@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/browsing_data/browsing_data_lifetime_policy_handler.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/explicitly_allowed_network_ports_policy_handler.h"
 #include "chrome/browser/net/secure_dns_policy_handler.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/policy/homepage_location_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
-#include "chrome/browser/policy/printing_restrictions_policy_handler.h"
 #include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #include "chrome/browser/profiles/force_safe_search_policy_handler.h"
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
@@ -99,6 +99,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/first_run/android/first_run_prefs.h"
@@ -124,10 +125,11 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/chromeos/policy/lacros_availability_policy_handler.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
@@ -152,6 +154,10 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/policy/printing_restrictions_policy_handler.h"
+#endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/pref_names.h"
@@ -185,6 +191,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kBuiltInDnsClientEnabled,
     prefs::kBuiltInDnsClientEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kAdditionalDnsQueryTypesEnabled,
+    prefs::kAdditionalDnsQueryTypesEnabled,
     base::Value::Type::BOOLEAN },
   { key::kWPADQuickCheckEnabled,
     prefs::kQuickCheckEnabled,
@@ -461,6 +470,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kCECPQ2Enabled,
     prefs::kCECPQ2Enabled,
+    base::Value::Type::BOOLEAN },
+  { key::kTripleDESEnabled,
+    prefs::kTripleDESEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSSLErrorOverrideAllowed,
     prefs::kSSLErrorOverrideAllowed,
@@ -759,6 +771,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kShowLogoutButtonInTray,
     ash::prefs::kShowLogoutButtonInTray,
+    base::Value::Type::BOOLEAN },
+  { key::kSuggestLogoutAfterClosingLastWindow,
+    ash::prefs::kSuggestLogoutAfterClosingLastWindow,
     base::Value::Type::BOOLEAN },
   { key::kAppRecommendationZeroStateEnabled,
     prefs::kAppReinstallRecommendationEnabled,
@@ -1389,6 +1404,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPdfAnnotationsEnabled,
     prefs::kPdfAnnotationsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDataLeakPreventionReportingEnabled,
+    policy_prefs::kDlpReportingEnabled,
+    base::Value::Type::BOOLEAN },
 #endif
 };
 // clang-format on
@@ -1499,12 +1517,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
       std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
-  handlers->AddHandler(
-      std::make_unique<PrintingAllowedBackgroundGraphicsModesPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<PrintingBackgroundGraphicsDefaultPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<PrintingPaperSizeDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<DeveloperToolsPolicyHandler>());
   handlers->AddHandler(std::make_unique<FileSelectionDialogsPolicyHandler>());
   handlers->AddHandler(std::make_unique<JavascriptPolicyHandler>());
@@ -1636,28 +1648,31 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
           prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope, chrome_schema));
 
-  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+  handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
       key::kBrowsingDataLifetime, browsing_data::prefs::kBrowsingDataLifetime,
-      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
-      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
-      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+      chrome_schema));
+
+  handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
+      key::kClearBrowsingDataOnExitList,
+      browsing_data::prefs::kClearBrowsingDataOnExitList, chrome_schema));
 
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kClearBrowsingDataOnExitList,
-      browsing_data::prefs::kClearBrowsingDataOnExitList, chrome_schema,
+      key::kRelaunchWindow, prefs::kRelaunchWindow, chrome_schema,
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN) || \
+    defined(OS_CHROMEOS)
   handlers->AddHandler(
       std::make_unique<
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kContextAwareAccessSignalsAllowlist,
           enterprise_connectors::kContextAwareAccessSignalsAllowlistPref,
           chrome_schema));
-#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
+#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN) ||
+        // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
@@ -1790,11 +1805,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       chromeos::prefs::kSAMLOfflineSigninTimeLimit, -1, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kGaiaLockScreenOfflineSigninTimeLimitDays,
-      chromeos::prefs::kGaiaLockScreenOfflineSigninTimeLimitDays, -1, 365,
+      chromeos::prefs::kGaiaLockScreenOfflineSigninTimeLimitDays, -2, 365,
       true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kSamlLockScreenOfflineSigninTimeLimitDays,
-      chromeos::prefs::kSamlLockScreenOfflineSigninTimeLimitDays, -1, 365,
+      chromeos::prefs::kSamlLockScreenOfflineSigninTimeLimitDays, -2, 365,
       true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kLidCloseAction, ash::prefs::kPowerLidClosedAction,
@@ -1930,6 +1945,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       chrome_schema, SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(std::make_unique<LacrosAvailabilityPolicyHandler>());
 #if defined(USE_CUPS)
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kPrintingAPIExtensionsAllowlist,
@@ -2021,6 +2037,15 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  handlers->AddHandler(
+      std::make_unique<PrintingAllowedBackgroundGraphicsModesPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<PrintingBackgroundGraphicsDefaultPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<PrintingPaperSizeDefaultPolicyHandler>());
+#endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   handlers->AddHandler(std::make_unique<SpellcheckLanguagePolicyHandler>());

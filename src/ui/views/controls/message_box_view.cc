@@ -13,10 +13,10 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
@@ -28,7 +28,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -110,11 +109,11 @@ MessageBoxView::MessageBoxView(const std::u16string& message,
   } else {
     add_label(message, true, gfx::ALIGN_LEFT);
   }
-  auto scroll_view = std::make_unique<ScrollView>();
-  scroll_view->ClipHeightTo(0, provider->GetDistanceMetric(
-                                   DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
-  scroll_view->SetContents(std::move(message_contents));
-  scroll_view_ = AddChildView(std::move(scroll_view));
+  scroll_view_ = AddChildView(std::make_unique<ScrollView>());
+  scroll_view_->ClipHeightTo(
+      0,
+      provider->GetDistanceMetric(DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
+  scroll_view_->SetContents(std::move(message_contents));
   // Don't enable text selection if multiple labels are used, since text
   // selection can't span multiple labels.
   if (message_labels_.size() == 1u)
@@ -278,30 +277,31 @@ void MessageBoxView::ResetLayoutManager() {
   layout->StartRow(0, kMessageViewColumnSetId);
   layout->AddExistingView(scroll_view_);
 
-  views::DialogContentType trailing_content_type = views::TEXT;
+  views::DialogContentType trailing_content_type =
+      views::DialogContentType::kText;
   if (prompt_field_->GetVisible()) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
     layout->AddExistingView(prompt_field_);
-    trailing_content_type = views::CONTROL;
+    trailing_content_type = views::DialogContentType::kControl;
   }
 
   if (checkbox_->GetVisible()) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
     layout->AddExistingView(checkbox_);
-    trailing_content_type = views::TEXT;
+    trailing_content_type = views::DialogContentType::kText;
   }
 
   if (link_->GetVisible()) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
     layout->AddExistingView(link_);
-    trailing_content_type = views::TEXT;
+    trailing_content_type = views::DialogContentType::kText;
   }
 
   gfx::Insets border_insets = provider->GetDialogInsetsForContentType(
-      views::TEXT, trailing_content_type);
+      views::DialogContentType::kText, trailing_content_type);
   // Horizontal insets have already been applied to the message contents and
   // controls as padding columns. Only apply the missing vertical insets.
   border_insets.Set(border_insets.top(), 0, border_insets.bottom(), 0);

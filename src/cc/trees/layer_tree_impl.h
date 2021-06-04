@@ -15,7 +15,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "cc/base/synced_property.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/event_listener_properties.h"
@@ -47,6 +46,7 @@ class ContextProvider;
 
 namespace cc {
 
+enum class ActivelyScrollingType;
 class DebugRectHistory;
 class DocumentTransitionRequest;
 class DroppedFrameCounter;
@@ -707,7 +707,7 @@ class CC_EXPORT LayerTreeImpl {
   void ResetAllChangeTracking();
 
   void HandleTickmarksVisibilityChange();
-  void HandleScrollbarShowRequestsFromMain();
+  void HandleScrollbarShowRequests();
 
   void InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
@@ -728,6 +728,10 @@ class CC_EXPORT LayerTreeImpl {
 
   bool IsInSynchronousComposite() const {
     return host_impl_->IsInSynchronousComposite();
+  }
+
+  ActivelyScrollingType GetActivelyScrollingType() const {
+    return host_impl_->GetActivelyScrollingType();
   }
 
   // These functions are used for plumbing DelegatedInkMetadata from blink

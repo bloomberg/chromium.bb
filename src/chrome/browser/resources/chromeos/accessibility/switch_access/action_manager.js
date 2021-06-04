@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {FocusRingManager} from './focus_ring_manager.js';
 import {MenuManager} from './menu_manager.js';
 import {Navigator} from './navigator.js';
 import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
@@ -69,7 +70,8 @@ export class ActionManager {
    */
   static onSelect() {
     const node = Navigator.byItem.currentNode;
-    if (node.actions.length <= 1 || !node.location) {
+    if (MenuManager.isMenuOpen() || node.actions.length <= 1 ||
+        !node.location) {
       node.doDefaultAction();
       return;
     }
@@ -91,16 +93,38 @@ export class ActionManager {
    * @param {!SwitchAccessMenuAction} action
    */
   static performAction(action) {
-    const manager = ActionManager.instance;
-    manager.handleGlobalActions_(action) ||
-        manager.handlePointScanActions_(action) ||
-        manager.performActionOnCurrentNode_(action);
-    ActionManager.exitCurrentMenu();
+    switch (action) {
+      // Global actions:
+      case SwitchAccessMenuAction.SETTINGS:
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
+        ActionManager.exitCurrentMenu();
+        break;
+      case SwitchAccessMenuAction.POINT_SCAN:
+        ActionManager.exitCurrentMenu();
+        Navigator.byPoint.start();
+        break;
+      case SwitchAccessMenuAction.ITEM_SCAN:
+        Navigator.byItem.restart();
+        ActionManager.exitAllMenus();
+        break;
+      // Point scan actions:
+      case SwitchAccessMenuAction.LEFT_CLICK:
+      case SwitchAccessMenuAction.RIGHT_CLICK:
+        // Exit menu, then click (so the action will hit the desired target,
+        // instead of the menu).
+        FocusRingManager.clearAll();
+        ActionManager.exitCurrentMenu();
+        Navigator.byPoint.performMouseAction(action);
+        break;
+      // Item scan actions:
+      default:
+        ActionManager.instance.performActionOnCurrentNode_(action);
+    }
   }
 
-
   /** Refreshes the current menu, if needed. */
-  static refreshMenu() {
+  static refreshMenuUnconditionally() {
     if (!MenuManager.isMenuOpen()) {
       return;
     }
@@ -115,7 +139,7 @@ export class ActionManager {
    */
   static refreshMenuForNode(node) {
     if (node.equals(ActionManager.instance.actionNode_)) {
-      ActionManager.refreshMenu();
+      ActionManager.refreshMenuUnconditionally();
     }
   }
 
@@ -208,7 +232,7 @@ export class ActionManager {
     }
     let actions = this.actionNode_.actions;
     const possibleActions = this.actionsForType_(this.currentMenuType_);
-    actions.filter((a) => possibleActions.includes(a));
+    actions = actions.filter((a) => possibleActions.includes(a));
     if (this.currentMenuType_ === SAConstants.MenuType.MAIN_MENU) {
       actions = this.addGlobalActions_(actions);
     }
@@ -236,63 +260,6 @@ export class ActionManager {
     return undefined;
   }
 
-  /**
-   * If the action is a global action, perform the action and return true.
-   * Otherwise return false.
-   * @param {!SwitchAccessMenuAction} action
-   * @return {boolean}
-   * @private
-   */
-  handleGlobalActions_(action) {
-    switch (action) {
-      case SwitchAccessMenuAction.SETTINGS:
-        chrome.accessibilityPrivate.openSettingsSubpage(
-            'manageAccessibility/switchAccess');
-        return true;
-      case SwitchAccessMenuAction.POINT_SCAN:
-        ActionManager.exitCurrentMenu();
-        Navigator.byPoint.start();
-        return true;
-      case SwitchAccessMenuAction.ITEM_SCAN:
-        Navigator.byPoint.stop();
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * If the action is a point scan action, perform the action and return true.
-   * Otherwise return false.
-   * @param {!SwitchAccessMenuAction} action
-   * @return {boolean}
-   * @private
-   */
-  handlePointScanActions_(action) {
-    if (SwitchAccess.mode !== SAConstants.Mode.POINT_SCAN) {
-      return false;
-    }
-
-    switch (action) {
-      case SwitchAccessMenuAction.LEFT_CLICK:
-        EventGenerator.sendMouseClick(
-            Navigator.byPoint.currentPoint.x, Navigator.byPoint.currentPoint.y);
-        Navigator.byPoint.start();
-        return true;
-      case SwitchAccessMenuAction.RIGHT_CLICK:
-        EventGenerator.sendMouseClick(
-            Navigator.byPoint.currentPoint.x, Navigator.byPoint.currentPoint.y,
-            {
-              mouseButton:
-                  chrome.accessibilityPrivate.SyntheticMouseEventButton.RIGHT
-            });
-        Navigator.byPoint.start();
-        return true;
-      default:
-        return false;
-    }
-  }
-
   /** @private */
   openCurrentMenu_() {
     const actions = this.getActionsForCurrentMenuAndNode_();
@@ -310,8 +277,7 @@ export class ActionManager {
    */
   performActionOnCurrentNode_(action) {
     if (!this.actionNode_.hasAction(action)) {
-      // Refresh the actions in the menu.
-      this.openCurrentMenu_();
+      ActionManager.refreshMenuUnconditionally();
       return;
     }
 
@@ -319,17 +285,23 @@ export class ActionManager {
     // having the menu on the group stack interferes with some actions. We do
     // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
     // If we receive a different response, we re-enter the menu.
-    Navigator.byItem.exitIfInGroup(MenuManager.menuAutomationNode);
+    Navigator.byItem.suspendCurrentGroup();
+
     const response = this.actionNode_.performAction(action);
     if (response === SAConstants.ActionResponse.CLOSE_MENU) {
-      MenuManager.close();
-    } else {
-      Navigator.byItem.jumpToSwitchAccessMenu();
+      ActionManager.exitAllMenus();
+      return;
     }
 
     switch (response) {
+      case SAConstants.ActionResponse.EXIT_MENU:
+        ActionManager.exitCurrentMenu();
+        return;
+      case SAConstants.ActionResponse.REMAIN_OPEN:
+        Navigator.byItem.restoreSuspendedGroup();
+        return;
       case SAConstants.ActionResponse.RELOAD_MENU:
-        this.openCurrentMenu_();
+        ActionManager.refreshMenuUnconditionally();
         break;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
         if (SwitchAccess.instance.improvedTextInputEnabled()) {

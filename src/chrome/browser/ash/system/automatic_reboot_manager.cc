@@ -10,6 +10,7 @@
 #include <sys/types.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -101,8 +102,7 @@ void SaveUpdateRebootNeededUptime() {
 
   std::string update_reboot_needed_uptime =
       base::NumberToString(uptime.InSecondsF());
-  base::WriteFileDescriptor(fd.get(), update_reboot_needed_uptime.c_str(),
-                            update_reboot_needed_uptime.size());
+  base::WriteFileDescriptor(fd.get(), update_reboot_needed_uptime);
 }
 
 }  // namespace
@@ -127,8 +127,8 @@ struct SystemEventTimes {
 
   SystemEventTimes() = default;
 
-  base::Optional<base::TimeTicks> boot_time;
-  base::Optional<base::TimeTicks> update_reboot_needed_time;
+  absl::optional<base::TimeTicks> boot_time;
+  absl::optional<base::TimeTicks> update_reboot_needed_time;
 };
 
 SystemEventTimes GetSystemEventTimes() {
@@ -167,7 +167,8 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
   if (!session_manager::SessionManager::Get()->IsSessionStarted()) {
     if (ui::UserActivityDetector::Get())
       ui::UserActivityDetector::Get()->AddObserver(this);
-    session_manager_observer_.Add(session_manager::SessionManager::Get());
+    session_manager_observation_.Observe(
+        session_manager::SessionManager::Get());
     login_screen_idle_timer_ = std::make_unique<base::OneShotTimer>();
     OnUserActivity(nullptr);
   }
@@ -237,7 +238,7 @@ void AutomaticRebootManager::OnUserActivity(const ui::Event* event) {
   // Destroying and re-creating the timer ensures that Start() posts a fresh
   // task with a delay of exactly |kLoginManagerIdleTimeoutMs|, ensuring that
   // the timer fires predictably in tests.
-  login_screen_idle_timer_.reset(new base::OneShotTimer);
+  login_screen_idle_timer_ = std::make_unique<base::OneShotTimer>();
   login_screen_idle_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
       base::BindOnce(&AutomaticRebootManager::MaybeReboot,
@@ -252,7 +253,7 @@ void AutomaticRebootManager::OnUserSessionStarted(bool is_primary_user) {
   // a relevant criterion.
   if (ui::UserActivityDetector::Get())
     ui::UserActivityDetector::Get()->RemoveObserver(this);
-  session_manager_observer_.RemoveAll();
+  session_manager_observation_.Reset();
   login_screen_idle_timer_.reset();
 }
 
@@ -346,7 +347,7 @@ void AutomaticRebootManager::Reschedule() {
   // Set up a timer for the start of the grace period. If the grace period
   // started in the past, the timer is still used with its delay set to zero.
   if (!grace_start_timer_)
-    grace_start_timer_.reset(new base::OneShotTimer);
+    grace_start_timer_ = std::make_unique<base::OneShotTimer>();
   VLOG(1) << "Scheduling reboot attempt in " << (grace_start_time - now);
   grace_start_timer_->Start(
       FROM_HERE, std::max(grace_start_time - now, base::TimeDelta()),
@@ -358,7 +359,7 @@ void AutomaticRebootManager::Reschedule() {
   // Set up a timer for the end of the grace period. If the grace period ended
   // in the past, the timer is still used with its delay set to zero.
   if (!grace_end_timer_)
-    grace_end_timer_.reset(new base::OneShotTimer);
+    grace_end_timer_ = std::make_unique<base::OneShotTimer>();
   VLOG(1) << "Scheduling unconditional reboot in " << (grace_end_time - now);
   grace_end_timer_->Start(
       FROM_HERE, std::max(grace_end_time - now, base::TimeDelta()),

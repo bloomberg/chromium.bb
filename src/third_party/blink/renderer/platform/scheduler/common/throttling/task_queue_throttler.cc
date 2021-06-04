@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/time/tick_clock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/throttled_time_domain.h"
@@ -27,7 +27,7 @@ using base::sequence_manager::TaskQueue;
 
 namespace {
 
-base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
+absl::optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
                                                 TaskQueue* queue) {
   if (queue->HasTaskToRunImmediately())
     return lazy_now->Now();
@@ -313,7 +313,7 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
 
   LazyNow lazy_now(now);
 
-  base::Optional<base::TimeTicks> next_desired_run_time =
+  absl::optional<base::TimeTicks> next_desired_run_time =
       NextTaskRunTime(&lazy_now, queue);
 
   if (CanRunTasksAt(queue, now, is_wake_up)) {
@@ -338,7 +338,7 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
       time_domain_->SetNextTaskRunTime(next_desired_run_time.value());
     }
 
-    base::Optional<base::TimeTicks> next_wake_up =
+    absl::optional<base::TimeTicks> next_wake_up =
         queue->GetNextScheduledWakeUp();
     // TODO(altimin, crbug.com/813218): Find a testcase to repro freezes
     // mentioned in the bug.
@@ -358,7 +358,7 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
       UpdateNextAllowedRunTime(queue, next_desired_run_time.value());
 
   // Insert a fence of an approriate type.
-  base::Optional<QueueBlockType> block_type = GetQueueBlockType(now, queue);
+  absl::optional<QueueBlockType> block_type = GetQueueBlockType(now, queue);
   DCHECK(block_type);
 
   switch (block_type.value()) {
@@ -388,12 +388,12 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
   MaybeSchedulePumpThrottledTasks(FROM_HERE, now, next_run_time);
 }
 
-base::Optional<QueueBlockType> TaskQueueThrottler::GetQueueBlockType(
+absl::optional<QueueBlockType> TaskQueueThrottler::GetQueueBlockType(
     base::TimeTicks now,
     TaskQueue* queue) {
   auto find_it = queue_details_.find(queue);
   if (find_it == queue_details_.end())
-    return base::nullopt;
+    return absl::nullopt;
 
   bool has_new_tasks_only_block = false;
 
@@ -408,11 +408,11 @@ base::Optional<QueueBlockType> TaskQueueThrottler::GetQueueBlockType(
 
   if (has_new_tasks_only_block)
     return QueueBlockType::kNewTasksOnly;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-void TaskQueueThrottler::WriteIntoTracedValue(perfetto::TracedValue context,
-                                              base::TimeTicks now) const {
+void TaskQueueThrottler::WriteIntoTrace(perfetto::TracedValue context,
+                                        base::TimeTicks now) const {
   auto dict = std::move(context).WriteDictionary();
   if (pending_pump_throttled_tasks_runtime_) {
     dict.Add(
@@ -425,8 +425,7 @@ void TaskQueueThrottler::WriteIntoTracedValue(perfetto::TracedValue context,
   {
     auto time_budget_pools = dict.AddArray("time_budget_pools");
     for (const auto& budget_pool : budget_pools_) {
-      budget_pool.key->WriteIntoTracedValue(time_budget_pools.AppendItem(),
-                                            now);
+      budget_pool.key->WriteIntoTrace(time_budget_pools.AppendItem(), now);
     }
   }
 
@@ -546,7 +545,7 @@ void TaskQueueThrottler::DisableThrottling() {
   }
 
   pump_throttled_tasks_closure_.Cancel();
-  pending_pump_throttled_tasks_runtime_ = base::nullopt;
+  pending_pump_throttled_tasks_runtime_ = absl::nullopt;
 
   TRACE_EVENT0("renderer.scheduler", "TaskQueueThrottler_DisableThrottling");
 }
@@ -608,7 +607,7 @@ void TaskQueueThrottler::Metadata::OnQueueNextWakeUpChanged(
   throttler_->OnQueueNextWakeUpChanged(queue_, wake_up);
 }
 
-void TaskQueueThrottler::Metadata::WriteIntoTracedValue(
+void TaskQueueThrottler::Metadata::WriteIntoTrace(
     perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("throttling_ref_count", throttling_ref_count_);

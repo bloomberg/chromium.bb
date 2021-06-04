@@ -37,7 +37,7 @@ HoldingSpaceItem::~HoldingSpaceItem() {
 bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
   return type_ == rhs.type_ && id_ == rhs.id_ && file_path_ == rhs.file_path_ &&
          file_system_url_ == rhs.file_system_url_ && text_ == rhs.text_ &&
-         *image_ == *rhs.image_;
+         *image_ == *rhs.image_ && progress_ == rhs.progress_;
 }
 
 // static
@@ -46,13 +46,41 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
     const base::FilePath& file_path,
     const GURL& file_system_url,
     ImageResolver image_resolver) {
+  return CreateFileBackedItem(type, file_path, file_system_url,
+                              /*progress=*/1.f, std::move(image_resolver));
+}
+
+// static
+std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
+    Type type,
+    const base::FilePath& file_path,
+    const GURL& file_system_url,
+    const absl::optional<float>& progress,
+    ImageResolver image_resolver) {
   DCHECK(!file_system_url.is_empty());
 
   // Note: std::make_unique does not work with private constructors.
   return base::WrapUnique(new HoldingSpaceItem(
       type, /*id=*/base::UnguessableToken::Create().ToString(), file_path,
       file_system_url, file_path.BaseName().LossyDisplayName(),
-      std::move(image_resolver).Run(type, file_path)));
+      std::move(image_resolver).Run(type, file_path), progress));
+}
+
+// static
+bool HoldingSpaceItem::IsDownload(HoldingSpaceItem::Type type) {
+  switch (type) {
+    case Type::kArcDownload:
+    case Type::kDiagnosticsLog:
+    case Type::kDownload:
+    case Type::kLacrosDownload:
+      return true;
+    case Type::kNearbyShare:
+    case Type::kPinnedFile:
+    case Type::kPrintedPdf:
+    case Type::kScreenRecording:
+    case Type::kScreenshot:
+      return false;
+  }
 }
 
 // static
@@ -61,7 +89,7 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
 std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::Deserialize(
     const base::DictionaryValue& dict,
     ImageResolver image_resolver) {
-  const base::Optional<int> version = dict.FindIntPath(kVersionPath);
+  const absl::optional<int> version = dict.FindIntPath(kVersionPath);
   DCHECK(version.has_value() && version.value() == kVersion);
 
   const Type type = static_cast<Type>(dict.FindIntPath(kTypePath).value());
@@ -71,7 +99,7 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::Deserialize(
   return base::WrapUnique(new HoldingSpaceItem(
       type, DeserializeId(dict), file_path,
       /*file_system_url=*/GURL(), file_path.BaseName().LossyDisplayName(),
-      std::move(image_resolver).Run(type, file_path)));
+      std::move(image_resolver).Run(type, file_path), /*progress=*/1.f));
 }
 
 // static
@@ -79,7 +107,7 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::Deserialize(
 // serialization versions are supported, care must be taken to handle each.
 const std::string& HoldingSpaceItem::DeserializeId(
     const base::DictionaryValue& dict) {
-  const base::Optional<int> version = dict.FindIntPath(kVersionPath);
+  const absl::optional<int> version = dict.FindIntPath(kVersionPath);
   DCHECK(version.has_value() && version.value() == kVersion);
 
   const std::string* id = dict.FindStringPath(kIdPath);
@@ -93,10 +121,10 @@ const std::string& HoldingSpaceItem::DeserializeId(
 // serialization versions are supported, care must be taken to handle each.
 base::FilePath HoldingSpaceItem::DeserializeFilePath(
     const base::DictionaryValue& dict) {
-  const base::Optional<int> version = dict.FindIntPath(kVersionPath);
+  const absl::optional<int> version = dict.FindIntPath(kVersionPath);
   DCHECK(version.has_value() && version.value() == kVersion);
 
-  const base::Optional<base::FilePath> file_path =
+  const absl::optional<base::FilePath> file_path =
       util::ValueToFilePath(dict.FindPath(kFilePathPath));
   DCHECK(file_path.has_value());
 
@@ -120,22 +148,45 @@ base::CallbackListSubscription HoldingSpaceItem::AddDeletionCallback(
   return deletion_callback_list_.Add(std::move(callback));
 }
 
-bool HoldingSpaceItem::IsFinalized() const {
+bool HoldingSpaceItem::IsInitialized() const {
   return !file_system_url_.is_empty();
 }
 
-void HoldingSpaceItem::Finalize(const GURL& file_system_url) {
-  DCHECK(!IsFinalized());
+void HoldingSpaceItem::Initialize(const GURL& file_system_url) {
+  DCHECK(!IsInitialized());
   DCHECK(!file_system_url.is_empty());
   file_system_url_ = file_system_url;
 }
 
-void HoldingSpaceItem::UpdateBackingFile(const base::FilePath& file_path,
+bool HoldingSpaceItem::UpdateBackingFile(const base::FilePath& file_path,
                                          const GURL& file_system_url) {
+  if (file_path_ == file_path && file_system_url_ == file_system_url)
+    return false;
+
   file_path_ = file_path;
   file_system_url_ = file_system_url;
   text_ = file_path.BaseName().LossyDisplayName();
   image_->UpdateBackingFilePath(file_path);
+
+  return true;
+}
+
+bool HoldingSpaceItem::IsInProgress() const {
+  return progress_ != 1.f;
+}
+
+bool HoldingSpaceItem::UpdateProgress(const absl::optional<float>& progress) {
+  // NOTE: Progress can only be updated for in progress items.
+  if (progress_ == progress || !IsInProgress())
+    return false;
+
+  if (progress.has_value()) {
+    DCHECK_GE(progress.value(), 0.f);
+    DCHECK_LE(progress.value(), 1.f);
+  }
+
+  progress_ = progress;
+  return true;
 }
 
 void HoldingSpaceItem::InvalidateImage() {
@@ -145,12 +196,16 @@ void HoldingSpaceItem::InvalidateImage() {
 
 bool HoldingSpaceItem::IsScreenCapture() const {
   switch (type_) {
-    case HoldingSpaceItem::Type::kScreenshot:
-    case HoldingSpaceItem::Type::kScreenRecording:
+    case Type::kScreenRecording:
+    case Type::kScreenshot:
       return true;
-    case HoldingSpaceItem::Type::kDownload:
-    case HoldingSpaceItem::Type::kNearbyShare:
-    case HoldingSpaceItem::Type::kPinnedFile:
+    case Type::kArcDownload:
+    case Type::kDiagnosticsLog:
+    case Type::kDownload:
+    case Type::kLacrosDownload:
+    case Type::kNearbyShare:
+    case Type::kPinnedFile:
+    case Type::kPrintedPdf:
       return false;
   }
 }
@@ -160,12 +215,19 @@ HoldingSpaceItem::HoldingSpaceItem(Type type,
                                    const base::FilePath& file_path,
                                    const GURL& file_system_url,
                                    const std::u16string& text,
-                                   std::unique_ptr<HoldingSpaceImage> image)
+                                   std::unique_ptr<HoldingSpaceImage> image,
+                                   const absl::optional<float>& progress)
     : type_(type),
       id_(id),
       file_path_(file_path),
       file_system_url_(file_system_url),
       text_(text),
-      image_(std::move(image)) {}
+      image_(std::move(image)),
+      progress_(progress) {
+  if (progress_.has_value()) {
+    DCHECK_GE(progress_.value(), 0.f);
+    DCHECK_LE(progress_.value(), 1.f);
+  }
+}
 
 }  // namespace ash

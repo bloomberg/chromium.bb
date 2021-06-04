@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,8 +15,10 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
@@ -51,8 +54,8 @@ class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
     if (theme_color_)
       web_app_info->theme_color = *theme_color_;
 
-    web_app::AppId app_id =
-        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
+    web_app::AppId app_id = web_app::test::InstallWebApp(
+        browser()->profile(), std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(GetStartURL());
     navigation_observer.StartWatchingNewWebContents();
     app_browser_ = web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
@@ -73,7 +76,7 @@ class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
     return true;
   }
 
-  base::Optional<SkColor> theme_color_ = SK_ColorBLUE;
+  absl::optional<SkColor> theme_color_ = SK_ColorBLUE;
   Browser* app_browser_ = nullptr;
   BrowserView* browser_view_ = nullptr;
   GlassBrowserFrameView* glass_frame_view_ = nullptr;
@@ -88,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, ThemeColor) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, NoThemeColor) {
-  theme_color_ = base::nullopt;
+  theme_color_ = absl::nullopt;
   if (!InstallAndLaunchWebApp())
     return;
 
@@ -188,8 +191,8 @@ class WebAppGlassBrowserFrameViewWindowControlsOverlayTest
     web_app_info->title = u"A Web App";
     web_app_info->display_override = display_overrides;
 
-    web_app::AppId app_id =
-        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
+    web_app::AppId app_id = web_app::test::InstallWebApp(
+        browser()->profile(), std::move(web_app_info));
 
     content::TestNavigationObserver navigation_observer(start_url);
     base::RunLoop loop;

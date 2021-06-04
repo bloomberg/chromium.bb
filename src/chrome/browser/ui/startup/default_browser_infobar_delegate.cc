@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,10 +22,11 @@
 namespace chrome {
 
 // static
-void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                           Profile* profile) {
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
+void DefaultBrowserInfoBarDelegate::Create(
+    infobars::ContentInfoBarManager* infobar_manager,
+    Profile* profile) {
+  infobar_manager->AddInfoBar(
+      CreateConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate>(
           new DefaultBrowserInfoBarDelegate(profile))));
 }
 

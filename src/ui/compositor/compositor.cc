@@ -57,6 +57,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -744,27 +745,49 @@ void Compositor::OnFrameTokenChanged(uint32_t frame_token,
   NOTREACHED();
 }
 
+Compositor::TrackerState::TrackerState() = default;
+Compositor::TrackerState::TrackerState(TrackerState&&) = default;
+Compositor::TrackerState& Compositor::TrackerState::operator=(TrackerState&&) =
+    default;
+Compositor::TrackerState::~TrackerState() = default;
+
 void Compositor::StartThroughputTracker(
     TrackerId tracker_id,
     ThroughputTrackerHost::ReportCallback callback) {
   DCHECK(!base::Contains(throughput_tracker_map_, tracker_id));
-  throughput_tracker_map_[tracker_id] = std::move(callback);
+
+  auto& tracker_state = throughput_tracker_map_[tracker_id];
+  tracker_state.report_callback = std::move(callback);
+
   animation_host_->StartThroughputTracking(tracker_id);
 }
 
-void Compositor::StopThroughtputTracker(TrackerId tracker_id) {
-  // TODO(crbug.com/1183374): DCHECKs are disabled during automated testing on
-  // CrOS and this check failed when tested on an experimental builder. Revert
-  // https://crrev.com/c/2727841 (or uncomment) to enable it. See
-  // go/chrome-dcheck-on-cros or http://crbug.com/1113456 for more details.
-  // DCHECK(base::Contains(throughput_tracker_map_, tracker_id));
+bool Compositor::StopThroughtputTracker(TrackerId tracker_id) {
+  auto it = throughput_tracker_map_.find(tracker_id);
+  DCHECK(it != throughput_tracker_map_.end());
+
+  // Clean up if report has happened since StopThroughputTracking would
+  // not trigger report in this case.
+  if (it->second.report_attempted) {
+    throughput_tracker_map_.erase(it);
+    return false;
+  }
+
+  it->second.should_report = true;
   animation_host_->StopThroughputTracking(tracker_id);
+  return true;
 }
 
 void Compositor::CancelThroughtputTracker(TrackerId tracker_id) {
-  DCHECK(base::Contains(throughput_tracker_map_, tracker_id));
-  StopThroughtputTracker(tracker_id);
-  throughput_tracker_map_.erase(tracker_id);
+  auto it = throughput_tracker_map_.find(tracker_id);
+  DCHECK(it != throughput_tracker_map_.end());
+
+  const bool should_stop = !it->second.report_attempted;
+
+  throughput_tracker_map_.erase(it);
+
+  if (should_stop)
+    animation_host_->StopThroughputTracking(tracker_id);
 }
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -803,15 +826,22 @@ void Compositor::ReportMetricsForTracker(
   if (it == throughput_tracker_map_.end())
     return;
 
+  // Set `report_attempted` but not reporting if relevant ThroughputTrackers
+  // are not stopped and waiting for reports.
+  if (!it->second.should_report) {
+    it->second.report_attempted = true;
+    return;
+  }
+
   // Callback may modify `throughput_tracker_map_` so update the map first.
   // See https://crbug.com/1193382.
-  auto callback = std::move(it->second);
+  auto callback = std::move(it->second.report_callback);
   throughput_tracker_map_.erase(it);
   std::move(callback).Run(data);
 }
 
 void Compositor::SetDelegatedInkPointRenderer(
-    mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver) {
+    mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver) {
   if (display_private_)
     display_private_->SetDelegatedInkPointRenderer(std::move(receiver));
 }

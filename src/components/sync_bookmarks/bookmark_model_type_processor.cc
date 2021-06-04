@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -516,7 +517,8 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
       syncer::ProtoTimeToTime(metadata->modification_time());
   data.name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
-  data.unique_position = metadata->unique_position();
+  data.unique_position =
+      syncer::UniquePosition::FromProto(metadata->unique_position());
   data.specifics =
       CreateSpecificsFromBookmarkNode(node, bookmark_model_,
                                       /*force_favicon_load=*/false);

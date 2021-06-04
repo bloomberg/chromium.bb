@@ -35,10 +35,6 @@ namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
 }
 
-namespace agent_interference_recorder_test {
-class AgentInterferenceRecorderTest;
-}
-
 namespace task_queue_throttler_unittest {
 class TaskQueueThrottlerTest;
 }
@@ -265,7 +261,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return key;
     }
 
-    void WriteIntoTracedValue(perfetto::TracedValue context) const;
+    void WriteIntoTrace(perfetto::TracedValue context) const;
 
     bool can_be_deferred : 1;
     bool can_be_throttled : 1;
@@ -292,7 +288,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     }
 
     QueueCreationParams SetWebSchedulingPriority(
-        base::Optional<WebSchedulingPriority> priority) {
+        absl::optional<WebSchedulingPriority> priority) {
       web_scheduling_priority = priority;
       return *this;
     }
@@ -383,7 +379,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     FrameSchedulerImpl* frame_scheduler;
     QueueTraits queue_traits;
     bool freeze_when_keep_active;
-    base::Optional<WebSchedulingPriority> web_scheduling_priority;
+    absl::optional<WebSchedulingPriority> web_scheduling_priority;
 
    private:
     void ApplyQueueTraitsToSpec() {
@@ -431,10 +427,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     return queue_traits_.prioritisation_type;
   }
 
-  void OnTaskReady(const void* frame_scheduler,
-                   const base::sequence_manager::Task& task,
-                   base::sequence_manager::LazyNow* lazy_now);
-
   void OnTaskStarted(const base::sequence_manager::Task& task,
                      const TaskQueue::TaskTiming& task_timing);
 
@@ -461,10 +453,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   }
 
   void SetNetRequestPriority(net::RequestPriority net_request_priority);
-  base::Optional<net::RequestPriority> net_request_priority() const;
+  absl::optional<net::RequestPriority> net_request_priority() const;
 
   void SetWebSchedulingPriority(WebSchedulingPriority priority);
-  base::Optional<WebSchedulingPriority> web_scheduling_priority() const;
+  absl::optional<WebSchedulingPriority> web_scheduling_priority() const;
 
   // TODO(kdillon): Improve MTTQ API surface so that we no longer
   // need to expose the raw pointer to the queue.
@@ -501,7 +493,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
@@ -526,7 +518,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   friend class base::sequence_manager::SequenceManager;
   friend class blink::scheduler::main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplTest;
-  friend class agent_interference_recorder_test::AgentInterferenceRecorderTest;
   friend class blink::scheduler::task_queue_throttler_unittest::
       TaskQueueThrottlerTest;
 
@@ -546,12 +537,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // to the queue, if one exists.
   //
   // Used to track UMA metrics for resource loading tasks split by net priority.
-  base::Optional<net::RequestPriority> net_request_priority_;
+  absl::optional<net::RequestPriority> net_request_priority_;
 
   // |web_scheduling_priority_| is the priority of the task queue within the web
   // scheduling API. This priority is used in conjunction with the frame
   // scheduling policy to determine the task queue priority.
-  base::Optional<WebSchedulingPriority> web_scheduling_priority_;
+  absl::optional<WebSchedulingPriority> web_scheduling_priority_;
 
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

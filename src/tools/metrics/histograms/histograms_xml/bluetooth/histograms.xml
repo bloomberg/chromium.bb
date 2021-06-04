@@ -23,6 +23,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Android.GATTConnection.Disconnected.Result"
     enum="AndroidGATTConnectionErrorCodes" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1052931
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -33,6 +36,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Android.GATTConnection.Failure.Result"
     enum="AndroidGATTConnectionErrorCodes" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1052932
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -43,6 +49,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Android.GATTConnection.Success.Result"
     enum="AndroidGATTConnectionErrorCodes" expires_after="2021-05-02">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1052933
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -148,7 +157,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result"
-    enum="BooleanSuccess" expires_after="2021-09-12">
+    enum="BooleanSuccess" expires_after="2021-11-14">
 <!-- Name completed by histogram_suffixes name="BluetoothUISurfaces" -->
 
   <owner>hansberry@chromium.org</owner>
@@ -289,6 +298,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.Android" enum="AndroidGATTStatusResult"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/12. crbug.com/1052934
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="AndroidGATTEvents" -->
 
   <owner>ortuno@chromium.org</owner>
@@ -314,6 +326,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.Characteristic.ReadValue.Outcome"
     enum="WebBluetoothGATTOperationOutcome" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1052935
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -326,6 +341,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.Characteristic.StartNotifications.Outcome"
     enum="WebBluetoothGATTOperationOutcome" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160798
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -338,6 +356,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.Characteristic.WriteValue.Outcome"
     enum="WebBluetoothGATTOperationOutcome" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1052936
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -571,6 +592,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.Filters.Count" units="filters"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -582,6 +606,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.Filters.Services"
     enum="GATTServiceHash" expires_after="2021-04-04">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804 Use
+    Bluetooth.Web.RequestDevice.UnionOfServices.Services instead.
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -593,6 +621,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.FilterSize" units="services"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -605,6 +636,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Bluetooth.Web.RequestDevice.NumOfDevicesInChooserWhenNotAcceptingAllDevices"
     units="devices" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -615,6 +649,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.OptionalServices.Count"
     units="filters" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -626,6 +663,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.OptionalServices.Services"
     enum="GATTServiceHash" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804 Use
+    Bluetooth.Web.RequestDevice.UnionOfServices.Services instead.
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -637,6 +678,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.Options.AcceptAllDevices"
     enum="Boolean" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -658,17 +702,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.RSSISignalStrength" units="dBm"
-    expires_after="2021-01-31">
+    expires_after="2022-04-09">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
     Raw RSSI values provided to chooser, before processing them for display in
-    the Web Bluetooth chooser.
+    the Web Bluetooth chooser. This histogram is used to choose the 4 threshold
+    points used to display signal strength.
+
+    See //content/browser/bluetooth/bluetooth_device_chooser_controller.cc.
   </summary>
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.RSSISignalStrengthLevel"
-    enum="WebBluetoothRSSISignalStrengthLevel" expires_after="2021-01-31">
+    enum="WebBluetoothRSSISignalStrengthLevel" expires_after="2022-04-09">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -679,6 +726,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.ScanningDuration" units="ms"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1160804
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -690,6 +740,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Bluetooth.Web.RequestDevice.UnionOfServices.Count"
     units="services" expires_after="2021-01-31">
+  <obsolete>
+    Removed 2021/04/09. crbug.com/1036974
+  </obsolete>
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -700,7 +753,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.UnionOfServices.Services"
-    enum="GATTServiceHash" expires_after="2021-08-15">
+    enum="GATTServiceHash" expires_after="2021-10-17">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>

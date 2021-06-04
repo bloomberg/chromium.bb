@@ -17,6 +17,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxcrt/fx_extension.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/stl_util.h"
 
 bool GraphicsData::operator<(const GraphicsData& other) const {
@@ -52,7 +53,7 @@ bool CPDF_PageObjectHolder::IsPage() const {
 
 void CPDF_PageObjectHolder::StartParse(
     std::unique_ptr<CPDF_ContentParser> pParser) {
-  DCHECK(m_ParseState == ParseState::kNotParsed);
+  DCHECK_EQ(m_ParseState, ParseState::kNotParsed);
   m_pParser = std::move(pParser);
   m_ParseState = ParseState::kParsing;
 }
@@ -61,7 +62,7 @@ void CPDF_PageObjectHolder::ContinueParse(PauseIndicatorIface* pPause) {
   if (m_ParseState == ParseState::kParsed)
     return;
 
-  DCHECK(m_ParseState == ParseState::kParsing);
+  DCHECK_EQ(m_ParseState, ParseState::kParsing);
   if (m_pParser->Continue(pPause))
     return;
 
@@ -81,6 +82,33 @@ std::set<int32_t> CPDF_PageObjectHolder::TakeDirtyStreams() {
   auto dirty_streams = std::move(m_DirtyStreams);
   m_DirtyStreams.clear();
   return dirty_streams;
+}
+
+Optional<ByteString> CPDF_PageObjectHolder::GraphicsMapSearch(
+    const GraphicsData& gd) {
+  auto it = m_GraphicsMap.find(gd);
+  if (it == m_GraphicsMap.end())
+    return pdfium::nullopt;
+
+  return it->second;
+}
+
+void CPDF_PageObjectHolder::GraphicsMapInsert(const GraphicsData& gd,
+                                              const ByteString& str) {
+  m_GraphicsMap[gd] = str;
+}
+
+Optional<ByteString> CPDF_PageObjectHolder::FontsMapSearch(const FontData& fd) {
+  auto it = m_FontsMap.find(fd);
+  if (it == m_FontsMap.end())
+    return pdfium::nullopt;
+
+  return it->second;
+}
+
+void CPDF_PageObjectHolder::FontsMapInsert(const FontData& fd,
+                                           const ByteString& str) {
+  m_FontsMap[fd] = str;
 }
 
 void CPDF_PageObjectHolder::LoadTransparencyInfo() {

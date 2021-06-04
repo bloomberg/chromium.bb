@@ -54,7 +54,7 @@ const char kClientStr[] = "android";
 #elif defined(OS_IOS)
 const Client kClient = Client::CHROME_IOS;
 const char kClientStr[] = "ios";
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
 const Client kClient = Client::CHROME_MAC;
 const char kClientStr[] = "mac";
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
@@ -386,7 +386,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
                               test.chrome_proxy_header_value);
     request_headers.SetHeader("some_random_header_after", "some_random_key");
 
-    base::Optional<std::string> session_key =
+    absl::optional<std::string> session_key =
         request_options()->GetSessionKeyFromRequestHeaders(request_headers);
     EXPECT_EQ(test.expect_result, session_key.has_value());
     if (test.expect_result) {
@@ -428,7 +428,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetPageIdFromRequestHeaders) {
                               test.chrome_proxy_header_value);
     request_headers.SetHeader("some_random_header_after", "some_random_key");
 
-    base::Optional<uint64_t> page_id =
+    absl::optional<uint64_t> page_id =
         request_options()->GetPageIdFromRequestHeaders(request_headers);
     EXPECT_EQ(test.expect_result, page_id.has_value());
     if (test.expect_result) {

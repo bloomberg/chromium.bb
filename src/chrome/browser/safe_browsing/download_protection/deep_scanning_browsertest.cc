@@ -212,7 +212,7 @@ class DownloadDeepScanningBrowserTestBase
 
   void WaitForDownloadToFinish() {
     content::DownloadManager* download_manager =
-        content::BrowserContext::GetDownloadManager(browser()->profile());
+        browser()->profile()->GetDownloadManager();
     content::DownloadTestObserverTerminal observer(
         download_manager, 1,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
@@ -297,7 +297,7 @@ class DownloadDeepScanningBrowserTestBase
 
   void ObserveDownloadManager() {
     content::DownloadManager* download_manager =
-        content::BrowserContext::GetDownloadManager(browser()->profile());
+        browser()->profile()->GetDownloadManager();
     download_manager->AddObserver(this);
   }
 
@@ -718,7 +718,8 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest, MultipleFCMResponses) {
       /*mimetypes*/ &zip_types,
       /*size*/ 276,
       /*result*/ EventResultToString(EventResult::WARNED),
-      /*username*/ kUserName);
+      /*username*/ kUserName,
+      /*scan_id*/ last_enterprise_request().request_token());
 
   // The DLP scan finishes asynchronously, and finds nothing. The malware result
   // is attached to the response again.
@@ -808,7 +809,8 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
       /*mimetypes*/ &zip_types,
       /*size*/ 276,
       /*result*/ EventResultToString(EventResult::WARNED),
-      /*username*/ kUserName);
+      /*username*/ kUserName,
+      /*scan_id*/ last_enterprise_request().request_token());
   WaitForDownloadToFinish();
 
   // The file should be blocked.
@@ -898,7 +900,7 @@ IN_PROC_BROWSER_TEST_P(DownloadRestrictionsDeepScanningBrowserTest,
       /*mimetypes*/ &zip_types,
       /*size*/ 276,
       /*result*/ EventResultToString(EventResult::BLOCKED),
-      /*username*/ kUserName);
+      /*username*/ kUserName, /*scan_id*/ absl::nullopt);
 
   WaitForDownloadToFinish();
 
@@ -1022,13 +1024,17 @@ class MetadataCheckAndDeepScanningBrowserTest
         return "POTENTIALLY_UNWANTED";
       case ClientDownloadResponse::DANGEROUS_HOST:
         return "DANGEROUS_HOST";
+      case ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE:
+        return "DANGEROUS_ACCOUNT_COMPROMISE";
     }
   }
 
   std::string expected_threat_type() const {
     // These results exempt the file from being deep scanned.
     if (metadata_check_verdict() == ClientDownloadResponse::DANGEROUS ||
-        metadata_check_verdict() == ClientDownloadResponse::DANGEROUS_HOST) {
+        metadata_check_verdict() == ClientDownloadResponse::DANGEROUS_HOST ||
+        metadata_check_verdict() ==
+            ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE) {
       return metadata_check_threat_type();
     }
     switch (scanning_verdict()) {
@@ -1049,6 +1055,9 @@ class MetadataCheckAndDeepScanningBrowserTest
       case ClientDownloadResponse::DANGEROUS_HOST:
         return download::DownloadDangerType::
             DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
+      case ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE:
+        return download::DownloadDangerType::
+            DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE;
       case ClientDownloadResponse::UNCOMMON:
         if (scanning_verdict() != ScanningVerdict::MALWARE) {
           return download::DownloadDangerType::
@@ -1082,7 +1091,9 @@ class MetadataCheckAndDeepScanningBrowserTest
 
   bool deep_scan_needed() const {
     return metadata_check_verdict() != ClientDownloadResponse::DANGEROUS &&
-           metadata_check_verdict() != ClientDownloadResponse::DANGEROUS_HOST;
+           metadata_check_verdict() != ClientDownloadResponse::DANGEROUS_HOST &&
+           metadata_check_verdict() !=
+               ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE;
   }
 };
 
@@ -1095,7 +1106,8 @@ INSTANTIATE_TEST_SUITE_P(
                         ClientDownloadResponse::UNCOMMON,
                         ClientDownloadResponse::POTENTIALLY_UNWANTED,
                         ClientDownloadResponse::DANGEROUS_HOST,
-                        ClientDownloadResponse::UNKNOWN),
+                        ClientDownloadResponse::UNKNOWN,
+                        ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE),
         testing::Values(ScanningVerdict::MALWARE,
                         ScanningVerdict::UNWANTED,
                         ScanningVerdict::SAFE),
@@ -1152,6 +1164,14 @@ IN_PROC_BROWSER_TEST_P(MetadataCheckAndDeepScanningBrowserTest, Test) {
   if (threat_type.empty()) {
     validator.ExpectNoReport();
   } else {
+    // A scan ID is only expected when a deep scan is performed and when its
+    // result will be reported over the metadata check one.
+    auto scan_id =
+        deep_scan_needed() && scanning_verdict() != ScanningVerdict::SAFE
+            ? absl::optional<std::string>(
+                  last_enterprise_request().request_token())
+            : absl::nullopt;
+
     validator.ExpectDangerousDeepScanningResult(
         /*url*/ url.spec(),
         /*filename*/
@@ -1166,7 +1186,8 @@ IN_PROC_BROWSER_TEST_P(MetadataCheckAndDeepScanningBrowserTest, Test) {
         /*mimetypes*/ &zip_types,
         /*size*/ 276,
         /*result*/ EventResultToString(EventResult::WARNED),
-        /*username*/ kUserName);
+        /*username*/ kUserName,
+        /*scan_id*/ scan_id);
   }
 
   // The deep scanning malware verdict is returned asynchronously. It is not

@@ -13,7 +13,6 @@
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/multiplexed_channel.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -62,14 +61,14 @@ class FakeMultiplexedChannelDelegate : public MultiplexedChannel::Delegate {
   FakeMultiplexedChannelDelegate();
   ~FakeMultiplexedChannelDelegate() override;
 
-  const base::Optional<ConnectionDetails>& disconnected_connection_details() {
+  const absl::optional<ConnectionDetails>& disconnected_connection_details() {
     return disconnected_connection_details_;
   }
 
  private:
   void OnDisconnected(const ConnectionDetails& connection_details) override;
 
-  base::Optional<ConnectionDetails> disconnected_connection_details_;
+  absl::optional<ConnectionDetails> disconnected_connection_details_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiplexedChannelDelegate);
 };

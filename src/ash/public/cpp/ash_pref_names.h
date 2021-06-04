@@ -58,7 +58,6 @@ ASH_PUBLIC_EXPORT extern const char
 ASH_PUBLIC_EXPORT extern const char
     kAccessibilityTabletModeShelfNavigationButtonsEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
-ASH_PUBLIC_EXPORT extern const char kLiveCaptionEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
 ASH_PUBLIC_EXPORT extern const char kAltTabPerDesk[];
@@ -169,10 +168,12 @@ ASH_PUBLIC_EXPORT extern const char kShelfPreferences[];
 
 ASH_PUBLIC_EXPORT extern const char kShowLogoutButtonInTray[];
 ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
+ASH_PUBLIC_EXPORT extern const char kSuggestLogoutAfterClosingLastWindow[];
 
 ASH_PUBLIC_EXPORT extern const char kUserWallpaperInfo[];
 ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
 ASH_PUBLIC_EXPORT extern const char kSyncableWallpaperInfo[];
+ASH_PUBLIC_EXPORT extern const char kWallpaperCollectionId[];
 
 ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];
 ASH_PUBLIC_EXPORT extern const char kSystemBluetoothAdapterEnabled[];
@@ -230,6 +231,9 @@ ASH_PUBLIC_EXPORT extern const char kGlobalMediaControlsPinned[];
 
 ASH_PUBLIC_EXPORT extern const char
     kPciePeripheralDisplayNotificationRemaining[];
+
+ASH_PUBLIC_EXPORT extern const char kLastUsedImeShortcutReminderDismissed[];
+ASH_PUBLIC_EXPORT extern const char kNextImeShortcutReminderDismissed[];
 
 }  // namespace prefs
 

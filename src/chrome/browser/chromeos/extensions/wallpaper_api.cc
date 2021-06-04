@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -203,11 +204,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
 
-    base::Value event_args(Value::Type::LIST);
-    event_args.Append(Value(GenerateThumbnail(image, image.size())));
-    event_args.Append(Value(thumbnail_data));
-    event_args.Append(
-        extensions::api::wallpaper::ToString(params_->details.layout));
+    std::vector<base::Value> event_args;
+    event_args.push_back(base::Value(GenerateThumbnail(image, image.size())));
+    event_args.push_back(base::Value(thumbnail_data));
+    event_args.push_back(base::Value(
+        extensions::api::wallpaper::ToString(params_->details.layout)));
     // Setting wallpaper from right click menu in 'Files' app is a feature that
     // was implemented in crbug.com/578935. Since 'Files' app is a built-in v1
     // app in ChromeOS, we should treat it slightly differently with other third
@@ -215,14 +216,15 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     // and it should not appear in the wallpaper grid in the Wallpaper Picker.
     // But we should not display the 'wallpaper-set-by-mesage' since it might
     // introduce confusion as shown in crbug.com/599407.
-    event_args.Append((extension()->id() == file_manager::kFileManagerAppId)
-                          ? base::StringPiece()
-                          : extension()->name());
+    base::StringPiece ext_name;
+    if (extension()->id() != file_manager::kFileManagerAppId)
+      ext_name = extension()->name();
+    event_args.push_back(base::Value(ext_name));
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
             kEventName,
-        base::ListValue::From(std::make_unique<Value>(std::move(event_args)))));
+        std::move(event_args)));
     event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                            std::move(event));
   }
@@ -236,8 +238,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperFetched(
     bool success,
     const std::string& response) {
   if (success) {
-    params_->details.data.reset(
-        new std::vector<uint8_t>(response.begin(), response.end()));
+    params_->details.data = std::make_unique<std::vector<uint8_t>>(
+        response.begin(), response.end());
     StartDecode(*params_->details.data);
     // StartDecode() will Respond later through OnWallpaperDecoded()
   } else {

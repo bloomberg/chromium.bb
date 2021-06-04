@@ -4,7 +4,7 @@
 
 #include "content/test/mock_clipboard_host.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace content {
@@ -68,6 +68,9 @@ void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,
       result = write_smart_paste_;
       break;
     case blink::mojom::ClipboardFormat::kBookmark:
+      result = false;
+      break;
+    case blink::mojom::ClipboardFormat::kRtf:
       result = false;
       break;
   }

@@ -6,7 +6,7 @@
 
 // validationEGL.cpp: Validation functions for generic EGL entry point parameters
 
-#include "libANGLE/validationEGL.h"
+#include "libANGLE/validationEGL_autogen.h"
 
 #include "common/utilities.h"
 #include "libANGLE/Config.h"
@@ -3399,6 +3399,26 @@ bool ValidateCreateImage(const ValidationContext *val,
             }
             break;
 
+        case EGL_METAL_TEXTURE_ANGLE:
+            if (!displayExtensions.mtlTextureClientBuffer)
+            {
+                val->setError(EGL_BAD_PARAMETER,
+                              "EGL_ANGLE_metal_texture_client_buffer not supported.");
+                return false;
+            }
+
+            if (context != nullptr)
+            {
+                val->setError(EGL_BAD_CONTEXT, "ctx must be EGL_NO_CONTEXT.");
+                return false;
+            }
+
+            ANGLE_EGL_TRY_RETURN(
+                val->eglThread,
+                display->validateImageClientBuffer(context, target, buffer, attributes),
+                val->entryPoint, val->labeledObject, false);
+            break;
+
         default:
             val->setError(EGL_BAD_PARAMETER, "invalid target: 0x%X", target);
             return false;
@@ -4348,6 +4368,13 @@ bool ValidateSwapBuffersWithDamageKHR(const ValidationContext *val,
 
 bool ValidateWaitNative(const ValidationContext *val, const EGLint engine)
 {
+    if (val->eglThread->getDisplay() == nullptr)
+    {
+        // EGL spec says this about eglWaitNative -
+        //    eglWaitNative is ignored if there is no current EGL rendering context.
+        return true;
+    }
+
     ANGLE_VALIDATION_TRY(ValidateDisplay(val, val->eglThread->getDisplay()));
 
     if (engine != EGL_CORE_NATIVE_ENGINE)
@@ -5740,6 +5767,13 @@ bool ValidateQueryString(const ValidationContext *val, const Display *dpyPacked,
 
 bool ValidateWaitGL(const ValidationContext *val)
 {
+    if (val->eglThread->getDisplay() == nullptr)
+    {
+        // EGL spec says this about eglWaitGL -
+        //    eglWaitGL is ignored if there is no current EGL rendering context for OpenGL ES.
+        return true;
+    }
+
     ANGLE_VALIDATION_TRY(ValidateDisplay(val, val->eglThread->getDisplay()));
     return true;
 }
@@ -5756,6 +5790,15 @@ bool ValidateReleaseThread(const ValidationContext *val)
 
 bool ValidateWaitClient(const ValidationContext *val)
 {
+    if (val->eglThread->getDisplay() == nullptr)
+    {
+        // EGL spec says this about eglWaitClient -
+        //    If there is no current context for the current rendering API,
+        //    the function has no effect but still returns EGL_TRUE.
+        return true;
+    }
+
+    ANGLE_VALIDATION_TRY(ValidateDisplay(val, val->eglThread->getDisplay()));
     return true;
 }
 

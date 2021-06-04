@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">सीक स्‍लाइडर</translation>
 <translation id="1404323374378969387">नार्वेजियन</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
+<translation id="1433628812591023318">फ़ाइलों को Parallels Desktop में डालने के लिए, Windows की फ़ाइलों में ट्रांसफ़र किया जाना ज़रूरी है.</translation>
 <translation id="1435838927755162558">Parallels Desktop के साथ फ़ोल्डर शेयर करें</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1471718551822868769">स्लोवाक</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows की फ़ाइलें</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> से शेयर करें</translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">इस लोकेशन से "<ph name="PATH" />" नहीं खोला जा सका. खोलने के लिए, कृपया "मेरी फ़ाइलें" पर कॉपी करें.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">हो गया</translation>
 <translation id="3188257591659621405">मेरी फ़ाइलें</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">फ़ोनेटिक कीबोर्ड के साथ बुल्गेरियन</translation>
 <translation id="5605830556594064952">यूएस ड्वोरक</translation>
 <translation id="5625294776298156701">Tamil99 कीबोर्ड के साथ तमिल</translation>
+<translation id="5633226425545095130">इस आइटम को कहीं और ट्रांसफ़र करने से, यह उन सभी लोगों के साथ शेयर हो जाएगा जो इस शेयर किए जाने वाले फ़ोल्डर '<ph name="DESTINATION_NAME" />' को देख सकते हैं.</translation>
 <translation id="5649768706273821470">सुनें</translation>
 <translation id="5678784840044122290">Linux ऐप्लिकेशन आपके 'टर्मिनल' में उपलब्ध होगा और आपके 'लॉन्चर' में एक आइकॉन भी दिखाई दे सकता है.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />किसी संग्रह या वर्चुअल डिस्क से डिसकनेक्ट नहीं किया जा सकता<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">इथिओपियाई कीबोर्ड</translation>
 <translation id="7417705661718309329">Google मैप</translation>
 <translation id="7460898608667578234">उक्रेनियाई</translation>
+<translation id="7486315294984620427">फाइलों को Parallels Desktop में डालने के लिए, Windows की फ़ाइलों में कॉपी किया जाना ज़रूरी है.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> मिलीं
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google डिस्क<ph name="END_LINK" /> में बैक अप लेने के लिए तैयार है</translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">आयाम</translation>
 <translation id="8437209419043462667">यूएस</translation>
 <translation id="8456681095658380701">गलत नाम</translation>
+<translation id="8459404855768962328">इस आइटम को कॉपी करने से, यह उन सभी लोगों के साथ शेयर हो जाएगा जो इस शेयर किए जाने वाले फ़ोल्डर '<ph name="DESTINATION_NAME" />' को देख सकते हैं.</translation>
 <translation id="8461467696380332069">शेल्फ़ में अपनी फ़ाइलों को तुरंत ऐक्सेस करने के लिए, किसी फ़ाइल पर दायां क्लिक करें और "शेल्फ़ पर पिन करें" को चुनें.</translation>
 <translation id="8463494891489624050">वियतनामीज़ वीआईक्यूआर</translation>
 <translation id="8466234950814670489">Tar संग्रह</translation>

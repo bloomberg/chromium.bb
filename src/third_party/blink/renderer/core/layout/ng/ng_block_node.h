@@ -101,6 +101,10 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
     return box_->IsTableCell() && !box_->IsTableCellLegacy();
   }
 
+  bool IsContainingBlockNGGrid() const {
+    return box_->ContainingBlock()->IsLayoutNGGrid();
+  }
+
   // Return true if this block node establishes an inline formatting context.
   // This will only be the case if there is actual inline content. Empty nodes
   // or nodes consisting purely of block-level, floats, and/or out-of-flow
@@ -116,13 +120,18 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   LogicalSize GetAspectRatio() const;
 
   // Returns the transform to apply to a child (e.g. for layout-overflow).
-  base::Optional<TransformationMatrix> GetTransformForChildFragment(
+  absl::optional<TransformationMatrix> GetTransformForChildFragment(
       const NGPhysicalBoxFragment& child_fragment,
       PhysicalSize size) const;
 
   bool HasLeftOverflow() const { return box_->HasLeftOverflow(); }
   bool HasTopOverflow() const { return box_->HasTopOverflow(); }
   bool HasNonVisibleOverflow() const { return box_->HasNonVisibleOverflow(); }
+
+  // Return true if overflow in the block direction is clipped. With
+  // overflow-[xy]:clip, it is possible with visible overflow along one axis at
+  // the same time as we clip it along the other axis.
+  bool HasNonVisibleBlockOverflow() const;
 
   OverflowClipAxes GetOverflowClipAxes() const {
     return box_->GetOverflowClipAxes();
@@ -194,6 +203,14 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
     return false;
   }
 
+  // After we run the layout algorithm, this function copies back the fragment
+  // position to the layout box.
+  void CopyChildFragmentPosition(
+      const NGPhysicalBoxFragment& child_fragment,
+      PhysicalOffset,
+      const NGPhysicalBoxFragment& container_fragment,
+      const NGBlockBreakToken* previous_container_break_token = nullptr) const;
+
   String ToString() const;
 
  private:
@@ -233,11 +250,6 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       const NGConstraintSpace&,
       const NGPhysicalBoxFragment&,
       const NGBlockBreakToken* previous_container_break_token) const;
-  void CopyChildFragmentPosition(
-      const NGPhysicalBoxFragment& child_fragment,
-      PhysicalOffset,
-      const NGPhysicalBoxFragment& container_fragment,
-      const NGBlockBreakToken* previous_container_break_token = nullptr) const;
 
   void CopyBaselinesFromLegacyLayout(const NGConstraintSpace&,
                                      NGBoxFragmentBuilder*) const;

@@ -21,7 +21,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -45,6 +44,7 @@
 #include "net/cert/known_roots.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_delegate.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/filter/brotli_source_stream.h"
@@ -70,6 +70,7 @@
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -77,6 +78,7 @@
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/websocket_handshake_userdata_key.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -171,6 +173,14 @@ net::CookieOptions CreateCookieOptions(
   options.set_is_in_nontrivial_first_party_set(
       is_in_nontrivial_first_party_set);
   return options;
+}
+
+bool IsTLS13OverTCP(const net::HttpResponseInfo& response_info) {
+  // Although IETF QUIC also uses TLS 1.3, our QUIC connections report
+  // SSL_CONNECTION_VERSION_QUIC.
+  return net::SSLConnectionStatusToVersion(
+             response_info.ssl_info.connection_status) ==
+         net::SSL_CONNECTION_VERSION_TLS1_3;
 }
 
 }  // namespace
@@ -268,7 +278,7 @@ void URLRequestHttpJob::Start() {
       request_->isolation_info().request_type() ==
       net::IsolationInfo::RequestType::kSubFrame;
   request_info_.load_flags = request_->load_flags();
-  request_info_.disable_secure_dns = request_->disable_secure_dns();
+  request_info_.secure_dns_policy = request_->secure_dns_policy();
   request_info_.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
   request_info_.socket_tag = request_->socket_tag();
@@ -567,19 +577,20 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
             is_main_frame_navigation, force_ignore_site_for_cookies);
 
     net::SchemefulSite request_site(request_->url());
-
     const CookieAccessDelegate* delegate =
         cookie_store->cookie_access_delegate();
 
-    CookieOptions::SamePartyCookieContextType same_party_context =
-        net::cookie_util::ComputeSamePartyContext(
-            request_site, request_->isolation_info(), delegate,
-            request_->force_ignore_top_frame_party_for_cookies());
     bool is_in_nontrivial_first_party_set =
         delegate && delegate->IsInNontrivialFirstPartySet(request_site);
     CookieOptions options = CreateCookieOptions(
-        same_site_context, same_party_context, request_->isolation_info(),
-        is_in_nontrivial_first_party_set);
+        same_site_context, request_->same_party_cookie_context_type(),
+        request_->isolation_info(), is_in_nontrivial_first_party_set);
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Cookie.FirstPartySetsContextType.HTTP.Read",
+        net::cookie_util::ComputeFirstPartySetsContextType(
+            request_site, request_->isolation_info(), delegate,
+            request_->force_ignore_top_frame_party_for_cookies()));
 
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
@@ -713,9 +724,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   }
 
   base::Time response_date;
-  base::Optional<base::Time> server_time = base::nullopt;
+  absl::optional<base::Time> server_time = absl::nullopt;
   if (GetResponseHeaders()->GetDateValue(&response_date))
-    server_time = base::make_optional(response_date);
+    server_time = absl::make_optional(response_date);
 
   bool force_ignore_site_for_cookies =
       request_->force_ignore_site_for_cookies();
@@ -735,15 +746,17 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   const CookieAccessDelegate* delegate = cookie_store->cookie_access_delegate();
   net::SchemefulSite request_site(request_->url());
 
-  CookieOptions::SamePartyCookieContextType same_party_context =
-      net::cookie_util::ComputeSamePartyContext(
-          request_site, request_->isolation_info(), delegate,
-          request_->force_ignore_top_frame_party_for_cookies());
   bool is_in_nontrivial_first_party_set =
       delegate && delegate->IsInNontrivialFirstPartySet(request_site);
   CookieOptions options = CreateCookieOptions(
-      same_site_context, same_party_context, request_->isolation_info(),
-      is_in_nontrivial_first_party_set);
+      same_site_context, request_->same_party_cookie_context_type(),
+      request_->isolation_info(), is_in_nontrivial_first_party_set);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Cookie.FirstPartySetsContextType.HTTP.Write",
+      net::cookie_util::ComputeFirstPartySetsContextType(
+          request_site, request_->isolation_info(), delegate,
+          request_->force_ignore_top_frame_party_for_cookies()));
 
   // Set all cookies, without waiting for them to be set. Any subsequent
   // read will see the combined result of all cookie operation.
@@ -770,7 +783,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         request_->url(), cookie_string, base::Time::Now(), server_time,
         &returned_status);
 
-    base::Optional<CanonicalCookie> cookie_to_return = base::nullopt;
+    absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
     if (returned_status.IsInclude()) {
       DCHECK(cookie);
       // Make a copy of the cookie if we successfully made one.
@@ -802,7 +815,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
 void URLRequestHttpJob::OnSetCookieResult(
     const CookieOptions& options,
-    base::Optional<CanonicalCookie> cookie,
+    absl::optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CookieAccessResult access_result) {
   if (request_->net_log().IsCapturing()) {
@@ -922,7 +935,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // |URLRequestHttpJob::OnHeadersReceivedCallback()| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
       OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED);
-      preserve_fragment_on_redirect_url_ = base::nullopt;
+      preserve_fragment_on_redirect_url_ = absl::nullopt;
       IPEndPoint endpoint;
       if (transaction_)
         transaction_->GetRemoteEndpoint(&endpoint);
@@ -1403,6 +1416,19 @@ void URLRequestHttpJob::RecordTimer() {
   request_creation_time_ = base::Time();
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpTimeToFirstByte", to_start);
+
+  // Record additional metrics for TLS 1.3 servers. This is to help measure the
+  // impact of enabling 0-RTT. The effects of 0-RTT will be muted because not
+  // all TLS 1.3 servers enable 0-RTT, and only the first round-trip on a
+  // connection makes use of 0-RTT. However, 0-RTT can affect how requests are
+  // bound to connections and which connections offer resumption. We look at all
+  // TLS 1.3 responses for an apples-to-apples comparison.
+  //
+  // TODO(https://crbug.com/641225): Remove these metrics after launching 0-RTT.
+  if (transaction_ && transaction_->GetResponseInfo() &&
+      IsTLS13OverTCP(*transaction_->GetResponseInfo())) {
+    base::UmaHistogramMediumTimes("Net.HttpTimeToFirstByte.TLS13", to_start);
+  }
 }
 
 void URLRequestHttpJob::ResetTimer() {
@@ -1435,7 +1461,7 @@ void URLRequestHttpJob::SetResponseHeadersCallback(
   response_headers_callback_ = std::move(callback);
 }
 
-void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
+void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
   if (start_time_.is_null())
     return;
 
@@ -1463,6 +1489,15 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Secure.Quic",
                                    total_time);
       }
+    }
+
+    // Record metrics for TLS 1.3 to measure the impact of 0-RTT. See comment in
+    // RecordTimer().
+    //
+    // TODO(https://crbug.com/641225): Remove these metrics after launching
+    // 0-RTT.
+    if (IsTLS13OverTCP(*response_info_)) {
+      base::UmaHistogramTimes("Net.HttpJob.TotalTime.TLS13", total_time);
     }
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead",
@@ -1511,7 +1546,7 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
     network_quality_estimator->NotifyRequestCompleted(*request());
   }
 
-  RecordPerfHistograms(reason);
+  RecordCompletionHistograms(reason);
   request()->set_received_response_content_length(prefilter_bytes_read());
 }
 

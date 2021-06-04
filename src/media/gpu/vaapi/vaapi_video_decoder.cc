@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/bind_to_current_loop.h"
@@ -50,7 +50,7 @@ namespace {
 // Size of the timestamp cache, needs to be large enough for frame-reordering.
 constexpr size_t kTimestampCacheSize = 128;
 
-base::Optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
+absl::optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
   constexpr auto kSupportedBitDepthAndGfxFormats = base::MakeFixedFlatMap<
       uint8_t, gfx::BufferFormat>({
 #if defined(USE_OZONE)
@@ -61,7 +61,7 @@ base::Optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
   });
   if (!base::Contains(kSupportedBitDepthAndGfxFormats, bit_depth)) {
     VLOGF(1) << "Unsupported bit depth: " << base::strict_cast<int>(bit_depth);
-    return base::nullopt;
+    return absl::nullopt;
   }
   return GfxBufferFormatToVideoPixelFormat(
       kSupportedBitDepthAndGfxFormats.at(bit_depth));
@@ -100,10 +100,9 @@ std::unique_ptr<DecoderInterface> VaapiVideoDecoder::Create(
 }
 
 // static
-SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs(
-    const gpu::GpuDriverBugWorkarounds& workarounds) {
+SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
   return ConvertFromSupportedProfiles(
-      VaapiWrapper::GetSupportedDecodeProfiles(workarounds),
+      VaapiWrapper::GetSupportedDecodeProfiles(),
 #if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
       true /* allow_encrypted */);
 #else
@@ -275,6 +274,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   profile_ = profile;
   color_space_ = config.color_space_info();
+  hdr_metadata_ = config.hdr_metadata();
   encryption_scheme_ = config.encryption_scheme();
   auto accel_status = CreateAcceleratedVideoDecoder();
   if (!accel_status.is_ok()) {
@@ -380,7 +380,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       // Decoding was successful, notify client and try to schedule the next
       // task. Switch to the idle state if we ran out of buffers to decode.
       std::move(current_decode_task_->decode_done_cb_).Run(DecodeStatus::OK);
-      current_decode_task_ = base::nullopt;
+      current_decode_task_ = absl::nullopt;
       if (!decode_task_queue_.empty()) {
         ScheduleNextDecodeTask();
       } else {
@@ -428,7 +428,7 @@ void VaapiVideoDecoder::ClearDecodeTaskQueue(DecodeStatus status) {
 
   if (current_decode_task_) {
     std::move(current_decode_task_->decode_done_cb_).Run(status);
-    current_decode_task_ = base::nullopt;
+    current_decode_task_ = absl::nullopt;
   }
 
   while (!decode_task_queue_.empty()) {
@@ -607,7 +607,7 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
   const auto gfx_color_space = color_space.ToGfxColorSpace();
   if (gfx_color_space.IsValid())
     video_frame->set_color_space(gfx_color_space);
-
+  video_frame->set_hdr_metadata(hdr_metadata_);
   output_cb_.Run(std::move(video_frame));
 }
 
@@ -651,7 +651,7 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
     return;
 
   const uint8_t bit_depth = decoder_->GetBitDepth();
-  const base::Optional<VideoPixelFormat> format =
+  const absl::optional<VideoPixelFormat> format =
       GetPixelFormatForBitDepth(bit_depth);
   if (!format) {
     SetState(State::kError);
@@ -740,7 +740,7 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
       // Create the surface pool for decoding, the normal pool will be used for
       // output.
       const size_t decode_pool_size = decoder_->GetRequiredNumOfPictures();
-      const base::Optional<gfx::BufferFormat> buffer_format =
+      const absl::optional<gfx::BufferFormat> buffer_format =
           VideoPixelFormatToGfxBufferFormat(*format);
       if (!buffer_format) {
         decode_to_output_scale_factor_.reset();
@@ -761,7 +761,7 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
         std::unique_ptr<ScopedVASurface> surface =
             vaapi_wrapper_->CreateScopedVASurface(
                 base::strict_cast<unsigned int>(va_rt_format), decoder_pic_size,
-                /*visible_size=*/base::nullopt, va_fourcc);
+                /*visible_size=*/absl::nullopt, va_fourcc);
         if (!surface) {
           while (!decode_surface_pool_for_scaling_.empty())
             decode_surface_pool_for_scaling_.pop();
@@ -893,7 +893,7 @@ void VaapiVideoDecoder::Flush() {
 
   // Notify the client flushing is done.
   std::move(current_decode_task_->decode_done_cb_).Run(DecodeStatus::OK);
-  current_decode_task_ = base::nullopt;
+  current_decode_task_ = absl::nullopt;
 
   // Wait for new decodes, no decode tasks should be queued while flushing.
   SetState(State::kWaitingForInput);

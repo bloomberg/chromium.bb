@@ -6,10 +6,9 @@
 #define UI_GTK_NATIVE_THEME_GTK_H_
 
 #include "base/callback_list.h"
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/native_theme/native_theme_base.h"
@@ -23,7 +22,7 @@ namespace gtk {
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
 // A version of NativeTheme that uses GTK-rendered widgets.
-class COMPONENT_EXPORT(GTK) NativeThemeGtk : public ui::NativeThemeBase {
+class NativeThemeGtk : public ui::NativeThemeBase {
  public:
   static NativeThemeGtk* instance();
 
@@ -71,6 +70,7 @@ class COMPONENT_EXPORT(GTK) NativeThemeGtk : public ui::NativeThemeBase {
                          const FrameTopAreaExtraParams& frame_top_area,
                          ColorScheme color_scheme) const override;
   void NotifyOnNativeThemeUpdated() override;
+  std::string GetNativeThemeName() const override;
 
   void OnThemeChanged(GtkSettings* settings, GtkParamSpec* param);
 
@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(GTK) NativeThemeGtk : public ui::NativeThemeBase {
 
   void SetThemeCssOverride(ScopedCssProvider provider);
 
-  mutable base::Optional<SkColor> color_cache_[kColorId_NumColors];
+  mutable absl::optional<SkColor> color_cache_[kColorId_NumColors];
 
   ScopedCssProvider theme_css_override_;
 

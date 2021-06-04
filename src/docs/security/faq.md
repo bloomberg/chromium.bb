@@ -152,7 +152,7 @@ No. Chromium once contained a reflected XSS filter called the [XSSAuditor](https
 that was a best-effort second line of defense against reflected XSS flaws found
 in web sites. The XSS Auditor was [removed in Chrome 78](https://groups.google.com/a/chromium.org/forum/#!msg/blink-dev/TuYw-EZhO9g/blGViehIAwAJ).
 
-<a name="TOC-What-if-a-Chrome-component-breaks-an-OS-security-boundary-"</a>
+<a name="TOC-What-if-a-Chrome-component-breaks-an-OS-security-boundary-"></a>
 ## What if a Chrome component breaks an OS security boundary?
 
 If Chrome or any of its components (e.g. updater) can be abused to
@@ -661,7 +661,7 @@ vulnerability in the relevant feature, not Safe Browsing itself.
 ## What is the security story for Service Workers?
 
 See our dedicated [Service Worker Security
-FAQ](https://chromium.googlesource.com/chromium/src/+/master/docs/security/service-worker-security-faq.md).
+FAQ](https://chromium.googlesource.com/chromium/src/+/main/docs/security/service-worker-security-faq.md).
 
 <a name="TOC-What-about-URL-spoofs-using-Internationalized-Domain-Names-IDN-"></a>
 ## What about URL spoofs using Internationalized Domain Names (IDN)?
@@ -672,7 +672,7 @@ IDN display issues we are still working on.
 
 *    Please see [this document](https://docs.google.com/document/d/1_xJz3J9kkAPwk3pma6K3X12SyPTyyaJDSCxTfF8Y5sU)
 for a list of known issues and how we handle them.
-*    [This document](https://www.chromium.org/developers/design-documents/idn-in-google-chrome)
+*    [This document](https://chromium.googlesource.com/chromium/src/+/main/docs/idn.md)
 describes Chrome's IDN policy in detail.
 
 <a name="TOC-Chrome-silently-syncs-extensions-across-devices.-Is-this-a-security-vulnerability-"></a>
@@ -692,7 +692,7 @@ abusive behavior.
 
 In the future, we may pursue further mitigations. However, because an attacker
 must already have the victim's Google credentials and/or [physical access to a
-device](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model), we
+device](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-), we
 don't consider this attack a security vulnerability.
 
 We **do** consider it a vulnerability if an attacker can get an extension to
@@ -718,3 +718,38 @@ Null pointer dereferences with consistent, small, fixed offsets are not consider
 security bugs. A read or write to the NULL page results in a non-exploitable crash.
 If the offset is larger than a page, or if there's uncertainty about whether the
 offset is controllable, it is considered a security bug.
+
+<a name="TOC-Are-enterprise-admins-considered-privileged-"></a>
+## Are enterprise admins considered privileged?
+
+Chrome [can't guard against local
+attacks](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-).
+Enterprise administrators often have full control over the device. Does Chrome
+assume that enterprise administrators are as privileged and powerful as other
+local users? It depends:
+
+* On a fully managed machine, for example a [domain-joined Windows
+  machine](https://docs.microsoft.com/en-us/windows-server/identity/ad-fs/deployment/join-a-computer-to-a-domain),
+  a device managed via a Mobile Device Management product, or a device with
+  Chrome managed via machine-level [Chrome Browser Cloud
+  Management](https://support.google.com/chrome/?p=cloud_management),
+  the administrator effectively has privileges to view and mutate any state on
+  the device. Chrome [policy implementations](../enterprise/add_new_policy.md)
+  should still guide enterprise admins to the most user-respectful defaults
+  and policy description text should clearly describe the nature of the
+  capabilities and the user impact of them being granted.
+* On an unmanaged machine, Chrome profiles [can be managed via cloud
+  policy](https://support.google.com/chrome/?p=manage_profiles)
+  if users sign into Chrome using a managed account. These policies are called
+  *user policies*. In this scenario, the Chrome enterprise administrator should
+  have privileges only to *view and mutate state within the profile that they
+  administer*. Any access outside that profile requires end-user consent.
+
+Chrome administrators can force-install Chrome extensions without permissions
+prompts, so the same restrictions must apply to the Chrome extension APIs.
+
+Chrome has a long history of policy support with many hundreds of policies. We
+recognize that there may exist policies or policy combinations that can provide
+capabilities outside of the guidance provided here. In cases of clear violation
+of user expectations, we will attempt to remedy these policies and we will apply
+the guidance laid out in this document to any newly added policies.

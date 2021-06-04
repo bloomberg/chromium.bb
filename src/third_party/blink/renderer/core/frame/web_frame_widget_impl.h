@@ -223,8 +223,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   GetLastVirtualKeyboardVisibilityRequest() override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   void GetEditContextBoundsInWindow(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override;
   int32_t ComputeWebTextInputNextPreviousFlags() override;
   void ResetVirtualKeyboardVisibilityRequest() override;
   bool GetSelectionBoundsInWindow(gfx::Rect* focus,
@@ -336,12 +336,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // WebWidget overrides.
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-      cc::TaskGraphRunner* task_graph_runner,
       const ScreenInfos& screen_infos,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-      const cc::LayerTreeSettings* settings,
-      gfx::RenderingPipeline* main_thread_pipeline,
-      gfx::RenderingPipeline* compositor_thread_pipeline) override;
+      const cc::LayerTreeSettings* settings) override;
   void SetCompositorVisible(bool visible) override;
   gfx::Size Size() override;
   void Resize(const gfx::Size& size_with_dsf) override;
@@ -386,7 +382,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                        const gfx::Point& location) override;
   void SetViewportIntersection(
       mojom::blink::ViewportIntersectionStatePtr intersection_state,
-      const base::Optional<VisualProperties>& visual_properties) override;
+      const absl::optional<VisualProperties>& visual_properties) override;
   void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                          const gfx::PointF& screen_point,
                          ui::mojom::blink::DragOperation,
@@ -396,7 +392,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // is applied to all widgets.
   void SetDisplayMode(mojom::blink::DisplayMode);
 
-  base::Optional<gfx::Point> GetAndResetContextMenuLocation();
+  absl::optional<gfx::Point> GetAndResetContextMenuLocation();
 
   void BindWidgetCompositor(
       mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver) override;
@@ -499,7 +495,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetWindowRect(const gfx::Rect& window_rect);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
-  void SetToolTipText(const String& tooltip_text, TextDirection dir);
+  void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
 
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
@@ -657,7 +653,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void DidUpdateSurfaceAndScreen(
       const ScreenInfo& previous_original_screen_info) override;
   gfx::Rect ViewportVisibleRect() override;
-  base::Optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
+  absl::optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
       override;
   void WasHidden() override;
   void WasShown(bool was_evicted) override;
@@ -665,7 +661,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                          cc::PaintBenchmarkResult& result) override;
   KURL GetURLForDebugTrace() override;
   float GetTestingDeviceScaleFactorOverride() override;
-
+  void CountDroppedPointerDownForEventTiming(unsigned count) override;
   // mojom::blink::FrameWidget overrides.
   void DragTargetDragEnter(const WebDragData&,
                            const gfx::PointF& point_in_viewport,
@@ -870,6 +866,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Returns the current state of synchronous resize mode for testing.
   bool SynchronousResizeModeForTestingEnabled();
 
+  void NotifyZoomLevelChanged(LocalFrame* root);
+
   // A copy of the web drop data object we received from the browser.
   Member<DataObject> current_drag_data_;
 
@@ -906,7 +904,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // The size of the widget in viewport coordinates. This is slightly different
   // than the WebViewImpl::size_ since isn't set in auto resize mode.
-  base::Optional<gfx::Size> size_;
+  absl::optional<gfx::Size> size_;
 
   static bool ignore_input_events_;
 
@@ -946,11 +944,11 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Different consumers in the browser process makes different assumptions, so
   // must always send the first IPC regardless of value.
-  base::Optional<bool> has_touch_handlers_;
+  absl::optional<bool> has_touch_handlers_;
 
   Vector<mojom::blink::EditCommandPtr> edit_commands_;
 
-  base::Optional<gfx::Point> host_context_menu_location_;
+  absl::optional<gfx::Point> host_context_menu_location_;
   uint32_t last_capture_sequence_number_ = 0u;
 
   // Indicates whether tab-initiated fullscreen was granted.
@@ -960,10 +958,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   bool swipe_to_move_cursor_activated_ = false;
 
   // Set when a measurement begins, reset when the measurement is taken.
-  base::Optional<base::TimeTicks> update_layers_start_time_;
+  absl::optional<base::TimeTicks> update_layers_start_time_;
 
   // Metrics for gathering time for commit of compositor frame.
-  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
+  absl::optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   // Present when emulation is enabled, only on a main frame's WebFrameWidget.
   // Used to override values given from the browser such as ScreenInfo,
@@ -1017,7 +1015,7 @@ class CORE_EXPORT WebFrameWidgetImpl
     bool should_dispatch_first_layout_after_finished_parsing = false;
     bool should_dispatch_first_layout_after_finished_loading = false;
     // Last background color sent to the browser. Only set for main frames.
-    base::Optional<SkColor> last_background_color;
+    absl::optional<SkColor> last_background_color;
     // This bit is used to tell if this is a nested widget (an "inner web
     // contents") like a <webview> or <portal> widget. If false, the widget is
     // the top level widget.
@@ -1062,4 +1060,4 @@ class CORE_EXPORT WebFrameWidgetImpl
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_IMPL_H_

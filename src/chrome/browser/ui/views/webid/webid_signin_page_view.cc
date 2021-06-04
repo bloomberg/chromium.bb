@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/views/webid/webid_signin_page_view.h"
 
 #include "chrome/browser/ui/webid/identity_dialog_controller.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -18,8 +21,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // Dimensions of the dialog itself.
@@ -126,7 +127,12 @@ std::unique_ptr<views::WebView> SigninPageView::CreateContentWebView(
       initiator_web_contents_->GetBrowserContext());
 
   web_view->SetWebContents(idp_web_contents);
-  web_view->LoadInitialURL(provider);
+
+  // Navigate using the WebContents directly because the WebID custom header
+  // is needed.
+  std::string header = std::string(content::kSecWebIdCsrfHeader) + ":";
+  idp_web_contents->GetController().LoadURL(
+      provider, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL, header);
 
   // The webview must get an explicitly set height otherwise the layout
   // doesn't make it fill its container. This is likely because it has no
@@ -165,7 +171,7 @@ void SigninPageView::LoadProgressChanged(double progress) {
   // progress.
   if (progress >= 1) {
     // hide the progress bar
-    dialog_->GetBubbleFrameView()->SetProgress(base::nullopt);
+    dialog_->GetBubbleFrameView()->SetProgress(absl::nullopt);
     return;
   }
   dialog_->GetBubbleFrameView()->SetProgress(progress);

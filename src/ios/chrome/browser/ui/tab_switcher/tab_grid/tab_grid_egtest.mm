@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
@@ -23,11 +25,15 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForUIElementTimeout;
 using chrome_test_util::TabGridOtherDevicesPanelButton;
 using chrome_test_util::LongPressCellAndDragToEdge;
 using chrome_test_util::LongPressCellAndDragToOffsetOf;
 using chrome_test_util::TapAtOffsetOf;
 using chrome_test_util::WindowWithNumber;
+using chrome_test_util::AddToBookmarksButton;
+using chrome_test_util::AddToReadingListButton;
+using chrome_test_util::CloseTabMenuButton;
 
 namespace {
 char kURL1[] = "http://firstURL";
@@ -42,6 +48,9 @@ char kResponse2[] = "Test Page 2 content";
 char kResponse3[] = "Test Page 3 content";
 char kResponse4[] = "Test Page 4 content";
 
+const CFTimeInterval kSnackbarAppearanceTimeout = 5;
+const CFTimeInterval kSnackbarDisappearanceTimeout = 11;
+
 // Matcher for the 'Close All' confirmation button.
 id<GREYMatcher> CloseAllTabsConfirmationWithNumberOfTabs(
     NSInteger numberOfTabs) {
@@ -50,6 +59,11 @@ id<GREYMatcher> CloseAllTabsConfirmationWithNumberOfTabs(
           IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION, numberOfTabs));
   return grey_allOf(grey_accessibilityLabel(closeTabs),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+}
+
+id<GREYMatcher> TabWithTitle(NSString* title) {
+  return grey_allOf(grey_accessibilityLabel(title), grey_sufficientlyVisible(),
+                    nil);
 }
 
 // Identifer for cell at given |index| in the tab grid.
@@ -68,6 +82,23 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 @end
 
 @implementation TabGridTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  // Features are enabled or disabled based on the name of the test that is
+  // running. This is done because it is inefficient to use
+  // ensureAppLaunchedWithConfiguration for each test.
+  if ([self isRunningTest:@selector(testTabGridItemContextMenuShare)] ||
+      [self isRunningTest:@selector
+            (testTabGridItemContextMenuAddToReadingList)] ||
+      [self isRunningTest:@selector(testTabGridItemContextCloseTab)] ||
+      [self
+          isRunningTest:@selector(testTabGridItemContextMenuAddToBookmarks)]) {
+    config.features_enabled.push_back(kTabGridContextMenu);
+  }
+  return config;
+}
 
 - (void)setUp {
   [super setUp];
@@ -199,6 +230,8 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
+#pragma mark - Recent Tabs Context Menu
+
 // Tests the Copy Link action on a recent tab's context menu.
 - (void)testRecentTabsContextMenuCopyLink {
   if (![ChromeEarlGrey isNativeContextMenusEnabled]) {
@@ -207,7 +240,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   }
 
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
-  [self longPressRecentTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
   [ChromeEarlGrey
       verifyCopyLinkActionWithText:[NSString stringWithUTF8String:_URL1.spec()
@@ -223,7 +256,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   }
 
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
-  [self longPressRecentTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
   [ChromeEarlGrey verifyOpenInNewTabActionWithURL:_URL1.GetContent()];
 
@@ -244,7 +277,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   }
 
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
-  [self longPressRecentTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
   [ChromeEarlGrey verifyOpenInNewWindowActionWithContent:kResponse1];
 }
@@ -257,11 +290,103 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   }
 
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
-  [self longPressRecentTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
   [ChromeEarlGrey
-      verifyShareActionWithPageTitle:[NSString stringWithUTF8String:kTitle1]];
+      verifyShareActionWithURL:_URL1
+                     pageTitle:[NSString stringWithUTF8String:kTitle1]];
 }
+
+#pragma mark - Tab Grid Item Context Menu
+
+// Tests the Share action on a tab grid item's context menu.
+- (void)testTabGridItemContextMenuShare {
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Tab Grid context menu only supported on iOS 13 and later.");
+  }
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+
+  [ChromeEarlGrey
+      verifyShareActionWithURL:_URL1
+                     pageTitle:[NSString stringWithUTF8String:kTitle1]];
+}
+
+// Tests the Add to Reading list action on a tab grid item's context menu.
+- (void)testTabGridItemContextMenuAddToReadingList {
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Tab Grid context menu only supported on iOS 13 and later.");
+  }
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+
+  [self waitForSnackBarMessage:IDS_IOS_READING_LIST_SNACKBAR_MESSAGE
+      triggeredByTappingItemWithMatcher:AddToReadingListButton()];
+}
+
+// Tests the Add to Bookmarks action on a tab grid item's context menu.
+- (void)testTabGridItemContextMenuAddToBookmarks {
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Tab Grid context menu only supported on iOS 13 and later.");
+  }
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+
+  [self waitForSnackBarMessage:IDS_IOS_BOOKMARK_PAGE_SAVED
+      triggeredByTappingItemWithMatcher:AddToBookmarksButton()];
+}
+
+// Tests the Share action on a tab grid item's context menu.
+- (void)testTabGridItemContextCloseTab {
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Tab Grid context menu only supported on iOS 13 and later.");
+  }
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+
+  // Close Tab.
+  [[EarlGrey selectElementWithMatcher:CloseTabMenuButton()]
+      performAction:grey_tap()];
+
+  // Make sure that the tab is no longer present.
+  [[EarlGrey selectElementWithMatcher:TabWithTitle([NSString
+                                          stringWithUTF8String:kTitle1])]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridRegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+#pragma mark -
 
 // Tests that tapping on "Close All" shows a confirmation dialog.
 // It also tests that tapping on "Close x Tab(s)" on the confirmation dialog
@@ -797,7 +922,9 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
       performAction:grey_tap()];
 }
 
-- (void)longPressRecentTabWithTitle:(NSString*)title {
+// Long press on the recent tab entry or the tab item in the tab grid with
+// |title|.
+- (void)longPressTabWithTitle:(NSString*)title {
   // The test page may be there multiple times.
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(title),
@@ -818,6 +945,40 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
                              inWindowWithNumber:windowNumber];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
+}
+
+- (void)waitForSnackBarMessage:(int)messageIdentifier
+    triggeredByTappingItemWithMatcher:(id<GREYMatcher>)matcher {
+  NSString* snackBarLabel = l10n_util::GetNSStringWithFixup(messageIdentifier);
+  // Start custom monitor, because there's a chance the snackbar is
+  // already gone by the time we wait for it (and it was like that sometimes).
+  [ChromeEarlGrey watchForButtonsWithLabels:@[ snackBarLabel ]
+                                    timeout:kSnackbarAppearanceTimeout];
+
+  // Add the page to the reading list.
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+
+  // Wait for the snackbar to appear.
+  id<GREYMatcher> snackbar_matcher =
+      chrome_test_util::ButtonWithAccessibilityLabelId(messageIdentifier);
+  ConditionBlock wait_for_appearance = ^{
+    return [ChromeEarlGrey watcherDetectedButtonWithLabel:snackBarLabel];
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarAppearanceTimeout, wait_for_appearance),
+             @"Snackbar did not appear.");
+
+  // Wait for the snackbar to disappear.
+  ConditionBlock wait_for_disappearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarDisappearanceTimeout, wait_for_disappearance),
+             @"Snackbar did not disappear.");
 }
 
 @end

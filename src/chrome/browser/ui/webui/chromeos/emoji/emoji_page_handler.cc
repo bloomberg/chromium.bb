@@ -22,12 +22,18 @@ enum class EmojiVariantType {
   kMaxValue = kEmojiPickerVariant,
 };
 
-void LogInsertEmoji(bool is_variant) {
+void LogInsertEmoji(bool is_variant, int16_t search_length) {
   EmojiVariantType insert_value = is_variant
                                       ? EmojiVariantType::kEmojiPickerVariant
                                       : EmojiVariantType::kEmojiPickerBase;
   base::UmaHistogramEnumeration("InputMethod.SystemEmojiPicker.TriggerType",
                                 insert_value);
+  base::UmaHistogramCounts100("InputMethod.SystemEmojiPicker.SearchLength",
+                              search_length);
+}
+
+void LogInsertEmojiDelay(base::TimeDelta delay) {
+  base::UmaHistogramMediumTimes("InputMethod.SystemEmojiPicker.Delay", delay);
 }
 
 EmojiPageHandler::EmojiPageHandler(
@@ -49,6 +55,7 @@ void EmojiPageHandler::ShowUI() {
   if (embedder) {
     embedder->ShowUI();
   }
+  shown_time_ = base::TimeTicks::Now();
 }
 
 void EmojiPageHandler::IsIncognitoTextField(
@@ -57,15 +64,16 @@ void EmojiPageHandler::IsIncognitoTextField(
 }
 
 void EmojiPageHandler::InsertEmoji(const std::string& emoji_to_insert,
-                                   bool is_variant) {
+                                   bool is_variant,
+                                   int16_t search_length) {
   // By hiding the emoji picker, we restore focus to the original text field so
   // we can insert the text.
   auto embedder = webui_controller_->embedder();
   if (embedder) {
     embedder->CloseUI();
   }
-  LogInsertEmoji(is_variant);
-
+  LogInsertEmoji(is_variant, search_length);
+  LogInsertEmojiDelay(base::TimeTicks::Now() - shown_time_);
   // In theory, we are returning focus to the input field where the user
   // originally selected emoji. However, the input field may not exist anymore
   // e.g. JS has mutated the web page while emoji picker was open, so check that

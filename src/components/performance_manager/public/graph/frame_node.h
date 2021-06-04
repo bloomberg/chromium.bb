@@ -8,12 +8,12 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/types/strong_alias.h"
 #include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/mojom/lifecycle.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -130,6 +130,18 @@ class FrameNode : public Node {
   // lifetime of the frame.
   virtual const base::flat_set<const PageNode*> GetOpenedPageNodes() const = 0;
 
+  // Visits the page nodes that have been embedded by this frame. The iteration
+  // is halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitEmbeddedPageNodes(const PageNodeVisitor& visitor) const = 0;
+
+  // Returns the set of embedded pages associatted with this frame. Note that
+  // this incurs a full container copy all the embedded nodes. Please use
+  // VisitEmbeddedPageNodes when that makes sense. This can change over the
+  // lifetime of the frame.
+  virtual const base::flat_set<const PageNode*> GetEmbeddedPageNodes()
+      const = 0;
+
   // Returns the current lifecycle state of this frame. See
   // FrameNodeObserver::OnFrameLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
@@ -192,7 +204,7 @@ class FrameNode : public Node {
   // Returns the intersection of this frame with the viewport. This is initially
   // null on node creation and is initialized during layout when the viewport
   // intersection is first calculated. May only be called for a child frame.
-  virtual const base::Optional<gfx::Rect>& GetViewportIntersection() const = 0;
+  virtual const absl::optional<gfx::Rect>& GetViewportIntersection() const = 0;
 
   // Returns true if the frame is visible. This value is based on the viewport
   // intersection of the frame, and the visibility of the page.

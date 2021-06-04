@@ -18,6 +18,11 @@ DebugInfoEventListener::DebugInfoEventListener()
 
 DebugInfoEventListener::~DebugInfoEventListener() {}
 
+void DebugInfoEventListener::InitializationComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CreateAndAddEvent(sync_pb::SyncEnums::INITIALIZATION_COMPLETE);
+}
+
 void DebugInfoEventListener::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -47,14 +52,6 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
       sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 
   AddEventToQueue(event_info);
-}
-
-void DebugInfoEventListener::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend,
-    const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
-    bool success) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CreateAndAddEvent(sync_pb::SyncEnums::INITIALIZATION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(ConnectionStatus status) {

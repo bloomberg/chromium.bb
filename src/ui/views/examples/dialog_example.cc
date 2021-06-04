@@ -110,11 +110,11 @@ class DialogExample::Dialog : public Delegate<DialogDelegateView> {
 DialogExample::DialogExample()
     : ExampleBase("Dialog"),
       mode_model_({
-          u"Modeless",
-          u"Window Modal",
-          u"Child Modal",
-          u"System Modal",
-          u"Fake Modeless (non-bubbles)",
+          ui::SimpleComboboxModel::Item(u"Modeless"),
+          ui::SimpleComboboxModel::Item(u"Window Modal"),
+          ui::SimpleComboboxModel::Item(u"Child Modal"),
+          ui::SimpleComboboxModel::Item(u"System Modal"),
+          ui::SimpleComboboxModel::Item(u"Fake Modeless (non-bubbles)"),
       }) {}
 
 DialogExample::~DialogExample() = default;
@@ -317,7 +317,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
 
 void DialogExample::OnPerformAction() {
   bool enable = bubble_->GetChecked() || GetModalType() != ui::MODAL_TYPE_CHILD;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   enable = enable && GetModalType() != ui::MODAL_TYPE_SYSTEM;
 #endif
   show_->SetEnabled(enable);

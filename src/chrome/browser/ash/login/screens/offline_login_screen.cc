@@ -12,6 +12,7 @@
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/screen_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -25,8 +26,7 @@
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr char kUserActionCancel[] = "cancel";
@@ -146,9 +146,9 @@ void OfflineLoginScreen::HandleCompleteAuth(const std::string& email,
     LOG(ERROR) << "OfflineLoginScreen::HandleCompleteAuth: User not found! "
                   "account type="
                << AccountId::AccountTypeToString(account_id.GetAccountType());
-    LoginDisplayHost::default_host()->GetLoginDisplay()->ShowError(
-        IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, 1,
-        HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
+        SigninError::kOfflineFailedNetworkNotConnected,
+        /*details=*/std::string(), /*login_attempts=*/1);
     return;
   }
 
@@ -180,7 +180,7 @@ void OfflineLoginScreen::HandleEmailSubmitted(const std::string& email) {
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   const AccountId account_id = user_manager::known_user::GetAccountId(
       sanitized_email, std::string(), AccountType::UNKNOWN);
-  const base::Optional<base::TimeDelta> offline_signin_interval =
+  const absl::optional<base::TimeDelta> offline_signin_interval =
       user_manager::known_user::GetOfflineSigninLimit(account_id);
 
   // Further checks only if the limit is set.
@@ -241,4 +241,4 @@ void OfflineLoginScreen::UpdateState(NetworkError::ErrorReason reason) {
        reason != NetworkError::ERROR_REASON_LOADING_TIMEOUT);
 }
 
-}  // namespace chromeos
+}  // namespace ash

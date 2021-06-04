@@ -5,8 +5,6 @@
 #ifndef ASH_WM_DESKS_CLOSE_DESK_BUTTON_H_
 #define ASH_WM_DESKS_CLOSE_DESK_BUTTON_H_
 
-#include <memory>
-
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/gfx/color_palette.h"
@@ -28,10 +26,6 @@ class ASH_EXPORT CloseDeskButton : public views::ImageButton,
 
   // views::ImageButton:
   const char* GetClassName() const override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  SkColor GetInkDropBaseColor() const override;
   void OnThemeChanged() override;
 
   // views::ViewTargeterDelegate:

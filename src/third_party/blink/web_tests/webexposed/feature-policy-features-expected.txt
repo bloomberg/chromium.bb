@@ -3,6 +3,7 @@ All changes to this list should go through Blink's feature review process: http:
 
 accelerometer
 ambient-light-sensor
+attribution-reporting
 autoplay
 camera
 ch-device-memory
@@ -10,6 +11,7 @@ ch-downlink
 ch-dpr
 ch-ect
 ch-lang
+ch-prefers-color-scheme
 ch-rtt
 ch-ua
 ch-ua-arch
@@ -22,8 +24,8 @@ ch-viewport-width
 ch-width
 clipboard-read
 clipboard-write
-conversion-measurement
 cross-origin-isolated
+direct-sockets
 display-capture
 document-domain
 encrypted-media
@@ -46,10 +48,12 @@ picture-in-picture
 publickey-credentials-get
 screen-wake-lock
 serial
+shared-autofill
 storage-access-api
 sync-xhr
 trust-token-redemption
 usb
 vertical-scroll
+window-placement
 xr-spatial-tracking
 

@@ -32,6 +32,7 @@
 #include "base/no_destructor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform_util.h"
@@ -144,7 +145,7 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
     // Ignore other window types when computing bounding box of overview target
     // item.
     if (window_iter != window &&
-        window_iter->type() != aura::client::WINDOW_TYPE_NORMAL) {
+        window_iter->GetType() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;
     }
     gfx::RectF target_bounds(window_iter->GetTargetBounds());
@@ -180,14 +181,14 @@ void MaximizeIfSnapped(aura::Window* window) {
 
 gfx::Rect GetGridBoundsInScreen(aura::Window* target_root) {
   return GetGridBoundsInScreen(target_root,
-                               /*window_dragging_state=*/base::nullopt,
+                               /*window_dragging_state=*/absl::nullopt,
                                /*divider_changed=*/false,
                                /*account_for_hotseat=*/true);
 }
 
 gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
-    base::Optional<SplitViewDragIndicators::WindowDraggingState>
+    absl::optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state,
     bool divider_changed,
     bool account_for_hotseat) {
@@ -212,18 +213,18 @@ gfx::Rect GetGridBoundsInScreen(
   gfx::Rect bounds;
   gfx::Rect work_area =
       WorkAreaInsets::ForWindow(target_root)->ComputeStableWorkArea();
-  base::Optional<SplitViewController::SnapPosition> opposite_position =
-      base::nullopt;
+  absl::optional<SplitViewController::SnapPosition> opposite_position =
+      absl::nullopt;
   switch (state) {
     case SplitViewController::State::kLeftSnapped:
       bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr);
-      opposite_position = base::make_optional(SplitViewController::RIGHT);
+      opposite_position = absl::make_optional(SplitViewController::RIGHT);
       break;
     case SplitViewController::State::kRightSnapped:
       bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr);
-      opposite_position = base::make_optional(SplitViewController::LEFT);
+      opposite_position = absl::make_optional(SplitViewController::LEFT);
       break;
     case SplitViewController::State::kNoSnap:
       bounds = work_area;
@@ -294,11 +295,11 @@ gfx::Rect GetGridBoundsInScreen(
   return bounds;
 }
 
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
+absl::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
   if (!ShouldAllowSplitView())
-    return base::nullopt;
+    return absl::nullopt;
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
-    return base::nullopt;
+    return absl::nullopt;
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   DCHECK(overview_session);
@@ -312,13 +313,13 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
   if (!SplitViewController::Get(root_window)->InSplitViewMode() &&
       SplitViewDragIndicators::GetSnapPosition(window_dragging_state) ==
           SplitViewController::NONE) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // The hotseat bounds do not affect splitview after a window is snapped, so
   // the aspect ratio should reflect it and not worry about the hotseat.
-  return base::make_optional(gfx::RectF(GetGridBoundsInScreen(
-      root_window, base::make_optional(window_dragging_state),
+  return absl::make_optional(gfx::RectF(GetGridBoundsInScreen(
+      root_window, absl::make_optional(window_dragging_state),
       /*divider_changed=*/false, /*account_for_hotseat=*/false)));
 }
 

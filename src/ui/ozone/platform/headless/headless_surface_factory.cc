@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -251,7 +252,7 @@ scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   return new TestPixmap(format);
 }
 

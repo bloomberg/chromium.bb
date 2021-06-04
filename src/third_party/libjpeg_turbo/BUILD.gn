@@ -21,6 +21,7 @@ source_set("libjpeg_headers") {
     "jpeglib.h",
     "jpeglibmangler.h",
   ]
+  defines = [ "MANGLE_JPEG_NAMES" ]
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
@@ -136,22 +137,15 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 static_library("simd") {
   include_dirs = [ "." ]
-  deps = [
-    ":libjpeg_headers",
-  ]
+  deps = [ ":libjpeg_headers" ]
 
   if (current_cpu == "x86") {
     deps += [ ":simd_asm" ]
-    sources = [
-      "simd/i386/jsimd.c",
-    ]
+    sources = [ "simd/i386/jsimd.c" ]
   } else if (current_cpu == "x64") {
     deps += [ ":simd_asm" ]
-    sources = [
-      "simd/x86_64/jsimd.c",
-    ]
-  } else if ((current_cpu == "arm" || current_cpu == "arm64") &&
-             arm_use_neon) {
+    sources = [ "simd/x86_64/jsimd.c" ]
+  } else if ((current_cpu == "arm" || current_cpu == "arm64") && arm_use_neon) {
     include_dirs += [ "simd/arm/" ]
 
     sources = [
@@ -174,23 +168,19 @@ static_library("simd") {
         "simd/arm/aarch32/jchuff-neon.c",
         "simd/arm/aarch32/jsimd.c",
       ]
-    } else if (current_cpu == "arm64"){
+    } else if (current_cpu == "arm64") {
       sources += [
         "simd/arm/aarch64/jchuff-neon.c",
         "simd/arm/aarch64/jsimd.c",
       ]
     }
 
-    defines = [
-      "NEON_INTRINSICS"
-    ]
+    defines = [ "NEON_INTRINSICS" ]
 
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_speed" ]
   } else {
-    sources = [
-      "jsimd_none.c",
-    ]
+    sources = [ "jsimd_none.c" ]
   }
 
   if (is_win) {
@@ -263,9 +253,7 @@ static_library("libjpeg") {
   configs += [ ":libjpeg_config" ]
 
   public_configs = [ ":libjpeg_config" ]
-  public_deps = [
-    ":libjpeg_headers",
-  ]
+  public_deps = [ ":libjpeg_headers" ]
 
   # MemorySanitizer doesn't support assembly code, so keep it disabled in x86
   # and x64 MSan builds for now.
@@ -275,19 +263,19 @@ static_library("libjpeg") {
     public_deps += [ ":simd" ]
 
     if ((current_cpu == "arm" || current_cpu == "arm64") && arm_use_neon) {
-      defines += [ "NEON_INTRINSICS", ]
+      defines += [ "NEON_INTRINSICS" ]
     }
   }
 }
 
 static_library("turbojpeg") {
   sources = [
-    "turbojpeg.c",
-    "transupp.c",
     "jdatadst-tj.c",
     "jdatasrc-tj.c",
     "rdbmp.c",
     "rdppm.c",
+    "transupp.c",
+    "turbojpeg.c",
     "wrbmp.c",
     "wrppm.c",
   ]
@@ -301,9 +289,7 @@ static_library("turbojpeg") {
   configs += [ ":libjpeg_config" ]
 
   public_configs = [ ":libjpeg_config" ]
-  public_deps = [
-    ":libjpeg",
-  ]
+  public_deps = [ ":libjpeg" ]
 }
 
 if (build_with_chromium) {
@@ -325,12 +311,12 @@ if (build_with_chromium) {
       "jpegtran.c",
       "md5/md5.c",
       "md5/md5hl.c",
-      "tjbench.c",
-      "tjunittest.c",
-      "tjutil.c",
       "rdcolmap.c",
       "rdgif.c",
       "rdswitch.c",
+      "tjbench.c",
+      "tjunittest.c",
+      "tjutil.c",
     ]
 
     deps = [
@@ -340,9 +326,7 @@ if (build_with_chromium) {
       "//testing/gtest:gtest_main",
     ]
 
-    data = [
-      "testimages/"
-    ]
+    data = [ "testimages/" ]
 
     defines = [
       "GTEST",

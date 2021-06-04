@@ -39,6 +39,7 @@ bool AppListTestViewDelegate::KeyboardTraversalEngaged() {
 
 void AppListTestViewDelegate::OpenSearchResult(
     const std::string& result_id,
+    ash::AppListSearchResultType result_type,
     int event_flags,
     ash::AppListLaunchedFrom launched_from,
     ash::AppListLaunchType launch_type,
@@ -145,6 +146,11 @@ bool AppListTestViewDelegate::ShouldDismissImmediately() {
 int AppListTestViewDelegate::GetTargetYForAppListHide(
     aura::Window* root_window) {
   return 0;
+}
+
+int AppListTestViewDelegate::AdjustAppListViewScrollOffset(int offset,
+                                                           ui::EventType type) {
+  return offset;
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(

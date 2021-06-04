@@ -4,6 +4,7 @@
 
 #include "chromeos/network/test_cellular_esim_profile_handler.h"
 
+#include "base/containers/contains.h"
 #include "chromeos/network/cellular_utils.h"
 #include "chromeos/network/network_state_handler.h"
 
@@ -13,9 +14,25 @@ TestCellularESimProfileHandler::TestCellularESimProfileHandler() = default;
 
 TestCellularESimProfileHandler::~TestCellularESimProfileHandler() = default;
 
+void TestCellularESimProfileHandler::SetHasRefreshedProfilesForEuicc(
+    const std::string& eid,
+    bool has_refreshed) {
+  if (has_refreshed) {
+    refreshed_eids_.insert(eid);
+    return;
+  }
+
+  refreshed_eids_.erase(eid);
+}
+
 std::vector<CellularESimProfile>
 TestCellularESimProfileHandler::GetESimProfiles() {
   return esim_profile_states_;
+}
+
+bool TestCellularESimProfileHandler::HasRefreshedProfilesForEuicc(
+    const std::string& eid) {
+  return base::Contains(refreshed_eids_, eid);
 }
 
 void TestCellularESimProfileHandler::SetDevicePrefs(PrefService* device_prefs) {

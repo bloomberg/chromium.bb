@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/audio/audio_node.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
@@ -30,6 +29,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/events/devices/microphone_mute_switch_monitor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -48,6 +49,7 @@ using VoidCrasAudioHandlerCallback = base::OnceCallback<void(bool result)>;
 // browser main thread.
 class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
     : public chromeos::CrasAudioClient::Observer,
+      public ui::MicrophoneMuteSwitchMonitor::Observer,
       public AudioPrefObserver,
       public media::VideoCaptureObserver,
       public media_session::mojom::MediaControllerObserver {
@@ -71,6 +73,9 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
     // Called when input mute state changed.
     virtual void OnInputMuteChanged(bool mute_on);
+
+    // Called when the state of input mute hw switch state changes.
+    virtual void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted);
 
     // Called when audio nodes changed.
     virtual void OnAudioNodesChanged();
@@ -152,14 +157,17 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override;
+      const absl::optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
+      const absl::optional<base::UnguessableToken>& request_id) override {}
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override;
+      const absl::optional<media_session::MediaPosition>& position) override;
+
+  // ui::MicrophoneMuteSwitchMonitor::Observer:
+  void OnMicrophoneMuteSwitchValueChanged(bool muted) override;
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);
@@ -178,6 +186,9 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Returns true if audio output is muted for a device.
   bool IsOutputMutedForDevice(uint64_t device_id);
+
+  // Returns true if audio output is muted for the system by policy.
+  bool IsOutputMutedByPolicy();
 
   // Returns true if audio input is muted.
   bool IsInputMuted();
@@ -334,17 +345,30 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // the use case. It should be called from a user initiated action.
   void SwitchToFrontOrRearMic();
 
-  // Returns if system AEC is supported in CRAS.
+  bool input_muted_by_microphone_mute_switch() const {
+    return input_muted_by_microphone_mute_switch_;
+  }
+
+  // Returns if system AEC is supported in CRAS or not.
   bool system_aec_supported() const;
 
   // Returns the system AEC group ID. If no group ID is specified, -1 is
   // returned.
   int32_t system_aec_group_id() const;
 
+  // Returns if system NS is supported in CRAS or not.
+  bool system_ns_supported() const;
+
+  // Returns if system AGC is supported in CRAS or not.
+  bool system_agc_supported() const;
+
   // Asks  CRAS to resend BluetoothBatteryChanged signal, used in cases when
   // Chrome cleans up the stored battery information but still has the device
   // connected afterward. For example: User logout.
   void ResendBluetoothBattery();
+
+  void SetPrefHandlerForTesting(
+      scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
  protected:
   CrasAudioHandler(
@@ -466,13 +490,13 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
                        bool* active_device_removed);
 
   // Handles dbus callback for GetNodes.
-  void HandleGetNodes(base::Optional<chromeos::AudioNodeList> node_list);
+  void HandleGetNodes(absl::optional<chromeos::AudioNodeList> node_list);
 
   void HandleGetNumActiveOutputStreams(
-      base::Optional<int> num_active_output_streams);
+      absl::optional<int> num_active_output_streams);
 
   void HandleGetDeprioritizeBtWbsMic(
-      base::Optional<bool> deprioritize_bt_wbs_mic);
+      absl::optional<bool> deprioritize_bt_wbs_mic);
 
   // Adds an active node.
   // If there is no active node, |node_id| will be switched to become the
@@ -562,7 +586,7 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void GetDefaultOutputBufferSizeInternal();
 
   // Handle dbus callback for GetDefaultOutputBufferSize.
-  void HandleGetDefaultOutputBufferSize(base::Optional<int> buffer_size);
+  void HandleGetDefaultOutputBufferSize(absl::optional<int> buffer_size);
 
   // Calling dbus to get current number of input streams with permission and
   // storing the result in number_of_input_streams_with_permission_.
@@ -574,7 +598,7 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Handle dbus callback for GetNumberOfInputStreamsWithPermission.
   void HandleGetNumberOfInputStreamsWithPermission(
-      base::Optional<base::flat_map<std::string, uint32_t>> num_input_streams);
+      absl::optional<base::flat_map<std::string, uint32_t>> num_input_streams);
 
   // Calling dbus to get system AEC supported flag.
   void GetSystemAecSupported();
@@ -583,7 +607,7 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void GetSystemAecSupportedOnMainThread();
 
   // Handle dbus callback for GetSystemAecSupported.
-  void HandleGetSystemAecSupported(base::Optional<bool> system_aec_supported);
+  void HandleGetSystemAecSupported(absl::optional<bool> system_aec_supported);
 
   // Calling dbus to get the system AEC group id if available.
   void GetSystemAecGroupId();
@@ -592,7 +616,25 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void GetSystemAecGroupIdOnMainThread();
 
   // Handle dbus callback for GetSystemAecGroupId.
-  void HandleGetSystemAecGroupId(base::Optional<int32_t> system_aec_group_id);
+  void HandleGetSystemAecGroupId(absl::optional<int32_t> system_aec_group_id);
+
+  // Calling dbus to get system NS supported flag.
+  void GetSystemNsSupported();
+
+  // Calling dbus to get system NS supported flag on main thread.
+  void GetSystemNsSupportedOnMainThread();
+
+  // Handle dbus callback for GetSystemNsSupported.
+  void HandleGetSystemNsSupported(absl::optional<bool> system_ns_supported);
+
+  // Calling dbus to get system AGC supported flag.
+  void GetSystemAgcSupported();
+
+  // Calling dbus to get system AGC supported flag on main thread.
+  void GetSystemAgcSupportedOnMainThread();
+
+  // Handle dbus callback for GetSystemAgcSupported.
+  void HandleGetSystemAgcSupported(absl::optional<bool> system_agc_supported);
 
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
@@ -657,6 +699,8 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   bool system_aec_supported_ = false;
   int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
+  bool system_ns_supported_ = false;
+  bool system_agc_supported_ = false;
 
   int num_active_output_streams_ = 0;
 
@@ -666,6 +710,10 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // stabilized, CRAS may report to deprioritze the BT WBS mic's node
   // priority.
   bool deprioritize_bt_wbs_mic_ = false;
+
+  // Whether the audio input is muted because the microphone mute switch is on.
+  // In this case, input mute changes will be disabled.
+  bool input_muted_by_microphone_mute_switch_ = false;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

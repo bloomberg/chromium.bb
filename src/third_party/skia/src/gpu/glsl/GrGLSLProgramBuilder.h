@@ -71,11 +71,7 @@ public:
         return this->uniformHandler()->inputSamplerSwizzle(handle);
     }
 
-    // Used to add a uniform for the RenderTarget width (used for sk_Width) without mangling
-    // the name of the uniform inside of a stage.
-    void addRTWidthUniform(const char* name);
-
-    // Used to add a uniform for the RenderTarget height (used for sk_Height and frag position)
+    // Used to add a uniform for the RenderTarget height (used for u_skRTHeight and frag position)
     // without mangling the name of the uniform inside of a stage.
     void addRTHeightUniform(const char* name);
 
@@ -103,7 +99,6 @@ public:
 
     int fStageIndex;
 
-    GrRenderTarget*              fRenderTarget; // TODO: remove this
     const GrProgramDesc&         fDesc;
     const GrProgramInfo&         fProgramInfo;
 
@@ -114,7 +109,7 @@ public:
     std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
 
 protected:
-    explicit GrGLSLProgramBuilder(GrRenderTarget*, const GrProgramDesc&, const GrProgramInfo&);
+    explicit GrGLSLProgramBuilder(const GrProgramDesc&, const GrProgramInfo&);
 
     void addFeature(GrShaderFlags shaders, uint32_t featureBit, const char* extensionName);
 
@@ -150,14 +145,14 @@ private:
     // Generates a possibly mangled name for a stage variable and writes it to the fragment shader.
     void nameExpression(SkString*, const char* baseName);
 
-    void emitAndInstallPrimProc(SkString* outputColor, SkString* outputCoverage);
-    void emitAndInstallFragProcs(SkString* colorInOut, SkString* coverageInOut);
+    bool emitAndInstallPrimProc(SkString* outputColor, SkString* outputCoverage);
+    bool emitAndInstallFragProcs(SkString* colorInOut, SkString* coverageInOut);
     SkString emitFragProc(const GrFragmentProcessor&,
                           GrGLSLFragmentProcessor&,
                           int transformedCoordVarsIdx,
                           const SkString& input,
                           SkString output);
-    void emitAndInstallXferProc(const SkString& colorIn, const SkString& coverageIn);
+    bool emitAndInstallXferProc(const SkString& colorIn, const SkString& coverageIn);
     SamplerHandle emitSampler(const GrBackendFormat&, GrSamplerState, const GrSwizzle&,
                               const char* name);
     SamplerHandle emitInputSampler(const GrSwizzle& swizzle, const char* name);

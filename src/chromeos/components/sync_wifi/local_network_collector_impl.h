@@ -11,12 +11,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_pb {
 class WifiConfigurationSpecifics;
@@ -54,7 +55,7 @@ class LocalNetworkCollectorImpl
   void GetSyncableNetwork(const std::string& guid,
                           ProtoCallback callback) override;
 
-  base::Optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
+  absl::optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
       const std::string& guid) override;
 
   void SetNetworkMetadataStore(

@@ -64,13 +64,13 @@ void PendingUnsafeResourceStorage::UpdatePolicyObserver() {
   if (resource_) {
     policy_observer_ = ResourcePolicyObserver(this);
   } else {
-    policy_observer_ = base::nullopt;
+    policy_observer_ = absl::nullopt;
   }
 }
 
 void PendingUnsafeResourceStorage::ResetResource() {
-  resource_ = base::nullopt;
-  policy_observer_ = base::nullopt;
+  resource_ = absl::nullopt;
+  policy_observer_ = absl::nullopt;
 }
 
 #pragma mark - PendingUnsafeResourceStorage::ResourcePolicyObserver
@@ -78,14 +78,14 @@ void PendingUnsafeResourceStorage::ResetResource() {
 PendingUnsafeResourceStorage::ResourcePolicyObserver::ResourcePolicyObserver(
     PendingUnsafeResourceStorage* storage)
     : storage_(storage) {
-  scoped_observer_.Add(SafeBrowsingUrlAllowList::FromWebState(
+  scoped_observation_.Observe(SafeBrowsingUrlAllowList::FromWebState(
       storage_->resource()->web_state_getter.Run()));
 }
 
 PendingUnsafeResourceStorage::ResourcePolicyObserver::ResourcePolicyObserver(
     const ResourcePolicyObserver& other)
     : storage_(other.storage_) {
-  scoped_observer_.Add(SafeBrowsingUrlAllowList::FromWebState(
+  scoped_observation_.Observe(SafeBrowsingUrlAllowList::FromWebState(
       storage_->resource()->web_state_getter.Run()));
 }
 

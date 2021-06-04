@@ -11,19 +11,11 @@
 #include <vector>
 
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "third_party/base/span.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
-
-enum class FX_HatchStyle {
-  Horizontal = 0,
-  Vertical = 1,
-  ForwardDiagonal = 2,
-  BackwardDiagonal = 3,
-  Cross = 4,
-  DiagonalCross = 5
-};
 
 class CFGAS_GEPath;
 class CFX_DIBBase;
@@ -49,11 +41,11 @@ class CFGAS_GEGraphics {
   void SetStrokeColor(const CFGAS_GEColor& color);
   void SetFillColor(const CFGAS_GEColor& color);
   void SetClipRect(const CFX_RectF& rect);
-  void StrokePath(CFGAS_GEPath* path, const CFX_Matrix* matrix);
-  void FillPath(CFGAS_GEPath* path,
+  void StrokePath(const CFGAS_GEPath& path, const CFX_Matrix& matrix);
+  void FillPath(const CFGAS_GEPath& path,
                 CFX_FillRenderOptions::FillType fill_type,
-                const CFX_Matrix* matrix);
-  void ConcatMatrix(const CFX_Matrix* matrix);
+                const CFX_Matrix& matrix);
+  void ConcatMatrix(const CFX_Matrix& matrix);
 
  private:
   struct TInfo {
@@ -68,15 +60,15 @@ class CFGAS_GEGraphics {
     CFGAS_GEColor fillColor{nullptr};
   };
 
-  void RenderDeviceStrokePath(const CFGAS_GEPath* path,
-                              const CFX_Matrix* matrix);
-  void RenderDeviceFillPath(const CFGAS_GEPath* path,
+  void RenderDeviceStrokePath(const CFGAS_GEPath& path,
+                              const CFX_Matrix& matrix);
+  void RenderDeviceFillPath(const CFGAS_GEPath& path,
                             CFX_FillRenderOptions::FillType fill_type,
-                            const CFX_Matrix* matrix);
-  void FillPathWithPattern(const CFGAS_GEPath* path,
+                            const CFX_Matrix& matrix);
+  void FillPathWithPattern(const CFGAS_GEPath& path,
                            const CFX_FillRenderOptions& fill_options,
                            const CFX_Matrix& matrix);
-  void FillPathWithShading(const CFGAS_GEPath* path,
+  void FillPathWithShading(const CFGAS_GEPath& path,
                            const CFX_FillRenderOptions& fill_options,
                            const CFX_Matrix& matrix);
   void SetDIBitsWithMatrix(const RetainPtr<CFX_DIBBase>& source,

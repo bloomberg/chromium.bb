@@ -42,6 +42,7 @@
 <translation id="1395262318152388157">Ρυθμιστικό αναζήτησης</translation>
 <translation id="1404323374378969387">Νορβηγικά</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
+<translation id="1433628812591023318">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να μετακινηθεί στα αρχεία των Windows.</translation>
 <translation id="1435838927755162558">Κοινή χρήση φακέλου με το Parallels Desktop</translation>
 <translation id="1467432559032391204">Αριστερά</translation>
 <translation id="1471718551822868769">Σλοβακικά</translation>
@@ -200,6 +201,7 @@
 <translation id="3067790092342515856">Αρχεία Windows</translation>
 <translation id="3078461028045006476">Μοιραστείτε με την επέκταση <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Δεν ήταν δυνατό το άνοιγμα του <ph name="PATH" /> από αυτήν την τοποθεσία. Αντιγράψτε το στον φάκελο Τα αρχεία μου για άνοιγμα.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ΤΕΛΟΣ</translation>
 <translation id="3188257591659621405">Τα αρχεία μου</translation>
@@ -462,6 +464,7 @@
 <translation id="5602622065581044566">Βουλγαρικά με φωνητικό πληκτρολόγιο</translation>
 <translation id="5605830556594064952">Dvorak ΗΠΑ</translation>
 <translation id="5625294776298156701">Ταμίλ με πληκτρολόγιο Tamil99</translation>
+<translation id="5633226425545095130">Με τη μετακίνηση αυτού του στοιχείου, αυτό θα κοινοποιηθεί σε όλους τους χρήστες που μπορούν να δουν τον κοινόχρηστο φάκελο "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Ακρόαση</translation>
 <translation id="5678784840044122290">Η εφαρμογή Linux θα είναι διαθέσιμη στο τερματικό σας και μπορεί επίσης να εμφανίζει ένα εικονίδιο στην Εφαρμογή εκκίνησης.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Δεν είναι δυνατή η αποσύνδεση από κάποιο αρχείο ή εικονικό δίσκο<ph name="END_BOLD" />
@@ -625,6 +628,7 @@
 <translation id="7417705661718309329">Χάρτης Google</translation>
 <translation id="7460898608667578234">Ουκρανικά
 </translation>
+<translation id="7486315294984620427">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να αντιγραφεί στα αρχεία των Windows.</translation>
 <translation id="7489215562877293245">Βρέθηκαν <ph name="FILE_COUNT" /> αρχεία
     <ph name="LINE_BREAK1" />
     Έτοιμα για δημιουργία αντιγράφων ασφαλείας στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -741,6 +745,7 @@
 <translation id="8395901698320285466">Διαστάσεις</translation>
 <translation id="8437209419043462667">ΗΠΑ</translation>
 <translation id="8456681095658380701">Μη έγκυρο όνομα</translation>
+<translation id="8459404855768962328">Με την αντιγραφή αυτού του στοιχείου, αυτό θα κοινοποιηθεί σε όλους τους χρήστες που μπορούν να δουν τον κοινόχρηστο φάκελο "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Κάντε δεξί κλικ σε ένα αρχείο και επιλέξτε Καρφίτσωμα στο ράφι, για να έχετε γρήγορη πρόσβαση στα αρχεία στο ράφι.</translation>
 <translation id="8463494891489624050">Βιετναμικά VIQR</translation>
 <translation id="8466234950814670489">Αρχείο Tar</translation>

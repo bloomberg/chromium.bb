@@ -9,8 +9,8 @@
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrProcessorAnalysis.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/effects/generated/GrClampFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "src/gpu/effects/generated/GrOverrideInputFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -156,30 +156,16 @@ void GrFragmentProcessor::registerChild(std::unique_ptr<GrFragmentProcessor> chi
     SkASSERT(!child->fParent && !child->sampleUsage().isSampled() &&
              !child->isSampledWithExplicitCoords() && !child->hasPerspectiveTransform());
 
-    // If a child is sampled directly (sample(child)), and with a single uniform matrix, we need to
-    // treat it as if it were sampled with multiple matrices (eg variable).
-    bool variableMatrix = sampleUsage.hasVariableMatrix() ||
-                          (sampleUsage.fPassThrough && sampleUsage.hasUniformMatrix());
-
     // Configure child's sampling state first
     child->fUsage = sampleUsage;
 
-    // When an FP is sampled using variable matrix expressions, it is effectively being sampled
-    // explicitly, except that the call site will automatically evaluate the matrix expression to
-    // produce the float2 passed into this FP.
-    if (sampleUsage.fExplicitCoords || variableMatrix) {
+    if (sampleUsage.isExplicit()) {
         child->addAndPushFlagToChildren(kSampledWithExplicitCoords_Flag);
     }
 
     // Push perspective matrix type to children
     if (sampleUsage.fHasPerspective) {
         child->addAndPushFlagToChildren(kNetTransformHasPerspective_Flag);
-    }
-
-    // If the child is sampled with a variable matrix expression, auto-generated code in
-    // invokeChildWithMatrix() for this FP will refer to the local coordinates.
-    if (variableMatrix) {
-        this->setUsesSampleCoordsDirectly();
     }
 
     // If the child is not sampled explicitly and not already accessing sample coords directly
@@ -216,6 +202,17 @@ void GrFragmentProcessor::cloneAndRegisterAllChildProcessors(const GrFragmentPro
     }
 }
 
+std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::MakeColor(SkPMColor4f color) {
+    // Use ColorFilter signature/factory to get the constant output for constant input optimization
+    static constexpr char kCode[] = R"(
+        uniform half4 color;
+        half4 main(half4 inColor) { return color; }
+    )";
+    auto builder = GrRuntimeFPBuilder::Make<kCode, SkRuntimeEffect::MakeForColorFilter>();
+    builder.uniform("color") = color;
+    return builder.makeFP();
+}
+
 std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::MulChildByInputAlpha(
         std::unique_ptr<GrFragmentProcessor> fp) {
     if (!fp) {
@@ -234,7 +231,7 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::MulInputByChildAlpha(
 
 std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::ModulateAlpha(
         std::unique_ptr<GrFragmentProcessor> inputFP, const SkPMColor4f& color) {
-    auto colorFP = GrConstColorProcessor::Make(color);
+    auto colorFP = MakeColor(color);
     return GrBlendFragmentProcessor::Make(
             std::move(colorFP), std::move(inputFP), SkBlendMode::kSrcIn,
             GrBlendFragmentProcessor::BlendBehavior::kSkModeBehavior);
@@ -242,7 +239,7 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::ModulateAlpha(
 
 std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::ModulateRGBA(
         std::unique_ptr<GrFragmentProcessor> inputFP, const SkPMColor4f& color) {
-    auto colorFP = GrConstColorProcessor::Make(color);
+    auto colorFP = MakeColor(color);
     return GrBlendFragmentProcessor::Make(
             std::move(colorFP), std::move(inputFP), SkBlendMode::kModulate,
             GrBlendFragmentProcessor::BlendBehavior::kSkModeBehavior);
@@ -486,10 +483,10 @@ std::unique_ptr<GrFragmentProcessor> GrFragmentProcessor::Compose(
         case 1:
             // Replace the first processor with a constant color.
             return ComposeProcessor::Make(/*f=*/std::move(series[1]),
-                                          /*g=*/GrConstColorProcessor::Make(knownColor));
+                                          /*g=*/MakeColor(knownColor));
         case 2:
             // Replace the entire composition with a constant color.
-            return GrConstColorProcessor::Make(knownColor);
+            return MakeColor(knownColor);
     }
 }
 

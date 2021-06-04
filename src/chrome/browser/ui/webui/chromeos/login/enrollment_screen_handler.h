@@ -151,11 +151,11 @@ class EnrollmentScreenHandler
   void DoShowWithPartition(const std::string& partition_name);
 
   // Returns true if current visible screen is the enrollment sign-in page.
-  bool IsOnEnrollmentScreen() const;
+  bool IsOnEnrollmentScreen();
 
   // Returns true if current visible screen is the error screen over
   // enrollment sign-in page.
-  bool IsEnrollmentScreenHiddenByError() const;
+  bool IsEnrollmentScreenHiddenByError();
 
   // Called after configuration seed was unlocked.
   void OnAdConfigurationUnlocked(std::string unlocked_data);
@@ -207,5 +207,11 @@ class EnrollmentScreenHandler
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::ActiveDirectoryErrorState;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENROLLMENT_SCREEN_HANDLER_H_

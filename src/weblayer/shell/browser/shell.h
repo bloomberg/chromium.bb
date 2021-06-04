@@ -27,9 +27,14 @@ namespace views {
 class Widget;
 class ViewsDelegate;
 }  // namespace views
+#if !defined(OS_CHROMEOS)
+namespace display {
+class Screen;
+}
 namespace wm {
 class WMState;
 }
+#endif
 #endif  // defined(USE_AURA)
 
 class GURL;
@@ -108,7 +113,7 @@ class Shell : public TabObserver,
   void AllowDownload(Tab* tab,
                      const GURL& url,
                      const std::string& request_method,
-                     base::Optional<url::Origin> request_initiator,
+                     absl::optional<url::Origin> request_initiator,
                      AllowDownloadCallback callback) override;
 
   // Helper to create a new Shell.
@@ -161,6 +166,7 @@ class Shell : public TabObserver,
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #elif defined(USE_AURA)
   static wm::WMState* wm_state_;
+  static display::Screen* screen_;
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;
 

@@ -6,10 +6,8 @@
 #define CHROME_BROWSER_APPS_INTENT_HELPER_APPS_NAVIGATION_THROTTLE_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
@@ -81,7 +79,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // When |kIntentPickerPWAPersistence| is enabled |kWebAppEnableLinkCapturing|
   // is handled by WebAppsBase::LaunchAppWithIntentImpl() instead and integrates
   // properly with App Service's intent handling system.
-  base::Optional<ThrottleCheckResult> CaptureWebAppScopeNavigations(
+  absl::optional<ThrottleCheckResult> CaptureWebAppScopeNavigations(
       content::WebContents* web_contents,
       content::NavigationHandle* handle) const;
 

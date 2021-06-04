@@ -9,11 +9,11 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/base/audio_point.h"
 #include "media/base/audio_processing.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -51,12 +51,6 @@ struct PLATFORM_EXPORT AudioProcessingProperties {
     kEchoCancellationSystem
   };
 
-  // Creates an AudioProcessingProperties object with fields initialized to
-  // their default values.
-  AudioProcessingProperties();
-  AudioProcessingProperties(const AudioProcessingProperties& other);
-  AudioProcessingProperties& operator=(const AudioProcessingProperties& other);
-
   // Disables properties that are enabled by default.
   void DisableDefaultProperties();
 
@@ -79,7 +73,20 @@ struct PLATFORM_EXPORT AudioProcessingProperties {
 
   EchoCancellationType echo_cancellation_type =
       EchoCancellationType::kEchoCancellationAec3;
+  // Indicates whether system-level gain control and noise suppression
+  // functionalities are present that fill a role comparable to the browser
+  // counterparts.
+  bool system_gain_control_activated = false;
+  bool system_noise_suppression_activated = false;
+
+  // Used for an experiment for forcing certain system-level
+  // noise suppression functionalities to be off. In contrast to
+  // `system_noise_suppression_activated` the system-level noise suppression
+  // referred to does not correspond to something that can replace the browser
+  // counterpart. I.e., the browser counterpart should be on, even if
+  // `disable_hw_noise_suppression` is false.
   bool disable_hw_noise_suppression = false;
+
   bool goog_audio_mirroring = false;
   bool goog_auto_gain_control = true;
   bool goog_experimental_echo_cancellation =
@@ -115,38 +122,39 @@ PLATFORM_EXPORT void StartEchoCancellationDump(
 PLATFORM_EXPORT void StopEchoCancellationDump(
     AudioProcessing* audio_processing);
 
-// Adaptive Gain Controller 2 (aka AGC2) properties.
-struct PLATFORM_EXPORT AdaptiveGainController2Properties {
-  float vad_probability_attack;
-  bool use_peaks_not_rms;
-  int level_estimator_speech_frames_threshold;
-  int initial_saturation_margin_db;
-  int extra_saturation_margin_db;
-  int gain_applier_speech_frames_threshold;
-  int max_gain_change_db_per_second;
-  int max_output_noise_level_dbfs;
+// WebRTC Hybrid AGC experiment parameters.
+struct PLATFORM_EXPORT WebRtcHybridAgcParams {
+  bool dry_run;
+  int vad_reset_period_ms;
+  int adjacent_speech_frames_threshold;
+  float max_gain_change_db_per_second;
+  float max_output_noise_level_dbfs;
   bool sse2_allowed;
   bool avx2_allowed;
   bool neon_allowed;
 };
 
-// Configures automatic gain control in `apm_config`. If `agc_enabled` is true
-// and `agc2_properties` is specified, the AGC2 adaptive digital replaces the
-// adaptive digital controller of AGC1 - i.e., hybrid configuration (AGC1 analog
-// plus AGC2 adaptive digital).
-// TODO(crbug.com/webrtc/7494): Clean up once hybrid AGC experiment finalized.
+// Changes the automatic gain control configuration in `apm_config` if
+// `properties.goog_auto_gain_control` or
+// `properties.goog_experimental_auto_gain_control` are true. If both are true
+// and `hybrid_agc_params` is specified, the hybrid AGC configuration will be
+// used - i.e., analog AGC1 and adaptive digital AGC2.
+// When `properties.goog_auto_gain_control` is true,
+// `properties.goog_experimental_auto_gain_control` is false and
+// `compression_gain_db` is specified, the AGC2 fixed digital controller is
+// enabled.
+// TODO(bugs.webrtc.org/7494): Clean up once hybrid AGC experiment finalized.
 PLATFORM_EXPORT void ConfigAutomaticGainControl(
-    bool agc_enabled,
-    bool experimental_agc_enabled,
-    base::Optional<AdaptiveGainController2Properties> agc2_properties,
-    base::Optional<double> compression_gain_db,
-    AudioProcessing::Config& apm_config);
+    const AudioProcessingProperties& properties,
+    const absl::optional<WebRtcHybridAgcParams>& hybrid_agc_params,
+    absl::optional<double> compression_gain_db,
+    webrtc::AudioProcessing::Config& apm_config);
 
 PLATFORM_EXPORT void PopulateApmConfig(
     AudioProcessing::Config* apm_config,
     const AudioProcessingProperties& properties,
-    const base::Optional<std::string>& audio_processing_platform_config_json,
-    base::Optional<double>* gain_control_compression_gain_db);
+    const absl::optional<std::string>& audio_processing_platform_config_json,
+    absl::optional<double>* gain_control_compression_gain_db);
 
 }  // namespace blink
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -32,6 +33,7 @@
 
 namespace blink {
 
+class DiskDataAllocator;
 class WebProcessMemoryDump;
 struct BackgroundTaskParams;
 
@@ -204,7 +206,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
       base::TimeDelta parking_thread_time);
 
   void PostBackgroundWritingTask() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
-  static void WriteToDiskInBackground(std::unique_ptr<BackgroundTaskParams>);
+  static void WriteToDiskInBackground(std::unique_ptr<BackgroundTaskParams>,
+                                      DiskDataAllocator* data_allocator);
   // Called on the main thread after writing is done.
   // |params| is the same as the one passed to PostBackgroundWritingTask()|,
   // |metadata| is the on-disk metadata, nullptr if writing failed.

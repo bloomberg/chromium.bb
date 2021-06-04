@@ -15,13 +15,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/optional.h"
 #include "base/process/process_info.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -61,7 +61,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -79,6 +78,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
@@ -117,6 +117,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/color_chooser.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -167,10 +168,12 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/find_in_page/find_tab_helper.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
@@ -225,6 +228,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/filename_util.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
@@ -1072,22 +1076,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 }
 
 bool Browser::ShouldDisplayFavicon(content::WebContents* web_contents) const {
-  // Suppress the icon for the new-tab page, even if a navigation to it is
-  // not committed yet. Note that we're looking at the visible URL, so
-  // navigations from NTP generally don't hit this case and still show an icon.
-  GURL url = web_contents->GetVisibleURL();
-  if (url.SchemeIs(content::kChromeUIScheme) &&
-      url.host_piece() == chrome::kChromeUINewTabHost) {
-    return false;
-  }
-
-  // Also suppress instant-NTP. This does not use search::IsInstantNTP since
-  // it looks at the last-committed entry and we need to show icons for pending
-  // navigations away from it.
-  if (search::IsInstantNTPURL(url, profile_)) {
-    return false;
-  }
-
   // Suppress for System Apps.
   if (app_controller_ && app_controller_->is_for_system_web_app()) {
     return false;
@@ -1254,7 +1242,7 @@ void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 }
 
 void Browser::TabGroupedStateChanged(
-    base::Optional<tab_groups::TabGroupId> group,
+    absl::optional<tab_groups::TabGroupId> group,
     content::WebContents* contents,
     int index) {
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
@@ -1467,6 +1455,10 @@ content::PictureInPictureResult Browser::EnterPictureInPicture(
 
 void Browser::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
+}
+
+bool Browser::IsBackForwardCacheSupported() {
+  return true;
 }
 
 std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
@@ -1705,18 +1697,18 @@ void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
   if (is_type_normal())
     return;
 
-  page_load_metrics::mojom::PageLoadFeatures features;
-  features.features.push_back(blink::mojom::WebFeature::kMovedOrResizedPopup);
+  std::vector<blink::mojom::WebFeature> features = {
+      blink::mojom::WebFeature::kMovedOrResizedPopup};
   if (creation_timer_.Elapsed() > base::TimeDelta::FromSeconds(2)) {
     // Additionally measure whether a popup was moved after creation, to
     // distinguish between popups that reposition themselves after load and
     // those which move popups continuously.
-    features.features.push_back(
+    features.push_back(
         blink::mojom::WebFeature::kMovedOrResizedPopup2sAfterCreation);
   }
 
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      source->GetMainFrame(), features);
+      source->GetMainFrame(), std::move(features));
   window_->SetBounds(bounds);
 }
 
@@ -2042,7 +2034,7 @@ void Browser::RegisterProtocolHandler(
     permission_request_manager->AddRequest(
         requesting_frame,
         new RegisterProtocolHandlerPermissionRequest(
-            registry, handler, url, user_gesture, std::move(fullscreen_block)));
+            registry, handler, url, std::move(fullscreen_block)));
   }
 }
 
@@ -2675,7 +2667,7 @@ void Browser::SyncHistoryWithTabs(int index) {
                                         session_tab_helper->session_id(),
                                         tab_strip_model_->IsTabPinned(i));
 
-        base::Optional<tab_groups::TabGroupId> group_id =
+        absl::optional<tab_groups::TabGroupId> group_id =
             tab_strip_model_->GetTabGroupForTab(i);
         session_service->SetTabGroup(session_id(),
                                      session_tab_helper->session_id(),

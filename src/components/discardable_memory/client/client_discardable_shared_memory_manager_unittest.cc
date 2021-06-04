@@ -5,7 +5,7 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_shared_memory.h"
-#include "base/process/process_metrics.h"
+#include "base/memory/page_size.h"
 #include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -63,6 +63,11 @@ class TestClientDiscardableSharedMemoryManager
   size_t GetFreelistSize() const {
     base::AutoLock lock(lock_);
     return heap_->GetFreelistSize();
+  }
+
+  size_t GetDirtyFreedMemoryPageCount() const {
+    base::AutoLock lock(lock_);
+    return heap_->dirty_freed_memory_page_count_;
   }
 
   bool IsPurgeScheduled() const {
@@ -456,6 +461,80 @@ TEST_F(ClientDiscardableSharedMemoryManagerTest,
   task_env_.FastForwardBy(
       ClientDiscardableSharedMemoryManager::kScheduledPurgeInterval);
   EXPECT_FALSE(client->IsPurgeScheduled());
+}
+
+TEST_F(ClientDiscardableSharedMemoryManagerTest, MarkDirtyFreelistPages) {
+  auto client =
+      base::MakeRefCounted<TestClientDiscardableSharedMemoryManager>();
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  auto mem1 = client->AllocateLockedDiscardableMemory(base::GetPageSize() / 2u);
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  auto mem2 =
+      client->AllocateLockedDiscardableMemory(base::GetPageSize() * 1.2);
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  // Allocate 5 MiB. This is to test large allocations, which are special-cased
+  // when allocating.
+  auto mem3 = client->AllocateLockedDiscardableMemory(5 * 1024 * 1024);
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  mem1 = nullptr;
+
+  ASSERT_EQ(1u, client->GetDirtyFreedMemoryPageCount());
+
+  mem2 = nullptr;
+
+  // Allocations on done in multiples of the page size, so we have 3 pages
+  // dirtied, even though we only actually touched 1.7 pages (since the 0.5 page
+  // allocation used 1 page, and the 1.2 page allocation used 2).
+  ASSERT_EQ(3u, client->GetDirtyFreedMemoryPageCount());
+
+  mem3 = nullptr;
+
+  ASSERT_EQ(1283u, client->GetDirtyFreedMemoryPageCount());
+
+  client->ReleaseFreeMemory();
+
+  // All pages should be freed now, so there are no dirty pages in the freelist.
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+}
+
+TEST_F(ClientDiscardableSharedMemoryManagerTest,
+       MarkDirtyFreelistPagesReleaseFreeListPages) {
+  base::test::ScopedFeatureList fl;
+  fl.InitAndEnableFeature(discardable_memory::kReleaseDiscardableFreeListPages);
+  auto client =
+      base::MakeRefCounted<TestClientDiscardableSharedMemoryManager>();
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  auto mem1 = client->AllocateLockedDiscardableMemory(base::GetPageSize() / 2u);
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  auto mem2 =
+      client->AllocateLockedDiscardableMemory(base::GetPageSize() * 1.2);
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  mem1 = nullptr;
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  mem2 = nullptr;
+
+  // Freelist memory is released immediately, so there's no dirty memory.
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
+
+  client->ReleaseFreeMemory();
+
+  ASSERT_EQ(0u, client->GetDirtyFreedMemoryPageCount());
 }
 
 }  // namespace

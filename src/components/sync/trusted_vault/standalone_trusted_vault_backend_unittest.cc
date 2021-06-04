@@ -20,6 +20,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
+#include "components/sync/trusted_vault/trusted_vault_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,7 @@ using testing::IsEmpty;
 using testing::Mock;
 using testing::Ne;
 using testing::NotNull;
+using testing::SaveArg;
 
 MATCHER_P(KeyMaterialEq, expected, "") {
   const std::string& key_material = arg.key_material();
@@ -46,7 +48,7 @@ MATCHER_P2(OptionalTrustedVaultKeyAndVersionEq,
            expected_key,
            expected_version,
            "") {
-  const base::Optional<TrustedVaultKeyAndVersion>& key_and_version = arg;
+  const absl::optional<TrustedVaultKeyAndVersion>& key_and_version = arg;
   return key_and_version.has_value() && key_and_version->key == expected_key &&
          key_and_version->version == expected_version;
 }
@@ -54,6 +56,12 @@ MATCHER_P2(OptionalTrustedVaultKeyAndVersionEq,
 base::FilePath CreateUniqueTempDir(base::ScopedTempDir* temp_dir) {
   EXPECT_TRUE(temp_dir->CreateUniqueTempDir());
   return temp_dir->GetPath();
+}
+
+CoreAccountInfo MakeAccountInfoWithGaiaId(const std::string& gaia_id) {
+  CoreAccountInfo account_info;
+  account_info.gaia = gaia_id;
+  return account_info;
 }
 
 class MockDelegate : public StandaloneTrustedVaultBackend::Delegate {
@@ -70,7 +78,7 @@ class MockTrustedVaultConnection : public TrustedVaultConnection {
   MOCK_METHOD(std::unique_ptr<Request>,
               RegisterAuthenticationFactor,
               (const CoreAccountInfo& account_info,
-               const base::Optional<TrustedVaultKeyAndVersion>&
+               const absl::optional<TrustedVaultKeyAndVersion>&
                    last_trusted_vault_key_and_version,
                const SecureBoxPublicKey& authentication_factor_public_key,
                AuthenticationFactorType authentication_factor_type,
@@ -79,10 +87,15 @@ class MockTrustedVaultConnection : public TrustedVaultConnection {
   MOCK_METHOD(std::unique_ptr<Request>,
               DownloadNewKeys,
               (const CoreAccountInfo& account_info,
-               const base::Optional<TrustedVaultKeyAndVersion>&
+               const absl::optional<TrustedVaultKeyAndVersion>&
                    last_trusted_vault_key_and_version,
                std::unique_ptr<SecureBoxKeyPair> device_key_pair,
                DownloadNewKeysCallback callback),
+              (override));
+  MOCK_METHOD(std::unique_ptr<Request>,
+              RetrieveIsRecoverabilityDegraded,
+              (const CoreAccountInfo& account_info,
+               IsRecoverabilityDegradedCallback),
               (override));
 };
 
@@ -92,9 +105,6 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
       : file_path_(
             CreateUniqueTempDir(&temp_dir_)
                 .Append(base::FilePath(FILE_PATH_LITERAL("some_file")))) {
-    override_features.InitAndEnableFeature(
-        switches::kFollowTrustedVaultKeyRotation);
-
     auto delegate = std::make_unique<testing::NiceMock<MockDelegate>>();
     delegate_ = delegate.get();
 
@@ -106,6 +116,14 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
         file_path_, std::move(delegate), std::move(connection));
     backend_->SetClockForTesting(&clock_);
     clock_.SetNow(base::Time::Now());
+
+    // To avoid DCHECK failures in tests that exercise SetPrimaryAccount(),
+    // return non-null for RegisterAuthenticationFactor(). This registration
+    // operation will never complete, though.
+    ON_CALL(*connection_, RegisterAuthenticationFactor(_, _, _, _, _))
+        .WillByDefault(testing::InvokeWithoutArgs([&]() {
+          return std::make_unique<TrustedVaultConnection::Request>();
+        }));
   }
 
   ~StandaloneTrustedVaultBackendTest() override = default;
@@ -141,7 +159,7 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
                     _, AuthenticationFactorType::kPhysicalDevice, _))
         .WillOnce(
             [&](const CoreAccountInfo&,
-                const base::Optional<TrustedVaultKeyAndVersion>&,
+                const absl::optional<TrustedVaultKeyAndVersion>&,
                 const SecureBoxPublicKey& device_public_key,
                 AuthenticationFactorType,
                 TrustedVaultConnection::RegisterAuthenticationFactorCallback
@@ -159,10 +177,10 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
 
     // Pretend that the registration completed successfully.
     std::move(device_registration_callback)
-        .Run(TrustedVaultRequestStatus::kSuccess);
+        .Run(TrustedVaultRegistrationStatus::kSuccess);
 
     // Reset primary account.
-    backend()->SetPrimaryAccount(base::nullopt);
+    backend()->SetPrimaryAccount(absl::nullopt);
 
     std::string device_private_key_material =
         backend_->GetDeviceRegistrationInfoForTesting(account_info.gaia)
@@ -171,9 +189,16 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
                                 device_private_key_material.end());
   }
 
- private:
-  base::test::ScopedFeatureList override_features;
+  bool GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info) {
+    bool is_degraded = false;
+    base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+    EXPECT_CALL(completion_callback, Run(_)).WillOnce(SaveArg<0>(&is_degraded));
+    backend()->GetIsRecoverabilityDegraded(account_info,
+                                           completion_callback.Get());
+    return is_degraded;
+  }
 
+ private:
   base::ScopedTempDir temp_dir_;
   const base::FilePath file_path_;
   testing::NiceMock<MockDelegate>* delegate_;
@@ -183,8 +208,7 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
 };
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchEmptyKeys) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   // Callback should be called immediately.
   base::MockCallback<StandaloneTrustedVaultBackend::FetchKeysCallback>
       fetch_keys_callback;
@@ -193,10 +217,8 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchEmptyKeys) {
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldReadAndFetchNonEmptyKeys) {
-  CoreAccountInfo account_info_1;
-  account_info_1.gaia = "user1";
-  CoreAccountInfo account_info_2;
-  account_info_2.gaia = "user2";
+  const CoreAccountInfo account_info_1 = MakeAccountInfoWithGaiaId("user1");
+  const CoreAccountInfo account_info_2 = MakeAccountInfoWithGaiaId("user2");
 
   const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
   const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
@@ -258,10 +280,8 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldStoreKeys) {
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchPreviouslyStoredKeys) {
-  CoreAccountInfo account_info_1;
-  account_info_1.gaia = "user1";
-  CoreAccountInfo account_info_2;
-  account_info_2.gaia = "user2";
+  const CoreAccountInfo account_info_1 = MakeAccountInfoWithGaiaId("user1");
+  const CoreAccountInfo account_info_2 = MakeAccountInfoWithGaiaId("user2");
 
   const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
   const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
@@ -287,10 +307,8 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchPreviouslyStoredKeys) {
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldRemoveAllStoredKeys) {
-  CoreAccountInfo account_info_1;
-  account_info_1.gaia = "user1";
-  CoreAccountInfo account_info_2;
-  account_info_2.gaia = "user2";
+  const CoreAccountInfo account_info_1 = MakeAccountInfoWithGaiaId("user1");
+  const CoreAccountInfo account_info_2 = MakeAccountInfoWithGaiaId("user2");
 
   const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
   const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
@@ -315,9 +333,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRemoveAllStoredKeys) {
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<uint8_t> kVaultKey = {1, 2, 3};
   const int kLastKeyVersion = 0;
 
@@ -333,7 +349,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
           OptionalTrustedVaultKeyAndVersionEq(kVaultKey, kLastKeyVersion), _,
           AuthenticationFactorType::kPhysicalDevice, _))
       .WillOnce([&](const CoreAccountInfo&,
-                    const base::Optional<TrustedVaultKeyAndVersion>&,
+                    const absl::optional<TrustedVaultKeyAndVersion>&,
                     const SecureBoxPublicKey& device_public_key,
                     AuthenticationFactorType,
                     TrustedVaultConnection::RegisterAuthenticationFactorCallback
@@ -349,7 +365,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
 
   // Pretend that the registration completed successfully.
   std::move(device_registration_callback)
-      .Run(TrustedVaultRequestStatus::kSuccess);
+      .Run(TrustedVaultRegistrationStatus::kSuccess);
 
   // Now the device should be registered.
   sync_pb::LocalDeviceRegistrationInfo registration_info =
@@ -366,9 +382,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
 
 TEST_F(StandaloneTrustedVaultBackendTest,
        ShouldThrottleAndUnthrottleDeviceRegistration) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<uint8_t> kVaultKey = {1, 2, 3};
   const int kLastKeyVersion = 0;
 
@@ -378,7 +392,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   ON_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _))
       .WillByDefault(
           [&](const CoreAccountInfo&,
-              const base::Optional<TrustedVaultKeyAndVersion>&,
+              const absl::optional<TrustedVaultKeyAndVersion>&,
               const SecureBoxPublicKey&, AuthenticationFactorType,
               TrustedVaultConnection::RegisterAuthenticationFactorCallback
                   callback) {
@@ -396,7 +410,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   // Mimic transient failure.
   std::move(device_registration_callback)
-      .Run(TrustedVaultRequestStatus::kOtherError);
+      .Run(TrustedVaultRegistrationStatus::kOtherError);
 
   // Following request should be throttled.
   device_registration_callback =
@@ -404,7 +418,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   EXPECT_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _))
       .Times(0);
   // Reset and set primary account to trigger device registration attempt.
-  backend()->SetPrimaryAccount(base::nullopt);
+  backend()->SetPrimaryAccount(absl::nullopt);
   backend()->SetPrimaryAccount(account_info);
   EXPECT_TRUE(device_registration_callback.is_null());
   Mock::VerifyAndClearExpectations(connection());
@@ -414,7 +428,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   EXPECT_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _));
   // Reset and set primary account to trigger device registration attempt.
-  backend()->SetPrimaryAccount(base::nullopt);
+  backend()->SetPrimaryAccount(absl::nullopt);
   backend()->SetPrimaryAccount(account_info);
   EXPECT_FALSE(device_registration_callback.is_null());
 }
@@ -423,9 +437,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 // requests could be throttled for unreasonable amount of time.
 TEST_F(StandaloneTrustedVaultBackendTest,
        ShouldUnthrottleDeviceRegistrationWhenTimeSetToPast) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<uint8_t> kVaultKey = {1, 2, 3};
   const int kLastKeyVersion = 0;
 
@@ -435,7 +447,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   ON_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _))
       .WillByDefault(
           [&](const CoreAccountInfo&,
-              const base::Optional<TrustedVaultKeyAndVersion>&,
+              const absl::optional<TrustedVaultKeyAndVersion>&,
               const SecureBoxPublicKey&, AuthenticationFactorType,
               TrustedVaultConnection::RegisterAuthenticationFactorCallback
                   callback) {
@@ -453,7 +465,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   // Mimic transient failure.
   std::move(device_registration_callback)
-      .Run(TrustedVaultRequestStatus::kOtherError);
+      .Run(TrustedVaultRegistrationStatus::kOtherError);
 
   // Mimic system set to the past.
   clock()->Advance(base::TimeDelta::FromSeconds(-1));
@@ -462,7 +474,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
       TrustedVaultConnection::RegisterAuthenticationFactorCallback();
   EXPECT_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _));
   // Reset and set primary account to trigger device registration attempt.
-  backend()->SetPrimaryAccount(base::nullopt);
+  backend()->SetPrimaryAccount(absl::nullopt);
   backend()->SetPrimaryAccount(account_info);
   EXPECT_FALSE(device_registration_callback.is_null());
 }
@@ -470,9 +482,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 // Unless keys marked as stale, FetchKeys() should be completed immediately,
 // without keys download attempt.
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchKeysImmediately) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<std::vector<uint8_t>> kVaultKeys = {{1, 2, 3}};
   const int kLastKeyVersion = 0;
 
@@ -492,9 +502,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchKeysImmediately) {
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest, ShouldDownloadNewKeys) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<uint8_t> kInitialVaultKey = {1, 2, 3};
   const int kInitialLastKeyVersion = 0;
 
@@ -516,7 +524,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldDownloadNewKeys) {
                                   kInitialVaultKey, kInitialLastKeyVersion),
                               _, _))
       .WillOnce([&](const CoreAccountInfo&,
-                    const base::Optional<TrustedVaultKeyAndVersion>&,
+                    const absl::optional<TrustedVaultKeyAndVersion>&,
                     std::unique_ptr<SecureBoxKeyPair> key_pair,
                     TrustedVaultConnection::DownloadNewKeysCallback callback) {
         device_key_pair = std::move(key_pair);
@@ -539,15 +547,13 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldDownloadNewKeys) {
   // completed.
   EXPECT_CALL(fetch_keys_callback, Run(/*keys=*/Eq(kNewVaultKeys)));
   std::move(download_keys_callback)
-      .Run(TrustedVaultRequestStatus::kSuccess, kNewVaultKeys,
+      .Run(TrustedVaultDownloadKeysStatus::kSuccess, kNewVaultKeys,
            kNewLastKeyVersion);
 }
 
 TEST_F(StandaloneTrustedVaultBackendTest,
        ShouldThrottleAndUntrottleKeysDownloading) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
-
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
   const std::vector<uint8_t> kInitialVaultKey = {1, 2, 3};
   const int kInitialLastKeyVersion = 0;
 
@@ -561,7 +567,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   ON_CALL(*connection(), DownloadNewKeys(_, _, _, _))
       .WillByDefault(
           [&](const CoreAccountInfo&,
-              const base::Optional<TrustedVaultKeyAndVersion>&,
+              const absl::optional<TrustedVaultKeyAndVersion>&,
               std::unique_ptr<SecureBoxKeyPair> key_pair,
               TrustedVaultConnection::DownloadNewKeysCallback callback) {
             download_keys_callback = std::move(callback);
@@ -578,7 +584,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   // Mimic transient failure.
   std::move(download_keys_callback)
-      .Run(TrustedVaultRequestStatus::kOtherError,
+      .Run(TrustedVaultDownloadKeysStatus::kOtherError,
            /*keys=*/std::vector<std::vector<uint8_t>>(),
            /*last_key_version=*/0);
 
@@ -601,8 +607,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 // successful registration, the client should be able to download keys.
 TEST_F(StandaloneTrustedVaultBackendTest,
        ShouldSilentlyRegisterDeviceAndDownloadNewKeys) {
-  CoreAccountInfo account_info;
-  account_info.gaia = "user";
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
 
   TrustedVaultConnection::RegisterAuthenticationFactorCallback
       device_registration_callback;
@@ -610,9 +615,9 @@ TEST_F(StandaloneTrustedVaultBackendTest,
       *connection(),
       RegisterAuthenticationFactor(
           account_info,
-          /*last_trusted_vault_key_and_version=*/Eq(base::nullopt), _, _, _))
+          /*last_trusted_vault_key_and_version=*/Eq(absl::nullopt), _, _, _))
       .WillOnce([&](const CoreAccountInfo&,
-                    const base::Optional<TrustedVaultKeyAndVersion>&,
+                    const absl::optional<TrustedVaultKeyAndVersion>&,
                     const SecureBoxPublicKey& device_public_key,
                     AuthenticationFactorType,
                     TrustedVaultConnection::RegisterAuthenticationFactorCallback
@@ -627,7 +632,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   // Pretend that the registration completed successfully.
   std::move(device_registration_callback)
-      .Run(TrustedVaultRequestStatus::kSuccess);
+      .Run(TrustedVaultRegistrationStatus::kSuccess);
 
   // Now the device should be registered.
   sync_pb::LocalDeviceRegistrationInfo registration_info =
@@ -639,10 +644,10 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   ON_CALL(*connection(),
           DownloadNewKeys(
               account_info,
-              /*last_trusted_vault_key_and_version=*/Eq(base::nullopt), _, _))
+              /*last_trusted_vault_key_and_version=*/Eq(absl::nullopt), _, _))
       .WillByDefault(
           [&](const CoreAccountInfo&,
-              const base::Optional<TrustedVaultKeyAndVersion>&,
+              const absl::optional<TrustedVaultKeyAndVersion>&,
               std::unique_ptr<SecureBoxKeyPair> key_pair,
               TrustedVaultConnection::DownloadNewKeysCallback callback) {
             download_keys_callback = std::move(callback);
@@ -662,8 +667,50 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   const std::vector<std::vector<uint8_t>> kNewVaultKeys = {{1, 2, 3}};
   EXPECT_CALL(fetch_keys_callback, Run(/*keys=*/kNewVaultKeys));
   std::move(download_keys_callback)
-      .Run(TrustedVaultRequestStatus::kSuccess, kNewVaultKeys,
+      .Run(TrustedVaultDownloadKeysStatus::kSuccess, kNewVaultKeys,
            /*last_key_version=*/40);
+}
+
+TEST_F(StandaloneTrustedVaultBackendTest, ShouldAddTrustedRecoveryMethod) {
+  // TODO(crbug.com/1081649): Implement proper test expectations when possible.
+  const std::vector<uint8_t> kPublicKey = {1, 2, 3, 4};
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
+  const int kUnusedMethodTypeHint = 7;
+
+  backend()->SetPrimaryAccount(account_info);
+  backend()->SetRecoverabilityDegradedForTesting();
+  ASSERT_TRUE(GetIsRecoverabilityDegraded(account_info));
+
+  base::MockCallback<base::OnceClosure> completion_callback;
+  EXPECT_CALL(completion_callback, Run());
+  backend()->AddTrustedRecoveryMethod(account_info.gaia, kPublicKey,
+                                      kUnusedMethodTypeHint,
+                                      completion_callback.Get());
+
+  EXPECT_FALSE(GetIsRecoverabilityDegraded(account_info));
+}
+
+TEST_F(StandaloneTrustedVaultBackendTest,
+       ShouldDeferTrustedRecoveryMethodUntilPrimaryAccount) {
+  // TODO(crbug.com/1201659): Implement proper test expectations when possible.
+  const std::vector<uint8_t> kPublicKey = {1, 2, 3, 4};
+  const CoreAccountInfo account_info = MakeAccountInfoWithGaiaId("user");
+  const int kUnusedMethodTypeHint = 7;
+
+  backend()->SetRecoverabilityDegradedForTesting();
+  ASSERT_TRUE(GetIsRecoverabilityDegraded(account_info));
+
+  base::MockCallback<base::OnceClosure> completion_callback;
+  EXPECT_CALL(completion_callback, Run()).Times(0);
+  backend()->AddTrustedRecoveryMethod(account_info.gaia, kPublicKey,
+                                      kUnusedMethodTypeHint,
+                                      completion_callback.Get());
+
+  EXPECT_TRUE(GetIsRecoverabilityDegraded(account_info));
+
+  EXPECT_CALL(completion_callback, Run());
+  backend()->SetPrimaryAccount(account_info);
+  EXPECT_FALSE(GetIsRecoverabilityDegraded(account_info));
 }
 
 }  // namespace

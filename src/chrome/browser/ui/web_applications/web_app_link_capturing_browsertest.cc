@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -367,8 +368,8 @@ IN_PROC_BROWSER_TEST_P(WebAppDeclarativeLinkCapturingBrowserTest,
   }
 }
 
-// Flaky on Linux, crbug.com/1185680
-#if defined(OS_LINUX)
+// TODO(crbug.com/1185680): Flaky on Linux and lacros.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CaptureLinksNewClient DISABLED_CaptureLinksNewClient
 #else
 #define MAYBE_CaptureLinksNewClient CaptureLinksNewClient
@@ -467,15 +468,11 @@ IN_PROC_BROWSER_TEST_P(WebAppDeclarativeLinkCapturingBrowserTest,
   Navigate(browser(), in_scope_1_, LinkTarget::BLANK);
   // TODO(crbug.com/1209082): The app window should now be focused.
   // EXPECT_EQ(app_browser, BrowserList::GetInstance()->GetLastActive());
-  // TODO(crbug.com/1209096): With IntentPickerPWAPersistence we don't close the
-  // new about:blank tab after capturing.
-  if (!IsIntentPickerPersistenceEnabled()) {
-    // Clicking target=_blank will open a new tab that closes asynchronously,
-    // wait for that to finish before checking browser tab state.
-    AwaitTabCount(browser(), 1);
-    ExpectTabs(browser(), {out_of_scope_});
-    ExpectTabs(app_browser, {in_scope_1_});
-  }
+  // Clicking target=_blank will open a new tab that closes asynchronously,
+  // wait for that to finish before checking browser tab state.
+  AwaitTabCount(browser(), 1);
+  ExpectTabs(browser(), {out_of_scope_});
+  ExpectTabs(app_browser, {in_scope_1_});
 }
 
 INSTANTIATE_TEST_SUITE_P(

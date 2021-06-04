@@ -184,14 +184,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default autoplay setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default cookies setting at profile open.</summary>
@@ -214,14 +214,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultJavaScriptSetting"
-    enum="ContentSetting" expires_after="2021-08-22">
+    enum="ContentSetting" expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default JavaScript setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default location setting at profile open.</summary>
@@ -498,8 +498,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2020-08-16">
+    expires_after="2021-10-31">
   <owner>charleszhao@chromium.org</owner>
+  <owner>lazzzis@google.com</owner>
+  <owner>src/components/blocked_content/OWNERS</owner>
   <summary>
     Tracks whether the popup content blocked puzzle piece was shown in the
     Omnibox, and how the user interacted with it.
@@ -507,8 +509,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.BlockerActions"
-    enum="PopupBlockerAction" expires_after="2020-08-30">
+    enum="PopupBlockerAction" expires_after="2021-10-31">
   <owner>csharrison@chromium.org</owner>
+  <owner>lazzzis@google.com</owner>
+  <owner>src/components/blocked_content/OWNERS</owner>
   <summary>
     Counts of various events related to the popup blocker. Including blocked
     popups and overridden (clicked through) popups. This is similar to the
@@ -571,7 +575,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2021-08-15">
+    enum="StrongPopupBlockerAction" expires_after="2021-10-17">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -617,6 +621,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     current suggestions to be deleted. Each row should correspond to a url that
     is beign removed from history. Is not emitted when entire history is being
     cleared.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.AutoplayEvent"
+    enum="FeedAutoplayEvent" expires_after="M95">
+  <obsolete>
+    Removed as of 05/2021. Replaced by ContentSuggestions.Feed.VideoPlayEvent.
+  </obsolete>
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records events triggered during the video autoplay.
   </summary>
 </histogram>
 
@@ -721,7 +737,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.DisplayStatusOnOpen"
-    enum="ContentSuggestionsDisplayStatus" expires_after="2021-08-22">
+    enum="ContentSuggestionsDisplayStatus" expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1021,7 +1037,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1377,7 +1393,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisitDuration" units="ms"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>harringtond@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1539,6 +1555,53 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>The reason the zero state (no articles) is shown to a user.</summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.InitializationError"
+    enum="FeedVideoInitializationError" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records errors occurred during the video player initialization. The
+    embedded video player needs to be initialized before it can be used to play
+    a video in {PlayType} mode. In autoplay muted mode, the initialization may
+    kick off even before the video view is scrolled to become visible. In normal
+    unmuted mode, this happens when the user taps the video to launch the video
+    in fullscreen playing mode.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayError"
+    enum="FeedVideoPlayError" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records errors occurred during the video playing, in {PlayType}
+    mode. Upon the successful initialization of the embedded player, the video
+    starts to play and any error occurs since then is reported here.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayEvent"
+    enum="FeedVideoPlayEvent" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records events triggered during the video playing, in {PlayType}
+    mode.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.EngagementType"

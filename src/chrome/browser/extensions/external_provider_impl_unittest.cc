@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -26,7 +25,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/external_testing_loader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/web_applications/components/external_app_install_features.h"
+#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -42,10 +41,11 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -107,14 +107,15 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     service()->updater()->SetExtensionCacheForTesting(
         test_extension_cache_.get());
 
-    // Don't install default apps. Some of the default apps are downloaded from
-    // the webstore, ignoring the url we pass to kAppsGalleryUpdateURL, which
-    // would cause the external updates to never finish install.
-    profile_->GetPrefs()->SetString(prefs::kDefaultApps, "");
+    // Don't install pre-installed apps. Some of the pre-installed apps are
+    // downloaded from the webstore, ignoring the url we pass to
+    // kAppsGalleryUpdateURL, which would cause the external updates to never
+    // finish install.
+    profile_->GetPrefs()->SetString(prefs::kPreinstalledApps, "");
   }
 
   void InitServiceWithExternalProviders(
-      const base::Optional<bool> block_external = base::nullopt) {
+      const absl::optional<bool> block_external = absl::nullopt) {
     InitService();
 
     if (block_external.has_value())
@@ -306,7 +307,7 @@ TEST_F(ExternalProviderImplTest, WebAppMigrationFlag) {
   // App is not installed, we should not install if the flag is enabled.
   {
     base::AutoReset<bool> testing_scope =
-        web_app::SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+        web_app::SetPreinstalledAppInstallFeatureAlwaysEnabledForTesting();
     AwaitCheckForExternalUpdates();
     EXPECT_FALSE(registry()->GetInstalledExtension(kGoodApp.app_id));
   }
@@ -320,7 +321,7 @@ TEST_F(ExternalProviderImplTest, WebAppMigrationFlag) {
   // App is now installed, we should not uninstall if the flag is enabled.
   {
     base::AutoReset<bool> testing_scope =
-        web_app::SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+        web_app::SetPreinstalledAppInstallFeatureAlwaysEnabledForTesting();
     AwaitCheckForExternalUpdates();
     EXPECT_TRUE(registry()->GetInstalledExtension(kGoodApp.app_id));
   }

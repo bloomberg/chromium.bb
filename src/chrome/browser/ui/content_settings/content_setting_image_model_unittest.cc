@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,9 +30,9 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/permissions/features.h"
-#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/request_type.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/mock_permission_request.h"
@@ -45,20 +44,23 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/cookie_options.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
-#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
-#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 
+#if defined(OS_MAC)
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#endif
+
 using content_settings::PageSpecificContentSettings;
-using device::LocationSystemPermissionStatus;
 
 namespace {
 
 class TestQuietNotificationPermissionUiSelector
-    : public permissions::NotificationPermissionUiSelector {
+    : public permissions::PermissionUiSelector {
  public:
   explicit TestQuietNotificationPermissionUiSelector(
       QuietUiReason simulated_reason_for_quiet_ui)
@@ -66,11 +68,16 @@ class TestQuietNotificationPermissionUiSelector
   ~TestQuietNotificationPermissionUiSelector() override = default;
 
  protected:
-  // permissions::NotificationPermissionUiSelector:
+  // permissions::PermissionUiSelector:
   void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
     std::move(callback).Run(
-        Decision(simulated_reason_for_quiet_ui_, base::nullopt));
+        Decision(simulated_reason_for_quiet_ui_, absl::nullopt));
+  }
+
+  bool IsPermissionRequestSupported(
+      permissions::RequestType request_type) override {
+    return request_type == permissions::RequestType::kNotifications;
   }
 
  private:
@@ -82,7 +89,7 @@ class TestQuietNotificationPermissionUiSelector
 class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
  public:
   ContentSettingImageModelTest()
-      : request_("test1",
+      : request_(u"test1",
                  permissions::RequestType::kNotifications,
                  permissions::PermissionRequestGestureType::GESTURE) {}
   ~ContentSettingImageModelTest() override {}
@@ -154,7 +161,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdate) {
 
   chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents())
       ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
-          "mailto", GURL("http://www.google.com/")));
+          "mailto", GURL("https://www.google.com/")));
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
 }
@@ -175,7 +182,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
 
   GURL origin("http://google.com");
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-      origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
+      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
   PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
@@ -276,14 +283,13 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
-  auto test_location_permission_manager =
-      std::make_unique<FakeSystemGeolocationPermissionsManager>();
-  FakeSystemGeolocationPermissionsManager* location_permission_manager =
-      test_location_permission_manager.get();
+  auto test_geolocation_manager =
+      std::make_unique<device::FakeGeolocationManager>();
+  device::FakeGeolocationManager* geolocation_manager =
+      test_geolocation_manager.get();
   TestingBrowserProcess::GetGlobal()
       ->GetTestPlatformPart()
-      ->SetLocationPermissionManager(
-          std::move(test_location_permission_manager));
+      ->SetGeolocationManager(std::move(test_geolocation_manager));
 
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
@@ -302,8 +308,8 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
-  location_permission_manager->set_status(
-      LocationSystemPermissionStatus::kAllowed);
+  geolocation_manager->SetSystemPermission(
+      device::LocationSystemPermissionStatus::kAllowed);
 
   settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
                                          CONTENT_SETTING_ALLOW);
@@ -326,8 +332,8 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
             l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
   EXPECT_EQ(content_setting_image_model->explanatory_string_id(), 0);
 
-  location_permission_manager->set_status(
-      LocationSystemPermissionStatus::kDenied);
+  geolocation_manager->SetSystemPermission(
+      device::LocationSystemPermissionStatus::kDenied);
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
@@ -348,14 +354,13 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
 TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsUndetermined) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
-  auto test_location_permission_manager =
-      std::make_unique<FakeSystemGeolocationPermissionsManager>();
-  test_location_permission_manager->set_status(
-      LocationSystemPermissionStatus::kNotDetermined);
+  auto test_geolocation_manager =
+      std::make_unique<device::FakeGeolocationManager>();
+  test_geolocation_manager->SetSystemPermission(
+      device::LocationSystemPermissionStatus::kNotDetermined);
   TestingBrowserProcess::GetGlobal()
       ->GetTestPlatformPart()
-      ->SetLocationPermissionManager(
-          std::move(test_location_permission_manager));
+      ->SetGeolocationManager(std::move(test_geolocation_manager));
 
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
@@ -627,9 +632,9 @@ TEST_F(ContentSettingImageModelTest, NotificationsPromptCrowdDeny) {
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  manager_->set_notification_permission_ui_selector_for_testing(
+  manager_->set_permission_ui_selector_for_testing(
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
-          permissions::NotificationPermissionUiSelector::QuietUiReason::
+          permissions::PermissionUiSelector::QuietUiReason::
               kTriggeredByCrowdDeny));
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
@@ -648,9 +653,9 @@ TEST_F(ContentSettingImageModelTest, NotificationsPromptAbusive) {
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  manager_->set_notification_permission_ui_selector_for_testing(
+  manager_->set_permission_ui_selector_for_testing(
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
-          permissions::NotificationPermissionUiSelector::QuietUiReason::
+          permissions::PermissionUiSelector::QuietUiReason::
               kTriggeredDueToAbusiveRequests));
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
@@ -669,9 +674,9 @@ TEST_F(ContentSettingImageModelTest, NotificationsContentAbusive) {
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  manager_->set_notification_permission_ui_selector_for_testing(
+  manager_->set_permission_ui_selector_for_testing(
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
-          permissions::NotificationPermissionUiSelector::QuietUiReason::
+          permissions::PermissionUiSelector::QuietUiReason::
               kTriggeredDueToAbusiveContent));
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();

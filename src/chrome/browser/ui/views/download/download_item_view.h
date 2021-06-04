@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -20,7 +19,10 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/icon_loader.h"
+#include "chrome/browser/ui/download/download_item_mode.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -32,7 +34,6 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 class DownloadShelfView;
@@ -70,8 +71,6 @@ class DownloadItemView : public views::View,
  public:
   METADATA_HEADER(DownloadItemView);
 
-  enum class Mode;
-
   DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
                    DownloadShelfView* shelf,
                    views::View* accessible_alert);
@@ -80,6 +79,7 @@ class DownloadItemView : public views::View,
   ~DownloadItemView() override;
 
   // views::View:
+  void AddedToWidget() override;
   void Layout() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
@@ -116,18 +116,22 @@ class DownloadItemView : public views::View,
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
 
- private:
-  // Returns the mode that best reflects the current model state.
-  Mode GetDesiredMode() const;
+  // ui::LayerDelegate:
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
+ private:
   // Sets the current mode to |mode| and updates UI appropriately.
-  void SetMode(Mode mode);
-  Mode GetMode() const;
+  void SetMode(download::DownloadItemMode mode);
+  download::DownloadItemMode GetMode() const;
 
   // Updates the file path, and if necessary, begins loading the file icon in
   // various sizes. This may eventually result in a callback to
   // OnFileIconLoaded().
   void UpdateFilePathAndIcons();
+
+  // Begins loading the file icon in various sizes.
+  void StartLoadIcons();
 
   // Updates the visibility, text, size, etc. of all labels.
   void UpdateLabels();
@@ -233,7 +237,7 @@ class DownloadItemView : public views::View,
   DownloadShelfView* const shelf_;
 
   // Mode of the download item view.
-  Mode mode_;
+  download::DownloadItemMode mode_;
 
   // The "open download" button. This button is visually transparent and fills
   // the entire bounds of the DownloadItemView, to make the DownloadItemView
@@ -247,7 +251,7 @@ class DownloadItemView : public views::View,
   bool dragging_ = false;
 
   // Position that a possible drag started at.
-  base::Optional<gfx::Point> drag_start_point_;
+  absl::optional<gfx::Point> drag_start_point_;
 
   gfx::ImageSkia file_icon_;
 
@@ -302,6 +306,8 @@ class DownloadItemView : public views::View,
 
   // Forces reading the current alert text the next time it updates.
   bool announce_accessible_alert_soon_ = false;
+
+  float current_scale_;
 
   base::ScopedObservation<DownloadUIModel, DownloadUIModel::Observer>
       observation_{this};

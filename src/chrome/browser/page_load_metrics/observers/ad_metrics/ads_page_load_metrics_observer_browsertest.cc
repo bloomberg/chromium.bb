@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -598,7 +597,7 @@ class CreativeOriginAdsPageLoadMetricsObserverBrowserTest
   void TestCreativeOriginStatus(
       std::unique_ptr<Frame> main_frame,
       page_load_metrics::OriginStatus expected_status,
-      base::Optional<page_load_metrics::OriginStatusWithThrottling>
+      absl::optional<page_load_metrics::OriginStatusWithThrottling>
           expected_status_with_throttling) {
     base::HistogramTester histogram_tester;
     bool subframe_exists = main_frame->HasChild();
@@ -689,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
                        CreativeOriginStatusNoCreativeDesignated) {
   TestCreativeOriginStatus(
       MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr))),
-      OriginStatus::kUnknown, base::nullopt);
+      OriginStatus::kUnknown, absl::nullopt);
 }
 
 // Test that if no iframe is created, there is no histogram set.
@@ -1178,7 +1177,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "video.onplaying = () => { "
       "window.domAutomationController.send('true'); };"
       "video.play();";
-  EXPECT_EQ("true", content::EvalJsWithManualReply(ad_frame, play_script));
+  EXPECT_EQ("true", content::EvalJs(ad_frame, play_script,
+                                    content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 

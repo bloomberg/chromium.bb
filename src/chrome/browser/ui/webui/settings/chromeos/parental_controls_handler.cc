@@ -10,7 +10,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/chromeos/child_accounts/child_user_service.h"
+#include "chrome/browser/ash/child_accounts/child_user_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -53,14 +53,14 @@ void ParentalControlsHandler::OnJavascriptDisallowed() {}
 
 void ParentalControlsHandler::HandleShowAddSupervisionDialog(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   AddSupervisionDialog::Show(
       web_ui()->GetWebContents()->GetTopLevelNativeWindow());
 }
 
 void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
 
   apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);

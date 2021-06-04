@@ -174,7 +174,7 @@ int SOCKSConnectJob::DoSOCKSConnect() {
     socks_socket_ptr_ = new SOCKSClientSocket(
         transport_connect_job_->PassSocket(), socks_params_->destination(),
         socks_params_->network_isolation_key(), priority(), host_resolver(),
-        socks_params_->transport_params()->disable_secure_dns(),
+        socks_params_->transport_params()->secure_dns_policy(),
         socks_params_->traffic_annotation());
     socket_.reset(socks_socket_ptr_);
   }
@@ -191,7 +191,7 @@ int SOCKSConnectJob::DoSOCKSConnectComplete(int result) {
     return result;
   }
 
-  SetSocket(std::move(socket_), base::nullopt /* dns_aliases */);
+  SetSocket(std::move(socket_), absl::nullopt /* dns_aliases */);
   return result;
 }
 

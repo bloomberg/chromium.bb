@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import shutil
+from six.moves import input # pylint: disable=redefined-builtin
 
 from telemetry.core import exceptions
 from telemetry.core import platform as platform_module
@@ -152,8 +154,8 @@ class SharedPageState(story_module.SharedState):
 
   def _AllowInteractionForStage(self, stage):
     if self._finder_options.pause == stage:
-      raw_input('Pausing for interaction at %s... Press Enter to continue.' %
-                stage)
+      input('Pausing for interaction at %s... Press Enter to continue.' %
+            stage)
 
   def _StartBrowser(self, page):
     assert self._browser is None
@@ -278,7 +280,7 @@ class SharedPageState(story_module.SharedState):
     if self._current_page.is_file:
       self.platform.SetHTTPServerDirectories(
           self._current_page.story_set.serving_dirs
-          | set([self._current_page.serving_dir]),
+          | {self._current_page.serving_dir},
           self._current_page.story_set.request_handler_class)
 
   @property

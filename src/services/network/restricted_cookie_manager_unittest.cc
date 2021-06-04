@@ -244,7 +244,7 @@ class RestrictedCookieManagerTest
                         const char* domain,
                         const char* path,
                         bool secure = true) {
-    CHECK(SetCanonicalCookie(
+    ASSERT_TRUE(SetCanonicalCookie(
         *net::CanonicalCookie::CreateUnsafeCookieForTesting(
             name, value, domain, path, base::Time(), base::Time(), base::Time(),
             /* secure = */ secure,
@@ -659,25 +659,19 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
   service_->OverrideIsolationInfoForTesting(kOtherIsolationInfo);
-  {
-    // Disable kCookiesWithoutSameSiteMustBeSecure to inject such a cookie.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {} /* enabled_features */,
-        {net::features::kSameSiteByDefaultCookies,
-         net::features::
-             kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
-    SetSessionCookie("cookie-name", "cookie-value", "example.com", "/",
-                     /* secure = */ false);
-  }
 
-  // Now test get with the feature on.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {net::features::kSameSiteByDefaultCookies,
-       net::features::
-           kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
-      {} /* disabled_features */);
+  // Activate legacy semantics to be able to inject a bad cookie.
+  auto cookie_access_delegate =
+      std::make_unique<net::TestCookieAccessDelegate>();
+  cookie_access_delegate->SetExpectationForCookieDomain(
+      "example.com", net::CookieAccessSemantics::LEGACY);
+  cookie_monster_.SetCookieAccessDelegate(std::move(cookie_access_delegate));
+
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/",
+                   /* secure = */ false);
+
+  // Now test get using (default) nonlegacy semantics.
+  cookie_monster_.SetCookieAccessDelegate(nullptr);
 
   {
     auto options = mojom::CookieManagerGetOptions::New();
@@ -876,7 +870,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
     // With default settings object, setting a third-party cookie is OK.
     auto cookie = net::CanonicalCookie::Create(
         kDefaultUrl, "A=B; SameSite=none; Secure", base::Time::Now(),
-        base::nullopt /* server_time */);
+        absl::nullopt /* server_time */);
     EXPECT_TRUE(sync_service_->SetCanonicalCookie(
         *cookie, kDefaultUrl, net::SiteForCookies(), kDefaultOrigin));
   }
@@ -893,7 +887,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
     cookie_settings_.set_block_third_party_cookies(true);
     auto cookie = net::CanonicalCookie::Create(
         kDefaultUrl, "A2=B2; SameSite=none; Secure", base::Time::Now(),
-        base::nullopt /* server_time */);
+        absl::nullopt /* server_time */);
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
         *cookie, kDefaultUrl, net::SiteForCookies(), kDefaultOrigin));
   }
@@ -932,13 +926,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   service_->OverrideIsolationInfoForTesting(kOtherIsolationInfo);
-  // Make sure the deprecation warnings are also produced when the feature
-  // to enable the new behavior is on.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
 
   auto cookie = net::CanonicalCookie::Create(
-      kDefaultUrl, "A=B", base::Time::Now(), base::nullopt /* server_time */);
+      kDefaultUrl, "A=B", base::Time::Now(), absl::nullopt /* server_time */);
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
       *cookie, kDefaultUrl, net::SiteForCookies(), kDefaultOrigin));
 
@@ -1319,10 +1309,6 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
 // Test that the Change listener receives the access semantics, and that they
 // are taken into account when deciding when to dispatch the change.
 TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
-  // Turn on SameSiteByDefaultCookies.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
-
   auto cookie_access_delegate =
       std::make_unique<net::TestCookieAccessDelegate>();
   cookie_access_delegate->SetExpectationForCookieDomain(
@@ -1343,7 +1329,7 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
 
   auto cookie = net::CanonicalCookie::Create(
       kDefaultUrl, "cookie_with_no_samesite=unspecified", base::Time::Now(),
-      base::nullopt);
+      absl::nullopt);
 
   // Set cookie directly into the CookieMonster, using all-inclusive options.
   net::ResultSavingCookieCallback<net::CookieAccessResult> callback;
@@ -1362,10 +1348,6 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
 }
 
 TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
-  // Turn on SameSiteByDefaultCookies.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
-
   auto cookie_access_delegate =
       std::make_unique<net::TestCookieAccessDelegate>();
   cookie_access_delegate->SetExpectationForCookieDomain(
@@ -1386,11 +1368,11 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
 
   auto unspecified_cookie = net::CanonicalCookie::Create(
       kDefaultUrl, "cookie_with_no_samesite=unspecified", base::Time::Now(),
-      base::nullopt);
+      absl::nullopt);
 
   auto samesite_none_cookie = net::CanonicalCookie::Create(
       kDefaultUrl, "samesite_none_cookie=none; SameSite=None; Secure",
-      base::Time::Now(), base::nullopt);
+      base::Time::Now(), absl::nullopt);
 
   // Set cookies directly into the CookieMonster, using all-inclusive options.
   net::ResultSavingCookieCallback<net::CookieAccessResult> callback1;

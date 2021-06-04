@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/paint/text_painter_base.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -68,7 +70,7 @@ inline PhysicalRect ComputeBoxRect(const NGInlineCursor& cursor,
 
 inline const NGInlineCursor& InlineCursorForBlockFlow(
     const NGInlineCursor& cursor,
-    base::Optional<NGInlineCursor>* storage) {
+    absl::optional<NGInlineCursor>* storage) {
   if (*storage)
     return **storage;
   *storage = cursor;
@@ -144,7 +146,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   const bool is_printing = document.Printing();
 
   // Determine whether or not we're selected.
-  base::Optional<NGHighlightPainter::SelectionPaintState> selection;
+  absl::optional<NGHighlightPainter::SelectionPaintState> selection;
   if (UNLIKELY(!is_printing && paint_info.phase != PaintPhase::kTextClip &&
                layout_object->IsSelected())) {
     const NGInlineCursor& root_inline_cursor =
@@ -165,28 +167,32 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
+  IntRect visual_rect;
   const LayoutSVGInlineText* svg_inline_text = nullptr;
   float scaling_factor = 1.0f;
   if (text_item.Type() == NGFragmentItem::kSVGText) {
     svg_inline_text = To<LayoutSVGInlineText>(layout_object);
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
+    visual_rect = EnclosingIntRect(
+        svg_inline_text->Parent()->VisualRectInLocalSVGCoordinates());
+  } else {
+    PhysicalRect ink_overflow = text_item.SelfInkOverflow();
+    ink_overflow.Move(box_rect.offset);
+    visual_rect = EnclosingIntRect(ink_overflow);
   }
-  PhysicalRect ink_overflow = text_item.SelfInkOverflow();
-  ink_overflow.Move(box_rect.offset);
-  IntRect visual_rect = EnclosingIntRect(ink_overflow);
 
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainterBase::PaintFillLayer, which is already within a
   // DrawingRecorder.
-  base::Optional<DrawingRecorder> recorder;
+  absl::optional<DrawingRecorder> recorder;
   const auto& display_item_client =
       AsDisplayItemClient(cursor_, selection.has_value());
 
   // Ensure the selection bounds are recorded on the paint chunk regardless of
   // whether the diplay item that contains the actual selection painting is
   // reused.
-  base::Optional<SelectionBoundsRecorder> selection_recorder;
+  absl::optional<SelectionBoundsRecorder> selection_recorder;
   if (UNLIKELY(selection && paint_info.phase == PaintPhase::kForeground &&
                !is_printing)) {
     if (SelectionBoundsRecorder::ShouldRecordSelection(
@@ -232,8 +238,15 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // Determine text colors.
 
   Node* node = layout_object->GetNode();
+  DCHECK(!svg_inline_text ||
+         (!IsA<SVGElement>(node) && IsA<SVGElement>(node->parentNode())));
   TextPaintStyle text_style =
-      TextPainterBase::TextPaintingStyle(document, style, paint_info);
+      svg_inline_text
+          ? TextPainterBase::SvgTextPaintingStyle(
+                document, SVGLengthContext(To<SVGElement>(node->parentNode())),
+                style, paint_info)
+          : TextPainterBase::TextPaintingStyle(document, style, paint_info);
+  // TODO(crbug.com/1179585): Support SVG Paint Servers (e.g. Gradient, Pattern)
   if (UNLIKELY(selection)) {
     selection->ComputeSelectionStyle(document, style, node, paint_info,
                                      text_style);
@@ -248,8 +261,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   const bool paint_marker_backgrounds =
       paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing;
-  base::Optional<GraphicsContextStateSaver> state_saver;
-  base::Optional<AffineTransform> rotation;
+  absl::optional<GraphicsContextStateSaver> state_saver;
+  absl::optional<AffineTransform> rotation;
   const WritingMode writing_mode = style.GetWritingMode();
   const bool is_horizontal = IsHorizontalWritingMode(writing_mode);
   int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
@@ -258,6 +271,11 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   if (svg_inline_text && scaling_factor != 1.0f) {
     state_saver.emplace(context);
     context.Scale(1 / scaling_factor, 1 / scaling_factor);
+  }
+  if (text_item.HasSVGTransformForPaint()) {
+    if (!state_saver)
+      state_saver.emplace(context);
+    context.ConcatCTM(text_item.BuildSVGTransformForPaint());
   }
   NGTextPainter text_painter(context, font, fragment_paint_info, visual_rect,
                              text_origin, box_rect, is_horizontal);
@@ -316,52 +334,22 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   const unsigned length = fragment_paint_info.to - fragment_paint_info.from;
-  if (!highlight_painter.Selection() ||
-      !highlight_painter.Selection()->ShouldPaintSelectedTextOnly()) {
-    // Paint text decorations except line-through.
-    base::Optional<TextDecorationInfo> decoration_info;
+  const unsigned start_offset = fragment_paint_info.from;
+  const unsigned end_offset = fragment_paint_info.to;
+
+  if (LIKELY(!highlight_painter.Selection())) {
     bool has_line_through_decoration = false;
-    if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
-        // Ellipsis should not have text decorations. This is not defined, but 4
-        // impls do this.
-        !text_item.IsEllipsis()) {
-      PhysicalOffset local_origin = box_rect.offset;
-      LayoutUnit width = box_rect.Width();
-      base::Optional<AppliedTextDecoration> selection_text_decoration =
-          UNLIKELY(highlight_painter.Selection())
-              ? base::Optional<AppliedTextDecoration>(
-                    highlight_painter.Selection()
-                        ->GetSelectionStyle()
-                        .selection_text_decoration)
-              : base::nullopt;
-
-      decoration_info.emplace(box_rect.offset, local_origin, width,
-                              style.GetFontBaseline(), style,
-                              selection_text_decoration, nullptr);
-      NGTextDecorationOffset decoration_offset(decoration_info->Style(),
-                                               text_item.Style(), nullptr);
-      text_painter.PaintDecorationsExceptLineThrough(
-          decoration_offset, decoration_info.value(), paint_info,
-          style.AppliedTextDecorations(), text_style,
-          &has_line_through_decoration);
-    }
-
-    unsigned start_offset = fragment_paint_info.from;
-    unsigned end_offset = fragment_paint_info.to;
-
-    if (UNLIKELY(highlight_painter.Selection())) {
-      highlight_painter.Selection()->PaintSuppressingTextProperWhereSelected(
-          text_painter, start_offset, end_offset, length, text_style, node_id);
-    } else {
-      text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
-    }
-
-    // Paint line-through decoration if needed.
+    text_painter.PaintDecorationsExceptLineThrough(
+        text_item, paint_info, style, text_style, box_rect, absl::nullopt,
+        &has_line_through_decoration);
+    text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
     if (has_line_through_decoration) {
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info.value(), paint_info, style.AppliedTextDecorations(),
-          text_style);
+          text_item, paint_info, style, text_style, box_rect, absl::nullopt);
     }
+  } else if (!highlight_painter.Selection()->ShouldPaintSelectedTextOnly()) {
+    highlight_painter.Selection()->PaintSuppressingTextProperWhereSelected(
+        text_painter, start_offset, end_offset, length, text_style, node_id);
   }
 
   // 3. Paint CSS highlight overlays, such as ::selection and ::target-text.
@@ -377,9 +365,20 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
           context, node, document, style, rotation);
     }
 
+    bool has_line_through_decoration = false;
+    text_painter.PaintDecorationsExceptLineThrough(
+        text_item, paint_info, style, text_style, box_rect,
+        highlight_painter.SelectionDecoration(), &has_line_through_decoration);
+
     // Paint only the text that is selected.
     highlight_painter.Selection()->PaintSelectedText(text_painter, length,
                                                      text_style, node_id);
+
+    if (has_line_through_decoration) {
+      text_painter.PaintDecorationsOnlyLineThrough(
+          text_item, paint_info, style, text_style, box_rect,
+          highlight_painter.SelectionDecoration());
+    }
   }
 
   if (paint_info.phase != PaintPhase::kForeground)

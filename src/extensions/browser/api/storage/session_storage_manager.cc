@@ -19,7 +19,7 @@ SessionStorageManager::SessionValue::SessionValue(base::Value value,
 // Implementation of ValueChange.
 SessionStorageManager::ValueChange::ValueChange(
     std::string key,
-    base::Optional<base::Value> old_value,
+    absl::optional<base::Value> old_value,
     base::Value* new_value)
     : key(key), old_value(std::move(old_value)), new_value(new_value) {}
 
@@ -69,7 +69,7 @@ size_t SessionStorageManager::ExtensionStorage::CalculateUsage(
 
 std::map<std::string, const base::Value*>
 SessionStorageManager::ExtensionStorage::Get(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::string>& keys) const {
   std::map<std::string, const base::Value*> values;
   for (auto& key : keys) {
     auto value_it = values_.find(key);
@@ -80,7 +80,7 @@ SessionStorageManager::ExtensionStorage::Get(
 }
 
 std::map<std::string, const base::Value*>
-SessionStorageManager::ExtensionStorage::GetAll() {
+SessionStorageManager::ExtensionStorage::GetAll() const {
   std::map<std::string, const base::Value*> values;
   for (auto& value : values_) {
     values.emplace(value.first, &value.second->value);
@@ -106,9 +106,9 @@ bool SessionStorageManager::ExtensionStorage::Set(
 
     // Add the change to the changes list.
     ValueChange change(session_value.first,
-                       existent_value ? base::Optional<base::Value>(
+                       existent_value ? absl::optional<base::Value>(
                                             std::move(existent_value->value))
-                                      : base::nullopt,
+                                      : absl::nullopt,
                        &session_value.second->value);
     changes.push_back(std::move(change));
 
@@ -116,6 +116,53 @@ bool SessionStorageManager::ExtensionStorage::Set(
   }
   used_total_ = updated_used_total;
   return true;
+}
+
+void SessionStorageManager::ExtensionStorage::Remove(
+    const std::vector<std::string>& keys,
+    std::vector<ValueChange>& changes) {
+  for (auto& key : keys) {
+    auto value_it = values_.find(key);
+    if (value_it == values_.end())
+      continue;
+
+    // Add the change to the changes list.
+    ValueChange change(
+        key, absl::optional<base::Value>(std::move(value_it->second->value)),
+        nullptr);
+    changes.push_back(std::move(change));
+
+    used_total_ -= value_it->second->size;
+    values_.erase(value_it);
+  }
+}
+
+void SessionStorageManager::ExtensionStorage::Clear(
+    std::vector<ValueChange>& changes) {
+  for (auto& value : values_) {
+    ValueChange change(
+        value.first,
+        absl::optional<base::Value>(std::move(value.second->value)), nullptr);
+    changes.push_back(std::move(change));
+  }
+
+  used_total_ = 0;
+  values_.clear();
+}
+
+size_t SessionStorageManager::ExtensionStorage::GetBytesInUse(
+    const std::vector<std::string>& keys) const {
+  size_t total = 0;
+  for (const auto& key : keys) {
+    auto value_it = values_.find(key);
+    if (value_it != values_.end())
+      total += value_it->second->size;
+  }
+  return total;
+}
+
+size_t SessionStorageManager::ExtensionStorage::GetTotalBytesInUse() const {
+  return used_total_;
 }
 
 // Implementation of SessionStorageManager.
@@ -168,4 +215,48 @@ bool SessionStorageManager::Set(const ExtensionId& extension_id,
 
   return storage->Set(std::move(input_values), changes);
 }
+
+void SessionStorageManager::Remove(const ExtensionId& extension_id,
+                                   const std::vector<std::string>& keys,
+                                   std::vector<ValueChange>& changes) {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    storage_it->second->Remove(keys, changes);
+}
+
+void SessionStorageManager::Remove(const ExtensionId& extension_id,
+                                   const std::string& key,
+                                   std::vector<ValueChange>& changes) {
+  Remove(extension_id, std::vector<std::string>(1, key), changes);
+}
+
+void SessionStorageManager::Clear(const ExtensionId& extension_id,
+                                  std::vector<ValueChange>& changes) {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    storage_it->second->Clear(changes);
+}
+
+size_t SessionStorageManager::GetBytesInUse(const ExtensionId& extension_id,
+                                            const std::string& key) const {
+  return GetBytesInUse(extension_id, std::vector<std::string>(1, key));
+}
+
+size_t SessionStorageManager::GetBytesInUse(
+    const ExtensionId& extension_id,
+    const std::vector<std::string>& keys) const {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    return storage_it->second->GetBytesInUse(keys);
+  return 0;
+}
+
+size_t SessionStorageManager::GetTotalBytesInUse(
+    const ExtensionId& extension_id) const {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    return storage_it->second->GetTotalBytesInUse();
+  return 0;
+}
+
 }  // namespace extensions

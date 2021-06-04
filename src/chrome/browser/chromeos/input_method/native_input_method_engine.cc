@@ -15,6 +15,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
+#include "chrome/browser/chromeos/input_method/suggestions_service_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -22,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_ukm.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace chromeos {
@@ -44,14 +46,17 @@ bool ShouldRouteToFstMojoEngine(const std::string& engine_id) {
   // and the physical keyboard, only run the native code path if the virtual
   // keyboard is disabled. Otherwise, just let the extension handle any physical
   // key events.
-  return base::FeatureList::IsEnabled(
-             chromeos::features::kSystemLatinPhysicalTyping) &&
+  return features::IsSystemLatinPhysicalTypingEnabled() &&
          base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE) &&
          !ChromeKeyboardControllerClient::Get()->GetKeyboardEnabled();
 }
 
 bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
                                           const std::string& engine_id) {
+  if (!prefs) {
+    return false;
+  }
+
   // The FST Mojo engine is only needed if autocorrect is enabled.
   const base::DictionaryValue* input_method_settings =
       prefs->GetDictionary(prefs::kLanguageInputMethodSpecificSettings);
@@ -60,7 +65,7 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
   return autocorrect_setting && autocorrect_setting->GetIfInt().value_or(0) > 0;
 }
 
-std::string NormalizeEngineId(const std::string engine_id) {
+std::string NormalizeRuleBasedEngineId(const std::string engine_id) {
   // For legacy reasons, |engine_id| starts with "vkd_" in the input method
   // manifest, but the InputEngineManager expects the prefix "m17n:".
   // TODO(https://crbug.com/1012490): Migrate to m17n prefix and remove this.
@@ -163,24 +168,27 @@ void NativeInputMethodEngine::Initialize(
       std::make_unique<AutocorrectManager>(this);
   autocorrect_manager_ = autocorrect_manager.get();
 
+  auto suggestions_service_client =
+      base::FeatureList::IsEnabled(chromeos::features::kAssistMultiWord)
+          ? std::make_unique<SuggestionsServiceClient>()
+          : nullptr;
+
+  auto suggestions_collector =
+      base::FeatureList::IsEnabled(chromeos::features::kAssistMultiWord)
+          ? std::make_unique<SuggestionsCollector>(
+                assistive_suggester_, std::move(suggestions_service_client))
+          : nullptr;
+
   chrome_keyboard_controller_client_observer_.Observe(
       ChromeKeyboardControllerClient::Get());
-
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kSystemLatinPhysicalTyping)) {
-    pref_change_registrar_.Init(profile->GetPrefs());
-    pref_change_registrar_.Add(
-        prefs::kLanguageInputMethodSpecificSettings,
-        base::BindRepeating(&NativeInputMethodEngine::OnInputMethodPrefsChanged,
-                            base::Unretained(this)));
-  }
 
   // Wrap the given observer in our observer that will decide whether to call
   // Mojo directly or forward to the extension.
   auto native_observer =
       std::make_unique<chromeos::NativeInputMethodEngine::ImeObserver>(
           profile->GetPrefs(), std::move(observer),
-          std::move(assistive_suggester), std::move(autocorrect_manager));
+          std::move(assistive_suggester), std::move(autocorrect_manager),
+          std::move(suggestions_collector), std::make_unique<GrammarManager>());
   InputMethodEngine::Initialize(std::move(native_observer), extension_id,
                                 profile);
 }
@@ -189,6 +197,11 @@ void NativeInputMethodEngine::OnKeyboardEnabledChanged(bool enabled) {
   // Re-activate the engine whenever the virtual keyboard is enabled or disabled
   // so that the native or extension state is reset correctly.
   Enable(GetActiveComponentId());
+}
+
+void NativeInputMethodEngine::OnProfileWillBeDestroyed(Profile* profile) {
+  InputMethodEngine::OnProfileWillBeDestroyed(profile);
+  GetNativeObserver()->OnProfileWillBeDestroyed();
 }
 
 void NativeInputMethodEngine::FlushForTesting() {
@@ -217,12 +230,16 @@ NativeInputMethodEngine::ImeObserver::ImeObserver(
     PrefService* prefs,
     std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer,
     std::unique_ptr<AssistiveSuggester> assistive_suggester,
-    std::unique_ptr<AutocorrectManager> autocorrect_manager)
+    std::unique_ptr<AutocorrectManager> autocorrect_manager,
+    std::unique_ptr<SuggestionsCollector> suggestions_collector,
+    std::unique_ptr<GrammarManager> grammar_manager)
     : prefs_(prefs),
       ime_base_observer_(std::move(ime_base_observer)),
       receiver_from_engine_(this),
       assistive_suggester_(std::move(assistive_suggester)),
-      autocorrect_manager_(std::move(autocorrect_manager)) {}
+      autocorrect_manager_(std::move(autocorrect_manager)),
+      suggestions_collector_(std::move(suggestions_collector)),
+      grammar_manager_(std::move(grammar_manager)) {}
 
 NativeInputMethodEngine::ImeObserver::~ImeObserver() = default;
 
@@ -238,8 +255,7 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
     return;
   }
 
-  if (ShouldRouteToRuleBasedEngine(engine_id) ||
-      ShouldRouteToFstMojoEngine(engine_id)) {
+  if (ShouldRouteToRuleBasedEngine(engine_id)) {
     if (!remote_manager_.is_bound()) {
       auto* ime_manager = input_method::InputMethodManager::Get();
       ime_manager->ConnectInputEngineManager(
@@ -249,28 +265,51 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
       LogEvent(ImeServiceEvent::kInitSuccess);
     }
 
-    const auto new_engine_id = NormalizeEngineId(engine_id);
+    const auto new_engine_id = NormalizeRuleBasedEngineId(engine_id);
+
+    // Deactivate any existing engine.
+    remote_to_engine_.reset();
+    receiver_from_engine_.reset();
+
+    // Pass an extra parameter to indicate that this connection is from
+    // NativeInputMethodEngine.
+    remote_manager_->ConnectToImeEngine(
+        new_engine_id, remote_to_engine_.BindNewPipeAndPassReceiver(),
+        receiver_from_engine_.BindNewPipeAndPassRemote(), /*extra=*/{0},
+        base::BindOnce(&ImeObserver::OnConnected, base::Unretained(this),
+                       base::Time::Now(), new_engine_id));
+
+    // Notify the virtual keyboard extension that the IME has changed.
+    ime_base_observer_->OnActivate(engine_id);
+  } else if (ShouldRouteToFstMojoEngine(engine_id)) {
+    if (!remote_manager_.is_bound()) {
+      auto* ime_manager = input_method::InputMethodManager::Get();
+      ime_manager->ConnectInputEngineManager(
+          remote_manager_.BindNewPipeAndPassReceiver());
+      remote_manager_.set_disconnect_handler(base::BindOnce(
+          &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
+      LogEvent(ImeServiceEvent::kInitSuccess);
+    }
 
     // Deactivate any existing engine.
     remote_to_engine_.reset();
     receiver_from_engine_.reset();
 
     remote_manager_->ConnectToImeEngine(
-        new_engine_id, remote_to_engine_.BindNewPipeAndPassReceiver(),
-        receiver_from_engine_.BindNewPipeAndPassRemote(), {},
+        engine_id, remote_to_engine_.BindNewPipeAndPassReceiver(),
+        receiver_from_engine_.BindNewPipeAndPassRemote(), /*extra=*/{0},
         base::BindOnce(&ImeObserver::OnConnected, base::Unretained(this),
-                       base::Time::Now(), new_engine_id));
+                       base::Time::Now(), engine_id));
 
-    active_engine_id_ = new_engine_id;
-    remote_to_engine_->OnInputMethodChanged(new_engine_id);
-
-    if (ShouldRouteToRuleBasedEngine(engine_id)) {
-      ime_base_observer_->OnActivate(engine_id);
-    }
+    // `ConnectToImeEngine` doesn't actually activate the IME in the IME
+    // service. We must call `OnInputMethodChanged` as well.
+    remote_to_engine_->OnInputMethodChanged(engine_id);
   } else {
     // Release the IME service.
     // TODO(b/147709499): A better way to cleanup all.
     remote_manager_.reset();
+    remote_to_engine_.reset();
+    receiver_from_engine_.reset();
 
     ime_base_observer_->OnActivate(engine_id);
   }
@@ -284,13 +323,17 @@ void NativeInputMethodEngine::ImeObserver::ProcessMessage(
 }
 
 void NativeInputMethodEngine::ImeObserver::OnFocus(
+    const std::string& engine_id,
     int context_id,
     const IMEEngineHandlerInterface::InputContext& context) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnFocus(context_id);
   }
   autocorrect_manager_->OnFocus(context_id);
-  if (active_engine_id_ && ShouldRouteToFstMojoEngine(*active_engine_id_)) {
+  if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
+    grammar_manager_->OnFocus(context_id);
+  }
+  if (ShouldRouteToFstMojoEngine(engine_id)) {
     if (remote_to_engine_.is_bound()) {
       remote_to_engine_->OnFocus(ime::mojom::InputFieldInfo::New(
           TextInputTypeToMojoType(context.type),
@@ -300,20 +343,21 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
               : ime::mojom::PersonalizationMode::kDisabled));
     }
   } else {
-    ime_base_observer_->OnFocus(context_id, context);
+    ime_base_observer_->OnFocus(engine_id, context_id, context);
   }
 }
 
-void NativeInputMethodEngine::ImeObserver::OnBlur(int context_id) {
+void NativeInputMethodEngine::ImeObserver::OnBlur(const std::string& engine_id,
+                                                  int context_id) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
 
-  if (active_engine_id_ && ShouldRouteToFstMojoEngine(*active_engine_id_)) {
+  if (ShouldRouteToFstMojoEngine(engine_id)) {
     if (remote_to_engine_.is_bound()) {
       remote_to_engine_->OnBlur();
     }
   } else {
-    ime_base_observer_->OnBlur(context_id);
+    ime_base_observer_->OnBlur(engine_id, context_id);
   }
 }
 
@@ -328,6 +372,11 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
     }
   }
   if (autocorrect_manager_->OnKeyEvent(event)) {
+    std::move(callback).Run(true);
+    return;
+  }
+  if (grammar_manager_->IsOnDeviceGrammarEnabled() &&
+      grammar_manager_->OnKeyEvent(event)) {
     std::move(callback).Run(true);
     return;
   }
@@ -407,6 +456,9 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
                                                    anchor_pos);
   }
   autocorrect_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
+  if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
+    grammar_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
+  }
   if (ShouldRouteToFstMojoEngine(engine_id)) {
     if (remote_to_engine_.is_bound()) {
       std::vector<size_t> selection_indices = {anchor_pos, cursor_pos};
@@ -482,6 +534,12 @@ void NativeInputMethodEngine::ImeObserver::OnScreenProjectionChanged(
   ime_base_observer_->OnScreenProjectionChanged(is_projected);
 }
 
+void NativeInputMethodEngine::ImeObserver::OnSuggestionsGathered(
+    RequestSuggestionsCallback callback,
+    ime::mojom::SuggestionsResponsePtr response) {
+  std::move(callback).Run(std::move(response));
+}
+
 void NativeInputMethodEngine::ImeObserver::OnSuggestionsChanged(
     const std::vector<std::string>& suggestions) {
   ime_base_observer_->OnSuggestionsChanged(suggestions);
@@ -508,19 +566,28 @@ void NativeInputMethodEngine::ImeObserver::SetComposition(
     const std::string& text) {
   ui::CompositionText composition;
   composition.text = ConvertToUtf16AndNormalize(text);
+  // TODO(b/151884011): Turn on underlining for composition-based languages.
+  composition.ime_text_spans = {ui::ImeTextSpan(
+      ui::ImeTextSpan::Type::kComposition, 0, composition.text.length(),
+      ui::ImeTextSpan::Thickness::kNone,
+      ui::ImeTextSpan::UnderlineStyle::kNone)};
   GetInputContext()->UpdateCompositionText(
-      composition, /*cursor_pos=*/composition.text.length(), /*visible=*/true);
+      std::move(composition), /*cursor_pos=*/composition.text.length(),
+      /*visible=*/true);
 }
 
 void NativeInputMethodEngine::ImeObserver::SetCompositionRange(
     uint32_t start_byte_index,
     uint32_t end_byte_index) {
   const auto ordered_range = std::minmax(start_byte_index, end_byte_index);
+  // TODO(b/151884011): Turn on underlining for composition-based languages.
   GetInputContext()->SetComposingRange(
       ordered_range.first, ordered_range.second,
       {ui::ImeTextSpan(
           ui::ImeTextSpan::Type::kComposition, /*start_offset=*/0,
-          /*end_offset=*/ordered_range.second - ordered_range.first)});
+          /*end_offset=*/ordered_range.second - ordered_range.first,
+          ui::ImeTextSpan::Thickness::kNone,
+          ui::ImeTextSpan::UnderlineStyle::kNone)});
 }
 
 void NativeInputMethodEngine::ImeObserver::FinishComposition() {
@@ -542,6 +609,31 @@ void NativeInputMethodEngine::ImeObserver::HandleAutocorrect(
       autocorrect_span->autocorrect_range,
       base::UTF8ToUTF16(autocorrect_span->original_text),
       base::UTF8ToUTF16(autocorrect_span->current_text));
+}
+
+void NativeInputMethodEngine::ImeObserver::RequestSuggestions(
+    ime::mojom::SuggestionsRequestPtr request,
+    RequestSuggestionsCallback callback) {
+  suggestions_collector_->GatherSuggestions(
+      std::move(request),
+      base::BindOnce(
+          &NativeInputMethodEngine::ImeObserver::OnSuggestionsGathered,
+          base::Unretained(this), std::move(callback)));
+}
+
+void NativeInputMethodEngine::ImeObserver::DisplaySuggestions(
+    const std::vector<ime::TextSuggestion>& suggestions) {
+  assistive_suggester_->OnExternalSuggestionsUpdated(suggestions);
+}
+
+void NativeInputMethodEngine::ImeObserver::RecordUkm(
+    ime::mojom::UkmEntryPtr entry) {
+  if (entry->is_non_compliant_api()) {
+    ui::RecordUkmNonCompliantApi(
+        GetInputContext()->GetClientSourceForMetrics(),
+        static_cast<int>(
+            entry->get_non_compliant_api()->non_compliant_operation));
+  }
 }
 
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
@@ -570,8 +662,6 @@ void NativeInputMethodEngine::ImeObserver::OnError(base::Time start) {
   } else {
     LogEvent(ImeServiceEvent::kServiceDisconnected);
   }
-
-  active_engine_id_.reset();
 }
 
 void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
@@ -597,8 +687,16 @@ void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
   std::move(callback).Run(response->result);
 }
 
-void NativeInputMethodEngine::OnInputMethodPrefsChanged() {
-  Enable(GetActiveComponentId());
+void NativeInputMethodEngine::ImeObserver::OnProfileWillBeDestroyed() {
+  prefs_ = nullptr;
+}
+
+void NativeInputMethodEngine::OnInputMethodOptionsChanged() {
+  if (ShouldRouteToFstMojoEngine(GetActiveComponentId())) {
+    Enable(GetActiveComponentId());
+  } else {
+    InputMethodEngine::OnInputMethodOptionsChanged();
+  }
 }
 
 }  // namespace chromeos

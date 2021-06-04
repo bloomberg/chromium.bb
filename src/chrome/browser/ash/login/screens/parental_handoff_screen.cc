@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "chrome/browser/ash/child_accounts/family_features.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
-#include "chrome/browser/chromeos/child_accounts/family_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
@@ -18,8 +18,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr char kUserActionNext[] = "next";
@@ -102,4 +101,4 @@ void ParentalHandoffScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

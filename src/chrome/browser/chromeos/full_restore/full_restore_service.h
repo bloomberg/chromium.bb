@@ -8,9 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync_preferences/pref_service_syncable_observer.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
 
@@ -35,9 +36,23 @@ enum class RestoreNotificationButtonIndex {
   kCancel,
 };
 
+// This is used to record histograms, so do not remove or reorder existing
+// entries.
+enum class RestoreAction {
+  kRestore = 0,
+  kCancel = 1,
+  kCloseByUser = 2,
+  kCloseNotByUser = 3,
+
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kCloseNotByUser,
+};
+
 // The FullRestoreService class calls AppService and Window Management
 // interfaces to restore the app launchings and app windows.
-class FullRestoreService : public KeyedService {
+class FullRestoreService : public KeyedService,
+                           public message_center::NotificationObserver {
  public:
   static FullRestoreService* GetForProfile(Profile* profile);
 
@@ -51,6 +66,11 @@ class FullRestoreService : public KeyedService {
   // to restore.
   void LaunchBrowserWhenReady();
 
+  // message_center::NotificationObserver:
+  void Close(bool by_user) override;
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override;
+
   void RestoreForTesting();
 
  private:
@@ -62,14 +82,24 @@ class FullRestoreService : public KeyedService {
   // Show the restore notification on startup.
   void ShowRestoreNotification(const std::string& id);
 
-  void HandleRestoreNotificationClicked(base::Optional<int> button_index);
-
   // Implement the restoration.
   void Restore();
 
+  void RecordRestoreAction(const std::string& notification_id,
+                           RestoreAction restore_action);
+
+  // Callback used when the pref |kRestoreAppsAndPagesPrefName| changes.
+  void OnPreferenceChanged(const std::string& pref_name);
+
   Profile* profile_ = nullptr;
+  PrefChangeRegistrar pref_change_registrar_;
 
   bool is_shut_down_ = false;
+
+  // If the user clicks a notification button, set
+  // |skip_notification_histogram_| as true to skip the notification close
+  // histogram.
+  bool skip_notification_histogram_ = false;
 
   std::unique_ptr<NewUserRestorePrefHandler> new_user_pref_handler_;
 
@@ -86,5 +116,13 @@ class FullRestoreService : public KeyedService {
 
 }  // namespace full_restore
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace full_restore {
+using ::chromeos::full_restore::FullRestoreService;
+}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_FULL_RESTORE_FULL_RESTORE_SERVICE_H_

@@ -6,13 +6,12 @@
 #define COMPONENTS_SAFE_BROWSING_CORE_FEATURES_H_
 
 #include <stddef.h>
-#include <algorithm>
-#include <utility>
-#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/values.h"
+
 namespace base {
 class ListValue;
 }  // namespace base
@@ -30,6 +29,10 @@ extern const base::Feature kAdRedirectTriggerFeature;
 
 extern const base::Feature kAdSamplerTriggerFeature;
 
+// Enables including some information in protection requests sent to Safe
+// Browsing.
+extern const base::Feature kBetterTelemetryAcrossReports;
+
 // Controls whether we sample inline JavaScript for ads in RIND
 // reports.
 extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
@@ -37,9 +40,25 @@ extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 // Enables client side detection on Android.
 extern const base::Feature kClientSideDetectionForAndroid;
 
+// The client side detection model is a flatbuffer.
+extern const base::Feature kClientSideDetectionModelIsFlatBuffer;
+
 // Determines the experimental version of client side detection model, for
 // Desktop.
 extern const base::Feature kClientSideDetectionModelVersion;
+
+// Determines the tag to pass to Omaha to get a client side detection model.
+extern const base::Feature kClientSideDetectionModelTag;
+
+// Determines the tag to pass to Omaha to get a client side detection model.
+// This is used for high-memory devices, when `kClientSideDetectionModelTag` is
+// disabled.
+extern const base::Feature kClientSideDetectionModelHighMemoryTag;
+
+// The parameter name used for getting the tag values from client side detection
+// features, `kClientSideDetectionModelTag` and
+// `kClientSideDetectionModelHighMemoryTag`.
+const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 
 // Enables client side detection referrer chain.
 extern const base::Feature kClientSideDetectionReferrerChain;
@@ -56,9 +75,6 @@ extern const base::Feature kDownloadRequestWithToken;
 // limits the number of entries stored in each Safe Browsing list.
 extern const base::Feature kLimitedListSizeForIOS;
 
-// Include referring app info in password protection requests on Android.
-extern const base::Feature kPasswordProtectionReferringAppEnabledAndroid;
-
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
@@ -70,8 +86,12 @@ extern const base::Feature kPasswordProtectionWithToken;
 // scanning.
 extern const base::Feature kPromptEsbForDeepScanning;
 
-// Controls whether we are performing enterprise download checks for users with
-// the appropriate policies enabled.
+// Contros whether users will see an account compromise specific warning
+// when Safe Browsing determines a file is associated with stealing cookies.
+extern const base::Feature kSafeBrowsingCTDownloadWarning;
+
+// Controls whether we are performing enterprise download checks for users
+// with the appropriate policies enabled.
 extern const base::Feature kSafeBrowsingEnterpriseCsd;
 
 // Controls whether we are disabling consumer download checks for users using
@@ -91,15 +111,6 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
-
-// Controls whether to do real time URL lookup for enterprise users. If both
-// this feature and the enterprise policies are enabled, the enterprise real
-// time URL lookup will be enabled and the consumer real time URL lookup will be
-// disabled.
-extern const base::Feature kRealTimeUrlLookupEnabledForEnterprise;
-
-// Controls whether to use the GA endpoint for enterprise real time URL lookup.
-extern const base::Feature kRealTimeUrlLookupEnterpriseGaEndpoint;
 
 // Controls whether the GAIA-keyed real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
@@ -150,6 +161,10 @@ base::ListValue GetFeatureStatusList();
 // ReusedPasswordType enums. This is used in the
 // |kPasswordProtectionForSignedInUsers| experiment.
 bool GetShouldFillOldPhishGuardProto();
+
+// Returns the tag used for Client Side Phishing Detection models, as
+// computed from the current feature flags.
+std::string GetClientSideDetectionTag();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_FEATURES_H_

@@ -22,16 +22,22 @@ class AutomationAsh;
 class BrowserServiceHostAsh;
 class CertDatabaseAsh;
 class ClipboardAsh;
+class ClipboardHistoryAsh;
+class ContentProtectionAsh;
 class DeviceAttributesAsh;
+class DownloadControllerAsh;
+class DriveIntegrationServiceAsh;
 class FeedbackAsh;
 class FileManagerAsh;
 class IdleServiceAsh;
 class KeystoreServiceAsh;
+class LocalPrinterAsh;
 class MessageCenterAsh;
 class MetricsReportingAsh;
 class PrefsAsh;
 class ScreenManagerAsh;
 class SelectFileAsh;
+class SystemDisplayAsh;
 class TaskManagerAsh;
 class TestControllerAsh;
 class UrlHandlerAsh;
@@ -62,14 +68,26 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindCertDatabase(
       mojo::PendingReceiver<mojom::CertDatabase> receiver) override;
   void BindClipboard(mojo::PendingReceiver<mojom::Clipboard> receiver) override;
+  void BindClipboardHistory(
+      mojo::PendingReceiver<mojom::ClipboardHistory> receiver) override;
+  void BindContentProtection(
+      mojo::PendingReceiver<mojom::ContentProtection> receiver) override;
   void BindDeviceAttributes(
       mojo::PendingReceiver<mojom::DeviceAttributes> receiver) override;
+  void BindHoldingSpaceService(
+      mojo::PendingReceiver<mojom::HoldingSpaceService> receiver) override;
+  void BindDownloadController(
+      mojo::PendingReceiver<mojom::DownloadController> receiver) override;
+  void BindDriveIntegrationService(
+      mojo::PendingReceiver<mojom::DriveIntegrationService> receiver) override;
   void BindFileManager(
       mojo::PendingReceiver<mojom::FileManager> receiver) override;
   void BindIdleService(
       mojo::PendingReceiver<mojom::IdleService> receiver) override;
   void BindKeystoreService(
       mojo::PendingReceiver<mojom::KeystoreService> receiver) override;
+  void BindLocalPrinter(
+      mojo::PendingReceiver<mojom::LocalPrinter> receiver) override;
   void BindMessageCenter(
       mojo::PendingReceiver<mojom::MessageCenter> receiver) override;
   void BindMetricsReporting(
@@ -95,6 +113,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindMediaSessionAudioFocusDebug(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManagerDebug>
           receiver) override;
+  void BindSystemDisplay(
+      mojo::PendingReceiver<mojom::SystemDisplay> receiver) override;
   void BindTaskManager(
       mojo::PendingReceiver<mojom::TaskManager> receiver) override;
   void BindTestController(
@@ -108,6 +128,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindVideoCaptureDeviceFactory(
       mojo::PendingReceiver<mojom::VideoCaptureDeviceFactory> receiver)
       override;
+  void BindAppPublisher(
+      mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
 
   BrowserServiceHostAsh* browser_service_host_ash() {
     return browser_service_host_ash_.get();
@@ -115,7 +137,15 @@ class CrosapiAsh : public mojom::Crosapi {
 
   AutomationAsh* automation_ash() { return automation_ash_.get(); }
 
+  DownloadControllerAsh* download_controller_ash() {
+    return download_controller_ash_.get();
+  }
+
   TaskManagerAsh* task_manager_ash() { return task_manager_ash_.get(); }
+
+  KeystoreServiceAsh* keystore_service_ash() {
+    return keystore_service_ash_.get();
+  }
 
  private:
   // Called when a connection is lost.
@@ -125,16 +155,22 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<BrowserServiceHostAsh> browser_service_host_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
   std::unique_ptr<ClipboardAsh> clipboard_ash_;
+  std::unique_ptr<ClipboardHistoryAsh> clipboard_history_ash_;
+  std::unique_ptr<ContentProtectionAsh> content_protection_ash_;
   std::unique_ptr<DeviceAttributesAsh> device_attributes_ash_;
+  std::unique_ptr<DownloadControllerAsh> download_controller_ash_;
+  std::unique_ptr<DriveIntegrationServiceAsh> drive_integration_service_ash_;
   std::unique_ptr<FeedbackAsh> feedback_ash_;
   std::unique_ptr<FileManagerAsh> file_manager_ash_;
   std::unique_ptr<IdleServiceAsh> idle_service_ash_;
   std::unique_ptr<KeystoreServiceAsh> keystore_service_ash_;
+  std::unique_ptr<LocalPrinterAsh> local_printer_ash_;
   std::unique_ptr<MessageCenterAsh> message_center_ash_;
   std::unique_ptr<MetricsReportingAsh> metrics_reporting_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
   std::unique_ptr<SelectFileAsh> select_file_ash_;
+  std::unique_ptr<SystemDisplayAsh> system_display_ash_;
   std::unique_ptr<TaskManagerAsh> task_manager_ash_;
   std::unique_ptr<TestControllerAsh> test_controller_ash_;
   std::unique_ptr<UrlHandlerAsh> url_handler_ash_;

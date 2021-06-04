@@ -883,6 +883,16 @@ ANGLE_EXPORT void GL_APIENTRY GL_RenderbufferStorageMultisampleEXT(GLenum target
 
 // GL_EXT_occlusion_query_boolean
 
+// GL_EXT_primitive_bounding_box
+ANGLE_EXPORT void GL_APIENTRY GL_PrimitiveBoundingBoxEXT(GLfloat minX,
+                                                         GLfloat minY,
+                                                         GLfloat minZ,
+                                                         GLfloat minW,
+                                                         GLfloat maxX,
+                                                         GLfloat maxY,
+                                                         GLfloat maxZ,
+                                                         GLfloat maxW);
+
 // GL_EXT_read_format_bgra
 
 // GL_EXT_robustness
@@ -1088,6 +1098,30 @@ ANGLE_EXPORT void GL_APIENTRY GL_FramebufferFetchBarrierEXT();
 // GL_EXT_tessellation_shader
 ANGLE_EXPORT void GL_APIENTRY GL_PatchParameteriEXT(GLenum pname, GLint value);
 
+// GL_EXT_texture_border_clamp
+ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIivEXT(GLuint sampler,
+                                                           GLenum pname,
+                                                           GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIuivEXT(GLuint sampler,
+                                                            GLenum pname,
+                                                            GLuint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIivEXT(GLenum target, GLenum pname, GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIuivEXT(GLenum target,
+                                                        GLenum pname,
+                                                        GLuint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIivEXT(GLuint sampler,
+                                                        GLenum pname,
+                                                        const GLint *param);
+ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIuivEXT(GLuint sampler,
+                                                         GLenum pname,
+                                                         const GLuint *param);
+ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIivEXT(GLenum target,
+                                                    GLenum pname,
+                                                    const GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIuivEXT(GLenum target,
+                                                     GLenum pname,
+                                                     const GLuint *params);
+
 // GL_EXT_texture_buffer
 ANGLE_EXPORT void GL_APIENTRY GL_TexBufferEXT(GLenum target, GLenum internalformat, GLuint buffer);
 ANGLE_EXPORT void GL_APIENTRY GL_TexBufferRangeEXT(GLenum target,
@@ -1114,6 +1148,8 @@ ANGLE_EXPORT void GL_APIENTRY GL_TexBufferRangeEXT(GLenum target,
 
 // GL_EXT_texture_sRGB_R8
 
+// GL_EXT_texture_sRGB_RG8
+
 // GL_EXT_texture_storage
 ANGLE_EXPORT void GL_APIENTRY GL_TexStorage1DEXT(GLenum target,
                                                  GLsizei levels,
@@ -1130,6 +1166,9 @@ ANGLE_EXPORT void GL_APIENTRY GL_TexStorage3DEXT(GLenum target,
                                                  GLsizei width,
                                                  GLsizei height,
                                                  GLsizei depth);
+
+// GL_KHR_blend_equation_advanced
+ANGLE_EXPORT void GL_APIENTRY GL_BlendBarrierKHR();
 
 // GL_KHR_debug
 ANGLE_EXPORT void GL_APIENTRY GL_DebugMessageCallbackKHR(GLDEBUGPROCKHR callback,
@@ -1567,6 +1606,7 @@ ANGLE_EXPORT void GL_APIENTRY GL_BindVertexBufferContextANGLE(GLeglContext ctx,
                                                               GLintptr offset,
                                                               GLsizei stride);
 ANGLE_EXPORT void GL_APIENTRY GL_BlendBarrierContextANGLE(GLeglContext ctx);
+ANGLE_EXPORT void GL_APIENTRY GL_BlendBarrierKHRContextANGLE(GLeglContext ctx);
 ANGLE_EXPORT void GL_APIENTRY GL_BlendColorContextANGLE(GLeglContext ctx,
                                                         GLfloat red,
                                                         GLfloat green,
@@ -2705,6 +2745,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIivContextANGLE(GLeglContext
                                                                     GLuint sampler,
                                                                     GLenum pname,
                                                                     GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                                       GLuint sampler,
+                                                                       GLenum pname,
+                                                                       GLint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                                        GLuint sampler,
                                                                        GLenum pname,
@@ -2713,6 +2757,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIuivContextANGLE(GLeglContex
                                                                      GLuint sampler,
                                                                      GLenum pname,
                                                                      GLuint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                                        GLuint sampler,
+                                                                        GLenum pname,
+                                                                        GLuint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_GetSamplerParameterIuivOESContextANGLE(GLeglContext ctx,
                                                                         GLuint sampler,
                                                                         GLenum pname,
@@ -2796,6 +2844,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIivContextANGLE(GLeglContext ctx
                                                                 GLenum target,
                                                                 GLenum pname,
                                                                 GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                                   GLenum target,
+                                                                   GLenum pname,
+                                                                   GLint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIivOESContextANGLE(GLeglContext ctx,
                                                                    GLenum target,
                                                                    GLenum pname,
@@ -2804,6 +2856,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIuivContextANGLE(GLeglContext ct
                                                                  GLenum target,
                                                                  GLenum pname,
                                                                  GLuint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                                    GLenum target,
+                                                                    GLenum pname,
+                                                                    GLuint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_GetTexParameterIuivOESContextANGLE(GLeglContext ctx,
                                                                     GLenum target,
                                                                     GLenum pname,
@@ -3178,6 +3234,15 @@ ANGLE_EXPORT void GL_APIENTRY GL_PrimitiveBoundingBoxContextANGLE(GLeglContext c
                                                                   GLfloat maxY,
                                                                   GLfloat maxZ,
                                                                   GLfloat maxW);
+ANGLE_EXPORT void GL_APIENTRY GL_PrimitiveBoundingBoxEXTContextANGLE(GLeglContext ctx,
+                                                                     GLfloat minX,
+                                                                     GLfloat minY,
+                                                                     GLfloat minZ,
+                                                                     GLfloat minW,
+                                                                     GLfloat maxX,
+                                                                     GLfloat maxY,
+                                                                     GLfloat maxZ,
+                                                                     GLfloat maxW);
 ANGLE_EXPORT void GL_APIENTRY GL_ProgramBinaryContextANGLE(GLeglContext ctx,
                                                            GLuint program,
                                                            GLenum binaryFormat,
@@ -3652,6 +3717,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIivContextANGLE(GLeglContext ct
                                                                  GLuint sampler,
                                                                  GLenum pname,
                                                                  const GLint *param);
+ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                                    GLuint sampler,
+                                                                    GLenum pname,
+                                                                    const GLint *param);
 ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                                     GLuint sampler,
                                                                     GLenum pname,
@@ -3660,6 +3729,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIuivContextANGLE(GLeglContext c
                                                                   GLuint sampler,
                                                                   GLenum pname,
                                                                   const GLuint *param);
+ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                                     GLuint sampler,
+                                                                     GLenum pname,
+                                                                     const GLuint *param);
 ANGLE_EXPORT void GL_APIENTRY GL_SamplerParameterIuivOESContextANGLE(GLeglContext ctx,
                                                                      GLuint sampler,
                                                                      GLenum pname,
@@ -3858,6 +3931,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIivContextANGLE(GLeglContext ctx,
                                                              GLenum target,
                                                              GLenum pname,
                                                              const GLint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                                GLenum target,
+                                                                GLenum pname,
+                                                                const GLint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIivOESContextANGLE(GLeglContext ctx,
                                                                 GLenum target,
                                                                 GLenum pname,
@@ -3866,6 +3943,10 @@ ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIuivContextANGLE(GLeglContext ctx,
                                                               GLenum target,
                                                               GLenum pname,
                                                               const GLuint *params);
+ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                                 GLenum target,
+                                                                 GLenum pname,
+                                                                 const GLuint *params);
 ANGLE_EXPORT void GL_APIENTRY GL_TexParameterIuivOESContextANGLE(GLeglContext ctx,
                                                                  GLenum target,
                                                                  GLenum pname,

@@ -33,6 +33,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -233,7 +234,7 @@ export class Layers3DView extends UI.Widget.VBox implements LayerView {
     }
     if (selection.layer()) {
       const promise = selection.layer().snapshots()[0];
-      if (promise) {
+      if (promise !== undefined) {
         return promise;
       }
     }
@@ -848,6 +849,7 @@ export class Layers3DView extends UI.Widget.VBox implements LayerView {
     const maxDistanceInPixels = 6;
     if (this._mouseDownX && Math.abs(mouseEvent.clientX - this._mouseDownX) < maxDistanceInPixels &&
         Math.abs(mouseEvent.clientY - (this._mouseDownY || 0)) < maxDistanceInPixels) {
+      this._canvasElement.focus();
       this._layerViewHost.selectObject(this._selectionFromEventPoint(event));
     }
     delete this._mouseDownX;

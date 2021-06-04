@@ -12,8 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
@@ -23,6 +21,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
@@ -100,11 +99,14 @@ class AutofillAgent : public content::RenderFrameObserver,
   void SetSecureContextRequired(bool required) override;
   void SetFocusRequiresScroll(bool require) override;
   void SetQueryPasswordSuggestion(bool required) override;
-  void GetElementFormAndFieldData(
-      const std::vector<std::string>& selectors,
-      GetElementFormAndFieldDataCallback callback) override;
+  void GetElementFormAndFieldDataAtIndex(
+      const std::string& selector,
+      int index,
+      GetElementFormAndFieldDataAtIndexCallback callback) override;
   void SetAssistantActionState(bool running) override;
   void EnableHeavyFormDataScraping() override;
+  void SetFieldsEligibleForManualFilling(
+      const std::vector<FieldRendererId>& fields) override;
 
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
@@ -252,7 +254,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Attempt to get submitted FormData from last_interacted_form_ or
   // provisionally_saved_form_, return true if |form| is set.
-  base::Optional<FormData> GetSubmittedForm() const;
+  absl::optional<FormData> GetSubmittedForm() const;
 
   // Pushes the value of GetSubmittedForm() to the AutofillDriver.
   void SendPotentiallySubmittedFormToBrowser();
@@ -287,12 +289,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // label, visibility, control type) have changed after an autofill.
   void TriggerRefillIfNeeded(const FormData& form);
 
-  // Find the unique element given by |selectors| in the associated web frame.
-  // Empty blink::WebElement is returned if there is no matching element or
-  // there are multiple matching elements.
-  blink::WebElement FindUniqueWebElement(
-      const std::vector<std::string>& selectors);
-
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
   FormCache form_cache_;
@@ -323,7 +319,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.
-  base::Optional<FormData> provisionally_saved_form_;
+  absl::optional<FormData> provisionally_saved_form_;
 
   // Keeps track of the forms for which form submitted event has been sent to
   // AutofillDriver. We use it to avoid fire duplicated submission event when

@@ -8,7 +8,9 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/onboarding_result.h"
+#include "components/autofill_assistant/browser/service/service_request_sender.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "components/autofill_assistant/browser/trigger_scripts/trigger_script_coordinator.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "components/version_info/version_info.h"
 
@@ -20,6 +22,24 @@ class StarterPlatformDelegate {
  public:
   StarterPlatformDelegate() = default;
   virtual ~StarterPlatformDelegate() = default;
+
+  // Asks the platform delegate to return a UI delegate for trigger scripts.
+  virtual std::unique_ptr<TriggerScriptCoordinator::UiDelegate>
+  CreateTriggerScriptUiDelegate() = 0;
+  // Allows integration tests to provide their own mocked trigger script request
+  // senders. Returns null if the default request sender should be used.
+  virtual std::unique_ptr<ServiceRequestSender>
+  GetTriggerScriptRequestSenderToInject() = 0;
+
+  // Requests the platform delegate to start the regular script.
+  virtual void StartRegularScript(
+      GURL url,
+      std::unique_ptr<TriggerContext> trigger_context,
+      const absl::optional<TriggerScriptProto>& trigger_script) = 0;
+  // Returns whether a regular script is currently running.
+  virtual bool IsRegularScriptRunning() const;
+  // Returns whether a regular script is currently showing UI to the user.
+  virtual bool IsRegularScriptVisible() const;
 
   // Access to the login manager.
   virtual WebsiteLoginManager* GetWebsiteLoginManager() const = 0;
@@ -63,6 +83,8 @@ class StarterPlatformDelegate {
   // TODO(arbesser): Move this out of the platform delegate.
   // Returns whether the MSBB seetting is enabled.
   virtual bool GetMakeSearchesAndBrowsingBetterEnabled() const = 0;
+  // Returns whether this is a custom tab or not.
+  virtual bool GetIsCustomTab() const = 0;
 };
 
 }  // namespace autofill_assistant

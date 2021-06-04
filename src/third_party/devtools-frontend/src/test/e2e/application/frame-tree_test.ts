@@ -4,20 +4,33 @@
 
 import {assert} from 'chai';
 
-import {click, getBrowserAndPages, getTestServerPort, goToResource, pressKey, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$$, click, getBrowserAndPages, getTestServerPort, goToResource, pressKey, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {doubleClickSourceTreeItem, getCustomComponentReportValues, getFrameTreeTitles, getReportValues, navigateToApplicationTab} from '../helpers/application-helpers.js';
+import {doubleClickSourceTreeItem, getFrameTreeTitles, getTrimmedTextContent, navigateToApplicationTab} from '../helpers/application-helpers.js';
 
 const TOP_FRAME_SELECTOR = '[aria-label="top"]';
 const WEB_WORKERS_SELECTOR = '[aria-label="Web Workers"]';
 const SERVICE_WORKERS_SELECTOR = '[aria-label="top"] ~ ol [aria-label="Service Workers"]';
 const OPENED_WINDOWS_SELECTOR = '[aria-label="Opened Windows"]';
-const IFRAME_SELECTOR = '[aria-label="frameId (iframe.html)"]';
+const IFRAME_FRAME_ID_SELECTOR = '[aria-label="frameId (iframe.html)"]';
 const MAIN_FRAME_SELECTOR = '[aria-label="frameId (main-frame.html)"]';
+const IFRAME_SELECTOR = '[aria-label="iframe.html"]';
+const EXPAND_STACKTRACE_BUTTON_SELECTOR = '.arrow-icon-button';
+const STACKTRACE_ROW_SELECTOR = '.stack-trace-row';
+const APPLICATION_PANEL_SELECTED_SELECTOR = '.tabbed-pane-header-tab.selected[aria-label="Application"]';
 
 const getTrailingURL = (text: string): string => {
   const match = text.match(/http.*$/);
   return match ? match[0] : '';
+};
+
+const ensureApplicationPanel = async () => {
+  if ((await $$(APPLICATION_PANEL_SELECTED_SELECTOR)).length === 0) {
+    await waitForFunction(async () => {
+      await click('#tab-resources');
+      return (await $$(APPLICATION_PANEL_SELECTED_SELECTOR)).length === 1;
+    });
+  }
 };
 
 describe('The Application Tab', async () => {
@@ -32,18 +45,21 @@ describe('The Application Tab', async () => {
   });
 
   // Update and reactivate when the whole FrameDetailsView is a custom component
-  it.skip('[crbug.com/1165710]: shows details for a frame when clicked on in the frame tree', async () => {
+  it('shows details for a frame when clicked on in the frame tree', async () => {
     const {target} = getBrowserAndPages();
     await navigateToApplicationTab(target, 'frame-tree');
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
 
     await waitForFunction(async () => {
-      const fieldValues = await getCustomComponentReportValues();
+      const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         // This contains some CSS from the svg icon link being rendered. It's
         // system-specific, so we get rid of it and only look at the (URL) text.
         fieldValues[0] = getTrailingURL(fieldValues[0]);
+      }
+      if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
+        fieldValues[9] = 'accelerometer';
       }
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/frame-tree.html`,
@@ -53,10 +69,33 @@ describe('The Application Tab', async () => {
         'No',
         'None',
         'UnsafeNone',
-        'available, transferable ⚠️ will require cross-origin isolated context in the future',
+        'unavailable requires cross-origin isolated context',
         'unavailable Learn more',
+        'accelerometer',
       ];
       return JSON.stringify(fieldValues) === JSON.stringify(expected);
+    });
+  });
+
+
+  it('shows stack traces for OOPIF', async () => {
+    await goToResource('application/js-oopif.html');
+    await ensureApplicationPanel();
+    await waitForFunction(async () => {
+      await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
+      await doubleClickSourceTreeItem(IFRAME_SELECTOR);
+      return (await $$(EXPAND_STACKTRACE_BUTTON_SELECTOR)).length === 1;
+    });
+    await waitForFunction(async () => {
+      await ensureApplicationPanel();
+      await click(EXPAND_STACKTRACE_BUTTON_SELECTOR);
+      const stackTraceRows = await getTrimmedTextContent(STACKTRACE_ROW_SELECTOR);
+      const expected = [
+        'second @ js-oopif.html:17',
+        'first @ js-oopif.html:11',
+        '(anonymous) @ js-oopif.html:20',
+      ];
+      return JSON.stringify(stackTraceRows) === JSON.stringify(expected);
     });
   });
 
@@ -75,7 +114,7 @@ describe('The Application Tab', async () => {
     pressKey('ArrowDown');
 
     await waitForFunction(async () => {
-      const fieldValues = await getReportValues();
+      const fieldValues = await getTrimmedTextContent('.report-field-value');
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
         '<#document>',
@@ -98,7 +137,7 @@ describe('The Application Tab', async () => {
     pressKey('ArrowDown');
 
     await waitForFunction(async () => {
-      const fieldValues = await getReportValues();
+      const fieldValues = await getTrimmedTextContent('.report-field-value');
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/dedicated-worker.js`,
         'Web Worker',
@@ -117,7 +156,7 @@ describe('The Application Tab', async () => {
     pressKey('ArrowDown');
 
     await waitForFunction(async () => {
-      const fieldValues = await getReportValues();
+      const fieldValues = await getTrimmedTextContent('.report-field-value');
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/service-worker.js`,
         'Service Worker',
@@ -128,20 +167,23 @@ describe('The Application Tab', async () => {
   });
 
   // Update and reactivate when the whole FrameDetailsView is a custom component
-  it.skip('[crbug.com/1165710]: can handle when JS writes to frame', async () => {
+  it('can handle when JS writes to frame', async () => {
     const {target} = getBrowserAndPages();
     await goToResource('application/main-frame.html');
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
-    await doubleClickSourceTreeItem(IFRAME_SELECTOR);
+    await doubleClickSourceTreeItem(IFRAME_FRAME_ID_SELECTOR);
 
     // check iframe's URL after pageload
     await waitForFunction(async () => {
-      const fieldValues = await getCustomComponentReportValues();
+      const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         // This contains some CSS from the svg icon link being rendered. It's
         // system-specific, so we get rid of it and only look at the (URL) text.
         fieldValues[0] = getTrailingURL(fieldValues[0]);
+      }
+      if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
+        fieldValues[9] = 'accelerometer';
       }
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
@@ -151,8 +193,9 @@ describe('The Application Tab', async () => {
         'No',
         'None',
         'UnsafeNone',
-        'available, transferable ⚠️ will require cross-origin isolated context in the future',
+        'unavailable requires cross-origin isolated context',
         'unavailable Learn more',
+        'accelerometer',
       ];
       return JSON.stringify(fieldValues) === JSON.stringify(expected);
     });
@@ -173,9 +216,12 @@ describe('The Application Tab', async () => {
     // check that iframe's URL has changed
     await doubleClickSourceTreeItem(MAIN_FRAME_SELECTOR);
     await waitForFunction(async () => {
-      const fieldValues = await getCustomComponentReportValues();
+      const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         fieldValues[0] = getTrailingURL(fieldValues[0]);
+      }
+      if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
+        fieldValues[9] = 'accelerometer';
       }
       const expected = [
         `https://localhost:${getTestServerPort()}/test/e2e/resources/application/main-frame.html`,
@@ -185,8 +231,9 @@ describe('The Application Tab', async () => {
         'No',
         'None',
         'UnsafeNone',
-        'available, transferable ⚠️ will require cross-origin isolated context in the future',
+        'unavailable requires cross-origin isolated context',
         'unavailable Learn more',
+        'accelerometer',
       ];
       return JSON.stringify(fieldValues) === JSON.stringify(expected);
     });

@@ -440,10 +440,10 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
 
   network::mojom::URLLoaderFactory* loader_factory = nullptr;
   if (!icon_url.is_empty()) {
-    loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context())
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get();
+    loader_factory = browser_context()
+                         ->GetDefaultStoragePartition()
+                         ->GetURLLoaderFactoryForBrowserProcess()
+                         .get();
   }
 
   auto helper = base::MakeRefCounted<WebstoreInstallHelper>(
@@ -814,19 +814,15 @@ ExtensionFunction::ResponseValue
 WebstorePrivateBeginInstallWithManifest3Function::BuildResponse(
     api::webstore_private::Result result,
     const std::string& error) {
-  if (result != api::webstore_private::RESULT_SUCCESS)
-    return ErrorWithArguments(CreateResults(result), error);
+  if (result != api::webstore_private::RESULT_SUCCESS) {
+    return ErrorWithArguments(
+        BeginInstallWithManifest3::Results::Create(result), error);
+  }
 
   // The web store expects an empty string on success, so don't use
   // RESULT_SUCCESS here.
-  return ArgumentList(
-      CreateResults(api::webstore_private::RESULT_EMPTY_STRING));
-}
-
-std::unique_ptr<base::ListValue>
-WebstorePrivateBeginInstallWithManifest3Function::CreateResults(
-    api::webstore_private::Result result) const {
-  return BeginInstallWithManifest3::Results::Create(result);
+  return ArgumentList(BeginInstallWithManifest3::Results::Create(
+      api::webstore_private::RESULT_EMPTY_STRING));
 }
 
 bool WebstorePrivateBeginInstallWithManifest3Function::ShouldShowFrictionDialog(

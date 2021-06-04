@@ -180,14 +180,8 @@ constexpr const char *kSkippedMessages[] = {
     "VUID-vkCmdDrawIndirectCount-None-04584",
     "VUID-vkCmdDrawIndexedIndirect-None-04584",
     "VUID-vkCmdDrawIndexedIndirectCount-None-04584",
-    // http://anglebug.com/5821
-    "VUID-vkCmdDraw-None-02698",
-    "VUID-vkCmdDrawIndexed-None-02698",
-    "VUID-vkCmdDrawIndirect-None-02698",
-    "VUID-vkCmdDrawIndirectCount-None-02698",
-    "VUID-vkCmdDrawIndexedIndirect-None-02698",
-    "VUID-vkCmdDrawIndexedIndirectCount-None-02698",
-    "VUID-vkCmdDispatch-None-02698",
+    // https://anglebug.com/5912
+    "VUID-VkImageViewCreateInfo-pNext-01585",
 };
 
 // Suppress validation errors that are known
@@ -505,28 +499,30 @@ void ComputePipelineCacheVkChunkKey(VkPhysicalDeviceProperties physicalDevicePro
                                hashString.length(), hashOut->data());
 }
 
-angle::Result CompressAndStorePipelineCacheVk(VkPhysicalDeviceProperties physicalDeviceProperties,
-                                              DisplayVk *displayVk,
-                                              ContextVk *contextVk,
-                                              angle::MemoryBuffer *pipelineCacheData,
-                                              bool *success)
+bool CompressAndStorePipelineCacheVk(VkPhysicalDeviceProperties physicalDeviceProperties,
+                                     DisplayVk *displayVk,
+                                     ContextVk *contextVk,
+                                     const std::vector<uint8_t> &cacheData,
+                                     const size_t maxTotalSize)
 {
-    // There is a limitation in android, we can only store cache data less than 64kb in blob cache.
-    // So there is no use to handle big pipeline cache when android will reject it finally.
-    constexpr size_t kMaxTotalSize = 64 * 1024;
-
-    if (pipelineCacheData->size() >= kMaxTotalSize)
+    // Though the pipeline cache will be compressed and divided into several chunks to store in blob
+    // cache, the largest total size of blob cache is only 2M in android now, so there is no use to
+    // handle big pipeline cache when android will reject it finally.
+    if (cacheData.size() >= maxTotalSize)
     {
         // TODO: handle the big pipeline cache. http://anglebug.com/4722
         ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_LOW,
-                           "Skip syncing pipeline cache data when it's larger than 64kb.");
-        return angle::Result::Continue;
+                           "Skip syncing pipeline cache data when it's larger than maxTotalSize.");
+        return false;
     }
 
     // To make it possible to store more pipeline cache data, compress the whole pipelineCache.
     angle::MemoryBuffer compressedData;
-    ANGLE_VK_CHECK(displayVk, egl::CompressBlobCacheData(pipelineCacheData, &compressedData),
-                   VK_ERROR_INITIALIZATION_FAILED);
+
+    if (!egl::CompressBlobCacheData(cacheData.size(), cacheData.data(), &compressedData))
+    {
+        return false;
+    }
 
     // If the size of compressedData is larger than (kMaxBlobCacheSize - sizeof(numChunks)),
     // the pipelineCache still can't be stored in blob cache. Divide the large compressed
@@ -553,8 +549,10 @@ angle::Result CompressAndStorePipelineCacheVk(VkPhysicalDeviceProperties physica
         }
 
         angle::MemoryBuffer keyData;
-        ANGLE_VK_CHECK(displayVk, keyData.resize(kBlobHeaderSize + chunkSize),
-                       VK_ERROR_INITIALIZATION_FAILED);
+        if (!keyData.resize(kBlobHeaderSize + chunkSize))
+        {
+            return false;
+        }
 
         ASSERT(numChunks <= UINT8_MAX);
         keyData.data()[0] = static_cast<uint8_t>(numChunks);
@@ -565,11 +563,58 @@ angle::Result CompressAndStorePipelineCacheVk(VkPhysicalDeviceProperties physica
         // Create unique hash key.
         egl::BlobCache::Key chunkCacheHash;
         ComputePipelineCacheVkChunkKey(physicalDeviceProperties, chunkIndex, &chunkCacheHash);
+
         displayVk->getBlobCache()->putApplication(chunkCacheHash, keyData);
     }
-    *success = true;
-    return angle::Result::Continue;
+
+    return true;
 }
+
+class CompressAndStorePipelineCacheTask : public angle::Closure
+{
+  public:
+    CompressAndStorePipelineCacheTask(DisplayVk *displayVk,
+                                      ContextVk *contextVk,
+                                      std::vector<uint8_t> &&cacheData,
+                                      size_t kMaxTotalSize)
+        : mDisplayVk(displayVk),
+          mContextVk(contextVk),
+          mCacheData(std::move(cacheData)),
+          mMaxTotalSize(kMaxTotalSize),
+          mResult(true)
+    {}
+
+    void operator()() override
+    {
+        ANGLE_TRACE_EVENT0("gpu.angle", "CompressAndStorePipelineCacheVk");
+        mResult = CompressAndStorePipelineCacheVk(
+            mContextVk->getRenderer()->getPhysicalDeviceProperties(), mDisplayVk, mContextVk,
+            mCacheData, mMaxTotalSize);
+    }
+
+    bool getResult() { return mResult; }
+
+  private:
+    DisplayVk *mDisplayVk;
+    ContextVk *mContextVk;
+    std::vector<uint8_t> mCacheData;
+    size_t mMaxTotalSize;
+    bool mResult;
+};
+
+class WaitableCompressEventImpl : public WaitableCompressEvent
+{
+  public:
+    WaitableCompressEventImpl(std::shared_ptr<angle::WaitableEvent> waitableEvent,
+                              std::shared_ptr<CompressAndStorePipelineCacheTask> compressTask)
+        : WaitableCompressEvent(waitableEvent), mCompressTask(compressTask)
+    {}
+
+    bool getResult() override { return mCompressTask->getResult(); }
+
+  private:
+    std::shared_ptr<CompressAndStorePipelineCacheTask> mCompressTask;
+};
 
 angle::Result GetAndDecompressPipelineCacheVk(VkPhysicalDeviceProperties physicalDeviceProperties,
                                               DisplayVk *displayVk,
@@ -653,6 +698,7 @@ RendererVk::RendererVk()
       mInstance(VK_NULL_HANDLE),
       mEnableValidationLayers(false),
       mEnableDebugUtils(false),
+      mAngleDebuggerMode(false),
       mEnabledICD(angle::vk::ICD::Default),
       mDebugUtilsMessenger(VK_NULL_HANDLE),
       mDebugReportCallback(VK_NULL_HANDLE),
@@ -667,6 +713,7 @@ RendererVk::RendererVk()
       mPipelineCacheVkUpdateTimeout(kPipelineCacheVkUpdatePeriod),
       mPipelineCacheDirty(false),
       mPipelineCacheInitialized(false),
+      mValidationMessageCount(0),
       mCommandProcessor(this),
       mSupportedVulkanPipelineStageMask(0)
 {
@@ -762,6 +809,12 @@ void RendererVk::onDestroy(vk::Context *context)
     {
         vkDestroyInstance(mInstance, nullptr);
         mInstance = VK_NULL_HANDLE;
+    }
+
+    if (mCompressEvent)
+    {
+        mCompressEvent->wait();
+        mCompressEvent.reset();
     }
 
     mMemoryProperties.destroy();
@@ -1544,7 +1597,7 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
 
     if (getFeatures().supportsRenderPassStoreOpNoneQCOM.enabled)
     {
-        enabledDeviceExtensions.push_back(VK_QCOM_render_pass_store_ops_EXTENSION_NAME);
+        enabledDeviceExtensions.push_back(VK_QCOM_RENDER_PASS_STORE_OPS_EXTENSION_NAME);
     }
 
     if (getFeatures().supportsImageFormatList.enabled)
@@ -1655,17 +1708,35 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
         vk::AddToPNextChain(&createInfo, &mMultisampledRenderToSingleSampledFeatures);
     }
 
-    if (mMemoryReportFeatures.deviceMemoryReport &&
-        (getFeatures().logMemoryReportCallbacks.enabled ||
-         getFeatures().logMemoryReportStats.enabled))
+    if (getFeatures().logMemoryReportCallbacks.enabled ||
+        getFeatures().logMemoryReportStats.enabled)
     {
-        enabledDeviceExtensions.push_back(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME);
+        if (mMemoryReportFeatures.deviceMemoryReport)
+        {
+            enabledDeviceExtensions.push_back(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME);
 
-        mMemoryReportCallback       = {};
-        mMemoryReportCallback.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
-        mMemoryReportCallback.pfnUserCallback = &MemoryReportCallback;
-        mMemoryReportCallback.pUserData       = this;
-        vk::AddToPNextChain(&createInfo, &mMemoryReportCallback);
+            mMemoryReportCallback = {};
+            mMemoryReportCallback.sType =
+                VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
+            mMemoryReportCallback.pfnUserCallback = &MemoryReportCallback;
+            mMemoryReportCallback.pUserData       = this;
+            vk::AddToPNextChain(&createInfo, &mMemoryReportCallback);
+        }
+        else
+        {
+            WARN() << "Disabling the following feature(s) because driver does not support "
+                      "VK_EXT_device_memory_report extension:";
+            if (getFeatures().logMemoryReportStats.enabled)
+            {
+                WARN() << "\tlogMemoryReportStats";
+                ANGLE_FEATURE_CONDITION(&mFeatures, logMemoryReportStats, false);
+            }
+            if (getFeatures().logMemoryReportCallbacks.enabled)
+            {
+                WARN() << "\tlogMemoryReportCallbacks";
+                ANGLE_FEATURE_CONDITION(&mFeatures, logMemoryReportCallbacks, false);
+            }
+        }
     }
 
     if (getFeatures().supportsExternalMemoryHost.enabled)
@@ -2131,13 +2202,6 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
         &mFeatures, supportsIncrementalPresent,
         ExtensionFound(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME, deviceExtensionNames));
 
-    // The Vulkan specification for the VK_KHR_incremental_present extension does not address
-    // rotation.  In Android, this extension is implemented on top of the same platform code as
-    // eglSwapBuffersWithDamageKHR(), which code assumes that it should rotate each rectangle.  To
-    // avoid double-rotating damage rectangles on Android, we must avoid pre-rotating
-    // application-provided rectangles.   See: https://issuetracker.google.com/issues/181796746
-    ANGLE_FEATURE_CONDITION(&mFeatures, disablePreRotateIncrementalPresentRectangles, IsAndroid());
-
 #if defined(ANGLE_PLATFORM_ANDROID)
     ANGLE_FEATURE_CONDITION(
         &mFeatures, supportsAndroidHardwareBuffer,
@@ -2210,7 +2274,7 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
 
     ANGLE_FEATURE_CONDITION(
         &mFeatures, supportsRenderPassStoreOpNoneQCOM,
-        ExtensionFound(VK_QCOM_render_pass_store_ops_EXTENSION_NAME, deviceExtensionNames));
+        ExtensionFound(VK_QCOM_RENDER_PASS_STORE_OPS_EXTENSION_NAME, deviceExtensionNames));
 
     ANGLE_FEATURE_CONDITION(&mFeatures, supportsTransformFeedbackExtension,
                             mTransformFeedbackFeatures.transformFeedback == VK_TRUE);
@@ -2333,7 +2397,8 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     // - Qualcomm: http://anglebug.com/5143
     ANGLE_FEATURE_CONDITION(
         &mFeatures, supportsImageCubeArray,
-        mPhysicalDeviceFeatures.imageCubeArray == VK_TRUE && !isSwiftShader && !isQualcomm);
+        mPhysicalDeviceFeatures.imageCubeArray == VK_TRUE && !isSwiftShader &&
+            !IsPixel2(mPhysicalDeviceProperties.vendorID, mPhysicalDeviceProperties.deviceID));
 
     ANGLE_FEATURE_CONDITION(&mFeatures, preferredLargeHeapBlockSize4MB, !isQualcomm);
 
@@ -2343,6 +2408,16 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
 
     // Android mistakenly destroys the old swapchain when creating a new one.
     ANGLE_FEATURE_CONDITION(&mFeatures, waitIdleBeforeSwapchainRecreation, IsAndroid() && isARM);
+
+    for (size_t lodOffsetFeatureIdx = 0;
+         lodOffsetFeatureIdx < mFeatures.forceTextureLODOffset.size(); lodOffsetFeatureIdx++)
+    {
+        ANGLE_FEATURE_CONDITION(&mFeatures, forceTextureLODOffset[lodOffsetFeatureIdx], false);
+    }
+    ANGLE_FEATURE_CONDITION(&mFeatures, forceNearestFiltering, false);
+    ANGLE_FEATURE_CONDITION(&mFeatures, forceNearestMipFiltering, false);
+
+    ANGLE_FEATURE_CONDITION(&mFeatures, compressVertexData, false);
 
     ANGLE_FEATURE_CONDITION(
         &mFeatures, preferDrawClearOverVkCmdClearAttachments,
@@ -2359,12 +2434,14 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     ANGLE_FEATURE_CONDITION(&mFeatures, exposeNonConformantExtensionsAndVersions,
                             kExposeNonConformantExtensionsAndVersions);
 
-    // The EGL_EXT_buffer_age implementation causes
-    // android.graphics.cts.BitmapTest#testDrawingHardwareBitmapNotLeaking to fail on Cuttlefish
-    // with SwANGLE. Needs investigation whether this is a race condition which could affect other
-    // Vulkan drivers, or if it's a SwiftShader bug.
-    // http://anglebug.com/3529
-    ANGLE_FEATURE_CONDITION(&mFeatures, enableBufferAge, !isSwiftShader);
+    // Disabled by default. Only enable it for experimental purpose, as this will cause various
+    // tests to fail.
+    ANGLE_FEATURE_CONDITION(&mFeatures, forceFragmentShaderPrecisionHighpToMediump, false);
+
+    // Testing shows that on ARM GPU, doing implicit flush at framebuffer boundary improves
+    // performance. Most app traces shows frame time reduced and manhattan 3.1 offscreen score
+    // improves 7%.
+    ANGLE_FEATURE_CONDITION(&mFeatures, preferSubmitAtFBOBoundary, isARM);
 
     angle::PlatformMethods *platform = ANGLEPlatformCurrent();
     platform->overrideFeaturesVk(platform, &mFeatures);
@@ -2453,7 +2530,7 @@ angle::Result RendererVk::getPipelineCacheSize(DisplayVk *displayVk, size_t *pip
     return angle::Result::Continue;
 }
 
-angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk, ContextVk *contextVk)
+angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk, const gl::Context *context)
 {
     // TODO: Synchronize access to the pipeline/blob caches?
     ASSERT(mPipelineCache.valid());
@@ -2481,13 +2558,23 @@ angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk, ContextVk *c
         return angle::Result::Continue;
     }
 
-    angle::MemoryBuffer *pipelineCacheData = nullptr;
-    ANGLE_VK_CHECK_ALLOC(displayVk,
-                         displayVk->getScratchBuffer(pipelineCacheSize, &pipelineCacheData));
+    ContextVk *contextVk = vk::GetImpl(context);
+
+    // Use worker thread pool to complete compression.
+    // If the last task hasn't been finished, skip the syncing.
+    if (mCompressEvent && (!mCompressEvent->isReady() || !mCompressEvent->getResult()))
+    {
+        ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_LOW,
+                           "Skip syncing pipeline cache data when the last task is not ready or "
+                           "the compress task failed.");
+        return angle::Result::Continue;
+    }
+
+    std::vector<uint8_t> pipelineCacheData(pipelineCacheSize);
 
     size_t oldPipelineCacheSize = pipelineCacheSize;
     VkResult result =
-        mPipelineCache.getCacheData(mDevice, &pipelineCacheSize, pipelineCacheData->data());
+        mPipelineCache.getCacheData(mDevice, &pipelineCacheSize, pipelineCacheData.data());
     // We don't need all of the cache data, so just make sure we at least got the header
     // Vulkan Spec 9.6. Pipeline Cache
     // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap9.html#pipelines-cache
@@ -2512,20 +2599,41 @@ angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk, ContextVk *c
 
     // If vkGetPipelineCacheData ends up writing fewer bytes than requested, zero out the rest of
     // the buffer to avoid leaking garbage memory.
-    ASSERT(pipelineCacheSize <= pipelineCacheData->size());
-    if (pipelineCacheSize < pipelineCacheData->size())
+    ASSERT(pipelineCacheSize <= pipelineCacheData.size());
+    if (pipelineCacheSize < pipelineCacheData.size())
     {
-        memset(pipelineCacheData->data() + pipelineCacheSize, 0,
-               pipelineCacheData->size() - pipelineCacheSize);
+        memset(pipelineCacheData.data() + pipelineCacheSize, 0,
+               pipelineCacheData.size() - pipelineCacheSize);
     }
 
-    bool success = false;
-    ANGLE_TRY(CompressAndStorePipelineCacheVk(mPhysicalDeviceProperties, displayVk, contextVk,
-                                              pipelineCacheData, &success));
-
-    if (success)
+    if (context->getFrontendFeatures().enableCompressingPipelineCacheInThreadPool.enabled)
     {
+        // The function zlib_internal::GzipCompressHelper() can compress 10M pipeline cache data
+        // into about 2M, to save the time of compression, set kMaxTotalSize to 10M.
+        constexpr size_t kMaxTotalSize = 10 * 1024 * 1024;
+
+        // Create task to compress.
+        auto compressAndStorePipelineCacheTask =
+            std::make_shared<CompressAndStorePipelineCacheTask>(
+                displayVk, contextVk, std::move(pipelineCacheData), kMaxTotalSize);
+        mCompressEvent = std::make_shared<WaitableCompressEventImpl>(
+            angle::WorkerThreadPool::PostWorkerTask(context->getWorkerThreadPool(),
+                                                    compressAndStorePipelineCacheTask),
+            compressAndStorePipelineCacheTask);
         mPipelineCacheDirty = false;
+    }
+    else
+    {
+        // If enableCompressingPipelineCacheInThreadPool is diabled, to avoid the risk, set
+        // kMaxTotalSize to 64k.
+        constexpr size_t kMaxTotalSize = 64 * 1024;
+        bool compressResult            = CompressAndStorePipelineCacheVk(
+            mPhysicalDeviceProperties, displayVk, contextVk, pipelineCacheData, kMaxTotalSize);
+
+        if (compressResult)
+        {
+            mPipelineCacheDirty = false;
+        }
     }
 
     return angle::Result::Continue;
@@ -2696,6 +2804,11 @@ angle::Result RendererVk::cleanupGarbage(Serial lastCompletedQueueSerial)
     return angle::Result::Continue;
 }
 
+void RendererVk::cleanupCompletedCommandsGarbage()
+{
+    (void)cleanupGarbage(getLastCompletedQueueSerial());
+}
+
 void RendererVk::onNewValidationMessage(const std::string &message)
 {
     mLastValidationMessage = message;
@@ -2719,34 +2832,44 @@ uint64_t RendererVk::getMaxFenceWaitTimeNs() const
 
 void RendererVk::setGlobalDebugAnnotator()
 {
-    // If the vkCmd*DebugUtilsLabelEXT functions exist, and if the kEnableDebugMarkersVarName
-    // environment variable is set, initialize DebugAnnotatorVk to log the OpenGL ES commands that
-    // are used, for debuggers (e.g. AGI).  Otherwise, uninitialize the global  DebugAnnotator
-    // pointer so that applications run full speed.
-    bool enableDebugAnnotatorVk = false;
+    // Install one of two DebugAnnotator classes:
+    //
+    // 1) The global class enables basic ANGLE debug functionality (e.g. Vulkan validation errors
+    //    will cause dEQP tests to fail).
+    //
+    // 2) The DebugAnnotatorVk class processes OpenGL ES commands that the application uses.  It is
+    //    installed for the following purposes:
+    //
+    //    1) To enable calling the vkCmd*DebugUtilsLabelEXT functions in order to communicate to
+    //       debuggers (e.g. AGI) the OpenGL ES commands that the application uses.  In addition to
+    //       simply installing DebugAnnotatorVk, also enable calling vkCmd*DebugUtilsLabelEXT.
+    //
+    //    2) To enable logging to Android logcat the OpenGL ES commands that the application uses.
+    bool installDebugAnnotatorVk = false;
+
+    // Enable calling the vkCmd*DebugUtilsLabelEXT functions if the vkCmd*DebugUtilsLabelEXT
+    // functions exist, and if the kEnableDebugMarkersVarName environment variable is set.
     if (vkCmdBeginDebugUtilsLabelEXT)
     {
         std::string enabled = angle::GetEnvironmentVarOrAndroidProperty(
             kEnableDebugMarkersVarName, kEnableDebugMarkersPropertyName);
         if (!enabled.empty() && enabled.compare("0") != 0)
         {
-            enableDebugAnnotatorVk = true;
+            mAngleDebuggerMode      = true;
+            installDebugAnnotatorVk = true;
         }
     }
 #if defined(ANGLE_ENABLE_TRACE_ANDROID_LOGCAT)
-    // This will log all API commands to Android's logcat as well as create Vulkan debug markers.
-    enableDebugAnnotatorVk = true;
+    // Only install DebugAnnotatorVk to log all API commands to Android's logcat.
+    installDebugAnnotatorVk = true;
 #endif
 
-    if (enableDebugAnnotatorVk)
+    if (installDebugAnnotatorVk)
     {
-        // Install DebugAnnotatorVk so that GLES API commands will generate Vulkan debug markers
         gl::InitializeDebugAnnotations(&mAnnotator);
     }
     else
     {
-        // Install LoggingAnnotator so that other debug functionality will still work (e.g. Vulkan
-        // validation errors will cause dEQP tests to fail).
         mDisplay->setGlobalDebugAnnotator();
     }
 }

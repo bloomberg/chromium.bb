@@ -1830,8 +1830,8 @@ TEST_F(VkLayerTest, BindInvalidMemory2Disjoint) {
     if (mp_extensions == true) {
         VkFormatProperties mp_format_properties;
         vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), mp_format, &mp_format_properties);
-        if (0 !=
-            (mp_format_properties.optimalTilingFeatures & (VK_FORMAT_FEATURE_DISJOINT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
+        if ((mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DISJOINT_BIT) &&
+            (mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
             mp_disjoint_support = true;
         }
     }
@@ -2259,8 +2259,8 @@ TEST_F(VkLayerTest, BindInvalidMemoryNoCheck) {
         const VkFormat mp_format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
         VkFormatProperties mp_format_properties;
         vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), mp_format, &mp_format_properties);
-        if (0 ==
-            (mp_format_properties.optimalTilingFeatures & (VK_FORMAT_FEATURE_DISJOINT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
+        if (!((mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DISJOINT_BIT) &&
+              (mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
             printf("%s Rest of test rely on a supported disjoint format.\n", kSkipPrefix);
             return;
         }
@@ -2497,8 +2497,8 @@ TEST_F(VkLayerTest, BindInvalidMemory2BindInfos) {
         // Check for support of format used by all multi-planar tests
         VkFormatProperties mp_format_properties;
         vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), mp_format, &mp_format_properties);
-        if (0 ==
-            (mp_format_properties.optimalTilingFeatures & (VK_FORMAT_FEATURE_DISJOINT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
+        if (!((mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DISJOINT_BIT) &&
+              (mp_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
             printf("%s test requires disjoint support extensions, not available.  Skipping.\n", kSkipPrefix);
             return;
         }
@@ -4267,7 +4267,6 @@ TEST_F(VkLayerTest, InvalidCmdBufferImageDestroyed) {
     }
     // Destroy image dependency prior to submit to cause ERROR
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkImage");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkDeviceMemory");
 
     VkSubmitInfo submit_info = {};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -4342,7 +4341,6 @@ TEST_F(VkLayerTest, InvalidCmdBufferFramebufferImageDestroyed) {
     // Destroy image attached to framebuffer to invalidate cmd buffer
     // Now attempt to submit cmd buffer and verify error
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkImage");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkDeviceMemory");
     m_commandBuffer->QueueCommandBuffer(false);
     m_errorMonitor->VerifyFound();
 
@@ -6450,9 +6448,9 @@ TEST_F(VkLayerTest, InvalidBarrierQueueFamily) {
 
     // Find queues of two families
     const uint32_t submit_family = m_device->graphics_queue_node_index_;
-    const uint32_t invalid = static_cast<uint32_t>(m_device->queue_props.size());
+    const uint32_t queue_family_count = static_cast<uint32_t>(m_device->queue_props.size());
     const uint32_t other_family = submit_family != 0 ? 0 : 1;
-    const bool only_one_family = (invalid == 1) || (m_device->queue_props[other_family].queueCount == 0);
+    const bool only_one_family = (queue_family_count == 1) || (m_device->queue_props[other_family].queueCount == 0);
 
     std::vector<uint32_t> qf_indices{{submit_family, other_family}};
     if (only_one_family) {
@@ -6504,10 +6502,9 @@ TEST_F(VkLayerTest, InvalidBarrierQueueFamily) {
         BarrierQueueFamilyTestHelper excl_test(&test_context);
         excl_test.Init(nullptr);
 
-        // core_validation::barrier_queue_families::kSubmitQueueMustMatchSrcOrDst
-        excl_test("UNASSIGNED-CoreValidation-VkImageMemoryBarrier-sharing-mode-exclusive-same-family",
-                  "UNASSIGNED-CoreValidation-VkBufferMemoryBarrier-sharing-mode-exclusive-same-family", other_family, other_family,
-                  false, submit_family);
+        // Although other_family does not match submit_family, because the barrier families are
+        // equal here, no ownership transfer actually happens, and this barrier is valid by the spec.
+        excl_test("POSITIVE_TEST", "POSITIVE_TEST", other_family, other_family, true, submit_family);
 
         // true -> positive test (testing both the index logic and the QFO transfer tracking.
         excl_test("POSITIVE_TEST", "POSITIVE_TEST", submit_family, other_family, true, submit_family);
@@ -6535,6 +6532,24 @@ TEST_F(VkLayerTest, InvalidBarrierQueueFamily) {
         excl_test("POSITIVE_TEST", "POSITIVE_TEST", submit_family, other_family, true, submit_family);  // need a succesful release
         excl_test("UNASSIGNED-VkImageMemoryBarrier-image-00002", "UNASSIGNED-VkBufferMemoryBarrier-buffer-00002", submit_family,
                   other_family, false, other_family, BarrierQueueFamilyTestHelper::DOUBLE_COMMAND_BUFFER);
+
+        // core_validation::barrier_queue_families::kSubmitQueueMustMatchSrcOrDst
+        // Need a third queue family to test this.
+        uint32_t third_family = VK_QUEUE_FAMILY_IGNORED;
+        for (uint32_t candidate = 0; candidate < queue_family_count; ++candidate) {
+            if (candidate != submit_family && candidate != other_family && m_device->queue_props[candidate].queueCount != 0) {
+                third_family = candidate;
+                break;
+            }
+        }
+
+        if (third_family == VK_QUEUE_FAMILY_IGNORED) {
+            printf("%s No third queue family found -- kSubmitQueueMustMatchSrcOrDst test skipped.\n", kSkipPrefix);
+        } else {
+            excl_test("UNASSIGNED-CoreValidation-VkImageMemoryBarrier-sharing-mode-exclusive-same-family",
+                      "UNASSIGNED-CoreValidation-VkBufferMemoryBarrier-sharing-mode-exclusive-same-family",
+                      other_family, third_family, false, submit_family);
+        }
     }
 }
 
@@ -6970,7 +6985,6 @@ TEST_F(VkLayerTest, VertexBufferInvalid) {
     m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
     vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "CoreValidation-DrawState-InvalidCommandBuffer-VkBuffer");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "CoreValidation-DrawState-InvalidCommandBuffer-VkDeviceMemory");
 
     {
         // Create and bind a vertex buffer in a reduced scope, which will cause it to be deleted upon leaving this scope
@@ -11375,6 +11389,11 @@ TEST_F(VkLayerTest, CreateImageYcbcrFormats) {
         return;
     }
 
+    if (!ImageFormatIsSupported(gpu(), VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM)) {
+        printf("%s VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM is unsupported.\n", kSkipPrefix);
+        return;
+    }
+
     // Set format features as needed for tests
     VkFormatProperties formatProps;
     const VkFormat mp_format = VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
@@ -11588,22 +11607,22 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
 
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
-    if (!InitSwapchain()) {
+    if (!InitSwapchain(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) {
         printf("%s Cannot create surface or swapchain, skipping BindSwapchainImageMemory test\n", kSkipPrefix);
         return;
     }
 
     auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    image_create_info.extent.width = 64;
-    image_create_info.extent.height = 64;
+    image_create_info.format = m_surface_formats[0].format;
+    image_create_info.extent.width = m_surface_capabilities.minImageExtent.width;
+    image_create_info.extent.height = m_surface_capabilities.minImageExtent.height;
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
     image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -11612,7 +11631,8 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     image_create_info.pNext = &image_swapchain_create_info;
 
     VkImage image_from_swapchain;
-    vk::CreateImage(device(), &image_create_info, NULL, &image_from_swapchain);
+    VkResult err = vk::CreateImage(device(), &image_create_info, NULL, &image_from_swapchain);
+    ASSERT_VK_SUCCESS(err);
 
     VkMemoryRequirements mem_reqs = {};
     vk::GetImageMemoryRequirements(device(), image_from_swapchain, &mem_reqs);
@@ -11625,7 +11645,7 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     ASSERT_TRUE(pass);
 
     VkDeviceMemory mem;
-    VkResult err = vk::AllocateMemory(m_device->device(), &alloc_info, NULL, &mem);
+    err = vk::AllocateMemory(m_device->device(), &alloc_info, NULL, &mem);
     ASSERT_VK_SUCCESS(err);
 
     auto bind_info = LvlInitStruct<VkBindImageMemoryInfo>();
@@ -11813,15 +11833,15 @@ TEST_F(VkLayerTest, TransferImageToSwapchainWithInvalidLayoutDeviceGroup) {
 
     auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    image_create_info.extent.width = 64;
-    image_create_info.extent.height = 64;
+    image_create_info.format = m_surface_formats[0].format;
+    image_create_info.extent.width = m_surface_capabilities.minImageExtent.width;
+    image_create_info.extent.height = m_surface_capabilities.minImageExtent.height;
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
     image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -11829,7 +11849,6 @@ TEST_F(VkLayerTest, TransferImageToSwapchainWithInvalidLayoutDeviceGroup) {
     src_Image.init(&image_create_info);
 
     image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    image_create_info.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
     auto image_swapchain_create_info = LvlInitStruct<VkImageSwapchainCreateInfoKHR>();
     image_swapchain_create_info.swapchain = m_swapchain;
@@ -12188,8 +12207,8 @@ TEST_F(VkLayerTest, InvalidMemoryRequirements) {
         // Also need to support an arbitrary image usage feature
         VkFormatProperties format_properties;
         vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), VK_FORMAT_G8_B8R8_2PLANE_420_UNORM, &format_properties);
-        if (0 ==
-            (format_properties.optimalTilingFeatures & (VK_FORMAT_FEATURE_DISJOINT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
+        if (!((format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DISJOINT_BIT) &&
+              (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))) {
             printf("%s test requires disjoint/sampled feature bit on format.  Skipping.\n", kSkipPrefix);
         } else {
             VkImageCreateInfo image_create_info = {};
@@ -12704,7 +12723,8 @@ TEST_F(VkLayerTest, CustomBorderColor) {
         LvlInitStruct<VkPhysicalDeviceCustomBorderColorPropertiesEXT>();
     auto prop2 = LvlInitStruct<VkPhysicalDeviceProperties2KHR>(&custom_properties);
     vkGetPhysicalDeviceProperties2KHR(gpu(), &prop2);
-    if (custom_properties.maxCustomBorderColorSamplers <= 0xFFFF) {
+    if ((custom_properties.maxCustomBorderColorSamplers <= 0xFFFF) &&
+        (prop2.properties.limits.maxSamplerAllocationCount >= custom_properties.maxCustomBorderColorSamplers)) {
         VkSampler samplers[0xFFFF];
         // Still have one custom border color sampler from above, so this should exceed max
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSamplerCreateInfo-None-04012");
@@ -13516,4 +13536,104 @@ TEST_F(VkLayerTest, InvalidShadingRateUsage) {
             m_errorMonitor->VerifyFound();
         }
     }
+}
+
+TEST_F(VkLayerTest, InvalidImageFormatList) {
+    TEST_DESCRIPTION("Tests for VK_KHR_image_format_list");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+    } else {
+        printf("%s %s extension not supported, skipping test\n", kSkipPrefix, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    // Use sampled formats that will always be supported
+    // Last format is not compatible with the rest
+    const VkFormat formats[4] = {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SNORM, VK_FORMAT_R8G8B8A8_UINT, VK_FORMAT_R8_UNORM};
+    VkImageFormatListCreateInfo formatList = LvlInitStruct<VkImageFormatListCreateInfo>(nullptr);
+    formatList.viewFormatCount = 4;
+    formatList.pViewFormats = formats;
+
+    VkImageCreateInfo imageInfo = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                   &formatList,
+                                   VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
+                                   VK_IMAGE_TYPE_2D,
+                                   VK_FORMAT_R8G8B8A8_UNORM,
+                                   {128, 128, 1},
+                                   1,
+                                   1,
+                                   VK_SAMPLE_COUNT_1_BIT,
+                                   VK_IMAGE_TILING_OPTIMAL,
+                                   VK_IMAGE_USAGE_SAMPLED_BIT,
+                                   VK_SHARING_MODE_EXCLUSIVE,
+                                   0,
+                                   nullptr,
+                                   VK_IMAGE_LAYOUT_UNDEFINED};
+
+    VkImage badImage = VK_NULL_HANDLE;
+    VkImageObj mutableImage(m_device);
+    VkImageObj mutableImageZero(m_device);
+    VkImageObj normalImage(m_device);
+
+    // Not all 4 formats are compatible
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageCreateInfo-pNext-04737");
+    vk::CreateImage(device(), &imageInfo, nullptr, &badImage);
+    m_errorMonitor->VerifyFound();
+
+    // Should work with only first 3 in array
+    m_errorMonitor->ExpectSuccess();
+    formatList.viewFormatCount = 3;
+    mutableImage.init(&imageInfo);
+    ASSERT_TRUE(mutableImage.initialized());
+    m_errorMonitor->VerifyNotFound();
+
+    // Make sure no error if 0 format
+    m_errorMonitor->ExpectSuccess();
+    formatList.viewFormatCount = 0;
+    formatList.pViewFormats = &formats[3];  // non-compatible format
+    mutableImageZero.init(&imageInfo);
+    ASSERT_TRUE(mutableImageZero.initialized());
+    m_errorMonitor->VerifyNotFound();
+    // reset
+    formatList.viewFormatCount = 3;
+    formatList.pViewFormats = formats;
+
+    // Can't use 2 or higher formats if no mutable flag
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageCreateInfo-flags-04738");
+    imageInfo.flags = 0;
+    vk::CreateImage(device(), &imageInfo, nullptr, &badImage);
+    m_errorMonitor->VerifyFound();
+
+    // Make sure no error if 1 format
+    m_errorMonitor->ExpectSuccess();
+    formatList.viewFormatCount = 1;
+    normalImage.init(&imageInfo);
+    ASSERT_TRUE(normalImage.initialized());
+    m_errorMonitor->VerifyNotFound();
+
+    VkImageViewCreateInfo imageViewInfo = LvlInitStruct<VkImageViewCreateInfo>(nullptr);
+    imageViewInfo.flags = 0;
+    imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageViewInfo.subresourceRange.layerCount = 1;
+    imageViewInfo.subresourceRange.baseMipLevel = 0;
+    imageViewInfo.subresourceRange.levelCount = 1;
+    imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageViewInfo.image = mutableImage.handle();
+
+    // Not in format list
+    imageViewInfo.format = VK_FORMAT_R8_SNORM;
+    m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01018");
+    CreateImageViewTest(*this, &imageViewInfo, "VUID-VkImageViewCreateInfo-pNext-01585");
+
+    imageViewInfo.format = VK_FORMAT_R8G8B8A8_SNORM;
+    CreateImageViewTest(*this, &imageViewInfo, {});
+
+    // If viewFormatCount is zero should not hit VUID 01585
+    imageViewInfo.image = mutableImageZero.handle();
+    CreateImageViewTest(*this, &imageViewInfo, {});
 }

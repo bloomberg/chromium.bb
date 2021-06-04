@@ -10,8 +10,8 @@
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
 #include "base/scoped_multi_source_observation.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -48,7 +48,7 @@ class ASH_EXPORT AmbientBackgroundImageView : public views::View,
   // Updates the details for the currently displayed image.
   void UpdateImageDetails(const std::u16string& details);
 
-  const gfx::ImageSkia& GetCurrentImage();
+  gfx::ImageSkia GetCurrentImage();
 
   gfx::Rect GetImageBoundsForTesting() const;
   gfx::Rect GetRelatedImageBoundsForTesting() const;

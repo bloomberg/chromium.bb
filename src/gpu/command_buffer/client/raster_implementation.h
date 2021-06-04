@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/paint/paint_cache.h"
 #include "gpu/command_buffer/client/client_font_manager.h"
@@ -31,6 +30,7 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/raster_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cc {
 class TransferCacheSerializeHelper;
@@ -149,7 +149,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       const gfx::Rect& full_raster_rect,
                       const gfx::Rect& playback_rect,
                       const gfx::Vector2dF& post_translate,
-                      GLfloat post_scale,
+                      const gfx::Vector2dF& post_scale,
                       bool requires_clear,
                       size_t* max_op_size_hint) override;
   SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
@@ -160,10 +160,11 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void ReadbackARGBPixelsAsync(
       const gpu::Mailbox& source_mailbox,
       GLenum source_target,
-      const gfx::Size& dst_size,
+      GrSurfaceOrigin source_origin,
+      const SkImageInfo& dst_info,
+      GLuint dst_row_bytes,
       unsigned char* out,
-      GLenum format,
-      base::OnceCallback<void(bool)> readback_done) override;
+      base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done) override;
   void ReadbackYUVPixelsAsync(
       const gpu::Mailbox& source_mailbox,
       GLenum source_target,
@@ -245,6 +246,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
   void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+  void ShallowFlushCHROMIUM() override;
 
   bool GetQueryObjectValueHelper(const char* function_name,
                                  GLuint id,
@@ -347,6 +349,25 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       SyncToken* decode_sync_token,
       ClientDiscardableHandle handle);
 
+  void ReadbackImagePixelsINTERNAL(
+      const gpu::Mailbox& source_mailbox,
+      const SkImageInfo& dst_info,
+      GLuint dst_row_bytes,
+      int src_x,
+      int src_y,
+      base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done,
+      void* dst_pixels);
+
+  struct AsyncARGBReadbackRequest;
+  void OnAsyncARGBReadbackDone(AsyncARGBReadbackRequest* request);
+  base::queue<std::unique_ptr<AsyncARGBReadbackRequest>> argb_request_queue_;
+
+  struct AsyncYUVReadbackRequest;
+  void OnAsyncYUVReadbackDone(AsyncYUVReadbackRequest* request);
+  base::queue<std::unique_ptr<AsyncYUVReadbackRequest>> yuv_request_queue_;
+
+  void CancelRequests();
+
 // Set to 1 to have the client fail when a GL error is generated.
 // This helps find bugs in the renderer since the debugger stops on the error.
 #if DCHECK_IS_ON()
@@ -379,8 +400,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   // Used to check for single threaded access.
   int use_count_;
 
-  base::Optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
-  base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
+  absl::optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
+  absl::optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
   base::RepeatingCallback<void(const char*, int32_t)> error_message_callback_;
 
@@ -411,7 +432,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
     bool can_use_lcd_text = false;
     sk_sp<SkColorSpace> color_space;
   };
-  base::Optional<RasterProperties> raster_properties_;
+  absl::optional<RasterProperties> raster_properties_;
 
   uint32_t max_inlined_entry_size_;
   ClientTransferCache transfer_cache_;

@@ -19,8 +19,10 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
+#include "components/safe_browsing/core/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
+#include "url/url_constants.h"
 
 namespace safe_browsing {
 
@@ -32,7 +34,9 @@ bool DangerTypeIsDangerous(download::DownloadDangerType danger_type) {
           danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
           danger_type == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
           danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
-          danger_type == download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
+          danger_type == download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED ||
+          danger_type ==
+              download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE);
 }
 
 void MaybeReportDangerousDownloadWarning(download::DownloadItem* download) {
@@ -57,7 +61,7 @@ void MaybeReportDangerousDownloadWarning(download::DownloadItem* download) {
       router->OnDangerousDownloadEvent(
           download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
           base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-          download->GetDangerType(), download->GetMimeType(),
+          download->GetDangerType(), download->GetMimeType(), /*scan_id*/ "",
           download->GetTotalBytes(), EventResult::WARNED);
     }
   }
@@ -75,10 +79,15 @@ void ReportDangerousDownloadWarningBypassed(
         extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
             profile);
     if (router) {
+      enterprise_connectors::ScanResult* stored_result =
+          static_cast<enterprise_connectors::ScanResult*>(
+              download->GetUserData(enterprise_connectors::ScanResult::kKey));
       router->OnDangerousDownloadWarningBypassed(
           download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
           base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
           original_danger_type, download->GetMimeType(),
+          /*scan_id*/
+          stored_result ? stored_result->response.request_token() : "",
           download->GetTotalBytes());
     }
   }
@@ -120,9 +129,10 @@ DownloadReporter::~DownloadReporter() {
 }
 
 void DownloadReporter::OnProfileAdded(Profile* profile) {
-  observed_profiles_.Add(profile);
-  observed_coordinators_.Add(SimpleDownloadManagerCoordinatorFactory::GetForKey(
-      profile->GetProfileKey()));
+  observed_profiles_.AddObservation(profile);
+  observed_coordinators_.AddObservation(
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile->GetProfileKey()));
 }
 
 void DownloadReporter::OnOffTheRecordProfileCreated(Profile* off_the_record) {
@@ -130,21 +140,22 @@ void DownloadReporter::OnOffTheRecordProfileCreated(Profile* off_the_record) {
 }
 
 void DownloadReporter::OnProfileWillBeDestroyed(Profile* profile) {
-  observed_profiles_.Remove(profile);
+  observed_profiles_.RemoveObservation(profile);
 }
 
 void DownloadReporter::OnManagerGoingDown(
     download::SimpleDownloadManagerCoordinator* coordinator) {
-  observed_coordinators_.Remove(coordinator);
+  observed_coordinators_.RemoveObservation(coordinator);
 }
 
 void DownloadReporter::OnDownloadCreated(download::DownloadItem* download) {
   danger_types_[download] = download->GetDangerType();
-  observed_downloads_.Add(download);
+  if (!observed_downloads_.IsObservingSource(download))
+    observed_downloads_.AddObservation(download);
 }
 
 void DownloadReporter::OnDownloadDestroyed(download::DownloadItem* download) {
-  observed_downloads_.Remove(download);
+  observed_downloads_.RemoveObservation(download);
   danger_types_.erase(download);
 }
 
@@ -165,6 +176,10 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
       current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
     AddBypassEventToPref(download);
     ReportDangerousDownloadWarningBypassed(download, old_danger_type);
+    RecordDangerousDownloadWarningBypassed(
+        old_danger_type, download->GetTargetFilePath(),
+        download->GetURL().SchemeIs(url::kHttpsScheme),
+        download->HasUserGesture());
   }
 
   if (old_danger_type ==

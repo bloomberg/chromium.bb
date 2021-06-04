@@ -54,7 +54,7 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 	switch(topology)
 	{
-		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+	case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
 		{
 			auto index = start;
 			auto pointBatch = &(batch[0][0]);
@@ -69,9 +69,9 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 			{
 				*pointBatch++ = indices[index];
 			}
-			break;
 		}
-		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		break;
+	case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
 		{
 			auto index = 2 * start;
 			for(unsigned int i = 0; i < triangleCount; i++)
@@ -82,9 +82,9 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 				index += 2;
 			}
-			break;
 		}
-		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+		break;
+	case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
 		{
 			auto index = start;
 			for(unsigned int i = 0; i < triangleCount; i++)
@@ -95,9 +95,9 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 				index += 1;
 			}
-			break;
 		}
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		break;
+	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
 		{
 			auto index = 3 * start;
 			for(unsigned int i = 0; i < triangleCount; i++)
@@ -108,9 +108,9 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 				index += 3;
 			}
-			break;
 		}
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		break;
+	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
 		{
 			auto index = start;
 			for(unsigned int i = 0; i < triangleCount; i++)
@@ -121,9 +121,9 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 				index += 1;
 			}
-			break;
 		}
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+		break;
+	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
 		{
 			auto index = start + 1;
 			for(unsigned int i = 0; i < triangleCount; i++)
@@ -134,11 +134,11 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 				index += 1;
 			}
-			break;
 		}
-		default:
-			ASSERT(false);
-			return false;
+		break;
+	default:
+		ASSERT(false);
+		return false;
 	}
 
 	return true;
@@ -229,20 +229,20 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 	{
 		switch(pipelineState.getPolygonMode())
 		{
-			case VK_POLYGON_MODE_FILL:
-				setupPrimitives = &DrawCall::setupSolidTriangles;
-				break;
-			case VK_POLYGON_MODE_LINE:
-				setupPrimitives = &DrawCall::setupWireframeTriangles;
-				numPrimitivesPerBatch /= 3;
-				break;
-			case VK_POLYGON_MODE_POINT:
-				setupPrimitives = &DrawCall::setupPointTriangles;
-				numPrimitivesPerBatch /= 3;
-				break;
-			default:
-				UNSUPPORTED("polygon mode: %d", int(pipelineState.getPolygonMode()));
-				return;
+		case VK_POLYGON_MODE_FILL:
+			setupPrimitives = &DrawCall::setupSolidTriangles;
+			break;
+		case VK_POLYGON_MODE_LINE:
+			setupPrimitives = &DrawCall::setupWireframeTriangles;
+			numPrimitivesPerBatch /= 3;
+			break;
+		case VK_POLYGON_MODE_POINT:
+			setupPrimitives = &DrawCall::setupPointTriangles;
+			numPrimitivesPerBatch /= 3;
+			break;
+		default:
+			UNSUPPORTED("polygon mode: %d", int(pipelineState.getPolygonMode()));
+			return;
 		}
 	}
 	else if(pipelineState.isDrawLine(false))
@@ -267,6 +267,7 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 	draw->lineRasterizationMode = pipelineState.getLineRasterizationMode();
 	draw->descriptorSetObjects = inputs.getDescriptorSetObjects();
 	draw->pipelineLayout = pipelineState.getPipelineLayout();
+	draw->depthClipEnable = pipelineState.getDepthClipEnable();
 
 	draw->vertexRoutine = vertexRoutine;
 	draw->setupRoutine = setupRoutine;
@@ -355,21 +356,22 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 		data->constantDepthBias = pipelineState.getConstantDepthBias();
 		data->slopeDepthBias = pipelineState.getSlopeDepthBias();
 		data->depthBiasClamp = pipelineState.getDepthBiasClamp();
+		data->depthClipEnable = pipelineState.getDepthClipEnable();
 
 		const vk::Attachments attachments = pipeline->getAttachments();
 		if(attachments.depthBuffer)
 		{
 			switch(attachments.depthBuffer->getFormat(VK_IMAGE_ASPECT_DEPTH_BIT))
 			{
-				case VK_FORMAT_D16_UNORM:
-					data->minimumResolvableDepthDifference = 1.0f / 0xFFFF;
-					break;
-				case VK_FORMAT_D32_SFLOAT:
-					// The minimum resolvable depth difference is determined per-polygon for floating-point depth
-					// buffers. DrawData::minimumResolvableDepthDifference is unused.
-					break;
-				default:
-					UNSUPPORTED("Depth format: %d", int(attachments.depthBuffer->getFormat(VK_IMAGE_ASPECT_DEPTH_BIT)));
+			case VK_FORMAT_D16_UNORM:
+				data->minimumResolvableDepthDifference = 1.0f / 0xFFFF;
+				break;
+			case VK_FORMAT_D32_SFLOAT:
+				// The minimum resolvable depth difference is determined per-polygon for floating-point depth
+				// buffers. DrawData::minimumResolvableDepthDifference is unused.
+				break;
+			default:
+				UNSUPPORTED("Depth format: %d", int(attachments.depthBuffer->getFormat(VK_IMAGE_ASPECT_DEPTH_BIT)));
 			}
 		}
 	}
@@ -625,22 +627,22 @@ void DrawCall::processPrimitiveVertices(
 	{
 		switch(indexType)
 		{
-			case VK_INDEX_TYPE_UINT16:
-				if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint16_t *>(primitiveIndices), start, triangleCount))
-				{
-					return;
-				}
-				break;
-			case VK_INDEX_TYPE_UINT32:
-				if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint32_t *>(primitiveIndices), start, triangleCount))
-				{
-					return;
-				}
-				break;
-				break;
-			default:
-				ASSERT(false);
+		case VK_INDEX_TYPE_UINT16:
+			if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint16_t *>(primitiveIndices), start, triangleCount))
+			{
 				return;
+			}
+			break;
+		case VK_INDEX_TYPE_UINT32:
+			if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint32_t *>(primitiveIndices), start, triangleCount))
+			{
+				return;
+			}
+			break;
+			break;
+		default:
+			ASSERT(false);
+			return;
 		}
 	}
 
@@ -901,19 +903,19 @@ bool DrawCall::setupLine(Primitive &primitive, Triangle &triangle, const DrawCal
 
 		P[0].x += -dy0w;
 		P[0].y += +dx0h;
-		C[0] = Clipper::ComputeClipFlags(P[0]);
+		C[0] = Clipper::ComputeClipFlags(P[0], draw.depthClipEnable);
 
 		P[1].x += -dy1w;
 		P[1].y += +dx1h;
-		C[1] = Clipper::ComputeClipFlags(P[1]);
+		C[1] = Clipper::ComputeClipFlags(P[1], draw.depthClipEnable);
 
 		P[2].x += +dy1w;
 		P[2].y += -dx1h;
-		C[2] = Clipper::ComputeClipFlags(P[2]);
+		C[2] = Clipper::ComputeClipFlags(P[2], draw.depthClipEnable);
 
 		P[3].x += +dy0w;
 		P[3].y += -dx0h;
-		C[3] = Clipper::ComputeClipFlags(P[3]);
+		C[3] = Clipper::ComputeClipFlags(P[3], draw.depthClipEnable);
 
 		if((C[0] & C[1] & C[2] & C[3]) == Clipper::CLIP_FINITE)
 		{
@@ -958,28 +960,28 @@ bool DrawCall::setupLine(Primitive &primitive, Triangle &triangle, const DrawCal
 		float dy1 = lineWidth * 0.5f * P1.w / H;
 
 		P[0].x += -dx0;
-		C[0] = Clipper::ComputeClipFlags(P[0]);
+		C[0] = Clipper::ComputeClipFlags(P[0], draw.depthClipEnable);
 
 		P[1].y += +dy0;
-		C[1] = Clipper::ComputeClipFlags(P[1]);
+		C[1] = Clipper::ComputeClipFlags(P[1], draw.depthClipEnable);
 
 		P[2].x += +dx0;
-		C[2] = Clipper::ComputeClipFlags(P[2]);
+		C[2] = Clipper::ComputeClipFlags(P[2], draw.depthClipEnable);
 
 		P[3].y += -dy0;
-		C[3] = Clipper::ComputeClipFlags(P[3]);
+		C[3] = Clipper::ComputeClipFlags(P[3], draw.depthClipEnable);
 
 		P[4].x += -dx1;
-		C[4] = Clipper::ComputeClipFlags(P[4]);
+		C[4] = Clipper::ComputeClipFlags(P[4], draw.depthClipEnable);
 
 		P[5].y += +dy1;
-		C[5] = Clipper::ComputeClipFlags(P[5]);
+		C[5] = Clipper::ComputeClipFlags(P[5], draw.depthClipEnable);
 
 		P[6].x += +dx1;
-		C[6] = Clipper::ComputeClipFlags(P[6]);
+		C[6] = Clipper::ComputeClipFlags(P[6], draw.depthClipEnable);
 
 		P[7].y += -dy1;
-		C[7] = Clipper::ComputeClipFlags(P[7]);
+		C[7] = Clipper::ComputeClipFlags(P[7], draw.depthClipEnable);
 
 		if((C[0] & C[1] & C[2] & C[3] & C[4] & C[5] & C[6] & C[7]) == Clipper::CLIP_FINITE)
 		{
@@ -1112,10 +1114,10 @@ bool DrawCall::setupLine(Primitive &primitive, Triangle &triangle, const DrawCal
 			}
 		}
 
-		int C0 = Clipper::ComputeClipFlags(L[0]);
-		int C1 = Clipper::ComputeClipFlags(L[1]);
-		int C2 = Clipper::ComputeClipFlags(L[2]);
-		int C3 = Clipper::ComputeClipFlags(L[3]);
+		int C0 = Clipper::ComputeClipFlags(L[0], draw.depthClipEnable);
+		int C1 = Clipper::ComputeClipFlags(L[1], draw.depthClipEnable);
+		int C2 = Clipper::ComputeClipFlags(L[2], draw.depthClipEnable);
+		int C3 = Clipper::ComputeClipFlags(L[3], draw.depthClipEnable);
 
 		if((C0 & C1 & C2 & C3) == Clipper::CLIP_FINITE)
 		{
@@ -1166,19 +1168,19 @@ bool DrawCall::setupPoint(Primitive &primitive, Triangle &triangle, const DrawCa
 
 	P[0].x -= X;
 	P[0].y += Y;
-	C[0] = Clipper::ComputeClipFlags(P[0]);
+	C[0] = Clipper::ComputeClipFlags(P[0], draw.depthClipEnable);
 
 	P[1].x += X;
 	P[1].y += Y;
-	C[1] = Clipper::ComputeClipFlags(P[1]);
+	C[1] = Clipper::ComputeClipFlags(P[1], draw.depthClipEnable);
 
 	P[2].x += X;
 	P[2].y -= Y;
-	C[2] = Clipper::ComputeClipFlags(P[2]);
+	C[2] = Clipper::ComputeClipFlags(P[2], draw.depthClipEnable);
 
 	P[3].x -= X;
 	P[3].y -= Y;
-	C[3] = Clipper::ComputeClipFlags(P[3]);
+	C[3] = Clipper::ComputeClipFlags(P[3], draw.depthClipEnable);
 
 	Polygon polygon(P, 4);
 

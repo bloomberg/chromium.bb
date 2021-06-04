@@ -23,6 +23,7 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
 
  private:
   struct SubSupPair {
+    DISALLOW_NEW();
     NGBlockNode sub = nullptr;
     NGBlockNode sup = nullptr;
   };

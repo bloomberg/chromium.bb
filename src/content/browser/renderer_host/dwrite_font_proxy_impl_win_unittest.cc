@@ -36,7 +36,7 @@ namespace content {
 namespace {
 
 struct FontExpectation {
-  const char font_name[64];
+  const char* font_name;
   uint16_t ttc_index;
 };
 
@@ -306,7 +306,7 @@ void TestWhenLookupTableReady(
     base::ReadOnlySharedMemoryRegion font_table_memory) {
   blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
   for (auto& test_font_name_index : kExpectedTestFonts) {
-    base::Optional<blink::FontTableMatcher::MatchResult> match_result =
+    absl::optional<blink::FontTableMatcher::MatchResult> match_result =
         font_table_matcher.MatchName(test_font_name_index.font_name);
     ASSERT_TRUE(match_result)
         << "No font matched for font name: " << test_font_name_index.font_name;
@@ -354,10 +354,10 @@ TEST_F(DWriteFontProxyLocalMatchingTest, TestSingleLookupUnavailable) {
     return;
   base::FilePath result_path;
   uint32_t ttc_index;
-  std::string unavailable_font_name =
-      "Unavailable_Font_Name_56E7EA7E-2C69-4E23-99DC-750BC19B250E";
-  dwrite_font_proxy().MatchUniqueFont(base::UTF8ToUTF16(unavailable_font_name),
-                                      &result_path, &ttc_index);
+  std::u16string unavailable_font_name =
+      u"Unavailable_Font_Name_56E7EA7E-2C69-4E23-99DC-750BC19B250E";
+  dwrite_font_proxy().MatchUniqueFont(unavailable_font_name, &result_path,
+                                      &ttc_index);
   ASSERT_EQ(result_path.value().size(), 0u);
   ASSERT_EQ(ttc_index, 0u);
 }

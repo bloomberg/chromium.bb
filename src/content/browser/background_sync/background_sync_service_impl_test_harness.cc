@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -94,9 +95,9 @@ void BackgroundSyncServiceImplTestHarness::SetUp() {
   // Don't let the tests be confused by the real-world device connectivity
   background_sync_test_util::SetIgnoreNetworkChanges(true);
 
-  mojo::SetDefaultProcessErrorHandler(base::AdaptCallbackForRepeating(
-      base::BindOnce(&BackgroundSyncServiceImplTestHarness::CollectMojoError,
-                     base::Unretained(this))));
+  mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
+      &BackgroundSyncServiceImplTestHarness::CollectMojoError,
+      base::Unretained(this)));
 
   CreateTestHelper();
   CreateStoragePartition();
@@ -174,8 +175,9 @@ void BackgroundSyncServiceImplTestHarness::CreateServiceWorkerRegistration() {
   bool called = false;
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL(kServiceWorkerScope);
+  storage::StorageKey key(url::Origin::Create(GURL(kServiceWorkerScope)));
   embedded_worker_helper_->context()->RegisterServiceWorker(
-      GURL(kServiceWorkerScript), options,
+      GURL(kServiceWorkerScript), key, options,
       blink::mojom::FetchClientSettingsObject::New(),
       base::BindOnce(&RegisterServiceWorkerCallback, &called,
                      &sw_registration_id_));
@@ -183,7 +185,8 @@ void BackgroundSyncServiceImplTestHarness::CreateServiceWorkerRegistration() {
   ASSERT_TRUE(called);
 
   embedded_worker_helper_->context_wrapper()->FindReadyRegistrationForId(
-      sw_registration_id_, url::Origin::Create(GURL(kServiceWorkerScope)),
+      sw_registration_id_,
+      storage::StorageKey(url::Origin::Create(GURL(kServiceWorkerScope))),
       base::BindOnce(FindServiceWorkerRegistrationCallback, &sw_registration_));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_registration_);

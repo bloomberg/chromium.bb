@@ -393,7 +393,7 @@ ContentSetting HostContentSettingsMap::GetUserModifiableContentSetting(
 void HostContentSettingsMap::GetSettingsForOneType(
     ContentSettingsType content_type,
     ContentSettingsForOneType* settings,
-    base::Optional<content_settings::SessionModel> session_model) const {
+    absl::optional<content_settings::SessionModel> session_model) const {
   DCHECK(settings);
   UsedContentSettingsProviders();
 
@@ -768,7 +768,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
     ContentSettingsType content_type,
     ContentSettingsForOneType* settings,
     bool incognito,
-    base::Optional<content_settings::SessionModel> session_model) const {
+    absl::optional<content_settings::SessionModel> session_model) const {
   std::unique_ptr<content_settings::RuleIterator> rule_iterator(
       provider->GetRuleIterator(content_type, incognito));
   if (!rule_iterator)
@@ -905,7 +905,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     info->primary_pattern = ContentSettingsPattern();
     info->secondary_pattern = ContentSettingsPattern();
   }
-  return std::unique_ptr<base::Value>();
+  return nullptr;
 }
 
 // static
@@ -964,11 +964,11 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
           *secondary_pattern = rule.secondary_pattern;
         if (session_model)
           *session_model = rule.session_model;
-        return rule.value.CreateDeepCopy();
+        return base::Value::ToUniquePtrValue(rule.value.Clone());
       }
     }
   }
-  return std::unique_ptr<base::Value>();
+  return nullptr;
 }
 
 void HostContentSettingsMap::

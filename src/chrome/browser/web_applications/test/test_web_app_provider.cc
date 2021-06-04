@@ -9,16 +9,15 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
-#include "chrome/browser/web_applications/web_app_migration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
 namespace web_app {
@@ -62,12 +61,6 @@ void TestWebAppProvider::SetRunSubsystemStartupTasks(
   run_subsystem_startup_tasks_ = run_subsystem_startup_tasks;
 }
 
-void TestWebAppProvider::SetMigrationManager(
-    std::unique_ptr<WebAppMigrationManager> migration_manager) {
-  CheckNotStarted();
-  migration_manager_ = std::move(migration_manager);
-}
-
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
   CheckNotStarted();
   registrar_ = std::move(registrar);
@@ -91,10 +84,11 @@ void TestWebAppProvider::SetInstallFinalizer(
   install_finalizer_ = std::move(install_finalizer);
 }
 
-void TestWebAppProvider::SetPendingAppManager(
-    std::unique_ptr<PendingAppManager> pending_app_manager) {
+void TestWebAppProvider::SetExternallyManagedAppManager(
+    std::unique_ptr<ExternallyManagedAppManager>
+        externally_managed_app_manager) {
   CheckNotStarted();
-  pending_app_manager_ = std::move(pending_app_manager);
+  externally_managed_app_manager_ = std::move(externally_managed_app_manager);
 }
 
 void TestWebAppProvider::SetWebAppUiManager(
@@ -121,9 +115,9 @@ void TestWebAppProvider::SetOsIntegrationManager(
   os_integration_manager_ = std::move(os_integration_manager);
 }
 
-void TestWebAppProvider::DisableMigrationManager() {
+void TestWebAppProvider::SkipAwaitingExtensionSystem() {
   CheckNotStarted();
-  migration_manager_ = nullptr;
+  skip_awaiting_extension_system_ = true;
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

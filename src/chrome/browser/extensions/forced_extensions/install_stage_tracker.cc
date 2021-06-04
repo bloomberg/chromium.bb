@@ -21,7 +21,7 @@ namespace {
 // Returns true if the |current_stage| should be overridden by the
 // |new_stage|.
 bool ShouldOverrideCurrentStage(
-    base::Optional<InstallStageTracker::Stage> current_stage,
+    absl::optional<InstallStageTracker::Stage> current_stage,
     InstallStageTracker::Stage new_stage) {
   if (!current_stage)
     return true;
@@ -270,6 +270,15 @@ InstallStageTracker::GetManifestInvalidAppStatusError(
   return AppStatusError::kUnknown;
 }
 
+void InstallStageTracker::ReportFetchErrorCodes(
+    const ExtensionId& id,
+    const ExtensionDownloaderDelegate::FailureData& failure_data) {
+  InstallationData& data = installation_data_map_[id];
+  data.network_error_code = failure_data.network_error_code;
+  data.response_code = failure_data.response_code;
+  data.fetch_tries = failure_data.fetch_tries;
+}
+
 void InstallStageTracker::ReportFetchError(
     const ExtensionId& id,
     FailureReason reason,
@@ -278,9 +287,7 @@ void InstallStageTracker::ReportFetchError(
          reason == FailureReason::CRX_FETCH_FAILED);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;
-  data.network_error_code = failure_data.network_error_code;
-  data.response_code = failure_data.response_code;
-  data.fetch_tries = failure_data.fetch_tries;
+  ReportFetchErrorCodes(id, failure_data);
   NotifyObserversOfFailure(id, reason, data);
 }
 
@@ -313,7 +320,7 @@ void InstallStageTracker::ReportCrxInstallError(
 void InstallStageTracker::ReportSandboxedUnpackerFailureReason(
     const ExtensionId& id,
     const CrxInstallError& crx_install_error) {
-  base::Optional<SandboxedUnpackerFailureReason> unpacker_failure_reason =
+  absl::optional<SandboxedUnpackerFailureReason> unpacker_failure_reason =
       crx_install_error.sandbox_failure_detail();
   DCHECK(unpacker_failure_reason);
   InstallationData& data = installation_data_map_[id];

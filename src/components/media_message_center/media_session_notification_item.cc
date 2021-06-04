@@ -75,7 +75,7 @@ void MediaSessionNotificationItem::MediaSessionInfoChanged(
 }
 
 void MediaSessionNotificationItem::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    const absl::optional<media_session::MediaMetadata>& metadata) {
   session_metadata_ = metadata.value_or(media_session::MediaMetadata());
 
   view_needs_metadata_update_ = true;
@@ -110,7 +110,7 @@ void MediaSessionNotificationItem::MediaSessionActionsChanged(
 }
 
 void MediaSessionNotificationItem::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   session_position_ = position;
   if (!position.has_value())
     return;
@@ -185,6 +185,13 @@ void MediaSessionNotificationItem::Dismiss() {
 
 media_message_center::SourceType MediaSessionNotificationItem::SourceType() {
   return media_message_center::SourceType::kLocalMediaSession;
+}
+
+void MediaSessionNotificationItem::Raise() {
+  if (!media_controller_remote_.is_bound())
+    return;
+
+  media_controller_remote_->Raise();
 }
 
 void MediaSessionNotificationItem::SetController(

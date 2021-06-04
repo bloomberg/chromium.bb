@@ -10,7 +10,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,14 +18,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/favicon_cache.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/search_engines/util.h"
 #include "extensions/common/image_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -68,49 +70,15 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
             "publicly available image."
         })");
 
-int ACMatchStyleToTagStyle(int styles) {
-  int tag_styles = 0;
-  if (styles & ACMatchClassification::URL)
-    tag_styles |= ash::SearchResultTag::URL;
-  if (styles & ACMatchClassification::MATCH)
-    tag_styles |= ash::SearchResultTag::MATCH;
-  if (styles & ACMatchClassification::DIM)
-    tag_styles |= ash::SearchResultTag::DIM;
+// Types of generic icon to show with a result.
+enum class IconType {
+  kDomain,
+  kSearch,
+  kHistory,
+  kCalculator,
+};
 
-  return tag_styles;
-}
-
-// Translates ACMatchClassifications into ChromeSearchResult tags.
-void ACMatchClassificationsToTags(const std::u16string& text,
-                                  const ACMatchClassifications& text_classes,
-                                  ChromeSearchResult::Tags* tags) {
-  int tag_styles = ash::SearchResultTag::NONE;
-  size_t tag_start = 0;
-
-  for (size_t i = 0; i < text_classes.size(); ++i) {
-    const ACMatchClassification& text_class = text_classes[i];
-
-    // Closes current tag.
-    if (tag_styles != ash::SearchResultTag::NONE) {
-      tags->push_back(
-          ash::SearchResultTag(tag_styles, tag_start, text_class.offset));
-      tag_styles = ash::SearchResultTag::NONE;
-    }
-
-    if (text_class.style == ACMatchClassification::NONE)
-      continue;
-
-    tag_start = text_class.offset;
-    tag_styles = ACMatchStyleToTagStyle(text_class.style);
-  }
-
-  if (tag_styles != ash::SearchResultTag::NONE) {
-    tags->push_back(ash::SearchResultTag(tag_styles, tag_start, text.length()));
-  }
-}
-
-// AutocompleteMatchType::Type to vector icon, used for app list.
-const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
+const IconType MatchTypeToIconType(AutocompleteMatchType::Type type) {
   switch (type) {
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
     case AutocompleteMatchType::HISTORY_URL:
@@ -125,8 +93,8 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
-    case AutocompleteMatchType::PEDAL:
-      return ash::kDomainIcon;
+    case AutocompleteMatchType::PEDAL_DEPRECATED:
+      return IconType::kDomain;
 
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -138,24 +106,36 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::VOICE_SUGGEST:
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
-      return ash::kSearchIcon;
+      return IconType::kSearch;
 
     case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return ash::kHistoryIcon;
+      return IconType::kHistory;
 
     case AutocompleteMatchType::CALCULATOR:
-      return ash::kEqualIcon;
+      return IconType::kCalculator;
 
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_NAVSUGGEST:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
-      break;
+      return IconType::kDomain;
   }
-  NOTREACHED();
-  return ash::kDomainIcon;
+}
+
+// AutocompleteMatchType::Type to vector icon, used for app list.
+const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
+  switch (MatchTypeToIconType(type)) {
+    case IconType::kDomain:
+      return ash::kOmniboxGenericIcon;
+    case IconType::kSearch:
+      return ash::kSearchIcon;
+    case IconType::kHistory:
+      return ash::kHistoryIcon;
+    case IconType::kCalculator:
+      return ash::kEqualIcon;
+  }
 }
 
 // Converts AutocompleteMatchType::Type to an answer vector icon.
@@ -186,14 +166,14 @@ gfx::ImageSkia CreateAnswerIcon(const gfx::VectorIcon& vector_icon) {
       dimension / 2, gfx::kGoogleBlue600, icon);
 }
 
-base::Optional<std::u16string> GetAdditionalText(
+absl::optional<std::u16string> GetAdditionalText(
     const SuggestionAnswer::ImageLine& line) {
   if (line.additional_text()) {
     const auto additional_text = line.additional_text()->text();
     if (!additional_text.empty())
       return additional_text;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::u16string ImageLineToString16(const SuggestionAnswer::ImageLine& line) {
@@ -216,11 +196,13 @@ std::u16string ImageLineToString16(const SuggestionAnswer::ImageLine& line) {
 OmniboxResult::OmniboxResult(Profile* profile,
                              AppListControllerDelegate* list_controller,
                              AutocompleteController* autocomplete_controller,
+                             FaviconCache* favicon_cache,
                              const AutocompleteMatch& match,
                              bool is_zero_suggestion)
     : profile_(profile),
       list_controller_(list_controller),
       autocomplete_controller_(autocomplete_controller),
+      favicon_cache_(favicon_cache),
       match_(match),
       is_zero_suggestion_(is_zero_suggestion) {
   if (match_.search_terms_args && autocomplete_controller_) {
@@ -229,15 +211,13 @@ OmniboxResult::OmniboxResult(Profile* profile,
         *match_.search_terms_args, &match_);
   }
   set_id(match_.stripped_destination_url.spec());
-  SetResultType(ash::AppListSearchResultType::kOmnibox);
-  set_result_subtype(static_cast<int>(match_.type));
+  SetDisplayType(DisplayType::kList);
+  SetResultType(ResultType::kOmnibox);
   SetMetricsType(GetSearchResultType());
 
   if (app_list_features::IsOmniboxRichEntitiesEnabled()) {
     if (match_.answer.has_value()) {
       SetOmniboxType(OmniboxType::kAnswer);
-      // The answer subtype overrides the match subtype.
-      set_result_subtype(static_cast<int>(match_.answer->type()));
     } else if (match_.type == AutocompleteMatchType::CALCULATOR) {
       SetOmniboxType(OmniboxType::kCalculatorAnswer);
     } else if (!match_.image_url.is_empty()) {
@@ -245,11 +225,9 @@ OmniboxResult::OmniboxResult(Profile* profile,
     }
 
     // The stripped destination URL is no longer a unique identifier, so append
-    // result types.
-    // TODO(crbug.com/1130372): Consider generating a random unique ID instead.
+    // it to the omnibox type.
     const std::string id = base::JoinString(
         {base::NumberToString(static_cast<int>(omnibox_type())),
-         base::NumberToString(static_cast<int>(result_subtype())),
          match_.stripped_destination_url.spec()},
         "-");
     set_id(id);
@@ -262,6 +240,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
 
   if (AutocompleteMatch::IsSearchType(match_.type))
     SetIsOmniboxSearch(true);
+
   UpdateIcon();
   UpdateTitleAndDetails();
 
@@ -350,7 +329,7 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
-    case AutocompleteMatchType::PEDAL:
+    case AutocompleteMatchType::PEDAL_DEPRECATED:
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
     case AutocompleteMatchType::HISTORY_BODY:
@@ -366,13 +345,11 @@ GURL OmniboxResult::DestinationURL() const {
 }
 
 void OmniboxResult::UpdateIcon() {
-  if (app_list_features::IsOmniboxRichEntitiesEnabled() &&
-      IsRichEntityResult()) {
-    // Determine if we have a local icon. Calculator and non-weather answer
-    // results have local icons.
-    if (match_.type == AutocompleteMatchType::CALCULATOR) {
+  switch (omnibox_type()) {
+    case OmniboxType::kCalculatorAnswer:
       SetIcon(CreateAnswerIcon(omnibox::kCalculatorIcon));
-    } else if (match_.answer) {
+      return;
+    case OmniboxType::kAnswer:
       if (match_.answer->type() == SuggestionAnswer::ANSWER_TYPE_WEATHER &&
           !match_.answer->image_url().is_empty()) {
         // Weather icons are downloaded. Check this first so that the local
@@ -381,21 +358,43 @@ void OmniboxResult::UpdateIcon() {
       } else {
         SetIcon(CreateAnswerIcon(TypeToAnswerIcon(match_.answer->type())));
       }
-    } else if (!match_.image_url.is_empty()) {
-      // All remaining rich entity icons will have their image downloaded.
+      return;
+    case OmniboxType::kRichImage:
       FetchRichEntityImage(match_.image_url);
-    }
-  } else {
-    BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForBrowserContext(profile_);
-    bool is_bookmarked =
-        bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
+      return;
+    default:
+      // Use a favicon if eligible. If the result should have a favicon but
+      // there isn't one in the cache, fall through to using a generic icon
+      // instead.
+      if (favicon_cache_ &&
+          MatchTypeToIconType(match_.type) == IconType::kDomain) {
+        const auto icon = favicon_cache_->GetFaviconForPageUrl(
+            match_.destination_url,
+            base::BindOnce(&OmniboxResult::OnFaviconFetched,
+                           weak_factory_.GetWeakPtr()));
+        if (!icon.IsEmpty()) {
+          SetOmniboxType(OmniboxType::kFavicon);
+          SetIcon(icon.AsImageSkia());
+          return;
+        }
+      }
 
-    const gfx::VectorIcon& icon =
-        is_bookmarked ? omnibox::kBookmarkIcon : TypeToVectorIcon(match_.type);
-    SetIcon(gfx::CreateVectorIcon(
-        icon, ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-        kListIconColor));
+      // If this is neither a rich entity nor eligible for a favicon, use either
+      // the generic bookmark or another generic icon as appropriate.
+      BookmarkModel* bookmark_model =
+          BookmarkModelFactory::GetForBrowserContext(profile_);
+      if (bookmark_model &&
+          bookmark_model->IsBookmarked(match_.destination_url)) {
+        SetIcon(gfx::CreateVectorIcon(
+            omnibox::kBookmarkIcon,
+            ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+            kListIconColor));
+      } else {
+        SetIcon(gfx::CreateVectorIcon(
+            TypeToVectorIcon(match_.type),
+            ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+            kListIconColor));
+      }
   }
 }
 
@@ -460,11 +459,6 @@ bool OmniboxResult::IsUrlResultWithDescription() const {
          !match_.description.empty();
 }
 
-bool OmniboxResult::IsRichEntityResult() const {
-  return match_.type == AutocompleteMatchType::CALCULATOR || match_.answer ||
-         !match_.image_url.is_empty();
-}
-
 void OmniboxResult::FetchRichEntityImage(const GURL& url) {
   if (!bitmap_fetcher_) {
     bitmap_fetcher_ =
@@ -474,6 +468,13 @@ void OmniboxResult::FetchRichEntityImage(const GURL& url) {
                         net::ReferrerPolicy::NEVER_CLEAR,
                         network::mojom::CredentialsMode::kOmit);
   bitmap_fetcher_->Start(profile_->GetURLLoaderFactory().get());
+}
+
+void OmniboxResult::OnFaviconFetched(const gfx::Image& icon) {
+  // By contract, this is never called with an empty |icon|.
+  DCHECK(!icon.IsEmpty());
+  SetOmniboxType(OmniboxType::kFavicon);
+  SetIcon(icon.AsImageSkia());
 }
 
 void OmniboxResult::SetZeroSuggestionActions() {

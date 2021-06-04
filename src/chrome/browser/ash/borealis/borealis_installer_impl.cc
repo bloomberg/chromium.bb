@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
@@ -20,9 +19,8 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,13 +154,13 @@ class BorealisInstallerImpl::Uninstallation
     request.set_cryptohome_id(
         chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
     request.set_disk_path(uninstall_info_->vm_name);
-    chromeos::DBusThreadManager::Get()->GetConciergeClient()->DestroyDiskImage(
+    chromeos::ConciergeClient::Get()->DestroyDiskImage(
         std::move(request), base::BindOnce(&Uninstallation::OnDiskRemoved,
                                            weak_factory_.GetWeakPtr()));
   }
 
   void OnDiskRemoved(
-      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response) {
+      absl::optional<vm_tools::concierge::DestroyDiskImageResponse> response) {
     if (!response) {
       LOG(ERROR) << "Failed to destroy disk image. Empty response.";
       Fail(BorealisUninstallResult::kRemoveDiskFailed);

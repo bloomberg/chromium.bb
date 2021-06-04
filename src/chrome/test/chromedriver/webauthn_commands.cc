@@ -131,6 +131,8 @@ Status ExecuteAddVirtualAuthenticator(WebView* web_view,
       const std::string& extension_string = extension.GetString();
       if (extension_string == "largeBlob") {
         mapped_params.SetPath("options.hasLargeBlob", base::Value(true));
+      } else if (extension_string == "credBlob") {
+        mapped_params.SetPath("options.hasCredBlob", base::Value(true));
       } else {
         return Status(kUnsupportedOperation,
                       extension_string + kUnrecognizedExtension);
@@ -160,7 +162,7 @@ Status ExecuteAddVirtualAuthenticator(WebView* web_view,
   if (status.IsError())
     return status;
 
-  base::Optional<base::Value> authenticator_id =
+  absl::optional<base::Value> authenticator_id =
       result->ExtractKey("authenticatorId");
   if (!authenticator_id)
     return Status(kUnknownError, kDevToolsDidNotReturnExpectedValue);
@@ -212,7 +214,7 @@ Status ExecuteGetCredentials(WebView* web_view,
   if (status.IsError())
     return status;
 
-  base::Optional<base::Value> credentials = result->ExtractKey("credentials");
+  absl::optional<base::Value> credentials = result->ExtractKey("credentials");
   if (!credentials)
     return Status(kUnknownError, kDevToolsDidNotReturnExpectedValue);
 

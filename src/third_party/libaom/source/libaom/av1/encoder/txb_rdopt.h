@@ -44,11 +44,11 @@ extern "C" {
  * skip flag (tx_skip) and the sign of DC coefficient (dc_sign).
  * \param[out]   rate_cost      The entropy cost of coding the transform block
  * after adjustment of coefficients.
- * \param[in]    sharpness      When sharpness == 1, the function will be less
- * aggressive toward lowering the magnitude of coefficients.
+ * \param[in]    sharpness      When sharpness > 0, the function will be less
+ * aggressive towards lowering the magnitude of coefficients.
  * In this way, the transform block will contain more high-frequency
- coefficients
- * and therefore preserve the sharpness of the reconstructed block.
+ * coefficients and therefore, will preserve the sharpness of the reconstructed
+ * block.
  */
 int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      int block, TX_SIZE tx_size, TX_TYPE tx_type,

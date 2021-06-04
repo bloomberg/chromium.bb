@@ -4,65 +4,66 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("./visibility.gni")
 
 devtools_module("ui") {
   sources = [
     "ARIAUtils.ts",
     "ActionRegistration.ts",
     "ActionRegistry.ts",
-    "Context.js",
+    "Context.ts",
     "ContextFlavorListener.ts",
-    "ContextMenu.js",
+    "ContextMenu.ts",
     "Dialog.ts",
-    "DockController.js",
+    "DockController.ts",
     "DropTarget.ts",
     "EmptyWidget.ts",
     "FilterBar.ts",
-    "FilterSuggestionBuilder.js",
+    "FilterSuggestionBuilder.ts",
     "ForwardedInputEventHandler.ts",
     "Fragment.ts",
-    "Geometry.js",
+    "Geometry.ts",
     "GlassPane.ts",
     "HistoryInput.ts",
     "Icon.ts",
-    "Infobar.js",
+    "Infobar.ts",
     "InplaceEditor.ts",
-    "InspectorView.js",
-    "KeyboardShortcut.js",
-    "ListControl.js",
-    "ListModel.js",
-    "ListWidget.js",
-    "Panel.js",
-    "PopoverHelper.js",
-    "ProgressIndicator.js",
-    "RemoteDebuggingTerminatedScreen.js",
-    "ReportView.js",
-    "ResizerWidget.js",
-    "RootView.js",
-    "SearchableView.js",
-    "SettingsUI.js",
-    "ShortcutRegistry.js",
-    "SoftContextMenu.js",
+    "InspectorView.ts",
+    "KeyboardShortcut.ts",
+    "ListControl.ts",
+    "ListModel.ts",
+    "ListWidget.ts",
+    "Panel.ts",
+    "PopoverHelper.ts",
+    "ProgressIndicator.ts",
+    "RemoteDebuggingTerminatedScreen.ts",
+    "ReportView.ts",
+    "ResizerWidget.ts",
+    "RootView.ts",
+    "SearchableView.ts",
+    "SettingsUI.ts",
+    "ShortcutRegistry.ts",
+    "SoftContextMenu.ts",
     "SoftDropDown.ts",
-    "SplitWidget.js",
-    "SuggestBox.js",
-    "TabbedPane.js",
+    "SplitWidget.ts",
+    "SuggestBox.ts",
+    "TabbedPane.ts",
     "TargetCrashedScreen.ts",
     "TextEditor.ts",
-    "TextPrompt.js",
+    "TextPrompt.ts",
     "ThrottledWidget.ts",
-    "Toolbar.js",
-    "Tooltip.js",
+    "Toolbar.ts",
+    "Tooltip.ts",
     "Treeoutline.ts",
-    "UIUtils.js",
+    "UIUtils.ts",
     "View.ts",
     "ViewManager.ts",
     "ViewRegistration.ts",
-    "Widget.js",
+    "Widget.ts",
     "XElement.ts",
     "XLink.ts",
     "XWidget.ts",
-    "ZoomManager.js",
+    "ZoomManager.ts",
   ]
 
   deps = [
@@ -73,7 +74,8 @@ devtools_module("ui") {
     "../../core/platform:bundle",
     "../../core/sdk:bundle",
     "../../models/text_utils:bundle",
-    "../../theme_support:bundle",
+    "../../ui/legacy/theme_support:bundle",
+    "../components/helpers:bundle",
     "utils:bundle",
   ]
 }
@@ -123,13 +125,35 @@ copy_to_gen("legacy_css") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "legacy.js"
+  entrypoint = "legacy.ts"
 
   deps = [ ":ui" ]
+
+  visibility = [
+    "../../../test/unittests/front_end/*",
+    "../../entrypoints/*",
+    "../../legacy_test_runner/*",
+    "../../panels/*",
+    "./*",
+
+    # TODO(crbug.com/1202788): Remove invalid dependents
+    "../../models/extensions:*",
+    "../../models/persistence:*",
+    "../../models/recorder:*",
+    "../components/data_grid:*",
+    "../components/markdown_view:*",
+  ]
+
+  visibility += devtools_ui_legacy_visibility
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "legacy-legacy.js"
+  entrypoint = "legacy-legacy.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [
+    "../..:legacy_entrypoints",
+    "../../entrypoints/shell/*",
+  ]
 }

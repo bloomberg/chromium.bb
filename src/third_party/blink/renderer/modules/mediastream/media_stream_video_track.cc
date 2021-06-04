@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -45,8 +46,8 @@ using EncodedVideoFrameInternalCallback =
 
 base::TimeDelta ComputeRefreshIntervalFromBounds(
     const base::TimeDelta required_min_refresh_interval,
-    const base::Optional<double>& min_frame_rate,
-    const base::Optional<double>& max_frame_rate) {
+    const absl::optional<double>& min_frame_rate,
+    const absl::optional<double>& max_frame_rate) {
   // Start with the default required refresh interval, and refine based on
   // constraints. If a minimum frameRate is provided, use that. Otherwise, use
   // the maximum frameRate if it happens to be less than the default.
@@ -423,12 +424,12 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const VideoTrackAdapterSettings& adapter_settings,
-    const base::Optional<bool>& noise_reduction,
+    const absl::optional<bool>& noise_reduction,
     bool is_screencast,
-    const base::Optional<double>& min_frame_rate,
-    const base::Optional<double>& pan,
-    const base::Optional<double>& tilt,
-    const base::Optional<double>& zoom,
+    const absl::optional<double>& min_frame_rate,
+    const absl::optional<double>& pan,
+    const absl::optional<double>& tilt,
+    const absl::optional<double>& zoom,
     bool pan_tilt_zoom_allowed,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
@@ -483,12 +484,12 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource* source,
     const VideoTrackAdapterSettings& adapter_settings,
-    const base::Optional<bool>& noise_reduction,
+    const absl::optional<bool>& noise_reduction,
     bool is_screen_cast,
-    const base::Optional<double>& min_frame_rate,
-    const base::Optional<double>& pan,
-    const base::Optional<double>& tilt,
-    const base::Optional<double>& zoom,
+    const absl::optional<double>& min_frame_rate,
+    const absl::optional<double>& pan,
+    const absl::optional<double>& tilt,
+    const absl::optional<double>& zoom,
     bool pan_tilt_zoom_allowed,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
@@ -677,7 +678,7 @@ void MediaStreamVideoTrack::GetSettings(
     settings.frame_rate = frame_rate_;
   }
 
-  base::Optional<media::VideoCaptureFormat> format =
+  absl::optional<media::VideoCaptureFormat> format =
       source_->GetCurrentFormat();
   if (format) {
     if (frame_rate_ == 0.0)
@@ -700,6 +701,15 @@ void MediaStreamVideoTrack::GetSettings(
     settings.display_surface = info->display_surface;
     settings.logical_surface = info->logical_surface;
     settings.cursor = info->cursor;
+    if (info->capture_handle) {
+      settings.capture_handle.emplace();
+      if (!info->capture_handle->origin.opaque()) {
+        settings.capture_handle->origin =
+            String::FromUTF8(info->capture_handle->origin.Serialize());
+      }
+      settings.capture_handle->handle =
+          WebString::FromUTF16(info->capture_handle->capture_handle);
+    }
   }
 }
 

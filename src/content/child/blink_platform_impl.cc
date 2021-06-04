@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -43,6 +44,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -55,35 +57,14 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
-#if defined(OS_ANDROID)
-#include "content/child/webthemeengine_impl_android.h"
-#else
-#include "content/child/webthemeengine_impl_default.h"
-#endif
-
-#if defined(OS_MAC)
-#include "content/child/webthemeengine_impl_mac.h"
-#endif
-
 using blink::WebData;
 using blink::WebString;
-using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
 
 namespace content {
 
 namespace {
-
-std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
-#if defined(OS_ANDROID)
-  return std::make_unique<WebThemeEngineAndroid>();
-#elif defined(OS_MAC)
-  return std::make_unique<WebThemeEngineMac>();
-#else
-  return std::make_unique<WebThemeEngineDefault>();
-#endif
-}
 
 // This must match third_party/WebKit/public/blink_resources.grd.
 struct DataResource {
@@ -161,8 +142,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : io_thread_task_runner_(std::move(io_thread_task_runner)),
       browser_interface_broker_proxy_(
-          base::MakeRefCounted<ThreadSafeBrowserInterfaceBrokerProxyImpl>()),
-      native_theme_engine_(GetWebThemeEngine()) {}
+          base::MakeRefCounted<ThreadSafeBrowserInterfaceBrokerProxyImpl>()) {}
 
 BlinkPlatformImpl::~BlinkPlatformImpl() = default;
 
@@ -184,7 +164,7 @@ WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
   if (resource.empty())
     return WebData(resource.data(), resource.size());
   std::string uncompressed;
-  CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
+  CHECK(compression::GzipUncompress(std::string(resource), &uncompressed));
   return WebData(uncompressed.data(), uncompressed.size());
 }
 
@@ -237,10 +217,6 @@ blink::WebCrypto* BlinkPlatformImpl::Crypto() {
 blink::ThreadSafeBrowserInterfaceBrokerProxy*
 BlinkPlatformImpl::GetBrowserInterfaceBroker() {
   return browser_interface_broker_proxy_.get();
-}
-
-WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
-  return native_theme_engine_.get();
 }
 
 bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {

@@ -18,7 +18,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 using dom_distiller::UMAHelper;
 using dom_distiller::url_utils::IsDistilledPage;
@@ -31,7 +31,7 @@ UMAHelper::ReaderModePageType GetPageType(content::WebContents* contents) {
   if (IsDistilledPage(contents->GetLastCommittedURL())) {
     page_type = UMAHelper::ReaderModePageType::kDistilled;
   } else {
-    base::Optional<dom_distiller::DistillabilityResult> distillability =
+    absl::optional<dom_distiller::DistillabilityResult> distillability =
         dom_distiller::GetLatestResult(contents);
     if (distillability && distillability.value().is_distillable)
       page_type = UMAHelper::ReaderModePageType::kDistillable;
@@ -62,7 +62,7 @@ ReaderModeIconView::~ReaderModeIconView() {
 void ReaderModeIconView::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (GetVisible())
-    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
+    ink_drop()->AnimateToState(views::InkDropState::HIDDEN, nullptr);
 }
 
 void ReaderModeIconView::ReadyToCommitNavigation(

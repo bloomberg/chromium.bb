@@ -24,6 +24,7 @@ class GrPipeline;
 
 class GrVkBuffer;
 class GrVkCommandPool;
+class GrVkFramebuffer;
 class GrVkMemoryAllocator;
 class GrVkPipeline;
 class GrVkPipelineState;
@@ -107,9 +108,8 @@ public:
     }
 #endif
 
-    sk_sp<GrAttachment> makeStencilAttachmentForRenderTarget(const GrRenderTarget*,
-                                                             SkISize dimensions,
-                                                             int numStencilSamples) override;
+    sk_sp<GrAttachment> makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,
+                                              SkISize dimensions, int numStencilSamples) override;
 
     GrBackendFormat getPreferredStencilFormat(const GrBackendFormat&) override {
         return GrBackendFormat::MakeVk(this->vkCaps().preferredStencilFormat());
@@ -137,8 +137,8 @@ public:
 
     bool loadMSAAFromResolve(GrVkCommandBuffer* commandBuffer,
                              const GrVkRenderPass& renderPass,
-                             GrSurface* dst,
-                             GrSurface* src,
+                             GrAttachment* dst,
+                             GrVkAttachment* src,
                              const SkIRect& srcRect);
 
     bool onRegenerateMipMapLevels(GrTexture* tex) override;
@@ -185,8 +185,9 @@ public:
     void storeVkPipelineCacheData() override;
 
     bool beginRenderPass(const GrVkRenderPass*,
+                         sk_sp<const GrVkFramebuffer>,
                          const VkClearValue* colorClear,
-                         GrVkRenderTarget*,
+                         const GrSurface*,
                          const SkIRect& renderPassBounds,
                          bool forSecondaryCB);
     void endRenderPass(GrRenderTarget* target, GrSurfaceOrigin origin, const SkIRect& bounds);
@@ -218,13 +219,14 @@ private:
                                                       GrMipmapped,
                                                       GrProtected) override;
 
-    bool onUpdateBackendTexture(const GrBackendTexture&,
-                                sk_sp<GrRefCntedCallback> finishedCallback,
-                                const BackendTextureData*) override;
+    bool onClearBackendTexture(const GrBackendTexture&,
+                               sk_sp<GrRefCntedCallback> finishedCallback,
+                               std::array<float, 4> color) override;
 
     bool onUpdateCompressedBackendTexture(const GrBackendTexture&,
                                           sk_sp<GrRefCntedCallback> finishedCallback,
-                                          const BackendTextureData*) override;
+                                          const void* data,
+                                          size_t length) override;
 
     bool setBackendSurfaceState(GrVkImageInfo info,
                                 sk_sp<GrBackendSurfaceMutableStateImpl> currentState,
@@ -292,6 +294,7 @@ private:
     void addFinishedCallback(sk_sp<GrRefCntedCallback> finishedCallback);
 
     GrOpsRenderPass* onGetOpsRenderPass(GrRenderTarget*,
+                                        bool useMSAASurface,
                                         GrAttachment*,
                                         GrSurfaceOrigin,
                                         const SkIRect&,

@@ -372,7 +372,7 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
   SkIRect int_src_rect;
   src_rect.roundOut(&int_src_rect);
   DrawImage draw_image(image_, false, int_src_rect, quality,
-                       total_image_matrix);
+                       SkM44(total_image_matrix));
   auto decoded_draw_image = image_provider->GetRasterContent(draw_image);
   if (!decoded_draw_image)
     return nullptr;
@@ -414,8 +414,8 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
 }
 
 sk_sp<SkShader> PaintShader::GetSkShader(SkFilterQuality quality) const {
-  SkSamplingOptions sampling(quality,
-                             SkSamplingOptions::kMedium_asMipmapLinear);
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(quality));
 
   switch (shader_type_) {
     case Type::kEmpty:

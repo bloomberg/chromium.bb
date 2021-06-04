@@ -26,7 +26,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_checkup.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +56,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -84,11 +85,10 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager_util.h"
 #include "chrome/browser/lacros/lacros_prefs.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/lacros/lacros_startup_infobar_delegate.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "components/infobars/core/simple_alert_infobar_delegate.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
@@ -377,6 +377,11 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
       welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (IsAccountManagerAvailable(profile_))
+    welcome_enabled = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   bool serve_extensions_page =
       extensions::ShouldShowExtensionsCheckupOnStartup(profile_);
 
@@ -581,7 +586,7 @@ Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
   // Now that a restore is no longer possible, it is safe to clear DOM storage,
   // unless this is a crash recovery.
   if (!is_post_crash_launch) {
-    content::BrowserContext::GetDefaultStoragePartition(profile_)
+    profile_->GetDefaultStoragePartition()
         ->GetDOMStorageContext()
         ->StartScavengingUnusedSessionStorage();
   }
@@ -627,39 +632,29 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     if (show_bad_flags_security_warnings)
       chrome::ShowBadFlagsPrompt(web_contents);
 
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents);
+    infobars::ContentInfoBarManager* infobar_manager =
+        infobars::ContentInfoBarManager::FromWebContents(web_contents);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     PrefService* local_state = g_browser_process->local_state();
-    if (local_state) {
-      if (!local_state->GetBoolean(
-              lacros_prefs::kShowedExperimentalBannerPref)) {
-        // Show the experimental lacros info bar. auto_expire must be set to
-        // false, since otherwise an automated navigation [which can happen at
-        // launch] will cause the info bar to disappear.
-        SimpleAlertInfoBarDelegate::Create(
-            infobar_service,
-            infobars::InfoBarDelegate::EXPERIMENTAL_INFOBAR_DELEGATE_LACROS,
-            /*vector_icon=*/nullptr,
-            l10n_util::GetStringUTF16(IDS_EXPERIMENTAL_LACROS_WARNING_MESSAGE),
-            /*auto_expire=*/false, /*should_animate=*/false);
+    if (local_state &&
+        !local_state->GetBoolean(lacros_prefs::kShowedExperimentalBannerPref)) {
+      LacrosStartupInfoBarDelegate::Create(infobar_manager);
 
-        // Mark the pref as shown, so that we don't show the banner again.
-        local_state->SetBoolean(lacros_prefs::kShowedExperimentalBannerPref,
-                                true);
-      }
+      // Mark the pref as shown, so that we don't show the banner again.
+      local_state->SetBoolean(lacros_prefs::kShowedExperimentalBannerPref,
+                              true);
     }
 #endif
 
     if (!google_apis::HasAPIKeyConfigured())
-      GoogleApiKeysInfoBarDelegate::Create(infobar_service);
+      GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
 
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
       PrefService* local_state = g_browser_process->local_state();
       if (!local_state ||
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
-        ObsoleteSystemInfoBarDelegate::Create(infobar_service);
+        ObsoleteSystemInfoBarDelegate::Create(infobar_manager);
     }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

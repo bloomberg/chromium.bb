@@ -80,7 +80,7 @@ TEST_P(CreatePipelineAsyncTest, BasicUseOfCreateComputePipelineAsync) {
         };
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             ssbo.value = 1u;
         })");
     csDesc.computeStage.entryPoint = "main";
@@ -115,7 +115,7 @@ TEST_P(CreatePipelineAsyncTest, CreateComputePipelineFailed) {
         };
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             ssbo.value = 1u;
         })");
     csDesc.computeStage.entryPoint = "main0";
@@ -147,14 +147,12 @@ TEST_P(CreatePipelineAsyncTest, BasicUseOfCreateRenderPipelineAsync) {
 
     utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
     wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[stage(vertex)]] fn main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        [[location(0)]] var<out> o_color : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
     renderPipelineDescriptor.vertex.module = vsModule;
     renderPipelineDescriptor.cFragment.module = fsModule;
@@ -217,14 +215,12 @@ TEST_P(CreatePipelineAsyncTest, CreateRenderPipelineFailed) {
 
     utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
     wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[stage(vertex)]] fn main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        [[location(0)]] var<out> o_color : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
     renderPipelineDescriptor.vertex.module = vsModule;
     renderPipelineDescriptor.cFragment.module = fsModule;
@@ -257,7 +253,7 @@ TEST_P(CreatePipelineAsyncTest, CreateRenderPipelineFailed) {
 TEST_P(CreatePipelineAsyncTest, ReleaseDeviceBeforeCallbackOfCreateComputePipelineAsync) {
     wgpu::ComputePipelineDescriptor csDesc;
     csDesc.computeStage.module = utils::CreateShaderModule(device, R"(
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
         })");
     csDesc.computeStage.entryPoint = "main";
 
@@ -281,14 +277,12 @@ TEST_P(CreatePipelineAsyncTest, ReleaseDeviceBeforeCallbackOfCreateComputePipeli
 TEST_P(CreatePipelineAsyncTest, ReleaseDeviceBeforeCallbackOfCreateRenderPipelineAsync) {
     utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
     wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[stage(vertex)]] fn main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        [[location(0)]] var<out> o_color : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
     renderPipelineDescriptor.vertex.module = vsModule;
     renderPipelineDescriptor.cFragment.module = fsModule;
@@ -320,7 +314,7 @@ TEST_P(CreatePipelineAsyncTest, CreateSameComputePipelineTwice) {
         };
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             ssbo.value = 1u;
         })");
     csDesc.computeStage.entryPoint = "main";
@@ -361,7 +355,7 @@ TEST_P(CreatePipelineAsyncTest, CreateSamePipelineTwiceAtSameTime) {
         };
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             ssbo.value = 1u;
         })");
     csDesc.computeStage.entryPoint = "main";

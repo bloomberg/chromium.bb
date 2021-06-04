@@ -25,7 +25,7 @@ class HistoryService;
 
 namespace optimization_guide {
 
-class OptimizationGuideDecider;
+class OptimizationGuideModelProvider;
 class PageContentAnnotationsModelManager;
 
 // The information used by HistoryService to identify a visit to a URL.
@@ -38,7 +38,7 @@ struct HistoryVisit {
 class PageContentAnnotationsService : public KeyedService {
  public:
   explicit PageContentAnnotationsService(
-      OptimizationGuideDecider* optimization_guide_decider,
+      OptimizationGuideModelProvider* optimization_guide_model_provider,
       history::HistoryService* history_service);
   ~PageContentAnnotationsService() override;
   PageContentAnnotationsService(const PageContentAnnotationsService&) = delete;
@@ -58,16 +58,16 @@ class PageContentAnnotationsService : public KeyedService {
   virtual void Annotate(const HistoryVisit& visit, const std::string& text);
 
   // Returns the version of the page topics model that is currently being used
-  // to annotate page content. Will return |base::nullopt| if no model is being
+  // to annotate page content. Will return |absl::nullopt| if no model is being
   // used to annotate page topics for received page content.
-  base::Optional<int64_t> GetPageTopicsModelVersion() const;
+  absl::optional<int64_t> GetPageTopicsModelVersion() const;
 
  private:
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // Callback invoked when |visit| has been annotated.
   void OnPageContentAnnotated(
       const HistoryVisit& visit,
-      const base::Optional<history::VisitContentModelAnnotations>&
+      const absl::optional<history::VisitContentModelAnnotations>&
           content_annotations);
 
   // Callback invoked when |history_service| has returned results for the visits

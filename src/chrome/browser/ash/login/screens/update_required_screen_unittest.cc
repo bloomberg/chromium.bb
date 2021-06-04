@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ash/login/screens/update_required_screen.h"
 
+#include <memory>
+
 #include "ash/constants/ash_switches.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/ash/login/screens/mock_error_screen.h"
 #include "chrome/browser/ash/login/startup_utils.h"
@@ -21,19 +22,22 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::Return;
+namespace ash {
+namespace {
 
-namespace chromeos {
+// TODO(https://crbug.com/1164001): remove after migrated to ash::
+using ::chromeos::FakeUpdateRequiredScreenHandler;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Return;
 
 class UpdateRequiredScreenUnitTest : public testing::Test {
  public:
@@ -56,14 +60,19 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
     wizard_context_ = std::make_unique<WizardContext>();
     fake_view_ = std::make_unique<FakeUpdateRequiredScreenHandler>();
     fake_update_engine_client_ = new FakeUpdateEngineClient();
+    DBusThreadManager::Initialize();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
-    NetworkHandler::Initialize();
+    network_handler_test_helper_ =
+        std::make_unique<chromeos::NetworkHandlerTestHelper>();
+    network_handler_test_helper_->AddDefaultProfiles();
+
     mock_network_portal_detector_ = new MockNetworkPortalDetector();
     network_portal_detector::SetNetworkPortalDetector(
         mock_network_portal_detector_);
-    mock_error_screen_.reset(new MockErrorScreen(mock_error_view_.get()));
+    mock_error_screen_ =
+        std::make_unique<MockErrorScreen>(mock_error_view_.get());
 
     // Ensure proper behavior of `UpdateRequiredScreen`'s supporting objects.
     EXPECT_CALL(*mock_network_portal_detector_, IsEnabled())
@@ -75,10 +84,6 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
 
     update_required_screen_->GetVersionUpdaterForTesting()
         ->set_wait_for_reboot_time_for_testing(base::TimeDelta::FromSeconds(0));
-
-    network_state_test_helper_ =
-        std::make_unique<chromeos::NetworkStateTestHelper>(
-            true /*use_default_devices_and_services*/);
   }
 
   void TearDown() override {
@@ -88,10 +93,9 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
     update_required_screen_.reset();
     mock_error_view_.reset();
     mock_error_screen_.reset();
-    network_state_test_helper_.reset();
 
     network_portal_detector::Shutdown();
-    NetworkHandler::Shutdown();
+    network_handler_test_helper_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -109,8 +113,9 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   MockNetworkPortalDetector* mock_network_portal_detector_;
   // Will be deleted in `DBusThreadManager::Shutdown()`.
   FakeUpdateEngineClient* fake_update_engine_client_;
-  // Initializes NetworkStateHandler
-  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  // Initializes NetworkHandler and required DBus clients.
+  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
+      network_handler_test_helper_;
 
  private:
   // Test versions of core browser infrastructure.
@@ -212,4 +217,5 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesCellularPermissionNeeded) {
             UpdateRequiredView::UPDATE_COMPLETED_NEED_REBOOT);
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

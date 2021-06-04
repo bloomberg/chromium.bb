@@ -19,10 +19,10 @@
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
@@ -74,8 +74,8 @@ ImportLockDialogView::ImportLockDialogView(
   views::Label* description_label =
       new views::Label(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT));
   description_label->SetBorder(views::CreateEmptyBorder(
-      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
-                                                                 views::TEXT)));
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::DialogContentType::kText, views::DialogContentType::kText)));
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label);

@@ -703,14 +703,6 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
 }
 
 void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
-  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
-      ::prefs::kResolveTimezoneByGeolocationMethod);
-  DCHECK(pref);
-  int setTimeZoneByGeolocation =
-      static_cast<int>(chromeos::system::TimeZoneResolverManager::
-                           TimeZoneResolveMethod::DISABLED);
-  bool value_exists = pref->GetValue()->GetAsInteger(&setTimeZoneByGeolocation);
-  DCHECK(value_exists);
   base::DictionaryValue extras;
   extras.SetBoolean("autoTimeZone",
                     chromeos::system::TimeZoneResolverManager::
@@ -756,10 +748,8 @@ int ArcSettingsServiceImpl::GetIntegerPref(const std::string& pref_name) const {
   const PrefService::Preference* pref =
       registrar_.prefs()->FindPreference(pref_name);
   DCHECK(pref);
-  int val = -1;
-  bool value_exists = pref->GetValue()->GetAsInteger(&val);
-  DCHECK(value_exists);
-  return val;
+  DCHECK(pref->GetValue()->is_int());
+  return pref->GetValue()->GetIfInt().value_or(-1);
 }
 
 bool ArcSettingsServiceImpl::IsBooleanPrefManaged(

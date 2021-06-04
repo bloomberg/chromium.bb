@@ -20,6 +20,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/privacy_sandbox/generated_floc_pref.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/generated_safe_browsing_pref.h"
@@ -34,6 +35,7 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/media_router/common/pref_names.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -59,6 +61,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
@@ -67,11 +70,11 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/ash/system/timezone_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
@@ -280,6 +283,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
         settings_api::PrefType::PREF_TYPE_BOOLEAN;
     (*s_allowlist)[::prefs::kPrivacySandboxPageViewed] =
         settings_api::PrefType::PREF_TYPE_BOOLEAN;
+    (*s_allowlist)[::kGeneratedFlocPref] =
+        settings_api::PrefType::PREF_TYPE_BOOLEAN;
   }
 
   // Security page
@@ -322,17 +327,25 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[language::prefs::kForcedLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
-  (*s_allowlist)[translate::TranslatePrefs::kPrefTranslateRecentTarget] =
+  (*s_allowlist)[::prefs::kPrefTranslateRecentTarget] =
       settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[prefs::kPrefAlwaysTranslateList] =
+      settings_api::PrefType::PREF_TYPE_LIST;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   (*s_allowlist)[::prefs::kLanguageImeMenuActivated] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::prefs::kAssistPersonalInfoEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[chromeos::prefs::kAssistPredictiveWritingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::prefs::kEmojiSuggestionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kLanguageInputMethodSpecificSettings] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_allowlist)[ash::prefs::kLastUsedImeShortcutReminderDismissed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kNextImeShortcutReminderDismissed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -352,6 +365,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Search page.
   (*s_allowlist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_allowlist)[::omnibox::kKeywordSpaceTriggeringEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Site Settings prefs.
   (*s_allowlist)[::content_settings::kCookiePrimarySetting] =
@@ -364,8 +379,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kPluginsAlwaysOpenPdfExternally] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kEnableDRM] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kProtectedContentDefault] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kEnableQuietNotificationPermissionUi] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
@@ -537,6 +552,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Guest OS
   (*s_allowlist)[crostini::prefs::kCrostiniEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[crostini::prefs::kCrostiniMicAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[crostini::prefs::kCrostiniContainers] =
@@ -586,6 +603,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[chromeos::assistant::prefs::kAssistantLaunchWithMicOpen] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::assistant::prefs::kAssistantNotificationEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Quick Answers.
+  (*s_allowlist)[chromeos::quick_answers::prefs::kQuickAnswersEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
@@ -837,7 +858,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetCrosSettingsPref(
   }
   pref_object->key = name;
   pref_object->type = GetType(name, value->type());
-  pref_object->value.reset(value->DeepCopy());
+  pref_object->value = base::Value::ToUniquePtrValue(value->Clone());
 #endif
 
   return pref_object;
@@ -868,7 +889,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object = std::make_unique<settings_api::PrefObject>();
     pref_object->key = pref->name();
     pref_object->type = GetType(name, pref->GetType());
-    pref_object->value.reset(pref->GetValue()->DeepCopy());
+    pref_object->value =
+        base::Value::ToUniquePtrValue(pref->GetValue()->Clone());
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -890,11 +912,11 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_PRIMARY_USER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name.reset(
-        new std::string(user_manager::UserManager::Get()
-                            ->GetPrimaryUser()
-                            ->GetAccountId()
-                            .GetUserEmail()));
+    pref_object->controlled_by_name =
+        std::make_unique<std::string>(user_manager::UserManager::Get()
+                                          ->GetPrimaryUser()
+                                          ->GetAccountId()
+                                          .GetUserEmail());
     return pref_object;
   }
 #endif
@@ -920,7 +942,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
         settings_api::ControlledBy::CONTROLLED_BY_USER_POLICY;
     pref_object->enforcement =
         settings_api::Enforcement::ENFORCEMENT_RECOMMENDED;
-    pref_object->recommended_value.reset(recommended->DeepCopy());
+    pref_object->recommended_value =
+        base::Value::ToUniquePtrValue(recommended->Clone());
     return pref_object;
   }
 
@@ -933,8 +956,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_OWNER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name.reset(new std::string(
-        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
+    pref_object->controlled_by_name = std::make_unique<std::string>(
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     return pref_object;
   }
 
@@ -1215,10 +1238,7 @@ const Extension* PrefsUtil::GetExtensionControllingPref(
     return GetExtensionOverridingHomepage(profile_);
 
   if (pref_object.key == ::prefs::kRestoreOnStartup) {
-    int restore_on_startup;
-    CHECK(pref_object.value->GetAsInteger(&restore_on_startup));
-
-    if (restore_on_startup == SessionStartupPref::kPrefValueURLs)
+    if (pref_object.value->GetInt() == SessionStartupPref::kPrefValueURLs)
       return GetExtensionOverridingStartupPages(profile_);
   }
 

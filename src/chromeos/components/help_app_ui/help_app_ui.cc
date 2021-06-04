@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "chromeos/components/help_app_ui/help_app_manager.h"
+#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
 #include "chromeos/components/help_app_ui/help_app_page_handler.h"
 #include "chromeos/components/help_app_ui/help_app_untrusted_ui.h"
+#include "chromeos/components/help_app_ui/search/search_handler.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy.h"
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
@@ -42,6 +45,8 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_HELP_APP_LOCAL_SEARCH_SERVICE_TYPES_MOJOM_JS);
   source->AddResourcePath("local_search_service_index.mojom-lite.js",
                           IDR_HELP_APP_LOCAL_SEARCH_SERVICE_INDEX_MOJOM_JS);
+  source->AddResourcePath("help_app_search.mojom-lite.js",
+                          IDR_HELP_APP_SEARCH_MOJOM_JS);
   source->AddLocalizedString("appTitle", IDS_HELP_APP_EXPLORE);
   return source;
 }
@@ -81,6 +86,26 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
                             ContentSettingsType::JAVASCRIPT,
                             ContentSettingsType::SOUND,
                         });
+
+  content::WebUIDataSource* magazine_untrusted_source =
+      CreateHelpAppKidsMagazineUntrustedDataSource();
+
+  content::WebUIDataSource::Add(browser_context, magazine_untrusted_source);
+
+  // Register common permissions for chrome-untrusted:// pages.
+  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // granted by default.
+  auto* magazine_permissions_allowlist =
+      WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin magazine_untrusted_origin =
+      url::Origin::Create(GURL(kChromeUIHelpAppKidsMagazineUntrustedURL));
+  magazine_permissions_allowlist->RegisterAutoGrantedPermissions(
+      magazine_untrusted_origin, {
+                                     ContentSettingsType::COOKIES,
+                                     ContentSettingsType::IMAGES,
+                                     ContentSettingsType::JAVASCRIPT,
+                                     ContentSettingsType::SOUND,
+                                 });
 }
 
 HelpAppUI::~HelpAppUI() = default;
@@ -103,6 +128,17 @@ void HelpAppUI::BindInterface(
     factory->GetIndex(chromeos::local_search_service::IndexId::kHelpApp,
                       chromeos::local_search_service::Backend::kInvertedIndex,
                       std::move(index_receiver));
+  }
+}
+
+void HelpAppUI::BindInterface(
+    mojo::PendingReceiver<help_app::mojom::SearchHandler> receiver) {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kHelpAppLauncherSearch)) {
+    help_app::HelpAppManagerFactory::GetForBrowserContext(
+        web_ui()->GetWebContents()->GetBrowserContext())
+        ->search_handler()
+        ->BindInterface(std::move(receiver));
   }
 }
 

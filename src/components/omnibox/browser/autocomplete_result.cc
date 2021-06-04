@@ -21,13 +21,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/intranet_redirector_state.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
-#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -187,35 +187,16 @@ void AutocompleteResult::TransferOldMatches(
 
 void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
                                        const ACMatches& matches) {
-  for (const auto& i : matches) {
-    DCHECK_EQ(AutocompleteMatch::SanitizeString(i.contents), i.contents);
-    DCHECK_EQ(AutocompleteMatch::SanitizeString(i.description),
-              i.description);
-    matches_.push_back(i);
-    if (!AutocompleteMatch::IsSearchType(i.type) &&
-        i.type != ACMatchType::DOCUMENT_SUGGESTION) {
-      const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
-          OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input));
-      bool emphasize = false;
-      switch (condition) {
-        case OmniboxFieldTrial::EMPHASIZE_WHEN_NONEMPTY:
-          emphasize = !i.description.empty();
-          break;
-        case OmniboxFieldTrial::EMPHASIZE_WHEN_TITLE_MATCHES:
-          emphasize = !i.description.empty() &&
-                      AutocompleteMatch::HasMatchStyle(i.description_class);
-          break;
-        case OmniboxFieldTrial::EMPHASIZE_WHEN_ONLY_TITLE_MATCHES:
-          emphasize = !i.description.empty() &&
-                      AutocompleteMatch::HasMatchStyle(i.description_class) &&
-                      !AutocompleteMatch::HasMatchStyle(i.contents_class);
-          break;
-        case OmniboxFieldTrial::EMPHASIZE_NEVER:
-          break;
-        default:
-          NOTREACHED();
-      }
-      matches_.back().swap_contents_and_description = emphasize;
+  for (const auto& match : matches) {
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents),
+              match.contents);
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
+              match.description);
+    matches_.push_back(match);
+    if (!match.description.empty() &&
+        !AutocompleteMatch::IsSearchType(match.type) &&
+        match.type != ACMatchType::DOCUMENT_SUGGESTION) {
+      matches_.back().swap_contents_and_description = true;
     }
   }
 }
@@ -468,6 +449,10 @@ void AutocompleteResult::AttachPedalsToMatches(
     const AutocompleteInput& input,
     const AutocompleteProviderClient& client) {
   OmniboxPedalProvider* provider = client.GetPedalProvider();
+  if (!provider) {
+    return;
+  }
+
   // Used to ensure we keep only one Pedal of each kind.
   std::unordered_set<OmniboxPedal*> pedals_found;
 

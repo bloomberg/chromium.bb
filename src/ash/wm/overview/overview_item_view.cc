@@ -15,6 +15,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/wm_highlight_item_border.h"
+#include "base/containers/contains.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -60,21 +61,6 @@ constexpr int kCloseButtonInkDropRadiusDp = 18;
 // ash/resources/vector_icons/overview_window_close.icon.
 constexpr int kCloseButtonIconMarginDp = 5;
 
-// Shadow values for shadow on overview header views.
-constexpr int kTitleShadowBlur = 28;
-constexpr SkColor kTitleShadowColor = SkColorSetA(SK_ColorBLACK, 82);
-constexpr int kIconShadowBlur = 10;
-constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
-
-gfx::ShadowValues GetTitleShadowValues() {
-  return {
-      gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur, kTitleShadowColor)};
-}
-
-gfx::ShadowValues GetIconShadowValues() {
-  return {gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur, kIconShadowColor)};
-}
-
 // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
 // otherwise. The tween type differs for |visible| and if |visible| is true
 // there is a slight delay before the animation begins. Does not animate if
@@ -103,7 +89,8 @@ class OverviewCloseButton : public views::ImageButton {
  public:
   explicit OverviewCloseButton(PressedCallback callback)
       : views::ImageButton(std::move(callback)) {
-    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+    views::InkDrop::UseInkDropForFloodFillRipple(ink_drop());
     SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
     SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
     SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
@@ -122,30 +109,18 @@ class OverviewCloseButton : public views::ImageButton {
   void ResetListener() { SetCallback(views::Button::PressedCallback()); }
 
  protected:
-  // views::Button:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
-    ink_drop->SetAutoHighlightMode(
-        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-    return ink_drop;
-  }
-
   // views::ImageButton:
   void OnThemeChanged() override {
     views::ImageButton::OnThemeChanged();
-    // Add a shadow to the close vector icon.
     auto* color_provider = AshColorProvider::Get();
     const SkColor color = color_provider->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kButtonIconColor);
-    gfx::ImageSkia image_with_shadow =
-        gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-            gfx::CreateVectorIcon(kOverviewWindowCloseIcon, color),
-            GetIconShadowValues());
-    SetImage(views::Button::STATE_NORMAL, image_with_shadow);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(kOverviewWindowCloseIcon, color));
 
     const auto ripple_attributes = color_provider->GetRippleAttributes(color);
-    SetInkDropBaseColor(ripple_attributes.base_color);
-    SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
+    ink_drop()->SetBaseColor(ripple_attributes.base_color);
+    ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
   }
 };
 
@@ -166,11 +141,6 @@ OverviewItemView::OverviewItemView(
       std::make_unique<OverviewCloseButton>(std::move(close_callback)));
   close_button_->SetPaintToLayer();
   close_button_->layer()->SetFillsBoundsOpaquely(false);
-  // The button's image may be larger than |kHeaderHeightDp| due to added
-  // shadows.
-  close_button_->SetPreferredSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
-
-  title_label()->SetShadows(GetTitleShadowValues());
 
   // Call this last as it calls |Layout()| which relies on the some of the other
   // elements existing.
@@ -183,11 +153,6 @@ OverviewItemView::OverviewItemView(
   }
 
   UpdateIconView();
-
-  // Do not use a layout manager for the header as its elements have shadows
-  // which need to overlap each other. Remove the FlexLayout set in
-  // WindowMiniView.
-  header_view()->SetLayoutManager(nullptr);
 }
 
 OverviewItemView::~OverviewItemView() = default;
@@ -307,41 +272,6 @@ gfx::Size OverviewItemView::GetPreviewViewSize() const {
   return gfx::ToRoundedSize(target_size);
 }
 
-gfx::ImageSkia OverviewItemView::ModifyIcon(gfx::ImageSkia* image) const {
-  gfx::ImageSkia image_resized = gfx::ImageSkiaOperations::CreateResizedImage(
-      *image, skia::ImageOperations::RESIZE_BEST, kIconSize);
-  return gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-      image_resized, GetIconShadowValues());
-}
-
-void OverviewItemView::Layout() {
-  WindowMiniView::Layout();
-
-  // Layout the header items. The icon, if available should be aligned left, the
-  // close button should be aligned right and the title should take up all the
-  // space in between but the text should be aligned left.
-  gfx::Rect header_bounds = header_view()->bounds();
-  const int width = header_bounds.width();
-  const int height = header_bounds.height();
-  int x = 0;
-  if (icon_view()) {
-    const int icon_width = kIconSize.width();
-    icon_view()->SetBounds(x, 0, icon_width, height);
-    x += icon_width;
-  }
-  const gfx::Size close_button_size = close_button()->GetPreferredSize();
-  close_button()->SetBoundsRect(gfx::Rect(
-      gfx::Point(width - close_button_size.width(), 0), close_button_size));
-
-  // The title label text has shadow blur of |kTitleShadowBlur|. This will cause
-  // the preferred size of the title label to increase by |kTitleShadowBlur| / 2
-  // on all sides. To create the visual of the title label being
-  // |kHeaderPaddingDp| away from the icon (excluding the shadows), layout it
-  // somewhat on top of the icon.
-  x -= (kTitleShadowBlur / 2 - kHeaderPaddingDp);
-  title_label()->SetBounds(x, 0, width - close_button_size.width() - x, height);
-}
-
 views::View* OverviewItemView::GetView() {
   return this;
 }
@@ -357,6 +287,13 @@ void OverviewItemView::MaybeCloseHighlightedView() {
 }
 
 void OverviewItemView::MaybeSwapHighlightedView(bool right) {}
+
+bool OverviewItemView::MaybeActivateHighlightedViewOnOverviewExit(
+    OverviewSession* overview_session) {
+  DCHECK(overview_session);
+  overview_session->SelectWindow(overview_item_);
+  return true;
+}
 
 void OverviewItemView::OnViewHighlighted() {
   UpdateBorderState(/*show=*/true);

@@ -17,7 +17,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace borealis {
 
@@ -75,14 +74,14 @@ void CreateDiskImage::RunInternal(BorealisContext* context) {
   request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
   request.set_disk_size(0);
 
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->CreateDiskImage(
+  chromeos::ConciergeClient::Get()->CreateDiskImage(
       std::move(request), base::BindOnce(&CreateDiskImage::OnCreateDiskImage,
                                          weak_factory_.GetWeakPtr(), context));
 }
 
 void CreateDiskImage::OnCreateDiskImage(
     BorealisContext* context,
-    base::Optional<vm_tools::concierge::CreateDiskImageResponse> response) {
+    absl::optional<vm_tools::concierge::CreateDiskImageResponse> response) {
   if (!response) {
     context->set_disk_path(base::FilePath());
     Complete(BorealisStartupResult::kDiskImageFailed,
@@ -114,6 +113,7 @@ void StartBorealisVm::RunInternal(BorealisContext* context) {
   request.set_enable_gpu(true);
   request.set_software_tpm(false);
   request.set_enable_audio_capture(false);
+  request.set_enable_vulkan(true);
   request.set_name(context->vm_name());
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
@@ -129,14 +129,14 @@ void StartBorealisVm::RunInternal(BorealisContext* context) {
                        chromeos::features::kExoPointerLock)
                        ? "enabled"
                        : "disabled");
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->StartTerminaVm(
+  chromeos::ConciergeClient::Get()->StartTerminaVm(
       std::move(request), base::BindOnce(&StartBorealisVm::OnStartBorealisVm,
                                          weak_factory_.GetWeakPtr(), context));
 }
 
 void StartBorealisVm::OnStartBorealisVm(
     BorealisContext* context,
-    base::Optional<vm_tools::concierge::StartVmResponse> response) {
+    absl::optional<vm_tools::concierge::StartVmResponse> response) {
   if (!response) {
     Complete(BorealisStartupResult::kStartVmFailed,
              "Failed to start Borealis VM: Empty response.");
@@ -171,7 +171,7 @@ BorealisLaunchWatcher& AwaitBorealisStartup::GetWatcherForTesting() {
 
 void AwaitBorealisStartup::OnAwaitBorealisStartup(
     BorealisContext* context,
-    base::Optional<std::string> container) {
+    absl::optional<std::string> container) {
   if (!container) {
     Complete(BorealisStartupResult::kAwaitBorealisStartupFailed,
              "Awaiting for Borealis launch failed: timed out");

@@ -4,7 +4,7 @@
 
 package osp
 
-// TODO(pthatcher):
+// TODO(jophba):
 // - Write messages as well
 
 import (
@@ -14,7 +14,7 @@ import (
 )
 
 func ReadMessagesAsServer(ctx context.Context, instanceName string, port int, cert tls.Certificate, messages chan<- interface{}) error {
-	// TODO(pthatcher): log error if it fails
+	// TODO(jophba): log error if it fails
 	go RunMdnsServer(ctx, instanceName, port)
 	streams := make(chan io.ReadWriteCloser)
 	go RunQuicServer(ctx, port, cert, streams)

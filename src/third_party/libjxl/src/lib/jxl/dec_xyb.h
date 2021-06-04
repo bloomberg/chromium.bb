@@ -20,8 +20,10 @@
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/status.h"
+#include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/dec_bit_reader.h"
 #include "lib/jxl/image.h"
+#include "lib/jxl/image_metadata.h"
 #include "lib/jxl/opsin_params.h"
 
 namespace jxl {
@@ -33,6 +35,18 @@ struct OpsinParams {
   float opsin_biases_cbrt[4];
   float quant_biases[4];
   void Init(float intensity_target);
+};
+
+struct OutputEncodingInfo {
+  ColorEncoding color_encoding;
+  // Used for Gamma and DCI transfer functions.
+  float inverse_gamma;
+  // Contains an opsin matrix that converts to the primaries of the output
+  // encoding.
+  OpsinParams opsin_params;
+  Status Set(const ImageMetadata& metadata);
+  bool all_default_opsin = true;
+  bool color_encoding_is_original = false;
 };
 
 // Converts `inout` (not padded) from opsin to linear sRGB in-place. Called from
@@ -55,12 +69,14 @@ ImageF UpsampleV2(const ImageF& src, ThreadPool* pool);
 
 // WARNING: this uses unaligned accesses, so the caller must first call
 // src.InitializePaddingForUnalignedAccesses() to avoid msan crashes.
-ImageF UpsampleH2(const ImageF& src, ThreadPool* pool);
+ImageF UpsampleH2(const ImageF& src, size_t output_xsize, ThreadPool* pool);
 
 bool HasFastXYBTosRGB8();
 void FastXYBTosRGB8(const Image3F& input, const Rect& input_rect,
-                    const Rect& output_buf_rect,
-                    uint8_t* JXL_RESTRICT output_buf, size_t xsize);
+                    const Rect& output_buf_rect, const ImageF* alpha,
+                    const Rect& alpha_rect, bool is_rgba,
+                    uint8_t* JXL_RESTRICT output_buf, size_t xsize,
+                    size_t output_stride);
 
 }  // namespace jxl
 

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -30,11 +29,13 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
 #include "net/net_buildflags.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 namespace {
@@ -71,7 +72,7 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
 
   void OnComplete(int error,
                   const net::ResolveErrorInfo& resolve_error_info,
-                  const base::Optional<net::AddressList>& addresses) override {
+                  const absl::optional<net::AddressList>& addresses) override {
     DCHECK(!complete_);
 
     complete_ = true;
@@ -104,17 +105,17 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
     return result_error_;
   }
 
-  const base::Optional<net::AddressList>& result_addresses() const {
+  const absl::optional<net::AddressList>& result_addresses() const {
     DCHECK(complete_);
     return result_addresses_;
   }
 
-  const base::Optional<std::vector<std::string>>& result_text() const {
+  const absl::optional<std::vector<std::string>>& result_text() const {
     DCHECK(complete_);
     return result_text_;
   }
 
-  const base::Optional<std::vector<net::HostPortPair>>& result_hosts() const {
+  const absl::optional<std::vector<net::HostPortPair>>& result_hosts() const {
     DCHECK(complete_);
     return result_hosts_;
   }
@@ -125,9 +126,9 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   bool complete_;
   int top_level_result_error_;
   int result_error_;
-  base::Optional<net::AddressList> result_addresses_;
-  base::Optional<std::vector<std::string>> result_text_;
-  base::Optional<std::vector<net::HostPortPair>> result_hosts_;
+  absl::optional<net::AddressList> result_addresses_;
+  absl::optional<std::vector<std::string>> result_text_;
+  absl::optional<std::vector<net::HostPortPair>> result_hosts_;
   base::RunLoop* const run_loop_;
 };
 
@@ -708,15 +709,15 @@ TEST_F(HostResolverTest, LoopbackOnly) {
               testing::ElementsAre(CreateExpectedEndPoint("127.0.12.24", 80)));
 }
 
-TEST_F(HostResolverTest, SecureDnsModeOverride) {
+TEST_F(HostResolverTest, HandlesSecureDnsPolicyParameter) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->secure_dns_mode_override =
-      network::mojom::OptionalSecureDnsMode::SECURE;
+  optional_parameters->secure_dns_policy =
+      network::mojom::SecureDnsPolicy::DISABLE;
 
   base::RunLoop run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
@@ -730,8 +731,8 @@ TEST_F(HostResolverTest, SecureDnsModeOverride) {
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
-  EXPECT_EQ(net::SecureDnsMode::kSecure,
-            inner_resolver->last_secure_dns_mode_override().value());
+  EXPECT_EQ(net::SecureDnsPolicy::kDisable,
+            inner_resolver->last_secure_dns_policy());
 }
 
 TEST_F(HostResolverTest, Failure_Sync) {
@@ -1292,7 +1293,9 @@ TEST_F(HostResolverTest, TextResults) {
       net::HostResolver::CreateStandaloneContextResolver(net::NetLog::Get());
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
-  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
+  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(
+      /*enabled=*/true,
+      /*additional_dns_types_enabled=*/true);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -1331,7 +1334,9 @@ TEST_F(HostResolverTest, HostResults) {
       net::HostResolver::CreateStandaloneContextResolver(net::NetLog::Get());
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
-  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
+  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(
+      /*enabled=*/true,
+      /*additional_dns_types_enabled=*/true);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -1354,6 +1359,40 @@ TEST_F(HostResolverTest, HostResults) {
               testing::Optional(testing::UnorderedElementsAre(
                   net::HostPortPair("google.com", 160),
                   net::HostPortPair("chromium.org", 160))));
+  EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+}
+
+TEST_F(HostResolverTest, RespectsDisablingAdditionalQueryTypes) {
+  net::MockDnsClientRuleList rules;
+  auto dns_client = std::make_unique<net::MockDnsClient>(CreateValidDnsConfig(),
+                                                         std::move(rules));
+  dns_client->set_ignore_system_config_changes(true);
+
+  std::unique_ptr<net::ContextHostResolver> inner_resolver =
+      net::HostResolver::CreateStandaloneContextResolver(net::NetLog::Get());
+  inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
+      std::move(dns_client));
+  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(
+      /*enabled=*/true,
+      /*additional_dns_types_enabled=*/false);
+
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->dns_query_type = net::DnsQueryType::PTR;
+  mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
+  TestResolveHostClient response_client(&pending_response_client, &run_loop);
+
+  resolver.ResolveHost(
+      net::HostPortPair("example.com", 160), net::NetworkIsolationKey(),
+      std::move(optional_parameters), std::move(pending_response_client));
+  run_loop.Run();
+
+  // No queries made, so result is `ERR_DNS_CACHE_MISS`.
+  EXPECT_THAT(response_client.result_error(),
+              net::test::IsError(net::ERR_DNS_CACHE_MISS));
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
 

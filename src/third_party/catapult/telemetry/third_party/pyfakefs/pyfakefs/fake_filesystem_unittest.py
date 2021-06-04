@@ -39,15 +39,16 @@ retrofitted to use `pyfakefs` by simply changing their base class from
 `:py:class`pyfakefs.fake_filesystem_unittest.TestCase`.
 """
 
+from __future__ import absolute_import
 import sys
 import unittest
 import doctest
-import fake_filesystem
-import fake_filesystem_glob
-import fake_filesystem_shutil
-import fake_tempfile
+from . import fake_filesystem
+from . import fake_filesystem_glob
+from . import fake_filesystem_shutil
+from . import fake_tempfile
 if sys.version_info < (3,):
-    import __builtin__ as builtins
+    import six.moves.builtins as builtins
 else:
     import builtins
 
@@ -101,15 +102,15 @@ class Patcher(object):
     Instantiate a stub creator to bind and un-bind the file-related modules to
     the :py:mod:`pyfakefs` fake modules.
     '''
-    SKIPMODULES = set([None, fake_filesystem, fake_filesystem_glob,
-                      fake_filesystem_shutil, fake_tempfile, sys])
+    SKIPMODULES = {None, fake_filesystem, fake_filesystem_glob,
+                      fake_filesystem_shutil, fake_tempfile, sys}
     '''Stub nothing that is imported within these modules.
     `sys` is included to prevent `sys.path` from being stubbed with the fake
     `os.path`.
     '''
     assert None in SKIPMODULES, "sys.modules contains 'None' values; must skip them."
     
-    SKIPNAMES = set(['os', 'glob', 'path', 'shutil', 'tempfile'])
+    SKIPNAMES = {'os', 'glob', 'path', 'shutil', 'tempfile'}
         
     def __init__(self):
         # Attributes set by _findModules()
@@ -119,7 +120,7 @@ class Patcher(object):
         self._shutilModules = None
         self._tempfileModules = None
         self._findModules()
-        assert None not in vars(self).values(), \
+        assert None not in list(vars(self).values()), \
                 "_findModules() missed the initialization of an instance variable"
         
         # Attributes set by _refresh()
@@ -134,7 +135,7 @@ class Patcher(object):
         # _isStale is set by tearDown(), reset by _refresh()
         self._isStale = True
         self._refresh()
-        assert None not in vars(self).values(), \
+        assert None not in list(vars(self).values()), \
                 "_refresh() missed the initialization of an instance variable"
         assert self._isStale == False, "_refresh() did not reset _isStale"
         

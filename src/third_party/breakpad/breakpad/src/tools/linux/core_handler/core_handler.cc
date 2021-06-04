@@ -40,6 +40,7 @@
 
 #include "client/linux/minidump_writer/linux_core_dumper.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
+#include "common/path_helper.h"
 #include "common/scoped_ptr.h"
 
 namespace {
@@ -58,7 +59,8 @@ using google_breakpad::scoped_array;
 const int core_read_size = 1024 * 1024;
 
 void ShowUsage(const char* argv0) {
-  fprintf(stderr, "Usage: %s <process id> <minidump file>\n\n", argv0);
+  fprintf(stderr, "Usage: %s <process id> <minidump file>\n\n",
+          google_breakpad::BaseName(argv0).c_str());
   fprintf(stderr,
           "A tool which serves as a core dump handler and produces "
           "minidump files.\n");

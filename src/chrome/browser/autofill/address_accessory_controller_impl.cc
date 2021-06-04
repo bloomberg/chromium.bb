@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -102,13 +103,24 @@ AddressAccessoryController* AddressAccessoryController::GetOrCreate(
 
 void AddressAccessoryControllerImpl::RegisterFillingSourceObserver(
     FillingSourceObserver observer) {
-  NOTIMPLEMENTED();
+  source_observer_ = std::move(observer);
 }
 
-base::Optional<autofill::AccessorySheetData>
+absl::optional<autofill::AccessorySheetData>
 AddressAccessoryControllerImpl::GetSheetData() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  if (!personal_data_manager_) {
+    return absl::nullopt;
+  }
+  std::vector<AutofillProfile*> profiles =
+      personal_data_manager_->GetProfilesToSuggest();
+  std::u16string title_or_empty_message;
+  if (profiles.empty()) {
+    title_or_empty_message =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SHEET_EMPTY_MESSAGE);
+  }
+  return autofill::CreateAccessorySheetData(
+      autofill::AccessoryTabType::ADDRESSES, title_or_empty_message,
+      UserInfosForProfiles(profiles), CreateManageAddressesFooter());
 }
 
 void AddressAccessoryControllerImpl::OnFillingTriggered(
@@ -145,20 +157,27 @@ void AddressAccessoryControllerImpl::OnToggleChanged(
 }
 
 void AddressAccessoryControllerImpl::RefreshSuggestions() {
-  std::vector<AutofillProfile*> profiles = GetProfiles();
-  std::u16string title_or_empty_message;
-  if (profiles.empty())
-    title_or_empty_message =
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SHEET_EMPTY_MESSAGE);
-  GetManualFillingController()->RefreshSuggestions(
-      autofill::CreateAccessorySheetData(
-          autofill::AccessoryTabType::ADDRESSES, title_or_empty_message,
-          UserInfosForProfiles(profiles), CreateManageAddressesFooter()));
+  if (!personal_data_manager_) {
+    personal_data_manager_ =
+        autofill::PersonalDataManagerFactory::GetForProfile(
+            Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+    personal_data_manager_->AddObserver(this);
+  }
+  absl::optional<AccessorySheetData> data = GetSheetData();
+  if (source_observer_) {
+    source_observer_.Run(this, IsFillingSourceAvailable(data.has_value()));
+  } else {
+    // TODO(crbug.com/1169167): Remove once filling controller pulls this
+    // information instead of waiting to get it pushed.
+    DCHECK(data.has_value());
+    GetManualFillingController()->RefreshSuggestions(std::move(data.value()));
+  }
 }
 
 void AddressAccessoryControllerImpl::OnPersonalDataChanged() {
   RefreshSuggestions();
 }
+
 // static
 void AddressAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
@@ -183,16 +202,6 @@ AddressAccessoryControllerImpl::AddressAccessoryControllerImpl(
     : web_contents_(web_contents),
       mf_controller_(std::move(mf_controller)),
       personal_data_manager_(nullptr) {}
-
-std::vector<AutofillProfile*> AddressAccessoryControllerImpl::GetProfiles() {
-  if (!personal_data_manager_) {
-    personal_data_manager_ =
-        autofill::PersonalDataManagerFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-    personal_data_manager_->AddObserver(this);
-  }
-  return personal_data_manager_->GetProfilesToSuggest();
-}
 
 base::WeakPtr<ManualFillingController>
 AddressAccessoryControllerImpl::GetManualFillingController() {

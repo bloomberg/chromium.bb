@@ -14,7 +14,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing/core/db/prefix_iterator.h"
 #include "components/safe_browsing/core/db/v4_rice.h"
 #include "components/safe_browsing/core/db/v4_store.pb.h"
@@ -38,8 +40,11 @@ const char kReadFromDisk[] = "SafeBrowsing.V4ReadFromDisk";
 const char kApplyUpdate[] = ".ApplyUpdate";
 const char kDecodeAdditions[] = ".DecodeAdditions";
 const char kDecodeRemovals[] = ".DecodeRemovals";
-const char kAdditionsHashesCount[] = ".AdditionsHashesCount";
+const char kAdditionsHashesCountPartialUpdate[] = ".AdditionsHashesCount";
+const char kAdditionsHashesCountFullUpdate[] = ".AdditionsHashesCount2";
 const char kRemovalsHashesCount[] = ".RemovalsHashesCount";
+const char kApplyUpdateDuration[] = ".ApplyUpdateDuration";
+const char kVerifyChecksumDuration[] = ".VerifyChecksumDuration";
 // Part 3: Represent the unit of value being measured and logged.
 const char kResult[] = ".Result";
 // Part 4 (optional): Represent the name of the list for which the metric is
@@ -57,7 +62,9 @@ const uint32_t kFileVersion = 9;
 constexpr size_t kMaxStoreSizeBytes = 50 * 1000 * 1000;
 
 // The maximum size of additions hashes in a single update response.
-const int32_t ADDITIONS_HASHES_COUNT_MAX = 10000;
+const int32_t ADDITIONS_HASHES_COUNT_PARTIAL_UPDATE_MAX = 10000;
+const int32_t ADDITIONS_HASHES_COUNT_FULL_UPDATE_MAX = 5000000;
+
 // The maximum size of removals hashes in a single update response.
 const int32_t REMOVALS_HASHES_COUNT_MAX = 10000;
 
@@ -89,6 +96,14 @@ void RecordCountWithAndWithoutSuffix(const std::string& metric,
                                  /*buckets=*/50);
 }
 
+void RecordTimeWithAndWithoutSuffix(const std::string& metric,
+                                    base::TimeDelta duration,
+                                    const base::FilePath& file_path) {
+  base::UmaHistogramTimes(metric, duration);
+  std::string suffix = GetUmaSuffixForStore(file_path);
+  base::UmaHistogramTimes(metric + suffix, duration);
+}
+
 void RecordApplyUpdateResult(const std::string& base_metric,
                              ApplyUpdateResult result,
                              const base::FilePath& file_path) {
@@ -113,8 +128,15 @@ void RecordDecodeRemovalsResult(const std::string& base_metric,
 void RecordAdditionsHashesCount(const std::string& base_metric,
                                 int32_t count,
                                 const base::FilePath& file_path) {
-  RecordCountWithAndWithoutSuffix(base_metric + kAdditionsHashesCount, count,
-                                  ADDITIONS_HASHES_COUNT_MAX, file_path);
+  if (base_metric == kProcessFullUpdate) {
+    RecordCountWithAndWithoutSuffix(
+        base_metric + kAdditionsHashesCountFullUpdate, count,
+        ADDITIONS_HASHES_COUNT_FULL_UPDATE_MAX, file_path);
+  } else {
+    RecordCountWithAndWithoutSuffix(
+        base_metric + kAdditionsHashesCountPartialUpdate, count,
+        ADDITIONS_HASHES_COUNT_PARTIAL_UPDATE_MAX, file_path);
+  }
 }
 
 void RecordRemovalsHashesCount(const std::string& base_metric,
@@ -122,6 +144,20 @@ void RecordRemovalsHashesCount(const std::string& base_metric,
                                const base::FilePath& file_path) {
   RecordCountWithAndWithoutSuffix(base_metric + kRemovalsHashesCount, count,
                                   REMOVALS_HASHES_COUNT_MAX, file_path);
+}
+
+void RecordApplyUpdateDuration(const std::string& base_metric,
+                               base::TimeDelta duration,
+                               const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutSuffix(base_metric + kApplyUpdateDuration, duration,
+                                 file_path);
+}
+
+void RecordVerifyChecksumDuration(const std::string& base_metric,
+                                  base::TimeDelta duration,
+                                  const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutSuffix(base_metric + kVerifyChecksumDuration,
+                                 duration, file_path);
 }
 
 void RecordStoreReadResult(StoreReadResult result) {
@@ -328,6 +364,7 @@ void V4Store::ApplyUpdate(
     std::unique_ptr<ListUpdateResponse> response,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     UpdatedStoreReadyCallback callback) {
+  base::ElapsedThreadTimer thread_timer;
   std::unique_ptr<V4Store> new_store(
       new V4Store(task_runner_, store_path_, file_size_));
   ApplyUpdateResult apply_update_result;
@@ -361,6 +398,7 @@ void V4Store::ApplyUpdate(
   last_apply_update_result_ = apply_update_result;
 
   RecordApplyUpdateResult(metric, apply_update_result, store_path_);
+  RecordApplyUpdateDuration(metric, thread_timer.Elapsed(), store_path_);
 
   // Posting the task should be the last thing to do in this function.
   // Otherwise, the posted task can end up running in parallel. If that
@@ -747,7 +785,7 @@ HashPrefix V4Store::GetMatchingHashPrefix(base::StringPiece full_hash) {
     const PrefixSize& prefix_size = pair.first;
     base::StringPiece hash_prefix = full_hash.substr(0, prefix_size);
     if (HashPrefixMatches(hash_prefix, pair.second, prefix_size))
-      return hash_prefix.as_string();
+      return std::string(hash_prefix);
   }
   return HashPrefix();
 }
@@ -761,6 +799,7 @@ bool V4Store::HashPrefixMatches(base::StringPiece prefix,
 }
 
 bool V4Store::VerifyChecksum() {
+  base::ElapsedThreadTimer thread_timer;
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (expected_checksum_.empty()) {
@@ -808,9 +847,14 @@ bool V4Store::VerifyChecksum() {
                << "; expected: " << expected_checksum_b64
                << "; store: " << *this;
 #endif
+      RecordVerifyChecksumDuration(kReadFromDisk, thread_timer.Elapsed(),
+                                   store_path_);
       return false;
     }
   }
+
+  RecordVerifyChecksumDuration(kReadFromDisk, thread_timer.Elapsed(),
+                               store_path_);
   return true;
 }
 

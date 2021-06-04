@@ -6,6 +6,7 @@
 // to be conformant.
 
 #include "ui/gl/test/gl_image_test_template.h"
+#include "base/strings/stringprintf.h"
 
 namespace gl {
 
@@ -137,9 +138,9 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
 
 }  // namespace internal
 
-base::Optional<GLImplementationParts>
+absl::optional<GLImplementationParts>
 GLImageTestDelegateBase::GetPreferedGLImplementation() const {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool GLImageTestDelegateBase::SkipTest() const {

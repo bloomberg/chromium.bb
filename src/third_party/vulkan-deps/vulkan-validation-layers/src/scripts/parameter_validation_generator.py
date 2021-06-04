@@ -156,6 +156,7 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             'vkCreateRenderPass2KHR',
             'vkCreateBuffer',
             'vkCreateImage',
+            'vkCreatePipelineLayout',
             'vkCreateGraphicsPipelines',
             'vkCreateComputePipelines',
             'vkCreateRayTracingPipelinesNV',
@@ -241,7 +242,9 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             'vkGetAccelerationStructureBuildSizesKHR',
             'vkCmdWriteAccelerationStructuresPropertiesNV',
             'vkCreateDisplayModeKHR',
-            'vkCreatePrivateDataSlotEXT'
+            'vkCreatePrivateDataSlotEXT',
+            'vkCmdSetVertexInputEXT',
+            'vkCmdPushConstants'
             ]
 
         # Commands to ignore

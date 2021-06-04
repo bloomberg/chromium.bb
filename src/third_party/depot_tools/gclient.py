@@ -2605,8 +2605,8 @@ def CMDstatus(parser, args):
   gclient sync --force
       update files from SCM according to current configuration, for
       all modules (useful for recovering files deleted from local copy)
-  gclient sync --revision src@31000
-      update src directory to r31000
+  gclient sync --revision src@GIT_COMMIT_OR_REF
+      update src directory to GIT_COMMIT_OR_REF
 
 JSON output format:
 If the --output-json option is specified, the following document structure will
@@ -2634,14 +2634,15 @@ def CMDsync(parser, args):
                     help='don\'t run pre-DEPS hooks', default=False)
   parser.add_option('-r', '--revision', action='append',
                     dest='revisions', metavar='REV', default=[],
-                    help='Enforces revision/hash for the solutions with the '
+                    help='Enforces git ref/hash for the solutions with the '
                          'format src@rev. The src@ part is optional and can be '
                          'skipped. You can also specify URLs instead of paths '
                          'and gclient will find the solution corresponding to '
                          'the given URL. If a path is also specified, the URL '
                          'takes precedence. -r can be used multiple times when '
                          '.gclient has multiple solutions configured, and will '
-                         'work even if the src@ part is skipped.')
+                         'work even if the src@ part is skipped. Revision '
+                         'numbers (e.g. 31000 or r31000) are not supported.')
   parser.add_option('--patch-ref', action='append',
                     dest='patch_refs', metavar='GERRIT_REF', default=[],
                     help='Patches the given reference with the format '

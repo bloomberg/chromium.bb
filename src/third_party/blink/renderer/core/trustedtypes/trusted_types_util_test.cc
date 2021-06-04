@@ -9,8 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_trustedscript.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -29,10 +31,11 @@ void TrustedTypesCheckForHTMLThrows(const String& string) {
   String s = TrustedTypesCheckForHTML(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  window->GetContentSecurityPolicy()->DidReceiveHeader(
-      "require-trusted-types-for 'script'", *(window->GetSecurityOrigin()),
+  window->GetContentSecurityPolicy()->AddPolicies(ParseContentSecurityPolicies(
+      "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
+      network::mojom::ContentSecurityPolicySource::kMeta,
+      *(window->GetSecurityOrigin())));
   ASSERT_FALSE(exception_state.HadException());
   String s1 = TrustedTypesCheckForHTML(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
@@ -49,10 +52,11 @@ void TrustedTypesCheckForScriptThrows(const String& string) {
   String s = TrustedTypesCheckForScript(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  window->GetContentSecurityPolicy()->DidReceiveHeader(
-      "require-trusted-types-for 'script'", *(window->GetSecurityOrigin()),
+  window->GetContentSecurityPolicy()->AddPolicies(ParseContentSecurityPolicies(
+      "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
+      network::mojom::ContentSecurityPolicySource::kMeta,
+      *(window->GetSecurityOrigin())));
   ASSERT_FALSE(exception_state.HadException());
   String s1 = TrustedTypesCheckForScript(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
@@ -69,10 +73,11 @@ void TrustedTypesCheckForScriptURLThrows(const String& string) {
   String s = TrustedTypesCheckForScriptURL(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  window->GetContentSecurityPolicy()->DidReceiveHeader(
-      "require-trusted-types-for 'script'", *(window->GetSecurityOrigin()),
+  window->GetContentSecurityPolicy()->AddPolicies(ParseContentSecurityPolicies(
+      "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
+      network::mojom::ContentSecurityPolicySource::kMeta,
+      *(window->GetSecurityOrigin())));
   ASSERT_FALSE(exception_state.HadException());
   String s1 = TrustedTypesCheckForScriptURL(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
@@ -81,7 +86,11 @@ void TrustedTypesCheckForScriptURLThrows(const String& string) {
 }
 
 void TrustedTypesCheckForScriptWorks(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8UnionStringOrTrustedScript* string_or_trusted_script,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const StringOrTrustedScript& string_or_trusted_script,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
@@ -100,8 +109,13 @@ TEST(TrustedTypesUtilTest, TrustedTypesCheckForHTML_String) {
 // TrustedTypesCheckForScript tests
 TEST(TrustedTypesUtilTest, TrustedTypesCheckForScript_TrustedScript) {
   auto* script = MakeGarbageCollected<TrustedScript>("A string");
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* trusted_value =
+      MakeGarbageCollected<V8UnionStringOrTrustedScript>(script);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   StringOrTrustedScript trusted_value =
       StringOrTrustedScript::FromTrustedScript(script);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   TrustedTypesCheckForScriptWorks(trusted_value, "A string");
 }
 

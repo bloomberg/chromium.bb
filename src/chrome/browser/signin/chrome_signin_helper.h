@@ -98,7 +98,7 @@ void FixAccountConsistencyRequestHeader(
     int incognito_availibility,
     AccountConsistencyMethod account_consistency,
     std::string gaia_id,
-    const base::Optional<bool>& is_child_account,
+    const absl::optional<bool>& is_child_account,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     bool is_secondary_account_addition_allowed,
 #endif
@@ -113,6 +113,12 @@ void FixAccountConsistencyRequestHeader(
 void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
                                               const GURL& redirect_url,
                                               bool is_off_the_record);
+
+// Parses and returns an account ID (Gaia ID) from HTTP response header
+// Google-Accounts-RemoveLocalAccount. Returns an empty string if parsing
+// failed. Exposed for testing purposes.
+std::string ParseGaiaIdFromRemoveLocalAccountResponseHeaderForTesting(
+    const net::HttpResponseHeaders* response_headers);
 
 }  // namespace signin
 

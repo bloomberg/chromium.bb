@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/location_arbitrator.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
@@ -64,6 +65,11 @@ void RecordUmaEvent(NetworkLocationRequestEvent event) {
 void RecordUmaResponseCode(int code) {
   base::UmaHistogramSparse("Geolocation.NetworkLocationRequest.ResponseCode",
                            code);
+}
+
+void RecordUmaNetError(int net_error) {
+  base::UmaHistogramSparse("Geolocation.NetworkLocationRequest.NetError",
+                           -net_error);
 }
 
 void RecordUmaAccessPoints(int count) {
@@ -303,12 +309,13 @@ void GetLocationFromResponse(int net_error,
                              const GURL& server_url,
                              mojom::Geoposition* position) {
   DCHECK(position);
-
   // HttpPost can fail for a number of reasons. Most likely this is because
   // we're offline, or there was no response.
   if (net_error != net::OK) {
-    FormatPositionError(server_url, "No response received", position);
+    FormatPositionError(server_url, net::ErrorToShortString(net_error),
+                        position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_EMPTY);
+    RecordUmaNetError(net_error);
     return;
   }
 
@@ -353,13 +360,16 @@ bool GetAsDouble(const base::DictionaryValue& object,
   const base::Value* value = NULL;
   if (!object.Get(property_name, &value))
     return false;
-  int value_as_int;
   DCHECK(value);
-  if (value->GetAsInteger(&value_as_int)) {
-    *out = value_as_int;
+  if (value->is_int()) {
+    *out = value->GetInt();
     return true;
   }
-  return value->GetAsDouble(out);
+  if (value->is_double()) {
+    *out = value->GetDouble();
+    return true;
+  }
+  return false;
 }
 
 bool ParseServerResponse(const std::string& response_body,

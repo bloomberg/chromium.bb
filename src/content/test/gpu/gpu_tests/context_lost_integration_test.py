@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import sys
@@ -169,8 +171,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuNormalTermination_NewWebGLNotBlocked',
               'webgl-domain-not-blocked.html'),
              ('ContextLost_WorkerRAFAfterGPUCrash',
-              'worker-raf-after-gpu-crash.html'),
-             ('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
               'worker-raf-after-gpu-crash.html'),
              ('ContextLost_WebGL2Blocked', 'webgl2-context-blocked.html'),
              ('ContextLost_MacWebGLMultisamplingHighPowerSwitchLosesContext',
@@ -458,15 +458,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _ContextLost_WorkerRAFAfterGPUCrash(self, test_path):
     self.RestartBrowserIfNecessaryWithArgs([])
-    self._NavigateAndWaitForLoad(test_path)
-    self._KillGPUProcess(1, False)
-    self._WaitForTabAndCheckCompletion()
-    self._RestartBrowser('must restart after tests that kill the GPU process')
-
-  def _ContextLost_WorkerRAFAfterGPUCrash_OOPD(self, test_path):
-    self.RestartBrowserIfNecessaryWithArgs([
-        '--enable-viz-display-compositor',
-    ])
     self._NavigateAndWaitForLoad(test_path)
     self._KillGPUProcess(1, False)
     self._WaitForTabAndCheckCompletion()

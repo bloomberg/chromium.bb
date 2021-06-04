@@ -26,7 +26,6 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/hash/sha1.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,6 +37,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -250,7 +250,7 @@ void AmbientPhotoController::OnScreenUpdateInfoFetched(
   // It is possible that |screen_update| is an empty instance if fatal errors
   // happened during the fetch.
   if (screen_update.next_topics.empty()) {
-    LOG(WARNING) << "The screen update has no topics.";
+    DVLOG(2) << "The screen update has no topics.";
 
     fetch_topic_retry_backoff_.InformOfRequest(/*succeeded=*/false);
     ScheduleFetchTopics(/*backoff=*/true);
@@ -428,6 +428,7 @@ void AmbientPhotoController::OnPhotoRawDataSaved(bool from_downloading,
       num_callbacks,
       base::BindOnce(&AmbientPhotoController::OnAllPhotoDecoded,
                      weak_factory_.GetWeakPtr(), from_downloading,
+                     cache_entry.details ? *cache_entry.details : std::string(),
                      /*hash=*/base::SHA1HashString(*cache_entry.image)));
 
   DecodePhotoRawData(from_downloading,
@@ -465,6 +466,7 @@ void AmbientPhotoController::OnPhotoDecoded(bool from_downloading,
 }
 
 void AmbientPhotoController::OnAllPhotoDecoded(bool from_downloading,
+                                               const std::string& details,
                                                const std::string& hash) {
   if (image_.isNull()) {
     LOG(WARNING) << "Image decoding failed";
@@ -489,8 +491,7 @@ void AmbientPhotoController::OnAllPhotoDecoded(bool from_downloading,
   PhotoWithDetails detailed_photo;
   detailed_photo.photo = image_;
   detailed_photo.related_photo = related_image_;
-  if (cache_entry_.details)
-    detailed_photo.details = *cache_entry_.details;
+  detailed_photo.details = details;
   detailed_photo.hash = hash;
 
   ResetImageData();
@@ -501,7 +502,7 @@ void AmbientPhotoController::OnAllPhotoDecoded(bool from_downloading,
 }
 
 void AmbientPhotoController::StartDownloadingWeatherConditionIcon(
-    const base::Optional<WeatherInfo>& weather_info) {
+    const absl::optional<WeatherInfo>& weather_info) {
   if (!weather_info) {
     LOG(WARNING) << "No weather info included in the response.";
     return;

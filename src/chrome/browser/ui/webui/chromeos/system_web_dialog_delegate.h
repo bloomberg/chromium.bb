@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -119,5 +119,11 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::SystemWebDialogDelegate;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_WEB_DIALOG_DELEGATE_H_

@@ -44,7 +44,7 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::CreatePipelineState(
 GrMtlPipelineStateBuilder::GrMtlPipelineStateBuilder(GrMtlGpu* gpu,
                                                      const GrProgramDesc& desc,
                                                      const GrProgramInfo& programInfo)
-        : INHERITED(nullptr, desc, programInfo)
+        : INHERITED(desc, programInfo)
         , fGpu(gpu)
         , fUniformHandler(this)
         , fVaryingHandler(this) {
@@ -525,7 +525,7 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(
     pipelineDescriptor.colorAttachments[0] = create_color_attachment(pixelFormat,
                                                                      programInfo.pipeline(),
                                                                      writer.get());
-    pipelineDescriptor.sampleCount = programInfo.numRasterSamples();
+    pipelineDescriptor.sampleCount = programInfo.numSamples();
     GrMtlCaps* mtlCaps = (GrMtlCaps*)this->caps();
     pipelineDescriptor.stencilAttachmentPixelFormat = mtlCaps->getStencilPixelFormat(desc);
     if (writer) {

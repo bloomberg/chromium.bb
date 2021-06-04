@@ -22,7 +22,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
@@ -59,7 +59,7 @@ bool IsPluginVmRunning(Profile* profile) {
   return plugin_vm::PluginVmManagerFactory::GetForProfile(profile)
                  ->vm_state() ==
              vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING &&
-         ChromeLauncherController::instance()->IsOpen(
+         ChromeShelfController::instance()->IsOpen(
              ash::ShelfID(kPluginVmShelfAppId));
 }
 
@@ -124,7 +124,7 @@ void RemoveDriveDownloadDirectoryIfExists() {
       base::BindOnce(std::move(log_file_deletion_if_failed)));
 }
 
-base::Optional<std::string> GetIdFromDriveUrl(const GURL& url) {
+absl::optional<std::string> GetIdFromDriveUrl(const GURL& url) {
   const std::string& spec = url.spec();
 
   const std::string kOpenUrlBase = "https://drive.google.com/open?";
@@ -133,7 +133,7 @@ base::Optional<std::string> GetIdFromDriveUrl(const GURL& url) {
     // e.g. https://drive.google.com/open?id=[ID]
     std::string id;
     if (!net::GetValueForKeyInQuery(url, "id", &id))
-      return base::nullopt;
+      return absl::nullopt;
     return id;
   }
 
@@ -151,7 +151,7 @@ base::Optional<std::string> GetIdFromDriveUrl(const GURL& url) {
     return spec.substr(id_start, id_end - id_start);
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 PluginVmPolicySubscription::PluginVmPolicySubscription(

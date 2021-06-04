@@ -51,18 +51,20 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -81,7 +83,6 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
@@ -195,7 +196,7 @@ void FocusFirstOrLastFocusableChild(views::View* root, bool reverse) {
 // |bold_length|: The length of bold text.
 void MakeSectionBold(views::StyledLabel* label,
                      const std::u16string& text,
-                     const base::Optional<int>& bold_start,
+                     const absl::optional<int>& bold_start,
                      int bold_length) {
   auto create_style = [&](bool is_bold) {
     views::StyledLabel::RangeStyleInfo style;
@@ -773,8 +774,6 @@ void LockContentsView::FocusPreviousUser() {
 
 void LockContentsView::ShowEnterpriseDomainManager(
     const std::string& entreprise_domain_manager) {
-  if (!chromeos::features::IsLoginDeviceManagementDisclosureEnabled())
-    return;
   bottom_status_indicator_->SetText(l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR, ui::GetChromeOSDeviceName(),
       base::UTF8ToUTF16(entreprise_domain_manager)));
@@ -883,7 +882,7 @@ bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void LockContentsView::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  NonAccessibleView::OnThemeChanged();
   UpdateBottomStatusIndicatorColors();
   UpdateSystemInfoColors();
 }
@@ -1120,7 +1119,7 @@ void LockContentsView::OnSetTpmLockedState(const AccountId& user,
   }
 
   state->time_until_tpm_unlock =
-      is_locked ? base::make_optional(time_left) : base::nullopt;
+      is_locked ? absl::make_optional(time_left) : absl::nullopt;
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
@@ -1251,7 +1250,7 @@ void LockContentsView::OnSystemInfoChanged(
   if (enforced) {
     enable_system_info_enforced_ = show;
   } else {
-    enable_system_info_enforced_ = base::nullopt;
+    enable_system_info_enforced_ = absl::nullopt;
     enable_system_info_if_possible_ |= show;
   }
 
@@ -1640,17 +1639,26 @@ void LockContentsView::CreateMediumDensityLayout(
   primary_big_view_ = main_view_->AddChildView(std::move(primary_big_view));
   auto* spacing_middle =
       main_view_->AddChildView(std::make_unique<NonAccessibleView>());
-  users_list_ = main_view_->AddChildView(
-      BuildScrollableUsersListView(users, LoginDisplayStyle::kSmall));
+  users_list_ =
+      main_view_->AddChildView(std::make_unique<ScrollableUsersListView>(
+          users,
+          base::BindRepeating(&LockContentsView::SwapToBigUser,
+                              base::Unretained(this)),
+          LoginDisplayStyle::kSmall));
   auto* spacing_right =
       main_view_->AddChildView(std::make_unique<NonAccessibleView>());
 
   // Set width for the |spacing_*| views.
   AddDisplayLayoutAction(base::BindRepeating(
       [](views::View* host_view, views::View* big_user_view,
-         views::View* users_list, views::View* spacing_left,
+         ScrollableUsersListView* users_list, views::View* spacing_left,
          views::View* spacing_middle, views::View* spacing_right,
          bool landscape) {
+        // `users_list` has margins that depend on the current orientation.
+        // Update these here so that the following calculations see the correct
+        // bounds.
+        users_list->UpdateUserViewHostLayoutInsets();
+
         int total_width = host_view->GetPreferredSize().width();
         int available_width =
             total_width - (big_user_view->GetPreferredSize().width() +
@@ -1695,8 +1703,12 @@ void LockContentsView::CreateHighDensityLayout(
   fill = main_view_->AddChildView(std::make_unique<NonAccessibleView>());
   main_layout->SetFlexForView(fill, 1);
 
-  users_list_ = main_view_->AddChildView(
-      BuildScrollableUsersListView(users, LoginDisplayStyle::kExtraSmall));
+  users_list_ =
+      main_view_->AddChildView(std::make_unique<ScrollableUsersListView>(
+          users,
+          base::BindRepeating(&LockContentsView::SwapToBigUser,
+                              base::Unretained(this)),
+          LoginDisplayStyle::kExtraSmall));
 
   // User list size may change after a display metric change.
   AddDisplayLayoutAction(base::BindRepeating(
@@ -2058,7 +2070,7 @@ void LockContentsView::ShowAuthErrorMessage() {
         u" " + l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT);
   }
 
-  base::Optional<int> bold_start;
+  absl::optional<int> bold_start;
   int bold_length = 0;
   // Display a hint to switch keyboards if there are other active input
   // methods in clamshell mode.
@@ -2247,20 +2259,6 @@ LoginUserView* LockContentsView::TryToFindUserView(const AccountId& user) {
 
   // Try to find |user| in users_list_.
   return users_list_->GetUserView(user);
-}
-
-std::unique_ptr<ScrollableUsersListView>
-LockContentsView::BuildScrollableUsersListView(
-    const std::vector<LoginUserInfo>& users,
-    LoginDisplayStyle display_style) {
-  auto user_list_view = std::make_unique<ScrollableUsersListView>(
-      users,
-      base::BindRepeating(&LockContentsView::SwapToBigUser,
-                          base::Unretained(this)),
-      display_style);
-  user_list_view->ClipHeightTo(user_list_view->contents()->size().height(),
-                               size().height());
-  return user_list_view;
 }
 
 void LockContentsView::SetDisplayStyle(DisplayStyle style) {

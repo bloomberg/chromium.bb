@@ -9,11 +9,12 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_MAC)
 #include "base/threading/thread_restrictions.h"
@@ -37,18 +38,19 @@ void PrintBackendServiceImpl::EnumeratePrinters(
   if (!print_backend_) {
     DLOG(ERROR)
         << "Print backend instance has not been initialized for locale.";
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(
+        mojom::PrinterListResult::NewResultCode(mojom::ResultCode::kFailed));
     return;
   }
 
   PrinterList printer_list;
-  if (!print_backend_->EnumeratePrinters(&printer_list)) {
-    DLOG(ERROR) << "EnumeratePrinters failed, last error is "
-                << logging::GetLastSystemErrorCode();
-    std::move(callback).Run(base::nullopt);
+  mojom::ResultCode result = print_backend_->EnumeratePrinters(&printer_list);
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(mojom::PrinterListResult::NewResultCode(result));
     return;
   }
-  std::move(callback).Run(std::move(printer_list));
+  std::move(callback).Run(
+      mojom::PrinterListResult::NewPrinterList(std::move(printer_list)));
 }
 
 void PrintBackendServiceImpl::GetDefaultPrinterName(
@@ -56,7 +58,7 @@ void PrintBackendServiceImpl::GetDefaultPrinterName(
   if (!print_backend_) {
     DLOG(ERROR)
         << "Print backend instance has not been initialized for locale.";
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   std::move(callback).Run(print_backend_->GetDefaultPrinterName());
@@ -69,20 +71,24 @@ void PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
   if (!print_backend_) {
     DLOG(ERROR)
         << "Print backend instance has not been initialized for locale.";
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(
+        mojom::PrinterSemanticCapsAndDefaultsResult::NewResultCode(
+            mojom::ResultCode::kFailed));
     return;
   }
 
   PrinterSemanticCapsAndDefaults printer_caps;
-  const bool result = print_backend_->GetPrinterSemanticCapsAndDefaults(
-      printer_name, &printer_caps);
-  if (!result) {
-    DLOG(ERROR) << "GetPrinterSemanticCapsAndDefaults failed, last error is "
-                << logging::GetLastSystemErrorCode();
-    std::move(callback).Run(base::nullopt);
+  const mojom::ResultCode result =
+      print_backend_->GetPrinterSemanticCapsAndDefaults(printer_name,
+                                                        &printer_caps);
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(
+        mojom::PrinterSemanticCapsAndDefaultsResult::NewResultCode(result));
     return;
   }
-  std::move(callback).Run(std::move(printer_caps));
+  std::move(callback).Run(
+      mojom::PrinterSemanticCapsAndDefaultsResult::NewPrinterCaps(
+          std::move(printer_caps)));
 }
 
 void PrintBackendServiceImpl::FetchCapabilities(
@@ -91,7 +97,8 @@ void PrintBackendServiceImpl::FetchCapabilities(
   if (!print_backend_) {
     DLOG(ERROR)
         << "Print backend instance has not been initialized for locale.";
-    std::move(callback).Run(base::nullopt, base::nullopt, base::nullopt);
+    std::move(callback).Run(mojom::PrinterCapsAndInfoResult::NewResultCode(
+        mojom::ResultCode::kFailed));
     return;
   }
 
@@ -114,25 +121,26 @@ void PrintBackendServiceImpl::FetchCapabilities(
 #endif
 
   PrinterBasicInfo printer_info;
-  bool result =
+  mojom::ResultCode result =
       print_backend_->GetPrinterBasicInfo(printer_name, &printer_info);
-  if (!result) {
-    DLOG(ERROR) << "GetPrinterBasicInfo failed, last error is "
-                << logging::GetLastSystemErrorCode();
-    std::move(callback).Run(base::nullopt, base::nullopt, base::nullopt);
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(
+        mojom::PrinterCapsAndInfoResult::NewResultCode(result));
     return;
   }
   PrinterSemanticCapsAndDefaults caps;
   result =
       print_backend_->GetPrinterSemanticCapsAndDefaults(printer_name, &caps);
-  if (!result) {
-    DLOG(ERROR) << "GetPrinterSemanticCapsAndDefaults failed, last error is "
-                << logging::GetLastSystemErrorCode();
-    std::move(callback).Run(base::nullopt, base::nullopt, base::nullopt);
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(
+        mojom::PrinterCapsAndInfoResult::NewResultCode(result));
     return;
   }
-  std::move(callback).Run(std::move(printer_info),
-                          std::move(user_defined_papers), std::move(caps));
+  mojom::PrinterCapsAndInfoPtr caps_and_info = mojom::PrinterCapsAndInfo::New(
+      std::move(printer_info), std::move(user_defined_papers), std::move(caps));
+  std::move(callback).Run(
+      mojom::PrinterCapsAndInfoResult::NewPrinterCapsAndInfo(
+          std::move(caps_and_info)));
 }
 
 }  // namespace printing

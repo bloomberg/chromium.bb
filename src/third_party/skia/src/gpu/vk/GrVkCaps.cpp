@@ -556,15 +556,6 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
     // GrCaps workarounds
     ////////////////////////////////////////////////////////////////////////////
 
-    // The GTX660 bot was experiencing crashes and incorrect rendering with MSAA CCPR. Block this
-    // path renderer on non-mixed-sampled NVIDIA.
-    // NOTE: We may lose mixed samples support later if the context options suppress dual source
-    // blending, but that shouldn't be an issue because MSAA CCPR seems to work fine (even without
-    // mixed samples) on later NVIDIA hardware where mixed samples would be supported.
-    if ((kNvidia_VkVendor == properties.vendorID) && !fMixedSamplesSupport) {
-        fDriverDisableMSAAClipAtlas = true;
-    }
-
 #ifdef SK_BUILD_FOR_ANDROID
     // MSAA CCPR was slow on Android. http://skbug.com/9676
     fDriverDisableMSAAClipAtlas = true;
@@ -632,10 +623,6 @@ void GrVkCaps::initGrCaps(const GrVkInterface* vkInterface,
         fMultisampleDisableSupport = true;
     }
 #endif
-
-    if (extensions.hasExtension(VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME, 1)) {
-        fMixedSamplesSupport = true;
-    }
 
     if (extensions.hasExtension(VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, 1)) {
         fConservativeRasterSupport = true;
@@ -732,6 +719,7 @@ void GrVkCaps::initShaderCaps(const VkPhysicalDeviceProperties& properties,
     shaderCaps->fDualSourceBlendingSupport = features.features.dualSrcBlend;
 
     shaderCaps->fIntegerSupport = true;
+    shaderCaps->fNonsquareMatrixSupport = true;
     shaderCaps->fVertexIDSupport = true;
     shaderCaps->fBitManipulationSupport = true;
 
@@ -1845,10 +1833,10 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt,
         SkASSERT(!needsResolve || (vkRT->resolveAttachment() &&
                                    vkRT->resolveAttachment()->supportsInputAttachmentUsage()));
 
-        bool needsStencil = programInfo.numStencilSamples() || programInfo.isStencilEnabled();
+        bool needsStencil = programInfo.needsStencil() || programInfo.isStencilEnabled();
         // TODO: support failure in getSimpleRenderPass
-        auto[rp, compatibleHandle] = vkRT->getSimpleRenderPass(needsResolve, needsStencil,
-                                                               selfDepFlags, loadFromResolve);
+        auto rp = vkRT->getSimpleRenderPass(needsResolve, needsStencil, selfDepFlags,
+                                            loadFromResolve);
         SkASSERT(rp);
         rp->genKey(&b);
 
@@ -1883,16 +1871,10 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt,
     stencil.genKey(&b, true);
 
     programInfo.pipeline().genKey(&b, *this);
-    b.add32(programInfo.numRasterSamples());
+    b.add32(programInfo.numSamples());
 
     // Vulkan requires the full primitive type as part of its key
     b.add32(programInfo.primitiveTypeKey());
-
-    if (this->mixedSamplesSupport()) {
-        // Add "0" to indicate that coverage modulation will not be enabled, or the (non-zero)
-        // raster sample count if it will.
-        b.add32(!programInfo.isMixedSampled() ? 0 : programInfo.numRasterSamples());
-    }
 
     b.flush();
     return desc;

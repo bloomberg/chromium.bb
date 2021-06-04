@@ -8,12 +8,12 @@
 #include <memory>
 #include <utility>
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace network_diagnostics {
@@ -26,12 +26,12 @@ class FakeHostResolver : public network::mojom::HostResolver {
    public:
     DnsResult(int32_t result,
               net::ResolveErrorInfo resolve_error_info,
-              base::Optional<net::AddressList> resolved_addresses);
+              absl::optional<net::AddressList> resolved_addresses);
     ~DnsResult();
 
     int result_;
     net::ResolveErrorInfo resolve_error_info_;
-    base::Optional<net::AddressList> resolved_addresses_;
+    absl::optional<net::AddressList> resolved_addresses_;
   };
 
   FakeHostResolver(
@@ -65,7 +65,7 @@ class FakeHostResolver : public network::mojom::HostResolver {
   // Responds to calls made to |this|.
   mojo::Remote<network::mojom::ResolveHostClient> response_client_;
   // Use the |fake_dns_result| to fake a single host resolution.
-  std::unique_ptr<DnsResult> fake_dns_result_ = nullptr;
+  std::unique_ptr<DnsResult> fake_dns_result_;
   // Used to mimic the scenario where network::mojom::HostResolver receiver
   // is disconnected.
   bool disconnect_ = false;

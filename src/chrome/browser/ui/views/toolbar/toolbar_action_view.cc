@@ -17,11 +17,13 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -37,7 +39,6 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/mouse_constants.h"
 
 using views::LabelButtonBorder;
@@ -59,22 +60,25 @@ ToolbarActionView::ToolbarActionView(
                                      base::Unretained(this))),
       view_controller_(view_controller),
       delegate_(delegate) {
-  SetInkDropMode(InkDropMode::ON);
-  SetHasInkDropActionOnClick(true);
+  ConfigureInkDropForToolbar(this);
   SetHideInkDropWhenShowingContextMenu(false);
   SetShowInkDropWhenHotTracked(true);
   SetID(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
+  // Normally, the notify action is determined by whether a view is draggable
+  // (and is set to press for non-draggable and release for draggable views).
+  // However, ToolbarActionViews may be draggable or non-draggable depending on
+  // whether they are shown in an incognito window. We want to preserve the same
+  // trigger event to keep the UX (more) consistent. Set all ToolbarActionViews
+  // to trigger on mouse release.
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::kOnRelease);
 
   context_menu_controller_ =
       std::make_unique<ExtensionContextMenuController>(view_controller);
   set_context_menu_controller(context_menu_controller_.get());
-
-  InstallToolbarButtonHighlightPathGenerator(this);
-
-  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
 
   UpdateState();
 }
@@ -87,6 +91,12 @@ gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   bounds.Inset(GetToolbarInkDropInsets(this));
   return bounds;
+}
+
+void ToolbarActionView::OnThemeChanged() {
+  MenuButton::OnThemeChanged();
+
+  ToolbarButton::UpdateFocusRingColor(this, focus_ring());
 }
 
 std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
@@ -110,15 +120,6 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
   return button_controller()->IsTriggerableEventType(event);
 }
 
-SkColor ToolbarActionView::GetInkDropBaseColor() const {
-  return GetToolbarInkDropBaseColor(this);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-ToolbarActionView::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight(this);
-}
-
 bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_DOWN) {
     context_menu_controller()->ShowContextMenuForView(this, gfx::Point(),
@@ -138,13 +139,6 @@ void ToolbarActionView::UpdateState() {
   if (!sessions::SessionTabHelper::IdForTab(web_contents).is_valid())
     return;
 
-  if (!view_controller_->IsEnabled(web_contents) &&
-      !view_controller_->DisabledClickOpensMenu()) {
-    SetState(views::Button::STATE_DISABLED);
-  } else if (GetState() == views::Button::STATE_DISABLED) {
-    SetState(views::Button::STATE_NORMAL);
-  }
-
   gfx::ImageSkia icon(
       view_controller_->GetIcon(web_contents, GetPreferredSize())
           .AsImageSkia());
@@ -161,6 +155,10 @@ void ToolbarActionView::UpdateState() {
 
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
+}
+
+int ToolbarActionView::GetDragOperationsForTest(const gfx::Point& point) {
+  return views::View::GetDragOperations(point);
 }
 
 gfx::Size ToolbarActionView::CalculatePreferredSize() const {
@@ -184,7 +182,7 @@ bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
       // TODO(bruthig): The ACTION_PENDING triggering logic should be in
       // MenuButton::OnPressed() however there is a bug with the pressed state
       // logic in MenuButton. See http://crbug.com/567252.
-      AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+      ink_drop()->AnimateToState(views::InkDropState::ACTION_PENDING, &event);
     }
   }
 
@@ -217,12 +215,12 @@ void ToolbarActionView::OnDragDone() {
   // the drag set |suppress_next_release_|, it must be reset here or the next
   // mouse release after the drag will be erroneously discarded.
   suppress_next_release_ = false;
-
-  delegate_->OnToolbarActionViewDragDone();
 }
 
 void ToolbarActionView::AddedToWidget() {
   MenuButton::AddedToWidget();
+
+  ToolbarButton::UpdateFocusRingColor(this, focus_ring());
 
   // This cannot happen until there's a focus controller, which lives on the
   // widget.
@@ -250,6 +248,11 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
   // a reference view other than this button's parent. If so, use the overflow
   // view which is a BrowserAppMenuButton.
   return GetVisible() ? this : delegate_->GetOverflowReferenceView();
+}
+
+void ToolbarActionView::ShowContextMenuAsFallback() {
+  context_menu_controller()->ShowContextMenuForView(
+      this, GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
 }
 
 bool ToolbarActionView::CanShowIconInToolbar() const {
@@ -280,9 +283,7 @@ void ToolbarActionView::ButtonPressed() {
     view_controller_->ExecuteAction(
         true, ToolbarActionViewController::InvocationSource::kToolbarButton);
   } else {
-    // We should only get a button pressed event with a non-enabled action if
-    // the left-click behavior should open the menu.
-    DCHECK(view_controller_->DisabledClickOpensMenu());
+    // If the action isn't enabled, show the context menu as a fallback.
     context_menu_controller()->ShowContextMenuForView(this, GetMenuPosition(),
                                                       ui::MENU_SOURCE_NONE);
   }

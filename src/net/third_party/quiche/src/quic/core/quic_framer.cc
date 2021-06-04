@@ -49,7 +49,7 @@
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_stack_trace.h"
-#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 
@@ -435,10 +435,6 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
   version_ = supported_versions_[0];
   QUICHE_DCHECK(version_.IsKnown())
       << ParsedQuicVersionVectorToString(supported_versions_);
-  if (do_not_synthesize_source_cid_for_short_header_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_do_not_synthesize_source_cid_for_short_header, 1, 3);
-  }
 }
 
 QuicFramer::~QuicFramer() {}
@@ -1309,9 +1305,9 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
     size_t received_packet_length,
     StatelessResetToken stateless_reset_token) {
   QUIC_DVLOG(1) << "Building IETF stateless reset packet.";
-  if (GetQuicReloadableFlag(quic_fix_stateless_reset)) {
+  if (GetQuicRestartFlag(quic_fix_stateless_reset2)) {
     if (received_packet_length <= GetMinStatelessResetPacketLength()) {
-      QUIC_BUG(362045737_1)
+      QUICHE_DLOG(ERROR)
           << "Tried to build stateless reset packet with received packet "
              "length "
           << received_packet_length;
@@ -1344,7 +1340,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
       QUIC_BUG(362045737_3) << "Failed to write stateless reset token";
       return nullptr;
     }
-    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_stateless_reset);
+    QUIC_RESTART_FLAG_COUNT(quic_fix_stateless_reset2);
     return std::make_unique<QuicEncryptedPacket>(buffer.release(), len,
                                                  /*owns_buffer=*/true);
   }
@@ -2774,7 +2770,6 @@ bool QuicFramer::ProcessAndValidateIetfConnectionIdLength(
 
 bool QuicFramer::ValidateReceivedConnectionIds(const QuicPacketHeader& header) {
   bool skip_server_connection_id_validation =
-      do_not_synthesize_source_cid_for_short_header_ &&
       perspective_ == Perspective::IS_CLIENT &&
       header.form == IETF_QUIC_SHORT_HEADER_PACKET;
   if (!skip_server_connection_id_validation &&
@@ -2786,13 +2781,8 @@ bool QuicFramer::ValidateReceivedConnectionIds(const QuicPacketHeader& header) {
   }
 
   bool skip_client_connection_id_validation =
-      do_not_synthesize_source_cid_for_short_header_ &&
       perspective_ == Perspective::IS_SERVER &&
       header.form == IETF_QUIC_SHORT_HEADER_PACKET;
-  if (skip_client_connection_id_validation) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_do_not_synthesize_source_cid_for_short_header, 2, 3);
-  }
   if (!skip_client_connection_id_validation &&
       version_.SupportsClientConnectionIds() &&
       !QuicUtils::IsConnectionIdValidForVersion(
@@ -2829,15 +2819,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     header->destination_connection_id_included = CONNECTION_ID_PRESENT;
     header->source_connection_id_included =
         header->version_flag ? CONNECTION_ID_PRESENT : CONNECTION_ID_ABSENT;
-    if (!do_not_synthesize_source_cid_for_short_header_ &&
-        header->source_connection_id_included == CONNECTION_ID_ABSENT) {
-      QUICHE_DCHECK(header->source_connection_id.IsEmpty());
-      if (perspective_ == Perspective::IS_CLIENT) {
-        header->source_connection_id = last_serialized_server_connection_id_;
-      } else {
-        header->source_connection_id = last_serialized_client_connection_id_;
-      }
-    }
 
     if (!ValidateReceivedConnectionIds(*header)) {
       return false;
@@ -2924,13 +2905,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
       QUICHE_DCHECK(!version_.SupportsClientConnectionIds());
       set_detailed_error("Client connection ID not supported in this version.");
       return false;
-    }
-    if (!do_not_synthesize_source_cid_for_short_header_) {
-      if (perspective_ == Perspective::IS_CLIENT) {
-        header->source_connection_id = last_serialized_server_connection_id_;
-      } else {
-        header->source_connection_id = last_serialized_client_connection_id_;
-      }
     }
   }
 
@@ -3232,20 +3206,14 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
       set_detailed_error("Unable to read frame type.");
       return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
-    if (reject_unexpected_ietf_frame_types_) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_reject_unexpected_ietf_frame_types, 1,
-                                   2);
-      if (!IsIetfFrameTypeExpectedForEncryptionLevel(frame_type,
-                                                     decrypted_level)) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_reject_unexpected_ietf_frame_types, 2,
-                                     2);
-        set_detailed_error(absl::StrCat(
-            "IETF frame type ",
-            QuicIetfFrameTypeString(static_cast<QuicIetfFrameType>(frame_type)),
-            " is unexpected at encryption level ",
-            EncryptionLevelToString(decrypted_level)));
-        return RaiseError(IETF_QUIC_PROTOCOL_VIOLATION);
-      }
+    if (!IsIetfFrameTypeExpectedForEncryptionLevel(frame_type,
+                                                   decrypted_level)) {
+      set_detailed_error(absl::StrCat(
+          "IETF frame type ",
+          QuicIetfFrameTypeString(static_cast<QuicIetfFrameType>(frame_type)),
+          " is unexpected at encryption level ",
+          EncryptionLevelToString(decrypted_level)));
+      return RaiseError(IETF_QUIC_PROTOCOL_VIOLATION);
     }
     current_received_frame_type_ = frame_type;
 
@@ -4872,10 +4840,8 @@ bool QuicFramer::DecryptPayload(size_t udp_packet_length,
         if ((current_key_phase_first_received_packet_number_.IsInitialized() &&
              header.packet_number >
                  current_key_phase_first_received_packet_number_) ||
-            (GetQuicReloadableFlag(quic_fix_key_update_on_first_packet) &&
-             !current_key_phase_first_received_packet_number_.IsInitialized() &&
+            (!current_key_phase_first_received_packet_number_.IsInitialized() &&
              !key_update_performed_)) {
-          QUIC_RELOADABLE_FLAG_COUNT(quic_fix_key_update_on_first_packet);
           if (!next_decrypter_) {
             next_decrypter_ =
                 visitor_->AdvanceKeysAndCreateCurrentOneRttDecrypter();

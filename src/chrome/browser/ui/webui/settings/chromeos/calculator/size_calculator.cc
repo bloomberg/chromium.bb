@@ -11,8 +11,8 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -74,7 +74,7 @@ void SizeCalculator::RemoveObserver(SizeCalculator::Observer* observer) {
 
 void SizeCalculator::NotifySizeCalculated(
     int64_t total_bytes,
-    const base::Optional<int64_t>& available_bytes) {
+    const absl::optional<int64_t>& available_bytes) {
   calculating_ = false;
   for (SizeCalculator::Observer& observer : observers_) {
     observer.OnSizeCalculated(calculation_type_, total_bytes, available_bytes);
@@ -161,15 +161,14 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
 
   // Fetch the size of http cache in browsing data.
   browsing_data::ConditionalCacheCountingHelper::Count(
-      content::BrowserContext::GetDefaultStoragePartition(profile_),
-      base::Time(), base::Time::Max(),
+      profile_->GetDefaultStoragePartition(), base::Time(), base::Time::Max(),
       base::BindOnce(&BrowsingDataSizeCalculator::OnGetCacheSize,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_);
+        profile_->GetDefaultStoragePartition();
     site_data_size_collector_ = std::make_unique<SiteDataSizeCollector>(
         storage_partition->GetPath(),
         new browsing_data::CookieHelper(storage_partition,
@@ -379,7 +378,7 @@ void OtherUsersSizeCalculator::PerformCalculation() {
 }
 
 void OtherUsersSizeCalculator::OnGetOtherUserSize(
-    base::Optional<user_data_auth::GetAccountDiskUsageReply> reply) {
+    absl::optional<user_data_auth::GetAccountDiskUsageReply> reply) {
   user_sizes_.push_back(
       user_data_auth::AccountDiskUsageReplyToUsageSize(reply));
   if (user_sizes_.size() != other_users_.size())

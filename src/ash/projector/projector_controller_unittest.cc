@@ -9,17 +9,18 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/projector/test/mock_projector_client.h"
 #include "ash/projector/test/mock_projector_metadata_controller.h"
 #include "ash/projector/test/mock_projector_ui_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chromeos/services/machine_learning/public/mojom/soda.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
 namespace {
@@ -84,12 +85,16 @@ class ProjectorControllerTest : public AshTestBase {
     mock_metadata_controller_ = mock_metadata_controller.get();
     controller_->SetProjectorMetadataControllerForTest(
         std::move(mock_metadata_controller));
+
+    controller_->SetClient(&mock_client_);
+    controller_->OnSpeechRecognitionAvailable(/*available=*/true);
   }
 
  protected:
   MockProjectorUiController* mock_ui_controller_ = nullptr;
   MockProjectorMetadataController* mock_metadata_controller_ = nullptr;
   ProjectorControllerImpl* controller_;
+  MockProjectorClient mock_client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -99,6 +104,15 @@ TEST_F(ProjectorControllerTest, ShowToolbar) {
   // Verify that |ShowToolbar| in |ProjectorUiController| is called.
   EXPECT_CALL(*mock_ui_controller_, ShowToolbar()).Times(1);
   controller_->SetProjectorToolsVisible(true);
+}
+
+TEST_F(ProjectorControllerTest, CloseToolbar) {
+  controller_->SetProjectorToolsVisible(/*is_visible=*/true);
+  mock_client_.SetSelfieCamVisible(/*visible=*/true);
+  // Verify that |CloseToolbar| in |ProjectorUiController| is called.
+  EXPECT_CALL(*mock_ui_controller_, CloseToolbar()).Times(1);
+  EXPECT_CALL(mock_client_, CloseSelfieCam()).Times(1);
+  controller_->SetProjectorToolsVisible(/*is_visible=*/false);
 }
 
 TEST_F(ProjectorControllerTest, SaveScreencast) {
@@ -153,7 +167,7 @@ TEST_F(ProjectorControllerTest, OnTranscriptionCaptionOn) {
   // capton is on.
   EXPECT_CALL(*mock_ui_controller_, OnTranscription("transcript text 1", true))
       .Times(1);
-  controller_->SetCaptionState(true);
+  controller_->OnCaptionBubbleModelStateChanged(true);
   NotifyControllerForFinalSpeechResult(controller_);
 }
 
@@ -167,7 +181,7 @@ TEST_F(ProjectorControllerTest, OnTranscriptionCaptionOnPartialResult) {
   EXPECT_CALL(*mock_ui_controller_,
               OnTranscription("transcript partial text 1", false))
       .Times(1);
-  controller_->SetCaptionState(true);
+  controller_->OnCaptionBubbleModelStateChanged(true);
   NotifyControllerForPartialSpeechResult(controller_);
 }
 
@@ -189,6 +203,57 @@ TEST_F(ProjectorControllerTest, OnMarkerPressed) {
   // Verify that |OnMarkerPressed| in |ProjectorUiController| is called.
   EXPECT_CALL(*mock_ui_controller_, OnMarkerPressed());
   controller_->OnMarkerPressed();
+}
+
+TEST_F(ProjectorControllerTest, OnClearAllMarkersPressed) {
+  // Verify that |OnClearAllMarkersPressed| in |ProjectorUiController| is
+  // called.
+  EXPECT_CALL(*mock_ui_controller_, OnClearAllMarkersPressed());
+  controller_->OnClearAllMarkersPressed();
+}
+
+TEST_F(ProjectorControllerTest, OnSelfieCamPressed) {
+  // Verify that |OnSelfieCamPressed| in |ProjectorUiController| is called.
+  EXPECT_CALL(*mock_ui_controller_, OnSelfieCamPressed(/*enabled=*/true));
+  EXPECT_CALL(mock_client_, ShowSelfieCam());
+  controller_->OnSelfieCamPressed(/*enabled=*/true);
+  mock_client_.SetSelfieCamVisible(/*visible=*/true);
+
+  EXPECT_CALL(*mock_ui_controller_, OnSelfieCamPressed(/*enabled=*/false));
+  EXPECT_CALL(mock_client_, CloseSelfieCam());
+  controller_->OnSelfieCamPressed(/*enabled=*/false);
+  mock_client_.SetSelfieCamVisible(/*visible=*/false);
+}
+
+TEST_F(ProjectorControllerTest, SetCaptionBubbleState) {
+  EXPECT_CALL(*mock_ui_controller_, SetCaptionBubbleState(true));
+  controller_->SetCaptionBubbleState(true);
+}
+
+TEST_F(ProjectorControllerTest, MagnifierButtonPressed) {
+  EXPECT_CALL(*mock_ui_controller_, OnMagnifierButtonPressed(true));
+  controller_->OnMagnifierButtonPressed(true);
+}
+
+TEST_F(ProjectorControllerTest, OnChangeMarkerColorPressed) {
+  EXPECT_CALL(*mock_ui_controller_, OnChangeMarkerColorPressed(SK_ColorBLACK));
+  controller_->OnChangeMarkerColorPressed(SK_ColorBLACK);
+}
+
+TEST_F(ProjectorControllerTest, RecordingStarted) {
+  EXPECT_CALL(mock_client_, StartSpeechRecognition());
+  EXPECT_CALL(*mock_ui_controller_, OnRecordingStateChanged(/*started=*/true));
+  EXPECT_CALL(*mock_metadata_controller_, OnRecordingStarted());
+  controller_->OnRecordingStarted();
+}
+
+TEST_F(ProjectorControllerTest, RecordingEnded) {
+  controller_->OnRecordingStarted();
+  mock_client_.SetSelfieCamVisible(/*visible=*/true);
+  EXPECT_CALL(mock_client_, StopSpeechRecognition());
+  EXPECT_CALL(*mock_ui_controller_, OnRecordingStateChanged(/*started=*/false));
+  EXPECT_CALL(mock_client_, CloseSelfieCam());
+  controller_->SetProjectorToolsVisible(/*is_visible=*/false);
 }
 
 }  // namespace ash

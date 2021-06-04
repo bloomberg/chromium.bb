@@ -200,8 +200,7 @@ jvalue CoerceJavaScriptBooleanToJavaValue(JNIEnv* env,
                                           bool coerce_to_string,
                                           GinJavaBridgeError* error) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_BOOLEAN_VALUES.
-  bool boolean_value;
-  value->GetAsBoolean(&boolean_value);
+  bool boolean_value = value->GetBool();
   jvalue result;
   switch (target_type.type) {
     case JavaType::TypeBoolean:
@@ -252,9 +251,7 @@ jvalue CoerceJavaScriptStringToJavaValue(JNIEnv* env,
   jvalue result;
   switch (target_type.type) {
     case JavaType::TypeString: {
-      std::string string_result;
-      value->GetAsString(&string_result);
-      result.l = ConvertUTF8ToJavaString(env, string_result).Release();
+      result.l = ConvertUTF8ToJavaString(env, value->GetString()).Release();
       break;
     }
     case JavaType::TypeObject:
@@ -517,14 +514,12 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   // range for a Java array length, return null.
   jsize length = -1;
   if (length_value->is_int()) {
-    int int_length;
-    length_value->GetAsInteger(&int_length);
-    if (int_length >= 0 && int_length <= std::numeric_limits<int32_t>::max()) {
-      length = static_cast<jsize>(int_length);
+    if (length_value->GetInt() >= 0 &&
+        length_value->GetInt() <= std::numeric_limits<int32_t>::max()) {
+      length = static_cast<jsize>(length_value->GetInt());
     }
   } else if (length_value->is_double()) {
-    double double_length;
-    length_value->GetAsDouble(&double_length);
+    double double_length = length_value->GetDouble();
     if (double_length >= 0.0 &&
         double_length <= std::numeric_limits<int32_t>::max()) {
       length = static_cast<jsize>(double_length);
@@ -711,10 +706,8 @@ jvalue CoerceJavaScriptValueToJavaValue(JNIEnv* env,
       return CoerceJavaScriptIntegerToJavaValue(
           env, value->GetInt(), target_type, coerce_to_string, error);
     case base::Value::Type::DOUBLE: {
-      double double_value;
-      value->GetAsDouble(&double_value);
       return CoerceJavaScriptDoubleToJavaValue(
-          env, double_value, target_type, coerce_to_string, error);
+          env, value->GetDouble(), target_type, coerce_to_string, error);
     }
     case base::Value::Type::BOOLEAN:
       return CoerceJavaScriptBooleanToJavaValue(
@@ -731,14 +724,9 @@ jvalue CoerceJavaScriptValueToJavaValue(JNIEnv* env,
     case base::Value::Type::BINARY:
       return CoerceGinJavaBridgeValueToJavaValue(
           env, value, target_type, coerce_to_string, object_refs, error);
-    // TODO(crbug.com/859477): Remove after root cause is found.
-    case base::Value::Type::DEAD:
-      CHECK(false);
-      return jvalue();
   }
 
-  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
-  CHECK(false);
+  NOTREACHED();
   return jvalue();
 }
 

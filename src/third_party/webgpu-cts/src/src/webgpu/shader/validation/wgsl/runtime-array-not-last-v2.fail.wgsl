@@ -8,5 +8,5 @@ struct S {
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

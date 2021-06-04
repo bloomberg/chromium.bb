@@ -18,6 +18,7 @@
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/test/gfx_util.h"
 
 namespace {
 
@@ -28,8 +29,8 @@ constexpr int testSuggestionsMaxCount = 4;
 
 class MockAutofillPopupController : public autofill::AutofillPopupController {
  public:
-  MockAutofillPopupController() {
-    gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
+  MockAutofillPopupController()
+      : default_font_desc_setter_("Arial, Times New Roman, 15px") {
     suggestions_.push_back(
         autofill::Suggestion("bufflehead", "canvasback", "goldeneye", 1));
     suggestions_.push_back(
@@ -77,8 +78,8 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
   MOCK_METHOD3(GetRemovalConfirmationText,
                bool(int index, std::u16string* title, std::u16string* body));
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
-  MOCK_METHOD1(SetSelectedLine, void(base::Optional<int> selected_line));
-  MOCK_CONST_METHOD0(selected_line, base::Optional<int>());
+  MOCK_METHOD1(SetSelectedLine, void(absl::optional<int> selected_line));
+  MOCK_CONST_METHOD0(selected_line, absl::optional<int>());
   MOCK_CONST_METHOD0(GetPopupType, autofill::PopupType());
 
   void set_line_count(int line_count) {
@@ -89,6 +90,7 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
  private:
   int line_count_;
   std::vector<autofill::Suggestion> suggestions_;
+  gfx::ScopedDefaultFontDescription default_font_desc_setter_;
 };
 
 class CreditCardAutofillTouchBarControllerUnitTest : public CocoaTest {

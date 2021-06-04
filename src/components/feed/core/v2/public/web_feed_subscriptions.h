@@ -61,6 +61,21 @@ class WebFeedSubscriptions {
   // Returns all current subscriptions.
   virtual void GetAllSubscriptions(
       base::OnceCallback<void(std::vector<WebFeedMetadata>)> callback) = 0;
+
+  // Result of `RefreshSubscriptions()`.
+  struct RefreshResult {
+    // Whether or not the refresh succeeded. Failures may happen due to network
+    // errors.
+    bool success = false;
+  };
+  // Refresh list of subscribed web feeds from the server.
+  virtual void RefreshSubscriptions(
+      base::OnceCallback<void(RefreshResult)> callback) = 0;
+
+  // Whether the user has subscribed to at least one web feed.
+  // Because this function returns synchronously, it may return the wrong value.
+  // TODO(crbug.com/1152592): Update this and its callers to use an async call.
+  virtual bool IsWebFeedSubscriber() = 0;
 };
 
 }  // namespace feed

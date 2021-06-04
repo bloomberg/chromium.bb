@@ -14,6 +14,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/component_updater/autofill_regex_component_installer.h"
 #include "chrome/browser/component_updater/chrome_origin_trials_component_installer.h"
+#include "chrome/browser/component_updater/client_side_phishing_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/trust_token_key_commitments_component_installer.h"
-#include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -56,6 +56,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/soda_component_installer.h"
+#include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "media/base/media_switches.h"
 #endif
@@ -179,11 +180,15 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   RegisterHyphenationComponent(cus);
 #endif
 
+#if !defined(OS_ANDROID)
   RegisterZxcvbnDataComponent(cus);
+#endif  // !defined(OS_ANDROID)
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 
   RegisterAutofillRegexComponent(cus);
+
+  RegisterClientSidePhishingComponent(cus);
 }
 
 }  // namespace component_updater

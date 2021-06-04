@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -57,6 +56,8 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -109,7 +110,7 @@ constexpr base::TimeDelta kFindResultCooldown =
 
 // Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
 constexpr int kCompletePDFIndex = -1;
-// A different negative value to differentiate itself from |kCompletePDFIndex|.
+// A different negative value to differentiate itself from `kCompletePDFIndex`.
 constexpr int kInvalidPDFIndex = -2;
 
 constexpr char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
@@ -211,6 +212,14 @@ void ReplaceSelection(PP_Instance instance, const char* text) {
   }
 }
 
+void SelectAll(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->SelectAll();
+  }
+}
+
 PP_Bool CanUndo(PP_Instance instance) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (!object)
@@ -300,6 +309,7 @@ const PPP_Pdf ppp_private = {
     &CanEditText,
     &HasEditableText,
     &ReplaceSelection,
+    &SelectAll,
     &CanUndo,
     &CanRedo,
     &Undo,
@@ -309,7 +319,7 @@ const PPP_Pdf ppp_private = {
 };
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
-  // Sample |src_url| format: chrome://print/id/page_index/print.pdf
+  // Sample `src_url` format: chrome://print/id/page_index/print.pdf
   // The page_index is zero-based, but can be negative with special meanings.
   std::vector<base::StringPiece> url_substr =
       base::SplitStringPiece(src_url.substr(strlen(kChromePrint)), "/",
@@ -332,11 +342,6 @@ bool IsPrintPreviewUrl(base::StringPiece url) {
 
 bool IsPreviewingPDF(int print_preview_page_count) {
   return print_preview_page_count == 0;
-}
-
-void ScaleFloatPoint(float scale, pp::FloatPoint* point) {
-  point->set_x(point->x() * scale);
-  point->set_y(point->y() * scale);
 }
 
 void ScalePoint(float scale, pp::Point* point) {
@@ -550,7 +555,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   InitializeEngine(script_option);
 
   // If we're in print preview mode we don't need to load the document yet.
-  // A |kJSResetPrintPreviewModeType| message will be sent to the plugin letting
+  // A `kJSResetPrintPreviewModeType` message will be sent to the plugin letting
   // it know the url to load. By not loading here we avoid loading the same
   // document twice.
   if (IsPrintPreview())
@@ -596,68 +601,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 }
 
 bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
-  // Ignore user input in read-only mode.
-  // TODO(dhoss): Add a test for ignored input events. It is currently difficult
-  // to unit test certain `OutOfProcessInstance` methods.
-  if (engine()->IsReadOnly())
+  std::unique_ptr<blink::WebInputEvent> web_event = GetWebInputEvent(event);
+  if (!web_event)
     return false;
 
-  // To simplify things, convert the event into device coordinates.
-  pp::InputEvent event_device_res(event);
-  {
-    pp::MouseInputEvent mouse_event(event);
-    if (!mouse_event.is_null()) {
-      pp::Point point = mouse_event.GetPosition();
-      pp::Point movement = mouse_event.GetMovement();
-      ScalePoint(device_scale(), &point);
-      point.set_x(point.x() - available_area().x());
-
-      ScalePoint(device_scale(), &movement);
-      mouse_event =
-          pp::MouseInputEvent(this, event.GetType(), event.GetTimeStamp(),
-                              event.GetModifiers(), mouse_event.GetButton(),
-                              point, mouse_event.GetClickCount(), movement);
-      event_device_res = mouse_event;
-    }
-  }
-  {
-    pp::TouchInputEvent touch_event(event);
-    if (!touch_event.is_null()) {
-      pp::TouchInputEvent new_touch_event = pp::TouchInputEvent(
-          this, touch_event.GetType(), touch_event.GetTimeStamp(),
-          touch_event.GetModifiers());
-
-      for (uint32_t i = 0;
-           i < touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES);
-           i++) {
-        pp::TouchPoint touch_point =
-            touch_event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, i);
-
-        pp::FloatPoint point = touch_point.position();
-        ScaleFloatPoint(device_scale(), &point);
-        point.set_x(point.x() - available_area().x());
-
-        new_touch_event.AddTouchPoint(
-            PP_TOUCHLIST_TYPE_TARGETTOUCHES,
-            {touch_point.id(), point, touch_point.radii(),
-             touch_point.rotation_angle(), touch_point.pressure()});
-      }
-      event_device_res = new_touch_event;
-    }
-  }
-
-  if (SendInputEventToEngine(event_device_res))
-    return true;
-
-  // Middle click is used for scrolling and is handled by the container page.
-  pp::MouseInputEvent mouse_event(event_device_res);
-  if (!mouse_event.is_null() &&
-      mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
-    return false;
-  }
-
-  // Return true for unhandled clicks so the plugin takes focus.
-  return (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
+  return PdfViewPluginBase::HandleInputEvent(*web_event);
 }
 
 void OutOfProcessInstance::DidChangeView(const pp::View& view) {
@@ -684,7 +632,7 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
       static_cast<PP_PrivateDuplexMode_Dev>(engine()->GetDuplexType());
   options->copies = engine()->GetCopiesToPrint();
 
-  base::Optional<gfx::Size> uniform_page_size =
+  absl::optional<gfx::Size> uniform_page_size =
       engine()->GetUniformPageSizePoints();
   options->is_page_size_uniform = PP_FromBool(uniform_page_size.has_value());
   options->uniform_page_size = PPSizeFromSize(
@@ -693,16 +641,22 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
 
 void OutOfProcessInstance::SelectionChanged(const gfx::Rect& left,
                                             const gfx::Rect& right) {
-  pp::Point l(left.x() + available_area().x(), left.y());
-  pp::Point r(right.x() + available_area().x(), right.y());
+  const gfx::Rect left_with_offset = left + plugin_rect().OffsetFromOrigin();
+  const gfx::Rect right_with_offset = right + plugin_rect().OffsetFromOrigin();
+
+  pp::Point l(left_with_offset.x() + available_area().x(),
+              left_with_offset.y());
+  pp::Point r(right_with_offset.x() + available_area().x(),
+              right_with_offset.y());
 
   float inverse_scale = 1.0f / device_scale();
   ScalePoint(inverse_scale, &l);
   ScalePoint(inverse_scale, &r);
 
-  pp::PDF::SelectionChanged(GetPluginInstance(),
-                            PP_MakeFloatPoint(l.x(), l.y()), left.height(),
-                            PP_MakeFloatPoint(r.x(), r.y()), right.height());
+  pp::PDF::SelectionChanged(
+      GetPluginInstance(), PP_MakeFloatPoint(l.x(), l.y()),
+      left_with_offset.height(), PP_MakeFloatPoint(r.x(), r.y()),
+      right_with_offset.height());
   if (accessibility_state() == AccessibilityState::kLoaded)
     PrepareAndSetAccessibilityViewportInfo();
 }
@@ -753,6 +707,10 @@ bool OutOfProcessInstance::HasEditableText() {
 
 void OutOfProcessInstance::ReplaceSelection(const std::string& text) {
   engine()->ReplaceSelection(text);
+}
+
+void OutOfProcessInstance::SelectAll() {
+  engine()->SelectAll();
 }
 
 bool OutOfProcessInstance::CanUndo() {
@@ -885,10 +843,10 @@ void OutOfProcessInstance::SetFormFieldInFocus(bool in_focus) {
                                          : PP_TEXTINPUT_TYPE_DEV_NONE);
 }
 
-void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType cursor_type) {
-  if (cursor_type == cursor_type_)
+void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
+  if (cursor_type() == new_cursor_type)
     return;
-  cursor_type_ = cursor_type;
+  set_cursor_type(new_cursor_type);
 
   const PPB_CursorControl_Dev* cursor_interface =
       reinterpret_cast<const PPB_CursorControl_Dev*>(
@@ -900,7 +858,7 @@ void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType cursor_type) {
   }
 
   cursor_interface->SetCursor(pp_instance(),
-                              PPCursorTypeFromCursorType(cursor_type_),
+                              PPCursorTypeFromCursorType(cursor_type()),
                               pp::ImageData().pp_resource(), nullptr);
 }
 
@@ -1066,9 +1024,9 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   }
 
   // The page count is zero if the print preview source is a PDF. In which
-  // case, the page index for |url| should be at |kCompletePDFIndex|.
+  // case, the page index for `url` should be at `kCompletePDFIndex`.
   // When the page count is not zero, then the source is not PDF. In which
-  // case, the page index for |url| should be non-negative.
+  // case, the page index for `url` should be non-negative.
   bool is_previewing_pdf = IsPreviewingPDF(print_preview_page_count);
   int page_index = ExtractPrintPreviewPageIndex(url);
   if ((is_previewing_pdf && page_index != kCompletePDFIndex) ||
@@ -1413,43 +1371,6 @@ void OutOfProcessInstance::SetContentRestrictions(int content_restrictions) {
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
-}
-
-bool OutOfProcessInstance::SendInputEventToEngine(const pp::InputEvent& event) {
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-    case PP_INPUTEVENT_TYPE_MOUSEUP:
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-    case PP_INPUTEVENT_TYPE_MOUSEENTER:
-    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-      return engine()->HandleEvent(
-          GetMouseInputEvent(pp::MouseInputEvent(event)));
-    case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-    case PP_INPUTEVENT_TYPE_KEYDOWN:
-    case PP_INPUTEVENT_TYPE_KEYUP:
-    case PP_INPUTEVENT_TYPE_CHAR:
-      return engine()->HandleEvent(
-          GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
-    case PP_INPUTEVENT_TYPE_TOUCHSTART:
-    case PP_INPUTEVENT_TYPE_TOUCHEND:
-    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
-    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-      return engine()->HandleEvent(
-          GetTouchInputEvent(pp::TouchInputEvent(event)));
-    case PP_INPUTEVENT_TYPE_WHEEL:
-    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
-    case PP_INPUTEVENT_TYPE_IME_TEXT:
-      // These event types are not used in PDFiumEngine, so there are no
-      // functions to convert them from pp::InputEvent to
-      // chrome_pdf::InputEvent. As such just send a dummy NoneInputEvent
-      // instead.
-      return engine()->HandleEvent(NoneInputEvent());
-    case PP_INPUTEVENT_TYPE_UNDEFINED:
-      return false;
-  }
 }
 
 void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {

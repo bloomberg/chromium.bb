@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -110,7 +111,7 @@ void DispatchNotificationClickForRegistration(
                         base::DoNothing());
   version->endpoint()->DispatchNotificationClickEvent(
       "notification_id", notification_data, -1 /* action_index */,
-      base::nullopt /* reply */,
+      absl::nullopt /* reply */,
       base::BindOnce([](blink::mojom::ServiceWorkerEventStatus event_status) {
         DCHECK_EQ(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                   event_status);
@@ -131,7 +132,9 @@ void FindReadyRegistrationForScope(
                                              std::move(callback)));
     return;
   }
-  context_wrapper->FindReadyRegistrationForScope(scope, std::move(callback));
+  context_wrapper->FindReadyRegistrationForScope(
+      scope, storage::StorageKey(url::Origin::Create(scope)),
+      std::move(callback));
 }
 
 }  // namespace

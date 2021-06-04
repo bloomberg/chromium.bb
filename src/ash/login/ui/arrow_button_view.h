@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/login/ui/login_button.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace gfx {
 class MultiAnimation;
@@ -30,17 +30,14 @@ class ArrowButtonView : public LoginButton {
   ArrowButtonView& operator=(const ArrowButtonView&) = delete;
   ~ArrowButtonView() override;
 
-  // views::Button:
+  // LoginButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   // Allows to control the loading animation (disabled by default). The
   // animation is an arc that gradually increases from a point to a full circle;
   // the animation is looped.
   void EnableLoadingAnimation(bool enabled);
-
-  // views::View:
-  void OnThemeChanged() override;
 
  private:
   // Helper class that translates events from the loading animation events into

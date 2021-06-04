@@ -37,32 +37,15 @@
     width: 100%;
   }
 
-  #oneGoogleBarOverlayBackdrop {
-    background: rgba(0, 0, 0, .6);
-    display: none;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 999;
-  }
-
-  #oneGoogleBarOverlayBackdrop[show] {
-    display: block;
-  }
-
   #content {
     align-items: center;
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--ntp-one-google-bar-height));
     min-width: fit-content;  /* Prevents OneGoogleBar cutoff at 500% zoom. */
+    padding-top: var(--ntp-one-google-bar-height);
     position: relative;
     z-index: 1;
-  }
-
-  :host([iframe-one-google-bar-enabled_]) #content {
-    padding-top: var(--ntp-one-google-bar-height);
   }
 
   #logo {
@@ -75,9 +58,13 @@
   }
 
   ntp-realbox,
-  ntp-module-wrapper {
+  ntp-modules {
     flex-shrink: 0;
     width: var(--ntp-search-box-width);
+  }
+
+  ntp-middle-slot-promo {
+    max-width: var(--ntp-search-box-width);
   }
 
   ntp-realbox {
@@ -95,15 +82,9 @@
   }
 
   /* ~ because the dom-if results in a template between the middle-slot-promo
-     and the first ntp-module-wrapper. */
-  ntp-middle-slot-promo:not([hidden]) ~ ntp-module-wrapper,
-  ntp-module-wrapper + ntp-module-wrapper {
+     and ntp-modules. */
+  ntp-middle-slot-promo:not([hidden]) ~ ntp-modules {
     margin-top: 16px;
-  }
-
-  :host(:not([promo-and-modules-loaded_])) ntp-middle-slot-promo,
-  :host(:not([promo-and-modules-loaded_])) ntp-module-wrapper {
-    display: none;
   }
 
   #customizeButtonContainer {
@@ -253,7 +234,7 @@
         --ntp-theme-shortcut-background-color:
               [[rgbaOrInherit_(theme_.shortcutBackgroundColor)]];
         --ntp-logo-color: [[rgbaOrInherit_(logoColor_)]];">
-  <template is="dom-if" if="[[showIframedOneGoogleBar_]]">
+  <template is="dom-if" if="[[lazyRender_]]">
     <ntp-iframe id="oneGoogleBar" src="[[oneGoogleBarIframePath_]]"
         hidden$="[[!oneGoogleBarLoaded_]]">
     </ntp-iframe>
@@ -279,19 +260,16 @@
       </template>
       <template is="dom-if" if="[[middleSlotPromoEnabled_]]">
         <ntp-middle-slot-promo
-            on-ntp-middle-slot-promo-loaded="onMiddleSlotPromoLoaded_">
+            on-ntp-middle-slot-promo-loaded="onMiddleSlotPromoLoaded_"
+            hidden="[[!promoAndModulesLoaded_]]">
         </ntp-middle-slot-promo>
       </template>
-      <template is="dom-repeat" items="[[moduleDescriptors_]]" id="modules"
-          on-dom-change="onModulesLoaded_">
-        <ntp-module-wrapper descriptor="[[item]]"
-            on-dismiss-module="onDismissModule_"
-            on-disable-module="onDisableModule_"
+      <template is="dom-if" if="[[modulesEnabled_]]" >
+        <ntp-modules id="modules"
+            on-modules-loaded="onModulesLoaded_"
             on-customize-module="onCustomizeModule_"
-            hidden="[[moduleDisabled_(item.id,
-                                      dismissedModules_.*,
-                                      disabledModules_)]]">
-        </ntp-module-wrapper>
+            hidden="[[!promoAndModulesLoaded_]]">
+        </ntp-modules>
       </template>
       <a id="backgroundImageAttribution"
           href="[[backgroundImageAttributionUrl_]]"
@@ -312,16 +290,16 @@
            button in container to enfore solid background color. -->
       <div id="customizeButtonContainer">
         <cr-button id="customizeButton" on-click="onCustomizeClick_"
-            title="$i18n{customizeThisPage}">
+            title="[[i18n('customizeThisPage')]]">
           <div id="customizeIcon"></div>
           <div id="customizeText" hidden$="[[showBackgroundImage_]]">
-            $i18n{customizeButton}
+            [[i18n('customizeButton')]]
           </div>
         </cr-button>
       </div>
       <div id="themeAttribution"
           hidden$="[[!theme_.backgroundImage.attributionUrl]]">
-        <div>$i18n{themeCreatedBy}</div>
+        <div>[[i18n('themeCreatedBy')]]</div>
         <img src="[[theme_.backgroundImage.attributionUrl.url]]"><img>
       </div>
     </template>
@@ -334,7 +312,8 @@
     </ntp-voice-search-overlay>
   </template>
 </dom-if>
-<template is="dom-if" if="[[showCustomizeDialog_]]" restamp>
+<template id="customizeDialogIf" is="dom-if" if="[[showCustomizeDialog_]]"
+    restamp>
   <ntp-customize-dialog
       on-close="onCustomizeDialogClose_"
       theme="[[theme_]]"
@@ -342,19 +321,6 @@
       selected-page="[[selectedCustomizeDialogPage_]]">
   </ntp-customize-dialog>
 </template>
-<dom-if if="[[lazyRender_]]" restamp>
-  <template>
-    <cr-toast id="removeModuleToast" duration="10000">
-      <div id="removeModuleToastMessage">[[removedModuleData_.message]]</div>
-      <cr-button id="undoRemoveModuleButton"
-          aria-label="$i18n{undoDescription}"
-          on-click="onUndoRemoveModuleButtonClick_">
-        $i18n{undo}
-      </cr-button>
-    </cr-toast>
-  </template>
-</dom-if>
-<div id="oneGoogleBarOverlayBackdrop"></div>
 <svg>
   <defs>
     <clipPath id="oneGoogleBarClipPath">

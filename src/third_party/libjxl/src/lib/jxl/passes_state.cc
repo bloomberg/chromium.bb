@@ -15,6 +15,7 @@
 #include "lib/jxl/passes_state.h"
 
 #include "lib/jxl/chroma_from_luma.h"
+#include "lib/jxl/coeff_order.h"
 #include "lib/jxl/common.h"
 
 namespace jxl {
@@ -37,10 +38,6 @@ Status InitializePassesSharedState(const FrameHeader& frame_header,
   shared->epf_sharpness =
       ImageB(frame_dim.xsize_blocks, frame_dim.ysize_blocks);
   shared->cmap = ColorCorrelationMap(frame_dim.xsize, frame_dim.ysize);
-
-  shared->opsin_params =
-      shared->metadata->transform_data.opsin_inverse_matrix.ToOpsinParams(
-          shared->metadata->m.IntensityTarget());
 
   // In the decoder, we allocate coeff orders afterwards, when we know how many
   // we will actually need.

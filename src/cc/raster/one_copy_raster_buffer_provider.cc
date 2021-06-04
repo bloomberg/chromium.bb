@@ -13,7 +13,6 @@
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -265,6 +264,11 @@ uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
   return callback_id;
 }
 
+void OneCopyRasterBufferProvider::SetShutdownEvent(
+    base::WaitableEvent* shutdown_event) {
+  shutdown_event_ = shutdown_event;
+}
+
 void OneCopyRasterBufferProvider::Shutdown() {
   staging_pool_.Shutdown();
 }
@@ -317,7 +321,8 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     staging_buffer->gpu_memory_buffer =
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             staging_buffer->size, BufferFormat(format),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
+            shutdown_event_);
   }
 
   gfx::Rect playback_rect = raster_full_rect;

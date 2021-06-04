@@ -37,13 +37,15 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/cpp/timing_allow_origin_parser.h"
 #include "services/network/public/mojom/parsed_headers.mojom-blink.h"
+#include "services/network/public/mojom/timing_allow_origin.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
@@ -98,7 +100,7 @@ String ConvertToBlink(const std::string& in) {
   return String::FromUTF8(in);
 }
 
-String ConvertToBlink(const base::Optional<std::string>& in) {
+String ConvertToBlink(const absl::optional<std::string>& in) {
   return in ? String::FromUTF8(*in) : String();
 }
 
@@ -106,7 +108,8 @@ String ConvertToBlink(const base::Optional<std::string>& in) {
   return ::blink::KURL(in);
 }
 
-scoped_refptr<::blink::SecurityOrigin> ConvertToBlink(const url::Origin& in) {
+scoped_refptr<const ::blink::SecurityOrigin> ConvertToBlink(
+    const url::Origin& in) {
   return ::blink::SecurityOrigin::CreateFromUrlOrigin(in);
 }
 
@@ -221,6 +224,20 @@ blink::LinkHeaderPtr ConvertToBlink(const LinkHeaderPtr& in) {
       ConvertToBlink(in->mime_type));
 }
 
+blink::TimingAllowOriginPtr ConvertToBlink(const TimingAllowOriginPtr& in) {
+  if (!in) {
+    return nullptr;
+  }
+
+  switch (in->which()) {
+    case TimingAllowOrigin::Tag::kSerializedOrigins:
+      return blink::TimingAllowOrigin::NewSerializedOrigins(
+          ConvertToBlink(in->get_serialized_origins()));
+    case TimingAllowOrigin::Tag::kAll:
+      return blink::TimingAllowOrigin::NewAll(/*ignored=*/0);
+  }
+}
+
 blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
   DCHECK(in);
   return blink::ParsedHeaders::New(
@@ -228,13 +245,14 @@ blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
       ConvertToBlink(in->allow_csp_from), in->cross_origin_embedder_policy,
       in->cross_origin_opener_policy, in->origin_agent_cluster,
       in->accept_ch.has_value()
-          ? base::make_optional(ConvertToBlink(in->accept_ch.value()))
-          : base::nullopt,
+          ? absl::make_optional(ConvertToBlink(in->accept_ch.value()))
+          : absl::nullopt,
       in->accept_ch_lifetime,
       in->critical_ch.has_value()
-          ? base::make_optional(ConvertToBlink(in->critical_ch.value()))
-          : base::nullopt,
-      in->xfo, ConvertToBlink(in->link_headers));
+          ? absl::make_optional(ConvertToBlink(in->critical_ch.value()))
+          : absl::nullopt,
+      in->xfo, ConvertToBlink(in->link_headers),
+      ConvertToBlink(in->timing_allow_origin), in->bfcache_opt_in_unload);
 }
 
 }  // namespace mojom
@@ -403,7 +421,7 @@ bool ParseHTTPRefresh(const String& refresh,
   }
 }
 
-base::Optional<base::Time> ParseDate(const String& value) {
+absl::optional<base::Time> ParseDate(const String& value) {
   return ParseDateFromNullTerminatedCharacters(value.Utf8().c_str());
 }
 
@@ -582,8 +600,8 @@ CacheControlHeader ParseCacheControlDirectives(
     const AtomicString& pragma_value) {
   CacheControlHeader cache_control_header;
   cache_control_header.parsed = true;
-  cache_control_header.max_age = base::nullopt;
-  cache_control_header.stale_while_revalidate = base::nullopt;
+  cache_control_header.max_age = absl::nullopt;
+  cache_control_header.stale_while_revalidate = absl::nullopt;
 
   static const char kNoCacheDirective[] = "no-cache";
   static const char kNoStoreDirective[] = "no-store";
@@ -821,10 +839,12 @@ ParseContentSecurityPolicies(
     network::mojom::blink::ContentSecurityPolicyType type,
     network::mojom::blink::ContentSecurityPolicySource source,
     const SecurityOrigin& self_origin) {
+  const SecurityOrigin* precursor_origin =
+      self_origin.GetOriginOrPrecursorOriginIfOpaque();
   KURL base_url;
-  base_url.SetProtocol(self_origin.Protocol());
-  base_url.SetHost(self_origin.Host());
-  base_url.SetPort(self_origin.Port());
+  base_url.SetProtocol(precursor_origin->Protocol());
+  base_url.SetHost(precursor_origin->Host());
+  base_url.SetPort(precursor_origin->Port());
   return ParseContentSecurityPolicies(raw_policies, type, source, base_url);
 }
 
@@ -846,6 +866,12 @@ ParseContentSecurityPolicyHeaders(
   parsed_csps.AppendRange(std::make_move_iterator(report_only_csps.begin()),
                           std::make_move_iterator(report_only_csps.end()));
   return parsed_csps;
+}
+
+network::mojom::blink::TimingAllowOriginPtr ParseTimingAllowOrigin(
+    const String& header_value) {
+  return network::mojom::ConvertToBlink(
+      network::ParseTimingAllowOrigin(header_value.Latin1()));
 }
 
 }  // namespace blink

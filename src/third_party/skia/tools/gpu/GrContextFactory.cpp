@@ -188,8 +188,8 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     // (<= 269.73). We get shader link failures when testing on recent drivers
                     // using this backend.
                     if (glCtx) {
-                        auto [backend, vendor, renderer] = GrGLGetANGLEInfo(glCtx->gl());
-                        if (vendor == GrGLANGLEVendor::kNVIDIA) {
+                        GrGLDriverInfo info = GrGLGetDriverInfo(glCtx->gl());
+                        if (info.fANGLEVendor == GrGLVendor::kNVIDIA) {
                             delete glCtx;
                             return ContextInfo();
                         }
@@ -307,6 +307,9 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
     GrContextOptions grOptions = fGlobalOptions;
     if (ContextOverrides::kAvoidStencilBuffers & overrides) {
         grOptions.fAvoidStencilBuffers = true;
+    }
+    if (ContextOverrides::kReducedShaders & overrides) {
+        grOptions.fReducedShaderVariations = true;
     }
     sk_sp<GrDirectContext> grCtx;
     {

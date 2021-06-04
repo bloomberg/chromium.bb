@@ -212,9 +212,10 @@ TEST(NoiseStrengthSolver, SimplifiesCurve) {
   aom_noise_strength_solver_free(&solver);
 }
 
-TEST(NoiseStrengthLut, LutInitNegativeSize) {
+TEST(NoiseStrengthLut, LutInitNegativeOrZeroSize) {
   aom_noise_strength_lut_t lut;
   ASSERT_FALSE(aom_noise_strength_lut_init(&lut, -1));
+  ASSERT_FALSE(aom_noise_strength_lut_init(&lut, 0));
 }
 
 TEST(NoiseStrengthLut, LutEvalSinglePoint) {

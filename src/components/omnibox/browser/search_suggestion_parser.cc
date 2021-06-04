@@ -435,7 +435,7 @@ std::unique_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     if (error_code == 0)
       return data;
   }
-  return std::unique_ptr<base::Value>();
+  return nullptr;
 }
 
 // static
@@ -632,7 +632,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       std::string image_dominant_color;
       std::string image_url;
       std::string additional_query_params;
-      base::Optional<int> suggestion_group_id;
+      absl::optional<int> suggestion_group_id;
 
       if (suggestion_details) {
         suggestion_details->GetDictionary(index, &suggestion_detail);

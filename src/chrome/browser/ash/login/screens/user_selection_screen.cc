@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -41,7 +40,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -64,12 +63,12 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kWakeLockReason[] = "TPMLockedIssue";
@@ -124,21 +123,20 @@ std::unique_ptr<base::ListValue> GetPublicSessionLocales(
 }
 
 // Determines the initial fingerprint state for the given user.
-ash::FingerprintState GetInitialFingerprintState(
-    const user_manager::User* user) {
+FingerprintState GetInitialFingerprintState(const user_manager::User* user) {
   // User must be logged in.
   if (!user->is_logged_in())
-    return ash::FingerprintState::UNAVAILABLE;
+    return FingerprintState::UNAVAILABLE;
 
   // Quick unlock storage must be available.
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(user);
   if (!quick_unlock_storage)
-    return ash::FingerprintState::UNAVAILABLE;
+    return FingerprintState::UNAVAILABLE;
 
   // Fingerprint is not registered for this account.
   if (!quick_unlock_storage->fingerprint_storage()->HasRecord())
-    return ash::FingerprintState::UNAVAILABLE;
+    return FingerprintState::UNAVAILABLE;
 
   // Fingerprint unlock attempts should not be exceeded, as the lock screen has
   // not been displayed yet.
@@ -147,14 +145,14 @@ ash::FingerprintState GetInitialFingerprintState(
 
   // It has been too long since the last authentication.
   if (!quick_unlock_storage->HasStrongAuth())
-    return ash::FingerprintState::DISABLED_FROM_TIMEOUT;
+    return FingerprintState::DISABLED_FROM_TIMEOUT;
 
   // Auth is available.
   if (quick_unlock_storage->IsFingerprintAuthenticationAvailable())
-    return ash::FingerprintState::AVAILABLE_DEFAULT;
+    return FingerprintState::AVAILABLE_DEFAULT;
 
   // Default to unavailabe.
-  return ash::FingerprintState::UNAVAILABLE;
+  return FingerprintState::UNAVAILABLE;
 }
 
 // Returns true if dircrypto migration check should be performed.
@@ -213,7 +211,7 @@ bool CanRemoveUser(const user_manager::User* user) {
 
 void GetMultiProfilePolicy(const user_manager::User* user,
                            bool* out_is_allowed,
-                           ash::MultiProfileUserBehavior* out_policy) {
+                           MultiProfileUserBehavior* out_policy) {
   const std::string& user_id = user->GetAccountId().GetUserEmail();
   MultiProfileUserController* multi_profile_user_controller =
       ChromeUserManager::Get()->GetMultiProfileUserController();
@@ -292,7 +290,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
   // Callback invoked when NeedsDircryptoMigration call is finished.
   void OnCryptohomeNeedsDircryptoMigrationCallback(
       const AccountId& account_id,
-      base::Optional<user_data_auth::NeedsDircryptoMigrationReply> reply) {
+      absl::optional<user_data_auth::NeedsDircryptoMigrationReply> reply) {
     if (!reply.has_value()) {
       LOG(ERROR) << "Failed to call cryptohome NeedsDircryptoMigration.";
       // Hide the banner to avoid confusion in http://crbug.com/721948.
@@ -511,7 +509,7 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
     return true;
   }
 
-  const base::Optional<base::TimeDelta> offline_signin_time_limit =
+  const absl::optional<base::TimeDelta> offline_signin_time_limit =
       user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
   if (!offline_signin_time_limit)
     return false;
@@ -530,9 +528,9 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 }
 
 // static
-ash::UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
+UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
     const user_manager::User& user) {
-  ash::UserAvatar avatar;
+  UserAvatar avatar;
   avatar.image = user.GetImage();
   if (avatar.image.isNull()) {
     avatar.image = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -633,15 +631,13 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
     return;
 
   if (!token_handle_util_.get()) {
-    token_handle_util_.reset(new TokenHandleUtil());
+    token_handle_util_ = std::make_unique<TokenHandleUtil>();
   }
 
   if (token_handle_util_->HasToken(account_id)) {
     token_handle_util_->CheckToken(
         account_id,
-        chromeos::ProfileHelper::Get()
-            ->GetSigninProfile()
-            ->GetURLLoaderFactory(),
+        ProfileHelper::Get()->GetSigninProfile()->GetURLLoaderFactory(),
         base::BindOnce(&UserSelectionScreen::OnUserStatusChecked,
                        weak_factory_.GetWeakPtr()));
   }
@@ -857,9 +853,9 @@ void UserSelectionScreen::AttemptEasyUnlock(const AccountId& account_id) {
   service->AttemptAuth(account_id);
 }
 
-std::vector<ash::LoginUserInfo>
+std::vector<LoginUserInfo>
 UserSelectionScreen::UpdateAndReturnUserListForAsh() {
-  std::vector<ash::LoginUserInfo> user_info_list;
+  std::vector<LoginUserInfo> user_info_list;
 
   const AccountId owner = GetOwnerAccountId();
   const bool is_signin_to_add = IsSigninToAdd();
@@ -880,7 +876,7 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
                    : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD);
     user_auth_type_map_[account_id] = initial_auth_type;
 
-    ash::LoginUserInfo user_info;
+    LoginUserInfo user_info;
     user_info.basic_user_info.type = user->GetType();
     user_info.basic_user_info.account_id = user->GetAccountId();
 
@@ -918,8 +914,7 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
         chromeos::kDeviceShowNumericKeyboardForPassword,
         &user_info.show_pin_pad_for_password);
     user_manager::known_user::GetBooleanPref(
-        user->GetAccountId(),
-        chromeos::prefs::kLoginDisplayPasswordButtonEnabled,
+        user->GetAccountId(), prefs::kLoginDisplayPasswordButtonEnabled,
         &user_info.show_display_password_button);
 
     // Fill multi-profile data.
@@ -963,8 +958,8 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.can_remove = CanRemoveUser(user);
 
     // Send a request to get keyboard layouts for default locale.
-    if (is_public_account && LoginScreenClient::HasInstance()) {
-      LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(
+    if (is_public_account && LoginScreenClientImpl::HasInstance()) {
+      LoginScreenClientImpl::Get()->RequestPublicSessionKeyboardLayouts(
           account_id, user_info.public_account_info->default_locale);
     }
 
@@ -1005,4 +1000,4 @@ EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
   return EasyUnlockService::Get(profile);
 }
 
-}  // namespace chromeos
+}  // namespace ash

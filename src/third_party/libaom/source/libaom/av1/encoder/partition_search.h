@@ -64,12 +64,14 @@ static AOM_INLINE void set_cb_offsets(uint16_t *cb_offset,
 static AOM_INLINE void update_cb_offsets(MACROBLOCK *x, const BLOCK_SIZE bsize,
                                          const int subsampling_x,
                                          const int subsampling_y) {
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(bsize, subsampling_x, subsampling_y);
   x->cb_offset[PLANE_TYPE_Y] += block_size_wide[bsize] * block_size_high[bsize];
-  if (x->e_mbd.is_chroma_ref)
+  if (x->e_mbd.is_chroma_ref) {
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, subsampling_x, subsampling_y);
+    assert(plane_bsize != BLOCK_INVALID);
     x->cb_offset[PLANE_TYPE_UV] +=
         block_size_wide[plane_bsize] * block_size_high[plane_bsize];
+  }
 }
 
 #endif  // AOM_AV1_ENCODER_PARTITION_SEARCH_H_

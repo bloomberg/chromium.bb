@@ -24,6 +24,7 @@
 #include "base/containers/adapters.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/insets.h"
@@ -295,7 +296,7 @@ class HoldingSpaceTrayBubble::ChildBubbleContainer
   mutable views::ProposedLayout target_layout_;   // Layout being animated to.
 
   std::unique_ptr<gfx::SlideAnimation> layout_animation_;
-  base::Optional<ui::ThroughputTracker> layout_animation_throughput_tracker_;
+  absl::optional<ui::ThroughputTracker> layout_animation_throughput_tracker_;
 };
 
 // HoldingSpaceTrayBubble ------------------------------------------------------
@@ -310,6 +311,7 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect =
       holding_space_tray->shelf()->GetSystemTrayAnchorRect();
+  init_params.bg_color = SK_ColorTRANSPARENT;
   init_params.insets = GetTrayBubbleInsets();
   init_params.shelf_alignment = holding_space_tray->shelf()->alignment();
   init_params.preferred_width = kHoldingSpaceBubbleWidth;
@@ -319,6 +321,8 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
 
   // Create and customize bubble view.
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
+  // Ensure bubble frame does not draw background behind bubble view.
+  bubble_view->set_color(SK_ColorTRANSPARENT);
   child_bubble_container_ =
       bubble_view->AddChildView(std::make_unique<ChildBubbleContainer>());
   child_bubble_container_->SetMaxHeight(CalculateMaxHeight());
@@ -338,12 +342,6 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
   // Show the bubble.
   bubble_wrapper_ =
       std::make_unique<TrayBubbleWrapper>(holding_space_tray, bubble_view);
-
-  // Set bubble frame to be invisible.
-  bubble_wrapper_->GetBubbleWidget()
-      ->non_client_view()
-      ->frame_view()
-      ->SetVisible(false);
 
   event_handler_ =
       std::make_unique<HoldingSpaceTrayBubbleEventHandler>(this, &delegate_);

@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_DICE_BUBBLE_SYNC_PROMO_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_DICE_BUBBLE_SYNC_PROMO_VIEW_H_
 
-#include <memory>
-#include <vector>
-
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 

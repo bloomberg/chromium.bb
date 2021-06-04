@@ -115,11 +115,9 @@ static ResourceId CreateResourceInLayerTree(
   auto resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, is_overlay_candidate);
-  auto release_callback = SingleReleaseCallback::Create(
-      base::BindRepeating([](const gpu::SyncToken&, bool) {}));
 
-  ResourceId resource_id = child_resource_provider->ImportResource(
-      resource, std::move(release_callback));
+  ResourceId resource_id =
+      child_resource_provider->ImportResource(resource, base::DoNothing());
 
   return resource_id;
 }
@@ -132,7 +130,8 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
   ResourceId resource_id = CreateResourceInLayerTree(
       child_resource_provider, size, is_overlay_candidate);
 
-  int child_id = parent_resource_provider->CreateChild(base::DoNothing());
+  int child_id =
+      parent_resource_provider->CreateChild(base::DoNothing(), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -311,7 +310,6 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   CreateFullscreenCandidateQuad(
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  pass->shared_quad_state_list.back()->is_clipped = true;
   pass->shared_quad_state_list.back()->clip_rect = kOverlayRect;
 
   gfx::Rect damage_rect;
@@ -337,7 +335,6 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   CreateFullscreenCandidateQuad(
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  pass->shared_quad_state_list.back()->is_clipped = true;
   pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(64, 64, 128, 128);
 
   gfx::Rect damage_rect;
@@ -355,7 +352,6 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
       &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(1U, ca_layer_list.size());
-  EXPECT_TRUE(ca_layer_list.back().shared_state->is_clipped);
   EXPECT_EQ(gfx::RectF(64, 64, 128, 128),
             ca_layer_list.back().shared_state->clip_rect);
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());

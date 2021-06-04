@@ -69,16 +69,6 @@ constexpr char kAbusiveNotificationContentWarningMessage[] =
 
 namespace {
 
-bool IsMessageTextEqual(PermissionRequest* a, PermissionRequest* b) {
-  if (a == b)
-    return true;
-  if (a->GetMessageTextFragment() == b->GetMessageTextFragment() &&
-      a->GetOrigin() == b->GetOrigin()) {
-    return true;
-  }
-  return false;
-}
-
 bool IsMediaRequest(RequestType type) {
 #if !defined(OS_ANDROID)
   if (type == RequestType::kCameraPanTiltZoom)
@@ -141,6 +131,12 @@ void PermissionRequestManager::AddRequest(
     return;
   }
 
+  if (source_frame->IsInactiveAndDisallowActivation()) {
+    request->Cancelled();
+    request->RequestFinished();
+    return;
+  }
+
   if (is_notification_prompt_cooldown_active_ &&
       request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
     // Short-circuit by canceling rather than denying to avoid creating a large
@@ -166,12 +162,13 @@ void PermissionRequestManager::AddRequest(
   // any other renderer-side nav initiations?). Double-check this for
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
-  const GURL& main_frame_url_ = web_contents()->GetLastCommittedURL();
+  CHECK_EQ(source_frame->GetMainFrame(), web_contents()->GetMainFrame());
+  const GURL& main_frame_url = web_contents()->GetLastCommittedURL();
   bool is_main_frame =
-      url::Origin::Create(main_frame_url_)
+      url::Origin::Create(main_frame_url)
           .IsSameOriginWith(url::Origin::Create(request->GetOrigin()));
 
-  base::Optional<url::Origin> auto_approval_origin =
+  absl::optional<url::Origin> auto_approval_origin =
       PermissionsClient::Get()->GetAutoApprovalOrigin();
   if (auto_approval_origin) {
     if (url::Origin::Create(request->GetOrigin()) ==
@@ -255,7 +252,7 @@ void PermissionRequestManager::UpdateAnchor() {
 
 void PermissionRequestManager::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -274,7 +271,7 @@ void PermissionRequestManager::DidStartNavigation(
 
 void PermissionRequestManager::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument()) {
     return;
@@ -457,8 +454,8 @@ PermissionRequestManager::PermissionRequestManager(
       tab_is_hidden_(web_contents->GetVisibility() ==
                      content::Visibility::HIDDEN),
       auto_response_for_test_(NONE),
-      notification_permission_ui_selectors_(
-          PermissionsClient::Get()->CreateNotificationPermissionUiSelectors(
+      permission_ui_selectors_(
+          PermissionsClient::Get()->CreatePermissionUiSelectors(
               web_contents->GetBrowserContext())) {}
 
 void PermissionRequestManager::ScheduleShowBubble() {
@@ -513,21 +510,27 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
     }
   }
 
-  if (!notification_permission_ui_selectors_.empty() &&
-      requests_.front()->GetRequestType() == RequestType::kNotifications) {
+  if (!permission_ui_selectors_.empty()) {
     DCHECK(!current_request_ui_to_use_.has_value());
     // Initialize the selector decisions vector.
     DCHECK(selector_decisions_.empty());
-    selector_decisions_.resize(notification_permission_ui_selectors_.size());
+    selector_decisions_.resize(permission_ui_selectors_.size());
 
     for (size_t selector_index = 0;
-         selector_index < notification_permission_ui_selectors_.size();
-         ++selector_index) {
-      notification_permission_ui_selectors_[selector_index]->SelectUiToUse(
-          requests_.front(),
-          base::BindOnce(
-              &PermissionRequestManager::OnNotificationPermissionUiSelectorDone,
-              weak_factory_.GetWeakPtr(), selector_index));
+         selector_index < permission_ui_selectors_.size(); ++selector_index) {
+      if (permission_ui_selectors_[selector_index]
+              ->IsPermissionRequestSupported(
+                  requests_.front()->GetRequestType())) {
+        permission_ui_selectors_[selector_index]->SelectUiToUse(
+            requests_.front(),
+            base::BindOnce(
+                &PermissionRequestManager::OnPermissionUiSelectorDone,
+                weak_factory_.GetWeakPtr(), selector_index));
+      } else {
+        OnPermissionUiSelectorDone(
+            selector_index,
+            PermissionUiSelector::Decision::UseNormalUiAndShowNoWarning());
+      }
     }
   } else {
     current_request_ui_to_use_ =
@@ -602,7 +605,7 @@ void PermissionRequestManager::DeleteBubble() {
 }
 
 void PermissionRequestManager::ResetViewStateForCurrentRequest() {
-  for (const auto& selector : notification_permission_ui_selectors_)
+  for (const auto& selector : permission_ui_selectors_)
     selector->Cancel();
 
   current_request_already_displayed_ = false;
@@ -636,7 +639,7 @@ void PermissionRequestManager::FinalizeCurrentRequests(
       PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           browser_context);
 
-  base::Optional<QuietUiReason> quiet_ui_reason;
+  absl::optional<QuietUiReason> quiet_ui_reason;
   if (ShouldCurrentRequestUseQuietUI())
     quiet_ui_reason = ReasonForUsingQuietUi();
 
@@ -704,11 +707,11 @@ void PermissionRequestManager::CleanUpRequests() {
 PermissionRequest* PermissionRequestManager::GetExistingRequest(
     PermissionRequest* request) {
   for (PermissionRequest* existing_request : requests_) {
-    if (IsMessageTextEqual(existing_request, request))
+    if (request->IsDuplicateOf(existing_request))
       return existing_request;
   }
   for (PermissionRequest* queued_request : queued_requests_) {
-    if (IsMessageTextEqual(queued_request, request))
+    if (request->IsDuplicateOf(queued_request))
       return queued_request;
   }
   return nullptr;
@@ -773,14 +776,14 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() const {
   // ContentSettingImageModel might call into this method if the user switches
   // between tabs while the |notification_permission_ui_selectors_| are pending.
-  return ReasonForUsingQuietUi() != base::nullopt;
+  return ReasonForUsingQuietUi() != absl::nullopt;
 }
 
-base::Optional<PermissionRequestManager::QuietUiReason>
+absl::optional<PermissionRequestManager::QuietUiReason>
 PermissionRequestManager::ReasonForUsingQuietUi() const {
   if (!IsRequestInProgress() || !current_request_ui_to_use_ ||
       !current_request_ui_to_use_->quiet_ui_reason)
-    return base::nullopt;
+    return absl::nullopt;
 
   return *(current_request_ui_to_use_->quiet_ui_reason);
 }
@@ -799,7 +802,7 @@ void PermissionRequestManager::NotifyBubbleRemoved() {
     observer.OnBubbleRemoved();
 }
 
-void PermissionRequestManager::OnNotificationPermissionUiSelectorDone(
+void PermissionRequestManager::OnPermissionUiSelectorDone(
     size_t selector_index,
     const UiDecision& decision) {
   if (decision.warning_reason) {
@@ -828,9 +831,8 @@ void PermissionRequestManager::OnNotificationPermissionUiSelectorDone(
         selector_decisions_[decision_index].value();
 
     if (!prediction_grant_likelihood_.has_value()) {
-      prediction_grant_likelihood_ =
-          notification_permission_ui_selectors_[decision_index]
-              ->PredictedGrantLikelihoodForUKM();
+      prediction_grant_likelihood_ = permission_ui_selectors_[decision_index]
+                                         ->PredictedGrantLikelihoodForUKM();
     }
 
     if (current_decision.quiet_ui_reason.has_value()) {

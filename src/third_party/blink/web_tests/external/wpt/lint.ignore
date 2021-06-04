@@ -166,6 +166,7 @@ SET TIMEOUT: html/cross-origin-embedder-policy/credentialless/resources/dispatch
 SET TIMEOUT: html/editing/dnd/*
 SET TIMEOUT: html/semantics/embedded-content/the-iframe-element/*
 SET TIMEOUT: html/semantics/embedded-content/the-img-element/*
+SET TIMEOUT: html/semantics/interactive-elements/the-popup-element/popup-light-dismiss.tentative.html
 SET TIMEOUT: html/semantics/scripting-1/the-script-element/*
 SET TIMEOUT: html/webappapis/dynamic-markup-insertion/opening-the-input-stream/0*
 SET TIMEOUT: html/webappapis/dynamic-markup-insertion/opening-the-input-stream/resources/history-frame.html
@@ -486,6 +487,7 @@ SET TIMEOUT: css/CSS2/selectors/dom-hover-002.xht
 SET TIMEOUT: css/CSS2/tables/tables-102.xht
 SET TIMEOUT: css/mediaqueries/min-width-tables-001.html
 SET TIMEOUT: css/css-text/crashtests/rendering-rtl-bidi-override-crash.html
+SET TIMEOUT: resource-timing/resources/run-async-tasks-promise.js
 
 ## Build system stuff
 CSS-COLLIDING-SUPPORT-NAME: css/*/README
@@ -727,6 +729,7 @@ WEB-PLATFORM.TEST:web-bundle/subresource-loading/*.html
 # https://github.com/web-platform-tests/wpt/issues/16455
 # Please consult with ecosystem-infra@chromium.org before adding more.
 MISSING DEPENDENCY: credential-management/support/otpcredential-helper.js
+MISSING DEPENDENCY: resources/chromium/content-index-helpers.js
 MISSING DEPENDENCY: resources/chromium/contacts_manager_mock.js
 MISSING DEPENDENCY: resources/chromium/web-bluetooth-test.js
 MISSING DEPENDENCY: resources/chromium/webusb-test.js
@@ -746,7 +749,7 @@ MISSING DEPENDENCY: resources/chromium/webxr-test.js
 AHEM SYSTEM FONT: acid/acid3/test.html
 AHEM SYSTEM FONT: resource-timing/entry-attributes.html
 AHEM SYSTEM FONT: resource-timing/font-timestamps.html
-AHEM SYSTEM FONT: resource-timing/resources/all_resource_types.htm
+AHEM SYSTEM FONT: resource-timing/resources/all_resource_types.html
 AHEM SYSTEM FONT: resource-timing/resources/iframe-reload-TAO.sub.html
 AHEM SYSTEM FONT: html/canvas/element/drawing-text-to-the-canvas/2d.text.measure.fontBoundingBox.ahem.html
 AHEM SYSTEM FONT: css/css-font-loading/fontface-override-descriptors.html

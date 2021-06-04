@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">រកមើលរបាររំកិល</translation>
 <translation id="1404323374378969387">ភាសា​ន័រវែស</translation>
 <translation id="1430915738399379752">បោះពុម្ព</translation>
+<translation id="1433628812591023318">ត្រូវតែផ្លាស់ទី​ឯកសារ​ទៅថតឯកសារ​របស់ Windows សិន ទើបអាចទម្លាក់​ឯកសារនោះ​ទៅក្នុង Parallels Desktop បាន។</translation>
 <translation id="1435838927755162558">ចែករំលែក​ថត​ជាមួយ Parallels Desktop</translation>
 <translation id="1467432559032391204">ឆ្វេង</translation>
 <translation id="1471718551822868769">ភាសា​ស្លូវ៉ាគី</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">ឯកសារ Windows</translation>
 <translation id="3078461028045006476">ចែករំលែកជាមួយ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">មិនអាចបើក "<ph name="PATH" />" ពីទីតាំងនេះបានទេ។ សូមចម្លងទៅ "ឯកសាររបស់ខ្ញុំ" ដើម្បីបើក។</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ធ្វើរួច</translation>
 <translation id="3188257591659621405">ឯកសារ​របស់ខ្ញុំ​</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">ភាសាប៊ុលហ្ការី​ដែលប្រើ​ក្ដារចុច​តាម​សូរសព្ទ</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5625294776298156701">ភាសាតាមិល​ដែលប្រើ​ក្ដារចុច Tamil99</translation>
+<translation id="5633226425545095130">ការផ្លាស់ទីធាតុនេះនឹងចែករំលែកវាជាមួយអ្នកគ្រប់គ្នាដែលអាចមើលឃើញថតរួម '<ph name="DESTINATION_NAME" />'។</translation>
 <translation id="5649768706273821470">ស្តាប់</translation>
 <translation id="5678784840044122290">កម្មវិធី Linux នឹង​មាននៅក្នុង​ស្ថានីយ​​របស់អ្នក​ ហើយវា​ក៏​អាច​បង្ហាញរូបតំណាង​នៅក្នុង​កម្មវិធី​ចាប់ផ្ដើម​របស់អ្នក​ផងដែរ។</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />មិនអាច​ផ្ដាច់ចេញ​ពីបណ្ណសារ ឬ​ថាស​និម្មិត​បានទេ<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">ក្តារចុចអេត្យូពី</translation>
 <translation id="7417705661718309329">Google ផែនទី</translation>
 <translation id="7460898608667578234">ភាសាអ៊ុយក្រែន</translation>
+<translation id="7486315294984620427">ត្រូវតែចម្លង​ឯកសារ​ទៅថតឯកសារ​របស់ Windows សិន ទើបអាចទម្លាក់​ឯកសារនោះ​ទៅក្នុង Parallels Desktop បាន។</translation>
 <translation id="7489215562877293245">បានរកឃើញ <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     រួច​រាល់​ដើម្បី​បម្រុងទុក​ទៅកាន់ <ph name="BEGIN_LINK" />Google ថាស<ph name="END_LINK" /></translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">ទំហំ</translation>
 <translation id="8437209419043462667">អាមេរិក</translation>
 <translation id="8456681095658380701">ឈ្មោះគ្មានសុពលភាព</translation>
+<translation id="8459404855768962328">ការចម្លងធាតុនេះនឹងចែករំលែកវាជាមួយអ្នកគ្រប់គ្នាដែលអាចមើលឃើញថតរួម '<ph name="DESTINATION_NAME" />'។</translation>
 <translation id="8461467696380332069">ចុចកណ្ដុរខាងស្ដាំ​លើឯកសារ រួចជ្រើសរើស "ខ្ទាស់ទៅធ្នើ" ដើម្បីចូលប្រើឯកសាររបស់អ្នកនៅក្នុងធ្នើបានយ៉ាងរហ័ស។</translation>
 <translation id="8463494891489624050">ភាសាវៀតណាម VIQR</translation>
 <translation id="8466234950814670489">បណ្ណាសារ tar</translation>

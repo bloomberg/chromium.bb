@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -17,8 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
@@ -77,8 +76,8 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/url_util.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
@@ -112,7 +111,7 @@ StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
       site_instance = render_frame_host_->GetSiteInstance();
   }
   return static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartition(context, site_instance));
+      context->GetStoragePartition(site_instance));
 }
 
 // TODO(acolwell): Update DownloadManager and related code to pass around
@@ -122,7 +121,7 @@ StoragePartitionImpl* GetStoragePartitionForSiteUrl(BrowserContext* context,
   auto partition_config = SiteInfo::GetStoragePartitionConfigForUrl(
       context, site_url, /*is_site_url=*/true);
   return static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartition(context, partition_config));
+      context->GetStoragePartition(partition_config));
 }
 
 void OnDownloadStarted(
@@ -175,7 +174,7 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_refererr_url,
-      const base::Optional<url::Origin>& request_initiator,
+      const absl::optional<url::Origin>& request_initiator,
       const std::string& mime_type,
       const std::string& original_mime_type,
       base::Time start_time,
@@ -204,7 +203,7 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         last_modified, received_bytes, total_bytes, auto_resume_count, hash,
         state, danger_type, interrupt_reason, false /* paused */,
         false /* allow_metered */, opened, last_access_time, transient,
-        received_slices, base::nullopt /*download_schedule*/,
+        received_slices, absl::nullopt /*download_schedule*/,
         nullptr /* download_entry */);
   }
 
@@ -264,7 +263,7 @@ CreatePendingSharedURLLoaderFactory(StoragePartitionImpl* storage_partition,
         rfh->GetSiteInstance()->GetBrowserContext(), rfh,
         rfh->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kDownload, url::Origin(),
-        base::nullopt /* navigation_id */, ukm::kInvalidSourceIdObj,
+        absl::nullopt /* navigation_id */, ukm::kInvalidSourceIdObj,
         &maybe_proxy_factory_receiver, nullptr /* header_client */,
         nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
         nullptr /* factory_override */);
@@ -330,9 +329,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   download::SetIOTaskRunner(GetIOThreadTaskRunner({}));
 
   if (!in_progress_manager_) {
-    auto* proto_db_provider =
-        BrowserContext::GetDefaultStoragePartition(browser_context)
-            ->GetProtoDatabaseProvider();
+    auto* proto_db_provider = browser_context->GetDefaultStoragePartition()
+                                  ->GetProtoDatabaseProvider();
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
             this, base::FilePath(), proto_db_provider,
@@ -429,7 +427,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
         target_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN, target_path,
-        base::nullopt /*download_schedule*/,
+        absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }
@@ -873,7 +871,7 @@ void DownloadManagerImpl::InterceptNavigation(
 
   const GURL& url = resource_request->url;
   const std::string& method = resource_request->method;
-  base::Optional<url::Origin> request_initiator =
+  absl::optional<url::Origin> request_initiator =
       resource_request->request_initiator;
 
   WebContents::Getter web_contents_getter =
@@ -966,7 +964,7 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_refererr_url,
-    const base::Optional<url::Origin>& request_initiator,
+    const absl::optional<url::Origin>& request_initiator,
     const std::string& mime_type,
     const std::string& original_mime_type,
     base::Time start_time,
@@ -1156,7 +1154,9 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
         it.second->GetDangerType() !=
             download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED &&
         it.second->GetDangerType() !=
-            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
+            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE) {
       ++count;
     }
   }
@@ -1300,7 +1300,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
             FileURLLoaderFactory::Create(
                 browser_context_->GetPath(),
-                BrowserContext::GetSharedCorsOriginAccessList(browser_context_),
+                browser_context_->GetSharedCorsOriginAccessList(),
                 // USER_VISIBLE because download should progress
                 // even when there is high priority work to do.
                 base::TaskPriority::USER_VISIBLE));
@@ -1323,8 +1323,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     pending_url_loader_factory =
         std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
             DataURLLoaderFactory::CreateForOneSpecificUrl(params->url()));
-  } else if (rfh && !blink::network_utils::IsURLHandledByNetworkService(
-                        params->url())) {
+  } else if (rfh && !network::IsURLHandledByNetworkService(params->url())) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap
         non_network_url_loader_factories;
     GetContentClient()
@@ -1388,7 +1387,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
         WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
     const GURL& url = params->url();
     const std::string& method = params->method();
-    base::Optional<url::Origin> initiator = params->initiator();
+    absl::optional<url::Origin> initiator = params->initiator();
     base::OnceCallback<void(bool /* download allowed */)>
         on_can_download_checks_done = base::BindOnce(
             &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,

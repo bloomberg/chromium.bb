@@ -90,6 +90,20 @@ bool IsSupportedIncognitoType(StorageType type) {
   return type == StorageType::kTemporary || type == StorageType::kPersistent;
 }
 
+QuotaErrorOr<BucketId> CreateBucketOnDBThread(const url::Origin& origin,
+                                              const std::string& bucket_name,
+                                              QuotaDatabase* database) {
+  DCHECK(database);
+  return database->CreateBucket(origin, bucket_name);
+}
+
+QuotaErrorOr<BucketId> GetBucketIdOnDBThread(const url::Origin& origin,
+                                             const std::string& bucket_name,
+                                             QuotaDatabase* database) {
+  DCHECK(database);
+  return database->GetBucketId(origin, bucket_name);
+}
+
 bool GetPersistentHostQuotaOnDBThread(const std::string& host,
                                       int64_t* quota,
                                       QuotaDatabase* database) {
@@ -111,7 +125,7 @@ bool SetPersistentHostQuotaOnDBThread(const std::string& host,
 bool GetLRUOriginOnDBThread(StorageType type,
                             const std::set<url::Origin>& exceptions,
                             SpecialStoragePolicy* policy,
-                            base::Optional<url::Origin>* origin,
+                            absl::optional<url::Origin>* origin,
                             QuotaDatabase* database) {
   DCHECK(database);
   database->GetLRUOrigin(type, exceptions, policy, origin);
@@ -127,14 +141,14 @@ bool DeleteOriginInfoOnDBThread(const url::Origin& origin,
   base::Time now = base::Time::Now();
 
   if (is_eviction) {
-    QuotaDatabase::OriginInfoTableEntry entry;
+    QuotaDatabase::BucketTableEntry entry;
     database->GetOriginInfo(origin, type, &entry);
     UMA_HISTOGRAM_COUNTS_1M(
         QuotaManagerImpl::kEvictedOriginAccessedCountHistogram,
-        entry.used_count);
+        entry.use_count);
     UMA_HISTOGRAM_COUNTS_1000(
         QuotaManagerImpl::kEvictedOriginDaysSinceAccessHistogram,
-        (now - entry.last_access_time).InDays());
+        (now - entry.last_accessed).InDays());
   }
 
   if (!database->DeleteOriginInfo(origin, type))
@@ -230,7 +244,7 @@ class QuotaManagerImpl::UsageAndQuotaInfoGatherer : public QuotaTask {
                             bool is_unlimited,
                             bool is_session_only,
                             bool is_incognito,
-                            base::Optional<int64_t> quota_override_size,
+                            absl::optional<int64_t> quota_override_size,
                             UsageAndQuotaForDevtoolsCallback callback)
       : QuotaTask(manager),
         origin_(origin),
@@ -385,7 +399,7 @@ class QuotaManagerImpl::UsageAndQuotaInfoGatherer : public QuotaTask {
   int64_t desired_host_quota_ = 0;
   int64_t host_usage_ = 0;
   const bool is_override_enabled_;
-  base::Optional<int64_t> quota_override_size_;
+  absl::optional<int64_t> quota_override_size_;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_;
   QuotaSettings settings_;
   SEQUENCE_CHECKER(sequence_checker_);
@@ -869,20 +883,20 @@ class QuotaManagerImpl::DumpQuotaTableHelper {
 // goes out of scope, the object is deleted.
 // This class is not thread-safe because there can be races when entries_ is
 // modified.
-class QuotaManagerImpl::DumpOriginInfoTableHelper {
+class QuotaManagerImpl::DumpBucketTableHelper {
  public:
-  bool DumpOriginInfoTableOnDBThread(QuotaDatabase* database) {
+  bool DumpBucketTableOnDBThread(QuotaDatabase* database) {
     DCHECK(database);
-    return database->DumpOriginInfoTable(base::BindRepeating(
-        &DumpOriginInfoTableHelper::AppendEntry, base::Unretained(this)));
+    return database->DumpBucketTable(base::BindRepeating(
+        &DumpBucketTableHelper::AppendEntry, base::Unretained(this)));
   }
 
-  void DidDumpOriginInfoTable(const base::WeakPtr<QuotaManagerImpl>& manager,
-                              DumpOriginInfoTableCallback callback,
-                              bool success) {
+  void DidDumpBucketTable(const base::WeakPtr<QuotaManagerImpl>& manager,
+                          DumpBucketTableCallback callback,
+                          bool success) {
     if (!manager) {
       // The operation was aborted.
-      std::move(callback).Run(OriginInfoTableEntries());
+      std::move(callback).Run(BucketTableEntries());
       return;
     }
     manager->DidDatabaseWork(success);
@@ -890,12 +904,12 @@ class QuotaManagerImpl::DumpOriginInfoTableHelper {
   }
 
  private:
-  bool AppendEntry(const OriginInfoTableEntry& entry) {
+  bool AppendEntry(const BucketTableEntry& entry) {
     entries_.push_back(entry);
     return true;
   }
 
-  OriginInfoTableEntries entries_;
+  BucketTableEntries entries_;
 };
 
 // QuotaManagerImpl -----------------------------------------------------------
@@ -937,6 +951,32 @@ void QuotaManagerImpl::SetQuotaSettings(const QuotaSettings& settings) {
 
   settings_ = settings;
   settings_timestamp_ = base::TimeTicks::Now();
+}
+
+void QuotaManagerImpl::CreateBucket(
+    const url::Origin& origin,
+    const std::string& bucket_name,
+    base::OnceCallback<void(QuotaErrorOr<BucketId>)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LazyInitialize();
+
+  PostTaskAndReplyWithResultForDBThread(
+      base::BindOnce(&CreateBucketOnDBThread, origin, bucket_name),
+      base::BindOnce(&QuotaManagerImpl::DidGetBucketId,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void QuotaManagerImpl::GetBucketId(
+    const url::Origin& origin,
+    const std::string& bucket_name,
+    base::OnceCallback<void(QuotaErrorOr<BucketId>)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LazyInitialize();
+
+  PostTaskAndReplyWithResultForDBThread(
+      base::BindOnce(&GetBucketIdOnDBThread, origin, bucket_name),
+      base::BindOnce(&QuotaManagerImpl::DidGetBucketId,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void QuotaManagerImpl::GetUsageInfo(GetUsageInfoCallback callback) {
@@ -987,7 +1027,7 @@ void QuotaManagerImpl::GetUsageAndQuotaForDevtools(
       type == StorageType::kTemporary && special_storage_policy_ &&
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
 
-  base::Optional<int64_t> quota_override = GetQuotaOverrideForOrigin(origin);
+  absl::optional<int64_t> quota_override = GetQuotaOverrideForOrigin(origin);
 
   UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
@@ -1020,7 +1060,7 @@ void QuotaManagerImpl::GetUsageAndQuota(const url::Origin& origin,
       type == StorageType::kTemporary && special_storage_policy_ &&
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
 
-  base::Optional<int64_t> quota_override = GetQuotaOverrideForOrigin(origin);
+  absl::optional<int64_t> quota_override = GetQuotaOverrideForOrigin(origin);
 
   UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
@@ -1462,15 +1502,14 @@ void QuotaManagerImpl::DumpQuotaTable(DumpQuotaTableCallback callback) {
                      std::move(callback)));
 }
 
-void QuotaManagerImpl::DumpOriginInfoTable(
-    DumpOriginInfoTableCallback callback) {
+void QuotaManagerImpl::DumpBucketTable(DumpBucketTableCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DumpOriginInfoTableHelper* helper = new DumpOriginInfoTableHelper;
+  DumpBucketTableHelper* helper = new DumpBucketTableHelper;
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
-      base::BindOnce(&DumpOriginInfoTableHelper::DumpOriginInfoTableOnDBThread,
+      base::BindOnce(&DumpBucketTableHelper::DumpBucketTableOnDBThread,
                      base::Unretained(helper)),
-      base::BindOnce(&DumpOriginInfoTableHelper::DidDumpOriginInfoTable,
+      base::BindOnce(&DumpBucketTableHelper::DidDumpBucketTable,
                      base::Owned(helper), weak_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
@@ -1580,7 +1619,7 @@ void QuotaManagerImpl::SetStoragePressureCallback(
   if (origin_for_pending_storage_pressure_callback_.has_value()) {
     storage_pressure_callback_.Run(
         std::move(origin_for_pending_storage_pressure_callback_.value()));
-    origin_for_pending_storage_pressure_callback_ = base::nullopt;
+    origin_for_pending_storage_pressure_callback_ = absl::nullopt;
   }
 }
 
@@ -1592,7 +1631,7 @@ int QuotaManagerImpl::GetOverrideHandleId() {
 void QuotaManagerImpl::OverrideQuotaForOrigin(
     int handle_id,
     const url::Origin& origin,
-    base::Optional<int64_t> quota_size) {
+    absl::optional<int64_t> quota_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (quota_size.has_value()) {
     DCHECK_GE(next_override_handle_id_, handle_id);
@@ -1624,11 +1663,11 @@ void QuotaManagerImpl::WithdrawOverridesForHandle(int handle_id) {
   }
 }
 
-base::Optional<int64_t> QuotaManagerImpl::GetQuotaOverrideForOrigin(
+absl::optional<int64_t> QuotaManagerImpl::GetQuotaOverrideForOrigin(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::Contains(devtools_overrides_, origin)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return devtools_overrides_[origin].quota_size;
 }
@@ -1683,14 +1722,14 @@ void QuotaManagerImpl::DidGetPersistentGlobalUsageForHistogram(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfPersistentStorage", usage);
 
-  // We DumpOriginInfoTable last to ensure the trackers caches are loaded.
-  DumpOriginInfoTable(
-      base::BindOnce(&QuotaManagerImpl::DidDumpOriginInfoTableForHistogram,
+  // We DumpBucketTable last to ensure the trackers caches are loaded.
+  DumpBucketTable(
+      base::BindOnce(&QuotaManagerImpl::DidDumpBucketTableForHistogram,
                      weak_factory_.GetWeakPtr()));
 }
 
-void QuotaManagerImpl::DidDumpOriginInfoTableForHistogram(
-    const OriginInfoTableEntries& entries) {
+void QuotaManagerImpl::DidDumpBucketTableForHistogram(
+    const BucketTableEntries& entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<url::Origin, int64_t> usage_map =
       GetUsageTracker(StorageType::kTemporary)->GetCachedOriginsUsage();
@@ -1705,8 +1744,8 @@ void QuotaManagerImpl::DidDumpOriginInfoTableForHistogram(
     if (it == usage_map.end() || it->second == 0)
       continue;
 
-    base::TimeDelta age = now - std::max(info.last_access_time,
-                                         info.last_modified_time);
+    base::TimeDelta age =
+        now - std::max(info.last_accessed, info.last_modified);
     UMA_HISTOGRAM_COUNTS_1000("Quota.AgeOfOriginInDays", age.InDays());
 
     int64_t kilobytes = std::max(it->second / INT64_C(1024), INT64_C(1));
@@ -1736,7 +1775,7 @@ std::set<url::Origin> QuotaManagerImpl::GetEvictionOriginExceptions() {
 
 void QuotaManagerImpl::DidGetEvictionOrigin(
     GetOriginCallback callback,
-    const base::Optional<url::Origin>& origin) {
+    const absl::optional<url::Origin>& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Make sure the returned origin is (still) not in the origin_in_use_ set
   // and has not been accessed since we posted the task.
@@ -1744,7 +1783,7 @@ void QuotaManagerImpl::DidGetEvictionOrigin(
   if (origin.has_value() &&
       (base::Contains(origins_in_use_, *origin) ||
        base::Contains(access_notified_origins_, *origin))) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   } else {
     std::move(callback).Run(origin);
   }
@@ -1814,11 +1853,11 @@ void QuotaManagerImpl::GetLRUOrigin(StorageType type,
   DCHECK(lru_origin_callback_.is_null());
   lru_origin_callback_ = std::move(callback);
   if (db_disabled_) {
-    std::move(lru_origin_callback_).Run(base::nullopt);
+    std::move(lru_origin_callback_).Run(absl::nullopt);
     return;
   }
 
-  auto origin = std::make_unique<base::Optional<url::Origin>>();
+  auto origin = std::make_unique<absl::optional<url::Origin>>();
   auto* origin_ptr = origin.get();
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
@@ -1853,7 +1892,7 @@ void QuotaManagerImpl::DidSetPersistentHostQuota(const std::string& host,
 }
 
 void QuotaManagerImpl::DidGetLRUOrigin(
-    std::unique_ptr<base::Optional<url::Origin>> origin,
+    std::unique_ptr<absl::optional<url::Origin>> origin,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DidDatabaseWork(success);
@@ -1864,7 +1903,7 @@ void QuotaManagerImpl::DidGetLRUOrigin(
 namespace {
 void DidGetSettingsThreadAdapter(base::TaskRunner* task_runner,
                                  OptionalQuotaSettingsCallback callback,
-                                 base::Optional<QuotaSettings> settings) {
+                                 absl::optional<QuotaSettings> settings) {
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(settings)));
 }
@@ -1893,7 +1932,7 @@ void QuotaManagerImpl::GetQuotaSettings(QuotaSettingsCallback callback) {
                                         weak_factory_.GetWeakPtr()))));
 }
 
-void QuotaManagerImpl::DidGetSettings(base::Optional<QuotaSettings> settings) {
+void QuotaManagerImpl::DidGetSettings(absl::optional<QuotaSettings> settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!settings) {
     settings = settings_;
@@ -1951,10 +1990,33 @@ void QuotaManagerImpl::DidDatabaseWork(bool success) {
   db_disabled_ = !success;
 }
 
+void QuotaManagerImpl::DidGetBucketId(
+    base::OnceCallback<void(QuotaErrorOr<BucketId>)> callback,
+    QuotaErrorOr<BucketId> result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DidDatabaseWork(result.ok());
+  std::move(callback).Run(std::move(result));
+}
+
 void QuotaManagerImpl::PostTaskAndReplyWithResultForDBThread(
     const base::Location& from_here,
     base::OnceCallback<bool(QuotaDatabase*)> task,
     base::OnceCallback<void(bool)> reply) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Deleting manager will post another task to DB sequence to delete
+  // |database_|, therefore we can be sure that database_ is alive when this
+  // task runs.
+  base::PostTaskAndReplyWithResult(
+      db_runner_.get(), from_here,
+      base::BindOnce(std::move(task), base::Unretained(database_.get())),
+      std::move(reply));
+}
+
+template <typename ValueType>
+void QuotaManagerImpl::PostTaskAndReplyWithResultForDBThread(
+    base::OnceCallback<QuotaErrorOr<ValueType>(QuotaDatabase*)> task,
+    base::OnceCallback<void(QuotaErrorOr<ValueType>)> reply,
+    const base::Location& from_here) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Deleting manager will post another task to DB sequence to delete
   // |database_|, therefore we can be sure that database_ is alive when this

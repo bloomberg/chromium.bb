@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "constants/form_flags.h"
-#include "core/fpdfdoc/cba_fontmap.h"
+#include "core/fpdfdoc/cpdf_bafontmap.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
@@ -110,17 +110,14 @@ void CFFL_ListBox::SaveData(CPDFSDK_PageView* pPageView) {
     return;
 
   int32_t nNewTopIndex = pListBox->GetTopVisibleIndex();
-  m_pWidget->ClearSelection(NotificationOption::kDoNotNotify);
+  m_pWidget->ClearSelection();
   if (m_pWidget->GetFieldFlags() & pdfium::form_flags::kChoiceMultiSelect) {
     for (int32_t i = 0, sz = pListBox->GetCount(); i < sz; i++) {
-      if (pListBox->IsItemSelected(i)) {
-        m_pWidget->SetOptionSelection(i, true,
-                                      NotificationOption::kDoNotNotify);
-      }
+      if (pListBox->IsItemSelected(i))
+        m_pWidget->SetOptionSelection(i);
     }
   } else {
-    m_pWidget->SetOptionSelection(pListBox->GetCurSel(), true,
-                                  NotificationOption::kDoNotNotify);
+    m_pWidget->SetOptionSelection(pListBox->GetCurSel());
   }
   ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
   ObservedPtr<CFFL_ListBox> observed_this(this);

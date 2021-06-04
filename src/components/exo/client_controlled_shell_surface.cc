@@ -16,6 +16,7 @@
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -61,10 +62,12 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::ClientControlledShellSurface*)
+
 namespace exo {
 
 namespace {
-
+using ::ash::screen_util::GetIdealBoundsForMaximizedOrFullscreenOrPinnedState;
 using ::chromeos::WindowStateType;
 
 // Client controlled specific accelerators.
@@ -473,7 +476,7 @@ void ClientControlledShellSurface::SetShadowBounds(const gfx::Rect& bounds) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetShadowBounds", "bounds",
                bounds.ToString());
   auto shadow_bounds =
-      bounds.IsEmpty() ? base::nullopt : base::make_optional(bounds);
+      bounds.IsEmpty() ? absl::nullopt : absl::make_optional(bounds);
   if (shadow_bounds_ != shadow_bounds) {
     shadow_bounds_ = shadow_bounds;
     shadow_bounds_changed_ = true;
@@ -634,6 +637,16 @@ void ClientControlledShellSurface::SetClientAccessibilityId(
   }
 }
 
+void ClientControlledShellSurface::RebindRootSurface(
+    Surface* root_surface,
+    bool can_minimize,
+    int container,
+    bool default_scale_cancellation) {
+  current_pin_ = chromeos::WindowPinType::kNone;
+  use_default_scale_cancellation_ = default_scale_cancellation;
+  ShellSurfaceBase::RebindRootSurface(root_surface, can_minimize, container);
+}
+
 void ClientControlledShellSurface::DidReceiveCompositorFrameAck() {
   orientation_ = pending_orientation_;
   // Unlock the compositor after the frame is received by viz so that
@@ -682,7 +695,7 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
   if (server_reparent_window_ &&
       window_state->GetDisplay().id() != display_id) {
     ScopedSetBoundsLocally scoped_set_bounds(this);
-    int container_id = window_state->window()->parent()->id();
+    int container_id = window_state->window()->parent()->GetId();
     aura::Window* new_parent =
         ash::Shell::GetRootWindowControllerWithDisplayId(display_id)
             ->GetContainer(container_id);
@@ -963,8 +976,11 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   // Calculate a minimum window visibility required bounds.
   gfx::Rect adjusted_bounds = bounds;
   if (!is_display_move_pending) {
+    const gfx::Rect& restriction = GetWindowState()->IsFullscreen()
+                                       ? target_display.bounds()
+                                       : target_display.work_area();
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-        target_display.work_area(), &adjusted_bounds);
+        restriction, &adjusted_bounds);
     // Collision detection to the bounds set by Android should be applied only
     // to initial bounds. Do not adjust new bounds as it can be obsolete or in
     // transit during animation, which results in incorrect resting postiion.
@@ -1024,7 +1040,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
   gfx::Rect shadow_bounds = ShellSurfaceBase::GetShadowBounds();
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
-  if (frame_view->GetVisible()) {
+  if (frame_view->GetFrameEnabled() && !shadow_bounds_->IsEmpty() &&
+      !geometry_.IsEmpty()) {
     // The client controlled geometry is only for the client
     // area. When the chrome side frame is enabled, the shadow height
     // has to include the height of the frame, and the total height is
@@ -1080,10 +1097,10 @@ float ClientControlledShellSurface::GetScale() const {
   return scale_;
 }
 
-base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
+absl::optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
-  if (frame_view->GetVisible()) {
+  if (frame_view->GetFrameEnabled()) {
     gfx::Rect visible_bounds = ShellSurfaceBase::GetVisibleBounds();
     if (widget_->IsMaximized() && frame_type_ == SurfaceFrameType::NORMAL) {
       // When the widget is maximized in clamshell mode, client sends
@@ -1256,15 +1273,15 @@ void ClientControlledShellSurface::OnContentSizeChanged(Surface* surface) {
 void ClientControlledShellSurface::UpdateFrame() {
   if (!widget_)
     return;
-  gfx::Rect work_area =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(widget_->GetNativeWindow())
-          .work_area();
-
   ash::WindowState* window_state = GetWindowState();
-  bool enable_wide_frame = GetFrameView()->GetVisible() &&
-                           window_state->IsMaximizedOrFullscreenOrPinned() &&
-                           work_area.width() != geometry().width();
+  bool enable_wide_frame = false;
+  if (GetFrameView()->GetFrameEnabled() &&
+      window_state->IsMaximizedOrFullscreenOrPinned()) {
+    gfx::Rect ideal_bounds =
+        GetIdealBoundsForMaximizedOrFullscreenOrPinnedState(
+            widget_->GetNativeWindow());
+    enable_wide_frame = ideal_bounds.width() != geometry().width();
+  }
   bool update_frame = state_changed_;
   state_changed_ = false;
   if (enable_wide_frame) {

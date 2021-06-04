@@ -14,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -99,7 +98,7 @@
 #include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if defined(OS_MAC)
@@ -325,18 +324,14 @@ class NetworkContextConfigurationBrowserTest
         NOTREACHED() << "Network context has no storage partition";
         return nullptr;
       case NetworkContextType::kProfile:
-        return content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        return browser()->profile()->GetDefaultStoragePartition();
       case NetworkContextType::kIncognitoProfile:
         DCHECK(incognito_);
-        return content::BrowserContext::GetDefaultStoragePartition(
-            incognito_->profile());
+        return incognito_->profile()->GetDefaultStoragePartition();
       case NetworkContextType::kOnDiskApp:
-        return content::BrowserContext::GetStoragePartition(
-            browser()->profile(), kOnDiskConfig);
+        return browser()->profile()->GetStoragePartition(kOnDiskConfig);
       case NetworkContextType::kInMemoryApp:
-        return content::BrowserContext::GetStoragePartition(
-            browser()->profile(), kInMemoryConfig);
+        return browser()->profile()->GetStoragePartition(kInMemoryConfig);
       case NetworkContextType::kOnDiskAppWithIncognitoProfile: {
         DCHECK(incognito_);
         // Note: Even though we are requesting an on-disk config, the function
@@ -347,8 +342,7 @@ class NetworkContextConfigurationBrowserTest
             /*in_memory=*/false);
         DCHECK(kIncognitoConfig.in_memory());
 
-        return content::BrowserContext::GetStoragePartition(
-            incognito_->profile(), kIncognitoConfig);
+        return incognito_->profile()->GetStoragePartition(kIncognitoConfig);
       }
     }
     NOTREACHED();
@@ -454,7 +448,10 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         // Incognito actually uses the non-incognito prefs, so this should end
         // up being the same pref store as in the KProfile case.
-        return browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
+        return browser()
+            ->profile()
+            ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+            ->GetPrefs();
     }
   }
 
@@ -483,7 +480,8 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kIncognitoProfile:
       case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         ProfileNetworkContextServiceFactory::GetForContext(
-            browser()->profile()->GetPrimaryOTRProfile())
+            browser()->profile()->GetPrimaryOTRProfile(
+                /*create_if_needed=*/true))
             ->FlushProxyConfigMonitorForTesting();
         break;
     }
@@ -1270,7 +1268,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   MakeLongLivedRequestThatHangsUntilShutdown();
 }
 
-#if defined(OS_CHROMEOS)
+// Disabled due to flakiness. See crbug.com/1189031.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_UserAgentAndLanguagePrefs DISABLED_UserAgentAndLanguagePrefs
 #else
 #define MAYBE_UserAgentAndLanguagePrefs UserAgentAndLanguagePrefs
@@ -1475,8 +1474,16 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       }));
 }
 
+// Disabled due to flakiness. See https://crbug.com/1126755.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_PRE_ThirdPartyCookiesBlocked DISABLED_PRE_ThirdPartyCookiesBlocked
+#define MAYBE_ThirdPartyCookiesBlocked DISABLED_ThirdPartyCookiesBlocked
+#else
+#define MAYBE_PRE_ThirdPartyCookiesBlocked PRE_ThirdPartyCookiesBlocked
+#define MAYBE_ThirdPartyCookiesBlocked ThirdPartyCookiesBlocked
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       PRE_ThirdPartyCookiesBlocked) {
+                       MAYBE_PRE_ThirdPartyCookiesBlocked) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   // The system and SafeBrowsing network contexts don't support the third party
@@ -1496,8 +1503,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 }
 
+// Disabled due to flakiness. See https://crbug.com/1126755.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       ThirdPartyCookiesBlocked) {
+                       MAYBE_ThirdPartyCookiesBlocked) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   // The system and SafeBrowsing network contexts don't support the third party
@@ -1787,7 +1795,7 @@ class NetworkContextConfigurationFtpPacBrowserTest
  public:
   NetworkContextConfigurationFtpPacBrowserTest()
       : ftp_server_(net::SpawnedTestServer::TYPE_FTP, GetChromeTestDataDir()) {
-    scoped_feature_list_.InitAndEnableFeature(blink::features::kFtpProtocol);
+    scoped_feature_list_.InitAndEnableFeature(network::features::kFtpProtocol);
     EXPECT_TRUE(ftp_server_.Start());
   }
   ~NetworkContextConfigurationFtpPacBrowserTest() override {}

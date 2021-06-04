@@ -376,14 +376,14 @@ TEST_F(ModelLoaderTest, ModelNamesTest) {
   EXPECT_EQ(ModelLoader::FillInModelName(false, 5),
             "client_model_v5_variation_5.pb");
 
-  // No Finch setup. Should default to 4.
+  // No Finch setup. Should default to 8.
   std::unique_ptr<ModelLoader> loader;
   loader = std::make_unique<ModelLoader>(base::RepeatingClosure(), nullptr,
                                          false /* is_extended_reporting */);
-  EXPECT_EQ(loader->name(), "client_model_v5_variation_6.pb");
+  EXPECT_EQ(loader->name(), "client_model_v5_variation_8.pb");
   EXPECT_EQ(loader->url_.spec(),
             "https://ssl.gstatic.com/safebrowsing/csd/"
-            "client_model_v5_variation_6.pb");
+            "client_model_v5_variation_8.pb");
 
   // Model 1, no extended reporting.
   SetFinchModelNumber(1);
@@ -433,17 +433,6 @@ TEST_F(ModelLoaderTest, ModelHasValidHashIds) {
 
   rule->set_feature(2, 1);
   EXPECT_TRUE(ModelLoader::ModelHasValidHashIds(model));
-}
-
-TEST_F(ModelLoaderTest, FetchesFromCacheAtStartup) {
-  ModelLoader model_loader(base::DoNothing(), shared_loader_factory(),
-                           /*is_extended_reporting=*/false);
-  ASSERT_NE(test_url_loader_factory()->GetPendingRequest(0), nullptr);
-
-  // Check the request does not use the network
-  int load_flags =
-      test_url_loader_factory()->GetPendingRequest(0)->request.load_flags;
-  EXPECT_NE((load_flags & net::LOAD_ONLY_FROM_CACHE), 0);
 }
 
 }  // namespace safe_browsing

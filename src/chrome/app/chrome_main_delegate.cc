@@ -614,6 +614,10 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
         power_scheduler::SchedulingPolicy::kLittleCoresOnly);
   } else if (base::FeatureList::IsEnabled(
+                 features::kPowerSchedulerThrottleIdleAndNopAnimation)) {
+    power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
+        power_scheduler::SchedulingPolicy::kThrottleIdleAndNopAnimation);
+  } else if (base::FeatureList::IsEnabled(
                  features::kPowerSchedulerThrottleIdle)) {
     power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
         power_scheduler::SchedulingPolicy::kThrottleIdle);
@@ -1263,7 +1267,7 @@ ChromeMainDelegate::CreateContentUtilityClient() {
   return g_chrome_content_utility_client.Pointer();
 }
 
-void ChromeMainDelegate::PreCreateMainMessageLoop() {
+void ChromeMainDelegate::PreBrowserMain() {
 #if defined(OS_MAC)
   // Tell Cocoa to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()

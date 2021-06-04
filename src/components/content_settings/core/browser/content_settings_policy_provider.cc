@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -342,7 +343,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    base::Optional<base::Value> pattern_filter = base::JSONReader::Read(
+    absl::optional<base::Value> pattern_filter = base::JSONReader::Read(
         pattern_filter_str.GetString(), base::JSON_ALLOW_TRAILING_COMMAS);
     if (!pattern_filter || !pattern_filter->is_dict()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"

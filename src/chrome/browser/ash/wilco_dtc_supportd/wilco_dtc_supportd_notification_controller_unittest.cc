@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -98,7 +98,7 @@ class WilcoDtcSupportdNotificationControllerTest
         .size();
   }
 
-  base::Optional<message_center::Notification> GetNotification(
+  absl::optional<message_center::Notification> GetNotification(
       const std::string& notification_id) const {
     return service_tester_->GetNotification(notification_id);
   }
@@ -119,8 +119,8 @@ class WilcoDtcSupportdNotificationControllerTest
   TestingProfileManager profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<WilcoDtcSupportdNotificationController>
-      notification_controller_ = nullptr;
-  std::unique_ptr<NotificationDisplayServiceTester> service_tester_ = nullptr;
+      notification_controller_;
+  std::unique_ptr<NotificationDisplayServiceTester> service_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdNotificationControllerTest);
 };
@@ -132,7 +132,7 @@ TEST_P(WilcoDtcSupportdNotificationControllerTest, SingleNotification) {
   EXPECT_EQ(0u, NotificationCount());
   std::string id = (notification_controller()->*test_params.function)();
   EXPECT_EQ(1u, NotificationCount());
-  base::Optional<message_center::Notification> notification =
+  absl::optional<message_center::Notification> notification =
       GetNotification(id);
   EXPECT_EQ(l10n_util::GetStringUTF16(test_params.title),
             notification->title());
@@ -157,4 +157,4 @@ INSTANTIATE_TEST_SUITE_P(WilcoDtcSupportdNotificationControllerTest,
                          WilcoDtcSupportdNotificationControllerTest,
                          testing::ValuesIn(kTestParams));
 
-}  // namespace chromeos
+}  // namespace ash

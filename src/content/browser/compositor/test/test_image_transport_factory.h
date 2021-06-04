@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_TEST_TEST_IMAGE_TRANSPORT_FACTORY_H_
 #define CONTENT_BROWSER_COMPOSITOR_TEST_TEST_IMAGE_TRANSPORT_FACTORY_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -20,7 +18,6 @@
 #include "components/viz/test/test_image_factory.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {

@@ -95,11 +95,10 @@ export async function initMetrics() {
   ]);
 
   const GA_LOCAL_STORAGE_KEY = 'google-analytics.analytics.user-id';
-  const gaLocalStorage = await localStorage.get({[GA_LOCAL_STORAGE_KEY]: null});
-  const clientId = gaLocalStorage[GA_LOCAL_STORAGE_KEY];
+  const clientId = localStorage.getString(GA_LOCAL_STORAGE_KEY);
 
   const setClientId = (id) => {
-    localStorage.set({[GA_LOCAL_STORAGE_KEY]: id});
+    localStorage.set(GA_LOCAL_STORAGE_KEY, id);
   };
 
   await (await gaHelper).initGA(GA_ID, clientId, Comlink.proxy(setClientId));
@@ -407,4 +406,21 @@ export function sendBarcodeDetectedEvent({contentType}) {
     eventAction: 'detect',
     eventLabel: contentType,
   });
+}
+
+/**
+ * Sends the open ptz panel event.
+ * @param {{pan: boolean, tilt: boolean, zoom: boolean}} capabilities
+ */
+export function sendOpenPTZPanelEvent(capabilities) {
+  sendEvent(
+      {
+        eventCategory: 'ptz',
+        eventAction: 'open-panel',
+      },
+      new Map([
+        [24, capabilities.pan],
+        [25, capabilities.tilt],
+        [26, capabilities.zoom],
+      ]));
 }

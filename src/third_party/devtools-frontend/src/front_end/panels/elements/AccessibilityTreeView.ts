@@ -4,18 +4,21 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as LitHtml from '../../third_party/lit-html/lit-html.js';
-import * as Components from '../../ui/components/components.js';
+import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as LitHtml from '../../ui/lit-html/lit-html.js';
 
-import {accessibilityNodeRenderer, AXTreeNode, sdkNodeToAXTreeNode} from './AccessibilityTreeUtils.js';
+import * as ElementsComponents from './components/components.js';
 
 export class AccessibilityTreeView extends UI.Widget.VBox {
   private readonly accessibilityTreeComponent =
-      new Components.TreeOutline.TreeOutline<SDK.AccessibilityModel.AccessibilityNode>();
-  private treeData: AXTreeNode[] = [];
+      new TreeOutline.TreeOutline.TreeOutline<SDK.AccessibilityModel.AccessibilityNode>();
+  private treeData: ElementsComponents.AccessibilityTreeUtils.AXTreeNode[] = [];
   private readonly toggleButton: HTMLButtonElement;
   private accessibilityModel: SDK.AccessibilityModel.AccessibilityModel|null = null;
+  private rootAXNode: SDK.AccessibilityModel.AccessibilityNode|null = null;
+  private selectedTreeNode: ElementsComponents.AccessibilityTreeUtils.AXTreeNode|null = null;
+  private inspectedDOMNode: SDK.DOMModel.DOMNode|null = null;
 
   constructor(toggleButton: HTMLButtonElement) {
     super();
@@ -29,7 +32,7 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
     // on node selection, update the currently inspected node and reveal in the
     // DOM tree.
     this.accessibilityTreeComponent.addEventListener('itemselected', (event: Event) => {
-      const evt = event as Components.TreeOutline.ItemSelectedEvent<SDK.AccessibilityModel.AccessibilityNode>;
+      const evt = event as TreeOutline.TreeOutline.ItemSelectedEvent<SDK.AccessibilityModel.AccessibilityNode>;
       const axNode = evt.data.node.treeNodeData;
       if (!axNode.isDOMNode()) {
         return;
@@ -37,6 +40,9 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
       const deferredNode = axNode.deferredDOMNode();
       if (deferredNode) {
         deferredNode.resolve(domNode => {
+          if (domNode && domNode.nodeName() === '#document') {
+            return;
+          }
           Common.Revealer.reveal(domNode, true /* omitFocus */);
         });
       }
@@ -46,13 +52,19 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
     });
 
     this.accessibilityTreeComponent.addEventListener('itemmouseover', (event: Event) => {
-      const evt = event as Components.TreeOutline.ItemMouseOverEvent<SDK.AccessibilityModel.AccessibilityNode>;
+      const evt = event as TreeOutline.TreeOutline.ItemMouseOverEvent<SDK.AccessibilityModel.AccessibilityNode>;
       evt.data.node.treeNodeData.highlightDOMNode();
     });
 
     this.accessibilityTreeComponent.addEventListener('itemmouseout', () => {
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     });
+  }
+
+  wasShown(): void {
+    if (this.selectedTreeNode) {
+      this.accessibilityTreeComponent.expandToAndSelectTreeNode(this.selectedTreeNode);
+    }
   }
 
   setAccessibilityModel(model: SDK.AccessibilityModel.AccessibilityModel|null): void {
@@ -66,17 +78,76 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
     }
 
     const root = await this.accessibilityModel.requestRootNode();
-
     if (!root) {
       return;
     }
 
-    this.treeData = [sdkNodeToAXTreeNode(root)];
+    this.rootAXNode = root;
+    this.treeData = [ElementsComponents.AccessibilityTreeUtils.sdkNodeToAXTreeNode(this.rootAXNode)];
 
     this.accessibilityTreeComponent.data = {
-      defaultRenderer: (node): LitHtml.TemplateResult => accessibilityNodeRenderer(node),
+      defaultRenderer: (node): LitHtml.TemplateResult =>
+          ElementsComponents.AccessibilityTreeUtils.accessibilityNodeRenderer(node),
       tree: this.treeData,
     };
+
     this.accessibilityTreeComponent.expandRecursively(2);
+    this.selectedTreeNode = this.treeData[0];
+  }
+
+  // Given a selected DOM node, asks the model to load the missing subtree from the root to the
+  // selected node and then re-renders the tree.
+  async loadSubTreeIntoAccessibilityModel(selectedNode: SDK.DOMModel.DOMNode): Promise<void> {
+    if (!this.accessibilityModel) {
+      return;
+    }
+
+    this.inspectedDOMNode = selectedNode;
+
+    // If this node has been loaded previously, the accessibility tree will return it's cached node.
+    // Eventually we'll need some mechanism for forcing it to fetch a new node when we are subscribing
+    // for updates, but TBD later.
+    // EG for a backend tree like:
+    //
+    // A*
+    //   B
+    //     C
+    //   D
+    //     E
+    // Where only A is already loaded into the model, calling requestAndLoadSubTreeToNode(C) will
+    // load [A, B, D, C] into the model, and return C.
+    const inspectedAXNode = await this.accessibilityModel.requestAndLoadSubTreeToNode(selectedNode);
+    if (!inspectedAXNode) {
+      return;
+    }
+
+    this.accessibilityTreeComponent.data = {
+      defaultRenderer: (node): LitHtml.TemplateResult =>
+          ElementsComponents.AccessibilityTreeUtils.accessibilityNodeRenderer(node),
+      tree: this.treeData,
+    };
+
+    // These nodes require a special case, as they don't have an unignored node in the
+    // accessibility tree. Someone inspecting these in the DOM is probably expecting to
+    // be focused on the root WebArea of the accessibility tree.
+    // TODO(meredithl): Fix for when the inspected node is ingored in the accessibility
+    // tree. Eg, inspecting <head> in the DOM tree.
+    if (selectedNode.nodeName() === 'BODY' || selectedNode.nodeName() === 'HTML') {
+      this.accessibilityTreeComponent.expandToAndSelectTreeNode(this.treeData[0]);
+      this.selectedTreeNode = this.treeData[0];
+      return;
+    }
+
+    this.selectedTreeNode = ElementsComponents.AccessibilityTreeUtils.sdkNodeToAXTreeNode(inspectedAXNode);
+    this.accessibilityTreeComponent.expandToAndSelectTreeNode(this.selectedTreeNode);
+  }
+
+  // Selected node in the DOM has changed, and the corresponding accessibility node may be
+  // unloaded. We probably only want to do this when the AccessibilityTree is visible.
+  async selectedNodeChanged(inspectedNode: SDK.DOMModel.DOMNode): Promise<void> {
+    if (inspectedNode === this.inspectedDOMNode) {
+      return;
+    }
+    await this.loadSubTreeIntoAccessibilityModel(inspectedNode);
   }
 }

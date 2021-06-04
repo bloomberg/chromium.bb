@@ -35,7 +35,7 @@ namespace content {
 
 namespace {
 
-// Note on lifetime: this context should be deleted when the web contents
+// Note on lifetime: this context should be deleted when the WebContents
 // is destroyed.
 class WebContentsContext : public WebContentsFrameTracker::Context {
  public:
@@ -43,7 +43,7 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
   ~WebContentsContext() override = default;
 
   // WebContextFrameTracker::Context overrides.
-  base::Optional<gfx::Rect> GetScreenBounds() override {
+  absl::optional<gfx::Rect> GetScreenBounds() override {
     if (auto* view = GetCurrentView()) {
       // If we know the available size of the screen, we don't want to exceed
       // it as it may result in strange capture behavior in some cases.
@@ -51,14 +51,11 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
       view->GetScreenInfo(&info);
       return info.rect;
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   viz::FrameSinkId GetFrameSinkIdForCapture() override {
-    if (auto* view = GetCurrentView()) {
-      return view->GetFrameSinkId();
-    }
-    return {};
+    return static_cast<WebContentsImpl*>(contents_)->GetCaptureFrameSinkId();
   }
 
   void IncrementCapturerCount(const gfx::Size& capture_size) override {
@@ -84,7 +81,7 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
 
   base::ScopedClosureRunner capture_handle_;
 
-  // The backing web contents.
+  // The backing WebContents.
   WebContents* contents_;
 };
 
@@ -141,14 +138,36 @@ void WebContentsFrameTracker::DidStopCapturingWebContents() {
 // the first capturer's preferred size is set.
 gfx::Size WebContentsFrameTracker::CalculatePreferredSize(
     const gfx::Size& capture_size) {
+  if (capture_size.IsEmpty()) {
+    // NOTE: An empty preferred size will cause the WebContents to keep its
+    // previous size preference.
+    return {};
+  }
   gfx::Size preferred_size = capture_size;
 
   // If we know the available size of the screen, we don't want to exceed
   // it as it may result in strange capture behavior in some cases.
   if (context_) {
-    const base::Optional<gfx::Rect> screen_bounds = context_->GetScreenBounds();
+    const absl::optional<gfx::Rect> screen_bounds = context_->GetScreenBounds();
     if (screen_bounds) {
-      preferred_size.SetToMin(screen_bounds->size());
+      if (screen_bounds->size().IsEmpty()) {
+        return {};
+      }
+
+      // We want to honor the aspect ratio of the capture size request while
+      // also limiting it to the screen bounds of the view.
+      // For motivation, see https://crbug.com/1194803.
+      const double x_ratio = static_cast<double>(capture_size.width()) /
+                             static_cast<double>(screen_bounds->size().width());
+      const double y_ratio =
+          static_cast<double>(capture_size.height()) /
+          static_cast<double>(screen_bounds->size().height());
+
+      const double scale_ratio = std::max(x_ratio, y_ratio);
+      if (scale_ratio > 1.0) {
+        preferred_size = gfx::ScaleToFlooredSize(
+            preferred_size, static_cast<float>(1 / scale_ratio));
+      }
     }
   }
   return preferred_size;
@@ -173,6 +192,10 @@ void WebContentsFrameTracker::RenderFrameHostChanged(
 void WebContentsFrameTracker::WebContentsDestroyed() {
   is_capturing_ = false;
   Observe(nullptr);
+  OnPossibleTargetChange();
+}
+
+void WebContentsFrameTracker::CaptureTargetChanged() {
   OnPossibleTargetChange();
 }
 

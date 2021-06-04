@@ -64,6 +64,7 @@
 #undef IPC_MESSAGE_EXTRA
 #define IPC_MESSAGE_IMPL
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_message_templates_impl.h"
 
 #undef IPC_MESSAGE_START
@@ -434,7 +435,7 @@ IN_PROC_BROWSER_TEST_P(RenderThreadImplGpuMemoryBufferBrowserTest,
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
       memory_buffer_manager()->CreateGpuMemoryBuffer(
           buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-          gpu::kNullSurfaceHandle);
+          gpu::kNullSurfaceHandle, nullptr);
   ASSERT_TRUE(buffer);
   EXPECT_EQ(format, buffer->GetFormat());
 

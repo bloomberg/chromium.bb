@@ -146,8 +146,7 @@ class SettingsTableViewControllerMICETest
   AuthenticationServiceFake* auth_service_ = nullptr;
   syncer::MockSyncService* sync_service_mock_ = nullptr;
   SyncSetupServiceMock* sync_setup_service_mock_ = nullptr;
-  scoped_refptr<password_manager::TestPasswordStore> password_store_mock_ =
-      nullptr;
+  scoped_refptr<password_manager::TestPasswordStore> password_store_mock_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
@@ -207,10 +206,9 @@ TEST_F(SettingsTableViewControllerMICETest, SyncPasswordError) {
   ASSERT_EQ(UILayoutConstraintAxisVertical, sync_item.textLayoutConstraintAxis);
 
   // Check that there is no sign-in promo when there is a sync error.
-  NSArray* identity_items = [controller().tableViewModel
-      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
-                                       SettingsSectionIdentifierSignIn];
-  ASSERT_EQ(0U, identity_items.count);
+  ASSERT_FALSE([controller().tableViewModel
+      hasSectionForSectionIdentifier:SettingsSectionIdentifier::
+                                         SettingsSectionIdentifierSignIn]);
 }
 
 // Verifies that the Sync icon displays the off state when the user has

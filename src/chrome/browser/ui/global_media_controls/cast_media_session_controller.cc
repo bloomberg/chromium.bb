@@ -67,6 +67,7 @@ void CastMediaSessionController::Send(
     case media_session::mojom::MediaSessionAction::kToggleMicrophone:
     case media_session::mojom::MediaSessionAction::kToggleCamera:
     case media_session::mojom::MediaSessionAction::kHangUp:
+    case media_session::mojom::MediaSessionAction::kRaise:
       NOTREACHED();
       return;
   }
@@ -82,6 +83,12 @@ void CastMediaSessionController::OnMediaStatusUpdated(
   // seeked), and not when the current position is incremented every second.
   if (IsPlaying(media_status_))
     IncrementCurrentTimeAfterOneSecond();
+}
+
+void CastMediaSessionController::SeekTo(base::TimeDelta time) {
+  if (!media_status_)
+    return;
+  route_controller_->Seek(time);
 }
 
 void CastMediaSessionController::FlushForTesting() {

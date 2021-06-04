@@ -115,9 +115,19 @@ specific filters.
 
 ## Directives
 
-Directives allow you to control a test flow and test output. They can appear
-anywhere but typically they're in an HTML comment block (or PDF comment block
-in case of PDF tests), and must be one per line.
+Directives allow you to control test flow and test output. The directives are
+defined inside the first comment block in the test's input file, one directive
+per line. For example, in the case of an HTML file the directives are located in
+between `<!--` and `-->`, in the case of a PDF file the directives are
+preceding by `%` character designating a comment.
+
+Directives have format of `@directive_name:directive_value`. Directives can be
+spawned over multiple lines:
+```
+@directive_name:
+  directive_value
+  directive_value
+```
 
 Certain directives are platform dependent. If so, then such directives are
 prefixed by a platform name:
@@ -230,12 +240,17 @@ Invokes default action on an accessible object defined by the directive.
 
 #### @NO_DUMP and @NO_CHILDREN_DUMP
 
-To skip dumping a particular element, make its accessible name equal to
-`@NO_DUMP`, for example `<div aria-label="@NO_DUMP"></div>`.
+To skip dumping a particular element, add `@NO_DUMP` to a property that will
+be exposed as an ax::mojom::StringAttribute, for example
+`<div class="@NO_DUMP"></div>`.
 
-To skip dumping all children of a particular element, make its accessible
-name equal to `@NO_CHILDREN_DUMP`, for example
-`<div aria-label="@NO_CHILDREN_DUMP"></div>`.
+To skip dumping all children of a particular element, add `@NO_CHILDREN_DUMP`
+to a property that will be exposed as an ax::mojom::StringAttribute, for example
+`<div class="@NO_CHILDREN_DUMP"></div>`.
+
+Note that setting the `aria-label` value to `@NO_DUMP` or `@NO_CHILDREN_DUMP`
+is not guaranteed to work due to certain roles no longer supporting author-
+provided naming in ARIA 1.2.
 
 To load an iframe from a different site, forcing it into a different process,
 use `/cross-site/HOSTNAME/` in the url, for example:

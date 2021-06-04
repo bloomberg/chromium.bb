@@ -37,6 +37,7 @@ namespace tint {
     class Program;
 
     namespace transform {
+        class DataMap;
         class Transform;
         class VertexPulling;
     }  // namespace transform
@@ -51,9 +52,17 @@ namespace dawn_native {
 
     struct EntryPointMetadata;
 
+    using PipelineLayoutEntryPointPair = std::pair<PipelineLayoutBase*, std::string>;
+    struct PipelineLayoutEntryPointPairHashFunc {
+        size_t operator()(const PipelineLayoutEntryPointPair& pair) const;
+    };
+
     // A map from name to EntryPointMetadata.
     using EntryPointMetadataTable =
         std::unordered_map<std::string, std::unique_ptr<EntryPointMetadata>>;
+
+    // Source for a tint program
+    class TintSource;
 
     struct ShaderModuleParseResult {
         ShaderModuleParseResult();
@@ -64,6 +73,7 @@ namespace dawn_native {
         bool HasParsedShader() const;
 
         std::unique_ptr<tint::Program> tintProgram;
+        std::unique_ptr<TintSource> tintSource;
         std::vector<uint32_t> spirv;
         std::unique_ptr<OwnedCompilationMessages> compilationMessages;
     };
@@ -79,12 +89,15 @@ namespace dawn_native {
                                                             const PipelineLayoutBase* layout);
     ResultOrError<tint::Program> RunTransforms(tint::transform::Transform* transform,
                                                const tint::Program* program,
+                                               const tint::transform::DataMap& inputs,
+                                               tint::transform::DataMap* outputs,
                                                OwnedCompilationMessages* messages);
 
-    std::unique_ptr<tint::transform::VertexPulling> MakeVertexPullingTransform(
-        const VertexState& vertexState,
-        const std::string& entryPoint,
-        BindGroupIndex pullingBufferBindingSet);
+    /// Creates and adds the tint::transform::VertexPulling::Config to transformInputs.
+    void AddVertexPullingTransformConfig(const VertexState& vertexState,
+                                         const std::string& entryPoint,
+                                         BindGroupIndex pullingBufferBindingSet,
+                                         tint::transform::DataMap* transformInputs);
 
     // Contains all the reflection data for a valid (ShaderModule, entryPoint, stage). They are
     // stored in the ShaderModuleBase and destroyed only when the shader program is destroyed so
@@ -164,7 +177,7 @@ namespace dawn_native {
             const std::string& entryPoint,
             BindGroupIndex pullingBufferBindingSet) const;
 
-        OwnedCompilationMessages* CompilationMessages() {
+        OwnedCompilationMessages* GetCompilationMessages() {
             return mCompilationMessages.get();
         }
 
@@ -190,6 +203,7 @@ namespace dawn_native {
         EntryPointMetadataTable mEntryPoints;
         std::vector<uint32_t> mSpirv;
         std::unique_ptr<tint::Program> mTintProgram;
+        std::unique_ptr<TintSource> mTintSource;  // Keep the tint::Source::File alive
 
         std::unique_ptr<OwnedCompilationMessages> mCompilationMessages;
     };

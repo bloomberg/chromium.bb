@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <winevt.h>
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -437,7 +439,8 @@ HRESULT EventLogsUploadManager::UploadEventViewerLogs(
     }
 
     if (!log_entry_value_list) {
-      log_entry_value_list.reset(new base::Value(base::Value::Type::LIST));
+      log_entry_value_list =
+          std::make_unique<base::Value>(base::Value::Type::LIST);
     }
     log_entry_value_list->Append(std::move(log_entry_value));
 
@@ -494,7 +497,7 @@ HRESULT EventLogsUploadManager::MakeUploadLogChunkRequest(
   base::Value log_entries =
       base::Value::FromUniquePtrValue(std::move(log_entries_value_list));
   request_dict.SetKey(kRequestLogEntriesParameterName, std::move(log_entries));
-  base::Optional<base::Value> request_result;
+  absl::optional<base::Value> request_result;
 
   // Make the upload HTTP request.
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(

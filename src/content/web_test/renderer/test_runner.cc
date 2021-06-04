@@ -14,11 +14,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
@@ -43,6 +43,7 @@
 #include "gin/wrappable.h"
 #include "mojo/public/mojom/base/text_direction.mojom-forward.h"
 #include "net/base/filename_util.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
@@ -243,7 +244,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void AllowPointerLock();
   void SetHighlightAds();
+#if BUILDFLAG(ENABLE_PRINTING)
   void CapturePrintingPixelsThen(v8::Local<v8::Function> callback);
+#endif
   void CheckForLeakedWindows();
   void ClearAllDatabases();
   void ClearTrustTokenState(v8::Local<v8::Function> callback);
@@ -310,7 +313,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
                                v8::Local<v8::Function> callback);
   void SetBluetoothManualChooser(bool enable);
-  void SetCanOpenWindows();
   void SetCaretBrowsingEnabled();
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);
@@ -513,8 +515,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Permits the adding of only one opaque overlay. May only be called from
       // inside the main frame.
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
+#if BUILDFLAG(ENABLE_PRINTING)
       .SetMethod("capturePrintingPixelsThen",
                  &TestRunnerBindings::CapturePrintingPixelsThen)
+#endif
       // If the test will be closing its windows explicitly, and wants to look
       // for leaks due to those windows closing incorrectly, it can specify this
       // to avoid having them closed at the end of the test before the leak
@@ -700,7 +704,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setBluetoothManualChooser",
                  &TestRunnerBindings::SetBluetoothManualChooser)
       .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setCanOpenWindows", &TestRunnerBindings::SetCanOpenWindows)
       .SetMethod("setCaretBrowsingEnabled",
                  &TestRunnerBindings::SetCaretBrowsingEnabled)
       .SetMethod("setColorProfile", &TestRunnerBindings::SetColorProfile)
@@ -1075,8 +1078,8 @@ TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
     return {};
 
   blink::WebScriptSource source = blink::WebString::FromUTF8(script);
-  return GetWebFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(world_id,
-                                                                   source);
+  return GetWebFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(
+      world_id, source, blink::BackForwardCacheAware::kAllow);
 }
 
 void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
@@ -1086,7 +1089,8 @@ void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
     return;
 
   blink::WebScriptSource source = blink::WebString::FromUTF8(script);
-  GetWebFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
+  GetWebFrame()->ExecuteScriptInIsolatedWorld(
+      world_id, source, blink::BackForwardCacheAware::kAllow);
 }
 
 void TestRunnerBindings::SetIsolatedWorldInfo(
@@ -1489,13 +1493,6 @@ void TestRunnerBindings::DumpTitleChanges() {
   runner_->DumpTitleChanges();
 }
 
-void TestRunnerBindings::SetCanOpenWindows() {
-  if (invalid_)
-    return;
-  // TODO(https://crbug.com/1170931): Remove the alias from the tests.
-  runner_->GetWebTestControlHostRemote()->SetPopupBlockingEnabled(false);
-}
-
 void TestRunnerBindings::SetCaretBrowsingEnabled() {
   if (invalid_)
     return;
@@ -1786,7 +1783,7 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
 
   std::string title;
   int action_index = std::numeric_limits<int32_t>::min();
-  base::Optional<std::u16string> reply;
+  absl::optional<std::u16string> reply;
 
   if (!args->GetNext(&title)) {
     args->ThrowError();
@@ -1892,6 +1889,7 @@ void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> v8_callback) {
       base::BindOnce(GetManifestReply, WrapV8Callback(std::move(v8_callback))));
 }
 
+#if BUILDFLAG(ENABLE_PRINTING)
 void TestRunnerBindings::CapturePrintingPixelsThen(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
@@ -1911,6 +1909,7 @@ void TestRunnerBindings::CapturePrintingPixelsThen(
           ConvertBitmapToV8(context_scope, bitmap),
       });
 }
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 void TestRunnerBindings::CheckForLeakedWindows() {
   if (invalid_)
@@ -2277,7 +2276,7 @@ void TestRunner::WorkQueue::ReplicateStates(
 }
 
 void TestRunner::WorkQueue::OnStatesChanged() {
-  if (states_.changed_values().empty())
+  if (states_.changed_values().DictEmpty())
     return;
 
   controller_->GetWebTestControlHostRemote()->WorkQueueStatesChanged(
@@ -2461,6 +2460,7 @@ SkBitmap TestRunner::DumpPixelsInRenderer(blink::WebLocalFrame* main_frame) {
     return bitmap;
   }
 
+#if BUILDFLAG(ENABLE_PRINTING)
   blink::WebLocalFrame* target_frame = main_frame;
   std::string frame_name = web_test_runtime_flags_.printing_frame();
   if (!frame_name.empty()) {
@@ -2470,6 +2470,10 @@ SkBitmap TestRunner::DumpPixelsInRenderer(blink::WebLocalFrame* main_frame) {
       target_frame = frame_to_print->ToWebLocalFrame();
   }
   return PrintFrameToBitmap(target_frame);
+#else
+  NOTREACHED();
+  return SkBitmap();
+#endif
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
@@ -3239,7 +3243,7 @@ void TestRunner::OnWebTestRuntimeFlagsChanged() {
   // web flag changes in SetTestConfiguration().
   if (!test_is_running_)
     return;
-  if (web_test_runtime_flags_.tracked_dictionary().changed_values().empty())
+  if (web_test_runtime_flags_.tracked_dictionary().changed_values().DictEmpty())
     return;
 
   GetWebTestControlHostRemote()->WebTestRuntimeFlagsChanged(

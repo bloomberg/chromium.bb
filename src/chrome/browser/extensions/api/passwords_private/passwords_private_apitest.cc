@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +32,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
 
 namespace extensions {
@@ -60,9 +60,9 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
  protected:
   bool RunPasswordsSubtest(const std::string& subtest) {
     const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest({.name = "passwords_private",
-                             .page_url = page_url.c_str(),
-                             .load_as_component = true});
+    return RunExtensionTest(
+        {.name = "passwords_private", .page_url = page_url.c_str()},
+        {.load_as_component = true});
   }
 
   bool importPasswordsWasTriggered() {

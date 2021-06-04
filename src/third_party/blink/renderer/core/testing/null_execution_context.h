@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -41,12 +42,14 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) override {}
+  void AddInspectorIssue(AuditsIssue) override {}
   void ExceptionThrown(ErrorEvent*) override {}
 
   void SetUpSecurityContextForTesting();
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
   bool CrossOriginIsolatedCapability() const override { return false; }
+  bool DirectSocketCapability() const override { return false; }
   FrameOrWorkerScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 

@@ -11,7 +11,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,6 +30,7 @@
 #include "net/base/schemeful_site.h"
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_info.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_event_type.h"
@@ -58,6 +58,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using net::test::IsError;
@@ -70,7 +71,6 @@ namespace net {
 namespace {
 
 const char kHttpURLFromAnotherOrigin[] = "http://www.example2.org/a.dat";
-const char kHttpsURLFromAnotherOrigin[] = "https://www.example2.org/b.dat";
 const char kPushedUrl[] = "https://www.example.org/a.dat";
 
 const char kBodyData[] = "Body data";
@@ -92,13 +92,6 @@ base::TimeTicks SlowReads() {
 
 base::TimeTicks InstantaneousReads() {
   return g_time_now;
-}
-
-std::string HexDecode(base::StringPiece hex) {
-  std::string output;
-  bool success = base::HexStringToString(hex, &output);
-  DCHECK(success);
-  return output;
 }
 
 class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
@@ -181,7 +174,7 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
              SpdySessionKey::IsProxySession::kFalse,
              SocketTag(),
              NetworkIsolationKey(),
-             false /* disable_secure_dns */),
+             SecureDnsPolicy::kAllow),
         ssl_(SYNCHRONOUS, OK) {}
 
   ~SpdySessionTest() override {
@@ -222,12 +215,6 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
     DCHECK(!session_);
     session_ =
         ::net::CreateSpdySession(http_session_.get(), key_, log_.bound());
-  }
-
-  void CreateTrustedSpdySession() {
-    DCHECK(!session_);
-    session_ = ::net::CreateTrustedSpdySession(http_session_.get(), key_,
-                                               log_.bound());
   }
 
   void StallSessionSend() {
@@ -2167,7 +2154,7 @@ bool NetLogSourceFromEventParameters(const base::Value* event_params,
     *source = NetLogSource();
     return false;
   }
-  base::Optional<int> opt_int;
+  absl::optional<int> opt_int;
   opt_int = source_dict->FindIntKey("id");
   if (!opt_int) {
     *source = NetLogSource();
@@ -2853,7 +2840,7 @@ TEST_F(SpdySessionTest, VerifyDomainAuthenticationExpectCT) {
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                         NetworkIsolationKey::CreateTransient(),
-                        false /* disable_secure_dns */);
+                        SecureDnsPolicy::kAllow);
   ssl_.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_.ssl_info.is_issued_by_known_root = true;
@@ -3649,9 +3636,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
                 ClientSocketPool::GroupId(
                     host_port2, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3694,7 +3681,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session1 =
       ::net::CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
   EXPECT_FALSE(pool->IsStalled());
@@ -3703,7 +3690,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                      NetworkIsolationKey(), false /* disable_secure_dns */);
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   std::unique_ptr<SpdySessionPool::SpdySessionRequest> request;
   bool is_blocking_request_for_session = false;
   SpdySessionRequestDelegate request_delegate;
@@ -3739,9 +3726,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
                 ClientSocketPool::GroupId(
                     host_port3, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback3.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3820,9 +3807,9 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
                 ClientSocketPool::GroupId(
                     host_port2, ClientSocketPool::SocketType::kHttp,
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                    false /* disable_secure_dns */),
+                    SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                absl::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                 callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
                 pool, NetLogWithSource()));
@@ -3853,11 +3840,11 @@ TEST_F(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   SpdySessionKey key_privacy_enabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_ENABLED,
       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-      NetworkIsolationKey(), false /* disable_secure_dns */);
+      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   SpdySessionKey key_privacy_disabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-      NetworkIsolationKey(), false /* disable_secure_dns */);
+      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
@@ -4249,7 +4236,7 @@ TEST_F(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
   spdy::SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, spdy::ERROR_CODE_FLOW_CONTROL_ERROR,
       "delta_window_size is 400 in DecreaseRecvWindowSize, which is larger "
-      "than the receive window size of 500"));
+      "than the receive window size of 300"));
   MockWrite writes[] = {
       CreateMockWrite(goaway, 4),
   };
@@ -5468,109 +5455,9 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
-// Tests that HTTP SPDY push streams that advertise an origin different from the
-// associated stream are accepted from a trusted SPDY proxy.
-TEST_F(SpdySessionTest, TrustedSpdyProxy) {
-  base::HistogramTester histogram_tester;
-
-  // Origin of kDefaultUrl should be different from the origin of
-  // kHttpURLFromAnotherOrigin and kHttpsURLFromAnotherOrigin.
-  ASSERT_NE(GURL(kDefaultUrl).host(), GURL(kHttpURLFromAnotherOrigin).host());
-  ASSERT_NE(GURL(kDefaultUrl).host(), GURL(kHttpsURLFromAnotherOrigin).host());
-
-  // cross_origin_push contains HTTP resource for an origin different from the
-  // origin of kDefaultUrl, and should be accepted.
-  spdy::SpdySerializedFrame cross_origin_push(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, kHttpURLFromAnotherOrigin));
-  // cross_origin_https_push contains HTTPS resource, and should be refused.
-  spdy::SpdySerializedFrame cross_origin_https_push(
-      spdy_util_.ConstructSpdyPush(nullptr, 0, 4, 1,
-                                   kHttpsURLFromAnotherOrigin));
-  MockRead reads[] = {
-      MockRead(ASYNC, ERR_IO_PENDING, 1),
-      CreateMockRead(cross_origin_push, 2),
-      MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(cross_origin_https_push, 5),
-      MockRead(ASYNC, ERR_IO_PENDING, 7),
-      MockRead(ASYNC, 0, 8),
-  };
-
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
-  spdy::SpdySerializedFrame priority_http(
-      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
-  spdy::SpdySerializedFrame rst_https(
-      spdy_util_.ConstructSpdyRstStream(4, spdy::ERROR_CODE_REFUSED_STREAM));
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(priority_http, 3),
-      CreateMockWrite(rst_https, 6),
-  };
-
-  SequencedSocketData data(reads, writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  AddSSLSocketData();
-
-  CreateNetworkSession();
-  CreateTrustedSpdySession();
-
-  base::WeakPtr<SpdyStream> spdy_stream =
-      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                test_url_, LOWEST, NetLogWithSource());
-  ASSERT_TRUE(spdy_stream);
-  EXPECT_EQ(0u, spdy_stream->stream_id());
-  test::StreamDelegateDoNothing delegate(spdy_stream);
-  spdy_stream->SetDelegate(&delegate);
-
-  EXPECT_EQ(0u, num_active_streams());
-  EXPECT_EQ(1u, num_created_streams());
-  EXPECT_EQ(0u, num_pushed_streams());
-  EXPECT_EQ(0u, num_active_pushed_streams());
-
-  spdy::Http2HeaderBlock headers(
-      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
-
-  // Run until 1st stream is activated.
-  EXPECT_EQ(0u, delegate.stream_id());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, delegate.stream_id());
-  EXPECT_EQ(1u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(0u, num_pushed_streams());
-  EXPECT_EQ(0u, num_active_pushed_streams());
-
-  // Run until pushed stream is created.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(1u, num_pushed_streams());
-  EXPECT_EQ(1u, num_active_pushed_streams());
-
-  // Reset incoming pushed stream.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, num_active_streams());
-  EXPECT_EQ(0u, num_created_streams());
-  EXPECT_EQ(1u, num_pushed_streams());
-  EXPECT_EQ(1u, num_active_pushed_streams());
-
-  // Read EOF.
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(session_);
-
-  histogram_tester.ExpectBucketCount(
-      "Net.SpdyPushedStreamFate",
-      static_cast<int>(SpdyPushedStreamFate::kNonHttpSchemeFromTrustedProxy),
-      1);
-  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
-}
-
-// Tests that if the SPDY trusted proxy is not set, then push streams that
-// advertise an origin different from the associated stream are refused.
-TEST_F(SpdySessionTest, TrustedSpdyProxyNotSet) {
+// Tests that push streams that advertise an origin different from the
+// associated stream are refused.
+TEST_F(SpdySessionTest, StreamsAdvertisingDifferentOriginAreRefused) {
   base::HistogramTester histogram_tester;
 
   // Origin of kDefaultUrl should be different from the origin of
@@ -6122,7 +6009,7 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
   session_deps_.greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+      absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
 
   // Connection preface.
@@ -6456,7 +6343,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithExpectCTError) {
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                         NetworkIsolationKey::CreateTransient(),
-                        false /* disable_secure_dns */);
+                        SecureDnsPolicy::kAllow);
   ssl_.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_.ssl_info.is_issued_by_known_root = true;
@@ -6645,7 +6532,7 @@ TEST_F(AltSvcFrameTest,
   key_ = SpdySessionKey(HostPortPair::FromURL(test_url_), ProxyServer::Direct(),
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                        kNetworkIsolationKey1, false /* disable_secure_dns */);
+                        kNetworkIsolationKey1, SecureDnsPolicy::kAllow);
 
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);

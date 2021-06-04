@@ -27,6 +27,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -162,9 +163,6 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     case DEBUG_SHOW_TOAST:
       Shell::Get()->toast_manager()->Show(
           ToastData("id", u"Toast", 5000 /* duration_ms */, u"Dismiss"));
-      break;
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-      Shell::Get()->display_manager()->ToggleDisplayScaleFactor();
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/enterprise/browser/enterprise_switches.h"
@@ -57,7 +58,6 @@
 #include "components/ukm/ios/features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/policy/policy_features.h"
@@ -400,20 +400,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillIOSDelayBetweenFieldsName,
      flag_descriptions::kAutofillIOSDelayBetweenFieldsDescription,
      flags_ui::kOsIos, MULTI_VALUE_TYPE(kAutofillIOSDelayBetweenFieldsChoices)},
-    {"autofill-rich-metadata-queries",
-     flag_descriptions::kAutofillRichMetadataQueriesName,
-     flag_descriptions::kAutofillRichMetadataQueriesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillRichMetadataQueries)},
     {"fullscreen-viewport-adjustment-experiment",
      flag_descriptions::kFullscreenSmoothScrollingName,
      flag_descriptions::kFullscreenSmoothScrollingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(fullscreen::features::kSmoothScrollingDefault)},
-    {"autofill-cache-query-responses",
-     flag_descriptions::kAutofillCacheQueryResponsesName,
-     flag_descriptions::kAutofillCacheQueryResponsesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
     {"webpage-default-zoom-from-dynamic-type",
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeName,
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeDescription,
@@ -484,7 +474,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCollectionsCardPresentationStyle)},
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kLogBreadcrumbs)},
+     FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
     {"ios-synthetic-crash-reports",
      flag_descriptions::kSyntheticCrashReportsForUteName,
      flag_descriptions::kSyntheticCrashReportsForUteDescription,
@@ -496,7 +486,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"restore-session-from-cache",
      flag_descriptions::kRestoreSessionFromCacheName,
      flag_descriptions::kRestoreSessionFromCacheDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kRestoreSessionFromCache)},
+     FEATURE_VALUE_TYPE(web::kRestoreSessionFromCache)},
     {"autofill-save-card-dismiss-on-navigation",
      flag_descriptions::kAutofillSaveCardDismissOnNavigationName,
      flag_descriptions::kAutofillSaveCardDismissOnNavigationDescription,
@@ -518,12 +508,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"infobar-overlay-ui", flag_descriptions::kInfobarOverlayUIName,
      flag_descriptions::kInfobarOverlayUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInfobarOverlayUI)},
-    {"autofill-save-card-infobar-edit-support",
-     flag_descriptions::kAutofillSaveCardInfobarEditSupportName,
-     flag_descriptions::kAutofillSaveCardInfobarEditSupportDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCardInfobarEditSupport)},
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
@@ -541,9 +525,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kRefactoredNTP,
                                     kRefactoredNTPLoggingVariations,
                                     "RefactoredNTP")},
-    {"illustrated-empty-states", flag_descriptions::kIllustratedEmptyStatesName,
-     flag_descriptions::kIllustratedEmptyStatesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIllustratedEmptyStates)},
     {"expanded-tab-strip", flag_descriptions::kExpandedTabStripName,
      flag_descriptions::kExpandedTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kExpandedTabStrip)},
@@ -562,9 +543,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFullPageScreenshotName,
      flag_descriptions::kEnableFullPageScreenshotDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFullPageScreenshot)},
-    {"scroll-to-text-ios", flag_descriptions::kScrollToTextIOSName,
-     flag_descriptions::kScrollToTextIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kScrollToTextIOS)},
     {"legacy-tls-interstitial",
      flag_descriptions::kIOSLegacyTLSInterstitialsName,
      flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
@@ -579,6 +557,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScreenTimeIntegrationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kScreenTimeIntegration)},
 #endif
+    {"mice-web-signin", flag_descriptions::kMICEWebSignInName,
+     flag_descriptions::kMICEWebSignInDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(signin::kMICEWebSignIn)},
     {"mobile-identity-consistency",
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, flags_ui::kOsIos,
@@ -597,11 +578,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillUseRendererIDsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseUniqueRendererIDsOnIOS)},
-    {"restore-gaia-cookies-if-deleted",
-     flag_descriptions::kRestoreGaiaCookiesIfDeletedName,
-     flag_descriptions::kRestoreGaiaCookiesIfDeletedDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kRestoreGaiaCookiesIfDeleted)},
     {"restore-gaia-cookies-on-user-action",
      flag_descriptions::kRestoreGaiaCookiesOnUserActionName,
      flag_descriptions::kRestoreGaiaCookiesOnUserActionDescription,
@@ -724,9 +700,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"default-browser-promo-non-modal",
      flag_descriptions::kDefaultPromoNonModalName,
      flag_descriptions::kDefaultPromoNonModalDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kDefaultPromoNonModal,
-                                    kDefaultPromoNonModalVariations,
-                                    "DefaultPromoNonModal")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultPromoNonModal,
+         kDefaultPromoNonModalVariations,
+         "IOSDefaultBrowserNonModalPromoExperiment")},
     {"default-browser-promo-tailored",
      flag_descriptions::kDefaultPromoTailoredName,
      flag_descriptions::kDefaultPromoTailoredDescription, flags_ui::kOsIos,
@@ -748,6 +725,28 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          kInterestFeedV2ClickAndViewActionsConditionalUploadDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2ClicksAndViewsConditionalUpload)},
+    {"tabs-bulkactions-ios", flag_descriptions::kTabsBulkActionsName,
+     flag_descriptions::kTabsBulkActionsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabsBulkActions)},
+    {"tabgrid-context-menu-ios", flag_descriptions::kTabGridContextMenuName,
+     flag_descriptions::kTabGridContextMenuDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridContextMenu)},
+    {"incognito-brand-consistency-for-ios",
+     flag_descriptions::kIncognitoBrandConsistencyForIOSName,
+     flag_descriptions::kIncognitoBrandConsistencyForIOSDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIncognitoBrandConsistencyForIOS)},
+    {"update-history-entry-points-in-incognito",
+     flag_descriptions::kUpdateHistoryEntryPointsInIncognitoName,
+     flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUpdateHistoryEntryPointsInIncognito)},
+    {"enable-autofill-account-wallet-storage",
+     flag_descriptions::kEnableAutofillAccountWalletStorageName,
+     flag_descriptions::kEnableAutofillAccountWalletStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableAccountWalletStorage)},
+
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -790,6 +789,10 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     // still marked as experimental (future_on), they must be explicitly
     // allowed, otherwise they will be ignored in Beta and Stable. Add them to
     // the |allowed_experimental_policies| array.
+    [allowed_experimental_policies addObjectsFromArray:@[
+      base::SysUTF8ToNSString(policy::key::kNTPContentSuggestionsEnabled),
+    ]];
+
     [testing_policies addEntriesFromDictionary:@{
       base::SysUTF8ToNSString(policy::key::kAutofillAddressEnabled) : @NO,
 
@@ -811,6 +814,8 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
       base::SysUTF8ToNSString(policy::key::kEditBookmarksEnabled) : @NO,
 
+      base::SysUTF8ToNSString(policy::key::kNTPContentSuggestionsEnabled) : @NO,
+
       base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled) : @NO,
 
       base::SysUTF8ToNSString(policy::key::kTranslateEnabled) : @NO,
@@ -823,6 +828,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       // 0 = browser sign-in disabled
       base::SysUTF8ToNSString(policy::key::kBrowserSignin) : @0,
     }];
+  }
+
+  if ([defaults boolForKey:@"EnableSyncDisabledPolicy"]) {
+    [testing_policies addEntriesFromDictionary:@{
+      base::SysUTF8ToNSString(policy::key::kSyncDisabled) : @YES
+    }];
+    NSString* sync_policy_key =
+        base::SysUTF8ToNSString(policy::key::kSyncDisabled);
+    [allowed_experimental_policies addObject:sync_policy_key];
   }
 
   // If an incognito mode availability is set, add the policy key to the list of

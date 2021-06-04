@@ -54,7 +54,7 @@ class WebRtcEncodedVideoFrame : public EncodedVideoFrame {
 
   bool IsKeyFrame() const override { return is_key_frame_; }
 
-  base::Optional<media::VideoColorSpace> ColorSpace() const override {
+  absl::optional<media::VideoColorSpace> ColorSpace() const override {
     return color_space_;
   }
 
@@ -64,7 +64,7 @@ class WebRtcEncodedVideoFrame : public EncodedVideoFrame {
   rtc::scoped_refptr<const webrtc::EncodedImageBufferInterface> buffer_;
   media::VideoCodec codec_;
   bool is_key_frame_;
-  base::Optional<media::VideoColorSpace> color_space_;
+  absl::optional<media::VideoColorSpace> color_space_;
   gfx::Size resolution_;
 };
 
@@ -110,7 +110,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   EncodedVideoFrameCB encoded_frame_callback_;
 
   // Timestamp of the first received frame.
-  base::Optional<base::TimeTicks> start_timestamp_;
+  absl::optional<base::TimeTicks> start_timestamp_;
 
   // WebRTC real time clock, needed to determine NTP offset.
   webrtc::Clock* clock_;
@@ -220,26 +220,24 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   // Set capture time to the NTP time, which is the estimated capture time
   // converted to the local clock.
   if (incoming_frame.ntp_time_ms() > 0) {
-    const base::TimeTicks capture_time =
+    video_frame->metadata().capture_begin_time =
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(
                                 incoming_frame.ntp_time_ms() + ntp_offset_);
-    video_frame->metadata().capture_begin_time = capture_time;
   }
 
   // Set receive time to arrival of last packet.
   if (!incoming_frame.packet_infos().empty()) {
-    int64_t last_packet_arrival_ms =
+    webrtc::Timestamp last_packet_arrival =
         std::max_element(
             incoming_frame.packet_infos().cbegin(),
             incoming_frame.packet_infos().cend(),
             [](const webrtc::RtpPacketInfo& a, const webrtc::RtpPacketInfo& b) {
-              return a.receive_time_ms() < b.receive_time_ms();
+              return a.receive_time() < b.receive_time();
             })
-            ->receive_time_ms();
-    const base::TimeTicks receive_time =
+            ->receive_time();
+    video_frame->metadata().receive_time =
         base::TimeTicks() +
-        base::TimeDelta::FromMilliseconds(last_packet_arrival_ms);
-    video_frame->metadata().receive_time = receive_time;
+        base::TimeDelta::FromMicroseconds(last_packet_arrival.us());
   }
 
   // Use our computed render time as estimated capture time. If timestamp_us()

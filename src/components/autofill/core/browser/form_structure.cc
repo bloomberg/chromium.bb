@@ -527,34 +527,6 @@ void PopulateRandomizedFieldMetadata(
   }
 }
 
-void EncodeFormMetadataForQuery(const FormStructure& form,
-                                AutofillRandomizedFormMetadata* metadata) {
-  DCHECK(metadata);
-  metadata->mutable_id()->set_encoded_bits(
-      base::UTF16ToUTF8(form.id_attribute()));
-  metadata->mutable_name()->set_encoded_bits(
-      base::UTF16ToUTF8(form.name_attribute()));
-}
-
-void EncodeFieldMetadataForQuery(const FormFieldData& field,
-                                 AutofillRandomizedFieldMetadata* metadata) {
-  DCHECK(metadata);
-  metadata->mutable_id()->set_encoded_bits(
-      base::UTF16ToUTF8(field.id_attribute));
-  metadata->mutable_name()->set_encoded_bits(
-      base::UTF16ToUTF8(field.name_attribute));
-  metadata->mutable_type()->set_encoded_bits(field.form_control_type);
-  metadata->mutable_label()->set_encoded_bits(base::UTF16ToUTF8(field.label));
-  metadata->mutable_aria_label()->set_encoded_bits(
-      base::UTF16ToUTF8(field.aria_label));
-  metadata->mutable_aria_description()->set_encoded_bits(
-      base::UTF16ToUTF8(field.aria_description));
-  metadata->mutable_css_class()->set_encoded_bits(
-      base::UTF16ToUTF8(field.css_classes));
-  metadata->mutable_placeholder()->set_encoded_bits(
-      base::UTF16ToUTF8(field.placeholder));
-}
-
 // Creates the type relationship rules map. The keys represent the type that has
 // rules, and the value represents the list of required types for the given
 // key. In order to respect the rule, only one of the required types is needed.
@@ -858,7 +830,7 @@ void FormStructure::ProcessQueryResponse(
   bool query_response_overrode_heuristics = false;
 
   std::map<std::pair<FormSignature, FieldSignature>,
-           AutofillQueryResponse::FormSuggestion::FieldSuggestion>
+           std::deque<AutofillQueryResponse::FormSuggestion::FieldSuggestion>>
       field_types;
   for (int form_idx = 0;
        form_idx < std::min(response.form_suggestions_size(),
@@ -868,7 +840,7 @@ void FormStructure::ProcessQueryResponse(
     for (const auto& field :
          response.form_suggestions(form_idx).field_suggestions()) {
       FieldSignature field_sig(field.field_signature());
-      field_types[std::make_pair(form_sig, field_sig)] = field;
+      field_types[std::make_pair(form_sig, field_sig)].push_back(field);
     }
   }
 
@@ -881,7 +853,13 @@ void FormStructure::ProcessQueryResponse(
       if (it == field_types.end())
         continue;
 
-      const auto& current_field = it->second;
+      // Get the next suggestion for this signature. If this is the last
+      // suggestion, keep it for all subsequent fields with this signature.
+      DCHECK(!it->second.empty());
+      AutofillQueryResponse::FormSuggestion::FieldSuggestion current_field =
+          it->second.front();
+      if (it->second.size() > 1)
+        it->second.pop_front();
 
       ServerFieldType field_type =
           static_cast<ServerFieldType>(current_field.primary_type_prediction());
@@ -972,6 +950,29 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     forms.push_back(form);
   }
   return forms;
+}
+
+// static
+std::vector<FieldRendererId> FormStructure::FindFieldsEligibleForManualFilling(
+    const std::vector<FormStructure*>& forms) {
+  std::vector<FieldRendererId> fields_eligible_for_manual_filling;
+  for (const auto* form : forms) {
+    for (const auto& field : form->fields_) {
+      FieldTypeGroup field_type_group =
+          autofill::GroupTypeOfServerFieldType(field->server_type());
+      // In order to trigger the payments bottom sheet that assists users to
+      // manually fill the form, credit card form fields are marked eligible for
+      // manual filling. Also, if a field is not classified to a type, we can
+      // assume that the prediction failed and thus mark it eligible for manual
+      // filling. As more form types support manual filling on form interaction,
+      // this list may expand in the future.
+      if (field_type_group == FieldTypeGroup::kCreditCard ||
+          field_type_group == FieldTypeGroup::kNoGroup) {
+        fields_eligible_for_manual_filling.push_back(field->unique_renderer_id);
+      }
+    }
+  }
+  return fields_eligible_for_manual_filling;
 }
 
 std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
@@ -1962,10 +1963,6 @@ void FormStructure::EncodeFormForQuery(
   query_form->set_signature(form_signature().value());
   queried_form_signatures->push_back(form_signature());
 
-  if (is_rich_query_enabled_) {
-    EncodeFormMetadataForQuery(*this, query_form->mutable_metadata());
-  }
-
   for (const auto& field : fields_) {
     if (ShouldSkipField(*field))
       continue;
@@ -1973,10 +1970,6 @@ void FormStructure::EncodeFormForQuery(
     AutofillPageQueryRequest::Form::Field* added_field =
         query_form->add_fields();
     added_field->set_signature(field->GetFieldSignature().value());
-
-    if (is_rich_query_enabled_) {
-      EncodeFieldMetadataForQuery(*field, added_field->mutable_metadata());
-    }
   }
 }
 
@@ -2425,7 +2418,7 @@ void FormStructure::ExtractParseableFieldLabels() {
   }
 
   // Determine the parsable labels and write them back.
-  base::Optional<std::vector<std::u16string>> parsable_labels =
+  absl::optional<std::vector<std::u16string>> parsable_labels =
       GetParseableLabels(field_labels);
   // If not single label was split, the function can return, because the
   // |parsable_label_| is assigned to |label| by default.

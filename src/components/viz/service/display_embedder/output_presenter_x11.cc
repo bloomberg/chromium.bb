@@ -111,7 +111,7 @@ class PresenterImageX11 : public OutputPresenter::Image {
                   scoped_refptr<base::SingleThreadTaskRunner> x11_task_runner);
   // OutputPresenterX11::Image:
   void BeginPresent() final;
-  void EndPresent() final;
+  void EndPresent(gfx::GpuFenceHandle release_fence) final;
   int GetPresentCount() const final;
   void OnContextLost() final;
 
@@ -272,8 +272,9 @@ bool PresenterImageX11::Initialize(
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   if (!factory->CreateSharedImage(
           mailbox, 0, std::move(gmb_handle), BufferFormat(format),
-          deps->GetSurfaceHandle(), size, color_space, kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage)) {
+          gfx::BufferPlane::DEFAULT, deps->GetSurfaceHandle(), size,
+          color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          shared_image_usage)) {
     DLOG(ERROR) << "CreateSharedImage failed.";
     return false;
   }
@@ -348,8 +349,9 @@ void PresenterImageX11::BeginPresent() {
   }
 }
 
-void PresenterImageX11::EndPresent() {
+void PresenterImageX11::EndPresent(gfx::GpuFenceHandle release_fence) {
   DCHECK(present_count_);
+  DCHECK(release_fence.is_null());
   if (--present_count_)
     return;
   auto vk_semaphores = ToVkSemaphores(end_read_semaphores_);

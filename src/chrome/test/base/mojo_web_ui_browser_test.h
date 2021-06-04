@@ -5,10 +5,7 @@
 #ifndef CHROME_TEST_BASE_MOJO_WEB_UI_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_MOJO_WEB_UI_BROWSER_TEST_H_
 
-#include <string>
-
 #include "chrome/test/base/web_ui_browser_test.h"
-#include "chrome/test/data/webui/web_ui_test.mojom.h"
 
 // The runner of Mojo WebUI javascript based tests. The main difference between
 // this and WebUIBrowserTest is that tests subclassing from this class use a

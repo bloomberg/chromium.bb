@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/shelf_model.h"
@@ -17,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
 
@@ -34,7 +36,7 @@ class ShelfTest : public AshTestBase {
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
     shelf_model_ = shelf_view_->model();
 
-    test_.reset(new ShelfViewTestAPI(shelf_view_));
+    test_ = std::make_unique<ShelfViewTestAPI>(shelf_view_);
   }
 
   ShelfView* shelf_view() { return shelf_view_; }

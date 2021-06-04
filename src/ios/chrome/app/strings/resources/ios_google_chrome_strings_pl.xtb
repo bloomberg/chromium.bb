@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1096883626080133124">Zwiększ produktywność, korzystając z prostej, bezpiecznej i wyjątkowo szybkiej przeglądarki Google Chrome</translation>
 <translation id="1282031177488366470">Pomóż w ulepszaniu funkcji i działania Chrome</translation>
 <translation id="1314663809820920746">Nadal masz dostęp do swoich zakładek, historii, haseł i innych ustawień na tym urządzeniu. Jeśli wprowadzisz zmiany, nie zostaną one zsynchronizowane na Twoim koncie Google.</translation>
 <translation id="1479202195792305274">Chrome może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome nie udało się sprawdzić dostępności aktualizacji. Sprawdź połączenie z internetem.</translation>
 <translation id="1682483655351012182">Synchronizuj dane Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Pomóż nam ulepszyć Chrome, przesyłając do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="1917964099031477364">To konto razem z wszelkimi niezapisanymi danymi zostanie usunięte z Chrome i innych aplikacji Google na tym urządzeniu.</translation>
 <translation id="2009224836393115614">Przeglądarce Chrome nie udało się sprawdzić Twoich haseł. Sprawdź połączenie z internetem.</translation>
 <translation id="2147651015520127414">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome nie udało się sprawdzić dostępności aktualizacji. Spróbuj ponownie później.</translation>
 <translation id="2732745070297234559">Przeglądarce Chrome nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie jutro.</translation>
 <translation id="2740105938841089077">Otwieraj linki w Chrome</translation>
+<translation id="2869959624320573933">Zaloguj się w Chrome</translation>
 <translation id="2919738076569633423">Używając Chrome, wyrażasz zgodę na <ph name="BEGIN_LINK_TOS" />Warunki korzystania z usługi<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chrome z tego urządzenia, ale pozostaną one na koncie Google.</translation>
 <translation id="3167189358072330585">Twoje konto nie działa w Google Chrome. Skontaktuj się z administratorem domeny lub zaloguj się przy użyciu zwykłego konta Google.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome oszczędza Twój czas, zapisując konta w internecie. Konta możesz dodawać i usuwać w Ustawieniach.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3345341804167540816">Korzystaj z Chrome w dowolnym miejscu</translation>
+<translation id="3455456143708465450">Aby w pełni wykorzystać możliwości Chrome, zaloguj się na konto Google</translation>
 <translation id="3522659714780527202">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chrome, włącz synchronizację</translation>
 <translation id="3533694711092285624">Brak zapisanych haseł. Chrome może sprawdzać Twoje hasła, gdy je zapiszesz.</translation>
 <translation id="3706101708757577809">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Jeśli zezwolisz na dostęp do swojej lokalizacji, Chrome będzie wysyłać ją do witryn, którym przyznasz dostęp. O dostęp do Twojej lokalizacji mogą prosić witryny pokazujące treści lokalne, np. wiadomości z regionu czy informacje o sklepach w pobliżu.</translation>
 <translation id="6036420186814142909">W Google Chrome są funkcje, które pomogą Ci zarządzać szybkością wczytywania stron internetowych oraz danymi przesyłanymi przez sieć.
 <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Zezwalaj na logowanie się w Chrome</translation>
 <translation id="6181930887571472871">Przejdź na Chrome</translation>
 <translation id="6238746320622508509">Pozwól Chrome blokować karty incognito.</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Usunąć dane Chrome z tego urządzenia?</translation>
 <translation id="6822673484890854830">Przeglądarce Chrome nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie później.</translation>
 <translation id="6964931465519938134">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
+<translation id="7059914902409643750">Dostosuj Chrome do swoich potrzeb</translation>
 <translation id="7124339256045485976">Zawsze używaj aktualnej wersji Chrome</translation>
 <translation id="7161390184744336561">Masz nieaktualną wersję Google Chrome</translation>
 <translation id="7165736900384873061">Skaner QR w Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Masz aktualną wersję Google Chrome</translation>
 <translation id="8022947259858476807">Używaj domyślnie Chrome, aby otwierać linki, wyszukiwać z widżetów i korzystać z autouzupełniania haseł w innych aplikacjach</translation>
 <translation id="8160472928944011082">Nie udało się zaktualizować Chrome</translation>
+<translation id="8263079278049777200">Zaloguj się na tej stronie, na swoim koncie Google i w Chrome. Synchronizację możesz włączyć później.</translation>
 <translation id="8357607116237445042">Zdecyduj, czy chcesz usunąć swoje dane z Chrome z tego urządzenia czy je na nim zachować</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Wszelkie prawa zastrzeżone.</translation>
 <translation id="840168496893712993">Niektóre dodatki mogą powodować awarie Chrome. Spróbuj je odinstalować.</translation>
@@ -95,5 +102,6 @@
   3. Wybierz Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Dbaj o swoje bezpieczeństwo, używając Google Chrome</translation>
+<translation id="8772179140489533211">Pokazuj prośby o zalogowanie się w Chrome.</translation>
 <translation id="9112744793181547300">Ustawić Chrome jako domyślną przeglądarkę?</translation>
 </translationbundle>

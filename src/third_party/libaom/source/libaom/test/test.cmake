@@ -25,6 +25,7 @@ list(APPEND AOM_UNIT_TEST_WRAPPER_SOURCES "${AOM_GEN_SRC_DIR}/usage_exit.c"
 
 list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
             "${AOM_ROOT}/test/acm_random.h"
+            "${AOM_ROOT}/test/aom_image_test.cc"
             "${AOM_ROOT}/test/aom_integer_test.cc"
             "${AOM_ROOT}/test/av1_config_test.cc"
             "${AOM_ROOT}/test/av1_key_value_api_test.cc"
@@ -58,6 +59,11 @@ list(APPEND AOM_UNIT_TEST_DECODER_SOURCES "${AOM_ROOT}/test/decode_api_test.cc"
             "${AOM_ROOT}/test/invalid_file_test.cc"
             "${AOM_ROOT}/test/test_vector_test.cc"
             "${AOM_ROOT}/test/ivf_video_source.h")
+if(CONFIG_REALTIME_ONLY)
+  list(REMOVE_ITEM AOM_UNIT_TEST_DECODER_SOURCES
+                   "${AOM_ROOT}/test/invalid_file_test.cc"
+                   "${AOM_ROOT}/test/test_vector_test.cc")
+endif()
 
 list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/active_map_test.cc"
@@ -86,12 +92,26 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/yuv_video_source.h"
             "${AOM_ROOT}/test/time_stamp_test.cc")
 
+if(CONFIG_REALTIME_ONLY)
+  list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
+                   "${AOM_ROOT}/test/borders_test.cc"
+                   "${AOM_ROOT}/test/cpu_speed_test.cc"
+                   "${AOM_ROOT}/test/end_to_end_test.cc"
+                   "${AOM_ROOT}/test/gf_pyr_height_test.cc"
+                   "${AOM_ROOT}/test/horz_superres_test.cc"
+                   "${AOM_ROOT}/test/level_test.cc"
+                   "${AOM_ROOT}/test/monochrome_test.cc")
+endif()
+
 if(CONFIG_AV1_TEMPORAL_DENOISING AND (HAVE_SSE2 OR HAVE_NEON))
   list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
               "${AOM_ROOT}/test/av1_temporal_denoiser_test.cc")
 endif()
 
-list(APPEND AOM_DECODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/decode_perf_test.cc")
+if(NOT CONFIG_REALTIME_ONLY)
+  list(APPEND AOM_DECODE_PERF_TEST_SOURCES
+              "${AOM_ROOT}/test/decode_perf_test.cc")
+endif()
 list(APPEND AOM_ENCODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/encode_perf_test.cc")
 list(APPEND AOM_UNIT_TEST_WEBM_SOURCES "${AOM_ROOT}/test/webm_video_source.h")
 list(APPEND AOM_TEST_INTRA_PRED_SPEED_SOURCES "${AOM_GEN_SRC_DIR}/usage_exit.c"
@@ -143,13 +163,27 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/screen_content_test.cc"
                 "${AOM_ROOT}/test/segment_binarization_sync.cc"
                 "${AOM_ROOT}/test/still_picture_test.cc"
+                "${AOM_ROOT}/test/temporal_filter_test.cc"
                 "${AOM_ROOT}/test/tile_config_test.cc"
                 "${AOM_ROOT}/test/tile_independence_test.cc"
-                "${AOM_ROOT}/test/temporal_filter_test.cc")
+                "${AOM_ROOT}/test/tpl_model_test.cc")
     if(CONFIG_REALTIME_ONLY)
       list(REMOVE_ITEM AOM_UNIT_TEST_COMMON_SOURCES
+                       "${AOM_ROOT}/test/altref_test.cc"
+                       "${AOM_ROOT}/test/av1_encoder_parms_get_to_decoder.cc"
+                       "${AOM_ROOT}/test/av1_ext_tile_test.cc"
                        "${AOM_ROOT}/test/cnn_test.cc"
-                       "${AOM_ROOT}/test/selfguided_filter_test.cc")
+                       "${AOM_ROOT}/test/decode_multithreaded_test.cc"
+                       "${AOM_ROOT}/test/error_resilience_test.cc"
+                       "${AOM_ROOT}/test/fwd_kf_test.cc"
+                       "${AOM_ROOT}/test/kf_test.cc"
+                       "${AOM_ROOT}/test/lossless_test.cc"
+                       "${AOM_ROOT}/test/sb_multipass_test.cc"
+                       "${AOM_ROOT}/test/selfguided_filter_test.cc"
+                       "${AOM_ROOT}/test/screen_content_test.cc"
+                       "${AOM_ROOT}/test/still_picture_test.cc"
+                       "${AOM_ROOT}/test/tile_independence_test.cc"
+                       "${AOM_ROOT}/test/tpl_model_test.cc")
     endif()
     if(NOT CONFIG_AV1_HIGHBITDEPTH)
       list(REMOVE_ITEM AOM_UNIT_TEST_COMMON_SOURCES
@@ -246,6 +280,7 @@ if(NOT BUILD_SHARED_LIBS)
   if(CONFIG_REALTIME_ONLY)
     list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
                      "${AOM_ROOT}/test/frame_error_test.cc"
+                     "${AOM_ROOT}/test/motion_vector_test.cc"
                      "${AOM_ROOT}/test/obmc_sad_test.cc"
                      "${AOM_ROOT}/test/obmc_variance_test.cc"
                      "${AOM_ROOT}/test/pickrst_test.cc"

@@ -42,8 +42,7 @@
 }
 
 .tabbed-pane-content.has-no-tabs {
-  background-color: #d3d3d3; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-2);
 }
 
 .tabbed-pane-placeholder {
@@ -51,8 +50,7 @@
   text-align: center;
   width: fit-content;
   margin: 20px auto 0;
-  text-shadow: rgb(255 255 255 / 75%) 0 1px 0; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  text-shadow: var(--color-background-opacity-80) 0 1px 0;
   line-height: 28px;
 }
 
@@ -89,11 +87,10 @@
 .tabbed-pane-header {
   display: flex;
   flex: 0 0 27px;
-  border-bottom: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border-bottom: 1px solid var(--color-details-hairline);
   overflow: visible;
   width: 100%;
-  background-color: var(--toolbar-bg-color);
+  background-color: var(--color-background-elevation-1);
 }
 
 .tabbed-pane-header-contents {
@@ -123,8 +120,7 @@
   cursor: default;
   display: flex;
   align-items: center;
-  color: #5a5a5a; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-secondary);
 }
 
 .tabbed-pane-header-tab.closeable {
@@ -133,9 +129,8 @@
 
 .tabbed-pane-header-tab:hover,
 .tabbed-pane-shadow .tabbed-pane-header-tab:focus-visible {
-  color: #333; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  background-color: var(--toolbar-hover-bg-color);
+  color: var(--color-text-primary);
+  background-color: var(--legacy-toolbar-hover-bg-color);
 }
 
 .tabbed-pane-header-tab-title {
@@ -149,16 +144,29 @@
 
 .tabbed-pane-header-tab.selected {
   border-bottom: none;
-  background-color: var(--tab-selected-bg-color);
-  color: var(--tab-selected-fg-color);
+  background-color: var(--color-background-elevation-1);
+  color: var(--legacy-tab-selected-fg-color);
+}
+
+/**
+ * In light-mode we have a blue border to show the active pane, and we don't change the background color. In dark mode we do not show the border, so we instead change the background color.
+ */
+.-theme-with-dark-background .tabbed-pane-header-tab.selected,
+:host-context(.-theme-with-dark-background) .tabbed-pane-header-tab.selected {
+  background-color: var(--color-background-elevation-0);
 }
 
 .tabbed-pane-header-tab.dragging {
+  --override-dragging-box-shadow-color: rgb(0 0 0 / 37%);
+
   position: relative;
-  box-shadow: 0 1px 4px 0 rgb(0 0 0 / 37%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  background-color: #e5e5e5; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  box-shadow: 0 1px 4px 0 var(--override-dragging-box-shadow-color);
+  background-color: var(--color-background-elevation-2);
+}
+
+.-theme-with-dark-background .tabbed-pane-header-tab.dragging,
+:host-context(.-theme-with-dark-background) .tabbed-pane-header-tab.dragging {
+  --override-dragging-box-shadow-color: rgb(230 230 230 / 37%);
 }
 
 .tabbed-pane-header-tab .tabbed-pane-close-button {
@@ -181,15 +189,13 @@
 }
 
 .tabbed-pane-header-tabs-drop-down-container > .chevron-icon {
-  background-color: hsl(0deg 0% 20% / 100%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-text-secondary);
   display: block;
 }
 
 .tabbed-pane-header-tabs-drop-down-container:hover,
 .tabbed-pane-header-tabs-drop-down-container:focus-visible {
-  background-color: rgb(0 0 0 / 8%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-2);
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {
@@ -202,12 +208,12 @@
 /* Web page style */
 
 .tabbed-pane-shadow.vertical-tab-layout {
-  flex-direction: row !important;
+  flex-direction: row !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header {
   background-color: transparent;
-  border: none transparent !important;
+  border: none transparent !important; /* stylelint-disable-line declaration-no-important */
   width: auto;
   flex: 0 0 auto;
   flex-direction: column;
@@ -235,8 +241,7 @@
   border: none transparent;
   font-weight: normal;
   text-shadow: none;
-  color: #777; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-secondary);
   height: 26px;
   padding-left: 10px;
   border-left: 6px solid transparent;
@@ -246,21 +251,27 @@
 }
 
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab:not(.selected) {
-  cursor: pointer !important;
+  cursor: pointer !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected {
+  --override-vertical-tab-selected-border-color: #666;
+
   color: inherit;
   border: none transparent;
-  border-left: 6px solid #666; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border-left: 6px solid var(--override-vertical-tab-selected-border-color);
+}
+
+.-theme-with-dark-background .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected,
+:host-context(.-theme-with-dark-background) .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected {
+  --override-vertical-tab-selected-border-color: rgb(153 153 153);
 }
 
 .tabbed-pane-tab-slider {
   height: 2px;
   position: absolute;
   bottom: -1px;
-  background-color: var(--accent-color);
+  background-color: var(--legacy-accent-color);
   left: 0;
   z-index: 50;
   transform-origin: 0 100%;

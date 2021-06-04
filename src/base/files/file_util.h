@@ -81,7 +81,8 @@ BASE_EXPORT bool DeleteFile(const FilePath& path);
 BASE_EXPORT bool DeletePathRecursively(const FilePath& path);
 
 // Simplified way to get a callback to do DeleteFile(path) and ignore the
-// DeleteFile() result.
+// DeleteFile() result. On Windows, this will retry the delete via delayed tasks
+// for up to 2 seconds before giving up, to deal with AV S/W locking the file.
 BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
 
 // Simplified way to get a callback to do DeletePathRecursively(path) and ignore
@@ -343,6 +344,10 @@ BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStream(FilePath* path);
 BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
                                                          FilePath* path);
 
+// Do NOT USE in new code. Use ScopedTempDir instead.
+// TODO(crbug.com/561597) Remove existing usage and make this an implementation
+// detail inside ScopedTempDir.
+//
 // Create a new directory. If prefix is provided, the new directory name is in
 // the format of prefixyyyy.
 // NOTE: prefix is ignored in the POSIX implementation.
@@ -453,9 +458,13 @@ BASE_EXPORT bool WriteFile(const FilePath& filename, span<const uint8_t> data);
 BASE_EXPORT bool WriteFile(const FilePath& filename, StringPiece data);
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-// Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff
-// |size| bytes of |data| were written to |fd|.
-BASE_EXPORT bool WriteFileDescriptor(const int fd, const char* data, int size);
+// Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff all
+// of |data| were written to |fd|.
+BASE_EXPORT bool WriteFileDescriptor(int fd, span<const uint8_t> data);
+
+// WriteFileDescriptor() variant that takes a StringPiece so callers don't have
+// to do manual conversions from a char span to a uint8_t span.
+BASE_EXPORT bool WriteFileDescriptor(int fd, StringPiece data);
 
 // Allocates disk space for the file referred to by |fd| for the byte range
 // starting at |offset| and continuing for |size| bytes. The file size will be
@@ -466,11 +475,14 @@ BASE_EXPORT bool WriteFileDescriptor(const int fd, const char* data, int size);
 BASE_EXPORT bool AllocateFileRegion(File* file, int64_t offset, size_t size);
 #endif
 
-// Appends |data| to |filename|.  Returns true iff |size| bytes of |data| were
-// written to |filename|.
+// Appends |data| to |filename|.  Returns true iff |data| were written to
+// |filename|.
 BASE_EXPORT bool AppendToFile(const FilePath& filename,
-                              const char* data,
-                              int size);
+                              span<const uint8_t> data);
+
+// AppendToFile() variant that takes a StringPiece so callers don't have to do
+// manual conversions from a char span to a uint8_t span.
+BASE_EXPORT bool AppendToFile(const FilePath& filename, StringPiece data);
 
 // Gets the current working directory for the process.
 BASE_EXPORT bool GetCurrentDirectory(FilePath* path);

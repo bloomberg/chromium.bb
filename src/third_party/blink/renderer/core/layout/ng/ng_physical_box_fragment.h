@@ -5,12 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_fragment_data.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
@@ -22,8 +23,7 @@ class NGBlockBreakToken;
 class NGBoxFragmentBuilder;
 enum class NGOutlineType;
 
-class CORE_EXPORT NGPhysicalBoxFragment final
-    : public NGPhysicalContainerFragment {
+class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
  public:
   static scoped_refptr<const NGPhysicalBoxFragment> Create(
       NGBoxFragmentBuilder* builder,
@@ -32,10 +32,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // fragment-tree consistency.
   static scoped_refptr<const NGPhysicalBoxFragment>
   CloneWithPostLayoutFragments(const NGPhysicalBoxFragment& other,
-                               const base::Optional<PhysicalRect>
-                                   updated_layout_overflow = base::nullopt);
+                               const absl::optional<PhysicalRect>
+                                   updated_layout_overflow = absl::nullopt);
 
-  using MulticolCollection = NGContainerFragmentBuilder::MulticolCollection;
+  using MulticolCollection =
+      HashMap<LayoutBox*, NGMulticolWithPendingOOFs<PhysicalOffset>>;
   using PassKey = base::PassKey<NGPhysicalBoxFragment>;
   NGPhysicalBoxFragment(PassKey,
                         NGBoxFragmentBuilder* builder,
@@ -45,7 +46,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         const NGPhysicalBoxStrut& borders,
                         bool has_padding,
                         const NGPhysicalBoxStrut& padding,
-                        const base::Optional<PhysicalRect>& inflow_bounds,
+                        const absl::optional<PhysicalRect>& inflow_bounds,
+                        bool has_fragment_items,
                         bool has_rare_data,
                         WritingMode block_or_line_writing_mode);
 
@@ -59,34 +61,77 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   ~NGPhysicalBoxFragment() {
     ink_overflow_.Reset(InkOverflowType());
-    if (has_fragment_items_)
+    if (const_has_fragment_items_)
       ComputeItemsAddress()->~NGFragmentItems();
-    if (has_rare_data_)
+    if (const_has_rare_data_)
       ComputeRareDataAddress()->~RareData();
-    for (const NGLink& child : Children()) {
-      if (child.fragment)
-        child.fragment->Release();
+    if (ChildrenValid()) {
+      for (const NGLink& child : Children()) {
+        if (child.fragment)
+          child.fragment->Release();
+      }
     }
   }
 
   const NGPhysicalBoxFragment* PostLayout() const;
 
-  // Returns |NGFragmentItems| if this fragment has one.
-  bool HasItems() const { return has_fragment_items_; }
-  const NGFragmentItems* Items() const {
-    return has_fragment_items_ ? ComputeItemsAddress() : nullptr;
+  // Returns the children of |this|.
+  //
+  // Note, children in this collection maybe old generations. Items in this
+  // collection are safe, but their children (grandchildren of |this|) maybe
+  // from deleted nodes or LayoutObjects. Also see |PostLayoutChildren()|.
+  base::span<const NGLink> Children() const {
+    DCHECK(children_valid_);
+    return base::make_span(children_, const_num_children_);
   }
 
-  base::Optional<LayoutUnit> Baseline() const {
+  // Similar to |Children()| but all children are the latest generation of
+  // post-layout, and therefore all descendants are safe.
+  NGPhysicalFragment::PostLayoutChildLinkList PostLayoutChildren() const {
+    DCHECK(children_valid_);
+    return PostLayoutChildLinkList(const_num_children_, children_);
+  }
+
+  // This exposes a mutable part of the fragment for |NGOutOfFlowLayoutPart|.
+  class MutableChildrenForOutOfFlow final {
+    STACK_ALLOCATED();
+
+   protected:
+    friend class NGOutOfFlowLayoutPart;
+    base::span<NGLink> Children() const {
+      return base::make_span(buffer_, num_children_);
+    }
+
+   private:
+    friend class NGPhysicalBoxFragment;
+    MutableChildrenForOutOfFlow(const NGLink* buffer, wtf_size_t num_children)
+        : buffer_(const_cast<NGLink*>(buffer)), num_children_(num_children) {}
+
+    NGLink* buffer_;
+    wtf_size_t num_children_;
+  };
+
+  MutableChildrenForOutOfFlow GetMutableChildrenForOutOfFlow() const {
+    DCHECK(children_valid_);
+    return MutableChildrenForOutOfFlow(children_, const_num_children_);
+  }
+
+  // Returns |NGFragmentItems| if this fragment has one.
+  bool HasItems() const { return const_has_fragment_items_; }
+  const NGFragmentItems* Items() const {
+    return const_has_fragment_items_ ? ComputeItemsAddress() : nullptr;
+  }
+
+  absl::optional<LayoutUnit> Baseline() const {
     if (has_baseline_)
       return baseline_;
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  base::Optional<LayoutUnit> LastBaseline() const {
+  absl::optional<LayoutUnit> LastBaseline() const {
     if (has_last_baseline_)
       return last_baseline_;
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   PhysicalRect TableGridRect() const {
@@ -132,46 +177,46 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   // Returns the bounds of any inflow children for this fragment (specifically
-  // no out-of-flow positioned objects). This will return |base::nullopt| if:
+  // no out-of-flow positioned objects). This will return |absl::nullopt| if:
   //  - The fragment is *not* a scroll container.
   //  - The scroll container contains no inflow children.
   // This is normally the union of all inflow children's border-box rects
   // (without relative positioning applied), however for grid layout it is the
   // size and position of the grid instead.
   // This is used for scrollable overflow calculations.
-  const base::Optional<PhysicalRect> InflowBounds() const {
+  const absl::optional<PhysicalRect> InflowBounds() const {
     if (!has_inflow_bounds_)
-      return base::nullopt;
+      return absl::nullopt;
     return *ComputeInflowBoundsAddress();
   }
 
   bool HasOutOfFlowPositionedFragmentainerDescendants() const {
-    if (!has_rare_data_)
+    if (!const_has_rare_data_)
       return false;
 
     return !ComputeRareDataAddress()
                 ->oof_positioned_fragmentainer_descendants.IsEmpty();
   }
 
-  base::span<NGPhysicalOutOfFlowPositionedNode>
+  base::span<NGPhysicalOOFNodeForFragmentation>
   OutOfFlowPositionedFragmentainerDescendants() const {
-    if (!has_rare_data_)
-      return base::span<NGPhysicalOutOfFlowPositionedNode>();
-    Vector<NGPhysicalOutOfFlowPositionedNode>& descendants =
-        const_cast<Vector<NGPhysicalOutOfFlowPositionedNode>&>(
+    if (!const_has_rare_data_)
+      return base::span<NGPhysicalOOFNodeForFragmentation>();
+    Vector<NGPhysicalOOFNodeForFragmentation>& descendants =
+        const_cast<Vector<NGPhysicalOOFNodeForFragmentation>&>(
             ComputeRareDataAddress()->oof_positioned_fragmentainer_descendants);
     return {descendants.data(), descendants.size()};
   }
 
   bool HasMulticolsWithPendingOOFs() const {
-    if (!has_rare_data_)
+    if (!const_has_rare_data_)
       return false;
 
     return !ComputeRareDataAddress()->multicols_with_pending_oofs.IsEmpty();
   }
 
   MulticolCollection MulticolsWithPendingOOFs() const {
-    if (!has_rare_data_)
+    if (!const_has_rare_data_)
       return MulticolCollection();
     return const_cast<MulticolCollection&>(
         ComputeRareDataAddress()->multicols_with_pending_oofs);
@@ -247,6 +292,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGInkOverflow::Type InkOverflowType() const {
     return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
   }
+  bool IsInkOverflowComputed() const {
+    return InkOverflowType() != NGInkOverflow::kNotSet &&
+           InkOverflowType() != NGInkOverflow::kInvalidated;
+  }
   bool HasInkOverflow() const {
     return InkOverflowType() != NGInkOverflow::kNone;
   }
@@ -311,6 +360,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // Return true if this is the first fragment generated from a node.
   bool IsFirstForNode() const { return is_first_for_node_; }
 
+  // Return true if this is the only fragment generated from a node.
+  bool IsOnlyForNode() const { return IsFirstForNode() && !BreakToken(); }
+
   bool HasDescendantsForTablePart() const {
     DCHECK(IsTableNGPart() || IsTableNGCell());
     return has_descendants_for_table_part_;
@@ -331,7 +383,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     if (IsMathMLFraction())
       return true;
 
-    if (has_rare_data_ && ComputeRareDataAddress()->mathml_paint_info)
+    if (const_has_rare_data_ && ComputeRareDataAddress()->mathml_paint_info)
       return true;
 
     return false;
@@ -350,6 +402,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     void RecalcInkOverflow(const PhysicalRect& contents) {
       fragment_.RecalcInkOverflow(contents);
     }
+#if DCHECK_IS_ON()
+    void InvalidateInkOverflow() { fragment_.InvalidateInkOverflow(); }
+#endif
 
    private:
     friend class NGPhysicalBoxFragment;
@@ -363,11 +418,15 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   // Returns if this fragment can compute ink overflow.
-  bool CanUseFragmentsForInkOverflow() const;
+  bool CanUseFragmentsForInkOverflow() const { return !IsLegacyLayoutRoot(); }
   // Recalculates and updates |*InkOverflow|.
   void RecalcInkOverflow();
   // |RecalcInkOverflow| using the given contents ink overflow rect.
   void RecalcInkOverflow(const PhysicalRect& contents);
+
+#if DCHECK_IS_ON()
+  void InvalidateInkOverflow();
+#endif
 
  private:
   static size_t ByteSize(wtf_size_t num_fragment_items,
@@ -382,7 +441,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     RareData(const RareData&);
     RareData(NGBoxFragmentBuilder*, PhysicalSize size);
 
-    Vector<NGPhysicalOutOfFlowPositionedNode>
+    Vector<NGPhysicalOOFNodeForFragmentation>
         oof_positioned_fragmentainer_descendants;
     MulticolCollection multicols_with_pending_oofs;
     const std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
@@ -397,17 +456,17 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   };
 
   const NGFragmentItems* ComputeItemsAddress() const {
-    DCHECK(has_fragment_items_ || has_layout_overflow_ || has_borders_ ||
-           has_padding_ || has_inflow_bounds_ || has_rare_data_);
-    const NGLink* children_end = children_ + Children().size();
+    DCHECK(const_has_fragment_items_ || has_layout_overflow_ || has_borders_ ||
+           has_padding_ || has_inflow_bounds_ || const_has_rare_data_);
+    const NGLink* children_end = children_ + const_num_children_;
     return reinterpret_cast<const NGFragmentItems*>(children_end);
   }
 
   const PhysicalRect* ComputeLayoutOverflowAddress() const {
     DCHECK(has_layout_overflow_ || has_borders_ || has_padding_ ||
-           has_inflow_bounds_ || has_rare_data_);
+           has_inflow_bounds_ || const_has_rare_data_);
     const NGFragmentItems* items = ComputeItemsAddress();
-    if (!has_fragment_items_)
+    if (!const_has_fragment_items_)
       return reinterpret_cast<const PhysicalRect*>(items);
     return reinterpret_cast<const PhysicalRect*>(
         reinterpret_cast<const uint8_t*>(items) + items->ByteSize());
@@ -415,7 +474,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
     DCHECK(has_borders_ || has_padding_ || has_inflow_bounds_ ||
-           has_rare_data_);
+           const_has_rare_data_);
     const PhysicalRect* address = ComputeLayoutOverflowAddress();
     return has_layout_overflow_
                ? reinterpret_cast<const NGPhysicalBoxStrut*>(address + 1)
@@ -423,13 +482,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   const NGPhysicalBoxStrut* ComputePaddingAddress() const {
-    DCHECK(has_padding_ || has_inflow_bounds_ || has_rare_data_);
+    DCHECK(has_padding_ || has_inflow_bounds_ || const_has_rare_data_);
     const NGPhysicalBoxStrut* address = ComputeBordersAddress();
     return has_borders_ ? address + 1 : address;
   }
 
   const PhysicalRect* ComputeInflowBoundsAddress() const {
-    DCHECK(has_inflow_bounds_ || has_rare_data_);
+    DCHECK(has_inflow_bounds_ || const_has_rare_data_);
     NGPhysicalBoxStrut* address =
         const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress());
     return has_padding_ ? reinterpret_cast<PhysicalRect*>(address + 1)
@@ -437,7 +496,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   const RareData* ComputeRareDataAddress() const {
-    DCHECK(has_rare_data_);
+    DCHECK(const_has_rare_data_);
     PhysicalRect* address =
         const_cast<PhysicalRect*>(ComputeInflowBoundsAddress());
     return has_inflow_bounds_ ? reinterpret_cast<RareData*>(address + 1)
@@ -473,6 +532,23 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 #if DCHECK_IS_ON()
   void CheckIntegrity() const;
 #endif
+
+  unsigned is_inline_formatting_context_ : 1;
+  const unsigned const_has_fragment_items_ : 1;
+  unsigned include_border_top_ : 1;
+  unsigned include_border_right_ : 1;
+  unsigned include_border_bottom_ : 1;
+  unsigned include_border_left_ : 1;
+  unsigned has_layout_overflow_ : 1;
+  unsigned ink_overflow_type_ : NGInkOverflow::kTypeBits;
+  unsigned has_borders_ : 1;
+  unsigned has_padding_ : 1;
+  unsigned has_inflow_bounds_ : 1;
+  const unsigned const_has_rare_data_ : 1;
+  unsigned is_first_for_node_ : 1;
+  unsigned has_descendants_for_table_part_ : 1;
+
+  const wtf_size_t const_num_children_;
 
   LayoutUnit baseline_;
   LayoutUnit last_baseline_;

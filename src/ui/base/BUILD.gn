@@ -102,6 +102,12 @@ component("base") {
     "dragdrop/os_exchange_data_provider_factory.h",
     "ime/utf_offset.cc",
     "ime/utf_offset.h",
+    "interaction/element_identifier.cc",
+    "interaction/element_identifier.h",
+    "interaction/element_tracker.cc",
+    "interaction/element_tracker.h",
+    "interaction/interaction_sequence.cc",
+    "interaction/interaction_sequence.h",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -113,6 +119,16 @@ component("base") {
     "l10n/time_format.h",
     "layout.cc",
     "layout.h",
+    "metadata/base_type_conversion.cc",
+    "metadata/base_type_conversion.h",
+    "metadata/metadata_cache.cc",
+    "metadata/metadata_cache.h",
+    "metadata/metadata_header_macros.h",
+    "metadata/metadata_impl_macros.h",
+    "metadata/metadata_macros_internal.h",
+    "metadata/metadata_types.cc",
+    "metadata/metadata_types.h",
+    "metadata/property_metadata.h",
     "models/button_menu_item_model.cc",
     "models/button_menu_item_model.h",
     "models/combobox_model.cc",
@@ -274,8 +290,6 @@ component("base") {
       "cocoa/flipped_view.mm",
       "cocoa/focus_tracker.h",
       "cocoa/focus_tracker.mm",
-      "cocoa/focus_window_set.h",
-      "cocoa/focus_window_set.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
       "cocoa/nsmenuitem_additions.h",
@@ -329,6 +343,7 @@ component("base") {
       "accelerators/accelerator.h",
       "accelerators/accelerator_manager.cc",
       "accelerators/accelerator_manager.h",
+      "accelerators/accelerator_map.h",
       "accelerators/media_keys_listener.cc",
       "accelerators/media_keys_listener.h",
       "accelerators/media_keys_util.cc",
@@ -357,6 +372,8 @@ component("base") {
         "accelerators/menu_label_accelerator_util_linux.h",
         "linux/linux_desktop.cc",
         "linux/linux_desktop.h",
+        "linux/linux_ui_delegate.cc",
+        "linux/linux_ui_delegate.h",
       ]
     }
 
@@ -417,6 +434,10 @@ component("base") {
 
   defines = [ "IS_UI_BASE_IMPL" ]
 
+  if (enable_pseudolocales) {
+    defines += [ "ENABLE_PSEUDOLOCALES" ]
+  }
+
   public_deps = [
     ":buildflags",
     ":features",
@@ -462,6 +483,7 @@ component("base") {
     # iOS does not use Chromium-specific code for event handling.
     public_deps += [
       "//ui/base/clipboard:file_info",
+      "//ui/events:dom_keycode_converter",
       "//ui/events:events_base",
       "//ui/events/platform",
     ]
@@ -676,6 +698,9 @@ if (!is_ios) {
 static_library("test_support") {
   testonly = true
   sources = [
+    "interaction/element_test_util.cc",
+    "interaction/element_test_util.h",
+    "interaction/expect_call_in_scope.h",
     "resource/mock_resource_bundle_delegate.cc",
     "resource/mock_resource_bundle_delegate.h",
   ]
@@ -797,7 +822,10 @@ static_library("test_support") {
       "ime/chromeos/mock_input_method_manager.cc",
       "ime/chromeos/mock_input_method_manager.h",
     ]
-    deps += [ "//ui/base/ime/chromeos" ]
+    deps += [
+      "//ui/base/ime/chromeos",
+      "//ui/base/ime/chromeos:typing_session_manager",
+    ]
   }
 }
 
@@ -866,10 +894,15 @@ test("ui_base_unittests") {
     "class_property_unittest.cc",
     "clipboard/file_info_unittest.cc",
     "ime/utf_offset_unittest.cc",
+    "interaction/element_tracker_unittest.cc",
+    "interaction/interaction_sequence_unittest.cc",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
     "layout_unittest.cc",
+    "metadata/base_type_conversion_unittest.cc",
+    "metadata/metadata_unittest.cc",
     "models/image_model_unittest.cc",
+    "models/simple_combobox_model_unittest.cc",
     "models/simple_menu_model_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
     "pointer/touch_ui_controller_unittest.cc",
@@ -914,7 +947,7 @@ test("ui_base_unittests") {
   }
 
   data = []
-  data_deps = [ "//testing/buildbot/filters:ui_base_unittests_filters" ]
+  data_deps = []
   deps = [
     ":ui_base_test_resources_grit",
     ":ui_base_unittests_bundle_data",
@@ -966,6 +999,7 @@ test("ui_base_unittests") {
   } else {  # !is_ios
     sources += [
       "accelerators/accelerator_manager_unittest.cc",
+      "accelerators/accelerator_map_unittest.cc",
       "accelerators/accelerator_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
       "models/dialog_model_unittest.cc",
@@ -1030,10 +1064,12 @@ test("ui_base_unittests") {
         "ime/chromeos/input_method_chromeos_unittest.cc",
         "ime/chromeos/input_method_descriptor_unittest.cc",
         "ime/chromeos/input_method_util_unittest.cc",
+        "ime/chromeos/typing_session_manager_unittest.cc",
       ]
       deps += [
         "//build:branding_buildflags",
         "//ui/base/ime/chromeos",
+        "//ui/base/ime/chromeos:typing_session_manager",
       ]
     }
     if ((is_linux || is_chromeos_lacros) && use_aura) {
@@ -1126,11 +1162,6 @@ test("ui_base_unittests") {
       "//ui/events",
       "//ui/events/platform",
     ]
-  }
-
-  if (use_x11) {
-    sources += [ "dragdrop/os_exchange_data_provider_x11_unittest.cc" ]
-    deps += [ "//ui/gfx/x:unit_test" ]
   }
 
   if (is_chromeos_ash) {

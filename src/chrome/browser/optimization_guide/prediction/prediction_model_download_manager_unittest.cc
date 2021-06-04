@@ -6,11 +6,11 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -24,13 +24,13 @@
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/in_process_unzipper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace optimization_guide {
 
 using ::testing::_;
 using ::testing::Eq;
-using ::testing::SaveArg;
 
 class TestPredictionModelDownloadObserver
     : public PredictionModelDownloadObserver {
@@ -42,12 +42,12 @@ class TestPredictionModelDownloadObserver
     last_ready_model_ = model;
   }
 
-  base::Optional<proto::PredictionModel> last_ready_model() const {
+  absl::optional<proto::PredictionModel> last_ready_model() const {
     return last_ready_model_;
   }
 
  private:
-  base::Optional<proto::PredictionModel> last_ready_model_;
+  absl::optional<proto::PredictionModel> last_ready_model_;
 };
 
 enum class PredictionModelDownloadFileStatus {
@@ -70,7 +70,7 @@ class PredictionModelDownloadManagerTest : public testing::Test {
     mock_download_service_ =
         std::make_unique<download::test::MockDownloadService>();
     download_manager_ = std::make_unique<PredictionModelDownloadManager>(
-        mock_download_service_.get(), temp_dir_.GetPath(),
+        mock_download_service_.get(),
         task_environment_.GetMainThreadTaskRunner());
 
     unzip::SetUnzipperLaunchOverrideForTesting(
@@ -273,8 +273,8 @@ TEST_F(PredictionModelDownloadManagerTest, StartDownloadRestrictedDownloading) {
       /*disabled_features=*/{});
 
   download::DownloadParams download_params;
-  EXPECT_CALL(*download_service(), StartDownload(_))
-      .WillOnce(SaveArg<0>(&download_params));
+  EXPECT_CALL(*download_service(), StartDownload_(_))
+      .WillOnce(MoveArg<0>(&download_params));
   download_manager()->StartDownload(GURL("someurl"));
 
   // Validate parameters - basically that we attach the correct client, just do
@@ -313,8 +313,8 @@ TEST_F(PredictionModelDownloadManagerTest,
       /*disabled_features=*/{});
 
   download::DownloadParams download_params;
-  EXPECT_CALL(*download_service(), StartDownload(_))
-      .WillOnce(SaveArg<0>(&download_params));
+  EXPECT_CALL(*download_service(), StartDownload_(_))
+      .WillOnce(MoveArg<0>(&download_params));
   download_manager()->StartDownload(GURL("someurl"));
 
   // Validate parameters - basically that we attach the correct client, just do
@@ -344,8 +344,8 @@ TEST_F(PredictionModelDownloadManagerTest,
 
 TEST_F(PredictionModelDownloadManagerTest, StartDownloadFailedToSchedule) {
   download::DownloadParams download_params;
-  EXPECT_CALL(*download_service(), StartDownload(_))
-      .WillOnce(SaveArg<0>(&download_params));
+  EXPECT_CALL(*download_service(), StartDownload_(_))
+      .WillOnce(MoveArg<0>(&download_params));
   download_manager()->StartDownload(GURL("someurl"));
 
   // Now invoke start callback.
@@ -424,16 +424,8 @@ TEST_F(PredictionModelDownloadManagerTest, UnverifiedFileShouldDeleteTempFile) {
       PredictionModelDownloadStatus::kFailedCrxVerification, 1);
 }
 
-// TODO(crbug.com/1156112): Flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_VerifiedCrxWithInvalidPublisherShouldDeleteTempFile \
-  DISABLED_VerifiedCrxWithInvalidPublisherShouldDeleteTempFile
-#else
-#define MAYBE_VerifiedCrxWithInvalidPublisherShouldDeleteTempFile \
-  VerifiedCrxWithInvalidPublisherShouldDeleteTempFile
-#endif
 TEST_F(PredictionModelDownloadManagerTest,
-       MAYBE_VerifiedCrxWithInvalidPublisherShouldDeleteTempFile) {
+       VerifiedCrxWithInvalidPublisherShouldDeleteTempFile) {
   base::HistogramTester histogram_tester;
 
   TestPredictionModelDownloadObserver observer;
@@ -541,20 +533,16 @@ TEST_F(PredictionModelDownloadManagerTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelDownloadManager."
       "DownloadStatus",
-      PredictionModelDownloadStatus::kFailedModelFileNotFound, 1);
+      PredictionModelDownloadStatus::kFailedModelFileOtherError, 1);
+  // The error code for ReplaceFile varies by platform for this test, only
+  // care that the error code is recorded.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelDownloadManager.ReplaceFileError", 1);
 }
 
-// TODO(crbug.com/1156112): Flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted \
-  DISABLED_VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted
-#else
-#define MAYBE_VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted \
-  VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted
-#endif
 TEST_F(
     PredictionModelDownloadManagerTest,
-    MAYBE_VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted) {
+    VerifiedCrxWithGoodModelFilesShouldDeleteDownloadFileButHaveContentExtracted) {
   base::HistogramTester histogram_tester;
 
   TestPredictionModelDownloadObserver observer;

@@ -429,7 +429,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     DCHECK(!flatten_protocol_);
 
     if (throttle_) {
-      base::Optional<base::Value> value =
+      absl::optional<base::Value> value =
           base::JSONReader::Read(base::StringPiece(
               reinterpret_cast<const char*>(message.data()), message.size()));
       const std::string* method;
@@ -617,8 +617,9 @@ Response TargetHandler::Disable() {
   return Response::Success();
 }
 
-void TargetHandler::DidFinishNavigation() {
-  auto_attacher_.UpdateServiceWorkers();
+void TargetHandler::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  auto_attacher_.DidFinishNavigation(
+      NavigationRequest::From(navigation_handle));
 }
 
 std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(

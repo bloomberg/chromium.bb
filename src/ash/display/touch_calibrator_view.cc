@@ -4,12 +4,15 @@
 
 #include "ash/display/touch_calibrator_view.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -88,7 +91,7 @@ views::Widget::InitParams GetWidgetParams(aura::Window* root_window) {
   params.name = kWidgetName;
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.accept_events = true;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
@@ -181,7 +184,7 @@ CircularThrobberView::CircularThrobberView(int width,
   outer_circle_flags_.setAntiAlias(true);
   outer_circle_flags_.setStyle(cc::PaintFlags::kFill_Style);
 
-  animation_.reset(new gfx::ThrobAnimation(this));
+  animation_ = std::make_unique<gfx::ThrobAnimation>(this);
   animation_->SetThrobDuration(animation_duration);
   animation_->StartThrobbing(-1);
 

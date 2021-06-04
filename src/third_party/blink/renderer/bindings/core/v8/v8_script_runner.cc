@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
@@ -129,8 +128,9 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     // TODO(leszeks): Add compile timer to streaming compilation.
     DCHECK(streamer->IsFinished());
     DCHECK(!streamer->IsStreamingSuppressed());
-    return v8::ScriptCompiler::Compile(isolate->GetCurrentContext(),
-                                       streamer->Source(), code, origin);
+    return v8::ScriptCompiler::Compile(
+        isolate->GetCurrentContext(),
+        streamer->Source(v8::ScriptType::kClassic), code, origin);
   }
 
   // Allow inspector to use its own compilation cache store.
@@ -176,7 +176,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
             CachedMetadataHandler::kDiscardLocally);
       }
       if (cache_result) {
-        cache_result->consume_result = base::make_optional(
+        cache_result->consume_result = absl::make_optional(
             inspector_compile_script_event::V8CacheResult::ConsumeResult(
                 v8::ScriptCompiler::kConsumeCodeCache, cached_data->length,
                 cached_data->rejected));
@@ -292,7 +292,8 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     DCHECK(streamer->IsFinished());
     DCHECK(!streamer->IsStreamingSuppressed());
     script = v8::ScriptCompiler::CompileModule(
-        isolate->GetCurrentContext(), streamer->Source(), code, origin);
+        isolate->GetCurrentContext(), streamer->Source(v8::ScriptType::kModule),
+        code, origin);
   } else {
     switch (compile_options) {
       case v8::ScriptCompiler::kNoCompileOptions:
@@ -322,7 +323,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
           cache_handler->ClearCachedMetadata(
               CachedMetadataHandler::kDiscardLocally);
         }
-        cache_result.consume_result = base::make_optional(
+        cache_result.consume_result = absl::make_optional(
             inspector_compile_script_event::V8CacheResult::ConsumeResult(
                 compile_options, cached_data->length, cached_data->rejected));
         break;
@@ -650,7 +651,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     ExecutionContext* context,
     v8::Local<v8::Value> receiver,
     int argc,
-    v8::Local<v8::Value> args[],
+    v8::Local<v8::Value> argv[],
     v8::Isolate* isolate) {
   LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
   LocalFrame* frame = window ? window->GetFrame() : nullptr;
@@ -687,7 +688,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
 
   probe::CallFunction probe(context, function, depth);
   v8::MaybeLocal<v8::Value> result =
-      function->Call(isolate->GetCurrentContext(), receiver, argc, args);
+      function->Call(isolate->GetCurrentContext(), receiver, argc, argv);
   CHECK(!isolate->IsDead());
 
   if (!depth)

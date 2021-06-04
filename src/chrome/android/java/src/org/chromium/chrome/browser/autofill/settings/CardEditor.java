@@ -18,7 +18,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill.CreditCardScanner;
 import org.chromium.chrome.browser.autofill.CreditCardScanner.Delegate;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -30,10 +29,11 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorFi
 import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
-import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorSupplier;
 import org.chromium.components.payments.BasicCardUtils;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
@@ -292,8 +292,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> implements
         };
         mCalendar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
+        TabModelSelector tabModelSelector =
+                TabModelSelectorSupplier.getValueOrNullFrom(mWebContents.getTopLevelNativeWindow());
+        mIsIncognito = tabModelSelector != null && tabModelSelector.isIncognitoSelected();
     }
 
     private boolean isCardNumberLengthMaximum(@Nullable CharSequence value) {

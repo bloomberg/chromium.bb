@@ -60,9 +60,9 @@ TEST_F(ShaderModuleValidationTest, CreationSuccess) {
 // be compiled.
 TEST_F(ShaderModuleValidationTest, FragmentOutputLocationExceedsMaxColorAttachments) {
     std::ostringstream stream;
-    stream << "[[location(" << kMaxColorAttachments << R"()]] var<out> fragColor : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+    stream << "[[stage(fragment)]] fn main() -> [[location(" << kMaxColorAttachments
+           << R"()]]  vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })";
     ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, stream.str().c_str()));
 }
@@ -157,26 +157,23 @@ TEST_F(ShaderModuleValidationTest, MultisampledArrayTexture) {
 }
 
 // Tests that shader module compilation messages can be queried.
-TEST_F(ShaderModuleValidationTest, CompilationMessages) {
+TEST_F(ShaderModuleValidationTest, GetCompilationMessages) {
     // This test works assuming ShaderModule is backed by a dawn_native::ShaderModuleBase, which
     // is not the case on the wire.
     DAWN_SKIP_TEST_IF(UsesWire());
 
-    std::ostringstream stream;
-    stream << R"([[location(0)]] var<out> fragColor : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-        })";
-    wgpu::ShaderModule shaderModule = utils::CreateShaderModule(device, stream.str().c_str());
+    wgpu::ShaderModule shaderModule = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        })");
 
     dawn_native::ShaderModuleBase* shaderModuleBase =
         reinterpret_cast<dawn_native::ShaderModuleBase*>(shaderModule.Get());
-    shaderModuleBase->CompilationMessages()->ClearMessages();
-    shaderModuleBase->CompilationMessages()->AddMessage("Info Message");
-    shaderModuleBase->CompilationMessages()->AddMessage("Warning Message",
-                                                        wgpu::CompilationMessageType::Warning);
-    shaderModuleBase->CompilationMessages()->AddMessage("Error Message",
-                                                        wgpu::CompilationMessageType::Error, 3, 4);
+    dawn_native::OwnedCompilationMessages* messages = shaderModuleBase->GetCompilationMessages();
+    messages->ClearMessages();
+    messages->AddMessage("Info Message");
+    messages->AddMessage("Warning Message", wgpu::CompilationMessageType::Warning);
+    messages->AddMessage("Error Message", wgpu::CompilationMessageType::Error, 3, 4);
 
     auto callback = [](WGPUCompilationInfoRequestStatus status, const WGPUCompilationInfo* info,
                        void* userdata) {

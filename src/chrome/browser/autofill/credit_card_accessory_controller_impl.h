@@ -26,7 +26,7 @@ class CreditCardAccessoryControllerImpl
 
   // AccessoryController:
   void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
-  base::Optional<autofill::AccessorySheetData> GetSheetData() const override;
+  absl::optional<autofill::AccessorySheetData> GetSheetData() const override;
   void OnFillingTriggered(FieldGlobalId focused_field_id,
                           const UserInfo::Field& selection) override;
   void OnOptionSelected(AccessoryAction selected_action) override;
@@ -47,7 +47,7 @@ class CreditCardAccessoryControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> mf_controller,
       autofill::PersonalDataManager* personal_data_manager,
-      autofill::AutofillManager* af_manager,
+      autofill::BrowserAutofillManager* af_manager,
       autofill::AutofillDriver* af_driver);
 
  private:
@@ -61,21 +61,29 @@ class CreditCardAccessoryControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> mf_controller,
       PersonalDataManager* personal_data_manager,
-      autofill::AutofillManager* af_manager,
+      autofill::BrowserAutofillManager* af_manager,
       autofill::AutofillDriver* af_driver);
 
   void FetchSuggestionsFromPersonalDataManager();
   base::WeakPtr<ManualFillingController> GetManualFillingController();
   autofill::AutofillDriver* GetDriver();
-  autofill::AutofillManager* GetManager();
+  autofill::BrowserAutofillManager* GetManager() const;
 
   // Pointers to cards owned by PersonalDataManager.
   std::vector<CreditCard*> cards_cache_;
   content::WebContents* web_contents_;
   base::WeakPtr<ManualFillingController> mf_controller_;
   PersonalDataManager* const personal_data_manager_;
-  autofill::AutofillManager* af_manager_for_testing_ = nullptr;
+  autofill::BrowserAutofillManager* af_manager_for_testing_ = nullptr;
   autofill::AutofillDriver* af_driver_for_testing_ = nullptr;
+
+  // Cached cards that are already unmasked by the user. These are shown to the
+  // user in plaintext and won't require any authentication when filling is
+  // triggered.
+  std::vector<const CachedServerCardInfo*> cached_server_cards_;
+
+  // The observer to notify if available suggestions change.
+  FillingSourceObserver source_observer_;
 
   // OnFillingTriggered() sets this so that OnCreditCardFetched() can assert
   // that the focused frame has not changed and knows the field to be filled.

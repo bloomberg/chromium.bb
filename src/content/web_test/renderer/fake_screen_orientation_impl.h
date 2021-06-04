@@ -5,8 +5,6 @@
 #ifndef CONTENT_WEB_TEST_RENDERER_FAKE_SCREEN_ORIENTATION_IMPL_H_
 #define CONTENT_WEB_TEST_RENDERER_FAKE_SCREEN_ORIENTATION_IMPL_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -37,7 +35,7 @@ class FakeScreenOrientationImpl : public device::mojom::ScreenOrientation {
   bool UpdateDeviceOrientation(blink::WebView* web_view,
                                blink::mojom::ScreenOrientation orientation);
 
-  base::Optional<blink::mojom::ScreenOrientation> CurrentOrientationType()
+  absl::optional<blink::mojom::ScreenOrientation> CurrentOrientationType()
       const;
   bool IsDisabled() const { return is_disabled_; }
   void SetDisabled(blink::WebView* web_view, bool disabled);

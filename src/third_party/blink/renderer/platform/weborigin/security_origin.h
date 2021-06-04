@@ -141,15 +141,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // scheme (e.g. "http" => 80).
   uint16_t Port() const { return port_; }
 
-  // Returns true if a given URL is secure, based either directly on its
-  // own protocol, or, when relevant, on the protocol of its "inner URL"
-  // Protocols like blob: and filesystem: fall into this latter category.
-  // This method is a stricter alternative to "potentially trustworthy url":
-  // https://w3c.github.io/webappsec-secure-contexts/#potentially-trustworthy-url
-  // TODO(crbug.com/1153336): Deprecated, to be removed. Please use
-  // network::IsUrlPotentiallyTrustworthy() instead.
-  static bool IsSecure(const KURL&);
-
   // Returns true if this SecurityOrigin can script objects in the given
   // SecurityOrigin. This check is similar to `IsSameOriginDomainWith()`, but
   // additionally takes "universal access" flag into account, as well as the
@@ -423,13 +414,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Get the nonce associated with this origin, if it is opaque. This should be
   // used only when trying to send an Origin across an IPC pipe or comparing
   // blob URL's opaque origins in the thread-safe way.
-  base::Optional<base::UnguessableToken> GetNonceForSerialization() const;
+  absl::optional<base::UnguessableToken> GetNonceForSerialization() const;
 
   const String protocol_ = g_empty_string;
   const String host_ = g_empty_string;
   String domain_ = g_empty_string;
   const uint16_t port_ = 0;
-  const base::Optional<url::Origin::Nonce> nonce_if_opaque_;
+  const absl::optional<url::Origin::Nonce> nonce_if_opaque_;
   bool universal_access_ = false;
   bool domain_was_set_in_dom_ = false;
   bool can_load_local_resources_ = false;

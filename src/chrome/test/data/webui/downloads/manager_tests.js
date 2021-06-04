@@ -118,6 +118,7 @@ suite('manager tests', function() {
     flush();
     const list = manager.$$('iron-list');
     assertTrue(list.hidden);
+    assertTrue(toastManager.isToastOpen);
   });
 
   test('toolbar hasClearableDownloads set correctly', async () => {
@@ -182,6 +183,21 @@ suite('manager tests', function() {
     toastManager.show('');
     assertTrue(toastManager.isToastOpen);
     manager.$$('cr-toast-manager cr-button').click();
+    assertFalse(toastManager.isToastOpen);
+  });
+
+  test('toast is not hidden when itself is clicked', () => {
+    toastManager.show('');
+    assertTrue(toastManager.isToastOpen);
+    toastManager.$$('#toast').click();
+    assertTrue(toastManager.isToastOpen);
+  });
+
+  test('toast is hidden when page is clicked', () => {
+    toastManager.show('');
+    assertTrue(toastManager.isToastOpen);
+
+    document.body.click();
     assertFalse(toastManager.isToastOpen);
   });
 

@@ -30,6 +30,7 @@ extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
 extern const base::Feature kIPHDesktopPwaInstallFeature;
 extern const base::Feature kIPHProfileSwitchFeature;
+extern const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature;
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -96,6 +97,9 @@ extern const base::Feature kIPHChromeReengagementNotification2Feature;
 extern const base::Feature kIPHChromeReengagementNotification3Feature;
 extern const base::Feature kIPHPwaInstallAvailableFeature;
 extern const base::Feature kIPHShareScreenshotFeature;
+extern const base::Feature kIPHWebFeedFollowFeature;
+extern const base::Feature kIPHWebFeedPostFollowDialogFeature;
+extern const base::Feature kIPHSharedHighlightingBuilder;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

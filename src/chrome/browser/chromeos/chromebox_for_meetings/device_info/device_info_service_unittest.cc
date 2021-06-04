@@ -7,11 +7,12 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -25,6 +26,7 @@
 #include "chromeos/services/chromebox_for_meetings/public/cpp/service_connection.h"
 #include "chromeos/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
 #include "chromeos/services/chromebox_for_meetings/public/mojom/meet_devices_info.mojom.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -32,6 +34,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace cfm {
@@ -57,6 +60,8 @@ class CfmDeviceInfoServiceTest : public ::testing::Test {
     ServiceConnection::UseFakeServiceConnectionForTesting(
         &fake_service_connection_);
     DeviceInfoService::Initialize();
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &fake_statistics_provider_);
   }
 
   void TearDown() override {
@@ -70,14 +75,16 @@ class CfmDeviceInfoServiceTest : public ::testing::Test {
   }
 
   void UpdatePolicyInfo(int64_t timestamp,
-                        std::string device_id,
+                        std::string directory_api_id,
                         std::string service_account_id,
-                        int64_t gaia_id) {
+                        int64_t gaia_id,
+                        std::string cros_device_id) {
     device_policy_.policy_data().set_timestamp(timestamp);
-    device_policy_.policy_data().set_device_id(device_id);
+    device_policy_.policy_data().set_directory_api_id(directory_api_id);
     device_policy_.policy_data().set_service_account_identity(
         service_account_id);
     device_policy_.policy_data().set_gaia_id(base::NumberToString(gaia_id));
+    device_policy_.policy_data().set_device_id(cros_device_id);
     device_policy_.Build();
     session_manager_client_.set_device_policy(device_policy_.GetBlob());
     ash::DeviceSettingsService::Get()->Load();
@@ -128,12 +135,13 @@ class CfmDeviceInfoServiceTest : public ::testing::Test {
 
  protected:
   FakeCfmServiceContext context_;
-  mojo::Remote<mojom::MeetDevicesInfo> device_info_remote_;
-  mojo::ReceiverSet<mojom::CfmServiceContext> context_receiver_set_;
-  mojo::Remote<mojom::CfmServiceAdaptor> adaptor_remote_;
+  FakeServiceConnectionImpl fake_service_connection_;
   ash::ScopedTestDeviceSettingsService scoped_device_settings_service_;
   chromeos::FakeSessionManagerClient session_manager_client_;
-  FakeServiceConnectionImpl fake_service_connection_;
+  chromeos::system::FakeStatisticsProvider fake_statistics_provider_;
+  mojo::ReceiverSet<mojom::CfmServiceContext> context_receiver_set_;
+  mojo::Remote<mojom::CfmServiceAdaptor> adaptor_remote_;
+  mojo::Remote<mojom::MeetDevicesInfo> device_info_remote_;
   policy::DevicePolicyBuilder device_policy_;
 
   // Require a full task environment for testing device policy
@@ -165,19 +173,22 @@ TEST_F(CfmDeviceInfoServiceTest, TestPolicyInfo) {
   run_loop.RunUntilIdle();
 
   int64_t timestamp = 10;
-  std::string device_id = "device_id";
+  std::string directory_api_id = "device_id";
   std::string service_account_id = "service_account_id";
   int64_t gaia_id = 20;
-  UpdatePolicyInfo(timestamp, device_id, service_account_id, gaia_id);
+  std::string cros_device_id = "cros_device_id";
+  UpdatePolicyInfo(timestamp, directory_api_id, service_account_id, gaia_id,
+                   cros_device_id);
 
   base::RunLoop mojo_loop;
   details_remote->GetPolicyInfo(
       base::BindLambdaForTesting([&](mojom::PolicyInfoPtr policy_ptr) {
         ASSERT_EQ(timestamp, policy_ptr->timestamp_ms);
-        ASSERT_EQ(device_id, policy_ptr->device_id);
+        ASSERT_EQ(directory_api_id, policy_ptr->device_id);
         ASSERT_EQ(service_account_id,
                   policy_ptr->service_account_email_address);
         ASSERT_EQ(gaia_id, policy_ptr->service_account_gaia_id);
+        ASSERT_EQ(cros_device_id, policy_ptr->cros_device_id);
         mojo_loop.Quit();
       }));
   mojo_loop.Run();
@@ -198,6 +209,26 @@ TEST_F(CfmDeviceInfoServiceTest, TestSysInfo) {
       base::BindLambdaForTesting([&](mojom::SysInfoPtr info_ptr) {
         ASSERT_FALSE(info_ptr.is_null());
         EXPECT_EQ(info_ptr->release_version, kReleaseVersion);
+        mojo_loop.Quit();
+      }));
+  mojo_loop.Run();
+}
+
+// Crashes on linux-cfm-rel. crbug.com/1209841
+TEST_F(CfmDeviceInfoServiceTest, DISABLED_TestMachineStatisticsInfo) {
+  const std::string kExpectedHwid = "kExpectedHwid";
+
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kHardwareClassKey, kExpectedHwid);
+
+  const auto& details_remote = GetDeviceInfoRemote();
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop mojo_loop;
+  details_remote->GetMachineStatisticsInfo(base::BindLambdaForTesting(
+      [&](mojom::MachineStatisticsInfoPtr stats_ptr) {
+        ASSERT_FALSE(stats_ptr.is_null());
+        EXPECT_EQ(stats_ptr->hwid, kExpectedHwid);
         mojo_loop.Quit();
       }));
   mojo_loop.Run();

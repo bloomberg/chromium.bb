@@ -26,13 +26,13 @@
 #include "quic/core/qpack/qpack_encoder_stream_sender.h"
 #include "quic/core/qpack/qpack_receive_stream.h"
 #include "quic/core/qpack/qpack_send_stream.h"
-#include "quic/core/quic_circular_deque.h"
 #include "quic/core/quic_session.h"
 #include "quic/core/quic_time.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_containers.h"
 #include "quic/platform/api/quic_export.h"
+#include "common/quiche_circular_deque.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
 
 namespace quic {
@@ -250,12 +250,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   QuicHeadersStream* headers_stream() { return headers_stream_; }
 
   const QuicHeadersStream* headers_stream() const { return headers_stream_; }
-
-  // Returns whether server push is enabled.
-  // For a Google QUIC client this always returns false.
-  // For a Google QUIC server this is set by incoming SETTINGS_ENABLE_PUSH.
-  // For an IETF QUIC client or server this returns false.
-  bool server_push_enabled() const;
 
   // Called when the control stream receives HTTP/3 SETTINGS.
   // Returns false in case of 0-RTT if received settings are incompatible with
@@ -683,10 +677,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // constructor. As long as it is not the assigned value, that would indicate
   // an use-after-free.
   int32_t destruction_indicator_;
-
-  // Used in Google QUIC only.  Set every time SETTINGS_ENABLE_PUSH is received.
-  // Defaults to true.
-  bool server_push_enabled_;
 
   // The identifier in the most recently received GOAWAY frame.  Unset if no
   // GOAWAY frame has been received yet.

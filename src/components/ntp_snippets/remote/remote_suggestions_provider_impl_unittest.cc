@@ -124,7 +124,7 @@ const char kImageUrl[] = "http://image/image.png";
 
 const char kSuggestionUrl2[] = "http://foo.com/bar";
 
-const char kTestJsonDefaultCategoryTitle[] = "Some title";
+const char16_t kTestJsonDefaultCategoryTitle[] = u"Some title";
 
 const int kOtherCategoryId = 2;
 const int kUnknownRemoteCategoryId = 1234;
@@ -284,7 +284,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     } else {
       remote_suggestions_status_service =
           std::make_unique<RemoteSuggestionsStatusServiceImpl>(
-              /*has_signed_in=*/false, utils_.pref_service(), std::string());
+              /*has_signed_in=*/false, utils_.pref_service(),
+              std::vector<std::string>());
     }
     remote_suggestions_status_service_ =
         remote_suggestions_status_service.get();
@@ -395,7 +396,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   void FetchTheseSuggestions(
       bool interactive_request,
       Status status,
-      base::Optional<std::vector<FetchedCategory>> fetched_categories) {
+      absl::optional<std::vector<FetchedCategory>> fetched_categories) {
     RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
     EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
         .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
@@ -410,7 +411,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       const std::set<std::string>& known_suggestion_ids,
       FetchDoneCallback fetch_done_callback,
       Status status,
-      base::Optional<std::vector<FetchedCategory>> fetched_categories) {
+      absl::optional<std::vector<FetchedCategory>> fetched_categories) {
     RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
     EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
         .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
@@ -591,8 +592,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Full) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
-  const std::u16string test_default_title =
-      base::UTF8ToUTF16(kTestJsonDefaultCategoryTitle);
+  const std::u16string test_default_title = kTestJsonDefaultCategoryTitle;
 
   // Don't send an initial response -- we want to test what happens without any
   // server status.
@@ -1476,7 +1476,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ASSERT_FALSE(snippets_callback.is_null());
   std::move(snippets_callback)
       .Run(Status(StatusCode::TEMPORARY_ERROR, "Received invalid JSON"),
-           base::nullopt);
+           absl::nullopt);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1487,7 +1487,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   FetchTheseSuggestions(
       /*interactive_request=*/false,
       Status(StatusCode::TEMPORARY_ERROR, "Received invalid JSON"),
-      base::nullopt);
+      absl::nullopt);
   EXPECT_THAT(provider()->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
@@ -1514,7 +1514,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   FetchTheseSuggestions(
       /*interactive_request=*/false,
       Status(StatusCode::TEMPORARY_ERROR, "Received invalid JSON"),
-      base::nullopt);
+      absl::nullopt);
   // This should not have changed the existing suggestions.
   EXPECT_THAT(
       provider()->GetSuggestionsForTesting(articles_category()),
@@ -1760,7 +1760,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
 
   FetchTheseSuggestions(/*interactive_request=*/true,
                         Status(StatusCode::TEMPORARY_ERROR, "message"),
-                        base::nullopt);
+                        absl::nullopt);
   // Error responses don't update the list of suggestions and shouldn't
   // influence these metrics.
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
@@ -2116,7 +2116,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   provider()->RefetchInTheBackground(
       RemoteSuggestionsProvider::FetchStatusCallback());
   RunUntilIdle();
-  std::move(snippets_callback).Run(Status::Success(), base::nullopt);
+  std::move(snippets_callback).Run(Status::Success(), absl::nullopt);
   // TODO(jkrcal): Move together with the pref storage into the scheduler.
   EXPECT_EQ(
       SerializeTime(simple_test_clock.Now()),
@@ -3024,7 +3024,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // Next fetch returns an error (with an empty section).
   FetchTheseSuggestions(/*interactive_request=*/true,
                         Status(StatusCode::TEMPORARY_ERROR, "some error"),
-                        base::nullopt);
+                        absl::nullopt);
 
   // Articles category should stay unchanged.
   EXPECT_EQ(CategoryStatus::AVAILABLE,
@@ -3140,7 +3140,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   // After the results come, the status is flipped back to AVAILABLE.
   std::move(response_callback)
-      .Run(Status(StatusCode::TEMPORARY_ERROR, "some error"), base::nullopt);
+      .Run(Status(StatusCode::TEMPORARY_ERROR, "some error"), absl::nullopt);
   // The category is available with the previous suggestion.
   EXPECT_EQ(CategoryStatus::AVAILABLE,
             observer().StatusForCategory(articles_category()));
@@ -3281,7 +3281,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   // After the results come, the status is flipped back to AVAILABLE.
   std::move(response_callback)
-      .Run(Status(StatusCode::TEMPORARY_ERROR, "some error"), base::nullopt);
+      .Run(Status(StatusCode::TEMPORARY_ERROR, "some error"), absl::nullopt);
   // The category is available, with no suggestions.
   EXPECT_EQ(CategoryStatus::AVAILABLE,
             observer().StatusForCategory(articles_category()));

@@ -19,6 +19,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -26,7 +27,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/timer/timer.h"
@@ -152,6 +152,22 @@ TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
   photo_controller()->StopScreenUpdate();
 }
 
+// Tests that image details is correctly set.
+TEST_F(AmbientPhotoControllerTest, ShouldSetDetailsCorrectly) {
+  // Start to refresh images.
+  photo_controller()->StartScreenUpdate();
+  FastForwardToNextImage();
+  PhotoWithDetails image =
+      photo_controller()->ambient_backend_model()->GetNextImage();
+  EXPECT_FALSE(image.IsNull());
+
+  // Fake details defined in fake_ambient_backend_controller_impl.cc.
+  EXPECT_EQ(image.details, "fake-photo-attribution");
+
+  // Stop to refresh images.
+  photo_controller()->StopScreenUpdate();
+}
+
 // Test that image is saved.
 TEST_F(AmbientPhotoControllerTest, ShouldSaveImagesOnDisk) {
   // Start to refresh images. It will download two images immediately and write
@@ -253,6 +269,28 @@ TEST_F(AmbientPhotoControllerTest, ShouldReadCacheWhenImageDownloadingFailed) {
   task_environment()->FastForwardBy(0.2 * kTopicFetchInterval);
   image = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_FALSE(image.IsNull());
+}
+
+// Test that image details is read from disk.
+TEST_F(AmbientPhotoControllerTest, ShouldPopulateDetailsWhenReadFromCache) {
+  FetchImage();
+  FastForwardToNextImage();
+  // Topics is empty. Will read from cache, which is empty.
+  auto image = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  EXPECT_TRUE(image.IsNull());
+
+  // Save a file to check if it gets read for display.
+  std::string data("cached image");
+  std::string details("image details");
+  WriteCacheDataBlocking(/*cache_index=*/0, &data, &details);
+
+  // Reset variables in photo controller.
+  photo_controller()->StopScreenUpdate();
+  FetchImage();
+  FastForwardToNextImage();
+  image = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  EXPECT_FALSE(image.IsNull());
+  EXPECT_EQ(image.details, details);
 }
 
 // Test that image is read from disk when image decoding failed.

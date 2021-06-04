@@ -40,9 +40,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
-#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/buildflags.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -61,7 +60,7 @@ namespace blink {
 Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   DCHECK(node);
   if (node->isConnected())
-    return &node->GetDocument().TreeRootDocument();
+    return &node->GetDocument();
 
   if (auto* attr = DynamicTo<Attr>(node)) {
     Node* owner_element = attr->ownerElement();

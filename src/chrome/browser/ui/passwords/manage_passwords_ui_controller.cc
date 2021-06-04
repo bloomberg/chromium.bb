@@ -282,7 +282,7 @@ void ManagePasswordsUIController::OnCredentialLeak(
     ClearPopUpFlagForBubble();
 
   auto* raw_controller =
-      new CredentialLeakDialogControllerImpl(this, leak_type, origin);
+      new CredentialLeakDialogControllerImpl(this, leak_type);
   dialog_controller_.reset(raw_controller);
   raw_controller->ShowCredentialLeakPrompt(
       CreateCredentialLeakPrompt(raw_controller));
@@ -634,7 +634,8 @@ void ManagePasswordsUIController::OnDialogHidden() {
 
 void ManagePasswordsUIController::OnLeakDialogHidden() {
   dialog_controller_.reset();
-  if (GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+  if (GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+      GetState() == password_manager::ui::PENDING_PASSWORD_STATE) {
     bubble_status_ = BubbleStatus::SHOULD_POP_UP;
     UpdateBubbleAndIconVisibility();
   }

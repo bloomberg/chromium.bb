@@ -44,7 +44,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
-  void DidChangeThemeColor(base::Optional<::SkColor> theme_color) override;
+  void DidChangeThemeColor(absl::optional<::SkColor> theme_color) override;
   void DidChangeBackgroundColor(SkColor background_color,
                                 bool color_adjust) override;
   void DidFailLoadWithError(const ::blink::KURL& url,
@@ -73,7 +73,6 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidFinishLoad(const KURL& validated_url) override;
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
-  void RenderFallbackContentInParentProcess() override;
   void UpdateTitle(const WTF::String& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
@@ -113,6 +112,11 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       Vector<mojom::blink::MenuItemPtr> menu_items,
       bool right_aligned,
       bool allow_multiple_selection) override;
+  void CreateNewPopupWidget(
+      mojo::PendingAssociatedReceiver<mojom::blink::PopupWidgetHost>
+          popup_widget_host,
+      mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost> widget_host,
+      mojo::PendingAssociatedRemote<mojom::blink::Widget> widget) override;
   void ShowContextMenu(
       mojo::PendingAssociatedRemote<mojom::blink::ContextMenuClient>
           context_menu_client,
@@ -126,7 +130,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       const blink::FrameToken& child_frame_token,
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
-      const base::Optional<LocalFrameToken>& opener_frame) override;
+      const absl::optional<LocalFrameToken>& opener_frame) override;
   void DidChangeCSPAttribute(const blink::FrameToken& child_frame_token,
                              network::mojom::blink::ContentSecurityPolicyPtr
                                  parsed_csp_attribute) override;

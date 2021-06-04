@@ -7,16 +7,17 @@
 #include <cstdint>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/content/scanning/scanning_uma.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +27,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/scanning/lorgnette_scanner_manager.h"
 #include "chrome/browser/ash/scanning/scanning_type_converters.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -58,6 +60,12 @@ std::string CreateFilename(const base::Time::Exploded& start_time,
                            const mojo_ipc::FileType file_type) {
   std::string file_ext;
   switch (file_type) {
+    case mojo_ipc::FileType::kSearchablePdf:
+      DCHECK(base::FeatureList::IsEnabled(
+          chromeos::features::kScanAppSearchablePdf));
+      // Temporarily set searchable pdfs to follow png pipeline while
+      // implementing.
+      FALLTHROUGH;
     case mojo_ipc::FileType::kPng:
       file_ext = "png";
       break;
@@ -202,6 +210,11 @@ base::FilePath SavePage(const base::FilePath& scan_to_path,
       return base::FilePath();
     }
   }
+  // Temporarily set searchable pdfs to follow png pipeline while implementing.
+  else if (file_type == mojo_ipc::FileType::kSearchablePdf) {
+    if (!WriteImage(scan_to_path.Append(filename), scanned_image))
+      return base::FilePath();
+  }
 
   return scan_to_path.Append(filename);
 }
@@ -233,7 +246,7 @@ scanning::ScanJobFailureReason GetScanJobFailureReason(
 // Records the histograms based on the scan job result.
 void RecordScanJobResult(
     bool success,
-    const base::Optional<scanning::ScanJobFailureReason>& failure_reason,
+    const absl::optional<scanning::ScanJobFailureReason>& failure_reason,
     int num_pages_scanned) {
   base::UmaHistogramBoolean("Scanning.ScanJobSuccessful", success);
   if (success) {
@@ -379,7 +392,7 @@ void ScanService::OnScannerNamesReceived(
 
 void ScanService::OnScannerCapabilitiesReceived(
     GetScannerCapabilitiesCallback callback,
-    const base::Optional<lorgnette::ScannerCapabilities>& capabilities) {
+    const absl::optional<lorgnette::ScannerCapabilities>& capabilities) {
   if (!capabilities) {
     LOG(ERROR) << "Failed to get scanner capabilities.";
     std::move(callback).Run(mojo_ipc::ScannerCapabilities::New());
@@ -444,12 +457,10 @@ void ScanService::OnPageReceived(const base::FilePath& scan_to_path,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ScanService::OnScanCompleted(bool success,
-                                  lorgnette::ScanFailureMode failure_mode) {
-  DCHECK_EQ(success, failure_mode == lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
-
+void ScanService::OnScanCompleted(lorgnette::ScanFailureMode failure_mode) {
   // |scanned_images_| only has data for PDF scans.
-  if (success && !scanned_images_.empty()) {
+  if (failure_mode == lorgnette::SCAN_FAILURE_MODE_NO_FAILURE &&
+      !scanned_images_.empty()) {
     DCHECK(!scanned_file_paths_.empty());
     base::PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
@@ -467,7 +478,7 @@ void ScanService::OnScanCompleted(bool success,
           [](lorgnette::ScanFailureMode failure_mode) { return failure_mode; },
           failure_mode),
       base::BindOnce(&ScanService::OnAllPagesSaved,
-                     weak_ptr_factory_.GetWeakPtr(), success));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScanService::OnCancelCompleted(bool success) {
@@ -489,12 +500,9 @@ void ScanService::OnPageSaved(const base::FilePath& saved_file_path) {
   scanned_file_paths_.push_back(saved_file_path);
 }
 
-void ScanService::OnAllPagesSaved(bool success,
-                                  lorgnette::ScanFailureMode failure_mode) {
-  DCHECK_EQ(success, failure_mode == lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
-
-  base::Optional<scanning::ScanJobFailureReason> failure_reason = base::nullopt;
-  if (!success) {
+void ScanService::OnAllPagesSaved(lorgnette::ScanFailureMode failure_mode) {
+  absl::optional<scanning::ScanJobFailureReason> failure_reason = absl::nullopt;
+  if (failure_mode != lorgnette::SCAN_FAILURE_MODE_NO_FAILURE) {
     failure_reason = GetScanJobFailureReason(failure_mode);
     scanned_file_paths_.clear();
   } else if (page_save_failed_) {
@@ -507,8 +515,9 @@ void ScanService::OnAllPagesSaved(bool success,
       mojo::ConvertTo<mojo_ipc::ScanResult>(
           static_cast<lorgnette::ScanFailureMode>(failure_mode)),
       scanned_file_paths_);
-  RecordScanJobResult(success && !page_save_failed_, failure_reason,
-                      num_pages_scanned_);
+  RecordScanJobResult(failure_mode == lorgnette::SCAN_FAILURE_MODE_NO_FAILURE &&
+                          !page_save_failed_,
+                      failure_reason, num_pages_scanned_);
 }
 
 void ScanService::ClearScanState() {

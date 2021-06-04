@@ -222,6 +222,7 @@ Status DecodeImageAPNG(Span<const uint8_t> bytes, ThreadPool* pool,
   bool isAnimated = false;
   bool skipFirst = false;
   bool hasInfo = false;
+  bool all_dispose_bg = true;
   APNGFrame frameRaw = {};
 
   if (!(f = fmemopen((void*)bytes.data(), bytes.size(), "rb"))) {
@@ -292,7 +293,7 @@ Status DecodeImageAPNG(Span<const uint8_t> bytes, ThreadPool* pool,
               bundle.origin.x0 = x0;
               bundle.origin.y0 = y0;
               // TODO(veluca): this could in principle be implemented.
-              if (last_base_was_none &&
+              if (last_base_was_none && !all_dispose_bg &&
                   (x0 != 0 || y0 != 0 || w0 != w || h0 != h || bop != 0)) {
                 return JXL_FAILURE(
                     "APNG with dispose-to-0 is not supported for non-full or "
@@ -302,9 +303,11 @@ Status DecodeImageAPNG(Span<const uint8_t> bytes, ThreadPool* pool,
                 case 0:
                   bundle.use_for_next_frame = true;
                   last_base_was_none = false;
+                  all_dispose_bg = false;
                   break;
                 case 2:
                   bundle.use_for_next_frame = false;
+                  all_dispose_bg = false;
                   break;
                 default:
                   bundle.use_for_next_frame = false;
@@ -345,7 +348,10 @@ Status DecodeImageAPNG(Span<const uint8_t> bytes, ThreadPool* pool,
             }
           }
 
-          if (id == id_IEND) { errorstate = false; break; }
+          if (id == id_IEND) {
+            errorstate = false;
+            break;
+          }
           // At this point the old frame is done. Let's start a new one.
           w0 = png_get_uint_32(chunk.p + 12);
           h0 = png_get_uint_32(chunk.p + 16);

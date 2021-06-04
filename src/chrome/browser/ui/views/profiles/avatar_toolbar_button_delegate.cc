@@ -42,11 +42,6 @@ ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
       profile->GetPath());
 }
 
-bool IsGenericProfile(const ProfileAttributesEntry& entry) {
-  return entry.GetAvatarIconIndex() == 0 &&
-         GetProfileAttributesStorage().GetNumberOfProfiles() == 1;
-}
-
 // Returns the avatar image for the current profile. May be called only in
 // "normal" states where the user is guaranteed to have an avatar image (i.e.
 // not kGuestSession and not kIncognitoProfile).
@@ -144,7 +139,7 @@ gfx::Image AvatarToolbarButtonDelegate::GetGaiaAccountImage() const {
       IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager &&
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
-    base::Optional<AccountInfo> account_info =
+    absl::optional<AccountInfo> account_info =
         identity_manager
             ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
                 identity_manager->GetPrimaryAccountId(
@@ -177,27 +172,22 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
   if (profile_->IsOffTheRecord())
     return AvatarToolbarButton::State::kIncognitoProfile;
 
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile_);
-  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
-  if (!entry ||  // This can happen if the user deletes the current profile.
-      (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
-       IsGenericProfile(*entry))) {
-    return AvatarToolbarButton::State::kGenericProfile;
-  }
-
   if (identity_animation_state_ == IdentityAnimationState::kShowing) {
     return AvatarToolbarButton::State::kAnimatedUserIdentity;
   }
 
   if (!ProfileSyncServiceFactory::IsSyncAllowed(profile_) ||
-      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+      !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount(
+          signin::ConsentLevel::kSync)) {
     return AvatarToolbarButton::State::kNormal;
   }
 
   // Show any existing sync errors.
-  const sync_ui_util::AvatarSyncErrorType error =
+  const absl::optional<sync_ui_util::AvatarSyncErrorType> error =
       sync_ui_util::GetAvatarSyncErrorType(profile_);
+  if (!error)
+    return AvatarToolbarButton::State::kNormal;
+
   if (error == sync_ui_util::AUTH_ERROR &&
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
     return AvatarToolbarButton::State::kSyncPaused;
@@ -206,9 +196,7 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
   if (error == sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR)
     return AvatarToolbarButton::State::kPasswordsOnlySyncError;
 
-  return error == sync_ui_util::NO_SYNC_ERROR
-             ? AvatarToolbarButton::State::kNormal
-             : AvatarToolbarButton::State::kSyncError;
+  return AvatarToolbarButton::State::kSyncError;
 }
 
 void AvatarToolbarButtonDelegate::ShowHighlightAnimation() {
@@ -367,7 +355,7 @@ void AvatarToolbarButtonDelegate::OnExtendedAccountInfoRemoved(
 }
 
 void AvatarToolbarButtonDelegate::OnStateChanged(syncer::SyncService*) {
-  sync_ui_util::AvatarSyncErrorType error =
+  const absl::optional<sync_ui_util::AvatarSyncErrorType> error =
       sync_ui_util::GetAvatarSyncErrorType(profile_);
   if (last_avatar_error_ == error)
     return;

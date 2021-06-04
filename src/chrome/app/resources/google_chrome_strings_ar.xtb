@@ -6,11 +6,11 @@
 <translation id="1051826050538111504">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة إعداداتك المفضّلة. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في الإعدادات المفضّلة.</translation>
 <translation id="1088300314857992706">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chrome سابقًا</translation>
-<translation id="1097330777386562916">‏محو بيانات الموقع وملفات تعريف الارتباط عند الخروج من Chrome</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="1125124144982679672">‏مَن يستخدم متصفِّح Chrome؟</translation>
 <translation id="1142745911746664600">‏تعذّرت إعادة التحميل Chrome</translation>
 <translation id="1154147086299354128">‏&amp;فتح في Chrome</translation>
+<translation id="1278833599417554002">‏إعادة تشغيل متصفِّح Chrome لتحديثه</translation>
 <translation id="1293325835983155583">‏يشترط <ph name="MANAGER" /> عليك قراءة بنود الخدمة التالية وقبولها قبل استخدام هذا الجهاز، مع العلم بأنّ هذه البنود لا توسِّع نطاق بنود نظام التشغيل Google Chrome ولا تعدلِّها ولا تفرض قيودًا عليها.</translation>
 <translation id="1302523850133262269">‏يُرجى الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
 <translation id="137466361146087520">‏الإصدار التجريبي من Google Chrome</translation>
@@ -48,6 +48,7 @@
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2094919256425865063">‏هل تريد الخروج من Chrome على أي حال؟</translation>
 <translation id="2120620239521071941">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
+<translation id="2121284319307530122">‏إعادة تشغيل متصفِّح Chrome لتحديثه</translation>
 <translation id="2123055963409958220">‏يمكنك المساعدة في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">‏يُرجى إعادة تشغيل Chrome الآن</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
@@ -58,7 +59,6 @@
 <translation id="234869673307233423">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى إعادة المحاولة.</translation>
 <translation id="235650106824528204">‏يمكن لمشرف الملف الشخصي للعمل إزالة أي بيانات مرتبطة بمتصفِّح Chrome والتي يتم إنشاؤها أثناء استخدام هذا الملف الشخصي (مثل إنشاء الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى).<ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
-<translation id="245659736593643560">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج إضافي مفتوح المصدر<ph name="END_LINK_CROS_OSS" />، كما هو الحال في <ph name="BEGIN_LINK_LINUX_OSS" />بيئة تطوير أدوات Linux (إصدار تجريبي)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">‏يرغب Google Chrome في تصدير كلمات مرورك، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2534507159460261402">‏Google Pay (تم النسخ إلى Chrome)</translation>
@@ -71,6 +71,7 @@
 <translation id="2652691236519827073">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
+<translation id="2742320827292110288">‏تحذير: لا يستطيع Google Chrome منع الإضافات من تسجيل سجل التصفُّح الخاص بك. لإيقاف هذه الإضافة في وضع التصفُّح المتخفي، يجب إلغاء تحديد هذا الخيار.</translation>
 <translation id="2765403129283291972">‏يحتاج Chrome إلى إذن للوصول إلى الميكروفون من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="2770231113462710648">تغيير المتصفح التلقائي إلى:</translation>
 <translation id="2775140325783767197">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى التحقّق من اتصال الإنترنت.</translation>
@@ -166,11 +167,11 @@
 <translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="521447420733633466">‏في حال مشاركة جهاز مع الأصدقاء والعائلة، يمكنهم الحصول على تجربة تصفّح منفصلة وإعداد Chrome على النحو المفضّل لديهم.</translation>
 <translation id="5251420635869119124">‏يمكن للضيف استخدام Chrome بدون أن يترك أي أثر وراءه.</translation>
-<translation id="532046782124376502">‏تحذير: يتعذّر على Google Chrome منع الإضافات من تسجيل سجل تصفحك. لإيقاف هذه الإضافة في وضع التصفح المتخفي، ألغِ تحديد هذا الخيار.</translation>
 <translation id="5386244825306882791">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="5394833366792865639">‏مشاركة علامة تبويب Chrome</translation>
 <translation id="5430073640787465221">‏ملف الإعدادات المفضّلة تالف أو غير صالح. يتعذر على Google Chrome استرداد إعداداتك.</translation>
 <translation id="5434383153637353914">‏تتيح لك هذه الصفحة إدارة حساباتك على Google التي تم تسجيل الدخول إليها. وستكون هذه الحسابات متوفّرة في متصفِّح Chrome وتطبيقات "متجر Play"، بالإضافة إلى خدمات مثل Gmail وDrive وYouTube. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">‏تثبيت نظام التشغيل Chrome</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">‏في حال عدم عرض إعداد على هذه الصفحة، انتقل إلى <ph name="LINK_BEGIN" />
@@ -222,6 +223,7 @@
 <translation id="7106741999175697885">‏مدير المهام - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل.}=1{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نافذة التصفح المتخفي.}two{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نافذتَي التصفح المتخفي.}few{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}many{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}other{‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}}</translation>
 <translation id="7155997830309522122">‏في هذه الحالة، يُرجى تعديل كلمة المرور المحفوظة في Chrome لتتطابق مع كلمة المرور الجديدة.</translation>
+<translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">‏يتم استخدام هذه اللغة لعرض واجهة مستخدم Google Chrome</translation>
 <translation id="7296210096911315575">معلومات مهمّة حول الأمان والاستخدام</translation>
@@ -239,6 +241,7 @@
 <translation id="7629695634924605473">‏يتم إعلامك من خلال Chrome في حال تم اختراق كلمات المرور في أي وقت.</translation>
 <translation id="7641148173327520642">‏ضَبَط مشرف النظام Google Chrome لفتح <ph name="ALTERNATIVE_BROWSER_NAME" /> للوصول إلى <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">‏شعار Chrome Enterprise</translation>
+<translation id="7665553140559834626">‏إعادة تشغيل نظام التشغيل Chrome لتحديثه</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
 <translation id="7777080907402804672">‏في حال لم تتضمن صورة  ما وصفًا مفيدًا، سيحاول Chrome توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>
@@ -250,9 +253,10 @@
 <translation id="7855730255114109580">‏Google Chrome محدّث</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
 <translation id="7896673875602241923">‏سجّل شخص ما الدخول من قبل إلى Chrome على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chrome للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
-<translation id="7905891027772979035">‏يتعذّر على Chrome التحقّق من الإضافات. يُرجى إعادة المحاولة.</translation>
 <translation id="7930071585467473040">‏يحاول Google Chrome نسخ كلمات المرور.</translation>
+<translation id="7951988079884443914">‏ينصح Chrome بعدم تنزيل هذا الملف أو فتحه.</translation>
 <translation id="7962410387636238736">‏لن يستلم جهاز الكمبيوتر هذا تحديثات Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
+<translation id="79947657522496226">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج إضافي مفتوح المصدر<ph name="END_LINK_CROS_OSS" />، كما هو الحال في <ph name="BEGIN_LINK_LINUX_OSS" />بيئة تطوير أدوات Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="8013993649590906847">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chrome توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google.</translation>
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>

@@ -34,11 +34,12 @@ namespace {
 
 constexpr char kSinkId[] = "sink_id";
 constexpr char kSinkFriendlyName[] = "Nest Hub";
+constexpr char16_t kSinkFriendlyName16[] = u"Nest Hub";
 
 UIMediaSink CreateMediaSink(
     UIMediaSinkState state = UIMediaSinkState::AVAILABLE) {
   UIMediaSink sink;
-  sink.friendly_name = base::UTF8ToUTF16(kSinkFriendlyName);
+  sink.friendly_name = kSinkFriendlyName16;
   sink.id = kSinkId;
   sink.state = state;
   sink.cast_modes = {media_router::MediaCastMode::PRESENTATION};
@@ -282,12 +283,28 @@ TEST_F(MediaNotificationDeviceSelectorViewTest,
     SimulateButtonClick(child);
   }
 
-  // Clicking on available or connected sinks will start casting.
-  view_->OnModelUpdated(CreateModelWithSinks(
-      {CreateMediaSink(), CreateMediaSink(UIMediaSinkState::CONNECTED)}));
+  // Clicking on available or connected CAST sinks will start casting.
+  auto cast_connected_sink = CreateMediaSink(UIMediaSinkState::CONNECTED);
+  cast_connected_sink.provider = media_router::MediaRouteProviderId::CAST;
+  view_->OnModelUpdated(
+      CreateModelWithSinks({CreateMediaSink(), cast_connected_sink}));
   EXPECT_CALL(*cast_controller_ptr,
               StartCasting(_, media_router::MediaCastMode::PRESENTATION))
       .Times(2);
+  for (views::View* child : view_->device_entry_views_container_->children()) {
+    SimulateButtonClick(child);
+  }
+
+  // Clicking on connected DIAL sinks will terminate casting.
+  // TODO(crbug.com/1206830): change test cases after DIAL MRP supports
+  // launching session on a connected sink.
+  auto dial_connected_sink = CreateMediaSink(UIMediaSinkState::CONNECTED);
+  dial_connected_sink.provider = media_router::MediaRouteProviderId::DIAL;
+  dial_connected_sink.route =
+      media_router::MediaRoute("routeId1", media_router::MediaSource("source1"),
+                               "sinkId1", "description", true, true);
+  view_->OnModelUpdated(CreateModelWithSinks({dial_connected_sink}));
+  EXPECT_CALL(*cast_controller_ptr, StopCasting("routeId1"));
   for (views::View* child : view_->device_entry_views_container_->children()) {
     SimulateButtonClick(child);
   }

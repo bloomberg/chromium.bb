@@ -41,7 +41,7 @@ static int compare_weight(const void *a, const void *b) {
 // Allow more mesh searches for screen content type on the ARF.
 static int use_fine_search_interval(const AV1_COMP *const cpi) {
   return cpi->is_screen_content_type &&
-         cpi->gf_group.update_type[cpi->gf_frame_index] == ARF_UPDATE &&
+         cpi->ppi->gf_group.update_type[cpi->gf_frame_index] == ARF_UPDATE &&
          cpi->oxcf.speed <= 2;
 }
 
@@ -62,15 +62,15 @@ static INLINE void get_mv_candidate_from_tpl(const AV1_COMP *const cpi,
   const int mi_col = xd->mi_col;
 
   const BLOCK_SIZE tpl_bsize =
-      convert_length_to_bsize(cpi->tpl_data.tpl_bsize_1d);
+      convert_length_to_bsize(cpi->ppi->tpl_data.tpl_bsize_1d);
   const int tplw = mi_size_wide[tpl_bsize];
   const int tplh = mi_size_high[tpl_bsize];
   const int nw = mi_size_wide[bsize] / tplw;
   const int nh = mi_size_high[bsize] / tplh;
 
   if (nw >= 1 && nh >= 1) {
-    const int of_h = mi_row % mi_size_high[cm->seq_params.sb_size];
-    const int of_w = mi_col % mi_size_wide[cm->seq_params.sb_size];
+    const int of_h = mi_row % mi_size_high[cm->seq_params->sb_size];
+    const int of_w = mi_col % mi_size_wide[cm->seq_params->sb_size];
     const int start = of_h / tplh * sb_enc->tpl_stride + of_w / tplw;
     int valid = 1;
 
@@ -920,7 +920,7 @@ int_mv av1_simple_motion_sse_var(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   const uint8_t *dst = xd->plane[0].dst.buf;
   const int dst_stride = xd->plane[0].dst.stride;
 
-  *var = cpi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, sse);
+  *var = cpi->ppi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, sse);
 
   return best_mv;
 }

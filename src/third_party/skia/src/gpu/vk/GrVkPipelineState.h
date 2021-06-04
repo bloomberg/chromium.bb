@@ -53,7 +53,7 @@ public:
 
     ~GrVkPipelineState();
 
-    bool setAndBindUniforms(GrVkGpu*, const GrRenderTarget*, const GrProgramInfo&,
+    bool setAndBindUniforms(GrVkGpu*, SkISize colorAttachmentDimensions, const GrProgramInfo&,
                             GrVkCommandBuffer*);
     /**
      * This must be called after setAndBindUniforms() since that function invalidates texture
@@ -65,7 +65,8 @@ public:
                             const GrSurfaceProxy* const geomProcTextures[],
                             GrVkCommandBuffer*);
 
-    bool setAndBindInputAttachment(GrVkGpu*, GrVkRenderTarget* renderTarget, GrVkCommandBuffer*);
+    bool setAndBindInputAttachment(GrVkGpu*, gr_rp<const GrVkDescriptorSet> inputDescSet,
+                                   GrVkCommandBuffer*);
 
     void bindPipeline(const GrVkGpu* gpu, GrVkCommandBuffer* commandBuffer);
 
@@ -109,7 +110,7 @@ private:
     };
 
     // Helper for setData() that sets the view matrix and loads the render target height uniform
-    void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
+    void setRenderTargetState(SkISize colorAttachmentDimensions, GrSurfaceOrigin);
 
     // GrManagedResources
     sk_sp<const GrVkPipeline> fPipeline;

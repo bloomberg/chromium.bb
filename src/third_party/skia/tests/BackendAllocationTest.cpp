@@ -14,7 +14,6 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrSurfaceFillContext.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "src/image/SkImage_Base.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -222,7 +221,7 @@ static void check_solid_pixmap(skiatest::Reporter* reporter,
 static SkColor4f get_expected_color(SkColor4f orig, GrColorType ct) {
     GrImageInfo ii(ct, kUnpremul_SkAlphaType, nullptr, {1, 1});
     std::unique_ptr<char[]> data(new char[ii.minRowBytes()]);
-    GrClearImage(ii, data.get(), ii.minRowBytes(), orig);
+    GrClearImage(ii, data.get(), ii.minRowBytes(), orig.array());
 
     // Read back to SkColor4f.
     SkColor4f result;
@@ -414,7 +413,7 @@ static void check_mipmaps(GrDirectContext* dContext,
         // Our swizzles for alpha color types currently produce (a, a, a, a) in the shader. Remove
         // this once they are correctly (0, 0, 0, a).
         if (GrColorTypeIsAlphaOnly(colorType)) {
-            auto black = GrConstColorProcessor::Make(SK_PMColor4fBLACK);
+            auto black = GrFragmentProcessor::MakeColor(SK_PMColor4fBLACK);
             fp = GrBlendFragmentProcessor::Make(std::move(fp),
                                                 std::move(black),
                                                 SkBlendMode::kModulate);

@@ -21,6 +21,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/text_suggester.mojom.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -175,10 +176,15 @@ TEST_F(ServiceConnectionTest, BindMachineLearningService) {
       &fake_service_connection);
   ServiceConnection::GetInstance()->Initialize();
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   mojo::Remote<mojom::MachineLearningService> ml_service;
-  ServiceConnection::GetInstance()->BindMachineLearningService(
-      ml_service.BindNewPipeAndPassReceiver());
-  base::RunLoop().RunUntilIdle();
+  base::OnceClosure callback =
+      base::BindOnce(&ServiceConnection::BindMachineLearningService,
+                     base::Unretained(ServiceConnection::GetInstance()),
+                     ml_service.BindNewPipeAndPassReceiver())
+          .Then(run_loop->QuitClosure());
+  std::move(callback).Run();
+  run_loop->Run();
   ASSERT_TRUE(ml_service.is_bound());
 
   // Check the bound ml_service remote can be used to call
@@ -186,6 +192,7 @@ TEST_F(ServiceConnectionTest, BindMachineLearningService) {
   mojo::Remote<mojom::Model> model;
   bool callback_done = false;
 
+  run_loop.reset(new base::RunLoop);
   ml_service->LoadBuiltinModel(
       mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
       model.BindNewPipeAndPassReceiver(),
@@ -194,8 +201,10 @@ TEST_F(ServiceConnectionTest, BindMachineLearningService) {
             EXPECT_EQ(result, mojom::LoadModelResult::OK);
             *callback_done = true;
           },
-          &callback_done));
-  base::RunLoop().RunUntilIdle();
+          &callback_done)
+          .Then(run_loop->QuitClosure()));
+
+  run_loop->Run();
   EXPECT_TRUE(callback_done);
   EXPECT_TRUE(model.is_bound());
 }
@@ -247,6 +256,7 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
   const double expected_value = 200.002;
   fake_service_connection.SetOutputValue(std::vector<int64_t>{1L},
                                          std::vector<double>{expected_value});
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadBuiltinModel(
@@ -257,13 +267,15 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(model.is_bound());
 
   callback_done = false;
   mojo::Remote<mojom::GraphExecutor> graph;
+  run_loop.reset(new base::RunLoop);
   model->CreateGraphExecutor(
       graph.BindNewPipeAndPassReceiver(),
       base::BindOnce(
@@ -271,19 +283,21 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
             EXPECT_EQ(result, mojom::CreateGraphExecutorResult::OK);
             *callback_done = true;
           },
-          &callback_done));
-  base::RunLoop().RunUntilIdle();
+          &callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(graph.is_bound());
 
   callback_done = false;
   base::flat_map<std::string, mojom::TensorPtr> inputs;
   std::vector<std::string> outputs;
+  run_loop.reset(new base::RunLoop);
   graph->Execute(std::move(inputs), std::move(outputs),
                  base::BindOnce(
                      [](bool* callback_done, double expected_value,
                         const mojom::ExecuteResult result,
-                        base::Optional<std::vector<mojom::TensorPtr>> outputs) {
+                        absl::optional<std::vector<mojom::TensorPtr>> outputs) {
                        EXPECT_EQ(result, mojom::ExecuteResult::OK);
                        ASSERT_TRUE(outputs.has_value());
                        ASSERT_EQ(outputs->size(), 1LU);
@@ -293,9 +307,10 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
 
                        *callback_done = true;
                      },
-                     &callback_done, expected_value));
+                     &callback_done, expected_value)
+                     .Then(run_loop->QuitClosure()));
 
-  base::RunLoop().RunUntilIdle();
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
 }
 
@@ -312,6 +327,7 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
   fake_service_connection.SetOutputValue(std::vector<int64_t>{1L},
                                          std::vector<double>{expected_value});
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadFlatBufferModel(
@@ -321,13 +337,15 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(model.is_bound());
 
   callback_done = false;
   mojo::Remote<mojom::GraphExecutor> graph;
+  run_loop.reset(new base::RunLoop);
   model->CreateGraphExecutor(
       graph.BindNewPipeAndPassReceiver(),
       base::BindOnce(
@@ -335,19 +353,21 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
             EXPECT_EQ(result, mojom::CreateGraphExecutorResult::OK);
             *callback_done = true;
           },
-          &callback_done));
-  base::RunLoop().RunUntilIdle();
+          &callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(graph.is_bound());
 
   callback_done = false;
   base::flat_map<std::string, mojom::TensorPtr> inputs;
   std::vector<std::string> outputs;
+  run_loop.reset(new base::RunLoop);
   graph->Execute(std::move(inputs), std::move(outputs),
                  base::BindOnce(
                      [](bool* callback_done, double expected_value,
                         const mojom::ExecuteResult result,
-                        base::Optional<std::vector<mojom::TensorPtr>> outputs) {
+                        absl::optional<std::vector<mojom::TensorPtr>> outputs) {
                        EXPECT_EQ(result, mojom::ExecuteResult::OK);
                        ASSERT_TRUE(outputs.has_value());
                        ASSERT_EQ(outputs->size(), 1LU);
@@ -357,9 +377,9 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
 
                        *callback_done = true;
                      },
-                     &callback_done, expected_value));
-
-  base::RunLoop().RunUntilIdle();
+                     &callback_done, expected_value)
+                     .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
 }
 
@@ -387,6 +407,7 @@ TEST_F(ServiceConnectionTest,
   annotations.emplace_back(std::move(dummy_annotation));
   fake_service_connection.SetOutputAnnotation(annotations);
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadTextClassifier(
@@ -396,13 +417,15 @@ TEST_F(ServiceConnectionTest,
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
 
   auto request = mojom::TextAnnotationRequest::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   text_classifier->Annotate(
       std::move(request),
       base::BindOnce(
@@ -417,8 +440,9 @@ TEST_F(ServiceConnectionTest,
             EXPECT_EQ(annotations[0]->entities[0]->data->get_numeric_value(),
                       123456789.);
           },
-          &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -437,6 +461,7 @@ TEST_F(ServiceConnectionTest,
   span->end_offset = 2;
   fake_service_connection.SetOutputSelection(span);
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadTextClassifier(
@@ -446,14 +471,16 @@ TEST_F(ServiceConnectionTest,
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
 
   auto request = mojom::TextSuggestSelectionRequest::New();
   request->user_selection = mojom::CodepointSpan::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   text_classifier->SuggestSelection(
       std::move(request), base::BindOnce(
                               [](bool* infer_callback_done,
@@ -463,8 +490,9 @@ TEST_F(ServiceConnectionTest,
                                 EXPECT_EQ(suggested_span->start_offset, 1u);
                                 EXPECT_EQ(suggested_span->end_offset, 2u);
                               },
-                              &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+                              &infer_callback_done)
+                              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -483,6 +511,7 @@ TEST_F(ServiceConnectionTest,
   languages.emplace_back(mojom::TextLanguage::New("fr", 0.1));
   fake_service_connection.SetOutputLanguages(languages);
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadTextClassifier(
@@ -492,13 +521,15 @@ TEST_F(ServiceConnectionTest,
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
 
   std::string input_text = "dummy input text";
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   text_classifier->FindLanguages(
       input_text, base::BindOnce(
                       [](bool* infer_callback_done,
@@ -511,8 +542,9 @@ TEST_F(ServiceConnectionTest,
                         EXPECT_EQ(languages[1]->locale, "fr");
                         EXPECT_EQ(languages[1]->confidence, 0.1f);
                       },
-                      &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+                      &infer_callback_done)
+                      .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -525,6 +557,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
       &fake_service_connection);
   ServiceConnection::GetInstance()->Initialize();
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadHandwritingModel(
@@ -536,8 +569,9 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
                 EXPECT_EQ(result, mojom::LoadHandwritingModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(recognizer.is_bound());
 
@@ -554,6 +588,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
 
   auto query = mojom::HandwritingRecognitionQuery::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   recognizer->Recognize(
       std::move(query),
       base::BindOnce(
@@ -566,8 +601,9 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
             EXPECT_EQ(result->candidates.at(0)->text, "cat");
             EXPECT_EQ(result->candidates.at(0)->score, 0.5f);
           },
-          &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -581,6 +617,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
       &fake_service_connection);
   ServiceConnection::GetInstance()->Initialize();
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadHandwritingModelWithSpec(
@@ -591,8 +628,9 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(recognizer.is_bound());
 
@@ -609,6 +647,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
 
   auto query = mojom::HandwritingRecognitionQuery::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   recognizer->Recognize(
       std::move(query),
       base::BindOnce(
@@ -621,8 +660,9 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
             EXPECT_EQ(result->candidates.at(0)->text, "cat");
             EXPECT_EQ(result->candidates.at(0)->score, 0.5f);
           },
-          &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -636,6 +676,7 @@ TEST_F(ServiceConnectionTest, FakeWebPlatformHandWritingRecognizer) {
   ServiceConnection::GetInstance()->Initialize();
   auto constraint = web_platform::mojom::HandwritingModelConstraint::New();
   constraint->languages.emplace_back("en");
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadWebPlatformHandwritingModel(
@@ -646,8 +687,9 @@ TEST_F(ServiceConnectionTest, FakeWebPlatformHandWritingRecognizer) {
                 EXPECT_EQ(result, mojom::LoadHandwritingModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(recognizer.is_bound());
 
@@ -662,18 +704,20 @@ TEST_F(ServiceConnectionTest, FakeWebPlatformHandWritingRecognizer) {
   std::vector<web_platform::mojom::HandwritingStrokePtr> strokes;
   auto hints = web_platform::mojom::HandwritingHints::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   recognizer->GetPrediction(
       std::move(strokes), std::move(hints),
       base::BindOnce(
           [](bool* infer_callback_done,
-             base::Optional<std::vector<
+             absl::optional<std::vector<
                  web_platform::mojom::HandwritingPredictionPtr>> predictions) {
             *infer_callback_done = true;
             ASSERT_TRUE(predictions.has_value());
             ASSERT_EQ(predictions.value().size(), 1u);
           },
-          &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 
@@ -685,6 +729,7 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
       &fake_service_connection);
   ServiceConnection::GetInstance()->Initialize();
 
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   ServiceConnection::GetInstance()
       ->GetMachineLearningService()
       .LoadGrammarChecker(
@@ -694,8 +739,9 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
                 EXPECT_EQ(result, mojom::LoadModelResult::OK);
                 *callback_done = true;
               },
-              &callback_done));
-  base::RunLoop().RunUntilIdle();
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(checker.is_bound());
 
@@ -717,6 +763,7 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
 
   auto query = mojom::GrammarCheckerQuery::New();
   bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
   checker->Check(
       std::move(query),
       base::BindOnce(
@@ -734,8 +781,72 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
             EXPECT_EQ(result->candidates.at(0)->fragments.at(0)->replacement,
                       "dog");
           },
-          &infer_callback_done));
-  base::RunLoop().RunUntilIdle();
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
+  ASSERT_TRUE(infer_callback_done);
+}
+
+TEST_F(ServiceConnectionTest, FakeTextSuggester) {
+  mojo::Remote<mojom::TextSuggester> suggester;
+  bool callback_done = false;
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
+
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadTextSuggester(
+          suggester.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done)
+              .Then(run_loop->QuitClosure()));
+  run_loop->Run();
+  ASSERT_TRUE(callback_done);
+  ASSERT_TRUE(suggester.is_bound());
+
+  // Construct fake output
+  mojom::TextSuggesterResultPtr result = mojom::TextSuggesterResult::New();
+  result->status = mojom::TextSuggesterResult::Status::OK;
+
+  mojom::MultiWordSuggestionCandidatePtr multi_word =
+      mojom::MultiWordSuggestionCandidate::New();
+  multi_word->text = "hello";
+  multi_word->normalized_score = 0.5f;
+  mojom::TextSuggestionCandidatePtr candidate =
+      mojom::TextSuggestionCandidate::New();
+  candidate->set_multi_word(std::move(multi_word));
+
+  result->candidates.emplace_back(std::move(candidate));
+  fake_service_connection.SetOutputTextSuggesterResult(result);
+
+  auto query = mojom::TextSuggesterQuery::New();
+  bool infer_callback_done = false;
+  run_loop.reset(new base::RunLoop);
+  suggester->Suggest(
+      std::move(query),
+      base::BindOnce(
+          [](bool* infer_callback_done, mojom::TextSuggesterResultPtr result) {
+            *infer_callback_done = true;
+            // Check the fake suggestion is returned
+            ASSERT_EQ(result->status, mojom::TextSuggesterResult::Status::OK);
+            ASSERT_EQ(result->candidates.size(), 1UL);
+            ASSERT_TRUE(result->candidates.at(0)->is_multi_word());
+            EXPECT_EQ(result->candidates.at(0)->get_multi_word()->text,
+                      "hello");
+            EXPECT_EQ(
+                result->candidates.at(0)->get_multi_word()->normalized_score,
+                0.5f);
+          },
+          &infer_callback_done)
+          .Then(run_loop->QuitClosure()));
+  run_loop->Run();
   ASSERT_TRUE(infer_callback_done);
 }
 

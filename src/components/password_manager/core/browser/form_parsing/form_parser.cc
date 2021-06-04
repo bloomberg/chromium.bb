@@ -427,8 +427,11 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
 //    fields have the "username" attribute.
 // If any assumption is violated, the autocomplete attribute is ignored.
 void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
+                            FormDataParser::Mode mode,
                             SignificantFields* result) {
   bool new_password_found_by_server = result->new_password;
+  bool new_password_found_by_autocomplete = false;
+  bool should_ignore_new_password_autocomplete = false;
   const FormFieldData* field_marked_as_username = nullptr;
   int username_fields_found = 0;
   for (const ProcessedField& processed_field : processed_fields) {
@@ -452,14 +455,27 @@ void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
         break;
       case AutocompleteFlag::kNewPassword:
         if (!processed_field.is_password || new_password_found_by_server ||
-            processed_field.server_hints_not_password)
+            processed_field.server_hints_not_password ||
+            should_ignore_new_password_autocomplete)
           continue;
         // The first field with autocomplete=new-password is considered to be
         // new_password and the second is confirmation_password.
-        if (!result->new_password)
+        if (!result->new_password) {
           result->new_password = processed_field.field;
-        else if (!result->confirmation_password)
+          new_password_found_by_autocomplete = true;
+        } else if (!result->confirmation_password) {
+          // Ignore kNewPassword autocomplete feature if fields that have it
+          // have different values in saving mode.
+          if (mode == FormDataParser::Mode::kSaving &&
+              new_password_found_by_autocomplete &&
+              GetFieldValue(*result->new_password) !=
+                  GetFieldValue(*processed_field.field)) {
+            should_ignore_new_password_autocomplete = true;
+            result->new_password = nullptr;
+            continue;
+          }
           result->confirmation_password = processed_field.field;
+        }
         break;
       case AutocompleteFlag::kNonPassword:
       case AutocompleteFlag::kNone:
@@ -665,7 +681,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
       continue;
     if (!MatchesInteractability(*it, best_interactability))
       continue;
-    if (is_saving && IsProbablyNotUsername(it->field->value))
+    if (is_saving && IsProbablyNotUsername(GetFieldValue(*it->field)))
       continue;
     if (!is_fallback && IsNotPasswordField(*it))
       continue;
@@ -895,7 +911,7 @@ std::vector<ProcessedField> ProcessFields(
 // |form_predictions| has |may_use_prefilled_placeholder| == true for the
 // username field.
 bool GetMayUsePrefilledPlaceholder(
-    const base::Optional<FormPredictions>& form_predictions,
+    const absl::optional<FormPredictions>& form_predictions,
     const SignificantFields& significant_fields) {
   if (!form_predictions || !significant_fields.username)
     return false;
@@ -922,7 +938,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
     const SignificantFields& significant_fields,
     ValueElementVector all_possible_passwords,
     ValueElementVector all_possible_usernames,
-    const base::Optional<FormPredictions>& form_predictions) {
+    const absl::optional<FormPredictions>& form_predictions) {
   if (!significant_fields.HasPasswords() &&
       !significant_fields.is_single_username) {
     return nullptr;
@@ -995,7 +1011,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
 
   // (2) If that failed, try to parse with autocomplete attributes.
   if (!significant_fields.is_single_username) {
-    ParseUsingAutocomplete(processed_fields, &significant_fields);
+    ParseUsingAutocomplete(processed_fields, mode, &significant_fields);
     if (method == UsernameDetectionMethod::kNoUsernameDetected &&
         significant_fields.username) {
       method = UsernameDetectionMethod::kAutocompleteAttribute;

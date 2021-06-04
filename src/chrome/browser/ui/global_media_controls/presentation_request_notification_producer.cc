@@ -8,6 +8,7 @@
 
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "components/media_router/browser/media_router.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace {
 
@@ -42,6 +44,35 @@ content::WebContents* GetWebContentsFromPresentationRequest(
   return content::WebContents::FromRenderFrameHost(rfh);
 }
 }  // namespace
+
+class PresentationRequestNotificationProducer::
+    PresentationRequestWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  PresentationRequestWebContentsObserver(
+      content::WebContents* web_contents,
+      PresentationRequestNotificationProducer* notification_producer)
+      : content::WebContentsObserver(web_contents),
+        notification_producer_(notification_producer) {
+    DCHECK(notification_producer_);
+  }
+
+ private:
+  void WebContentsDestroyed() override {
+    notification_producer_->DeleteItemForPresentationRequest("closed");
+  }
+
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override {
+    notification_producer_->DeleteItemForPresentationRequest("closed");
+  }
+
+  void RenderProcessGone(base::TerminationStatus status) override {
+    notification_producer_->DeleteItemForPresentationRequest("closed");
+  }
+
+  PresentationRequestNotificationProducer* const notification_producer_;
+};
 
 PresentationRequestNotificationProducer::
     PresentationRequestNotificationProducer(
@@ -195,6 +226,9 @@ void PresentationRequestNotificationProducer::OnDefaultPresentationChanged(
 void PresentationRequestNotificationProducer::CreateItemForPresentationRequest(
     const content::PresentationRequest& request,
     std::unique_ptr<media_router::StartPresentationContext> context) {
+  presentation_request_observer_ =
+      std::make_unique<PresentationRequestWebContentsObserver>(
+          GetWebContentsFromPresentationRequest(request), this);
   // This may replace an existing item, which is the right thing to do if
   // we've reached this point.
   item_.emplace(notification_service_, request, std::move(context));
@@ -204,16 +238,17 @@ void PresentationRequestNotificationProducer::CreateItemForPresentationRequest(
 
 void PresentationRequestNotificationProducer::DeleteItemForPresentationRequest(
     const std::string& message) {
-  if (item_) {
-    if (item_->context()) {
-      item_->context()->InvokeErrorCallback(blink::mojom::PresentationError(
-          blink::mojom::PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
-          message));
-    }
-    const auto id{item_->id()};
-    item_.reset();
-    notification_service_->RemoveItem(id);
+  if (!item_)
+    return;
+  if (item_->context()) {
+    item_->context()->InvokeErrorCallback(blink::mojom::PresentationError(
+        blink::mojom::PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
+        message));
   }
+  const auto id{item_->id()};
+  item_.reset();
+  presentation_request_observer_.reset();
+  notification_service_->HideNotification(id);
 }
 
 void PresentationRequestNotificationProducer::ShowOrHideItem() {

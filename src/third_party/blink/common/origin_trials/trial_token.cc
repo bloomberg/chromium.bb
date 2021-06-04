@@ -10,10 +10,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -160,8 +161,7 @@ OriginTrialTokenStatus TrialToken::Extract(base::StringPiece token_text,
                                   kPayloadLengthSize + payload_length);
 
   // The data which is covered by the signature is (version + length + payload).
-  std::string signed_data =
-      version_piece.as_string() + payload_piece.as_string();
+  std::string signed_data = base::StrCat({version_piece, payload_piece});
 
   // Validate the signature on the data before proceeding.
   if (!TrialToken::ValidateSignature(signature, signed_data, public_key)) {
@@ -171,7 +171,7 @@ OriginTrialTokenStatus TrialToken::Extract(base::StringPiece token_text,
   // Return the payload and signature, as new strings.
   *out_token_version = version;
   *out_token_payload = token_contents.substr(kPayloadOffset, payload_length);
-  *out_token_signature = signature.as_string();
+  *out_token_signature = std::string(signature);
   return OriginTrialTokenStatus::kSuccess;
 }
 
@@ -186,7 +186,7 @@ std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_payload,
     return nullptr;
   }
 
-  base::Optional<base::Value> datadict = base::JSONReader::Read(token_payload);
+  absl::optional<base::Value> datadict = base::JSONReader::Read(token_payload);
   if (!datadict || !datadict->is_dict()) {
     return nullptr;
   }

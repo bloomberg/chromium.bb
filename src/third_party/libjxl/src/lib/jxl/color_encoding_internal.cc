@@ -14,12 +14,15 @@
 
 #include "lib/jxl/color_encoding_internal.h"
 
+#include <errno.h>
+
 #include <array>
 #include <cmath>
 
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/common.h"
 #include "lib/jxl/fields.h"
+#include "lib/jxl/linalg.h"
 
 namespace jxl {
 namespace {
@@ -255,7 +258,7 @@ static Status F64ToCustomxyI32(const double f, int32_t* JXL_RESTRICT i) {
   if (!(-4 <= f && f <= 4)) {
     return JXL_FAILURE("F64 out of bounds for CustomxyI32");
   }
-  *i = static_cast<int32_t>(std::round(f * 1E6));
+  *i = static_cast<int32_t>(roundf(f * 1E6));
   return true;
 }
 
@@ -304,7 +307,7 @@ Status CustomTransferFunction::SetGamma(double gamma) {
   // values because those curves also have a linear part.
 
   have_gamma_ = true;
-  gamma_ = std::round(gamma * kGammaMul);
+  gamma_ = roundf(gamma * kGammaMul);
   transfer_function_ = TransferFunction::kUnknown;
   return true;
 }
@@ -472,6 +475,14 @@ Status ColorEncoding::SetPrimaries(const PrimariesCIExy& xy) {
   return true;
 }
 
+Status ColorEncoding::CreateICC() {
+  InternalRemoveICC();
+  if (!MaybeCreateProfile(*this, &icc_)) {
+    return JXL_FAILURE("Failed to create profile from fields");
+  }
+  return true;
+}
+
 std::string Description(const ColorEncoding& c_in) {
   // Copy required for Implicit*
   ColorEncoding c = c_in;
@@ -482,8 +493,8 @@ std::string Description(const ColorEncoding& c_in) {
     d += '_';
     if (c.white_point == WhitePoint::kCustom) {
       const CIExy wp = c.GetWhitePoint();
-      d += std::to_string(wp.x) + ';';
-      d += std::to_string(wp.y);
+      d += ToString(wp.x) + ';';
+      d += ToString(wp.y);
     } else {
       d += ToString(c.white_point);
     }
@@ -493,12 +504,12 @@ std::string Description(const ColorEncoding& c_in) {
     d += '_';
     if (c.primaries == Primaries::kCustom) {
       const PrimariesCIExy pr = c.GetPrimaries();
-      d += std::to_string(pr.r.x) + ';';
-      d += std::to_string(pr.r.y) + ';';
-      d += std::to_string(pr.g.x) + ';';
-      d += std::to_string(pr.g.y) + ';';
-      d += std::to_string(pr.b.x) + ';';
-      d += std::to_string(pr.b.y);
+      d += ToString(pr.r.x) + ';';
+      d += ToString(pr.r.y) + ';';
+      d += ToString(pr.g.x) + ';';
+      d += ToString(pr.g.y) + ';';
+      d += ToString(pr.b.x) + ';';
+      d += ToString(pr.b.y);
     } else {
       d += ToString(c.primaries);
     }
@@ -511,7 +522,7 @@ std::string Description(const ColorEncoding& c_in) {
     d += '_';
     if (c.tf.IsGamma()) {
       d += 'g';
-      d += std::to_string(c.tf.GetGamma());
+      d += ToString(c.tf.GetGamma());
     } else {
       d += ToString(c.tf.GetTransferFunction());
     }
@@ -661,6 +672,75 @@ void ConvertInternalToExternalColorEncoding(const ColorEncoding& internal,
 
   external->rendering_intent =
       static_cast<JxlRenderingIntent>(internal.rendering_intent);
+}
+
+/* Chromatic adaptation matrices*/
+static float kBradford[9] = {
+    0.8951f, 0.2664f, -0.1614f, -0.7502f, 1.7135f,
+    0.0367f, 0.0389f, -0.0685f, 1.0296f,
+};
+
+static float kBradfordInv[9] = {
+    0.9869929f, -0.1470543f, 0.1599627f, 0.4323053f, 0.5183603f,
+    0.0492912f, -0.0085287f, 0.0400428f, 0.9684867f,
+};
+
+// Adapts whitepoint x, y to D50
+Status AdaptToXYZD50(float wx, float wy, float matrix[9]) {
+  if (wx < 0 || wx > 1 || wy < 0 || wy > 1) {
+    return JXL_FAILURE("xy color out of range");
+  }
+
+  float w[3] = {wx / wy, 1.0f, (1.0f - wx - wy) / wy};
+  float w50[3] = {0.96422f, 1.0f, 0.82521f};
+
+  float lms[3];
+  float lms50[3];
+
+  MatMul(kBradford, w, 3, 3, 1, lms);
+  MatMul(kBradford, w50, 3, 3, 1, lms50);
+
+  float a[9] = {
+      lms50[0] / lms[0], 0, 0, 0, lms50[1] / lms[1], 0, 0, 0, lms50[2] / lms[2],
+  };
+
+  float b[9];
+  MatMul(a, kBradford, 3, 3, 3, b);
+  MatMul(kBradfordInv, b, 3, 3, 3, matrix);
+
+  return true;
+}
+
+Status PrimariesToXYZD50(float rx, float ry, float gx, float gy, float bx,
+                         float by, float wx, float wy, float matrix[9]) {
+  if (rx < 0 || rx > 1 || ry < 0 || ry > 1 || gx < 0 || gx > 1 || gy < 0 ||
+      gy > 1 || bx < 0 || bx > 1 || by < 0 || by > 1 || wx < 0 || wx > 1 ||
+      wy < 0 || wy > 1) {
+    return JXL_FAILURE("xy color out of range");
+  }
+
+  float primaries[9] = {
+      rx, gx, bx, ry, gy, by, 1.0f - rx - ry, 1.0f - gx - gy, 1.0f - bx - by};
+  float primaries_inv[9];
+  memcpy(primaries_inv, primaries, sizeof(float) * 9);
+  JXL_RETURN_IF_ERROR(Inv3x3Matrix(primaries_inv));
+
+  float w[3] = {wx / wy, 1.0f, (1.0f - wx - wy) / wy};
+  float xyz[3];
+  MatMul(primaries_inv, w, 3, 3, 1, xyz);
+
+  float a[9] = {
+      xyz[0], 0, 0, 0, xyz[1], 0, 0, 0, xyz[2],
+  };
+
+  float toXYZ[9];
+  MatMul(primaries, a, 3, 3, 3, toXYZ);
+
+  float d50[9];
+  JXL_RETURN_IF_ERROR(AdaptToXYZD50(wx, wy, d50));
+
+  MatMul(d50, toXYZ, 3, 3, 3, matrix);
+  return true;
 }
 
 }  // namespace jxl

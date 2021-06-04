@@ -47,16 +47,20 @@ this['DiagnosticsApp'] = class extends PolymerTest {
 const debug_suites_list = [
   'App',
   'BatteryStatusCard',
+  'CellularInfo',
   'ConnectivityCard',
   'CpuCard',
   'DataPoint',
   'DiagnosticsUtils',
-  'FakeMethodProvider',
+  'EthernetInfo',
   'FakeMojoInterface',
-  'FakeObservables',
+  'FakeNetworkHealthProvider',
   'FakeSystemDataProvider',
   'FakeSystemRoutineContoller',
   'MemoryCard',
+  'NetworkCard',
+  'NetworkInfo',
+  'NetworkList',
   'OverviewCard',
   'PercentBarChart',
   'RealtimeCpuChart',
@@ -64,7 +68,8 @@ const debug_suites_list = [
   'RoutineResultEntry',
   'RoutineResultList',
   'RoutineSection',
-  'TextBadge'
+  'TextBadge',
+  'WifiInfo',
 ];
 
 TEST_F('DiagnosticsApp', 'BrowserTest', function() {

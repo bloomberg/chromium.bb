@@ -190,14 +190,17 @@ void WebUIInfoSingleton::ClearSecurityEvents() {
 }
 
 int WebUIInfoSingleton::AddToPGPings(
-    const LoginReputationClientRequest& request) {
+    const LoginReputationClientRequest& request,
+    const std::string oauth_token) {
   if (!HasListener())
     return -1;
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyPGPingJsListener(pg_pings_.size(), request);
+  LoginReputationClientRequestAndToken ping = {request, oauth_token};
 
-  pg_pings_.push_back(request);
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyPGPingJsListener(pg_pings_.size(), ping);
+
+  pg_pings_.push_back(ping);
 
   return pg_pings_.size() - 1;
 }
@@ -215,7 +218,7 @@ void WebUIInfoSingleton::AddToPGResponses(
 }
 
 void WebUIInfoSingleton::ClearPGPings() {
-  std::vector<LoginReputationClientRequest>().swap(pg_pings_);
+  std::vector<LoginReputationClientRequestAndToken>().swap(pg_pings_);
   std::map<int, LoginReputationClientResponse>().swap(pg_responses_);
 }
 
@@ -613,6 +616,15 @@ base::Value SerializeChromeUserPopulation(
   population_dict.SetKey("is_incognito",
                          base::Value(population.is_incognito()));
 
+  population_dict.SetKey("user_agent", base::Value(population.user_agent()));
+
+  population_dict.SetKey("number_of_profiles",
+                         base::Value(population.number_of_profiles()));
+  population_dict.SetKey("number_of_loaded_profiles",
+                         base::Value(population.number_of_loaded_profiles()));
+  population_dict.SetKey("number_of_open_profiles",
+                         base::Value(population.number_of_open_profiles()));
+
   return std::move(population_dict);
 }
 
@@ -763,28 +775,33 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   return request_serialized;
 }
 
+std::string ClientDownloadResponseVerdictToString(
+    const ClientDownloadResponse::Verdict& verdict) {
+  switch (verdict) {
+    case ClientDownloadResponse::SAFE:
+      return "SAFE";
+    case ClientDownloadResponse::DANGEROUS:
+      return "DANGEROUS";
+    case ClientDownloadResponse::UNCOMMON:
+      return "UNCOMMON";
+    case ClientDownloadResponse::POTENTIALLY_UNWANTED:
+      return "POTENTIALLY_UNWANTED";
+    case ClientDownloadResponse::DANGEROUS_HOST:
+      return "DANGEROUS_HOST";
+    case ClientDownloadResponse::UNKNOWN:
+      return "UNKNOWN";
+    case ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE:
+      return "DANGEROUS_ACCOUNT_COMPROMISE";
+  }
+}
+
 std::string SerializeClientDownloadResponse(const ClientDownloadResponse& cdr) {
   base::DictionaryValue dict;
 
-  switch (cdr.verdict()) {
-    case ClientDownloadResponse::SAFE:
-      dict.SetKey("verdict", base::Value("SAFE"));
-      break;
-    case ClientDownloadResponse::DANGEROUS:
-      dict.SetKey("verdict", base::Value("DANGEROUS"));
-      break;
-    case ClientDownloadResponse::UNCOMMON:
-      dict.SetKey("verdict", base::Value("UNCOMMON"));
-      break;
-    case ClientDownloadResponse::POTENTIALLY_UNWANTED:
-      dict.SetKey("verdict", base::Value("POTENTIALLY_UNWANTED"));
-      break;
-    case ClientDownloadResponse::DANGEROUS_HOST:
-      dict.SetKey("verdict", base::Value("DANGEROUS_HOST"));
-      break;
-    case ClientDownloadResponse::UNKNOWN:
-      dict.SetKey("verdict", base::Value("UNKNOWN"));
-      break;
+  if (cdr.has_verdict()) {
+    dict.SetKey(
+        "verdict",
+        base::Value(ClientDownloadResponseVerdictToString(cdr.verdict())));
   }
 
   if (cdr.has_more_info()) {
@@ -846,7 +863,6 @@ std::string SerializeClientPhishingRequest(
   }
   dict.SetList("shingle_hashes", std::move(shingle_hashes));
 
-  dict.SetString("model_filename", cpr.model_filename());
   dict.SetKey("population", SerializeChromeUserPopulation(cpr.population()));
   if (cpr.has_screenshot_digest()) {
     dict.SetKey("screenshot_digest", base::Value(cpr.screenshot_digest()));
@@ -867,6 +883,17 @@ std::string SerializeClientPhishingRequest(
   }
   dict.SetList("vision_match", std::move(vision_matches));
   dict.SetKey("scoped_oauth_token", base::Value(cprat.token));
+
+  if (cpr.has_tflite_model_version())
+    dict.SetInteger("tflite_model_version", cpr.tflite_model_version());
+  dict.SetBoolean("is_tflite_match", cpr.is_tflite_match());
+  auto tflite_scores = std::make_unique<base::ListValue>();
+  for (const auto& score : cpr.tflite_model_scores()) {
+    auto score_value = std::make_unique<base::DictionaryValue>();
+    score_value->SetStringKey("label", score.label());
+    score_value->SetDoubleKey("lvalue", score.value());
+  }
+  dict.SetList("tflite_model_scores", std::move(tflite_scores));
 
   base::Value* request_tree = &dict;
   std::string request_serialized;
@@ -903,6 +930,21 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
   }
   if (report.has_did_proceed()) {
     report_request.SetInteger("did_proceed", report.did_proceed());
+  }
+  if (report.has_download_verdict()) {
+    report_request.SetString(
+        "download_verdict",
+        ClientDownloadResponseVerdictToString(report.download_verdict()));
+  }
+  if (report.has_url()) {
+    report_request.SetString("url", report.url());
+  }
+  if (report.has_token()) {
+    report_request.SetString("token", report.token());
+  }
+  if (report.has_show_download_in_folder()) {
+    report_request.SetBoolean("show_download_in_folder",
+                              report.show_download_in_folder());
   }
   std::string serialized;
   if (report.SerializeToString(&serialized)) {
@@ -1303,8 +1345,11 @@ base::Value SerializeReferringAppInfo(
   return std::move(dict);
 }
 
-std::string SerializePGPing(const LoginReputationClientRequest& request) {
+std::string SerializePGPing(
+    const LoginReputationClientRequestAndToken& request_and_token) {
   base::DictionaryValue request_dict;
+
+  const LoginReputationClientRequest& request = request_and_token.request;
 
   request_dict.SetKey("page_url", base::Value(request.page_url()));
 
@@ -1364,6 +1409,9 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
         "referring_app_info",
         SerializeReferringAppInfo(request.referring_app_info()));
   }
+
+  request_dict.SetKey("scoped_oauth_token",
+                      base::Value(request_and_token.token));
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
@@ -1955,7 +2003,7 @@ void SafeBrowsingUIHandler::GetSecurityEvents(const base::ListValue* args) {
 }
 
 void SafeBrowsingUIHandler::GetPGPings(const base::ListValue* args) {
-  const std::vector<LoginReputationClientRequest> requests =
+  const std::vector<LoginReputationClientRequestAndToken> requests =
       WebUIInfoSingleton::GetInstance()->pg_pings();
 
   base::ListValue pings_sent;
@@ -2163,7 +2211,7 @@ void SafeBrowsingUIHandler::NotifySecurityEventJsListener(
 
 void SafeBrowsingUIHandler::NotifyPGPingJsListener(
     int token,
-    const LoginReputationClientRequest& request) {
+    const LoginReputationClientRequestAndToken& request) {
   base::ListValue request_list;
   request_list.Append(base::Value(token));
   request_list.Append(base::Value(SerializePGPing(request)));

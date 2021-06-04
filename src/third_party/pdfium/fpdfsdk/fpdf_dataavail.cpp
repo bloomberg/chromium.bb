@@ -25,28 +25,29 @@
 #endif  // PDF_ENABLE_XFA
 
 // These checks are here because core/ and public/ cannot depend on each other.
-static_assert(CPDF_DataAvail::DataError == PDF_DATA_ERROR,
-              "CPDF_DataAvail::DataError value mismatch");
-static_assert(CPDF_DataAvail::DataNotAvailable == PDF_DATA_NOTAVAIL,
-              "CPDF_DataAvail::DataNotAvailable value mismatch");
-static_assert(CPDF_DataAvail::DataAvailable == PDF_DATA_AVAIL,
-              "CPDF_DataAvail::DataAvailable value mismatch");
+static_assert(CPDF_DataAvail::kDataError == PDF_DATA_ERROR,
+              "CPDF_DataAvail::kDataError value mismatch");
+static_assert(CPDF_DataAvail::kDataNotAvailable == PDF_DATA_NOTAVAIL,
+              "CPDF_DataAvail::kDataNotAvailable value mismatch");
+static_assert(CPDF_DataAvail::kDataAvailable == PDF_DATA_AVAIL,
+              "CPDF_DataAvail::kDataAvailable value mismatch");
 
-static_assert(CPDF_DataAvail::LinearizationUnknown == PDF_LINEARIZATION_UNKNOWN,
-              "CPDF_DataAvail::LinearizationUnknown value mismatch");
-static_assert(CPDF_DataAvail::NotLinearized == PDF_NOT_LINEARIZED,
-              "CPDF_DataAvail::NotLinearized value mismatch");
-static_assert(CPDF_DataAvail::Linearized == PDF_LINEARIZED,
-              "CPDF_DataAvail::Linearized value mismatch");
+static_assert(CPDF_DataAvail::kLinearizationUnknown ==
+                  PDF_LINEARIZATION_UNKNOWN,
+              "CPDF_DataAvail::kLinearizationUnknown value mismatch");
+static_assert(CPDF_DataAvail::kNotLinearized == PDF_NOT_LINEARIZED,
+              "CPDF_DataAvail::kNotLinearized value mismatch");
+static_assert(CPDF_DataAvail::kLinearized == PDF_LINEARIZED,
+              "CPDF_DataAvail::kLinearized value mismatch");
 
-static_assert(CPDF_DataAvail::FormError == PDF_FORM_ERROR,
-              "CPDF_DataAvail::FormError value mismatch");
-static_assert(CPDF_DataAvail::FormNotAvailable == PDF_FORM_NOTAVAIL,
-              "CPDF_DataAvail::FormNotAvailable value mismatch");
-static_assert(CPDF_DataAvail::FormAvailable == PDF_FORM_AVAIL,
-              "CPDF_DataAvail::FormAvailable value mismatch");
-static_assert(CPDF_DataAvail::FormNotExist == PDF_FORM_NOTEXIST,
-              "CPDF_DataAvail::FormNotExist value mismatch");
+static_assert(CPDF_DataAvail::kFormError == PDF_FORM_ERROR,
+              "CPDF_DataAvail::kFormError value mismatch");
+static_assert(CPDF_DataAvail::kFormNotAvailable == PDF_FORM_NOTAVAIL,
+              "CPDF_DataAvail::kFormNotAvailable value mismatch");
+static_assert(CPDF_DataAvail::kFormAvailable == PDF_FORM_AVAIL,
+              "CPDF_DataAvail::kFormAvailable value mismatch");
+static_assert(CPDF_DataAvail::kFormNotExist == PDF_FORM_NOTEXIST,
+              "CPDF_DataAvail::kFormNotExist value mismatch");
 
 namespace {
 
@@ -129,7 +130,11 @@ class FPDF_AvailContext {
 };
 
 FPDF_AvailContext* FPDFAvailContextFromFPDFAvail(FPDF_AVAIL avail) {
-  return static_cast<FPDF_AvailContext*>(avail);
+  return reinterpret_cast<FPDF_AvailContext*>(avail);
+}
+
+FPDF_AVAIL FPDFAvailFromFPDFAvailContext(FPDF_AvailContext* pAvailContext) {
+  return reinterpret_cast<FPDF_AVAIL>(pAvailContext);
 }
 
 }  // namespace
@@ -137,7 +142,9 @@ FPDF_AvailContext* FPDFAvailContextFromFPDFAvail(FPDF_AVAIL avail) {
 FPDF_EXPORT FPDF_AVAIL FPDF_CALLCONV FPDFAvail_Create(FX_FILEAVAIL* file_avail,
                                                       FPDF_FILEACCESS* file) {
   auto pAvail = std::make_unique<FPDF_AvailContext>(file_avail, file);
-  return pAvail.release();  // Caller takes ownership.
+
+  // Caller takes ownership.
+  return FPDFAvailFromFPDFAvailContext(pAvail.release());
 }
 
 FPDF_EXPORT void FPDF_CALLCONV FPDFAvail_Destroy(FPDF_AVAIL avail) {

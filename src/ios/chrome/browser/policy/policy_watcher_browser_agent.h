@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 
 class Browser;
+@protocol PolicySignoutPromptCommands;
+class PolicyWatcherBrowserAgentObserver;
 class PrefChangeRegistrar;
 
 // Service that listens for policy-controlled prefs changes and sends commands
@@ -21,9 +23,17 @@ class PolicyWatcherBrowserAgent
  public:
   ~PolicyWatcherBrowserAgent() override;
 
-  // Sets the command dispatcher to use for sneding UI commands when prefs
-  // change. Also starts observing the kSigninAllowed pref.
-  void SetApplicationCommandsHandler(id<ApplicationCommands> handler);
+  void AddObserver(PolicyWatcherBrowserAgentObserver* observer);
+  void RemoveObserver(PolicyWatcherBrowserAgentObserver* observer);
+
+  // Notifies the BrowserAgent that a SignIn UI was dismissed as a result of a
+  // policy SignOut.
+  void SignInUIDismissed();
+
+  // Starts observing the kSigninAllowed pref and trigger a SignOut if the pref
+  // has changed before the BrowserAgent start the observation. |handler| is
+  // used to send UI commands when the SignOut is done.
+  void Initialize(id<PolicySignoutPromptCommands> handler);
 
  private:
   explicit PolicyWatcherBrowserAgent(Browser* browser);
@@ -38,12 +48,17 @@ class PolicyWatcherBrowserAgent
   // The owning Browser.
   Browser* browser_;
 
-  // The command handler to use for sending ApplicationCommands. Must be set by
-  //
-  id<ApplicationCommands> application_commands_handler_;
-
   // Registrar for pref change notifications.
   std::unique_ptr<PrefChangeRegistrar> prefs_change_observer_;
+
+  // List of observers notified of changes to the policy.
+  base::ObserverList<PolicyWatcherBrowserAgentObserver, true> observers_;
+
+  // Whether a Sign Out is currently in progress.
+  bool sign_out_in_progress_ = false;
+
+  // Handler to send commands.
+  id<PolicySignoutPromptCommands> handler_ = nil;
 };
 
-#endif  // IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BROWSER_AGENT_H_
+#endif  // IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_

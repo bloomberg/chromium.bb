@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/clipboard/clipboard_nudge.h"
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -15,6 +16,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -111,8 +113,7 @@ class ClipboardNudge::ClipboardNudgeView : public views::View {
       shortcut_icon = gfx::CreateVectorIcon(
           kClipboardSearchIcon, kKeyboardShortcutIconSize, icon_color);
     }
-    std::unique_ptr<views::ImageView> keyboard_shortcut_icon;
-    keyboard_shortcut_icon = std::make_unique<views::ImageView>();
+    auto keyboard_shortcut_icon = std::make_unique<views::ImageView>();
     keyboard_shortcut_icon->SetImage(shortcut_icon);
     keyboard_shortcut_icon->SetBorder(views::CreateEmptyBorder(2, 4, 0, -2));
 
@@ -163,7 +164,7 @@ ClipboardNudge::ClipboardNudge(ClipboardNudgeType nudge_type)
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.name = "ClipboardContextualNudge";
   params.layer_type = ui::LAYER_NOT_DRAWN;

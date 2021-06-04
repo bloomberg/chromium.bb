@@ -73,12 +73,12 @@ void GrVkPipelineState::freeGPUResources(GrVkGpu* gpu) {
 }
 
 bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
-                                           const GrRenderTarget* renderTarget,
+                                           SkISize colorAttachmentDimensions,
                                            const GrProgramInfo& programInfo,
                                            GrVkCommandBuffer* commandBuffer) {
-    this->setRenderTargetState(renderTarget, programInfo.origin());
+    this->setRenderTargetState(colorAttachmentDimensions, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, programInfo.geomProc());
+    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
         for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
@@ -117,150 +117,151 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
                                            const GrSurfaceProxy* const geomProcTextures[],
                                            GrVkCommandBuffer* commandBuffer) {
     SkASSERT(geomProcTextures || !geomProc.numTextureSamplers());
-    if (fNumSamplers) {
-        struct SamplerBindings {
-            GrSamplerState fState;
-            GrVkTexture* fTexture;
-        };
-        SkAutoSTArray<8, SamplerBindings> samplerBindings(fNumSamplers);
-        int currTextureBinding = 0;
-
-        for (int i = 0; i < geomProc.numTextureSamplers(); ++i) {
-            SkASSERT(geomProcTextures[i]->asTextureProxy());
-            const auto& sampler = geomProc.textureSampler(i);
-            auto texture = static_cast<GrVkTexture*>(geomProcTextures[i]->peekTexture());
-            samplerBindings[currTextureBinding++] = {sampler.samplerState(), texture};
-        }
-
-        pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
-            GrSamplerState samplerState = te.samplerState();
-            auto* texture = static_cast<GrVkTexture*>(te.texture());
-            samplerBindings[currTextureBinding++] = {samplerState, texture};
-        });
-
-        if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
-            samplerBindings[currTextureBinding++] = {GrSamplerState::Filter::kNearest,
-                                                     static_cast<GrVkTexture*>(dstTexture)};
-        }
-
-        // Get new descriptor set
-        SkASSERT(fNumSamplers == currTextureBinding);
-        static const int kSamplerDSIdx = GrVkUniformHandler::kSamplerDescSet;
-
-        if (fNumSamplers == 1) {
-            auto texture = samplerBindings[0].fTexture;
-            auto texAttachment = texture->textureAttachment();
-            const auto& samplerState = samplerBindings[0].fState;
-            const GrVkDescriptorSet* descriptorSet = texture->cachedSingleDescSet(samplerState);
-            if (descriptorSet) {
-                commandBuffer->addGrSurface(sk_ref_sp<const GrSurface>(texture));
-                commandBuffer->addResource(texAttachment->textureView());
-                commandBuffer->addResource(texAttachment->resource());
-                commandBuffer->addRecycledResource(descriptorSet);
-                commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), kSamplerDSIdx,
-                                                  /*setCount=*/1, descriptorSet->descriptorSet(),
-                                                  /*dynamicOffsetCount=*/0,
-                                                  /*dynamicOffsets=*/nullptr);
-                return true;
-            }
-        }
-
-        const GrVkDescriptorSet* descriptorSet =
-                gpu->resourceProvider().getSamplerDescriptorSet(fSamplerDSHandle);
-        if (!descriptorSet) {
-            return false;
-        }
-
-        for (int i = 0; i < fNumSamplers; ++i) {
-            GrSamplerState state = samplerBindings[i].fState;
-            GrVkTexture* texture = samplerBindings[i].fTexture;
-            auto texAttachment = texture->textureAttachment();
-
-            const GrVkImageView* textureView = texAttachment->textureView();
-            const GrVkSampler* sampler = nullptr;
-            if (fImmutableSamplers[i]) {
-                sampler = fImmutableSamplers[i];
-            } else {
-                sampler = gpu->resourceProvider().findOrCreateCompatibleSampler(
-                        state, texAttachment->ycbcrConversionInfo());
-            }
-            SkASSERT(sampler);
-
-            VkDescriptorImageInfo imageInfo;
-            memset(&imageInfo, 0, sizeof(VkDescriptorImageInfo));
-            imageInfo.sampler = fImmutableSamplers[i] ? VK_NULL_HANDLE : sampler->sampler();
-            imageInfo.imageView = textureView->imageView();
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            VkWriteDescriptorSet writeInfo;
-            memset(&writeInfo, 0, sizeof(VkWriteDescriptorSet));
-            writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writeInfo.pNext = nullptr;
-            writeInfo.dstSet = *descriptorSet->descriptorSet();
-            writeInfo.dstBinding = i;
-            writeInfo.dstArrayElement = 0;
-            writeInfo.descriptorCount = 1;
-            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            writeInfo.pImageInfo = &imageInfo;
-            writeInfo.pBufferInfo = nullptr;
-            writeInfo.pTexelBufferView = nullptr;
-
-            GR_VK_CALL(gpu->vkInterface(),
-                       UpdateDescriptorSets(gpu->device(), 1, &writeInfo, 0, nullptr));
-            commandBuffer->addResource(sampler);
-            if (!fImmutableSamplers[i]) {
-                sampler->unref();
-            }
-            commandBuffer->addResource(textureView);
-            commandBuffer->addResource(texAttachment->resource());
-        }
-        if (fNumSamplers == 1) {
-            GrSamplerState state = samplerBindings[0].fState;
-            GrVkTexture* texture = samplerBindings[0].fTexture;
-            texture->addDescriptorSetToCache(descriptorSet, state);
-        }
-
-        commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), kSamplerDSIdx, /*setCount=*/1,
-                                          descriptorSet->descriptorSet(),
-                                          /*dynamicOffsetCount=*/0, /*dynamicOffsets=*/nullptr);
-        commandBuffer->addRecycledResource(descriptorSet);
-        descriptorSet->recycle();
+    if (!fNumSamplers) {
+        return true;
     }
+    struct SamplerBindings {
+        GrSamplerState fState;
+        GrVkTexture* fTexture;
+    };
+    SkAutoSTArray<8, SamplerBindings> samplerBindings(fNumSamplers);
+    int currTextureBinding = 0;
+
+    for (int i = 0; i < geomProc.numTextureSamplers(); ++i) {
+        SkASSERT(geomProcTextures[i]->asTextureProxy());
+        const auto& sampler = geomProc.textureSampler(i);
+        auto texture = static_cast<GrVkTexture*>(geomProcTextures[i]->peekTexture());
+        samplerBindings[currTextureBinding++] = {sampler.samplerState(), texture};
+    }
+
+    pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
+        GrSamplerState samplerState = te.samplerState();
+        auto* texture = static_cast<GrVkTexture*>(te.texture());
+        samplerBindings[currTextureBinding++] = {samplerState, texture};
+    });
+
+    if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
+        samplerBindings[currTextureBinding++] = {GrSamplerState::Filter::kNearest,
+                                                 static_cast<GrVkTexture*>(dstTexture)};
+    }
+
+    // Get new descriptor set
+    SkASSERT(fNumSamplers == currTextureBinding);
+    static const int kSamplerDSIdx = GrVkUniformHandler::kSamplerDescSet;
+
+    if (fNumSamplers == 1) {
+        auto texture = samplerBindings[0].fTexture;
+        auto texAttachment = texture->textureAttachment();
+        const auto& samplerState = samplerBindings[0].fState;
+        const GrVkDescriptorSet* descriptorSet = texture->cachedSingleDescSet(samplerState);
+        if (descriptorSet) {
+            commandBuffer->addGrSurface(sk_ref_sp<const GrSurface>(texture));
+            commandBuffer->addResource(texAttachment->textureView());
+            commandBuffer->addResource(texAttachment->resource());
+            commandBuffer->addRecycledResource(descriptorSet);
+            commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), kSamplerDSIdx,
+                                              /*setCount=*/1, descriptorSet->descriptorSet(),
+                                              /*dynamicOffsetCount=*/0,
+                                              /*dynamicOffsets=*/nullptr);
+            return true;
+        }
+    }
+
+    const GrVkDescriptorSet* descriptorSet =
+            gpu->resourceProvider().getSamplerDescriptorSet(fSamplerDSHandle);
+    if (!descriptorSet) {
+        return false;
+    }
+
+    for (int i = 0; i < fNumSamplers; ++i) {
+        GrSamplerState state = samplerBindings[i].fState;
+        GrVkTexture* texture = samplerBindings[i].fTexture;
+        auto texAttachment = texture->textureAttachment();
+
+        const GrVkImageView* textureView = texAttachment->textureView();
+        const GrVkSampler* sampler = nullptr;
+        if (fImmutableSamplers[i]) {
+            sampler = fImmutableSamplers[i];
+        } else {
+            sampler = gpu->resourceProvider().findOrCreateCompatibleSampler(
+                    state, texAttachment->ycbcrConversionInfo());
+            if (!sampler) {
+                descriptorSet->recycle();
+                return false;
+            }
+        }
+        SkASSERT(sampler);
+
+        VkDescriptorImageInfo imageInfo;
+        memset(&imageInfo, 0, sizeof(VkDescriptorImageInfo));
+        imageInfo.sampler = fImmutableSamplers[i] ? VK_NULL_HANDLE : sampler->sampler();
+        imageInfo.imageView = textureView->imageView();
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkWriteDescriptorSet writeInfo;
+        memset(&writeInfo, 0, sizeof(VkWriteDescriptorSet));
+        writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeInfo.pNext = nullptr;
+        writeInfo.dstSet = *descriptorSet->descriptorSet();
+        writeInfo.dstBinding = i;
+        writeInfo.dstArrayElement = 0;
+        writeInfo.descriptorCount = 1;
+        writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        writeInfo.pImageInfo = &imageInfo;
+        writeInfo.pBufferInfo = nullptr;
+        writeInfo.pTexelBufferView = nullptr;
+
+        GR_VK_CALL(gpu->vkInterface(),
+                   UpdateDescriptorSets(gpu->device(), 1, &writeInfo, 0, nullptr));
+        commandBuffer->addResource(sampler);
+        if (!fImmutableSamplers[i]) {
+            sampler->unref();
+        }
+        commandBuffer->addResource(textureView);
+        commandBuffer->addResource(texAttachment->resource());
+    }
+    if (fNumSamplers == 1) {
+        GrSamplerState state = samplerBindings[0].fState;
+        GrVkTexture* texture = samplerBindings[0].fTexture;
+        texture->addDescriptorSetToCache(descriptorSet, state);
+    }
+
+    commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), kSamplerDSIdx, /*setCount=*/1,
+                                      descriptorSet->descriptorSet(),
+                                      /*dynamicOffsetCount=*/0, /*dynamicOffsets=*/nullptr);
+    commandBuffer->addRecycledResource(descriptorSet);
+    descriptorSet->recycle();
     return true;
 }
 
 bool GrVkPipelineState::setAndBindInputAttachment(GrVkGpu* gpu,
-                                                  GrVkRenderTarget* renderTarget,
+                                                  gr_rp<const GrVkDescriptorSet> inputDescSet,
                                                   GrVkCommandBuffer* commandBuffer) {
-    SkASSERT(renderTarget->colorAttachment()->supportsInputAttachmentUsage());
-    const GrVkDescriptorSet* descriptorSet = renderTarget->inputDescSet(gpu, /*forResolve=*/false);
-
-    if (!descriptorSet) {
-        return false;
-    }
+    SkASSERT(inputDescSet);
     commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), GrVkUniformHandler::kInputDescSet,
-                                      /*setCount=*/1, descriptorSet->descriptorSet(),
+                                      /*setCount=*/1, inputDescSet->descriptorSet(),
                                       /*dynamicOffsetCount=*/0, /*dynamicOffsets=*/nullptr);
     // We don't add the input resource to the command buffer to track since the input will be
     // the same as the color attachment which is already tracked on the command buffer.
-    commandBuffer->addRecycledResource(descriptorSet);
+    commandBuffer->addRecycledResource(std::move(inputDescSet));
     return true;
 }
 
-void GrVkPipelineState::setRenderTargetState(const GrRenderTarget* rt, GrSurfaceOrigin origin) {
+void GrVkPipelineState::setRenderTargetState(SkISize colorAttachmentDimensions,
+                                             GrSurfaceOrigin origin) {
 
     // Load the RT height uniform if it is needed to y-flip gl_FragCoord.
     if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
-        fRenderTargetState.fRenderTargetSize.fHeight != rt->height()) {
-        fDataManager.set1f(fBuiltinUniformHandles.fRTHeightUni, SkIntToScalar(rt->height()));
+        fRenderTargetState.fRenderTargetSize.fHeight != colorAttachmentDimensions.height()) {
+        fDataManager.set1f(fBuiltinUniformHandles.fRTHeightUni,
+                           SkIntToScalar(colorAttachmentDimensions.height()));
     }
 
     // set RT adjustment
-    SkISize dimensions = rt->dimensions();
     SkASSERT(fBuiltinUniformHandles.fRTAdjustmentUni.isValid());
     if (fRenderTargetState.fRenderTargetOrigin != origin ||
-        fRenderTargetState.fRenderTargetSize != dimensions) {
-        fRenderTargetState.fRenderTargetSize = dimensions;
+        fRenderTargetState.fRenderTargetSize != colorAttachmentDimensions) {
+        fRenderTargetState.fRenderTargetSize = colorAttachmentDimensions;
         fRenderTargetState.fRenderTargetOrigin = origin;
 
         float rtAdjustmentVec[4];

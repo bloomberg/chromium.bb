@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_POLICY_MESSAGING_LAYER_PUBLIC_REPORT_CLIENT_H_
 
 #include <memory>
+#include <queue>
 #include <utility>
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
-#include "components/reporting//proto/record.pb.h"
+#include "chrome/browser/policy/messaging_layer/util/get_cloud_policy_client.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/client/report_queue_provider.h"
+#include "components/reporting/proto/record.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
 #include "components/reporting/storage_selector/storage_selector.h"
@@ -32,16 +34,12 @@ class ReportingClient : public ReportQueueProvider {
   using CreateReportQueueCallback =
       base::OnceCallback<void(CreateReportQueueResponse)>;
 
-  using GetCloudPolicyClientCallback = base::OnceCallback<void(
-      base::OnceCallback<void(StatusOr<policy::CloudPolicyClient*>)>)>;
-
   class ClientInitializingContext
       : public ReportQueueProvider::InitializingContext {
    public:
     ClientInitializingContext(
         GetCloudPolicyClientCallback get_client_cb,
         UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
-        UpdateConfigurationCallback update_config_cb,
         InitCompleteCallback init_complete_cb,
         ReportingClient* client,
         scoped_refptr<InitializationStateTracker> init_state_tracker);
@@ -83,25 +81,26 @@ class ReportingClient : public ReportQueueProvider {
   };
 
   ReportQueueProvider::InitializingContext* InstantiateInitializingContext(
-      InitializingContext::UpdateConfigurationCallback update_config_cb,
       InitCompleteCallback init_complete_cb,
       scoped_refptr<InitializationStateTracker> init_state_tracker) override;
 
   StatusOr<std::unique_ptr<ReportQueue>> CreateNewQueue(
       std::unique_ptr<ReportQueueConfiguration> config) override;
 
-  // RAII class for testing ReportingClient - substitutes a cloud policy client
-  // builder to return given client and resets it when destructed.
+  // RAII class for testing ReportingClient - substitutes reporting files
+  // location, signature verification public key and a cloud policy client
+  // builder to return given client. Resets client when destructed.
   class TestEnvironment {
    public:
-    explicit TestEnvironment(policy::CloudPolicyClient* client);
+    TestEnvironment(const base::FilePath& reporting_path,
+                    base::StringPiece verification_key,
+                    policy::CloudPolicyClient* client);
     TestEnvironment(const TestEnvironment& other) = delete;
     TestEnvironment& operator=(const TestEnvironment& other) = delete;
     ~TestEnvironment();
 
    private:
-    ReportingClient::GetCloudPolicyClientCallback
-        saved_build_cloud_policy_client_cb_;
+    GetCloudPolicyClientCallback saved_build_cloud_policy_client_cb_;
   };
 
   ~ReportingClient() override;
@@ -110,6 +109,30 @@ class ReportingClient : public ReportQueueProvider {
 
  private:
   class Uploader;
+
+  // Request for async start uploader (to be held in queue until upload_client
+  // is set).
+  class AsyncStartUploaderRequest {
+   public:
+    AsyncStartUploaderRequest(
+        Priority priority,
+        bool need_encryption_key,
+        UploaderInterface::UploaderInterfaceResultCb start_uploader_cb);
+    AsyncStartUploaderRequest(const AsyncStartUploaderRequest& other) = delete;
+    AsyncStartUploaderRequest& operator=(
+        const AsyncStartUploaderRequest& other) = delete;
+    ~AsyncStartUploaderRequest();
+
+    Priority priority() const;
+    bool need_encryption_key() const;
+    UploaderInterface::UploaderInterfaceResultCb& start_uploader_cb();
+
+   private:
+    const Priority priority_;
+    const bool need_encryption_key_;
+    UploaderInterface::UploaderInterfaceResultCb start_uploader_cb_;
+  };
+
   friend class TestEnvironment;
   friend class ReportQueueProvider;
   friend struct base::DefaultSingletonTraits<ReportingClient>;
@@ -132,13 +155,33 @@ class ReportingClient : public ReportQueueProvider {
       bool need_encryption_key,
       UploaderInterface::UploaderInterfaceResultCb start_uploader_cb);
 
+  void DeliverAsyncStartUploader(
+      Priority priority,
+      bool need_encryption_key,
+      UploaderInterface::UploaderInterfaceResultCb start_uploader_cb);
+
+  void FlushAsyncStartUploaderQueue();
+
+  void SetUploadClient(std::unique_ptr<UploadClient> upload_client);
+
+  base::FilePath reporting_path_;
+  std::string verification_key_;
   GetCloudPolicyClientCallback build_cloud_policy_client_cb_;
 
+  // The three member variables below are protected by
+  // uploaders_queue_task_runner_.
   // TODO(chromium:1078512) Passing around a raw pointer is unsafe. Wrap
   // CloudPolicyClient and guard access.
   policy::CloudPolicyClient* cloud_policy_client_ = nullptr;
   std::unique_ptr<UploadClient> upload_client_;
   scoped_refptr<StorageModuleInterface> storage_;
+
+  // Queue of async start uploader requests protected by sequenced task runner.
+  // When new request is posted, upload_client_ might be not set yet; in that
+  // case it is added to the queue and executed only once upload_client_ is set.
+  std::queue<AsyncStartUploaderRequest> async_start_uploaders_queue_;
+  scoped_refptr<base::SequencedTaskRunner> uploaders_queue_task_runner_;
+  SEQUENCE_CHECKER(uploaders_queue_sequence_checker_);
 };
 }  // namespace reporting
 

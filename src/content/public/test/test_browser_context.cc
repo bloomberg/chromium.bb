@@ -40,7 +40,7 @@ TestBrowserContext::~TestBrowserContext() {
       << "the BrowserTaskEnvironment instance.  "
       << BrowserThread::GetDCheckCurrentlyOnErrorMessage(BrowserThread::UI);
 
-  NotifyWillBeDestroyed(this);
+  NotifyWillBeDestroyed();
   ShutdownStoragePartitions();
 
   // Various things that were just torn down above post tasks to other
@@ -75,7 +75,7 @@ base::FilePath TestBrowserContext::GetPath() {
 #if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return std::unique_ptr<ZoomLevelDelegate>();
+  return nullptr;
 }
 #endif  // !defined(OS_ANDROID)
 

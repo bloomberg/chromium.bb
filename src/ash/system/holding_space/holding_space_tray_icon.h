@@ -15,7 +15,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "base/scoped_observation.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -72,6 +72,7 @@ class ASH_EXPORT HoldingSpaceTrayIcon : public views::View,
   // views::View:
   int GetHeightForWidth(int width) const override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnThemeChanged() override;
 
   // ShellObserver:
   void OnShellDestroying() override;

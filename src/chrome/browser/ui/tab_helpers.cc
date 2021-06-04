@@ -32,7 +32,6 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
@@ -65,7 +64,7 @@
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/browser/subresource_filter/chrome_content_subresource_filter_throttle_manager_factory.h"
 #include "chrome/browser/subresource_redirect/subresource_redirect_observer.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
@@ -85,11 +84,12 @@
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/captive_portal/core/buildflags.h"
@@ -99,6 +99,7 @@
 #include "components/download/content/public/download_navigation_observer.h"
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_web_contents_helper.h"
@@ -145,9 +146,13 @@
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
+#include "chrome/browser/ash/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/web_contents_can_go_back_observer.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
@@ -228,6 +233,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   zoom::ZoomController::CreateForWebContents(web_contents);
 #endif
 
+  // infobars::ContentInfoBarManager comes before common tab helpers since
+  // ChromeSubresourceFilterClient has it as a dependency.
+  infobars::ContentInfoBarManager::CreateForWebContents(web_contents);
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -238,13 +247,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale(),
-      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
-  ChromeSubresourceFilterClient::CreateThrottleManagerWithClientForWebContents(
-      web_contents);
+  CreateSubresourceFilterThrottleManagerForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
   ConnectionHelpTabHelper::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
@@ -261,7 +269,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents, TopSitesFactory::GetForProfile(profile).get());
   HistoryTabHelper::CreateForWebContents(web_contents);
   HistoryClustersTabHelper::CreateForWebContents(web_contents);
-  InfoBarService::CreateForWebContents(web_contents);
   webapps::InstallableManager::CreateForWebContents(web_contents);
   PrefetchProxyTabHelper::CreateForWebContents(web_contents);
   LiteVideoObserver::MaybeCreateForWebContents(web_contents);
@@ -367,7 +374,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
         web_contents);
   }
 #else
-  webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
+  if (web_app::AreWebAppsUserInstallable(profile))
+    webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);
   BrowserSyncedTabDelegate::CreateForWebContents(web_contents);
   FocusTabAfterNavigationHelper::CreateForWebContents(web_contents);
@@ -387,10 +395,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   SadTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncSupportTrustedVaultPassphrase)) {
-    SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
-  }
+  SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
       base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
@@ -406,9 +411,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
-  chromeos::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
+  ash::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
       web_contents);
   policy::DlpContentTabHelper::CreateForWebContents(web_contents);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  WebContentsCanGoBackObserver::CreateForWebContents(web_contents);
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch

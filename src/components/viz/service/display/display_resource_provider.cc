@@ -120,41 +120,14 @@ bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   return resource->transferable.is_backed_by_surface_texture;
 }
 
-size_t DisplayResourceProvider::CountPromotionHintRequestsForTesting() {
-  return wants_promotion_hints_set_.size();
-}
-
-void DisplayResourceProvider::InitializePromotionHintRequest(ResourceId id) {
+bool DisplayResourceProvider::DoesResourceWantPromotionHint(ResourceId id) {
   ChildResource* resource = TryGetResource(id);
   // TODO(ericrk): We should never fail TryGetResource, but we appear to
   // be doing so on Android in rare cases. Handle this gracefully until a
   // better solution can be found. https://crbug.com/811858
-  if (!resource)
-    return;
-
-  // We could sync all |wants_promotion_hint| resources elsewhere, and send 'no'
-  // to all resources that weren't used.  However, there's no real advantage.
-  if (resource->transferable.wants_promotion_hint)
-    wants_promotion_hints_set_.insert(id);
+  return resource && resource->transferable.wants_promotion_hint;
 }
 #endif
-
-bool DisplayResourceProvider::DoesResourceWantPromotionHint(
-    ResourceId id) const {
-#if defined(OS_ANDROID)
-  return wants_promotion_hints_set_.count(id) > 0;
-#else
-  return false;
-#endif
-}
-
-bool DisplayResourceProvider::DoAnyResourcesWantPromotionHints() const {
-#if defined(OS_ANDROID)
-  return wants_promotion_hints_set_.size() > 0;
-#else
-  return false;
-#endif
-}
 
 bool DisplayResourceProvider::IsOverlayCandidate(ResourceId id) {
   ChildResource* resource = TryGetResource(id);
@@ -162,6 +135,16 @@ bool DisplayResourceProvider::IsOverlayCandidate(ResourceId id) {
   // be doing so on Android in rare cases. Handle this gracefully until a
   // better solution can be found. https://crbug.com/811858
   return resource && resource->transferable.is_overlay_candidate;
+}
+
+SurfaceId DisplayResourceProvider::GetSurfaceId(ResourceId id) {
+  ChildResource* resource = GetResource(id);
+  return children_[resource->child_id].surface_id;
+}
+
+int DisplayResourceProvider::GetChildId(ResourceId id) {
+  ChildResource* resource = GetResource(id);
+  return resource->child_id;
 }
 
 bool DisplayResourceProvider::IsResourceSoftwareBacked(ResourceId id) {
@@ -182,12 +165,15 @@ const gfx::ColorSpace& DisplayResourceProvider::GetColorSpace(ResourceId id) {
   return resource->transferable.color_space;
 }
 
-int DisplayResourceProvider::CreateChild(ReturnCallback return_callback) {
+int DisplayResourceProvider::CreateChild(ReturnCallback return_callback,
+                                         const SurfaceId& surface_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   int child_id = next_child_++;
   Child& child = children_[child_id];
+  child.id = child_id;
   child.return_callback = std::move(return_callback);
+  child.surface_id = surface_id;
 
   return child_id;
 }
@@ -225,7 +211,9 @@ void DisplayResourceProvider::ReceiveFromChild(
         resource.mailbox_holder.mailbox.IsZero()) {
       TRACE_EVENT0(
           "viz", "DisplayResourceProvider::ReceiveFromChild dropping invalid");
-      child_info.return_callback.Run({resource.ToReturnedResource()});
+      std::vector<ReturnedResource> returned;
+      returned.push_back(resource.ToReturnedResource());
+      child_info.return_callback.Run(std::move(returned));
       continue;
     }
 
@@ -315,16 +303,6 @@ bool DisplayResourceProvider::ReadLockFenceHasPassed(
   return !resource->read_lock_fence || resource->read_lock_fence->HasPassed();
 }
 
-#if defined(OS_ANDROID)
-void DisplayResourceProvider::DeletePromotionHint(ResourceMap::iterator it) {
-  ChildResource* resource = &it->second;
-  // If this resource was interested in promotion hints, then remove it from
-  // the set of resources that we'll notify.
-  if (resource->transferable.wants_promotion_hint)
-    wants_promotion_hints_set_.erase(it->first);
-}
-#endif
-
 DisplayResourceProvider::CanDeleteNowResult
 DisplayResourceProvider::CanDeleteNow(const Child& child_info,
                                       const ChildResource& resource,
@@ -361,11 +339,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (unused.empty() && !child_info.marked_for_deletion)
     return;
 
-  // Store unused resources while batching is enabled or we can't access gpu
-  // thread right now.
-  // TODO(vasilyt): Technically we need to delay only resources with
-  // |image_context|.
-  if (batch_return_resources_lock_count_ > 0 || !can_access_gpu_thread_) {
+  // Store unused resources while batching is enabled.
+  if (batch_return_resources_lock_count_ > 0) {
     int child_id = child_it->first;
     auto& child_resources = batched_returning_resources_[child_id];
     child_resources.reserve(child_resources.size() + unused.size());
@@ -377,7 +352,7 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       DeleteAndReturnUnusedResourcesToChildImpl(child_info, style, unused);
 
   if (!to_return.empty())
-    child_info.return_callback.Run(to_return);
+    child_info.return_callback.Run(std::move(to_return));
 
   if (child_info.marked_for_deletion &&
       child_info.child_to_parent_map.empty()) {
@@ -479,6 +454,18 @@ DisplayResourceProvider::ScopedReadLockSharedImage::operator=(
   other.resource_id_ = kInvalidResourceId;
   other.resource_ = nullptr;
   return *this;
+}
+
+void DisplayResourceProvider::ScopedReadLockSharedImage::SetReleaseFence(
+    gfx::GpuFenceHandle release_fence) {
+  DCHECK(resource_);
+  resource_->release_fence = std::move(release_fence);
+}
+
+bool DisplayResourceProvider::ScopedReadLockSharedImage::HasReadLockFence()
+    const {
+  DCHECK(resource_);
+  return resource_->transferable.read_lock_fences_enabled;
 }
 
 void DisplayResourceProvider::ScopedReadLockSharedImage::Reset() {

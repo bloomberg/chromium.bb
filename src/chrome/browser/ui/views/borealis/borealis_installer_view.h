@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ash/borealis/borealis_installer.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -99,7 +99,7 @@ class BorealisInstallerView : public views::DialogDelegateView,
 
   State state_ = State::kConfirmInstall;
   InstallingState installing_state_ = InstallingState::kInactive;
-  base::Optional<borealis::BorealisInstallResult> result_;
+  absl::optional<borealis::BorealisInstallResult> result_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_BOREALIS_BOREALIS_INSTALLER_VIEW_H_

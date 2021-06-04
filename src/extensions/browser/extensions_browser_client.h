@@ -287,6 +287,10 @@ class ExtensionsBrowserClient {
                               int embedder_process_id,
                               int view_instance_id) {}
 
+  // Clears the back-forward cache for all active tabs across all browser
+  // contexts.
+  virtual void ClearBackForwardCache() {}
+
   // Attaches the task manager extension tag to |web_contents|, if needed based
   // on |view_type|, so that its corresponding task shows up in the task
   // manager.
@@ -342,6 +346,10 @@ class ExtensionsBrowserClient {
   virtual network::mojom::NetworkContext* GetSystemNetworkContext();
 
   virtual UserScriptListener* GetUserScriptListener();
+
+  // Called when all initial script loads from extensions have been completed
+  // for the given BrowserContext.
+  virtual void SignalContentScriptsLoaded(content::BrowserContext* context);
 
   // Returns the user agent used by the content module.
   virtual std::string GetUserAgent() const;

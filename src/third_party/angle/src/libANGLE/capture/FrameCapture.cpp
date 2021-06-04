@@ -31,6 +31,7 @@
 #include "libANGLE/Shader.h"
 #include "libANGLE/Surface.h"
 #include "libANGLE/VertexArray.h"
+#include "libANGLE/capture/capture_gles_1_0_autogen.h"
 #include "libANGLE/capture/capture_gles_2_0_autogen.h"
 #include "libANGLE/capture/capture_gles_3_0_autogen.h"
 #include "libANGLE/capture/capture_gles_3_1_autogen.h"
@@ -318,6 +319,7 @@ void WriteGLFloatValue(std::ostream &out, GLfloat value)
     }
     else
     {
+        out << std::setprecision(16);
         out << value;
     }
 }
@@ -526,7 +528,8 @@ void WriteCppReplayForCall(const CallCapture &call,
     std::ostringstream callOut;
 
     if (call.entryPoint == EntryPoint::GLCreateShader ||
-        call.entryPoint == EntryPoint::GLCreateProgram)
+        call.entryPoint == EntryPoint::GLCreateProgram ||
+        call.entryPoint == EntryPoint::GLCreateShaderProgramv)
     {
         GLuint id = call.params.getReturnValue().value.GLuintVal;
         callOut << "gShaderProgramMap[" << id << "] = ";
@@ -929,6 +932,37 @@ void MaybeResetResources(std::stringstream &out,
     }
 }
 
+void MaybeResetFenceSyncObjects(std::stringstream &out,
+                                DataTracker *dataTracker,
+                                std::stringstream &header,
+                                ResourceTracker *resourceTracker,
+                                std::vector<uint8_t> *binaryData)
+{
+    FenceSyncCalls &fenceSyncRegenCalls = resourceTracker->getFenceSyncRegenCalls();
+
+    // If any of our starting fence sync objects were deleted during the run, recreate them
+    FenceSyncSet &fenceSyncsToRegen = resourceTracker->getFenceSyncsToRegen();
+    for (const GLsync sync : fenceSyncsToRegen)
+    {
+        // Emit their regen calls
+        for (CallCapture &call : fenceSyncRegenCalls[sync])
+        {
+            out << "    ";
+            WriteCppReplayForCall(call, dataTracker, out, header, binaryData);
+            out << ";\n";
+        }
+    }
+}
+
+void MaybeResetOpaqueTypeObjects(std::stringstream &out,
+                                 DataTracker *dataTracker,
+                                 std::stringstream &header,
+                                 ResourceTracker *resourceTracker,
+                                 std::vector<uint8_t> *binaryData)
+{
+    MaybeResetFenceSyncObjects(out, dataTracker, header, resourceTracker, binaryData);
+}
+
 void WriteCppReplayFunctionWithParts(const gl::Context *context,
                                      ReplayFunc replayFunc,
                                      DataTracker *dataTracker,
@@ -1056,8 +1090,11 @@ void WriteCppReplay(bool compression,
                                 resourceTracker, binaryData);
         }
 
-        out << restoreCallStream.str();
+        // Reset opaque type objects that don't have IDs, so are not ResourceIDTypes.
+        MaybeResetOpaqueTypeObjects(restoreCallStream, &dataTracker, header, resourceTracker,
+                                    binaryData);
 
+        out << restoreCallStream.str();
         out << "}\n";
     }
 
@@ -1186,6 +1223,13 @@ void WriteCppReplayIndexFiles(bool compression,
            << (config ? std::to_string(config->stencilSize) : "EGL_DONT_CARE") << ";\n";
     header << "constexpr bool kIsBinaryDataCompressed = " << (compression ? "true" : "false")
            << ";\n";
+    header << "constexpr bool kAreClientArraysEnabled = "
+           << (context->getState().areClientArraysEnabled() ? "true" : "false") << ";\n";
+    header << "constexpr bool kbindGeneratesResources = "
+           << (context->getState().isBindGeneratesResourceEnabled() ? "true" : "false") << ";\n";
+    header << "constexpr bool kWebGLCompatibility = "
+           << (context->getState().getExtensions().webglCompatibility ? "true" : "false") << ";\n";
+
     header << "// End Trace Metadata\n";
     header << "\n";
     for (uint32_t frameIndex = 1; frameIndex <= frameCount; ++frameIndex)
@@ -1622,10 +1666,9 @@ void CaptureUpdateUniformValues(const gl::State &replayState,
 
     const std::vector<gl::LinkedUniform> &uniforms = program->getState().getUniforms();
 
-    for (size_t i = 0; i < uniforms.size(); i++)
+    for (const gl::LinkedUniform &uniform : uniforms)
     {
-        const gl::LinkedUniform &uniform = uniforms[i];
-        std::string uniformName          = uniform.name;
+        std::string uniformName = uniform.name;
 
         int uniformCount = 1;
         if (uniform.isArray())
@@ -1650,11 +1693,15 @@ void CaptureUpdateUniformValues(const gl::State &replayState,
 
         // If the uniform is unused, just continue
         if (readLoc.value == -1)
+        {
             continue;
+        }
 
         // Image uniforms are special and cannot be set this way
         if (typeInfo->isImageType)
+        {
             continue;
+        }
 
         // Samplers should be populated with GL_INT, regardless of return type
         if (typeInfo->isSampler)
@@ -1824,6 +1871,46 @@ void CaptureUpdateUniformValues(const gl::State &replayState,
     }
 }
 
+void CaptureVertexPointerES1(std::vector<CallCapture> *setupCalls,
+                             gl::State *replayState,
+                             GLuint attribIndex,
+                             const gl::VertexAttribute &attrib,
+                             const gl::VertexBinding &binding)
+{
+    switch (gl::GLES1Renderer::VertexArrayType(attribIndex))
+    {
+        case gl::ClientVertexArrayType::Vertex:
+            Capture(setupCalls,
+                    CaptureVertexPointer(*replayState, true, attrib.format->channelCount,
+                                         attrib.format->vertexAttribType, binding.getStride(),
+                                         attrib.pointer));
+            break;
+        case gl::ClientVertexArrayType::Normal:
+            Capture(setupCalls,
+                    CaptureNormalPointer(*replayState, true, attrib.format->vertexAttribType,
+                                         binding.getStride(), attrib.pointer));
+            break;
+        case gl::ClientVertexArrayType::Color:
+            Capture(setupCalls, CaptureColorPointer(*replayState, true, attrib.format->channelCount,
+                                                    attrib.format->vertexAttribType,
+                                                    binding.getStride(), attrib.pointer));
+            break;
+        case gl::ClientVertexArrayType::PointSize:
+            Capture(setupCalls,
+                    CapturePointSizePointerOES(*replayState, true, attrib.format->vertexAttribType,
+                                               binding.getStride(), attrib.pointer));
+            break;
+        case gl::ClientVertexArrayType::TextureCoord:
+            Capture(setupCalls,
+                    CaptureTexCoordPointer(*replayState, true, attrib.format->channelCount,
+                                           attrib.format->vertexAttribType, binding.getStride(),
+                                           attrib.pointer));
+            break;
+        default:
+            UNREACHABLE();
+    }
+}
+
 void CaptureVertexArrayData(std::vector<CallCapture> *setupCalls,
                             const gl::Context *context,
                             const gl::VertexArray *vertexArray,
@@ -1842,7 +1929,17 @@ void CaptureVertexArrayData(std::vector<CallCapture> *setupCalls,
 
         if (attrib.enabled != defaultAttrib.enabled)
         {
-            Capture(setupCalls, CaptureEnableVertexAttribArray(*replayState, false, attribIndex));
+            if (context->isGLES1())
+            {
+                Capture(setupCalls,
+                        CaptureEnableClientState(*replayState, false,
+                                                 gl::GLES1Renderer::VertexArrayType(attribIndex)));
+            }
+            else
+            {
+                Capture(setupCalls,
+                        CaptureEnableVertexAttribArray(*replayState, false, attribIndex));
+            }
         }
 
         if (attrib.format != defaultAttrib.format || attrib.pointer != defaultAttrib.pointer ||
@@ -1860,10 +1957,18 @@ void CaptureVertexArrayData(std::vector<CallCapture> *setupCalls,
             }
 
             // Establish the relationship between currently bound buffer and the VAO
-            Capture(setupCalls, CaptureVertexAttribPointer(
-                                    *replayState, true, attribIndex, attrib.format->channelCount,
-                                    attrib.format->vertexAttribType, attrib.format->isNorm(),
-                                    binding.getStride(), attrib.pointer));
+            if (context->isGLES1())
+            {
+                CaptureVertexPointerES1(setupCalls, replayState, attribIndex, attrib, binding);
+            }
+            else
+            {
+                Capture(setupCalls,
+                        CaptureVertexAttribPointer(
+                            *replayState, true, attribIndex, attrib.format->channelCount,
+                            attrib.format->vertexAttribType, attrib.format->isNorm(),
+                            binding.getStride(), attrib.pointer));
+            }
         }
 
         if (binding.getDivisor() != 0)
@@ -2094,6 +2199,18 @@ void CaptureBufferResetCalls(const gl::State &replayState,
             CaptureUnmapBuffer(replayState, true, gl::BufferBinding::Array, GL_TRUE));
 }
 
+void CaptureFenceSyncResetCalls(const gl::State &replayState,
+                                ResourceTracker *resourceTracker,
+                                GLsync syncID,
+                                const gl::Sync *sync)
+{
+    // Track calls to regenerate a given fence sync
+    FenceSyncCalls &fenceSyncRegenCalls = resourceTracker->getFenceSyncRegenCalls();
+    Capture(&fenceSyncRegenCalls[syncID],
+            CaptureFenceSync(replayState, true, sync->getCondition(), sync->getFlags(), syncID));
+    MaybeCaptureUpdateResourceIDs(&fenceSyncRegenCalls[syncID]);
+}
+
 void CaptureBufferBindingResetCalls(const gl::State &replayState,
                                     ResourceTracker *resourceTracker,
                                     gl::BufferBinding binding,
@@ -2130,6 +2247,24 @@ void CaptureIndexedBuffers(const gl::State &glState,
         {
             Capture(setupCalls,
                     CaptureBindBufferRange(glState, true, binding, index, bufferID, offset, size));
+        }
+    }
+}
+
+void CaptureDefaultVertexAttribs(const gl::State &replayState,
+                                 const gl::State &apiState,
+                                 std::vector<CallCapture> *setupCalls)
+{
+    const std::vector<gl::VertexAttribCurrentValueData> &currentValues =
+        apiState.getVertexAttribCurrentValues();
+
+    for (GLuint attribIndex = 0; attribIndex < gl::MAX_VERTEX_ATTRIBS; ++attribIndex)
+    {
+        const gl::VertexAttribCurrentValueData &defaultValue = currentValues[attribIndex];
+        if (!IsDefaultCurrentValue(defaultValue))
+        {
+            Capture(setupCalls, CaptureVertexAttrib4fv(replayState, true, attribIndex,
+                                                       defaultValue.Values.FloatValues));
         }
     }
 }
@@ -2190,9 +2325,19 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             cap(CaptureBindBuffer(replayState, true, gl::BufferBinding::Array, id));
         }
 
-        cap(CaptureBufferData(replayState, true, gl::BufferBinding::Array,
-                              static_cast<GLsizeiptr>(buffer->getSize()), buffer->getMapPointer(),
-                              buffer->getUsage()));
+        if (buffer->isImmutable())
+        {
+            cap(CaptureBufferStorageEXT(replayState, true, gl::BufferBinding::Array,
+                                        static_cast<GLsizeiptr>(buffer->getSize()),
+                                        buffer->getMapPointer(),
+                                        buffer->getStorageExtUsageFlags()));
+        }
+        else
+        {
+            cap(CaptureBufferData(replayState, true, gl::BufferBinding::Array,
+                                  static_cast<GLsizeiptr>(buffer->getSize()),
+                                  buffer->getMapPointer(), buffer->getUsage()));
+        }
 
         if (bufferMapped)
         {
@@ -2230,18 +2375,10 @@ void CaptureMidExecutionSetup(const gl::Context *context,
     // Must happen after buffer data initialization.
     // TODO(http://anglebug.com/3662): Complete state capture.
 
-    // Capture default vertex attribs
-    const std::vector<gl::VertexAttribCurrentValueData> &currentValues =
-        apiState.getVertexAttribCurrentValues();
-
-    for (GLuint attribIndex = 0; attribIndex < gl::MAX_VERTEX_ATTRIBS; ++attribIndex)
+    // Capture default vertex attribs. Do not capture on GLES1.
+    if (!context->isGLES1())
     {
-        const gl::VertexAttribCurrentValueData &defaultValue = currentValues[attribIndex];
-        if (!IsDefaultCurrentValue(defaultValue))
-        {
-            Capture(setupCalls, CaptureVertexAttrib4fv(replayState, true, attribIndex,
-                                                       defaultValue.Values.FloatValues));
-        }
+        CaptureDefaultVertexAttribs(replayState, apiState, setupCalls);
     }
 
     // Capture vertex array objects
@@ -2693,6 +2830,8 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         shadersAndPrograms.getShadersForCapture();
     const gl::ResourceMap<gl::Program, gl::ShaderProgramID> &programs =
         shadersAndPrograms.getProgramsForCaptureAndPerf();
+    const gl::ProgramPipelineManager *programPipelineManager =
+        apiState.getProgramPipelineManagerForCapture();
 
     // Capture Program binary state. Use max ID as a temporary shader ID.
     gl::ShaderProgramID tempShaderID = {resourceTracker->getMaxShaderPrograms()};
@@ -2759,10 +2898,21 @@ void CaptureMidExecutionSetup(const gl::Context *context,
                 continue;
             }
 
-            ASSERT(attrib.location != -1);
+            // Separable programs may not have a VS, meaning it may not have attributes.
+            if (program->getExecutable().hasLinkedShaderStage(gl::ShaderType::Vertex))
+            {
+                ASSERT(attrib.location != -1);
+                cap(CaptureBindAttribLocation(replayState, true, id,
+                                              static_cast<GLuint>(attrib.location),
+                                              attrib.name.c_str()));
+            }
+        }
 
-            cap(CaptureBindAttribLocation(
-                replayState, true, id, static_cast<GLuint>(attrib.location), attrib.name.c_str()));
+        if (program->isSeparable())
+        {
+            // MEC manually recreates separable programs, rather than attempting to recreate a call
+            // to glCreateShaderProgramv(), so insert a call to mark it separable.
+            cap(CaptureProgramParameteri(replayState, true, id, GL_PROGRAM_SEPARABLE, GL_TRUE));
         }
 
         cap(CaptureLinkProgram(replayState, true, id));
@@ -2780,6 +2930,36 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         }
 
         resourceTracker->onShaderProgramAccess(id);
+    }
+
+    for (const auto &ppoIterator : *programPipelineManager)
+    {
+        gl::ProgramPipeline *pipeline = ppoIterator.second;
+        gl::ProgramPipelineID id      = {ppoIterator.first};
+        cap(CaptureGenProgramPipelines(replayState, true, 1, &id));
+        MaybeCaptureUpdateResourceIDs(setupCalls);
+
+        // PPOs can contain graphics and compute programs, so loop through all shader types rather
+        // than just the linked ones since getLinkedShaderStages() will return either only graphics
+        // or compute stages.
+        for (gl::ShaderType shaderType : gl::AllShaderTypes())
+        {
+            gl::Program *program = pipeline->getShaderProgram(shaderType);
+            if (!program)
+            {
+                continue;
+            }
+            ASSERT(program->isLinked());
+            GLbitfield gLbitfield = GetBitfieldFromShaderType(shaderType);
+            cap(CaptureUseProgramStages(replayState, true, pipeline->id(), gLbitfield,
+                                        program->id()));
+        }
+
+        gl::Program *program = pipeline->getActiveShaderProgram();
+        if (program)
+        {
+            cap(CaptureActiveShaderProgram(replayState, true, id, program->id()));
+        }
     }
 
     // Handle shaders.
@@ -2824,10 +3004,24 @@ void CaptureMidExecutionSetup(const gl::Context *context,
 
     // For now we assume the installed program executable is the same as the current program.
     // TODO(jmadill): Handle installed program executable. http://anglebug.com/3662
-    if (apiState.getProgram())
+    if (apiState.getProgram() && !context->isGLES1())
     {
         cap(CaptureUseProgram(replayState, true, apiState.getProgram()->id()));
         CaptureUpdateCurrentProgram(setupCalls->back(), setupCalls);
+    }
+    else if (apiState.getProgramPipeline())
+    {
+        // glUseProgram() is called above to update the necessary uniform values for each program
+        // that's being recreated. If there is no program currently bound, then we need to unbind
+        // the last bound program so the PPO will be used instead:
+        // 7.4 Program Pipeline Objects
+        // If no current program object has been established by UseProgram, the program objects used
+        // for each shader stage and for uniform updates are taken from the bound program pipeline
+        // object, if any. If there is a current program object established by UseProgram, the bound
+        // program pipeline object has no effect on rendering or uniform updates.
+        cap(CaptureUseProgram(replayState, true, {0}));
+        CaptureUpdateCurrentProgram(setupCalls->back(), setupCalls);
+        cap(CaptureBindProgramPipeline(replayState, true, apiState.getProgramPipeline()->id()));
     }
 
     // TODO(http://anglebug.com/3662): ES 3.x objects.
@@ -2996,6 +3190,8 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             continue;
         }
         cap(CaptureFenceSync(replayState, true, sync->getCondition(), sync->getFlags(), syncID));
+        CaptureFenceSyncResetCalls(replayState, resourceTracker, syncID, sync);
+        resourceTracker->getStartingFenceSyncs().insert(syncID);
     }
 
     // Capture Image Texture bindings
@@ -3027,6 +3223,17 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             cap(CaptureDisable(replayState, true, capEnum));
         }
     };
+
+    // Capture GLES1 context states.
+    if (context->isGLES1())
+    {
+        const bool currentTextureState = apiState.getEnableFeature(GL_TEXTURE_2D);
+        const bool defaultTextureState = replayState.getEnableFeature(GL_TEXTURE_2D);
+        if (currentTextureState != defaultTextureState)
+        {
+            capCap(GL_TEXTURE_2D, currentTextureState);
+        }
+    }
 
     // Rasterizer state. Missing ES 3.x features.
     const gl::RasterizerState &defaultRasterState = replayState.getRasterizerState();
@@ -3093,50 +3300,97 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         capCap(GL_STENCIL_TEST, currentDSState.stencilTest);
     }
 
-    if (defaultDSState.stencilFunc != currentDSState.stencilFunc ||
-        defaultDSState.stencilMask != currentDSState.stencilMask || apiState.getStencilRef() != 0)
+    if (currentDSState.stencilFunc == currentDSState.stencilBackFunc &&
+        currentDSState.stencilMask == currentDSState.stencilBackMask)
     {
-        cap(CaptureStencilFuncSeparate(replayState, true, GL_FRONT, currentDSState.stencilFunc,
-                                       apiState.getStencilRef(), currentDSState.stencilMask));
+        // Front and back are equal
+        if (defaultDSState.stencilFunc != currentDSState.stencilFunc ||
+            defaultDSState.stencilMask != currentDSState.stencilMask ||
+            apiState.getStencilRef() != 0)
+        {
+            cap(CaptureStencilFunc(replayState, true, currentDSState.stencilFunc,
+                                   apiState.getStencilRef(), currentDSState.stencilMask));
+        }
+    }
+    else
+    {
+        // Front and back are separate
+        if (defaultDSState.stencilFunc != currentDSState.stencilFunc ||
+            defaultDSState.stencilMask != currentDSState.stencilMask ||
+            apiState.getStencilRef() != 0)
+        {
+            cap(CaptureStencilFuncSeparate(replayState, true, GL_FRONT, currentDSState.stencilFunc,
+                                           apiState.getStencilRef(), currentDSState.stencilMask));
+        }
+
+        if (defaultDSState.stencilBackFunc != currentDSState.stencilBackFunc ||
+            defaultDSState.stencilBackMask != currentDSState.stencilBackMask ||
+            apiState.getStencilBackRef() != 0)
+        {
+            cap(CaptureStencilFuncSeparate(
+                replayState, true, GL_BACK, currentDSState.stencilBackFunc,
+                apiState.getStencilBackRef(), currentDSState.stencilBackMask));
+        }
     }
 
-    if (defaultDSState.stencilBackFunc != currentDSState.stencilBackFunc ||
-        defaultDSState.stencilBackMask != currentDSState.stencilBackMask ||
-        apiState.getStencilBackRef() != 0)
+    if (currentDSState.stencilFail == currentDSState.stencilBackFail &&
+        currentDSState.stencilPassDepthFail == currentDSState.stencilBackPassDepthFail &&
+        currentDSState.stencilPassDepthPass == currentDSState.stencilBackPassDepthPass)
     {
-        cap(CaptureStencilFuncSeparate(replayState, true, GL_BACK, currentDSState.stencilBackFunc,
-                                       apiState.getStencilBackRef(),
-                                       currentDSState.stencilBackMask));
+        // Front and back are equal
+        if (defaultDSState.stencilFail != currentDSState.stencilFail ||
+            defaultDSState.stencilPassDepthFail != currentDSState.stencilPassDepthFail ||
+            defaultDSState.stencilPassDepthPass != currentDSState.stencilPassDepthPass)
+        {
+            cap(CaptureStencilOp(replayState, true, currentDSState.stencilFail,
+                                 currentDSState.stencilPassDepthFail,
+                                 currentDSState.stencilPassDepthPass));
+        }
+    }
+    else
+    {
+        // Front and back are separate
+        if (defaultDSState.stencilFail != currentDSState.stencilFail ||
+            defaultDSState.stencilPassDepthFail != currentDSState.stencilPassDepthFail ||
+            defaultDSState.stencilPassDepthPass != currentDSState.stencilPassDepthPass)
+        {
+            cap(CaptureStencilOpSeparate(replayState, true, GL_FRONT, currentDSState.stencilFail,
+                                         currentDSState.stencilPassDepthFail,
+                                         currentDSState.stencilPassDepthPass));
+        }
+
+        if (defaultDSState.stencilBackFail != currentDSState.stencilBackFail ||
+            defaultDSState.stencilBackPassDepthFail != currentDSState.stencilBackPassDepthFail ||
+            defaultDSState.stencilBackPassDepthPass != currentDSState.stencilBackPassDepthPass)
+        {
+            cap(CaptureStencilOpSeparate(replayState, true, GL_BACK, currentDSState.stencilBackFail,
+                                         currentDSState.stencilBackPassDepthFail,
+                                         currentDSState.stencilBackPassDepthPass));
+        }
     }
 
-    if (defaultDSState.stencilFail != currentDSState.stencilFail ||
-        defaultDSState.stencilPassDepthFail != currentDSState.stencilPassDepthFail ||
-        defaultDSState.stencilPassDepthPass != currentDSState.stencilPassDepthPass)
+    if (currentDSState.stencilWritemask == currentDSState.stencilBackWritemask)
     {
-        cap(CaptureStencilOpSeparate(replayState, true, GL_FRONT, currentDSState.stencilFail,
-                                     currentDSState.stencilPassDepthFail,
-                                     currentDSState.stencilPassDepthPass));
+        // Front and back are equal
+        if (defaultDSState.stencilWritemask != currentDSState.stencilWritemask)
+        {
+            cap(CaptureStencilMask(replayState, true, currentDSState.stencilWritemask));
+        }
     }
-
-    if (defaultDSState.stencilBackFail != currentDSState.stencilBackFail ||
-        defaultDSState.stencilBackPassDepthFail != currentDSState.stencilBackPassDepthFail ||
-        defaultDSState.stencilBackPassDepthPass != currentDSState.stencilBackPassDepthPass)
+    else
     {
-        cap(CaptureStencilOpSeparate(replayState, true, GL_BACK, currentDSState.stencilBackFail,
-                                     currentDSState.stencilBackPassDepthFail,
-                                     currentDSState.stencilBackPassDepthPass));
-    }
+        // Front and back are separate
+        if (defaultDSState.stencilWritemask != currentDSState.stencilWritemask)
+        {
+            cap(CaptureStencilMaskSeparate(replayState, true, GL_FRONT,
+                                           currentDSState.stencilWritemask));
+        }
 
-    if (defaultDSState.stencilWritemask != currentDSState.stencilWritemask)
-    {
-        cap(CaptureStencilMaskSeparate(replayState, true, GL_FRONT,
-                                       currentDSState.stencilWritemask));
-    }
-
-    if (defaultDSState.stencilBackWritemask != currentDSState.stencilBackWritemask)
-    {
-        cap(CaptureStencilMaskSeparate(replayState, true, GL_BACK,
-                                       currentDSState.stencilBackWritemask));
+        if (defaultDSState.stencilBackWritemask != currentDSState.stencilBackWritemask)
+        {
+            cap(CaptureStencilMaskSeparate(replayState, true, GL_BACK,
+                                           currentDSState.stencilBackWritemask));
+        }
     }
 
     // Blend state.
@@ -3153,9 +3407,20 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         currentBlendState.sourceBlendAlpha != defaultBlendState.sourceBlendAlpha ||
         currentBlendState.destBlendAlpha != defaultBlendState.destBlendAlpha)
     {
-        cap(CaptureBlendFuncSeparate(
-            replayState, true, currentBlendState.sourceBlendRGB, currentBlendState.destBlendRGB,
-            currentBlendState.sourceBlendAlpha, currentBlendState.destBlendAlpha));
+        if (currentBlendState.sourceBlendRGB == currentBlendState.sourceBlendAlpha &&
+            currentBlendState.destBlendRGB == currentBlendState.destBlendAlpha)
+        {
+            // Color and alpha are equal
+            cap(CaptureBlendFunc(replayState, true, currentBlendState.sourceBlendRGB,
+                                 currentBlendState.destBlendRGB));
+        }
+        else
+        {
+            // Color and alpha are separate
+            cap(CaptureBlendFuncSeparate(
+                replayState, true, currentBlendState.sourceBlendRGB, currentBlendState.destBlendRGB,
+                currentBlendState.sourceBlendAlpha, currentBlendState.destBlendAlpha));
+        }
     }
 
     if (currentBlendState.blendEquationRGB != defaultBlendState.blendEquationRGB ||
@@ -3941,7 +4206,29 @@ void FrameCapture::maybeCapturePreCallUpdates(const gl::Context *context, CallCa
             }
             else
             {
-                index = call.params.getClientArrayPointerParameter().arrayClientPointerIndex;
+                gl::ClientVertexArrayType type;
+                switch (call.entryPoint)
+                {
+                    case EntryPoint::GLVertexPointer:
+                        type = gl::ClientVertexArrayType::Vertex;
+                        break;
+                    case EntryPoint::GLColorPointer:
+                        type = gl::ClientVertexArrayType::Color;
+                        break;
+                    case EntryPoint::GLTexCoordPointer:
+                        type = gl::ClientVertexArrayType::TextureCoord;
+                        break;
+                    case EntryPoint::GLNormalPointer:
+                        type = gl::ClientVertexArrayType::Normal;
+                        break;
+                    case EntryPoint::GLPointSizePointerOES:
+                        type = gl::ClientVertexArrayType::PointSize;
+                        break;
+                    default:
+                        UNREACHABLE();
+                        type = gl::ClientVertexArrayType::InvalidEnum;
+                }
+                index = gl::GLES1Renderer::VertexArrayIndex(type, context->getState().gles1());
             }
 
             if (call.params.hasClientArrayData())
@@ -3970,7 +4257,7 @@ void FrameCapture::maybeCapturePreCallUpdates(const gl::Context *context, CallCa
                     mBufferDataMap.erase(bufferDataInfo);
                 }
                 // If we're capturing, track what buffers have been deleted
-                if (mFrameIndex >= mCaptureStartFrame)
+                if (isCaptureActive())
                 {
                     mResourceTracker.setDeletedBuffer(bufferIDs[i]);
                 }
@@ -3987,10 +4274,21 @@ void FrameCapture::maybeCapturePreCallUpdates(const gl::Context *context, CallCa
             for (GLsizei i = 0; i < count; i++)
             {
                 // If we're capturing, track what new buffers have been genned
-                if (mFrameIndex >= mCaptureStartFrame)
+                if (isCaptureActive())
                 {
                     mResourceTracker.setGennedBuffer(bufferIDs[i]);
                 }
+            }
+            break;
+        }
+
+        case EntryPoint::GLDeleteSync:
+        {
+            GLsync sync = call.params.getParam("sync", ParamType::TGLsync, 0).value.GLsyncVal;
+            // If we're capturing, track which fence sync has been deleted
+            if (isCaptureActive())
+            {
+                mResourceTracker.setDeletedFenceSync(sync);
             }
             break;
         }
@@ -4026,6 +4324,27 @@ void FrameCapture::maybeCapturePreCallUpdates(const gl::Context *context, CallCa
                 call.params.getParamFlexName("instancecount", "primcount", ParamType::TGLsizei, 4)
                     .value.GLsizeiVal;
             maybeCaptureDrawElementsClientData(context, call, instancecount);
+            break;
+        }
+
+        case EntryPoint::GLCreateShaderProgramv:
+        {
+            // Refresh the cached shader sources.
+            // The command CreateShaderProgramv() creates a stand-alone program from an array of
+            // null-terminated source code strings for a single shader type, so we need update the
+            // Shader and Program sources, similar to GLCompileShader + GLLinkProgram handling.
+            gl::ShaderProgramID programID = {call.params.getReturnValue().value.GLuintVal};
+            const ParamCapture &paramCapture =
+                call.params.getParam("typePacked", ParamType::TShaderType, 0);
+            gl::ShaderType shaderType = paramCapture.value.ShaderTypeVal;
+            gl::Program *program      = context->getProgramResolveLink(programID);
+            ASSERT(program);
+            const gl::Shader *shader = program->getAttachedShader(shaderType);
+            ASSERT(shader);
+            FrameCaptureShared *frameCaptureShared =
+                context->getShareGroup()->getFrameCaptureShared();
+            frameCaptureShared->setShaderSource(shader->getHandle(), shader->getSourceString());
+            frameCaptureShared->setProgramSources(programID, GetAttachedProgramSources(program));
             break;
         }
 
@@ -4232,6 +4551,15 @@ void FrameCapture::maybeCapturePostCallUpdates(const gl::Context *context)
     const CallCapture &lastCall = mFrameCalls.back();
     switch (lastCall.entryPoint)
     {
+        case EntryPoint::GLCreateShaderProgramv:
+        {
+            gl::ShaderProgramID programId;
+            programId.value            = lastCall.params.getReturnValue().value.GLuintVal;
+            const gl::Program *program = context->getProgramResolveLink(programId);
+            CaptureUpdateUniformLocations(program, &mFrameCalls);
+            CaptureUpdateUniformBlockIndexes(program, &mFrameCalls);
+            break;
+        }
         case EntryPoint::GLLinkProgram:
         {
             const ParamCapture &param =
@@ -4399,11 +4727,23 @@ void FrameCapture::checkForCaptureTrigger()
 
 void FrameCapture::onEndFrame(const gl::Context *context)
 {
+    if (mFrameIndex > mCaptureEndFrame)
+    {
+        setCaptureInactive();
+        return;
+    }
+
     // On Android, we can trigger a capture during the run
     checkForCaptureTrigger();
 
+    // Done after checkForCaptureTrigger(), since that can modify mCaptureStartFrame.
+    if (mFrameIndex >= mCaptureStartFrame)
+    {
+        setCaptureActive();
+    }
+
     // Note that we currently capture before the start frame to collect shader and program sources.
-    if (!mFrameCalls.empty() && mFrameIndex >= mCaptureStartFrame)
+    if (!mFrameCalls.empty() && isCaptureActive())
     {
         if (mIsFirstFrame)
         {
@@ -4552,6 +4892,19 @@ void ResourceTracker::setDeletedBuffer(gl::BufferID id)
     // In this case, the app is deleting a buffer we started with, we need to regen on loop
     mBuffersToRegen.insert(id);
     mBuffersToRestore.insert(id);
+}
+
+void ResourceTracker::setDeletedFenceSync(GLsync sync)
+{
+    ASSERT(sync != nullptr);
+    if (mStartingFenceSyncs.find(sync) == mStartingFenceSyncs.end())
+    {
+        // This is a fence sync created after MEC was initialized. Ignore it.
+        return;
+    }
+
+    // In this case, the app is deleting a fence sync we started with, we need to regen on loop.
+    mFenceSyncsToRegen.insert(sync);
 }
 
 void ResourceTracker::setGennedBuffer(gl::BufferID id)
@@ -4869,8 +5222,11 @@ void CaptureVertexPointerGLES1(const gl::State &glState,
                                ParamCapture *paramCapture)
 {
     paramCapture->value.voidConstPointerVal = pointer;
-    paramCapture->arrayClientPointerIndex =
-        gl::GLES1Renderer::VertexArrayIndex(type, glState.gles1());
+    if (!glState.getTargetBuffer(gl::BufferBinding::Array))
+    {
+        paramCapture->arrayClientPointerIndex =
+            gl::GLES1Renderer::VertexArrayIndex(type, glState.gles1());
+    }
 }
 
 gl::Program *GetProgramForCapture(const gl::State &glState, gl::ShaderProgramID handle)
@@ -4924,6 +5280,21 @@ void CaptureGenHandlesImpl(GLsizei n, GLuint *handles, ParamCapture *paramCaptur
     CaptureMemory(handles, paramCapture->readBufferSizeBytes, paramCapture);
 }
 
+void CaptureShaderStrings(GLsizei count,
+                          const GLchar *const *strings,
+                          const GLint *length,
+                          ParamCapture *paramCapture)
+{
+    for (GLsizei index = 0; index < count; ++index)
+    {
+        size_t len = ((length && length[index] >= 0) ? length[index] : strlen(strings[index]));
+        // includes the '\0' suffix
+        std::vector<uint8_t> data(len + 1, 0);
+        memcpy(data.data(), strings[index], len);
+        paramCapture->data.emplace_back(std::move(data));
+    }
+}
+
 template <>
 void WriteParamValueReplay<ParamType::TGLboolean>(std::ostream &os,
                                                   const CallCapture &call,
@@ -4938,7 +5309,7 @@ void WriteParamValueReplay<ParamType::TGLboolean>(std::ostream &os,
             os << "GL_FALSE";
             break;
         default:
-            os << "GL_INVALID_ENUM";
+            os << "0x" << std::hex << std::uppercase << GLint(value);
     }
 }
 

@@ -8,14 +8,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/vector_icons.h"
 
 namespace {
+
+constexpr int kBackToTabButtonMargin = 48;
 
 constexpr int kBackToTabButtonSize = 20;
 
@@ -89,7 +91,8 @@ void BackToTabLabelButton::UpdateSizingAndPosition() {
   if (!window_size_.has_value())
     return;
 
-  SetMaxSize(gfx::Size(window_size_->width() - 48, kBackToTabButtonSize));
+  SetMaxSize(gfx::Size(window_size_->width() - kBackToTabButtonMargin,
+      kBackToTabButtonSize));
   SetSize(CalculatePreferredSize());
   LabelButton::SetPosition(
       gfx::Point((window_size_->width() / 2) - (size().width() / 2),

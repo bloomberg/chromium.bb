@@ -20,9 +20,9 @@
 #include "src/shaders/SkBitmapProcShader.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrBitmapTextureMaker.h"
-#include "src/gpu/GrTextureAdjuster.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrBicubicEffect.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #endif
 
 // fixes https://bug.skia.org/5096
@@ -137,6 +137,13 @@ private:
     std::tuple<GrSurfaceProxyView, GrColorType> onAsView(GrRecordingContext*,
                                                          GrMipmapped,
                                                          GrImageTexGenPolicy) const override;
+
+    std::unique_ptr<GrFragmentProcessor> onAsFragmentProcessor(GrRecordingContext*,
+                                                               SkSamplingOptions,
+                                                               const SkTileMode[2],
+                                                               const SkMatrix&,
+                                                               const SkRect*,
+                                                               const SkRect*) const override;
 #endif
 
     SkBitmap fBitmap;
@@ -205,15 +212,15 @@ bool SkImage_Raster::onPinAsTexture(GrRecordingContext* rContext) const {
     } else {
         SkASSERT(fPinnedCount == 0);
         SkASSERT(fPinnedUniqueID == 0);
-        GrBitmapTextureMaker maker(rContext, fBitmap, GrImageTexGenPolicy::kDraw);
-        fPinnedView = maker.view(GrMipmapped::kNo);
+        std::tie(fPinnedView, fPinnedColorType) = GrMakeCachedBitmapProxyView(rContext,
+                                                                              fBitmap,
+                                                                              GrMipmapped::kNo);
         if (!fPinnedView) {
+            fPinnedColorType = GrColorType::kUnknown;
             return false;
         }
-        SkASSERT(fPinnedView.asTextureProxy());
         fPinnedUniqueID = fBitmap.getGenerationID();
         fPinnedContextID = rContext->priv().contextID();
-        fPinnedColorType = maker.colorType();
     }
     // Note: we only increment if the texture was successfully pinned
     ++fPinnedCount;
@@ -407,19 +414,47 @@ sk_sp<SkImage> SkImage_Raster::onReinterpretColorSpace(sk_sp<SkColorSpace> newCS
 
 #if SK_SUPPORT_GPU
 std::tuple<GrSurfaceProxyView, GrColorType> SkImage_Raster::onAsView(
-        GrRecordingContext* context,
+        GrRecordingContext* rContext,
         GrMipmapped mipmapped,
         GrImageTexGenPolicy policy) const {
     if (fPinnedView) {
         if (policy != GrImageTexGenPolicy::kDraw) {
-            return {CopyView(context, fPinnedView, mipmapped, policy), fPinnedColorType};
+            return {CopyView(rContext, fPinnedView, mipmapped, policy), fPinnedColorType};
         }
-        GrColorInfo colorInfo(fPinnedColorType, this->alphaType(), this->refColorSpace());
-        GrTextureAdjuster adjuster(context, fPinnedView, colorInfo, fPinnedUniqueID);
-        return {adjuster.view(mipmapped), adjuster.colorType()};
+        if (mipmapped == GrMipmapped::kYes) {
+            auto view = FindOrMakeCachedMipmappedView(rContext, fPinnedView, fPinnedUniqueID);
+            return {std::move(view), fPinnedColorType};
+        }
+        return {fPinnedView, fPinnedColorType};
     }
+    if (policy == GrImageTexGenPolicy::kDraw) {
+        return GrMakeCachedBitmapProxyView(rContext, fBitmap, mipmapped);
+    }
+    auto budgeted = (policy == GrImageTexGenPolicy::kNew_Uncached_Unbudgeted)
+            ? SkBudgeted::kNo
+            : SkBudgeted::kYes;
+    return GrMakeUncachedBitmapProxyView(rContext,
+                                         fBitmap,
+                                         mipmapped,
+                                         SkBackingFit::kExact,
+                                         budgeted);
+}
 
-    GrBitmapTextureMaker maker(context, fBitmap, policy);
-    return {maker.view(mipmapped), maker.colorType()};
+std::unique_ptr<GrFragmentProcessor> SkImage_Raster::onAsFragmentProcessor(
+        GrRecordingContext* rContext,
+        SkSamplingOptions sampling,
+        const SkTileMode tileModes[2],
+        const SkMatrix& m,
+        const SkRect* subset,
+        const SkRect* domain) const {
+    auto mm = sampling.mipmap == SkMipmapMode::kNone ? GrMipmapped::kNo : GrMipmapped::kYes;
+    return MakeFragmentProcessorFromView(rContext,
+                                         std::get<0>(this->asView(rContext, mm)),
+                                         this->alphaType(),
+                                         sampling,
+                                         tileModes,
+                                         m,
+                                         subset,
+                                         domain);
 }
 #endif

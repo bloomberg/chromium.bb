@@ -4,8 +4,8 @@
 
 #include "media/capture/content/video_capture_oracle.h"
 
-#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -880,7 +880,7 @@ TEST(VideoCaptureOracleTest, RespectsMaxFrameRateFeedback) {
   int frame_number;
 
   // As if previous frame was captured at 30 fps.
-  base::Optional<base::TimeTicks> last_capture_time;
+  absl::optional<base::TimeTicks> last_capture_time;
   for (int i = 0; i < 100; ++i) {
     t += vsync_interval;
     if (oracle.ObserveEventAndDecideCapture(
@@ -904,7 +904,7 @@ TEST(VideoCaptureOracleTest, RespectsMaxFrameRateFeedback) {
       frame_number, media::VideoCaptureFeedback(kNoResourceUtilization, k5Fps));
 
   // Don't measure frame-rate across different target frame-rates.
-  last_capture_time = base::nullopt;
+  last_capture_time = absl::nullopt;
   // Continue capturing frames, observe that frame-rate limit is respected.
   for (int i = 0; i < 100; ++i) {
     t += vsync_interval;
@@ -930,7 +930,7 @@ TEST(VideoCaptureOracleTest, RespectsMaxFrameRateFeedback) {
       media::VideoCaptureFeedback(kNoResourceUtilization, kNoFpsLimit));
 
   // Don't measure frame-rate across different target frame-rates.
-  last_capture_time = base::nullopt;
+  last_capture_time = absl::nullopt;
   // Continue capturing frames, observe that original min capture period is
   // respected.
   for (int i = 0; i < 100; ++i) {

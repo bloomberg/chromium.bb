@@ -17,9 +17,10 @@ class Layer;
 
 namespace blink {
 
+class HTMLCanvasElementOrOffscreenCanvas;
 class ImageBitmap;
 class ImageLayerBridge;
-class HTMLCanvasElementOrOffscreenCanvas;
+class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 
 class MODULES_EXPORT ImageBitmapRenderingContextBase
     : public CanvasRenderingContext {
@@ -38,7 +39,11 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   }
 
   bool CanCreateCanvas2dResourceProvider() const;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
@@ -77,4 +82,4 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_BASE_H_

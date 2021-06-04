@@ -110,11 +110,12 @@ class OsIntegrationManager {
 
   // Update all needed OS hooks for the web app.
   // virtual for testing
-  virtual void UpdateOsHooks(const AppId& app_id,
-                             base::StringPiece old_name,
-                             std::unique_ptr<ShortcutInfo> old_shortcut,
-                             bool file_handlers_need_os_update,
-                             const WebApplicationInfo& web_app_info);
+  virtual void UpdateOsHooks(
+      const AppId& app_id,
+      base::StringPiece old_name,
+      std::unique_ptr<ShortcutInfo> old_shortcut,
+      FileHandlerUpdateAction file_handlers_need_os_update,
+      const WebApplicationInfo& web_app_info);
 
   // Proxy calls for AppShortcutManager.
   // virtual for testing
@@ -130,7 +131,7 @@ class OsIntegrationManager {
   // Proxy calls for FileHandlerManager.
   bool IsFileHandlingAPIAvailable(const AppId& app_id);
   const apps::FileHandlers* GetEnabledFileHandlers(const AppId& app_id);
-  const base::Optional<GURL> GetMatchingFileHandlerURL(
+  const absl::optional<GURL> GetMatchingFileHandlerURL(
       const AppId& app_id,
       const std::vector<base::FilePath>& launch_files);
   void MaybeUpdateFileHandlingOriginTrialExpiry(
@@ -140,8 +141,12 @@ class OsIntegrationManager {
   void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
 
   // Proxy calls for ProtocolHandlerManager.
-  virtual base::Optional<GURL> TranslateProtocolUrl(const AppId& app_id,
+  virtual absl::optional<GURL> TranslateProtocolUrl(const AppId& app_id,
                                                     const GURL& protocol_url);
+  virtual std::vector<ProtocolHandler> GetHandlersForProtocol(
+      const std::string& protocol);
+  virtual std::vector<ProtocolHandler> GetAppProtocolHandlers(
+      const AppId& app_id);
 
   // Getter for testing FileHandlerManager
   FileHandlerManager& file_handler_manager_for_testing();
@@ -162,6 +167,10 @@ class OsIntegrationManager {
   virtual void UpdateUrlHandlers(
       const AppId& app_id,
       base::OnceCallback<void(bool success)> callback);
+
+  virtual void UpdateFileHandlers(
+      const AppId& app_id,
+      FileHandlerUpdateAction file_handlers_need_os_update);
 
  protected:
   AppShortcutManager* shortcut_manager() { return shortcut_manager_.get(); }
@@ -229,8 +238,10 @@ class OsIntegrationManager {
                                DeleteShortcutsCallback callback);
   virtual void UnregisterFileHandlers(const AppId& app_id,
                                       std::unique_ptr<ShortcutInfo> info,
-                                      base::OnceCallback<void()> callback);
-  virtual void UnregisterProtocolHandlers(const AppId& app_id);
+                                      base::OnceCallback<void(bool)> callback);
+  virtual void UnregisterProtocolHandlers(
+      const AppId& app_id,
+      base::OnceCallback<void(bool)> callback);
   virtual void UnregisterUrlHandlers(const AppId& app_id);
   virtual void UnregisterWebAppOsUninstallation(const AppId& app_id);
 
@@ -238,8 +249,11 @@ class OsIntegrationManager {
   virtual void UpdateShortcuts(const AppId& app_id, base::StringPiece old_name);
   virtual void UpdateShortcutsMenu(const AppId& app_id,
                                    const WebApplicationInfo& web_app_info);
-  virtual void UpdateFileHandlers(const AppId& app_id,
-                                  std::unique_ptr<ShortcutInfo> info);
+  virtual void UpdateFileHandlersWithShortcutInfo(
+      const AppId& app_id,
+      FileHandlerUpdateAction file_handlers_need_os_update,
+      std::unique_ptr<ShortcutInfo> info);
+  virtual void UpdateProtocolHandlers(const AppId& app_id);
 
   // Utility methods:
   virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id);

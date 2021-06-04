@@ -20,9 +20,6 @@ const char kOfflinePagesUseTestingSnapshotDelay[] =
 
 namespace offline_pages {
 
-const base::Feature kOffliningRecentPagesFeature{
-    "OfflineRecentPages", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -47,23 +44,13 @@ const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature{
 const base::Feature kOfflinePagesCTSuppressNotificationsFeature{
     "OfflinePagesCTSuppressNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kOfflinePagesShowAlternateDinoPageFeature{
-    "OfflinePagesShowAlternateDinoPage", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kOfflineIndicatorFeature{"OfflineIndicator",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature{
-    "OfflineIndicatorAlwaysHttpProbe", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesNetworkStateLikelyUnknown{
     "OfflinePagesNetworkStateLikelyUnknown", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
-
-bool IsOffliningRecentPagesEnabled() {
-  return base::FeatureList::IsEnabled(kOffliningRecentPagesFeature);
-}
 
 bool IsOfflinePagesCTEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesCTFeature);
@@ -106,11 +93,6 @@ bool IsOfflinePagesSuppressNotificationsEnabled() {
       kOfflinePagesCTSuppressNotificationsFeature);
 }
 
-bool ShouldShowAlternateDinoPage() {
-  return base::FeatureList::IsEnabled(
-      kOfflinePagesShowAlternateDinoPageFeature);
-}
-
 std::string GetPrefetchingOfflinePagesExperimentTag() {
   return base::GetFieldTrialParamValueByFeature(
       kPrefetchingOfflinePagesFeature,
@@ -119,10 +101,6 @@ std::string GetPrefetchingOfflinePagesExperimentTag() {
 
 bool IsOfflineIndicatorFeatureEnabled() {
   return base::FeatureList::IsEnabled(kOfflineIndicatorFeature);
-}
-
-bool IsOfflineIndicatorAlwaysHttpProbeEnabled() {
-  return base::FeatureList::IsEnabled(kOfflineIndicatorAlwaysHttpProbeFeature);
 }
 
 bool IsOnTheFlyMhtmlHashComputationEnabled() {

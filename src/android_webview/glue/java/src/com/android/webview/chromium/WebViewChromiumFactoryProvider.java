@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PacProcessor;
@@ -55,10 +54,11 @@ import org.chromium.base.annotations.VerifiesOnN;
 import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.build.BuildConfig;
 import org.chromium.build.NativeLibraries;
-import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
+import org.chromium.components.version_info.VersionConstants;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
 import java.io.File;
@@ -317,6 +317,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 CommandLine cl = CommandLine.getInstance();
                 cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
             }
+            // Using concatenation rather than %s to allow values to be inlined by R8.
+            Log.i(TAG,
+                    "Loaded version=" + VersionConstants.PRODUCT_VERSION + " minSdkVersion="
+                            + BuildConfig.MIN_SDK_VERSION + " isBundle=" + ProductConfig.IS_BUNDLE
+                            + " multiprocess=%s packageId=%s",
+                    multiProcess, packageId);
 
             // Enable modern SameSite cookie behavior if the app targets at least S.
             if (BuildInfo.targetsAtLeastS()) {
@@ -646,11 +652,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                      "WebViewChromiumFactoryProvider.insideCreateWebViewContentsClientAdapter")) {
             return new WebViewContentsClientAdapter(webView, context, mWebViewDelegate);
         }
-    }
-
-    AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
-        return new AutofillProvider(context, containerView, "Android WebView");
     }
 
     void startYourEngines(boolean onMainThread) {

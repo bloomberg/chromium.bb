@@ -80,26 +80,13 @@ OriginData CreateOriginData(const std::string& host, uint64_t last_visit_time) {
   return data;
 }
 
-NavigationID CreateNavigationID(SessionID tab_id,
-                                const std::string& main_frame_url,
-                                ukm::SourceId ukm_source_id) {
-  NavigationID navigation_id;
-  navigation_id.tab_id = tab_id;
-  navigation_id.ukm_source_id = ukm_source_id;
-  navigation_id.main_frame_url = GURL(main_frame_url);
-  navigation_id.creation_time = base::TimeTicks::Now();
-  return navigation_id;
-}
-
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
     const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos,
     base::TimeTicks navigation_started) {
-  NavigationID navigation_id;
-  navigation_id.main_frame_url = GURL(main_frame_url);
-  navigation_id.creation_time = navigation_started;
-  PageRequestSummary summary(navigation_id);
+  PageRequestSummary summary(ukm::SourceId(), GURL(main_frame_url),
+                             navigation_started);
   summary.initial_url = GURL(initial_url);
   for (const auto& resource_load_info : resource_load_infos)
     summary.UpdateOrAddResource(*resource_load_info);
@@ -116,7 +103,7 @@ blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
   resource_load_info->method = "GET";
   resource_load_info->request_destination = request_destination;
   resource_load_info->network_info = blink::mojom::CommonNetworkInfo::New(
-      true, always_access_network, base::nullopt);
+      true, always_access_network, absl::nullopt);
   resource_load_info->request_priority = net::HIGHEST;
   return resource_load_info;
 }
@@ -140,7 +127,7 @@ blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
   resource_load_info->request_destination = request_destination;
   resource_load_info->request_priority = net::HIGHEST;
   auto common_network_info =
-      blink::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
+      blink::mojom::CommonNetworkInfo::New(true, false, absl::nullopt);
   resource_load_info->network_info = common_network_info.Clone();
   for (size_t i = 0; i + 1 < redirect_chain.size(); ++i) {
     resource_load_info->redirect_info_chain.push_back(
@@ -215,10 +202,6 @@ std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
   for (const auto& pair : summary.origins)
     os << "\t\t" << pair.first << ":" << pair.second << std::endl;
   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
-  return os << navigation_id.tab_id << "," << navigation_id.main_frame_url;
 }
 
 std::ostream& operator<<(std::ostream& os, const PreconnectRequest& request) {

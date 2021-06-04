@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//build/config/linux/gtk/gtk.gni")
 import("//gpu/vulkan/features.gni")
 import("//ui/base/ui_features.gni")
 
@@ -29,6 +28,8 @@ source_set("x11") {
     "x11_clipboard_ozone.h",
     "x11_global_shortcut_listener_ozone.cc",
     "x11_global_shortcut_listener_ozone.h",
+    "x11_keyboard_hook_ozone.cc",
+    "x11_keyboard_hook_ozone.h",
     "x11_menu_utils.cc",
     "x11_menu_utils.h",
     "x11_screen_ozone.cc",
@@ -88,10 +89,6 @@ source_set("x11") {
 
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan/x" ]
-  }
-
-  if (use_gtk) {
-    deps += [ "//ui/gtk/x" ]
   }
 
   if (use_xkbcommon) {

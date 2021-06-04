@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
@@ -61,14 +61,14 @@ bool FidoDevice::SupportedProtocolIsInitialized() {
 
 void FidoDevice::OnDeviceInfoReceived(
     base::OnceClosure done,
-    base::Optional<std::vector<uint8_t>> response) {
+    absl::optional<std::vector<uint8_t>> response) {
   // TODO(hongjunchoi): Add tests that verify this behavior.
   if (state_ == FidoDevice::State::kDeviceError)
     return;
 
   state_ = FidoDevice::State::kReady;
-  base::Optional<AuthenticatorGetInfoResponse> get_info_response =
-      response ? ReadCTAPGetInfoResponse(*response) : base::nullopt;
+  absl::optional<AuthenticatorGetInfoResponse> get_info_response =
+      response ? ReadCTAPGetInfoResponse(*response) : absl::nullopt;
   if (!get_info_response ||
       !base::Contains(get_info_response->versions, ProtocolVersion::kCtap2)) {
     supported_protocol_ = ProtocolVersion::kU2f;

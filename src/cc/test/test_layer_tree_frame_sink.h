@@ -101,18 +101,18 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   void SubmitCompositorFrame(viz::CompositorFrame frame,
                              bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                          FrameSkippedReason reason) override;
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion buffer,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   // mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
+      std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
                     const viz::FrameTimingDetailsMap& timing_details) override;
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void OnCompositorFrameTransitionDirectiveProcessed(
       uint32_t sequence_id) override {}

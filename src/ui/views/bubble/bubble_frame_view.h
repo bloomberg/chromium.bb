@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/time/time.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -18,7 +18,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/input_event_activation_protector.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -72,10 +71,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
 
   // Updates the current progress value of |progress_indicator_|. If progress is
   // absent, hides |the progress_indicator|.
-  void SetProgress(base::Optional<double> progress);
+  void SetProgress(absl::optional<double> progress);
   // Returns the current progress value of |progress_indicator_| if
   // |progress_indicator_| is visible.
-  base::Optional<double> GetProgress() const;
+  absl::optional<double> GetProgress() const;
 
   // View:
   gfx::Size CalculatePreferredSize() const override;

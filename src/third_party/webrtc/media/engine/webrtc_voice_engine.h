@@ -38,8 +38,6 @@ class AudioFrameProcessor;
 
 namespace cricket {
 
-class AudioDeviceModule;
-class AudioMixer;
 class AudioSource;
 class WebRtcVoiceMediaChannel;
 
@@ -79,12 +77,6 @@ class WebRtcVoiceEngine final : public VoiceEngineInterface {
   const std::vector<AudioCodec>& recv_codecs() const override;
   std::vector<webrtc::RtpHeaderExtensionCapability> GetRtpHeaderExtensions()
       const override;
-
-  // For tracking WebRtc channels. Needed because we have to pause them
-  // all when switching devices.
-  // May only be called by WebRtcVoiceMediaChannel.
-  void RegisterChannel(WebRtcVoiceMediaChannel* channel);
-  void UnregisterChannel(WebRtcVoiceMediaChannel* channel);
 
   // Starts AEC dump using an existing file. A maximum file size in bytes can be
   // specified. When the maximum file size is reached, logging is stopped and
@@ -129,7 +121,6 @@ class WebRtcVoiceEngine final : public VoiceEngineInterface {
   rtc::scoped_refptr<webrtc::AudioState> audio_state_;
   std::vector<AudioCodec> send_codecs_;
   std::vector<AudioCodec> recv_codecs_;
-  std::vector<WebRtcVoiceMediaChannel*> channels_;
   bool is_dumping_aec_ = false;
   bool initialized_ = false;
 
@@ -217,6 +208,7 @@ class WebRtcVoiceMediaChannel final : public VoiceMediaChannel,
 
   void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                         int64_t packet_time_us) override;
+  void OnPacketSent(const rtc::SentPacket& sent_packet) override;
   void OnNetworkRouteChanged(const std::string& transport_name,
                              const rtc::NetworkRoute& network_route) override;
   void OnReadyToSend(bool ready) override;
@@ -247,29 +239,9 @@ class WebRtcVoiceMediaChannel final : public VoiceMediaChannel,
   // implements Transport interface
   bool SendRtp(const uint8_t* data,
                size_t len,
-               const webrtc::PacketOptions& options) override {
-    rtc::CopyOnWriteBuffer packet(data, len, kMaxRtpPacketLen);
-    rtc::PacketOptions rtc_options;
-    rtc_options.packet_id = options.packet_id;
-    if (DscpEnabled()) {
-      rtc_options.dscp = PreferredDscp();
-    }
-    rtc_options.info_signaled_after_sent.included_in_feedback =
-        options.included_in_feedback;
-    rtc_options.info_signaled_after_sent.included_in_allocation =
-        options.included_in_allocation;
-    return VoiceMediaChannel::SendPacket(&packet, rtc_options);
-  }
+               const webrtc::PacketOptions& options) override;
 
-  bool SendRtcp(const uint8_t* data, size_t len) override {
-    rtc::CopyOnWriteBuffer packet(data, len, kMaxRtpPacketLen);
-    rtc::PacketOptions rtc_options;
-    if (DscpEnabled()) {
-      rtc_options.dscp = PreferredDscp();
-    }
-
-    return VoiceMediaChannel::SendRtcp(&packet, rtc_options);
-  }
+  bool SendRtcp(const uint8_t* data, size_t len) override;
 
  private:
   bool SetOptions(const AudioOptions& options);

@@ -70,6 +70,7 @@ class MockClipboardImageModelFactory : public ClipboardImageModelFactory {
               Render,
               (const base::UnguessableToken&,
                const std::string&,
+               const gfx::Size&,
                ImageModelCallback),
               (override));
   MOCK_METHOD(void, CancelRequest, (const base::UnguessableToken&), (override));
@@ -130,16 +131,16 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
       .SetFilenames({ui::FileInfo(base::FilePath("/dir/filename"),
                                   base::FilePath("filename"))})
       .SetBookmarkTitle("Bookmark Title")
-      .SetBitmap(gfx::test::CreateBitmap(10, 10))
-      .SetFileSystemData({"/path/to/File.txt", "/path/to/Other%20File.txt"})
+      .SetPng(gfx::test::CreatePNGBytes(10))
+      .SetFileSystemData({u"/path/to/File.txt", u"/path/to/Other%20File.txt"})
       .SetWebSmartPaste(true);
 
-  // Bitmap data always take precedence.
+  // PNG data always take precedence.
   EXPECT_EQ(resource_manager()->GetLabel(builder.Build()), u"Image");
 
-  builder.ClearBitmap();
+  builder.ClearPng();
 
-  // In the absence of bitmap data, HTML data takes precedence, but we use
+  // In the absence of PNG data, HTML data takes precedence, but we use
   // plain-text format for the label.
   EXPECT_EQ(resource_manager()->GetLabel(builder.Build()), u"Text");
 
@@ -189,7 +190,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
 TEST_F(ClipboardHistoryResourceManagerTest, BasicImgCachedImageModel) {
   ui::ImageModel expected_image_model = GetRandomImageModel();
   ON_CALL(*mock_image_factory(), Render)
-      .WillByDefault(testing::WithArg<2>(
+      .WillByDefault(testing::WithArg<3>(
           [&](ClipboardImageModelFactory::ImageModelCallback callback) {
             std::move(callback).Run(expected_image_model);
           }));
@@ -213,7 +214,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, BasicImgCachedImageModel) {
 TEST_F(ClipboardHistoryResourceManagerTest, BasicTableCachedImageModel) {
   ui::ImageModel expected_image_model = GetRandomImageModel();
   ON_CALL(*mock_image_factory(), Render)
-      .WillByDefault(testing::WithArg<2>(
+      .WillByDefault(testing::WithArg<3>(
           [&](ClipboardImageModelFactory::ImageModelCallback callback) {
             std::move(callback).Run(expected_image_model);
           }));
@@ -237,7 +238,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, BasicTableCachedImageModel) {
 TEST_F(ClipboardHistoryResourceManagerTest, BasicIneligibleCachedImageModel) {
   ui::ImageModel expected_image_model = GetRandomImageModel();
   ON_CALL(*mock_image_factory(), Render)
-      .WillByDefault(testing::WithArg<2>(
+      .WillByDefault(testing::WithArg<3>(
           [&](ClipboardImageModelFactory::ImageModelCallback callback) {
             std::move(callback).Run(expected_image_model);
           }));
@@ -260,7 +261,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, DuplicateHTML) {
   // history, but they should share a CachedImageModel.
   ui::ImageModel expected_image_model = GetRandomImageModel();
   ON_CALL(*mock_image_factory(), Render)
-      .WillByDefault(testing::WithArg<2>(
+      .WillByDefault(testing::WithArg<3>(
           [&](ClipboardImageModelFactory::ImageModelCallback callback) {
             std::move(callback).Run(expected_image_model);
           }));
@@ -295,7 +296,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, DifferentHTML) {
   std::deque<ui::ImageModel> expected_image_models{first_expected_image_model,
                                                    second_expected_image_model};
   ON_CALL(*mock_image_factory(), Render)
-      .WillByDefault(testing::WithArg<2>(
+      .WillByDefault(testing::WithArg<3>(
           [&](ClipboardImageModelFactory::ImageModelCallback callback) {
             std::move(callback).Run(expected_image_models.front());
             expected_image_models.pop_front();

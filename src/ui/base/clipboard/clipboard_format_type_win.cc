@@ -212,8 +212,15 @@ const ClipboardFormatType& ClipboardFormatType::GetRtfType() {
 }
 
 // static
+const ClipboardFormatType& ClipboardFormatType::GetPngType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"PNG"));
+  return *format;
+}
+
+// static
 const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
-  static base::NoDestructor<ClipboardFormatType> format(CF_BITMAP);
+  static base::NoDestructor<ClipboardFormatType> format(CF_DIBV5);
   return *format;
 }
 

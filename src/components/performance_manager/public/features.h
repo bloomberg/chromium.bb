@@ -5,11 +5,13 @@
 // This header contains field trial and variations definitions for policies,
 // mechanisms and features in the performance_manager component.
 
-#include "base/feature_list.h"
-#include "base/time/time.h"
-
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_FEATURES_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_FEATURES_H_
+
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace performance_manager {
 namespace features {
@@ -38,6 +40,50 @@ struct TabLoadingFrameNavigationThrottlesParams {
 
 // The feature that gates whether or not the PM runs on the main (UI) thread.
 extern const base::Feature kRunOnMainThread;
+
+#if !defined(OS_ANDROID)
+// Enables urgent discarding of pages directly from PerformanceManager rather
+// than via TabManager.
+extern const base::Feature kUrgentDiscardingFromPerformanceManager;
+
+// The discard strategy to use.
+// Integer values are specified to allow conversion from the integer value in
+// the DiscardStrategy feature param.
+enum class DiscardStrategy : int {
+  // Discards the least recently used tab among the eligible ones. This is the
+  // default strategy.
+  LRU = 0,
+  // Discard the tab with the biggest resident set among the eligible ones.
+  BIGGEST_RSS = 1,
+};
+
+class UrgentDiscardingParams {
+ public:
+  ~UrgentDiscardingParams();
+
+  static UrgentDiscardingParams GetParams();
+
+  DiscardStrategy discard_strategy() const { return discard_strategy_; }
+
+  static constexpr base::FeatureParam<int> kDiscardStrategy{
+      &features::kUrgentDiscardingFromPerformanceManager, "DiscardStrategy",
+      static_cast<int>(DiscardStrategy::LRU)};
+
+ private:
+  UrgentDiscardingParams();
+  UrgentDiscardingParams(const UrgentDiscardingParams& rhs);
+
+  DiscardStrategy discard_strategy_;
+};
+
+// Feature that controls whether or not tabs should be automatically discarded
+// when the total PMF is too high.
+extern const base::Feature kHighPMFDiscardPolicy;
+
+// Enable background tab loading of pages (restored via session restore)
+// directly from Performance Manager rather than via TabLoader.
+extern const base::Feature kBackgroundTabLoadingFromPerformanceManager;
+#endif
 
 }  // namespace features
 }  // namespace performance_manager

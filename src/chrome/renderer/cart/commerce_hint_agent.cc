@@ -42,9 +42,15 @@ namespace {
 constexpr unsigned kLengthLimit = 4096;
 constexpr char kAmazonDomain[] = "amazon.com";
 constexpr char kEbayDomain[] = "ebay.com";
+constexpr char kElectronicExpressDomain[] = "electronicexpress.com";
 
 constexpr base::FeatureParam<std::string> kSkipPattern{
     &ntp_features::kNtpChromeCartModule, "product-skip-pattern",
+    // This regex does not match anything.
+    "\\b\\B"};
+
+constexpr base::FeatureParam<std::string> kPartnerMerchantPattern{
+    &ntp_features::kNtpChromeCartModule, "partner-merchant-pattern",
     // This regex does not match anything.
     "\\b\\B"};
 
@@ -96,10 +102,10 @@ mojo::Remote<mojom::CommerceHintObserver> GetObserver(
   return observer;
 }
 
-base::Optional<GURL> ScanCartURL(content::RenderFrame* render_frame) {
+absl::optional<GURL> ScanCartURL(content::RenderFrame* render_frame) {
   blink::WebDocument doc = render_frame->GetWebFrame()->GetDocument();
 
-  base::Optional<GURL> best;
+  absl::optional<GURL> best;
   blink::WebVector<WebElement> elements =
       doc.QuerySelectorAll(WebString("a[href]"));
   for (WebElement element : elements) {
@@ -121,10 +127,11 @@ base::Optional<GURL> ScanCartURL(content::RenderFrame* render_frame) {
   return best;
 }
 
-void OnAddToCart(content::RenderFrame* render_frame) {
+void OnAddToCart(content::RenderFrame* render_frame,
+                 const std::string& product_id = std::string()) {
   mojo::Remote<mojom::CommerceHintObserver> observer =
       GetObserver(render_frame);
-  observer->OnAddToCart(ScanCartURL(render_frame));
+  observer->OnAddToCart(ScanCartURL(render_frame), product_id);
 }
 
 void OnVisitCart(content::RenderFrame* render_frame) {
@@ -164,7 +171,7 @@ const re2::RE2& GetAddToCartPattern() {
   static base::NoDestructor<re2::RE2> instance(
       "(\\b|[^a-z])"
       "((add(ed)?(-|_|(%20))?(item)?(-|_|(%20))?to(-|_|(%20))?(cart|basket|bag)"
-      ")|(cart\\/add)|(checkout\\/basket)|(cart_type))"
+      ")|(cart\\/add)|(checkout\\/basket)|(cart_type)|(isquickaddtocartbutton))"
       "(\\b|[^a-z])",
       options);
   return *instance;
@@ -282,6 +289,27 @@ const re2::RE2& GetPurchaseTextPattern() {
   return *instance;
 }
 
+bool GetProductIdFromRequest(base::StringPiece request,
+                             std::string* product_id) {
+  re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  static base::NoDestructor<re2::RE2> re("(product_id|pr1id)=(\\w+)", options);
+  return RE2::PartialMatch(re2::StringPiece(request.data(), request.size()),
+                           *re, nullptr, product_id);
+}
+
+const re2::RE2& GetPartnerMerchantPattern() {
+  re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  static base::NoDestructor<re2::RE2> instance(kPartnerMerchantPattern.Get(),
+                                               options);
+  return *instance;
+}
+
+bool IsPartnerMerchant(const GURL& url) {
+  return PartialMatch(url.spec(), GetPartnerMerchantPattern());
+}
+
 bool IsSameDomainXHR(const std::string& host,
                      const blink::WebURLRequest& request) {
   // Only handle XHR POST requests here.
@@ -302,13 +330,34 @@ void DetectAddToCart(content::RenderFrame* render_frame,
   // Only handle XHR POST requests here.
   // Other matches like navigation is handled in DidStartNavigation().
   // Some sites use GET requests though, so special-case them here.
-  if (!request.HttpMethod().Equals("POST") && !url.DomainIs(kEbayDomain)) {
+  if (!request.HttpMethod().Equals("POST") && !url.DomainIs(kEbayDomain) &&
+      !navigation_url.DomainIs(kElectronicExpressDomain)) {
     return;
   }
 
-  if (CommerceHintAgent::IsAddToCart(url.path_piece())) {
+  bool is_add_to_cart = false;
+  if (navigation_url.DomainIs("dickssportinggoods.com")) {
+    is_add_to_cart = CommerceHintAgent::IsAddToCart(url.spec());
+  } else if (url.DomainIs("rei.com")) {
+    // TODO(crbug.com/1188143): There are other true positives like
+    // 'neo-product/rs/cart/item' that are missed here. Figure out a more
+    // comprehensive solution.
+    is_add_to_cart = url.path_piece() == "/rest/cart/item";
+  } else if (navigation_url.DomainIs(kElectronicExpressDomain)) {
+    is_add_to_cart =
+        CommerceHintAgent::IsAddToCart(url.spec()) &&
+        GetProductIdFromRequest(url.spec().substr(0, kLengthLimit), nullptr);
+  } else {
+    is_add_to_cart = CommerceHintAgent::IsAddToCart(url.path_piece());
+  }
+  if (is_add_to_cart) {
+    std::string url_product_id;
+    if (IsPartnerMerchant(navigation_url)) {
+      GetProductIdFromRequest(url.spec().substr(0, kLengthLimit),
+                              &url_product_id);
+    }
     RecordCommerceEvent(CommerceEvent::kAddToCartByURL);
-    OnAddToCart(render_frame);
+    OnAddToCart(render_frame, std::move(url_product_id));
     return;
   }
 
@@ -321,6 +370,8 @@ void DetectAddToCart(content::RenderFrame* render_frame,
   if (navigation_url.DomainIs("qvc.com"))
     return;
   if (navigation_url.DomainIs("hsn.com") && url.DomainIs("granify.com"))
+    return;
+  if (navigation_url.DomainIs(kElectronicExpressDomain))
     return;
 
   blink::WebHTTPBody body = request.HttpBody();
@@ -343,11 +394,15 @@ void DetectAddToCart(content::RenderFrame* render_frame,
       return;
 
     if (CommerceHintAgent::IsAddToCart(str)) {
+      std::string product_id;
+      if (IsPartnerMerchant(url)) {
+        GetProductIdFromRequest(str.substr(0, kLengthLimit), &product_id);
+      }
       RecordCommerceEvent(CommerceEvent::kAddToCartByForm);
       DVLOG(2) << "Matched add-to-cart. Request from \"" << navigation_url
                << "\" to \"" << url << "\" with payload (size = " << str.size()
                << ") \"" << str << "\"";
-      OnAddToCart(render_frame);
+      OnAddToCart(render_frame, std::move(product_id));
       return;
     }
   }
@@ -439,7 +494,8 @@ void CommerceHintAgent::ExtractProducts() {
       new JavaScriptRequest(weak_factory_.GetWeakPtr());
   main_frame->RequestExecuteScriptInIsolatedWorld(
       ISOLATED_WORLD_ID_CHROME_INTERNAL, &source, 1, false,
-      blink::WebLocalFrame::kAsynchronous, request);
+      blink::WebLocalFrame::kAsynchronous, request,
+      blink::BackForwardCacheAware::kAllow);
 }
 
 CommerceHintAgent::JavaScriptRequest::JavaScriptRequest(
@@ -470,6 +526,8 @@ void CommerceHintAgent::OnProductsExtracted(
   // that the cart is not loaded.
   if (!results->is_list())
     return;
+  bool is_partner = IsPartnerMerchant(
+      GURL(render_frame()->GetWebFrame()->GetDocument().Url()));
   std::vector<mojom::ProductPtr> products;
   for (const auto& product : results->GetList()) {
     if (!product.is_dict())
@@ -484,6 +542,16 @@ void CommerceHintAgent::OnProductsExtracted(
     if (ShouldSkip(product_ptr->name)) {
       DVLOG(1) << "skipped";
       continue;
+    }
+    if (is_partner) {
+      std::string product_id;
+      const auto* extracted_id = product.FindKey("productId");
+      if (extracted_id) {
+        product_id = extracted_id->GetString();
+      }
+      DVLOG(1) << "product_id = " << product_id;
+      DCHECK(!product_id.empty());
+      product_ptr->product_id = std::move(product_id);
     }
     products.push_back(std::move(product_ptr));
   }
@@ -517,7 +585,7 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
 
 void CommerceHintAgent::DidStartNavigation(
     const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
+    absl::optional<blink::WebNavigationType> navigation_type) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   starting_url_ = url;

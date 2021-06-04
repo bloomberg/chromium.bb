@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/scrollbar_theme_settings.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -70,6 +69,10 @@ void WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
     bool enable) {
   RuntimeEnabledFeatures::
       SetWebBluetoothRemoteCharacteristicNewWriteValueEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebBluetoothManufacturerDataFilter(bool enable) {
+  RuntimeEnabledFeatures::SetWebBluetoothManufacturerDataFilterEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableCompositeBGColorAnimation(bool enable) {
@@ -205,6 +208,14 @@ void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
 
 void WebRuntimeFeatures::EnableRemoveMobileViewportDoubleTap(bool enable) {
   RuntimeEnabledFeatures::SetRemoveMobileViewportDoubleTapEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableFencedFrames(bool enable) {
+  RuntimeEnabledFeatures::SetFencedFramesEnabled(enable);
+}
+
+bool WebRuntimeFeatures::IsFencedFramesEnabled() {
+  return RuntimeEnabledFeatures::FencedFramesEnabledByRuntimeFlag();
 }
 
 void WebRuntimeFeatures::EnableFileSystem(bool enable) {
@@ -351,6 +362,10 @@ void WebRuntimeFeatures::ForceOverlayFullscreenVideo(bool enable) {
 
 void WebRuntimeFeatures::EnableSharedArrayBuffer(bool enable) {
   RuntimeEnabledFeatures::SetSharedArrayBufferEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableSharedAutofill(bool enable) {
+  RuntimeEnabledFeatures::SetSharedAutofillEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableSharedWorker(bool enable) {

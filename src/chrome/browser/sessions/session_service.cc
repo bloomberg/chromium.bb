@@ -16,12 +16,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
@@ -48,7 +49,8 @@
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "ash/public/cpp/ash_features.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #endif
 
 #if defined(OS_MAC)
@@ -86,11 +88,43 @@ SessionService::~SessionService() {
     LogExitEvent();
 }
 
-bool SessionService::ShouldNewWindowStartSession() {
+bool SessionService::ShouldNewWindowStartSession(Browser* browser) {
   // ChromeOS and OSX have different ideas of application lifetime than
   // the other platforms.
   // On ChromeOS opening a new window should never start a new session.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If the full restore feature is enabled, Chrome browser is not launched
+  // automatically during the system startup phase. When Chrome browser is
+  // created or launched by users, sessions might be restored based on the on
+  // startup setting.
+  if (ash::features::IsFullRestoreEnabled()) {
+    // If there are other browser windows, or during the restoring process, or
+    // restore from crash, sessions should not be restored.
+    if (SessionRestore::IsRestoring(profile()) ||
+        has_open_trackable_browsers_ || HasPendingUncleanExit(profile())) {
+      return false;
+    }
+
+    // If the on startup setting is not restore, sessions should not be
+    // restored.
+    SessionStartupPref pref =
+        SessionStartupPref::GetStartupPref(profile()->GetPrefs());
+    if (pref.type != SessionStartupPref::Type::LAST)
+      return false;
+
+    if (!browser)
+      return true;
+
+    // App windows should not be restored.
+    auto window_type = WindowTypeForBrowserType(browser->type());
+    if (window_type == sessions::SessionWindow::TYPE_APP ||
+        window_type == sessions::SessionWindow::TYPE_APP_POPUP) {
+      return false;
+    }
+
+    return true;
+  }
+
   if (!force_browser_not_alive_with_no_windows_)
     return false;
 #endif
@@ -132,7 +166,7 @@ void SessionService::DeleteLastSession() {
 
 void SessionService::SetTabGroup(const SessionID& window_id,
                                  const SessionID& tab_id,
-                                 base::Optional<tab_groups::TabGroupId> group) {
+                                 absl::optional<tab_groups::TabGroupId> group) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -268,12 +302,6 @@ void SessionService::WindowClosing(const SessionID& window_id) {
 }
 
 void SessionService::WindowClosed(const SessionID& window_id) {
-  if (!ShouldTrackChangesToWindow(window_id)) {
-    // The last window may be one that is not tracked.
-    MaybeDeleteSessionOnlyData();
-    return;
-  }
-
   windows_tracking()->erase(window_id);
   last_selected_tab_in_window()->erase(window_id);
 
@@ -291,7 +319,6 @@ void SessionService::WindowClosed(const SessionID& window_id) {
       ScheduleCommand(sessions::CreateWindowClosedCommand(window_id));
     }
   }
-  MaybeDeleteSessionOnlyData();
 }
 
 void SessionService::SetWindowType(const SessionID& window_id,
@@ -357,13 +384,6 @@ Browser::Type SessionService::GetDesiredBrowserTypeForWebContents() {
 
 bool SessionService::ShouldRestoreWindowOfType(
     sessions::SessionWindow::WindowType window_type) const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Restore apps and app popups for ChromeOS alone.
-  if (window_type == sessions::SessionWindow::TYPE_APP ||
-      window_type == sessions::SessionWindow::TYPE_APP_POPUP)
-    return true;
-#endif
-
   // TYPE_APP and TYPE_APP_POPUP are handled by app_session_service.
   return (window_type == sessions::SessionWindow::TYPE_NORMAL) ||
          (window_type == sessions::SessionWindow::TYPE_POPUP);
@@ -372,7 +392,7 @@ bool SessionService::ShouldRestoreWindowOfType(
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                                         Browser* browser,
                                         bool restore_apps) {
-  if (ShouldNewWindowStartSession()) {
+  if (ShouldNewWindowStartSession(browser)) {
     // We're going from no tabbed browsers to a tabbed browser (and not in
     // process startup), restore the last session.
     if (move_on_new_browser_) {
@@ -401,7 +421,7 @@ void SessionService::BuildCommandsForTab(
     const SessionID& window_id,
     WebContents* tab,
     int index_in_window,
-    base::Optional<tab_groups::TabGroupId> group,
+    absl::optional<tab_groups::TabGroupId> group,
     bool is_pinned,
     IdToRange* tab_to_available_range) {
   SessionServiceBase::BuildCommandsForTab(window_id, tab, index_in_window,
@@ -508,29 +528,6 @@ bool SessionService::HasOpenTrackableBrowsers(
 void SessionService::RebuildCommandsIfRequired() {
   if (rebuild_on_next_save() && pending_window_close_ids_.empty())
     ScheduleResetCommands();
-}
-
-void SessionService::MaybeDeleteSessionOnlyData() {
-  // Don't try anything if we're testing.  The browser_process is not fully
-  // created and DeleteSession will crash if we actually attempt it.
-  if (profile()->AsTestingProfile())
-    return;
-
-  // Clear session data if the last window for a profile has been closed and
-  // closing the last window would normally close Chrome, unless background mode
-  // is active.  Tests don't have a background_mode_manager.
-  if (has_open_trackable_browsers_ ||
-      browser_defaults::kBrowserAliveWithNoWindows ||
-      g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
-    return;
-  }
-
-  // Check for any open windows for the current profile that we aren't tracking.
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() == profile())
-      return;
-  }
-  DeleteSessionOnlyData(profile());
 }
 
 void SessionService::OnClosingAllBrowsersChanged(bool closing) {

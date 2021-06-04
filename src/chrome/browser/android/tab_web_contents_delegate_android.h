@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -102,6 +101,7 @@ class TabWebContentsDelegateAndroid
       const viz::SurfaceId&,
       const gfx::Size&) override;
   void ExitPictureInPicture() override;
+  bool IsBackForwardCacheSupported() override;
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
@@ -145,8 +145,9 @@ class TabWebContentsDelegateAndroid
   std::unique_ptr<device::mojom::GeolocationContext>
       installed_webapp_geolocation_context_;
 
-  ScopedObserver<find_in_page::FindTabHelper, find_in_page::FindResultObserver>
-      find_result_observer_{this};
+  base::ScopedMultiSourceObservation<find_in_page::FindTabHelper,
+                                     find_in_page::FindResultObserver>
+      find_result_observations_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabWebContentsDelegateAndroid);
 };

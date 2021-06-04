@@ -8,12 +8,14 @@
 
 #include "base/no_destructor.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/autofill_profile_validator_factory.h"
+#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -58,7 +60,7 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
   DependsOn(ios::WebDataServiceFactory::GetInstance());
 }
 
-PersonalDataManagerFactory::~PersonalDataManagerFactory() {}
+PersonalDataManagerFactory::~PersonalDataManagerFactory() = default;
 
 std::unique_ptr<KeyedService>
 PersonalDataManagerFactory::BuildServiceInstanceFor(
@@ -68,17 +70,23 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
   std::unique_ptr<PersonalDataManager> service(
       new PersonalDataManager(GetApplicationContext()->GetApplicationLocale(),
                               GetCountryCodeFromVariations()));
-  auto autofill_db =
+  auto local_storage =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
+          chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  auto account_storage =
+      ios::WebDataServiceFactory::GetAutofillWebDataForAccount(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   auto* history_service = ios::HistoryServiceFactory::GetForBrowserState(
       chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  auto* strike_database =
+      StrikeDatabaseFactory::GetForBrowserState(chrome_browser_state);
+
   service->Init(
-      autofill_db, nullptr, chrome_browser_state->GetPrefs(),
+      local_storage, account_storage, chrome_browser_state->GetPrefs(),
       GetApplicationContext()->GetLocalState(),
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
       AutofillProfileValidatorFactory::GetInstance(), history_service,
-      chrome_browser_state->IsOffTheRecord());
+      strike_database, chrome_browser_state->IsOffTheRecord());
   return service;
 }
 

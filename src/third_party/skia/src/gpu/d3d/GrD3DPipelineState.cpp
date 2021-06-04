@@ -46,7 +46,7 @@ void GrD3DPipelineState::setAndBindConstants(GrD3DGpu* gpu,
                                              const GrProgramInfo& programInfo) {
     this->setRenderTargetState(renderTarget, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, programInfo.geomProc());
+    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
         for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
@@ -132,16 +132,16 @@ void GrD3DPipelineState::setAndBindTextures(GrD3DGpu* gpu,
     if (fNumSamplers > 0) {
         // set up and bind shader resource view table
         sk_sp<GrD3DDescriptorTable> srvTable =
-                gpu->resourceProvider().findOrCreateShaderResourceTable(shaderResourceViews);
+                gpu->resourceProvider().findOrCreateShaderViewTable(shaderResourceViews);
         gpu->currentCommandList()->setGraphicsRootDescriptorTable(
-                static_cast<unsigned int>(GrD3DRootSignature::ParamIndex::kTextureDescriptorTable),
+                (unsigned int)GrD3DRootSignature::ParamIndex::kShaderViewDescriptorTable,
                 srvTable->baseGpuDescriptor());
 
         // set up and bind sampler table
         sk_sp<GrD3DDescriptorTable> samplerTable =
                 gpu->resourceProvider().findOrCreateSamplerTable(samplers);
         gpu->currentCommandList()->setGraphicsRootDescriptorTable(
-                static_cast<unsigned int>(GrD3DRootSignature::ParamIndex::kSamplerDescriptorTable),
+                (unsigned int)GrD3DRootSignature::ParamIndex::kSamplerDescriptorTable,
                 samplerTable->baseGpuDescriptor());
     }
 }

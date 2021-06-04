@@ -54,13 +54,14 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // |windows| is empty, cancels cycling.
   void ReplaceWindows(const WindowList& windows);
 
-  // Cycles to the next or previous window based on |direction|. This moves the
-  // focus ring to the next/previous window and also scrolls the list.
-  void Step(WindowCycleController::WindowCyclingDirection direction);
-
-  // Scrolls windows in given |direction|. Does not move the focus ring.
-  void ScrollInDirection(
-      WindowCycleController::WindowCyclingDirection direction);
+  // Cycles to the next or previous window based on |direction| or to the
+  // default position if |starting_alt_tab_or_switching_mode| is true.
+  // This moves the focus ring and also scrolls the list.
+  // If |starting_alt_tab_or_switching_mode| is true and |direction| is
+  // forward, the highlight moves to the first non-active window in MRU list:
+  // the second window by default or the first window if it is not active.
+  void Step(WindowCycleController::WindowCyclingDirection direction,
+            bool starting_alt_tab_or_switching_mode);
 
   // Should be called when a user drags their finger on the touch screen.
   // Translates the mirror container by |delta_x|.
@@ -99,18 +100,13 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
     user_did_accept_ = user_did_accept;
   }
 
-  bool HasWindowTargeter() { return !!window_targeter_; }
-
  private:
-  friend class WindowCycleControllerTest;
-  friend class MultiUserWindowCycleControllerTest;
-  friend class InteractiveWindowCycleListGestureHandlerTest;
   friend class ModeSelectionWindowCycleControllerTest;
+  friend class MultiUserWindowCycleControllerTest;
+  friend class WindowCycleListTestApi;
+  friend class WindowCycleControllerTest;
 
   static void DisableInitialDelayForTesting();
-
-  const WindowList& windows() const { return windows_; }
-  const views::Widget* widget() const { return cycle_ui_widget_; }
 
   // aura::WindowObserver:
   // There is a chance a window is destroyed, for example by JS code. We need to
@@ -147,6 +143,9 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // |windows_|.
   int GetIndexOfWindow(aura::Window* window) const;
 
+  // Returns the number of windows in the window cycle list for all desks.
+  int GetNumberOfWindowsAllDesks() const;
+
   // Returns the views for the window cycle list.
   const views::View::Views& GetWindowCycleItemViewsForTesting() const;
 
@@ -161,10 +160,6 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
 
   // Returns whether the cycle view is animating.
   bool IsCycleViewAnimatingForTesting() const;
-
-  WindowCycleView* cycle_view_for_testing() const { return cycle_view_; }
-
-  int current_index_for_testing() const { return current_index_; }
 
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the

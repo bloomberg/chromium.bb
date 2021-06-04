@@ -1,7 +1,6 @@
 {
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
       {
         "aesIvMask": "64A6AAC2821880145271BB15B0188821",

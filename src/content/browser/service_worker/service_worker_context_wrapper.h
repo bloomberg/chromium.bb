@@ -37,6 +37,7 @@ namespace storage {
 class QuotaManagerProxy;
 class ServiceWorkerStorageControlImpl;
 class SpecialStoragePolicy;
+class StorageKey;
 }
 
 namespace url {
@@ -192,63 +193,67 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
-  void HasMainFrameWindowClient(const GURL& origin,
+  void HasMainFrameWindowClient(const storage::StorageKey& key,
                                 BoolCallback callback) const;
 
-  // Returns all frame routing ids for the given |origin|.
+  // Returns all frame routing ids for the given `key`.
   std::unique_ptr<std::vector<GlobalFrameRoutingId>>
-  GetWindowClientFrameRoutingIds(const GURL& origin) const;
+  GetWindowClientFrameRoutingIds(const storage::StorageKey& key) const;
 
-  // Returns the registration whose scope longest matches |client_url|. It is
+  // Returns the registration whose scope longest matches `client_url` with the
+  // associated `key`. It is guaranteed that the returned registration has the
+  // activated worker.
+  //
+  //  - If the registration is not found, returns ERROR_NOT_FOUND.
+  //  - If the registration has neither the waiting version nor the active
+  //    version, returns ERROR_NOT_FOUND.
+  //  - If the registration does not have the active version but has the waiting
+  //    version, activates the waiting version and runs `callback` when it is
+  //    activated.
+  //
+  // There is no guarantee for whether the callback is called synchronously or
+  // asynchronously.
+  void FindReadyRegistrationForClientUrl(const GURL& client_url,
+                                         const storage::StorageKey& key,
+                                         FindRegistrationCallback callback);
+
+  // Returns the registration for `scope` with the associated `key`. It is
   // guaranteed that the returned registration has the activated worker.
   //
   //  - If the registration is not found, returns ERROR_NOT_FOUND.
   //  - If the registration has neither the waiting version nor the active
   //    version, returns ERROR_NOT_FOUND.
   //  - If the registration does not have the active version but has the waiting
-  //    version, activates the waiting version and runs |callback| when it is
-  //    activated.
-  //
-  // There is no guarantee for whether the callback is called synchronously or
-  // asynchronously.
-  void FindReadyRegistrationForClientUrl(const GURL& client_url,
-                                         FindRegistrationCallback callback);
-
-  // Returns the registration for |scope|. It is guaranteed that the returned
-  // registration has the activated worker.
-  //
-  //  - If the registration is not found, returns ERROR_NOT_FOUND.
-  //  - If the registration has neither the waiting version nor the active
-  //    version, returns ERROR_NOT_FOUND.
-  //  - If the registration does not have the active version but has the waiting
-  //    version, activates the waiting version and runs |callback| when it is
+  //    version, activates the waiting version and runs `callback` when it is
   //    activated.
   //
   // There is no guarantee for whether the callback is called synchronously or
   // asynchronously.
   void FindReadyRegistrationForScope(const GURL& scope,
+                                     const storage::StorageKey& key,
                                      FindRegistrationCallback callback);
 
   // Similar to FindReadyRegistrationForScope, but in the case no waiting or
   // active worker is found (i.e., there is only an installing worker),
-  // |callback| is called without waiting for the worker to reach active.
+  // `callback` is called without waiting for the worker to reach active.
   void FindRegistrationForScope(const GURL& scope,
+                                const storage::StorageKey& key,
                                 FindRegistrationCallback callback);
 
-  // Returns the registration for |registration_id|. It is guaranteed that the
+  // Returns the registration for `registration_id`. It is guaranteed that the
   // returned registration has the activated worker.
   //
   //  - If the registration is not found, returns ERROR_NOT_FOUND.
   //  - If the registration has neither the waiting version nor the active
   //    version, returns ERROR_NOT_FOUND.
   //  - If the registration does not have the active version but has the waiting
-  //    version, activates the waiting version and runs |callback| when it is
+  //    version, activates the waiting version and runs `callback` when it is
   //    activated.
   //
   // There is no guarantee about whether the callback is called asynchronously
   // or synchronously.
   void FindReadyRegistrationForId(int64_t registration_id,
-                                  const url::Origin& origin,
+                                  const storage::StorageKey& key,
                                   FindRegistrationCallback callback);
 
   // Returns the registration for |registration_id|. It is guaranteed that the
@@ -288,7 +293,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       GetUserKeysAndDataCallback callback);
   void StoreRegistrationUserData(
       int64_t registration_id,
-      const url::Origin& origin,
+      const storage::StorageKey& key,
       const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
       StatusCallback callback);
   void ClearRegistrationUserData(int64_t registration_id,
@@ -308,19 +313,21 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const std::string& key_prefix,
       StatusCallback callback);
 
-  // Returns a list of ServiceWorkerRegistration for |origin|. The list includes
+  // Returns a list of ServiceWorkerRegistration for `key`. The list includes
   // stored registrations and installing (not stored yet) registrations.
-  void GetRegistrationsForOrigin(const url::Origin& origin,
-                                 GetRegistrationsCallback callback);
+  void GetRegistrationsForStorageKey(const storage::StorageKey& key,
+                                     GetRegistrationsCallback callback);
 
   // Fails with kErrorNotFound if there is no active registration for the given
-  // scope. It means that there is no registration at all or that the
-  // registration doesn't have an active version yet (which is the case for
+  // `scope` and `key`. It means that there is no registration at all or that
+  // the registration doesn't have an active version yet (which is the case for
   // installing service workers).
-  void StartActiveServiceWorker(const GURL& scope, StatusCallback callback);
+  void StartActiveServiceWorker(const GURL& scope,
+                                const storage::StorageKey& key,
+                                StatusCallback callback);
 
-  void SkipWaitingWorker(const GURL& scope);
-  void UpdateRegistration(const GURL& scope);
+  void SkipWaitingWorker(const GURL& scope, const storage::StorageKey& key);
+  void UpdateRegistration(const GURL& scope, const storage::StorageKey& key);
   void SetForceUpdateOnPageLoad(bool force_update_on_page_load);
 
   // Different from AddObserver/RemoveObserver(ServiceWorkerContextObserver*).
@@ -379,9 +386,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       URLLoaderFactoryGetter* loader_factory_getter,
       BrowserContext* browser_context);
 
-  // If |include_installing_version| is true, |callback| is called if there is
+  // If `include_installing_version` is true, `callback` is called if there is
   // an installing version with no waiting or active version.
   void FindRegistrationForScopeImpl(const GURL& scope,
+                                    const storage::StorageKey& key,
                                     bool include_installing_version,
                                     FindRegistrationCallback callback);
 
@@ -415,10 +423,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback,
       blink::ServiceWorkerStatusCode code);
 
-  void RecordStartServiceWorkerForNavigationHintResult(
-      StartServiceWorkerForNavigationHintCallback callback,
-      StartServiceWorkerForNavigationHintResult result);
-
   void DidFindRegistrationForMessageDispatch(
       blink::TransferableMessage message,
       const GURL& source_origin,
@@ -433,47 +437,22 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerContext::ResultCallback result_callback,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
       BrowserContext* browser_context);
-
-  void SetUpLoaderFactoryForUpdateCheckOnUI(
-      const GURL& scope,
-      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-          callback);
-
-  // This method completes the remaining work of
-  // SetUpLoaderFactoryForUpdateCheckOnUI() on Core thread: Binds the pending
-  // network factory receiver and creates the loader factory bundle for update
-  // check.
-  void DidSetUpLoaderFactoryForUpdateCheck(
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
-      bool bypass_redirect_checks,
-      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-          callback);
 
   // This is used as a callback of GetRegisteredOrigins when initialising to
   // store a list of origins that have registered service workers.
   void DidGetRegisteredOrigins(const std::vector<url::Origin>& origins);
 
-  static void DidGetRegisteredOriginsForGetInstalledRegistrationOrigins(
-      base::Optional<std::string> host_filter,
-      GetInstalledRegistrationOriginsCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
-      const std::vector<url::Origin>& origins);
-
   // Temporary for https://crbug.com/1161153.
-  void PerformStorageCleanupOnUIThread(
-      base::OnceClosure callback,
-      scoped_refptr<base::TaskRunner> callback_runner);
   void StartServiceWorkerAndDispatchMessageOnUIThread(
       const GURL& scope,
+      const storage::StorageKey& key,
       blink::TransferableMessage message,
       ResultCallback callback);
-  void DeleteForOriginOnUIThread(
-      const url::Origin& origin,
+  void DeleteForStorageKeyOnUIThread(
+      const storage::StorageKey& key,
       ResultCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
   void GetRegistrationUserDataOnUIThread(int64_t registration_id,
@@ -489,7 +468,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       GetUserKeysAndDataCallback callback);
   void StoreRegistrationUserDataOnUIThread(
       int64_t registration_id,
-      const url::Origin& origin,
+      const storage::StorageKey& key,
       const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
       StatusCallback callback);
   void ClearRegistrationUserDataOnUIThread(int64_t registration_id,
@@ -508,10 +487,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ClearUserDataForAllRegistrationsByKeyPrefixOnUIThread(
       const std::string& key_prefix,
       StatusCallback callback);
-  void GetInstalledRegistrationOriginsOnUIThread(
-      base::Optional<std::string> host_filter,
-      GetInstalledRegistrationOriginsCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.

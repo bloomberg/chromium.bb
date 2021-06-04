@@ -12,8 +12,6 @@ namespace app_list_features {
 
 const base::Feature kEnableAppDataSearch{"EnableAppDataSearch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableAppListSearchAutocomplete{
-    "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppRanker{"EnableAppRanker",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateAppsRanker{
@@ -49,16 +47,15 @@ const base::Feature kNewDragSpecInLauncher{"NewDragSpecInLauncher",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableOmniboxRichEntities{
     "EnableOmniboxRichEntities", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableLauncherSearchNormalization{
     "EnableLauncherSearchNormalization", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCategoricalSearch{"CategoricalSearch",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLauncherQueryHighlighting{
+    "LauncherQueryHighlighting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAppDataSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppDataSearch);
-}
-
-bool IsAppListSearchAutocompleteEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
 }
 
 bool IsAppRankerEnabled() {
@@ -131,6 +128,18 @@ std::string AppSearchResultRankerPredictorName() {
 
 bool IsAppListLaunchRecordingEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListLaunchRecording);
+}
+
+bool IsCategoricalSearchEnabled() {
+  return base::FeatureList::IsEnabled(kCategoricalSearch);
+}
+
+bool IsLauncherQueryHighlightingEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherQueryHighlighting);
+}
+
+std::string CategoricalSearchType() {
+  return GetFieldTrialParamValueByFeature(kCategoricalSearch, "ranking");
 }
 
 }  // namespace app_list_features

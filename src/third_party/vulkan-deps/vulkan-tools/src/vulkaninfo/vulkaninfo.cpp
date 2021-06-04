@@ -307,18 +307,13 @@ void GpuDumpProps(Printer &p, AppGpu &gpu) {
     p.SetSubHeader();
     {
         ObjectWrapper obj(p, "VkPhysicalDeviceProperties");
-        p.PrintKeyValue("apiVersion", props.apiVersion, 14, VkVersionString(props.apiVersion));
-        p.PrintKeyValue("driverVersion", props.driverVersion, 14, to_hex_str(props.driverVersion));
-        p.PrintKeyString("vendorID", to_hex_str(props.vendorID), 14);
-        p.PrintKeyString("deviceID", to_hex_str(props.deviceID), 14);
-        p.PrintKeyString("deviceType", VkPhysicalDeviceTypeString(props.deviceType), 14);
-        p.PrintKeyString("deviceName", props.deviceName, 14);
-        if (p.Type() == OutputType::vkconfig_output) {
-            ArrayWrapper arr(p, "pipelineCacheUUID", VK_UUID_SIZE);
-            for (uint32_t i = 0; i < VK_UUID_SIZE; ++i) {
-                p.PrintElement(static_cast<uint32_t>(props.pipelineCacheUUID[i]));
-            }
-        }
+        p.PrintKeyValue("apiVersion", props.apiVersion, 17, VkVersionString(props.apiVersion));
+        p.PrintKeyValue("driverVersion", props.driverVersion, 17, to_hex_str(props.driverVersion));
+        p.PrintKeyString("vendorID", to_hex_str(props.vendorID), 17);
+        p.PrintKeyString("deviceID", to_hex_str(props.deviceID), 17);
+        p.PrintKeyString("deviceType", VkPhysicalDeviceTypeString(props.deviceType), 17);
+        p.PrintKeyString("deviceName", props.deviceName, 17);
+        p.PrintKeyString("pipelineCacheUUID", to_string_16(props.pipelineCacheUUID), 17);
     }
     p.AddNewline();
     DumpVkPhysicalDeviceLimits(p, "VkPhysicalDeviceLimits",
@@ -442,8 +437,11 @@ void GpuDumpMemoryProps(Printer &p, AppGpu &gpu) {
             ObjectWrapper obj(p, "memoryHeaps");
 
             p.PrintKeyString("size", append_human_readible(gpu.memory_props.memoryHeaps[i].size), 6);
-            p.PrintKeyString("budget", append_human_readible(gpu.heapBudget[i]), 6);
-            p.PrintKeyString("usage", append_human_readible(gpu.heapUsage[i]), 6);
+            if (gpu.CheckPhysicalDeviceExtensionIncluded(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
+            {
+                p.PrintKeyString("budget", append_human_readible(gpu.heapBudget[i]), 6);
+                p.PrintKeyString("usage", append_human_readible(gpu.heapUsage[i]), 6);
+            }
             DumpVkMemoryHeapFlags(p, "flags", gpu.memory_props.memoryHeaps[i].flags, 6);
         }
     }

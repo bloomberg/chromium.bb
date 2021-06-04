@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/app_history/app_history_entry.h"
 
+#include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
@@ -20,6 +21,11 @@ String AppHistoryEntry::id() const {
   return DomWindow() ? item_->GetAppHistoryId() : String();
 }
 
+int64_t AppHistoryEntry::index() {
+  return DomWindow() ? AppHistory::appHistory(*DomWindow())->GetIndexFor(this)
+                     : -1;
+}
+
 KURL AppHistoryEntry::url() {
   return DomWindow() ? item_->Url() : NullURL();
 }
@@ -30,6 +36,14 @@ bool AppHistoryEntry::sameDocument() const {
   auto* current_item = DomWindow()->document()->Loader()->GetHistoryItem();
   return current_item->DocumentSequenceNumber() ==
          item_->DocumentSequenceNumber();
+}
+
+ScriptValue AppHistoryEntry::getState() const {
+  SerializedScriptValue* state = item_->GetAppHistoryState();
+  if (!DomWindow() || !state)
+    return ScriptValue();
+  v8::Isolate* isolate = DomWindow()->GetIsolate();
+  return ScriptValue(isolate, state->Deserialize(isolate));
 }
 
 const AtomicString& AppHistoryEntry::InterfaceName() const {

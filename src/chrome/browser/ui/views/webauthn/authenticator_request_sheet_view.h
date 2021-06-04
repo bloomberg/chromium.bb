@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBAUTHN_AUTHENTICATOR_REQUEST_SHEET_VIEW_H_
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {

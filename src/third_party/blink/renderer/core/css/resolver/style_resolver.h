@@ -94,6 +94,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   scoped_refptr<const ComputedStyle> StyleForText(Text*);
   scoped_refptr<ComputedStyle> StyleForViewport();
 
+  // Propagate computed values from the root or body element to the viewport
+  // when specified to do so.
+  void PropagateStyleToViewport();
+
   // Create ComputedStyle for anonymous boxes.
   scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
@@ -146,6 +150,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void SetResizedForViewportUnits();
   void ClearResizedForViewportUnits();
+  bool WasViewportResized() const { return was_viewport_resized_; }
 
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
@@ -259,7 +264,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void ApplyCallbackSelectors(StyleResolverState&);
 
   Document& GetDocument() const { return *document_; }
-  bool WasViewportResized() const { return was_viewport_resized_; }
 
   bool IsForcedColorsModeEnabled() const;
   bool IsForcedColorsModeEnabled(const StyleResolverState&) const;

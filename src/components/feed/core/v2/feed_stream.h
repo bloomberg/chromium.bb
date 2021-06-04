@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -31,15 +32,10 @@
 #include "components/feed/core/v2/web_feed_subscription_coordinator.h"
 #include "components/feed/core/v2/web_feed_subscriptions/web_feed_index.h"
 #include "components/feed/core/v2/wire_response_translator.h"
-#include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/offline_pages/task/task_queue.h"
+#include "components/prefs/pref_member.h"
 
 class PrefService;
-
-namespace offline_pages {
-class OfflinePageModel;
-class PrefetchService;
-}  // namespace offline_pages
 
 namespace feed {
 namespace feed_stream {
@@ -50,7 +46,6 @@ class FeedStore;
 class WebFeedSubscriptionCoordinator;
 class ImageFetcher;
 class MetricsReporter;
-class OfflinePageSpy;
 class RefreshTaskScheduler;
 class PersistentKeyValueStoreImpl;
 class StreamModel;
@@ -71,6 +66,7 @@ class FeedStream : public FeedApi,
     virtual bool IsOffline() = 0;
     virtual DisplayMetrics GetDisplayMetrics() = 0;
     virtual std::string GetLanguageTag() = 0;
+    virtual bool IsAutoplayEnabled() = 0;
     virtual void ClearAll() = 0;
     virtual std::string GetSyncSignedInGaia() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
@@ -85,8 +81,6 @@ class FeedStream : public FeedApi,
              ImageFetcher* image_fetcher,
              FeedStore* feed_store,
              PersistentKeyValueStoreImpl* persistent_key_value_store,
-             offline_pages::PrefetchService* prefetch_service,
-             offline_pages::OfflinePageModel* offline_page_model,
              const ChromeInfo& chrome_info);
   ~FeedStream() override;
 
@@ -129,6 +123,7 @@ class FeedStream : public FeedApi,
                              EphemeralChangeId id) override;
   void ProcessThereAndBackAgain(base::StringPiece data) override;
   void ProcessViewAction(base::StringPiece data) override;
+  bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) override;
   DebugStreamData GetDebugStreamData() override;
   void ForceRefreshForDebugging() override;
   std::string DumpStateForDebugging() override;
@@ -140,10 +135,12 @@ class FeedStream : public FeedApi,
                          const std::string& slice_id) override;
   void ReportFeedViewed(SurfaceId surface_id) override;
   void ReportPageLoaded() override;
-  void ReportOpenAction(const StreamType& stream_type,
+  void ReportOpenAction(const GURL& url,
+                        const StreamType& stream_type,
                         const std::string& slice_id) override;
   void ReportOpenVisitComplete(base::TimeDelta visit_time) override;
-  void ReportOpenInNewTabAction(const StreamType& stream_type,
+  void ReportOpenInNewTabAction(const GURL& url,
+                                const StreamType& stream_type,
                                 const std::string& slice_id) override;
   void ReportStreamScrolled(const StreamType& stream_type,
                             int distance_dp) override;
@@ -190,9 +187,10 @@ class FeedStream : public FeedApi,
   FeedNetwork* GetNetwork() { return feed_network_; }
   FeedStore* GetStore() { return store_; }
   RequestThrottler* GetRequestThrottler() { return &request_throttler_; }
-  const feedstore::Metadata& GetMetadata() const { return metadata_; }
+  const feedstore::Metadata& GetMetadata() const;
   void SetMetadata(feedstore::Metadata metadata);
-  bool SetMetadata(base::Optional<feedstore::Metadata> metadata);
+  bool SetMetadata(absl::optional<feedstore::Metadata> metadata);
+  void SetStreamStale(const StreamType& stream_type, bool is_stale);
 
   MetricsReporter& GetMetricsReporter() const { return *metrics_reporter_; }
 
@@ -248,6 +246,8 @@ class FeedStream : public FeedApi,
   RequestMetadata GetRequestMetadata(const StreamType& stream_type,
                                      bool is_for_next_page) const;
 
+  bool HasUnreadContent(const StreamType& stream_type);
+
   bool IsOffline() const { return delegate_->IsOffline(); }
 
   offline_pages::TaskQueue& GetTaskQueue() { return task_queue_; }
@@ -272,12 +272,13 @@ class FeedStream : public FeedApi,
 
   bool ClearAllInProgress() const { return clear_all_in_progress_; }
 
+  bool IsEnabledAndVisible();
+
   base::WeakPtr<FeedStream> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
-  class OfflineSuggestionsProvider;
   using UnreadContentNotifier = feed_stream::UnreadContentNotifier;
 
   struct Stream {
@@ -295,9 +296,7 @@ class FeedStream : public FeedApi,
     // |UnloadModel()|.
     std::unique_ptr<StreamModel> model;
     int unload_on_detach_sequence_number = 0;
-    // When new content was last added to this stream. Populated when we attempt
-    // to load the model or background refresh.
-    base::Time last_updated_time;
+    ContentIdSet content_ids;
     std::vector<UnreadContentNotifier> unread_content_notifiers;
     std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks;
     bool is_activity_logging_enabled = false;
@@ -313,10 +312,6 @@ class FeedStream : public FeedApi,
   // Re-evaluate whether or not activity logging should currently be enabled.
   void UpdateIsActivityLoggingEnabled(const StreamType& stream_type);
 
-  void GetPrefetchSuggestions(
-      base::OnceCallback<void(std::vector<offline_pages::PrefetchSuggestion>)>
-          suggestions_callback);
-
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
   void ForceRefreshForDebuggingTask();
@@ -331,8 +326,6 @@ class FeedStream : public FeedApi,
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
   void LoadTaskComplete(const LoadStreamTask::Result& result);
   void UploadActionsComplete(UploadActionsTask::Result result);
-  void MaybeReportNewSuggestionsAvailable(const LoadStreamTask::Result& result);
-  void MaybeReportNewSuggestionsAvailable(const LoadMoreTask::Result& result);
 
   void ClearAll();
 
@@ -343,6 +336,7 @@ class FeedStream : public FeedApi,
   bool CanLogViews() const;
 
   void MaybeNotifyHasUnreadContent(const StreamType& stream_type);
+  void EnabledPreferencesChanged();
 
   Stream& GetStream(const StreamType& type);
   Stream* FindStream(const StreamType& type);
@@ -351,7 +345,6 @@ class FeedStream : public FeedApi,
 
   // Unowned.
 
-  offline_pages::PrefetchService* prefetch_service_;
   RefreshTaskScheduler* refresh_task_scheduler_;
   MetricsReporter* metrics_reporter_;
   Delegate* delegate_;
@@ -368,14 +361,16 @@ class FeedStream : public FeedApi,
 
   std::map<StreamType, Stream> streams_;
 
-  std::unique_ptr<OfflineSuggestionsProvider> offline_suggestions_provider_;
-  std::unique_ptr<OfflinePageSpy> offline_page_spy_;
   std::unique_ptr<WebFeedSubscriptionCoordinator>
       web_feed_subscription_coordinator_;
 
   // Mutable state.
   RequestThrottler request_throttler_;
   base::TimeTicks signed_out_for_you_refreshes_until_;
+
+  BooleanPrefMember has_stored_data_;
+  BooleanPrefMember enable_snippets_;
+  BooleanPrefMember articles_list_visible_;
 
   // State loaded at startup:
   feedstore::Metadata metadata_;
@@ -394,6 +389,8 @@ class FeedStream : public FeedApi,
   NoticeCardTracker notice_card_tracker_;
 
   bool clear_all_in_progress_ = false;
+
+  std::vector<GURL> recent_feed_navigations_;
 
   base::WeakPtrFactory<FeedStream> weak_ptr_factory_{this};
 };

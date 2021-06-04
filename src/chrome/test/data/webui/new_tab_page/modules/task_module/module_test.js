@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {shoppingTasksDescriptor, TaskModuleHandlerProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, shoppingTasksDescriptor, TaskModuleHandlerProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
@@ -28,11 +28,11 @@ suite('NewTabPageModulesTaskModuleTest', () => {
         'getPrimaryTask', Promise.resolve({task: null}));
 
     // Act.
-    await shoppingTasksDescriptor.initialize();
+    const moduleElement = await shoppingTasksDescriptor.initialize();
 
     // Assert.
     assertEquals(1, testProxy.handler.getCallCount('getPrimaryTask'));
-    assertEquals(null, shoppingTasksDescriptor.element);
+    assertEquals(null, moduleElement);
   });
 
   test('creates module if task', async () => {
@@ -69,8 +69,7 @@ suite('NewTabPageModulesTaskModuleTest', () => {
     testProxy.handler.setResultFor('getPrimaryTask', Promise.resolve({task}));
 
     // Act.
-    await shoppingTasksDescriptor.initialize();
-    const moduleElement = shoppingTasksDescriptor.element;
+    const moduleElement = await shoppingTasksDescriptor.initialize();
     document.body.append(moduleElement);
     moduleElement.$.taskItemsRepeat.render();
     moduleElement.$.relatedSearchesRepeat.render();
@@ -123,8 +122,7 @@ suite('NewTabPageModulesTaskModuleTest', () => {
                                     })),
       }
     }));
-    await shoppingTasksDescriptor.initialize();
-    const moduleElement = shoppingTasksDescriptor.element;
+    const moduleElement = await shoppingTasksDescriptor.initialize();
     document.body.append(moduleElement);
     moduleElement.$.taskItemsRepeat.render();
     moduleElement.$.relatedSearchesRepeat.render();
@@ -181,8 +179,7 @@ suite('NewTabPageModulesTaskModuleTest', () => {
     testProxy.handler.setResultFor('getPrimaryTask', Promise.resolve({task}));
 
     // Arrange.
-    await shoppingTasksDescriptor.initialize();
-    const moduleElement = shoppingTasksDescriptor.element;
+    const moduleElement = await shoppingTasksDescriptor.initialize();
     document.body.append(moduleElement);
     await flushTasks();
 
@@ -209,5 +206,24 @@ suite('NewTabPageModulesTaskModuleTest', () => {
     assertDeepEquals(
         [taskModule.mojom.TaskModuleType.kShopping, 'Hello world'],
         await testProxy.handler.whenCalled('restoreTask'));
+  });
+
+  test('info button click opens info dialog', async () => {
+    // Arrange.
+    const task = {
+      title: '',
+      taskItems: [],
+      relatedSearches: [],
+    };
+    testProxy.handler.setResultFor('getPrimaryTask', Promise.resolve({task}));
+    const moduleElement = await shoppingTasksDescriptor.initialize();
+    document.body.append(moduleElement);
+
+    // Act.
+    $$(moduleElement, 'ntp-module-header')
+        .dispatchEvent(new Event('info-button-click'));
+
+    // Assert.
+    assertTrue(!!$$(moduleElement, 'ntp-info-dialog'));
   });
 });

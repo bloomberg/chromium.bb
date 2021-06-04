@@ -66,9 +66,6 @@ const CGFloat kDiscoverFeedFeaderHeight = 30;
 const CGFloat kDiscoverFeedLoadedHeight = 1000;
 }
 
-NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
-    @"contentSuggestionsMostVisitedAccessibilityIdentifierPrefix";
-
 @interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate> {
   CGFloat _initialContentOffset;
 }
@@ -126,7 +123,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   _feedVisible = visible;
   _layout =
       [[ContentSuggestionsLayout alloc] initWithOffset:offset
-                                           feedVisible:refactoredFeedVisible];
+                                 refactoredFeedVisible:refactoredFeedVisible];
   self = [super initWithLayout:_layout style:style];
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
@@ -271,8 +268,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   // to never and internally offset the UI to account for safe area insets.
   self.collectionView.contentInsetAdjustmentBehavior =
       UIScrollViewContentInsetAdjustmentNever;
-  self.collectionView.accessibilityIdentifier =
-      kContentSuggestionsCollectionIdentifier;
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;

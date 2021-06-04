@@ -30,6 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
+#include "base/dcheck_is_on.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -41,7 +42,6 @@ namespace blink {
 
 class Document;
 class ExecutionContext;
-class HTMLImportsController;
 class LocalDOMWindow;
 class LocalFrame;
 class PluginData;
@@ -93,11 +93,6 @@ class CORE_EXPORT DocumentInit final {
 
   // Actually constructs the Document based on the provided state.
   Document* CreateDocument() const;
-
-  DocumentInit& WithImportsController(HTMLImportsController*);
-  HTMLImportsController* ImportsController() const {
-    return imports_controller_;
-  }
 
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
@@ -153,7 +148,6 @@ class CORE_EXPORT DocumentInit final {
   bool is_initial_empty_document_ = false;
   String mime_type_;
   LocalDOMWindow* window_ = nullptr;
-  HTMLImportsController* imports_controller_ = nullptr;
   ExecutionContext* execution_context_ = nullptr;
   KURL url_;
   Document* owner_document_ = nullptr;

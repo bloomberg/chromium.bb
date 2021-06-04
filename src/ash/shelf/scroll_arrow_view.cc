@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/style/ash_color_provider.h"
+#include "base/i18n/rtl.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -23,14 +24,15 @@ ScrollArrowView::ScrollArrowView(ArrowType arrow_type,
       arrow_type_(arrow_type),
       is_horizontal_alignment_(is_horizontal_alignment) {
   SetHasInkDropActionOnClick(true);
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
 }
 
 ScrollArrowView::~ScrollArrowView() = default;
 
 void ScrollArrowView::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
-  shelf_button_delegate()->ButtonPressed(/*sender=*/this, event, GetInkDrop());
+  shelf_button_delegate()->ButtonPressed(/*sender=*/this, event,
+                                         ink_drop()->GetInkDrop());
 }
 
 void ScrollArrowView::PaintButtonContents(gfx::Canvas* canvas) {

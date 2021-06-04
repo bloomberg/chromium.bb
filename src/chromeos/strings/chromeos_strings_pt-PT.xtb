@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Coloque o documento no scanner e selecione Digitalizar para começar.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2878387241690264070">Descarregou <ph name="RATE" /> em <ph name="NUM_SECONDS" /> segundos.</translation>
+<translation id="2983662233540284543">Aprenda com um criador de videojogos, obtenha apps de criação de videojogos e muito mais</translation>
 <translation id="3008341117444806826">ATUALIZAR</translation>
 <translation id="3009958530611748826">Selecione uma pasta onde guardar</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Autenticação</translation>
 <translation id="5154917547274118687">Memória</translation>
 <translation id="5168185087976003268">Condição da bateria</translation>
+<translation id="5170568018924773124">Mostrar numa pasta</translation>
+<translation id="519607504553633437">Conceba e desenvolva os seus próprios jogos</translation>
 <translation id="5212543919916444558">Não consigo encontrar nada no ecrã com que possa ajudar.
 Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
@@ -201,6 +204,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5275828089655680674">Executar novamente as Rotinas</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">versão <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Mover janela para o espaço de trabalho</translation>
 <translation id="5315873049536339193">Identidade</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5318334351163689047">Falhas de pedidos de TCP.</translation>
@@ -222,6 +226,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Família</translation>
+<translation id="5752751666635965375">Criar o seu próprio jogo</translation>
 <translation id="5760715441271661976">Estado do portal</translation>
 <translation id="5797428682393400134">ÊXITO</translation>
 <translation id="5832805196449965646">Adicionar pessoa</translation>
@@ -294,6 +299,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="7216409898977639127">Operador de telemóvel</translation>
 <translation id="7271040990581020067">O leitor está a ser utilizado atualmente. Tente novamente mais tarde.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
 <translation id="7359657277149375382">Tipo de ficheiro</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="8372477600026034341">Anfitriões adicionais</translation>
 <translation id="8395584934117017006">Este <ph name="DEVICE_TYPE" /> é gerido pela empresa.</translation>
 <translation id="8398927464629426868">A velocidade de carregamento ou descarregamento atual do dispositivo.</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Nome do fornecedor base</translation>
 <translation id="8475690821716466388">A rede Wi-Fi está protegida com um protocolo pouco seguro WEP PSK.</translation>
 <translation id="8477551185774834963">Latência de DNS ligeiramente acima do limite permitido.</translation>
@@ -351,6 +358,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="8575298406870537639">O operador pode exigir esta opção para estabelecer ligação à respetiva rede. Contacte o seu operador para obter mais detalhes.</translation>
 <translation id="8576249514688522074">Não iniciada</translation>
 <translation id="8620617069779373398">Estado do roaming</translation>
+<translation id="8660881923941176839">libras</translation>
 <translation id="8675354002693747642">Chave pré-partilhada</translation>
 <translation id="871560550817059752">Falha – Sem tinta</translation>
 <translation id="8723108084122415655">Rede não predefinida acima do limite de latência.</translation>
@@ -366,6 +374,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="8881098542468797602">Teste com êxito</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
 <translation id="8910721771319628100">Rede predefinida acima do limite de latência.</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> de <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Falha – Tabuleiro em falta</translation>
 <translation id="8928727111548978589">Falha – Sem papel</translation>
 <translation id="8930622219860340959">Sem fios</translation>
@@ -383,6 +392,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="9149391708638971077">Executar teste de memória</translation>
 <translation id="9173638680043580060">Falta menos de um minuto</translation>
 <translation id="9190063653747922532">L2TP/IPSec + chave pré-partilhada</translation>
+<translation id="9211490828691860325">Todos os espaços de trabalho</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Não activado</translation>
 <translation id="960719561871045870">Código do operador</translation>

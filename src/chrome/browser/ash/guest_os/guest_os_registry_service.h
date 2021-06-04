@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
+#include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
@@ -147,7 +147,7 @@ class GuestOsRegistryService : public KeyedService {
       VmType vm_type) const;
 
   // Return null if |app_id| is not found in the registry.
-  base::Optional<GuestOsRegistryService::Registration> GetRegistration(
+  absl::optional<GuestOsRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
   // Constructs path to app icon for specific scale factor.

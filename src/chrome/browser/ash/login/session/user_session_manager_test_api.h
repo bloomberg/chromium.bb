@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 
-namespace chromeos {
+namespace ash {
 namespace test {
 
 // Accesses private data from a UserSessionManager for testing.
@@ -37,6 +37,8 @@ class UserSessionManagerTestApi {
   void SetAttemptRestartClosureInTests(
       const base::RepeatingClosure& attempt_restart_closure);
 
+  OnboardingUserActivityCounter* get_onboarding_user_activity_counter();
+
  private:
   UserSessionManager* session_manager_;  // not owned
 
@@ -44,6 +46,14 @@ class UserSessionManagerTestApi {
 };
 
 }  // namespace test
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+namespace test {
+using ::ash::test::UserSessionManagerTestApi;
+}
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SESSION_USER_SESSION_MANAGER_TEST_API_H_

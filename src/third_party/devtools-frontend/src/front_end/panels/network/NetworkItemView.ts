@@ -34,16 +34,17 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as NetworkComponents from './components/components.js';
 
 import {EventSourceMessagesView} from './EventSourceMessagesView.js';
-import {NetworkTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+import type {UIHeaderSection} from './NetworkSearchScope.js';
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js'; // eslint-disable-line no-unused-vars
 import {RequestCookiesView} from './RequestCookiesView.js';
 import {RequestHeadersView} from './RequestHeadersView.js';
 import {RequestInitiatorView} from './RequestInitiatorView.js';
 import {RequestPreviewView} from './RequestPreviewView.js';
 import {RequestResponseView} from './RequestResponseView.js';
 import {RequestTimingView} from './RequestTimingView.js';
-import {RequestTrustTokensView, statusConsideredSuccess} from './RequestTrustTokensView.js';
 import {ResourceWebSocketFrameView} from './ResourceWebSocketFrameView.js';
 
 const UIStrings = {
@@ -80,7 +81,8 @@ const UIStrings = {
   */
   signedexchangeError: 'SignedExchange error',
   /**
-  *@description Text for a network response
+  *@description Title of a tab in the Network panel. A Network response refers to the act of acknowledging a
+  network request. Should not be confused with answer.
   */
   response: 'Response',
   /**
@@ -138,7 +140,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     this._request = request;
     this.element.classList.add('network-item-view');
 
-    this._resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', 'preview');
+    this._resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', Tabs.Preview);
 
     this._headersView = new RequestHeadersView(request);
     this.appendTab(
@@ -149,7 +151,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
       const frameView = new ResourceWebSocketFrameView(request);
       this.appendTab(Tabs.WsFrames, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
-    } else if (request.mimeType === 'text/event-stream') {
+    } else if (request.mimeType === SDK.NetworkRequest.MIME_TYPE.EVENTSTREAM) {
       this.appendTab(Tabs.EventSource, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
     } else {
       this._responseView = new RequestResponseView(request);
@@ -175,7 +177,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
 
     if (request.trustTokenParams()) {
       this.appendTab(
-          Tabs.TrustTokens, i18nString(UIStrings.trustTokens), new RequestTrustTokensView(request),
+          Tabs.TrustTokens, i18nString(UIStrings.trustTokens),
+          new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request),
           i18nString(UIStrings.trustTokenOperationDetails));
     }
 
@@ -229,7 +232,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
 
   _maybeShowErrorIconInTrustTokenTabHeader(): void {
     const trustTokenResult = this._request.trustTokenOperationDoneEvent();
-    if (trustTokenResult && !statusConsideredSuccess(trustTokenResult.status)) {
+    if (trustTokenResult &&
+        !NetworkComponents.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
       this.setTabIcon(Tabs.TrustTokens, UI.Icon.Icon.create('smallicon-error'));
     }
   }
@@ -262,14 +266,9 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     }
   }
 
-  revealRequestHeader(header: string): void {
+  revealHeader(section: UIHeaderSection, header: string|undefined): void {
     this._selectTab(Tabs.Headers);
-    this._headersView.revealRequestHeader(header);
-  }
-
-  revealResponseHeader(header: string): void {
-    this._selectTab(Tabs.Headers);
-    this._headersView.revealResponseHeader(header);
+    this._headersView.revealHeader(section, header);
   }
 }
 

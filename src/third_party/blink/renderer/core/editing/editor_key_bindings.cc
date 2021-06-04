@@ -45,7 +45,7 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
     return false;
 
   String command_name = Behavior().InterpretKeyEvent(*evt);
-  const EditorCommand command = this->CreateCommand(command_name);
+  const EditorCommand command = CreateCommand(command_name);
 
   if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how
@@ -69,6 +69,11 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   auto* edit_context =
       GetFrame().GetInputMethodController().GetActiveEditContext();
   if (edit_context) {
+    if (DispatchBeforeInputInsertText(evt->target()->ToNode(),
+                                      key_event->text) !=
+        DispatchEventResult::kNotCanceled)
+      return true;
+
     WebString text(WTF::String(key_event->text));
     edit_context->InsertText(text);
     return true;

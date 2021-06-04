@@ -71,16 +71,17 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
     void GetFrameInfoImpl(
         std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
         base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
-                                base::Optional<FrameInfo>)> cb) {
+                                absl::optional<FrameInfo>)> cb) {
       DCHECK(buffer_renderer);
 
       auto texture_owner = buffer_renderer->texture_owner();
       DCHECK(texture_owner);
 
-      base::Optional<FrameInfo> info;
+      absl::optional<FrameInfo> info;
 
       if (buffer_renderer->RenderToTextureOwnerFrontBuffer(
-              CodecOutputBufferRenderer::BindingsMode::kDontRestoreIfBound)) {
+              CodecOutputBufferRenderer::BindingsMode::kDontRestoreIfBound,
+              0)) {
         gfx::Size coded_size;
         gfx::Rect visible_rect;
         if (texture_owner->GetCodedSizeAndVisibleRect(
@@ -98,7 +99,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
     void GetFrameInfo(
         std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
         base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
-                                base::Optional<FrameInfo>)> cb) {
+                                absl::optional<FrameInfo>)> cb) {
       DCHECK(buffer_renderer);
 
       auto texture_owner = buffer_renderer->texture_owner();
@@ -112,12 +113,12 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
 
    private:
     // Gets YCbCrInfo from last rendered frame.
-    base::Optional<gpu::VulkanYCbCrInfo> GetYCbCrInfo(
+    absl::optional<gpu::VulkanYCbCrInfo> GetYCbCrInfo(
         gpu::TextureOwner* texture_owner) {
       gpu::ContextResult result;
 
       if (!stub_)
-        return base::nullopt;
+        return absl::nullopt;
 
       auto shared_context =
           stub_->channel()->gpu_channel_manager()->GetSharedContextState(
@@ -125,7 +126,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
       auto context_provider =
           (result == gpu::ContextResult::kSuccess) ? shared_context : nullptr;
       if (!context_provider)
-        return base::nullopt;
+        return absl::nullopt;
 
       return gpu::SharedImageVideo::GetYcbcrInfo(texture_owner,
                                                  context_provider);
@@ -144,7 +145,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
 
   void OnFrameInfoReady(
       std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
-      base::Optional<FrameInfo> frame_info) {
+      absl::optional<FrameInfo> frame_info) {
     DCHECK(buffer_renderer);
     DCHECK(!requests_.empty());
 

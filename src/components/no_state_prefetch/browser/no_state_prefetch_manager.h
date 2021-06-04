@@ -9,12 +9,10 @@
 
 #include <memory>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -26,6 +24,7 @@
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -102,7 +101,7 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
       int process_id,
       int route_id,
       const GURL& url,
-      blink::mojom::PrerenderRelType rel_type,
+      blink::mojom::PrerenderTriggerType trigger_type,
       const content::Referrer& referrer,
       const url::Origin& initiator_origin,
       const gfx::Size& size);
@@ -138,6 +137,14 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  // Adds a NoStatePrefetch that only allows for same origin requests (i.e.,
+  // requests that only redirect to the same origin).
+  std::unique_ptr<NoStatePrefetchHandle> AddSameOriginSpeculation(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size,
+      const url::Origin& initiator_origin);
+
   std::unique_ptr<NoStatePrefetchHandle> AddPrerenderFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,
@@ -154,6 +161,11 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
 
   // Cancels all active prerenders.
   void CancelAllPrerenders();
+
+  // Destroys all pending prerenders using FinalStatus.  Also deletes them as
+  // well as any swapped out WebContents queued for destruction.
+  // Used both on destruction, and when clearing the browsing history.
+  void DestroyAllContents(FinalStatus final_status);
 
   // Moves a NoStatePrefetchContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
@@ -275,7 +287,7 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
   AddPrerenderWithPreconnectFallbackForTesting(
       Origin origin,
       const GURL& url,
-      const base::Optional<url::Origin>& initiator_origin);
+      const absl::optional<url::Origin>& initiator_origin);
 
  protected:
   class NoStatePrefetchData
@@ -376,7 +388,7 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace);
 
@@ -408,7 +420,7 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
   CreateNoStatePrefetchContents(
       const GURL& url,
       const content::Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       Origin origin);
 
   // Insures the |active_prefetches_| are sorted by increasing expiry time. Call
@@ -456,11 +468,6 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
 
   // Returns a new Value representing the pages currently being prerendered.
   std::unique_ptr<base::ListValue> GetActivePrerendersAsValue() const;
-
-  // Destroys all pending prerenders using FinalStatus.  Also deletes them as
-  // well as any swapped out WebContents queued for destruction.
-  // Used both on destruction, and when clearing the browsing history.
-  void DestroyAllContents(FinalStatus final_status);
 
   // Records the final status a prerender in the case that a
   // NoStatePrefetchContents was never created, adds a PrerenderHistory entry,

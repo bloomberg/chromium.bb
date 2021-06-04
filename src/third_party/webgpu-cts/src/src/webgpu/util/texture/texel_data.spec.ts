@@ -62,17 +62,17 @@ function doTest(
       .map((C, i) => `[[offset(${i * 4})]] result${C} : ${shaderType};`)
       .join('\n')}
   };
-  [[group(0), binding(1)]] var<storage_buffer> output : Output;
+  [[group(0), binding(1)]] var<storage> output : [[access(read_write)]] Output;
 
   [[stage(compute)]]
-  fn main() -> void {
+  fn main() {
       var texel : vec4<${shaderType}> = textureLoad(tex, vec2<i32>(0, 0), 0);
       ${rep.componentOrder.map(C => `output.result${C} = texel.${C.toLowerCase()};`).join('\n')}
       return;
   }`;
 
   const pipeline = t.device.createComputePipeline({
-    computeStage: {
+    compute: {
       module: t.device.createShaderModule({
         code: shader,
       }),

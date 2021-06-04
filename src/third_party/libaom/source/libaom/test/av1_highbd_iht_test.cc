@@ -210,6 +210,12 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HighbdInvTxfm2d);
 void AV1HighbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type_, TX_SIZE tx_size_,
                                              int run_times, int bit_depth_,
                                              int gt_int16) {
+#if CONFIG_REALTIME_ONLY
+  if (tx_size_ == TX_4X16 || tx_size_ == TX_16X4 || tx_size_ == TX_8X32 ||
+      tx_size_ == TX_32X8 || tx_size_ == TX_16X64 || tx_size_ == TX_64X16) {
+    return;
+  }
+#endif
   FwdTxfm2dFunc fwd_func_ = libaom_test::fwd_txfm_func_ls[tx_size_];
   TxfmParam txfm_param;
   const int BLK_WIDTH = 64;

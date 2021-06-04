@@ -6,6 +6,10 @@
 # into C++ header files as constexpr char[] raw strings with variable names
 # taken directly from the original file name.
 
+# The root directory must be defined outside of the template for use while
+# embedded.
+openscreen_root = rebase_path("../../", "//")
+
 template("data_headers") {
   action_foreach(target_name) {
     forward_variables_from(invoker,
@@ -14,7 +18,7 @@ template("data_headers") {
                              "sources",
                              "testonly",
                            ])
-    script = "../../tools/convert_to_data_file.py"
+    script = "//${openscreen_root}/tools/convert_to_data_file.py"
     outputs = [ "{{source_gen_dir}}/{{source_name_part}}_data.h" ]
     args = [
       namespace,

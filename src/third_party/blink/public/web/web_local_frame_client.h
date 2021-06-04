@@ -35,24 +35,24 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "media/base/speech_recognition_client.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -99,7 +99,6 @@ class Rect;
 namespace blink {
 namespace mojom {
 enum class TreeScopeType;
-enum class WebFeature : int32_t;
 }  // namespace mojom
 
 class AssociatedInterfaceProvider;
@@ -129,6 +128,11 @@ struct MobileFriendliness;
 struct WebConsoleMessage;
 struct ContextMenuData;
 struct WebPluginParams;
+
+enum class SyncCondition {
+  kNotForced,  // Sync only if the value has changed since the last call.
+  kForced,     // Force a sync even if the value is unchanged.
+};
 
 class BLINK_EXPORT WebLocalFrameClient {
  public:
@@ -410,10 +414,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidFinishLoad() {}
 
   // The navigation resulted in no change to the documents within the page.
-  // For example, the navigation may have just resulted in scrolling to a
-  // named anchor or a PopState event may have been dispatched.
+  // For example, the navigation may have just resulted in scrolling to a named
+  // anchor or a PopState event may have been dispatched.
+  // |is_synchronously_committed| is true if the navigation is synchronously
+  // committed from within Blink, as opposed to being driven by the browser's
+  // navigation stack.
   virtual void DidFinishSameDocumentNavigation(WebHistoryCommitType,
-                                               bool content_initiated,
+                                               bool is_synchronously_committed,
                                                bool is_history_api_navigation,
                                                bool is_client_redirect) {}
 
@@ -452,9 +459,15 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Editing -------------------------------------------------------------
 
-  // These methods allow the client to intercept and overrule editing
-  // operations.
-  virtual void DidChangeSelection(bool is_selection_empty) {}
+  // These methods allow the client to intercept editing operations.
+
+  // Called when the selection may have changed (Note, that due to
+  // http://crbug.com/632920 the selection may not have changed). Additionally,
+  // in some circumstances the browser selection may be known to not match the
+  // last synced value, in which case SyncCondition::kForced is passed to force
+  // an update even if the selection appears unchanged since the last call.
+  virtual void DidChangeSelection(bool is_selection_empty,
+                                  SyncCondition force_sync) {}
   virtual void DidChangeContents() {}
 
   // UI ------------------------------------------------------------------
@@ -462,7 +475,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Update a context menu data for testing.
   virtual void UpdateContextMenuDataForTesting(
       const ContextMenuData&,
-      const base::Optional<gfx::Point>&) {}
+      const absl::optional<gfx::Point>&) {}
 
   // Called when a new element gets focused. |from_element| is the previously
   // focused element, |to_element| is the newly focused one. Either can be null.
@@ -516,19 +529,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   // use for segregated histograms.
   virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}
 
-  // Blink hits the code path for a certain web feature for the first time on
-  // this frame. As a performance optimization, features already hit on other
+  // Blink hits the code path for a certain UseCounterFeature for the first time
+  // on this frame. As a performance optimization, features already hit on other
   // frames associated with the same page in the renderer are not currently
-  // reported. This is used for reporting UseCounter features histograms.
-  virtual void DidObserveNewFeatureUsage(mojom::WebFeature) {}
-  // Blink hits the code path for a certain CSS property (either an animated CSS
-  // property or not) for the first time on this frame. As a performance
-  // optimization, features already hit on other frames associated with the same
-  // page in the renderer are not currently reported. This is used for reporting
-  // UseCounter CSS histograms.
-  virtual void DidObserveNewCssPropertyUsage(
-      mojom::CSSSampleId /*css_property*/,
-      bool /*is_animated*/) {}
+  // reported.
+  virtual void DidObserveNewFeatureUsage(const UseCounterFeature&) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
@@ -544,7 +549,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidObserveLayoutNg(uint32_t all_block_count,
                                   uint32_t ng_block_count,
                                   uint32_t all_call_count,
-                                  uint32_t ng_call_count) {}
+                                  uint32_t ng_call_count,
+                                  uint32_t flexbox_ng_block_count,
+                                  uint32_t grid_ng_block_count) {}
 
   enum class LazyLoadBehavior {
     kDeferredImage,    // An image is being deferred by the lazy load feature.
@@ -605,8 +612,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Asks the embedder what values to send for User Agent client hints
   // (or nullopt if none).  Used only when UserAgentOverride() is non-empty;
   // Platform::current()->UserAgentMetadata() is used otherwise.
-  virtual base::Optional<UserAgentMetadata> UserAgentMetadataOverride() {
-    return base::nullopt;
+  virtual absl::optional<UserAgentMetadata> UserAgentMetadataOverride() {
+    return absl::nullopt;
   }
 
   // Do not track ----------------------------------------------------
@@ -698,8 +705,12 @@ class BLINK_EXPORT WebLocalFrameClient {
     return false;
   }
 
-  // Update the current frame selection to the browser.
-  virtual void SyncSelectionIfRequired() {}
+  // Update the current frame selection to the browser if it has changed since
+  // the last call. Note that this only synchronizes the selection, if the
+  // TextInputState may have changed call DidChangeSelection instead.
+  // If the browser selection may not match the last synced
+  // value, SyncCondition::kForced can be passed to force a sync.
+  virtual void SyncSelectionIfRequired(SyncCondition force_sync) {}
 
   // TODO(https://crbug.com/787252): Remove the methods below and use the
   // Supplement mechanism.
@@ -714,6 +725,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
       const std::string& output_device_id) {}
+
+  // Notifies the observers of the origins for which subresource redirect
+  // optimizations can be preloaded.
+  virtual void PreloadSubresourceOptimizationsForOrigins(
+      const std::vector<WebSecurityOrigin>& origins) {}
 
   // Called immediately following the first compositor-driven (frame-generating)
   // layout that happened after an interesting document lifecycle change (see

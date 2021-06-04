@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,6 +37,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -134,7 +134,6 @@ HttpProxySocketParams::HttpProxySocketParams(
     scoped_refptr<SSLSocketParams> ssl_params,
     bool is_quic,
     const HostPortPair& endpoint,
-    bool is_trusted_proxy,
     bool tunnel,
     const NetworkTrafficAnnotationTag traffic_annotation,
     const NetworkIsolationKey& network_isolation_key)
@@ -142,7 +141,6 @@ HttpProxySocketParams::HttpProxySocketParams(
       ssl_params_(std::move(ssl_params)),
       is_quic_(is_quic),
       endpoint_(endpoint),
-      is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
       network_isolation_key_(network_isolation_key),
       traffic_annotation_(traffic_annotation) {
@@ -286,7 +284,7 @@ base::TimeDelta HttpProxyConnectJob::AlternateNestedConnectionTimeout(
   if (!network_quality_estimator)
     return default_alternate_timeout;
 
-  base::Optional<base::TimeDelta> http_rtt_estimate =
+  absl::optional<base::TimeDelta> http_rtt_estimate =
       network_quality_estimator->GetHttpRTT();
   if (!http_rtt_estimate)
     return default_alternate_timeout;
@@ -603,8 +601,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
     // Create a session direct to the proxy itself
     spdy_session = common_connect_job_params()
                        ->spdy_session_pool->CreateAvailableSessionFromSocket(
-                           key, params_->is_trusted_proxy(),
-                           nested_connect_job_->PassSocket(),
+                           key, nested_connect_job_->PassSocket(),
                            nested_connect_job_->connect_timing(), net_log());
     DCHECK(spdy_session);
     nested_connect_job_.reset();
@@ -671,7 +668,7 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
   return quic_stream_request_->Request(
       proxy_server, quic_version, ssl_params->privacy_mode(),
       kH2QuicTunnelPriority, socket_tag(), params_->network_isolation_key(),
-      ssl_params->GetDirectConnectionParams()->disable_secure_dns(),
+      ssl_params->GetDirectConnectionParams()->secure_dns_policy(),
       /*use_dns_aliases=*/false, ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),
       &quic_net_error_details_,
@@ -797,7 +794,7 @@ void HttpProxyConnectJob::OnTimedOutInternal() {
 
 int HttpProxyConnectJob::HandleConnectResult(int result) {
   if (result == OK)
-    SetSocket(std::move(transport_socket_), base::nullopt /* dns_aliases */);
+    SetSocket(std::move(transport_socket_), absl::nullopt /* dns_aliases */);
   return result;
 }
 
@@ -832,7 +829,7 @@ SpdySessionKey HttpProxyConnectJob::CreateSpdySessionKey() const {
       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kTrue, socket_tag(),
       params_->network_isolation_key(),
-      params_->ssl_params()->GetDirectConnectionParams()->disable_secure_dns());
+      params_->ssl_params()->GetDirectConnectionParams()->secure_dns_policy());
 }
 
 }  // namespace net

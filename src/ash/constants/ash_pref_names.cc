@@ -15,6 +15,10 @@ const char kAssistiveInputFeatureSettings[] =
 const char kAssistPersonalInfoEnabled[] =
     "assistive_input.personal_info_enabled";
 
+// A boolean pref of whether assist predictive writing is enabled.
+const char kAssistPredictiveWritingEnabled[] =
+    "assistive_input.predictive_writing_enabled";
+
 // A boolean pref of whether emoji suggestion is enabled.
 const char kEmojiSuggestionEnabled[] =
     "assistive_input.emoji_suggestion_enabled";
@@ -101,6 +105,10 @@ const char kQuirksClientLastServerCheck[] = "quirks_client.last_server_check";
 // Whether 802.11r Fast BSS Transition is currently enabled.
 const char kDeviceWiFiFastTransitionEnabled[] =
     "net.device_wifi_fast_transition_enabled";
+
+// A boolean pref that controls whether input noise cancellation is enabled.
+const char kInputNoiseCancellationEnabled[] =
+    "ash.input_noise_cancellation_enabled";
 
 // A boolean pref to store if Secondary Google Account additions are allowed on
 // Chrome OS Account Manager. The default value is |true|, i.e. Secondary Google

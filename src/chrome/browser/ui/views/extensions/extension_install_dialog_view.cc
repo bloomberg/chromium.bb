@@ -27,12 +27,14 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
@@ -45,8 +47,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 using content::OpenURLParams;
@@ -108,7 +108,7 @@ class RatingStar : public views::ImageView {
 
   // views::ImageView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kIgnored;
+    node_data->role = ax::mojom::Role::kNone;
   }
 };
 
@@ -128,7 +128,7 @@ class RatingLabel : public views::Label {
 
   // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kIgnored;
+    node_data->role = ax::mojom::Role::kNone;
   }
 };
 
@@ -141,15 +141,14 @@ void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
 }
 
 void ShowExtensionInstallDialogImpl(
-    ExtensionInstallPromptShowParams* show_params,
+    std::unique_ptr<ExtensionInstallPromptShowParams> show_params,
     ExtensionInstallPrompt::DoneCallback done_callback,
     std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  gfx::NativeWindow parent_window = show_params->GetParentWindow();
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      show_params->profile(), show_params->GetParentWebContents(),
-      std::move(done_callback), std::move(prompt));
-  constrained_window::CreateBrowserModalDialogViews(
-      dialog, show_params->GetParentWindow())
+      std::move(show_params), std::move(done_callback), std::move(prompt));
+  constrained_window::CreateBrowserModalDialogViews(dialog, parent_window)
       ->Show();
 }
 
@@ -206,12 +205,11 @@ void AddPermissions(ExtensionInstallPrompt::Prompt* prompt,
 }  // namespace
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
-    Profile* profile,
-    content::PageNavigator* navigator,
+    std::unique_ptr<ExtensionInstallPromptShowParams> show_params,
     ExtensionInstallPrompt::DoneCallback done_callback,
     std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt)
-    : profile_(profile),
-      navigator_(navigator),
+    : profile_(show_params->profile()),
+      show_params_(std::move(show_params)),
       done_callback_(std::move(done_callback)),
       prompt_(std::move(prompt)),
       title_(prompt_->GetDialogTitle()),
@@ -273,6 +271,15 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {
   if (done_callback_)
     OnDialogCanceled();
+}
+
+ExtensionInstallPromptShowParams*
+ExtensionInstallDialogView::GetShowParamsForTesting() {
+  return show_params_.get();
+}
+
+void ExtensionInstallDialogView::ClickLinkForTesting() {
+  LinkClicked();
 }
 
 void ExtensionInstallDialogView::SetInstallButtonDelayForTesting(
@@ -445,8 +452,9 @@ void ExtensionInstallDialogView::LinkClicked() {
                        WindowOpenDisposition::NEW_FOREGROUND_TAB,
                        ui::PAGE_TRANSITION_LINK, false);
 
-  if (navigator_) {
-    navigator_->OpenURL(params);
+  DCHECK(show_params_);
+  if (show_params_->GetParentWebContents()) {
+    show_params_->GetParentWebContents()->OpenURL(params);
   } else {
     chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     displayer.browser()->OpenURL(params);
@@ -459,8 +467,8 @@ void ExtensionInstallDialogView::CreateContents() {
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto extension_info_container = std::make_unique<CustomScrollableView>(this);
-  const gfx::Insets content_insets =
-      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
+  const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kControl, views::DialogContentType::kControl);
   extension_info_container->SetBorder(views::CreateEmptyBorder(
       0, content_insets.left(), 0, content_insets.right()));
   extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(

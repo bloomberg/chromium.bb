@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "base/cpu.h"
@@ -87,6 +88,16 @@ TEST(PageAllocatorTest, Rounding) {
                 2 * PageAllocationGranularity() - 1));
 }
 
+TEST(PageAllocatorTest, NextAlignedWithOffset) {
+  EXPECT_EQ(1024u, NextAlignedWithOffset(1024, 1, 0));
+  EXPECT_EQ(2024u, NextAlignedWithOffset(1024, 1024, 1000));
+  EXPECT_EQ(2024u, NextAlignedWithOffset(2024, 1024, 1000));
+  EXPECT_EQ(3048u, NextAlignedWithOffset(2025, 1024, 1000));
+  EXPECT_EQ(2048u, NextAlignedWithOffset(1024, 2048, 0));
+  EXPECT_EQ(2148u, NextAlignedWithOffset(1024, 2048, 100));
+  EXPECT_EQ(2000u, NextAlignedWithOffset(1024, 2048, 2000));
+}
+
 // Test that failed page allocations invoke base::ReleaseReservation().
 // We detect this by making a reservation and ensuring that after failure, we
 // can make a new reservation.
@@ -155,6 +166,24 @@ TEST(PageAllocatorTest, AllocAndFreePages) {
   FreePages(buffer, PageAllocationGranularity());
 }
 
+TEST(PageAllocatorTest, AllocPagesAligned) {
+  size_t alignment = 8 * PageAllocationGranularity();
+  size_t sizes[] = {PageAllocationGranularity(),
+                    alignment - PageAllocationGranularity(), alignment,
+                    alignment + PageAllocationGranularity(), alignment * 4};
+  size_t offsets[] = {0, PageAllocationGranularity(), alignment / 2,
+                      alignment - PageAllocationGranularity()};
+  for (size_t size : sizes) {
+    for (size_t offset : offsets) {
+      void* buffer = AllocPagesWithAlignOffset(
+          nullptr, size, alignment, offset, PageReadWrite, PageTag::kChromium);
+      EXPECT_TRUE(buffer);
+      EXPECT_EQ(reinterpret_cast<uintptr_t>(buffer) % alignment, offset);
+      FreePages(buffer, size);
+    }
+  }
+}
+
 TEST(PageAllocatorTest, AllocAndFreePagesWithPageReadWriteTagged) {
   // This test checks that a page allocated with PageReadWriteTagged is
   // safe to use on all systems (even those which don't support MTE).
@@ -196,7 +225,8 @@ TEST(PageAllocatorTest, AllocAndFreePagesWithPageReadExecuteConfirmCFI) {
          function_range);
   uint32_t* bufferi = reinterpret_cast<uint32_t*>(buffer);
   // Next re-protect the page.
-  SetSystemPagesAccess(buffer, PageAllocationGranularity(), PageReadExecute);
+  SetSystemPagesAccess(buffer, PageAllocationGranularity(),
+                       PageReadExecuteProtected);
   // Attempt to call the function through the BTI-enabled entrypoint. Confirm
   // that it works.
   int64_t (*bti_enabled_fn)(int64_t) =
@@ -240,15 +270,27 @@ TEST(PageAllocatorTest, AllocAndFreePagesWithPageReadWriteTaggedSynchronous) {
   buffer1 = reinterpret_cast<int*>(__arm_mte_get_tag(buffer));
   // Prove that the tag is different (if they're the same, the test won't work).
   ASSERT_NE(buffer0, buffer1);
+  memory::TagViolationReportingMode parent_tagging_mode =
+      memory::GetMemoryTaggingModeForCurrentThread();
   EXPECT_EXIT(
       {
+  // Switch to synchronous mode.
+#if defined(OS_ANDROID)
+        memory::ChangeMemoryTaggingModeForAllThreadsPerProcess(
+            memory::TagViolationReportingMode::kSynchronous);
+#else
+        memory::ChangeMemoryTaggingModeForCurrentThread(
+            memory::TagViolationReportingMode::kSynchronous);
+#endif  // defined(OS_ANDROID)
+        EXPECT_EQ(memory::GetMemoryTaggingModeForCurrentThread(),
+                  memory::TagViolationReportingMode::kSynchronous);
         // Write to the buffer using its previous tag. A segmentation fault
-        // should be delivered (the test should already be running in
-        // synchronous MTE mode due to AndroidManifest.xml or `am compat` (on
-        // Android) or test_runner.cc on Linux.
+        // should be delivered.
         *buffer0 = 42;
       },
       testing::KilledBySignal(SIGSEGV), "");
+  EXPECT_EQ(memory::GetMemoryTaggingModeForCurrentThread(),
+            parent_tagging_mode);
   FreePages(buffer, PageAllocationGranularity());
 #else
   NOTREACHED();
@@ -276,11 +318,20 @@ TEST(PageAllocatorTest, AllocAndFreePagesWithPageReadWriteTaggedAsynchronous) {
   __arm_mte_set_tag(__arm_mte_increment_tag(buffer, 0x1));
   int* buffer1 = reinterpret_cast<int*>(__arm_mte_get_tag(buffer));
   EXPECT_NE(buffer0, buffer1);
+  memory::TagViolationReportingMode parent_tagging_mode =
+      memory::GetMemoryTaggingModeForCurrentThread();
   EXPECT_EXIT(
       {
-        // Switch to asynchronous mode.
-        base::memory::ChangeMemoryTaggingModeForCurrentThread(
-            base::memory::TagViolationReportingMode::kAsynchronous);
+  // Switch to asynchronous mode.
+#if defined(OS_ANDROID)
+        memory::ChangeMemoryTaggingModeForAllThreadsPerProcess(
+            memory::TagViolationReportingMode::kAsynchronous);
+#else
+        memory::ChangeMemoryTaggingModeForCurrentThread(
+            memory::TagViolationReportingMode::kAsynchronous);
+#endif  // defined(OS_ANDROID)
+        EXPECT_EQ(memory::GetMemoryTaggingModeForCurrentThread(),
+                  memory::TagViolationReportingMode::kAsynchronous);
         // Write to the buffer using its previous tag. A fault should be
         // generated at this point but we may not notice straight away...
         *buffer0 = 42;
@@ -290,6 +341,8 @@ TEST(PageAllocatorTest, AllocAndFreePagesWithPageReadWriteTaggedAsynchronous) {
       },
       testing::KilledBySignal(SIGSEGV), "");
   FreePages(buffer, PageAllocationGranularity());
+  EXPECT_EQ(memory::GetMemoryTaggingModeForCurrentThread(),
+            parent_tagging_mode);
 #else
   NOTREACHED();
 #endif
@@ -408,7 +461,7 @@ TEST(PageAllocatorTest, PageTagging) {
 #endif  // defined(OS_ANDROID)
 
 TEST(PageAllocatorTest, DecommitErasesMemory) {
-  if (!kDecommittedPagesAreAlwaysZeroed)
+  if (!DecommittedMemoryIsAlwaysZeroed())
     return;
 
   size_t size = PageAllocationGranularity();
@@ -434,21 +487,27 @@ TEST(PageAllocatorTest, DecommitErasesMemory) {
 
 TEST(PageAllocatorTest, MappedPagesAccounting) {
   size_t size = PageAllocationGranularity();
-  size_t mapped_size_before = GetTotalMappedSize();
-
   // Ask for a large alignment to make sure that trimming doesn't change the
   // accounting.
-  void* data = AllocPages(nullptr, size, 128 * PageAllocationGranularity(),
-                          PageInaccessible, PageTag::kChromium);
-  ASSERT_TRUE(data);
+  size_t alignment = 128 * PageAllocationGranularity();
+  size_t offsets[] = {0, PageAllocationGranularity(), alignment / 2,
+                      alignment - PageAllocationGranularity()};
 
-  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+  size_t mapped_size_before = GetTotalMappedSize();
 
-  DecommitSystemPages(data, size, PageKeepPermissionsIfPossible);
-  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+  for (size_t offset : offsets) {
+    void* data = AllocPagesWithAlignOffset(
+        nullptr, size, alignment, offset, PageInaccessible, PageTag::kChromium);
+    ASSERT_TRUE(data);
 
-  FreePages(data, size);
-  EXPECT_EQ(mapped_size_before, GetTotalMappedSize());
+    EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+    DecommitSystemPages(data, size, PageKeepPermissionsIfPossible);
+    EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+    FreePages(data, size);
+    EXPECT_EQ(mapped_size_before, GetTotalMappedSize());
+  }
 }
 
 }  // namespace base

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/viz_vulkan_context_provider_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include <vulkan/vulkan.h>
@@ -53,7 +54,7 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanContextProvider
   // memory immediately. In other words, the CPU will wait for GPU work to
   // complete before proceeding when the current amount of allocated memory
   // exceeds this limit.
-  virtual base::Optional<uint32_t> GetSyncCpuMemoryLimit() const = 0;
+  virtual absl::optional<uint32_t> GetSyncCpuMemoryLimit() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<VulkanContextProvider>;

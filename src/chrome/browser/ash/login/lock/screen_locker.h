@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -31,6 +30,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -323,5 +323,10 @@ class ScreenLocker
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when //c/b/ash/login moved to ash.
+namespace ash {
+using ::chromeos::ScreenLocker;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_LOCK_SCREEN_LOCKER_H_

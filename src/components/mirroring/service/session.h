@@ -7,7 +7,6 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
@@ -18,7 +17,6 @@
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/receiver_setup_querier.h"
 #include "components/mirroring/service/rtp_stream.h"
-#include "components/mirroring/service/wifi_status_monitor.h"
 #include "gpu/config/gpu_info.h"
 #include "media/capture/video/video_capture_feedback.h"
 #include "media/cast/cast_environment.h"
@@ -28,6 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 class AudioInputDevice;
@@ -78,9 +77,6 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   void RequestRefreshFrame() override;
   void CreateVideoEncodeAccelerator(
       media::cast::ReceiveVideoEncodeAcceleratorCallback callback) override;
-  void CreateVideoEncodeMemory(
-      size_t size,
-      media::cast::ReceiveVideoEncodeMemoryCallback callback) override;
 
   // Callbacks by media::cast::CastTransport::Client.
   void OnTransportStatusChanged(media::cast::CastTransportStatus status);
@@ -185,10 +181,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   std::unique_ptr<AudioRtpStream> audio_stream_;
   std::unique_ptr<VideoRtpStream> video_stream_;
   std::unique_ptr<VideoCaptureClient> video_capture_client_;
-  scoped_refptr<media::cast::CastEnvironment> cast_environment_ = nullptr;
+  scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   std::unique_ptr<media::cast::CastTransport> cast_transport_;
-  scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_ = nullptr;
-  scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_ = nullptr;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_;
   std::unique_ptr<AudioCapturingCallback> audio_capturing_callback_;
   scoped_refptr<media::AudioInputDevice> audio_input_device_;
   std::unique_ptr<MediaRemoter> media_remoter_;

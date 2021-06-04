@@ -1,6 +1,7 @@
 # Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import optparse
 import os
 import unittest
@@ -93,7 +94,7 @@ class BrowserOptionsTest(unittest.TestCase):
     parser.parse_args(['--extra-browser-args=--foo --bar'])
 
     self.assertEquals(options.browser_options.extra_browser_args,
-                      set(['--foo', '--bar']))
+                      {'--foo', '--bar'})
 
   def testEnableSystrace(self):
     options = browser_options.BrowserFinderOptions()
@@ -198,7 +199,7 @@ class BrowserOptionsTest(unittest.TestCase):
 
     self.assertEquals(options.interval_profiler_options, [log_file])
     self.assertEquals(
-        options.browser_options.extra_browser_args, set([log_file]))
+        options.browser_options.extra_browser_args, {log_file})
     self.assertEquals(options.browser_options.extra_wpr_args, [log_file])
 
 

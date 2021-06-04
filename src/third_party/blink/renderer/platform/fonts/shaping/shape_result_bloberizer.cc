@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
 
 #include <hb.h>
+
+#include "base/logging.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
@@ -162,7 +164,8 @@ void ShapeResultBloberizer::CommitPendingRun() {
     builder_rotation_ = pending_canvas_rotation_;
   }
 
-  CommitText();
+  if (UNLIKELY(!current_character_indexes_.IsEmpty()))
+    CommitText();
 
   SkFont run_font;
   pending_font_data_->PlatformData().SetupSkFont(
@@ -440,7 +443,7 @@ ShapeResultBloberizer::FillGlyphs::FillGlyphs(
   float advance = 0;
   auto results = result_buffer.results_;
 
-  if (type_ == Type::kEmitText) {
+  if (UNLIKELY(type_ == Type::kEmitText)) {
     unsigned word_offset = 0;
     ClusterStarts cluster_starts;
     for (const auto& word_result : results) {
@@ -483,7 +486,7 @@ ShapeResultBloberizer::FillGlyphs::FillGlyphs(
     }
   }
 
-  if (type_ == Type::kEmitText)
+  if (UNLIKELY(type_ == Type::kEmitText))
     CommitText();
 
   advance_ = advance;
@@ -514,7 +517,7 @@ ShapeResultBloberizer::FillGlyphsNG::FillGlyphsNG(
 
   DVLOG(4) << "FillGlyphsNG slow path";
   unsigned run_offset = 0;
-  if (type_ == Type::kEmitText) {
+  if (UNLIKELY(type_ == Type::kEmitText)) {
     ClusterStarts cluster_starts;
     result->ForEachGlyph(initial_advance, from, to, run_offset,
                          ClusterStarts::Accumulate,
@@ -528,7 +531,7 @@ ShapeResultBloberizer::FillGlyphsNG::FillGlyphsNG(
       result->ForEachGlyph(initial_advance, from, to, run_offset,
                            AddGlyphToBloberizer, static_cast<void*>(&context));
 
-  if (type_ == Type::kEmitText)
+  if (UNLIKELY(type_ == Type::kEmitText))
     CommitText();
 }
 

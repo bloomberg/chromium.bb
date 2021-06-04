@@ -17,11 +17,16 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "gpu/ipc/common/memory_stats.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/task_manager/providers/crosapi/crosapi_task_provider_ash.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace task_manager {
 
@@ -72,7 +77,7 @@ void GetWindowsHandles(base::ProcessHandle handle,
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_NACL)
-int GetNaClDebugStubPortOnIoThread(int process_id) {
+int GetNaClDebugStubPortOnProcessThread(int process_id) {
   return nacl::NaClBrowser::GetInstance()->GetProcessGdbDebugStubPort(
       process_id);
 }
@@ -86,6 +91,9 @@ TaskGroup::TaskGroup(
     bool is_running_in_vm,
     const base::RepeatingClosure& on_background_calculations_done,
     const scoped_refptr<SharedSampler>& shared_sampler,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    CrosapiTaskProviderAsh* crosapi_task_provider,
+#endif
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
       process_id_(proc_id),
@@ -95,6 +103,7 @@ TaskGroup::TaskGroup(
       shared_sampler_(shared_sampler),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       arc_shared_sampler_(nullptr),
+      crosapi_task_provider_(crosapi_task_provider),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
@@ -120,7 +129,11 @@ TaskGroup::TaskGroup(
       idle_wakeups_per_second_(-1),
       gpu_memory_has_duplicates_(false),
       is_backgrounded_(false) {
-  if (process_id_ != base::kNullProcessId && !is_running_in_vm_) {
+  if (process_id_ != base::kNullProcessId && !is_running_in_vm_
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      && !crosapi_task_provider_ /* not running in Lacros */
+#endif
+  ) {
     worker_thread_sampler_ = base::MakeRefCounted<TaskGroupSampler>(
         base::Process::Open(process_id_), blocking_pool_runner,
         base::BindRepeating(&TaskGroup::OnCpuRefreshDone,
@@ -188,6 +201,15 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
           task->GetCumulativeNetworkUsage();
     }
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (crosapi_task_provider_) {
+    // If the task group is running in Lacros, we need to call
+    // crosapi_task_provider_ to help reresh its stats.
+    crosapi_task_provider_->RefreshTaskGroup(this);
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // 2- Refresh GPU memory (if enabled).
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY,
@@ -276,21 +298,24 @@ void TaskGroup::RefreshGpuMemory(
 
 void TaskGroup::RefreshWindowsHandles() {
 #if defined(OS_WIN)
-  GetWindowsHandles(process_handle_,
-                    &gdi_current_handles_,
-                    &gdi_peak_handles_,
-                    &user_current_handles_,
-                    &user_peak_handles_);
+  GetWindowsHandles(process_handle_, &gdi_current_handles_, &gdi_peak_handles_,
+                    &user_current_handles_, &user_peak_handles_);
 #endif  // defined(OS_WIN)
 }
 
 #if BUILDFLAG(ENABLE_NACL)
 void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
-  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&GetNaClDebugStubPortOnIoThread, child_process_unique_id),
-      base::BindOnce(&TaskGroup::OnRefreshNaClDebugStubPortDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    OnRefreshNaClDebugStubPortDone(
+        GetNaClDebugStubPortOnProcessThread(child_process_unique_id));
+  } else {
+    content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&GetNaClDebugStubPortOnProcessThread,
+                       child_process_unique_id),
+        base::BindOnce(&TaskGroup::OnRefreshNaClDebugStubPortDone,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
@@ -339,7 +364,7 @@ void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {
 }
 
 void TaskGroup::OnSamplerRefreshDone(
-    base::Optional<SharedSampler::SamplingResult> results) {
+    absl::optional<SharedSampler::SamplingResult> results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If any of the Optional<> fields have no value then replace them with
@@ -368,7 +393,7 @@ void TaskGroup::OnSamplerRefreshDone(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void TaskGroup::OnArcSamplerRefreshDone(
-    base::Optional<ArcSharedSampler::MemoryFootprintBytes> memory_footprint) {
+    absl::optional<ArcSharedSampler::MemoryFootprintBytes> memory_footprint) {
   if (memory_footprint)
     set_footprint_bytes(*memory_footprint);
 }

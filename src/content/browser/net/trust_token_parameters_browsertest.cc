@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/containers/contains.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/common/network_service_util.h"
@@ -84,7 +86,7 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
                    expected_params_and_serialization.serialized_params + "});");
 
   monitor.WaitForUrls();
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(trust_token_url);
   ASSERT_TRUE(request);
   ASSERT_TRUE(request->trust_token_params);
@@ -117,7 +119,7 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
                          expected_params_and_serialization.serialized_params)));
 
   monitor.WaitForUrls();
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(trust_token_url);
   ASSERT_TRUE(request);
   ASSERT_TRUE(request->trust_token_params);
@@ -154,7 +156,7 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
                  expected_params_and_serialization.serialized_params.c_str())));
 
   monitor.WaitForUrls();
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(trust_token_url);
   ASSERT_TRUE(request);
 

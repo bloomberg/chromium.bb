@@ -108,8 +108,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
     pairing_event.device.vendor_id_source = bt::VENDOR_ID_SOURCE_USB;
     pairing_event.device.type = bt::DEVICE_TYPE_PHONE;
 
-    std::unique_ptr<base::ListValue> args =
-        bt_private::OnPairing::Create(pairing_event);
+    auto args = bt_private::OnPairing::Create(pairing_event);
     std::unique_ptr<Event> event(new Event(events::BLUETOOTH_PRIVATE_ON_PAIRING,
                                            bt_private::OnPairing::kEventName,
                                            std::move(args)));
@@ -176,15 +175,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, SetAdapterState) {
       .WillOnce(WithArgs<0, 1>(
           Invoke(this, &BluetoothPrivateApiTest::SetDiscoverable)));
 
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/adapter_state", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/adapter_state"},
+                               {.load_as_component = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, NoBluetoothAdapter) {
   ON_CALL(*mock_adapter_, IsPresent()).WillByDefault(Return(false));
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/no_adapter", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/no_adapter"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -198,8 +197,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, CancelPairing) {
   EXPECT_CALL(*mock_device_, ExpectingConfirmation())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, CancelPairing());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/cancel_pairing", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/cancel_pairing"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -211,8 +210,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, PincodePairing) {
           Invoke(this, &BluetoothPrivateApiTest::DispatchPincodePairingEvent)));
   EXPECT_CALL(*mock_device_, ExpectingPinCode()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, SetPinCode("abbbbbbk"));
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/pincode_pairing", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/pincode_pairing"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -224,8 +223,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, PasskeyPairing) {
           Invoke(this, &BluetoothPrivateApiTest::DispatchPasskeyPairingEvent)));
   EXPECT_CALL(*mock_device_, ExpectingPasskey()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, SetPasskey(900531));
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/passkey_pairing", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/passkey_pairing"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -241,8 +240,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
       .WillOnce(RunOnceClosure<1>())
       .WillOnce(RunOnceClosure<1>())
       .WillOnce(RunOnceClosure<0>());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/disconnect", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/disconnect"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -252,8 +251,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
   EXPECT_CALL(*mock_device_, Forget(_, _))
       .WillOnce(
           WithArgs<0>(Invoke(this, &BluetoothPrivateApiTest::ForgetDevice)));
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/forget_device", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/forget_device"},
+                               {.load_as_component = true}))
       << message_;
 }
 #endif
@@ -281,8 +280,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       .Times(1)
       .WillOnce(WithArgs<1>(
           Invoke(this, &BluetoothPrivateApiTest::UpdateFilterOverride)));
-  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/discovery_filter",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/discovery_filter"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -292,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Connect) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_device_, Connect_(_, _, _)).WillOnce(RunOnceClosure<1>());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/connect", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/connect"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -309,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Pair) {
               this,
               &BluetoothPrivateApiTest::DispatchConfirmPasskeyPairingEvent)),
           RunOnceClosure<1>()));
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "bluetooth_private/pair", .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest({.name = "bluetooth_private/pair"},
+                               {.load_as_component = true}))
       << message_;
 }
 

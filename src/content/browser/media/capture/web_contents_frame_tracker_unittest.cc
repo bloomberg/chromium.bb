@@ -25,14 +25,18 @@ using testing::Invoke;
 using testing::NiceMock;
 using testing::StrictMock;
 
-constexpr gfx::Size kSize720p = gfx::Size(1280, 720);
-constexpr gfx::Size kSize1080p = gfx::Size(1920, 1080);
+// Standardized screen resolutions to test common scenarios.
+constexpr gfx::Size kSizeZero{0, 0};
+constexpr gfx::Size kSize720p{1280, 720};
+constexpr gfx::Size kSize1080p{1920, 1080};
+constexpr gfx::Size kSizeWsxgaPlus{1680, 1050};
 
 class SimpleContext : public WebContentsFrameTracker::Context {
+ public:
   ~SimpleContext() override = default;
 
   // WebContentsFrameTracker::Context overrides.
-  base::Optional<gfx::Rect> GetScreenBounds() override {
+  absl::optional<gfx::Rect> GetScreenBounds() override {
     return screen_bounds_;
   }
   viz::FrameSinkId GetFrameSinkIdForCapture() override {
@@ -40,37 +44,25 @@ class SimpleContext : public WebContentsFrameTracker::Context {
   }
   void IncrementCapturerCount(const gfx::Size& capture_size) override {
     ++capturer_count_;
+    last_capture_size_ = capture_size;
   }
   void DecrementCapturerCount() override { --capturer_count_; }
 
-  // Setters.
   int capturer_count() const { return capturer_count_; }
+  const gfx::Size& last_capture_size() const { return last_capture_size_; }
+
   void set_frame_sink_id(viz::FrameSinkId frame_sink_id) {
     frame_sink_id_ = frame_sink_id;
   }
-  void set_screen_bounds(base::Optional<gfx::Rect> screen_bounds) {
+  void set_screen_bounds(absl::optional<gfx::Rect> screen_bounds) {
     screen_bounds_ = std::move(screen_bounds);
   }
 
  private:
   int capturer_count_ = 0;
   viz::FrameSinkId frame_sink_id_;
-  base::Optional<gfx::Rect> screen_bounds_;
-};
-
-class SimpleWebContentsDelegate : public WebContentsDelegate {
- public:
-  void UpdatePreferredSize(WebContents* contents,
-                           const gfx::Size& size) override {
-    // We generally get a zero-value preferred size update when the contents are
-    // torn down--this can be safely ignored for the purpose of these tests.
-    if (size == gfx::Size{}) {
-      return;
-    }
-    current_size = size;
-  }
-
-  gfx::Size current_size;
+  gfx::Size last_capture_size_;
+  absl::optional<gfx::Rect> screen_bounds_;
 };
 
 // The capture device is mostly for interacting with the frame tracker. We do
@@ -105,8 +97,6 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
     tracker_ = std::make_unique<WebContentsFrameTracker>(device_->AsWeakPtr(),
                                                          controller());
 
-    // It's fine to use the UI thread task runner for callbacks here, since the
-    // mock delegate doesn't care what thread it executes on.
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&WebContentsFrameTrackerTest::SetUpOnUIThread,
                                   base::Unretained(this)));
@@ -114,9 +104,9 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
   }
 
   void SetUpOnUIThread() {
-    web_contents_->SetDelegate(&delegate_);
     auto context = std::make_unique<SimpleContext>();
     raw_context_ = context.get();
+    SetScreenSize(kSize1080p);
     tracker_->SetWebContentsAndContextForTesting(web_contents_.get(),
                                                  std::move(context));
     SetFrameSinkId(viz::FrameSinkId(123, 456));
@@ -168,9 +158,9 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
     return &controller_;
 #endif
   }
-  const SimpleWebContentsDelegate& delegate() const { return delegate_; }
   WebContentsFrameTracker* tracker() { return tracker_.get(); }
   SimpleContext* context() { return raw_context_; }
+  StrictMock<MockCaptureDevice>* device() { return device_.get(); }
 
  private:
 #if !defined(OS_ANDROID)
@@ -178,7 +168,6 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
 #endif
 
   std::unique_ptr<TestWebContents> web_contents_;
-  SimpleWebContentsDelegate delegate_;
   std::unique_ptr<StrictMock<MockCaptureDevice>> device_;
   std::unique_ptr<WebContentsFrameTracker> tracker_;
 
@@ -188,45 +177,134 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
 
 TEST_F(WebContentsFrameTrackerTest, CalculatesPreferredSizeClampsToView) {
   SetScreenSize(kSize720p);
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](WebContentsFrameTracker* tracker) {
-            EXPECT_EQ(kSize720p, tracker->CalculatePreferredSize(kSize720p));
-            EXPECT_EQ(kSize720p, tracker->CalculatePreferredSize(kSize1080p));
-          },
-          base::Unretained(tracker())));
-  RunAllTasksUntilIdle();
+  EXPECT_EQ(kSize720p, tracker()->CalculatePreferredSize(kSize720p));
+  EXPECT_EQ(kSize720p, tracker()->CalculatePreferredSize(kSize1080p));
 }
 
 TEST_F(WebContentsFrameTrackerTest,
        CalculatesPreferredSizeNoLargerThanCaptureSize) {
   SetScreenSize(kSize1080p);
-  RunAllTasksUntilIdle();
-
   EXPECT_EQ(kSize720p, tracker()->CalculatePreferredSize(kSize720p));
   EXPECT_EQ(kSize1080p, tracker()->CalculatePreferredSize(kSize1080p));
 }
 
-TEST_F(WebContentsFrameTrackerTest, UpdatesPreferredSizeOnWebContents) {
+TEST_F(WebContentsFrameTrackerTest,
+       CalculatesPreferredSizeWithCorrectAspectRatio) {
+  SetScreenSize(kSizeWsxgaPlus);
+
+  // 720P is strictly less than WSXGA+, so should be unchanged.
+  EXPECT_EQ(kSize720p, tracker()->CalculatePreferredSize(kSize720p));
+
+  // 1080P is larger, so should be scaled appropriately.
+  EXPECT_EQ((gfx::Size{1680, 945}),
+            tracker()->CalculatePreferredSize(kSize1080p));
+
+  // Wider capture size.
+  EXPECT_EQ((gfx::Size{1680, 525}),
+            tracker()->CalculatePreferredSize(gfx::Size{3360, 1050}));
+
+  // Taller capture size.
+  EXPECT_EQ((gfx::Size{500, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1000, 2100}));
+}
+
+TEST_F(WebContentsFrameTrackerTest,
+       CalculatesPreferredSizeAspectRatioWithNoOffByOneErrors) {
+  SetScreenSize(kSizeWsxgaPlus);
+
+  // Wider capture size.
+  EXPECT_EQ((gfx::Size{1680, 525}),
+            tracker()->CalculatePreferredSize(gfx::Size{3360, 1050}));
+  EXPECT_EQ((gfx::Size{1680, 525}),
+            tracker()->CalculatePreferredSize(gfx::Size{3360, 1051}));
+  EXPECT_EQ((gfx::Size{1680, 526}),
+            tracker()->CalculatePreferredSize(gfx::Size{3360, 1052}));
+  EXPECT_EQ((gfx::Size{1680, 525}),
+            tracker()->CalculatePreferredSize(gfx::Size{3361, 1052}));
+  EXPECT_EQ((gfx::Size{1680, 666}),
+            tracker()->CalculatePreferredSize(gfx::Size{5897, 2339}));
+
+  // Taller capture size.
+  EXPECT_EQ((gfx::Size{500, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1000, 2100}));
+  EXPECT_EQ((gfx::Size{499, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1000, 2101}));
+  EXPECT_EQ((gfx::Size{499, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1000, 2102}));
+  EXPECT_EQ((gfx::Size{500, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1001, 2102}));
+  EXPECT_EQ((gfx::Size{500, 1050}),
+            tracker()->CalculatePreferredSize(gfx::Size{1002, 2102}));
+
+  // Some larger and prime factor cases to sanity check.
+  EXPECT_EQ((gfx::Size{1680, 565}),
+            tracker()->CalculatePreferredSize(gfx::Size{21841, 7351}));
+  EXPECT_EQ((gfx::Size{1680, 565}),
+            tracker()->CalculatePreferredSize(gfx::Size{21841, 7349}));
+  EXPECT_EQ((gfx::Size{1680, 565}),
+            tracker()->CalculatePreferredSize(gfx::Size{21839, 7351}));
+  EXPECT_EQ((gfx::Size{1680, 565}),
+            tracker()->CalculatePreferredSize(gfx::Size{21839, 7349}));
+
+  EXPECT_EQ((gfx::Size{1680, 670}),
+            tracker()->CalculatePreferredSize(gfx::Size{139441, 55651}));
+  EXPECT_EQ((gfx::Size{1680, 670}),
+            tracker()->CalculatePreferredSize(gfx::Size{139439, 55651}));
+  EXPECT_EQ((gfx::Size{1680, 670}),
+            tracker()->CalculatePreferredSize(gfx::Size{139441, 55649}));
+  EXPECT_EQ((gfx::Size{1680, 670}),
+            tracker()->CalculatePreferredSize(gfx::Size{139439, 55649}));
+
+  // Finally, just check for roundoff errors.
+  SetScreenSize(gfx::Size{1000, 1000});
+  EXPECT_EQ((gfx::Size{1000, 333}),
+            tracker()->CalculatePreferredSize(gfx::Size{3000, 1000}));
+}
+
+TEST_F(WebContentsFrameTrackerTest,
+       CalculatesPreferredSizeLeavesCaptureSizeIfSmallerThanScreen) {
+  // Smaller in both directions, but different aspect ratio, should be
+  // unchanged.
   SetScreenSize(kSize1080p);
+  EXPECT_EQ(kSizeWsxgaPlus, tracker()->CalculatePreferredSize(kSizeWsxgaPlus));
+}
+
+TEST_F(WebContentsFrameTrackerTest,
+       CalculatesPreferredSizeWithZeroValueProperly) {
+  // If a capture dimension is zero, the preferred size should be (0, 0).
+  EXPECT_EQ((kSizeZero), tracker()->CalculatePreferredSize(gfx::Size{0, 1000}));
+  EXPECT_EQ((kSizeZero), tracker()->CalculatePreferredSize(kSizeZero));
+  EXPECT_EQ((kSizeZero), tracker()->CalculatePreferredSize(gfx::Size{1000, 0}));
+
+  // If a screen dimension is zero, the preferred size should be (0, 0). This
+  // probably means the tab isn't being drawn anyway.
+  SetScreenSize(gfx::Size{1920, 0});
+  EXPECT_EQ(kSizeZero, tracker()->CalculatePreferredSize(kSize720p));
+  SetScreenSize(gfx::Size{0, 1080});
+  EXPECT_EQ(kSizeZero, tracker()->CalculatePreferredSize(kSize720p));
+  SetScreenSize(kSizeZero);
+  EXPECT_EQ(kSizeZero, tracker()->CalculatePreferredSize(kSize720p));
+}
+
+TEST_F(WebContentsFrameTrackerTest, UpdatesPreferredSizeOnWebContents) {
   StartTrackerOnUIThread(kSize720p);
   RunAllTasksUntilIdle();
 
   // In this case, the capture size requested is smaller than the screen size,
   // so it should be used.
-  EXPECT_EQ(kSize720p, delegate().current_size);
+  EXPECT_EQ(kSize720p, context()->last_capture_size());
   EXPECT_EQ(context()->capturer_count(), 1);
+
   // When we stop the tracker, the web contents issues a preferred size change
   // of the "old" size--so it shouldn't change.
   StopTrackerOnUIThread();
   RunAllTasksUntilIdle();
-  EXPECT_EQ(kSize720p, delegate().current_size);
+  EXPECT_EQ(kSize720p, context()->last_capture_size());
   EXPECT_EQ(context()->capturer_count(), 0);
 }
 
 TEST_F(WebContentsFrameTrackerTest, NotifiesOfLostTargets) {
-  EXPECT_CALL(*device_, OnTargetPermanentlyLost()).Times(1);
+  EXPECT_CALL(*device(), OnTargetPermanentlyLost()).Times(1);
   tracker()->WebContentsDestroyed();
   RunAllTasksUntilIdle();
 }
@@ -235,7 +313,7 @@ TEST_F(WebContentsFrameTrackerTest, NotifiesOfLostTargets) {
 // test the observer callbacks here.
 TEST_F(WebContentsFrameTrackerTest, NotifiesOfTargetChanges) {
   const viz::FrameSinkId kNewId(42, 1337);
-  EXPECT_CALL(*device_, OnTargetChanged(kNewId)).Times(1);
+  EXPECT_CALL(*device(), OnTargetChanged(kNewId)).Times(1);
   SetFrameSinkId(kNewId);
   // The tracker doesn't actually use the frame host information, just
   // posts a possible target change.

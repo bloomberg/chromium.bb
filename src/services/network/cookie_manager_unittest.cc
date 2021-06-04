@@ -263,6 +263,20 @@ class SynchronousCookieManager {
     return result_out;
   }
 
+  uint32_t DeleteSessionOnlyCookies() {
+    base::RunLoop run_loop;
+    uint32_t result_out = 0u;
+
+    cookie_service_->DeleteSessionOnlyCookies(
+        base::BindLambdaForTesting([&run_loop, &result_out](uint32_t result) {
+          result_out = result;
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return result_out;
+  }
+
   void FlushCookieStore() {
     base::RunLoop run_loop;
     cookie_service_->FlushCookieStore(base::BindLambdaForTesting([&]() {
@@ -486,7 +500,7 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_EQ("B", cookies[0].Value());
   EXPECT_EQ(kCookieDomain, cookies[0].Domain());
   EXPECT_EQ("/", cookies[0].Path());
-  EXPECT_LT(before_creation, cookies[0].CreationDate());
+  EXPECT_LE(before_creation, cookies[0].CreationDate());
   EXPECT_LE(cookies[0].CreationDate(), after_creation);
   EXPECT_EQ(cookies[0].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[0].ExpiryDate(), base::Time());
@@ -501,7 +515,7 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_EQ("D", cookies[1].Value());
   EXPECT_EQ("foo_host2", cookies[1].Domain());
   EXPECT_EQ("/with/path", cookies[1].Path());
-  EXPECT_LT(before_creation, cookies[1].CreationDate());
+  EXPECT_LE(before_creation, cookies[1].CreationDate());
   EXPECT_LE(cookies[1].CreationDate(), after_creation);
   EXPECT_EQ(cookies[1].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[1].ExpiryDate(), base::Time());
@@ -516,7 +530,7 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_EQ("F", cookies[2].Value());
   EXPECT_EQ(kCookieDomain, cookies[2].Domain());
   EXPECT_EQ("/with/path", cookies[2].Path());
-  EXPECT_LT(before_creation, cookies[2].CreationDate());
+  EXPECT_LE(before_creation, cookies[2].CreationDate());
   EXPECT_LE(cookies[2].CreationDate(), after_creation);
   EXPECT_EQ(cookies[2].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[2].ExpiryDate(), base::Time());
@@ -531,7 +545,7 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_EQ("E", cookies[3].Value());
   EXPECT_EQ(kCookieDomain, cookies[3].Domain());
   EXPECT_EQ("/with/path", cookies[3].Path());
-  EXPECT_LT(before_creation, cookies[3].CreationDate());
+  EXPECT_LE(before_creation, cookies[3].CreationDate());
   EXPECT_LE(cookies[3].CreationDate(), after_creation);
   EXPECT_EQ(cookies[3].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[3].ExpiryDate(), base::Time());
@@ -546,7 +560,7 @@ TEST_F(CookieManagerTest, GetAllCookies) {
   EXPECT_EQ("G", cookies[4].Value());
   EXPECT_EQ(kCookieDomain, cookies[4].Domain());
   EXPECT_EQ("/with/path", cookies[4].Path());
-  EXPECT_LT(before_creation, cookies[4].CreationDate());
+  EXPECT_LE(before_creation, cookies[4].CreationDate());
   EXPECT_LE(cookies[4].CreationDate(), after_creation);
   EXPECT_EQ(cookies[4].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[4].ExpiryDate(), base::Time());
@@ -1118,7 +1132,7 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   GURL http_localhost_url("http://localhost/path");
   auto http_localhost_cookie = net::CanonicalCookie::Create(
       http_localhost_url, "http_localhost=1; Secure", base::Time::Now(),
-      base::nullopt);
+      absl::nullopt);
 
   // Secure cookie can be set from non-cryptographic localhost URL.
   EXPECT_TRUE(service_wrapper()
@@ -1138,7 +1152,7 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
 
   GURL http_other_url("http://other.test/path");
   auto http_other_cookie = net::CanonicalCookie::Create(
-      http_other_url, "http_other=1; Secure", base::Time::Now(), base::nullopt);
+      http_other_url, "http_other=1; Secure", base::Time::Now(), absl::nullopt);
 
   // Secure cookie cannot be set from another non-cryptographic URL if there is
   // no CookieAccessDelegate.
@@ -2672,7 +2686,7 @@ TEST_F(SessionCleanupCookieManagerTest, PersistSessionCookies) {
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
 
-TEST_F(SessionCleanupCookieManagerTest, DeleteSessionCookies) {
+TEST_F(SessionCleanupCookieManagerTest, DeleteSessionCookiesOnShutdown) {
   EXPECT_TRUE(SetCanonicalCookie(CreateCookie(), "https", true));
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
@@ -2687,7 +2701,7 @@ TEST_F(SessionCleanupCookieManagerTest, DeleteSessionCookies) {
   EXPECT_EQ(0u, service_wrapper()->GetAllCookies().size());
 }
 
-TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomain) {
+TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomainOnShutdown) {
   EXPECT_TRUE(SetCanonicalCookie(CreateCookie(), "https", true));
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
@@ -2700,6 +2714,39 @@ TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomain) {
   InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+}
+
+TEST_F(SessionCleanupCookieManagerTest, DeleteSessionOnlyCookies) {
+  EXPECT_TRUE(SetCanonicalCookie(CreateCookie(), "https", true));
+
+  EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, service_wrapper()->DeleteSessionOnlyCookies());
+  EXPECT_EQ(0u, service_wrapper()->GetAllCookies().size());
+}
+
+TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomain) {
+  EXPECT_TRUE(SetCanonicalCookie(CreateCookie(), "https", true));
+
+  EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, "http://other.com")});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, service_wrapper()->DeleteSessionOnlyCookies());
+  EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, service_wrapper()->DeleteSessionOnlyCookies());
+  EXPECT_EQ(0u, service_wrapper()->GetAllCookies().size());
 }
 
 TEST_F(SessionCleanupCookieManagerTest, FirstSettingTakesPrecedence) {

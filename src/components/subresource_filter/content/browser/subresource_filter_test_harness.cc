@@ -10,6 +10,9 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -86,11 +89,13 @@ void SubresourceFilterTestHarness::SetUp() {
 
   VerifiedRulesetDealer::Handle* dealer =
       ruleset_service_.get()->GetRulesetDealer();
-  auto client = std::make_unique<TestSubresourceFilterClient>(web_contents());
-  client_ = client.get();
-  client_->CreateSafeBrowsingDatabaseManager();
+  throttle_manager_test_support_ =
+      std::make_unique<ThrottleManagerTestSupport>(web_contents());
+  database_manager_ = base::MakeRefCounted<FakeSafeBrowsingDatabaseManager>();
+  infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
   ContentSubresourceFilterThrottleManager::CreateForWebContents(
-      web_contents(), std::move(client), client_->profile_context(), dealer);
+      web_contents(), throttle_manager_test_support_->profile_context(),
+      database_manager_, dealer);
 
   // Observe web_contents() to add subresource filter navigation throttles at
   // the start of navigations.
@@ -158,7 +163,7 @@ void SubresourceFilterTestHarness::RemoveURLFromBlocklist(const GURL& url) {
 
 SubresourceFilterContentSettingsManager*
 SubresourceFilterTestHarness::GetSettingsManager() {
-  return client_->profile_context()->settings_manager();
+  return throttle_manager_test_support_->profile_context()->settings_manager();
 }
 
 void SubresourceFilterTestHarness::SetIsAdSubframe(

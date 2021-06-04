@@ -5,6 +5,7 @@
 #include "device/bluetooth/adapter.h"
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
@@ -369,7 +370,7 @@ TEST_F(
   // change where the device has no RSSI. This will result in a failed
   // connect-to-service result.
   EXPECT_CALL(*mock_unknown_bluetooth_device_, GetInquiryRSSI())
-      .WillRepeatedly(Return(base::nullopt));
+      .WillRepeatedly(Return(absl::nullopt));
   adapter_->DeviceChanged(mock_bluetooth_adapter_.get(),
                           mock_unknown_bluetooth_device_.get());
   run_loop.Run();

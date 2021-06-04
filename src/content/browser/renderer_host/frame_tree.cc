@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_factory.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -48,6 +49,25 @@ std::set<SiteInstance*> CollectSiteInstances(FrameTree* tree) {
   return instances;
 }
 
+// If |node| is the placeholder FrameTreeNode for an embedded frame tree,
+// returns the inner tree's main frame's FrameTreeNode. Otherwise, returns null.
+FrameTreeNode* GetInnerTreeMainFrameNode(FrameTreeNode* node) {
+  // TODO(1196715): Currently, inner frame trees are only implemented using
+  // multiple WebContents. Once pages can be embedded with MPArch, traverse
+  // them here as well.
+  RenderFrameHostImpl* inner_tree_main_frame =
+      node->frame_tree()->render_frame_delegate()->GetMainFrameForInnerDelegate(
+          node);
+
+  if (inner_tree_main_frame) {
+    DCHECK_NE(node->frame_tree(), inner_tree_main_frame->frame_tree());
+    DCHECK(inner_tree_main_frame->frame_tree_node());
+  }
+
+  return inner_tree_main_frame ? inner_tree_main_frame->frame_tree_node()
+                               : nullptr;
+}
+
 }  // namespace
 
 FrameTree::NodeIterator::NodeIterator(const NodeIterator& other) = default;
@@ -58,17 +78,28 @@ FrameTree::NodeIterator& FrameTree::NodeIterator::operator++() {
   if (current_node_ != root_of_subtree_to_skip_) {
     for (size_t i = 0; i < current_node_->child_count(); ++i) {
       FrameTreeNode* child = current_node_->child_at(i);
-      queue_.push(child);
+      FrameTreeNode* inner_tree_main_ftn = GetInnerTreeMainFrameNode(child);
+      queue_.push((should_descend_into_inner_trees_ && inner_tree_main_ftn)
+                      ? inner_tree_main_ftn
+                      : child);
+    }
+
+    if (should_descend_into_inner_trees_) {
+      for (auto* unattached_node :
+           current_node_->current_frame_host()
+               ->delegate()
+               ->GetUnattachedOwnedNodes(current_node_->current_frame_host())) {
+        queue_.push(unattached_node);
+      }
     }
   }
 
-  if (!queue_.empty()) {
-    current_node_ = queue_.front();
-    queue_.pop();
-  } else {
-    current_node_ = nullptr;
-  }
+  AdvanceNode();
+  return *this;
+}
 
+FrameTree::NodeIterator& FrameTree::NodeIterator::AdvanceSkippingChildren() {
+  AdvanceNode();
   return *this;
 }
 
@@ -76,25 +107,52 @@ bool FrameTree::NodeIterator::operator==(const NodeIterator& rhs) const {
   return current_node_ == rhs.current_node_;
 }
 
-FrameTree::NodeIterator::NodeIterator(FrameTreeNode* starting_node,
-                                      FrameTreeNode* root_of_subtree_to_skip)
-    : current_node_(starting_node),
-      root_of_subtree_to_skip_(root_of_subtree_to_skip) {}
+void FrameTree::NodeIterator::AdvanceNode() {
+  if (!queue_.empty()) {
+    current_node_ = queue_.front();
+    queue_.pop();
+  } else {
+    current_node_ = nullptr;
+  }
+}
+
+FrameTree::NodeIterator::NodeIterator(
+    const std::vector<FrameTreeNode*>& starting_nodes,
+    const FrameTreeNode* root_of_subtree_to_skip,
+    bool should_descend_into_inner_trees)
+    : current_node_(nullptr),
+      root_of_subtree_to_skip_(root_of_subtree_to_skip),
+      should_descend_into_inner_trees_(should_descend_into_inner_trees),
+      queue_(base::circular_deque<FrameTreeNode*>(starting_nodes.begin(),
+                                                  starting_nodes.end())) {
+  AdvanceNode();
+}
 
 FrameTree::NodeIterator FrameTree::NodeRange::begin() {
   // We shouldn't be attempting a frame tree traversal while the tree is
-  // being constructed.
-  DCHECK(root_->current_frame_host());
-  return NodeIterator(root_, root_of_subtree_to_skip_);
+  // being constructed or destructed.
+  DCHECK(std::all_of(
+      starting_nodes_.begin(), starting_nodes_.end(),
+      [](FrameTreeNode* ftn) { return ftn->current_frame_host(); }));
+
+  return NodeIterator(starting_nodes_, root_of_subtree_to_skip_,
+                      should_descend_into_inner_trees_);
 }
 
 FrameTree::NodeIterator FrameTree::NodeRange::end() {
-  return NodeIterator(nullptr, nullptr);
+  return NodeIterator({}, nullptr, should_descend_into_inner_trees_);
 }
 
-FrameTree::NodeRange::NodeRange(FrameTreeNode* root,
-                                FrameTreeNode* root_of_subtree_to_skip)
-    : root_(root), root_of_subtree_to_skip_(root_of_subtree_to_skip) {}
+FrameTree::NodeRange::NodeRange(
+    const std::vector<FrameTreeNode*>& starting_nodes,
+    const FrameTreeNode* root_of_subtree_to_skip,
+    bool should_descend_into_inner_trees)
+    : starting_nodes_(starting_nodes),
+      root_of_subtree_to_skip_(root_of_subtree_to_skip),
+      should_descend_into_inner_trees_(should_descend_into_inner_trees) {}
+
+FrameTree::NodeRange::NodeRange(const NodeRange&) = default;
+FrameTree::NodeRange::~NodeRange() = default;
 
 FrameTree::FrameTree(
     BrowserContext* browser_context,
@@ -104,7 +162,8 @@ FrameTree::FrameTree(
     RenderFrameHostDelegate* render_frame_delegate,
     RenderViewHostDelegate* render_view_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
-    RenderFrameHostManager::Delegate* manager_delegate)
+    RenderFrameHostManager::Delegate* manager_delegate,
+    Type type)
     : delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
@@ -126,7 +185,8 @@ FrameTree::FrameTree(
                               blink::mojom::FrameOwnerProperties(),
                               blink::mojom::FrameOwnerElementType::kNone)),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
-      load_progress_(0.0) {}
+      load_progress_(0.0),
+      type_(type) {}
 
 FrameTree::~FrameTree() {
 #if DCHECK_IS_ON()
@@ -181,11 +241,29 @@ FrameTree::NodeRange FrameTree::Nodes() {
 }
 
 FrameTree::NodeRange FrameTree::SubtreeNodes(FrameTreeNode* subtree_root) {
-  return NodeRange(subtree_root, nullptr);
+  return NodeRange({subtree_root}, nullptr,
+                   /* should_descend_into_inner_trees */ false);
+}
+
+FrameTree::NodeRange FrameTree::SubtreeAndInnerTreeNodes(
+    RenderFrameHostImpl* parent) {
+  std::vector<FrameTreeNode*> starting_nodes;
+  starting_nodes.reserve(parent->child_count());
+  for (size_t i = 0; i < parent->child_count(); ++i) {
+    FrameTreeNode* child = parent->child_at(i);
+    FrameTreeNode* inner_tree_main_ftn = GetInnerTreeMainFrameNode(child);
+    starting_nodes.push_back(inner_tree_main_ftn ? inner_tree_main_ftn : child);
+  }
+  const std::vector<FrameTreeNode*> unattached_owned_nodes =
+      parent->delegate()->GetUnattachedOwnedNodes(parent);
+  starting_nodes.insert(starting_nodes.end(), unattached_owned_nodes.begin(),
+                        unattached_owned_nodes.end());
+  return NodeRange(starting_nodes, nullptr,
+                   /* should_descend_into_inner_trees */ true);
 }
 
 FrameTree::NodeRange FrameTree::NodesExceptSubtree(FrameTreeNode* node) {
-  return NodeRange(root_, node);
+  return NodeRange({root_}, node, /* should_descend_into_inner_trees */ false);
 }
 
 FrameTreeNode* FrameTree::AddFrame(
@@ -555,13 +633,11 @@ void FrameTree::RegisterExistingOriginToPreventOptInIsolation(
 
 void FrameTree::Init(SiteInstance* main_frame_site_instance,
                      bool renderer_initiated_creation,
-                     const std::string& main_frame_name,
-                     FrameTree::Type type) {
+                     const std::string& main_frame_name) {
   // blink::FrameTree::SetName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
   std::string unique_name;
   root_->SetFrameName(main_frame_name, unique_name);
-  type_ = type;
   root_->render_manager()->InitRoot(main_frame_site_instance,
                                     renderer_initiated_creation);
 }
@@ -570,13 +646,6 @@ void FrameTree::DidAccessInitialMainDocument() {
   OPTIONAL_TRACE_EVENT0("content", "FrameTree::DidAccessInitialDocument");
   has_accessed_initial_main_document_ = true;
   controller().DidAccessInitialMainDocument();
-}
-
-void FrameTree::ActivatePrerenderedFrameTree() {
-  DCHECK(is_prerendering());
-  DCHECK(blink::features::IsPrerenderWebContentsEnabled());
-  type_ = FrameTree::Type::kPrimary;
-  GetMainFrame()->ActivateForPrerendering();
 }
 
 void FrameTree::DidStartLoadingNode(FrameTreeNode& node,
@@ -625,7 +694,6 @@ void FrameTree::StopLoading() {
     node->StopLoading();
 }
 
-
 void FrameTree::Shutdown() {
 #if DCHECK_IS_ON()
   DCHECK(!was_shut_down_);
@@ -634,25 +702,31 @@ void FrameTree::Shutdown() {
 
   RenderFrameHostManager* root_manager = root_->render_manager();
 
-  // If the page has been moved out due to MPArch activation do nothing.
-  // TODO(https://crbug.com/1176148): It might make sense to do some of the
-  // things here like delete RFHs pending shutdown.
-  if (!root_manager->current_frame_host())
+  if (!root_manager->current_frame_host()) {
+    // The page has been transferred out during an activation. There is little
+    // left to do.
+    // TODO(https://crbug.com/1199693): If we decide that pending delete RFHs
+    // need to be moved along during activation replace this line with a DCHECK
+    // that there are no pending delete instances.
+    root_manager->ClearRFHsPendingShutdown();
+    DCHECK_EQ(0u, root_manager->GetProxyCount());
+    DCHECK(!root_->navigation_request());
+    DCHECK(!root_manager->speculative_frame_host());
+    manager_delegate_->OnFrameTreeNodeDestroyed(root_);
     return;
+  }
 
   for (FrameTreeNode* node : Nodes()) {
     // Delete all RFHs pending shutdown, which will lead the corresponding RVHs
     // to be shutdown and be deleted as well.
     node->render_manager()->ClearRFHsPendingShutdown();
-    // TODO(https://crbug.com/1164280): Ban WebUI instance in Prerender pages.
+    // TODO(https://crbug.com/1199676): Ban WebUI instance in Prerender pages.
     node->render_manager()->ClearWebUIInstances();
   }
 
   // Destroy all subframes now. This notifies observers.
   root_manager->current_frame_host()->ResetChildren();
   root_manager->ResetProxyHosts();
-
-  controller().GetBackForwardCache().Shutdown();
 
   // Manually call the observer methods for the root FrameTreeNode. It is
   // necessary to manually delete all objects tracking navigations
@@ -672,6 +746,11 @@ void FrameTree::Shutdown() {
     root_manager->speculative_frame_host()->RenderFrameDeleted();
     root_manager->speculative_frame_host()->ResetNavigationRequests();
   }
+
+  // NavigationRequests restoring the page from bfcache have a reference to the
+  // RFHs stored in the cache, so the cache should be cleared after the
+  // navigation request is reset.
+  controller().GetBackForwardCache().Shutdown();
 
   manager_delegate_->OnFrameTreeNodeDestroyed(root_);
   render_view_delegate_->RenderViewDeleted(

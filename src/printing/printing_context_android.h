@@ -21,7 +21,8 @@ class MetafilePlayer;
 
 // Android subclass of PrintingContext. This class communicates with the
 // Java side through JNI.
-class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
+class COMPONENT_EXPORT(PRINTING) PrintingContextAndroid
+    : public PrintingContext {
  public:
   explicit PrintingContextAndroid(Delegate* delegate);
   PrintingContextAndroid(const PrintingContextAndroid&) = delete;
@@ -30,7 +31,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
 
   // Called when the page is successfully written to a PDF using the file
   // descriptor specified, or when the printing operation failed. On success,
-  // the PDF has |page_count| pages. Non-positive |page_count| indicates
+  // the PDF has `page_count` pages. Non-positive `page_count` indicates
   // failure.
   static void PdfWritingDone(int page_count);
 
@@ -50,7 +51,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   void ShowSystemDialogDone(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
-  // Prints the document contained in |metafile|.
+  // Prints the document contained in `metafile`.
   void PrintDocument(const MetafilePlayer& metafile);
 
   // PrintingContext implementation.

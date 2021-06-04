@@ -81,12 +81,12 @@ AutofillWalletOfferSyncBridge::CreateMetadataChangeList() {
       GetAutofillTable(), syncer::AUTOFILL_WALLET_OFFER);
 }
 
-base::Optional<syncer::ModelError> AutofillWalletOfferSyncBridge::MergeSyncData(
+absl::optional<syncer::ModelError> AutofillWalletOfferSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // All metadata changes have been already written, return early for an error.
-  base::Optional<syncer::ModelError> error =
+  absl::optional<syncer::ModelError> error =
       static_cast<syncer::SyncMetadataStoreChangeList*>(
           metadata_change_list.get())
           ->TakeError();
@@ -95,17 +95,17 @@ base::Optional<syncer::ModelError> AutofillWalletOfferSyncBridge::MergeSyncData(
   }
 
   MergeRemoteData(std::move(entity_data));
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<syncer::ModelError>
+absl::optional<syncer::ModelError>
 AutofillWalletOfferSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // This bridge does not support incremental updates, so whenever this is
   // called, the change list should be empty.
   DCHECK(entity_data.empty()) << "Received an unsupported incremental update.";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AutofillWalletOfferSyncBridge::GetData(StorageKeyList storage_keys,
@@ -147,7 +147,7 @@ void AutofillWalletOfferSyncBridge::GetAllDataImpl(DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<std::unique_ptr<AutofillOfferData>> offers;
-  if (!GetAutofillTable()->GetCreditCardOffers(&offers)) {
+  if (!GetAutofillTable()->GetAutofillOffers(&offers)) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load offer data from table."});
     return;
@@ -189,11 +189,11 @@ void AutofillWalletOfferSyncBridge::MergeRemoteData(
   // Only do a write operation if there is any difference between server data
   // and local data.
   std::vector<std::unique_ptr<AutofillOfferData>> existing_offers;
-  table->GetCreditCardOffers(&existing_offers);
+  table->GetAutofillOffers(&existing_offers);
 
   bool offer_data_changed = AreAnyItemsDifferent(existing_offers, offer_data);
   if (offer_data_changed) {
-    table->SetCreditCardOffers(offer_data);
+    table->SetAutofillOffers(offer_data);
   }
 
   // Commit the transaction to make sure the data and the metadata with the

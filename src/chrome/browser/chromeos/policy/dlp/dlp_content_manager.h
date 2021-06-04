@@ -11,13 +11,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_window_observer.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 struct ScreenshotArea;
@@ -31,6 +31,8 @@ class WebContents;
 }  // namespace content
 
 namespace policy {
+
+class DlpReportingManager;
 
 // System-wide class that tracks the set of currently known confidential
 // WebContents and whether any of them are currently visible.
@@ -98,6 +100,9 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
       DlpContentManager* dlp_content_manager);
   static void ResetDlpContentManagerForTesting();
 
+ protected:
+  void SetReportingManagerForTesting(DlpReportingManager* manager);
+
  private:
   friend class DlpContentManagerTestHelper;
   friend class DlpContentTabHelper;
@@ -132,6 +137,8 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   DlpContentManager(const DlpContentManager&) = delete;
   DlpContentManager& operator=(const DlpContentManager&) = delete;
 
+  // Initializing to be called separately to make testing possible
+  virtual void Init();
   // Called from DlpContentTabHelper:
   // Being called when confidentiality state changes for |web_contents|, e.g.
   // because of navigation.
@@ -162,9 +169,16 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   // Removes PrivacyScreen enforcement after delay if it's still not enforced.
   void MaybeRemovePrivacyScreenEnforcement() const;
 
-  // Returns whether |restriction| is currently enforced for |area|.
-  bool IsAreaRestricted(const ScreenshotArea& area,
-                        DlpContentRestriction restriction) const;
+  // Returns which level and url of |restriction| that is currently enforced for
+  // |area|.
+  RestrictionLevelAndUrl GetAreaRestrictionInfo(
+      const ScreenshotArea& area,
+      DlpContentRestriction restriction) const;
+
+  // Returns which level and url of screen capture restriction that is currently
+  // enforced for |media_id|.
+  RestrictionLevelAndUrl GetScreenCaptureRestrictionInfo(
+      const content::DesktopMediaID& media_id) const;
 
   // Checks and stops the running video capture if restricted content appeared
   // in the corresponding areas.
@@ -193,10 +207,12 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   DlpContentRestrictionSet on_screen_restrictions_;
 
   // The currently running video capture area if any.
-  base::Optional<ScreenshotArea> running_video_capture_area_;
+  absl::optional<ScreenshotArea> running_video_capture_area_;
 
   // List of the currently running screen captures.
   std::vector<ScreenCaptureInfo> running_screen_captures_;
+
+  DlpReportingManager* reporting_manager_;
 };
 
 // Helper class to call SetDlpContentManagerForTesting and

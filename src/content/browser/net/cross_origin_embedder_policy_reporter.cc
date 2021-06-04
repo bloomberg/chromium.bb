@@ -4,6 +4,7 @@
 
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/request_destination.h"
@@ -27,8 +28,8 @@ GURL StripUsernameAndPassword(const GURL& url) {
 CrossOriginEmbedderPolicyReporter::CrossOriginEmbedderPolicyReporter(
     StoragePartition* storage_partition,
     const GURL& context_url,
-    const base::Optional<std::string>& endpoint,
-    const base::Optional<std::string>& report_only_endpoint,
+    const absl::optional<std::string>& endpoint,
+    const absl::optional<std::string>& report_only_endpoint,
     const net::NetworkIsolationKey& network_isolation_key)
     : storage_partition_(storage_partition),
       context_url_(context_url),
@@ -68,6 +69,15 @@ void CrossOriginEmbedderPolicyReporter::QueueNavigationReport(
                  report_only);
 }
 
+void CrossOriginEmbedderPolicyReporter::QueueWorkerInitializationReport(
+    const GURL& blocked_url,
+    bool report_only) {
+  GURL url_to_pass = StripUsernameAndPassword(blocked_url);
+  QueueAndNotify({std::make_pair("type", "worker initialization"),
+                  std::make_pair("blockedURL", url_to_pass.spec())},
+                 report_only);
+}
+
 void CrossOriginEmbedderPolicyReporter::Clone(
     mojo::PendingReceiver<network::mojom::CrossOriginEmbedderPolicyReporter>
         receiver) {
@@ -77,7 +87,7 @@ void CrossOriginEmbedderPolicyReporter::Clone(
 void CrossOriginEmbedderPolicyReporter::QueueAndNotify(
     std::initializer_list<std::pair<base::StringPiece, base::StringPiece>> body,
     bool report_only) {
-  const base::Optional<std::string>& endpoint =
+  const absl::optional<std::string>& endpoint =
       report_only ? report_only_endpoint_ : endpoint_;
   const char* const disposition = report_only ? "reporting" : "enforce";
   if (observer_) {
@@ -85,7 +95,7 @@ void CrossOriginEmbedderPolicyReporter::QueueAndNotify(
 
     for (const auto& pair : body) {
       list.push_back(blink::mojom::ReportBodyElement::New(
-          pair.first.as_string(), pair.second.as_string()));
+          std::string(pair.first), std::string(pair.second)));
     }
     list.push_back(
         blink::mojom::ReportBodyElement::New("disposition", disposition));
@@ -102,7 +112,7 @@ void CrossOriginEmbedderPolicyReporter::QueueAndNotify(
 
     storage_partition_->GetNetworkContext()->QueueReport(
         kType, *endpoint, context_url_, network_isolation_key_,
-        /*user_agent=*/base::nullopt, std::move(body_to_pass));
+        /*user_agent=*/absl::nullopt, std::move(body_to_pass));
   }
 }
 

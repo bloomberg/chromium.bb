@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Хайх слайд</translation>
 <translation id="1404323374378969387">Норвег</translation>
 <translation id="1430915738399379752">Хэвлэх</translation>
+<translation id="1433628812591023318">Parallels Desktop-д файлууд буулгахын тулд файлыг Windows-н файлуудад зөөсөн байх ёстой.</translation>
 <translation id="1435838927755162558">Фолдерыг Parallels Desktop-тай хуваалцах</translation>
 <translation id="1467432559032391204">Зүүн</translation>
 <translation id="1471718551822868769">Словак</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-н файлууд</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" />-тай хуваалцах</translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Энэ байршлаас "<ph name="PATH" />"-г нээж чадсангүй. Нээхийн тулд "Mиний файлууд" руу хуулна уу.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ДУУССАН</translation>
 <translation id="3188257591659621405">Миний файл</translation>
@@ -446,6 +448,7 @@
 <translation id="5602622065581044566">Авиа зүйн гартай болгар</translation>
 <translation id="5605830556594064952">АНУ-ын Дворак</translation>
 <translation id="5625294776298156701">Tamil99 гартай тамил</translation>
+<translation id="5633226425545095130">Энэ зүйлийг зөөснөөр үүнийг '<ph name="DESTINATION_NAME" />' хуваалцсан фолдерыг харах боломжтой бүх хүнтэй хуваалцана.</translation>
 <translation id="5649768706273821470">Сонсох</translation>
 <translation id="5678784840044122290">Linux апп таны Терминалд боломжтой болохоос гадна таны Эхлүүлэгчид дүрс тэмдэг харуулж болзошгүй.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Архив эсвэл виртуал дискнээс салгах боломжгүй байна<ph name="END_BOLD" />
@@ -607,6 +610,7 @@
 <translation id="7417453074306512035">Этиоп хэлний гар</translation>
 <translation id="7417705661718309329">Google-ийн газрын зураг</translation>
 <translation id="7460898608667578234">Украйн</translation>
+<translation id="7486315294984620427">Parallels Desktop-д файлууд буулгахын тулд файлыг Windows-н файлуудад хуулсан байх ёстой.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> олдсон
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Драйвт<ph name="END_LINK" /> нөөцлөхөд бэлэн</translation>
@@ -719,6 +723,7 @@
 <translation id="8395901698320285466">Хэмжээ</translation>
 <translation id="8437209419043462667">АНУ</translation>
 <translation id="8456681095658380701">Хүчин төгөлдөр бус нэр</translation>
+<translation id="8459404855768962328">Энэ зүйлийг хуулснаар үүнийг '<ph name="DESTINATION_NAME" />' хуваалцсан фолдерыг харах боломжтой бүх хүнтэй хуваалцана.</translation>
 <translation id="8461467696380332069">Тавиур дахь файлууддаа шуурхай хандахын тулд файл дээр хулганын баруун талыг товшиж, "Тавиурт бэхлэх"-ийг сонгоно уу.</translation>
 <translation id="8463494891489624050">Вьетнам VIQR</translation>
 <translation id="8466234950814670489">Архивыг нэгтгэх</translation>

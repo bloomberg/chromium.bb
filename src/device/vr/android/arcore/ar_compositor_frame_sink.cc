@@ -75,6 +75,12 @@ bool ArCompositorFrameSink::IsOnGlThread() const {
   return gl_thread_task_runner_->BelongsToCurrentThread();
 }
 
+viz::FrameSinkId ArCompositorFrameSink::FrameSinkId() {
+  if (!is_initialized_)
+    return {};
+  return xr_frame_sink_client_->FrameSinkId();
+}
+
 void ArCompositorFrameSink::Initialize(
     gpu::SurfaceHandle surface_handle,
     ui::WindowAndroid* root_window,
@@ -151,7 +157,7 @@ void ArCompositorFrameSink::OnRootCompositorFrameSinkReady(
     // If the frame sink client doesn't have a valid SurfaceId at this point,
     // then the compositor hierarchy did not get set up, which means that we'll
     // be unable to composite DOM content.
-    base::Optional<viz::SurfaceId> dom_surface =
+    absl::optional<viz::SurfaceId> dom_surface =
         xr_frame_sink_client_->GetDOMSurface();
     if (dom_surface && dom_surface->is_valid()) {
       should_composite_dom_overlay_ = true;
@@ -201,7 +207,7 @@ void ArCompositorFrameSink::SubmitFrame(WebXrFrame* xr_frame,
   DCHECK(xr_frame);
   sink_remote_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
                                       CreateFrame(xr_frame, frame_type),
-                                      base::Optional<viz::HitTestRegionList>(),
+                                      absl::optional<viz::HitTestRegionList>(),
                                       /*trace_time=*/0);
 }
 
@@ -216,7 +222,7 @@ void ArCompositorFrameSink::DidNotProduceFrame(WebXrFrame* xr_frame) {
 }
 
 void ArCompositorFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DVLOG(3) << __func__;
   // Notify that we've received the Ack for this frame first. It may be that the
   // most recently submitted frame is also dropped, so updating the parent that
@@ -229,11 +235,11 @@ void ArCompositorFrameSink::DidReceiveCompositorFrameAck(
   // resources. However, it's all timing dependent as to which one gets called
   // with the actual freed resources.
   DVLOG(3) << __func__ << " Reclaiming Resources";
-  ReclaimResources(resources);
+  ReclaimResources(std::move(resources));
 }
 
 void ArCompositorFrameSink::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DVLOG(3) << __func__ << " resources.size()=" << resources.size();
   for (const auto& resource : resources) {
     DVLOG(3) << __func__ << " Reclaimed: " << resource.id;
@@ -351,16 +357,21 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
   // First the DOM, if it's enabled
   if (should_composite_dom_overlay_) {
     auto dom_surface_id = xr_frame_sink_client_->GetDOMSurface();
-    if (dom_surface_id && dom_surface_id->is_valid()) {
+    bool can_composite_dom_overlay =
+        dom_surface_id && dom_surface_id->is_valid();
+    DVLOG(3)
+        << __func__
+        << " Attempting to composite DOMOverlay, can_composite_dom_overlay="
+        << can_composite_dom_overlay;
+    if (can_composite_dom_overlay) {
       viz::SharedQuadState* dom_quad_state =
           render_pass->CreateAndAppendSharedQuadState();
       dom_quad_state->SetAll(
           gfx::Transform(),
           /*quad_layer_rect=*/output_rect,
-          /*visible_quad_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-          /*clip_rect=*/gfx::Rect(),
-          /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-          SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+          /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
+          /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+          /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
       viz::SurfaceDrawQuad* dom_quad =
           render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
@@ -386,10 +397,9 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
     xr_content_quad_state->SetAll(
         gfx::Transform(),
         /*quad_layer_rect=*/output_rect,
-        /*visible_quad_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-        /*clip_rect=*/gfx::Rect(),
-        /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-        SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+        /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
+        /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+        /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
     viz::TextureDrawQuad* xr_content_quad =
         render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
@@ -426,10 +436,9 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
   camera_quad_state->SetAll(
       gfx::Transform(),
       /*quad_layer_rect=*/output_rect,
-      /*visible_quad_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-      /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*are_contents_opaque=*/true, /*opacity=*/1.f,
-      SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+      /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
+      /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/true,
+      /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
   viz::TextureDrawQuad* camera_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();

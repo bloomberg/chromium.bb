@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">شريط تمرير البحث</translation>
 <translation id="1404323374378969387">النرويجية</translation>
 <translation id="1430915738399379752">طباعة</translation>
+<translation id="1433628812591023318">‏لإفلات ملفات في Parallels Desktop، يجب نقل الملف إلى مجلد ملفات Windows.</translation>
 <translation id="1435838927755162558">‏مشاركة المجلد مع نظام Parallels Desktop</translation>
 <translation id="1467432559032391204">اليسار</translation>
 <translation id="1471718551822868769">السلوفاكية</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">‏ملفات نظام التشغيل Windows</translation>
 <translation id="3078461028045006476">مشاركة مع <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">‏أجهزة Chromebit</translation>
+<translation id="3113153474486991170">تعذَّر فتح "<ph name="PATH" />" من هذا المكان. يُرجي نسخه إلى "ملفاتي" لفتحه.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">تم</translation>
 <translation id="3188257591659621405">ملفاتي</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">البلغارية باستخدام لوحة المفاتيح الصوتية</translation>
 <translation id="5605830556594064952">‏الأمريكية Dvorak</translation>
 <translation id="5625294776298156701">‏التاميلية باستخدام لوحة مفاتيح Tamil99</translation>
+<translation id="5633226425545095130">يؤدي نقل هذا الملف إلى مشاركته مع جميع المستخدمين الذين يمكنهم الاطّلاع على المجلد المشترك "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">استماع</translation>
 <translation id="5678784840044122290">‏سيكون تطبيق Linux متاحًا ضمن الوحدة الطرفية وقد يعرض أيضًا رمزًا في مشغِّل التطبيقات.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />لا يمكن قطع الاتصال من أرشيف أو قرص افتراضي<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">لوحة المفاتيح الإثيوبية</translation>
 <translation id="7417705661718309329">‏خريطة Google</translation>
 <translation id="7460898608667578234">الأوكرانية</translation>
+<translation id="7486315294984620427">‏لإفلات ملفات في Parallels Desktop، يجب نسخ الملف إلى مجلد ملفات Windows.</translation>
 <translation id="7489215562877293245">‏تم العثور على <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     جاهز للاحتفاظ بنسخة احتياطية في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">الأبعاد</translation>
 <translation id="8437209419043462667">الأمريكية</translation>
 <translation id="8456681095658380701">اسم غير صالح</translation>
+<translation id="8459404855768962328">يؤدي نسخ هذا الملف إلى مشاركته مع جميع المستخدمين الذين يمكنهم الاطّلاع على المجلد المشترك "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">يُرجى النقر بزر الماوس الأيمن على ملف واختيار "تثبيت في الرف" للوصول السريع إلى الملفات في الرف.</translation>
 <translation id="8463494891489624050">‏الفيتنامية باستخدام لوحة مفاتيح VIQR</translation>
 <translation id="8466234950814670489">‏أرشيف Tar</translation>

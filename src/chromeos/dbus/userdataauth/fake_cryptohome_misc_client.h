@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeCryptohomeMiscClient
   void CheckHealth(const ::user_data_auth::CheckHealthRequest& request,
                    CheckHealthCallback callback) override;
 
-  base::Optional<::user_data_auth::GetSanitizedUsernameReply>
+  absl::optional<::user_data_auth::GetSanitizedUsernameReply>
   BlockingGetSanitizedUsername(
       const ::user_data_auth::GetSanitizedUsernameRequest& request) override;
 
@@ -130,5 +130,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeCryptohomeMiscClient
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::FakeCryptohomeMiscClient;
+}
 
 #endif  // CHROMEOS_DBUS_USERDATAAUTH_FAKE_CRYPTOHOME_MISC_CLIENT_H_

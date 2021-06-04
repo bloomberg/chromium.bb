@@ -9,6 +9,9 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/action_delegate_util.h"
+#include "components/autofill_assistant/browser/actions/check_element_tag_action.h"
+#include "components/autofill_assistant/browser/actions/check_option_element_action.h"
+#include "components/autofill_assistant/browser/actions/clear_persistent_ui_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
@@ -28,6 +31,7 @@
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
+#include "components/autofill_assistant/browser/actions/set_persistent_ui_action.h"
 #include "components/autofill_assistant/browser/actions/show_cast_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
 #include "components/autofill_assistant/browser/actions/show_form_action.h"
@@ -112,7 +116,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_payload,
     const ClientContextProto& client_context,
     const ScriptParameters& script_parameters,
-    const base::Optional<ScriptStoreConfig>& script_store_config) {
+    const absl::optional<ScriptStoreConfig>& script_store_config) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
       request_proto.mutable_initial_request();
@@ -258,18 +262,20 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
     case ActionProto::ActionInfoCase::kSendClickEvent:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.send_click_event().client_id(),
-          base::BindOnce(&ActionDelegate::ClickOrTapElement,
-                         delegate->GetWeakPtr(), ClickType::CLICK));
+          base::BindOnce(&WebController::ClickOrTapElement,
+                         delegate->GetWebController()->GetWeakPtr(),
+                         ClickType::CLICK));
     case ActionProto::ActionInfoCase::kSendTapEvent:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.send_tap_event().client_id(),
-          base::BindOnce(&ActionDelegate::ClickOrTapElement,
-                         delegate->GetWeakPtr(), ClickType::TAP));
+          base::BindOnce(&WebController::ClickOrTapElement,
+                         delegate->GetWebController()->GetWeakPtr(),
+                         ClickType::TAP));
     case ActionProto::ActionInfoCase::kJsClick:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.js_click().client_id(),
-          base::BindOnce(&ActionDelegate::ClickOrTapElement,
-                         delegate->GetWeakPtr(), ClickType::JAVASCRIPT));
+          base::BindOnce(&WebController::JsClickElement,
+                         delegate->GetWebController()->GetWeakPtr()));
     case ActionProto::ActionInfoCase::kSendKeystrokeEvents:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.send_keystroke_events().client_id(),
@@ -328,13 +334,28 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<ReleaseElementsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kDispatchJsEvent:
       return std::make_unique<DispatchJsEventAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kSendKeyEvent: {
+    case ActionProto::ActionInfoCase::kSendKeyEvent:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.send_key_event().client_id(),
           base::BindOnce(&WebController::SendKeyEvent,
                          delegate->GetWebController()->GetWeakPtr(),
                          action.send_key_event().key_event()));
-    }
+    case ActionProto::ActionInfoCase::kSelectOptionElement:
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.select_option_element().select_id(),
+          base::BindOnce(
+              &action_delegate_util::PerformWithElementValue, delegate,
+              action.select_option_element().option_id(),
+              base::BindOnce(&WebController::SelectOptionElement,
+                             delegate->GetWebController()->GetWeakPtr())));
+    case ActionProto::ActionInfoCase::kCheckElementTag:
+      return std::make_unique<CheckElementTagAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kCheckOptionElement:
+      return std::make_unique<CheckOptionElementAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSetPersistentUi:
+      return std::make_unique<SetPersistentUiAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kClearPersistentUi:
+      return std::make_unique<ClearPersistentUiAction>(delegate, action);
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -396,7 +417,7 @@ std::string ProtocolUtils::CreateGetTriggerScriptsRequest(
   GetTriggerScriptsRequestProto request_proto;
   request_proto.set_url(url.spec());
   *request_proto.mutable_client_context() = client_context;
-  *request_proto.mutable_debug_script_parameters() =
+  *request_proto.mutable_script_parameters() =
       script_parameters.ToProto(/* only_trigger_script_allowlisted = */ true);
 
   std::string serialized_request_proto;
@@ -411,7 +432,7 @@ bool ProtocolUtils::ParseTriggerScripts(
     std::vector<std::unique_ptr<TriggerScript>>* trigger_scripts,
     std::vector<std::string>* additional_allowed_domains,
     int* trigger_condition_check_interval_ms,
-    base::Optional<int>* timeout_ms) {
+    absl::optional<int>* timeout_ms) {
   DCHECK(trigger_scripts);
   DCHECK(additional_allowed_domains);
   DCHECK(trigger_condition_check_interval_ms);

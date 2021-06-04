@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/hash.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -26,11 +25,11 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace app_list {
 namespace {
 
-using base::Optional;
 using base::Time;
 using base::TimeDelta;
 
@@ -79,8 +78,7 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
   return proto;
 }
 
-std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
-    int n,
+std::vector<std::pair<std::string, float>> SortRanks(
     const std::map<std::string, float>& ranks) {
   std::vector<std::pair<std::string, float>> sorted_ranks(ranks.begin(),
                                                           ranks.end());
@@ -89,12 +87,13 @@ std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
                const std::pair<std::string, float>& b) {
               return a.second > b.second;
             });
-
-  // vector::resize simply truncates the array if there are more than n
-  // elements. Note this is still O(N).
-  if (sorted_ranks.size() > static_cast<size_t>(n))
-    sorted_ranks.resize(n);
   return sorted_ranks;
+}
+
+void TruncateRanks(std::vector<std::pair<std::string, float>>& ranks,
+                   const int n) {
+  if (ranks.size() > static_cast<size_t>(n))
+    ranks.resize(n);
 }
 
 // Given a FrecencyStore's map from target names to IDs, and a
@@ -280,8 +279,8 @@ std::map<std::string, float> RecurrenceRanker::Rank(
   if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName)
     return GetScoresFromFrecencyStore(targets_->GetAll());
 
-  base::Optional<unsigned int> condition_id = conditions_->GetId(condition);
-  if (condition_id == base::nullopt)
+  absl::optional<unsigned int> condition_id = conditions_->GetId(condition);
+  if (condition_id == absl::nullopt)
     return {};
 
   const auto& targets = targets_->GetAll();
@@ -304,13 +303,24 @@ void RecurrenceRanker::MaybeCleanup(float proportion_valid,
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
-    int n,
+    const int n,
     const std::string& condition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return {};
 
-  return SortAndTruncateRanks(n, Rank(condition));
+  auto ranks = SortRanks(Rank(condition));
+  TruncateRanks(ranks, n);
+  return ranks;
+}
+
+std::vector<std::pair<std::string, float>> RecurrenceRanker::RankSorted(
+    const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!load_from_disk_completed_)
+    return {};
+
+  return SortRanks(Rank(condition));
 }
 
 std::map<std::string, FrecencyStore::ValueData>*

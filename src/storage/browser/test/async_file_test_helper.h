@@ -28,7 +28,8 @@ namespace storage {
 class AsyncFileTestHelper {
  public:
   using FileEntryList = FileSystemOperation::FileEntryList;
-  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyOrMoveProgressCallback =
+      FileSystemOperation::CopyOrMoveProgressCallback;
 
   static const int64_t kDontCheckSize;
 
@@ -42,7 +43,7 @@ class AsyncFileTestHelper {
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
-      const CopyProgressCallback& progress_callback);
+      const CopyOrMoveProgressCallback& progress_callback);
 
   // Performs CopyFileLocal from |src| to |dest| and returns the status code.
   static base::File::Error CopyFileLocal(FileSystemContext* context,
@@ -53,6 +54,13 @@ class AsyncFileTestHelper {
   static base::File::Error Move(FileSystemContext* context,
                                 const FileSystemURL& src,
                                 const FileSystemURL& dest);
+
+  // Same as Move, but this supports |progress_callback|.
+  static base::File::Error MoveWithProgress(
+      FileSystemContext* context,
+      const FileSystemURL& src,
+      const FileSystemURL& dest,
+      const CopyOrMoveProgressCallback& progress_callback);
 
   // Performs MoveFileLocal from |src| to |dest| and returns the status code.
   static base::File::Error MoveFileLocal(FileSystemContext* context,

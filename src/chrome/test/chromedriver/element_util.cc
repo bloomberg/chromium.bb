@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace {
@@ -29,50 +30,43 @@ const char kElementKey[] = "ELEMENT";
 const char kElementKeyW3C[] = "element-6066-11e4-a52e-4f735466cecf";
 
 bool ParseFromValue(base::Value* value, WebPoint* point) {
-  base::DictionaryValue* dict_value;
-  if (!value->GetAsDictionary(&dict_value))
+  if (!value->is_dict())
     return false;
-  double x = 0;
-  double y = 0;
-  if (!dict_value->GetDouble("x", &x) ||
-      !dict_value->GetDouble("y", &y))
+  auto x = value->FindDoubleKey("x");
+  auto y = value->FindDoubleKey("y");
+  if (!x.has_value() || !y.has_value())
     return false;
-  point->x = static_cast<int>(x);
-  point->y = static_cast<int>(y);
+  point->x = static_cast<int>(x.value());
+  point->y = static_cast<int>(y.value());
   return true;
 }
 
 bool ParseFromValue(base::Value* value, WebSize* size) {
-  base::DictionaryValue* dict_value;
-  if (!value->GetAsDictionary(&dict_value))
+  if (!value->is_dict())
     return false;
-  double width = 0;
-  double height = 0;
-  if (!dict_value->GetDouble("width", &width) ||
-      !dict_value->GetDouble("height", &height))
+  auto width = value->FindDoubleKey("width");
+  auto height = value->FindDoubleKey("height");
+  if (!width.has_value() || !height.has_value())
     return false;
-  size->width = static_cast<int>(width);
-  size->height = static_cast<int>(height);
+  size->width = static_cast<int>(width.value());
+  size->height = static_cast<int>(height.value());
   return true;
 }
 
 bool ParseFromValue(base::Value* value, WebRect* rect) {
-  base::DictionaryValue* dict_value;
-  if (!value->GetAsDictionary(&dict_value))
+  if (!value->is_dict())
     return false;
-  double x = 0;
-  double y = 0;
-  double width = 0;
-  double height = 0;
-  if (!dict_value->GetDouble("left", &x) ||
-      !dict_value->GetDouble("top", &y) ||
-      !dict_value->GetDouble("width", &width) ||
-      !dict_value->GetDouble("height", &height))
+  auto x = value->FindDoubleKey("left");
+  auto y = value->FindDoubleKey("top");
+  auto width = value->FindDoubleKey("width");
+  auto height = value->FindDoubleKey("height");
+  if (!x.has_value() || !y.has_value() || !width.has_value() ||
+      !height.has_value())
     return false;
-  rect->origin.x = static_cast<int>(x);
-  rect->origin.y = static_cast<int>(y);
-  rect->size.width = static_cast<int>(width);
-  rect->size.height = static_cast<int>(height);
+  rect->origin.x = static_cast<int>(x.value());
+  rect->origin.y = static_cast<int>(y.value());
+  rect->size.width = static_cast<int>(width.value());
+  rect->size.height = static_cast<int>(height.value());
   return true;
 }
 
@@ -111,18 +105,21 @@ Status VerifyElementClickable(
       args, &result);
   if (status.IsError())
     return status;
-  base::DictionaryValue* dict;
-  bool is_clickable = false;
-  if (!result->GetAsDictionary(&dict) ||
-      !dict->GetBoolean("clickable", &is_clickable)) {
+  absl::optional<bool> is_clickable = absl::nullopt;
+  if (result->is_dict())
+    is_clickable = result->FindBoolKey("clickable");
+  if (!is_clickable.has_value()) {
     return Status(kUnknownError,
                   "failed to parse value of IS_ELEMENT_CLICKABLE");
   }
 
-  if (!is_clickable) {
+  if (!is_clickable.value()) {
     std::string message;
-    if (!dict->GetString("message", &message))
+    const std::string* maybe_message = result->FindStringKey("message");
+    if (!maybe_message)
       message = "element click intercepted";
+    else
+      message = *maybe_message;
     return Status(kElementClickIntercepted, message);
   }
   return Status(kOk);
@@ -450,7 +447,7 @@ Status IsElementFocused(
   if (status.IsError())
     return status;
   std::unique_ptr<base::Value> element_dict(CreateElement(element_id));
-  *is_focused = result->Equals(element_dict.get());
+  *is_focused = *result == *element_dict;
   return Status(kOk);
 }
 
@@ -548,10 +545,12 @@ Status GetElementClickableLocation(
         session->GetCurrentFrameId(), kGetImageElementForArea, args, &result);
     if (status.IsError())
       return status;
-    const base::DictionaryValue* element_dict;
-    if (!result->GetAsDictionary(&element_dict) ||
-        !element_dict->GetString(GetElementKey(), &target_element_id))
+    std::string* maybe_target_element_id = nullptr;
+    if (result->is_dict())
+      maybe_target_element_id = result->FindStringKey(GetElementKey());
+    if (!maybe_target_element_id)
       return Status(kUnknownError, "no element reference returned by script");
+    target_element_id = *maybe_target_element_id;
   }
   bool is_displayed = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -595,6 +594,8 @@ Status GetElementEffectiveStyle(
                                   element_id, property_name, property_value);
 }
 
+// Wrapper to JavaScript code in js/get_element_region.js. See comments near the
+// beginning of that file for what is returned.
 Status GetElementRegion(
     Session* session,
     WebView* web_view,
@@ -678,8 +679,9 @@ Status IsElementDisplayed(
       args, &result);
   if (status.IsError())
     return status;
-  if (!result->GetAsBoolean(is_displayed))
+  if (!result->is_bool())
     return Status(kUnknownError, "IS_DISPLAYED should return a boolean value");
+  *is_displayed = result->GetBool();
   return Status(kOk);
 }
 
@@ -699,8 +701,9 @@ Status IsElementEnabled(
       args, &result);
   if (status.IsError())
     return status;
-  if (!result->GetAsBoolean(is_enabled))
+  if (!result->is_bool())
     return Status(kUnknownError, "IS_ENABLED should return a boolean value");
+  *is_enabled = result->GetBool();
   return Status(kOk);
 }
 
@@ -720,8 +723,9 @@ Status IsOptionElementSelected(
       args, &result);
   if (status.IsError())
     return status;
-  if (!result->GetAsBoolean(is_selected))
+  if (!result->is_bool())
     return Status(kUnknownError, "IS_SELECTED should return a boolean value");
+  *is_selected = result->GetBool();
   return Status(kOk);
 }
 
@@ -741,8 +745,9 @@ Status IsOptionElementTogglable(
       args, &result);
   if (status.IsError())
     return status;
-  if (!result->GetAsBoolean(is_togglable))
+  if (!result->is_bool())
     return Status(kUnknownError, "failed check if option togglable or not");
+  *is_togglable = result->GetBool();
   return Status(kOk);
 }
 
@@ -797,6 +802,16 @@ Status ScrollElementIntoView(
   return Status(kOk);
 }
 
+// Scroll a region of an element (identified by |element_id|) into view.
+// It first scrolls the element region relative to its enclosing viewport,
+// so that the region becomes visible in that viewport.
+// If that viewport is a frame, it then makes necessary scroll to make the
+// region of the frame visible in its enclosing viewport. It repeats this up
+// the frame chain until it reaches the top-level viewport.
+//
+// Upon return, |location| gives the location of the region relative to the
+// top-level viewport. If |center| is true, the location is for the center of
+// the region, otherwise it is for the upper-left corner of the region.
 Status ScrollElementRegionIntoView(
     Session* session,
     WebView* web_view,
@@ -807,6 +822,7 @@ Status ScrollElementRegionIntoView(
     WebPoint* location) {
   WebPoint region_offset = region.origin;
   WebSize region_size = region.size;
+  // Scroll the element region in its enclosing viewport.
   Status status = ScrollElementRegionIntoViewHelper(
       session->GetCurrentFrameId(), web_view, element_id, region,
       center, clickable_element_id, &region_offset);
@@ -817,6 +833,9 @@ Status ScrollElementRegionIntoView(
       "  return document.evaluate(xpath, document, null,"
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "}";
+  // If the element is in a frame, go up the frame chain (from the innermost
+  // frame up to the top-level window) and scroll each frame relative to its
+  // parent frame, so that the region becomes visible in the parent frame.
   for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
        ++rit) {
     base::ListValue args;
@@ -828,12 +847,13 @@ Status ScrollElementRegionIntoView(
         rit->parent_frame_id, kFindSubFrameScript, args, &result);
     if (status.IsError())
       return status;
-    const base::DictionaryValue* element_dict;
-    if (!result->GetAsDictionary(&element_dict))
+    if (!result->is_dict())
       return Status(kUnknownError, "no element reference returned by script");
-    std::string frame_element_id;
-    if (!element_dict->GetString(GetElementKey(), &frame_element_id))
+    std::string* maybe_frame_element_id =
+        result->FindStringKey(GetElementKey());
+    if (!maybe_frame_element_id)
       return Status(kUnknownError, "failed to locate a sub frame");
+    std::string frame_element_id = *maybe_frame_element_id;
 
     // Modify |region_offset| by the frame's border.
     int border_left = -1;
@@ -881,12 +901,13 @@ Status GetElementLocationInViewCenter(Session* session,
                                     args, &result);
     if (status.IsError())
       return status;
-    const base::DictionaryValue* element_dict;
-    if (!result->GetAsDictionary(&element_dict))
+    if (!result->is_dict())
       return Status(kUnknownError, "no element reference returned by script");
-    std::string frame_element_id;
-    if (!element_dict->GetString(GetElementKey(), &frame_element_id))
+    std::string* maybe_frame_element_id =
+        result->FindStringKey(GetElementKey());
+    if (!maybe_frame_element_id)
       return Status(kUnknownError, "failed to locate a sub frame");
+    std::string frame_element_id = *maybe_frame_element_id;
 
     // Modify |center_location| by the frame's border.
     int border_left = -1;
@@ -935,7 +956,7 @@ Status GetAXNodeByElementId(Session* session,
   if (status.IsError())
     return status;
 
-  base::Optional<base::Value> nodes = result->ExtractKey("nodes");
+  absl::optional<base::Value> nodes = result->ExtractKey("nodes");
   if (!nodes)
     return Status(kUnknownError, "No `nodes` found in CDP response");
 

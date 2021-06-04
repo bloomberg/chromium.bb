@@ -34,10 +34,10 @@ namespace content {
 //  - ToolkitInitialized: similar to EarlyInitialization but for the UI toolkit.
 //    Allows an embedder to do any extra toolkit initialization.
 //
-//  - PreMainMessageLoopStart: things to be done at some generic time before the
-//    creation of the main message loop.
+//  - PreCreateMainMessageLoop: things to be done at some generic time before
+//    the creation of the main message loop.
 //
-//  - PostMainMessageLoopStart: things that should be done as early as possible
+//  - PostCreateMainMessageLoop: things that should be done as early as possible
 //    but need the main message loop to be around (i.e. APIs like
 //    ThreadTaskRunnerHandle, BrowserThread::UI are up).
 //
@@ -49,7 +49,7 @@ namespace content {
 //    owned by content. As such, this is still "single-threaded" initialization
 //    as far as content and its embedders are concerned and the right place to
 //    initialize thread-compatible objects:
-//    https://chromium.googlesource.com/chromium/src/+/master/docs/threading_and_tasks.md#threading-lexicon
+//    https://chromium.googlesource.com/chromium/src/+/main/docs/threading_and_tasks.md#threading-lexicon
 //
 //  - PostCreateThreads: things that should be done as early as possible but
 //    need browser process threads to be alive (i.e. APIs like base::ThreadPool
@@ -81,6 +81,10 @@ namespace content {
 //    as a way for embedders to override or cancel the default RunLoop if
 //    needed.
 //
+//  - OnFirstIdle: The main thread reached idle for the first time since
+//    WillRunMainMessageLoop(). In other words, it's done running any tasks
+//    posted as part of the above phases and anything else posted from these.
+//
 //  - PostMainMessageLoopRun: stop and cleanup things that can/should be cleaned
 //    up while base::ThreadPool and BrowserThread::IO are still running.
 //    Note: Also see BrowserMainLoop::ShutdownThreadsAndCleanUp() which is often
@@ -98,7 +102,7 @@ namespace content {
 //  - Split out any platform-specific bits. Please avoid #ifdefs it at all
 //    possible. You have two choices for platform-specific code: (1) Execute it
 //    from one of the |Pre/Post...()| methods in an embedder's platform-specific
-//    override (e.g., ChromeBrowserMainPartsWin::PreMainMessageLoopStart()); do
+//    override (e.g., ChromeBrowserMainPartsWin::PreCreateMainMessageLoop()); do
 //    this if the code is unique to an embedder and platform type. Or (2)
 //    execute it from one of the "stages" (e.g.,
 //    |BrowserMainLoop::EarlyInitialization()|) and provide platform-specific
@@ -121,8 +125,8 @@ class CONTENT_EXPORT BrowserMainParts {
   virtual int PreEarlyInitialization();
   virtual void PostEarlyInitialization() {}
   virtual void ToolkitInitialized() {}
-  virtual void PreMainMessageLoopStart() {}
-  virtual void PostMainMessageLoopStart() {}
+  virtual void PreCreateMainMessageLoop() {}
+  virtual void PostCreateMainMessageLoop() {}
   virtual int PreCreateThreads();
   virtual void PostCreateThreads() {}
   virtual int PreMainMessageLoopRun();
@@ -133,6 +137,7 @@ class CONTENT_EXPORT BrowserMainParts {
   virtual void WillRunMainMessageLoop(
       std::unique_ptr<base::RunLoop>& run_loop) {}
 
+  virtual void OnFirstIdle() {}
   virtual void PostMainMessageLoopRun() {}
   virtual void PostDestroyThreads() {}
 };

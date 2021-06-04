@@ -32,7 +32,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -85,6 +84,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -94,6 +94,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
@@ -13820,7 +13821,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,
-      ca_layer_shared_state_->opacity, filter);
+      ca_layer_shared_state_->opacity, filter, gfx::ProtectedVideoType::kClear);
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
@@ -17021,7 +17022,7 @@ void GLES2DecoderImpl::FinishAsyncSwapBuffers(
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
   // Handling of the out-fence should have already happened before reaching
   // this function, so we don't expect to get a valid fence here.
-  DCHECK(!result.gpu_fence);
+  DCHECK(result.release_fence.is_null());
 
   FinishSwapBuffers(result.swap_result);
 }
@@ -19824,8 +19825,9 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
   params.transform =
       gfx::Transform(transform_c1r1, transform_c2r1, transform_c1r2,
                      transform_c2r2, transform_tx, transform_ty);
-  params.is_clipped = is_clipped;
-  params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  if (is_clipped) {
+    params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  }
   params.protected_video_type =
       static_cast<gfx::ProtectedVideoType>(protected_video_type);
 

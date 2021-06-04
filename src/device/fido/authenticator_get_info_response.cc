@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -136,6 +137,11 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     device_info_map.emplace(
         0x0d,
         cbor::Value(base::strict_cast<int64_t>(*response.min_pin_length)));
+  }
+
+  if (response.max_cred_blob_length) {
+    device_info_map.emplace(
+        0x0f, base::strict_cast<int64_t>(*response.max_cred_blob_length));
   }
 
   auto encoded_bytes =

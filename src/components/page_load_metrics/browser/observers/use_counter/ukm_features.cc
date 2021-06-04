@@ -46,6 +46,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kXMLHttpRequestSynchronousInWorker,
           WebFeature::kPaymentHandler,
           WebFeature::kPaymentRequestShowWithoutGesture,
+          WebFeature::kPaymentRequestShowWithoutGestureOrToken,
           WebFeature::kCredentialManagerCreatePublicKeyCredential,
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
@@ -195,9 +196,18 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kGetCurrentBrowsingContextMedia,
           WebFeature::kLaxAllowingUnsafeCookies,
           WebFeature::kOpenWebDatabaseThirdPartyContext,
+          WebFeature::kOversrollBehaviorOnViewportBreaks,
           WebFeature::kPaymentRequestCSPViolation,
+          WebFeature::kRequestedFileSystemPersistentThirdPartyContext,
+          WebFeature::kPrefixedStorageInfoThirdPartyContext,
           WebFeature::
               kCrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed,
+          WebFeature::kUsbDeviceOpen,
+          WebFeature::kWebBluetoothRemoteServerConnect,
+          WebFeature::kSerialRequestPort,
+          WebFeature::kSerialPortOpen,
+          WebFeature::kHidRequestDevice,
+          WebFeature::kHidDeviceOpen,
       }));
   return *opt_in_features;
 }

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PROFILE_PICKER_H_
 #define CHROME_BROWSER_UI_PROFILE_PICKER_H_
 
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
@@ -87,21 +85,6 @@ class ProfilePicker {
   // for the sign-in flow.
   static void CancelSignIn();
 
-  // Finishes the sign-in flow by moving to the sync confirmation screen. It
-  // uses the same new profile created by `SwitchToSignIn()`.
-  static void SwitchToSyncConfirmation();
-
-  // Finishes the sign-in flow by moving to the enterprise profile welcome
-  // screen. It uses the same new profile created by `SwitchToSignIn()`.
-  static void SwitchToEnterpriseProfileWelcome(
-      EnterpriseProfileWelcomeUI::ScreenType type,
-      base::OnceCallback<void(bool)> proceed_callback);
-
-  // When the sign-in flow cannot be completed because another profile at
-  // `profile_path` is already syncing with a chosen account, shows the profile
-  // switch screen. It uses the system profile.
-  static void SwitchToProfileSwitch(const base::FilePath& profile_path);
-
   // Shows a dialog where the user can auth the profile or see the
   // auth error message. If a dialog is already shown, this destroys the current
   // dialog and creates a new one.
@@ -171,6 +154,12 @@ class ProfilePickerForceSigninDialog {
   // flow.
   static constexpr int kDialogHeight = 512;
   static constexpr int kDialogWidth = 448;
+
+  // Shows a dialog where the user reauthenticates their primary account that
+  // has invalid credentials, when force signin is enabled.
+  static void ShowReauthDialog(content::BrowserContext* browser_context,
+                               const std::string& email,
+                               const base::FilePath& profile_path);
 
   // Shows a dialog where the user logs into their profile for the first time
   // via the profile picker, when force signin is enabled.

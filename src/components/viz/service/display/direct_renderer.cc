@@ -476,8 +476,8 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
 
   gfx::Rect target_rect = cc::MathUtil::MapEnclosingClippedRect(
       quad.shared_quad_state->quad_to_target_transform, quad.visible_rect);
-  if (quad.shared_quad_state->is_clipped)
-    target_rect.Intersect(quad.shared_quad_state->clip_rect);
+  if (quad.shared_quad_state->clip_rect)
+    target_rect.Intersect(*quad.shared_quad_state->clip_rect);
 
   target_rect.Intersect(render_pass_scissor);
   return target_rect.IsEmpty();
@@ -489,12 +489,12 @@ void DirectRenderer::SetScissorStateForQuad(
     bool use_render_pass_scissor) {
   if (use_render_pass_scissor) {
     gfx::Rect quad_scissor_rect = render_pass_scissor;
-    if (quad.shared_quad_state->is_clipped)
-      quad_scissor_rect.Intersect(quad.shared_quad_state->clip_rect);
+    if (quad.shared_quad_state->clip_rect)
+      quad_scissor_rect.Intersect(*quad.shared_quad_state->clip_rect);
     SetScissorTestRectInDrawSpace(quad_scissor_rect);
     return;
-  } else if (quad.shared_quad_state->is_clipped) {
-    SetScissorTestRectInDrawSpace(quad.shared_quad_state->clip_rect);
+  } else if (quad.shared_quad_state->clip_rect) {
+    SetScissorTestRectInDrawSpace(*quad.shared_quad_state->clip_rect);
     return;
   }
 
@@ -539,11 +539,11 @@ const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const base::Optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
+const absl::optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
     AggregatedRenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end()
-             ? base::Optional<gfx::RRectF>()
+             ? absl::optional<gfx::RRectF>()
              : it->second;
 }
 
@@ -802,12 +802,15 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   const AggregatedRenderPass* root_render_pass =
       current_frame()->root_render_pass;
   gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
+  // If |frame_buffer_damage|, which is carried over from the previous frame
+  // when we want to preserve buffer content, is not empty, we should add it
+  // to both root and non-root render passes.
+  gfx::Rect frame_buffer_damage =
+      output_surface_->GetCurrentFramebufferDamage();
 
   if (render_pass == root_render_pass) {
     base::CheckedNumeric<int64_t> display_area =
         current_frame()->device_viewport_size.GetCheckedArea();
-    gfx::Rect frame_buffer_damage =
-        output_surface_->GetCurrentFramebufferDamage();
     base::CheckedNumeric<int64_t> root_damage_area =
         root_damage_rect.size().GetCheckedArea();
     if (display_area.IsValid() && root_damage_area.IsValid()) {
@@ -880,7 +883,22 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 
   DCHECK(render_pass->copy_requests.empty() ||
          (render_pass->damage_rect == render_pass->output_rect));
-  return render_pass->damage_rect;
+
+  // For the non-root render pass.
+  gfx::Rect damage_rect = render_pass->damage_rect;
+  if (!frame_buffer_damage.IsEmpty()) {
+    gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
+    if (render_pass->transform_to_root_target.GetInverse(&inverse_transform)) {
+      // |frame_buffer_damage| is in the root target space. Transform the damage
+      // from the root to the non-root space before it's added.
+      gfx::Rect frame_buffer_damage_in_render_pass_space =
+          cc::MathUtil::MapEnclosingClippedRect(inverse_transform,
+                                                frame_buffer_damage);
+      damage_rect.Union(frame_buffer_damage_in_render_pass_space);
+    }
+  }
+
+  return damage_rect;
 }
 
 gfx::Size DirectRenderer::CalculateTextureSizeForRenderPass(

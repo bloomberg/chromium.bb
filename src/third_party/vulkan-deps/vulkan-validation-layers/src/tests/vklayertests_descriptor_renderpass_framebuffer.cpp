@@ -799,6 +799,9 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
         {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
          VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        // depth non-resolve attachment
+        {0, ds_format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL},
     };
 
     std::vector<VkAttachmentReference> input = {
@@ -814,6 +817,10 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
         {VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
     };
     std::vector<uint32_t> preserve = {5};
+    std::vector<VkAttachmentReference> depth_1bit = {
+        {6, VK_IMAGE_LAYOUT_GENERAL},
+        {6, VK_IMAGE_LAYOUT_GENERAL},
+    };
 
     VkSubpassDescription subpass = {0,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -957,6 +964,39 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
 
         attachments[input[0].attachment].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     }
+
+    // Test for depthStencil and color pointing to same attachment
+    {
+        // Both use same VkAttachmentReference
+        VkSubpassDescription subpass_same = {
+            0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, depth_1bit.data(), nullptr, depth_1bit.data(), 0, nullptr};
+
+        VkRenderPassCreateInfo rpci_same = rpci;
+        rpci_same.pSubpasses = &subpass_same;
+
+        // only test rp1 so can ignore the expected 2nd error
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription-pColorAttachments-02648");
+        TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci_same, rp2Supported,
+                             "VUID-VkSubpassDescription-pDepthStencilAttachment-04438", nullptr);
+
+        safe_VkRenderPassCreateInfo2 create_info2;
+        ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
+        TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
+                                 "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+
+        // Same test but use 2 different VkAttachmentReference to point to same attachment
+        subpass_same.pDepthStencilAttachment = &depth_1bit.data()[1];
+
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription-pColorAttachments-02648");
+        TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci_same, rp2Supported,
+                             "VUID-VkSubpassDescription-pDepthStencilAttachment-04438", nullptr);
+
+        ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
+        TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
+                                 "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+    }
 }
 
 TEST_F(VkLayerTest, RenderPassCreateAttachmentReferenceInvalidLayout) {
@@ -984,6 +1024,8 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentReferenceInvalidLayout) {
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, (vkGetPhysicalDeviceFeatures2KHR) ? &features2 : nullptr));
 
     const VkFormat ds_format = FindSupportedDepthStencilFormat(gpu());
+    const VkFormat depth_only_format = FindSupportedDepthOnlyFormat(gpu());
+    const VkFormat stencil_only_format = FindSupportedStencilOnlyFormat(gpu());
 
     VkAttachmentDescription attach[] = {
         {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -1038,43 +1080,85 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentReferenceInvalidLayout) {
         rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;  // reset
 
         if (separate_depth_stencil_layouts_features.separateDepthStencilLayouts) {
-            rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
-            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
-            rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
-            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
-            rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
-            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
-            rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
-            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
+            // No VkAttachmentReferenceStencilLayout set
+            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(),
+                                     "VUID-VkAttachmentReference2-attachment-04755");
+
+            // Set a valid VkAttachmentReferenceStencilLayout since the feature bit is set
+            auto attachment_reference_stencil_layout = LvlInitStruct<VkAttachmentReferenceStencilLayout>();
+            attachment_reference_stencil_layout.stencilLayout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
+            rpci2.pSubpasses[0].pDepthStencilAttachment->pNext = &attachment_reference_stencil_layout;
+
+            // Tests invalid use of color attachment with layouts
+            // Duels as tests for 04754 since the attachment format is not a depth/stencil format
+            {
+                rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAttachmentReference2-attachment-04754");
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
+
+                rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAttachmentReference2-attachment-04754");
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
+
+                rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAttachmentReference2-attachment-04754");
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
+
+                rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAttachmentReference2-attachment-04754");
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(), "VUID-VkSubpassDescription2-None-04439");
+            }
 
             // reset to valid layout
             // The following tests originally were negative tests until it was noticed that the aspectMask only matters for input
             // attachments. These tests were converted into positive tests to catch regression
             rpci2.pSubpasses[0].pColorAttachments[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            {
+                rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 
-            rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+            }
+            {
+                rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+            }
+            {
+                rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 
-            rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
+                PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
+            }
 
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
-
-            rpci2.pSubpasses[0].pDepthStencilAttachment->aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
-            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
-            PositiveTestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr());
-
-            auto attachment_reference_stencil_layout = LvlInitStruct<VkAttachmentReferenceStencilLayoutKHR>();
-            rpci2.pSubpasses[0].pDepthStencilAttachment->pNext = &attachment_reference_stencil_layout;
+            // Test using depth-only or stencil-only format with wrong layout for the attachment reference
+            if (depth_only_format != VK_FORMAT_UNDEFINED) {
+                rpci2.pAttachments[1].format = depth_only_format;
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(),
+                                         "VUID-VkAttachmentReference2-attachment-04756");
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR;
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(),
+                                         "VUID-VkAttachmentReference2-attachment-04756");
+            }
+            if (stencil_only_format != VK_FORMAT_UNDEFINED) {
+                rpci2.pAttachments[1].format = stencil_only_format;
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(),
+                                         "VUID-VkAttachmentReference2-attachment-04757");
+                rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR;
+                TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), rpci2.ptr(),
+                                         "VUID-VkAttachmentReference2-attachment-04757");
+            }
+            rpci2.pAttachments[1].format = ds_format;                                                                // reset
+            rpci2.pSubpasses[0].pDepthStencilAttachment->layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;  // reset
 
             VkImageLayout forbidden_layouts[] = {VK_IMAGE_LAYOUT_PREINITIALIZED,
                                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -2370,14 +2454,14 @@ TEST_F(VkLayerTest, InvalidSampleLocations) {
     const uint32_t valid_count =
         multisample_prop.maxSampleLocationGridSize.width * multisample_prop.maxSampleLocationGridSize.height * 1;
 
-    VkSampleLocationEXT sample_location = {0.5, 0.5};
+    std::vector<VkSampleLocationEXT> sample_location(valid_count,{0.5, 0.5});
     VkSampleLocationsInfoEXT sample_locations_info = {};
     sample_locations_info.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
     sample_locations_info.pNext = nullptr;
     sample_locations_info.sampleLocationsPerPixel = VK_SAMPLE_COUNT_1_BIT;
     sample_locations_info.sampleLocationGridSize = multisample_prop.maxSampleLocationGridSize;
     sample_locations_info.sampleLocationsCount = valid_count;
-    sample_locations_info.pSampleLocations = &sample_location;
+    sample_locations_info.pSampleLocations = sample_location.data();
 
     VkPipelineSampleLocationsStateCreateInfoEXT sample_location_state = {};
     sample_location_state.sType = VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT;
@@ -3690,9 +3774,8 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
         vk::CmdEndRenderPass(m_commandBuffer->handle());
         m_commandBuffer->end();
     }
-    // buffer2 just went out of scope and was destroyed along with its memory
+    // buffer2 just went out of scope and was destroyed
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkBuffer");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkDeviceMemory");
 
     VkSubmitInfo submit_info = {};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -3880,10 +3963,8 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
-    // Invalid VkBuffe
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffe");
-    // Invalid VkDeviceMemory
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, " that is invalid because bound ");
+    // Invalid VkBuffer
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkBuffer");
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
     m_errorMonitor->VerifyFound();
 }
@@ -7569,6 +7650,98 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     vk::DestroyPipelineLayout(m_device->handle(), pipeline_layout, NULL);
 }
 
+TEST_F(VkLayerTest, DescriptorIndexingSetNonIdenticalWrite) {
+    TEST_DESCRIPTION("VkWriteDescriptorSet must have identical VkDescriptorBindingFlagBits");
+
+    if (!(CheckDescriptorIndexingSupportAndInitFramework(this, m_instance_extension_names, m_device_extension_names, NULL,
+                                                         m_errorMonitor))) {
+        printf("%s Descriptor indexing or one of its dependencies not supported, skipping tests\n.", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto indexing_features = LvlInitStruct<VkPhysicalDeviceDescriptorIndexingFeatures>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&indexing_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (VK_FALSE == indexing_features.descriptorBindingStorageBufferUpdateAfterBind) {
+        printf("%s Test requires (unsupported) descriptorBindingStorageBufferUpdateAfterBind, skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    m_errorMonitor->ExpectSuccess();
+
+    // not all identical VkDescriptorBindingFlags flags
+    VkDescriptorBindingFlags flags[3] = {VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, 0,
+                                         VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT};
+    auto flags_create_info = LvlInitStruct<VkDescriptorSetLayoutBindingFlagsCreateInfo>();
+    flags_create_info.bindingCount = 3;
+    flags_create_info.pBindingFlags = &flags[0];
+
+    VkDescriptorSetLayoutBinding binding[3] = {
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+        {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+        {2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+    };
+    auto ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>(&flags_create_info);
+    ds_layout_ci.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+    ds_layout_ci.bindingCount = 3;
+    ds_layout_ci.pBindings = &binding[0];
+    VkDescriptorSetLayout ds_layout = VK_NULL_HANDLE;
+    ASSERT_VK_SUCCESS(vk::CreateDescriptorSetLayout(m_device->handle(), &ds_layout_ci, nullptr, &ds_layout));
+
+    VkDescriptorPoolSize pool_sizes = {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3};
+    auto dspci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    dspci.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+    dspci.poolSizeCount = 1;
+    dspci.pPoolSizes = &pool_sizes;
+    dspci.maxSets = 3;
+    VkDescriptorPool pool;
+    ASSERT_VK_SUCCESS(vk::CreateDescriptorPool(m_device->handle(), &dspci, nullptr, &pool));
+
+    auto ds_alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
+    ds_alloc_info.descriptorPool = pool;
+    ds_alloc_info.descriptorSetCount = 1;
+    ds_alloc_info.pSetLayouts = &ds_layout;
+    VkDescriptorSet ds = VK_NULL_HANDLE;
+    ASSERT_VK_SUCCESS(vk::AllocateDescriptorSets(m_device->handle(), &ds_alloc_info, &ds));
+
+    auto buff_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buff_create_info.size = 1024;
+    buff_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buff_create_info);
+    m_errorMonitor->VerifyNotFound();
+
+    VkDescriptorBufferInfo bufferInfo[3] = {};
+    bufferInfo[0].buffer = buffer.handle();
+    bufferInfo[0].offset = 0;
+    bufferInfo[0].range = 1024;
+    bufferInfo[1] = bufferInfo[0];
+    bufferInfo[2] = bufferInfo[0];
+
+    auto descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_write.dstSet = ds;
+    descriptor_write.dstBinding = 0;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptor_write.pBufferInfo = bufferInfo;
+    // If the dstBinding has fewer than descriptorCount, remainder will be used to update the subsequent binding
+    descriptor_write.descriptorCount = 3;
+
+    // binding 1 has a different VkDescriptorBindingFlags
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-dstArrayElement-00321");
+    vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyDescriptorSetLayout(m_device->handle(), ds_layout, nullptr);
+    vk::DestroyDescriptorPool(m_device->handle(), pool, nullptr);
+}
+
 TEST_F(VkLayerTest, AllocatePushDescriptorSet) {
     TEST_DESCRIPTION("Attempt to allocate a push descriptor set.");
     if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
@@ -9262,4 +9435,96 @@ TEST_F(VkLayerTest, FramebufferDepthStencilResolveAttachmentTests) {
     }
 
     vk::DestroyRenderPass(m_device->device(), renderPass, nullptr);
+}
+
+TEST_F(VkLayerTest, RenderPassCreateInvalidInputAttachmentLayout) {
+    TEST_DESCRIPTION("Create renderpass where an input attachment is also uses as another type");
+
+    bool rp2_supported = InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    if (rp2_supported) m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    rp2_supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    const VkAttachmentDescription attach0 = {0,
+                                      VK_FORMAT_R8G8B8A8_UNORM,
+                                      VK_SAMPLE_COUNT_1_BIT,
+                                      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                      VK_IMAGE_LAYOUT_UNDEFINED,
+                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    const VkAttachmentDescription attach1 = {0,
+                                      VK_FORMAT_R8G8B8A8_UNORM,
+                                      VK_SAMPLE_COUNT_1_BIT,
+                                      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                      VK_IMAGE_LAYOUT_UNDEFINED,
+                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+
+    const VkAttachmentReference ref0 = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    const VkAttachmentReference ref1 = {1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    const VkAttachmentReference inRef0 = {0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    const VkAttachmentReference inRef1 = {1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+
+    // First subpass draws to attachment 0
+    const VkSubpassDescription subpass0 = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &ref0, nullptr, nullptr, 0, nullptr};
+    // Second subpass reads attachment 0 as input-attachment, writes to attachment 1
+    const VkSubpassDescription subpass1 = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 1, &inRef0, 1, &ref1, nullptr, nullptr, 0, nullptr};
+    // Seconnd subpass reads attachment 1 as input-attachment, writes to attachment 0
+    const VkSubpassDescription subpass2 = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 1, &inRef1, 1, &ref0, nullptr, nullptr, 0, nullptr};
+
+    // Subpass 0 writes attachment 0 as output, subpass 1 reads as input (RAW)
+    VkSubpassDependency dep0 = {0,
+                               1,
+                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                               VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                               VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+                               VK_DEPENDENCY_BY_REGION_BIT};
+    // Subpass 1 writes attachment 1 as output, subpass 2 reads as input while (RAW)
+    VkSubpassDependency dep1 = {1,
+                               2,
+                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                               VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                               VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+                               VK_DEPENDENCY_BY_REGION_BIT};
+    // Subpass 1 reads attachment 0 as input, subpass 2 writes output (WAR)
+    VkSubpassDependency dep2 = {1,
+                               2,
+                               VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                               VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                               VK_DEPENDENCY_BY_REGION_BIT};
+
+    std::vector<VkAttachmentDescription> attachs = {attach0, attach1};
+    std::vector<VkSubpassDescription> subpasses = {subpass0, subpass1, subpass2};
+    std::vector<VkSubpassDependency> deps = {dep0, dep1, dep2};
+
+    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, (uint32_t)attachs.size(), attachs.data(), (uint32_t)subpasses.size(), subpasses.data(), (uint32_t)deps.size(), deps.data()};
+
+    // Current setup should be OK -- no attachment is both input and output in same subpass
+    PositiveTestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci, rp2_supported);
+
+    // Check for invalid layout error when input-attachment is also used as color-attachment.
+    // This should fail as attachment 0 is both input and output in subpass 2, but is not the correct layout
+    // (Note that TestRenderPassCreate() filters out the VUID we want to test -- VUID-VkSubpassDescription-None-04437 -- so we can't use that here.)
+    subpasses[2].pInputAttachments = &inRef0;
+    const char *rp1_vuid = "VUID-VkSubpassDescription-None-04437";
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, rp1_vuid);
+    {
+        VkResult err;
+        VkRenderPass render_pass = VK_NULL_HANDLE;
+        err = vk::CreateRenderPass(m_device->device(), &rpci, nullptr, &render_pass);
+        if (err == VK_SUCCESS) vk::DestroyRenderPass(m_device->device(), render_pass, nullptr);
+    }
+    m_errorMonitor->VerifyFound();
 }

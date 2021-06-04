@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -34,9 +33,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -93,10 +92,10 @@ class AutofillCapturedSitesInteractiveTest
                     content::RenderFrameHost* frame) override {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
-    AutofillManager* autofill_manager =
+    BrowserAutofillManager* autofill_manager =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(frame)
-            ->autofill_manager();
+            ->browser_autofill_manager();
     autofill_manager->SetTestDelegate(test_delegate());
 
     int tries = 0;
@@ -172,7 +171,7 @@ class AutofillCapturedSitesInteractiveTest
 
  protected:
   AutofillCapturedSitesInteractiveTest()
-      : profile_(test::GetFullProfile()),
+      : profile_(test::GetIncompleteProfile2()),
         card_(CreditCard(base::GenerateGUID(), "http://www.example.com")) {
     for (size_t i = NO_SERVER_DATA; i < MAX_VALID_FIELD_TYPE; ++i) {
       ServerFieldType field_type = static_cast<ServerFieldType>(i);
@@ -235,7 +234,7 @@ class AutofillCapturedSitesInteractiveTest
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillShowTypePredictions},
-        /*disabled_features=*/{features::kAutofillCacheQueryResponses});
+        /*disabled_features=*/{});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(
         variations::switches::kVariationsOverrideCountry, "us");

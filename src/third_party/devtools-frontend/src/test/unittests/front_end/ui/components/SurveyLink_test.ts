@@ -4,30 +4,29 @@
 
 const {assert} = chai;
 
-import * as UIComponents from '../../../../../front_end/ui/components/components.js';
+import * as SurveyLink from '../../../../../front_end/ui/components/survey_link/survey_link.js';
 import * as Common from '../../../../../front_end/core/common/common.js';
-import {describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
 import {assertNotNull} from '../../../../../front_end/core/platform/platform.js';
 import {assertShadowRoot, renderElementIntoDOM} from '../../helpers/DOMHelpers.js';
 
-function canShowSuccessfulCallback(trigger: string, callback: UIComponents.SurveyLink.CanShowSurveyCallback) {
+function canShowSuccessfulCallback(trigger: string, callback: SurveyLink.SurveyLink.CanShowSurveyCallback) {
   callback({canShowSurvey: true});
 }
-function showSuccessfulCallback(trigger: string, callback: UIComponents.SurveyLink.ShowSurveyCallback) {
+function showSuccessfulCallback(trigger: string, callback: SurveyLink.SurveyLink.ShowSurveyCallback) {
   callback({surveyShown: true});
 }
-function canShowFailureCallback(trigger: string, callback: UIComponents.SurveyLink.CanShowSurveyCallback) {
+function canShowFailureCallback(trigger: string, callback: SurveyLink.SurveyLink.CanShowSurveyCallback) {
   callback({canShowSurvey: false});
 }
-function showFailureCallback(trigger: string, callback: UIComponents.SurveyLink.ShowSurveyCallback) {
+function showFailureCallback(trigger: string, callback: SurveyLink.SurveyLink.ShowSurveyCallback) {
   callback({surveyShown: false});
 }
 
 const empty = Common.UIString.LocalizedEmptyString;
 
-describeWithEnvironment('SurveyLink', async () => {
+describe('SurveyLink', async () => {
   it('shows no link when canShowSurvey is still pending', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data = {trigger: 'test trigger', promptText: empty, canShowSurvey: () => {}, showSurvey: () => {}};
     renderElementIntoDOM(link);
 
@@ -36,7 +35,7 @@ describeWithEnvironment('SurveyLink', async () => {
   });
 
   it('shows no link when canShowSurvey is false', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data =
         {trigger: 'test trigger', promptText: empty, canShowSurvey: canShowFailureCallback, showSurvey: () => {}};
     renderElementIntoDOM(link);
@@ -46,7 +45,7 @@ describeWithEnvironment('SurveyLink', async () => {
   });
 
   it('shows a link when canShowSurvey is true', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data =
         {trigger: 'test trigger', promptText: empty, canShowSurvey: canShowSuccessfulCallback, showSurvey: () => {}};
     renderElementIntoDOM(link);
@@ -57,7 +56,7 @@ describeWithEnvironment('SurveyLink', async () => {
   });
 
   it('shows a pending state when trying to show the survey', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data =
         {trigger: 'test trigger', promptText: empty, canShowSurvey: canShowSuccessfulCallback, showSurvey: () => {}};
     renderElementIntoDOM(link);
@@ -77,7 +76,7 @@ describeWithEnvironment('SurveyLink', async () => {
   });
 
   it('shows a successful state after showing the survey', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data = {
       trigger: 'test trigger',
       promptText: empty,
@@ -98,7 +97,7 @@ describeWithEnvironment('SurveyLink', async () => {
   });
 
   it('shows a failure state when failing to show the survey', () => {
-    const link = new UIComponents.SurveyLink.SurveyLink();
+    const link = new SurveyLink.SurveyLink.SurveyLink();
     link.data = {
       trigger: 'test trigger',
       promptText: empty,

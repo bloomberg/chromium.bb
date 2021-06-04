@@ -25,6 +25,7 @@ class FakeTextInputClient : public TextInputClient {
   ~FakeTextInputClient() override;
 
   void set_text_input_type(TextInputType text_input_type);
+  void set_source_id(ukm::SourceId source_id);
   void SetTextAndSelection(const std::u16string& text, gfx::Range selection);
 
   const std::u16string& text() const { return text_; }
@@ -48,6 +49,7 @@ class FakeTextInputClient : public TextInputClient {
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
@@ -80,8 +82,8 @@ class FakeTextInputClient : public TextInputClient {
 #endif
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,
@@ -95,6 +97,7 @@ class FakeTextInputClient : public TextInputClient {
   gfx::Range composition_range_;
   std::vector<ui::ImeTextSpan> ime_text_spans_;
   gfx::Range autocorrect_range_;
+  ukm::SourceId source_id_;
 };
 
 }  // namespace ui

@@ -12,18 +12,19 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/renderer/media/batching_media_log.h"
 #include "content/renderer/media/inspector_media_event_handler.h"
 #include "content/renderer/media/media_interface_factory.h"
-#include "content/renderer/media/power_status_helper_impl.h"
 #include "content/renderer/media/render_media_event_handler.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/render_frame_impl.h"
@@ -35,10 +36,13 @@
 #include "media/base/demuxer.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_factory_selector.h"
+#include "media/blink/power_status_helper.h"
 #include "media/blink/remote_playback_client_wrapper_impl.h"
 #include "media/blink/resource_fetch_context.h"
+#include "media/blink/url_index.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/renderers/decrypting_renderer_factory.h"
@@ -105,11 +109,39 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
+#include "media/cdm/win/media_foundation_cdm.h"
 #include "media/mojo/clients/win/media_foundation_renderer_client_factory.h"
 #endif  // defined(OS_WIN)
 
 namespace {
+
+// This limit corresponds to the per-platform 99.9th %ile of the number of
+// WebMediaPlayers used by a single frame, as measured in March 2021. This
+// tries to balance minimizing web platform breakage and preventing abusive
+// API usage. See http://crbug.com/1144736#c49
+constexpr size_t kDefaultMaxWebMediaPlayers =
+#if defined(OS_ANDROID)
+    40;
+#else
+    // All desktop platforms share the same value.
+    75;
+#endif
+
+size_t GetMaxWebMediaPlayers() {
+  static const size_t kMaxWebMediaPlayers = []() {
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kMaxWebMediaPlayerCount)) {
+      std::string value =
+          command_line->GetSwitchValueASCII(switches::kMaxWebMediaPlayerCount);
+      size_t parsed_value = 0;
+      if (base::StringToSizeT(value, &parsed_value) && parsed_value > 0)
+        return parsed_value;
+    }
+    return kDefaultMaxWebMediaPlayers;
+  }();
+  return kMaxWebMediaPlayers;
+}
+
 class FrameFetchContext : public media::ResourceFetchContext {
  public:
   explicit FrameFetchContext(blink::WebLocalFrame* frame) : frame_(frame) {
@@ -372,6 +404,19 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     scoped_refptr<base::SingleThreadTaskRunner>
         main_thread_compositor_task_runner) {
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
+  auto* delegate = GetWebMediaPlayerDelegate();
+
+  // Prevent a frame from creating too many media players, as they are extremely
+  // heavy objects and a common cause of browser memory leaks. See
+  // crbug.com/1144736
+  if (delegate->web_media_player_count() >= GetMaxWebMediaPlayers()) {
+    blink::WebString message =
+        "Blocked attempt to create a WebMediaPlayer as there are too many "
+        "WebMediaPlayers already in existence. See crbug.com/1144736#c27";
+    web_frame->GenerateInterventionReport("TooManyWebMediaPlayers", message);
+    return nullptr;
+  }
+
   if (source.IsMediaStream()) {
     return CreateWebMediaPlayerForMediaStream(
         client, inspector_context, sink_id, web_frame, parent_frame_sink_id,
@@ -463,8 +508,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           return battery_monitor;
         },
         remote_interfaces);
-    power_status_helper =
-        std::make_unique<PowerStatusHelperImpl>(std::move(battery_monitor_cb));
+    power_status_helper = std::make_unique<media::PowerStatusHelper>(
+        std::move(battery_monitor_cb));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -490,7 +535,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           base::BindRepeating(&ContentRendererClient::DeferMediaLoad,
                               base::Unretained(GetContentClient()->renderer()),
                               static_cast<RenderFrame*>(render_frame_),
-                              GetWebMediaPlayerDelegate()->has_played_media()),
+                              delegate->has_played_media()),
           audio_renderer_sink, media_task_runner,
           render_thread->GetWorkerTaskRunner(),
           render_thread->compositor_task_runner(),
@@ -521,7 +566,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           params->video_frame_compositor_task_runner(), std::move(submitter));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
-      web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
+      web_frame, client, encrypted_client, delegate,
       std::move(factory_selector), url_index_.get(), std::move(vfc),
       std::move(params));
 
@@ -547,7 +592,7 @@ MediaFactory::CreateRendererFactorySelector(
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
-  using FactoryType = media::RendererFactoryType;
+  using media::RendererType;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // Render thread may not exist in tests, returning nullptr if it does not.
@@ -576,13 +621,13 @@ MediaFactory::CreateRendererFactorySelector(
               render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (use_media_player_renderer) {
-    factory_selector->AddBaseFactory(FactoryType::kMediaPlayer,
+    factory_selector->AddBaseFactory(RendererType::kMediaPlayer,
                                      std::move(media_player_factory));
     use_default_renderer_factory = false;
   } else {
     // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
     // might fallback to it if the final redirected URL is an HLS url.
-    factory_selector->AddFactory(FactoryType::kMediaPlayer,
+    factory_selector->AddFactory(RendererType::kMediaPlayer,
                                  std::move(media_player_factory));
   }
 
@@ -602,7 +647,7 @@ MediaFactory::CreateRendererFactorySelector(
       base::BindRepeating(&FlingingRendererClientFactory::IsFlingingActive,
                           base::Unretained(flinging_factory.get()));
   factory_selector->AddConditionalFactory(
-      FactoryType::kFlinging, std::move(flinging_factory), is_flinging_cb);
+      RendererType::kFlinging, std::move(flinging_factory), is_flinging_cb);
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -611,16 +656,16 @@ MediaFactory::CreateRendererFactorySelector(
     use_default_renderer_factory = false;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     factory_selector->AddBaseFactory(
-        FactoryType::kCast, std::make_unique<CastRendererClientFactory>(
-                                media_log, CreateMojoRendererFactory()));
+        RendererType::kCast, std::make_unique<CastRendererClientFactory>(
+                                 media_log, CreateMojoRendererFactory()));
 #else
     // The "default" MojoRendererFactory can be wrapped by a
     // DecryptingRendererFactory without changing any behavior.
-    // TODO(tguilbert/xhwang): Add "FactoryType::DECRYPTING" if ever we need to
+    // TODO(tguilbert/xhwang): Add "RendererType::DECRYPTING" if ever we need to
     // distinguish between a "pure" and "decrypting" MojoRenderer.
     factory_selector->AddBaseFactory(
-        FactoryType::kMojo, std::make_unique<media::DecryptingRendererFactory>(
-                                media_log, CreateMojoRendererFactory()));
+        RendererType::kMojo, std::make_unique<media::DecryptingRendererFactory>(
+                                 media_log, CreateMojoRendererFactory()));
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -628,7 +673,7 @@ MediaFactory::CreateRendererFactorySelector(
 #if defined(OS_FUCHSIA)
   use_default_renderer_factory = false;
   factory_selector->AddBaseFactory(
-      FactoryType::kFuchsia,
+      RendererType::kFuchsia,
       std::make_unique<FuchsiaRendererFactory>(
           media_log, decoder_factory,
           base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
@@ -640,7 +685,7 @@ MediaFactory::CreateRendererFactorySelector(
     DCHECK(!use_media_player_renderer);
     auto default_factory = CreateDefaultRendererFactory(
         media_log, decoder_factory, render_thread, render_frame_);
-    factory_selector->AddBaseFactory(FactoryType::kDefault,
+    factory_selector->AddBaseFactory(RendererType::kDefault,
                                      std::move(default_factory));
   }
 
@@ -666,13 +711,14 @@ MediaFactory::CreateRendererFactorySelector(
       &media::remoting::CourierRendererFactory::IsRemotingActive,
       base::Unretained(courier_factory.get()));
   factory_selector->AddConditionalFactory(
-      FactoryType::kCourier, std::move(courier_factory), is_remoting_cb);
+      RendererType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::Version::WIN10_20H1) {
+  // Only use MediaFoundationRenderer when MediaFoundationCdm is available.
+  if (media::MediaFoundationCdm::IsAvailable()) {
     factory_selector->AddFactory(
-        FactoryType::kMediaFoundation,
+        RendererType::kMediaFoundation,
         std::make_unique<media::MediaFoundationRendererClientFactory>(
             render_thread->compositor_task_runner(),
             CreateMojoRendererFactory()));
@@ -700,7 +746,7 @@ MediaFactory::CreateRendererFactorySelector(
         },
         url);
     factory_selector->AddConditionalFactory(
-        FactoryType::kRemoting, std::move(remoting_renderer_factory),
+        RendererType::kRemoting, std::move(remoting_renderer_factory),
         is_remoting_media);
   }
 #endif  // BUILDFLAG(IS_CHROMECAST)

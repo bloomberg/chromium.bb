@@ -56,6 +56,17 @@ void MessageWrapper::SetDescription(const std::u16string& description) {
   Java_MessageWrapper_setDescription(env, java_message_wrapper_, jdescription);
 }
 
+int MessageWrapper::GetDescriptionMaxLines() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_MessageWrapper_getDescriptionMaxLines(env, java_message_wrapper_);
+}
+
+void MessageWrapper::SetDescriptionMaxLines(int max_lines) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_MessageWrapper_setDescriptionMaxLines(env, java_message_wrapper_,
+                                             max_lines);
+}
+
 std::u16string MessageWrapper::GetPrimaryButtonText() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> jprimary_button_text =
@@ -105,6 +116,11 @@ void MessageWrapper::SetIconResourceId(int resource_id) {
                                         resource_id);
 }
 
+void MessageWrapper::DisableIconTint() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_MessageWrapper_disableIconTint(env, java_message_wrapper_);
+}
+
 int MessageWrapper::GetSecondaryIconResourceId() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_MessageWrapper_getSecondaryIconResourceId(env,
@@ -119,6 +135,11 @@ void MessageWrapper::SetSecondaryIconResourceId(int resource_id) {
 
 void MessageWrapper::SetSecondaryActionCallback(base::OnceClosure callback) {
   secondary_action_callback_ = std::move(callback);
+}
+
+void MessageWrapper::SetDuration(long customDuration) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_MessageWrapper_setDuration(env, java_message_wrapper_, customDuration);
 }
 
 void MessageWrapper::HandleActionClick(JNIEnv* env) {

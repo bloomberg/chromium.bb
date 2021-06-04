@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">सिक स्लाइडर</translation>
 <translation id="1404323374378969387">नर्वेली</translation>
 <translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
+<translation id="1433628812591023318">फाइल ड्र्याग गरेर Parallels Desktop मा ड्रप गर्न सो फाइल सारेर 'Windows फाइलहरू' फोल्डरमा लैजानु पर्ने हुन्छ।</translation>
 <translation id="1435838927755162558">Parallels Desktop सँग फोल्डर सेयर गर्नुहोस्</translation>
 <translation id="1467432559032391204">बाँया</translation>
 <translation id="1471718551822868769">स्लोभाकियाली</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows फाइलहरू</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> मार्फत सेयर गर्नुहोस्</translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">यहाँबाट "<ph name="PATH" />" खोल्न सकिएन। यो फाइल खोल्न यसलाई कपी गरी "मेरा फाइलहरू"मा पेस्ट गर्नुहोस्।</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">सम्पन्न  भयो</translation>
 <translation id="3188257591659621405">मेरा फाइलहरू</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">बुल्गेरियन फोनेटिक किबोर्ड</translation>
 <translation id="5605830556594064952">युएस ड्भोराक</translation>
 <translation id="5625294776298156701">तमिल Tamil99 किबोर्ड</translation>
+<translation id="5633226425545095130">तपाईंले यो वस्तु सार्नुभयो भने '<ph name="DESTINATION_NAME" />' नामक साझा फोल्डर हेर्न सक्ने सबै जनासँग यो वस्तु सेयर हुने छ।</translation>
 <translation id="5649768706273821470">सुन्नुहोस्</translation>
 <translation id="5678784840044122290">Linux एप तपाईंको टर्मिनलअन्तर्गत उपलब्ध हुने छ तपाईंको लन्चरमा कुनै आइकन देखाउन पनि सक्छ।</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />अभिलेख वा भर्चुअल डिस्कबाट विच्छेदन गर्न सकिँदैन<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">इथियोपिक किबोर्ड</translation>
 <translation id="7417705661718309329">Google नक्सा</translation>
 <translation id="7460898608667578234">युक्रेनियन</translation>
+<translation id="7486315294984620427">फाइल ड्र्याग गरेर Parallels Desktop मा ड्रप गर्न सो फाइल कपी गरेर 'Windows फाइलहरू' फोल्डरमा पेस्ट गर्नु पर्ने हुन्छ।</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> फेला पर्‍यो
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google ड्राइभ<ph name="END_LINK" /> मा ब्याकअप गर्न तयार</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">उचाइ तथा चौडाइ</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8456681095658380701">अवैध नाम</translation>
+<translation id="8459404855768962328">तपाईंले यो वस्तु कपी गर्नुभयो भने '<ph name="DESTINATION_NAME" />' नामक साझा फोल्डर हेर्न सक्ने सबै जनासँग यो वस्तु सेयर हुने छ।</translation>
 <translation id="8461467696380332069">आफ्ना फाइलहरू सेल्फबाट द्रुत रूपमा हेर्न तथा प्रयोग गर्न कुनै फाइलमा राइट क्लिक गर्नुहोस् र "सेल्फमा पिन गर्नुहोस्" चयन गर्नुहोस्।</translation>
 <translation id="8463494891489624050">भियतनामी VIQR</translation>
 <translation id="8466234950814670489">टार सङ्ग्रह</translation>

@@ -12,7 +12,7 @@ ConversionReport::ConversionReport(const StorableImpression& impression,
                                    const std::string& conversion_data,
                                    base::Time conversion_time,
                                    base::Time report_time,
-                                   const base::Optional<int64_t>& conversion_id)
+                                   const absl::optional<int64_t>& conversion_id)
     : impression(impression),
       conversion_data(conversion_data),
       conversion_time(conversion_time),
@@ -31,8 +31,7 @@ std::ostream& operator<<(std::ostream& out, const ConversionReport& report) {
       << ", conversion_data: " << report.conversion_data
       << ", conversion_time: " << report.conversion_time
       << ", report_time: " << report.report_time
-      << ", extra_delay: " << report.extra_delay
-      << ", attribution_credit: " << report.attribution_credit;
+      << ", extra_delay: " << report.extra_delay;
   return out;
 }
 

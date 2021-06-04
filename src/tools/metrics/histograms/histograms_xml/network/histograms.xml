@@ -102,6 +102,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.Apn.UseAttachApnOnSave" enum="Boolean"
+    expires_after="2022-05-18">
+  <owner>hsuregan@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Chrome OS cellular network metric that tracks the Attach APN Toggle value
+    when the user explicitly clicks the Save button in the 'Other' APN settings,
+    with the intent of setting the cellular network APN properties.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.Connection.Disconnections"
     enum="NetworkCellularConnectionState" expires_after="2021-08-29">
   <obsolete>
@@ -127,6 +138,39 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Tracks the amount fo time taken between when cellular device starts and
     finishes connecting.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.InstallPendingProfile.Result"
+    enum="HermesResponseStatus" expires_after="2022-03-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of installing a &quot;pending&quot; eSIM profile
+    found via SM-DS. SM-DS provides all profiles which a carrier has associated
+    with a device's EID; once this occurs, the user has the chance to install
+    one of these pending profiles via the UI. The installation process involves
+    making a network request to the cellular carrier and downloading a profile
+    to the device.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.InstallViaQrCode.Result"
+    enum="HermesResponseStatus" expires_after="2022-03-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of installing an eSIM profile via a QR code. During
+    this process, the user can either scan a QR code by using the device's
+    webcam or can enter the QR code's decoded contents into a text field
+    manually. Once this occurs, the device contacts the cellular carrier and
+    downloads a profile to the device.
+
+    Emitted once the operation completes.
   </summary>
 </histogram>
 
@@ -307,8 +351,46 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="Network.Cellular.{SimType}.ConnectionResult.All"
+    enum="ShillCellularConnectResult" expires_after="2022-04-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <summary>
+    Tracks the result of all connection attempts. A success is emitted when a
+    {SimType} network becomes connected from a non-connected state. When a
+    {SimType} network goes from a connecting state to a disconnected state, a
+    shill failure reason is emitted.
+  </summary>
+  <token key="SimType">
+    <variant name="ESim"/>
+    <variant name="PSim"/>
+  </token>
+</histogram>
+
+<histogram name="Network.Cellular.{SimType}.ConnectionResult.UserInitiated"
+    enum="UserInitiatedCellularConnectResult" expires_after="2022-04-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <summary>
+    Tracks the result of a user initiated connection attempt. Logged when a
+    {SimType} connection succeeds or fails. This histogram logs failure reasons
+    exposed by NetworkConnectionHandler.
+  </summary>
+  <token key="SimType">
+    <variant name="ESim"/>
+    <variant name="PSim"/>
+  </token>
+</histogram>
+
 <histogram name="Network.Cellular.{SimType}.ConnectionSuccess"
     enum="CellularConnectResult" expires_after="2022-03-01">
+  <obsolete>
+    Removed 04/2021. Split to
+    Network.Cellular.{SimType}.ConnectionResult.UserInitiated and
+    Network.Cellular.{SimType}.ConnectionResult.All.
+  </obsolete>
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -1110,7 +1192,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.ServicesOnSameNetwork" units="units"
-    expires_after="2021-12-01">
+    expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1527,6 +1612,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.HiddenSSIDEverConnected"
+    enum="BooleanEverConnected" expires_after="2022-04-27">
+  <owner>tnagel@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <owner>cros-privacy-core@google.com</owner>
+  <summary>
+    Chrome OS network metric tracking whether WiFi networks configured with
+    hidden SSID have ever been connected. The metric includes networks from
+    system and user profile and it's recorded each time a user configuration
+    profile is loaded, such as when a user logs in.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.HiddenSSIDNetworkCount" units="units"
     expires_after="2021-12-01">
   <owner>tnagel@chromium.org</owner>
@@ -1565,7 +1663,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorBroadcastErrorsAtFailure"
-    units="units" expires_after="2021-12-01">
+    units="units" expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>briannorris@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1576,7 +1677,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorFailure"
-    enum="LinkMonitorFailureType" expires_after="2021-12-01">
+    enum="LinkMonitorFailureType" expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>briannorris@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1586,7 +1690,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorResponseTimeSample" units="ms"
-    expires_after="2021-12-01">
+    expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>briannorris@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1634,7 +1741,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorSecondsToFailure"
-    units="seconds" expires_after="2021-12-01">
+    units="seconds" expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>briannorris@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1644,13 +1754,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorUnicastErrorsAtFailure"
-    units="units" expires_after="2021-12-01">
+    units="units" expires_after="M92">
+  <obsolete>
+    Removed 05/2021
+  </obsolete>
   <owner>briannorris@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of LinkMonitor
     unicast errors that were accrued on an 802.11 wireless network at the time
     that the link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.MBOSupport" enum="MBOSupport"
+    expires_after="2021-12-01">
+  <owner>matthewmwang@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network metric that tracks the Multi-Band Operation (MBO) support
+    of access points that devices connect to. Results are recorded every time a
+    device connects to an access point.
   </summary>
 </histogram>
 
@@ -2255,7 +2379,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Connection.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2021-08-29">
+    enum="ConnectionFailureReason" expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2265,7 +2389,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Connection.Result" enum="BooleanSuccess"
-    expires_after="2021-08-29">
+    expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2275,7 +2399,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Hidden.Fixed" units="networks"
-    expires_after="2022-04-01">
+    expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -2288,7 +2412,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2021-04-22">
+    enum="ConnectionFailureReason" expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2298,7 +2422,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.Result"
-    enum="BooleanSuccess" expires_after="2021-08-29">
+    enum="BooleanSuccess" expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2308,7 +2432,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.TotalCount" units="units"
-    expires_after="2021-08-29">
+    expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2318,7 +2442,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.UpdateOperation.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2021-10-04">
+    enum="ConnectionFailureReason" expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2329,7 +2453,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.UpdateOperation.Result"
-    enum="BooleanSuccess" expires_after="2021-08-29">
+    enum="BooleanSuccess" expires_after="2022-04-19">
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2340,7 +2464,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ZeroNetworksEligibleForSync.Reason"
-    enum="NetworkEligibilityStatus" expires_after="2021-11-01">
+    enum="NetworkEligibilityStatus" expires_after="2022-04-19">
   <owner>cvandermerwe@google.com</owner>
   <owner>jonmann@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
@@ -2401,7 +2525,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NetworkService.CorsForcedOffForIsolatedWorldOrigin"
-    enum="BooleanForceDisabled" expires_after="2021-08-09">
+    enum="BooleanForceDisabled" expires_after="2021-10-10">
   <owner>lukasza@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -2499,7 +2623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility"
-    enum="RequestInitiatorOriginLockCompatibility" expires_after="2021-09-05">
+    enum="RequestInitiatorOriginLockCompatibility" expires_after="2021-11-07">
   <owner>lukasza@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>jam@chromium.org</owner>

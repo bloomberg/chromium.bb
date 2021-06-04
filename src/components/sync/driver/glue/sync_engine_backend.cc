@@ -13,12 +13,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/configure_context.h"
+#include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -37,17 +38,9 @@
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
 
-#define SLOG(severity) LOG(severity) << name_ << ": "
-
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-namespace net {
-class URLFetcher;
-}
-
 namespace syncer {
-
-class EngineComponentsFactory;
 
 namespace {
 
@@ -115,42 +108,6 @@ void SyncEngineBackend::DoRefreshTypes(ModelTypeSet types) {
   sync_manager_->RefreshTypes(types);
 }
 
-void SyncEngineBackend::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend,
-    const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    bool success) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!success) {
-    DoDestroySyncManager();
-    host_.Call(FROM_HERE,
-               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
-    return;
-  }
-
-  // Hang on to these for a while longer.  We're not ready to hand them back to
-  // the UI thread yet.
-  js_backend_ = js_backend;
-  debug_info_listener_ = debug_info_listener;
-
-  LoadAndConnectNigoriController();
-
-  ConfigureReason reason = sync_manager_->InitialSyncEndedTypes().Empty()
-                               ? CONFIGURE_REASON_NEW_CLIENT
-                               : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
-
-  ModelTypeSet new_control_types =
-      Difference(ControlTypes(), sync_manager_->InitialSyncEndedTypes());
-
-  SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
-            << " added; calling ConfigureSyncer";
-
-  sync_manager_->ConfigureSyncer(
-      reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
-      base::BindOnce(&SyncEngineBackend::DoInitialProcessControlTypes,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
 void SyncEngineBackend::OnConnectionStatusChange(ConnectionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE,
@@ -192,26 +149,16 @@ void SyncEngineBackend::DoOnInvalidatorStateChange(
                                        invalidation::INVALIDATIONS_ENABLED);
 }
 
-bool SyncEngineBackend::ShouldIgnoreRedundantInvalidation(
+void SyncEngineBackend::RecordRedundantInvalidationsMetric(
     const invalidation::Invalidation& invalidation,
-    ModelType type) {
-  bool fcm_invalidation = base::FeatureList::IsEnabled(
-      invalidation::switches::kFCMInvalidationsForSyncDontCheckVersion);
-  bool redundant_invalidation = false;
+    ModelType type) const {
   auto last_invalidation = last_invalidation_versions_.find(type);
   if (!invalidation.is_unknown_version() &&
       last_invalidation != last_invalidation_versions_.end() &&
       invalidation.version() <= last_invalidation->second) {
-    DVLOG(1) << "Ignoring redundant invalidation for "
-             << ModelTypeToString(type) << " with version "
-             << invalidation.version() << ", last seen version was "
-             << last_invalidation->second;
-    redundant_invalidation = true;
     UMA_HISTOGRAM_ENUMERATION("Sync.RedundantInvalidationPerModelType2",
                               ModelTypeHistogramValue(type));
   }
-
-  return !fcm_invalidation && redundant_invalidation;
 }
 
 void SyncEngineBackend::DoOnIncomingInvalidation(
@@ -228,9 +175,7 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
       invalidation::SingleTopicInvalidationSet invalidation_set =
           invalidation_map.ForTopic(topic);
       for (invalidation::Invalidation invalidation : invalidation_set) {
-        if (ShouldIgnoreRedundantInvalidation(invalidation, type)) {
-          continue;
-        }
+        RecordRedundantInvalidationsMetric(invalidation, type);
 
         std::unique_ptr<InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));
@@ -271,7 +216,7 @@ void SyncEngineBackend::DoInitialize(
       std::make_unique<NigoriStorageImpl>(
           sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
       &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
-      restored_local_transport_data.encryption_bootstrap_token,
+      params.encryption_bootstrap_token,
       restored_local_transport_data.keystore_encryption_bootstrap_token);
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
@@ -295,6 +240,23 @@ void SyncEngineBackend::DoInitialize(
   args.bag_of_chips = restored_local_transport_data.bag_of_chips;
   args.sync_status_observers.push_back(this);
   sync_manager_->Init(&args);
+
+  LoadAndConnectNigoriController();
+
+  ConfigureReason reason = sync_manager_->InitialSyncEndedTypes().Empty()
+                               ? CONFIGURE_REASON_NEW_CLIENT
+                               : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+
+  ModelTypeSet new_control_types =
+      Difference(ControlTypes(), sync_manager_->InitialSyncEndedTypes());
+
+  SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
+            << " added; calling ConfigureSyncer";
+
+  sync_manager_->ConfigureSyncer(
+      reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
+      base::BindOnce(&SyncEngineBackend::DoInitialProcessControlTypes,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncEngineBackend::DoUpdateCredentials(
@@ -343,11 +305,7 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
   DVLOG(1) << "Initilalizing Control Types";
 
   // Initialize encryption.
-  if (!sync_manager_->GetEncryptionHandler()->Init()) {
-    host_.Call(FROM_HERE,
-               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
-    return;
-  }
+  sync_manager_->GetEncryptionHandler()->NotifyInitialStateToObservers();
 
   if (!sync_manager_->InitialSyncEndedTypes().HasAll(ControlTypes())) {
     LOG(ERROR) << "Failed to download control types";
@@ -358,12 +316,10 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
 
   host_.Call(FROM_HERE,
              &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
-             sync_manager_->GetEnabledTypes(), js_backend_,
-             debug_info_listener_, sync_manager_->GetModelTypeConnectorProxy(),
+             sync_manager_->GetEnabledTypes(), sync_manager_->GetJsBackend(),
+             sync_manager_->GetDebugInfoListener(),
+             sync_manager_->GetModelTypeConnectorProxy(),
              sync_manager_->birthday(), sync_manager_->bag_of_chips());
-
-  js_backend_.Reset();
-  debug_info_listener_.Reset();
 }
 
 void SyncEngineBackend::DoSetDecryptionPassphrase(
@@ -388,15 +344,21 @@ void SyncEngineBackend::ShutdownOnUIThread() {
 void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Having no |sync_manager_| means that initialization was failed and NIGORI
-  // wasn't connected and started.
-  // TODO(crbug.com/922900): this logic seems fragile, maybe initialization and
-  // connecting of NIGORI needs refactoring.
-  if (nigori_controller_ && sync_manager_) {
+  // |sync_manager_| and |nigori_controller_| may be null if DoInitialize() was
+  // never called.
+  if (sync_manager_) {
+    // However, |sync_manager_| and |nigori_controller_| are always either both
+    // null or both non-null.
+    DCHECK(nigori_controller_);
+
     sync_manager_->GetModelTypeConnector()->DisconnectDataType(NIGORI);
     nigori_controller_->Stop(reason, base::DoNothing());
+    nigori_controller_.reset();
+
+    sync_manager_->RemoveObserver(this);
+    sync_manager_->ShutdownOnSyncThread();
+    sync_manager_.reset();
   }
-  DoDestroySyncManager();
 
   if (reason == DISABLE_SYNC) {
     DeleteLegacyDirectoryFilesAndNigoriStorage(sync_data_folder_);
@@ -404,16 +366,6 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void SyncEngineBackend::DoDestroySyncManager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (sync_manager_) {
-    sync_manager_->RemoveObserver(this);
-    sync_manager_->ShutdownOnSyncThread();
-    sync_manager_.reset();
-  }
 }
 
 void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge) {

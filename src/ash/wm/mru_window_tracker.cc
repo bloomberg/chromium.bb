@@ -21,7 +21,9 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/stl_util.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -132,7 +134,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
         if (active_desk_only) {
           // If only the active desk's MRU windows are requested, then exclude
           // children of the non-active desks' containers.
-          const int parent_id = window->parent()->id();
+          const int parent_id = window->parent()->GetId();
           if (desks_util::IsDeskContainerId(parent_id) &&
               parent_id != active_desk_id) {
             continue;
@@ -203,10 +205,14 @@ bool CanIncludeWindowInMruList(aura::Window* window) {
 // MruWindowTracker, public:
 
 MruWindowTracker::MruWindowTracker() {
+  if (features::IsFullRestoreEnabled())
+    aura::Env::GetInstance()->AddObserver(this);
+
   Shell::Get()->activation_client()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
+  aura::Env::GetInstance()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto* window : mru_windows_)
     window->RemoveObserver(this);
@@ -263,14 +269,6 @@ void MruWindowTracker::OnWindowMovedOutFromRemovingDesk(aura::Window* window) {
   mru_windows_.insert(mru_windows_.begin(), window);
 }
 
-void MruWindowTracker::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MruWindowTracker::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, private:
 
@@ -306,9 +304,35 @@ void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
   // else we may end up with a deleted window in |mru_windows_|.
   base::Erase(mru_windows_, window);
   window->RemoveObserver(this);
+}
 
-  for (auto& observer : observers_)
-    observer.OnWindowUntracked(window);
+void MruWindowTracker::OnWindowInitialized(aura::Window* window) {
+  DCHECK(features::IsFullRestoreEnabled());
+
+  int32_t* activation_index =
+      window->GetProperty(full_restore::kActivationIndexKey);
+  if (!activation_index)
+    return;
+
+  // When windows are restored from Full Restore, they are restored inactive
+  // so we have to manually insert them into the window tracker and restore
+  // their MRU order.
+  window->AddObserver(this);
+  auto reverse_iter = mru_windows_.rbegin();
+  while (reverse_iter != mru_windows_.rend()) {
+    int32_t* curr_window_activation_index =
+        (*reverse_iter)->GetProperty(full_restore::kActivationIndexKey);
+    if (curr_window_activation_index &&
+        *curr_window_activation_index > *activation_index) {
+      // The lower `full_restore::kActivationIndexKey` is, the more recently it
+      // was used. If the current window has a higher activation index, then we
+      // should insert `window` right after it.
+      break;
+    }
+    reverse_iter = std::next(reverse_iter);
+  }
+
+  mru_windows_.insert(reverse_iter.base(), window);
 }
 
 }  // namespace ash

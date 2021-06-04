@@ -96,6 +96,11 @@ export const Facing = {
   USER: 'user',
   ENVIRONMENT: 'environment',
   EXTERNAL: 'external',
+  // VIRTUAL_{facing} is for labeling video device for configuring extra stream
+  // from corresponding {facing} video device.
+  VIRTUAL_USER: 'virtual_user',
+  VIRTUAL_ENV: 'virtual_environment',
+  VIRTUAL_EXT: 'virtual_external',
   NOT_SET: '(not set)',
   UNKNOWN: 'unknown',
 };
@@ -203,6 +208,7 @@ export let PerfEntry;
  *   level: !ErrorLevel,
  *   stack: string,
  *   time: number,
+ *   name: string,
  * }}
  */
 export let ErrorInfo;
@@ -217,7 +223,11 @@ export const ErrorType = {
   IDLE_DETECTOR_FAILURE: 'idle-detector-failure',
   PRELOAD_IMAGE_FAILURE: 'preload-image-failure',
   SET_FPS_RANGE_FAILURE: 'set-fps-range-failure',
+  START_CAMERA_FAILURE: 'start-camera-failure',
+  START_CAPTURE_FAILURE: 'start-capture-failure',
+  STOP_CAPTURE_FAILURE: 'stop-capture-failure',
   UNCAUGHT_PROMISE: 'uncaught-promise',
+  MULTIPLE_STREAMS_FAILURE: 'multiple-streams-failure',
 };
 
 /**
@@ -252,6 +262,62 @@ export class CanceledError extends Error {
    * @public
    */
   constructor(message = 'The action is canceled') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an element fails to load a source.
+ */
+export class LoadError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Source failed to load') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an media element fails to play.
+ */
+export class PlayError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Media element failed to play') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an media element play a malformed file.
+ */
+export class PlayMalformedError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Media element failed to play a malformed file') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when the data to generate thumbnail is totally empty.
+ */
+export class EmptyThumbnailError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'The thumbnail is empty') {
     super(message);
     this.name = this.constructor.name;
   }

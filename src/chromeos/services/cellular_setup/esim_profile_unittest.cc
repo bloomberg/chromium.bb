@@ -13,6 +13,7 @@
 #include "chromeos/services/cellular_setup/esim_test_base.h"
 #include "chromeos/services/cellular_setup/esim_test_utils.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-shared.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
@@ -24,6 +25,24 @@ const char kProfileUninstallationResultHistogram[] =
     "Network.Cellular.ESim.ProfileUninstallationResult";
 const char kProfileRenameResultHistogram[] =
     "Network.Cellular.ESim.ProfileRenameResult";
+const char kPendingProfileLatencyHistogram[] =
+    "Network.Cellular.ESim.ProfileDownload.PendingProfile.Latency";
+const char kPendingProfileInstallHistogram[] =
+    "Network.Cellular.ESim.InstallPendingProfile.Result";
+
+class TestUserManager : public user_manager::FakeUserManager {
+ public:
+  TestUserManager(bool is_guest) : is_guest_(is_guest) {
+    user_manager::UserManager::SetInstance(this);
+  }
+  ~TestUserManager() override = default;
+
+  // user_manager::UserManager:
+  bool IsLoggedInAsGuest() const override { return is_guest_; }
+
+ private:
+  const bool is_guest_;
+};
 
 mojom::ESimOperationResult UninstallProfile(
     const mojo::Remote<mojom::ESimProfile>& esim_profile) {
@@ -113,6 +132,10 @@ class ESimProfileTest : public ESimTestBase {
         /*connected_after_enable=*/false);
   }
 
+  void SetIsGuest(bool is_guest) {
+    test_user_manager_ = std::make_unique<TestUserManager>(is_guest);
+  }
+
   mojo::Remote<mojom::ESimProfile> GetESimProfileForIccid(
       const std::string& eid,
       const std::string& iccid) {
@@ -168,9 +191,14 @@ class ESimProfileTest : public ESimTestBase {
     run_loop.Run();
     return out_install_result;
   }
+
+ private:
+  std::unique_ptr<TestUserManager> test_user_manager_;
 };
 
 TEST_F(ESimProfileTest, GetProperties) {
+  SetIsGuest(false);
+
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
   dbus::ObjectPath profile_path = euicc_test->AddFakeCarrierProfile(
@@ -191,6 +219,9 @@ TEST_F(ESimProfileTest, GetProperties) {
 }
 
 TEST_F(ESimProfileTest, InstallProfile) {
+  SetIsGuest(false);
+  base::HistogramTester histogram_tester;
+
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
   dbus::ObjectPath profile_path = euicc_test->AddFakeCarrierProfile(
@@ -213,9 +244,11 @@ TEST_F(ESimProfileTest, InstallProfile) {
   EXPECT_EQ(mojom::ProfileInstallResult::kErrorNeedsConfirmationCode,
             install_result);
 
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(
-      "Network.Cellular.ESim.ProfileDownload.PendingProfile.Latency", 0);
+  histogram_tester.ExpectTotalCount(kPendingProfileLatencyHistogram, 0);
+  histogram_tester.ExpectBucketCount(
+      kPendingProfileInstallHistogram,
+      HermesResponseStatus::kErrorNeedConfirmationCode,
+      /*expected_count=*/1);
 
   // Verify that installing pending profile returns proper results
   // and updates esim_profile properties.
@@ -230,11 +263,15 @@ TEST_F(ESimProfileTest, InstallProfile) {
   EXPECT_NE(mojo_properties->state, mojom::ProfileState::kPending);
   EXPECT_EQ(1u, observer()->profile_list_change_calls().size());
 
-  histogram_tester.ExpectTotalCount(
-      "Network.Cellular.ESim.ProfileDownload.PendingProfile.Latency", 1);
+  histogram_tester.ExpectTotalCount(kPendingProfileLatencyHistogram, 1);
+  histogram_tester.ExpectBucketCount(kPendingProfileInstallHistogram,
+                                     HermesResponseStatus::kSuccess,
+                                     /*expected_count=*/1);
 }
 
 TEST_F(ESimProfileTest, InstallProfileAlreadyConnected) {
+  SetIsGuest(false);
+
   dbus::ObjectPath profile_path =
       HermesEuiccClient::Get()->GetTestInterface()->AddFakeCarrierProfile(
           dbus::ObjectPath(ESimTestBase::kTestEuiccPath),
@@ -256,6 +293,8 @@ TEST_F(ESimProfileTest, InstallProfileAlreadyConnected) {
 }
 
 TEST_F(ESimProfileTest, InstallConnectFailure) {
+  SetIsGuest(false);
+
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
   dbus::ObjectPath profile_path = euicc_test->AddFakeCarrierProfile(
@@ -277,6 +316,8 @@ TEST_F(ESimProfileTest, InstallConnectFailure) {
 }
 
 TEST_F(ESimProfileTest, UninstallProfile) {
+  SetIsGuest(false);
+
   base::HistogramTester histogram_tester;
 
   HermesEuiccClient::TestInterface* euicc_test =
@@ -338,6 +379,25 @@ TEST_F(ESimProfileTest, UninstallProfile) {
                                      true, 1);
 }
 
+TEST_F(ESimProfileTest, CannotUninstallProfileAsGuest) {
+  SetIsGuest(true);
+
+  HermesEuiccClient::TestInterface* euicc_test =
+      HermesEuiccClient::Get()->GetTestInterface();
+  dbus::ObjectPath active_profile_path = euicc_test->AddFakeCarrierProfile(
+      dbus::ObjectPath(kTestEuiccPath), hermes::profile::State::kActive, "",
+      HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+          kAddProfileWithService);
+  HermesProfileClient::Properties* active_profile_dbus_properties =
+      HermesProfileClient::Get()->GetProperties(active_profile_path);
+  mojo::Remote<mojom::ESimProfile> active_esim_profile = GetESimProfileForIccid(
+      ESimTestBase::kTestEid, active_profile_dbus_properties->iccid().value());
+
+  mojom::ESimOperationResult result = UninstallProfile(active_esim_profile);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(mojom::ESimOperationResult::kFailure, result);
+}
+
 TEST_F(ESimProfileTest, EnableProfile) {
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
@@ -385,6 +445,8 @@ TEST_F(ESimProfileTest, EnableProfile) {
 }
 
 TEST_F(ESimProfileTest, DisableProfile) {
+  SetIsGuest(false);
+
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
   dbus::ObjectPath active_profile_path = euicc_test->AddFakeCarrierProfile(
@@ -430,6 +492,8 @@ TEST_F(ESimProfileTest, DisableProfile) {
 }
 
 TEST_F(ESimProfileTest, SetProfileNickName) {
+  SetIsGuest(false);
+
   const std::u16string test_nickname = u"Test nickname";
   base::HistogramTester histogram_tester;
 
@@ -476,6 +540,26 @@ TEST_F(ESimProfileTest, SetProfileNickName) {
   mojom::ESimProfilePropertiesPtr active_profile_mojo_properties =
       GetESimProfileProperties(active_esim_profile);
   EXPECT_EQ(test_nickname, active_profile_mojo_properties->nickname);
+}
+
+TEST_F(ESimProfileTest, CannotSetProfileNickNameAsGuest) {
+  SetIsGuest(true);
+
+  HermesEuiccClient::TestInterface* euicc_test =
+      HermesEuiccClient::Get()->GetTestInterface();
+  dbus::ObjectPath active_profile_path = euicc_test->AddFakeCarrierProfile(
+      dbus::ObjectPath(kTestEuiccPath), hermes::profile::State::kActive, "",
+      HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+          kAddProfileWithService);
+  HermesProfileClient::Properties* active_profile_dbus_properties =
+      HermesProfileClient::Get()->GetProperties(active_profile_path);
+  mojo::Remote<mojom::ESimProfile> active_esim_profile = GetESimProfileForIccid(
+      ESimTestBase::kTestEid, active_profile_dbus_properties->iccid().value());
+
+  mojom::ESimOperationResult result =
+      SetProfileNickname(active_esim_profile, u"Nickname");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(mojom::ESimOperationResult::kFailure, result);
 }
 
 }  // namespace cellular_setup

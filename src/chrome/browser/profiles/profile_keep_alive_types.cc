@@ -39,6 +39,10 @@ std::ostream& operator<<(std::ostream& out,
       return out << "kChromeViewsDelegate";
     case ProfileKeepAliveOrigin::kDevToolsWindow:
       return out << "kDevToolsWindow";
+    case ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow:
+      return out << "kWebAppPermissionDialogWindow";
+    case ProfileKeepAliveOrigin::kSessionDataDeleter:
+      return out << "kSessionDataDeleter";
   }
   NOTREACHED();
   return out << static_cast<int>(origin);

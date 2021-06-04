@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/preprocess_if_expr.gni")
@@ -26,16 +27,23 @@ static_library("eche_app_ui") {
     "eche_notification_click_handler.h",
     "eche_signaler.cc",
     "eche_signaler.h",
+    "eche_uid_provider.cc",
+    "eche_uid_provider.h",
     "feature_status.cc",
     "feature_status.h",
     "feature_status_provider.cc",
     "feature_status_provider.h",
+    "system_info.cc",
+    "system_info.h",
+    "system_info_provider.cc",
+    "system_info_provider.h",
     "url_constants.cc",
     "url_constants.h",
   ]
 
   deps = [
     "//ash/constants",
+    "//ash/public/cpp",
     "//chromeos/components/eche_app_ui/mojom",
     "//chromeos/components/eche_app_ui/proto",
     "//chromeos/components/multidevice:multidevice",
@@ -46,6 +54,7 @@ static_library("eche_app_ui") {
     "//chromeos/services/device_sync/public/cpp:cpp",
     "//chromeos/services/multidevice_setup/public/cpp:cpp",
     "//chromeos/services/secure_channel/public/cpp/client:client",
+    "//components/prefs",
     "//content/public/browser",
     "//ui/webui",
   ]
@@ -69,10 +78,13 @@ source_set("unit_tests") {
   sources = [
     "eche_feature_status_provider_unittest.cc",
     "eche_notification_click_handler_unittest.cc",
+    "eche_uid_provider_unittest.cc",
+    "system_info_provider_unittest.cc",
   ]
   deps = [
     ":eche_app_ui",
     ":test_support",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//chromeos/components/multidevice",
@@ -104,9 +116,11 @@ js_library("app") {
 
 js2gtest("browser_tests_js") {
   test_type = "mojo_lite_webui"
-
-  sources = [ "test/eche_app_ui_browsertest.js" ]
-
+  if (is_chromeos_ash && is_chrome_branded) {
+    sources = [ "test/eche_app_ui_chrome_branded_browsertest.js" ]
+  } else {
+    sources = [ "test/eche_app_ui_browsertest.js" ]
+  }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
 

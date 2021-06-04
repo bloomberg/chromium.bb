@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/policy/test_platform_policy_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,6 +21,11 @@ bool DisableAppGroupAccess() {
 
 bool DisableContentSuggestions() {
   return true;
+}
+
+bool DisableDiscoverFeed() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDiscoverFeed);
 }
 
 bool DisableFirstRun() {

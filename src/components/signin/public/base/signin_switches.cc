@@ -4,6 +4,7 @@
 
 #include "components/signin/public/base/signin_switches.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -29,13 +30,16 @@ const base::Feature kForceAccountIdMigration{"ForceAccountIdMigration",
 // Menagerie API.
 const base::Feature kDeprecateMenagerieAPI{"DeprecateMenagerieAPI",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+// This feature flag is used to wipe device data on child account signin.
+const base::Feature kWipeDataOnChildAccountSignin{
+    "WipeDataOnChildAccountSignin", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kUseAccountManagerFacade{"kUseAccountManagerFacade",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-const base::Feature kUseAccountManagerFacade{"kUseAccountManagerFacade",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kMinorModeSupport{"MinorModeSupport",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace switches

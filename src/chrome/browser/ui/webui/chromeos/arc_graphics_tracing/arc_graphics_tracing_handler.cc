@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_iterator.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -23,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/tracing/arc_graphics_jank_detector.h"
 #include "chrome/browser/ash/arc/tracing/arc_system_model.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_util.h"
@@ -106,7 +109,7 @@ std::pair<base::Value, std::string> MaybeLoadLastGraphicsModel(
   if (!base::ReadFileToString(last_model_path, &json_content))
     return std::make_pair(base::Value(), std::string());
 
-  base::Optional<base::Value> model = base::JSONReader::Read(json_content);
+  absl::optional<base::Value> model = base::JSONReader::Read(json_content);
   if (!model || !model->is_dict())
     return std::make_pair(base::Value(), "Failed to read last tracing model");
 
@@ -152,7 +155,7 @@ bool ReadNameFromStatus(pid_t pid, pid_t tid, std::string* out_name) {
     std::vector<base::StringPiece> split_value_str = base::SplitStringPiece(
         value_str, "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     DCHECK_EQ(2U, split_value_str.size());
-    *out_name = split_value_str[1].as_string();
+    *out_name = std::string(split_value_str[1]);
     return true;
   }
 
@@ -202,6 +205,22 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
     const base::FilePath& model_path) {
   DCHECK(system_stat_collector);
 
+  if (base::FeatureList::IsEnabled(arc::kSaveRawFilesOnTracing)) {
+    const base::FilePath raw_path =
+        model_path.DirName().Append(model_path.BaseName().value() + "_raw");
+    const base::FilePath system_path =
+        model_path.DirName().Append(model_path.BaseName().value() + "_system");
+    if (!base::WriteFile(base::FilePath(raw_path), data.c_str(),
+                         data.length())) {
+      LOG(ERROR) << "Failed to save raw trace model to " << raw_path.value();
+    }
+    const std::string system_raw = system_stat_collector->SerializeToJson();
+    if (!base::WriteFile(base::FilePath(system_path), system_raw.c_str(),
+                         system_raw.length())) {
+      LOG(ERROR) << "Failed to save system model to " << system_path.value();
+    }
+  }
+
   arc::ArcTracingModel common_model;
   const base::TimeTicks time_min_clamped =
       std::max(time_min, time_max - system_stat_collector->max_interval());
@@ -247,8 +266,11 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
 }
 
 std::pair<base::Value, std::string> LoadGraphicsModel(
+    ArcGraphicsTracingMode mode,
     const std::string& json_text) {
   arc::ArcTracingGraphicsModel graphics_model;
+  if (mode != ArcGraphicsTracingMode::kFull)
+    graphics_model.set_skip_structure_validation();
   if (!graphics_model.LoadFromJson(json_text)) {
     UpdateStatistics(Action::kLoadFailed);
     return std::make_pair(base::Value(), "Failed to load tracing model");
@@ -620,7 +642,7 @@ void ArcGraphicsTracingHandler::HandleLoadFromText(
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&LoadGraphicsModel,
+      base::BindOnce(&LoadGraphicsModel, mode_,
                      std::move(args->GetList()[0].GetString())),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
                      weak_ptr_factory_.GetWeakPtr()));

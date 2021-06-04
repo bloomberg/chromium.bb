@@ -7,10 +7,10 @@
 #include <limits>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/debug/crash_logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
@@ -31,6 +31,7 @@
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/display_list.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -130,10 +131,9 @@ void ExtractUnderlines(NSAttributedString* string,
     NSDictionary* attrs = [string attributesAtIndex:i
                               longestEffectiveRange:&range
                                             inRange:NSMakeRange(i, length - i)];
-    if (NSNumber* style = [attrs objectForKey:NSUnderlineStyleAttributeName]) {
+    if (NSNumber* style = attrs[NSUnderlineStyleAttributeName]) {
       SkColor color = SK_ColorBLACK;
-      if (NSColor* colorAttr =
-              [attrs objectForKey:NSUnderlineColorAttributeName]) {
+      if (NSColor* colorAttr = attrs[NSUnderlineColorAttributeName]) {
         color = SkColorFromNSColor(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
@@ -165,7 +165,7 @@ void ExtractUnderlines(NSAttributedString* string,
 // Private methods:
 @interface RenderWidgetHostViewCocoa () {
   bool _keyboardLockActive;
-  base::Optional<base::flat_set<ui::DomCode>> _lockedKeys;
+  absl::optional<base::flat_set<ui::DomCode>> _lockedKeys;
 
   API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<NSCandidateListTouchBarItem> _candidateListTouchBarItem;
@@ -214,8 +214,8 @@ void ExtractUnderlines(NSAttributedString* string,
   RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass(self);
 }
 
-- (id)initWithHost:(RenderWidgetHostNSViewHost*)host
-    withHostHelper:(RenderWidgetHostNSViewHostHelper*)hostHelper {
+- (instancetype)initWithHost:(RenderWidgetHostNSViewHost*)host
+              withHostHelper:(RenderWidgetHostNSViewHostHelper*)hostHelper {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     self.acceptsTouchEvents = YES;
@@ -847,7 +847,7 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
-- (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock {
+- (void)lockKeyboard:(absl::optional<base::flat_set<ui::DomCode>>)keysToLock {
   // TODO(joedow): Integrate System-level keyboard hook into this method.
   _lockedKeys = std::move(keysToLock);
   _keyboardLockActive = true;
@@ -1040,7 +1040,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
   // Sends key down events to input method first, then we can decide what should
   // be done according to input method's feedback.
-  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+  [self interpretKeyEvents:@[ theEvent ]];
 
   _handlingKeyDown = NO;
 
@@ -1394,9 +1394,10 @@ void ExtractUnderlines(NSAttributedString* string,
 
   // TODO(ccameron): This will call [enclosingWindow screen], which may return
   // nil. Do that call here to avoid sending bogus display info to the host.
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(self);
-  _host->OnDisplayChanged(display);
+  const display::DisplayList new_display_list =
+      display::Screen::GetScreen()->GetDisplayListNearestViewWithFallbacks(
+          self);
+  _host->OnDisplaysChanged(new_display_list);
 }
 
 // This will be called when the NSView's NSWindow moves from one NSScreen to
@@ -1490,14 +1491,11 @@ void ExtractUnderlines(NSAttributedString* string,
   // See http://crbug.com/47209
   [self cancelComposition];
 
-  NSNumber* direction = [NSNumber
-      numberWithUnsignedInteger:[[self window] keyViewSelectionDirection]];
-  NSDictionary* userInfo =
-      [NSDictionary dictionaryWithObject:direction forKey:kSelectionDirection];
+  NSNumber* direction = @([[self window] keyViewSelectionDirection]);
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kViewDidBecomeFirstResponder
                     object:self
-                  userInfo:userInfo];
+                  userInfo:@{kSelectionDirection : direction}];
 
   return YES;
 }
@@ -1848,11 +1846,17 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 // Each RenderWidgetHostViewCocoa has its own input context, but we return
-// nil when the caret is in non-editable content to avoid making input methods
-// do their work.
+// nil when the caret is in non-editable content or password box to avoid
+// making input methods do their work.
+// We disable input method inside password field as it is normal for Mac OS X
+// password input fields to not allow dead keys or non ASCII input methods.
+// There is also a privacy risk if the composition candidate window shows your
+// password when the user is "composing" inside a password field. See
+// crbug.com/1196101 for more info.
 - (NSTextInputContext*)inputContext {
   switch (_textInputType) {
     case ui::TEXT_INPUT_TYPE_NONE:
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
     default:
       return [super inputContext];

@@ -5,6 +5,7 @@
 #include "chrome/browser/android/ntp/most_visited_sites_bridge.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -82,14 +83,14 @@ void JavaHomepageClient::QueryHomepageTitle(TitleCallback title_callback) {
   DCHECK(!title_callback.is_null());
   GURL url = GetHomepageUrl();
   if (url.is_empty()) {
-    std::move(title_callback).Run(base::nullopt);
+    std::move(title_callback).Run(absl::nullopt);
     return;
   }
   history::HistoryService* const history_service =
       HistoryServiceFactory::GetForProfileIfExists(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service) {
-    std::move(title_callback).Run(base::nullopt);
+    std::move(title_callback).Run(absl::nullopt);
     return;
   }
   // If the client is destroyed, the tracker will cancel this task automatically
@@ -105,7 +106,7 @@ void JavaHomepageClient::QueryHomepageTitle(TitleCallback title_callback) {
 void JavaHomepageClient::OnTitleEntryFound(TitleCallback title_callback,
                                            history::QueryURLResult result) {
   if (!result.success) {
-    std::move(title_callback).Run(base::nullopt);
+    std::move(title_callback).Run(absl::nullopt);
     return;
   }
   std::move(title_callback).Run(result.row.title());
@@ -219,7 +220,7 @@ void MostVisitedSitesBridge::SetObserver(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_observer,
     jint num_sites) {
-  java_observer_.reset(new JavaObserver(env, j_observer));
+  java_observer_ = std::make_unique<JavaObserver>(env, j_observer);
   most_visited_->SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
 }
 

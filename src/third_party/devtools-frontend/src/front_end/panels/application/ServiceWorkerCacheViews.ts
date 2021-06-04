@@ -8,8 +8,9 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as DataGrid from '../../data_grid/data_grid.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as Network from '../network/network.js';
 
 const UIStrings = {
@@ -339,9 +340,10 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     }
 
     this._loadingPromise = new Promise(resolve => {
-      this._model.loadAllCacheData(this._cache, this._entryPathFilter, (entries, returnCount) => {
-        resolve({entries, returnCount});
-      });
+      this._model.loadAllCacheData(
+          this._cache, this._entryPathFilter, (entries: Protocol.CacheStorage.DataEntry[], returnCount: number) => {
+            resolve({entries, returnCount});
+          });
     });
 
     const {entries, returnCount} = await this._loadingPromise;
@@ -389,7 +391,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
     let header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-type');
     const contentType = header ? header.value : SDK.NetworkRequest.MIME_TYPE.PLAIN;
-    request.mimeType = (contentType as string);
+    request.mimeType = contentType as SDK.NetworkRequest.MIME_TYPE;
 
     header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-length');
     request.resourceSize = (header && Number(header.value)) || 0;

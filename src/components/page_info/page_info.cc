@@ -34,7 +34,7 @@
 #include "components/page_info/page_info_delegate.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -100,7 +100,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::BACKGROUND_SYNC,
     ContentSettingsType::SOUND,
     ContentSettingsType::AUTOMATIC_DOWNLOADS,
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
     ContentSettingsType::MIDI_SYSEX,
@@ -258,11 +258,6 @@ void ReportAnyInsecureContent(
   }
 }
 
-std::u16string GetSimpleSiteName(const GURL& url) {
-  return url_formatter::FormatUrlForSecurityDisplay(
-      url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-}
-
 // The list of chooser types that need to display entries in the Website
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
@@ -278,7 +273,7 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
      IDS_PAGE_INFO_DELETE_HID_DEVICE},
     {ContentSettingsType::SERIAL_CHOOSER_DATA,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
-     /*allowed_by_policy_description_string_id=*/-1,
+     IDS_PAGE_INFO_SERIAL_PORT_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_SERIAL_PORT},
 #endif
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
@@ -549,8 +544,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 
 void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
                                          const base::Value& object) {
-  // TODO(reillyg): Create metrics for revocations. crbug.com/556845
-  permissions::ChooserContextBase* context =
+  permissions::ObjectPermissionContextBase* context =
       delegate_->GetChooserContext(ui_info.content_settings_type);
   const auto origin = url::Origin::Create(site_url_);
   context->RevokeObjectPermission(origin, object);
@@ -649,9 +643,14 @@ void PageInfo::OnAllowlistPasswordReuseButtonPressed() {
 #endif
 }
 
-permissions::ChooserContextBase* PageInfo::GetChooserContextFromUIInfo(
+permissions::ObjectPermissionContextBase* PageInfo::GetChooserContextFromUIInfo(
     const ChooserUIInfo& ui_info) const {
   return delegate_->GetChooserContext(ui_info.content_settings_type);
+}
+
+std::u16string PageInfo::GetSimpleSiteName() const {
+  return url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
+      site_url_);
 }
 
 void PageInfo::ComputeUIInputs(const GURL& url) {
@@ -742,7 +741,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
 
 #if defined(OS_ANDROID)
         identity_status_description_android_ +=
-            UTF8ToUTF16("\n\n") +
+            u"\n\n" +
             l10n_util::GetStringUTF16(
                 IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
 #endif
@@ -757,7 +756,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ERROR;
     }
 #if defined(OS_ANDROID)
-    const std::u16string bullet = UTF8ToUTF16("\n • ");
+    const std::u16string bullet = u"\n • ";
     std::vector<ssl_errors::ErrorInfo> errors;
     ssl_errors::ErrorInfo::GetErrorsForCertStatus(
         certificate_, visible_security_state.cert_status, url, &errors);
@@ -830,7 +829,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
   // weakly encrypted connections.
   site_connection_status_ = SITE_CONNECTION_STATUS_UNKNOWN;
 
-  std::u16string subject_name(GetSimpleSiteName(url));
+  std::u16string subject_name(GetSimpleSiteName());
   if (subject_name.empty()) {
     subject_name.assign(
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
@@ -990,13 +989,13 @@ void PageInfo::PresentSitePermissions() {
 
   const auto origin = url::Origin::Create(site_url_);
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
-    permissions::ChooserContextBase* context =
+    permissions::ObjectPermissionContextBase* context =
         delegate_->GetChooserContext(ui_info.content_settings_type);
     if (!context)
       continue;
     auto chosen_objects = context->GetGrantedObjects(origin);
-    for (std::unique_ptr<permissions::ChooserContextBase::Object>& object :
-         chosen_objects) {
+    for (std::unique_ptr<permissions::ObjectPermissionContextBase::Object>&
+             object : chosen_objects) {
       chosen_object_info_list.push_back(
           std::make_unique<PageInfoUI::ChosenObjectInfo>(ui_info,
                                                          std::move(object)));
@@ -1034,7 +1033,7 @@ void PageInfo::PresentSiteIdentity() {
   DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
   DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
   PageInfoUI::IdentityInfo info;
-  info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_));
+  info.site_identity = UTF16ToUTF8(GetSimpleSiteName());
 
   info.connection_status = site_connection_status_;
   info.connection_status_description = UTF16ToUTF8(site_connection_details_);

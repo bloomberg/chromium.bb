@@ -27,7 +27,6 @@
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -91,11 +90,13 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const url::Origin& origin,
+    const GURL& document_url,
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
     : notification_context_(notification_context),
       browser_context_(browser_context),
       service_worker_context_(std::move(service_worker_context)),
       origin_(origin),
+      document_url_(document_url),
       receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(notification_context_);
@@ -154,7 +155,7 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
       notification_id, std::move(event_listener_remote));
 
   GetNotificationService(browser_context_)
-      ->DisplayNotification(notification_id, origin_.GetURL(),
+      ->DisplayNotification(notification_id, origin_.GetURL(), document_url_,
                             platform_notification_data, notification_resources);
 }
 
@@ -185,9 +186,8 @@ BlinkNotificationServiceImpl::CheckPermissionStatus() {
   // TOOD(crbug.com/987654): It is odd that a service instance can be created
   // for cross-origin subframes, yet the instance is completely oblivious of
   // whether it is serving a top-level browsing context or an embedded one.
-  return BrowserContext::GetPermissionController(browser_context_)
-      ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin_.GetURL(),
-                            origin_.GetURL());
+  return browser_context_->GetPermissionController()->GetPermissionStatus(
+      PermissionType::NOTIFICATIONS, origin_.GetURL(), origin_.GetURL());
 }
 
 bool BlinkNotificationServiceImpl::ValidateNotificationDataAndResources(

@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
@@ -63,10 +64,6 @@ class ASH_EXPORT ShellDelegate {
   virtual std::unique_ptr<NearbyShareDelegate> CreateNearbyShareDelegate(
       NearbyShareController* controller) const = 0;
 
-  // Notifies the browser that there was a change in the state for desks and now
-  // there are |num_desks| desks.
-  virtual void DesksStateChanged(int num_desks) const;
-
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
@@ -119,6 +116,13 @@ class ASH_EXPORT ShellDelegate {
   virtual void StartUiDevTools() {}
   virtual void StopUiDevTools() {}
   virtual int GetUiDevToolsPort() const;
+
+  // Returns true if Chrome was started with --disable-logging-redirect option.
+  virtual bool IsLoggingRedirectDisabled() const = 0;
+
+  // Returns empty path is user session has not started yet, or path to the
+  // primary user Downloads folder if user has already logged in.
+  virtual base::FilePath GetPrimaryUserDownloadsFolder() const = 0;
 };
 
 }  // namespace ash

@@ -48,6 +48,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -380,7 +381,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    base::Optional<base::Time> server_time,
+    absl::optional<base::Time> server_time,
     CookieInclusionStatus* status) {
   // Put a pointer on the stack so the rest of the function can assign to it if
   // the default nullptr is passed in.
@@ -466,6 +467,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
 
   RecordCookieSameSiteAttributeValueHistogram(samesite_string,
                                               parsed_cookie.IsSameParty());
+
+  UMA_HISTOGRAM_BOOLEAN("Cookie.ControlCharacterTruncation",
+                        parsed_cookie.HasTruncatedNameOrValue());
 
   return cc;
 }
@@ -1232,7 +1236,7 @@ bool CanonicalCookie::IsCookieSamePartyValid(bool is_same_party,
 CookieAndLineWithAccessResult::CookieAndLineWithAccessResult() = default;
 
 CookieAndLineWithAccessResult::CookieAndLineWithAccessResult(
-    base::Optional<CanonicalCookie> cookie,
+    absl::optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CookieAccessResult access_result)
     : cookie(std::move(cookie)),

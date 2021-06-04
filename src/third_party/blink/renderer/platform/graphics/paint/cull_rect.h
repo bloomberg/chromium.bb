@@ -62,17 +62,18 @@ class PLATFORM_EXPORT CullRect {
   // TODO(wangxianzhu): Remove this function for CullRectUpdate.
   void ApplyTransforms(const TransformPaintPropertyNode& source,
                        const TransformPaintPropertyNode& destination,
-                       const base::Optional<CullRect>& old_cull_rect);
+                       const absl::optional<CullRect>& old_cull_rect);
 
   // For CullRectUpdate only. Similar to the above but also applies clips and
   // expands for all directly composited transforms (including scrolling and
   // non-scrolling ones). |root| is used to calculate the expansion distance in
   // the local space, to make the expansion distance approximately the same in
   // the root space.
-  void ApplyPaintProperties(const PropertyTreeState& root,
+  // Returns whether the cull rect has been expanded.
+  bool ApplyPaintProperties(const PropertyTreeState& root,
                             const PropertyTreeState& source,
                             const PropertyTreeState& destination,
-                            const base::Optional<CullRect>& old_cull_rect);
+                            const absl::optional<CullRect>& old_cull_rect);
 
   const IntRect& Rect() const { return rect_; }
 
@@ -99,7 +100,10 @@ class PLATFORM_EXPORT CullRect {
       const TransformPaintPropertyNode& scroll_translation);
 
   void ApplyTransformWithoutExpansion(const TransformPaintPropertyNode&);
-  void ApplyPaintPropertiesWithoutExpansion(
+  // Returns false if the rect is clipped to be invisible. Otherwise returns
+  // true, even if the cull rect is empty due to a special 3d transform in case
+  // later 3d transforms make the cull rect visible again.
+  bool ApplyPaintPropertiesWithoutExpansion(
       const PropertyTreeState& source,
       const PropertyTreeState& destination);
 

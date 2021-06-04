@@ -5,14 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TO_V8_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TO_V8_H_
 
+// ToV8() is a legacy API and deprecated. Use ToV8Traits<T>::ToV8() instead.
+// TODO(crbug.com/1172074): Replace this old ToV8 with ToV8Traits.
+
 // ToV8() provides C++ -> V8 conversion. Note that ToV8() can return an empty
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include <utility>
 
 #include "base/containers/span.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
 #include "third_party/blink/renderer/platform/bindings/dictionary_base.h"
@@ -39,7 +42,9 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
   if (!wrapper.IsEmpty())
     return wrapper;
 
-  wrapper = impl->Wrap(isolate, creation_context);
+  ScriptState* script_state =
+      ScriptState::From(creation_context->CreationContext());
+  wrapper = impl->Wrap(script_state).ToLocalChecked();
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
 }
@@ -93,6 +98,15 @@ inline v8::Local<v8::Value> ToV8(const bindings::EnumerationBase& enumeration,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return V8String(isolate, enumeration.AsCStr());
+}
+
+// Union
+inline v8::Local<v8::Value> ToV8(const bindings::UnionBase* union_value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  return union_value
+      ->ToV8Value(ScriptState::From(creation_context->CreationContext()))
+      .ToLocalChecked();
 }
 
 // Primitives
@@ -209,7 +223,7 @@ inline v8::Local<v8::Value> ToV8(const ToV8UndefinedGenerator& value,
 
 // Forward declaration to allow interleaving with sequences.
 template <typename InnerType>
-inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
+inline v8::Local<v8::Value> ToV8(const absl::optional<InnerType>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate*);
 
@@ -331,7 +345,7 @@ inline v8::Local<v8::Array> ToV8SequenceInternal(
 // Nullable
 
 template <typename InnerType>
-inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
+inline v8::Local<v8::Value> ToV8(const absl::optional<InnerType>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   if (!value)
@@ -372,4 +386,4 @@ v8::Local<v8::Value> ToV8(const void* value,
 
 }  // namespace blink
 
-#endif  // ToV8ForPlatform_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TO_V8_H_

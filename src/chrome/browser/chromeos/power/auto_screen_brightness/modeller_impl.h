@@ -11,8 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -36,13 +36,13 @@ namespace auto_screen_brightness {
 
 struct Model {
   Model();
-  Model(const base::Optional<MonotoneCubicSpline>& global_curve,
-        const base::Optional<MonotoneCubicSpline>& personal_curve,
+  Model(const absl::optional<MonotoneCubicSpline>& global_curve,
+        const absl::optional<MonotoneCubicSpline>& personal_curve,
         int iteration_count);
   Model(const Model& model);
   ~Model();
-  base::Optional<MonotoneCubicSpline> global_curve;
-  base::Optional<MonotoneCubicSpline> personal_curve;
+  absl::optional<MonotoneCubicSpline> global_curve;
+  absl::optional<MonotoneCubicSpline> personal_curve;
   int iteration_count = 0;
 };
 
@@ -95,7 +95,7 @@ class ModellerImpl : public Modeller,
   void OnUserBrightnessChangeRequested() override;
 
   // ModelConfigLoader::Observer overrides:
-  void OnModelConfigLoaded(base::Optional<ModelConfig> model_config) override;
+  void OnModelConfigLoaded(absl::optional<ModelConfig> model_config) override;
 
   // ui::UserActivityObserver overrides:
   void OnUserActivity(const ui::Event* event) override;
@@ -112,7 +112,7 @@ class ModellerImpl : public Modeller,
       const base::TickClock* tick_clock);
 
   // Current average log ambient light.
-  base::Optional<double> AverageAmbientForTesting(base::TimeTicks now);
+  absl::optional<double> AverageAmbientForTesting(base::TimeTicks now);
 
   // Current number of training data points stored, which will be used for next
   // training.
@@ -217,16 +217,17 @@ class ModellerImpl : public Modeller,
   // exported. The error is expressed in terms of percentages.
   double curve_error_tolerance_ = 5.0;
 
-  ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
+  base::ScopedObservation<AlsReader, AlsReader::Observer>
+      als_reader_observation_{this};
 
-  ScopedObserver<BrightnessMonitor, BrightnessMonitor::Observer>
-      brightness_monitor_observer_;
+  base::ScopedObservation<BrightnessMonitor, BrightnessMonitor::Observer>
+      brightness_monitor_observation_{this};
 
-  ScopedObserver<ModelConfigLoader, ModelConfigLoader::Observer>
-      model_config_loader_observer_;
+  base::ScopedObservation<ModelConfigLoader, ModelConfigLoader::Observer>
+      model_config_loader_observation_{this};
 
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
-      user_activity_observer_;
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observation_{this};
 
   // Background task runner for IO work (loading a curve from disk and writing a
   // curve to disk) and training jobs.
@@ -238,22 +239,22 @@ class ModellerImpl : public Modeller,
 
   base::OneShotTimer model_timer_;
 
-  base::Optional<AlsReader::AlsInitStatus> als_init_status_;
-  base::Optional<bool> brightness_monitor_success_;
+  absl::optional<AlsReader::AlsInitStatus> als_init_status_;
+  absl::optional<bool> brightness_monitor_success_;
 
   // |model_config_exists_| will remain nullopt until |OnModelConfigLoaded| is
   // called. Its value will then be set to true if the input model config exists
   // (not nullopt), else its value will be false.
-  base::Optional<bool> model_config_exists_;
+  absl::optional<bool> model_config_exists_;
   ModelConfig model_config_;
 
   // Whether this modeller has initialized successfully, including connecting
   // to AlsReader, BrightnessMonitor and loading a Trainer.
   // Initially has no value. Guaranteed to have a value after the completion of
   // |OnModelLoadedFromDisk|.
-  base::Optional<bool> is_modeller_enabled_;
+  absl::optional<bool> is_modeller_enabled_;
 
-  base::Optional<ModelSavingSpec> model_saving_spec_;
+  absl::optional<ModelSavingSpec> model_saving_spec_;
 
   // Whether the initial global curve is reset to the one constructed from
   // model config. It is true if there is no saved model loaded from the disk
@@ -268,7 +269,7 @@ class ModellerImpl : public Modeller,
   Model model_;
 
   // |initial_global_curve_| is constructed from model config.
-  base::Optional<MonotoneCubicSpline> initial_global_curve_;
+  absl::optional<MonotoneCubicSpline> initial_global_curve_;
 
   // Recent log ambient values.
   std::unique_ptr<AmbientLightSampleBuffer> log_als_values_;
@@ -278,7 +279,7 @@ class ModellerImpl : public Modeller,
   base::ObserverList<Modeller::Observer> observers_;
 
   // Training start time.
-  base::Optional<base::TimeTicks> training_start_;
+  absl::optional<base::TimeTicks> training_start_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

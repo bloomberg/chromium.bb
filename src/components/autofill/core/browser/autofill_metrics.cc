@@ -8,12 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -38,6 +40,29 @@ namespace {
 
 // Exponential bucket spacing for UKM event data.
 constexpr double kAutofillEventDataBucketSpacing = 2.0;
+
+// Translates structured name types into simple names that are used for
+// naming histograms.
+constexpr auto kStructuredNameTypeToNameMap =
+    base::MakeFixedFlatMap<ServerFieldType, base::StringPiece>(
+        {{NAME_FULL, "Full"},
+         {NAME_FIRST, "First"},
+         {NAME_MIDDLE, "Middle"},
+         {NAME_LAST, "Last"},
+         {NAME_LAST_FIRST, "FirstLast"},
+         {NAME_LAST_SECOND, "SecondLast"}});
+
+// Translates structured address types into simple names that are used for
+// naming histograms.
+constexpr auto kStructuredAddressTypeToNameMap =
+    base::MakeFixedFlatMap<ServerFieldType, base::StringPiece>(
+        {{ADDRESS_HOME_STREET_ADDRESS, "StreetAddress"},
+         {ADDRESS_HOME_STREET_NAME, "StreetName"},
+         {ADDRESS_HOME_HOUSE_NUMBER, "HouseNumber"},
+         {ADDRESS_HOME_FLOOR, "FloorNumber"},
+         {ADDRESS_HOME_APT_NUM, "ApartmentNumber"},
+         {ADDRESS_HOME_PREMISE_NAME, "Premise"},
+         {ADDRESS_HOME_SUBPREMISE, "SubPremise"}});
 
 // Note: if adding an enum value here, update the corresponding description for
 // AutofillFieldPredictionQualityByFieldType in
@@ -100,6 +125,61 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
     previous_response = ".NoPreviousDecision";
   }
   return previous_response;
+}
+
+// Converts a server field type that can be edited in the settings to an enum
+// used for metrics.
+AutofillMetrics::SettingsVisibleFieldTypeForMetrics
+ConvertSettingsVisibleFieldTypeForMetrics(ServerFieldType field_type) {
+  switch (field_type) {
+    case ServerFieldType::NAME_FULL:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kName;
+      break;
+
+    case ServerFieldType::EMAIL_ADDRESS:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kEmailAddress;
+      break;
+
+    case ServerFieldType::PHONE_HOME_WHOLE_NUMBER:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kPhoneNumber;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_CITY:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_COUNTRY:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_ZIP:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_STATE:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kState;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_STREET_ADDRESS:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
+          kStreetAddress;
+      break;
+
+    case ServerFieldType::ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
+          kDependentLocality;
+      break;
+
+    case ServerFieldType::NAME_HONORIFIC_PREFIX:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
+          kHonorificPrefix;
+      break;
+
+    default:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kUndefined;
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace
@@ -1823,6 +1903,9 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
         num_unmasked_cards += 1;
         num_disused_unmasked_cards += disused_delta;
         break;
+      case CreditCard::VIRTUAL_CARD:
+        // This card type is not persisted in Chrome.
+        break;
     }
   }
 
@@ -1873,6 +1956,16 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
         "Autofill.StoredCreditCardDisusedCount.Server.Unmasked",
         num_disused_unmasked_cards);
   }
+
+  // Log the number of server cards that are enrolled with virtual cards.
+  size_t virtual_card_enabled_card_count = base::ranges::count_if(
+      server_cards, [](const std::unique_ptr<CreditCard>& card) {
+        return card->virtual_card_enrollment_state() ==
+               CreditCard::VirtualCardEnrollmentState::ENROLLED;
+      });
+  base::UmaHistogramCounts1000(
+      "Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata",
+      virtual_card_enabled_card_count);
 }
 
 // static
@@ -2586,4 +2679,109 @@ void AutofillMetrics::LogNumberOfAutofilledFieldsAtSubmission(
       "Autofill.NumberOfAutofilledFieldsAtSubmission.Corrected",
       number_of_corrected_fields, 50);
 }
+
+void AutofillMetrics::LogProfileImportType(
+    AutofillProfileImportType import_type) {
+  base::UmaHistogramEnumeration("Autofill.ProfileImport.ProfileImportType",
+                                import_type);
+}
+
+void AutofillMetrics::LogNewProfileImportDecision(
+    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
+  base::UmaHistogramEnumeration("Autofill.ProfileImport.NewProfileDecision",
+                                decision);
+}
+
+void AutofillMetrics::LogNewProfileEditedType(ServerFieldType edited_type) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.NewProfileEditedType",
+      ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
+}
+
+void AutofillMetrics::LogNewProfileNumberOfEditedFields(
+    int number_of_edited_fields) {
+  base::UmaHistogramExactLinear(
+      "Autofill.ProfileImport.NewProfileNumberOfEditedFields",
+      number_of_edited_fields, /*exclusive_max=*/15);
+}
+
+void AutofillMetrics::LogProfileUpdateImportDecision(
+    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
+  base::UmaHistogramEnumeration("Autofill.ProfileImport.UpdateProfileDecision",
+                                decision);
+}
+
+void AutofillMetrics::LogProfileUpdateAffectedType(
+    ServerFieldType affected_type) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.UpdateProfileAffectedType",
+      ConvertSettingsVisibleFieldTypeForMetrics(affected_type));
+}
+
+void AutofillMetrics::LogProfileUpdateEditedType(ServerFieldType edited_type) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.UpdateProfileEditedType",
+      ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
+}
+
+void AutofillMetrics::LogUpdateProfileNumberOfEditedFields(
+    int number_of_edited_fields) {
+  base::UmaHistogramExactLinear(
+      "Autofill.ProfileImport.UpdateProfileNumberOfEditedFields",
+      number_of_edited_fields, /*exclusive_max=*/15);
+}
+
+void AutofillMetrics::LogUpdateProfileNumberOfAffectedFields(
+    int number_of_edited_fields) {
+  base::UmaHistogramExactLinear(
+      "Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields",
+      number_of_edited_fields, /*exclusive_max=*/15);
+}
+
+void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(
+    const AutofillProfile& profile) {
+  constexpr base::StringPiece base_histogram_name =
+      "Autofill.NameTokenVerificationStatusAtProfileUsage.";
+
+  for (const auto& type_name_pair : kStructuredNameTypeToNameMap) {
+    // Do not record the status for empty values.
+    if (profile.GetRawInfo(type_name_pair.first).empty()) {
+      continue;
+    }
+
+    structured_address::VerificationStatus status =
+        profile.GetVerificationStatus(type_name_pair.first);
+    base::UmaHistogramEnumeration(
+        base::StrCat({base_histogram_name, type_name_pair.second}), status);
+    base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, "Any"}),
+                                  status);
+  }
+}
+
+void AutofillMetrics::LogVerificationStatusOfAddressTokensOnProfileUsage(
+    const AutofillProfile& profile) {
+  constexpr base::StringPiece base_histogram_name =
+      "Autofill.AddressTokenVerificationStatusAtProfileUsage.";
+
+  for (const auto& type_name_pair : kStructuredAddressTypeToNameMap) {
+    // Do not record the status for empty values.
+    if (profile.GetRawInfo(type_name_pair.first).empty()) {
+      continue;
+    }
+
+    structured_address::VerificationStatus status =
+        profile.GetVerificationStatus(type_name_pair.first);
+    base::UmaHistogramEnumeration(
+        base::StrCat({base_histogram_name, type_name_pair.second}), status);
+    base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, "Any"}),
+                                  status);
+  }
+}
+
+// static
+void AutofillMetrics::LogVirtualCardMetadataSynced(bool existing_card) {
+  base::UmaHistogramBoolean("Autofill.VirtualCard.MetadataSynced",
+                            existing_card);
+}
+
 }  // namespace autofill

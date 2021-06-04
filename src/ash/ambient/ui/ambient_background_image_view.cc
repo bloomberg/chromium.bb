@@ -13,6 +13,8 @@
 #include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "base/rand_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -21,7 +23,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
@@ -122,7 +123,7 @@ void AmbientBackgroundImageView::UpdateImageDetails(
   ambient_info_view_->UpdateImageDetails(details);
 }
 
-const gfx::ImageSkia& AmbientBackgroundImageView::GetCurrentImage() {
+gfx::ImageSkia AmbientBackgroundImageView::GetCurrentImage() {
   return image_view_->GetImage();
 }
 
@@ -180,7 +181,7 @@ void AmbientBackgroundImageView::InitLayout() {
       AddChildView(std::make_unique<AmbientInfoView>(delegate_));
 
   gfx::Insets shadow_insets =
-      gfx::ShadowValue::GetMargin(ambient::util::GetTextShadowValues());
+      gfx::ShadowValue::GetMargin(ambient::util::GetTextShadowValues(nullptr));
 
   // Inits the media string view. The media string view is positioned on the
   // right-top corner of the container.

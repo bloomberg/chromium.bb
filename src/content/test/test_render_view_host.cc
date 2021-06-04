@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -17,10 +16,10 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/data_transfer_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -32,6 +31,7 @@
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/page/drag.mojom.h"
@@ -75,8 +75,8 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
   }
 
 #if defined(USE_AURA)
-  window_.reset(new aura::Window(
-      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate()));
+  window_ = std::make_unique<aura::Window>(
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window_->set_owned_by_parent(false);
   window_->Init(ui::LayerType::LAYER_NOT_DRAWN);
 #endif
@@ -227,10 +227,10 @@ void TestRenderWidgetHostView::SetDisplayFeatureForTesting(
   if (display_feature)
     display_feature_ = *display_feature;
   else
-    display_feature_ = base::nullopt;
+    display_feature_ = absl::nullopt;
 }
 
-base::Optional<DisplayFeature> TestRenderWidgetHostView::GetDisplayFeature() {
+absl::optional<DisplayFeature> TestRenderWidgetHostView::GetDisplayFeature() {
   return display_feature_;
 }
 
@@ -263,11 +263,11 @@ TestRenderViewHost::~TestRenderViewHost() {
 }
 
 bool TestRenderViewHost::CreateTestRenderView() {
-  return CreateRenderView(base::nullopt, MSG_ROUTING_NONE, false);
+  return CreateRenderView(absl::nullopt, MSG_ROUTING_NONE, false);
 }
 
 bool TestRenderViewHost::CreateRenderView(
-    const base::Optional<blink::FrameToken>& opener_frame_token,
+    const absl::optional<blink::FrameToken>& opener_frame_token,
     int proxy_route_id,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
@@ -278,8 +278,16 @@ bool TestRenderViewHost::CreateRenderView(
   // When the RenderViewHost has a main frame host attached, the RenderView
   // in the renderer creates the main frame along with it. We mimic that here by
   // creating the mojo connections and calling RenderFrameCreated().
-  RenderFrameHostImpl* main_frame = RenderFrameHostImpl::FromID(
-      GetProcess()->GetID(), main_frame_routing_id_);
+  RenderFrameHostImpl* main_frame = nullptr;
+  RenderFrameProxyHost* proxy_host = nullptr;
+  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
+    main_frame = RenderFrameHostImpl::FromID(GetProcess()->GetID(),
+                                             main_frame_routing_id_);
+  } else {
+    proxy_host =
+        RenderFrameProxyHost::FromID(GetProcess()->GetID(), proxy_route_id);
+  }
+
   DCHECK_EQ(!!main_frame, is_active());
   if (main_frame) {
     // Pretend that we started a renderer process and created the renderer Frame
@@ -299,7 +307,13 @@ bool TestRenderViewHost::CreateRenderView(
 
     // This also initializes the RenderWidgetHost attached to the frame.
     main_frame->RenderFrameCreated();
+  } else {
+    // Pretend that mojo connections of the RemoteFrame is transferred to
+    // renderer process and bound in blink.
+    ignore_result(proxy_host->BindRemoteMainFrameReceiverForTesting());
+    proxy_host->SetRenderFrameProxyCreated(true);
   }
+
   opener_frame_token_ = opener_frame_token;
   DCHECK(IsRenderViewLive());
   return true;

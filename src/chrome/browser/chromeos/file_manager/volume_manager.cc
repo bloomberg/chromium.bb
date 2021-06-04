@@ -31,16 +31,16 @@
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/ash/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -54,8 +54,6 @@
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
 #include "storage/browser/file_system/external_mount_points.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace file_manager {
 namespace {
@@ -410,13 +408,7 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
   volume->mount_path_ =
       arc::GetDocumentsProviderMountPath(authority, document_id);
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
-  if (summary.empty()) {
-    volume->volume_label_ = title;
-  } else {
-    volume->volume_label_ = l10n_util::GetStringFUTF8(
-        IDS_FILE_BROWSER_DOCPROVIDER_ROOT_LABEL_WITH_SUMMARY,
-        base::UTF8ToUTF16(title), base::UTF8ToUTF16(summary));
-  }
+  volume->volume_label_ = title;
   volume->is_read_only_ = read_only;
   volume->watchable_ = false;
   volume->volume_id_ = arc::GetDocumentsProviderVolumeId(authority, root_id);

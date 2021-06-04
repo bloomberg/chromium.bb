@@ -1002,11 +1002,11 @@ void av1_filter_block_plane_bitmask_vert(
     }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-    if (cm->seq_params.use_highbitdepth)
+    if (cm->seq_params->use_highbitdepth)
       highbd_filter_selectively_vert_row2(
           ssx, CONVERT_TO_SHORTPTR(dst->buf), dst->stride, pl, mask_16x16_0,
           mask_8x8_0, mask_4x4_0, mask_16x16_1, mask_8x8_1, mask_4x4_1,
-          &cm->lf_info, lfl, lfl2, (int)cm->seq_params.bit_depth);
+          &cm->lf_info, lfl, lfl2, (int)cm->seq_params->bit_depth);
     else
       filter_selectively_vert_row2(
           ssx, dst->buf, dst->stride, pl, mask_16x16_0, mask_8x8_0, mask_4x4_0,
@@ -1075,10 +1075,11 @@ void av1_filter_block_plane_bitmask_horz(
     mask_4x4 = (mask_4x4 >> shift) & mask_cutoff;
 
 #if CONFIG_AV1_HIGHBITDEPTH
-    if (cm->seq_params.use_highbitdepth)
-      highbd_filter_selectively_horiz(
-          CONVERT_TO_SHORTPTR(dst->buf), dst->stride, pl, ssx, mask_16x16,
-          mask_8x8, mask_4x4, &cm->lf_info, lfl, (int)cm->seq_params.bit_depth);
+    if (cm->seq_params->use_highbitdepth)
+      highbd_filter_selectively_horiz(CONVERT_TO_SHORTPTR(dst->buf),
+                                      dst->stride, pl, ssx, mask_16x16,
+                                      mask_8x8, mask_4x4, &cm->lf_info, lfl,
+                                      (int)cm->seq_params->bit_depth);
     else
       filter_selectively_horiz(dst->buf, dst->stride, pl, ssx, mask_16x16,
                                mask_8x8, mask_4x4, &cm->lf_info, lfl);
@@ -1109,10 +1110,10 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
   uint8_t *lfl2;
 
   // filter two rows at a time
-  for (r = 0; r < cm->seq_params.mib_size &&
+  for (r = 0; r < cm->seq_params->mib_size &&
               ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.mib_size &&
+    for (c = 0; c < cm->seq_params->mib_size &&
                 ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       dst->buf += ((c << MI_SIZE_LOG2) >> ssx);
@@ -1159,11 +1160,11 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
       uint64_t mask_4x4_1 = (mask_4x4 >> shift_next) & mask_cutoff;
 
 #if CONFIG_AV1_HIGHBITDEPTH
-      if (cm->seq_params.use_highbitdepth)
+      if (cm->seq_params->use_highbitdepth)
         highbd_filter_selectively_vert_row2(
             ssx, CONVERT_TO_SHORTPTR(dst->buf), dst->stride, pl, mask_16x16_0,
             mask_8x8_0, mask_4x4_0, mask_16x16_1, mask_8x8_1, mask_4x4_1,
-            &cm->lf_info, lfl, lfl2, (int)cm->seq_params.bit_depth);
+            &cm->lf_info, lfl, lfl2, (int)cm->seq_params->bit_depth);
       else
         filter_selectively_vert_row2(ssx, dst->buf, dst->stride, pl,
                                      mask_16x16_0, mask_8x8_0, mask_4x4_0,
@@ -1194,10 +1195,10 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
   uint64_t mask_4x4 = 0;
   uint8_t *lfl;
 
-  for (r = 0; r < cm->seq_params.mib_size &&
+  for (r = 0; r < cm->seq_params->mib_size &&
               ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.mib_size &&
+    for (c = 0; c < cm->seq_params->mib_size &&
                 ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       if (mi_row + r == 0) continue;
@@ -1235,11 +1236,11 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
       mask_4x4 = (mask_4x4 >> shift) & mask_cutoff;
 
 #if CONFIG_AV1_HIGHBITDEPTH
-      if (cm->seq_params.use_highbitdepth)
+      if (cm->seq_params->use_highbitdepth)
         highbd_filter_selectively_horiz(CONVERT_TO_SHORTPTR(dst->buf),
                                         dst->stride, pl, ssx, mask_16x16,
                                         mask_8x8, mask_4x4, &cm->lf_info, lfl,
-                                        (int)cm->seq_params.bit_depth);
+                                        (int)cm->seq_params->bit_depth);
       else
         filter_selectively_horiz(dst->buf, dst->stride, pl, ssx, mask_16x16,
                                  mask_8x8, mask_4x4, &cm->lf_info, lfl);
@@ -1260,9 +1261,11 @@ void av1_store_bitmask_vartx(AV1_COMMON *cm, int mi_row, int mi_col,
   const TX_SIZE tx_size_y_vert = txsize_vert_map[tx_size];
   const TX_SIZE tx_size_y_horz = txsize_horz_map[tx_size];
   const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
-      mbmi->bsize, cm->seq_params.subsampling_x, cm->seq_params.subsampling_y)];
+      mbmi->bsize, cm->seq_params->subsampling_x,
+      cm->seq_params->subsampling_y)];
   const TX_SIZE tx_size_uv_horz = txsize_horz_map[av1_get_max_uv_txsize(
-      mbmi->bsize, cm->seq_params.subsampling_x, cm->seq_params.subsampling_y)];
+      mbmi->bsize, cm->seq_params->subsampling_x,
+      cm->seq_params->subsampling_y)];
   const int is_square_transform_size = tx_size <= TX_64X64;
   int mask_id = 0;
   int offset = 0;
@@ -1330,9 +1333,11 @@ void av1_store_bitmask_univariant_tx(AV1_COMMON *cm, int mi_row, int mi_col,
   const TX_SIZE tx_size_y_vert = txsize_vert_map[mbmi->tx_size];
   const TX_SIZE tx_size_y_horz = txsize_horz_map[mbmi->tx_size];
   const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
-      mbmi->bsize, cm->seq_params.subsampling_x, cm->seq_params.subsampling_y)];
+      mbmi->bsize, cm->seq_params->subsampling_x,
+      cm->seq_params->subsampling_y)];
   const TX_SIZE tx_size_uv_horz = txsize_horz_map[av1_get_max_uv_txsize(
-      mbmi->bsize, cm->seq_params.subsampling_x, cm->seq_params.subsampling_y)];
+      mbmi->bsize, cm->seq_params->subsampling_x,
+      cm->seq_params->subsampling_y)];
   const int is_square_transform_size = mbmi->tx_size <= TX_64X64;
   int mask_id = 0;
   int offset = 0;

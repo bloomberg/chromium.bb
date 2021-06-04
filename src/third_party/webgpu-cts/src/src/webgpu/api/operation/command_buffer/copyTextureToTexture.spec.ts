@@ -1,7 +1,7 @@
 export const description = `copyTexturetoTexture operation tests
 
-  TODO(jiawei.shao@intel.com): support all WebGPU texture formats.
-  `;
+TODO(jiawei.shao@intel.com): support all WebGPU texture formats.
+`;
 
 import { poptions, params } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -322,9 +322,9 @@ g.test('color_textures,non_compressed,non_array')
   - covers the mipmap level > 0
   `
   )
-  .params(
+  .cases(poptions('format', kRegularTextureFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kRegularTextureFormats))
       .combine(
         poptions('textureSize', [
           {
@@ -370,9 +370,9 @@ g.test('color_textures,compressed,non_array')
   the content of the whole dstTexture.
   `
   )
-  .params(
+  .cases(poptions('format', kCompressedTextureFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kCompressedTextureFormats))
       .combine(
         poptions('textureSize', [
           // The heights and widths are all power of 2
@@ -415,9 +415,7 @@ g.test('color_textures,compressed,non_array')
   )
   .fn(async t => {
     const { textureSize, format, copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
-
-    const extension: GPUExtensionName = kCompressedTextureFormatInfo[format].extension;
-    await t.selectDeviceOrSkipTestCase({ extensions: [extension] });
+    await t.selectDeviceOrSkipTestCase(kCompressedTextureFormatInfo[format].feature);
 
     t.DoCopyTextureToTextureTest(
       textureSize.srcTextureSize,
@@ -437,9 +435,9 @@ g.test('color_textures,non_compressed,array')
   CopyTextureToTexture() copy, and verifying the content of the whole dstTexture.
   `
   )
-  .params(
+  .cases(poptions('format', kRegularTextureFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kRegularTextureFormats))
       .combine(
         poptions('textureSize', [
           {
@@ -477,9 +475,9 @@ g.test('color_textures,compressed,array')
   CopyTextureToTexture() copy, and verifying the content of the whole dstTexture.
   `
   )
-  .params(
+  .cases(poptions('format', kCompressedTextureFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kCompressedTextureFormats))
       .combine(
         poptions('textureSize', [
           // The heights and widths are all power of 2
@@ -500,9 +498,7 @@ g.test('color_textures,compressed,array')
   )
   .fn(async t => {
     const { textureSize, format, copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
-
-    const extension: GPUExtensionName = kCompressedTextureFormatInfo[format].extension;
-    await t.selectDeviceOrSkipTestCase({ extensions: [extension] });
+    await t.selectDeviceOrSkipTestCase(kCompressedTextureFormatInfo[format].feature);
 
     t.DoCopyTextureToTextureTest(
       textureSize.srcTextureSize,
@@ -523,7 +519,7 @@ g.test('zero_sized')
   of that dimension.
   `
   )
-  .params(
+  .subcases(() =>
     params()
       .combine(
         poptions('copyBoxOffset', [

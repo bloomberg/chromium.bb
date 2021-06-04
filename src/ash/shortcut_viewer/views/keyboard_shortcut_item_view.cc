@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -84,7 +85,24 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
                  ->emplace(key_code, GetStringForKeyboardCode(key_code))
                  .first;
     }
-    const std::u16string& dom_key_string = iter->second;
+
+    // Get the string for the |DomKey|.
+    std::u16string dom_key_string = iter->second;
+
+    // There are two existing browser shortcuts which should not be
+    // positionally remapped, these are manually overridden here. When
+    // this app is deprecated, the new shortcut app will source the shortcut
+    // data directly from ash or the browser and will not remap the browser
+    // set. Since they are duplicated and intermixed in this app they need
+    // to be explicitly omitted.
+    const bool dont_remap_position =
+        item.description_message_id == IDS_KSV_DESCRIPTION_IDC_ZOOM_PLUS ||
+        item.description_message_id == IDS_KSV_DESCRIPTION_IDC_ZOOM_MINUS;
+    if (dont_remap_position) {
+      dom_key_string =
+          GetStringForKeyboardCode(key_code, /*remap_positional_key=*/false);
+    }
+
     // If the |key_code| has no mapped |dom_key_string|, we use alternative
     // string to indicate that the shortcut is not supported by current keyboard
     // layout.
@@ -94,11 +112,11 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
       has_invalid_dom_key = true;
       break;
     }
-    replacement_strings.push_back(dom_key_string);
 
     std::u16string accessible_name = GetAccessibleNameForKeyboardCode(key_code);
     accessible_names.push_back(accessible_name.empty() ? dom_key_string
                                                        : accessible_name);
+    replacement_strings.push_back(std::move(dom_key_string));
   }
 
   int shortcut_message_id;

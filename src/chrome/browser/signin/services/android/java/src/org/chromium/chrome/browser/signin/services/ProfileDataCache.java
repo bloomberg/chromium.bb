@@ -113,6 +113,9 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
                 ? null
                 : AccountManagerFacadeProvider.getInstance().getProfileDataSource();
         mAccountInfoService = AccountInfoService.get();
+        if (mProfileDataSource == null) {
+            populateCache();
+        }
     }
 
     /**
@@ -172,9 +175,9 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         if (mObservers.isEmpty()) {
             if (mProfileDataSource != null) {
                 mProfileDataSource.addObserver(this);
+                populateCacheLegacy();
             }
             mAccountInfoService.addObserver(this);
-            populateCache();
         }
         mObservers.addObserver(observer);
     }
@@ -193,14 +196,6 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         }
     }
 
-    private void populateCache() {
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
-            for (Account account : accounts) {
-                updateAccountInfoByEmail(account.name);
-            }
-        });
-    }
-
     @Override
     public void onProfileDataUpdated(ProfileDataSource.ProfileData profileData) {
         ThreadUtils.assertOnUiThread();
@@ -208,8 +203,11 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         Bitmap avatar = profileData.getAvatar();
         if (avatar == null) {
             // If the avatar is null, try to fetch the monogram from IdentityManager
-            final AccountInfo accountInfo = mAccountInfoService.getAccountInfoByEmail(email);
-            avatar = accountInfo != null ? accountInfo.getAccountImage() : null;
+            mAccountInfoService.getAccountInfoByEmailAsync(email).then(accountInfo -> {
+                updateCacheAndNotifyObservers(email,
+                        accountInfo != null ? accountInfo.getAccountImage() : null,
+                        profileData.getFullName(), profileData.getGivenName());
+            });
         }
         updateCacheAndNotifyObservers(
                 email, avatar, profileData.getFullName(), profileData.getGivenName());
@@ -226,24 +224,32 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
      */
     @Override
     public void onAccountInfoUpdated(AccountInfo accountInfo) {
-        if (accountInfo.hasDisplayableInfo()) {
+        if (accountInfo != null && accountInfo.hasDisplayableInfo()) {
             updateCacheAndNotifyObservers(accountInfo.getEmail(), accountInfo.getAccountImage(),
                     accountInfo.getFullName(), accountInfo.getGivenName());
         }
     }
 
-    private void updateAccountInfoByEmail(String email) {
-        if (mProfileDataSource != null) {
-            ProfileData profileData = mProfileDataSource.getProfileDataForAccount(email);
-            if (profileData != null) {
-                onProfileDataUpdated(profileData);
+    private void populateCache() {
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
+            for (Account account : accounts) {
+                mAccountInfoService.getAccountInfoByEmailAsync(account.name)
+                        .then(this::onAccountInfoUpdated);
             }
-            return;
-        }
-        final AccountInfo accountInfo = mAccountInfoService.getAccountInfoByEmail(email);
-        if (accountInfo != null) {
-            onAccountInfoUpdated(accountInfo);
-        }
+        });
+    }
+
+    private void populateCacheLegacy() {
+        assert mProfileDataSource
+                != null : "This only populates cache with the Legacy profile data source.";
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
+            for (Account account : accounts) {
+                ProfileData profileData = mProfileDataSource.getProfileDataForAccount(account.name);
+                if (profileData != null) {
+                    onProfileDataUpdated(profileData);
+                }
+            }
+        });
     }
 
     private void updateCacheAndNotifyObservers(

@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/modules/v8/usv_string_or_url_pattern_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_urlpatterninit_usvstring.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_url_pattern_component_result.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_url_pattern_result.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -834,28 +835,48 @@ URLPattern::URLPattern(Component* protocol,
       search_(search),
       hash_(hash) {}
 
-bool URLPattern::test(const USVStringOrURLPatternInit& input,
-                      const String& base_url,
-                      ExceptionState& exception_state) const {
+bool URLPattern::test(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8URLPatternInput* input,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const USVStringOrURLPatternInit& input,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const String& base_url,
+    ExceptionState& exception_state) const {
   return Match(input, base_url, /*result=*/nullptr, exception_state);
 }
 
-bool URLPattern::test(const USVStringOrURLPatternInit& input,
-                      ExceptionState& exception_state) const {
+bool URLPattern::test(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8URLPatternInput* input,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const USVStringOrURLPatternInit& input,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) const {
   return test(input, /*base_url=*/String(), exception_state);
 }
 
-URLPatternResult* URLPattern::exec(const USVStringOrURLPatternInit& input,
-                                   const String& base_url,
-                                   ExceptionState& exception_state) const {
+URLPatternResult* URLPattern::exec(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8URLPatternInput* input,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const USVStringOrURLPatternInit& input,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const String& base_url,
+    ExceptionState& exception_state) const {
   URLPatternResult* result = URLPatternResult::Create();
   if (!Match(input, base_url, result, exception_state))
     return nullptr;
   return result;
 }
 
-URLPatternResult* URLPattern::exec(const USVStringOrURLPatternInit& input,
-                                   ExceptionState& exception_state) const {
+URLPatternResult* URLPattern::exec(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8URLPatternInput* input,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const USVStringOrURLPatternInit& input,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) const {
   return exec(input, /*base_url=*/String(), exception_state);
 }
 
@@ -963,10 +984,30 @@ URLPattern::Component* URLPattern::CompilePattern(
       String(regexp_string.data(), regexp_string.size()), case_sensitive,
       kMultilineDisabled, ScriptRegexp::UTF16);
   if (!regexp->IsValid()) {
-    // TODO: Figure out which embedded regex expression caused the failure
-    //       by compiling each pattern kRegex part individually.
+    // The regular expression failed to compile.  This means that some
+    // custom regexp group within the pattern is illegal.  Attempt to
+    // compile each regexp group individually in order to identify the
+    // culprit.
+    for (auto& part : parse_result.value().PartList()) {
+      if (part.type != liburlpattern::PartType::kRegex)
+        continue;
+      DCHECK(base::IsStringASCII(part.value));
+      String group_value(part.value.data(), part.value.size());
+      regexp = MakeGarbageCollected<ScriptRegexp>(
+          group_value, case_sensitive, kMultilineDisabled, ScriptRegexp::UTF16);
+      if (regexp->IsValid())
+        continue;
+      exception_state.ThrowTypeError("Invalid " + component + " pattern '" +
+                                     pattern +
+                                     "'. Custom regular expression group '" +
+                                     group_value + "' is invalid.");
+      return nullptr;
+    }
+    // We couldn't find a bad regexp group, but we still have an overall
+    // error.  This shouldn't happen, but we handle it anyway.
     exception_state.ThrowTypeError("Invalid " + component + " pattern '" +
-                                   pattern + "'.");
+                                   pattern +
+                                   "'. An unexpected error has occurred.");
     return nullptr;
   }
 
@@ -982,10 +1023,15 @@ URLPattern::Component* URLPattern::CompilePattern(
       std::move(wtf_name_list));
 }
 
-bool URLPattern::Match(const USVStringOrURLPatternInit& input,
-                       const String& base_url,
-                       URLPatternResult* result,
-                       ExceptionState& exception_state) const {
+bool URLPattern::Match(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8URLPatternInput* input,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const USVStringOrURLPatternInit& input,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const String& base_url,
+    URLPatternResult* result,
+    ExceptionState& exception_state) const {
   // By default each URL component value starts with an empty string.  The
   // given input is then layered on top of these defaults.
   String protocol(g_empty_string);
@@ -997,7 +1043,17 @@ bool URLPattern::Match(const USVStringOrURLPatternInit& input,
   String search(g_empty_string);
   String hash(g_empty_string);
 
-  if (input.IsURLPatternInit()) {
+  HeapVector<USVStringOrURLPatternInit> inputs;
+
+  bool is_init =
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      input->GetContentType() ==
+      V8URLPatternInput::ContentType::kURLPatternInit;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      input.IsURLPatternInit();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+  if (is_init) {
     if (base_url) {
       exception_state.ThrowTypeError(
           "Invalid second argument baseURL '" + base_url +
@@ -1006,10 +1062,18 @@ bool URLPattern::Match(const USVStringOrURLPatternInit& input,
       return false;
     }
 
+    URLPatternInit* init =
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        input->GetAsURLPatternInit();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        input.GetAsURLPatternInit();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+    inputs.push_back(USVStringOrURLPatternInit::FromURLPatternInit(init));
+
     // Layer the URLPatternInit values on top of the default empty strings.
-    ApplyInit(input.GetAsURLPatternInit(), ValueType::kURL, protocol, username,
-              password, hostname, port, pathname, search, hash,
-              exception_state);
+    ApplyInit(init, ValueType::kURL, protocol, username, password, hostname,
+              port, pathname, search, hash, exception_state);
     if (exception_state.HadException()) {
       // Treat exceptions simply as a failure to match.
       exception_state.ClearException();
@@ -1022,8 +1086,19 @@ bool URLPattern::Match(const USVStringOrURLPatternInit& input,
       return false;
     }
 
+    const String& input_string =
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        input->GetAsUSVString();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        input.GetAsUSVString();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+    inputs.push_back(USVStringOrURLPatternInit::FromUSVString(input_string));
+    if (base_url)
+      inputs.push_back(USVStringOrURLPatternInit::FromUSVString(base_url));
+
     // The compile the input string as a fully resolved URL.
-    KURL url(parsed_base_url, input.GetAsUSVString());
+    KURL url(parsed_base_url, input_string);
     if (!url.IsValid() || url.IsEmpty()) {
       // Treat as failure to match, but don't throw an exception.
       return false;
@@ -1084,10 +1159,6 @@ bool URLPattern::Match(const USVStringOrURLPatternInit& input,
   if (!matched || !result)
     return matched;
 
-  HeapVector<USVStringOrURLPatternInit> inputs;
-  inputs.push_back(input);
-  if (base_url)
-    inputs.push_back(USVStringOrURLPatternInit::FromUSVString(base_url));
   result->setInputs(std::move(inputs));
 
   result->setProtocol(

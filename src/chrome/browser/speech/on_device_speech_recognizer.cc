@@ -5,13 +5,14 @@
 #include "chrome/browser/speech/on_device_speech_recognizer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/cros_speech_recognition_service.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
+#include "components/soda/soda_installer.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_system.h"
@@ -31,7 +32,7 @@ static constexpr int kAudioSampleRate = 16000;
 static constexpr int kPollingTimesPerSecond = 10;
 
 media::AudioParameters GetAudioParameters(
-    const base::Optional<media::AudioParameters>& params,
+    const absl::optional<media::AudioParameters>& params,
     bool is_multichannel_supported) {
   if (params) {
     media::AudioParameters result = params.value();
@@ -71,7 +72,8 @@ bool OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(
 OnDeviceSpeechRecognizer::OnDeviceSpeechRecognizer(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
     Profile* profile,
-    std::string language_or_locale)
+    std::string language_or_locale,
+    bool recognition_mode_ime)
     : SpeechRecognizer(delegate),
       state_(SpeechRecognizerStatus::SPEECH_RECOGNIZER_OFF),
       is_multichannel_supported_(false),
@@ -87,6 +89,9 @@ OnDeviceSpeechRecognizer::OnDeviceSpeechRecognizer(
   speech_recognition_context_->BindAudioSourceFetcher(
       audio_source_fetcher_.BindNewPipeAndPassReceiver(),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
+      media::mojom::SpeechRecognitionOptions::New(
+          recognition_mode_ime ? media::mojom::SpeechRecognitionMode::kIme
+                               : media::mojom::SpeechRecognitionMode::kCaption),
       media::BindToCurrentLoop(
           base::BindOnce(&OnDeviceSpeechRecognizer::OnRecognizerBound,
                          weak_factory_.GetWeakPtr())));
@@ -124,13 +129,16 @@ void OnDeviceSpeechRecognizer::Stop() {
 }
 
 void OnDeviceSpeechRecognizer::OnSpeechRecognitionRecognitionEvent(
-    media::mojom::SpeechRecognitionResultPtr result) {
+    media::mojom::SpeechRecognitionResultPtr result,
+    OnSpeechRecognitionRecognitionEventCallback reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!result->transcription.size())
     return;
   UpdateStatus(SpeechRecognizerStatus::SPEECH_RECOGNIZER_IN_SPEECH);
   delegate()->OnSpeechResult(base::UTF8ToUTF16(result->transcription),
-                             result->is_final, base::nullopt);
+                             result->is_final, absl::nullopt);
+  // Returning true ensures the speech recognition continues.
+  std::move(reply).Run(true);
 }
 
 void OnDeviceSpeechRecognizer::OnSpeechRecognitionError() {
@@ -153,7 +161,7 @@ void OnDeviceSpeechRecognizer::OnRecognizerDisconnected() {
 }
 
 void OnDeviceSpeechRecognizer::StartFetchingOnInputDeviceInfo(
-    const base::Optional<media::AudioParameters>& params) {
+    const absl::optional<media::AudioParameters>& params) {
   // waiting_for_params_ was set before requesting audio params from the
   // AudioSystem, which returns here asynchronously. If this has changed, then
   // we shouldn't start up any more.

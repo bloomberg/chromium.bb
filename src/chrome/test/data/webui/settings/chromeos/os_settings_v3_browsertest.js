@@ -34,17 +34,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
   }
 };
 
-// TODO(crbug/1109431): Remove this test once migration is complete.
-// eslint-disable-next-line no-var
-var OSSettingsOsLanguagesPageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_languages_page_tests.m.js';
-  }
-};
-
-TEST_F('OSSettingsOsLanguagesPageV3Test', 'All', () => mocha.run());
-
 // eslint-disable-next-line no-var
 var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
@@ -89,10 +78,7 @@ var OSSettingsOnStartupPageV3Test = class extends OSSettingsV3BrowserTest {
 
   /** @override */
   get featureList() {
-    return {
-      enabled: super.featureList.enabled,
-      disabled: ['ash::features::kFullRestore']
-    };
+    return {enabled: ['ash::features::kFullRestore']};
   }
 };
 
@@ -318,7 +304,6 @@ TEST_F(
  ['AppManagementToggleRow', 'toggle_row_test.m.js'],
  ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
- ['CellularBanner', 'cellular_banner_test.m.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
  ['CrostiniPage', 'crostini_page_test.m.js'],
@@ -344,6 +329,7 @@ TEST_F(
  ['InternetPage', 'internet_page_tests.m.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
+ ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
@@ -368,6 +354,7 @@ TEST_F(
    'multidevice_wifi_sync_disabled_link_tests.m.js'
  ],
  ['MultideviceWifiSyncItem', 'multidevice_wifi_sync_item_tests.m.js'],
+ ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.m.js'],
  ['NetworkProxySection', 'network_proxy_section_test.m.js'],
  ['NetworkSummary', 'network_summary_test.m.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.m.js'],
@@ -391,6 +378,8 @@ TEST_F(
  ['PersonalizationPage', 'personalization_page_test.m.js'],
  ['PrintingPage', 'os_printing_page_tests.m.js'],
  ['ResetPage', 'os_reset_page_test.m.js'],
+ ['SearchEngine', 'search_engine_test.m.js'],
+ ['SearchSubpage', 'search_subpage_test.m.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.m.js'],
  ['SmbPage', 'smb_shares_page_tests.m.js'],
  [

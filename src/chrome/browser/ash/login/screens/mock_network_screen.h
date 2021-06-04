@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
+namespace ash {
 
 class MockNetworkScreen : public NetworkScreen {
  public:
@@ -41,9 +41,6 @@ class MockNetworkScreenView : public NetworkScreenView {
   MOCK_METHOD(void, Hide, ());
   MOCK_METHOD(void, ShowError, (const std::u16string& message));
   MOCK_METHOD(void, ClearErrors, ());
-  MOCK_METHOD(void,
-              ShowConnectingStatus,
-              (bool connecting, const std::u16string& network_id));
   MOCK_METHOD(void, SetOfflineDemoModeEnabled, (bool enabled));
 
  private:
@@ -52,6 +49,13 @@ class MockNetworkScreenView : public NetworkScreenView {
   DISALLOW_COPY_AND_ASSIGN(MockNetworkScreenView);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::MockNetworkScreen;
+using ::ash::MockNetworkScreenView;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_MOCK_NETWORK_SCREEN_H_

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * A helper class that handles generating context menus for {@link WebContents}s.
  */
 public class ContextMenuHelper {
-    private static Callback<RevampedContextMenuCoordinator> sMenuShownCallbackForTests;
+    private static Callback<ContextMenuCoordinator> sMenuShownCallbackForTests;
 
     private final WebContents mWebContents;
     private long mNativeContextMenuHelper;
@@ -95,6 +95,7 @@ public class ContextMenuHelper {
     private void showContextMenu(final ContextMenuParams params, RenderFrameHost renderFrameHost,
             View view, float topContentOffsetPx) {
         if (params.isFile()) return;
+
         final WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
 
         if (view == null || view.getVisibility() != View.VISIBLE || view.getParent() == null
@@ -122,9 +123,13 @@ public class ContextMenuHelper {
             mMenuShownTimeMs =
                     TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs());
             RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", mWebContents != null);
+            recordContextMenuShownType(params);
             if (LensUtils.isInShoppingAllowlist(mCurrentContextMenuParams.getPageUrl())) {
                 RecordHistogram.recordBooleanHistogram(
                         "ContextMenu.Shown.ShoppingDomain", mWebContents != null);
+            }
+            if (sMenuShownCallbackForTests != null) {
+                sMenuShownCallbackForTests.onResult((ContextMenuCoordinator) mCurrentContextMenu);
             }
         };
         mOnMenuClosed = () -> {
@@ -148,21 +153,32 @@ public class ContextMenuHelper {
                     mNativeContextMenuHelper, ContextMenuHelper.this);
         };
 
-        displayRevampedContextMenu(topContentOffsetPx);
+        displayContextMenu(topContentOffsetPx);
     }
 
-    private void displayRevampedContextMenu(float topContentOffsetPx) {
+    /**
+     * Record a histogram for a context menu shown even sliced by type.
+     */
+    private void recordContextMenuShownType(final ContextMenuParams params) {
+        RecordHistogram.recordBooleanHistogram(
+                String.format("ContextMenu.Shown.%s",
+                        ContextMenuUtils.getContextMenuTypeForHistogram(params)),
+                mWebContents != null);
+    }
+
+    private void displayContextMenu(float topContentOffsetPx) {
         List<Pair<Integer, ModelList>> items = mCurrentPopulator.buildContextMenu();
         if (items.isEmpty()) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+            // Only call if no items are populated. Otherwise call in mOnMenuShown callback.
             if (sMenuShownCallbackForTests != null) {
                 sMenuShownCallbackForTests.onResult(null);
             }
             return;
         }
 
-        final RevampedContextMenuCoordinator menuCoordinator =
-                new RevampedContextMenuCoordinator(topContentOffsetPx, mCurrentNativeDelegate);
+        final ContextMenuCoordinator menuCoordinator =
+                new ContextMenuCoordinator(topContentOffsetPx, mCurrentNativeDelegate);
         mCurrentContextMenu = menuCoordinator;
         mChipDelegate = mCurrentPopulator.getChipDelegate();
 
@@ -172,10 +188,6 @@ public class ContextMenuHelper {
         } else {
             menuCoordinator.displayMenu(mWindow, mWebContents, mCurrentContextMenuParams, items,
                     mCallback, mOnMenuShown, mOnMenuClosed);
-        }
-
-        if (sMenuShownCallbackForTests != null) {
-            sMenuShownCallbackForTests.onResult(menuCoordinator);
         }
     }
 
@@ -196,9 +208,22 @@ public class ContextMenuHelper {
     }
 
     @VisibleForTesting
-    public static void setMenuShownCallbackForTests(
-            Callback<RevampedContextMenuCoordinator> callback) {
+    public static void setMenuShownCallbackForTests(Callback<ContextMenuCoordinator> callback) {
         sMenuShownCallbackForTests = callback;
+    }
+
+    @VisibleForTesting
+    public static ContextMenuHelper createForTesting(
+            long nativeContextMenuHelper, WebContents webContents) {
+        return create(nativeContextMenuHelper, webContents);
+    }
+
+    @VisibleForTesting
+    void showContextMenuForTesting(ContextMenuPopulatorFactory populatorFactory,
+            final ContextMenuParams params, RenderFrameHost renderFrameHost, View view,
+            float topContentOffsetPx) {
+        setPopulatorFactory(populatorFactory);
+        showContextMenu(params, renderFrameHost, view, topContentOffsetPx);
     }
 
     @NativeMethods

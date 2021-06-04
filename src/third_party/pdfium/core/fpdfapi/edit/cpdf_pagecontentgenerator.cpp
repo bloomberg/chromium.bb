@@ -174,16 +174,15 @@ ByteString CPDF_PageContentGenerator::RealizeResource(
     const CPDF_Object* pResource,
     const ByteString& bsType) const {
   DCHECK(pResource);
-  if (!m_pObjHolder->m_pResources) {
-    m_pObjHolder->m_pResources.Reset(
-        m_pDocument->NewIndirect<CPDF_Dictionary>());
+  if (!m_pObjHolder->GetResources()) {
+    m_pObjHolder->SetResources(m_pDocument->NewIndirect<CPDF_Dictionary>());
     m_pObjHolder->GetDict()->SetNewFor<CPDF_Reference>(
         "Resources", m_pDocument.Get(),
-        m_pObjHolder->m_pResources->GetObjNum());
+        m_pObjHolder->GetResources()->GetObjNum());
   }
-  CPDF_Dictionary* pResList = m_pObjHolder->m_pResources->GetDictFor(bsType);
+  CPDF_Dictionary* pResList = m_pObjHolder->GetResources()->GetDictFor(bsType);
   if (!pResList)
-    pResList = m_pObjHolder->m_pResources->SetNewFor<CPDF_Dictionary>(bsType);
+    pResList = m_pObjHolder->GetResources()->SetNewFor<CPDF_Dictionary>(bsType);
 
   ByteString name;
   int idnum = 1;
@@ -229,9 +228,8 @@ const CPDF_ContentMarks* CPDF_PageContentGenerator::ProcessContentMarks(
     std::ostringstream* buf,
     const CPDF_PageObject* pPageObj,
     const CPDF_ContentMarks* pPrev) {
-  const CPDF_ContentMarks* pNext = &pPageObj->m_ContentMarks;
-
-  size_t first_different = pPrev->FindFirstDifference(pNext);
+  const CPDF_ContentMarks* pNext = pPageObj->GetContentMarks();
+  const size_t first_different = pPrev->FindFirstDifference(pNext);
 
   // Close all marks that are in prev but not in next.
   // Technically we should iterate backwards to close from the top to the
@@ -459,9 +457,9 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
   }
 
   ByteString name;
-  auto it = m_pObjHolder->m_GraphicsMap.find(graphD);
-  if (it != m_pObjHolder->m_GraphicsMap.end()) {
-    name = it->second;
+  Optional<ByteString> maybe_name = m_pObjHolder->GraphicsMapSearch(graphD);
+  if (maybe_name.has_value()) {
+    name = std::move(maybe_name.value());
   } else {
     auto gsDict = pdfium::MakeRetain<CPDF_Dictionary>();
     if (graphD.fillAlpha != 1.0f)
@@ -476,7 +474,7 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
     }
     CPDF_Object* pDict = m_pDocument->AddIndirectObject(gsDict);
     name = RealizeResource(pDict, "ExtGState");
-    m_pObjHolder->m_GraphicsMap[graphD] = name;
+    m_pObjHolder->GraphicsMapInsert(graphD, name);
   }
   *buf << "/" << PDF_NameEncode(name) << " gs ";
 }
@@ -495,20 +493,19 @@ ByteString CPDF_PageContentGenerator::GetOrCreateDefaultGraphics() const {
   defaultGraphics.fillAlpha = 1.0f;
   defaultGraphics.strokeAlpha = 1.0f;
   defaultGraphics.blendType = BlendMode::kNormal;
-  auto it = m_pObjHolder->m_GraphicsMap.find(defaultGraphics);
 
-  // If default graphics already exists, return it.
-  if (it != m_pObjHolder->m_GraphicsMap.end())
-    return it->second;
+  Optional<ByteString> maybe_name =
+      m_pObjHolder->GraphicsMapSearch(defaultGraphics);
+  if (maybe_name.has_value())
+    return maybe_name.value();
 
-  // Otherwise, create them.
   auto gsDict = pdfium::MakeRetain<CPDF_Dictionary>();
   gsDict->SetNewFor<CPDF_Number>("ca", defaultGraphics.fillAlpha);
   gsDict->SetNewFor<CPDF_Number>("CA", defaultGraphics.strokeAlpha);
   gsDict->SetNewFor<CPDF_Name>("BM", "Normal");
   CPDF_Object* pDict = m_pDocument->AddIndirectObject(gsDict);
   ByteString name = RealizeResource(pDict, "ExtGState");
-  m_pObjHolder->m_GraphicsMap[defaultGraphics] = name;
+  m_pObjHolder->GraphicsMapInsert(defaultGraphics, name);
   return name;
 }
 
@@ -539,10 +536,11 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
     return;
   }
   data.baseFont = pFont->GetBaseFontName();
-  auto it = m_pObjHolder->m_FontsMap.find(data);
+
   ByteString dictName;
-  if (it != m_pObjHolder->m_FontsMap.end()) {
-    dictName = it->second;
+  Optional<ByteString> maybe_name = m_pObjHolder->FontsMapSearch(data);
+  if (maybe_name.has_value()) {
+    dictName = std::move(maybe_name.value());
   } else {
     CPDF_Object* pIndirectFont = pFont->GetFontDict();
     if (pIndirectFont->IsInline()) {
@@ -558,7 +556,7 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
       pIndirectFont = m_pDocument->AddIndirectObject(pFontDict);
     }
     dictName = RealizeResource(pIndirectFont, "Font");
-    m_pObjHolder->m_FontsMap[data] = dictName;
+    m_pObjHolder->FontsMapInsert(data, dictName);
   }
   *buf << "/" << PDF_NameEncode(dictName) << " ";
   WriteFloat(*buf, pTextObj->GetFontSize()) << " Tf ";

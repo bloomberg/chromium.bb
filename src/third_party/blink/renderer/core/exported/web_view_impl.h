@@ -116,6 +116,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_inside_portal,
       bool compositing_enabled,
+      bool widgets_never_composited,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
@@ -136,7 +137,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // WebView methods:
   void DidAttachLocalMainFrame() override;
   void DidDetachLocalMainFrame() override;
-  void DidAttachRemoteMainFrame() override;
+  void DidAttachRemoteMainFrame(
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::RemoteMainFrameHostInterfaceBase>,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::blink::RemoteMainFrameInterfaceBase>) override;
   void DidDetachRemoteMainFrame() override;
   void SetNoStatePrefetchClient(WebNoStatePrefetchClient*) override;
   WebSettings* GetSettings() override;
@@ -147,6 +152,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetWindowFeatures(const WebWindowFeatures&) override;
   void SetOpenedByDOM() override;
   WebFrame* MainFrame() override;
+  const WebFrame* MainFrame() const override;
   WebLocalFrame* FocusedFrame() override;
   void SetFocusedFrame(WebFrame*) override;
   void SmoothScroll(int target_x,
@@ -165,7 +171,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   gfx::PointF VisualViewportOffset() const override;
   gfx::SizeF VisualViewportSize() const override;
   void SetScreenOrientationOverrideForTesting(
-      base::Optional<blink::mojom::ScreenOrientation> orientation) override;
+      absl::optional<blink::mojom::ScreenOrientation> orientation) override;
   void UseSynchronousResizeModeForTesting(bool enable) override;
   void SetWindowRectSynchronouslyForTesting(
       const gfx::Rect& new_window_rect) override;
@@ -200,15 +206,15 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       CrossVariantMojoRemote<mojom::RendererPreferenceWatcherInterfaceBase>
           watcher) override;
   void SetRendererPreferences(const RendererPreferences& preferences) override;
-  const RendererPreferences& GetRendererPreferences() override;
+  const RendererPreferences& GetRendererPreferences() const override;
   void SetWebPreferences(const web_pref::WebPreferences& preferences) override;
   const web_pref::WebPreferences& GetWebPreferences() override;
   void SetHistoryListFromNavigation(
       int32_t history_offset,
-      base::Optional<int32_t> history_length) override;
+      absl::optional<int32_t> history_length) override;
   void IncreaseHistoryListFromNavigation() override;
-  int32_t HistoryBackListCount() override;
-  int32_t HistoryForwardListCount() override;
+  int32_t HistoryBackListCount() const override;
+  int32_t HistoryForwardListCount() const override;
   const SessionStorageNamespaceId& GetSessionStorageNamespaceId() override;
 
   // Functions to add and remove observers for this object.
@@ -239,9 +245,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   //
   // Add new methods with clear precedence for new use cases.
   void SetBackgroundColorOverrideForFullscreenController(
-      base::Optional<SkColor>);
+      absl::optional<SkColor>);
   void SetBaseBackgroundColorOverrideTransparent(bool override_to_transparent);
-  void SetBaseBackgroundColorOverrideForInspector(base::Optional<SkColor>);
+  void SetBaseBackgroundColorOverrideForInspector(absl::optional<SkColor>);
 
   // Resize the WebView. You likely should be using
   // MainFrameWidget()->Resize instead.
@@ -286,9 +292,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float DefaultMaximumPageScaleFactor() const;
   float ClampPageScaleFactorToLimits(float) const;
   void ResetScaleStateImmediately();
-  base::Optional<mojom::blink::ScreenOrientation> ScreenOrientationOverride();
+  absl::optional<mojom::blink::ScreenOrientation> ScreenOrientationOverride();
 
-  void InvalidateRect(const IntRect&);
+  // This is only for non-composited WebViewPlugin.
+  void InvalidateContainer();
 
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
@@ -318,6 +325,16 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   DevToolsEmulator* GetDevToolsEmulator() const {
     return dev_tools_emulator_.Get();
   }
+
+  // When true, a hint to all WebWidgets that they will never be
+  // user-visible and thus never need to produce pixels for display. This is
+  // separate from page visibility, as background pages can be marked visible in
+  // blink even though they are not user-visible. Page visibility controls blink
+  // behaviour for javascript, timers, and such to inform blink it is in the
+  // foreground or background. Whereas this bit refers to user-visibility and
+  // whether the tab needs to produce pixels to put on the screen at some point
+  // or not.
+  bool widgets_never_composited() const { return widgets_never_composited_; }
 
   // Returns the main frame associated with this view. This will be null when
   // the main frame is remote.
@@ -615,6 +632,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_inside_portal,
       bool does_composite,
+      bool widgets_never_composite,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
@@ -670,6 +688,16 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Callback when this widget window has been displayed by the browser.
   // Corresponds to a Show method call.
   void DidShowCreatedWindow();
+
+  // A value provided by the browser to state that all Widgets in this
+  // WebView's frame tree will never be user-visible and thus never need to
+  // produce pixels for display. This is separate from Page visibility, as
+  // non-user-visible pages can still be marked visible for blink. Page
+  // visibility controls blink behaviour for javascript, timers, and such to
+  // inform blink it is in the foreground or background. Whereas this bit refers
+  // to user-visibility and whether the tab needs to produce pixels to put on
+  // the screen at some point or not.
+  const bool widgets_never_composited_;
 
   // Can be null (e.g. unittests, shared workers, etc).
   WebViewClient* web_view_client_;
@@ -793,9 +821,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
-  base::Optional<SkColor> background_color_override_for_fullscreen_controller_;
+  absl::optional<SkColor> background_color_override_for_fullscreen_controller_;
   bool override_base_background_color_to_transparent_ = false;
-  base::Optional<SkColor> base_background_color_override_for_inspector_;
+  absl::optional<SkColor> base_background_color_override_for_inspector_;
   SkColor base_background_color_ = Color::kWhite;
 
   float zoom_factor_override_ = 0.f;
@@ -848,7 +876,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   mojo::AssociatedRemote<mojom::blink::RemoteMainFrameHost>
       remote_main_frame_host_remote_;
 
-  base::Optional<mojom::blink::ScreenOrientation> screen_orientation_override_;
+  absl::optional<mojom::blink::ScreenOrientation> screen_orientation_override_;
 
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 
@@ -870,4 +898,4 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_VIEW_IMPL_H_

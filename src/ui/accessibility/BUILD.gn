@@ -111,6 +111,8 @@ component("accessibility") {
     "ax_event_generator.cc",
     "ax_event_generator.h",
     "ax_export.h",
+    "ax_hypertext.cc",
+    "ax_hypertext.h",
     "ax_language_detection.cc",
     "ax_language_detection.h",
     "ax_mode_observer.h",
@@ -242,6 +244,8 @@ test("accessibility_unittests") {
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
     "platform/ax_unique_id_unittest.cc",
+    "platform/inspect/ax_inspect_scenario_unittest.cc",
+    "platform/inspect/ax_inspect_utils_unittest.cc",
     "platform/inspect/ax_property_node_unittest.cc",
     "run_all_unittests.cc",
   ]

@@ -81,20 +81,18 @@ class OcclusionQueryTests : public QueryTests {
 
         // Create basic render pipeline
         vsModule = utils::CreateShaderModule(device, R"(
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[stage(vertex)]] fn main() -> void {
-                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0, -1.0),
                     vec2<f32>( 1.0, -1.0));
-                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
         fsModule = utils::CreateShaderModule(device, R"(
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
         utils::ComboRenderPipelineDescriptor2 descriptor;
@@ -255,7 +253,7 @@ TEST_P(OcclusionQueryTests, QueryWithScissorTest) {
     // the WriteBuffer and ResolveQuerySet are not executed in order or the ResolveQuerySet does not
     // copy the result to the buffer. In order to integrate end2end tests to Intel driver CL without
     // unknown issues, skip it until we find the root cause.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
     // Test there are samples passed scissor testing, the expected occlusion result is non-zero.
     TestOcclusionQueryWithScissorTest({2, 1, 2, 1}, OcclusionExpectation::Result::NonZero);
@@ -304,14 +302,15 @@ TEST_P(OcclusionQueryTests, Rewrite) {
 // Test resolving occlusion query correctly if the queries are written sparsely, which also tests
 // the query resetting at the start of render passes on Vulkan backend.
 TEST_P(OcclusionQueryTests, ResolveSparseQueries) {
-    // TODO(hao.x.li@intel.com): Clear the resolve region of the buffer to 0 if there is at least
-    // one query not written and the resolve buffer has been initialized or fully used.
-    DAWN_SKIP_TEST_IF(IsVulkan());
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
     // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
     // the previous occlusion tests. Expect resolve to 0 for these unwritten queries but the
     // occlusion result of the previous tests is got.
-    DAWN_SKIP_TEST_IF(IsD3D12() & IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
 
     constexpr uint32_t kQueryCount = 7;
 
@@ -368,14 +367,10 @@ TEST_P(OcclusionQueryTests, ResolveSparseQueries) {
 
 // Test resolving occlusion query to 0 if all queries are not written
 TEST_P(OcclusionQueryTests, ResolveWithoutWritten) {
-    // TODO(hao.x.li@intel.com): Clear the resolve region of the buffer to 0 if there is at least
-    // one query not written and the resolve buffer has been initialized or fully used.
-    DAWN_SKIP_TEST_IF(IsVulkan());
-
     // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
     // the previous occlusion tests. Expect resolve to 0 but the occlusion result of the previous
     // tests is got.
-    DAWN_SKIP_TEST_IF(IsD3D12() & IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
 
     constexpr uint32_t kQueryCount = 1;
 
@@ -455,7 +450,7 @@ class PipelineStatisticsQueryTests : public QueryTests {
         DawnTest::SetUp();
 
         // Skip all tests if pipeline statistics extension is not supported
-        DAWN_SKIP_TEST_IF(!SupportsExtensions({"pipeline_statistics_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"pipeline_statistics_query"}));
     }
 
     std::vector<const char*> GetRequiredExtensions() override {
@@ -512,11 +507,8 @@ class TimestampQueryTests : public QueryTests {
     void SetUp() override {
         DawnTest::SetUp();
 
-        // TODO(crbug.com/tint/682): error: runtime array not supported yet
-        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
         // Skip all tests if timestamp extension is not supported
-        DAWN_SKIP_TEST_IF(!SupportsExtensions({"timestamp_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"timestamp_query"}));
     }
 
     std::vector<const char*> GetRequiredExtensions() override {
@@ -544,7 +536,7 @@ TEST_P(TimestampQueryTests, QuerySetCreation) {
 TEST_P(TimestampQueryTests, TimestampOnCommandEncoder) {
     // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
     // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     constexpr uint32_t kQueryCount = 2;
 
@@ -712,6 +704,11 @@ TEST_P(TimestampQueryTests, ResolveFromAnotherEncoder) {
 
 // Test resolving timestamp query correctly if the queries are written sparsely
 TEST_P(TimestampQueryTests, ResolveSparseQueries) {
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
     constexpr uint32_t kQueryCount = 4;
 
     wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
@@ -758,14 +755,14 @@ TEST_P(TimestampQueryTests, ResolveWithoutWritten) {
 
 // Test resolving timestamp query to one slot in the buffer
 TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
-    // TODO(hao.x.li@intel.com): Fail to resolve query to buffer with offset on Windows Vulkan and
-    // Metal on Intel platforms, need investigation.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
-    DAWN_SKIP_TEST_IF(IsIntel() && IsMetal());
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
     // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
     // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     constexpr uint32_t kQueryCount = 2;
     constexpr uint64_t kZero = 0;
@@ -777,7 +774,6 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
         wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
-        encoder.WriteTimestamp(querySet, 1);
         encoder.ResolveQuerySet(querySet, 0, 1, destination, 0);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
@@ -792,7 +788,6 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
         wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
-        encoder.WriteTimestamp(querySet, 1);
         encoder.ResolveQuerySet(querySet, 0, 1, destination, sizeof(uint64_t));
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
@@ -800,6 +795,31 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
         EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 0, 1);
         EXPECT_BUFFER(destination, sizeof(uint64_t), sizeof(uint64_t), new TimestampExpectation);
     }
+}
+
+// Test resolving a query set twice into the same destination buffer with potentially overlapping
+// ranges
+TEST_P(TimestampQueryTests, ResolveTwiceToSameBuffer) {
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
+    constexpr uint32_t kQueryCount = 3;
+
+    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.WriteTimestamp(querySet, 0);
+    encoder.WriteTimestamp(querySet, 1);
+    encoder.WriteTimestamp(querySet, 2);
+    encoder.ResolveQuerySet(querySet, 0, 2, destination, 0);
+    encoder.ResolveQuerySet(querySet, 1, 2, destination, sizeof(uint64_t));
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
 }
 
 DAWN_INSTANTIATE_TEST(TimestampQueryTests,

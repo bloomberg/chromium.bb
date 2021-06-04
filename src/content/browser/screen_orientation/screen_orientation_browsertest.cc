@@ -7,25 +7,30 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/screen.h"
 
@@ -274,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest,
   navigation_observer.Wait();
 
   {
-    ASSERT_TRUE(ExecuteScript(shell(), "run();"));
+    ASSERT_TRUE(ExecJs(shell(), "run();"));
 
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     navigation_observer.Wait();
@@ -310,30 +315,15 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
     root_observer.Wait();
     child_observer.Wait();
 
-    int orientation_angle;
-    std::string orientation_type;
+    EXPECT_EQ(angle,
+              EvalJs(root->current_frame_host(), "screen.orientation.angle"));
+    EXPECT_EQ(angle,
+              EvalJs(child->current_frame_host(), "screen.orientation.angle"));
 
-    EXPECT_TRUE(ExecuteScriptAndExtractInt(
-        root->current_frame_host(),
-        "window.domAutomationController.send(screen.orientation.angle)",
-        &orientation_angle));
-    EXPECT_EQ(angle, orientation_angle);
-    EXPECT_TRUE(ExecuteScriptAndExtractInt(
-        child->current_frame_host(),
-        "window.domAutomationController.send(screen.orientation.angle)",
-        &orientation_angle));
-    EXPECT_EQ(angle, orientation_angle);
-
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        root->current_frame_host(),
-        "window.domAutomationController.send(screen.orientation.type)",
-        &orientation_type));
-    EXPECT_EQ(types[i], orientation_type);
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        child->current_frame_host(),
-        "window.domAutomationController.send(screen.orientation.type)",
-        &orientation_type));
-    EXPECT_EQ(types[i], orientation_type);
+    EXPECT_EQ(types[i],
+              EvalJs(root->current_frame_host(), "screen.orientation.type"));
+    EXPECT_EQ(types[i],
+              EvalJs(child->current_frame_host(), "screen.orientation.type"));
   }
 }
 
@@ -388,12 +378,8 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   WaitForResizeComplete(shell()->web_contents());
 #endif  // USE_AURA || defined(OS_ANDROID)
 
-  int orientation_angle;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      root->current_frame_host(),
-      "window.domAutomationController.send(screen.orientation.angle)",
-      &orientation_angle));
-  EXPECT_EQ(expected_angle, orientation_angle);
+  EXPECT_EQ(expected_angle,
+            EvalJs(root->current_frame_host(), "screen.orientation.angle"));
 }
 
 #ifdef OS_ANDROID
@@ -414,27 +400,109 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   RenderFrameHostImpl* frames[] = {root->current_frame_host(),
                                    child->current_frame_host()};
 
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
-                            "document.body.webkitRequestFullscreen()"));
+  EXPECT_TRUE(ExecJs(root->current_frame_host(),
+                     "document.body.webkitRequestFullscreen()"));
   for (const char* type : types) {
     std::string script =
         base::StringPrintf("screen.orientation.lock('%s')", type);
-    EXPECT_TRUE(ExecuteScript(child->current_frame_host(), script));
+    EXPECT_TRUE(ExecJs(child->current_frame_host(), script));
 
     for (auto* frame : frames) {
       std::string orientation_type;
       while (type != orientation_type) {
-        EXPECT_TRUE(ExecuteScriptAndExtractString(
-            frame,
-            "window.domAutomationController.send(screen.orientation.type)",
-            &orientation_type));
+        orientation_type =
+            EvalJs(frame, "screen.orientation.type").ExtractString();
       }
     }
 
-    EXPECT_TRUE(ExecuteScript(child->current_frame_host(),
-                              "screen.orientation.unlock()"));
+    EXPECT_TRUE(
+        ExecJs(child->current_frame_host(), "screen.orientation.unlock()"));
   }
 }
 #endif  // OS_ANDROID
+
+class ScreenOrientationLockForPrerenderBrowserTest
+    : public ScreenOrientationBrowserTest {
+ public:
+  ScreenOrientationLockForPrerenderBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &ScreenOrientationLockForPrerenderBrowserTest::web_contents,
+            base::Unretained(this))) {
+    feature_list_.InitAndEnableFeature(blink::features::kPrerender2);
+  }
+  void SetUpOnMainThread() override {
+    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+    ScreenOrientationBrowserTest::SetUpOnMainThread();
+  }
+
+  content::WebContents* web_contents() { return shell()->web_contents(); }
+
+ protected:
+  test::PrerenderTestHelper prerender_helper_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class FakeScreenOrientationDelegate : public ScreenOrientationDelegate {
+ public:
+  FakeScreenOrientationDelegate() {
+    ScreenOrientationProvider::SetDelegate(this);
+  }
+
+  ~FakeScreenOrientationDelegate() override = default;
+
+  bool FullScreenRequired(WebContents* web_contents) override { return false; }
+
+  bool ScreenOrientationProviderSupported() override { return true; }
+
+  void Lock(
+      WebContents* web_contents,
+      device::mojom::ScreenOrientationLockType lock_orientation) override {
+    lock_count_++;
+  }
+
+  void Unlock(WebContents* web_contents) override { unlock_count_++; }
+
+  int lock_count() const { return lock_count_; }
+  int unlock_count() const { return unlock_count_; }
+
+ private:
+  int lock_count_ = 0;
+  int unlock_count_ = 0;
+};
+
+// Unlock should not triggered the orientation upon the completion of a
+// non-primary navigation.
+IN_PROC_BROWSER_TEST_F(ScreenOrientationLockForPrerenderBrowserTest,
+                       ShouldNotUnlockWhenPrerenderNavigation) {
+  FakeScreenOrientationDelegate delegate;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a site.
+  GURL initial_url =
+      embedded_test_server()->GetURL("/prerender/add_prerender.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), initial_url, 1);
+
+  EXPECT_TRUE(ExecuteScript(web_contents()->GetMainFrame(),
+                            "screen.orientation.lock('portrait')"));
+
+  // Delegate did apply lock once.
+  EXPECT_EQ(1, delegate.lock_count());
+  EXPECT_EQ(0, delegate.unlock_count());
+
+  GURL prerender_url = embedded_test_server()->GetURL("/title2.html");
+
+  // Prerender to another site.
+  prerender_helper_.AddPrerender(prerender_url);
+
+  // Delegate should not apply unlock.
+  EXPECT_EQ(0, delegate.unlock_count());
+
+  // Navigate to the prerendered site.
+  prerender_helper_.NavigatePrimaryPage(prerender_url);
+
+  // Delegate did apply unlock once.
+  EXPECT_EQ(1, delegate.unlock_count());
+}
 
 } // namespace content

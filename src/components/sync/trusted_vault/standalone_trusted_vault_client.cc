@@ -100,7 +100,7 @@ void PrimaryAccountObserver::UpdatePrimaryAccountIfNeeded() {
 
   // IdentityManager returns empty CoreAccountInfo if there is no primary
   // account.
-  base::Optional<CoreAccountInfo> optional_primary_account;
+  absl::optional<CoreAccountInfo> optional_primary_account;
   if (!primary_account_.IsEmpty()) {
     optional_primary_account = primary_account_;
   }
@@ -139,15 +139,11 @@ StandaloneTrustedVaultClient::StandaloneTrustedVaultClient(
     : backend_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner(kBackendTaskTraits)),
       access_token_fetcher_frontend_(identity_manager) {
-  if (!base::FeatureList::IsEnabled(
-          switches::kSyncSupportTrustedVaultPassphrase)) {
-    return;
-  }
-
   std::unique_ptr<TrustedVaultConnection> connection;
   GURL trusted_vault_service_gurl =
       ExtractTrustedVaultServiceURLFromCommandLine();
-  if (base::FeatureList::IsEnabled(switches::kFollowTrustedVaultKeyRotation) &&
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncSupportTrustedVaultPassphraseRecovery) &&
       trusted_vault_service_gurl.is_valid()) {
     connection = std::make_unique<TrustedVaultConnectionImpl>(
         trusted_vault_service_gurl, url_loader_factory->Clone(),
@@ -171,13 +167,11 @@ StandaloneTrustedVaultClient::StandaloneTrustedVaultClient(
 }
 
 StandaloneTrustedVaultClient::~StandaloneTrustedVaultClient() {
-  if (backend_) {
-    // |backend_| needs to be destroyed inside backend sequence, not the current
-    // one. Destroy |primary_account_observer_| that owns pointer to |backend_|
-    // as well and release |backend_| in |backend_task_runner_|.
-    primary_account_observer_.reset();
-    backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
-  }
+  // |backend_| needs to be destroyed inside backend sequence, not the current
+  // one. Destroy |primary_account_observer_| that owns pointer to |backend_|
+  // as well and release |backend_| in |backend_task_runner_|.
+  primary_account_observer_.reset();
+  backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
 }
 
 void StandaloneTrustedVaultClient::AddObserver(Observer* observer) {
@@ -254,13 +248,14 @@ void StandaloneTrustedVaultClient::GetIsRecoverabilityDegraded(
 void StandaloneTrustedVaultClient::AddTrustedRecoveryMethod(
     const std::string& gaia_id,
     const std::vector<uint8_t>& public_key,
+    int method_type_hint,
     base::OnceClosure cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod,
-                     backend_, gaia_id, public_key,
+                     backend_, gaia_id, public_key, method_type_hint,
                      BindToCurrentSequence(std::move(cb))));
 }
 
@@ -272,7 +267,7 @@ void StandaloneTrustedVaultClient::WaitForFlushForTesting(
 }
 
 void StandaloneTrustedVaultClient::FetchBackendPrimaryAccountForTesting(
-    base::OnceCallback<void(const base::Optional<CoreAccountInfo>&)> cb) const {
+    base::OnceCallback<void(const absl::optional<CoreAccountInfo>&)> cb) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   base::PostTaskAndReplyWithResult(
@@ -291,6 +286,19 @@ void StandaloneTrustedVaultClient::SetRecoverabilityDegradedForTesting() {
       base::BindOnce(
           &StandaloneTrustedVaultBackend::SetRecoverabilityDegradedForTesting,
           backend_));
+}
+
+void StandaloneTrustedVaultClient::
+    GetLastAddedRecoveryMethodPublicKeyForTesting(
+        base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  base::PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&StandaloneTrustedVaultBackend::
+                         GetLastAddedRecoveryMethodPublicKeyForTesting,
+                     backend_),
+      std::move(callback));
 }
 
 void StandaloneTrustedVaultClient::NotifyRecoverabilityDegradedChanged() {

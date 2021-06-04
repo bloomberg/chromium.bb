@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_processor_impl_delegate.h"
-#include "chrome/browser/prefetch/speculation_host_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -50,6 +48,7 @@
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/feed/buildflags.h"
+#include "components/live_caption/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_processor_impl.h"
 #include "components/performance_manager/embedder/binders.h"
@@ -104,7 +103,7 @@
 #include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #else
-#include "chrome/browser/accessibility/caption_host_impl.h"
+#include "chrome/browser/accessibility/live_caption_speech_recognition_host.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/cart/commerce_hint_service.h"
@@ -140,7 +139,6 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
-#include "chrome/common/caption.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/search/ntp_features.h"
 #include "media/base/media_switches.h"
@@ -179,8 +177,6 @@
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm.mojom.h"
@@ -196,12 +192,14 @@
 #include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/components/connectivity_diagnostics/connectivity_diagnostics_ui.h"
 #include "chromeos/components/diagnostics_ui/diagnostics_ui.h"
+#include "chromeos/components/diagnostics_ui/mojom/input_data_provider.mojom.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_routine_controller.mojom.h"
 #include "chromeos/components/eche_app_ui/eche_app_ui.h"
 #include "chromeos/components/eche_app_ui/mojom/eche_app.mojom.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
+#include "chromeos/components/help_app_ui/search/search.mojom.h"
 #include "chromeos/components/local_search_service/public/mojom/index.mojom.h"
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/media_app_ui.mojom.h"
@@ -461,7 +459,7 @@ void BindSpeechRecognitionContextHandler(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionContext> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
-  if (base::FeatureList::IsEnabled(media::kLiveCaption)) {
+  if (media::IsLiveCaptionFeatureEnabled()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     CrosSpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
         std::move(receiver));
@@ -476,7 +474,7 @@ void BindSpeechRecognitionClientBrowserInterfaceHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SpeechRecognitionClientBrowserInterface>
         receiver) {
-  if (base::FeatureList::IsEnabled(media::kLiveCaption)) {
+  if (media::IsLiveCaptionFeatureEnabled()) {
     Profile* profile = Profile::FromBrowserContext(
         frame_host->GetProcess()->GetBrowserContext());
 
@@ -485,15 +483,17 @@ void BindSpeechRecognitionClientBrowserInterfaceHandler(
   }
 }
 
-void BindCaptionContextHandler(
+void BindSpeechRecognitionRecognizerClientHandler(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<chrome::mojom::CaptionHost> receiver) {
+    mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizerClient>
+        receiver) {
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
-      base::FeatureList::IsEnabled(media::kLiveCaption)) {
-    captions::CaptionHostImpl::Create(frame_host, std::move(receiver));
+      media::IsLiveCaptionFeatureEnabled()) {
+    captions::LiveCaptionSpeechRecognitionHost::Create(frame_host,
+                                                       std::move(receiver));
   }
 }
 #endif
@@ -608,8 +608,8 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindSpeechRecognitionContextHandler));
   map->Add<media::mojom::SpeechRecognitionClientBrowserInterface>(
       base::BindRepeating(&BindSpeechRecognitionClientBrowserInterfaceHandler));
-  map->Add<chrome::mojom::CaptionHost>(
-      base::BindRepeating(&BindCaptionContextHandler));
+  map->Add<media::mojom::SpeechRecognitionRecognizerClient>(
+      base::BindRepeating(&BindSpeechRecognitionRecognizerClientHandler));
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
@@ -619,9 +619,6 @@ void PopulateChromeFrameBinders(
         base::BindRepeating(&DraggableRegionsHostImpl::CreateIfAllowed));
   }
 #endif
-
-  map->Add<blink::mojom::SpeculationHost>(
-      base::BindRepeating(&SpeculationHostImpl::Bind));
 }
 
 void PopulateChromeWebUIFrameBinders(
@@ -661,7 +658,7 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<memories::mojom::PageHandler,
+  RegisterWebUIControllerInterfaceBinder<history_clusters::mojom::PageHandler,
                                          MemoriesUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -753,10 +750,6 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::CrostiniUpgraderUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::machine_learning::mojom::PageHandler,
-      chromeos::machine_learning::MachineLearningInternalsUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<
       chromeos::multidevice_setup::mojom::MultiDeviceSetup, chromeos::OobeUI,
       chromeos::multidevice::ProximityAuthUI,
       chromeos::multidevice_setup::MultiDeviceSetupDialogUI>(map);
@@ -788,8 +781,19 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::local_search_service::mojom::Index, chromeos::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
+      chromeos::help_app::mojom::SearchHandler, chromeos::HelpAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
       chromeos::eche_app::mojom::SignalingMessageExchanger,
       chromeos::eche_app::EcheAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::eche_app::mojom::SystemInfoProvider,
+      chromeos::eche_app::EcheAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::eche_app::mojom::UidGenerator, chromeos::eche_app::EcheAppUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<
       media_app_ui::mojom::PageHandlerFactory, chromeos::MediaAppUI>(map);
@@ -801,6 +805,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines,
       chromeos::NetworkUI, chromeos::ConnectivityDiagnosticsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::diagnostics::mojom::InputDataProvider,
+      chromeos::DiagnosticsDialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::diagnostics::mojom::SystemDataProvider,

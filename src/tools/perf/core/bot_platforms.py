@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
-import urllib
+import six.moves.urllib.parse  # pylint: disable=import-error
 
 from core import benchmark_finders
 from core import benchmark_utils
@@ -123,7 +123,7 @@ class PerfPlatform(object):
   @property
   def builder_url(self):
     return ('https://ci.chromium.org/p/chrome/builders/ci/%s' %
-             urllib.quote(self._name))
+            six.moves.urllib.parse.quote(self._name))
 
 
 class BenchmarkConfig(object):
@@ -222,7 +222,11 @@ def _GetBenchmarkConfig(benchmark_name, abridged=False):
 OFFICIAL_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig(b.Name()) for b in OFFICIAL_BENCHMARKS])
 # power.mobile requires special hardware.
-OFFICIAL_BENCHMARK_CONFIGS = OFFICIAL_BENCHMARK_CONFIGS.Remove(['power.mobile'])
+# only run blink_perf.sanitizer-api on linux-perf.
+OFFICIAL_BENCHMARK_CONFIGS = OFFICIAL_BENCHMARK_CONFIGS.Remove([
+    'power.mobile',
+    'blink_perf.sanitizer-api',
+])
 # TODO(crbug.com/965158): Remove OFFICIAL_BENCHMARK_NAMES once sharding
 # scripts are no longer using it.
 OFFICIAL_BENCHMARK_NAMES = frozenset(
@@ -307,6 +311,8 @@ _CHROME_HEALTH_BENCHMARK_CONFIGS_DESKTOP = PerfSuite([
 _LINUX_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
     'blink_perf.display_locking',
     'v8.runtime_stats.top_25',
+]).Add([
+    'blink_perf.sanitizer-api',
 ])
 _LINUX_EXECUTABLE_CONFIGS = frozenset([
     # TODO(crbug.com/811766): Add views_perftests.
@@ -361,9 +367,11 @@ _WIN_10_LOW_END_BENCHMARK_CONFIGS = PerfSuite(
     ])
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('v8.browsing_desktop'),
-    _GetBenchmarkConfig('rendering.desktop'),
+    _GetBenchmarkConfig('rendering.desktop', abridged=True),
 ])
 _WIN_10_AMD_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream'),
+    _GetBenchmarkConfig('jetstream2'),
     _GetBenchmarkConfig('kraken'),
     _GetBenchmarkConfig('octane'),
     _GetBenchmarkConfig('system_health.common_desktop'),
@@ -471,10 +479,11 @@ _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
 ])
 _FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_desktop'),
-    _GetBenchmarkConfig('media.desktop')
+    _GetBenchmarkConfig('media.mobile')
 ])
 _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('blink_perf.shadow_dom'),
 ])
 
 

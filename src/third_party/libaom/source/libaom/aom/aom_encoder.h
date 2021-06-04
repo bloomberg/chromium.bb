@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 #include "aom/aom_codec.h"
+#include "aom/aom_external_partition.h"
 
 /*!\brief Current ABI version number
  *
@@ -41,7 +42,7 @@ extern "C" {
  * fields to structures
  */
 #define AOM_ENCODER_ABI_VERSION \
-  (9 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
+  (9 + AOM_CODEC_ABI_VERSION + AOM_EXT_PART_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Encoder capabilities bitfield
  *
@@ -293,10 +294,6 @@ typedef struct cfg_options {
    *
    */
   unsigned int disable_smooth_intra;
-  /*!\brief disable D45 to D203 intra modes
-   *
-   */
-  unsigned int disable_diagonal_intra;
   /*!\brief disable filter intra
    *
    */

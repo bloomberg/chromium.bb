@@ -18,7 +18,6 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "components/exo/buffer.h"
@@ -48,9 +47,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
-
-#include "ash/wm/resize_shadow.h"
-#include "ash/wm/resize_shadow_controller.h"
 
 namespace exo {
 
@@ -486,7 +482,7 @@ TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
   // manager.
   EXPECT_TRUE(ash::WindowState::Get(child_window)->allow_set_bounds_direct());
   EXPECT_EQ(ash::kShellWindowId_ShelfBubbleContainer,
-            child_window->parent()->id());
+            child_window->parent()->GetId());
 
   // NONE/SHADOW frame type should work on override redirect.
   child_surface->SetFrame(SurfaceFrameType::SHADOW);
@@ -982,7 +978,7 @@ TEST_F(ShellSurfaceTest, Popup) {
 
   // Verify that created shell surface is popup and has capture.
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
-            popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+            popup_shell_surface->GetWidget()->GetNativeWindow()->GetType());
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
 
@@ -1006,7 +1002,7 @@ TEST_F(ShellSurfaceTest, Popup) {
   // The capture should be on sub_popup_shell_surface.
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             target);
-  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP, target->type());
+  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP, target->GetType());
 
   {
     // Mouse is on the top most popup.
@@ -1080,7 +1076,7 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
 
   // Verify that created shell surface is popup and has capture.
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
-            popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+            popup_shell_surface->GetWidget()->GetNativeWindow()->GetType());
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
 
@@ -1455,6 +1451,11 @@ TEST_F(ShellSurfaceTest, Overlay) {
   EXPECT_NE(shell_surface->GetWidget()->GetFocusManager()->GetFocusedView(),
             textfield_ptr);
 
+  EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+  EXPECT_EQ(gfx::Size(100, 100), shell_surface->overlay_widget_for_testing()
+                                     ->GetWindowBoundsInScreen()
+                                     .size());
+
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::VKEY_X, 0);
   generator->ReleaseKey(ui::VKEY_X, 0);
@@ -1498,6 +1499,63 @@ TEST_F(ShellSurfaceTest, Overlay) {
   generator->ReleaseKey(ui::VKEY_Y, 0);
   EXPECT_EQ(textfield_ptr->GetText(), u"y");
   EXPECT_TRUE(textfield_ptr->GetSelectedText().empty());
+}
+
+TEST_F(ShellSurfaceTest, OverlayOverlapsFrame) {
+  auto shell_surface =
+      test::ShellSurfaceBuilder({100, 100}).BuildShellSurface();
+  shell_surface->GetWidget()->GetNativeWindow()->SetProperty(
+      aura::client::kSkipImeProcessing, true);
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+
+  EXPECT_FALSE(shell_surface->HasOverlay());
+
+  ShellSurfaceBase::OverlayParams params(std::make_unique<views::View>());
+  params.overlaps_frame = false;
+  shell_surface->AddOverlay(std::move(params));
+  EXPECT_TRUE(shell_surface->HasOverlay());
+
+  {
+    gfx::Size overlay_size =
+        shell_surface->GetWidget()->GetWindowBoundsInScreen().size();
+    overlay_size.set_height(overlay_size.height() - views::kCaptionButtonWidth);
+    EXPECT_EQ(overlay_size, shell_surface->overlay_widget_for_testing()
+                                ->GetWindowBoundsInScreen()
+                                .size());
+  }
+
+  shell_surface->OnSetFrame(SurfaceFrameType::NONE);
+  {
+    gfx::Size overlay_size =
+        shell_surface->GetWidget()->GetWindowBoundsInScreen().size();
+    EXPECT_EQ(overlay_size, shell_surface->overlay_widget_for_testing()
+                                ->GetWindowBoundsInScreen()
+                                .size());
+  }
+}
+
+TEST_F(ShellSurfaceTest, OverlayCanResize) {
+  auto shell_surface =
+      test::ShellSurfaceBuilder({100, 100}).BuildShellSurface();
+  shell_surface->GetWidget()->GetNativeWindow()->SetProperty(
+      aura::client::kSkipImeProcessing, true);
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+
+  EXPECT_FALSE(shell_surface->HasOverlay());
+  {
+    ShellSurfaceBase::OverlayParams params(std::make_unique<views::View>());
+    params.can_resize = false;
+    shell_surface->AddOverlay(std::move(params));
+  }
+  EXPECT_FALSE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+
+  shell_surface->RemoveOverlay();
+  {
+    ShellSurfaceBase::OverlayParams params(std::make_unique<views::View>());
+    params.can_resize = true;
+    shell_surface->AddOverlay(std::move(params));
+  }
+  EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
 }
 
 }  // namespace exo

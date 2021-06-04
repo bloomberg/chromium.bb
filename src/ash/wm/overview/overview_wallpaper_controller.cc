@@ -44,9 +44,7 @@ OverviewWallpaperController::OverviewWallpaperController() {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
-OverviewWallpaperController::~OverviewWallpaperController() {
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-}
+OverviewWallpaperController::~OverviewWallpaperController() = default;
 
 // static
 void OverviewWallpaperController::SetDisableChangeWallpaperForTest(
@@ -63,16 +61,20 @@ void OverviewWallpaperController::Unblur() {
 }
 
 void OverviewWallpaperController::OnTabletModeStarted() {
-  UpdateWallpaper(wallpaper_blurred_, /*animate=*/base::nullopt);
+  UpdateWallpaper(wallpaper_blurred_, /*animate=*/absl::nullopt);
 }
 
 void OverviewWallpaperController::OnTabletModeEnded() {
-  UpdateWallpaper(wallpaper_blurred_, /*animate=*/base::nullopt);
+  UpdateWallpaper(wallpaper_blurred_, /*animate=*/absl::nullopt);
+}
+
+void OverviewWallpaperController::OnTabletControllerDestroyed() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void OverviewWallpaperController::UpdateWallpaper(
     bool should_blur,
-    base::Optional<bool> animate) {
+    absl::optional<bool> animate) {
   if (!IsWallpaperChangeAllowed())
     return;
 

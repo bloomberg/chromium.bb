@@ -21,6 +21,8 @@
 #include "device/fido/cable/v2_registration.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/obj.h"
 
 // These "headers" actually contain several function definitions and thus can
 // only be included once across Chromium.
@@ -109,7 +111,7 @@ base::span<const uint8_t> JavaByteArrayToSpan(
 // the span is not of the correct length. Be aware that the reference for |data|
 // must outlive the span.
 template <size_t N>
-base::Optional<base::span<const uint8_t, N>> JavaByteArrayToFixedSpan(
+absl::optional<base::span<const uint8_t, N>> JavaByteArrayToFixedSpan(
     JNIEnv* env,
     const JavaParamRef<jbyteArray>& data) {
   static_assert(N != 0,
@@ -117,12 +119,12 @@ base::Optional<base::span<const uint8_t, N>> JavaByteArrayToFixedSpan(
                 "inputs will always be rejected here.");
 
   if (data.is_null()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const size_t data_len = env->GetArrayLength(data);
   if (data_len != N) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   const jbyte* data_bytes = env->GetByteArrayElements(data, /*iscopy=*/nullptr);
   return base::as_bytes(base::make_span<N>(data_bytes, data_len));
@@ -139,24 +141,12 @@ struct GlobalData {
   // reserved so that functions can still return that to indicate an error.
   jlong instance_num = 1;
 
-  base::Optional<std::array<uint8_t, device::cablev2::kRootSecretSize>>
+  absl::optional<std::array<uint8_t, device::cablev2::kRootSecretSize>>
       root_secret;
   network::mojom::NetworkContext* network_context = nullptr;
 
   // registration is a non-owning pointer to the global |Registration|.
   device::cablev2::authenticator::Registration* registration = nullptr;
-
-  // activity_class_name is the name of a Java class that should be the target
-  // of any notifications shown.
-  std::string activity_class_name;
-
-  // interaction_ready_callback is called when the |CableAuthenticatorUI|
-  // Fragment comes into the foreground after a request to do so from the
-  // |AndroidPlatform|. The |cable_authenticator| parameter is a reference to
-  // the newly created |CableAuthenticator| Java object, which can be used to
-  // start interactive actions such a getting an assertion.
-  base::OnceCallback<void(ScopedJavaGlobalRef<jobject> cable_authenticator)>
-      interaction_ready_callback;
 
   // current_transaction holds the |Transaction| that is currently active.
   std::unique_ptr<device::cablev2::authenticator::Transaction>
@@ -165,19 +155,24 @@ struct GlobalData {
   // pending_make_credential_callback holds the callback that the
   // |Authenticator| expects to be run once a makeCredential operation has
   // completed.
-  base::Optional<
+  absl::optional<
       device::cablev2::authenticator::Platform::MakeCredentialCallback>
       pending_make_credential_callback;
   // pending_get_assertion_callback holds the callback that the
   // |Authenticator| expects to be run once a getAssertion operation has
   // completed.
-  base::Optional<device::cablev2::authenticator::Platform::GetAssertionCallback>
+  absl::optional<device::cablev2::authenticator::Platform::GetAssertionCallback>
       pending_get_assertion_callback;
 
   // usb_callback holds the callback that receives data from a USB connection.
-  base::Optional<
-      base::RepeatingCallback<void(base::Optional<base::span<const uint8_t>>)>>
+  absl::optional<
+      base::RepeatingCallback<void(absl::optional<base::span<const uint8_t>>)>>
       usb_callback;
+
+  // pending_event holds a cloud message while we are waiting for the user to
+  // tap on the notification.
+  std::unique_ptr<device::cablev2::authenticator::Registration::Event>
+      pending_event;
 };
 
 // GetGlobalData returns a pointer to the unique |GlobalData| for the address
@@ -193,6 +188,8 @@ void ResetGlobalData() {
   global_data.pending_make_credential_callback.reset();
   global_data.pending_get_assertion_callback.reset();
   global_data.usb_callback.reset();
+  // pending_event is not reset because a notification might still exist that
+  // depends on it.
 }
 
 // AndroidBLEAdvert wraps a Java |BLEAdvert| object so that
@@ -232,66 +229,45 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
   AndroidPlatform(JNIEnv* env,
                   const JavaRef<jobject>& cable_authenticator,
                   bool is_usb)
-      : env_(env),
-        cable_authenticator_(cable_authenticator),
-        is_usb_(is_usb),
-        need_to_disable_bluetooth_(false) {
+      : env_(env), cable_authenticator_(cable_authenticator), is_usb_(is_usb) {
     DCHECK(env_->IsInstanceOf(
         cable_authenticator_.obj(),
         org_chromium_chrome_browser_webauth_authenticator_CableAuthenticator_clazz(
             env)));
   }
 
-  // This constructor may be used when a |CableAuthenticator| reference is
-  // unavailable because the code is running in the background. Sending BLE
-  // adverts is possible in this state, but performing anything that requires
-  // interaction (i.e. making a credential or getting an assertion) is not. If
-  // anything requiring interaction is requested then the given callback will be
-  // called. It must arrange for a foreground |CableAuthenticator| to start and,
-  // when ready, call the passed callback with a reference to it. The pending
-  // action will then complete as normal.
-  AndroidPlatform(JNIEnv* env,
-                  InteractionNeededCallback interaction_needed_callback,
-                  bool need_to_disable_bluetooth)
-      : env_(env),
-        interaction_needed_callback_(std::move(interaction_needed_callback)),
-        is_usb_(false),
-        need_to_disable_bluetooth_(need_to_disable_bluetooth) {}
-
-  ~AndroidPlatform() override {
-    if (notification_showing_) {
-      Java_CableAuthenticator_dropNotification(env_);
-    }
-    if (need_to_disable_bluetooth_) {
-      Java_CableAuthenticator_disableBluetooth(env_);
-    }
-  }
+  ~AndroidPlatform() override = default;
 
   // Platform:
   void MakeCredential(std::unique_ptr<MakeCredentialParams> params) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (cable_authenticator_) {
-      CallMakeCredential(std::move(params));
-      return;
-    }
+    GlobalData& global_data = GetGlobalData();
+    DCHECK(!global_data.pending_make_credential_callback);
+    global_data.pending_make_credential_callback = std::move(params->callback);
 
-    DCHECK(!pending_make_credential_);
-    pending_make_credential_ = std::move(params);
-    NeedInteractive();
+    Java_CableAuthenticator_makeCredential(
+        env_, cable_authenticator_,
+        ConvertUTF8ToJavaString(env_, params->rp_id),
+        ToJavaByteArray(env_, params->client_data_hash),
+        ToJavaByteArray(env_, params->user_id),
+        ToJavaIntArray(env_, params->algorithms),
+        ToJavaArrayOfByteArray(env_, params->excluded_cred_ids),
+        params->resident_key_required);
   }
 
   void GetAssertion(std::unique_ptr<GetAssertionParams> params) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (cable_authenticator_) {
-      CallGetAssertion(std::move(params));
-      return;
-    }
+    GlobalData& global_data = GetGlobalData();
+    DCHECK(!global_data.pending_get_assertion_callback);
+    global_data.pending_get_assertion_callback = std::move(params->callback);
 
-    DCHECK(!pending_get_assertion_);
-    pending_get_assertion_ = std::move(params);
-    NeedInteractive();
+    Java_CableAuthenticator_getAssertion(
+        env_, cable_authenticator_,
+        ConvertUTF8ToJavaString(env_, params->rp_id),
+        ToJavaByteArray(env_, params->client_data_hash),
+        ToJavaArrayOfByteArray(env_, params->allowed_cred_ids));
   }
 
   void OnStatus(Status status) override {
@@ -330,7 +306,7 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
                                      static_cast<int>(status));
   }
 
-  void OnCompleted(base::Optional<Error> maybe_error) override {
+  void OnCompleted(absl::optional<Error> maybe_error) override {
     LOG(ERROR) << __func__ << " "
                << (maybe_error ? static_cast<int>(*maybe_error) : -1);
 
@@ -359,6 +335,9 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
           result = CableV2MobileResult::kUnknownCommand;
           break;
         case Error::INTERNAL_ERROR:
+        case Error::SERVER_LINK_WRONG_LENGTH:
+        case Error::SERVER_LINK_NOT_ON_CURVE:
+        case Error::NO_SCREENLOCK:
           result = CableV2MobileResult::kInternalError;
           break;
       }
@@ -393,87 +372,13 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
   }
 
  private:
-  void CallMakeCredential(std::unique_ptr<MakeCredentialParams> params) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    GlobalData& global_data = GetGlobalData();
-    DCHECK(!global_data.pending_make_credential_callback);
-    global_data.pending_make_credential_callback = std::move(params->callback);
-
-    Java_CableAuthenticator_makeCredential(
-        env_, cable_authenticator_,
-        ConvertUTF8ToJavaString(env_, params->rp_id),
-        ToJavaByteArray(env_, params->client_data_hash),
-        ToJavaByteArray(env_, params->user_id),
-        ToJavaIntArray(env_, params->algorithms),
-        ToJavaArrayOfByteArray(env_, params->excluded_cred_ids),
-        params->resident_key_required);
-  }
-
-  void CallGetAssertion(std::unique_ptr<GetAssertionParams> params) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    GlobalData& global_data = GetGlobalData();
-    DCHECK(!global_data.pending_get_assertion_callback);
-    global_data.pending_get_assertion_callback = std::move(params->callback);
-
-    Java_CableAuthenticator_getAssertion(
-        env_, cable_authenticator_,
-        ConvertUTF8ToJavaString(env_, params->rp_id),
-        ToJavaByteArray(env_, params->client_data_hash),
-        ToJavaArrayOfByteArray(env_, params->allowed_cred_ids));
-  }
-
-  // NeedInteractive is called when this object is operating in the background,
-  // but we need to trigger interactive mode in order to show UI.
-  void NeedInteractive() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    notification_showing_ = true;
-    std::move(interaction_needed_callback_)
-        .Run(base::BindOnce(&AndroidPlatform::OnInteractionReady,
-                            weak_factory_.GetWeakPtr()));
-  }
-
-  // OnInteractionReady is called when the caBLE Activity is running in the
-  // foreground after a |NeedInteractive| call.
-  void OnInteractionReady(ScopedJavaGlobalRef<jobject> cable_authenticator) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(!cable_authenticator_);
-    DCHECK(notification_showing_);
-    DCHECK(env_->IsInstanceOf(
-        cable_authenticator.obj(),
-        org_chromium_chrome_browser_webauth_authenticator_CableAuthenticator_clazz(
-            env_)));
-
-    RecordEvent(CableV2MobileEvent::kInteractionReady);
-    cable_authenticator_ = std::move(cable_authenticator);
-    notification_showing_ = false;
-
-    DCHECK(static_cast<bool>(pending_make_credential_) ^
-           static_cast<bool>(pending_get_assertion_));
-    if (pending_make_credential_) {
-      CallMakeCredential(std::move(pending_make_credential_));
-    } else {
-      CallGetAssertion(std::move(pending_get_assertion_));
-    }
-  }
-
   JNIEnv* const env_;
-  bool notification_showing_ = false;
   ScopedJavaGlobalRef<jobject> cable_authenticator_;
-  std::unique_ptr<MakeCredentialParams> pending_make_credential_;
-  std::unique_ptr<GetAssertionParams> pending_get_assertion_;
-  InteractionNeededCallback interaction_needed_callback_;
-  base::Optional<base::ElapsedTimer> tunnel_server_connect_time_;
+  absl::optional<base::ElapsedTimer> tunnel_server_connect_time_;
 
   // is_usb_ is true if this object was created in order to respond to a client
   // connected over USB.
   const bool is_usb_;
-  // need_to_disable_bluetooth_ is true if Bluetooth was enabled on the system
-  // in order to handle this message and thus should be disabled once handling
-  // is complete.
-  const bool need_to_disable_bluetooth_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<AndroidPlatform> weak_factory_{this};
@@ -495,7 +400,7 @@ class USBTransport : public device::cablev2::authenticator::Transport {
 
   // GetCallback returns callback which will be called repeatedly with data from
   // the USB connection, forwarded via the Java code.
-  base::RepeatingCallback<void(base::Optional<base::span<const uint8_t>>)>
+  base::RepeatingCallback<void(absl::optional<base::span<const uint8_t>>)>
   GetCallback() {
     return base::BindRepeating(&USBTransport::OnData,
                                weak_factory_.GetWeakPtr());
@@ -513,7 +418,7 @@ class USBTransport : public device::cablev2::authenticator::Transport {
   }
 
  private:
-  void OnData(base::Optional<base::span<const uint8_t>> data) {
+  void OnData(absl::optional<base::span<const uint8_t>> data) {
     if (!data) {
       callback_.Run(Disconnected::kDisconnected);
     } else {
@@ -527,18 +432,6 @@ class USBTransport : public device::cablev2::authenticator::Transport {
   base::WeakPtrFactory<USBTransport> weak_factory_{this};
 };
 
-// OnNeedInteractive is called by |AndroidPlatform| when it needs to move from
-// the background to the foreground in order to show UI.
-void OnNeedInteractive(AndroidPlatform::InteractionReadyCallback callback) {
-  RecordEvent(CableV2MobileEvent::kNeedInteractive);
-
-  GlobalData& global_data = GetGlobalData();
-  global_data.interaction_ready_callback = std::move(callback);
-  Java_CableAuthenticator_showNotification(
-      global_data.env, ConvertUTF8ToJavaString(
-                           global_data.env, global_data.activity_class_name));
-}
-
 }  // anonymous namespace
 
 // These functions are the entry points for CableAuthenticator.java and
@@ -547,7 +440,6 @@ void OnNeedInteractive(AndroidPlatform::InteractionReadyCallback callback) {
 static void JNI_CableAuthenticator_Setup(
     JNIEnv* env,
     jlong registration_long,
-    const JavaParamRef<jstring>& activity_class_name,
     jlong network_context_long,
     const JavaParamRef<jbyteArray>& secret) {
   GlobalData& global_data = GetGlobalData();
@@ -571,10 +463,7 @@ static void JNI_CableAuthenticator_Setup(
   }
 
   RecordEvent(CableV2MobileEvent::kSetup);
-
   global_data.env = env;
-  global_data.activity_class_name =
-      ConvertJavaStringToUTF8(activity_class_name);
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     // If kWebAuthPhoneSupport isn't enabled then QR scanning isn't enabled and
@@ -624,7 +513,7 @@ static jlong JNI_CableAuthenticator_StartQR(
 
   GlobalData& global_data = GetGlobalData();
   const std::string& qr_string = ConvertJavaStringToUTF8(qr_url);
-  base::Optional<device::cablev2::qr::Components> decoded_qr(
+  absl::optional<device::cablev2::qr::Components> decoded_qr(
       device::cablev2::qr::Parse(qr_string));
   if (!decoded_qr) {
     FIDO_LOG(ERROR) << "Failed to decode QR: " << qr_string;
@@ -643,7 +532,7 @@ static jlong JNI_CableAuthenticator_StartQR(
           global_data.network_context, *global_data.root_secret,
           ConvertJavaStringToUTF8(authenticator_name), decoded_qr->secret,
           decoded_qr->peer_identity,
-          link ? global_data.registration->contact_id() : base::nullopt);
+          link ? global_data.registration->contact_id() : absl::nullopt);
 
   return ++global_data.instance_num;
 }
@@ -656,14 +545,10 @@ static jlong JNI_CableAuthenticator_StartServerLink(
 
   constexpr size_t kDataSize =
       device::kP256X962Length + device::cablev2::kQRSecretSize;
-  const base::Optional<base::span<const uint8_t, kDataSize>> server_link_data =
+  const absl::optional<base::span<const uint8_t, kDataSize>> server_link_data =
       JavaByteArrayToFixedSpan<kDataSize>(env, server_link_data_java);
-
-  if (!server_link_data) {
-    FIDO_LOG(ERROR) << "Bad length server-link data length";
-    RecordResult(CableV2MobileResult::kInvalidServerLink);
-    return 0;
-  }
+  // validateServerLinkData should have been called to check this already.
+  CHECK(server_link_data);
 
   // Sending pairing information is disabled when doing a server-linked
   // connection, thus the root secret and authenticator name will not be used.
@@ -677,51 +562,22 @@ static jlong JNI_CableAuthenticator_StartServerLink(
       global_data.network_context, dummy_root_secret, dummy_authenticator_name,
       server_link_data
           ->subspan<device::kP256X962Length, device::cablev2::kQRSecretSize>(),
-      server_link_data->subspan<0, device::kP256X962Length>(), base::nullopt);
+      server_link_data->subspan<0, device::kP256X962Length>(), absl::nullopt);
 
   return ++global_data.instance_num;
 }
 
-static void JNI_CableAuthenticator_Unlink(JNIEnv* env) {
-  RecordEvent(CableV2MobileEvent::kUnlink);
-
-  GlobalData& global_data = GetGlobalData();
-  global_data.registration->RotateContactID();
-}
-
-static jlong JNI_CableAuthenticator_OnInteractionReady(
+static jlong JNI_CableAuthenticator_StartCloudMessage(
     JNIEnv* env,
     const JavaParamRef<jobject>& cable_authenticator) {
-  GlobalData& global_data = GetGlobalData();
-  std::move(global_data.interaction_ready_callback)
-      .Run(ScopedJavaGlobalRef<jobject>(cable_authenticator));
-
-  return ++global_data.instance_num;
-}
-
-static void JNI_CableAuthenticator_Stop(JNIEnv* env, jlong instance_num) {
-  GlobalData& global_data = GetGlobalData();
-  if (global_data.instance_num == instance_num) {
-    ResetGlobalData();
-  }
-}
-
-static void JNI_CableAuthenticator_OnCloudMessage(
-    JNIEnv* env,
-    jlong event_long,
-    jboolean need_to_disable_bluetooth) {
   RecordEvent(CableV2MobileEvent::kCloudMessage);
 
-  static_assert(sizeof(jlong) >= sizeof(void*), "");
-  std::unique_ptr<device::cablev2::authenticator::Registration::Event> event(
-      reinterpret_cast<device::cablev2::authenticator::Registration::Event*>(
-          event_long));
-  DCHECK(event->source ==
-             device::cablev2::authenticator::Registration::Type::SYNC ||
-         base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
-
   GlobalData& global_data = GetGlobalData();
-  base::Optional<base::span<const uint8_t>> maybe_contact_id;
+  DCHECK(global_data.pending_event);
+  std::unique_ptr<device::cablev2::authenticator::Registration::Event> event =
+      std::move(global_data.pending_event);
+
+  absl::optional<base::span<const uint8_t>> maybe_contact_id;
   if (event->source ==
       device::cablev2::authenticator::Registration::Type::LINKING) {
     // If the event if from linking then the contact_id must be ready because
@@ -734,12 +590,78 @@ static void JNI_CableAuthenticator_OnCloudMessage(
   // Only the most recent is processed.
   global_data.current_transaction =
       device::cablev2::authenticator::TransactFromFCM(
-          std::make_unique<AndroidPlatform>(env,
-                                            base::BindOnce(&OnNeedInteractive),
-                                            need_to_disable_bluetooth),
+          std::make_unique<AndroidPlatform>(env, cable_authenticator,
+                                            /*is_usb=*/false),
           global_data.network_context, *global_data.root_secret,
           event->routing_id, event->tunnel_id, event->pairing_id,
           event->client_nonce, maybe_contact_id);
+
+  return ++global_data.instance_num;
+}
+
+static void JNI_CableAuthenticator_Unlink(JNIEnv* env) {
+  RecordEvent(CableV2MobileEvent::kUnlink);
+
+  GlobalData& global_data = GetGlobalData();
+  global_data.registration->RotateContactID();
+}
+
+static void JNI_CableAuthenticator_Stop(JNIEnv* env, jlong instance_num) {
+  GlobalData& global_data = GetGlobalData();
+  if (global_data.instance_num == instance_num) {
+    ResetGlobalData();
+  }
+}
+
+static jboolean JNI_CableAuthenticator_OnCloudMessage(JNIEnv* env,
+                                                      jlong event_long) {
+  static_assert(sizeof(jlong) >= sizeof(void*), "");
+  std::unique_ptr<device::cablev2::authenticator::Registration::Event> event(
+      reinterpret_cast<device::cablev2::authenticator::Registration::Event*>(
+          event_long));
+  DCHECK(event->source ==
+             device::cablev2::authenticator::Registration::Type::SYNC ||
+         base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
+
+  bool ret;
+  switch (event->request_type) {
+    case device::FidoRequestType::kMakeCredential:
+      ret = true;
+      break;
+
+    case device::FidoRequestType::kGetAssertion:
+      ret = false;
+      break;
+  }
+
+  GlobalData& global_data = GetGlobalData();
+  global_data.pending_event = std::move(event);
+
+  return ret;
+}
+
+static int JNI_CableAuthenticator_ValidateServerLinkData(
+    JNIEnv* env,
+    const JavaParamRef<jbyteArray>& jdata) {
+  base::span<const uint8_t> data = JavaByteArrayToSpan(env, jdata);
+  if (data.size() != device::kP256X962Length + device::cablev2::kQRSecretSize) {
+    RecordResult(CableV2MobileResult::kInvalidServerLink);
+    return static_cast<int>(device::cablev2::authenticator::Platform::Error::
+                                SERVER_LINK_WRONG_LENGTH);
+  }
+
+  base::span<const uint8_t> x962 = data.subspan(0, device::kP256X962Length);
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
+  if (!EC_POINT_oct2point(p256.get(), point.get(), x962.data(), x962.size(),
+                          /*ctx=*/nullptr)) {
+    RecordResult(CableV2MobileResult::kInvalidServerLink);
+    return static_cast<int>(device::cablev2::authenticator::Platform::Error::
+                                SERVER_LINK_NOT_ON_CURVE);
+  }
+
+  return 0;
 }
 
 static void JNI_CableAuthenticator_OnAuthenticatorAttestationResponse(
@@ -786,7 +708,7 @@ static void JNI_USBHandler_OnUSBData(JNIEnv* env,
   }
 
   if (!usb_data) {
-    global_data.usb_callback->Run(base::nullopt);
+    global_data.usb_callback->Run(absl::nullopt);
   } else {
     global_data.usb_callback->Run(JavaByteArrayToSpan(env, usb_data));
   }

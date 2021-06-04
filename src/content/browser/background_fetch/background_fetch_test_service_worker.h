@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -96,4 +96,4 @@ class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_EMBEDDED_WORKER_TEST_HELPER_H_
+#endif  // CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_SERVICE_WORKER_H_

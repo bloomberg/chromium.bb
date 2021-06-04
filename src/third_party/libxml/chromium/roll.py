@@ -66,8 +66,6 @@ import tempfile
 #    e. Complete the review as usual
 
 PATCHES = [
-    # TODO(dcheng): reach out upstream to see what's going on here.
-    'revert-non-recursive-xml-parsing.patch',
     'chromium-issue-599427.patch',
     'chromium-issue-628581.patch',
     'libxml2-2.9.4-security-xpath-nodetab-uaf.patch',
@@ -402,7 +400,7 @@ def roll_libxml_win32(src_path):
             shutil.move('../include/libxml/xmlversion.h',
                         '../../win32/include/libxml/xmlversion.h')
             git('add', '../../win32/include/libxml/xmlversion.h')
-            git('commit', '-m', 'Windows')
+            git('commit', '--allow-empty', '-m', 'Windows')
             git('clean', '-f')
     print('Now push to Mac and run steps there.')
 

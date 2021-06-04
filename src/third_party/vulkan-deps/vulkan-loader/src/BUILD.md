@@ -11,6 +11,7 @@ Instructions for building this repository on Linux, Windows, and MacOS.
 1. [Linux Build](#building-on-linux)
 1. [MacOS build](#building-on-macos)
 1. [Fuchsia build](#building-on-fuchsia)
+1. [QNX build](#building-on-qnx)
 
 ## Contributing to the Repository
 
@@ -172,6 +173,7 @@ on/off options currently supported by this repository:
 | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the loader with the Xlib entry points enabled. Without this, the X11 headers should not be needed, but the extension `VK_KHR_xlib_surface` won't be available. |
 | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the loader with the Wayland entry points enabled. Without this, the Wayland headers should not be needed, but the extension `VK_KHR_wayland_surface` won't be available. |
 | BUILD_WSI_DIRECTFB_SUPPORT | Linux | `OFF` | Build the loader with the DirectFB entry points enabled. Without this, the DirectFB headers should not be needed, but the extension `VK_EXT_directfb_surface` won't be available. |
+| BUILD_WSI_SCREEN_QNX_SUPPORT | QNX | `OFF` | Build the loader with the QNX Screen entry points enabled. Without this the extension `VK_QNX_screen_surface` won't be available. |
 | ENABLE_WIN10_ONECORE | Windows | `OFF` | Link the loader to the [OneCore](https://msdn.microsoft.com/en-us/library/windows/desktop/mt654039.aspx) umbrella library, instead of the standard Win32 ones. |
 | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
 | USE_MASM | Windows | `ON` | Controls whether to build assembly files with MS assembler, else fallback to C code |
@@ -683,6 +685,15 @@ Vulkan-Loader repository, and run:
 ## Building on Fuchsia
 
 Fuchsia uses the project's GN build system to integrate with the Fuchsia platform build.
+
+## Building on QNX
+
+QNX is using its own build system. The proper build environment must be set
+under the QNX host development system (Linux, Win64, MacOS) by invoking 
+the shell/batch script provided with QNX installation.
+
+Then change working directory to the "build-qnx" in this project and type "make".
+It will build the ICD loader for all CPU targets supported by QNX.
 
 ### SDK Symbols
 

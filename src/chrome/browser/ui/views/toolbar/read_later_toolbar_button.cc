@@ -26,13 +26,23 @@ class ReadLaterSidePanelWebView : public views::WebView,
             IDS_READ_LATER_TITLE,
             /*enable_extension_apis=*/true,
             /*webui_resizes_host=*/false)) {
+    SetVisible(false);
     contents_wrapper_->SetHost(weak_factory_.GetWeakPtr());
     contents_wrapper_->ReloadWebContents();
     SetWebContents(contents_wrapper_->web_contents());
   }
 
+  void ViewHierarchyChanged(
+      const views::ViewHierarchyChangedDetails& details) override {
+    WebView::ViewHierarchyChanged(details);
+    // Ensure the WebContents is in a visible state after being added to the
+    // side panel so the correct lifecycle hooks are triggered.
+    if (details.is_add && details.child == this)
+      contents_wrapper_->web_contents()->WasShown();
+  }
+
   // BubbleContentsWrapper::Host:
-  void ShowUI() override {}
+  void ShowUI() override { SetVisible(true); }
   void CloseUI() override { close_cb_.Run(); }
 
  private:
@@ -54,7 +64,7 @@ ReadLaterToolbarButton::ReadLaterToolbarButton(Browser* browser)
           true)) {
   contents_wrapper_->ReloadWebContents();
 
-  SetVectorIcon(kReadLaterIcon);
+  SetVectorIcons(kSidePanelIcon, kSidePanelTouchIcon);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_READ_LATER_TITLE));
 }
 
@@ -63,7 +73,7 @@ ReadLaterToolbarButton::~ReadLaterToolbarButton() = default;
 void ReadLaterToolbarButton::ButtonPressed() {
   BrowserView* const browser_view =
       BrowserView::GetBrowserViewForBrowser(browser_);
-  DCHECK(browser_view->side_panel());
+  DCHECK(browser_view->right_aligned_side_panel());
 
   if (!side_panel_webview_) {
     auto webview = std::make_unique<ReadLaterSidePanelWebView>(
@@ -71,10 +81,12 @@ void ReadLaterToolbarButton::ButtonPressed() {
         base::BindRepeating(&ReadLaterToolbarButton::ButtonPressed,
                             base::Unretained(this)));
     side_panel_webview_ =
-        browser_view->side_panel()->AddChildView(std::move(webview));
+        browser_view->right_aligned_side_panel()->AddChildView(
+            std::move(webview));
     SetHighlighted(true);
   } else {
-    browser_view->side_panel()->RemoveChildViewT(side_panel_webview_);
+    browser_view->right_aligned_side_panel()->RemoveChildViewT(
+        side_panel_webview_);
     side_panel_webview_ = nullptr;
     // TODO(pbos): Observe read_later_side_panel_bubble_ so we don't need to
     // SetHighlighted(false) here.

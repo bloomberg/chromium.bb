@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/screens/error_screen.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
-#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
@@ -47,8 +48,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 // Returns the current running kiosk app profile in a kiosk session. Otherwise,
@@ -313,8 +313,7 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   base::CommandLine command_line(browser_command_line.GetProgram());
-  GetOffTheRecordCommandLine(GURL(), StartupUtils::IsOobeCompleted(),
-                             browser_command_line, &command_line);
+  GetOffTheRecordCommandLine(GURL(), browser_command_line, &command_line);
   RestartChrome(command_line, RestartChromeReason::kGuest);
 }
 
@@ -426,8 +425,8 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
   if (guest_login_performer_)
     return;
 
-  guest_login_performer_.reset(new ChromeLoginPerformer(this));
+  guest_login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   guest_login_performer_->LoginOffTheRecord();
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -17,7 +17,7 @@
 #include "components/security_state/core/security_state.h"
 
 namespace permissions {
-class ChooserContextBase;
+class ObjectPermissionContextBase;
 class PermissionDecisionAutoBlocker;
 }  // namespace permissions
 
@@ -37,10 +37,10 @@ class PageInfoDelegate {
  public:
   virtual ~PageInfoDelegate() = default;
 
-  // Return the |ChooserContextBase| corresponding to the  content settings
-  // type, |type|. Returns a nullptr for content settings for which there's no
-  // ChooserContextBase.
-  virtual permissions::ChooserContextBase* GetChooserContext(
+  // Return the |ObjectPermissionContextBase| corresponding to the content
+  // settings type, |type|. Returns a nullptr for content settings for which
+  // there's no ObjectPermissionContextBase.
+  virtual permissions::ObjectPermissionContextBase* GetChooserContext(
       ContentSettingsType type) = 0;
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -57,8 +57,9 @@ class PageInfoDelegate {
       ContentSettingsType type,
       const GURL& site_url) = 0;
 #if !defined(OS_ANDROID)
-  // Creates an InfoBarService and an InfoBarDelegate using it, if possible.
-  // Returns true if an InfoBarDelegate was created, false otherwise.
+  // Creates an infobars::ContentInfoBarManager and an InfoBarDelegate using it,
+  // if possible. Returns true if an InfoBarDelegate was created, false
+  // otherwise.
   virtual bool CreateInfoBarDelegate() = 0;
 
   virtual void ShowSiteSettings(const GURL& site_url) = 0;

@@ -38,6 +38,11 @@ const base::Feature kEnableRegularToChildTransitionFeature{
 const base::Feature kEnableUnifiedAudioFocusFeature{
     "ArcEnableUnifiedAudioFocus", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether ARC handles unmanaged->managed account transition.
+const base::Feature kEnableUnmanagedToManagedTransitionFeature{
+    "ArcEnableUnmanagedToManagedTransitionFeature",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARC Unspecialized Application Processes.
 // When enabled, Android creates a pool of processes
 // that will start applications so that zygote doesn't have to wake.
@@ -65,6 +70,10 @@ const base::Feature kNativeBridgeToggleFeature{
 const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, tracing raw files are saved in order to help debug failures.
+const base::Feature kSaveRawFilesOnTracing{"ArcSaveRawFilesOnTracing",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.
 const base::Feature kRtVcpuDualCore{"ArcRtVcpuDualCore",
@@ -81,11 +90,6 @@ const base::Feature kRtVcpuQuadCore{"ArcRtVcpuQuadCore",
 // in ARC container.
 const base::Feature kUseHighMemoryDalvikProfile{
     "ArcUseHighMemoryDalvikProfile", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls ARC USB host integration.
-// When enabled, Android apps will be able to use usb host features.
-const base::Feature kUsbHostFeature{"ArcUsbHost",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants

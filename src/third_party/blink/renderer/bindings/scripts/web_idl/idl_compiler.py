@@ -33,7 +33,6 @@ from .union import BackwardCompatibleUnion
 from .union import NewUnion
 from .user_defined_type import StubUserDefinedType
 from .user_defined_type import UserDefinedType
-from .validator import validate_after_resolve_references
 
 
 class IdlCompiler(object):
@@ -119,11 +118,9 @@ class IdlCompiler(object):
         # Resolve references.
         self._resolve_references_to_idl_def()
         self._resolve_references_to_idl_type()
-        validate_after_resolve_references(self._ir_map)
 
         # Build union API objects.
         self._create_public_unions()
-        self._create_backward_compatible_public_unions()
 
         return Database(self._db)
 
@@ -224,6 +221,11 @@ class IdlCompiler(object):
             propagate(('Exposed', 'add_global_name_and_feature'))
             propagate(('RuntimeEnabled', 'add_runtime_enabled_feature'))
             propagate(('ContextEnabled', 'add_context_enabled_feature'))
+            propagate(('CrossOriginIsolated', 'set_only_in_coi_contexts'),
+                      default_value=True)
+            propagate(
+                ('DirectSocketEnabled', 'set_only_in_direct_socket_contexts'),
+                default_value=True)
             propagate(('SecureContext', 'set_only_in_secure_contexts'),
                       default_value=True)
 
@@ -520,7 +522,8 @@ class IdlCompiler(object):
                         OperationGroup.IR, item.operations)
 
     def _propagate_extattrs_to_overload_group(self):
-        ANY_OF = ('CrossOrigin', 'Custom', 'LegacyLenientThis',
+        ANY_OF = ('CrossOrigin', 'CrossOriginIsolated', 'Custom',
+                  'DirectSocketEnabled', 'LegacyLenientThis',
                   'LegacyUnforgeable', 'NoAllocDirectCall', 'NotEnumerable',
                   'PerWorldBindings', 'SecureContext', 'Unscopable')
 
@@ -569,6 +572,7 @@ class IdlCompiler(object):
                             group.exposure.add_global_name_and_feature(
                                 entry.global_name, entry.feature)
 
+
                 # [RuntimeEnabled]
                 if any(not exposure.runtime_enabled_features
                        for exposure in exposures):
@@ -586,6 +590,20 @@ class IdlCompiler(object):
                     for exposure in exposures:
                         for name in exposure.context_enabled_features:
                             group.exposure.add_context_enabled_feature(name)
+
+                # [CrossOriginIsolated]
+                if any(not exposure.only_in_coi_contexts
+                       for exposure in exposures):
+                    pass  # Exposed by default.
+                else:
+                    group.exposure.set_only_in_coi_contexts(True)
+
+                # [DirectSocketEnabled]
+                if any(not exposure.only_in_direct_socket_contexts
+                       for exposure in exposures):
+                    pass  # Exposed by default.
+                else:
+                    group.exposure.set_only_in_direct_socket_contexts(True)
 
                 # [SecureContext]
                 if any(exposure.only_in_secure_contexts is False
@@ -769,7 +787,7 @@ class IdlCompiler(object):
                     ir_i.sub_union_irs.append(ir_j)
 
         for ir in sorted(irs.values()):
-            self._db.register(DatabaseBody.Kind.NEW_UNION, NewUnion(ir))
+            self._db.register(DatabaseBody.Kind.UNION, NewUnion(ir))
 
     def _create_backward_compatible_public_unions(self):
         all_union_types = []  # all instances of UnionType

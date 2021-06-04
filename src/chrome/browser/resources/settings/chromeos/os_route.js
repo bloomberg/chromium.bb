@@ -180,6 +180,8 @@ cr.define('settings', function() {
         Section.kSearchAndAssistant);
     r.GOOGLE_ASSISTANT = createSubpage(
         r.OS_SEARCH, mojom.ASSISTANT_SUBPAGE_PATH, Subpage.kAssistant);
+    r.SEARCH_SUBPAGE =
+        createSubpage(r.OS_SEARCH, mojom.SEARCH_SUBPAGE_PATH, Subpage.kSearch);
 
     // Apps section.
     r.APPS = createSection(r.BASIC, mojom.APPS_SECTION_PATH, Section.kApps);
@@ -201,6 +203,11 @@ cr.define('settings', function() {
       r.APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES = createSubpage(
           r.APP_MANAGEMENT, mojom.PLUGIN_VM_USB_PREFERENCES_SUBPAGE_PATH,
           Subpage.kPluginVmUsbPreferences);
+    }
+    if (loadTimeData.valueExists('showStartup') &&
+        loadTimeData.getBoolean('showStartup')) {
+      r.ON_STARTUP = createSubpage(
+          r.APPS, mojom.ON_STARTUP_SUBPAGE_PATH, Subpage.kOnStartup);
     }
 
     // Crostini section.
@@ -230,10 +237,6 @@ cr.define('settings', function() {
           r.CROSTINI_DETAILS, mojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
           Subpage.kCrostiniPortForwarding);
     }
-
-    // On Startup section.
-    r.ON_STARTUP = createSection(
-        r.BASIC, mojom.ON_STARTUP_SECTION_PATH, Section.kOnStartup);
 
     // Date and Time section.
     r.DATETIME = createSection(
@@ -266,28 +269,16 @@ cr.define('settings', function() {
     r.OS_LANGUAGES = createSection(
         r.ADVANCED, mojom.LANGUAGES_AND_INPUT_SECTION_PATH,
         Section.kLanguagesAndInput);
-    if (loadTimeData.getBoolean('enableLanguageSettingsV2')) {
-      r.OS_LANGUAGES_LANGUAGES = createSubpage(
-          r.OS_LANGUAGES, mojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
-      r.OS_LANGUAGES_INPUT = createSubpage(
-          r.OS_LANGUAGES, mojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
-      r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
-          r.OS_LANGUAGES_INPUT, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
-          Subpage.kInputMethodOptions);
-      r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
-          r.OS_LANGUAGES_INPUT, mojom.EDIT_DICTIONARY_SUBPAGE_PATH,
-          Subpage.kEditDictionary);
-    } else {
-      r.OS_LANGUAGES_DETAILS = createSubpage(
-          r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
-          Subpage.kLanguagesAndInputDetails);
-      r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
-          r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
-          Subpage.kManageInputMethods);
-      r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
-          r.OS_LANGUAGES_DETAILS, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
-          Subpage.kInputMethodOptions);
-    }
+    r.OS_LANGUAGES_LANGUAGES = createSubpage(
+        r.OS_LANGUAGES, mojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
+    r.OS_LANGUAGES_INPUT =
+        createSubpage(r.OS_LANGUAGES, mojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+        r.OS_LANGUAGES_INPUT, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+        Subpage.kInputMethodOptions);
+    r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT, mojom.EDIT_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kEditDictionary);
     r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
         r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBPAGE_PATH, Subpage.kSmartInputs);
 

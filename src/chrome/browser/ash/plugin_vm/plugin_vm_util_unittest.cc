@@ -10,6 +10,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
@@ -28,8 +29,15 @@ class PluginVmUtilTest : public testing::Test {
 
  protected:
   struct ScopedDBusThreadManager {
-    ScopedDBusThreadManager() { chromeos::DBusThreadManager::Initialize(); }
-    ~ScopedDBusThreadManager() { chromeos::DBusThreadManager::Shutdown(); }
+    ScopedDBusThreadManager() {
+      chromeos::DBusThreadManager::Initialize();
+      chromeos::ConciergeClient::InitializeFake(
+          /*fake_cicerone_client=*/nullptr);
+    }
+    ~ScopedDBusThreadManager() {
+      chromeos::ConciergeClient::Shutdown();
+      chromeos::DBusThreadManager::Shutdown();
+    }
   } dbus_thread_manager_;
 
   content::BrowserTaskEnvironment task_environment_;
@@ -126,19 +134,19 @@ TEST_F(PluginVmUtilTest, AddPluginVmPolicyObserver) {
 }
 
 TEST_F(PluginVmUtilTest, DriveUrlNonMatches) {
-  EXPECT_EQ(base::nullopt,
+  EXPECT_EQ(absl::nullopt,
             GetIdFromDriveUrl(GURL(
                 "http://192.168.0.2?id=Yxhi5BDTxsEl9onT8AunH4o_tkKviFGjY")));
-  EXPECT_EQ(base::nullopt,
+  EXPECT_EQ(absl::nullopt,
             GetIdFromDriveUrl(
                 GURL("https://drive.notgoogle.com/open?id=someSortOfId123")));
-  EXPECT_EQ(base::nullopt,
+  EXPECT_EQ(absl::nullopt,
             GetIdFromDriveUrl(GURL(
                 "https://site.com/a/site.com/file/d/definitelyNotDrive/view")));
   EXPECT_EQ(
-      base::nullopt,
+      absl::nullopt,
       GetIdFromDriveUrl(GURL("file:///home/chronos/user/Downloads/file.zip")));
-  EXPECT_EQ(base::nullopt,
+  EXPECT_EQ(absl::nullopt,
             GetIdFromDriveUrl(GURL("http://drive.google.com/open?id=fancyId")));
 }
 

@@ -17,8 +17,8 @@ constexpr double kDefaultWeight = 1.0;
 
 TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
   {
-    const std::u16string text(base::UTF8ToUTF16(
-        "Check duplicate. Duplicate is #@$%^&@#$%#@$^@#$ bad"));
+    const std::u16string text(
+        u"Check duplicate. Duplicate is #@$%^&@#$%#@$^@#$ bad");
     const auto tokens = ConsolidateToken(
         ExtractContent("3rd test", text, kDefaultWeight, "en"));
     EXPECT_EQ(tokens.size(), 3u);
@@ -74,9 +74,9 @@ TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
 
 TEST(ContentExtractionUtilsTest, ExtractContentTest) {
   {
-    const std::u16string text(base::UTF8ToUTF16(
-        "Normal... English!!! paragraph: email@gmail.com. Here is a link: "
-        "https://google.com, ip=8.8.8.8"));
+    const std::u16string text(
+        u"Normal... English!!! paragraph: email@gmail.com. Here is a link: "
+        u"https://google.com, ip=8.8.8.8");
     const auto tokens =
         ExtractContent("first test", text, kDefaultWeight / 2, "en");
     EXPECT_EQ(tokens.size(), 7u);
@@ -116,7 +116,7 @@ TEST(ContentExtractionUtilsTest, NormalizerTest) {
             u"cac dau cau da duoc loai bo thanh cong");
 
   // Test hyphens removed.
-  EXPECT_EQ(Normalizer(base::UTF8ToUTF16(u8"wi\u2015fi----"), true), u"wifi");
+  EXPECT_EQ(Normalizer(u"wi\u2015fi----", true), u"wifi");
 
   // Keep hyphen.
   EXPECT_EQ(Normalizer(u"wi-fi", false), u"wi-fi");
@@ -127,8 +127,7 @@ TEST(ContentExtractionUtilsTest, NormalizerTest) {
 
   // Combine test.
   EXPECT_EQ(
-      Normalizer(base::UTF8ToUTF16(
-                     "Đây là MỘT trình duyệt tuyệt vời và mượt\u2014\u058Amà"),
+      Normalizer(u"Đây là MỘT trình duyệt tuyệt vời và mượt\u2014\u058Amà",
                  true),
       u"day la mot trinh duyet tuyet voi va muotma");
 }

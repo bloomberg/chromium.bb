@@ -118,10 +118,6 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Enables Shelf Dimming for ChromeOS.
 const char kEnableDimShelf[] = "enable-dim-shelf";
 
-// Enables compositing-based throttling
-const char kEnableCompositingBasedThrottling[] =
-    "enable-compositing-based-throttling";
-
 // If set, tablet-like power button behavior (i.e. tapping the button turns the
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
@@ -152,7 +148,7 @@ const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 const char kSupportsClamshellAutoRotation[] =
     "supports-clamshell-auto-rotation";
 
-base::Optional<base::TimeDelta> ContextualNudgesInterval() {
+absl::optional<base::TimeDelta> ContextualNudgesInterval() {
   int numeric_cooldown_time;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kAshContextualNudgesInterval) &&
@@ -165,9 +161,9 @@ base::Optional<base::TimeDelta> ContextualNudgesInterval() {
     cooldown_time =
         base::ClampToRange(cooldown_time, kAshContextualNudgesMinInterval,
                            kAshContextualNudgesMaxInterval);
-    return base::Optional<base::TimeDelta>(cooldown_time);
+    return absl::optional<base::TimeDelta>(cooldown_time);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool ContextualNudgesResetShownCount() {
@@ -177,11 +173,6 @@ bool ContextualNudgesResetShownCount() {
 
 bool IsUsingShelfAutoDim() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
-}
-
-bool IsCompositingBasedThrottlingEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableCompositingBasedThrottling);
 }
 
 bool ShouldClearFastInkBuffer() {

@@ -1261,6 +1261,18 @@ angle::CallCapture CaptureRenderbufferStorageMultisampleEXT(const State &glState
 
 // GL_EXT_occlusion_query_boolean
 
+// GL_EXT_primitive_bounding_box
+angle::CallCapture CapturePrimitiveBoundingBoxEXT(const State &glState,
+                                                  bool isCallValid,
+                                                  GLfloat minX,
+                                                  GLfloat minY,
+                                                  GLfloat minZ,
+                                                  GLfloat minW,
+                                                  GLfloat maxX,
+                                                  GLfloat maxY,
+                                                  GLfloat maxZ,
+                                                  GLfloat maxW);
+
 // GL_EXT_read_format_bgra
 
 // GL_EXT_robustness
@@ -1614,6 +1626,48 @@ angle::CallCapture CapturePatchParameteriEXT(const State &glState,
                                              GLenum pname,
                                              GLint value);
 
+// GL_EXT_texture_border_clamp
+angle::CallCapture CaptureGetSamplerParameterIivEXT(const State &glState,
+                                                    bool isCallValid,
+                                                    SamplerID samplerPacked,
+                                                    GLenum pname,
+                                                    GLint *params);
+angle::CallCapture CaptureGetSamplerParameterIuivEXT(const State &glState,
+                                                     bool isCallValid,
+                                                     SamplerID samplerPacked,
+                                                     GLenum pname,
+                                                     GLuint *params);
+angle::CallCapture CaptureGetTexParameterIivEXT(const State &glState,
+                                                bool isCallValid,
+                                                TextureType targetPacked,
+                                                GLenum pname,
+                                                GLint *params);
+angle::CallCapture CaptureGetTexParameterIuivEXT(const State &glState,
+                                                 bool isCallValid,
+                                                 TextureType targetPacked,
+                                                 GLenum pname,
+                                                 GLuint *params);
+angle::CallCapture CaptureSamplerParameterIivEXT(const State &glState,
+                                                 bool isCallValid,
+                                                 SamplerID samplerPacked,
+                                                 GLenum pname,
+                                                 const GLint *param);
+angle::CallCapture CaptureSamplerParameterIuivEXT(const State &glState,
+                                                  bool isCallValid,
+                                                  SamplerID samplerPacked,
+                                                  GLenum pname,
+                                                  const GLuint *param);
+angle::CallCapture CaptureTexParameterIivEXT(const State &glState,
+                                             bool isCallValid,
+                                             TextureType targetPacked,
+                                             GLenum pname,
+                                             const GLint *params);
+angle::CallCapture CaptureTexParameterIuivEXT(const State &glState,
+                                              bool isCallValid,
+                                              TextureType targetPacked,
+                                              GLenum pname,
+                                              const GLuint *params);
+
 // GL_EXT_texture_buffer
 angle::CallCapture CaptureTexBufferEXT(const State &glState,
                                        bool isCallValid,
@@ -1646,6 +1700,8 @@ angle::CallCapture CaptureTexBufferRangeEXT(const State &glState,
 
 // GL_EXT_texture_sRGB_R8
 
+// GL_EXT_texture_sRGB_RG8
+
 // GL_EXT_texture_storage
 angle::CallCapture CaptureTexStorage1DEXT(const State &glState,
                                           bool isCallValid,
@@ -1668,6 +1724,9 @@ angle::CallCapture CaptureTexStorage3DEXT(const State &glState,
                                           GLsizei width,
                                           GLsizei height,
                                           GLsizei depth);
+
+// GL_KHR_blend_equation_advanced
+angle::CallCapture CaptureBlendBarrierKHR(const State &glState, bool isCallValid);
 
 // GL_KHR_debug
 angle::CallCapture CaptureDebugMessageCallbackKHR(const State &glState,
@@ -4075,6 +4134,54 @@ void CaptureProgramUniformMatrix4x3fvEXT_value(const State &glState,
                                                GLboolean transpose,
                                                const GLfloat *value,
                                                angle::ParamCapture *paramCapture);
+void CaptureGetSamplerParameterIivEXT_params(const State &glState,
+                                             bool isCallValid,
+                                             SamplerID samplerPacked,
+                                             GLenum pname,
+                                             GLint *params,
+                                             angle::ParamCapture *paramCapture);
+void CaptureGetSamplerParameterIuivEXT_params(const State &glState,
+                                              bool isCallValid,
+                                              SamplerID samplerPacked,
+                                              GLenum pname,
+                                              GLuint *params,
+                                              angle::ParamCapture *paramCapture);
+void CaptureGetTexParameterIivEXT_params(const State &glState,
+                                         bool isCallValid,
+                                         TextureType targetPacked,
+                                         GLenum pname,
+                                         GLint *params,
+                                         angle::ParamCapture *paramCapture);
+void CaptureGetTexParameterIuivEXT_params(const State &glState,
+                                          bool isCallValid,
+                                          TextureType targetPacked,
+                                          GLenum pname,
+                                          GLuint *params,
+                                          angle::ParamCapture *paramCapture);
+void CaptureSamplerParameterIivEXT_param(const State &glState,
+                                         bool isCallValid,
+                                         SamplerID samplerPacked,
+                                         GLenum pname,
+                                         const GLint *param,
+                                         angle::ParamCapture *paramCapture);
+void CaptureSamplerParameterIuivEXT_param(const State &glState,
+                                          bool isCallValid,
+                                          SamplerID samplerPacked,
+                                          GLenum pname,
+                                          const GLuint *param,
+                                          angle::ParamCapture *paramCapture);
+void CaptureTexParameterIivEXT_params(const State &glState,
+                                      bool isCallValid,
+                                      TextureType targetPacked,
+                                      GLenum pname,
+                                      const GLint *params,
+                                      angle::ParamCapture *paramCapture);
+void CaptureTexParameterIuivEXT_params(const State &glState,
+                                       bool isCallValid,
+                                       TextureType targetPacked,
+                                       GLenum pname,
+                                       const GLuint *params,
+                                       angle::ParamCapture *paramCapture);
 void CaptureDebugMessageCallbackKHR_userParam(const State &glState,
                                               bool isCallValid,
                                               GLDEBUGPROCKHR callback,

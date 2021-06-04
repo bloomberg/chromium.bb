@@ -7,18 +7,20 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/time/time.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_state.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 
+class InkDropHost;
 class InkDropObserver;
 
 // Base class that manages the lifetime and state of an ink drop ripple as
@@ -28,6 +30,42 @@ class VIEWS_EXPORT InkDrop {
   InkDrop(const InkDrop&) = delete;
   InkDrop& operator=(const InkDrop&) = delete;
   virtual ~InkDrop();
+
+  // Create an InkDrop appropriate for the "square" InkDropRipple effect. This
+  // InkDrop hides when the ripple effect is active instead of layering
+  // underneath it.
+  static std::unique_ptr<InkDrop> CreateInkDropForSquareRipple(
+      InkDropHost* host,
+      bool highlight_on_hover = true,
+      bool highlight_on_focus = false);
+
+  // Configure `host` to use CreateInkDropForSquareRipple().
+  static void UseInkDropForSquareRipple(InkDropHost* host,
+                                        bool highlight_on_hover = true,
+                                        bool highlight_on_focus = false);
+
+  // Create an InkDrop appropriate for the "flood-fill" InkDropRipple effect.
+  // This InkDrop shows as a response to the ripple effect.
+  static std::unique_ptr<InkDrop> CreateInkDropForFloodFillRipple(
+      InkDropHost* host,
+      bool highlight_on_hover = true,
+      bool highlight_on_focus = false);
+
+  // Configure `host` to use CreateInkDropForFloodFillRipple().
+  static void UseInkDropForFloodFillRipple(InkDropHost* host,
+                                           bool highlight_on_hover = true,
+                                           bool highlight_on_focus = false);
+
+  // Create an InkDrop whose highlight does not react to its ripple.
+  static std::unique_ptr<InkDrop> CreateInkDropWithoutAutoHighlight(
+      InkDropHost* host,
+      bool highlight_on_hover = true,
+      bool highlight_on_focus = false);
+
+  // Configure `host` to use CreateInkDropWithoutAutoHighlight().
+  static void UseInkDropWithoutAutoHighlight(InkDropHost* host,
+                                             bool highlight_on_hover = true,
+                                             bool highlight_on_focus = false);
 
   // Called by ink drop hosts when their size is changed.
   virtual void HostSizeChanged(const gfx::Size& new_size) = 0;
@@ -92,18 +130,14 @@ class VIEWS_EXPORT InkDrop {
 // as a non-ancestor view to labels so that the labels can paint on an opaque
 // canvas. This is used to avoid ugly text renderings when labels with subpixel
 // rendering enabled are painted onto a non-opaque canvas.
-class VIEWS_EXPORT InkDropContainerView : public views::View {
+// TODO(pbos): Replace with a function that returns unique_ptr<View>, this only
+// calls SetProcessEventsWithinSubtree(false) right now.
+class VIEWS_EXPORT InkDropContainerView : public View {
  public:
   METADATA_HEADER(InkDropContainerView);
   InkDropContainerView();
   InkDropContainerView(const InkDropContainerView&) = delete;
   InkDropContainerView& operator=(const InkDropContainerView&) = delete;
-
-  void AddInkDropLayer(ui::Layer* ink_drop_layer);
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer);
-
-  // View:
-  bool GetCanProcessEventsWithinSubtree() const override;
 };
 
 }  // namespace views

@@ -17,12 +17,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -145,7 +145,7 @@ bool PhotoView::NeedToAnimateTransition() const {
   return !image_views_.back()->GetCurrentImage().isNull();
 }
 
-const gfx::ImageSkia& PhotoView::GetVisibleImageForTesting() {
+gfx::ImageSkia PhotoView::GetVisibleImageForTesting() {
   return image_views_.at(image_index_)->GetCurrentImage();
 }
 

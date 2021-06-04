@@ -8,6 +8,7 @@ cr.define('cellular_setup', function() {
     PROFILE_LOADING: 'profileLoadingPage',
     PROFILE_DISCOVERY: 'profileDiscoveryPage',
     ACTIVATION_CODE: 'activationCodePage',
+    ACTIVATION_VERIFCATION: 'activationVerificationPage',
     CONFIRMATION_CODE: 'confirmationCodePage',
     FINAL: 'finalPage',
   };
@@ -68,6 +69,16 @@ cr.define('cellular_setup', function() {
     properties: {
       /** @type {!cellular_setup.CellularSetupDelegate} */
       delegate: Object,
+
+      /**
+       * Header shown at the top of the flow. No header shown if the string is
+       * empty.
+       */
+      header: {
+        type: String,
+        notify: true,
+        computed: 'computeHeader_(selectedESimPageName_, showError_)',
+      },
 
       forwardButtonLabel: {
         type: String,
@@ -133,7 +144,7 @@ cr.define('cellular_setup', function() {
       },
 
       /** @private */
-      hasHadActivePSimNetwork_: {
+      hasHadActiveCellularNetwork_: {
         type: Boolean,
         value: false,
       },
@@ -354,8 +365,10 @@ cr.define('cellular_setup', function() {
           break;
         case ESimUiState.ACTIVATION_CODE_ENTRY:
         case ESimUiState.ACTIVATION_CODE_ENTRY_READY:
-        case ESimUiState.ACTIVATION_CODE_ENTRY_INSTALLING:
           this.selectedESimPageName_ = ESimPageName.ACTIVATION_CODE;
+          break;
+        case ESimUiState.ACTIVATION_CODE_ENTRY_INSTALLING:
+          this.selectedESimPageName_ = ESimPageName.ACTIVATION_VERIFCATION;
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY:
         case ESimUiState.CONFIRMATION_CODE_ENTRY_READY:
@@ -433,6 +446,10 @@ cr.define('cellular_setup', function() {
           this.delegate.shouldShowCancelButton() ?
           cellularSetup.ButtonState.ENABLED :
           cellularSetup.ButtonState.HIDDEN;
+      const cancelButtonStateIfDisabled =
+          this.delegate.shouldShowCancelButton() ?
+          cellularSetup.ButtonState.DISABLED :
+          cellularSetup.ButtonState.HIDDEN;
       switch (this.state_) {
         case ESimUiState.PROFILE_SEARCH:
           this.forwardButtonLabel = this.i18n('next');
@@ -454,7 +471,7 @@ cr.define('cellular_setup', function() {
           break;
         case ESimUiState.ACTIVATION_CODE_ENTRY_INSTALLING:
           buttonState = this.generateButtonStateForActivationPage_(
-              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*enableForwardBtn*/ false, cancelButtonStateIfDisabled,
               /*isInstalling*/ true);
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY:
@@ -469,7 +486,7 @@ cr.define('cellular_setup', function() {
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY_INSTALLING:
           buttonState = this.generateButtonStateForConfirmationPage_(
-              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*enableForwardBtn*/ false, cancelButtonStateIfDisabled,
               /*isInstalling*/ true);
           break;
         case ESimUiState.PROFILE_SELECTION:
@@ -485,7 +502,7 @@ cr.define('cellular_setup', function() {
         case ESimUiState.PROFILE_SELECTION_INSTALLING:
           buttonState = {
             backward: cellularSetup.ButtonState.HIDDEN,
-            cancel: cancelButtonStateIfEnabled,
+            cancel: cancelButtonStateIfDisabled,
             forward: cellularSetup.ButtonState.DISABLED,
           };
           break;
@@ -635,19 +652,14 @@ cr.define('cellular_setup', function() {
       }
     },
 
-    /** @private */
-    getShowNoProfilesMessage_() {
-      return !(this.pendingProfiles_ && this.pendingProfiles_.length > 0);
-    },
-
     /** NetworkListenerBehavior override */
     onNetworkStateListChanged() {
-      hasActivePSimNetwork().then((hasActive) => {
-        // If hasHadActivePSimNetwork_ has been set to true, don't set to false
-        // again as we should show the cellular disconnect warning for the
+      hasActiveCellularNetwork().then((hasActive) => {
+        // If hasHadActiveCellularNetwork_ has been set to true, don't set to
+        // false again as we should show the cellular disconnect warning for the
         // duration of the flow's lifecycle.
         if (hasActive) {
-          this.hasHadActivePSimNetwork_ = hasActive;
+          this.hasHadActiveCellularNetwork_ = hasActive;
         }
       });
     },
@@ -659,14 +671,24 @@ cr.define('cellular_setup', function() {
           this.state_ === ESimUiState.PROFILE_SELECTION_INSTALLING;
     },
 
+    /** @private */
+    getLoadingMessage_() {
+      return this.hasHadActiveCellularNetwork_ ?
+          this.i18n('eSimProfileDetectDuringActiveCellularConnectionMessage') :
+          this.i18n('eSimProfileDetectMessage');
+    },
+
     /**
-     * @param {boolean} hasActivePSimNetwork
+     * @return {string}
      * @private
      */
-    getLoadingPageState_(hasActivePSimNetwork) {
-      return hasActivePSimNetwork ?
-          LoadingPageState.CELLULAR_DISCONNECT_WARNING :
-          LoadingPageState.LOADING;
+    computeHeader_() {
+      if (this.selectedESimPageName_ === ESimPageName.FINAL &&
+          !this.showError_) {
+        return this.i18n('eSimFinalPageSuccessHeader');
+      }
+
+      return '';
     },
   });
 

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
@@ -272,7 +273,7 @@ void FileBrowserHandlerExecutor::Execute(
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
   scoped_refptr<storage::FileSystemContext> file_system_context(
-      util::GetFileSystemContextForExtensionId(profile_, extension_->id()));
+      util::GetFileSystemContextForSourceURL(profile_, extension_->url()));
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
@@ -287,13 +288,10 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
   // Outlives the conversion process, since bound to the callback.
   const FileDefinitionList& file_definition_list_ref =
       *file_definition_list.get();
-  const std::string& origin_id = extension_->id();
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      file_manager::util::GetFileSystemContextForExtensionId(profile_,
-                                                             origin_id),
-      url::Origin::Create(
-          extensions::Extension::GetBaseURLFromExtensionId(origin_id)),
-      file_definition_list_ref,
+      file_manager::util::GetFileSystemContextForSourceURL(profile_,
+                                                           extension_->url()),
+      url::Origin::Create(extension_->url()), file_definition_list_ref,
       base::BindOnce(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(file_definition_list)));
@@ -390,7 +388,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   event_args->Append(std::move(details));
   auto event = std::make_unique<extensions::Event>(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
-      "fileBrowserHandler.onExecute", std::move(event_args), profile_);
+      "fileBrowserHandler.onExecute", event_args->TakeList(), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));
 
   ExecuteDoneOnUIThread(true, "");

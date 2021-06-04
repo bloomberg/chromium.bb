@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 
@@ -161,7 +162,7 @@ ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
 
 // static
 bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
-  return window->transparent();
+  return window->GetTransparent();
 }
 
 // static

@@ -19,9 +19,9 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/remote_apps/remote_apps_impl.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_manager.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_manager_factory.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_impl.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_manager.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -37,7 +37,7 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"  // nogncheck
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -74,12 +74,12 @@ void BindMachineLearningService(
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-void BindTtsStreamFactory(
+void BindGoogleTtsStream(
     content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<chromeos::tts::mojom::TtsStreamFactory> receiver) {
+    mojo::PendingReceiver<chromeos::tts::mojom::GoogleTtsStream> receiver) {
   TtsEngineExtensionObserverChromeOS::GetInstance(
       Profile::FromBrowserContext(render_frame_host->GetBrowserContext()))
-      ->BindTtsStreamFactory(std::move(receiver));
+      ->BindGoogleTtsStream(std::move(receiver));
 }
 
 void BindRemoteAppsFactory(
@@ -165,11 +165,9 @@ void PopulateChromeFrameBindersForExtension(
         base::BindRepeating(&chromeos::CameraAppUI::ConnectToCameraAppHelper));
   }
 
-  // TODO: extend to more extensions.
-  if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId ||
-      extension->id() == extension_misc::kEspeakSpeechSynthesisExtensionId) {
-    binder_map->Add<chromeos::tts::mojom::TtsStreamFactory>(
-        base::BindRepeating(&BindTtsStreamFactory));
+  if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {
+    binder_map->Add<chromeos::tts::mojom::GoogleTtsStream>(
+        base::BindRepeating(&BindGoogleTtsStream));
   }
 
   if (chromeos::RemoteAppsImpl::IsAllowed(render_frame_host, extension)) {

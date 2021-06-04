@@ -35,12 +35,14 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/pref_names.h"
@@ -55,6 +57,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -213,13 +216,12 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url;
-    web_app_info->title = base::UTF8ToUTF16("Test app \xF0\x9F\x90\x90");
-    web_app_info->description =
-        base::UTF8ToUTF16("Test description \xF0\x9F\x90\x90");
+    web_app_info->title = u"Test app 🐐";
+    web_app_info->description = u"Test description 🐐";
     web_app_info->open_as_window = open_as_window;
 
-    return web_app::InstallWebApp(browser()->profile(),
-                                  std::move(web_app_info));
+    return web_app::test::InstallWebApp(browser()->profile(),
+                                        std::move(web_app_info));
   }
 
   Browser* OpenTestWebApp(const AppId& app_id) {
@@ -568,10 +570,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
         WebAppProviderBase::GetProviderBase(browser()->profile());
     base::RunLoop run_loop;
 
-    ASSERT_TRUE(
-        provider->install_finalizer().CanUserUninstallExternalApp(app_id));
-    provider->install_finalizer().UninstallExternalAppByUser(
-        app_id, base::BindLambdaForTesting([&](bool uninstalled) {
+    ASSERT_TRUE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+    provider->install_finalizer().UninstallWebApp(
+        app_id, webapps::WebappUninstallSource::kAppMenu,
+        base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
           run_loop.Quit();
         }));
@@ -833,6 +835,64 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
 
   // Verify that it's the correct tab.
   EXPECT_EQ(GURL("about:blank"), tab->GetURL());
+}
+
+// Verify that "Open Link in New Tab" doesn't crash for about:blank.
+// This is a regression test for https://crbug.com/1197027.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenAboutBlankInNewTab) {
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL page(embedded_test_server()->GetURL("/title1.html"));
+
+  ui_test_utils::NavigateToURL(browser(), page);
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.link_url = GURL("about:blank");
+  context_menu_params.page_url = page;
+
+  // Select "Open Link in New Tab" and wait for the new tab to be added.
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  // Verify that it's the correct tab.
+  EXPECT_EQ(GURL("about:blank"), tab->GetURL());
+}
+
+// Verify that "Open Link in New Tab" doesn't crash for data: URLs.
+// This is a regression test for https://crbug.com/1197027.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenDataURLInNewTab) {
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL page(embedded_test_server()->GetURL("/title1.html"));
+
+  ui_test_utils::NavigateToURL(browser(), page);
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.link_url = GURL("data:text/html,hello");
+  context_menu_params.page_url = page;
+
+  // Select "Open Link in New Tab" and wait for the new tab to be added.
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  // Main frame navigations to data: URLs are blocked, so we don't check the
+  // final URL of the new tab.
 }
 
 // Verify that "Open Link in New Tab" doesn't send URL fragment as referrer.
@@ -1435,7 +1495,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
 
  private:
   void SetupImageSearchEngine() {
-    static const char kShortName[] = "test";
+    static const char16_t kShortName[] = u"test";
     static const char kSearchURL[] = "/search?q={searchTerms}";
     static const char kImageSearchPostParams[] =
         "thumb={google:imageThumbnail}";
@@ -1447,7 +1507,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(model->loaded());
 
     TemplateURLData data;
-    data.SetShortName(base::ASCIIToUTF16(kShortName));
+    data.SetShortName(kShortName);
     data.SetKeyword(data.short_name());
     data.SetURL(embedded_test_server()->GetURL(kSearchURL).spec());
     data.image_url = GetImageSearchURL().spec();

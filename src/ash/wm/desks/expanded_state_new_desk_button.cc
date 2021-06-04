@@ -15,6 +15,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/label.h"
 
@@ -31,9 +32,11 @@ constexpr int kCornerRadius = 4;
 // The button belongs to ExpandedStateNewDeskButton.
 class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
  public:
-  InnerNewDeskButton(ExpandedStateNewDeskButton* outer_button)
+  InnerNewDeskButton(ExpandedStateNewDeskButton* outer_button,
+                     DesksBarView* bar_view)
       : DeskButtonBase(std::u16string(), kBorderCornerRadius, kCornerRadius),
-        outer_button_(outer_button) {
+        outer_button_(outer_button),
+        bar_view_(bar_view) {
     paint_contents_only_ = true;
   }
   InnerNewDeskButton(const InnerNewDeskButton&) = delete;
@@ -52,6 +55,7 @@ class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
   void OnButtonPressed() override {
     auto* controller = DesksController::Get();
     if (controller->CanCreateDesks()) {
+      bar_view_->set_should_name_nudge(true);
       controller->NewDesk(DesksCreationRemovalSource::kButton);
       UpdateButtonState();
     }
@@ -78,13 +82,14 @@ class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
     if (!enabled)
       background_color_ = AshColorProvider::GetDisabledColor(background_color_);
 
-    SetInkDropVisibleOpacity(
+    ink_drop()->SetVisibleOpacity(
         color_provider->GetRippleAttributes(background_color_).inkdrop_opacity);
     SchedulePaint();
   }
 
  private:
   ExpandedStateNewDeskButton* outer_button_;
+  DesksBarView* bar_view_;
 };
 
 }  // namespace
@@ -92,7 +97,7 @@ class ASH_EXPORT InnerNewDeskButton : public DeskButtonBase {
 ExpandedStateNewDeskButton::ExpandedStateNewDeskButton(DesksBarView* bar_view)
     : bar_view_(bar_view),
       new_desk_button_(
-          AddChildView(std::make_unique<InnerNewDeskButton>(this))),
+          AddChildView(std::make_unique<InnerNewDeskButton>(this, bar_view))),
       label_(AddChildView(std::make_unique<views::Label>())) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -112,8 +117,7 @@ void ExpandedStateNewDeskButton::Layout() {
     return;
 
   const gfx::Rect new_desk_button_bounds = DeskMiniView::GetDeskPreviewBounds(
-      bar_view_->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      /*compact=*/false);
+      bar_view_->GetWidget()->GetNativeWindow()->GetRootWindow());
   new_desk_button_->SetBoundsRect(new_desk_button_bounds);
 
   const gfx::Size label_size = label_->GetPreferredSize();

@@ -9,7 +9,6 @@
 
 #include <utility>
 
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -17,6 +16,7 @@
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -28,7 +28,7 @@
 namespace content {
 namespace {
 
-base::Optional<std::string> GetStringAttribute(
+absl::optional<std::string> GetStringAttribute(
     const ui::AXNode& node,
     ax::mojom::StringAttribute attr) {
   // Language is different from other string attributes as it inherits and has
@@ -36,7 +36,7 @@ base::Optional<std::string> GetStringAttribute(
   if (attr == ax::mojom::StringAttribute::kLanguage) {
     std::string value = node.GetLanguage();
     if (value.empty()) {
-      return base::nullopt;
+      return absl::nullopt;
     }
     return value;
   }
@@ -45,7 +45,7 @@ base::Optional<std::string> GetStringAttribute(
   if (attr == ax::mojom::StringAttribute::kFontFamily) {
     std::string value = node.GetInheritedStringAttribute(attr);
     if (value.empty()) {
-      return base::nullopt;
+      return absl::nullopt;
     }
     return value;
   }
@@ -56,7 +56,7 @@ base::Optional<std::string> GetStringAttribute(
   if (node.GetStringAttribute(attr, &value)) {
     return value;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::string FormatColor(int argb) {
@@ -287,7 +287,12 @@ std::string AccessibilityTreeFormatterBlink::DumpInternalAccessibilityTree(
 void AccessibilityTreeFormatterBlink::RecursiveBuildTree(
     const BrowserAccessibility& node,
     base::Value* dict) const {
+  if (!ShouldDumpNode(node))
+    return;
+
   AddProperties(node, static_cast<base::DictionaryValue*>(dict));
+  if (!ShouldDumpChildren(node))
+    return;
 
   base::Value children(base::Value::Type::LIST);
   for (size_t i = 0; i < ChildCount(node); ++i) {
@@ -812,10 +817,9 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         break;
       }
       case base::Value::Type::INTEGER: {
-        int int_value = 0;
-        value->GetAsInteger(&int_value);
         WriteAttribute(false,
-                       base::StringPrintf("%s=%d", attribute_name, int_value),
+                       base::StringPrintf("%s=%d", attribute_name,
+                                          value->GetIfInt().value_or(0)),
                        &line);
         break;
       }

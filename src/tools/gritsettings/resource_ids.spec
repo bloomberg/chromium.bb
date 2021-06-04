@@ -154,7 +154,8 @@
     "META": {"sizes": {"includes": [20]}},
     "includes": [1590],
   },
-  "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page_instant/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
     "includes": [1620],
   },
    "chrome/browser/resources/webid/webid_resources.grd": {
@@ -168,6 +169,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_share/nearby_share_dialog_resources.grd": {
     "META": {"sizes": {"includes": [100]}},
     "includes": [1640],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/media_router/media_router_feedback_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1650],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/memories/resources.grd": {
     "META": {"sizes": {"includes": [40]}},
@@ -254,7 +259,11 @@
     "includes": [2050],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/network_ui/network_ui_resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2060],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/projector/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
     "includes": [2065],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_internals/resources.grd": {
@@ -369,6 +378,18 @@
   "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
     "includes": [2520],
   },
+  # Both help_app_kids_magazine_bundle_resources.grd and
+  # help_app_kids_magazine_bundle_mock_resources.grd start with the same id
+  # because only one of them is built depending on if src_internal is available.
+  # Lower bound for number of resource ids is the number of files, which is 3 in
+  # in this case (HTML, JS and CSS file).
+  "chromeos/components/help_app_ui/resources/prod/help_app_kids_magazine_bundle_resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [2530],
+  },
+  "chromeos/components/help_app_ui/resources/mock/help_app_kids_magazine_bundle_mock_resources.grd": {
+    "includes": [2530],
+  },
   # Both help_app_bundle_resources.grd and help_app_bundle_mock_resources.grd
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound is that we bundle ~100 images for
@@ -433,6 +454,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/personalization_app/resources/chromeos_personalization_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2690],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/demo_mode_app_ui/chromeos_demo_mode_app_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+   "includes": [2695],
   },
   # END chromeos/ section.
 
@@ -592,8 +617,20 @@
   "ash/ash_strings.grd": {
     "messages": [3060],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/components/os_feedback_ui/resources/ash_os_feedback_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3064],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/content/shortcut_customization_ui/resources/ash_shortcut_customization_app_resources.grd": {
+    "META": {"sizes": {"includes": [200],}},
+    "includes": [3070],
+  },
   "ash/shortcut_viewer/shortcut_viewer_strings.grd": {
     "messages": [3080],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/content/shimless_rma/resources/ash_shimless_rma_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [3090],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
     "includes": [3100],
@@ -676,9 +713,6 @@
   "third_party/blink/public/strings/blink_strings.grd": {
     "messages": [3560],
   },
-  "third_party/ink/ink_resources.grd": {
-    "includes": [3580],
-  },
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
     "messages": [3600],
   },
@@ -730,7 +764,7 @@
   },
 
   # This file is generated during the build.
-  "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/third_party/devtools-frontend/src/front_end/devtools_resources.grd": {
     # In debug build, devtools frontend sources are not bundled and therefore
     # includes a lot of individual resources
     "META": {"sizes": {"includes": [2000],}},

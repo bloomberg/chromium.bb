@@ -48,7 +48,6 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -70,6 +69,7 @@
 #include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/plugin_manager.h"
+#include "chrome/browser/extensions/preinstalled_apps.h"
 #include "chrome/browser/extensions/test_blocklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -80,7 +80,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_waiter.h"
-#include "chrome/browser/web_applications/components/external_app_install_features.h"
+#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -95,6 +95,9 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
+#include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -159,6 +162,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -200,7 +204,7 @@ const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
 const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
 const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
-const char genius_app[] = "ljoammodoonkhnehlncldjelhidljdpi";
+const char gallery_app[] = "nlkncpkkdoccmpiclbokaimcnedabhhm";
 const char kPrefBlocklist[] = "blacklist";
 
 struct BubbleErrorsTestData {
@@ -1305,7 +1309,7 @@ TEST_F(ExtensionServiceTest, UninstallExternalExtensionAndReinstallAsUser) {
   base::RunLoop run_loop;
   installer->set_installer_callback(base::BindOnce(
       [](base::OnceClosure quit_closure,
-         const base::Optional<CrxInstallError>& result) {
+         const absl::optional<CrxInstallError>& result) {
         ASSERT_FALSE(result) << result->message();
         std::move(quit_closure).Run();
       },
@@ -1349,7 +1353,7 @@ TEST_F(ExtensionServiceTest,
   base::RunLoop run_loop;
   installer->set_installer_callback(base::BindOnce(
       [](base::OnceClosure quit_closure,
-         const base::Optional<CrxInstallError>& result) {
+         const absl::optional<CrxInstallError>& result) {
         ASSERT_FALSE(result) << result->message();
         std::move(quit_closure).Run();
       },
@@ -1929,8 +1933,8 @@ TEST_F(ExtensionServiceTest, UpdateIncognitoMode) {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 // This tests that the granted permissions preferences are correctly set for
-// default apps.
-TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
+// pre-installed apps.
+TEST_F(ExtensionServiceTest, PreinstalledAppsGrantedPermissions) {
   InitializeEmptyExtensionService();
   base::FilePath path = data_dir().AppendASCII("permissions");
 
@@ -4557,15 +4561,15 @@ TEST_F(ExtensionServiceTest, ExternalExtensionRemainsDisabledIfIgnored) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-// This tests if default apps are installed correctly.
-TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
+// This tests if pre-installed apps are installed correctly.
+TEST_F(ExtensionServiceTest, PreinstalledAppsInstall) {
   InitializeEmptyExtensionService();
 
   {
-    // Initializing the ExtensionService will have set the default app
+    // Initializing the ExtensionService will have set the pre-installed app
     // state; reset it for the sake of testing.
-    profile()->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-                                      default_apps::kUnknown);
+    profile()->GetPrefs()->SetInteger(prefs::kPreinstalledAppsInstallState,
+                                      preinstalled_apps::kUnknown);
     std::string json_data =
         "{"
         "  \"ldnnhddmnhbkjipkidpdiheffobcpfmf\" : {"
@@ -4574,7 +4578,7 @@ TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
         "    \"is_bookmark_app\": false"
         "  }"
         "}";
-    default_apps::Provider* provider = new default_apps::Provider(
+    preinstalled_apps::Provider* provider = new preinstalled_apps::Provider(
         profile(), service(), new ExternalTestingLoader(json_data, data_dir()),
         ManifestLocation::kInternal, ManifestLocation::kInvalidLocation,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
@@ -5077,7 +5081,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   ASSERT_TRUE(cookie_store);
   auto cookie =
       net::CanonicalCookie::Create(ext_url, "dummy=value", base::Time::Now(),
-                                   base::nullopt /* server_time */);
+                                   absl::nullopt /* server_time */);
   cookie_store->SetCanonicalCookieAsync(
       std::move(cookie), ext_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
@@ -5094,29 +5098,35 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Open a database.
   storage::DatabaseTracker* db_tracker =
-      BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetDatabaseTracker();
+      profile()->GetDefaultStoragePartition()->GetDatabaseTracker();
   db_tracker->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
   task_environment()->RunUntilIdle();
 
-  // Create local storage. We only simulate this by creating the backing files.
-  // Note: This test depends on details of how the dom_storage library
-  // stores data in the host file system.
-  base::FilePath lso_dir_path =
-      profile()->GetPath().AppendASCII("Local Storage");
-  base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
-      .AddExtension(FILE_PATH_LITERAL(".localstorage"));
-  EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, base::WriteFile(lso_file_path, nullptr, 0));
-  EXPECT_TRUE(base::PathExists(lso_file_path));
+  // Create local storage.
+  auto* local_storage_control =
+      profile()->GetDefaultStoragePartition()->GetLocalStorageControl();
+  mojo::Remote<blink::mojom::StorageArea> area;
+  local_storage_control->BindStorageArea(url::Origin::Create(ext_url),
+                                         area.BindNewPipeAndPassReceiver());
+  {
+    bool success = false;
+    base::RunLoop run_loop;
+    area->Put({'k', 'e', 'y'}, {'v', 'a', 'l', 'u', 'e'}, absl::nullopt,
+              "source", base::BindLambdaForTesting([&](bool success_in) {
+                success = success_in;
+                run_loop.Quit();
+              }));
+    run_loop.Run();
+    ASSERT_TRUE(success);
+  }
 
-  // Create indexed db. Similarly, it is enough to only simulate this by
+  // Create indexed db. It is enough to only simulate this by
   // creating the directory on the disk, and resetting the caches of
   // "known" origins.
-  auto& idb_control = BrowserContext::GetDefaultStoragePartition(profile())
-                          ->GetIndexedDBControl();
+  auto& idb_control =
+      profile()->GetDefaultStoragePartition()->GetIndexedDBControl();
   mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
   idb_control.BindTestInterface(idb_control_test.BindNewPipeAndPassReceiver());
 
@@ -5162,8 +5172,18 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
                      base::Unretained(db_tracker)));
   task_environment()->RunUntilIdle();
 
-  // Check that the LSO file has been removed.
-  EXPECT_FALSE(base::PathExists(lso_file_path));
+  // Check that the localStorage data been removed.
+  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
+  {
+    base::RunLoop run_loop;
+    local_storage_control->GetUsage(base::BindLambdaForTesting(
+        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
+          usage_infos.swap(usage_infos_in);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(usage_infos.empty());
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(base::DirectoryExists(idb_path));
@@ -5219,15 +5239,14 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       origin2));
 
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetNetworkContext();
+      profile()->GetDefaultStoragePartition()->GetNetworkContext();
   mojo::Remote<network::mojom::CookieManager> cookie_manager_remote;
   network_context->GetCookieManager(
       cookie_manager_remote.BindNewPipeAndPassReceiver());
 
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(origin1, "dummy=value", base::Time::Now(),
-                                   base::nullopt /* server_time */));
+                                   absl::nullopt /* server_time */));
   ASSERT_TRUE(cc.get());
 
   {
@@ -5254,29 +5273,35 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   // Open a database.
   storage::DatabaseTracker* db_tracker =
-      BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetDatabaseTracker();
+      profile()->GetDefaultStoragePartition()->GetDatabaseTracker();
   db_tracker->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
   task_environment()->RunUntilIdle();
 
-  // Create local storage. We only simulate this by creating the backing files.
-  // Note: This test depends on details of how the dom_storage library
-  // stores data in the host file system.
-  base::FilePath lso_dir_path =
-      profile()->GetPath().AppendASCII("Local Storage");
-  base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
-      .AddExtension(FILE_PATH_LITERAL(".localstorage"));
-  EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, base::WriteFile(lso_file_path, nullptr, 0));
-  EXPECT_TRUE(base::PathExists(lso_file_path));
+  // Create local storage.
+  auto* local_storage_control =
+      profile()->GetDefaultStoragePartition()->GetLocalStorageControl();
+  mojo::Remote<blink::mojom::StorageArea> area;
+  local_storage_control->BindStorageArea(url::Origin::Create(origin1),
+                                         area.BindNewPipeAndPassReceiver());
+  {
+    bool success = false;
+    base::RunLoop run_loop;
+    area->Put({'k', 'e', 'y'}, {'v', 'a', 'l', 'u', 'e'}, absl::nullopt,
+              "source", base::BindLambdaForTesting([&](bool success_in) {
+                success = success_in;
+                run_loop.Quit();
+              }));
+    run_loop.Run();
+    ASSERT_TRUE(success);
+  }
 
-  // Create indexed db. Similarly, it is enough to only simulate this by
+  // Create indexed db. It is enough to only simulate this by
   // creating the directory on the disk, and resetting the caches of
   // "known" origins.
-  auto& idb_control = BrowserContext::GetDefaultStoragePartition(profile())
-                          ->GetIndexedDBControl();
+  auto& idb_control =
+      profile()->GetDefaultStoragePartition()->GetIndexedDBControl();
   mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
   idb_control.BindTestInterface(idb_control_test.BindNewPipeAndPassReceiver());
 
@@ -5344,8 +5369,18 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
                      base::Unretained(db_tracker)));
   task_environment()->RunUntilIdle();
 
-  // Check that the LSO file has been removed.
-  EXPECT_FALSE(base::PathExists(lso_file_path));
+  // Check that the localStorage data been removed.
+  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
+  {
+    base::RunLoop run_loop;
+    local_storage_control->GetUsage(base::BindLambdaForTesting(
+        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
+          usage_infos.swap(usage_infos_in);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(usage_infos.empty());
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(base::DirectoryExists(idb_path));
@@ -5876,7 +5911,7 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
 
     {
       base::AutoReset<bool> testing_scope =
-          web_app::SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+          web_app::SetPreinstalledAppInstallFeatureAlwaysEnabledForTesting();
       EXPECT_EQ(0, visitor.Visit(json_data));
       visitor.provider().HasExtension("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     }
@@ -7649,19 +7684,19 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
 TEST_F(ExtensionServiceTest, UninstallMigratedComponentExtensions) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  ASSERT_TRUE(prefs->ShouldInstallObsoleteComponentExtension(genius_app));
+  ASSERT_TRUE(prefs->ShouldInstallObsoleteComponentExtension(gallery_app));
 
-  scoped_refptr<const Extension> genius_extension =
-      ExtensionBuilder("genius")
-          .SetID(genius_app)
+  scoped_refptr<const Extension> gallery_extension =
+      ExtensionBuilder("gallery")
+          .SetID(gallery_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  service()->AddComponentExtension(genius_extension.get());
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(genius_app));
+  service()->AddComponentExtension(gallery_extension.get());
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(gallery_app));
 
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(genius_app));
-  EXPECT_FALSE(prefs->ShouldInstallObsoleteComponentExtension(genius_app));
+  EXPECT_FALSE(registry()->GetInstalledExtension(gallery_app));
+  EXPECT_FALSE(prefs->ShouldInstallObsoleteComponentExtension(gallery_app));
 }
 
 // Tests that component extensions that are not marked as obsolete will not be
@@ -7694,19 +7729,19 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsMultipleCalls) {
           .SetID(cast_stable)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  scoped_refptr<const Extension> genius_extension =
-      ExtensionBuilder("genius")
-          .SetID(genius_app)
+  scoped_refptr<const Extension> gallery_extension =
+      ExtensionBuilder("gallery")
+          .SetID(gallery_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
   service()->AddExtension(cast_extension.get());
-  service()->AddComponentExtension(genius_extension.get());
+  service()->AddComponentExtension(gallery_extension.get());
 
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-  EXPECT_FALSE(registry()->GetInstalledExtension(genius_app));
+  EXPECT_FALSE(registry()->GetInstalledExtension(gallery_app));
 }
 
 // Tests the case of a user installing a non-policy extension (e.g. through the

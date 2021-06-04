@@ -25,9 +25,9 @@ class GLImageD3DTestDelegate : public GLImageTestDelegateBase {
 
   void WillTearDown() override { d3d11_device_ = nullptr; }
 
-  base::Optional<GLImplementationParts> GetPreferedGLImplementation()
+  absl::optional<GLImplementationParts> GetPreferedGLImplementation()
       const override {
-    return base::Optional<GLImplementationParts>(
+    return absl::optional<GLImplementationParts>(
         GLImplementationParts(ANGLEImplementation::kD3D11));
   }
 
@@ -52,7 +52,8 @@ class GLImageD3DTestDelegate : public GLImageTestDelegateBase {
     EXPECT_TRUE(SUCCEEDED(hr));
 
     auto image = base::MakeRefCounted<GLImageD3D>(
-        size, internal_format, data_type, std::move(d3d11_texture), nullptr);
+        size, internal_format, data_type, gfx::ColorSpace::CreateSRGB(),
+        std::move(d3d11_texture));
     EXPECT_TRUE(image->Initialize());
     return image;
   }

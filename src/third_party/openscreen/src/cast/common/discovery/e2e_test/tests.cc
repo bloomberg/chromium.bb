@@ -125,16 +125,7 @@ discovery::Config GetConfigSettings() {
   // Get the loopback interface to run on.
   InterfaceInfo loopback = GetLoopbackInterfaceForTesting().value();
   OSP_LOG_INFO << "Selected network interface for testing: " << loopback;
-  discovery::Config::NetworkInfo::AddressFamilies address_families =
-      discovery::Config::NetworkInfo::kNoAddressFamily;
-  if (loopback.GetIpAddressV4()) {
-    address_families |= discovery::Config::NetworkInfo::kUseIpV4;
-  }
-  if (loopback.GetIpAddressV6()) {
-    address_families |= discovery::Config::NetworkInfo::kUseIpV6;
-  }
-
-  return discovery::Config{{{std::move(loopback), address_families}}};
+  return discovery::Config{{std::move(loopback)}};
 }
 
 class DiscoveryE2ETest : public testing::Test {

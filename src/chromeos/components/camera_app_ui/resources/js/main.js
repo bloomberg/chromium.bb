@@ -14,6 +14,7 @@ import {
 import {DeviceInfoUpdater} from './device/device_info_updater.js';
 import * as dom from './dom.js';
 import * as error from './error.js';
+import * as focusRing from './focus_ring.js';
 import {GalleryButton} from './gallerybutton.js';
 import {Intent} from './intent.js';
 import * as metrics from './metrics.js';
@@ -131,7 +132,8 @@ export class App {
     document.title = loadTimeData.getI18nMessage('name');
     util.setupI18nElements(document.body);
     this.setupToggles_();
-    this.setupSettingEffect_();
+    this.setupEffect_();
+    focusRing.initialize();
 
     const resolutionSettings = new ResolutionSettings(
         this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_);
@@ -160,8 +162,8 @@ export class App {
    * @private
    */
   setupToggles_() {
-    localStorage.get({expert: false})
-        .then((values) => state.set(state.State.EXPERT, values['expert']));
+    const expert = localStorage.getBool('expert');
+    state.set(state.State.EXPERT, expert);
     dom.getAll('input', HTMLInputElement).forEach((element) => {
       element.addEventListener('keypress', (event) => {
         const e = assertInstanceof(event, KeyboardEvent);
@@ -170,11 +172,9 @@ export class App {
         }
       });
 
-      const payload = (element) =>
-          ({[element.dataset['key']]: element.checked});
       const save = (element) => {
         if (element.dataset['key'] !== undefined) {
-          localStorage.set(payload(element));
+          localStorage.set(element.dataset['key'], element.checked);
         }
       };
       element.addEventListener('change', (event) => {
@@ -188,30 +188,50 @@ export class App {
             // Handle unchecked grouped sibling radios.
             const grouped =
                 `input[type=radio][name=${element.name}]:not(:checked)`;
-            dom.getAll(grouped, HTMLInputElement)
-                .forEach(
-                    (radio) => radio.dispatchEvent(new Event('change')) &&
-                        save(radio));
+            for (const radio of dom.getAll(grouped, HTMLInputElement)) {
+              radio.dispatchEvent(new Event('change'));
+              save(radio);
+            }
           }
         }
       });
       if (element.dataset['key'] !== undefined) {
         // Restore the previously saved state on startup.
-        localStorage.get(payload(element))
-            .then(
-                (values) => util.toggleChecked(
-                    element, values[element.dataset['key']]));
+        const value =
+            localStorage.getBool(element.dataset['key'], element.checked);
+        util.toggleChecked(element, value);
       }
     });
   }
 
   /**
-   * Sets up inkdrop effect for settings view.
+   * Sets up visual effect for all applicable elements.
    * @private
    */
-  setupSettingEffect_() {
-    dom.getAll('button.menu-item, label.menu-item', HTMLElement)
+  setupEffect_() {
+    dom.getAll('.inkdrop', HTMLElement)
         .forEach((el) => util.setInkdropEffect(el));
+
+    const observer = new MutationObserver((mutationList) => {
+      mutationList.forEach((mutation) => {
+        assert(mutation.type === 'childList');
+        // Only the newly added nodes with inkdrop class are considered here. So
+        // simply adding class attribute on existing element will not work.
+        for (const node of mutation.addedNodes) {
+          if (!(node instanceof HTMLElement)) {
+            continue;
+          }
+          const el = assertInstanceof(node, HTMLElement);
+          if (el.classList.contains('inkdrop')) {
+            util.setInkdropEffect(el);
+          }
+        }
+      });
+    });
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+    });
   }
 
   /**
@@ -224,7 +244,18 @@ export class App {
       await filesystem.initialize();
       const cameraDir = filesystem.getCameraDirectory();
       assert(cameraDir !== null);
-      this.galleryButton_.initialize(cameraDir);
+
+      // There are three possible cases:
+      // 1. Regular instance
+      //      (intent === null)
+      // 2. STILL_CAPTURE_CAMREA and VIDEO_CAMERA intents
+      //      (intent !== null && shouldHandleResult === false)
+      // 3. Other intents
+      //      (intent !== null && shouldHandleResult === true)
+      // Only (1) and (2) will show gallery button on the UI.
+      if (this.intent_ === null || !this.intent_.shouldHandleResult) {
+        this.galleryButton_.initialize(cameraDir);
+      }
     } catch (error) {
       console.error(error);
       nav.open(ViewName.WARNING, WarningType.FILESYSTEM_FAILURE);

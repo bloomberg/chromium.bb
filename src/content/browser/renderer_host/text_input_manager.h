@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_bound.h"
@@ -73,6 +74,9 @@ class CONTENT_EXPORT TextInputManager {
     gfx::SelectionBound anchor;
     // The end of the selection region (caret position).
     gfx::SelectionBound focus;
+
+    // The bounding box of the selection region.
+    gfx::Rect bounding_box;
 
     // The following variables are only used on Mac platform.
     // The current caret bounds.
@@ -153,6 +157,11 @@ class CONTENT_EXPORT TextInputManager {
   // range is currently present.
   gfx::Range GetAutocorrectRange() const;
 
+  // Returns the grammar fragment which contains |range|. If non-existent,
+  // returns an empty Fragment.
+  absl::optional<ui::GrammarFragment> GetGrammarFragment(
+      gfx::Range range) const;
+
   // Returns the selection bounds information for |view|. If |view| == nullptr,
   // it will return the corresponding information for |active_view_| or nullptr
   // if there are no active views.
@@ -189,6 +198,7 @@ class CONTENT_EXPORT TextInputManager {
                               base::i18n::TextDirection anchor_dir,
                               const gfx::Rect& focus_rect,
                               base::i18n::TextDirection focus_dir,
+                              const gfx::Rect& bounding_box,
                               bool is_anchor_first);
 
   // Notify observers that the selection bounds have been updated. This is also

@@ -344,7 +344,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
 
   std::unique_ptr<base::DictionaryValue> policies =
       policy_watcher_->GetEffectivePolicies();
-  if (policies->size() == 0) {
+  if (policies->DictSize() == 0) {
     // At this point policies have been read, so if there are none set then
     // it indicates an error. Since this can be fixed by end users it has a
     // dedicated message type rather than the generic "error" so that the
@@ -563,7 +563,7 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
   }
 }
 
-base::Optional<bool>
+absl::optional<bool>
 It2MeNativeMessagingHost::GetAllowElevatedHostPolicyValue() {
   DCHECK(policy_received_);
 #if defined(OS_WIN)
@@ -581,7 +581,7 @@ It2MeNativeMessagingHost::GetAllowElevatedHostPolicyValue() {
   }
 #endif  // defined(OS_WIN)
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void It2MeNativeMessagingHost::OnPolicyError() {
@@ -660,11 +660,11 @@ bool It2MeNativeMessagingHost::DelegateToElevatedHost(
     // The new process runs at an elevated level due to being granted uiAccess.
     // |parent_window_handle| can be used to position dialog windows but is not
     // currently used.
-    elevated_host_.reset(new ElevatedNativeMessagingHost(
+    elevated_host_ = std::make_unique<ElevatedNativeMessagingHost>(
         binary_path.DirName().Append(kElevatedHostBinaryName),
         /*parent_window_handle=*/0,
         /*elevate_process=*/false,
-        /*host_timeout=*/base::TimeDelta(), client_));
+        /*host_timeout=*/base::TimeDelta(), client_);
   }
 
   if (elevated_host_->EnsureElevatedHostCreated() ==

@@ -38,6 +38,10 @@ void av1_setup_butteraugli_recon(AV1_COMP *cpi,
 
 void av1_setup_butteraugli_source(AV1_COMP *cpi);
 
-void av1_restore_butteraugli_source(AV1_COMP *cpi);
+// 'K' is used to balance the rate-distortion distribution between PSNR
+// and Butteraugli.
+void av1_setup_butteraugli_rdmult_and_restore_source(AV1_COMP *cpi, double K);
+
+void av1_setup_butteraugli_rdmult(AV1_COMP *cpi);
 
 #endif  // AOM_AV1_ENCODER_TUNE_BUTTERAUGLI_H_

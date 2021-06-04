@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -35,7 +35,7 @@ constexpr bool kLocallyInstallWebAppsOnSync = false;
 #endif
 
 InstallManager::InstallParams CreateSyncInstallParams(
-    const base::Optional<std::string>& manifest_id,
+    const absl::optional<std::string>& manifest_id,
     const GURL& start_url,
     const std::u16string& app_name,
     DisplayMode user_display_mode) {
@@ -82,8 +82,6 @@ WebAppInstallManager::~WebAppInstallManager() = default;
 void WebAppInstallManager::Start() {
   DCHECK(!started_);
   started_ = true;
-
-  MaybeEnqueuePendingAppSyncInstalls();
 }
 
 void WebAppInstallManager::Shutdown() {
@@ -161,13 +159,13 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     webapps::WebappInstallSource install_source,
     OnceInstallCallback callback) {
   InstallWebAppFromInfo(std::move(web_application_info), for_installable_site,
-                        base::nullopt, install_source, std::move(callback));
+                        absl::nullopt, install_source, std::move(callback));
 }
 
 void WebAppInstallManager::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     ForInstallableSite for_installable_site,
-    const base::Optional<InstallParams>& install_params,
+    const absl::optional<InstallParams>& install_params,
     webapps::WebappInstallSource install_source,
     OnceInstallCallback callback) {
   DCHECK(started_);
@@ -202,29 +200,6 @@ void WebAppInstallManager::InstallWebAppWithParams(
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
-}
-
-void WebAppInstallManager::InstallBookmarkAppFromSync(
-    const AppId& bookmark_app_id,
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    OnceInstallCallback callback) {
-  if (disable_bookmark_app_sync_install_for_testing())
-    return;
-
-  // This method can be called by
-  // ExtensionSyncService::ApplyBookmarkAppSyncData() while |this| is not
-  // |started_|.
-  if (started_) {
-    EnqueueInstallAppFromSync(bookmark_app_id, std::move(web_application_info),
-                              std::move(callback));
-  } else {
-    AppSyncInstallRequest request;
-    request.sync_app_id = bookmark_app_id;
-    request.web_application_info = std::move(web_application_info);
-    request.callback = std::move(callback);
-
-    pending_app_sync_installs_.push_back(std::move(request));
-  }
 }
 
 void WebAppInstallManager::EnqueueInstallAppFromSync(
@@ -373,16 +348,6 @@ void WebAppInstallManager::SetUrlLoaderForTesting(
   url_loader_ = std::move(url_loader);
 }
 
-void WebAppInstallManager::MaybeEnqueuePendingAppSyncInstalls() {
-  for (AppSyncInstallRequest& request : pending_app_sync_installs_) {
-    EnqueueInstallAppFromSync(request.sync_app_id,
-                              std::move(request.web_application_info),
-                              std::move(request.callback));
-  }
-
-  pending_app_sync_installs_.clear();
-}
-
 void WebAppInstallManager::
     LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForAppSync(
         const AppId& sync_app_id,
@@ -499,7 +464,7 @@ void WebAppInstallManager::OnLoadWebAppAndCheckManifestCompleted(
   DeleteTask(task);
 
   InstallableCheckResult result;
-  base::Optional<AppId> opt_app_id;
+  absl::optional<AppId> opt_app_id;
   if (IsSuccess(code)) {
     if (!app_id.empty() && registrar()->IsInstalled(app_id)) {
       result = InstallableCheckResult::kAlreadyInstalled;
@@ -537,12 +502,5 @@ WebAppInstallManager::PendingTask::PendingTask() = default;
 WebAppInstallManager::PendingTask::PendingTask(PendingTask&&) = default;
 
 WebAppInstallManager::PendingTask::~PendingTask() = default;
-
-WebAppInstallManager::AppSyncInstallRequest::AppSyncInstallRequest() = default;
-
-WebAppInstallManager::AppSyncInstallRequest::AppSyncInstallRequest(
-    AppSyncInstallRequest&&) = default;
-
-WebAppInstallManager::AppSyncInstallRequest::~AppSyncInstallRequest() = default;
 
 }  // namespace web_app

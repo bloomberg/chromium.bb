@@ -16,36 +16,28 @@ import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 let UI: typeof UIModule;
 
 // Expose the locale.
-i18n.i18n.registerLocale('en-US');
+i18n.DevToolsLocale.DevToolsLocale.instance({
+  create: true,
+  data: {
+    navigatorLanguage: 'en-US',
+    settingLanguage: 'en-US',
+    lookupClosestDevToolsLocale: () => 'en-US',
+  },
+});
 
 // Load the strings from the resource file.
-(async () => {
-  const locale = i18n.i18n.registeredLocale;
-  if (locale) {
-    // proxied call.
-    try {
-      const data = await (await fetch(`locales/${locale}.json`)).json();
-      if (data) {
-        const localizedStrings = data;
-        i18n.i18n.registerLocaleData(locale, localizedStrings);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
-    }
-  }
-})();
+const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
+// proxied call.
+try {
+  await i18n.i18n.fetchAndRegisterLocaleData(locale);
+} catch (error) {
+  // eslint-disable-next-line no-console
+  console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
+}
 
 let targetManager: SDK.SDKModel.TargetManager;
 
 function initializeTargetManagerIfNecessary() {
-  // SDK.ResourceTree model has to exist to avoid a circular dependency, thus it
-  // needs to be placed on the global if it is not already there.
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const globalObject = (globalThis as unknown as {SDK: {ResourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel}});
-  globalObject.SDK = globalObject.SDK || {};
-  globalObject.SDK.ResourceTreeModel = globalObject.SDK.ResourceTreeModel || SDK.ResourceTreeModel.ResourceTreeModel;
-
   // Create the target manager.
   targetManager = targetManager || SDK.SDKModel.TargetManager.instance({forceNew: true});
 }
@@ -104,6 +96,7 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showHitTestBorders', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showWebVitals', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'webpFormatDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'jpegXlFormatDisabled', false),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'cssSourceMapsEnabled', true),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'jsSourceMapsEnabled', true),
     createSettingValue(
@@ -168,4 +161,12 @@ export function describeWithEnvironment(title: string, fn: (this: Mocha.Suite) =
     after(async () => await deinitializeGlobalVars());
     describe(title, fn);
   });
+}
+
+export function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T> {
+  const storageVals = new Map<string, string>();
+  const storage = new Common.Settings.SettingsStorage(
+      {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
+      'test');
+  return new Common.Settings.Setting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage);
 }

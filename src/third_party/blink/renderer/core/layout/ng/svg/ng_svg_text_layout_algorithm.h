@@ -9,7 +9,7 @@
 
 namespace blink {
 
-struct SVGCharacterData;
+struct SVGTextLengthContext;
 
 class NGSVGTextLayoutAlgorithm {
   STACK_ALLOCATED();
@@ -19,27 +19,35 @@ class NGSVGTextLayoutAlgorithm {
 
   // Apply SVG specific text layout algorithm to |items|.
   // Text items in |items| will be converted to kSVGText type.
-  void Layout(NGFragmentItemsBuilder::ItemWithOffsetList& items);
+  void Layout(const String& ifc_text_content,
+              NGFragmentItemsBuilder::ItemWithOffsetList& items);
 
  private:
   // Returns false if we should skip the following steps.
   bool Setup(wtf_size_t approximate_count);
-  void SetFlags(const NGFragmentItemsBuilder::ItemWithOffsetList& items);
-  void ResolveCharacterPositioning(
-      const LayoutObject& layout_object,
-      const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      bool in_text_path,
-      wtf_size_t& index,
-      Vector<SVGCharacterData>& resolve);
+  void SetFlags(const String& ifc_text_content,
+                const NGFragmentItemsBuilder::ItemWithOffsetList& items);
   void AdjustPositionsDxDy(
+      const NGFragmentItemsBuilder::ItemWithOffsetList& items);
+  void ApplyTextLengthAttribute(
+      const NGFragmentItemsBuilder::ItemWithOffsetList& items);
+  Vector<SVGTextLengthContext> CollectTextLengthAncestors(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      Vector<SVGCharacterData>& resolve);
+      wtf_size_t index,
+      const LayoutObject* layout_object) const;
+  void ResolveTextLength(
+      const NGFragmentItemsBuilder::ItemWithOffsetList& items,
+      const SVGTextLengthContext& length_context,
+      wtf_size_t j_plus_1,
+      Vector<wtf_size_t>& resolved_descendant_node_starts);
   void AdjustPositionsXY(
-      const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      const Vector<SVGCharacterData>& resolve);
+      const NGFragmentItemsBuilder::ItemWithOffsetList& items);
+  void ApplyAnchoring(const NGFragmentItemsBuilder::ItemWithOffsetList& items);
+  void PositionOnPath(const NGFragmentItemsBuilder::ItemWithOffsetList& items);
 
   float ScalingFactorAt(const NGFragmentItemsBuilder::ItemWithOffsetList& items,
                         wtf_size_t addressable_index) const;
+  bool IsFirstCharacterInTextPath(wtf_size_t index) const;
 
   NGInlineNode inline_node_;
 
@@ -51,12 +59,18 @@ class NGSVGTextLayoutAlgorithm {
   bool horizontal_;
 
   struct NGSVGPerCharacterInfo {
-    base::Optional<float> x;
-    base::Optional<float> y;
-    base::Optional<float> rotate;
+    absl::optional<float> x;
+    absl::optional<float> y;
+    absl::optional<float> rotate;
     bool hidden = false;
     bool middle = false;
     bool anchored_chunk = false;
+
+    bool in_text_path = false;
+    bool text_length_resolved = false;
+    float baseline_shift = 0.0f;
+    float inline_size = 0.0f;
+    float length_adjust_scale = 1.0f;
     wtf_size_t item_index = WTF::kNotFound;
   };
   // This data member represents "result" defined in the specification, but it

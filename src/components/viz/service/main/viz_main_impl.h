@@ -6,13 +6,13 @@
 #define COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
+#include "components/viz/common/buildflags.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -126,6 +126,12 @@ class VizMainImpl : public mojom::VizMain,
 #endif
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
   void CreateVizDevTools(mojom::VizDevToolsParamsPtr params) override;
+#if BUILDFLAG(USE_VIZ_DEBUGGER)
+  void FilterDebugStream(base::Value filter_data) override;
+  void StartDebugStream(
+      mojo::PendingRemote<mojom::VizDebugOutput> debug_output) override;
+  void StopDebugStream() override;
+#endif
 
   // gpu::GpuInProcessThreadServiceDelegate implementation:
   scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
@@ -141,10 +147,9 @@ class VizMainImpl : public mojom::VizMain,
     return discardable_shared_memory_manager_.get();
   }
 
-  // Cleanly exits the process. If |immediate_exit_code| is base::nullopt, the
-  // process exits by shutting down the GPU main thread. Otherwise, the process
-  // is terminated immediately with the specified exit code.
-  void ExitProcess(base::Optional<ExitCode> immediate_exit_code);
+  // If it's in browser process, shut down the GPU main thread. Otherwise, the
+  // GPU process is terminated immediately with the specified exit code.
+  void ExitProcess(ExitCode immediate_exit_code);
 
  private:
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);

@@ -524,7 +524,7 @@
   TestSuite.prototype.testConsoleOnNavigateBack = function() {
 
     function filteredMessages() {
-      return self.SDK.consoleModel.messages().filter(a => a.source !== SDK.ConsoleMessage.MessageSource.Violation);
+      return self.SDK.consoleModel.messages().filter(a => a.source !== Protocol.Log.LogEntrySource.Violation);
     }
 
     if (filteredMessages().length === 1) {
@@ -535,7 +535,7 @@
 
 
     function firstConsoleMessageReceived(event) {
-      if (event && event.data.source === SDK.ConsoleMessage.MessageSource.Violation) {
+      if (event && event.data.source === Protocol.Log.LogEntrySource.Violation) {
         return;
       }
       self.SDK.consoleModel.removeEventListener(
@@ -1320,8 +1320,8 @@
     const {browserContextId} = await targetAgent.invoke_createBrowserContext();
 
     // Cause a Browser to be created with the temp profile.
-    const {targetId} =
-        await targetAgent.invoke_createTarget({url: 'data:text/html,', browserContextId, newWindow: true});
+    const {targetId} = await targetAgent.invoke_createTarget(
+        {url: 'data:text/html,<!DOCTYPE html>', browserContextId, newWindow: true});
     await targetAgent.invoke_attachToTarget({targetId, flatten: true});
 
     // Destroy the temp profile.
@@ -1488,7 +1488,7 @@
     await testCase(
         baseURL + 'echoheader?Cookie', undefined, 200, ['cache-control'], 'devtools-test-cookie=same-site-cookie');
     await testCase('data:text/html,<body>hello</body>', undefined, 200, [], '<body>hello</body>');
-    await testCase(fileURL, undefined, 200, [], '<html>\n<body>\nDummy page.\n</body>\n</html>\n');
+    await testCase(fileURL, undefined, 200, [], '<!DOCTYPE html>\n<html>\n<body>\nDummy page.\n</body>\n</html>\n');
     await testCase(fileURL + 'thisfileshouldnotbefound', undefined, 404, [], '');
 
     this.releaseControl();

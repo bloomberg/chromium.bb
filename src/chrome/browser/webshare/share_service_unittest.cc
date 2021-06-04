@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -110,8 +111,7 @@ class ShareServiceUnitTest : public ChromeRenderViewHostTestHarness {
     blob->content_type = content_type;
 
     base::RunLoop run_loop;
-    auto blob_context_getter =
-        content::BrowserContext::GetBlobStorageContext(browser_context());
+    auto blob_context_getter = browser_context()->GetBlobStorageContext();
     content::GetIOThreadTaskRunner({})->PostTaskAndReply(
         FROM_HERE,
         base::BindLambdaForTesting(

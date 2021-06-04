@@ -16,6 +16,7 @@
 #include "base/pickle.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "url/gurl.h"
@@ -73,25 +74,25 @@ Origin& Origin::operator=(Origin&&) noexcept = default;
 Origin::~Origin() = default;
 
 // static
-base::Optional<Origin> Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+absl::optional<Origin> Origin::UnsafelyCreateTupleOriginWithoutNormalization(
     base::StringPiece scheme,
     base::StringPiece host,
     uint16_t port) {
-  SchemeHostPort tuple(scheme.as_string(), host.as_string(), port,
+  SchemeHostPort tuple(std::string(scheme), std::string(host), port,
                        SchemeHostPort::CHECK_CANONICALIZATION);
   if (!tuple.IsValid())
-    return base::nullopt;
+    return absl::nullopt;
   return Origin(std::move(tuple));
 }
 
 // static
-base::Optional<Origin> Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
+absl::optional<Origin> Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
     base::StringPiece precursor_scheme,
     base::StringPiece precursor_host,
     uint16_t precursor_port,
     const Origin::Nonce& nonce) {
-  SchemeHostPort precursor(precursor_scheme.as_string(),
-                           precursor_host.as_string(), precursor_port,
+  SchemeHostPort precursor(std::string(precursor_scheme),
+                           std::string(precursor_host), precursor_port,
                            SchemeHostPort::CHECK_CANONICALIZATION);
   // For opaque origins, it is okay for the SchemeHostPort to be invalid;
   // however, this should only arise when the arguments indicate the
@@ -99,7 +100,7 @@ base::Optional<Origin> Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
   if (!precursor.IsValid() &&
       !(precursor_scheme.empty() && precursor_host.empty() &&
         precursor_port == 0)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return Origin(std::move(nonce), std::move(precursor));
 }
@@ -148,11 +149,11 @@ GURL Origin::GetURL() const {
   return tuple_.GetURL();
 }
 
-base::Optional<base::UnguessableToken> Origin::GetNonceForSerialization()
+absl::optional<base::UnguessableToken> Origin::GetNonceForSerialization()
     const {
   // TODO(nasko): Consider not making a copy here, but return a reference to
   // the nonce.
-  return nonce_ ? base::make_optional(nonce_->token()) : base::nullopt;
+  return nonce_ ? absl::make_optional(nonce_->token()) : absl::nullopt;
 }
 
 bool Origin::IsSameOriginWith(const Origin& other) const {
@@ -288,11 +289,11 @@ Origin::Origin(const Nonce& nonce, SchemeHostPort precursor)
   DCHECK_EQ(0U, port());
 }
 
-base::Optional<std::string> Origin::SerializeWithNonce() const {
+absl::optional<std::string> Origin::SerializeWithNonce() const {
   return SerializeWithNonceImpl();
 }
 
-base::Optional<std::string> Origin::SerializeWithNonceAndInitIfNeeded() {
+absl::optional<std::string> Origin::SerializeWithNonceAndInitIfNeeded() {
   GetNonceForSerialization();
   return SerializeWithNonceImpl();
 }
@@ -301,9 +302,9 @@ base::Optional<std::string> Origin::SerializeWithNonceAndInitIfNeeded() {
 // string - tuple_.GetURL().spec().
 // uint64_t (if opaque) - high bits of nonce if opaque. 0 if not initialized.
 // uint64_t (if opaque) - low bits of nonce if opaque. 0 if not initialized.
-base::Optional<std::string> Origin::SerializeWithNonceImpl() const {
+absl::optional<std::string> Origin::SerializeWithNonceImpl() const {
   if (!opaque() && !tuple_.IsValid())
-    return base::nullopt;
+    return absl::nullopt;
 
   base::Pickle pickle;
   pickle.WriteString(tuple_.Serialize());
@@ -324,16 +325,16 @@ base::Optional<std::string> Origin::SerializeWithNonceImpl() const {
 }
 
 // static
-base::Optional<Origin> Origin::Deserialize(const std::string& value) {
+absl::optional<Origin> Origin::Deserialize(const std::string& value) {
   std::string data;
   if (!base::Base64Decode(value, &data))
-    return base::nullopt;
+    return absl::nullopt;
   base::Pickle pickle(reinterpret_cast<char*>(&data[0]), data.size());
   base::PickleIterator reader(pickle);
 
   std::string pickled_url;
   if (!reader.ReadString(&pickled_url))
-    return base::nullopt;
+    return absl::nullopt;
   GURL url(pickled_url);
 
   // If only a tuple was serialized, then this origin is not opaque. For opaque
@@ -342,24 +343,24 @@ base::Optional<Origin> Origin::Deserialize(const std::string& value) {
 
   // Opaque origins without a tuple are ok.
   if (!is_opaque && !url.is_valid())
-    return base::nullopt;
+    return absl::nullopt;
   SchemeHostPort tuple(url);
 
   // Possible successful early return if the pickled Origin was not opaque.
   if (!is_opaque) {
     Origin origin(tuple);
     if (origin.opaque())
-      return base::nullopt;  // Something went horribly wrong.
+      return absl::nullopt;  // Something went horribly wrong.
     return origin;
   }
 
   uint64_t nonce_high = 0;
   if (!reader.ReadUInt64(&nonce_high))
-    return base::nullopt;
+    return absl::nullopt;
 
   uint64_t nonce_low = 0;
   if (!reader.ReadUInt64(&nonce_low))
-    return base::nullopt;
+    return absl::nullopt;
 
   Origin::Nonce nonce;
   if (nonce_high != 0 && nonce_low != 0) {
@@ -373,7 +374,7 @@ base::Optional<Origin> Origin::Deserialize(const std::string& value) {
   return origin;
 }
 
-void Origin::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void Origin::WriteIntoTrace(perfetto::TracedValue context) const {
   std::move(context).WriteString(GetDebugString());
 }
 

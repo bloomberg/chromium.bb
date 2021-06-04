@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_SAVE_ADDRESS_PROFILE_PROMPT_VIEW_ANDROID_H_
 
 #include <jni.h>
-#include <memory>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -32,12 +31,20 @@ class SaveAddressProfilePromptViewAndroid
       const SaveAddressProfilePromptViewAndroid&) = delete;
   ~SaveAddressProfilePromptViewAndroid() override;
 
-  bool Show(SaveAddressProfilePromptController* controller) override;
+  // SaveAddressProfilePromptView:
+  bool Show(SaveAddressProfilePromptController* controller,
+            const AutofillProfile& profile,
+            bool is_update) override;
 
  private:
+  // Populates the content of the existing `java_object_` as a save or update
+  // prompt (according to `is_update`) with the details supplied by the
+  // `controller`.
+  void SetContent(SaveAddressProfilePromptController* controller,
+                  bool is_update);
+
   // The corresponding Java SaveAddressProfilePrompt owned by this class.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
   content::WebContents* web_contents_;
 };
 

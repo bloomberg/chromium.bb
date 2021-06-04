@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 
 from telemetry import decorators
@@ -45,7 +46,7 @@ class AndroidDeviceTest(_BaseAndroidDeviceTest):
         self._GetMockDeviceUtils('01'),
         self._GetMockDeviceUtils('02')]
     self.assertEquals(
-        set(['01', '02']),
+        {'01', '02'},
         set(device.device_id for device in
             android_device.AndroidDevice.GetAllConnectedDevices(None)))
 

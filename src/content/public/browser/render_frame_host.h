@@ -18,10 +18,12 @@
 #include "ipc/ipc_sender.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
@@ -39,8 +41,6 @@ class JavaRef;
 }  // namespace android
 #endif
 
-template <typename T>
-class Optional;
 class TimeDelta;
 class UnguessableToken;
 class Value;
@@ -69,7 +69,7 @@ class PendingReceiver;
 namespace net {
 class IsolationInfo;
 class NetworkIsolationKey;
-}
+}  // namespace net
 
 namespace network {
 namespace mojom {
@@ -241,6 +241,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns a vector of all RenderFrameHosts in the subtree rooted at |this|.
   // The results may be in different processes.
+  // Does not consider inner frame trees.
   // TODO(https://crbug.com/1013740): Consider exposing a way for the browser
   // process to run a function across a subtree in all renderers rather than
   // exposing the RenderFrameHosts of the frames here.
@@ -251,7 +252,37 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // GetParent().
   // This is a strict relationship, a RenderFrameHost is never an ancestor of
   // itself.
+  // This does not consider inner frame trees.
   virtual bool IsDescendantOf(RenderFrameHost* ancestor) = 0;
+
+  // |ForEachRenderFrameHost| traverses this RenderFrameHost and all of its
+  // descendants, including frames in any inner frame trees, in breadth-first
+  // order. Examples of features that have inner frame trees are portals or
+  // GuestViews. Note: The RenderFrameHost parameter is not guaranteed to have a
+  // live RenderFrame counterpart in the renderer process. Callbacks should
+  // check IsRenderFrameLive(), as sending IPC messages to it in this case will
+  // fail silently.
+  //
+  // The callback returns a FrameIterationAction which determines if/how
+  // iteration on subsequent frames continues. The FrameIterationAction may be
+  // omitted, in which case kContinue will be assumed.
+  enum class FrameIterationAction {
+    // Includes the children of the visited frame for subsequent traversal and
+    // continues traversal to the next frame.
+    kContinue,
+    // Continues traversal to the next frame but does not include the children
+    // of the visited frame for subsequent traversal.
+    kSkipChildren,
+    // Does not continue traversal.
+    kStop
+  };
+  using FrameIterationCallback =
+      base::RepeatingCallback<FrameIterationAction(RenderFrameHost*)>;
+  using FrameIterationAlwaysContinueCallback =
+      base::RepeatingCallback<void(RenderFrameHost*)>;
+  virtual void ForEachRenderFrameHost(FrameIterationCallback on_frame) = 0;
+  virtual void ForEachRenderFrameHost(
+      FrameIterationAlwaysContinueCallback on_frame) = 0;
 
   // Returns the FrameTreeNode ID for this frame. This ID is browser-global and
   // uniquely identifies a frame that hosts content. The identifier is fixed at
@@ -282,7 +313,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   //
   // TODO(crbug/1098283): Remove the nullopt scenario by creating the token in
   // CreateChildFrame() or similar.
-  virtual base::Optional<base::UnguessableToken> GetEmbeddingToken() = 0;
+  virtual absl::optional<base::UnguessableToken> GetEmbeddingToken() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag
   // declaring it. For example, <iframe name="framename">[...]</iframe>. It is
@@ -295,68 +326,85 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the size of the frame in the viewport. The frame may not be aware
   // of its size.
-  virtual const base::Optional<gfx::Size>& GetFrameSize() = 0;
+  virtual const absl::optional<gfx::Size>& GetFrameSize() = 0;
 
-  // Returns the distance from this frame to the root frame.
+  // Returns the distance from this frame to its main frame.
   virtual size_t GetFrameDepth() = 0;
 
-  // Returns true if the frame is out of process.
+  // Returns true if the frame is out of process relative to its parent.
   virtual bool IsCrossProcessSubframe() = 0;
 
-  // Indicates whether this frame is in a cross-origin isolated agent cluster.
-  // See [1] and [2] for a description of what this means for web content.
-  // Specifically, an agent cluster may be cross-origin isolated if:
-  // - its top-level document has "Cross-Origin-Opener-Policy: same-origin" and
-  //   "Cross-Origin-Embedder-Policy: require-corp" HTTP headers; or,
-  // - its top-level worker script has a
-  //   "Cross-Origin-Embedder-Policy: require-corp" HTTP header.
+  // Reflects the web-exposed isolation properties of a given frame, which
+  // depends both on the process in which the frame lives, as well as the agent
+  // cluster into which it has been placed.
   //
-  // In practice this means that the frame is guaranteed to be hosted in a
-  // process that is isolated to the frame's origin. The process may also host
-  // cross-origin frames and workers only if they have opted in to being
-  // embedded with CORS or CORP headers.
+  // Three broad categories are possible:
   //
-  // Certain advanced web platform APIs are gated behind this property. It will
-  // correspond to the value returned by accessing
-  // "WindowOrWorkerGlobalScope.crossOriginIsolated" in Javascript.
+  // 1.  The frame may not be isolated in a web-facing way.
   //
-  // NOTE: some of the information needed to fully determine a frame's
-  // cross-isolation status is currently not available in the browser process.
-  // Access to web platform API's must be checked in the renderer, with the
-  // CrossOriginIsolationStatus on the browser side only used as a backup to
-  // catch misbehaving renderers.
+  // 2.  The frame may be "cross-origin isolated", corresponding to the value
+  //     returned by `WorkerOrWindowGlobalScope.crossOriginIsolated`, and gating
+  //     the set of APIs which specify [CrossOriginIsolated] attributes. The
+  //     requirements for this level of isolation are described in [1] and [2]
+  //     below.
+  //
+  //     In practice this means that the frame is guaranteed to be hosted in a
+  //     process that is isolated to the frame's origin. The process may also
+  //     host cross-origin frames and workers only if they have opted in to
+  //     being embedded by asserting CORS or CORP headers.
+  //
+  // 3.  The frame may be an "isolated application", corresponding to a mostly
+  //     TBD set of restrictions we're exploring in https://crbug.com/1206150,
+  //     and which currently gate the set of APIs which specify
+  //     [DirectSocketEnabled] attributes.
+  //
+  // The enum below is ordered from least-isolated to most-isolated.
   //
   // [1]
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated
   // [2] https://w3c.github.io/webappsec-permissions-policy/
-  enum class CrossOriginIsolationStatus {
-    // The frame is in a cross-origin isolated process and agent cluster.
-    // It is allowed to call web platform API's gated behind the
-    // crossOriginIsolated property.
-    kIsolated,
-
-    // The frame is not in a cross-origin isolated agent cluster. It may be
-    // hosted in a cross-origin isolated process but it is not allowed to call
-    // web platform API's gated behind the crossOriginIsolated property.
+  //
+  // NOTE: some of the information needed to fully determine a frame's
+  // isolation status is currently not available in the browser process.
+  // Access to web platform API's must be checked in the renderer, with the
+  // WebExposedIsolationLevel on the browser side only used as a backup to
+  // catch misbehaving renderers.
+  enum class WebExposedIsolationLevel {
+    // The frame is not in a cross-origin isolated agent cluster. It may not
+    // meet the requirements for such isolation in itself, or it may be
+    // hosted in a process capable of supporting cross-origin isolation or
+    // application isolation, but barred from using those capabilities by
+    // its embedder.
     kNotIsolated,
 
-    // The frame is in a cross-origin isolated process, but it's not possible
-    // to determine whether it's in a cross-origin isolated agent cluster. The
-    // browser process should not prevent it from calling web platform API's
-    // gated behind the crossOriginIsolated property because it may be allowed.
-    // TODO(clamy): Remove this status once the document policy is available on
-    // the browser side.
+    // The frame is in a cross-origin isolated process and agent cluster,
+    // allowed to access web platform APIs gated on [CrossOriginIsolated].
+    //
+    // TODO(clamy): Remove this "maybe" status once it is possible to determine
+    // conclusively whether the document is capable of calling cross-origin
+    // isolated APIs by examining the active document policy.
     kMaybeIsolated,
+    kIsolated,
+
+    // The frame is in a cross-origin isolated process and agent cluster that
+    // supports application isolation, allowing access to web platform APIs
+    // gated on both [CrossOriginIsolated] and [DirectSocketEnabled].
+    //
+    // TODO(clamy): Remove this "maybe" status once it is possible to determine
+    // conclusively whether the document is capable of calling cross-origin
+    // isolated APIs by examining the active document policy.
+    kMaybeIsolatedApplication,
+    kIsolatedApplication
   };
 
-  // Returns whether the frame is in a cross-origin isolated agent cluster.
+  // Returns the web-exposed isolation level of a frame's agent cluster.
   //
   // Note that this is a property of the document so can change as the frame
   // navigates.
   //
   // TODO(https://936696): Once RenderDocument ships this should be exposed as
   // an invariant of the document host.
-  virtual CrossOriginIsolationStatus GetCrossOriginIsolationStatus() = 0;
+  virtual WebExposedIsolationLevel GetWebExposedIsolationLevel() = 0;
 
   // Returns the last committed URL of this RenderFrameHost. This will be empty
   // until the first commit in this RenderFrameHost.
@@ -416,7 +464,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   //   ExecuteJavaScript("obj.foo(1, true)", callback)
   virtual void ExecuteJavaScriptMethod(const std::u16string& object_name,
                                        const std::u16string& method_name,
-                                       base::Value&& arguments,
+                                       base::Value arguments,
                                        JavaScriptResultCallback callback) = 0;
 
   // This is the default API to run JavaScript in this frame. This API can only
@@ -704,10 +752,19 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const blink::mojom::MediaPlayerAction& action) = 0;
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|.
+  //
   // If this returns true, any redirect safety checks should be bypassed in
-  // downstream loaders.
+  // downstream loaders.  (This indicates that a layer above //content has
+  // wrapped `default_factory_receiver` and may inject arbitrary redirects - for
+  // example see WebRequestAPI::MaybeProxyURLLoaderFactory.)
+  //
+  // The parameters of the new URLLoaderFactory will be based on the current
+  // state of `this` RenderFrameHost.  For example, the
+  // `request_initiator_origin_lock` parameter will be based on the last
+  // committed origin (or on the origin of the initial empty document if one is
+  // currently hosted in the frame).
   virtual bool CreateNetworkServiceDefaultFactory(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>&&
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver) = 0;
 
   // Requests that future URLLoaderFactoryBundle(s) sent to the renderer should
@@ -716,7 +773,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // origin will be created via
   // ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests method.
   virtual void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
-      base::flat_set<url::Origin> isolated_world_origins,
+      const base::flat_set<url::Origin>& isolated_world_origins,
       bool push_to_renderer_now) = 0;
 
   // Returns true if the given sandbox flag |flags| is in effect on this frame.
@@ -819,14 +876,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // recent orientation change.
   virtual void SetIsXrOverlaySetup() = 0;
 
-  // Returns true if this RenderFrameHost is currently stored in the
-  // back-forward cache.
-  //
-  // TODO(hajimehoshi): Introduce an enum value for lifecycle states and replace
-  // IsInBackForwardCache with the enum values and a new function like
-  // DidChangeLifecycleState.
-  virtual bool IsInBackForwardCache() = 0;
-
   // Returns the UKM source id for the page load (last committed cross-document
   // non-bfcache navigation in the main frame).
   // This id typically has an associated PageLoad UKM event.
@@ -846,17 +895,30 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool DocumentUsedWebOTP() = 0;
 
   // Write a description of this RenderFrameHost into the provided |context|.
-  virtual void WriteIntoTracedValue(perfetto::TracedValue&& context) = 0;
+  virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
 
   // Start/stop event log output from WebRTC on this RFH for the peer connection
   // identified locally within the RFH using the ID `lid`.
   virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
   virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
+  // Return true if onload has been executed in the renderer in the main frame.
+  virtual bool IsDocumentOnLoadCompletedInMainFrame() = 0;
+
+  // The GURL for the document's web application manifest. If called on a
+  // subframe, returns the value from the corresponding main frame.  See
+  // https://w3c.github.io/manifest/#web-application-manifest
+  virtual const GURL& ManifestURL() = 0;
+
+  // Returns the raw list of favicon candidates as reported to observers via
+  // since the last navigation start. If called on a subframe, returns the
+  // value from the corresponding main frame.
+  virtual const std::vector<blink::mojom::FaviconURLPtr>& FaviconURLs() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;
-  RenderFrameHost() {}
+  RenderFrameHost() = default;
 };
 
 }  // namespace content

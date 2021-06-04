@@ -9,15 +9,11 @@
 ] interface GPUDevice : EventTarget {
     [SameObject] readonly attribute GPUAdapter adapter;
 
-    readonly attribute FrozenArray<GPUFeatureName> features;
-    // Deprecated
-    readonly attribute FrozenArray<GPUFeatureName> extensions;
+    readonly attribute GPUSupportedFeatures features;
 
     [CallWith=ScriptState] readonly attribute Promise<GPUDeviceLostInfo> lost;
 
     [SameObject] readonly attribute GPUQueue queue;
-    // Deprecated
-    [SameObject] readonly attribute GPUQueue defaultQueue;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
@@ -30,14 +26,10 @@
 
     [RaisesException] GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
     [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
-    GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
+    [RaisesException] GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
 
     [CallWith=ScriptState] Promise<GPURenderPipeline?> createRenderPipelineAsync(GPURenderPipelineDescriptor descriptor);
     [CallWith=ScriptState] Promise<GPUComputePipeline?> createComputePipelineAsync(GPUComputePipelineDescriptor descriptor);
-
-    // Deprecated
-    [CallWith=ScriptState] Promise<GPURenderPipeline?> createReadyRenderPipeline(GPURenderPipelineDescriptor descriptor);
-    [CallWith=ScriptState] Promise<GPUComputePipeline?> createReadyComputePipeline(GPUComputePipelineDescriptor descriptor);
 
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);

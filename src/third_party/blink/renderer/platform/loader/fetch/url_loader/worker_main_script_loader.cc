@@ -91,7 +91,7 @@ void WorkerMainScriptLoader::Start(
     client_->OnFailedLoadingWorkerMainScript();
     resource_load_observer_->DidFailLoading(
         initial_request_.Url(), initial_request_.InspectorId(),
-        ResourceError(net::ERR_FAILED, last_request_url_, base::nullopt),
+        ResourceError(net::ERR_FAILED, last_request_url_, absl::nullopt),
         resource_response_.EncodedDataLength(),
         ResourceLoadObserver::IsInternalRequest(
             resource_loader_options_.initiator_info.name ==
@@ -177,12 +177,9 @@ void WorkerMainScriptLoader::OnComplete(
       ResourceTimingInfo::Create(g_empty_atom, base::TimeTicks::Now(),
                                  initial_request_.GetRequestContext(),
                                  initial_request_.GetRequestDestination());
-  const int64_t encoded_data_length = resource_response_.EncodedDataLength();
   timing_info->SetInitialURL(initial_request_url_);
   timing_info->SetFinalResponse(resource_response_);
   timing_info->SetLoadResponseEnd(status.completion_time);
-  timing_info->AddFinalTransferSize(
-      encoded_data_length == -1 ? 0 : encoded_data_length);
   fetch_context_->AddResourceTiming(*timing_info);
 
   has_received_completion_ = true;
@@ -290,7 +287,7 @@ void WorkerMainScriptLoader::NotifyCompletionIfAppropriate() {
     client->OnFailedLoadingWorkerMainScript();
     resource_load_observer_->DidFailLoading(
         last_request_url_, initial_request_.InspectorId(),
-        ResourceError(status_.error_code, last_request_url_, base::nullopt),
+        ResourceError(status_.error_code, last_request_url_, absl::nullopt),
         resource_response_.EncodedDataLength(),
         ResourceLoadObserver::IsInternalRequest(
             ResourceLoadObserver::IsInternalRequest(

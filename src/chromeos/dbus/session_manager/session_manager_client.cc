@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -24,7 +25,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -41,6 +41,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -110,9 +111,8 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
   const size_t data_size = data.size();
 
   base::WriteFileDescriptor(pipe_write_end.get(),
-                            reinterpret_cast<const char*>(&data_size),
-                            sizeof(data_size));
-  base::WriteFileDescriptor(pipe_write_end.get(), data.c_str(), data.size());
+                            base::as_bytes(base::make_span(&data_size, 1)));
+  base::WriteFileDescriptor(pipe_write_end.get(), data);
 
   return pipe_read_end;
 }
@@ -325,6 +325,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerStopSessionWithReason);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(static_cast<uint32_t>(reason));
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
+  }
+
+  void LoadShillProfile(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoadShillProfile);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
@@ -638,8 +650,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
         dbus::ObjectPath(login_manager::kSessionManagerServicePath));
-    blocking_method_caller_.reset(
-        new BlockingMethodCaller(bus, session_manager_proxy_));
+    blocking_method_caller_ =
+        std::make_unique<BlockingMethodCaller>(bus, session_manager_proxy_);
 
     // Signals emitted on the session manager's interface.
     session_manager_proxy_->ConnectToSignal(
@@ -790,7 +802,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                 ActiveSessionsCallback callback,
                                 dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -799,7 +811,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!reader.PopArray(&array_reader)) {
       LOG(ERROR) << method_name
                  << " response is incorrect: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -822,13 +834,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void OnLoginScreenStorageStore(LoginScreenStorageStoreCallback callback,
                                  dbus::Response* response) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 
   void OnLoginScreenStorageRetrieve(LoginScreenStorageRetrieveCallback callback,
                                     dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt /* data */,
+      std::move(callback).Run(absl::nullopt /* data */,
                               "LoginScreenStorageRetrieve() D-Bus method "
                               "returned an empty response");
       return;
@@ -840,18 +852,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!reader.PopUint64(&result_size) ||
         !reader.PopFileDescriptor(&result_fd)) {
       std::string error = "Invalid response: " + response->ToString();
-      std::move(callback).Run(base::nullopt /* data */, error);
+      std::move(callback).Run(absl::nullopt /* data */, error);
       return;
     }
     std::vector<uint8_t> result_data;
     if (!ReadSecretFromSharedMemory(std::move(result_fd), result_size,
                                     &result_data)) {
       std::string error = "Couldn't read retrieved data from shared memory.";
-      std::move(callback).Run(base::nullopt /* data */, error);
+      std::move(callback).Run(absl::nullopt /* data */, error);
       return;
     }
     std::move(callback).Run(std::string(result_data.begin(), result_data.end()),
-                            base::nullopt /* error */);
+                            absl::nullopt /* error */);
   }
 
   void OnLoginScreenStorageListKeys(LoginScreenStorageListKeysCallback callback,
@@ -871,7 +883,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
       std::move(callback).Run({} /* keys */, error);
       return;
     }
-    std::move(callback).Run(std::move(keys), base::nullopt /* error */);
+    std::move(callback).Run(std::move(keys), absl::nullopt /* error */);
   }
 
   // Reads an array of policy data bytes data as std::string.
@@ -996,7 +1008,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,
                          dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -1004,7 +1016,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     int64_t ticks = 0;
     if (!reader.PopInt64(&ticks)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 

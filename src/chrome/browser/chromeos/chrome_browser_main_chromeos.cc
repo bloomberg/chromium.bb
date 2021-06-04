@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,6 +24,7 @@
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -47,8 +49,12 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/enterprise/arc_data_snapshotd_delegate.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crostini/crostini_unsupported_action_notifier.h"
+#include "chrome/browser/ash/crostini/crosvm_metrics.h"
+#include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -70,19 +76,20 @@
 #include "chrome/browser/ash/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/ash/system/breakpad_consent_watcher.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
+#include "chrome/browser/ash/system/kernel_feature_manager.h"
 #include "chrome/browser/ash/system/user_removal_manager.h"
+#include "chrome/browser/ash/usb/cros_usb_detector.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/crostini/crostini_unsupported_action_notifier.h"
-#include "chrome/browser/chromeos/crostini/crosvm_metrics.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_key_delegate_service_provider.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
+#include "chrome/browser/chromeos/dbus/encrypted_reporting_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/libvda_service_provider.h"
 #include "chrome/browser/chromeos/dbus/lock_to_single_user_service_provider.h"
@@ -96,9 +103,9 @@
 #include "chrome/browser/chromeos/dbus/smb_fs_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm/vm_permission_service_provider.h"
+#include "chrome/browser/chromeos/dbus/vm/vm_sk_forwarding_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 #include "chrome/browser/chromeos/device_name_store.h"
-#include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
@@ -130,7 +137,6 @@
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
-#include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
@@ -347,6 +353,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmApplicationsServiceProvider>()));
 
+    vm_sk_forwarding_service_ = CrosDBusService::Create(
+        system_bus, vm_tools::sk_forwarding::kVmSKForwardingServiceName,
+        dbus::ObjectPath(vm_tools::sk_forwarding::kVmSKForwardingServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<VmSKForwardingServiceProvider>()));
+
     vm_permission_service_ = CrosDBusService::Create(
         system_bus, kVmPermissionServiceName,
         dbus::ObjectPath(kVmPermissionServicePath),
@@ -364,6 +376,12 @@ class DBusServices {
         dbus::ObjectPath(cryptohome::kCryptohomeKeyDelegateServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<CryptohomeKeyDelegateServiceProvider>()));
+
+    encrypted_reporting_service_ = CrosDBusService::Create(
+        system_bus, chromeos::kChromeReportingServiceName,
+        dbus::ObjectPath(chromeos::kChromeReportingServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<EncryptedReportingServiceProvider>()));
 
     smb_fs_service_ =
         CrosDBusService::Create(system_bus, smbfs::kSmbFsServiceName,
@@ -440,9 +458,11 @@ class DBusServices {
     component_updater_service_.reset();
     chrome_features_service_.reset();
     vm_applications_service_.reset();
+    vm_sk_forwarding_service_.reset();
     vm_permission_service_.reset();
     drive_file_stream_service_.reset();
     cryptohome_key_delegate_service_.reset();
+    encrypted_reporting_service_.reset();
     lock_to_single_user_service_.reset();
     mojo_connection_service_.reset();
     ProcessDataCollector::Shutdown();
@@ -467,9 +487,11 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> component_updater_service_;
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
+  std::unique_ptr<CrosDBusService> vm_sk_forwarding_service_;
   std::unique_ptr<CrosDBusService> vm_permission_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
   std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
+  std::unique_ptr<CrosDBusService> encrypted_reporting_service_;
   std::unique_ptr<CrosDBusService> libvda_service_;
   std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
   std::unique_ptr<CrosDBusService> smb_fs_service_;
@@ -548,15 +570,15 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   return ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
 
-void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
+void ChromeBrowserMainPartsChromeos::PreCreateMainMessageLoop() {
   // Initialize session manager in early stage in case others want to listen
   // to session state change right after browser is started.
   g_browser_process->platform_part()->InitializeSessionManager();
 
-  ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
+  ChromeBrowserMainPartsLinux::PreCreateMainMessageLoop();
 }
 
-void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
+void ChromeBrowserMainPartsChromeos::PostCreateMainMessageLoop() {
   // Used by ChromeOS components to retrieve the system token certificate
   // database.
   SystemTokenCertDbStorage::Initialize();
@@ -568,20 +590,20 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // (ComponentUpdaterServiceProvider).
   g_browser_process->platform_part()->InitializeCrosComponentManager();
 
-  dbus_services_.reset(new internal::DBusServices(parameters()));
+  dbus_services_ = std::make_unique<internal::DBusServices>(parameters());
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();
 
-  ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
+  ChromeBrowserMainPartsLinux::PostCreateMainMessageLoop();
 }
 
-// Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
+// Threads are initialized between CreateMainMessageLoop and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  network_change_manager_client_.reset(new NetworkChangeManagerClient(
+  network_change_manager_client_ = std::make_unique<NetworkChangeManagerClient>(
       static_cast<net::NetworkChangeNotifierPosix*>(
-          content::GetNetworkChangeNotifier())));
+          content::GetNetworkChangeNotifier()));
 
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
@@ -628,14 +650,16 @@ int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           ->GetSharedURLLoaderFactory(),
       g_browser_process->local_state());
 
-  fast_transition_observer_.reset(
-      new FastTransitionObserver(g_browser_process->local_state()));
-  network_throttling_observer_.reset(
-      new NetworkThrottlingObserver(g_browser_process->local_state()));
+  fast_transition_observer_ = std::make_unique<FastTransitionObserver>(
+      g_browser_process->local_state());
+  network_throttling_observer_ = std::make_unique<NetworkThrottlingObserver>(
+      g_browser_process->local_state());
 
   g_browser_process->platform_part()->InitializeSchedulerConfigurationManager();
   arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>(
       g_browser_process->platform_part()->scheduler_configuration_manager());
+
+  g_browser_process->platform_part()->InitializeKernelFeatureManager();
 
   session_termination_manager_ =
       std::make_unique<chromeos::SessionTerminationManager>();
@@ -724,13 +748,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     logging::RedirectChromeLogging(parsed_command_line());
 
     // Load the default app order synchronously for restarting case.
-    app_order_loader_.reset(
-        new default_app_order::ExternalLoader(false /* async */));
+    app_order_loader_ =
+        std::make_unique<default_app_order::ExternalLoader>(false /* async */);
   }
 
   if (!app_order_loader_) {
-    app_order_loader_.reset(
-        new default_app_order::ExternalLoader(true /* async */));
+    app_order_loader_ =
+        std::make_unique<default_app_order::ExternalLoader>(true /* async */);
   }
 
   audio::SoundsManager::Create(content::GetAudioServiceStreamFactoryBinder());
@@ -761,8 +785,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::BindOnce(&ChromeOSVersionCallback));
 
-  arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
-  web_kiosk_app_manager_.reset(new WebKioskAppManager());
+  arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
+  web_kiosk_app_manager_ = std::make_unique<WebKioskAppManager>();
 
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     DeviceNameStore::GetInstance()->Initialize(
@@ -845,6 +869,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
+
+    // Before creating a session, migrate user data if required. The migration
+    // will happen at this timing only if lacros chrome was enabled via
+    // chrome://flags. In other cases, migration will happen upon login
+    // asynchronously. This migration has to complete before profile is created
+    // and chrome starts accessing those user data files, thus we pass
+    // async=false.
+    ash::BrowserDataMigrator::MaybeMigrate(
+        account_id, user_id_hash, false /* async */, base::DoNothing());
+
     session_manager::SessionManager::Get()->CreateSessionForRestart(
         account_id, user_id_hash);
 
@@ -1310,6 +1344,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   arc_kiosk_app_manager_.reset();
   web_kiosk_app_manager_.reset();
   chrome_keyboard_controller_client_.reset();
+
+  g_browser_process->platform_part()->ShutdownKernelFeatureManager();
 
   // All ARC related modules should have been shut down by this point, so
   // destroy ARC.

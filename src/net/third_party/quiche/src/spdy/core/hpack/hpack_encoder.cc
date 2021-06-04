@@ -9,13 +9,12 @@
 #include <utility>
 
 #include "http2/hpack/huffman/hpack_huffman_encoder.h"
+#include "common/platform/api/quiche_bug_tracker.h"
+#include "common/platform/api/quiche_logging.h"
 #include "spdy/core/hpack/hpack_constants.h"
 #include "spdy/core/hpack/hpack_header_table.h"
 #include "spdy/core/hpack/hpack_output_stream.h"
 #include "spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "spdy/platform/api/spdy_flag_utils.h"
-#include "spdy/platform/api/spdy_flags.h"
-#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -155,14 +154,14 @@ void HpackEncoder::EncodeRepresentations(RepresentationIterator* iter,
 }
 
 void HpackEncoder::EmitIndex(size_t index) {
-  SPDY_DVLOG(2) << "Emitting index " << index;
+  QUICHE_DVLOG(2) << "Emitting index " << index;
   output_stream_.AppendPrefix(kIndexedOpcode);
   output_stream_.AppendUint32(index);
 }
 
 void HpackEncoder::EmitIndexedLiteral(const Representation& representation) {
-  SPDY_DVLOG(2) << "Emitting indexed literal: (" << representation.first << ", "
-                << representation.second << ")";
+  QUICHE_DVLOG(2) << "Emitting indexed literal: (" << representation.first
+                  << ", " << representation.second << ")";
   output_stream_.AppendPrefix(kLiteralIncrementalIndexOpcode);
   EmitLiteral(representation);
   header_table_.TryAddEntry(representation.first, representation.second);
@@ -170,8 +169,8 @@ void HpackEncoder::EmitIndexedLiteral(const Representation& representation) {
 
 void HpackEncoder::EmitNonIndexedLiteral(const Representation& representation,
                                          bool enable_compression) {
-  SPDY_DVLOG(2) << "Emitting nonindexed literal: (" << representation.first
-                << ", " << representation.second << ")";
+  QUICHE_DVLOG(2) << "Emitting nonindexed literal: (" << representation.first
+                  << ", " << representation.second << ")";
   output_stream_.AppendPrefix(kLiteralNoIndexOpcode);
   size_t name_index = header_table_.GetByName(representation.first);
   if (enable_compression && name_index != kHpackEntryNotFound) {
@@ -198,13 +197,13 @@ void HpackEncoder::EmitString(absl::string_view str) {
   size_t encoded_size =
       enable_compression_ ? http2::HuffmanSize(str) : str.size();
   if (encoded_size < str.size()) {
-    SPDY_DVLOG(2) << "Emitted Huffman-encoded string of length "
-                  << encoded_size;
+    QUICHE_DVLOG(2) << "Emitted Huffman-encoded string of length "
+                    << encoded_size;
     output_stream_.AppendPrefix(kStringLiteralHuffmanEncoded);
     output_stream_.AppendUint32(encoded_size);
     http2::HuffmanEncodeFast(str, encoded_size, output_stream_.MutableString());
   } else {
-    SPDY_DVLOG(2) << "Emitted literal string of length " << str.size();
+    QUICHE_DVLOG(2) << "Emitted literal string of length " << str.size();
     output_stream_.AppendPrefix(kStringLiteralIdentityEncoded);
     output_stream_.AppendUint32(str.size());
     output_stream_.AppendBytes(str);
@@ -216,9 +215,9 @@ void HpackEncoder::MaybeEmitTableSize() {
     return;
   }
   const size_t current_size = CurrentHeaderTableSizeSetting();
-  SPDY_DVLOG(1) << "MaybeEmitTableSize current_size=" << current_size;
-  SPDY_DVLOG(1) << "MaybeEmitTableSize min_table_size_setting_received_="
-                << min_table_size_setting_received_;
+  QUICHE_DVLOG(1) << "MaybeEmitTableSize current_size=" << current_size;
+  QUICHE_DVLOG(1) << "MaybeEmitTableSize min_table_size_setting_received_="
+                  << min_table_size_setting_received_;
   if (min_table_size_setting_received_ < current_size) {
     output_stream_.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream_.AppendUint32(min_table_size_setting_received_);
@@ -347,7 +346,7 @@ HpackEncoder::Encoderator::Encoderator(const Representations& representations,
 
 void HpackEncoder::Encoderator::Next(size_t max_encoded_bytes,
                                      std::string* output) {
-  SPDY_BUG_IF(spdy_bug_61_1, !has_next_)
+  QUICHE_BUG_IF(spdy_bug_61_1, !has_next_)
       << "Encoderator::Next called with nothing left to encode.";
   const bool enable_compression = encoder_->enable_compression_;
 

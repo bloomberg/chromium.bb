@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">ძიების სლაიდერი</translation>
 <translation id="1404323374378969387">ნორვეგიული</translation>
 <translation id="1430915738399379752">ბეჭდვა</translation>
+<translation id="1433628812591023318">Parallels Desktop-ში ფაილის ჩავლებით გადასატანად ის უნდა გადაიტანოთ Windows ფაილებში.</translation>
 <translation id="1435838927755162558">საქაღალდის გაზიარება Parallels Desktop-თან</translation>
 <translation id="1467432559032391204">მარცხენა</translation>
 <translation id="1471718551822868769">სლოვაკური</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows ფაილები</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" />-ით გაზიარება</translation>
 <translation id="3083975830683400843">Chromebit-ები</translation>
+<translation id="3113153474486991170">„<ph name="PATH" />“ ამ მდებარეობიდან ვერ გაიხსნა. გასახსნელად დააკოპირეთ საქაღალდეში „ჩემი ფაილები“.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">მზადაა</translation>
 <translation id="3188257591659621405">ჩემი ფაილები</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">ბულგარული ფონეტიკური კლავიატურით</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5625294776298156701">ტამილური Tamil99 კლავიატურით</translation>
+<translation id="5633226425545095130">ამ ერთეულის გადატანის შემთხვევაში ის გაზიარდება ყველასთან, ვისაც შეუძლია საზიარო საქაღალდის „<ph name="DESTINATION_NAME" />“ ნახვა.</translation>
 <translation id="5649768706273821470">მოსმენა</translation>
 <translation id="5678784840044122290">Linux აპლიკაცია ხელმისაწვდომი იქნება თქვენს ტერმინალში, ხოლო გამშვებში შეიძლება ხატულაც გამოჩნდეს.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />არქივთან ან ვირტუალურ დისკთან კავშირის გაწყვეტა ვერ ხერხდება<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">ეთიოპიური კლავიატურა</translation>
 <translation id="7417705661718309329">Google რუკა</translation>
 <translation id="7460898608667578234">უკრაინული</translation>
+<translation id="7486315294984620427">Parallels Desktop-ში ფაილის ჩავლებით გადასატანად ის უნდა დააკოპიროთ Windows ფაილებში.</translation>
 <translation id="7489215562877293245">მოიძებნა <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     მზადაა <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />-ზე სარეზერვო კოპირებისთვის</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">ზომები</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8456681095658380701">არასწორი სახელი</translation>
+<translation id="8459404855768962328">ამ ერთეულის კოპირების შემთხვევაში ის გაზიარდება ყველასთან, ვისაც შეუძლია საზიარო საქაღალდის „<ph name="DESTINATION_NAME" />“ ნახვა.</translation>
 <translation id="8461467696380332069">თაროდან თქვენს ფაილებზე სწრაფი წვდომა რომ იქონიოთ, მარჯვენა ღილაკით დააწკაპუნეთ ფაილზე და აირჩიეთ „თაროზე ჩამაგრება“.</translation>
 <translation id="8463494891489624050">ვიეტნამური VIQR</translation>
 <translation id="8466234950814670489">Tar არქივი</translation>

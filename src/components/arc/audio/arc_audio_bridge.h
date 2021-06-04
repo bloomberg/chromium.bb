@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_ARC_AUDIO_ARC_AUDIO_BRIDGE_H_
 #define COMPONENTS_ARC_AUDIO_ARC_AUDIO_BRIDGE_H_
 
-#include <string>
-
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/macros.h"
 #include "components/arc/mojom/audio.mojom.h"
@@ -29,6 +27,8 @@ class ArcAudioBridge : public KeyedService,
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcAudioBridge* GetForBrowserContext(content::BrowserContext* context);
+  static ArcAudioBridge* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   ArcAudioBridge(content::BrowserContext* context,
                  ArcBridgeService* bridge_service);

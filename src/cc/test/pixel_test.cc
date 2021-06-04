@@ -74,7 +74,7 @@ PixelTest::PixelTest(GraphicsBackend backend)
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
     init_vulkan = true;
 #elif defined(OS_WIN)
-    // TODO(sgilhuly): Initialize D3D12 for Windows.
+    // TODO(rivr): Initialize D3D12 for Windows.
 #else
     NOTREACHED();
 #endif
@@ -252,7 +252,7 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
   return child_resource_provider_->ImportResource(
       viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,
                                               viz::RGBA_8888),
-      viz::SingleReleaseCallback::Create(base::DoNothing()));
+      base::DoNothing());
 }
 
 void PixelTest::SetUpGLWithoutRenderer(
@@ -296,7 +296,7 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
   auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
-      gpu_service(), gpu::kNullSurfaceHandle);
+      gpu_service(), task_executor(), gpu::kNullSurfaceHandle);
   display_controller_ =
       std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
           std::move(skia_deps));

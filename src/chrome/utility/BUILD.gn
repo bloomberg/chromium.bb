@@ -176,6 +176,13 @@ static_library("utility") {
         "//chromeos/services/assistant/audio_decoder:lib",
         "//chromeos/services/assistant/public/mojom",
       ]
+
+      if (enable_libassistant_sandbox) {
+        deps += [
+          "//chromeos/services/libassistant",
+          "//chromeos/services/libassistant/public/mojom",
+        ]
+      }
     }
   }
 
@@ -196,6 +203,10 @@ static_library("utility") {
       "//components/services/print_compositor/public/mojom",
     ]
 
+    if (is_win || is_mac || is_linux || is_chromeos) {
+      deps += [ "//chrome/services/printing:lib" ]
+    }
+
     if (is_chromeos_ash) {
       deps += [
         "//chrome/services/ipp_parser",
@@ -205,8 +216,6 @@ static_library("utility") {
   }
 
   if (enable_print_preview) {
-    deps += [ "//chrome/services/printing:lib" ]
-
     if (is_win) {
       sources += [
         "printing_handler.cc",

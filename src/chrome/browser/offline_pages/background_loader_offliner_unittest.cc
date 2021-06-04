@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -52,22 +53,11 @@ namespace {
 
 using security_state::VisibleSecurityState;
 
-const int64_t kRequestId = 7;
+constexpr int64_t kRequestId = 7;
 const ClientId kClientId("async_loading", "88");
-const bool kUserRequested = true;
-const char kRequestOrigin[] = "abc.xyz";
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL HttpUrl() {
-  return GURL("http://www.tunafish.com");
-}
-GURL HttpsUrl() {
-  return GURL("https://www.yellowtail.com");
-}
-GURL FileUrl() {
-  return GURL("file://salmon.png");
-}
+constexpr bool kUserRequested = true;
+constexpr char kRequestOrigin[] = "abc.xyz";
+constexpr char kHttpUrl[] = "http://www.tunafish.com";
 
 class TestLoadTerminationListener : public LoadTerminationListener {
  public:
@@ -257,10 +247,9 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
 
   void CompleteLoading() {
     // Reset snapshot controller.
-    std::unique_ptr<BackgroundSnapshotController> snapshot_controller(
-        new BackgroundSnapshotController(base::ThreadTaskRunnerHandle::Get(),
-                                         offliner_.get(),
-                                         false /* RenovationsEnabled */));
+    auto snapshot_controller = std::make_unique<BackgroundSnapshotController>(
+        base::ThreadTaskRunnerHandle::Get(), offliner_.get(),
+        false /* RenovationsEnabled */);
     offliner_->SetBackgroundSnapshotControllerForTest(
         std::move(snapshot_controller));
     // Call complete loading.
@@ -277,7 +266,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   std::unique_ptr<VisibleSecurityState> BaseVisibleSecurityState() {
     auto visible_security_state = std::make_unique<VisibleSecurityState>();
     visible_security_state->connection_info_initialized = true;
-    visible_security_state->url = HttpsUrl();
+    visible_security_state->url = GURL("https://www.yellowtail.com");
     visible_security_state->certificate =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "sha1_2016.pem");
     visible_security_state->cert_status =
@@ -331,9 +320,9 @@ void BackgroundLoaderOfflinerTest::SetUp() {
       std::make_unique<TestLoadTerminationListener>();
   load_termination_listener_ = listener.get();
   model_ = new MockOfflinePageModel();
-  policy_.reset(new OfflinerPolicy());
-  offliner_.reset(new TestBackgroundLoaderOffliner(
-      profile(), policy_.get(), model_, std::move(listener)));
+  policy_ = std::make_unique<OfflinerPolicy>();
+  offliner_ = std::make_unique<TestBackgroundLoaderOffliner>(
+      profile(), policy_.get(), model_, std::move(listener));
 }
 
 void BackgroundLoaderOfflinerTest::OnCompletion(
@@ -370,7 +359,7 @@ TEST_F(BackgroundLoaderOfflinerTest,
        LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
   base::Time creation_time = base::Time::Now();
   ClientId custom_tabs_client_id("custom_tabs", "88");
-  SavePageRequest request(kRequestId, HttpUrl(), custom_tabs_client_id,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), custom_tabs_client_id,
                           creation_time, kUserRequested);
 
   profile()->GetPrefs()->SetInteger(
@@ -384,7 +373,7 @@ TEST_F(BackgroundLoaderOfflinerTest,
        LoadAndSaveNetworkPredictionDisabledForCustomTabs) {
   base::Time creation_time = base::Time::Now();
   ClientId custom_tabs_client_id("custom_tabs", "88");
-  SavePageRequest request(kRequestId, HttpUrl(), custom_tabs_client_id,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), custom_tabs_client_id,
                           creation_time, kUserRequested);
 
   profile()->GetPrefs()->SetInteger(
@@ -396,7 +385,7 @@ TEST_F(BackgroundLoaderOfflinerTest,
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveStartsLoading) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -408,7 +397,7 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveStartsLoading) {
 
 TEST_F(BackgroundLoaderOfflinerTest, BytesReportedWillUpdateProgress) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -420,7 +409,7 @@ TEST_F(BackgroundLoaderOfflinerTest, BytesReportedWillUpdateProgress) {
 
 TEST_F(BackgroundLoaderOfflinerTest, CompleteLoadingInitiatesSave) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   request.set_request_origin(kRequestOrigin);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
@@ -436,7 +425,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CompleteLoadingInitiatesSave) {
 
 TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -451,7 +440,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
 
 TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoadTerminated) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -464,7 +453,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoadTerminated) {
 
 TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -485,7 +474,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadedButSaveFails) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -503,7 +492,7 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadedButSaveFails) {
 
 TEST_F(BackgroundLoaderOfflinerTest, ProgressDoesNotUpdateDuringSave) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -516,7 +505,7 @@ TEST_F(BackgroundLoaderOfflinerTest, ProgressDoesNotUpdateDuringSave) {
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveSuccess) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -535,7 +524,7 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveSuccess) {
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveAlreadyExists) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -554,11 +543,12 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveAlreadyExists) {
 TEST_F(BackgroundLoaderOfflinerTest, ResetsWhenDownloadStarts) {
   base::Time creation_time = base::Time::Now();
   ClientId browser_actions("browser_actions", "123");
-  SavePageRequest request(kRequestId, HttpUrl(), browser_actions, creation_time,
-                          kUserRequested);
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), browser_actions,
+                          creation_time, kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
-  offliner()->stub()->CanDownload(HttpUrl(), "foo", can_download_callback());
+  offliner()->stub()->CanDownload(GURL(kHttpUrl), "foo",
+                                  can_download_callback());
   PumpLoop();
   EXPECT_TRUE(can_download_callback_called());
   EXPECT_TRUE(can_download());
@@ -569,11 +559,12 @@ TEST_F(BackgroundLoaderOfflinerTest, ResetsWhenDownloadStarts) {
 TEST_F(BackgroundLoaderOfflinerTest, ResetsWhenDownloadEncountered) {
   base::Time creation_time = base::Time::Now();
   ClientId prefetching("suggested_articles", "123");
-  SavePageRequest request(kRequestId, HttpUrl(), prefetching, creation_time,
-                          kUserRequested);
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), prefetching,
+                          creation_time, kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
-  offliner()->stub()->CanDownload(HttpUrl(), "foo", can_download_callback());
+  offliner()->stub()->CanDownload(GURL(kHttpUrl), "foo",
+                                  can_download_callback());
   PumpLoop();
   EXPECT_TRUE(can_download_callback_called());
   EXPECT_FALSE(can_download());
@@ -590,15 +581,15 @@ TEST_F(BackgroundLoaderOfflinerTest, CanDownloadReturnsIfNoPendingRequest) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnInvalidURL) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, FileUrl(), kClientId, creation_time,
-                          kUserRequested);
+  SavePageRequest request(kRequestId, GURL("file://salmon.png"), kClientId,
+                          creation_time, kUserRequested);
   EXPECT_FALSE(offliner()->LoadAndSave(request, completion_callback(),
                                        progress_callback()));
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderCrash) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -611,7 +602,7 @@ TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderCrash) {
 
 TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderKilled) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -624,7 +615,7 @@ TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderKilled) {
 
 TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnWebContentsDestroyed) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -636,14 +627,14 @@ TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnWebContentsDestroyed) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
   // Create handle with net error code.
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   handle.set_is_error_page(true);
   handle.set_net_error_code(net::Error::ERR_NAME_NOT_RESOLVED);
@@ -663,7 +654,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnCertificateError) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -677,7 +668,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnCertificateError) {
 
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   offliner()->DidFinishNavigation(&handle);
 
@@ -692,7 +683,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnCertificateError) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnRevocationCheckingFailure) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -708,7 +699,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnRevocationCheckingFailure) {
 
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   offliner()->DidFinishNavigation(&handle);
 
@@ -723,7 +714,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnRevocationCheckingFailure) {
 
 TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnHttp) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -732,14 +723,14 @@ TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnHttp) {
   // be ignored).
   std::unique_ptr<VisibleSecurityState> visible_security_state =
       BaseVisibleSecurityState();
-  visible_security_state->url = HttpUrl();
+  visible_security_state->url = GURL(kHttpUrl);
   visible_security_state->cert_status |= net::CERT_STATUS_REVOKED;
   offliner()->set_custom_visible_security_state(
       std::move(visible_security_state));
 
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   offliner()->DidFinishNavigation(&handle);
 
@@ -752,7 +743,7 @@ TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnHttp) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnUnwantedContent) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -766,7 +757,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnUnwantedContent) {
       std::move(visible_security_state));
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   offliner()->DidFinishNavigation(&handle);
 
@@ -780,7 +771,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnUnwantedContent) {
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -788,7 +779,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
   // Create handle with net error code.
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   handle.set_is_error_page(true);
   handle.set_net_error_code(net::Error::ERR_INTERNET_DISCONNECTED);
@@ -804,21 +795,21 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
 
 TEST_F(BackgroundLoaderOfflinerTest, DoesNotCrashWithNullResponseHeaders) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
 
   // Called after calling LoadAndSave so we have web_contents to work with.
   content::MockNavigationHandle handle(
-      HttpUrl(), offliner()->web_contents()->GetMainFrame());
+      GURL(kHttpUrl), offliner()->web_contents()->GetMainFrame());
   handle.set_has_committed(true);
   offliner()->DidFinishNavigation(&handle);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -838,7 +829,7 @@ TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {
 
 TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarStartedTriesMet) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   request.set_started_attempt_count(policy()->GetMaxStartedTries() - 1);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
@@ -856,7 +847,7 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarStartedTriesMet) {
 
 TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarCompletedTriesMet) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   request.set_completed_attempt_count(policy()->GetMaxCompletedTries() - 1);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
@@ -874,7 +865,7 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarCompletedTriesMet) {
 
 TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithNoLowBarStartedTriesMet) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -887,7 +878,7 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithNoLowBarStartedTriesMet) {
 TEST_F(BackgroundLoaderOfflinerTest,
        HandleTimeoutWithNoLowBarCompletedTriesMet) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -899,7 +890,7 @@ TEST_F(BackgroundLoaderOfflinerTest,
 
 TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarNoRetryLimit) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
@@ -913,7 +904,7 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarNoRetryLimit) {
 
 TEST_F(BackgroundLoaderOfflinerTest, SignalCollectionDisabled) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, HttpUrl(), kClientId, creation_time,
+  SavePageRequest request(kRequestId, GURL(kHttpUrl), kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));

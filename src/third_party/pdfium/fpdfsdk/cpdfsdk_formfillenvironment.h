@@ -16,6 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/observed_ptr.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
@@ -63,7 +64,7 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   void OutputSelectedRect(CFFL_FormFiller* pFormFiller,
                           const CFX_FloatRect& rect) override;
   bool IsSelectionImplemented() const override;
-  void SetCursor(int32_t nCursorType) override;
+  void SetCursor(CursorStyle nCursorType) override;
 
   CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage, bool renew);
   CPDFSDK_PageView* GetPageViewAtIndex(int nIndex);

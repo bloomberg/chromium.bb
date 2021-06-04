@@ -514,6 +514,7 @@ class ServerProc(object):
 
     def create_daemon(self, init_func, host, port, paths, routes, bind_address,
                       config, **kwargs):
+        ensure_logger(config)
         if sys.platform == "darwin":
             # on Darwin, NOFILE starts with a very low limit (256), so bump it up a little
             # by way of comparison, Debian starts with a limit of 1024, Windows 512
@@ -629,7 +630,7 @@ def start_servers(host, ports, paths, routes, bind_address, config,
         # If trying to start HTTP/2.0 server, check compatibility
         if scheme == 'h2' and not http2_compatible():
             logger.error('Cannot start HTTP/2.0 server as the environment is not compatible. ' +
-                         'Requires Python 2.7.10+ or 3.6+ and OpenSSL 1.0.2+')
+                         'Requires OpenSSL 1.0.2+')
             continue
 
         for port in ports:
@@ -1006,6 +1007,9 @@ def build_config(override_path=None, config_cls=ConfigBuilder, **kwargs):
     if enable_http2:
         rv._default["ports"]["h2"] = [9000]
 
+    if kwargs.get("quic_transport"):
+        rv._default["ports"]["quic-transport"] = [10000]
+
     if override_path and os.path.exists(override_path):
         with open(override_path) as f:
             override_obj = json.load(f)
@@ -1065,6 +1069,13 @@ class MpContext(object):
     def __getattr__(self, name):
         return getattr(multiprocessing, name)
 
+def ensure_logger(config):
+    global logger
+    try:
+        logger
+    except NameError:
+        logger = config.logger
+        set_logger(logger)
 
 def run(config_cls=ConfigBuilder, route_builder=None, mp_context=None, **kwargs):
     received_signal = threading.Event()
@@ -1078,9 +1089,7 @@ def run(config_cls=ConfigBuilder, route_builder=None, mp_context=None, **kwargs)
     with build_config(os.path.join(repo_root, "config.json"),
                       config_cls=config_cls,
                       **kwargs) as config:
-        global logger
-        logger = config.logger
-        set_logger(logger)
+        ensure_logger(config)
         # Configure the root logger to cover third-party libraries.
         logging.getLogger().setLevel(config.log_level)
 

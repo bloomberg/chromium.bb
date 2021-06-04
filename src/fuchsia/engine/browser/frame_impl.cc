@@ -17,11 +17,13 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -29,6 +31,7 @@
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
@@ -52,8 +55,10 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -66,6 +71,9 @@ constexpr gfx::Size kHeadlessWindowSize = {1, 1};
 
 // Simulated screen bounds to use when testing the SemanticsManager.
 constexpr gfx::Size kSemanticsTestingWindowSize = {720, 640};
+
+// Name of the Inspect node that holds accessibility information.
+constexpr char kAccessibilityInspectNodeName[] = "accessibility";
 
 // A special value which matches all origins when specified in an origin list.
 constexpr char kWildcardOrigin[] = "*";
@@ -221,20 +229,20 @@ void HandleMediaPermissionsRequestResult(
       nullptr);
 }
 
-base::Optional<url::Origin> ParseAndValidateWebOrigin(
+absl::optional<url::Origin> ParseAndValidateWebOrigin(
     const std::string& origin_str) {
   GURL origin_url(origin_str);
   if (!origin_url.username().empty() || !origin_url.password().empty() ||
       !origin_url.query().empty() || !origin_url.ref().empty()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (!origin_url.path().empty() && origin_url.path() != "/")
-    return base::nullopt;
+    return absl::nullopt;
 
   auto origin = url::Origin::Create(origin_url);
   if (origin.opaque())
-    return base::nullopt;
+    return absl::nullopt;
 
   return origin;
 }
@@ -262,6 +270,7 @@ FrameImpl* FrameImpl::FromRenderFrameHost(
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
                      fuchsia::web::CreateFrameParams params,
+                     inspect::Node inspect_node,
                      fidl::InterfaceRequest<fuchsia::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
       context_(context),
@@ -273,7 +282,13 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       permission_controller_(web_contents_.get()),
       binding_(this, std::move(frame_request)),
       media_blocker_(web_contents_.get()),
-      theme_manager_(web_contents_.get()) {
+      theme_manager_(web_contents_.get()),
+      inspect_node_(std::move(inspect_node)),
+      inspect_name_property_(
+          params_for_popups_.has_debug_name()
+              ? inspect_node_.CreateString("name",
+                                           params_for_popups_.debug_name())
+              : inspect::StringProperty()) {
   DCHECK(!WebContentsToFrameImplMap()[web_contents_.get()]);
   WebContentsToFrameImplMap()[web_contents_.get()] = this;
 
@@ -532,7 +547,7 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
     std::string* origin,
     fuchsia::web::WebMessage* message,
     PostMessageCallback* callback) {
-  if (!IsCastStreamingEnabled())
+  if (!context_->has_cast_streaming_enabled())
     return false;
 
   if (!IsCastStreamingAppOrigin(*origin))
@@ -557,7 +572,8 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
 
 void FrameImpl::MaybeStartCastStreaming(
     content::NavigationHandle* navigation_handle) {
-  if (!IsCastStreamingEnabled() || !cast_streaming_session_client_)
+  if (!context_->has_cast_streaming_enabled() ||
+      !cast_streaming_session_client_)
     return;
 
   mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver;
@@ -566,6 +582,15 @@ void FrameImpl::MaybeStartCastStreaming(
       ->GetInterface(&cast_streaming_receiver);
   cast_streaming_session_client_->StartMojoConnection(
       std::move(cast_streaming_receiver));
+}
+
+void FrameImpl::UpdateRenderViewZoomLevel(
+    content::RenderViewHost* render_view_host) {
+  content::HostZoomMap* host_zoom_map =
+      content::HostZoomMap::GetForWebContents(web_contents_.get());
+  host_zoom_map->SetTemporaryZoomLevel(
+      render_view_host->GetProcess()->GetID(), render_view_host->GetRoutingID(),
+      blink::PageZoomFactorToZoomLevel(page_scale_));
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
@@ -607,7 +632,8 @@ void FrameImpl::CreateViewWithViewRef(
       semantics_manager_for_test_ ? semantics_manager_for_test_
                                   : semantics_manager.get(),
       window_tree_host_->CreateViewRef(), web_contents_.get(),
-      base::BindOnce(&FrameImpl::OnAccessibilityError, base::Unretained(this)));
+      base::BindOnce(&FrameImpl::OnAccessibilityError, base::Unretained(this)),
+      inspect_node_.CreateChild(kAccessibilityInspectNodeName));
 }
 
 void FrameImpl::GetMediaPlayer(
@@ -720,7 +746,7 @@ void FrameImpl::PostMessage(std::string origin,
     return;
   }
 
-  base::Optional<std::u16string> origin_utf16;
+  absl::optional<std::u16string> origin_utf16;
   if (origin != kWildcardOrigin)
     origin_utf16 = base::UTF8ToUTF16(origin);
 
@@ -820,7 +846,8 @@ void FrameImpl::EnableHeadlessRendering() {
         semantics_manager_for_test_, window_tree_host_->CreateViewRef(),
         web_contents_.get(),
         base::BindOnce(&FrameImpl::OnAccessibilityError,
-                       base::Unretained(this)));
+                       base::Unretained(this)),
+        inspect_node_.CreateChild(kAccessibilityInspectNodeName));
 
     // Set bounds for testing hit testing.
     bounds.set_size(kSemanticsTestingWindowSize);
@@ -933,6 +960,19 @@ void FrameImpl::SetPreferredTheme(fuchsia::settings::ThemeType theme) {
                                      base::Unretained(this)));
 }
 
+void FrameImpl::SetPageScale(float scale) {
+  if (scale <= 0.0) {
+    LOG(ERROR) << "SetPageScale() called with nonpositive scale.";
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  if (scale == page_scale_)
+    return;
+  page_scale_ = scale;
+  UpdateRenderViewZoomLevel(web_contents_->GetRenderViewHost());
+}
+
 void FrameImpl::ForceContentDimensions(
     std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) {
   if (!web_dips) {
@@ -944,7 +984,7 @@ void FrameImpl::ForceContentDimensions(
 
   gfx::Size web_dips_converted(web_dips->x, web_dips->y);
   if (web_dips_converted.IsEmpty()) {
-    LOG(WARNING) << "Rejecting zero-area size for ForceContentDimensions().";
+    LOG(ERROR) << "Rejecting zero-area size for ForceContentDimensions().";
     CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
     return;
   }
@@ -1131,8 +1171,17 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 void FrameImpl::RenderFrameCreated(content::RenderFrameHost* frame_host) {
   // The top-level frame is given a transparent background color.
   // GetView() is guaranteed to be non-null until |frame_host| teardown.
-  if (frame_host == web_contents()->GetMainFrame())
+  if (frame_host == web_contents()->GetMainFrame()) {
     frame_host->GetView()->SetBackgroundColor(SK_AlphaTRANSPARENT);
+  }
+}
+
+void FrameImpl::RenderViewHostChanged(content::RenderViewHost* old_host,
+                                      content::RenderViewHost* new_host) {
+  // UpdateRenderViewZoomLevel() sets temporary zoom level for the current
+  // RenderView. It needs to be called again whenever main RenderView is
+  // changed.
+  UpdateRenderViewZoomLevel(new_host);
 }
 
 void FrameImpl::DidFirstVisuallyNonEmptyPaint() {

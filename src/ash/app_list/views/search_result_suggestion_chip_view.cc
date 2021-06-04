@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -62,8 +63,27 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(AppListColorProvider::Get()->GetFocusRingColor());
 
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   views::InstallPillHighlightPathGenerator(this);
+  views::InkDrop::UseInkDropWithoutAutoHighlight(ink_drop(),
+                                                 /*highlight_on_hover=*/false);
+  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+      [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
+        const gfx::Point center = host->GetLocalBounds().CenterPoint();
+        const int ripple_radius = host->width() / 2;
+        const gfx::Rect bounds(center.x() - ripple_radius,
+                               center.y() - ripple_radius, 2 * ripple_radius,
+                               2 * ripple_radius);
+        const AppListColorProvider* const color_provider =
+            AppListColorProvider::Get();
+        const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
+        return std::make_unique<views::FloodFillInkDropRipple>(
+            host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            color_provider->GetRippleAttributesBaseColor(bg_color),
+            color_provider->GetRippleAttributesInkDropOpacity(bg_color));
+      },
+      this));
 
   InitLayout();
 }
@@ -153,31 +173,6 @@ void SearchResultSuggestionChipView::OnThemeChanged() {
   SchedulePaint();
 }
 
-std::unique_ptr<views::InkDrop>
-SearchResultSuggestionChipView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetShowHighlightOnFocus(false);
-  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropRipple>
-SearchResultSuggestionChipView::CreateInkDropRipple() const {
-  const gfx::Point center = GetLocalBounds().CenterPoint();
-  const int ripple_radius = width() / 2;
-  gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
-                   2 * ripple_radius, 2 * ripple_radius);
-  const AppListColorProvider* color_provider = AppListColorProvider::Get();
-  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(),
-      color_provider->GetRippleAttributesBaseColor(bg_color),
-      color_provider->GetRippleAttributesInkDropOpacity(bg_color));
-}
-
 std::unique_ptr<ui::Layer> SearchResultSuggestionChipView::RecreateLayer() {
   std::unique_ptr<ui::Layer> old_layer = views::View::RecreateLayer();
   if (layer())
@@ -254,7 +249,7 @@ void SearchResultSuggestionChipView::OnButtonPressed(const ui::Event& event) {
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
-      result()->id(), event.flags(),
+      result()->id(), result()->result_type(), event.flags(),
       AppListLaunchedFrom::kLaunchedFromSuggestionChip,
       AppListLaunchType::kAppSearchResult, index_in_container(),
       false /* launch_as_default */);

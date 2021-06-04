@@ -142,7 +142,7 @@ PaintLayer* SlowContainingLayer(const PaintLayer* ancestor,
                                 LayoutObject* layout_object) {
   // This is a universal approach to find the containing layer, but it is
   // slower.
-  base::Optional<LayoutObject::AncestorSkipInfo> skip_info;
+  absl::optional<LayoutObject::AncestorSkipInfo> skip_info;
   if (skipped_ancestor)
     skip_info.emplace(&ancestor->GetLayoutObject());
   while (auto* container = layout_object->Container(
@@ -1163,6 +1163,9 @@ void PaintLayer::SetNeedsCheckRasterInvalidation() {
 
 void PaintLayer::SetNeedsVisualOverflowRecalc() {
   DCHECK(IsSelfPaintingLayer());
+#if DCHECK_IS_ON()
+  GetLayoutObject().InvalidateVisualOverflow();
+#endif
   needs_visual_overflow_recalc_ = true;
   MarkAncestorChainForFlagsUpdate();
 }
@@ -1234,9 +1237,39 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
 }
 
 void PaintLayer::UpdateAncestorDependentCompositingInputs(
-    const AncestorDependentCompositingInputs& compositing_inputs) {
+    const PaintLayer* opacity_ancestor,
+    const PaintLayer* transform_ancestor,
+    const PaintLayer* filter_ancestor,
+    const PaintLayer* clip_path_ancestor,
+    const PaintLayer* mask_ancestor,
+    const PaintLayer* ancestor_scrolling_layer,
+    const PaintLayer* nearest_fixed_position_layer,
+    const PaintLayer* scroll_parent,
+    const PaintLayer* clip_parent,
+    const PaintLayer* nearest_contained_layout_layer,
+    const LayoutBoxModelObject* clipping_container) {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  EnsureAncestorDependentCompositingInputs() = compositing_inputs;
+  if (!ancestor_dependent_compositing_inputs_) {
+    ancestor_dependent_compositing_inputs_ =
+        std::make_unique<AncestorDependentCompositingInputs>();
+  }
+  ancestor_dependent_compositing_inputs_->opacity_ancestor = opacity_ancestor;
+  ancestor_dependent_compositing_inputs_->transform_ancestor =
+      transform_ancestor;
+  ancestor_dependent_compositing_inputs_->filter_ancestor = filter_ancestor;
+  ancestor_dependent_compositing_inputs_->clip_path_ancestor =
+      clip_path_ancestor;
+  ancestor_dependent_compositing_inputs_->mask_ancestor = mask_ancestor;
+  ancestor_dependent_compositing_inputs_->ancestor_scrolling_layer =
+      ancestor_scrolling_layer;
+  ancestor_dependent_compositing_inputs_->nearest_fixed_position_layer =
+      nearest_fixed_position_layer;
+  ancestor_dependent_compositing_inputs_->scroll_parent = scroll_parent;
+  ancestor_dependent_compositing_inputs_->clip_parent = clip_parent;
+  ancestor_dependent_compositing_inputs_->nearest_contained_layout_layer =
+      nearest_contained_layout_layer;
+  ancestor_dependent_compositing_inputs_->clipping_container =
+      clipping_container;
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
 
@@ -1625,7 +1658,7 @@ void PaintLayer::UpdateStackingNode() {
     if (needs_stacking_node)
       stacking_node_ = std::make_unique<PaintLayerStackingNode>(*this);
     else
-      stacking_node_ = nullptr;
+      stacking_node_.reset();
   }
 
   if (stacking_node_)
@@ -1787,7 +1820,7 @@ void PaintLayer::CollectFragments(
         root_layer, root_fragment_data, overlay_scrollbar_clip_behavior,
         respect_overflow_clip, sub_pixel_accumulation);
 
-    base::Optional<CullRect> fragment_cull_rect;
+    absl::optional<CullRect> fragment_cull_rect;
     if (cull_rect) {
       // |cull_rect| is in the coordinate space of |root_layer| (i.e. the
       // space of |root_layer|'s first fragment). Map the rect to the space of
@@ -2106,7 +2139,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
   HitTestingTransformState* local_transform_state = nullptr;
-  STACK_UNINITIALIZED base::Optional<HitTestingTransformState> storage;
+  STACK_UNINITIALIZED absl::optional<HitTestingTransformState> storage;
 
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
@@ -2134,7 +2167,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   }
 
   HitTestingTransformState* unflattened_transform_state = local_transform_state;
-  STACK_UNINITIALIZED base::Optional<HitTestingTransformState>
+  STACK_UNINITIALIZED absl::optional<HitTestingTransformState>
       unflattened_storage;
   if (local_transform_state && !Preserves3D()) {
     // Keep a copy of the pre-flattening state, for computing z-offsets for the
@@ -2166,7 +2199,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
 
   // Collect the fragments. This will compute the clip rectangles for each
   // layer fragment.
-  STACK_UNINITIALIZED base::Optional<PaintLayerFragments> layer_fragments;
+  STACK_UNINITIALIZED absl::optional<PaintLayerFragments> layer_fragments;
   if (recursion_data.intersects_location) {
     layer_fragments.emplace();
     if (applied_transform) {
@@ -2424,7 +2457,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   // been flattened (losing z) by our container.
   FloatPoint local_point = new_transform_state.MappedPoint();
   PhysicalRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
-  base::Optional<HitTestLocation> new_location;
+  absl::optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
     new_location.emplace(local_point, new_transform_state.MappedQuad());
   else
@@ -3457,13 +3490,25 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
       // context, in order to generate new paint chunks in the correct order.
       // Raster invalidation will be issued if needed during paint.
       SetNeedsRepaint();
-    } else if (old_style &&
-               !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // Change of PaintedOutputInvisible() will affect existence of paint
-      // chunks, so needs repaint.
+    } else if (old_style) {
+      bool new_painted_output_invisible =
+          PaintLayerPainter::PaintedOutputInvisible(new_style);
       if (PaintLayerPainter::PaintedOutputInvisible(*old_style) !=
-          PaintLayerPainter::PaintedOutputInvisible(new_style))
-        SetNeedsRepaint();
+          new_painted_output_invisible) {
+        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+          // Though CompositeAfterPaint ignores PaintedOutputInvisible during
+          // paint, we still force repaint to ensure FCP/LCP will be reported.
+          // See crbug.com/1184903. Only SetNeedsRepaint() won't work because
+          // we won't repaint the display items which are already in the old
+          // painted result. TODO(crbug.com/1104218): Optimize this.
+          if (!new_painted_output_invisible)
+            GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
+        } else {
+          // Change of PaintedOutputInvisible() will affect existence of paint
+          // chunks, so needs repaint.
+          SetNeedsRepaint();
+        }
+      }
     }
   }
 }
@@ -3830,7 +3875,7 @@ void showLayerTree(const blink::PaintLayer* layer) {
     return;
   }
 
-  base::Optional<blink::DisableCompositingQueryAsserts> disabler;
+  absl::optional<blink::DisableCompositingQueryAsserts> disabler;
   if (!blink::RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     disabler.emplace();
 

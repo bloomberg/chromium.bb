@@ -8,17 +8,19 @@
 // impact on build time. Try not to raise this limit unless necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 475000
+#pragma clang max_tokens_here 480000
 #endif
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace {
@@ -127,7 +129,7 @@ template <class ObserverListType>
 class ObserverListCreator : public DelegateSimpleThread::Delegate {
  public:
   std::unique_ptr<ObserverListType> Create(
-      base::Optional<base::ObserverListPolicy> policy = nullopt) {
+      absl::optional<base::ObserverListPolicy> policy = absl::nullopt) {
     policy_ = policy;
     DelegateSimpleThread thread(this, "ListCreator");
     thread.Start();
@@ -145,7 +147,7 @@ class ObserverListCreator : public DelegateSimpleThread::Delegate {
   }
 
   std::unique_ptr<ObserverListType> observer_list_;
-  base::Optional<base::ObserverListPolicy> policy_;
+  absl::optional<base::ObserverListPolicy> policy_;
 };
 
 }  // namespace

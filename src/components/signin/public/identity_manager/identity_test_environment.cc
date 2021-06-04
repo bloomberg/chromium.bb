@@ -376,12 +376,14 @@ void IdentityTestEnvironment::WaitForRefreshTokensLoaded() {
 
 CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
     const std::string& email) {
-  return signin::SetPrimaryAccount(identity_manager(), email);
+  return signin::SetPrimaryAccount(identity_manager(), email,
+                                   signin::ConsentLevel::kSync);
 }
 
 CoreAccountInfo IdentityTestEnvironment::SetUnconsentedPrimaryAccount(
     const std::string& email) {
-  return signin::SetUnconsentedPrimaryAccount(identity_manager(), email);
+  return signin::SetPrimaryAccount(identity_manager(), email,
+                                   signin::ConsentLevel::kSignin);
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForPrimaryAccount() {
@@ -398,7 +400,8 @@ void IdentityTestEnvironment::RemoveRefreshTokenForPrimaryAccount() {
 
 AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
     const std::string& email) {
-  return signin::MakePrimaryAccountAvailable(identity_manager(), email);
+  return signin::MakePrimaryAccountAvailable(identity_manager(), email,
+                                             signin::ConsentLevel::kSync);
 }
 
 AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
@@ -408,8 +411,8 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   // Chrome OS sets the unconsented primary account during login and does not
   // allow signout.
   AccountInfo account_info = MakeAccountAvailable(email);
-  identity_manager()->GetPrimaryAccountMutator()->SetUnconsentedPrimaryAccount(
-      account_info.account_id);
+  identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      account_info.account_id, signin::ConsentLevel::kSignin);
 #elif defined(OS_IOS)
   // iOS only support the primary account.
   AccountInfo account_info = MakePrimaryAccountAvailable(email);
@@ -421,9 +424,8 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   // Tests that don't use the |SigninManager| needs the unconsented primary
   // account to be set manually.
   if (!identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin)) {
-    identity_manager()
-        ->GetPrimaryAccountMutator()
-        ->SetUnconsentedPrimaryAccount(account_info.account_id);
+    identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
+        account_info.account_id, signin::ConsentLevel::kSignin);
   }
 #endif
   DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -491,7 +493,7 @@ void IdentityTestEnvironment::
         const std::string& token,
         const base::Time& expiration,
         const std::string& id_token) {
-  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  WaitForAccessTokenRequestIfNecessary(absl::nullopt);
   fake_token_service()->IssueTokenForAllPendingRequests(
       TokenResponseBuilder()
           .WithAccessToken(token)
@@ -521,7 +523,7 @@ void IdentityTestEnvironment::
         const base::Time& expiration,
         const std::string& id_token,
         const ScopeSet& scopes) {
-  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  WaitForAccessTokenRequestIfNecessary(absl::nullopt);
   fake_token_service()->IssueTokenForScope(scopes,
                                            TokenResponseBuilder()
                                                .WithAccessToken(token)
@@ -533,7 +535,7 @@ void IdentityTestEnvironment::
 void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
         const GoogleServiceAuthError& error) {
-  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  WaitForAccessTokenRequestIfNecessary(absl::nullopt);
   fake_token_service()->IssueErrorForAllPendingRequests(error);
 }
 
@@ -611,7 +613,7 @@ void IdentityTestEnvironment::HandleOnAccessTokenRequested(
 }
 
 void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
-    base::Optional<CoreAccountId> account_id) {
+    absl::optional<CoreAccountId> account_id) {
   // Handle HandleOnAccessTokenRequested getting called before
   // WaitForAccessTokenRequestIfNecessary.
   if (account_id) {

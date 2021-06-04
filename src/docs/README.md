@@ -157,10 +157,13 @@ used when committed.
     you are interested in.
 *   [Shutdown](shutdown.md) - Explains the steps of Chrome shutdown, to make it
     easier to determine where to add a new shutdown operation.
+*   [API Keys](api_keys.md) - When you need access to Google APIs for a custom
+    build, fork, integration of stock Chromium, or are building ChromiumOS (for
+    login).
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)
-*   [On disabling tests](testing/disabling_tests.md)
+*   [On disabling tests](testing/on_disabling_tests.md)
 *   [Writing Web Tests](testing/writing_web_tests.md) - Web Tests using
     `content_shell`
 *   [Web Test Expectations and Baselines](testing/web_test_expectations.md) -
@@ -242,6 +245,8 @@ used when committed.
     hardware video decode codepaths on Linux
 
 ### Misc MacOS-Specific Docs
+*   [Mac Debugging Tips](mac/debugging.md) - An introduction to debugging on
+    Mac, as well as a collection of useful tips.
 *   [Using CCache on Mac](ccache_mac.md) - Speed up builds on Mac using ccache
     with clang/ninja
 *   [Cocoa tips and tricks](cocoa_tips_and_tricks.md) - A collection of idioms

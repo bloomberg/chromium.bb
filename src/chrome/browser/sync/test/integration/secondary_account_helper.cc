@@ -90,13 +90,14 @@ void SignOutSecondaryAccount(
 void MakeAccountPrimary(Profile* profile, const std::string& email) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  base::Optional<AccountInfo> maybe_account =
+  absl::optional<AccountInfo> maybe_account =
       identity_manager
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               email);
   DCHECK(maybe_account.has_value());
   auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
-  primary_account_mutator->SetPrimaryAccount(maybe_account->account_id);
+  primary_account_mutator->SetPrimaryAccount(maybe_account->account_id,
+                                             signin::ConsentLevel::kSync);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 

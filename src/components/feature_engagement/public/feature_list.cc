@@ -73,6 +73,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHExploreSitesTileFeature,
     &kIPHFeedHeaderMenuFeature,
     &kIPHShareScreenshotFeature,
+    &kIPHWebFeedFollowFeature,
+    &kIPHWebFeedPostFollowDialogFeature,
+    &kIPHSharedHighlightingBuilder,
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
     &kIPHBottomToolbarTipFeature,
@@ -96,6 +99,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHWebUITabStripFeature,
     &kIPHDesktopPwaInstallFeature,
     &kIPHProfileSwitchFeature,
+    &kIPHUpdatedConnectionSecurityIndicatorsFeature,
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 };

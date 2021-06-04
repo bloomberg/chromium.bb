@@ -19,12 +19,12 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -72,6 +72,9 @@ public final class ReturnToChromeExperimentsUtil {
 
         @Override
         public void onUrlFocusChange(boolean hasFocus) {
+            // Filter out focus events that happen when the tab itself in not the current tab.
+            if (mActivityTabProvider.get() != mNewTab) return;
+
             if (hasFocus) {
                 // It is possible that unfocusing event happens before the Omnibox
                 // first gets focused, use this flag to skip the cases.
@@ -81,7 +84,7 @@ public final class ReturnToChromeExperimentsUtil {
 
             if (!hasFocus && mIsOmniboxFocused) {
                 if (mNewTab.getUrl().isEmpty()) {
-                    if (mEmptyTabCloseCallback != null && mNewTab == mActivityTabProvider.get()) {
+                    if (mEmptyTabCloseCallback != null) {
                         mEmptyTabCloseCallback.run();
                     }
                     // Closes the Tab after any necessary transition is done. This
@@ -315,7 +318,7 @@ public final class ReturnToChromeExperimentsUtil {
 
             // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
             RecordUserAction.record("MobileOmniboxUse");
-            LocaleManager.getInstance().recordLocaleBasedSearchMetrics(
+            AppHooks.get().getLocaleManager().recordLocaleBasedSearchMetrics(
                     false, url, params.getTransitionType());
         }
 
@@ -343,14 +346,6 @@ public final class ReturnToChromeExperimentsUtil {
         }
 
         return chromeActivity;
-    }
-
-    public static boolean isCanonicalizedNTPUrl(String url) {
-        if (TextUtils.isEmpty(url)) return false;
-        // Avoid loading native library due to GURL usage since
-        // #shouldShowStartSurfaceAsTheHomePage() is in the critical path in Instant Start.
-        return url.equals("chrome://newtab/") || url.equals("chrome-native://newtab/")
-                || url.equals("about:newtab");
     }
 
     /**
@@ -381,13 +376,6 @@ public final class ReturnToChromeExperimentsUtil {
     }
 
     /**
-     * @return Whether hides the home button on an incognito tab.
-     */
-    public static boolean shouldHideHomeButtonForStartSurface(boolean incognito, boolean isTablet) {
-        return incognito && shouldShowStartSurfaceAsTheHomePageOnPhone(isTablet);
-    }
-
-    /**
      * Check whether we should show Start Surface as the home page for initial tab creation.
      *
      * @return Whether Start Surface should be shown as the home page.
@@ -398,7 +386,8 @@ public final class ReturnToChromeExperimentsUtil {
         // on tablet, accessibility is not enabled or the tab group continuation feature is enabled.
         String homePageUrl = HomepageManager.getHomepageUri();
         return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
-                && (TextUtils.isEmpty(homePageUrl) || isCanonicalizedNTPUrl(homePageUrl))
+                && (TextUtils.isEmpty(homePageUrl)
+                        || UrlUtilities.isCanonicalizedNTPUrl(homePageUrl))
                 && !StartSurfaceConfiguration.shouldHideStartSurfaceWithAccessibilityOn()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());

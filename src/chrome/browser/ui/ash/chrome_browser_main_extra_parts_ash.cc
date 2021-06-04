@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -35,11 +36,10 @@
 #include "chrome/browser/ui/ash/crosapi_new_window_delegate.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
-#include "chrome/browser/ui/ash/launcher/app_service/exo_app_type_resolver.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/browser/ui/ash/media_notification_provider_impl.h"
+#include "chrome/browser/ui/ash/microphone_mute_notification_delegate_impl.h"
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
@@ -47,7 +47,9 @@
 #include "chrome/browser/ui/ash/quick_answers/quick_answers_browser_client_impl.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
@@ -71,39 +73,39 @@
 
 namespace internal {
 
-// Creates a ChromeLauncherController on the first active session notification.
-// Used to avoid constructing a ChromeLauncherController with no active profile.
-class ChromeLauncherControllerInitializer
+// Creates a ChromeShelfController on the first active session notification.
+// Used to avoid constructing a ChromeShelfController with no active profile.
+class ChromeShelfControllerInitializer
     : public session_manager::SessionManagerObserver {
  public:
-  ChromeLauncherControllerInitializer() {
+  ChromeShelfControllerInitializer() {
     session_manager::SessionManager::Get()->AddObserver(this);
   }
 
-  ~ChromeLauncherControllerInitializer() override {
-    if (!chrome_launcher_controller_)
+  ~ChromeShelfControllerInitializer() override {
+    if (!chrome_shelf_controller_)
       session_manager::SessionManager::Get()->RemoveObserver(this);
   }
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override {
-    DCHECK(!chrome_launcher_controller_);
-    DCHECK(!ChromeLauncherController::instance());
+    DCHECK(!chrome_shelf_controller_);
+    DCHECK(!ChromeShelfController::instance());
 
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
-      chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
+      chrome_shelf_controller_ = std::make_unique<ChromeShelfController>(
           nullptr, ash::ShelfModel::Get());
-      chrome_launcher_controller_->Init();
+      chrome_shelf_controller_->Init();
 
       session_manager::SessionManager::Get()->RemoveObserver(this);
     }
   }
 
  private:
-  std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
+  std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerInitializer);
+  DISALLOW_COPY_AND_ASSIGN(ChromeShelfControllerInitializer);
 };
 
 }  // namespace internal
@@ -112,7 +114,7 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() = default;
 
 ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() = default;
 
-void ChromeBrowserMainExtraPartsAsh::PreMainMessageLoopStart() {
+void ChromeBrowserMainExtraPartsAsh::PreCreateMainMessageLoop() {
   user_profile_loaded_observer_ = std::make_unique<UserProfileLoadedObserver>();
 }
 
@@ -179,14 +181,14 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   session_controller_client_ = std::make_unique<SessionControllerClientImpl>();
   session_controller_client_->Init();
 
-  system_tray_client_ = std::make_unique<SystemTrayClient>();
+  system_tray_client_ = std::make_unique<SystemTrayClientImpl>();
   network_connect_delegate_->SetSystemTrayClient(system_tray_client_.get());
 
   tablet_mode_page_behavior_ = std::make_unique<TabletModePageBehavior>();
   vpn_list_forwarder_ = std::make_unique<VpnListForwarder>();
 
-  chrome_launcher_controller_initializer_ =
-      std::make_unique<internal::ChromeLauncherControllerInitializer>();
+  chrome_shelf_controller_initializer_ =
+      std::make_unique<internal::ChromeShelfControllerInitializer>();
 
   ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
 
@@ -208,13 +210,18 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  login_screen_client_ = std::make_unique<LoginScreenClient>();
-  // https://crbug.com/884127 ensuring that LoginScreenClient is initialized
+  login_screen_client_ = std::make_unique<LoginScreenClientImpl>();
+  // https://crbug.com/884127 ensuring that LoginScreenClientImpl is initialized
   // before using it InitializeDeviceDisablingManager.
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
   media_client_ = std::make_unique<MediaClientImpl>();
   media_client_->Init();
+
+  if (ash::features::IsMicMuteNotificationsEnabled()) {
+    microphone_mute_notification_delegate_ =
+        std::make_unique<MicrophoneMuteNotificationDelegateImpl>();
+  }
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.
@@ -255,7 +262,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();
-  chrome_launcher_controller_initializer_.reset();
+  chrome_shelf_controller_initializer_.reset();
 
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();
@@ -307,8 +314,8 @@ class ChromeBrowserMainExtraPartsAsh::UserProfileLoadedObserver
       SyncErrorNotifierFactory::GetForProfile(profile);
     }
 
-    if (ChromeLauncherController::instance()) {
-      ChromeLauncherController::instance()->OnUserProfileReadyToSwitch(profile);
+    if (ChromeShelfController::instance()) {
+      ChromeShelfController::instance()->OnUserProfileReadyToSwitch(profile);
     }
   }
 

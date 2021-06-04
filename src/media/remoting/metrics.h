@@ -6,10 +6,10 @@
 #define MEDIA_REMOTING_METRICS_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/pipeline_metadata.h"
 #include "media/remoting/triggers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -70,7 +70,8 @@ class SessionMetricsRecorder {
   // for the recorder instance.
   void RecordVideoPixelRateSupport(PixelRateSupport support);
 
-  // Records the compatibility of a media content with remoting.
+  // Records the compatibility of a media content with remoting. Records only on
+  // the first call for the recorder instance.
   void RecordCompatibility(RemotingCompatibility compatibility);
 
  private:
@@ -95,7 +96,7 @@ class SessionMetricsRecorder {
   void RecordTrackConfiguration();
 
   // |start_trigger_| is set while a remoting session is active.
-  base::Optional<StartTrigger> start_trigger_;
+  absl::optional<StartTrigger> start_trigger_;
 
   // When the current (or last) remoting session started.
   base::TimeTicks start_time_;
@@ -114,6 +115,7 @@ class SessionMetricsRecorder {
   bool remote_playback_is_disabled_ = false;
 
   bool did_record_pixel_rate_support_ = false;
+  bool did_record_compatibility_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SessionMetricsRecorder);
 };

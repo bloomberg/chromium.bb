@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
-#include "chrome/browser/web_applications/components/external_app_install_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "extensions/common/extension_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -50,12 +49,12 @@ class AppServiceAppModelBuilder::CrostiniFolderObserver
   ~CrostiniFolderObserver() override = default;
 
   void OnAppListItemAdded(ChromeAppListItem* item) override {
-    if (item->id() != crostini::kCrostiniFolderId)
+    if (item->id() != ash::kCrostiniFolderId)
       return;
 
     item->SetIsPersistent(true);
 
-    if (!parent_->GetSyncItem(crostini::kCrostiniFolderId,
+    if (!parent_->GetSyncItem(ash::kCrostiniFolderId,
                               sync_pb::AppListSpecifics::TYPE_FOLDER)) {
       item->SetDefaultPositionIfApplicable(parent_->model_updater());
     }
@@ -121,19 +120,10 @@ void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
         // Play Store.
         unsynced_change = !arc::IsArcPlayStoreEnabledForProfile(profile());
       }
-      bool default_chrome_apps_migrating =
-          base::FeatureList::IsEnabled(
-              web_app::kMigrateDefaultChromeAppToWebAppsGSuite) ||
-          base::FeatureList::IsEnabled(
-              web_app::kMigrateDefaultChromeAppToWebAppsNonGSuite);
-      if (!base::FeatureList::IsEnabled(
-              extensions_features::kDefaultChromeAppUninstallSync) ||
-          default_chrome_apps_migrating) {
-        if (update.InstalledInternally() == apps::mojom::OptionalBool::kTrue) {
-          // Don't sync default app removal as default installed apps are not
-          // synced.
-          unsynced_change = true;
-        }
+      if (update.InstalledInternally() == apps::mojom::OptionalBool::kTrue) {
+        // Don't sync default app removal as default installed apps are not
+        // synced.
+        unsynced_change = true;
       }
       RemoveApp(update.AppId(), unsynced_change);
     }

@@ -135,14 +135,14 @@ void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
     const auto invocation_mode = flags & PartitionPurgeAggressiveReclaim
                                      ? PCScan::InvocationMode::kForcedBlocking
                                      : PCScan::InvocationMode::kBlocking;
-    PCScan::Instance().PerformScanIfNeeded(invocation_mode);
+    PCScan::PerformScanIfNeeded(invocation_mode);
   }
 
 #if defined(PA_THREAD_CACHE_SUPPORTED)
   // Don't completely empty the thread cache outside of low memory situations,
   // as there is periodic purge which makes sure that it doesn't take too much
   // space.
-  if (PartitionPurgeAggressiveReclaim)
+  if (flags & PartitionPurgeAggressiveReclaim)
     internal::ThreadCacheRegistry::Instance().PurgeAll();
 #endif
 

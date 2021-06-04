@@ -4,6 +4,7 @@
 
 #include "chromeos/services/ime/decoder/system_engine.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -17,7 +18,7 @@ namespace ime {
 
 namespace {
 
-base::Optional<ImeDecoder::EntryPoints> g_fake_decoder_entry_points_for_testing;
+absl::optional<ImeDecoder::EntryPoints> g_fake_decoder_entry_points_for_testing;
 
 using ReplyCallback =
     base::RepeatingCallback<void(const std::vector<uint8_t>&,
@@ -83,7 +84,8 @@ void FakeDecoderEntryPointsForTesting(  // IN-TEST
   g_fake_decoder_entry_points_for_testing = decoder_entry_points;
 }
 
-SystemEngine::SystemEngine(ImeCrosPlatform* platform) : platform_(platform) {
+SystemEngine::SystemEngine(ImeCrosPlatform* platform)
+    : platform_(platform), decoder_channel_receiver_(this) {
   if (g_fake_decoder_entry_points_for_testing) {
     decoder_entry_points_ = g_fake_decoder_entry_points_for_testing;
   } else {
@@ -112,6 +114,26 @@ bool SystemEngine::BindRequest(
     mojo::PendingRemote<mojom::InputChannel> remote,
     const std::vector<uint8_t>& extra) {
   if (IsImeSupportedByDecoder(ime_spec)) {
+    // There can only be one client using the decoder at any time. There are two
+    // possible clients: NativeInputMethodEngine (for physical keyboard) and the
+    // XKB extension (for virtual keyboard). The XKB extension may try to
+    // connect the decoder even when it's not supposed to (due to race
+    // conditions), so we must prevent the extension from taking over the
+    // NativeInputMethodEngine connection.
+    //
+    // This is a hack to to determine whether a connection came from
+    // NativeInputMethodEngine or the extension. NativeInputMethodEngine will
+    // send some extra bytes, whereas the extension doesn't. Thus, we can
+    // prevent the extension from taking over the NativeInputMethodEngine's
+    // connection to the decoder. NativeInputMethodEngine will voluntarily give
+    // up its connection when tswitching to tablet mode, allowing the extension
+    // to connect again.
+    // TODO(b/184115850): Create a separate Mojo API for NativeInputMethodEngine
+    // so that we don't need to inspect `extra` to distinguish the client.
+    if (is_decoder_receiver_connected_ && extra.size() == 0) {
+      return false;
+    }
+
     // Activates an IME engine via the shared library. Passing a
     // |ClientDelegate| for engine instance created by the shared library to
     // make safe calls on the client.
@@ -120,10 +142,16 @@ bool SystemEngine::BindRequest(
             new ClientDelegate(ime_spec, std::move(remote),
                                base::BindRepeating(&SystemEngine::OnReply,
                                                    base::Unretained(this))))) {
-      decoder_channel_receivers_.Add(this, std::move(receiver));
-      // TODO(https://crbug.com/837156): Registry connection error handler.
+      decoder_channel_receiver_.Bind(std::move(receiver));
+      is_decoder_receiver_connected_ = true;
+      decoder_channel_receiver_.set_disconnect_handler(base::BindOnce(
+          [](bool& is_decoder_receiver_connected) {
+            is_decoder_receiver_connected = false;
+          },
+          std::ref(is_decoder_receiver_connected_)));
       return true;
     }
+    is_decoder_receiver_connected_ = false;
     return false;
   }
 
@@ -198,6 +226,16 @@ void SystemEngine::OnCompositionCanceled() {
                  base::DoNothing());
 }
 
+void SystemEngine::OnSuggestionsReturned(
+    mojom::SuggestionsResponsePtr response) {
+  const uint64_t seq_id = current_seq_id_;
+  ++current_seq_id_;
+
+  ProcessMessage(WrapAndSerializeMessage(
+                     SuggestionsResponseToProto(seq_id, std::move(response))),
+                 base::DoNothing());
+}
+
 void SystemEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                   ProcessMessageCallback callback) {
   // TODO(https://crbug.com/837156): Set a default protobuf message.
@@ -219,6 +257,7 @@ void SystemEngine::OnReply(const std::vector<uint8_t>& message,
   }
 
   const ime::PublicMessage& reply = wrapper.public_message();
+  // TODO(crbug/1146266): Add case to handle request for suggestions.
   switch (reply.param_case()) {
     case ime::PublicMessage::kOnKeyEventReply: {
       const auto it = pending_key_event_callbacks_.find(reply.seq_id());
@@ -261,6 +300,24 @@ void SystemEngine::OnReply(const std::vector<uint8_t>& message,
     case ime::PublicMessage::kHandleAutocorrect: {
       remote->HandleAutocorrect(ProtoToAutocorrectSpan(
           reply.handle_autocorrect().autocorrect_span()));
+      break;
+    }
+    case ime::PublicMessage::kSuggestionsRequest: {
+      remote->RequestSuggestions(
+          ProtoToSuggestionsRequest(reply.suggestions_request()),
+          base::BindOnce(&SystemEngine::OnSuggestionsReturned,
+                         base::Unretained(this)));
+      break;
+    }
+    case ime::PublicMessage::kDisplaySuggestions: {
+      remote->DisplaySuggestions(
+          ProtoToTextSuggestions(reply.display_suggestions()));
+      break;
+    }
+    case ime::PublicMessage::kRecordUkm: {
+      auto ukm = ProtoToUkmEntry(reply.record_ukm());
+      if (ukm)
+        remote->RecordUkm(std::move(ukm));
       break;
     }
     default:

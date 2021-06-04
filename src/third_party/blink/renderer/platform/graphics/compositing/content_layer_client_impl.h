@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
@@ -63,7 +64,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   // Callback from raster_invalidator_.
   void InvalidateRect(const IntRect&);
 
-  base::Optional<PaintChunk::Id> id_;
+  absl::optional<PaintChunk::Id> id_;
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
   RasterInvalidator raster_invalidator_;

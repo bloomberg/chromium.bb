@@ -53,7 +53,7 @@ void FakeLorgnetteScannerManager::Scan(const std::string& scanner_name,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(completion_callback), scan_data_.has_value(),
+      base::BindOnce(std::move(completion_callback),
                      scan_data_.has_value()
                          ? lorgnette::SCAN_FAILURE_MODE_NO_FAILURE
                          : lorgnette::SCAN_FAILURE_MODE_DEVICE_BUSY));
@@ -70,13 +70,13 @@ void FakeLorgnetteScannerManager::SetGetScannerNamesResponse(
 }
 
 void FakeLorgnetteScannerManager::SetGetScannerCapabilitiesResponse(
-    const base::Optional<lorgnette::ScannerCapabilities>&
+    const absl::optional<lorgnette::ScannerCapabilities>&
         scanner_capabilities) {
   scanner_capabilities_ = scanner_capabilities;
 }
 
 void FakeLorgnetteScannerManager::SetScanResponse(
-    const base::Optional<std::vector<std::string>>& scan_data) {
+    const absl::optional<std::vector<std::string>>& scan_data) {
   scan_data_ = scan_data;
 }
 

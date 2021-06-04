@@ -18,6 +18,15 @@
       "use_goma": true
     }
   },
+  "Cast Linux Debug": {
+    "gn_args": {
+      "is_chromecast": true,
+      "is_component_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
   "Deterministic Fuchsia (dbg)": {
     "gn_args": {
       "is_component_build": true,
@@ -148,6 +157,15 @@
       "use_goma": true
     }
   },
+  "linux-bionic-rel": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_goma": true
+    }
+  },
   "linux-extended-tracing-rel": {
     "gn_args": {
       "extended_tracing_enabled": true,
@@ -178,6 +196,15 @@
     }
   },
   "linux-trusty-rel": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_goma": true
+    }
+  },
+  "linux-xenial-rel": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,

@@ -32,6 +32,7 @@
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/ash/arc/policy/arc_android_management_checker.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -49,7 +50,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
@@ -87,7 +87,7 @@ bool g_ui_enabled = true;
 // tests, even when the tests are set to skip creating UI.
 bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
-base::Optional<bool> g_enable_check_android_management_in_tests;
+absl::optional<bool> g_enable_check_android_management_in_tests;
 
 constexpr const char kArcSaltPath[] = "/var/lib/misc/arc_salt";
 constexpr const size_t kArcSaltFileSize = 16;
@@ -95,7 +95,8 @@ constexpr const size_t kArcSaltFileSize = 16;
 constexpr const char kArcPrepareHostGeneratedDirJobName[] =
     "arc_2dprepare_2dhost_2dgenerated_2ddir";
 
-const char kInitialParam[] = "S.org.chromium.arc.start_type=initialStart";
+constexpr base::TimeDelta kWaitForPoliciesTimeout =
+    base::TimeDelta::FromSeconds(20);
 
 // Generates a unique, 20-character hex string from |chromeos_user| and
 // |salt| which can be used as Android's ro.boot.serialno and ro.serialno
@@ -210,7 +211,7 @@ bool ShouldUseErrorDialog() {
   if (IsArcKioskMode())
     return false;
 
-  if (chromeos::DemoSession::IsDeviceInDemoMode())
+  if (ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
   return true;
@@ -501,14 +502,13 @@ ArcSessionManager::ArcSessionManager(
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->AddVmObserver(this);
+  chromeos::ConciergeClient::Get()->AddVmObserver(this);
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->RemoveVmObserver(
-      this);
+  chromeos::ConciergeClient::Get()->RemoveVmObserver(this);
 
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->RemoveObserver(this);
@@ -674,6 +674,9 @@ void ArcSessionManager::OnProvisioningFinished(
 
     PrefService* const prefs = profile_->GetPrefs();
 
+    prefs->SetBoolean(prefs::kArcIsManaged,
+                      policy_util::IsAccountManaged(profile_));
+
     if (prefs->GetBoolean(prefs::kArcSignedIn))
       return;
 
@@ -684,8 +687,8 @@ void ArcSessionManager::OnProvisioningFinished(
             prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe))) {
       playstore_launcher_ = std::make_unique<ArcAppLauncher>(
           profile_, kPlayStoreAppId,
-          GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
-                          {kInitialParam}),
+          apps_util::CreateIntentForActivity(
+              kPlayStoreActivity, kInitialStartParam, kCategoryLauncher),
           false /* deferred_launch_allowed */, display::kInvalidDisplayId,
           apps::mojom::LaunchSource::kFromChromeInternal);
     }
@@ -722,7 +725,7 @@ void ArcSessionManager::OnProvisioningFinished(
     RequestArcDataRemoval();
   }
 
-  base::Optional<int> error_code;
+  absl::optional<int> error_code;
   ArcSupportHost::Error support_error = GetSupportHostError(result);
   if (support_error == ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR) {
     error_code = static_cast<std::underlying_type_t<ProvisioningStatus>>(
@@ -760,6 +763,10 @@ void ArcSessionManager::SetUserInfo() {
 
   std::string serialno = GetSerialNumber();
   arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);
+}
+
+void ArcSessionManager::TrimVmMemory(TrimVmMemoryCallback callback) {
+  arc_session_runner_->TrimVmMemory(std::move(callback));
 }
 
 std::string ArcSessionManager::GetSerialNumber() const {
@@ -896,6 +903,7 @@ void ArcSessionManager::ResetArcState() {
   playstore_launcher_.reset();
   terms_of_service_negotiator_.reset();
   android_management_checker_.reset();
+  wait_for_policy_timer_.AbandonAndStop();
 }
 
 void ArcSessionManager::AddObserver(ArcSessionManagerObserver* observer) {
@@ -978,6 +986,11 @@ bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
   return playstore_launcher_.get();
 }
 
+void ArcSessionManager::OnBackgroundAndroidManagementCheckedForTesting(
+    policy::AndroidManagementClient::Result result) {
+  OnBackgroundAndroidManagementChecked(result);
+}
+
 void ArcSessionManager::OnVmStarted(
     const vm_tools::concierge::VmStartedSignal& vm_signal) {
   // When an ARCVM starts, store the vm info.
@@ -989,10 +1002,10 @@ void ArcSessionManager::OnVmStopped(
     const vm_tools::concierge::VmStoppedSignal& vm_signal) {
   // When an ARCVM stops, clear the stored vm info.
   if (vm_signal.name() == kArcVmName)
-    vm_info_ = base::nullopt;
+    vm_info_ = absl::nullopt;
 }
 
-const base::Optional<vm_tools::concierge::VmInfo>&
+const absl::optional<vm_tools::concierge::VmInfo>&
 ArcSessionManager::GetVmInfo() const {
   return vm_info_;
 }
@@ -1345,20 +1358,82 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
 void ArcSessionManager::OnBackgroundAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(android_management_checker_);
-  android_management_checker_.reset();
+
+  if (g_enable_check_android_management_in_tests.value_or(true)) {
+    DCHECK(android_management_checker_);
+    android_management_checker_.reset();
+  }
 
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
       // Do nothing. ARC should be started already.
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      SetArcPlayStoreEnabledForProfile(profile_, false);
+      if (base::FeatureList::IsEnabled(
+              arc::kEnableUnmanagedToManagedTransitionFeature)) {
+        WaitForPoliciesLoad();
+      } else {
+        SetArcPlayStoreEnabledForProfile(profile_, false /* enabled */);
+      }
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       // This code should not be reached. For background check,
       // retry_on_error should be set.
       NOTREACHED();
+  }
+}
+
+void ArcSessionManager::WaitForPoliciesLoad() {
+  auto* policy_service =
+      profile()->GetProfilePolicyConnector()->policy_service();
+
+  // User might be transitioning to managed state, wait for policies load
+  // to confirm.
+  if (policy_service->IsFirstPolicyLoadComplete(policy::POLICY_DOMAIN_CHROME)) {
+    OnFirstPoliciesLoadedOrTimeout();
+  } else {
+    profile_->GetProfilePolicyConnector()->policy_service()->AddObserver(
+        policy::POLICY_DOMAIN_CHROME, this);
+    wait_for_policy_timer_.Start(
+        FROM_HERE, kWaitForPoliciesTimeout,
+        base::BindOnce(&ArcSessionManager::OnFirstPoliciesLoadedOrTimeout,
+                       base::Unretained(this)));
+  }
+}
+
+void ArcSessionManager::OnFirstPoliciesLoaded(policy::PolicyDomain domain) {
+  DCHECK(domain == policy::POLICY_DOMAIN_CHROME);
+
+  wait_for_policy_timer_.Stop();
+  OnFirstPoliciesLoadedOrTimeout();
+}
+
+void ArcSessionManager::OnFirstPoliciesLoadedOrTimeout() {
+  profile_->GetProfilePolicyConnector()->policy_service()->RemoveObserver(
+      policy::POLICY_DOMAIN_CHROME, this);
+
+  // OnFirstPoliciesLoaded callback is triggered for both unmanaged and managed
+  // users, we need to check user state here.
+  // If timeout comes before policies are loaded, we fallback to calling
+  // SetArcPlayStoreEnabledForProfile(profile_, false).
+  if (arc::policy_util::IsAccountManaged(profile_)) {
+    // User has become managed, notify ARC by setting transition preference,
+    // which is eventually passed to ARC via ArcSession parameters.
+    profile_->GetPrefs()->SetInteger(
+        arc::prefs::kArcSupervisionTransition,
+        static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+
+    // Restart ARC to perform managed re-provisioning.
+    // kArcIsManaged and kArcSignedIn are not reset during the restart.
+    // In case of successful re-provisioning, OnProvisioningFinished is called
+    // and kArcIsManaged is updated.
+    // In case of re-provisioning failure, ARC data is removed and transition
+    // preference is reset.
+    // In case Chrome is terminated during re-provisioning, user transition will
+    // be detected in ProfileManager::InitProfileUserPrefs, on next startup.
+    StopAndEnableArc();
+  } else {
+    SetArcPlayStoreEnabledForProfile(profile_, false /* enabled */);
   }
 }
 
@@ -1397,7 +1472,7 @@ void ArcSessionManager::StartArc() {
 
   UpgradeParams params;
 
-  const chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+  const auto* demo_session = ash::DemoSession::Get();
   params.is_demo_session = demo_session && demo_session->started();
   if (params.is_demo_session) {
     DCHECK(demo_session->resources()->loaded());
@@ -1434,6 +1509,7 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcFastAppReinstallStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe,
                                      false);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcIsManaged, false);
   }
 
   ShutdownSession();
@@ -1454,7 +1530,7 @@ void ArcSessionManager::MaybeStartArcDataRemoval() {
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcSessionManager::OnArcDataRemoved(base::Optional<bool> result) {
+void ArcSessionManager::OnArcDataRemoved(absl::optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
   DCHECK(profile_);

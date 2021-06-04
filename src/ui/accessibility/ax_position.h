@@ -19,10 +19,10 @@
 #include "base/containers/contains.h"
 #include "base/containers/stack.h"
 #include "base/i18n/break_iterator.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -126,7 +126,23 @@ enum class AXEmbeddedObjectBehavior {
 // character and a word boundary. For example, an empty text field should act as
 // a character and a word boundary when a screen reader user tries to navigate
 // through it, otherwise the text field would be missed by the user.
-AX_EXPORT extern AXEmbeddedObjectBehavior g_ax_embedded_object_behavior;
+// Tests should use ScopedAXEmbeddedObjectBehaviorSetter to change this.
+// TODO(crbug.com/1204592) Don't export this so tests can't change it.
+extern AX_EXPORT AXEmbeddedObjectBehavior g_ax_embedded_object_behavior;
+
+namespace testing {
+
+class AX_EXPORT ScopedAXEmbeddedObjectBehaviorSetter {
+ public:
+  explicit ScopedAXEmbeddedObjectBehaviorSetter(
+      AXEmbeddedObjectBehavior behavior);
+  ~ScopedAXEmbeddedObjectBehaviorSetter();
+
+ private:
+  AXEmbeddedObjectBehavior prev_behavior_;
+};
+
+}  // namespace testing
 
 // Forward declarations.
 template <class AXPositionType, class AXNodeType>
@@ -2445,12 +2461,14 @@ class AXPosition {
       return Clone();
     }
 
-    DCHECK_LT(text_position->text_offset_, text_position->MaxTextOffset());
+    int max_text_offset = text_position->MaxTextOffset();
+    DCHECK_LT(text_position->text_offset_, max_text_offset);
     std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
         text_position->GetGraphemeIterator();
     do {
       ++text_position->text_offset_;
-    } while (!text_position->AtEndOfAnchor() && grapheme_iterator &&
+    } while (text_position->text_offset_ < max_text_offset &&
+             grapheme_iterator &&
              !grapheme_iterator->IsGraphemeBoundary(
                  size_t{text_position->text_offset_}));
     DCHECK_GT(text_position->text_offset_, 0);
@@ -3210,11 +3228,11 @@ class AXPosition {
   //    0: if this position is logically equivalent to the other position
   //   <0: if this position is logically less than the other position
   //   >0: if this position is logically greater than the other position
-  base::Optional<int> CompareTo(const AXPosition& other) const {
+  absl::optional<int> CompareTo(const AXPosition& other) const {
     if (IsNullPosition() && other.IsNullPosition())
       return 0;
     if (IsNullPosition() || other.IsNullPosition())
-      return base::nullopt;
+      return absl::nullopt;
 
     if (GetAnchor() == other.GetAnchor())
       return SlowCompareTo(other);  // No optimization is necessary.
@@ -3288,7 +3306,7 @@ class AXPosition {
     }
 
     if (!common_anchor)
-      return base::nullopt;
+      return absl::nullopt;
 
     // If each position has an uncommon ancestor node, we can compare those
     // instead of needing to compute ancestor positions. Otherwise we need to
@@ -3391,17 +3409,17 @@ class AXPosition {
   // A less optimized, but much slower version of "CompareTo". Should only be
   // used when optimizations cannot be applied, e.g. when comparing ignored
   // positions. See "CompareTo" for an explanation of the return values.
-  base::Optional<int> SlowCompareTo(const AXPosition& other) const {
+  absl::optional<int> SlowCompareTo(const AXPosition& other) const {
     if (IsNullPosition() && other.IsNullPosition())
       return 0;
     if (IsNullPosition() || other.IsNullPosition())
-      return base::nullopt;
+      return absl::nullopt;
 
     // If both positions share an anchor and either one is a text position, or
     // both are tree positions, we can do a straight comparison of text offsets
     // or child indices.
     if (GetAnchor() == other.GetAnchor()) {
-      base::Optional<int> optional_result;
+      absl::optional<int> optional_result;
       ax::mojom::TextAffinity this_affinity;
       ax::mojom::TextAffinity other_affinity;
 
@@ -3462,14 +3480,14 @@ class AXPosition {
 
     const AXNode* common_anchor = this->LowestCommonAnchor(other);
     if (!common_anchor)
-      return base::nullopt;
+      return absl::nullopt;
 
     // If either of the two positions is a text position, and if one position is
     // an ancestor of the other, we need to compare using text positions,
     // because converting to tree positions will potentially lose information if
     // the text offset is anything other than 0 or `MaxTextOffset()`.
     if (IsTextPosition() || other.IsTextPosition()) {
-      base::Optional<int> optional_result;
+      absl::optional<int> optional_result;
       ax::mojom::TextAffinity this_affinity;
       ax::mojom::TextAffinity other_affinity;
 
@@ -3701,8 +3719,8 @@ class AXPosition {
   // a collapsed popup menu. The presence or the absence of accessible content
   // inside a control might alter whether an "object replacement character"
   // would be exposed in that control, in contrast to ordinary text such as in
-  // the case of a non-empty plain text field which should only have textual
-  // nodes inside it. This is because empty controls need to act as a word and
+  // the case of a non-empty text field which should only have textual nodes
+  // inside it. This is because empty controls need to act as a word and
   // character boundary.
   bool IsEmptyObjectReplacedByCharacter() const {
     if (g_ax_embedded_object_behavior ==
@@ -4078,8 +4096,8 @@ class AXPosition {
         // that are descendants of platform leaves should maintain the actual
         // text of all their static text descendants, otherwise there would be
         // loss of information while traversing the accessibility tree upwards.
-        // An example of a platform leaf is a plain text field, because all of
-        // the accessibility subtree inside the text field is hidden from
+        // An example of a platform leaf is an <input> text field, because all
+        // of the accessibility subtree inside the text field is hidden from
         // platform APIs. An example of how an ignored node can affect the
         // hypertext of an unignored ancestor is shown below:
         // ++kTextField "Hello"
@@ -4986,42 +5004,42 @@ const int AXPosition<AXPositionType, AXNodeType>::INVALID_OFFSET;
 template <class AXPositionType, class AXNodeType>
 bool operator==(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() == 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator!=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() != 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator<(const AXPosition<AXPositionType, AXNodeType>& first,
                const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() < 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator<=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() <= 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator>(const AXPosition<AXPositionType, AXNodeType>& first,
                const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() > 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator>=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  const base::Optional<int> compare_to_optional = first.CompareTo(second);
+  const absl::optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() >= 0;
 }
 

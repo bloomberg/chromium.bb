@@ -24,8 +24,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -180,8 +180,9 @@ public class PseudoTab {
      * @return The URL
      */
     public String getUrl() {
+        // TODO(crbug/783819): Return the GURL directly.
         if (mTab != null && mTab.get() != null && mTab.get().isInitialized()) {
-            return mTab.get().getUrlString();
+            return mTab.get().getUrl() != null ? mTab.get().getUrl().getSpec() : null;
         }
         assert mTabId != null;
         return TabAttributeCache.getUrl(mTabId);
@@ -353,8 +354,7 @@ public class PseudoTab {
                     (index, id, url, isIncognito, isStandardActiveIndex, isIncognitoActiveIndex)
                             -> {
                         // Skip restoring of non-selected NTP to match the real restoration logic.
-                        if (ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(url)
-                                && !isStandardActiveIndex) {
+                        if (UrlUtilities.isCanonicalizedNTPUrl(url) && !isStandardActiveIndex) {
                             return;
                         } else if (TextUtils.isEmpty(url)) {
                             // Skip restoring of empty Tabs.

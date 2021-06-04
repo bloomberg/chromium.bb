@@ -22,40 +22,12 @@
 namespace blink {
 
 template <typename T, typename V8TypedArray, bool clamped>
-v8::Local<v8::Value> DOMTypedArray<T, V8TypedArray, clamped>::Wrap(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> creation_context) {
-  DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
-
-  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
-  DOMArrayBufferBase* buffer = this->BufferBase();
-  v8::Local<v8::Value> v8_buffer = ToV8(buffer, creation_context, isolate);
-  if (v8_buffer.IsEmpty())
-    return v8::Local<v8::Object>();
-  DCHECK_EQ(IsShared(), v8_buffer->IsSharedArrayBuffer());
-
-  v8::Local<v8::Object> wrapper;
-  {
-    v8::Context::Scope context_scope(creation_context->CreationContext());
-    if (IsShared()) {
-      wrapper = V8TypedArray::New(v8_buffer.As<v8::SharedArrayBuffer>(),
-                                  byteOffset(), length());
-    } else {
-      wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(), byteOffset(),
-                                  length());
-    }
-  }
-
-  return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
-}
-
-template <typename T, typename V8TypedArray, bool clamped>
-v8::MaybeLocal<v8::Value> DOMTypedArray<T, V8TypedArray, clamped>::WrapV2(
+v8::MaybeLocal<v8::Value> DOMTypedArray<T, V8TypedArray, clamped>::Wrap(
     ScriptState* script_state) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, script_state->GetIsolate()));
 
-  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
-  DOMArrayBufferBase* buffer = this->BufferBase();
+  const WrapperTypeInfo* wrapper_type_info = GetWrapperTypeInfo();
+  DOMArrayBufferBase* buffer = BufferBase();
   v8::Local<v8::Value> v8_buffer;
   if (!ToV8Traits<DOMArrayBufferBase>::ToV8(script_state, buffer)
            .ToLocal(&v8_buffer)) {
@@ -64,12 +36,15 @@ v8::MaybeLocal<v8::Value> DOMTypedArray<T, V8TypedArray, clamped>::WrapV2(
   DCHECK_EQ(IsShared(), v8_buffer->IsSharedArrayBuffer());
 
   v8::Local<v8::Object> wrapper;
-  if (IsShared()) {
-    wrapper = V8TypedArray::New(v8_buffer.As<v8::SharedArrayBuffer>(),
-                                byteOffset(), length());
-  } else {
-    wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(), byteOffset(),
-                                length());
+  {
+    v8::Context::Scope context_scope(script_state->GetContext());
+    if (IsShared()) {
+      wrapper = V8TypedArray::New(v8_buffer.As<v8::SharedArrayBuffer>(),
+                                  byteOffset(), length());
+    } else {
+      wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(), byteOffset(),
+                                  length());
+    }
   }
 
   return AssociateWithWrapper(script_state->GetIsolate(), wrapper_type_info,

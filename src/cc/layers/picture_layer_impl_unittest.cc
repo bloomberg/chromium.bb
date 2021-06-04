@@ -149,27 +149,46 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
   }
 
   void SetupDrawProperties(FakePictureLayerImpl* layer,
-                           float ideal_contents_scale,
+                           const gfx::Vector2dF& ideal_contents_scale,
                            float device_scale_factor,
                            float page_scale_factor) {
     layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
     host_impl()->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
     gfx::Transform scale_transform;
-    scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);
+    scale_transform.Scale(ideal_contents_scale.x(), ideal_contents_scale.y());
     layer->draw_properties().screen_space_transform = scale_transform;
     layer->draw_properties().target_space_transform = scale_transform;
     layer->set_contributes_to_drawn_render_surface(true);
     DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
   }
 
+  void SetupDrawProperties(FakePictureLayerImpl* layer,
+                           float ideal_contents_scale,
+                           float device_scale_factor,
+                           float page_scale_factor) {
+    SetupDrawProperties(
+        layer, gfx::Vector2dF(ideal_contents_scale, ideal_contents_scale),
+        device_scale_factor, page_scale_factor);
+  }
+
+  void SetupDrawPropertiesAndUpdateTiles(
+      FakePictureLayerImpl* layer,
+      const gfx::Vector2dF& ideal_contents_scale,
+      float device_scale_factor,
+      float page_scale_factor) {
+    SetupDrawProperties(layer, ideal_contents_scale, device_scale_factor,
+                        page_scale_factor);
+    layer->UpdateTiles();
+  }
+
   void SetupDrawPropertiesAndUpdateTiles(FakePictureLayerImpl* layer,
                                          float ideal_contents_scale,
                                          float device_scale_factor,
                                          float page_scale_factor) {
-    SetupDrawProperties(layer, ideal_contents_scale, device_scale_factor,
-                        page_scale_factor);
-    layer->UpdateTiles();
+    SetupDrawPropertiesAndUpdateTiles(
+        layer, gfx::Vector2dF(ideal_contents_scale, ideal_contents_scale),
+        device_scale_factor, page_scale_factor);
   }
 
   static void VerifyAllPrioritizedTilesExistAndHaveRasterSource(
@@ -1796,13 +1815,13 @@ TEST_F(LegacySWPictureLayerImplTest, TileScalesWithSolidColorRasterSource) {
   SetupTrees(pending_raster_source, active_raster_source);
   // Solid color raster source should not allow tilings at any scale.
   EXPECT_FALSE(active_layer()->CanHaveTilings());
-  EXPECT_EQ(0.f, active_layer()->ideal_contents_scale());
+  EXPECT_EQ(0.f, active_layer()->ideal_contents_scale_key());
 
   // Activate non-solid-color pending raster source makes active layer can have
   // tilings.
   ActivateTree();
   EXPECT_TRUE(active_layer()->CanHaveTilings());
-  EXPECT_GT(active_layer()->ideal_contents_scale(), 0.f);
+  EXPECT_GT(active_layer()->ideal_contents_scale_key(), 0.f);
 }
 
 TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
@@ -2064,8 +2083,8 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetupDrawPropertiesAndUpdateTiles(active_layer(), 2.f, 1.f, 1.f);
 
   EXPECT_EQ(1.f, active_layer()->HighResTiling()->contents_scale_key());
-  EXPECT_EQ(1.f, active_layer()->raster_contents_scale());
-  EXPECT_EQ(2.f, active_layer()->ideal_contents_scale());
+  EXPECT_EQ(1.f, active_layer()->raster_contents_scale_key());
+  EXPECT_EQ(2.f, active_layer()->ideal_contents_scale_key());
 
   // Both tilings still exist.
   EXPECT_EQ(2.f, active_layer()->tilings()->tiling_at(0)->contents_scale_key());
@@ -2126,6 +2145,7 @@ TEST_F(LegacySWPictureLayerImplTest, AppendQuadsDataForCheckerboard) {
   EXPECT_EQ(17500, data.checkerboarded_no_recording_content_area);
   EXPECT_EQ(22500, data.checkerboarded_needs_raster_content_area);
   EXPECT_TRUE(active_layer()->only_used_low_res_last_append_quads());
+  EXPECT_TRUE(active_layer()->DidCheckerboardQuad());
 }
 
 TEST_F(LegacySWPictureLayerImplTest, HighResRequiredWhenActiveAllReady) {
@@ -3156,13 +3176,36 @@ TEST_F(LegacySWPictureLayerImplTest,
   // The maximum animation scale exceeds the squared size of the maximum
   // viewport dimension, so raster scale should be shrunk to make the
   // rasterized layer not larger than the viewport.
-  contents_scale = 2.f;
   maximum_animation_scale = 21.f;
 
   SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
                                             page_scale, maximum_animation_scale,
                                             affected_by_invalid_scale);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 20.f);
+  EXPECT_NEAR(20.f, pending_layer()->HighResTiling()->contents_scale_key(),
+              0.001f);
+  EXPECT_NEAR(20.f, active_layer()->HighResTiling()->contents_scale_key(),
+              0.001f);
+
+  // The clamping logic still works with will-change:transform.
+  // Raster source size change forces adjustment of raster scale.
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
+  layer_bounds = gfx::Size(200, 200);
+  Region invalidation;
+  // UpdateRasterSource() requires that the pending tree doesn't have tiles.
+  pending_layer()->picture_layer_tiling_set()->RemoveAllTiles();
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->UpdateRasterSource(
+      FakeRasterSource::CreateFilled(layer_bounds), &invalidation, nullptr,
+      nullptr);
+  pending_layer()->PushPropertiesTo(active_layer());
+  SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
+                                            page_scale, maximum_animation_scale,
+                                            affected_by_invalid_scale);
+  EXPECT_NEAR(10.f, pending_layer()->HighResTiling()->contents_scale_key(),
+              0.001f);
+  EXPECT_NEAR(10.f, active_layer()->HighResTiling()->contents_scale_key(),
+              0.001f);
 }
 
 TEST_F(LegacySWPictureLayerImplTest, TilingSetRasterQueue) {
@@ -3703,7 +3746,38 @@ TEST_F(LegacySWPictureLayerImplTest, TinyRasterScale) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest,
-       AnimationChangeRespectsWillChangeTransformHint) {}
+       ForceAdjustRasterScaleWillChangeTransform) {
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  ResetTilingsAndRasterScales();
+
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  contents_scale = 2.f;
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  // Raster source size change forces adjustment of raster scale.
+  layer_bounds = gfx::Size(200, 200);
+  Region invalidation;
+  // UpdateRasterSource() requires that the pending tree doesn't have tiles.
+  pending_layer()->picture_layer_tiling_set()->RemoveAllTiles();
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->UpdateRasterSource(
+      FakeRasterSource::CreateFilled(layer_bounds), &invalidation, nullptr,
+      nullptr);
+  pending_layer()->PushPropertiesTo(active_layer());
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+}
 
 TEST_F(LegacySWPictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
@@ -5250,6 +5324,44 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
     EXPECT_FALSE(tile->can_use_lcd_text());
 }
 
+TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTreeWith2dScale) {
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
+  gfx::Vector2dF ideal_scale(4.f, 2.f);
+  float page_scale = 4.f;
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), ideal_scale, 1.0f,
+                                    page_scale);
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_TRUE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  std::vector<Tile*> tiles =
+      active_layer()->HighResTiling()->AllTilesForTesting();
+  for (Tile* tile : tiles)
+    EXPECT_TRUE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), ideal_scale, 1.0f,
+                                    page_scale);
+  pending_layer()->SetContentsOpaque(false);
+  pending_layer()->UpdateTiles();
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_FALSE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_FALSE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : active_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+}
+
 TEST_F(LegacySWPictureLayerImplTest, TilingAllTilesDone) {
   gfx::Size tile_size = host_impl()->settings().default_tile_size;
   size_t tile_mem = 4 * tile_size.width() * tile_size.height();
@@ -5607,10 +5719,14 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
   SetupPendingTree(pending_raster_source);
   pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
 
-  float expected_contents_scale = 0.25f;
+  float expected_contents_scale = 0.125f;
   for (int i = 1; i < 30; ++i) {
     float ideal_contents_scale = 0.1f * i - 1e-6;
     switch (i) {
+      // Scale 0.2.
+      case 2:
+        expected_contents_scale = 0.25f;
+        break;
       // Scale 0.3.
       case 3:
         expected_contents_scale = 0.5f;
@@ -5636,10 +5752,6 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
     switch (i) {
       // Scale 0.2.
       case 2:
-        expected_contents_scale = 0.5f;
-        break;
-      // Scale 0.1.
-      case 1:
         expected_contents_scale = 0.25f;
         break;
     }
@@ -5680,20 +5792,20 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOnChange) {
 
   // Set an image size much larger than the layer bounds (5x). Verify that the
   // scaling down code is triggered (we should halve the raster scale until it
-  // is less than 4x the ideal source scale).
+  // is less than 2x the ideal source scale).
   pending_layer()->SetBounds(layer_bounds);
   pending_layer()->SetDirectlyCompositedImageSize(gfx::Size(2000, 2000));
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f);
-  EXPECT_FLOAT_EQ(2.5f, pending_layer()
-                            ->picture_layer_tiling_set()
-                            ->FindTilingWithResolution(HIGH_RESOLUTION)
-                            ->contents_scale_key());
+  EXPECT_FLOAT_EQ(1.25f, pending_layer()
+                             ->picture_layer_tiling_set()
+                             ->FindTilingWithResolution(HIGH_RESOLUTION)
+                             ->contents_scale_key());
 
   // Update the bounds to no longer match the aspect ratio, but still compute
   // the same raster scale.
   pending_layer()->SetBounds(gfx::Size(600, 500));
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f);
-  EXPECT_FLOAT_EQ(4.f, pending_layer()
+  EXPECT_FLOAT_EQ(1.f, pending_layer()
                            ->picture_layer_tiling_set()
                            ->FindTilingWithResolution(HIGH_RESOLUTION)
                            ->contents_scale_key());
@@ -5710,10 +5822,10 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOnChange) {
   // Lower the ideal scale to see that the clamping still applied as it is
   // lowered.
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.5f, 1.f, 1.f);
-  EXPECT_FLOAT_EQ(1.25f, pending_layer()
-                             ->picture_layer_tiling_set()
-                             ->FindTilingWithResolution(HIGH_RESOLUTION)
-                             ->contents_scale_key());
+  EXPECT_FLOAT_EQ(0.625f, pending_layer()
+                              ->picture_layer_tiling_set()
+                              ->FindTilingWithResolution(HIGH_RESOLUTION)
+                              ->contents_scale_key());
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.25f, 1.f, 1.f);
   EXPECT_FLOAT_EQ(0.625f, pending_layer()
@@ -5722,8 +5834,26 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOnChange) {
                               ->contents_scale_key());
 }
 
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterHighResScreen) {
+  gfx::Size layer_bounds(100, 100);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Verify that device_scale=2.0 is handled correctly. The image is expected to
+  // be downscaled not more than 4x, so content scale is above 1.0.
+  gfx::Size image_size(500, 500);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 2.f, 1.f);
+  EXPECT_FLOAT_EQ(1.25f, pending_layer()
+                             ->picture_layer_tiling_set()
+                             ->FindTilingWithResolution(HIGH_RESOLUTION)
+                             ->contents_scale_key());
+}
+
 TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
-  gfx::Size layer_bounds(5, 5);
+  gfx::Size layer_bounds(6, 6);
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
 
@@ -5734,10 +5864,10 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
   pending_layer()->SetBounds(layer_bounds);
   pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.3f, 1.f, 1.f);
-  EXPECT_FLOAT_EQ(1.f, pending_layer()
-                           ->picture_layer_tiling_set()
-                           ->FindTilingWithResolution(HIGH_RESOLUTION)
-                           ->contents_scale_key());
+  EXPECT_FLOAT_EQ(0.5f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
 
   // Change the image and bounds to values that make the layer not eligible for
   // direct compositing. This must be reflected by a |contents_scale_key()| of
@@ -5754,12 +5884,12 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
   // change such that the optimization should apply.
   pending_layer()->SetBounds(ScaleToFlooredSize(layer_bounds, 2));
   pending_layer()->SetDirectlyCompositedImageSize(
-      ScaleToFlooredSize(image_size, 2));
+      ScaleToFlooredSize(layer_bounds, 2));
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f);
-  EXPECT_FLOAT_EQ(0.46875, pending_layer()
-                               ->picture_layer_tiling_set()
-                               ->FindTilingWithResolution(HIGH_RESOLUTION)
-                               ->contents_scale_key());
+  EXPECT_FLOAT_EQ(0.25f, pending_layer()
+                             ->picture_layer_tiling_set()
+                             ->FindTilingWithResolution(HIGH_RESOLUTION)
+                             ->contents_scale_key());
 }
 
 TEST_F(LegacySWPictureLayerImplTest,

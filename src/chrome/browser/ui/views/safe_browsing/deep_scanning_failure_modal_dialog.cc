@@ -10,10 +10,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace safe_browsing {
@@ -57,7 +57,7 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
           IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
 

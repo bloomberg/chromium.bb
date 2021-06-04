@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -51,7 +50,7 @@ class MockLanguageModel : public language::LanguageModel {
 
 class TranslateUIDelegateTest : public ::testing::Test {
  public:
-  TranslateUIDelegateTest() {}
+  TranslateUIDelegateTest() = default;
 
   void SetUp() override {
     pref_service_ =
@@ -77,8 +76,6 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
     delegate_ = std::make_unique<TranslateUIDelegate>(manager_->GetWeakPtr(),
                                                       "ar", "fr");
-
-    ASSERT_FALSE(client_->GetTranslatePrefs()->IsTooOftenDenied("ar"));
   }
 
   // Do not reorder. These are ordered for dependency on creation/destruction.
@@ -114,7 +111,6 @@ TEST_F(TranslateUIDelegateTest, CheckDeclinedFalse) {
   EXPECT_EQ(accepted_count, prefs->GetTranslationAcceptedCount("ar"));
   EXPECT_EQ(denied_count, prefs->GetTranslationDeniedCount("ar"));
   EXPECT_EQ(ignored_count + 1, prefs->GetTranslationIgnoredCount("ar"));
-  EXPECT_FALSE(prefs->IsTooOftenDenied("ar"));
   EXPECT_FALSE(manager_->GetLanguageState()->translation_declined());
 }
 

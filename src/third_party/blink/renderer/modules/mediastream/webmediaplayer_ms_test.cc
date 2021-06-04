@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -172,12 +172,12 @@ class ReusableMessageLoopEvent {
 
   void RunAndWait() {
     event_->RunAndWait();
-    event_.reset(new media::WaitableMessageLoopEvent());
+    event_ = std::make_unique<media::WaitableMessageLoopEvent>();
   }
 
   void RunAndWaitForStatus(media::PipelineStatus expected) {
     event_->RunAndWaitForStatus(expected);
-    event_.reset(new media::WaitableMessageLoopEvent());
+    event_ = std::make_unique<media::WaitableMessageLoopEvent>();
   }
 
  private:

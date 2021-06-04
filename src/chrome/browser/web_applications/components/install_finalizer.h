@@ -5,20 +5,22 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_FINALIZER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_FINALIZER_H_
 
-#include <memory>
-
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 struct WebApplicationInfo;
 class GURL;
 
 namespace content {
 class WebContents;
+}
+
+namespace webapps {
+enum class WebappUninstallSource;
 }
 
 namespace web_app {
@@ -48,8 +50,8 @@ class InstallFinalizer {
         webapps::WebappInstallSource::COUNT;
     bool locally_installed = true;
 
-    base::Optional<WebAppChromeOsData> chromeos_data;
-    base::Optional<WebAppSystemWebAppData> system_web_app_data;
+    absl::optional<WebAppChromeOsData> chromeos_data;
+    absl::optional<WebAppSystemWebAppData> system_web_app_data;
   };
 
   // Write the WebApp data to disk and register the app.
@@ -69,36 +71,39 @@ class InstallFinalizer {
                               content::WebContents* web_contents,
                               InstallFinalizedCallback callback) = 0;
 
-  // Removes |external_install_source| from |app_id|. If no more interested
+  // Removes |webapp_uninstall_source| from |app_id|. If no more interested
   // sources left, deletes the app from disk and registrar.
   virtual void UninstallExternalWebApp(
       const AppId& app_id,
-      ExternalInstallSource external_install_source,
+      webapps::WebappUninstallSource webapp_uninstall_source,
       UninstallWebAppCallback callback) = 0;
 
   // Removes the external app for |app_url| from disk and registrar. Fails if
   // there is no installed external app for |app_url|. Virtual for testing.
   virtual void UninstallExternalWebAppByUrl(
       const GURL& app_url,
-      ExternalInstallSource external_install_source,
+      webapps::WebappUninstallSource webapp_uninstall_source,
       UninstallWebAppCallback callback);
 
-  virtual bool CanUserUninstallExternalApp(const AppId& app_id) const = 0;
-  // If external app is synced, uninstalls it from sync and from all devices.
-  virtual void UninstallExternalAppByUser(const AppId& app_id,
-                                          UninstallWebAppCallback callback) = 0;
+  virtual bool CanUserUninstallWebApp(const AppId& app_id) const = 0;
+
+  // Removes |webapp_uninstall_source| from |app_id|. If no more interested
+  // sources left, deletes the app from disk and registrar.
+  virtual void UninstallWebApp(
+      const AppId& app_id,
+      webapps::WebappUninstallSource webapp_uninstall_source,
+      UninstallWebAppCallback callback) = 0;
+
   // Returns true if the app with |app_id| was previously uninstalled by the
   // user. For example, if a user uninstalls a default app ('default apps' are
   // considered external apps), then this will return true.
-  virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
+  virtual bool WasPreinstalledWebAppUninstalled(const AppId& app_id) const = 0;
 
   // |virtual| for testing.
   virtual bool CanReparentTab(const AppId& app_id, bool shortcut_created) const;
   virtual void ReparentTab(const AppId& app_id,
                            bool shortcut_created,
                            content::WebContents* web_contents);
-
-  virtual void RemoveLegacyInstallFinalizerForTesting() {}
 
   virtual void Start() {}
   virtual void Shutdown() {}

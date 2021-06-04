@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/test/browser_task_environment.h"
@@ -65,15 +65,16 @@ TEST_F(GuestOsExternalProtocolHandlerTest, MostRecent) {
   AddApp("id2", "x-scheme-handler/testscheme", base::Time::FromTimeT(2));
   GuestOsRegistryService(profile()).UpdateApplicationList(app_list());
 
-  base::Optional<GuestOsRegistryService::Registration> registration =
+  absl::optional<GuestOsRegistryService::Registration> registration =
       GetHandler(profile(), GURL("testscheme:12341234"));
   EXPECT_TRUE(registration);
   EXPECT_EQ("id2", registration->DesktopFileId());
 }
 
 TEST_F(GuestOsExternalProtocolHandlerTest, OffTheRecordProfile) {
-  auto* otr_profile =
-      profile()->GetOffTheRecordProfile(Profile::OTRProfileID("otr-id"));
+  auto* otr_profile = profile()->GetOffTheRecordProfile(
+      Profile::OTRProfileID::CreateUniqueForTesting(),
+      /*create_if_needed=*/true);
 
   EXPECT_FALSE(guest_os::GetHandler(otr_profile, GURL("testscheme:12341234")));
 

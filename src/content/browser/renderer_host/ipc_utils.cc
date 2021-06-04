@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "base/optional.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,6 +18,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -118,8 +117,8 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
   if (params->blob_url_token.is_valid()) {
     *out_blob_url_loader_factory =
         ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            BrowserContext::GetStoragePartition(
-                site_instance->GetBrowserContext(), site_instance),
+            site_instance->GetBrowserContext()->GetStoragePartition(
+                site_instance),
             std::move(params->blob_url_token));
   }
 

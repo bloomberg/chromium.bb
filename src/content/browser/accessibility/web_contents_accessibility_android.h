@@ -33,6 +33,7 @@ constexpr float kMinimumPercentageMoveForSliders = 0.01f;
 
 class BrowserAccessibilityAndroid;
 class BrowserAccessibilityManagerAndroid;
+class TouchPassthroughManager;
 class WebContents;
 class WebContentsImpl;
 
@@ -70,7 +71,12 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Global methods.
   jboolean IsEnabled(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
-  void Enable(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Enable(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& obj,
+              jboolean screen_reader_mode);
+  void SetAXMode(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 jboolean screen_reader_mode);
 
   base::android::ScopedJavaLocalRef<jstring> GetSupportedHtmlElementTypes(
       JNIEnv* env,
@@ -239,6 +245,12 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
                      jint id,
                      float value);
 
+  // Responds to a hover event without relying on the renderer for hit testing.
+  bool OnHoverEventNoRenderer(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              jfloat x,
+                              jfloat y);
+
   // Returns true if the given subtree has inline text box data, or if there
   // aren't any to load.
   jboolean AreInlineTextBoxesLoaded(
@@ -333,7 +345,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   BrowserAccessibilityAndroid* GetAXFromUniqueID(int32_t unique_id);
 
-  void CollectStats();
   void UpdateAccessibilityNodeInfoBoundsRect(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -367,6 +378,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // This isn't associated with a real WebContents and is only populated when
   // this class is constructed with a ui::AXTreeUpdate.
   std::unique_ptr<BrowserAccessibilityManagerAndroid> manager_;
+
+  std::unique_ptr<TouchPassthroughManager> touch_passthrough_manager_;
 
   base::WeakPtrFactory<WebContentsAccessibilityAndroid> weak_ptr_factory_{this};
 

@@ -516,8 +516,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool TakeForceSendMetadataRequest();
 
   // Used externally by blink for setting the PropertyTrees when
-  // UseLayerLists() is true, which also implies that Slimming Paint
-  // v2 is enabled.
+  // UseLayerLists() is true.
   PropertyTrees* property_trees() { return &property_trees_; }
   const PropertyTrees* property_trees() const { return &property_trees_; }
 
@@ -806,7 +805,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void UpdateScrollOffsetFromImpl(
       const ElementId&,
       const gfx::ScrollOffset& delta,
-      const base::Optional<TargetSnapAreaElementIds>&);
+      const absl::optional<TargetSnapAreaElementIds>&);
 
   const CompositorMode compositor_mode_;
 

@@ -11,10 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
@@ -162,7 +162,8 @@ RootCompositorFrameSinkImpl::Create(
       std::move(synthetic_begin_frame_source),
       std::move(external_begin_frame_source), std::move(display),
       params->use_preferred_interval_for_video,
-      hw_support_for_multiple_refresh_rates));
+      hw_support_for_multiple_refresh_rates,
+      params->renderer_settings.apply_simple_frame_rate_throttling));
 
 #if !defined(OS_APPLE)
   // On Mac vsync parameter updates come from the browser process. We don't need
@@ -264,6 +265,7 @@ void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
 
 void RootCompositorFrameSinkImpl::UpdateVSyncParameters() {
   base::TimeTicks timebase = display_frame_timebase_;
+
   // Overwrite the interval with a meaningful one here if
   // |use_preferred_interval_|
   base::TimeDelta interval =
@@ -272,6 +274,19 @@ void RootCompositorFrameSinkImpl::UpdateVSyncParameters() {
                   FrameRateDecider::UnspecifiedFrameInterval()
           ? preferred_frame_interval_
           : display_frame_interval_;
+
+  // Throttle rendering to 30hz.
+  constexpr base::TimeDelta kThrottledInterval = base::TimeDelta::FromHz(30);
+
+  // Only throttle if the frame interval is smaller than |kThrottledInterval|
+  // meaning the refresh rate is higher than the target of 30hz.
+  if (apply_simple_frame_rate_throttling_ &&
+      display_frame_interval_ <= kThrottledInterval) {
+    interval = kThrottledInterval;
+    // timebase remains constant while throttling.
+    timebase = base::TimeTicks();
+  }
+
   if (synthetic_begin_frame_source_) {
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
     if (vsync_listener_)
@@ -321,11 +336,8 @@ void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
 }
 
 void RootCompositorFrameSinkImpl::SetDelegatedInkPointRenderer(
-    mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver) {
-  if (auto* ink_renderer = display_->GetDelegatedInkPointRenderer(
-          /*create_if_necessary=*/true)) {
-    ink_renderer->InitMessagePipeline(std::move(receiver));
-  }
+    mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver) {
+  display_->InitDelegatedInkPointRendererReceiver(std::move(receiver));
 }
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -339,7 +351,7 @@ void RootCompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames() {
 void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
+    absl::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
   if (support_->last_activated_local_surface_id() != local_surface_id) {
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
@@ -366,7 +378,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
 void RootCompositorFrameSinkImpl::SubmitCompositorFrameSync(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
+    absl::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     SubmitCompositorFrameSyncCallback callback) {
   NOTIMPLEMENTED();
@@ -409,7 +421,8 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
     std::unique_ptr<Display> display,
     bool use_preferred_interval_for_video,
-    bool hw_support_for_multiple_refresh_rates)
+    bool hw_support_for_multiple_refresh_rates,
+    bool apply_simple_frame_rate_throttling)
     : compositor_frame_sink_client_(std::move(frame_sink_client)),
       compositor_frame_sink_receiver_(this, std::move(frame_sink_receiver)),
       display_client_(std::move(display_client)),
@@ -421,7 +434,8 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
           /*is_root=*/true)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       external_begin_frame_source_(std::move(external_begin_frame_source)),
-      display_(std::move(display)) {
+      display_(std::move(display)),
+      apply_simple_frame_rate_throttling_(apply_simple_frame_rate_throttling) {
   DCHECK(display_);
   DCHECK(begin_frame_source());
   frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),

@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_entry_ui.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -76,8 +77,10 @@ AudioDeviceEntryView::AudioDeviceEntryView(PressedCallback callback,
                    subtitle(), icon_, foreground_color, background_color);
 
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  SetInkDropMode(Button::InkDropMode::ON);
-  SetInkDropBaseColor(foreground_color);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetBaseColor(foreground_color);
+  // Bypass color-callback setup in HoverButton.
+  ink_drop()->SetBaseColorCallback({});
   SetHasInkDropActionOnClick(true);
   SetPreferredSize(kDeviceEntryViewSize);
 }
@@ -88,12 +91,12 @@ void AudioDeviceEntryView::SetHighlighted(bool highlighted) {
   }
   is_highlighted_ = highlighted;
   if (highlighted) {
-    SetInkDropMode(Button::InkDropMode::OFF);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetHasInkDropActionOnClick(false);
     SetBackground(views::CreateSolidBackground(
-        SkColorSetA(GetInkDropBaseColor(), kEntryHighlightOpacity)));
+        SkColorSetA(ink_drop()->GetBaseColor(), kEntryHighlightOpacity)));
   } else {
-    SetInkDropMode(Button::InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
     SetBackground(nullptr);
   }
@@ -106,17 +109,13 @@ bool AudioDeviceEntryView::GetHighlighted() const {
 
 void AudioDeviceEntryView::OnColorsChanged(SkColor foreground_color,
                                            SkColor background_color) {
-  SetInkDropBaseColor(foreground_color);
+  ink_drop()->SetBaseColor(foreground_color);
 
   ChangeEntryColor(static_cast<views::ImageView*>(icon_view()), title(),
                    subtitle(), icon_, foreground_color, background_color);
 
   // Reapply highlight formatting as some effects rely on these colors.
   SetHighlighted(is_highlighted_);
-}
-
-SkColor AudioDeviceEntryView::GetInkDropBaseColor() const {
-  return views::Button::GetInkDropBaseColor();
 }
 
 DeviceEntryUIType AudioDeviceEntryView::GetType() const {
@@ -137,24 +136,22 @@ CastDeviceEntryView::CastDeviceEntryView(
   ChangeCastEntryColor(sink, foreground_color, background_color);
 
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  SetInkDropMode(Button::InkDropMode::ON);
-  SetInkDropBaseColor(foreground_color);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetBaseColor(foreground_color);
   SetHasInkDropActionOnClick(true);
+  // Bypass color-callback setup in HoverButton.
+  ink_drop()->SetBaseColorCallback({});
   SetPreferredSize(kDeviceEntryViewSize);
 }
 
 void CastDeviceEntryView::OnColorsChanged(SkColor foreground_color,
                                           SkColor background_color) {
-  SetInkDropBaseColor(foreground_color);
+  ink_drop()->SetBaseColor(foreground_color);
   ChangeCastEntryColor(sink(), foreground_color, background_color);
 }
 
 DeviceEntryUIType CastDeviceEntryView::GetType() const {
   return DeviceEntryUIType::kCast;
-}
-
-SkColor CastDeviceEntryView::GetInkDropBaseColor() const {
-  return views::Button::GetInkDropBaseColor();
 }
 
 void CastDeviceEntryView::OnFocus() {

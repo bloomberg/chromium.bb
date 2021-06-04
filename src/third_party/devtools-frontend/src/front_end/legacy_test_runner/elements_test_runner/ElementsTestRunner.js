@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as EventListeners from '../../panels/event_listeners/event_listeners.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
  */
@@ -68,8 +70,6 @@ ElementsTestRunner.findNode = async function(matchFunction, callback) {
         children.push(node.templateContent());
       } else if (node.contentDocument()) {
         children.push(node.contentDocument());
-      } else if (node.importedDocument()) {
-        children.push(node.importedDocument());
       }
 
       for (let i = 0; i < children.length; ++i) {
@@ -121,7 +121,7 @@ function dumpObjectPropertyTreeElement(treeElement) {
 }
 
 /**
- * @param {!EventListeners.EventListenersView} eventListenersView
+ * @param {!EventListeners.EventListenersView.EventListenersView} eventListenersView
  * @param {function():void} callback
  * @param {boolean=} force
  */
@@ -160,12 +160,13 @@ ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, ca
     listenersArrived();
   } else {
     TestRunner.addSniffer(
-        EventListeners.EventListenersView.prototype, '_eventListenersArrivedForTest', listenersArrived);
+        EventListeners.EventListenersView.EventListenersView.prototype, '_eventListenersArrivedForTest',
+        listenersArrived);
   }
 };
 
 /**
- * @param {!EventListeners.EventListenersView} eventListenersView
+ * @param {!EventListeners.EventListenersView.EventListenersView} eventListenersView
  * @param {boolean=} force
  * @return {!Promise}
  */
@@ -932,10 +933,6 @@ ElementsTestRunner.dumpDOMAgentTree = function(node) {
 
     if (node.contentDocument()) {
       dump(node.contentDocument(), prefix);
-    }
-
-    if (node.importedDocument()) {
-      dump(node.importedDocument(), prefix);
     }
 
     const shadowRoots = node.shadowRoots();

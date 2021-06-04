@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/button/menu_button_controller.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 

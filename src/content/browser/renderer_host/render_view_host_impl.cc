@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -55,7 +54,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -330,10 +328,10 @@ RenderViewHostImpl::RenderViewHostImpl(
   input_device_change_observer_ =
       std::make_unique<InputDeviceChangeObserver>(this);
 
-  bool initially_visible = !GetWidget()->delegate()->IsHidden();
+  bool initially_hidden = frame_tree_->delegate()->IsHidden();
   page_lifecycle_state_manager_ = std::make_unique<PageLifecycleStateManager>(
-      this, initially_visible ? blink::mojom::PageVisibilityState::kVisible
-                              : blink::mojom::PageVisibilityState::kHidden);
+      this, initially_hidden ? blink::mojom::PageVisibilityState::kHidden
+                             : blink::mojom::PageVisibilityState::kVisible);
 
   GetWidget()->set_owner_delegate(this);
   frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
@@ -386,7 +384,7 @@ RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
 }
 
 bool RenderViewHostImpl::CreateRenderView(
-    const base::Optional<blink::FrameToken>& opener_frame_token,
+    const absl::optional<blink::FrameToken>& opener_frame_token,
     int proxy_route_id,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host,navigation",
@@ -461,24 +459,29 @@ bool RenderViewHostImpl::CreateRenderView(
         main_rfh->GetRenderWidgetHost()
             ->BindAndGenerateCreateFrameWidgetParams();
 
+    local_frame_params->subresource_loader_factories =
+        main_rfh->CreateSubresourceLoaderFactoriesForInitialEmptyDocument();
+
     params->main_frame = mojom::CreateMainFrameUnion::NewLocalParams(
         std::move(local_frame_params));
   } else {
     params->main_frame = mojom::CreateMainFrameUnion::NewRemoteParams(
-        mojom::CreateRemoteMainFrameParams::New(main_rfph->GetFrameToken(),
-                                                proxy_route_id));
+        mojom::CreateRemoteMainFrameParams::New(
+            main_rfph->GetFrameToken(), proxy_route_id,
+            main_rfph->BindAndPassRemoteMainFrameInterfaces()));
   }
 
   params->session_storage_namespace_id =
       frame_tree_->controller().GetSessionStorageNamespace(site_info_)->id();
-  params->hidden = GetWidget()->delegate()->IsHidden();
+  params->hidden = frame_tree_->delegate()->IsHidden();
   params->never_composited = delegate_->IsNeverComposited();
   params->window_was_created_with_opener = window_was_created_with_opener;
-  // GuestViews in the same StoragePartition need to find each other's frames.
-  params->renderer_wide_named_frame_lookup = site_info_.is_guest();
 
   bool is_portal = delegate_->IsPortal();
-  bool is_guest_view = site_info_.is_guest();
+  bool is_guest_view = delegate_->IsGuest();
+
+  // GuestViews in the same StoragePartition need to find each other's frames.
+  params->renderer_wide_named_frame_lookup = is_guest_view;
 
   // A view cannot be inside both a <portal> and inside a <webview>.
   DCHECK(!is_portal || !is_guest_view);
@@ -554,9 +557,9 @@ void RenderViewHostImpl::LeaveBackForwardCache(
       is_in_back_forward_cache_, std::move(page_restore_params));
 }
 
-void RenderViewHostImpl::SetVisibility(
+void RenderViewHostImpl::SetFrameTreeVisibility(
     blink::mojom::PageVisibilityState visibility) {
-  page_lifecycle_state_manager_->SetWebContentsVisibility(visibility);
+  page_lifecycle_state_manager_->SetFrameTreeVisibility(visibility);
 }
 
 void RenderViewHostImpl::SetIsFrozen(bool frozen) {
@@ -595,6 +598,10 @@ void RenderViewHostImpl::MaybeEvictFromBackForwardCache() {
       }
     }
   }
+}
+
+void RenderViewHostImpl::EnforceBackForwardCacheSizeLimit() {
+  frame_tree_->controller().GetBackForwardCache().EnforceCacheSizeLimit();
 }
 
 bool RenderViewHostImpl::DidReceiveBackForwardCacheAck() {
@@ -920,7 +927,7 @@ void RenderViewHostImpl::ResetPerPageState() {
 
 void RenderViewHostImpl::OnThemeColorChanged(
     RenderFrameHostImpl* rfh,
-    const base::Optional<SkColor>& theme_color) {
+    const absl::optional<SkColor>& theme_color) {
   if (GetMainFrame() != rfh)
     return;
   main_frame_theme_color_ = theme_color;
@@ -974,7 +981,7 @@ void RenderViewHostImpl::SetWillSendRendererPreferencesCallbackForTesting(
   will_send_renderer_preferences_callback_for_testing_ = callback;
 }
 
-void RenderViewHostImpl::WriteIntoTracedValue(perfetto::TracedValue context) {
+void RenderViewHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("routing_id", GetRoutingID());
   dict.Add("process", GetProcess());

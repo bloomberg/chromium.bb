@@ -37,9 +37,11 @@ rsync -c --delete --delete-excluded -r -v --prune-empty-dirs \
     "components-chromium/"
 
 # Replace all occurrences of "@polymer/" with "../" or # "../../".
-find components-chromium/ -mindepth 2 -maxdepth 2 -name '*.js' \
+find components-chromium/ -mindepth 2 -maxdepth 2 \
+  \( -name "*.js" -or -name "*.d.ts" \) \
   -exec sed -i 's/@polymer\//..\//g' {} +
-find components-chromium/ -mindepth 3 -maxdepth 3 -name '*.js' \
+find components-chromium/ -mindepth 3 -maxdepth 3 \
+  \( -name "*.js" -or -name "*.d.ts" \) \
   -exec sed -i 's/@polymer\//..\/..\//g' {} +
 
 # Replace all occurrences of "@webcomponents/" with "../".
@@ -59,6 +61,12 @@ echo 'Copying TypeScript .d.ts files to the final Polymer directory.'
 rsync -c --delete -r -v --prune-empty-dirs \
     --include="*/" --include="*.d.ts" --exclude="*" \
     "node_modules/@polymer/polymer/" "components-chromium/polymer/"
+
+echo 'Generating polymer.d.ts file for Polymer bundle.'
+cp polymer.js components-chromium/polymer/polymer.d.ts
+
+# Apply additional chrome specific patches for the .d.ts files.
+patch -p1 --forward -r - < chromium_dts.patch
 
 echo 'Updating paper/iron elements to point to the minified file.'
 # Replace all paths that point to within polymer/ to point to the bundle.

@@ -56,6 +56,7 @@
 #include "chrome/browser/privacy_budget/privacy_budget_ukm_entry_filter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
+#include "chrome/browser/safe_browsing/metrics/safe_browsing_metrics_provider.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tracing/background_tracing_metrics_provider.h"
@@ -148,8 +149,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/feature_list.h"
+#include "chrome/browser/ash/child_accounts/family_features.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/child_accounts/family_features.h"
 #include "chrome/browser/chromeos/printing/printer_metrics_provider.h"
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
@@ -493,6 +494,11 @@ ukm::UkmService* ChromeMetricsServiceClient::GetUkmService() {
   return ukm_service_.get();
 }
 
+bool ChromeMetricsServiceClient::ShouldUploadMetricsForUserId(
+    const uint64_t user_id) {
+  return true;
+}
+
 void ChromeMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   crash_keys::SetMetricsClientIdFromGUID(client_id);
@@ -692,6 +698,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(MakeDemographicMetricsProvider(
       metrics::MetricsLogUploader::MetricServiceType::UMA));
 
+  // TODO(crbug.com/1207574): Add metrics registration for WebView, iOS and
+  // WebLayer.
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<safe_browsing::SafeBrowsingMetricsProvider>());
+
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::AndroidMetricsProvider>());
@@ -763,12 +774,12 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<AmbientModeMetricsProvider>());
 
-  if (base::FeatureList::IsEnabled(chromeos::kFamilyUserMetricsProvider)) {
+  if (base::FeatureList::IsEnabled(ash::kFamilyUserMetricsProvider)) {
     metrics_service_->RegisterMetricsProvider(
         std::make_unique<FamilyUserMetricsProvider>());
   }
 
-  if (base::FeatureList::IsEnabled(chromeos::kFamilyLinkUserMetricsProvider)) {
+  if (base::FeatureList::IsEnabled(ash::kFamilyLinkUserMetricsProvider)) {
     metrics_service_->RegisterMetricsProvider(
         std::make_unique<FamilyLinkUserMetricsProvider>());
   }
@@ -1100,7 +1111,7 @@ bool ChromeMetricsServiceClient::IsWebstoreExtension(base::StringPiece id) {
     if (!registry)
       continue;
     const extensions::Extension* extension = registry->GetExtensionById(
-        id.as_string(), extensions::ExtensionRegistry::ENABLED);
+        std::string(id), extensions::ExtensionRegistry::ENABLED);
     if (!extension)
       continue;
     if (!extension->from_webstore())

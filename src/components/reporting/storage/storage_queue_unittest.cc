@@ -12,11 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/reporting/encryption/test_encryption_module.h"
 #include "components/reporting/proto/record.pb.h"
 #include "components/reporting/storage/resources/resource_interface.h"
@@ -27,6 +27,7 @@
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 using ::testing::Between;
@@ -37,6 +38,7 @@ using ::testing::Return;
 using ::testing::Sequence;
 using ::testing::StrEq;
 using ::testing::WithArg;
+using ::testing::WithoutArgs;
 
 namespace reporting {
 namespace {
@@ -53,7 +55,7 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
   // no-value if there was a gap record instead of a real one.
   using LastRecordDigestMap =
       std::map<std::pair<int64_t /*generation id */, int64_t /*sequencing id*/>,
-               base::Optional<std::string /*digest*/>>;
+               absl::optional<std::string /*digest*/>>;
 
   explicit MockUploadClient(LastRecordDigestMap* last_record_digest_map)
       : last_record_digest_map_(last_record_digest_map) {}
@@ -151,7 +153,7 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
     last_record_digest_map_->emplace(
         std::make_pair(sequencing_information.sequencing_id(),
                        sequencing_information.generation_id()),
-        base::nullopt);
+        absl::nullopt);
 
     for (uint64_t c = 0; c < count; ++c) {
       EncounterSeqId(sequencing_information.sequencing_id() +
@@ -173,7 +175,7 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
   // completion.
   class SetUp {
    public:
-    explicit SetUp(MockUploadClient* client, test::TestCallbackWaiter* waiter)
+    SetUp(MockUploadClient* client, test::TestCallbackWaiter* waiter)
         : client_(client), waiter_(waiter) {}
     ~SetUp() {
       test::TestCallbackWaiter* const waiter =
@@ -181,7 +183,8 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
       EXPECT_CALL(*client_, UploadComplete(Eq(Status::StatusOK())))
           .InSequence(client_->test_upload_sequence_,
                       client_->test_encounter_sequence_)
-          .WillOnce(Invoke([waiter] { waiter->Signal(); }));
+          .WillOnce(
+              WithoutArgs(Invoke(waiter, &test::TestCallbackWaiter::Signal)));
     }
 
     SetUp& Required(int64_t sequence_number, base::StringPiece value) {
@@ -247,7 +250,7 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
   };
 
  private:
-  base::Optional<int64_t> generation_id_;
+  absl::optional<int64_t> generation_id_;
   LastRecordDigestMap* const last_record_digest_map_;
 
   Sequence test_encounter_sequence_;
@@ -268,7 +271,6 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
 
   void TearDown() override {
     ResetTestStorageQueue();
-    task_environment_.RunUntilIdle();
     // Make sure all memory is deallocated.
     ASSERT_THAT(GetMemoryResource()->GetUsed(), Eq(0u));
     // Make sure all disk is not reserved (files remain, but Storage is not
@@ -299,8 +301,12 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
   }
 
   void ResetTestStorageQueue() {
+    // Let everything ongoing to finish.
     task_environment_.RunUntilIdle();
     storage_queue_.reset();
+    // StorageQueue is destructed on a thread,
+    // so we need to wait for it to destruct.
+    task_environment_.RunUntilIdle();
   }
 
   void InjectFailures(std::initializer_list<int64_t> sequencing_ids) {
@@ -346,7 +352,7 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
     ASSERT_OK(write_result) << write_result;
   }
 
-  void ConfirmOrDie(base::Optional<std::int64_t> sequencing_id,
+  void ConfirmOrDie(absl::optional<std::int64_t> sequencing_id,
                     bool force = false) {
     test::TestEvent<Status> c;
     storage_queue_->Confirm(sequencing_id, force, c.cb());
@@ -1150,7 +1156,7 @@ TEST_P(StorageQueueTest, ForceConfirm) {
   }
 
   // Now force confirm the very beginning and forward time again.
-  ConfirmOrDie(/*sequencing_id=*/base::nullopt, /*force=*/true);
+  ConfirmOrDie(/*sequencing_id=*/absl::nullopt, /*force=*/true);
 
   {
     // Set uploader expectations.

@@ -5,16 +5,11 @@
 #ifndef COMPONENTS_METRICS_STRUCTURED_EXTERNAL_METRICS_H_
 #define COMPONENTS_METRICS_STRUCTURED_EXTERNAL_METRICS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "base/values.h"
 
 namespace metrics {
 namespace structured {

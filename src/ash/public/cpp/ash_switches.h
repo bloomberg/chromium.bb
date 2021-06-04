@@ -6,8 +6,8 @@
 #define ASH_PUBLIC_CPP_ASH_SWITCHES_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace switches {
@@ -41,7 +41,6 @@ ASH_PUBLIC_EXPORT extern const char kAshSideVolumeButtonPosition[];
 ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kEnableDimShelf[];
-ASH_PUBLIC_EXPORT extern const char kEnableCompositingBasedThrottling[];
 ASH_PUBLIC_EXPORT extern const char kForceTabletPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kFrameThrottleFps[];
 ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
@@ -50,7 +49,7 @@ ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kSupportsClamshellAutoRotation[];
 
-ASH_PUBLIC_EXPORT base::Optional<base::TimeDelta> ContextualNudgesInterval();
+ASH_PUBLIC_EXPORT absl::optional<base::TimeDelta> ContextualNudgesInterval();
 ASH_PUBLIC_EXPORT bool ContextualNudgesResetShownCount();
 ASH_PUBLIC_EXPORT bool IsUsingShelfAutoDim();
 ASH_PUBLIC_EXPORT bool IsCompositingBasedThrottlingEnabled();

@@ -12,14 +12,14 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_observer.h"
 
 class Browser;
@@ -100,7 +100,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   views::Widget* GetAnchoredWidgetForExtensionForTesting(
       const std::string& extension_id);
 
-  base::Optional<extensions::ExtensionId>
+  absl::optional<extensions::ExtensionId>
   GetExtensionWithOpenContextMenuForTesting() {
     return extension_with_open_context_menu_id_;
   }
@@ -111,9 +111,12 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                       std::set<ui::ClipboardFormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
+  void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event) override;
+  views::View::DropCallback GetDropCallback(
       const ui::DropTargetEvent& event) override;
 
   // ExtensionsContainer:
@@ -144,7 +147,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
   bool CanShowIconInToolbar() const override;
-  void OnToolbarActionViewDragDone() override;
   views::LabelButton* GetOverflowReferenceView() const override;
   gfx::Size GetToolbarActionSize() override;
   void WriteDragDataForView(View* sender,
@@ -221,23 +223,29 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
       const TabStripSelectionChange& selection) override;
 
   // ToolbarActionsModel::Observer:
-  void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,
-                            int index) override;
+  void OnToolbarActionAdded(
+      const ToolbarActionsModel::ActionId& action_id) override;
   void OnToolbarActionRemoved(
       const ToolbarActionsModel::ActionId& action_id) override;
-  void OnToolbarActionMoved(const ToolbarActionsModel::ActionId& action_id,
-                            int index) override;
-  void OnToolbarActionLoadFailed() override;
   void OnToolbarActionUpdated(
       const ToolbarActionsModel::ActionId& action_id) override;
-  void OnToolbarVisibleCountChanged() override;
-  void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
   void OnToolbarPinnedActionsChanged() override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // Moves the dragged extension `action_id`.
+  void MovePinnedAction(const ToolbarActionsModel::ActionId& action_id,
+                        size_t index,
+                        base::ScopedClosureRunner cleanup,
+                        const ui::DropTargetEvent& event,
+                        ui::mojom::DragOperation& output_drag_op);
+
+  // Performs clean up after dragging.
+  void DragDropCleanup(
+      const ToolbarActionsModel::ActionId& dragged_extension_id);
 
   Browser* const browser_;
   ToolbarActionsModel* const model_;
@@ -258,7 +266,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // The action that triggered the current popup, if any.
   ToolbarActionViewController* popup_owner_ = nullptr;
   // Extension with an open context menu, if any.
-  base::Optional<extensions::ExtensionId> extension_with_open_context_menu_id_;
+  absl::optional<extensions::ExtensionId> extension_with_open_context_menu_id_;
 
   // The widgets currently popped out and, for each, the extension it is
   // associated with. See AnchoredWidget.
@@ -269,6 +277,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   std::unique_ptr<DropInfo> drop_info_;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
+
+  base::WeakPtrFactory<ExtensionsToolbarContainer> drop_weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_CONTAINER_H_

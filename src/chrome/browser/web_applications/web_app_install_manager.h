@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
@@ -67,17 +66,13 @@ class WebAppInstallManager final : public InstallManager,
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
-      const base::Optional<InstallParams>& install_params,
+      const absl::optional<InstallParams>& install_params,
       webapps::WebappInstallSource install_source,
       OnceInstallCallback callback) override;
   void InstallWebAppWithParams(content::WebContents* web_contents,
                                const InstallParams& install_params,
                                webapps::WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
-  void InstallBookmarkAppFromSync(
-      const AppId& bookmark_app_id,
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      OnceInstallCallback callback) override;
   void UpdateWebAppFromInfo(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -97,14 +92,12 @@ class WebAppInstallManager final : public InstallManager,
 
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
-  size_t tasks_size_for_testing() const { return tasks_.size(); }
   std::set<AppId> GetEnqueuedInstallAppIdsForTesting() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
                            TaskQueueWebContentsReadyRace);
 
-  void MaybeEnqueuePendingAppSyncInstalls();
   void EnqueueInstallAppFromSync(
       const AppId& sync_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -168,17 +161,6 @@ class WebAppInstallManager final : public InstallManager,
   using TaskQueue = base::queue<PendingTask>;
   TaskQueue task_queue_;
   const WebAppInstallTask* current_queued_task_ = nullptr;
-
-  struct AppSyncInstallRequest {
-    AppSyncInstallRequest();
-    AppSyncInstallRequest(AppSyncInstallRequest&&);
-    ~AppSyncInstallRequest();
-
-    AppId sync_app_id;
-    std::unique_ptr<WebApplicationInfo> web_application_info;
-    OnceInstallCallback callback;
-  };
-  std::vector<AppSyncInstallRequest> pending_app_sync_installs_;
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;

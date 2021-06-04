@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_sequence_sequence_or_usv_string_usv_string_record_or_usv_string.h"
@@ -18,18 +19,29 @@
 
 namespace blink {
 
-class ExceptionState;
 class DOMURL;
+class ExceptionState;
+class V8UnionUSVStringOrUSVStringSequenceSequenceOrUSVStringUSVStringRecord;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+using URLSearchParamsInit =
+    V8UnionUSVStringOrUSVStringSequenceSequenceOrUSVStringUSVStringRecord;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 typedef USVStringSequenceSequenceOrUSVStringUSVStringRecordOrUSVString
     URLSearchParamsInit;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
                                           public PairIterable<String, String> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  static URLSearchParams* Create(const URLSearchParamsInit* init,
+                                 ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static URLSearchParams* Create(const URLSearchParamsInit&, ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static URLSearchParams* Create(const Vector<std::pair<String, String>>&,
                                  ExceptionState&);
   static URLSearchParams* Create(const Vector<Vector<String>>&,

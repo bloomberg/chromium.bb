@@ -4,6 +4,7 @@
 
 from __future__ import division
 
+from __future__ import absolute_import
 import warnings
 
 from telemetry.internal.util import external_modules
@@ -102,7 +103,7 @@ def AreEqual(image1, image2, tolerance, likely_equal):
     if likely_equal:
       return np.amax(_SimpleDiff(image1, image2)) <= tolerance
     else:
-      for row in xrange(Height(image1)):
+      for row in range(Height(image1)):
         if np.amax(_SimpleDiff(image1[row], image2[row])) > tolerance:
           return False
       return True
@@ -110,7 +111,7 @@ def AreEqual(image1, image2, tolerance, likely_equal):
     if likely_equal:
       return (self_image == other_image).all()
     else:
-      for row in xrange(Height(image1)):
+      for row in range(Height(image1)):
         if not (self_image[row] == other_image[row]).all():
           return False
       return True

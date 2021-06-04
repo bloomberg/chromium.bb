@@ -1060,9 +1060,11 @@ public:
 		return {"chit"};
 	}
 
-	virtual deUint32 getDynamicStackSize() const
+	virtual deUint32 getDynamicStackSize(deUint32 maxPipelineRayRecursionDepth) const
 	{
 		DE_ASSERT(false);
+
+		DE_UNREF(maxPipelineRayRecursionDepth);
 
 		return 0;
 	}
@@ -1442,9 +1444,14 @@ public:
 		return m_nASesToUse;
 	}
 
-	std::vector<std::string> getCHitShaderCollectionShaderNames() const final
+	std::vector<std::string> getAHitShaderCollectionShaderNames() const final
 	{
 		return {};
+	}
+
+	std::vector<std::string> getCHitShaderCollectionShaderNames() const final
+	{
+		return {"chit"};
 	}
 
 	deUint32 getInstanceCustomIndex(const deUint32& nBL, const deUint32& nInstance) const final
@@ -1595,7 +1602,7 @@ public:
 				"    hits[nHit].nAS                 = nAS;\n"
 				"}\n";
 
-			programCollection.glslSources.add("ahit") << glu::AnyHitSource(css.str() ) << buildOptions;
+			programCollection.glslSources.add("chit") << glu::ClosestHitSource(css.str()) << buildOptions;
 		}
 
 		{
@@ -1798,7 +1805,6 @@ public:
 			m_gridSizeXYZ					(tcu::UVec3 (128, 1, 1) ),
 			m_nMaxCallableLevels			( (useDynamicStackSize)		? 8
 																		: 2 /* as per spec */),
-			m_maxPipelineRayRecursionDepth	(0),
 			m_useDynamicStackSize			(useDynamicStackSize),
 			m_ahitShaderStackSize			(0),
 			m_callableShaderStackSize		(0),
@@ -1835,7 +1841,7 @@ public:
 		return tcu::UVec3(m_gridSizeXYZ[0], m_gridSizeXYZ[1], m_gridSizeXYZ[2]);
 	}
 
-	deUint32 getDynamicStackSize() const final
+	deUint32 getDynamicStackSize(const deUint32 maxPipelineRayRecursionDepth) const final
 	{
 		deUint32	result									= 0;
 		const auto	maxStackSpaceNeededForZerothTrace		= static_cast<deUint32>(de::max(de::max(m_chitShaderStackSize, m_missShaderStackSize), m_isectShaderStackSize + m_ahitShaderStackSize) );
@@ -1844,8 +1850,8 @@ public:
 		DE_ASSERT(m_useDynamicStackSize);
 
 		result =	static_cast<deUint32>(m_raygenShaderStackSize)														+
-					de::min(1u, m_maxPipelineRayRecursionDepth)		* maxStackSpaceNeededForZerothTrace					+
-					de::max(0u, m_maxPipelineRayRecursionDepth - 1)	* maxStackSpaceNeededForNonZerothTraces				+
+					de::min(1u, maxPipelineRayRecursionDepth)		* maxStackSpaceNeededForZerothTrace					+
+					de::max(0u, maxPipelineRayRecursionDepth - 1)	* maxStackSpaceNeededForNonZerothTraces				+
 					m_nMaxCallableLevels							* static_cast<deUint32>(m_callableShaderStackSize);
 
 		DE_ASSERT(result != 0);
@@ -1878,8 +1884,7 @@ public:
 	bool init(	vkt::Context&			/* context    */,
 				RayTracingProperties*	rtPropertiesPtr) final
 	{
-		m_maxPipelineRayRecursionDepth = rtPropertiesPtr->getMaxRecursionDepth();
-
+		DE_UNREF(rtPropertiesPtr);
 		return true;
 	}
 
@@ -2410,7 +2415,6 @@ end:
 
 	const tcu::UVec3								m_gridSizeXYZ;
 	const deUint32									m_nMaxCallableLevels;
-	deUint32										m_maxPipelineRayRecursionDepth;
 	const bool										m_useDynamicStackSize;
 	std::unique_ptr<TopLevelAccelerationStructure>	m_tlPtr;
 
@@ -4149,7 +4153,7 @@ public:
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_SCALAR_OFFSET_3)	||
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_SCALAR_OFFSET_4)	||
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_SCALAR_OFFSET_5)	||
-				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_STD430_OFFSET_6)	||
+				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_SCALAR_OFFSET_6)	||
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_STD430_OFFSET_1)	||
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_STD430_OFFSET_2)	||
 				(testType == TestType::SHADER_RECORD_BLOCK_EXPLICIT_STD430_OFFSET_3)	||
@@ -4175,18 +4179,27 @@ public:
 		const auto tested_var_types = getVarsToTest(testType);
 		const bool has_f64			= std::find	(	tested_var_types.begin	(),
 													tested_var_types.end	(),
-													VariableType::FLOAT) != tested_var_types.end();
+													VariableType::DOUBLE) != tested_var_types.end();
 		const bool has_f64vec2		= std::find	(	tested_var_types.begin	(),
 													tested_var_types.end	(),
-													VariableType::VEC2) != tested_var_types.end();
+													VariableType::DVEC2) != tested_var_types.end();
 		const bool has_f64vec3		= std::find	(	tested_var_types.begin	(),
 													tested_var_types.end	(),
-													VariableType::VEC3) != tested_var_types.end();
+													VariableType::DVEC3) != tested_var_types.end();
 		const bool has_f64vec4		= std::find	(	tested_var_types.begin	(),
 													tested_var_types.end	(),
-													VariableType::VEC4) != tested_var_types.end();
+													VariableType::DVEC4) != tested_var_types.end();
+		const bool has_f64mat2		= std::find	(	tested_var_types.begin	(),
+													tested_var_types.end	(),
+													VariableType::DMAT2) != tested_var_types.end();
+		const bool has_f64mat3		= std::find	(	tested_var_types.begin	(),
+													tested_var_types.end	(),
+													VariableType::DMAT3) != tested_var_types.end();
+		const bool has_f64mat4		= std::find	(	tested_var_types.begin	(),
+													tested_var_types.end	(),
+													VariableType::DMAT4) != tested_var_types.end();
 
-		return (has_f64 || has_f64vec2 || has_f64vec3 || has_f64vec4);
+		return (has_f64 || has_f64vec2 || has_f64vec3 || has_f64vec4 || has_f64mat2 || has_f64mat3 || has_f64mat4);
 	}
 
 	static bool usesI8(const TestType& testType)
@@ -8396,7 +8409,7 @@ de::MovePtr<BufferWithMemory> RayTracingMiscTestInstance::runTest(void)
 			if (m_testPtr->usesDynamicStackSize() )
 			{
 				deviceInterface.cmdSetRayTracingPipelineStackSizeKHR(	*cmdBufferPtr,
-																		m_testPtr->getDynamicStackSize() );
+																		m_testPtr->getDynamicStackSize(m_testPtr->getMaxRecursionDepthUsed()) );
 			}
 
 			for (deUint32 nInvocation = 0; nInvocation < nTraceRaysInvocationsNeeded; ++nInvocation)

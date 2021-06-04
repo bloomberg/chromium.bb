@@ -27,7 +27,8 @@
   --default-font-family: 'Google Sans', sans-serif;
   --fixed-width-font-family: 'Cousine', monospace;
 
-  --focus-color: rgba(var(--blue-600-dark-rgb), 0.7);
+  /* From https://www.w3.org/TR/css-backgrounds-3/#corner-overlap. */
+  --border-radius-rounded-with-short-side: 9999999px;
 }
 
 html {
@@ -53,11 +54,6 @@ body {
 }
 
 button,
-input {
-  --focus-ring-size: 3px;
-}
-
-button,
 input[type=radio],
 input[type=checkbox],
 label {
@@ -80,28 +76,12 @@ input[type=checkbox] {
   user-select: none;
 }
 
-body.tab-navigation button:focus::after,
-body.tab-navigation input:focus::after {
-  --focus-ring-width: 2px;
-
-  border: var(--focus-ring-width) solid var(--focus-color);
-  border-radius: 4px;
-  content: '';
-  height: calc(100% + var(--focus-ring-size) * 2);
-  left: calc(-1 * var(--focus-ring-size) - var(--focus-ring-width));
-  position: absolute;
-  top: calc(-1 * var(--focus-ring-size) - var(--focus-ring-width));
-  width: calc(100% + var(--focus-ring-size) * 2);
-}
-
 .cancel-animate {
   animation: none !important;
   transition: none !important;
 }
 
-.circle button,
-body.tab-navigation .circle button:focus::after,
-body.tab-navigation .circle input:focus::after {
+.circle button {
   border-radius: 50%;
 }
 
@@ -333,7 +313,7 @@ body.playing-result-video #play-result-video {
 
   display: inline-block;
   font-size: 0; /* Remove space between inline-block. */
-  margin: calc(var(--focus-ring-gap) + var(--focus-ring-border)) 8px;
+  margin: 0 8px;
   position: relative;
 }
 
@@ -362,14 +342,13 @@ div.mode-item>span {
 }
 
 .mode-item>input {
+  --focus-ring-size: 7px;
+  --focus-ring-style: mode-item-input;
+
   height: 100%;
   position: absolute;
   width: 100%;
   z-index: 1;
-}
-
-body.tab-navigation .mode-item>input:focus::after {
-  display: none;
 }
 
 .mode-item>input:checked + span {
@@ -379,17 +358,8 @@ body.tab-navigation .mode-item>input:focus::after {
   text-shadow: none;
 }
 
-body.tab-navigation .mode-item>input:focus + span::after {
-  --negative-size: calc(-1 * var(--focus-ring-gap));
-
-  border: var(--focus-ring-border) solid var(--focus-color);
+#focus-ring.mode-item-input {
   border-radius: 23px/50%;
-  bottom: var(--negative-size);
-  content: '';
-  left: var(--negative-size);
-  position: absolute;
-  right: var(--negative-size);
-  top: var(--negative-size);
 }
 
 button.shutter {
@@ -665,7 +635,7 @@ body.max-wnd #options-group {
   margin: var(--option-item-vpadding) 0;
 }
 
-body:is(:not(.has-ptz-support), :not(.expert), :not(.show-ptz-options)) #open-ptz-panel {
+body:not(.enable-ptz) #open-ptz-panel {
   display: none;
 }
 
@@ -965,11 +935,12 @@ body.mirror:not(.streaming) #preview-video {
 }
 
 body:not(.streaming) #expert-controls,
-body:not(.streaming) #preview-grid,
-body:not(.streaming) #preview-focus,
 body:not(.streaming) #open-settings,
-body:not(.streaming) #toggle-mic,
-body:not(.streaming) #options-group {
+body:not(.streaming) #options-group,
+body:not(.streaming) #preview-focus,
+body:not(.streaming) #preview-grid,
+body:not(.streaming) #toggle-barcode,
+body:not(.streaming) #toggle-mic {
   visibility: hidden;
 }
 
@@ -1313,43 +1284,6 @@ label.menu-item:hover {
   background-color: var(--hover-color);
 }
 
-/* Inkdrop effect. */
-button.menu-item,
-label.menu-item {
-  overflow: hidden;
-}
-
-button.menu-item::before,
-label.menu-item::before {
-  background: white;
-  border-radius: 50%;
-  content: '';
-  height: 0;
-  left: var(--drop-x);
-  position: absolute;
-  top: var(--drop-y);
-  transform: translate(-50%, -50%);
-  width: 0;
-}
-
-button.menu-item.animate::before,
-label.menu-item.animate::before {
-  animation: inkdrop var(--moderate1-duration) ease-out;
-}
-
-@keyframes inkdrop {
-  0% {
-    height: 0;
-    opacity: 0.6;
-    width: 0;
-  }
-  100% {
-    height: calc(var(--drop-radius) * 2);
-    opacity: 0;
-    width: calc(var(--drop-radius) * 2);
-  }
-}
-
 .menu-item {
   padding-inline-start: 32px;
 }
@@ -1423,7 +1357,7 @@ body.timer-10s .description span[i18n-text=label_timer_10s],
   transition: border-width var(--fast1-duration) ease-in;
 }
 
-body.tab-navigation button.menu-item:focus::after {
+button.menu-item {
   --focus-ring-size: -3px;
 }
 

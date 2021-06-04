@@ -47,6 +47,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEInputContextHandlerInterface {
   virtual gfx::Rect GetAutocorrectCharacterBounds() = 0;
   // Sets the autocorrect range to be `range`.
   virtual bool SetAutocorrectRange(const gfx::Range& range) = 0;
+  virtual bool ClearGrammarFragments(const gfx::Range& range) = 0;
+  virtual bool AddGrammarFragments(
+      const std::vector<GrammarFragment>& fragements) = 0;
 
   // Called when the engine changes the selection range.
   // Returns true if the operation was successful.
@@ -80,6 +83,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEInputContextHandlerInterface {
 
   // Returns true if there is any composition text.
   virtual bool HasCompositionText() = 0;
+
+  // Returns the ukm::SourceId that identifies the currently focused client.
+  virtual ukm::SourceId GetClientSourceForMetrics() = 0;
 };
 
 }  // namespace ui

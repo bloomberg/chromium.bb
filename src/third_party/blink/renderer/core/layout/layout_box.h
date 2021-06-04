@@ -25,13 +25,12 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
@@ -121,8 +120,6 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
   // last paint invalidation. It's valid if has_previous_content_box_rect_ is
   // true.
   PhysicalRect previous_physical_content_box_rect_;
-
-  PhysicalRect partial_invalidation_rect_;
 
   // Used by CSSLayoutDefinition::Instance::Layout. Represents the script
   // object for this box that web developers can query style, and perform
@@ -618,6 +615,20 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return FlipForWritingMode(VisualOverflowRect());
   }
+  // VisualOverflow has DCHECK for reading before it is computed. These
+  // functions pretend there is no visual overflow when it is not computed.
+  // TODO(crbug.com/1205708): Audit the usages and fix issues.
+#if DCHECK_IS_ON()
+  LayoutRect VisualOverflowRectAllowingUnset() const;
+  PhysicalRect PhysicalVisualOverflowRectAllowingUnset() const;
+#else
+  ALWAYS_INLINE LayoutRect VisualOverflowRectAllowingUnset() const {
+    return VisualOverflowRect();
+  }
+  ALWAYS_INLINE PhysicalRect PhysicalVisualOverflowRectAllowingUnset() const {
+    return PhysicalVisualOverflowRect();
+  }
+#endif
   LayoutUnit LogicalLeftVisualOverflow() const {
     NOT_DESTROYED();
     return StyleRef().IsHorizontalWritingMode() ? VisualOverflowRect().X()
@@ -699,6 +710,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanUseFragmentsForVisualOverflow() const;
   void RecalcFragmentsVisualOverflow();
+  void CopyVisualOverflowFromFragments();
 
   virtual void UpdateAfterLayout();
 
@@ -801,14 +813,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int PixelSnappedOffsetWidth(const Element*) const final;
   int PixelSnappedOffsetHeight(const Element*) const final;
 
-  bool UsesOverlayScrollbars() const {
-    NOT_DESTROYED();
-    if (StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar))
-      return false;
-    if (GetFrame()->GetPage()->GetScrollbarTheme().UsesOverlayScrollbars())
-      return true;
-    return false;
-  }
+  bool UsesOverlayScrollbars() const;
 
   // Clamps the left scrollbar size so it is not wider than the content box.
   DISABLE_CFI_PERF LayoutUnit LogicalLeftScrollbarWidth() const {
@@ -1213,7 +1218,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const NGConstraintSpace&,
       const NGBreakToken*,
       const NGEarlyBreak*,
-      base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
+      absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
 
   using NGLayoutResultList = Vector<scoped_refptr<const NGLayoutResult>, 1>;
@@ -1255,6 +1260,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
     Iterator begin() const { return Iterator(layout_results_.begin()); }
     Iterator end() const { return Iterator(layout_results_.end()); }
+
+    const NGPhysicalBoxFragment& front() const;
+    const NGPhysicalBoxFragment& back() const;
 
    private:
     const NGLayoutResultList& layout_results_;
@@ -1608,6 +1616,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Returns the combination of overflow clip, contain: paint clip and CSS clip
   // for this object.
   PhysicalRect ClippingRect(const PhysicalOffset& location) const;
+
+  // Adjust the clip rectangle to encompass overflow-clip-margin, and remove
+  // clipping along any axis where we shouldn't clip.
+  void ApplyVisibleOverflowToClipRect(PhysicalRect& clip_rect) const;
 
   virtual void PaintBoxDecorationBackground(
       const PaintInfo&,
@@ -2055,15 +2067,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Make it public.
   using LayoutObject::BackgroundIsKnownToBeObscured;
 
-  // Invalidate the raster of a specific sub-rectangle within the object. The
-  // rect is in the object's local coordinate space. This is useful e.g. when
-  // a small region of a canvas changes.
-  void InvalidatePaintRectangle(const PhysicalRect&);
-  bool HasPartialInvalidationRect() const {
-    NOT_DESTROYED();
-    return rare_data_ && !rare_data_->partial_invalidation_rect_.IsEmpty();
-  }
-
   // Sets the coordinates of find-in-page scrollbar tickmarks, bypassing
   // DocumentMarkerController.  This is used by the PDF plugin.
   void OverrideTickmarks(Vector<IntRect> tickmarks);
@@ -2190,17 +2193,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return overflow_ && overflow_->layout_overflow;
   }
+#if DCHECK_IS_ON()
+  void CheckIsVisualOverflowComputed() const;
+#else
+  ALWAYS_INLINE void CheckIsVisualOverflowComputed() const {}
+#endif
   inline bool VisualOverflowIsSet() const {
     NOT_DESTROYED();
+    CheckIsVisualOverflowComputed();
     return overflow_ && overflow_->visual_overflow;
   }
 
   void UpdateHasSubpixelVisualEffectOutsets(const LayoutRectOutsets&);
   void SetVisualOverflow(const PhysicalRect& self,
                          const PhysicalRect& contents);
-  void CopyVisualOverflowFromFragmentsRecursively();
-  bool CopyVisualOverflowFromFragments();
-  bool CopyVisualOverflowFromFragmentsWithoutInvalidations();
+  void CopyVisualOverflowFromFragmentsWithoutInvalidations();
 
   void UpdateShapeOutsideInfoAfterStyleChange(const ComputedStyle&,
                                               const ComputedStyle* old_style);
@@ -2319,10 +2326,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
         container_box->Size().Width() - Size().Width() - Location().X(),
         Location().Y());
   }
-
-  // DisplayItemClient methods.
-  void ClearPartialInvalidationVisualRect() const final;
-  IntRect PartialInvalidationVisualRect() const final;
 
   // The CSS border box rect for this box.
   //

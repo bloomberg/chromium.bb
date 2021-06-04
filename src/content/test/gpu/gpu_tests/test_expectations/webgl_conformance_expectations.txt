@@ -22,7 +22,7 @@
 #         release release-x64 ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
-#         apple apple-apple-m1 apple-metal-renderer:-apple-m1
+#         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
@@ -94,6 +94,7 @@ crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 crbug.com/1142754 [ linux ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
 crbug.com/1142754 [ fuchsia ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
+crbug.com/1194209 [ mac no-passthrough ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
 
 # Extensions not available with SwiftShader
 crbug.com/1099955 [ swiftshader-gl angle-disabled linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
@@ -141,48 +142,6 @@ crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Sk
 [ android android-nexus-5x ] WebglExtension_WEBGL_depth_texture [ Skip ]
 [ android android-nexus-5x no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
 [ android android-nexus-6 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
-
-# Fuchsia specific
-[ fuchsia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-[ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ fuchsia fuchsia-board-astro ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-[ fuchsia fuchsia-board-astro no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-crbug.com/1145858 [ fuchsia fuchsia-board-astro ] conformance/extensions/ext-disjoint-timer-query.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Skip ]
-crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/step/step_001_to_006.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-# OOM on hardware devices
-crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/multisample-corruption.html [ Skip ]
-crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/context/context-creation-and-destruction.html [ Skip ]
-crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/preservedrawingbuffer-leak.html [ Skip ]
-# Specific build issue
-crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-upload-size.html [ Skip ]
-crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-video-transparent.html [ Skip ]
-crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-
-# Flaky on Fuchsia hardware devices
-[ fuchsia fuchsia-board-astro ] WebglExtension_EXT_float_blend [ Skip ]
-[ fuchsia fuchsia-board-astro ] conformance/rendering/rendering-stencil-large-viewport.html [ Skip ]
-[ fuchsia fuchsia-board-astro ] conformance/canvas/drawingbuffer-static-canvas-test.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-corner-case-videos.html [ Skip ]
-crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-npot-video.html [ Skip ]
 
 # Fails on Android Nvidia Tegra driver version 343, passes on 361
 # We don't have tags for specific driver version so just skip all
@@ -271,6 +230,49 @@ crbug.com/angleproject/4922 [ win intel angle-vulkan passthrough ] conformance/c
 # Fuchsia failures #
 ####################
 
+# Extensions not available on Fuchsia
+[ fuchsia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+[ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ fuchsia fuchsia-board-astro ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+[ fuchsia fuchsia-board-astro no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+
+# Astro specific issues
+crbug.com/1145858 [ fuchsia fuchsia-board-astro ] conformance/extensions/ext-disjoint-timer-query.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
+crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Skip ]
+crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/step/step_001_to_006.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+# OOM on hardware devices
+crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/multisample-corruption.html [ Skip ]
+crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/context/context-creation-and-destruction.html [ Skip ]
+crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/preservedrawingbuffer-leak.html [ Skip ]
+# Specific build issue
+crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
+crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-upload-size.html [ Skip ]
+crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-video-transparent.html [ Skip ]
+crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+# Flaky tests
+[ fuchsia fuchsia-board-astro ] WebglExtension_EXT_float_blend [ Failure ]
+[ fuchsia fuchsia-board-astro ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+[ fuchsia fuchsia-board-astro ] conformance/canvas/drawingbuffer-static-canvas-test.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+
 # GPU or renderer process crashes / Timed out tests
 crbug.com/1175419 [ fuchsia ] conformance/extensions/khr-parallel-shader-compile.html [ Skip ]
 crbug.com/angleproject/5259 [ fuchsia ] conformance/uniforms/uniform-default-values.html [ Skip ]
@@ -291,10 +293,10 @@ crbug.com/angleproject/3111 [ fuchsia ] deqp/data/gles2/shaders/swizzles.html [ 
 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-upload-size.html [ Skip ]
 
 # Flaky tests
-crbug.com/1136414 [ fuchsia ] conformance/glsl/functions/glsl-function* [ Skip ]
-crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/fract/fract_001_to_006.html [ Skip ]
-crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/build/build_009_to_016.html [ Skip ]
-crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/mat/mat_009_to_016.html [ Skip ]
+crbug.com/1136414 [ fuchsia ] conformance/glsl/functions/glsl-function* [ Failure ]
+crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/fract/fract_001_to_006.html [ Failure ]
+crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
+crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/mat/mat_009_to_016.html [ Failure ]
 
 # Anti-aliasing disabled on Fuchsia
 [ fuchsia ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
@@ -406,6 +408,8 @@ crbug.com/963223 [ win nvidia angle-vulkan passthrough ] conformance/rendering/o
 crbug.com/angleproject/2930 [ win nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/1082826 [ win nvidia angle-vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
 crbug.com/1148120 [ win7 nvidia angle-vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
+crbug.com/1197905 [ win7 nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/1209189 [ win nvidia angle-vulkan passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-index.html [ Failure ]
 
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia angle-vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
@@ -427,6 +431,10 @@ crbug.com/844311 [ mac no-swiftshader-gl ] conformance/glsl/misc/fragcolor-fragd
 # Mac AMD failures
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
+crbug.com/1203167 [ mac amd angle-disabled ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
+crbug.com/1203167 [ mac amd angle-opengl ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
+crbug.com/1203167 [ mac amd angle-metal ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
+
 
 # TODO(kbr): uncomment the following expectation after test has
 # been made more robust.
@@ -482,14 +490,14 @@ crbug.com/1130703 [ mac apple-apple-m1 no-passthrough ] conformance/textures/mis
 # TODO(crbug.com/1153984): remove the expectations with the incorrect GPU type for the Metal backend.
 # finder:disable Want to keep both sets of expectations around until the issue is fixed.
 crbug.com/1130758 [ mac apple-apple-m1 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
-crbug.com/1130758 [ mac apple-metal-renderer:-apple-m1 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
+crbug.com/1130758 [ mac apple-angle-metal-renderer:-apple-m1 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
 crbug.com/1130759 [ mac apple-apple-m1 angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/1130759 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1130759 [ mac apple-angle-metal-renderer:-apple-m1 angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 crbug.com/1130759 [ mac apple-apple-m1 angle-metal ] conformance/textures/misc/texture-mips.html [ Failure ]
 crbug.com/1130760 [ mac apple-apple-m1 angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/1130760 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1130760 [ mac apple-angle-metal-renderer:-apple-m1 angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 crbug.com/1130760 [ mac apple-apple-m1 angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
-crbug.com/1130760 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+crbug.com/1130760 [ mac apple-angle-metal-renderer:-apple-m1 angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
 crbug.com/1141066 [ mac apple-apple-m1 angle-opengl passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1141066 [ mac apple-apple-m1 angle-opengl passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 # finder:enable
@@ -612,6 +620,7 @@ crbug.com/1056830 [ android android-nexus-5x ] conformance/extensions/webgl-comp
 crbug.com/1099148 [ android android-nexus-5x ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 crbug.com/1122644 [ android android-nexus-5x ] conformance/textures/misc/texture-upload-size.html [ Skip ]
 crbug.com/1163306 [ android android-nexus-5x ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1203167 [ android android-nexus-5x ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 
 # Nexus 6 (Adreno 420)
 crbug.com/499555 [ android android-nexus-6 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
@@ -679,9 +688,22 @@ crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conform
 crbug.com/1175226 [ android android-pixel-4 no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1179432 [ android android-pixel-4 no-passthrough ] conformance/rendering/polygon-offset.html [ RetryOnFailure ]
 crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
+crbug.com/1187332 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/context-size-change.html [ Failure ]
+
+# Failing webgl passthrough test on nexus 5x.
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
+
+# Flaking webgl passthrough test on nexus 5x.
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ RetryOnFailure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 ############
 # ChromeOS #
@@ -700,13 +722,18 @@ crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 # There is a crash, likely in this test, causing the root partition to become
 # read-only.
-crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
+crbug.com/1043953 [ chromeos chromeos-board-kevin ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
+# Skip test that breaks subsequent tests.
+crbug.com/1043953 [ chromeos chromeos-board-amd64-generic ] conformance/textures/misc/texture-size-limit.html [ Skip ]
+
 
 # Texture compression is only expected to be available on desktop GPUs.
 crbug.com/1080360 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1080401 [ chromeos chromeos-board-kevin no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/1080408 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 crbug.com/1080377 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+
+crbug.com/1197243 [ chromeos chromeos-board-amd64-generic ] conformance/extensions/oes-texture-half-float.html [ Failure ]
 
 # GPU supports ES 3.2, but supporting draw_buffers on WebGL 1.0/ ES 2.0 requires
 # a significant amount of emulation.
@@ -730,6 +757,10 @@ crbug.com/1091562 [ chromeos-board-kevin ] * [ RetryOnFailure ]
 
 # Flaky driver crash on AMD.
 crbug.com/1186499 [ chromeos chromeos-board-amd64-generic ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
+
+# Flaky test on chromeos-amd64-generic-rel.
+crbug.com/1202015 [ chromeos chromeos-board-amd64-generic ] conformance/glsl/constructors/glsl-construct-vec3.html [ RetryOnFailure ]
+
 
 ###########################
 # Lacros/Wayland failures #

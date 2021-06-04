@@ -296,7 +296,7 @@ bool OwnerSettingsServiceAsh::Set(const std::string& setting,
   if (!IsOwner() && !IsOwnerInTests(user_id_))
     return false;
 
-  pending_changes_[setting] = base::WrapUnique(value.DeepCopy());
+  pending_changes_[setting] = base::Value::ToUniquePtrValue(value.Clone());
 
   em::ChromeDeviceSettingsProto settings;
   if (tentative_settings_.get()) {
@@ -325,7 +325,7 @@ bool OwnerSettingsServiceAsh::AppendToList(const std::string& setting,
   std::unique_ptr<base::ListValue> new_value(
       old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
                 : new base::ListValue());
-  new_value->Append(value.CreateDeepCopy());
+  new_value->Append(value.Clone());
   return Set(setting, *new_value);
 }
 
@@ -351,7 +351,7 @@ bool OwnerSettingsServiceAsh::CommitTentativeDeviceSettings(
                << user_id_;
     return false;
   }
-  tentative_settings_.reset(new em::ChromeDeviceSettingsProto);
+  tentative_settings_ = std::make_unique<em::ChromeDeviceSettingsProto>();
   CHECK(tentative_settings_->ParseFromString(policy->policy_value()));
   StorePendingChanges();
   return true;
@@ -485,12 +485,11 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     em::DeviceLocalAccountsProto* device_local_accounts =
         settings.mutable_device_local_accounts();
     device_local_accounts->clear_account();
-    const base::ListValue* accounts_list = NULL;
+    const base::ListValue* accounts_list = nullptr;
     if (value.GetAsList(&accounts_list)) {
-      for (base::ListValue::const_iterator entry(accounts_list->begin());
-           entry != accounts_list->end(); ++entry) {
-        const base::DictionaryValue* entry_dict = NULL;
-        if (entry->GetAsDictionary(&entry_dict)) {
+      for (const auto& entry : accounts_list->GetList()) {
+        const base::DictionaryValue* entry_dict = nullptr;
+        if (entry.GetAsDictionary(&entry_dict)) {
           em::DeviceLocalAccountInfoProto* account =
               device_local_accounts->add_account();
           std::string account_id;
@@ -535,9 +534,8 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
   } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
     em::DeviceLocalAccountsProto* device_local_accounts =
         settings.mutable_device_local_accounts();
-    int delay;
-    if (value.GetAsInteger(&delay))
-      device_local_accounts->set_auto_login_delay(delay);
+    if (value.is_int())
+      device_local_accounts->set_auto_login_delay(value.GetInt());
     else
       NOTREACHED();
   } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled) {

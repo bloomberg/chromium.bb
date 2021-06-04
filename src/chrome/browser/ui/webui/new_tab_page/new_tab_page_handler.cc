@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
@@ -19,13 +20,13 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -331,8 +332,6 @@ NewTabPageHandler::NewTabPageHandler(
       ntp_background_service_(
           NtpBackgroundServiceFactory::GetForProfile(profile)),
       logo_service_(LogoServiceFactory::GetForProfile(profile)),
-      one_google_bar_service_(
-          OneGoogleBarServiceFactory::GetForProfile(profile)),
       profile_(profile),
       web_contents_(web_contents),
       ntp_navigation_start_time_(ntp_navigation_start_time),
@@ -343,14 +342,12 @@ NewTabPageHandler::NewTabPageHandler(
   CHECK(instant_service_);
   CHECK(ntp_background_service_);
   CHECK(logo_service_);
-  CHECK(one_google_bar_service_);
   CHECK(promo_service_);
   CHECK(web_contents_);
   instant_service_->AddObserver(this);
   ntp_background_service_->AddObserver(this);
   instant_service_->UpdateNtpTheme();
   promo_service_observation_.Observe(promo_service_);
-  one_google_bar_service_observation_.Observe(one_google_bar_service_);
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
@@ -538,6 +535,10 @@ void NewTabPageHandler::GetDoodle(GetDoodleCallback callback) {
 
 void NewTabPageHandler::ChooseLocalCustomBackground(
     ChooseLocalCustomBackgroundCallback callback) {
+  // Early return if the select file dialog is already active.
+  if (select_file_dialog_)
+    return;
+
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, std::make_unique<ChromeSelectFilePolicy>(web_contents_));
   ui::SelectFileDialog::FileTypeInfo file_types;
@@ -546,6 +547,7 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("png"));
+  file_types.extensions[0].push_back(FILE_PATH_LITERAL("gif"));
   file_types.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_UPLOAD_IMAGE_FORMAT));
   choose_local_custom_background_callback_ = std::move(callback);
@@ -554,24 +556,6 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
       profile_->last_selected_directory(), &file_types, 0,
       base::FilePath::StringType(), web_contents_->GetTopLevelNativeWindow(),
       nullptr);
-}
-
-void NewTabPageHandler::GetOneGoogleBarParts(
-    const std::string& query_params,
-    GetOneGoogleBarPartsCallback callback) {
-  if (!one_google_bar_service_) {
-    return;
-  }
-  one_google_bar_parts_callbacks_.push_back(std::move(callback));
-  bool wait_for_refresh =
-      one_google_bar_service_->SetAdditionalQueryParams(query_params);
-  if (one_google_bar_service_->one_google_bar_data().has_value() &&
-      !wait_for_refresh &&
-      base::FeatureList::IsEnabled(ntp_features::kCacheOneGoogleBar)) {
-    OnOneGoogleBarDataUpdated();
-  }
-  one_google_bar_load_start_time_ = base::TimeTicks::Now();
-  one_google_bar_service_->Refresh();
 }
 
 void NewTabPageHandler::GetPromo(GetPromoCallback callback) {
@@ -629,10 +613,12 @@ void NewTabPageHandler::SetModulesVisible(bool visible) {
 void NewTabPageHandler::SetModuleDisabled(const std::string& module_id,
                                           bool disabled) {
   ListPrefUpdate update(profile_->GetPrefs(), prefs::kNtpDisabledModules);
+  base::Value module_id_value(module_id);
   if (disabled) {
-    update->AppendIfNotPresent(std::make_unique<base::Value>(module_id));
+    if (!base::Contains(update->GetList(), module_id_value))
+      update->Append(std::move(module_id_value));
   } else {
-    update->EraseListValue(base::Value(module_id));
+    update->EraseListValue(module_id_value);
   }
   UpdateDisabledModules();
 }
@@ -644,7 +630,7 @@ void NewTabPageHandler::UpdateDisabledModules() {
   if (!profile_->GetPrefs()->IsManagedPreference(prefs::kNtpModulesVisible)) {
     const auto* module_ids_value =
         profile_->GetPrefs()->GetList(prefs::kNtpDisabledModules);
-    for (const auto& id : *module_ids_value) {
+    for (const auto& id : module_ids_value->GetList()) {
       module_ids.push_back(id.GetString());
     }
   }
@@ -680,7 +666,7 @@ void NewTabPageHandler::OnPromoDataUpdated() {
       UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
                                  duration);
     }
-    promo_load_start_time_ = base::nullopt;
+    promo_load_start_time_ = absl::nullopt;
   }
 
   const auto& data = promo_service_->promo_data();
@@ -722,7 +708,7 @@ void NewTabPageHandler::OnOneGoogleBarRendered(double time) {
 }
 
 void NewTabPageHandler::OnPromoRendered(double time,
-                                        const base::Optional<GURL>& log_url) {
+                                        const absl::optional<GURL>& log_url) {
   logger_.LogEvent(NTP_MIDDLE_SLOT_PROMO_SHOWN,
                    base::Time::FromJsTime(time) - ntp_navigation_start_time_);
   if (log_url.has_value() && log_url->is_valid()) {
@@ -817,7 +803,7 @@ void NewTabPageHandler::OnCustomizeDialogAction(
 
 void NewTabPageHandler::OnDoodleImageClicked(
     new_tab_page::mojom::DoodleImageType type,
-    const base::Optional<::GURL>& log_url) {
+    const absl::optional<::GURL>& log_url) {
   NTPLoggingEventType event;
   switch (type) {
     case new_tab_page::mojom::DoodleImageType::kAnimation:
@@ -862,7 +848,7 @@ void NewTabPageHandler::OnDoodleImageRendered(
 void NewTabPageHandler::OnDoodleShared(
     new_tab_page::mojom::DoodleShareChannel channel,
     const std::string& doodle_id,
-    const base::Optional<std::string>& share_id) {
+    const absl::optional<std::string>& share_id) {
   int channel_id;
   switch (channel) {
     case new_tab_page::mojom::DoodleShareChannel::kFacebook:
@@ -897,73 +883,6 @@ void NewTabPageHandler::OnDoodleShared(
 
 void NewTabPageHandler::OnPromoLinkClicked() {
   LogEvent(NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
-}
-
-void NewTabPageHandler::OnVoiceSearchAction(
-    new_tab_page::mojom::VoiceSearchAction action) {
-  NTPLoggingEventType event;
-  switch (action) {
-    case new_tab_page::mojom::VoiceSearchAction::kActivateSearchBox:
-      event = NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kActivateKeyboard:
-      event = NTP_VOICE_ACTION_ACTIVATE_KEYBOARD;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kCloseOverlay:
-      event = NTP_VOICE_ACTION_CLOSE_OVERLAY;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kQuerySubmitted:
-      event = NTP_VOICE_ACTION_QUERY_SUBMITTED;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kSupportLinkClicked:
-      event = NTP_VOICE_ACTION_SUPPORT_LINK_CLICKED;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kTryAgainLink:
-      event = NTP_VOICE_ACTION_TRY_AGAIN_LINK;
-      break;
-    case new_tab_page::mojom::VoiceSearchAction::kTryAgainMicButton:
-      event = NTP_VOICE_ACTION_TRY_AGAIN_MIC_BUTTON;
-      break;
-  }
-  LogEvent(event);
-}
-
-void NewTabPageHandler::OnVoiceSearchError(
-    new_tab_page::mojom::VoiceSearchError error) {
-  NTPLoggingEventType event;
-  switch (error) {
-    case new_tab_page::mojom::VoiceSearchError::kAborted:
-      event = NTP_VOICE_ERROR_ABORTED;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kNoSpeech:
-      event = NTP_VOICE_ERROR_NO_SPEECH;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kAudioCapture:
-      event = NTP_VOICE_ERROR_AUDIO_CAPTURE;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kNetwork:
-      event = NTP_VOICE_ERROR_NETWORK;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kNotAllowed:
-      event = NTP_VOICE_ERROR_NOT_ALLOWED;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kLanguageNotSupported:
-      event = NTP_VOICE_ERROR_LANGUAGE_NOT_SUPPORTED;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kNoMatch:
-      event = NTP_VOICE_ERROR_NO_MATCH;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kServiceNotAllowed:
-      event = NTP_VOICE_ERROR_SERVICE_NOT_ALLOWED;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kBadGrammar:
-      event = NTP_VOICE_ERROR_BAD_GRAMMAR;
-      break;
-    case new_tab_page::mojom::VoiceSearchError::kOther:
-      event = NTP_VOICE_ERROR_OTHER;
-      break;
-  }
-  LogEvent(event);
 }
 
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
@@ -1080,39 +999,6 @@ void NewTabPageHandler::OnNtpBackgroundServiceShuttingDown() {
   ntp_background_service_ = nullptr;
 }
 
-void NewTabPageHandler::OnOneGoogleBarDataUpdated() {
-  base::Optional<OneGoogleBarData> data =
-      one_google_bar_service_->one_google_bar_data();
-
-  if (one_google_bar_load_start_time_.has_value()) {
-    NTPUserDataLogger::LogOneGoogleBarFetchDuration(
-        /*success=*/data.has_value(),
-        /*duration=*/base::TimeTicks::Now() - *one_google_bar_load_start_time_);
-    one_google_bar_load_start_time_ = base::nullopt;
-  }
-
-  for (auto& callback : one_google_bar_parts_callbacks_) {
-    if (data.has_value()) {
-      auto parts = new_tab_page::mojom::OneGoogleBarParts::New();
-      parts->bar_html = data->bar_html;
-      parts->in_head_script = data->in_head_script;
-      parts->in_head_style = data->in_head_style;
-      parts->after_bar_script = data->after_bar_script;
-      parts->end_of_body_html = data->end_of_body_html;
-      parts->end_of_body_script = data->end_of_body_script;
-      std::move(callback).Run(std::move(parts));
-    } else {
-      std::move(callback).Run(nullptr);
-    }
-  }
-  one_google_bar_parts_callbacks_.clear();
-}
-
-void NewTabPageHandler::OnOneGoogleBarServiceShuttingDown() {
-  one_google_bar_service_observation_.Reset();
-  one_google_bar_service_ = nullptr;
-}
-
 void NewTabPageHandler::FileSelected(const base::FilePath& path,
                                      int index,
                                      void* params) {
@@ -1146,7 +1032,7 @@ void NewTabPageHandler::FileSelectionCanceled(void* params) {
 void NewTabPageHandler::OnLogoAvailable(
     GetDoodleCallback callback,
     search_provider_logos::LogoCallbackReason type,
-    const base::Optional<search_provider_logos::EncodedLogo>& logo) {
+    const absl::optional<search_provider_logos::EncodedLogo>& logo) {
   if (!logo) {
     std::move(callback).Run(nullptr);
     return;
@@ -1229,9 +1115,8 @@ void NewTabPageHandler::Fetch(const GURL& url,
             }
           }
         })");
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  auto url_loader_factory = profile_->GetDefaultStoragePartition()
+                                ->GetURLLoaderFactoryForBrowserProcess();
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   auto loader =
@@ -1260,12 +1145,12 @@ void NewTabPageHandler::OnLogFetchResult(OnDoodleImageRenderedCallback callback,
                                          bool success,
                                          std::unique_ptr<std::string> body) {
   if (!success || body->size() < 4 || body->substr(0, 4) != ")]}'") {
-    std::move(callback).Run("", base::nullopt, "");
+    std::move(callback).Run("", absl::nullopt, "");
     return;
   }
   auto value = base::JSONReader::Read(body->substr(4));
   if (!value.has_value()) {
-    std::move(callback).Run("", base::nullopt, "");
+    std::move(callback).Run("", absl::nullopt, "");
     return;
   }
 
@@ -1278,12 +1163,12 @@ void NewTabPageHandler::OnLogFetchResult(OnDoodleImageRenderedCallback callback,
       value->FindPath("ddllog.interaction_log_url");
   auto interaction_log_url =
       interaction_log_url_value && interaction_log_url_value->is_string()
-          ? base::Optional<GURL>(
+          ? absl::optional<GURL>(
                 GURL(TemplateURLServiceFactory::GetForProfile(profile_)
                          ->search_terms_data()
                          .GoogleBaseURLValue())
                     .Resolve(interaction_log_url_value->GetString()))
-          : base::nullopt;
+          : absl::nullopt;
   auto* encoded_ei_value = value->FindPath("ddllog.encoded_ei");
   auto encoded_ei = encoded_ei_value && encoded_ei_value->is_string()
                         ? encoded_ei_value->GetString()

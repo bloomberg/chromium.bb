@@ -11,18 +11,19 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class ChooserController;
+class GURL;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
@@ -49,6 +50,7 @@ class AuthChallengeInfo;
 }
 
 namespace permissions {
+class ChooserController;
 enum class PermissionAction;
 }
 
@@ -118,6 +120,22 @@ using AppInstallationAcceptanceCallback =
 void ShowWebAppInstallDialog(content::WebContents* web_contents,
                              std::unique_ptr<WebApplicationInfo> web_app_info,
                              AppInstallationAcceptanceCallback callback);
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// Callback used to indicate whether a user has accepted the launch of a
+// web app. The boolean parameter is true when the user accepts the dialog.
+using WebAppProtocolHandlerAcceptanceCallback =
+    base::OnceCallback<void(bool accepted)>;
+
+// Shows the Web App Protocol Handler Intent Picker view.
+// |profile| is kept alive throughout the processing and running of
+// |close_callback|. |close_callback| may be null.
+void ShowWebAppProtocolHandlerIntentPicker(
+    const GURL& url,
+    Profile* profile,
+    const web_app::AppId& app_id,
+    WebAppProtocolHandlerAcceptanceCallback close_callback);
+#endif
 
 // Sets whether |ShowWebAppDialog| should accept immediately without any
 // user interaction. |auto_open_in_window| sets whether the open in window
@@ -384,7 +402,7 @@ void ShowExtensionInstallFrictionDialog(
 #if defined(TOOLKIT_VIEWS)
 base::OnceClosure ShowDeviceChooserDialog(
     content::RenderFrameHost* owner,
-    std::unique_ptr<ChooserController> controller);
+    std::unique_ptr<permissions::ChooserController> controller);
 bool IsDeviceChooserShowingForTesting(Browser* browser);
 #endif
 

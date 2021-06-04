@@ -92,9 +92,11 @@ class FlocIdProviderImpl : public FlocIdProvider,
 
   blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
       const GURL& url,
-      const base::Optional<url::Origin>& top_frame_origin) const override;
+      const absl::optional<url::Origin>& top_frame_origin) const override;
 
   void MaybeRecordFlocToUkm(ukm::SourceId source_id) override;
+
+  base::Time GetApproximateNextComputeTime() const override;
 
  protected:
   // protected virtual for testing.
@@ -113,8 +115,9 @@ class FlocIdProviderImpl : public FlocIdProvider,
   // When the floc-accessible-since time is updated (due to e.g. cookies
   // deletion), we'll either invalidate or keep using the floc. This will
   // depend on the updated time and the begin time of the history used to
-  // compute the current floc.
-  void OnFlocDataAccessibleSinceUpdated() override;
+  // compute the current floc. If |reset_compute_timer| is true the timer to
+  // re-compute the floc is reset.
+  void OnFlocDataAccessibleSinceUpdated(bool reset_compute_timer) override;
 
   // On history deletion, we'll either invalidate or keep using the floc. This
   // will depend on the deletion type and the time range.
@@ -131,7 +134,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
                                       bool can_compute_floc);
 
   bool IsSyncHistoryEnabled() const;
-  bool IsPrivacySandboxAllowed() const;
+  bool IsFlocAllowed() const;
 
   void IsSwaaNacAccountEnabled(CanComputeFlocCallback callback);
 
@@ -143,7 +146,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
                                         uint64_t sim_hash,
                                         base::Time history_begin_time,
                                         base::Time history_end_time,
-                                        base::Optional<uint64_t> final_hash,
+                                        absl::optional<uint64_t> final_hash,
                                         base::Version version);
 
   // Abandon any scheduled task, and schedule a new compute-floc task with

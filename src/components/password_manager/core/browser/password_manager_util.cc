@@ -74,7 +74,7 @@ password_manager::SyncState GetPasswordSyncState(
   }
 
   if (sync_service->IsSyncFeatureActive()) {
-    return sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()
+    return sync_service->GetUserSettings()->IsUsingExplicitPassphrase()
                ? password_manager::SyncState::kSyncingWithCustomPassphrase
                : password_manager::SyncState::kSyncingNormalEncryption;
   }
@@ -85,11 +85,6 @@ password_manager::SyncState GetPasswordSyncState(
   // the moment. Data types won't become active for non-sync users with custom
   // passphrase.
   return password_manager::SyncState::kAccountPasswordsActiveNormalEncryption;
-}
-
-bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service) {
-  return GetPasswordSyncState(sync_service) ==
-         password_manager::SyncState::kSyncingNormalEncryption;
 }
 
 void TrimUsernameOnlyCredentials(

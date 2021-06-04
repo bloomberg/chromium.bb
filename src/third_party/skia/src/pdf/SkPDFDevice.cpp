@@ -333,7 +333,7 @@ void SkPDFDevice::drawAnnotation(const SkRect& rect, const char key[], SkData* v
     }
     // Annotations are specified in absolute coordinates, so the page xform maps from device space
     // to the global space, and applies the document transform.
-    SkMatrix pageXform = this->deviceToGlobal();
+    SkMatrix pageXform = this->deviceToGlobal().asM33();
     pageXform.postConcat(fDocument->currentPageTransform());
     if (rect.isEmpty()) {
         if (!strcmp(key, SkPDFGetNodeIdKey())) {
@@ -950,7 +950,8 @@ void SkPDFDevice::internalDrawGlyphRun(
     }
 }
 
-void SkPDFDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+void SkPDFDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+    SkASSERT(!glyphRunList.hasRSXForm());
     for (const SkGlyphRun& glyphRun : glyphRunList) {
         this->internalDrawGlyphRun(glyphRun, glyphRunList.origin(), paint);
     }
@@ -1726,11 +1727,12 @@ void SkPDFDevice::drawSpecial(SkSpecialImage* srcImg, const SkMatrix& localToDev
 }
 
 sk_sp<SkSpecialImage> SkPDFDevice::makeSpecial(const SkBitmap& bitmap) {
-    return SkSpecialImage::MakeFromRaster(bitmap.bounds(), bitmap);
+    return SkSpecialImage::MakeFromRaster(bitmap.bounds(), bitmap, this->surfaceProps());
 }
 
 sk_sp<SkSpecialImage> SkPDFDevice::makeSpecial(const SkImage* image) {
-    return SkSpecialImage::MakeFromImage(nullptr, image->bounds(), image->makeNonTextureImage());
+    return SkSpecialImage::MakeFromImage(nullptr, image->bounds(), image->makeNonTextureImage(),
+                                         this->surfaceProps());
 }
 
 SkImageFilterCache* SkPDFDevice::getImageFilterCache() {

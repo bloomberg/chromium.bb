@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -23,12 +21,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
+import android.view.KeyEvent;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.matcher.ViewMatchers.Visibility;
@@ -54,11 +54,15 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TellProto;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -87,18 +91,11 @@ public class AutofillAssistantChromeTabIntegrationTest {
         return mTestServer.getURL(HTML_DIRECTORY + page);
     }
 
-    private AutofillAssistantTestService setupScripts(AutofillAssistantTestScript... scripts) {
+    private void startAutofillAssistantOnTab(
+            String pageToLoad, AutofillAssistantTestScript... scripts) {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Arrays.asList(scripts));
-        testService.scheduleForInjection();
-        return testService;
-    }
-
-    private void startAutofillAssistantOnTab(String pageToLoad) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> AutofillAssistantFacade.start(mTestRule.getActivity(),
-                                /* bundleExtras= */ null, getURL(pageToLoad)));
+        startAutofillAssistant(mTestRule.getActivity(), testService, getURL(pageToLoad));
     }
 
     @Before
@@ -136,8 +133,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                         .build(),
                 list);
 
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         onView(is(mScrimCoordinator.getViewForTesting()))
@@ -173,8 +169,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         int initialTabId =
                 TabModelUtils.getCurrentTabId(mTestRule.getActivity().getCurrentTabModel());
 
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
@@ -204,8 +199,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                                 ChipProto.newBuilder().setText("Done")))
                         .build(),
                 list);
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
@@ -254,8 +248,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         int initialTabId =
                 TabModelUtils.getCurrentTabId(mTestRule.getActivity().getCurrentTabModel());
 
-        setupScripts(scriptA, scriptB);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, scriptA);
 
         waitUntilViewMatchesCondition(withText("Prompt A"), isCompletelyDisplayed());
 
@@ -263,7 +256,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
         waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
-        startAutofillAssistantOnTab(TEST_PAGE_B);
+        startAutofillAssistantOnTab(TEST_PAGE_B, scriptB);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
 
         ChromeTabUtils.switchTabInCurrentTabModel(mTestRule.getActivity(),
@@ -320,8 +313,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         int initialTabId =
                 TabModelUtils.getCurrentTabId(mTestRule.getActivity().getCurrentTabModel());
 
-        setupScripts(scriptA, scriptB);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, scriptA);
 
         waitUntilViewMatchesCondition(withId(R.id.autofill_assistant), isDisplayed());
         waitUntilViewMatchesCondition(withText("Prompt A"), not(isDisplayed()));
@@ -331,7 +323,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         waitUntilViewAssertionTrue(allOf(withText("Sticky"), isDescendantOfA(withId(R.id.header))),
                 doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
-        startAutofillAssistantOnTab(TEST_PAGE_B);
+        startAutofillAssistantOnTab(TEST_PAGE_B, scriptB);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
 
         ChromeTabUtils.switchTabInCurrentTabModel(mTestRule.getActivity(),
@@ -399,8 +391,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         int initialTabId =
                 TabModelUtils.getCurrentTabId(mTestRule.getActivity().getCurrentTabModel());
 
-        AutofillAssistantTestService autofillAssistantTestService = setupScripts(scriptA, scriptB);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, scriptA);
         waitUntilViewMatchesCondition(
                 allOf(withText("Sticky"), isDescendantOfA(withId(R.id.header))),
                 isCompletelyDisplayed());
@@ -410,7 +401,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         waitUntilViewAssertionTrue(allOf(withText("Sticky"), isDescendantOfA(withId(R.id.header))),
                 doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
-        startAutofillAssistantOnTab(TEST_PAGE_B);
+        startAutofillAssistantOnTab(TEST_PAGE_B, scriptB);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
 
         Espresso.pressBack();
@@ -470,8 +461,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                                 ChipProto.newBuilder().setText("Done")))
                         .build(),
                 listB);
-        setupScripts(scriptA, scriptB);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, scriptA);
 
         waitUntilViewMatchesCondition(withText("Prompt A"), isCompletelyDisplayed());
 
@@ -479,7 +469,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
         waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
-        startAutofillAssistantOnTab(TEST_PAGE_B);
+        startAutofillAssistantOnTab(TEST_PAGE_B, scriptB);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
 
         ChromeTabUtils.closeCurrentTab(
@@ -504,27 +494,29 @@ public class AutofillAssistantChromeTabIntegrationTest {
                                 ChipProto.newBuilder().setText("Done")))
                         .build(),
                 list);
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(is(mScrimCoordinator.getViewForTesting()),
                 withEffectiveVisibility(Visibility.VISIBLE));
 
         // Clicking location bar hides UI and shows the keyboard.
-        onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
+        final UrlBar urlBar = mTestRule.getActivity().findViewById(R.id.url_bar);
+        WaitForFocusHelper.acquireFocusForView(urlBar);
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
         waitUntilViewMatchesCondition(withText("Prompt"), not(isCompletelyDisplayed()));
-        waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
 
         // Closing keyboard brings it back.
+        Espresso.closeSoftKeyboard();
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(is(mScrimCoordinator.getViewForTesting()),
                 withEffectiveVisibility(Visibility.VISIBLE));
 
         // Committing URL shows error.
-        onView(withId(org.chromium.chrome.R.id.url_bar))
-                .perform(click(), typeText(getURL(TEST_PAGE_B)), pressImeActionButton());
+        TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.setText(getURL(TEST_PAGE_B)); });
+        KeyUtils.singleKeyEventView(
+                InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
         waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
     }
 
@@ -554,8 +546,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                                 ChipProto.newBuilder().setText("Done")))
                         .build(),
                 list);
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         // Browse mode hides the Scrim.
         waitUntilViewMatchesCondition(withText("Browse"), isCompletelyDisplayed());
@@ -596,8 +587,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                         .build(),
                 list);
 
-        setupScripts(script);
-        startAutofillAssistantOnTab(TEST_PAGE_A);
+        startAutofillAssistantOnTab(TEST_PAGE_A, script);
 
         waitUntilViewMatchesCondition(withText("Shutdown"), isCompletelyDisplayed());
 
@@ -641,7 +631,6 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1171149")
     public void interactingWithLocationBarHidesOnboarding() {
         // Onboarding has not been accepted.
         AutofillAssistantPreferencesUtil.setInitialPreferences(false);
@@ -657,11 +646,13 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 withEffectiveVisibility(Visibility.VISIBLE));
 
         // Clicking location bar hides UI and shows the keyboard.
-        onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
+        final UrlBar urlBar = mTestRule.getActivity().findViewById(R.id.url_bar);
+        WaitForFocusHelper.acquireFocusForView(urlBar);
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
         waitUntilViewMatchesCondition(withId(R.id.button_init_ok), not(isDisplayed()));
-        waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
 
         // Closing keyboard brings it back.
+        Espresso.closeSoftKeyboard();
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(is(mScrimCoordinator.getViewForTesting()),

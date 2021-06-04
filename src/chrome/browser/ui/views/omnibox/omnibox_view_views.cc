@@ -52,6 +52,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
+#include "components/send_tab_to_self/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_fixer.h"
@@ -83,6 +84,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
@@ -100,7 +102,6 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -805,8 +806,8 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
       send_tab_to_self::ShareToSingleTarget(
           location_bar_view_->GetWebContents());
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::RecordDeviceClicked(
+          send_tab_to_self::ShareEntryPoint::kOmniboxMenu);
       return;
 
     // These commands do invoke the popup.
@@ -827,23 +828,23 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-ui::TextInputType OmniboxViewViews::GetTextInputType() const {
-  ui::TextInputType input_type = views::Textfield::GetTextInputType();
+void OmniboxViewViews::OnInputMethodChanged() {
+#if defined(OS_WIN)
   // We'd like to set the text input type to TEXT_INPUT_TYPE_URL, because this
   // triggers URL-specific layout in software keyboards, e.g. adding top-level
   // "/" and ".com" keys for English.  However, this also causes IMEs to default
   // to Latin character mode, which makes entering search queries difficult for
   // IME users. Therefore, we try to guess whether an IME will be used based on
   // the input language, and set the input type accordingly.
-#if defined(OS_WIN)
-  if (input_type != ui::TEXT_INPUT_TYPE_NONE && location_bar_view_) {
+  if (location_bar_view_) {
     ui::InputMethod* input_method =
         location_bar_view_->GetWidget()->GetInputMethod();
     if (input_method && input_method->IsInputLocaleCJK())
-      return ui::TEXT_INPUT_TYPE_SEARCH;
+      SetTextInputType(ui::TEXT_INPUT_TYPE_SEARCH);
+    else
+      SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   }
 #endif
-  return input_type;
 }
 
 void OmniboxViewViews::AddedToWidget() {
@@ -1628,13 +1629,8 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   PermitExternalProtocolHandler();
 
-  static const bool kTakeFocusOnTapUp =
-      base::FeatureList::IsEnabled(views::features::kTextfieldFocusOnTapUp);
-
   const bool gesture_should_take_focus =
-      !HasFocus() &&
-      event->type() ==
-          (kTakeFocusOnTapUp ? ui::ET_GESTURE_TAP : ui::ET_GESTURE_TAP_DOWN);
+      !HasFocus() && event->type() == ui::ET_GESTURE_TAP;
   if (gesture_should_take_focus) {
     select_all_on_gesture_tap_ = true;
 

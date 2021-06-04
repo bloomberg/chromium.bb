@@ -64,12 +64,13 @@ class WebFrameTestProxy : public RenderFrameImpl,
                               const blink::WebString& stack_trace) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void DidChangeSelection(bool is_selection_empty) override;
+  void DidChangeSelection(bool is_selection_empty,
+                          blink::SyncCondition force_sync) override;
   void DidChangeContents() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
   void UpdateContextMenuDataForTesting(
       const blink::ContextMenuData& context_menu_data,
-      const base::Optional<gfx::Point>&) override;
+      const absl::optional<gfx::Point>&) override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request,
                        ForRedirect for_redirect) override;

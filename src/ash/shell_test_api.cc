@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/hud_display/hud_display.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -29,6 +31,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -260,6 +263,21 @@ PaginationModel* ShellTestApi::GetAppListPaginationModel() {
 
 bool ShellTestApi::IsContextMenuShown() const {
   return Shell::GetPrimaryRootWindowController()->IsContextMenuShown();
+}
+
+bool ShellTestApi::IsActionForAcceleratorEnabled(
+    const ui::Accelerator& accelerator) const {
+  return Shell::Get()->accelerator_controller()->IsActionForAcceleratorEnabled(
+      accelerator);
+}
+
+bool ShellTestApi::PressAccelerator(const ui::Accelerator& accelerator) {
+  return Shell::Get()->accelerator_controller()->AcceleratorPressed(
+      accelerator);
+}
+
+bool ShellTestApi::IsHUDShown() {
+  return hud_display::HUDDisplayView::IsShown();
 }
 
 }  // namespace ash

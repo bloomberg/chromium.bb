@@ -180,7 +180,9 @@ def expr_from_exposure(exposure,
     #         feature_selector-1st-phase-term
     #         feature_selector-2nd-phase-term))
     # which can be represented in more details as:
-    #   (and secure_context_term
+    #   (and cross_origin_isolated_term
+    #        direct_socket_enabled_term
+    #        secure_context_term
     #        uncond_exposed_term
     #        (or
     #         (and feature_selector.IsAll()  # 1st phase; all enabled
@@ -190,6 +192,8 @@ def expr_from_exposure(exposure,
     #         (or exposed_selector_term      # 2nd phase; any selected
     #             feature_selector_term)))
     # where
+    #   cross_origin_isolated_term represents [CrossOriginIsolated]
+    #   direct_socket_enabled_term represents [DirectSocketEnabled]
     #   secure_context_term represents [SecureContext=F1]
     #   uncond_exposed_term represents [Exposed=(G1, G2)]
     #   cond_exposed_term represents [Exposed(G1 F1, G2 F2)]
@@ -215,6 +219,18 @@ def expr_from_exposure(exposure,
             features)
         return _Expr("${{feature_selector}}.IsAnyOf({})".format(
             ", ".join(feature_tokens)))
+
+    # [CrossOriginIsolated]
+    if exposure.only_in_coi_contexts:
+        cross_origin_isolated_term = _Expr("${is_cross_origin_isolated}")
+    else:
+        cross_origin_isolated_term = _Expr(True)
+
+    # [DirectSocketEnabled]
+    if exposure.only_in_direct_socket_contexts:
+        direct_socket_enabled_term = _Expr("${is_direct_socket_enabled}")
+    else:
+        direct_socket_enabled_term = _Expr(True)
 
     # [SecureContext]
     if exposure.only_in_secure_contexts is True:
@@ -286,6 +302,8 @@ def expr_from_exposure(exposure,
 
     # Build an expression.
     top_level_terms = []
+    top_level_terms.append(cross_origin_isolated_term)
+    top_level_terms.append(direct_socket_enabled_term)
     top_level_terms.append(secure_context_term)
     if uncond_exposed_terms:
         top_level_terms.append(expr_or(uncond_exposed_terms))
@@ -313,7 +331,7 @@ def expr_from_exposure(exposure,
     if exposed_selector_terms:
         selector_terms.append(expr_or(exposed_selector_terms))
     if feature_selector_names:
-        selector_terms.append(ref_selected(feature_selector_names))
+        selector_terms.append(ref_selected(set(feature_selector_names)))
 
     terms = []
     terms.append(expr_and(all_enabled_terms))

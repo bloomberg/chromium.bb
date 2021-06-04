@@ -5,7 +5,6 @@ import sys
 from collections import OrderedDict
 from distutils.spawn import find_executable
 from datetime import timedelta
-from six import ensure_text
 
 from . import config
 from . import wpttest
@@ -189,10 +188,6 @@ scheme host and port.""")
                                  help="Path or url to symbols file used to analyse crash minidumps.")
     debugging_group.add_argument("--stackwalk-binary", action="store", type=abs_path,
                                  help="Path to stackwalker program used to analyse minidumps.")
-    debugging_group.add_argument("--output-directory", action="store",
-                                 help="Path to chromium output directory.")
-    debugging_group.add_argument("--stackparser-script", action="store", type=abs_path,
-                                 help="Path to stack parser script used to analyse tombstones.")
     debugging_group.add_argument("--pdb", action="store_true",
                                  help="Drop into pdb on python exception")
 
@@ -369,7 +364,7 @@ scheme host and port.""")
 
     taskcluster_group = parser.add_argument_group("Taskcluster-specific")
     taskcluster_group.add_argument("--github-checks-text-file",
-                                   type=ensure_text,
+                                   type=str,
                                    help="Path to GitHub checks output file")
 
     webkit_group = parser.add_argument_group("WebKit-specific")

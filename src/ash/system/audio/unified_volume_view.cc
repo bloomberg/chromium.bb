@@ -18,6 +18,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_utils.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -84,21 +86,6 @@ class UnifiedVolumeViewButton : public T {
   }
 
   ~UnifiedVolumeViewButton() override = default;
-
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return TrayPopupUtils::CreateInkDrop(this);
-  }
-
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return TrayPopupUtils::CreateInkDropRipple(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        T::GetInkDropCenterBasedOnLastEvent());
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return TrayPopupUtils::CreateInkDropHighlight(this);
-  }
 
   void OnThemeChanged() override {
     T::OnThemeChanged();
@@ -257,6 +244,7 @@ void UnifiedVolumeView::Update(bool by_user) {
   slider()->SetRenderingStyle(
       is_muted ? views::Slider::RenderingStyle::kMinimalStyle
                : views::Slider::RenderingStyle::kDefaultStyle);
+  slider()->SetEnabled(!CrasAudioHandler::Get()->IsOutputMutedByPolicy());
 
   // The button should be gray when muted and colored otherwise.
   button()->SetToggled(!is_muted);
@@ -273,7 +261,7 @@ void UnifiedVolumeView::Update(bool by_user) {
       base::FeatureList::IsEnabled(media::kLiveCaptionSystemWideOnChromeOS));
   live_caption_button_->SetToggled(
       Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
-          prefs::kLiveCaptionEnabled));
+          ::prefs::kLiveCaptionEnabled));
 
   // Slider's value is in finer granularity than audio volume level(0.01),
   // there will be a small discrepancy between slider's value and volume level
@@ -316,8 +304,8 @@ void UnifiedVolumeView::ChildVisibilityChanged(views::View* child) {
 void UnifiedVolumeView::OnLiveCaptionButtonPressed() {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
-  bool enabled = !prefs->GetBoolean(prefs::kLiveCaptionEnabled);
-  prefs->SetBoolean(prefs::kLiveCaptionEnabled, enabled);
+  bool enabled = !prefs->GetBoolean(::prefs::kLiveCaptionEnabled);
+  prefs->SetBoolean(::prefs::kLiveCaptionEnabled, enabled);
   live_caption_button_->SetToggled(enabled);
 }
 

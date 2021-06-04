@@ -120,6 +120,18 @@ void TestAXNodeWrapper::SetHitTestResult(AXNodeID src_node_id,
   g_hit_test_result[src_node_id] = dst_node_id;
 }
 
+// static
+void TestAXNodeWrapper::ResetGlobalState() {
+  g_node_id_to_wrapper_map.clear();
+  g_focused_node_in_tree.clear();
+  g_hit_test_result.clear();
+  g_node_from_last_show_context_menu = nullptr;
+  g_node_from_last_default_action = nullptr;
+  g_scale_factor = 1.0;
+  g_offset.set_x(0);
+  g_offset.set_y(0);
+}
+
 TestAXNodeWrapper::~TestAXNodeWrapper() {
   platform_node_->Destroy();
 }
@@ -439,27 +451,27 @@ bool TestAXNodeWrapper::IsTable() const {
   return node_->IsTable();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableRowCount() const {
+absl::optional<int> TestAXNodeWrapper::GetTableRowCount() const {
   return node_->GetTableRowCount();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableColCount() const {
+absl::optional<int> TestAXNodeWrapper::GetTableColCount() const {
   return node_->GetTableColCount();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableAriaRowCount() const {
+absl::optional<int> TestAXNodeWrapper::GetTableAriaRowCount() const {
   return node_->GetTableAriaRowCount();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableAriaColCount() const {
+absl::optional<int> TestAXNodeWrapper::GetTableAriaColCount() const {
   return node_->GetTableAriaColCount();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellCount() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellCount() const {
   return node_->GetTableCellCount();
 }
 
-base::Optional<bool> TestAXNodeWrapper::GetTableHasColumnOrRowHeaderNode()
+absl::optional<bool> TestAXNodeWrapper::GetTableHasColumnOrRowHeaderNode()
     const {
   return node_->GetTableHasColumnOrRowHeaderNode();
 }
@@ -486,7 +498,7 @@ bool TestAXNodeWrapper::IsTableRow() const {
   return node_->IsTableRow();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableRowRowIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableRowRowIndex() const {
   return node_->GetTableRowRowIndex();
 }
 
@@ -494,39 +506,39 @@ bool TestAXNodeWrapper::IsTableCellOrHeader() const {
   return node_->IsTableCellOrHeader();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellIndex() const {
   return node_->GetTableCellIndex();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellColIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellColIndex() const {
   return node_->GetTableCellColIndex();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellRowIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellRowIndex() const {
   return node_->GetTableCellRowIndex();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellColSpan() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellColSpan() const {
   return node_->GetTableCellColSpan();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellRowSpan() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellRowSpan() const {
   return node_->GetTableCellRowSpan();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellAriaColIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellAriaColIndex() const {
   return node_->GetTableCellAriaColIndex();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
+absl::optional<int> TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
   return node_->GetTableCellAriaRowIndex();
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::GetCellId(int row_index,
+absl::optional<int32_t> TestAXNodeWrapper::GetCellId(int row_index,
                                                      int col_index) const {
   AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
   if (!cell)
-    return base::nullopt;
+    return absl::nullopt;
   return cell->id();
 }
 
@@ -535,10 +547,10 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return native_event_target_;
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::CellIndexToId(int cell_index) const {
+absl::optional<int32_t> TestAXNodeWrapper::CellIndexToId(int cell_index) const {
   AXNode* cell = node_->GetTableCellFromIndex(cell_index);
   if (!cell)
-    return base::nullopt;
+    return absl::nullopt;
   return cell->id();
 }
 
@@ -713,6 +725,9 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kColorWell:
       return u"color picker";
 
+    case ax::mojom::Role::kComment:
+      return u"comment";
+
     case ax::mojom::Role::kContentInfo:
       return u"content information";
 
@@ -732,8 +747,17 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
       return {};
     }
 
+    case ax::mojom::Role::kDefinition:
+      return u"definition";
+
     case ax::mojom::Role::kDetails:
       return u"details";
+
+    case ax::mojom::Role::kDocEndnote:
+      return u"endnote";
+
+    case ax::mojom::Role::kDocFootnote:
+      return u"footnote";
 
     case ax::mojom::Role::kEmphasis:
       return u"emphasis";
@@ -798,13 +822,11 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
     ax::mojom::ImageAnnotationStatus status) const {
   switch (status) {
     case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
-      return base::ASCIIToUTF16(
-          "To get missing image descriptions, open the context menu.");
+      return u"To get missing image descriptions, open the context menu.";
     case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
       return u"Getting description...";
     case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
-      return base::ASCIIToUTF16(
-          "Appears to contain adult content. No description available.");
+      return u"Appears to contain adult content. No description available.";
     case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
       return u"No description available.";
@@ -844,8 +866,8 @@ bool TestAXNodeWrapper::HasVisibleCaretOrSelection() const {
 
   // Selection or caret will be visible in a focused editable area.
   if (GetData().HasState(ax::mojom::State::kEditable)) {
-    return GetData().IsPlainTextField() ? focus_object == node_
-                                        : focus_object->IsDescendantOf(node_);
+    return GetData().IsAtomicTextField() ? focus_object == node_
+                                         : focus_object->IsDescendantOf(node_);
   }
 
   // The selection will be visible in non-editable content only if it is not
@@ -891,11 +913,11 @@ bool TestAXNodeWrapper::IsOrderedSet() const {
   return node_->IsOrderedSet();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetPosInSet() const {
+absl::optional<int> TestAXNodeWrapper::GetPosInSet() const {
   return node_->GetPosInSet();
 }
 
-base::Optional<int> TestAXNodeWrapper::GetSetSize() const {
+absl::optional<int> TestAXNodeWrapper::GetSetSize() const {
   return node_->GetSetSize();
 }
 

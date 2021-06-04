@@ -4,7 +4,6 @@
 
 #include "chrome/browser/cart/cart_handler.h"
 
-#include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
@@ -17,6 +16,7 @@
 #include "components/search/ntp_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 void GetEvaluationMerchantCarts(
@@ -227,32 +227,6 @@ TEST_F(CartHandlerTest, TestRemoveCart) {
   run_loop[5].Run();
 }
 
-// Test cart click index histogram is properly recorded.
-TEST_F(CartHandlerTest, TestOnCartItemClicked) {
-  handler_->OnCartItemClicked(3);
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.ClickCart", 3));
-  handler_->OnCartItemClicked(2);
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.ClickCart", 2));
-  handler_->OnCartItemClicked(3);
-  ASSERT_EQ(2,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.ClickCart", 3));
-}
-
-// Test cart item count histogram is properly recorded.
-TEST_F(CartHandlerTest, TestOnModuleCreated) {
-  handler_->OnModuleCreated(0);
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.CartCount", 0));
-  handler_->OnModuleCreated(1);
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.CartCount", 1));
-  handler_->OnModuleCreated(0);
-  ASSERT_EQ(2,
-            histogram_tester_.GetBucketCount("NewTabPage.Carts.CartCount", 0));
-}
-
 // Override CartHandlerTest so that we can initialize feature_list_ in our
 // constructor, before CartHandlerTest::SetUp is called.
 class CartHandlerNtpModuleFakeDataTest : public CartHandlerTest {
@@ -271,8 +245,8 @@ TEST_F(CartHandlerNtpModuleFakeDataTest, TestEnableFakeData) {
   // Remove fake data loaded by CartService::CartService.
   service_->DeleteCartsWithFakeData();
 
-  service_->AddCart(kFakeMerchantKey, base::nullopt, kFakeProto);
-  service_->AddCart(kMockMerchantBKey, base::nullopt, kMockProtoB);
+  service_->AddCart(kFakeMerchantKey, absl::nullopt, kFakeProto);
+  service_->AddCart(kMockMerchantBKey, absl::nullopt, kMockProtoB);
   task_environment_.RunUntilIdle();
 
   std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
@@ -302,8 +276,8 @@ class CartHandlerNtpModuleTest : public CartHandlerTest {
 // Flaky, see crbug.com/1185497.
 TEST_F(CartHandlerNtpModuleTest, DISABLED_TestDisableFakeData) {
   base::RunLoop run_loop;
-  service_->AddCart(kFakeMerchantKey, base::nullopt, kFakeProto);
-  service_->AddCart(kMockMerchantBKey, base::nullopt, kMockProtoB);
+  service_->AddCart(kFakeMerchantKey, absl::nullopt, kFakeProto);
+  service_->AddCart(kMockMerchantBKey, absl::nullopt, kMockProtoB);
   task_environment_.RunUntilIdle();
 
   std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
@@ -390,40 +364,28 @@ TEST_F(CartHandlerNtpModuleTest, TestShowWelcomeSurface) {
   run_loop[run_loop_index++].Run();
 }
 
-// Verifies discount data fetching.
-TEST_F(CartHandlerNtpModuleTest, TestDiscountDataFetching) {
+// Verifies discount data not showing with RBD disabled.
+TEST_F(CartHandlerNtpModuleTest, TestDiscountDataWithoutFeature) {
   base::RunLoop run_loop[7];
   int run_loop_index = 0;
   // Add a cart with discount.
   cart_db::ChromeCartContentProto merchant_proto =
       BuildProto(kMockMerchantBKey, kMockMerchantB, kMockMerchantURLB);
   merchant_proto.mutable_discount_info()->set_discount_text("15% off");
-  service_->AddCart(kMockMerchantBKey, base::nullopt, merchant_proto);
+  service_->AddCart(kMockMerchantBKey, absl::nullopt, merchant_proto);
   task_environment_.RunUntilIdle();
 
-  // Discount should not show in welcome surface.
+  // Skip the welcome surface stage as discount is not showing for welcome
+  // surface.
   for (int i = 0; i < CartService::kWelcomSurfaceShowLimit; i++) {
-    // Build a callback result without discount.
-    auto expect_cart = chrome_cart::mojom::MerchantCart::New();
-    expect_cart->merchant = kMockMerchantB;
-    expect_cart->cart_url = GURL(kMockMerchantURLB);
-    std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
-    carts.push_back(std::move(expect_cart));
-    handler_->GetWarmWelcomeVisible(base::BindOnce(
-        &CartHandlerTest::GetEvaluationBoolResult, base::Unretained(this),
-        run_loop[run_loop_index].QuitClosure(), true));
-    run_loop[run_loop_index++].Run();
-    handler_->GetMerchantCarts(base::BindOnce(
-        &GetEvaluationMerchantCarts, run_loop[run_loop_index].QuitClosure(),
-        std::move(carts)));
-    run_loop[run_loop_index++].Run();
+    service_->IncreaseWelcomeSurfaceCounter();
   }
+  ASSERT_FALSE(service_->ShouldShowWelcomeSurface());
 
-  // Discount should show in normal cart module.
+  // Discount should not show in normal cart module with RBD disabled.
   auto expect_cart = chrome_cart::mojom::MerchantCart::New();
   expect_cart->merchant = kMockMerchantB;
   expect_cart->cart_url = GURL(kMockMerchantURLB);
-  expect_cart->discount_text = "15% off";
   std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
   carts.push_back(std::move(expect_cart));
   handler_->GetMerchantCarts(
@@ -441,7 +403,8 @@ class CartHandlerNtpModuleDiscountTest : public CartHandlerTest {
     // if a feature is enabled.
     feature_list_.InitAndEnableFeatureWithParameters(
         ntp_features::kNtpChromeCartModule,
-        {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"}});
+        {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"},
+         {"partner-merchant-pattern", "(foo.com)"}});
   }
 
   void SetUp() override {
@@ -457,33 +420,63 @@ class CartHandlerNtpModuleDiscountTest : public CartHandlerTest {
 
 // Test discount consent card visibility aligns with CartService.
 TEST_F(CartHandlerNtpModuleDiscountTest, TestGetDiscountConsentCardVisible) {
-  base::RunLoop run_loop[2];
-  ASSERT_TRUE(service_->ShouldShowDiscountConsent());
-  handler_->GetDiscountConsentCardVisible(
+  CartDB* cart_db = service_->GetDB();
+  base::RunLoop run_loop[5];
+  service_->ShouldShowDiscountConsent(
       base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
-                     base::Unretained(this), run_loop[0].QuitClosure(), true));
+                     base::Unretained(this), run_loop[0].QuitClosure(), false));
   run_loop[0].Run();
-
-  profile_.GetPrefs()->SetBoolean(prefs::kCartDiscountAcknowledged, true);
-
-  ASSERT_FALSE(service_->ShouldShowDiscountConsent());
   handler_->GetDiscountConsentCardVisible(
       base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
                      base::Unretained(this), run_loop[1].QuitClosure(), false));
   run_loop[1].Run();
+
+  // Add a partner cart.
+  cart_db->AddCart(
+      kFakeMerchant, kFakeProto,
+      base::BindOnce(&CartHandlerTest::OperationEvaluation,
+                     base::Unretained(this), run_loop[2].QuitClosure(), true));
+  run_loop[2].Run();
+
+  service_->ShouldShowDiscountConsent(
+      base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[3].QuitClosure(), true));
+  run_loop[3].Run();
+  handler_->GetDiscountConsentCardVisible(
+      base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[4].QuitClosure(), true));
+  run_loop[4].Run();
 }
 
 // Test OnDiscountConsentAcknowledged can update status in CartService.
 TEST_F(CartHandlerNtpModuleDiscountTest, TestOnDiscountConsentAcknowledged) {
-  ASSERT_TRUE(service_->ShouldShowDiscountConsent());
+  CartDB* cart_db = service_->GetDB();
+  base::RunLoop run_loop[4];
+  // Add a partner cart.
+  cart_db->AddCart(
+      kFakeMerchant, kFakeProto,
+      base::BindOnce(&CartHandlerTest::OperationEvaluation,
+                     base::Unretained(this), run_loop[0].QuitClosure(), true));
+  run_loop[0].Run();
+
+  service_->ShouldShowDiscountConsent(
+      base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[1].QuitClosure(), true));
+  run_loop[1].Run();
   ASSERT_FALSE(service_->IsCartDiscountEnabled());
 
   handler_->OnDiscountConsentAcknowledged(true);
-  ASSERT_FALSE(service_->ShouldShowDiscountConsent());
+  service_->ShouldShowDiscountConsent(
+      base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[2].QuitClosure(), false));
+  run_loop[2].Run();
   ASSERT_TRUE(service_->IsCartDiscountEnabled());
 
   handler_->OnDiscountConsentAcknowledged(false);
-  ASSERT_FALSE(service_->ShouldShowDiscountConsent());
+  service_->ShouldShowDiscountConsent(
+      base::BindOnce(&CartHandlerTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[3].QuitClosure(), false));
+  run_loop[3].Run();
   ASSERT_FALSE(service_->IsCartDiscountEnabled());
 }
 
@@ -513,4 +506,50 @@ TEST_F(CartHandlerNtpModuleDiscountTest, TestSetDiscountEnabled) {
   ASSERT_TRUE(service_->IsCartDiscountEnabled());
   handler_->SetDiscountEnabled(false);
   ASSERT_FALSE(service_->IsCartDiscountEnabled());
+}
+
+// Verifies discount data showing with RBD enabled.
+TEST_F(CartHandlerNtpModuleDiscountTest, TestDiscountDataWithFeature) {
+  base::RunLoop run_loop[7];
+  int run_loop_index = 0;
+  // Add a cart with discount. Mock that welcome surface hasn't shown and RBD is
+  // enabled.
+  cart_db::ChromeCartContentProto merchant_proto =
+      BuildProto(kMockMerchantBKey, kMockMerchantB, kMockMerchantURLB);
+  merchant_proto.mutable_discount_info()->set_discount_text("15% off");
+  service_->AddCart(kMockMerchantBKey, absl::nullopt, merchant_proto);
+  task_environment_.RunUntilIdle();
+  profile_.GetPrefs()->SetInteger(prefs::kCartModuleWelcomeSurfaceShownTimes,
+                                  0);
+  profile_.GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
+
+  // Discount should not show in welcome surface.
+  for (int i = 0; i < CartService::kWelcomSurfaceShowLimit; i++) {
+    // Build a callback result without discount.
+    auto expect_cart = chrome_cart::mojom::MerchantCart::New();
+    expect_cart->merchant = kMockMerchantB;
+    expect_cart->cart_url = GURL(kMockMerchantURLB);
+    std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
+    carts.push_back(std::move(expect_cart));
+    handler_->GetWarmWelcomeVisible(base::BindOnce(
+        &CartHandlerTest::GetEvaluationBoolResult, base::Unretained(this),
+        run_loop[run_loop_index].QuitClosure(), true));
+    run_loop[run_loop_index++].Run();
+    handler_->GetMerchantCarts(base::BindOnce(
+        &GetEvaluationMerchantCarts, run_loop[run_loop_index].QuitClosure(),
+        std::move(carts)));
+    run_loop[run_loop_index++].Run();
+  }
+
+  // Discount should show in normal cart module with RBD enabled.
+  auto expect_cart = chrome_cart::mojom::MerchantCart::New();
+  expect_cart->merchant = kMockMerchantB;
+  expect_cart->cart_url = GURL(kMockMerchantURLB);
+  expect_cart->discount_text = "15% off";
+  std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
+  carts.push_back(std::move(expect_cart));
+  handler_->GetMerchantCarts(
+      base::BindOnce(&GetEvaluationMerchantCarts,
+                     run_loop[run_loop_index].QuitClosure(), std::move(carts)));
+  run_loop[run_loop_index++].Run();
 }

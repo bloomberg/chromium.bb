@@ -50,7 +50,6 @@ class ChannelManager final {
   // will own that reference and media engine initialization
   static std::unique_ptr<ChannelManager> Create(
       std::unique_ptr<MediaEngineInterface> media_engine,
-      std::unique_ptr<DataEngineInterface> data_engine,
       bool enable_rtx,
       rtc::Thread* worker_thread,
       rtc::Thread* network_thread);
@@ -68,7 +67,6 @@ class ChannelManager final {
   void GetSupportedAudioReceiveCodecs(std::vector<AudioCodec>* codecs) const;
   void GetSupportedVideoSendCodecs(std::vector<VideoCodec>* codecs) const;
   void GetSupportedVideoReceiveCodecs(std::vector<VideoCodec>* codecs) const;
-  void GetSupportedDataCodecs(std::vector<DataCodec>* codecs) const;
   RtpHeaderExtensions GetDefaultEnabledAudioRtpHeaderExtensions() const;
   std::vector<webrtc::RtpHeaderExtensionCapability>
   GetSupportedAudioRtpHeaderExtensions() const;
@@ -110,20 +108,6 @@ class ChannelManager final {
   // Destroys a video channel created by CreateVideoChannel.
   void DestroyVideoChannel(VideoChannel* video_channel);
 
-  RtpDataChannel* CreateRtpDataChannel(
-      const MediaConfig& media_config,
-      webrtc::RtpTransportInternal* rtp_transport,
-      rtc::Thread* signaling_thread,
-      const std::string& content_name,
-      bool srtp_required,
-      const webrtc::CryptoOptions& crypto_options,
-      rtc::UniqueRandomIdGenerator* ssrc_generator);
-  // Destroys a data channel created by CreateRtpDataChannel.
-  void DestroyRtpDataChannel(RtpDataChannel* data_channel);
-
-  // Indicates whether any channels exist.
-  bool has_channels() const;
-
   // Starts AEC dump using existing file, with a specified maximum file size in
   // bytes. When the limit is reached, logging will stop and the file will be
   // closed. If max_size_bytes is set to <= 0, no limit will be used.
@@ -134,13 +118,11 @@ class ChannelManager final {
 
  private:
   ChannelManager(std::unique_ptr<MediaEngineInterface> media_engine,
-                 std::unique_ptr<DataEngineInterface> data_engine,
                  bool enable_rtx,
                  rtc::Thread* worker_thread,
                  rtc::Thread* network_thread);
 
   const std::unique_ptr<MediaEngineInterface> media_engine_;  // Nullable.
-  const std::unique_ptr<DataEngineInterface> data_engine_;    // Non-null.
   rtc::Thread* const worker_thread_;
   rtc::Thread* const network_thread_;
 
@@ -148,8 +130,6 @@ class ChannelManager final {
   std::vector<std::unique_ptr<VoiceChannel>> voice_channels_
       RTC_GUARDED_BY(worker_thread_);
   std::vector<std::unique_ptr<VideoChannel>> video_channels_
-      RTC_GUARDED_BY(worker_thread_);
-  std::vector<std::unique_ptr<RtpDataChannel>> data_channels_
       RTC_GUARDED_BY(worker_thread_);
 
   const bool enable_rtx_;

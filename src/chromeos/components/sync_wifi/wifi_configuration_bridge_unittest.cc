@@ -12,6 +12,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -182,18 +183,13 @@ class WifiConfigurationBridgeTest : public testing::Test {
   }
 
   void InitializeSyncStore() {
-    std::move(init_callback_).Run(/*error=*/base::nullopt, std::move(store_));
+    std::move(init_callback_).Run(/*error=*/absl::nullopt, std::move(store_));
     base::RunLoop().RunUntilIdle();
   }
 
   void OnModelTypeStoreCallback(syncer::ModelType type,
                                 syncer::ModelTypeStore::InitCallback callback) {
     init_callback_ = std::move(callback);
-  }
-
-  void TearDown() override {
-    // TODO(cvandermerwe) Put the shutdown logic into network_test_helper.
-    NetworkHandler::Shutdown();
   }
 
   void DisableBridge() {
@@ -238,7 +234,7 @@ class WifiConfigurationBridgeTest : public testing::Test {
     store_->CommitWriteBatch(
         std::move(batch),
         base::BindLambdaForTesting(
-            [&](const base::Optional<syncer::ModelError>& error) {
+            [&](const absl::optional<syncer::ModelError>& error) {
               EXPECT_FALSE(error);
               run_loop.Quit();
             }));
@@ -333,7 +329,7 @@ TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesAddTwoSpecifics) {
   const WifiConfigurationSpecifics woof_network =
       GenerateTestWifiSpecifics(woof_network_id());
 
-  base::Optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
+  absl::optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(),
       CreateEntityAddList({meow_network, woof_network}));
   EXPECT_FALSE(error);
@@ -376,7 +372,7 @@ TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesOneAdd) {
 TEST_F(WifiConfigurationBridgeTest,
        ApplySyncChangesOneDeletion_DeletesDisabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kWifiSyncAllowDeletes);
+  feature_list.InitAndDisableFeature(features::kWifiSyncApplyDeletes);
   InitializeSyncStore();
 
   WifiConfigurationSpecifics entry =
@@ -415,7 +411,7 @@ TEST_F(WifiConfigurationBridgeTest,
 TEST_F(WifiConfigurationBridgeTest,
        ApplySyncChangesOneDeletion_DeletesEnabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kWifiSyncAllowDeletes);
+  feature_list.InitAndEnableFeature(features::kWifiSyncApplyDeletes);
   InitializeSyncStore();
 
   WifiConfigurationSpecifics entry =

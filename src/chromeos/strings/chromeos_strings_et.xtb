@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Asetage dokument skannerisse ja valige alustamiseks käsk Skanni.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2878387241690264070">Tühjenes <ph name="RATE" /> <ph name="NUM_SECONDS" /> sekundiga.</translation>
+<translation id="2983662233540284543">Õppige mänguloojalt, hankige mänguloomise rakendusi ja tehke muudki</translation>
 <translation id="3008341117444806826">VÄRSKENDA</translation>
 <translation id="3009958530611748826">Valige kaust, kuhu salvestada</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Autentimine</translation>
 <translation id="5154917547274118687">Mälu</translation>
 <translation id="5168185087976003268">Aku seisukord</translation>
+<translation id="5170568018924773124">Kuva kaustas</translation>
+<translation id="519607504553633437">Kujundage ja looge oma mänge</translation>
 <translation id="5212543919916444558">Ma ei leia teie ekraanilt midagi, mille puhul saaksin aidata.
 Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
@@ -201,6 +204,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5275828089655680674">Taaskäita rutiinid</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">versioon <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Teisalda aken töölauale</translation>
 <translation id="5315873049536339193">Identiteet</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5318334351163689047">TCP-taotluste vead</translation>
@@ -222,6 +226,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5669267381087807207">Aktiveerimine</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Perekond</translation>
+<translation id="5752751666635965375">Looge ise mäng</translation>
 <translation id="5760715441271661976">Portaali olek</translation>
 <translation id="5797428682393400134">ÕNNESTUS</translation>
 <translation id="5832805196449965646">Lisa inimene</translation>
@@ -294,6 +299,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7216409898977639127">Mobiilsideteenuse pakkuja</translation>
 <translation id="7271040990581020067">Skanner on kasutuses. Proovige hiljem uuesti.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Võrguseadmed</translation>
 <translation id="7359657277149375382">Faili tüüp</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="8372477600026034341">Lisahostid</translation>
 <translation id="8395584934117017006">Seda seadet <ph name="DEVICE_TYPE" /> haldab ettevõte</translation>
 <translation id="8398927464629426868">Praegune seadme laadimise või tühjenemise kiirus</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Koduteenuse pakkuja nimi</translation>
 <translation id="8475690821716466388">WiFi-võrk on kaitstud nõrga protokolliga (WEP PSK)</translation>
 <translation id="8477551185774834963">DNS-i latentsusaeg ületab veidi lubatud piiri</translation>
@@ -351,6 +358,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="8575298406870537639">Teie operaator võib võrguga ühendamiseks seda valikut nõuda. Lisateavet küsige operaatorilt.</translation>
 <translation id="8576249514688522074">Lähtestamata</translation>
 <translation id="8620617069779373398">Rändluse olek</translation>
+<translation id="8660881923941176839">naela</translation>
 <translation id="8675354002693747642">Eeljagatud võti</translation>
 <translation id="871560550817059752">Ebaõnnestus – tint on otsas</translation>
 <translation id="8723108084122415655">Mittevaikevõrk ületab latentsusaja piiri</translation>
@@ -366,6 +374,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="8881098542468797602">Test õnnestus</translation>
 <translation id="8898840733695078011">Signaali tugevus</translation>
 <translation id="8910721771319628100">Vaikevõrk ületab latentsusaja piiri</translation>
+<translation id="8918637186205009138">Kasutaja <ph name="GIVEN_NAME" /> <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">Ebaõnnestus – salv puudub</translation>
 <translation id="8928727111548978589">Ebaõnnestus – paber on otsas</translation>
 <translation id="8930622219860340959">Raadiovõrk</translation>
@@ -383,6 +392,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="9149391708638971077">Käita mälutest</translation>
 <translation id="9173638680043580060">Jäänud on alla minuti</translation>
 <translation id="9190063653747922532">L2TP/IPSec + eeljagatud võti</translation>
+<translation id="9211490828691860325">Kõik töölauad</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Aktiveerimata</translation>
 <translation id="960719561871045870">Operaatori kood</translation>

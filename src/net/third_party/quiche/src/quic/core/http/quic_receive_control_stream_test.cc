@@ -15,7 +15,6 @@
 #include "quic/test_tools/quic_spdy_session_peer.h"
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
-#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -165,7 +164,7 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettings) {
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
 
   QpackEncoder* qpack_encoder = session_.qpack_encoder();
-  QpackHeaderTable* header_table =
+  QpackEncoderHeaderTable* header_table =
       QpackEncoderPeer::header_table(qpack_encoder);
   EXPECT_EQ(std::numeric_limits<size_t>::max(),
             session_.max_outbound_header_list_size());
@@ -311,7 +310,10 @@ TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
                         push_promise_frame);
   EXPECT_CALL(
       *connection_,
-      CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _))
+      CloseConnection(GetQuicReloadableFlag(quic_error_on_http3_push)
+                          ? QUIC_HTTP_FRAME_ERROR
+                          : QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
+                      _, _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
   EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
@@ -382,13 +384,21 @@ TEST_P(QuicReceiveControlStreamTest, CancelPushFrameBeforeSettings) {
       "01"    // payload length
       "01");  // push ID
 
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
-                              "First frame received on control stream is type "
-                              "3, but it must be SETTINGS.",
-                              _))
-      .WillOnce(
-          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  if (GetQuicReloadableFlag(quic_error_on_http3_push)) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
+                                              "CANCEL_PUSH frame received.", _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  } else {
+    EXPECT_CALL(
+        *connection_,
+        CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                        "First frame received on control stream is type "
+                        "3, but it must be SETTINGS.",
+                        _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  }
   EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 

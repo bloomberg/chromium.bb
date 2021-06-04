@@ -25,6 +25,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -42,12 +43,12 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 20;
+constexpr int kIndexedRulesetFormatVersion = 21;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating kIndexedRulesetFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 8,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 9,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated kIndexedRulesetFormatVersion above.");
 
@@ -155,6 +156,7 @@ bool PersistIndexedRuleset(const base::FilePath& path,
 
 void ClearRendererCacheOnNavigation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  extensions::ExtensionsBrowserClient::Get()->ClearBackForwardCache();
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
@@ -346,7 +348,7 @@ size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher) {
 }
 
 bool HasDNRFeedbackPermission(const Extension* extension,
-                              const base::Optional<int>& tab_id) {
+                              const absl::optional<int>& tab_id) {
   const PermissionsData* permissions_data = extension->permissions_data();
   return tab_id.has_value()
              ? permissions_data->HasAPIPermissionForTab(

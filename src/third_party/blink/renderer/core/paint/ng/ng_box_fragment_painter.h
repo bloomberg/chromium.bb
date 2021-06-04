@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -157,7 +158,7 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
                     const PhysicalOffset& paint_offset,
                     const PhysicalOffset& parent_offset);
   void PaintFloatingItems(const PaintInfo&, NGInlineCursor* cursor);
-  void PaintFloatingChildren(const NGPhysicalContainerFragment&,
+  void PaintFloatingChildren(const NGPhysicalFragment&,
                              const PaintInfo& paint_info,
                              const PaintInfo& float_paint_info);
   void PaintFloats(const PaintInfo&);
@@ -236,7 +237,7 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
                             const NGPhysicalBoxFragment& container,
                             const NGInlineCursor& children);
   bool HitTestFloatingChildren(const HitTestContext& hit_test,
-                               const NGPhysicalContainerFragment& container,
+                               const NGPhysicalFragment& container,
                                const PhysicalOffset& accumulated_offset);
   bool HitTestFloatingChildItems(const HitTestContext& hit_test,
                                  const NGInlineCursor& children,

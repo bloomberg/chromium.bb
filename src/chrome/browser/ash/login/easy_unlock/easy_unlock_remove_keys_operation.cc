@@ -13,7 +13,7 @@
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-namespace chromeos {
+namespace ash {
 
 EasyUnlockRemoveKeysOperation::EasyUnlockRemoveKeysOperation(
     const UserContext& user_context,
@@ -65,7 +65,7 @@ void EasyUnlockRemoveKeysOperation::RemoveKey() {
 }
 
 void EasyUnlockRemoveKeysOperation::OnKeyRemoved(
-    base::Optional<::user_data_auth::RemoveKeyReply> reply) {
+    absl::optional<::user_data_auth::RemoveKeyReply> reply) {
   if (reply.has_value() &&
       reply->error() ==
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
@@ -87,4 +87,4 @@ void EasyUnlockRemoveKeysOperation::OnKeyRemoved(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

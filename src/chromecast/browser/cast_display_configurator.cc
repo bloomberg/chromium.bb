@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
@@ -141,6 +142,7 @@ void CastDisplayConfigurator::EnableDisplay(
   config_request.push_back(std::move(display_config_params));
 
   delegate_->Configure(config_request, std::move(callback));
+  NotifyObservers();
 }
 
 void CastDisplayConfigurator::DisableDisplay(
@@ -167,6 +169,7 @@ void CastDisplayConfigurator::SetColorMatrix(
   if (!delegate_ || !display_)
     return;
   delegate_->SetColorMatrix(display_->display_id(), color_matrix);
+  NotifyObservers();
 }
 
 void CastDisplayConfigurator::SetGammaCorrection(
@@ -176,6 +179,12 @@ void CastDisplayConfigurator::SetGammaCorrection(
     return;
 
   delegate_->SetGammaCorrection(display_->display_id(), degamma_lut, gamma_lut);
+  NotifyObservers();
+}
+
+void CastDisplayConfigurator::NotifyObservers() {
+  for (Observer& observer : observers_)
+    observer.OnDisplayStateChanged();
 }
 
 void CastDisplayConfigurator::ForceInitialConfigure() {
@@ -263,6 +272,14 @@ void CastDisplayConfigurator::UpdateScreen(
   cast_screen_->OnDisplayChanged(display_id, device_scale_factor, rotation,
                                  GetScreenBounds(bounds.size(), rotation));
   touch_device_manager_->OnDisplayConfigured(display_id, rotation, bounds);
+}
+
+void CastDisplayConfigurator::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CastDisplayConfigurator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace shell

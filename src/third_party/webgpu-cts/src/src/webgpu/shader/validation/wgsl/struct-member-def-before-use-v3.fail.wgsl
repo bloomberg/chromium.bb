@@ -13,7 +13,7 @@ fn Foo() -> goo {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var r : i32 = Foo().s.z;
   return;
 }

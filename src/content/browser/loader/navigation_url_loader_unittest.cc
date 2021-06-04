@@ -58,7 +58,7 @@ class NavigationURLLoaderTest : public testing::Test {
       NavigationURLLoaderDelegate* delegate) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
-            base::nullopt /* initiator_frame_token */,
+            absl::nullopt /* initiator_frame_token */,
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
@@ -69,17 +69,17 @@ class NavigationURLLoaderTest : public testing::Test {
             GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
-            base::nullopt /* devtools_initiator_info */,
-            nullptr /* trust_token_params */, base::nullopt /* impression */,
+            absl::nullopt /* devtools_initiator_info */,
+            nullptr /* trust_token_params */, absl::nullopt /* impression */,
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
-            base::nullopt /* web_bundle_token */);
+            absl::nullopt /* web_bundle_token */);
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
 
     StoragePartition* storage_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_.get());
+        browser_context_->GetDefaultStoragePartition();
 
     url::Origin origin = url::Origin::Create(url);
     std::unique_ptr<NavigationRequestInfo> request_info(
@@ -90,15 +90,14 @@ class NavigationURLLoaderTest : public testing::Test {
                 net::SiteForCookies::FromUrl(url)),
             true /* is_main_frame */, false /* are_ancestors_secure */,
             FrameTreeNode::kFrameTreeNodeInvalidId /* frame_tree_node_id */,
-            false /* report_raw_headers */, false /* is_prerendering */,
-            false /* upgrade_if_insecure */,
+            false /* report_raw_headers */, false /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,
             false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
-            base::nullopt /* devtools_accepted_stream_types */));
+            absl::nullopt /* devtools_accepted_stream_types */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, nullptr, delegate,
@@ -162,8 +161,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   // Set HSTS for the test domain in order to make SSL errors fatal.
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;
-  auto* storage_partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context_.get());
+  auto* storage_partition = browser_context_->GetDefaultStoragePartition();
   base::RunLoop run_loop;
   storage_partition->GetNetworkContext()->AddHSTS(
       url.host(), expiry, include_subdomains, run_loop.QuitClosure());

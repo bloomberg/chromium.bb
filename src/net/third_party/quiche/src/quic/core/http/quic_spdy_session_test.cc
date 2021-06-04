@@ -38,7 +38,6 @@
 #include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/qpack/qpack_encoder_peer.h"
-#include "quic/test_tools/qpack/qpack_header_table_peer.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
 #include "quic/test_tools/quic_config_peer.h"
 #include "quic/test_tools/quic_connection_peer.h"
@@ -48,7 +47,6 @@
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
-#include "common/platform/api/quiche_text_utils.h"
 #include "common/quiche_endian.h"
 #include "common/test_tools/quiche_test_utils.h"
 #include "spdy/core/spdy_framer.h"
@@ -559,7 +557,6 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void ReceiveWebTransportSession(WebTransportSessionId session_id) {
-    SetQuicReloadableFlag(quic_accept_empty_stream_frame_with_no_fin, true);
     QuicStreamFrame frame(session_id, /*fin=*/false, /*offset=*/0,
                           absl::string_view());
     session_.OnStreamFrame(frame);
@@ -1178,7 +1175,6 @@ TEST_P(QuicSpdySessionTestServer, SendGoAway) {
 }
 
 TEST_P(QuicSpdySessionTestServer, SendGoAwayWithoutEncryption) {
-  SetQuicReloadableFlag(quic_encrypted_goaway, true);
   if (VersionHasIetfQuicFrames(transport_version())) {
     // HTTP/3 GOAWAY has different semantic and thus has its own test.
     return;
@@ -1220,7 +1216,6 @@ TEST_P(QuicSpdySessionTestServer, SendHttp3GoAway) {
 }
 
 TEST_P(QuicSpdySessionTestServer, SendHttp3GoAwayWithoutEncryption) {
-  SetQuicReloadableFlag(quic_encrypted_goaway, true);
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
@@ -1918,12 +1913,6 @@ TEST_P(QuicSpdySessionTestClient, BadStreamFramePendingStream) {
       GetNthServerInitiatedUnidirectionalStreamId(transport_version(), 0);
   // A bad stream frame with no data and no fin.
   QuicStreamFrame data1(stream_id1, false, 0, 0);
-  if (!GetQuicReloadableFlag(quic_accept_empty_stream_frame_with_no_fin)) {
-    EXPECT_CALL(*connection_, CloseConnection(_, _, _))
-        .WillOnce(
-            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-    EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
-  }
   session_.OnStreamFrame(data1);
 }
 
@@ -2519,19 +2508,17 @@ TEST_P(QuicSpdySessionTestServer, ReceiveControlStream) {
   QuicStreamFrame frame(stream_id, false, 1, absl::string_view(data));
 
   QpackEncoder* qpack_encoder = session_.qpack_encoder();
-  QpackHeaderTable* header_table =
+  QpackEncoderHeaderTable* header_table =
       QpackEncoderPeer::header_table(qpack_encoder);
 
-  EXPECT_NE(512u,
-            QpackHeaderTablePeer::maximum_dynamic_table_capacity(header_table));
+  EXPECT_NE(512u, header_table->maximum_dynamic_table_capacity());
   EXPECT_NE(5u, session_.max_outbound_header_list_size());
   EXPECT_NE(42u, QpackEncoderPeer::maximum_blocked_streams(qpack_encoder));
 
   EXPECT_CALL(debug_visitor, OnSettingsFrameReceived(settings));
   session_.OnStreamFrame(frame);
 
-  EXPECT_EQ(512u,
-            QpackHeaderTablePeer::maximum_dynamic_table_capacity(header_table));
+  EXPECT_EQ(512u, header_table->maximum_dynamic_table_capacity());
   EXPECT_EQ(5u, session_.max_outbound_header_list_size());
   EXPECT_EQ(42u, QpackEncoderPeer::maximum_blocked_streams(qpack_encoder));
 }
@@ -2618,10 +2605,10 @@ TEST_P(QuicSpdySessionTestServer, SessionDestroyedWhileHeaderDecodingBlocked) {
   EXPECT_FALSE(stream->headers_decompressed());
 
   // |session_| gets destoyed.  That destroys QpackDecoder, a member of
-  // QuicSpdySession (derived class), which destroys QpackHeaderTable.
+  // QuicSpdySession (derived class), which destroys QpackDecoderHeaderTable.
   // Then |*stream|, owned by QuicSession (base class) get destroyed, which
-  // destroys QpackProgessiveDecoder, a registered Observer of QpackHeaderTable.
-  // This must not cause a crash.
+  // destroys QpackProgessiveDecoder, a registered Observer of
+  // QpackDecoderHeaderTable.  This must not cause a crash.
 }
 
 TEST_P(QuicSpdySessionTestClient, ResetAfterInvalidIncomingStreamType) {
@@ -2897,10 +2884,7 @@ TEST_P(QuicSpdySessionTestClient, Http3GoAwayLargerIdThanBefore) {
   session_.OnHttp3GoAway(stream_id2);
 }
 
-// Test that receipt of CANCEL_PUSH frame does not result in closing the
-// connection.
-// TODO(b/151841240): Handle CANCEL_PUSH frames instead of ignoring them.
-TEST_P(QuicSpdySessionTestClient, IgnoreCancelPush) {
+TEST_P(QuicSpdySessionTestClient, CloseConnectionOnCancelPush) {
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
@@ -2937,16 +2921,19 @@ TEST_P(QuicSpdySessionTestClient, IgnoreCancelPush) {
       "00");  // push ID
   QuicStreamFrame data3(receive_control_stream_id, /* fin = */ false, offset,
                         cancel_push_frame);
-  EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
-  session_.OnStreamFrame(data3);
-}
-
-TEST_P(QuicSpdySessionTestServer, ServerPushEnabledDefaultValue) {
-  if (VersionUsesHttp3(transport_version())) {
-    EXPECT_FALSE(session_.server_push_enabled());
+  if (GetQuicReloadableFlag(quic_error_on_http3_push)) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
+                                              "CANCEL_PUSH frame received.", _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+    EXPECT_CALL(*connection_,
+                SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
+                                          "CANCEL_PUSH frame received."));
   } else {
-    EXPECT_TRUE(session_.server_push_enabled());
+    // CANCEL_PUSH is ignored.
+    EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
   }
+  session_.OnStreamFrame(data3);
 }
 
 TEST_P(QuicSpdySessionTestServer, OnSetting) {
@@ -2964,7 +2951,7 @@ TEST_P(QuicSpdySessionTestServer, OnSetting) {
     session_.OnSetting(SETTINGS_QPACK_BLOCKED_STREAMS, 12);
     EXPECT_EQ(12u, QpackEncoderPeer::maximum_blocked_streams(qpack_encoder));
 
-    QpackHeaderTable* header_table =
+    QpackEncoderHeaderTable* header_table =
         QpackEncoderPeer::header_table(qpack_encoder);
     EXPECT_EQ(0u, header_table->maximum_dynamic_table_capacity());
     session_.OnSetting(SETTINGS_QPACK_MAX_TABLE_CAPACITY, 37);
@@ -2977,10 +2964,6 @@ TEST_P(QuicSpdySessionTestServer, OnSetting) {
             session_.max_outbound_header_list_size());
   session_.OnSetting(SETTINGS_MAX_FIELD_SECTION_SIZE, 5);
   EXPECT_EQ(5u, session_.max_outbound_header_list_size());
-
-  EXPECT_TRUE(session_.server_push_enabled());
-  session_.OnSetting(spdy::SETTINGS_ENABLE_PUSH, 0);
-  EXPECT_FALSE(session_.server_push_enabled());
 
   spdy::HpackEncoder* hpack_encoder =
       QuicSpdySessionPeer::GetSpdyFramer(&session_)->GetHpackEncoder();
@@ -3108,10 +3091,7 @@ TEST_P(QuicSpdySessionTestServer, PeerClosesCriticalSendStream) {
   session_.OnStopSendingFrame(stop_sending_encoder_stream);
 }
 
-// Test that receipt of CANCEL_PUSH frame does not result in closing the
-// connection.
-// TODO(b/151841240): Handle CANCEL_PUSH frames instead of ignoring them.
-TEST_P(QuicSpdySessionTestServer, IgnoreCancelPush) {
+TEST_P(QuicSpdySessionTestServer, CloseConnectionOnCancelPush) {
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
@@ -3148,7 +3128,18 @@ TEST_P(QuicSpdySessionTestServer, IgnoreCancelPush) {
       "00");  // push ID
   QuicStreamFrame data3(receive_control_stream_id, /* fin = */ false, offset,
                         cancel_push_frame);
-  EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
+  if (GetQuicReloadableFlag(quic_error_on_http3_push)) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
+                                              "CANCEL_PUSH frame received.", _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+    EXPECT_CALL(*connection_,
+                SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
+                                          "CANCEL_PUSH frame received."));
+  } else {
+    // CANCEL_PUSH is ignored.
+    EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
+  }
   session_.OnStreamFrame(data3);
 }
 

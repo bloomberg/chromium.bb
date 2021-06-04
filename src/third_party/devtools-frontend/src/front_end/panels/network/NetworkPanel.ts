@@ -39,20 +39,25 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as PerfUI from '../../perf_ui/perf_ui.js';
-import * as Search from '../../search/search.js';
-import * as Components from '../../ui/components/components.js';
+import * as Logs from '../../models/logs/logs.js';
+import * as Workspace from '../../models/workspace/workspace.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Workspace from '../../workspace/workspace.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as Search from '../search/search.js';
 
 import {BlockedURLsPane} from './BlockedURLsPane.js';
 import {Events} from './NetworkDataGridNode.js';
-import {NetworkItemView, Tabs as NetworkItemViewTabs} from './NetworkItemView.js';  // eslint-disable-line no-unused-vars
-import {FilterType, NetworkLogView} from './NetworkLogView.js';  // eslint-disable-line no-unused-vars
+import type {Tabs as NetworkItemViewTabs} from './NetworkItemView.js';
+import {NetworkItemView} from './NetworkItemView.js';  // eslint-disable-line no-unused-vars
+import type {FilterType} from './NetworkLogView.js';
+import {NetworkLogView} from './NetworkLogView.js';  // eslint-disable-line no-unused-vars
 import {NetworkOverview} from './NetworkOverview.js';
-import {NetworkSearchScope, UIRequestLocation} from './NetworkSearchScope.js';  // eslint-disable-line no-unused-vars
-import {NetworkTimeCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+import type {UIRequestLocation} from './NetworkSearchScope.js';
+import {NetworkSearchScope} from './NetworkSearchScope.js';  // eslint-disable-line no-unused-vars
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
+import {NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
 
 const UIStrings = {
   /**
@@ -193,7 +198,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
   constructor() {
     super('network');
-    this.registerRequiredCSS('panels/network/networkPanel.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/network/networkPanel.css', {enableLegacyPatching: false});
 
     this._networkLogShowOverviewSetting =
         Common.Settings.Settings.instance().createSetting('networkLogShowOverview', true);
@@ -320,11 +325,11 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._load, this);
     this._networkLogView.addEventListener(Events.RequestSelected, this._onRequestSelected, this);
     this._networkLogView.addEventListener(Events.RequestActivated, this._onRequestActivated, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(
-        SDK.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(
-        SDK.NetworkLog.Events.RequestUpdated, this._onUpdateRequest, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(SDK.NetworkLog.Events.Reset, this._onNetworkLogReset, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(
+        Logs.NetworkLog.Events.RequestAdded, this._onUpdateRequest, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(
+        Logs.NetworkLog.Events.RequestUpdated, this._onUpdateRequest, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(Logs.NetworkLog.Events.Reset, this._onNetworkLogReset, this);
   }
 
   static instance(opts: {
@@ -394,7 +399,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     this._panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this._toggleRecordAction));
     const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'largeicon-clear');
     clearButton.addEventListener(
-        UI.Toolbar.ToolbarButton.Events.Click, () => SDK.NetworkLog.NetworkLog.instance().reset(true), this);
+        UI.Toolbar.ToolbarButton.Events.Click, () => Logs.NetworkLog.NetworkLog.instance().reset(true), this);
     this._panelToolbar.appendToolbarItem(clearButton);
     this._panelToolbar.appendSeparator();
 
@@ -418,7 +423,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
     this._panelToolbar.appendToolbarItem(this._throttlingSelect);
 
-    const networkConditionsIcon = new Components.Icon.Icon();
+    const networkConditionsIcon = new IconButton.Icon.Icon();
     networkConditionsIcon.data = {
       iconName: 'network_conditions_icon',
       color: 'rgb(110 110 110)',
@@ -659,6 +664,10 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   }
 
   _showRequestPanel(shownTab?: NetworkItemViewTabs, takeFocus?: boolean): void {
+    if (this._splitWidget.showMode() === UI.SplitWidget.ShowMode.Both && !shownTab && !takeFocus) {
+      // If panel is already shown, and we are not forcing a specific tab, return.
+      return;
+    }
     this._clearNetworkItemView();
     if (this._currentRequest) {
       const networkItemView = this._createNetworkItemView(shownTab);
@@ -985,11 +994,8 @@ export class RequestLocationRevealer implements Common.Revealer.Revealer {
     if (location.searchMatch) {
       await view.revealResponseBody(location.searchMatch.lineNumber);
     }
-    if (location.requestHeader) {
-      view.revealRequestHeader(location.requestHeader.name);
-    }
-    if (location.responseHeader) {
-      view.revealResponseHeader(location.responseHeader.name);
+    if (location.header) {
+      view.revealHeader(location.header.section, location.header.header?.name);
     }
   }
 }

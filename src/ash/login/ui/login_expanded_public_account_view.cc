@@ -28,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -127,7 +128,7 @@ class SelectionButtonView : public LoginButton {
     layer()->SetFillsBoundsOpaquely(false);
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    SetInkDropMode(InkDropMode::OFF);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
 
     auto add_horizontal_margin = [&](int width,
                                      views::View* parent) -> views::View* {
@@ -281,7 +282,7 @@ class MonitoringWarningView : public NonAccessibleView {
   friend class LoginExpandedPublicAccountView::TestApi;
 
   WarningType warning_type_;
-  base::Optional<std::string> device_manager_;
+  absl::optional<std::string> device_manager_;
   views::ImageView* image_;
   views::Label* label_;
 
@@ -410,6 +411,8 @@ class RightPaneView : public NonAccessibleView {
         base::BindRepeating(&RightPaneView::SubmitButtonPressed,
                             base::Unretained(this)),
         kArrowButtonSizeDp);
+    submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_PUBLIC_ACCOUNT_LOG_IN_BUTTON_ACCESSIBLE_NAME));
     AddChildView(submit_button_);
   }
 

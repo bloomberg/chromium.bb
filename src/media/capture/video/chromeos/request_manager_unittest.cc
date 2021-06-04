@@ -65,7 +65,8 @@ class FakeCameraBufferFactory : public CameraBufferFactory {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
     return unittest_internal::MockGpuMemoryBufferManager::
-        CreateFakeGpuMemoryBuffer(size, format, usage, gpu::kNullSurfaceHandle);
+        CreateFakeGpuMemoryBuffer(size, format, usage, gpu::kNullSurfaceHandle,
+                                  nullptr);
   }
 
   ChromiumPixelFormat ResolveStreamBufferFormat(
@@ -104,7 +105,8 @@ class RequestManagerTest : public ::testing::Test {
               [](const uint8_t* buffer, const uint32_t bytesused,
                  const VideoCaptureFormat& capture_format,
                  const int rotation) { return mojom::Blob::New(); }),
-          base::ThreadTaskRunnerHandle::Get());
+          base::ThreadTaskRunnerHandle::Get(),
+          cros::mojom::CAMERA_DEVICE_API_VERSION_3_5);
     }
   }
 
@@ -114,7 +116,7 @@ class RequestManagerTest : public ::testing::Test {
   }
 
   void DoLoop() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 

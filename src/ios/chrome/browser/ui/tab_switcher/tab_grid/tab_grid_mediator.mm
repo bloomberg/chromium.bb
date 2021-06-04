@@ -12,9 +12,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
@@ -29,6 +31,7 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -130,12 +133,14 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @implementation TabGridMediator {
   // Observers for WebStateList.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
-  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
-      _scopedWebStateListObserver;
+  std::unique_ptr<
+      base::ScopedMultiSourceObservation<WebStateList, WebStateListObserver>>
+      _scopedWebStateListObservation;
   // Observer for WebStates.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
-  std::unique_ptr<ScopedObserver<web::WebState, web::WebStateObserver>>
-      _scopedWebStateObserver;
+  std::unique_ptr<
+      base::ScopedMultiSourceObservation<web::WebState, web::WebStateObserver>>
+      _scopedWebStateObservation;
 }
 
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
@@ -143,13 +148,14 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     _consumer = consumer;
     _webStateListObserverBridge =
         std::make_unique<WebStateListObserverBridge>(self);
-    _scopedWebStateListObserver =
-        std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
-            _webStateListObserverBridge.get());
+    _scopedWebStateListObservation = std::make_unique<
+        base::ScopedMultiSourceObservation<WebStateList, WebStateListObserver>>(
+        _webStateListObserverBridge.get());
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
-    _scopedWebStateObserver =
-        std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
+    _scopedWebStateObservation =
+        std::make_unique<base::ScopedMultiSourceObservation<
+            web::WebState, web::WebStateObserver>>(
             _webStateObserverBridge.get());
     _appearanceCache = [[NSMutableDictionary alloc] init];
   }
@@ -160,18 +166,18 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)setBrowser:(Browser*)browser {
   [self.snapshotCache removeObserver:self];
-  _scopedWebStateListObserver->RemoveAll();
-  _scopedWebStateObserver->RemoveAll();
+  _scopedWebStateListObservation->RemoveAllObservations();
+  _scopedWebStateObservation->RemoveAllObservations();
   _browser = browser;
   _webStateList = browser ? browser->GetWebStateList() : nullptr;
   _browserState = browser ? browser->GetBrowserState() : nullptr;
   [self.snapshotCache addObserver:self];
 
   if (_webStateList) {
-    _scopedWebStateListObserver->Add(_webStateList);
+    _scopedWebStateListObservation->AddObservation(_webStateList);
     for (int i = 0; i < self.webStateList->count(); i++) {
       web::WebState* webState = self.webStateList->GetWebStateAt(i);
-      _scopedWebStateObserver->Add(webState);
+      _scopedWebStateObservation->AddObservation(webState);
     }
     [self populateConsumerItems];
   }
@@ -189,7 +195,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   [self.consumer insertItem:CreateItem(webState)
                     atIndex:index
              selectedItemID:GetActiveTabId(webStateList)];
-  _scopedWebStateObserver->Add(webState);
+  _scopedWebStateObservation->AddObservation(webState);
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -213,8 +219,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(oldWebState);
   [self.consumer replaceItemID:tabHelper->tab_id()
                       withItem:CreateItem(newWebState)];
-  _scopedWebStateObserver->Remove(oldWebState);
-  _scopedWebStateObserver->Add(newWebState);
+  _scopedWebStateObservation->RemoveObservation(oldWebState);
+  _scopedWebStateObservation->AddObservation(newWebState);
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -229,7 +235,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   NSString* itemID = tabHelper->tab_id();
   [self.consumer removeItemWithID:itemID
                    selectedItemID:GetActiveTabId(webStateList)];
-  _scopedWebStateObserver->Remove(webState);
+  _scopedWebStateObservation->RemoveObservation(webState);
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -253,14 +259,14 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
-  _scopedWebStateObserver->RemoveAll();
+  _scopedWebStateObservation->RemoveAllObservations();
 }
 
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
   for (int i = 0; i < self.webStateList->count(); i++) {
     web::WebState* webState = self.webStateList->GetWebStateAt(i);
-    _scopedWebStateObserver->Add(webState);
+    _scopedWebStateObservation->AddObservation(webState);
   }
   [self.consumer populateItems:CreateItems(self.webStateList)
                 selectedItemID:GetActiveTabId(self.webStateList)];
@@ -579,6 +585,23 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)clearPreloadedSnapshots {
   [self.appearanceCache removeAllObjects];
+}
+
+#pragma mark - GridMenuActionsDataSource
+
+- (GridItem*)gridItemForCellIdentifier:(NSString*)identifier {
+  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  GridItem* item =
+      [[GridItem alloc] initWithTitle:tab_util::GetTabTitle(webState)
+                                  url:webState->GetVisibleURL()];
+  return item;
+}
+
+- (BOOL)isGridItemBookmarked:(GridItem*)item {
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+  return item && bookmarkModel &&
+         bookmarkModel->GetMostRecentlyAddedUserNodeForURL(item.URL);
 }
 
 #pragma mark - Private

@@ -10,11 +10,11 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_canvas.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -343,7 +343,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra,
                      ColorScheme color_scheme = ColorScheme::kDefault,
-                     const base::Optional<SkColor>& accent_color = 0) const = 0;
+                     const absl::optional<SkColor>& accent_color = 0) const = 0;
 
   // Paint part during state transition, used for overlay scrollbar state
   // transition animation.
@@ -449,6 +449,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // colors, you probably shouldn't. Instead, use GetSystemColor().
   virtual bool ShouldUseDarkColors() const;
 
+  // Returns the name that uniquely identifies the current NativeTheme. Default
+  // implementation returns an empty string.
+  virtual std::string GetNativeThemeName() const;
+
   // Returns the OS-level user preferred color scheme. See the comment for
   // CalculatePreferredColorScheme() for details on how preferred color scheme
   // is calculated.
@@ -458,13 +462,13 @@ class NATIVE_THEME_EXPORT NativeTheme {
   virtual PreferredContrast GetPreferredContrast() const;
 
   // Returns the system's caption style.
-  virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
+  virtual absl::optional<CaptionStyle> GetSystemCaptionStyle() const;
 
   virtual ColorScheme GetDefaultSystemColorScheme() const;
 
   virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
 
-  base::Optional<SkColor> GetSystemThemeColor(
+  absl::optional<SkColor> GetSystemThemeColor(
       SystemThemeColor theme_color) const;
 
   bool HasDifferentSystemColors(
@@ -502,8 +506,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   virtual ~NativeTheme();
 
   // Gets the color from the color provider if using a color provider is enable.
-  base::Optional<SkColor> GetColorProviderColor(ColorId color_id,
-                                                ColorScheme color_scheme) const;
+  absl::optional<SkColor> GetColorProviderColor(ColorId color_id,
+                                                ColorScheme color_scheme,
+                                                std::string theme_name) const;
 
   // Whether high contrast is forced via command-line flag.
   bool IsForcedHighContrast() const;

@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +32,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/context_menu_params.h"
@@ -54,6 +54,7 @@
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
@@ -68,9 +69,9 @@
 #include "skia/ext/skia_utils_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
-#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -111,8 +112,6 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    WebUIControllerFactory::RegisterFactory(
-        ContentWebUIControllerFactory::GetInstance());
 
     if (IsIsolatedOriginRequiredToGuaranteeDedicatedProcess()) {
       // Isolate |isolated_cross_site_url()| so it cannot share a process
@@ -128,12 +127,6 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
     }
   }
 
-  void TearDown() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(
-        ContentWebUIControllerFactory::GetInstance());
-    RenderViewHostImplTestHarness::TearDown();
-  }
-
   bool has_audio_wake_lock() {
     return contents()
         ->media_web_contents_observer()
@@ -143,13 +136,19 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
   GURL isolated_cross_site_url() const {
     return GURL("http://isolated-cross-site.com");
   }
+
+ private:
+  ScopedWebUIControllerFactoryRegistration factory_registration_{
+      ContentWebUIControllerFactory::GetInstance()};
 };
 
 class TestWebContentsObserver : public WebContentsObserver {
  public:
   explicit TestWebContentsObserver(WebContents* contents)
       : WebContentsObserver(contents) {}
-  ~TestWebContentsObserver() override {}
+  ~TestWebContentsObserver() override {
+    EXPECT_FALSE(expected_capture_handle_config_) << "Unfulfilled expectation.";
+  }
 
   void DidFinishLoad(RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
@@ -179,9 +178,23 @@ class TestWebContentsObserver : public WebContentsObserver {
     last_is_connected_to_bluetooth_device_ = is_connected_to_bluetooth_device;
   }
 
+  void OnCaptureHandleConfigUpdate(
+      const blink::mojom::CaptureHandleConfig& config) override {
+    ASSERT_TRUE(expected_capture_handle_config_) << "Unexpected call.";
+    EXPECT_EQ(config, *expected_capture_handle_config_);
+    expected_capture_handle_config_ = nullptr;
+  }
+
+  void ExpectOnCaptureHandleConfigUpdate(
+      blink::mojom::CaptureHandleConfigPtr config) {
+    CHECK(config) << "Malformed test.";
+    ASSERT_FALSE(expected_capture_handle_config_) << "Unfulfilled expectation.";
+    expected_capture_handle_config_ = std::move(config);
+  }
+
   const GURL& last_url() const { return last_url_; }
   int theme_color_change_calls() const { return theme_color_change_calls_; }
-  base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction()
+  absl::optional<viz::VerticalScrollDirection> last_vertical_scroll_direction()
       const {
     return last_vertical_scroll_direction_;
   }
@@ -198,10 +211,11 @@ class TestWebContentsObserver : public WebContentsObserver {
  private:
   GURL last_url_;
   int theme_color_change_calls_ = 0;
-  base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction_;
+  absl::optional<viz::VerticalScrollDirection> last_vertical_scroll_direction_;
   bool observed_did_first_visually_non_empty_paint_ = false;
   int num_is_connected_to_bluetooth_device_changed_ = 0;
   bool last_is_connected_to_bluetooth_device_ = false;
+  blink::mojom::CaptureHandleConfigPtr expected_capture_handle_config_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
@@ -490,10 +504,10 @@ TEST_F(WebContentsImplTest, NavigateToInvalidURL) {
 // inside a view-source: URL. This verifies that the navigation is not allowed
 // to proceed after the view-source: URL rewriting logic has run.
 TEST_F(WebContentsImplTest, NavigateToViewSourceRendererDebugURL) {
-  const GURL renderer_debug_url(kChromeUIKillURL);
+  const GURL renderer_debug_url(blink::kChromeUIKillURL);
   const GURL view_source_debug_url("view-source:" + renderer_debug_url.spec());
-  EXPECT_TRUE(IsRendererDebugURL(renderer_debug_url));
-  EXPECT_FALSE(IsRendererDebugURL(view_source_debug_url));
+  EXPECT_TRUE(blink::IsRendererDebugURL(renderer_debug_url));
+  EXPECT_FALSE(blink::IsRendererDebugURL(view_source_debug_url));
   controller().LoadURL(view_source_debug_url, Referrer(),
                        ui::PAGE_TRANSITION_GENERATED, std::string());
   EXPECT_EQ(nullptr, controller().GetPendingEntry());
@@ -815,7 +829,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          native_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_LINK,
+          native_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_LINK,
           false, std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entries.push_back(std::move(new_entry));
@@ -856,7 +870,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          regular_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_LINK,
+          regular_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_LINK,
           false, std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entries.push_back(std::move(new_entry));
@@ -1694,7 +1708,7 @@ TEST_F(WebContentsImplTest, PendingContentsShown) {
   int widget_id = widget->GetRoutingID();
 
   // The first call to GetCreatedWindow pops it off the pending list.
-  base::Optional<CreatedWindow> created_window =
+  absl::optional<CreatedWindow> created_window =
       contents()->GetCreatedWindow(process_id, widget_id);
   EXPECT_TRUE(created_window.has_value());
   EXPECT_EQ(test_web_contents, created_window->contents.get());
@@ -2481,7 +2495,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   TestRenderFrameHost* rfh = main_test_rfh();
   rfh->InitializeRenderFrameIfNeeded();
 
-  EXPECT_EQ(base::nullopt, contents()->GetThemeColor());
+  EXPECT_EQ(absl::nullopt, contents()->GetThemeColor());
   EXPECT_EQ(0, observer.theme_color_change_calls());
 
   // Theme color changes should not propagate past the WebContentsImpl before
@@ -2781,49 +2795,6 @@ TEST_F(WebContentsImplTest, Bluetooth) {
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
 
-TEST_F(WebContentsImplTest, FaviconURLsSet) {
-  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
-  const auto kFavicon =
-      blink::mojom::FaviconURL(GURL("https://example.com/favicon.ico"),
-                               blink::mojom::FaviconIconType::kFavicon, {});
-
-  contents()->NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(2u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-}
-
-TEST_F(WebContentsImplTest, FaviconURLsResetWithNavigation) {
-  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(
-      GURL("https://example.com/favicon.ico"),
-      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>()));
-
-  contents()->NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
-
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-
-  contents()->NavigateAndCommit(GURL("https://example.com/navigation.html"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
-}
-
 TEST_F(WebContentsImplTest, BadDownloadImageResponseFromRenderer) {
   // Avoid using TestWebContents, which fakes image download logic without
   // exercising the code in WebContentsImpl.
@@ -2870,6 +2841,178 @@ TEST_F(WebContentsImplTest, BadDownloadImageResponseFromRenderer) {
   // The renderer process should have been killed due to
   // WCI_INVALID_DOWNLOAD_IMAGE_RESULT.
   EXPECT_TRUE(contents->GetMainFrame()->GetProcess()->ShutdownRequested());
+}
+
+TEST_F(WebContentsImplTest,
+       GetCaptureHandleConfigBeforeSetIsCalledReturnsEmptyConfig) {
+  const auto empty_config = blink::mojom::CaptureHandleConfig::New();
+  EXPECT_EQ(contents()->GetCaptureHandleConfig(), *empty_config);
+}
+
+TEST_F(WebContentsImplTest, SetAndGetCaptureHandleConfig) {
+  // Value set - value returned.
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"Pay not attention";
+    contents()->SetCaptureHandleConfig(config->Clone());
+    EXPECT_EQ(*config, contents()->GetCaptureHandleConfig());
+  }
+
+  // New value set - new value returned.
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"to the man behind the curtain.";
+    contents()->SetCaptureHandleConfig(config->Clone());
+    EXPECT_EQ(*config, contents()->GetCaptureHandleConfig());
+  }
+}
+
+TEST_F(WebContentsImplTest, NoOnCaptureHandleConfigUpdateCallIfResettingEmpty) {
+  const auto empty_config = blink::mojom::CaptureHandleConfig::New();
+
+  // Reminder - empty in the beginning.
+  ASSERT_EQ(contents()->GetCaptureHandleConfig(),
+            *blink::mojom::CaptureHandleConfig::New());
+
+  TestWebContentsObserver observer(contents());
+  // Note that ExpectOnCaptureHandleConfigUpdate() is NOT called.
+  // If OnCaptureHandleConfigUpdate() is called, the test will fail.
+
+  contents()->SetCaptureHandleConfig(empty_config.Clone());
+}
+
+TEST_F(WebContentsImplTest,
+       OnCaptureHandleConfigUpdateCalledWhenHandleChanges) {
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"Some handle.";
+    contents()->SetCaptureHandleConfig(config.Clone());
+  }
+
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"A different handle.";
+    TestWebContentsObserver observer(contents());
+    observer.ExpectOnCaptureHandleConfigUpdate(config.Clone());
+    contents()->SetCaptureHandleConfig(config.Clone());
+  }
+}
+
+TEST_F(WebContentsImplTest,
+       OnCaptureHandleConfigUpdateNotCalledWhenResettingAnIdenticalHandle) {
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"The ministry of redundancy ministry.";
+    contents()->SetCaptureHandleConfig(config.Clone());
+  }
+
+  {
+    auto config = blink::mojom::CaptureHandleConfig::New();
+    config->capture_handle = u"The ministry of redundancy ministry.";
+    TestWebContentsObserver observer(contents());
+    // Note that ExpectOnCaptureHandleConfigUpdate() is NOT called.
+    // If OnCaptureHandleConfigUpdate() is called, the test will fail.
+    contents()->SetCaptureHandleConfig(config.Clone());
+  }
+}
+
+TEST_F(WebContentsImplTest,
+       OnCaptureHandleConfigUpdateCalledWhenClearingTheConfig) {
+  auto config = blink::mojom::CaptureHandleConfig::New();
+  config->capture_handle = u"Some handle.";
+  contents()->SetCaptureHandleConfig(config.Clone());
+
+  auto empty_config = blink::mojom::CaptureHandleConfig::New();
+  TestWebContentsObserver observer(contents());
+  observer.ExpectOnCaptureHandleConfigUpdate(empty_config.Clone());
+  contents()->SetCaptureHandleConfig(empty_config.Clone());
+}
+
+TEST_F(WebContentsImplTest,
+       CrossDocumentMainPageNavigationClearsCaptureHandleConfig) {
+  TestRenderFrameHost* orig_rfh = main_test_rfh();
+  ASSERT_EQ(orig_rfh, orig_rfh->GetMainFrame());
+
+  // Navigate to the first site.
+  NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents(), GURL("http://www.google.com/a.html"));
+  orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
+
+  // Set a capture handle.
+  auto config = blink::mojom::CaptureHandleConfig::New();
+  config->capture_handle = u"Some handle.";
+  contents()->SetCaptureHandleConfig(config.Clone());
+
+  // Expect that navigation to a new site will reset the capture handle config.
+  const auto empty_config = blink::mojom::CaptureHandleConfig::New();
+  TestWebContentsObserver observer(contents());
+  observer.ExpectOnCaptureHandleConfigUpdate(empty_config.Clone());
+
+  // Navigate to the second site.
+  auto new_site_navigation = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://www.google.com/b.html"), contents());
+  new_site_navigation->ReadyToCommit();
+
+  // Further proof that the config was reset.
+  EXPECT_EQ(contents()->GetCaptureHandleConfig(), *empty_config);
+}
+
+TEST_F(WebContentsImplTest,
+       SameDocumentMainPageNavigationDoesNotClearCaptureHandleConfig) {
+  TestRenderFrameHost* orig_rfh = main_test_rfh();
+  ASSERT_EQ(orig_rfh, orig_rfh->GetMainFrame());
+
+  // Navigate to the first site.
+  NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents(), GURL("http://www.google.com/index.html"));
+  orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
+
+  // Set a capture handle.
+  auto config = blink::mojom::CaptureHandleConfig::New();
+  config->capture_handle = u"Some handle.";
+  contents()->SetCaptureHandleConfig(config.Clone());
+
+  // ExpectOnCaptureHandleConfigUpdate() not called - the test will fail
+  // if OnCaptureHandleConfigUpdate() is called.
+  TestWebContentsObserver observer(contents());
+
+  // Navigate to the second site.
+  auto new_site_navigation = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://www.google.com/index.html#same_doc"), contents());
+  new_site_navigation->ReadyToCommit();
+
+  // Further proof that the config was not reset.
+  EXPECT_EQ(contents()->GetCaptureHandleConfig(), *config);
+}
+
+TEST_F(WebContentsImplTest,
+       CrossDocumentChildPageNavigationDoesNotClearCaptureHandleConfig) {
+  TestRenderFrameHost* orig_rfh = main_test_rfh();
+  ASSERT_EQ(orig_rfh, orig_rfh->GetMainFrame());
+
+  NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents(), GURL("http://www.google.com/a.html"));
+
+  TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
+  ASSERT_NE(subframe, subframe->GetMainFrame());
+  subframe->GetSiteInstance()->IncrementActiveFrameCount();
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://www.google.com/b.html"), subframe);
+
+  // Set a capture handle.
+  auto config = blink::mojom::CaptureHandleConfig::New();
+  config->capture_handle = u"Some handle.";
+  contents()->SetCaptureHandleConfig(config.Clone());
+
+  // ExpectOnCaptureHandleConfigUpdate() not called - the test will fail
+  // if OnCaptureHandleConfigUpdate() is called.
+  TestWebContentsObserver observer(contents());
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://www.google.com/c.html"), subframe);
+
+  // Further proof that the config was not reset.
+  EXPECT_EQ(contents()->GetCaptureHandleConfig(), *config);
 }
 
 }  // namespace content

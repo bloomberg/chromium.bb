@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/values.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -59,6 +60,21 @@ void ScanningHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "openFilesInMediaApp",
       base::BindRepeating(&ScanningHandler::HandleOpenFilesInMediaApp,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "saveScanSettings",
+      base::BindRepeating(&ScanningHandler::HandleSaveScanSettings,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getScanSettings",
+      base::BindRepeating(&ScanningHandler::HandleGetScanSettings,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "ensureValidFilePath",
+      base::BindRepeating(&ScanningHandler::HandleEnsureValidFilePath,
                           base::Unretained(this)));
 }
 
@@ -180,6 +196,46 @@ void ScanningHandler::HandleGetMyFilesPath(const base::ListValue* args) {
   const base::FilePath my_files_path = scanning_app_delegate_->GetMyFilesPath();
   ResolveJavascriptCallback(base::Value(callback),
                             base::Value(my_files_path.value()));
+}
+
+void ScanningHandler::HandleSaveScanSettings(const base::ListValue* args) {
+  CHECK(base::FeatureList::IsEnabled(ash::features::kScanAppStickySettings));
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(1U, args->GetSize());
+  const std::string& scan_settings = args->GetList()[0].GetString();
+  scanning_app_delegate_->SaveScanSettingsToPrefs(scan_settings);
+}
+
+void ScanningHandler::HandleGetScanSettings(const base::ListValue* args) {
+  CHECK(base::FeatureList::IsEnabled(ash::features::kScanAppStickySettings));
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(1U, args->GetSize());
+  const std::string& callback = args->GetList()[0].GetString();
+
+  ResolveJavascriptCallback(
+      base::Value(callback),
+      base::Value(scanning_app_delegate_->GetScanSettingsFromPrefs()));
+}
+
+void ScanningHandler::HandleEnsureValidFilePath(const base::ListValue* args) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(2U, args->GetSize());
+  const std::string callback = args->GetList()[0].GetString();
+  const base::FilePath file_path(args->GetList()[1].GetString());
+
+  // When |file_path| is not valid, return a dictionary with an empty file path.
+  const bool filePathValid =
+      scanning_app_delegate_->IsFilePathSupported(file_path) &&
+      base::PathExists(file_path);
+  ResolveJavascriptCallback(
+      base::Value(callback),
+      CreateSelectedPathValue(filePathValid ? file_path : base::FilePath()));
 }
 
 }  // namespace ash

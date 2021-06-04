@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/containers/flat_set.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/values.h"
@@ -61,7 +62,7 @@ bool CanAccountStorageBeEnabled(const syncer::SyncService* sync_service) {
 bool IsUserEligibleForAccountStorage(const syncer::SyncService* sync_service) {
   return CanAccountStorageBeEnabled(sync_service) &&
          sync_service->IsEngineInitialized() &&
-         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() &&
+         !sync_service->GetUserSettings()->IsUsingExplicitPassphrase() &&
          !sync_service->IsSyncFeatureEnabled();
 }
 
@@ -86,9 +87,8 @@ int GetNumberOfOptedInAccounts(const PrefService* pref_service) {
   const base::DictionaryValue* global_pref =
       pref_service->GetDictionary(prefs::kAccountStoragePerAccountSettings);
   int count = 0;
-  for (const std::pair<std::string, std::unique_ptr<base::Value>>& entry :
-       *global_pref) {
-    if (entry.second->FindBoolKey(kAccountStorageOptedInKey).value_or(false))
+  for (const auto& entry : global_pref->DictItems()) {
+    if (entry.second.FindBoolKey(kAccountStorageOptedInKey).value_or(false))
       ++count;
   }
   return count;
@@ -115,7 +115,7 @@ class AccountStorageSettingsReader {
   PasswordForm::Store GetDefaultStore() const {
     if (!account_settings_)
       return PasswordForm::Store::kNotSet;
-    base::Optional<int> value =
+    absl::optional<int> value =
         account_settings_->FindIntKey(kAccountStorageDefaultStoreKey);
     if (!value)
       return PasswordForm::Store::kNotSet;
@@ -231,9 +231,10 @@ bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
   // Show the opt-in if any known previous user opted into using the account
   // storage before and might want to access it again.
   return base::ranges::any_of(
-      *pref_service->GetDictionary(prefs::kAccountStoragePerAccountSettings),
-      [](const std::pair<std::string, std::unique_ptr<base::Value>>& p) {
-        return p.second->FindBoolKey(kAccountStorageOptedInKey).value_or(false);
+      pref_service->GetDictionary(prefs::kAccountStoragePerAccountSettings)
+          ->DictItems(),
+      [](const std::pair<std::string, const base::Value&>& p) {
+        return p.second.FindBoolKey(kAccountStorageOptedInKey).value_or(false);
       });
 }
 

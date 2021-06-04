@@ -28,14 +28,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_H_
 
-#include <bitset>
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
@@ -47,12 +46,8 @@
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
-#include "third_party/blink/renderer/core/frame/policy_container.h"
-#include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -74,11 +69,12 @@ class UkmRecorder;
 namespace blink {
 
 class Agent;
+class AuditsIssue;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
+class ContextLifecycleObserver;
 class CoreProbeSink;
-class DOMTimerCoordinator;
 class DOMWrapperWorld;
 class ErrorEvent;
 class EventTarget;
@@ -86,6 +82,7 @@ class FrameOrWorkerScheduler;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
+class PolicyContainer;
 class PublicURLManager;
 class ResourceFetcher;
 class SecurityOrigin;
@@ -246,6 +243,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
     AddConsoleMessageImpl(message, discard_duplicates);
   }
   virtual void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) = 0;
+  virtual void AddInspectorIssue(AuditsIssue) = 0;
 
   bool IsContextPaused() const;
   WebURLLoader::DeferType DeferType() const;
@@ -357,14 +355,17 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   network::mojom::IPAddressSpace AddressSpace() const;
   void SetAddressSpace(network::mojom::blink::IPAddressSpace ip_address_space);
 
-  HeapObserverSet<ContextLifecycleObserver>& ContextLifecycleObserverSet() {
-    return ContextLifecycleNotifier::observers();
-  }
+  HeapObserverSet<ContextLifecycleObserver>& ContextLifecycleObserverSet();
   unsigned ContextLifecycleStateObserverCountForTesting() const;
 
   // Implementation of WindowOrWorkerGlobalScope.crossOriginIsolated.
   // https://html.spec.whatwg.org/C/webappapis.html#concept-settings-object-cross-origin-isolated-capability
   virtual bool CrossOriginIsolatedCapability() const = 0;
+
+  // Reflects the context's potential ability to use Direct Socket APIs.
+  //
+  // TODO(mkwst): We need a specification for the necessary restrictions.
+  virtual bool DirectSocketCapability() const = 0;
 
   // Returns true if SharedArrayBuffers can be transferred via PostMessage,
   // false otherwise. SharedArrayBuffer allows pages to craft high-precision
@@ -375,6 +376,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // inspector issue if the transfer was disallowed, or will be disallowed in
   // the future.
   bool CheckSharedArrayBufferTransferAllowedAndReport();
+
+  // Reports first usage of `navigator.userAgent` and related getters
+  void ReportNavigatorUserAgentAccess();
 
   virtual ukm::UkmRecorder* UkmRecorder() { return nullptr; }
   virtual ukm::SourceId UkmSourceID() const { return ukm::kInvalidSourceId; }
@@ -388,9 +392,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // the lifetime of its parent. This is used for resource usage attribution,
   // where the resource usage of a child context will be charged to its parent
   // (and so on up the tree).
-  virtual base::Optional<ExecutionContextToken> GetParentExecutionContextToken()
+  virtual absl::optional<ExecutionContextToken> GetParentExecutionContextToken()
       const {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // ExecutionContext subclasses are usually the V8 global object, which means
@@ -470,6 +474,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   bool has_filed_shared_array_buffer_transfer_issue_ = false;
   bool has_filed_shared_array_buffer_creation_issue_ = false;
+  bool has_filed_navigator_user_agent_issue_ = false;
 
   bool is_in_request_animation_frame_ = false;
 

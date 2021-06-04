@@ -65,8 +65,11 @@ export function mipSize(
   size: readonly [number, number, number],
   level: number
 ): [number, number, number];
-export function mipSize(size: GPUExtent3DDict, level: number): GPUExtent3DDict;
-export function mipSize(size: Readonly<GPUExtent3D>, level: number): GPUExtent3D {
+export function mipSize(size: Readonly<GPUExtent3DDict>, level: number): GPUExtent3DDict;
+export function mipSize(
+  size: Readonly<GPUExtent3DDict> | readonly number[],
+  level: number
+): GPUExtent3D {
   const rShiftMax1 = (s: number) => Math.max(s >> level, 1);
   if (size instanceof Array) {
     return size.map(rShiftMax1);

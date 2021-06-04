@@ -19,7 +19,6 @@ import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
-import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
 
@@ -130,11 +129,11 @@ public abstract class PageInfoControllerDelegate {
 
     /**
      * Initialize viewParams with Offline Page UI info, if any.
-     * @param viewParams The PageInfoViewParams to set state on.
+     * @param viewParams The PageInfoView.Params to set state on.
      * @param runAfterDismiss Used to set "open Online" button callback for offline page.
      */
     public void initOfflinePageUiParams(
-            PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
+            PageInfoView.Params viewParams, Consumer<Runnable> runAfterDismiss) {
         viewParams.openOnlineButtonShown = false;
     }
 
@@ -157,24 +156,11 @@ public abstract class PageInfoControllerDelegate {
     }
 
     /**
-     * Returns whether or not the performance badge should be shown for |url|.
-     */
-    public boolean shouldShowPerformanceBadge(GURL url) {
-        return false;
-    }
-
-    /**
      * Whether Site settings are available.
      */
     public boolean isSiteSettingsAvailable() {
         return mIsSiteSettingsAvailable;
     }
-
-    /**
-     * Show site settings for the URL passed in.
-     * @param url The URL to show site settings for.
-     */
-    public abstract void showSiteSettings(String url);
 
     /**
      * Show cookie settings.
@@ -214,7 +200,7 @@ public abstract class PageInfoControllerDelegate {
      * Fetches a favicon for the current page and passes it to callback.
      * The UI will use a fallback icon if null is supplied.
      */
-    public abstract void getFavicon(String url, Callback<Drawable> callback);
+    public abstract void getFavicon(GURL url, Callback<Drawable> callback);
 
     /**
      * Checks to see that touch exploration or an accessibility service that can perform gestures

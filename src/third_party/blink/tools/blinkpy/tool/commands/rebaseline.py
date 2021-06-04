@@ -125,9 +125,7 @@ class AbstractRebaseliningCommand(Command):
         if is_wpt:
             # *-actual.txt produced by wptrunner are actually manifest files
             # that can make the test pass if renamed to *.ini.
-            # WPT bots do not include "external/wpt" in test names.
-            file_name = self._host_port.get_file_path_for_wpt_test(
-                'external/wpt/' + test_name)
+            file_name = self._host_port.get_file_path_for_wpt_test(test_name)
             assert file_name, ('Cannot find %s in WPT' % test_name)
             return file_name + '.ini'
 
@@ -308,13 +306,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 debug_builders.add(builder)
 
         builders_to_fallback_paths = {}
+        wpt_builders = set()
         for builder in list(release_builders) + list(debug_builders):
-            port = self._tool.port_factory.get_from_builder_name(builder)
-            fallback_path = port.baseline_search_path()
-            if fallback_path not in builders_to_fallback_paths.values():
-                builders_to_fallback_paths[builder] = fallback_path
+            if not self._tool.builders.is_wpt_builder(builder):
+                port = self._tool.port_factory.get_from_builder_name(builder)
+                fallback_path = port.baseline_search_path()
+                if fallback_path not in builders_to_fallback_paths.values():
+                    builders_to_fallback_paths[builder] = fallback_path
+            else:
+                wpt_builders.add(builder)
 
-        return set(builders_to_fallback_paths)
+        return set(builders_to_fallback_paths) | wpt_builders
 
     def _rebaseline_commands(self, test_baseline_set, options):
         path_to_blink_tool = self._tool.path()

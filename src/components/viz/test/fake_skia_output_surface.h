@@ -122,7 +122,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const gfx::Size& size,
       ResourceFormat format,
       bool concurrent_reads,
-      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+      const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
   // If set true, callbacks triggering will be in a reverse order as SignalQuery
@@ -139,6 +139,14 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   gfx::DelegatedInkMetadata* last_delegated_ink_metadata() const {
     return last_delegated_ink_metadata_.get();
+  }
+
+  void InitDelegatedInkPointRendererReceiver(
+      mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
+          pending_receiver) override;
+
+  bool ContainsDelegatedInkPointRendererReceiverForTesting() const {
+    return delegated_ink_renderer_receiver_arrived_;
   }
 
  private:
@@ -165,6 +173,11 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   // Most recent delegated ink metadata to have arrived via a SwapBuffers call.
   std::unique_ptr<gfx::DelegatedInkMetadata> last_delegated_ink_metadata_;
+
+  // Flag to mark if a pending delegated ink renderer mojo receiver has arrived
+  // here or not. Used in testing to confirm that the pending receiver is
+  // correctly routed towards gpu main when the platform supports delegated ink.
+  bool delegated_ink_renderer_receiver_arrived_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

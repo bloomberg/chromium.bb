@@ -15,6 +15,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -116,7 +116,8 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     // between the top/left side of the back button and the dialog borders.
     const gfx::Insets dialog_insets =
         views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-            views::CONTROL, views::CONTROL);
+            views::DialogContentType::kControl,
+            views::DialogContentType::kControl);
     auto color_reference = std::make_unique<views::Label>(
         std::u16string(), views::style::CONTEXT_DIALOG_TITLE,
         views::style::STYLE_PRIMARY);
@@ -143,7 +144,8 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
 
   contents->SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::CONTROL)));
+          views::DialogContentType::kControl,
+          views::DialogContentType::kControl)));
 
   auto label_container = std::make_unique<views::View>();
   label_container->SetLayoutManager(std::make_unique<BoxLayout>(

@@ -15,12 +15,12 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/geometry/GrStyledShape.h"
+#include "src/gpu/geometry/GrWangsFormula.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/tessellate/GrDrawAtlasPathOp.h"
 #include "src/gpu/tessellate/GrPathInnerTriangulateOp.h"
+#include "src/gpu/tessellate/GrPathStencilFillOp.h"
 #include "src/gpu/tessellate/GrStrokeTessellateOp.h"
-#include "src/gpu/tessellate/GrTessellatingStencilFillOp.h"
-#include "src/gpu/tessellate/GrWangsFormula.h"
 
 constexpr static SkISize kAtlasInitialSize{512, 512};
 constexpr static int kMaxAtlasSize = 2048;
@@ -81,10 +81,10 @@ void GrTessellationPathRenderer::initAtlasFlags(GrRecordingContext* rContext) {
     //
     // Solve the following equation for w:
     //
-    //     GrWangsFormula::worst_case_cubic(kLinearizationIntolerance, w, kMaxAtlasPathHeight^2 / w)
+    //     GrWangsFormula::worst_case_cubic(kLinearizationPrecision, w, kMaxAtlasPathHeight^2 / w)
     //              == maxTessellationSegments
     //
-    float k = GrWangsFormula::length_term<3>(kLinearizationIntolerance);
+    float k = GrWangsFormula::length_term<3>(kLinearizationPrecision);
     float h = kMaxAtlasPathHeight;
     float s = caps.shaderCaps()->maxTessellationSegments();
     // Quadratic formula from Numerical Recipes in C:
@@ -119,7 +119,7 @@ void GrTessellationPathRenderer::initAtlasFlags(GrRecordingContext* rContext) {
     // Verify GrWangsFormula::worst_case_cubic() still works as we expect. The worst case number of
     // segments for this bounding box should be maxTessellationSegments.
     SkASSERT(SkScalarNearlyEqual(GrWangsFormula::worst_case_cubic(
-            kLinearizationIntolerance, worstCaseWidth, worstCaseHeight), s, 1));
+            kLinearizationPrecision, worstCaseWidth, worstCaseHeight), s, 1));
 #endif
     fStencilAtlasFlags &= ~OpFlags::kDisableHWTessellation;
     fMaxAtlasPathWidth = std::min(fMaxAtlasPathWidth, (int)worstCaseWidth);
@@ -128,19 +128,14 @@ void GrTessellationPathRenderer::initAtlasFlags(GrRecordingContext* rContext) {
 GrPathRenderer::CanDrawPath GrTessellationPathRenderer::onCanDrawPath(
         const CanDrawPathArgs& args) const {
     const GrStyledShape& shape = *args.fShape;
-    if (shape.style().hasPathEffect() ||
+    if (args.fAAType == GrAAType::kCoverage ||
+        shape.style().hasPathEffect() ||
         args.fViewMatrix->hasPerspective() ||
         shape.style().strokeRec().getStyle() == SkStrokeRec::kStrokeAndFill_Style ||
         shape.inverseFilled() ||
         args.fHasUserStencilSettings ||
         !args.fProxy->canUseStencil(*args.fCaps)) {
         return CanDrawPath::kNo;
-    }
-    if (GrAAType::kCoverage == args.fAAType) {
-        SkASSERT(1 == args.fProxy->numSamples());
-        if (!args.fProxy->canUseMixedSamples(*args.fCaps)) {
-            return CanDrawPath::kNo;
-        }
     }
     // On platforms that don't have native support for indirect draws and/or hardware tessellation,
     // we find that cached triangulations of strokes can render slightly faster. Let cacheable paths
@@ -158,8 +153,8 @@ static GrOp::Owner make_op(GrRecordingContext* rContext, const GrSurfaceContext*
                            GrTessellationPathRenderer::OpFlags opFlags, GrAAType aaType,
                            const SkRect& shapeDevBounds, const SkMatrix& viewMatrix,
                            const GrStyledShape& shape, GrPaint&& paint) {
-    constexpr static auto kLinearizationIntolerance =
-            GrTessellationPathRenderer::kLinearizationIntolerance;
+    constexpr static auto kLinearizationPrecision =
+            GrTessellationPathRenderer::kLinearizationPrecision;
     constexpr static auto kMaxResolveLevel = GrTessellationPathRenderer::kMaxResolveLevel;
     using OpFlags = GrTessellationPathRenderer::OpFlags;
 
@@ -170,7 +165,7 @@ static GrOp::Owner make_op(GrRecordingContext* rContext, const GrSurfaceContext*
 
     // Find the worst-case log2 number of line segments that a curve in this path might need to be
     // divided into.
-    int worstCaseResolveLevel = GrWangsFormula::worst_case_cubic_log2(kLinearizationIntolerance,
+    int worstCaseResolveLevel = GrWangsFormula::worst_case_cubic_log2(kLinearizationPrecision,
                                                                       shapeDevBounds.width(),
                                                                       shapeDevBounds.height());
     if (worstCaseResolveLevel > kMaxResolveLevel) {
@@ -206,7 +201,7 @@ static GrOp::Owner make_op(GrRecordingContext* rContext, const GrSurfaceContext*
 
         SkRect newDevBounds;
         viewMatrix.mapRect(&newDevBounds, path.getBounds());
-        worstCaseResolveLevel = GrWangsFormula::worst_case_cubic_log2(kLinearizationIntolerance,
+        worstCaseResolveLevel = GrWangsFormula::worst_case_cubic_log2(kLinearizationPrecision,
                                                                       newDevBounds.width(),
                                                                       newDevBounds.height());
         // kMaxResolveLevel should be large enough to tessellate paths the size of any screen we
@@ -244,8 +239,8 @@ static GrOp::Owner make_op(GrRecordingContext* rContext, const GrSurfaceContext*
                                                             std::move(paint), aaType, opFlags);
             }
         }
-        return GrOp::Make<GrTessellatingStencilFillOp>(rContext, viewMatrix, path, std::move(paint),
-                                                       aaType, opFlags);
+        return GrOp::Make<GrPathStencilFillOp>(rContext, viewMatrix, path, std::move(paint), aaType,
+                                               opFlags);
     }
 }
 
@@ -273,7 +268,7 @@ bool GrTessellationPathRenderer::onDrawPath(const DrawPathArgs& args) {
         // sufficient for this path. fMaxAtlasPathWidth should have been tuned for this to always be
         // the case.
         if (!(fStencilAtlasFlags & OpFlags::kDisableHWTessellation)) {
-            int worstCaseNumSegments = GrWangsFormula::worst_case_cubic(kLinearizationIntolerance,
+            int worstCaseNumSegments = GrWangsFormula::worst_case_cubic(kLinearizationPrecision,
                                                                         devIBounds.width(),
                                                                         devIBounds.height());
             const GrShaderCaps& shaderCaps = *args.fContext->priv().caps()->shaderCaps();
@@ -415,8 +410,9 @@ void GrTessellationPathRenderer::renderAtlas(GrOnFlushResourceProvider* onFlushR
             }
             uberPath->setFillType(fillType);
             GrAAType aaType = (antialias) ? GrAAType::kMSAA : GrAAType::kNone;
-            auto op = GrOp::Make<GrTessellatingStencilFillOp>(onFlushRP->recordingContext(),
-                    SkMatrix::I(), *uberPath, GrPaint(), aaType, fStencilAtlasFlags);
+            auto op = GrOp::Make<GrPathStencilFillOp>(onFlushRP->recordingContext(), SkMatrix::I(),
+                                                      *uberPath, GrPaint(), aaType,
+                                                      fStencilAtlasFlags);
             rtc->addDrawOp(nullptr, std::move(op));
         }
     }
@@ -425,30 +421,16 @@ void GrTessellationPathRenderer::renderAtlas(GrOnFlushResourceProvider* onFlushR
     auto aaType = GrAAType::kMSAA;
     auto fillRectFlags = GrFillRectOp::InputFlags::kNone;
 
-    // This will be the final op in the surfaceDrawContext. So if Ganesh is planning to discard the
-    // stencil values anyway, then we might not actually need to reset the stencil values back to 0.
-    bool mustResetStencil = !onFlushRP->caps()->discardStencilValuesAfterRenderPass();
-
-    if (rtc->numSamples() == 1) {
-        // We are mixed sampled. We need to either enable conservative raster (preferred) or disable
-        // MSAA in order to avoid double blend artifacts. (Even if we disable MSAA for the cover
-        // geometry, the stencil test is still multisampled and will still produce smooth results.)
-        if (onFlushRP->caps()->conservativeRasterSupport()) {
-            fillRectFlags |= GrFillRectOp::InputFlags::kConservativeRaster;
-        } else {
-            aaType = GrAAType::kNone;
-        }
-        mustResetStencil = true;
-    }
-
     SkRect coverRect = SkRect::MakeIWH(fAtlas.drawBounds().width(), fAtlas.drawBounds().height());
     const GrUserStencilSettings* stencil;
-    if (mustResetStencil) {
+    if (onFlushRP->caps()->discardStencilValuesAfterRenderPass()) {
+        // This is the final op in the surfaceDrawContext. Since Ganesh is planning to discard the
+        // stencil values anyway, there is no need to reset the stencil values back to 0.
+        stencil = &kTestStencil;
+    } else {
         // Outset the cover rect in case there are T-junctions in the path bounds.
         coverRect.outset(1, 1);
         stencil = &kTestAndResetStencil;
-    } else {
-        stencil = &kTestStencil;
     }
 
     GrQuad coverQuad(coverRect);

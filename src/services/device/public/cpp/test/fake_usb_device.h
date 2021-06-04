@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -71,7 +72,7 @@ class FakeUsbDevice : public mojom::UsbDevice,
                          uint32_t timeout,
                          GenericTransferInCallback callback) override;
   void GenericTransferOut(uint8_t endpoint_number,
-                          const std::vector<uint8_t>& data,
+                          base::span<const uint8_t> data,
                           uint32_t timeout,
                           GenericTransferOutCallback callback) override;
   void IsochronousTransferIn(uint8_t endpoint_number,
@@ -97,7 +98,8 @@ class FakeUsbDevice : public mojom::UsbDevice,
   const scoped_refptr<FakeUsbDeviceInfo> device_;
   const base::flat_set<uint8_t> blocked_interface_classes_;
 
-  ScopedObserver<FakeUsbDeviceInfo, FakeUsbDeviceInfo::Observer> observer_;
+  base::ScopedObservation<FakeUsbDeviceInfo, FakeUsbDeviceInfo::Observer>
+      observation_{this};
 
   bool is_opened_ = false;
 

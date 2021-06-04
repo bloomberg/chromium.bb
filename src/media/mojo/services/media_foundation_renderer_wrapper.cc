@@ -11,13 +11,16 @@
 
 namespace media {
 
+// TODO(xhwang): Remove `force_dcomp_mode_for_testing=true` after composition is
+// working by default.
 MediaFoundationRendererWrapper::MediaFoundationRendererWrapper(
     bool web_contents_muted,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     mojo::PendingReceiver<RendererExtension> renderer_extension_receiver)
     : renderer_(std::make_unique<media::MediaFoundationRenderer>(
           web_contents_muted,
-          std::move(task_runner))),
+          std::move(task_runner),
+          /*force_dcomp_mode_for_testing=*/true)),
       renderer_extension_receiver_(this,
                                    std::move(renderer_extension_receiver)) {
   DVLOG_FUNC(1);
@@ -40,7 +43,7 @@ void MediaFoundationRendererWrapper::SetCdm(CdmContext* cdm_context,
 }
 
 void MediaFoundationRendererWrapper::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   renderer_->SetLatencyHint(latency_hint);
 }
 

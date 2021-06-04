@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/toolchain/gcc_toolchain.gni")
 import("//chromecast/chromecast.gni")
 
 declare_args() {
@@ -19,5 +20,12 @@ declare_args() {
   # across the board. Until then, this buildflag allows some platforms to use
   # app_session_service and some not.
   enable_app_session_service =
-      !(is_chromeos_ash || is_chromeos_lacros || is_chromecast || is_android)
+      !(is_chromeos_lacros || is_chromecast || is_android)
 }
+
+# If true, the resource .pak files will be hashed and the digest will be
+# embedded in the binary and checked at run-time. This is incompatible with
+# enable_resource_allowlist_generation on Windows because it creates a circular
+# dependency with chrome_dll.
+enable_pak_file_integrity_checks =
+    !(enable_resource_allowlist_generation && is_win) && !is_android

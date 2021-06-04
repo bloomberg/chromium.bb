@@ -8,11 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/cursor/platform_cursor.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -29,6 +33,22 @@ namespace views {
 namespace {
 
 using ::ui::mojom::DragOperation;
+
+// Platforms have different approaches to handling window coordinates.  For
+// instance, Wayland doesn't use window origin (it is always zero) and treats
+// coordinates of pointer events as local ones (always within the window), but
+// X11 1) uses the origin and may adjust it so that a window gets non-zero
+// origin, see X11Window::OnConfigureEvent(), and 2) treats mouse coordinates as
+// global ones, so that the event may be considered being 'outside the window'
+// and discarded, which will make some tests in this suite failing.
+//
+// To ensure the drag to be always started within the drag widget, we choose
+// size of the drag widget and location so that the location stays within the
+// widget, even if the platform adjusts its position.
+//
+// See crbug.com/1119787
+constexpr gfx::Rect kDragWidgetBounds{200, 200};
+constexpr gfx::PointF kStartDragLocation{100, 100};
 
 class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
  public:
@@ -58,7 +78,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   }
   void Activate() override {}
   void Deactivate() override {}
-  void SetCursor(ui::PlatformCursor cursor) override {}
+  void SetCursor(scoped_refptr<ui::PlatformCursor> cursor) override {}
   void MoveCursorTo(const gfx::Point& location) override {}
   void ConfineCursorToBounds(const gfx::Rect& bounds) override {}
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override {}
@@ -121,17 +141,17 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
     drop_handler->OnDragLeave();
   }
 
-  void CloseDrag(uint32_t dnd_action) {
-    drag_handler_delegate_->OnDragFinished(dnd_action);
+  void CloseDrag(DragOperation operation) {
+    drag_handler_delegate_->OnDragFinished(operation);
     std::move(drag_loop_quit_closure_).Run();
   }
 
   void ProcessDrag(std::unique_ptr<OSExchangeData> data, int operation) {
-    OnDragEnter(gfx::PointF(), std::move(data), operation);
-    int updated_operation = OnDragMotion(gfx::PointF(), operation);
+    OnDragEnter(kStartDragLocation, std::move(data), operation);
+    int updated_operation = OnDragMotion(kStartDragLocation, operation);
     OnDragDrop(nullptr);
     OnDragLeave();
-    CloseDrag(updated_operation);
+    CloseDrag(ui::PreferredDragOperation(updated_operation));
   }
 
  private:
@@ -201,6 +221,11 @@ class FakeDragDropDelegate : public aura::client::DragDropDelegate {
     return destination_operation_;
   }
 
+  DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
+    NOTIMPLEMENTED();
+    return base::NullCallback();
+  }
+
   int num_enters_;
   int num_updates_;
   int num_exits_;
@@ -224,7 +249,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
     platform_window_->set_modifiers(modifiers);
   }
 
-  int StartDragAndDrop(int operation) {
+  DragOperation StartDragAndDrop(int allowed_operations) {
     auto data = std::make_unique<ui::OSExchangeData>();
     data->SetString(u"Test");
     SkBitmap drag_bitmap;
@@ -235,7 +260,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
 
     return client_->StartDragAndDrop(
         std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
-        widget_->GetNativeWindow(), gfx::Point(), operation,
+        widget_->GetNativeWindow(), gfx::Point(), allowed_operations,
         ui::mojom::DragEventSource::kMouse);
   }
 
@@ -249,7 +274,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(100, 100);
+    params.bounds = kDragWidgetBounds;
     widget_->Init(std::move(params));
     widget_->Show();
 
@@ -286,15 +311,14 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientOzoneTest);
 };
 
-// TODO(1119787): fix this.
-TEST_F(DesktopDragDropClientOzoneTest, DISABLED_StartDrag) {
+TEST_F(DesktopDragDropClientOzoneTest, StartDrag) {
   // Set the operation which the destination can accept.
   dragdrop_delegate_->SetOperation(DragOperation::kCopy);
   // Start Drag and Drop with the operations suggested.
-  int operation = StartDragAndDrop(ui::DragDropTypes::DRAG_COPY |
-                                   ui::DragDropTypes::DRAG_MOVE);
+  DragOperation operation = StartDragAndDrop(ui::DragDropTypes::DRAG_COPY |
+                                             ui::DragDropTypes::DRAG_MOVE);
   // The |operation| decided through negotiation should be 'DRAG_COPY'.
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, operation);
+  EXPECT_EQ(DragOperation::kCopy, operation);
 
   EXPECT_EQ(1, dragdrop_delegate_->num_enters());
   EXPECT_EQ(1, dragdrop_delegate_->num_updates());
@@ -304,16 +328,15 @@ TEST_F(DesktopDragDropClientOzoneTest, DISABLED_StartDrag) {
   EXPECT_EQ(ui::EF_NONE, dragdrop_delegate_->last_event_flags());
 }
 
-// TODO(1119787): fix this.
-TEST_F(DesktopDragDropClientOzoneTest, DISABLED_StartDragCtrlPressed) {
+TEST_F(DesktopDragDropClientOzoneTest, StartDragCtrlPressed) {
   SetModifiers(ui::EF_CONTROL_DOWN);
   // Set the operation which the destination can accept.
   dragdrop_delegate_->SetOperation(DragOperation::kCopy);
   // Start Drag and Drop with the operations suggested.
-  int operation = StartDragAndDrop(ui::DragDropTypes::DRAG_COPY |
-                                   ui::DragDropTypes::DRAG_MOVE);
+  DragOperation operation = StartDragAndDrop(ui::DragDropTypes::DRAG_COPY |
+                                             ui::DragDropTypes::DRAG_MOVE);
   // The |operation| decided through negotiation should be 'DRAG_COPY'.
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, operation);
+  EXPECT_EQ(DragOperation::kCopy, operation);
 
   EXPECT_EQ(1, dragdrop_delegate_->num_enters());
   EXPECT_EQ(1, dragdrop_delegate_->num_updates());
@@ -338,10 +361,10 @@ TEST_F(DesktopDragDropClientOzoneTest, ReceiveDrag) {
   // |suggested_operation|.
   int suggested_operation =
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
-  platform_window_->OnDragEnter(gfx::PointF(), std::move(data),
+  platform_window_->OnDragEnter(kStartDragLocation, std::move(data),
                                 suggested_operation);
   int updated_operation =
-      platform_window_->OnDragMotion(gfx::PointF(), suggested_operation);
+      platform_window_->OnDragMotion(kStartDragLocation, suggested_operation);
   platform_window_->OnDragDrop(nullptr);
   platform_window_->OnDragLeave();
 
@@ -374,9 +397,9 @@ TEST_F(DesktopDragDropClientOzoneTest, TargetDestroyedDuringDrag) {
 
   // Simulate that the drag enter/motion/leave events happen with the
   // |suggested_operation| in the main window.
-  platform_window_->OnDragEnter(gfx::PointF(), std::move(data),
+  platform_window_->OnDragEnter(kStartDragLocation, std::move(data),
                                 suggested_operation);
-  platform_window_->OnDragMotion(gfx::PointF(), suggested_operation);
+  platform_window_->OnDragMotion(kStartDragLocation, suggested_operation);
   platform_window_->OnDragLeave();
 
   // Create another window with its own DnD facility and simulate that the drag

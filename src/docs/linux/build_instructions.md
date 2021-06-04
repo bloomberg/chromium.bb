@@ -15,7 +15,8 @@ Are you a Google employee? See
 *   A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
     recommended.
 *   At least 100GB of free disk space.
-*   You must have Git and Python v2 installed already.
+*   You must have Git and Python v3 installed already (and `python3` must point
+    to a Python v3 binary).
 
 Most development is done on Ubuntu (currently 16.04, Xenial Xerus). There are
 some instructions for other distros below, but they are mostly unsupported.
@@ -345,7 +346,8 @@ Instead of running `install-build-deps.sh` to install build dependencies, run:
 
 ```shell
 $ sudo pacman -S --needed python perl gcc gcc-libs bison flex gperf pkgconfig \
-nss alsa-lib glib2 gtk3 nspr ttf-ms-fonts freetype2 cairo dbus libgnome-keyring
+nss alsa-lib glib2 gtk3 nspr freetype2 cairo dbus libgnome-keyring \
+xorg-server-xvfb xorg-xdpyinfo
 ```
 
 For the optional packages on Arch Linux:
@@ -353,7 +355,6 @@ For the optional packages on Arch Linux:
 *   `php-cgi` is provided with `pacman`
 *   `wdiff` is not in the main repository but `dwdiff` is. You can get `wdiff`
     in AUR/`yaourt`
-*   `sun-java6-fonts` do not seem to be in main repository or AUR.
 
 ### Crostini (Debian based)
 

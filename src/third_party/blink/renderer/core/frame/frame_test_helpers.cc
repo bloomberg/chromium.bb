@@ -157,7 +157,7 @@ cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings() {
 void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
   auto* impl = To<WebLocalFrameImpl>(frame);
   if (url.ProtocolIs("javascript")) {
-    impl->LoadJavaScriptURL(url);
+    impl->GetFrame()->LoadJavaScriptURL(url);
   } else {
     auto params = std::make_unique<WebNavigationParams>();
     params->url = url;
@@ -315,8 +315,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebRemoteFrameImpl>(parent.CreateRemoteChild(
-      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(),
-      mojom::blink::FrameOwnerElementType::kIframe, client,
+      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
       client->GetRemoteAssociatedInterfaces(), RemoteFrameToken(),
       /*devtools_frame_token=*/base::UnguessableToken(), nullptr));
@@ -484,8 +483,7 @@ WebLocalFrameImpl* WebViewHelper::CreateLocalChild(
   MockPolicyContainerHost mock_policy_container_host;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
-      nullptr, previous_sibling, properties,
-      mojom::blink::FrameOwnerElementType::kIframe, LocalFrameToken(), nullptr,
+      nullptr, previous_sibling, properties, LocalFrameToken(), nullptr,
       std::make_unique<WebPolicyContainer>(
           WebPolicyContainerPolicies(),
           mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote())));
@@ -559,12 +557,9 @@ TestWebFrameWidget* WebViewHelper::CreateFrameWidgetAndInitializeCompositing(
   cc::LayerTreeSettings layer_tree_settings =
       GetSynchronousSingleThreadLayerTreeSettings();
   ScreenInfos initial_screen_infos(frame_widget->GetInitialScreenInfo());
-  frame_widget->InitializeCompositing(
-      frame_widget->GetAgentGroupScheduler(), frame_widget->task_graph_runner(),
-      initial_screen_infos, std::make_unique<cc::TestUkmRecorderFactory>(),
-      &layer_tree_settings,
-      /*main_thread_pipeline=*/nullptr,
-      /*compositor_thread_pipeline=*/nullptr);
+  frame_widget->InitializeCompositing(frame_widget->GetAgentGroupScheduler(),
+                                      initial_screen_infos,
+                                      &layer_tree_settings);
   frame_widget->SetCompositorVisible(true);
   return frame_widget;
 }
@@ -620,6 +615,7 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                       /*is_hidden=*/false,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/true,
+                      /*widgets_never_composited=*/false,
                       /*opener=*/opener, mojo::NullAssociatedReceiver(),
                       *agent_group_scheduler_,
                       /*session_storage_namespace_id=*/base::EmptyString()));
@@ -854,7 +850,7 @@ void TestWebFrameWidgetHost::SetCursor(const ui::Cursor& cursor) {
   cursor_set_count_++;
 }
 
-void TestWebFrameWidgetHost::SetToolTipText(
+void TestWebFrameWidgetHost::UpdateTooltipUnderCursor(
     const String& tooltip_text,
     base::i18n::TextDirection text_direction_hint) {}
 
@@ -932,7 +928,7 @@ WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
                                        network::mojom::blink::WebSandboxFlags,
                                        const SessionStorageNamespaceId&,
                                        bool& consumed_user_gesture,
-                                       const base::Optional<WebImpression>&) {
+                                       const absl::optional<WebImpression>&) {
   auto webview_helper = std::make_unique<WebViewHelper>();
   WebView* result = webview_helper->InitializeWithOpener(opener);
   child_web_views_.push_back(std::move(webview_helper));

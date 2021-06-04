@@ -34,7 +34,7 @@ void RegisterFileHandlersWithOsTask(
     const std::wstring& app_name_extension) {
   const base::FilePath web_app_path =
       GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id, GURL());
-  base::Optional<base::FilePath> app_specific_launcher_path =
+  absl::optional<base::FilePath> app_specific_launcher_path =
       CreateAppLauncherFile(app_name, app_name_extension, web_app_path);
   if (!app_specific_launcher_path.has_value())
     return;
@@ -83,7 +83,7 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                      base::UTF8ToWide(app_name), profile->GetPath(),
                      file_extensions_wide, app_name_extension),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id, base::DoNothing::Once()));
+                     app_id, base::DoNothing::Once<bool>()));
 }
 
 void UnregisterFileHandlersWithOsTask(const AppId& app_id,
@@ -105,7 +105,7 @@ void UnregisterFileHandlersWithOsTask(const AppId& app_id,
 void UnregisterFileHandlersWithOs(const AppId& app_id,
                                   Profile* profile,
                                   std::unique_ptr<ShortcutInfo> info,
-                                  base::OnceCallback<void()> callback) {
+                                  base::OnceCallback<void(bool)> callback) {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},

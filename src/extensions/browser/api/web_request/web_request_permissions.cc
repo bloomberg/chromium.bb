@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/url_constants.h"
@@ -81,8 +80,8 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     int tab_id,
     bool crosses_incognito,
     WebRequestPermissions::HostPermissionsCheck host_permissions_check,
-    const base::Optional<url::Origin>& initiator,
-    const base::Optional<extensions::WebRequestResourceType>&
+    const absl::optional<url::Origin>& initiator,
+    const absl::optional<extensions::WebRequestResourceType>&
         web_request_type) {
   const extensions::Extension* extension =
       permission_helper->extension_registry()->enabled_extensions().GetByID(
@@ -361,7 +360,7 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     int tab_id,
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
-    const base::Optional<url::Origin>& initiator,
+    const absl::optional<url::Origin>& initiator,
     extensions::WebRequestResourceType web_request_type) {
   return CanExtensionAccessURLInternal(
       permission_helper, extension_id, url, tab_id, crosses_incognito,
@@ -372,7 +371,7 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
 bool WebRequestPermissions::CanExtensionAccessInitiator(
     extensions::PermissionHelper* permission_helper,
     const extensions::ExtensionId extension_id,
-    const base::Optional<url::Origin>& initiator,
+    const absl::optional<url::Origin>& initiator,
     int tab_id,
     bool crosses_incognito) {
   if (!initiator)
@@ -382,7 +381,7 @@ bool WebRequestPermissions::CanExtensionAccessInitiator(
              permission_helper, extension_id, initiator->GetURL(), tab_id,
              crosses_incognito,
              WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-             base::nullopt /* initiator */,
-             base::nullopt /* resource_type */) ==
+             absl::nullopt /* initiator */,
+             absl::nullopt /* resource_type */) ==
          PermissionsData::PageAccess::kAllowed;
 }

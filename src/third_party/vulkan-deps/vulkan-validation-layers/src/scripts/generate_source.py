@@ -30,7 +30,8 @@ import difflib
 import common_codegen
 
 # files to exclude from --verify check
-verify_exclude = ['.clang-format']
+verify_exclude = ['.clang-format',
+                  'gpu_pre_draw_shader.h'] # Requires glslangvalidator, so updated manually when needed
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Generate source code for this repository')
@@ -69,10 +70,10 @@ def main(argv):
                                               "best_practices.h",
                                               "best_practices.cpp",
                                               "spirv_validation_helper.cpp",
+                                              "command_validation.cpp",
+                                              "command_validation.h",
                                               "corechecks_optick_instrumentation.cpp",
-                                              "corechecks_optick_instrumentation.h",
-                                              "command_counter_helper.cpp",
-                                              "command_counter_helper.h"]],
+                                              "corechecks_optick_instrumentation.h"]],
                 [common_codegen.repo_relative('scripts/vk_validation_stats.py'),
                  os.path.abspath(os.path.join(args.registry, 'validusage.json')),
                  '-export_header'],

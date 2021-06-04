@@ -11,11 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -23,6 +24,7 @@
 #include "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
@@ -40,6 +42,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace autofill {
 
@@ -188,7 +193,7 @@ void FormStructureBrowserTest::SetUp() {
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
 void FormStructureBrowserTest::TearDown() {
@@ -198,9 +203,29 @@ void FormStructureBrowserTest::TearDown() {
 bool FormStructureBrowserTest::LoadHtmlWithoutSubresourcesAndInitRendererIds(
     const std::string& html) {
   bool success = ChromeWebTest::LoadHtmlWithoutSubresources(html);
-  if (success)
-    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(1);");
-  return success;
+  if (!success) {
+    return false;
+  }
+
+  __block web::WebFrame* main_frame = nullptr;
+  success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+    return main_frame != nullptr;
+  });
+  if (!success) {
+    return false;
+  }
+  DCHECK(main_frame);
+
+  uint32_t next_available_id = 1;
+  autofill::FormUtilJavaScriptFeature::GetInstance()
+      ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
+
+  // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
+  return WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
+           int{next_available_id};
+  });
 }
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
@@ -208,7 +233,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_TRUE(LoadHtmlWithoutSubresourcesAndInitRendererIds(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
   web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
-  AutofillManager* autofill_manager =
+  BrowserAutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
           ->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);

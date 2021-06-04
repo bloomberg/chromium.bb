@@ -9,10 +9,14 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 
 class SkBitmap;
+
+template <class T>
+class scoped_refptr;
 
 namespace base {
 class TimeDelta;
@@ -23,7 +27,15 @@ class Point;
 }
 
 namespace ui {
-using PlatformCursor = void*;
+class PlatformCursor;
+
+class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactoryObserver {
+ public:
+  // Called by the factory after it has loaded the cursor theme.
+  virtual void OnThemeLoaded() = 0;
+
+  virtual ~CursorFactoryObserver();
+};
 
 class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
  public:
@@ -33,36 +45,29 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
   // Returns the thread-local instance.
   static CursorFactory* GetInstance();
 
-  // Return the default cursor of the specified type. The types are listed in
-  // ui/base/cursor/cursor.h. Default cursors are managed by the implementation
-  // and must live indefinitely; there's no way to know when to free them.
-  // When a default cursor is not available, nullptr is returned.
-  virtual PlatformCursor GetDefaultCursor(mojom::CursorType type);
+  void AddObserver(CursorFactoryObserver* observer);
+  void RemoveObserver(CursorFactoryObserver* observer);
+  void NotifyObserversOnThemeLoaded();
 
-  // Return an image cursor for the specified |type| with a |bitmap| and
-  // |hotspot|. Image cursors are referenced counted and have an initial
-  // refcount of 1. Therefore, each CreateImageCursor call must be matched with
-  // a call to UnrefImageCursor.
-  virtual PlatformCursor CreateImageCursor(mojom::CursorType type,
-                                           const SkBitmap& bitmap,
-                                           const gfx::Point& hotspot);
+  // Return the default cursor of the specified type. When a default cursor is
+  // not available, nullptr is returned.
+  virtual scoped_refptr<PlatformCursor> GetDefaultCursor(
+      mojom::CursorType type);
 
-  // Return a animated cursor from the specified image & hotspot. Animated
-  // cursors are referenced counted and have an initial refcount of 1.
-  // Therefore, each CreateAnimatedCursor call must be matched with a call to
-  // UnrefImageCursor.
-  // |frame_delay| is the delay between frames.
-  virtual PlatformCursor CreateAnimatedCursor(
+  // Return an image cursor for the specified `type` with a `bitmap` and
+  // `hotspot`.
+  virtual scoped_refptr<PlatformCursor> CreateImageCursor(
+      mojom::CursorType type,
+      const SkBitmap& bitmap,
+      const gfx::Point& hotspot);
+
+  // Return a animated cursor from the specified `bitmaps` and `hotspot`.
+  // `frame_delay` is the delay between frames.
+  virtual scoped_refptr<PlatformCursor> CreateAnimatedCursor(
       mojom::CursorType type,
       const std::vector<SkBitmap>& bitmaps,
       const gfx::Point& hotspot,
       base::TimeDelta frame_delay);
-
-  // Increment platform image cursor refcount.
-  virtual void RefImageCursor(PlatformCursor cursor);
-
-  // Decrement platform image cursor refcount.
-  virtual void UnrefImageCursor(PlatformCursor cursor);
 
   // Called after CursorThemeManager is initialized, to be able to track
   // cursor theme and size changes.
@@ -71,6 +76,9 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
   // Sets the device scale factor that CursorFactory may use when creating
   // cursors.
   virtual void SetDeviceScaleFactor(float scale);
+
+ private:
+  base::ObserverList<CursorFactoryObserver>::Unchecked observers_;
 };
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

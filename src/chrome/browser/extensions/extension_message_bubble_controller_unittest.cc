@@ -29,6 +29,8 @@
 #include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 #include "chrome/browser/extensions/test_extension_message_bubble_delegate.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -362,6 +364,11 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
         std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
     ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
         true);
+    // Prevent the Profile from getting deleted before TearDown() is complete,
+    // since WaitForStorageCleanup() relies on an active Profile. See the
+    // DestroyProfileOnBrowserClose flag.
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile(), ProfileKeepAliveOrigin::kBrowserWindow);
   }
 
   void TearDown() override {
@@ -378,6 +385,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
       SettingsApiBubbleDelegate(profile(), type).ClearProfileSetForTesting();
     }
     SuspiciousExtensionBubbleDelegate(profile()).ClearProfileSetForTesting();
+    profile_keep_alive_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -412,7 +420,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
 
   void WaitForStorageCleanup() {
     content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile());
+        profile()->GetDefaultStoragePartition();
     if (partition)
       partition->WaitForDeletionTasksForTesting();
   }
@@ -422,15 +430,14 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<base::CommandLine> command_line_;
+  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleTest);
 };
 
 // Test that the bubble correctly treats dismissal due to deactivation.
-// TODO(https://crbug.com/1177315): This test is flaky. When the flake is fixed,
-// re-enable this test.
 TEST_F(ExtensionMessageBubbleTest,
-       DISABLED_BubbleDoesNotAcknowledgeExtensionOnDeactivationDismissal) {
+       BubbleDoesNotAcknowledgeExtensionOnDeactivationDismissal) {
   Init();
 
   scoped_refptr<const Extension> extension = ExtensionBuilder("Alpha").Build();
@@ -667,7 +674,8 @@ TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
 
   {
     // Construct an off-the-record profile and browser.
-    Profile* off_the_record_profile = profile()->GetPrimaryOTRProfile();
+    Profile* off_the_record_profile =
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
     ToolbarActionsModelFactory::GetInstance()->SetTestingFactory(
         off_the_record_profile, base::BindRepeating(&BuildToolbarModel));
@@ -759,8 +767,7 @@ TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
     std::vector<std::u16string> override_extensions =
         controller->GetExtensionList();
     ASSERT_EQ(1U, override_extensions.size());
-    EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") ==
-                override_extensions[0].c_str());
+    EXPECT_TRUE(u"Extension 2" == override_extensions[0]);
     EXPECT_EQ(0U, controller->link_click_count());
     EXPECT_EQ(0U, controller->dismiss_click_count());
     EXPECT_EQ(0U, controller->action_click_count());
@@ -1141,10 +1148,9 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
   EXPECT_EQ(1u, model->action_ids().size());
-  controller->HighlightExtensionsIfNecessary();
-  EXPECT_TRUE(model->is_highlighting());
+  EXPECT_TRUE(model->has_active_bubble());
   set_browser(nullptr);
-  EXPECT_FALSE(model->is_highlighting());
+  EXPECT_FALSE(model->has_active_bubble());
   controller.reset();
 }
 
@@ -1167,12 +1173,11 @@ TEST_F(ExtensionMessageBubbleTest,
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
   EXPECT_EQ(1u, model->action_ids().size());
-  controller->HighlightExtensionsIfNecessary();
-  EXPECT_TRUE(model->is_highlighting());
+  EXPECT_TRUE(model->has_active_bubble());
   set_browser(nullptr);
   service_->UninstallExtension(kId1, extensions::UNINSTALL_REASON_FOR_TESTING,
                                nullptr);
-  EXPECT_FALSE(model->is_highlighting());
+  EXPECT_FALSE(model->has_active_bubble());
   controller.reset();
 }
 
@@ -1194,11 +1199,10 @@ TEST_F(ExtensionMessageBubbleTest,
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
   EXPECT_EQ(1u, model->action_ids().size());
-  controller->HighlightExtensionsIfNecessary();
-  EXPECT_TRUE(model->is_highlighting());
+  EXPECT_TRUE(model->has_active_bubble());
   set_browser(nullptr);
   service_->DisableExtension(kId1, disable_reason::DISABLE_USER_ACTION);
-  EXPECT_FALSE(model->is_highlighting());
+  EXPECT_FALSE(model->has_active_bubble());
   controller.reset();
 }
 

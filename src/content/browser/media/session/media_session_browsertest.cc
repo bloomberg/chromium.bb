@@ -6,7 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/optional.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -31,6 +31,7 @@
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -69,7 +70,7 @@ class MediaImageGetterHelper {
   }
 
   base::RunLoop run_loop_;
-  base::Optional<SkBitmap> bitmap_;
+  absl::optional<SkBitmap> bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaImageGetterHelper);
 };
@@ -97,14 +98,14 @@ class MediaSessionBrowserTestBase : public ContentBrowserTest {
 
   void StartPlaybackAndWait(Shell* shell, const std::string& id) {
     shell->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.querySelector('#" + id + "').play();"),
+        u"document.querySelector('#" + base::ASCIIToUTF16(id) + u"').play();",
         base::NullCallback());
     WaitForStart(shell);
   }
 
   void StopPlaybackAndWait(Shell* shell, const std::string& id) {
     shell->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.querySelector('#" + id + "').pause();"),
+        u"document.querySelector('#" + base::ASCIIToUTF16(id) + u"').pause();",
         base::NullCallback());
     WaitForStop(shell);
   }
@@ -122,14 +123,9 @@ class MediaSessionBrowserTestBase : public ContentBrowserTest {
   }
 
   bool IsPlaying(Shell* shell, const std::string& id) {
-    bool result;
-    EXPECT_TRUE(
-        ExecuteScriptAndExtractBool(shell->web_contents(),
-                                    "window.domAutomationController.send("
-                                    "!document.querySelector('#" +
-                                        id + "').paused);",
-                                    &result));
-    return result;
+    return EvalJs(shell->web_contents(),
+                  "!document.querySelector('#" + id + "').paused;")
+        .ExtractBool();
   }
 
   bool WasURLVisited(const GURL& url) {
@@ -411,6 +407,19 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   // should not download it and instead we should receive a null image.
   EXPECT_TRUE(helper.bitmap().isNull());
   EXPECT_FALSE(WasURLVisited(image.src));
+}
+
+// Regression test of crbug.com/1195769.
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ChangeMediaElementDocument) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/session", "change_document.html")));
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), "moveAudioToSubframe();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "play();"));
+  MediaSession* const media_session =
+      MediaSession::Get(shell()->web_contents());
+  media_session->Suspend(MediaSession::SuspendType::kUI);
+  WaitForStop(shell());
 }
 
 }  // namespace content

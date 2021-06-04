@@ -33,6 +33,15 @@ source_set("base") {
   public_configs = [ "../build:openscreen_include_dirs" ]
 }
 
+# Public API source files. May depend on nothing except :base.
+source_set("logging") {
+  defines = []
+
+  sources = [ "api/logging.h" ]
+
+  public_deps = [ ":base" ]
+}
+
 # Public API source files. These may depend on nothing except :base.
 source_set("api") {
   defines = []
@@ -56,7 +65,10 @@ source_set("api") {
     "api/udp_socket.h",
   ]
 
-  public_deps = [ ":base" ]
+  public_deps = [
+    ":base",
+    ":logging",
+  ]
 }
 
 # The following target is only activated in standalone builds (see :platform).

@@ -25,8 +25,8 @@ constexpr int kQueryHistoryWindowInDays = 7;
 
 struct StartupComputeDecision {
   bool invalidate_existing_floc = true;
-  // Will be base::nullopt if should recompute immediately.
-  base::Optional<base::TimeDelta> next_compute_delay;
+  // Will be absl::nullopt if should recompute immediately.
+  absl::optional<base::TimeDelta> next_compute_delay;
 };
 
 // Determine whether we can keep using the previous floc and/or when should the
@@ -39,7 +39,7 @@ StartupComputeDecision GetStartupComputeDecision(
   // never been ready).
   if (last_floc.compute_time().is_null()) {
     return StartupComputeDecision{.invalidate_existing_floc = true,
-                                  .next_compute_delay = base::nullopt};
+                                  .next_compute_delay = absl::nullopt};
   }
 
   // The browser started with a kFlocIdFinchConfigVersion param different from
@@ -53,7 +53,7 @@ StartupComputeDecision GetStartupComputeDecision(
   if (last_floc.finch_config_version() !=
       static_cast<uint32_t>(kFlocIdFinchConfigVersion.Get())) {
     return StartupComputeDecision{.invalidate_existing_floc = true,
-                                  .next_compute_delay = base::nullopt};
+                                  .next_compute_delay = absl::nullopt};
   }
 
   base::TimeDelta presumed_next_compute_delay =
@@ -63,7 +63,7 @@ StartupComputeDecision GetStartupComputeDecision(
   // The last floc has expired.
   if (presumed_next_compute_delay <= base::TimeDelta()) {
     return StartupComputeDecision{.invalidate_existing_floc = true,
-                                  .next_compute_delay = base::nullopt};
+                                  .next_compute_delay = absl::nullopt};
   }
 
   // This could happen if the machine time has changed since the last
@@ -71,7 +71,7 @@ StartupComputeDecision GetStartupComputeDecision(
   // rather than potentially stop computing for a very long time.
   if (presumed_next_compute_delay >= 2 * kFlocIdScheduledUpdateInterval.Get()) {
     return StartupComputeDecision{.invalidate_existing_floc = true,
-                                  .next_compute_delay = base::nullopt};
+                                  .next_compute_delay = absl::nullopt};
   }
 
   // Normally "floc_accessible_since <= last_floc.history_begin_time()" is an
@@ -132,14 +132,16 @@ FlocIdProviderImpl::~FlocIdProviderImpl() {
 
 blink::mojom::InterestCohortPtr FlocIdProviderImpl::GetInterestCohortForJsApi(
     const GURL& url,
-    const base::Optional<url::Origin>& top_frame_origin) const {
-  // Check the Privacy Sandbox general settings.
-  if (!IsPrivacySandboxAllowed())
+    const absl::optional<url::Origin>& top_frame_origin) const {
+  // Check the general floc setting.
+  if (!IsFlocAllowed())
     return blink::mojom::InterestCohort::New();
 
-  // Check the Privacy Sandbox context specific settings.
-  if (!privacy_sandbox_settings_->IsFlocAllowed(url, top_frame_origin))
+  // Check the context specific floc setting.
+  if (!privacy_sandbox_settings_->IsFlocAllowedForContext(url,
+                                                          top_frame_origin)) {
     return blink::mojom::InterestCohort::New();
+  }
 
   if (!floc_id_.IsValid())
     return blink::mojom::InterestCohort::New();
@@ -160,6 +162,15 @@ void FlocIdProviderImpl::MaybeRecordFlocToUkm(ukm::SourceId source_id) {
   builder.Record(ukm_recorder->Get());
 
   need_ukm_recording_ = false;
+}
+
+base::Time FlocIdProviderImpl::GetApproximateNextComputeTime() const {
+  if (!compute_floc_timer_.IsRunning())
+    return base::Time::Now();
+
+  // Convert the TimeTicks type the timer provides to base::Time.
+  return base::Time::Now() +
+         (compute_floc_timer_.desired_run_time() - base::TimeTicks::Now());
 }
 
 void FlocIdProviderImpl::OnComputeFlocCompleted(ComputeFlocResult result) {
@@ -196,13 +207,26 @@ void FlocIdProviderImpl::Shutdown() {
   g_browser_process->floc_sorting_lsh_clusters_service()->RemoveObserver(this);
 }
 
-void FlocIdProviderImpl::OnFlocDataAccessibleSinceUpdated() {
+void FlocIdProviderImpl::OnFlocDataAccessibleSinceUpdated(
+    bool reset_compute_timer) {
   // Set the |need_recompute_| flag so that we will recompute the floc
   // immediately after the in-progress one finishes, so as to avoid potential
-  // data races.
+  // data races. This function maybe have been called in response to a user
+  // deliberately resetting floc, in this case the recomputed floc should be
+  // invalid as the floc-accessible timestamp was just updated to now. The
+  // floc computation is fast so it's exceedingly unlikely to populate enough
+  // history for the recomputed ID to be valid between one floc calculation and
+  // the next.
   if (floc_computation_in_progress_) {
     need_recompute_ = true;
     return;
+  }
+
+  // Clear any pending computes and re-schedule if requested.
+  if (reset_compute_timer) {
+    compute_floc_timer_.AbandonAndStop();
+    ScheduleFlocComputation(kFlocIdScheduledUpdateInterval.Get());
+    floc_id_.ResetComputeTimeAndSaveToPrefs(base::Time::Now(), prefs_);
   }
 
   // Note: we only invalidate the floc rather than recomputing, because we don't
@@ -278,7 +302,7 @@ void FlocIdProviderImpl::ComputeFloc() {
 }
 
 void FlocIdProviderImpl::CheckCanComputeFloc(CanComputeFlocCallback callback) {
-  if (!IsPrivacySandboxAllowed()) {
+  if (!IsFlocAllowed()) {
     std::move(callback).Run(false);
     return;
   }
@@ -299,8 +323,8 @@ void FlocIdProviderImpl::OnCheckCanComputeFlocCompleted(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-bool FlocIdProviderImpl::IsPrivacySandboxAllowed() const {
-  return privacy_sandbox_settings_->IsPrivacySandboxAllowed();
+bool FlocIdProviderImpl::IsFlocAllowed() const {
+  return privacy_sandbox_settings_->IsFlocAllowed();
 }
 
 void FlocIdProviderImpl::GetRecentlyVisitedURLs(
@@ -366,7 +390,7 @@ void FlocIdProviderImpl::DidApplySortingLshPostProcessing(
     uint64_t sim_hash,
     base::Time history_begin_time,
     base::Time history_end_time,
-    base::Optional<uint64_t> final_hash,
+    absl::optional<uint64_t> final_hash,
     base::Version version) {
   if (!final_hash) {
     std::move(callback).Run(ComputeFlocResult(sim_hash, FlocId()));

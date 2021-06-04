@@ -22,8 +22,7 @@ namespace libyuv {
 
 // TODO(fbarchard): clang x86 has a higher accuracy YUV to RGB.
 // Port to Visual C and other CPUs
-#if !defined(LIBYUV_DISABLE_X86) && \
-    (defined(__x86_64__) || (defined(__i386__) && !defined(_MSC_VER)))
+#if !defined(LIBYUV_DISABLE_X86) && (defined(__x86_64__) || defined(__i386__))
 #define ERROR_FULL 5
 #define ERROR_J420 4
 #else
@@ -32,7 +31,11 @@ namespace libyuv {
 #endif
 #define ERROR_R 1
 #define ERROR_G 1
-#define ERROR_B 3
+#ifdef LIBYUV_UNLIMITED_DATA
+#define ERROR_B 1
+#else
+#define ERROR_B 18
+#endif
 
 #define TESTCS(TESTNAME, YUVTOARGB, ARGBTOYUV, HS1, HS, HN, DIFF)              \
   TEST_F(LibYUVColorTest, TESTNAME) {                                          \
@@ -498,7 +501,11 @@ TEST_F(LibYUVColorTest, TestYUV) {
   YUVToRGB(240, 0, 0, &r1, &g1, &b1);
   EXPECT_EQ(57, r1);
   EXPECT_EQ(255, g1);
+#ifdef LIBYUV_UNLIMITED_DATA
+  EXPECT_EQ(3, b1);
+#else
   EXPECT_EQ(5, b1);
+#endif
 
   for (int i = 0; i < 256; ++i) {
     YUVToRGBReference(i, 128, 128, &r0, &g0, &b0);
@@ -655,9 +662,9 @@ TEST_F(LibYUVColorTest, TestFullYUVJ) {
         int y = RANDOM256(y2);
         YUVJToRGBReference(y, u, v, &r0, &g0, &b0);
         YUVJToRGB(y, u, v, &r1, &g1, &b1);
-        EXPECT_NEAR(r0, r1, 1);
-        EXPECT_NEAR(g0, g1, 1);
-        EXPECT_NEAR(b0, b1, 1);
+        EXPECT_NEAR(r0, r1, ERROR_R);
+        EXPECT_NEAR(g0, g1, ERROR_G);
+        EXPECT_NEAR(b0, b1, ERROR_B);
         ++rh[r1 - r0 + 128];
         ++gh[g1 - g0 + 128];
         ++bh[b1 - b0 + 128];
@@ -687,8 +694,7 @@ TEST_F(LibYUVColorTest, TestFullYUVH) {
         YUVHToRGB(y, u, v, &r1, &g1, &b1);
         EXPECT_NEAR(r0, r1, ERROR_R);
         EXPECT_NEAR(g0, g1, ERROR_G);
-        // TODO(crbug.com/libyuv/862): Reduce the errors in the B channel.
-        EXPECT_NEAR(b0, b1, 15);
+        EXPECT_NEAR(b0, b1, ERROR_B);
         ++rh[r1 - r0 + 128];
         ++gh[g1 - g0 + 128];
         ++bh[b1 - b0 + 128];
@@ -716,9 +722,9 @@ TEST_F(LibYUVColorTest, TestFullYUVF) {
         int y = RANDOM256(y2);
         YUVFToRGBReference(y, u, v, &r0, &g0, &b0);
         YUVFToRGB(y, u, v, &r1, &g1, &b1);
-        EXPECT_NEAR(r0, r1, 5);
-        EXPECT_NEAR(g0, g1, 5);
-        EXPECT_NEAR(b0, b1, 5);
+        EXPECT_NEAR(r0, r1, ERROR_R);
+        EXPECT_NEAR(g0, g1, ERROR_G);
+        EXPECT_NEAR(b0, b1, ERROR_B);
         ++rh[r1 - r0 + 128];
         ++gh[g1 - g0 + 128];
         ++bh[b1 - b0 + 128];
@@ -748,8 +754,7 @@ TEST_F(LibYUVColorTest, TestFullYUVU) {
         YUVUToRGB(y, u, v, &r1, &g1, &b1);
         EXPECT_NEAR(r0, r1, ERROR_R);
         EXPECT_NEAR(g0, g1, ERROR_G);
-        // TODO(crbug.com/libyuv/863): Reduce the errors in the B channel.
-        EXPECT_NEAR(b0, b1, 18);
+        EXPECT_NEAR(b0, b1, ERROR_B);
         ++rh[r1 - r0 + 128];
         ++gh[g1 - g0 + 128];
         ++bh[b1 - b0 + 128];

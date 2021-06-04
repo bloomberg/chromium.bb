@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Tafuta Kitelezi</translation>
 <translation id="1404323374378969387">Kinorwe</translation>
 <translation id="1430915738399379752">Chapisha</translation>
+<translation id="1433628812591023318">Ili uweze kudondosha faili katika Parallels Desktop, ni lazima faili hiyo iwe imehamishiwa kwenye folda ya faili za Windows.</translation>
 <translation id="1435838927755162558">Shiriki folda na Parallels Desktop</translation>
 <translation id="1467432559032391204">Kushoto</translation>
 <translation id="1471718551822868769">Kislovakia</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Faili za Windows</translation>
 <translation id="3078461028045006476">Shiriki na <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Imeshindwa kufungua "<ph name="PATH" />" kutoka hapa. Tafadhali inakili kwenye sehemu ya "Faili zangu" ili uifungue.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">IMEKAMILIKA</translation>
 <translation id="3188257591659621405">Faili zangu</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Kibulgaria kwenye kibodi ya Fonetiki</translation>
 <translation id="5605830556594064952">Dvorak ya Marekani</translation>
 <translation id="5625294776298156701">Kitamili kwenye kibodi ya Tamil99</translation>
+<translation id="5633226425545095130">Hatua ya kuhamisha kipengee hiki itakishiriki na kila mtu anayeweza kuona folda ya pamoja iitwayo '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">Sikiliza</translation>
 <translation id="5678784840044122290">Programu ya Linux itapatikana kwenye Kituo chako na huenda pia ikaonyesha aikoni kwenye Kifungua programu chako.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Imeshindwa kutenganishwa kwenye kumbukumbu au diski pepe<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Kibodi ya Kiethiopia</translation>
 <translation id="7417705661718309329">Ramani ya Google</translation>
 <translation id="7460898608667578234">Kiukrania</translation>
+<translation id="7486315294984620427">Ili uweze kudondosha faili katika Parallels Desktop, ni lazima faili hiyo iwe imenakiliwa kwenye folda ya faili za Windows.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> imepatikana 
    <ph name="LINE_BREAK1" />
     Iko tayari kuhifadhi nakala kwenye <ph name="BEGIN_LINK" />Hifadhi ya Google<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Vipimo</translation>
 <translation id="8437209419043462667">Kimarekani</translation>
 <translation id="8456681095658380701">Jina batili</translation>
+<translation id="8459404855768962328">Hatua ya kunakili kipengee hiki itakishiriki na kila mtu anayeweza kuona folda ya pamoja iitwayo '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="8461467696380332069">Bofya kulia kwenye faili kisha uchague "Bandika kwenye rafu" ili uweze kufikia faili zako zilizo kwenye rafu kwa haraka.</translation>
 <translation id="8463494891489624050">VIQR ya Kivietinamu</translation>
 <translation id="8466234950814670489">Kumbukumbu ya Tar</translation>

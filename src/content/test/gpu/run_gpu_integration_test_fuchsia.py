@@ -4,8 +4,9 @@
 # found in the LICENSE file.
 """Wrapper for running gpu integration tests on Fuchsia devices."""
 
+from __future__ import print_function
+
 import os
-import shutil
 import sys
 
 import fuchsia_util

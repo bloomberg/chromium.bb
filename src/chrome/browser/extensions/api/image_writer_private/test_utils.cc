@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/disks/disk.h"
@@ -38,9 +39,9 @@ class ImageWriterFakeImageBurnerClient
   ~ImageWriterFakeImageBurnerClient() override = default;
 
   void SetEventHandlers(
-      const BurnFinishedHandler& burn_finished_handler,
+      BurnFinishedHandler burn_finished_handler,
       const BurnProgressUpdateHandler& burn_progress_update_handler) override {
-    burn_finished_handler_ = burn_finished_handler;
+    burn_finished_handler_ = std::move(burn_finished_handler);
     burn_progress_update_handler_ = burn_progress_update_handler;
   }
 
@@ -242,11 +243,15 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!chromeos::DBusThreadManager::IsInitialized()) {
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    std::unique_ptr<chromeos::ImageBurnerClient> image_burner_fake(
-        new ImageWriterFakeImageBurnerClient());
-    dbus_setter->SetImageBurnerClient(std::move(image_burner_fake));
+    if (!is_browser_test) {
+      // For browser tests, chromeos::InitializeDBus() automatically does the
+      // same.
+      chromeos::DBusThreadManager::Initialize();
+      chromeos::ConciergeClient::InitializeFake(
+          /*fake_cicerone_client=*/nullptr);
+    }
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetImageBurnerClient(
+        std::make_unique<ImageWriterFakeImageBurnerClient>());
   }
 
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();
@@ -269,6 +274,9 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
 void ImageWriterTestUtils::TearDown() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::DBusThreadManager::IsInitialized()) {
+    // When in browser_tests, this path is not taken. These clients have already
+    // been shut down by chromeos::ShutdownDBus().
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
   chromeos::disks::DiskMountManager::Shutdown();

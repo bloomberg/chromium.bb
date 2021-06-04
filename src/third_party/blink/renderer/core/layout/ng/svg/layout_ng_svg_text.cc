@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/svg/svg_text_element.h"
@@ -12,6 +14,7 @@ namespace blink {
 
 LayoutNGSVGText::LayoutNGSVGText(Element* element)
     : LayoutNGBlockFlowMixin<LayoutSVGBlock>(element),
+      needs_update_bounding_box_(true),
       needs_text_metrics_update_(true) {
   DCHECK(IsA<SVGTextElement>(element));
 }
@@ -96,10 +99,73 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
   }
 
   UpdateNGBlockLayout();
+  needs_update_bounding_box_ = true;
 
   // TODO(crbug.com/1179585): Pass |bounds_changed|, and check the return value
   // of the function.
   UpdateTransformAfterLayout(true);
+}
+
+bool LayoutNGSVGText::IsObjectBoundingBoxValid() const {
+  NOT_DESTROYED();
+  return PhysicalFragments().HasFragmentItems();
+}
+
+FloatRect LayoutNGSVGText::ObjectBoundingBox() const {
+  NOT_DESTROYED();
+  if (needs_update_bounding_box_) {
+    // Compute a box containing repositioned text in the non-scaled coordinate.
+    // We don't need to take into account of ink overflow here. We should
+    // return a union of "advance x EM height".
+    // https://svgwg.org/svg2-draft/coords.html#BoundingBoxes
+    FloatRect bbox;
+    DCHECK_LE(PhysicalFragmentCount(), 1u);
+    for (const auto& fragment : PhysicalFragments()) {
+      if (!fragment.Items())
+        continue;
+      for (const auto& item : fragment.Items()->Items()) {
+        if (item.Type() != NGFragmentItem::kSVGText)
+          continue;
+        // Do not use item.RectInContainerFragment() in order to avoid
+        // precision loss.
+        bbox.Unite(item.ObjectBoundingBox());
+      }
+    }
+    bounding_box_ = bbox;
+    needs_update_bounding_box_ = false;
+  }
+  return bounding_box_;
+}
+
+FloatRect LayoutNGSVGText::StrokeBoundingBox() const {
+  NOT_DESTROYED();
+  FloatRect box = ObjectBoundingBox();
+  if (box.IsEmpty())
+    return FloatRect();
+  return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box);
+}
+
+FloatRect LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
+  NOT_DESTROYED();
+  // TODO(crbug.com/1179585): Just use ink overflow?
+  FloatRect box = ObjectBoundingBox();
+  if (box.IsEmpty())
+    return FloatRect();
+  return SVGLayoutSupport::ComputeVisualRectForText(*this, box);
+}
+
+void LayoutNGSVGText::SetNeedsPositioningValuesUpdate() {
+  NOT_DESTROYED();
+  // We resolve text layout attributes in CollectInlines().
+  // Do not use SetNeedsCollectInlines() without arguments.
+  SetNeedsCollectInlines(true);
+}
+
+void LayoutNGSVGText::SetNeedsTextMetricsUpdate() {
+  NOT_DESTROYED();
+  needs_text_metrics_update_ = true;
+  // We need to re-shape text.
+  SetNeedsCollectInlines(true);
 }
 
 }  // namespace blink

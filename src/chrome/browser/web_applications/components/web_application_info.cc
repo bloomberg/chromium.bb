@@ -24,9 +24,7 @@ const std::map<SquareSizePx, SkBitmap>& IconBitmaps::GetBitmapsForPurpose(
     IconPurpose purpose) const {
   switch (purpose) {
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
-      FALLTHROUGH;
+      return monochrome;
     case IconPurpose::ANY:
       return any;
     case IconPurpose::MASKABLE:
@@ -42,8 +40,7 @@ void IconBitmaps::SetBitmapsForPurpose(
       any = std::move(bitmaps);
       return;
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
+      monochrome = std::move(bitmaps);
       return;
     case IconPurpose::MASKABLE:
       maskable = std::move(bitmaps);
@@ -52,8 +49,7 @@ void IconBitmaps::SetBitmapsForPurpose(
 }
 
 bool IconBitmaps::empty() const {
-  // TODO (crbug.com/1114638): Check Monochrome if supported.
-  return any.empty() && maskable.empty();
+  return any.empty() && maskable.empty() && monochrome.empty();
 }
 
 // IconSizes
@@ -73,9 +69,7 @@ const std::vector<SquareSizePx>& IconSizes::GetSizesForPurpose(
     IconPurpose purpose) const {
   switch (purpose) {
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
-      FALLTHROUGH;
+      return monochrome;
     case IconPurpose::ANY:
       return any;
     case IconPurpose::MASKABLE:
@@ -90,8 +84,7 @@ void IconSizes::SetSizesForPurpose(IconPurpose purpose,
       any = std::move(sizes);
       return;
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
+      monochrome = std::move(sizes);
       return;
     case IconPurpose::MASKABLE:
       maskable = std::move(sizes);
@@ -100,8 +93,7 @@ void IconSizes::SetSizesForPurpose(IconPurpose purpose,
 }
 
 bool IconSizes::empty() const {
-  // TODO (crbug.com/1114638): Check Monochrome if supported.
-  return any.empty() && maskable.empty();
+  return any.empty() && maskable.empty() && monochrome.empty();
 }
 
 // WebApplicationIconInfo
@@ -169,9 +161,7 @@ WebApplicationShortcutsMenuItemInfo::GetShortcutIconInfosForPurpose(
     IconPurpose purpose) const {
   switch (purpose) {
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
-      FALLTHROUGH;
+      return monochrome;
     case IconPurpose::ANY:
       return any;
     case IconPurpose::MASKABLE:
@@ -188,8 +178,7 @@ void WebApplicationShortcutsMenuItemInfo::SetShortcutIconInfosForPurpose(
       any = std::move(shortcut_icon_infos);
       return;
     case IconPurpose::MONOCHROME:
-      // TODO (crbug.com/1114638): Monochrome support.
-      NOTREACHED();
+      monochrome = std::move(shortcut_icon_infos);
       return;
     case IconPurpose::MASKABLE:
       maskable = std::move(shortcut_icon_infos);
@@ -240,19 +229,21 @@ bool operator==(const WebApplicationIconInfo& icon_info1,
 
 std::ostream& operator<<(std::ostream& out,
                          const WebApplicationIconInfo& icon_info) {
-  out << "url: " << icon_info.url << " square_size_px: ";
+  out << "url: " << icon_info.url << std::endl;
+  out << "  square_size_px: ";
   if (icon_info.square_size_px)
-    out << *icon_info.square_size_px;
+    out << *icon_info.square_size_px << std::endl;
   else
-    out << "none";
-  out << " purpose: " << icon_info.purpose;
+    out << "none" << std::endl;
+  out << "  purpose: " << icon_info.purpose << std::endl;
   return out;
 }
 
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2) {
-  // TODO (crbug.com/1114638): Add Monochrome support.
-  return std::tie(icon_sizes1.any, icon_sizes1.maskable) ==
-         std::tie(icon_sizes2.any, icon_sizes2.maskable);
+  return std::tie(icon_sizes1.any, icon_sizes1.maskable,
+                  icon_sizes1.monochrome) == std::tie(icon_sizes2.any,
+                                                      icon_sizes2.maskable,
+                                                      icon_sizes2.monochrome);
 }
 
 bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
@@ -263,31 +254,35 @@ bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
 
 bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
                 const WebApplicationShortcutsMenuItemInfo& shortcut_info2) {
-  // TODO (crbug.com/1114638): Add Monochrome support.
   return std::tie(shortcut_info1.name, shortcut_info1.url, shortcut_info1.any,
-                  shortcut_info1.maskable) ==
+                  shortcut_info1.maskable, shortcut_info1.monochrome) ==
          std::tie(shortcut_info2.name, shortcut_info2.url, shortcut_info2.any,
-                  shortcut_info2.maskable);
+                  shortcut_info2.maskable, shortcut_info2.monochrome);
 }
 
 std::ostream& operator<<(std::ostream& out,
                          const WebApplicationShortcutsMenuItemInfo& info) {
-  out << "    name: " << info.name << std::endl
-      << "    url: " << info.url << std::endl
-      << "    any:" << std::endl;
+  out << "name: " << info.name << std::endl;
+  out << "  url: " << info.url << std::endl;
+  out << "  icons:" << std::endl;
+  out << "    any:" << std::endl;
 
   for (WebApplicationShortcutsMenuItemInfo::Icon icon : info.any) {
-    out << "      icon url: " << icon.url << std::endl
-        << "      icon square_size_px" << icon.square_size_px << std::endl;
+    out << "      url: " << icon.url << std::endl;
+    out << "      square_size_px: " << icon.square_size_px << std::endl;
   }
 
   out << "    maskable:" << std::endl;
   for (WebApplicationShortcutsMenuItemInfo::Icon icon : info.maskable) {
-    out << "      icon url: " << icon.url << std::endl
-        << "      icon square_size_px" << icon.square_size_px << std::endl;
+    out << "      url: " << icon.url << std::endl;
+    out << "      square_size_px: " << icon.square_size_px << std::endl;
   }
 
-  // TODO (crbug.com/1114638): Add Monochrome support.
+  out << "    monochrome:" << std::endl;
+  for (WebApplicationShortcutsMenuItemInfo::Icon icon : info.monochrome) {
+    out << "      url: " << icon.url << std::endl;
+    out << "      square_size_px: " << icon.square_size_px << std::endl;
+  }
 
   return out;
 }

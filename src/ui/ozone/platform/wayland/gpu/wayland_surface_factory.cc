@@ -165,10 +165,8 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-WaylandSurfaceFactory::CreateVulkanImplementation(
-    bool use_swiftshader,
-    bool allow_protected_memory,
-    bool enforce_protected_memory) {
+WaylandSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
+                                                  bool allow_protected_memory) {
   return std::make_unique<VulkanImplementationWayland>(use_swiftshader);
 }
 #endif
@@ -179,7 +177,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =

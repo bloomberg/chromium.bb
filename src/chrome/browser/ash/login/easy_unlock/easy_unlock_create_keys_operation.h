@@ -18,9 +18,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
-
-class UserContext;
+namespace ash {
 
 // A class to create Easy unlock cryptohome keys for the given user and devices.
 class EasyUnlockCreateKeysOperation {
@@ -46,7 +44,7 @@ class EasyUnlockCreateKeysOperation {
   void OnGetSystemSalt(size_t index, const std::string& system_salt);
   void OnKeyCreated(size_t index,
                     const Key& user_key,
-                    base::Optional<::user_data_auth::AddKeyReply> reply);
+                    absl::optional<::user_data_auth::AddKeyReply> reply);
 
   UserContext user_context_;
   std::string tpm_public_key_;
@@ -63,6 +61,6 @@ class EasyUnlockCreateKeysOperation {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockCreateKeysOperation);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_EASY_UNLOCK_EASY_UNLOCK_CREATE_KEYS_OPERATION_H_

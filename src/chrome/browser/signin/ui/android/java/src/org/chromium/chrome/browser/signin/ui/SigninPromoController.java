@@ -19,10 +19,14 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.ui.SigninActivityLauncher.AccessPoint;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher.AccessPoint;
 import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
 import org.chromium.components.browser_ui.widget.impression.OneShotImpressionListener;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
@@ -62,7 +66,7 @@ public class SigninPromoController {
     private final @Nullable String mImpressionsTilXButtonHistogramName;
     private final @StringRes int mDescriptionStringId;
     private final @StringRes int mDescriptionStringIdNoAccount;
-    private final SigninActivityLauncher mSigninActivityLauncher;
+    private final SyncConsentActivityLauncher mSyncConsentActivityLauncher;
     private boolean mWasDisplayed;
     private boolean mWasUsed;
 
@@ -98,12 +102,12 @@ public class SigninPromoController {
     /**
      * Creates a new SigninPromoController.
      * @param accessPoint Specifies the AccessPoint from which the promo is to be shown.
-     * @param signinActivityLauncher Launcher of {@link SigninActivity}.
+     * @param syncConsentActivityLauncher Launcher of {@link SigninActivity}.
      */
     public SigninPromoController(
-            @AccessPoint int accessPoint, SigninActivityLauncher signinActivityLauncher) {
+            @AccessPoint int accessPoint, SyncConsentActivityLauncher syncConsentActivityLauncher) {
         mAccessPoint = accessPoint;
-        mSigninActivityLauncher = signinActivityLauncher;
+        mSyncConsentActivityLauncher = syncConsentActivityLauncher;
         switch (mAccessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
                 mImpressionCountName =
@@ -276,11 +280,7 @@ public class SigninPromoController {
 
         view.getDescription().setText(mDescriptionStringIdNoAccount);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
-        } else {
-            view.getPrimaryButton().setText(R.string.sign_in_to_chrome);
-        }
+        view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
         view.getPrimaryButton().setOnClickListener(v -> signinWithNewAccount(context));
 
         view.getSecondaryButton().setVisibility(View.GONE);
@@ -293,12 +293,18 @@ public class SigninPromoController {
 
         view.getDescription().setText(mDescriptionStringId);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
+        String continueAsButtonText = context.getString(
+                R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY_PROMOS)) {
+            IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                    Profile.getLastUsedRegularProfile());
+            boolean hasPrimaryAccount =
+                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) != null;
+            view.getPrimaryButton().setText(hasPrimaryAccount
+                            ? context.getString(R.string.sync_promo_turn_on_sync)
+                            : continueAsButtonText);
         } else {
-            String signinButtonText = context.getString(R.string.signin_promo_continue_as,
-                    mProfileData.getGivenNameOrFullNameOrEmail());
-            view.getPrimaryButton().setText(signinButtonText);
+            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
         }
         view.getPrimaryButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
@@ -314,20 +320,20 @@ public class SigninPromoController {
     private void signinWithNewAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNewAccountUserActionName);
-        mSigninActivityLauncher.launchActivityForPromoAddAccountFlow(context, mAccessPoint);
+        mSyncConsentActivityLauncher.launchActivityForPromoAddAccountFlow(context, mAccessPoint);
     }
 
     private void signinWithDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninWithDefaultUserActionName);
-        mSigninActivityLauncher.launchActivityForPromoDefaultFlow(
+        mSyncConsentActivityLauncher.launchActivityForPromoDefaultFlow(
                 context, mAccessPoint, mProfileData.getAccountEmail());
     }
 
     private void signinWithNotDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNotDefaultUserActionName);
-        mSigninActivityLauncher.launchActivityForPromoChooseAccountFlow(
+        mSyncConsentActivityLauncher.launchActivityForPromoChooseAccountFlow(
                 context, mAccessPoint, mProfileData.getAccountEmail());
     }
 

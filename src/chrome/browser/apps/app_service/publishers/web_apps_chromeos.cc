@@ -13,20 +13,19 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/apps/app_service/web_apps_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,9 +59,11 @@
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/sessions/core/session_id.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/origin.h"
 
@@ -137,7 +138,7 @@ void WebAppsChromeOs::Initialize() {
 
   media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
 
-  notification_display_service_.Add(
+  notification_display_service_.Observe(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
   badge_manager_ = badging::BadgeManagerFactory::GetForProfile(profile());
@@ -177,33 +178,8 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
     return;
   }
 
-  DCHECK(provider());
-  DCHECK(provider()->install_finalizer().CanUserUninstallExternalApp(app_id));
-
-  auto origin = url::Origin::Create(web_app->start_url());
-  // TODO(crbug.com/1104696): Update web_app::InstallFinalizer to accommodate
-  // when install_source == apps::mojom::UninstallSource::kMigration.
-  provider()->install_finalizer().UninstallExternalAppByUser(app_id,
-                                                             base::DoNothing());
-  web_app = nullptr;
-
-  if (!clear_site_data) {
-    // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
-    return;
-  }
-
-  // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
-  constexpr bool kClearCookies = true;
-  constexpr bool kClearStorage = true;
-  constexpr bool kClearCache = true;
-  constexpr bool kAvoidClosingConnections = false;
-  content::ClearSiteData(base::BindRepeating(
-                             [](content::BrowserContext* browser_context) {
-                               return browser_context;
-                             },
-                             base::Unretained(profile())),
-                         origin, kClearCookies, kClearStorage, kClearCache,
-                         kAvoidClosingConnections, base::DoNothing());
+  apps_util::UninstallWebApp(profile(), web_app, uninstall_source,
+                             clear_site_data, report_abuse);
 }
 
 void WebAppsChromeOs::PauseApp(const std::string& app_id) {
@@ -262,7 +238,7 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
-  if (provider()->install_finalizer().CanUserUninstallExternalApp(app_id)) {
+  if (provider()->install_finalizer().CanUserUninstallWebApp(app_id)) {
     AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
   }
 
@@ -418,9 +394,11 @@ void WebAppsChromeOs::OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
   // Sometimes OnWebAppDisabledStateChanged is called but
   // WebApp::chromos_data().is_disabled isn't updated yet, that's why here we
   // depend only on |is_disabled|.
-  apps::mojom::AppPtr app = WebAppsBase::ConvertImpl(
-      web_app, is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
-                           : apps::mojom::Readiness::kReady);
+  apps::mojom::Readiness readiness =
+      is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
+                  : apps::mojom::Readiness::kReady;
+  apps::mojom::AppPtr app =
+      apps_util::ConvertWebApp(profile(), web_app, app_type(), readiness);
   app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused_apps_.IsPaused(app_id), is_disabled));
 
@@ -533,7 +511,7 @@ void WebAppsChromeOs::OnRequestUpdate(int render_process_id,
     return;
   }
 
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(profile(), web_contents->GetURL(),
                                               /*window_only=*/false);
   if (!app_id.has_value()) {
@@ -560,7 +538,7 @@ void WebAppsChromeOs::OnWebContentsDestroyed(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
 
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(
           profile(), web_contents->GetLastCommittedURL(),
           /*window_only=*/false);
@@ -607,7 +585,8 @@ void WebAppsChromeOs::OnNotificationClosed(const std::string& notification_id) {
 
 void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
     NotificationDisplayService* service) {
-  notification_display_service_.Remove(service);
+  DCHECK(notification_display_service_.IsObservingSource(service));
+  notification_display_service_.Reset();
 }
 
 bool WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
@@ -628,16 +607,18 @@ bool WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
 void WebAppsChromeOs::MaybeAddWebPageNotifications(
     const message_center::Notification& notification,
     const NotificationCommon::Metadata* const metadata) {
-  const GURL& url =
-      metadata
-          ? PersistentNotificationMetadata::From(metadata)->service_worker_scope
-          : notification.origin_url();
+  const PersistentNotificationMetadata* persistent_metadata =
+      PersistentNotificationMetadata::From(metadata);
 
-  if (metadata) {
-    // For persistent notifications, find the web app with the scope url.
-    base::Optional<web_app::AppId> app_id =
-        web_app::FindInstalledAppWithUrlInScope(profile(), url,
-                                                /*window_only=*/false);
+  const NonPersistentNotificationMetadata* non_persistent_metadata =
+      NonPersistentNotificationMetadata::From(metadata);
+
+  if (persistent_metadata) {
+    // For persistent notifications, find the web app with the SW scope url.
+    absl::optional<web_app::AppId> app_id =
+        web_app::FindInstalledAppWithUrlInScope(
+            profile(), persistent_metadata->service_worker_scope,
+            /*window_only=*/false);
     if (app_id.has_value()) {
       MaybeAddNotification(app_id.value(), notification.id());
     }
@@ -645,6 +626,12 @@ void WebAppsChromeOs::MaybeAddWebPageNotifications(
     // For non-persistent notifications, find all web apps that are installed
     // under the origin url.
     DCHECK(provider());
+
+    const GURL& url = non_persistent_metadata &&
+                              !non_persistent_metadata->document_url.is_empty()
+                          ? non_persistent_metadata->document_url
+                          : notification.origin_url();
+
     auto app_ids = provider()->registrar().FindAppsInScope(url);
     int count = 0;
     for (const auto& app_id : app_ids) {
@@ -660,8 +647,8 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const web_app::WebApp* web_app,
                                              apps::mojom::Readiness readiness) {
   DCHECK(web_app->chromeos_data().has_value());
   bool is_disabled = web_app->chromeos_data()->is_disabled;
-  apps::mojom::AppPtr app = WebAppsBase::ConvertImpl(
-      web_app,
+  apps::mojom::AppPtr app = apps_util::ConvertWebApp(
+      profile(), web_app, app_type(),
       is_disabled ? apps::mojom::Readiness::kDisabledByPolicy : readiness);
   if (is_disabled) {
     UpdateAppDisabledMode(app);

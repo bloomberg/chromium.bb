@@ -5,16 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_GLES_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_GLES_H_
 
-#include <unordered_map>
-
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "gpu/command_buffer/client/client_font_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/raster_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace gpu {
@@ -34,7 +32,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   // Command buffer Flush / Finish.
   void Finish() override;
   void Flush() override;
-  void ShallowFlushCHROMIUM() override;
   void OrderingBarrierCHROMIUM() override;
 
   // Command buffer state.
@@ -97,7 +94,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       const gfx::Rect& full_raster_rect,
                       const gfx::Rect& playback_rect,
                       const gfx::Vector2dF& post_translate,
-                      GLfloat post_scale,
+                      const gfx::Vector2dF& post_scale,
                       bool requires_clear,
                       size_t* max_op_size_hint) override;
   void EndRasterCHROMIUM() override;
@@ -112,10 +109,11 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void ReadbackARGBPixelsAsync(
       const gpu::Mailbox& source_mailbox,
       GLenum source_target,
-      const gfx::Size& dst_size,
+      GrSurfaceOrigin source_origin,
+      const SkImageInfo& dst_info,
+      GLuint dst_row_bytes,
       unsigned char* out,
-      GLenum format,
-      base::OnceCallback<void(bool)> callback) override;
+      base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done) override;
 
   void ReadbackYUVPixelsAsync(
       const gpu::Mailbox& source_mailbox,
@@ -164,12 +162,15 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
   void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+  void ShallowFlushCHROMIUM() override;
 
  private:
   GLHelper* GetGLHelper();
-  void OnReadARGBPixelsAsync(GLuint texture_id,
-                             base::OnceCallback<void(bool)> callback,
-                             bool success);
+  void OnReadARGBPixelsAsync(
+      GLuint texture_id,
+      base::OnceCallback<void(GrSurfaceOrigin, bool)> callback,
+      GrSurfaceOrigin result_origin,
+      bool success);
   void OnReadYUVPixelsAsync(GLuint copy_texture_id,
                             base::OnceCallback<void()> on_release_mailbox,
                             base::OnceCallback<void(bool)> readback_done,

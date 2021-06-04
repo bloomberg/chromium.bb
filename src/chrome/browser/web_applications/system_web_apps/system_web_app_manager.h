@@ -15,16 +15,19 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+class Browser;
 
 namespace base {
 class Version;
@@ -113,6 +116,9 @@ struct SystemAppInfo {
   // If set to false, the surface of app will can be non-maximizable.
   bool is_maximizable = true;
 
+  // If set to true, the App's window will have a tab-strip.
+  bool has_tab_strip = false;
+
   // If set to false, the app will not have the reload button in minimal ui
   // mode.
   bool should_have_reload_button_in_minimal_ui = true;
@@ -121,10 +127,15 @@ struct SystemAppInfo {
   // using `window.close()`.
   bool allow_scripts_to_close_windows = false;
 
+  // If set, this function will be called to determine the default bounds
+  // (window location and size) when the app's window is created.
+  base::RepeatingCallback<gfx::Rect(Browser*)> get_default_bounds =
+      base::NullCallback();
+
   WebApplicationInfoFactory app_info_factory;
 
   // Setup information to drive a background task.
-  base::Optional<SystemAppBackgroundTaskInfo> timer_info;
+  absl::optional<SystemAppBackgroundTaskInfo> timer_info;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -153,12 +164,13 @@ class SystemWebAppManager {
   SystemWebAppManager& operator=(const SystemWebAppManager&) = delete;
   virtual ~SystemWebAppManager();
 
-  void SetSubsystems(PendingAppManager* pending_app_manager,
-                     AppRegistrar* registrar,
-                     AppRegistryController* registry_controller,
-                     WebAppUiManager* ui_manager,
-                     OsIntegrationManager* os_integration_manager,
-                     WebAppPolicyManager* web_app_policy_manager);
+  void SetSubsystems(
+      ExternallyManagedAppManager* externally_managed_app_manager,
+      AppRegistrar* registrar,
+      AppRegistryController* registry_controller,
+      WebAppUiManager* ui_manager,
+      OsIntegrationManager* os_integration_manager,
+      WebAppPolicyManager* web_app_policy_manager);
 
   void Start();
 
@@ -176,10 +188,10 @@ class SystemWebAppManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the app id for the given System App |type|.
-  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType type) const;
+  absl::optional<AppId> GetAppIdForSystemApp(SystemAppType type) const;
 
   // Returns the System App Type for the given |app_id|.
-  base::Optional<SystemAppType> GetSystemAppTypeForAppId(AppId app_id) const;
+  absl::optional<SystemAppType> GetSystemAppTypeForAppId(AppId app_id) const;
 
   // Returns the App Ids for all installed System Web Apps.
   std::vector<AppId> GetAppIds() const;
@@ -220,9 +232,15 @@ class SystemWebAppManager {
   // Returns whether the app is allowed to close the window through scripts.
   bool AllowScriptsToCloseWindows(SystemAppType type) const;
 
+  // Returns whether the app window should have the tab-strip.
+  bool ShouldHaveTabStrip(SystemAppType type) const;
+
   // Returns the SystemAppType that should capture the navigation to |url|.
-  base::Optional<SystemAppType> GetCapturingSystemAppForURL(
+  absl::optional<SystemAppType> GetCapturingSystemAppForURL(
       const GURL& url) const;
+
+  // Return the default bound of App's window.
+  gfx::Rect GetDefaultBounds(SystemAppType type, Browser* browser) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.
@@ -278,7 +296,8 @@ class SystemWebAppManager {
   void OnAppsSynchronized(
       bool did_force_install_apps,
       const base::TimeTicks& install_start_time,
-      std::map<GURL, PendingAppManager::InstallResult> install_results,
+      std::map<GURL, ExternallyManagedAppManager::InstallResult>
+          install_results,
       std::map<GURL, bool> uninstall_results);
   bool ShouldForceInstallApps() const;
   void UpdateLastAttemptedInfo();
@@ -287,8 +306,8 @@ class SystemWebAppManager {
   bool CheckAndIncrementRetryAttempts();
 
   void RecordSystemWebAppInstallResults(
-      const std::map<GURL, PendingAppManager::InstallResult>& install_results)
-      const;
+      const std::map<GURL, ExternallyManagedAppManager::InstallResult>&
+          install_results) const;
 
   void RecordSystemWebAppInstallDuration(
       const base::TimeDelta& time_duration) const;
@@ -311,7 +330,7 @@ class SystemWebAppManager {
   PrefService* const pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
-  PendingAppManager* pending_app_manager_ = nullptr;
+  ExternallyManagedAppManager* externally_managed_app_manager_ = nullptr;
 
   AppRegistrar* registrar_ = nullptr;
 

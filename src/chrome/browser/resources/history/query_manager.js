@@ -2,68 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserService} from './browser_service.js';
 import {HistoryEntry, HistoryQuery, QueryResult} from './externs.js';
 import {QueryState} from './externs.js';
+import {HistoryRouterElement} from './router.js';
 
-Polymer({
-  is: 'history-query-manager',
+/** @polymer */
+export class HistoryQueryManagerElement extends PolymerElement {
+  static get is() {
+    return 'history-query-manager';
+  }
 
-  properties: {
-    /** @type {QueryState} */
-    queryState: {
-      type: Object,
-      notify: true,
-      value() {
-        return {
-          // Whether the most recent query was incremental.
-          incremental: false,
-          // A query is initiated by page load.
-          querying: true,
-          searchTerm: '',
-        };
+  static get template() {
+    return null;
+  }
+
+  static get properties() {
+    return {
+      /** @type {QueryState} */
+      queryState: {
+        type: Object,
+        notify: true,
+        value() {
+          return {
+            // Whether the most recent query was incremental.
+            incremental: false,
+            // A query is initiated by page load.
+            querying: true,
+            searchTerm: '',
+          };
+        },
       },
-    },
 
-    /** @type {QueryResult} */
-    queryResult: {
-      type: Object,
-      notify: true,
-    },
+      /** @type {QueryResult} */
+      queryResult: {
+        type: Object,
+        notify: true,
+      },
 
-    /** @type {?HistoryRouterElement} */
-    router: Object,
-  },
+      /** @type {?HistoryRouterElement} */
+      router: Object,
+    };
+  }
 
-  observers: [
-    'searchTermChanged_(queryState.searchTerm)',
-  ],
+  static get observers() {
+    return ['searchTermChanged_(queryState.searchTerm)'];
+  }
 
-  /** @private {!Object<string, !function(!Event)>} */
-  documentListeners_: {},
+  constructor() {
+    super();
 
-  /** @override */
-  attached() {
-    this.documentListeners_['change-query'] = this.onChangeQuery_.bind(this);
-    this.documentListeners_['query-history'] = this.onQueryHistory_.bind(this);
-
-    for (const e in this.documentListeners_) {
-      document.addEventListener(e, this.documentListeners_[e]);
-    }
-  },
+    /** @private {!EventTracker} */
+    this.eventTracker_ = new EventTracker();
+  }
 
   /** @override */
-  detached() {
-    for (const e in this.documentListeners_) {
-      document.removeEventListener(e, this.documentListeners_[e]);
-    }
-  },
+  connectedCallback() {
+    super.connectedCallback();
+    this.eventTracker_.add(
+        document, 'change-query', this.onChangeQuery_.bind(this));
+    this.eventTracker_.add(
+        document, 'query-history', this.onQueryHistory_.bind(this));
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.eventTracker_.removeAll();
+  }
 
   initialize() {
     this.queryHistory_(false /* incremental */);
-  },
+  }
 
   /**
    * @param {boolean} incremental
@@ -79,7 +92,7 @@ Polymer({
         browserService.queryHistory(this.queryState.searchTerm);
     // Ignore rejected (cancelled) queries.
     promise.then(result => this.onQueryResult_(result), () => {});
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -101,7 +114,7 @@ Polymer({
         this.router.serializeUrl();
       }
     }
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -110,7 +123,7 @@ Polymer({
   onQueryHistory_(e) {
     this.queryHistory_(/** @type {boolean} */ (e.detail));
     return false;
-  },
+  }
 
   /**
    * @param {{info: !HistoryQuery,
@@ -122,8 +135,9 @@ Polymer({
     this.set('queryState.querying', false);
     this.set('queryResult.info', results.info);
     this.set('queryResult.results', results.value);
-    this.fire('query-finished');
-  },
+    this.dispatchEvent(
+        new CustomEvent('query-finished', {bubbles: true, composed: true}));
+  }
 
   /** @private */
   searchTermChanged_() {
@@ -131,5 +145,8 @@ Polymer({
     if (this.queryState.searchTerm) {
       BrowserService.getInstance().recordAction('Search');
     }
-  },
-});
+  }
+}
+
+customElements.define(
+    HistoryQueryManagerElement.is, HistoryQueryManagerElement);

@@ -9,14 +9,10 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/time/time.h"
-
-namespace aura {
-class Window;
-}
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
-enum class SourceType;
 class ProjectorClient;
 
 // Interface to control projector in ash.
@@ -37,19 +33,15 @@ class ASH_PUBLIC_EXPORT ProjectorController {
   virtual void OnSpeechRecognitionAvailable(bool available) = 0;
 
   // Called when transcription result from mic input is ready.
-  virtual void OnTranscription(const std::u16string& text,
-                               base::TimeDelta start_time,
-                               base::TimeDelta end_time,
-                               const std::vector<base::TimeDelta>& word_offsets,
-                               bool is_final) = 0;
+  virtual void OnTranscription(
+      const std::u16string& text,
+      absl::optional<base::TimeDelta> start_time,
+      absl::optional<base::TimeDelta> end_time,
+      const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
+      bool is_final) = 0;
 
   // Sets projector toolbar visibility.
   virtual void SetProjectorToolsVisible(bool is_visible) = 0;
-
-  // Starts a projector session. If scope is SourceType::kUnset, window may be
-  // null.
-  virtual void StartProjectorSession(SourceType scope,
-                                     aura::Window* window) = 0;
 
   // Returns true if Projector is eligible to start a new session.
   virtual bool IsEligible() const = 0;

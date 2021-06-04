@@ -10,9 +10,10 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/crx_file/id_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace speech {
 
@@ -90,7 +91,7 @@ const base::FilePath GetSodaBinaryPath() {
                           : soda_dir.Append(kSodaBinaryRelativePath);
 }
 
-base::Optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
+absl::optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
     LanguageCode language_code) {
   for (const SodaLanguagePackComponentConfig& config :
        kLanguageComponentConfigs) {
@@ -99,10 +100,10 @@ base::Optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
+absl::optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
     const std::string& language_name) {
   for (const SodaLanguagePackComponentConfig& config :
        kLanguageComponentConfigs) {
@@ -111,6 +112,33 @@ base::Optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
+
+LanguageCode GetLanguageCodeByComponentId(const std::string& component_id) {
+  for (const SodaLanguagePackComponentConfig& config :
+       kLanguageComponentConfigs) {
+    if (crx_file::id_util::GenerateIdFromHash(config.public_key_sha,
+                                              sizeof(config.public_key_sha)) ==
+        component_id) {
+      return config.language_code;
+    }
+  }
+
+  return LanguageCode::kNone;
+}
+
+std::string GetLanguageName(LanguageCode language_code) {
+  std::string language_name;
+  if (language_code != speech::LanguageCode::kNone) {
+    absl::optional<speech::SodaLanguagePackComponentConfig> language_config =
+        speech::GetLanguageComponentConfig(language_code);
+    if (language_config.has_value()) {
+      language_name = language_config.value().language_name;
+    }
+  }
+
+  return language_name;
+}
+
 }  // namespace speech

@@ -16,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.ui.base.LocalizationUtils;
@@ -100,8 +99,8 @@ abstract class OverlayPanelBase {
     /** Ratio of dps per pixel. */
     protected final float mPxToDp;
 
-    /** The height of the Toolbar in dps. */
-    private float mToolbarHeight;
+    /** The height of the Toolbar in dp. */
+    private float mToolbarHeightDp;
 
     /** The background color of the Bar. */
     private final @ColorInt int mBarBackgroundColor;
@@ -133,9 +132,11 @@ abstract class OverlayPanelBase {
 
     /**
      * @param context The current Android {@link Context}.
+     * @param toolbarHeightDp The current height of the toolbar in dp.
      */
-    public OverlayPanelBase(Context context) {
+    public OverlayPanelBase(Context context, float toolbarHeightDp) {
         mContext = context;
+        mToolbarHeightDp = toolbarHeightDp;
         mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
 
         mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
@@ -188,12 +189,6 @@ abstract class OverlayPanelBase {
 
     /** Shows a previously hidden panel again.  {@See #hidePanel}. */
     public abstract void showPanel(@StateChangeReason int reason);
-
-    /**
-     * TODO(mdjones): This method should be removed from this class.
-     * @return The resource id that contains how large the browser controls are.
-     */
-    protected abstract int getControlContainerHeightResource();
 
     /**
      * Handles when the Panel's container view size changes.
@@ -279,13 +274,6 @@ abstract class OverlayPanelBase {
      */
     protected float calculateOverlayPanelWidth() {
         return isFullWidthSizePanel() ? getFullscreenWidth() : SMALL_PANEL_WIDTH_DP;
-    }
-
-    /**
-     * @return The height of the Chrome toolbar in dp.
-     */
-    public float getToolbarHeight() {
-        return mToolbarHeight;
     }
 
     /**
@@ -721,7 +709,7 @@ abstract class OverlayPanelBase {
         if (isFullWidthSizePanel()) {
             return getTabHeight() * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
         } else {
-            return (getTabHeight() - mToolbarHeight) * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+            return (getTabHeight() - mToolbarHeightDp * mPxToDp) * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
         }
     }
 
@@ -730,20 +718,6 @@ abstract class OverlayPanelBase {
      */
     protected float getMaximizedHeight() {
         return getTabHeight();
-    }
-
-    /**
-     * Initializes the UI state.
-     */
-    protected void initializeUiState() {
-        // TODO(pedrosimonetti): Coordinate with mdjones@ to move this to the OverlayPanelBase
-        // constructor, once we are able to get the Activity during instantiation. The Activity
-        // is needed in order to get the correct height of the Toolbar, which varies depending
-        // on the Activity (WebApps have a smaller toolbar for example).
-        int toolbarHeightResource = getControlContainerHeightResource();
-        mToolbarHeight = toolbarHeightResource == ChromeActivity.NO_CONTROL_CONTAINER
-                ? 0
-                : mContext.getResources().getDimension(toolbarHeightResource) * mPxToDp;
     }
 
     /**

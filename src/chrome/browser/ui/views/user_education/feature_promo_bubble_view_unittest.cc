@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
@@ -40,7 +39,7 @@ class FeaturePromoBubbleViewTest : public TestWithBrowserView {
     params.arrow = views::BubbleBorder::TOP_RIGHT;
 
     if (button_callback) {
-      params.focusable = true;
+      params.focus_on_create = true;
       params.persist_on_blur = true;
 
       FeaturePromoBubbleView::ButtonParams button_params;

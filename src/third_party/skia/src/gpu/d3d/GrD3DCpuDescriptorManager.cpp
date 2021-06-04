@@ -12,7 +12,7 @@
 GrD3DCpuDescriptorManager::GrD3DCpuDescriptorManager(GrD3DGpu* gpu)
     : fRTVDescriptorPool(gpu, D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
     , fDSVDescriptorPool(gpu, D3D12_DESCRIPTOR_HEAP_TYPE_DSV)
-    , fCBVSRVUAVDescriptorPool(gpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+    , fShaderViewDescriptorPool(gpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
     , fSamplerDescriptorPool(gpu, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) {}
 
 GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createRenderTargetView(
@@ -41,7 +41,8 @@ void GrD3DCpuDescriptorManager::recycleDepthStencilView(
 
 GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createConstantBufferView(
         GrD3DGpu* gpu, ID3D12Resource* bufferResource, size_t offset, size_t size) {
-    const GrD3DDescriptorHeap::CPUHandle& descriptor = fCBVSRVUAVDescriptorPool.allocateHandle(gpu);
+    const GrD3DDescriptorHeap::CPUHandle& descriptor =
+            fShaderViewDescriptorPool.allocateHandle(gpu);
     D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
     desc.BufferLocation = bufferResource->GetGPUVirtualAddress() + offset;
     desc.SizeInBytes = size;
@@ -50,25 +51,42 @@ GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createConstantBufferVi
 }
 
 GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createShaderResourceView(
-        GrD3DGpu* gpu, ID3D12Resource* resource) {
-    const GrD3DDescriptorHeap::CPUHandle& descriptor = fCBVSRVUAVDescriptorPool.allocateHandle(gpu);
+        GrD3DGpu* gpu, ID3D12Resource* resource,
+        unsigned int mostDetailedMip, unsigned int mipLevels) {
+    const GrD3DDescriptorHeap::CPUHandle& descriptor =
+            fShaderViewDescriptorPool.allocateHandle(gpu);
     // TODO: for 4:2:0 YUV formats we'll need to map two different views, one for Y and one for UV.
     // For now map the entire resource.
-    gpu->device()->CreateShaderResourceView(resource, nullptr, descriptor.fHandle);
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Format = resource->GetDesc().Format;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    desc.Texture2D.MostDetailedMip = mostDetailedMip;
+    desc.Texture2D.MipLevels = mipLevels;
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    gpu->device()->CreateShaderResourceView(resource, &desc, descriptor.fHandle);
     return descriptor;
 }
 
 GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createUnorderedAccessView(
-        GrD3DGpu* gpu, ID3D12Resource* resource) {
-    const GrD3DDescriptorHeap::CPUHandle& descriptor = fCBVSRVUAVDescriptorPool.allocateHandle(gpu);
-    // TODO: might need more granularity here for textures (specify miplevels, etc.)
-    gpu->device()->CreateUnorderedAccessView(resource, nullptr, nullptr, descriptor.fHandle);
+        GrD3DGpu* gpu, ID3D12Resource* resource, unsigned int mipSlice) {
+    const GrD3DDescriptorHeap::CPUHandle& descriptor =
+            fShaderViewDescriptorPool.allocateHandle(gpu);
+    if (resource->GetDesc().Dimension == D3D12_RESOURCE_DIMENSION_BUFFER) {
+        // TODO: figure out buffer setup
+        gpu->device()->CreateUnorderedAccessView(resource, nullptr, nullptr, descriptor.fHandle);
+    } else {
+        D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
+        desc.Format = resource->GetDesc().Format;
+        desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        desc.Texture2D.MipSlice = mipSlice;
+        gpu->device()->CreateUnorderedAccessView(resource, nullptr, &desc, descriptor.fHandle);
+    }
     return descriptor;
 }
 
-void GrD3DCpuDescriptorManager::recycleCBVSRVUAV(
+void GrD3DCpuDescriptorManager::recycleShaderView(
         const GrD3DDescriptorHeap::CPUHandle& view) {
-    fCBVSRVUAVDescriptorPool.releaseHandle(view);
+    fShaderViewDescriptorPool.releaseHandle(view);
 }
 
 GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::createSampler(
@@ -148,7 +166,10 @@ GrD3DDescriptorHeap::CPUHandle GrD3DCpuDescriptorManager::HeapPool::allocateHand
 
     // need to allocate more space
     std::unique_ptr<GrD3DCpuDescriptorManager::Heap> heap =
-        GrD3DCpuDescriptorManager::Heap::Make(gpu, fHeapType, fMaxAvailableDescriptors);
+            GrD3DCpuDescriptorManager::Heap::Make(gpu, fHeapType, fMaxAvailableDescriptors);
+    // TODO: handle failed heap creation and/or memory restrictions better
+    // skbug.com/11959
+    SkASSERT(heap);
 
     fDescriptorHeaps.push_back(std::move(heap));
     fMaxAvailableDescriptors *= 2;

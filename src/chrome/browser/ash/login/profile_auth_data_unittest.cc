@@ -47,8 +47,8 @@ namespace {
 const char kProxyAuthURL[] = "https://example.com/";
 const char kProxyAuthRealm[] = "realm";
 const char kProxyAuthChallenge[] = "challenge";
-const char kProxyAuthPassword1[] = "password 1";
-const char kProxyAuthPassword2[] = "password 2";
+const char16_t kProxyAuthPassword1[] = u"password 1";
+const char16_t kProxyAuthPassword2[] = u"password 2";
 
 const char kGAIACookieURL[] = "https://google.com/";
 const char kSAMLIdPCookieURL[] = "https://example.com/";
@@ -70,8 +70,8 @@ CreateNetworkContextForDefaultStoragePartition(
   auto network_context = std::make_unique<network::NetworkContext>(
       network_service, network_context_remote.InitWithNewPipeAndPassReceiver(),
       std::move(params));
-  content::BrowserContext::GetDefaultStoragePartition(browser_context)
-      ->SetNetworkContextForTesting(std::move(network_context_remote));
+  browser_context->GetDefaultStoragePartition()->SetNetworkContextForTesting(
+      std::move(network_context_remote));
   return network_context;
 }
 
@@ -105,7 +105,7 @@ class ProfileAuthDataTest : public testing::Test {
  private:
   void PopulateBrowserContext(TestingProfile* browser_context,
                               network::NetworkContext* network_context,
-                              const std::string& proxy_auth_password,
+                              const std::u16string& proxy_auth_password,
                               const std::string& cookie_value);
 
   net::HttpAuthCache* GetAuthCache(network::NetworkContext* network_context);
@@ -143,10 +143,8 @@ void ProfileAuthDataTest::Transfer(
     bool transfer_auth_cookies_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login) {
   base::RunLoop run_loop;
-  ProfileAuthData::Transfer(content::BrowserContext::GetDefaultStoragePartition(
-                                &login_browser_context_),
-                            content::BrowserContext::GetDefaultStoragePartition(
-                                &user_browser_context_),
+  ProfileAuthData::Transfer(login_browser_context_.GetDefaultStoragePartition(),
+                            user_browser_context_.GetDefaultStoragePartition(),
                             transfer_auth_cookies_on_first_login,
                             transfer_saml_auth_cookies_on_subsequent_login,
                             run_loop.QuitClosure());
@@ -180,8 +178,7 @@ void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
                    kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
                    net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
-  EXPECT_EQ(base::ASCIIToUTF16(kProxyAuthPassword1),
-            entry->credentials().password());
+  EXPECT_EQ(kProxyAuthPassword1, entry->credentials().password());
 }
 
 void ProfileAuthDataTest::VerifyUserCookies(
@@ -210,14 +207,13 @@ void ProfileAuthDataTest::VerifyUserCookies(
 void ProfileAuthDataTest::PopulateBrowserContext(
     TestingProfile* browser_context,
     network::NetworkContext* network_context,
-    const std::string& proxy_auth_password,
+    const std::u16string& proxy_auth_password,
     const std::string& cookie_value) {
   GetAuthCache(network_context)
       ->Add(GURL(kProxyAuthURL), net::HttpAuth::AUTH_PROXY, kProxyAuthRealm,
             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
             kProxyAuthChallenge,
-            net::AuthCredentials(std::u16string(),
-                                 base::ASCIIToUTF16(proxy_auth_password)),
+            net::AuthCredentials(std::u16string(), proxy_auth_password),
             std::string());
 
   network::mojom::CookieManager* cookies = GetCookies(browser_context);
@@ -265,7 +261,7 @@ net::HttpAuthCache* ProfileAuthDataTest::GetAuthCache(
 
 network::mojom::CookieManager* ProfileAuthDataTest::GetCookies(
     content::BrowserContext* browser_context) {
-  return content::BrowserContext::GetDefaultStoragePartition(browser_context)
+  return browser_context->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess();
 }
 

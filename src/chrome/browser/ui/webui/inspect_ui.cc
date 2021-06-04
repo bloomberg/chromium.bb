@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -699,7 +698,7 @@ void InspectUI::SetPortForwardingDefaults() {
   }
 
   // Do nothing if user already took explicit action.
-  if (enabled || !config->empty())
+  if (enabled || !config->DictEmpty())
     return;
 
   base::DictionaryValue default_config;

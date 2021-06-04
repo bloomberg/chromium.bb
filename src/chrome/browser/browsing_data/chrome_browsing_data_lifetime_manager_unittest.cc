@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -23,6 +22,7 @@
 #include "content/public/test/mock_browsing_data_remover_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 TEST(ChromeBrowsingDataLifetimeManager, ScheduledRemoval) {
   base::test::ScopedFeatureList feature_list;
@@ -37,8 +37,7 @@ TEST(ChromeBrowsingDataLifetimeManager, ScheduledRemoval) {
                                    base::Value(true));
 
   content::MockBrowsingDataRemoverDelegate delegate;
-  auto* remover =
-      content::BrowserContext::GetBrowsingDataRemover(testing_profile.get());
+  auto* remover = testing_profile->GetBrowsingDataRemover();
   remover->SetEmbedderDelegate(&delegate);
   static constexpr char kPref[] =
       R"([{"time_to_live_in_hours": 1, "data_types":["cached_images_and_files",
@@ -81,8 +80,7 @@ TEST(ChromeBrowsingDataLifetimeManager, ScheduledRemoval) {
                                    *base::JSONReader::Read(kPref));
   browser_task_environment.RunUntilIdle();
   delegate.VerifyAndClearExpectations();
-  // Each scheduled removal is called once every lowest time_to_live_in_hours,
-  // ere every 1 hour.
+  // Each scheduled removal is called once every hour.
   delegate.ExpectCallDontCareAboutFilterBuilder(
       base::Time::Min(), base::Time::Now(), remove_mask_1_filterable, 0);
   delegate.ExpectCallDontCareAboutFilterBuilder(
@@ -111,8 +109,7 @@ TEST(ChromeBrowsingDataLifetimeManager, ScheduledRemovalWithSync) {
   auto testing_profile = builder.Build();
 
   content::MockBrowsingDataRemoverDelegate delegate;
-  auto* remover =
-      content::BrowserContext::GetBrowsingDataRemover(testing_profile.get());
+  auto* remover = testing_profile->GetBrowsingDataRemover();
   remover->SetEmbedderDelegate(&delegate);
   static constexpr char kPref[] =
       R"([{"time_to_live_in_hours": 1, "data_types":["cached_images_and_files",

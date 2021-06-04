@@ -278,9 +278,9 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi lock_contents(contents);
   SetUserCount(3);
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Returns the distance between the auth user view and the user view.
   auto calculate_distance = [&]() {
@@ -298,11 +298,13 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
           widget->GetNativeWindow());
   for (int i = 2; i < 10; ++i) {
     SetUserCount(i);
+    SCOPED_TRACE(testing::Message() << "User count: " << i);
 
     // Start at 0 degrees (landscape).
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_0,
         display::Display::RotationSource::ACTIVE);
+    widget->LayoutRootViewIfNecessary();
     int distance_0deg = calculate_distance();
     EXPECT_NE(distance_0deg, 0);
 
@@ -310,16 +312,18 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_90,
         display::Display::RotationSource::ACTIVE);
+    widget->LayoutRootViewIfNecessary();
     int distance_90deg = calculate_distance();
-    EXPECT_GT(distance_0deg, distance_90deg);
+    EXPECT_LT(distance_90deg, distance_0deg);
 
     // Rotate the display back to 0 degrees (landscape).
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_0,
         display::Display::RotationSource::ACTIVE);
-    int distance_180deg = calculate_distance();
-    EXPECT_EQ(distance_0deg, distance_180deg);
-    EXPECT_NE(distance_0deg, distance_90deg);
+    widget->LayoutRootViewIfNecessary();
+    int distance_0deg_2 = calculate_distance();
+    EXPECT_EQ(distance_0deg_2, distance_0deg);
+    EXPECT_NE(distance_0deg_2, distance_90deg);
   }
 }
 
@@ -329,10 +333,10 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutExtraSmallUsersListAfterRotation) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   SetUserCount(9);
   ScrollableUsersListView* users_list =
       LockContentsView::TestApi(contents).users_list();
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Users list in extra small layout should adjust its height to parent.
   EXPECT_EQ(contents->height(), users_list->height());
@@ -366,10 +370,10 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutSmallUsersListAfterRotation) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   SetUserCount(4);
   ScrollableUsersListView* users_list =
       LockContentsView::TestApi(contents).users_list();
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Calculate top spacing between users list and lock screen contents.
   auto top_margin = [&]() {
@@ -547,11 +551,11 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi lock_contents(contents);
   SetUserCount(5);
   ScrollableUsersListView::TestApi users_list(lock_contents.users_list());
   EXPECT_EQ(users().size() - 1, users_list.user_views().size());
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LoginBigUserView* auth_view = lock_contents.primary_big_view();
 
@@ -820,22 +824,8 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfAdbSideloadingEnabled) {
   EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
 }
 
-class LockContentsViewUnitTestWithDeviceDisclosureEnabled
-    : public LockContentsViewUnitTest {
- public:
-  LockContentsViewUnitTestWithDeviceDisclosureEnabled()
-      : LockContentsViewUnitTest() {
-    feature_list_.InitWithFeatures(
-        {chromeos::features::kLoginDeviceManagementDisclosure}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Show bottom status indicator if device is enrolled
-TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
-       ShowStatusIndicatorIfEnrolledDevice) {
+TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfEnrolledDevice) {
   // If the device is enrolled, bottom_status_indicator should be visible.
   Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
                                                              false);
@@ -860,8 +850,7 @@ TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
 }
 
 // Show bottom status indicator if device is enrolled
-TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
-       ShowManagementBubbleOnClickIfEnrolledDevice) {
+TEST_F(LockContentsViewUnitTest, ShowManagementBubbleOnClickIfEnrolledDevice) {
   // If the device is enrolled, bottom_status_indicator should be visible.
   Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
                                                              false);
@@ -896,8 +885,7 @@ TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
 
 // Do not show the management bubble on click if ADB sideloading is enabled and
 // device is enrolled.
-TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
-       DoNotShowManagementBubbleOnClickIfAdb) {
+TEST_F(LockContentsViewUnitTest, DoNotShowManagementBubbleOnClickIfAdb) {
   // If the device is enrolled, bottom_status_indicator should be visible.
   Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
                                                              false);
@@ -1912,9 +1900,9 @@ TEST_F(LockContentsViewUnitTest, UserListUserSwapFocusesPassword) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi contents_test_api(contents);
   AddUsers(3);
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LoginPasswordView* password_view =
       LoginAuthUserView::TestApi(
@@ -1938,8 +1926,8 @@ TEST_F(LockContentsViewUnitTest, BadDetachableBaseUnfocusesPasswordView) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(), std::move(fake_detachable_base_model));
-  SetUserCount(3);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  SetUserCount(3);
 
   LockContentsView::TestApi test_api(contents);
   LoginBigUserView* primary_view = test_api.primary_big_view();
@@ -2688,8 +2676,8 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
-  SetUserCount(3);
   SetWidget(CreateWidgetWithContent(contents));
+  SetUserCount(3);
 
   LockContentsView::TestApi lock_contents(contents);
   ScrollableUsersListView::TestApi users_list(lock_contents.users_list());
@@ -2776,7 +2764,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenAfterDelay) {
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping and delay.
-  lock_contents.media_controls_view()->MediaSessionChanged(base::nullopt);
+  lock_contents.media_controls_view()->MediaSessionChanged(absl::nullopt);
   mock_timer->Fire();
   base::RunLoop().RunUntilIdle();
 
@@ -2833,7 +2821,7 @@ TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping.
-  lock_contents.media_controls_view()->MediaSessionChanged(base::nullopt);
+  lock_contents.media_controls_view()->MediaSessionChanged(absl::nullopt);
 
   // Simulate new media session starting within timer delay.
   SimulateMediaSessionChanged(

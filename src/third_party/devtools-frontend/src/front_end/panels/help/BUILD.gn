@@ -4,6 +4,7 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
 
 devtools_module("help") {
   sources = [
@@ -28,16 +29,21 @@ devtools_entrypoint("bundle") {
   entrypoint = "help.ts"
 
   deps = [ ":help" ]
-}
 
-devtools_entrypoint("legacy") {
-  entrypoint = "help-legacy.ts"
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../../test/unittests/front_end/panels/help/*",
+    "../../entrypoints/*",
+  ]
 
-  deps = [ ":bundle" ]
+  visibility += devtools_panels_visibility
 }
 
 devtools_entrypoint("meta") {
   entrypoint = "help-meta.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [ "../../entrypoints/*" ]
 }

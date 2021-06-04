@@ -97,8 +97,8 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
-  // Returns true if an artificial unsafe URL has been provided using the
-  // command-line flag "mark_as_real_time_phishing".
+  // Returns true if an artificial unsafe URL has been provided using
+  // command-line flags.
   static bool has_artificial_unsafe_url();
 
   void StopCleanUpTimerForTesting();
@@ -146,17 +146,21 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
 
   // This adds a cached verdict for a URL that has artificially been marked as
   // unsafe using the command line flag "mark_as_real_time_phishing".
-  void CacheArtificialVerdict();
+  void CacheArtificialRealTimeUrlVerdict();
+
+  // This adds a cached verdict for a URL that has artificially been marked as
+  // unsafe using the command line flag "mark_as_phish_guard_phishing".
+  void CacheArtificialPhishGuardVerdict();
 
   // Number of verdict stored for this profile for password on focus pings.
-  base::Optional<size_t> stored_verdict_count_password_on_focus_;
+  absl::optional<size_t> stored_verdict_count_password_on_focus_;
 
   // Number of verdict stored for this profile for protected password entry
   // pings.
-  base::Optional<size_t> stored_verdict_count_password_entry_;
+  absl::optional<size_t> stored_verdict_count_password_entry_;
 
   // Number of verdict stored for this profile for real time url check pings.
-  base::Optional<size_t> stored_verdict_count_real_time_url_check_;
+  absl::optional<size_t> stored_verdict_count_real_time_url_check_;
 
   base::ScopedObservation<history::HistoryService,
                           history::HistoryServiceObserver>

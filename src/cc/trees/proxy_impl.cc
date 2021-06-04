@@ -31,6 +31,7 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -89,13 +90,14 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
       new CompositorTimingHistory(
           scheduler_settings.using_synchronous_renderer_compositor,
           CompositorTimingHistory::RENDERER_UMA,
-          layer_tree_host->rendering_stats_instrumentation(),
-          host_impl_->compositor_frame_reporting_controller()));
+          layer_tree_host->rendering_stats_instrumentation()));
   scheduler_ = std::make_unique<Scheduler>(
       this, scheduler_settings, layer_tree_host_id_,
       task_runner_provider_->ImplThreadTaskRunner(),
       std::move(compositor_timing_history), layer_tree_host->TakeMainPipeline(),
-      layer_tree_host->TakeCompositorPipeline());
+      layer_tree_host->TakeCompositorPipeline(),
+      host_impl_->compositor_frame_reporting_controller(),
+      power_scheduler::PowerModeArbiter::GetInstance());
 
   DCHECK_EQ(scheduler_->visible(), host_impl_->visible());
 }
@@ -529,7 +531,7 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
     const viz::FrameTimingDetails& details) {
   auto main_thread_callbacks = std::move(activated.main_thread_callbacks);
   host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(activated), details);
+      frame_token, std::move(activated.compositor_thread_callbacks), details);
 
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,

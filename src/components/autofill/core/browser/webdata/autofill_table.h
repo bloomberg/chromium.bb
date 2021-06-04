@@ -35,6 +35,7 @@ class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
+struct CreditCardArtImage;
 struct CreditCardCloudTokenData;
 struct FormFieldData;
 struct PaymentsCustomerData;
@@ -63,6 +64,10 @@ struct PaymentsCustomerData;
 //
 //   guid               A guid string to uniquely identify the profile.
 //                      Added in version 31.
+//   label              A user-chosen and user-visible label for the profile to
+//                      help identifying the semantics of the profile. The user
+//                      can choose an arbitrary string in principle, but the
+//                      values '$HOME$' and '$WORK$' indicate a special meaning.
 //   company_name
 //   street_address     The combined lines of the street address.
 //                      Added in version 54.
@@ -97,6 +102,9 @@ struct PaymentsCustomerData;
 //                      A flag indicating whether the validity states of
 //                      different fields according to the client validity api is
 //                      updated or not. Added in version 80.
+//   disallow_settings_visible_updates
+//                      If true, a profile does not qualify to get merged with
+//                      a profile observed in a form submission.
 //
 // autofill_profile_addresses
 //   guid               The guid string that identifies the profile to which
@@ -264,6 +272,13 @@ struct PaymentsCustomerData;
 //   instrument_id      Credit card id assigned by the server to identify this
 //                      card. This is opaque to the client, and |id| is the
 //                      legacy version of this.
+//   virtual_card_enrollment_state
+//                      An enum indicating the virtual card enrollment state of
+//                      this card. UNSPECIFIED is the default value. UNENROLLED
+//                      means this card has not been enrolled to have virtual
+//                      cards. ENROLLED means the card has been enrolled and
+//                      has related virtual credit cards.
+//   card_art_url       URL to generate the card art image for this card.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -377,8 +392,8 @@ struct PaymentsCustomerData;
 //
 //   vpa_id             A string representing the UPI ID (a.k.a. VPA) value.
 //
-// offer_data           The data for credit card offers which will be presented
-//                      in payments autofill flows.
+// offer_data           The data for Autofill offers which will be presented in
+//                      payments autofill flows.
 //
 //   offer_id           The unique server ID for this offer data.
 //   offer_reward_amount
@@ -388,6 +403,14 @@ struct PaymentsCustomerData;
 //   expiry             The timestamp when the offer will go expired. Expired
 //                      offers will not be shown in the frontend.
 //   offer_details_url  The link leading to the offer details page on Gpay app.
+//   promo_code         The promo code to be autofilled for a promo code offer.
+//   value_prop_text    Server-driven UI string to explain the value of the
+//                      offer.
+//   see_details_text   Server-driven UI string to imply or link additional
+//                      details.
+//   usage_instructions_text
+//                      Server-driven UI string to instruct the user on how they
+//                      can redeem the offer.
 //
 // offer_eligible_instrument
 //                      Contains the mapping of credit cards and card linked
@@ -406,6 +429,13 @@ struct PaymentsCustomerData;
 //                      offer_id in the offer_data table.
 //   merchant_domain    List of full origins for merchant websites on which
 //                      this offer would apply.
+// credit_card_art_images
+//                      Contains the card art image for the server credit card.
+//
+//   id                 The server id of the credit card.
+//   instrument_id      The non-legacy server instrument id of the card.
+//   card_art_image     The customized card art image. Stored in the form of
+//                      BLOB.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -566,6 +596,12 @@ class AutofillTable : public WebDatabaseTable,
       std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
           credit_card_cloud_token_data);
 
+  // Setters and getters related to the credit card art images.
+  bool AddCreditCardArtImage(const CreditCardArtImage& credit_card_art_image);
+  bool GetCreditCardArtImages(
+      std::vector<std::unique_ptr<CreditCardArtImage>>* credit_card_art_images);
+  bool ClearCreditCardArtImage(const std::string& id);
+
   // Setters and getters related to the Google Payments customer data.
   // Passing null to the setter will clear the data.
   void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
@@ -576,9 +612,9 @@ class AutofillTable : public WebDatabaseTable,
 
   // |autofill_offer_data| must include all existing offers, since table will
   // be completely overwritten.
-  void SetCreditCardOffers(
+  void SetAutofillOffers(
       const std::vector<AutofillOfferData>& autofill_offer_data);
-  bool GetCreditCardOffers(
+  bool GetAutofillOffers(
       std::vector<std::unique_ptr<AutofillOfferData>>* autofill_offer_data);
 
   // Adds |upi_id| to the saved UPI IDs.
@@ -683,6 +719,10 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion90AddNewStructuredAddressColumns();
   bool MigrateToVersion91AddMoreStructuredAddressColumns();
   bool MigrateToVersion92AddNewPrefixedNameColumn();
+  bool MigrateToVersion93AddAutofillProfileLabelColumn();
+  bool MigrateToVersion94AddPromoCodeColumnsToOfferData();
+  bool MigrateToVersion95AddVirtualCardMetadata();
+  bool MigrateToVersion96AddAutofillProfileDisallowConfirmableMergesColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -795,6 +835,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitOfferDataTable();
   bool InitOfferEligibleInstrumentTable();
   bool InitOfferMerchantDomainTable();
+  bool InitCreditCardArtImagesTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 

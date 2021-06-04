@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/cipd/cipd.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/chromeos/ui_mode.gni")
@@ -471,6 +472,15 @@ if (is_win) {
     }
 
     if (is_component_build) {
+      # In a component build, the framework is directly linked to the
+      # executable because dlopen() and loading all the dependent dylibs
+      # is time-consuming, see https://crbug.com/1197495.
+      deps += [ ":chrome_framework+link" ]
+      ldflags = [
+        "-rpath",
+        "@executable_path/../Frameworks",
+      ]
+
       # The Framework is packaged inside the .app bundle. But when using the
       # component build, all the dependent shared libraries of :chrome_dll are
       # not packaged within the framework. This data_deps line makes all of
@@ -686,11 +696,20 @@ if (is_win) {
       ldflags = []
 
       if (is_component_build) {
+        # In a component build, the framework is directly linked to the
+        # executable because dlopen() and loading all the dependent dylibs
+        # is time-consuming, see https://crbug.com/1197495.
+        deps += [ ":chrome_framework+link_nested" ]
+
         ldflags += [
           # The helper is in Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/MacOS
           # so set rpath up to the base.
           "-rpath",
           "@loader_path/../../../../../../../../../..",
+
+          # ... and up to Contents/Frameworks.
+          "-rpath",
+          "@executable_path/../../../../../../..",
         ]
       }
 
@@ -1112,7 +1131,7 @@ if (is_win) {
 
     public_deps = [ ":chrome_dll" ]
 
-    deps = [
+    bundle_deps = [
       ":angle_library",
       ":chrome_framework_helpers",
       ":chrome_framework_plugins",
@@ -1125,12 +1144,10 @@ if (is_win) {
     ]
 
     if (is_chrome_branded) {
-      deps += [ ":default_apps" ]
+      bundle_deps += [ ":preinstalled_apps" ]
     }
 
-    ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/$chrome_framework_name" ]
-
-    ldflags += [
+    ldflags = [
       "-compatibility_version",
       chrome_dylib_version,
       "-current_version",
@@ -1138,8 +1155,17 @@ if (is_win) {
       "-Wl,-order_file," + rebase_path("app/framework.order", root_build_dir),
     ]
 
-    if (is_component_build) {
+    if (!is_component_build) {
+      # Specify a sensible install_name for static builds. The library is
+      # dlopen()ed so this is not used to resolve the module.
+      ldflags += [ "-Wl,-install_name,@executable_path/../Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/$chrome_framework_name" ]
+    } else {
+      # In the component build, both the :chrome_app and various
+      # :chrome_helper* targets directly link to the Framework target. Use
+      # @rpath-based loading so that the dylib ID does not have to be changed
+      # with install_name_tool.
       ldflags += [
+        "-Wl,-install_name,@rpath/$chrome_framework_name.framework/$chrome_framework_name",
         "-rpath",
         "@loader_path/../../../../../..",
         "-Wl,-reexport_library,libchrome_dll.dylib",
@@ -1176,7 +1202,14 @@ if (is_win) {
     }
   } else {
     group("verify_chrome_framework_order") {
-      public_deps = [ ":chrome_framework" ]
+      if (is_component_build) {
+        # In a component build, the framework is directly linked to the
+        # executable because dlopen() and loading all the dependent dylibs
+        # is time-consuming, see https://crbug.com/1197495.
+        public_deps = [ ":chrome_framework+link" ]
+      } else {
+        public_deps = [ ":chrome_framework" ]
+      }
     }
   }
 
@@ -1467,21 +1500,16 @@ group("extra_resources") {
     "//chrome/browser/resources:resources",
     "//components/autofill/core/browser:autofill_address_rewriter_resources",
   ]
-
-  if (is_chromeos_ash && !enable_use_media_app_ink) {
-    # TODO(crbug/1150244): Remove when enable_use_media_app_ink is default true.
-    public_deps += [ "//third_party/ink:ink_resources" ]
-  }
 }
 
 if (is_chrome_branded && !is_android) {
   if (!is_mac) {
-    _default_apps_target_type = "copy"
+    _preinstalled_apps_target_type = "copy"
   } else {
-    _default_apps_target_type = "bundle_data"
+    _preinstalled_apps_target_type = "bundle_data"
   }
 
-  target(_default_apps_target_type, "default_apps") {
+  target(_preinstalled_apps_target_type, "preinstalled_apps") {
     visibility = [ ":packed_resources" ]
     if (is_mac) {
       visibility += [
@@ -1490,13 +1518,7 @@ if (is_chrome_branded && !is_android) {
       ]
     }
 
-    sources = [
-      "browser/resources/default_apps/docs.crx",
-      "browser/resources/default_apps/drive.crx",
-      "browser/resources/default_apps/external_extensions.json",
-      "browser/resources/default_apps/gmail.crx",
-      "browser/resources/default_apps/youtube.crx",
-    ]
+    sources = [ "browser/resources/default_apps/external_extensions.json" ]
 
     if (!is_mac) {
       outputs = [ "$root_out_dir/default_apps/{{source_file_part}}" ]
@@ -1524,7 +1546,17 @@ if (!is_android) {
     }
 
     if (is_chrome_branded && !is_mac) {
-      public_deps = [ ":default_apps" ]
+      public_deps = [ ":preinstalled_apps" ]
+    }
+
+    if (enable_pak_file_integrity_checks) {
+      files_to_hash = [
+        "resources.pak",
+        "chrome_100_percent.pak",
+      ]
+      if (enable_hidpi) {
+        files_to_hash += [ "chrome_200_percent.pak" ]
+      }
     }
   }
 }
@@ -1785,6 +1817,20 @@ if (is_chromeos_lacros && is_official_build) {
     binary_input = "$root_out_dir/chrome"
     symbol_output = "$root_out_dir/chrome.debug"
     stripped_binary_output = "$root_out_dir/chrome.stripped"
+    deps = [ ":chrome" ]
+  }
+}
+
+# This target is for Lacros version skew testing.
+if (is_chromeos_ash) {
+  cipd_package_definition_by_file("gen_linux_ash_chromium_cipd_yaml") {
+    testonly = true
+    buildtype = "dev"
+    arch = "64bit"
+    files_file = "//chrome/tools/build/chromeos/FILES.cfg"
+    package = "chromium/testing/linux-ash-chromium/x86_64/ash.zip"
+    description = "Prebuilt test binary."
+    install_mode = "copy"
     deps = [ ":chrome" ]
   }
 }

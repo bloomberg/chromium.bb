@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -84,7 +84,7 @@ class WebAppToolbarButtonContainer : public views::View,
       base::TimeDelta::FromMilliseconds(750);
 
   // PageActionIconContainer:
-  void AddPageActionIcon(views::View* icon) override;
+  void AddPageActionIcon(std::unique_ptr<views::View> icon) override;
 
   // PageActionIconView::Delegate:
   int GetPageActionIconSize() const override;

@@ -5,8 +5,11 @@
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {ensureLazyLoaded} from '../ensure_lazy_loaded.js';
-import {Route, Router, MinimumRoutes} from '../router.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {MinimumRoutes, Route, Router} from '../router.js';
 // clang-format on
 
   /**
@@ -27,6 +30,9 @@ import {Route, Router, MinimumRoutes} from '../router.js';
     // The top level Settings page, '/'.
     TOP_LEVEL: 'top-level',
   };
+
+  /** @type {!Route} */
+  const TOP_LEVEL_EQUIVALENT_ROUTE = routes.PEOPLE;
 
   /**
    * @param {?Route} route
@@ -67,6 +73,7 @@ import {Route, Router, MinimumRoutes} from '../router.js';
         type: Boolean,
         value: false,
         observer: 'inSearchModeChanged_',
+        reflectToAttribute: true,
       },
     },
 
@@ -120,6 +127,12 @@ import {Route, Router, MinimumRoutes} from '../router.js';
      * @private
      */
     inSearchModeChanged_(current, previous) {
+      if (loadTimeData.getBoolean('enableLandingPageRedesign')) {
+        // No need to deal with overscroll, as only one section is shown at any
+        // given time.
+        return;
+      }
+
       // Ignore 1st occurrence which happens while the element is being
       // initialized.
       if (previous === undefined) {
@@ -186,6 +199,41 @@ import {Route, Router, MinimumRoutes} from '../router.js';
     },
 
     /**
+     * Finds the settings-section instances corresponding to the given route. If
+     * the section is lazily loaded it force-renders it.
+     * Note: If the section resides within "advanced" settings, a
+     * 'hide-container' event is fired (necessary to avoid flashing). Callers
+     * are responsible for firing a 'show-container' event.
+     * @param {!Route} route
+     * @return {!Promise<!Array<!SettingsSectionElement>>}
+     * @private
+     */
+    ensureSectionsForRoute_(route) {
+      const sections = this.querySettingsSections_(route.section);
+      if (sections.length > 0) {
+        return Promise.resolve(sections);
+      }
+
+      // The function to use to wait for <dom-if>s to render.
+      const waitFn = beforeNextRender.bind(null, this);
+
+      return new Promise(resolve => {
+        if (this.shouldExpandAdvanced_(route)) {
+          this.fire('hide-container');
+          waitFn(() => {
+            this.$$('#advancedPageTemplate').get().then(() => {
+              resolve(this.querySettingsSections_(route.section));
+            });
+          });
+        } else {
+          waitFn(() => {
+            resolve(this.querySettingsSections_(route.section));
+          });
+        }
+      });
+    },
+
+    /**
      * @param {!Route} route
      * @private
      */
@@ -242,6 +290,28 @@ import {Route, Router, MinimumRoutes} from '../router.js';
     },
 
     /**
+     * Shows the section(s) corresponding to |newRoute| and hides the previously
+     * |active| section(s), if any.
+     * @param {!Route} newRoute
+     */
+    switchToSections_(newRoute) {
+      this.ensureSectionsForRoute_(newRoute).then(sections => {
+        // Clear any previously |active| section.
+        const oldSections =
+            this.shadowRoot.querySelectorAll(`settings-section[active]`);
+        for (const s of oldSections) {
+          s.toggleAttribute('active', false);
+        }
+
+        for (const s of sections) {
+          s.toggleAttribute('active', true);
+        }
+
+        this.fire('show-container');
+      });
+    },
+
+    /**
      * Detects which state transition is appropriate for the given new/old
      * routes.
      * @param {!Route} newRoute
@@ -292,6 +362,20 @@ import {Route, Router, MinimumRoutes} from '../router.js';
       const newState = transition[1];
       assert(this.validTransitions_.get(oldState).has(newState));
 
+      loadTimeData.getBoolean('enableLandingPageRedesign') ?
+          this.processTransitionRedesign_(
+              oldRoute, newRoute, oldState, newState) :
+          this.processTransition_(oldRoute, newRoute, oldState, newState);
+    },
+
+    /**
+     * @param {Route} oldRoute
+     * @param {!Route} newRoute
+     * @param {!RouteState} oldState
+     * @param {!RouteState} newState
+     * @private
+     */
+    processTransition_(oldRoute, newRoute, oldState, newState) {
       if (oldState === RouteState.TOP_LEVEL) {
         if (newState === RouteState.SECTION) {
           this.scrollToSection_(newRoute);
@@ -318,7 +402,7 @@ import {Route, Router, MinimumRoutes} from '../router.js';
 
       if (oldState === RouteState.SUBPAGE) {
         if (newState === RouteState.SECTION) {
-          this.enterMainPage_(oldRoute);
+          this.enterMainPage_(/** @type {!Route} */ (oldRoute));
 
           // Scroll to the corresponding section, only if the user explicitly
           // navigated to a section (via the menu).
@@ -345,11 +429,11 @@ import {Route, Router, MinimumRoutes} from '../router.js';
           // position is automatically restored, because we focus the
           // sub-subpage entry point.
         } else if (newState === RouteState.TOP_LEVEL) {
-          this.enterMainPage_(oldRoute);
+          this.enterMainPage_(/** @type {!Route} */ (oldRoute));
         } else if (newState === RouteState.DIALOG) {
           // The only known case currently for such a transition is from
-          // /storage to /clearBrowserData.
-          this.enterMainPage_(oldRoute);
+          // /syncSetup to /signOut.
+          this.enterMainPage_(/** @type {!Route} */ (oldRoute));
         }
         return;
       }
@@ -367,11 +451,93 @@ import {Route, Router, MinimumRoutes} from '../router.js';
       if (oldState === RouteState.DIALOG) {
         if (newState === RouteState.SUBPAGE) {
           // The only known case currently for such a transition is from
-          // /clearBrowserData back to /storage.
+          // /signOut to /syncSetup.
           this.enterSubpage_(newRoute);
         }
         // Nothing to do for all other cases.
       }
+
+      // Nothing to do for when oldState === RouteState.DIALOG.
+    },
+
+    /**
+     * @param {Route} oldRoute
+     * @param {!Route} newRoute
+     * @param {!RouteState} oldState
+     * @param {!RouteState} newState
+     * @private
+     */
+    processTransitionRedesign_(oldRoute, newRoute, oldState, newState) {
+      if (oldState === RouteState.TOP_LEVEL) {
+        if (newState === RouteState.SECTION) {
+          this.switchToSections_(newRoute);
+        } else if (newState === RouteState.SUBPAGE) {
+          this.enterSubpage_(newRoute);
+        } else if (newState === RouteState.TOP_LEVEL) {
+          // Case when navigating from '/?search=foo' to '/' (clearing search
+          // results).
+          this.switchToSections_(TOP_LEVEL_EQUIVALENT_ROUTE);
+        }
+        // Nothing to do here for the case of RouteState.DIALOG.
+        return;
+      }
+
+      if (oldState === RouteState.SECTION) {
+        if (newState === RouteState.SECTION) {
+          this.switchToSections_(newRoute);
+        } else if (newState === RouteState.SUBPAGE) {
+          this.switchToSections_(newRoute);
+          this.enterSubpage_(newRoute);
+        } else if (newState === RouteState.TOP_LEVEL) {
+          this.switchToSections_(TOP_LEVEL_EQUIVALENT_ROUTE);
+          this.scroller.scrollTop = 0;
+        }
+        // Nothing to do here for the case of RouteState.DIALOG.
+        return;
+      }
+
+      if (oldState === RouteState.SUBPAGE) {
+        if (newState === RouteState.SECTION) {
+          this.enterMainPage_(/** @type {!Route} */ (oldRoute));
+          this.switchToSections_(newRoute);
+        } else if (newState === RouteState.SUBPAGE) {
+          // Handle case where the two subpages belong to
+          // different sections, but are linked to each other. For example
+          // /storage and /accounts (in ChromeOS).
+          if (!oldRoute.contains(newRoute) && !newRoute.contains(oldRoute)) {
+            this.enterMainPage_(oldRoute).then(() => {
+              this.enterSubpage_(newRoute);
+            });
+            return;
+          }
+
+          // Handle case of subpage to sub-subpage navigation.
+          if (oldRoute.contains(newRoute)) {
+            this.scroller.scrollTop = 0;
+            return;
+          }
+          // When going from a sub-subpage to its parent subpage, scroll
+          // position is automatically restored, because we focus the
+          // sub-subpage entry point.
+        } else if (newState === RouteState.TOP_LEVEL) {
+          this.enterMainPage_(/** @type {!Route} */ (oldRoute));
+        }
+        return;
+      }
+
+      if (oldState === RouteState.INITIAL) {
+        if ([RouteState.SECTION, RouteState.DIALOG].includes(newState)) {
+          this.switchToSections_(newRoute);
+        } else if (newState === RouteState.SUBPAGE) {
+          this.switchToSections_(newRoute);
+          this.enterSubpage_(newRoute);
+        } else if (newState === RouteState.TOP_LEVEL) {
+          this.switchToSections_(TOP_LEVEL_EQUIVALENT_ROUTE);
+        }
+        return;
+      }
+
+      // Nothing to do for when oldState === RouteState.DIALOG.
     },
 
     /**
@@ -388,4 +554,24 @@ import {Route, Router, MinimumRoutes} from '../router.js';
       return /** @type {?SettingsSectionElement} */ (
           this.$$(`settings-section[section="${section}"]`));
     },
+
+    /*
+     * @param {string} sectionName Section name of the element to get.
+     * @return {!Array<!SettingsSectionElement>}
+     */
+    querySettingsSections_(sectionName) {
+      const result = [];
+      const section = this.getSection(sectionName);
+
+      if (section) {
+        result.push(section);
+      }
+
+      const extraSections = this.shadowRoot.querySelectorAll(
+          `settings-section[nest-under-section="${sectionName}"]`);
+      if (extraSections.length > 0) {
+        result.push(...extraSections);
+      }
+      return result;
+    }
   };

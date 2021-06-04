@@ -16,6 +16,8 @@
 #include "base/bind.h"
 #include "ui/base/class_property.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -23,7 +25,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/vector_icons.h"
@@ -100,12 +101,6 @@ HoldingSpaceItemView::HoldingSpaceItemView(
   GetViewAccessibility().OverrideName(item->text());
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
 
-  // Background.
-  SetBackground(views::CreateRoundedRectBackground(
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
-      kHoldingSpaceCornerRadius));
-
   // Layer.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -139,12 +134,19 @@ HoldingSpaceItemView::~HoldingSpaceItemView() {
 
 // static
 HoldingSpaceItemView* HoldingSpaceItemView::Cast(views::View* view) {
-  DCHECK(HoldingSpaceItemView::IsInstance(view));
-  return static_cast<HoldingSpaceItemView*>(view);
+  return const_cast<HoldingSpaceItemView*>(
+      Cast(const_cast<const views::View*>(view)));
 }
 
 // static
-bool HoldingSpaceItemView::IsInstance(views::View* view) {
+const HoldingSpaceItemView* HoldingSpaceItemView::Cast(
+    const views::View* view) {
+  DCHECK(HoldingSpaceItemView::IsInstance(view));
+  return static_cast<const HoldingSpaceItemView*>(view);
+}
+
+// static
+bool HoldingSpaceItemView::IsInstance(const views::View* view) {
   return view->GetProperty(kIsHoldingSpaceItemViewProperty);
 }
 
@@ -216,6 +218,12 @@ void HoldingSpaceItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   AshColorProvider* const ash_color_provider = AshColorProvider::Get();
 
+  // Background.
+  SetBackground(views::CreateRoundedRectBackground(
+      ash_color_provider->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
+      kHoldingSpaceCornerRadius));
+
   // Checkmark.
   checkmark_->SetBackground(holding_space_util::CreateCircleBackground(
       ash_color_provider->GetControlsLayerColor(
@@ -225,6 +233,23 @@ void HoldingSpaceItemView::OnThemeChanged() {
       kCheckIcon, kHoldingSpaceIconSize,
       ash_color_provider->IsDarkModeEnabled() ? gfx::kGoogleGrey900
                                               : SK_ColorWHITE));
+
+  // Focused/selected layers.
+  InvalidateLayer(focused_layer_owner_->layer());
+  InvalidateLayer(selected_layer_owner_->layer());
+
+  if (!pin_)
+    return;
+
+  // Pin.
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kButtonIconColor);
+  const gfx::ImageSkia unpinned_icon = gfx::CreateVectorIcon(
+      views::kUnpinIcon, kHoldingSpaceIconSize, icon_color);
+  const gfx::ImageSkia pinned_icon =
+      gfx::CreateVectorIcon(views::kPinIcon, kHoldingSpaceIconSize, icon_color);
+  pin_->SetImage(views::Button::STATE_NORMAL, unpinned_icon);
+  pin_->SetToggledImage(views::Button::STATE_NORMAL, &pinned_icon);
 }
 
 void HoldingSpaceItemView::OnHoldingSpaceItemUpdated(
@@ -281,23 +306,11 @@ views::ToggleImageButton* HoldingSpaceItemView::AddPin(views::View* parent) {
   pin_ = parent->AddChildView(std::make_unique<views::ToggleImageButton>());
   pin_->SetID(kHoldingSpaceItemPinButtonId);
   pin_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  pin_->SetVisible(false);
-
-  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
-
-  const gfx::ImageSkia unpinned_icon = gfx::CreateVectorIcon(
-      views::kUnpinIcon, kHoldingSpaceIconSize, icon_color);
-  const gfx::ImageSkia pinned_icon =
-      gfx::CreateVectorIcon(views::kPinIcon, kHoldingSpaceIconSize, icon_color);
-
-  pin_->SetImage(views::Button::STATE_NORMAL, unpinned_icon);
-  pin_->SetToggledImage(views::Button::STATE_NORMAL, &pinned_icon);
-
   pin_->SetImageHorizontalAlignment(
       views::ToggleImageButton::HorizontalAlignment::ALIGN_CENTER);
   pin_->SetImageVerticalAlignment(
       views::ToggleImageButton::VerticalAlignment::ALIGN_MIDDLE);
+  pin_->SetVisible(false);
 
   pin_->SetCallback(base::BindRepeating(&HoldingSpaceItemView::OnPinPressed,
                                         base::Unretained(this)));

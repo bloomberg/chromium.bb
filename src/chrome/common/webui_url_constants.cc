@@ -10,6 +10,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 
 namespace chrome {
 
@@ -39,7 +40,7 @@ const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIConflictsHost[] = "conflicts";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
 const char kChromeUIContentSettingsURL[] = "chrome://settings/content";
-// TODO (crbug.com/1107816): Remove deprecated cookie URL redirection.
+// TODO(crbug/1107816): Remove deprecated cookie URL redirection.
 const char kChromeUICookieSettingsDeprecatedURL[] =
     "chrome://settings/content/cookies";
 const char kChromeUICookieSettingsURL[] = "chrome://settings/cookies";
@@ -148,7 +149,7 @@ const char kChromeUIRestartURL[] = "chrome://restart/";
 const char kChromeUISafetyPixelbookURL[] = "https://g.co/Pixelbook/legal";
 const char kChromeUISafetyPixelSlateURL[] = "https://g.co/PixelSlate/legal";
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-const char kChromeUISessionServiceInternalsHost[] = "session-service-internals";
+const char kChromeUISessionServiceInternalsPath[] = "session-service";
 #endif
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISettingsURL[] = "chrome://settings/";
@@ -268,8 +269,6 @@ const char kChromeUILockScreenNetworkHost[] = "lock-network";
 const char kChromeUILockScreenNetworkURL[] = "chrome://lock-network";
 const char kChromeUILockScreenStartReauthHost[] = "lock-reauth";
 const char kChromeUILockScreenStartReauthURL[] = "chrome://lock-reauth";
-const char kChromeUIMachineLearningInternalsHost[] =
-    "machine-learning-internals";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIMultiDeviceInternalsHost[] = "multidevice-internals";
@@ -284,6 +283,8 @@ const char kChromeUIPasswordChangeHost[] = "password-change";
 const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
 const char kChromeUIPrintManagementUrl[] = "chrome://print-management";
 const char kChromeUIPowerHost[] = "power";
+const char kChromeUIProjectorSelfieCamHost[] = "projector-selfie-cam";
+const char kChromeUIProjectorSelfieCamURL[] = "chrome://projector-selfie-cam/";
 const char kChromeUIScanningAppURL[] = "chrome://scanning";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
@@ -473,6 +474,10 @@ const char kPrivacySandboxSubPagePath[] = "/privacySandbox";
 const char kCleanupSubPage[] = "cleanup";
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kChromeUICastFeedbackHost[] = "cast-feedback";
+#endif
+
 // Extension sub pages.
 const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
 
@@ -515,9 +520,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIPredictorsHost,
     kChromeUIPrefsInternalsHost,
     kChromeUIQuotaInternalsHost,
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-    kChromeUISessionServiceInternalsHost,
-#endif
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
     kChromeUINTPTilesInternalsHost,
@@ -572,7 +574,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUICrostiniCreditsHost,
     kChromeUICryptohomeHost,
     kChromeUIDriveInternalsHost,
-    kChromeUIMachineLearningInternalsHost,
     kChromeUINetworkHost,
     kChromeUILockScreenNetworkHost,
     kChromeUIOobeHost,
@@ -621,32 +622,35 @@ const char* const kChromeInternalsPathURLs[] = {
 #else
     kChromeUIInternalsWebAppPath,
 #endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+    kChromeUISessionServiceInternalsPath,
+#endif
 };
 const size_t kNumberOfChromeInternalsPathURLs =
     base::size(kChromeInternalsPathURLs);
 
 const char* const kChromeDebugURLs[] = {
-    content::kChromeUIBadCastCrashURL,
-    content::kChromeUIBrowserCrashURL,
-    content::kChromeUICrashURL,
-    content::kChromeUIDumpURL,
-    content::kChromeUIKillURL,
-    content::kChromeUIHangURL,
-    content::kChromeUIShorthangURL,
-    content::kChromeUIGpuCleanURL,
-    content::kChromeUIGpuCrashURL,
-    content::kChromeUIGpuHangURL,
-    content::kChromeUIMemoryExhaustURL,
-    content::kChromeUIMemoryPressureCriticalURL,
-    content::kChromeUIMemoryPressureModerateURL,
-    content::kChromeUIPpapiFlashCrashURL,
-    content::kChromeUIPpapiFlashHangURL,
+    blink::kChromeUIBadCastCrashURL,
+    blink::kChromeUIBrowserCrashURL,
+    blink::kChromeUICrashURL,
+    blink::kChromeUIDumpURL,
+    blink::kChromeUIKillURL,
+    blink::kChromeUIHangURL,
+    blink::kChromeUIShorthangURL,
+    blink::kChromeUIGpuCleanURL,
+    blink::kChromeUIGpuCrashURL,
+    blink::kChromeUIGpuHangURL,
+    blink::kChromeUIMemoryExhaustURL,
+    blink::kChromeUIMemoryPressureCriticalURL,
+    blink::kChromeUIMemoryPressureModerateURL,
+    blink::kChromeUIPpapiFlashCrashURL,
+    blink::kChromeUIPpapiFlashHangURL,
 #if defined(OS_WIN)
-    content::kChromeUIBrowserHeapCorruptionURL,
-    content::kChromeUIHeapCorruptionCrashURL,
+    blink::kChromeUIBrowserHeapCorruptionURL,
+    blink::kChromeUIHeapCorruptionCrashURL,
 #endif
 #if defined(OS_ANDROID)
-    content::kChromeUIGpuJavaCrashURL,
+    blink::kChromeUIGpuJavaCrashURL,
     kChromeUIJavaCrashURL,
 #endif
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

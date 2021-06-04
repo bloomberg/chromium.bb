@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
-#define CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -18,6 +17,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -70,7 +70,7 @@ class BrowserAssociatedInterface : public Interface {
   class InternalState : public base::RefCountedThreadSafe<InternalState> {
    public:
     explicit InternalState(Interface* impl)
-        : impl_(impl), receivers_(base::in_place) {}
+        : impl_(impl), receivers_(absl::in_place) {}
 
     void ClearReceivers() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -97,7 +97,7 @@ class BrowserAssociatedInterface : public Interface {
     ~InternalState() {}
 
     Interface* impl_;
-    base::Optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
+    absl::optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
@@ -109,4 +109,4 @@ class BrowserAssociatedInterface : public Interface {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_

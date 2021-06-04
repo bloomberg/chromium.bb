@@ -18,7 +18,10 @@
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/user_data.h"
-#include "content/public/test/navigation_simulator.h"
+#include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/web/element_store.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,16 +36,13 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
 
-class ActionDelegateUtilTest : public content::RenderViewHostTestHarness {
+class ActionDelegateUtilTest : public testing::Test {
  public:
-  ActionDelegateUtilTest()
-      : RenderViewHostTestHarness(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~ActionDelegateUtilTest() override {}
+  ActionDelegateUtilTest() {}
 
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
 
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
@@ -74,9 +74,19 @@ class ActionDelegateUtilTest : public content::RenderViewHostTestHarness {
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> done));
 
+  MOCK_METHOD3(MockElementAction,
+               void(const ElementFinder::Result& parameter_element,
+                    const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> done));
+
  protected:
+  content::BrowserTaskEnvironment task_environment_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
   MockActionDelegate mock_action_delegate_;
   UserData user_data_;
+  UserModel user_model_;
   MockWebsiteLoginManager mock_website_login_manager_;
 };
 
@@ -309,16 +319,16 @@ TEST_F(ActionDelegateUtilTest, PerformWithAutofillValue) {
                                                   autofill::test::kEmptyOrigin);
   autofill::test::SetProfileInfo(contact.get(), "John", /* middle name */ "",
                                  "Doe", "", "", "", "", "", "", "", "", "");
-  user_data_.selected_addresses_["contact"] = std::move(contact);
+  user_model_.SetSelectedAutofillProfile("contact", std::move(contact),
+                                         &user_data_);
 
   TextValue text_value;
-  auto* autofill_value = text_value.mutable_autofill_value();
-  autofill_value->mutable_profile()->set_identifier("contact");
-  autofill_value->set_value_expression(
-      base::StrCat({"${",
-                    base::NumberToString(static_cast<int>(
-                        autofill::ServerFieldType::NAME_FIRST)),
-                    "}"}));
+  text_value.mutable_autofill_value()->mutable_profile()->set_identifier(
+      "contact");
+  text_value.mutable_autofill_value()
+      ->mutable_value_expression()
+      ->add_chunk()
+      ->set_key(static_cast<int>(autofill::ServerFieldType::NAME_FIRST));
 
   PerformWithTextValue(&mock_action_delegate_, text_value,
                        base::BindOnce(&ActionDelegateUtilTest::MockValueAction,
@@ -330,11 +340,11 @@ TEST_F(ActionDelegateUtilTest, PerformWithAutofillValue) {
 
 TEST_F(ActionDelegateUtilTest, PerformWithPasswordManagerValue) {
   auto element = std::make_unique<ElementFinder::Result>();
-  content::NavigationSimulator::NavigateAndCommitFromDocument(
-      GURL("https://www.example.com"), web_contents()->GetMainFrame());
-  element->container_frame_host = web_contents()->GetMainFrame();
+  content::WebContentsTester::For(web_contents_.get())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  element->container_frame_host = web_contents_->GetMainFrame();
 
-  user_data_.selected_login_ = base::make_optional<WebsiteLoginManager::Login>(
+  user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
   EXPECT_CALL(*this, MockValueAction("username", _, _))
@@ -355,11 +365,11 @@ TEST_F(ActionDelegateUtilTest, PerformWithPasswordManagerValue) {
 
 TEST_F(ActionDelegateUtilTest, PerformWithFailingPasswordManagerValue) {
   auto element = std::make_unique<ElementFinder::Result>();
-  content::NavigationSimulator::NavigateAndCommitFromDocument(
-      GURL("https://www.other.com"), web_contents()->GetMainFrame());
-  element->container_frame_host = web_contents()->GetMainFrame();
+  content::WebContentsTester::For(web_contents_.get())
+      ->NavigateAndCommit(GURL("https://www.other.com"));
+  element->container_frame_host = web_contents_->GetMainFrame();
 
-  user_data_.selected_login_ = base::make_optional<WebsiteLoginManager::Login>(
+  user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
   EXPECT_CALL(*this, MockValueAction("username", _, _)).Times(0);
@@ -397,6 +407,48 @@ TEST_F(ActionDelegateUtilTest, PerformWithClientMemoryKey) {
                        *element,
                        base::BindOnce(&ActionDelegateUtilTest::MockDone,
                                       base::Unretained(this)));
+}
+
+TEST_F(ActionDelegateUtilTest, PerformWithExistingElementValue) {
+  auto element = std::make_unique<ElementFinder::Result>();
+
+  ElementFinder::Result option;
+  option.dom_object.object_data.object_id = "option";
+  mock_action_delegate_.GetElementStore()->AddElement("o", option.dom_object);
+
+  EXPECT_CALL(*this, MockElementAction(EqualsElement(option), _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_CALL(*this, MockDone(EqualsStatus(OkClientStatus())));
+
+  ClientIdProto option_id;
+  option_id.set_identifier("o");
+
+  PerformWithElementValue(
+      &mock_action_delegate_, option_id,
+      base::BindOnce(&ActionDelegateUtilTest::MockElementAction,
+                     base::Unretained(this)),
+      *element,
+      base::BindOnce(&ActionDelegateUtilTest::MockDone,
+                     base::Unretained(this)));
+}
+
+TEST_F(ActionDelegateUtilTest, PerformWithMissingElementValue) {
+  auto element = std::make_unique<ElementFinder::Result>();
+
+  EXPECT_CALL(*this, MockElementAction(_, _, _)).Times(0);
+  EXPECT_CALL(
+      *this, MockDone(EqualsStatus(ClientStatus(CLIENT_ID_RESOLUTION_FAILED))));
+
+  ClientIdProto option_id;
+  option_id.set_identifier("o");
+
+  PerformWithElementValue(
+      &mock_action_delegate_, option_id,
+      base::BindOnce(&ActionDelegateUtilTest::MockElementAction,
+                     base::Unretained(this)),
+      *element,
+      base::BindOnce(&ActionDelegateUtilTest::MockDone,
+                     base::Unretained(this)));
 }
 
 }  // namespace

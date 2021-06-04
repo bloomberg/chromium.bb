@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
@@ -620,6 +622,74 @@ TEST_F(HTMLSelectElementTest, ChangeRenderingCrash) {
   // Changing the size attribute changes the rendering. This should not trigger
   // a DCHECK failure updating the style recalc root.
   GetElementById("sel")->setAttribute(html_names::kSizeAttr, AtomicString("2"));
+}
+
+TEST_F(HTMLSelectElementTest, ChangeRenderingCrash2) {
+  SetHtmlInnerHTML(R"HTML(
+    <select id="sel">
+      <optgroup id="grp">
+        <option id="opt"></option>
+      </optgroup>
+    </select>
+  )HTML");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  // Make the select UA slot the style recalc root.
+  GetElementById("opt")->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+  GetElementById("grp")->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+  // Changing the multiple attribute changes the rendering. This should not
+  // trigger a DCHECK failure updating the style recalc root.
+  GetElementById("sel")->setAttribute(html_names::kMultipleAttr,
+                                      AtomicString("true"));
+}
+
+TEST_F(HTMLSelectElementTest, ChangeRenderingCrash3) {
+  SetHtmlInnerHTML(R"HTML(
+    <div id="host">
+      <select id="select">
+        <option></option>
+      </select>
+    </div>
+    <div id="green">Green</div>
+  )HTML");
+
+  auto* host = GetDocument().getElementById("host");
+  auto* select = GetDocument().getElementById("select");
+  auto* green = GetDocument().getElementById("green");
+
+  // Make sure the select is outside the flat tree.
+  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Changing the select rendering should not clear the style recalc root set by
+  // the color change on #green.
+  green->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+  select->setAttribute(html_names::kMultipleAttr, AtomicString("true"));
+
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
+  EXPECT_TRUE(green->NeedsStyleRecalc());
+}
+
+TEST_F(HTMLSelectElementTest, ChangeRenderingSelectRoot) {
+  // This test exercises the path in StyleEngine::ChangeRenderingForHTMLSelect()
+  // where the select does not have a GetStyleRecalcParent().
+  SetHtmlInnerHTML(R"HTML(
+    <select id="sel">
+      <option></option>
+    </select>
+  )HTML");
+
+  auto* select = GetElementById("sel");
+
+  // Make the select the root element.
+  select->remove();
+  GetDocument().documentElement()->remove();
+  GetDocument().appendChild(select);
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Changing the multiple attribute changes the rendering.
+  select->setAttribute(html_names::kMultipleAttr, AtomicString("true"));
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
+  EXPECT_TRUE(select->NeedsStyleRecalc());
 }
 
 }  // namespace blink

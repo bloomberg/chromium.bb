@@ -1,4 +1,6 @@
-export function standardizeExtent3D(v: GPUExtent3D): Required<GPUExtent3DDict> {
+export function standardizeExtent3D(
+  v: Readonly<GPUExtent3DDict> | readonly number[]
+): Required<GPUExtent3DDict> {
   if (v instanceof Array) {
     return { width: v[0] ?? 1, height: v[1] ?? 1, depthOrArrayLayers: v[2] ?? 1 };
   } else {

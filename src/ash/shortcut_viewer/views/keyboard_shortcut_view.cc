@@ -40,6 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -63,7 +64,7 @@ namespace {
 
 KeyboardShortcutView* g_ksv_view = nullptr;
 
-constexpr base::nullopt_t kAllCategories = base::nullopt;
+constexpr absl::nullopt_t kAllCategories = absl::nullopt;
 
 // Creates the no search result view.
 std::unique_ptr<views::View> CreateNoSearchResultView() {
@@ -413,7 +414,7 @@ void KeyboardShortcutView::InitViews() {
 }
 
 void KeyboardShortcutView::InitCategoriesTabbedPane(
-    base::Optional<ShortcutCategory> initial_category) {
+    absl::optional<ShortcutCategory> initial_category) {
   active_tab_index_ = categories_tabbed_pane_->GetSelectedTabIndex();
   // If the tab count is 0, GetSelectedTabIndex() will return kNoSelectedTab,
   // which we do not want to cache.

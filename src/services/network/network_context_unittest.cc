@@ -23,7 +23,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
-#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
@@ -80,7 +79,7 @@
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_cache.h"
@@ -122,6 +121,8 @@
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/p2p.mojom.h"
+#include "services/network/public/mojom/p2p_trusted.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
@@ -133,6 +134,7 @@
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
@@ -343,7 +345,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   // mojom::ProxyLookupClient implementation:
   void OnProxyLookupComplete(
       int32_t net_error,
-      const base::Optional<net::ProxyInfo>& proxy_info) override {
+      const absl::optional<net::ProxyInfo>& proxy_info) override {
     EXPECT_FALSE(is_done_);
     EXPECT_FALSE(proxy_info_);
 
@@ -356,7 +358,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
     run_loop_.Quit();
   }
 
-  const base::Optional<net::ProxyInfo>& proxy_info() const {
+  const absl::optional<net::ProxyInfo>& proxy_info() const {
     return proxy_info_;
   }
 
@@ -367,7 +369,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   mojo::Receiver<mojom::ProxyLookupClient> receiver_{this};
 
   bool is_done_ = false;
-  base::Optional<net::ProxyInfo> proxy_info_;
+  absl::optional<net::ProxyInfo> proxy_info_;
   int32_t net_error_ = net::ERR_UNEXPECTED;
 
   base::RunLoop run_loop_;
@@ -1933,16 +1935,16 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
 }
 
-base::Optional<net::AuthCredentials> GetAuthCredentials(
+absl::optional<net::AuthCredentials> GetAuthCredentials(
     NetworkContext* network_context,
     const GURL& origin,
     const net::NetworkIsolationKey& network_isolation_key) {
   base::RunLoop run_loop;
-  base::Optional<net::AuthCredentials> result;
+  absl::optional<net::AuthCredentials> result;
   network_context->LookupServerBasicAuthCredentials(
       origin, network_isolation_key,
       base::BindLambdaForTesting(
-          [&](const base::Optional<net::AuthCredentials>& credentials) {
+          [&](const absl::optional<net::AuthCredentials>& credentials) {
             result = credentials;
             run_loop.Quit();
           }));
@@ -1975,7 +1977,7 @@ TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
              net::HttpAuth::AUTH_SCHEME_BASIC, network_isolation_key1,
              "basic realm=Realm", net::AuthCredentials(user, password), "/");
 
-  base::Optional<net::AuthCredentials> result =
+  absl::optional<net::AuthCredentials> result =
       GetAuthCredentials(network_context.get(), origin, network_isolation_key1);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(user, result->username());
@@ -1993,17 +1995,17 @@ TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-base::Optional<net::AuthCredentials> GetProxyAuthCredentials(
+absl::optional<net::AuthCredentials> GetProxyAuthCredentials(
     NetworkContext* network_context,
     const net::ProxyServer& proxy_server,
     const std::string& scheme,
     const std::string& realm) {
   base::RunLoop run_loop;
-  base::Optional<net::AuthCredentials> result;
+  absl::optional<net::AuthCredentials> result;
   network_context->LookupProxyAuthCredentials(
       proxy_server, scheme, realm,
       base::BindLambdaForTesting(
-          [&](const base::Optional<net::AuthCredentials>& credentials) {
+          [&](const absl::optional<net::AuthCredentials>& credentials) {
             result = credentials;
             run_loop.Quit();
           }));
@@ -2040,7 +2042,7 @@ TEST_F(NetworkContextTest, LookupProxyAuthCredentials) {
              net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
              "basic realm=Realm", net::AuthCredentials(user, password),
              /* path = */ "/");
-  base::Optional<net::AuthCredentials> result = GetProxyAuthCredentials(
+  absl::optional<net::AuthCredentials> result = GetProxyAuthCredentials(
       network_context.get(),
       net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
                        net::HostPortPair::FromURL(http_proxy)),
@@ -3205,7 +3207,7 @@ class TestResolveHostClient : public ResolveHostClientBase {
 
   void OnComplete(int error,
                   const net::ResolveErrorInfo& resolve_error_info,
-                  const base::Optional<net::AddressList>& addresses) override {
+                  const absl::optional<net::AddressList>& addresses) override {
     DCHECK(!complete_);
 
     complete_ = true;
@@ -3227,7 +3229,7 @@ class TestResolveHostClient : public ResolveHostClientBase {
     return result_error_;
   }
 
-  const base::Optional<net::AddressList>& result_addresses() const {
+  const absl::optional<net::AddressList>& result_addresses() const {
     DCHECK(complete_);
     return result_addresses_;
   }
@@ -3238,7 +3240,7 @@ class TestResolveHostClient : public ResolveHostClientBase {
   bool complete_;
   int top_level_result_error_;
   int result_error_;
-  base::Optional<net::AddressList> result_addresses_;
+  absl::optional<net::AddressList> result_addresses_;
   base::RunLoop* const run_loop_;
 };
 
@@ -3643,7 +3645,7 @@ TEST_F(NetworkContextTest, CreateHostResolver) {
   factory->ForgetResolvers();
 
   mojo::Remote<mojom::HostResolver> resolver;
-  network_context->CreateHostResolver(base::nullopt,
+  network_context->CreateHostResolver(absl::nullopt,
                                       resolver.BindNewPipeAndPassReceiver());
 
   // Expected to reuse shared (within the NetworkContext) internal HostResolver.
@@ -3677,7 +3679,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
       internal_resolver.get());
 
   mojo::Remote<mojom::HostResolver> resolver;
-  network_context->CreateHostResolver(base::nullopt,
+  network_context->CreateHostResolver(absl::nullopt,
                                       resolver.BindNewPipeAndPassReceiver());
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
@@ -3720,7 +3722,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
       internal_resolver.get());
 
   mojo::Remote<mojom::HostResolver> resolver;
-  network_context->CreateHostResolver(base::nullopt,
+  network_context->CreateHostResolver(absl::nullopt,
                                       resolver.BindNewPipeAndPassReceiver());
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
@@ -3811,7 +3813,8 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       false /* delay */);
   auto mock_dns_client = std::make_unique<net::MockDnsClient>(
       base_configuration, std::move(rules));
-  mock_dns_client->SetInsecureEnabled(true);
+  mock_dns_client->SetInsecureEnabled(/*enabled=*/true,
+                                      /*additional_types_enabled=*/false);
   mock_dns_client->set_ignore_system_config_changes(true);
   auto* mock_dns_client_ptr = mock_dns_client.get();
   internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
@@ -4347,13 +4350,13 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
   net::ClientSocketPool::GroupId group_id1(
       test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
       net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey1,
-      false /* disable_secure_dns */);
+      net::SecureDnsPolicy::kAllow);
   EXPECT_EQ(
       1, GetSocketCountForGroup(network_context.get(), group_id1.ToString()));
   net::ClientSocketPool::GroupId group_id2(
       test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
       net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey2,
-      false /* disable_secure_dns */);
+      net::SecureDnsPolicy::kAllow);
   EXPECT_EQ(
       2, GetSocketCountForGroup(network_context.get(), group_id2.ToString()));
 }
@@ -4561,11 +4564,12 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
-    EXPECT_EQ(disable_secure_dns,
-              resolver->last_secure_dns_mode_override().has_value());
     if (disable_secure_dns) {
-      EXPECT_EQ(net::SecureDnsMode::kOff,
-                resolver->last_secure_dns_mode_override().value());
+      EXPECT_EQ(net::SecureDnsPolicy::kDisable,
+                resolver->last_secure_dns_policy());
+    } else {
+      EXPECT_EQ(net::SecureDnsPolicy::kAllow,
+                resolver->last_secure_dns_policy());
     }
   }
 }
@@ -4607,11 +4611,12 @@ TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client->RunUntilComplete();
-    EXPECT_EQ(disable_secure_dns,
-              resolver.last_secure_dns_mode_override().has_value());
     if (disable_secure_dns) {
-      EXPECT_EQ(net::SecureDnsMode::kOff,
-                resolver.last_secure_dns_mode_override().value());
+      EXPECT_EQ(net::SecureDnsPolicy::kDisable,
+                resolver.last_secure_dns_policy());
+    } else {
+      EXPECT_EQ(net::SecureDnsPolicy::kAllow,
+                resolver.last_secure_dns_policy());
     }
   }
 }
@@ -6006,8 +6011,8 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 TEST_F(NetworkContextTest, AddFtpAuthCacheEntry) {
   GURL url("ftp://example.test/");
-  const char kUsername[] = "test_user";
-  const char kPassword[] = "test_pass";
+  const char16_t kUsername[] = u"test_user";
+  const char16_t kPassword[] = u"test_pass";
   mojom::NetworkContextParamsPtr params = CreateContextParams();
   params->enable_ftp_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
@@ -6020,18 +6025,16 @@ TEST_F(NetworkContextTest, AddFtpAuthCacheEntry) {
   ASSERT_FALSE(
       network_context->url_request_context()->ftp_auth_cache()->Lookup(url));
   base::RunLoop run_loop;
-  network_context->AddAuthCacheEntry(
-      challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kUsername),
-                           base::ASCIIToUTF16(kPassword)),
-      run_loop.QuitClosure());
+  network_context->AddAuthCacheEntry(challenge, net::NetworkIsolationKey(),
+                                     net::AuthCredentials(kUsername, kPassword),
+                                     run_loop.QuitClosure());
   run_loop.Run();
   net::FtpAuthCache::Entry* entry =
       network_context->url_request_context()->ftp_auth_cache()->Lookup(url);
   ASSERT_TRUE(entry);
   EXPECT_EQ(url, entry->origin);
-  EXPECT_EQ(base::ASCIIToUTF16(kUsername), entry->credentials.username());
-  EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials.password());
+  EXPECT_EQ(kUsername, entry->credentials.username());
+  EXPECT_EQ(kPassword, entry->credentials.password());
 }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
@@ -6121,17 +6124,15 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   challenge.challenger = url::Origin::Create(url);
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
-  const char kUsername[] = "test_user";
-  const char kPassword[] = "test_pass";
+  const char16_t kUsername[] = u"test_user";
+  const char16_t kPassword[] = u"test_pass";
   ASSERT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
                              net::HttpAuth::AUTH_SCHEME_BASIC,
                              net::NetworkIsolationKey()));
   base::RunLoop run_loop;
-  network_context->AddAuthCacheEntry(
-      challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kUsername),
-                           base::ASCIIToUTF16(kPassword)),
-      run_loop.QuitClosure());
+  network_context->AddAuthCacheEntry(challenge, net::NetworkIsolationKey(),
+                                     net::AuthCredentials(kUsername, kPassword),
+                                     run_loop.QuitClosure());
   run_loop.Run();
   net::HttpAuthCache::Entry* entry = cache->Lookup(
       url, net::HttpAuth::AUTH_SERVER, challenge.realm,
@@ -6140,8 +6141,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   EXPECT_EQ(url, entry->origin());
   EXPECT_EQ(challenge.realm, entry->realm());
   EXPECT_EQ(net::HttpAuth::StringToScheme(challenge.scheme), entry->scheme());
-  EXPECT_EQ(base::ASCIIToUTF16(kUsername), entry->credentials().username());
-  EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials().password());
+  EXPECT_EQ(kUsername, entry->credentials().username());
+  EXPECT_EQ(kPassword, entry->credentials().password());
   // Entry should only have been added for server auth.
   EXPECT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_PROXY, challenge.realm,
                              net::HttpAuth::AUTH_SCHEME_BASIC,
@@ -6151,16 +6152,15 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   GURL proxy_url("http://proxy.test/");
   challenge.is_proxy = true;
   challenge.challenger = url::Origin::Create(proxy_url);
-  const char kProxyUsername[] = "test_proxy_user";
-  const char kProxyPassword[] = "test_proxy_pass";
+  const char16_t kProxyUsername[] = u"test_proxy_user";
+  const char16_t kProxyPassword[] = u"test_proxy_pass";
   ASSERT_FALSE(cache->Lookup(proxy_url, net::HttpAuth::AUTH_PROXY,
                              challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC,
                              net::NetworkIsolationKey()));
   base::RunLoop run_loop2;
   network_context->AddAuthCacheEntry(
       challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kProxyUsername),
-                           base::ASCIIToUTF16(kProxyPassword)),
+      net::AuthCredentials(kProxyUsername, kProxyPassword),
       run_loop2.QuitClosure());
   run_loop2.Run();
   entry = cache->Lookup(proxy_url, net::HttpAuth::AUTH_PROXY, challenge.realm,
@@ -6170,10 +6170,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   EXPECT_EQ(proxy_url, entry->origin());
   EXPECT_EQ(challenge.realm, entry->realm());
   EXPECT_EQ(net::HttpAuth::StringToScheme(challenge.scheme), entry->scheme());
-  EXPECT_EQ(base::ASCIIToUTF16(kProxyUsername),
-            entry->credentials().username());
-  EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
-            entry->credentials().password());
+  EXPECT_EQ(kProxyUsername, entry->credentials().username());
+  EXPECT_EQ(kProxyPassword, entry->credentials().password());
   // Entry should only have been added for proxy auth.
   EXPECT_FALSE(cache->Lookup(proxy_url, net::HttpAuth::AUTH_SERVER,
                              challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC,
@@ -6202,17 +6200,15 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
   challenge.challenger = origin;
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
-  const char kUsername[] = "test_user";
-  const char kPassword[] = "test_pass";
+  const char16_t kUsername[] = u"test_user";
+  const char16_t kPassword[] = u"test_pass";
   ASSERT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
                              net::HttpAuth::AUTH_SCHEME_BASIC,
                              network_isolation_key));
   base::RunLoop run_loop;
-  network_context->AddAuthCacheEntry(
-      challenge, network_isolation_key,
-      net::AuthCredentials(base::ASCIIToUTF16(kUsername),
-                           base::ASCIIToUTF16(kPassword)),
-      run_loop.QuitClosure());
+  network_context->AddAuthCacheEntry(challenge, network_isolation_key,
+                                     net::AuthCredentials(kUsername, kPassword),
+                                     run_loop.QuitClosure());
   run_loop.Run();
   net::HttpAuthCache::Entry* entry =
       cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
@@ -6221,8 +6217,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
   EXPECT_EQ(url, entry->origin());
   EXPECT_EQ(challenge.realm, entry->realm());
   EXPECT_EQ(net::HttpAuth::StringToScheme(challenge.scheme), entry->scheme());
-  EXPECT_EQ(base::ASCIIToUTF16(kUsername), entry->credentials().username());
-  EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials().password());
+  EXPECT_EQ(kUsername, entry->credentials().username());
+  EXPECT_EQ(kPassword, entry->credentials().password());
   // Entry should only be accessibly when using the correct NetworkIsolationKey.
   EXPECT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
                              net::HttpAuth::AUTH_SCHEME_BASIC,
@@ -6240,26 +6236,24 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
   challenge.challenger = url::Origin::Create(kURL);
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
-  const char kProxyUsername[] = "proxy_user";
-  const char kProxyPassword[] = "proxy_pass";
+  const char16_t kProxyUsername[] = u"proxy_user";
+  const char16_t kProxyPassword[] = u"proxy_pass";
 
   base::RunLoop run_loop1;
   network_context1->AddAuthCacheEntry(
       challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kProxyUsername),
-                           base::ASCIIToUTF16(kProxyPassword)),
+      net::AuthCredentials(kProxyUsername, kProxyPassword),
       run_loop1.QuitClosure());
   run_loop1.Run();
 
   challenge.is_proxy = false;
-  const char kServerUsername[] = "server_user";
-  const char kServerPassword[] = "server_pass";
+  const char16_t kServerUsername[] = u"server_user";
+  const char16_t kServerPassword[] = u"server_pass";
 
   base::RunLoop run_loop2;
   network_context1->AddAuthCacheEntry(
       challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kServerUsername),
-                           base::ASCIIToUTF16(kServerPassword)),
+      net::AuthCredentials(kServerUsername, kServerPassword),
       run_loop2.QuitClosure());
   run_loop2.Run();
 
@@ -6298,10 +6292,8 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
       kURL, net::HttpAuth::AUTH_PROXY, challenge.realm,
       net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
-  EXPECT_EQ(base::ASCIIToUTF16(kProxyUsername),
-            entry->credentials().username());
-  EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
-            entry->credentials().password());
+  EXPECT_EQ(kProxyUsername, entry->credentials().username());
+  EXPECT_EQ(kProxyPassword, entry->credentials().password());
 }
 
 TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
@@ -6322,13 +6314,12 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
   challenge.challenger = url::Origin::Create(kURL);
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
-  const char kProxyUsername[] = "proxy_user";
-  const char kProxyPassword[] = "proxy_pass";
+  const char16_t kProxyUsername[] = u"proxy_user";
+  const char16_t kProxyPassword[] = u"proxy_pass";
   base::RunLoop run_loop1;
   network_context->AddAuthCacheEntry(
       challenge, net::NetworkIsolationKey(),
-      net::AuthCredentials(base::ASCIIToUTF16(kProxyUsername),
-                           base::ASCIIToUTF16(kProxyPassword)),
+      net::AuthCredentials(kProxyUsername, kProxyPassword),
       run_loop1.QuitClosure());
   run_loop1.Run();
 
@@ -6342,13 +6333,12 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
               cache->key_server_entries_by_network_isolation_key());
 
     // Add server credentials.
-    const char kServerUsername[] = "server_user";
-    const char kServerPassword[] = "server_pass";
+    const char16_t kServerUsername[] = u"server_user";
+    const char16_t kServerPassword[] = u"server_pass";
     base::RunLoop run_loop2;
     network_context->AddAuthCacheEntry(
         challenge, net::NetworkIsolationKey(),
-        net::AuthCredentials(base::ASCIIToUTF16(kServerUsername),
-                             base::ASCIIToUTF16(kServerPassword)),
+        net::AuthCredentials(kServerUsername, kServerPassword),
         run_loop2.QuitClosure());
     run_loop2.Run();
 
@@ -6368,10 +6358,8 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
         kURL, net::HttpAuth::AUTH_PROXY, challenge.realm,
         net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
     ASSERT_TRUE(entry);
-    EXPECT_EQ(base::ASCIIToUTF16(kProxyUsername),
-              entry->credentials().username());
-    EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
-              entry->credentials().password());
+    EXPECT_EQ(kProxyUsername, entry->credentials().username());
+    EXPECT_EQ(kProxyPassword, entry->credentials().password());
   }
 }
 
@@ -6450,7 +6438,7 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
                            const net::IsolationInfo& isolation_info,
                            bool was_cached,
                            bool expect_redirect = false,
-                           base::Optional<GURL> new_url = base::nullopt,
+                           absl::optional<GURL> new_url = absl::nullopt,
                            bool automatically_assign_isolation_info = false) {
     ResourceRequest request = CreateResourceRequest("GET", url);
     request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
@@ -6498,7 +6486,7 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
 
     if (new_url) {
       client->RunUntilRedirectReceived();
-      loader->FollowRedirect({}, {}, {}, base::nullopt);
+      loader->FollowRedirect({}, {}, {}, absl::nullopt);
     }
 
     client->RunUntilComplete();
@@ -6611,7 +6599,7 @@ TEST_F(NetworkContextSplitCacheTest, AutomaticallyAssignIsolationInfo) {
   // Load with an automatically assigned IsolationInfo, which should populate
   // the cache using the IsolationInfo for |url|'s origin.
   LoadAndVerifyCached(url, net::IsolationInfo(), false /* was_cached */,
-                      false /* expect_redirect */, base::nullopt /* new_url */,
+                      false /* expect_redirect */, absl::nullopt /* new_url */,
                       true /* automatically_assign_isolation_info */);
 
   // Load again with a different isolation info. The cached entry should not be
@@ -6692,7 +6680,7 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
         CreateContextWithParams(std::move(params));
 
     base::RunLoop run_loop;
-    base::Optional<int> obtained_num_tokens;
+    absl::optional<int> obtained_num_tokens;
     network_context->trust_token_store()->ExecuteOrEnqueue(
         base::BindLambdaForTesting(
             [&obtained_num_tokens, &run_loop](TrustTokenStore* store) {
@@ -6895,7 +6883,7 @@ TEST_F(NetworkContextTest, NoAvailableTrustTokensWhenTrustTokensAreDisabled) {
 
   // Allow the store time to initialize asynchronously.
   base::RunLoop run_loop;
-  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+  absl::optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
       trust_tokens;
   network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
       [&trust_tokens,
@@ -6919,7 +6907,7 @@ TEST_F(NetworkContextTest, GetStoredTrustTokens) {
   base::RunLoop run_loop;
 
   // Query Trust Tokens before adding the mock token.
-  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+  absl::optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
       trust_tokens_before_adding;
   network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
       [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
@@ -6936,7 +6924,7 @@ TEST_F(NetworkContextTest, GetStoredTrustTokens) {
       }));
 
   // Query Trust Tokens after adding the mock token.
-  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+  absl::optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
       trust_tokens_after_adding;
   network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
       [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
@@ -6974,9 +6962,9 @@ TEST_F(NetworkContextTest, GetStoredTrustTokensReentrant) {
             std::vector<std::string>{"token"}, "issuing key");
       }));
 
-  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+  absl::optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
       trust_tokens;
-  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+  absl::optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
       reentrant_trust_tokens;
   network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
       [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
@@ -7011,7 +6999,7 @@ TEST_F(NetworkContextTest,
 
   // Allow the store time to initialize asynchronously.
   base::RunLoop run_loop;
-  base::Optional<mojom::DeleteStoredTrustTokensStatus> actual_status;
+  absl::optional<mojom::DeleteStoredTrustTokensStatus> actual_status;
   network_context->DeleteStoredTrustTokens(
       url::Origin::Create(GURL("https://example.com")),
       base::BindLambdaForTesting(
@@ -7036,7 +7024,7 @@ TEST_F(NetworkContextTest,
 
   // Allow the store time to initialize asynchronously.
   base::RunLoop run_loop;
-  base::Optional<mojom::DeleteStoredTrustTokensStatus> actual_status;
+  absl::optional<mojom::DeleteStoredTrustTokensStatus> actual_status;
   network_context->DeleteStoredTrustTokens(
       url::Origin::Create(GURL("ws://example.com")),
       base::BindLambdaForTesting(
@@ -7078,7 +7066,7 @@ TEST_F(NetworkContextTest, DeleteStoredTrustTokens) {
       }));
 
   // Delete all Trust Tokens for one of the issuers.
-  base::Optional<mojom::DeleteStoredTrustTokensStatus> delete_status;
+  absl::optional<mojom::DeleteStoredTrustTokensStatus> delete_status;
   network_context->DeleteStoredTrustTokens(
       issuer_origin_to_delete.origin(),
       base::BindLambdaForTesting(
@@ -7087,7 +7075,7 @@ TEST_F(NetworkContextTest, DeleteStoredTrustTokens) {
           }));
 
   // Query Trust Tokens after deleting one of the mock token.
-  base::Optional<base::flat_map<SuitableTrustTokenOrigin, int>> trust_tokens;
+  absl::optional<base::flat_map<SuitableTrustTokenOrigin, int>> trust_tokens;
   network_context->trust_token_store()->ExecuteOrEnqueue(
       base::BindLambdaForTesting([&](TrustTokenStore* store) {
         trust_tokens = store->GetStoredTrustTokenCounts();
@@ -7133,8 +7121,8 @@ TEST_F(NetworkContextTest, DeleteStoredTrustTokensReentrant) {
       }));
 
   // Delete all Trust Tokens for both issuers simultaneously.
-  base::Optional<mojom::DeleteStoredTrustTokensStatus> delete_status_foo;
-  base::Optional<mojom::DeleteStoredTrustTokensStatus> delete_status_bar;
+  absl::optional<mojom::DeleteStoredTrustTokensStatus> delete_status_foo;
+  absl::optional<mojom::DeleteStoredTrustTokensStatus> delete_status_bar;
   network_context->DeleteStoredTrustTokens(
       issuer_origin_foo.origin(),
       base::BindLambdaForTesting(

@@ -17,8 +17,10 @@
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_commands.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
@@ -30,6 +32,8 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/modals/modals_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -398,6 +402,18 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return NO;
 }
 
+- (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
+    contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
+                                         point:(CGPoint)point
+    API_AVAILABLE(ios(13.0)) {
+  if (!IsTabGridContextMenuEnabled()) {
+    return nil;
+  }
+  GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+      [self.collectionView cellForItemAtIndexPath:indexPath]);
+  return [self.menuProvider contextMenuConfigurationForGridCell:cell];
+}
+
 #pragma mark - UIPointerInteractionDelegate
 
 - (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
@@ -764,6 +780,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   [self updateVisibleCellZIndex];
   [self updateVisibleCellIdentifiers];
+}
+
+- (void)dismissModals {
+  ios::GetChromeBrowserProvider()
+      ->GetModalsProvider()
+      ->DismissModalsForCollectionView(self.collectionView);
 }
 
 #pragma mark - LayoutSwitcher

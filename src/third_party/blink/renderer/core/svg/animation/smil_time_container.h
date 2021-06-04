@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -66,7 +67,8 @@ class CORE_EXPORT SMILTimeContainer final
   void Unpause();
   void SetElapsed(SMILTime);
 
-  void ServiceAnimations();
+  // True if an animation frame is successfully scheduled.
+  bool ServiceAnimations();
   bool HasAnimations() const;
 
   void ResetDocumentTime();
@@ -98,7 +100,7 @@ class CORE_EXPORT SMILTimeContainer final
   mojom::blink::ImageAnimationPolicy AnimationPolicy() const;
   bool AnimationsDisabled() const;
   class TimingUpdate;
-  void UpdateAnimationsAndScheduleFrameIfNeeded(TimingUpdate&);
+  bool UpdateAnimationsAndScheduleFrameIfNeeded(TimingUpdate&);
   void PrepareSeek(TimingUpdate&);
   void ResetIntervals();
   void UpdateIntervals(TimingUpdate&);

@@ -129,7 +129,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
   // errors, but should be supressed (i.e. |logger| should be null) in normal
   // cases.
 
-  base::Optional<KURL> mapped_url;
+  absl::optional<KURL> mapped_url;
   if (import_map_) {
     String import_map_debug_message;
     mapped_url = import_map_->Resolve(parsed_specifier, base_url,
@@ -334,7 +334,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
     KURL child_url =
         module_script->ResolveModuleSpecifier(module_request.specifier);
 
-    ModuleType child_module_type = this->ModuleTypeFromRequest(module_request);
+    ModuleType child_module_type = ModuleTypeFromRequest(module_request);
     CHECK_NE(child_module_type, ModuleType::kInvalid);
 
     CHECK(child_url.IsValid())

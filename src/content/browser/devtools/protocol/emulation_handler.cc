@@ -15,12 +15,14 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/idle_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/http/http_util.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
+#include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
@@ -42,13 +44,13 @@ blink::mojom::ScreenOrientation WebScreenOrientationTypeFromString(
   return blink::mojom::ScreenOrientation::kUndefined;
 }
 
-base::Optional<content::DisplayFeature::Orientation>
+absl::optional<content::DisplayFeature::Orientation>
 DisplayFeatureOrientationTypeFromString(const std::string& type) {
   if (type == Emulation::DisplayFeature::OrientationEnum::Vertical)
     return content::DisplayFeature::Orientation::kVertical;
   if (type == Emulation::DisplayFeature::OrientationEnum::Horizontal)
     return content::DisplayFeature::Orientation::kHorizontal;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 ui::GestureProviderConfigType TouchEmulationConfigurationToType(
@@ -267,11 +269,11 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     }
   }
 
-  base::Optional<content::DisplayFeature> display_feature = base::nullopt;
+  absl::optional<content::DisplayFeature> display_feature = absl::nullopt;
   if (displayFeature.isJust()) {
     protocol::Emulation::DisplayFeature* emu_display_feature =
         displayFeature.fromJust();
-    base::Optional<content::DisplayFeature::Orientation> disp_orientation =
+    absl::optional<content::DisplayFeature::Orientation> disp_orientation =
         DisplayFeatureOrientationTypeFromString(
             emu_display_feature->GetOrientation());
     if (!disp_orientation) {
@@ -413,7 +415,7 @@ Response EmulationHandler::SetUserAgentOverride(
   user_agent_ = user_agent;
   accept_language_ = accept_lang;
 
-  user_agent_metadata_ = base::nullopt;
+  user_agent_metadata_ = absl::nullopt;
   if (!ua_metadata_override.isJust())
     return Response::FallThrough();
 
@@ -586,7 +588,7 @@ void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
 }
 
 bool EmulationHandler::ApplyUserAgentMetadataOverrides(
-    base::Optional<blink::UserAgentMetadata>* override_out) {
+    absl::optional<blink::UserAgentMetadata>* override_out) {
   // This is conditional on basic user agent override being on; this helps us
   // emulate a device not sending any UA client hints.
   if (user_agent_.empty())

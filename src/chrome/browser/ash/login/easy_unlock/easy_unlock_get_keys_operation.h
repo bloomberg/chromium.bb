@@ -10,14 +10,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_types.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/auth/user_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 class EasyUnlockGetKeysOperation {
  public:
@@ -41,7 +41,7 @@ class EasyUnlockGetKeysOperation {
 
   // Callback for GetKeyData(). Updates `devices_`, increments `key_index_`, and
   // calls GetKeyData() again.
-  void OnGetKeyData(base::Optional<user_data_auth::GetKeyDataReply> reply);
+  void OnGetKeyData(absl::optional<user_data_auth::GetKeyDataReply> reply);
 
   UserContext user_context_;
   GetKeysCallback callback_;
@@ -54,6 +54,6 @@ class EasyUnlockGetKeysOperation {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockGetKeysOperation);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_EASY_UNLOCK_EASY_UNLOCK_GET_KEYS_OPERATION_H_

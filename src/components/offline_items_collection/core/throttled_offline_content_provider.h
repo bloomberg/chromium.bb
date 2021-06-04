@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_ITEMS_COLLETION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
-#define COMPONENTS_OFFLINE_ITEMS_COLLETION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
+#ifndef COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
+#define COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
 
 #include <map>
 #include <utility>
@@ -54,7 +54,7 @@ class ThrottledOfflineContentProvider
                   const std::string& name,
                   RenameCallback callback) override;
   void ChangeSchedule(const ContentId& id,
-                      base::Optional<OfflineItemSchedule> schedule) override;
+                      absl::optional<OfflineItemSchedule> schedule) override;
 
   // Visible for testing. Overrides the time at which this throttle last pushed
   // updates to observers.
@@ -65,13 +65,13 @@ class ThrottledOfflineContentProvider
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item,
-                     const base::Optional<UpdateDelta>& update_delta) override;
+                     const absl::optional<UpdateDelta>& update_delta) override;
   void OnContentProviderGoingDown() override;
 
   void OnGetAllItemsDone(MultipleItemCallback callback,
                          const OfflineItemList& items);
   void OnGetItemByIdDone(SingleItemCallback callback,
-                         const base::Optional<OfflineItem>& item);
+                         const absl::optional<OfflineItem>& item);
 
   // Checks if |item| already has an update pending. If so, replaces the content
   // of the update with |item|.
@@ -92,7 +92,7 @@ class ThrottledOfflineContentProvider
       observation_{this};
 
   typedef std::map<ContentId,
-                   std::pair<OfflineItem, base::Optional<UpdateDelta>>>
+                   std::pair<OfflineItem, absl::optional<UpdateDelta>>>
       OfflineItemMap;
   OfflineItemMap updates_;
 
@@ -103,4 +103,4 @@ class ThrottledOfflineContentProvider
 
 }  // namespace offline_items_collection
 
-#endif  // COMPONENTS_OFFLINE_ITEMS_COLLETION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
+#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_

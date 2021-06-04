@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {

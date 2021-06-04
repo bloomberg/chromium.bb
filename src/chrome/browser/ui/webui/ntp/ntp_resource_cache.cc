@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -453,7 +452,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS(
     const content::WebContents::Getter wc_getter) {
   const ui::NativeTheme* native_theme = webui::GetNativeTheme(wc_getter.Run());
   const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
-      profile_->GetPrimaryOTRProfile());
+      profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true));
 
   // Generate the replacements.
   ui::TemplateReplacements substitutions;

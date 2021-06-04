@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace chromeos {
+namespace ash {
 
 FakeWilcoDtcSupportdClient::FakeWilcoDtcSupportdClient() = default;
 
@@ -50,7 +50,7 @@ int FakeWilcoDtcSupportdClient::
 }
 
 void FakeWilcoDtcSupportdClient::SetWaitForServiceToBeAvailableResult(
-    base::Optional<bool> wait_for_service_to_be_available_result) {
+    absl::optional<bool> wait_for_service_to_be_available_result) {
   wait_for_service_to_be_available_result_ =
       wait_for_service_to_be_available_result;
   if (!wait_for_service_to_be_available_result_)
@@ -67,7 +67,7 @@ int FakeWilcoDtcSupportdClient::bootstrap_mojo_connection_in_flight_call_count()
 }
 
 void FakeWilcoDtcSupportdClient::SetBootstrapMojoConnectionResult(
-    base::Optional<bool> bootstrap_mojo_connection_result) {
+    absl::optional<bool> bootstrap_mojo_connection_result) {
   bootstrap_mojo_connection_result_ = bootstrap_mojo_connection_result;
   if (!bootstrap_mojo_connection_result_)
     return;
@@ -77,4 +77,4 @@ void FakeWilcoDtcSupportdClient::SetBootstrapMojoConnectionResult(
     std::move(callback).Run(*bootstrap_mojo_connection_result_);
 }
 
-}  // namespace chromeos
+}  // namespace ash

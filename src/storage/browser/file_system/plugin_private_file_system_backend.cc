@@ -18,8 +18,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
-#include "storage/browser/file_system/file_stream_reader.h"
-#include "storage/browser/file_system/file_stream_writer.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
@@ -27,6 +25,7 @@
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/file_system/quota/quota_reservation.h"
+#include "storage/browser/file_system/sandbox_file_stream_reader.h"
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "url/origin.h"
@@ -208,7 +207,7 @@ PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+  return std::make_unique<SandboxFileStreamReader>(context, url, offset,
                                                    expected_modification_time);
 }
 
@@ -260,7 +259,7 @@ PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
   std::vector<url::Origin> origins;
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value())
     origins.push_back(std::move(origin).value());
   return origins;
@@ -275,7 +274,7 @@ PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
   std::vector<url::Origin> origins;
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == origin->host())
       origins.push_back(std::move(origin).value());

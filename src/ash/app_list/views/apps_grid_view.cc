@@ -49,6 +49,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/animation_throughput_reporter.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -765,6 +766,9 @@ void AppsGridView::EndDrag(bool cancel) {
   const bool landed_in_drag_and_drop_host =
       forward_events_to_drag_and_drop_host_;
 
+  // The drag ended by reparenting in a folder.
+  bool reparented_into_folder = false;
+
   // This is the folder view to drop an item into. Cache the |drag_view_|'s item
   // and its bounds for later use in folder dropping animation.
   AppListItemView* folder_item_view = nullptr;
@@ -814,6 +818,7 @@ void AppsGridView::EndDrag(bool cancel) {
         // folder view has one too.
         if (drag_view_ && drag_view_->layer())
           folder_item_view->EnsureLayer();
+        reparented_into_folder = true;
       } else if (IsValidReorderTargetIndex(drop_target_)) {
         // Ensure reorder event has already been announced by the end of drag.
         MaybeCreateDragReorderAccessibilityEvent();
@@ -883,9 +888,11 @@ void AppsGridView::EndDrag(bool cancel) {
   BeginHideCurrentGhostImageView();
   StopPageFlipTimer();
   if (cardified_state_) {
-    // Temporarily set to cardified UI State so it animates back to its position
-    // smoothly with all other icons.
-    released_drag_view->EnterCardifyState();
+    if (!reparented_into_folder) {
+      // Temporarily set to cardified UI State so it animates back to its
+      // position smoothly with all other icons.
+      released_drag_view->EnterCardifyState();
+    }
     // Compensate drag_source_bounds for the translation of the items_container
     // during AnimateCardifiedState().
     gfx::Point start_position = items_container_->origin();
@@ -1115,7 +1122,11 @@ void AppsGridView::Layout() {
     if (view != drag_view_) {
       view->SetBoundsRect(view_model_.ideal_bounds(i));
     } else {
-      view->SetSize(GetTileViewSize(GetAppListConfig(), cardified_state_));
+      // If the drag view size changes, make sure it has the same center.
+      gfx::Rect bounds = view->bounds();
+      bounds.ClampToCenteredSize(
+          GetTileViewSize(GetAppListConfig(), cardified_state_));
+      view->SetBoundsRect(bounds);
     }
   }
   if (cardified_state_) {
@@ -1231,6 +1242,9 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       event->SetHandled();
       mouse_drag_start_point_ = point_in_root;
       last_mouse_drag_point_ = point_in_root;
+      // Manually send the press event to the AppListView to update drag root
+      // location
+      contents_view_->app_list_view()->OnMouseEvent(event);
       break;
     case ui::ET_MOUSE_DRAGGED:
       if (!ShouldHandleDragEvent(*event)) {
@@ -2298,7 +2312,9 @@ void AppsGridView::StartAppsGridCardifiedView() {
   RemoveAllBackgroundCards();
   // Calculate background bounds for a normal grid so it animates from the
   // normal to the cardified bounds with the icons.
-  for (int i = 0; i < pagination_model_.total_pages(); i++)
+  // Add an extra card for the peeking page in the last page. This hints users
+  // that apps can be dragged past the last existing page.
+  for (int i = 0; i < pagination_model_.total_pages() + 1; i++)
     AppendBackgroundCard();
   cardified_state_ = true;
   UpdateTilePadding();
@@ -2367,6 +2383,8 @@ void AppsGridView::AnimateCardifiedState() {
     gfx::Rect current_bounds = entry_view->bounds();
     current_bounds.Offset(translate_offset);
 
+    entry_view->EnsureLayer();
+
     if (cardified_state_)
       entry_view->EnterCardifyState();
     else
@@ -2374,8 +2392,6 @@ void AppsGridView::AnimateCardifiedState() {
 
     gfx::Rect target_bounds(view_model_.ideal_bounds(i));
     entry_view->SetBoundsRect(target_bounds);
-
-    entry_view->EnsureLayer();
 
     // View bounds are currently |target_bounds|. Transform the view so it
     // appears in |current_bounds|.
@@ -3087,19 +3103,6 @@ void AppsGridView::TotalPagesChanged(int previous_page_count,
       type = AppListPageCreationType::kDraggingApp;
     UMA_HISTOGRAM_ENUMERATION("Apps.AppList.AppsGridAddPage", type);
   }
-
-  if (!cardified_state_)
-    return;
-
-  const int page_difference = new_page_count - previous_page_count;
-  if (page_difference > 0) {
-    for (int i = background_cards_.size(); i <= new_page_count; ++i) {
-      AppendBackgroundCard();
-    }
-  } else {
-    for (int i = 0; i < page_difference; ++i)
-      RemoveBackgroundCard();
-  }
 }
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
@@ -3704,7 +3707,7 @@ int AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
 
 void AppsGridView::RecordPageMetrics() {
   DCHECK(!folder_delegate_);
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfPagesHistogram,
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfPages",
                            pagination_model_.total_pages());
 
   // Calculate the number of pages that have empty slots.
@@ -3722,11 +3725,11 @@ void AppsGridView::RecordPageMetrics() {
     if (item_num % TilesPerPage() > 0)
       page_count = 1;
   }
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfPagesNotFullHistogram, page_count);
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfPagesNotFull", page_count);
 }
 
 void AppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
-  UMA_HISTOGRAM_ENUMERATION(kAppListAppMovingType, type,
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListAppMovingType", type,
                             kMaxAppListAppMovingType);
 }
 
@@ -3967,7 +3970,9 @@ bool AppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
   if (!folder_delegate_ &&
       (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_SCROLL_BEGIN) &&
       !contents_view_->app_list_view()->is_tablet_mode() &&
-      pagination_model_.selected_page() == 0 && calculate_offset(event) > 0) {
+      ((pagination_model_.selected_page() == 0 &&
+        calculate_offset(event) > 0) ||
+       contents_view_->app_list_view()->is_in_drag())) {
     return false;
   }
 

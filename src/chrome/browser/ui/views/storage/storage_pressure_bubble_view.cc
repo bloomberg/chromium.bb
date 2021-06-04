@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -16,8 +17,8 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 

@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -93,6 +95,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+using page_load_metrics::PageEndReason;
 using page_load_metrics::PageLoadMetricsTestWaiter;
 using TimingField = page_load_metrics::PageLoadMetricsTestWaiter::TimingField;
 using WebFeature = blink::mojom::WebFeature;
@@ -958,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, IgnoreDownloads) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::DownloadTestObserverTerminal downloads_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      browser()->profile()->GetDownloadManager(),
       1,  // == wait_count (only waiting for "download-test3.gif").
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
@@ -1371,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::DownloadTestObserverTerminal downloads_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      browser()->profile()->GetDownloadManager(),
       1,  // == wait_count (only waiting for "download-test1.lib").
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
@@ -3001,26 +3004,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPStopsUponInput) {
   waiter->Wait();
 
   // Tap in the middle of the button.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var submitRect = document.getElementById('button')"
-      ".getBoundingClientRect();"));
-  double y;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.top +"
-      "submitRect.bottom) / 2);",
-      &y));
-  double x;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.left + submitRect.right)"
-      "/ 2);",
-      &x));
-  content::SimulateMouseClickAt(
-      browser()->tab_strip_model()->GetActiveWebContents(), 0,
-      blink::WebMouseEvent::Button::kLeft,
-      gfx::Point(static_cast<int>(x), static_cast<int>(y)));
+  content::SimulateMouseClickOrTapElementWithId(web_contents(), "button");
   waiter2->Wait();
 
   // LCP is collected only at the end of the page lifecycle. Navigate to flush.
@@ -3099,10 +3083,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PortalActivation) {
   content::WebContents* portal_contents = contents_observer.GetWebContents();
 
   {
-    // The portal is not activated, so nothing should be recorded.
+    // The portal is not activated, so no page end metrics should be recorded
+    // (although the outer contents may have recorded FCP).
     auto entries = test_ukm_recorder_->GetMergedEntriesByName(
         ukm::builders::PageLoad::kEntryName);
-    EXPECT_EQ(0u, entries.size());
+    for (const auto& kv : entries) {
+      EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+          kv.second.get(),
+          ukm::builders::PageLoad::kNavigation_PageEndReason3Name));
+    }
   }
 
   // Activate the portal.
@@ -3115,11 +3104,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PortalActivation) {
   EXPECT_TRUE(
       ExecJs(outer_contents, "document.querySelector('portal').activate()"));
 
-  EXPECT_EQ(true,
-            EvalJsWithManualReply(portal_contents,
+  EXPECT_EQ(true, content::EvalJs(portal_contents,
                                   "activatePromise.then(r => { "
                                   "  window.domAutomationController.send(r);"
-                                  "});"));
+                                  "});",
+                                  content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   // The activated portal contents should be the currently active contents.
   EXPECT_EQ(portal_contents,
@@ -3127,10 +3116,17 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PortalActivation) {
   EXPECT_NE(portal_contents, outer_contents);
 
   {
-    // The portal is activated, so there should be a PageLoad entry.
+    // The portal is activated, so there should be a PageLoad entry showing
+    // that the outer contents was closed.
     auto entries = test_ukm_recorder_->GetMergedEntriesByName(
         ukm::builders::PageLoad::kEntryName);
     EXPECT_EQ(1u, entries.size());
+    for (const auto& kv : entries) {
+      ukm::TestUkmRecorder::ExpectEntryMetric(
+          kv.second.get(),
+          ukm::builders::PageLoad::kNavigation_PageEndReason3Name,
+          PageEndReason::END_CLOSE);
+    }
   }
   {
     // The portal is activated, also check the portal entry.

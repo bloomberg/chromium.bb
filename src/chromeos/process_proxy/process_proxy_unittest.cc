@@ -10,7 +10,6 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/process/kill.h"
@@ -270,7 +269,7 @@ class ProcessProxyTest : public testing::Test {
 // Test will open new process that will run cat command, and verify data we
 // write to process gets echoed back.
 TEST_F(ProcessProxyTest, RegistryTest) {
-  test_runner_.reset(new RegistryTestRunner());
+  test_runner_ = std::make_unique<RegistryTestRunner>();
   RunTest();
 }
 
@@ -278,7 +277,7 @@ TEST_F(ProcessProxyTest, RegistryTest) {
 //
 // Disabled due to flakiness: https://crbug.com/1151205
 TEST_F(ProcessProxyTest, DISABLED_RegistryNotifiedOnProcessExit) {
-  test_runner_.reset(new RegistryNotifiedOnProcessExitTestRunner());
+  test_runner_ = std::make_unique<RegistryNotifiedOnProcessExitTestRunner>();
   RunTest();
 }
 

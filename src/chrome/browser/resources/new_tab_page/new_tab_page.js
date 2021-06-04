@@ -10,8 +10,7 @@
  * things tests need.
  */
 
-import './app.js';
-
+export {NtpElement} from './app.js';
 export {BackgroundManager} from './background_manager.js';
 export {BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
 export {ImgElement} from './img.js';
@@ -24,13 +23,16 @@ export {driveDescriptor} from './modules/drive/module.js';
 export {FooProxy} from './modules/dummy/foo_proxy.js';
 export {dummyDescriptor} from './modules/dummy/module.js';
 // </if>
-export {ModuleDescriptor} from './modules/module_descriptor.js';
+export {InfoDialogElement} from './modules/info_dialog.js';
+export {Module, ModuleDescriptor} from './modules/module_descriptor.js';
 export {ModuleHeaderElement} from './modules/module_header.js';
 export {ModuleRegistry} from './modules/module_registry.js';
+export {ModulesElement} from './modules/modules.js';
 export {recipeTasksDescriptor, shoppingTasksDescriptor} from './modules/task_module/module.js';
 export {TaskModuleHandlerProxy} from './modules/task_module/task_module_handler_proxy.js';
 export {NewTabPageProxy} from './new_tab_page_proxy.js';
 export {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
 export {RealboxBrowserProxy} from './realbox/realbox_browser_proxy.js';
 export {$$, createScrollBorders, decodeString16, mojoString16} from './utils.js';
+export {Action as VoiceAction, Error as VoiceError} from './voice_search_overlay.js';
 export {WindowProxy} from './window_proxy.js';

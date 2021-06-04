@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
@@ -90,7 +89,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     bool res;
     base::RunLoop loop;
     storage_->SetPin(
-        user_context, pin, base::nullopt,
+        user_context, pin, absl::nullopt,
         base::BindOnce(
             [](base::OnceClosure closure, bool* res, bool did_set) {
               *res = did_set;
@@ -117,7 +116,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     chromeos::UserDataAuthClient::Get()->AddKey(
         request, base::BindOnce(
                      [](base::OnceClosure closure,
-                        base::Optional<::user_data_auth::AddKeyReply> reply) {
+                        absl::optional<::user_data_auth::AddKeyReply> reply) {
                        std::move(closure).Run();
                      },
                      run_loop.QuitClosure()));
@@ -147,7 +146,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     chromeos::UserDataAuthClient::Get()->AddKey(
         request, base::BindOnce(
                      [](base::OnceClosure closure,
-                        base::Optional<::user_data_auth::AddKeyReply> reply) {
+                        absl::optional<::user_data_auth::AddKeyReply> reply) {
                        std::move(closure).Run();
                      },
                      run_loop.QuitClosure()));

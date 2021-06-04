@@ -2,7 +2,7 @@
 <meta charset="utf-8" />
 <title>Popup light dismiss behavior</title>
 <link rel="author" href="mailto:masonf@chromium.org">
-<link rel=help href="https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/Popup/explainer.md">
+<link rel=help href="https://open-ui.org/components/popup.research.explainer">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/resources/testdriver.js"></script>
@@ -39,7 +39,13 @@
   #p3 { top:150px;}
   #p4 { top:150px; left:250px;}
   #p5 { top:250px;}
-  #p6 { overflow-y: scroll; }
+  #p6 {
+    top: 50px;
+    left:150px;
+    width: 300px;
+    height: 300px;
+    overflow-y: scroll;
+  }
   popup { border: 5px solid red; }
 </style>
 
@@ -51,6 +57,9 @@
       .pointerDown({button: actions.ButtonType.LEFT})
       .pointerUp({button: actions.ButtonType.LEFT})
       .send();
+  }
+  function eventLoop() {
+    return new Promise(resolve => setTimeout(resolve, 0));
   }
 
   const popup1 = document.querySelector('#p1');
@@ -150,13 +159,14 @@
     },'An invoking element that was not used to invoke the popup should NOT be part of the ancestor chain');
 
     popup1.show();
-    popup2.show();
+    popup2.show(); // Popup1 is an ancestral element for popup2.
     assert_true(popup1.open);
     assert_true(popup2.open);
     const drag_actions = new test_driver.Actions();
-    await drag_actions.pointerMove(0,0,{origin: popup1})
+    // Drag *from* popup2 *to* popup1 (its ancestor).
+    await drag_actions.pointerMove(0,0,{origin: popup2})
       .pointerDown({button: drag_actions.ButtonType.LEFT})
-      .pointerMove(0,0,{origin: popup2})
+      .pointerMove(0,0,{origin: popup1})
       .pointerUp({button: drag_actions.ButtonType.LEFT})
       .send();
     test(t => {
@@ -167,26 +177,37 @@
     },'Dragging from an open popup outside an open popup should leave the popup open');
 
     popup6.show();
+    assert_equals(popup6.scrollTop,0,'popup6 should start non-scrolled');
     await new test_driver.Actions()
        .scroll(0, 0, 0, 50, {origin: popup6})
        .send();
     test(t => {
       assert_true(popup6.open,'popup6 should stay open');
-      assert_equals(popup1.scrollTop,50,'popup6 should scroll');
+      assert_equals(popup6.scrollTop,50,'popup6 should be scrolled');
       popup6.hide();
     },'Scrolling within a popup should not close the popup');
 
+    popup1.show();
+    await eventLoop(); // Wait for initial resize observer to run
+    assert_true(popup1.open,'popup1 should be open');
+    popup1.style.width = "250px";
+    await eventLoop(); // Wait for style change resize to run
     test(t => {
-      popup1.show();
-      assert_true(popup1.open,'popup1 should be open');
-      popup1.style.width = "100px";
       assert_false(popup1.open,'popup1 should close when resized');
       popup1.style.width = "";
-      popup1.show();
-      assert_true(popup1.open);
-      popup1.querySelector('span').textContent = "This is a test, which is longer than original";
+    },'Popup should be closed by an explicit resize of the popup');
+
+    popup1.show();
+    await eventLoop(); // Wait for initial resize observer to run
+    assert_true(popup1.open);
+    const popup1Text = popup1.querySelector('span');
+    const originalText = popup1Text.textContent;
+    popup1Text.textContent = "This is a test, which is longer than the original";
+    await eventLoop(); // Wait for style change resize to run
+    test(t => {
       assert_false(popup1.open,'popup1 should close when text content forces its size to change');
-    },'Popup should be closed by a resize of the popup');
+      popup1Text.textContent = originalText;
+    },'Popup should be closed by an implicit resize of the popup');
 
     done();
   })();

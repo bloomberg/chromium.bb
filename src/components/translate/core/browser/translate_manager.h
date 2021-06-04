@@ -102,9 +102,9 @@ class TranslateManager {
       const std::set<std::string>& skipped_languages,
       TranslateBrowserMetrics::TargetLanguageOrigin& target_language_origin);
 
-  // Returns the language to automatically translate to. |original_language| is
-  // the webpage's original language.
-  static std::string GetAutoTargetLanguage(const std::string& original_language,
+  // Returns the language to automatically translate to. |source_language| is
+  // the webpage's source language.
+  static std::string GetAutoTargetLanguage(const std::string& source_language,
                                            TranslatePrefs* translate_prefs);
 
   // Returns the target language for a manually triggered translation: the
@@ -214,14 +214,12 @@ class TranslateManager {
       const std::string& page_language_code,
       const std::string& target_language_code);
 
-  // Returns true if the decision should be overridden and logs the event
-  // appropriately. |event_type| must be one of the
-  // values defined by metrics::TranslateEventProto::EventType.
-  bool ShouldOverrideDecision(int event_type);
+  // Returns true if the MATCHES_PREVIOUS_LANGUAGE decision should be overridden
+  // and logs the event appropriately.
+  bool ShouldOverrideMatchesPreviousLanguageDecision();
 
   // Returns true if the BubbleUI should be suppressed.
-  bool ShouldSuppressBubbleUI(bool triggered_from_menu,
-                              const std::string& source_language);
+  bool ShouldSuppressBubbleUI();
 
   // Sets target language.
   void SetPredefinedTargetLanguage(const std::string& language_code);

@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/browser/nearby_sharing/client/fake_nearby_share_client.h"
@@ -23,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
@@ -31,17 +31,17 @@ namespace {
 const char kFakeDeviceName[] = "My Cool Chromebook";
 const char kFakeEmptyDeviceName[] = "";
 const char kFakeFullName[] = "Barack Obama";
-const char kFakeGivenName[] = "Barack";
+const char16_t kFakeGivenName[] = u"Barack";
 const char kFakeIconUrl[] = "https://www.google.com";
 const char kFakeInvalidDeviceName[] = {0xC0, 0x00};
 const char kFakeTooLongDeviceName[] = "this string is 33 bytes in UTF-8!";
-const char kFakeTooLongGivenName[] = "this is a 33-byte string in utf-8";
+const char16_t kFakeTooLongGivenName[] = u"this is a 33-byte string in utf-8";
 const char kFakeTooLongTruncatedDeviceName[] =
     "this is a 33-...'s Chrome device";
 
 nearbyshare::proto::UpdateDeviceResponse CreateResponse(
-    const base::Optional<std::string>& full_name,
-    const base::Optional<std::string>& icon_url) {
+    const absl::optional<std::string>& full_name,
+    const absl::optional<std::string>& icon_url) {
   nearbyshare::proto::UpdateDeviceResponse response;
   if (full_name)
     response.set_person_name(*full_name);
@@ -101,7 +101,7 @@ class NearbyShareLocalDeviceDataManagerImplTest
     NearbyShareSchedulerFactory::SetFactoryForTesting(&scheduler_factory_);
     NearbyShareDeviceDataUpdaterImpl::Factory::SetFactoryForTesting(
         &updater_factory_);
-    profile_info_provider()->set_given_name(base::UTF8ToUTF16(kFakeGivenName));
+    profile_info_provider()->set_given_name(kFakeGivenName);
   }
 
   void TearDown() override {
@@ -132,7 +132,7 @@ class NearbyShareLocalDeviceDataManagerImplTest
   }
 
   void DownloadDeviceData(
-      const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
+      const absl::optional<nearbyshare::proto::UpdateDeviceResponse>&
           response) {
     manager_->DownloadDeviceData();
 
@@ -154,12 +154,12 @@ class NearbyShareLocalDeviceDataManagerImplTest
   }
 
   void UploadContacts(
-      const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
+      const absl::optional<nearbyshare::proto::UpdateDeviceResponse>&
           response) {
-    base::Optional<bool> returned_success;
+    absl::optional<bool> returned_success;
     manager_->UploadContacts(
         GetFakeContacts(),
-        base::BindOnce([](base::Optional<bool>* returned_success,
+        base::BindOnce([](absl::optional<bool>* returned_success,
                           bool success) { *returned_success = success; },
                        &returned_success));
 
@@ -181,12 +181,12 @@ class NearbyShareLocalDeviceDataManagerImplTest
   }
 
   void UploadCertificates(
-      const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
+      const absl::optional<nearbyshare::proto::UpdateDeviceResponse>&
           response) {
-    base::Optional<bool> returned_success;
+    absl::optional<bool> returned_success;
     manager_->UploadCertificates(
         GetFakeCertificates(),
-        base::BindOnce([](base::Optional<bool>* returned_success,
+        base::BindOnce([](absl::optional<bool>* returned_success,
                           bool success) { *returned_success = success; },
                        &returned_success));
 
@@ -276,22 +276,21 @@ TEST_F(NearbyShareLocalDeviceDataManagerImplTest, DefaultDeviceName) {
   CreateManager();
 
   // If given name is null, only return the device type.
-  profile_info_provider()->set_given_name(base::nullopt);
+  profile_info_provider()->set_given_name(absl::nullopt);
   EXPECT_EQ(base::UTF16ToUTF8(ui::GetChromeOSDeviceName()),
             manager()->GetDeviceName());
 
   // Set given name and expect full default device name of the form
   // "<given name>'s <device type>."
-  profile_info_provider()->set_given_name(base::UTF8ToUTF16(kFakeGivenName));
-  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_NEARBY_DEFAULT_DEVICE_NAME,
-                                      base::UTF8ToUTF16(kFakeGivenName),
-                                      ui::GetChromeOSDeviceName()),
-            manager()->GetDeviceName());
+  profile_info_provider()->set_given_name(kFakeGivenName);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF8(IDS_NEARBY_DEFAULT_DEVICE_NAME, kFakeGivenName,
+                                ui::GetChromeOSDeviceName()),
+      manager()->GetDeviceName());
 
   // Make sure that when we use a given name that is very long we truncate
   // correctly.
-  profile_info_provider()->set_given_name(
-      base::UTF8ToUTF16(kFakeTooLongGivenName));
+  profile_info_provider()->set_given_name(kFakeTooLongGivenName);
   EXPECT_EQ(kFakeTooLongTruncatedDeviceName, manager()->GetDeviceName());
 }
 
@@ -311,10 +310,10 @@ TEST_F(NearbyShareLocalDeviceDataManagerImplTest, ValidateDeviceName) {
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, SetDeviceName) {
   CreateManager();
 
-  profile_info_provider()->set_given_name(base::UTF8ToUTF16(kFakeGivenName));
-  std::string expected_default_device_name = l10n_util::GetStringFUTF8(
-      IDS_NEARBY_DEFAULT_DEVICE_NAME, base::UTF8ToUTF16(kFakeGivenName),
-      ui::GetChromeOSDeviceName());
+  profile_info_provider()->set_given_name(kFakeGivenName);
+  std::string expected_default_device_name =
+      l10n_util::GetStringFUTF8(IDS_NEARBY_DEFAULT_DEVICE_NAME, kFakeGivenName,
+                                ui::GetChromeOSDeviceName());
   EXPECT_EQ(expected_default_device_name, manager()->GetDeviceName());
   EXPECT_TRUE(notifications().empty());
 
@@ -408,60 +407,54 @@ TEST_F(NearbyShareLocalDeviceDataManagerImplTest,
 
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, DownloadDeviceData_Failure) {
   CreateManager();
-  DownloadDeviceData(/*response=*/base::nullopt);
+  DownloadDeviceData(/*response=*/absl::nullopt);
 
   // No full name or icon URL set because response was null.
-  EXPECT_EQ(base::nullopt, manager()->GetFullName());
-  EXPECT_EQ(base::nullopt, manager()->GetIconUrl());
+  EXPECT_EQ(absl::nullopt, manager()->GetFullName());
+  EXPECT_EQ(absl::nullopt, manager()->GetIconUrl());
   EXPECT_TRUE(notifications().empty());
 }
 
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, UploadContacts_Success) {
   CreateManager();
-  EXPECT_FALSE(manager()->GetFullName());
-  EXPECT_FALSE(manager()->GetIconUrl());
-  EXPECT_TRUE(notifications().empty());
   UploadContacts(CreateResponse(kFakeFullName, kFakeIconUrl));
-  EXPECT_EQ(kFakeFullName, manager()->GetFullName());
-  EXPECT_EQ(kFakeIconUrl, manager()->GetIconUrl());
-  EXPECT_EQ(1u, notifications().size());
-  EXPECT_EQ(ObserverNotification(/*did_device_name_change=*/false,
-                                 /*did_full_name_change=*/true,
-                                 /*did_icon_url_change=*/true),
-            notifications()[0]);
+
+  // TODO(http://crbug.com/1211189): Only process the UpdateDevice response for
+  // DownloadDeviceData() calls. We want avoid infinite loops if the full name
+  // or icon URL unexpectedly change. When the bug is resolved, check that the
+  // full name and icon URL were properly handed in the response response sent
+  // from uploading contacts or certificates as well.
 }
 
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, UploadContacts_Failure) {
   CreateManager();
-  UploadContacts(/*response=*/base::nullopt);
+  UploadContacts(/*response=*/absl::nullopt);
 
-  // No full name or icon URL set because response was null.
-  EXPECT_EQ(base::nullopt, manager()->GetFullName());
-  EXPECT_EQ(base::nullopt, manager()->GetIconUrl());
-  EXPECT_TRUE(notifications().empty());
+  // TODO(http://crbug.com/1211189): Only process the UpdateDevice response for
+  // DownloadDeviceData() calls. We want avoid infinite loops if the full name
+  // or icon URL unexpectedly change. When the bug is resolved, check that the
+  // full name and icon URL were properly handed in the response response sent
+  // from uploading contacts or certificates as well.
 }
 
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, UploadCertificates_Success) {
   CreateManager();
-  EXPECT_FALSE(manager()->GetFullName());
-  EXPECT_FALSE(manager()->GetIconUrl());
-  EXPECT_TRUE(notifications().empty());
   UploadCertificates(CreateResponse(kFakeFullName, kFakeIconUrl));
-  EXPECT_EQ(kFakeFullName, manager()->GetFullName());
-  EXPECT_EQ(kFakeIconUrl, manager()->GetIconUrl());
-  EXPECT_EQ(1u, notifications().size());
-  EXPECT_EQ(ObserverNotification(/*did_device_name_change=*/false,
-                                 /*did_full_name_change=*/true,
-                                 /*did_icon_url_change=*/true),
-            notifications()[0]);
+
+  // TODO(http://crbug.com/1211189): Only process the UpdateDevice response for
+  // DownloadDeviceData() calls. We want avoid infinite loops if the full name
+  // or icon URL unexpectedly change. When the bug is resolved, check that the
+  // full name and icon URL were properly handed in the response response sent
+  // from uploading contacts or certificates as well.
 }
 
 TEST_F(NearbyShareLocalDeviceDataManagerImplTest, UploadCertificates_Failure) {
   CreateManager();
-  UploadCertificates(/*response=*/base::nullopt);
+  UploadCertificates(/*response=*/absl::nullopt);
 
-  // No full name or icon URL set because response was null.
-  EXPECT_EQ(base::nullopt, manager()->GetFullName());
-  EXPECT_EQ(base::nullopt, manager()->GetIconUrl());
-  EXPECT_TRUE(notifications().empty());
+  // TODO(http://crbug.com/1211189): Only process the UpdateDevice response for
+  // DownloadDeviceData() calls. We want avoid infinite loops if the full name
+  // or icon URL unexpectedly change. When the bug is resolved, check that the
+  // full name and icon URL were properly handed in the response response sent
+  // from uploading contacts or certificates as well.
 }

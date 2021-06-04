@@ -98,6 +98,11 @@ MATCHER_P(ListedAccountEquals, expected, "") {
   return AreAccountListsEqual(expected, arg);
 }
 
+// Custom matcher for ListedAccount.
+MATCHER_P(ListedAccountMatchesGaiaId, gaia_id, "") {
+  return arg.gaia_id == std::string(gaia_id);
+}
+
 class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   InstrumentedGaiaCookieManagerService(ProfileOAuth2TokenService* token_service,
@@ -248,6 +253,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
 }  // namespace
 
 using ::testing::_;
+using ::testing::ElementsAre;
 
 TEST_F(GaiaCookieManagerServiceTest, Success) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
@@ -1096,4 +1102,148 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCCOnce) {
   // StartFetchingMergeSession.
   EXPECT_CALL(helper, StartFetchingMergeSession());
   SimulateUbertokenSuccess(&helper, "token3");
+}
+
+TEST_F(GaiaCookieManagerServiceTest, RemoveLoggedOutAccountByGaiaId) {
+  const std::string kTestGaiaId1 = "8";
+  const std::string kTestGaiaId2 = "9";
+
+  ::testing::NiceMock<InstrumentedGaiaCookieManagerService> helper(
+      token_service(), signin_client());
+  ::testing::NiceMock<MockObserver> observer(&helper);
+
+  std::vector<gaia::ListedAccount> signed_in_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  ASSERT_FALSE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+
+  // Simulate two signed out accounts being listed.
+  SimulateListAccountsSuccess(
+      &helper,
+      base::StringPrintf(
+          "[\"f\","
+          "[[\"a\", 0, \"n\", \"a@d.com\", \"p\", 0, 0, 0, 0, 1, \"%s\","
+          "null,null,null,1],"
+          "[\"b\", 0, \"n\", \"b@d.com\", \"p\", 0, 0, 0, 0, 1, \"%s\","
+          "null,null,null,1]]]",
+          kTestGaiaId1.c_str(), kTestGaiaId2.c_str()));
+
+  ASSERT_TRUE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  ASSERT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId1),
+                          ListedAccountMatchesGaiaId(kTestGaiaId2)));
+
+  // The removal should notify observers, with one account removed.
+  EXPECT_CALL(observer,
+              OnGaiaAccountsInCookieUpdated(
+                  _, /*signed_out_accounts=*/
+                  ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId2)), _));
+  EXPECT_CALL(helper, StartFetchingListAccounts()).Times(0);
+  base::HistogramTester histograms;
+  helper.RemoveLoggedOutAccountByGaiaId(kTestGaiaId1);
+
+  // Verify that ListAccounts wasn't triggered.
+  EXPECT_FALSE(helper.is_running());
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&helper));
+
+  ASSERT_TRUE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  EXPECT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId2)));
+
+  histograms.ExpectUniqueSample(
+      "Signin.RemoveLocalAccountOutcome",
+      GaiaCookieManagerService::RemoveLocalAccountOutcome::kSuccess, 1);
+}
+
+TEST_F(GaiaCookieManagerServiceTest,
+       RemoveLoggedOutAccountByGaiaIdWhileAccountsStale) {
+  const std::string kTestGaiaId1 = "8";
+
+  ::testing::NiceMock<InstrumentedGaiaCookieManagerService> helper(
+      token_service(), signin_client());
+  ::testing::NiceMock<MockObserver> observer(&helper);
+
+  std::vector<gaia::ListedAccount> signed_in_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  ASSERT_FALSE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+
+  // Simulate one signed out account being listed.
+  SimulateListAccountsSuccess(
+      &helper,
+      base::StringPrintf(
+          "[\"f\","
+          "[[\"a\", 0, \"n\", \"a@d.com\", \"p\", 0, 0, 0, 0, 1, \"%s\","
+          "null,null,null,1]]]",
+          kTestGaiaId1.c_str()));
+
+  // Change list account state to be stale, which will trigger list accounts
+  // request.
+  helper.ForceOnCookieChangeProcessing();
+
+  ASSERT_FALSE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  ASSERT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId1)));
+
+  // The removal should be ignored because the account list is stale.
+  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(_, _, _)).Times(0);
+  EXPECT_CALL(helper, StartFetchingListAccounts()).Times(0);
+  base::HistogramTester histograms;
+  helper.RemoveLoggedOutAccountByGaiaId(kTestGaiaId1);
+
+  // Verify that ListAccounts wasn't triggered again.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&helper));
+
+  ASSERT_FALSE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  EXPECT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId1)));
+
+  histograms.ExpectUniqueSample(
+      "Signin.RemoveLocalAccountOutcome",
+      GaiaCookieManagerService::RemoveLocalAccountOutcome::kAccountsStale, 1);
+}
+
+TEST_F(GaiaCookieManagerServiceTest,
+       RemoveLoggedOutAccountByGaiaIdForMissingAccount) {
+  const std::string kTestGaiaId1 = "8";
+  const std::string kNonListedAccount = "9";
+
+  ::testing::NiceMock<InstrumentedGaiaCookieManagerService> helper(
+      token_service(), signin_client());
+  ::testing::NiceMock<MockObserver> observer(&helper);
+
+  std::vector<gaia::ListedAccount> signed_in_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  ASSERT_FALSE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+
+  // Simulate one signed out account being listed.
+  SimulateListAccountsSuccess(
+      &helper,
+      base::StringPrintf(
+          "[\"f\","
+          "[[\"a\", 0, \"n\", \"a@d.com\", \"p\", 0, 0, 0, 0, 1, \"%s\","
+          "null,null,null,1]]]",
+          kTestGaiaId1.c_str()));
+
+  ASSERT_TRUE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  ASSERT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId1)));
+
+  // The removal should be ignored because the Gaia ID is not listed/known.
+  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(_, _, _)).Times(0);
+  EXPECT_CALL(helper, StartFetchingListAccounts()).Times(0);
+  base::HistogramTester histograms;
+  helper.RemoveLoggedOutAccountByGaiaId(kNonListedAccount);
+
+  // Verify that ListAccounts wasn't triggered.
+  EXPECT_FALSE(helper.is_running());
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&helper));
+
+  ASSERT_TRUE(helper.ListAccounts(&signed_in_accounts, &signed_out_accounts));
+  EXPECT_THAT(signed_out_accounts,
+              ElementsAre(ListedAccountMatchesGaiaId(kTestGaiaId1)));
+
+  histograms.ExpectUniqueSample(
+      "Signin.RemoveLocalAccountOutcome",
+      GaiaCookieManagerService::RemoveLocalAccountOutcome::
+          kSignedOutAccountMissing,
+      1);
 }

@@ -8,13 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace net {
@@ -124,7 +123,7 @@ class WebRequestEventDetails {
   std::unique_ptr<base::DictionaryValue> request_body_;
   std::unique_ptr<base::ListValue> request_headers_;
   std::unique_ptr<base::ListValue> response_headers_;
-  base::Optional<url::Origin> initiator_;
+  absl::optional<url::Origin> initiator_;
 
   int extra_info_spec_;
 

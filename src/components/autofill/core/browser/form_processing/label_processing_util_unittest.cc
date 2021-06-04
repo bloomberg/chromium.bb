@@ -34,7 +34,7 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces) {
   labels.push_back(u"");
   labels.push_back(u"Zip");
 
-  auto expectation = base::make_optional(std::vector<std::u16string>());
+  auto expectation = absl::make_optional(std::vector<std::u16string>());
   expectation->push_back(u"City");
   expectation->push_back(u"Street");
   expectation->push_back(u"House Number");
@@ -51,7 +51,7 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces_ThreeComponents) {
   labels.push_back(u"");
   labels.push_back(u"Zip");
 
-  auto expectation = base::make_optional(std::vector<std::u16string>());
+  auto expectation = absl::make_optional(std::vector<std::u16string>());
   expectation->push_back(u"City");
   expectation->push_back(u"Street");
   expectation->push_back(u"House Number");
@@ -70,7 +70,7 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces_TooManyComponents) {
   labels.push_back(u"");
   labels.push_back(u"Zip");
 
-  base::Optional<std::vector<std::u16string>> expectation = base::nullopt;
+  absl::optional<std::vector<std::u16string>> expectation = absl::nullopt;
   ;
 
   EXPECT_EQ(GetParseableLabels(StringsToStringPieces(labels)), expectation);
@@ -83,7 +83,7 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces_UnmachtingComponents) {
   labels.push_back(u"");
   labels.push_back(u"Zip");
 
-  base::Optional<std::vector<std::u16string>> expectation = base::nullopt;
+  absl::optional<std::vector<std::u16string>> expectation = absl::nullopt;
 
   EXPECT_EQ(GetParseableLabels(StringsToStringPieces(labels)), expectation);
 }
@@ -95,7 +95,7 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces_SplitableLabelAtEnd) {
   labels.push_back(u"Zip");
   labels.push_back(u"Street & House Number & Floor");
 
-  base::Optional<std::vector<std::u16string>> expectation = base::nullopt;
+  absl::optional<std::vector<std::u16string>> expectation = absl::nullopt;
 
   EXPECT_EQ(GetParseableLabels(StringsToStringPieces(labels)), expectation);
 }
@@ -104,12 +104,12 @@ TEST(LabelProcessingUtil, GetParseableNameStringPieces_TooLongLabel) {
   std::vector<std::u16string> labels;
   labels.push_back(u"City");
   labels.push_back(
-      ASCIIToUTF16("Street & House Number with a lot of additional text that "
-                   "exceeds 40 characters by far"));
+      u"Street & House Number with a lot of additional text that exceeds 40 "
+      u"characters by far");
   labels.push_back(u"");
   labels.push_back(u"Zip");
 
-  base::Optional<std::vector<std::u16string>> expectation = base::nullopt;
+  absl::optional<std::vector<std::u16string>> expectation = absl::nullopt;
 
   EXPECT_EQ(GetParseableLabels(StringsToStringPieces(labels)), expectation);
 }

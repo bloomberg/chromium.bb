@@ -19,12 +19,12 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -101,7 +101,7 @@ bool IsRecoveryToolRunning(Profile* profile) {
 void BroadcastEvent(Profile* profile,
                     extensions::events::HistogramValue histogram_value,
                     const std::string& event_name,
-                    std::unique_ptr<base::ListValue> event_args) {
+                    std::vector<base::Value> event_args) {
   extensions::EventRouter::Get(profile)->BroadcastEvent(
       std::make_unique<extensions::Event>(histogram_value, event_name,
                                           std::move(event_args)));
@@ -114,7 +114,7 @@ void DispatchEventToExtension(
     const std::string& extension_id,
     extensions::events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
+    std::vector<base::Value> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
       extension_id, std::make_unique<extensions::Event>(
                         histogram_value, event_name, std::move(event_args)));
@@ -179,21 +179,26 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
   return file_manager_private::MOUNT_COMPLETED_STATUS_NONE;
 }
 
-file_manager_private::CopyProgressStatusType
-CopyProgressTypeToCopyProgressStatusType(
-    storage::FileSystemOperation::CopyProgressType type) {
+file_manager_private::CopyOrMoveProgressStatusType
+CopyOrMoveProgressTypeToCopyOrMoveProgressStatusType(
+    storage::FileSystemOperation::CopyOrMoveProgressType type) {
   switch (type) {
-    case storage::FileSystemOperation::BEGIN_COPY_ENTRY:
-      return file_manager_private::COPY_PROGRESS_STATUS_TYPE_BEGIN_COPY_ENTRY;
-    case storage::FileSystemOperation::END_COPY_ENTRY:
-      return file_manager_private::COPY_PROGRESS_STATUS_TYPE_END_COPY_ENTRY;
-    case storage::FileSystemOperation::PROGRESS:
-      return file_manager_private::COPY_PROGRESS_STATUS_TYPE_PROGRESS;
-    case storage::FileSystemOperation::ERROR_COPY_ENTRY:
-      return file_manager_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kBegin:
+      return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_BEGIN;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kProgress:
+      return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_PROGRESS;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kEndCopy:
+      return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_END_COPY;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kEndMove:
+      return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_END_MOVE;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kEndRemoveSource:
+      return file_manager_private::
+          COPY_OR_MOVE_PROGRESS_STATUS_TYPE_END_REMOVE_SOURCE;
+    case storage::FileSystemOperation::CopyOrMoveProgressType::kError:
+      return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_ERROR;
   }
   NOTREACHED();
-  return file_manager_private::COPY_PROGRESS_STATUS_TYPE_NONE;
+  return file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_NONE;
 }
 
 std::string FileErrorToErrorName(base::File::Error error_code) {
@@ -272,7 +277,7 @@ bool ShouldShowNotificationForVolume(
   // If the disable-default-apps flag is on, the Files app is not opened
   // automatically on device mount not to obstruct the manual test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDefaultApps)) {
+          switches::kDisablePreinstalledApps)) {
     return false;
   }
 
@@ -355,14 +360,25 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
       : profile_(profile), file_watchers_(file_watchers) {}
 
  private:
-  std::set<std::string> GetEventListenerExtensionIds(
-      const std::string& event_name) override {
-    return ::file_manager::GetEventListenerExtensionIds(profile_, event_name);
+  std::set<GURL> GetEventListenerURLs(const std::string& event_name) override {
+    const extensions::EventListenerMap::ListenerList& listeners =
+        extensions::EventRouter::Get(profile_)
+            ->listeners()
+            .GetEventListenersByName(event_name);
+    std::set<GURL> urls;
+    for (const auto& listener : listeners) {
+      if (!listener->extension_id().empty()) {
+        urls.insert(extensions::Extension::GetBaseURLFromExtensionId(
+            listener->extension_id()));
+      } else {
+        urls.insert(listener->listener_url());
+      }
+    }
+    return urls;
   }
 
-  GURL ConvertDrivePathToFileSystemUrl(
-      const base::FilePath& file_path,
-      const std::string& extension_id) override {
+  GURL ConvertDrivePathToFileSystemUrl(const base::FilePath& file_path,
+                                       const GURL& listener_url) override {
     GURL url;
     file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
         profile_,
@@ -370,7 +386,7 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
                            ->GetMountPointPath()
                            .value() +
                        file_path.value()),
-        extension_id, &url);
+        listener_url, &url);
     return url;
   }
 
@@ -393,7 +409,7 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
       const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> event_args) override {
+      std::vector<base::Value> event_args) override {
     extensions::EventRouter::Get(profile_)->DispatchEventToExtension(
         extension_id, std::make_unique<extensions::Event>(
                           histogram_value, event_name, std::move(event_args)));
@@ -424,7 +440,7 @@ EventRouter::EventRouter(Profile* profile)
 EventRouter::~EventRouter() = default;
 
 void EventRouter::OnIntentFiltersUpdated(
-    const base::Optional<std::string>& package_name) {
+    const absl::optional<std::string>& package_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_APPS_UPDATED,
@@ -600,16 +616,17 @@ void EventRouter::OnCopyCompleted(int copy_id,
                                   base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  file_manager_private::CopyProgressStatus status;
+  file_manager_private::CopyOrMoveProgressStatus status;
   if (error == base::File::FILE_OK) {
     // Send success event.
-    status.type = file_manager_private::COPY_PROGRESS_STATUS_TYPE_SUCCESS;
+    status.type =
+        file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_SUCCESS;
     status.source_url = std::make_unique<std::string>(source_url.spec());
     status.destination_url =
         std::make_unique<std::string>(destination_url.spec());
   } else {
     // Send error event.
-    status.type = file_manager_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
+    status.type = file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_ERROR;
     status.error = std::make_unique<std::string>(FileErrorToErrorName(error));
   }
 
@@ -621,33 +638,42 @@ void EventRouter::OnCopyCompleted(int copy_id,
 
 void EventRouter::OnCopyProgress(
     int copy_id,
-    storage::FileSystemOperation::CopyProgressType type,
+    storage::FileSystemOperation::CopyOrMoveProgressType type,
     const GURL& source_url,
     const GURL& destination_url,
     int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  file_manager_private::CopyProgressStatus status;
-  status.type = CopyProgressTypeToCopyProgressStatusType(type);
+  file_manager_private::CopyOrMoveProgressStatus status;
+  status.type = CopyOrMoveProgressTypeToCopyOrMoveProgressStatusType(type);
   status.source_url = std::make_unique<std::string>(source_url.spec());
-  if (type == storage::FileSystemOperation::END_COPY_ENTRY ||
-      type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
+  if (type == storage::FileSystemOperation::CopyOrMoveProgressType::kError) {
+    // For cross-filesystems moves, no destination_url is provided when an error
+    // occurs. This translates into to a non-valid destination GURL.
+    // status.destination_url should never be used in this case.
+    status.destination_url =
+        std::make_unique<std::string>(destination_url.possibly_invalid_spec());
+  } else if (type != storage::FileSystemOperation::CopyOrMoveProgressType::
+                         kEndRemoveSource) {
     status.destination_url =
         std::make_unique<std::string>(destination_url.spec());
-  if (type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
+  }
+
+  if (type == storage::FileSystemOperation::CopyOrMoveProgressType::kError)
     status.error = std::make_unique<std::string>(
         FileErrorToErrorName(base::File::FILE_ERROR_FAILED));
-  if (type == storage::FileSystemOperation::PROGRESS)
+  if (type == storage::FileSystemOperation::CopyOrMoveProgressType::kProgress)
     status.size = std::make_unique<double>(size);
 
   // Discard error progress since current JS code cannot handle this properly.
   // TODO(yawano): Remove this after JS side is implemented correctly.
-  if (type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
+  if (type == storage::FileSystemOperation::CopyOrMoveProgressType::kError)
     return;
 
   // Should not skip events other than TYPE_PROGRESS.
   const bool always =
-      status.type != file_manager_private::COPY_PROGRESS_STATUS_TYPE_PROGRESS;
+      status.type !=
+      file_manager_private::COPY_OR_MOVE_PROGRESS_STATUS_TYPE_PROGRESS;
   if (!ShouldSendProgressEvent(always, &last_copy_progress_event_))
     return;
 
@@ -735,11 +761,11 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
     // API.
     file_definition.is_directory = true;
 
+    GURL listener_url =
+        extensions::Extension::GetBaseURLFromExtensionId(*extension_id);
     file_manager::util::ConvertFileDefinitionToEntryDefinition(
-        util::GetFileSystemContextForExtensionId(profile_, *extension_id),
-        url::Origin::Create(
-            extensions::Extension::GetBaseURLFromExtensionId(*extension_id)),
-        file_definition,
+        util::GetFileSystemContextForSourceURL(profile_, listener_url),
+        url::Origin::Create(listener_url), file_definition,
         base::BindOnce(
             &EventRouter::DispatchDirectoryChangeEventWithEntryDefinition,
             weak_factory_.GetWeakPtr(), base::Owned(extension_id), got_error));
@@ -957,18 +983,14 @@ void EventRouter::OnCrostiniChanged(
     const std::string& pref_name,
     extensions::api::file_manager_private::CrostiniEventType pref_true,
     extensions::api::file_manager_private::CrostiniEventType pref_false) {
-  for (const auto& extension_id : GetEventListenerExtensionIds(
-           profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
-    file_manager_private::CrostiniEvent event;
-    event.vm_name = vm_name;
-    event.event_type =
-        profile_->GetPrefs()->GetBoolean(pref_name) ? pref_true : pref_false;
-    DispatchEventToExtension(
-        profile_, extension_id,
-        extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
-        file_manager_private::OnCrostiniChanged::kEventName,
-        file_manager_private::OnCrostiniChanged::Create(event));
-  }
+  file_manager_private::CrostiniEvent event;
+  event.vm_name = vm_name;
+  event.event_type =
+      profile_->GetPrefs()->GetBoolean(pref_name) ? pref_true : pref_false;
+  BroadcastEvent(profile_,
+                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+                 file_manager_private::OnCrostiniChanged::kEventName,
+                 file_manager_private::OnCrostiniChanged::Create(event));
 }
 
 void EventRouter::NotifyDriveConnectionStatusChanged() {

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
@@ -116,7 +117,7 @@ std::unique_ptr<base::ListValue> GetUsersList(
     users_pref_object->value->GetAsList(&existing);
     email_list.reset(existing->DeepCopy());
   } else {
-    email_list.reset(new base::ListValue());
+    email_list = std::make_unique<base::ListValue>();
   }
 
   const user_manager::UserManager* user_manager =
@@ -137,8 +138,9 @@ std::unique_ptr<base::ListValue> GetUsersList(
 
   const user_manager::UserList& users = user_manager->GetUsers();
   for (const auto* user : users) {
-    email_list->AppendIfNotPresent(
-        std::make_unique<base::Value>(user->GetAccountId().GetUserEmail()));
+    base::Value email_value(user->GetAccountId().GetUserEmail());
+    if (!base::Contains(email_list->GetList(), email_value))
+      email_list->Append(std::move(email_value));
   }
 
   if (ash::OwnerSettingsServiceAsh* service =

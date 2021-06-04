@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
+#include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
@@ -17,6 +19,12 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 namespace gfx {
 class AxisTransform2d;
@@ -80,7 +88,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   gfx::Size GetSize() const;
 
   // Returns the content size of this raster source at a particular scale.
-  gfx::Size GetContentSize(float content_scale) const;
+  gfx::Size GetContentSize(const gfx::Vector2dF& content_scale) const;
 
   // Populate the given list with all images that may overlap the given
   // rect in layer space.

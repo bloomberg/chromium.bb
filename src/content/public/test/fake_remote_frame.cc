@@ -65,6 +65,10 @@ void FakeRemoteFrame::SetPageFocus(bool is_focused) {}
 
 void FakeRemoteFrame::RenderFallbackContent() {}
 
+void FakeRemoteFrame::RenderFallbackContentWithResourceTiming(
+    blink::mojom::ResourceTimingInfoPtr,
+    const std::string& server_timing_value) {}
+
 void FakeRemoteFrame::AddResourceTimingFromChild(
     blink::mojom::ResourceTimingInfoPtr timing) {}
 
@@ -80,7 +84,7 @@ void FakeRemoteFrame::IntrinsicSizingInfoOfChildChanged(
     blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
 void FakeRemoteFrame::UpdateOpener(
-    const base::Optional<blink::FrameToken>& opener_frame_token) {}
+    const absl::optional<blink::FrameToken>& opener_frame_token) {}
 
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

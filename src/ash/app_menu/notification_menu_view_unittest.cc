@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -103,7 +104,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_POPUP));
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    init_params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+    init_params.activatable = views::Widget::InitParams::Activatable::kYes;
     widget_->Init(std::move(init_params));
     notification_menu_view_ =
         widget_->SetContentsView(std::move(notification_menu_view));

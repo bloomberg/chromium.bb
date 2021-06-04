@@ -72,7 +72,7 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             os.path.join(layout_test_results, 'full_results.json'),
             os.path.join(layout_test_results, 'full_results_jsonp.js'),
             # NOTE: Despite the name, this is actually a JSONP file.
-            # https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/tools/blinkpy/web_tests/controllers/manager.py;l=636;drc=3b93609b2498af0e9dc298f64e2b4f6204af68fa
+            # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/tools/blinkpy/web_tests/controllers/manager.py;l=636;drc=3b93609b2498af0e9dc298f64e2b4f6204af68fa
             os.path.join(layout_test_results, 'failing_results.json'),
         )
 
@@ -109,7 +109,7 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         self.fs.copyfile(self.wpt_output, full_results_json)
 
         # JSONP paddings need to be the same as
-        # https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/tools/blinkpy/web_tests/controllers/manager.py;l=629;drc=3b93609b2498af0e9dc298f64e2b4f6204af68fa
+        # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/tools/blinkpy/web_tests/controllers/manager.py;l=629;drc=3b93609b2498af0e9dc298f64e2b4f6204af68fa
         # Write to full_results.jsonp
         with self.fs.open_text_file_for_writing(full_results_jsonp) as f:
             f.write('ADD_FULL_RESULTS(')
@@ -257,7 +257,8 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         """
         # When looking into the WPT manifest, we omit "external/wpt" from the
         # test name, since that part of the path is only in Chromium.
-        wpt_test_name = test_name.replace("external/wpt/", "")
+        wpt_test_name = test_name.replace(
+            os.path.join("external", "wpt", ""), "")
         test_file_subpath = self.wpt_manifest.file_path_for_test_url(
             wpt_test_name)
         if not test_file_subpath:
@@ -382,7 +383,8 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             # When comparing the test name to the image URL, we omit
             # "external/wpt" from the test name, since that part of the path is
             # only in Chromium.
-            wpt_test_name = test_name.replace("external/wpt/", "")
+            wpt_test_name = test_name.replace(
+                os.path.join("external", "wpt", ""), "")
             if wpt_test_name == url:
                 screenshot_key = "actual_image"
                 file_suffix = test_failures.FILENAME_SUFFIX_ACTUAL

@@ -2,15 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <if expr="is_ios">
+import 'chrome://resources/js/ios/web_ui.js';
+// </if>
+
+import 'chrome://resources/js/jstemplate_compiled.js';
+import './strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isIOS, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
 let lastChanged = null;
 let lastFocused = null;
 const restartButton = $('experiment-restart-button');
 
+let pageLoadOnResetAllFlags = false;
+
 /** @type {?function():void} */
 let experimentalFeaturesResolver = null;
 
+// Exported on |window| since this is needed by tests.
 /** @type {!Promise} */
-const experimentalFeaturesReady = new Promise(resolve => {
+window.experimentalFeaturesReadyForTest = new Promise(resolve => {
   experimentalFeaturesResolver = resolve;
 });
 
@@ -84,7 +100,7 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
-  assert(restartButton || cr.isIOS);
+  assert(restartButton || isIOS);
   if (restartButton) {
     restartButton.onclick = restartBrowser;
   }
@@ -138,6 +154,16 @@ function registerFocusEvents(el) {
 }
 
 /**
+ * Set focus on the element associated with the page's location's hash.
+ */
+function setFocusOnReferencedFlag() {
+  const anchor = window.location.hash;
+  if (anchor != '') {
+    $(anchor.substr(1) + '_name').focus();
+  }
+}
+
+/**
  * Highlight an element associated with the page's location's hash. We need to
  * fake fragment navigation with '.scrollIntoView()', since the fragment IDs
  * don't actually exist until after the template code runs; normal navigation
@@ -171,7 +197,8 @@ function highlightReferencedFlag() {
  * |returnExperimentalFeatures()| will be called with reply.
  */
 function requestExperimentalFeaturesData() {
-  chrome.send('requestExperimentalFeatures');
+  sendWithPromise('requestExperimentalFeatures')
+      .then(returnExperimentalFeatures);
 }
 
 /** Restart browser and restore tabs. */
@@ -197,6 +224,7 @@ function resetAllFlags() {
   announceStatus(loadTimeData.getString("reset-acknowledged"));
   showRestartToast(true);
   requestExperimentalFeaturesData();
+  pageLoadOnResetAllFlags = true;
 }
 
 /**
@@ -296,6 +324,10 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
   const ownerWarningDiv = $('owner-warning');
   if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
+  }
+
+  if (!pageLoadOnResetAllFlags) {
+    setFocusOnReferencedFlag();
   }
 
   experimentalFeaturesResolver();
@@ -659,8 +691,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Get and display the data upon loading.
   requestExperimentalFeaturesData();
   setupRestartButton();
-  cr.ui.FocusOutlineManager.forDocument(document);
+  FocusOutlineManager.forDocument(document);
 });
 
 // Update the highlighted flag when the hash changes.
 window.addEventListener('hashchange', highlightReferencedFlag);
+// Set focus on referenced flag when the hash changes.
+window.addEventListener('hashchange', setFocusOnReferencedFlag);

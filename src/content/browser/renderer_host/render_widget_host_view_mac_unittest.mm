@@ -659,7 +659,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
                                     caret_rect, base::i18n::LEFT_TO_RIGHT,
-                                    false);
+                                    gfx::Rect(), false);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
                                                              &actual_range));
   EXPECT_EQ(caret_rect, rect);
@@ -678,7 +678,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
                                     caret_rect, base::i18n::LEFT_TO_RIGHT,
-                                    false);
+                                    gfx::Rect(), false);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
                                                              &actual_range));
   EXPECT_EQ(caret_rect, rect);
@@ -694,9 +694,9 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   // No caret.
   caret_range = gfx::Range(1, 2);
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
-                                    gfx::Rect(30, 11, 0, 10),
-                                    base::i18n::LEFT_TO_RIGHT, false);
+  rwhv_mac_->SelectionBoundsChanged(
+      caret_rect, base::i18n::LEFT_TO_RIGHT, gfx::Rect(30, 11, 0, 10),
+      base::i18n::LEFT_TO_RIGHT, gfx::Rect(), false);
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
       gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
@@ -1697,7 +1697,7 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
   base::HistogramTester histogram_tester;
 
   // Send an initial wheel event for scrolling by 3 lines.
-  // Verify that Event.Latency.OS.MOUSE_WHEEL histogram is computed properly.
+  // Verify that Event.Latency.OS2.MOUSE_WHEEL histogram is computed properly.
   NSEvent* wheelEvent = MockScrollWheelEventWithPhase(@selector(phaseBegan),3);
   [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent];
 
@@ -1708,6 +1708,7 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
       blink::mojom::InputEventResultState::kConsumed);
 
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS2.MOUSE_WHEEL", 1);
 }
 
 // This test verifies that |selected_text_| is updated accordingly with

@@ -20,7 +20,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
-#include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -30,6 +29,7 @@
 #include "storage/browser/file_system/quota/quota_backend_impl.h"
 #include "storage/browser/file_system/quota/quota_reservation.h"
 #include "storage/browser/file_system/quota/quota_reservation_manager.h"
+#include "storage/browser/file_system/sandbox_file_stream_reader.h"
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
 #include "storage/browser/file_system/sandbox_quota_observer.h"
@@ -56,9 +56,6 @@ int64_t kMinimumStatsCollectionIntervalHours = 1;
 const char kTemporaryDirectoryName[] = "t";
 const char kPersistentDirectoryName[] = "p";
 const char kSyncableDirectoryName[] = "s";
-
-const char* const kPrepopulateTypes[] = {kPersistentDirectoryName,
-                                         kTemporaryDirectoryName};
 
 enum FileSystemError {
   kOK = 0,
@@ -103,7 +100,7 @@ class SandboxObfuscatedOriginEnumerator
   }
   ~SandboxObfuscatedOriginEnumerator() override = default;
 
-  base::Optional<url::Origin> Next() override { return enum_->Next(); }
+  absl::optional<url::Origin> Next() override { return enum_->Next(); }
 
   bool HasFileSystemType(FileSystemType type) const override {
     return enum_->HasTypeDirectory(
@@ -212,19 +209,6 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
       special_storage_policy_(special_storage_policy),
       file_system_options_(file_system_options),
       is_filesystem_opened_(false) {
-  // Prepopulate database only if it can run asynchronously (i.e. the current
-  // sequence is not file_task_runner). Usually this is the case but may not
-  // in test code.
-  if (!file_system_options.is_incognito() &&
-      !file_task_runner_->RunsTasksInCurrentSequence()) {
-    std::vector<std::string> types_to_prepopulate(
-        &kPrepopulateTypes[0],
-        &kPrepopulateTypes[base::size(kPrepopulateTypes)]);
-    file_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
-                                  base::Unretained(obfuscated_file_util()),
-                                  types_to_prepopulate));
-  }
 }
 
 SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
@@ -322,7 +306,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
     return nullptr;
-  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+  return std::make_unique<SandboxFileStreamReader>(context, url, offset,
                                                    expected_modification_time);
 }
 
@@ -377,7 +361,7 @@ SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   std::vector<url::Origin> origins;
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (enumerator->HasFileSystemType(type))
       origins.push_back(std::move(origin).value());
@@ -402,7 +386,7 @@ SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   std::vector<url::Origin> origins;
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == origin->host() && enumerator->HasFileSystemType(type))
       origins.push_back(std::move(origin).value());

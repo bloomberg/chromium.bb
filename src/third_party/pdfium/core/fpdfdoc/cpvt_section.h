@@ -18,7 +18,7 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
-class CPDF_VariableText;
+class CPVT_VariableText;
 struct CPVT_LineInfo;
 struct CPVT_WordLine;
 struct CPVT_WordPlace;
@@ -34,11 +34,11 @@ class CPVT_Section final {
     CPVT_WordPlace GetEndWordPlace() const;
     CPVT_WordPlace GetPrevWordPlace(const CPVT_WordPlace& place) const;
     CPVT_WordPlace GetNextWordPlace(const CPVT_WordPlace& place) const;
-    CPVT_WordPlace LinePlace;
+    CPVT_WordPlace m_LinePlace;
     CPVT_LineInfo m_LineInfo;
   };
 
-  explicit CPVT_Section(CPDF_VariableText* pVT);
+  explicit CPVT_Section(CPVT_VariableText* pVT);
   ~CPVT_Section();
 
   void ResetLinePlace();
@@ -63,12 +63,11 @@ class CPVT_Section final {
   void SetPlaceIndex(int32_t index) { m_SecPlace.nSecIndex = index; }
   const CPVT_FloatRect& GetRect() const { return m_Rect; }
   void SetRect(const CPVT_FloatRect& rect) { m_Rect = rect; }
-  const std::vector<std::unique_ptr<Line>>& GetLineArray() const {
-    return m_LineArray;
-  }
-  const std::vector<std::unique_ptr<CPVT_WordInfo>>& GetWordArray() const {
-    return m_WordArray;
-  }
+
+  int32_t GetLineArraySize() const;
+  const Line* GetLineFromArray(int32_t index) const;
+  int32_t GetWordArraySize() const;
+  const CPVT_WordInfo* GetWordFromArray(int32_t index) const;
   void EraseWordsFrom(int32_t index);
 
  private:
@@ -85,7 +84,7 @@ class CPVT_Section final {
   CPVT_FloatRect m_Rect;
   std::vector<std::unique_ptr<Line>> m_LineArray;
   std::vector<std::unique_ptr<CPVT_WordInfo>> m_WordArray;
-  UnownedPtr<CPDF_VariableText> const m_pVT;
+  UnownedPtr<CPVT_VariableText> const m_pVT;
 };
 
 #endif  // CORE_FPDFDOC_CPVT_SECTION_H_

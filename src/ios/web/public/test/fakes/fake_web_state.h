@@ -17,6 +17,7 @@
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 @class NSURLRequest;
@@ -76,14 +77,15 @@ class FakeWebState : public WebState {
       const ScriptCommandCallback& callback,
       const std::string& command_prefix) override;
   CRWWebViewProxyType GetWebViewProxy() const override;
-  bool IsShowingWebInterstitial() const override;
-  WebInterstitial* GetWebInterstitial() const override;
 
   void AddObserver(WebStateObserver* observer) override;
 
   void RemoveObserver(WebStateObserver* observer) override;
 
   void CloseWebState() override;
+
+  bool SetSessionStateData(NSData* data) override;
+  NSData* SessionStateData() override;
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
@@ -129,6 +131,9 @@ class FakeWebState : public WebState {
       bool for_main_frame,
       base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
   std::u16string GetLastExecutedJavascript() const;
+  // Returns a copy of the last added callback, if one has been added.
+  absl::optional<ScriptCommandCallback> GetLastAddedCallback() const;
+  std::string GetLastCommandPrefix() const;
   NSData* GetLastLoadedData() const;
   bool IsClosed() const;
 
@@ -166,6 +171,8 @@ class FakeWebState : public WebState {
   CRWWebViewProxyType web_view_proxy_;
   NSData* last_loaded_data_;
   base::RepeatingCallbackList<ScriptCommandCallbackSignature> callback_list_;
+  absl::optional<ScriptCommandCallback> last_added_callback_;
+  std::string last_command_prefix_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true>::Unchecked observers_;

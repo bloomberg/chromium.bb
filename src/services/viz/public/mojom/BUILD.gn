@@ -19,7 +19,6 @@ mojom("mojom") {
     "compositing/compositor_render_pass_id.mojom",
     "compositing/copy_output_request.mojom",
     "compositing/copy_output_result.mojom",
-    "compositing/delegated_ink_point_renderer.mojom",
     "compositing/filter_operation.mojom",
     "compositing/filter_operations.mojom",
     "compositing/frame_deadline.mojom",
@@ -48,6 +47,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
+    ":resource_format",
     "//gpu/ipc/common:interfaces",
     "//media/mojo/mojom",
     "//mojo/public/mojom/base",
@@ -96,10 +96,7 @@ mojom("mojom") {
         {
           mojom = "viz.mojom.ReturnedResource"
           cpp = "::viz::ReturnedResource"
-        },
-        {
-          mojom = "viz.mojom.ReturnedResourceArray"
-          cpp = "::viz::ReturnedResourceArray"
+          move_only = true
         },
       ]
       traits_headers = [ "//services/viz/public/cpp/compositing/returned_resource_mojom_traits.h" ]
@@ -278,6 +275,7 @@ mojom("mojom") {
           cpp = "::cc::FilterOperation"
         },
       ]
+      traits_sources = [ "//services/viz/public/cpp/compositing/filter_operation_mojom_traits.cc" ]
       traits_headers = [
         "//services/viz/public/cpp/compositing/filter_operation_mojom_traits.h",
       ]
@@ -453,7 +451,7 @@ mojom("mojom") {
       traits_headers = [ "//services/viz/public/cpp/compositing/transferable_resource_mojom_traits.h" ]
       traits_public_deps = [ "//components/viz/common" ]
       traits_deps = [
-        "//gpu/ipc/common:mojom_traits",
+        "//gpu/ipc/common",
         "//ui/gfx/geometry/mojom",
       ]
     },
@@ -550,12 +548,35 @@ mojom("mojom") {
       traits_public_deps = [
         "//components/viz/common",
         "//gpu/ipc/common:interfaces",
+        "//gpu/ipc/common:interfaces_blink",
         "//services/viz/public/mojom",
         "//skia/public/mojom",
         "//ui/gfx/geometry/mojom",
         "//ui/gfx/mojom",
         "//ui/latency/mojom",
       ]
+    },
+  ]
+}
+
+mojom("resource_format") {
+  generate_java = true
+  sources = [ "compositing/resource_format.mojom" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "viz.mojom.ResourceFormat"
+          cpp = "::viz::ResourceFormat"
+        },
+      ]
+      traits_headers = [
+        "//services/viz/public/cpp/compositing/resource_format_mojom_traits.h",
+      ]
+      traits_sources = [
+        "//services/viz/public/cpp/compositing/resource_format_mojom_traits.cc",
+      ]
+      traits_public_deps = [ "//components/viz/common:resource_format" ]
     },
   ]
 }

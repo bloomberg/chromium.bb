@@ -128,6 +128,13 @@ void PolicyContainerNavigationBundle::AddContentSecurityPolicies(
   delivered_policies_->AddContentSecurityPolicies(std::move(policies));
 }
 
+void PolicyContainerNavigationBundle::SetCrossOriginOpenerPolicy(
+    network::CrossOriginOpenerPolicy coop) {
+  DCHECK(!HasComputedPolicies());
+
+  delivered_policies_->cross_origin_opener_policy = coop;
+}
+
 const PolicyContainerPolicies&
 PolicyContainerNavigationBundle::DeliveredPoliciesForTesting() const {
   DCHECK(!HasComputedPolicies());
@@ -153,6 +160,15 @@ void PolicyContainerNavigationBundle::ComputePoliciesForError() {
   // crbug.com/1180140.
   policies->ip_address_space = delivered_policies_->ip_address_space;
 
+  // TODO(https://crbug.com/1153648) This keeps the existing behavior which is
+  // to keep the last value stored in cross_origin_opener_policy_status for the
+  // error page. This will be the previous document COOP value or the last
+  // redirect. This should be changed to a default value to be decided, for that
+  // this will need to be executed before determining the render frame host to
+  // use for the error.
+  policies->cross_origin_opener_policy =
+      delivered_policies_->cross_origin_opener_policy;
+
   SetFinalPolicies(std::move(policies));
 
   DCHECK(HasComputedPolicies());
@@ -173,6 +189,7 @@ void PolicyContainerNavigationBundle::ComputeIsWebSecureContext() {
 
 std::unique_ptr<PolicyContainerPolicies>
 PolicyContainerNavigationBundle::IncorporateDeliveredPolicies(
+    const GURL& url,
     std::unique_ptr<PolicyContainerPolicies> policies) {
   // Delivered content security policies must be appended.
   policies->AddContentSecurityPolicies(
@@ -184,15 +201,20 @@ PolicyContainerNavigationBundle::IncorporateDeliveredPolicies(
     policies->ip_address_space = delivered_policies_->ip_address_space;
   }
 
+  // Ignore inheritance of COOP for blobs or filesystem schemes as this
+  // conflicts with COEP.
+  // TODO(https://crbug.com/1057296) properly implement inheritance for blobs
+  if (url.SchemeIs(url::kBlobScheme) || url.SchemeIs(url::kFileSystemScheme)) {
+    policies->cross_origin_opener_policy =
+        delivered_policies_->cross_origin_opener_policy;
+  }
+
   return policies;
 }
 
 std::unique_ptr<PolicyContainerPolicies>
 PolicyContainerNavigationBundle::ComputeInheritedPolicies(const GURL& url) {
-  if (!HasLocalScheme(url)) {
-    // No inheritance for non-local schemes.
-    return nullptr;
-  }
+  DCHECK(HasLocalScheme(url)) << "No inheritance allowed for non-local schemes";
 
   if (url.IsAboutSrcdoc()) {
     DCHECK(parent_policies_)
@@ -209,21 +231,21 @@ PolicyContainerNavigationBundle::ComputeInheritedPolicies(const GURL& url) {
 
 std::unique_ptr<PolicyContainerPolicies>
 PolicyContainerNavigationBundle::ComputeFinalPolicies(const GURL& url) {
-  if (history_policies_) {
-    DCHECK(HasLocalScheme(url)) << "Document is restoring policies from "
-                                   "history for non-local scheme: "
-                                << url;
+  // Policies are either inherited from another document for local scheme, or
+  // directly set from the delivered response.
+  if (!HasLocalScheme(url))
+    return delivered_policies_->Clone();
+
+  // For a local scheme, history policies should not incorporate delivered ones
+  // as this may lead to duplication of some policies already stored in history.
+  // For example, consider the following HTML:
+  //    <iframe src="about:blank" csp="something">
+  // This will store CSP: something in history. The next time we have a history
+  // navigation we will have CSP: something twice.
+  if (history_policies_)
     return history_policies_->Clone();
-  }
 
-  std::unique_ptr<PolicyContainerPolicies> inherited_policies =
-      ComputeInheritedPolicies(url);
-
-  if (inherited_policies) {
-    return IncorporateDeliveredPolicies(std::move(inherited_policies));
-  }
-
-  return delivered_policies_->Clone();
+  return IncorporateDeliveredPolicies(url, ComputeInheritedPolicies(url));
 }
 
 void PolicyContainerNavigationBundle::ComputePolicies(const GURL& url) {

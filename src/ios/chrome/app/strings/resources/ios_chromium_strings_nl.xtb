@@ -9,6 +9,7 @@
 <translation id="1431818719585918472">Laat Chromium je incognitotabbladen vergrendelen.</translation>
 <translation id="1472013873724362412">Je account werkt niet in Chromium. Neem contact op met je domeinbeheerder of gebruik een gewoon Google-account om je aan te melden.</translation>
 <translation id="1507010443238049608">Help de functies en prestaties van Chromium te verbeteren</translation>
+<translation id="1531155317299575425">Toont prompts om in te loggen bij Chromium.</translation>
 <translation id="1617663976202781617">Gegevens van Chromium-synchronisatie</translation>
 <translation id="1736662517232558588">Chromium-gegevens gewist</translation>
 <translation id="1838412507805038478">Chromium heeft bevestigd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
@@ -20,6 +21,7 @@
 <translation id="2168108852149185974">Sommige add-ons kunnen ervoor zorgen dat Chromium crasht. Verwijder de volgende add-ons:</translation>
 <translation id="2178608107313874732">Chromium kan je camera momenteel niet gebruiken</translation>
 <translation id="2195025571279539885">Wil je dat Chromium de volgende keer aanbiedt om pagina's in het <ph name="LANGUAGE_NAME" /> op deze site te vertalen?</translation>
+<translation id="2567507405773541360">Krijg meer gedaan met Chromium. Nu nog eenvoudiger, veiliger en sneller dan ooit</translation>
 <translation id="2590893390871230428">Je Chromium-gegevens synchroniseren</translation>
 <translation id="2650312721222849884">Zet de synchronisatie aan om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
 <translation id="2684230048001240293">Stel Chromium in als je standaardbrowser om je tabbladen, wachtwoorden en betalingsgegevens op al je apparaten te synchroniseren</translation>
@@ -41,9 +43,12 @@
 <translation id="4681781466797808448">Chromium-scanner aanzetten</translation>
 <translation id="4736424910885271643">Je account wordt beheerd door <ph name="HOSTED_DOMAIN" />, dus je Chromium-gegevens worden verwijderd van dit apparaat</translation>
 <translation id="4787850887676698916">Hier zie je tabbladen die je op andere apparaten in Chromium hebt geopend.</translation>
+<translation id="4806326830773390517">Help Chromium beter te maken door gebruiksstatistieken en crashrapporten naar Google te sturen</translation>
 <translation id="4828317641996116749">Chromium kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
+<translation id="4852878756222711218">Log in met je Google-account om het maximale uit Chromium te halen</translation>
 <translation id="4985291216379576555">Offline. Chromium kan niet checken op updates</translation>
 <translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
+<translation id="5171868502429358653">Inloggen bij Chromium</translation>
 <translation id="5224391634244552924">Geen opgeslagen wachtwoorden. Chromium kan je wachtwoorden checken als je deze hebt opgeslagen.</translation>
 <translation id="5308226104666789935">Chromium kan niet checken op updates</translation>
 <translation id="5396916991083608703">Chromium instellen als standaard?</translation>
@@ -59,12 +64,15 @@
 1. Open Instellingen.
 2. Tik op Standaard browser-app.
 3. Selecteer Chromium.</translation>
+<translation id="6155422572367400359">Log in op deze site, op je Google-account en bij Chromium. Je kunt synchronisatie later aanzetten.</translation>
 <translation id="6268381023930128611">Uitloggen bij Chromium?</translation>
+<translation id="632825460376924298">Inloggen bij Chromium toestaan</translation>
 <translation id="6337530241089703714">Kies of je je Chromium-gegevens voor dit apparaat wilt verwijderen of behouden</translation>
 <translation id="6424492062988593837">Chromium is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="6820823224820483452">Chromium kan niet alle wachtwoorden checken. Probeer het morgen opnieuw.</translation>
 <translation id="6827294685447036764">Als je Chromium toestaat je locatie te gebruiken, stuurt Chromium deze naar sites waarvoor je toestemming geeft. Sites kunnen om je locatie vragen als ze je lokale informatie willen laten zien, zoals winkels in de buurt of lokaal nieuws.</translation>
 <translation id="7018284295775193585">Chromium kan niet updaten</translation>
+<translation id="7045244423563602563">Chromium personaliseren</translation>
 <translation id="7099326575020694068">Chromium kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>
 <translation id="7118091470949186573">Je kunt Chromium nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
 <translation id="7208566199746267865">Chromium bespaart je tijd door je accounts beschikbaar te maken op internet. Je kunt accounts toevoegen of verwijderen bij Instellingen.</translation>

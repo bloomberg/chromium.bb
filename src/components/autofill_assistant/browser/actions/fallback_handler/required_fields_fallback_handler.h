@@ -60,6 +60,11 @@ class RequiredFieldsFallbackHandler {
   // Sets fallback field values for empty fields.
   void SetFallbackFieldValuesSequentially(size_t required_fields_index);
 
+  // Fill an HTML form field.
+  void FillFormField(const std::string& value,
+                     const RequiredField& required_field,
+                     base::OnceCallback<void()> set_next_field);
+
   // Called after attempting to find one of the elements to execute a fallback
   // action on.
   void OnFindElement(const std::string& value,
@@ -77,8 +82,14 @@ class RequiredFieldsFallbackHandler {
       const ClientStatus& element_tag_status,
       const std::string& element_tag);
 
+  // Fill a JS driven dropdown.
+  void FillJsDrivenDropdown(const std::string& value,
+                            const RequiredField& required_field,
+                            base::OnceCallback<void()> set_next_field);
+
   // Called after clicking a fallback element.
-  void OnClickOrTapFallbackElement(const std::string& value,
+  void OnClickOrTapFallbackElement(const std::string& re2_value,
+                                   bool case_sensitive,
                                    const RequiredField& required_field,
                                    base::OnceCallback<void()> set_next_field,
                                    const ClientStatus& element_click_status);

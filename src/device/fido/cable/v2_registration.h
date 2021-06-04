@@ -12,8 +12,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "device/fido/cable/v2_constants.h"
+#include "device/fido/fido_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace instance_id {
 class InstanceIDDriver;
@@ -48,6 +49,7 @@ class Registration {
     Event& operator=(const Event&) = delete;
 
     Type source;
+    FidoRequestType request_type;
     std::array<uint8_t, kTunnelIdSize> tunnel_id;
     std::array<uint8_t, kRoutingIdSize> routing_id;
     std::array<uint8_t, kPairingIDSize> pairing_id;
@@ -68,7 +70,7 @@ class Registration {
   // contact_id returns an opaque token that may be placed in pairing data for
   // desktops to later connect to. |nullopt| will be returned if the value is
   // not yet ready.
-  virtual base::Optional<std::vector<uint8_t>> contact_id() const = 0;
+  virtual absl::optional<std::vector<uint8_t>> contact_id() const = 0;
 };
 
 // Register subscribes to the tunnel service and returns a |Registration|. This

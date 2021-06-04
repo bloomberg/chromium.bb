@@ -23,17 +23,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/child_accounts/child_user_service.h"
+#include "chrome/browser/ash/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_activity_registry.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_time_limits_policy_builder.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/child_accounts/child_user_service.h"
-#include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/policy/status_collector/child_status_collector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
@@ -42,10 +42,13 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -202,11 +205,13 @@ class ChildStatusCollectorTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // Use FakeUpdateEngineClient.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetUpdateEngineClient(
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
 
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
+    chromeos::SeneschalClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
 
@@ -216,6 +221,11 @@ class ChildStatusCollectorTest : public testing::Test {
   ~ChildStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::SeneschalClient::Shutdown();
+    // |testing_profile_| must be destructed while ConciergeClient is alive.
+    testing_profile_.reset();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     // Finish pending tasks.
@@ -295,17 +305,17 @@ class ChildStatusCollectorTest : public testing::Test {
 
   // If `should_run_tasks` is true, then use FastForwardBy() to run tasks.
   // Otherwise use AdvanceClock() to skip running tasks.
-  void SimulateAppActivity(const chromeos::app_time::AppId& app_id,
+  void SimulateAppActivity(const ash::app_time::AppId& app_id,
                            TimeDelta duration,
                            bool should_run_tasks = true) {
-    chromeos::ChildUserService::TestApi child_user_service =
-        chromeos::ChildUserService::TestApi(
-            chromeos::ChildUserServiceFactory::GetForBrowserContext(
+    ash::ChildUserService::TestApi child_user_service =
+        ash::ChildUserService::TestApi(
+            ash::ChildUserServiceFactory::GetForBrowserContext(
                 testing_profile_.get()));
     EXPECT_TRUE(child_user_service.app_time_controller());
 
-    chromeos::app_time::AppActivityRegistry* app_registry =
-        chromeos::app_time::AppTimeController::TestApi(
+    ash::app_time::AppActivityRegistry* app_registry =
+        ash::app_time::AppTimeController::TestApi(
             child_user_service.app_time_controller())
             .app_registry();
     app_registry->OnAppInstalled(app_id);
@@ -330,7 +340,7 @@ class ChildStatusCollectorTest : public testing::Test {
   }
 
   void GetStatus() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     status_collector_->GetStatusAsync(base::BindRepeating(
         &ChildStatusCollectorTest::OnStatusReceived, base::Unretained(this)));
     run_loop_->Run();
@@ -551,7 +561,7 @@ TEST_F(ChildStatusCollectorTest, ReportingActivityTimesIdleTransitions) {
 
 TEST_F(ChildStatusCollectorTest, ActivityKeptInPref) {
   EXPECT_TRUE(
-      pref_service()->GetDictionary(prefs::kUserActivityTimes)->empty());
+      pref_service()->GetDictionary(prefs::kUserActivityTimes)->DictEmpty());
   task_environment_.AdvanceClock(kHour);
 
   DeviceStateTransitions test_states[] = {
@@ -568,7 +578,7 @@ TEST_F(ChildStatusCollectorTest, ActivityKeptInPref) {
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
   EXPECT_FALSE(
-      pref_service()->GetDictionary(prefs::kUserActivityTimes)->empty());
+      pref_service()->GetDictionary(prefs::kUserActivityTimes)->DictEmpty());
 
   // Process the list a second time after restarting the collector. It should be
   // able to count the active periods found by the original collector, because
@@ -619,7 +629,7 @@ TEST_F(ChildStatusCollectorTest, BeforeDayStart) {
                       TimeDelta::FromHours(4);
   FastForwardTo(initial_time);
   EXPECT_TRUE(
-      pref_service()->GetDictionary(prefs::kUserActivityTimes)->empty());
+      pref_service()->GetDictionary(prefs::kUserActivityTimes)->DictEmpty());
 
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
@@ -702,9 +712,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
   status_collector_->OnSubmittedSuccessfully();
 
   // Report activity for two different apps.
-  const chromeos::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const chromeos::app_time::AppId app2(apps::mojom::AppType::kExtension,
-                                       "app2");
+  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
   const Time start_time = Time::Now();
   const TimeDelta app1_interval = TimeDelta::FromMinutes(1);
   const TimeDelta app2_interval = TimeDelta::FromMinutes(2);
@@ -760,9 +769,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityNoReport) {
   EXPECT_EQ(0, child_status_.app_activity_size());
   status_collector_->OnSubmittedSuccessfully();
 
-  const chromeos::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const chromeos::app_time::AppId app2(apps::mojom::AppType::kExtension,
-                                       "app2");
+  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
   const TimeDelta app1_interval = TimeDelta::FromMinutes(1);
   const TimeDelta app2_interval = TimeDelta::FromMinutes(2);
 
@@ -773,7 +781,7 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityNoReport) {
   SimulateAppActivity(app1, app1_interval);
 
   {
-    chromeos::app_time::AppTimeLimitsPolicyBuilder builder;
+    ash::app_time::AppTimeLimitsPolicyBuilder builder;
     builder.SetAppActivityReportingEnabled(/* enabled */ false);
     DictionaryPrefUpdate update(testing_profile()->GetPrefs(),
                                 prefs::kPerAppTimeLimitsPolicy);
@@ -807,9 +815,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityMetrics) {
       /*expected_count=*/0);
 
   // Report activity for two different apps.
-  const chromeos::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const chromeos::app_time::AppId app2(apps::mojom::AppType::kExtension,
-                                       "app2");
+  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
   const TimeDelta app1_interval = TimeDelta::FromSeconds(1);
   const TimeDelta app2_interval = TimeDelta::FromSeconds(2);
   SimulateAppActivity(app1, app1_interval);

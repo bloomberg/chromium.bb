@@ -2,9 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note we can only import from 'receiver.js': other modules are rolled-up into
+// it, and already loaded.
+import {TEST_ONLY} from './receiver.js';
+const {
+  RenameResult,
+  DELEGATE,
+  assertCast,
+  parentMessagePipe,
+  loadFiles,
+  setLoadFiles,
+} = TEST_ONLY;
+
 /**
  * The last file list loaded into the guest, updated via a spy on loadFiles().
- * @type {?ReceivedFileList}
+ * TODO(b/185734620): This should be type {ReceivedFileList} but closure fails
+ * to resolve it properly. See b/185734620 for details.
  */
 let lastReceivedFileList = null;
 
@@ -55,26 +68,28 @@ async function runTestQuery(data) {
     } else {
       result = 'nothing called';
     }
-  } else if (data.overwriteLastFile) {
+  } else if (data.overwriteLastFile !== undefined) {
     // Simulate a user overwriting the currently open file.
     const testBlob = new Blob([data.overwriteLastFile]);
     const file = currentFile();
-    await assertCast(file.overwriteOriginal).call(file, testBlob);
+    try {
+      await assertCast(file.overwriteOriginal).call(file, testBlob);
+      result = 'overwriteOriginal resolved';
+    } catch (/** @type{!Error} */ error) {
+      result = `overwriteOriginal failed Error: ${error}`;
+      if (data.rethrow) {
+        throw error;
+      }
+    }
     extraResultData = {
       receiverFileName: file.name,
       receiverErrorName: file.error
     };
-    result = 'overwriteOriginal resolved';
   } else if (data.deleteLastFile) {
     // Simulate a user deleting the currently open file.
     try {
-      const deleteResult = await assertCast(currentFile().deleteOriginalFile)
-                               .call(currentFile());
-      if (deleteResult === DeleteResult.FILE_MOVED) {
-        result = 'deleteOriginalFile resolved file moved';
-      } else {
-        result = 'deleteOriginalFile resolved success';
-      }
+      await assertCast(currentFile().deleteOriginalFile).call(currentFile());
+      result = 'deleteOriginalFile resolved success';
     } catch (/** @type{!Error} */ error) {
       result = `deleteOriginalFile failed Error: ${error}`;
     }
@@ -170,7 +185,7 @@ async function runTestCase(data) {
  * @param {string} testName
  * @param {function(): !Promise<undefined>} testCase
  */
-function GUEST_TEST(testName, testCase) {
+export function GUEST_TEST(testName, testCase) {
   guestTestCases.set(testName, testCase);
 }
 
@@ -183,18 +198,22 @@ function GUEST_TEST(testName, testCase) {
  */
 async function signalTestHandlersReady() {
   const EXPECTED_ERROR =
-      `No handler registered for message type 'test-handlers-ready'`;
-  while (true) {
+      /No handler registered for message type 'test-handlers-ready'/;
+  let attempts = 10;
+  while (--attempts >= 0) {
     try {
+      // Try to limit log output from message pipe errors.
+      await new Promise(resolve => setTimeout(resolve, 100));
       await parentMessagePipe.sendMessage('test-handlers-ready', {});
       return;
     } catch (/** @type {!GenericErrorResponse} */ e) {
-      if (e.message !== EXPECTED_ERROR) {
+      if (!EXPECTED_ERROR.test(e.message)) {
         console.error('Unexpected error in signalTestHandlersReady', e);
         return;
       }
     }
   }
+  console.error('signalTestHandlersReady failed to signal.');
 }
 
 /** Installs the MessagePipe handlers for receiving test queries. */
@@ -245,14 +264,14 @@ function installTestHandlers() {
   // Install spies.
   const realLoadFiles = loadFiles;
   /**
-   * @param {!ReceivedFileList} fileList
+   * @param {*} fileList
    * @return {!Promise<undefined>}
    */
   async function watchLoadFiles(fileList) {
     lastReceivedFileList = fileList;
     return realLoadFiles(fileList);
   }
-  loadFiles = watchLoadFiles;
+  setLoadFiles(watchLoadFiles);
   signalTestHandlersReady();
 }
 
@@ -262,5 +281,3 @@ if (document.readyState !== 'complete') {
 } else {
   installTestHandlers();
 }
-
-//# sourceURL=guest_query_receiver.js

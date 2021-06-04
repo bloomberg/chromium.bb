@@ -27,9 +27,6 @@
 #include "src/gpu/vk/GrVkCaps.h"
 #endif
 
-// name of the render target width uniform
-#define SKSL_RTWIDTH_NAME "u_skRTWidth"
-
 // name of the render target height uniform
 #define SKSL_RTHEIGHT_NAME "u_skRTHeight"
 
@@ -70,9 +67,6 @@ struct Program {
     using Settings = ProgramSettings;
 
     struct Inputs {
-        // if true, this program requires the render target width uniform to be defined
-        bool fRTWidth;
-
         // if true, this program requires the render target height uniform to be defined
         bool fRTHeight;
 
@@ -81,13 +75,12 @@ struct Program {
         bool fFlipY;
 
         void reset() {
-            fRTWidth = false;
             fRTHeight = false;
             fFlipY = false;
         }
 
         bool isEmpty() {
-            return !fRTWidth && !fRTHeight && !fFlipY;
+            return !fRTHeight && !fFlipY;
         }
     };
 
@@ -197,6 +190,16 @@ struct Program {
     // The iterator's value type is 'std::unique_ptr<ProgramElement>', and mutation is allowed.
     std::vector<std::unique_ptr<ProgramElement>>& ownedElements() { return fElements; }
     const std::vector<std::unique_ptr<ProgramElement>>& ownedElements() const { return fElements; }
+
+    String description() const {
+        String result;
+        for (const auto& e : this->elements()) {
+            result += e->description();
+        }
+        return result;
+    }
+
+    const ProgramUsage* usage() const { return fUsage.get(); }
 
     std::unique_ptr<String> fSource;
     std::unique_ptr<ProgramConfig> fConfig;

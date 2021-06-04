@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -232,8 +233,8 @@ void AssistantScreenContextControllerImpl::OnAssistantControllerDestroying() {
 void AssistantScreenContextControllerImpl::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   // In Clamshell, we need to cache the Assistant structure when Launcher the
   // first to show, because we cannot retrieve the active ARC app window after
   // it lose focus. Later Assistant UI visibility changes inside the Launcher

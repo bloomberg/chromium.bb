@@ -29,7 +29,7 @@
 
 namespace autofill {
 
-class AutofillManager;
+class BrowserAutofillManager;
 enum class WebauthnDialogCallbackType;
 
 // Flow type denotes which card unmask authentication method was used.
@@ -57,7 +57,7 @@ struct CachedServerCardInfo {
 };
 
 // Manages logic for accessing credit cards either stored locally or stored
-// with Google Payments. Owned by AutofillManager.
+// with Google Payments. Owned by BrowserAutofillManager.
 #if defined(OS_IOS)
 class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
 #else
@@ -131,6 +131,14 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // TODO(crbug/1069929): Add browsertests for this.
   void CacheUnmaskedCardInfo(const CreditCard& card, const std::u16string& cvc);
 
+  // Return the info for the server cards present in the
+  // |unamsked_cards_cache_|.
+  std::vector<const CachedServerCardInfo*> GetCachedUnmaskedCards() const;
+
+  // Returns true if a |unmasked_cards_cache| contains an entry for the card
+  // with |server_id|.
+  bool IsCardPresentInUnmaskedCache(const std::string& server_id) const;
+
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
 #if !defined(OS_IOS)
@@ -143,7 +151,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
                            PreflightCallRateLimited);
   friend class AutofillAssistantTest;
-  friend class AutofillManagerTest;
+  friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
   friend class CreditCardAccessManagerTest;
 
@@ -268,15 +276,15 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   base::TimeTicks preflight_call_timestamp_;
 
   // Timestamp used for user-perceived latency metrics.
-  base::Optional<base::TimeTicks>
-      card_selected_without_unmask_details_timestamp_ = base::nullopt;
+  absl::optional<base::TimeTicks>
+      card_selected_without_unmask_details_timestamp_;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;
 
   // Timestamp for when fido_authenticator_->IsUserVerifiable() is called.
-  base::Optional<base::TimeTicks> is_user_verifiable_called_timestamp_ =
-      base::nullopt;
+  absl::optional<base::TimeTicks> is_user_verifiable_called_timestamp_ =
+      absl::nullopt;
 
   // Authenticators for card unmasking.
   std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
@@ -317,7 +325,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Set to true only if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
   // and enabled.
-  base::Optional<bool> is_user_verifiable_;
+  absl::optional<bool> is_user_verifiable_;
 
   // True only if currently waiting on unmask details. This avoids making
   // unnecessary calls to payments.

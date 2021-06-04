@@ -11,10 +11,13 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/task_runner.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -26,7 +29,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 
 namespace ash {
@@ -160,11 +162,12 @@ CaptureLabelView::CaptureLabelView(CaptureModeSession* capture_mode_session)
   label_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label_button_->SetNotifyEnterExitOnChild(true);
 
-  label_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  label_button_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   const auto ripple_attributes =
       color_provider->GetRippleAttributes(background_color);
-  label_button_->SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
-  label_button_->SetInkDropBaseColor(ripple_attributes.base_color);
+  label_button_->ink_drop()->SetVisibleOpacity(
+      ripple_attributes.inkdrop_opacity);
+  label_button_->ink_drop()->SetBaseColor(ripple_attributes.base_color);
   label_button_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   label_ = AddChildView(std::make_unique<views::Label>(std::u16string()));
@@ -234,7 +237,11 @@ void CaptureLabelView::UpdateIconAndText() {
   if (!icon.isNull()) {
     label_->SetVisible(false);
     label_button_->SetVisible(true);
-    label_button_->SetImage(views::Button::STATE_NORMAL, icon);
+    // Update the icon only if it has changed to reduce repainting.
+    if (!icon.BackedBySameObjectAs(
+            label_button_->GetImage(views::Button::STATE_NORMAL))) {
+      label_button_->SetImage(views::Button::STATE_NORMAL, icon);
+    }
     label_button_->SetText(text);
   } else if (!text.empty()) {
     label_button_->SetVisible(false);

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
@@ -219,10 +220,16 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
       // will be re-inserted after us.
       if (LayoutBlock* cb = ContainingBlock()) {
         cb->RemovePositionedObjects(this, kNewContainingBlock);
-        if (IsOutOfFlowPositioned()) {
+        if (IsOutOfFlowPositioned() && !cb->IsLayoutNGObject()) {
           // Insert this object into containing block's positioned descendants
           // list in case the parent won't layout. This is needed especially
           // there are descendants scheduled for overflow recalc.
+          //
+          // Only do this if the containing block is a legacy object, to let
+          // LayoutNG decide when to insert positioned objects. In particular,
+          // we don't want that if the OOF participates in block fragmentation,
+          // since an OOF will then be laid out as a child of a fragmentainer,
+          // rather than its actual containing block.
           cb->InsertPositionedObject(this);
         }
       }
@@ -1813,12 +1820,12 @@ LayoutUnit LayoutBlock::EmptyLineBaseline(
   return baseline_offset ? *baseline_offset : LayoutUnit(-1);
 }
 
-base::Optional<LayoutUnit> LayoutBlock::BaselineForEmptyLine(
+absl::optional<LayoutUnit> LayoutBlock::BaselineForEmptyLine(
     LineDirectionMode line_direction) const {
   NOT_DESTROYED();
   const SimpleFontData* font_data = FirstLineStyle()->GetFont().PrimaryFont();
   if (!font_data)
-    return base::nullopt;
+    return absl::nullopt;
   const auto& font_metrics = font_data->GetFontMetrics();
   const LayoutUnit line_height =
       LineHeight(true, line_direction, kPositionOfInteriorLineBoxes);
@@ -1938,7 +1945,7 @@ LayoutUnit LayoutBlock::MinLineHeightForReplacedObject(
 // them. Just walking the block children in logical order seems rather wrong for
 // those two layout modes, though.
 
-base::Optional<LayoutUnit> LayoutBlock::FirstLineBoxBaselineOverride() const {
+absl::optional<LayoutUnit> LayoutBlock::FirstLineBoxBaselineOverride() const {
   NOT_DESTROYED();
   if (ShouldApplyLayoutContainment())
     return LayoutUnit(-1);
@@ -1948,13 +1955,13 @@ base::Optional<LayoutUnit> LayoutBlock::FirstLineBoxBaselineOverride() const {
   if (IsWritingModeRoot() && !IsRubyRun() && !IsGridItem())
     return LayoutUnit(-1);
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 LayoutUnit LayoutBlock::FirstLineBoxBaseline() const {
   NOT_DESTROYED();
   DCHECK(!ChildrenInline());
-  if (const base::Optional<LayoutUnit> baseline =
+  if (const absl::optional<LayoutUnit> baseline =
           FirstLineBoxBaselineOverride())
     return *baseline;
 
@@ -1985,7 +1992,7 @@ bool LayoutBlock::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
          ShouldApplyLayoutContainment();
 }
 
-base::Optional<LayoutUnit> LayoutBlock::InlineBlockBaselineOverride(
+absl::optional<LayoutUnit> LayoutBlock::InlineBlockBaselineOverride(
     LineDirectionMode line_direction) const {
   NOT_DESTROYED();
   if (UseLogicalBottomMarginEdgeForInlineBlockBaseline()) {
@@ -1998,14 +2005,14 @@ base::Optional<LayoutUnit> LayoutBlock::InlineBlockBaselineOverride(
   if (IsWritingModeRoot() && !IsRubyRun())
     return LayoutUnit(-1);
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 LayoutUnit LayoutBlock::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
   NOT_DESTROYED();
   DCHECK(!ChildrenInline());
-  if (const base::Optional<LayoutUnit> baseline =
+  if (const absl::optional<LayoutUnit> baseline =
           InlineBlockBaselineOverride(line_direction))
     return *baseline;
 
@@ -2075,16 +2082,6 @@ inline bool LayoutBlock::IsInlineBoxWrapperActuallyChild() const {
   NOT_DESTROYED();
   return IsInlineBlockOrInlineTable() && !Size().IsEmpty() && GetNode() &&
          EditingIgnoresContent(*GetNode());
-}
-
-bool LayoutBlock::ShouldPaintCursorCaret() const {
-  NOT_DESTROYED();
-  return GetFrame()->Selection().ShouldPaintCaret(*this);
-}
-
-bool LayoutBlock::ShouldPaintDragCaret() const {
-  NOT_DESTROYED();
-  return GetFrame()->GetPage()->GetDragCaret().ShouldPaintCaret(*this);
 }
 
 LayoutRect LayoutBlock::LocalCaretRect(
@@ -2312,6 +2309,21 @@ RecalcLayoutOverflowResult LayoutBlock::RecalcChildLayoutOverflow() {
 
   result.Unite(RecalcPositionedDescendantsLayoutOverflow());
   return result;
+}
+
+void LayoutBlock::RebuildFragmentTreeSpine() {
+  DCHECK(PhysicalFragmentCount() && NGBlockNode::CanUseNewLayout(*this));
+  // If this box has an associated layout-result, rebuild the spine of the
+  // fragment-tree to ensure consistency.
+  LayoutBlock* cb = this;
+  while (NGBlockNode::CanUseNewLayout(*cb) && !cb->NeedsLayout()) {
+    // Create and set a new identical results.
+    for (auto& layout_result : cb->layout_results_) {
+      layout_result =
+          NGLayoutResult::CloneWithPostLayoutFragments(*layout_result);
+    }
+    cb = cb->ContainingBlock();
+  }
 }
 
 void LayoutBlock::RecalcChildVisualOverflow() {

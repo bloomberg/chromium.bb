@@ -14,7 +14,6 @@
 #include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -44,8 +43,7 @@
 #include "content/public/test/browser_test.h"
 #include "mojo/public/c/system/trap.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const test::UIPath kChromebookEmailToggle = {"marketing-opt-in",
@@ -99,7 +97,6 @@ const RegionToCodeMap kDoubleOptInCountries[]{
 // Unknown country.
 const RegionToCodeMap kUnknownCountry[]{
     {"Unknown", "unknown", "", false, true}};
-}  // namespace
 
 // Base class for simple tests on the marketing opt-in screen.
 class MarketingOptInScreenTest : public OobeBaseTest,
@@ -142,7 +139,7 @@ class MarketingOptInScreenTest : public OobeBaseTest,
   // Logs in as a normal user. Overridden by subclasses.
   virtual void PerformLogin();
 
-  base::Optional<MarketingOptInScreen::Result> screen_result_;
+  absl::optional<MarketingOptInScreen::Result> screen_result_;
   base::HistogramTester histogram_tester_;
 
  protected:
@@ -192,7 +189,7 @@ MarketingOptInScreenTest::MarketingOptInScreenTest() {
 }
 
 void MarketingOptInScreenTest::SetUpOnMainThread() {
-  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  ShellTestApi().SetTabletModeEnabledForTest(true);
 
   original_callback_ = GetScreen()->get_exit_callback_for_testing();
   GetScreen()->set_exit_callback_for_testing(base::BindRepeating(
@@ -211,7 +208,7 @@ void MarketingOptInScreenTest::ShowMarketingOptInScreen() {
   PerformLogin();
   OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-      ash::prefs::kGestureEducationNotificationShown, true);
+      prefs::kGestureEducationNotificationShown, true);
   LoginDisplayHost::default_host()->StartWizard(
       MarketingOptInScreenView::kScreenId);
 }
@@ -457,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
 
   // Verify the accessibility pref for shelf navigation buttons is set.
   EXPECT_TRUE(ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
 }
 
 // Tests that the user can exit the screen from the accessibility page.
@@ -657,4 +654,5 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestChildUser, DisabledForChild) {
                                      0);
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

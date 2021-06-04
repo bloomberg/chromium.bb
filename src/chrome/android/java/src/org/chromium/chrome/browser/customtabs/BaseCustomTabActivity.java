@@ -66,7 +66,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     protected static Integer sOverrideCoreCountForTesting;
 
     // Fallback study name used for experiments ids.
-    private static final String GSA_FALLBACK_STUDY_NAME = "GsaExperiments";
+    public static final String GSA_FALLBACK_STUDY_NAME = "GsaExperiments";
 
     protected BrowserServicesIntentDataProvider mIntentDataProvider;
     protected CustomTabDelegateFactory mDelegateFactory;
@@ -151,7 +151,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 ()
                         -> mNavigationController,
                 getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
-                this::getContextualSearchManager, getTabModelSelectorSupplier());
+                this::getContextualSearchManager, getTabModelSelectorSupplier(),
+                getBrowserControlsManager());
     }
 
     @Override

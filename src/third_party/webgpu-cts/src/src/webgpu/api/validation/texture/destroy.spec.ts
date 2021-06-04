@@ -45,8 +45,9 @@ g.test('submit_a_destroyed_texture')
     const renderPass = commandEncoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: textureView,
+          view: textureView,
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          storeOp: 'store',
         },
       ],
     });

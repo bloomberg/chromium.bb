@@ -7,6 +7,7 @@
 #include <cmath>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/dcheck_is_on.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
@@ -135,6 +136,10 @@ WebRtcVideoFrameAdapter::SharedResources::ConstructVideoFrameFromGpu(
   DCHECK_EQ(source_frame->format(), media::PIXEL_FORMAT_NV12);
   DCHECK_EQ(source_frame->storage_type(),
             media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  // This is necessary because mapping may require waiting on IO thread,
+  // but webrtc API is synchronous.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
   return media::ConvertToMemoryMappedFrame(std::move(source_frame));
 }

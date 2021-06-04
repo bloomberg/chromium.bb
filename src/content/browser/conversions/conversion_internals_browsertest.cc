@@ -4,7 +4,6 @@
 
 #include "content/browser/conversions/conversion_internals_ui.h"
 
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager.h"
@@ -20,6 +19,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -85,11 +85,10 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
 
   // Execute script to ensure the page has loaded correctly, executing similarly
   // to ExecJsInWebUI().
-  EXPECT_EQ(
-      true,
-      EvalJs(shell()->web_contents()->GetMainFrame(),
-             "document.body.innerHTML.search('Conversion Internals') >= 0;",
-             EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
+                         "document.body.innerHTML.search('Conversion "
+                         "Measurement API Internals') >= 0;",
+                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
 }
 
 IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
@@ -177,14 +176,21 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   manager.SetActiveImpressionsForWebUI(
       {ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
-       ImpressionBuilder(base::Time::Now()).Build()});
+       ImpressionBuilder(base::Time::Now())
+           .SetSourceType(StorableImpression::SourceType::kEvent)
+           .SetPriority(10)
+           .Build()});
   OverrideWebUIConversionManager(&manager);
 
   std::string wait_script = R"(
     let table = document.getElementById("impression-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
-          table.children[0].children[0].innerText === "100") {
+          table.children[0].children[0].innerText === "100" &&
+          table.children[0].children[6].innerText === "Navigation" &&
+          table.children[1].children[6].innerText === "Event" &&
+          table.children[0].children[7].innerText === "0" &&
+          table.children[1].children[7].innerText === "10") {
         document.title = $1;
       }
     });
@@ -205,6 +211,66 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   SetTitleOnReportsTableEmpty(kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       WebUIShownWithNoSentReports_NoSentReportsDisplayed) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  OverrideWebUIConversionManager(&manager);
+
+  std::string wait_script = R"(
+    let table = document.getElementById("sent-report-table-body");
+    let obs = new MutationObserver(() => {
+      if (table.children.length === 1 &&
+          table.children[0].children[0].innerText ===
+          "No sent reports.") {
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       WebUIShownWithSentReport_SentReportsDisplayed) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  manager.SetSentReportsForWebUI({
+      {.report_url = GURL("https://example.com/1"),
+       .report_body = "a",
+       .http_response_code = 200},
+      {.report_url = GURL("https://example.com/2"),
+       .report_body = "b",
+       .http_response_code = 404},
+  });
+  OverrideWebUIConversionManager(&manager);
+
+  std::string wait_script = R"(
+    let table = document.getElementById("sent-report-table-body");
+    let obs = new MutationObserver(() => {
+      if (table.children.length === 2 &&
+          table.children[0].children[0].innerText === "https://example.com/1" &&
+          table.children[0].children[1].innerText === "a" &&
+          table.children[0].children[2].innerText === "200" &&
+          table.children[1].children[0].innerText === "https://example.com/2" &&
+          table.children[1].children[1].innerText === "b" &&
+          table.children[1].children[2].innerText === "404") {
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
@@ -271,14 +337,23 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
       ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
       "7" /* conversion_data */, base::Time::Now() /* conversion_time */,
       base::Time::Now() /* report_time */, 1 /* conversion_id */);
-  manager.SetReportsForWebUI({report});
+  ConversionReport report2(
+      ImpressionBuilder(base::Time::Now())
+          .SetData("200")
+          .SetSourceType(StorableImpression::SourceType::kEvent)
+          .Build(),
+      "7" /* conversion_data */, base::Time::Now() /* conversion_time */,
+      base::Time::Now() /* report_time */, 1 /* conversion_id */);
+  manager.SetReportsForWebUI({report, report2});
   OverrideWebUIConversionManager(&manager);
 
   std::string wait_script = R"(
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
-      if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "7") {
+      if (table.children.length === 2 &&
+          table.children[0].children[1].innerText === "7" &&
+          table.children[0].children[5].innerText === "Navigation" &&
+          table.children[1].children[5].innerText === "Event") {
         document.title = $1;
       }
     });

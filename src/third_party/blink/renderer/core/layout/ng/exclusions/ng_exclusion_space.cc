@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 
 namespace blink {
@@ -60,9 +60,10 @@ void InsertClosedArea(
 }
 
 // Returns true if there is at least one edge between block_start and block_end.
-bool HasSolidEdges(const Vector<NGExclusionSpaceInternal::NGShelfEdge>& edges,
-                   LayoutUnit block_start,
-                   LayoutUnit block_end) {
+bool HasSolidEdges(
+    const Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>& edges,
+    LayoutUnit block_start,
+    LayoutUnit block_end) {
   // If there aren't any adjacent exclusions, we must be the initial shelf.
   // This always has "solid" edges on either side.
   if (edges.IsEmpty())
@@ -81,9 +82,9 @@ bool HasSolidEdges(const Vector<NGExclusionSpaceInternal::NGShelfEdge>& edges,
 // to the given out_edges vector.
 // edges will be invalid after this call.
 void CollectSolidEdges(
-    Vector<NGExclusionSpaceInternal::NGShelfEdge>* edges,
+    Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>* edges,
     LayoutUnit block_offset,
-    Vector<NGExclusionSpaceInternal::NGShelfEdge>* out_edges) {
+    Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>* out_edges) {
   *out_edges = std::move(*edges);
   for (auto* it = out_edges->begin(); it != out_edges->end();) {
     if ((*it).block_end <= block_offset) {
@@ -156,10 +157,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 }  // namespace
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal()
-    : exclusions_(base::MakeRefCounted<NGExclusionPtrArray>()),
-      num_exclusions_(0),
-      track_shape_exclusions_(false),
-      derived_geometry_(nullptr) {}
+    : exclusions_(base::MakeRefCounted<NGExclusionPtrArray>()) {}
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal(
     const NGExclusionSpaceInternal& other)
@@ -279,7 +277,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
   for (wtf_size_t i = 0; i < shelves_.size(); ++i) {
     // We modify the current shelf in-place. However we need to keep a copy of
     // the shelf if we need to insert a new shelf later in the loop.
-    base::Optional<NGShelf> shelf_copy;
+    absl::optional<NGShelf> shelf_copy;
 
     bool is_between_shelves;
 

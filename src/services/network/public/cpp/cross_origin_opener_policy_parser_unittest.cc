@@ -9,6 +9,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,17 +32,17 @@ TEST(CrossOriginOpenerPolicyTest, Parse) {
   constexpr auto kCoepCorp =
       mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
 
-  const auto kNoHeader = base::Optional<std::string>();
+  const auto kNoHeader = absl::optional<std::string>();
   const auto kNoEndpoint = kNoHeader;
 
   const struct {
-    base::Optional<std::string> raw_coop_string;
+    absl::optional<std::string> raw_coop_string;
     mojom::CrossOriginEmbedderPolicyValue coep_value;
-    base::Optional<std::string> raw_coop_report_only_string;
+    absl::optional<std::string> raw_coop_report_only_string;
     mojom::CrossOriginEmbedderPolicyValue coep_report_only_value;
-    base::Optional<std::string> expected_endpoint;
+    absl::optional<std::string> expected_endpoint;
     CrossOriginOpenerPolicyValue expected_policy;
-    base::Optional<std::string> expected_endpoit_report_only;
+    absl::optional<std::string> expected_endpoit_report_only;
     CrossOriginOpenerPolicyValue expected_policy_report_only;
   } kTestCases[] = {
       {"same-origin", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kSameOrigin,
@@ -218,10 +220,10 @@ TEST(CrossOriginOpenerPolicyTest, Default) {
   // Then we have no policy enforced by default:
   network::CrossOriginOpenerPolicy parsed_policy =
       ParseCrossOriginOpenerPolicy(*headers, coep);
-  EXPECT_EQ(base::nullopt, parsed_policy.reporting_endpoint);
+  EXPECT_EQ(absl::nullopt, parsed_policy.reporting_endpoint);
   EXPECT_EQ(mojom::CrossOriginOpenerPolicyValue::kUnsafeNone,
             parsed_policy.value);
-  EXPECT_EQ(base::nullopt, parsed_policy.report_only_reporting_endpoint);
+  EXPECT_EQ(absl::nullopt, parsed_policy.report_only_reporting_endpoint);
   EXPECT_EQ(mojom::CrossOriginOpenerPolicyValue::kUnsafeNone,
             parsed_policy.report_only_value);
 }
@@ -242,10 +244,10 @@ TEST(CrossOriginOpenerPolicyTest, DefaultWithCOOPByDefault) {
   // policy reported on by default:
   network::CrossOriginOpenerPolicy parsed_policy =
       ParseCrossOriginOpenerPolicy(*headers, coep);
-  EXPECT_EQ(base::nullopt, parsed_policy.reporting_endpoint);
+  EXPECT_EQ(absl::nullopt, parsed_policy.reporting_endpoint);
   EXPECT_EQ(mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups,
             parsed_policy.value);
-  EXPECT_EQ(base::nullopt, parsed_policy.report_only_reporting_endpoint);
+  EXPECT_EQ(absl::nullopt, parsed_policy.report_only_reporting_endpoint);
   EXPECT_EQ(mojom::CrossOriginOpenerPolicyValue::kUnsafeNone,
             parsed_policy.report_only_value);
 }

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -203,7 +204,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
       loading_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Loading")) {
-  frame_task_queue_controller_.reset(
+  frame_task_queue_controller_ = base::WrapUnique(
       new FrameTaskQueueController(main_thread_scheduler_, this, this));
 }
 
@@ -429,6 +430,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kSensor:
     case TaskType::kPerformanceTimeline:
     case TaskType::kWebGL:
+    case TaskType::kWebGPU:
     case TaskType::kIdleTask:
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
@@ -628,7 +630,7 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
   if (!is_same_document) {
     loading_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kLoading);
     loading_power_mode_voter_->ResetVoteAfterTimeout(
-        power_scheduler::PowerModeVoter::kLoadingTimeout);
+        power_scheduler::PowerModeVoter::kStuckLoadingTimeout);
 
     waiting_for_contentful_paint_ = true;
     waiting_for_meaningful_paint_ = true;
@@ -792,8 +794,7 @@ void FrameSchedulerImpl::OnRemovedBackForwardCacheOptOut(
       !back_forward_cache_opt_out_counts_.empty();
 }
 
-void FrameSchedulerImpl::WriteIntoTracedValue(
-    perfetto::TracedValue context) const {
+void FrameSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame_visible", frame_visible_);
   dict.Add("page_visible", parent_page_scheduler_->IsPageVisible());
@@ -937,10 +938,10 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   return SchedulingLifecycleState::kNotThrottled;
 }
 
-void FrameSchedulerImpl::OnFirstContentfulPaint() {
+void FrameSchedulerImpl::OnFirstContentfulPaintInMainFrame() {
   waiting_for_contentful_paint_ = false;
-  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame)
-    main_thread_scheduler_->OnMainFramePaint();
+  DCHECK_EQ(GetFrameType(), FrameScheduler::FrameType::kMainFrame);
+  main_thread_scheduler_->OnMainFramePaint();
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
@@ -966,7 +967,8 @@ void FrameSchedulerImpl::OnLoad() {
     main_thread_scheduler_->OnMainFrameLoad(*this);
   }
 
-  loading_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kIdle);
+  loading_power_mode_voter_->ResetVoteAfterTimeout(
+      power_scheduler::PowerModeVoter::kLoadingTimeout);
 }
 
 bool FrameSchedulerImpl::IsWaitingForContentfulPaint() const {
@@ -1128,7 +1130,7 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   // Consult per-agent scheduling strategy to see if it wants to affect queue
   // priority. Done here to avoid interfering with other policy decisions.
-  base::Optional<TaskQueue::QueuePriority> per_agent_priority =
+  absl::optional<TaskQueue::QueuePriority> per_agent_priority =
       main_thread_scheduler_->agent_scheduling_strategy().QueuePriority(
           *task_queue);
   if (per_agent_priority.has_value())

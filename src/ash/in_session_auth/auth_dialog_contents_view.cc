@@ -24,6 +24,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -585,7 +586,7 @@ void AuthDialogContentsView::OnAuthSubmit(const std::u16string& pin) {
 }
 
 // TODO(b/156258540): Clear PIN if auth failed and retry is allowed.
-void AuthDialogContentsView::OnPinAuthComplete(base::Optional<bool> success) {
+void AuthDialogContentsView::OnPinAuthComplete(absl::optional<bool> success) {
   // On success, do nothing, and the dialog will dismiss.
   if (success.has_value() && success.value())
     return;

@@ -130,6 +130,7 @@ private:
     }
 
     GrOpsRenderPass* onGetOpsRenderPass(GrRenderTarget*,
+                                        bool useMSAASurface,
                                         GrAttachment*,
                                         GrSurfaceOrigin,
                                         const SkIRect&,
@@ -142,9 +143,8 @@ private:
         return true;
     }
 
-    sk_sp<GrAttachment> makeStencilAttachmentForRenderTarget(const GrRenderTarget*,
-                                                             SkISize dimensions,
-                                                             int numStencilSamples) override;
+    sk_sp<GrAttachment> makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,
+                                              SkISize dimensions, int numStencilSamples) override;
 
     GrBackendFormat getPreferredStencilFormat(const GrBackendFormat&) override {
         return GrBackendFormat::MakeMock(GrColorType::kUnknown, SkImage::CompressionType::kNone,
@@ -164,9 +164,9 @@ private:
                                             GrMipmapped,
                                             GrProtected) override;
 
-    bool onUpdateBackendTexture(const GrBackendTexture&,
-                                sk_sp<GrRefCntedCallback> finishedCallback,
-                                const BackendTextureData*) override {
+    bool onClearBackendTexture(const GrBackendTexture&,
+                               sk_sp<GrRefCntedCallback> finishedCallback,
+                               std::array<float, 4> color) override {
         return true;
     }
 
@@ -177,7 +177,8 @@ private:
 
     bool onUpdateCompressedBackendTexture(const GrBackendTexture&,
                                           sk_sp<GrRefCntedCallback> finishedCallback,
-                                          const BackendTextureData*) override {
+                                          const void*,
+                                          size_t) override {
         return true;
     }
 

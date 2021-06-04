@@ -35,18 +35,24 @@ class EmojiGroupComponent extends PolymerElement {
     super();
   }
 
+  /** @param emoji {Emoji} */
+  getTooltipForEmoji(emoji) {
+    return emoji.name;
+  }
+
   getDisplayEmojiForEmoji(emoji) {
     return this.preferred[emoji] || emoji;
   }
 
   onClearClick(ev) {
     ev.preventDefault();
+    ev.stopPropagation();
     this.showClearRecents = true;
-    console.error('clear clicked');
   }
 
   onClearRecentsClick(ev) {
     ev.preventDefault();
+    ev.stopPropagation();
     this.showClearRecents = false;
     this.dispatchEvent(createCustomEvent(EMOJI_CLEAR_RECENTS_CLICK, {}));
   }

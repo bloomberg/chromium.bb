@@ -32,6 +32,17 @@
 
 namespace perfetto {
 namespace trace_processor {
+namespace {
+
+bool IsBadTimestamp(int64_t ts) {
+  // Very small or very large timestamps are likely a mistake.
+  // See b/185978397
+  constexpr int64_t kBadTimestamp =
+      std::numeric_limits<int64_t>::max() - (10LL * 1000 * 1000 * 1000);
+  return std::abs(ts) >= kBadTimestamp;
+}
+
+}  // namespace
 
 using ExpectedDisplayFrameStartDecoder =
     protos::pbzero::FrameTimelineEvent_ExpectedDisplayFrameStart_Decoder;
@@ -69,6 +80,8 @@ static StringId JankTypeBitmaskToStringId(TraceProcessorContext* context,
     jank_reasons.emplace_back("Buffer Stuffing");
   if (jank_type & FrameTimelineEvent::JANK_UNKNOWN)
     jank_reasons.emplace_back("Unknown Jank");
+  if (jank_type & FrameTimelineEvent::JANK_SF_STUFFING)
+    jank_reasons.emplace_back("SurfaceFlinger Stuffing");
 
   std::string jank_str(
       std::accumulate(jank_reasons.begin(), jank_reasons.end(), std::string(),
@@ -159,7 +172,9 @@ FrameTimelineEventParser::FrameTimelineEventParser(
       jank_tag_other_id_(context->storage->InternString("Other Jank")),
       jank_tag_dropped_id_(context->storage->InternString("Dropped Frame")),
       jank_tag_buffer_stuffing_id_(
-          context->storage->InternString("Buffer Stuffing")) {}
+          context->storage->InternString("Buffer Stuffing")),
+      jank_tag_sf_stuffing_id_(
+          context->storage->InternString("SurfaceFlinger Stuffing")) {}
 
 void FrameTimelineEventParser::ParseExpectedDisplayFrameStart(
     int64_t timestamp,
@@ -268,10 +283,13 @@ void FrameTimelineEventParser::ParseActualDisplayFrameStart(
         prediction_type_ids_[static_cast<size_t>(event.prediction_type())];
   }
   actual_row.prediction_type = prediction_type;
-  if (DisplayFrameJanky(event.jank_type()))
+  if (DisplayFrameJanky(event.jank_type())) {
     actual_row.jank_tag = jank_tag_self_id_;
-  else
+  } else if (event.jank_type() == FrameTimelineEvent::JANK_SF_STUFFING) {
+    actual_row.jank_tag = jank_tag_sf_stuffing_id_;
+  } else {
     actual_row.jank_tag = jank_tag_none_id_;
+  }
 
   base::Optional<SliceId> opt_slice_id =
       context_->slice_tracker->BeginTyped(
@@ -460,16 +478,18 @@ void FrameTimelineEventParser::ParseActualSurfaceFrameStart(
         prediction_type_ids_[static_cast<size_t>(event.prediction_type())];
   }
   actual_row.prediction_type = prediction_type;
-  if (SurfaceFrameJanky(event.jank_type()))
+  if (SurfaceFrameJanky(event.jank_type())) {
     actual_row.jank_tag = jank_tag_self_id_;
-  else if (DisplayFrameJanky(event.jank_type()))
+  } else if (DisplayFrameJanky(event.jank_type())) {
     actual_row.jank_tag = jank_tag_other_id_;
-  else if (event.jank_type() == FrameTimelineEvent::JANK_BUFFER_STUFFING)
+  } else if (event.jank_type() == FrameTimelineEvent::JANK_BUFFER_STUFFING) {
     actual_row.jank_tag = jank_tag_buffer_stuffing_id_;
-  else if (present_type_validated && event.present_type() == FrameTimelineEvent::PRESENT_DROPPED)
+  } else if (present_type_validated &&
+             event.present_type() == FrameTimelineEvent::PRESENT_DROPPED) {
     actual_row.jank_tag = jank_tag_dropped_id_;
-  else
+  } else {
     actual_row.jank_tag = jank_tag_none_id_;
+  }
   StringId is_buffer = context_->storage->InternString("Unspecified");
   if (event.has_is_buffer()) {
     if (event.is_buffer())
@@ -528,7 +548,13 @@ void FrameTimelineEventParser::ParseFrameEnd(int64_t timestamp,
 void FrameTimelineEventParser::ParseFrameTimelineEvent(int64_t timestamp,
                                                        ConstBytes blob) {
   protos::pbzero::FrameTimelineEvent_Decoder frame_event(blob.data, blob.size);
-  context_->storage->InternString(base::StringView(std::to_string(timestamp)));
+
+  if (IsBadTimestamp(timestamp)) {
+    context_->storage->IncrementStats(
+        stats::frame_timeline_event_parser_errors);
+    return;
+  }
+
   if (frame_event.has_expected_display_frame_start()) {
     ParseExpectedDisplayFrameStart(timestamp,
                                    frame_event.expected_display_frame_start());

@@ -24,3 +24,43 @@ interface SignalingMessageObserver {
   // Dispatch message to recipient. The `signal` is a serialized WebRtcSignal.
   OnReceivedSignalingMessage(array<uint8> signal);
 };
+
+// Screen backlight state.
+// Reference from ash/public/cpp/screen_backlight_type.h
+enum ScreenBacklightState {
+    ON,
+    OFF,
+    OFF_AUTO,
+};
+
+// Interface for getting system information.
+interface SystemInfoProvider {
+  // Get the system info such as board name and device name. The
+  // output parameter is JSON encoded set of data.
+  GetSystemInfo() => (string system_info);
+
+  // Registers a generic interface to observe events from browser-to-renderer.
+  SetSystemInfoObserver(pending_remote<SystemInfoObserver> observer);
+};
+
+// A generic interface to observe events of browser process, all events from
+// browser-to-render should be added in this interface if there is no other
+// reason.
+interface SystemInfoObserver {
+  // Interface for monitoring screen backlight state of device. The state is
+  // detected from Chrome browser process and is notified to Eche App in
+  // renderer process. Updates with the latest screen backlight state.
+  OnScreenBacklightStateChanged(ScreenBacklightState state);
+
+  // Interface for monitoring tablet mode state of device. The state is detected
+  // from Chrome browser process and is notified to eche app in renderer
+  // process. TODO(b/184119538): Need to handle the resize issue and virtual
+  // keyboard in table mode.
+  OnReceivedTabletModeChanged(bool is_tablet_mode);
+};
+
+// Interface for generating uid. The uid is unique and persistent.
+interface UidGenerator {
+  // Get the uid.
+  GetUid() => (string local_uid);
+};

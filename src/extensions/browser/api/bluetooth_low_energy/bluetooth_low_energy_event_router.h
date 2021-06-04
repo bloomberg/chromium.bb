@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/values.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -29,12 +30,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/bluetooth_low_energy.h"
-
-namespace base {
-
-class ListValue;
-
-}  // namespace base
 
 namespace content {
 
@@ -310,8 +305,7 @@ class BluetoothLowEnergyEventRouter
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       int offset,
-      Delegate::ValueCallback value_callback,
-      Delegate::ErrorCallback error_callback) override;
+      Delegate::ValueCallback value_callback) override;
   void OnCharacteristicWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
@@ -331,8 +325,7 @@ class BluetoothLowEnergyEventRouter
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       int offset,
-      Delegate::ValueCallback value_callback,
-      Delegate::ErrorCallback error_callback) override;
+      Delegate::ValueCallback value_callback) override;
   void OnDescriptorWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
@@ -409,12 +402,12 @@ class BluetoothLowEnergyEventRouter
       const std::string& event_name,
       const device::BluetoothUUID& uuid,
       const std::string& characteristic_id,
-      std::unique_ptr<base::ListValue> args);
+      std::vector<base::Value> args);
 
   void DispatchEventToExtension(const std::string& extension_id,
                                 events::HistogramValue histogram_value,
                                 const std::string& event_name,
-                                std::unique_ptr<base::ListValue> args);
+                                std::vector<base::Value> args);
 
   // Returns a BluetoothRemoteGattService by its instance ID |instance_id|.
   // Returns
@@ -435,14 +428,19 @@ class BluetoothLowEnergyEventRouter
 
   // Dispatches a BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_VALUE_CHANGED and runs
   // |callback|.
-  void OnReadRemoteCharacteristicSuccess(
+  void OnReadRemoteCharacteristic(
       const std::string& characteristic_instance_id,
       base::OnceClosure callback,
+      ErrorCallback error_callback,
+      absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
       const std::vector<uint8_t>& value);
 
   // Runs |callback|.
-  void OnReadRemoteDescriptorSuccess(base::OnceClosure callback,
-                                     const std::vector<uint8_t>& value);
+  void OnReadRemoteDescriptor(
+      base::OnceClosure callback,
+      ErrorCallback error_callback,
+      absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
+      const std::vector<uint8_t>& value);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
   void OnCreateGattConnection(
@@ -464,9 +462,9 @@ class BluetoothLowEnergyEventRouter
 
   // Called by BluetoothRemoteGattCharacteristic and
   // BluetoothRemoteGattDescriptor in
-  // case of an error during the read/write operations.
+  // case of an error during the write operations.
   void OnError(ErrorCallback error_callback,
-               device::BluetoothRemoteGattService::GattErrorCode error_code);
+               device::BluetoothGattService::GattErrorCode error_code);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
   void OnConnectError(const std::string& extension_id,
@@ -489,7 +487,7 @@ class BluetoothLowEnergyEventRouter
       const std::string& extension_id,
       const std::string& characteristic_id,
       ErrorCallback error_callback,
-      device::BluetoothRemoteGattService::GattErrorCode error_code);
+      device::BluetoothGattService::GattErrorCode error_code);
 
   // Called by BluetoothGattNotifySession in response to a call to Stop.
   void OnStopNotifySession(const std::string& extension_id,

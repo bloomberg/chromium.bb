@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -97,6 +98,11 @@ void RecordListAccountsFailure(GoogleServiceAuthError::State error_state) {
 
 void RecordLogoutRequestState(LogoutRequestState logout_state) {
   UMA_HISTOGRAM_ENUMERATION("Signin.GaiaCookieManager.Logout", logout_state);
+}
+
+void RecordRemoveLocalAccountOutcome(
+    GaiaCookieManagerService::RemoveLocalAccountOutcome outcome) {
+  base::UmaHistogramEnumeration("Signin.RemoveLocalAccountOutcome", outcome);
 }
 
 }  // namespace
@@ -660,6 +666,36 @@ void GaiaCookieManagerService::LogOutAllAccounts(
   } else {
     std::move(completion_callback)
         .Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+  }
+}
+
+void GaiaCookieManagerService::RemoveLoggedOutAccountByGaiaId(
+    const std::string& gaia_id) {
+  VLOG(1) << "GaiaCookieManagerService::RemoveLoggedOutAccountByGaiaId";
+
+  if (list_accounts_stale_) {
+    RecordRemoveLocalAccountOutcome(RemoveLocalAccountOutcome::kAccountsStale);
+    return;
+  }
+
+  const bool accounts_updated =
+      base::EraseIf(signed_out_accounts_,
+                    [&gaia_id](const gaia::ListedAccount& account) {
+                      return account.gaia_id == gaia_id;
+                    }) != 0;
+
+  if (!accounts_updated) {
+    RecordRemoveLocalAccountOutcome(
+        RemoveLocalAccountOutcome::kSignedOutAccountMissing);
+    return;
+  }
+
+  RecordRemoveLocalAccountOutcome(RemoveLocalAccountOutcome::kSuccess);
+
+  if (gaia_accounts_updated_in_cookie_callback_) {
+    gaia_accounts_updated_in_cookie_callback_.Run(
+        listed_accounts_, signed_out_accounts_,
+        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
 }
 

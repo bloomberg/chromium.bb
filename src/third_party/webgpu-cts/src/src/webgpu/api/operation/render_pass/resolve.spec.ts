@@ -52,16 +52,14 @@ g.test('render_pass_resolve')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_index)]] var<in> VertexIndex : i32;
-
-            [[stage(vertex)]] fn main() -> void {
-              const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+            [[stage(vertex)]] fn main(
+              [[builtin(vertex_index)]] VertexIndex : i32
+              ) -> [[builtin(position)]] vec4<f32> {
+              let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                   vec2<f32>(-1.0, -1.0),
                   vec2<f32>(-1.0,  1.0),
                   vec2<f32>( 1.0,  1.0));
-              Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
-              return;
+              return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -69,17 +67,20 @@ g.test('render_pass_resolve')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[location(0)]] var<out> fragColor0 : vec4<f32>;
-            [[location(1)]] var<out> fragColor1 : vec4<f32>;
-            [[location(2)]] var<out> fragColor2 : vec4<f32>;
-            [[location(3)]] var<out> fragColor3 : vec4<f32>;
+            struct Output {
+              [[location(0)]] fragColor0 : vec4<f32>;
+              [[location(1)]] fragColor1 : vec4<f32>;
+              [[location(2)]] fragColor2 : vec4<f32>;
+              [[location(3)]] fragColor3 : vec4<f32>;
+            };
 
-            [[stage(fragment)]] fn main() -> void {
-              fragColor0 = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-              fragColor1 = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-              fragColor2 = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-              fragColor3 = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-              return;
+            [[stage(fragment)]] fn main() -> Output {
+              return Output(
+                vec4<f32>(1.0, 1.0, 1.0, 1.0),
+                vec4<f32>(1.0, 1.0, 1.0, 1.0),
+                vec4<f32>(1.0, 1.0, 1.0, 1.0),
+                vec4<f32>(1.0, 1.0, 1.0, 1.0)
+              );
             }`,
         }),
         entryPoint: 'main',
@@ -90,7 +91,7 @@ g.test('render_pass_resolve')
     });
 
     const resolveTargets: GPUTexture[] = [];
-    const renderPassColorAttachmentDescriptors: GPURenderPassColorAttachmentDescriptor[] = [];
+    const renderPassColorAttachments: GPURenderPassColorAttachment[] = [];
 
     // The resolve target must be the same size as the color attachment. If we're resolving to mip
     // level 1, the resolve target base mip level should be 2x the color attachment size.
@@ -130,8 +131,8 @@ g.test('render_pass_resolve')
 
         // Clear to black for the load operation. After the draw, the top left half of the attachment
         // will be white and the bottom right half will be black.
-        renderPassColorAttachmentDescriptors.push({
-          attachment: colorAttachment.createView(),
+        renderPassColorAttachments.push({
+          view: colorAttachment.createView(),
           loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
           storeOp: t.params.storeOperation,
           resolveTarget: resolveTarget.createView({
@@ -142,8 +143,8 @@ g.test('render_pass_resolve')
 
         resolveTargets.push(resolveTarget);
       } else {
-        renderPassColorAttachmentDescriptors.push({
-          attachment: colorAttachment.createView(),
+        renderPassColorAttachments.push({
+          view: colorAttachment.createView(),
           loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
           storeOp: t.params.storeOperation,
         });
@@ -153,7 +154,7 @@ g.test('render_pass_resolve')
     const encoder = t.device.createCommandEncoder();
 
     const pass = encoder.beginRenderPass({
-      colorAttachments: renderPassColorAttachmentDescriptors,
+      colorAttachments: renderPassColorAttachments,
     });
     pass.setPipeline(pipeline);
     pass.draw(3);

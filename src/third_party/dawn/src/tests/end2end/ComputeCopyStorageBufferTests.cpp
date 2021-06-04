@@ -99,10 +99,9 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
         [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
         [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
 
-        [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
-
-        [[stage(compute)]] fn main() -> void {
-            var index : u32 = GlobalInvocationID.x;
+        [[stage(compute)]]
+        fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+            let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }
             dst.s[index] = src.s[index];
         })");
@@ -110,9 +109,6 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
 
 // Test that a slightly-less-trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
-    // TODO(crbug.com/tint/683): internal compiler error: TINT_UNIMPLEMENTED
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
     BasicTest(R"(
         struct S {
             a : vec2<u32>;
@@ -130,10 +126,9 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
         [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
         [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
 
-        [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
-
-        [[stage(compute)]] fn main() -> void {
-            var index : u32 = GlobalInvocationID.x;
+        [[stage(compute)]]
+        fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+            let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }
             dst.s[index] = src.s[index];
         })");
@@ -141,9 +136,6 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
 
 // Test that a trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, UnsizedArrayOfBasic) {
-    // TODO(crbug.com/tint/682): error: runtime array not supported yet
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
     BasicTest(R"(
         [[block]] struct Buf1 {
             s : array<vec4<u32>>;
@@ -156,10 +148,9 @@ TEST_P(ComputeCopyStorageBufferTests, UnsizedArrayOfBasic) {
         [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
         [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
 
-        [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
-
-        [[stage(compute)]] fn main() -> void {
-            var index : u32 = GlobalInvocationID.x;
+        [[stage(compute)]]
+        fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+            let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }
             dst.s[index] = src.s[index];
         })");

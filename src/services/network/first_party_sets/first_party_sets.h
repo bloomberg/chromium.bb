@@ -11,8 +11,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
 #include "net/base/schemeful_site.h"
+#include "net/cookies/cookie_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -48,7 +49,21 @@ class FirstPartySets {
   // is nullopt, then it is ignored.
   bool IsContextSamePartyWithSite(
       const net::SchemefulSite& site,
-      const base::Optional<net::SchemefulSite>& top_frame_site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::set<net::SchemefulSite>& party_context) const;
+
+  // Computes the "type" of the context. I.e., categorizes contexts based on
+  // whether the top frame site and resource URL are same-party; whether the top
+  // frame site was ignored; whether the `party_context` is same-party with
+  // everything else; etc.
+  //
+  // Since this metric may be used to inform decisions based on actual usage
+  // patterns of sites on the web, this infers singleton sets. That is, it
+  // treats sites that do not belong to a First-Party Set as belonging to an
+  // implictly-declared singleton First-Party Set.
+  net::FirstPartySetsContextType ComputeContextType(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const;
 
   // Returns whether the `site` is a member of a non-trivial (i.e.
@@ -73,7 +88,7 @@ class FirstPartySets {
   // values are owners of the sets. Owners are explicitly represented as members
   // of the set.
   base::flat_map<net::SchemefulSite, net::SchemefulSite> sets_;
-  base::Optional<
+  absl::optional<
       std::pair<net::SchemefulSite, base::flat_set<net::SchemefulSite>>>
       manually_specified_set_;
 };

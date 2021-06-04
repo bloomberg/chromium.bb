@@ -37,7 +37,9 @@
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
@@ -47,7 +49,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -336,7 +337,10 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_view = GetBubbleAnchor();
+  init_params.anchor_view = nullptr;
+  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
+  init_params.anchor_rect = GetBubbleAnchor()->GetAnchorBoundsInScreen();
+  init_params.anchor_rect.Inset(GetBubbleAnchorInsets());
   init_params.shelf_alignment = shelf()->alignment();
   init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
@@ -351,7 +355,6 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   };
 
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
-  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
   bubble_view->set_margins(GetSecondaryBubbleInsets());
 
   // Add a title item with a separator on the top of the IME menu.
@@ -482,10 +485,10 @@ views::Widget* ImeMenuTray::GetBubbleWidget() const {
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
-    ime_list_view_->Update(ime_controller_->current_ime().id,
-                           ime_controller_->available_imes(),
-                           ime_controller_->current_ime_menu_items(), false,
-                           ImeListView::SHOW_SINGLE_IME);
+    ime_list_view_->Update(
+        ime_controller_->current_ime().id, ime_controller_->available_imes(),
+        ime_controller_->current_ime_menu_items(), ShouldShowKeyboardToggle(),
+        ImeListView::SHOW_SINGLE_IME);
   }
 }
 

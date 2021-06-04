@@ -9,13 +9,19 @@
 namespace borealis {
 
 const char kBorealisAppId[] = "dkecggknbdokeipkgnhifhiokailichf";
+const char kBorealisMainAppId[] = "epfhbkiklgmlkhfpbcdleadnhcfdjfmo";
 const char kBorealisDlcName[] = "borealis-dlc";
 // TODO(b/174282035): Potentially update regex when other strings
 // are updated.
 const char kBorealisAppIdRegex[] = "([^/]+\\d+)";
 
-bool GetBorealisAppId(std::string exec, int& app_id) {
-  return RE2::PartialMatch(exec, kBorealisAppIdRegex, &app_id);
+absl::optional<int> GetBorealisAppId(std::string exec) {
+  int app_id;
+  if (RE2::PartialMatch(exec, kBorealisAppIdRegex, &app_id)) {
+    return app_id;
+  } else {
+    return absl::nullopt;
+  }
 }
 
 }  // namespace borealis

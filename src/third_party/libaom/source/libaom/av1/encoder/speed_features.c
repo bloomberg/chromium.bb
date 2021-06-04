@@ -153,6 +153,7 @@ static int frame_is_boosted(const AV1_COMP *cpi) {
 static void set_allintra_speed_feature_framesize_dependent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
+  const int is_360p_or_larger = AOMMIN(cm->width, cm->height) >= 360;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_1080p_or_larger = AOMMIN(cm->width, cm->height) >= 1080;
@@ -274,6 +275,31 @@ static void set_allintra_speed_feature_framesize_dependent(
 
     sf->part_sf.use_square_partition_only_threshold = BLOCK_16X16;
   }
+
+  if (speed >= 7) {
+    if (!is_480p_or_larger) {
+      sf->rt_sf.nonrd_check_partition_merge_mode = 2;
+    }
+    if (!is_360p_or_larger) {
+      sf->rt_sf.force_tx_search_off = 1;
+    }
+  }
+
+  if (speed >= 8) {
+    if (!is_360p_or_larger) {
+      sf->rt_sf.use_modeled_non_rd_cost = 0;
+    } else {
+      if (speed == 8) {
+        sf->rt_sf.short_circuit_low_temp_var = 0;
+      }
+    }
+  }
+
+  if (speed >= 9) {
+    if (!is_360p_or_larger) {
+      sf->rt_sf.use_modeled_non_rd_cost = 1;
+    }
+  }
 }
 
 static void set_allintra_speed_features_framesize_independent(
@@ -301,7 +327,7 @@ static void set_allintra_speed_features_framesize_independent(
   sf->rt_sf.use_nonrd_pick_mode = 0;
   sf->rt_sf.use_real_time_ref_set = 0;
 
-  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
+  if (cpi->ppi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
       cpi->use_screen_content_tools) {
     sf->mv_sf.exhaustive_searches_thresh = (1 << 20);
   } else {
@@ -470,8 +496,47 @@ static void set_allintra_speed_features_framesize_independent(
 
     sf->rd_sf.perform_coeff_opt = 6;
     sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH_LVL4;
+    sf->lpf_sf.lpf_pick = LPF_PICK_FROM_Q;
 
     sf->winner_mode_sf.multi_winner_mode_type = MULTI_WINNER_MODE_OFF;
+  }
+
+  if (speed >= 7) {
+    sf->part_sf.default_min_partition_size = BLOCK_8X8;
+    sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
+
+    sf->lpf_sf.cdef_pick_method = CDEF_PICK_FROM_Q;
+
+    sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
+    sf->rt_sf.use_nonrd_pick_mode = 1;
+    sf->rt_sf.nonrd_check_partition_merge_mode = 1;
+    sf->rt_sf.nonrd_check_partition_split = 0;
+    sf->rt_sf.skip_intra_pred_if_tx_skip = 1;
+    // Set mask for intra modes.
+    for (int i = 0; i < BLOCK_SIZES; ++i)
+      if (i >= BLOCK_32X32)
+        sf->rt_sf.intra_y_mode_bsize_mask_nrd[i] = INTRA_DC;
+      else
+        // Use DC, H, V intra mode for block sizes < 32X32.
+        sf->rt_sf.intra_y_mode_bsize_mask_nrd[i] = INTRA_DC_H_V;
+  }
+
+  if (speed >= 8) {
+    sf->tx_sf.intra_tx_size_search_init_depth_sqr = 2;
+    sf->intra_sf.intra_pruning_with_hog = 1;
+    sf->rt_sf.estimate_motion_for_var_based_partition = 1;
+    sf->rt_sf.short_circuit_low_temp_var = 1;
+    sf->rt_sf.nonrd_check_partition_merge_mode = 0;
+    sf->rt_sf.nonrd_check_partition_split = 0;
+    sf->rt_sf.use_modeled_non_rd_cost = 1;
+    sf->rt_sf.source_metrics_sb_nonrd = 1;
+    sf->rt_sf.skip_intra_pred_if_tx_skip = 0;
+  }
+  if (speed >= 9) {
+    sf->rt_sf.estimate_motion_for_var_based_partition = 0;
+    sf->rt_sf.force_large_partition_blocks = 1;
+    for (int i = 0; i < BLOCK_SIZES; ++i)
+      sf->rt_sf.intra_y_mode_bsize_mask_nrd[i] = INTRA_DC;
   }
 
   // Intra txb hash is currently not compatible with multi-winner mode as the
@@ -661,7 +726,7 @@ static void set_good_speed_feature_framesize_dependent(
 static void set_good_speed_features_framesize_independent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   const int boosted = frame_is_boosted(cpi);
   const int is_boosted_arf2_bwd_type =
       boosted || gf_group->update_type[cpi->gf_frame_index] == INTNL_ARF_UPDATE;
@@ -709,7 +774,7 @@ static void set_good_speed_features_framesize_independent(
   sf->rt_sf.use_nonrd_pick_mode = 0;
   sf->rt_sf.use_real_time_ref_set = 0;
 
-  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
+  if (cpi->ppi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
       cpi->use_screen_content_tools) {
     sf->mv_sf.exhaustive_searches_thresh = (1 << 20);
   } else {
@@ -805,6 +870,9 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.enable_fast_compound_mode_search = 1;
     sf->inter_sf.reuse_mask_search_results = 1;
     sf->inter_sf.txfm_rd_gate_level = boosted ? 0 : 1;
+    sf->inter_sf.disable_interinter_wedge_newmv_search =
+        is_boosted_arf2_bwd_type ? 0 : 1;
+    sf->inter_sf.inter_mode_txfm_breakout = boosted ? 0 : 1;
 
     // TODO(Sachin): Enable/Enhance this speed feature for speed 2 & 3
     sf->interp_sf.adaptive_interp_filter_search = 1;
@@ -862,6 +930,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.txfm_rd_gate_level =
         boosted ? 0 : (is_boosted_arf2_bwd_type ? 1 : 2);
     sf->inter_sf.enable_fast_wedge_mask_search = 1;
+    sf->inter_sf.inter_mode_txfm_breakout = boosted ? 0 : 2;
 
     sf->interp_sf.adaptive_interp_filter_search = 2;
 
@@ -940,6 +1009,7 @@ static void set_good_speed_features_framesize_independent(
     sf->tpl_sf.prune_starting_mv = 2;
     sf->tpl_sf.subpel_force_stop = HALF_PEL;
     sf->tpl_sf.search_method = FAST_BIGDIA;
+    sf->tpl_sf.gop_length_decision_method = 1;
 
     sf->tx_sf.tx_type_search.winner_mode_tx_type_pruning = 1;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
@@ -965,6 +1035,8 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 5) {
+    sf->fp_sf.reduce_mv_step_param = 4;
+
     sf->part_sf.simple_motion_search_prune_agg = 3;
     sf->part_sf.ext_partition_eval_thresh =
         allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
@@ -991,6 +1063,7 @@ static void set_good_speed_features_framesize_independent(
     sf->tpl_sf.prune_starting_mv = 3;
     sf->tpl_sf.use_y_only_rate_distortion = 1;
     sf->tpl_sf.subpel_force_stop = FULL_PEL;
+    sf->tpl_sf.gop_length_decision_method = 2;
 
     sf->winner_mode_sf.dc_blk_pred_level = 1;
   }
@@ -1006,18 +1079,22 @@ static void set_good_speed_features_framesize_independent(
 
     sf->intra_sf.chroma_intra_pruning_with_hog = 4;
     sf->intra_sf.intra_pruning_with_hog = 4;
+    sf->intra_sf.intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC;
+    sf->intra_sf.intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC;
+    sf->intra_sf.intra_y_mode_mask[TX_32X32] = INTRA_DC;
+    sf->intra_sf.intra_y_mode_mask[TX_64X64] = INTRA_DC;
 
     sf->part_sf.prune_rectangular_split_based_on_qidx =
         boosted || allow_screen_content_tools ? 0 : 1;
     sf->part_sf.prune_sub_8x8_partition_level =
         allow_screen_content_tools ? 0
                                    : frame_is_intra_only(&cpi->common) ? 1 : 2;
-    sf->part_sf.prune_part4_search = 3;
+    sf->part_sf.ext_partition_eval_thresh = BLOCK_128X128;
 
     sf->mv_sf.simple_motion_subpel_force_stop = FULL_PEL;
     sf->mv_sf.use_bsize_dependent_search_method = 1;
 
-    sf->tpl_sf.disable_gop_length_decision = 1;
+    sf->tpl_sf.gop_length_decision_method = 3;
     sf->tpl_sf.disable_filtered_key_tpl = 1;
 
     sf->tx_sf.tx_type_search.winner_mode_tx_type_pruning = 2;
@@ -1069,7 +1146,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
 #endif
     }
   } else {
-    if (speed == 8 && !cpi->use_svc) {
+    if (speed == 8 && !cpi->ppi->use_svc) {
       sf->rt_sf.short_circuit_low_temp_var = 0;
       sf->rt_sf.use_nonrd_altref_frame = 1;
     }
@@ -1366,7 +1443,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // TODO(marpan): Look into why enabling skip_loopfilter_non_reference is
     // not bitexact on rtc testset, its very close (< ~0.01 bdrate), but not
     // always bitexact.
-    if (cpi->use_svc && cpi->svc.non_reference_frame &&
+    if (cpi->ppi->use_svc && cpi->svc.non_reference_frame &&
         sf->lpf_sf.cdef_pick_method == CDEF_PICK_FROM_Q &&
         sf->lpf_sf.lpf_pick == LPF_PICK_FROM_Q)
       sf->rt_sf.skip_loopfilter_non_reference = 1;
@@ -1422,7 +1499,7 @@ static AOM_INLINE void init_fp_sf(FIRST_PASS_SPEED_FEATURES *fp_sf) {
 }
 
 static AOM_INLINE void init_tpl_sf(TPL_SPEED_FEATURES *tpl_sf) {
-  tpl_sf->disable_gop_length_decision = 0;
+  tpl_sf->gop_length_decision_method = 0;
   tpl_sf->prune_intra_modes = 0;
   tpl_sf->prune_starting_mv = 0;
   tpl_sf->reduce_first_step_size = 0;
@@ -1542,6 +1619,7 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->enable_fast_compound_mode_search = 0;
   inter_sf->reuse_mask_search_results = 0;
   inter_sf->enable_fast_wedge_mask_search = 0;
+  inter_sf->inter_mode_txfm_breakout = 0;
 }
 
 static AOM_INLINE void init_interp_sf(INTERP_FILTER_SPEED_FEATURES *interp_sf) {
@@ -1678,7 +1756,7 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
   }
 
   if (!cpi->ppi->seq_params_locked) {
-    cpi->common.seq_params.enable_masked_compound &=
+    cpi->common.seq_params->enable_masked_compound &=
         !sf->inter_sf.disable_masked_comp;
   }
 
@@ -1730,11 +1808,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
 
   if (!cpi->ppi->seq_params_locked) {
-    cpi->common.seq_params.enable_dual_filter &=
+    cpi->common.seq_params->enable_dual_filter &=
         !sf->interp_sf.disable_dual_filter;
-    cpi->common.seq_params.enable_restoration &= !sf->lpf_sf.disable_lr_filter;
+    cpi->common.seq_params->enable_restoration &= !sf->lpf_sf.disable_lr_filter;
 
-    cpi->common.seq_params.enable_interintra_compound &=
+    cpi->common.seq_params->enable_interintra_compound &=
         (sf->inter_sf.disable_interintra_wedge_var_thresh != UINT_MAX);
   }
 
@@ -1852,7 +1930,7 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_1080p_or_larger = AOMMIN(cm->width, cm->height) >= 1080;
   const int is_arf2_bwd_type =
-      cpi->gf_group.update_type[cpi->gf_frame_index] == INTNL_ARF_UPDATE;
+      cpi->ppi->gf_group.update_type[cpi->gf_frame_index] == INTNL_ARF_UPDATE;
 
   if (cpi->oxcf.mode == REALTIME) return;
 

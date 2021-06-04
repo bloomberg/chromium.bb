@@ -11,12 +11,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
@@ -61,7 +59,6 @@
 #include "content/public/browser/url_loader_throttles.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -83,15 +80,14 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_destination.h"
+#include "services/network/public/cpp/url_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/common/features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/record_load_histograms.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -479,11 +475,10 @@ void NavigationURLLoaderImpl::Restart() {
   // if the redirected URL's scheme and the previous URL scheme don't match in
   // their use or disuse of the network service loader.
   if (!default_loader_used_ ||
-      (url_chain_.size() > 1 &&
-       blink::network_utils::IsURLHandledByNetworkService(
-           url_chain_[url_chain_.size() - 1]) !=
-           blink::network_utils::IsURLHandledByNetworkService(
-               url_chain_[url_chain_.size() - 2]))) {
+      (url_chain_.size() > 1 && network::IsURLHandledByNetworkService(
+                                    url_chain_[url_chain_.size() - 1]) !=
+                                    network::IsURLHandledByNetworkService(
+                                        url_chain_[url_chain_.size() - 2]))) {
     if (url_loader_)
       url_loader_->ResetForFollowRedirect();
     url_loader_.reset();
@@ -621,8 +616,7 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
   scoped_refptr<network::SharedURLLoaderFactory> factory;
 
   const bool should_be_handled_by_network_service =
-      blink::network_utils::IsURLHandledByNetworkService(
-          resource_request_->url) ||
+      network::IsURLHandledByNetworkService(resource_request_->url) ||
       resource_request_->web_bundle_token_params.has_value();
 
   if (!should_be_handled_by_network_service) {
@@ -954,6 +948,10 @@ void NavigationURLLoaderImpl::OnComplete(
   // URLLoaderClient has already been transferred to the renderer process and
   // OnComplete is not expected to be called here.
   if (status.error_code == net::OK) {
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("navigate_url",
+                                            base::debug::CrashKeySize::Size256),
+        url_.spec());
     base::debug::DumpWithoutCrashing();
     return;
   }
@@ -1025,7 +1023,7 @@ bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
             container_host->SetControllerRegistration(
                 nullptr, false /* notify_controllerchange */);
             container_host->UpdateUrls(GURL(), net::SiteForCookies(),
-                                       base::nullopt);
+                                       absl::nullopt);
           }
         }
       }
@@ -1243,11 +1241,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   // Loading and rendering a web page after the user clicks a link.
   base::TaskPriority file_factory_priority = base::TaskPriority::USER_BLOCKING;
   non_network_url_loader_factories_.emplace(
-      url::kFileScheme,
-      FileURLLoaderFactory::Create(
-          browser_context_->GetPath(),
-          BrowserContext::GetSharedCorsOriginAccessList(browser_context_),
-          file_factory_priority));
+      url::kFileScheme, FileURLLoaderFactory::Create(
+                            browser_context_->GetPath(),
+                            browser_context_->GetSharedCorsOriginAccessList(),
+                            file_factory_priority));
 
 #if defined(OS_ANDROID)
   non_network_url_loader_factories_.emplace(url::kContentScheme,

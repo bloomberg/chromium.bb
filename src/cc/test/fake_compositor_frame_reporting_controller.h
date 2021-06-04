@@ -5,8 +5,6 @@
 #ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 #define CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 
-#include <vector>
-
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 namespace viz {
@@ -29,7 +27,10 @@ class FakeCompositorFrameReportingController
       const FakeCompositorFrameReportingController& controller) = delete;
 
   void WillBeginMainFrame(const viz::BeginFrameArgs& args) override;
-  void BeginMainFrameAborted(const viz::BeginFrameId& id) override;
+  void BeginMainFrameAborted(
+      const viz::BeginFrameId& id,
+      CommitEarlyOutReason reason =
+          CommitEarlyOutReason::ABORTED_NOT_VISIBLE) override;
   void WillCommit() override;
   void DidCommit() override;
   void WillActivate() override;

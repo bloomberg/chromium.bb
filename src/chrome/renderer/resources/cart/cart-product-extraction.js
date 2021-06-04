@@ -12,15 +12,19 @@ var priceRegexTemplate = '((reg|regular|orig|from|' + priceCleanupPrefix +
     ')\\s+)?' +
     '(\\d+\\s*/\\s*)?(US(D)?\\s*)?' +
     '\\$[\\d.,]+(\\s+(to|-|–)\\s+(\\$)?[\\d.,]+)?' + priceCleanupPostfix + '?';
-var priceRegexFull = new RegExp('^' + priceRegexTemplate + '$', 'i');
+var priceRegexFull = new RegExp('^' + priceRegexTemplate + '( ea)?$', 'i');
 var priceRegex = new RegExp(priceRegexTemplate, 'i');
 var priceCleanupRegex = new RegExp(
     '^((' + priceCleanupPrefix + ')\\s+)|' + priceCleanupPostfix + '$', 'i');
-var cartItemHTMLRegex = new RegExp('(cart|basket|bundle)[-_]?item', 'i')
+var cartItemHTMLRegex = new RegExp(
+    '(cart|basket|bundle)[-_]?(item|product)', 'i');
 var cartItemTextContentRegex = new RegExp(
     'remove|delete|save for later|move to (favo(u?)rite|list|wish( ?)list)s?',
-    'i')
-var notCartItemTextContentRegex = new RegExp('move to cart', 'i')
+    'i');
+var moveToCartRegex = new RegExp('move to (cart|bag)', 'i');
+var addToCartRegex = new RegExp('add to cart', 'i');
+var productIdHTMLRegex = new RegExp('<a href="#modal-(\\w+)', 'i');
+var productIdURLRegex = new RegExp('(\\w+)-\\d+-medium', 'i');
 
 function getLazyLoadingURL(image) {
   // FIXME: some lazy images in Nordstrom and Staples don't have URLs in the
@@ -91,7 +95,8 @@ function multipleImagesSupported() {
   // When saving target.com to mhtml, the color selecting images become very
   // large and are picked up. Adding in hostname.endsWith('target.com') is a
   // workaround for this problem. In target we only get one image per product.
-  return hostname.endsWith('craigslist.org') || hostname.endsWith('target.com');
+  return hostname.endsWith('craigslist.org') || hostname.endsWith('target.com')
+      || hostname.endsWith('zazzle.com');
 }
 
 function extractImage(item) {
@@ -160,6 +165,13 @@ function getAbsoluteUrlOfSrcSet(image) {
 }
 
 function extractUrl(item) {
+  // Some sites doesn't use <a> tag or explicitly state href. E.g. samsclub.com
+  // triggers JS to initiate navigation instead of <a>, and ae.com shows side
+  // panel after clicking on each item instead of directing to product page.
+  if (document.URL.includes("samsclub.com")
+      || document.URL.includes("ae.com")) {
+    return "";
+  }
   let anchors;
   if (item.tagName == 'A') {
     anchors = [item];
@@ -443,6 +455,11 @@ function choosePrice(priceArray) {
 }
 
 function extractPrice(item) {
+  // shein.com shows price by one element per digit and it's challenging
+  // to decide based on textContent.
+  if (document.URL.includes("shein.com")) {
+    return "";
+  }
   // Etsy mobile
   const prices = item.querySelectorAll(`
       .currency-value
@@ -523,7 +540,19 @@ function extractItem(item) {
       console.warn('no price found', item);
     return null;
   }
-  return {'url': url, 'imageUrl': imageUrl, 'title': title, 'price': price};
+  let extractionResult =
+      {'url': url, 'imageUrl': imageUrl, 'title': title, 'price': price};
+  // productId is an optional field for extraction.
+  productId = item.outerHTML.match(productIdHTMLRegex);
+  if (productId !== null && productId.length >= 2) {
+    extractionResult['productId'] = productId[1];
+    return extractionResult;
+  }
+  productId = imageUrl.match(productIdURLRegex);
+  if (productId !== null && productId.length >= 2) {
+    extractionResult['productId'] = productId[1];
+  }
+  return extractionResult;
 }
 
 function commonAncestor(a, b) {
@@ -548,19 +577,24 @@ function hasOverlap(target, list) {
   return false;
 }
 
-function isCartItem(item) {
-  // TODO: Improve the heuristic here to accommodate more formats of cart item.
+function matchNonCartPattern(item, pattern) {
   if (item.parentElement) {
     // Walmart has 'move to cart' outside of the div.cart-item.
-    if (item.parentElement.textContent.toLowerCase().match(
-            notCartItemTextContentRegex))
-      return false;
-  } else {
-    if (item.textContent.toLowerCase().match(notCartItemTextContentRegex))
-      return false;
+    if (item.parentElement.textContent.toLowerCase().match(pattern))
+      return true;
   }
+  return item.textContent.toLowerCase().match(pattern);
+}
+
+function isCartItem(item) {
+  // TODO: Improve the heuristic here to accommodate more formats of cart item.
+  if (matchNonCartPattern(item, moveToCartRegex)) return false;
+  // Item element in bestbuy.com contains "add to cart" for things
+  // like protection plans.
+  if (!document.URL.includes("bestbuy.com")
+    && matchNonCartPattern(item, addToCartRegex)) return false;
   return item.textContent.toLowerCase().match(cartItemTextContentRegex) ||
-      item.innerHTML.toLowerCase().match(cartItemHTMLRegex);
+      item.outerHTML.toLowerCase().match(cartItemHTMLRegex);
 }
 
 function extractOneItem(item, extracted_items, processed, output) {
@@ -648,40 +682,49 @@ function extractAllItems(root) {
     }
   }
 
-  // Generic pattern
-  const candidates = new Set();
-  items = root.querySelectorAll('a');
+  if (document.URL.includes("samsclub.com")) {
+    items = root.querySelectorAll(".sc-cart-item-shipping");
+  } else if (document.URL.includes("zazzle.com")) {
+    // TODO(yuezhanggg@): This is a workaround due to that zazzle.com
+    // has two images in cart item. Remove this when we support cart
+    // with multiple images for one product.
+    items = root.getElementsByClassName("CartItem CartLineItem");
+  } else {
+    // Generic pattern
+    const candidates = new Set();
+    items = root.querySelectorAll('a');
 
-  const urlMap = new Map();
-  for (const item of items) {
-    if (!urlMap.has(item.href)) {
-      urlMap.set(item.href, new Set());
-    }
-    urlMap.get(item.href).add(item);
-  }
-
-  for (const [key, value] of urlMap) {
-    const ancestor = commonAncestorList(Array.from(value));
-    if (!candidates.has(ancestor))
-      candidates.add(ancestor);
-  }
-  for (const item of items) {
-    candidates.add(item);
-  }
-  const ancestors = new Set();
-  // TODO: optimize this part.
-  for (let depth = 0; depth < 8; depth++) {
-    for (let item of candidates) {
-      for (let i = 0; i < depth; i++) {
-        item = item.parentElement;
-        if (!item)
-          break;
+    const urlMap = new Map();
+    for (const item of items) {
+      if (!urlMap.has(item.href)) {
+        urlMap.set(item.href, new Set());
       }
-      if (item)
-        ancestors.add(item);
+      urlMap.get(item.href).add(item);
     }
+
+    for (const [key, value] of urlMap) {
+      const ancestor = commonAncestorList(Array.from(value));
+      if (!candidates.has(ancestor))
+        candidates.add(ancestor);
+    }
+    for (const item of items) {
+      candidates.add(item);
+    }
+    const ancestors = new Set();
+    // TODO: optimize this part.
+    for (let depth = 0; depth < 8; depth++) {
+      for (let item of candidates) {
+        for (let i = 0; i < depth; i++) {
+          item = item.parentElement;
+          if (!item)
+            break;
+        }
+        if (item)
+          ancestors.add(item);
+      }
+    }
+    items = Array.from(ancestors);
   }
-  items = Array.from(ancestors);
 
   if (verbose > 0)
     console.log(items);

@@ -6,11 +6,11 @@
 <translation id="1051826050538111504">Det finnes skadelig programvare på datamaskinen din. Chrome kan fjerne den, gjenopprette innstillingene dine og deaktivere utvidelser for å få nettleseren til å fungere som normalt igjen.</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> brukte Chrome tidligere</translation>
-<translation id="1097330777386562916">Slett informasjonskapsler og nettstedsdata når du avslutter Chrome</translation>
 <translation id="110877069173485804">Dette er din Chrome</translation>
 <translation id="1125124144982679672">Hvem bruker Chrome?</translation>
 <translation id="1142745911746664600">Kan ikke oppdatere Chrome</translation>
 <translation id="1154147086299354128">&amp;Åpne i Chrome</translation>
+<translation id="1278833599417554002">Start på nytt for å oppdatere &amp;Chrome</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> krever at du leser og godtar følgende vilkår før du bruker denne enheten. Disse vilkårene verken utvider, endrer eller begrenser Google Chrome OS-vilkårene.</translation>
 <translation id="1302523850133262269">Vent mens Chrome installerer de nyeste systemoppdateringene.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
@@ -45,6 +45,7 @@
 <translation id="2063848847527508675">Chrome OS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
 <translation id="2094919256425865063">Vil du avslutte Chrome likevel?</translation>
 <translation id="2120620239521071941">Dette sletter <ph name="ITEMS_COUNT" /> elementer fra denne enheten. For å hente dataene dine igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
+<translation id="2121284319307530122">Start på nytt for å oppdatere &amp;Chrome</translation>
 <translation id="2123055963409958220">Bidra til å gjøre Chrome bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Start Chrome på nytt nå</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise forhåndsvisningen av utskrift når det innebygde PDF-visningsprogrammet mangler.</translation>
@@ -55,7 +56,6 @@
 <translation id="234869673307233423">Chrome kan ikke sjekke passordene dine. Prøv igjen senere.</translation>
 <translation id="235650106824528204">Alle Chrome-data som genereres mens denne profilen brukes (f.eks. oppretting av bokmerker, logg, passord og andre innstillinger), kan fjernes av administratoren for jobbprofilen. <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
-<translation id="245659736593643560">Chrome OS er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med <ph name="BEGIN_LINK_LINUX_OSS" />Linux-utviklingsmiljøet (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">Google Chrome forsøker å eksportere passordene dine. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2534507159460261402">Google Pay (kopiert til Chrome)</translation>
@@ -68,6 +68,7 @@
 <translation id="2652691236519827073">Åpne linken i en ny &amp;fane i Chrome</translation>
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="2689103672227170538">Denne utvidelsen har endret hvilken side som vises når du starter Chrome.</translation>
+<translation id="2742320827292110288">Advarsel: Google Chrome kan ikke forhindre utvidelser fra å registrere nettleserloggen din. For å deaktivere denne utvidelsen i Inkognitomodus, fjern merkingen for dette alternativet.</translation>
 <translation id="2765403129283291972">Chrome trenger tilgang til mikrofonen din for dette nettstedet</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2775140325783767197">Chrome kan ikke sjekke passordene dine. Prøv å kontrollere internettilkoblingen.</translation>
@@ -161,11 +162,11 @@
 <translation id="5193136243808726294">Google Chrome OS kan ikke åpne denne siden</translation>
 <translation id="521447420733633466">Hvis du deler en enhet med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil</translation>
 <translation id="5251420635869119124">Gjester kan bruke Chrome uten å etterlate seg spor.</translation>
-<translation id="532046782124376502">Advarsel: Google Chrome kan ikke hindre utvidelser i å registrere nettlesingsloggen din. Du kan deaktivere utvidelsen i inkognitomodus ved å fjerne avmerkingen for dette alternativet.</translation>
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5394833366792865639">Del en Chrome-fane</translation>
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="5434383153637353914">På denne siden kan du administrere de påloggede Google-kontoene dine. Kontoene blir tilgjengelige i apper i Chrome-nettleseren og Play-butikken samt tjenester som Gmail, Disk og YouTube. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">Installer Chrome OS</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="5657226924540934362">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
@@ -217,6 +218,7 @@
 <translation id="7106741999175697885">Oppgavebehandling – Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{En ny oppdatering for Chrome er tilgjengelig og tas i bruk når du starter Chrome på nytt.}=1{En ny oppdatering for Chrome er tilgjengelig og tas i bruk når du starter Chrome på nytt. Inkognitovinduet ditt blir ikke gjenåpnet.}other{En ny oppdatering for Chrome er tilgjengelig og tas i bruk når du starter Chrome på nytt. De # inkognitovinduene dine blir ikke gjenåpnet.}}</translation>
 <translation id="7155997830309522122">I så fall bør du endre det lagrede passordet i Chrome så det samsvarer med det nye passordet.</translation>
+<translation id="7161904924553537242">Velkommen til Google Chrome</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Dette språket brukes for UI-et i Google Chrome</translation>
 <translation id="7296210096911315575">Viktig informasjon om bruk og sikkerhet</translation>
@@ -234,6 +236,7 @@
 <translation id="7629695634924605473">Med Chrome får du beskjed hvis passordene dine noensinne utsettes for sikkerhetsbrudd</translation>
 <translation id="7641148173327520642">Systemadministratoren din har konfigurert Google Chrome til å åpne <ph name="ALTERNATIVE_BROWSER_NAME" /> for å få tilgang til <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise-logo</translation>
+<translation id="7665553140559834626">Start på nytt for å oppdatere &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
 <translation id="7761834446675418963">Klikk på navnet ditt for å åpne Chrome og starte surfingen.</translation>
 <translation id="7777080907402804672">Hvis et bilde ikke har noen nyttig beskrivelse, prøver Chrome å finne en til deg. For å opprette beskrivelser blir bilder sendt til Google. Du kan slå av dette i innstillingene når som helst.</translation>
@@ -245,9 +248,10 @@
 <translation id="7855730255114109580">Google Chrome er oppdatert</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
 <translation id="7896673875602241923">Noen har tidligere logget på Chrome på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chrome-bruker for å holde informasjonen din atskilt.</translation>
-<translation id="7905891027772979035">Chrome kan ikke sjekke utvidelsene dine. Prøv igjen senere.</translation>
 <translation id="7930071585467473040">Google Chrome prøver å kopiere passord.</translation>
+<translation id="7951988079884443914">Chrome fraråder deg å laste ned eller åpne denne filen.</translation>
 <translation id="7962410387636238736">Denne datamaskinen kommer ikke lenger til å motta oppdateringer av Google Chrome, fordi Windows XP og Windows Vista ikke støttes lenger</translation>
+<translation id="79947657522496226">Chrome OS er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med <ph name="BEGIN_LINK_LINUX_OSS" />Linux-utviklingsmiljøet<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="8013993649590906847">Hvis et bilde ikke har noen nyttig beskrivelse, prøver Chrome å finne en til deg. For å opprette beskrivelser blir bilder sendt til Google.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>

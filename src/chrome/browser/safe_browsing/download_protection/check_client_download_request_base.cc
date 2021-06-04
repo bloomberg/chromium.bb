@@ -41,8 +41,6 @@ namespace {
 
 const char kDownloadExtensionUmaName[] = "SBClientDownload.DownloadExtensions";
 
-constexpr char kAuthHeaderBearer[] = "Bearer ";
-
 void RecordFileExtensionType(const std::string& metric_name,
                              const base::FilePath& file) {
   base::UmaHistogramSparse(
@@ -254,7 +252,6 @@ void CheckClientDownloadRequestBase::OnUrlAllowlistCheckDone(
   // extraction and download ping are skipped.
   if (is_allowlisted) {
     DVLOG(2) << source_url_ << " is on the download allowlist.";
-    RecordCountOfAllowlistedDownload(URL_ALLOWLIST);
     if (ShouldSampleAllowlistedDownload()) {
       skipped_url_whitelist_ = true;
     } else {
@@ -375,7 +372,6 @@ void CheckClientDownloadRequestBase::OnCertificateAllowlistCheckDone(
     bool is_allowlisted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!skipped_url_whitelist_ && is_allowlisted) {
-    RecordCountOfAllowlistedDownload(SIGNATURE_ALLOWLIST);
     if (ShouldSampleAllowlistedDownload()) {
       skipped_certificate_whitelist_ = true;
     } else {
@@ -386,8 +382,6 @@ void CheckClientDownloadRequestBase::OnCertificateAllowlistCheckDone(
       return;
     }
   }
-
-  RecordCountOfAllowlistedDownload(NO_ALLOWLIST_MATCH);
 
   if (!pingback_enabled_) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_PING_DISABLED);
@@ -505,8 +499,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
       base::BindOnce(&CheckClientDownloadRequestBase::OnURLLoaderComplete,
                      GetWeakPtr()));
   request_start_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DownloadRequestPayloadSize",
-                          client_download_request_data_.size());
 
   // Add the access token to the proto for display on chrome://safe-browsing
   client_download_request_->set_access_token(access_token_);
@@ -578,6 +570,11 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
         case ClientDownloadResponse::UNKNOWN:
           reason = REASON_VERDICT_UNKNOWN;
           result = DownloadCheckResult::UNKNOWN;
+          break;
+        case ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE:
+          reason = REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE;
+          result = DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE;
+          token = response.token();
           break;
         default:
           LOG(DFATAL) << "Unknown download response verdict: "

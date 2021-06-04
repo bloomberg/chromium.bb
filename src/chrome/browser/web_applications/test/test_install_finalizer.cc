@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/crx_file/id_util.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 
 namespace web_app {
 
@@ -52,7 +54,7 @@ void TestInstallFinalizer::FinalizeUninstallAfterSync(
 
 void TestInstallFinalizer::UninstallExternalWebApp(
     const AppId& app_id,
-    ExternalInstallSource external_install_source,
+    webapps::WebappUninstallSource webapp_uninstall_source,
     UninstallWebAppCallback callback) {
   user_uninstalled_external_apps_.erase(app_id);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -61,7 +63,7 @@ void TestInstallFinalizer::UninstallExternalWebApp(
 
 void TestInstallFinalizer::UninstallExternalWebAppByUrl(
     const GURL& app_url,
-    ExternalInstallSource external_install_source,
+    webapps::WebappUninstallSource webapp_uninstall_source,
     UninstallWebAppCallback callback) {
   DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
@@ -76,18 +78,19 @@ void TestInstallFinalizer::UninstallExternalWebAppByUrl(
                      }));
 }
 
-bool TestInstallFinalizer::CanUserUninstallExternalApp(
-    const AppId& app_id) const {
+bool TestInstallFinalizer::CanUserUninstallWebApp(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return false;
 }
 
-void TestInstallFinalizer::UninstallExternalAppByUser(const AppId& app_id,
-                                                      UninstallWebAppCallback) {
+void TestInstallFinalizer::UninstallWebApp(
+    const AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
+    UninstallWebAppCallback) {
   NOTIMPLEMENTED();
 }
 
-bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
+bool TestInstallFinalizer::WasPreinstalledWebAppUninstalled(
     const AppId& app_id) const {
   return base::Contains(user_uninstalled_external_apps_, app_id);
 }

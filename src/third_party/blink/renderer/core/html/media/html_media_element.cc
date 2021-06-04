@@ -34,6 +34,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_content_type.h"
@@ -58,6 +59,7 @@
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -153,7 +155,9 @@ enum class MediaControlsShow {
   kNoScript,
   kNotShown,
   kDisabledSettings,
-  kMaxValue = kDisabledSettings,
+  kUserExplicitlyEnabled,
+  kUserExplicitlyDisabled,
+  kMaxValue = kUserExplicitlyDisabled,
 };
 
 // These values are used for the Media.MediaElement.ContentTypeResult histogram.
@@ -176,6 +180,35 @@ enum class PlayPromiseRejectReason {
   kInterruptedByLoad,
   kMaxValue = kInterruptedByLoad,
 };
+
+// The state of the HTMLMediaElement when ProgressEventTimerFired is invoked.
+// These values are histogrammed, so please only add values to the end.
+enum class ProgressEventTimerState {
+  // networkState is not NETWORK_LOADING.
+  kNotLoading,
+  // MediaShouldBeOpaque() is true.
+  kMediaShouldBeOpaque,
+  // "progress" event was scheduled.
+  kProgress,
+  // No progress. The "stalled" event was scheduled.
+  kStalled,
+  // No progress. No "stalled" event scheduled because a Media Source Attachment
+  // is used.
+  kHasMediaSourceAttachment,
+  // No progress. No "stalled" event scheduled because there was recent
+  // progress.
+  kRecentProgress,
+  // No progress. No "stalled" event scheduled because it was already scheduled.
+  kStalledEventAlreadyScheduled,
+  kMaxValue = kStalledEventAlreadyScheduled
+};
+
+// Records the state of the HTMLMediaElement when its "progress event" timer
+// fires.
+// TODO(crbug.com/1143317): Remove once the bug is fixed.
+void RecordProgressEventTimerState(ProgressEventTimerState state) {
+  UMA_HISTOGRAM_ENUMERATION("Media.ProgressEventTimerState", state);
+}
 
 static const base::TimeDelta kStalledNotificationInterval =
     base::TimeDelta::FromSeconds(3);
@@ -623,9 +656,11 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   media_player_host_remote_ = MakeGarbageCollected<DisallowNewWrapper<
       HeapMojoAssociatedRemote<media::mojom::blink::MediaPlayerHost>>>(
       GetExecutionContext());
+  media_player_observer_remote_set_->Value().Clear();
   media_player_observer_remote_set_ = MakeGarbageCollected<DisallowNewWrapper<
       HeapMojoAssociatedRemoteSet<media::mojom::blink::MediaPlayerObserver>>>(
       GetExecutionContext());
+  media_player_receiver_set_->Value().Clear();
   media_player_receiver_set_ =
       MakeGarbageCollected<DisallowNewWrapper<HeapMojoAssociatedReceiverSet<
           media::mojom::blink::MediaPlayer, HTMLMediaElement>>>(
@@ -669,6 +704,10 @@ void HTMLMediaElement::ParseAttribute(
     DVLOG(2) << "parseAttribute(" << *this
              << ", kSrcAttr, old=" << params.old_value
              << ", new=" << params.new_value << ")";
+    // A change to the src attribute can affect intrinsic size, which in turn
+    // requires a style recalc.
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::FromAttribute(name));
     // Trigger a reload, as long as the 'src' attribute is present.
     if (!params.new_value.IsNull()) {
       ignore_preload_none_ = false;
@@ -1910,7 +1949,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           current_src_after_redirects_ == current_src_
               ? ResourceRequest::RedirectStatus::kNoRedirect
               : ResourceRequest::RedirectStatus::kFollowedRedirect,
-          current_src_after_redirects_, /* devtools_id= */ base::nullopt,
+          current_src_after_redirects_, /* devtools_id= */ absl::nullopt,
           ReportingDisposition::kReport,
           GetDocument().Loader()->GetContentSecurityNotifier());
     }
@@ -2056,15 +2095,20 @@ void HTMLMediaElement::UpdateLayoutObject() {
 }
 
 void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
-  if (network_state_ != kNetworkLoading)
+  if (network_state_ != kNetworkLoading) {
+    RecordProgressEventTimerState(ProgressEventTimerState::kNotLoading);
     return;
+  }
 
   // If this is an cross-origin request, and we haven't discovered whether
   // the media is actually playable yet, don't fire any progress events as
   // those may let the page know information about the resource that it's
   // not supposed to know.
-  if (MediaShouldBeOpaque())
+  if (MediaShouldBeOpaque()) {
+    RecordProgressEventTimerState(
+        ProgressEventTimerState::kMediaShouldBeOpaque);
     return;
+  }
 
   DCHECK(previous_progress_time_);
 
@@ -2073,10 +2117,17 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
     previous_progress_time_ = base::ElapsedTimer();
     sent_stalled_event_ = false;
     UpdateLayoutObject();
-  } else if (!media_source_attachment_ &&
-             previous_progress_time_->Elapsed() >
-                 kStalledNotificationInterval &&
-             !sent_stalled_event_) {
+    RecordProgressEventTimerState(ProgressEventTimerState::kProgress);
+  } else if (media_source_attachment_) {
+    RecordProgressEventTimerState(
+        ProgressEventTimerState::kHasMediaSourceAttachment);
+  } else if (previous_progress_time_->Elapsed() <=
+             kStalledNotificationInterval) {
+    RecordProgressEventTimerState(ProgressEventTimerState::kRecentProgress);
+  } else if (sent_stalled_event_) {
+    RecordProgressEventTimerState(
+        ProgressEventTimerState::kStalledEventAlreadyScheduled);
+  } else {
     // Note the !media_source_attachment_ condition above. The 'stalled' event
     // is not fired when using MSE. MSE's resource is considered 'local' (we
     // don't manage the download - the app does), so the HTML5 spec text around
@@ -2086,6 +2137,7 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
     ScheduleEvent(event_type_names::kStalled);
     sent_stalled_event_ = true;
     SetShouldDelayLoadEvent(false);
+    RecordProgressEventTimerState(ProgressEventTimerState::kStalled);
   }
 }
 
@@ -2550,7 +2602,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   play_promise_resolvers_.push_back(resolver);
 
-  base::Optional<DOMExceptionCode> code = Play();
+  absl::optional<DOMExceptionCode> code = Play();
   if (code) {
     DCHECK(!play_promise_resolvers_.IsEmpty());
     play_promise_resolvers_.pop_back();
@@ -2576,10 +2628,10 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   return promise;
 }
 
-base::Optional<DOMExceptionCode> HTMLMediaElement::Play() {
+absl::optional<DOMExceptionCode> HTMLMediaElement::Play() {
   DVLOG(2) << "play(" << *this << ")";
 
-  base::Optional<DOMExceptionCode> exception_code =
+  absl::optional<DOMExceptionCode> exception_code =
       autoplay_policy_->RequestPlay();
 
   if (exception_code == DOMExceptionCode::kNotAllowedError) {
@@ -2587,7 +2639,7 @@ base::Optional<DOMExceptionCode> HTMLMediaElement::Play() {
     // Call playInternal to handle scheduling the promise resolution.
     if (!paused_) {
       PlayInternal();
-      return base::nullopt;
+      return absl::nullopt;
     }
     return exception_code;
   }
@@ -2601,7 +2653,7 @@ base::Optional<DOMExceptionCode> HTMLMediaElement::Play() {
 
   PlayInternal();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void HTMLMediaElement::PlayInternal() {
@@ -2740,6 +2792,18 @@ bool HTMLMediaElement::ShouldShowControls(
     return false;
   }
 
+  // If the user has explicitly shown or hidden the controls, then force that
+  // choice.
+  if (user_wants_controls_visible_.has_value()) {
+    if (record_metrics == RecordMetricsBehavior::kDoRecord) {
+      RecordShowControlsUsage(this,
+                              *user_wants_controls_visible_
+                                  ? MediaControlsShow::kUserExplicitlyEnabled
+                                  : MediaControlsShow::kUserExplicitlyDisabled);
+    }
+    return *user_wants_controls_visible_;
+  }
+
   if (FastHasAttribute(html_names::kControlsAttr)) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
       RecordShowControlsUsage(this, MediaControlsShow::kAttribute);
@@ -2848,6 +2912,11 @@ void HTMLMediaElement::setMuted(bool muted) {
     GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
 
   autoplay_policy_->StopAutoplayMutedWhenVisible();
+}
+
+void HTMLMediaElement::SetUserWantsControlsVisible(bool visible) {
+  user_wants_controls_visible_ = visible;
+  UpdateControlsVisibility();
 }
 
 double HTMLMediaElement::EffectiveMediaVolume() const {
@@ -3685,6 +3754,8 @@ void HTMLMediaElement::UpdatePlayState() {
     web_media_player_->OnTimeUpdate();
 
   ReportCurrentTimeToMediaSource();
+  PseudoStateChanged(CSSSelector::kPseudoPaused);
+  PseudoStateChanged(CSSSelector::kPseudoPlaying);
 }
 
 void HTMLMediaElement::StopPeriodicTimers() {

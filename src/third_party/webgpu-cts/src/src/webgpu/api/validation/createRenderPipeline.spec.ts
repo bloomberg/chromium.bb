@@ -65,10 +65,8 @@ class F extends ValidationTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-              Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+              return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -76,9 +74,8 @@ class F extends ValidationTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[location(0)]] var<out> fragColor : vec4<${fragColorType}>;
-            [[stage(fragment)]] fn main() -> void {
-              fragColor = vec4<${fragColorType}>(0${suffix}, 1${suffix}, 0${suffix}, 1${suffix});
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<${fragColorType}> {
+              return vec4<${fragColorType}>(0${suffix}, 1${suffix}, 0${suffix}, 1${suffix});
             }`,
         }),
         entryPoint: 'main',
@@ -138,8 +135,7 @@ g.test('color_formats_must_be_renderable')
   .fn(async t => {
     const format: GPUTextureFormat = t.params.format;
     const info = kAllTextureFormatInfo[format];
-
-    await t.selectDeviceOrSkipTestCase(info.extension);
+    await t.selectDeviceOrSkipTestCase(info.feature);
 
     const descriptor = t.getDescriptor({ targets: [{ format }] });
 
@@ -200,21 +196,22 @@ g.test('sample_count_must_be_equal_to_the_one_of_every_attachment_in_the_render_
     const renderPassDescriptorWithoutDepthStencil = {
       colorAttachments: [
         {
-          attachment: colorTexture.createView(),
+          view: colorTexture.createView(),
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          storeOp: 'store',
         },
       ],
-    };
+    } as const;
     const renderPassDescriptorWithDepthStencilOnly = {
       colorAttachments: [],
       depthStencilAttachment: {
-        attachment: depthStencilTexture.createView(),
+        view: depthStencilTexture.createView(),
         depthLoadValue: 1.0,
         depthStoreOp: 'store',
         stencilLoadValue: 0,
         stencilStoreOp: 'store',
       },
-    };
+    } as const;
 
     const pipelineWithoutDepthStencil = t.device.createRenderPipeline(
       t.getDescriptor({

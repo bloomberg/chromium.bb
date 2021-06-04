@@ -11,7 +11,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
@@ -19,11 +18,15 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.content_creation.notes.NoteCreationCoordinator;
+import org.chromium.chrome.browser.content_creation.notes.NoteCreationCoordinatorFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator;
+import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
+import org.chromium.chrome.browser.share.link_to_text.LinkToTextMetricsHelper;
 import org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsCoordinator;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
@@ -71,7 +74,7 @@ class ChromeProvidedSharingOptionsProvider {
     private final String mUrl;
     private final ImageEditorModuleProvider mImageEditorModuleProvider;
     private final Tracker mFeatureEngagementTracker;
-    private String mShareDetailsForMetrics;
+    private @LinkGeneration int mLinkGenerationStatusForMetrics = LinkGeneration.MAX;
 
     /**
      * Constructs a new {@link ChromeProvidedSharingOptionsProvider}.
@@ -101,7 +104,7 @@ class ChromeProvidedSharingOptionsProvider {
             SettingsLauncher settingsLauncher, boolean isSyncEnabled, long shareStartTime,
             ChromeOptionShareCallback chromeOptionShareCallback,
             ImageEditorModuleProvider imageEditorModuleProvider, Tracker featureEngagementTracker,
-            String url, @Nullable String shareDetailsForMetrics) {
+            String url, @LinkGeneration int linkGenerationStatusForMetrics) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
@@ -117,7 +120,7 @@ class ChromeProvidedSharingOptionsProvider {
         initializeFirstPartyOptionsInOrder();
         mChromeOptionShareCallback = chromeOptionShareCallback;
         mUrl = url;
-        mShareDetailsForMetrics = shareDetailsForMetrics;
+        mLinkGenerationStatusForMetrics = linkGenerationStatusForMetrics;
     }
 
     /**
@@ -178,9 +181,7 @@ class ChromeProvidedSharingOptionsProvider {
         }
 
         FirstPartyOptionBuilder setContentTypesToDisableFor(Integer... contentTypesToDisableFor) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
-                mContentTypesToDisableFor = contentTypesToDisableFor;
-            }
+            mContentTypesToDisableFor = contentTypesToDisableFor;
             return this;
         }
 
@@ -195,9 +196,9 @@ class ChromeProvidedSharingOptionsProvider {
                     mActivity.getResources().getString(mIconLabel), (view) -> {
                         RecordUserAction.record(mFeatureNameForMetrics);
                         if (ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
-                                && mShareDetailsForMetrics != null) {
-                            RecordUserAction.record(mShareDetailsForMetrics);
+                                    ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
+                            LinkToTextMetricsHelper.recordSharedHighlightStateMetrics(
+                                    mLinkGenerationStatusForMetrics);
                         }
                         recordTimeToShare(mShareStartTime);
                         mBottomSheetController.hideContent(mBottomSheetContent, true);
@@ -234,6 +235,9 @@ class ChromeProvidedSharingOptionsProvider {
      * mOrderedFirstPartyOptions} in the order they should appear.
      */
     private void initializeFirstPartyOptionsInOrder() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEBNOTES_STYLIZE)) {
+            mOrderedFirstPartyOptions.add(createWebNotesStylizeFirstPartyOption());
+        }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
             mOrderedFirstPartyOptions.add(createScreenshotFirstPartyOption());
         }
@@ -242,20 +246,16 @@ class ChromeProvidedSharingOptionsProvider {
             mOrderedFirstPartyOptions.add(createLongScreenshotsFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
-            mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
-            mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
-            mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
-        }
+        mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
         mOrderedFirstPartyOptions.add(createSendTabToSelfFirstPartyOption());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID)
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID)
                 && !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
             mOrderedFirstPartyOptions.add(createHighlightsFirstPartyOption());
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)
-                && !mTabProvider.get().getWebContents().isIncognito()) {
+        if (!mTabProvider.get().getWebContents().isIncognito()) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
         if (UserPrefs.get(Profile.getLastUsedRegularProfile()).getBoolean(Pref.PRINTING_ENABLED)) {
@@ -432,6 +432,18 @@ class ChromeProvidedSharingOptionsProvider {
                     LinkToTextCoordinator linkToTextCoordinator =
                             new LinkToTextCoordinator(mActivity, mTabProvider.get(),
                                     mChromeOptionShareCallback, mUrl, mShareParams.getText());
+                })
+                .build();
+    }
+
+    private FirstPartyOption createWebNotesStylizeFirstPartyOption() {
+        return new FirstPartyOptionBuilder(ContentType.HIGHLIGHTED_TEXT)
+                .setIcon(R.drawable.webnote, R.string.sharing_webnotes_stylized)
+                .setFeatureNameForMetrics("SharingHubAndroid.WebnotesStylize")
+                .setOnClickCallback((view) -> {
+                    NoteCreationCoordinator coordinator = NoteCreationCoordinatorFactory.create(
+                            mActivity, mShareParams.getText());
+                    coordinator.showDialog();
                 })
                 .build();
     }

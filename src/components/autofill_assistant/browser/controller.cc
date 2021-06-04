@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/url_utils.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/view_layout.pb.h"
 #include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/google/core/common/google_util.h"
@@ -253,11 +254,11 @@ int Controller::GetProgress() const {
   return progress_;
 }
 
-base::Optional<int> Controller::GetProgressActiveStep() const {
+absl::optional<int> Controller::GetProgressActiveStep() const {
   return progress_active_step_;
 }
 
-base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
 Controller::GetStepProgressBarConfiguration() const {
   return step_progress_bar_configuration_;
 }
@@ -401,12 +402,22 @@ void Controller::SetUserActions(
   SetVisibilityAndUpdateUserActions();
 }
 
+bool Controller::ShouldChipsBeVisible() {
+  return !(is_keyboard_showing_ && is_focus_on_bottom_sheet_text_input_);
+}
+
+bool Controller::ShouldUpdateChipVisibility() {
+  return are_chips_visible_ != ShouldChipsBeVisible();
+}
+
 void Controller::SetVisibilityAndUpdateUserActions() {
-  // All non-cancel chips should be hidden while the keyboard is showing.
+  // All non-cancel chips should be hidden while the keyboard is showing to fill
+  // an input text field in the bottom sheet.
+  are_chips_visible_ = ShouldChipsBeVisible();
   if (user_actions_) {
     for (UserAction& user_action : *user_actions_) {
       if (user_action.chip().type != CANCEL_ACTION) {
-        user_action.chip().visible = !is_keyboard_showing_;
+        user_action.chip().visible = are_chips_visible_;
       }
     }
   }
@@ -453,11 +464,32 @@ void Controller::SetGenericUi(
   }
 }
 
+void Controller::SetPersistentGenericUi(
+    std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+    base::OnceCallback<void(const ClientStatus&)>
+        view_inflation_finished_callback) {
+  persistent_generic_user_interface_ = std::move(generic_ui);
+  basic_interactions_.SetPersistentViewInflationFinishedCallback(
+      std::move(view_inflation_finished_callback));
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPersistentGenericUserInterfaceChanged(
+        persistent_generic_user_interface_.get());
+  }
+}
+
 void Controller::ClearGenericUi() {
   generic_user_interface_.reset();
   basic_interactions_.ClearCallbacks();
   for (ControllerObserver& observer : observers_) {
     observer.OnGenericUserInterfaceChanged(nullptr);
+  }
+}
+
+void Controller::ClearPersistentGenericUi() {
+  persistent_generic_user_interface_.reset();
+  basic_interactions_.ClearPersistentUiCallbacks();
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPersistentGenericUserInterfaceChanged(nullptr);
   }
 }
 
@@ -697,6 +729,11 @@ BasicInteractions* Controller::GetBasicInteractions() {
 
 const GenericUserInterfaceProto* Controller::GetGenericUiProto() const {
   return generic_user_interface_.get();
+}
+
+const GenericUserInterfaceProto* Controller::GetPersistentGenericUiProto()
+    const {
+  return persistent_generic_user_interface_.get();
 }
 
 void Controller::AddObserver(ControllerObserver* observer) {
@@ -1168,7 +1205,7 @@ void Controller::InitFromParameters() {
   if (details->UpdateFromParameters(trigger_context_->GetScriptParameters()))
     SetDetails(std::move(details), base::TimeDelta());
 
-  const base::Optional<std::string> overlay_color =
+  const absl::optional<std::string> overlay_color =
       trigger_context_->GetScriptParameters().GetOverlayColors();
   if (overlay_color) {
     std::unique_ptr<OverlayColors> colors = std::make_unique<OverlayColors>();
@@ -1186,7 +1223,7 @@ void Controller::InitFromParameters() {
 
     SetOverlayColors(std::move(colors));
   }
-  const base::Optional<std::string> password_change_username =
+  const absl::optional<std::string> password_change_username =
       trigger_context_->GetScriptParameters().GetPasswordChangeUsername();
   if (password_change_username) {
     DCHECK(GetDeeplinkURL().is_valid());  // |deeplink_url_| must be set.
@@ -1366,7 +1403,7 @@ void Controller::OnFormActionLinkClicked(int link) {
 }
 
 void Controller::SetDateTimeRangeStartDate(
-    const base::Optional<DateProto>& date) {
+    const absl::optional<DateProto>& date) {
   if (!user_data_)
     return;
 
@@ -1399,7 +1436,7 @@ void Controller::SetDateTimeRangeStartDate(
 }
 
 void Controller::SetDateTimeRangeStartTimeSlot(
-    const base::Optional<int>& timeslot_index) {
+    const absl::optional<int>& timeslot_index) {
   if (!user_data_)
     return;
 
@@ -1432,7 +1469,7 @@ void Controller::SetDateTimeRangeStartTimeSlot(
 }
 
 void Controller::SetDateTimeRangeEndDate(
-    const base::Optional<DateProto>& date) {
+    const absl::optional<DateProto>& date) {
   if (!user_data_)
     return;
 
@@ -1465,7 +1502,7 @@ void Controller::SetDateTimeRangeEndDate(
 }
 
 void Controller::SetDateTimeRangeEndTimeSlot(
-    const base::Optional<int>& timeslot_index) {
+    const absl::optional<int>& timeslot_index) {
   if (!user_data_)
     return;
 
@@ -1545,7 +1582,7 @@ void Controller::SetCreditCard(
 
   DCHECK(!collect_user_data_options_->billing_address_name.empty());
 
-  user_data_->selected_card_ = std::move(card);
+  user_model_.SetSelectedCreditCard(std::move(card), user_data_.get());
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::CARD);
   }
@@ -1562,13 +1599,8 @@ void Controller::SetProfile(
     return;
   }
 
-  auto it = user_data_->selected_addresses_.find(key);
-  if (it != user_data_->selected_addresses_.end()) {
-    user_data_->selected_addresses_.erase(it);
-  }
-  if (profile != nullptr) {
-    user_data_->selected_addresses_.emplace(key, std::move(profile));
-  }
+  user_model_.SetSelectedAutofillProfile(key, std::move(profile),
+                                         user_data_.get());
 
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(), field_change);
@@ -1726,7 +1758,7 @@ void Controller::PerformDelayedShutdownIfNecessary() {
   if (delayed_shutdown_reason_ &&
       script_url_.host() != GetCurrentURL().host()) {
     Metrics::DropOutReason reason = delayed_shutdown_reason_.value();
-    delayed_shutdown_reason_ = base::nullopt;
+    delayed_shutdown_reason_ = absl::nullopt;
     tracking_ = false;
     client_->Shutdown(reason);
   }
@@ -2084,7 +2116,18 @@ bool Controller::StateNeedsUI(AutofillAssistantState state) {
 
 void Controller::OnKeyboardVisibilityChanged(bool visible) {
   is_keyboard_showing_ = visible;
-  SetVisibilityAndUpdateUserActions();
+
+  if (ShouldUpdateChipVisibility()) {
+    SetVisibilityAndUpdateUserActions();
+  }
+}
+
+void Controller::OnInputTextFocusChanged(bool is_text_focused) {
+  is_focus_on_bottom_sheet_text_input_ = is_text_focused;
+
+  if (ShouldUpdateChipVisibility()) {
+    SetVisibilityAndUpdateUserActions();
+  }
 }
 
 ElementArea* Controller::touchable_element_area() {

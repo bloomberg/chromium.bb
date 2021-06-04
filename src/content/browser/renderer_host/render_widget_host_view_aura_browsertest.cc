@@ -208,8 +208,19 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
 }
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
 
+// TODO(1126339): fix the way how exo creates accelerated widgets. At the
+// moment, they are created only after the client attaches a buffer to a
+// surface, which is incorrect and results in the "[destroyed object]: error 1:
+// popup parent not constructed" error.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_SetKeyboardFocusOnTapAfterDismissingPopup \
+  DISABLED_SetKeyboardFocusOnTapAfterDismissingPopup
+#else
+#define MAYBE_SetKeyboardFocusOnTapAfterDismissingPopup \
+  SetKeyboardFocusOnTapAfterDismissingPopup
+#endif
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
-                       SetKeyboardFocusOnTapAfterDismissingPopup) {
+                       MAYBE_SetKeyboardFocusOnTapAfterDismissingPopup) {
   GURL page(
       "data:text/html;charset=utf-8,"
       "<!DOCTYPE html>"
@@ -231,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), page));
 
   auto* wc = shell()->web_contents();
-  ASSERT_TRUE(ExecuteScript(wc, "focusSelectMenu();"));
+  ASSERT_TRUE(ExecJs(wc, "focusSelectMenu();"));
   SimulateKeyPress(wc, ui::DomKey::FromCharacter(' '), ui::DomCode::SPACE,
                    ui::VKEY_SPACE, false, false, false, false);
 
@@ -315,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDevtoolsBrowserTest,
   Attach();
   SendCommand("Debugger.enable", nullptr);
 
-  ASSERT_TRUE(ExecuteScript(wc, "focusSelectMenu();"));
+  ASSERT_TRUE(ExecJs(wc, "focusSelectMenu();"));
   SimulateKeyPress(wc, ui::DomKey::FromCharacter(' '), ui::DomCode::SPACE,
                    ui::VKEY_SPACE, false, false, false, false);
 
@@ -360,7 +371,76 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDevtoolsBrowserTest,
 
   // Try to access the renderer process, it would have died if
   // crbug.com/1032984 wasn't fixed.
-  ASSERT_TRUE(ExecuteScript(wc, "noop();"));
+  ASSERT_TRUE(ExecJs(wc, "noop();"));
+}
+
+// Used to verify features under the environment whose device scale factor is 2.
+class RenderWidgetHostViewAuraDSFBrowserTest
+    : public RenderWidgetHostViewAuraBrowserTest {
+ public:
+  // RenderWidgetHostViewAuraBrowserTest:
+  void SetUp() override {
+    EnablePixelOutput(scale());
+    RenderWidgetHostViewAuraBrowserTest::SetUp();
+  }
+
+  float scale() const { return 2.f; }
+};
+
+// Verifies the bounding box of the selection region.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDSFBrowserTest,
+                       SelectionRegionBoundingBox) {
+  GURL page(
+      "data:text/html;charset=utf-8,"
+      "<!DOCTYPE html>"
+      "<html>"
+      "<body>"
+      "<p id=\"text-content\">Gibbons are apes in the family Hylobatidae.</p>"
+      "<script>"
+      "  function selectText() {"
+      "    const input = document.getElementById('text-content');"
+      "    var range = document.createRange();"
+      "    range.selectNodeContents(input);"
+      "    var selection = window.getSelection();  "
+      "    selection.removeAllRanges();"
+      "    selection.addRange(range);"
+      "  }"
+      "  function getSelectionBounds() {"
+      "    var r = "
+      "document.getSelection().getRangeAt(0).getBoundingClientRect();"
+      "    return [r.x, r.right, r.y, r.bottom]; "
+      "  }"
+      "</script>"
+      "</body>"
+      "</html>");
+  EXPECT_TRUE(NavigateToURL(shell(), page));
+
+  // Select text and wait until the bounding box updates.
+  auto* wc = shell()->web_contents();
+  ASSERT_TRUE(ExecJs(wc, "selectText();"));
+  WaitForSelectionBoundingBoxUpdate(wc);
+
+  // Verify the device scale factor.
+  const float device_scale_factor =
+      GetRenderWidgetHostView()->GetDeviceScaleFactor();
+  ASSERT_EQ(scale(), device_scale_factor);
+
+  // Calculate the DIP size from the bounds in pixel. Follow exactly what is
+  // done in `WebFrameWidgetImpl`.
+  const base::ListValue eval_result =
+      EvalJs(wc, "getSelectionBounds();").ExtractList();
+  const int x = floor(eval_result.GetList()[0].GetDouble());
+  const int right = ceil(eval_result.GetList()[1].GetDouble());
+  const int y = floor(eval_result.GetList()[2].GetDouble());
+  const int bottom = ceil(eval_result.GetList()[3].GetDouble());
+  const int expected_dip_width = floor(right / scale()) - ceil(x / scale());
+  const int expected_dip_height = floor(bottom / scale()) - ceil(y / scale());
+
+  // Verify the DIP size of the bounding box.
+  const gfx::Rect selection_bounds =
+      GetRenderWidgetHostView()->GetSelectionBoundingBox();
+  EXPECT_EQ(expected_dip_width, selection_bounds.width());
+  EXPECT_EQ(expected_dip_height, selection_bounds.height());
 }
 
 class RenderWidgetHostViewAuraActiveWidgetTest : public ContentBrowserTest {

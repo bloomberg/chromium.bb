@@ -34,6 +34,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -97,7 +98,8 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
   const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
   DCHECK(desks_bar_view);
 
-  const float scale_factor = desks_bar_view->GetOnHoverWindowSizeScaleFactor();
+  const float scale_factor = float{desks_bar_view->height()} /
+                             overview_grid->root_window()->bounds().height();
   gfx::SizeF scaled_size = gfx::ScaleSize(window_original_size, scale_factor);
   // Add the margins overview mode adds around the window's contents.
   scaled_size.Enlarge(2 * kWindowMargin, 2 * kWindowMargin + kHeaderHeightDp);

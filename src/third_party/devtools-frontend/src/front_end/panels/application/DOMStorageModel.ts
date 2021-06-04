@@ -35,6 +35,8 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 
 export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
   _model: DOMStorageModel;
@@ -238,7 +240,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(DOMStorageModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(DOMStorageModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

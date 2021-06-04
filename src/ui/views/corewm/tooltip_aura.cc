@@ -16,6 +16,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -26,8 +28,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -158,6 +158,9 @@ END_METADATA
 namespace views {
 namespace corewm {
 
+// static
+const char TooltipAura::kWidgetName[] = "TooltipAura";
+
 TooltipAura::~TooltipAura() {
   DestroyWidget();
   CHECK(!IsInObserverList());
@@ -246,6 +249,7 @@ void TooltipAura::CreateTooltipWidget(const gfx::Rect& bounds) {
   // Use software compositing to avoid using unnecessary hardware resources
   // which just amount to overkill for this UI.
   params.force_software_compositing = true;
+  params.name = kWidgetName;
   widget_->Init(std::move(params));
 }
 

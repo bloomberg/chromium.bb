@@ -16,7 +16,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
+#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
@@ -24,6 +24,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/version.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -31,25 +32,55 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
+#include "chromeos/crosapi/mojom/app_service.mojom.h"
+#include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
+#include "chromeos/crosapi/mojom/clipboard.mojom.h"
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
+#include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/device_attributes.mojom.h"
+#include "chromeos/crosapi/mojom/download_controller.mojom.h"
+#include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
+#include "chromeos/crosapi/mojom/feedback.mojom.h"
+#include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/prefs.mojom.h"
+#include "chromeos/crosapi/mojom/screen_manager.mojom.h"
+#include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
+#include "chromeos/crosapi/mojom/test_controller.mojom.h"
+#include "chromeos/crosapi/mojom/url_handler.mojom.h"
+#include "chromeos/crosapi/mojom/video_capture.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "services/device/public/mojom/hid.mojom.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using user_manager::User;
 using version_info::Channel;
@@ -60,7 +91,11 @@ namespace {
 
 bool g_lacros_enabled_for_test = false;
 
-base::Optional<bool> g_lacros_primary_browser_for_test;
+absl::optional<bool> g_lacros_primary_browser_for_test;
+
+// The rootfs lacros-chrome metadata keys.
+constexpr char kLacrosMetadataContentKey[] = "content";
+constexpr char kLacrosMetadataVersionKey[] = "version";
 
 // Some account types require features that aren't yet supported by lacros.
 // See https://crbug.com/1080693
@@ -148,16 +183,16 @@ bool IsLacrosAllowedToBeEnabledWithUser(const User* user, Channel channel) {
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
-base::Optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
+absl::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
     EnvironmentProvider* environment_provider) {
   if (!user_manager::UserManager::IsInitialized()) {
     LOG(ERROR) << "User not initialized.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   const auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
   if (!primary_user) {
     LOG(ERROR) << "No primary user.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   std::string policy_data = environment_provider->GetDeviceAccountPolicy();
   return std::vector<uint8_t>(policy_data.begin(), policy_data.end());
@@ -177,15 +212,22 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<chromeos::sensors::mojom::SensorHalClient>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Automation>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AccountManager>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::AppPublisher>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Crosapi>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceAttributes>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::DownloadController>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::DriveIntegrationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdleService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::KeystoreService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::LocalPrinter>(),
     MakeInterfaceVersionEntry<
         chromeos::machine_learning::mojom::MachineLearningService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MessageCenter>(),
@@ -193,6 +235,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SnapshotCapturer>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::SystemDisplay>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TaskManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TestController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
@@ -218,8 +261,8 @@ constexpr bool HasDuplicatedUuid() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 21,
-    "if you add a new crosapi, please add it to the version map here");
+    crosapi::mojom::Crosapi::Version_ == 29,
+    "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
 
@@ -230,16 +273,26 @@ const base::Feature kLacrosAllowOnStableChannel{
     "LacrosAllowOnStableChannel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
+const char kLacrosStabilityLeastStable[] = "least-stable";
 const char kLacrosStabilityLessStable[] = "less-stable";
 const char kLacrosStabilityMoreStable[] = "more-stable";
 
+const char kLacrosSelectionSwitch[] = "lacros-selection";
+const char kLacrosSelectionRootfs[] = "rootfs";
+const char kLacrosSelectionStateful[] = "stateful";
+
 const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
 const char kClearUserDataDir1Pref[] = "lacros.clear_user_data_dir_1";
+const char kDataVerPref[] = "lacros.data_version";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kLaunchOnLoginPref, /*default_value=*/false);
   registry->RegisterBooleanPref(kClearUserDataDir1Pref,
                                 /*default_value=*/false);
+}
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kDataVerPref);
 }
 
 base::FilePath GetUserDataDir() {
@@ -388,7 +441,7 @@ bool IsLacrosPrimaryBrowser(Channel channel) {
   return base::FeatureList::IsEnabled(chromeos::features::kLacrosPrimary);
 }
 
-void SetLacrosPrimaryBrowserForTest(base::Optional<bool> value) {
+void SetLacrosPrimaryBrowserForTest(absl::optional<bool> value) {
   g_lacros_primary_browser_for_test = value;
 }
 
@@ -492,10 +545,12 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->device_mode = environment_provider->GetDeviceMode();
   params->interface_versions = GetInterfaceVersions();
   params->default_paths = environment_provider->GetDefaultPaths();
+  params->use_new_account_manager =
+      environment_provider->GetUseNewAccountManager();
 
   params->device_account_gaia_id =
       environment_provider->GetDeviceAccountGaiaId();
-  const base::Optional<account_manager::Account> maybe_device_account =
+  const absl::optional<account_manager::Account> maybe_device_account =
       environment_provider->GetDeviceAccount();
   if (maybe_device_account) {
     params->device_account =
@@ -519,6 +574,10 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
       crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
   params->initial_browser_action = initial_browser_action;
 
+  params->web_apps_enabled =
+      base::FeatureList::IsEnabled(features::kWebAppsCrosapi);
+  params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
+
   return params;
 }
 
@@ -536,9 +595,7 @@ base::ScopedFD CreateStartupData(
     return base::ScopedFD();
   }
 
-  if (!base::WriteFileDescriptor(
-          fd.get(), reinterpret_cast<const char*>(serialized.data()),
-          serialized.size())) {
+  if (!base::WriteFileDescriptor(fd.get(), serialized)) {
     LOG(ERROR) << "Failed to dump the serialized startup data";
     return base::ScopedFD();
   }
@@ -549,6 +606,64 @@ base::ScopedFD CreateStartupData(
   }
 
   return fd;
+}
+
+base::Version GetDataVer(PrefService* local_state,
+                         const std::string& user_id_hash) {
+  const base::DictionaryValue* data_versions =
+      local_state->GetDictionary(kDataVerPref);
+  const std::string* data_version_str =
+      data_versions->FindStringPath(user_id_hash);
+
+  if (!data_version_str)
+    return base::Version();
+
+  return base::Version(*data_version_str);
+}
+
+void RecordDataVer(PrefService* local_state,
+                   const std::string& user_id_hash,
+                   const base::Version& version) {
+  DCHECK(version.IsValid());
+  DictionaryPrefUpdate update(local_state, kDataVerPref);
+  base::DictionaryValue* dict = update.Get();
+  dict->SetString(user_id_hash, version.GetString());
+}
+
+base::Version GetRootfsLacrosVersionMayBlock(
+    const base::FilePath& version_file_path) {
+  if (!base::PathExists(version_file_path)) {
+    LOG(WARNING) << "The rootfs lacros-chrome metadata is missing.";
+    return {};
+  }
+
+  std::string metadata;
+  if (!base::ReadFileToString(version_file_path, &metadata)) {
+    PLOG(WARNING) << "Failed to read rootfs lacros-chrome metadata.";
+    return {};
+  }
+
+  absl::optional<base::Value> v = base::JSONReader::Read(metadata);
+  if (!v || !v->is_dict()) {
+    LOG(WARNING) << "Failed to parse rootfs lacros-chrome metadata.";
+    return {};
+  }
+
+  const base::Value* content = v->FindKey(kLacrosMetadataContentKey);
+  if (!content || !content->is_dict()) {
+    LOG(WARNING)
+        << "Failed to parse rootfs lacros-chrome metadata content key.";
+    return {};
+  }
+
+  const base::Value* version = content->FindKey(kLacrosMetadataVersionKey);
+  if (!version || !version->is_string()) {
+    LOG(WARNING)
+        << "Failed to parse rootfs lacros-chrome metadata version key.";
+    return {};
+  }
+
+  return base::Version{version->GetString()};
 }
 
 }  // namespace browser_util

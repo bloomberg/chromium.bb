@@ -4,18 +4,21 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include <memory>
+
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/system_tray_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
-#include "ash/system/accessibility/select_to_speak_tray.h"
+#include "ash/system/accessibility/select_to_speak/select_to_speak_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
@@ -30,9 +33,10 @@
 #include "ash/test/ash_test_base.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "chromeos/dbus/hermes/hermes_clients.h"
-#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/cellular_esim_profile_handler_impl.h"
+#include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -74,6 +78,45 @@ TEST_F(StatusAreaWidgetTest, Basics) {
   EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->GetVisible());
 }
 
+TEST_F(StatusAreaWidgetTest, HanldeOnLocaleChange) {
+  base::i18n::SetRTLForTesting(false);
+
+  StatusAreaWidget* status_area_ =
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  TrayBackgroundView* ime_menu_(status_area_->ime_menu_tray());
+  TrayBackgroundView* palette_(status_area_->palette_tray());
+  TrayBackgroundView* dictation_button_(status_area_->dictation_button_tray());
+  TrayBackgroundView* select_to_speak_(status_area_->select_to_speak_tray());
+
+  ime_menu_->SetVisiblePreferred(true);
+  palette_->SetVisiblePreferred(true);
+  dictation_button_->SetVisiblePreferred(true);
+  select_to_speak_->SetVisiblePreferred(true);
+
+  // From left to right: dictation_button_, select_to_speak_, ime_menu_,
+  // palette_.
+  EXPECT_GT(palette_->layer()->bounds().x(), ime_menu_->layer()->bounds().x());
+  EXPECT_GT(ime_menu_->layer()->bounds().x(),
+            select_to_speak_->layer()->bounds().x());
+  EXPECT_GT(select_to_speak_->layer()->bounds().x(),
+            dictation_button_->layer()->bounds().x());
+
+  // Switch to RTL mode.
+  base::i18n::SetRTLForTesting(true);
+  // Trigger the LocaleChangeObserver, which should cause a layout of the menu.
+  ash::LocaleUpdateController::Get()->OnLocaleChanged();
+
+  // From left to right: palette_, ime_menu_, select_to_speak_,
+  // dictation_button_.
+  EXPECT_LT(palette_->layer()->bounds().x(), ime_menu_->layer()->bounds().x());
+  EXPECT_LT(ime_menu_->layer()->bounds().x(),
+            select_to_speak_->layer()->bounds().x());
+  EXPECT_LT(select_to_speak_->layer()->bounds().x(),
+            dictation_button_->layer()->bounds().x());
+
+  base::i18n::SetRTLForTesting(false);
+}
+
 class SystemTrayFocusTestObserver : public SystemTrayObserver {
  public:
   SystemTrayFocusTestObserver() = default;
@@ -103,7 +146,7 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    test_observer_.reset(new SystemTrayFocusTestObserver);
+    test_observer_ = std::make_unique<SystemTrayFocusTestObserver>();
     Shell::Get()->system_tray_notifier()->AddSystemTrayObserver(
         test_observer_.get());
   }
@@ -222,11 +265,10 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    chromeos::shill_clients::InitializeFakes();
-    chromeos::hermes_clients::InitializeFakes();
     // Initializing NetworkHandler before ash is more like production.
-    chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
+    chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
+        local_state_.registry());
     chromeos::NetworkMetadataStore::RegisterPrefs(profile_prefs_.registry());
     chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
                                                             &local_state_);
@@ -238,12 +280,10 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
     // This roughly matches production shutdown order.
     chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
-    chromeos::NetworkHandler::Shutdown();
-    chromeos::hermes_clients::Shutdown();
-    chromeos::shill_clients::Shutdown();
   }
 
  private:
+  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;
 

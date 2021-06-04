@@ -4,10 +4,8 @@
 }
 
 .header {
-  background-color: var(--toolbar-bg-color, #f3f3f3); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  border-bottom: var(--divider-border, 1px solid #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-1);
+  border-bottom: var(--legacy-divider-border);
   line-height: 1.6;
   overflow: hidden;
   padding: 0 5px;
@@ -22,13 +20,12 @@
 }
 
 .header:focus {
-  background-color: var(--focus-bg-color);
+  background-color: var(--legacy-focus-bg-color);
 }
 
 .content-section {
   padding: 16px;
-  border-bottom: var(--divider-border, 1px solid #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border-bottom: var(--legacy-divider-border);
   overflow-x: hidden;
 }
 
@@ -165,7 +162,7 @@ that uses the dimensions to draw an outline around the element. */
 
 .color-picker-label:hover,
 .color-picker-label:focus {
-  border: 1px solid var(--accent-color-hover);
+  border: 1px solid var(--legacy-accent-color-hover);
   transform: scale(1.2);
 }
 
@@ -214,4 +211,8 @@ devtools-survey-link {
   --issue-link-font-size: 12px;
   --issue-link-padding: 0;
   --issue-link-icon-size: 14px;
+}
+
+:host-context(.-theme-with-dark-background) input[type="checkbox"] {
+  filter: invert(80%);
 }

@@ -50,6 +50,7 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/bad_message.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
@@ -70,6 +71,7 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -208,30 +210,44 @@ ChromeContentBrowserClientExtensionsPart::
 GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
     Profile* profile,
     const GURL& url) {
-  // If the input |url| is part of an installed app, the effective URL is an
-  // extension URL with the ID of that extension as the host. This has the
-  // effect of grouping apps together in a common SiteInstance.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  if (!registry)
-    return url;
+  DCHECK(registry);
 
-  const Extension* extension =
-      registry->enabled_extensions().GetHostedAppByURL(url);
-  if (!extension)
-    return url;
-
+  // If the URL is part of a hosted app's web extent, convert it to the app's
+  // extension URL. I.e., the effective URL becomes a chrome-extension: URL
+  // with the ID of the hosted app as the host.  This has the effect of
+  // grouping (possibly cross-site) URLs belonging to one hosted app together
+  // in a common SiteInstance, and it ensures that hosted app capabilities are
+  // properly granted to that SiteInstance's process.
+  //
+  // Note that we don't need to carry over the |url|'s path, because the
+  // process model only uses the origin of a hosted app's effective URL.  Note
+  // also that we must not return an invalid effective URL here, since that
+  // might lead to incorrect security decisions - see
+  // https://crbug.com/1016954.
+  //
   // Bookmark apps do not use the hosted app process model, and should be
   // treated as normal URLs.
-  if (extension->from_bookmark())
-    return url;
+  const Extension* hosted_app =
+      registry->enabled_extensions().GetHostedAppByURL(url);
+  if (hosted_app && !hosted_app->from_bookmark())
+    return hosted_app->url();
 
-  // If the URL is part of an extension's web extent, convert it to the
-  // extension's URL.  Note that we don't need to carry over the |url|'s path,
-  // because the process model only uses the origin of a hosted app's effective
-  // URL.  Note also that we must not return an invalid effective URL here,
-  // since that might lead to incorrect security decisions - see
-  // https://crbug.com/1016954.
-  return extension->url();
+  // If this is a chrome-extension: URL, check whether a corresponding
+  // extension exists and is enabled. If this is not the case, translate |url|
+  // into |kExtensionInvalidRequestURL| to avoid assigning a particular
+  // extension's disabled and enabled extension URLs to the same SiteInstance.
+  // This is important to prevent the SiteInstance and (unprivileged) process
+  // hosting a disabled extension URL from incorrectly getting reused after
+  // re-enabling the extension, which would lead to renderer kills
+  // (https://crbug.com/1197360).
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      !registry->enabled_extensions().GetExtensionOrAppByURL(url)) {
+    return GURL(chrome::kExtensionInvalidRequestURL);
+  }
+
+  // Don't translate to effective URLs in all other cases.
+  return url;
 }
 
 // static
@@ -322,8 +338,12 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockProcessToSite(
   const Extension* extension = ExtensionRegistry::Get(browser_context)
                                    ->enabled_extensions()
                                    .GetExtensionOrAppByURL(effective_site_url);
+  // Avoid locking renderer processes for disabled or non-existent extension
+  // URLs, to be consistent with the enabled non-hosted-app cases below.  It's
+  // ok for URLs from multiple disabled/non-existent extensions to share a
+  // process. Some context for this is in https://crbug.com/1197360.
   if (!extension)
-    return true;
+    return false;
 
   // Hosted apps should be locked to their web origin. See
   // https://crbug.com/794315.
@@ -401,8 +421,8 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   if (is_guest &&
       url_request_util::AllowSpecialCaseExtensionURLInGuest(
           extension, url_path.length() > 1
-                         ? base::make_optional<base::StringPiece>(url_path)
-                         : base::nullopt)) {
+                         ? absl::make_optional<base::StringPiece>(url_path)
+                         : absl::nullopt)) {
     return true;
   }
 
@@ -753,6 +773,14 @@ void ChromeContentBrowserClientExtensionsPart::
   if (ProcessMap::Get(profile)->Contains(process->GetID())) {
     command_line->AppendSwitch(switches::kExtensionProcess);
   }
+}
+
+void ChromeContentBrowserClientExtensionsPart::ExposeInterfacesToRenderer(
+    service_manager::BinderRegistry* registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
+    content::RenderProcessHost* host) {
+  associated_registry->AddInterface(
+      base::BindRepeating(&EventRouter::BindForRenderer, host->GetID()));
 }
 
 }  // namespace extensions

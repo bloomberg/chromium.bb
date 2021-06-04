@@ -28,6 +28,7 @@ constexpr char kMessageType[] = "type";
 constexpr char kMessageTypeOffer[] = "OFFER";
 constexpr char kOfferMessageBody[] = "offer";
 constexpr char kSequenceNumber[] = "seqNum";
+constexpr char kCodecName[] = "codecName";
 
 /// ANSWER message fields.
 constexpr char kMessageTypeAnswer[] = "ANSWER";

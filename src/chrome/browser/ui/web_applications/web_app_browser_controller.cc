@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "ui/gfx/favicon_size.h"
@@ -42,7 +43,7 @@ WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : AppBrowserController(browser,
                            GetAppIdFromApplicationName(browser->app_name())),
       provider_(*WebAppProvider::Get(browser->profile())) {
-  registrar_observer_.Add(&provider_.registrar());
+  registrar_observation_.Observe(&provider_.registrar());
   PerformDigitalAssetLinkVerification(browser);
 }
 
@@ -101,7 +102,7 @@ void WebAppBrowserController::OnWebAppUninstalled(const AppId& app_id) {
 }
 
 void WebAppBrowserController::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
+  registrar_observation_.Reset();
 }
 
 void WebAppBrowserController::SetReadIconCallbackForTesting(
@@ -138,12 +139,12 @@ gfx::ImageSkia WebAppBrowserController::GetWindowIcon() const {
   return GetWindowAppIcon();
 }
 
-base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
+absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   // System App popups (settings pages) always use default theme.
   if (is_for_system_web_app() && browser()->is_type_app_popup())
-    return base::nullopt;
+    return absl::nullopt;
 
-  base::Optional<SkColor> web_theme_color =
+  absl::optional<SkColor> web_theme_color =
       AppBrowserController::GetThemeColor();
   if (web_theme_color)
     return web_theme_color;
@@ -151,7 +152,7 @@ base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   return registrar().GetAppThemeColor(GetAppId());
 }
 
-base::Optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
+absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
   if (auto color = AppBrowserController::GetBackgroundColor())
     return color;
   return registrar().GetAppBackgroundColor(GetAppId());
@@ -209,17 +210,17 @@ std::u16string WebAppBrowserController::GetFormattedUrlOrigin() const {
   return FormatUrlOrigin(GetAppStartUrl());
 }
 
-bool WebAppBrowserController::CanUninstall() const {
+bool WebAppBrowserController::CanUserUninstall() const {
   return WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .CanUninstallWebApp(GetAppId());
+      .CanUserUninstallWebApp(GetAppId());
 }
 
-void WebAppBrowserController::Uninstall() {
+void WebAppBrowserController::Uninstall(
+    webapps::WebappUninstallSource webapp_uninstall_source) {
   WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .UninstallWebApp(GetAppId(),
-                       WebAppDialogManager::UninstallSource::kAppMenu,
+      .UninstallWebApp(GetAppId(), webapps::WebappUninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
 }
 
@@ -284,7 +285,7 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
   asset_link_handler_ =
       std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
           browser->profile()->GetURLLoaderFactory());
-  is_verified_ = base::nullopt;
+  is_verified_ = absl::nullopt;
 
   if (!HasAppId())
     return;
@@ -295,9 +296,9 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
     return;
 
   const std::string origin = GetAppStartUrl().GetOrigin().spec();
-  const base::Optional<std::string> package_name =
+  const absl::optional<std::string> package_name =
       apk_web_app_service->GetPackageNameForWebApp(GetAppId());
-  const base::Optional<std::string> fingerprint =
+  const absl::optional<std::string> fingerprint =
       apk_web_app_service->GetCertificateSha256Fingerprint(GetAppId());
 
   // Any web-only TWA should have an associated package name and fingerprint.

@@ -63,11 +63,11 @@ void RGB2BGR(uint8_t* buffer, int width = 1) {
 
 }  // namespace
 
-ProgressiveDecoder::CFXCODEC_WeightTable::CFXCODEC_WeightTable() = default;
+ProgressiveDecoder::WeightTable::WeightTable() = default;
 
-ProgressiveDecoder::CFXCODEC_WeightTable::~CFXCODEC_WeightTable() = default;
+ProgressiveDecoder::WeightTable::~WeightTable() = default;
 
-void ProgressiveDecoder::CFXCODEC_WeightTable::Calc(int dest_len, int src_len) {
+void ProgressiveDecoder::WeightTable::Calc(int dest_len, int src_len) {
   double scale = static_cast<double>(src_len) / dest_len;
   double base = dest_len < 0 ? src_len : 0.0;
   m_ItemSize = (int)(sizeof(int) * 2 + sizeof(int) * (ceil(fabs(scale)) + 1));
@@ -137,11 +137,11 @@ void ProgressiveDecoder::CFXCODEC_WeightTable::Calc(int dest_len, int src_len) {
   }
 }
 
-ProgressiveDecoder::CFXCODEC_HorzTable::CFXCODEC_HorzTable() = default;
+ProgressiveDecoder::HorzTable::HorzTable() = default;
 
-ProgressiveDecoder::CFXCODEC_HorzTable::~CFXCODEC_HorzTable() = default;
+ProgressiveDecoder::HorzTable::~HorzTable() = default;
 
-void ProgressiveDecoder::CFXCODEC_HorzTable::Calc(int dest_len, int src_len) {
+void ProgressiveDecoder::HorzTable::Calc(int dest_len, int src_len) {
   double scale = (double)dest_len / (double)src_len;
   m_ItemSize = sizeof(int) * 4;
   int size = dest_len * m_ItemSize + 4;
@@ -190,11 +190,11 @@ void ProgressiveDecoder::CFXCODEC_HorzTable::Calc(int dest_len, int src_len) {
   }
 }
 
-ProgressiveDecoder::CFXCODEC_VertTable::CFXCODEC_VertTable() = default;
+ProgressiveDecoder::VertTable::VertTable() = default;
 
-ProgressiveDecoder::CFXCODEC_VertTable::~CFXCODEC_VertTable() = default;
+ProgressiveDecoder::VertTable::~VertTable() = default;
 
-void ProgressiveDecoder::CFXCODEC_VertTable::Calc(int dest_len, int src_len) {
+void ProgressiveDecoder::VertTable::Calc(int dest_len, int src_len) {
   double scale = (double)dest_len / (double)src_len;
   m_ItemSize = sizeof(int) * 4;
   int size = dest_len * m_ItemSize + 4;
@@ -462,7 +462,7 @@ bool ProgressiveDecoder::GifInputRecordPositionBuf(uint32_t rcd_pos,
     trans_index = -1;
   if (trans_index != -1) {
     m_pSrcPalette.get()[trans_index] &= 0x00ffffff;
-    if (pDevice->HasAlpha())
+    if (pDevice->IsAlphaFormat())
       pal_index = trans_index;
   }
   if (pal_index >= pal_num)
@@ -509,7 +509,7 @@ void ProgressiveDecoder::GifReadScanline(int32_t row_num, uint8_t* row_buf) {
   RetainPtr<CFX_DIBitmap> pDIBitmap = m_pDeviceBitmap;
   DCHECK(pDIBitmap);
   int32_t img_width = m_GifFrameRect.Width();
-  if (!pDIBitmap->HasAlpha()) {
+  if (!pDIBitmap->IsAlphaFormat()) {
     uint8_t* byte_ptr = row_buf;
     for (int i = 0; i < img_width; i++) {
       if (*byte_ptr == m_GifTransIndex) {
@@ -519,7 +519,7 @@ void ProgressiveDecoder::GifReadScanline(int32_t row_num, uint8_t* row_buf) {
     }
   }
   int32_t pal_index = m_GifBgIndex;
-  if (m_GifTransIndex != -1 && m_pDeviceBitmap->HasAlpha()) {
+  if (m_GifTransIndex != -1 && m_pDeviceBitmap->IsAlphaFormat()) {
     pal_index = m_GifTransIndex;
   }
   memset(m_pDecodeBuf.get(), pal_index, m_SrcWidth);
@@ -829,10 +829,10 @@ bool ProgressiveDecoder::GifDetectImageTypeInBuffer() {
   m_pGifContext = GifDecoder::StartDecode(this);
   GifDecoder::Input(m_pGifContext.get(), m_pCodecMemory, nullptr);
   m_SrcComponents = 1;
-  CFX_GifDecodeStatus readResult =
+  GifDecoder::Status readResult =
       GifDecoder::ReadHeader(m_pGifContext.get(), &m_SrcWidth, &m_SrcHeight,
                              &m_GifPltNumber, &m_pGifPalette, &m_GifBgIndex);
-  while (readResult == CFX_GifDecodeStatus::Unfinished) {
+  while (readResult == GifDecoder::Status::kUnfinished) {
     FXCODEC_STATUS error_status = FXCODEC_STATUS_ERR_FORMAT;
     if (!GifReadMoreData(&error_status)) {
       m_pGifContext = nullptr;
@@ -843,7 +843,7 @@ bool ProgressiveDecoder::GifDetectImageTypeInBuffer() {
         GifDecoder::ReadHeader(m_pGifContext.get(), &m_SrcWidth, &m_SrcHeight,
                                &m_GifPltNumber, &m_pGifPalette, &m_GifBgIndex);
   }
-  if (readResult == CFX_GifDecodeStatus::Success) {
+  if (readResult == GifDecoder::Status::kSuccess) {
     m_SrcBPC = 8;
     m_clipBox = FX_RECT(0, 0, m_SrcWidth, m_SrcHeight);
     return true;
@@ -867,9 +867,9 @@ FXCODEC_STATUS ProgressiveDecoder::GifStartDecode(
 }
 
 FXCODEC_STATUS ProgressiveDecoder::GifContinueDecode() {
-  CFX_GifDecodeStatus readRes =
+  GifDecoder::Status readRes =
       GifDecoder::LoadFrame(m_pGifContext.get(), m_FrameCur);
-  while (readRes == CFX_GifDecodeStatus::Unfinished) {
+  while (readRes == GifDecoder::Status::kUnfinished) {
     FXCODEC_STATUS error_status = FXCODEC_STATUS_DECODE_FINISH;
     if (!GifReadMoreData(&error_status)) {
       m_pDeviceBitmap = nullptr;
@@ -880,7 +880,7 @@ FXCODEC_STATUS ProgressiveDecoder::GifContinueDecode() {
     readRes = GifDecoder::LoadFrame(m_pGifContext.get(), m_FrameCur);
   }
 
-  if (readRes == CFX_GifDecodeStatus::Success) {
+  if (readRes == GifDecoder::Status::kSuccess) {
     m_pDeviceBitmap = nullptr;
     m_pFile = nullptr;
     m_status = FXCODEC_STATUS_DECODE_FINISH;
@@ -2117,10 +2117,10 @@ std::pair<FXCODEC_STATUS, size_t> ProgressiveDecoder::GetFrames() {
 #ifdef PDF_ENABLE_XFA_GIF
     case FXCODEC_IMAGE_GIF: {
       while (true) {
-        CFX_GifDecodeStatus readResult;
+        GifDecoder::Status readResult;
         std::tie(readResult, m_FrameNumber) =
             GifDecoder::LoadFrameInfo(m_pGifContext.get());
-        while (readResult == CFX_GifDecodeStatus::Unfinished) {
+        while (readResult == GifDecoder::Status::kUnfinished) {
           FXCODEC_STATUS error_status = FXCODEC_STATUS_ERR_READ;
           if (!GifReadMoreData(&error_status))
             return {error_status, 0};
@@ -2128,7 +2128,7 @@ std::pair<FXCODEC_STATUS, size_t> ProgressiveDecoder::GetFrames() {
           std::tie(readResult, m_FrameNumber) =
               GifDecoder::LoadFrameInfo(m_pGifContext.get());
         }
-        if (readResult == CFX_GifDecodeStatus::Success) {
+        if (readResult == GifDecoder::Status::kSuccess) {
           m_status = FXCODEC_STATUS_DECODE_READY;
           return {m_status, m_FrameNumber};
         }

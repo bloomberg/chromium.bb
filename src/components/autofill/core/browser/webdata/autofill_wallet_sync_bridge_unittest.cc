@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -228,8 +229,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   void ResetProcessor() {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::AUTOFILL_WALLET_DATA, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
+            syncer::AUTOFILL_WALLET_DATA, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
   }
 
@@ -406,8 +406,13 @@ TEST_F(AutofillWalletSyncBridgeTest,
   CreditCard card1 = test::GetMaskedServerCard();
   // Set the card issuer to Google.
   card1.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  card1.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+  card1.set_card_art_url(GURL("https://www.example.com/card.png"));
   CreditCard card2 = test::GetMaskedServerCardAmex();
   CreditCard card_with_nickname = test::GetMaskedServerCardWithNickname();
+  card2.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
   table()->SetServerCreditCards({card1, card2, card_with_nickname});
   PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
   table()->SetPaymentsCustomerData(&customer_data);
@@ -444,6 +449,14 @@ TEST_F(AutofillWalletSyncBridgeTest,
             card_specifics1.masked_card().card_issuer().issuer());
   EXPECT_EQ(sync_pb::CardIssuer::ISSUER_UNKNOWN,
             card_specifics2.masked_card().card_issuer().issuer());
+  EXPECT_EQ(sync_pb::WalletMaskedCreditCard::UNENROLLED,
+            card_specifics1.masked_card().virtual_card_enrollment_state());
+  EXPECT_EQ(sync_pb::WalletMaskedCreditCard::ENROLLED,
+            card_specifics2.masked_card().virtual_card_enrollment_state());
+  EXPECT_EQ("https://www.example.com/card.png",
+            card_specifics1.masked_card().card_art_url());
+  EXPECT_TRUE(card_specifics2.masked_card().card_art_url().empty());
+
   // Read local Wallet Data from Autofill table, and compare with expected
   // wallet specifics.
   EXPECT_THAT(
@@ -488,6 +501,9 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
   AutofillProfile address1 = test::GetServerProfile();
   table()->SetServerProfiles({address1});
   CreditCard card1 = test::GetMaskedServerCard();
+  card1.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+  card1.set_card_art_url(GURL("https://www.example.com/card.png"));
   table()->SetServerCreditCards({card1});
   PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
   table()->SetPaymentsCustomerData(&customer_data);
@@ -500,6 +516,9 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
   AutofillWalletSpecifics profile_specifics2;
   SetAutofillWalletSpecificsFromServerProfile(address2, &profile_specifics2);
   CreditCard card2 = test::GetMaskedServerCardAmex();
+  card2.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  card2.set_card_art_url(GURL("https://www.test.com/card.png"));
   AutofillWalletSpecifics card_specifics2;
   SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
   AutofillWalletSpecifics customer_data_specifics;
@@ -714,6 +733,9 @@ TEST_F(AutofillWalletSyncBridgeTest,
   AutofillProfile profile = test::GetServerProfile();
   table()->SetServerProfiles({profile});
   CreditCard card = test::GetMaskedServerCard();
+  card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+  card.set_card_art_url(GURL("https://www.example.com/card.png"));
   table()->SetServerCreditCards({card});
   PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
   table()->SetPaymentsCustomerData(&customer_data);
@@ -856,6 +878,9 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   card.SetNickname(u"Grocery card");
   // Set the card issuer to Google.
   card.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+  card.set_card_art_url(GURL("https://www.example.com/card.png"));
   AutofillWalletSpecifics card_specifics;
   SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
 
@@ -882,6 +907,9 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_EQ(card.nickname(), cards[0]->nickname());
   EXPECT_EQ(card.card_issuer(), cards[0]->card_issuer());
   EXPECT_EQ(card.instrument_id(), cards[0]->instrument_id());
+  EXPECT_EQ(card.virtual_card_enrollment_state(),
+            cards[0]->virtual_card_enrollment_state());
+  EXPECT_EQ(card.card_art_url(), cards[0]->card_art_url());
 
   // Also make sure that those types are not empty, to exercice all the code
   // paths.
@@ -1004,6 +1032,73 @@ TEST_F(AutofillWalletSyncBridgeTest,
   // Make sure that the correct instrument_id was set.
   EXPECT_EQ(card.instrument_id(), cards[0]->instrument_id());
   EXPECT_EQ(INT64_MAX, cards[0]->instrument_id());
+}
+
+// Test that it logs correctly when new cards with virtual card metadata are
+// synced.
+TEST_F(AutofillWalletSyncBridgeTest, SetWalletCards_LogVirtualMetadataSynced) {
+  // Initial data:
+  // Card 1: has virtual cards.
+  CreditCard card1 = test::GetMaskedServerCard();
+  card1.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  card1.set_server_id("card1_server_id");
+  card1.set_card_art_url(GURL("https://www.example.com/card1.png"));
+  // Card 2: has virtual cards.
+  CreditCard card2 = test::GetMaskedServerCard();
+  card2.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  card2.set_server_id("card2_server_id");
+  card2.set_card_art_url(GURL("https://www.example.com/card2.png"));
+  // Card 3: has no virtual cards
+  CreditCard card3 = test::GetMaskedServerCard();
+  card3.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+  card3.set_server_id("card3_server_id");
+
+  table()->SetServerCreditCards({card1, card2, card3});
+
+  // Trigger sync:
+  // Card 1: Same as old card 1. No data changed; should not log.
+  AutofillWalletSpecifics card1_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card1, &card1_specifics);
+  // Card 2: Updated the card art url; should log for existing card.
+  AutofillWalletSpecifics card2_specifics;
+  card2.set_card_art_url(GURL("https://www.example.com/card2-new.png"));
+  SetAutofillWalletSpecificsFromServerCard(card2, &card2_specifics);
+  // Card 3: Existed card newly-enrolled in virtual cards; should log for new
+  // card.
+  AutofillWalletSpecifics card3_specifics;
+  card3.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  card3.set_card_art_url(GURL("https://www.example.com/card3.png"));
+  SetAutofillWalletSpecificsFromServerCard(card3, &card3_specifics);
+  // Card 4: New card enrolled in virtual cards; should log for new card
+  AutofillWalletSpecifics card4_specifics;
+  CreditCard card4 = test::GetMaskedServerCard();
+  card4.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  card4.set_server_id("card4_server_id");
+  card4.set_card_art_url(GURL("https://www.example.com/card4.png"));
+  SetAutofillWalletSpecificsFromServerCard(card4, &card4_specifics);
+
+  // This bridge does not store metadata, i.e. billing_address_id. Strip it
+  // off so that the expectations below pass.
+  card1_specifics.mutable_masked_card()->set_billing_address_id(std::string());
+  card2_specifics.mutable_masked_card()->set_billing_address_id(std::string());
+  card3_specifics.mutable_masked_card()->set_billing_address_id(std::string());
+  card4_specifics.mutable_masked_card()->set_billing_address_id(std::string());
+
+  // Trigger sync.
+  base::HistogramTester histogram_tester;
+  StartSyncing(
+      {card1_specifics, card2_specifics, card3_specifics, card4_specifics});
+
+  // Verify the histogram logs.
+  histogram_tester.ExpectBucketCount("Autofill.VirtualCard.MetadataSynced",
+                                     /*existing_card*/ false, 1);
+  histogram_tester.ExpectBucketCount("Autofill.VirtualCard.MetadataSynced",
+                                     /*existing_card*/ true, 2);
 }
 
 }  // namespace autofill

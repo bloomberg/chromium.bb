@@ -35,7 +35,7 @@
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/external_app_install_features.h"
+#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -55,10 +55,10 @@
 #include "ash/constants/ash_paths.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_external_loader.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/signin_screen_extensions_external_loader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -67,7 +67,7 @@
 #include "components/arc/arc_util.h"
 #include "extensions/common/constants.h"
 #else
-#include "chrome/browser/extensions/default_apps.h"
+#include "chrome/browser/extensions/preinstalled_apps.h"
 #endif
 
 #if defined(OS_WIN)
@@ -83,8 +83,8 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// Certain default extensions are no longer needed on ARC devices as they were
-// replaced by their ARC counterparts.
+// Certain pre-installed extensions are no longer needed on ARC devices as they
+// were replaced by their ARC counterparts.
 bool ShouldUninstallExtensionReplacedByArcApp(const std::string& extension_id) {
   if (!arc::IsArcAvailable())
     return false;
@@ -369,8 +369,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     const std::string* web_app_migration_flag =
         extension->FindStringPath(kWebAppMigrationFlag);
     bool is_migrating_to_web_app =
-        web_app_migration_flag && web_app::IsExternalAppInstallFeatureEnabled(
-                                      *web_app_migration_flag, *profile_);
+        web_app_migration_flag &&
+        web_app::IsPreinstalledAppInstallFeatureEnabled(*web_app_migration_flag,
+                                                        *profile_);
     bool keep_if_present =
         extension->FindBoolPath(kKeepIfPresent).value_or(false);
     if (keep_if_present || is_migrating_to_web_app) {
@@ -727,10 +728,10 @@ void ExternalProviderImpl::CreateExternalProviders(
     provider_list->push_back(std::move(recommended_provider));
   }
 
-  // In tests don't install extensions from default external sources.
+  // In tests don't install pre-installed apps.
   // It would only slowdown tests and make them flaky.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableDefaultApps)) {
+          ::switches::kDisablePreinstalledApps)) {
     return;
   }
 
@@ -765,11 +766,11 @@ void ExternalProviderImpl::CreateExternalProviders(
         ManifestLocation::kExternalPrefDownload,
         bundled_extension_creation_flags));
 
-    // OEM default apps.
+    // OEM pre-installed apps.
     int oem_extension_creation_flags =
         bundled_extension_creation_flags | Extension::WAS_INSTALLED_BY_OEM;
-    chromeos::ServicesCustomizationDocument* customization =
-        chromeos::ServicesCustomizationDocument::GetInstance();
+    ash::ServicesCustomizationDocument* customization =
+        ash::ServicesCustomizationDocument::GetInstance();
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service, customization->CreateExternalLoader(profile), profile,
         ManifestLocation::kExternalPref,
@@ -777,19 +778,19 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 
   // For Chrome OS demo sessions, add pre-installed demo extensions and apps.
-  if (chromeos::DemoExtensionsExternalLoader::SupportedForProfile(profile)) {
+  if (ash::DemoExtensionsExternalLoader::SupportedForProfile(profile)) {
     base::FilePath cache_dir;
     CHECK(base::PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
                                  &cache_dir));
-    scoped_refptr<chromeos::DemoExtensionsExternalLoader> loader =
-        base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(cache_dir);
+    auto loader =
+        base::MakeRefCounted<ash::DemoExtensionsExternalLoader>(cache_dir);
     std::unique_ptr<ExternalProviderImpl> demo_apps_provider =
         std::make_unique<ExternalProviderImpl>(
             service, loader, profile, ManifestLocation::kExternalPolicy,
             ManifestLocation::kExternalPolicyDownload, Extension::NO_FLAGS);
     demo_apps_provider->set_auto_acknowledge(true);
     demo_apps_provider->set_install_immediately(true);
-    chromeos::DemoSession::Get()->SetExtensionsExternalLoader(loader);
+    ash::DemoSession::Get()->SetExtensionsExternalLoader(loader);
     provider_list->push_back(std::move(demo_apps_provider));
   }
 #endif
@@ -838,9 +839,9 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // The default apps are installed as INTERNAL but use the external
+  // The pre-installed apps are installed as INTERNAL but use the external
   // extension installer codeflow.
-  provider_list->push_back(std::make_unique<default_apps::Provider>(
+  provider_list->push_back(std::make_unique<preinstalled_apps::Provider>(
       profile, service,
       base::MakeRefCounted<ExternalPrefLoader>(
           chrome::DIR_DEFAULT_APPS, ExternalPrefLoader::NONE, nullptr),

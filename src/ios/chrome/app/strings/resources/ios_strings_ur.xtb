@@ -4,6 +4,7 @@
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1013952917065545813">آپ ان ٹیبز کو دوبارہ کھولنے کے لیے یہاں واپس آ سکتے ہیں جنہیں آپ نے حال ہی میں بند کر دیا ہے</translation>
 <translation id="1016495303386450659">آئٹم اپ ڈيٹ ہوگیا</translation>
+<translation id="1027850213405719822">اس سے مطابقت پذیری آف ہو جائے گی۔</translation>
 <translation id="1044891598689252897">سائٹس حسب معمول کام کریں گی</translation>
 <translation id="1047726139967079566">یہ صفحہ بُک مارک کریں…</translation>
 <translation id="1049743911850919806">پوشیدگی</translation>
@@ -32,9 +33,11 @@
 <translation id="122699739164161391">سبھی ٹیبز بند کریں</translation>
 <translation id="1229222343402087523">‏Chrome میں {searchPhrase}$ تلاش کریں</translation>
 <translation id="1231733316453485619">مطابقت پذیری آن کریں؟</translation>
+<translation id="1242044645101871359">دوبارہ سائن ان کریں</translation>
 <translation id="1254117744268754948">فولڈر کا انتخاب کریں</translation>
 <translation id="1265739287306757398">طریقہ جانیں</translation>
 <translation id="1272079795634619415">روکیں</translation>
+<translation id="1282311502488501110">سائن ان نہ کریں</translation>
 <translation id="1283524564873030414">گزشتہ 24 گھنٹے</translation>
 <translation id="1285320974508926690">اس سائٹ کا ترجمہ کبھی نہ کریں</translation>
 <translation id="1321993286294231467">تصویر محفوظ کرنے میں خرابی۔</translation>
@@ -95,8 +98,8 @@
 <translation id="1820259098641718022">پڑھنے کی فہرست میں شامل کر دیا گیا ہے</translation>
 <translation id="1870148520156231997">پاس ورڈ ظاہر کریں</translation>
 <translation id="1872096359983322073">ٹارچ</translation>
+<translation id="1894205589103145703">سائن ان کرنے کے دوران کچھ غلط ہو گیا۔</translation>
 <translation id="1911619930368729126">‏Google Drive میں اپ لوڈ کریں</translation>
-<translation id="1919130412786645364">‏Chrome میں سائن ان کی اجازت دیں</translation>
 <translation id="1923342640370224680">پچھلے گھنٹے</translation>
 <translation id="1941314575388338491">کاپی کرنے کیلئے دو بار تھپتھپائیں۔</translation>
 <translation id="1952172573699511566">جب ممکن ہوگا، تو ویب سائٹس آپ کی پسندیدہ زبان میں متن دکھائیں گی۔</translation>
@@ -106,21 +109,22 @@
 <translation id="1974060860693918893">جدید ترین</translation>
 <translation id="1989112275319619282">براؤز کریں</translation>
 <translation id="2015722694326466240">پاسورڈز دیکھنے کے لیے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا چاہئے۔</translation>
+<translation id="2022352537516230970">‏آپ کے iPhone کیلئے بنایا گیا</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> دن پہلے فعال تھا</translation>
 <translation id="2074131957428911366">آپ <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں کسی بھی وقت اس بات کا انتخاب کر سکتے ہیں کہ کس چیز کی مطابقت پذیری کرنی ہے۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
+<translation id="2086623437239112659">آپ کی اسٹور کردہ سائن ان کی معلومات پرانی ہو سکتی ہے۔</translation>
 <translation id="209018056901015185">ڈیسک ٹاپ سائٹ کی درخواست کریں</translation>
 <translation id="2103075008456228677">‏history.google.com کھولیں</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> آئٹمز منتقل کر دیے گئے</translation>
-<translation id="213900355088104901">نجی طور پر براؤز کرنے کیلئے، ایک پوشیدگی ٹیب کھولیں</translation>
 <translation id="2139867232736819575">وہ متن تلاش کریں جسے آپ نے کاپی کیا ہے</translation>
+<translation id="214201757571129614">سائن ان کریں…</translation>
 <translation id="2149973817440762519">بک مارک میں ترمیم کریں</translation>
 <translation id="2175927920773552910">‏QR کوڈ</translation>
 <translation id="2198757192731523470">‏تلاش، اشتہارات اور Google کی دیگر سروسز کو ذاتی نوعیت کا بنانے کے لیے Google آپ کی سرگزشت کا استعمال کر سکتا ہے۔</translation>
 <translation id="2218443599109088993">زوم آؤٹ کریں</translation>
 <translation id="2230173723195178503">ویب صفحہ لوڈ کر دیا گیا ہے</translation>
 <translation id="2239626343334228536">براؤزنگ ڈیٹا صاف ہو رہا ہے...</translation>
-<translation id="2257567812274161158">مطابقت پذیری کام نہیں کر رہی ہے۔</translation>
 <translation id="225943865679747347">خرابی کا کوڈ: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">اکاؤنٹ شامل کریں</translation>
 <translation id="2268044343513325586">بہتر بنائیں</translation>
@@ -183,6 +187,7 @@
 <translation id="2871695793448672541">مخفی، پاس ورڈ</translation>
 <translation id="2876369937070532032">‏آپ کو سیکیورٹی کا خطرہ لاحق ہونے پر، Google کو آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs بھیجتا ہے</translation>
 <translation id="288655811176831528">ٹیب بند کریں</translation>
+<translation id="2893180576842394309">‏تلاش اور Google کی دیگر سروسز کو ذاتی نوعیت کا بنانے کے لیے Google آپ کی سرگزشت کا استعمال کر سکتا ہے</translation>
 <translation id="2898963176829412617">نیا فولڈر…</translation>
 <translation id="2916171785467530738">‏تلاشوں اور URLs کی خودکار تکمیل کریں</translation>
 <translation id="291754862089661335">‏QR کوڈ کو اس فریم میں رکھیں</translation>
@@ -203,23 +208,23 @@
 <translation id="3081338492074632642">اس بات کو یقینی بنائیں کہ آپ جو پاس ورڈ محفوظ کر رہے ہیں وہ آپ کے <ph name="WEBSITE" /> کے پاس ورڈ سے مماثل ہے</translation>
 <translation id="3112556859945124369">نشان زد کریں…</translation>
 <translation id="3131206671572504478">سبھی کو مسدود کریں</translation>
+<translation id="313283613037595347">نیا پوشیدگی ٹیب بنائیں۔</translation>
 <translation id="3153862085237805241">کارڈ محفوظ کریں</translation>
+<translation id="3157387275655328056">پڑھنے کی فہرست میں شامل کریں</translation>
 <translation id="3157684681743766797">سبھی کو نشان زد کریں…</translation>
 <translation id="3161291298470460782">‏یہ آپ کو سائن آؤٹ، مطابقت پذیری کو آف اور اس آلہ سے تمام Chrome ڈیٹا کو صاف کر دے گا۔ آپ کا مطابقت پذیر ڈیٹا آپ کے Google اکاؤنٹ میں رہے گا۔</translation>
 <translation id="3169472444629675720">دریافت کریں</translation>
 <translation id="3175081911749765310">ویب سروسز</translation>
 <translation id="3178650076442119961">آج فعال تھا</translation>
+<translation id="3181825792072797598">مطابقت پذیری آن کریں</translation>
 <translation id="3181954750937456830">محفوظ براؤزنگ (آپ اور آپ کے آلہ کی خطرناک سائٹس سے حفاظت کرتی ہے)</translation>
 <translation id="3184767182050912705"><ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> سے غیر مقفل کریں</translation>
-<translation id="3196681740617426482">سائٹس آپ کے براؤزنگ کے تجربہ کو بہتر بنانے کے لیے کوکیز کا استعمال کر سکتی ہیں، مثال کے طور پر آپ کو سائن ان رکھنا یا آپ کی شاپنگ کارٹ میں آئٹمز کو یاد رکھنا۔
-
-پوشیدگی موڈ میں ہونے پر سائٹس مختلف سائٹس میں آپ کی براؤزنگ سرگرمی کو دیکھنے کے لیے کوکیز کا استعمال نہیں کرسکتی ہیں، مثال کے طور پر اشتہارات کو ذاتی نوعیت کا بنانا۔</translation>
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
-<translation id="3222343486469566063">سائن ان نہیں ہیں</translation>
 <translation id="3224641773458703735">پاس ورڈز برآمد کرنے کیلئے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا ہوگا۔</translation>
 <translation id="3240426699337459095">لنک کاپی ہوگیا</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، <ph name="ADDITIONAL_INFO" />، <ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
+<translation id="3261971309013797455">آپ کی پڑھنے کی فہرست آف لائن دستیاب ہے۔ اپنی پڑھنے کی فہرست میں صفحہ شامل کرنے کے لیے، <ph name="SHARE_OPENING_ICON" />  پھر <ph name="ADD_TO_READING_LIST_TEXT" /> پر تھپتھپائیں۔</translation>
 <translation id="3268451620468152448">کھلے ٹیبز</translation>
 <translation id="3272527697863656322">منسوخ کریں</translation>
 <translation id="3277021493514034324">سائٹ کا پتہ کاپی ہو گیا</translation>
@@ -285,8 +290,6 @@
 <translation id="3928666092801078803">میرا ڈیٹا ملائیں</translation>
 <translation id="3929457972718048006">پتے</translation>
 <translation id="3943492037546055397">پاس ورڈز</translation>
-<translation id="3943557322767080599">‏اپنے Google اکاؤنٹ میں سائن ان کرنے پر Chrome سائن ان پرامپٹس دکھائیں</translation>
-<translation id="3967266340354872733">‏رازداری، سیکیورٹی اور ڈیٹا جمع کرنے سے متعلق مزید ترتیبات کیلئے، <ph name="BEGIN_LINK" />مطابقت پذیری<ph name="END_LINK" /> اور <ph name="BEGIN_LINK" />Google سروسز<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="3967822245660637423">ڈاؤن لوڈ مکمل ہوگیا ہے</translation>
 <translation id="3968505803272650567">دلچسپیوں کا نظم کریں</translation>
 <translation id="3989635538409502728">سائن آؤٹ کریں</translation>
@@ -310,6 +313,7 @@
 <translation id="4172051516777682613">ہمیشہ دکھائیں</translation>
 <translation id="418156467088430727">نئے ٹیب میں آف لائن ورژن دیکھیں</translation>
 <translation id="4181841719683918333">زبانیں</translation>
+<translation id="4184011057600693970">‏آپ کے iPad کیلئے بنایا گیا</translation>
 <translation id="424315890655130736">پاس فریز درج کریں</translation>
 <translation id="4263576668337963058">دستیاب صفحہ کی کارروائیاں دکھائیں</translation>
 <translation id="4267380167363222949">اگلا ٹیب</translation>
@@ -344,6 +348,7 @@
 <translation id="4630540211544979320">صفحات کا ترجمہ کریں</translation>
 <translation id="4634124774493850572">پاس ورڈ استعمال کریں</translation>
 <translation id="4636930964841734540">معلومات</translation>
+<translation id="4650125387981512669">بطور <ph name="FIRST_RUN_ACCOUNT_NAME" /> جاری رکھیں</translation>
 <translation id="4659126640776004816">‏جب آپ اپنے Google اکاؤنٹ میں سائن ان کرتے ہیں، تو یہ خصوصیت آن ہو جاتی ہے۔</translation>
 <translation id="4659667755519643272">ٹیب سوئچ کنندہ میں داخل ہوں</translation>
 <translation id="46614316059270592">پاس ورڈ محفوظ کریں</translation>
@@ -351,6 +356,7 @@
 
 آپ کے ڈیٹا کی آپ کے مطابقت پذیر پاس فریز کے ساتھ مرموز کاری کی گئی ہے۔ مطابقت پذیری شروع کرنے کیلئے اسے درج کریں۔</translation>
 <translation id="4689564913179979534">ادائیگی کے طریقوں کا نظم کریں...</translation>
+<translation id="470966556546083668">مطابقت پذیری کو آن نہ کریں</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4747097190499141774">‏پاس فریز کی مرموز کاری میں Google Pay کے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔ آپ کے پاس فریز کا حامل شخص ہی آپ کے مرموز کردہ ڈیٹا کو پڑھ سکتا ہے۔ پاس فریز Google کو نہیں بھیجا جاتا ہے اور نہ ہی Google اسے اسٹور کرتا ہے۔ اگر آپ اپنا پاس فریز بھول جاتے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو آپ کو مطابقت پذیری کو دوبارہ ترتیب دینے کی ضرورت ہوگی۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">نیا پوشیدگی ٹیب</translation>
@@ -383,7 +389,6 @@
 <translation id="4945756290001680296">پاس ورڈ کی ترتیبات تک رسائی حاصل کریں</translation>
 <translation id="4979397965658815378">‏اپنے سبھی آلات پر اپنے بُک مارکس، پاس ورڈز، سرگزشت اور دیگر ترتیبات حاصل کرنے کیلئے اپنے Google اکاؤنٹ کے ساتھ سائن ان کریں</translation>
 <translation id="5005498671520578047">پاس ورڈ کاپی کریں</translation>
-<translation id="5010803260590204777">ویب کو نجی طور پر براؤز کرنے کیلئے ایک پوشیدگی ٹیب کھولیں۔</translation>
 <translation id="5017828934289857214">مجھے بعد میں یاد دلائیں</translation>
 <translation id="5039804452771397117">اجازت دیں</translation>
 <translation id="5056446788882570708"><ph name="TIME" /> مسائل کا پتا چلا۔</translation>
@@ -397,11 +402,13 @@
 <translation id="5132942445612118989">سبھی آلات پر اپنے پاس ورڈز اور سرگزشت کی مطابقت پذیری اور مزید بہت کچھ کریں</translation>
 <translation id="5140288047769711648">‏Chrome یہ پاس ورڈ آپ کے لئے یاد رکھے گا۔ آپ کو اسے یاد رکھنے کی ضرورت نہیں ہے۔</translation>
 <translation id="5150492518600715772">اپنے آلہ پر بھیجیں</translation>
+<translation id="5168414296986405587">‏iPadOS کیلئے بنائی گئی</translation>
 <translation id="5181140330217080051">ڈاؤن لوڈ کیا جا رہا ہے</translation>
 <translation id="5186185447130319458">نجی</translation>
 <translation id="5188482106078495165">آپ کی کوکیز کی ترتیب سبھی ٹیبز پر لاگو ہوتی ہے۔ ایک کھلے ٹیب پر نئی ترتیب لاگو کرنے کیلئے، ٹیب کو دوبارہ لوڈ کریں۔</translation>
 <translation id="5190835502935405962">بُک مارکس بار</translation>
 <translation id="5197255632782567636">انٹرنیٹ</translation>
+<translation id="5210365745912300556">ٹیب بند کریں</translation>
 <translation id="5228579091201413441">مطابقت پذیری فعال کریں</translation>
 <translation id="5234764350956374838">برخاست کریں</translation>
 <translation id="5245322853195994030">مطابقت پذیری منسوخ کریں</translation>
@@ -425,6 +432,7 @@
 <translation id="5508435575041083207">اس آلہ سے سائن آؤٹ کریں اور ڈیٹا صاف کریں</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> گھنٹہ پہلے</translation>
 <translation id="5525269841082836315">پاس فریز بنائیں</translation>
+<translation id="5532698011560297095">سائن نہیں کیا جا سکتا</translation>
 <translation id="5548760955356983418">‏Handoff آپ کو اس آلہ پر کسی ویب سائٹ کی براؤزنگ شروع کرنے اور پھر آسانی سےآپ کے Mac پر جاری رکھنے دیتا ہے۔ موجودہ کھلی ویب سائٹ آپ کے Mac کے ڈاک میں ظاہر ہوگی۔
 
 Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ضروری ہے اور آپ کے آلات کو وہی iCloud اکاؤنٹ استعمال کرنا چاہیے۔</translation>
@@ -447,8 +455,11 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5738887413654608789">یہ آپ کو آپ کے قرب و جوار کی بنیاد پر متعلقہ ویب صفحات کو دریافت کرنے کی اجازت دیتا ہے۔</translation>
 <translation id="5758631781033351321">آپ اپنی پڑھنے کی فہرست یہاں پائیں گے</translation>
 <translation id="5782227691023083829">ترجمہ کیا جا رہا ہے...</translation>
+<translation id="5797070761912323120">‏تلاش، اشتہارات اور Google کی دیگر سروسز کو ذاتی نوعیت کا بنانے کے لیے Google آپ کی سرگزشت کا استعمال کر سکتا ہے</translation>
 <translation id="5803566855766646066">کیا آپ واقعی اس نئے کارڈ کو مسترد کرنا چاہتے ہیں؟</translation>
+<translation id="5812974770859303494">اس میں شامل کریں...</translation>
 <translation id="5816228676161003208">یہ آپ کو اپنی آواز کا استعمال کر کے زیادہ تیزی سے تلاش کرنے دیتا ہے۔</translation>
+<translation id="581659025233126501">مطابقت پذیری آن کریں</translation>
 <translation id="5819208479324046259"><ph name="MANAGER" /> نظم کرتا ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="5846482154967366008">تلاش انجن</translation>
 <translation id="5854790677617711513">30 دن سے زیادہ پرانا</translation>
@@ -467,7 +478,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5955891643922670672">آف لائن ورژن دیکھنا</translation>
 <translation id="5957613098218939406">مزید اختیارات</translation>
 <translation id="5963939892571022323">نمایاں کرنے کا لنک تخلیق نہیں کیا جا سکا۔</translation>
-<translation id="5964480694698977962">نیا پوشیدگی ٹیب بنائیں۔</translation>
 <translation id="5965679971710331625">آپ سائن ان ہیں</translation>
 <translation id="5979837087407522202">پاس ورڈز تلاش کریں</translation>
 <translation id="5982717868370722439"><ph name="USER_EMAIL" /> میں موجودہ ڈیٹا شامل کریں۔</translation>
@@ -482,13 +492,13 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">اپنی کہانیوں اور سرگرمی کو یہاں کنٹرول کریں</translation>
 <translation id="6066301408025741299">منسوخ کرنے کیلئے تھپتھپائیں۔</translation>
+<translation id="60829778314739003">قبول کریں اور جاری رکھیں</translation>
 <translation id="6108923351542677676">سیٹ اپ جاری ہے…</translation>
 <translation id="6119050551270742952">موجودہ ویب صفحہ پوشیدگی پر ہے</translation>
 <translation id="6122191549521593678">آن لائن</translation>
 <translation id="6127379762771434464">آئٹم ہٹا دیا گیا</translation>
 <translation id="6136914049981179737">کچھ سیکنڈ پہلے</translation>
 <translation id="6144589619057374135">‏پوشیدگی میں {url}$ کھولیں</translation>
-<translation id="616831107264507309">بعد میں پڑھیں</translation>
 <translation id="6177442314419606057">‏Chrome میں تلاش کریں</translation>
 <translation id="6184086493125982861">ٹیبز دکھائیں</translation>
 <translation id="6187302354554850004">آخری مطابقت پذیری: <ph name="LAST_USED_TIME" /></translation>
@@ -496,12 +506,14 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6196207969502475924">صوتی تلاش</translation>
 <translation id="6202364442240589072">{COUNT,plural, =1{{COUNT} ٹیب بند کریں}other{{COUNT} ٹیبز بند کریں}}</translation>
 <translation id="6219688215832490856">کبھی بھی ترجمہ نہ کریں</translation>
+<translation id="6223816392543092032">اپنے سبھی آلات پر اپنے بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات حاصل کریں۔</translation>
+<translation id="6232329973559504466">پوشیدگی تلاش</translation>
 <translation id="6254066287920239840">براؤزر کی بجائے لنکس کو ایپ میں کھولیں۔</translation>
 <translation id="6255097610484507482">کریڈٹ کارڈ میں ترمیم کریں</translation>
 <translation id="6284652193729350524"><ph name="LANGUAGE" /> کا ترجمہ کرنے کی پیشکش کریں</translation>
 <translation id="6293101329759844770">‏محفوظ براؤزنگ کو آن کرنے کے لیے، <ph name="BEGIN_LINK" />Google سروسز<ph name="END_LINK" /> کھولیں اور محفوظ براؤزنگ پر تھپتھپائیں۔</translation>
-<translation id="6303969859164067831">سائن آؤٹ کریں اور مطابقت پذیری آف کریں</translation>
 <translation id="6308436439357671616">یہ آپ کو تصاویر لینے اور اپ لوڈ کرنے دیتا ہے۔</translation>
+<translation id="6321526113093607004">بُک مارکس میں شامل کریں</translation>
 <translation id="6324528485781869530">مطابقت پذیری اکاؤنٹ کو سوئچ کریں</translation>
 <translation id="6324669097367352121">سائن ان کی ترتیبات</translation>
 <translation id="6337234675334993532">مرموزکاری</translation>
@@ -509,8 +521,10 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6342069812937806050">ابھی ابھی</translation>
 <translation id="6344783595350022745">متن صاف کریں</translation>
 <translation id="6346549652287021269">نیا ڈاؤن لوڈ شروع کریں؟</translation>
+<translation id="634878792104344809">اپنے سبھی آلات پر اپنے پاس ورڈز، سرگزشت اور مزید کی مطابقت پذیری کریں</translation>
 <translation id="6362362396625799311">کوئی پوشیدگی ٹیبز نہیں ہیں</translation>
 <translation id="6363526231572697780">کوئی صارف نام نہیں ہے</translation>
+<translation id="6366663624406569102">سائن آؤٹ کریں اور مطابقت پذیری آف کریں</translation>
 <translation id="6374469231428023295">دوبارہ کوشش کریں</translation>
 <translation id="6377118281273296434">سائٹ کی سیکیورٹی</translation>
 <translation id="6380866119319257197">اگر آپ اپنا پاس فریز بھول جاتے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو <ph name="BEGIN_LINK" />مطابقت پذیری دوبارہ ترتیب دیں<ph name="END_LINK" /></translation>
@@ -528,6 +542,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6445981559479772097">پیغام بھیج دیا گیا۔</translation>
 <translation id="6447842834002726250">کوکیز</translation>
 <translation id="6453018583485750254">چیک کبھی نہیں چلتا ہے۔</translation>
+<translation id="6459307836338400162">‏رازداری، سیکیورٹی اور ڈیٹا جمع کرنے سے متعلق مزید ترتیبات کے لیے، <ph name="BEGIN_LINK" />مطابقت پذیری<ph name="END_LINK" /> اور <ph name="BEGIN_LINK" />Google سروسز<ph name="END_LINK" /> دونوں دیکھیں۔</translation>
 <translation id="6464071786529933911">نئے پوشیدگی ٹیب میں کھولیں</translation>
 <translation id="6464397691496239022">سائٹس آپ کے براؤزنگ کے تجربہ کو بہتر بنانے کے لیے کوکیز کا استعمال کر سکتی ہیں، مثال کے طور پر آپ کو سائن ان رکھنا یا آپ کی شاپنگ کارٹ میں آئٹمز کو یاد رکھنا۔
 
@@ -557,6 +572,9 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6656103420185847513">فولڈر میں ترمیم کریں</translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
 <translation id="6668619169535738264">بُک مارک میں ترمیم کریں</translation>
+<translation id="6672241253012342409">سائٹس آپ کے براؤزنگ کے تجربے کو بہتر بنانے کے لیے کوکیز کا استعمال کر سکتی ہیں، مثال کے طور پر آپ کو سائن ان رکھنا یا آپ کی شاپنگ کارٹ میں آئٹمز کو یاد رکھنا۔
+
+پوشیدگی موڈ میں ہونے پر سائٹس کوکیز کے ذریعے مختلف سائٹس پر آپ کی براؤزنگ کی سرگرمی، مثال کے طور پر، اشتہارات کو ذاتی نوعیت کا بنانے کے لیے نہیں دیکھ سکتی ہیں۔</translation>
 <translation id="6674571176963658787">مطابقت پذیری شروع کرنے کے لیے، اپنا پاس فریز درج کریں</translation>
 <translation id="667999046851023355">دستاویز</translation>
 <translation id="6691331417640343772">‏Google ڈیش بورڈ پر مطابقت پذیر ڈیٹا کا نظم کریں</translation>
@@ -567,10 +585,11 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6760509555861141183">حالیہ ٹیب میں واپس جائیں</translation>
 <translation id="6780034285637185932">زپ کوڈ</translation>
 <translation id="6785453220513215166">کریش رپورٹ بھیج رہا ہے…</translation>
-<translation id="679325081238418596">اپنے سبھی آلات پر اپنے بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات حاصل کریں</translation>
 <translation id="6797885426782475225">صوتی تلاش</translation>
+<translation id="6801927553864092214">نجی طور پر براؤز کرنے کے لیے ایک پوشیدگی ٹیب کھولیں</translation>
 <translation id="6807889908376551050">سبھی دکھائیں…</translation>
 <translation id="681368974849482173">آئٹم بنایا گیا</translation>
+<translation id="6830804042318138535">مزید پڑھیں</translation>
 <translation id="6831043979455480757">ترجمہ کریں</translation>
 <translation id="6851516051005285358">ڈیسک ٹاپ سائٹ کی درخواست کریں</translation>
 <translation id="6858855187367714033">اسکین کیا گیا</translation>
@@ -579,7 +598,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6873263987691478642">منقسم منظر</translation>
 <translation id="6888009575607455378">کیا آپ واقعی اپنی تبدیلیوں کو مسترد کرنا چاہتے ہیں؟</translation>
 <translation id="6896758677409633944">کاپی کریں</translation>
-<translation id="6903907808598579934">مطابقت پذیری آن کریں</translation>
 <translation id="6914583639806229067">وہ تصویر تلاش کریں جسے آپ نے کاپی کیا ہے</translation>
 <translation id="6914783257214138813">آپ کے پاسورڈز کسی بھی ایسے شخص کے لیے مرئی ہوں گے جو برآمد کردہ فائل کو دیکھ سکتا ہے۔</translation>
 <translation id="6930799952781667037">اس زبان میں تبدیل کرنے کے لیے تھپتھپائیں۔</translation>
@@ -613,11 +631,13 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7203585745079012652">جوابات دوبارہ بولیں</translation>
 <translation id="7207383424303353046">‏نیا: Chrome کو اپنی ڈیفالٹ براؤزر ایپ بنا کر سائٹس کو اس میں خودکار طور پر کھولیں۔ <ph name="BEGIN_LINK" />ترتیبات کھولیں<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">کارڈ کا غلط عرفی نام</translation>
+<translation id="722454870747268814">نیا پوشیدگی ٹیب</translation>
 <translation id="7265758999917665941">اس سائٹ کیلئے کبھی نہیں</translation>
 <translation id="7272437679830969316">آپ کی شناخت کی توثیق نہیں کی جا سکتی۔ پاس ورڈ کاپی نہیں ہوا۔</translation>
 <translation id="7291368939935408496">پاسورڈز تیار کیے جا رہے ہيں...</translation>
 <translation id="7293171162284876153">‏مطابقت پذیری شروع کرنے کے لیے، "اپنے Chrome ڈیٹا کو مطابقت پذیر بنائیں" کو آن کریں۔</translation>
 <translation id="7313347584264171202">آپ کو اپنے پوشیدگی ٹیبز یہاں ملیں گے</translation>
+<translation id="7319242366286515846">جاری رکھ کر آپ <ph name="BEGIN_LINK" />سروس کی شرائط<ph name="END_LINK" /> سے اتفاق کرتے ہیں</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> فیصد ڈاؤن لوڈ ہوگئی۔</translation>
 <translation id="7340958967809483333">‏Discover کے لیے اختیارات</translation>
 <translation id="7346909386216857016">ٹھیک ہے، سمجھ آ گئی</translation>
@@ -674,7 +694,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7856733331829174190">ڈاؤن لوڈ نہیں ہو سکی</translation>
 <translation id="7859704718976024901">براؤزنگ سرگزشت</translation>
 <translation id="7887198238286927132">‏آپ کی رازداری کے تحفظ کے لیے، Chrome اس فیلڈ کو آٹو فل نہیں کرے گا۔</translation>
-<translation id="7918293828610777738">آپ کی پڑھنے کی فہرست آف لائن دستیاب ہے۔ اپنی پڑھنے کی فہرست میں صفحہ شامل کرنے کیلئے، پہلے <ph name="SHARE_OPENING_ICON" /> پھر <ph name="READ_LATER_TEXT" /> کو تھپتھپائیں۔</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">پاس ورڈز برآمد کریں...</translation>
 <translation id="7947953824732555851">قبول و سائن ان کریں</translation>
@@ -688,7 +707,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7982789257301363584">نیٹ ورک</translation>
 <translation id="7993619969781047893">کچھ سائٹس پر خصوصیات میں خلل ہو سکتا ہے۔</translation>
 <translation id="800361585186029508">‏درج کردہ URLs کو Google Chrome میں کھولتا ہے۔</translation>
-<translation id="8007420562015504427">پوشیدگی وضع میں تلاش کریں</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8023878949384262191">سیکشن کو پھیلاتا ہے۔</translation>
 <translation id="8027581147000338959">نئی ونڈو میں کھولیں</translation>
@@ -710,8 +728,11 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8225985093977202398">کیش کردہ تصاویر اور فائلیں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8281781826761538115">ڈیفالٹ - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8281886186245836920">نظر انداز کریں</translation>
 <translation id="8283172974887967105">سیٹ کریں…</translation>
 <translation id="8299417921174340354">پاس ورڈز استعمال کرنے کے ليے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا ہوگا۔</translation>
+<translation id="8299613349954694191">ویب کو نجی طور پر براؤز کرنے کے لیے ایک پوشیدگی ٹیب کھولیں۔</translation>
+<translation id="83100941411593607">سائن ان کی خصوصیت غیر فعال ہے</translation>
 <translation id="8319076807703933069">نئی تلاش</translation>
 <translation id="8323906514956095947">ٹیب کے مزید اختیارات کیلئے ٹچ کریں اور دبائے رکھیں</translation>
 <translation id="8328777765163860529">تمام بند کریں</translation>
@@ -748,6 +769,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8654802032646794042">منسوخ کریں</translation>
 <translation id="8668210798914567634">اس صفحہ کو آپ کی پڑھنے کی فہرست میں محفوظ کر دیا گیا ہے۔</translation>
 <translation id="8680787084697685621">اکاؤنٹ سائن ان کی تفصیلات پرانی ہیں۔</translation>
+<translation id="8693663554456874301">{count,plural, =1{ٹیب بند کریں}other{ٹیبز بند کریں}}</translation>
 <translation id="8706588385081740091">پاس ورڈز</translation>
 <translation id="8717864919010420084">لنک کاپی کریں</translation>
 <translation id="8721297211384281569">ٹولز مینو</translation>
@@ -763,6 +785,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8820817407110198400">بُک مارکس</translation>
 <translation id="8840513115188359703">‏آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے۔</translation>
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
+<translation id="8876882697946675716">اپنے آلات کو مطابقت پذیر رکھیں</translation>
 <translation id="8881801611828450202">اس تصویر کیلئے <ph name="SEARCH_ENGINE" /> پر تلاش کریں</translation>
 <translation id="8909135823018751308">اشتراک کریں…</translation>
 <translation id="8917490105272468696">ہاں میں متفق ہوں</translation>
@@ -770,6 +793,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8976382372951310360">مدد</translation>
 <translation id="8981454092730389528">‏Google سرگرمی کنٹرولز</translation>
 <translation id="8985320356172329008">‏Google میں سائن ان ہے بطور</translation>
+<translation id="8996526648899750015">اکاؤنٹ شامل کریں…</translation>
 <translation id="9034759925968272072">‏آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے۔ ممکن ہے کہ ‎<ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />‎ پر آپ کے Google اکاؤنٹ میں براؤزنگ کی سرگزشت کی دیگر شکلیں موجود ہوں۔</translation>
 <translation id="9037965129289936994">اصل دکھائیں</translation>
 <translation id="9039373489628511875">بینڈ وڈتھ</translation>
@@ -792,6 +816,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">کریش رپورٹ بھیج دی گئی۔</translation>
 <translation id="952704832371081537">منسوخ کریں</translation>
+<translation id="984509647832111802">مطابقت پذیری کام نہیں کر رہی ہے۔</translation>
 <translation id="988141524645182168">دیگر آلات</translation>
 <translation id="989988560359834682">پتہ میں ترمیم کریں</translation>
 <translation id="994757059139821576">مضمون کی تجاویز</translation>

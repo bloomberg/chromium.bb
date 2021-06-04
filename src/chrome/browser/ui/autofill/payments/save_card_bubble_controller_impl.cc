@@ -264,8 +264,6 @@ bool SaveCardBubbleControllerImpl::ShouldRequestExpirationDateFromUser() const {
 
 void SaveCardBubbleControllerImpl::OnSaveButton(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
-  set_bubble_view(nullptr);
-
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE: {
       DCHECK(!upload_save_card_prompt_callback_.is_null());
@@ -532,7 +530,7 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
       PersonalDataManagerFactory::GetForProfile(profile);
   if (!personal_data_manager)
     return;
-  base::Optional<AccountInfo> account_info =
+  absl::optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           personal_data_manager->GetAccountInfoForPaymentsServer());
   account_info_ = account_info.value_or(AccountInfo{});

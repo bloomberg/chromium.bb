@@ -25,7 +25,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+import six
 from six.moves import cPickle
 
 from blinkpy.web_tests.controllers import repaint_overlay
@@ -124,6 +124,10 @@ class AbstractTestResultType(object):
         if expected_driver_output:
             self.has_stderr |= expected_driver_output.has_stderr()
 
+    def _artifact_is_text(self, path):
+        ext = self.filesystem.splitext(path)[1]
+        return ext != '.png' and ext != '.wav'
+
     def _write_to_artifacts(self, typ_artifacts, artifact_name, path, content,
                             force_overwrite):
         typ_artifacts.CreateArtifact(
@@ -155,12 +159,11 @@ class AbstractTestResultType(object):
             # --iterations=n or --repeat-each=n.
             if (force_overwrite or self.result != ResultType.Pass
                     or not self.filesystem.exists(artifacts_abspath)):
-                self._write_to_artifacts(
-                    typ_artifacts,
-                    'stderr',
-                    artifact_filename,
-                    self.actual_driver_output.error,
-                    force_overwrite=True)
+                self._write_to_artifacts(typ_artifacts,
+                                         'stderr',
+                                         artifact_filename,
+                                         self.actual_driver_output.error,
+                                         force_overwrite=True)
 
     @staticmethod
     def loads(s):
@@ -245,9 +248,9 @@ class FailureCrash(AbstractTestResultType):
         if self.crash_log:
             artifact_filename = self.port.output_filename(
                 self.test_name, FILENAME_SUFFIX_CRASH_LOG, '.txt')
-            self._write_to_artifacts(
-                typ_artifacts, 'crash_log', artifact_filename,
-                self.crash_log.encode('utf8', 'replace'), force_overwrite)
+            self._write_to_artifacts(typ_artifacts, 'crash_log',
+                                     artifact_filename, self.crash_log,
+                                     force_overwrite)
 
     def message(self):
         if self.pid:
@@ -316,8 +319,29 @@ class FailureText(ActualAndBaselineArtifacts):
         # non empty text.
         super(FailureText, self).create_artifacts(typ_artifacts,
                                                   force_overwrite)
-        expected_text = self.expected_driver_output.text or ''
-        actual_text = self.actual_driver_output.text or ''
+
+        actual_text = ''
+        expected_text = ''
+        if self.expected_driver_output.text is not None:
+            if six.PY3:
+                # TODO(crbug/1197331): We should not decode here looks like.
+                # html_diff expects it to be bytes for comparing to account
+                # various types of encodings.
+                # html_diff.py and unified_diff.py use str types during
+                # diff fixup. Will handle it later.
+                expected_text = self.expected_driver_output.text.decode(
+                    'utf8', 'replace')
+            else:
+                expected_text = self.expected_driver_output.text
+
+        if self.actual_driver_output.text is not None:
+            if six.PY3:
+                # TODO(crbug/1197331): ditto as in the case of expected_text above.
+                actual_text = self.actual_driver_output.text.decode(
+                    'utf8', 'replace')
+            else:
+                actual_text = self.actual_driver_output.text
+
         artifacts_abs_path = self.filesystem.join(
             self.result_directory, typ_artifacts.ArtifactsSubDirectory())
         diff_content = unified_diff(
@@ -331,6 +355,13 @@ class FailureText(ActualAndBaselineArtifacts):
         html_diff_content = html_diff(expected_text, actual_text)
         html_diff_filename = self.port.output_filename(
             self.test_name, FILENAME_SUFFIX_HTML_DIFF, '.html')
+
+        # TODO(crbug/1197331): Revisit while handling the diff modules.
+        if diff_content and six.PY3:
+            diff_content = diff_content.encode('utf8', 'replace')
+        if html_diff_content and six.PY3:
+            html_diff_content = html_diff_content.encode('utf8', 'replace')
+
         self._write_to_artifacts(typ_artifacts, 'text_diff', diff_filename,
                                  diff_content, force_overwrite)
         self._write_to_artifacts(typ_artifacts, 'pretty_text_diff',
@@ -448,7 +479,8 @@ class FailureImageHashMismatch(FailureImage):
                 'prefix': self.port.output_filename(self.test_name, '', '')
             }
             self._write_to_artifacts(typ_artifacts, 'pretty_image_diff',
-                                     diffs_html_filename, diffs_html,
+                                     diffs_html_filename,
+                                     diffs_html.encode('utf8', 'replace'),
                                      force_overwrite)
 
         super(FailureImageHashMismatch, self).create_artifacts(

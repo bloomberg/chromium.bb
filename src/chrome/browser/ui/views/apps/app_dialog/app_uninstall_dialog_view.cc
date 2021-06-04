@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,7 +147,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
       NOTREACHED();
       break;
@@ -181,13 +180,8 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
 
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
-      if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsWithoutExtensions)) {
-        InitializeViewForWebApp(profile, app_id);
-        break;
-      }
-      // Otherwise fallback to Extension-based Bookmark Apps.
-      FALLTHROUGH;
+      InitializeViewForWebApp(profile, app_id);
+      break;
     case apps::mojom::AppType::kExtension:
       InitializeViewForExtension(profile, app_id);
       break;

@@ -149,11 +149,21 @@ IntRect ConvertToPaintingRect(const LayoutObject& input_layout_object,
   return PixelSnappedIntRect(part_rect);
 }
 
-base::Optional<SkColor> BlinkToSkColor(
-    const base::Optional<Color> blink_color) {
-  if (!blink_color)
-    return base::nullopt;
-  return blink_color->Rgb();
+absl::optional<SkColor> GetAccentColor(const ComputedStyle& style) {
+  if (!RuntimeEnabledFeatures::CSSAccentColorEnabled())
+    return absl::nullopt;
+
+  absl::optional<Color> css_accent_color = style.AccentColorResolved();
+  if (css_accent_color)
+    return css_accent_color->Rgb();
+
+  mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
+  LayoutTheme& layout_theme = LayoutTheme::GetTheme();
+  if (layout_theme.IsAccentColorCustomized(color_scheme)) {
+    return layout_theme.GetAccentColor(color_scheme).Rgb();
+  }
+
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -181,7 +191,7 @@ bool ThemePainterDefault::PaintCheckbox(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartCheckbox, GetWebThemeState(element),
       gfx::Rect(unzoomed_rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -206,7 +216,7 @@ bool ThemePainterDefault::PaintRadio(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartRadio, GetWebThemeState(element),
       gfx::Rect(unzoomed_rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -228,7 +238,7 @@ bool ThemePainterDefault::PaintButton(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartButton, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -269,7 +279,7 @@ bool ThemePainterDefault::PaintTextField(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartTextField, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -305,7 +315,7 @@ bool ThemePainterDefault::PaintMenuList(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartMenuList, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -325,7 +335,7 @@ bool ThemePainterDefault::PaintMenuListButton(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartMenuList, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -418,7 +428,7 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartSliderTrack, GetWebThemeState(element),
       gfx::Rect(unzoomed_rect), &extra_params, o.StyleRef().UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -452,10 +462,8 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
       DynamicTo<SliderThumbElement>(&element);
   DCHECK(slider_element);  // PaintSliderThumb should always be passed a
                            // SliderThumbElement
-  base::Optional<SkColor> accent_color =
-      BlinkToSkColor(slider_element->HostInput()
-                         ->EnsureComputedStyle()
-                         ->AccentColorResolved());
+  absl::optional<SkColor> accent_color =
+      GetAccentColor(*slider_element->HostInput()->EnsureComputedStyle());
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartSliderThumb, GetWebThemeState(element),
@@ -487,7 +495,7 @@ bool ThemePainterDefault::PaintInnerSpinButton(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartInnerSpinButton, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, style.UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 
@@ -515,7 +523,7 @@ bool ThemePainterDefault::PaintProgressBar(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartProgressBar, GetWebThemeState(element),
       gfx::Rect(rect), &extra_params, o.StyleRef().UsedColorScheme(),
-      BlinkToSkColor(style.AccentColorResolved()));
+      GetAccentColor(style));
   return false;
 }
 

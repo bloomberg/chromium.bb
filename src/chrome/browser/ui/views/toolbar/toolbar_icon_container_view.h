@@ -8,11 +8,12 @@
 #include <list>
 
 #include "base/observer_list.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 // A general view container for any type of toolbar icons.
@@ -114,7 +115,7 @@ class ToolbarIconContainerView : public views::View,
 
   // Override for the icon color. If not set, |COLOR_TOOLBAR_BUTTON_ICON| is
   // used.
-  base::Optional<SkColor> icon_color_;
+  absl::optional<SkColor> icon_color_;
 
   // Points to the child buttons that we know are currently highlighted.
   // TODO(pbos): Consider observing buttons leaving our hierarchy and removing

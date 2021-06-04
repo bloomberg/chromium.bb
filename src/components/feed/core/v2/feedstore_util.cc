@@ -4,8 +4,10 @@
 
 #include "components/feed/core/v2/feedstore_util.h"
 
+#include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_store.h"
+#include "components/feed/core/v2/public/stream_type.h"
 
 namespace feedstore {
 using feed::LocalActionId;
@@ -16,6 +18,14 @@ base::StringPiece StreamId(const StreamType& stream_type) {
     return kForYouStreamId;
   DCHECK(stream_type.IsWebFeed());
   return kFollowStreamId;
+}
+
+feed::StreamType StreamTypeFromId(base::StringPiece id) {
+  if (id == kForYouStreamId)
+    return feed::kForYouStream;
+  if (id == kFollowStreamId)
+    return feed::kWebFeedStream;
+  return {};
 }
 
 int64_t ToTimestampMillis(base::Time t) {
@@ -49,9 +59,9 @@ void SetSessionId(Metadata& metadata,
       expiry_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
 }
 
-base::Optional<Metadata> MaybeUpdateSessionId(
+absl::optional<Metadata> MaybeUpdateSessionId(
     const Metadata& metadata,
-    base::Optional<std::string> token) {
+    absl::optional<std::string> token) {
   if (token && metadata.session_id().token() != *token) {
     base::Time expiry_time =
         token->empty()
@@ -61,7 +71,7 @@ base::Optional<Metadata> MaybeUpdateSessionId(
     SetSessionId(new_metadata, *token, expiry_time);
     return new_metadata;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 LocalActionId GetNextActionId(Metadata& metadata) {
@@ -91,25 +101,25 @@ Metadata::StreamMetadata& MetadataForStream(Metadata& metadata,
   if (existing)
     return *const_cast<Metadata::StreamMetadata*>(existing);
   Metadata::StreamMetadata* sm = metadata.add_stream_metadata();
-  sm->set_stream_id(StreamId(stream_type).as_string());
+  sm->set_stream_id(std::string(StreamId(stream_type)));
   return *sm;
 }
 
-void SetStreamViewTime(Metadata& metadata,
-                       const StreamType& stream_type,
-                       base::Time stream_last_added_time) {
-  Metadata::StreamMetadata& sm = MetadataForStream(metadata, stream_type);
-  sm.set_view_time_millis(ToTimestampMillis(stream_last_added_time));
+void SetStreamViewContentIds(Metadata& metadata,
+                             const StreamType& stream_type,
+                             const feed::ContentIdSet& content_ids) {
+  Metadata::StreamMetadata& stream_metadata =
+      MetadataForStream(metadata, stream_type);
+  stream_metadata.clear_view_content_ids();
+  stream_metadata.mutable_view_content_ids()->Add(content_ids.values().begin(),
+                                                  content_ids.values().end());
 }
 
-base::Time GetStreamViewTime(const Metadata& metadata,
-                             const StreamType& stream_type) {
-  base::Time result;
+bool IsKnownStale(const Metadata& metadata,
+                  const feed::StreamType& stream_type) {
   const Metadata::StreamMetadata* sm =
       FindMetadataForStream(metadata, stream_type);
-  if (sm)
-    result = FromTimestampMillis(sm->view_time_millis());
-  return result;
+  return sm ? sm->is_known_stale() : false;
 }
 
 feedstore::Metadata MakeMetadata(const std::string& gaia) {
@@ -119,15 +129,31 @@ feedstore::Metadata MakeMetadata(const std::string& gaia) {
   return md;
 }
 
-base::Optional<Metadata> SetStreamViewTime(const Metadata& metadata,
-                                           const StreamType& stream_type,
-                                           base::Time stream_last_added_time) {
-  base::Optional<Metadata> result;
-  if (GetStreamViewTime(metadata, stream_type) != stream_last_added_time) {
+absl::optional<Metadata> SetStreamViewContentIds(
+    const Metadata& metadata,
+    const feed::StreamType& stream_type,
+    const feed::ContentIdSet& content_ids) {
+  absl::optional<Metadata> result;
+  if (!(GetViewContentIds(metadata, stream_type) == content_ids)) {
     result = metadata;
-    SetStreamViewTime(*result, stream_type, stream_last_added_time);
+    SetStreamViewContentIds(*result, stream_type, content_ids);
   }
   return result;
+}
+
+feed::ContentIdSet GetContentIds(const StreamData& stream_data) {
+  return feed::ContentIdSet{
+      {stream_data.content_ids().begin(), stream_data.content_ids().end()}};
+}
+feed::ContentIdSet GetViewContentIds(const Metadata& metadata,
+                                     const feed::StreamType& stream_type) {
+  const Metadata::StreamMetadata* stream_metadata =
+      FindMetadataForStream(metadata, stream_type);
+  if (stream_metadata) {
+    return feed::ContentIdSet({stream_metadata->view_content_ids().begin(),
+                               stream_metadata->view_content_ids().end()});
+  }
+  return {};
 }
 
 }  // namespace feedstore

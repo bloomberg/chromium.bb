@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "v8/include/v8.h"
@@ -184,14 +183,21 @@ void CreateMainThreadAndInitialize(Platform* platform,
 // Function defined in third_party/blink/public/web/blink.h.
 void SetIsCrossOriginIsolated(bool value) {
   Agent::SetIsCrossOriginIsolated(value);
-  if (value) {
-    v8::V8::SetIsCrossOriginIsolated();
-  }
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
 bool IsCrossOriginIsolated() {
   return Agent::IsCrossOriginIsolated();
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+void SetIsDirectSocketEnabled(bool value) {
+  Agent::SetIsDirectSocketEnabled(value);
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+bool IsDirectSocketEnabled() {
+  return Agent::IsDirectSocketEnabled();
 }
 
 void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {

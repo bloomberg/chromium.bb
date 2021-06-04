@@ -8,16 +8,14 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
-#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
+#include "base/allocator/partition_allocator/partition_root.h"
 #include "base/bits.h"
-#include "base/check.h"
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
-#include "base/notreached.h"
-#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -49,17 +47,32 @@ PartitionDirectUnmap(SlotSpanMetadata<thread_safe>* slot_span) {
   size_t reserved_size =
       extent->map_size +
       PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize();
-  PA_DCHECK(!(reserved_size & PageAllocationGranularityOffsetMask()));
+  PA_DCHECK(!(reserved_size & DirectMapAllocationGranularityOffsetMask()));
   PA_DCHECK(root->total_size_of_direct_mapped_pages >= reserved_size);
   root->total_size_of_direct_mapped_pages -= reserved_size;
-  PA_DCHECK(!(reserved_size & PageAllocationGranularityOffsetMask()));
+  PA_DCHECK(!(reserved_size & DirectMapAllocationGranularityOffsetMask()));
 
   char* ptr = reinterpret_cast<char*>(
       SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
   // Account for the mapping starting a partition page before the actual
   // allocation address.
   ptr -= PartitionPageSize();
+
+#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+  if (root->UseBRPPool()) {
+    uintptr_t ptr_as_uintptr = reinterpret_cast<uintptr_t>(ptr);
+    uintptr_t ptr_end = ptr_as_uintptr + reserved_size;
+    auto* offset_ptr = internal::ReservationOffsetPointer(ptr_as_uintptr);
+    while (ptr_as_uintptr < ptr_end) {
+      PA_DCHECK(offset_ptr < internal::EndOfReservationOffsetTable());
+      *offset_ptr++ = internal::NotInDirectMapOffsetTag();
+      ptr_as_uintptr += kSuperPageSize;
+    }
+  }
+  return {ptr, reserved_size, root->UseBRPPool()};
+#else
   return {ptr, reserved_size};
+#endif
 }
 
 template <bool thread_safe>
@@ -213,16 +226,16 @@ void SlotSpanMetadata<thread_safe>::DecommitIfPossible(
 
 void DeferredUnmap::Unmap() {
   PA_DCHECK(ptr && size > 0);
-  if (features::IsPartitionAllocGigaCageEnabled()) {
-    // Currently this function is only called for direct-mapped allocations,
-    // which always belong to the non-BRP pool, provided that GigaCage is used.
-    // TODO(bartekn): Add a !"is in normal buckets" DCHECK.
-    PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(ptr));
+#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+  if (use_brp_pool) {
     internal::AddressPoolManager::GetInstance()->UnreserveAndDecommit(
-        internal::GetNonBRPPool(), ptr, size);
-  } else {
-    FreePages(ptr, size);
+        internal::GetBRPPool(), ptr, size);
+    return;
   }
+#endif  // BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+  PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(ptr));
+  internal::AddressPoolManager::GetInstance()->UnreserveAndDecommit(
+      internal::GetNonBRPPool(), ptr, size);
 }
 
 template struct SlotSpanMetadata<ThreadSafe>;

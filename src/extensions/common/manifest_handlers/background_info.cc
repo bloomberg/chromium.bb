@@ -106,6 +106,13 @@ const std::string& BackgroundInfo::GetBackgroundServiceWorkerScript(
 }
 
 // static
+BackgroundServiceWorkerType BackgroundInfo::GetBackgroundServiceWorkerType(
+    const Extension* extension) {
+  const BackgroundInfo& info = GetBackgroundInfo(extension);
+  return *info.background_service_worker_type_;
+}
+
+// static
 const std::vector<std::string>& BackgroundInfo::GetBackgroundScripts(
     const Extension* extension) {
   return GetBackgroundInfo(extension).background_scripts_;
@@ -252,7 +259,32 @@ bool BackgroundInfo::LoadBackgroundServiceWorkerScript(
 
   background_service_worker_script_ = scripts_value->GetString();
 
-  return true;
+  const base::Value* scripts_type = nullptr;
+  if (!extension->manifest()->Get(keys::kBackgroundServiceWorkerType,
+                                  &scripts_type)) {
+    background_service_worker_type_ = BackgroundServiceWorkerType::kClassic;
+    return true;
+  }
+
+  DCHECK(scripts_type);
+  if (!scripts_type->is_string()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundServiceWorkerType);
+    return false;
+  }
+
+  const std::string& type = scripts_type->GetString();
+  if (type == "classic") {
+    background_service_worker_type_ = BackgroundServiceWorkerType::kClassic;
+    return true;
+  }
+
+  if (type == "module") {
+    background_service_worker_type_ = BackgroundServiceWorkerType::kModule;
+    return true;
+  }
+
+  *error = ASCIIToUTF16(errors::kInvalidBackgroundServiceWorkerType);
+  return false;
 }
 
 bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
@@ -276,10 +308,11 @@ bool BackgroundInfo::LoadBackgroundPersistent(const Extension* extension,
     return true;
   }
 
-  if (!background_persistent->GetAsBoolean(&is_persistent_)) {
+  if (!background_persistent->is_bool()) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
     return false;
   }
+  is_persistent_ = background_persistent->GetBool();
 
   if (!has_background_page()) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistentNoPage);
@@ -296,12 +329,11 @@ bool BackgroundInfo::LoadAllowJSAccess(const Extension* extension,
                                   &allow_js_access))
     return true;
 
-  if (!allow_js_access->is_bool() ||
-      !allow_js_access->GetAsBoolean(&allow_js_access_)) {
+  if (!allow_js_access->is_bool()) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
     return false;
   }
-
+  allow_js_access_ = allow_js_access->GetBool();
   return true;
 }
 
@@ -409,11 +441,14 @@ bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 }
 
 base::span<const char* const> BackgroundManifestHandler::Keys() const {
-  static constexpr const char* kKeys[] = {
-      keys::kBackgroundAllowJsAccess,       keys::kBackgroundPage,
-      keys::kBackgroundPersistent,          keys::kBackgroundScripts,
-      keys::kBackgroundServiceWorkerScript, keys::kPlatformAppBackgroundPage,
-      keys::kPlatformAppBackgroundScripts};
+  static constexpr const char* kKeys[] = {keys::kBackgroundAllowJsAccess,
+                                          keys::kBackgroundPage,
+                                          keys::kBackgroundPersistent,
+                                          keys::kBackgroundScripts,
+                                          keys::kBackgroundServiceWorkerScript,
+                                          keys::kBackgroundServiceWorkerType,
+                                          keys::kPlatformAppBackgroundPage,
+                                          keys::kPlatformAppBackgroundScripts};
   return kKeys;
 }
 

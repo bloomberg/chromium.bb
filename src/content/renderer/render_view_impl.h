@@ -61,7 +61,6 @@ struct WebWindowFeatures;
 namespace content {
 class AgentSchedulingGroup;
 class RenderViewImplTest;
-class RenderViewObserver;
 class RenderViewTest;
 
 namespace mojom {
@@ -81,7 +80,6 @@ class CreateViewParams;
 // the owner of it. Thus a tab may have multiple RenderViewImpls, one for the
 // main frame, and one for each other frame tree generated.
 class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
-                                      public IPC::Listener,
                                       public RenderView {
  public:
   // Creates a new RenderView. Note that if the original opener has been closed,
@@ -94,7 +92,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // to send an additional IPC to finish making this view visible.
   static RenderViewImpl* Create(
       AgentSchedulingGroup& agent_scheduling_group,
-      CompositorDependencies* compositor_deps,
       mojom::CreateViewParamsPtr params,
       bool was_created_by_renderer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -107,25 +104,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 
-  // When true, a hint to all RenderWidgets that they will never be
-  // user-visible and thus never need to produce pixels for display. This is
-  // separate from page visibility, as background pages can be marked visible in
-  // blink even though they are not user-visible. Page visibility controls blink
-  // behaviour for javascript, timers, and such to inform blink it is in the
-  // foreground or background. Whereas this bit refers to user-visibility and
-  // whether the tab needs to produce pixels to put on the screen at some point
-  // or not.
-  bool widgets_never_composited() const { return widgets_never_composited_; }
-
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
-
-  CompositorDependencies* compositor_deps() const { return compositor_deps_; }
-
-  // Functions to add and remove observers for this object.
-  void AddObserver(RenderViewObserver* observer);
-  void RemoveObserver(RenderViewObserver* observer);
 
   // Passes along the page zoom to the WebView to set it on a newly attached
   // LocalFrame.
@@ -136,17 +117,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // timer isn't already running. This allows multiple state changing events to
   // be coalesced into one update.
   void StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame);
-
-  // Registers a watcher to observe changes in the
-  // blink::RendererPreferences.
-  void RegisterRendererPreferenceWatcher(
-      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
-
-  // Returns the current instance of blink::RendererPreferences.
-  const blink::RendererPreferences& GetRendererPreferences() const;
-
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // blink::WebViewClient implementation --------------------------------------
 
@@ -159,18 +129,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id,
       bool& consumed_user_gesture,
-      const base::Optional<blink::WebImpression>& impression) override;
-  blink::WebPagePopup* CreatePopup(blink::WebLocalFrame* creator) override;
+      const absl::optional<blink::WebImpression>& impression) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
-  bool AcceptsLoadDrops() override;
-  bool CanUpdateLayout() override;
-  void OnPageVisibilityChanged(PageVisibilityState visibility) override;
   void OnPageFrozenChanged(bool frozen) override;
-  void DidUpdateRendererPreferences() override;
 
   // RenderView implementation -------------------------------------------------
 
-  bool Send(IPC::Message* message) override;
   RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() override;
   blink::WebView* GetWebView() override;
@@ -185,7 +149,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
  protected:
   RenderViewImpl(AgentSchedulingGroup& agent_scheduling_group,
-                 CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params);
   ~RenderViewImpl() override;
 
@@ -203,8 +166,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // to accidentally call virtual functions. All RenderViewImpl creation is
   // fronted by the Create() method which ensures Initialize() is always called
   // before any other code can interact with instances of this call.
-  void Initialize(CompositorDependencies* compositor_deps,
-                  mojom::CreateViewParamsPtr params,
+  void Initialize(mojom::CreateViewParamsPtr params,
                   bool was_created_by_renderer,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -212,13 +174,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       blink::WebNavigationPolicy policy);
 
   // Misc private functions ----------------------------------------------------
-
-#if defined(OS_ANDROID)
-  // Make the video capture devices (e.g. webcam) stop/resume delivering video
-  // frames to their clients, depending on flag |suspend|. This is called in
-  // response to a RenderView PageHidden/Shown().
-  void SuspendVideoCaptureDevices(bool suspend);
-#endif
 
   // In OOPIF-enabled modes, this tells each RenderFrame with a pending state
   // update to inform the browser process.
@@ -240,20 +195,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   const bool renderer_wide_named_frame_lookup_;
-
-  // A value provided by the browser to state that all RenderWidgets in this
-  // RenderView's frame tree will never be user-visible and thus never need to
-  // produce pixels for display. This is separate from Page visibility, as
-  // non-user-visible pages can still be marked visible for blink. Page
-  // visibility controls blink behaviour for javascript, timers, and such to
-  // inform blink it is in the foreground or background. Whereas this bit refers
-  // to user-visibility and whether the tab needs to produce pixels to put on
-  // the screen at some point or not.
-  const bool widgets_never_composited_;
-
-  // Dependency injection for RenderWidget and compositing to inject behaviour
-  // and not depend on RenderThreadImpl in tests.
-  CompositorDependencies* const compositor_deps_;
 
   // Settings ------------------------------------------------------------------
 
@@ -291,12 +232,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Whether this was a renderer-created or browser-created RenderView.
   bool was_created_by_renderer_ = false;
 #endif
-
-  // Misc ----------------------------------------------------------------------
-
-  // All the registered observers.  We expect this list to be small, so vector
-  // is fine.
-  base::ObserverList<RenderViewObserver>::Unchecked observers_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

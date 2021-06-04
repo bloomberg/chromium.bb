@@ -216,7 +216,7 @@ static int get_current_frame_ref_type(
   // TODO(jingning): This table should be a lot simpler with the new
   // ARF system in place. Keep frame_params for the time being as we are
   // still evaluating a few design options.
-  switch (cpi->gf_group.layer_depth[cpi->gf_frame_index]) {
+  switch (cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index]) {
     case 0: return 0;
     case 1: return 1;
     case MAX_ARF_LAYERS:
@@ -238,11 +238,11 @@ static int choose_primary_ref_frame(
 
   // In large scale case, always use Last frame's frame contexts.
   // Note(yunqing): In other cases, primary_ref_frame is chosen based on
-  // cpi->gf_group.layer_depth[cpi->gf_frame_index], which also controls
+  // cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index], which also controls
   // frame bit allocation.
   if (cm->tiles.large_scale) return (LAST_FRAME - LAST_FRAME);
 
-  if (cpi->use_svc) return av1_svc_primary_ref_frame(cpi);
+  if (cpi->ppi->use_svc) return av1_svc_primary_ref_frame(cpi);
 
   // Find the most recent reference frame with the same reference type as the
   // current frame
@@ -303,7 +303,7 @@ static void adjust_frame_rate(AV1_COMP *cpi, int64_t ts_start, int64_t ts_end) {
   // Clear down mmx registers
   aom_clear_system_state();
 
-  if (cpi->use_svc && cpi->svc.spatial_layer_id > 0) {
+  if (cpi->ppi->use_svc && cpi->svc.spatial_layer_id > 0) {
     cpi->framerate = cpi->svc.base_framerate;
     av1_rc_update_framerate(cpi, cpi->common.width, cpi->common.height);
     return;
@@ -372,7 +372,7 @@ static struct lookahead_entry *choose_frame_source(
     struct lookahead_entry **last_source,
     EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   struct lookahead_entry *source = NULL;
 
   // Source index in lookahead buffer.
@@ -859,10 +859,10 @@ void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
 
-  av1_setup_src_planes(x, src, 0, 0, num_planes, cm->seq_params.sb_size);
+  av1_setup_src_planes(x, src, 0, 0, num_planes, cm->seq_params->sb_size);
 
-  av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
-                         cm->seq_params.subsampling_y, num_planes);
+  av1_setup_block_planes(xd, cm->seq_params->subsampling_x,
+                         cm->seq_params->subsampling_y, num_planes);
 
   set_mi_offsets(&cm->mi_params, xd, 0, 0);
 }
@@ -879,9 +879,9 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 #endif
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   FRAME_UPDATE_TYPE update_type =
-      get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
+      get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
 
   // Decide whether to apply temporal filtering to the source frame.
   int apply_filtering = 0;
@@ -895,7 +895,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
         oxcf->algo_cfg.arnr_max_frames > 0 && oxcf->gf_cfg.lag_in_frames > 1;
     if (allow_kf_filtering) {
       const double y_noise_level = av1_estimate_noise_from_single_plane(
-          frame_input->source, 0, cm->seq_params.bit_depth);
+          frame_input->source, 0, cm->seq_params->bit_depth);
       apply_filtering = y_noise_level > 0;
     } else {
       apply_filtering = 0;
@@ -933,8 +933,8 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
         av1_temporal_filter(cpi, arf_src_index, update_type,
                             is_forward_keyframe, &show_existing_alt_ref);
     if (code_arf) {
-      aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
-      frame_input->source = &cpi->alt_ref_buffer;
+      aom_extend_frame_borders(&cpi->ppi->alt_ref_buffer, av1_num_planes(cm));
+      frame_input->source = &cpi->ppi->alt_ref_buffer;
       aom_copy_metadata_to_frame_buffer(frame_input->source,
                                         source_buffer->metadata);
     }
@@ -973,9 +973,10 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 
   if (allow_tpl == 0) {
     // Avoid the use of unintended TPL stats from previous GOP's results.
-    if (cpi->gf_frame_index == 0) av1_init_tpl_stats(&cpi->tpl_data);
+    if (cpi->gf_frame_index == 0 && !is_stat_generation_stage(cpi))
+      av1_init_tpl_stats(&cpi->ppi->tpl_data);
   } else {
-    if (!cpi->tpl_data.skip_tpl_setup_stats)
+    if (!cpi->skip_tpl_setup_stats)
       av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
   }
 
@@ -1098,7 +1099,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         int flush) {
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
-  GF_GROUP *gf_group = &cpi->gf_group;
+  GF_GROUP *gf_group = &cpi->ppi->gf_group;
   ExternalFlags *const ext_flags = &cpi->ext_flags;
   GFConfig *const gf_cfg = &oxcf->gf_cfg;
 
@@ -1122,9 +1123,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (!av1_lookahead_peek(cpi->ppi->lookahead, 0, cpi->compressor_stage)) {
 #if !CONFIG_REALTIME_ONLY
-    if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
+    if (flush && oxcf->pass == 1 && !cpi->ppi->twopass.first_pass_done) {
       av1_end_first_pass(cpi); /* get last stats packet */
-      cpi->twopass.first_pass_done = 1;
+      cpi->ppi->twopass.first_pass_done = 1;
     }
 #endif
     return -1;
@@ -1138,7 +1139,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
         AOMMIN(gf_cfg->gf_min_pyr_height, gf_cfg->gf_max_pyr_height);
   }
 
-  cpi->tpl_data.skip_tpl_setup_stats = 0;
+  cpi->skip_tpl_setup_stats = 0;
 #if !CONFIG_REALTIME_ONLY
   const int use_one_pass_rt_params = has_no_stats_stage(cpi) &&
                                      oxcf->mode == REALTIME &&
@@ -1191,9 +1192,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
 #if !CONFIG_REALTIME_ONLY
-    if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
+    if (flush && oxcf->pass == 1 && !cpi->ppi->twopass.first_pass_done) {
       av1_end_first_pass(cpi); /* get last stats packet */
-      cpi->twopass.first_pass_done = 1;
+      cpi->ppi->twopass.first_pass_done = 1;
     }
 #endif
     return -1;
@@ -1226,7 +1227,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
           &cm->film_grain_params);
     } else {
       cm->cur_frame->film_grain_params_present =
-          cm->seq_params.film_grain_params_present;
+          cm->seq_params->film_grain_params_present;
     }
     // only one operating point supported now
     const int64_t pts64 = ticks_to_timebase_units(timestamp_ratio, *time_stamp);
@@ -1236,14 +1237,14 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
 #if CONFIG_REALTIME_ONLY
   av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
-  if (cpi->oxcf.speed >= 5 && cm->number_spatial_layers == 1 &&
-      cm->number_temporal_layers == 1)
+  if (cpi->oxcf.speed >= 5 && cpi->ppi->number_spatial_layers == 1 &&
+      cpi->ppi->number_temporal_layers == 1)
     av1_set_reference_structure_one_pass_rt(cpi, cpi->gf_frame_index == 0);
 #else
   if (use_one_pass_rt_params) {
     av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
-    if (cpi->oxcf.speed >= 5 && cm->number_spatial_layers == 1 &&
-        cm->number_temporal_layers == 1)
+    if (cpi->oxcf.speed >= 5 && cpi->ppi->number_spatial_layers == 1 &&
+        cpi->ppi->number_temporal_layers == 1)
       av1_set_reference_structure_one_pass_rt(cpi, cpi->gf_frame_index == 0);
   }
 #endif
@@ -1432,7 +1433,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cpi->droppable = is_frame_droppable(&cpi->svc, &ext_flags->refresh_frame);
   }
 
-  if (cpi->use_svc) av1_save_layer_context(cpi);
+  if (cpi->ppi->use_svc) av1_save_layer_context(cpi);
 
   return AOM_CODEC_OK;
 }

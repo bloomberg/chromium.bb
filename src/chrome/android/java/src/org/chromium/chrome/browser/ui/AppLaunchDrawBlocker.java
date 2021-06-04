@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -155,7 +155,7 @@ public class AppLaunchDrawBlocker {
 
         String url = IntentHandler.getUrlFromIntent(mIntentSupplier.get());
         boolean hasValidIntentUrl = !mShouldIgnoreIntentSupplier.get() && !TextUtils.isEmpty(url);
-        boolean isNtpUrl = ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(url);
+        boolean isNtpUrl = UrlUtilities.isCanonicalizedNTPUrl(url);
 
         boolean shouldBlockWithoutIntent = shouldBlockDrawForNtpOnColdStartWithoutIntent(
                 tabState, HomepageManager.isHomepageNonNtpPreNative(), singleUrlBarMode);

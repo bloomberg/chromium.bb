@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -20,7 +21,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/texture_definition.h"
+#include "gpu/command_buffer/service/native_image_buffer.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
@@ -225,7 +226,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   const auto useANGLE = command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   feature_flags_.is_swiftshader_for_webgl =
-      (useGL == gl::kGLImplementationSwiftShaderForWebGLName);
+      (useGL == gl::kGLImplementationSwiftShaderForWebGLName) ||
+      ((useGL == gl::kGLImplementationANGLEName) &&
+       (useANGLE == gl::kANGLEImplementationSwiftShaderForWebGLName));
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
@@ -1573,10 +1576,6 @@ void FeatureInfo::InitializeFeatures() {
     validators_.src_blend_factor.AddValue(GL_ONE_MINUS_SRC1_ALPHA_EXT);
     validators_.dst_blend_factor.AddValue(GL_ONE_MINUS_SRC1_ALPHA_EXT);
     validators_.g_l_state.AddValue(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT);
-  }
-
-  if (workarounds_.avoid_egl_image_target_texture_reuse) {
-    TextureDefinition::AvoidEGLTargetTextureReuse();
   }
 
   if (gl_version_info_->IsLowerThanGL(4, 3)) {

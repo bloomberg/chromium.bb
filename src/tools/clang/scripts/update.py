@@ -9,7 +9,7 @@
 It can also be run stand-alone as a convenient way of installing a well-tested
 near-tip-of-tree clang version:
 
-  $ curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py | python - --output-dir=/tmp/clang
+  $ curl -s https://raw.githubusercontent.com/chromium/chromium/main/tools/clang/scripts/update.py | python - --output-dir=/tmp/clang
 
 (Note that the output dir may be deleted and re-created if it exists.)
 """
@@ -36,10 +36,10 @@ import zipfile
 
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
-# https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
+# https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-13-init-6429-g0e92cbd6'
+CLANG_REVISION = 'llvmorg-13-init-10392-gd3676d4b'
 CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)

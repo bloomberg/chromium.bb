@@ -13,6 +13,10 @@
 #include "content/public/browser/global_routing_id.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-forward.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 
 // A ref-counted permission grant. This is needed so the implementation of
@@ -51,7 +55,9 @@ class CONTENT_EXPORT FileSystemAccessPermissionGrant
     kUserDismissed = 6,
     kRequestAborted = 7,
     kGrantedByContentSetting = 8,
-    kMaxValue = kGrantedByContentSetting
+    kGrantedByPersistentPermission = 9,
+    kGrantedByAncestorPersistentPermission = 10,
+    kMaxValue = kGrantedByAncestorPersistentPermission
   };
 
   // Passed to |RequestPermission| to indicate if for this particular permission

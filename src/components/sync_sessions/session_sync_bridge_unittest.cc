@@ -12,7 +12,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -188,8 +187,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
   void InitializeBridge() {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::SESSIONS, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
+            syncer::SESSIONS, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     // Instantiate the bridge.
     bridge_ = std::make_unique<SessionSyncBridge>(
@@ -1290,7 +1288,7 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
     underlying_store()->ReadData(
         {header_storage_key, tab_storage_key},
         base::BindLambdaForTesting(
-            [&](const base::Optional<syncer::ModelError>& error,
+            [&](const absl::optional<syncer::ModelError>& error,
                 std::unique_ptr<syncer::ModelTypeStore::RecordList>
                     data_records,
                 std::unique_ptr<syncer::ModelTypeStore::IdList>
@@ -1308,7 +1306,7 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
   {
     base::RunLoop loop;
     underlying_store()->ReadAllMetadata(base::BindLambdaForTesting(
-        [&](const base::Optional<syncer::ModelError>& error,
+        [&](const absl::optional<syncer::ModelError>& error,
             std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
           syncer::EntityMetadataMap entity_metadata_map =
               metadata_batch->TakeAllMetadata();

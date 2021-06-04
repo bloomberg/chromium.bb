@@ -33,8 +33,7 @@
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr const char kGetAppListUrl[] =
@@ -261,7 +260,7 @@ void RecordUmaResponseParseResult(RecommendAppsResponseParseResult result) {
 
 RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
     RecommendAppsFetcherDelegate* delegate,
-    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config,
+    mojo::PendingRemote<mojom::CrosDisplayConfigController> display_config,
     network::mojom::URLLoaderFactory* url_loader_factory)
     : delegate_(delegate),
       url_loader_factory_(url_loader_factory),
@@ -311,7 +310,7 @@ void RecommendAppsFetcherImpl::PopulateDeviceConfig() {
 
   for (const base::StringPiece& gl_extension : GetGLExtensions()) {
     if (!gl_extension.empty())
-      device_config_.add_gl_extension(gl_extension.as_string());
+      device_config_.add_gl_extension(std::string(gl_extension));
   }
 }
 
@@ -344,11 +343,11 @@ void RecommendAppsFetcherImpl::OnProtoMessageCompressedAndEncoded(
 }
 
 void RecommendAppsFetcherImpl::OnAshResponse(
-    std::vector<ash::mojom::DisplayUnitInfoPtr> all_displays_info) {
+    std::vector<mojom::DisplayUnitInfoPtr> all_displays_info) {
   ash_ready_ = true;
 
   int screen_density = 0;
-  for (const ash::mojom::DisplayUnitInfoPtr& display_info : all_displays_info) {
+  for (const mojom::DisplayUnitInfoPtr& display_info : all_displays_info) {
     if (base::NumberToString(display::Display::InternalDisplayId()) ==
         display_info->id) {
       screen_density = display_info->dpi_x + display_info->dpi_y;
@@ -370,10 +369,10 @@ void RecommendAppsFetcherImpl::OnAshResponse(
 }
 
 void RecommendAppsFetcherImpl::OnArcFeaturesRead(
-    base::Optional<arc::ArcFeatures> read_result) {
+    absl::optional<arc::ArcFeatures> read_result) {
   arc_features_ready_ = true;
 
-  if (read_result != base::nullopt) {
+  if (read_result != absl::nullopt) {
     for (const auto& feature : read_result.value().feature_map) {
       device_config_.add_system_available_feature(feature.first);
     }
@@ -486,7 +485,7 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   base::StringPiece response_body_json(*response_body);
   if (base::StartsWith(response_body_json, json_xss_prevention_prefix))
     response_body_json.remove_prefix(json_xss_prevention_prefix.length());
-  base::Optional<base::Value> output = ParseResponse(response_body_json);
+  absl::optional<base::Value> output = ParseResponse(response_body_json);
   if (!output.has_value()) {
     RecordUmaResponseAppCount(0);
     delegate_->OnParseResponseError();
@@ -508,7 +507,7 @@ void RecommendAppsFetcherImpl::Retry() {
   StartDownload();
 }
 
-base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
+absl::optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
     base::StringPiece response) {
   base::Value output(base::Value::Type::LIST);
 
@@ -520,7 +519,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
     LOG(ERROR) << "Error parsing response JSON: " << parsed_json.error_message;
     RecordUmaResponseParseResult(
         RECOMMEND_APPS_RESPONSE_PARSE_RESULT_INVALID_JSON);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // If the response is a dictionary, it is an error message in the
@@ -536,7 +535,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
                  << response.substr(0, 128);
       RecordUmaResponseParseResult(
           RECOMMEND_APPS_RESPONSE_PARSE_RESULT_INVALID_JSON);
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     base::StringPiece response_error_code_str =
@@ -546,7 +545,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       LOG(WARNING) << "Unable to parse error code: " << response_error_code_str;
       RecordUmaResponseParseResult(
           RECOMMEND_APPS_RESPONSE_PARSE_RESULT_INVALID_ERROR_CODE);
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     if (response_error_code == kResponseErrorNotFirstTimeChromebookUser) {
@@ -560,7 +559,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
           RECOMMEND_APPS_RESPONSE_PARSE_RESULT_UNKNOWN_ERROR_CODE);
     }
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Otherwise, the response should return a list of apps.
@@ -568,7 +567,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
   if (app_list.empty()) {
     DVLOG(1) << "No app in the response.";
     RecordUmaResponseParseResult(RECOMMEND_APPS_RESPONSE_PARSE_RESULT_NO_APP);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   for (auto& item : app_list) {
@@ -619,4 +618,4 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
   return output;
 }
 
-}  // namespace chromeos
+}  // namespace ash

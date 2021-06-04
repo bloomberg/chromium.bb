@@ -43,8 +43,12 @@ constexpr int kDefaultMinimumPinLength = 6;
 bool HasPolicyValue(const PrefService* pref_service, const char* value) {
   const base::ListValue* quick_unlock_allowlist =
       pref_service->GetList(prefs::kQuickUnlockModeAllowlist);
-  return quick_unlock_allowlist->Find(base::Value(value)) !=
-         quick_unlock_allowlist->end();
+  // TODO(crbug.com/1187106): Use base::Contains once |quick_unlock_allowlist|
+  // is not a ListValue.
+  return std::find(quick_unlock_allowlist->GetList().begin(),
+                   quick_unlock_allowlist->GetList().end(),
+                   base::Value(value)) !=
+         quick_unlock_allowlist->GetList().end();
 }
 
 }  // namespace
@@ -149,6 +153,9 @@ FingerprintLocation GetFingerprintLocation() {
 }
 
 bool IsFingerprintSupported() {
+  if (enable_for_testing_)
+    return true;
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(::features::kQuickUnlockFingerprint) &&

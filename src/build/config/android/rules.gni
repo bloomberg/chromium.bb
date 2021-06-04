@@ -12,6 +12,7 @@ import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/python.gni")
+import("//build/config/rts.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -724,12 +725,6 @@ if (enable_java_templates) {
           "--native-libraries-list",
           rebase_path(invoker.native_libraries_list_file, root_build_dir),
         ]
-        if (defined(invoker.version_number)) {
-          args += [
-            "--version-number",
-            invoker.version_number,
-          ]
-        }
         if (defined(invoker.main_component_library)) {
           args += [
             "--main-component-library",
@@ -997,10 +992,6 @@ if (enable_java_templates) {
       not_needed(invoker, [ "v14_skip" ])
     }
 
-    assert(!defined(invoker.resource_dirs) || defined(invoker.sources),
-           "resource_dirs in android_resources is deprecated. Please use " +
-               "sources=[] and list resource files instead. Details: " +
-               "https://crbug.com/1026378")
     _res_sources_path = "$target_gen_dir/${invoker.target_name}.res.sources"
 
     _resources_zip = "$target_out_dir/$target_name.resources.zip"
@@ -1372,6 +1363,12 @@ if (enable_java_templates) {
       testonly = true
       main_class = _main_class
       wrapper_script_name = "helper/$main_target_name"
+
+      # As of April 2021, adding -XX:TieredStopAtLevel=1 does not affect the
+      # wall time of a single robolectric shard, but does reduce the CPU time by
+      # 66%, which makes sharding more effective.
+      tiered_stop_at_level_one = true
+
       if (!defined(srcjar_deps)) {
         srcjar_deps = []
       }
@@ -2331,7 +2328,7 @@ if (enable_java_templates) {
     _generate_productconfig_java = defined(invoker.product_config_java_packages)
 
     # JNI generation usually goes hand-in-hand with buildconfig generation.
-    _generate_final_jni = _generate_buildconfig_java && build_with_chromium
+    _generate_final_jni = _generate_buildconfig_java
     if (defined(invoker.generate_final_jni)) {
       _generate_final_jni = invoker.generate_final_jni
     }
@@ -2637,13 +2634,6 @@ if (enable_java_templates) {
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
         forward_variables_from(invoker, [ "main_component_library" ])
-        deps = []
-        if (defined(invoker.native_lib_version_rule)) {
-          deps += [ invoker.native_lib_version_rule ]
-        }
-        if (defined(invoker.native_lib_version_arg)) {
-          version_number = invoker.native_lib_version_arg
-        }
 
         # Do not add a dep on the generated_file target in order to avoid having
         # to build the native libraries before this target. The dependency is
@@ -2659,13 +2649,6 @@ if (enable_java_templates) {
         use_final_fields = true
       }
       _srcjar_deps += [ ":${_template_name}__native_libraries" ]
-    } else {
-      if (defined(invoker.native_lib_version_arg)) {
-        not_needed(invoker, [ "native_lib_version_arg" ])
-      }
-      if (defined(invoker.native_lib_version_rule)) {
-        not_needed(invoker, [ "native_lib_version_rule" ])
-      }
     }
 
     _loadable_modules = []
@@ -3484,8 +3467,6 @@ if (enable_java_templates) {
                                "main_component_library",
                                "min_sdk_version",
                                "native_lib_placeholders",
-                               "native_lib_version_arg",
-                               "native_lib_version_rule",
                                "never_incremental",
                                "no_xml_namespaces",
                                "png_to_webp",
@@ -3617,8 +3598,6 @@ if (enable_java_templates) {
                                "max_sdk_version",
                                "min_sdk_version",
                                "native_lib_placeholders",
-                               "native_lib_version_arg",
-                               "native_lib_version_rule",
                                "no_xml_namespaces",
                                "package_id",
                                "package_name",
@@ -3693,6 +3672,14 @@ if (enable_java_templates) {
   #     apk_under_test: ":bar"
   #   }
   template("instrumentation_test_runner") {
+    if (use_rts) {
+      action("${invoker.target_name}__rts_filters") {
+        script = "//build/add_rts_filters.py"
+        rts_file = "${root_build_dir}/gen/rts/${invoker.target_name}.filter"
+        args = [ rebase_path(rts_file, root_build_dir) ]
+        outputs = [ rts_file ]
+      }
+    }
     test_runner_script(target_name) {
       forward_variables_from(invoker,
                              [
@@ -3730,6 +3717,12 @@ if (enable_java_templates) {
       }
       if (defined(invoker.additional_apks)) {
         public_deps += invoker.additional_apks
+      }
+      if (use_rts) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
   }
@@ -3948,14 +3941,16 @@ if (enable_java_templates) {
       final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
 
       if (!defined(use_default_launcher) || use_default_launcher) {
-        deps += [ "//testing/android/native_test:native_test_java" ]
+        deps += [
+          "//base:base_java",
+          "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
+          "//testing/android/native_test:native_test_java",
+        ]
       }
       shared_libraries = [ invoker.shared_library ]
       deps += [
         ":${target_name}__secondary_abi_shared_library_list",
         ":${target_name}__shared_library_list",
-        "//base:base_java",
-        "//testing/android/reporter:reporter_java",
       ]
     }
   }
@@ -3984,6 +3979,7 @@ if (enable_java_templates) {
       forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
 
       script = "//build/android/gyp/aidl.py"
+      depfile = "$target_gen_dir/$target_name.d"
       sources = invoker.sources
 
       _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
@@ -4005,22 +4001,15 @@ if (enable_java_templates) {
         "--imports=$_rebased_imports",
         "--srcjar",
         rebase_path(_srcjar_path, root_build_dir),
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
       ]
       if (defined(invoker.import_include) && invoker.import_include != []) {
-        # TODO(cjhopman): aidl supports creating a depfile. We should be able to
-        # switch to constructing a depfile for the overall action from that
-        # instead of having all the .java files in the include paths as inputs.
         _rebased_import_paths = []
         foreach(_import_path, invoker.import_include) {
           _rebased_import_path = []
           _rebased_import_path = [ rebase_path(_import_path, root_build_dir) ]
           _rebased_import_paths += _rebased_import_path
-          _java_files_build_rel = []
-          _java_files_build_rel =
-              exec_script("//build/android/gyp/find.py",
-                          [ "--pattern=*.java" ] + _rebased_import_path,
-                          "list lines")
-          inputs += rebase_path(_java_files_build_rel, ".", root_build_dir)
         }
         args += [ "--includes=$_rebased_import_paths" ]
       }
@@ -4839,8 +4828,6 @@ if (enable_java_templates) {
 
     _bundle_target_name = "${_target_name}__bundle"
     action_with_pydeps(_bundle_target_name) {
-      # TODO(crbug.com/1187279): Get this to work under Python3.
-      run_under_python2 = true
       script = "//build/android/gyp/create_app_bundle.py"
       inputs = _all_module_zip_paths + _all_module_build_configs
       outputs = [ _bundle_path ]

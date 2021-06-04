@@ -24,6 +24,7 @@
 #include "api/array_view.h"
 #include "api/crypto/frame_decryptor_interface.h"
 #include "api/video/encoded_image.h"
+#include "api/video_codecs/h264_profile_level_id.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_decoder_factory.h"
@@ -31,7 +32,6 @@
 #include "call/rtp_stream_receiver_controller_interface.h"
 #include "call/rtx_receive_stream.h"
 #include "common_video/include/incoming_video_stream.h"
-#include "media/base/h264_profile_level_id.h"
 #include "modules/utility/include/process_thread.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/include/video_coding_defines.h"
@@ -332,8 +332,7 @@ void VideoReceiveStream::Start() {
 
   for (const Decoder& decoder : config_.decoders) {
     std::unique_ptr<VideoDecoder> video_decoder =
-        config_.decoder_factory->LegacyCreateVideoDecoder(decoder.video_format,
-                                                          config_.stream_id);
+        config_.decoder_factory->CreateVideoDecoder(decoder.video_format);
     // If we still have no valid decoder, we have to create a "Null" decoder
     // that ignores all calls. The reason we can get into this state is that the
     // old decoder factory interface doesn't have a way to query supported
@@ -507,6 +506,10 @@ void VideoReceiveStream::OnFrame(const VideoFrame& video_frame) {
   int64_t video_playout_ntp_ms;
   int64_t sync_offset_ms;
   double estimated_freq_khz;
+
+  // TODO(bugs.webrtc.org/10739): we should set local capture clock offset for
+  // |video_frame.packet_infos|. But VideoFrame is const qualified here.
+
   // TODO(tommi): GetStreamSyncOffsetInMs grabs three locks.  One inside the
   // function itself, another in GetChannel() and a third in
   // GetPlayoutTimestamp.  Seems excessive.  Anyhow, I'm assuming the function

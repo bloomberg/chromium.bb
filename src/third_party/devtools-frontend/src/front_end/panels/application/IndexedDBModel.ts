@@ -32,6 +32,8 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 
 export class IndexedDBModel extends SDK.SDKModel.SDKModel implements ProtocolProxyApi.StorageDispatcher {
   _securityOriginManager: SDK.SecurityOriginManager.SecurityOriginManager|null;
@@ -414,7 +416,7 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel implements ProtocolPro
   }
 }
 
-SDK.SDKModel.SDKModel.register(IndexedDBModel, SDK.SDKModel.Capability.Storage, false);
+SDK.SDKModel.SDKModel.register(IndexedDBModel, {capabilities: SDK.SDKModel.Capability.Storage, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">للبدء، يُرجى وضع المستند على الماسح الضوئي واختيار "المسح ضوئيًا".</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="2878387241690264070">تم نفاد <ph name="RATE" /> خلال <ph name="NUM_SECONDS" /> ثانية.</translation>
+<translation id="2983662233540284543">يمكنك تعلّم تصميم الألعاب من أحد منشئي الألعاب والحصول على التطبيقات الخاصة بتصميم الألعاب وغير ذلك.</translation>
 <translation id="3008341117444806826">إعادة التحميل</translation>
 <translation id="3009958530611748826">اختيار مجلّد لحفظ عمليات المسح الضوئي فيه</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> ميلي أمبير</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">المصادقة</translation>
 <translation id="5154917547274118687">الذاكرة</translation>
 <translation id="5168185087976003268">حالة البطارية</translation>
+<translation id="5170568018924773124">العرض في المجلد</translation>
+<translation id="519607504553633437">تصميم ألعابك وإنشاؤها بنفسك</translation>
 <translation id="5212543919916444558">يتعذَّر عليَّ العثور على شيء مفيد في هذه الشاشة.
 يُرجى تجربة النقر على الميكروفون لمطالبتي بأي شيء.</translation>
 <translation id="5222676887888702881">تسجيل الخروج</translation>
@@ -201,6 +204,7 @@
 <translation id="5275828089655680674">إعادة تشغيل سلاسل الإجراءات</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">الإصدار <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">نقل النافذة إلى سطح المكتب</translation>
 <translation id="5315873049536339193">الهوية</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5318334351163689047">‏تعذَّر طلب بروتوكول TCP.</translation>
@@ -222,6 +226,7 @@
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">العائلة</translation>
+<translation id="5752751666635965375">أنشئ لعبتك</translation>
 <translation id="5760715441271661976">حالة المدخل</translation>
 <translation id="5797428682393400134">نجح الاختبار</translation>
 <translation id="5832805196449965646">إضافة شخص</translation>
@@ -294,6 +299,7 @@
 <translation id="7216409898977639127">موفر شبكة الجوّال</translation>
 <translation id="7271040990581020067">يتم حاليًا استخدام الماسح الضوئي. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">أجهزة الشبكات</translation>
 <translation id="7359657277149375382">نوع الملف</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@
 <translation id="8372477600026034341">المضيفون الإضافيون</translation>
 <translation id="8395584934117017006">تُدير المؤسسة جهاز <ph name="DEVICE_TYPE" /> هذا.</translation>
 <translation id="8398927464629426868">معدّل شحن الجهاز أو تفريغ شحنه حاليًا</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">اسم مقدم الخدمة الرئيسي</translation>
 <translation id="8475690821716466388">‏شبكة Wi-Fi مؤمَّنة باستخدام بروتوكول WEP PSK ضعيف.</translation>
 <translation id="8477551185774834963">وقت استجابة "نظام أسماء النطاقات" أعلى بقليل من الحدّ الأقصى المسموح به.</translation>
@@ -351,6 +358,7 @@
 <translation id="8575298406870537639">قد يتطلّب مشغّل شبكة الجوّال تفعيل هذا الخيار للاتصال بالشبكة التابعة له. يُرجى التواصل مع مشغّل شبكة الجوّال للاطّلاع على التفاصيل.</translation>
 <translation id="8576249514688522074">غير مهيأة</translation>
 <translation id="8620617069779373398">حالة التجوال</translation>
+<translation id="8660881923941176839">رطل</translation>
 <translation id="8675354002693747642">مفتاح المشاركة المسبقة</translation>
 <translation id="871560550817059752">تعذَّرت الطباعة - نفد الحبر</translation>
 <translation id="8723108084122415655">وقت استجابة الشبكة غير التلقائية أعلى من الحد الأقصى.</translation>
@@ -366,6 +374,7 @@
 <translation id="8881098542468797602">نجح الاختبار.</translation>
 <translation id="8898840733695078011">قوة الإشارة</translation>
 <translation id="8910721771319628100">وقت استجابة الشبكة التلقائية أعلى من الحدّ الأقصى.</translation>
+<translation id="8918637186205009138">جهاز <ph name="DEVICE_TYPE" /> الخاص بـ <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">تعذَّرت الطباعة - دُرج الورق غير متوفّر</translation>
 <translation id="8928727111548978589">تعذَّرت الطباعة - نفد الورق</translation>
 <translation id="8930622219860340959">شبكة لاسلكية</translation>
@@ -383,6 +392,7 @@
 <translation id="9149391708638971077">تشغيل اختبار الذاكرة</translation>
 <translation id="9173638680043580060">يتبقى أقل من دقيقة.</translation>
 <translation id="9190063653747922532">‏L2TP/IPSec + المفتاح المشترك مسبقًا</translation>
+<translation id="9211490828691860325">جميع أجهزة سطح المكتب</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">غير نشطة</translation>
 <translation id="960719561871045870">رمز مشغل شبكة الجوال</translation>

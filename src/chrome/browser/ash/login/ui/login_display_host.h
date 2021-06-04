@@ -12,14 +12,14 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move KioskAppId to forward declaration
 // when moved to chrome/browser/ash/.
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "components/user_manager/user_type.h"
 
 #include "ui/gfx/native_widget_types.h"
@@ -183,7 +183,7 @@ class LoginDisplayHost {
   // Returns true if user is allowed to log in by domain policy.
   virtual bool IsUserAllowlisted(
       const AccountId& account_id,
-      const base::Optional<user_manager::UserType>& user_type) = 0;
+      const absl::optional<user_manager::UserType>& user_type) = 0;
 
   // ----- Password change flow methods -----
   // Cancels current password changed flow.
@@ -222,7 +222,8 @@ class LoginDisplayHost {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Return sign-in UI instance, guaranteed to be non-null
-  // during sign-in process. Result should not be stored.
+  // during OOBE/Login process. Returns nullptr on the secondary login screen.
+  // Result should not be stored.
   virtual SigninUI* GetSigninUI() = 0;
 
  protected:

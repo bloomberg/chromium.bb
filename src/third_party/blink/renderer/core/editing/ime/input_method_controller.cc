@@ -28,6 +28,7 @@
 
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -292,6 +293,8 @@ SuggestionMarker::SuggestionType ConvertImeTextSpanType(
   switch (type) {
     case ImeTextSpan::Type::kAutocorrect:
       return SuggestionMarker::SuggestionType::kAutocorrect;
+    case ImeTextSpan::Type::kGrammarSuggestion:
+      return SuggestionMarker::SuggestionType::kGrammar;
     case ImeTextSpan::Type::kMisspellingSuggestion:
       return SuggestionMarker::SuggestionType::kMisspelling;
     case ImeTextSpan::Type::kComposition:
@@ -305,6 +308,8 @@ ImeTextSpan::Type ConvertSuggestionMarkerType(
   switch (type) {
     case SuggestionMarker::SuggestionType::kAutocorrect:
       return ImeTextSpan::Type::kAutocorrect;
+    case SuggestionMarker::SuggestionType::kGrammar:
+      return ImeTextSpan::Type::kGrammarSuggestion;
     case SuggestionMarker::SuggestionType::kMisspelling:
       return ImeTextSpan::Type::kMisspellingSuggestion;
     case SuggestionMarker::SuggestionType::kNotMisspelling:
@@ -314,8 +319,9 @@ ImeTextSpan::Type ConvertSuggestionMarkerType(
 
 // ImeTextSpans types that need to be provided to TextInputInfo can be added
 // here.
-bool ShouldGetImeTextSpansAroundPosition(ImeTextSpan::Type type) {
-  return type == ImeTextSpan::Type::kAutocorrect;
+bool ShouldGetImeTextSpans(ImeTextSpan::Type type) {
+  return type == ImeTextSpan::Type::kAutocorrect ||
+         type == ImeTextSpan::Type::kGrammarSuggestion;
 }
 
 }  // anonymous namespace
@@ -508,6 +514,7 @@ void InputMethodController::ClearImeTextSpansByType(ImeTextSpan::Type type,
 
   switch (type) {
     case ImeTextSpan::Type::kAutocorrect:
+    case ImeTextSpan::Type::kGrammarSuggestion:
     case ImeTextSpan::Type::kMisspellingSuggestion:
     case ImeTextSpan::Type::kSuggestion:
       GetDocument().Markers().RemoveSuggestionMarkerByType(
@@ -742,6 +749,7 @@ void InputMethodController::AddImeTextSpans(
         break;
       }
       case ImeTextSpan::Type::kAutocorrect:
+      case ImeTextSpan::Type::kGrammarSuggestion:
       case ImeTextSpan::Type::kSuggestion:
       case ImeTextSpan::Type::kMisspellingSuggestion:
         const SuggestionMarker::SuggestionType suggestion_type =
@@ -1541,6 +1549,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
   if (!element)
     return info;
 
+  info.node_id = NodeIdOfFocusedElement();
   info.action = InputActionOfFocusedElement();
   info.input_mode = InputModeOfFocusedElement();
   info.virtual_keyboard_policy = VirtualKeyboardPolicyOfFocusedElement();
@@ -1726,6 +1735,10 @@ void InputMethodController::SetVirtualKeyboardVisibilityRequest(
   }  // else we don't change the last VK visibility request.
 }
 
+DOMNodeId InputMethodController::NodeIdOfFocusedElement() const {
+  return DOMNodeIds::IdForNode(GetDocument().FocusedElement());
+}
+
 WebTextInputType InputMethodController::TextInputType() const {
   if (!GetFrame().Selection().IsAvailable()) {
     // "mouse-capture-inside-shadow.html" reaches here.
@@ -1838,7 +1851,7 @@ WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpans() const {
         To<SuggestionMarker>(node_marker_pair.second.Get());
     ImeTextSpan::Type type =
         ConvertSuggestionMarkerType(marker->GetSuggestionType());
-    if (ShouldGetImeTextSpansAroundPosition(type)) {
+    if (ShouldGetImeTextSpans(type)) {
       const Text* node = node_marker_pair.first;
       const EphemeralRange& marker_ephemeral_range =
           EphemeralRange(Position(node, marker->StartOffset()),
@@ -1851,7 +1864,8 @@ WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpans() const {
                       marker_plain_text_range.End(), Color::kTransparent,
                       ImeTextSpanThickness::kNone,
                       ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
-                      Color::kTransparent)
+                      Color::kTransparent, Color::kTransparent, false, false,
+                      marker->Suggestions())
               .ToUiImeTextSpan());
     }
   }

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/origin.h"
 
@@ -118,10 +118,9 @@ PageSpecificContentSettings::WebContentsHandler::WebContentsHandler(
       map_(delegate_->GetSettingsMap()) {
   DCHECK(!PageSpecificContentSettings::GetForCurrentDocument(
       web_contents->GetMainFrame()));
-  content::SetRenderDocumentHostUserData(
-      web_contents->GetMainFrame(), PageSpecificContentSettings::UserDataKey(),
-      base::WrapUnique(
-          new PageSpecificContentSettings(*this, delegate_.get())));
+  content::RenderDocumentHostUserData<PageSpecificContentSettings>::
+      CreateForCurrentDocument(web_contents->GetMainFrame(), *this,
+                               delegate_.get());
 }
 
 PageSpecificContentSettings::WebContentsHandler::~WebContentsHandler() {
@@ -146,16 +145,13 @@ void PageSpecificContentSettings::WebContentsHandler::
 void PageSpecificContentSettings::WebContentsHandler::OnCookiesAccessed(
     content::NavigationHandle* navigation,
     const content::CookieAccessDetails& details) {
-  auto it = inflight_navigation_settings_.find(navigation);
-  if (it != inflight_navigation_settings_.end()) {
-    it->second.cookie_accesses.push_back(details);
+  if (WillNavigationCreateNewPageSpecificContentSettingsOnCommit(navigation)) {
+    auto* inflight_navigation_settings =
+        content::NavigationHandleUserData<InflightNavigationContentSettings>::
+            GetOrCreateForNavigationHandle(*navigation);
+    inflight_navigation_settings->cookie_accesses.push_back(details);
     return;
   }
-  // TODO(carlscab): We should be able to
-  // DHECK(!WillNavigationCreateNewPageSpecificContentSettingsOnCommit) here,
-  // but there is still code that starts a navigation before attaching the tab
-  // helpers in DevConsole related code. So we miss the DidStartNavigation event
-  // for those navigations. (https://crbug.com/1095576)
   OnCookiesAccessed(web_contents()->GetMainFrame(), details);
 }
 
@@ -174,17 +170,14 @@ void PageSpecificContentSettings::WebContentsHandler::OnServiceWorkerAccessed(
     content::AllowServiceWorkerResult allowed) {
   DCHECK(scope.is_valid());
 
-  auto it = inflight_navigation_settings_.find(navigation);
-  if (it != inflight_navigation_settings_.end()) {
-    it->second.service_worker_accesses.emplace_back(
+  if (WillNavigationCreateNewPageSpecificContentSettingsOnCommit(navigation)) {
+    auto* inflight_navigation_settings =
+        content::NavigationHandleUserData<InflightNavigationContentSettings>::
+            GetOrCreateForNavigationHandle(*navigation);
+    inflight_navigation_settings->service_worker_accesses.emplace_back(
         std::make_pair(scope, allowed));
     return;
   }
-  // TODO(carlscab): We should be able to
-  // DHECK(!WillNavigationCreateNewPageSpecificContentSettingsOnCommit) here,
-  // but there is still code that starts a navigation before attaching the tab
-  // helpers in DevConsole related code. So we miss the DidStartNavigation event
-  // for those navigations.
   OnServiceWorkerAccessed(web_contents()->GetMainFrame(), scope, allowed);
 }
 
@@ -198,17 +191,6 @@ void PageSpecificContentSettings::WebContentsHandler::OnServiceWorkerAccessed(
     tscs->OnServiceWorkerAccessed(scope, allowed);
 }
 
-void PageSpecificContentSettings::WebContentsHandler::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
-          navigation_handle)) {
-    return;
-  }
-
-  inflight_navigation_settings_.insert(
-      std::make_pair(navigation_handle, InflightNavigationContentSettings()));
-}
-
 void PageSpecificContentSettings::WebContentsHandler::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
@@ -219,39 +201,29 @@ void PageSpecificContentSettings::WebContentsHandler::ReadyToCommitNavigation(
   // There may be content settings that were updated for the navigated URL.
   // These would not have been sent before if we're navigating cross-origin.
   // Ensure up to date rules are sent before navigation commits.
-  MaybeSendRendererContentSettingsRules(
-      navigation_handle->GetWebContents()->GetMainFrame(), map_,
-      delegate_.get());
+  MaybeSendRendererContentSettingsRules(navigation_handle->GetRenderFrameHost(),
+                                        map_, delegate_.get());
 }
 
 void PageSpecificContentSettings::WebContentsHandler::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
-          navigation_handle)) {
+          navigation_handle) ||
+      !navigation_handle->HasCommitted()) {
     return;
   }
 
-  if (!navigation_handle->HasCommitted()) {
-    inflight_navigation_settings_.erase(navigation_handle);
-    return;
-  }
+  content::RenderDocumentHostUserData<PageSpecificContentSettings>::
+      CreateForCurrentDocument(navigation_handle->GetRenderFrameHost(), *this,
+                               delegate_.get());
+  InflightNavigationContentSettings* inflight_settings =
+      content::NavigationHandleUserData<InflightNavigationContentSettings>::
+          GetForNavigationHandle(*navigation_handle);
 
-  auto tscs =
-      base::WrapUnique(new PageSpecificContentSettings(*this, delegate_.get()));
-
-  // TODO(carlscab): This sort of internal. Maybe add a
-  // RenderDocumentHostUserData::Create(RenderFrameHost* rfh, Params...)
-  content::SetRenderDocumentHostUserData(
-      navigation_handle->GetRenderFrameHost(),
-      PageSpecificContentSettings::UserDataKey(), std::move(tscs));
-
-  auto it = inflight_navigation_settings_.find(navigation_handle);
-  if (it != inflight_navigation_settings_.end()) {
+  if (inflight_settings) {
     TransferNavigationContentSettingsToCommittedDocument(
-        it->second, navigation_handle->GetRenderFrameHost());
-    inflight_navigation_settings_.erase(it);
+        *inflight_settings, navigation_handle->GetRenderFrameHost());
   }
-
   delegate_->UpdateLocationBar();
 }
 
@@ -280,29 +252,19 @@ void PageSpecificContentSettings::WebContentsHandler::
     observer.OnSiteDataAccessed();
 }
 
-PageSpecificContentSettings::WebContentsHandler::
-    InflightNavigationContentSettings::InflightNavigationContentSettings() =
-        default;
-PageSpecificContentSettings::WebContentsHandler::
-    InflightNavigationContentSettings::InflightNavigationContentSettings(
-        const InflightNavigationContentSettings&) = default;
-PageSpecificContentSettings::WebContentsHandler::
-    InflightNavigationContentSettings::InflightNavigationContentSettings(
-        InflightNavigationContentSettings&&) = default;
+PageSpecificContentSettings::InflightNavigationContentSettings::
+    InflightNavigationContentSettings(content::NavigationHandle&) {}
 
-PageSpecificContentSettings::WebContentsHandler::
-    InflightNavigationContentSettings::~InflightNavigationContentSettings() =
-        default;
+PageSpecificContentSettings::InflightNavigationContentSettings::
+    ~InflightNavigationContentSettings() = default;
 
-PageSpecificContentSettings::WebContentsHandler::
-    InflightNavigationContentSettings&
-    PageSpecificContentSettings::WebContentsHandler::
-        InflightNavigationContentSettings::operator=(
-            InflightNavigationContentSettings&&) = default;
+NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(
+    PageSpecificContentSettings::InflightNavigationContentSettings)
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PageSpecificContentSettings::WebContentsHandler)
 
 PageSpecificContentSettings::PageSpecificContentSettings(
+    content::RenderFrameHost*,
     PageSpecificContentSettings::WebContentsHandler& handler,
     Delegate* delegate)
     : handler_(handler),
@@ -426,13 +388,13 @@ void PageSpecificContentSettings::SharedWorkerAccessed(
     int render_frame_id,
     const GURL& worker_url,
     const std::string& name,
-    const url::Origin& constructor_origin,
+    const storage::StorageKey& storage_key,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PageSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
-    settings->OnSharedWorkerAccessed(worker_url, name, constructor_origin,
+    settings->OnSharedWorkerAccessed(worker_url, name, storage_key,
                                      blocked_by_policy);
 }
 
@@ -650,16 +612,16 @@ void PageSpecificContentSettings::OnServiceWorkerAccessed(
 void PageSpecificContentSettings::OnSharedWorkerAccessed(
     const GURL& worker_url,
     const std::string& name,
-    const url::Origin& constructor_origin,
+    const storage::StorageKey& storage_key,
     bool blocked_by_policy) {
   DCHECK(worker_url.is_valid());
   if (blocked_by_policy) {
     blocked_local_shared_objects_.shared_workers()->AddSharedWorker(
-        worker_url, name, constructor_origin);
+        worker_url, name, storage_key);
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
     allowed_local_shared_objects_.shared_workers()->AddSharedWorker(
-        worker_url, name, constructor_origin);
+        worker_url, name, storage_key);
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 }
@@ -696,7 +658,7 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
   handler_.NotifySiteDataObservers();
 }
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 void PageSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {

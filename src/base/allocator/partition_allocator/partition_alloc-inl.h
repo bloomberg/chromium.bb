@@ -17,8 +17,12 @@
 #include <windows.h>
 #endif
 
-#define PARTITION_EXTRAS_REQUIRED \
-  (DCHECK_IS_ON() || BUILDFLAG(USE_BACKUP_REF_PTR))
+// Prefetch *x into memory.
+#if defined(__clang__) || defined(COMPILER_GCC)
+#define PA_PREFETCH(x) __builtin_prefetch(x)
+#else
+#define PA_PREFETCH(x)
+#endif
 
 namespace base {
 

@@ -10,8 +10,9 @@
 #include "components/safe_search_api/stub_url_checker.h"
 #include "components/safe_search_api/url_checker.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/frame_impl_browser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,10 @@ class ExplicitSitesFilterTest : public FrameImplTestBaseWithServer {
 
   void SetUpOnMainThread() override {
     FrameImplTestBaseWithServer::SetUpOnMainThread();
+
+    // Spin the message loop to allow the Context to connect, before
+    // |context_impl()| is called.
+    base::RunLoop().RunUntilIdle();
 
     SafeSearchFactory::GetInstance()
         ->GetForBrowserContext(context_impl()->browser_context())

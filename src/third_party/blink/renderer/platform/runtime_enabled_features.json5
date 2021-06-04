@@ -116,6 +116,11 @@
       status: "stable",
     },
     {
+      name: "AccessibilityAriaTouchPassthrough",
+      status: "experimental",
+      origin_trial_feature_name: "AccessibilityAriaTouchPassthrough",
+    },
+    {
       name: "AccessibilityAriaVirtualContent",
       status: "experimental",
     },
@@ -201,10 +206,6 @@
     },
     {
       name: "AudioVideoTracks",
-      status: "experimental",
-    },
-    {
-      name: "AudioWorkletRealtimeThread",
       status: "experimental",
     },
     {
@@ -342,15 +343,18 @@
       name: "CapabilityDelegationPaymentRequest",
     },
     {
+      name: "CaptureHandle",
+      origin_trial_feature_name: "CaptureHandle",
+      depends_on: ["GetDisplayMedia"],
+      status: {"Android": "", "default": "experimental"},
+    },
+    {
       name: "CaptureTimeInCsrc",
       status: "stable",
     },
     {
       name: "ClickPointerEvent",
-      status: "experimental",
-    },
-    {
-      name: "ClickPointerEventIntegerCoordinates",
+      status: "stable",
     },
     {
       name: "ClickRetargetting",
@@ -371,6 +375,9 @@
       name: "CompositeBGColorAnimation",
     },
     {
+      name: "CompositeClipPathAnimation",
+    },
+    {
       name: "CompositedSelectionUpdate",
       status: {"Android": "stable"},
     },
@@ -387,10 +394,11 @@
       status: "experimental",
     },
     {
+      // blink::features::kComputePressure is a kill switch for the API. If the
+      // feature is disabled, origin trial tokens are ignored.
       name: "ComputePressure",
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature which needs to
-      // be enabled to make the whole feature work.
+      origin_trial_feature_name: "ComputePressure",
+      status: "experimental",
     },
     {
       name: "ConsolidatedMovementXY",
@@ -500,6 +508,10 @@
       status: "stable",
     },
     {
+      name: "CSSColorTypedOM",
+      status:  "experimental",
+    },
+    {
       name: "CSSContainerQueries",
     },
     {
@@ -541,7 +553,7 @@
       // @font-face descriptor size-adjust.
       // https://drafts.csswg.org/css-fonts-5/#descdef-font-face-size-adjust
       name: "CSSFontFaceSizeAdjust",
-      status: "test",
+      status: "stable",
     },
     {
       // @font-face descriptors ascent-override, descent-override and
@@ -627,16 +639,19 @@
       depends_on: ["PictureInPictureAPI"],
     },
     {
+      name: "CSSPositionStickyStaticScrollPosition",
+      status: "experimental",
+    },
+    {
       name: "CSSPseudoDir",
       status: "experimental",
     },
     {
-      name: "CSSPseudoIs",
-      status: "stable",
-    },
-    {
-      name: "CSSPseudoWhere",
-      status: "stable",
+      // When an audio, video, or similar resource is "playing"
+      // or "paused".
+      // https://www.w3.org/TR/selectors-4/#video-state
+      name: "CSSPseudoPlayingPaused",
+      status: "test",
     },
     // Scrollbar styling.
     // https://drafts.csswg.org/css-scrollbars/
@@ -678,11 +693,6 @@
       // Support for ::target-text pseudo element as specified in
       // https://drafts.csswg.org/css-pseudo/#selectordef-target-text
       name: "CSSTargetTextPseudoElement",
-      status: "stable",
-    },
-    // Support for @property rules.
-    {
-      name: "CSSVariables2AtProperty",
       status: "stable",
     },
     // Support for registered custom properties with <image> syntax.
@@ -819,8 +829,9 @@
     },
     {
       // Document transitions, including shared element transitions.
-      // See https://github.com/WICG/proposals/issues/12.
-      name: "DocumentTransition"
+      // See https://github.com/WICG/shared-element-transitions
+      name: "DocumentTransition",
+      origin_trial_feature_name: "DocumentTransition"
     },
     {
       name: "DocumentWrite",
@@ -914,6 +925,16 @@
     {
       name: "FeaturePolicyReporting",
       status: "experimental"
+    },
+    {
+      name: "FencedFrames",
+      // This helps enable and expose the <fencedframe> element, but note that
+      // blink::features::kFencedFrames must be enabled as well, similar to
+      // Portals, as we require the support of the browser process to fully
+      // enable the feature. Enabling this runtime enabled feature alone has no
+      // effect.
+      status: "experimental",
+      origin_trial_feature_name: "FencedFrames",
     },
     {
       name: "FetchUploadStreaming",
@@ -1149,22 +1170,33 @@
       // enabled, we'll typically fall back to legacy code for block children.
       name: "LayoutNGFullPositionForPoint",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
+      status: "stable",
     },
     {
       name: "LayoutNGGrid",
       implied_by: ["CSSContainerQueries"],
     },
     {
+      name: "LayoutNGLayoutOverflowRecalc",
+      depends_on: ["LayoutNG"],
+      status: "stable",
+    },
+    {
       name: "LayoutNGPrinting",
     },
     {
       name: "LayoutNGReplaced",
-      depends_on: ["LayoutNG"]
+      depends_on: ["LayoutNG"],
+      status: "stable",
     },
     {
       name: "LayoutNGTable",
       depends_on: ["LayoutNG"],
-      status: "test"
+      status: "stable"
+    },
+    {
+      name: "LayoutNGTextCombine",
+      depends_on: ["LayoutNG"],
     },
     {
       name: "LayoutNGTextControl",
@@ -1202,10 +1234,6 @@
       "implied_by": ["DeviceAttributes", "ManagedConfiguration"],
     },
     {
-      name:"ManualSlotting",
-      status:"stable",
-    },
-    {
       name: "MathMLCore",
       status:"experimental",
       depends_on: ["LayoutNG"],
@@ -1229,6 +1257,10 @@
     {
       name: "MediaCapabilitiesSpatialAudio",
       status: "test",
+    },
+    {
+      name: "MediaCapabilitiesWebRtc",
+      status: "experimental",
     },
     {
       name: "MediaCapture",
@@ -1415,6 +1447,12 @@
       status: "experimental",
     },
     {
+      // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the
+      // feature is in stable with no issues.
+      name: "OffsetParentNewSpecBehavior",
+      status: "experimental"
+    },
+    {
       name: "OnDeviceChange",
       // Android does not yet support SystemMonitor.
       status: {"Android": "", "default": "stable"},
@@ -1513,8 +1551,12 @@
     },
     {
       // This flag enables the Manifest parser to handle URL Protocols.
+      // Also enabled when blink::features::kWebAppEnableProtocolHandlers is
+      // overridden on the command line (or via chrome://flags).
       name: "ParseUrlProtocolHandler",
-      status: "test",
+      status: "experimental",
+      origin_trial_feature_name: "ParseUrlProtocolHandler",
+      origin_trial_os: ["win", "mac", "linux"],
     },
     {
       name: "PassPaintVisualRectToCompositor",
@@ -1640,6 +1682,10 @@
       settable_from_internals: true,
     },
     {
+      name: "PrefersColorSchemeClientHintHeader",
+      status: "experimental",
+    },
+    {
       name: "PrefersContrast",
       depends_on: ["ForcedColors"],
     },
@@ -1671,10 +1717,6 @@
     },
     {
       name: "PushMessagingSubscriptionChange",
-      status: "experimental",
-    },
-    {
-      name: "QuicTransport",
       status: "experimental",
     },
     {
@@ -1870,13 +1912,16 @@
     },
     {
       name: "SharedArrayBuffer",
-      status: "stable",
     },
     {
       name: "SharedArrayBufferOnDesktop",
     },
     {
       name: "SharedArrayBufferUnrestrictedAccessAllowed",
+    },
+    {
+      name: "SharedAutofill",
+      status: "experimental",
     },
     {
       name: "SharedWorker",
@@ -1913,14 +1958,14 @@
     // was enabled.
     {
       name: "SpeculationRules",
-      implied_by: ["SpeculationRulesPrefetchProxy"],
+      implied_by: ["SpeculationRulesPrefetchProxy", "Prerender2"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
     // Origin trial to enable Speculation Rules for access to the prefetch proxy.
     // https://crbug.com/1190167
     {
       name: "SpeculationRulesPrefetchProxy",
-      origin_trial_feature_name: "SpeculationRulesPrefetchProxy",
+      origin_trial_feature_name: "SpeculationRulesPrefetch",
     },
     {
       name: "SrcsetMaxDensity",
@@ -1955,10 +2000,6 @@
       origin_trial_feature_name: "SubresourceWebBundles",
       origin_trial_allows_third_party: true,
       status: "experimental"
-    },
-    {
-      name: "SurfaceEmbeddingFeatures",
-      status: "stable",
     },
     {
       name: "SVGTextNG",
@@ -2000,8 +2041,16 @@
       status: "stable",
     },
     {
+      name: "TextFragmentTapOpensContextMenu",
+      status: {"Android": "stable"},
+    },
+    {
       name: "ThirdPartyOriginTrials",
       status: "stable",
+    },
+    {
+      name: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+      status: "experimental",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
@@ -2093,6 +2142,10 @@
       status: "stable",
     },
     {
+      name: "UUID",
+      status: "stable"
+    },
+    {
       name: "V8IdleTasks",
     },
     {
@@ -2154,7 +2207,18 @@
       status:"experimental",
     },
     {
+      // This flag enables the Manifest parser to handle URL Handlers.
+      // Also enabled when blink::features::kWebAppEnableUrlHandlers is
+      // overridden on the command line (or via chrome://flags).
+      name: "WebAppUrlHandling",
+      status: "experimental",
+      origin_trial_feature_name: "WebAppUrlHandling",
+      origin_trial_os: ["win", "mac", "linux"],
+    },
+    {
       name: "WebAppWindowControlsOverlay",
+      origin_trial_feature_name: "WebAppWindowControlsOverlay",
+      origin_trial_os: ["win", "mac", "linux"],
     },
     {
       name: "WebAssemblyCSP",
@@ -2204,6 +2268,18 @@
       name: "WebBluetoothGetDevices",
       status: "experimental",
     },
+    // WebBluetoothManufacturerDataFilter is enabled by default on Android,
+    // ChromeOS and Mac. It is also supported in Windows 10 which is handled in
+    // runtime_features.cc
+    {
+      name: "WebBluetoothManufacturerDataFilter",
+      status: {
+        "Android": "stable",
+        "ChromeOS": "stable",
+        "Mac": "stable",
+        "default": "experimental",
+      },
+    },
     {
       name: "WebBluetoothRemoteCharacteristicNewWriteValue",
       status: {
@@ -2244,6 +2320,7 @@
     // --enable-experimental-web-platform-features flag.
     {
       name: "WebGPU",
+      origin_trial_feature_name: "WebGPU",
     },
     {
       // Requires both WebGPU and --enable-experimental-web-platform-features
@@ -2288,6 +2365,12 @@
       name: "WebTransport",
       origin_trial_feature_name: "WebTransport",
       status: "experimental",
+    },
+    {
+      name: "WebTransportCustomCertificates",
+      origin_trial_feature_name: "WebTransport",
+      status: "experimental",
+      depends_on: ["WebTransport"],
     },
     {
       name: "WebUSB",

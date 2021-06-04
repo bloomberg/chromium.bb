@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
@@ -43,7 +43,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   struct Params {
     Params();
     ~Params();
-    base::Optional<int> default_button = base::nullopt;
+    absl::optional<int> default_button = absl::nullopt;
     bool round_corners = true;
     bool draggable = false;
 
@@ -336,10 +336,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   Params params_;
 
   // The extra view for this dialog, if there is one.
-  std::unique_ptr<View> extra_view_ = nullptr;
+  std::unique_ptr<View> extra_view_;
 
   // The footnote view for this dialog, if there is one.
-  std::unique_ptr<View> footnote_view_ = nullptr;
+  std::unique_ptr<View> footnote_view_;
 
   // Observers for DialogModel changes.
   base::ObserverList<DialogObserver>::Unchecked observer_list_;

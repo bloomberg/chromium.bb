@@ -21,6 +21,7 @@
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/span.h"
 #include "lib/jxl/base/status.h"
+#include "lib/jxl/blending.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/common.h"
 #include "lib/jxl/dec_bit_reader.h"
@@ -70,6 +71,7 @@ class FrameDecoder {
   void SetFrameSizeLimits(const SizeConstraints* constraints) {
     constraints_ = constraints;
   }
+  void SetRenderSpotcolors(bool rsc) { render_spotcolors_ = rsc; }
 
   // Read FrameHeader and table of contents from the given BitReader.
   // Also checks frame dimensions for their limits, and sets the output
@@ -129,52 +131,72 @@ class FrameDecoder {
     return frame_header_.encoding == FrameEncoding::kVarDCT && finalized_dc_;
   }
 
-  // If the image has default exif orientation, no extra channels and no
-  // blending, the target output encoding is not linear sRGB, and the current
-  // frame cannot be referenced by future frames, sets the buffer to which uint8
-  // sRGB pixels will be decoded to.
+  // If the image has default exif orientation and no
+  // blending, the current frame cannot be referenced by future frames, sets the
+  // buffer to which uint8 sRGB pixels will be decoded to.
   // TODO(veluca): reduce this set of restrictions.
-  void MaybeSetRGB8OutputBuffer(uint8_t* rgb_output, bool is_rgba) const {
+  // If an output callback is set, this function *must not* be called.
+  void MaybeSetRGB8OutputBuffer(uint8_t* rgb_output, size_t stride,
+                                bool is_rgba) const {
     if (decoded_->metadata()->GetOrientation() != Orientation::kIdentity) {
       return;
     }
-    if (decoded_->metadata()->num_extra_channels != 0) {
+    if (ImageBlender::NeedsBlending(dec_state_)) {
       return;
-    }
-    if (frame_header_.blending_info.mode != BlendMode::kReplace ||
-        frame_header_.custom_size_or_origin) {
-      return;
-    }
-    // If output_encoding is linear sRGB converted from XYB, it would require an
-    // extra conversion to sRGB, which is not implemented yet. However, since we
-    // are not doing any blending, we can just convert to sRGB anyway instead of
-    // linear.
-    if (dec_state_->output_encoding.IsLinearSRGB() &&
-        decoded_->metadata()->xyb_encoded) {
-      dec_state_->output_encoding =
-          ColorEncoding::SRGB(dec_state_->output_encoding.IsGray());
     }
     if (frame_header_.CanBeReferenced()) {
       return;
     }
+    if (render_spotcolors_ &&
+        decoded_->metadata()->Find(ExtraChannel::kSpotColor)) {
+      return;
+    }
     dec_state_->rgb_output = rgb_output;
     dec_state_->rgb_output_is_rgba = is_rgba;
+    dec_state_->rgb_stride = stride;
+    JXL_ASSERT(dec_state_->pixel_callback == nullptr);
 #if !JXL_HIGH_PRECISION
-    if (!is_rgba && decoded_->metadata()->xyb_encoded &&
-        dec_state_->output_encoding.IsSRGB() &&
-        frame_header_.nonserialized_metadata->transform_data
-            .opsin_inverse_matrix.all_default &&
-        std::abs(frame_header_.nonserialized_metadata->m.IntensityTarget() -
-                 255.0f) < 1.0f &&
+    if (decoded_->metadata()->xyb_encoded &&
+        dec_state_->output_encoding_info.color_encoding.IsSRGB() &&
+        dec_state_->output_encoding_info.all_default_opsin &&
         HasFastXYBTosRGB8() && frame_header_.needs_color_transform()) {
       dec_state_->fast_xyb_srgb8_conversion = true;
     }
 #endif
   }
 
+  // Same as MaybeSetRGB8OutputBuffer, but with a float callback.
+  // If a RGB8 output buffer is set, this function *must not* be called.
+  void MaybeSetFloatCallback(
+      const std::function<void(const float* pixels, size_t x, size_t y,
+                               size_t num_pixels)>& cb,
+      bool is_rgba) const {
+    if (decoded_->metadata()->GetOrientation() != Orientation::kIdentity) {
+      return;
+    }
+    if (frame_header_.blending_info.mode != BlendMode::kReplace ||
+        frame_header_.custom_size_or_origin) {
+      return;
+    }
+    if (frame_header_.CanBeReferenced()) {
+      return;
+    }
+    if (render_spotcolors_ &&
+        decoded_->metadata()->Find(ExtraChannel::kSpotColor)) {
+      return;
+    }
+    dec_state_->pixel_callback = cb;
+    dec_state_->rgb_output_is_rgba = is_rgba;
+    JXL_ASSERT(dec_state_->rgb_output == nullptr);
+  }
+
   // Returns true if the rgb output buffer passed by MaybeSetRGB8OutputBuffer
-  // has been/will be populated by Flush() / FinalizeFrame().
-  bool HasRGBBuffer() const { return dec_state_->rgb_output != nullptr; }
+  // has been/will be populated by Flush() / FinalizeFrame(), or if a pixel
+  // callback has been used.
+  bool HasRGBBuffer() const {
+    return dec_state_->rgb_output != nullptr ||
+           dec_state_->pixel_callback != nullptr;
+  }
 
  private:
   Status ProcessDCGlobal(BitReader* br);
@@ -217,6 +239,7 @@ class FrameDecoder {
   ModularFrameDecoder modular_frame_decoder_;
   bool allow_partial_frames_;
   bool allow_partial_dc_global_;
+  bool render_spotcolors_ = true;
 
   std::vector<uint8_t> processed_section_;
   std::vector<uint8_t> decoded_passes_per_ac_group_;

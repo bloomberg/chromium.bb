@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_menu_button.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace gfx {
 class Rect;
@@ -116,7 +116,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
   }
 
   // Convenience method to return the theme color from |app_controller_|.
-  base::Optional<SkColor> GetThemeColor() const;
+  absl::optional<SkColor> GetThemeColor() const;
 
   // Populates child elements with page details from the current WebContents.
   void UpdateContents();

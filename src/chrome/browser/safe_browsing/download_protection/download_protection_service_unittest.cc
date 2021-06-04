@@ -1003,7 +1003,8 @@ TEST_F(DownloadProtectionServiceTest,
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetPrimaryOTRProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1018,7 +1019,8 @@ TEST_F(DownloadProtectionServiceTest,
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetPrimaryOTRProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1147,7 +1149,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetPrimaryOTRProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1187,7 +1190,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetPrimaryOTRProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1252,11 +1256,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
               MatchDownloadAllowlistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(8);
+      .Times(9);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(8);
+      .Times(9);
   std::string feedback_ping;
   std::string feedback_response;
   ClientDownloadResponse expected_response;
@@ -1367,6 +1371,30 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
   }
+
+  {
+    // If the response is dangerous_account_compromise the result should
+    // also be marked as dangerous_account_compromise.
+
+    PrepareResponse(ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE,
+                    net::HTTP_OK, net::OK, true /* upload_requested */);
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE));
+    EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
+    expected_response.set_verdict(
+        ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE);
+    expected_response.set_upload(true);
+    EXPECT_EQ(expected_response.SerializeAsString(), feedback_response);
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+
   {
     // If the response is POTENTIALLY_UNWANTED the result should also be marked
     // as POTENTIALLY_UNWANTED.
@@ -2545,7 +2573,8 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
       {ClientDownloadResponse::POTENTIALLY_UNWANTED,
        DownloadCheckResult::POTENTIALLY_UNWANTED},
       {ClientDownloadResponse::UNKNOWN, DownloadCheckResult::UNKNOWN},
-  };
+      {ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE,
+       DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE}};
 
   for (const auto& test_case : kExpectedResults) {
     sb_service_->test_url_loader_factory()->ClearResponses();
@@ -2736,7 +2765,8 @@ TEST_F(DownloadProtectionServiceTest,
   // No report sent if user is in incognito mode.
   DownloadProtectionService::SetDownloadPingToken(&item, "token");
   content::DownloadItemUtils::AttachInfo(
-      &item, profile()->GetPrimaryOTRProfile(), nullptr);
+      &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
 
@@ -2790,7 +2820,8 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
 
   // No event is triggered if in incognito mode..
   content::DownloadItemUtils::AttachInfo(
-      &item, profile()->GetPrimaryOTRProfile(), nullptr);
+      &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnDangerousDownloadOpened::kEventName));
@@ -2827,11 +2858,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadAllowlistedByPolicy) {
 TEST_F(DownloadProtectionServiceTest, CheckOffTheRecordDoesNotSendFeedback) {
   NiceMockDownloadItem item;
   EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
-      profile()->GetPrimaryOTRProfile(), &item, DownloadCommands::KEEP));
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), &item,
+      DownloadCommands::KEEP));
 
   EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
       profile()->GetOffTheRecordProfile(
-          Profile::OTRProfileID("Test::DownloadProtectionService")),
+          Profile::OTRProfileID::CreateUniqueForTesting(),
+          /*create_if_needed=*/true),
       &item, DownloadCommands::KEEP));
 }
 
@@ -3334,7 +3367,8 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (1): is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
-    item->browser_context = profile()->GetPrimaryOTRProfile();
+    item->browser_context =
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
     RunLoop run_loop;
     download_service_->CheckFileSystemAccessWrite(
@@ -3379,7 +3413,8 @@ TEST_F(DownloadProtectionServiceTest,
     item = PrepareBasicFileSystemAccessWriteItem(
         /*tmp_path_literal=*/FILE_PATH_LITERAL("a.txt.crswap"),
         /*final_path_literal=*/FILE_PATH_LITERAL("a.txt"));
-    item->browser_context = profile()->GetPrimaryOTRProfile();
+    item->browser_context =
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
     RunLoop run_loop;
     download_service_->CheckFileSystemAccessWrite(
@@ -3444,11 +3479,11 @@ TEST_F(DownloadProtectionServiceTest, FileSystemAccessWriteRequest_Success) {
               MatchDownloadAllowlistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(8);
+      .Times(9);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(8);
+      .Times(9);
   ClientDownloadResponse expected_response;
 
   {
@@ -3491,6 +3526,8 @@ TEST_F(DownloadProtectionServiceTest, FileSystemAccessWriteRequest_Success) {
       {ClientDownloadResponse::POTENTIALLY_UNWANTED,
        DownloadCheckResult::POTENTIALLY_UNWANTED},
       {ClientDownloadResponse::UNKNOWN, DownloadCheckResult::UNKNOWN},
+      {ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE,
+       DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE},
   };
   for (const auto& test_case : kExpectedResults) {
     PrepareResponse(test_case.verdict, net::HTTP_OK, net::OK);
@@ -3843,7 +3880,8 @@ TEST_F(EnhancedProtectionDownloadTest, NoAccessTokenWhileIncognito) {
     SetEnhancedProtectionPrefForTests(profile()->GetPrefs(), true);
     NiceMockDownloadItem item;
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetPrimaryOTRProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        nullptr);
     PrepareBasicDownloadItem(&item,
                              {"http://www.evil.com/bla.exe"},  // url_chain
                              "",                               // referrer
@@ -4069,6 +4107,8 @@ TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
           {ClientDownloadResponse::POTENTIALLY_UNWANTED,
            DownloadCheckResult::POTENTIALLY_UNWANTED},
           {ClientDownloadResponse::UNCOMMON, DownloadCheckResult::UNCOMMON},
+          {ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE,
+           DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE},
       };
   for (const auto& response : responses) {
     NiceMockDownloadItem item;

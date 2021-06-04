@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/feature_list.h"
+#include <string>
+
+// feature_list.h is a widely included header and its size impacts build
+// time. Try not to raise this limit unless necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#ifndef NACL_TC_REV
+#pragma clang max_tokens_here 520000
+#endif
 
 #include <stddef.h>
-
-#include <utility>
-#include <vector>
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -16,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/strings/string_piece.h"
@@ -525,15 +531,45 @@ bool FeatureList::IsFeatureEnabled(const Feature& feature) {
 
 FieldTrial* FeatureList::GetAssociatedFieldTrial(const Feature& feature) {
   DCHECK(initialized_);
-  DCHECK(IsValidFeatureOrFieldTrialName(feature.name)) << feature.name;
   DCHECK(CheckFeatureIdentity(feature)) << feature.name;
 
-  auto it = overrides_.find(feature.name);
+  return GetAssociatedFieldTrialByFeatureName(feature.name);
+}
+
+const base::FeatureList::OverrideEntry*
+FeatureList::GetOverrideEntryByFeatureName(StringPiece name) {
+  DCHECK(initialized_);
+  DCHECK(IsValidFeatureOrFieldTrialName(std::string(name))) << name;
+
+  auto it = overrides_.find(name);
   if (it != overrides_.end()) {
     const OverrideEntry& entry = it->second;
-    return entry.field_trial;
+    return &entry;
   }
+  return nullptr;
+}
 
+FieldTrial* FeatureList::GetAssociatedFieldTrialByFeatureName(
+    StringPiece name) {
+  DCHECK(initialized_);
+
+  const base::FeatureList::OverrideEntry* entry =
+      GetOverrideEntryByFeatureName(name);
+  if (entry) {
+    return entry->field_trial;
+  }
+  return nullptr;
+}
+
+FieldTrial* FeatureList::GetEnabledFieldTrialByFeatureName(StringPiece name) {
+  DCHECK(initialized_);
+
+  const base::FeatureList::OverrideEntry* entry =
+      GetOverrideEntryByFeatureName(name);
+  if (entry &&
+      entry->overridden_state == base::FeatureList::OVERRIDE_ENABLE_FEATURE) {
+    return entry->field_trial;
+  }
   return nullptr;
 }
 

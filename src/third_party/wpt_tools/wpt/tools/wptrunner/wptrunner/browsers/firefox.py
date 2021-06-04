@@ -3,7 +3,6 @@ import os
 import platform
 import signal
 import subprocess
-import sys
 from abc import ABCMeta, abstractmethod
 
 import mozinfo
@@ -27,7 +26,6 @@ from ..executors.executormarionette import (MarionetteTestharnessExecutor,  # no
                                             MarionettePrintRefTestExecutor,  # noqa: F401
                                             MarionetteWdspecExecutor,  # noqa: F401
                                             MarionetteCrashtestExecutor)  # noqa: F401
-from ..process import cast_env
 
 
 here = os.path.dirname(__file__)
@@ -328,7 +326,7 @@ class FirefoxInstanceManager(object):
         runner = FirefoxRunner(profile=profile,
                                binary=cmd[0],
                                cmdargs=cmd[1:],
-                               env=cast_env(env),
+                               env=env,
                                process_class=ProcessHandler,
                                process_args={"processOutputLine": [output_handler]})
         instance = BrowserInstance(self.logger, runner, marionette_port,
@@ -404,14 +402,18 @@ class BrowserInstance(object):
         if is_running:
             self.logger.debug("Stopping Firefox %s" % self.pid())
             shutdown_methods = [(True, lambda: self.runner.wait(self.shutdown_timeout)),
-                                (False, lambda: self.runner.stop(signal.SIGTERM)),
-                                (False, lambda: self.runner.stop(signal.SIGKILL))]
+                                (False, lambda: self.runner.stop(signal.SIGTERM,
+                                                                 self.shutdown_timeout))]
+            if hasattr(signal, "SIGKILL"):
+                shutdown_methods.append((False, lambda: self.runner.stop(signal.SIGKILL,
+                                                                         self.shutdown_timeout)))
             if skip_marionette:
                 shutdown_methods = shutdown_methods[1:]
             try:
                 # For Firefox we assume that stopping the runner prompts the
                 # browser to shut down. This allows the leak log to be written
-                for clean, stop_f in shutdown_methods:
+                for i, (clean, stop_f) in enumerate(shutdown_methods):
+                    self.logger.debug("Shutting down attempt %i/%i" % (i + 1, len(shutdown_methods)))
                     if not force or not clean:
                         retcode = stop_f()
                         if retcode is not None:
@@ -672,14 +674,13 @@ class ProfileCreator(object):
 
 
         env[env_var] = (os.path.pathsep.join([certutil_dir, env[env_var]])
-                        if env_var in env else certutil_dir).encode(
-                            sys.getfilesystemencoding() or 'utf-8', 'replace')
+                        if env_var in env else certutil_dir)
 
         def certutil(*args):
             cmd = [self.certutil_binary] + list(args)
             self.logger.process_output("certutil",
                                        subprocess.check_output(cmd,
-                                                               env=cast_env(env),
+                                                               env=env,
                                                                stderr=subprocess.STDOUT),
                                        " ".join(cmd))
 

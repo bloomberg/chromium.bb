@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -184,15 +185,15 @@ class TestMediaPlayerObserver final
   // Getters used from HTMLMediaElementTest.
   bool received_media_playing() const { return received_media_playing_; }
 
-  const base::Optional<bool>& received_media_paused_stream_ended() const {
+  const absl::optional<bool>& received_media_paused_stream_ended() const {
     return received_media_paused_stream_ended_;
   }
 
-  const base::Optional<bool>& received_muted_status() const {
+  const absl::optional<bool>& received_muted_status() const {
     return received_muted_status_type_;
   }
 
-  const base::Optional<OnMetadataChangedResult>&
+  const absl::optional<OnMetadataChangedResult>&
   received_metadata_changed_result() const {
     return received_metadata_changed_result_;
   }
@@ -204,9 +205,9 @@ class TestMediaPlayerObserver final
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
   bool received_media_playing_{false};
-  base::Optional<bool> received_media_paused_stream_ended_;
-  base::Optional<bool> received_muted_status_type_;
-  base::Optional<OnMetadataChangedResult> received_metadata_changed_result_;
+  absl::optional<bool> received_media_paused_stream_ended_;
+  absl::optional<bool> received_muted_status_type_;
+  absl::optional<OnMetadataChangedResult> received_metadata_changed_result_;
   gfx::Size received_media_size_{0, 0};
   bool received_buffer_underflow_{false};
 };
@@ -323,6 +324,8 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   bool HasLazyLoadObserver() const {
     return !!Media()->lazy_load_intersection_observer_;
   }
+
+  bool ControlsVisible() const { return Media()->ShouldShowControls(); }
 
   ExecutionContext* GetExecutionContext() const {
     return dummy_page_holder_->GetFrame().DomWindow();
@@ -759,6 +762,7 @@ TEST_P(HTMLMediaElementTest, ContextPaused) {
 }
 
 TEST_P(HTMLMediaElementTest, GcMarkingNoAllocWebTimeRanges) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   auto* thread_state = ThreadState::Current();
   ThreadState::NoAllocationScope no_allocation_scope(thread_state);
   EXPECT_FALSE(thread_state->IsAllocationAllowed());
@@ -1066,6 +1070,38 @@ TEST_P(HTMLMediaElementTest, SendBufferOverflowToObserver) {
 
   NotifyBufferUnderflowEvent();
   EXPECT_TRUE(ReceivedMessageBufferUnderflowEvent());
+}
+
+TEST_P(HTMLMediaElementTest,
+       ControlsVisibilityUserChoiceOverridesControlsAttr) {
+  // Enable scripts to prevent controls being shown due to no scripts.
+  Media()->GetDocument().GetSettings()->SetScriptEnabled(true);
+
+  // Setting the controls attribute to true should show the controls.
+  Media()->SetBooleanAttribute(html_names::kControlsAttr, true);
+  EXPECT_TRUE(ControlsVisible());
+
+  // Setting it to false should hide them.
+  Media()->SetBooleanAttribute(html_names::kControlsAttr, false);
+  EXPECT_FALSE(ControlsVisible());
+
+  // If the user explicitly shows them, that should override the controls
+  // attribute.
+  Media()->SetUserWantsControlsVisible(true);
+  EXPECT_TRUE(ControlsVisible());
+
+  // Setting the controls attribute to false again should do nothing.
+  Media()->SetBooleanAttribute(html_names::kControlsAttr, false);
+  EXPECT_TRUE(ControlsVisible());
+
+  // If the user explicitly hides the controls, that should also override any
+  // controls attribute setting.
+  Media()->SetUserWantsControlsVisible(false);
+  EXPECT_FALSE(ControlsVisible());
+
+  // So setting the controls attribute to true should not show the controls.
+  Media()->SetBooleanAttribute(html_names::kControlsAttr, true);
+  EXPECT_FALSE(ControlsVisible());
 }
 
 }  // namespace blink

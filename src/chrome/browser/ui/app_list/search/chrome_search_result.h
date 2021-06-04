@@ -43,7 +43,7 @@ class ChromeSearchResult {
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
   using DisplayIndex = ash::SearchResultDisplayIndex;
-  using OmniboxType = ash::SearchResultOmniboxType;
+  using OmniboxType = ash::SearchResultOmniboxDisplayType;
 
   ChromeSearchResult();
   virtual ~ChromeSearchResult();
@@ -72,8 +72,8 @@ class ChromeSearchResult {
   double display_score() const { return metadata_->display_score; }
   bool is_installing() const { return metadata_->is_installing; }
   bool is_recommendation() const { return metadata_->is_recommendation; }
-  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
-  const base::Optional<std::string>& equivalent_result_id() const {
+  const absl::optional<GURL>& query_url() const { return metadata_->query_url; }
+  const absl::optional<std::string>& equivalent_result_id() const {
     return metadata_->equivalent_result_id;
   }
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
@@ -159,18 +159,9 @@ class ChromeSearchResult {
   static std::string TagsDebugStringForTest(const std::string& text,
                                             const Tags& tags);
 
-  // Subtype of a search result. -1 means no sub type. Derived classes
-  // can set this in their metadata to return useful values for rankers etc.
-  // Note set_result_subtype() does not call into ModelUpdater so changing the
-  // subtype after construction is not reflected in ash.
-  int result_subtype() const { return metadata_->result_subtype; }
-
  protected:
   // These id setters should be called in derived class constructors only.
   void set_id(const std::string& id) { metadata_->id = id; }
-  void set_result_subtype(int result_subtype) {
-    metadata_->result_subtype = result_subtype;
-  }
 
   // Get the context menu of a certain search result. This could be different
   // for different kinds of items.

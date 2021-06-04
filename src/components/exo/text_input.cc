@@ -73,6 +73,12 @@ void TextInput::Resync() {
     input_method_->OnCaretBoundsChanged(this);
 }
 
+void TextInput::Reset() {
+  composition_ = ui::CompositionText();
+  if (input_method_)
+    input_method_->CancelComposition(this);
+}
+
 void TextInput::SetSurroundingText(const std::u16string& text,
                                    uint32_t cursor_pos,
                                    uint32_t anchor) {
@@ -122,6 +128,7 @@ uint32_t TextInput::ConfirmCompositionText(bool keep_selection) {
   const uint32_t composition_text_length =
       static_cast<uint32_t>(composition_.text.length());
   delegate_->Commit(composition_.text);
+  composition_ = ui::CompositionText();
   return composition_text_length;
 }
 
@@ -178,6 +185,11 @@ bool TextInput::CanComposeInline() const {
 
 gfx::Rect TextInput::GetCaretBounds() const {
   return caret_bounds_ + window_->GetBoundsInScreen().OffsetFromOrigin();
+}
+
+gfx::Rect TextInput::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 bool TextInput::GetCompositionCharacterBounds(uint32_t index,
@@ -361,6 +373,26 @@ gfx::Rect TextInput::GetAutocorrectCharacterBounds() const {
 
 // TODO(crbug.com/1091088) Implement setAutocorrectRange
 bool TextInput::SetAutocorrectRange(const gfx::Range& range) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+absl::optional<ui::GrammarFragment> TextInput::GetGrammarFragment(
+    const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return absl::nullopt;
+}
+
+bool TextInput::ClearGrammarFragments(const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+bool TextInput::AddGrammarFragments(
+    const std::vector<ui::GrammarFragment>& fragments) {
+  // TODO(https://crbug.com/1201454): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -188,7 +189,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
   if (!GetPoliciesForUser(userhash) || !GetPoliciesForUser(std::string())) {
     NET_LOG(ERROR) << "GetManagedProperties failed: "
                    << kPoliciesNotInitialized;
-    std::move(callback).Run(service_path, base::nullopt,
+    std::move(callback).Run(service_path, absl::nullopt,
                             kPoliciesNotInitialized);
     return;
   }
@@ -514,10 +515,9 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   // This stores all GUIDs of policies that have changed or are new.
   std::set<std::string> modified_policies;
 
-  for (base::ListValue::const_iterator it = network_configs_onc.begin();
-       it != network_configs_onc.end(); ++it) {
+  for (const auto& entry : network_configs_onc.GetList()) {
     const base::DictionaryValue* network = nullptr;
-    it->GetAsDictionary(&network);
+    entry.GetAsDictionary(&network);
     DCHECK(network);
 
     std::string guid;
@@ -533,7 +533,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     policies->per_network_config[guid] = base::WrapUnique(new_entry);
 
     base::DictionaryValue* old_entry = old_per_network_config[guid].get();
-    if (!old_entry || !old_entry->Equals(new_entry))
+    if (!old_entry || *old_entry != *new_entry)
       modified_policies.insert(guid);
   }
 
@@ -621,15 +621,14 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
 void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::DictionaryValue& shill_properties,
     base::OnceClosure callback) {
-  base::RepeatingClosure adapted_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   network_configuration_handler_->CreateShillConfiguration(
       shill_properties,
-      base::BindRepeating(
+      base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
-          weak_ptr_factory_.GetWeakPtr(), adapted_callback),
-      base::BindRepeating(&LogErrorWithDictAndCallCallback, adapted_callback,
-                          FROM_HERE));
+          weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.first)),
+      base::BindOnce(&LogErrorWithDictAndCallCallback,
+                     std::move(split_callback.second), FROM_HERE));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::
@@ -637,8 +636,6 @@ void ManagedNetworkConfigurationHandlerImpl::
         const base::DictionaryValue& existing_properties,
         const base::DictionaryValue& new_properties,
         base::OnceClosure callback) {
-  base::RepeatingClosure adapted_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
   base::DictionaryValue shill_properties;
 
   std::string profile;
@@ -661,13 +658,14 @@ void ManagedNetworkConfigurationHandlerImpl::
 
   shill_properties.MergeDictionary(&new_properties);
 
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   network_configuration_handler_->CreateShillConfiguration(
       shill_properties,
-      base::BindRepeating(
+      base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
-          weak_ptr_factory_.GetWeakPtr(), adapted_callback),
-      base::BindRepeating(&LogErrorWithDictAndCallCallback, adapted_callback,
-                          FROM_HERE));
+          weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.first)),
+      base::BindOnce(&LogErrorWithDictAndCallCallback,
+                     std::move(split_callback.second), FROM_HERE));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
@@ -953,7 +951,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   // want information about all ipv4 and ipv6 IPConfig properties.
   base::Value ip_configs(base::Value::Type::LIST);
 
-  if (!device_state || device_state->ip_configs().empty()) {
+  if (!device_state || device_state->ip_configs().DictEmpty()) {
     // Shill may not provide IPConfigs for external Cellular devices/dongles
     // (https://crbug.com/739314) or VPNs, so build a dictionary of ipv4
     // properties from cached NetworkState properties .
@@ -977,10 +975,10 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
     const std::string& userhash,
     network_handler::PropertiesCallback callback,
     const std::string& service_path,
-    base::Optional<base::Value> shill_properties) {
+    absl::optional<base::Value> shill_properties) {
   if (!shill_properties) {
     SendProperties(properties_type, userhash, service_path, std::move(callback),
-                   base::nullopt);
+                   absl::nullopt);
     return;
   }
 
@@ -1033,9 +1031,9 @@ void ManagedNetworkConfigurationHandlerImpl::OnGetDeviceProperties(
     const std::string& userhash,
     const std::string& service_path,
     network_handler::PropertiesCallback callback,
-    base::Optional<base::Value> network_properties,
+    absl::optional<base::Value> network_properties,
     const std::string& device_path,
-    base::Optional<base::Value> device_properties) {
+    absl::optional<base::Value> device_properties) {
   DCHECK(network_properties);
   if (!device_properties) {
     NET_LOG(ERROR) << "Error getting device properties: "
@@ -1054,7 +1052,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
     const std::string& userhash,
     const std::string& service_path,
     network_handler::PropertiesCallback callback,
-    base::Optional<base::Value> shill_properties) {
+    absl::optional<base::Value> shill_properties) {
   auto get_name = [](PropertiesType properties_type) {
     switch (properties_type) {
       case PropertiesType::kUnmanaged:
@@ -1067,7 +1065,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
 
   if (!shill_properties) {
     NET_LOG(ERROR) << get_name(properties_type) << " Failed.";
-    std::move(callback).Run(service_path, base::nullopt,
+    std::move(callback).Run(service_path, absl::nullopt,
                             network_handler::kDBusFailedError);
     return;
   }
@@ -1075,7 +1073,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
       shill_properties->FindStringKey(shill::kGuidProperty);
   if (!guid) {
     NET_LOG(ERROR) << get_name(properties_type) << " Missing GUID.";
-    std::move(callback).Run(service_path, base::nullopt, kUnknownNetwork);
+    std::move(callback).Run(service_path, absl::nullopt, kUnknownNetwork);
     return;
   }
 
@@ -1090,9 +1088,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
 
   if (properties_type == PropertiesType::kUnmanaged) {
     std::move(callback).Run(service_path,
-                            base::make_optional(base::Value::FromUniquePtrValue(
+                            absl::make_optional(base::Value::FromUniquePtrValue(
                                 std::move(onc_network))),
-                            base::nullopt);
+                            absl::nullopt);
     return;
   }
 
@@ -1131,7 +1129,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
     if (!policies) {
       NET_LOG(ERROR) << "GetManagedProperties failed: "
                      << kPoliciesNotInitialized;
-      std::move(callback).Run(service_path, base::nullopt,
+      std::move(callback).Run(service_path, absl::nullopt,
                               kPoliciesNotInitialized);
       return;
     }
@@ -1145,9 +1143,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
                                     user_settings, onc_network.get(), profile));
   SetManagedActiveProxyValues(*guid, augmented_properties.get());
   std::move(callback).Run(service_path,
-                          base::make_optional(base::Value::FromUniquePtrValue(
+                          absl::make_optional(base::Value::FromUniquePtrValue(
                               std::move(augmented_properties))),
-                          base::nullopt);
+                          absl::nullopt);
 }
 
 }  // namespace chromeos

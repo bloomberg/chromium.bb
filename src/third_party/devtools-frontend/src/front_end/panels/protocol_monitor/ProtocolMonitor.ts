@@ -6,13 +6,15 @@
 
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as SourceFrame from '../../source_frame/source_frame.js';
-import * as LitHtml from '../../third_party/lit-html/lit-html.js';
-import * as Components from '../../ui/components/components.js';
+import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as LitHtml from '../../ui/lit-html/lit-html.js';
 
 const UIStrings = {
   /**
@@ -30,7 +32,8 @@ const UIStrings = {
   */
   request: 'Request',
   /**
-  *@description Text for a network response
+  *@description Title of a cell content in protocol monitor. A Network response refers to the act of acknowledging a
+  network request. Should not be confused with answer.
   */
   response: 'Response',
   /**
@@ -66,11 +69,23 @@ const UIStrings = {
   *@description Text in Protocol Monitor of the Protocol Monitor tab
   */
   noMessageSelected: 'No message selected',
+  /**
+  *@description Text in Protocol Monitor for the save button
+  */
+  save: 'Save',
+  /**
+  *@description Text in Protocol Monitor to describe the sessions column
+  */
+  session: 'Session',
+  /**
+  *@description A placeholder for an input in Protocol Monitor. The input accepts commands that are sent to the backend on Enter. CDP stands for Chrome DevTools Protocol.
+  */
+  sendRawCDPCommand: 'Send a raw `CDP` command',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/protocol_monitor/ProtocolMonitor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-const timestampRenderer = (value: Components.DataGridUtils.CellValue): LitHtml.TemplateResult => {
+const timestampRenderer = (value: DataGrid.DataGridUtils.CellValue): LitHtml.TemplateResult => {
   return LitHtml.html`${i18nString(UIStrings.sMs, {PH1: value})}`;
 };
 
@@ -80,18 +95,29 @@ export interface Message {
   error: Object;
   result: Object;
   params: Object;
+  sessionId?: string;
+}
+
+export interface LogMessage {
+  id?: number;
+  domain: string;
+  method: string;
+  params: Object;
+  type: 'send'|'recv';
 }
 
 let protocolMonitorImplInstance: ProtocolMonitorImpl;
 export class ProtocolMonitorImpl extends UI.Widget.VBox {
   _started: boolean;
   _startTime: number;
-  _dataGridRowForId: Map<number, Components.DataGridUtils.Row>;
+  _dataGridRowForId: Map<number, DataGrid.DataGridUtils.Row>;
   _infoWidget: InfoWidget;
-  _dataGridIntegrator: Components.DataGridControllerIntegrator.DataGridControllerIntegrator;
+  _dataGridIntegrator: DataGrid.DataGridControllerIntegrator.DataGridControllerIntegrator;
   _filterParser: TextUtils.TextUtils.FilterParser;
   _suggestionBuilder: UI.FilterSuggestionBuilder.FilterSuggestionBuilder;
   _textFilterUI: UI.Toolbar.ToolbarInput;
+  private messages: LogMessage[] = [];
+  private isRecording: boolean = false;
 
   constructor() {
     super(true);
@@ -111,15 +137,22 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
 
     const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'largeicon-clear');
     clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+      this.messages = [];
       this._dataGridIntegrator.update({...this._dataGridIntegrator.data(), rows: []});
     });
     topToolbar.appendToolbarItem(clearButton);
+
+    const saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.save), 'largeicon-download');
+    saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+      this.saveAsFile();
+    });
+    topToolbar.appendToolbarItem(saveButton);
 
     const split = new UI.SplitWidget.SplitWidget(true, true, 'protocol-monitor-panel-split', 250);
     split.show(this.contentElement);
     this._infoWidget = new InfoWidget();
 
-    const dataGridInitialData: Components.DataGridController.DataGridControllerData = {
+    const dataGridInitialData: DataGrid.DataGridController.DataGridControllerData = {
       columns: [
         {
           id: 'method',
@@ -169,29 +202,37 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
           visible: false,
           hideable: true,
         },
+        {
+          id: 'session',
+          title: i18nString(UIStrings.session),
+          sortable: true,
+          widthWeighting: 1,
+          visible: false,
+          hideable: true,
+        },
       ],
       rows: [],
       contextMenus: {
         bodyRow:
-            (menu: UI.ContextMenu.ContextMenu, columns: readonly Components.DataGridUtils.Column[],
-             row: Readonly<Components.DataGridUtils.Row>): void => {
-              const methodColumn = Components.DataGridUtils.getRowEntryForColumnId(row, 'method');
-              const directionColumn = Components.DataGridUtils.getRowEntryForColumnId(row, 'direction');
+            (menu: UI.ContextMenu.ContextMenu, columns: readonly DataGrid.DataGridUtils.Column[],
+             row: Readonly<DataGrid.DataGridUtils.Row>): void => {
+              const methodColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'method');
+              const directionColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'direction');
 
               /**
-           * You can click the "Filter" item in the context menu to filter the
-           * protocol monitor entries to those that match the method of the
-           * current row.
-           */
+             * You can click the "Filter" item in the context menu to filter the
+             * protocol monitor entries to those that match the method of the
+             * current row.
+             */
               menu.defaultSection().appendItem(i18nString(UIStrings.filter), () => {
-                const methodColumn = Components.DataGridUtils.getRowEntryForColumnId(row, 'method');
+                const methodColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'method');
                 this._textFilterUI.setValue(`method:${methodColumn.value}`, true);
               });
 
               /**
-           * You can click the "Documentation" item in the context menu to be
-           * taken to the CDP Documentation site entry for the given method.
-           */
+             * You can click the "Documentation" item in the context menu to be
+             * taken to the CDP Documentation site entry for the given method.
+             */
               menu.defaultSection().appendItem(i18nString(UIStrings.documentation), () => {
                 if (!methodColumn.value) {
                   return;
@@ -206,26 +247,26 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     };
 
     this._dataGridIntegrator =
-        new Components.DataGridControllerIntegrator.DataGridControllerIntegrator(dataGridInitialData);
+        new DataGrid.DataGridControllerIntegrator.DataGridControllerIntegrator(dataGridInitialData);
 
-    this._dataGridIntegrator.dataGrid.addEventListener('cell-focused', (event: Event) => {
-      const focusedEvent = event as Components.DataGrid.BodyCellFocusedEvent;
+    this._dataGridIntegrator.dataGrid.addEventListener('cellfocused', (event: Event) => {
+      const focusedEvent = event as DataGrid.DataGrid.BodyCellFocusedEvent;
       const focusedRow = focusedEvent.data.row;
       const infoWidgetData = {
-        request: Components.DataGridUtils.getRowEntryForColumnId(focusedRow, 'request'),
-        response: Components.DataGridUtils.getRowEntryForColumnId(focusedRow, 'response'),
-        direction: Components.DataGridUtils.getRowEntryForColumnId(focusedRow, 'direction'),
+        request: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'request'),
+        response: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'response'),
+        direction: DataGrid.DataGridUtils.getRowEntryForColumnId(focusedRow, 'direction'),
       };
       this._infoWidget.render(infoWidgetData);
     });
 
-    this._dataGridIntegrator.dataGrid.addEventListener('new-user-filter-text', (event: Event) => {
-      const filterTextEvent = event as Components.DataGrid.NewUserFilterTextEvent;
+    this._dataGridIntegrator.dataGrid.addEventListener('newuserfiltertext', (event: Event) => {
+      const filterTextEvent = event as DataGrid.DataGrid.NewUserFilterTextEvent;
       this._textFilterUI.setValue(filterTextEvent.data.filterText, /* notify listeners */ true);
     });
     split.setMainWidget(this._dataGridIntegrator);
     split.setSidebarWidget(this._infoWidget);
-    const keys = ['method', 'request', 'response', 'direction'];
+    const keys = ['method', 'request', 'response', 'direction', 'target', 'session'];
     this._filterParser = new TextUtils.TextUtils.FilterParser(keys);
     this._suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
 
@@ -238,6 +279,29 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       this._dataGridIntegrator.update({...this._dataGridIntegrator.data(), filters});
     });
     topToolbar.appendToolbarItem(this._textFilterUI);
+
+    const onSend = (): void => {
+      const value = input.value();
+      // If input cannot be parsed as json, we assume it's the command name
+      // for a command without parameters. Otherwise, we expect an object
+      // with "command" and "parameters" attributes.
+      let json = null;
+      try {
+        json = JSON.parse(value);
+      } catch (err) {
+      }
+      const command = json ? json.command : value;
+      const parameters = json ? json.parameters : null;
+      const test = ProtocolClient.InspectorBackend.test;
+      // TODO: TS thinks that properties are read-only because
+      // in TS test is defined as a namespace.
+      // @ts-ignore
+      test.sendRawMessage(command, parameters, () => {});
+    };
+    const input = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.sendRawCDPCommand), '', 1, .2, '', undefined, false);
+    input.addEventListener(UI.Toolbar.ToolbarInput.Event.EnterPressed, onSend);
+    const bottomToolbar = new UI.Toolbar.Toolbar('protocol-monitor-bottom-toolbar', this.contentElement);
+    bottomToolbar.appendToolbarItem(input);
   }
 
   static instance(opts = {forceNew: null}): ProtocolMonitorImpl {
@@ -259,6 +323,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
   }
 
   _setRecording(recording: boolean): void {
+    this.isRecording = recording;
     const test = ProtocolClient.InspectorBackend.test;
     if (recording) {
       // TODO: TS thinks that properties are read-only because
@@ -285,6 +350,9 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
 
   // eslint-disable
   _messageReceived(message: Message, target: ProtocolClient.InspectorBackend.TargetBase|null): void {
+    if (this.isRecording) {
+      this.messages.push({...message, type: 'recv', domain: '-'});
+    }
     if ('id' in message && message.id) {
       const existingRow = this._dataGridRowForId.get(message.id);
       if (!existingRow) {
@@ -319,14 +387,14 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     }
 
     const sdkTarget = target as SDK.SDKModel.Target | null;
-    const newRow: Components.DataGridUtils.Row = {
+    const newRow: DataGrid.DataGridUtils.Row = {
       cells: [
         {columnId: 'method', value: message.method},
-        {columnId: 'request', value: '', renderer: Components.DataGridRenderers.codeBlockRenderer},
+        {columnId: 'request', value: '', renderer: DataGrid.DataGridRenderers.codeBlockRenderer},
         {
           columnId: 'response',
           value: JSON.stringify(message.params),
-          renderer: Components.DataGridRenderers.codeBlockRenderer,
+          renderer: DataGrid.DataGridRenderers.codeBlockRenderer,
         },
         {
           columnId: 'timestamp',
@@ -335,6 +403,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         },
         {columnId: 'direction', value: 'received'},
         {columnId: 'target', value: this._targetToString(sdkTarget)},
+        {columnId: 'session', value: message.sessionId || ''},
       ],
       hidden: false,
     };
@@ -346,18 +415,21 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
   }
 
   _messageSent(
-      message: {domain: string, method: string, params: Object, id: number},
+      message: {domain: string, method: string, params: Object, id: number, sessionId?: string},
       target: ProtocolClient.InspectorBackend.TargetBase|null): void {
+    if (this.isRecording) {
+      this.messages.push({...message, type: 'send'});
+    }
     const sdkTarget = target as SDK.SDKModel.Target | null;
-    const newRow: Components.DataGridUtils.Row = {
+    const newRow: DataGrid.DataGridUtils.Row = {
       cells: [
         {columnId: 'method', value: message.method},
         {
           columnId: 'request',
           value: JSON.stringify(message.params),
-          renderer: Components.DataGridRenderers.codeBlockRenderer,
+          renderer: DataGrid.DataGridRenderers.codeBlockRenderer,
         },
-        {columnId: 'response', value: '(pending)', renderer: Components.DataGridRenderers.codeBlockRenderer},
+        {columnId: 'response', value: '(pending)', renderer: DataGrid.DataGridRenderers.codeBlockRenderer},
         {
           columnId: 'timestamp',
           value: Date.now() - this._startTime,
@@ -365,6 +437,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         },
         {columnId: 'direction', value: 'sent'},
         {columnId: 'target', value: this._targetToString(sdkTarget)},
+        {columnId: 'session', value: message.sessionId || ''},
       ],
       hidden: false,
     };
@@ -373,6 +446,20 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       ...this._dataGridIntegrator.data(),
       rows: this._dataGridIntegrator.data().rows.concat([newRow]),
     });
+  }
+
+  private async saveAsFile(): Promise<void> {
+    const now = new Date();
+    const fileName = 'ProtocolMonitor-' + Platform.DateUtilities.toISO8601Compact(now) + '.json';
+    const stream = new Bindings.FileUtils.FileOutputStream();
+
+    const accepted = await stream.open(fileName);
+    if (!accepted) {
+      return;
+    }
+
+    stream.write(JSON.stringify(this.messages, null, '  '));
+    stream.close();
   }
 }
 
@@ -389,9 +476,9 @@ export class InfoWidget extends UI.Widget.VBox {
   }
 
   render(data: {
-    request: Components.DataGridUtils.Cell|undefined,
-    response: Components.DataGridUtils.Cell|undefined,
-    direction: Components.DataGridUtils.Cell|undefined,
+    request: DataGrid.DataGridUtils.Cell|undefined,
+    response: DataGrid.DataGridUtils.Cell|undefined,
+    direction: DataGrid.DataGridUtils.Cell|undefined,
   }|null): void {
     if (!data || !data.request || !data.response) {
       this._tabbedPane.changeTabView(
@@ -409,7 +496,8 @@ export class InfoWidget extends UI.Widget.VBox {
 
     const requestParsed = JSON.parse(String(data.request.value) || 'null');
     this._tabbedPane.changeTabView('request', SourceFrame.JSONView.JSONView.createViewSync(requestParsed));
-    const responseParsed = JSON.parse(String(data.response.value) || 'null');
+    const responseParsed =
+        data.response.value === '(pending)' ? null : JSON.parse(String(data.response.value) || 'null');
     this._tabbedPane.changeTabView('response', SourceFrame.JSONView.JSONView.createViewSync(responseParsed));
   }
 }

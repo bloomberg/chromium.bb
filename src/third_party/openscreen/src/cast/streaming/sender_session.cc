@@ -31,40 +31,27 @@ namespace cast {
 
 namespace {
 
-constexpr int kSupportedRemotingVersion = 3;
-
 AudioStream CreateStream(int index,
                          const AudioCaptureConfig& config,
                          bool use_android_rtp_hack) {
-  return AudioStream{
-      Stream{index,
-             Stream::Type::kAudioSource,
-             config.channels,
-             GetPayloadType(config.codec, use_android_rtp_hack),
-             GenerateSsrc(true /*high_priority*/),
-             config.target_playout_delay,
-             GenerateRandomBytes16(),
-             GenerateRandomBytes16(),
-             false /* receiver_rtcp_event_log */,
-             {} /* receiver_rtcp_dscp */,
-             config.sample_rate},
-      config.codec,
-      (config.bit_rate >= capture_recommendations::kDefaultAudioMinBitRate)
-          ? config.bit_rate
-          : capture_recommendations::kDefaultAudioMaxBitRate};
-}
-
-Resolution ToResolution(const DisplayResolution& display_resolution) {
-  return Resolution{display_resolution.width, display_resolution.height};
+  return AudioStream{Stream{index,
+                            Stream::Type::kAudioSource,
+                            config.channels,
+                            GetPayloadType(config.codec, use_android_rtp_hack),
+                            GenerateSsrc(true /*high_priority*/),
+                            config.target_playout_delay,
+                            GenerateRandomBytes16(),
+                            GenerateRandomBytes16(),
+                            false /* receiver_rtcp_event_log */,
+                            {} /* receiver_rtcp_dscp */,
+                            config.sample_rate},
+                     config.codec,
+                     std::max(config.bit_rate, kDefaultAudioMinBitRate)};
 }
 
 VideoStream CreateStream(int index,
                          const VideoCaptureConfig& config,
                          bool use_android_rtp_hack) {
-  std::vector<Resolution> resolutions;
-  std::transform(config.resolutions.begin(), config.resolutions.end(),
-                 std::back_inserter(resolutions), ToResolution);
-
   constexpr int kVideoStreamChannelCount = 1;
   return VideoStream{
       Stream{index,
@@ -79,16 +66,14 @@ VideoStream CreateStream(int index,
              {} /* receiver_rtcp_dscp */,
              kRtpVideoTimebase},
       config.codec,
-      SimpleFraction{config.max_frame_rate.numerator,
-                     config.max_frame_rate.denominator},
-      (config.max_bit_rate >
-       capture_recommendations::kDefaultVideoBitRateLimits.minimum)
+      config.max_frame_rate,
+      (config.max_bit_rate >= kDefaultVideoMinBitRate)
           ? config.max_bit_rate
-          : capture_recommendations::kDefaultVideoBitRateLimits.maximum,
+          : kDefaultVideoMaxBitRate,
       {},  //  protection
       {},  //  profile
       {},  //  protection
-      std::move(resolutions),
+      config.resolutions,
       {} /* error_recovery mode, always "castv2" */
   };
 }
@@ -148,20 +133,19 @@ bool IsValidAudioCaptureConfig(const AudioCaptureConfig& config) {
   return config.channels >= 1 && config.bit_rate >= 0;
 }
 
-bool IsValidResolution(const DisplayResolution& resolution) {
+// We don't support resolutions below our minimums.
+bool IsSupportedResolution(const Resolution& resolution) {
   return resolution.width > kMinVideoWidth &&
          resolution.height > kMinVideoHeight;
 }
 
 bool IsValidVideoCaptureConfig(const VideoCaptureConfig& config) {
-  return config.max_frame_rate.numerator > 0 &&
-         config.max_frame_rate.denominator > 0 &&
+  return config.max_frame_rate.is_positive() &&
          ((config.max_bit_rate == 0) ||
-          (config.max_bit_rate >=
-           capture_recommendations::kDefaultVideoBitRateLimits.minimum)) &&
+          (config.max_bit_rate >= kDefaultVideoMinBitRate)) &&
          !config.resolutions.empty() &&
          std::all_of(config.resolutions.begin(), config.resolutions.end(),
-                     IsValidResolution);
+                     IsSupportedResolution);
 }
 
 bool AreAllValid(const std::vector<AudioCaptureConfig>& audio_configs,

@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_H_
 
-#include <string>
-#include <vector>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
@@ -48,9 +45,6 @@ class LoginDisplay {
     // Called when the owner permission for kiosk app auto launch is requested.
     virtual void OnStartKioskAutolaunchScreen() = 0;
 
-    // Returns name of the currently connected network, for error message,
-    virtual std::u16string GetConnectedNetworkName() = 0;
-
     // Restarts the auto-login timer if it is running.
     virtual void ResetAutoLoginTimer() = 0;
 
@@ -77,13 +71,6 @@ class LoginDisplay {
 
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;
-
-  // Displays simple error bubble with `error_msg_id` specified.
-  // `login_attempts` shows number of login attempts made by current user.
-  // `help_topic_id` is additional help topic that is presented as link.
-  virtual void ShowError(int error_msg_id,
-                         int login_attempts,
-                         HelpAppLauncher::HelpTopic help_topic_id) = 0;
 
   // Show allowlist check failed error. Happens after user completes online
   // signin but allowlist check fails.

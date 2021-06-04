@@ -9,6 +9,7 @@
 #define CONTENT_PUBLIC_COMMON_CONTENT_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -41,7 +42,7 @@ CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCapabilityDelegationPaymentRequest;
 CONTENT_EXPORT extern const base::Feature
-    kClearCrossBrowsingContextGroupMainFrameName;
+    kClearCrossSiteCrossBrowsingContextGroupWindowName;
 CONTENT_EXPORT extern const base::Feature kClickPointerEvent;
 CONTENT_EXPORT extern const base::Feature kCompositeBGColorAnimation;
 CONTENT_EXPORT extern const base::Feature kCodeCacheDeletionWithoutFilter;
@@ -128,6 +129,7 @@ CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
+CONTENT_EXPORT extern const base::Feature kPrefersColorSchemeClientHintHeader;
 CONTENT_EXPORT extern const base::Feature kProcessHostOnUI;
 CONTENT_EXPORT extern const base::Feature kPlzServiceWorker;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
@@ -163,13 +165,40 @@ CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
 CONTENT_EXPORT extern const base::Feature
     kSiteIsolationForCrossOriginOpenerPolicy;
+CONTENT_EXPORT extern const base::FeatureParam<bool>
+    kSiteIsolationForCrossOriginOpenerPolicyShouldPersistParam;
+CONTENT_EXPORT extern const base::FeatureParam<int>
+    kSiteIsolationForCrossOriginOpenerPolicyMaxSitesParam;
+CONTENT_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
 CONTENT_EXPORT extern const base::Feature kWebOTP;
 CONTENT_EXPORT extern const base::Feature kWebOTPAssertionFeaturePolicy;
+CONTENT_EXPORT extern const base::Feature kServiceWorkerSubresourceFilter;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kStorageServiceOutOfProcess;
 CONTENT_EXPORT extern const base::Feature kStrictOriginIsolation;
+CONTENT_EXPORT extern const base::Feature kSubframeShutdownDelay;
+enum class SubframeShutdownDelayType {
+  // A flat 2s shutdown delay.
+  kConstant,
+  // A flat 8s shutdown delay.
+  kConstantLong,
+  // A variable delay from 0s to 8s based on the median interval between
+  // subframe shutdown and process reuse over the past 5 subframe navigations.
+  // A subframe that could not be reused is counted as 0s.
+  kHistoryBased,
+  // A variable delay from 0s to 8s based on the 75th-percentile interval
+  // between subframe shutdown and process reuse over the past 5 subframe
+  // navigations. A subframe that could not be reused is counted as 0s.
+  kHistoryBasedLong,
+  // A 2s base delay at 8 GB available memory or lower. Above 8 GB available
+  // memory, scales up linearly to a maximum 8s delay at 16 GB or more.
+  kMemoryBased
+};
+CONTENT_EXPORT extern const base::FeatureParam<SubframeShutdownDelayType>
+    kSubframeShutdownDelayTypeParam;
 CONTENT_EXPORT extern const base::Feature kSubresourceWebBundles;
 CONTENT_EXPORT extern const base::Feature
     kSuppressDifferentOriginSubframeJSDialogs;
@@ -185,11 +214,16 @@ CONTENT_EXPORT extern const base::Feature kUserAgentClientHint;
 CONTENT_EXPORT extern const base::Feature kVerifyDidCommitParams;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
+CONTENT_EXPORT extern const base::Feature
+    kWarnAboutSecurePrivateNetworkRequests;
 CONTENT_EXPORT extern const base::Feature kWebAppWindowControlsOverlay;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
+CONTENT_EXPORT extern const base::Feature kWebAssemblyCodeProtection;
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+CONTENT_EXPORT extern const base::Feature kWebAssemblyCodeProtectionPku;
+#endif  // defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
 CONTENT_EXPORT extern const base::Feature kWebAssemblyLazyCompilation;
 CONTENT_EXPORT extern const base::Feature kWebAssemblySimd;
-CONTENT_EXPORT extern const base::Feature kWebAssemblyThreads;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTiering;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
 CONTENT_EXPORT extern const base::Feature kWebAuth;
@@ -199,6 +233,7 @@ CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;
 CONTENT_EXPORT extern const base::Feature kWebBundles;
 CONTENT_EXPORT extern const base::Feature kWebBundlesFromNetwork;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
+CONTENT_EXPORT extern const base::Feature kWebGPUService;
 CONTENT_EXPORT extern const base::Feature kWebID;
 CONTENT_EXPORT extern const base::Feature kWebOtpBackendAuto;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
@@ -213,7 +248,6 @@ CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
 
 #if defined(OS_ANDROID)
-CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;
@@ -237,7 +271,11 @@ CONTENT_EXPORT extern const char
     kSendWebUIJavaScriptErrorReportsSendToProductionVariation[];
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kWebUIJavaScriptErrorReportsSendToProductionParam;
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+CONTENT_EXPORT extern const base::Feature kAuraWindowSubtreeCapture;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;

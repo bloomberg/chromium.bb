@@ -12,10 +12,10 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -279,5 +279,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::FakeUserDataAuthClient;
+}
 
 #endif  // CHROMEOS_DBUS_USERDATAAUTH_FAKE_USERDATAAUTH_CLIENT_H_

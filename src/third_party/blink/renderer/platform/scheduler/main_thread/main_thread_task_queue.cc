@@ -238,7 +238,7 @@ void MainThreadTaskQueue::SetNetRequestPriority(
   net_request_priority_ = net_request_priority;
 }
 
-base::Optional<net::RequestPriority> MainThreadTaskQueue::net_request_priority()
+absl::optional<net::RequestPriority> MainThreadTaskQueue::net_request_priority()
     const {
   return net_request_priority_;
 }
@@ -251,7 +251,7 @@ void MainThreadTaskQueue::SetWebSchedulingPriority(
   frame_scheduler_->OnWebSchedulingTaskQueuePriorityChanged(this);
 }
 
-base::Optional<WebSchedulingPriority>
+absl::optional<WebSchedulingPriority>
 MainThreadTaskQueue::web_scheduling_priority() const {
   return web_scheduling_priority_;
 }
@@ -290,14 +290,13 @@ void MainThreadTaskQueue::SetImmediateWakeUpForTest() {
   }
 }
 
-void MainThreadTaskQueue::WriteIntoTracedValue(
-    perfetto::TracedValue context) const {
+void MainThreadTaskQueue::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("type", queue_type_);
   dict.Add("traits", queue_traits_);
 }
 
-void MainThreadTaskQueue::QueueTraits::WriteIntoTracedValue(
+void MainThreadTaskQueue::QueueTraits::WriteIntoTrace(
     perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("can_be_deferred", can_be_deferred);

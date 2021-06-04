@@ -35,7 +35,7 @@ enum Setting {
   kDisconnectTetherNetwork = 23,
   kWifiMetered = 24,
   kCellularMetered = 25,
-  kCellularAddNetwork = 26,
+  kAddESimNetwork = 26,
   kCellularRemoveESimNetwork = 27,
   kCellularRenameESimNetwork = 28,
   kWifiHidden = 29,
@@ -149,11 +149,13 @@ enum Setting {
   kAssistantNotifications = 605,
   kAssistantVoiceInput = 606,
   kTrainAssistantVoiceModel = 607,
+  kQuickAnswersOnOff = 608,
 
   // Apps section.
   kManageAndroidPreferences = 700,
   kRemovePlayStore = 701,
   kTurnOnPlayStore = 702,
+  kRestoreAppsAndPages = 703,
 
   // Crostini section.
   kSetUpCrostini= 800,
@@ -257,7 +259,4 @@ enum Setting {
   kAddKerberosTicketV2 = 1800,
   kRemoveKerberosTicketV2 = 1801,
   kSetActiveKerberosTicketV2 = 1802,
-
-  // On Startup section.
-  kRestoreAppsAndPages = 1900,
 };

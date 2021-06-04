@@ -179,7 +179,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const PepperPluginInfo& info,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock) {
+    const absl::optional<url::Origin>& origin_lock) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost(info, profile_data_directory, origin_lock);
   if (plugin_host->Init(info))
@@ -259,7 +259,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 PpapiPluginProcessHost::PpapiPluginProcessHost(
     const PepperPluginInfo& info,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock)
+    const absl::optional<url::Origin>& origin_lock)
     : profile_data_directory_(profile_data_directory),
       origin_lock_(origin_lock) {
   uint32_t base_permissions = info.permissions;
@@ -340,6 +340,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
     switches::kPpapiStartupDialog,
+    switches::kTimeZoneForTesting,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
                              base::size(kPluginForwardSwitches));

@@ -35,7 +35,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/client/client_resource_provider.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
@@ -535,77 +534,6 @@ class FailedCreateDoesNotCreateExtraLayerTreeFrameSink
 // This test uses Composite() which only exists for single thread.
 SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraLayerTreeFrameSink);
 
-class LayerTreeHostContextTestCommitAfterDelayedLayerTreeFrameSink
-    : public LayerTreeHostContextTest {
- public:
-  LayerTreeHostContextTestCommitAfterDelayedLayerTreeFrameSink()
-      : LayerTreeHostContextTest(), creating_output_(false) {}
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->single_thread_proxy_scheduler = false;
-    settings->use_zero_copy = true;
-  }
-
-  void RequestNewLayerTreeFrameSink() override {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &LayerTreeHostContextTestCommitAfterDelayedLayerTreeFrameSink::
-                CreateAndSetLayerTreeFrameSink,
-            base::Unretained(this)));
-  }
-
-  void CreateAndSetLayerTreeFrameSink() {
-    creating_output_ = true;
-    LayerTreeHostContextTest::RequestNewLayerTreeFrameSink();
-  }
-
-  void BeginTest() override {
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false);
-  }
-
-  void ScheduleComposite() override {
-    if (creating_output_)
-      EndTest();
-  }
-
-  bool creating_output_;
-};
-
-// This test uses Composite() which only exists for single thread.
-SINGLE_THREAD_TEST_F(
-    LayerTreeHostContextTestCommitAfterDelayedLayerTreeFrameSink);
-
-class LayerTreeHostContextTestAvoidUnnecessaryComposite
-    : public LayerTreeHostContextTest {
- public:
-  LayerTreeHostContextTestAvoidUnnecessaryComposite()
-      : LayerTreeHostContextTest(), in_composite_(false) {}
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->single_thread_proxy_scheduler = false;
-    settings->use_zero_copy = true;
-  }
-
-  void RequestNewLayerTreeFrameSink() override {
-    LayerTreeHostContextTest::RequestNewLayerTreeFrameSink();
-    EndTest();
-  }
-
-  void BeginTest() override {
-    in_composite_ = true;
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false);
-    in_composite_ = false;
-  }
-
-  void ScheduleComposite() override { EXPECT_FALSE(in_composite_); }
-
-  bool in_composite_;
-};
-
-// This test uses Composite() which only exists for single thread.
-SINGLE_THREAD_TEST_F(LayerTreeHostContextTestAvoidUnnecessaryComposite);
-
 // This test uses PictureLayer to check for a working context.
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {
@@ -922,9 +850,8 @@ class LayerTreeHostContextTestDontUseLostResources
         mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
         false /* is_overlay_candidate */);
     texture->SetTransferableResource(
-        resource, viz::SingleReleaseCallback::Create(base::BindOnce(
-                      &LayerTreeHostContextTestDontUseLostResources::
-                          EmptyReleaseCallback)));
+        resource, base::BindOnce(&LayerTreeHostContextTestDontUseLostResources::
+                                     EmptyReleaseCallback));
     root->AddChild(texture);
 
     scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);

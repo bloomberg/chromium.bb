@@ -11,7 +11,7 @@ js_modulizer("modulize") {
     "base_page_test.js",
     "button_bar_test.js",
     "confirmation_code_page_test.js",
-    "cellular_eid_popup_test.js",
+    "cellular_eid_dialog_test.js",
     "cellular_setup_test.js",
     "esim_flow_ui_test.js",
     "final_page_test.js",
@@ -34,5 +34,8 @@ js_modulizer("modulize") {
                          "cellular_setup.FakeMediaDevices|FakeMediaDevices",
                          "cellular_setup.FakeCanvasContext|FakeCanvasContext",
                          "cellular_setup.MockMetricsPrivate|MockMetricsPrivate",
+                         "test_util.eventToPromise|eventToPromise",
+                         "test_util.flushTasks|flushTasks",
+                         "test_util.waitAfterNextRender|waitAfterNextRender",
                        ]
 }

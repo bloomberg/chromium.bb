@@ -31,6 +31,8 @@ class TsLibraryTest(unittest.TestCase):
         os.path.join(_HERE_DIR, 'tests', 'project1'),
         '--gen_dir',
         gen_dir,
+        '--out_dir',
+        gen_dir,
         '--js_files',
         'legacy_file.js',
     ])
@@ -41,47 +43,91 @@ class TsLibraryTest(unittest.TestCase):
         os.path.join(_HERE_DIR, 'tests', 'project1'),
         '--gen_dir',
         gen_dir,
-        '--sources',
+        '--out_dir',
+        gen_dir,
+        '--in_files',
         'foo.ts',
         '--definitions',
         'legacy_file.d.ts',
+        '--composite',
     ])
     return gen_dir
 
   def _assert_project1_output(self, gen_dir):
-    os.path.exists(os.path.join(gen_dir, 'foo.d.ts'))
-    os.path.exists(os.path.join(gen_dir, 'foo.js'))
-    os.path.exists(os.path.join(gen_dir, 'legacy_file.d.ts'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.json'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.manifest'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.tsbuildinfo'))
+    files = [
+        'foo.d.ts',
+        'foo.js',
+        'legacy_file.d.ts',
+        'tsconfig_definitions.json',
+        'tsconfig.json',
+        'tsconfig.manifest',
+        'tsconfig.tsbuildinfo',
+    ]
+    for f in files:
+      self.assertTrue(os.path.exists(os.path.join(gen_dir, f)), f)
 
-  # Builds project2 which depends on files from project1, both via relative
-  # URLs, as well as via absolute chrome:// URLs.
-  def _build_project2(self, project1_gen_dir):
+  # Builds project2 which depends on files from project1 and project3, both via
+  # relative URLs, as well as via absolute chrome:// URLs.
+  def _build_project2(self, project1_gen_dir, project3_gen_dir):
+    root_dir = os.path.join(_HERE_DIR, 'tests', 'project2')
     gen_dir = os.path.join(self._out_folder, 'project2')
     project1_gen_dir = os.path.relpath(project1_gen_dir, gen_dir)
+    project3_gen_dir = os.path.relpath(project3_gen_dir, gen_dir)
 
     ts_library.main([
         '--root_dir',
-        os.path.join(_HERE_DIR, 'tests', 'project2'),
+        root_dir,
         '--gen_dir',
         gen_dir,
-        '--sources',
+        '--out_dir',
+        gen_dir,
+        '--in_files',
         'bar.ts',
         '--deps',
         os.path.join(project1_gen_dir, 'tsconfig.json'),
+        os.path.join(project3_gen_dir, 'tsconfig.json'),
         '--path_mappings',
         'chrome://some-other-source/*|' + os.path.join(project1_gen_dir, '*'),
+        '--tsconfig_base',
+        os.path.relpath(os.path.join(root_dir, 'tsconfig_base.json'), gen_dir),
     ])
     return gen_dir
 
   def _assert_project2_output(self, gen_dir):
-    os.path.exists(os.path.join(gen_dir, 'bar.d.ts'))
-    os.path.exists(os.path.join(gen_dir, 'bar.js'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.json'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.manifest'))
-    os.path.exists(os.path.join(gen_dir, 'tsconfig.tsbuildinfo'))
+    files = [
+        'bar.js',
+        'tsconfig.json',
+        'tsconfig.manifest',
+        'tsconfig.tsbuildinfo',
+    ]
+    for f in files:
+      self.assertTrue(os.path.exists(os.path.join(gen_dir, f)), f)
+
+    dts_file = 'bar.d.ts'
+    self.assertFalse(os.path.exists(os.path.join(gen_dir, dts_file)), dts_file)
+
+  # Builds project3, which includes only definition files.
+  def _build_project3(self):
+    gen_dir = os.path.join(self._out_folder, 'project3')
+
+    ts_library.main([
+        '--root_dir',
+        os.path.join(_HERE_DIR, 'tests', 'project3'),
+        '--gen_dir',
+        gen_dir,
+        '--out_dir',
+        gen_dir,
+        '--definitions',
+        '../../tests/project3/baz.d.ts',
+        '--composite',
+    ])
+    return gen_dir
+
+  def _assert_project3_output(self, gen_dir):
+    self.assertTrue(os.path.exists(os.path.join(gen_dir, 'tsconfig.json')))
+    self.assertTrue(
+        os.path.exists(os.path.join(gen_dir, 'tsconfig.tsbuildinfo')))
+    self.assertFalse(os.path.exists(os.path.join(gen_dir, 'tsconfig.manifest')))
 
   # Test success case where both project1 and project2 are compiled successfully
   # and no errors are thrown.
@@ -89,20 +135,27 @@ class TsLibraryTest(unittest.TestCase):
     self._out_folder = tempfile.mkdtemp(dir=_HERE_DIR)
     project1_gen_dir = self._build_project1()
     self._assert_project1_output(project1_gen_dir)
-    project2_gen_dir = self._build_project2(project1_gen_dir)
+
+    project3_gen_dir = self._build_project3()
+    self._assert_project3_output(project3_gen_dir)
+
+    project2_gen_dir = self._build_project2(project1_gen_dir, project3_gen_dir)
     self._assert_project2_output(project2_gen_dir)
 
   # Test error case where a type violation exists, ensure that an error is
   # thrown.
   def testError(self):
     self._out_folder = tempfile.mkdtemp(dir=_HERE_DIR)
+    gen_dir = os.path.join(self._out_folder, 'project1')
     try:
       ts_library.main([
           '--root_dir',
           os.path.join(_HERE_DIR, 'tests', 'project1'),
           '--gen_dir',
-          os.path.join(self._out_folder, 'project1'),
-          '--sources',
+          gen_dir,
+          '--out_dir',
+          gen_dir,
+          '--in_files',
           'errors.ts',
       ])
     except RuntimeError as err:

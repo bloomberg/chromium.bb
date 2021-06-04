@@ -5,12 +5,9 @@
 #ifndef ASH_WM_OVERVIEW_OVERVIEW_WALLPAPER_CONTROLLER_H_
 #define ASH_WM_OVERVIEW_OVERVIEW_WALLPAPER_CONTROLLER_H_
 
-#include <vector>
-
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -21,6 +18,9 @@ namespace ash {
 class ASH_EXPORT OverviewWallpaperController : public TabletModeObserver {
  public:
   OverviewWallpaperController();
+  OverviewWallpaperController(const OverviewWallpaperController&) = delete;
+  OverviewWallpaperController& operator=(const OverviewWallpaperController&) =
+      delete;
   ~OverviewWallpaperController() override;
 
   // There may not be a need to blur or dim the wallpaper for tests.
@@ -32,6 +32,7 @@ class ASH_EXPORT OverviewWallpaperController : public TabletModeObserver {
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
+  void OnTabletControllerDestroyed() override;
 
  private:
   // Called when the wallpaper is to be changed and updates all root windows.
@@ -39,12 +40,10 @@ class ASH_EXPORT OverviewWallpaperController : public TabletModeObserver {
   //   - nullopt: Apply the blur immediately.
   //   - true/false: Animates and applies the blur only if this value matches
   //     whether animations are allowed based on each root window.
-  void UpdateWallpaper(bool should_blur, base::Optional<bool> animate);
+  void UpdateWallpaper(bool should_blur, absl::optional<bool> animate);
 
   // Tracks if the wallpaper blur should be applied.
   bool wallpaper_blurred_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewWallpaperController);
 };
 
 }  // namespace ash

@@ -129,6 +129,7 @@ echo "Compiling bitcode"
   ${GN_FONT} \
   skia_use_expat=true \
   skia_enable_ccpr=true \
+  skia_enable_nga=false \
   skia_enable_svg=true \
   skia_enable_skshaper=true \
   skia_enable_skparagraph=true \
@@ -150,7 +151,6 @@ echo "Generating final wasm"
 SKIA_DEFINES="
 -DSK_DISABLE_AAA \
 -DSK_FORCE_8_BYTE_ALIGNMENT \
--DGR_OP_ALLOCATE_USE_NEW \
 -DSK_HAS_WUFFS_LIBRARY \
 -DSK_HAS_HEIF_LIBRARY \
 -DSK_ENCODE_WEBP \
@@ -173,6 +173,17 @@ fi
 
 GMS_TO_BUILD="gm/*.cpp"
 TESTS_TO_BUILD="tests/*.cpp"
+
+# DSL FP tests need to include compiled test shaders from the `dslfp` subdirectory.
+TESTS_TO_BUILD+=\
+" tests/sksl/dslfp/GrDSLFPTest_DoStatement.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_ForStatement.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_IfStatement.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_SwitchStatement.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_Swizzle.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_Ternary.dsl.cpp"\
+" tests/sksl/dslfp/GrDSLFPTest_WhileStatement.dsl.cpp"
+
 # When developing locally, it can be faster to focus only on the gms or tests you care about
 # (since they all have to be recompiled/relinked) every time. To do so, mark the following as true
 if false; then

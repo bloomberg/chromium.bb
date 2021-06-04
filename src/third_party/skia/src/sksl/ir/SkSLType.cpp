@@ -9,6 +9,7 @@
 
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLConstructorCompoundCast.h"
 #include "src/sksl/ir/SkSLConstructorScalarCast.h"
 #include "src/sksl/ir/SkSLFunctionReference.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
@@ -147,18 +148,6 @@ const Type& Type::toCompound(const Context& context, int columns, int rows) cons
                 }
             default: SK_ABORT("unsupported row count (%d)", rows);
         }
-    } else if (*this == *context.fTypes.fByte) {
-        switch (rows) {
-            case 1:
-                switch (columns) {
-                    case 1: return *context.fTypes.fByte;
-                    case 2: return *context.fTypes.fByte2;
-                    case 3: return *context.fTypes.fByte3;
-                    case 4: return *context.fTypes.fByte4;
-                    default: SK_ABORT("unsupported vector column count (%d)", columns);
-                }
-            default: SK_ABORT("unsupported row count (%d)", rows);
-        }
     } else if (*this == *context.fTypes.fUInt) {
         switch (rows) {
             case 1:
@@ -179,18 +168,6 @@ const Type& Type::toCompound(const Context& context, int columns, int rows) cons
                     case 2: return *context.fTypes.fUShort2;
                     case 3: return *context.fTypes.fUShort3;
                     case 4: return *context.fTypes.fUShort4;
-                    default: SK_ABORT("unsupported vector column count (%d)", columns);
-                }
-            default: SK_ABORT("unsupported row count (%d)", rows);
-        }
-    } else if (*this == *context.fTypes.fUByte) {
-        switch (rows) {
-            case 1:
-                switch (columns) {
-                    case 1: return *context.fTypes.fUByte;
-                    case 2: return *context.fTypes.fUByte2;
-                    case 3: return *context.fTypes.fUByte3;
-                    case 4: return *context.fTypes.fUByte4;
                     default: SK_ABORT("unsupported vector column count (%d)", columns);
                 }
             default: SK_ABORT("unsupported row count (%d)", rows);
@@ -268,12 +245,14 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
         return nullptr;
     }
 
-    ExpressionArray args;
-    args.push_back(std::move(expr));
     if (this->isScalar()) {
-        return ConstructorScalarCast::Convert(context, offset, *this, std::move(args));
+        return ConstructorScalarCast::Make(context, offset, *this, std::move(expr));
     }
-    return Constructor::Convert(context, offset, *this, std::move(args));
+    if (this->isVector() || this->isMatrix()) {
+        return ConstructorCompoundCast::Make(context, offset, *this, std::move(expr));
+    }
+    context.fErrors.error(offset, "cannot construct '" + this->displayName() + "'");
+    return nullptr;
 }
 
 bool Type::isOrContainsArray() const {

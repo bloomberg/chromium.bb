@@ -33,11 +33,13 @@ bool IsEligibleHost(const RemoteDeviceRef& device) {
 }
 
 bool IsEligibleForFeature(
-    const base::Optional<multidevice::RemoteDeviceRef>& local_device,
+    const absl::optional<multidevice::RemoteDeviceRef>& local_device,
     multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice host_status,
     const RemoteDeviceRefList& remote_devices,
     FeatureState feature_state) {
   if (feature_state == FeatureState::kProhibitedByPolicy)
+    return false;
+  if (feature_state == FeatureState::kNotSupportedByPhone)
     return false;
   if (!local_device)
     return false;
@@ -147,7 +149,7 @@ FeatureStatus EcheFeatureStatusProvider::ComputeStatus() {
     case phonehub::FeatureStatus::kEnabledAndConnecting:
       FALLTHROUGH;
     case phonehub::FeatureStatus::kEnabledButDisconnected:
-      return FeatureStatus::kIneligible;
+      return FeatureStatus::kDependentFeature;
     case phonehub::FeatureStatus::kEnabledAndConnected:
       break;
   }

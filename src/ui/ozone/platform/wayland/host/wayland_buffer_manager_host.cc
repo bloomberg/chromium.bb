@@ -16,6 +16,7 @@
 #include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
@@ -45,15 +46,6 @@ uint32_t GetPresentationKindFlags(uint32_t flags) {
     presentation_flags |= gfx::PresentationFeedback::kZeroCopy;
 
   return presentation_flags;
-}
-
-base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
-                                                 uint32_t tv_sec_lo,
-                                                 uint32_t tv_nsec) {
-  const int64_t seconds = (static_cast<int64_t>(tv_sec_hi) << 32) + tv_sec_lo;
-  const int64_t microseconds = seconds * base::Time::kMicrosecondsPerSecond +
-                               tv_nsec / base::Time::kNanosecondsPerMicrosecond;
-  return base::TimeTicks() + base::TimeDelta::FromMicroseconds(microseconds);
 }
 
 std::string NumberToString(uint32_t number) {
@@ -228,7 +220,8 @@ class WaylandBufferManagerHost::Surface {
         continue;
 
       submitted_buffers_.push_back(
-          SubmissionInfo{pending_commit.buffer->buffer_id, /*acked=*/false});
+          SubmissionInfo{pending_commit.buffer->buffer_id,
+                         /*acked=*/submitted_buffers_.empty() ? true : false});
       if (connection_->presentation()) {
         feedback_queue_.push_back(
             {wl::Object<struct wp_presentation_feedback>(),
@@ -283,7 +276,7 @@ class WaylandBufferManagerHost::Surface {
     uint32_t buffer_id;
     // The actual presentation feedback. May be missing if the callback from the
     // Wayland server has not arrived yet.
-    base::Optional<gfx::PresentationFeedback> feedback;
+    absl::optional<gfx::PresentationFeedback> feedback;
     // True iff OnSubmission has been called.
     bool submission_completed;
   };
@@ -409,7 +402,7 @@ class WaylandBufferManagerHost::Surface {
     feedback_queue_.push_back(
         {wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
              connection_->presentation(), wayland_surface_->surface())),
-         buffer_id, /*feedback=*/base::nullopt,
+         buffer_id, /*feedback=*/absl::nullopt,
          /*submission_completed=*/false});
     wp_presentation_feedback_add_listener(
         feedback_queue_.back().wp_presentation_feedback.get(),
@@ -518,7 +511,8 @@ class WaylandBufferManagerHost::Surface {
     // release because SwapCompletionCallback indicates to the client that the
     // previous buffer is available for reuse.
     buffer_manager_->OnSubmission(wayland_surface_->GetWidget(), buffer_id,
-                                  gfx::SwapResult::SWAP_ACK);
+                                  gfx::SwapResult::SWAP_ACK,
+                                  /*release_fence=*/gfx::GpuFenceHandle());
 
     // If presentation feedback is not supported, use a fake feedback. This
     // literally means there are no presentation feedback callbacks created.
@@ -615,10 +609,10 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(self);
     self->OnPresentation(
         wp_presentation_feedback,
-        gfx::PresentationFeedback(
-            GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
-            base::TimeDelta::FromNanoseconds(refresh),
-            GetPresentationKindFlags(flags)));
+        gfx::PresentationFeedback(self->connection_->ConvertPresentationTime(
+                                      tv_sec_hi, tv_sec_lo, tv_nsec),
+                                  base::TimeDelta::FromNanoseconds(refresh),
+                                  GetPresentationKindFlags(flags)));
   }
 
   static void FeedbackDiscarded(
@@ -1249,14 +1243,15 @@ void WaylandBufferManagerHost::OnCreateBufferComplete(
   // be destroyed.
 }
 
-void WaylandBufferManagerHost::OnSubmission(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::SwapResult& swap_result) {
+void WaylandBufferManagerHost::OnSubmission(gfx::AcceleratedWidget widget,
+                                            uint32_t buffer_id,
+                                            const gfx::SwapResult& swap_result,
+                                            gfx::GpuFenceHandle release_fence) {
   DCHECK(base::CurrentUIThread::IsSet());
 
   DCHECK(buffer_manager_gpu_associated_);
-  buffer_manager_gpu_associated_->OnSubmission(widget, buffer_id, swap_result);
+  buffer_manager_gpu_associated_->OnSubmission(widget, buffer_id, swap_result,
+                                               std::move(release_fence));
 }
 
 void WaylandBufferManagerHost::OnPresentation(

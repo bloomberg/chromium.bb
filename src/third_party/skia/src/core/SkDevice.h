@@ -15,6 +15,7 @@
 #include "include/core/SkShader.h"
 #include "include/core/SkSurfaceProps.h"
 #include "include/private/SkNoncopyable.h"
+#include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkRasterClip.h"
 #include "src/shaders/SkShaderBase.h"
@@ -27,7 +28,6 @@ class SkImageFilter;
 class SkImageFilterCache;
 struct SkIRect;
 class SkMarkerStack;
-class SkMatrix;
 class SkRasterHandleAllocator;
 class SkSpecialImage;
 
@@ -61,9 +61,7 @@ public:
      */
     void getGlobalBounds(SkIRect* bounds) const {
         SkASSERT(bounds);
-        SkRect localBounds = SkRect::Make(this->bounds());
-        fDeviceToGlobal.mapRect(&localBounds);
-        *bounds = localBounds.roundOut();
+        *bounds = SkMatrixPriv::MapRect(fDeviceToGlobal, SkRect::Make(this->bounds())).roundOut();
     }
 
     SkIRect getGlobalBounds() const {
@@ -116,12 +114,12 @@ public:
      *  into the global canvas' space (or root device space). This includes the translation
      *  necessary to account for the device's origin.
      */
-    const SkMatrix& deviceToGlobal() const { return fDeviceToGlobal; }
+    const SkM44& deviceToGlobal() const { return fDeviceToGlobal; }
     /**
      *  Return the inverse of getDeviceToGlobal(), mapping from the global canvas' space (or root
      *  device space) into this device's coordinate space.
      */
-    const SkMatrix& globalToDevice() const { return fGlobalToDevice; }
+    const SkM44& globalToDevice() const { return fGlobalToDevice; }
     /**
      *  DEPRECATED: This asserts that 'getDeviceToGlobal' is a translation matrix with integer
      *  components. In the future some SkDevices will have more complex device-to-global transforms,
@@ -202,6 +200,9 @@ public:
     virtual GrRecordingContext* recordingContext() const { return nullptr; }
     virtual GrSurfaceDrawContext* surfaceDrawContext() { return nullptr; }
 
+    // Ensure that non-RSXForm runs are passed to onDrawGlyphRunList.
+    void drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint);
+
 protected:
     enum TileUsage {
         kPossible_TileUsage,    //!< the created device may be drawn tiled
@@ -277,8 +278,6 @@ protected:
     virtual void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) = 0;
     virtual void drawShadow(const SkPath&, const SkDrawShadowRec&);
 
-    virtual void drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) = 0;
-
     // default implementation calls drawVertices
     virtual void drawPatch(const SkPoint cubics[12], const SkColor colors[4],
                            const SkPoint texCoords[4], SkBlendMode, const SkPaint& paint);
@@ -303,10 +302,10 @@ protected:
                                     const SkSamplingOptions&, const SkPaint&,
                                     SkCanvas::SrcRectConstraint);
 
-    void drawGlyphRunRSXform(const SkFont&, const SkGlyphID[], const SkRSXform[], int count,
-                             SkPoint origin, const SkPaint& paint);
-
     virtual void drawDrawable(SkDrawable*, const SkMatrix*, SkCanvas*);
+
+    // Only called with glyphRunLists that do not contain RSXForm.
+    virtual void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) = 0;
 
     /**
      * The SkDevice passed will be an SkDevice which was returned by a call to
@@ -351,8 +350,6 @@ protected:
     virtual void setImmutable() {}
 
     bool readPixels(const SkPixmap&, int x, int y);
-
-    ///////////////////////////////////////////////////////////////////////////
 
     virtual sk_sp<SkSurface> makeSurface(const SkImageInfo&, const SkSurfaceProps&);
     virtual bool onPeekPixels(SkPixmap*) { return false; }
@@ -421,10 +418,7 @@ private:
     friend class SkSurface_Raster;
     friend class DeviceTestingAccess;
 
-    // Temporarily friend the SkGlyphRunBuilder until drawPosText is gone.
-    friend class SkGlyphRun;
-    friend class SkGlyphRunList;
-    friend class SkGlyphRunBuilder;
+    void simplifyGlyphRunRSXFormAndRedraw(const SkGlyphRunList& glyphRunList, const SkPaint& paint);
 
     // used to change the backend's pixels (and possibly config/rowbytes)
     // but cannot change the width/height, so there should be no change to
@@ -443,12 +437,12 @@ private:
     // is anchored in the device space. The final device-to-global matrix stored by the SkDevice
     // will include a pre-translation by T(deviceOriginX, deviceOriginY), and the final
     // local-to-device matrix will have a post-translation of T(-deviceOriginX, -deviceOriginY).
-    void setDeviceCoordinateSystem(const SkMatrix& deviceToGlobal, const SkM44& localToDevice,
+    void setDeviceCoordinateSystem(const SkM44& deviceToGlobal, const SkM44& localToDevice,
                                    int bufferOriginX, int bufferOriginY);
     // Convenience to configure the device to be axis-aligned with the root canvas, but with a
     // unique origin.
     void setOrigin(const SkM44& globalCTM, int x, int y) {
-        this->setDeviceCoordinateSystem(SkMatrix::I(), globalCTM, x, y);
+        this->setDeviceCoordinateSystem(SkM44(), globalCTM, x, y);
     }
 
     virtual SkImageFilterCache* getImageFilterCache() { return nullptr; }
@@ -465,8 +459,8 @@ private:
     const SkSurfaceProps fSurfaceProps;
     // fDeviceToGlobal and fGlobalToDevice are inverses of each other; there are never that many
     // SkDevices, so pay the memory cost to avoid recalculating the inverse.
-    SkMatrix             fDeviceToGlobal;
-    SkMatrix             fGlobalToDevice;
+    SkM44 fDeviceToGlobal;
+    SkM44 fGlobalToDevice;
 
     // fLocalToDevice (inherited from SkMatrixProvider) is the device CTM, not the global CTM
     // It maps from local space to the device's coordinate space.
@@ -529,16 +523,18 @@ protected:
     void drawRRect(const SkRRect&, const SkPaint&) override {}
     void drawPath(const SkPath&, const SkPaint&, bool) override {}
     void drawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint&) override {}
-    void drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override {}
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override {}
 
     void drawFilteredImage(const skif::Mapping&, SkSpecialImage* src, const SkImageFilter*,
                            const SkSamplingOptions&, const SkPaint&) override {}
 
+    void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override {}
+
+
     bool isNoPixelsDevice() const override { return true; }
 
 private:
-struct ClipState {
+    struct ClipState {
         SkConservativeClip fClip;
         int fDeferredSaveCount = 0;
 

@@ -491,13 +491,15 @@ let FileAsyncData;
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
     if (!destinationLocationInfo) {
-      console.log(
+      console.error(
           'Failed to get destination location for ' + destinationEntry.toURL() +
           ' while attempting to paste files.');
     }
+    assert(destinationLocationInfo);
+
     return new FileTransferController.PastePlan(
-        sourceURLs, sourceEntries, destinationEntry,
-        assert(destinationLocationInfo), toMove);
+        sourceURLs, sourceEntries, destinationEntry, this.metadataModel_,
+        toMove);
   }
 
   /**
@@ -840,17 +842,9 @@ let FileAsyncData;
 
     const thumbnail = {element: null, x: 0, y: 0};
 
-    if (util.isFilesNg()) {
-      thumbnail.element = this.renderThumbnailFilesNg_();
-      if (this.document_.querySelector(':root[dir=rtl]')) {
-        thumbnail.x = thumbnail.element.clientWidth * window.devicePixelRatio;
-      }
-    } else {
-      thumbnail.element = this.renderThumbnail_();
-      // Move drag image above the start point for touch initiated drags.
-      if (this.touching_) {
-        thumbnail.y = thumbnail.element.getBoundingClientRect().height;
-      }
+    thumbnail.element = this.renderThumbnailFilesNg_();
+    if (this.document_.querySelector(':root[dir=rtl]')) {
+      thumbnail.x = thumbnail.element.clientWidth * window.devicePixelRatio;
     }
 
     dataTransfer.setDragImage(thumbnail.element, thumbnail.x, thumbnail.y);
@@ -895,26 +889,6 @@ let FileAsyncData;
         this.selectDropEffect_(event, this.getDragAndDropGlobalData_(), entry);
     event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
     event.preventDefault();
-
-    if (util.isFilesNg()) {
-      return;
-    }
-
-    // TODO(files-ng): the #drop-label is not used in files-ng, remove this
-    // code and update the effectAndLabel class to remove its label code.
-    if (!this.dropLabel_) {
-      this.dropLabel_ = document.querySelector('div#drop-label');
-    }
-    const label = effectAndLabel.getLabel();
-    if (label) {
-      this.dropLabel_.innerText = label;
-      this.dropLabel_.style.left = event.pageX + 'px';
-      this.dropLabel_.style.top =
-          (event.pageY + FileTransferController.DRAG_LABEL_Y_OFFSET_) + 'px';
-      this.dropLabel_.style.display = 'block';
-    } else {
-      this.dropLabel_.style.display = 'none';
-    }
   }
 
   /**
@@ -1669,6 +1643,8 @@ FileTransferController.DRAG_LABEL_Y_OFFSET_ = -32;
  */
 FileTransferController.ConfirmationType = {
   NONE: 'none',
+  COPY_TO_SHARED_DRIVE: 'copy_to_shared_drive',
+  MOVE_TO_SHARED_DRIVE: 'move_to_shared_drive',
   MOVE_BETWEEN_SHARED_DRIVES: 'between_team_drives',
   MOVE_FROM_SHARED_DRIVE_TO_OTHER: 'move_from_team_drive_to_other',
   MOVE_FROM_OTHER_TO_SHARED_DRIVE: 'move_from_other_to_team_drive',
@@ -1683,13 +1659,11 @@ FileTransferController.PastePlan = class {
    * @param {!Array<string>} sourceURLs URLs of source entries.
    * @param {!Array<!Entry>} sourceEntries Entries of source entries.
    * @param {!DirectoryEntry} destinationEntry Destination directory.
-   * @param {!EntryLocation} destinationLocationInfo Location info of the
-   *     destination directory.
+   * @param {!MetadataModel} metadataModel Metadata model instance.
    * @param {boolean} isMove true if move, false if copy.
    */
   constructor(
-      sourceURLs, sourceEntries, destinationEntry, destinationLocationInfo,
-      isMove) {
+      sourceURLs, sourceEntries, destinationEntry, metadataModel, isMove) {
     /**
      * @type {!Array<string>}
      * @const
@@ -1713,9 +1687,10 @@ FileTransferController.PastePlan = class {
     this.destinationEntry = destinationEntry;
 
     /**
-     * @type {!EntryLocation}
+     * @private {!MetadataModel}
+     * @const
      */
-    this.destinationLocationInfo = destinationLocationInfo;
+    this.metadataModel_ = metadataModel;
 
     /**
      * @type {boolean}
@@ -1743,12 +1718,32 @@ FileTransferController.PastePlan = class {
    * Obtains whether the planned operation requires user's confirmation, as well
    * as its type.
    *
-   * @return {FileTransferController.ConfirmationType} type of the confirmation
-   *     required for the operation. If no confirmation is needed,
+   * @return {!FileTransferController.ConfirmationType} Type of the confirmation
+   *     needed for the operation. If no confirmation is needed,
    *     FileTransferController.ConfirmationType.NONE will be returned.
    */
   getConfirmationType() {
-    assert(this.sourceEntries.length != 0);
+    assert(this.sourceEntries.length !== 0);
+
+    // Confirmation type for local drive.
+    const sourceEntryCache =
+        this.metadataModel_.getCache([this.sourceEntries[0]], ['shared']);
+    const destinationEntryCache =
+        this.metadataModel_.getCache([this.destinationEntry], ['shared']);
+
+    // The shared property tells us whether an entry is shared on Drive, and is
+    // potentially undefined.
+    const isSharedSource = sourceEntryCache[0].shared === true;
+    const isSharedDestination = destinationEntryCache[0].shared === true;
+
+    // See crbug.com/731583#c20.
+    if (!isSharedSource && isSharedDestination) {
+      return this.isMove ?
+          FileTransferController.ConfirmationType.MOVE_TO_SHARED_DRIVE :
+          FileTransferController.ConfirmationType.COPY_TO_SHARED_DRIVE;
+    }
+
+    // Confirmation type for team drives.
     const source = {
       isTeamDrive: util.isSharedDriveEntry(this.sourceEntries[0]),
       teamDriveName: util.getTeamDriveName(this.sourceEntries[0])
@@ -1801,6 +1796,14 @@ FileTransferController.PastePlan = class {
     const sourceName = util.getTeamDriveName(this.sourceEntries[0]);
     const destinationName = util.getTeamDriveName(this.destinationEntry);
     switch (confirmationType) {
+      case FileTransferController.ConfirmationType.COPY_TO_SHARED_DRIVE:
+        return [strf(
+            'DRIVE_CONFIRM_COPY_TO_SHARED_DRIVE',
+            this.destinationEntry.fullPath.split('/').pop())];
+      case FileTransferController.ConfirmationType.MOVE_TO_SHARED_DRIVE:
+        return [strf(
+            'DRIVE_CONFIRM_MOVE_TO_SHARED_DRIVE',
+            this.destinationEntry.fullPath.split('/').pop())];
       case FileTransferController.ConfirmationType.MOVE_BETWEEN_SHARED_DRIVES:
         return [
           strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName),

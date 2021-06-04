@@ -4,6 +4,6 @@ type RTArr = [[stride(4)]] array<f32>;
 [[group(0), binding(1)]] var<storage> x : RTArr;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }

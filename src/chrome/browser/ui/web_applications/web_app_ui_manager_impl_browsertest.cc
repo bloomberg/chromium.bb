@@ -18,10 +18,12 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_uninstall_waiter.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
@@ -32,19 +34,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #endif
-
-namespace {
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL FooUrl() {
-  return GURL("https://foo.example");
-}
-GURL BarUrl() {
-  return GURL("https://bar.example");
-}
-
-}  // namespace
 
 namespace web_app {
 
@@ -62,7 +51,7 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->open_as_window = true;
-    return web_app::InstallWebApp(profile(), std::move(web_app_info));
+    return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback) {
@@ -103,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   // Zero apps on start:
   EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(AppId()));
 
-  AppId foo_app_id = InstallWebApp(FooUrl());
+  AppId foo_app_id = InstallWebApp(GURL("https://foo.example"));
   LaunchWebApp(foo_app_id);
   EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
 
@@ -115,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        UninstallDuringLastBrowserWindow) {
   // Zero apps on start:
   EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(AppId()));
-  AppId foo_app_id = InstallWebApp(FooUrl());
+  AppId foo_app_id = InstallWebApp(GURL("https://foo.example"));
   LaunchWebApp(foo_app_id);
   EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
   // It has 2 browser window object.
@@ -128,9 +117,10 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   // Uninstalling should close the |app_browser|, but keep the browser
   // object alive long enough to complete the uninstall.
   base::RunLoop run_loop;
-  DCHECK(provider->install_finalizer().CanUserUninstallExternalApp(foo_app_id));
-  provider->install_finalizer().UninstallExternalAppByUser(
-      foo_app_id, base::BindLambdaForTesting([&](bool success) {
+  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(foo_app_id));
+  provider->install_finalizer().UninstallWebApp(
+      foo_app_id, webapps::WebappUninstallSource::kAppMenu,
+      base::BindLambdaForTesting([&](bool success) {
         EXPECT_TRUE(success);
         run_loop.Quit();
       }));
@@ -142,11 +132,11 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        GetNumWindowsForApp_AppWindowsRemoved) {
-  AppId foo_app_id = InstallWebApp(FooUrl());
+  AppId foo_app_id = InstallWebApp(GURL("https://foo.example"));
   auto* foo_window1 = LaunchWebApp(foo_app_id);
   auto* foo_window2 = LaunchWebApp(foo_app_id);
 
-  AppId bar_app_id = InstallWebApp(BarUrl());
+  AppId bar_app_id = InstallWebApp(GURL("https://bar.example"));
   LaunchWebApp(bar_app_id);
 
   EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app_id));
@@ -165,8 +155,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_NoOpenedWindows) {
-  AppId foo_app_id = InstallWebApp(FooUrl());
-  AppId bar_app_id = InstallWebApp(BarUrl());
+  AppId foo_app_id = InstallWebApp(GURL("https://foo.example"));
+  AppId bar_app_id = InstallWebApp(GURL("https://bar.example"));
   LaunchWebApp(bar_app_id);
 
   base::RunLoop run_loop;
@@ -179,8 +169,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 // app window.
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_MultipleOpenedWindows) {
-  AppId foo_app_id = InstallWebApp(FooUrl());
-  AppId bar_app_id = InstallWebApp(BarUrl());
+  AppId foo_app_id = InstallWebApp(GURL("https://foo.example"));
+  AppId bar_app_id = InstallWebApp(GURL("https://bar.example"));
 
   // Test that NotifyOnAllAppWindowsClosed can be called more than once for
   // the same app.

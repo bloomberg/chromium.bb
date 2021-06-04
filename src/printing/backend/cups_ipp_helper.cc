@@ -10,33 +10,33 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "build/chromeos_buildflags.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/backend/print_backend_utils.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "printing/backend/ipp_handler_map.h"
 #include "printing/printing_features.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 namespace printing {
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 constexpr int kPinMinimumLength = 4;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -184,8 +184,8 @@ void ExtractCopies(const CupsOptionProvider& printer,
       (lower_bound != -1 && upper_bound >= 2) ? upper_bound : 1;
 }
 
-// Reads resolution from |attr| and puts into |size| in dots per inch.
-base::Optional<gfx::Size> GetResolution(ipp_attribute_t* attr, int i) {
+// Reads resolution from `attr` and puts into `size` in dots per inch.
+absl::optional<gfx::Size> GetResolution(ipp_attribute_t* attr, int i) {
   ipp_res_t units;
   int yres;
   int xres = ippGetResolution(attr, i, &yres, &units);
@@ -201,8 +201,8 @@ base::Optional<gfx::Size> GetResolution(ipp_attribute_t* attr, int i) {
   return {};
 }
 
-// Initializes |printer_info.dpis| with available resolutions and
-// |printer_info.default_dpi| with default resolution provided by |printer|.
+// Initializes `printer_info.dpis` with available resolutions and
+// `printer_info.default_dpi` with default resolution provided by `printer`.
 void ExtractResolutions(const CupsOptionProvider& printer,
                         PrinterSemanticCapsAndDefaults* printer_info) {
   ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppResolution);
@@ -211,12 +211,12 @@ void ExtractResolutions(const CupsOptionProvider& printer,
 
   int num_options = ippGetCount(attr);
   for (int i = 0; i < num_options; i++) {
-    base::Optional<gfx::Size> size = GetResolution(attr, i);
+    absl::optional<gfx::Size> size = GetResolution(attr, i);
     if (size)
       printer_info->dpis.push_back(size.value());
   }
   ipp_attribute_t* def_attr = printer.GetDefaultOptionValue(kIppResolution);
-  base::Optional<gfx::Size> size = GetResolution(def_attr, 0);
+  absl::optional<gfx::Size> size = GetResolution(def_attr, 0);
   if (size)
     printer_info->default_dpi = size.value();
 }
@@ -256,7 +256,7 @@ bool CollateDefault(const CupsOptionProvider& printer) {
   return name && !base::StringPiece(name).compare(kCollated);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 bool PinSupported(const CupsOptionProvider& printer) {
   ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppPin);
   if (!attr)
@@ -270,7 +270,7 @@ bool PinSupported(const CupsOptionProvider& printer) {
   return base::Contains(values, kPinEncryptionNone);
 }
 
-// Returns the number of IPP attributes added to |caps| (not necessarily in
+// Returns the number of IPP attributes added to `caps` (not necessarily in
 // 1-to-1 correspondence).
 size_t AddAttributes(const CupsOptionProvider& printer,
                      const char* attr_group_name,
@@ -292,7 +292,7 @@ size_t AddAttributes(const CupsOptionProvider& printer,
     }
 
     size_t previous_size = caps->size();
-    // Run the handler that adds items to |caps| based on option type.
+    // Run the handler that adds items to `caps` based on option type.
     it->second.Run(printer, option_name, caps);
     if (caps->size() > previous_size)
       attr_count++;
@@ -311,7 +311,7 @@ void ExtractAdvancedCapabilities(const CupsOptionProvider& printer,
   attr_count += AddAttributes(printer, kIppDocumentAttributes, options);
   base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesCount", attr_count);
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -334,10 +334,10 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
   printer_info->default_paper = DefaultPaper(printer);
   printer_info->papers = SupportedPapers(printer);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   printer_info->pin_supported = PinSupported(printer);
   ExtractAdvancedCapabilities(printer, printer_info);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
   ExtractCopies(printer, printer_info);
   ExtractColor(printer, printer_info);

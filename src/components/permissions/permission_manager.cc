@@ -82,7 +82,7 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
     case PermissionType::GEOLOCATION:
       return ContentSettingsType::GEOLOCATION;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
       return ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER;
 #else
       break;
@@ -276,10 +276,15 @@ void PermissionManager::Shutdown() {
   is_shutting_down_ = true;
 
   if (!subscriptions_.IsEmpty()) {
-    PermissionsClient::Get()
-        ->GetSettingsMap(browser_context_)
-        ->RemoveObserver(this);
     subscriptions_.Clear();
+    for (const auto& type_to_count : subscription_type_counts_) {
+      if (type_to_count.second > 0) {
+        PermissionContextBase* context =
+            GetPermissionContext(type_to_count.first);
+        context->RemoveObserver(this);
+      }
+    }
+    subscription_type_counts_.clear();
   }
 }
 
@@ -302,7 +307,7 @@ PermissionContextBase* PermissionManager::GetPermissionContextForTesting(
 GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
                                            const GURL& requesting_origin,
                                            const GURL& embedding_origin) const {
-  base::Optional<GURL> override_origin =
+  absl::optional<GURL> override_origin =
       PermissionsClient::Get()->OverrideCanonicalOrigin(requesting_origin,
                                                         embedding_origin);
   if (override_origin)
@@ -524,7 +529,7 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
 
 bool PermissionManager::IsPermissionOverridableByDevTools(
     content::PermissionType permission,
-    const base::Optional<url::Origin>& origin) {
+    const absl::optional<url::Origin>& origin) {
   ContentSettingsType type = PermissionTypeToContentSettingSafe(permission);
   PermissionContextBase* context = GetPermissionContext(type);
 
@@ -545,12 +550,14 @@ PermissionManager::SubscribePermissionStatusChange(
   if (is_shutting_down_)
     return SubscriptionId();
 
-  if (subscriptions_.IsEmpty())
-    PermissionsClient::Get()
-        ->GetSettingsMap(browser_context_)
-        ->AddObserver(this);
-
   ContentSettingsType content_type = PermissionTypeToContentSetting(permission);
+  auto& type_count = subscription_type_counts_[content_type];
+  if (type_count == 0) {
+    PermissionContextBase* context = GetPermissionContext(content_type);
+    context->AddObserver(this);
+  }
+  ++type_count;
+
   auto subscription = std::make_unique<Subscription>();
 
   // The RFH may be null if the request is for a worker.
@@ -591,14 +598,19 @@ void PermissionManager::UnsubscribePermissionStatusChange(
   if (is_shutting_down_)
     return;
 
-  if (subscriptions_.Lookup(subscription_id)) {
-    subscriptions_.Remove(subscription_id);
-  }
+  Subscription* subscription = subscriptions_.Lookup(subscription_id);
+  if (!subscription)
+    return;
 
-  if (subscriptions_.IsEmpty()) {
-    PermissionsClient::Get()
-        ->GetSettingsMap(browser_context_)
-        ->RemoveObserver(this);
+  ContentSettingsType type = subscription->permission;
+  subscriptions_.Remove(subscription_id);
+  auto type_count = subscription_type_counts_.find(type);
+  CHECK(type_count != subscription_type_counts_.end());
+  CHECK_GT(type_count->second, size_t(0));
+  type_count->second--;
+  if (type_count->second == 0) {
+    PermissionContextBase* context = GetPermissionContext(type);
+    context->RemoveObserver(this);
   }
 }
 
@@ -608,7 +620,7 @@ bool PermissionManager::IsPermissionKillSwitchOn(
   return GetPermissionContext(permission)->IsPermissionKillSwitchOn();
 }
 
-void PermissionManager::OnContentSettingChanged(
+void PermissionManager::OnPermissionChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
@@ -689,7 +701,7 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
 }
 
 void PermissionManager::SetPermissionOverridesForDevTools(
-    const base::Optional<url::Origin>& optional_origin,
+    const absl::optional<url::Origin>& optional_origin,
     const PermissionOverrides& overrides) {
   ContentSettingsTypeOverrides result;
   for (const auto& item : overrides) {

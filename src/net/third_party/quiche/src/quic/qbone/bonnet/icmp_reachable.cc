@@ -11,8 +11,8 @@
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_mutex.h"
 #include "quic/qbone/platform/icmp_packet.h"
-#include "common/platform/api/quiche_text_utils.h"
 #include "common/quiche_endian.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 namespace {
@@ -97,8 +97,6 @@ bool IcmpReachable::Init() {
 
   epoll_server_->RegisterFD(recv_fd_, &cb_, kEpollFlags);
   epoll_server_->RegisterAlarm(0, this);
-
-  epoll_server_->set_timeout_in_us(50000);
 
   QuicWriterMutexLock mu(&header_lock_);
   icmp_header_.icmp6_type = ICMP6_ECHO_REQUEST;

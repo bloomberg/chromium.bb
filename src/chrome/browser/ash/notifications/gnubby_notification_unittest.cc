@@ -1,12 +1,15 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "chrome/browser/ash/notifications/gnubby_notification.h"
+
+#include <memory>
+
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_gnubby_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,10 +23,12 @@ class GnubbyNotificationTest : public BrowserWithTestWindowTest {
   ~GnubbyNotificationTest() override {}
 
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
+    DBusThreadManager::Initialize();
     DBusThreadManager::GetSetterForTesting()->SetGnubbyClient(
         std::unique_ptr<chromeos::GnubbyClient>(
             new chromeos::FakeGnubbyClient));
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    BrowserWithTestWindowTest::SetUp();
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -31,19 +36,20 @@ class GnubbyNotificationTest : public BrowserWithTestWindowTest {
         nullptr /* profile */);
     tester_->SetNotificationAddedClosure(base::BindRepeating(
         &GnubbyNotificationTest::OnNotificationAdded, base::Unretained(this)));
-    gnubby_notification_.reset(new GnubbyNotification());
+    gnubby_notification_ = std::make_unique<GnubbyNotification>();
     notification_count_ = 0;
   }
 
-  base::Optional<message_center::Notification> GetNotification() {
+  absl::optional<message_center::Notification> GetNotification() {
     return tester_->GetNotification("gnubby_notification");
   }
 
   void TearDown() override {
     gnubby_notification_.reset();
     tester_.reset();
-    DBusThreadManager::GetSetterForTesting()->SetGnubbyClient(nullptr);
     BrowserWithTestWindowTest::TearDown();
+    chromeos::ConciergeClient::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   void OnNotificationAdded() { notification_count_++; }

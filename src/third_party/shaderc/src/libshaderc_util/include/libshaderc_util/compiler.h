@@ -201,6 +201,7 @@ class Compiler {
         source_language_(SourceLanguage::GLSL),
         limits_(kDefaultTBuiltInResource),
         auto_bind_uniforms_(false),
+        auto_combined_image_sampler_(false),
         auto_binding_base_(),
         auto_map_locations_(false),
         hlsl_iomap_(false),
@@ -276,6 +277,12 @@ class Compiler {
   // Set whether the compiler automatically assigns bindings to
   // uniform variables that don't have explicit bindings.
   void SetAutoBindUniforms(bool auto_bind) { auto_bind_uniforms_ = auto_bind; }
+
+  // Sets whether the compiler should automatically remove sampler variables
+  // and convert image variables to combined image-sampler variables.
+  void SetAutoCombinedImageSampler(bool auto_combine) {
+    auto_combined_image_sampler_ = auto_combine;
+  }
 
   // Sets the lowest binding number used when automatically assigning bindings
   // for uniform resources of the given type, for all shader stages.  The default
@@ -491,6 +498,10 @@ class Compiler {
   // True if the compiler should automatically bind uniforms that don't
   // have explicit bindings.
   bool auto_bind_uniforms_;
+
+  // True if the compiler should automatically remove sampler variables
+  // and convert image variables to combined image-sampler variables.
+  bool auto_combined_image_sampler_;
 
   // The base binding number per uniform type, per stage, used when automatically
   // binding uniforms that don't hzve explicit bindings in the shader source.

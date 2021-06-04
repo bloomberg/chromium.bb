@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Слайдерди издөө</translation>
 <translation id="1404323374378969387">Норвежче</translation>
 <translation id="1430915738399379752">Басып чыгаруу</translation>
+<translation id="1433628812591023318">Parallels Desktop'ко файлды көчүрүү үчүн файл Windows файлдарына жылдырылышы керек.</translation>
 <translation id="1435838927755162558">Файлды Parallels Desktop менен бөлүшүү</translation>
 <translation id="1467432559032391204">Сол</translation>
 <translation id="1471718551822868769">Словакча</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows файлдары</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> менен бөлүшүү</translation>
 <translation id="3083975830683400843">Chromebit түзмөктөрү</translation>
+<translation id="3113153474486991170">Бул жерден "<ph name="PATH" />" ачылган жок. Ачуу үчүн "Менин файлдарыма" көчүрүңүз.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">БҮТТҮ</translation>
 <translation id="3188257591659621405">Менин файлдарым</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Болгарча (фонетикалык баскычтоп)</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5625294776298156701">Тамилче (Tamil99 баскычтобу)</translation>
+<translation id="5633226425545095130">Эгер бул нерсени жылдырсаңыз, ал "<ph name="DESTINATION_NAME" />" бөлүшүлгөн папкасын көрө алган адамдардын баары менен бөлүшүлөт.</translation>
 <translation id="5649768706273821470">Угуу</translation>
 <translation id="5678784840044122290">Linux колдонмосу Терминалыңызда жеткиликтүү болуп, Жүргүзгүчтө анын сүрөтчөсү көрүнүшү мүмкүн.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Архивден же виртуалдуу дисктен ажыратуу мүмкүн эмес<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Эфиопчо баскычтоп</translation>
 <translation id="7417705661718309329">Google карта</translation>
 <translation id="7460898608667578234">Украинче</translation>
+<translation id="7486315294984620427">Parallels Desktop'ко файлды көчүрүү үчүн файл Windows файлдарына көчүрүлүшү керек.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> табылды
     <ph name="LINE_BREAK1" />
     Камдык көчүрмөсүн <ph name="BEGIN_LINK" />Google Drive'га<ph name="END_LINK" /> сактай берсеңиз болот</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Чен-өлчөмү</translation>
 <translation id="8437209419043462667">АКШ</translation>
 <translation id="8456681095658380701">Жараксыз ат</translation>
+<translation id="8459404855768962328">Эгер бул нерсени көчүрсөңүз, ал "<ph name="DESTINATION_NAME" />" бөлүшүлгөн папкасын көрө алган адамдардын баары менен бөлүшүлөт.</translation>
 <translation id="8461467696380332069">Текчедеги файлдарды ыкчам ачуу мүмкүнчүлүгү үчүн курсорду файлдын үстүнө алып келип, чычкандын оң баскычын басып, "Текчеге кадоо" дегенди тандаңыз.</translation>
 <translation id="8463494891489624050">Вьетнамча (VIQR)</translation>
 <translation id="8466234950814670489">Tar архиви</translation>

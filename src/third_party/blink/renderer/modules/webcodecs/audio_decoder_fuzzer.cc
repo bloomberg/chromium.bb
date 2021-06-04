@@ -5,9 +5,9 @@
 #include "base/run_loop.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_frame_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -59,8 +59,8 @@ DEFINE_TEXT_PROTO_FUZZER(
         V8WebCodecsErrorCallback::Create(error_function->Bind());
     Persistent<FakeFunction> output_function =
         FakeFunction::Create(script_state, "output");
-    Persistent<V8AudioFrameOutputCallback> output_callback =
-        V8AudioFrameOutputCallback::Create(output_function->Bind());
+    Persistent<V8AudioDataOutputCallback> output_callback =
+        V8AudioDataOutputCallback::Create(output_function->Bind());
 
     Persistent<AudioDecoderInit> audio_decoder_init =
         MakeGarbageCollected<AudioDecoderInit>();
@@ -73,11 +73,17 @@ DEFINE_TEXT_PROTO_FUZZER(
     if (audio_decoder) {
       for (auto& invocation : proto.invocations()) {
         switch (invocation.Api_case()) {
-          case wc_fuzzer::AudioDecoderApiInvocation::kConfigure:
-            audio_decoder->configure(
-                MakeAudioDecoderConfig(invocation.configure()),
-                IGNORE_EXCEPTION_FOR_TESTING);
+          case wc_fuzzer::AudioDecoderApiInvocation::kConfigure: {
+            AudioDecoderConfig* config =
+                MakeAudioDecoderConfig(invocation.configure());
+
+            // Use the same config to fuzz isConfigSupported().
+            AudioDecoder::isConfigSupported(script_state, config,
+                                            IGNORE_EXCEPTION_FOR_TESTING);
+
+            audio_decoder->configure(config, IGNORE_EXCEPTION_FOR_TESTING);
             break;
+          }
           case wc_fuzzer::AudioDecoderApiInvocation::kDecode:
             audio_decoder->decode(
                 MakeEncodedAudioChunk(invocation.decode().chunk()),

@@ -54,7 +54,7 @@ class PresenterImageGL : public OutputPresenter::Image {
                   uint32_t shared_image_usage);
 
   void BeginPresent() final;
-  void EndPresent() final;
+  void EndPresent(gfx::GpuFenceHandle release_fence) final;
   int GetPresentCount() const final;
   void OnContextLost() final;
 
@@ -131,10 +131,16 @@ void PresenterImageGL::BeginPresent() {
   DCHECK(scoped_gl_read_access_);
 }
 
-void PresenterImageGL::EndPresent() {
+void PresenterImageGL::EndPresent(gfx::GpuFenceHandle release_fence) {
   DCHECK(present_count_);
   if (--present_count_)
     return;
+
+  // Check there is no release fence if we have a non-overlay read access.
+  DCHECK(!scoped_gl_read_access_ || release_fence.is_null());
+  if (scoped_overlay_read_access_)
+    scoped_overlay_read_access_->SetReleaseFence(std::move(release_fence));
+
   scoped_overlay_read_access_.reset();
   scoped_gl_read_access_.reset();
 }
@@ -425,8 +431,8 @@ void OutputPresenterGL::ScheduleOverlays(
         overlay.shared_state->sorting_context_id,
         gfx::Transform(overlay.shared_state->transform), gl_image,
         overlay.contents_rect, gfx::ToEnclosingRect(overlay.bounds_rect),
-        overlay.background_color, overlay.edge_aa_mask, opacity,
-        overlay.filter));
+        overlay.background_color, overlay.edge_aa_mask, opacity, overlay.filter,
+        overlay.protected_video_type));
 #endif
   }
 #endif  //  defined(OS_ANDROID) || defined(OS_APPLE) || defined(USE_OZONE)

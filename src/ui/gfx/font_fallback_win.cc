@@ -11,7 +11,6 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
@@ -239,7 +238,7 @@ bool GetFallbackFont(const Font& font,
   // font handles and is not guaranteed to result in the correct typeface, see
   // https://crbug.com/1003829
   *result = Font(PlatformFont::CreateFromSkTypeface(
-      std::move(fallback_typeface), font.GetFontSize(), base::nullopt));
+      std::move(fallback_typeface), font.GetFontSize(), absl::nullopt));
   return true;
 }
 

@@ -27,7 +27,10 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -35,7 +38,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #endif
 
 #if defined(OS_WIN)
@@ -58,9 +61,10 @@ bool IsAppInstalled(apps::AppServiceProxyBase* proxy, const AppId& app_id) {
 
 #if defined(OS_WIN)
 
-// UninstallWebAppWithDialog handles WebApp uninstallation from the
-// Windows Settings.
-void UninstallWebAppWithDialog(const AppId& app_id, Profile* profile) {
+// UninstallWebAppWithDialogFromStartupSwitch handles WebApp uninstallation from
+// the Windows Settings.
+void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
+                                                Profile* profile) {
   auto* provider = WebAppProvider::Get(profile);
   if (!provider->registrar().IsLocallyInstalled(app_id)) {
     // App does not exist and controller is destroyed.
@@ -71,7 +75,7 @@ void UninstallWebAppWithDialog(const AppId& app_id, Profile* profile) {
   // object which ensures the browser stays alive during the WebApp
   // uninstall.
   WebAppUiManagerImpl::Get(profile)->dialog_manager().UninstallWebApp(
-      app_id, WebAppDialogManager::UninstallSource::kOsSettings,
+      app_id, webapps::WebappUninstallSource::kOsSettings,
       gfx::kNullNativeWindow, base::DoNothing());
 }
 
@@ -114,9 +118,9 @@ void WebAppUiManagerImpl::Start() {
     ++num_windows_for_apps_map_[GetAppIdForBrowser(browser)];
   }
 
-  extensions::ExtensionSystem::Get(profile_)
-      ->app_sorting()
-      ->InitializePageOrdinalMapFromWebApps();
+  extensions::ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE, base::BindOnce(&WebAppUiManagerImpl::OnExtensionSystemReady,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   BrowserList::AddObserver(this);
 }
@@ -240,6 +244,12 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
   return uninstall_triggered;
 }
 
+void WebAppUiManagerImpl::OnExtensionSystemReady() {
+  extensions::ExtensionSystem::Get(profile_)
+      ->app_sorting()
+      ->InitializePageOrdinalMapFromWebApps();
+}
+
 void WebAppUiManagerImpl::OnShortcutInfoReceivedSearchShortcutLocations(
     const AppId& from_app,
     const AppId& app_id,
@@ -289,8 +299,8 @@ bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {
 void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
   DCHECK(CanAddAppToQuickLaunchBar());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeLauncherController does not exist in unit tests.
-  if (auto* controller = ChromeLauncherController::instance()) {
+  // ChromeShelfController does not exist in unit tests.
+  if (auto* controller = ChromeShelfController::instance()) {
     controller->PinAppWithID(app_id);
     controller->UpdateV1AppState(app_id);
   }
@@ -388,7 +398,8 @@ void WebAppUiManagerImpl::OnBrowserRemoved(Browser* browser) {
 void WebAppUiManagerImpl::UninstallWebAppFromStartupSwitch(
     const AppId& app_id) {
   WebAppProvider::Get(profile_)->on_registry_ready().Post(
-      FROM_HERE, base::BindOnce(&UninstallWebAppWithDialog, app_id, profile_));
+      FROM_HERE, base::BindOnce(&UninstallWebAppWithDialogFromStartupSwitch,
+                                app_id, profile_));
 }
 #endif  //  defined(OS_WIN)
 

@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/parsed_headers.h"
 
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/bfcache_opt_in_parser.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy_parser.h"
@@ -12,6 +13,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/link_header_parser.h"
 #include "services/network/public/cpp/origin_agent_cluster_parser.h"
+#include "services/network/public/cpp/timing_allow_origin_parser.h"
 #include "services/network/public/cpp/x_frame_options_parser.h"
 
 namespace network {
@@ -57,6 +59,19 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
   parsed_headers->xfo = ParseXFrameOptions(*headers);
 
   parsed_headers->link_headers = ParseLinkHeaders(*headers, url);
+
+  std::string timing_allow_origin_value;
+  if (headers->GetNormalizedHeader("Timing-Allow-Origin",
+                                   &timing_allow_origin_value)) {
+    parsed_headers->timing_allow_origin =
+        ParseTimingAllowOrigin(timing_allow_origin_value);
+  }
+
+  std::string bfcache_opt_in;
+  if (headers->GetNormalizedHeader("BFCache-Opt-In", &bfcache_opt_in)) {
+    parsed_headers->bfcache_opt_in_unload =
+        ParseBFCacheOptInUnload(bfcache_opt_in);
+  }
 
   return parsed_headers;
 }

@@ -1,4 +1,7 @@
 export const description = `
+
+TODO: check overlap with api,operation,rendering,draw:vertex_attributes,basic before implementing
+
 - Tests that render N points, using a generated pipeline with:
   (1) a vertex shader that has necessary vertex inputs and a static array of
   expected data (as indexed by vertexID + instanceID * verticesPerInstance),

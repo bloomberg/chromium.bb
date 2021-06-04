@@ -26,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -38,7 +39,6 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
@@ -47,16 +47,17 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(BrowserAppMenuButton, kIdentifier);
+
 // static
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
-BrowserAppMenuButton::BrowserAppMenuButton(PressedCallback callback,
-                                           ToolbarView* toolbar_view)
-    : AppMenuButton(std::move(callback)), toolbar_view_(toolbar_view) {
-  SetInkDropMode(InkDropMode::ON);
+BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
+    : AppMenuButton(base::BindRepeating(&BrowserAppMenuButton::ButtonPressed,
+                                        base::Unretained(this))),
+      toolbar_view_(toolbar_view) {
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-
-  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
+  SetProperty(views::kElementIdentifierKey, kIdentifier);
 }
 
 BrowserAppMenuButton::~BrowserAppMenuButton() {}
@@ -142,7 +143,7 @@ void BrowserAppMenuButton::UpdateTextAndHighlightColor() {
     text = l10n_util::GetStringUTF16(IDS_APP_MENU_BUTTON_ERROR);
   }
 
-  base::Optional<SkColor> color;
+  absl::optional<SkColor> color;
   switch (type_and_severity_.severity) {
     case AppMenuIconController::Severity::NONE:
       break;
@@ -170,14 +171,14 @@ void BrowserAppMenuButton::UpdateTextAndHighlightColor() {
   SetHighlight(text, color);
 }
 
-std::unique_ptr<views::InkDropHighlight>
-BrowserAppMenuButton::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight(this);
-}
-
 void BrowserAppMenuButton::OnTouchUiChanged() {
   UpdateColorsAndInsets();
   PreferredSizeChanged();
+}
+
+void BrowserAppMenuButton::ButtonPressed(const ui::Event& event) {
+  ShowMenu(event.IsKeyEvent() ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                              : views::MenuRunner::NO_FLAGS);
 }
 
 BEGIN_METADATA(BrowserAppMenuButton, AppMenuButton)

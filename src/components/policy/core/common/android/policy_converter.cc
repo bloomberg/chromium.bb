@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/android/policy_converter.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,7 +46,7 @@ PolicyConverter::~PolicyConverter() {
 
 std::unique_ptr<PolicyBundle> PolicyConverter::GetPolicyBundle() {
   std::unique_ptr<PolicyBundle> filled_bundle(std::move(policy_bundle_));
-  policy_bundle_.reset(new PolicyBundle);
+  policy_bundle_ = std::make_unique<PolicyBundle>();
   return filled_bundle;
 }
 
@@ -102,7 +103,7 @@ base::Value PolicyConverter::ConvertJavaStringArrayToListValue(
 }
 
 // static
-base::Optional<base::Value> PolicyConverter::ConvertValueToSchema(
+absl::optional<base::Value> PolicyConverter::ConvertValueToSchema(
     base::Value value,
     const Schema& schema) {
   if (!schema.valid())
@@ -169,32 +170,25 @@ base::Optional<base::Value> PolicyConverter::ConvertValueToSchema(
         // Do not try to convert empty string to list/dictionaries, since most
         // likely the value was not simply not set by the UEM.
         if (str_value.empty())
-          return base::nullopt;
-        base::Optional<base::Value> decoded_value = base::JSONReader::Read(
+          return absl::nullopt;
+        absl::optional<base::Value> decoded_value = base::JSONReader::Read(
             str_value, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
         if (decoded_value.has_value())
           return decoded_value;
       }
       return value;
     }
-
-    // TODO(crbug.com/859477): Remove after root cause is found.
-    case base::Value::Type::DEAD: {
-      CHECK(false);
-      return base::nullopt;
-    }
   }
 
-  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
-  CHECK(false);
-  return base::nullopt;
+  NOTREACHED();
+  return absl::nullopt;
 }
 
 void PolicyConverter::SetPolicyValue(const std::string& key,
                                      base::Value value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);
   const PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
-  base::Optional<base::Value> converted_value =
+  absl::optional<base::Value> converted_value =
       ConvertValueToSchema(std::move(value), schema);
   if (converted_value) {
     // Do not set list/dictionary policies that are sent as empty strings from

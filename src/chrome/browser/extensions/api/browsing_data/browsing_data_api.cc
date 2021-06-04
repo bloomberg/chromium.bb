@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
@@ -360,8 +361,7 @@ bool BrowsingDataRemoverFunction::IsPauseSyncAllowed() {
 
 void BrowsingDataRemoverFunction::StartRemoving() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(profile);
+  content::BrowsingDataRemover* remover = profile->GetBrowsingDataRemover();
 
   // Add a ref (Balanced in OnTaskFinished)
   AddRef();
@@ -503,10 +503,9 @@ bool BrowsingDataRemoveFunction::GetRemovalMask(uint64_t* removal_mask) {
   for (base::DictionaryValue::Iterator i(*data_to_remove);
        !i.IsAtEnd();
        i.Advance()) {
-    bool selected = false;
-    if (!i.value().GetAsBoolean(&selected))
+    if (!i.value().is_bool())
       return false;
-    if (selected)
+    if (i.value().GetBool())
       *removal_mask |= MaskForKey(i.key().c_str());
   }
 

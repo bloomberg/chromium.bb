@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -56,6 +58,12 @@ conformance_harness_script = r"""
 extension_harness_additional_script = r"""
   window.onload = function() { window._loaded = true; }
 """
+
+
+if sys.version_info[0] == 3:
+  # cmp no longer exists in Python 3
+  def cmp(a, b):  # pylint: disable=redefined-builtin
+    return int(a > b) - int(a < b)
 
 
 def _CompareVersion(version1, version2):

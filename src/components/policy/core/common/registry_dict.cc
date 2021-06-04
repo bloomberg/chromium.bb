@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/registry_dict.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -34,7 +35,7 @@ bool IsKeyNumerical(const std::string& key) {
 
 }  // namespace
 
-base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
+absl::optional<base::Value> ConvertRegistryValue(const base::Value& value,
                                                  const Schema& schema) {
   if (!schema.valid())
     return value.Clone();
@@ -45,7 +46,7 @@ base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
     if (value.is_dict()) {
       base::Value result(base::Value::Type::DICTIONARY);
       for (const auto& entry : value.DictItems()) {
-        base::Optional<base::Value> converted =
+        absl::optional<base::Value> converted =
             ConvertRegistryValue(entry.second, schema.GetProperty(entry.first));
         if (converted.has_value())
           result.SetKey(entry.first, std::move(converted.value()));
@@ -54,7 +55,7 @@ base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
     } else if (value.is_list()) {
       base::Value result(base::Value::Type::LIST);
       for (const auto& entry : value.GetList()) {
-        base::Optional<base::Value> converted =
+        absl::optional<base::Value> converted =
             ConvertRegistryValue(entry, schema.GetItems());
         if (converted.has_value())
           result.Append(std::move(converted.value()));
@@ -107,7 +108,7 @@ base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
         for (const auto& it : value.DictItems()) {
           if (!IsKeyNumerical(it.first))
             continue;
-          base::Optional<base::Value> converted =
+          absl::optional<base::Value> converted =
               ConvertRegistryValue(it.second, schema.GetItems());
           if (converted.has_value())
             result.Append(std::move(converted.value()));
@@ -120,7 +121,7 @@ base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
     case base::Value::Type::DICTIONARY: {
       // Dictionaries may be encoded as JSON strings.
       if (value.is_string()) {
-        base::Optional<base::Value> result = base::JSONReader::Read(
+        absl::optional<base::Value> result = base::JSONReader::Read(
             value.GetString(),
             base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
         if (result.has_value() && result.value().type() == schema.type())
@@ -132,15 +133,11 @@ base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
     case base::Value::Type::BINARY:
       // No conversion possible.
       break;
-    // TODO(crbug.com/859477): Remove after root cause is found.
-    case base::Value::Type::DEAD:
-      CHECK(false);
-      return base::nullopt;
   }
 
   LOG(WARNING) << "Failed to convert " << value.type() << " to "
                << schema.type();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool CaseInsensitiveStringCompare::operator()(const std::string& a,
@@ -234,7 +231,8 @@ void RegistryDict::Merge(const RegistryDict& other) {
 
   for (auto entry(other.values_.begin()); entry != other.values_.end();
        ++entry) {
-    SetValue(entry->first, entry->second->CreateDeepCopy());
+    SetValue(entry->first,
+             base::Value::ToUniquePtrValue(entry->second->Clone()));
   }
 }
 
@@ -254,8 +252,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const std::wstring& root) {
     switch (it.Type()) {
       case REG_SZ:
       case REG_EXPAND_SZ:
-        SetValue(name, std::unique_ptr<base::Value>(
-                           new base::Value(base::WideToUTF8(it.Value()))));
+        SetValue(name,
+                 std::make_unique<base::Value>(base::WideToUTF8(it.Value())));
         continue;
       case REG_DWORD_LITTLE_ENDIAN:
       case REG_DWORD_BIG_ENDIAN:
@@ -265,8 +263,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const std::wstring& root) {
             dword_value = base::NetToHost32(dword_value);
           else
             dword_value = base::ByteSwapToLE32(dword_value);
-          SetValue(name, std::unique_ptr<base::Value>(
-                             new base::Value(static_cast<int>(dword_value))));
+          SetValue(name, std::make_unique<base::Value>(
+                             static_cast<int>(dword_value)));
           continue;
         }
         FALLTHROUGH;
@@ -311,7 +309,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (matching_schemas.empty())
           matching_schemas.push_back(Schema());
         for (const Schema& subschema : matching_schemas) {
-          base::Optional<base::Value> converted =
+          absl::optional<base::Value> converted =
               ConvertRegistryValue(*entry->second, subschema);
           if (converted.has_value()) {
             result->SetKey(entry->first, std::move(converted.value()));
@@ -354,7 +352,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
            entry != values_.end(); ++entry) {
         if (!IsKeyNumerical(entry->first))
           continue;
-        base::Optional<base::Value> converted =
+        absl::optional<base::Value> converted =
             ConvertRegistryValue(*entry->second, item_schema);
         if (converted.has_value())
           result->Append(std::move(converted.value()));

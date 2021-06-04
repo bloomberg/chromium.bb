@@ -1,16 +1,15 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import base64
-import cgi
 import json
 import os
 
+import six
+
 from pylib.base import base_test_result
 import requests  # pylint: disable=import-error
-
-# Comes from luci/resultdb/pbutil/test_result.go
-MAX_REPORT_LEN = 4 * 1024
 
 # Maps base_test_results to the luci test-result.proto.
 # https://godoc.org/go.chromium.org/luci/resultdb/proto/v1#TestStatus
@@ -81,26 +80,11 @@ class ResultSinkClient(object):
                           base_test_result.ResultType.SKIP)
     result_db_status = RESULT_MAP[status]
 
-    # Slightly smaller to allow addition of <pre> tags and message.
-    report_check_size = MAX_REPORT_LEN - 45
-    test_log_escaped = cgi.escape(test_log)
-    if len(test_log_escaped) > report_check_size:
-      test_log_formatted = ('<pre>' + test_log_escaped[:report_check_size] +
-                            '...Full output in Artifact.</pre>')
-    else:
-      test_log_formatted = '<pre>' + test_log_escaped + '</pre>'
-
     tr = {
-        # Duration must be formatted to avoid scientific notation in case
-        # number is too small or too large. Result_db takes seconds, not ms.
-        'duration':
-        '%.9fs' % (duration / 1000.0),
         'expected':
         expected,
         'status':
         result_db_status,
-        'summaryHtml':
-        test_log_formatted,
         'tags': [
             {
                 'key': 'test_name',
@@ -115,12 +99,21 @@ class ResultSinkClient(object):
         'testId':
         test_id,
     }
+
     artifacts = artifacts or {}
-    if len(test_log_escaped) > report_check_size:
+    if test_log:
       # Upload the original log without any modifications.
-      artifacts.update({'Test Log': {'contents': base64.b64encode(test_log)}})
+      b64_log = six.ensure_str(base64.b64encode(six.ensure_binary(test_log)))
+      artifacts.update({'Test Log': {'contents': b64_log}})
+      tr['summaryHtml'] = '<text-artifact artifact-id="Test Log" />'
     if artifacts:
       tr['artifacts'] = artifacts
+
+    if duration is not None:
+      # Duration must be formatted to avoid scientific notation in case
+      # number is too small or too large. Result_db takes seconds, not ms.
+      # Need to use float() otherwise it does substitution first then divides.
+      tr['duration'] = '%.9fs' % float(duration / 1000.0)
 
     if test_file and str(test_file).startswith('//'):
       tr['testMetadata'] = {

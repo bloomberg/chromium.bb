@@ -114,9 +114,9 @@ enum DistanceMetric {
   VIEWS_DISTANCE_MAX = 0x2000
 };
 
-// The type of a dialog content element. TEXT should be used for Labels or other
-// elements that only show text. Otherwise CONTROL should be used.
-enum DialogContentType { CONTROL, TEXT };
+// The type of a dialog content element. kText should be used for Labels or
+// other elements that only show text. Otherwise kControl should be used.
+enum class DialogContentType { kControl, kText };
 
 enum class Emphasis {
   // No emphasis needed for shadows, corner radius, etc.
@@ -138,6 +138,8 @@ class VIEWS_EXPORT LayoutProvider {
   virtual ~LayoutProvider();
 
   // This should never return nullptr.
+  // TODO(crbug.com/1200584): Replace callers of this with
+  // View::GetLayoutProvider().
   static LayoutProvider* Get();
 
   // Calculates the control height based on the |font|'s reported glyph height,
@@ -176,11 +178,6 @@ class VIEWS_EXPORT LayoutProvider {
 
   // Returns the shadow elevation metric for the given emphasis.
   virtual int GetShadowElevationMetric(Emphasis emphasis) const;
-
-  // Creates shadows for the given elevation. Use GetShadowElevationMetric for
-  // the appropriate elevation.
-  virtual gfx::ShadowValues MakeShadowValues(int elevation,
-                                             SkColor color) const;
 
  protected:
   static constexpr int kSmallDialogWidth = 320;

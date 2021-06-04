@@ -5,6 +5,7 @@
 #include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/presentation/chrome_local_presentation_manager_factory.h"
@@ -58,6 +59,17 @@ constexpr char kPresentationId[] = "presentation_id";
 MATCHER_P(InfoEquals, expected, "") {
   return expected.url == arg.url && expected.id == arg.id;
 }
+
+#if !defined(OS_ANDROID)
+// Set the user preference for |origin| to prefer tab mirroring.
+void EnableTabMirroringForOrigin(PrefService* prefs,
+                                 const std::string& origin) {
+  ListPrefUpdate update(prefs,
+                        media_router::prefs::kMediaRouterTabMirroringSources);
+  if (!base::Contains(update->GetList(), base::Value(origin)))
+    update->Append(origin);
+}
+#endif
 
 }  // namespace
 
@@ -272,7 +284,8 @@ class PresentationServiceDelegateImplIncognitoTest
  protected:
   content::WebContents* GetWebContents() override {
     if (!off_the_record_web_contents_) {
-      Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+      Profile* incognito_profile =
+          profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
       off_the_record_web_contents_ =
           content::WebContentsTester::CreateTestWebContents(incognito_profile,
                                                             nullptr);
@@ -742,7 +755,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToPresentation) {
   });
   std::vector<mojom::RouteMessagePtr> messages;
   messages.emplace_back(mojom::RouteMessage::New(
-      mojom::RouteMessage::Type::TEXT, "beta", base::nullopt));
+      mojom::RouteMessage::Type::TEXT, "beta", absl::nullopt));
   proxy_message_observer->OnMessagesReceived(std::move(messages));
   base::RunLoop().RunUntilIdle();
 
@@ -761,12 +774,7 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   const std::string kPresentationId("auto-join");
   ASSERT_TRUE(IsAutoJoinPresentationId(kPresentationId));
 
-  // Set the user preference for |origin| to prefer tab mirroring.
-  {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(std::make_unique<base::Value>(origin));
-  }
+  EnableTabMirroringForOrigin(profile()->GetPrefs(), origin);
 
   auto& mock_local_manager = GetMockLocalPresentationManager();
   EXPECT_CALL(mock_local_manager, IsLocalPresentation(kPresentationId))
@@ -814,12 +822,9 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   const std::string kPresentationId("auto-join");
   ASSERT_TRUE(IsAutoJoinPresentationId(kPresentationId));
 
-  // Set the user preference for |origin| to prefer tab mirroring.
-  {
-    ListPrefUpdate update(profile()->GetPrimaryOTRProfile()->GetPrefs(),
-                          prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(std::make_unique<base::Value>(origin));
-  }
+  EnableTabMirroringForOrigin(
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)->GetPrefs(),
+      origin);
 
   auto& mock_local_manager = GetMockLocalPresentationManager();
   EXPECT_CALL(mock_local_manager, IsLocalPresentation(kPresentationId))
@@ -829,8 +834,8 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   // profile.
   const base::ListValue* non_off_the_record_origins =
       profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
-  EXPECT_EQ(non_off_the_record_origins->Find(base::Value(origin)),
-            non_off_the_record_origins->end());
+  EXPECT_FALSE(base::Contains(non_off_the_record_origins->GetList(),
+                              base::Value(origin)));
 
   // Auto-join requests should be rejected.
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
@@ -847,8 +852,9 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
 
   // Remove the user preference for |origin| in OffTheRecord.
   {
-    ListPrefUpdate update(profile()->GetPrimaryOTRProfile()->GetPrefs(),
-                          prefs::kMediaRouterTabMirroringSources);
+    ListPrefUpdate update(
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)->GetPrefs(),
+        prefs::kMediaRouterTabMirroringSources);
     update->Remove(base::Value(origin), nullptr);
   }
 

@@ -227,6 +227,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_TUNE_VMAF
                                         AV1E_SET_VMAF_MODEL_PATH,
 #endif
+                                        AV1E_SET_DV_COST_UPD_FREQ,
+                                        AV1E_SET_PARTITION_INFO_PATH,
                                         0 };
 
 const arg_def_t *main_args[] = { &g_av1_codec_arg_defs.help,
@@ -422,6 +424,8 @@ const arg_def_t *av1_ctrl_args[] = {
 #if CONFIG_TUNE_VMAF
   &g_av1_codec_arg_defs.vmaf_model_path,
 #endif
+  &g_av1_codec_arg_defs.dv_cost_upd_freq,
+  &g_av1_codec_arg_defs.partition_info_path,
   NULL,
 };
 
@@ -505,6 +509,7 @@ struct stream_config {
 #if CONFIG_TUNE_VMAF
   const char *vmaf_model_path;
 #endif
+  const char *partition_info_path;
   aom_color_range_t color_range;
 };
 
@@ -681,6 +686,8 @@ static void parse_global_config(struct AvxEncoderConfig *global, char ***argv) {
 
   if (global->usage == AOM_USAGE_REALTIME && global->passes > 1) {
     warn("Enforcing one-pass encoding in realtime mode\n");
+    if (global->pass > 1)
+      die("Error: Invalid --pass=%d for one-pass encoding\n", global->pass);
     global->passes = 1;
   }
 
@@ -853,9 +860,9 @@ static void set_config_arg_key_vals(struct stream_config *config,
   }
 
   /* Point either to the next free element or the first instance of this
-   * control.
+   * option.
    */
-  for (j = 0; j < config->arg_ctrl_cnt; j++)
+  for (j = 0; j < config->arg_key_val_cnt; j++)
     if (strcmp(name, config->arg_key_vals[j][0]) == 0) break;
 
   /* Update/insert */
@@ -1071,6 +1078,9 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &g_av1_codec_arg_defs.vmaf_model_path, argi)) {
       config->vmaf_model_path = arg.val;
 #endif
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.partition_info_path,
+                         argi)) {
+      config->partition_info_path = arg.val;
     } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_fixed_qp_offsets,
                          argi)) {
       config->cfg.use_fixed_qp_offsets = arg_parse_uint(&arg);
@@ -1301,7 +1311,6 @@ static void show_stream_config(struct stream_state *stream,
     SHOW_PARAMS(disable_intrabc);
     SHOW_PARAMS(disable_cfl);
     SHOW_PARAMS(disable_smooth_intra);
-    SHOW_PARAMS(disable_diagonal_intra);
     SHOW_PARAMS(disable_filter_intra);
     SHOW_PARAMS(disable_dual_filter);
     SHOW_PARAMS(disable_intra_angle_delta);
@@ -1437,6 +1446,11 @@ static void initialize_encoder(struct stream_state *stream,
                                   stream->config.vmaf_model_path);
   }
 #endif
+  if (stream->config.partition_info_path) {
+    AOM_CODEC_CONTROL_TYPECHECKED(&stream->encoder,
+                                  AV1E_SET_PARTITION_INFO_PATH,
+                                  stream->config.partition_info_path);
+  }
 
   if (stream->config.film_grain_filename) {
     AOM_CODEC_CONTROL_TYPECHECKED(&stream->encoder, AV1E_SET_FILM_GRAIN_TABLE,
@@ -1471,6 +1485,33 @@ static void initialize_encoder(struct stream_state *stream,
     }
   }
 #endif
+}
+
+// Convert the input image 'img' to a monochrome image. The Y plane of the
+// output image is a shallow copy of the Y plane of the input image, therefore
+// the input image must remain valid for the lifetime of the output image. The U
+// and V planes of the output image are set to null pointers. The output image
+// format is AOM_IMG_FMT_I420 because libaom does not have AOM_IMG_FMT_I400.
+static void convert_image_to_monochrome(const struct aom_image *img,
+                                        struct aom_image *monochrome_img) {
+  *monochrome_img = *img;
+  monochrome_img->fmt = AOM_IMG_FMT_I420;
+  if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+    monochrome_img->fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+  }
+  monochrome_img->monochrome = 1;
+  monochrome_img->csp = AOM_CSP_UNKNOWN;
+  monochrome_img->x_chroma_shift = 1;
+  monochrome_img->y_chroma_shift = 1;
+  monochrome_img->planes[AOM_PLANE_U] = NULL;
+  monochrome_img->planes[AOM_PLANE_V] = NULL;
+  monochrome_img->stride[AOM_PLANE_U] = 0;
+  monochrome_img->stride[AOM_PLANE_V] = 0;
+  monochrome_img->sz = 0;
+  monochrome_img->bps = (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 16 : 8;
+  monochrome_img->img_data = NULL;
+  monochrome_img->img_data_owner = 0;
+  monochrome_img->self_allocd = 0;
 }
 
 static void encode_frame(struct stream_state *stream,
@@ -1550,6 +1591,12 @@ static void encode_frame(struct stream_state *stream,
                       "To enable, configure with --enable-libyuv\n",
                       stream->index);
 #endif
+  }
+
+  struct aom_image monochrome_img;
+  if (img && cfg->monochrome) {
+    convert_image_to_monochrome(img, &monochrome_img);
+    img = &monochrome_img;
   }
 
   aom_usec_timer_start(&timer);
@@ -1941,8 +1988,10 @@ int main(int argc, const char **argv_) {
                 stream->config.cfg.g_profile = 1;
                 profile_updated = 1;
               }
-            } else if (input.bit_depth == 12 || input.fmt == AOM_IMG_FMT_I422 ||
-                       input.fmt == AOM_IMG_FMT_I42216) {
+            } else if (input.bit_depth == 12 ||
+                       ((input.fmt == AOM_IMG_FMT_I422 ||
+                         input.fmt == AOM_IMG_FMT_I42216) &&
+                        !stream->config.cfg.monochrome)) {
               stream->config.cfg.g_profile = 2;
               profile_updated = 1;
             }

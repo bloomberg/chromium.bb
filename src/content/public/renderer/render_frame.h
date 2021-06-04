@@ -10,22 +10,22 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_update.h"
+
+class GURL;
 
 namespace blink {
 namespace scheduler {
@@ -42,6 +42,7 @@ class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
+class WebView;
 }  // namespace blink
 
 namespace gfx {
@@ -151,8 +152,13 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Get the routing ID of the frame.
   virtual int GetRoutingID() = 0;
 
+  // Returns the associated WebView.
+  virtual blink::WebView* GetWebView() = 0;
+  virtual const blink::WebView* GetWebView() const = 0;
+
   // Returns the associated WebFrame.
   virtual blink::WebLocalFrame* GetWebFrame() = 0;
+  virtual const blink::WebLocalFrame* GetWebFrame() const = 0;
 
   // Gets WebKit related preferences associated with this frame.
   virtual const blink::web_pref::WebPreferences& GetBlinkPreferences() = 0;

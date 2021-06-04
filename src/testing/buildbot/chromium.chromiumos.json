@@ -372,44 +372,6 @@
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
-        "args": [
-          "--stop-ui",
-          "--dbus-stub",
-          "--gtest_filter=SplitViewTest.SplitViewResize"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "kvm": "1",
-              "os": "Ubuntu-18.04",
-              "pool": "chromium.tests"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "cros_vm",
-              "path": "magic_cros_vm_cache"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "interactive_ui_tests",
-        "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -828,6 +790,10 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
+        "args": [
+          "--stop-ui",
+          "--test-launcher-jobs=1"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1149,7 +1115,7 @@
             ]
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
+          "shards": 18
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
@@ -1270,10 +1236,39 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--board=amd64-generic",
+          "--use-vm"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "cc_unittests_amd64-generic",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cc_unittests",
+        "test_id_prefix": "ninja://cc:cc_unittests/"
+      },
+      {
+        "args": [
+          "--board=amd64-generic",
+          "--use-vm"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "lacros_smoke_tast_tests_amd64-generic",
         "resultdb": {
           "enable": true
         },
@@ -1283,20 +1278,50 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "lacros_smoke_tast_tests_amd64_generic",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_smoke_tast_tests_amd64_generic/"
+        "test": "lacros_smoke_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_smoke_tast_tests/"
+      },
+      {
+        "args": [
+          "--board=amd64-generic",
+          "--use-vm"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "ozone_unittests_amd64-generic",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ozone_unittests",
+        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/"
       }
+    ]
+  },
+  "lacros-arm-generic-rel": {
+    "additional_compile_targets": [
+      "chrome"
     ]
   },
   "linux-ash-chromium-generator-rel": {
     "additional_compile_targets": [
-      "chrome"
+      "chromiumos_preflight",
+      "gen_linux_ash_chromium_cipd_yaml"
     ]
   },
   "linux-cfm-rel": {
@@ -1410,6 +1435,23 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
       },
       {
         "merge": {
@@ -2972,7 +3014,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2984,7 +3026,7 @@
   },
   "linux-chromeos-rel": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
@@ -3062,6 +3104,24 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -4718,12 +4778,12 @@
   },
   "linux-lacros-rel": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -4761,7 +4821,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.components_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter"
         ],
         "merge": {
           "args": [],
@@ -4801,7 +4861,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.interactive_ui_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -4855,6 +4915,26 @@
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "sync_integration_tests",
+        "test_id_prefix": "ninja://chrome/test:sync_integration_tests/"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4873,7 +4953,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -5125,7 +5205,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -5285,7 +5365,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.components_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter"
         ],
         "merge": {
           "args": [],
@@ -5322,7 +5402,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.content_browsertests.filter"
         ],
         "merge": {
           "args": [],
@@ -5621,7 +5701,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.interactive_ui_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -6152,7 +6232,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-SingleClientSessionsSyncTestWithFaviconTestServer.ShouldDeleteOnDemandIconsOnSessionsDisabled"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter"
         ],
         "merge": {
           "args": [],
@@ -6223,7 +6303,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter"
         ],
         "merge": {
           "args": [],

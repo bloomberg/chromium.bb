@@ -327,7 +327,7 @@ void LastDownloadFinder::OnMetadataQuery(
                        weak_ptr_factory_.GetWeakPtr(), profile));
   } else {
     // else wait until history is loaded.
-    history_service_observer_.Add(history_service);
+    history_service_observations_.AddObservation(history_service);
   }
 }
 
@@ -379,10 +379,9 @@ void LastDownloadFinder::RemoveProfileAndReportIfDone(
 void LastDownloadFinder::ReportResults() {
   DCHECK(profile_states_.empty());
 
-  std::unique_ptr<ClientIncidentReport_DownloadDetails> binary_details =
-      nullptr;
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> binary_details;
   std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
-      non_binary_details = nullptr;
+      non_binary_details;
 
   if (details_) {
     binary_details =
@@ -437,7 +436,7 @@ void LastDownloadFinder::OnHistoryServiceLoaded(
 
 void LastDownloadFinder::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
-  history_service_observer_.Remove(history_service);
+  history_service_observations_.RemoveObservation(history_service);
 }
 
 }  // namespace safe_browsing

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -20,9 +19,10 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 
 class WilcoDtcSupportdNetworkContext {
  public:
@@ -57,12 +57,12 @@ class WilcoDtcSupportdNetworkContextImpl
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
   void OnCertificateRequested(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           cert_responder) override;
   void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       uint32_t request_id,
       const GURL& url,
       bool first_auth_attempt,
@@ -96,6 +96,6 @@ class WilcoDtcSupportdNetworkContextImpl
   DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdNetworkContextImpl);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_NETWORK_CONTEXT_H_

@@ -34,7 +34,8 @@ namespace paint_preview {
 
 namespace {
 
-constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;  // 5 MB.
+constexpr size_t kMaxPerCaptureSizeBytes = 8 * 1000L * 1000L;       // 8 MB.
+constexpr uint64_t kMaxDecodedImageSizeBytes = 10 * 1000L * 1000L;  // 10 MB.
 
 #if defined(OS_ANDROID)
 void JavaBooleanCallbackAdapter(base::OnceCallback<void(bool)> callback,
@@ -263,7 +264,7 @@ void PaintPreviewTabService::InitializeCache(
 void PaintPreviewTabService::CaptureTabInternal(
     base::WeakPtr<TabServiceTask> task,
     bool accessibility_enabled,
-    const base::Optional<base::FilePath>& file_path) {
+    const absl::optional<base::FilePath>& file_path) {
   if (!task) {
     return;
   }
@@ -303,6 +304,8 @@ void PaintPreviewTabService::CaptureTabInternal(
   capture_params.clip_rect = gfx::Rect();
   capture_params.capture_links = true;
   capture_params.max_per_capture_size = kMaxPerCaptureSizeBytes;
+  capture_params.max_decoded_image_size_bytes = kMaxDecodedImageSizeBytes;
+  capture_params.skip_accelerated_content = true;
   CapturePaintPreview(capture_params,
                       base::BindOnce(&PaintPreviewTabService::OnCaptured,
                                      weak_ptr_factory_.GetWeakPtr(), task));

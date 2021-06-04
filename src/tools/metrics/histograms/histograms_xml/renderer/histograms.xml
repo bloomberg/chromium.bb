@@ -230,7 +230,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameBlinkCaptureDuration"
-    units="ms" expires_after="2021-08-29">
+    units="ms" expires_after="2021-10-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -251,7 +251,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration"
-    units="ms" expires_after="2021-08-29">
+    units="ms" expires_after="2021-10-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -269,6 +269,40 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records a boolean indicating whether a capture for a subframe succeeded.
   </summary>
+</histogram>
+
+<histogram name="Renderer.ProcessLifetime.{Resolution}" units="ms"
+    expires_after="2021-08-29">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The total time for which a renderer process was live. Recorded when the
+    browser identifies the process as having gone away.
+  </summary>
+  <token key="Resolution">
+    <variant name="HighResolution" summary="Tops out at 5 minutes."/>
+    <variant name="LowResolution" summary="Tops out at 24 hours"/>
+  </token>
+</histogram>
+
+<histogram name="Renderer.TotalCPUUse{Lifetime}" units="ms"
+    expires_after="2022-05-06">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Total CPU utilization of a renderer, read just before the process is about
+    to go away. Total CPU time can exceed the total process lifetime. This is
+    because CPU use of N seconds can be spread out over M threads. Example: A
+    Renderer having 4 threads active for a period of 1 minute in parallel will
+    use 4 minutes of CPU time. Not recorded on Android.
+  </summary>
+  <token key="Lifetime">
+    <variant name="" summary="Applies to all lifetimes."/>
+    <variant name=".LongLived"
+        summary="Renderer process was alive for more than a minute."/>
+    <variant name=".ShortLived"
+        summary="Renderer process was alive for up to one minute."/>
+  </token>
 </histogram>
 
 <histogram name="Renderer.ViewportZoomBugCount" enum="BooleanHit"
@@ -292,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="RendererScheduler.QueueingDurationPerQueueType"
-    units="ms" expires_after="2021-08-09">
+    units="ms" expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="RendererScheduler.QueueType" -->
 
   <owner>kdillon@chromium.org</owner>
@@ -342,6 +376,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskCountPerFrameType"
     enum="RendererSchedulerFrameType2" expires_after="M85">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per frame type. Used to monitor
@@ -368,6 +405,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskCountPerQueueType"
     enum="RendererSchedulerTaskQueueType" expires_after="M77">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
@@ -397,6 +437,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskCPUDurationPerThreadType2"
     enum="RendererSchedulerThreadType" expires_after="M85">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Total cpu time (reported in full seconds) of renderer tasks split by per
@@ -433,6 +476,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskDurationPerFrameType3"
     enum="RendererSchedulerFrameType2" expires_after="M85">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Total duration (reported in full seconds) of renderer per-frame tasks split
@@ -450,6 +496,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskDurationPerQueueType3"
     enum="RendererSchedulerTaskQueueType" expires_after="M85">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <owner>scheduler-dev@chromium.org</owner>
   <summary>
@@ -520,6 +569,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.TaskDurationPerUseCase2"
     enum="RendererSchedulerTaskUseCase" expires_after="M77">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <owner>farahcharab@chromium.org</owner>
   <summary>
@@ -597,7 +649,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="RendererScheduler.UpdateForSameDocumentNavigationCount"
     enum="SinglePageAppNavigationType" expires_after="M85">
-  <owner>maxlg@chromium.org</owner>
+  <owner>npm@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The count of same-document-navigations split by whether it is the
     same-document backward/forward navigation, history API navigation, or other

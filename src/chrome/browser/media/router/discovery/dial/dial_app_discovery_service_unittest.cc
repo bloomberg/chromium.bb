@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
@@ -101,7 +100,7 @@ class DialAppDiscoveryServiceTest : public ::testing::Test {
   }
 
   void OnDialAppInfoFetchError(DialAppDiscoveryService::PendingRequest* request,
-                               base::Optional<int> response_code,
+                               absl::optional<int> response_code,
                                const std::string& error_text) {
     request->OnDialAppInfoFetchError(error_text, response_code);
   }
@@ -141,7 +140,7 @@ TEST_F(DialAppDiscoveryServiceTest,
 
   EXPECT_CALL(*this, OnAppInfoFailure(sink_id, _,
                                       DialAppInfoResultCode::kNetworkError));
-  OnDialAppInfoFetchError(request, base::nullopt, "Temporarily throttled");
+  OnDialAppInfoFetchError(request, absl::nullopt, "Temporarily throttled");
 }
 
 TEST_F(DialAppDiscoveryServiceTest, TestFetchDialAppInfoFetchURLError) {

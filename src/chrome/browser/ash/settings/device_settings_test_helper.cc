@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
@@ -12,7 +14,7 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
@@ -56,7 +58,7 @@ void DeviceSettingsTestBase::SetUp() {
       base::WrapUnique(user_manager_));
   owner_key_util_ = new ownership::MockOwnerKeyUtil();
   device_settings_service_ = std::make_unique<DeviceSettingsService>();
-  dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
+  chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
   chromeos::UserDataAuthClient::InitializeFake();
   chromeos::CryptohomeMiscClient::InitializeFake();
   PowerManagerClient::InitializeFake();
@@ -74,7 +76,7 @@ void DeviceSettingsTestBase::SetUp() {
   device_settings_service_->SetSessionManager(&session_manager_client_,
                                               owner_key_util_);
 
-  profile_.reset(new TestingProfile());
+  profile_ = std::make_unique<TestingProfile>();
 }
 
 void DeviceSettingsTestBase::TearDown() {
@@ -87,7 +89,7 @@ void DeviceSettingsTestBase::TearDown() {
   PowerManagerClient::Shutdown();
   chromeos::CryptohomeMiscClient::Shutdown();
   chromeos::UserDataAuthClient::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
+  chromeos::ConciergeClient::Shutdown();
   device_policy_.reset();
   base::RunLoop().RunUntilIdle();
   profile_.reset();

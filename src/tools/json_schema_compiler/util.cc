@@ -26,22 +26,32 @@ bool ReportError(const base::Value& from,
 }  // namespace
 
 bool PopulateItem(const base::Value& from, int* out) {
-  return from.GetAsInteger(out);
+  if (out && from.is_int()) {
+    *out = from.GetInt();
+    return true;
+  }
+  return from.is_int();
 }
 
 bool PopulateItem(const base::Value& from, int* out, std::u16string* error) {
-  if (!from.GetAsInteger(out))
+  if (!PopulateItem(from, out))
     return ReportError(from, base::Value::Type::INTEGER, error);
   return true;
 }
 
 bool PopulateItem(const base::Value& from, bool* out) {
-  return from.GetAsBoolean(out);
+  if (out && from.is_bool()) {
+    *out = from.GetBool();
+    return true;
+  }
+  return from.is_bool();
 }
 
 bool PopulateItem(const base::Value& from, bool* out, std::u16string* error) {
-  if (!from.GetAsBoolean(out))
+  if (!from.is_bool())
     return ReportError(from, base::Value::Type::BOOLEAN, error);
+  if (out)
+    *out = from.GetBool();
   return true;
 }
 
@@ -84,14 +94,14 @@ bool PopulateItem(const base::Value& from,
 }
 
 bool PopulateItem(const base::Value& from, std::unique_ptr<base::Value>* out) {
-  *out = from.CreateDeepCopy();
+  *out = base::Value::ToUniquePtrValue(from.Clone());
   return true;
 }
 
 bool PopulateItem(const base::Value& from,
                   std::unique_ptr<base::Value>* out,
                   std::u16string* error) {
-  *out = from.CreateDeepCopy();
+  *out = base::Value::ToUniquePtrValue(from.Clone());
   return true;
 }
 
@@ -123,7 +133,7 @@ void AddItemToList(const bool from, base::ListValue* out) {
 }
 
 void AddItemToList(const double from, base::ListValue* out) {
-  out->AppendDouble(from);
+  out->Append(from);
 }
 
 void AddItemToList(const std::string& from, base::ListValue* out) {
@@ -136,7 +146,7 @@ void AddItemToList(const std::vector<uint8_t>& from, base::ListValue* out) {
 
 void AddItemToList(const std::unique_ptr<base::Value>& from,
                    base::ListValue* out) {
-  out->Append(from->CreateDeepCopy());
+  out->Append(from->Clone());
 }
 
 void AddItemToList(const std::unique_ptr<base::DictionaryValue>& from,

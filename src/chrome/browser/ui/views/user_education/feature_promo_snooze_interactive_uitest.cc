@@ -4,13 +4,13 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/user_education/feature_promo_snooze_service.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_bubble_owner_impl.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/types/event_type.h"
@@ -113,9 +114,9 @@ class FeaturePromoSnoozeInteractiveTest : public InProcessBrowserTest {
 
   void SetSnoozePrefs(const base::Feature& iph_feature,
                       bool is_dismissed,
-                      base::Optional<int> show_count,
+                      absl::optional<int> show_count,
                       int snooze_count,
-                      base::Optional<base::Time> last_show_time,
+                      absl::optional<base::Time> last_show_time,
                       base::Time last_snooze_time,
                       base::TimeDelta last_snooze_duration) {
     FeaturePromoSnoozeService::SnoozeData data;
@@ -208,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(AttemptTabGroupsIPH(true));
   base::Time show_time_max = base::Time::Now();
 
-  FeaturePromoBubbleView* promo = promo_controller_->promo_bubble_for_testing();
+  FeaturePromoBubbleView* promo =
+      FeaturePromoBubbleOwnerImpl::GetInstance()->bubble_for_testing();
   ClickButton(GetDismissButtonForTesting(promo));
   CheckSnoozePrefs(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
                    /* is_dismiss */ true,
@@ -226,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(AttemptTabGroupsIPH(true));
   base::Time show_time_max = base::Time::Now();
 
-  FeaturePromoBubbleView* promo = promo_controller_->promo_bubble_for_testing();
+  FeaturePromoBubbleView* promo =
+      FeaturePromoBubbleOwnerImpl::GetInstance()->bubble_for_testing();
 
   base::Time snooze_time_min = base::Time::Now();
   ClickButton(GetSnoozeButtonForTesting(promo));
@@ -259,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest, CanReSnooze) {
   ASSERT_NO_FATAL_FAILURE(AttemptTabGroupsIPH(true));
   base::Time show_time_max = base::Time::Now();
 
-  FeaturePromoBubbleView* promo = promo_controller_->promo_bubble_for_testing();
+  FeaturePromoBubbleView* promo =
+      FeaturePromoBubbleOwnerImpl::GetInstance()->bubble_for_testing();
 
   base::Time snooze_time_min = base::Time::Now();
   ClickButton(GetSnoozeButtonForTesting(promo));
@@ -331,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(AttemptTabGroupsIPH(true));
   base::Time show_time_max = base::Time::Now();
 
-  FeaturePromoBubbleView* promo = promo_controller_->promo_bubble_for_testing();
+  FeaturePromoBubbleView* promo =
+      FeaturePromoBubbleOwnerImpl::GetInstance()->bubble_for_testing();
   promo->GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kEscKeyPressed);
   CheckSnoozePrefs(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
@@ -352,9 +357,9 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
   base::Time snooze_time = base::Time::Now() - snooze_duration;
   SetSnoozePrefs(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
                  /* is_dismiss */ false,
-                 /* show_count */ base::nullopt,
+                 /* show_count */ absl::nullopt,
                  /* snooze_count */ 1,
-                 /* last_show_time */ base::nullopt,
+                 /* last_show_time */ absl::nullopt,
                  /* last_snooze_time */ snooze_time,
                  /* last_snooze_duration */ snooze_duration);
 

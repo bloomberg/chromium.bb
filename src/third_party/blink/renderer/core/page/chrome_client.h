@@ -26,13 +26,13 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/paint/paint_image.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
@@ -135,14 +135,17 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   // For non-composited WebViews that exist to contribute to a "parent" WebView
   // painting. This informs the client of the area that needs to be redrawn.
-  virtual void InvalidateRect(const IntRect& update_rect) = 0;
+  virtual void InvalidateContainer() = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.
   virtual IntRect ViewportToScreen(const IntRect&,
                                    const LocalFrameView*) const = 0;
 
+  void ScheduleAnimation(const LocalFrameView* view) {
+    ScheduleAnimation(view, base::TimeDelta());
+  }
   virtual void ScheduleAnimation(const LocalFrameView*,
-                                 base::TimeDelta = base::TimeDelta()) = 0;
+                                 base::TimeDelta delay) = 0;
 
   // Adjusts |pending_rect| for the minimum window size and |frame|'s screen
   // and returns the adjusted value.
@@ -338,7 +341,19 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   void MouseDidMoveOverElement(LocalFrame&,
                                const HitTestLocation&,
                                const HitTestResult&);
-  virtual void SetToolTip(LocalFrame&, const String&, TextDirection) = 0;
+  virtual void UpdateTooltipUnderCursor(LocalFrame&,
+                                        const String&,
+                                        TextDirection) = 0;
+  void ElementFocusedFromKeypress(LocalFrame&, const Element*);
+  // This function allows us to trigger a tooltip to show from a keypress. The
+  // tooltip will be positioned in the gfx::Rect passed by parameter. That rect
+  // corresponds to the focused element's bounds, which are in viewport
+  // coordinates at this point. They will be converted to enclosed DIPS before
+  // being passed to the browser process.
+  virtual void UpdateTooltipFromKeyboard(LocalFrame&,
+                                         const String&,
+                                         TextDirection,
+                                         const gfx::Rect&) = 0;
   void ClearToolTip(LocalFrame&);
   String GetLastToolTipTextForTesting() {
     return current_tool_tip_text_for_test_;
@@ -562,7 +577,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   bool CanOpenUIElementIfDuringPageDismissal(Frame& main_frame,
                                              UIElementType,
                                              const String& message);
-  void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
+  void UpdateTooltipUnderCursor(LocalFrame&,
+                                const HitTestLocation&,
+                                const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;
   PhysicalOffset last_tool_tip_point_;
@@ -571,8 +588,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // the tooltip text that is cleared when ClearToolTip is called.
   String current_tool_tip_text_for_test_;
 
-  FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
-  FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipEmptyString);
+  FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, UpdateTooltipUnderCursorFlood);
+  FRIEND_TEST_ALL_PREFIXES(ChromeClientTest,
+                           UpdateTooltipUnderCursorEmptyString);
 };
 
 }  // namespace blink

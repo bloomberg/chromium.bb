@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -16,12 +16,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
-#include "device/fido/bio/enrollment_handler.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/credential_management_handler.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
 #include "device/fido/reset_request_handler.h"
 #include "device/fido/set_pin_request_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -116,7 +117,7 @@ void SecurityKeysPINHandler::HandleStartSetPIN(const base::ListValue* args) {
 
 void SecurityKeysPINHandler::OnGatherPIN(uint32_t current_min_pin_length,
                                          uint32_t new_min_pin_length,
-                                         base::Optional<int64_t> num_retries) {
+                                         absl::optional<int64_t> num_retries) {
   DCHECK_EQ(State::kStartSetPIN, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -421,9 +422,9 @@ void SecurityKeysCredentialHandler::OnCredentialManagementReady() {
 
 void SecurityKeysCredentialHandler::OnHaveCredentials(
     device::CtapDeviceResponseCode status,
-    base::Optional<std::vector<device::AggregatedEnumerateCredentialsResponse>>
+    absl::optional<std::vector<device::AggregatedEnumerateCredentialsResponse>>
         responses,
-    base::Optional<size_t> remaining_credentials) {
+    absl::optional<size_t> remaining_credentials) {
   DCHECK_EQ(State::kGettingCredentials, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(credential_management_);
@@ -583,6 +584,11 @@ void SecurityKeysBioEnrollmentHandler::RegisterMessages() {
       base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleProvidePIN,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollGetSensorInfo",
+      base::BindRepeating(
+          &SecurityKeysBioEnrollmentHandler::HandleGetSensorInfo,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "securityKeyBioEnrollEnumerate",
       base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleEnumerate,
                           base::Unretained(this)));
@@ -619,51 +625,54 @@ void SecurityKeysBioEnrollmentHandler::Close() {
   provide_pin_cb_.Reset();
 }
 
-void SecurityKeysBioEnrollmentHandler::OnReady() {
+void SecurityKeysBioEnrollmentHandler::OnReady(
+    device::BioEnrollmentHandler::SensorInfo sensor_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bio_);
   DCHECK_EQ(state_, State::kGatherPIN);
   DCHECK(!callback_id_.empty());
   state_ = State::kReady;
+  sensor_info_ = std::move(sensor_info);
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value());
 }
 
 void SecurityKeysBioEnrollmentHandler::OnError(
-    device::BioEnrollmentStatus status) {
+    device::BioEnrollmentHandler::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   state_ = State::kNone;
 
-  int error;
+  int error_message;
   bool requires_pin_change = false;
-  switch (status) {
-    case device::BioEnrollmentStatus::kSoftPINBlock:
-      error = IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK;
+  using Error = device::BioEnrollmentHandler::Error;
+  switch (error) {
+    case Error::kAuthenticatorRemoved:
+      error_message = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED;
       break;
-    case device::BioEnrollmentStatus::kHardPINBlock:
-      error = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
+    case Error::kSoftPINBlock:
+      error_message = IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK;
       break;
-    case device::BioEnrollmentStatus::kAuthenticatorMissingBioEnrollment:
-      error = IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT;
+    case Error::kHardPINBlock:
+      error_message = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
       break;
-    case device::BioEnrollmentStatus::kNoPINSet:
+    case Error::kAuthenticatorMissingBioEnrollment:
+      error_message = IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT;
+      break;
+    case Error::kNoPINSet:
       requires_pin_change = true;
-      error = IDS_SETTINGS_SECURITY_KEYS_BIO_NO_PIN;
+      error_message = IDS_SETTINGS_SECURITY_KEYS_BIO_NO_PIN;
       break;
-    case device::BioEnrollmentStatus::kAuthenticatorResponseInvalid:
-      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
+    case Error::kAuthenticatorResponseInvalid:
+      error_message = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
       break;
-    case device::BioEnrollmentStatus::kForcePINChange:
+    case Error::kForcePINChange:
       requires_pin_change = true;
-      error = IDS_SETTINGS_SECURITY_KEYS_FORCE_PIN_CHANGE;
-      break;
-    case device::BioEnrollmentStatus::kSuccess:
-      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED;
+      error_message = IDS_SETTINGS_SECURITY_KEYS_FORCE_PIN_CHANGE;
       break;
   }
 
   FireWebUIListener("security-keys-bio-enroll-error",
-                    base::Value(l10n_util::GetStringUTF8(error)),
+                    base::Value(l10n_util::GetStringUTF8(error_message)),
                     base::Value(requires_pin_change));
 
   // If |callback_id_| is not empty, there is an ongoing operation,
@@ -701,6 +710,23 @@ void SecurityKeysBioEnrollmentHandler::HandleProvidePIN(
   std::move(provide_pin_cb_).Run(args->GetList()[1].GetString());
 }
 
+void SecurityKeysBioEnrollmentHandler::HandleGetSensorInfo(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(1u, args->GetSize());
+  DCHECK_EQ(state_, State::kReady);
+  base::DictionaryValue response;
+  response.SetIntKey("maxTemplateFriendlyName",
+                     sensor_info_.max_template_friendly_name);
+  if (sensor_info_.max_samples_for_enroll) {
+    response.SetIntKey("maxSamplesForEnroll",
+                       *sensor_info_.max_samples_for_enroll);
+  }
+  ResolveJavascriptCallback(
+      base::Value(std::move(args->GetList()[0].GetString())),
+      std::move(response));
+}
+
 void SecurityKeysBioEnrollmentHandler::HandleEnumerate(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -715,7 +741,7 @@ void SecurityKeysBioEnrollmentHandler::HandleEnumerate(
 
 void SecurityKeysBioEnrollmentHandler::OnHaveEnumeration(
     device::CtapDeviceResponseCode code,
-    base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
+    absl::optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback_id_.empty());
   DCHECK_EQ(state_, State::kEnumerating);
@@ -766,7 +792,8 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
     std::vector<uint8_t> template_id) {
   DCHECK_EQ(state_, State::kEnrolling);
   DCHECK(!callback_id_.empty());
-  if (code == device::CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel) {
+  if (code == device::CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel ||
+      code == device::CtapDeviceResponseCode::kCtap2ErrFpDatabaseFull) {
     state_ = State::kReady;
     base::DictionaryValue d;
     d.SetIntKey("code", static_cast<int>(code));
@@ -776,7 +803,7 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
     return;
   }
   if (code != device::CtapDeviceResponseCode::kSuccess) {
-    OnError(device::BioEnrollmentStatus::kAuthenticatorResponseInvalid);
+    OnError(device::BioEnrollmentHandler::Error::kAuthenticatorResponseInvalid);
     return;
   }
   bio_->EnumerateTemplates(base::BindOnce(
@@ -787,13 +814,13 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
 void SecurityKeysBioEnrollmentHandler::OnHavePostEnrollmentEnumeration(
     std::vector<uint8_t> enrolled_template_id,
     device::CtapDeviceResponseCode code,
-    base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
+    absl::optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
   DCHECK_EQ(state_, State::kEnrolling);
   DCHECK(!callback_id_.empty());
   state_ = State::kReady;
   if (code != device::CtapDeviceResponseCode::kSuccess || !enrollments ||
       !base::Contains(*enrollments, enrolled_template_id)) {
-    OnError(device::BioEnrollmentStatus::kAuthenticatorResponseInvalid);
+    OnError(device::BioEnrollmentHandler::Error::kAuthenticatorResponseInvalid);
     return;
   }
 

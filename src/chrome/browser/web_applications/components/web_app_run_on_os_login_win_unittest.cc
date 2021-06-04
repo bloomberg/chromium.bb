@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
@@ -24,7 +25,7 @@ namespace web_app {
 
 namespace {
 
-constexpr char kAppTitle[] = {"app"};
+constexpr char16_t kAppTitle[] = u"app";
 }  // namespace
 
 class WebAppRunOnOsLoginWinTest : public WebAppTest {
@@ -41,7 +42,7 @@ class WebAppRunOnOsLoginWinTest : public WebAppTest {
   std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
     auto shortcut_info = std::make_unique<ShortcutInfo>();
     shortcut_info->extension_id = "app-id";
-    shortcut_info->title = base::UTF8ToUTF16(kAppTitle);
+    shortcut_info->title = kAppTitle;
     shortcut_info->profile_path = profile()->GetPath();
 
     gfx::ImageFamily image_family;
@@ -63,7 +64,7 @@ class WebAppRunOnOsLoginWinTest : public WebAppTest {
 
   std::vector<base::FilePath> GetShortcuts() {
     return internals::FindAppShortcutsByProfileAndTitle(
-        GetStartupFolder(), profile()->GetPath(), base::UTF8ToUTF16(kAppTitle));
+        GetStartupFolder(), profile()->GetPath(), kAppTitle);
   }
 
   void VerifyShortcutCreated() {
@@ -115,8 +116,7 @@ TEST_F(WebAppRunOnOsLoginWinTest, Unregister) {
   VerifyShortcutCreated();
 
   internals::UnregisterRunOnOsLogin(shortcut_info->extension_id,
-                                    profile()->GetPath(),
-                                    base::UTF8ToUTF16(kAppTitle));
+                                    profile()->GetPath(), kAppTitle);
   VerifyShortcutDeleted();
 }
 

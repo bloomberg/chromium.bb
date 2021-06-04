@@ -8,9 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -23,7 +25,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
@@ -34,9 +35,16 @@ MdTextButton::MdTextButton(PressedCallback callback,
                            const std::u16string& text,
                            int button_context)
     : LabelButton(std::move(callback), text, button_context) {
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
   SetShowInkDropWhenHotTracked(true);
+  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+      [](MdTextButton* host) {
+        return color_utils::DeriveDefaultIconColor(
+            host->label()->GetEnabledColor());
+      },
+      this));
+
   SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kLow));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -72,7 +80,7 @@ bool MdTextButton::GetProminent() const {
   return is_prominent_;
 }
 
-void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
+void MdTextButton::SetBgColorOverride(const absl::optional<SkColor>& color) {
   if (color == bg_color_override_)
     return;
   bg_color_override_ = color;
@@ -80,7 +88,7 @@ void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   OnPropertyChanged(&bg_color_override_, kPropertyEffectsNone);
 }
 
-base::Optional<SkColor> MdTextButton::GetBgColorOverride() const {
+absl::optional<SkColor> MdTextButton::GetBgColorOverride() const {
   return bg_color_override_;
 }
 
@@ -88,8 +96,8 @@ void MdTextButton::SetCornerRadius(float radius) {
   if (corner_radius_ == radius)
     return;
   corner_radius_ = radius;
-  SetInkDropSmallCornerRadius(corner_radius_);
-  SetInkDropLargeCornerRadius(corner_radius_);
+  ink_drop()->SetSmallCornerRadius(corner_radius_);
+  ink_drop()->SetLargeCornerRadius(corner_radius_);
   OnPropertyChanged(&corner_radius_, kPropertyEffectsPaint);
 }
 
@@ -100,10 +108,6 @@ float MdTextButton::GetCornerRadius() const {
 void MdTextButton::OnThemeChanged() {
   LabelButton::OnThemeChanged();
   UpdateColors();
-}
-
-SkColor MdTextButton::GetInkDropBaseColor() const {
-  return color_utils::DeriveDefaultIconColor(label()->GetEnabledColor());
 }
 
 void MdTextButton::StateChanged(ButtonState old_state) {
@@ -121,18 +125,18 @@ void MdTextButton::OnBlur() {
   UpdateColors();
 }
 
-void MdTextButton::SetEnabledTextColors(base::Optional<SkColor> color) {
+void MdTextButton::SetEnabledTextColors(absl::optional<SkColor> color) {
   LabelButton::SetEnabledTextColors(std::move(color));
   UpdateColors();
 }
 
 void MdTextButton::SetCustomPadding(
-    const base::Optional<gfx::Insets>& padding) {
+    const absl::optional<gfx::Insets>& padding) {
   custom_padding_ = padding;
   UpdatePadding();
 }
 
-base::Optional<gfx::Insets> MdTextButton::GetCustomPadding() const {
+absl::optional<gfx::Insets> MdTextButton::GetCustomPadding() const {
   return custom_padding_.value_or(CalculateDefaultPadding());
 }
 
@@ -253,16 +257,18 @@ void MdTextButton::UpdateBackgroundColor() {
 }
 
 void MdTextButton::UpdateColors() {
-  UpdateTextColor();
-  UpdateBackgroundColor();
-  SchedulePaint();
+  if (GetWidget()) {
+    UpdateTextColor();
+    UpdateBackgroundColor();
+    SchedulePaint();
+  }
 }
 
 BEGIN_METADATA(MdTextButton, LabelButton)
 ADD_PROPERTY_METADATA(bool, Prominent)
 ADD_PROPERTY_METADATA(float, CornerRadius)
-ADD_PROPERTY_METADATA(base::Optional<SkColor>, BgColorOverride)
-ADD_PROPERTY_METADATA(base::Optional<gfx::Insets>, CustomPadding)
+ADD_PROPERTY_METADATA(absl::optional<SkColor>, BgColorOverride)
+ADD_PROPERTY_METADATA(absl::optional<gfx::Insets>, CustomPadding)
 END_METADATA
 
 }  // namespace views

@@ -6,175 +6,186 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/history_clusters/core/memories_features.h"
-#include "services/data_decoder/public/cpp/data_decoder.h"
+#include "components/history_clusters/core/proto/clusters.pb.h"
+
+namespace history_clusters {
 
 namespace {
 
 const size_t kMaxExpectedResponseSize = 1024 * 1024;
 
-// Helpers to translate from |MemoriesVisit|s to |base::Value|; and from
-// |base::Value| to |mojom::MemoryPtr|s.
+// Also writes one line of debug information per visit to `debug_string`, if
+// the parameter is non-nullptr.
+proto::GetClustersRequest CreateRequestProto(
+    const std::vector<history::AnnotatedVisit>& visits,
+    absl::optional<DebugLoggerCallback> debug_logger) {
+  proto::GetClustersRequest request;
+  request.set_experiment_name(kRemoteModelEndpointExperimentName.Get());
 
-base::Value VisitToValue(const memories::MemoriesVisit& visit) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("visitId",
-              base::Value(static_cast<double>(visit.visit_row.visit_id)));
-  dict.SetKey("url", base::Value(visit.url_row.url().spec()));
-  dict.SetKey("origin", base::Value(visit.url_row.url().GetOrigin().spec()));
-  dict.SetKey("foregroundTimeSecs", base::Value(0));
-  dict.SetKey("navigationTimeMs",
-              base::Value(static_cast<double>(
-                  visit.visit_row.visit_time.ToDeltaSinceWindowsEpoch()
-                      .InMilliseconds())));
-  dict.SetKey("siteEngagementScore", base::Value(0));
-  dict.SetKey("pageEndReason",
-              base::Value(visit.context_signals.page_end_reason));
-  dict.SetKey("pageTransition",
-              base::Value(static_cast<int>(visit.visit_row.transition)));
-  dict.SetKey("isFromGoogleSearch", base::Value(false));
-  // TODO(manukh) fill out:
-  //  |foregroundTimeSecs|
-  //  |siteEngagementScore|
-  //  |isFromGoogleSearch|
-  return dict;
-}
+  base::ListValue debug_visits_list;
+  for (auto& visit : visits) {
+    proto::Visit* request_visit = request.add_visits();
+    request_visit->set_visit_id(visit.visit_row.visit_id);
+    request_visit->set_url(visit.url_row.url().spec());
+    request_visit->set_origin(visit.url_row.url().GetOrigin().spec());
+    request_visit->set_navigation_time_ms(
+        visit.visit_row.visit_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
+    request_visit->set_page_end_reason(
+        visit.context_annotations.page_end_reason);
+    request_visit->set_page_transition(
+        static_cast<int>(visit.visit_row.transition));
 
-base::Value VisitsToValue(const std::vector<memories::MemoriesVisit>& visits) {
-  base::Value visits_list(base::Value::Type::LIST);
-  for (const auto& visit : visits)
-    visits_list.Append(VisitToValue(visit));
-
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("visits", std::move(visits_list));
-  return dict;
-}
-
-// A helper method to get the values of the |base::ListValue| at |value[key]|.
-template <typename T>
-std::vector<T> FindListKeyAndCast(
-    const base::Value& value,
-    std::string key,
-    base::RepeatingCallback<T(const base::Value&)> cast_callback) {
-  const base::Value* list_ptr = value.FindListKey(key);
-  if (!list_ptr)
-    return {};
-
-  base::Value::ConstListView list = list_ptr->GetList();
-  std::vector<T> casted(list.size());
-
-  base::ranges::transform(list, casted.begin(), [&](const base::Value& value) {
-    return cast_callback.Run(value);
-  });
-  return casted;
-}
-
-memories::mojom::VisitPtr ValueToVisit(
-    const std::vector<memories::MemoriesVisit>& visits,
-    const base::Value& visit_id_value) {
-  auto visit = memories::mojom::Visit::New();
-  visit->id = visit_id_value.GetIfInt().value_or(-1);
-
-  const auto memory_visit_it = base::ranges::find(
-      visits, visit->id,
-      [](const auto& visit) { return visit.visit_row.visit_id; });
-  if (memory_visit_it != visits.end()) {
-    visit->url = memory_visit_it->url_row.url();
-    visit->time = memory_visit_it->visit_row.visit_time;
-    visit->page_title = memory_visit_it->url_row.title();
+    if (debug_logger) {
+      base::DictionaryValue debug_visit;
+      debug_visit.SetStringKey("visitId",
+                               base::NumberToString(request_visit->visit_id()));
+      debug_visit.SetStringKey("url", request_visit->url());
+      debug_visit.SetStringKey(
+          "navigationTimeMs",
+          base::NumberToString(request_visit->navigation_time_ms()));
+      debug_visit.SetStringKey(
+          "pageEndReason",
+          base::NumberToString(request_visit->page_end_reason()));
+      debug_visit.SetStringKey(
+          "pageTransition",
+          base::NumberToString(request_visit->page_transition()));
+      debug_visits_list.Append(std::move(debug_visit));
+    }
   }
 
-  // TODO(manukh) fill out:
-  //  |thumbnail_url|
-  //  |relative_date|
-  //  |time_of_day|
-  //  |num_duplicate_visits|
-  //  |related_visits|
-  //  |engagement_score|
-  return visit;
+  if (debug_logger) {
+    debug_logger->Run("MemoriesRemoteModelHelper CreateRequestProto:");
+
+    base::DictionaryValue debug_value;
+    debug_value.SetStringKey("experiment_name", request.experiment_name());
+    debug_value.SetKey("visits", std::move(debug_visits_list));
+
+    std::string debug_string;
+    if (base::JSONWriter::WriteWithOptions(
+            debug_value, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+            &debug_string)) {
+      debug_logger->Run(debug_string);
+    }
+  }
+  return request;
 }
 
-memories::mojom::MemoryPtr ValueToMemory(
-    const std::vector<memories::MemoriesVisit>& visits,
-    const base::Value& value) {
-  auto memory = memories::mojom::Memory::New();
-  memory->id = base::UnguessableToken::Create();
-  memory->top_visits = FindListKeyAndCast<memories::mojom::VisitPtr>(
-      value, "visitIds", base::BindRepeating(&ValueToVisit, visits));
-  // TODO(manukh) fill out:
-  //  |id|
-  //  |related_searches|
-  //  |related_tab_groups|
-  //  |bookmarks|
-  //  |last_visit_time|
-  //  |engagement_score|
-  return memory;
-}
+std::vector<history::Cluster> ParseResponseProto(
+    const std::vector<history::AnnotatedVisit>& visits,
+    const proto::GetClustersResponse& response_proto,
+    absl::optional<DebugLoggerCallback> debug_logger) {
+  std::vector<history::Cluster> clusters;
+  for (const proto::Cluster& cluster_proto : response_proto.clusters()) {
+    history::Cluster cluster;
+    for (const std::string& keyword : cluster_proto.keywords())
+      cluster.keywords.push_back(base::UTF8ToUTF16(keyword));
+    for (int64_t visit_id : cluster_proto.visit_ids()) {
+      const auto visits_it = base::ranges::find(
+          visits, visit_id,
+          [](const auto& visit) { return visit.visit_row.visit_id; });
+      if (visits_it != visits.end())
+        cluster.annotated_visits.push_back(*visits_it);
+    }
+    clusters.push_back(cluster);
+  }
 
-memories::Memories ValueToMemories(
-    const std::vector<memories::MemoriesVisit>& visits,
-    const base::Value& value) {
-  return FindListKeyAndCast<memories::mojom::MemoryPtr>(
-      value, "memories", base::BindRepeating(&ValueToMemory, visits));
+  if (debug_logger) {
+    // TODO(manukh): `ListValue` is deprecated; replace with `std::vector`.
+    base::ListValue debug_clusters_list;
+    for (const proto::Cluster& cluster : response_proto.clusters()) {
+      base::DictionaryValue debug_cluster;
+
+      base::ListValue debug_keywords;
+      for (const std::string& keyword : cluster.keywords()) {
+        debug_keywords.Append(keyword);
+      }
+      debug_cluster.SetKey("keywords", std::move(debug_keywords));
+
+      base::ListValue debug_visit_ids;
+      for (int64_t visit_id : cluster.visit_ids()) {
+        debug_visit_ids.Append(base::NumberToString(visit_id));
+      }
+      debug_cluster.SetKey("visit_ids", std::move(debug_visit_ids));
+
+      debug_clusters_list.Append(std::move(debug_cluster));
+    }
+
+    debug_logger->Run("MemoriesRemoteModelHelper ParseResponseProto Clusters:");
+
+    std::string debug_string;
+    if (base::JSONWriter::WriteWithOptions(
+            debug_clusters_list, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+            &debug_string)) {
+      debug_logger->Run(debug_string);
+    }
+  }
+
+  return clusters;
 }
 
 }  // namespace
 
-namespace memories {
-
 MemoriesRemoteModelHelper::MemoriesRemoteModelHelper(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_(nullptr), url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    absl::optional<DebugLoggerCallback> debug_logger)
+    : url_loader_factory_(url_loader_factory), debug_logger_(debug_logger) {}
 
 MemoriesRemoteModelHelper::~MemoriesRemoteModelHelper() = default;
 
 void MemoriesRemoteModelHelper::GetMemories(
-    const std::vector<MemoriesVisit>& visits,
-    MemoriesCallback callback) {
-  const GURL endpoint(memories::RemoteModelEndpoint());
-  if (!endpoint.is_valid())
-    NOTREACHED();
-  StopPendingRequests();
+    MemoriesCallback callback,
+    const std::vector<history::AnnotatedVisit>& visits) {
+  const GURL endpoint(RemoteModelEndpoint());
+  if (!endpoint.is_valid() || visits.empty()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // It's weird but the endpoint only accepts JSON, so wrap our serialized proto
+  // like this: {"data":"<base64-encoded-proto-serialization>"}
+  proto::GetClustersRequest request_proto =
+      CreateRequestProto(visits, debug_logger_);
+  const std::string serialized_request_proto =
+      request_proto.SerializeAsString();
+  std::string request_proto_base64;
+  base::Base64Encode(serialized_request_proto, &request_proto_base64);
+
+  base::DictionaryValue container_value;
+  container_value.SetStringPath("data", request_proto_base64);
 
   std::string request_body;
-  base::JSONWriter::Write(VisitsToValue(visits), &request_body);
-  auto request = CreateRequest(endpoint);
-  url_loader_ = CreateLoader(CreateRequest(endpoint), request_body);
+  base::JSONWriter::Write(container_value, &request_body);
 
-  url_loader_->DownloadToString(
+  auto url_loader = CreateLoader(CreateRequest(endpoint), request_body);
+  network::SimpleURLLoader* unowned_url_loader = url_loader.get();
+  unowned_url_loader->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(
-          [](const std::vector<MemoriesVisit>& visits,
-             MemoriesCallback callback, std::unique_ptr<std::string> response) {
+          [](std::unique_ptr<network::SimpleURLLoader> url_loader,
+             absl::optional<DebugLoggerCallback> debug_logger,
+             const std::vector<history::AnnotatedVisit>& visits,
+             std::unique_ptr<std::string> response) {
             if (!response) {
-              std::move(callback).Run({});
-              return;
+              if (debug_logger) {
+                debug_logger->Run("MemoriesRemoteModelHelper response nullptr");
+              }
+              return std::vector<history::Cluster>{};
             }
-            data_decoder::DataDecoder::ParseJsonIsolated(
-                *response,
-                base::BindOnce(
-                    [](const std::vector<MemoriesVisit>& visits,
-                       data_decoder::DataDecoder::ValueOrError value_or_error)
-                        -> Memories {
-                      return value_or_error.value
-                                 ? ValueToMemories(visits,
-                                                   value_or_error.value.value())
-                                 : Memories{};
-                    },
-                    visits)
-                    .Then(std::move(callback)));
+            proto::GetClustersResponse response_proto;
+            response_proto.ParseFromString(*response);
+            return ParseResponseProto(visits, response_proto, debug_logger);
           },
-          visits, std::move(callback)),
+          std::move(url_loader), debug_logger_, visits)
+          .Then(std::move(callback)),
       kMaxExpectedResponseSize);
-}
-
-void MemoriesRemoteModelHelper::StopPendingRequests() {
-  // TODO(manukh): Ensure the callback for the pending request is invoked.
-  url_loader_.reset();
 }
 
 // static
@@ -230,4 +241,4 @@ MemoriesRemoteModelHelper::CreateLoader(
   return loader;
 }
 
-}  // namespace memories
+}  // namespace history_clusters

@@ -16,6 +16,7 @@
 #include "json/value.h"
 #include "platform/base/error.h"
 #include "util/chrono_helpers.h"
+#include "util/json/json_serialization.h"
 #include "util/simple_fraction.h"
 
 // This file contains helper methods for parsing JSON, in an attempt to

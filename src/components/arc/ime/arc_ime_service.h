@@ -9,10 +9,10 @@
 
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/arc/ime/key_event_result_receiver.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -119,6 +119,7 @@ class ArcImeService : public KeyedService,
   void InsertChar(const ui::KeyEvent& event) override;
   ui::TextInputType GetTextInputType() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetTextRange(gfx::Range* range) const override;
   bool GetEditableSelectionRange(gfx::Range* range) const override;
   bool GetTextFromRange(const gfx::Range& range,
@@ -154,12 +155,17 @@ class ArcImeService : public KeyedService,
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const gfx::Range& range) override;
+  absl::optional<ui::GrammarFragment> GetGrammarFragment(
+      const gfx::Range& range) override;
+  bool ClearGrammarFragments(const gfx::Range& range) override;
+  bool AddGrammarFragments(
+      const std::vector<ui::GrammarFragment>& fragments) override;
   void OnDispatchingKeyEventPostIME(ui::KeyEvent* event) override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.
   static void SetOverrideDefaultDeviceScaleFactorForTesting(
-      base::Optional<double> scale_factor);
+      absl::optional<double> scale_factor);
 
  private:
   friend class ArcImeServiceTest;

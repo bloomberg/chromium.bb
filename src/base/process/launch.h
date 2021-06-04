@@ -16,6 +16,7 @@
 #include "base/base_export.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -101,7 +102,7 @@ struct BASE_EXPORT LaunchOptions {
   // for a good overview of Windows handle inheritance.
   //
   // Implementation note: it might be nice to implement in terms of
-  // base::Optional<>, but then the natural default state (vector not present)
+  // absl::optional<>, but then the natural default state (vector not present)
   // would be "all inheritable handles" while we want "no inheritance."
   enum class Inherit {
     // Only those handles in |handles_to_inherit| vector are inherited. If the

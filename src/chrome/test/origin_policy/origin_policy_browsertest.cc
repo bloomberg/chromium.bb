@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -13,6 +12,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 const base::FilePath::CharType kDataRoot[] =
@@ -20,7 +20,7 @@ const base::FilePath::CharType kDataRoot[] =
 
 // The title of the Origin Policy error interstitial. This is used to determine
 // whether the page load was blocked by the origin policy throttle.
-const char kErrorInterstitialTitle[] = "Origin Policy Error";
+const char16_t kErrorInterstitialTitle[] = u"Origin Policy Error";
 }  // namespace
 
 namespace content {
@@ -92,7 +92,7 @@ class OriginPolicyBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 
   net::HttpStatusCode status_;
-  base::Optional<std::string> location_header_;
+  absl::optional<std::string> location_header_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyBrowserTest);
 };
@@ -123,21 +123,21 @@ IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ApplyPolicy) {
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy301Redirect) {
   SetStatus(net::HTTP_MOVED_PERMANENTLY);
   SetLocationHeader("/.well-known/origin-policy/example-policy");
-  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+  EXPECT_EQ(kErrorInterstitialTitle,
             NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy302Redirect) {
   SetStatus(net::HTTP_FOUND);
   SetLocationHeader("/.well-known/origin-policy/example-policy");
-  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+  EXPECT_EQ(kErrorInterstitialTitle,
             NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy307Redirect) {
   SetStatus(net::HTTP_TEMPORARY_REDIRECT);
   SetLocationHeader("/.well-known/origin-policy/example-policy");
-  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
+  EXPECT_EQ(kErrorInterstitialTitle,
             NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 

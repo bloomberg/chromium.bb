@@ -61,6 +61,9 @@ int32_t WebrtcDummyVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
   base::AutoLock lock(lock_);
   encoded_callback_ = callback;
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnEncoderReady,
+                                video_channel_state_observer_));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -91,6 +94,13 @@ void WebrtcDummyVideoEncoder::SetRates(
                      parameters.bitrate.get_sum_kbps()));
   // framerate is not expected to be valid given we never report captured
   // frames.
+}
+
+void WebrtcDummyVideoEncoder::OnRttUpdate(int64_t rtt_ms) {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnRttUpdate,
+                                video_channel_state_observer_,
+                                base::TimeDelta::FromMilliseconds(rtt_ms)));
 }
 
 webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(

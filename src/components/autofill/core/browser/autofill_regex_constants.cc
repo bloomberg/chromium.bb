@@ -221,14 +221,14 @@ const char16_t kNameOnCardRe[] =
     u"|持卡人姓名";                     // zh-TW
 const char16_t kNameOnCardContextualRe[] = u"name";
 const char16_t kCardNumberRe[] =
-    u"(add)?(?:card|cc|acct).?(?:number|#|no|num|field)"
-    u"|(?<!telefon|haus|person|fødsels)nummer"  // de-DE, sv-SE, no
-    u"|カード番号"                              // ja-JP
-    u"|Номер.*карты"                            // ru
-    u"|no.*kartu"                               // id
-    u"|信用卡号|信用卡号码"                     // zh-CN
-    u"|信用卡卡號"                              // zh-TW
-    u"|카드"                                    // ko-KR
+    u"(add)?(?:card|cc|acct).?(?:number|#|no|num|field|pan)"
+    u"|(?<!telefon|haus|person|fødsels|kunden)nummer"  // de-DE, sv-SE, no
+    u"|カード番号"                                     // ja-JP
+    u"|Номер.*карты"                                   // ru
+    u"|no.*kartu"                                      // id
+    u"|信用卡号|信用卡号码"                            // zh-CN
+    u"|信用卡卡號"                                     // zh-TW
+    u"|카드"                                           // ko-KR
     // es/pt/fr
     u"|(numero|número|numéro)(?!.*(document|fono|phone|réservation))";
 

@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_AX_OBJECT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_AX_OBJECT_H_
 
-#include <memory>
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -145,12 +144,11 @@ class WebAXObject {
   BLINK_EXPORT bool IsModal() const;
   // Returns true if this object is an input element of a text field type, such
   // as type="text" or type="tel", or a textarea.
-  BLINK_EXPORT bool IsNativeTextField() const;
+  BLINK_EXPORT bool IsAtomicTextField() const;
   BLINK_EXPORT bool IsOffScreen() const;
   BLINK_EXPORT bool IsSelectedOptionActive() const;
   BLINK_EXPORT bool IsVisited() const;
 
-  BLINK_EXPORT bool HasAriaAttribute() const;
   BLINK_EXPORT WebString AccessKey() const;
   BLINK_EXPORT bool CanPress() const;
   BLINK_EXPORT bool CanSetValueAttribute() const;
@@ -366,6 +364,10 @@ class WebAXObject {
 
   BLINK_EXPORT void HandleAutofillStateChanged(
       const WebAXAutofillState state) const;
+
+  // For testing only, returns whether or not we have the permission to
+  // call AOM event listeners.
+  BLINK_EXPORT bool CanCallAOMEventListenersForTesting() const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);

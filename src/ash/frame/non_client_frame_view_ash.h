@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/frame/frame_context_menu_controller.h"
 #include "ash/frame/header_view.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -37,7 +38,9 @@ class NonClientFrameViewAshImmersiveHelper;
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
+class ASH_EXPORT NonClientFrameViewAsh
+    : public views::NonClientFrameView,
+      public FrameContextMenuController::Delegate {
  public:
   METADATA_HEADER(NonClientFrameViewAsh);
 
@@ -90,7 +93,10 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   void Layout() override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  void SetVisible(bool visible) override;
+
+  // FrameContextMenuController::Delegate:
+  bool ShouldShowContextMenu(views::View* source,
+                             const gfx::Point& screen_coords_point) override;
 
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
@@ -110,6 +116,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   SkColor GetInactiveFrameColorForTest() const;
 
   views::Widget* frame() { return frame_; }
+
+  bool GetFrameEnabled() const { return frame_enabled_; }
+  virtual void SetFrameEnabled(bool enabled);
 
  protected:
   // views::View:
@@ -141,7 +150,11 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
 
   OverlayView* overlay_view_ = nullptr;
 
+  bool frame_enabled_ = true;
+
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
+
+  std::unique_ptr<FrameContextMenuController> frame_context_menu_controller_;
 
   base::CallbackListSubscription paint_as_active_subscription_ =
       frame_->RegisterPaintAsActiveChangedCallback(

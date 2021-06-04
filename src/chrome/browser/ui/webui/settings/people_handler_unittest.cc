@@ -50,6 +50,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -272,7 +273,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetSelectedTypes())
         .WillByDefault(Return(GetAllTypes()));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-            IsEncryptEverythingAllowed())
+            IsCustomPassphraseAllowed())
         .WillByDefault(Return(true));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             IsEncryptEverythingEnabled())
@@ -314,29 +315,43 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(should_succeed, data.arg3()->GetBool());
   }
 
+  std::vector<const base::Value*> GetAllFiredValuesForEventName(
+      const std::string& event_name) {
+    std::vector<const base::Value*> arguments;
+    for (const std::unique_ptr<content::TestWebUI::CallData>& data :
+         web_ui_.call_data()) {
+      if (data->function_name() == "cr.webUIListenerCallback" &&
+          data->arg1()->is_string() &&
+          data->arg1()->GetString() == event_name) {
+        arguments.push_back(data->arg2());
+      }
+    }
+    return arguments;
+  }
+
+  // Must be called at most once per test to check if a sync-prefs-changed
+  // event happened. Returns the single fired value.
   const base::DictionaryValue* ExpectSyncPrefsChanged() {
-    const content::TestWebUI::CallData& data1 = *web_ui_.call_data().back();
-    EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
-
-    std::string event;
-    EXPECT_TRUE(data1.arg1()->GetAsString(&event));
-    EXPECT_EQ(event, "sync-prefs-changed");
-
-    const base::DictionaryValue* dictionary = nullptr;
-    EXPECT_TRUE(data1.arg2()->GetAsDictionary(&dictionary));
+    std::vector<const base::Value*> args =
+        GetAllFiredValuesForEventName("sync-prefs-changed");
+    EXPECT_EQ(1U, args.size());
+    EXPECT_NE(args[0], nullptr);
+    EXPECT_TRUE(args[0]->is_dict());
+    const base::DictionaryValue* dictionary;
+    args[0]->GetAsDictionary(&dictionary);
     return dictionary;
   }
 
+  // Must be called at most once per test to check if a sync-status-changed
+  // event happened. Returns the single fired value.
   const base::DictionaryValue* ExpectSyncStatusChanged() {
-    const content::TestWebUI::CallData& data = *web_ui_.call_data().back();
-    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
-
-    std::string event;
-    EXPECT_TRUE(data.arg1()->GetAsString(&event));
-    EXPECT_EQ(event, "sync-status-changed");
-
-    const base::DictionaryValue* dictionary = nullptr;
-    EXPECT_TRUE(data.arg2()->GetAsDictionary(&dictionary));
+    std::vector<const base::Value*> args =
+        GetAllFiredValuesForEventName("sync-status-changed");
+    EXPECT_EQ(1U, args.size());
+    EXPECT_NE(args[0], nullptr);
+    EXPECT_TRUE(args[0]->is_dict());
+    const base::DictionaryValue* dictionary;
+    args[0]->GetAsDictionary(&dictionary);
     return dictionary;
   }
 
@@ -462,12 +477,12 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   NotifySyncStateChanged();
 
-  // Updates for the sync status and the sync prefs are sent.
-  EXPECT_EQ(2U, web_ui_.call_data().size());
+  // Updates for the sync status, sync prefs and trusted vault opt-in are sent.
+  EXPECT_EQ(3U, web_ui_.call_data().size());
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "syncAllDataTypes", true);
-  CheckBool(dictionary, "encryptAllDataAllowed", true);
+  CheckBool(dictionary, "customPassphraseAllowed", true);
   CheckBool(dictionary, "encryptAllData", false);
   CheckBool(dictionary, "passphraseRequired", false);
   CheckBool(dictionary, "trustedVaultKeysRequired", false);
@@ -590,13 +605,12 @@ TEST_F(PeopleHandlerTest, AcquireSyncBlockerWhenLoadingSyncSettingsSubpage) {
   CreatePeopleHandler();
   // We set up a factory override here to prevent a new web ui from being
   // created when we navigate to a page that would normally create one.
-  test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
-  test_factory_->AddFactoryOverride(
+  TestChromeWebUIControllerFactory test_factory;
+  content::ScopedWebUIControllerFactoryRegistration factory_registration(
+      &test_factory, ChromeWebUIControllerFactory::GetInstance());
+  test_factory.AddFactoryOverride(
       chrome::GetSettingsUrl(chrome::kSyncSetupSubPage).host(),
       &test_provider_);
-  content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(
-      ChromeWebUIControllerFactory::GetInstance());
 
   EXPECT_FALSE(handler_->sync_blocker_);
 
@@ -606,10 +620,6 @@ TEST_F(PeopleHandlerTest, AcquireSyncBlockerWhenLoadingSyncSettingsSubpage) {
   handler_->InitializeSyncBlocker();
 
   EXPECT_TRUE(handler_->sync_blocker_);
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(
-      test_factory_.get());
-  content::WebUIControllerFactory::RegisterFactory(
-      ChromeWebUIControllerFactory::GetInstance());
 }
 
 TEST_F(PeopleHandlerTest, UnrecoverableErrorInitializingSync) {
@@ -670,10 +680,10 @@ TEST_F(PeopleHandlerTest, EnterCorrectExistingPassphrase) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -699,10 +709,10 @@ TEST_F(PeopleHandlerTest, SuccessfullyCreateCustomPassphrase) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -727,10 +737,10 @@ TEST_F(PeopleHandlerTest, EnterWrongExistingPassphrase) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -756,10 +766,10 @@ TEST_F(PeopleHandlerTest, CannotCreateBlankPassphrase) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -855,7 +865,7 @@ TEST_F(PeopleHandlerTest, ShowSyncSetup) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   // This should display the sync setup dialog (not login).
@@ -871,7 +881,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
@@ -902,7 +912,7 @@ TEST_F(PeopleHandlerTest, ShowSetupManuallySyncAll) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
@@ -922,7 +932,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
         .WillByDefault(Return(false));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-            IsUsingSecondaryPassphrase())
+            IsUsingExplicitPassphrase())
         .WillByDefault(Return(false));
     SetupInitializedSyncService();
     SetDefaultExpectationsForConfigPage();
@@ -1010,7 +1020,7 @@ TEST_F(PeopleHandlerTest, ShowSetupEncryptAll) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
@@ -1031,12 +1041,12 @@ TEST_F(PeopleHandlerTest, ShowSetupEncryptAllDisallowed) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(false));
 
   // This should display the sync setup dialog (not login).
@@ -1044,10 +1054,10 @@ TEST_F(PeopleHandlerTest, ShowSetupEncryptAllDisallowed) {
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "encryptAllData", false);
-  CheckBool(dictionary, "encryptAllDataAllowed", false);
+  CheckBool(dictionary, "customPassphraseAllowed", false);
 }
 
-TEST_F(PeopleHandlerTest, CannotCreatePassphraseIfEncryptEverythingDisallowed) {
+TEST_F(PeopleHandlerTest, CannotCreatePassphraseIfCustomPassphraseDisallowed) {
   SigninUser();
   CreatePeopleHandler();
   SetupInitializedSyncService();
@@ -1058,10 +1068,10 @@ TEST_F(PeopleHandlerTest, CannotCreatePassphraseIfEncryptEverythingDisallowed) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(false));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -1087,10 +1097,10 @@ TEST_F(PeopleHandlerTest, CannotOverwritePassphraseWithNewOne) {
           IsTrustedVaultKeyRequired())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsUsingSecondaryPassphrase())
+          IsUsingExplicitPassphrase())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsEncryptEverythingAllowed())
+          IsCustomPassphraseAllowed())
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_FAKE_ARCORE_H_
 
 #include <memory>
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -22,19 +24,20 @@ class FakeArCore : public ArCore {
   ~FakeArCore() override;
 
   // ArCore implementation.
-  base::Optional<ArCore::InitializeResult> Initialize(
+  absl::optional<ArCore::InitializeResult> Initialize(
       base::android::ScopedJavaLocalRef<jobject> application_context,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           required_features,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           optional_features,
       const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images,
-      base::Optional<ArCore::DepthSensingConfiguration> depth_sensing_config)
+      absl::optional<ArCore::DepthSensingConfiguration> depth_sensing_config)
       override;
   MinMaxRange GetTargetFramerateRange() override;
   void SetCameraTexture(uint32_t texture) override;
   void SetDisplayGeometry(const gfx::Size& frame_size,
                           display::Display::Rotation display_rotation) override;
+  gfx::Size GetUncroppedCameraImageSize() const override;
 
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
@@ -48,11 +51,11 @@ class FakeArCore : public ArCore {
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
-  base::Optional<uint64_t> SubscribeToHitTest(
+  absl::optional<uint64_t> SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr nativeOriginInformation,
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) override;
-  base::Optional<uint64_t> SubscribeToHitTestForTransientInput(
+  absl::optional<uint64_t> SubscribeToHitTestForTransientInput(
       const std::string& profile_name,
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) override;

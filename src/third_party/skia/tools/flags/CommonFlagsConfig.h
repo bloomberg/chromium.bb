@@ -57,7 +57,6 @@ public:
                            bool                      fakeGLESVer2,
                            uint32_t                  surfaceFlags,
                            int                       samples,
-                           bool                      useDMSAA,
                            SkColorType               colorType,
                            SkAlphaType               alphaType,
                            sk_sp<SkColorSpace>       colorSpace,
@@ -67,6 +66,7 @@ public:
                            bool                      testPrecompile,
                            bool                      useDDLSink,
                            bool                      OOPRish,
+                           bool                      reducedShaders,
                            SurfType);
 
     const SkCommandLineConfigGpu* asConfigGpu() const override { return this; }
@@ -74,7 +74,6 @@ public:
     ContextOverrides              getContextOverrides() const { return fContextOverrides; }
     uint32_t      getSurfaceFlags() const { return fSurfaceFlags; }
     int           getSamples() const { return fSamples; }
-    bool          getUseDMSAA() const { return fUseDMSAA; }
     SkColorType   getColorType() const { return fColorType; }
     SkAlphaType   getAlphaType() const { return fAlphaType; }
     SkColorSpace* getColorSpace() const { return fColorSpace.get(); }
@@ -83,6 +82,7 @@ public:
     bool          getTestPrecompile() const { return fTestPrecompile; }
     bool          getUseDDLSink() const { return fUseDDLSink; }
     bool          getOOPRish() const { return fOOPRish; }
+    bool          getReducedShaders() const { return fReducedShaders; }
     SurfType      getSurfType() const { return fSurfType; }
 
 private:
@@ -90,7 +90,6 @@ private:
     ContextOverrides    fContextOverrides;
     uint32_t            fSurfaceFlags;
     int                 fSamples;
-    bool                fUseDMSAA;
     SkColorType         fColorType;
     SkAlphaType         fAlphaType;
     sk_sp<SkColorSpace> fColorSpace;
@@ -99,6 +98,7 @@ private:
     bool                fTestPrecompile;
     bool                fUseDDLSink;
     bool                fOOPRish;
+    bool                fReducedShaders;
     SurfType            fSurfType;
 };
 

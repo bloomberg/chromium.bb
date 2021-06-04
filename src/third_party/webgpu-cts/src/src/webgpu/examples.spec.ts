@@ -9,15 +9,16 @@ import { makeTestGroup } from '../common/framework/test_group.js';
 
 import { GPUTest } from './gpu_test.js';
 
-// To run these tests in the standalone runner, run `grunt build` or `grunt pre` then open:
-// - http://localhost:8080/?runnow=1&q=webgpu:examples:
+// To run these tests in the standalone runner, run `npm start` then open:
+// - http://localhost:XXXX/standalone/?runnow=1&q=webgpu:examples:
 // To run in WPT, copy/symlink the out-wpt/ directory as the webgpu/ directory in WPT, then open:
 // - (wpt server url)/webgpu/cts.html?q=webgpu:examples:
 //
 // Tests here can be run individually or in groups:
-// - ?q=webgpu:examples:basic/async=
-// - ?q=webgpu:examples:basic/
-// - ?q=webgpu:examples:
+// - ?q=webgpu:examples:basic,async:
+// - ?q=webgpu:examples:basic,async:*
+// - ?q=webgpu:examples:basic,*
+// - ?q=webgpu:examples:*
 
 export const g = makeTestGroup(GPUTest);
 
@@ -132,10 +133,8 @@ g.test('basic,params_builder')
   .fn(() => {});
 
 g.test('gpu,async').fn(async t => {
-  const fence = t.queue.createFence();
-  t.queue.signal(fence, 2);
-  await fence.onCompletion(1);
-  t.expect(fence.getCompletedValue() === 2);
+  const x = await t.queue.onSubmittedWorkDone();
+  t.expect(x === undefined);
 });
 
 g.test('gpu,buffers').fn(async t => {
@@ -165,7 +164,7 @@ Tests that a BC format passes validation iff the feature is enabled.`
     const { textureCompressionBC } = t.params;
 
     if (textureCompressionBC) {
-      await t.selectDeviceOrSkipTestCase({ extensions: ['texture-compression-bc'] });
+      await t.selectDeviceOrSkipTestCase('texture-compression-bc');
     }
 
     const shouldError = !textureCompressionBC;
@@ -193,9 +192,7 @@ TODO: Test that an ETC format passes validation iff the feature is enabled.`
     const { textureCompressionETC } = t.params;
 
     if (textureCompressionETC) {
-      await t.selectDeviceOrSkipTestCase({
-        extensions: ['texture-compression-etc' as GPUExtensionName],
-      });
+      await t.selectDeviceOrSkipTestCase('texture-compression-etc' as GPUFeatureName);
     }
 
     // TODO: Should actually test createTexture with an ETC format here.

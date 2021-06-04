@@ -22,12 +22,13 @@ void CrosSpeechRecognitionRecognizerImpl::Create(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
     base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<CrosSpeechRecognitionRecognizerImpl>(
           std::move(remote), std::move(speech_recognition_service_impl),
-          binary_path, config_path),
+          std::move(options), binary_path, config_path),
       std::move(receiver));
 }
 CrosSpeechRecognitionRecognizerImpl::~CrosSpeechRecognitionRecognizerImpl() =
@@ -36,21 +37,21 @@ CrosSpeechRecognitionRecognizerImpl::~CrosSpeechRecognitionRecognizerImpl() =
 CrosSpeechRecognitionRecognizerImpl::CrosSpeechRecognitionRecognizerImpl(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
     base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path)
     : SpeechRecognitionRecognizerImpl(
           std::move(remote),
           std::move(speech_recognition_service_impl),
+          std::move(options),
           binary_path,
           config_path),
-      enable_soda_(base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)),
       binary_path_(binary_path),
       languagepack_path_(config_path) {
   recognition_event_callback_ = base::BindRepeating(
       &CrosSpeechRecognitionRecognizerImpl::OnRecognitionEvent,
       weak_factory_.GetWeakPtr());
-  DCHECK(enable_soda_) << "This class is only expected to run with soda "
-                          "enabled, but it can without.";
+  // The superclass handles speech recognition when soda is not enabled.
   if (enable_soda_) {
     cros_soda_client_ = std::make_unique<soda::CrosSodaClient>();
   }
@@ -60,9 +61,8 @@ void CrosSpeechRecognitionRecognizerImpl::
     SendAudioToSpeechRecognitionServiceInternal(
         media::mojom::AudioDataS16Ptr buffer) {
   if (!enable_soda_) {
-    // Defer to the superclass.
-    LOG(DFATAL) << "This class is only expected to be used when soda is "
-                   "enabled; Deferring to superclass.";
+    // This class is only expected to be used when soda is enabled; deferring to
+    // superclass.
     SpeechRecognitionRecognizerImpl::
         SendAudioToSpeechRecognitionServiceInternal(std::move(buffer));
     return;

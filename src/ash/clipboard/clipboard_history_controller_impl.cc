@@ -221,16 +221,13 @@ void ClipboardHistoryControllerImpl::ShowMenuByAccelerator() {
   }
 
   ShowMenu(CalculateAnchorRect(), ui::MENU_SOURCE_KEYBOARD,
-           ShowSource::kAccelerator);
+           crosapi::mojom::ClipboardHistoryControllerShowSource::kAccelerator);
 }
 
-gfx::Rect ClipboardHistoryControllerImpl::GetMenuBoundsInScreenForTest() const {
-  return context_menu_->GetMenuBoundsInScreenForTest();
-}
-
-void ClipboardHistoryControllerImpl::ShowMenu(const gfx::Rect& anchor_rect,
-                                              ui::MenuSourceType source_type,
-                                              ShowSource show_source) {
+void ClipboardHistoryControllerImpl::ShowMenu(
+    const gfx::Rect& anchor_rect,
+    ui::MenuSourceType source_type,
+    crosapi::mojom::ClipboardHistoryControllerShowSource show_source) {
   if (IsMenuShowing() || !CanShowMenu())
     return;
 
@@ -277,6 +274,10 @@ void ClipboardHistoryControllerImpl::ShowMenu(const gfx::Rect& anchor_rect,
     observer.OnClipboardHistoryMenuShown(show_source);
 }
 
+gfx::Rect ClipboardHistoryControllerImpl::GetMenuBoundsInScreenForTest() const {
+  return context_menu_->GetMenuBoundsInScreenForTest();
+}
+
 bool ClipboardHistoryControllerImpl::ShouldShowNewFeatureBadge() const {
   return chromeos::features::IsClipboardHistoryContextMenuNudgeEnabled() &&
          nudge_controller_->ShouldShowNewFeatureBadge();
@@ -284,6 +285,10 @@ bool ClipboardHistoryControllerImpl::ShouldShowNewFeatureBadge() const {
 
 void ClipboardHistoryControllerImpl::MarkNewFeatureBadgeShown() {
   nudge_controller_->MarkNewFeatureBadgeShown();
+}
+
+void ClipboardHistoryControllerImpl::OnScreenshotNotificationCreated() {
+  nudge_controller_->MarkScreenshotNotificationShown();
 }
 
 bool ClipboardHistoryControllerImpl::CanShowMenu() const {

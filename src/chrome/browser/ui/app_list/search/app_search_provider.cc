@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/containers/contains.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
@@ -28,8 +29,8 @@
 #include "base/time/clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
@@ -569,7 +571,12 @@ void AppSearchProvider::UpdateQueriedResults() {
       }
       std::unique_ptr<AppResult> result =
           app->data_source()->CreateResult(app->id(), list_controller_, false);
-      result->UpdateFromMatch(*indexed_name, match);
+
+      // Update result from match.
+      result->SetTitle(indexed_name->text());
+      result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
+      result->set_relevance(match.relevance());
+
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
       FuzzyTokenizedStringMatch match;
@@ -582,13 +589,8 @@ void AppSearchProvider::UpdateQueriedResults() {
 
         // Update result from match.
         result->SetTitle(indexed_name->text());
+        result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
         result->set_relevance(match.relevance());
-        ash::SearchResultTags tags;
-        for (const auto& hit : match.hits()) {
-          tags.push_back(ash::SearchResultTag(ash::SearchResultTag::MATCH,
-                                              hit.start(), hit.end()));
-        }
-        result->SetTitleTags(tags);
 
         MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
       }

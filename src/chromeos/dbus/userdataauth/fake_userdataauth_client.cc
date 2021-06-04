@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"

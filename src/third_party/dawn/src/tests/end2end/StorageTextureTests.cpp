@@ -273,7 +273,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
                 // On Windows Intel drivers the tests will fail if tolerance <= 0.00000001f.
                 return R"(
 fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
-  const tolerance : f32 = 0.0000001;
+  let tolerance : f32 = 0.0000001;
   return all(abs(pixel - expected) < vec4<f32>(tolerance, tolerance, tolerance, tolerance));
 })";
 
@@ -297,7 +297,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
                 << GetComparisonFunction(format) << "\n";
         ostream << "fn doTest() -> bool {\n";
         ostream << "  var size : vec2<i32> = textureDimensions(storageImage0);\n";
-        ostream << "  const layerCount : i32 = " << layerCount << ";\n";
+        ostream << "  let layerCount : i32 = " << layerCount << ";\n";
         ostream << "  for (var layer : i32 = 0; layer < layerCount; layer = layer + 1) {\n";
         ostream << "    for (var y : i32 = 0; y < size.y; y = y + 1) {\n";
         ostream << "      for (var x : i32 = 0; x < size.x; x = x + 1) {\n";
@@ -330,9 +330,9 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         std::ostringstream ostream;
         ostream << GetImageDeclaration(format, "write", is2DArray, 0) << "\n";
         ostream << "[[stage(" << stage << ")]]\n";
-        ostream << "fn main() -> void {\n";
-        ostream << "  var size : vec2<i32> = textureDimensions(storageImage0);\n";
-        ostream << "  const layerCount : i32 = " << layerCount << ";\n";
+        ostream << "fn main() {\n";
+        ostream << "  let size : vec2<i32> = textureDimensions(storageImage0);\n";
+        ostream << "  let layerCount : i32 = " << layerCount << ";\n";
         ostream << "  for (var layer : i32 = 0; layer < layerCount; layer = layer + 1) {\n";
         ostream << "    for (var y : i32 = 0; y < size.y; y = y + 1) {\n";
         ostream << "      for (var x : i32 = 0; x < size.x; x = x + 1) {\n";
@@ -358,9 +358,9 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         std::ostringstream ostream;
         ostream << GetImageDeclaration(format, "write", is2DArray, 0) << "\n";
         ostream << GetImageDeclaration(format, "read", is2DArray, 1) << "\n";
-        ostream << "[[stage(compute)]] fn main() -> void {\n";
-        ostream << "  var size : vec2<i32> = textureDimensions(storageImage0);\n";
-        ostream << "  const layerCount : i32 = " << layerCount << ";\n";
+        ostream << "[[stage(compute)]] fn main() {\n";
+        ostream << "  let size : vec2<i32> = textureDimensions(storageImage0);\n";
+        ostream << "  let layerCount : i32 = " << layerCount << ";\n";
         ostream << "  for (var layer : i32 = 0; layer < layerCount; layer = layer + 1) {\n";
         ostream << "    for (var y : i32 = 0; y < size.y; y = y + 1) {\n";
         ostream << "      for (var x : i32 = 0; x < size.x; x = x + 1) {\n";
@@ -648,9 +648,9 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
     static constexpr wgpu::TextureFormat kRenderAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
     const char* kSimpleVertexShader = R"(
-[[builtin(position)]] var<out> position : vec4<f32>;
-[[stage(vertex)]] fn main() -> void {
-  position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+;
+[[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+  return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 })";
 
     const char* kComputeExpectedValue = "1 + x + size.x * (y + size.y * layer)";
@@ -715,7 +715,7 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInComputeShader) {
 [[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )" << CommonReadOnlyTestCode(format)
                  << R"(
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   if (doTest()) {
     dstBuffer.result = 1u;
   } else {
@@ -746,23 +746,26 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInVertexShader) {
         // uses green as the output color, otherwise uses red instead.
         std::ostringstream vsStream;
         vsStream << R"(
-[[builtin(position)]] var<out> position : vec4<f32>;
-[[location(0)]] var<out> o_color : vec4<f32>;
+struct VertexOut {
+  [[location(0)]] color : vec4<f32>;
+  [[builtin(position)]] position : vec4<f32>;
+};
 )" << CommonReadOnlyTestCode(format)
                  << R"(
-[[stage(vertex)]] fn main() -> void {
-  position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+[[stage(vertex)]] fn main() -> VertexOut {
+  var output : VertexOut;
+  output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
   if (doTest()) {
-    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+    output.color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
   } else {
-    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
   }
+  return output;
 })";
         const char* kFragmentShader = R"(
-[[location(0)]] var<in> o_color : vec4<f32>;
-[[location(0)]] var<out> fragColor : vec4<f32>;
-[[stage(fragment)]] fn main() -> void {
-  fragColor = o_color;
+[[stage(fragment)]]
+fn main([[location(0)]] color : vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return color;
 })";
         CheckDrawsGreen(vsStream.str().c_str(), kFragmentShader, readonlyStorageTexture);
     }
@@ -791,16 +794,12 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInFragmentShader) {
         // uses green as the output color if the pixel value is expected, otherwise uses red
         // instead.
         std::ostringstream fsStream;
-        fsStream << R"(
-[[location(0)]] var<out> o_color : vec4<f32>;
-)" << CommonReadOnlyTestCode(format)
-                 << R"(
-[[stage(fragment)]] fn main() -> void {
+        fsStream << CommonReadOnlyTestCode(format) << R"(
+[[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
   if (doTest()) {
-    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-  } else {
-    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
   }
+  return vec4<f32>(1.0, 0.0, 0.0, 1.0);
 })";
         CheckDrawsGreen(kSimpleVertexShader, fsStream.str().c_str(), readonlyStorageTexture);
     }
@@ -940,7 +939,7 @@ TEST_P(StorageTextureTests, Readonly2DArrayStorageTexture) {
 [[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )" << CommonReadOnlyTestCode(kTextureFormat, true)
              << R"(
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   if (doTest()) {
     dstBuffer.result = 1u;
   } else {
@@ -985,7 +984,7 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : [[access(read)]]  texture_storage_2d<r32uint>;
 [[group(0), binding(1)]] var Dst : [[access(write)]] texture_storage_2d<r32uint>;
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   var srcValue : vec4<u32> = textureLoad(Src, vec2<i32>(0, 0));
   srcValue.x = srcValue.x + 1u;
   textureStore(Dst, vec2<i32>(0, 0), srcValue);
@@ -1049,9 +1048,6 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
 // Test that multiple dispatches to increment values by ping-ponging between a sampled texture and
 // a write-only storage texture are synchronized in one pass.
 TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
-    // TODO(crbug.com/tint/690): shaders compile, but output is unexpected
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
     constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::R32Uint;
     wgpu::Texture storageTexture1 = CreateTexture(
         kTextureFormat,
@@ -1062,7 +1058,7 @@ TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : texture_2d<u32>;
 [[group(0), binding(1)]] var Dst : [[access(write)]] texture_storage_2d<r32uint>;
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   var srcValue : vec4<u32> = textureLoad(Src, vec2<i32>(0, 0), 0);
   srcValue.x = srcValue.x + 1u;
   textureStore(Dst, vec2<i32>(0, 0), srcValue);
@@ -1161,13 +1157,13 @@ fn doTest() -> bool {
     const char* kCommonWriteOnlyZeroInitTestCodeFragment = R"(
 [[group(0), binding(0)]] var dstImage : [[access(write)]] texture_storage_2d<r32uint>;
 
-[[stage(fragment)]] fn main() -> void {
+[[stage(fragment)]] fn main() {
   textureStore(dstImage, vec2<i32>(0, 0), vec4<u32>(1u, 0u, 0u, 1u));
 })";
     const char* kCommonWriteOnlyZeroInitTestCodeCompute = R"(
 [[group(0), binding(0)]] var dstImage : [[access(write)]] texture_storage_2d<r32uint>;
 
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   textureStore(dstImage, vec2<i32>(0, 0), vec4<u32>(1u, 0u, 0u, 1u));
 })";
 };
@@ -1183,15 +1179,13 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInRenderPa
     const char* kVertexShader = kSimpleVertexShader;
     const std::string kFragmentShader = std::string(R"(
 [[group(0), binding(0)]] var srcImage : [[access(read)]] texture_storage_2d<r32uint>;
-[[location(0)]] var<out> o_color : vec4<f32>;
 )") + kCommonReadOnlyZeroInitTestCode +
                                         R"(
-[[stage(fragment)]] fn main() -> void {
+[[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
   if (doTest()) {
-    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-  } else {
-    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
   }
+  return vec4<f32>(1.0, 0.0, 0.0, 1.0);
 })";
     CheckDrawsGreen(kVertexShader, kFragmentShader.c_str(), readonlyStorageTexture);
 }
@@ -1212,7 +1206,7 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInComputeP
 [[group(0), binding(0)]] var srcImage : [[access(read)]] texture_storage_2d<r32uint>;
 [[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )") + kCommonReadOnlyZeroInitTestCode + R"(
-[[stage(compute)]] fn main() -> void {
+[[stage(compute)]] fn main() {
   if (doTest()) {
     dstBuffer.result = 1u;
   } else {

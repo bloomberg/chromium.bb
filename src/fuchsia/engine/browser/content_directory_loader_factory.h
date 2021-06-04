@@ -8,9 +8,6 @@
 #include <fuchsia/io/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_handle.h>
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "fuchsia/engine/web_engine_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -24,6 +21,10 @@
 class ContentDirectoryLoaderFactory
     : public network::SelfDeletingURLLoaderFactory {
  public:
+  // Path in the browser process' namespace at which content directories
+  // should be mounted.
+  static WEB_ENGINE_EXPORT const char kContentDirectoriesPath[];
+
   // Returns mojo::PendingRemote to a newly constructed
   // ContentDirectoryLoaderFactory.  The factory is self-owned - it will delete
   // itself once there are no more receivers (including the receiver associated
@@ -31,15 +32,13 @@ class ContentDirectoryLoaderFactory
   // method).
   static mojo::PendingRemote<network::mojom::URLLoaderFactory> Create();
 
-  // Sets the list of content directories for the duration of the process.
-  // Can be called multiple times for clearing or replacing the list.
-  static WEB_ENGINE_EXPORT void SetContentDirectoriesForTest(
-      std::vector<fuchsia::web::ContentDirectoryProvider> directories);
+  ContentDirectoryLoaderFactory(const ContentDirectoryLoaderFactory&) = delete;
+  ContentDirectoryLoaderFactory& operator=(
+      const ContentDirectoryLoaderFactory&) = delete;
 
  private:
   explicit ContentDirectoryLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
-
   ~ContentDirectoryLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -51,15 +50,8 @@ class ContentDirectoryLoaderFactory
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) final;
 
-  net::Error OpenFileFromDirectory(
-      const std::string& directory_name,
-      base::FilePath path,
-      fidl::InterfaceRequest<fuchsia::io::Node> file_request);
-
   // Used for executing blocking URLLoader routines.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentDirectoryLoaderFactory);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_CONTENT_DIRECTORY_LOADER_FACTORY_H_

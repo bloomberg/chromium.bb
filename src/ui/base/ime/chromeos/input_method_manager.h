@@ -299,6 +299,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
 
   virtual bool IsAltGrUsedByCurrentInputMethod() const = 0;
 
+  // Returns true if the current input method uses position based shortcuts.
+  // This is true for most layouts, with the exception of layouts that have
+  // non-standard locations for punctuation such as dvorak. See
+  // crbug.com/1174326 for more information.
+  virtual bool ArePositionalShortcutsUsedByCurrentInputMethod() const = 0;
+
   // Returns an X keyboard object which could be used to change the current XKB
   // layout, change the caps lock status, and set the auto repeat rate/interval.
   virtual ImeKeyboard* GetImeKeyboard() = 0;
@@ -365,5 +371,13 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
 
 }  // namespace input_method
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace input_method {
+using ::chromeos::input_method::InputMethodManager;
+}
+}  // namespace ash
 
 #endif  // UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_

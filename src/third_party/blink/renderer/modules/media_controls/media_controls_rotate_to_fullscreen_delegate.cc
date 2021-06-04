@@ -7,8 +7,10 @@
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -165,7 +167,7 @@ void MediaControlsRotateToFullscreenDelegate::OnDeviceOrientationAvailable(
   // zero, even though that's a valid (albeit unlikely) device orientation.
   DeviceOrientationData* data = event->Orientation();
   device_orientation_supported_ =
-      base::make_optional(data->CanProvideBeta() && data->CanProvideGamma() &&
+      absl::make_optional(data->CanProvideBeta() && data->CanProvideGamma() &&
                           (data->Beta() != 0.0 || data->Gamma() != 0.0));
 }
 

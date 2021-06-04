@@ -27,12 +27,18 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
     'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
-    'Memory.GPU.PeakMemoryUsage.Scroll',
-    'Memory.GPU.PeakMemoryUsage.PageLoad',
+    'Memory.GPU.PeakMemoryUsage2.Scroll',
+    'Memory.GPU.PeakMemoryUsage2.PageLoad',
 ]
 
 
 class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
+  # TODO(crbug/1205829): Capturing video is causing long cycle time and timeout
+  # on some Pixel devices. Disabling this option until the issue can be fixed.
+  #options = {
+  #    'capture_screen_video': True
+  #}
+
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--scroll-forever', action='store_true',

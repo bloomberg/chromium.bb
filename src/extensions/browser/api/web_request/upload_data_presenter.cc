@@ -43,7 +43,7 @@ void AppendKeyValuePair(const char* key,
                         std::unique_ptr<base::Value> value,
                         base::ListValue* list) {
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-  dictionary->SetWithoutPathExpansion(key, std::move(value));
+  dictionary->SetKey(key, base::Value::FromUniquePtrValue(std::move(value)));
   list->Append(std::move(dictionary));
 }
 
@@ -137,8 +137,8 @@ std::unique_ptr<base::Value> ParsedDataPresenter::Result() {
 
 // static
 std::unique_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
-  static const std::string form_type("application/x-www-form-urlencoded");
-  return base::WrapUnique(new ParsedDataPresenter(form_type));
+  return base::WrapUnique(
+      new ParsedDataPresenter("application/x-www-form-urlencoded"));
 }
 
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)

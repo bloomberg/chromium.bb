@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -66,6 +67,11 @@ EncoderBase<Traits>::EncoderBase(ScriptState* script_state,
 template <typename Traits>
 EncoderBase<Traits>::~EncoderBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::UmaHistogramSparse(
+      String::Format("Blink.WebCodecs.%s.FinalStatus", Traits::GetName())
+          .Ascii()
+          .c_str(),
+      static_cast<int>(logger_->status_code()));
 }
 
 template <typename Traits>
@@ -102,7 +108,7 @@ void EncoderBase<Traits>::configure(const ConfigType* config,
 }
 
 template <typename Traits>
-void EncoderBase<Traits>::encode(FrameType* frame,
+void EncoderBase<Traits>::encode(InputType* input,
                                  const EncodeOptionsType* opts,
                                  ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -114,26 +120,23 @@ void EncoderBase<Traits>::encode(FrameType* frame,
     return;
 
   DCHECK(active_config_);
-  auto* context = GetExecutionContext();
-  if (!context) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Context is destroyed.");
-    return;
-  }
 
-  // This will fail if |frame| is already closed.
-  auto* internal_frame = CloneFrame(frame, context);
+  // This will fail if |input| is already closed.
+  auto* internal_input = input->clone(exception_state);
 
-  if (!internal_frame) {
+  if (!internal_input) {
+    // Remove exceptions relating to cloning closed input.
+    exception_state.ClearException();
+
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                      "Cannot encode closed frame.");
+                                      "Cannot encode closed input.");
     return;
   }
 
   Request* request = MakeGarbageCollected<Request>();
   request->reset_count = reset_count_;
   request->type = Request::Type::kEncode;
-  request->frame = internal_frame;
+  request->input = internal_input;
   request->encodeOpts = opts;
   ++requested_encodes_;
   EnqueueRequest(request);
@@ -192,8 +195,8 @@ void EncoderBase<Traits>::ResetInternal() {
     DCHECK(pending_req);
     if (pending_req->resolver)
       pending_req->resolver.Release()->Resolve();
-    if (pending_req->frame)
-      pending_req->frame.Release()->close();
+    if (pending_req->input)
+      pending_req->input.Release()->close();
   }
   stall_request_processing_ = false;
 }
@@ -264,11 +267,15 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
 
   auto done_callback = [](EncoderBase<Traits>* self, Request* req,
                           media::Status status) {
-    if (!self)
-      return;
-    DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
     DCHECK(req);
     DCHECK(req->resolver);
+
+    if (!self) {
+      req->resolver.Release()->Reject();
+      return;
+    }
+
+    DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
     if (self->reset_count_ != req->reset_count) {
       req->resolver.Release()->Reject();
       return;
@@ -315,7 +322,7 @@ void EncoderBase<Traits>::Trace(Visitor* visitor) const {
 
 template <typename Traits>
 void EncoderBase<Traits>::Request::Trace(Visitor* visitor) const {
-  visitor->Trace(frame);
+  visitor->Trace(input);
   visitor->Trace(encodeOpts);
   visitor->Trace(resolver);
 }

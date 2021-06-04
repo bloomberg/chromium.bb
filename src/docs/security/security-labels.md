@@ -50,6 +50,9 @@ guidelines are as follows:
     *security@chromium.org* is a member of that group so the former is a
     superset of the latter. **Restrict-View-SecurityNotify** is not suitable for
     sensitive bugs.
+  * **Restrict-View-SecurityNotifyWebRTC**: As above, but additionally
+    gives access to *security-notify@webrtc.org*, a community of downstream
+    WebRTC embedders.
   * **Restrict-View-Google**: Restricts access to users that are Google
     employees (but also via their *chromium.org* accounts). This should be used
     for bugs that aren't OK for external contributors to see (even if we trust
@@ -137,6 +140,11 @@ Cases where it's *not* OK to set **Security_Impact-None**:
   attacker could overwrite memory for any feature checks performed within
   that lower-privileged process; the bug only qualifies as impact **None**
   if checks are performed in the higher-privileged process.
+* If a bug involves a patch to a renderer or use of a flag to turn on
+  [MojoJS](../../mojo/public/js/README.md)
+  this may mean it's a simulation of a compromised renderer and the
+  bug may still be a valid [sandbox escape
+  bug](severity-guidelines.md#TOC-High-severity).
 
 It's important to get this right, because this label influences how rapidly
 we merge and release the fix. Ask for help if you're not sure.
@@ -236,7 +244,8 @@ be used.
 
 ### Drop **Restrict-View-{SecurityTeam,SecurityNotify}** From Old And Fixed Bugs
 
-Remove **Restrict-View-SecurityTeam** and **Restrict-View-SecurityNotify** from
+Remove **Restrict-View-SecurityTeam**, **Restrict-View-SecurityNotify** and
+**Restrict-View-SecurityNotifyWebRTC** from
 security bugs that have been closed (Fixed, Verified, Duplicate, WontFix,
 Invalid) more than 14 weeks ago and add the **allpublic** label to make the bugs
 accessible publicly. The idea here is that security bug fixes will generally
@@ -250,6 +259,7 @@ Replace **Restrict-View-SecurityTeam** with **Restrict-View-SecurityNotify** for
 fixed security bugs. Rationale is that while fixed bugs are generally not
 intended to become public immediately, we'd like to give access to external
 parties depending on Chromium via *security-notify@chromium.org*.
+(WebRTC bugs instead get set to **Restrict-View-SecurityNotifyWebRTC**).
 
 ### Set **Merge-Request-X** For Fixed Bugs
 

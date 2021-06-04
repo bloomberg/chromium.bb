@@ -25,8 +25,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -79,7 +81,6 @@ class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
 class PseudoElement;
-class StyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
@@ -92,6 +93,8 @@ class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
+class StyleRequest;
+class V8UnionBooleanOrScrollIntoViewOptions;
 
 enum class CSSPropertyID;
 enum class CSSValueID;
@@ -121,7 +124,7 @@ enum class ElementFlags {
 
 enum class ShadowRootType;
 
-enum class SlotAssignmentMode { kManual, kAuto };
+enum class SlotAssignmentMode { kManual, kNamed };
 enum class FocusDelegation { kNone, kDelegateFocus };
 
 enum class SelectionBehaviorOnFocus {
@@ -199,11 +202,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool HasExplicitlySetAttrAssociatedElements(const QualifiedName& name);
   Element* GetElementAttribute(const QualifiedName& name);
   void SetElementAttribute(const QualifiedName&, Element*);
-  base::Optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
+  absl::optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
       const QualifiedName& name);
   void SetElementArrayAttribute(
       const QualifiedName&,
-      const base::Optional<HeapVector<Member<Element>>>&);
+      const absl::optional<HeapVector<Member<Element>>>&);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
@@ -240,6 +243,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   // Trusted Types variant for explicit setAttribute() use.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void setAttribute(const AtomicString& name,
+                    const V8TrustedString* trusted_string,
+                    ExceptionState& exception_state) {
+    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), trusted_string,
+                       exception_state);
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttribute(const AtomicString& name,
                     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
                         string_or_trusted,
@@ -247,6 +258,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     SetAttributeHinted(name, WeakLowercaseIfNecessary(name), string_or_trusted,
                        exception_state);
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
@@ -257,11 +269,18 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
                                  ExceptionState&);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void setAttributeNS(const AtomicString& namespace_uri,
+                      const AtomicString& qualified_name,
+                      const V8TrustedString* trusted_string,
+                      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttributeNS(
       const AtomicString& namespace_uri,
       const AtomicString& qualified_name,
       const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
       ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
@@ -300,7 +319,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // when not interested in style attribute or one of the SVG attributes.
   AttributeCollection AttributesWithoutUpdate() const;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void scrollIntoView(const V8UnionBooleanOrScrollIntoViewOptions* arg);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(bool align_to_top = true);
   void scrollIntoViewWithOptions(const ScrollIntoViewOptions*);
   void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions*);
@@ -552,7 +575,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ShadowRoot& AttachShadowRootInternal(
       ShadowRootType,
       FocusDelegation focus_delegation = FocusDelegation::kNone,
-      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kAuto);
+      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
@@ -569,7 +592,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // stored on the Element, computes the ComputedStyle and stores it on the
   // Element’s ElementRareData.  Used for getComputedStyle when Element is
   // display none.
-  const ComputedStyle* EnsureComputedStyle(PseudoId = kPseudoIdNone);
+  const ComputedStyle* EnsureComputedStyle(
+      PseudoId = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   bool HasDisplayContentsStyle() const;
 
@@ -648,6 +673,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsFocusable() const;
   virtual bool IsKeyboardFocusable() const;
   virtual bool IsMouseFocusable() const;
+  // IsBaseElementFocusable() is used by some subclasses to check if the base
+  // element is focusable. This is used to avoid infinite recursion.
+  bool IsBaseElementFocusable() const;
   bool IsFocusedElementInDocument() const;
   Element* AdjustedFocusedElementInTreeScope() const;
   bool IsAutofocusable() const;
@@ -1077,8 +1105,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // and returns the new style. Otherwise, returns null.
   scoped_refptr<ComputedStyle> PropagateInheritedProperties();
 
-  const ComputedStyle* EnsureOwnComputedStyle(const StyleRecalcContext&,
-                                              PseudoId);
+  const ComputedStyle* EnsureOwnComputedStyle(
+      const StyleRecalcContext&,
+      PseudoId,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   // Recalculate the ComputedStyle for this element and return a
   // StyleRecalcChange for propagation/traversal into child nodes.
@@ -1175,11 +1205,18 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                           WTF::AtomicStringTable::WeakResult hint,
                           const AtomicString& value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void SetAttributeHinted(const AtomicString& name,
+                          WTF::AtomicStringTable::WeakResult hint,
+                          const V8TrustedString* trusted_string,
+                          ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetAttributeHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint,
       const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
       ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint) const;
@@ -1188,8 +1225,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual int DefaultTabIndex() const;
 
   const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) final {
-    return EnsureComputedStyle(pseudo_element_specifier);
+      PseudoId pseudo_element_specifier = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom) final {
+    return EnsureComputedStyle(pseudo_element_specifier, pseudo_argument);
   }
 
   inline void UpdateCallbackSelectors(const ComputedStyle* old_style,

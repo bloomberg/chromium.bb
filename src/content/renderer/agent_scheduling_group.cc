@@ -8,7 +8,6 @@
 #include "base/types/pass_key.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/public/common/content_features.h"
-#include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -183,7 +182,7 @@ void AgentSchedulingGroup::CreateView(mojom::CreateViewParamsPtr params) {
   renderer.SetScrollAnimatorEnabled(
       params->web_preferences.enable_scroll_animator, PassKey());
 
-  RenderViewImpl::Create(*this, &renderer, std::move(params),
+  RenderViewImpl::Create(*this, std::move(params),
                          /*was_created_by_renderer=*/false,
                          agent_group_scheduler_->DefaultTaskRunner());
 }
@@ -210,8 +209,7 @@ void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {
       std::move(params->interface_broker), params->previous_routing_id,
       params->opener_frame_token, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,
-      std::move(params->replication_state), &ToImpl(render_thread_),
-      std::move(params->widget_params),
+      std::move(params->replication_state), std::move(params->widget_params),
       std::move(params->frame_owner_properties),
       params->has_committed_real_load, std::move(params->policy_container));
 }
@@ -219,14 +217,16 @@ void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {
 void AgentSchedulingGroup::CreateFrameProxy(
     const blink::RemoteFrameToken& token,
     int32_t routing_id,
-    const base::Optional<blink::FrameToken>& opener_frame_token,
+    const absl::optional<blink::FrameToken>& opener_frame_token,
     int32_t view_routing_id,
     int32_t parent_routing_id,
     blink::mojom::FrameReplicationStatePtr replicated_state,
-    const base::UnguessableToken& devtools_frame_token) {
+    const base::UnguessableToken& devtools_frame_token,
+    mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces) {
   RenderFrameProxy::CreateFrameProxy(
       *this, token, routing_id, opener_frame_token, view_routing_id,
-      parent_routing_id, std::move(replicated_state), devtools_frame_token);
+      parent_routing_id, std::move(replicated_state), devtools_frame_token,
+      std::move(remote_main_frame_interfaces));
 }
 
 void AgentSchedulingGroup::BindAssociatedInterfaces(

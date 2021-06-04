@@ -50,8 +50,9 @@ class UseAddressActionTest : public testing::Test {
     autofill::test::SetProfileInfo(&profile_, kFirstName, "", kLastName, kEmail,
                                    "", "", "", "", "", "", "", kPhoneNumber);
     // Store copies of |profile_| in |user_data_| and |user_model_|.
-    user_data_.selected_addresses_[kAddressName] =
-        std::make_unique<autofill::AutofillProfile>(profile_);
+    user_model_.SetSelectedAutofillProfile(
+        kAddressName, std::make_unique<autofill::AutofillProfile>(profile_),
+        &user_data_);
     auto profiles = std::make_unique<
         std::vector<std::unique_ptr<autofill::AutofillProfile>>>();
     profiles->emplace_back(
@@ -88,11 +89,12 @@ class UseAddressActionTest : public testing::Test {
     return action;
   }
 
-  UseAddressProto::RequiredField* AddRequiredField(ActionProto* action,
-                                                   std::string value_expression,
-                                                   std::string selector) {
+  RequiredFieldProto* AddRequiredField(ActionProto* action,
+                                       autofill::ServerFieldType field,
+                                       const std::string& selector) {
     auto* required_field = action->mutable_use_address()->add_required_fields();
-    required_field->set_value_expression(value_expression);
+    required_field->mutable_value_expression()->add_chunk()->set_key(
+        static_cast<int>(field));
     *required_field->mutable_element() = ToSelectorProto(selector);
     return required_field;
   }
@@ -173,7 +175,7 @@ TEST_F(UseAddressActionTest, ResolveProfileByNameSucceeds) {
   *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_name(kAddressName);
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(Pointee(Eq(profile_)), _, _))
+              FillAddressForm(Pointee(Eq(profile_)), _, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
@@ -208,7 +210,7 @@ TEST_F(UseAddressActionTest, ResolveProfileByModelIdentifierSucceeds) {
   *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_model_identifier(kModelIdentifier);
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(Pointee(Eq(profile_)), _, _))
+              FillAddressForm(Pointee(Eq(profile_)), _, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
@@ -217,8 +219,12 @@ TEST_F(UseAddressActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  user_data_.selected_addresses_[kAddressName] = nullptr;
-  user_data_.selected_addresses_["one_more"] = nullptr;
+  user_model_.SetSelectedAutofillProfile(kAddressName, nullptr, &user_data_);
+  user_model_.SetSelectedAutofillProfile(
+      "one_more",
+      std::make_unique<autofill::AutofillProfile>(base::GenerateGUID(),
+                                                  "www.example.com"),
+      &user_data_);
 
   UseAddressAction action(&mock_action_delegate_, action_proto);
 
@@ -230,8 +236,7 @@ TEST_F(UseAddressActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
             processed_action.status());
   const auto& error_info =
       processed_action.status_details().autofill_error_info();
-  EXPECT_EQ(base::JoinString({kAddressName, "one_more"}, ","),
-            error_info.client_memory_address_key_names());
+  EXPECT_EQ("one_more", error_info.client_memory_address_key_names());
   EXPECT_EQ(kAddressName, error_info.address_key_requested());
   EXPECT_TRUE(error_info.address_pointee_was_null());
 }
@@ -244,7 +249,7 @@ TEST_F(UseAddressActionTest, ShortWaitForElementVisible) {
 
   ActionProto action_proto = CreateUseAddressAction();
   // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(NotNull(), _, _))
+  EXPECT_CALL(mock_action_delegate_, FillAddressForm(NotNull(), _, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation succeeds.
@@ -259,28 +264,16 @@ TEST_F(UseAddressActionTest, ValidationSucceeds) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_FIRST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_FIRST,
                    "#first_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_LAST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_LAST,
                    "#last_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::EMAIL_ADDRESS,
                    "#email");
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation succeeds.
@@ -296,23 +289,11 @@ TEST_F(UseAddressActionTest, FallbackFails) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_FIRST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_FIRST,
                    "#first_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_LAST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_LAST,
                    "#last_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::EMAIL_ADDRESS,
                    "#email");
 
   Selector email_selector({"#email"});
@@ -321,7 +302,7 @@ TEST_F(UseAddressActionTest, FallbackFails) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting FIRST_NAME.
@@ -376,23 +357,11 @@ TEST_F(UseAddressActionTest, FillAddressWithFallback) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_FIRST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_FIRST,
                    "#first_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_LAST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_LAST,
                    "#last_name");
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::EMAIL_ADDRESS,
                    "#email");
 
   Selector first_name_selector({"#first_name"});
@@ -401,7 +370,7 @@ TEST_F(UseAddressActionTest, FillAddressWithFallback) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // First validation fails with an empty value, called once for each field.
@@ -443,7 +412,7 @@ TEST_F(UseAddressActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
   ActionProto action_proto = CreateUseAddressAction();
 
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
   ProcessedActionProto processed_action;
@@ -465,17 +434,13 @@ TEST_F(UseAddressActionTest,
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_FIRST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_FIRST,
                    "#first_name");
 
   Selector first_name_selector({"#first_name"});
 
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
   // First validation fails.
@@ -519,13 +484,24 @@ TEST_F(UseAddressActionTest, FallbackForPhoneSucceeds) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto, "(+${12}) (${11}) ${10}", "#phone_number");
+  auto* required_field =
+      action_proto.mutable_use_address()->add_required_fields();
+  *required_field->mutable_value_expression() =
+      test_util::ValueExpressionBuilder()
+          .addChunk("(+")
+          .addChunk(autofill::ServerFieldType::PHONE_HOME_COUNTRY_CODE)
+          .addChunk(") (")
+          .addChunk(autofill::ServerFieldType::PHONE_HOME_CITY_CODE)
+          .addChunk(") ")
+          .addChunk(autofill::ServerFieldType::PHONE_HOME_NUMBER)
+          .toProto();
+  *required_field->mutable_element() = ToSelectorProto("#phone_number");
 
   Selector phone_number_selector({"#phone_number"});
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting phone number.
@@ -563,12 +539,7 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
 
   ActionProto action_proto = CreateUseAddressAction();
   auto* name_required = AddRequiredField(
-      &action_proto,
-      base::StrCat({"${",
-                    base::NumberToString(static_cast<int>(
-                        autofill::ServerFieldType::NAME_FIRST)),
-                    "}"}),
-      "#first_name");
+      &action_proto, autofill::ServerFieldType::NAME_FIRST, "#first_name");
   name_required->set_forced(true);
   name_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
   name_required->set_delay_in_millisecond(1000);
@@ -577,7 +548,7 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              FillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Do not check required field.
@@ -601,7 +572,7 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
       .WillOnce(RunOnceCallback<3>(OkClientStatus(),
                                    base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       ClickOrTapElement(ClickType::CLICK, EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_,
@@ -628,18 +599,14 @@ TEST_F(UseAddressActionTest, SkippingAutofill) {
 
   ActionProto action_proto;
   action_proto.mutable_use_address()->set_name(kAddressName);
-  AddRequiredField(&action_proto,
-                   base::StrCat({"${",
-                                 base::NumberToString(static_cast<int>(
-                                     autofill::ServerFieldType::NAME_FIRST)),
-                                 "}"}),
+  AddRequiredField(&action_proto, autofill::ServerFieldType::NAME_FIRST,
                    "#first_name");
   action_proto.mutable_use_address()->set_skip_autofill(true);
 
   Selector first_name_selector({"#first_name"});
 
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _)).Times(0);
-  EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(_, _, _)).Times(0);
+  EXPECT_CALL(mock_action_delegate_, FillAddressForm(_, _, _)).Times(0);
 
   // First validation fails.
   EXPECT_CALL(mock_web_controller_,

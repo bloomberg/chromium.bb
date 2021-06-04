@@ -105,7 +105,7 @@ public:
         const char* name() const override { return "LazyProxyTest::Op"; }
         FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
         GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip* clip,
-                                          bool hasMixedSampledCoverage, GrClampType) override {
+                                          GrClampType) override {
             return GrProcessorSet::EmptySetAnalysis();
         }
         void onPrePrepare(GrRecordingContext*,
@@ -207,11 +207,12 @@ DEF_GPUTEST(LazyProxyTest, reporter, /* options */) {
     for (bool nullTexture : {false, true}) {
         LazyProxyTest test(reporter);
         ctx->priv().addOnFlushCallbackObject(&test);
-        auto rtc = GrSurfaceDrawContext::Make(
-                ctx.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {100, 100});
+        auto rtc = GrSurfaceDrawContext::Make(ctx.get(), GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kExact, {100, 100}, SkSurfaceProps());
         REPORTER_ASSERT(reporter, rtc);
-        auto mockAtlas = GrSurfaceDrawContext::Make(
-                ctx.get(), GrColorType::kAlpha_F16, nullptr, SkBackingFit::kExact, {10, 10});
+        auto mockAtlas = GrSurfaceDrawContext::Make(ctx.get(), GrColorType::kAlpha_F16, nullptr,
+                                                    SkBackingFit::kExact, {10, 10},
+                                                    SkSurfaceProps());
         REPORTER_ASSERT(reporter, mockAtlas);
         LazyProxyTest::Clip clip(&test, mockAtlas->asTextureProxy());
         rtc->addDrawOp(&clip,
@@ -354,8 +355,7 @@ private:
 
     const char* name() const override { return "LazyFailedInstantiationTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
     void onPrePrepare(GrRecordingContext*,
@@ -382,8 +382,8 @@ DEF_GPUTEST(LazyProxyFailedInstantiationTest, reporter, /* options */) {
     sk_sp<GrDirectContext> ctx = GrDirectContext::MakeMock(&mockOptions, GrContextOptions());
     GrProxyProvider* proxyProvider = ctx->priv().proxyProvider();
     for (bool failInstantiation : {false, true}) {
-        auto rtc = GrSurfaceDrawContext::Make(
-                ctx.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {100, 100});
+        auto rtc = GrSurfaceDrawContext::Make(ctx.get(), GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kExact, {100, 100}, SkSurfaceProps());
         REPORTER_ASSERT(reporter, rtc);
 
         rtc->clear(SkPMColor4f::FromBytes_RGBA(0xbaaaaaad));

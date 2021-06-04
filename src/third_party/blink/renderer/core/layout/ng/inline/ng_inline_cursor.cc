@@ -132,7 +132,7 @@ void NGInlineCursor::SetRoot(const NGPhysicalBoxFragment& box_fragment,
 bool NGInlineCursor::TrySetRootFragmentItems() {
   DCHECK(root_block_flow_);
   DCHECK(!fragment_items_ || fragment_items_->Equals(items_));
-  for (; fragment_index_ <= max_fragment_index_; AdvanceFragmentIndex()) {
+  for (; fragment_index_ <= max_fragment_index_; IncrementFragmentIndex()) {
     const NGPhysicalBoxFragment* fragment =
         root_block_flow_->GetPhysicalFragment(fragment_index_);
     DCHECK(fragment);
@@ -230,6 +230,18 @@ NGInlineCursor NGInlineCursor::CursorForDescendants() const {
   }
   NOTREACHED();
   return NGInlineCursor();
+}
+
+NGInlineCursor NGInlineCursor::CursorForMovingAcrossFragmentainer() const {
+  DCHECK(IsNotNull());
+  if (IsBlockFragmented())
+    return *this;
+  NGInlineCursor cursor(*GetLayoutBlockFlow());
+  const auto& item = *CurrentItem();
+  while (cursor && !cursor.TryToMoveTo(item))
+    cursor.MoveToNextFragmentainer();
+  DCHECK(cursor) << *this;
+  return cursor;
 }
 
 void NGInlineCursor::ExpandRootToContainingBlock() {
@@ -873,13 +885,20 @@ inline wtf_size_t NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
 }
 
 void NGInlineCursor::MoveTo(const NGFragmentItem& fragment_item) {
+  if (TryToMoveTo(fragment_item))
+    return;
+  NOTREACHED() << *this << " " << fragment_item;
+}
+
+bool NGInlineCursor::TryToMoveTo(const NGFragmentItem& fragment_item) {
   DCHECK(HasRoot());
   // Note: We use address instead of iterator because we can't compare
   // iterators in different span. See |base::CheckedContiguousIterator<T>|.
   const ptrdiff_t index = &fragment_item - &*items_.begin();
-  DCHECK_GE(index, 0);
-  DCHECK_LT(static_cast<size_t>(index), items_.size());
+  if (index < 0 || static_cast<size_t>(index) >= items_.size())
+    return false;
   MoveToItem(items_.begin() + index);
+  return true;
 }
 
 void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {
@@ -1077,10 +1096,21 @@ void NGInlineCursor::MoveToNextInlineLeafOnLine() {
   NGInlineCursor cursor = CursorForDescendants();
   cursor.MoveTo(last_item);
   // Note: AX requires this for AccessibilityLayoutTest.NextOnLine.
-  if (!cursor.Current().IsInlineLeaf())
+  // If the cursor is on a container, move to the next content
+  // not within the container.
+  if (cursor.Current().IsInlineLeaf()) {
     cursor.MoveToNextInlineLeaf();
-  cursor.MoveToNextInlineLeaf();
+  } else {
+    // Skip over descendants.
+    cursor.MoveToNextSkippingChildren();  // Skip over descendants.
+    // Ensure that a leaf is returned.
+    if (cursor.Current() && !cursor.Current().IsInlineLeaf())
+      cursor.MoveToNextInlineLeaf();
+  }
   MoveTo(cursor);
+  DCHECK(!cursor.Current() || cursor.Current().IsInlineLeaf())
+      << "Must return an empty or inline leaf position, returned: "
+      << cursor.CurrentMutableLayoutObject();
 }
 
 void NGInlineCursor::MoveToNextLine() {
@@ -1114,9 +1144,6 @@ void NGInlineCursor::MoveToPreviousInlineLeafOnLine() {
   MoveToContainingLine();
   NGInlineCursor cursor = CursorForDescendants();
   cursor.MoveTo(first_item);
-  // Note: AX requires this for AccessibilityLayoutTest.NextOnLine.
-  if (!cursor.Current().IsInlineLeaf())
-    cursor.MoveToPreviousInlineLeaf();
   cursor.MoveToPreviousInlineLeaf();
   MoveTo(cursor);
 }
@@ -1200,6 +1227,24 @@ void NGInlineCursor::MoveToPrevious() {
   current_.item_ = &*current_.item_iter_;
 }
 
+void NGInlineCursor::MoveToPreviousFragmentainer() {
+  DCHECK(CanMoveAcrossFragmentainer());
+  if (fragment_index_) {
+    DecrementFragmentIndex();
+    if (TrySetRootFragmentItems()) {
+      MoveToItem(items_.end() - 1);
+      return;
+    }
+  }
+  MakeNull();
+}
+
+void NGInlineCursor::MoveToPreviousIncludingFragmentainer() {
+  MoveToPrevious();
+  if (!Current() && max_fragment_index_ && CanMoveAcrossFragmentainer())
+    MoveToPreviousFragmentainer();
+}
+
 void NGInlineCursor::MoveToFirstIncludingFragmentainer() {
   if (!fragment_index_) {
     MoveToFirst();
@@ -1214,7 +1259,7 @@ void NGInlineCursor::MoveToFirstIncludingFragmentainer() {
 void NGInlineCursor::MoveToNextFragmentainer() {
   DCHECK(CanMoveAcrossFragmentainer());
   if (fragment_index_ < max_fragment_index_) {
-    AdvanceFragmentIndex();
+    IncrementFragmentIndex();
     if (TrySetRootFragmentItems())
       return;
   }
@@ -1510,7 +1555,22 @@ void NGInlineCursor::ResetFragmentIndex() {
   previously_consumed_block_size_ = LayoutUnit();
 }
 
-void NGInlineCursor::AdvanceFragmentIndex() {
+void NGInlineCursor::DecrementFragmentIndex() {
+  DCHECK(fragment_index_);
+  --fragment_index_;
+  previously_consumed_block_size_ = LayoutUnit();
+  if (!fragment_index_)
+    return;
+  // Note: |LayoutBox::GetPhysicalFragment(wtf_size_t)| is O(1).
+  const auto& root_box_fragment =
+      *root_block_flow_->GetPhysicalFragment(fragment_index_ - 1);
+  if (const auto* break_token =
+          To<NGBlockBreakToken>(root_box_fragment.BreakToken()))
+    previously_consumed_block_size_ = break_token->ConsumedBlockSize();
+}
+
+void NGInlineCursor::IncrementFragmentIndex() {
+  DCHECK_LE(fragment_index_, max_fragment_index_);
   fragment_index_++;
   if (!root_box_fragment_)
     return;

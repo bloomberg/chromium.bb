@@ -4,6 +4,7 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
 
 devtools_module("profiler") {
   sources = [
@@ -32,19 +33,19 @@ devtools_module("profiler") {
   ]
 
   deps = [
-    "../../components:bundle",
     "../../core/common:bundle",
     "../../core/host:bundle",
     "../../core/i18n:bundle",
     "../../core/platform:bundle",
     "../../core/sdk:bundle",
-    "../../data_grid:bundle",
     "../../models/bindings:bundle",
     "../../models/heap_snapshot_model:bundle",
-    "../../object_ui:bundle",
-    "../../perf_ui:bundle",
+    "../../models/workspace:bundle",
     "../../ui/legacy:bundle",
-    "../../workspace:bundle",
+    "../../ui/legacy/components/data_grid:bundle",
+    "../../ui/legacy/components/object_ui:bundle",
+    "../../ui/legacy/components/perf_ui:bundle",
+    "../../ui/legacy/components/utils:bundle",
   ]
 }
 
@@ -52,16 +53,32 @@ devtools_entrypoint("bundle") {
   entrypoint = "profiler.ts"
 
   deps = [ ":profiler" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../entrypoints/*",
+
+    # TODO(crbug.com/1202788): Remove invalid dependents
+    "../js_profiler/*",
+    "../timeline/*",
+  ]
+
+  visibility += devtools_panels_visibility
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "profiler-legacy.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [ "../..:legacy_entrypoints" ]
 }
 
 devtools_entrypoint("meta") {
   entrypoint = "profiler-meta.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [ "../../entrypoints/*" ]
 }

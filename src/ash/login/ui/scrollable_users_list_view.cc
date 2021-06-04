@@ -18,8 +18,9 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -332,7 +333,7 @@ ScrollableUsersListView::ScrollableUsersListView(
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));
-  SetBackgroundColor(base::nullopt);
+  SetBackgroundColor(absl::nullopt);
   SetDrawOverflowIndicator(false);
 
   SetVerticalScrollBar(std::make_unique<UsersListScrollBar>(false));
@@ -352,6 +353,16 @@ LoginUserView* ScrollableUsersListView::GetUserView(
   return nullptr;
 }
 
+void ScrollableUsersListView::UpdateUserViewHostLayoutInsets() {
+  DCHECK(GetWidget());
+  bool should_show_landscape =
+      login_views_utils::ShouldShowLandscape(GetWidget());
+  LayoutParams layout_params = BuildLayoutForStyle(display_style_);
+  user_view_host_layout_->set_inside_border_insets(
+      should_show_landscape ? layout_params.insets_landscape
+                            : layout_params.insets_portrait);
+}
+
 void ScrollableUsersListView::Layout() {
   DCHECK(user_view_host_layout_);
 
@@ -363,13 +374,7 @@ void ScrollableUsersListView::Layout() {
       PreferredSizeChanged();
   }
 
-  // Update the user view layout.
-  bool should_show_landscape =
-      login_views_utils::ShouldShowLandscape(GetWidget());
-  LayoutParams layout_params = BuildLayoutForStyle(display_style_);
-  user_view_host_layout_->set_inside_border_insets(
-      should_show_landscape ? layout_params.insets_landscape
-                            : layout_params.insets_portrait);
+  UpdateUserViewHostLayoutInsets();
 
   // Layout everything.
   ScrollView::Layout();
@@ -432,7 +437,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void ScrollableUsersListView::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  views::ScrollView::OnThemeChanged();
   gradient_params_ = GradientParams::BuildForStyle(display_style_);
 }
 

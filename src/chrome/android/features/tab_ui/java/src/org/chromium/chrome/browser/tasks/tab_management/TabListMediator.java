@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
+import org.chromium.chrome.browser.tab.state.StorePersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -173,19 +174,15 @@ class TabListMediator {
      */
     static class ShoppingPersistedTabDataFetcher {
         protected Tab mTab;
-        protected TabListModel mModel;
         protected PriceWelcomeMessageController mPriceWelcomeMessageController;
 
         /**
          * @param tab {@link Tab} {@link ShoppingPersistedTabData} will be acquired for.
-         * @param model {@link TabListModel} to check if we already have the price welcome message
-         *         in the model.
          * @param priceWelcomeMessageController to show the price welcome message.
          */
-        ShoppingPersistedTabDataFetcher(Tab tab, @Nullable TabListModel model,
-                @Nullable PriceWelcomeMessageController priceWelcomeMessageController) {
+        ShoppingPersistedTabDataFetcher(
+                Tab tab, @Nullable PriceWelcomeMessageController priceWelcomeMessageController) {
             mTab = tab;
-            mModel = model;
             mPriceWelcomeMessageController = priceWelcomeMessageController;
         }
 
@@ -203,24 +200,39 @@ class TabListMediator {
         @VisibleForTesting
         void maybeShowPriceWelcomeMessage(
                 @Nullable ShoppingPersistedTabData shoppingPersistedTabData) {
-            // TODO(crbug.com/1166702): Use another method to check if we already have the price
-            // welcome message in tab switcher instead of using
-            // mModel.lastIndexForMessageItemFromType(MessageService.MessageType.PRICE_MESSAGE),
-            // because we may have other price message types.
             // Avoid inserting message while RecyclerView is computing a layout.
             new Handler().post(() -> {
-                if (!PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled() || (mModel == null)
+                if (!PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled()
                         || (mPriceWelcomeMessageController == null)
                         || (shoppingPersistedTabData == null)
-                        || (shoppingPersistedTabData.getPriceDrop() == null)
-                        || (mModel.lastIndexForMessageItemFromType(
-                                    MessageService.MessageType.PRICE_MESSAGE)
-                                != TabModel.INVALID_TAB_INDEX)) {
+                        || (shoppingPersistedTabData.getPriceDrop() == null)) {
                     return;
                 }
                 mPriceWelcomeMessageController.showPriceWelcomeMessage(
                         new PriceTabData(mTab.getId(), shoppingPersistedTabData.getPriceDrop()));
             });
+        }
+    }
+
+    /**
+     * Provides capability to asynchronously acquire {@link StorePersistedTabData}
+     */
+    static class StorePersistedTabDataFetcher {
+        protected Tab mTab;
+
+        /**
+         * @param tab {@link Tab} {@link StorePersistedTabData} will be acquired for.
+         */
+        StorePersistedTabDataFetcher(Tab tab) {
+            mTab = tab;
+        }
+
+        /**
+         * Asynchronously acquire {@link StorePersistedTabData}
+         * @param callback {@link Callback} to pass {@link StorePersistedTabData} back in
+         */
+        public void fetch(Callback<StorePersistedTabData> callback) {
+            StorePersistedTabData.from(mTab, (res) -> { callback.onResult(res); });
         }
     }
 
@@ -426,7 +438,7 @@ class TabListMediator {
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
-            if (UrlUtilities.isNTPUrl(tab.getUrlString())) return;
+            if (UrlUtilities.isNTPUrl(tab.getUrl())) return;
             if (navigationHandle.isSameDocument() || !navigationHandle.isInMainFrame()) return;
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
@@ -1153,13 +1165,19 @@ class TabListMediator {
                     TabProperties.PAGE_INFO_ICON_DRAWABLE_ID, mSearchChipIconDrawableId);
         }
 
-        if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()
-                && PriceTrackingUtilities.isTrackPricesOnTabsEnabled()) {
-            mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
-                    new ShoppingPersistedTabDataFetcher(
-                            pseudoTab.getTab(), mModel, mPriceWelcomeMessageController));
+        if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()) {
+            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()) {
+                mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
+                        new ShoppingPersistedTabDataFetcher(
+                                pseudoTab.getTab(), mPriceWelcomeMessageController));
+            }
+            if (StoreTrackingUtilities.isStoreHoursOnTabsEnabled()) {
+                mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER,
+                        new StorePersistedTabDataFetcher(pseudoTab.getTab()));
+            }
         } else {
             mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
+            mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
         }
 
         updateFaviconForTab(pseudoTab, null);
@@ -1526,9 +1544,10 @@ class TabListMediator {
         if (!tab.isInitialized()) {
             return "";
         }
-        String domain = UrlUtilities.getDomainAndRegistry(tab.getUrlString(), false);
+        // TODO(crbug/783819): convert UrlUtilities to GURL
+        String domain = UrlUtilities.getDomainAndRegistry(tab.getUrl().getSpec(), false);
 
-        if (domain.isEmpty()) return tab.getUrlString();
+        if (domain.isEmpty()) return tab.getUrl().getSpec();
         return domain;
     }
 
@@ -1599,7 +1618,7 @@ class TabListMediator {
             urls.add(pseudoTab.getUrl());
             for (int i = 0; urls.size() < 4 && i < relatedTabList.size(); i++) {
                 if (pseudoTab.getId() == relatedTabList.get(i).getId()) continue;
-                urls.add(relatedTabList.get(i).getUrlString());
+                urls.add(relatedTabList.get(i).getUrl().getSpec());
             }
 
             // For tab group card in grid tab switcher, the favicon is the composed favicon.

@@ -26,7 +26,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -80,6 +79,7 @@ namespace dnr_api = extensions::api::declarative_net_request;
 using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
 
 void ClearCacheOnNavigationOnUI() {
+  extensions::ExtensionsBrowserClient::Get()->ClearBackForwardCache();
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
@@ -707,22 +707,23 @@ bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
   return a.extension_install_time > b.extension_install_time;
 }
 
-std::unique_ptr<base::ListValue> StringToCharList(const std::string& s) {
-  auto result = std::make_unique<base::ListValue>();
+base::Value StringToCharList(const std::string& s) {
+  base::Value result(base::Value::Type::LIST);
   for (size_t i = 0, n = s.size(); i < n; ++i) {
-    result->AppendInteger(*reinterpret_cast<const unsigned char*>(&s[i]));
+    result.Append(*reinterpret_cast<const unsigned char*>(&s[i]));
   }
   return result;
 }
 
-bool CharListToString(const base::ListValue* list, std::string* out) {
-  if (!list)
-    return false;
-  const size_t list_length = list->GetSize();
+bool CharListToString(base::Value::ConstListView list, std::string* out) {
+  const size_t list_length = list.size();
   out->resize(list_length);
   int value = 0;
   for (size_t i = 0; i < list_length; ++i) {
-    if (!list->GetInteger(i, &value) || value < 0 || value > 255)
+    if (!list[i].is_int())
+      return false;
+    value = list[i].GetInt();
+    if (value < 0 || value > 255)
       return false;
     unsigned char tmp = static_cast<unsigned char>(value);
     (*out)[i] = *reinterpret_cast<char*>(&tmp);
@@ -861,7 +862,7 @@ EventResponseDelta CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    base::Optional<net::AuthCredentials> auth_credentials) {
+    absl::optional<net::AuthCredentials> auth_credentials) {
   EventResponseDelta result(extension_id, extension_install_time);
   result.cancel = cancel;
   result.auth_credentials = std::move(auth_credentials);
@@ -870,8 +871,8 @@ EventResponseDelta CalculateOnAuthRequiredDelta(
 
 void MergeCancelOfResponses(
     const EventResponseDeltas& deltas,
-    base::Optional<extensions::ExtensionId>* canceled_by_extension) {
-  *canceled_by_extension = base::nullopt;
+    absl::optional<extensions::ExtensionId>* canceled_by_extension) {
+  *canceled_by_extension = absl::nullopt;
   for (const auto& delta : deltas) {
     if (delta.cancel) {
       *canceled_by_extension = delta.extension_id;
@@ -946,7 +947,7 @@ void MergeOnBeforeRequestResponses(const GURL& url,
 
 static bool DoesRequestCookieMatchFilter(
     const ParsedRequestCookie& cookie,
-    const base::Optional<RequestCookie>& filter) {
+    const absl::optional<RequestCookie>& filter) {
   if (!filter.has_value())
     return true;
   if (filter->name.has_value() && cookie.first != *filter->name)
@@ -1019,7 +1020,7 @@ static bool MergeEditRequestCookieModifications(
         continue;
 
       const std::string& new_value = *mod->modification->value;
-      const base::Optional<RequestCookie>& filter = mod->filter;
+      const absl::optional<RequestCookie>& filter = mod->filter;
       for (auto cookie = cookies->begin(); cookie != cookies->end(); ++cookie) {
         if (!DoesRequestCookieMatchFilter(*cookie, filter))
           continue;
@@ -1051,7 +1052,7 @@ static bool MergeRemoveRequestCookieModifications(
       if (mod->type != REMOVE)
         continue;
 
-      const base::Optional<RequestCookie>& filter = mod->filter;
+      const absl::optional<RequestCookie>& filter = mod->filter;
       auto i = cookies->begin();
       while (i != cookies->end()) {
         if (DoesRequestCookieMatchFilter(*i, filter)) {
@@ -1327,7 +1328,7 @@ static bool ApplyResponseCookieModification(const ResponseCookie& modification,
 
 static bool DoesResponseCookieMatchFilter(
     const net::ParsedCookie& cookie,
-    const base::Optional<FilterResponseCookie>& filter) {
+    const absl::optional<FilterResponseCookie>& filter) {
   if (!cookie.IsValid())
     return false;
   if (!filter.has_value())
@@ -1722,7 +1723,8 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
   if (base::IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
   } else {
-    header->Set(keys::kHeaderBinaryValueKey, StringToCharList(value));
+    header->Set(keys::kHeaderBinaryValueKey,
+                std::make_unique<base::Value>(StringToCharList(value)));
   }
   return header;
 }

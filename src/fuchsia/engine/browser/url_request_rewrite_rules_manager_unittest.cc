@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "fuchsia/base/url_request_rewrite_test_util.h"
+#include "fuchsia/base/test/url_request_rewrite_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class UrlRequestRewriteRulesManagerTest : public testing::Test {
@@ -65,7 +65,7 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertAddHeader) {
 // Tests RemoveHeader rewrites are properly converted to their Mojo equivalent.
 TEST_F(UrlRequestRewriteRulesManagerTest, ConvertRemoveHeader) {
   EXPECT_EQ(UpdateRulesFromRewrite(cr_fuchsia::CreateRewriteRemoveHeader(
-                base::make_optional("Test"), "Header")),
+                absl::make_optional("Test"), "Header")),
             ZX_OK);
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
       cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
@@ -83,7 +83,7 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertRemoveHeader) {
 
   // Create a RemoveHeader rewrite with no pattern.
   EXPECT_EQ(UpdateRulesFromRewrite(
-                cr_fuchsia::CreateRewriteRemoveHeader(base::nullopt, "Header")),
+                cr_fuchsia::CreateRewriteRemoveHeader(absl::nullopt, "Header")),
             ZX_OK);
   cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
   ASSERT_EQ(cached_rules->data.size(), 1u);

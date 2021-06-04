@@ -22,6 +22,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -214,8 +215,9 @@ bool VerifySyncInvalidationFieldsPopulated() {
     if (entity.specifics().device_info().cache_guid() == cache_guid) {
       const sync_pb::InvalidationSpecificFields& invalidation_fields =
           entity.specifics().device_info().invalidation_fields();
-      return !invalidation_fields.interested_data_type_ids().empty() &&
-             invalidation_fields.has_instance_id_token();
+      // TODO(crbug.com/1187481): check if |instance_id_token| is present once
+      // fixed.
+      return !invalidation_fields.interested_data_type_ids().empty();
     }
   }
   // The local DeviceInfo hasn't been committed yet.

@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
@@ -25,6 +26,10 @@ class MediaFoundationCdmSession;
 class MEDIA_EXPORT MediaFoundationCdm : public ContentDecryptionModule,
                                         public CdmContext {
  public:
+  // Checks whether MediaFoundationCdm is available based on OS version. Further
+  // checks need to be made to determine the usability and the capabilities.
+  static bool IsAvailable();
+
   MediaFoundationCdm(
       Microsoft::WRL::ComPtr<IMFContentDecryptionModule> mf_cdm,
       const SessionMessageCB& session_message_cb,
@@ -89,7 +94,7 @@ class MEDIA_EXPORT MediaFoundationCdm : public ContentDecryptionModule,
   // Session ID to session map.
   std::map<std::string, std::unique_ptr<MediaFoundationCdmSession>> sessions_;
 
-  Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy_;
+  scoped_refptr<MediaFoundationCdmProxy> cdm_proxy_;
 };
 
 }  // namespace media

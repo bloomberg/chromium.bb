@@ -35,12 +35,13 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -234,7 +235,7 @@ void ChromeClientImpl::StartDragging(LocalFrame* frame,
 }
 
 bool ChromeClientImpl::AcceptsLoadDrops() const {
-  return !web_view_->Client() || web_view_->Client()->AcceptsLoadDrops();
+  return web_view_->GetRendererPreferences().can_accept_load_drops;
 }
 
 Page* ChromeClientImpl::CreateWindowDelegate(
@@ -404,9 +405,8 @@ bool ChromeClientImpl::TabsToLinks() {
   return web_view_->TabsToLinks();
 }
 
-void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
-  if (!update_rect.IsEmpty())
-    web_view_->InvalidateRect(update_rect);
+void ChromeClientImpl::InvalidateContainer() {
+  web_view_->InvalidateContainer();
 }
 
 void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view,
@@ -543,21 +543,31 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
   web_view_->SetMouseOverURL(url);
 }
 
-void ChromeClientImpl::SetToolTip(LocalFrame& frame,
-                                  const String& tooltip_text,
-                                  TextDirection dir) {
+void ChromeClientImpl::UpdateTooltipUnderCursor(LocalFrame& frame,
+                                                const String& tooltip_text,
+                                                TextDirection dir) {
   WebFrameWidgetImpl* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   if (!tooltip_text.IsEmpty()) {
-    widget->SetToolTipText(tooltip_text, dir);
+    widget->UpdateTooltipUnderCursor(tooltip_text, dir);
     did_request_non_empty_tool_tip_ = true;
   } else if (did_request_non_empty_tool_tip_) {
-    // WebFrameWidgetImpl::SetToolTipText will send a Mojo message via
+    // WebFrameWidgetImpl::UpdateTooltipUnderCursor will send a Mojo message via
     // mojom::blink::WidgetHost. We'd like to reduce the number of
-    // SetToolTipText calls.
-    widget->SetToolTipText(tooltip_text, dir);
+    // UpdateTooltipUnderCursor calls.
+    widget->UpdateTooltipUnderCursor(tooltip_text, dir);
     did_request_non_empty_tool_tip_ = false;
   }
+}
+
+void ChromeClientImpl::UpdateTooltipFromKeyboard(LocalFrame& frame,
+                                                 const String& tooltip_text,
+                                                 TextDirection dir,
+                                                 const gfx::Rect& bounds) {
+  if (!RuntimeEnabledFeatures::KeyboardAccessibleTooltipEnabled())
+    return;
+
+  // TODO(bebeaudr): Add WidgetHost function and call it here.
 }
 
 void ChromeClientImpl::DispatchViewportPropertiesDidChange(

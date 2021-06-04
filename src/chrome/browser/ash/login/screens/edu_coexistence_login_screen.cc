@@ -21,7 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace chromeos {
+namespace ash {
 
 // static
 constexpr StaticOobeScreenId EduCoexistenceLoginScreen::kScreenId;
@@ -48,7 +48,7 @@ EduCoexistenceLoginScreen::EduCoexistenceLoginScreen(
     : BaseScreen(EduCoexistenceLoginScreen::kScreenId,
                  OobeScreenPriority::DEFAULT),
       exit_callback_(exit_callback) {
-  observed_login_display_host_.Add(LoginDisplayHost::default_host());
+  observed_login_display_host_.Observe(LoginDisplayHost::default_host());
 }
 
 EduCoexistenceLoginScreen::~EduCoexistenceLoginScreen() {}
@@ -101,4 +101,4 @@ void EduCoexistenceLoginScreen::WebDialogViewBoundsChanged(
   dialog_delegate_->UpdateDialogBounds(bounds);
 }
 
-}  // namespace chromeos
+}  // namespace ash

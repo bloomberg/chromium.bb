@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -204,7 +203,7 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
 JobConfigurationBase::JobConfigurationBase(
     JobType type,
     DMAuth auth_data,
-    base::Optional<std::string> oauth_token,
+    absl::optional<std::string> oauth_token,
     scoped_refptr<network::SharedURLLoaderFactory> factory)
     : type_(type),
       factory_(factory),

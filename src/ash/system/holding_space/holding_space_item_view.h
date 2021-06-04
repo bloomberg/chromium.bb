@@ -12,7 +12,7 @@
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "base/callback_list.h"
 #include "base/scoped_observation.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -42,9 +42,10 @@ class ASH_EXPORT HoldingSpaceItemView : public views::View,
   // Returns `view` cast as a `HoldingSpaceItemView`. Note that this performs a
   // DCHECK to assert that `view` is in fact a `HoldingSpaceItemView` instance.
   static HoldingSpaceItemView* Cast(views::View* view);
+  static const HoldingSpaceItemView* Cast(const views::View* view);
 
   // Returns if `view` is an instance of `HoldingSpaceItemView`.
-  static bool IsInstance(views::View* view);
+  static bool IsInstance(const views::View* view);
 
   // Resets the view. Called when the tray bubble starts closing to ensure
   // that any references that may be outlived are cleared out.

@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 #include "third_party/blink/renderer/core/animation/animation_utils.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
+#include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -86,7 +88,11 @@ KeyframeEffect* KeyframeEffect::Create(
     ScriptState* script_state,
     Element* element,
     const ScriptValue& keyframes,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8UnionKeyframeEffectOptionsOrUnrestrictedDouble* options,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   Document* document = element ? &element->GetDocument() : nullptr;
   Timing timing = TimingInput::Convert(options, document, exception_state);
@@ -95,8 +101,18 @@ KeyframeEffect* KeyframeEffect::Create(
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   String pseudo = String();
-  if (options.IsKeyframeEffectOptions()) {
+  if (
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      options->IsKeyframeEffectOptions()
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      options.IsKeyframeEffectOptions()
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  ) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* effect_options = options->GetAsKeyframeEffectOptions();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     auto* effect_options = options.GetAsKeyframeEffectOptions();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     composite =
         EffectModel::StringToCompositeOperation(effect_options->composite())
             .value();
@@ -125,7 +141,7 @@ KeyframeEffect* KeyframeEffect::Create(
     if (element) {
       element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
       effect->effect_target_ = element->GetPseudoElement(
-          CSSSelector::ParsePseudoId(pseudo, element));
+          CSSSelectorParser::ParsePseudoElement(pseudo, element));
     }
   }
   return effect;
@@ -213,7 +229,7 @@ void KeyframeEffect::RefreshTarget() {
     target_element_->GetDocument().UpdateStyleAndLayoutTreeForNode(
         target_element_);
     PseudoId pseudoId =
-        CSSSelector::ParsePseudoId(target_pseudo_, target_element_);
+        CSSSelectorParser::ParsePseudoElement(target_pseudo_, target_element_);
     new_target = target_element_->GetPseudoElement(pseudoId);
   }
 
@@ -349,7 +365,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
 void KeyframeEffect::StartAnimationOnCompositor(
     int group,
-    base::Optional<double> start_time,
+    absl::optional<double> start_time,
     base::TimeDelta time_offset,
     double animation_playback_rate,
     CompositorAnimation* compositor_animation) {
@@ -562,7 +578,7 @@ void KeyframeEffect::ApplyEffects() {
     GetAnimation()->CancelAnimationOnCompositor();
   }
 
-  base::Optional<double> iteration = CurrentIteration();
+  absl::optional<double> iteration = CurrentIteration();
   DCHECK(iteration);
   DCHECK_GE(iteration.value(), 0);
   bool changed = false;
@@ -654,14 +670,15 @@ void KeyframeEffect::DetachTarget(Animation* animation) {
 
 AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     bool forwards,
-    base::Optional<double> local_time,
+    absl::optional<AnimationTimeDelta> local_time,
     AnimationTimeDelta time_to_next_iteration) const {
-  const double start_time = SpecifiedTiming().start_delay;
-  const double end_time_minus_end_delay =
+  const AnimationTimeDelta start_time = SpecifiedTiming().start_delay;
+  const AnimationTimeDelta end_time_minus_end_delay =
       start_time + SpecifiedTiming().ActiveDuration();
-  const double end_time =
+  const AnimationTimeDelta end_time =
       end_time_minus_end_delay + SpecifiedTiming().end_delay;
-  const double after_time = std::min(end_time_minus_end_delay, end_time);
+  const AnimationTimeDelta after_time =
+      std::min(end_time_minus_end_delay, end_time);
 
   Timing::Phase phase = GetPhase();
   DCHECK(local_time || phase == Timing::kPhaseNone);
@@ -671,18 +688,17 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     case Timing::kPhaseBefore:
       // Return value is clamped at 0 to prevent unexpected results that could
       // be caused by returning negative values.
-      return forwards ? AnimationTimeDelta::FromSecondsD(std::max<double>(
-                            start_time - local_time.value(), 0))
+      return forwards ? std::max(start_time - local_time.value(),
+                                 AnimationTimeDelta())
                       : AnimationTimeDelta::Max();
     case Timing::kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
-        const double time_to_end = after_time - local_time.value();
+        const AnimationTimeDelta time_to_end = after_time - local_time.value();
         if (RequiresIterationEvents()) {
-          return std::min(AnimationTimeDelta::FromSecondsD(time_to_end),
-                          time_to_next_iteration);
+          return std::min(time_to_end, time_to_next_iteration);
         }
-        return AnimationTimeDelta::FromSecondsD(time_to_end);
+        return time_to_end;
       }
       return {};
     case Timing::kPhaseAfter:
@@ -691,11 +707,10 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
         // If an animation has a positive-valued end delay, we need an
         // additional tick at the end time to ensure that the finished event is
         // delivered.
-        return end_time > local_time ? AnimationTimeDelta::FromSecondsD(
-                                           end_time - local_time.value())
+        return end_time > local_time ? end_time - local_time.value()
                                      : AnimationTimeDelta::Max();
       }
-      return AnimationTimeDelta::FromSecondsD(local_time.value() - after_time);
+      return local_time.value() - after_time;
     default:
       NOTREACHED();
       return AnimationTimeDelta::Max();

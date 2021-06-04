@@ -23,6 +23,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIEW_H_
 
 #include <memory>
+
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_test_cache.h"
@@ -228,7 +230,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   }
 
   PaintLayerCompositor* Compositor();
-  bool UsesCompositing() const;
 
   PhysicalRect DocumentRect() const;
 
@@ -281,7 +282,11 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     NOT_DESTROYED();
     needs_marker_counter_update_ = true;
   }
-  void UpdateMarkersAndCountersAfterStyleChange();
+
+  // Update generated markers and counters after style and layout tree update.
+  // container - The container for container queries, otherwise nullptr.
+  void UpdateMarkersAndCountersAfterStyleChange(
+      LayoutObject* container = nullptr);
 
   bool BackgroundIsKnownToBeOpaqueInRect(
       const PhysicalRect& local_rect) const override;

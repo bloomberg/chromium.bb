@@ -68,14 +68,9 @@ class AuthenticatorSheetModelBase
 // The sheet shown for selecting the transport over which the security key
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel
-    : public AuthenticatorSheetModelBase,
-      public TransportHoverListModel::Delegate {
+    : public AuthenticatorSheetModelBase {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
-
-  // TransportHoverListModel::Delegate:
-  void OnTransportSelected(AuthenticatorTransport transport) override;
-  void StartWinNativeApi() override;
 
  private:
   // AuthenticatorSheetModelBase:

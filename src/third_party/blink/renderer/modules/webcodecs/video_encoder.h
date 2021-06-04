@@ -7,11 +7,11 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_encoder.h"
 #include "media/base/video_frame_pool.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_output_callback.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoder_base.h"
 #include "third_party/blink/renderer/modules/webcodecs/gpu_factories_retriever.h"
@@ -42,7 +42,7 @@ class MODULES_EXPORT VideoEncoderTraits {
 
     media::VideoEncoder::Options options;
     String codec_string;
-    base::Optional<gfx::Size> display_size;
+    absl::optional<gfx::Size> display_size;
 
     void Trace(Visitor*) const {}
   };
@@ -50,7 +50,7 @@ class MODULES_EXPORT VideoEncoderTraits {
   using Init = VideoEncoderInit;
   using Config = VideoEncoderConfig;
   using InternalConfig = ParsedConfig;
-  using Frame = VideoFrame;
+  using Input = VideoFrame;
   using EncodeOptions = VideoEncoderEncodeOptions;
   using OutputChunk = EncodedVideoChunk;
   using OutputCallback = V8EncodedVideoChunkOutputCallback;
@@ -58,6 +58,7 @@ class MODULES_EXPORT VideoEncoderTraits {
 
   // Can't be a virtual method, because it's used from base ctor.
   static const char* GetNameForDevTools();
+  static const char* GetName();
 };
 
 class MODULES_EXPORT VideoEncoder final
@@ -83,11 +84,10 @@ class MODULES_EXPORT VideoEncoder final
       ParsedConfig* active_config,
       uint32_t reset_count,
       media::VideoEncoderOutput output,
-      base::Optional<media::VideoEncoder::CodecDescription> codec_desc);
+      absl::optional<media::VideoEncoder::CodecDescription> codec_desc);
   void ProcessEncode(Request* request) override;
   void ProcessConfigure(Request* request) override;
   void ProcessReconfigure(Request* request) override;
-  void ProcessFlush(Request* request) override;
 
   void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
 
@@ -95,7 +95,6 @@ class MODULES_EXPORT VideoEncoder final
   ParsedConfig* ParseConfig(const VideoEncoderConfig*,
                             ExceptionState&) override;
   bool VerifyCodecSupport(ParsedConfig*, ExceptionState&) override;
-  VideoFrame* CloneFrame(VideoFrame*, ExecutionContext*) override;
 
   void ContinueConfigureWithGpuFactories(
       Request* request,

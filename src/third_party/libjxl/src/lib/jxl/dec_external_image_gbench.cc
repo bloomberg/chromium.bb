@@ -44,10 +44,10 @@ void BM_DecExternalImage_ConvertImageRGBA(benchmark::State& state) {
       JXL_CHECK(ConvertToExternal(
           ib,
           /*bits_per_sample=*/8,
-          /*float_out=*/false,
-          /*apply_srgb_tf=*/false, num_channels, JXL_NATIVE_ENDIAN,
+          /*float_out=*/false, num_channels, JXL_NATIVE_ENDIAN,
           /*stride*/ bytes_per_row,
           /*thread_pool=*/nullptr, interleaved.data(), interleaved.size(),
+          /*out_callback=*/nullptr, /*out_opaque=*/nullptr,
           /*undo_orientation=*/jxl::Orientation::kIdentity));
     }
   }

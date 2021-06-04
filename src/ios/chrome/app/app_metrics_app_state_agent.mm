@@ -40,20 +40,21 @@
   [sceneState addObserver:self];
 }
 
-- (void)appStateDidExitSafeMode:(AppState*)appState {
-  DCHECK(self.appState.lastTimeInForeground.is_null());
-  // Log session start. This normally happens in
-  // sceneState:transitionedToActivationLevel:, but is skipped in safe mode.
-  [self handleSessionStart];
+- (void)appState:(AppState*)appState
+    didTransitionFromInitStage:(InitStage)previousInitStage {
+  if (previousInitStage == InitStageSafeMode) {
+    // Log session start if the app is already foreground
+    if (self.appState.foregroundScenes.count > 0) {
+      [self handleSessionStart];
+    }
+  }
 }
 
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level {
-  if (self.appState.isInSafeMode) {
-    // Don't log any metrics at safe mode. Wait for AppStateObserver's
-    // -appStateDidExitSafeMode to log session start.
+  if (self.appState.initStage <= InitStageSafeMode) {
     return;
   }
 
@@ -61,19 +62,17 @@
       self.appState.lastTimeInForeground.is_null()) {
     [self handleSessionStart];
   } else if (level <= SceneActivationLevelBackground) {
-    for (SceneState* scene in self.appState.connectedScenes) {
-      if (scene.activationLevel > SceneActivationLevelBackground) {
-        // One scene has gone background, but at least one other is still
-        // foreground. Consider the session ongoing.
-        return;
-      }
+    // Do not consider the app as brackgrounded when there are still scenes on
+    // the foreground.
+    if (self.appState.foregroundScenes.count > 0) {
+      return;
     }
-
     if (self.appState.lastTimeInForeground.is_null()) {
       // This method will be called multiple times, once per scene, if multiple
       // scenes go background simulatneously (for example, if two windows were
       // in split screen and the user swiped to go home). Only log the session
-      // duration once.
+      // duration once. This also makes sure that the first scene that ramps up
+      // to foreground doesn't end the session.
       return;
     }
 

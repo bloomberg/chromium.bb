@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -115,15 +116,15 @@ bool Sensor::hasReading() const {
   return sensor_proxy_->GetReading().timestamp() != 0.0;
 }
 
-base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
+absl::optional<DOMHighResTimeStamp> Sensor::timestamp(
     ScriptState* script_state) const {
   if (!hasReading()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);

@@ -33,6 +33,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
@@ -55,7 +56,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
@@ -65,7 +65,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-using base::ASCIIToUTF16;
 using testing::ElementsAre;
 
 namespace {
@@ -1964,8 +1963,8 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 }
 
 TEST_F(ViewTest, Textfield) {
-  const std::u16string kText = ASCIIToUTF16(
-      "Reality is that which, when you stop believing it, doesn't go away.");
+  const std::u16string kText =
+      u"Reality is that which, when you stop believing it, doesn't go away.";
   const std::u16string kExtraText = u"Pretty deep, Philip!";
 
   Widget* widget = new Widget;
@@ -2285,7 +2284,7 @@ TEST_F(ViewTest, HandleAccelerator) {
 // TODO(themblsha): Bring this up on non-Mac platforms. It currently fails
 // because TestView::AcceleratorPressed() is not called. See
 // http://crbug.com/667757.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 // Test that BridgedContentView correctly handles Accelerator key events when
 // subject to OS event dispatch.
 TEST_F(ViewTest, ActivateAcceleratorOnMac) {
@@ -2328,11 +2327,11 @@ TEST_F(ViewTest, ActivateAcceleratorOnMac) {
                              key_down_accelerator.modifiers());
   EXPECT_EQ(view->accelerator_count_map_[key_down_accelerator], 1);
 }
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 // TODO(crbug.com/667757): these tests were initially commented out when getting
 // aura to run. Figure out if still valuable and either nuke or fix.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 TEST_F(ViewTest, ActivateAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
@@ -2414,7 +2413,7 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
 }
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 ////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy
@@ -5374,9 +5373,9 @@ TEST_F(ViewTest, TestEnabledPropertyMetadata) {
   auto subscription = test_view->AddEnabledChangedCallback(base::BindRepeating(
       [](bool* enabled_changed) { *enabled_changed = true; },
       &enabled_changed));
-  views::metadata::ClassMetaData* view_metadata = View::MetaData();
+  ui::metadata::ClassMetaData* view_metadata = View::MetaData();
   ASSERT_TRUE(view_metadata);
-  views::metadata::MemberMetaDataBase* enabled_property =
+  ui::metadata::MemberMetaDataBase* enabled_property =
       view_metadata->FindMemberData("Enabled");
   ASSERT_TRUE(enabled_property);
   std::u16string false_value = u"false";
@@ -5388,9 +5387,9 @@ TEST_F(ViewTest, TestEnabledPropertyMetadata) {
 
 TEST_F(ViewTest, TestMarginsPropertyMetadata) {
   auto test_view = std::make_unique<View>();
-  views::metadata::ClassMetaData* view_metadata = View::MetaData();
+  ui::metadata::ClassMetaData* view_metadata = View::MetaData();
   ASSERT_TRUE(view_metadata);
-  views::metadata::MemberMetaDataBase* insets_property =
+  ui::metadata::MemberMetaDataBase* insets_property =
       view_metadata->FindMemberData("kMarginsKey");
   ASSERT_TRUE(insets_property);
   std::u16string insets_value = u"8,8,8,8";

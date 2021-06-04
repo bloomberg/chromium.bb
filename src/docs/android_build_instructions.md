@@ -181,35 +181,36 @@ out/Default chrome/test:unit_tests`).
 
 The Google Play Store allows apps to send customized `.apk` or `.aab` files
 depending on the version of Android running on a device. Chrome uses this
-feature to target 4 different versions using 4 different ninja targets:
+feature to package optimized versions for different OS versions.
 
-1. `chrome_public_apk` (ChromePublic.apk)
-   * Used for local development and tests (simpler than using bundle targets).
-   * Same configuration as chrome_modern_public_bundle.
-2. `chrome_modern_public_bundle` (MonochromePublic.aab)
+1. `chrome_modern_public_bundle` (ChromeModernPublic.aab)
    * `minSdkVersion=21` (Lollipop).
    * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
    * Stores native library with "crazy." prefix to prevent extraction.
-3. `monochrome_public_bundle` (MonochromePublic.aab)
+   * WebView packaged independently (`system_webview_bundle`).
+2. `monochrome_public_bundle` (MonochromePublic.aab)
    * `minSdkVersion=24` (Nougat).
-   * Contains both WebView and Chrome within the same APK.
-     * This bundle is larger than ChromeModern, but much smaller than SUM(SystemWebView, ChromeModern)
+   * Contains both Chrome and WebView (to save disk space).
    * Does not use Crazy Linker (WebView requires system linker).
-     * But system linker supports crazy linker features now anyways.
-4. `trichrome_chrome_bundle` and `trichrome_library_apk` (TrichromeChrome.aab and TrichromeLibrary.apk)
-   * `minSdkVersion=Q` (Q).
-   * TrichromeChrome contains only the Chrome code that is not shared with WebView.
-   * TrichromeLibrary contains the shared code and is a "static shared library APK".
-   * Stores libmonochrome.so uncompressed within TrichromeLibrary.apk.
-   * Uses `android_dlopen_ext` to load native libraries with shared RELRO's
+3. `trichrome_chrome_bundle` (TrichromeChrome.aab)
+   * `minSdkVersion=29` (Android 10).
+   * Native code shared with WebView through a "Static Shared Library APK": `trichrome_library_apk` 
+   * Corresponding WebView target: `trichrome_webview_bundle`
+4. `chrome_public_apk` (ChromePublic.apk)
+   * Used for only local development and tests (simpler than using bundle
+     targets).
+   * Same configuration as chrome_modern_public_bundle, except without
+     separating things into modules.
 
-**Note**: These instructions use `chrome_public_apk`, but any of the other
-targets can be substituted.
-
-**Note**: These targets are actually the open-source equivalents to the
-closed-source targets that get shipped to the Play Store.
-
-**Note**: For more in-depth differences, see [android_native_libraries.md](android_native_libraries.md).
+*** note
+**Notes:**
+* These instructions use `chrome_public_apk`, but any of the other targets can
+  be substituted.
+* For more about bundles, see [android_dynamic feature modules.md](android_dynamic_feature_modules.md).
+* For more about native library packaging & loading, see [android_native_libraries.md](android_native_libraries.md).
+* There are closed-source equivalents to these targets (for Googlers), which
+  are identical but link in some extra code.
+***
 
 ## Updating your checkout
 
@@ -379,6 +380,27 @@ Args that affect build speed:
    * Don't run Android Lint when building APK / App Bundle targets.
    * Lint usually takes > 60 seconds to run, so disabling it dramatically
      reduces incremental build times.
+
+#### Running analysis build steps in the background
+Normally analysis build steps like lint and errorprone will run in parallel with
+the rest of the build. The build will then wait for all analysis steps to
+complete successfully. By offloading analysis build steps to a separate build
+server to be run lazily at a low priority when the machine is idle, the actual
+build can complete up to 50-80% faster.
+
+To take advantage of this speedup, run the script at
+[//build/android/fast_local_dev_server.py][fast_local_dev] in a separate
+terminal window. All your local builds will now forward analysis
+steps to this server. Analysis steps include android lint, errorprone, bytecode
+processor, etc. The output of these analysis checks will then be displayed in
+the terminal window running the server.
+
+**Note**: Since the build completes before the analysis checks finish, the build
+will not fail if an analysis check fails. Make sure to check the terminal that
+the server is running in at regular intervals to fix outstanding issues caught
+by these analysis checks.
+
+[fast_local_dev]: https://source.chromium.org/chromium/chromium/src/+/master:build/android/fast_local_dev_server.py
 
 #### Incremental Install
 [Incremental Install](/build/android/incremental_install/README.md) uses

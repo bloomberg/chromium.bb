@@ -4,7 +4,6 @@
 
 #include "ash/system/holding_space/holding_space_item_screen_capture_view.h"
 
-#include "ash/public/cpp/holding_space/holding_space_color_provider.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
@@ -13,6 +12,7 @@
 #include "ash/system/holding_space/holding_space_util.h"
 #include "ash/system/tray/tray_constants.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -20,7 +20,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -95,13 +94,32 @@ void HoldingSpaceItemScreenCaptureView::OnHoldingSpaceItemUpdated(
 
 void HoldingSpaceItemScreenCaptureView::OnThemeChanged() {
   HoldingSpaceItemView::OnThemeChanged();
+
+  // Image.
+  UpdateImage();
+
+  // Pin.
   pin()->SetBackground(holding_space_util::CreateCircleBackground(
-      HoldingSpaceColorProvider::Get()->GetBackgroundColor()));
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparent80)));
+
+  if (!play_icon_)
+    return;
+
+  // Play icon.
+  play_icon_->SetBackground(holding_space_util::CreateCircleBackground(
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparent80)));
+  play_icon_->SetImage(gfx::CreateVectorIcon(
+      vector_icons::kPlayArrowIcon, kHoldingSpaceIconSize,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor)));
 }
 
 void HoldingSpaceItemScreenCaptureView::UpdateImage() {
-  image_->SetImage(
-      item()->image().GetImageSkia(kHoldingSpaceScreenCaptureSize));
+  image_->SetImage(item()->image().GetImageSkia(
+      kHoldingSpaceScreenCaptureSize,
+      /*dark_background=*/AshColorProvider::Get()->IsDarkModeEnabled()));
   SchedulePaint();
 }
 
@@ -116,16 +134,10 @@ void HoldingSpaceItemScreenCaptureView::AddPlayIcon() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto* play_icon =
+  play_icon_ =
       play_icon_container->AddChildView(std::make_unique<views::ImageView>());
-  play_icon->SetID(kHoldingSpaceScreenCapturePlayIconId);
-  play_icon->SetBackground(holding_space_util::CreateCircleBackground(
-      HoldingSpaceColorProvider::Get()->GetBackgroundColor()));
-  play_icon->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kPlayArrowIcon, kHoldingSpaceIconSize,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kButtonIconColor)));
-  play_icon->SetPreferredSize(kPlayIconSize);
+  play_icon_->SetID(kHoldingSpaceScreenCapturePlayIconId);
+  play_icon_->SetPreferredSize(kPlayIconSize);
 }
 
 BEGIN_METADATA(HoldingSpaceItemScreenCaptureView, HoldingSpaceItemView)

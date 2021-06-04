@@ -17,7 +17,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,22 +57,21 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   void SetUp() override {
     fake_update_engine_client_ = new FakeUpdateEngineClient();
-    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-        DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetUpdateEngineClient(
+    DBusThreadManager::Initialize();
+    DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
     EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AtLeast(0));
 
-    NetworkHandler::Initialize();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     base::RunLoop().RunUntilIdle();
   }
 
   void SetEthernetService() {
     ShillServiceClient::TestInterface* service_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+        network_handler_test_helper_->service_test();
     service_test->ClearServices();
     service_test->AddService("/service/eth",
                              "eth" /* guid */,
@@ -84,7 +83,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   void SetCellularService() {
     ShillServiceClient::TestInterface* service_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+        network_handler_test_helper_->service_test();
     service_test->ClearServices();
     service_test->AddService("/service/cell", "cell" /* guid */, "cell",
                              shill::kTypeCellular, shill::kStateOnline,
@@ -93,10 +92,13 @@ class VersionUpdaterCrosTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    NetworkHandler::Shutdown();
+    network_handler_test_helper_.reset();
+    version_updater_.reset();
+    DBusThreadManager::Shutdown();
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<VersionUpdater> version_updater_;
   VersionUpdaterCros* version_updater_cros_ptr_;
   FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.

@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "services/device/public/cpp/test/mock_usb_mojo_device.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
 
@@ -33,7 +33,7 @@ void FakeUsbDevice::Create(
 
 FakeUsbDevice::~FakeUsbDevice() {
   CloseHandle();
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 FakeUsbDevice::FakeUsbDevice(
@@ -43,10 +43,9 @@ FakeUsbDevice::FakeUsbDevice(
     : device_(device),
       blocked_interface_classes_(blocked_interface_classes.begin(),
                                  blocked_interface_classes.end()),
-      observer_(this),
       client_(std::move(client)) {
   DCHECK(device_);
-  observer_.Add(device_.get());
+  observation_.Observe(device_.get());
 
   if (client_) {
     client_.set_disconnect_handler(base::BindOnce(
@@ -260,7 +259,7 @@ void FakeUsbDevice::GenericTransferIn(uint8_t endpoint_number,
 }
 
 void FakeUsbDevice::GenericTransferOut(uint8_t endpoint_number,
-                                       const std::vector<uint8_t>& data,
+                                       base::span<const uint8_t> data,
                                        uint32_t timeout,
                                        GenericTransferOutCallback callback) {
   // Go on with mock device for testing.

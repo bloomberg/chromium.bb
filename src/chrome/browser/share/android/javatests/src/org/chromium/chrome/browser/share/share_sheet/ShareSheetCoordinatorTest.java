@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share.share_sheet;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
@@ -91,7 +92,7 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> thirdPartyPropertyModels =
                 new ArrayList<>(Arrays.asList(testModel1, testModel2));
         when(mPropertyModelBuilder.selectThirdPartyApps(
-                     any(), anySet(), any(), anyBoolean(), any(), anyLong()))
+                     any(), anySet(), any(), anyBoolean(), any(), anyLong(), anyInt()))
                 .thenReturn(thirdPartyPropertyModels);
 
         mShareSheetCoordinator = new ShareSheetCoordinator(mController, mLifecycleDispatcher, null,
@@ -105,7 +106,7 @@ public final class ShareSheetCoordinatorTest {
 
         List<PropertyModel> propertyModels = mShareSheetCoordinator.createFirstPartyPropertyModels(
                 mActivity, mParams, /*chromeShareExtras=*/null,
-                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
+                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST);
         assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 
@@ -113,7 +114,7 @@ public final class ShareSheetCoordinatorTest {
     @MediumTest
     public void testCreateThirdPartyPropertyModels() {
         List<PropertyModel> propertyModels = mShareSheetCoordinator.createThirdPartyPropertyModels(
-                mActivity, mParams, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES,
+                mActivity, mParams, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
                 /*saveLastUsed=*/false);
 
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());

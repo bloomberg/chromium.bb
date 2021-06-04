@@ -149,24 +149,14 @@ std::u16string AuthenticatorTransportSelectorSheetModel::GetStepDescription()
       IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION);
 }
 
-void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
-    AuthenticatorTransport transport) {
-  dialog_model()->StartGuidedFlowForTransport(transport);
-}
-
-void AuthenticatorTransportSelectorSheetModel::StartWinNativeApi() {
-  dialog_model()->StartWinNativeApi();
-}
-
 // AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
 AuthenticatorInsertAndActivateUsbSheetModel::
     AuthenticatorInsertAndActivateUsbSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kUsbHumanInterfaceDevice)) {}
+      other_transports_menu_model_(
+          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
 
 AuthenticatorInsertAndActivateUsbSheetModel::
     ~AuthenticatorInsertAndActivateUsbSheetModel() = default;
@@ -487,9 +477,8 @@ AuthenticatorOffTheRecordInterstitialSheetModel::
     AuthenticatorOffTheRecordInterstitialSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kInternal)) {}
+      other_transports_menu_model_(
+          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
 
 AuthenticatorOffTheRecordInterstitialSheetModel::
     ~AuthenticatorOffTheRecordInterstitialSheetModel() = default;
@@ -549,18 +538,13 @@ AuthenticatorOffTheRecordInterstitialSheetModel::GetCancelButtonLabel() const {
 AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
+      other_transports_menu_model_(
+          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
 
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
 bool AuthenticatorPaaskSheetModel::IsBackButtonVisible() const {
-#if defined(OS_WIN)
-  return !base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi);
-#else
   return true;
-#endif
 }
 
 bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
@@ -578,13 +562,33 @@ std::u16string AuthenticatorPaaskSheetModel::GetStepTitle() const {
 }
 
 std::u16string AuthenticatorPaaskSheetModel::GetStepDescription() const {
-  if (dialog_model()->cable_should_suggest_usb()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_WEBAUTHN_CABLEV2_SERVERLINK_DESCRIPTION,
-        GetRelyingPartyIdString(dialog_model()), std::u16string());
-  }
+  switch (dialog_model()->cable_ui_type()) {
+    case AuthenticatorRequestDialogModel::CableUIType::CABLE_V1:
+      return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION);
 
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION);
+    case AuthenticatorRequestDialogModel::CableUIType::CABLE_V2_SERVER_LINK:
+      return l10n_util::GetStringFUTF16(
+          IDS_WEBAUTHN_CABLEV2_SERVERLINK_DESCRIPTION,
+          GetRelyingPartyIdString(dialog_model()));
+
+    case AuthenticatorRequestDialogModel::CableUIType::CABLE_V2_2ND_FACTOR: {
+      std::u16string notification_title;
+      switch (dialog_model()->transport_availability()->request_type) {
+        case device::FidoRequestType::kMakeCredential:
+          notification_title = l10n_util::GetStringUTF16(
+              IDS_CABLEV2_MAKE_CREDENTIAL_NOTIFICATION_TITLE);
+          break;
+        case device::FidoRequestType::kGetAssertion:
+          notification_title = l10n_util::GetStringUTF16(
+              IDS_CABLEV2_GET_ASSERTION_NOTIFICATION_TITLE);
+          break;
+      }
+
+      return l10n_util::GetStringFUTF16(
+          IDS_WEBAUTHN_CABLEV2_2ND_FACTOR_DESCRIPTION,
+          GetRelyingPartyIdString(dialog_model()), notification_title);
+    }
+  }
 }
 
 ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
@@ -598,9 +602,8 @@ AuthenticatorAndroidAccessorySheetModel::
     AuthenticatorAndroidAccessorySheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kAndroidAccessory)) {}
+      other_transports_menu_model_(
+          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
 
 AuthenticatorAndroidAccessorySheetModel::
     ~AuthenticatorAndroidAccessorySheetModel() = default;
@@ -639,18 +642,13 @@ AuthenticatorAndroidAccessorySheetModel::GetOtherTransportsMenuModel() {
 AuthenticatorPaaskV2SheetModel::AuthenticatorPaaskV2SheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
+      other_transports_menu_model_(
+          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
 
 AuthenticatorPaaskV2SheetModel::~AuthenticatorPaaskV2SheetModel() = default;
 
 bool AuthenticatorPaaskV2SheetModel::IsBackButtonVisible() const {
-#if defined(OS_WIN)
-  return !base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi);
-#else
   return true;
-#endif
 }
 
 bool AuthenticatorPaaskV2SheetModel::IsActivityIndicatorVisible() const {
@@ -720,7 +718,7 @@ AuthenticatorClientPinEntrySheetModel::AuthenticatorClientPinEntrySheetModel(
           dialog_model->min_pin_length());
       break;
     case device::pin::PINEntryError::kWrongPIN:
-      base::Optional<int> attempts = dialog_model->pin_attempts();
+      absl::optional<int> attempts = dialog_model->pin_attempts();
       error_ =
           attempts && *attempts <= 3
               ? l10n_util::GetPluralStringFUTF16(

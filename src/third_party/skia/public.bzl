@@ -576,6 +576,20 @@ DM_SRCS_ALL = struct(
         "src/xml/*.cpp",
         "tests/*.cpp",
         "tests/*.h",
+        "tests/sksl/dslfp/GrDSLFPTest_DoStatement.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_DoStatement.h",
+        "tests/sksl/dslfp/GrDSLFPTest_ForStatement.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_ForStatement.h",
+        "tests/sksl/dslfp/GrDSLFPTest_IfStatement.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_IfStatement.h",
+        "tests/sksl/dslfp/GrDSLFPTest_SwitchStatement.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_SwitchStatement.h",
+        "tests/sksl/dslfp/GrDSLFPTest_Swizzle.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_Swizzle.h",
+        "tests/sksl/dslfp/GrDSLFPTest_Ternary.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_Ternary.h",
+        "tests/sksl/dslfp/GrDSLFPTest_WhileStatement.dsl.cpp",
+        "tests/sksl/dslfp/GrDSLFPTest_WhileStatement.h",
         "tools/AutoreleasePool.h",
         "tools/BigPathBench.inc",
         "tools/BinaryAsset.h",
@@ -720,8 +734,6 @@ def base_defines(os_conditions):
         "SK_BUILD_FOR_GOOGLE3",
         # Required for building dm.
         "GR_TEST_UTILS",
-        # Google3 probably doesn't want this feature yet
-        "SK_DISABLE_REDUCE_OPLIST_SPLITTING",
         # Staging flags for API changes
         "SK_PARAGRAPH_GRAPHEME_EDGES",
         # Should remove after we update golden images

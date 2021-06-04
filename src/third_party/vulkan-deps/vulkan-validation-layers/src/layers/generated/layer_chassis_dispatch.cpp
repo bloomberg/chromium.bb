@@ -1614,7 +1614,6 @@ VkResult DispatchQueueBindSparse(
             local_pBindInfo = new safe_VkBindSparseInfo[bindInfoCount];
             for (uint32_t index0 = 0; index0 < bindInfoCount; ++index0) {
                 local_pBindInfo[index0].initialize(&pBindInfo[index0]);
-                WrapPnextChainHandles(layer_data, local_pBindInfo[index0].pNext);
                 if (local_pBindInfo[index0].pWaitSemaphores) {
                     for (uint32_t index1 = 0; index1 < local_pBindInfo[index0].waitSemaphoreCount; ++index1) {
                         local_pBindInfo[index0].pWaitSemaphores[index1] = layer_data->Unwrap(local_pBindInfo[index0].pWaitSemaphores[index1]);
@@ -2248,7 +2247,6 @@ VkResult DispatchCreateComputePipelines(
             local_pCreateInfos = new safe_VkComputePipelineCreateInfo[createInfoCount];
             for (uint32_t index0 = 0; index0 < createInfoCount; ++index0) {
                 local_pCreateInfos[index0].initialize(&pCreateInfos[index0]);
-                WrapPnextChainHandles(layer_data, local_pCreateInfos[index0].pNext);
                 if (pCreateInfos[index0].stage.module) {
                     local_pCreateInfos[index0].stage.module = layer_data->Unwrap(pCreateInfos[index0].stage.module);
                 }
@@ -3579,17 +3577,7 @@ VkResult DispatchGetPhysicalDeviceImageFormatProperties2(
     VkImageFormatProperties2*                   pImageFormatProperties)
 {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
-    if (!wrap_handles) return layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo, pImageFormatProperties);
-    safe_VkPhysicalDeviceImageFormatInfo2 var_local_pImageFormatInfo;
-    safe_VkPhysicalDeviceImageFormatInfo2 *local_pImageFormatInfo = NULL;
-    {
-        if (pImageFormatInfo) {
-            local_pImageFormatInfo = &var_local_pImageFormatInfo;
-            local_pImageFormatInfo->initialize(pImageFormatInfo);
-            WrapPnextChainHandles(layer_data, local_pImageFormatInfo->pNext);
-        }
-    }
-    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2(physicalDevice, (const VkPhysicalDeviceImageFormatInfo2*)local_pImageFormatInfo, pImageFormatProperties);
+    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo, pImageFormatProperties);
 
     return result;
 }
@@ -3656,16 +3644,7 @@ VkResult DispatchCreateSamplerYcbcrConversion(
 {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles) return layer_data->device_dispatch_table.CreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator, pYcbcrConversion);
-    safe_VkSamplerYcbcrConversionCreateInfo var_local_pCreateInfo;
-    safe_VkSamplerYcbcrConversionCreateInfo *local_pCreateInfo = NULL;
-    {
-        if (pCreateInfo) {
-            local_pCreateInfo = &var_local_pCreateInfo;
-            local_pCreateInfo->initialize(pCreateInfo);
-            WrapPnextChainHandles(layer_data, local_pCreateInfo->pNext);
-        }
-    }
-    VkResult result = layer_data->device_dispatch_table.CreateSamplerYcbcrConversion(device, (const VkSamplerYcbcrConversionCreateInfo*)local_pCreateInfo, pAllocator, pYcbcrConversion);
+    VkResult result = layer_data->device_dispatch_table.CreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator, pYcbcrConversion);
     if (VK_SUCCESS == result) {
         *pYcbcrConversion = layer_data->WrapNew(*pYcbcrConversion);
     }
@@ -4379,6 +4358,298 @@ VkBool32 DispatchGetPhysicalDeviceWin32PresentationSupportKHR(
 }
 #endif // VK_USE_PLATFORM_WIN32_KHR
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchGetPhysicalDeviceVideoCapabilitiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    const VkVideoProfileKHR*                    pVideoProfile,
+    VkVideoCapabilitiesKHR*                     pCapabilities)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, pVideoProfile, pCapabilities);
+
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchGetPhysicalDeviceVideoFormatPropertiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    const VkPhysicalDeviceVideoFormatInfoKHR*   pVideoFormatInfo,
+    uint32_t*                                   pVideoFormatPropertyCount,
+    VkVideoFormatPropertiesKHR*                 pVideoFormatProperties)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, pVideoFormatInfo, pVideoFormatPropertyCount, pVideoFormatProperties);
+
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchCreateVideoSessionKHR(
+    VkDevice                                    device,
+    const VkVideoSessionCreateInfoKHR*          pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionKHR*                          pVideoSession)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CreateVideoSessionKHR(device, pCreateInfo, pAllocator, pVideoSession);
+    VkResult result = layer_data->device_dispatch_table.CreateVideoSessionKHR(device, pCreateInfo, pAllocator, pVideoSession);
+    if (VK_SUCCESS == result) {
+        *pVideoSession = layer_data->WrapNew(*pVideoSession);
+    }
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchDestroyVideoSessionKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    const VkAllocationCallbacks*                pAllocator)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.DestroyVideoSessionKHR(device, videoSession, pAllocator);
+    uint64_t videoSession_id = reinterpret_cast<uint64_t &>(videoSession);
+    auto iter = unique_id_mapping.pop(videoSession_id);
+    if (iter != unique_id_mapping.end()) {
+        videoSession = (VkVideoSessionKHR)iter->second;
+    } else {
+        videoSession = (VkVideoSessionKHR)0;
+    }
+    layer_data->device_dispatch_table.DestroyVideoSessionKHR(device, videoSession, pAllocator);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchGetVideoSessionMemoryRequirementsKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t*                                   pVideoSessionMemoryRequirementsCount,
+    VkVideoGetMemoryPropertiesKHR*              pVideoSessionMemoryRequirements)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetVideoSessionMemoryRequirementsKHR(device, videoSession, pVideoSessionMemoryRequirementsCount, pVideoSessionMemoryRequirements);
+    {
+        videoSession = layer_data->Unwrap(videoSession);
+    }
+    VkResult result = layer_data->device_dispatch_table.GetVideoSessionMemoryRequirementsKHR(device, videoSession, pVideoSessionMemoryRequirementsCount, pVideoSessionMemoryRequirements);
+
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchBindVideoSessionMemoryKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t                                    videoSessionBindMemoryCount,
+    const VkVideoBindMemoryKHR*                 pVideoSessionBindMemories)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.BindVideoSessionMemoryKHR(device, videoSession, videoSessionBindMemoryCount, pVideoSessionBindMemories);
+    safe_VkVideoBindMemoryKHR *local_pVideoSessionBindMemories = NULL;
+    {
+        videoSession = layer_data->Unwrap(videoSession);
+        if (pVideoSessionBindMemories) {
+            local_pVideoSessionBindMemories = new safe_VkVideoBindMemoryKHR[videoSessionBindMemoryCount];
+            for (uint32_t index0 = 0; index0 < videoSessionBindMemoryCount; ++index0) {
+                local_pVideoSessionBindMemories[index0].initialize(&pVideoSessionBindMemories[index0]);
+                if (pVideoSessionBindMemories[index0].memory) {
+                    local_pVideoSessionBindMemories[index0].memory = layer_data->Unwrap(pVideoSessionBindMemories[index0].memory);
+                }
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.BindVideoSessionMemoryKHR(device, videoSession, videoSessionBindMemoryCount, (const VkVideoBindMemoryKHR*)local_pVideoSessionBindMemories);
+    if (local_pVideoSessionBindMemories) {
+        delete[] local_pVideoSessionBindMemories;
+    }
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchCreateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    const VkVideoSessionParametersCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionParametersKHR*                pVideoSessionParameters)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CreateVideoSessionParametersKHR(device, pCreateInfo, pAllocator, pVideoSessionParameters);
+    safe_VkVideoSessionParametersCreateInfoKHR var_local_pCreateInfo;
+    safe_VkVideoSessionParametersCreateInfoKHR *local_pCreateInfo = NULL;
+    {
+        if (pCreateInfo) {
+            local_pCreateInfo = &var_local_pCreateInfo;
+            local_pCreateInfo->initialize(pCreateInfo);
+            if (pCreateInfo->videoSessionParametersTemplate) {
+                local_pCreateInfo->videoSessionParametersTemplate = layer_data->Unwrap(pCreateInfo->videoSessionParametersTemplate);
+            }
+            if (pCreateInfo->videoSession) {
+                local_pCreateInfo->videoSession = layer_data->Unwrap(pCreateInfo->videoSession);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.CreateVideoSessionParametersKHR(device, (const VkVideoSessionParametersCreateInfoKHR*)local_pCreateInfo, pAllocator, pVideoSessionParameters);
+    if (VK_SUCCESS == result) {
+        *pVideoSessionParameters = layer_data->WrapNew(*pVideoSessionParameters);
+    }
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+VkResult DispatchUpdateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkVideoSessionParametersUpdateInfoKHR* pUpdateInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.UpdateVideoSessionParametersKHR(device, videoSessionParameters, pUpdateInfo);
+    {
+        videoSessionParameters = layer_data->Unwrap(videoSessionParameters);
+    }
+    VkResult result = layer_data->device_dispatch_table.UpdateVideoSessionParametersKHR(device, videoSessionParameters, pUpdateInfo);
+
+    return result;
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchDestroyVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkAllocationCallbacks*                pAllocator)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.DestroyVideoSessionParametersKHR(device, videoSessionParameters, pAllocator);
+    uint64_t videoSessionParameters_id = reinterpret_cast<uint64_t &>(videoSessionParameters);
+    auto iter = unique_id_mapping.pop(videoSessionParameters_id);
+    if (iter != unique_id_mapping.end()) {
+        videoSessionParameters = (VkVideoSessionParametersKHR)iter->second;
+    } else {
+        videoSessionParameters = (VkVideoSessionParametersKHR)0;
+    }
+    layer_data->device_dispatch_table.DestroyVideoSessionParametersKHR(device, videoSessionParameters, pAllocator);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchCmdBeginVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoBeginCodingInfoKHR*            pBeginInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CmdBeginVideoCodingKHR(commandBuffer, pBeginInfo);
+    safe_VkVideoBeginCodingInfoKHR var_local_pBeginInfo;
+    safe_VkVideoBeginCodingInfoKHR *local_pBeginInfo = NULL;
+    {
+        if (pBeginInfo) {
+            local_pBeginInfo = &var_local_pBeginInfo;
+            local_pBeginInfo->initialize(pBeginInfo);
+            if (pBeginInfo->videoSession) {
+                local_pBeginInfo->videoSession = layer_data->Unwrap(pBeginInfo->videoSession);
+            }
+            if (pBeginInfo->videoSessionParameters) {
+                local_pBeginInfo->videoSessionParameters = layer_data->Unwrap(pBeginInfo->videoSessionParameters);
+            }
+            if (local_pBeginInfo->pReferenceSlots) {
+                for (uint32_t index1 = 0; index1 < local_pBeginInfo->referenceSlotCount; ++index1) {
+                    if (local_pBeginInfo->pReferenceSlots[index1].pPictureResource) {
+                        if (pBeginInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding) {
+                            local_pBeginInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding = layer_data->Unwrap(pBeginInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    layer_data->device_dispatch_table.CmdBeginVideoCodingKHR(commandBuffer, (const VkVideoBeginCodingInfoKHR*)local_pBeginInfo);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchCmdEndVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEndCodingInfoKHR*              pEndCodingInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdEndVideoCodingKHR(commandBuffer, pEndCodingInfo);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchCmdControlVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoCodingControlInfoKHR*          pCodingControlInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdControlVideoCodingKHR(commandBuffer, pCodingControlInfo);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchCmdDecodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoDecodeInfoKHR*                 pFrameInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CmdDecodeVideoKHR(commandBuffer, pFrameInfo);
+    safe_VkVideoDecodeInfoKHR var_local_pFrameInfo;
+    safe_VkVideoDecodeInfoKHR *local_pFrameInfo = NULL;
+    {
+        if (pFrameInfo) {
+            local_pFrameInfo = &var_local_pFrameInfo;
+            local_pFrameInfo->initialize(pFrameInfo);
+            if (pFrameInfo->srcBuffer) {
+                local_pFrameInfo->srcBuffer = layer_data->Unwrap(pFrameInfo->srcBuffer);
+            }
+            if (pFrameInfo->dstPictureResource.imageViewBinding) {
+                local_pFrameInfo->dstPictureResource.imageViewBinding = layer_data->Unwrap(pFrameInfo->dstPictureResource.imageViewBinding);
+            }
+            if (local_pFrameInfo->pSetupReferenceSlot) {
+                if (local_pFrameInfo->pSetupReferenceSlot->pPictureResource) {
+                    if (pFrameInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding) {
+                        local_pFrameInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding = layer_data->Unwrap(pFrameInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding);
+                    }
+                }
+            }
+            if (local_pFrameInfo->pReferenceSlots) {
+                for (uint32_t index1 = 0; index1 < local_pFrameInfo->referenceSlotCount; ++index1) {
+                    if (local_pFrameInfo->pReferenceSlots[index1].pPictureResource) {
+                        if (pFrameInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding) {
+                            local_pFrameInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding = layer_data->Unwrap(pFrameInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    layer_data->device_dispatch_table.CmdDecodeVideoKHR(commandBuffer, (const VkVideoDecodeInfoKHR*)local_pFrameInfo);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 void DispatchGetPhysicalDeviceFeatures2KHR(
     VkPhysicalDevice                            physicalDevice,
     VkPhysicalDeviceFeatures2*                  pFeatures)
@@ -4413,17 +4684,7 @@ VkResult DispatchGetPhysicalDeviceImageFormatProperties2KHR(
     VkImageFormatProperties2*                   pImageFormatProperties)
 {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
-    if (!wrap_handles) return layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, pImageFormatInfo, pImageFormatProperties);
-    safe_VkPhysicalDeviceImageFormatInfo2 var_local_pImageFormatInfo;
-    safe_VkPhysicalDeviceImageFormatInfo2 *local_pImageFormatInfo = NULL;
-    {
-        if (pImageFormatInfo) {
-            local_pImageFormatInfo = &var_local_pImageFormatInfo;
-            local_pImageFormatInfo->initialize(pImageFormatInfo);
-            WrapPnextChainHandles(layer_data, local_pImageFormatInfo->pNext);
-        }
-    }
-    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, (const VkPhysicalDeviceImageFormatInfo2*)local_pImageFormatInfo, pImageFormatProperties);
+    VkResult result = layer_data->instance_dispatch_table.GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, pImageFormatInfo, pImageFormatProperties);
 
     return result;
 }
@@ -5129,16 +5390,7 @@ VkResult DispatchCreateSamplerYcbcrConversionKHR(
 {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles) return layer_data->device_dispatch_table.CreateSamplerYcbcrConversionKHR(device, pCreateInfo, pAllocator, pYcbcrConversion);
-    safe_VkSamplerYcbcrConversionCreateInfo var_local_pCreateInfo;
-    safe_VkSamplerYcbcrConversionCreateInfo *local_pCreateInfo = NULL;
-    {
-        if (pCreateInfo) {
-            local_pCreateInfo = &var_local_pCreateInfo;
-            local_pCreateInfo->initialize(pCreateInfo);
-            WrapPnextChainHandles(layer_data, local_pCreateInfo->pNext);
-        }
-    }
-    VkResult result = layer_data->device_dispatch_table.CreateSamplerYcbcrConversionKHR(device, (const VkSamplerYcbcrConversionCreateInfo*)local_pCreateInfo, pAllocator, pYcbcrConversion);
+    VkResult result = layer_data->device_dispatch_table.CreateSamplerYcbcrConversionKHR(device, pCreateInfo, pAllocator, pYcbcrConversion);
     if (VK_SUCCESS == result) {
         *pYcbcrConversion = layer_data->WrapNew(*pYcbcrConversion);
     }
@@ -5582,6 +5834,49 @@ VkResult DispatchGetPipelineExecutableInternalRepresentationsKHR(
 
     return result;
 }
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void DispatchCmdEncodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEncodeInfoKHR*                 pEncodeInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CmdEncodeVideoKHR(commandBuffer, pEncodeInfo);
+    safe_VkVideoEncodeInfoKHR var_local_pEncodeInfo;
+    safe_VkVideoEncodeInfoKHR *local_pEncodeInfo = NULL;
+    {
+        if (pEncodeInfo) {
+            local_pEncodeInfo = &var_local_pEncodeInfo;
+            local_pEncodeInfo->initialize(pEncodeInfo);
+            if (pEncodeInfo->dstBitstreamBuffer) {
+                local_pEncodeInfo->dstBitstreamBuffer = layer_data->Unwrap(pEncodeInfo->dstBitstreamBuffer);
+            }
+            if (pEncodeInfo->srcPictureResource.imageViewBinding) {
+                local_pEncodeInfo->srcPictureResource.imageViewBinding = layer_data->Unwrap(pEncodeInfo->srcPictureResource.imageViewBinding);
+            }
+            if (local_pEncodeInfo->pSetupReferenceSlot) {
+                if (local_pEncodeInfo->pSetupReferenceSlot->pPictureResource) {
+                    if (pEncodeInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding) {
+                        local_pEncodeInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding = layer_data->Unwrap(pEncodeInfo->pSetupReferenceSlot->pPictureResource->imageViewBinding);
+                    }
+                }
+            }
+            if (local_pEncodeInfo->pReferenceSlots) {
+                for (uint32_t index1 = 0; index1 < local_pEncodeInfo->referenceSlotCount; ++index1) {
+                    if (local_pEncodeInfo->pReferenceSlots[index1].pPictureResource) {
+                        if (pEncodeInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding) {
+                            local_pEncodeInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding = layer_data->Unwrap(pEncodeInfo->pReferenceSlots[index1].pPictureResource->imageViewBinding);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    layer_data->device_dispatch_table.CmdEncodeVideoKHR(commandBuffer, (const VkVideoEncodeInfoKHR*)local_pEncodeInfo);
+
+}
+#endif // VK_ENABLE_BETA_EXTENSIONS
 
 void DispatchCmdSetEvent2KHR(
     VkCommandBuffer                             commandBuffer,
@@ -6132,6 +6427,104 @@ void DispatchCmdDrawIndirectByteCountEXT(
         counterBuffer = layer_data->Unwrap(counterBuffer);
     }
     layer_data->device_dispatch_table.CmdDrawIndirectByteCountEXT(commandBuffer, instanceCount, firstInstance, counterBuffer, counterBufferOffset, counterOffset, vertexStride);
+
+}
+
+VkResult DispatchCreateCuModuleNVX(
+    VkDevice                                    device,
+    const VkCuModuleCreateInfoNVX*              pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuModuleNVX*                              pModule)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CreateCuModuleNVX(device, pCreateInfo, pAllocator, pModule);
+    VkResult result = layer_data->device_dispatch_table.CreateCuModuleNVX(device, pCreateInfo, pAllocator, pModule);
+    if (VK_SUCCESS == result) {
+        *pModule = layer_data->WrapNew(*pModule);
+    }
+    return result;
+}
+
+VkResult DispatchCreateCuFunctionNVX(
+    VkDevice                                    device,
+    const VkCuFunctionCreateInfoNVX*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuFunctionNVX*                            pFunction)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CreateCuFunctionNVX(device, pCreateInfo, pAllocator, pFunction);
+    safe_VkCuFunctionCreateInfoNVX var_local_pCreateInfo;
+    safe_VkCuFunctionCreateInfoNVX *local_pCreateInfo = NULL;
+    {
+        if (pCreateInfo) {
+            local_pCreateInfo = &var_local_pCreateInfo;
+            local_pCreateInfo->initialize(pCreateInfo);
+            if (pCreateInfo->module) {
+                local_pCreateInfo->module = layer_data->Unwrap(pCreateInfo->module);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.CreateCuFunctionNVX(device, (const VkCuFunctionCreateInfoNVX*)local_pCreateInfo, pAllocator, pFunction);
+    if (VK_SUCCESS == result) {
+        *pFunction = layer_data->WrapNew(*pFunction);
+    }
+    return result;
+}
+
+void DispatchDestroyCuModuleNVX(
+    VkDevice                                    device,
+    VkCuModuleNVX                               module,
+    const VkAllocationCallbacks*                pAllocator)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.DestroyCuModuleNVX(device, module, pAllocator);
+    uint64_t module_id = reinterpret_cast<uint64_t &>(module);
+    auto iter = unique_id_mapping.pop(module_id);
+    if (iter != unique_id_mapping.end()) {
+        module = (VkCuModuleNVX)iter->second;
+    } else {
+        module = (VkCuModuleNVX)0;
+    }
+    layer_data->device_dispatch_table.DestroyCuModuleNVX(device, module, pAllocator);
+
+}
+
+void DispatchDestroyCuFunctionNVX(
+    VkDevice                                    device,
+    VkCuFunctionNVX                             function,
+    const VkAllocationCallbacks*                pAllocator)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.DestroyCuFunctionNVX(device, function, pAllocator);
+    uint64_t function_id = reinterpret_cast<uint64_t &>(function);
+    auto iter = unique_id_mapping.pop(function_id);
+    if (iter != unique_id_mapping.end()) {
+        function = (VkCuFunctionNVX)iter->second;
+    } else {
+        function = (VkCuFunctionNVX)0;
+    }
+    layer_data->device_dispatch_table.DestroyCuFunctionNVX(device, function, pAllocator);
+
+}
+
+void DispatchCmdCuLaunchKernelNVX(
+    VkCommandBuffer                             commandBuffer,
+    const VkCuLaunchInfoNVX*                    pLaunchInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.CmdCuLaunchKernelNVX(commandBuffer, pLaunchInfo);
+    safe_VkCuLaunchInfoNVX var_local_pLaunchInfo;
+    safe_VkCuLaunchInfoNVX *local_pLaunchInfo = NULL;
+    {
+        if (pLaunchInfo) {
+            local_pLaunchInfo = &var_local_pLaunchInfo;
+            local_pLaunchInfo->initialize(pLaunchInfo);
+            if (pLaunchInfo->function) {
+                local_pLaunchInfo->function = layer_data->Unwrap(pLaunchInfo->function);
+            }
+        }
+    }
+    layer_data->device_dispatch_table.CmdCuLaunchKernelNVX(commandBuffer, (const VkCuLaunchInfoNVX*)local_pLaunchInfo);
 
 }
 
@@ -7072,7 +7465,6 @@ VkResult DispatchCreateRayTracingPipelinesNV(
             local_pCreateInfos = new safe_VkRayTracingPipelineCreateInfoNV[createInfoCount];
             for (uint32_t index0 = 0; index0 < createInfoCount; ++index0) {
                 local_pCreateInfos[index0].initialize(&pCreateInfos[index0]);
-                WrapPnextChainHandles(layer_data, local_pCreateInfos[index0].pNext);
                 if (local_pCreateInfos[index0].pStages) {
                     for (uint32_t index1 = 0; index1 < local_pCreateInfos[index0].stageCount; ++index1) {
                         if (pCreateInfos[index0].pStages[index1].module) {
@@ -8067,6 +8459,155 @@ VkBool32 DispatchGetPhysicalDeviceDirectFBPresentationSupportEXT(
 }
 #endif // VK_USE_PLATFORM_DIRECTFB_EXT
 
+void DispatchCmdSetVertexInputEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    vertexBindingDescriptionCount,
+    const VkVertexInputBindingDescription2EXT*  pVertexBindingDescriptions,
+    uint32_t                                    vertexAttributeDescriptionCount,
+    const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetVertexInputEXT(commandBuffer, vertexBindingDescriptionCount, pVertexBindingDescriptions, vertexAttributeDescriptionCount, pVertexAttributeDescriptions);
+
+}
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+VkResult DispatchGetMemoryZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkMemoryGetZirconHandleInfoFUCHSIA*   pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetMemoryZirconHandleFUCHSIA(device, pGetZirconHandleInfo, pZirconHandle);
+    safe_VkMemoryGetZirconHandleInfoFUCHSIA var_local_pGetZirconHandleInfo;
+    safe_VkMemoryGetZirconHandleInfoFUCHSIA *local_pGetZirconHandleInfo = NULL;
+    {
+        if (pGetZirconHandleInfo) {
+            local_pGetZirconHandleInfo = &var_local_pGetZirconHandleInfo;
+            local_pGetZirconHandleInfo->initialize(pGetZirconHandleInfo);
+            if (pGetZirconHandleInfo->memory) {
+                local_pGetZirconHandleInfo->memory = layer_data->Unwrap(pGetZirconHandleInfo->memory);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.GetMemoryZirconHandleFUCHSIA(device, (const VkMemoryGetZirconHandleInfoFUCHSIA*)local_pGetZirconHandleInfo, pZirconHandle);
+
+    return result;
+}
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+VkResult DispatchGetMemoryZirconHandlePropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkExternalMemoryHandleTypeFlagBits          handleType,
+    zx_handle_t                                 zirconHandle,
+    VkMemoryZirconHandlePropertiesFUCHSIA*      pMemoryZirconHandleProperties)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    VkResult result = layer_data->device_dispatch_table.GetMemoryZirconHandlePropertiesFUCHSIA(device, handleType, zirconHandle, pMemoryZirconHandleProperties);
+
+    return result;
+}
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+VkResult DispatchImportSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.ImportSemaphoreZirconHandleFUCHSIA(device, pImportSemaphoreZirconHandleInfo);
+    safe_VkImportSemaphoreZirconHandleInfoFUCHSIA var_local_pImportSemaphoreZirconHandleInfo;
+    safe_VkImportSemaphoreZirconHandleInfoFUCHSIA *local_pImportSemaphoreZirconHandleInfo = NULL;
+    {
+        if (pImportSemaphoreZirconHandleInfo) {
+            local_pImportSemaphoreZirconHandleInfo = &var_local_pImportSemaphoreZirconHandleInfo;
+            local_pImportSemaphoreZirconHandleInfo->initialize(pImportSemaphoreZirconHandleInfo);
+            if (pImportSemaphoreZirconHandleInfo->semaphore) {
+                local_pImportSemaphoreZirconHandleInfo->semaphore = layer_data->Unwrap(pImportSemaphoreZirconHandleInfo->semaphore);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.ImportSemaphoreZirconHandleFUCHSIA(device, (const VkImportSemaphoreZirconHandleInfoFUCHSIA*)local_pImportSemaphoreZirconHandleInfo);
+
+    return result;
+}
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+VkResult DispatchGetSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetSemaphoreZirconHandleFUCHSIA(device, pGetZirconHandleInfo, pZirconHandle);
+    safe_VkSemaphoreGetZirconHandleInfoFUCHSIA var_local_pGetZirconHandleInfo;
+    safe_VkSemaphoreGetZirconHandleInfoFUCHSIA *local_pGetZirconHandleInfo = NULL;
+    {
+        if (pGetZirconHandleInfo) {
+            local_pGetZirconHandleInfo = &var_local_pGetZirconHandleInfo;
+            local_pGetZirconHandleInfo->initialize(pGetZirconHandleInfo);
+            if (pGetZirconHandleInfo->semaphore) {
+                local_pGetZirconHandleInfo->semaphore = layer_data->Unwrap(pGetZirconHandleInfo->semaphore);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.GetSemaphoreZirconHandleFUCHSIA(device, (const VkSemaphoreGetZirconHandleInfoFUCHSIA*)local_pGetZirconHandleInfo, pZirconHandle);
+
+    return result;
+}
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+void DispatchCmdSetPatchControlPointsEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    patchControlPoints)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetPatchControlPointsEXT(commandBuffer, patchControlPoints);
+
+}
+
+void DispatchCmdSetRasterizerDiscardEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    rasterizerDiscardEnable)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetRasterizerDiscardEnableEXT(commandBuffer, rasterizerDiscardEnable);
+
+}
+
+void DispatchCmdSetDepthBiasEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    depthBiasEnable)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetDepthBiasEnableEXT(commandBuffer, depthBiasEnable);
+
+}
+
+void DispatchCmdSetLogicOpEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkLogicOp                                   logicOp)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetLogicOpEXT(commandBuffer, logicOp);
+
+}
+
+void DispatchCmdSetPrimitiveRestartEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    primitiveRestartEnable)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetPrimitiveRestartEnableEXT(commandBuffer, primitiveRestartEnable);
+
+}
+
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 
 VkResult DispatchCreateScreenSurfaceQNX(
@@ -8098,6 +8639,16 @@ VkBool32 DispatchGetPhysicalDeviceScreenPresentationSupportQNX(
     return result;
 }
 #endif // VK_USE_PLATFORM_SCREEN_QNX
+
+void                                    DispatchCmdSetColorWriteEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    attachmentCount,
+    const VkBool32*                             pColorWriteEnables)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdSetColorWriteEnableEXT(commandBuffer, attachmentCount, pColorWriteEnables);
+
+}
 
 VkResult DispatchCreateAccelerationStructureKHR(
     VkDevice                                    device,
@@ -8522,7 +9073,6 @@ VkResult DispatchCreateRayTracingPipelinesKHR(
             local_pCreateInfos = new safe_VkRayTracingPipelineCreateInfoKHR[createInfoCount];
             for (uint32_t index0 = 0; index0 < createInfoCount; ++index0) {
                 local_pCreateInfos[index0].initialize(&pCreateInfos[index0]);
-                WrapPnextChainHandles(layer_data, local_pCreateInfos[index0].pNext);
                 if (local_pCreateInfos[index0].pStages) {
                     for (uint32_t index1 = 0; index1 < local_pCreateInfos[index0].stageCount; ++index1) {
                         if (pCreateInfos[index0].pStages[index1].module) {

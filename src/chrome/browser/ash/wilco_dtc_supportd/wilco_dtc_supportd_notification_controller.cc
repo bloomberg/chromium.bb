@@ -21,7 +21,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -47,8 +47,8 @@ class WilcoDtcSupportdNotificationDelegate
   WilcoDtcSupportdNotificationDelegate& operator=(
       const WilcoDtcSupportdNotificationDelegate& other) = delete;
 
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<std::u16string>& reply) override {
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
     if (button_index && *button_index == 0) {
       auto help_app(
           base::MakeRefCounted<HelpAppLauncher>(nullptr /* parent_window */));
@@ -190,9 +190,9 @@ void WilcoDtcSupportdNotificationController::DisplayNotification(
     notification->SetSystemPriority();
   }
   NotificationDisplayService::GetForProfile(
-      profile_manager_->GetLastUsedProfile(profile_manager_->user_data_dir()))
+      profile_manager_->GetLastUsedProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification,
                 nullptr /* metadata */);
 }
 
-}  // namespace chromeos
+}  // namespace ash

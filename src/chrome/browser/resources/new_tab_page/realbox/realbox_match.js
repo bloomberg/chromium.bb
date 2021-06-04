@@ -7,14 +7,14 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../i18n_setup.js';
 import {decodeString16} from '../utils.js';
 
 // clang-format off
 /**
- * Bitmap used to decode the value of search.mojom.ACMatchClassification style
+ * Bitmap used to decode the value of realbox.mojom.ACMatchClassification style
  * field.
  * See components/omnibox/browser/autocomplete_match.h.
  * @enum {number}
@@ -64,7 +64,7 @@ class RealboxMatchElement extends PolymerElement {
       },
 
       /**
-       * @type {!search.mojom.AutocompleteMatch}
+       * @type {!realbox.mojom.AutocompleteMatch}
        */
       match: {
         type: Object,
@@ -327,7 +327,7 @@ class RealboxMatchElement extends PolymerElement {
 
   /**
    * Decodes the ACMatchClassificationStyle enteries encoded in the given
-   * search.mojom.ACMatchClassification style field, maps each entry to a CSS
+   * realbox.mojom.ACMatchClassification style field, maps each entry to a CSS
    * class and returns them.
    * @param {number} style
    * @return {!Array<string>}
@@ -361,11 +361,11 @@ class RealboxMatchElement extends PolymerElement {
   }
 
   /**
-   * Renders |text| based on the given search.mojom.ACMatchClassification(s)
+   * Renders |text| based on the given realbox.mojom.ACMatchClassification(s)
    * Each classification contains an 'offset' and an encoded list of styles for
    * styling a substring starting with the 'offset' and ending with the next.
    * @param {string} text
-   * @param {!Array<!search.mojom.ACMatchClassification>} classifications
+   * @param {!Array<!realbox.mojom.ACMatchClassification>} classifications
    * @return {!Element} A <span> with <span> children for each styled substring.
    */
   renderTextWithClassifications_(text, classifications) {

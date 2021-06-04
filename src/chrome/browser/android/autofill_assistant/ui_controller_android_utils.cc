@@ -14,9 +14,11 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantValue_jni.h"
+#include "chrome/browser/android/tab_android.h"
 #include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/android/gurl_android.h"
 
 namespace autofill_assistant {
 namespace ui_controller_android_utils {
@@ -101,7 +103,7 @@ base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
   }
 }
 
-base::Optional<int> GetPixelSize(
+absl::optional<int> GetPixelSize(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
     const ClientDimensionProto& proto) {
@@ -117,7 +119,7 @@ base::Optional<int> GetPixelSize(
     case ClientDimensionProto::kSizeInPixel:
       return proto.size_in_pixel();
     case ClientDimensionProto::SIZE_NOT_SET:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -199,11 +201,11 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
       int diameter_size_in_pixel =
           ui_controller_android_utils::GetPixelSizeOrDefault(
               env, jcontext, proto.favicon().diameter_size(), 0);
-      std::string url = proto.favicon().has_website_url()
-                            ? proto.favicon().website_url()
-                            : user_model->GetCurrentURL().spec();
+      GURL url = proto.favicon().has_website_url()
+                     ? GURL(proto.favicon().website_url())
+                     : user_model->GetCurrentURL();
       return Java_AssistantDrawable_createFromFavicon(
-          env, base::android::ConvertUTF8ToJavaString(env, url),
+          env, url::GURLAndroid::FromNativeGURL(env, url),
           diameter_size_in_pixel, proto.favicon().force_monogram());
     }
     case DrawableProto::DRAWABLE_NOT_SET:
@@ -490,19 +492,29 @@ std::map<std::string, std::string> CreateStringMapFromJava(
 
 std::unique_ptr<TriggerContext> CreateTriggerContext(
     JNIEnv* env,
+    content::WebContents* web_contents,
     const base::android::JavaRef<jstring>& jexperiment_ids,
     const base::android::JavaRef<jobjectArray>& jparameter_names,
     const base::android::JavaRef<jobjectArray>& jparameter_values,
-    jboolean is_cct,
     jboolean onboarding_shown,
     jboolean is_direct_action,
     const base::android::JavaRef<jstring>& jinitial_url) {
   return std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
           CreateStringMapFromJava(env, jparameter_names, jparameter_values)),
-      SafeConvertJavaStringToNative(env, jexperiment_ids), is_cct,
-      onboarding_shown, is_direct_action,
-      SafeConvertJavaStringToNative(env, jinitial_url));
+      SafeConvertJavaStringToNative(env, jexperiment_ids),
+      IsCustomTab(web_contents), onboarding_shown, is_direct_action,
+      SafeConvertJavaStringToNative(env, jinitial_url),
+      /* is_in_chrome_triggered = */ false);
+}
+
+bool IsCustomTab(content::WebContents* web_contents) {
+  auto* tab_android = TabAndroid::FromWebContents(web_contents);
+  if (!tab_android) {
+    return false;
+  }
+
+  return tab_android->IsCustomTab();
 }
 
 }  // namespace ui_controller_android_utils

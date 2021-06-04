@@ -7,16 +7,15 @@
 
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_prompt_permissions.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
 

@@ -51,7 +51,7 @@ GURL::GURL(base::StringPiece16 url_string) {
 }
 
 GURL::GURL(const std::string& url_string, RetainWhiteSpaceSelector) {
-  InitCanonical(base::StringPiece(url_string), false);
+  InitCanonical(url_string, false);
 }
 
 GURL::GURL(const char* canonical_spec,
@@ -69,9 +69,8 @@ GURL::GURL(std::string canonical_spec, const url::Parsed& parsed, bool is_valid)
   InitializeFromCanonicalSpec();
 }
 
-template <typename CharT>
-void GURL::InitCanonical(base::BasicStringPiece<CharT> input_spec,
-                         bool trim_path_end) {
+template <typename T, typename CharT>
+void GURL::InitCanonical(T input_spec, bool trim_path_end) {
   url::StdStringCanonOutput output(&spec_);
   is_valid_ = url::Canonicalize(
       input_spec.data(), static_cast<int>(input_spec.length()), trim_path_end,
@@ -413,11 +412,11 @@ base::StringPiece GURL::PathForRequestPiece() const {
 }
 
 std::string GURL::PathForRequest() const {
-  return PathForRequestPiece().as_string();
+  return std::string(PathForRequestPiece());
 }
 
 std::string GURL::HostNoBrackets() const {
-  return HostNoBracketsPiece().as_string();
+  return std::string(HostNoBracketsPiece());
 }
 
 base::StringPiece GURL::HostNoBracketsPiece() const {
@@ -502,14 +501,14 @@ bool GURL::IsAboutPath(base::StringPiece actual_path,
 
   if ((actual_path.size() == allowed_path.size() + 1) &&
       actual_path.back() == '/') {
-    DCHECK_EQ(actual_path, allowed_path.as_string() + '/');
+    DCHECK_EQ(actual_path, std::string(allowed_path) + '/');
     return true;
   }
 
   return false;
 }
 
-void GURL::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void GURL::WriteIntoTrace(perfetto::TracedValue context) const {
   std::move(context).WriteString(possibly_invalid_spec());
 }
 

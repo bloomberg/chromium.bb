@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/channel_info.h"
-#include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/appfuse/arc_appfuse_bridge.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -190,7 +189,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   // List in lexicographical order.
   ArcAccessibilityHelperBridge::GetForBrowserContext(profile);
   ArcAdbdMonitorBridge::GetForBrowserContext(profile);
-  ArcAppPermissionsBridge::GetForBrowserContext(profile);
+  ArcAppPerformanceTracing::GetForBrowserContext(profile);
   ArcAudioBridge::GetForBrowserContext(profile);
   ArcAuthService::GetForBrowserContext(profile);
   ArcBluetoothBridge::GetForBrowserContext(profile);
@@ -244,7 +243,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcSharesheetBridge::GetForBrowserContext(profile);
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
-  ArcAppPerformanceTracing::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
   ArcUsbHostBridge::GetForBrowserContext(profile)->SetDelegate(
       std::make_unique<ArcUsbHostBridgeDelegate>());

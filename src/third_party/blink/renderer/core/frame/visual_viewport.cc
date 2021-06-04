@@ -328,7 +328,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 
   if (change == PaintPropertyChangeType::kNodeAddedOrRemoved &&
       LocalMainFrame()) {
-    LocalMainFrame()->View()->SetVisualViewportNeedsRepaint();
+    LocalMainFrame()->View()->SetVisualViewportOrOverlayNeedsRepaint();
   }
 
   return change;
@@ -381,7 +381,7 @@ void VisualViewport::SetSize(const IntSize& size) {
     DCHECK(scrollbar_layer_vertical_);
     UpdateScrollbarLayer(kHorizontalScrollbar);
     UpdateScrollbarLayer(kVerticalScrollbar);
-    LocalMainFrame()->View()->SetVisualViewportNeedsRepaint();
+    LocalMainFrame()->View()->SetVisualViewportOrOverlayNeedsRepaint();
   }
 
   EnqueueResizeEvent();
@@ -621,12 +621,21 @@ void VisualViewport::InitializeScrollbars() {
   // longer supplies scrollbars.
   LocalFrame* frame = LocalMainFrame();
   if (frame && frame->View())
-    frame->View()->VisualViewportScrollbarsChanged();
+    frame->View()->SetVisualViewportOrOverlayNeedsRepaint();
+}
+
+EScrollbarWidth VisualViewport::CSSScrollbarWidth() const {
+  if (LocalFrame* main_frame = LocalMainFrame()) {
+    if (Document* main_document = main_frame->GetDocument())
+      return main_document->GetLayoutView()->StyleRef().ScrollbarWidth();
+  }
+
+  return EScrollbarWidth::kAuto;
 }
 
 int VisualViewport::ScrollbarThickness() const {
   return ScrollbarThemeOverlayMobile::GetInstance().ScrollbarThickness(
-      ScaleFromDIP());
+      ScaleFromDIP(), CSSScrollbarWidth());
 }
 
 void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
@@ -636,8 +645,8 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
   if (!scrollbar_layer) {
     auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
     float scale = ScaleFromDIP();
-    int thumb_thickness = theme.ThumbThickness(scale);
-    int scrollbar_margin = theme.ScrollbarMargin(scale);
+    int thumb_thickness = theme.ThumbThickness(scale, CSSScrollbarWidth());
+    int scrollbar_margin = theme.ScrollbarMargin(scale, CSSScrollbarWidth());
     cc::ScrollbarOrientation cc_orientation =
         orientation == kHorizontalScrollbar
             ? cc::ScrollbarOrientation::HORIZONTAL
@@ -857,11 +866,8 @@ void VisualViewport::UpdateScrollOffset(const ScrollOffset& position,
                              FloatPoint(position))) {
     return;
   }
-  if (IsExplicitScrollType(scroll_type)) {
+  if (IsExplicitScrollType(scroll_type))
     NotifyRootFrameViewport();
-    if (scroll_type != mojom::blink::ScrollType::kCompositor && scroll_layer_)
-      scroll_layer_->ShowScrollbars();
-  }
 }
 
 cc::Layer* VisualViewport::LayerForScrolling() const {

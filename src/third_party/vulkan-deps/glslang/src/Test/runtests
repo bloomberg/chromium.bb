@@ -191,6 +191,16 @@ run -D -Od -e MainPs -H -Od -g hlsl.pp.line3.frag > $TARGETDIR/hlsl.pp.line3.fra
 diff -b $BASEDIR/hlsl.pp.line3.frag.out $TARGETDIR/hlsl.pp.line3.frag.out || HASERROR=1
 
 #
+# Testing --depfile
+#
+
+echo "Testing --depfile"
+run -D -Od -e main -H --depfile $TARGETDIR/hlsl.include.vert.d.out -Od ../Test/hlsl.include.vert > $TARGETDIR/hlsl.include.vert.out
+diff -b $BASEDIR/hlsl.include.vert.d.out $TARGETDIR/hlsl.include.vert.d.out || HASERROR=1
+run -D -Od -e main -H --depfile $TARGETDIR/hlsl.dashI.vert.d.out -Od -Iinc1/path1 -Iinc1/path2 hlsl.dashI.vert > $TARGETDIR/hlsl.dashI.vert.out
+diff -b $BASEDIR/hlsl.dashI.vert.d.out $TARGETDIR/hlsl.dashI.vert.d.out || HASERROR=1
+
+#
 # Testing -D and -U
 #
 echo "Testing -D and -U"
@@ -269,6 +279,15 @@ diff -b $BASEDIR/hlsl.pp.expand.frag.err $TARGETDIR/hlsl.pp.expand.frag.err || H
 echo "Testing nan-clamp"
 run --nan-clamp -H --aml --amb spv.400.frag > $TARGETDIR/spv.400.frag.nanclamp.out
 diff -b $BASEDIR/spv.400.frag.nanclamp.out $TARGETDIR/spv.400.frag.nanclamp.out || HASERROR=1
+
+#
+# Test --auto-sampled-textures
+#
+echo "Testing auto-sampled-textures"
+run --auto-sampled-textures -H -Od -e MainPs -D -S frag hlsl.autosampledtextures.frag > $TARGETDIR/hlsl.autosampledtextures.frag.out
+diff -b $BASEDIR/hlsl.autosampledtextures.frag.out $TARGETDIR/hlsl.autosampledtextures.frag.out || HASERROR=1
+run --auto-sampled-textures -H -Od -S frag glsl.autosampledtextures.frag > $TARGETDIR/glsl.autosampledtextures.frag.out
+diff -b $BASEDIR/glsl.autosampledtextures.frag.out $TARGETDIR/glsl.autosampledtextures.frag.out || HASERROR=1
 
 #
 # Final checking

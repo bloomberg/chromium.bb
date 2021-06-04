@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_status.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/common/extension.h"
@@ -36,9 +37,9 @@ class MediaRouterMojoImpl;
 class MockMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
   using RouteCallback =
-      base::OnceCallback<void(const base::Optional<MediaRoute>&,
+      base::OnceCallback<void(const absl::optional<MediaRoute>&,
                               mojom::RoutePresentationConnectionPtr,
-                              const base::Optional<std::string>&,
+                              const absl::optional<std::string>&,
                               RouteRequestResult::ResultCode)>;
 
   MockMediaRouteProvider();
@@ -161,7 +162,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
 
  private:
   // The route that is passed into callbacks.
-  base::Optional<MediaRoute> route_;
+  absl::optional<MediaRoute> route_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
 };

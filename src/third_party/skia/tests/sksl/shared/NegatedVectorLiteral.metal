@@ -10,15 +10,14 @@ struct Inputs {
 struct Outputs {
     float4 sk_FragColor [[color(0)]];
 };
-
 bool test_int_b() {
     int one = 1;
     const int two = 2;
     int4 result;
     result.x = 1;
     result.y = 1;
-    result.z = int(all(-int4(two) == int4(-2, int3(-2))) ? 1 : 0);
-    result.w = int(all(-int2(-one, one + one) == -int2(one - two, two)) ? 1 : 0);
+    result.z = 1;
+    result.w = int(all(-int2(-one, one + one) == -int2(one - two, 2)) ? 1 : 0);
     return bool(((result.x * result.y) * result.z) * result.w);
 }
 fragment Outputs fragmentMain(Inputs _in [[stage_in]], constant Uniforms& _uniforms [[buffer(0)]], bool _frontFacing [[front_facing]], float4 _fragCoord [[position]]) {

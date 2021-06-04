@@ -166,7 +166,7 @@
 // SetLogItems()
 //
 // Additional logging-related information can be found here:
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Logging
+// https://chromium.googlesource.com/chromium/src/+/main/docs/linux/debugging.md#Logging
 
 namespace logging {
 
@@ -351,32 +351,32 @@ BASE_EXPORT void SetLogMessageHandler(LogMessageHandlerFunction handler);
 BASE_EXPORT LogMessageHandlerFunction GetLogMessageHandler();
 
 using LogSeverity = int;
-const LogSeverity LOGGING_VERBOSE = -1;  // This is level 1 verbosity
+constexpr LogSeverity LOGGING_VERBOSE = -1;  // This is level 1 verbosity
 // Note: the log severities are used to index into the array of names,
 // see log_severity_names.
-const LogSeverity LOGGING_INFO = 0;
-const LogSeverity LOGGING_WARNING = 1;
-const LogSeverity LOGGING_ERROR = 2;
-const LogSeverity LOGGING_FATAL = 3;
-const LogSeverity LOGGING_NUM_SEVERITIES = 4;
+constexpr LogSeverity LOGGING_INFO = 0;
+constexpr LogSeverity LOGGING_WARNING = 1;
+constexpr LogSeverity LOGGING_ERROR = 2;
+constexpr LogSeverity LOGGING_FATAL = 3;
+constexpr LogSeverity LOGGING_NUM_SEVERITIES = 4;
 
 // LOGGING_DFATAL is LOGGING_FATAL in DCHECK-enabled builds, ERROR in normal
 // mode.
 #if DCHECK_IS_ON()
-const LogSeverity LOGGING_DFATAL = LOGGING_FATAL;
+constexpr LogSeverity LOGGING_DFATAL = LOGGING_FATAL;
 #else
-const LogSeverity LOGGING_DFATAL = LOGGING_ERROR;
+constexpr LogSeverity LOGGING_DFATAL = LOGGING_ERROR;
 #endif
 
 // This block duplicates the above entries to facilitate incremental conversion
 // from LOG_FOO to LOGGING_FOO.
 // TODO(thestig): Convert existing users to LOGGING_FOO and remove this block.
-const LogSeverity LOG_VERBOSE = LOGGING_VERBOSE;
-const LogSeverity LOG_INFO = LOGGING_INFO;
-const LogSeverity LOG_WARNING = LOGGING_WARNING;
-const LogSeverity LOG_ERROR = LOGGING_ERROR;
-const LogSeverity LOG_FATAL = LOGGING_FATAL;
-const LogSeverity LOG_DFATAL = LOGGING_DFATAL;
+constexpr LogSeverity LOG_VERBOSE = LOGGING_VERBOSE;
+constexpr LogSeverity LOG_INFO = LOGGING_INFO;
+constexpr LogSeverity LOG_WARNING = LOGGING_WARNING;
+constexpr LogSeverity LOG_ERROR = LOGGING_ERROR;
+constexpr LogSeverity LOG_FATAL = LOGGING_FATAL;
+constexpr LogSeverity LOG_DFATAL = LOGGING_DFATAL;
 
 // A few definitions of macros that don't generate much code. These are used
 // by LOG() and LOG_IF, etc. Since these are used all over our code, it's
@@ -418,7 +418,7 @@ const LogSeverity LOG_DFATAL = LOGGING_DFATAL;
   COMPACT_GOOGLE_LOG_EX_ERROR(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_0 COMPACT_GOOGLE_LOG_ERROR
 // Needed for LOG_IS_ON(ERROR).
-const LogSeverity LOGGING_0 = LOGGING_ERROR;
+constexpr LogSeverity LOGGING_0 = LOGGING_ERROR;
 #endif
 
 // As special cases, we can assume that LOG_IS_ON(FATAL) always holds. Also,
@@ -559,21 +559,11 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
 
 // Definitions for DCHECK et al.
 
-#if DCHECK_IS_ON()
-
 #if defined(DCHECK_IS_CONFIGURABLE)
 BASE_EXPORT extern LogSeverity LOGGING_DCHECK;
 #else
-const LogSeverity LOGGING_DCHECK = LOGGING_FATAL;
+constexpr LogSeverity LOGGING_DCHECK = LOGGING_FATAL;
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#else  // DCHECK_IS_ON()
-
-// There may be users of LOGGING_DCHECK that are enabled independently
-// of DCHECK_IS_ON(), so default to FATAL logging for those.
-const LogSeverity LOGGING_DCHECK = LOGGING_FATAL;
-
-#endif  // DCHECK_IS_ON()
 
 // Redefine the standard assert to use our nice log files
 #undef assert
@@ -606,14 +596,13 @@ class BASE_EXPORT LogMessage {
  private:
   void Init(const char* file, int line);
 
-  LogSeverity severity_;
+  const LogSeverity severity_;
   std::ostringstream stream_;
   size_t message_start_;  // Offset of the start of the message (past prefix
                           // info).
   // The file and line information passed in to the constructor.
-  const char* file_;
+  const char* const file_;
   const int line_;
-  const char* file_basename_;
 
   // This is useful since the LogMessage class uses a lot of Win32 calls
   // that will lose the value of GLE and the code that called the log function

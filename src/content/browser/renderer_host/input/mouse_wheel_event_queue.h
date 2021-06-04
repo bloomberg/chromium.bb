@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -112,7 +111,6 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   void SendScrollEnd(blink::WebGestureEvent update_event, bool synthetic);
   void SendScrollBegin(const blink::WebGestureEvent& gesture_update,
                        bool synthetic);
-  void RecordLatchingUmaMetric(bool latched);
 
   // True if gesture scroll events can be generated for the wheel event sent for
   // ack.

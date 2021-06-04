@@ -104,35 +104,35 @@ void AddLiveCaptionSectionStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("captionsEnableLiveCaptionSubtitle",
                                   live_caption_subtitle_message);
 
-  base::Optional<speech::SodaLanguagePackComponentConfig> englishConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> englishConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kEnUs);
   html_source->AddString("sodaLanguageCodeEnglish",
                          englishConfig->language_name);
   html_source->AddLocalizedString("sodaLanguageDisplayNameEnglish",
                                   englishConfig->display_name);
-  base::Optional<speech::SodaLanguagePackComponentConfig> frenchConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> frenchConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kFrFr);
   html_source->AddString("sodaLanguageCodeFrench", frenchConfig->language_name);
   html_source->AddLocalizedString("sodaLanguageDisplayNameFrench",
                                   frenchConfig->display_name);
-  base::Optional<speech::SodaLanguagePackComponentConfig> germanConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> germanConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kDeDe);
   html_source->AddString("sodaLanguageCodeGerman", germanConfig->language_name);
   html_source->AddLocalizedString("sodaLanguageDisplayNameGerman",
                                   germanConfig->display_name);
-  base::Optional<speech::SodaLanguagePackComponentConfig> italianConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> italianConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kItIt);
   html_source->AddString("sodaLanguageCodeItalian",
                          italianConfig->language_name);
   html_source->AddLocalizedString("sodaLanguageDisplayNameItalian",
                                   italianConfig->display_name);
-  base::Optional<speech::SodaLanguagePackComponentConfig> japaneseConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> japaneseConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kJaJp);
   html_source->AddString("sodaLanguageCodeJapanese",
                          japaneseConfig->language_name);
   html_source->AddLocalizedString("sodaLanguageDisplayNameJapanese",
                                   japaneseConfig->display_name);
-  base::Optional<speech::SodaLanguagePackComponentConfig> spanishConfig =
+  absl::optional<speech::SodaLanguagePackComponentConfig> spanishConfig =
       speech::GetLanguageComponentConfig(speech::LanguageCode::kEsEs);
   html_source->AddString("sodaLanguageCodeSpanish",
                          spanishConfig->language_name);
@@ -140,7 +140,7 @@ void AddLiveCaptionSectionStrings(content::WebUIDataSource* html_source) {
                                   spanishConfig->display_name);
 
   html_source->AddBoolean("enableLiveCaption",
-                          base::FeatureList::IsEnabled(media::kLiveCaption));
+                          media::IsLiveCaptionFeatureEnabled());
   html_source->AddBoolean("enableLiveCaptionMultiLanguage",
                           liveCaptionMultiLanguageEnabled);
 }
@@ -307,6 +307,8 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
       {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
       {"nearbyShareDeviceNameAriaDescription",
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
+      {"nearbyShareConfirmDeviceName",
+       IDS_SETTINGS_NEARBY_SHARE_CONFIRM_DEVICE_NAME},
       {"nearbyShareManageContactsLabel",
        IDS_SETTINGS_NEARBY_SHARE_MANAGE_CONTACTS_LABEL},
       {"nearbyShareManageContactsRowTitle",
@@ -347,7 +349,9 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
       {"nearbyShareHighVisibilityOn",
        IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_ON},
       {"nearbyShareHighVisibilityOff",
-       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_OFF}};
+       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_OFF},
+      {"nearbyShareVisibilityDialogSave",
+       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_SAVE}};
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

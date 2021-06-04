@@ -10,7 +10,6 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/common/search/omnibox.mojom.h"
 #include "components/search/search.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -110,29 +109,6 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
 }
 
 SearchIPCRouter::~SearchIPCRouter() = default;
-
-void SearchIPCRouter::AutocompleteResultChanged(
-    search::mojom::AutocompleteResultPtr result) {
-  if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_) ||
-      !embedded_search_client()) {
-    return;
-  }
-
-  embedded_search_client()->AutocompleteResultChanged(std::move(result));
-}
-
-void SearchIPCRouter::AutocompleteMatchImageAvailable(
-    uint32_t match_index,
-    const std::string& image_url,
-    const std::string& data_url) {
-  if (!policy_->ShouldProcessAutocompleteMatchImageAvailable(is_active_tab_) ||
-      !embedded_search_client()) {
-    return;
-  }
-
-  embedded_search_client()->AutocompleteMatchImageAvailable(
-      match_index, image_url, data_url);
-}
 
 void SearchIPCRouter::OnNavigationEntryCommitted() {
   ++commit_counter_;
@@ -374,17 +350,6 @@ void SearchIPCRouter::LogMostVisitedNavigation(
   delegate_->OnLogMostVisitedNavigation(impression);
 }
 
-void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,
-                                           const std::u16string& text) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessPasteIntoOmnibox(is_active_tab_))
-    return;
-
-  delegate_->PasteIntoOmnibox(text);
-}
-
 void SearchIPCRouter::SetCustomBackgroundInfo(
     const GURL& background_url,
     const std::string& attribution_line_1,
@@ -476,31 +441,6 @@ void SearchIPCRouter::ConfirmThemeChanges() {
   delegate_->OnConfirmThemeChanges();
 }
 
-void SearchIPCRouter::QueryAutocomplete(const std::u16string& input,
-                                        bool prevent_inline_autocomplete) {
-  if (!policy_->ShouldProcessQueryAutocomplete(is_active_tab_)) {
-    return;
-  }
-
-  delegate_->QueryAutocomplete(input, prevent_inline_autocomplete);
-}
-
-void SearchIPCRouter::StopAutocomplete(bool clear_result) {
-  if (!policy_->ShouldProcessStopAutocomplete()) {
-    return;
-  }
-
-  delegate_->StopAutocomplete(clear_result);
-}
-
-void SearchIPCRouter::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
-  if (!policy_->ShouldProcessLogCharTypedToRepaintLatency()) {
-    return;
-  }
-
-  delegate_->LogCharTypedToRepaintLatency(latency_ms);
-}
-
 void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   if (!policy_->ShouldProcessBlocklistPromo()) {
     return;
@@ -519,42 +459,6 @@ void SearchIPCRouter::OpenExtensionsPage(double button,
   }
 
   delegate_->OpenExtensionsPage(button, alt_key, ctrl_key, meta_key, shift_key);
-}
-
-void SearchIPCRouter::OpenAutocompleteMatch(
-    uint8_t line,
-    const GURL& url,
-    bool are_matches_showing,
-    double time_elapsed_since_last_focus,
-    double button,
-    bool alt_key,
-    bool ctrl_key,
-    bool meta_key,
-    bool shift_key) {
-  if (!policy_->ShouldProcessOpenAutocompleteMatch(is_active_tab_)) {
-    return;
-  }
-
-  delegate_->OpenAutocompleteMatch(line, url, are_matches_showing,
-                                   time_elapsed_since_last_focus, button,
-                                   alt_key, ctrl_key, meta_key, shift_key);
-}
-
-void SearchIPCRouter::DeleteAutocompleteMatch(uint8_t line) {
-  if (!policy_->ShouldProcessDeleteAutocompleteMatch()) {
-    return;
-  }
-
-  delegate_->DeleteAutocompleteMatch(line);
-}
-
-void SearchIPCRouter::ToggleSuggestionGroupIdVisibility(
-    int32_t suggestion_group_id) {
-  if (!policy_->ShouldProcessToggleSuggestionGroupIdVisibility()) {
-    return;
-  }
-
-  delegate_->ToggleSuggestionGroupIdVisibility(suggestion_group_id);
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {

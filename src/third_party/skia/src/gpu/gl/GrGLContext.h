@@ -23,58 +23,57 @@ struct GrContextOptions;
  */
 class GrGLContextInfo {
 public:
-    GrGLContextInfo(const GrGLContextInfo&) = delete;
-    GrGLContextInfo& operator=(const GrGLContextInfo&) = delete;
+    GrGLContextInfo(GrGLContextInfo&&) = default;
+    GrGLContextInfo& operator=(GrGLContextInfo&&) = default;
 
     virtual ~GrGLContextInfo() {}
 
     GrGLStandard standard() const { return fInterface->fStandard; }
-    GrGLVersion version() const { return fGLVersion; }
+    GrGLVersion version() const { return fDriverInfo.fVersion; }
     GrGLSLGeneration glslGeneration() const { return fGLSLGeneration; }
-    GrGLVendor vendor() const { return fVendor; }
-    GrGLRenderer renderer() const { return fRenderer; }
-    GrGLANGLEBackend angleBackend() const { return fANGLEBackend; }
-    GrGLANGLEVendor angleVendor() const { return fANGLEVendor; }
-    GrGLANGLERenderer angleRenderer() const { return fANGLERenderer; }
+    GrGLVendor vendor() const { return fDriverInfo.fVendor; }
+    GrGLRenderer renderer() const { return fDriverInfo.fRenderer; }
+    GrGLANGLEBackend angleBackend() const { return fDriverInfo.fANGLEBackend; }
+    GrGLVendor angleVendor() const { return fDriverInfo.fANGLEVendor; }
+    GrGLRenderer angleRenderer() const { return fDriverInfo.fANGLERenderer; }
     /** What driver is running our GL implementation? This is not necessarily related to the vendor.
         (e.g. Intel GPU being driven by Mesa) */
-    GrGLDriver driver() const { return fDriver; }
-    GrGLDriverVersion driverVersion() const { return fDriverVersion; }
+    GrGLDriver driver() const { return fDriverInfo.fDriver; }
+    GrGLDriverVersion driverVersion() const { return fDriverInfo.fDriverVersion; }
+    bool isOverCommandBuffer() const { return fDriverInfo.fIsOverCommandBuffer; }
+
     const GrGLCaps* caps() const { return fGLCaps.get(); }
     GrGLCaps* caps() { return fGLCaps.get(); }
+
     bool hasExtension(const char* ext) const {
         return fInterface->hasExtension(ext);
     }
 
     const GrGLExtensions& extensions() const { return fInterface->fExtensions; }
 
+    /**
+     * Makes a version of this context info that strips the "angle-ness". It will report kUnknown
+     * for angleBackend() and report this info's angleRenderer() as renderer() and similiar for
+     * driver(), driverVersion(), and vendor().
+     */
+    GrGLContextInfo makeNonAngle() const;
+
 protected:
+    GrGLContextInfo& operator=(const GrGLContextInfo&) = default;
+    GrGLContextInfo(const GrGLContextInfo&) = default;
+
     struct ConstructorArgs {
         sk_sp<const GrGLInterface>          fInterface;
-        GrGLVersion                         fGLVersion;
+        GrGLDriverInfo                      fDriverInfo;
         GrGLSLGeneration                    fGLSLGeneration;
-        GrGLVendor                          fVendor;
-        GrGLRenderer                        fRenderer;
-        GrGLDriver                          fDriver;
-        GrGLDriverVersion                   fDriverVersion;
-        GrGLANGLEBackend                    fANGLEBackend;
-        GrGLANGLEVendor                     fANGLEVendor;
-        GrGLANGLERenderer                   fANGLERenderer;
         const  GrContextOptions*            fContextOptions;
     };
 
     GrGLContextInfo(ConstructorArgs&&);
 
     sk_sp<const GrGLInterface> fInterface;
-    GrGLVersion                fGLVersion;
+    GrGLDriverInfo             fDriverInfo;
     GrGLSLGeneration           fGLSLGeneration;
-    GrGLVendor                 fVendor;
-    GrGLRenderer               fRenderer;
-    GrGLDriver                 fDriver;
-    GrGLDriverVersion          fDriverVersion;
-    GrGLANGLEBackend           fANGLEBackend;
-    GrGLANGLEVendor            fANGLEVendor;
-    GrGLANGLERenderer          fANGLERenderer;
     sk_sp<GrGLCaps>            fGLCaps;
 };
 

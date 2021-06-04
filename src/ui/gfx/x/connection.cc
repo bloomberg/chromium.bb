@@ -362,10 +362,19 @@ void Connection::SynchronizeForTest(bool synchronous) {
 
 void Connection::ReadResponses() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  while (auto* event = xcb_poll_for_event(XcbConnection())) {
+  while (ReadResponse(false)) {
+  }
+}
+
+bool Connection::ReadResponse(bool queued) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* event = queued ? xcb_poll_for_queued_event(XcbConnection())
+                       : xcb_poll_for_event(XcbConnection());
+  if (event) {
     events_.emplace_back(base::MakeRefCounted<MallocedRefCountedMemory>(event),
                          this);
   }
+  return event;
 }
 
 Event Connection::WaitForNextEvent() {
@@ -520,7 +529,7 @@ void Connection::ProcessNextResponse() {
   requests_.pop_front();
   if (last_non_void_request_id_.has_value() &&
       last_non_void_request_id_.value() == first_request_id_) {
-    last_non_void_request_id_ = base::nullopt;
+    last_non_void_request_id_ = absl::nullopt;
   }
   first_request_id_++;
   if (request.callback) {

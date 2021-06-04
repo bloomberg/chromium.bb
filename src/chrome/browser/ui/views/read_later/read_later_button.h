@@ -11,10 +11,10 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -57,7 +57,7 @@ class ReadLaterButton : public views::LabelButton,
     // |highlight_color_| and on the current animation state (which
     // influences the alpha channel).
     SkColor GetTextColor() const;
-    base::Optional<SkColor> GetBackgroundColor() const;
+    absl::optional<SkColor> GetBackgroundColor() const;
     SkColor GetIconColor() const;
 
     void AnimationEnded(const gfx::Animation* animation) override;
@@ -78,10 +78,6 @@ class ReadLaterButton : public views::LabelButton,
   };
 
   // LabelButton:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  SkColor GetInkDropBaseColor() const override;
   void OnThemeChanged() override;
   void Layout() override;
 

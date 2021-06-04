@@ -10,13 +10,13 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -116,7 +116,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
 // indicator to alert the user that recording, tab capture, or audio playback
 // has started/stopped.
 std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
-    base::Optional<TabAlertState> alert_state) {
+    absl::optional<TabAlertState> alert_state) {
   if (alert_state == TabAlertState::MEDIA_RECORDING ||
       alert_state == TabAlertState::TAB_CAPTURING ||
       alert_state == TabAlertState::DESKTOP_CAPTURING) {
@@ -191,11 +191,11 @@ void AlertIndicator::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AlertIndicator::TransitionToAlertState(
-    base::Optional<TabAlertState> next_state) {
+    absl::optional<TabAlertState> next_state) {
   if (next_state == alert_state_)
     return;
 
-  base::Optional<TabAlertState> previous_alert_showing_state =
+  absl::optional<TabAlertState> previous_alert_showing_state =
       showing_alert_state_;
 
   if (next_state)

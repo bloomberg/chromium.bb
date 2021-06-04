@@ -33,8 +33,10 @@ void BackgroundFetchDelegateImpl::MarkJobComplete(const std::string& job_id) {
   BackgroundFetchDelegateBase::MarkJobComplete(job_id);
 
 #if defined(OS_ANDROID)
-  if (GetJobDetails(job_id)->job_state ==
-      background_fetch::JobDetails::State::kJobComplete) {
+  background_fetch::JobDetails* job_details =
+      GetJobDetails(job_id, /*allow_null=*/true);
+  if (job_details && job_details->job_state ==
+                         background_fetch::JobDetails::State::kJobComplete) {
     // The UI should have already been updated to the Completed state, however,
     // sometimes Android drops notification updates if there have been too many
     // requested in a short span of time, so make sure the completed state is
@@ -52,8 +54,8 @@ void BackgroundFetchDelegateImpl::MarkJobComplete(const std::string& job_id) {
 
 void BackgroundFetchDelegateImpl::UpdateUI(
     const std::string& job_id,
-    const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {
+    const absl::optional<std::string>& title,
+    const absl::optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(title || icon);             // One of the UI options must be updatable.
   DCHECK(!icon || !icon->isNull());  // The |icon|, if provided, is not null.
@@ -73,13 +75,6 @@ void BackgroundFetchDelegateImpl::UpdateUI(
 
   if (auto client = GetClient(job_id))
     client->OnUIUpdated(job_id);
-}
-
-void BackgroundFetchDelegateImpl::GetPermissionForOriginWithoutWebContents(
-    const url::Origin& origin,
-    GetPermissionForOriginCallback callback) {
-  // TODO(estade): handle the case where there's no WebContents.
-  std::move(callback).Run(content::BackgroundFetchPermission::BLOCKED);
 }
 
 download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {

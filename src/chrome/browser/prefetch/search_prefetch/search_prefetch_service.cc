@@ -182,7 +182,7 @@ bool SearchPrefetchService::MaybePrefetchURL(const GURL& url) {
     return false;
   }
 
-  std::unique_ptr<BaseSearchPrefetchRequest> prefetch_request = nullptr;
+  std::unique_ptr<BaseSearchPrefetchRequest> prefetch_request;
   if (StreamSearchPrefetchResponses()) {
     prefetch_request = std::make_unique<StreamingSearchPrefetchRequest>(
         url, base::BindOnce(&SearchPrefetchService::ReportError,
@@ -236,11 +236,11 @@ void SearchPrefetchService::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   prefetches_[match_search_terms]->MarkPrefetchAsClicked();
 }
 
-base::Optional<SearchPrefetchStatus>
+absl::optional<SearchPrefetchStatus>
 SearchPrefetchService::GetSearchPrefetchStatusForTesting(
     std::u16string search_terms) {
   if (prefetches_.find(search_terms) == prefetches_.end())
-    return base::nullopt;
+    return absl::nullopt;
   return prefetches_[search_terms]->current_status();
 }
 
@@ -458,7 +458,7 @@ void SearchPrefetchService::OnTemplateURLServiceChanged() {
       TemplateURLServiceFactory::GetForProfile(profile_);
   DCHECK(template_url_service);
 
-  base::Optional<TemplateURLData> template_url_service_data;
+  absl::optional<TemplateURLData> template_url_service_data;
 
   const TemplateURL* template_url =
       template_url_service->GetDefaultSearchProvider();
@@ -538,21 +538,17 @@ bool SearchPrefetchService::LoadFromPrefs() {
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (!template_url_service ||
       !template_url_service->GetDefaultSearchProvider()) {
-    return dictionary->size() > 0;
+    return dictionary->DictSize() > 0;
   }
 
-  for (const auto& element : *dictionary) {
+  for (const auto& element : dictionary->DictItems()) {
     GURL navigation_url(element.first);
     if (!navigation_url.is_valid()) {
       continue;
     }
 
-    if (!element.second) {
-      continue;
-    }
-
     base::Value::ConstListView const prefetch_url_and_time =
-        base::Value::AsListValue(*element.second).GetList();
+        base::Value::AsListValue(element.second).GetList();
 
     if (prefetch_url_and_time.size() != 2 ||
         !prefetch_url_and_time[0].is_string() ||
@@ -586,7 +582,7 @@ bool SearchPrefetchService::LoadFromPrefs() {
       continue;
     }
 
-    base::Optional<base::Time> last_update =
+    absl::optional<base::Time> last_update =
         util::ValueToTime(prefetch_url_and_time[1]);
     if (!last_update) {
       continue;
@@ -601,7 +597,7 @@ bool SearchPrefetchService::LoadFromPrefs() {
         navigation_url,
         std::make_pair(GURL(prefetch_url), last_update.value()));
   }
-  return dictionary->size() > prefetch_cache_.size();
+  return dictionary->DictSize() > prefetch_cache_.size();
 }
 
 void SearchPrefetchService::SaveToPrefs() const {

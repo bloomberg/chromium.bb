@@ -11,13 +11,13 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/mojom/lifecycle.mojom.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -36,12 +36,10 @@ class PageNode : public Node {
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 
-  // Reasons for which a frame can become the opener of a page.
-  enum class OpenedType {
-    // Returned if this node doesn't have an opener.
+  // Reasons for which a frame can become the embedder of a page.
+  enum class EmbeddingType {
+    // Returned if this node doesn't have an embedder.
     kInvalid,
-    // This page is a popup (the opener created it via window.open).
-    kPopup,
     // This page is a guest view. This can be many things (<webview>, <appview>,
     // etc) but is backed by the same inner/outer WebContents mechanism.
     kGuestView,
@@ -49,8 +47,8 @@ class PageNode : public Node {
     kPortal,
   };
 
-  // Returns a string for a PageNode::OpenedType enumeration.
-  static const char* ToString(PageNode::OpenedType opened_type);
+  // Returns a string for a PageNode::EmbeddingType enumeration.
+  static const char* ToString(PageNode::EmbeddingType embedding_type);
 
   // Loading state of a page.
   enum class LoadingState {
@@ -86,9 +84,13 @@ class PageNode : public Node {
   // lifetime of this page. See "OnOpenerFrameNodeChanged".
   virtual const FrameNode* GetOpenerFrameNode() const = 0;
 
-  // Returns the type of relationship this node has with its opener, if it has
-  // an opener.
-  virtual OpenedType GetOpenedType() const = 0;
+  // Returns the embedder frame node, if there is one. This may change over the
+  // lifetime of this page. See "OnEmbedderFrameNodeChanged".
+  virtual const FrameNode* GetEmbedderFrameNode() const = 0;
+
+  // Returns the type of relationship this node has with its embedder, if it has
+  // an embedder.
+  virtual EmbeddingType GetEmbeddingType() const = 0;
 
   // Returns true if this page is currently visible, false otherwise.
   // See PageNodeObserver::OnIsVisibleChanged.
@@ -169,12 +171,12 @@ class PageNode : public Node {
 
   // Indicates if there's a freezing vote for this page node. This has 3
   // possible values:
-  //   - base::nullopt: There's no active freezing vote for this page.
+  //   - absl::nullopt: There's no active freezing vote for this page.
   //   - freezing::FreezingVoteValue::kCanFreeze: There's one or more positive
   //     freezing vote for this page and no negative vote.
   //   - freezing::FreezingVoteValue::kCannotFreeze: There's at least one
   //     negative freezing vote for this page.
-  virtual const base::Optional<freezing::FreezingVote>& GetFreezingVote()
+  virtual const absl::optional<freezing::FreezingVote>& GetFreezingVote()
       const = 0;
 
  private:
@@ -185,7 +187,7 @@ class PageNode : public Node {
 // implement the entire interface.
 class PageNodeObserver {
  public:
-  using OpenedType = PageNode::OpenedType;
+  using EmbeddingType = PageNode::EmbeddingType;
 
   PageNodeObserver();
   virtual ~PageNodeObserver();
@@ -204,13 +206,21 @@ class PageNodeObserver {
 
   // Notifications of property changes.
 
-  // Invoked when this page has been assigned an opener, had the opener change,
-  // or had the opener removed. This can happen if a page is opened via
-  // window.open, webviews, portals, etc, or when that relationship is
-  // subsequently severed or reparented.
+  // Invoked when this page has been assigned an opener, had the opener
+  // change, or had the opener removed. This happens when a page is opened
+  // via window.open, or when that relationship is subsequently severed or
+  // reparented.
   virtual void OnOpenerFrameNodeChanged(const PageNode* page_node,
-                                        const FrameNode* previous_opener,
-                                        OpenedType previous_opened_type) = 0;
+                                        const FrameNode* previous_opener) = 0;
+
+  // Invoked when this page has been assigned an embedder, had the embedder
+  // change, or had the embedder removed. This can happen if a page is opened
+  // via webviews, guestviews, portals, etc, or when that relationship is
+  // subsequently severed or reparented.
+  virtual void OnEmbedderFrameNodeChanged(
+      const PageNode* page_node,
+      const FrameNode* previous_embedder,
+      EmbeddingType previous_embedder_type) = 0;
 
   // Invoked when the IsVisible property changes.
   virtual void OnIsVisibleChanged(const PageNode* page_node) = 0;
@@ -258,7 +268,7 @@ class PageNodeObserver {
   // Called every time the aggregated freezing vote changes or gets invalidated.
   virtual void OnFreezingVoteChanged(
       const PageNode* page_node,
-      base::Optional<freezing::FreezingVote> previous_vote) = 0;
+      absl::optional<freezing::FreezingVote> previous_vote) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNodeObserver);
@@ -276,8 +286,11 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageNodeAdded(const PageNode* page_node) override {}
   void OnBeforePageNodeRemoved(const PageNode* page_node) override {}
   void OnOpenerFrameNodeChanged(const PageNode* page_node,
-                                const FrameNode* previous_opener,
-                                OpenedType previous_opened_type) override {}
+                                const FrameNode* previous_opener) override {}
+  void OnEmbedderFrameNodeChanged(
+      const PageNode* page_node,
+      const FrameNode* previous_embedder,
+      EmbeddingType previous_embedding_type) override {}
   void OnIsVisibleChanged(const PageNode* page_node) override {}
   void OnIsAudibleChanged(const PageNode* page_node) override {}
   void OnLoadingStateChanged(const PageNode* page_node) override {}
@@ -293,15 +306,16 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnFaviconUpdated(const PageNode* page_node) override {}
   void OnFreezingVoteChanged(
       const PageNode* page_node,
-      base::Optional<freezing::FreezingVote> previous_vote) override {}
+      absl::optional<freezing::FreezingVote> previous_vote) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
-// std::ostream support for PageNode::OpenedType.
-std::ostream& operator<<(std::ostream& os,
-                         performance_manager::PageNode::OpenedType opened_type);
+// std::ostream support for PageNode::EmbeddingType.
+std::ostream& operator<<(
+    std::ostream& os,
+    performance_manager::PageNode::EmbeddingType embedding_type);
 
 }  // namespace performance_manager
 

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/test/task_environment.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/language/core/browser/language_model.h"
@@ -25,6 +24,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/translate_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -41,17 +41,13 @@ const char kTargetLanguage[] = "en";
 
 namespace {
 
+const int kAutoAlwaysThreshold = 5;
+
 class TestInfoBarManager : public infobars::InfoBarManager {
  public:
   TestInfoBarManager() = default;
   // infobars::InfoBarManager:
   ~TestInfoBarManager() override {}
-
-  // infobars::InfoBarManager:
-  std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate> delegate) override {
-    return std::make_unique<infobars::InfoBar>(std::move(delegate));
-  }
 
   // infobars::InfoBarManager:
   int GetActiveEntryID() override { return 0; }
@@ -223,14 +219,14 @@ TEST_F(TranslateInfoBarDelegateTest, ShouldAutoAlwaysTranslate) {
       pref_service_.get(), TranslatePrefs::kPrefTranslateAcceptedCount);
   base::DictionaryValue* update_translate_accepted_dict =
       update_translate_accepted_count.Get();
-  // 6 = kAutoAlwaysThreshold + 1
-  update_translate_accepted_dict->SetInteger(kSourceLanguage, 6);
+  update_translate_accepted_dict->SetInteger(kSourceLanguage,
+                                             kAutoAlwaysThreshold + 1);
 
   const base::DictionaryValue* dict = pref_service_->GetDictionary(
       TranslatePrefs::kPrefTranslateAutoAlwaysCount);
-  int translate_auto_always_count = 0;
+  int translate_auto_always_count = -1;
   dict->GetInteger(kSourceLanguage, &translate_auto_always_count);
-  EXPECT_EQ(0, translate_auto_always_count);
+  EXPECT_EQ(-1, translate_auto_always_count);
 
   TranslateInfoBarDelegate::Create(
       /*replace_existing_infobar=*/true, manager_->GetWeakPtr(),
@@ -246,11 +242,48 @@ TEST_F(TranslateInfoBarDelegateTest, ShouldAutoAlwaysTranslate) {
   int count = -1;
   update_translate_accepted_dict->GetInteger(kSourceLanguage, &count);
   EXPECT_EQ(0, count);
+  // Get the dictionary again in order to update it.
   dict = pref_service_->GetDictionary(
       TranslatePrefs::kPrefTranslateAutoAlwaysCount);
-  translate_auto_always_count = 0;
   dict->GetInteger(kSourceLanguage, &translate_auto_always_count);
   EXPECT_EQ(1, translate_auto_always_count);
+}
+
+TEST_F(TranslateInfoBarDelegateTest, ShouldNotAutoAlwaysTranslateUnknown) {
+  DictionaryPrefUpdate update_translate_accepted_count(
+      pref_service_.get(), TranslatePrefs::kPrefTranslateAcceptedCount);
+  base::DictionaryValue* update_translate_accepted_dict =
+      update_translate_accepted_count.Get();
+  // Should not trigger auto always translate for unknown source language.
+  update_translate_accepted_dict->SetInteger(kUnknownLanguageCode,
+                                             kAutoAlwaysThreshold + 1);
+
+  const base::DictionaryValue* dict = pref_service_->GetDictionary(
+      TranslatePrefs::kPrefTranslateAutoAlwaysCount);
+  int translate_auto_always_count = -1;
+  dict->GetInteger(kUnknownLanguageCode, &translate_auto_always_count);
+  EXPECT_EQ(-1, translate_auto_always_count);
+
+  TranslateInfoBarDelegate::Create(
+      /*replace_existing_infobar=*/true, manager_->GetWeakPtr(),
+      infobar_manager_.get(),
+      /*is_off_the_record=*/false,
+      translate::TranslateStep::TRANSLATE_STEP_TRANSLATING,
+      kUnknownLanguageCode, kTargetLanguage, TranslateErrors::Type::NONE,
+      /*triggered_from_menu=*/false);
+  TranslateInfoBarDelegate* delegate =
+      infobar_manager_->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
+  EXPECT_FALSE(delegate->ShouldAutoAlwaysTranslate());
+
+  int count = -1;
+  update_translate_accepted_dict->GetInteger(kSourceLanguage, &count);
+  // Always translate not triggered, so count should be unchanged.
+  EXPECT_EQ(-1, count);
+  // Get the dictionary again in order to update it.
+  dict = pref_service_->GetDictionary(
+      TranslatePrefs::kPrefTranslateAutoAlwaysCount);
+  dict->GetInteger(kUnknownLanguageCode, &translate_auto_always_count);
+  EXPECT_EQ(-1, translate_auto_always_count);
 }
 
 TEST_F(TranslateInfoBarDelegateTest, ShouldNotAutoAlwaysTranslate) {
@@ -301,6 +334,7 @@ TEST_F(TranslateInfoBarDelegateTest, ShouldAutoNeverTranslate) {
   int count = -1;
   update_translate_denied_dict->GetInteger(kSourceLanguage, &count);
   EXPECT_EQ(0, count);
+  // Get the dictionary again in order to update it.
   dict = pref_service_->GetDictionary(
       TranslatePrefs::kPrefTranslateAutoNeverCount);
   translate_auto_never_count = 0;

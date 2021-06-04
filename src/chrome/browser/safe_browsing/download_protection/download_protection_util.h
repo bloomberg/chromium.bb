@@ -32,7 +32,8 @@ enum class DownloadCheckResult {
   DEEP_SCANNED_SAFE = 12,
   PROMPT_FOR_SCANNING = 13,
   BLOCKED_UNSUPPORTED_FILE_TYPE = 14,
-  kMaxValue = BLOCKED_UNSUPPORTED_FILE_TYPE,
+  DANGEROUS_ACCOUNT_COMPROMISE = 15,
+  kMaxValue = DANGEROUS_ACCOUNT_COMPROMISE,
 };
 
 // Enum to keep track why a particular download verdict was chosen.
@@ -74,6 +75,7 @@ enum DownloadCheckResultReason {
   REASON_DEEP_SCANNED_SAFE = 33,
   REASON_ADVANCED_PROTECTION_PROMPT = 34,
   REASON_BLOCKED_UNSUPPORTED_FILE_TYPE = 35,
+  REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE = 36,
   REASON_MAX  // Always add new values before this one.
 };
 
@@ -82,11 +84,11 @@ enum DownloadCheckResultReason {
 // be mixed together based on their values).
 enum SBStatsType {
   DOWNLOAD_URL_CHECKS_TOTAL,
-  DOWNLOAD_URL_CHECKS_CANCELED,
+  DEPRECATED_DOWNLOAD_URL_CHECKS_CANCELED,
   DOWNLOAD_URL_CHECKS_MALWARE,
 
-  DOWNLOAD_HASH_CHECKS_TOTAL,
-  DOWNLOAD_HASH_CHECKS_MALWARE,
+  DEPRECATED_DOWNLOAD_HASH_CHECKS_TOTAL,
+  DEPRECATED_DOWNLOAD_HASH_CHECKS_MALWARE,
 
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
@@ -132,8 +134,6 @@ using PPAPIDownloadRequestCallbackList =
     base::RepeatingCallbackList<void(const ClientDownloadRequest*)>;
 using PPAPIDownloadRequestCallback =
     PPAPIDownloadRequestCallbackList::CallbackType;
-
-void RecordCountOfAllowlistedDownload(AllowlistType type);
 
 // Given a certificate and its immediate issuer certificate, generates the
 // list of strings that need to be checked against the download allowlist to

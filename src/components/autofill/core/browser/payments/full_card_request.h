@@ -18,7 +18,7 @@
 
 namespace autofill {
 
-class AutofillManagerTest;
+class BrowserAutofillManagerTest;
 class AutofillMetricsTest;
 class CreditCardAccessManagerTest;
 class CreditCardCVCAuthenticatorTest;
@@ -143,7 +143,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   }
 
  private:
-  friend class autofill::AutofillManagerTest;
+  friend class autofill::BrowserAutofillManagerTest;
   friend class autofill::AutofillMetricsTest;
   friend class autofill::CreditCardAccessManagerTest;
   friend class autofill::CreditCardCVCAuthenticatorTest;
@@ -163,7 +163,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    AutofillClient::UnmaskCardReason reason,
                    base::WeakPtr<ResultDelegate> result_delegate,
                    base::WeakPtr<UIDelegate> ui_delegate,
-                   base::Optional<base::Value> fido_assertion_info);
+                   absl::optional<base::Value> fido_assertion_info);
 
   // CardUnmaskDelegate:
   void OnUnmaskPromptAccepted(

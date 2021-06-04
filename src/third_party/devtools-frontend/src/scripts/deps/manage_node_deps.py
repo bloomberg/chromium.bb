@@ -39,24 +39,34 @@ LICENSES = [
 # List all DEPS here.
 DEPS = {
     "@rollup/plugin-commonjs": "17.1.0",
-    "@types/chai": "4.2.15",
+    "@types/chai": "4.2.16",
     "@types/codemirror": "0.0.108",
     "@types/karma-chai-sinon": "0.1.15",
-    "@types/estree": "0.0.46",
-    "@types/filesystem": "0.0.29",
-    "@types/node": "14.14.35",
+    "@types/estree": "0.0.47",
+    "@types/filesystem": "0.0.30",
+    "@types/istanbul-lib-coverage": "2.0.3",
+    "@types/istanbul-lib-instrument": "1.7.4",
+    "@types/istanbul-lib-report": "3.0.0",
+    "@types/istanbul-lib-source-maps": "4.0.1",
+    "@types/istanbul-reports": "3.0.0",
+    "@types/node": "14.14.37",
+    "@types/marked": "2.0.2",
     "@types/mocha": "8.2.2",
+    "@types/rimraf": "3.0.0",
     "@types/sinon": "9.0.11",
-    "@typescript-eslint/parser": "4.19.0",
-    "@typescript-eslint/eslint-plugin": "4.19.0",
+    "@typescript-eslint/parser": "4.21.0",
+    "@typescript-eslint/eslint-plugin": "4.21.0",
     "bl": "4.1.0",
     "chai": "4.3.4",
+    "convert-source-map": "1.7.0",
     "escodegen": "2.0.0",
     "eslint": "7.22.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-lit-a11y": "1.0.1",
     "eslint-plugin-mocha": "8.1.0",
     "eslint-plugin-rulesdir": "0.2.0",
+    "istanbul-lib-instrument": "4.0.3",
+    "istanbul-lib-report": "3.0.0",
     "karma": "6.3.0",
     "karma-chai": "0.1.0",
     "karma-chrome-launcher": "3.1.0",
@@ -77,9 +87,9 @@ DEPS = {
     "rollup-plugin-terser": "7.0.2",
     "sinon": "10.0.0",
     "source-map-support": "0.5.19",
-    "stylelint": "13.12.0",
+    "stylelint": "13.13.1",
     "stylelint-config-standard": "21.0.0",
-    "typescript": "4.2.1-rc",
+    "typescript": "4.3.1-rc",
     "yargs": "16.2.0",
 }
 
@@ -267,7 +277,8 @@ def run_npm_command(npm_command_args=None):
     if run_custom_command:
         runs_analysis_command = npm_command_args[:1] == [
             'outdated'
-        ] or npm_command_args[:1] == ['audit']
+        ] or npm_command_args[:1] == ['audit'
+                                      ] or npm_command_args[:1] == ['ls']
 
     # By default, run the CI version of npm, which prevents updates to the versions of modules.
     # However, when we are analyzing the installed NPM dependencies, we don't need to run

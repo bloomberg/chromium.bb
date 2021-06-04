@@ -12,7 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/connection.h"
@@ -61,10 +61,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   static bool HasInstance();
   static X11EventSource* GetInstance();
 
-  // Called when there is a new XEvent available. Processes all (if any)
-  // available X events.
-  void DispatchXEvents();
-
   x11::Connection* connection() { return connection_; }
 
   // Returns the timestamp of the event currently being dispatched.  Falls back
@@ -74,7 +70,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   // Returns the root pointer location only if there is an event being
   // dispatched that contains that information.
-  base::Optional<gfx::Point> GetRootCursorLocationFromCurrentEvent() const;
+  absl::optional<gfx::Point> GetRootCursorLocationFromCurrentEvent() const;
 
   // Explicitly asks the X11 server for the current timestamp, and updates
   // |last_seen_server_time_| with this value.
@@ -85,7 +81,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   void OnEvent(const x11::Event& event) override;
 
   // PlatformEventSource:
-  void StopCurrentEventStream() override;
   void OnDispatcherListChanged() override;
 
   std::unique_ptr<X11EventWatcher> watcher_;
@@ -98,10 +93,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   x11::Window dummy_window_;
   x11::Atom dummy_atom_;
   std::unique_ptr<x11::XScopedEventSelector> dummy_window_events_;
-
-  // Keeps track of whether this source should continue to dispatch all the
-  // available events.
-  bool continue_stream_ = true;
 
   std::unique_ptr<X11HotplugEventHandler> hotplug_event_handler_;
 

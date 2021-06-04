@@ -21,6 +21,7 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
@@ -333,6 +334,7 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
     in_process_view_id_mapping_ =
         std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
             root_view_id_, [in_process_ns_window_ contentView]);
+    [in_process_ns_window_ enforceNeverMadeVisible];
   }
 
   // Initialize |remote_ns_window_remote_| to point to a bridge created by
@@ -720,6 +722,17 @@ NSView* NativeWidgetMacNSWindowHost::GetGlobalCaptureView() {
       [remote_cocoa::CocoaMouseCapture::GetGlobalCaptureWindow() contentView];
 }
 
+void NativeWidgetMacNSWindowHost::AddRemoteWindowControlsOverlayView(
+    remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type) {
+  GetNSWindowMojo()->CreateWindowControlsOverlayNSView(overlay_type);
+}
+
+void NativeWidgetMacNSWindowHost::UpdateRemoteWindowControlsOverlayView(
+    const gfx::Rect& bounds,
+    remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type) {
+  GetNSWindowMojo()->UpdateWindowControlsOverlayNSView(bounds, overlay_type);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMacNSWindowHost, remote_cocoa::BridgedNativeWidgetHostHelper:
 
@@ -862,14 +875,22 @@ void NativeWidgetMacNSWindowHost::SetKeyboardAccessible(bool enabled) {
 void NativeWidgetMacNSWindowHost::OnIsFirstResponderChanged(
     bool is_first_responder) {
   accessibility_focus_overrider_.SetViewIsFirstResponder(is_first_responder);
+
+  FocusManager* focus_manager = root_view_->GetWidget()->GetFocusManager();
+  if (focus_manager->IsSettingFocusedView()) {
+    // This first responder change is not initiated by the os,
+    // but by the focus change within the browser (e.g. tab switch),
+    // so skip setting the focus.
+    return;
+  }
+
   if (is_first_responder) {
-    root_view_->GetWidget()->GetFocusManager()->RestoreFocusedView();
+    focus_manager->RestoreFocusedView();
   } else {
     // Do not call ClearNativeFocus because that will re-make the
     // BridgedNativeWidget first responder (and this is called to indicate that
     // it is no longer first responder).
-    root_view_->GetWidget()->GetFocusManager()->StoreFocusedView(
-        false /* clear_native_focus */);
+    focus_manager->StoreFocusedView(false /* clear_native_focus */);
   }
 }
 

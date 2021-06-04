@@ -16,9 +16,10 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/proto_util.h"
-#include "components/feed/core/v2/public/feed_api.h"
+#include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/stream_model/ephemeral_change.h"
 #include "components/feed/core/v2/stream_model/feature_tree.h"
+#include "components/feed/core/v2/types.h"
 
 namespace feedwire {
 class DataOperation;
@@ -134,6 +135,9 @@ class StreamModel {
   // Time the client received this stream data. 'NextPage' requests do not
   // change this time.
   base::Time GetLastAddedTime() const;
+  // Returns a set of content IDs contained. This remains constant even
+  // after data operations or next-page requests.
+  ContentIdSet GetContentIds() const;
 
   // Outputs a string representing the model state for debugging or testing.
   std::string DumpStateForTesting();

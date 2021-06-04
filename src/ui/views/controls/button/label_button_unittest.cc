@@ -150,26 +150,26 @@ TEST_F(LabelButtonTest, FocusBehavior) {
 
 TEST_F(LabelButtonTest, Init) {
   const std::u16string text(u"abc");
-  TestLabelButton button(text);
+  button_->SetText(text);
 
-  EXPECT_TRUE(button.GetImage(Button::STATE_NORMAL).isNull());
-  EXPECT_TRUE(button.GetImage(Button::STATE_HOVERED).isNull());
-  EXPECT_TRUE(button.GetImage(Button::STATE_PRESSED).isNull());
-  EXPECT_TRUE(button.GetImage(Button::STATE_DISABLED).isNull());
+  EXPECT_TRUE(button_->GetImage(Button::STATE_NORMAL).isNull());
+  EXPECT_TRUE(button_->GetImage(Button::STATE_HOVERED).isNull());
+  EXPECT_TRUE(button_->GetImage(Button::STATE_PRESSED).isNull());
+  EXPECT_TRUE(button_->GetImage(Button::STATE_DISABLED).isNull());
 
-  EXPECT_EQ(text, button.GetText());
+  EXPECT_EQ(text, button_->GetText());
 
   ui::AXNodeData accessible_node_data;
-  button.GetAccessibleNodeData(&accessible_node_data);
+  button_->GetAccessibleNodeData(&accessible_node_data);
   EXPECT_EQ(ax::mojom::Role::kButton, accessible_node_data.role);
   EXPECT_EQ(text, accessible_node_data.GetString16Attribute(
                       ax::mojom::StringAttribute::kName));
 
-  EXPECT_FALSE(button.GetIsDefault());
-  EXPECT_EQ(Button::STATE_NORMAL, button.GetState());
+  EXPECT_FALSE(button_->GetIsDefault());
+  EXPECT_EQ(Button::STATE_NORMAL, button_->GetState());
 
-  EXPECT_EQ(button.image()->parent(), &button);
-  EXPECT_EQ(button.label()->parent(), &button);
+  EXPECT_EQ(button_->image()->parent(), button_);
+  EXPECT_EQ(button_->label()->parent(), button_);
 }
 
 TEST_F(LabelButtonTest, Label) {
@@ -719,7 +719,7 @@ TEST_F(LabelButtonTest, SetEnabledTextColorsResetsToThemeColors) {
 
   // Removing the enabled text color restore colors from the new theme, not
   // the original colors used before the theme changed.
-  button_->SetEnabledTextColors(base::nullopt);
+  button_->SetEnabledTextColors(absl::nullopt);
   EXPECT_EQ(TestNativeTheme::kSystemColor, button_->label()->GetEnabledColor());
 }
 
@@ -794,8 +794,8 @@ class InkDropLabelButtonTest : public ViewsTestBase {
         Button::PressedCallback(), std::u16string()));
 
     test_ink_drop_ = new test::TestInkDrop();
-    test::InkDropHostViewTestApi(button_).SetInkDrop(
-        base::WrapUnique(test_ink_drop_));
+    test::InkDropHostTestApi(button_->ink_drop())
+        .SetInkDrop(base::WrapUnique(test_ink_drop_));
   }
 
   void TearDown() override {
@@ -819,9 +819,9 @@ class InkDropLabelButtonTest : public ViewsTestBase {
 
 TEST_F(InkDropLabelButtonTest, HoverStateAfterMouseEnterAndExitEvents) {
   ui::test::EventGenerator event_generator(GetRootWindow(widget_.get()));
-  const gfx::Point out_of_bounds_point(button_->bounds().bottom_right() +
-                                       gfx::Vector2d(1, 1));
-  const gfx::Point in_bounds_point(button_->bounds().CenterPoint());
+  const gfx::Point out_of_bounds_point(
+      button_->GetBoundsInScreen().bottom_right() + gfx::Vector2d(1, 1));
+  const gfx::Point in_bounds_point(button_->GetBoundsInScreen().CenterPoint());
 
   event_generator.MoveMouseTo(out_of_bounds_point);
   EXPECT_FALSE(test_ink_drop_->is_hovered());
@@ -874,7 +874,7 @@ class LabelButtonVisualStateTest : public test::WidgetTest {
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.parent = parent->GetNativeView();
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.activatable = Widget::InitParams::ACTIVATABLE_YES;
+    params.activatable = Widget::InitParams::Activatable::kYes;
     child->Init(std::move(params));
     child->SetContentsView(std::make_unique<View>());
     return child;

@@ -14,7 +14,7 @@ DelegatedInkPointRendererBase::DelegatedInkPointRendererBase() = default;
 DelegatedInkPointRendererBase::~DelegatedInkPointRendererBase() = default;
 
 void DelegatedInkPointRendererBase::InitMessagePipeline(
-    mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver) {
+    mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver) {
   // The remote end of this pipeline exists on a per-tab basis, so if tab A
   // is using the feature and then tab B starts trying to use it, a new
   // PendingReceiver will arrive here while |receiver_| is still bound to the
@@ -53,7 +53,7 @@ void DelegatedInkPointRendererBase::SetDelegatedInkMetadata(
 
   // If we aren't able to find any matching point, set the pointer ID to null
   // so that FilterPoints and PredictPoints can early out.
-  pointer_id_ = base::nullopt;
+  pointer_id_ = absl::nullopt;
 }
 
 std::vector<gfx::DelegatedInkPoint>

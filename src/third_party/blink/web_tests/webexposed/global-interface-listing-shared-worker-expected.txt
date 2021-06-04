@@ -141,6 +141,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter subtle
 [Worker]     method constructor
 [Worker]     method getRandomValues
+[Worker]     method randomUUID
 [Worker] interface CryptoKey
 [Worker]     attribute @@toStringTag
 [Worker]     getter algorithm
@@ -352,6 +353,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method contains
 [Worker]     method item
+[Worker] interface DatagramDuplexStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface DecompressionStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter readable
@@ -701,8 +707,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method transferFromImageBitmap
 [Worker] interface ImageData
 [Worker]     attribute @@toStringTag
+[Worker]     getter colorSpace
 [Worker]     getter data
 [Worker]     getter height
+[Worker]     getter storageFormat
 [Worker]     getter width
 [Worker]     method constructor
 [Worker]     method getSettings
@@ -1142,18 +1150,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter applicationServerKey
 [Worker]     getter userVisibleOnly
 [Worker]     method constructor
-[Worker] interface QuicTransport
-[Worker]     attribute @@toStringTag
-[Worker]     getter closed
-[Worker]     getter ready
-[Worker]     method close
-[Worker]     method constructor
-[Worker]     method createBidirectionalStream
-[Worker]     method createSendStream
-[Worker]     method receiveBidirectionalStreams
-[Worker]     method receiveDatagrams
-[Worker]     method receiveStreams
-[Worker]     method sendDatagrams
 [Worker] interface ReadableByteStreamController
 [Worker]     attribute @@toStringTag
 [Worker]     getter byobRequest
@@ -1270,7 +1266,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter statusCode
 [Worker]     getter violatedDirective
 [Worker]     method constructor
-[Worker] interface SendStream
+[Worker] interface SendStream : WritableStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter writable
 [Worker]     getter writingAborted

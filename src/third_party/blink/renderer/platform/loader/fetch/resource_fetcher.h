@@ -65,7 +65,7 @@ class Resource;
 class ResourceError;
 class ResourceLoadObserver;
 class ResourceTimingInfo;
-class SubresourceWebBundle;
+class SubresourceWebBundleList;
 class WebBackForwardCacheLoaderHelper;
 class WebCodeCacheLoader;
 struct ResourceFetcherInit;
@@ -225,7 +225,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
 
+  // Set the deferring state of each loader owned by this ResourceFetcher. This
+  // method must be called when the page freezing state changes.
+  // TODO(yhirano): Rename this to a more easily recognizable name.
   void SetDefersLoading(WebURLLoader::DeferType);
+
   void StopFetching();
 
   bool ShouldDeferImageLoad(const KURL&) const;
@@ -296,10 +300,6 @@ class PLATFORM_EXPORT ResourceFetcher
                                speculative_preload_type, is_link_preload);
   }
 
-  void SetShouldLogRequestAsInvalidInImportedDocument() {
-    should_log_request_as_invalid_in_imported_document_ = true;
-  }
-
   void SetThrottleOptionOverride(
       ResourceLoadScheduler::ThrottleOptionOverride throttle_option_override) {
     scheduler_->SetThrottleOptionOverride(throttle_option_override);
@@ -311,10 +311,8 @@ class PLATFORM_EXPORT ResourceFetcher
     scheduler_->SetOptimizationGuideHints(std::move(optimization_hints));
   }
 
-  void AddSubresourceWebBundle(SubresourceWebBundle& subresource_web_bundle);
-  void RemoveSubresourceWebBundle(SubresourceWebBundle& subresource_web_bundle);
   void AttachWebBundleTokenIfNeeded(ResourceRequest&) const;
-  bool ShouldBeLoadedFromWebBundle(const KURL&) const;
+  SubresourceWebBundleList* GetOrCreateSubresourceWebBundleList();
 
   BackForwardCacheLoaderHelper* GetBackForwardCacheLoaderHelper() {
     return back_forward_cache_loader_helper_;
@@ -348,7 +346,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // |virtual_time_pauser| is an output parameter. PrepareRequest may
   // create a new WebScopedVirtualTimePauser and set it to
   // |virtual_time_pauser|.
-  base::Optional<ResourceRequestBlockedReason> PrepareRequest(
+  absl::optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
       WebScopedVirtualTimePauser& virtual_time_pauser);
@@ -477,19 +475,18 @@ class PLATFORM_EXPORT ResourceFetcher
 
   HeapMojoRemote<mojom::blink::BlobRegistry> blob_registry_remote_;
 
-  HeapHashSet<Member<SubresourceWebBundle>> subresource_web_bundles_;
+  // Lazily initialized when the first <link rel=webbundle> is inserted.
+  Member<SubresourceWebBundleList> subresource_web_bundles_;
 
   // This is not in the bit field below because we want to use AutoReset.
   bool is_in_request_resource_ = false;
 
-  // 26 bits left
+  // 27 bits left
   bool auto_load_images_ : 1;
   bool images_enabled_ : 1;
   bool allow_stale_resources_ : 1;
   bool image_fetched_ : 1;
   bool stale_while_revalidate_enabled_ : 1;
-  // for https://crbug.com/961614
-  bool should_log_request_as_invalid_in_imported_document_ : 1;
 
   static constexpr uint32_t kKeepaliveInflightBytesQuota = 64 * 1024;
 

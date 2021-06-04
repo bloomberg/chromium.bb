@@ -29,6 +29,15 @@ luci.notifier(
 )
 
 luci.notifier(
+    name = "chromium-3pp-packager",
+    on_new_status = ["FAILURE"],
+    notify_emails = [
+        "chromium-3pp-packager+failures@google.com",
+        "clank-build-core+3ppfailures@google.com",
+    ],
+)
+
+luci.notifier(
     name = "cr-fuchsia",
     on_status_change = True,
     notify_emails = [
@@ -41,7 +50,7 @@ luci.notifier(
     name = "cronet",
     on_status_change = True,
     notify_emails = [
-        "cronet-bots-observer@google.com",
+        "cronet-sheriff@grotations.appspotmail.com",
     ],
 )
 
@@ -126,7 +135,7 @@ tree_closure_notifier(
     name = "gpu-tree-closer-email",
     notify_emails = ["chrome-gpu-build-failures@google.com"],
     notify_rotation_urls = [
-        "https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-gpu-pixel-wrangling",
+        "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-gpu-pixel-wrangler",
     ],
 )
 

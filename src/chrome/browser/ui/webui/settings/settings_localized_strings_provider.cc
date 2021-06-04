@@ -48,7 +48,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
@@ -85,7 +85,6 @@
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
 #include "services/device/public/cpp/device_features.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,10 +100,10 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
@@ -380,6 +379,8 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
       {"clearBrowsingHistorySummary",
        IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY},
+      {"clearBrowsingHistorySummarySignedInNoLink",
+       IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN_NO_LINK},
       {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
       {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
       {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
@@ -417,6 +418,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       "clearBrowsingHistorySummarySynced",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
+          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
+  html_source->AddString(
+      "clearSearchHistorySummarySignedIn",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CLEAR_SEARCH_BROWSING_HISTORY_SUMMARY_SIGNED_IN,
+          base::ASCIIToUTF16(chrome::kSearchHistoryUrlInClearBrowsingData),
           base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
   html_source->AddString(
       "historyDeletionDialogBody",
@@ -660,6 +667,7 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
 void AddLanguagesStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
     {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
     {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
     {"languagesExpandA11yLabel",
@@ -674,13 +682,19 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
     {"addLanguagesDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
     {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},
     {"enabledLanguages", IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES},
+#if defined(OS_WIN)
     {"isDisplayedInThisLanguage",
      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
     {"displayInThisLanguage", IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
+#endif
     {"offerToTranslateInThisLanguage",
      IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
     {"offerToEnableTranslate",
      IDS_SETTINGS_LANGUAGES_OFFER_TO_ENABLE_TRANSLATE},
+    {"noLanguagesAdded", IDS_SETTINGS_LANGUAGES_NO_LANGUAGES_ADDED},
+    {"automaticallyTranslateLanguages",
+     IDS_SETTINGS_LANGUAGES_AUTOMATIC_TRANSLATE},
+    {"neverTranslateLanguages", IDS_SETTINGS_LANGUAGES_NEVER_LANGUAGES},
     {"translateTargetLabel", IDS_SETTINGS_LANGUAGES_TRANSLATE_TARGET},
     {"spellCheckTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_TITLE},
     {"spellCheckBasicLabel", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_BASIC_LABEL},
@@ -719,20 +733,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Only the Chrome OS help article explains how language order affects website
-  // language.
-  html_source->AddString(
-      "languagesLearnMoreURL",
-      base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
-  html_source->AddString(
-      "languagesPageTitle",
-      l10n_util::GetStringUTF16(IDS_SETTINGS_LANGUAGES_PAGE_TITLE));
-#else
-  html_source->AddString(
-      "languagesPageTitle",
-      l10n_util::GetStringUTF16(IDS_SETTINGS_LANGUAGES_PAGE_TITLE));
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -748,8 +748,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
   html_source->AddString(
       "chromeOSLanguagesSettingsPath",
       chromeos::settings::mojom::kLanguagesAndInputSectionPath);
-  // TODO(crbug.com/1097328): Delete this.
-  html_source->AddBoolean("isChromeOSLanguagesSettingsUpdate", true);
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -801,8 +799,8 @@ bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
       autofill_driver_factory->DriverForFrame(web_contents->GetMainFrame());
   if (!autofill_driver)
     return false;
-  autofill::AutofillManager* autofill_manager =
-      autofill_driver->autofill_manager();
+  autofill::BrowserAutofillManager* autofill_manager =
+      autofill_driver->browser_autofill_manager();
   if (!autofill_manager)
     return false;
 
@@ -1021,7 +1019,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"managePasswordsPlaintext",
        IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS_PLAINTEXT},
       {"savedToThisDeviceOnly",
-       IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY}};
+       IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY},
+      {"trustedVaultOptInLabel", IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_LABEL},
+      {"trustedVaultOptInSubLabel",
+       IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_SUB_LABEL}};
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
@@ -1084,6 +1085,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SIGNED_OUT_USER_HAS_COMPROMISED_CREDENTIALS_LABEL,
           base::ASCIIToUTF16(chrome::kSyncLearnMoreURL)));
+  // TODO(crbug.com/1202088): Add the correct URL here when that's available.
+  html_source->AddString("trustedVaultOptInUrl",
+                         google_password_manager_url.spec());
 
   bool is_guest_mode = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1472,6 +1476,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION2},
         {"privacySandboxPageExplanation3",
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION3},
+        {"privacySandboxPageExplanation2Phase2",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION2_PHASE2},
         {"privacySandboxPageSettingTitle",
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_TITLE},
         {"privacySandboxPageSettingExplanation1",
@@ -1480,8 +1486,24 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION2},
         {"privacySandboxPageSettingExplanation3",
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION3},
+        {"privacySandboxPageSettingExplanation1Phase2",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION1_PHASE2},
+        {"privacySandboxPageSettingExplanation2Phase2",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION2_PHASE2},
+        {"privacySandboxPageSettingExplanation3Phase2",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION3_PHASE2},
         {"privacySandboxPageDetails",
          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_DETAILS},
+        {"privacySandboxPageFlocHeading",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_HEADING},
+        {"privacySandboxPageFlocStatus",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_STATUS},
+        {"privacySandboxPageFlocCohort",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_COHORT},
+        {"privacySandboxPageFlocCohortNextUpdate",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_COHORT_NEXT_UPDATE},
+        {"privacySandboxPageFlocResetCohort",
+         IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_RESET_COHORT},
     };
     html_source->AddLocalizedStrings(kLocalizedStringsBehindFlag);
 
@@ -1494,6 +1516,33 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
         l10n_util::GetStringFUTF16(
             IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION4,
             base::ASCIIToUTF16(features::kPrivacySandboxSettingsURL.Get())));
+
+    html_source->AddString(
+        "privacySandboxPageExplanation1Phase2",
+        l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION1_PHASE2,
+            base::ASCIIToUTF16(features::kPrivacySandboxSettingsURL.Get())));
+
+    // The complete FLoC explanation string must be built from two strings,
+    // one provided by the Privacy Sandbox service, and one with a URL
+    // replacement based on a feature parameter.
+    std::u16string floc_explanation =
+        PrivacySandboxSettingsFactory::GetForProfile(profile)
+            ->GetFlocDescriptionForDisplay() +
+        u" " +  // Whitespace is a valid separator w.r.t l10n.
+        l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_PRIVACY_SANDBOX_FLOC_TRIAL_ACTIVE,
+            base::ASCIIToUTF16(
+                features::kPrivacySandboxSettings2FlocURL.Get()));
+    html_source->AddString("privacySandboxPageFlocExplanation",
+                           floc_explanation);
+
+    // The FLoC compute frequency string is constant through the life of the
+    // profile, and so the relevant string can be injected here, rather than
+    // fetched dynamically from JS.
+    html_source->AddString("privacySandboxPageFlocResetExplanation",
+                           PrivacySandboxSettingsFactory::GetForProfile(profile)
+                               ->GetFlocResetExplanationForDisplay());
   }
 }
 
@@ -1595,8 +1644,20 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST},
       {"searchEnginesManageExtension",
        IDS_SETTINGS_SEARCH_ENGINES_MANAGE_EXTENSION},
+      {"searchEnginesKeyboardShortcutsTitle",
+       IDS_SETTINGS_SEARCH_ENGINES_KEYBOARD_SHORTCUTS_TITLE},
+      {"searchEnginesKeyboardShortcutsDescription",
+       IDS_SETTINGS_SEARCH_ENGINES_KEYBOARD_SHORTCUTS_DESCRIPTION},
+      {"searchEnginesKeyboardShortcutsSpaceOrTab",
+       IDS_SETTINGS_SEARCH_ENGINES_KEYBOARD_SHORTCUTS_SPACE_OR_TAB},
+      {"searchEnginesKeyboardShortcutsTab",
+       IDS_SETTINGS_SEARCH_ENGINES_KEYBOARD_SHORTCUTS_TAB},
+
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+  html_source->AddBoolean(
+      "showKeywordTriggerSetting",
+      base::FeatureList::IsEnabled(omnibox::kKeywordSpaceTriggeringSetting));
 }
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
@@ -1941,8 +2002,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsAllowlisted", IDS_SETTINGS_SITE_SETTINGS_ALLOWLISTED},
     {"siteSettingsAdsBlockBlocklistedSingular",
      IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_BLOCKLISTED_SINGULAR},
-    {"siteSettingsSourceDrmDisabled",
-     IDS_SETTINGS_SITE_SETTINGS_SOURCE_DRM_DISABLED},
     {"siteSettingsSourceEmbargo",
      IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED},
     {"siteSettingsSourceInsecureOrigin",
@@ -2035,8 +2094,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_CONFIRMATION},
     {"thirdPartyCookie", IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE},
     {"thirdPartyCookieSublabel", IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL},
-    {"deleteDataPostSession",
-     IDS_SETTINGS_SITE_SETTINGS_DELETE_DATA_POST_SESSION},
     {"handlerIsDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT},
     {"handlerSetDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_SET_DEFAULT},
     {"handlerRemove", IDS_SETTINGS_SITE_SETTINGS_REMOVE},
@@ -2082,6 +2139,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOWED},
     {"siteSettingsBackgroundSyncBlocked",
      IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_BLOCKED},
+    {"siteSettingsBackgroundSyncBlockedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_BLOCKED_SUB_LABEL},
     {"siteSettingsBackgroundSyncAllowedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOWED_EXCEPTIONS},
     {"siteSettingsBackgroundSyncBlockedExceptions",
@@ -2158,6 +2217,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_IMAGES_DESCRIPTION},
     {"siteSettingsImagesAllowed", IDS_SETTINGS_SITE_SETTINGS_IMAGES_ALLOWED},
     {"siteSettingsImagesBlocked", IDS_SETTINGS_SITE_SETTINGS_IMAGES_BLOCKED},
+    {"siteSettingsImagesBlockedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_IMAGES_BLOCKED_SUB_LABEL},
     {"siteSettingsImagesAllowedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_IMAGES_ALLOWED_EXCEPTIONS},
     {"siteSettingsImagedBlockedExceptions",
@@ -2263,6 +2324,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_ALLOWED},
     {"siteSettingsProtectedContentBlocked",
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_BLOCKED},
+    {"siteSettingsProtectedContentBlockedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_BLOCKED_SUB_LABEL},
     {"siteSettingsProtectedContentAllowedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_ALLOWED_EXCEPTIONS},
     {"siteSettingsProtectedContentBlockedExceptions",
@@ -2285,6 +2348,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_SOUND_DESCRIPTION},
     {"siteSettingsSoundAllowed", IDS_SETTINGS_SITE_SETTINGS_SOUND_ALLOWED},
     {"siteSettingsSoundBlocked", IDS_SETTINGS_SITE_SETTINGS_SOUND_BLOCKED},
+    {"siteSettingsSoundBlockedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SOUND_BLOCKED_SUB_LABEL},
     {"siteSettingsSoundAllowedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_SOUND_ALLOWED_EXCEPTIONS},
     {"siteSettingsSoundBlockedExceptions",
@@ -2425,14 +2490,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
                           base::FeatureList::IsEnabled(
                               features::kWebBluetoothNewPermissionsBackend));
 
-  html_source->AddBoolean(
-      "enableFontAccessContentSetting",
-      base::FeatureList::IsEnabled(::blink::features::kFontAccess));
-
-  html_source->AddBoolean(
-      "enableFileHandlingContentSetting",
-      base::FeatureList::IsEnabled(::blink::features::kFileHandlingAPI));
-
   // The exception placeholder should not be translated. See crbug.com/1095878.
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
@@ -2486,6 +2543,8 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL},
       {"securityKeysBioEnrollmentEnrollingFailedLabel",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_FAILED_LABEL},
+      {"securityKeysBioEnrollmentStorageFullLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_STORAGE_FULL},
       {"securityKeysBioEnrollmentTryAgainLabel",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TRY_AGAIN_LABEL},
       {"securityKeysBioEnrollmentEnrollmentsLabel",
@@ -2500,6 +2559,8 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SECURITY_KEYS_BIO_CHOOSE_NAME},
       {"securityKeysBioEnrollmentNameLabel",
        IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL},
+      {"securityKeysBioEnrollmentNameLabelTooLong",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL_TOO_LONG},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
       {"securityKeysCredentialWebsite",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},

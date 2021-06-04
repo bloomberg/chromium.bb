@@ -6,13 +6,15 @@
 #define UI_GTK_GTK_TYPES_H_
 
 #include <gdk/gdk.h>
-
-#include "ui/gtk/gtk_buildflags.h"
+#include <gtk/gtk.h>
 
 // This file provides types that are only available in specific versions of GTK.
 
+// This struct uses doubles in Gtk3, but floats in Gtk4.
+#define GdkRGBA Do_not_use_GdkRGBA_because_it_is_not_ABI_compatible
+
 extern "C" {
-#if BUILDFLAG(GTK_VERSION) == 3
+#if GTK_MAJOR_VERSION == 3
 using GskRenderNodeType = enum {
   GSK_NOT_A_RENDER_NODE = 0,
   GSK_CONTAINER_NODE,
@@ -52,10 +54,12 @@ using GtkSnapshot = GdkSnapshot;
 using GdkPaintable = struct _GdkPaintable;
 using GtkNative = struct _GtkNative;
 using GdkSurface = struct _GdkSurface;
+using GdkToplevel = struct _GdkToplevel;
 
 constexpr GdkMemoryFormat GDK_MEMORY_B8G8R8A8 = static_cast<GdkMemoryFormat>(3);
-#else
+#elif GTK_MAJOR_VERSION == 4
 enum GtkWidgetHelpType : int;
+enum GtkWindowType : int;
 
 using GtkWidgetPath = struct _GtkWidgetPath;
 using GtkContainer = struct _GtkContainer;
@@ -64,6 +68,9 @@ using GdkWindow = struct _GdkWindow;
 using GdkKeymap = struct _GdkKeymap;
 using GtkIconInfo = struct _GtkIconInfo;
 using GdkScreen = struct _GdkScreen;
+using GdkColor = struct _GdkColor;
+
+using GdkEventFunc = void (*)(GdkEvent* event, gpointer data);
 
 struct _GdkEventKey {
   GdkEventType type;
@@ -79,11 +86,20 @@ struct _GdkEventKey {
   guint is_modifier : 1;
 };
 
+struct _GdkColor {
+  guint32 pixel;
+  guint16 red;
+  guint16 green;
+  guint16 blue;
+};
+
 constexpr int GTK_ICON_LOOKUP_USE_BUILTIN = 1 << 2;
 constexpr int GTK_ICON_LOOKUP_GENERIC_FALLBACK = 1 << 3;
 constexpr int GTK_ICON_LOOKUP_FORCE_SIZE = 1 << 4;
 
-constexpr const char GTK_STYLE_PROPERTY_BACKGROUND_IMAGE[] = "background-image";
+constexpr auto GTK_WINDOW_TOPLEVEL = static_cast<GtkWindowType>(0);
+#else
+#error "Unsupported GTK version"
 #endif
 }
 

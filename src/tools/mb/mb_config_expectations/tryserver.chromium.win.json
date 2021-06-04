@@ -148,21 +148,6 @@
       "use_goma": true
     }
   },
-  "gpu-fyi-try-win7-amd-dbg-32": {
-    "gn_args": {
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "enable_nacl": false,
-      "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "x86",
-      "use_goma": true
-    }
-  },
   "gpu-fyi-try-win7-amd-rel-32": {
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
@@ -298,6 +283,20 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "win10_chromium_x64_rel_ng_rts": {
+    "gn_args": {
+      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+      "dcheck_always_on": true,
+      "enable_resource_allowlist_generation": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_clang_coverage": true,
       "use_goma": true
     }
   },

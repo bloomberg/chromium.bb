@@ -19,33 +19,51 @@ SaveAddressProfileFlowManager::~SaveAddressProfileFlowManager() = default;
 void SaveAddressProfileFlowManager::OfferSave(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
+    const AutofillProfile* original_profile,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   DCHECK(web_contents);
   DCHECK(callback);
   DCHECK(base::FeatureList::IsEnabled(
       autofill::features::kAutofillAddressProfileSavePrompt));
 
-  // The previous message will be dismissed automatically.
-  // Destroy the previous prompt with details if exists.
-  save_address_profile_prompt_controller_.reset();
+  // If the message or prompt is already shown, suppress the incoming offer.
+  if (save_address_profile_message_controller_.IsMessageDisplayed() ||
+      save_address_profile_prompt_controller_) {
+    std::move(callback).Run(
+        AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
+        profile);
+    return;
+  }
 
   if (base::FeatureList::IsEnabled(
           messages::kMessagesForAndroidInfrastructure)) {
-    ShowSaveAddressProfileMessage(web_contents, profile, std::move(callback));
+    ShowSaveAddressProfileMessage(web_contents, profile, original_profile,
+                                  std::move(callback));
   } else {
     // Fallback to the default behavior without confirmation.
     std::move(callback).Run(
-        AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
+        AutofillClient::SaveAddressProfileOfferUserDecision::kUserNotAsked,
         profile);
   }
+}
+
+SaveAddressProfileMessageController*
+SaveAddressProfileFlowManager::GetMessageControllerForTest() {
+  return &save_address_profile_message_controller_;
+}
+
+SaveAddressProfilePromptController*
+SaveAddressProfileFlowManager::GetPromptControllerForTest() {
+  return save_address_profile_prompt_controller_.get();
 }
 
 void SaveAddressProfileFlowManager::ShowSaveAddressProfileMessage(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
+    const AutofillProfile* original_profile,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   save_address_profile_message_controller_.DisplayMessage(
-      web_contents, profile, std::move(callback),
+      web_contents, profile, original_profile, std::move(callback),
       base::BindOnce(
           &SaveAddressProfileFlowManager::ShowSaveAddressProfileDetails,
           // Passing base::Unretained(this) is safe since |this|
@@ -56,12 +74,14 @@ void SaveAddressProfileFlowManager::ShowSaveAddressProfileMessage(
 void SaveAddressProfileFlowManager::ShowSaveAddressProfileDetails(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
+    const AutofillProfile* original_profile,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   auto prompt_view_android =
       std::make_unique<SaveAddressProfilePromptViewAndroid>(web_contents);
   save_address_profile_prompt_controller_ =
       std::make_unique<SaveAddressProfilePromptController>(
-          std::move(prompt_view_android), profile, std::move(callback),
+          std::move(prompt_view_android), profile, original_profile,
+          std::move(callback),
           /*dismissal_callback=*/
           base::BindOnce(
               &SaveAddressProfileFlowManager::OnSaveAddressProfileDetailsShown,

@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -23,6 +22,7 @@
 #include "net/base/trace_constants.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -47,6 +47,7 @@ const char kSecureKey[] = "secure";
 const char kNetworkIsolationKeyKey[] = "network_isolation_key";
 const char kExpirationKey[] = "expiration";
 const char kTtlKey[] = "ttl";
+const char kPinnedKey[] = "pinned";
 const char kNetworkChangesKey[] = "network_changes";
 const char kNetErrorKey[] = "net_error";
 const char kAddressesKey[] = "addresses";
@@ -55,7 +56,7 @@ const char kHostnameResultsKey[] = "hostname_results";
 const char kHostPortsKey[] = "host_ports";
 
 bool AddressListFromListValue(const base::Value* value,
-                              base::Optional<AddressList>* out_list) {
+                              absl::optional<AddressList>* out_list) {
   if (!value) {
     out_list->reset();
     return true;
@@ -75,7 +76,7 @@ bool AddressListFromListValue(const base::Value* value,
 }
 
 template <typename T>
-void MergeLists(base::Optional<T>* target, const base::Optional<T>& source) {
+void MergeLists(absl::optional<T>* target, const absl::optional<T>& source) {
   if (target->has_value() && source) {
     target->value().insert(target->value().end(), source.value().begin(),
                            source.value().end());
@@ -128,7 +129,7 @@ HostCache::Key::Key(Key&& key) = default;
 
 HostCache::Entry::Entry(int error,
                         Source source,
-                        base::Optional<base::TimeDelta> ttl)
+                        absl::optional<base::TimeDelta> ttl)
     : error_(error),
       source_(source),
       ttl_(ttl.value_or(base::TimeDelta::FromSeconds(-1))) {
@@ -143,11 +144,11 @@ HostCache::Entry::Entry(Entry&& entry) = default;
 
 HostCache::Entry::~Entry() = default;
 
-base::Optional<base::TimeDelta> HostCache::Entry::GetOptionalTtl() const {
+absl::optional<base::TimeDelta> HostCache::Entry::GetOptionalTtl() const {
   if (has_ttl())
     return ttl();
   else
-    return base::nullopt;
+    return absl::nullopt;
 }
 
 // static
@@ -238,16 +239,17 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
       hostnames_(entry.hostnames()),
       experimental_results_(entry.experimental_results()),
       source_(entry.source()),
+      pinned_(entry.pinned()),
       ttl_(entry.ttl()),
       expires_(now + ttl),
       network_changes_(network_changes) {}
 
 HostCache::Entry::Entry(
     int error,
-    const base::Optional<AddressList>& addresses,
-    base::Optional<std::vector<std::string>>&& text_records,
-    base::Optional<std::vector<HostPortPair>>&& hostnames,
-    base::Optional<std::vector<bool>>&& experimental_results,
+    const absl::optional<AddressList>& addresses,
+    absl::optional<std::vector<std::string>>&& text_records,
+    absl::optional<std::vector<HostPortPair>>&& hostnames,
+    absl::optional<std::vector<bool>>&& experimental_results,
     Source source,
     base::TimeTicks expires,
     int network_changes)
@@ -361,6 +363,9 @@ base::Value HostCache::Entry::GetAsValue(bool include_staleness) const {
                             NetLog::TickCountToString(expires()));
     entry_dict.SetIntKey(kTtlKey, ttl().InMilliseconds());
     entry_dict.SetIntKey(kNetworkChangesKey, network_changes());
+    // The "pinned" status is meaningful only if "network_changes" is also
+    // preserved.
+    entry_dict.SetBoolKey(kPinnedKey, pinned());
   } else {
     // Convert expiration time in TimeTicks to Time for serialization, using a
     // string because base::Value doesn't handle 64-bit integers.
@@ -534,10 +539,13 @@ void HostCache::Set(const Key& key,
   if (caching_is_disabled())
     return;
 
+  bool preserve_pin = false;
   bool result_changed = false;
   auto it = entries_.find(key);
   if (it != entries_.end()) {
-    base::Optional<AddressListDeltaType> addresses_delta;
+    preserve_pin = HasActivePin(it->second);
+
+    absl::optional<AddressListDeltaType> addresses_delta;
     if (entry.addresses() || it->second.addresses()) {
       if (entry.addresses() && it->second.addresses()) {
         addresses_delta = FindAddressListDeltaType(
@@ -550,7 +558,7 @@ void HostCache::Set(const Key& key,
     // For non-address results, delta is only considered for whole-list
     // equality. The meaning of partial list equality varies too much depending
     // on the context of a DNS record.
-    base::Optional<AddressListDeltaType> nonaddress_delta;
+    absl::optional<AddressListDeltaType> nonaddress_delta;
     if (entry.text_records() || it->second.text_records() ||
         entry.hostnames() || it->second.hostnames()) {
       if (entry.text_records() == it->second.text_records() &&
@@ -594,11 +602,18 @@ void HostCache::Set(const Key& key,
     entries_.erase(it);
   } else {
     result_changed = true;
-    if (size() == max_entries_)
-      EvictOneEntry(now);
+    // This loop almost always runs at most once, for total runtime
+    // O(max_entries_).  It only runs more than once if the cache was over-full
+    // due to pinned entries, and this is the first call to Set() after
+    // Invalidate().  The amortized cost remains O(size()) per call to Set().
+    while (size() >= max_entries_ && EvictOneEntry(now)) {
+    }
   }
 
   Entry entry_for_cache(entry, now, ttl, network_changes_);
+  if (preserve_pin)
+    entry_for_cache.set_pinned(true);
+
   entry_for_cache.PrepareForCacheInsertion();
   AddEntry(key, std::move(entry_for_cache));
 
@@ -607,10 +622,8 @@ void HostCache::Set(const Key& key,
 }
 
 void HostCache::AddEntry(const Key& key, Entry&& entry) {
-  DCHECK_GT(max_entries_, size());
   DCHECK_EQ(0u, entries_.count(key));
   entries_.emplace(key, std::move(entry));
-  DCHECK_GE(max_entries_, size());
 }
 
 void HostCache::Invalidate() {
@@ -705,7 +718,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
   // Reset the restore size to 0.
   restore_size_ = 0;
 
-  for (const auto& entry_dict : old_cache) {
+  for (const auto& entry_dict : old_cache.GetList()) {
     // If the cache is already full, don't bother prioritizing what to evict,
     // just stop restoring.
     if (size() == max_entries_)
@@ -717,7 +730,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     const std::string* hostname_ptr = entry_dict.FindStringKey(kHostnameKey);
     const std::string* expiration_ptr =
         entry_dict.FindStringKey(kExpirationKey);
-    base::Optional<int> maybe_flags = entry_dict.FindIntKey(kFlagsKey);
+    absl::optional<int> maybe_flags = entry_dict.FindIntKey(kFlagsKey);
     if (hostname_ptr == nullptr || expiration_ptr == nullptr ||
         !maybe_flags.has_value()) {
       return false;
@@ -731,13 +744,13 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     // TODO(crbug.com/846423): Remove kAddressFamilyKey support after a enough
     // time has passed to minimize loss-of-persistence impact from backwards
     // incompatibility.
-    base::Optional<int> maybe_dns_query_type =
+    absl::optional<int> maybe_dns_query_type =
         entry_dict.FindIntKey(kDnsQueryTypeKey);
     DnsQueryType dns_query_type;
     if (maybe_dns_query_type.has_value()) {
       dns_query_type = static_cast<DnsQueryType>(maybe_dns_query_type.value());
     } else {
-      base::Optional<int> maybe_address_family =
+      absl::optional<int> maybe_address_family =
           entry_dict.FindIntKey(kAddressFamilyKey);
       if (!maybe_address_family.has_value()) {
         return false;
@@ -768,7 +781,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     const base::Value* text_records_value = nullptr;
     const base::Value* hostname_records_value = nullptr;
     const base::Value* host_ports_value = nullptr;
-    base::Optional<int> maybe_error = entry_dict.FindIntKey(kNetErrorKey);
+    absl::optional<int> maybe_error = entry_dict.FindIntKey(kNetErrorKey);
     if (maybe_error.has_value()) {
       error = maybe_error.value();
     } else {
@@ -791,12 +804,12 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
         tick_clock_->NowTicks() -
         (base::Time::Now() - base::Time::FromInternalValue(time_internal));
 
-    base::Optional<AddressList> address_list;
+    absl::optional<AddressList> address_list;
     if (!AddressListFromListValue(addresses_value, &address_list)) {
       return false;
     }
 
-    base::Optional<std::vector<std::string>> text_records;
+    absl::optional<std::vector<std::string>> text_records;
     if (text_records_value) {
       text_records.emplace();
       for (const base::Value& value : text_records_value->GetList()) {
@@ -806,7 +819,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
       }
     }
 
-    base::Optional<std::vector<HostPortPair>> hostname_records;
+    absl::optional<std::vector<HostPortPair>> hostname_records;
     if (hostname_records_value) {
       DCHECK(host_ports_value);
       if (hostname_records_value->GetList().size() !=
@@ -830,7 +843,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     }
 
     // We do not intend to serialize experimental results with the host cache.
-    base::Optional<std::vector<bool>> experimental_results;
+    absl::optional<std::vector<bool>> experimental_results;
 
     // Assume an empty address list if we have an address type and no results.
     if (IsAddressType(dns_query_type) && !address_list && !text_records &&
@@ -878,19 +891,38 @@ std::unique_ptr<HostCache> HostCache::CreateDefaultCache() {
   return std::make_unique<HostCache>(kDefaultMaxEntries);
 }
 
-void HostCache::EvictOneEntry(base::TimeTicks now) {
+bool HostCache::EvictOneEntry(base::TimeTicks now) {
   DCHECK_LT(0u, entries_.size());
 
-  auto oldest_it = entries_.begin();
+  absl::optional<net::HostCache::EntryMap::iterator> oldest_it;
   for (auto it = entries_.begin(); it != entries_.end(); ++it) {
-    if ((it->second.expires() < oldest_it->second.expires()) &&
-        (it->second.IsStale(now, network_changes_) ||
-         !oldest_it->second.IsStale(now, network_changes_))) {
+    const Entry& entry = it->second;
+    if (HasActivePin(entry)) {
+      continue;
+    }
+
+    if (!oldest_it) {
+      oldest_it = it;
+      continue;
+    }
+
+    const Entry& oldest = (*oldest_it)->second;
+    if ((entry.expires() < oldest.expires()) &&
+        (entry.IsStale(now, network_changes_) ||
+         !oldest.IsStale(now, network_changes_))) {
       oldest_it = it;
     }
   }
 
-  entries_.erase(oldest_it);
+  if (oldest_it) {
+    entries_.erase(*oldest_it);
+    return true;
+  }
+  return false;
+}
+
+bool HostCache::HasActivePin(const Entry& entry) {
+  return entry.pinned() && entry.network_changes() == network_changes();
 }
 
 const HostCache::Key* HostCache::GetMatchingKey(

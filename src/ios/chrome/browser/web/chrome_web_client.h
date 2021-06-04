@@ -24,8 +24,6 @@ class ChromeWebClient : public web::WebClient {
   void AddAdditionalSchemes(Schemes* schemes) const override;
   std::string GetApplicationLocale() const override;
   bool IsAppSpecificURL(const GURL& url) const override;
-  void AddSerializableData(web::SerializableUserDataManager* user_data_manager,
-                           web::WebState* web_state) override;
   std::u16string GetPluginNotSupportedText() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   std::u16string GetLocalizedString(int message_id) const override;
@@ -39,8 +37,6 @@ class ChromeWebClient : public web::WebClient {
       web::BrowserURLRewriter* rewriter) override;
   std::vector<web::JavaScriptFeature*> GetJavaScriptFeatures(
       web::BrowserState* browser_state) const override;
-  NSString* GetDocumentStartScriptForAllFrames(
-      web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   bool IsLegacyTLSAllowedForHost(web::WebState* web_state,
@@ -50,7 +46,7 @@ class ChromeWebClient : public web::WebClient {
                         NSError* error,
                         bool is_post,
                         bool is_off_the_record,
-                        const base::Optional<net::SSLInfo>& info,
+                        const absl::optional<net::SSLInfo>& info,
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
@@ -59,6 +55,7 @@ class ChromeWebClient : public web::WebClient {
   bool ForceMobileVersionByDefault(const GURL& url) override;
   web::UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
                                          const GURL& url) override;
+  bool RestoreSessionFromCache(web::WebState* web_state) const override;
 
  private:
   // Reference to a view that is attached to a window.

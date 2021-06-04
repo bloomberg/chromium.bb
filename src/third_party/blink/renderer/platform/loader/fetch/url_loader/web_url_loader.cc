@@ -21,7 +21,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,6 +52,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
@@ -62,6 +62,7 @@
 #include "third_party/blink/public/common/net/ip_address_space_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -70,6 +71,7 @@
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_request_peer.h"
 #include "third_party/blink/public/platform/web_resource_request_sender.h"
@@ -347,7 +349,6 @@ class WebURLLoader::Context : public WebRequestPeer {
                          int intra_priority_value);
   void Start(std::unique_ptr<network::ResourceRequest> request,
              scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-             int requestor_id,
              bool pass_response_pipe_to_client,
              bool no_mime_sniffing,
              base::TimeDelta timeout_interval,
@@ -424,7 +425,7 @@ class WebURLLoader::Context : public WebRequestPeer {
   bool in_two_phase_read_ = false;
   bool is_in_on_body_available_ = false;
 
-  base::Optional<network::URLLoaderCompletionStatus> completion_status_;
+  absl::optional<network::URLLoaderCompletionStatus> completion_status_;
 
   std::unique_ptr<WebResourceRequestSender> resource_request_sender_;
 
@@ -512,7 +513,6 @@ void WebURLLoader::Context::DidChangePriority(
 void WebURLLoader::Context::Start(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<WebURLRequestExtraData> passed_url_request_extra_data,
-    int requestor_id,
     bool pass_response_pipe_to_client,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
@@ -803,8 +803,6 @@ void WebURLLoader::PopulateURLResponse(
   response->SetWasFetchedViaSPDY(head.was_fetched_via_spdy);
   response->SetWasFetchedViaServiceWorker(head.was_fetched_via_service_worker);
   response->SetServiceWorkerResponseSource(head.service_worker_response_source);
-  response->SetWasFallbackRequiredByServiceWorker(
-      head.was_fallback_required_by_service_worker);
   response->SetType(head.response_type);
   response->SetPadding(head.padding);
   WebVector<KURL> url_list_via_service_worker(
@@ -832,7 +830,7 @@ void WebURLLoader::PopulateURLResponse(
   //
   // Implements: https://wicg.github.io/cors-rfc1918/#integration-html
   response->SetAddressSpace(CalculateResourceAddressSpace(
-      KURL(response->ResponseUrl()), head.remote_endpoint.address()));
+      KURL(response->ResponseUrl()), head.remote_endpoint));
 
   WebVector<WebString> cors_exposed_header_names(
       head.cors_exposed_header_names.size());
@@ -843,6 +841,7 @@ void WebURLLoader::PopulateURLResponse(
   response->SetCorsExposedHeaderNames(cors_exposed_header_names);
   response->SetDidServiceWorkerNavigationPreload(
       head.did_service_worker_navigation_preload);
+  response->SetIsValidated(head.is_validated);
   response->SetEncodedDataLength(head.encoded_data_length);
   response->SetEncodedBodyLength(head.encoded_body_length);
   response->SetWasAlpnNegotiated(head.was_alpn_negotiated);
@@ -964,13 +963,12 @@ WebURLError WebURLLoader::PopulateURLError(
 void WebURLLoader::LoadSynchronously(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-    int requestor_id,
     bool pass_response_pipe_to_client,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     WebURLLoaderClient* client,
     WebURLResponse& response,
-    base::Optional<WebURLError>& error,
+    absl::optional<WebURLError>& error,
     WebData& data,
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
@@ -988,7 +986,7 @@ void WebURLLoader::LoadSynchronously(
 
   const bool report_raw_headers = request->report_raw_headers;
   context_->Start(std::move(request), std::move(url_request_extra_data),
-                  requestor_id, pass_response_pipe_to_client, no_mime_sniffing,
+                  pass_response_pipe_to_client, no_mime_sniffing,
                   timeout_interval, &sync_load_response,
                   std::move(resource_load_info_notifier_wrapper));
 
@@ -1037,7 +1035,6 @@ void WebURLLoader::LoadSynchronously(
 void WebURLLoader::LoadAsynchronously(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-    int requestor_id,
     bool no_mime_sniffing,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper,
@@ -1051,7 +1048,6 @@ void WebURLLoader::LoadAsynchronously(
 
   context_->set_client(client);
   context_->Start(std::move(request), std::move(url_request_extra_data),
-                  requestor_id,
                   /*pass_response_pipe_to_client=*/false, no_mime_sniffing,
                   base::TimeDelta(), nullptr,
                   std::move(resource_load_info_notifier_wrapper));

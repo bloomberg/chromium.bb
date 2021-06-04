@@ -45,6 +45,15 @@ Polymer({
     },
 
     /**
+     * If true, inhibited spinner can be shown, it will be shown
+     * if true and cellular is inhibited.
+     * @type {boolean}
+     */
+    canShowSpinner: {
+      type: Boolean,
+    },
+
+    /**
      * Device state for the tether network type. This device state should be
      * used for instant tether networks.
      * @type {!OncMojo.DeviceStateProperties|undefined}
@@ -116,7 +125,7 @@ Polymer({
     },
 
     /**@private */
-    shouldShowEidPopup_: {
+    shouldShowEidDialog_: {
       type: Boolean,
       value: false,
     },
@@ -166,10 +175,16 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /** @private {boolean} */
+    isDeviceInhibited_: {
+      type: Boolean,
+      computed: 'computeIsDeviceInhibited_(cellularDeviceState,' +
+          'cellularDeviceState.inhibitReason)',
+    },
   },
 
   listeners: {
-    'close-eid-popup': 'toggleEidPopup_',
     'install-profile': 'installProfile_',
   },
 
@@ -394,15 +409,26 @@ Polymer({
         {pageName: cellularSetup.CellularSetupPageName.ESIM_FLOW_UI});
   },
 
-  /** @private */
-  toggleEidPopup_() {
-    this.shouldShowEidPopup_ = !this.shouldShowEidPopup_;
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onESimDotsClick_(e) {
+    const menu = /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
+    menu.showAt(/** @type {!Element} */ (e.target));
+  },
 
-    if (this.shouldShowEidPopup_) {
-      Polymer.RenderStatus.afterNextRender(this, () => {
-        this.$$('.eid-popup').focus();
-      });
-    }
+  /** @private */
+  onShowEidDialogTap_() {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
+    actionMenu.close();
+    this.shouldShowEidDialog_ = true;
+  },
+
+  /** @private */
+  onCloseEidDialog_() {
+    this.shouldShowEidDialog_ = false;
   },
 
   /**
@@ -466,7 +492,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDeviceInhibited_() {
+  computeIsDeviceInhibited_() {
     if (!this.cellularDeviceState) {
       return false;
     }
@@ -487,5 +513,33 @@ Polymer({
    */
   getAddEsimButton() {
     return /** @type {?CrIconButtonElement} */ (this.$$('#addESimButton'));
+  },
+
+  /**
+   * @return {string} Inhibited subtext message.
+   * @private
+   */
+  getInhibitedSubtextMessage_() {
+    if (!this.cellularDeviceState) {
+      return '';
+    }
+
+    const mojom = chromeos.networkConfig.mojom.InhibitReason;
+    const inhibitReason = this.cellularDeviceState.inhibitReason;
+
+    switch (inhibitReason) {
+      case mojom.kInstallingProfile:
+        return this.i18n('cellularNetworkInstallingProfile');
+      case mojom.kRenamingProfile:
+        return this.i18n('cellularNetworkRenamingProfile');
+      case mojom.kRemovingProfile:
+        return this.i18n('cellularNetworkRemovingProfile');
+      case mojom.kConnectingToProfile:
+        return this.i18n('cellularNetworkConnectingToProfile');
+      case mojom.kRefreshingProfileList:
+        return this.i18n('cellularNetworRefreshingProfileListProfile');
+    }
+
+    return '';
   },
 });

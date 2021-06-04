@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
 #include "base/trace_event/common/trace_event_common.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -188,16 +189,23 @@ PerformanceNavigation* WindowPerformance::navigation() const {
   return navigation_.Get();
 }
 
-MemoryInfo* WindowPerformance::memory() const {
+MemoryInfo* WindowPerformance::memory(ScriptState* script_state) const {
   // The performance.memory() API has been improved so that we report precise
   // values when the process is locked to a site. The intent (which changed
   // course over time about what changes would be implemented) can be found at
   // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/no00RdMnGio,
   // and the relevant bug is https://crbug.com/807651.
-  return MakeGarbageCollected<MemoryInfo>(
-      Platform::Current()->IsLockedToSite()
-          ? MemoryInfo::Precision::Precise
-          : MemoryInfo::Precision::Bucketized);
+  auto* memory_info =
+      MakeGarbageCollected<MemoryInfo>(Platform::Current()->IsLockedToSite()
+                                           ? MemoryInfo::Precision::Precise
+                                           : MemoryInfo::Precision::Bucketized);
+  // Record Web Memory UKM.
+  const uint64_t kBytesInKB = 1024;
+  auto* execution_context = ExecutionContext::From(script_state);
+  ukm::builders::PerformanceAPI_Memory_Legacy(execution_context->UkmSourceID())
+      .SetJavaScript(memory_info->usedJSHeapSize() / kBytesInKB)
+      .Record(execution_context->UkmRecorder());
+  return memory_info;
 }
 
 PerformanceNavigationTiming*
@@ -347,9 +355,22 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   if (!DomWindow())
     return;
 
-  if (!event_counts_)
-    event_counts_ = MakeGarbageCollected<EventCounts>();
-  event_counts_->Add(event_type);
+  // Count non-pointerevent Events. Avoid double counting pointerevents
+  // because we count them in pointer_event_manager.cc. Note click, auxclick and
+  // contextmenu are PointerEvent but the dispatch process of them are different
+  // from other PointerEvent.
+  if (event_type != event_type_names::kPointerover &&
+      event_type != event_type_names::kPointerenter &&
+      event_type != event_type_names::kPointerdown &&
+      event_type != event_type_names::kPointerup &&
+      event_type != event_type_names::kPointercancel &&
+      event_type != event_type_names::kPointerout &&
+      event_type != event_type_names::kPointerleave &&
+      event_type != event_type_names::kGotpointercapture &&
+      event_type != event_type_names::kLostpointercapture) {
+    eventCounts()->Add(event_type);
+  }
+
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),

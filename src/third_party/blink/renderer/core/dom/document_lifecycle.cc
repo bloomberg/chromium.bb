@@ -32,7 +32,6 @@
 
 #include "base/notreached.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -86,8 +85,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       break;
     case kVisualUpdatePending:
-      if (next_state == kInPreLayout)
-        return true;
       if (next_state == kInStyleRecalc)
         return true;
       if (next_state == kInPerformLayout)
@@ -104,9 +101,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       // We can notify layout objects that subtrees changed.
       if (next_state == kInLayoutSubtreeChange)
-        return true;
-      // We can synchronously perform layout.
-      if (next_state == kInPreLayout)
         return true;
       if (next_state == kInPerformLayout)
         return true;
@@ -129,8 +123,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (next_state == kInStyleRecalc)
         return true;
       // We can synchronously perform layout.
-      if (next_state == kInPreLayout)
-        return true;
       if (next_state == kInPerformLayout)
         return true;
       // Can move back to style clean.
@@ -145,19 +137,9 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
           next_state == kInCompositingAssignmentsUpdate)
         return true;
       break;
-    case kInPreLayout:
-      if (next_state == kInStyleRecalc)
-        return true;
-      if (next_state == kStyleClean)
-        return true;
-      if (next_state == kInPreLayout)
-        return true;
-      break;
     case kInPerformLayout:
       return next_state == kAfterPerformLayout;
     case kAfterPerformLayout:
-      if (next_state == kInPreLayout)
-        return true;
       if (next_state == kInPerformLayout)
         return true;
       if (next_state == kLayoutClean)
@@ -166,9 +148,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
     case kLayoutClean:
       // We can synchronously recalc style.
       if (next_state == kInStyleRecalc)
-        return true;
-      // We can synchronously perform layout.
-      if (next_state == kInPreLayout)
         return true;
       if (next_state == kInPerformLayout)
         return true;
@@ -223,8 +202,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       // We can return to style re-calc, layout, or the start of compositing.
       if (next_state == kInStyleRecalc)
         return true;
-      if (next_state == kInPreLayout)
-        return true;
       if (next_state == kInCompositingInputsUpdate)
         return true;
       if (next_state == kInCompositingAssignmentsUpdate)
@@ -242,8 +219,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       break;
     case kCompositingAssignmentsClean:
       if (next_state == kInStyleRecalc)
-        return true;
-      if (next_state == kInPreLayout)
         return true;
       if (next_state == kInCompositingInputsUpdate)
         return true;
@@ -268,8 +243,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInStyleRecalc)
         return true;
-      if (next_state == kInPreLayout)
-        return true;
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           next_state == kInCompositingInputsUpdate)
         return true;
@@ -290,8 +263,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       break;
     case kPaintClean:
       if (next_state == kInStyleRecalc)
-        return true;
-      if (next_state == kInPreLayout)
         return true;
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           next_state == kInCompositingInputsUpdate)
@@ -347,7 +318,6 @@ static WTF::String StateAsDebugString(
     DEBUG_STRING_CASE(kStyleClean);
     DEBUG_STRING_CASE(kInLayoutSubtreeChange);
     DEBUG_STRING_CASE(kLayoutSubtreeChangeClean);
-    DEBUG_STRING_CASE(kInPreLayout);
     DEBUG_STRING_CASE(kInPerformLayout);
     DEBUG_STRING_CASE(kAfterPerformLayout);
     DEBUG_STRING_CASE(kLayoutClean);

@@ -92,7 +92,6 @@ int parse_cfg(const char *file, cfg_options_t *config) {
     GET_PARAMS(disable_intrabc);
     GET_PARAMS(disable_cfl);
     GET_PARAMS(disable_smooth_intra);
-    GET_PARAMS(disable_diagonal_intra);
     GET_PARAMS(disable_filter_intra);
     GET_PARAMS(disable_dual_filter);
     GET_PARAMS(disable_intra_angle_delta);

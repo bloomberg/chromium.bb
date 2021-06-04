@@ -157,9 +157,9 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     ASSERT_TRUE(test_nssdb_.is_open());
 
     // Use the same DB for public and private slot.
-    test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+    test_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())));
 
     SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
@@ -183,11 +183,12 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         network_config_handler_.get(), nullptr /* network_device_handler */,
         nullptr /* prohibited_tecnologies_handler */);
 
-    cellular_inhibitor_.reset(new CellularInhibitor());
+    cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
     cellular_inhibitor_->Init(helper_.network_state_handler(),
                               helper_.network_device_handler());
 
-    cellular_esim_profile_handler_.reset(new TestCellularESimProfileHandler());
+    cellular_esim_profile_handler_ =
+        std::make_unique<TestCellularESimProfileHandler>();
     cellular_esim_profile_handler_->Init(helper_.network_state_handler(),
                                          cellular_inhibitor_.get());
 
@@ -201,7 +202,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
                                        cellular_inhibitor_.get(),
                                        cellular_esim_profile_handler_.get());
 
-    network_connection_handler_.reset(new NetworkConnectionHandlerImpl());
+    network_connection_handler_ =
+        std::make_unique<NetworkConnectionHandlerImpl>();
     network_connection_handler_->Init(
         helper_.network_state_handler(), network_config_handler_.get(),
         managed_config_handler_.get(),
@@ -213,7 +215,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
 
     task_environment_.RunUntilIdle();
 
-    fake_tether_delegate_.reset(new FakeTetherDelegate());
+    fake_tether_delegate_ = std::make_unique<FakeTetherDelegate>();
   }
 
   void TearDown() override {
@@ -366,6 +368,12 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetCellularServiceState(const std::string& state) {
+    helper_.service_test()->SetServiceProperty(
+        kTestCellularServicePath, shill::kStateProperty, base::Value(state));
+    base::RunLoop().RunUntilIdle();
+  }
+
   void SetCellularServiceOutOfCredits() {
     helper_.service_test()->SetServiceProperty(kTestCellularServicePath,
                                                shill::kOutOfCreditsProperty,
@@ -447,6 +455,10 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     task_environment_.FastForwardBy(time_delta);
   }
 
+  void SetShillConnectError(const std::string& error_name) {
+    helper_.service_test()->SetErrorForNextConnectionAttempt(error_name);
+  }
+
   NetworkStateHandler* network_state_handler() {
     return helper_.network_state_handler();
   }
@@ -472,7 +484,6 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     helper_.service_test()->AddService(
         kTestCellularServicePath, kTestCellularGuid, kTestCellularName,
         shill::kTypeCellular, shill::kStateIdle, /*visible=*/true);
-    base::RunLoop().RunUntilIdle();
 
     if (has_eid) {
       helper_.service_test()->SetServiceProperty(
@@ -634,6 +645,50 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_TRUE(network_connection_observer()->GetRequested(wifi3_service_path));
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
             network_connection_observer()->GetResult(wifi3_service_path));
+}
+
+TEST_F(NetworkConnectionHandlerImplTest,
+       IgnoreConnectInProgressError_Succeeds) {
+  Init();
+
+  AddCellularServiceWithESimProfile();
+  // Verify the result is not returned and observers are not called if shill
+  // returns InProgress error.
+  SetShillConnectError(shill::kErrorResultInProgress);
+  Connect(kTestCellularServicePath);
+  EXPECT_TRUE(GetResultAndReset().empty());
+  EXPECT_TRUE(network_connection_observer()
+                  ->GetResult(kTestCellularServicePath)
+                  .empty());
+
+  // Verify that connect request returns when service state changes to
+  // connected.
+  SetCellularServiceState(shill::kStateOnline);
+  EXPECT_EQ(kSuccessResult,
+            network_connection_observer()->GetResult(kTestCellularServicePath));
+  EXPECT_EQ(kSuccessResult, GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest, IgnoreConnectInProgressError_Fails) {
+  Init();
+
+  AddCellularServiceWithESimProfile();
+  SetShillConnectError(shill::kErrorResultInProgress);
+  Connect(kTestCellularServicePath);
+  EXPECT_TRUE(GetResultAndReset().empty());
+  EXPECT_TRUE(network_connection_observer()
+                  ->GetResult(kTestCellularServicePath)
+                  .empty());
+
+  // Set cellular service to connecting state.
+  SetCellularServiceState(shill::kStateAssociation);
+
+  // Verify the connect request fails with error when returned and observers are
+  // not called if shill returns InProgress error.
+  SetCellularServiceState(shill::kStateIdle);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed,
+            network_connection_observer()->GetResult(kTestCellularServicePath));
+  EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed, GetResultAndReset());
 }
 
 namespace {

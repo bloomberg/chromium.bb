@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tab_capture/offscreen_tabs_owner.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
@@ -37,6 +36,7 @@
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "net/base/url_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 using content::DesktopMediaID;
@@ -76,77 +76,12 @@ const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
 
-// Tab Capture-specific video constraint to enable automatic resolution/rate
-// throttling mode in the capture pipeline.
-const char kEnableAutoThrottlingKey[] = "enableAutoThrottling";
-
 bool OptionsSpecifyAudioOrVideo(const TabCapture::CaptureOptions& options) {
   return (options.audio && *options.audio) || (options.video && *options.video);
 }
 
 bool IsAcceptableOffscreenTabUrl(const GURL& url) {
   return url.is_valid() && (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("data"));
-}
-
-// Removes all mandatory and optional constraint entries that start with the
-// "goog" prefix.  These are never needed and may cause the renderer-side
-// getUserMedia() call to fail.  http://crbug.com/579729
-//
-// TODO(miu): Remove once tabCapture API is migrated to new constraints spec.
-// http://crbug.com/579729
-void FilterDeprecatedGoogConstraints(TabCapture::CaptureOptions* options) {
-  const auto FilterGoogKeysFromDictionary = [](base::DictionaryValue* dict) {
-    std::vector<std::string> bad_keys;
-    base::DictionaryValue::Iterator it(*dict);
-    for (; !it.IsAtEnd(); it.Advance()) {
-      if (base::StartsWith(it.key(), "goog", base::CompareCase::SENSITIVE))
-        bad_keys.push_back(it.key());
-    }
-    for (const std::string& k : bad_keys) {
-      std::unique_ptr<base::Value> ignored;
-      dict->RemoveWithoutPathExpansion(k, &ignored);
-    }
-  };
-
-  if (options->audio_constraints) {
-    FilterGoogKeysFromDictionary(
-        &options->audio_constraints->mandatory.additional_properties);
-    if (options->audio_constraints->optional) {
-      FilterGoogKeysFromDictionary(
-          &options->audio_constraints->optional->additional_properties);
-    }
-  }
-
-  if (options->video_constraints) {
-    FilterGoogKeysFromDictionary(
-        &options->video_constraints->mandatory.additional_properties);
-    if (options->video_constraints->optional) {
-      FilterGoogKeysFromDictionary(
-          &options->video_constraints->optional->additional_properties);
-    }
-  }
-}
-
-bool GetAutoThrottlingFromOptions(TabCapture::CaptureOptions* options) {
-  bool enable_auto_throttling = false;
-  if (options && options->video && *options->video) {
-    if (options->video_constraints) {
-      // Check for the Tab Capture-specific video constraint for enabling
-      // automatic resolution/rate throttling mode in the capture pipeline.  See
-      // implementation comments for content::WebContentsVideoCaptureDevice.
-      base::DictionaryValue& props =
-          options->video_constraints->mandatory.additional_properties;
-      if (!props.GetBooleanWithoutPathExpansion(
-              kEnableAutoThrottlingKey, &enable_auto_throttling)) {
-        enable_auto_throttling = false;
-      }
-      // Remove the key from the properties to avoid an "unrecognized
-      // constraint" error in the renderer.
-      props.RemoveKey(kEnableAutoThrottlingKey);
-    }
-  }
-
-  return enable_auto_throttling;
 }
 
 DesktopMediaID BuildDesktopMediaID(content::WebContents* target_contents,
@@ -156,8 +91,7 @@ DesktopMediaID BuildDesktopMediaID(content::WebContents* target_contents,
   DesktopMediaID source(
       DesktopMediaID::TYPE_WEB_CONTENTS, DesktopMediaID::kNullId,
       WebContentsMediaCaptureId(target_frame->GetProcess()->GetID(),
-                                target_frame->GetRoutingID(),
-                                GetAutoThrottlingFromOptions(options), false));
+                                target_frame->GetRoutingID()));
   return source;
 }
 
@@ -272,7 +206,6 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
     // http://crbug.com/535336
     return RespondNow(Error(kCapturingSameTab));
   }
-  FilterDeprecatedGoogConstraints(&params->options);
   AddMediaStreamSourceConstraints(target_contents, &params->options, device_id);
 
   // At this point, everything is set up in the browser process.  It's now up to
@@ -344,11 +277,8 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
       target_contents, extension_id, true, extension()->url(), source,
       extension()->name(), extension_web_contents);
   if (device_id.empty()) {
-    // TODO(miu): Allow multiple consumers of single tab capture.
-    // http://crbug.com/535336
     return RespondNow(Error(kCapturingSameOffscreenTab));
   }
-  FilterDeprecatedGoogConstraints(&params->options);
   AddMediaStreamSourceConstraints(target_contents, &params->options, device_id);
 
   // At this point, everything is set up in the browser process.  It's now up to

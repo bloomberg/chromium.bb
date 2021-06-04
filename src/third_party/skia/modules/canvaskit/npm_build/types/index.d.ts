@@ -438,6 +438,7 @@ export interface CanvasKit {
     readonly FilterQuality: FilterQualityEnumValues;
     readonly FontEdging: FontEdgingEnumValues;
     readonly FontHinting: FontHintingEnumValues;
+    readonly GlyphRunFlags: GlyphRunFlagValues;
     readonly ImageFormat: ImageFormatEnumValues;
     readonly MipmapMode: MipmapModeEnumValues;
     readonly PaintStyle: PaintStyleEnumValues;
@@ -503,6 +504,7 @@ export interface CanvasKit {
     readonly TextAlign: TextAlignEnumValues;
     readonly TextBaseline: TextBaselineEnumValues;
     readonly TextDirection: TextDirectionEnumValues;
+    readonly TextHeightBehavior: TextHeightBehaviorEnumValues;
 
     // Paragraph Constants
     readonly NoDecoration: number;
@@ -646,6 +648,56 @@ export interface LineMetrics {
     baseline: number;
     /** Zero indexed line number. */
     lineNumber: number;
+}
+
+export interface Range {
+    first: number;
+    last: number;
+}
+
+/**
+ * Information for a run of shaped text. See Paragraph.getShapedLines()
+ *
+ * Notes:
+ * positions is documented as Float32, but it holds twice as many as you expect, and they
+ * are treated logically as pairs of floats: {x0, y0}, {x1, y1}, ... for each glyph.
+ *
+ * positions and offsets arrays have 1 extra slot (actually 2 for positions)
+ * to describe the location "after" the last glyph in the glyphs array.
+ */
+export interface GlyphRun {
+    typeface: Typeface;     // currently set to null (temporary)
+    size: number;
+    fakeBold: boolean;
+    fakeItalic: boolean;
+
+    glyphs: Uint16Array;
+    positions: Float32Array;    // alternating x0, y0, x1, y1, ...
+    offsets: Uint32Array;
+    flags: number;              // see GlyphRunFlags
+}
+
+/**
+ * Information for a paragraph of text. See Paragraph.getShapedLines()
+ */
+ export interface ShapedLine {
+    textRange: Range;   // first and last character offsets for the line (derived from runs[])
+    top: number;        // top y-coordinate for the line
+    bottom: number;     // bottom y-coordinate for the line
+    baseline: number;   // baseline y-coordinate for the line
+    runs: GlyphRun[];   // array of GlyphRun objects for the line
+}
+
+/**
+ * Input to ShapeText(..., FontBlock[], ...);
+ */
+export interface FontBlock {
+    length: number;     // number of text codepoints this block is applied to
+
+    typeface: Typeface;
+    size: number;
+    fakeBold: boolean;
+    fakeItalic: boolean;
 }
 
 /**
@@ -806,6 +858,11 @@ export interface Paragraph extends EmbindObject<Paragraph> {
     getWordBoundary(offset: number): URange;
 
     /**
+     * Returns an array of ShapedLine objects, describing the paragraph.
+     */
+    getShapedLines(): ShapedLine[];
+
+    /**
      * Lays out the text in the paragraph so it is wrapped to the given width.
      * @param width
      */
@@ -867,6 +924,7 @@ export interface ParagraphStyle {
     strutStyle?: StrutStyle;
     textAlign?: TextAlign;
     textDirection?: TextDirection;
+    textHeightBehavior?: TextHeightBehavior;
     textStyle?: TextStyle;
 }
 
@@ -1102,6 +1160,20 @@ export interface Canvas extends EmbindObject<Canvas> {
      * @param paint
      */
     drawDRRect(outer: InputRRect, inner: InputRRect, paint: Paint): void;
+
+    /**
+     * Draws a run of glyphs, at corresponding positions, in a given font.
+     * @param glyphs the array of glyph IDs (Uint16TypedArray)
+     * @param positions the array of x,y floats to position each glyph
+     * @param x x-coordinate of the origin of the entire run
+     * @param y y-coordinate of the origin of the entire run
+     * @param font the font that contains the glyphs
+     * @param paint
+     */
+    drawGlyphs(glyphs: InputGlyphIDArray,
+               positions: InputFlattenedPointArray,
+               x: number, y: number,
+               font: Font, paint: Paint): void;
 
     /**
      * Draws the given image with its top-left corner at (left, top) using the current clip,
@@ -1538,10 +1610,22 @@ export interface ContourMeasure extends EmbindObject<ContourMeasure> {
     length(): number;
 }
 
+export interface FontMetrics {
+    ascent: number;     // suggested space above the baseline. < 0
+    descent: number;    // suggested space below the baseline. > 0
+    leading: number;    // suggested spacing between descent of previous line and ascent of next line.
+    bounds?: Rect;      // smallest rect containing all glyphs (relative to 0,0)
+}
+
 /**
  * See SkFont.h for more on this class.
  */
 export interface Font extends EmbindObject<Font> {
+    /**
+     * Returns the FontMetrics for this font.
+     */
+    getMetrics(): FontMetrics;
+
     /**
      * Retrieves the bounds for each glyph in glyphs.
      * If paint is not null, its stroking, PathEffect, and MaskFilter fields are respected.
@@ -1576,6 +1660,24 @@ export interface Font extends EmbindObject<Font> {
                    output?: Float32Array): Float32Array;
 
     /**
+     * Computes any intersections of a thick "line" and a run of positionsed glyphs.
+     * The thick line is represented as a top and bottom coordinate (positive for
+     * below the baseline, negative for above). If there are no intersections
+     * (e.g. if this is intended as an underline, and there are no "collisions")
+     * then the returned array will be empty. If there are intersections, the array
+     * will contain pairs of X coordinates [start, end] for each segment that
+     * intersected with a glyph.
+     *
+     * @param glyphs        the glyphs to intersect with
+     * @param positions     x,y coordinates (2 per glyph) for each glyph
+     * @param top           top of the thick "line" to use for intersection testing
+     * @param bottom        bottom of the thick "line" to use for intersection testing
+     * @return              array of [start, end] x-coordinate pairs. Maybe be empty.
+     */
+    getGlyphIntercepts(glyphs: InputGlyphIDArray, positions: Float32Array | number[],
+                       top: number, bottom: number): Float32Array;
+
+    /**
      * Returns text scale on x-axis. Default value is 1.
      */
     getScaleX(): number;
@@ -1589,6 +1691,11 @@ export interface Font extends EmbindObject<Font> {
      * Returns text skew on x-axis. Default value is zero.
      */
     getSkewX(): number;
+
+    /**
+     * Returns embolden effect for this font. Default value is false.
+     */
+    isEmbolden(): boolean;
 
     /**
      * Returns the Typeface set for this font.
@@ -1639,6 +1746,12 @@ export interface Font extends EmbindObject<Font> {
      * @param sx
      */
     setSkewX(sx: number): void;
+
+    /**
+     * Set embolden effect for this font.
+     * @param embolden
+     */
+    setEmbolden(embolden: boolean): void;
 
     /**
      * Requests, but does not require, that glyphs respect sub-pixel positioning.
@@ -2630,6 +2743,7 @@ export interface StrutStyle {
     fontStyle?: FontStyle;
     fontSize?: number;
     heightMultiplier?: number;
+    halfLeading?: boolean;
     leading?: number;
     forceStrutHeight?: boolean;
 }
@@ -2661,6 +2775,7 @@ export interface TextStyle {
     fontStyle?: FontStyle;
     foregroundColor?: InputColor;
     heightMultiplier?: number;
+    halfLeading?: boolean;
     letterSpacing?: number;
     locale?: string;
     shadows?: TextShadow[];
@@ -2942,6 +3057,11 @@ export interface ParagraphBuilderFactory {
      * @param fontSrc
      */
     MakeFromFontProvider(style: ParagraphStyle, fontSrc: TypefaceFontProvider): ParagraphBuilder;
+
+    /**
+     * Return a shaped array of lines
+     */
+    ShapeText(text: string, runs: FontBlock[], width?: number): ShapedLine[];
 }
 
 export interface ParagraphStyleConstructor {
@@ -3526,11 +3646,8 @@ export type FlattenedPointArray = Float32Array;
  * be the top, left, right, bottom point for each rectangle.
  */
 export type FlattenedRectangleArray = Float32Array;
-/**
- * Regardless of the format we use internally for GlyphID (16 bit unsigned atm), we expose them
- * as 32 bit unsigned.
- */
-export type GlyphIDArray = Uint32Array;
+
+export type GlyphIDArray = Uint16Array;
 /**
  * PathCommand contains a verb and then any arguments needed to fulfill that path verb.
  * Examples:
@@ -3659,6 +3776,7 @@ export type RectWidthStyle = EmbindEnumEntity;
 export type TextAlign = EmbindEnumEntity;
 export type TextBaseline = EmbindEnumEntity;
 export type TextDirection = EmbindEnumEntity;
+export type TextHeightBehavior = EmbindEnumEntity;
 
 export interface AffinityEnumValues extends EmbindEnum {
     Upstream: Affinity;
@@ -3814,6 +3932,13 @@ export interface FontWidthEnumValues extends EmbindEnum {
     UltraExpanded: FontWidth;
 }
 
+/*
+ *  These values can be OR'd together
+ */
+export interface GlyphRunFlagValues {
+    IsWhiteSpace: number;
+}
+
 export interface ImageFormatEnumValues extends EmbindEnum {
     // TODO(kjlubick) When these are compiled in depending on the availability of the codecs,
     //   be sure to make these nullable.
@@ -3862,6 +3987,7 @@ export interface RectHeightStyleEnumValues extends EmbindEnum {
     IncludeLineSpacingMiddle: RectHeightStyle;
     IncludeLineSpacingTop: RectHeightStyle;
     IncludeLineSpacingBottom: RectHeightStyle;
+    Strut: RectHeightStyle;
 }
 
 export interface RectWidthStyleEnumValues extends EmbindEnum {
@@ -3898,6 +4024,13 @@ export interface TextBaselineEnumValues extends EmbindEnum {
 export interface TextDirectionEnumValues extends EmbindEnum {
     LTR: TextDirection;
     RTL: TextDirection;
+}
+
+export interface TextHeightBehaviorEnumValues extends EmbindEnum {
+    All: TextHeightBehavior;
+    DisableFirstAscent: TextHeightBehavior;
+    DisableLastDescent: TextHeightBehavior;
+    DisableAll: TextHeightBehavior;
 }
 
 export interface TileModeEnumValues extends EmbindEnum {

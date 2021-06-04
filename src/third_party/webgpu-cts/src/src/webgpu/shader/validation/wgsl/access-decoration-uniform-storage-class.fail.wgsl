@@ -9,5 +9,5 @@ struct Particles {
 [[group(0), binding(0)]] var<uniform> particles : [[access(read_write)]] Particles;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

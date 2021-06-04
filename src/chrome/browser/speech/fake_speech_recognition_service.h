@@ -38,11 +38,13 @@ class FakeSpeechRecognitionService
       mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           client,
+      media::mojom::SpeechRecognitionOptionsPtr options,
       BindRecognizerCallback callback) override;
   void BindAudioSourceFetcher(
       mojo::PendingReceiver<media::mojom::AudioSourceFetcher> fetcher_receiver,
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           client,
+      media::mojom::SpeechRecognitionOptionsPtr options,
       BindRecognizerCallback callback) override;
 
   // media::mojom::AudioSourceFetcher:
@@ -55,8 +57,6 @@ class FakeSpeechRecognitionService
   // media::mojom::SpeechRecognitionRecognizer:
   void SendAudioToSpeechRecognitionService(
       media::mojom::AudioDataS16Ptr buffer) override;
-  void OnCaptionBubbleClosed() override {}
-  void AudioReceivedAfterBubbleClosed(base::TimeDelta duration) override {}
   void OnLanguageChanged(const std::string& language) override {}
 
   // Methods for testing plumbing to SpeechRecognitionRecognizerClient.
@@ -74,7 +74,7 @@ class FakeSpeechRecognitionService
 
   std::string device_id() { return device_id_; }
 
-  const base::Optional<::media::AudioParameters>& audio_parameters() {
+  const absl::optional<::media::AudioParameters>& audio_parameters() {
     return audio_parameters_;
   }
 
@@ -85,6 +85,8 @@ class FakeSpeechRecognitionService
  private:
   void OnRecognizerClientDisconnected();
 
+  void OnSpeechRecognitionRecognitionEventCallback(bool success);
+
   // Whether multichannel audio is supported.
   bool is_multichannel_supported_ = false;
   // Whether the AudioSourceFetcher has been started.
@@ -94,7 +96,7 @@ class FakeSpeechRecognitionService
   // The device ID used to capture audio.
   std::string device_id_;
   // The audio parameters used to capture audio.
-  base::Optional<::media::AudioParameters> audio_parameters_;
+  absl::optional<::media::AudioParameters> audio_parameters_;
 
   base::OnceClosure recognition_started_closure_;
 

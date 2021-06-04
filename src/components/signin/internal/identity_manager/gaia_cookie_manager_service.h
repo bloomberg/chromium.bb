@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -67,6 +66,19 @@ class GaiaCookieManagerService
     LOG_OUT,
     LIST_ACCOUNTS,
     SET_ACCOUNTS
+  };
+
+  // The result of processing a request to remove an account (i.e.
+  // Google-Accounts-RemoveLocalAccount). Used as entry for histogram
+  // |Signin.RemoveLocalAccountOutcome|, hence entries should not be renumbered
+  // and numeric values should never be reused. Exposed publicly for testing
+  // purposes.
+  enum class RemoveLocalAccountOutcome {
+    kSuccess = 0,
+    kAccountsStale = 1,
+    // Missing means the account is not listed in |signed_out_accounts_|.
+    kSignedOutAccountMissing = 2,
+    kMaxValue = kSignedOutAccountMissing
   };
 
   typedef base::OnceCallback<void(signin::SetAccountsInCookieResult)>
@@ -270,6 +282,11 @@ class GaiaCookieManagerService
   // web, the Gaia logout page should be loaded as a navigation.
   void LogOutAllAccounts(gaia::GaiaSource source,
                          LogOutFromCookieCompletedCallback callback);
+
+  // Indicates that an account previously listed via ListAccounts should now
+  // be removed. Does not trigger a ListAccounts request and does not change the
+  // staleness of the account information.
+  void RemoveLoggedOutAccountByGaiaId(const std::string& gaia_id);
 
   // Call observers when setting accounts in cookie completes.
   void SignalSetAccountsComplete(signin::SetAccountsInCookieResult result);

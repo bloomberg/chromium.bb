@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -56,7 +57,7 @@ namespace {
 class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
  public:
   explicit TestNavigationLoaderInterceptor(
-      base::Optional<network::ResourceRequest>* most_recent_resource_request)
+      absl::optional<network::ResourceRequest>* most_recent_resource_request)
       : most_recent_resource_request_(most_recent_resource_request) {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
@@ -129,7 +130,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     url_loader_.reset();
   }
 
-  base::Optional<network::ResourceRequest>*
+  absl::optional<network::ResourceRequest>*
       most_recent_resource_request_;  // NOT OWNED.
   network::ResourceScheduler resource_scheduler_;
   std::unique_ptr<net::URLRequestContext> context_;
@@ -177,7 +178,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
       bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
-            base::nullopt /* initiator_frame_token */, headers,
+            absl::nullopt /* initiator_frame_token */, headers,
             net::LOAD_NORMAL, false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
             network::mojom::RequestDestination::kDocument,
@@ -187,11 +188,11 @@ class NavigationURLLoaderImplTest : public testing::Test {
             GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
-            base::nullopt /* devtools_initiator_info */,
-            nullptr /* trust_token_params */, base::nullopt /* impression */,
+            absl::nullopt /* devtools_initiator_info */,
+            nullptr /* trust_token_params */, absl::nullopt /* impression */,
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
-            base::nullopt /* web_bundle_token */);
+            absl::nullopt /* web_bundle_token */);
 
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;
@@ -208,7 +209,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                 net::SiteForCookies::FromUrl(url)),
             is_main_frame, false /* are_ancestors_secure */,
             FrameTreeNode::kFrameTreeNodeInvalidId /* frame_tree_node_id */,
-            false /* report_raw_headers */, false /* is_prerenering */,
+            false /* report_raw_headers */,
             upgrade_if_insecure /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
@@ -216,15 +217,14 @@ class NavigationURLLoaderImplTest : public testing::Test {
             false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
-            base::nullopt /* devtools_accepted_stream_types */));
+            absl::nullopt /* devtools_accepted_stream_types */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
-    most_recent_resource_request_ = base::nullopt;
+    most_recent_resource_request_ = absl::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
         &most_recent_resource_request_));
 
     return std::make_unique<NavigationURLLoaderImpl>(
-        browser_context_.get(),
-        BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
+        browser_context_.get(), browser_context_->GetDefaultStoragePartition(),
         std::move(request_info), nullptr /* navigation_ui_data */,
         nullptr /* service_worker_handle */, nullptr /* appcache_handle */,
         nullptr /* prefetched_signed_exchange_cache */, delegate,
@@ -306,7 +306,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
       network_change_notifier_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::EmbeddedTestServer http_test_server_;
-  base::Optional<network::ResourceRequest> most_recent_resource_request_;
+  absl::optional<network::ResourceRequest> most_recent_resource_request_;
 };
 
 TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {

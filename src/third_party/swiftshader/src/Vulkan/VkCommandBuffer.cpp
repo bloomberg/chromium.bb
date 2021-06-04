@@ -1296,7 +1296,7 @@ VkResult CommandBuffer::reset(VkCommandPoolResetFlags flags)
 }
 
 template<typename T, typename... Args>
-void CommandBuffer::addCommand(Args &&... args)
+void CommandBuffer::addCommand(Args &&...args)
 {
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
 	commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
@@ -1364,12 +1364,12 @@ void CommandBuffer::bindPipeline(VkPipelineBindPoint pipelineBindPoint, Pipeline
 {
 	switch(pipelineBindPoint)
 	{
-		case VK_PIPELINE_BIND_POINT_COMPUTE:
-		case VK_PIPELINE_BIND_POINT_GRAPHICS:
-			addCommand<::CmdPipelineBind>(pipelineBindPoint, pipeline);
-			break;
-		default:
-			UNSUPPORTED("VkPipelineBindPoint %d", int(pipelineBindPoint));
+	case VK_PIPELINE_BIND_POINT_COMPUTE:
+	case VK_PIPELINE_BIND_POINT_GRAPHICS:
+		addCommand<::CmdPipelineBind>(pipelineBindPoint, pipeline);
+		break;
+	default:
+		UNSUPPORTED("VkPipelineBindPoint %d", int(pipelineBindPoint));
 	}
 }
 

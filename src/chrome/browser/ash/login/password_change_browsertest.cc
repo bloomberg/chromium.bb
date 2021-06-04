@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
@@ -399,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, PRE_Session) {
       chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
   display_service_tester->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                        notifications[0].id(), base::nullopt,
-                                        base::nullopt);
+                                        notifications[0].id(), absl::nullopt,
+                                        absl::nullopt);
   exit_waiter.Wait();
 }
 

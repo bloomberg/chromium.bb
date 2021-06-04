@@ -19,6 +19,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/public/cpp/timing_allow_origin_parser.h"
 #include "services/network/trust_tokens/trust_token_operation_metrics_recorder.h"
 #include "services/network/url_loader.h"
 #include "url/url_util.h"
@@ -92,7 +93,7 @@ CorsURLLoader::CorsURLLoader(
       isolation_info_(isolation_info),
       devtools_observer_(std::move(devtools_observer)) {
   if (ignore_isolated_world_origin)
-    request_.isolated_world_origin = base::nullopt;
+    request_.isolated_world_origin = absl::nullopt;
 
   receiver_.set_disconnect_handler(
       base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
@@ -126,7 +127,7 @@ void CorsURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
@@ -483,7 +484,7 @@ void CorsURLLoader::StartRequest() {
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
   if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
-    StartNetworkRequest(net::OK, base::nullopt, false);
+    StartNetworkRequest(net::OK, absl::nullopt, false);
     return;
   }
 
@@ -513,7 +514,7 @@ void CorsURLLoader::StartRequest() {
 
 void CorsURLLoader::StartNetworkRequest(
     int error_code,
-    base::Optional<CorsErrorStatus> status,
+    absl::optional<CorsErrorStatus> status,
     bool has_authorization_covered_by_wildcard) {
   has_authorization_covered_by_wildcard_ =
       has_authorization_covered_by_wildcard;
@@ -616,8 +617,8 @@ bool CorsURLLoader::HasSpecialAccessToDestination() const {
 mojom::FetchResponseType CorsURLLoader::CalculateResponseTainting(
     const GURL& url,
     mojom::RequestMode request_mode,
-    const base::Optional<url::Origin>& origin,
-    const base::Optional<url::Origin>& isolated_world_origin,
+    const absl::optional<url::Origin>& origin,
+    const absl::optional<url::Origin>& isolated_world_origin,
     bool cors_flag,
     bool tainted_origin,
     const OriginAccessList* origin_access_list) {
@@ -670,38 +671,34 @@ bool CorsURLLoader::PassesTimingAllowOriginCheck(
   if (response_tainting_ == mojom::FetchResponseType::kBasic)
     return true;
 
-  base::Optional<std::string> tao_header =
+  absl::optional<std::string> tao_header_value =
       GetHeaderString(response, kTimingAllowOrigin);
-  if (!tao_header.has_value())
+  if (!tao_header_value)
     return false;
 
-  // Optimization for the common case when the header is a single '*'.
-  if (tao_header == "*")
+  mojom::TimingAllowOriginPtr tao = ParseTimingAllowOrigin(*tao_header_value);
+
+  if (tao->which() == mojom::TimingAllowOrigin::Tag::kAll)
     return true;
 
   url::Origin origin = tainted_ ? url::Origin() : *request_.request_initiator;
   std::string serialized_origin = origin.Serialize();
-  std::vector<std::string> tao_headers = base::SplitString(
-      *tao_header, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const std::string& header : tao_headers) {
-    if (header == "*")
-      return true;
-
-    if (header == serialized_origin)
-      return true;
+  if (base::Contains(tao->get_serialized_origins(), serialized_origin)) {
+    return true;
   }
+
   return false;
 }
 
 // static
-base::Optional<std::string> CorsURLLoader::GetHeaderString(
+absl::optional<std::string> CorsURLLoader::GetHeaderString(
     const mojom::URLResponseHead& response,
     const std::string& header_name) {
   if (!response.headers)
-    return base::nullopt;
+    return absl::nullopt;
   std::string header_value;
   if (!response.headers->GetNormalizedHeader(header_name, &header_value))
-    return base::nullopt;
+    return absl::nullopt;
   return header_value;
 }
 

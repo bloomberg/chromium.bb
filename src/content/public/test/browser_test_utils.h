@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -45,6 +44,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
@@ -261,16 +261,22 @@ void SimulateMouseClickAt(WebContents* web_contents,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point);
 
+// Retrieves the center coordinates of the element with id |id|.
+// ATTENTION: When using these coordinates to simulate a click or tap make sure
+// that the viewport is not zoomed as the coordinates returned by this method
+// are relative to the page not the viewport. In particular for Android make
+// sure the page has the meta tag
+// <meta name="viewport" content="width=device-width,minimum-scale=1">
+// TODO(https://crbug.com/1199644): Make the Simulate* methods more user
+// friendly by taking zooming into account.
+gfx::PointF GetCenterCoordinatesOfElementWithId(
+    content::WebContents* web_contents,
+    const std::string& id);
+
 // Retrieves the center coordinates of the element with id |id| and simulates a
 // mouse click there using SimulateMouseClickAt().
 void SimulateMouseClickOrTapElementWithId(content::WebContents* web_contents,
                                           const std::string& id);
-
-// Simulates MouseDown at the center of the given RenderWidgetHost's area.
-// This does not send a corresponding MouseUp.
-void SendMouseDownToWidget(RenderWidgetHost* target,
-                           int modifiers,
-                           blink::WebMouseEvent::Button button);
 
 // Simulates asynchronously a mouse enter/move/leave event. The mouse event is
 // routed through RenderWidgetHostInputEventRouter and thus can target OOPIFs.
@@ -313,10 +319,6 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
                                    const gfx::Point& point,
                                    const gfx::Vector2dF& delta);
 
-void SimulateGestureFlingSequence(WebContents* web_contents,
-                                  const gfx::Point& point,
-                                  const gfx::Vector2dF& velocity);
-
 void SimulateGestureEvent(WebContents* web_contents,
                           const blink::WebGestureEvent& gesture_event,
                           const ui::LatencyInfo& latency);
@@ -337,6 +339,10 @@ void SimulateTouchEventAt(WebContents* web_contents,
                           const gfx::Point& point);
 
 void SimulateLongTapAt(WebContents* web_contents, const gfx::Point& point);
+
+// Waits for the update in the bounding box (i.e. the rectangle enclosing the
+// selection region) associated with `web_contents`.
+void WaitForSelectionBoundingBoxUpdate(WebContents* web_contents);
 #endif
 
 // Taps the screen with modifires at |point|.
@@ -375,11 +381,6 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
 
 // Reset touch action for the embedder of a BrowserPluginGuest.
 void ResetTouchAction(RenderWidgetHost* host);
-
-// Requests mouse lock on the implementation of the given RenderWidgetHost
-void RequestMouseLock(RenderWidgetHost* host,
-                      bool user_gesture,
-                      bool request_unadjusted_movement);
 
 // Spins a run loop until effects of previously forwarded input are fully
 // realized.
@@ -460,7 +461,7 @@ class ToRenderFrameHost {
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
-// Semi-deprecated: in new code, prefer ExecJs() -- it works the same, but has
+// Deprecated: in new code, prefer ExecJs() -- it works the same, but has
 // better error handling. (Note: still use ExecuteScript() on pages with a
 // Content Security Policy).
 //
@@ -505,9 +506,7 @@ void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
 // the executed script. They return true on success, false if the script
 // execution failed or did not evaluate to the expected type.
 //
-// Semi-deprecated: Consider using EvalJs() or EvalJsWithManualReply() instead,
-// which handle errors better and don't require an out-param. If the target
-// document doesn't have a CSP. See the comment on EvalJs() for migration tips.
+// Deprecated: Use EvalJs().
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    double* result) WARN_UNUSED_RESULT;
@@ -522,14 +521,6 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    std::string* result) WARN_UNUSED_RESULT;
 
 // Same as above but the script executed without user gesture.
-bool ExecuteScriptWithoutUserGestureAndExtractDouble(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    double* result) WARN_UNUSED_RESULT;
-bool ExecuteScriptWithoutUserGestureAndExtractInt(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    int* result) WARN_UNUSED_RESULT;
 bool ExecuteScriptWithoutUserGestureAndExtractBool(
     const ToRenderFrameHost& adapter,
     const std::string& script,
@@ -803,8 +794,8 @@ enum EvalJsOptions {
 //     * Preferred, but more rewriting: Use EvalJs with a Promise which
 //       resolves to the value you previously passed to send().
 //     * Less rewriting of |script|, but with some drawbacks: Use
-//       EXECUTE_SCRIPT_USE_MANUAL_REPLY in |options|, or EvalJsWithManualReply.
-//       When specified, this means that |script| must continue to call
+//       EXECUTE_SCRIPT_USE_MANUAL_REPLY in |options|. When specified, this
+//       means that |script| must continue to call
 //       domAutomationController.send(). Note that this option option disables
 //       some error-catching safeguards, but you still get the benefit of having
 //       an EvalJsResult that can be passed to EXPECT.
@@ -832,15 +823,6 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                     int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
-    WARN_UNUSED_RESULT;
-
-// Like EvalJs(), except that |script| must call domAutomationController.send()
-// itself. This is the same as specifying the EXECUTE_SCRIPT_USE_MANUAL_REPLY
-// option to EvalJs.
-EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
-                                   const std::string& script,
-                                   int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                   int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
 // Like EvalJs(), but runs |raf_script| inside a requestAnimationFrame handler,
@@ -889,6 +871,15 @@ bool FrameHasSourceUrl(const GURL& url, RenderFrameHost* frame);
 // Finds the child frame at the specified |index| for |frame| and returns its
 // RenderFrameHost.  Returns nullptr if such child frame does not exist.
 RenderFrameHost* ChildFrameAt(RenderFrameHost* frame, size_t index);
+
+// Returns the frames visited by |RenderFrameHost::ForEachRenderFrameHost| in
+// the same order.
+std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
+    RenderFrameHost* starting_rfh);
+// Returns the frames visited by |WebContents::ForEachRenderFrameHost| in
+// the same order.
+std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
+    WebContents* web_contents);
 
 // Executes the WebUI resource test runner injecting each resource ID in
 // |js_resource_ids| prior to executing the tests.
@@ -990,8 +981,8 @@ ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(WebContents* web_contents);
 struct FindAccessibilityNodeCriteria {
   FindAccessibilityNodeCriteria();
   ~FindAccessibilityNodeCriteria();
-  base::Optional<ax::mojom::Role> role;
-  base::Optional<std::string> name;
+  absl::optional<ax::mojom::Role> role;
+  absl::optional<std::string> name;
 };
 ui::AXPlatformNodeDelegate* FindAccessibilityNode(
     WebContents* web_contents,
@@ -1016,17 +1007,8 @@ void UiaGetPropertyValueVtArrayVtUnknownValidate(
     const std::vector<std::string>& expected_names);
 #endif
 
-// Returns the RenderWidgetHost that holds the mouse lock.
-RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
-
 // Returns the RenderWidgetHost that holds the keyboard lock.
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents);
-
-// Returns the RenderWidgetHost that holds mouse capture, if any. This is
-// distinct from MouseLock above in that it is a widget that has requested
-// implicit capture, such as during a drag. MouseLock is explicitly gained
-// through the JavaScript API.
-RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents);
 
 // Allows tests to drive keyboard lock functionality without requiring access
 // to the RenderWidgetHostImpl header or setting up an HTTP test server.
@@ -1034,7 +1016,7 @@ RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents);
 // all keys will be considered locked.  If |codes| has a value, then at least
 // one key must be specified.
 bool RequestKeyboardLock(WebContents* web_contents,
-                         base::Optional<base::flat_set<ui::DomCode>> codes);
+                         absl::optional<base::flat_set<ui::DomCode>> codes);
 void CancelKeyboardLock(WebContents* web_contents);
 
 // Returns the screen orientation provider that's been set via
@@ -1154,9 +1136,9 @@ class RenderProcessHostKillWaiter {
 
   // Waits until the renderer process exits.  Extracts and returns the bad
   // message reason that should be logged in the |uma_name_| histogram.
-  // Returns |base::nullopt| if the renderer exited normally or didn't log
+  // Returns |absl::nullopt| if the renderer exited normally or didn't log
   // the |uma_name_| histogram.
-  base::Optional<int> Wait() WARN_UNUSED_RESULT;
+  absl::optional<int> Wait() WARN_UNUSED_RESULT;
 
  private:
   RenderProcessHostWatcher exit_watcher_;
@@ -1184,15 +1166,15 @@ class RenderProcessHostBadMojoMessageWaiter {
 
   // Waits until |render_process_host| from the constructor is terminated
   // because of a bad/invalid mojo message and returns the associated error
-  // string.  Returns base::nullopt if the process was terminated for an
+  // string.  Returns absl::nullopt if the process was terminated for an
   // unrelated reason.
-  base::Optional<std::string> Wait() WARN_UNUSED_RESULT;
+  absl::optional<std::string> Wait() WARN_UNUSED_RESULT;
 
  private:
   void OnBadMojoMessage(int render_process_id, const std::string& error);
 
   int monitored_render_process_id_;
-  base::Optional<std::string> observed_mojo_error_;
+  absl::optional<std::string> observed_mojo_error_;
   RenderProcessHostKillWaiter kill_waiter_;
 };
 
@@ -1677,7 +1659,7 @@ class WebContentsConsoleObserver : public WebContentsObserver {
       const std::u16string& message,
       int32_t line_no,
       const std::u16string& source_id,
-      const base::Optional<std::u16string>& untrusted_stack_trace) override;
+      const absl::optional<std::u16string>& untrusted_stack_trace) override;
 
   Filter filter_;
   std::string pattern_;

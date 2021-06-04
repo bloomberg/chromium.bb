@@ -28,6 +28,7 @@
 #include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
@@ -1253,7 +1254,7 @@ CXFA_Node* CXFA_Node::CreateSamePacketNode(XFA_Element eType) {
 }
 
 CXFA_Node* CXFA_Node::CloneTemplateToForm(bool bRecursive) {
-  DCHECK(m_ePacket == XFA_PacketType::Template);
+  DCHECK_EQ(m_ePacket, XFA_PacketType::Template);
   CXFA_Node* pClone =
       m_pDocument->CreateNode(XFA_PacketType::Form, m_elementType);
   if (!pClone)
@@ -1282,7 +1283,7 @@ void CXFA_Node::SetTemplateNode(CXFA_Node* pTemplateNode) {
 }
 
 CXFA_Node* CXFA_Node::GetBindData() {
-  DCHECK(GetPacketType() == XFA_PacketType::Form);
+  DCHECK_EQ(GetPacketType(), XFA_PacketType::Form);
   return GetBindingNode();
 }
 
@@ -1513,7 +1514,7 @@ CXFA_Node* CXFA_Node::GetDataDescriptionNode() {
 }
 
 void CXFA_Node::SetDataDescriptionNode(CXFA_Node* pDataDescriptionNode) {
-  DCHECK(m_ePacket == XFA_PacketType::Datasets);
+  DCHECK_EQ(m_ePacket, XFA_PacketType::Datasets);
   m_pAuxNode = pDataDescriptionNode;
 }
 
@@ -1612,7 +1613,7 @@ void CXFA_Node::RemoveChildAndNotify(CXFA_Node* pNode, bool bNotify) {
     return;
   }
 
-  DCHECK(pNode->xml_node_ == xml_node_);
+  DCHECK_EQ(pNode->xml_node_, xml_node_);
   CFX_XMLElement* pXMLElement = ToXMLElement(pNode->xml_node_.Get());
   if (pXMLElement) {
     WideString wsAttributeName =
@@ -1778,7 +1779,7 @@ bool CXFA_Node::HasFlag(XFA_NodeFlag dwFlag) const {
 }
 
 void CXFA_Node::SetFlagAndNotify(uint32_t dwFlag) {
-  DCHECK(dwFlag == XFA_NodeFlag_Initialized);
+  DCHECK_EQ(dwFlag, XFA_NodeFlag_Initialized);
 
   if (!IsInitialized()) {
     CXFA_FFNotify* pNotify = m_pDocument->GetNotify();
@@ -3994,7 +3995,7 @@ XFA_CHECKSTATE CXFA_Node::GetCheckState() {
   return XFA_CHECKSTATE_Off;
 }
 
-void CXFA_Node::SetCheckState(XFA_CHECKSTATE eCheckState, bool bNotify) {
+void CXFA_Node::SetCheckState(XFA_CHECKSTATE eCheckState) {
   CXFA_Node* node = GetExclGroupIfExists();
   if (!node) {
     CXFA_Items* pItems = GetChild<CXFA_Items>(0, XFA_Element::Items, false);
@@ -4012,7 +4013,7 @@ void CXFA_Node::SetCheckState(XFA_CHECKSTATE eCheckState, bool bNotify) {
       }
       pText = pText->GetNextSibling();
     }
-    SyncValue(wsContent, bNotify);
+    SyncValue(wsContent, true);
 
     return;
   }
@@ -4049,9 +4050,9 @@ void CXFA_Node::SetCheckState(XFA_CHECKSTATE eCheckState, bool bNotify) {
       else
         wsChildValue.clear();
     }
-    pChild->SyncValue(wsChildValue, bNotify);
+    pChild->SyncValue(wsChildValue, true);
   }
-  node->SyncValue(wsValue, bNotify);
+  node->SyncValue(wsValue, true);
 }
 
 CXFA_Node* CXFA_Node::GetSelectedMember() {
@@ -4070,12 +4071,12 @@ CXFA_Node* CXFA_Node::GetSelectedMember() {
   return pSelectedMember;
 }
 
-CXFA_Node* CXFA_Node::SetSelectedMember(WideStringView wsName, bool bNotify) {
+CXFA_Node* CXFA_Node::SetSelectedMember(WideStringView wsName) {
   uint32_t nameHash = FX_HashCode_GetW(wsName, false);
   for (CXFA_Node* pNode = ToNode(GetFirstChild()); pNode;
        pNode = pNode->GetNextSibling()) {
     if (pNode->GetNameHash() == nameHash) {
-      pNode->SetCheckState(XFA_CHECKSTATE_On, bNotify);
+      pNode->SetCheckState(XFA_CHECKSTATE_On);
       return pNode;
     }
   }
@@ -4988,31 +4989,32 @@ void CXFA_Node::InsertListTextItem(CXFA_Node* pItems,
 WideString CXFA_Node::NumericLimit(const WideString& wsValue) {
   int32_t iLead = GetLeadDigits();
   int32_t iTread = GetFracDigits();
-
-  if ((iLead == -1) && (iTread == -1))
+  if (iLead == -1 && iTread == -1)
     return wsValue;
 
-  WideString wsRet;
-  int32_t iLead_ = 0, iTread_ = -1;
   int32_t iCount = wsValue.GetLength();
   if (iCount == 0)
     return wsValue;
 
+  WideString wsRet;
   int32_t i = 0;
   if (wsValue[i] == L'-') {
     wsRet += L'-';
     i++;
   }
+
+  int32_t iLead2 = 0;
+  int32_t iTread2 = -1;
   for (; i < iCount; i++) {
     wchar_t wc = wsValue[i];
     if (FXSYS_IsDecimalDigit(wc)) {
       if (iLead >= 0) {
-        iLead_++;
-        if (iLead_ > iLead)
+        iLead2++;
+        if (iLead2 > iLead)
           return L"0";
-      } else if (iTread_ >= 0) {
-        iTread_++;
-        if (iTread_ > iTread) {
+      } else if (iTread2 >= 0) {
+        iTread2++;
+        if (iTread2 > iTread) {
           if (iTread != -1) {
             CFGAS_Decimal wsDeci = CFGAS_Decimal(wsValue.AsStringView());
             wsDeci.SetScale(iTread);
@@ -5022,7 +5024,7 @@ WideString CXFA_Node::NumericLimit(const WideString& wsValue) {
         }
       }
     } else if (wc == L'.') {
-      iTread_ = 0;
+      iTread2 = 0;
       iLead = -1;
     }
     wsRet += wc;

@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -60,8 +59,8 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_test_delegate.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
@@ -91,6 +90,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -109,6 +109,8 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -210,9 +212,8 @@ void SwitchToExtensionPanel(DevToolsWindow* window,
                             const char* panel_name) {
   // The full name is the concatenation of the extension URL (stripped of its
   // trailing '/') and the |panel_name| that was passed to panels.create().
-  std::string prefix = base::TrimString(devtools_extension->url().spec(), "/",
-                                        base::TRIM_TRAILING)
-                           .as_string();
+  std::string prefix(base::TrimString(devtools_extension->url().spec(), "/",
+                                      base::TRIM_TRAILING));
   SwitchToPanel(window, (prefix + panel_name).c_str());
 }
 
@@ -1619,7 +1620,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestNetworkSyncSize) {
 }
 
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsTest, TestNetworkRawHeadersText) {
+// TODO(https://crbug.com/1199825): Flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_TestNetworkRawHeadersText DISABLED_TestNetworkRawHeadersText
+#else
+#define MAYBE_TestNetworkRawHeadersText TestNetworkRawHeadersText
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestNetworkRawHeadersText) {
   // This test expects headers to be exactly 112 bytes in length, so add an
   // extra header to reach that length.
   RunTest("testNetworkRawHeadersText",
@@ -1720,13 +1727,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestDispatchKeyEventDoesNotCrash) {
   RunTest("testDispatchKeyEventDoesNotCrash", "about:blank");
 }
 
-class AutofillManagerTestDelegateDevtoolsImpl
-    : public autofill::AutofillManagerTestDelegate {
+class BrowserAutofillManagerTestDelegateDevtoolsImpl
+    : public autofill::BrowserAutofillManagerTestDelegate {
  public:
-  explicit AutofillManagerTestDelegateDevtoolsImpl(
+  explicit BrowserAutofillManagerTestDelegateDevtoolsImpl(
       WebContents* inspectedContents)
       : inspected_contents_(inspectedContents) {}
-  ~AutofillManagerTestDelegateDevtoolsImpl() override {}
+  ~BrowserAutofillManagerTestDelegateDevtoolsImpl() override {}
 
   void DidPreviewFormData() override {}
 
@@ -1742,7 +1749,7 @@ class AutofillManagerTestDelegateDevtoolsImpl
  private:
   WebContents* inspected_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateDevtoolsImpl);
+  DISALLOW_COPY_AND_ASSIGN(BrowserAutofillManagerTestDelegateDevtoolsImpl);
 };
 
 // Disabled. Failing on MacOS MSAN. See https://crbug.com/849129.
@@ -1761,9 +1768,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   autofill::ContentAutofillDriver* autofill_driver =
       autofill::ContentAutofillDriverFactory::FromWebContents(GetInspectedTab())
           ->DriverForFrame(GetInspectedTab()->GetMainFrame());
-  autofill::AutofillManager* autofill_manager =
-      autofill_driver->autofill_manager();
-  AutofillManagerTestDelegateDevtoolsImpl autoFillTestDelegate(
+  autofill::BrowserAutofillManager* autofill_manager =
+      autofill_driver->browser_autofill_manager();
+  BrowserAutofillManagerTestDelegateDevtoolsImpl autoFillTestDelegate(
       GetInspectedTab());
   autofill_manager->SetTestDelegate(&autoFillTestDelegate);
 
@@ -1916,7 +1923,7 @@ class DevToolsReattachAfterCrashTest : public DevToolsTest {
     content::RenderProcessHostWatcher crash_observer(
         GetInspectedTab(),
         content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
+    ui_test_utils::NavigateToURL(browser(), GURL(blink::kChromeUICrashURL));
     crash_observer.Wait();
     content::TestNavigationObserver navigation_observer(GetInspectedTab(), 1);
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -2282,6 +2289,8 @@ class MockWebUIProvider
 IN_PROC_BROWSER_TEST_F(DevToolsTest,
                        TestWindowInitializedOnNavigateBack) {
   TestChromeWebUIControllerFactory test_factory;
+  content::ScopedWebUIControllerFactoryRegistration factory_registration(
+      &test_factory);
   MockWebUIProvider mock_provider("dummyurl",
                                   "<script>\n"
                                   "  window.abc = 239;\n"
@@ -2289,7 +2298,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
                                   "</script>");
   test_factory.AddFactoryOverride(GURL("chrome://dummyurl").host(),
                                   &mock_provider);
-  content::WebUIControllerFactory::RegisterFactory(&test_factory);
 
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://dummyurl"));
   DevToolsWindow* window =
@@ -2301,7 +2309,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   RunTestFunction(window, "testWindowInitializedOnNavigateBack");
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsTest, TestRawHeadersWithRedirectAndHSTS) {
@@ -2316,7 +2323,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestRawHeadersWithRedirectAndHSTS) {
   bool include_subdomains = false;
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+      browser()->profile()->GetDefaultStoragePartition();
   base::RunLoop run_loop;
   partition->GetNetworkContext()->AddHSTS(
       https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
@@ -2677,4 +2684,65 @@ IN_PROC_BROWSER_TEST_F(DevToolsLocalizationTest,
   EXPECT_TRUE(NavigatorLanguageMatches("es"));
 
   CloseDevToolsWindow();
+}
+
+namespace {
+
+class DevToolsFetchTest : public DevToolsTest {
+ protected:
+  content::EvalJsResult Fetch(
+      const content::ToRenderFrameHost& execution_target,
+      const std::string& url) {
+    return content::EvalJs(execution_target, content::JsReplace(R"(
+      (async function() {
+        const response = await fetch($1);
+        return response.status;
+      })();
+    )",
+                                                                url));
+  }
+
+  content::EvalJsResult FetchFromDevToolsWindow(const std::string& url) {
+    WebContents* wc = DevToolsWindowTesting::Get(window_)->main_web_contents();
+    return Fetch(wc, url);
+  }
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(DevToolsFetchTest,
+                       DevToolsFetchFromDevToolsSchemeUndocked) {
+  OpenDevToolsWindow("about:blank", false);
+
+  EXPECT_EQ(200, FetchFromDevToolsWindow(
+                     "devtools://devtools/bundled/Images/whatsnew.avif"));
+
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsFetchTest,
+                       DevToolsFetchFromDevToolsSchemeDocked) {
+  OpenDevToolsWindow("about:blank", true);
+
+  EXPECT_EQ(200, FetchFromDevToolsWindow(
+                     "devtools://devtools/bundled/Images/whatsnew.avif"));
+
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsFetchTest, DevToolsFetchFromHttpDisallowed) {
+  OpenDevToolsWindow("about:blank", true);
+
+  const auto result = FetchFromDevToolsWindow("http://www.google.com");
+  EXPECT_EQ("a JavaScript error:\nTypeError: Failed to fetch\n", result.error);
+
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsFetchTest, FetchFromDevToolsSchemeIsProhibited) {
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  const auto result = Fetch(GetInspectedTab(),
+                            "devtools://devtools/bundled/Images/whatsnew.avif");
+  EXPECT_EQ("a JavaScript error:\nTypeError: Failed to fetch\n", result.error);
 }

@@ -13,7 +13,6 @@
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
@@ -42,6 +42,7 @@
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/url_formatter/url_fixer.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -57,6 +58,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using content::NavigationEntry;
@@ -74,8 +76,8 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
                                    bool match_incognito_profile,
                                    std::string* error_message) {
   Profile* incognito_profile =
-      match_incognito_profile && profile->HasPrimaryOTRProfile()
-          ? profile->GetPrimaryOTRProfile()
+      match_incognito_profile
+          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
           : nullptr;
   for (auto* browser : *BrowserList::GetInstance()) {
     if ((browser->profile() == profile ||
@@ -426,7 +428,7 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
 
   tab_object->group_id = -1;
   if (tab_strip) {
-    base::Optional<tab_groups::TabGroupId> group =
+    absl::optional<tab_groups::TabGroupId> group =
         tab_strip->GetTabGroupForTab(tab_index);
     if (group.has_value())
       tab_object->group_id = tab_groups_util::GetGroupId(group.value());
@@ -573,7 +575,6 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
       break;
     case TabMutedReason::CONTENT_SETTING:
     case TabMutedReason::CONTENT_SETTING_CHROME:
-    case TabMutedReason::CONTEXT_MENU:
       info->reason = api::tabs::MUTED_INFO_REASON_USER;
       break;
     case TabMutedReason::EXTENSION:
@@ -706,8 +707,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     return false;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
-      include_incognito && profile->HasPrimaryOTRProfile()
-          ? profile->GetPrimaryOTRProfile()
+      include_incognito
+          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
           : nullptr;
   for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
@@ -751,8 +752,8 @@ ExtensionTabUtil::GetAllActiveWebContentsForContext(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
-      include_incognito && profile->HasPrimaryOTRProfile()
-          ? profile->GetPrimaryOTRProfile()
+      include_incognito
+          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
           : nullptr;
   for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
@@ -972,6 +973,12 @@ api::tabs::TabStatus ExtensionTabUtil::GetLoadingStatus(WebContents* contents) {
 
   // Otherwise its considered loaded.
   return api::tabs::TAB_STATUS_COMPLETE;
+}
+
+void ExtensionTabUtil::ClearBackForwardCache() {
+  ForEachTab(base::BindRepeating([](WebContents* web_contents) {
+    web_contents->GetController().GetBackForwardCache().Flush();
+  }));
 }
 
 // static

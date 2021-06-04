@@ -75,7 +75,7 @@ class ScriptExecutorTest : public testing::Test,
 
     // In this test, "tell" actions always succeed and "click" actions,
     // always fail. The following makes a click action fail.
-    ON_CALL(mock_web_controller_, OnWaitForDocumentReadyState(_, _, _))
+    ON_CALL(mock_web_controller_, WaitForDocumentReadyState(_, _, _))
         .WillByDefault(RunOnceCallback<2>(OkClientStatus(), DOCUMENT_COMPLETE,
                                           base::TimeDelta::FromSeconds(0)));
     ON_CALL(mock_web_controller_, ScrollIntoView(_, _, _))
@@ -83,8 +83,8 @@ class ScriptExecutorTest : public testing::Test,
     ON_CALL(mock_web_controller_, WaitUntilElementIsStable(_, _, _, _))
         .WillByDefault(RunOnceCallback<3>(OkClientStatus(),
                                           base::TimeDelta::FromSeconds(0)));
-    ON_CALL(mock_web_controller_, OnClickOrTapElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(ClientStatus(UNEXPECTED_JS_ERROR)));
+    ON_CALL(mock_web_controller_, ClickOrTapElement(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(ClientStatus(UNEXPECTED_JS_ERROR)));
   }
 
  protected:
@@ -2132,6 +2132,24 @@ TEST_F(ScriptExecutorTest, RoundtripTimingStats) {
 
   EXPECT_EQ(200, timing_stats.roundtrip_time_ms());
   EXPECT_EQ(1000, timing_stats.client_time_ms());
+}
+
+TEST_F(ScriptExecutorTest, ClearPersistentUiOnError) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("1");
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, false)));
+
+  // empty, but not null
+  delegate_.SetPersistentGenericUi(
+      std::make_unique<GenericUserInterfaceProto>(), base::DoNothing());
+  ASSERT_NE(nullptr, delegate_.GetPersistentGenericUi());
+  executor_->Run(&user_data_, executor_callback_.Get());
+  ASSERT_EQ(nullptr, delegate_.GetPersistentGenericUi());
 }
 
 }  // namespace

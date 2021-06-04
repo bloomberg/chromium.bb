@@ -25,7 +25,7 @@ class Document;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class Node;
-class TextDecorationOffsetBase;
+class SVGLengthContext;
 struct PaintInfo;
 
 // Base class for text painting. Has no dependencies on the layout tree and thus
@@ -63,16 +63,6 @@ class CORE_EXPORT TextPainterBase {
       bool is_horizontal = true,
       ShadowMode = kBothShadowsAndTextProper);
 
-  void PaintDecorationsExceptLineThrough(const TextDecorationOffsetBase&,
-                                         TextDecorationInfo&,
-                                         const PaintInfo&,
-                                         const Vector<AppliedTextDecoration>&,
-                                         const TextPaintStyle& text_style,
-                                         bool* has_line_through_decoration);
-  void PaintDecorationsOnlyLineThrough(TextDecorationInfo&,
-                                       const PaintInfo&,
-                                       const Vector<AppliedTextDecoration>&,
-                                       const TextPaintStyle&);
   void PaintDecorationUnderOrOverLine(GraphicsContext&,
                                       TextDecorationInfo&,
                                       TextDecoration line);
@@ -81,6 +71,10 @@ class CORE_EXPORT TextPainterBase {
   static TextPaintStyle TextPaintingStyle(const Document&,
                                           const ComputedStyle&,
                                           const PaintInfo&);
+  static TextPaintStyle SvgTextPaintingStyle(const Document&,
+                                             const SVGLengthContext&,
+                                             const ComputedStyle&,
+                                             const PaintInfo&);
   static TextPaintStyle SelectionPaintingStyle(
       const Document&,
       const ComputedStyle&,
@@ -93,6 +87,10 @@ class CORE_EXPORT TextPainterBase {
                                   RotationDirection);
 
  protected:
+  static void AdjustTextStyleForClip(TextPaintStyle&);
+  static void AdjustTextStyleForPrint(const Document&,
+                                      const ComputedStyle&,
+                                      TextPaintStyle&);
   void UpdateGraphicsContext(const TextPaintStyle& style,
                              GraphicsContextStateSaver& saver) {
     UpdateGraphicsContext(graphics_context_, style, horizontal_, saver);

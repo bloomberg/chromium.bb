@@ -237,7 +237,7 @@ The script can abandon up to 100 CLs per invocation.
 Examples:
 gerrit_client.py mass-abandon --host https://HOST -p 'project=repo2'
 gerrit_client.py mass-abandon --host https://HOST -p 'message=testing'
-gerrit_client.py mass-abandon --host https://HOST -p 'is=wip' -p 'age:1y'
+gerrit_client.py mass-abandon --host https://HOST -p 'is=wip' -p 'age=1y'
 ''')
 def CMDmass_abandon(parser, args):
   parser.add_option('-p',

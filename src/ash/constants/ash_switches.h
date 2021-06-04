@@ -21,6 +21,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAggressiveCacheDiscardThreshold[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAllowFailedPolicyFetchForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowOsInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowRAInDevMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppAutoLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppOemManifestFile[];
@@ -64,6 +65,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCryptohomeUseAuthSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperIsOem[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperSmall[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeHighlightsApp[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeScreensaverApp[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDerelictDetectionTimeout[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDerelictIdleTimeout[];
@@ -99,6 +102,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableArc[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableArcVm[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableArcVmRtVcpu[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUseHugePages[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableCastReceiver[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableConsumerKiosk[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -186,7 +190,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNoteTakingAppIds[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeEulaUrlForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeForceTabletFirstRun[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeGuestSession[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kOobeLargeScreenSpecialScaling[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeTimerInterval[];
@@ -203,6 +208,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSafeMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOfflineSignInTimeLimitInSecondsOverrideForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kTimeBeforeOnboardingSurveyInSecondsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSamlLockScreenReauthenticationEnabledOverrideForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfHoverPreviews[];
@@ -281,6 +288,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();
 // device is not in tablet mode.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldOobeUseTabletModeFirstRun();
 
+// Returns whether OOBE should be scaled for CfM devices.
+COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldScaleOobe();
+
 // Returns true if device policy DeviceMinimumVersion should assume that
 // Auto Update Expiration is reached. This should only be used for testing.
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -298,6 +308,9 @@ bool IsOOBEChromeVoxHintEnabledForDevMode();
 // Returns true if the OEM Device Requisition can be configured.
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsDeviceRequisitionConfigurable();
+
+// Returns true if the OS installation UI flow can be entered.
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOsInstallAllowed();
 
 }  // namespace switches
 }  // namespace chromeos

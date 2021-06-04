@@ -37,11 +37,11 @@ SkBaseDevice::SkBaseDevice(const SkImageInfo& info, const SkSurfaceProps& surfac
         : SkMatrixProvider(/* localToDevice = */ SkMatrix::I())
         , fInfo(info)
         , fSurfaceProps(surfaceProps) {
-    fDeviceToGlobal.reset();
-    fGlobalToDevice.reset();
+    fDeviceToGlobal.setIdentity();
+    fGlobalToDevice.setIdentity();
 }
 
-void SkBaseDevice::setDeviceCoordinateSystem(const SkMatrix& deviceToGlobal,
+void SkBaseDevice::setDeviceCoordinateSystem(const SkM44& deviceToGlobal,
                                              const SkM44& localToDevice,
                                              int bufferOriginX,
                                              int bufferOriginY) {
@@ -62,17 +62,18 @@ void SkBaseDevice::setDeviceCoordinateSystem(const SkMatrix& deviceToGlobal,
 void SkBaseDevice::setGlobalCTM(const SkM44& ctm) {
     fLocalToDevice = ctm;
     fLocalToDevice.normalizePerspective();
-    if (!fGlobalToDevice.isIdentity()) {
-        // Map from the global CTM state to this device's coordinate system.
-        fLocalToDevice.postConcat(SkM44(fGlobalToDevice));
-    }
+    // Map from the global CTM state to this device's coordinate system.
+    fLocalToDevice.postConcat(fGlobalToDevice);
     fLocalToDevice33 = fLocalToDevice.asM33();
 }
 
 bool SkBaseDevice::isPixelAlignedToGlobal() const {
-    return fDeviceToGlobal.isTranslate() &&
-           SkScalarIsInt(fDeviceToGlobal.getTranslateX()) &&
-           SkScalarIsInt(fDeviceToGlobal.getTranslateY());
+    // pixelAligned is set to the identity + integer translation of the device-to-global matrix.
+    // If they are equal then the device is by definition pixel aligned.
+    SkM44 pixelAligned = SkM44();
+    pixelAligned.setRC(0, 3, SkScalarFloorToScalar(fDeviceToGlobal.rc(0, 3)));
+    pixelAligned.setRC(1, 3, SkScalarFloorToScalar(fDeviceToGlobal.rc(1, 3)));
+    return pixelAligned == fDeviceToGlobal;
 }
 
 SkIPoint SkBaseDevice::getOrigin() const {
@@ -83,14 +84,14 @@ SkIPoint SkBaseDevice::getOrigin() const {
     // (e.g. Android's device-space clip regions are going away, and are not compatible with the
     // generalized device coordinate system).
     SkASSERT(this->isPixelAlignedToGlobal());
-    return SkIPoint::Make(SkScalarFloorToInt(fDeviceToGlobal.getTranslateX()),
-                          SkScalarFloorToInt(fDeviceToGlobal.getTranslateY()));
+    return SkIPoint::Make(SkScalarFloorToInt(fDeviceToGlobal.rc(0, 3)),
+                          SkScalarFloorToInt(fDeviceToGlobal.rc(1, 3)));
 }
 
 SkMatrix SkBaseDevice::getRelativeTransform(const SkBaseDevice& dstDevice) const {
     // To get the transform from this space to the other device's, transform from our space to
     // global and then from global to the other device.
-    return SkMatrix::Concat(dstDevice.fGlobalToDevice, fDeviceToGlobal);
+    return (dstDevice.fGlobalToDevice * fDeviceToGlobal).asM33();
 }
 
 bool SkBaseDevice::getLocalToMarker(uint32_t id, SkM44* localToMarker) const {
@@ -432,44 +433,57 @@ static sk_sp<SkShader> make_post_inverse_lm(const SkShader* shader, const SkMatr
     return shader->makeWithLocalMatrix(lm_inv * inverse * lm * outer_lm);
 }
 
-void SkBaseDevice::drawGlyphRunRSXform(const SkFont& font, const SkGlyphID glyphs[],
-                                       const SkRSXform xform[], int count, SkPoint origin,
-                                       const SkPaint& paint) {
-    const SkM44 originalLocalToDevice = this->localToDevice44();
-    if (!originalLocalToDevice.isFinite() || !SkScalarIsFinite(font.getSize()) ||
-        !SkScalarIsFinite(font.getScaleX()) ||
-        !SkScalarIsFinite(font.getSkewX())) {
+void SkBaseDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+    if (!this->localToDevice().isFinite()) {
         return;
     }
 
-    SkPoint sharedPos{0, 0};    // we're at the origin
-    SkGlyphID glyphID;
-    SkGlyphRun glyphRun{
-        font,
-        SkSpan<const SkPoint>{&sharedPos, 1},
-        SkSpan<const SkGlyphID>{&glyphID, 1},
-        SkSpan<const char>{},
-        SkSpan<const uint32_t>{}
-    };
-
-    for (int i = 0; i < count; i++) {
-        glyphID = glyphs[i];
-        // now "glyphRun" is pointing at the current glyphID
-
-        SkMatrix glyphToDevice;
-        glyphToDevice.setRSXform(xform[i]).postTranslate(origin.fX, origin.fY);
-
-        // We want to rotate each glyph by the rsxform, but we don't want to rotate "space"
-        // (i.e. the shader that cares about the ctm) so we have to undo our little ctm trick
-        // with a localmatrixshader so that the shader draws as if there was no change to the ctm.
-        SkPaint transformingPaint{paint};
-        transformingPaint.setShader(make_post_inverse_lm(paint.getShader(), glyphToDevice));
-
-        this->setLocalToDevice(originalLocalToDevice * SkM44(glyphToDevice));
-
-        this->drawGlyphRunList(SkGlyphRunList{glyphRun}, transformingPaint);
+    if (!glyphRunList.hasRSXForm()) {
+        this->onDrawGlyphRunList(glyphRunList, paint);
+    } else {
+        this->simplifyGlyphRunRSXFormAndRedraw(glyphRunList, paint);
     }
-    this->setLocalToDevice(originalLocalToDevice);
+}
+
+void SkBaseDevice::simplifyGlyphRunRSXFormAndRedraw(const SkGlyphRunList& glyphRunList,
+                                                    const SkPaint& paint) {
+    for (const SkGlyphRun& run : glyphRunList) {
+        if (run.scaledRotations().empty()) {
+            this->drawGlyphRunList(SkGlyphRunList{run, run.sourceBounds(paint), {0, 0}}, paint);
+        } else {
+            SkPoint origin = glyphRunList.origin();
+            SkPoint sharedPos{0, 0};    // we're at the origin
+            SkGlyphID sharedGlyphID;
+            SkGlyphRun glyphRun {
+                    run.font(),
+                    SkSpan<const SkPoint>{&sharedPos, 1},
+                    SkSpan<const SkGlyphID>{&sharedGlyphID, 1},
+                    SkSpan<const char>{},
+                    SkSpan<const uint32_t>{},
+                    SkSpan<const SkVector>{}
+            };
+
+            const SkM44 originalLocalToDevice = this->localToDevice44();
+            for (auto [i, glyphID, pos] : SkMakeEnumerate(run.source())) {
+                sharedGlyphID = glyphID;
+                auto [scos, ssin] = run.scaledRotations()[i];
+                SkRSXform rsxForm = SkRSXform::Make(scos, ssin, pos.x(), pos.y());
+                SkMatrix glyphToLocal;
+                glyphToLocal.setRSXform(rsxForm).postTranslate(origin.x(), origin.y());
+
+                // We want to rotate each glyph by the rsxform, but we don't want to rotate "space"
+                // (i.e. the shader that cares about the ctm) so we have to undo our little ctm
+                // trick with a localmatrixshader so that the shader draws as if there was no
+                // change to the ctm.
+                SkPaint invertingPaint{paint};
+                invertingPaint.setShader(make_post_inverse_lm(paint.getShader(), glyphToLocal));
+                this->setLocalToDevice(originalLocalToDevice * SkM44(glyphToLocal));
+                this->drawGlyphRunList(
+                    SkGlyphRunList{glyphRun, glyphRun.sourceBounds(paint), {0, 0}}, invertingPaint);
+            }
+            this->setLocalToDevice(originalLocalToDevice);
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -529,8 +543,9 @@ void SkNoPixelsDevice::onClipRegion(const SkRegion& globalRgn, SkClipOp op) {
         deviceRgn.translate(-origin.fX, -origin.fY);
         this->writableClip().opRegion(deviceRgn, (SkRegion::Op) op);
     } else {
-        this->writableClip().opRect(SkRect::Make(globalRgn.getBounds()), this->globalToDevice(),
-                                    this->bounds(), (SkRegion::Op) op, false);
+        this->writableClip().opRect(SkRect::Make(globalRgn.getBounds()),
+                                    this->globalToDevice().asM33(), this->bounds(),
+                                    (SkRegion::Op) op, false);
     }
 }
 
@@ -539,7 +554,7 @@ void SkNoPixelsDevice::onClipShader(sk_sp<SkShader> shader) {
 }
 
 void SkNoPixelsDevice::onReplaceClip(const SkIRect& rect) {
-    SkIRect deviceRect = this->globalToDevice().mapRect(SkRect::Make(rect)).round();
+    SkIRect deviceRect = SkMatrixPriv::MapRect(this->globalToDevice(), SkRect::Make(rect)).round();
     if (!deviceRect.intersect(this->bounds())) {
         deviceRect.setEmpty();
     }
@@ -551,8 +566,9 @@ void SkNoPixelsDevice::onSetDeviceClipRestriction(SkIRect* mutableClipRestrictio
         // The subset clip restriction is gone, so just store the actual device bounds as the limit
         fDeviceClipRestriction.setEmpty();
     } else {
-        fDeviceClipRestriction =
-                this->globalToDevice().mapRect(SkRect::Make(*mutableClipRestriction)).round();
+        fDeviceClipRestriction = SkMatrixPriv::MapRect(this->globalToDevice(),
+                                                       SkRect::Make(*mutableClipRestriction))
+                                              .round();
         // Besides affecting future ops, it acts as an immediate intersection
         this->writableClip().opIRect(fDeviceClipRestriction, SkRegion::kIntersect_Op);
     }

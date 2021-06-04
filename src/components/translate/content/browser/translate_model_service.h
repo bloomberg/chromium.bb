@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_target_model_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace optimization_guide {
-class OptimizationGuideDecider;
+class OptimizationGuideModelProvider;
 }  // namespace optimization_guide
 
 namespace translate {
@@ -31,7 +31,7 @@ class TranslateModelService
   using GetModelCallback = base::OnceCallback<void(base::File)>;
 
   TranslateModelService(
-      optimization_guide::OptimizationGuideDecider* opt_guide,
+      optimization_guide::OptimizationGuideModelProvider* opt_guide,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
   ~TranslateModelService() override;
 
@@ -41,7 +41,7 @@ class TranslateModelService
   // optimization_guide::OptimizationTargetModelObserver implementation:
   void OnModelFileUpdated(
       optimization_guide::proto::OptimizationTarget optimization_target,
-      const base::Optional<optimization_guide::proto::Any>& model_metadata,
+      const absl::optional<optimization_guide::proto::Any>& model_metadata,
       const base::FilePath& file_path) override;
 
   // Invokes |callback| with a language detection model file when it is
@@ -54,12 +54,12 @@ class TranslateModelService
   // Optimization Guide Service that provides model files for this service.
   // Optimization Guide Service is a BrowserContextKeyedServiceFactory and
   // should not be used after Shutdown.
-  optimization_guide::OptimizationGuideDecider* opt_guide_;
+  optimization_guide::OptimizationGuideModelProvider* opt_guide_;
 
   // The file that contains the language detection model. Available when the
   // file path has been provided by the Optimization Guide and has been
   // successfully loaded.
-  base::Optional<base::File> language_detection_model_file_;
+  absl::optional<base::File> language_detection_model_file_;
 
   // The set of callbacks associated with requests for the language detection
   // model.

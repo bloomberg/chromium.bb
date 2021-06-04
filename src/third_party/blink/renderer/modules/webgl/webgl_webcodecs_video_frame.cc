@@ -8,6 +8,7 @@
 #include "build/chromeos_buildflags.h"
 #include "media/base/wait_and_replace_sync_token_client.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_color_space_matrix_id.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_color_space_primary_id.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_color_space_range_id.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_unowned_texture.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -41,7 +43,7 @@ const char kRequiredExtension[] = "";
 void FillVideoColorSpace(VideoColorSpace* video_color_space,
                          gfx::ColorSpace& gfx_color_space) {
   gfx::ColorSpace::PrimaryID primaries = gfx_color_space.GetPrimaryID();
-  base::Optional<V8ColorSpacePrimaryID> primary_id;
+  absl::optional<V8ColorSpacePrimaryID> primary_id;
   switch (primaries) {
     case gfx::ColorSpace::PrimaryID::BT709:
       primary_id = V8ColorSpacePrimaryID(V8ColorSpacePrimaryID::Enum::kBT709);
@@ -86,7 +88,7 @@ void FillVideoColorSpace(VideoColorSpace* video_color_space,
   }
 
   gfx::ColorSpace::TransferID transfer = gfx_color_space.GetTransferID();
-  base::Optional<V8ColorSpaceTransferID> transfer_id;
+  absl::optional<V8ColorSpaceTransferID> transfer_id;
   switch (transfer) {
     case gfx::ColorSpace::TransferID::BT709:
 #if defined(OS_MAC)
@@ -159,7 +161,7 @@ void FillVideoColorSpace(VideoColorSpace* video_color_space,
   }
 
   gfx::ColorSpace::MatrixID matrix = gfx_color_space.GetMatrixID();
-  base::Optional<V8ColorSpaceMatrixID> matrix_id;
+  absl::optional<V8ColorSpaceMatrixID> matrix_id;
   switch (matrix) {
     case gfx::ColorSpace::MatrixID::RGB:
       matrix_id = V8ColorSpaceMatrixID(V8ColorSpaceMatrixID::Enum::kRGB);
@@ -198,7 +200,7 @@ void FillVideoColorSpace(VideoColorSpace* video_color_space,
   }
 
   gfx::ColorSpace::RangeID range = gfx_color_space.GetRangeID();
-  base::Optional<V8ColorSpaceRangeID> range_id;
+  absl::optional<V8ColorSpaceRangeID> range_id;
   switch (range) {
     case gfx::ColorSpace::RangeID::LIMITED:
       range_id = V8ColorSpaceRangeID(V8ColorSpaceRangeID::Enum::kLIMITED);
@@ -281,6 +283,13 @@ bool WebGLWebCodecsVideoFrame::Supported(WebGLRenderingContextBase* context) {
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_FUCHSIA)
   // TODO(jie.a.chen@intel.com): Add Linux support.
   return false;
+#elif defined(OS_MAC)
+  // This extension is only supported on the passthrough command
+  // decoder on macOS.
+  DrawingBuffer* drawing_buffer = context->GetDrawingBuffer();
+  if (!drawing_buffer)
+    return false;
+  return drawing_buffer->GetGraphicsInfo().using_passthrough_command_decoder;
 #else
   return true;
 #endif

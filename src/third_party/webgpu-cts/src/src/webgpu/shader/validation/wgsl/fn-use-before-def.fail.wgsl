@@ -13,6 +13,6 @@ fn c() -> i32 {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }

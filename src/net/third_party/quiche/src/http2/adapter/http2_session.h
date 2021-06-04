@@ -26,15 +26,6 @@ class Http2Session {
   virtual int GetRemoteWindowSize() const = 0;
 };
 
-class Http2Options {
- public:
-  Http2Options() = default;
-  virtual ~Http2Options() {}
-
-  // This method returns an opaque reference to the underlying type.
-  virtual void* GetOptions() = 0;
-};
-
 }  // namespace adapter
 }  // namespace http2
 

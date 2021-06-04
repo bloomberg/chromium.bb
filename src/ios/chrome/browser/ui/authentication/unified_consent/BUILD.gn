@@ -16,6 +16,7 @@ source_set("unified_consent") {
     ":unified_consent_ui",
     "//base",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser",
@@ -33,6 +34,7 @@ source_set("unified_consent_ui") {
   ]
   deps = [
     "resources:identity_picker_view_arrow_down",
+    "resources:identity_picker_view_arrow_right",
     "resources:unified_consent_header",
     "//base",
     "//components/google/core/common",
@@ -59,4 +61,27 @@ source_set("constants") {
     "unified_consent_constants.mm",
   ]
   frameworks = [ "Foundation.framework" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "unified_consent_mediator_unittest.mm" ]
+  deps = [
+    ":unified_consent",
+    ":unified_consent_ui",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/unified_consent",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/web/public/test",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
 }

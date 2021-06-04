@@ -69,19 +69,20 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
                                           kIdentityButtonControlIdentifier)]
       performAction:grey_tap()];
   [self selectIdentityWithEmail:fakeIdentity.userEmail];
+  [self tapSigninConfirmationDialog];
+  CloseSigninManagedAccountDialogIfAny(fakeIdentity);
+
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  // Sync utilities require sync to be initialized in order to perform
+  // operations on the Sync server.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
+
   if (!enableSync) {
-    // Use "settings" link and open an external URL to not turn on sync.
-    [SigninEarlGreyUI tapSettingsLink];
-    CloseSigninManagedAccountDialogIfAny(fakeIdentity);
-    [ChromeEarlGreyUI waitForAppToIdle];
-    [ChromeEarlGrey simulateExternalAppURLOpening];
-  } else {
-    [self tapSigninConfirmationDialog];
-    CloseSigninManagedAccountDialogIfAny(fakeIdentity);
-    [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-        performAction:grey_tap()];
+    [ChromeEarlGrey stopSync];
+    [ChromeEarlGrey clearSyncFirstSetupComplete];
   }
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 + (void)signOut {
@@ -198,18 +199,11 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
                              closeButton:(BOOL)closeButton {
   [ChromeEarlGreyUI waitForAppToIdle];
 
-  // The sign-in promo is not visible when showing illustrated empty states.
-  if (![ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_accessibilityID(kSigninPromoViewId),
-                                     grey_sufficientlyVisible(), nil)]
-        assertWithMatcher:grey_notNil()];
-  }
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+
   switch (mode) {
     case SigninPromoViewModeNoAccounts:
     case SigninPromoViewModeSyncWithPrimaryAccount:
@@ -219,15 +213,11 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
           assertWithMatcher:grey_nil()];
       break;
     case SigninPromoViewModeSigninWithAccount:
-      if (![ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-        [[EarlGrey
-            selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
-                                                grey_sufficientlyVisible(),
-                                                nil)]
-            assertWithMatcher:grey_notNil()];
-      }
+      // TODO(crbug.com/1210846): Determine when the SecondarySignInButton
+      // should be present and assert that.
       break;
   }
+
   if (closeButton) {
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(

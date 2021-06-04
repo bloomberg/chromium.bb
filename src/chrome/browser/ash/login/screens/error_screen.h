@@ -13,16 +13,17 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 
-namespace chromeos {
-
-class CaptivePortalWindowProxy;
-class ErrorScreenView;
+namespace ash {
 
 // Controller for the error screen.
 class ErrorScreen : public BaseScreen,
@@ -171,6 +172,11 @@ class ErrorScreen : public BaseScreen,
 
   ErrorScreenView* view_ = nullptr;
 
+  // We have the guest login logic in this screen because it might be required
+  // quite early during OOBE. When Login screen is not yet shown and existing
+  // user controller not created. At this point even Guest button is not shown
+  // on the shelf. But we let user enter the guest session from the error screen
+  // to be able to look into the logs, etc.
   std::unique_ptr<LoginPerformer> guest_login_performer_;
 
   bool offline_login_allowed_ = false;
@@ -205,6 +211,12 @@ class ErrorScreen : public BaseScreen,
   DISALLOW_COPY_AND_ASSIGN(ErrorScreen);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::ErrorScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_ERROR_SCREEN_H_

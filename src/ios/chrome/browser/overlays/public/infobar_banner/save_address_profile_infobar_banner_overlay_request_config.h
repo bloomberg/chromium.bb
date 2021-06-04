@@ -14,10 +14,10 @@ namespace infobars {
 class InfoBar;
 }
 
-namespace save_address_profile_infobar_overlays {
+namespace autofill_address_profile_infobar_overlays {
 
 // Configuration object for OverlayRequests for the banner UI for an InfoBar
-// with a AutofillSaveAddressProfileDelegateIOS.
+// with a AutofillSaveUpdateAddressProfileDelegateIOS.
 class SaveAddressProfileBannerRequestConfig
     : public OverlayRequestConfig<SaveAddressProfileBannerRequestConfig> {
  public:
@@ -29,11 +29,14 @@ class SaveAddressProfileBannerRequestConfig
   // The button label text.
   std::u16string button_label_text() const { return button_label_text_; }
 
-  // The message sub text.
-  std::u16string message_sub_text() const { return message_sub_text_; }
+  // The description.
+  std::u16string description() const { return description_; }
 
   // The name of the icon image.
   NSString* icon_image_name() const { return icon_image_name_; }
+
+  // The banner type.
+  BOOL is_update_banner() const { return is_update_banner_; }
 
  private:
   OVERLAY_USER_DATA_SETUP(SaveAddressProfileBannerRequestConfig);
@@ -47,11 +50,14 @@ class SaveAddressProfileBannerRequestConfig
   // Configuration data extracted from |infobar_|'s save address profile
   // delegate.
   std::u16string message_text_;
-  std::u16string message_sub_text_;
+  std::u16string description_;
   std::u16string button_label_text_;
   NSString* icon_image_name_ = nil;
+
+  // Determines the type of the banner, true for save and false for the update.
+  bool is_update_banner_ = false;
 };
 
-}  // namespace save_address_profile_infobar_overlays
+}  // namespace autofill_address_profile_infobar_overlays
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_SAVE_ADDRESS_PROFILE_INFOBAR_BANNER_OVERLAY_REQUEST_CONFIG_H_

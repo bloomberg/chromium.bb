@@ -10,8 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
@@ -20,6 +18,9 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -32,12 +33,7 @@ class ProximityAuthProfilePrefManager;
 
 class Profile;
 
-namespace chromeos {
-
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
-
+namespace ash {
 class EasyUnlockNotificationController;
 
 // EasyUnlockService instance that should be used for regular, non-signin
@@ -167,6 +163,12 @@ class EasyUnlockServiceRegular
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::EasyUnlockServiceRegular;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_REGULAR_H_

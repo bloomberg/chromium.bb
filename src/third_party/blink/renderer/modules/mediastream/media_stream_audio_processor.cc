@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -16,7 +18,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -28,6 +29,9 @@
 #include "media/base/limits.h"
 #include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
@@ -64,7 +68,32 @@ using webrtc::AudioProcessing;
 
 bool Allow48kHzApmProcessing() {
   return base::FeatureList::IsEnabled(
-      features::kWebRtcAllow48kHzProcessingOnArm);
+      ::features::kWebRtcAllow48kHzProcessingOnArm);
+}
+
+absl::optional<WebRtcHybridAgcParams> GetWebRtcHybridAgcParams() {
+  if (!base::FeatureList::IsEnabled(::features::kWebRtcHybridAgc)) {
+    return absl::nullopt;
+  }
+  return WebRtcHybridAgcParams{
+      .dry_run = base::GetFieldTrialParamByFeatureAsBool(
+          ::features::kWebRtcHybridAgc, "dry_run", false),
+      .vad_reset_period_ms = base::GetFieldTrialParamByFeatureAsInt(
+          ::features::kWebRtcHybridAgc, "vad_reset_period_ms", 1500),
+      .adjacent_speech_frames_threshold =
+          base::GetFieldTrialParamByFeatureAsInt(
+              ::features::kWebRtcHybridAgc, "adjacent_speech_frames_threshold",
+              12),
+      .max_gain_change_db_per_second = base::GetFieldTrialParamByFeatureAsInt(
+          ::features::kWebRtcHybridAgc, "max_gain_change_db_per_second", 3),
+      .max_output_noise_level_dbfs = base::GetFieldTrialParamByFeatureAsInt(
+          ::features::kWebRtcHybridAgc, "max_output_noise_level_dbfs", -50),
+      .sse2_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          ::features::kWebRtcHybridAgc, "sse2_allowed", true),
+      .avx2_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          ::features::kWebRtcHybridAgc, "avx2_allowed", true),
+      .neon_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          ::features::kWebRtcHybridAgc, "neon_allowed", true)};
 }
 
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
@@ -142,7 +171,8 @@ class MediaStreamAudioFifo {
       // possible, twice the larger of the two is a (probably) loose upper bound
       // on the FIFO size.
       const int fifo_frames = 2 * std::max(source_frames, destination_frames);
-      fifo_.reset(new media::AudioFifo(destination_channels, fifo_frames));
+      fifo_ =
+          std::make_unique<media::AudioFifo>(destination_channels, fifo_frames);
     }
 
     // May be created in the main render thread and used in the audio threads.
@@ -233,10 +263,10 @@ class MediaStreamAudioFifo {
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::AudioProcessingProperties& properties,
     bool use_capture_multi_channel_processing,
-    blink::WebRtcPlayoutDataSource* playout_data_source)
+    scoped_refptr<WebRtcAudioDeviceImpl> playout_data_source)
     : render_delay_ms_(0),
       audio_delay_stats_reporter_(kBuffersPerSecond),
-      playout_data_source_(playout_data_source),
+      playout_data_source_(std::move(playout_data_source)),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
       typing_detected_(false),
@@ -247,6 +277,9 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   DCHECK(main_thread_runner_);
   DETACH_FROM_THREAD(capture_thread_checker_);
   DETACH_FROM_THREAD(render_thread_checker_);
+  SendLogMessage(
+      String::Format("%s({use_capture_multi_channel_processing=%s})", __func__,
+                     use_capture_multi_channel_processing ? "true" : "false"));
 
   InitializeAudioProcessingModule(properties);
 }
@@ -351,6 +384,17 @@ const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
 
 const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return output_format_;
+}
+
+void MediaStreamAudioProcessor::SetOutputWillBeMuted(bool muted) {
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kMinimizeAudioProcessingForUnusedOutput));
+  SendLogMessage(
+      String::Format("%s({muted=%s})", __func__, muted ? "true" : "false"));
+  if (audio_processing_) {
+    audio_processing_->set_output_will_be_muted(muted);
+  }
 }
 
 void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
@@ -490,6 +534,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::AudioProcessingProperties& properties) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(!audio_processing_);
+  SendLogMessage(String::Format("%s()", __func__));
 
   // Note: The audio mirroring constraint (i.e., swap left and right channels)
   // is handled within this MediaStreamAudioProcessor and does not, by itself,
@@ -527,23 +572,36 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
       properties.goog_experimental_noise_suppression));
 
+  // TODO(bugs.webrtc.org/7494): Move logic below in ConfigAutomaticGainControl.
+  // Retrieve the Hybrid AGC experiment parameters.
+  // The hybrid AGC setup, that is AGC1 analog and AGC2 adaptive digital,
+  // requires `goog_auto_gain_control` and `goog_experimental_auto_gain_control`
+  // to be both active.
+  absl::optional<WebRtcHybridAgcParams> hybrid_agc_params;
+  if (properties.goog_auto_gain_control &&
+      properties.goog_experimental_auto_gain_control) {
+    hybrid_agc_params = GetWebRtcHybridAgcParams();
+  }
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
     auto startup_min_volume = Platform::Current()->GetAgcStartupMinimumVolume();
-    auto* experimental_agc =
-        new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0));
+    auto* experimental_agc = new webrtc::ExperimentalAgc(
+        /*enabled=*/true, startup_min_volume.value_or(0));
+    // Disable the AGC1 adaptive digital controller if the hybrid AGC is enabled
+    // and it's not running in dry-run mode.
     experimental_agc->digital_adaptive_disabled =
-        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
-
+        hybrid_agc_params.has_value() && !hybrid_agc_params->dry_run;
     config.Set<webrtc::ExperimentalAgc>(experimental_agc);
 #if BUILDFLAG(IS_CHROMECAST)
   } else {
-    config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(false));
+    // Do not use the analog controller.
+    config.Set<webrtc::ExperimentalAgc>(
+        new webrtc::ExperimentalAgc(/*enabled=*/false));
 #endif  // BUILDFLAG(IS_CHROMECAST)
   }
 
   // Create and configure the webrtc::AudioProcessing.
-  base::Optional<std::string> audio_processing_platform_config_json =
+  absl::optional<std::string> audio_processing_platform_config_json =
       Platform::Current()->GetWebRTCAudioProcessingConfiguration();
   webrtc::AudioProcessingBuilder ap_builder;
   if (properties.EchoCancellationIsWebRtcProvided()) {
@@ -572,62 +630,20 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   apm_config.pipeline.multi_channel_capture =
       use_capture_multi_channel_processing_;
 
-  base::Optional<double> gain_control_compression_gain_db;
+  absl::optional<double> gain_control_compression_gain_db;
   blink::PopulateApmConfig(&apm_config, properties,
                            audio_processing_platform_config_json,
                            &gain_control_compression_gain_db);
 
-  if (properties.goog_auto_gain_control ||
-      properties.goog_experimental_auto_gain_control) {
-    base::Optional<blink::AdaptiveGainController2Properties> agc2_properties;
-    if (properties.goog_experimental_auto_gain_control &&
-        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc)) {
-      DCHECK(properties.goog_auto_gain_control)
-          << "Cannot enable hybrid AGC when AGC is disabled.";
-      agc2_properties = blink::AdaptiveGainController2Properties{};
-      agc2_properties->vad_probability_attack =
-          base::GetFieldTrialParamByFeatureAsDouble(
-              features::kWebRtcHybridAgc, "vad_probability_attack", 0.3);
-      agc2_properties->use_peaks_not_rms =
-          base::GetFieldTrialParamByFeatureAsBool(features::kWebRtcHybridAgc,
-                                                  "use_peaks_not_rms", false);
-      agc2_properties->level_estimator_speech_frames_threshold =
-          base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc,
-              "level_estimator_speech_frames_threshold", 6);
-      agc2_properties->initial_saturation_margin_db =
-          base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc, "initial_saturation_margin", 20);
-      agc2_properties->extra_saturation_margin_db =
-          base::GetFieldTrialParamByFeatureAsInt(features::kWebRtcHybridAgc,
-                                                 "extra_saturation_margin", 5);
-      agc2_properties->gain_applier_speech_frames_threshold =
-          base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc,
-              "gain_applier_speech_frames_threshold", 6);
-      agc2_properties->max_gain_change_db_per_second =
-          base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc, "max_gain_change_db_per_second", 3);
-      agc2_properties->max_output_noise_level_dbfs =
-          base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc, "max_output_noise_level_dbfs", -55);
-      agc2_properties->sse2_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          features::kWebRtcHybridAgc, "sse2_allowed", true);
-      agc2_properties->avx2_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          features::kWebRtcHybridAgc, "avx2_allowed", true);
-      agc2_properties->neon_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          features::kWebRtcHybridAgc, "neon_allowed", true);
-    }
-    blink::ConfigAutomaticGainControl(
-        properties.goog_auto_gain_control,
-        properties.goog_experimental_auto_gain_control, agc2_properties,
-        gain_control_compression_gain_db, apm_config);
-  }
+  // Set up gain control functionalities.
+  blink::ConfigAutomaticGainControl(properties, hybrid_agc_params,
+                                    gain_control_compression_gain_db,
+                                    apm_config);
 
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
     // is enabled by default.
-    typing_detector_.reset(new webrtc::TypingDetection());
+    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
     blink::EnableTypingDetection(&apm_config, typing_detector_.get());
   }
 
@@ -645,6 +661,9 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
     const media::AudioParameters& input_format) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(input_format.IsValid());
+  SendLogMessage(String::Format("%s({input_format=[%s]})", __func__,
+                                input_format.AsHumanReadableString().c_str()));
+
   input_format_ = input_format;
 
   // TODO(crbug/881275): For now, we assume fixed parameters for the output when
@@ -725,15 +744,21 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
     // Explicitly set number of channels for discrete channel layouts.
     output_format_.set_channels_for_discrete(input_format.channels());
   }
+  SendLogMessage(
+      String::Format("%s => (output_format=[%s])", __func__,
+                     output_format_.AsHumanReadableString().c_str()));
+  SendLogMessage(
+      String::Format("%s => (FIFO: processing_frames=%d, output_channels=%d)",
+                     __func__, processing_frames, fifo_output_channels));
 
-  capture_fifo_.reset(
-      new MediaStreamAudioFifo(input_format.channels(), fifo_output_channels,
-                               input_format.frames_per_buffer(),
-                               processing_frames, input_format.sample_rate()));
+  capture_fifo_ = std::make_unique<MediaStreamAudioFifo>(
+      input_format.channels(), fifo_output_channels,
+      input_format.frames_per_buffer(), processing_frames,
+      input_format.sample_rate());
 
   if (audio_processing_) {
-    output_bus_.reset(
-        new MediaStreamAudioBus(output_format_.channels(), output_frames));
+    output_bus_ = std::make_unique<MediaStreamAudioBus>(
+        output_format_.channels(), output_frames);
   }
 }
 
@@ -834,6 +859,13 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
 
 void MediaStreamAudioProcessor::UpdateAecStats() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
+}
+
+void MediaStreamAudioProcessor::SendLogMessage(const WTF::String& message) {
+  WebRtcLogMessage(String::Format("MSAP::%s [this=0x%" PRIXPTR "]",
+                                  message.Utf8().c_str(),
+                                  reinterpret_cast<uintptr_t>(this))
+                       .Utf8());
 }
 
 }  // namespace blink

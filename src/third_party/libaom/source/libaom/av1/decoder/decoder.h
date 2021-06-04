@@ -229,6 +229,8 @@ typedef struct AV1Decoder {
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;
+  AV1CdefSync cdef_sync;
+  AV1CdefWorkerData *cdef_worker;
   AVxWorker *tile_workers;
   int num_workers;
   DecWorkerData *thread_data;
@@ -332,6 +334,32 @@ typedef struct AV1Decoder {
   int is_arf_frame_present;
   int num_tile_groups;
   aom_s_frame_info sframe_info;
+
+  /*!
+   * Elements part of the sequence header, that are applicable for all the
+   * frames in the video.
+   */
+  SequenceHeader seq_params;
+
+  /*!
+   * If true, buffer removal times are present.
+   */
+  bool buffer_removal_time_present;
+
+  /*!
+   * Code and details about current error status.
+   */
+  struct aom_internal_error_info error;
+
+  /*!
+   * Number of temporal layers: may be > 1 for SVC (scalable vector coding).
+   */
+  unsigned int number_temporal_layers;
+
+  /*!
+   * Number of spatial layers: may be > 1 for SVC (scalable vector coding).
+   */
+  unsigned int number_spatial_layers;
 } AV1Decoder;
 
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error

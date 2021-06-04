@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOAD_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOAD_TIMING_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -60,6 +60,10 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   void SetInputStart(base::TimeTicks);
 
+  void SetUserTimingMarkFullyLoaded(base::TimeDelta);
+  void SetUserTimingMarkFullyVisible(base::TimeDelta);
+  void SetUserTimingMarkInteractive(base::TimeDelta);
+
   void AddRedirect(const KURL& redirecting_url, const KURL& redirected_url);
   void SetRedirectStart(base::TimeTicks);
   void SetRedirectEnd(base::TimeTicks);
@@ -84,6 +88,15 @@ class CORE_EXPORT DocumentLoadTiming final {
   }
 
   base::TimeTicks InputStart() const { return input_start_; }
+  absl::optional<base::TimeDelta> UserTimingMarkFullyLoaded() const {
+    return user_timing_mark_fully_loaded_;
+  }
+  absl::optional<base::TimeDelta> UserTimingMarkFullyVisible() const {
+    return user_timing_mark_fully_visible_;
+  }
+  absl::optional<base::TimeDelta> UserTimingMarkInteractive() const {
+    return user_timing_mark_interactive_;
+  }
   base::TimeTicks NavigationStart() const { return navigation_start_; }
   const WTF::Vector<base::TimeTicks>& BackForwardCacheRestoreNavigationStarts()
       const {
@@ -124,6 +137,9 @@ class CORE_EXPORT DocumentLoadTiming final {
   base::TimeTicks reference_monotonic_time_;
   base::TimeDelta reference_wall_time_;
   base::TimeTicks input_start_;
+  absl::optional<base::TimeDelta> user_timing_mark_fully_loaded_;
+  absl::optional<base::TimeDelta> user_timing_mark_fully_visible_;
+  absl::optional<base::TimeDelta> user_timing_mark_interactive_;
   base::TimeTicks navigation_start_;
   base::TimeTicks commit_navigation_end_;
   WTF::Vector<base::TimeTicks> bfcache_restore_navigation_starts_;
@@ -147,4 +163,4 @@ class CORE_EXPORT DocumentLoadTiming final {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOAD_TIMING_H_

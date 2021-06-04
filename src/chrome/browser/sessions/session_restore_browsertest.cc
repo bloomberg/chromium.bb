@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -56,7 +58,9 @@
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -915,14 +919,14 @@ namespace {
 
 // Groups the tabs in |model| according to |specified_groups|.
 void CreateTabGroups(TabStripModel* model,
-                     base::span<const base::Optional<int>> specified_groups) {
+                     base::span<const absl::optional<int>> specified_groups) {
   ASSERT_EQ(model->count(), static_cast<int>(specified_groups.size()));
 
   // Maps |specified_groups| IDs to actual group IDs in |model|.
   base::flat_map<int, tab_groups::TabGroupId> group_map;
 
   for (int i = 0; i < model->count(); ++i) {
-    if (specified_groups[i] == base::nullopt)
+    if (specified_groups[i] == absl::nullopt)
       continue;
 
     const int specified_group = specified_groups[i].value();
@@ -945,7 +949,7 @@ void CreateTabGroups(TabStripModel* model,
 // Checks that the grouping of tabs in |model| is equivalent to that specified
 // in |specified_groups| up to relabeling of the group IDs.
 void CheckTabGrouping(TabStripModel* model,
-                      base::span<const base::Optional<int>> specified_groups) {
+                      base::span<const absl::optional<int>> specified_groups) {
   ASSERT_EQ(model->count(), static_cast<int>(specified_groups.size()));
 
   // Maps |specified_groups| IDs to actual group IDs in |model|.
@@ -954,8 +958,8 @@ void CheckTabGrouping(TabStripModel* model,
   for (int i = 0; i < model->count(); ++i) {
     SCOPED_TRACE(i);
 
-    const base::Optional<int> specified_group = specified_groups[i];
-    const base::Optional<tab_groups::TabGroupId> actual_group =
+    const absl::optional<int> specified_group = specified_groups[i];
+    const absl::optional<tab_groups::TabGroupId> actual_group =
         model->GetTabGroupForTab(i);
 
     // The tab should be grouped iff it's grouped in |specified_groups|.
@@ -974,9 +978,9 @@ void CheckTabGrouping(TabStripModel* model,
 }
 
 // Returns the optional group ID for each tab in a vector.
-std::vector<base::Optional<tab_groups::TabGroupId>> GetTabGroups(
+std::vector<absl::optional<tab_groups::TabGroupId>> GetTabGroups(
     const TabStripModel* model) {
-  std::vector<base::Optional<tab_groups::TabGroupId>> result(model->count());
+  std::vector<absl::optional<tab_groups::TabGroupId>> result(model->count());
   for (int i = 0; i < model->count(); ++i)
     result[i] = model->GetTabGroupForTab(i);
   return result;
@@ -1016,8 +1020,8 @@ class SessionRestoreTabGroupsTest : public SessionRestoreTest,
 
 IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
   constexpr int kNumTabs = 6;
-  const std::array<base::Optional<int>, kNumTabs> group_spec = {
-      0, 0, base::nullopt, base::nullopt, 1, 1};
+  const std::array<absl::optional<int>, kNumTabs> group_spec = {
+      0, 0, absl::nullopt, absl::nullopt, 1, 1};
 
   // Open |kNumTabs| tabs.
   ui_test_utils::NavigateToURL(browser(), GetUrl1());
@@ -1856,7 +1860,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
 
   {
     content::DownloadTestObserverTerminal observer(
-        content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+        browser()->profile()->GetDownloadManager(), 1,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
     ui_test_utils::NavigateToURL(browser(), first_download_url);
     observer.WaitForFinished();
@@ -1866,7 +1870,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
 
   {
     content::DownloadManager* download_manager =
-        content::BrowserContext::GetDownloadManager(browser()->profile());
+        browser()->profile()->GetDownloadManager();
     content::DownloadTestObserverInProgress in_progress_counter(
         download_manager, 2);
     content::DownloadTestObserverTerminal observer(
@@ -2873,7 +2877,7 @@ class AppSessionRestoreTest : public SessionRestoreTest {
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->open_as_window = true;
     web_app_info->title = u"A Web App";
-    return web_app::InstallWebApp(profile, std::move(web_app_info));
+    return web_app::test::InstallWebApp(profile, std::move(web_app_info));
   }
 };
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import time
 
 from telemetry import decorators
@@ -75,7 +76,7 @@ class KeyPressActionTest(tab_test_case.TabTestCase):
       self._PressKey(char)
 
     # Make changes to the sentence using special keys.
-    for _ in xrange(6):
+    for _ in range(6):
       self._PressKey('ArrowLeft')
     self._PressKey('Backspace')
     self._PressKey('Return')

@@ -43,6 +43,7 @@
 #include "components/query_parser/snippet.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/device_info_tracker.h"
@@ -264,9 +265,9 @@ base::Value HistoryEntryToValue(
   result.SetStringKey("remoteIconUrlForUma",
                       entry.remote_icon_url_for_uma.spec());
 
-  // Additional debugging fields that are only shown if the memories::kDebug
-  // feature is enabled.
-  if (base::FeatureList::IsEnabled(memories::kDebug)) {
+  // Additional debugging fields that are only shown if the
+  // history_clusters::kDebug feature is enabled.
+  if (base::FeatureList::IsEnabled(history_clusters::kDebug)) {
     base::Value debug(base::Value::Type::DICTIONARY);
     debug.SetBoolKey("isUrlInLocalDatabase", IsUrlInLocalDatabase(entry));
     debug.SetIntKey("visitCount", entry.visit_count);

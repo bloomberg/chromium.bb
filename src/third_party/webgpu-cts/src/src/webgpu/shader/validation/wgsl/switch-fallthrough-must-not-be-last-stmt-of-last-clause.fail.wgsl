@@ -2,7 +2,7 @@
 // of a switch
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var a: i32 = -2;
   switch (a) {
     default: {

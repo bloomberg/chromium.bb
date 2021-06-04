@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -190,7 +190,7 @@ translate::TranslateManager* ChromeTranslateClient::GetManagerFromWebContents(
   ChromeTranslateClient* chrome_translate_client =
       FromWebContents(web_contents);
   if (!chrome_translate_client)
-    return NULL;
+    return nullptr;
   return chrome_translate_client->GetTranslateManager();
 }
 
@@ -198,11 +198,11 @@ void ChromeTranslateClient::GetTranslateLanguages(
     content::WebContents* web_contents,
     std::string* source,
     std::string* target) {
-  DCHECK(source != NULL);
-  DCHECK(target != NULL);
+  DCHECK(source != nullptr);
+  DCHECK(target != nullptr);
 
   *source = translate::TranslateDownloadManager::GetLanguageCode(
-      GetLanguageState().original_language());
+      GetLanguageState().source_language());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -248,7 +248,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
   translate::TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
       translate_manager_->GetWeakPtr(),
-      InfoBarService::FromWebContents(web_contents()),
+      infobars::ContentInfoBarManager::FromWebContents(web_contents()),
       web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
       source_language, target_language, error_type, triggered_from_menu);
 
@@ -257,8 +257,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
   DCHECK(TranslateService::IsTranslateBubbleEnabled());
   // Bubble UI.
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
-      translate_manager_->ShouldSuppressBubbleUI(triggered_from_menu,
-                                                 source_language)) {
+      translate_manager_->ShouldSuppressBubbleUI()) {
     return false;
   }
 
@@ -302,7 +301,7 @@ int ChromeTranslateClient::GetInfobarIconID() const {
 }
 
 void ChromeTranslateClient::ManualTranslateWhenReady() {
-  if (GetLanguageState().original_language().empty()) {
+  if (GetLanguageState().source_language().empty()) {
     manual_translate_on_ready_ = true;
   } else {
     translate::TranslateManager* manager = GetTranslateManager();
@@ -401,7 +400,7 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    return TranslateBubbleFactory::Show(NULL, web_contents(), step,
+    return TranslateBubbleFactory::Show(nullptr, web_contents(), step,
                                         source_language, target_language,
                                         error_type, is_user_gesture);
   }

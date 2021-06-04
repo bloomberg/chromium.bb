@@ -72,7 +72,7 @@ template <class T>
 bool PopulateArrayFromList(const base::ListValue& list, std::vector<T>* out) {
   out->clear();
   T item;
-  for (const auto& value : list) {
+  for (const auto& value : list.GetList()) {
     if (!PopulateItem(value, &item))
       return false;
     // T might not be movable, but in that case it should be copyable, and this
@@ -180,12 +180,6 @@ std::unique_ptr<base::Value> CreateValueFromArray(const std::vector<T>& from) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   PopulateListFromArray(from, list.get());
   return std::move(list);
-}
-
-template <class T>
-std::unique_ptr<base::Value> CreateValueFromOptionalArray(
-    const std::unique_ptr<std::vector<T>>& from) {
-  return from ? CreateValueFromArray(*from) : nullptr;
 }
 
 }  // namespace util

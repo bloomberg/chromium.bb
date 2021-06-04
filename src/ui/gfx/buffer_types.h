@@ -5,6 +5,8 @@
 #ifndef UI_GFX_BUFFER_TYPES_H_
 #define UI_GFX_BUFFER_TYPES_H_
 
+#include <stdint.h>
+
 #include <tuple>
 
 namespace gfx {
@@ -70,6 +72,26 @@ struct BufferUsageAndFormat {
 
   BufferUsage usage;
   BufferFormat format;
+};
+
+// Used to identify the plane of a GpuMemoryBuffer to use when creating a
+// SharedImage.
+enum class BufferPlane {
+  // For single-plane GpuMemoryBuffer, this refers to that single plane. For
+  // YUV_420, YUV_420_BIPLANAR, and P010 GpuMemoryBuffers, this refers to an
+  // RGB representation of the planes (either bound directly as a texture or
+  // created through an extra copy).
+  DEFAULT,
+  // The Y plane for YUV_420, YUV_420_BIPLANAR, and P010.
+  Y,
+  // The UV plane for YUV_420_BIPLANAR and P010.
+  UV,
+  // The U plane for YUV_420.
+  U,
+  // The V plane for YUV_420.
+  V,
+
+  LAST = V
 };
 
 }  // namespace gfx

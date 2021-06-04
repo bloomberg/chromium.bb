@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,6 +30,9 @@
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
+#include "content/browser/renderer_host/back_forward_cache_metrics.h"
+#include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -51,6 +53,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "net/base/filename_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -352,6 +355,7 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
+  bypass_csp_ = false;
 
   if (video_consumer_)
     video_consumer_->StopCapture();
@@ -738,7 +742,7 @@ void PageHandler::CaptureScreenshot(
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        screenshot_format, screenshot_quality, gfx::Size(),
                        gfx::Size(), blink::DeviceEmulationParams(),
-                       base::nullopt),
+                       absl::nullopt),
         false);
     return;
   }
@@ -801,7 +805,7 @@ void PageHandler::CaptureScreenshot(
     }
   }
 
-  base::Optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
+  absl::optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
   if (capture_beyond_viewport.fromMaybe(false)) {
     blink::web_pref::WebPreferences original_web_prefs =
         host_->GetRenderViewHost()->GetDelegate()->GetOrCreateWebPreferences();
@@ -1160,7 +1164,7 @@ void PageHandler::ScreenshotCaptured(
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
     const blink::DeviceEmulationParams& original_emulation_params,
-    const base::Optional<blink::web_pref::WebPreferences>&
+    const absl::optional<blink::web_pref::WebPreferences>&
         maybe_original_web_prefs,
     const gfx::Image& image) {
   if (original_view_size.width()) {
@@ -1267,6 +1271,27 @@ void PageHandler::GetManifestIcons(
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return no image data in the tests.
   callback->sendSuccess(Maybe<Binary>());
+}
+
+Response PageHandler::SetBypassCSP(bool enabled) {
+  bypass_csp_ = enabled;
+  return Response::FallThrough();
+}
+
+void PageHandler::BackForwardCacheNotUsed(const NavigationRequest* navigation) {
+  if (!enabled_)
+    return;
+
+  FrameTreeNode* ftn = navigation->frame_tree_node();
+  std::string devtools_navigation_token =
+      navigation->devtools_navigation_token().ToString();
+  std::string frame_id = ftn->devtools_frame_token().ToString();
+
+  frontend_->BackForwardCacheNotUsed(devtools_navigation_token, frame_id);
+}
+
+bool PageHandler::ShouldBypassCSP() {
+  return enabled_ && bypass_csp_;
 }
 
 }  // namespace protocol

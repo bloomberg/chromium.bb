@@ -8,11 +8,11 @@
 #include "src/gpu/ops/GrAtlasTextOp.h"
 
 #include "include/core/SkPoint3.h"
+#include "include/core/SkSpan.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
-#include "src/core/SkSpan.h"
 #include "src/core/SkStrikeCache.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrMemoryPool.h"
@@ -112,14 +112,18 @@ auto GrAtlasTextOp::Geometry::MakeForBlob(const GrAtlasSubRun& subRun,
                                           SkPoint drawOrigin,
                                           SkIRect clipRect,
                                           sk_sp<GrTextBlob> blob,
-                                          const SkPMColor4f& color) -> Geometry* {
-    return new Geometry{subRun,
-                        drawMatrix,
-                        drawOrigin,
-                        clipRect,
-                        std::move(blob),
-                        nullptr,
-                        color};
+                                          const SkPMColor4f& color,
+                                          SkArenaAlloc* alloc) -> Geometry* {
+    // Bypass the automatic dtor behavior in SkArenaAlloc. I'm leaving this up to the Op to run
+    // all geometry dtors for now.
+    void* geo = alloc->makeBytesAlignedTo(sizeof(Geometry), alignof(Geometry));
+    return new(geo) Geometry{subRun,
+                             drawMatrix,
+                             drawOrigin,
+                             clipRect,
+                             std::move(blob),
+                             nullptr,
+                             color};
 }
 
 void GrAtlasTextOp::Geometry::fillVertexData(void *dst, int offset, int count) const {
@@ -154,9 +158,8 @@ GrDrawOp::FixedFunctionFlags GrAtlasTextOp::fixedFunctionFlags() const {
     return FixedFunctionFlags::kNone;
 }
 
-GrProcessorSet::Analysis GrAtlasTextOp::finalize(
-        const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-        GrClampType clampType) {
+GrProcessorSet::Analysis GrAtlasTextOp::finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                                 GrClampType clampType) {
     GrProcessorAnalysisCoverage coverage;
     GrProcessorAnalysisColor color;
     if (this->maskType() == MaskType::kColorBitmap) {
@@ -183,9 +186,8 @@ GrProcessorSet::Analysis GrAtlasTextOp::finalize(
             break;
     }
 
-    auto analysis = fProcessors.finalize(
-            color, coverage, clip, &GrUserStencilSettings::kUnused, hasMixedSampledCoverage, caps,
-            clampType, &fHead->fColor);
+    auto analysis = fProcessors.finalize(color, coverage, clip, &GrUserStencilSettings::kUnused,
+                                         caps, clampType, &fHead->fColor);
     // TODO(michaelludwig): Once processor analysis can be done external to op creation/finalization
     // the atlas op metadata can be fully const. This is okay for now since finalize() happens
     // before the op is merged, so during combineIfPossible, metadata is effectively const.
@@ -497,7 +499,7 @@ GrOp::Owner GrAtlasTextOp::CreateOpTestingOnly(GrSurfaceDrawContext* rtc,
     drawMatrix.preTranslate(x, y);
     auto drawOrigin = SkPoint::Make(x, y);
     SkGlyphRunBuilder builder;
-    auto glyphRunList = builder.textToGlyphRunList(font, text, textLen, drawOrigin);
+    auto glyphRunList = builder.textToGlyphRunList(font, skPaint, text, textLen, drawOrigin);
     if (glyphRunList.empty()) {
         return nullptr;
     }
@@ -522,10 +524,6 @@ GrOp::Owner GrAtlasTextOp::CreateOpTestingOnly(GrSurfaceDrawContext* rtc,
 }
 
 GR_DRAW_OP_TEST_DEFINE(GrAtlasTextOp) {
-    // Setup dummy SkPaint / GrPaint / GrSurfaceDrawContext
-    auto rtc = GrSurfaceDrawContext::Make(
-            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox, {1024, 1024});
-
     SkSimpleMatrixProvider matrixProvider(GrTest::TestMatrixInvertible(random));
 
     SkPaint skPaint;
@@ -548,8 +546,7 @@ GR_DRAW_OP_TEST_DEFINE(GrAtlasTextOp) {
     int xInt = (random->nextU() % kMaxTrans) * xPos;
     int yInt = (random->nextU() % kMaxTrans) * yPos;
 
-    return GrAtlasTextOp::CreateOpTestingOnly(
-            rtc.get(), skPaint, font, matrixProvider, text, xInt, yInt);
+    return GrAtlasTextOp::CreateOpTestingOnly(sdc, skPaint, font, matrixProvider, text, xInt, yInt);
 }
 
 #endif

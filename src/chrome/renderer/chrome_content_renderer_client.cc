@@ -20,7 +20,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -85,13 +84,14 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
+#include "components/feed/buildflags.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/no_state_prefetch/common/prerender_url_loader_throttle.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_client.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
+#include "components/no_state_prefetch/renderer/no_state_prefetch_utils.h"
 #include "components/no_state_prefetch/renderer/prerender_render_frame_observer.h"
-#include "components/no_state_prefetch/renderer/prerender_utils.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
@@ -173,6 +173,16 @@
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "components/search/ntp_features.h"  // nogncheck
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/core_winrt_util.h"
+#include "base/win/scoped_hstring.h"
+#endif
+
+#if BUILDFLAG(ENABLE_FEED_V2)
+#include "components/feed/content/renderer/rss_link_reader.h"
+#include "components/feed/feed_feature_list.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -310,6 +320,26 @@ bool IsStandaloneContentExtensionProcess() {
 
 std::unique_ptr<base::Unwinder> CreateV8Unwinder(v8::Isolate* isolate) {
   return std::make_unique<V8Unwinder>(isolate);
+}
+
+// Web Share is conditionally enabled here in chrome/, to avoid it being
+// made available in other clients of content/ that do not have a Web Share
+// Mojo implementation (e.g. WebView).
+void MaybeEnableWebShare() {
+#if defined(OS_WIN)
+  if (!base::win::ResolveCoreWinRTDelayload() ||
+      !base::win::ScopedHString::ResolveCoreWinRTStringDelayload()) {
+    // Web Share API is not available for Windows 7.
+    return;
+  }
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
+  if (base::FeatureList::IsEnabled(features::kWebShare))
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC) || \
+    defined(OS_ANDROID)
+    blink::WebRuntimeFeatures::EnableWebShare(true);
+#endif
 }
 
 }  // namespace
@@ -522,10 +552,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncSupportTrustedVaultPassphrase)) {
-    SyncEncryptionKeysExtension::Create(render_frame);
-  }
+  SyncEncryptionKeysExtension::Create(render_frame);
 #endif
 
   if (render_frame->IsMainFrame())
@@ -651,6 +678,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
   new SpellCheckPanel(render_frame, registry, this);
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#endif
+#if BUILDFLAG(ENABLE_FEED_V2)
+  if (render_frame->IsMainFrame() &&
+      base::FeatureList::IsEnabled(feed::kWebFeed)) {
+    new feed::RssLinkReader(render_frame, registry);
+  }
 #endif
 }
 
@@ -1111,12 +1144,10 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const std::string& actual_mime_type,
     const content::WebPluginInfo& plugin) {
   // Look for the manifest URL among the MIME type's additonal parameters.
-  const char kNaClPluginManifestAttribute[] = "nacl";
-  std::u16string nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    if (plugin.mime_types[i].mime_type == actual_mime_type) {
-      for (const auto& p : plugin.mime_types[i].additional_params) {
-        if (p.name == nacl_attr)
+  for (const auto& mime_type : plugin.mime_types) {
+    if (mime_type.mime_type == actual_mime_type) {
+      for (const auto& p : mime_type.additional_params) {
+        if (p.name == u"nacl")
           return GURL(p.value);
       }
       break;
@@ -1493,16 +1524,7 @@ void ChromeContentRendererClient::
   // embedder only.
   blink::WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(true);
 
-  // Web Share is conditionally enabled here in chrome/, to avoid it being
-  // made available in other clients of content/ that do not have a Web Share
-  // Mojo implementation (e.g. WebView).  Web Share is shipped on Android.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
-  if (base::FeatureList::IsEnabled(features::kWebShare))
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC) || \
-    defined(OS_ANDROID)
-    blink::WebRuntimeFeatures::EnableWebShare(true);
-#endif
+  MaybeEnableWebShare();
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
     blink::WebRuntimeFeatures::EnableAdTagging(true);
@@ -1623,7 +1645,7 @@ bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
       return false;
     // TODO(solomonkinard): Use initiator_origin and add tests.
     return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-        extension, url.path(), base::Optional<url::Origin>());
+        extension, url.path(), absl::optional<url::Origin>());
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return true;

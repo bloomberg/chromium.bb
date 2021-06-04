@@ -4,9 +4,9 @@
 
 #include "components/ntp_snippets/remote/json_to_categories.h"
 
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ntp_snippets {
@@ -19,7 +19,7 @@ bool AddSuggestionsFromListValue(int remote_category_id,
                                  const base::ListValue& list,
                                  RemoteSuggestion::PtrVector* suggestions,
                                  const base::Time& fetch_time) {
-  for (const auto& value : list) {
+  for (const base::Value& value : list.GetList()) {
     const base::DictionaryValue* dict = nullptr;
     if (!value.GetAsDictionary(&dict)) {
       return false;
@@ -51,7 +51,7 @@ FetchedCategory::~FetchedCategory() = default;
 FetchedCategory& FetchedCategory::operator=(FetchedCategory&&) = default;
 
 CategoryInfo BuildArticleCategoryInfo(
-    const base::Optional<std::u16string>& title) {
+    const absl::optional<std::u16string>& title) {
   return CategoryInfo(
       title.has_value() ? title.value()
                         : l10n_util::GetStringUTF16(
@@ -91,7 +91,7 @@ bool JsonToCategories(const base::Value& parsed,
     return false;
   }
 
-  for (const auto& v : *categories_value) {
+  for (const base::Value& v : categories_value->GetList()) {
     std::string utf8_title;
     int remote_category_id = -1;
     const base::DictionaryValue* category_value = nullptr;

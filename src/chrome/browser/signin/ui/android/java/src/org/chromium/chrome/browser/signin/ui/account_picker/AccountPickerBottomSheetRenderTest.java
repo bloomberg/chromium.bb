@@ -4,16 +4,9 @@
 
 package org.chromium.chrome.browser.signin.ui.account_picker;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.pressBack;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
-
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
 
 import org.junit.AfterClass;
@@ -22,7 +15,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -34,7 +29,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.incognito.interstitial.IncognitoInterstitialDelegate;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -109,7 +103,7 @@ public class AccountPickerBottomSheetRenderTest {
 
     @Rule
     public final RenderTestRule mRenderTestRule =
-            RenderTestRule.Builder.withPublicCorpus().setRevision(2).build();
+            RenderTestRule.Builder.withPublicCorpus().setRevision(3).build();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
@@ -119,11 +113,11 @@ public class AccountPickerBottomSheetRenderTest {
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
     private final CustomAccountPickerDelegate mAccountPickerDelegate =
             new CustomAccountPickerDelegate();
-
-    @Mock
-    private IncognitoInterstitialDelegate mIncognitoInterstitialDelegateMock;
 
     private AccountPickerBottomSheetCoordinator mCoordinator;
 
@@ -142,7 +136,6 @@ public class AccountPickerBottomSheetRenderTest {
 
     @Before
     public void setUp() {
-        initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
@@ -171,21 +164,6 @@ public class AccountPickerBottomSheetRenderTest {
         mAccountManagerTestRule.addAccount(PROFILE_DATA2);
         buildAndShowCollapsedBottomSheet();
         expandBottomSheet();
-        mRenderTestRule.render(mCoordinator.getBottomSheetViewForTesting(), "expanded_sheet");
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testExpandedSheetShowsWhenBackpressingOnIncognitoInterstitial(
-            boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        mAccountManagerTestRule.addAccount(PROFILE_DATA2);
-        buildAndShowCollapsedBottomSheet();
-        expandBottomSheet();
-        openIncognitoInterstitialOnExpandedSheet();
-        onView(isRoot()).perform(pressBack());
         mRenderTestRule.render(mCoordinator.getBottomSheetViewForTesting(), "expanded_sheet");
     }
 
@@ -240,55 +218,6 @@ public class AccountPickerBottomSheetRenderTest {
                 mCoordinator.getBottomSheetViewForTesting(), "signin_auth_error_sheet");
     }
 
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testSigninAgainButtonOnSigninAuthErrorSheet(boolean nightModeEnabled)
-            throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        mAccountPickerDelegate.setError(State.INVALID_GAIA_CREDENTIALS);
-        buildAndShowCollapsedBottomSheet();
-        clickContinueButtonAndWaitForErrorView();
-        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            bottomSheetView.findViewById(R.id.account_picker_continue_as_button).performClick();
-        });
-
-        CriteriaHelper.pollUiThread(
-                bottomSheetView.findViewById(R.id.account_picker_selected_account)::isShown);
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testIncognitoInterstitialView(boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        mAccountManagerTestRule.addAccount(PROFILE_DATA2);
-        buildAndShowCollapsedBottomSheet();
-        expandBottomSheet();
-        openIncognitoInterstitialOnExpandedSheet();
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "signin_incognito_interstitial_view");
-    }
-
-    private void openIncognitoInterstitialOnExpandedSheet() {
-        // RecyclerView: PROFILE_DATA1, PROFILE_DATA2, |Add account to device|, |Sign in
-        // temporarily|
-        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-        RecyclerView accountListView =
-                bottomSheetView.findViewById(R.id.account_picker_account_list);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            accountListView.findViewHolderForAdapterPosition(3).itemView.performClick();
-        });
-        CriteriaHelper.pollUiThread(
-                bottomSheetView.findViewById(R.id.incognito_interstitial_learn_more)::isShown);
-    }
-
     private void clickContinueButtonAndWaitForErrorView() {
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -329,8 +258,7 @@ public class AccountPickerBottomSheetRenderTest {
     private void buildAndShowCollapsedBottomSheet() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator = new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
-                    getBottomSheetController(), mAccountPickerDelegate,
-                    mIncognitoInterstitialDelegateMock, true);
+                    getBottomSheetController(), mAccountPickerDelegate);
         });
         CriteriaHelper.pollUiThread(mCoordinator.getBottomSheetViewForTesting().findViewById(
                 R.id.account_picker_selected_account)::isShown);

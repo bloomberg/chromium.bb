@@ -6,11 +6,15 @@
 #define CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_DOWNLOADS_DELEGATE_H_
 
 #include <memory>
+#include <set>
 
-#include "base/callback.h"
-#include "base/scoped_observer.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/ash/crosapi/download_controller_ash.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
-#include "components/download/public/common/download_item.h"
+#include "chromeos/crosapi/mojom/download_controller.mojom-forward.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "content/public/browser/download_manager.h"
 
 namespace base {
@@ -20,20 +24,15 @@ class FilePath;
 namespace ash {
 
 // A delegate of `HoldingSpaceKeyedService` tasked with monitoring the status of
-// of downloads and notifying a callback on download completion.
-class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
-                                      public content::DownloadManager::Observer,
-                                      public download::DownloadItem::Observer {
+// of downloads on its behalf.
+class HoldingSpaceDownloadsDelegate
+    : public HoldingSpaceKeyedServiceDelegate,
+      public arc::ArcIntentHelperObserver,
+      public content::DownloadManager::Observer,
+      public crosapi::DownloadControllerAsh::DownloadControllerObserver {
  public:
-  // Callback to be invoked when a download is completed. Note that this
-  // callback will only be invoked after holding space persistence is restored.
-  using ItemDownloadedCallback =
-      base::RepeatingCallback<void(const base::FilePath&)>;
-
-  HoldingSpaceDownloadsDelegate(
-      Profile* profile,
-      HoldingSpaceModel* model,
-      ItemDownloadedCallback item_downloaded_callback);
+  HoldingSpaceDownloadsDelegate(HoldingSpaceKeyedService* service,
+                                HoldingSpaceModel* model);
   HoldingSpaceDownloadsDelegate(const HoldingSpaceDownloadsDelegate&) = delete;
   HoldingSpaceDownloadsDelegate& operator=(
       const HoldingSpaceDownloadsDelegate&) = delete;
@@ -45,33 +44,51 @@ class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
       content::DownloadManager* download_manager);
 
  private:
+  class InProgressDownload;
+
   // HoldingSpaceKeyedServiceDelegate:
   void Init() override;
   void OnPersistenceRestored() override;
+
+  // arc::ArcIntentHelperObserver:
+  void OnArcDownloadAdded(const base::FilePath& relative_path,
+                          const std::string& owner_package_name) override;
 
   // content::DownloadManager::Observer:
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
   void OnDownloadCreated(content::DownloadManager* manager,
-                         download::DownloadItem* item) override;
+                         download::DownloadItem* download_item) override;
 
-  // download::DownloadItem::Observer:
-  void OnDownloadUpdated(download::DownloadItem* item) override;
+  // crosapi::DownloadControllerAsh::DownloadControllerObserver:
+  void OnLacrosDownloadUpdated(
+      const crosapi::mojom::DownloadEvent& event) override;
 
-  // Invoked when the specified `file_path` has completed downloading.
-  void OnDownloadCompleted(const base::FilePath& file_path);
+  // Invoked when the specified `in_progress_download` is updated.
+  void OnDownloadUpdated(const InProgressDownload* in_progress_download);
 
-  // Removes all observers.
-  void RemoveObservers();
+  // Invoked when the specified `in_progress_download` is completed.
+  void OnDownloadCompleted(const InProgressDownload* in_progress_download);
 
-  // Callback to invoke when a download is completed.
-  ItemDownloadedCallback item_downloaded_callback_;
+  // Invoked when the specified `in_progress_download` fails. This may be due to
+  // cancellation, interruption, or destruction of the underlying download.
+  void OnDownloadFailed(const InProgressDownload* in_progress_download);
 
-  ScopedObserver<content::DownloadManager, content::DownloadManager::Observer>
-      download_manager_observer_{this};
+  // Invoked to erase the specified `in_progress_download` when it is no longer
+  // needed either due to completion or failure of the underlying download.
+  void EraseDownload(const InProgressDownload* in_progress_download);
 
-  ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
-      download_item_observer_{this};
+  // The collection of currently in-progress downloads.
+  std::set<std::unique_ptr<InProgressDownload>, base::UniquePtrComparator>
+      in_progress_downloads_;
+
+  base::ScopedObservation<arc::ArcIntentHelperBridge,
+                          arc::ArcIntentHelperObserver>
+      arc_intent_helper_observation_{this};
+
+  base::ScopedObservation<content::DownloadManager,
+                          content::DownloadManager::Observer>
+      download_manager_observation_{this};
 
   base::WeakPtrFactory<HoldingSpaceDownloadsDelegate> weak_factory_{this};
 };

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -22,9 +22,9 @@ import sys
 from subprocess import check_output
 
 import robo_branch
-from robo_lib import log
-from robo_lib import UserInstructions
-import robo_lib
+from robo_lib import shell
+from robo_lib import errors
+from robo_lib import config
 import robo_build
 import robo_setup
 
@@ -54,6 +54,7 @@ def BuildGnConfigsUnconditionally(robo_configuration):
   robo_branch.HandleAutorename(robo_configuration)
   robo_branch.AddAndCommit(robo_configuration,
                            robo_configuration.gn_commit_title())
+
 
 # Array of steps that this script knows how to perform.  Each step is a
 # dictionary that has the following keys:
@@ -140,31 +141,34 @@ steps = {
                                             ]) },
 }
 
+
 def RunSteps(cfg, step_names):
   for step_name in step_names:
     if not step_name in steps:
       raise Exception("Unknown step %s" % step_name)
-    log("Step %s" % step_name)
+    shell.log("Step %s" % step_name)
     step = steps[step_name]
     try:
       if "pre_fn" in step:
         raise Exception("pre_fn not supported yet")
       if "skip_fn" in step:
         if step["skip_fn"](cfg):
-          log("Step %s not needed, skipping" % step_name)
+          shell.log("Step %s not needed, skipping" % step_name)
           continue
       step["do_fn"](cfg)
-    except Exception, e:
-      log("Step %s failed" % step_name)
+    except Exception as e:
+      shell.log("Step %s failed" % step_name)
       raise e
+
 
 def ListSteps():
   for name, step in steps.iteritems():
     if "desc" in step:
-      print "%s: %s\n" % (name, step["desc"])
+      print(f"{name}: {step['desc']}\n")
+
 
 def main(argv):
-  robo_configuration = robo_lib.RoboConfiguration()
+  robo_configuration = config.RoboConfiguration()
   robo_configuration.chdir_to_ffmpeg_home();
 
   # TODO(liberato): Add a way to skip |skip_fn|.
@@ -181,11 +185,13 @@ def main(argv):
            "dev-merge",
           ])
 
+  exec_steps = []
+
   for opt, arg in parsed:
     if opt == "--prompt":
       robo_configuration.set_prompt_on_call(True)
     elif opt == "--setup":
-      RunSteps(robo_configuration, ["setup"])
+      exec_steps = ["setup"]
     elif opt == "--test":
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
       robo_build.RunTests(robo_configuration)
@@ -195,39 +201,40 @@ def main(argv):
     elif opt == "--patches":
       # To be run after committing a local change to fix the tests.
       if not robo_branch.IsWorkingDirectoryClean():
-        raise UserInstructions(
+        raise errors.UserInstructions(
                     "Working directory must be clean to generate patches file")
       robo_branch.UpdatePatchesFileUnconditionally(robo_configuration)
     elif opt == "--auto-merge":
-      # TODO: make sure that any untracked autorename files are removed, or
-      # make sure that the autorename git script doesn't try to 'git rm'
-      # untracked files, else the script fails.
-      RunSteps(robo_configuration, ["auto-merge"])
-
-      # TODO: Start a fake deps roll.  To do this, we would:
-      # Create new remote branch from the current remote sushi branch.
-      # Create and check out a new local branch at the current local branch.
-      # Make the new local branch track the new remote branch.
-      # Push to origin/new remote branch.
-      # Start a fake deps roll CL that runs the *san bots.
-      # Switch back to original local branch.
-      # For extra points, include a pointer to the fake deps roll CL in the
-      # local branch, so that when it's pushed for review, it'll point the
-      # reviewer at it.
-
-      # TODO: git cl upload for review.
+      exec_steps = ["auto-merge"]
     elif opt == "--step":
-      RunSteps(robo_configuration, arg.split(","))
+      exec_steps = arg.split(",")
     elif opt == "--list":
       ListSteps()
     elif opt == "--dev-merge":
       # Use HEAD rather than origin/master, so that local robosushi changes
       # are part of the merge.  Only useful for testing those changes.
-      new_merge_base = check_output(["git", "log", "--format=%H", "-1"]).strip()
-      log("Using %s as new origin merge base for testing" % new_merge_base)
+      new_merge_base = shell.output_or_error(["git", "log", "--format=%H", "-1"])
+      shell.log(f"Using {new_merge_base} as new origin merge base for testing")
       robo_configuration.override_origin_merge_base(new_merge_base)
     else:
       raise Exception("Unknown option '%s'" % opt);
+
+    # TODO: make sure that any untracked autorename files are removed, or
+    # make sure that the autorename git script doesn't try to 'git rm'
+    # untracked files, else the script fails.
+    RunSteps(robo_configuration, exec_steps)
+    # TODO: Start a fake deps roll.  To do this, we would:
+    # Create new remote branch from the current remote sushi branch.
+    # Create and check out a new local branch at the current local branch.
+    # Make the new local branch track the new remote branch.
+    # Push to origin/new remote branch.
+    # Start a fake deps roll CL that runs the *san bots.
+    # Switch back to original local branch.
+    # For extra points, include a pointer to the fake deps roll CL in the
+    # local branch, so that when it's pushed for review, it'll point the
+    # reviewer at it.
+    # TODO: git cl upload for review.
+
 
 if __name__ == "__main__":
   main(sys.argv[1:])

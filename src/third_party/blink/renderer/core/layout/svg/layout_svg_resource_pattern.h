@@ -91,4 +91,4 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_PATTERN_H_

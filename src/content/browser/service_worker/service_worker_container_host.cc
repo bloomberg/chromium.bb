@@ -8,7 +8,10 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/guid.h"
+#include "base/strings/stringprintf.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -204,8 +207,13 @@ void ServiceWorkerContainerHost::Register(
   auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), blink::mojom::ServiceWorkerErrorType::kUnknown,
       std::string(), nullptr);
+
+  // TODO(crbug.com/1199077): Update this when ServiceWorkerContainerHost
+  // implements StorageKey.
+  storage::StorageKey key(url::Origin::Create(options->scope));
   context_->RegisterServiceWorker(
-      script_url, *options, std::move(outside_fetch_client_settings_object),
+      script_url, key, *options,
+      std::move(outside_fetch_client_settings_object),
       base::BindOnce(&ServiceWorkerContainerHost::RegistrationComplete,
                      weak_factory_.GetWeakPtr(), GURL(script_url),
                      GURL(options->scope), std::move(wrapped_callback),
@@ -239,10 +247,10 @@ void ServiceWorkerContainerHost::GetRegistration(
                            "ServiceWorkerContainerHost::GetRegistration",
                            trace_id, "Client URL", client_url.spec());
   context_->registry()->FindRegistrationForClientUrl(
-      client_url,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &ServiceWorkerContainerHost::GetRegistrationComplete,
-          weak_factory_.GetWeakPtr(), std::move(callback), trace_id)));
+      client_url, storage::StorageKey(url::Origin::Create(client_url)),
+      base::BindOnce(&ServiceWorkerContainerHost::GetRegistrationComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     trace_id));
 }
 
 void ServiceWorkerContainerHost::GetRegistrations(
@@ -252,7 +260,7 @@ void ServiceWorkerContainerHost::GetRegistrations(
   if (!CanServeContainerHostMethods(
           &callback, url_, GURL(),
           ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix,
-          base::nullopt)) {
+          absl::nullopt)) {
     return;
   }
 
@@ -262,7 +270,7 @@ void ServiceWorkerContainerHost::GetRegistrations(
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
-                            std::string(), base::nullopt);
+                            std::string(), absl::nullopt);
     return;
   }
 
@@ -270,11 +278,11 @@ void ServiceWorkerContainerHost::GetRegistrations(
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContainerHost::GetRegistrations",
                            trace_id);
-  context_->registry()->GetRegistrationsForOrigin(
-      url::Origin::Create(url_),
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &ServiceWorkerContainerHost::GetRegistrationsComplete,
-          weak_factory_.GetWeakPtr(), std::move(callback), trace_id)));
+  context_->registry()->GetRegistrationsForStorageKey(
+      storage::StorageKey(url::Origin::Create(url_)),
+      base::BindOnce(&ServiceWorkerContainerHost::GetRegistrationsComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     trace_id));
 }
 
 void ServiceWorkerContainerHost::GetRegistrationForReady(
@@ -543,7 +551,7 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
   // is no controller, at least, until we can fix the extension bug.
   if (controller_ && fetch_request_window_id_) {
     controller_info->fetch_request_window_id =
-        base::make_optional(fetch_request_window_id_);
+        absl::make_optional(fetch_request_window_id_);
   }
 
   if (!controller_) {
@@ -701,12 +709,12 @@ void ServiceWorkerContainerHost::RemoveServiceWorkerObjectHost(
 
 bool ServiceWorkerContainerHost::IsContainerForServiceWorker() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return client_info_ == base::nullopt;
+  return client_info_ == absl::nullopt;
 }
 
 bool ServiceWorkerContainerHost::IsContainerForClient() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return client_info_ != base::nullopt;
+  return client_info_ != absl::nullopt;
 }
 
 blink::mojom::ServiceWorkerClientType
@@ -828,7 +836,7 @@ void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
 void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) {
+    const absl::optional<url::Origin>& top_frame_origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GURL previous_url = url_;
 
@@ -1379,7 +1387,7 @@ void ServiceWorkerContainerHost::RegistrationComplete(
   DCHECK(registration);
 
   std::move(callback).Run(
-      blink::mojom::ServiceWorkerErrorType::kNone, base::nullopt,
+      blink::mojom::ServiceWorkerErrorType::kNone, absl::nullopt,
       CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
 }
@@ -1429,7 +1437,7 @@ void ServiceWorkerContainerHost::GetRegistrationComplete(
   }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt, std::move(info));
+                          absl::nullopt, std::move(info));
 }
 
 void ServiceWorkerContainerHost::GetRegistrationsComplete(
@@ -1450,7 +1458,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
         std::string(
             ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
-        base::nullopt);
+        absl::nullopt);
     return;
   }
 
@@ -1463,7 +1471,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
         error_type,
         ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix +
             error_message,
-        base::nullopt);
+        absl::nullopt);
     return;
   }
 
@@ -1488,7 +1496,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
       });
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt, std::move(object_infos));
+                          absl::nullopt, std::move(object_infos));
 }
 
 bool ServiceWorkerContainerHost::IsValidGetRegistrationMessage(

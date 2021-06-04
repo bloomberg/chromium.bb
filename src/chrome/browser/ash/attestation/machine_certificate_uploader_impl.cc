@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/attestation/attestation_key_payload.pb.h"
@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_details.h"
 #include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -115,8 +116,8 @@ void MachineCertificateUploaderImpl::Start() {
   if (!attestation_flow_) {
     std::unique_ptr<ServerProxy> attestation_ca_client(
         new AttestationCAClient());
-    default_attestation_flow_.reset(
-        new AttestationFlow(std::move(attestation_ca_client)));
+    default_attestation_flow_ =
+        std::make_unique<AttestationFlow>(std::move(attestation_ca_client));
     attestation_flow_ = default_attestation_flow_.get();
   }
 

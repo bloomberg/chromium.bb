@@ -19,7 +19,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
-#include "content/common/frame_messages.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
@@ -328,7 +327,7 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 
 void CrossProcessFrameConnector::UpdateViewportIntersection(
     const blink::mojom::ViewportIntersectionState& intersection_state,
-    const base::Optional<blink::FrameVisualProperties>& visual_properties) {
+    const absl::optional<blink::FrameVisualProperties>& visual_properties) {
   if (visual_properties.has_value())
     SynchronizeVisualProperties(visual_properties.value(), false);
   UpdateViewportIntersectionInternal(intersection_state);
@@ -376,7 +375,7 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
     return;
   }
 
-  if (visible && !view_->host()->delegate()->IsHidden()) {
+  if (visible && !view_->host()->frame_tree()->IsHidden()) {
     view_->Show();
   } else if (!visible) {
     view_->Hide();

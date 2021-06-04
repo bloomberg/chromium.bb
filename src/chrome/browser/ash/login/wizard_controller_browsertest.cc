@@ -1069,23 +1069,13 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   }
 
   // WizardControllerFlowTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
-
-    // We need to initialize some dbus clients here, otherwise this test will
-    // timeout in WaitForAutoEnrollmentState on asan builds. TODO(stevenjb):
-    // Determine which client(s) need to be created and extract and initialize
-    // them. https://crbug.com/949063.
-    DBusThreadManager::GetSetterForTesting();
-  }
-
   void SetUpOnMainThread() override {
     WizardControllerFlowTest::SetUpOnMainThread();
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
     // Initialize the FakeShillManagerClient. This does not happen
-    // automatically because of the `DBusThreadManager::GetSetterForTesting`
+    // automatically because of the `DBusThreadManager::Initialize`
     // call in `SetUpInProcessBrowserTestFixture`. See https://crbug.com/847422.
     // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
     // automatically (https://crbug.com/847422).
@@ -1100,7 +1090,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableForcedReEnrollment,
-        chromeos::AutoEnrollmentController::kForcedReEnrollmentAlways);
+        AutoEnrollmentController::kForcedReEnrollmentAlways);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnrollmentInitialModulus, "1");
     command_line->AppendSwitchASCII(switches::kEnterpriseEnrollmentModulusLimit,
@@ -1466,7 +1456,7 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableInitialEnrollment,
-        chromeos::AutoEnrollmentController::kInitialEnrollmentAlways);
+        AutoEnrollmentController::kInitialEnrollmentAlways);
   }
 
   // Test initial enrollment. This method is shared by the tests for initial

@@ -5,6 +5,8 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "cc/paint/paint_image.h"
 #include "pdf/pdf_view_plugin_base.h"
@@ -12,13 +14,24 @@
 #include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+class WebAssociatedURLLoader;
+class WebLocalFrame;
 class WebPluginContainer;
+class WebURL;
+class WebURLRequest;
+struct WebAssociatedURLLoaderOptions;
 }  // namespace blink
+
+namespace gfx {
+class Range;
+}  // namespace gfx
 
 namespace chrome_pdf {
 
@@ -29,6 +42,42 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public PostMessageReceiver::Client,
                                public SkiaGraphics::Client {
  public:
+  class ContainerWrapper {
+   public:
+    virtual ~ContainerWrapper() = default;
+
+    // Invalidates the entire web plugin container and schedules a paint of the
+    // page in it.
+    virtual void Invalidate() = 0;
+
+    // Returns the device scale factor.
+    virtual float DeviceScaleFactor() const = 0;
+
+    // Calls underlying WebLocalFrame::SetReferrerForRequest().
+    virtual void SetReferrerForRequest(blink::WebURLRequest& request,
+                                       const blink::WebURL& referrer_url) = 0;
+
+    // Calls underlying WebLocalFrame::TextSelectionChanged().
+    virtual void TextSelectionChanged(const blink::WebString& selection_text,
+                                      uint32_t offset,
+                                      const gfx::Range& range) = 0;
+
+    // Calls underlying WebLocalFrame::CreateAssociatedURLLoader().
+    virtual std::unique_ptr<blink::WebAssociatedURLLoader>
+    CreateAssociatedURLLoader(
+        const blink::WebAssociatedURLLoaderOptions& options) = 0;
+
+    // Notifies the frame widget about the text input type change.
+    virtual void UpdateTextInputState() = 0;
+
+    // Returns the local frame to which the web plugin container belongs.
+    virtual blink::WebLocalFrame* GetFrame() = 0;
+
+    // Returns the blink web plugin container pointer that's wrapped inside this
+    // object. Returns nullptr if this object is for test only.
+    virtual blink::WebPluginContainer* Container() = 0;
+  };
+
   explicit PdfViewWebPlugin(const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
@@ -53,9 +102,19 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidReceiveData(const char* data, size_t data_length) override;
   void DidFinishLoading() override;
   void DidFailLoading(const blink::WebURLError& error) override;
+  bool HasSelection() const override;
+  blink::WebString SelectionAsText() const override;
+  blink::WebString SelectionAsMarkup() const override;
+  bool CanEditText() const override;
+  bool HasEditableText() const override;
+  bool CanUndo() const override;
+  bool CanRedo() const override;
+  bool ExecuteEditCommand(const blink::WebString& name,
+                          const blink::WebString& value) override;
+  blink::WebTextInputType GetPluginTextInputType() override;
 
   // PdfViewPluginBase:
-  void UpdateCursor(ui::mojom::CursorType cursor_type) override;
+  void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
@@ -100,6 +159,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // SkiaGraphics::Client:
   void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
 
+  // Initializes the plugin using the `container_wrapper` provided by tests.
+  bool InitializeForTesting(
+      std::unique_ptr<ContainerWrapper> container_wrapper);
+
+  const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
+
  protected:
   // PdfViewPluginBase:
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
@@ -127,18 +192,29 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
+  bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper);
+
   void OnViewportChanged(const gfx::Rect& view_rect, float new_device_scale);
 
   // Invalidates the entire web plugin container and schedules a paint of the
   // page in it.
   void InvalidatePluginContainer();
 
-  // Schedules a paint of the page of a given region in the web plugin
-  // container. The coordinates are relative to the top-left of the container.
-  void InvalidateRectInPluginContainer(const gfx::Rect& rect);
+  // Text editing methods.
+  bool SelectAll();
+  bool Cut();
+  bool Paste(const blink::WebString& value);
+  bool Undo();
+  bool Redo();
+
+  blink::WebString selected_text_;
+
+  blink::WebTextInputType text_input_type_ =
+      blink::WebTextInputType::kWebTextInputTypeNone;
 
   blink::WebPluginParams initial_params_;
-  blink::WebPluginContainer* container_ = nullptr;
+
+  std::unique_ptr<ContainerWrapper> container_wrapper_;
 
   v8::Persistent<v8::Object> scriptable_receiver_;
   PostMessageSender post_message_sender_;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"

@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager/lorgnette_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -27,15 +27,14 @@ class LorgnetteScannerManager : public KeyedService {
   using GetScannerNamesCallback =
       base::OnceCallback<void(std::vector<std::string> scanner_names)>;
   using GetScannerCapabilitiesCallback = base::OnceCallback<void(
-      const base::Optional<lorgnette::ScannerCapabilities>& capabilities)>;
+      const absl::optional<lorgnette::ScannerCapabilities>& capabilities)>;
   using ProgressCallback =
       base::RepeatingCallback<void(uint32_t progress_percent,
                                    uint32_t page_number)>;
   using PageCallback = base::RepeatingCallback<void(std::string scan_data,
                                                     uint32_t page_number)>;
   using CompletionCallback =
-      base::OnceCallback<void(bool success,
-                              lorgnette::ScanFailureMode failure_mode)>;
+      base::OnceCallback<void(lorgnette::ScanFailureMode failure_mode)>;
   using CancelCallback = base::OnceCallback<void(bool success)>;
 
   ~LorgnetteScannerManager() override = default;
@@ -47,7 +46,7 @@ class LorgnetteScannerManager : public KeyedService {
   virtual void GetScannerNames(GetScannerNamesCallback callback) = 0;
 
   // Returns the capabilities of the scanner specified by |scanner_name|. If
-  // |scanner_name| does not correspond to a known scanner, base::nullopt is
+  // |scanner_name| does not correspond to a known scanner, absl::nullopt is
   // returned in the callback.
   virtual void GetScannerCapabilities(
       const std::string& scanner_name,

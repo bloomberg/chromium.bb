@@ -51,6 +51,7 @@ using rtcp::ReceiveTimeInfo;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::ElementsAreArray;
+using ::testing::Eq;
 using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::IsEmpty;
@@ -83,14 +84,6 @@ class MockRtcpLossNotificationObserver : public RtcpLossNotificationObserver {
                uint16_t seq_num_of_last_decodable,
                uint16_t seq_num_of_last_received,
                bool decodability_flag),
-              (override));
-};
-
-class MockRtcpCallbackImpl : public RtcpStatisticsCallback {
- public:
-  MOCK_METHOD(void,
-              StatisticsUpdated,
-              (const RtcpStatistics&, uint32_t),
               (override));
 };
 
@@ -1266,53 +1259,17 @@ TEST(RtcpReceiverTest, TmmbrThreeConstraintsTimeOut) {
     mocks.clock.AdvanceTimeMilliseconds(5000);
   }
   // It is now starttime + 15.
-  std::vector<rtcp::TmmbItem> candidate_set = receiver.TmmbrReceived();
-  ASSERT_EQ(3u, candidate_set.size());
-  EXPECT_EQ(30000U, candidate_set[0].bitrate_bps());
+  EXPECT_THAT(receiver.TmmbrReceived(),
+              AllOf(SizeIs(3),
+                    Each(Property(&rtcp::TmmbItem::bitrate_bps, Eq(30'000U)))));
 
   // We expect the timeout to be 25 seconds. Advance the clock by 12
   // seconds, timing out the first packet.
   mocks.clock.AdvanceTimeMilliseconds(12000);
-  candidate_set = receiver.TmmbrReceived();
-  ASSERT_EQ(2u, candidate_set.size());
-  EXPECT_EQ(kSenderSsrc + 1, candidate_set[0].ssrc());
-}
-
-TEST(RtcpReceiverTest, Callbacks) {
-  ReceiverMocks mocks;
-  MockRtcpCallbackImpl callback;
-  RtpRtcpInterface::Configuration config = DefaultConfiguration(&mocks);
-  config.rtcp_statistics_callback = &callback;
-  RTCPReceiver receiver(config, &mocks.rtp_rtcp_impl);
-  receiver.SetRemoteSSRC(kSenderSsrc);
-
-  const uint8_t kFractionLoss = 3;
-  const uint32_t kCumulativeLoss = 7;
-  const uint32_t kJitter = 9;
-  const uint16_t kSequenceNumber = 1234;
-
-  // First packet, all numbers should just propagate.
-  rtcp::ReportBlock rb1;
-  rb1.SetMediaSsrc(kReceiverMainSsrc);
-  rb1.SetExtHighestSeqNum(kSequenceNumber);
-  rb1.SetFractionLost(kFractionLoss);
-  rb1.SetCumulativeLost(kCumulativeLoss);
-  rb1.SetJitter(kJitter);
-
-  rtcp::ReceiverReport rr1;
-  rr1.SetSenderSsrc(kSenderSsrc);
-  rr1.AddReportBlock(rb1);
-  EXPECT_CALL(callback,
-              StatisticsUpdated(
-                  AllOf(Field(&RtcpStatistics::fraction_lost, kFractionLoss),
-                        Field(&RtcpStatistics::packets_lost, kCumulativeLoss),
-                        Field(&RtcpStatistics::extended_highest_sequence_number,
-                              kSequenceNumber),
-                        Field(&RtcpStatistics::jitter, kJitter)),
-                  kReceiverMainSsrc));
-  EXPECT_CALL(mocks.rtp_rtcp_impl, OnReceivedRtcpReportBlocks);
-  EXPECT_CALL(mocks.bandwidth_observer, OnReceivedRtcpReceiverReport);
-  receiver.IncomingPacket(rr1.Build());
+  EXPECT_THAT(receiver.TmmbrReceived(),
+              UnorderedElementsAre(
+                  Property(&rtcp::TmmbItem::ssrc, Eq(kSenderSsrc + 1)),
+                  Property(&rtcp::TmmbItem::ssrc, Eq(kSenderSsrc + 2))));
 }
 
 TEST(RtcpReceiverTest,

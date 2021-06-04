@@ -13,7 +13,6 @@
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -40,16 +39,21 @@
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/compositor/throughput_tracker.h"
+#endif
 
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
@@ -59,6 +63,7 @@ class BookmarkBarView;
 class Browser;
 class ContentsLayoutManager;
 class ExclusiveAccessBubbleViews;
+class ExtensionsSidePanelController;
 class FeaturePromoControllerViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
@@ -78,9 +83,6 @@ class WebUITabStripContainerView;
 
 namespace ui {
 class NativeTheme;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-class ThroughputTracker;
-#endif
 }  // namespace ui
 
 namespace version_info {
@@ -174,7 +176,15 @@ class BrowserView : public BrowserWindow,
   // Container for the web contents.
   views::View* contents_container() { return contents_container_; }
 
-  SidePanel* side_panel() { return side_panel_; }
+  SidePanel* right_aligned_side_panel() { return right_aligned_side_panel_; }
+
+  SidePanel* left_aligned_side_panel_for_testing() {
+    return left_aligned_side_panel_;
+  }
+
+  ExtensionsSidePanelController* extensions_side_panel_controller() {
+    return extensions_side_panel_controller_.get();
+  }
 
   void set_contents_border_widget(views::Widget* contents_border_widget) {
     GetBrowserViewLayout()->set_contents_border_widget(contents_border_widget);
@@ -328,6 +338,10 @@ class BrowserView : public BrowserWindow,
   base::CallbackListSubscription AddOnLinkOpeningFromGestureCallback(
       OnLinkOpeningFromGestureCallback callback);
 
+  // Returns true when the window controls overlay should be displayed instead
+  // of a full titlebar. This is only supported for desktop web apps.
+  bool IsWindowControlsOverlayEnabled() const;
+
   // BrowserWindow:
   void Show() override;
   void ShowInactive() override;
@@ -421,7 +435,7 @@ class BrowserView : public BrowserWindow,
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(
@@ -431,6 +445,10 @@ class BrowserView : public BrowserWindow,
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) override;
+  sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
+      content::WebContents* contents,
+      sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
@@ -865,8 +883,17 @@ class BrowserView : public BrowserWindow,
   // Handled by ContentsLayoutManager.
   views::View* contents_container_ = nullptr;
 
-  // The side panel.
-  SidePanel* side_panel_ = nullptr;
+  // The side panel aligned to the right side of the browser window.
+  SidePanel* right_aligned_side_panel_ = nullptr;
+  views::View* right_aligned_side_panel_separator_ = nullptr;
+
+  // The side panel aligned to the left side of the browser window.
+  SidePanel* left_aligned_side_panel_ = nullptr;
+  views::View* left_aligned_side_panel_separator_ = nullptr;
+
+  // A controller that handles extensions hosted in the left aligned side panel.
+  std::unique_ptr<ExtensionsSidePanelController>
+      extensions_side_panel_controller_;
 
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
@@ -913,7 +940,7 @@ class BrowserView : public BrowserWindow,
   // is true, OnWidgetActivationChanged will call RestoreFocus. This is set
   // to true when not set in Show() so that RestoreFocus on activation only
   // happens for very first Show() calls.
-  base::Optional<bool> restore_focus_on_activation_;
+  absl::optional<bool> restore_focus_on_activation_;
 
   // This is non-null on Chrome OS only.
   std::unique_ptr<TopControlsSlideController> top_controls_slide_controller_;
@@ -967,7 +994,7 @@ class BrowserView : public BrowserWindow,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // |loading_animation_tracker_| is used to measure animation smoothness for
   // tab loading animation.
-  base::Optional<ui::ThroughputTracker> loading_animation_tracker_;
+  absl::optional<ui::ThroughputTracker> loading_animation_tracker_;
 #endif
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};

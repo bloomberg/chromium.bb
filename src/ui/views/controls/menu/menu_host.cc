@@ -24,7 +24,7 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 #include "ui/aura/window.h"
 #endif
 
@@ -32,7 +32,7 @@ namespace views {
 
 namespace internal {
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 // This class adds itself as the pre target handler for the |window|
 // passed in. It currently handles touch events and forwards them to the
 // controller. Reason for this approach is views does not get raw touch
@@ -79,7 +79,7 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
 
   DISALLOW_COPY_AND_ASSIGN(PreMenuEventDispatchHandler);
 };
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 void TransferGesture(ui::GestureRecognizer* gesture_recognizer,
                      gfx::NativeView source,
@@ -136,7 +136,7 @@ void MenuHost::InitMenuHost(Widget* parent,
   // Activatable, so that calling Show in ShowMenuHost will
   // get keyboard focus.
   if (parent == nullptr)
-    params.activatable = Widget::InitParams::ACTIVATABLE_YES;
+    params.activatable = Widget::InitParams::Activatable::kYes;
 #if defined(OS_WIN)
   // On Windows use the software compositor to ensure that we don't block
   // the UI thread blocking issue during command buffer creation. We can
@@ -145,7 +145,7 @@ void MenuHost::InitMenuHost(Widget* parent,
 #endif
   Init(std::move(params));
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   pre_dispatch_handler_ =
       std::make_unique<internal::PreMenuEventDispatchHandler>(
           menu_controller, submenu_, GetNativeView());
@@ -215,7 +215,7 @@ void MenuHost::DestroyMenuHost() {
   HideMenuHost();
   destroying_ = true;
   static_cast<MenuHostRootView*>(GetRootView())->ClearSubmenu();
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   pre_dispatch_handler_.reset();
 #endif
   Close();
@@ -303,6 +303,11 @@ void MenuHost::OnDragComplete() {
   // Return capture so we get MouseCaptureLost events.
   if (!should_close)
     native_widget_private()->SetCapture();
+}
+
+Widget* MenuHost::GetPrimaryWindowWidget() {
+  return owner_ ? owner_->GetPrimaryWindowWidget()
+                : Widget::GetPrimaryWindowWidget();
 }
 
 void MenuHost::OnWidgetDestroying(Widget* widget) {

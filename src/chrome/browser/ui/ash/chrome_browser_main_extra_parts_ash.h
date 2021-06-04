@@ -30,15 +30,16 @@ class AshShellInit;
 class CastConfigControllerMediaRouter;
 class ImeControllerClient;
 class InSessionAuthDialogClient;
-class LoginScreenClient;
+class LoginScreenClientImpl;
 class MediaClientImpl;
+class MicrophoneMuteNotificationDelegateImpl;
 class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
 class QuickAnswersBrowserClientImpl;
 class ScreenOrientationDelegateChromeos;
 class SessionControllerClientImpl;
-class SystemTrayClient;
+class SystemTrayClientImpl;
 class TabletModePageBehavior;
 class VpnListForwarder;
 class WallpaperControllerClientImpl;
@@ -50,7 +51,7 @@ class ExoParts;
 #endif
 
 namespace internal {
-class ChromeLauncherControllerInitializer;
+class ChromeShelfControllerInitializer;
 }
 
 // Browser initialization for Ash UI. Only use this for Ash specific
@@ -61,7 +62,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   ~ChromeBrowserMainExtraPartsAsh() override;
 
   // Overridden from ChromeBrowserMainExtraParts:
-  void PreMainMessageLoopStart() override;
+  void PreCreateMainMessageLoop() override;
   void PreProfileInit() override;
   void PostProfileInit() override;
   void PostBrowserStart() override;
@@ -91,7 +92,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ScreenOrientationDelegateChromeos>
       screen_orientation_delegate_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
-  std::unique_ptr<SystemTrayClient> system_tray_client_;
+  std::unique_ptr<SystemTrayClientImpl> system_tray_client_;
   std::unique_ptr<TabletModePageBehavior> tablet_mode_page_behavior_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
   std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
@@ -101,16 +102,18 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<chromeos::NetworkPortalNotificationController>
       network_portal_notification_controller_;
 
-  std::unique_ptr<internal::ChromeLauncherControllerInitializer>
-      chrome_launcher_controller_initializer_;
+  std::unique_ptr<internal::ChromeShelfControllerInitializer>
+      chrome_shelf_controller_initializer_;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   std::unique_ptr<ExoParts> exo_parts_;
 #endif
 
   // Initialized in PostProfileInit in all configs:
-  std::unique_ptr<LoginScreenClient> login_screen_client_;
+  std::unique_ptr<LoginScreenClientImpl> login_screen_client_;
   std::unique_ptr<MediaClientImpl> media_client_;
+  std::unique_ptr<MicrophoneMuteNotificationDelegateImpl>
+      microphone_mute_notification_delegate_;
   std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;
 
   // Initialized in PostBrowserStart in all configs:

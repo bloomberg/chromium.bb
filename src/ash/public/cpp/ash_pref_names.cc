@@ -146,9 +146,6 @@ const char kAccessibilityTabletModeShelfNavigationButtonsEnabled[] =
     "settings.a11y.tablet_mode_shelf_nav_buttons_enabled";
 // A boolean pref which determines whether dictation is enabled.
 const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
-// Whether the Live Caption feature is enabled.
-const char kLiveCaptionEnabled[] =
-    "accessibility.captions.live_caption_enabled";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
@@ -456,6 +453,12 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // a confirmation dialog.
 const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
 
+// A boolean pref that when set to true, displays the logout confirmation
+// dialog. If set to false, it prevents showing the dialog and the subsequent
+// logout after closing the last window.
+const char kSuggestLogoutAfterClosingLastWindow[] =
+    "suggest_logout_after_closing_last_window";
+
 // A dictionary pref that maps usernames to wallpaper info.
 const char kUserWallpaperInfo[] = "user_wallpaper_info";
 
@@ -465,6 +468,10 @@ const char kSyncableWallpaperInfo[] = "syncable_wallpaper_info";
 
 // A dictionary pref that maps wallpaper file paths to their prominent colors.
 const char kWallpaperColors[] = "ash.wallpaper.prominent_colors";
+
+// String pref storing the collection_id used to query for new wallpapers when
+// daily refresh is enabled.
+const char kWallpaperCollectionId[] = "ash.wallpaper.collection_id";
 
 // Boolean pref indicating whether a user has enabled the bluetooth adapter.
 const char kUserBluetoothAdapterEnabled[] =
@@ -621,6 +628,13 @@ const char kGlobalMediaControlsPinned[] =
 // PciePeripheral-related notifications before hiding new notifications.
 const char kPciePeripheralDisplayNotificationRemaining[] =
     "ash.pcie_peripheral_display_notification_remaining";
+
+// Boolean prefs storing whether various IME-related keyboard shortcut reminders
+// have previously been dismissed or not.
+const char kLastUsedImeShortcutReminderDismissed[] =
+    "ash.shortcut_reminders.last_used_ime_dismissed";
+const char kNextImeShortcutReminderDismissed[] =
+    "ash.shortcut_reminders.next_ime_dismissed";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

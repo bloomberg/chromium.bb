@@ -162,5 +162,12 @@ std::string MakeUniqueSessionId(const char* prefix) {
   return oss.str();
 }
 
+bool HasType(const Json::Value& object, CastMessageType type) {
+  OSP_DCHECK(object.isObject());
+  const Json::Value& value =
+      object.get(kMessageKeyType, Json::Value::nullSingleton());
+  return value.isString() && value.asString() == CastMessageTypeToString(type);
+}
+
 }  // namespace cast
 }  // namespace openscreen

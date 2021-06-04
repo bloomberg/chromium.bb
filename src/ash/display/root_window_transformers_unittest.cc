@@ -21,6 +21,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -430,7 +431,7 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   MirrorWindowTestApi test_api;
   UpdateDisplay("400x200,500x500");
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateCurrentRootWindowTransformerForMirroring());
   // Y margin must be margin is (500 - 500/400 * 200) / 2 = 125.
@@ -445,7 +446,7 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
 TEST_F(RootWindowTransformersTest, MirrorWithRotation) {
   MirrorWindowTestApi test_api;
   UpdateDisplay("400x200,500x500");
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
 
   for (auto rotation :
        {display::Display::ROTATE_0, display::Display::ROTATE_90,

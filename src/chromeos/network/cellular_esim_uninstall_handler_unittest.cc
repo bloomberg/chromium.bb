@@ -84,7 +84,6 @@ class CellularESimUninstallHandlerTest : public testing::Test {
         std::make_unique<FakeStubCellularNetworksProvider>();
     network_state_handler_->set_stub_cellular_networks_provider(
         stub_cellular_networks_provider_.get());
-    SetupNetwork();
   }
 
   void TearDown() override {
@@ -100,11 +99,45 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     shill_clients::Shutdown();
   }
 
+  void Init(bool is_first_profile_active = true) {
+    auto first_profile_state = is_first_profile_active
+                                   ? hermes::profile::State::kActive
+                                   : hermes::profile::State::kInactive;
+
+    ShillDeviceClient::Get()->GetTestInterface()->AddDevice(
+        kDefaultCellularDevicePath, shill::kTypeCellular, "cellular1");
+    HermesManagerClient::Get()->GetTestInterface()->AddEuicc(
+        dbus::ObjectPath(kDefaultEuiccPath), kDefaultEid, /*is_active=*/true,
+        /*physical_slot=*/0);
+    HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
+        dbus::ObjectPath(kTestCarrierProfilePath),
+        dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid,
+        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath,
+        first_profile_state, hermes::profile::ProfileClass::kOperational,
+        HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+            kAddProfileWithService);
+    HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
+        dbus::ObjectPath(kTestCarrierProfilePath2),
+        dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid2,
+        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath2,
+        hermes::profile::State::kInactive,
+        hermes::profile::ProfileClass::kOperational,
+        HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+            kAddProfileWithService);
+    base::RunLoop().RunUntilIdle();
+
+    ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
+        kTestNetworkServicePath, shill::kStateProperty,
+        base::Value(shill::kStateOnline));
+    base::RunLoop().RunUntilIdle();
+  }
+
   void UninstallESim(base::RunLoop& run_loop,
+                     const std::string& iccid,
                      const std::string& carrier_profile_path,
                      bool& status) {
     cellular_esim_uninstall_handler_->UninstallESim(
-        kTestCellularIccid, dbus::ObjectPath(carrier_profile_path),
+        iccid, dbus::ObjectPath(carrier_profile_path),
         dbus::ObjectPath(kDefaultEuiccPath),
         base::BindLambdaForTesting([&](bool status_result) {
           status = status_result;
@@ -141,37 +174,12 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     network_state_handler_->SyncStubCellularNetworks();
   }
 
- private:
-  void SetupNetwork() {
-    ShillDeviceClient::Get()->GetTestInterface()->AddDevice(
-        kDefaultCellularDevicePath, shill::kTypeCellular, "cellular1");
-    HermesManagerClient::Get()->GetTestInterface()->AddEuicc(
-        dbus::ObjectPath(kDefaultEuiccPath), kDefaultEid, /*is_active=*/true,
-        /*physical_slot=*/0);
-    HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
-        dbus::ObjectPath(kTestCarrierProfilePath),
-        dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid,
-        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath,
-        hermes::profile::State::kActive,
-        hermes::profile::ProfileClass::kOperational,
-        HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
-            kAddProfileWithService);
-    HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
-        dbus::ObjectPath(kTestCarrierProfilePath2),
-        dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid2,
-        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath2,
-        hermes::profile::State::kInactive,
-        hermes::profile::ProfileClass::kOperational,
-        HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
-            kAddProfileWithService);
-    base::RunLoop().RunUntilIdle();
-
-    ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
-        kTestNetworkServicePath, shill::kStateProperty,
-        base::Value(shill::kStateOnline));
-    base::RunLoop().RunUntilIdle();
+  void SetHasRefreshedProfiles(bool has_refreshed) {
+    cellular_esim_profile_handler_->SetHasRefreshedProfilesForEuicc(
+        kDefaultEid, has_refreshed);
   }
 
+ private:
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
@@ -188,10 +196,33 @@ class CellularESimUninstallHandlerTest : public testing::Test {
 };
 
 TEST_F(CellularESimUninstallHandlerTest, Success) {
+  Init();
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+
   base::RunLoop run_loop;
   bool status;
-  UninstallESim(run_loop, kTestCarrierProfilePath, status);
+  UninstallESim(run_loop, kTestCellularIccid, kTestCarrierProfilePath, status);
+  HandleNetworkDisconnect(/*should_fail=*/false);
+  run_loop.Run();
+
+  // Verify that the esim profile and shill service configuration are removed
+  // properly.
+  HermesEuiccClient::Properties* euicc_properties =
+      HermesEuiccClient::Get()->GetProperties(
+          dbus::ObjectPath(kDefaultEuiccPath));
+  ASSERT_TRUE(euicc_properties);
+  EXPECT_EQ(1u, euicc_properties->installed_carrier_profiles().value().size());
+  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
+  EXPECT_TRUE(status);
+}
+
+TEST_F(CellularESimUninstallHandlerTest, Success_AlreadyDisabled) {
+  Init(/*is_first_profile_active=*/false);
+  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+
+  base::RunLoop run_loop;
+  bool status;
+  UninstallESim(run_loop, kTestCellularIccid, kTestCarrierProfilePath, status);
   HandleNetworkDisconnect(/*should_fail=*/false);
   run_loop.Run();
 
@@ -207,10 +238,12 @@ TEST_F(CellularESimUninstallHandlerTest, Success) {
 }
 
 TEST_F(CellularESimUninstallHandlerTest, DisconnectFailure) {
+  Init();
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+
   bool status;
   base::RunLoop run_loop;
-  UninstallESim(run_loop, kTestCarrierProfilePath, status);
+  UninstallESim(run_loop, kTestCellularIccid, kTestCarrierProfilePath, status);
   HandleNetworkDisconnect(/*should_fail=*/true);
   run_loop.Run();
   EXPECT_FALSE(status);
@@ -218,12 +251,14 @@ TEST_F(CellularESimUninstallHandlerTest, DisconnectFailure) {
 }
 
 TEST_F(CellularESimUninstallHandlerTest, HermesFailure) {
+  Init();
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+
   HermesEuiccClient::Get()->GetTestInterface()->QueueHermesErrorStatus(
       HermesResponseStatus::kErrorUnknown);
   bool status;
   base::RunLoop run_loop;
-  UninstallESim(run_loop, kTestCarrierProfilePath, status);
+  UninstallESim(run_loop, kTestCellularIccid, kTestCarrierProfilePath, status);
   HandleNetworkDisconnect(/*should_fail=*/false);
   run_loop.Run();
   EXPECT_FALSE(status);
@@ -231,35 +266,41 @@ TEST_F(CellularESimUninstallHandlerTest, HermesFailure) {
 }
 
 TEST_F(CellularESimUninstallHandlerTest, MultipleRequests) {
+  Init();
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
 
   // Make two uninstall requests back to back.
   bool status1, status2;
   base::RunLoop run_loop1, run_loop2;
-  UninstallESim(run_loop1, kTestCarrierProfilePath, status1);
-  UninstallESim(run_loop2, kTestCarrierProfilePath2, status2);
+
+  UninstallESim(run_loop1, kTestCellularIccid, kTestCarrierProfilePath,
+                status1);
+  UninstallESim(run_loop2, kTestCellularIccid2, kTestCarrierProfilePath2,
+                status2);
+
+  // Only the first profile is connected, so only one disconnect handler is
+  // needed.
   HandleNetworkDisconnect(/*should_fail=*/false);
-  HandleNetworkDisconnect(/*should_fail=*/true);
+
   run_loop1.Run();
   run_loop2.Run();
 
-  // Verify that only the first request succeeded.
+  // Verify that both requests succeeded.
   EXPECT_TRUE(status1);
-  EXPECT_FALSE(status2);
+  EXPECT_TRUE(status2);
   HermesEuiccClient::Properties* euicc_properties =
       HermesEuiccClient::Get()->GetProperties(
           dbus::ObjectPath(kDefaultEuiccPath));
   ASSERT_TRUE(euicc_properties);
-  EXPECT_EQ(1u, euicc_properties->installed_carrier_profiles().value().size());
-  EXPECT_EQ(
-      kTestCarrierProfilePath2,
-      euicc_properties->installed_carrier_profiles().value().front().value());
+  EXPECT_TRUE(euicc_properties->installed_carrier_profiles().value().empty());
   EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
-  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
+  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath2));
 }
 
 TEST_F(CellularESimUninstallHandlerTest, StubCellularNetwork) {
+  Init();
+
   // Remove shill eSIM service and add a corresponding stub service.
   ShillServiceClient::Get()->GetTestInterface()->RemoveService(
       kTestNetworkServicePath);
@@ -269,23 +310,42 @@ TEST_F(CellularESimUninstallHandlerTest, StubCellularNetwork) {
   // Verify that removing the eSIM profile succeeds.
   base::RunLoop run_loop;
   bool success;
-  UninstallESim(run_loop, kTestCarrierProfilePath, success);
+  UninstallESim(run_loop, kTestCellularIccid, kTestCarrierProfilePath, success);
   run_loop.Run();
   EXPECT_TRUE(success);
 }
 
 TEST_F(CellularESimUninstallHandlerTest, RemovesShillOnlyServices) {
+  Init();
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
 
-  // Remove profile without removing service.
+  // Start without having refreshed profiles.
+  SetHasRefreshedProfiles(/*has_refreshed=*/false);
+
+  // Remove first profile without removing service. Both services should still
+  // exist, since removal of stale services only occurs if the EUICC has been
+  // refreshed.
   EXPECT_TRUE(
       HermesEuiccClient::Get()->GetTestInterface()->RemoveCarrierProfile(
           dbus::ObjectPath(kDefaultEuiccPath),
           dbus::ObjectPath(kTestCarrierProfilePath)));
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
 
-  // Verify that stale service is also removed.
+  // Finish refreshing profiles.
+  SetHasRefreshedProfiles(/*has_refreshed=*/true);
+
+  // Remove the second profile without removing service. Both services should
+  // have been detected as "stale" and should now be removed.
+  EXPECT_TRUE(
+      HermesEuiccClient::Get()->GetTestInterface()->RemoveCarrierProfile(
+          dbus::ObjectPath(kDefaultEuiccPath),
+          dbus::ObjectPath(kTestCarrierProfilePath2)));
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
+  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath2));
 }
 
 }  // namespace chromeos

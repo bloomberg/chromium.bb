@@ -19,6 +19,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/base/backoff_entry.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -129,7 +130,7 @@ class ProfileOAuth2TokenServiceDelegate {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   // Triggers platform specific implementation to reload accounts from system.
   virtual void ReloadAllAccountsFromSystemWithPrimaryAccount(
-      const base::Optional<CoreAccountId>& primary_account_id) {}
+      const absl::optional<CoreAccountId>& primary_account_id) {}
 #endif
 
 #if defined(OS_IOS)

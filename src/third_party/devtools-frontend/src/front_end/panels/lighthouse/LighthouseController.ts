@@ -7,6 +7,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 
 import type {ProtocolService} from './LighthouseProtocolService.js';
 
@@ -131,7 +132,7 @@ const UIStrings = {
   * Lighthouse. Resetting the storage clears/empties it to a neutral state.
   */
   resetStorageLocalstorage:
-      'Reset storage (`localStorage`, `IndexedDB`, etc) before auditing. (Good for performance & `PWA` testing)',
+      'Reset storage (`cache`, `service workers`, etc) before auditing. (Good for performance & `PWA` testing)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

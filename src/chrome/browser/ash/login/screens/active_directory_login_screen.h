@@ -9,16 +9,17 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/active_directory_login_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/login/auth/key.h"
 
-namespace chromeos {
-
-class ActiveDirectoryLoginView;
-class Key;
+namespace ash {
 
 // Controller for the active directory login screen.
 class ActiveDirectoryLoginScreen
@@ -59,7 +60,7 @@ class ActiveDirectoryLoginScreen
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
+  bool HandleAccelerator(LoginAcceleratorAction action) override;
 
   void ShowOfflineMessage(NetworkStateInformer::State state,
                           NetworkError::ErrorReason reason);
@@ -73,9 +74,8 @@ class ActiveDirectoryLoginScreen
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  std::unique_ptr<
-      ScopedObserver<NetworkStateInformer, NetworkStateInformerObserver>>
-      scoped_observer_;
+  base::ScopedObservation<NetworkStateInformer, NetworkStateInformerObserver>
+      scoped_observation_{this};
 
   ErrorScreen* error_screen_ = nullptr;
 
@@ -87,6 +87,12 @@ class ActiveDirectoryLoginScreen
   base::WeakPtrFactory<ActiveDirectoryLoginScreen> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::ActiveDirectoryLoginScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_ACTIVE_DIRECTORY_LOGIN_SCREEN_H_

@@ -7,19 +7,21 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/token.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_bubble_owner.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 class BrowserView;
-class FeaturePromoBubbleView;
-struct FeaturePromoBubbleParams;
 class FeaturePromoSnoozeService;
+
+struct FeaturePromoBubbleParams;
 
 namespace base {
 struct Feature;
@@ -32,11 +34,11 @@ class Tracker;
 
 // Views implementation of FeaturePromoController. There is one instance
 // per window.
-class FeaturePromoControllerViews : public FeaturePromoController,
-                                    public views::WidgetObserver {
+class FeaturePromoControllerViews : public FeaturePromoController {
  public:
   // Create the instance for the given |browser_view|.
-  explicit FeaturePromoControllerViews(BrowserView* browser_view);
+  explicit FeaturePromoControllerViews(BrowserView* browser_view,
+                                       FeaturePromoBubbleOwner* bubble_owner);
   ~FeaturePromoControllerViews() override;
 
   // Get the appropriate instance for |view|. This finds the BrowserView
@@ -62,7 +64,7 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   //
   // Returns an ID that can be passed to CloseBubbleForCriticalPromo()
   // if successful. This can fail if another critical promo is showing.
-  base::Optional<base::Token> ShowCriticalPromo(
+  absl::optional<base::Token> ShowCriticalPromo(
       const FeaturePromoBubbleParams& params);
 
   // Ends a promo started by ShowCriticalPromo() if it's still showing.
@@ -81,10 +83,6 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   PromoHandle CloseBubbleAndContinuePromo(
       const base::Feature& iph_feature) override;
 
-  // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetDestroying(views::Widget* widget) override;
-
   // Gets the IPH backend. Provided for convenience.
   feature_engagement::Tracker* feature_engagement_tracker() { return tracker_; }
 
@@ -92,11 +90,6 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   // current promo unless an outstanding PromoHandle from
   // CloseBubbleAndContinuePromo exists. Intended for browser tests.
   void BlockPromosForTesting();
-
-  FeaturePromoBubbleView* promo_bubble_for_testing() { return promo_bubble_; }
-  const FeaturePromoBubbleView* promo_bubble_for_testing() const {
-    return promo_bubble_;
-  }
 
   FeaturePromoSnoozeService* snooze_service_for_testing() {
     return snooze_service_.get();
@@ -110,7 +103,7 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   // Called when PromoHandle is destroyed to finish the promo.
   void FinishContinuedPromo() override;
 
-  void ShowPromoBubbleImpl(const FeaturePromoBubbleParams& params);
+  bool ShowPromoBubbleImpl(const FeaturePromoBubbleParams& params);
 
   void HandleBubbleClosed();
 
@@ -120,6 +113,9 @@ class FeaturePromoControllerViews : public FeaturePromoController,
 
   // The browser window this instance is responsible for.
   BrowserView* const browser_view_;
+
+  // The delegate responsible for creating and owning a bubble.
+  FeaturePromoBubbleOwner* const bubble_owner_;
 
   // Snooze service that is notified when a user snoozes or dismisses the promo.
   // Ask this service for display permission before |tracker_|.
@@ -133,15 +129,15 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   // feature registered with |tracker_|.
   const base::Feature* current_iph_feature_ = nullptr;
 
+  // Bubble ID from `bubble_owner_`, if a bubble is showing.
+  absl::optional<base::Token> bubble_id_;
+
   // Has a value if a critical promo is showing. If this has a value,
   // |current_iph_feature_| will usually be null. There is one edge case
   // where this may not be true: when a critical promo is requested
   // between a normal promo's CloseBubbleAndContinuePromo() call and its
   // end.
-  base::Optional<base::Token> current_critical_promo_;
-
-  // The bubble currently showing, if any.
-  FeaturePromoBubbleView* promo_bubble_ = nullptr;
+  absl::optional<base::Token> current_critical_promo_;
 
   // If present, called when |current_iph_feature_|'s bubble stops
   // showing. Only valid if |current_iph_feature_| and |promo_bubble_|
@@ -153,8 +149,6 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   views::ViewTracker anchor_view_tracker_;
 
   bool promos_blocked_for_testing_ = false;
-
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   base::WeakPtrFactory<FeaturePromoControllerViews> weak_ptr_factory_{this};
 };

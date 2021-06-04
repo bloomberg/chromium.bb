@@ -458,7 +458,7 @@ void AXNodeData::AddStringAttribute(ax::mojom::StringAttribute attribute,
   string_attributes.push_back(std::make_pair(attribute, value));
 }
 
-void AXNodeData::AddChildTreeId(const ui::AXTreeID& tree_id) {
+void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
   ax::mojom::StringAttribute attribute =
       ax::mojom::StringAttribute::kChildTreeId;
   if (HasStringAttribute(attribute))
@@ -984,8 +984,7 @@ bool AXNodeData::IsSelectable() const {
 }
 
 bool AXNodeData::IsIgnored() const {
-  return HasState(ax::mojom::State::kIgnored) ||
-         role == ax::mojom::Role::kIgnored;
+  return HasState(ax::mojom::State::kIgnored) || role == ax::mojom::Role::kNone;
 }
 
 bool AXNodeData::IsInvisible() const {
@@ -1022,43 +1021,25 @@ bool AXNodeData::IsMenuButton() const {
 }
 
 bool AXNodeData::IsTextField() const {
-  return IsPlainTextField() || IsRichTextField();
+  return IsAtomicTextField() || IsNonAtomicTextField();
 }
 
 bool AXNodeData::IsPasswordField() const {
   return IsTextField() && HasState(ax::mojom::State::kProtected);
 }
 
-bool AXNodeData::IsPlainTextField() const {
-  // We need to check both the role and editable state, because some ARIA text
-  // fields may in fact not be editable, whilst some editable fields might not
-  // have the role.
-  if (HasState(ax::mojom::State::kRichlyEditable))
-    return false;
-
-  // Blink adds the "kEditableRoot" attribute to all nodes that are at the root
-  // of any editable region, such as an <input> or a <textarea> field.
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
-    DCHECK(HasState(ax::mojom::State::kEditable));
-    return true;
-  }
-
-  // Has editable ARIA role, but is not actually editable.
-  // In theory, a webpage author could create a plain text field by using any of
-  // the following ARIA roles, even on elements that do not have the
-  // contenteditable attribute set. For example, <div role="textbox">. However,
-  // in practice it might be difficult to create such a plain text field because
-  // it would be hard to support text selection and a caret without specifying
-  // contenteditable="true"
-  // Exposing these roles as plain text fields is harmless and simplifies tests.
-  return role == ax::mojom::Role::kTextField ||
-         role == ax::mojom::Role::kTextFieldWithComboBox ||
-         role == ax::mojom::Role::kSearchBox;
+bool AXNodeData::IsAtomicTextField() const {
+  // ARIA-based textboxes or searchboxes could mistakenly be identified as
+  // atomic text fields, i.e. be identified as an <input> or a <textarea>. This
+  // can only occur when the web author hasn't specified the "contenteditable"
+  // attribute. Since these kinds of text fields are not really usable, we
+  // decide not to support them.
+  return ui::IsTextField(role) &&
+         !HasBoolAttribute(ax::mojom::BoolAttribute::kContentEditableRoot);
 }
 
-bool AXNodeData::IsRichTextField() const {
-  return GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
-         HasState(ax::mojom::State::kRichlyEditable);
+bool AXNodeData::IsNonAtomicTextField() const {
+  return HasBoolAttribute(ax::mojom::BoolAttribute::kContentEditableRoot);
 }
 
 bool AXNodeData::IsReadOnlyOrDisabled() const {
@@ -1540,8 +1521,8 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kContainerLiveStatus:
         result += " container_live=" + value;
         break;
-      case ax::mojom::StringAttribute::kParentTreeNodeAppId:
-        result += " parent_tree_node_app_id=" + value.substr(0, 8);
+      case ax::mojom::StringAttribute::kAppId:
+        result += " app_id=" + value.substr(0, 8);
         break;
       case ax::mojom::StringAttribute::kPlaceholder:
         result += " placeholder=" + value;
@@ -1606,8 +1587,8 @@ std::string AXNodeData::ToString() const {
        bool_attributes) {
     std::string value = bool_attribute.second ? "true" : "false";
     switch (bool_attribute.first) {
-      case ax::mojom::BoolAttribute::kEditableRoot:
-        result += " editable_root=" + value;
+      case ax::mojom::BoolAttribute::kContentEditableRoot:
+        result += " contentEditable_root=" + value;
         break;
       case ax::mojom::BoolAttribute::kLiveAtomic:
         result += " atomic=" + value;

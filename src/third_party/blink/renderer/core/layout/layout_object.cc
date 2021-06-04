@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
@@ -145,19 +146,22 @@ LayoutObject* FindAncestorByPredicate(const LayoutObject* descendant,
     if (skip_info)
       skip_info->Update(*object);
 
-    // According to the HTML standard, a rendered legend is a child of a
-    // fieldset. However a rendered legend is a child of an anonymous fieldset
-    // content box in a LayoutObject tree.  NG fragment trees follow the
-    // structure of the standard.
-    //
-    // The following code resolves this inconsistency, and we skip anonymous
-    // fieldset content boxes if |descendant| is in a rendered legend.
     if (UNLIKELY(object->IsRenderedLegend())) {
+      // According to the HTML standard, a rendered legend is a child of a
+      // fieldset. However a rendered legend is a child of an anonymous fieldset
+      // content box in a LayoutObject tree. NG fragment trees follow the
+      // structure of the standard.
+      //
+      // The following code resolves this inconsistency, and we skip anonymous
+      // fieldset content boxes if |descendant| is in a rendered legend. We also
+      // need to skip flow threads, in case the containing fieldset also
+      // establishes a multicol container.
       LayoutObject* legend_parent = object->Parent();
-      if (legend_parent->IsAnonymous()) {
+      while (legend_parent->IsAnonymous()) {
         if (skip_info)
           skip_info->Update(*legend_parent);
         object = legend_parent;
+        legend_parent = legend_parent->Parent();
       }
     } else if (UNLIKELY(object->IsColumnSpanAll())) {
       // The containing block chain goes directly from the column spanner to the
@@ -854,6 +858,11 @@ PaintLayer* LayoutObject::EnclosingLayer() const {
 PaintLayer* LayoutObject::PaintingLayer() const {
   NOT_DESTROYED();
   auto FindContainer = [](const LayoutObject& object) -> const LayoutObject* {
+    // Column spanners paint through their multicolumn containers which can
+    // be accessed through the associated out-of-flow placeholder's parent.
+    if (object.IsColumnSpanAll())
+      return object.SpannerPlaceholder();
+    // Rendered legends paint through their fieldset container.
     if (object.IsRenderedLegend())
       return LayoutFieldset::FindLegendContainingBlock(To<LayoutBox>(object));
     // Use ContainingBlock() instead of Parent() for floating objects to omit
@@ -870,13 +879,8 @@ PaintLayer* LayoutObject::PaintingLayer() const {
   for (const LayoutObject* current = this; current;
        current = FindContainer(*current)) {
     if (current->HasLayer() &&
-        To<LayoutBoxModelObject>(current)->Layer()->IsSelfPaintingLayer()) {
+        To<LayoutBoxModelObject>(current)->Layer()->IsSelfPaintingLayer())
       return To<LayoutBoxModelObject>(current)->Layer();
-    } else if (current->IsColumnSpanAll()) {
-      // Column spanners paint through their multicolumn containers which can
-      // be accessed through the associated out-of-flow placeholder's parent.
-      current = current->SpannerPlaceholder();
-    }
   }
   // TODO(crbug.com/365897): we should get rid of detached layout subtrees, at
   // which point this code should not be reached.
@@ -1582,14 +1586,24 @@ IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
   return result;
 }
 
-PhysicalRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
+PhysicalRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyInline(
+    MapCoordinatesFlags flags) const {
   NOT_DESTROYED();
-  return PhysicalRect::EnclosingRect(AbsoluteBoundingBoxFloatRect());
+  return PhysicalRect::EnclosingRect(AbsoluteBoundingBoxFloatRect(flags));
 }
 
 PhysicalRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
   NOT_DESTROYED();
-  PhysicalRect rect = AbsoluteBoundingBoxRectHandlingEmptyInline();
+  // Ignore sticky position offsets for the purposes of scrolling elements into
+  // view. See https://www.w3.org/TR/css-position-3/#stickypos-scroll for
+  // details
+
+  const MapCoordinatesFlags flag =
+      (RuntimeEnabledFeatures::CSSPositionStickyStaticScrollPositionEnabled())
+          ? kIgnoreStickyOffset
+          : 0;
+
+  PhysicalRect rect = AbsoluteBoundingBoxRectHandlingEmptyInline(flag);
   const auto& style = StyleRef();
   rect.ExpandEdges(LayoutUnit(style.ScrollMarginTop()),
                    LayoutUnit(style.ScrollMarginRight()),
@@ -1660,6 +1674,7 @@ LayoutObject::EnclosingDirectlyCompositableContainer() const {
 
 RecalcLayoutOverflowResult LayoutObject::RecalcLayoutOverflow() {
   NOT_DESTROYED();
+  ClearSelfNeedsLayoutOverflowRecalc();
   if (!ChildNeedsLayoutOverflowRecalc())
     return RecalcLayoutOverflowResult();
 
@@ -1691,6 +1706,16 @@ void LayoutObject::RecalcNormalFlowChildVisualOverflowIfNeeded() {
     return;
   RecalcVisualOverflow();
 }
+
+#if DCHECK_IS_ON()
+void LayoutObject::InvalidateVisualOverflow() {
+  if (auto* box = DynamicTo<LayoutBox>(this)) {
+    for (const NGPhysicalBoxFragment& fragment : box->PhysicalFragments())
+      fragment.GetMutableForPainting().InvalidateInkOverflow();
+  }
+  // For now, we can only check |LayoutBox| laid out by NG.
+}
+#endif
 
 bool LayoutObject::HasDistortingVisualEffects() const {
   NOT_DESTROYED();
@@ -2239,7 +2264,8 @@ StyleDifference LayoutObject::AdjustStyleDifference(
 }
 
 void LayoutObject::SetPseudoElementStyle(
-    scoped_refptr<const ComputedStyle> pseudo_style) {
+    scoped_refptr<const ComputedStyle> pseudo_style,
+    bool match_parent_size) {
   NOT_DESTROYED();
   DCHECK(pseudo_style->StyleType() == kPseudoIdBefore ||
          pseudo_style->StyleType() == kPseudoIdAfter ||
@@ -2260,6 +2286,11 @@ void LayoutObject::SetPseudoElementStyle(
     scoped_refptr<ComputedStyle> style =
         GetDocument().GetStyleResolver().CreateComputedStyle();
     style->InheritFrom(*pseudo_style);
+    if (match_parent_size) {
+      DCHECK(IsImage());
+      style->SetWidth(Length::Percent(100));
+      style->SetHeight(Length::Percent(100));
+    }
     SetStyle(std::move(style));
     return;
   }
@@ -2327,6 +2358,13 @@ void LayoutObject::SetNeedsOverflowRecalc(
         overflow_recalc_type ==
         OverflowRecalcType::kLayoutAndVisualOverflowRecalc);
   }
+
+#if 0  // TODO(crbug.com/1205708): This should pass, but it's not ready yet.
+#if DCHECK_IS_ON()
+  if (PaintLayer* layer = PaintingLayer())
+    DCHECK(layer->NeedsVisualOverflowRecalc());
+#endif
+#endif
 }
 
 DISABLE_CFI_PERF
@@ -2421,6 +2459,9 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       PaintingLayer()->SetNeedsVisualOverflowRecalc();
       SetShouldCheckForPaintInvalidation();
     }
+#if DCHECK_IS_ON()
+    InvalidateVisualOverflow();
+#endif
   }
 
   if (diff.NeedsPaintInvalidation() || updated_diff.NeedsPaintInvalidation()) {
@@ -4170,6 +4211,17 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
     if (!node)
       continue;
 
+    // In the case where |base| is getting slotted into a shadow root, we
+    // shouldn't return anything inside the shadow root. The returned node must
+    // be in the same shadow root or document as |base|.
+    // https://github.com/w3c/csswg-drafts/issues/159
+    // TODO(crbug.com/920069): Remove the feature check here when the feature
+    // has gotten to stable without any issues.
+    if (RuntimeEnabledFeatures::OffsetParentNewSpecBehaviorEnabled() && base &&
+        !base->IsDescendantOrShadowDescendantOf(&node->TreeRoot())) {
+      continue;
+    }
+
     // TODO(kochi): If |base| or |node| is nested deep in shadow roots, this
     // loop may get expensive, as isUnclosedNodeOf() can take up to O(N+M) time
     // (N and M are depths).
@@ -4369,7 +4421,6 @@ static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
   switch (document_lifecycle.GetState()) {
     case DocumentLifecycle::kInStyleRecalc:
       return PaintInvalidationReason::kStyle;
-    case DocumentLifecycle::kInPreLayout:
     case DocumentLifecycle::kInPerformLayout:
     case DocumentLifecycle::kAfterPerformLayout:
       return PaintInvalidationReason::kGeometry;
@@ -4482,7 +4533,6 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  fragment_.SetPartialInvalidationLocalRect(PhysicalRect());
   if (!ShouldDelayFullPaintInvalidation()) {
     full_paint_invalidation_reason_ = PaintInvalidationReason::kNone;
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(false);
@@ -4505,8 +4555,7 @@ bool LayoutObject::PaintInvalidationStateIsDirty() const {
          DescendantShouldCheckGeometryForPaintInvalidation() ||
          ShouldDoFullPaintInvalidation() ||
          SubtreeShouldDoFullPaintInvalidation() ||
-         MayNeedPaintInvalidationAnimatedBackgroundImage() ||
-         !fragment_.PartialInvalidationLocalRect().IsEmpty();
+         MayNeedPaintInvalidationAnimatedBackgroundImage();
 }
 #endif
 
@@ -4774,6 +4823,9 @@ void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
     if (box_model_object->HasSelfPaintingLayer())
       box_model_object->Layer()->SetNeedsVisualOverflowRecalc();
   }
+#if DCHECK_IS_ON()
+  InvalidateVisualOverflow();
+#endif
 }
 
 bool IsMenuList(const LayoutObject* object) {

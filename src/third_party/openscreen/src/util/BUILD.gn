@@ -17,31 +17,14 @@ config("trace_logging_config") {
   }
 }
 
-source_set("util") {
+# The set of util classes which have no dependency on platform:api.
+source_set("base") {
   sources = [
-    "alarm.cc",
-    "alarm.h",
     "base64.cc",
     "base64.h",
     "big_endian.cc",
     "big_endian.h",
     "chrono_helpers.h",
-    "crypto/certificate_utils.cc",
-    "crypto/certificate_utils.h",
-    "crypto/digest_sign.cc",
-    "crypto/digest_sign.h",
-    "crypto/openssl_util.cc",
-    "crypto/openssl_util.h",
-    "crypto/pem_helpers.cc",
-    "crypto/pem_helpers.h",
-    "crypto/random_bytes.cc",
-    "crypto/random_bytes.h",
-    "crypto/rsa_private_key.cc",
-    "crypto/rsa_private_key.h",
-    "crypto/secure_hash.cc",
-    "crypto/secure_hash.h",
-    "crypto/sha2.cc",
-    "crypto/sha2.h",
     "enum_name_table.h",
     "flat_map.h",
     "hashing.h",
@@ -59,10 +42,6 @@ source_set("util") {
     "std_util.h",
     "stringprintf.cc",
     "stringprintf.h",
-    "trace_logging.h",
-    "trace_logging/macro_support.h",
-    "trace_logging/scoped_trace_operations.cc",
-    "trace_logging/scoped_trace_operations.h",
     "url.cc",
     "url.h",
     "weak_ptr.h",
@@ -71,20 +50,58 @@ source_set("util") {
   ]
 
   public_deps = [
-    "../platform:api",
     "../platform:base",
+    "../platform:logging",
     "../third_party/abseil",
     "../third_party/jsoncpp",
   ]
 
   deps = [
-    "../third_party/boringssl",
     "../third_party/mozilla",
 
     # We do a clone of Chrome's modp_b64 in order to share their BUILD.gn
     # and license files, so this should always be an absolute reference.
     "//third_party/modp_b64",
   ]
+
+  public_configs = [ "../build:openscreen_include_dirs" ]
+}
+
+source_set("util") {
+  sources = [
+    "alarm.cc",
+    "alarm.h",
+    "crypto/certificate_utils.cc",
+    "crypto/certificate_utils.h",
+    "crypto/digest_sign.cc",
+    "crypto/digest_sign.h",
+    "crypto/openssl_util.cc",
+    "crypto/openssl_util.h",
+    "crypto/pem_helpers.cc",
+    "crypto/pem_helpers.h",
+    "crypto/random_bytes.cc",
+    "crypto/random_bytes.h",
+    "crypto/rsa_private_key.cc",
+    "crypto/rsa_private_key.h",
+    "crypto/secure_hash.cc",
+    "crypto/secure_hash.h",
+    "crypto/sha2.cc",
+    "crypto/sha2.h",
+    "trace_logging.h",
+    "trace_logging/macro_support.h",
+    "trace_logging/scoped_trace_operations.cc",
+    "trace_logging/scoped_trace_operations.h",
+  ]
+
+  public_deps = [
+    ":base",
+    "../platform:api",
+    "../platform:base",
+    "../third_party/abseil",
+    "../third_party/jsoncpp",
+  ]
+
+  deps = [ "../third_party/boringssl" ]
 
   public_configs = [
     "../build:openscreen_include_dirs",

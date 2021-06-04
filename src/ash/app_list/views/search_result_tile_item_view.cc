@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -59,11 +60,12 @@ constexpr int kSearchRatingStarHorizontalSpacing = 1;
 constexpr int kSearchRatingStarVerticalSpacing = 2;
 // Text line height in the search result tile.
 constexpr int kTileTextLineHeight = 16;
+constexpr int kBadgeIconShadowWidth = 1;
 
 // Delta applied to the font size of SearchResultTile title.
 constexpr int kSearchResultTileTitleTextSizeDelta = 1;
 
-constexpr int kIconSelectedSize = 56;
+constexpr int kIconSelectedSize = 58;
 constexpr int kIconSelectedCornerRadius = 4;
 
 // Offset for centering star rating when there is no price.
@@ -150,6 +152,7 @@ void SearchResultTileItemView::OnResultChanged() {
     return;
 
   SetTitle(result()->title());
+  SetTitleTags(result()->title_tags());
   SetRating(result()->rating());
   SetPrice(result()->formatted_price());
 
@@ -296,7 +299,7 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
 
   gfx::RectF selection_ring = GetSelectionRingBounds();
-  selection_ring.Inset(0, kSelectionRingWidth);
+  selection_ring.Inset(0, kSelectionRingWidth / 2.0);
   canvas->DrawRoundRect(selection_ring, kIconSelectedCornerRadius, flags);
 }
 
@@ -311,6 +314,7 @@ gfx::RectF SearchResultTileItemView::GetSelectionRingBounds() const {
 void SearchResultTileItemView::OnMetadataChanged() {
   SetIcon(result()->icon());
   SetTitle(result()->title());
+  SetTitleTags(result()->title_tags());
   SetBadgeIcon(result()->badge_icon(), result()->use_badge_icon_background());
   SetRating(result()->rating());
   SetPrice(result()->formatted_price());
@@ -362,7 +366,7 @@ void SearchResultTileItemView::OnGetContextMenuModel(
                          views::MenuRunner::FIXED_ANCHOR);
   if (!selected()) {
     selected_for_context_menu_ = true;
-    SetSelected(true, base::nullopt);
+    SetSelected(true, absl::nullopt);
   }
 }
 
@@ -372,7 +376,7 @@ void SearchResultTileItemView::OnMenuClosed() {
   context_menu_.reset();
   if (selected_for_context_menu_) {
     selected_for_context_menu_ = false;
-    SetSelected(false, base::nullopt);
+    SetSelected(false, absl::nullopt);
   }
 }
 
@@ -402,7 +406,8 @@ void SearchResultTileItemView::ActivateResult(int event_flags,
 
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(result()->id(), event_flags,
+  view_delegate_->OpenSearchResult(result()->id(), result()->result_type(),
+                                   event_flags,
                                    AppListLaunchedFrom::kLaunchedFromSearchBox,
                                    AppListLaunchType::kAppSearchResult,
                                    index_in_container(), launch_as_default);
@@ -439,9 +444,11 @@ void SearchResultTileItemView::SetBadgeIcon(const ui::ImageModel& badge_icon,
 
   gfx::ShadowValues shadow_values;
   shadow_values.push_back(
-      gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(0x33, 0, 0, 0)));
+      gfx::ShadowValue(gfx::Vector2d(0, kBadgeIconShadowWidth), 0,
+                       SkColorSetARGB(0x33, 0, 0, 0)));
   shadow_values.push_back(
-      gfx::ShadowValue(gfx::Vector2d(0, 1), 2, SkColorSetARGB(0x33, 0, 0, 0)));
+      gfx::ShadowValue(gfx::Vector2d(0, kBadgeIconShadowWidth), 2,
+                       SkColorSetARGB(0x33, 0, 0, 0)));
   badge_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
       resized_badge_icon, shadow_values));
   badge_->SetVisible(true);
@@ -449,6 +456,17 @@ void SearchResultTileItemView::SetBadgeIcon(const ui::ImageModel& badge_icon,
 
 void SearchResultTileItemView::SetTitle(const std::u16string& title) {
   title_->SetText(title);
+}
+
+void SearchResultTileItemView::SetTitleTags(const SearchResultTags& tags) {
+  if (!app_list_features::IsLauncherQueryHighlightingEnabled())
+    return;
+
+  for (const auto& tag : tags) {
+    if (tag.styles & SearchResult::Tag::MATCH) {
+      title_->SetTextStyleRange(AshTextStyle::STYLE_EMPHASIZED, tag.range);
+    }
+  }
 }
 
 void SearchResultTileItemView::SetRating(float rating) {
@@ -539,7 +557,8 @@ void SearchResultTileItemView::Layout() {
   icon_->SetBoundsRect(icon_rect);
 
   const int badge_icon_dimension =
-      SharedAppListConfig::instance().search_tile_badge_icon_dimension();
+      SharedAppListConfig::instance().search_tile_badge_icon_dimension() +
+      2 * kBadgeIconShadowWidth;
   const int badge_icon_offset =
       SharedAppListConfig::instance().search_tile_badge_icon_offset();
   const gfx::Rect badge_rect(

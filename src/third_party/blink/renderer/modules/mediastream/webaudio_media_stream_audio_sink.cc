@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -65,12 +67,12 @@ void WebAudioMediaStreamAudioSink::OnSetFormat(
   // converter will request source_params.frames_per_buffer() each time.
   // This will not increase the complexity as there is only one client to
   // the converter.
-  audio_converter_.reset(
-      new media::AudioConverter(params, sink_params_, false));
+  audio_converter_ =
+      std::make_unique<media::AudioConverter>(params, sink_params_, false);
   audio_converter_->AddInput(this);
-  fifo_.reset(new media::AudioFifo(
+  fifo_ = std::make_unique<media::AudioFifo>(
       params.channels(),
-      kMaxNumberOfAudioFifoBuffers * params.frames_per_buffer()));
+      kMaxNumberOfAudioFifoBuffers * params.frames_per_buffer());
 }
 
 void WebAudioMediaStreamAudioSink::OnReadyStateChanged(

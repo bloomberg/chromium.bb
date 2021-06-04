@@ -91,8 +91,19 @@ typedef enum FPDFANNOT_COLORTYPE {
 
 // Experimental API.
 // Check if an annotation subtype is currently supported for creation.
-// Currently supported subtypes: circle, highlight, ink, popup, square,
-// squiggly, stamp, strikeout, text, and underline.
+// Currently supported subtypes:
+//    - circle
+//    - freetext
+//    - highlight
+//    - ink
+//    - link
+//    - popup
+//    - square,
+//    - squiggly
+//    - stamp
+//    - strikeout
+//    - text
+//    - underline
 //
 //   subtype   - the subtype to be checked.
 //
@@ -453,12 +464,29 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_GetLine(FPDF_ANNOTATION annot,
                                                       FS_POINTF* end);
 
 // Experimental API.
+// Set the characteristics of the annotation's border (rounded rectangle).
+//
+//   annot              - handle to an annotation
+//   horizontal_radius  - horizontal corner radius, in default user space units
+//   vertical_radius    - vertical corner radius, in default user space units
+//   border_width       - border width, in default user space units
+//
+// Returns true if setting the border for |annot| succeeds, false otherwise.
+//
+// If |annot| contains an appearance stream that overrides the border values,
+// then the appearance stream will be removed on success.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_SetBorder(FPDF_ANNOTATION annot,
+                                                        float horizontal_radius,
+                                                        float vertical_radius,
+                                                        float border_width);
+
+// Experimental API.
 // Get the characteristics of the annotation's border (rounded rectangle).
 //
-//   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()
-//   horizontal_radius - horizontal corner radius, in default user space units
-//   vertical_radius - vertical corner radius, in default user space units
-//   border_width - border width, in default user space units
+//   annot              - handle to an annotation
+//   horizontal_radius  - horizontal corner radius, in default user space units
+//   vertical_radius    - vertical corner radius, in default user space units
+//   border_width       - border width, in default user space units
 //
 // Returns true if |horizontal_radius|, |vertical_radius| and |border_width| are
 // not NULL, false otherwise.
@@ -876,6 +904,16 @@ FPDFAnnot_GetFormFieldExportValue(FPDF_FORMHANDLE hHandle,
                                   FPDF_ANNOTATION annot,
                                   FPDF_WCHAR* buffer,
                                   unsigned long buflen);
+
+// Experimental API.
+// Add a URI action to |annot|, overwriting the existing action, if any.
+//
+//   annot  - handle to a link annotation.
+//   uri    - the URI to be set, encoded in 7-bit ASCII.
+//
+// Returns true if successful.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_SetURI(FPDF_ANNOTATION annot,
+                                                     const char* uri);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -87,6 +87,9 @@ class TextInput : public ui::TextInputClient,
   // during the text input session.
   void Resync();
 
+  // Resets the current input method state.
+  void Reset();
+
   // Sets the surrounding text in the app.
   void SetSurroundingText(const std::u16string& text,
                           uint32_t cursor_pos,
@@ -116,6 +119,7 @@ class TextInput : public ui::TextInputClient,
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
@@ -142,6 +146,11 @@ class TextInput : public ui::TextInputClient,
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const gfx::Range& range) override;
+  absl::optional<ui::GrammarFragment> GetGrammarFragment(
+      const gfx::Range& range) override;
+  bool ClearGrammarFragments(const gfx::Range& range) override;
+  bool AddGrammarFragments(
+      const std::vector<ui::GrammarFragment>& fragments) override;
 
   // ash::KeyboardControllerObserver:
   void OnKeyboardVisibilityChanged(bool is_visible) override;
@@ -163,7 +172,7 @@ class TextInput : public ui::TextInputClient,
   bool should_do_learning_ = true;
   ui::CompositionText composition_;
   std::u16string surrounding_text_;
-  base::Optional<gfx::Range> cursor_pos_;
+  absl::optional<gfx::Range> cursor_pos_;
   base::i18n::TextDirection direction_ = base::i18n::UNKNOWN_DIRECTION;
 
   DISALLOW_COPY_AND_ASSIGN(TextInput);
@@ -171,4 +180,4 @@ class TextInput : public ui::TextInputClient,
 
 }  // namespace exo
 
-#endif  // COMPONENTS_EXO_KEYBOARD_H_
+#endif  // COMPONENTS_EXO_TEXT_INPUT_H_

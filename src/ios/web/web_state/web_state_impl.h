@@ -45,7 +45,6 @@ class NavigationContextImpl;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebFrame;
-class WebInterstitialImpl;
 class WebUIIOS;
 
 // Implementation of WebState.
@@ -142,6 +141,14 @@ class WebStateImpl : public WebState,
   WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
+
+  // Decides whether the navigation corresponding to |response| should
+  // be allowed to display an error page if an error occurs, by asking its
+  // policy deciders. If at least one policy decider's decision is false,
+  // returns false; otherwise returns true.
+  bool ShouldAllowErrorPageToBeDisplayed(NSURLResponse* response,
+                                         bool for_main_frame);
+
   // Decides whether the navigation corresponding to |response| should be
   // allowed to continue by asking its policy deciders, and calls |callback|
   // with the decision. Defaults to PolicyDecision::Allow(). If at least one
@@ -218,8 +225,6 @@ class WebStateImpl : public WebState,
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
-  bool IsShowingWebInterstitial() const override;
-  WebInterstitial* GetWebInterstitial() const override;
   base::CallbackListSubscription AddScriptCommandCallback(
       const ScriptCommandCallback& callback,
       const std::string& command_prefix) override;
@@ -234,6 +239,8 @@ class WebStateImpl : public WebState,
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
   void CloseWebState() override;
+  bool SetSessionStateData(NSData* data) override;
+  NSData* SessionStateData() override;
 
   // Returns the UserAgent that should be used to load the |url| if it is a new
   // navigation. This will be Mobile or Desktop.
@@ -247,9 +254,6 @@ class WebStateImpl : public WebState,
   // will return |user_agent|.
   // GetUserAgentForSessionRestoration() will always return |user_agent|.
   void SetUserAgent(UserAgentType user_agent);
-
-  // Adds |interstitial|'s view to the web controller's content view.
-  void ShowWebInterstitial(WebInterstitialImpl* interstitial);
 
   // Notifies the delegate that the load progress was updated.
   void SendChangeLoadProgress(double progress);
@@ -265,6 +269,9 @@ class WebStateImpl : public WebState,
                            NSString* message_text,
                            NSString* default_prompt_text,
                            DialogClosedCallback callback);
+
+  // Returns true if a javascript dialog is running.
+  bool IsJavaScriptDialogRunning();
 
   // Instructs the delegate to create a new web state. Called when this WebState
   // wants to open a new window. |url| is the URL of the new window;
@@ -284,7 +291,6 @@ class WebStateImpl : public WebState,
   void CancelDialogs();
 
   // NavigationManagerDelegate:
-  void ClearTransientContent() override;
   void ClearDialogs() override;
   void RecordPageStateInNavigationItem() override;
   void LoadCurrentItem(NavigationInitiationType type) override;
@@ -371,9 +377,6 @@ class WebStateImpl : public WebState,
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 
   std::string mime_type_;
-
-  // Weak pointer to the interstitial page being displayed, if any.
-  WebInterstitialImpl* interstitial_;
 
   // Returned by reference.
   std::u16string empty_string16_;

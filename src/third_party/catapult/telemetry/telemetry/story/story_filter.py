@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import optparse
 import os
 import logging
@@ -25,6 +26,8 @@ class _StoryMatcher(object):
   def __nonzero__(self):
     return self._regex is not None
 
+  __bool__ = __nonzero__
+
   def HasMatch(self, story):
     return self and bool(self._regex.search(story.name))
 
@@ -36,6 +39,8 @@ class _StoryTagMatcher(object):
 
   def __nonzero__(self):
     return self._tags is not None
+
+  __bool__ = __nonzero__
 
   def HasLabelIn(self, story):
     return self and bool(story.tags.intersection(self._tags))
@@ -299,7 +304,7 @@ class StoryFilter(object):
           raise ValueError(
               'The index ranges have overlaps or not sorted correctly: %s' %
               self._shard_indexes)
-        indexes = indexes + range(begin, end)
+        indexes = indexes + list(range(begin, end))
         cur_end = end
       else:
         index = int(index_range)

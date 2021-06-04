@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "extensions/common/extension_features.h"
+#include "base/feature_list.h"
 
 namespace extensions_features {
 
@@ -15,6 +16,18 @@ const base::Feature kExtensionsCheckup{"ExtensionsCheckup",
 // Controls whether we disable extensions for malware.
 const base::Feature kDisableMalwareExtensionsRemotely{
     "DisableMalwareExtensionsRemotely", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether we disable extensions that are marked as policy violation
+// by the Omaha attribute.
+const base::Feature kDisablePolicyViolationExtensionsRemotely{
+    "DisablePolicyViolationExtensionsRemotely",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether we disable extensions that are marked as potentially
+// unwanted by the Omaha attribute.
+const base::Feature kDisablePotentiallyUwsExtensionsRemotely{
+    "DisablePotentiallyUwsExtensionsRemotely",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether we show an install friction dialog when an Enhanced Safe
 // Browsing user tries to install an extension that is not included in the
@@ -69,10 +82,5 @@ const base::Feature kMv3ExtensionsSupported{"Mv3ExtensionsSupported",
 // Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
 const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables default Chrome apps on Chrome OS to sync uninstallation across
-// devices.
-const base::Feature kDefaultChromeAppUninstallSync{
-    "DefaultChromeAppUninstallSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace extensions_features

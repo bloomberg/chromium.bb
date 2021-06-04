@@ -34,6 +34,7 @@ const char* kAddToCart[] = {
   "cnc/checkout/cartItems/addItemToCart", // kohls.com
   "\"event\":\"product_added_to_cart\"", // staples.com
   "checkout/basket/add_and_show", // wayfair.com
+  "isQuickAddToCartButton=true", // costco.com
 };
 
 const char* kNotAddToCart[] = {
@@ -131,6 +132,7 @@ const char* kVisitCart[] = {
     "https://www.dickssportinggoods.com/OrderItemDisplay",
     "https://www.dillards.com/webapp/wcs/stores/servlet/OrderItemDisplay",
     "https://www.dsw.com/en/us/shopping-bag",
+    "https://www.electronicexpress.com/cart",
     "https://www.etsy.com/cart",
     "https://www.etsy.com/cart/",
     "https://www.etsy.com/cart/listing.php",
@@ -214,8 +216,10 @@ const char* kVisitCart[] = {
     "https://www.weightwatchers.com/us/shop/checkout/cart",
     "https://www.westelm.com/shoppingcart/",
     "https://www.wiley.com/en-us/cart",
+    "https://www.wish.com/cart"
     "https://www.williams-sonoma.com/shoppingcart/",
     "https://www.zappos.com/cart",
+    "https://www.zazzle.com/co/cart",
     "https://www.zennioptical.com/shoppingCart",
     "https://www2.hm.com/en_gb/cart",
     "https://www2.hm.com/en_us/cart",

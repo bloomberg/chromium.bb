@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_HELPER_H_
 
-#include <string>
 
 namespace crash_helper {
 
@@ -25,9 +24,6 @@ void SetUploadingEnabled(bool enabled);
 // Sets the user preferences related to Breakpad and cache them to be used on
 // next startup to check if safe mode must be started.
 void SetUserEnabledUploading(bool enabled);
-
-// Returns true if uploading crash reports is enabled in the settings.
-bool UserEnabledUploading();
 
 // For breakpad, if |after_upgrade| is true, delete all pending reports.  For
 // crashpad, regardless of |after_upgrade|, process pending intermediate dumps.

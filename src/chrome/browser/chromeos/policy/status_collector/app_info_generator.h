@@ -10,19 +10,16 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
 #include "chrome/browser/chromeos/policy/status_collector/affiliated_session_service.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/services/app_service/public/cpp/instance.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace enterprise_management {
 class AppInfo;
@@ -35,7 +32,7 @@ namespace policy {
 class AppInfoGenerator : public apps::InstanceRegistry::Observer,
                          public AffiliatedSessionService::Observer {
  public:
-  using Result = base::Optional<std::vector<enterprise_management::AppInfo>>;
+  using Result = absl::optional<std::vector<enterprise_management::AppInfo>>;
 
   explicit AppInfoGenerator(
       base::TimeDelta max_stored_past_activity_interval,
@@ -84,7 +81,8 @@ class AppInfoGenerator : public apps::InstanceRegistry::Observer,
     ~AppInstances();
 
     const base::Time start_time;
-    std::unordered_set<aura::Window*> running_instances;
+    std::unordered_set<apps::Instance::InstanceKey, InstanceKeyHash>
+        running_instances;
   };
   struct AppInfoProvider {
     explicit AppInfoProvider(Profile* profile);
@@ -106,14 +104,14 @@ class AppInfoGenerator : public apps::InstanceRegistry::Observer,
   void SetIdleDurationsToOpen();
 
   void OpenUsageInterval(const std::string& app_id,
-                         aura::Window* window,
+                         const apps::Instance::InstanceKey& instance_key,
                          const base::Time start_time);
 
   void CloseUsageInterval(const std::string& app_id,
-                          aura::Window* window,
+                          const apps::Instance::InstanceKey& instance_key,
                           const base::Time end_time);
 
-  std::unique_ptr<AppInfoProvider> provider_ = nullptr;
+  std::unique_ptr<AppInfoProvider> provider_;
 
   bool should_report_ = false;
 

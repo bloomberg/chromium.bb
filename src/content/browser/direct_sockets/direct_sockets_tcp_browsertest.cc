@@ -5,7 +5,6 @@
 #include <map>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -33,9 +32,11 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 // The tests in this file use the Network Service implementation of
@@ -46,9 +47,6 @@ using testing::StartsWith;
 namespace content {
 
 namespace {
-
-constexpr char kPermissionDeniedHistogramName[] =
-    "DirectSockets.PermissionDeniedFailures";
 
 net::Error UnconditionallyPermitConnection(
     const blink::mojom::DirectSocketOptions& options) {
@@ -75,7 +73,7 @@ class ReadWriteWaiter {
  private:
   void OnAccept(
       int result,
-      const base::Optional<net::IPEndPoint>& remote_addr,
+      const absl::optional<net::IPEndPoint>& remote_addr,
       mojo::PendingRemote<network::mojom::TCPConnectedSocket> accepted_socket,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       mojo::ScopedDataPipeProducerHandle producer_handle) {
@@ -222,8 +220,7 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
   }
 
   network::mojom::NetworkContext* GetNetworkContext() {
-    return BrowserContext::GetDefaultStoragePartition(browser_context())
-        ->GetNetworkContext();
+    return browser_context()->GetDefaultStoragePartition()->GetNetworkContext();
   }
 
   std::string CreateMDNSHostName() {
@@ -258,7 +255,7 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
         base::BindLambdaForTesting(
             [&local_addr, &run_loop](
                 int32_t result,
-                const base::Optional<net::IPEndPoint>& local_addr_out) {
+                const absl::optional<net::IPEndPoint>& local_addr_out) {
               DCHECK_EQ(result, net::OK);
               DCHECK(local_addr_out.has_value());
               local_addr = *local_addr_out;
@@ -335,28 +332,6 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, OpenTcp_MDNS) {
   EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
             EvalJs(shell(), script));
 #endif  // BUILDFLAG(ENABLE_MDNS)
-}
-
-IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest,
-                       OpenTcp_TransientActivation) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 0);
-
-  const uint16_t listening_port = StartTcpServer();
-  const std::string script = base::StringPrintf(
-      "openTcp({remoteAddress: '127.0.0.1', remotePort: %d});\
-       openTcp({remoteAddress: '127.0.0.1', remotePort: %d})",
-      listening_port, listening_port);
-
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, CloseTcp) {

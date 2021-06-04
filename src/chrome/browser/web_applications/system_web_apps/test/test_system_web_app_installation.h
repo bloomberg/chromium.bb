@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APPS_TEST_TEST_SYSTEM_WEB_APP_INSTALLATION_H_
 
 #include <memory>
-#include <string>
 
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
@@ -68,6 +67,12 @@ class TestSystemWebAppInstallation {
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetupAppWithAllowScriptsToCloseWindows(bool value);
 
+  static std::unique_ptr<TestSystemWebAppInstallation> SetUpAppWithTabStrip(
+      bool has_tab_strip);
+
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppWithDefaultBounds(const gfx::Rect& default_bounds);
+
   ~TestSystemWebAppInstallation();
 
   void WaitForAppInstall();
@@ -97,7 +102,7 @@ class TestSystemWebAppInstallation {
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
   std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
   // nullopt if SetUpWithoutApps() was used.
-  const base::Optional<SystemAppType> type_;
+  const absl::optional<SystemAppType> type_;
   std::vector<std::unique_ptr<TestSystemWebAppWebUIControllerFactory>>
       web_ui_controller_factories_;
   std::set<ContentSettingsType> auto_granted_permissions_;

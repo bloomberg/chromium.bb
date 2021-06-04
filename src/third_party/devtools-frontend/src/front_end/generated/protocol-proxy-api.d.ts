@@ -8,6 +8,8 @@
  */
 
 
+import type * as Protocol from './protocol.js'
+
 /**
  * API generated from Protocol commands and events.
  */
@@ -413,7 +415,17 @@ declare namespace ProtocolProxyApi {
     invoke_executeBrowserCommand(params: Protocol.Browser.ExecuteBrowserCommandRequest):
         Promise<Protocol.ProtocolResponseWithError>;
   }
-  export interface BrowserDispatcher {}
+  export interface BrowserDispatcher {
+    /**
+     * Fired when page is about to start a download.
+     */
+    downloadWillBegin(params: Protocol.Browser.DownloadWillBeginEvent): void;
+
+    /**
+     * Fired when download makes progress. Last call has |done| == true.
+     */
+    downloadProgress(params: Protocol.Browser.DownloadProgressEvent): void;
+  }
 
   export interface CSSApi {
     /**
@@ -967,7 +979,7 @@ declare namespace ProtocolProxyApi {
     childNodeRemoved(params: Protocol.DOM.ChildNodeRemovedEvent): void;
 
     /**
-     * Called when distrubution is changed.
+     * Called when distribution is changed.
      */
     distributedNodesUpdated(params: Protocol.DOM.DistributedNodesUpdatedEvent): void;
 
@@ -1175,12 +1187,12 @@ declare namespace ProtocolProxyApi {
     invoke_canEmulate(): Promise<Protocol.Emulation.CanEmulateResponse>;
 
     /**
-     * Clears the overriden device metrics.
+     * Clears the overridden device metrics.
      */
     invoke_clearDeviceMetricsOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Clears the overriden Geolocation Position and Error.
+     * Clears the overridden Geolocation Position and Error.
      */
     invoke_clearGeolocationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
@@ -1430,6 +1442,12 @@ declare namespace ProtocolProxyApi {
   // eslint-disable-next-line @typescript-eslint/interface-name-prefix
   export interface InputApi {
     /**
+     * Dispatches a drag event into the page.
+     */
+    invoke_dispatchDragEvent(params: Protocol.Input.DispatchDragEventRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Dispatches a key event to the page.
      */
     invoke_dispatchKeyEvent(params: Protocol.Input.DispatchKeyEventRequest):
@@ -1466,6 +1484,13 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events.
+     * Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
+     */
+    invoke_setInterceptDrags(params: Protocol.Input.SetInterceptDragsRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
      */
     invoke_synthesizePinchGesture(params: Protocol.Input.SynthesizePinchGestureRequest):
@@ -1483,7 +1508,13 @@ declare namespace ProtocolProxyApi {
     invoke_synthesizeTapGesture(params: Protocol.Input.SynthesizeTapGestureRequest):
         Promise<Protocol.ProtocolResponseWithError>;
   }
-  export interface InputDispatcher {}
+  export interface InputDispatcher {
+    /**
+     * Emitted only when `Input.setInterceptDrags` is enabled. Use this data with `Input.dispatchDragEvent` to
+     * restore normal drag and drop behavior.
+     */
+    dragIntercepted(params: Protocol.Input.DragInterceptedEvent): void;
+  }
 
   // eslint thinks this is us prefixing our interfaces but it's not!
   // eslint-disable-next-line @typescript-eslint/interface-name-prefix
@@ -2179,7 +2210,7 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Page.CaptureSnapshotResponse>;
 
     /**
-     * Clears the overriden device metrics.
+     * Clears the overridden device metrics.
      */
     invoke_clearDeviceMetricsOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
@@ -2189,7 +2220,7 @@ declare namespace ProtocolProxyApi {
     invoke_clearDeviceOrientationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Clears the overriden Geolocation Position and Error.
+     * Clears the overridden Geolocation Position and Error.
      */
     invoke_clearGeolocationOverride(): Promise<Protocol.ProtocolResponseWithError>;
 
@@ -2523,11 +2554,13 @@ declare namespace ProtocolProxyApi {
 
     /**
      * Fired when page is about to start a download.
+     * Deprecated. Use Browser.downloadWillBegin instead.
      */
     downloadWillBegin(params: Protocol.Page.DownloadWillBeginEvent): void;
 
     /**
      * Fired when download makes progress. Last call has |done| == true.
+     * Deprecated. Use Browser.downloadProgress instead.
      */
     downloadProgress(params: Protocol.Page.DownloadProgressEvent): void;
 
@@ -2557,6 +2590,14 @@ declare namespace ProtocolProxyApi {
      * Fired for top level page lifecycle events such as navigation, load, paint, etc.
      */
     lifecycleEvent(params: Protocol.Page.LifecycleEventEvent): void;
+
+    /**
+     * Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do
+     * not assume any ordering with the Page.frameNavigated event. This event is fired only for
+     * main-frame history navigation where the document changes (non-same-document navigations),
+     * when bfcache navigation fails.
+     */
+    backForwardCacheNotUsed(params: Protocol.Page.BackForwardCacheNotUsedEvent): void;
 
     loadEventFired(params: Protocol.Page.LoadEventFiredEvent): void;
 
@@ -3302,8 +3343,8 @@ declare namespace ProtocolProxyApi {
     playerErrorsRaised(params: Protocol.Media.PlayerErrorsRaisedEvent): void;
 
     /**
-     * Called whenever a player is created, or when a new agent joins and recieves
-     * a list of active players. If an agent is restored, it will recieve the full
+     * Called whenever a player is created, or when a new agent joins and receives
+     * a list of active players. If an agent is restored, it will receive the full
      * list of player ids and all events again.
      */
     playersCreated(params: Protocol.Media.PlayersCreatedEvent): void;
@@ -3854,3 +3895,4 @@ declare namespace ProtocolProxyApi {
   export interface SchemaDispatcher {}
 }
 
+export = ProtocolProxyApi;

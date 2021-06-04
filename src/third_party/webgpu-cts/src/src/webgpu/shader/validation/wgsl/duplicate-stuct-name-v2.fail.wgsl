@@ -10,7 +10,7 @@ fn Foo() ->void {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var Foo : f32;
   var f : Foo;
   return;

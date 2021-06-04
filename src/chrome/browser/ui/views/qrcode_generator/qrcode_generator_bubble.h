@@ -7,13 +7,14 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -33,8 +34,6 @@ class View;
 
 namespace qrcode_generator {
 
-class QRCodeGeneratorBubbleController;
-
 // Dialog that displays a QR code used to share a page or image.
 class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
                               public LocationBarBubbleDelegateView,
@@ -43,10 +42,11 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   METADATA_HEADER(QRCodeGeneratorBubble);
   QRCodeGeneratorBubble(views::View* anchor_view,
                         content::WebContents* web_contents,
-                        QRCodeGeneratorBubbleController* controller,
+                        base::OnceClosure on_closing,
                         const GURL& url);
   QRCodeGeneratorBubble(const QRCodeGeneratorBubble&) = delete;
   QRCodeGeneratorBubble& operator=(const QRCodeGeneratorBubble&) = delete;
+  ~QRCodeGeneratorBubble() override;
 
   void Show();
 
@@ -57,9 +57,20 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // e.g.: www.foo.com may suggest qrcode_foo.png.
   static const std::u16string GetQRCodeFilenameForURL(const GURL& url);
 
- private:
-  ~QRCodeGeneratorBubble() override;
+  // Given an image |image| of a QR code, adds the required "quiet zone" padding
+  // around the outside of it. The |size| size is given in QR code tiles, not in
+  // pixels or dips. Both |image| and |size| must be square, and the resulting
+  // image is also square.
+  static gfx::ImageSkia AddQRCodeQuietZone(const gfx::ImageSkia& image,
+                                           const gfx::Size& size);
 
+  views::ImageView* image_for_testing() { return qr_code_image_; }
+  views::Textfield* textfield_for_testing() { return textfield_url_; }
+
+  void SetQRCodeServiceForTesting(
+      mojo::Remote<mojom::QRCodeGeneratorService>&& remote);
+
+ private:
   // Updates and formats QR code, text, and controls.
   void UpdateQRContent();
 
@@ -111,7 +122,7 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   views::Label* center_error_label_ = nullptr;
   views::Label* bottom_error_label_ = nullptr;
 
-  QRCodeGeneratorBubbleController* controller_;  // weak.
+  base::OnceClosure on_closing_;
   content::WebContents* web_contents_;           // weak.
 };
 

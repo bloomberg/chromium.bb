@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/modules/direct_sockets/navigator_socket.h"
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "services/network/public/mojom/tcp_socket.mojom-blink.h"
 #include "services/network/public/mojom/udp_socket.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -24,23 +24,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-constexpr net::NetworkTrafficAnnotationTag kDirectSocketsTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("direct_sockets", R"(
-        semantics {
-          sender: "Direct Sockets API"
-          description: "Web app request to communicate with network device"
-          trigger: "User completes network connection dialog"
-          data: "Any data sent by web app"
-          destination: OTHER
-          destination_other: "Address entered by user in connection dialog"
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot yet be controlled by settings."
-          policy_exception_justification: "To be implemented"
-        }
-      )");
 
 const char NavigatorSocket::kSupplementName[] = "NavigatorSocket";
 
@@ -148,7 +131,6 @@ ScriptPromise NavigatorSocket::openTCPSocket(ScriptState* script_state,
 
   service_remote_->OpenTcpSocket(
       CreateSocketOptions(*options),
-      net::MutableNetworkTrafficAnnotationTag(kDirectSocketsTrafficAnnotation),
       pending->GetTCPSocketReceiver(), pending->GetTCPSocketObserver(),
       WTF::Bind(&NavigatorSocket::OnTcpOpen, WrapPersistent(this),
                 WrapPersistent(pending)));
@@ -200,8 +182,8 @@ bool NavigatorSocket::OpenSocketPermitted(ScriptState* script_state,
 void NavigatorSocket::OnTcpOpen(
     TCPSocket* socket,
     int32_t result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   pending_tcp_.erase(socket);
@@ -212,21 +194,21 @@ void NavigatorSocket::OnTcpOpen(
 void NavigatorSocket::OnUdpOpen(
     UDPSocket* socket,
     int32_t result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr) {
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr) {
   pending_udp_.erase(socket);
   socket->Init(result, local_addr, peer_addr);
 }
 
 void NavigatorSocket::OnConnectionError() {
   for (auto& pending : pending_tcp_) {
-    pending->Init(net::Error::ERR_CONTEXT_SHUT_DOWN, base::nullopt,
-                  base::nullopt, mojo::ScopedDataPipeConsumerHandle(),
+    pending->Init(net::Error::ERR_CONTEXT_SHUT_DOWN, absl::nullopt,
+                  absl::nullopt, mojo::ScopedDataPipeConsumerHandle(),
                   mojo::ScopedDataPipeProducerHandle());
   }
   for (auto& pending : pending_udp_) {
-    pending->Init(net::Error::ERR_CONTEXT_SHUT_DOWN, base::nullopt,
-                  base::nullopt);
+    pending->Init(net::Error::ERR_CONTEXT_SHUT_DOWN, absl::nullopt,
+                  absl::nullopt);
   }
   pending_tcp_.clear();
   pending_udp_.clear();

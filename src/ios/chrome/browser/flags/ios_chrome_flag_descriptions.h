@@ -11,10 +11,6 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to control the autofill query cache.
-extern const char kAutofillCacheQueryResponsesName[];
-extern const char kAutofillCacheQueryResponsesDescription[];
-
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
@@ -40,16 +36,6 @@ extern const char kAutofillPruneSuggestionsDescription[];
 // Infobar on Navigation.
 extern const char kAutofillSaveCardDismissOnNavigationName[];
 extern const char kAutofillSaveCardDismissOnNavigationDescription[];
-
-// Title and description for the flag that enables editing on the Messages UI
-// for SaveCard Infobars.
-extern const char kAutofillSaveCardInfobarEditSupportName[];
-extern const char kAutofillSaveCardInfobarEditSupportDescription[];
-
-// Title and description for the flag to enable rich autofill queries on
-// Canary/Dev.
-extern const char kAutofillRichMetadataQueriesName[];
-extern const char kAutofillRichMetadataQueriesDescription[];
 
 // Title and description for the flag that controls whether Autofill's
 // suggestions' labels are formatting with a mobile-friendly approach.
@@ -157,6 +143,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kRestoreSessionFromCacheName[];
 extern const char kRestoreSessionFromCacheDescription[];
 
+extern const char kEnableAutofillAccountWalletStorageName[];
+extern const char kEnableAutofillAccountWalletStorageDescription[];
+
 // Title and description for the flag to enable autofill address save prompts.
 extern const char kEnableAutofillAddressSavePromptName[];
 extern const char kEnableAutofillAddressSavePromptDescription[];
@@ -212,10 +201,10 @@ extern const char kFullscreenSmoothScrollingDescription[];
 extern const char kIncognitoAuthenticationName[];
 extern const char kIncognitoAuthenticationDescription[];
 
-// Title and description for the flag to enable new illustrations and
-// UI on empty states.
-extern const char kIllustratedEmptyStatesName[];
-extern const char kIllustratedEmptyStatesDescription[];
+// Title and description for the flag to enable dark mode colors while in
+// Incognito mode.
+extern const char kIncognitoBrandConsistencyForIOSName[];
+extern const char kIncognitoBrandConsistencyForIOSDescription[];
 
 // Title and description for the flag to present the new UI Reboot on Infobars
 // using OverlayPresenter.
@@ -260,6 +249,10 @@ extern const char kLocationPermissionsPromptDescription[];
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
 extern const char kLockBottomToolbarDescription[];
+
+// Title and description for the flag to enable MICE web sign-in.
+extern const char kMICEWebSignInName[];
+extern const char kMICEWebSignInDescription[];
 
 // Title and description for the flag where the Google SRP is requested in
 // mobile mode by default.
@@ -328,10 +321,6 @@ extern const char kSafeBrowsingRealTimeLookupDescription[];
 extern const char kScreenTimeIntegrationName[];
 extern const char kScreenTimeIntegrationDescription[];
 
-// Title and description for the flag to enable the Scroll to Text feature.
-extern const char kScrollToTextIOSName[];
-extern const char kScrollToTextIOSDescription[];
-
 // Title and description for the flag to enable the Search History Link feature.
 extern const char kSearchHistoryLinkIOSName[];
 extern const char kSearchHistoryLinkIOSDescription[];
@@ -378,10 +367,23 @@ extern const char kStartSurfaceDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
+// Title and description for the flag to enable context menu in the Tab grid.
+extern const char kTabGridContextMenuName[];
+extern const char kTabGridContextMenuDescription[];
+
+// Title and description for the flag to enable tabs bulk actions feature.
+extern const char kTabsBulkActionsName[];
+extern const char kTabsBulkActionsDescription[];
+
 // Title and description for the flag to enable the toolbar container
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
+
+// Title and description for the flag to enable removing any entry points to the
+// history UI from Incognito mode.
+extern const char kUpdateHistoryEntryPointsInIncognitoName[];
+extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 
 // Title and description for the flag to enable URLBlocklist/URLAllowlist
 // enterprise policy.
@@ -419,11 +421,6 @@ extern const char kWebPageAlternativeTextZoomDescription[];
 // WebView.
 extern const char kWebViewNativeContextMenuName[];
 extern const char kWebViewNativeContextMenuDescription[];
-
-// Title and description for the flag to restore Gaia cookies as soon as Chrome
-// detects that they have been removed.
-extern const char kRestoreGaiaCookiesIfDeletedName[];
-extern const char kRestoreGaiaCookiesIfDeletedDescription[];
 
 // Title and description for the flag to restore Gaia cookies when the user
 // explicitly requests to be signed in to a Google service.

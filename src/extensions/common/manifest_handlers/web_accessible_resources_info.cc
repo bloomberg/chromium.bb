@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -151,7 +152,7 @@ WebAccessibleResourcesInfo::~WebAccessibleResourcesInfo() = default;
 bool WebAccessibleResourcesInfo::IsResourceWebAccessible(
     const Extension* extension,
     const std::string& relative_path,
-    const base::Optional<url::Origin>& initiator_origin) {
+    const absl::optional<url::Origin>& initiator_origin) {
   auto initiator_url =
       initiator_origin.has_value() ? initiator_origin->GetURL() : GURL();
   const WebAccessibleResourcesInfo* info = GetResourcesInfo(extension);

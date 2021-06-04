@@ -77,7 +77,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
   // WaylandSurfaceGpu overrides:
   void OnSubmission(BufferId buffer_id,
-                    const gfx::SwapResult& swap_result) override;
+                    const gfx::SwapResult& swap_result,
+                    gfx::GpuFenceHandle release_fence) override;
   void OnPresentation(BufferId buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
 
@@ -99,7 +100,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-
+    // Merged release fence fd. This is taken as the union of all release
+    // fences for a particular OnSubmission.
+    base::ScopedFD merged_release_fence_fd;
     bool schedule_planes_succeeded = false;
 
     // Maps |buffer_id| to an OverlayPlane, used for committing overlays and

@@ -238,7 +238,7 @@ Surface::QueueFrameResult Surface::QueueFrame(
 
   TakePendingLatencyInfo(&frame.metadata.latency_info);
 
-  base::Optional<FrameData> previous_pending_frame_data =
+  absl::optional<FrameData> previous_pending_frame_data =
       std::move(pending_frame_data_);
   pending_frame_data_.reset();
 
@@ -258,6 +258,11 @@ Surface::QueueFrameResult Surface::QueueFrame(
     if (deadline_->HasDeadlinePassed()) {
       ActivatePendingFrameForDeadline();
     } else {
+      // If we are blocked on another Surface, and its latest frame is unacked,
+      // we send the Ack now. This will allow frame production to continue for
+      // that client, leading to the group being unblocked.
+      for (auto* it : blocking_allocation_groups_)
+        it->AckLastestActiveUnAckedFrame();
       auto traced_value = std::make_unique<base::trace_event::TracedValue>();
       traced_value->BeginArray("Pending");
       for (auto& it : activation_dependencies_)
@@ -379,7 +384,7 @@ void Surface::ActivatePendingFrame() {
   FrameData frame_data = std::move(*pending_frame_data_);
   pending_frame_data_.reset();
 
-  base::Optional<base::TimeDelta> duration = deadline_->Cancel();
+  absl::optional<base::TimeDelta> duration = deadline_->Cancel();
   if (duration.has_value()) {
     TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
                          TRACE_EVENT_SCOPE_THREAD, "surface_id",
@@ -471,7 +476,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
   TakeActiveLatencyInfo(&frame_data.frame.metadata.latency_info);
 
-  base::Optional<FrameData> previous_frame_data = std::move(active_frame_data_);
+  absl::optional<FrameData> previous_frame_data = std::move(active_frame_data_);
 
   active_frame_data_ = std::move(frame_data);
 
@@ -534,7 +539,7 @@ FrameDeadline Surface::ResolveFrameDeadline(
     return FrameDeadline::MakeZero();
   }
 
-  const base::Optional<uint32_t>& default_deadline =
+  const absl::optional<uint32_t>& default_deadline =
       surface_manager_->activation_deadline_in_frames();
   const FrameDeadline& deadline = current_frame.metadata.deadline;
   uint32_t deadline_in_frames = deadline.deadline_in_frames();
@@ -725,7 +730,7 @@ bool Surface::IsVideoCaptureOnFromClient() {
 }
 
 void Surface::UnrefFrameResourcesAndRunCallbacks(
-    base::Optional<FrameData> frame_data) {
+    absl::optional<FrameData> frame_data) {
   if (!frame_data || !surface_client_)
     return;
 
@@ -734,7 +739,7 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   // No point in returning same sync token to sender.
   for (auto& resource : resources)
     resource.sync_token.Clear();
-  surface_client_->UnrefResources(resources);
+  surface_client_->UnrefResources(std::move(resources));
 
   if (!frame_data->frame_acked)
     surface_client_->OnSurfaceProcessed(this);

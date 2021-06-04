@@ -7,13 +7,12 @@
 
 #include <stdint.h>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
@@ -84,7 +83,7 @@ bool ListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 
 // Returns a server-side preference in FakeServer for |pref_name| or nullopt if
 // no preference exists.
-base::Optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
+absl::optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
     const std::string& pref_name,
     fake_server::FakeServer* fake_server);
 

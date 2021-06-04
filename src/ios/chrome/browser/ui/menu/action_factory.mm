@@ -241,4 +241,38 @@
                       block:block];
 }
 
+- (UIAction*)actionToAddToReadingListWithBlock:(ProceduralBlock)block {
+  return [self actionWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)
+                         image:[UIImage imageNamed:@"read_later"]
+                          type:MenuActionType::AddToReadingList
+                         block:block];
+}
+
+- (UIAction*)actionToBookmarkWithBlock:(ProceduralBlock)block {
+  return [self actionWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_CONTENT_CONTEXT_ADDTOBOOKMARKS)
+                         image:[UIImage imageNamed:@"bookmark"]
+                          type:MenuActionType::AddToBookmarks
+                         block:block];
+}
+
+- (UIAction*)actionToEditBookmarkWithBlock:(ProceduralBlock)block {
+  return [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
+                image:[UIImage imageNamed:@"bookmark"]
+                 type:MenuActionType::EditBookmark
+                block:block];
+}
+
+- (UIAction*)actionToCloseTabWithBlock:(ProceduralBlock)block {
+  UIAction* action = [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSETAB)
+                image:[UIImage imageNamed:@"close"]
+                 type:MenuActionType::CloseTab
+                block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
 @end

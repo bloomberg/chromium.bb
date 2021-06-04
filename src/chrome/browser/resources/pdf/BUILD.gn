@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromeos/ui_mode.gni")
+import("//chrome/browser/resources/pdf/ink/ink.gni")
 import("//chrome/common/features.gni")
 import("//pdf/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
@@ -22,6 +22,7 @@ preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
+  defines = [ "enable_ink=$enable_ink" ]
   in_files = [
     "bookmark_type.js",
     "constants.js",
@@ -40,7 +41,7 @@ preprocess_if_expr("preprocess") {
     "zoom_manager.js",
   ]
 
-  if (is_chromeos_ash) {
+  if (enable_ink) {
     in_files += [ "ink_controller.js" ]
   }
 }
@@ -50,6 +51,7 @@ preprocess_if_expr("preprocess_generated") {
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
+  defines = [ "enable_ink=$enable_ink" ]
   in_files = [
     "elements/icons.js",
     "elements/shared-css.js",
@@ -57,22 +59,21 @@ preprocess_if_expr("preprocess_generated") {
     "elements/viewer-bookmark.js",
     "elements/viewer-document-outline.js",
     "elements/viewer-download-controls.js",
-    "elements/viewer-error-screen.js",
+    "elements/viewer-error-dialog.js",
     "elements/viewer-page-selector.js",
     "elements/viewer-password-dialog.js",
     "elements/viewer-pdf-sidenav.js",
-    "elements/viewer-pdf-toolbar-new.js",
     "elements/viewer-properties-dialog.js",
     "elements/viewer-thumbnail-bar.js",
     "elements/viewer-thumbnail.js",
+    "elements/viewer-toolbar.js",
     "pdf_viewer.js",
     "pdf_viewer_shared_style.js",
   ]
-  if (is_chromeos_ash) {
+  if (enable_ink) {
     in_files += [
       "elements/viewer-annotations-bar.js",
       "elements/viewer-annotations-mode-dialog.js",
-      "elements/viewer-form-warning.js",
       "elements/viewer-ink-host.js",
       "elements/viewer-pen-options.js",
       "elements/viewer-toolbar-dropdown.js",
@@ -109,7 +110,7 @@ generate_grd("build_grd") {
     "index.html",
     "main.js",
   ]
-  if (is_chromeos_ash) {
+  if (enable_ink) {
     input_files += [
       "ink/index.html",
       "ink/ink_api.js",
@@ -138,7 +139,7 @@ generate_grd("build_grd") {
 }
 
 grit("resources") {
-  defines = chrome_grit_defines
+  defines = chrome_grit_defines + [ "enable_ink=$enable_ink" ]
 
   enable_input_discovery_for_gn_analyze = false
   source = "$target_gen_dir/resources.grd"
@@ -175,7 +176,7 @@ group("closure_compile") {
     ":closure_compile_local",
     "elements:closure_compile",
   ]
-  if (is_chromeos_ash) {
+  if (enable_ink) {
     deps += [ "ink:closure_compile" ]
   }
 }
@@ -259,20 +260,17 @@ js_library("ink_controller") {
     ":annotation_tool",
     ":controller",
     ":viewport",
-    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr:event_target.m",
   ]
 }
 
 js_library("local_storage_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("controller") {
   deps = [
     ":viewport",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:promise_resolver.m",
     "//ui/webui/resources/js/cr:event_target.m",
@@ -289,7 +287,6 @@ js_library("pdf_viewer_base") {
     ":pdf_viewer_utils",
     ":viewport",
     ":viewport_scroller",
-    "elements:viewer-error-screen",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:event_tracker.m",
@@ -313,11 +310,12 @@ js_library("pdf_viewer") {
     ":pdf_scripting_api",
     ":pdf_viewer_base",
     ":pdf_viewer_utils",
-    "elements:viewer-error-screen",
+    "elements:viewer-bookmark",
+    "elements:viewer-error-dialog",
     "elements:viewer-password-dialog",
     "elements:viewer-pdf-sidenav",
-    "elements:viewer-pdf-toolbar-new",
     "elements:viewer-properties-dialog",
+    "elements:viewer-toolbar",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:event_tracker.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -349,7 +347,7 @@ js_library("pdf_viewer_pp") {
     ":pdf_viewer_utils",
     ":toolbar_manager",
     ":viewport",
-    "elements:viewer-error-screen",
+    "elements:viewer-error-dialog",
     "elements:viewer-page-indicator",
     "elements:viewer-zoom-toolbar",
     "//ui/webui/resources/js:assert.m",

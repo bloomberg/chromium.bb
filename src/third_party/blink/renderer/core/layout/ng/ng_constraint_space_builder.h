@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
 
-#include "base/optional.h"
+#include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -312,7 +313,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   void SetTableCellAlignmentBaseline(
-      const base::Optional<LayoutUnit>& table_cell_alignment_baseline) {
+      const absl::optional<LayoutUnit>& table_cell_alignment_baseline) {
 #if DCHECK_IS_ON()
     DCHECK(!is_table_cell_alignment_baseline_set_);
     is_table_cell_alignment_baseline_set_ = true;
@@ -404,7 +405,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.is_line_clamp_context = is_line_clamp_context;
   }
 
-  void SetLinesUntilClamp(const base::Optional<int>& clamp) {
+  void SetLinesUntilClamp(const absl::optional<int>& clamp) {
 #if DCHECK_IS_ON()
     DCHECK(!is_lines_until_clamp_set_);
     is_lines_until_clamp_set_ = true;
@@ -450,6 +451,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
            "writing mode, forced means they are in child writing mode.";
 
     return std::move(space_);
+  }
+
+  static NGConstraintSpace CloneWithoutFragmentation(
+      const NGConstraintSpace& other) {
+    DCHECK(other.HasBlockFragmentation());
+    NGConstraintSpace copy = other;
+    DCHECK(copy.rare_data_);
+    copy.rare_data_->block_direction_fragmentation_type = kFragmentNone;
+    return copy;
   }
 
  private:
@@ -506,6 +516,8 @@ class CORE_EXPORT NGMinMaxConstraintSpaceBuilder final {
                   is_new_fc) {
     SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, child, &delegate_);
     delegate_.SetCacheSlot(NGCacheSlot::kMeasure);
+    if (parent_space.IsInColumnBfc() && !child.CreatesNewFormattingContext())
+      delegate_.SetIsInColumnBfc();
   }
 
   void SetAvailableBlockSize(LayoutUnit block_size) {
@@ -523,6 +535,10 @@ class CORE_EXPORT NGMinMaxConstraintSpaceBuilder final {
 
   void SetStretchBlockSizeIfAuto(bool b) {
     delegate_.SetStretchBlockSizeIfAuto(b);
+  }
+
+  void SetIsFixedBlockSizeIndefinite(bool b) {
+    delegate_.SetIsFixedBlockSizeIndefinite(b);
   }
 
   const NGConstraintSpace ToConstraintSpace() {

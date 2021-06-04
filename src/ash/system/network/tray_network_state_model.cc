@@ -11,6 +11,7 @@
 #include "ash/system/network/vpn_list.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -196,6 +197,7 @@ void TrayNetworkStateModel::OnGetDeviceStateList(
   }
 
   impl_->GetActiveNetworks();  // Will trigger an observer event.
+  SendDeviceStateListChanged();
 }
 
 void TrayNetworkStateModel::UpdateActiveNetworks(
@@ -278,6 +280,11 @@ void TrayNetworkStateModel::SendActiveNetworkStateChanged() {
 void TrayNetworkStateModel::SendNetworkListChanged() {
   for (auto& observer : observer_list_)
     observer.NetworkListChanged();
+}
+
+void TrayNetworkStateModel::SendDeviceStateListChanged() {
+  for (auto& observer : observer_list_)
+    observer.DeviceStateListChanged();
 }
 
 }  // namespace ash

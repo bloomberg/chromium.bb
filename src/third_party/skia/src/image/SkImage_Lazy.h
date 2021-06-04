@@ -14,7 +14,6 @@
 
 #if SK_SUPPORT_GPU
 #include "include/core/SkYUVAPixmaps.h"
-#include "src/gpu/GrTextureMaker.h"
 #endif
 
 class SharedGenerator;
@@ -72,6 +71,13 @@ private:
     std::tuple<GrSurfaceProxyView, GrColorType> onAsView(GrRecordingContext*,
                                                          GrMipmapped,
                                                          GrImageTexGenPolicy) const override;
+    std::unique_ptr<GrFragmentProcessor> onAsFragmentProcessor(GrRecordingContext*,
+                                                               SkSamplingOptions,
+                                                               const SkTileMode[],
+                                                               const SkMatrix&,
+                                                               const SkRect*,
+                                                               const SkRect*) const override;
+
     GrSurfaceProxyView textureProxyViewFromPlanes(GrRecordingContext*, SkBudgeted) const;
     sk_sp<SkCachedData> getPlanes(const SkYUVAPixmapInfo::SupportedDataTypes& supportedDataTypes,
                                   SkYUVAPixmaps* pixmaps) const;

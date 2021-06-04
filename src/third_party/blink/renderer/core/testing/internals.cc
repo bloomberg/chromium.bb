@@ -31,11 +31,11 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
-#include "third_party/blink/renderer/core/css/select_rule_feature_set.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -257,9 +256,9 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
    public:
     explicit Generator(int max_count) : max_count_(max_count) {}
 
-    base::Optional<int> Generate() {
+    absl::optional<int> Generate() {
       if (count_ >= max_count_) {
-        return base::nullopt;
+        return absl::nullopt;
       }
       ++count_;
       return current_++;
@@ -604,7 +603,7 @@ TestWritableStreamSink::Optimizer::PerformInProcessOptimization(
 
 }  // namespace
 
-static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
+static absl::optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     const String& marker_type) {
   if (EqualIgnoringASCIICase(marker_type, "Spelling"))
     return DocumentMarker::kSpelling;
@@ -618,16 +617,16 @@ static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     return DocumentMarker::kActiveSuggestion;
   if (EqualIgnoringASCIICase(marker_type, "Suggestion"))
     return DocumentMarker::kSuggestion;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-static base::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
+static absl::optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     const String& marker_type) {
   if (marker_type.IsEmpty() || EqualIgnoringASCIICase(marker_type, "all"))
     return DocumentMarker::MarkerTypes::All();
-  base::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
+  absl::optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)
-    return base::nullopt;
+    return absl::nullopt;
   return DocumentMarker::MarkerTypes(type.value());
 }
 
@@ -668,8 +667,6 @@ void Internals::ResetToConsistentState(Page* page) {
   frame->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(), mojom::blink::ScrollType::kProgrammatic);
   OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
-  if (page->DeprecatedLocalMainFrame()->GetEditor().IsOverwriteModeEnabled())
-    page->DeprecatedLocalMainFrame()->GetEditor().ToggleOverwriteModeEnabled();
 
   if (ScrollingCoordinator* scrolling_coordinator =
           page->GetScrollingCoordinator()) {
@@ -1013,62 +1010,50 @@ uint32_t Internals::countElementShadow(const Node* root,
   return To<ShadowRoot>(root)->ChildShadowRootCount();
 }
 
+namespace {
+
+bool CheckForFlatTreeExceptions(Node* node, ExceptionState& exception_state) {
+  if (node && !node->IsShadowRoot())
+    return false;
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kInvalidAccessError,
+      "The node argument doesn't participate in the flat tree.");
+  return true;
+}
+
+}  // namespace
+
 Node* Internals::nextSiblingInFlatTree(Node* node,
                                        ExceptionState& exception_state) {
-  DCHECK(node);
-  if (!node->CanParticipateInFlatTree()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument doesn't particite in the flat tree.");
+  if (CheckForFlatTreeExceptions(node, exception_state))
     return nullptr;
-  }
   return FlatTreeTraversal::NextSibling(*node);
 }
 
 Node* Internals::firstChildInFlatTree(Node* node,
                                       ExceptionState& exception_state) {
-  DCHECK(node);
-  if (!node->CanParticipateInFlatTree()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument doesn't particite in the flat tree");
+  if (CheckForFlatTreeExceptions(node, exception_state))
     return nullptr;
-  }
   return FlatTreeTraversal::FirstChild(*node);
 }
 
 Node* Internals::lastChildInFlatTree(Node* node,
                                      ExceptionState& exception_state) {
-  DCHECK(node);
-  if (!node->CanParticipateInFlatTree()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument doesn't particite in the flat tree.");
+  if (CheckForFlatTreeExceptions(node, exception_state))
     return nullptr;
-  }
   return FlatTreeTraversal::LastChild(*node);
 }
 
 Node* Internals::nextInFlatTree(Node* node, ExceptionState& exception_state) {
-  DCHECK(node);
-  if (!node->CanParticipateInFlatTree()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument doesn't particite in the flat tree.");
+  if (CheckForFlatTreeExceptions(node, exception_state))
     return nullptr;
-  }
   return FlatTreeTraversal::Next(*node);
 }
 
 Node* Internals::previousInFlatTree(Node* node,
                                     ExceptionState& exception_state) {
-  DCHECK(node);
-  if (!node->CanParticipateInFlatTree()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument doesn't particite in the flat tree.");
+  if (CheckForFlatTreeExceptions(node, exception_state))
     return nullptr;
-  }
   return FlatTreeTraversal::Previous(*node);
 }
 
@@ -1287,7 +1272,7 @@ void Internals::setMarker(Document* document,
     return;
   }
 
-  base::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
+  absl::optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -1315,7 +1300,7 @@ unsigned Internals::markerCountForNode(Text* text,
                                        const String& marker_type,
                                        ExceptionState& exception_state) {
   DCHECK(text);
-  base::Optional<DocumentMarker::MarkerTypes> marker_types =
+  absl::optional<DocumentMarker::MarkerTypes> marker_types =
       MarkerTypesFrom(marker_type);
   if (!marker_types) {
     exception_state.ThrowDOMException(
@@ -1351,7 +1336,7 @@ DocumentMarker* Internals::MarkerAt(Text* text,
                                     unsigned index,
                                     ExceptionState& exception_state) {
   DCHECK(text);
-  base::Optional<DocumentMarker::MarkerTypes> marker_types =
+  absl::optional<DocumentMarker::MarkerTypes> marker_types =
       MarkerTypesFrom(marker_type);
   if (!marker_types) {
     exception_state.ThrowDOMException(
@@ -1414,13 +1399,13 @@ unsigned Internals::markerUnderlineColorForNode(
   return style_marker->UnderlineColor().Rgb();
 }
 
-static base::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(
+static absl::optional<TextMatchMarker::MatchStatus> MatchStatusFrom(
     const String& match_status) {
   if (EqualIgnoringASCIICase(match_status, "kActive"))
     return TextMatchMarker::MatchStatus::kActive;
   if (EqualIgnoringASCIICase(match_status, "kInactive"))
     return TextMatchMarker::MatchStatus::kInactive;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void Internals::addTextMatchMarker(const Range* range,
@@ -1430,7 +1415,7 @@ void Internals::addTextMatchMarker(const Range* range,
   if (!range->OwnerDocument().View())
     return;
 
-  base::Optional<TextMatchMarker::MatchStatus> match_status_enum =
+  absl::optional<TextMatchMarker::MatchStatus> match_status_enum =
       MatchStatusFrom(match_status);
   if (!match_status_enum) {
     exception_state.ThrowDOMException(
@@ -1460,7 +1445,7 @@ static bool ParseColor(const String& value,
   return true;
 }
 
-static base::Optional<ImeTextSpanThickness> ThicknessFrom(
+static absl::optional<ImeTextSpanThickness> ThicknessFrom(
     const String& thickness) {
   if (EqualIgnoringASCIICase(thickness, "none"))
     return ImeTextSpanThickness::kNone;
@@ -1468,10 +1453,10 @@ static base::Optional<ImeTextSpanThickness> ThicknessFrom(
     return ImeTextSpanThickness::kThin;
   if (EqualIgnoringASCIICase(thickness, "thick"))
     return ImeTextSpanThickness::kThick;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-static base::Optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
+static absl::optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
     const String& underline_style) {
   if (EqualIgnoringASCIICase(underline_style, "none"))
     return ImeTextSpanUnderlineStyle::kNone;
@@ -1483,7 +1468,7 @@ static base::Optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
     return ImeTextSpanUnderlineStyle::kDash;
   if (EqualIgnoringASCIICase(underline_style, "squiggle"))
     return ImeTextSpanUnderlineStyle::kSquiggle;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 namespace {
@@ -1504,7 +1489,7 @@ void addStyleableMarkerHelper(const Range* range,
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
-  base::Optional<ImeTextSpanThickness> thickness =
+  absl::optional<ImeTextSpanThickness> thickness =
       ThicknessFrom(thickness_value);
   if (!thickness) {
     exception_state.ThrowDOMException(
@@ -1513,7 +1498,7 @@ void addStyleableMarkerHelper(const Range* range,
     return;
   }
 
-  base::Optional<ImeTextSpanUnderlineStyle> underline_style =
+  absl::optional<ImeTextSpanUnderlineStyle> underline_style =
       UnderlineStyleFrom(underline_style_value);
   if (!underline_style_value) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -2375,22 +2360,6 @@ bool Internals::canHyphenate(const AtomicString& locale) {
 void Internals::setMockHyphenation(const AtomicString& locale) {
   LayoutLocale::SetHyphenationForTesting(locale,
                                          base::AdoptRef(new MockHyphenation));
-}
-
-bool Internals::isOverwriteModeEnabled(Document* document) {
-  DCHECK(document);
-  if (!document->GetFrame())
-    return false;
-
-  return document->GetFrame()->GetEditor().IsOverwriteModeEnabled();
-}
-
-void Internals::toggleOverwriteModeEnabled(Document* document) {
-  DCHECK(document);
-  if (!document->GetFrame())
-    return;
-
-  document->GetFrame()->GetEditor().ToggleOverwriteModeEnabled();
 }
 
 unsigned Internals::numberOfLiveNodes() const {
@@ -3889,7 +3858,7 @@ ReadableStream* Internals::createReadableStream(
       MakeGarbageCollected<TestReadableStreamSource>(script_state, type);
   source->Attach(std::make_unique<TestReadableStreamSource::Generator>(10));
   return ReadableStream::CreateWithCountQueueingStrategy(
-      script_state, source, queue_size,
+      script_state, source, queue_size, AllowPerChunkTransferring(false),
       source->CreateTransferringOptimizer(script_state));
 }
 
@@ -3941,6 +3910,14 @@ ScriptValue Internals::createWritableStreamAndSink(
             ToV8(resolver->Promise(), script_state))
       .Check();
   return ScriptValue(script_state->GetIsolate(), object);
+}
+
+void Internals::setAllowPerChunkTransferring(ReadableStream* stream) {
+  if (!stream) {
+    return;
+  }
+  stream->SetAllowPerChunkTransferringForTesting(
+      AllowPerChunkTransferring(true));
 }
 
 }  // namespace blink

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include <cstddef>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -18,11 +18,13 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -122,7 +124,6 @@ namespace {
 // TODO(https://crbug.com/1164001): remove after the classes are migrated
 using ::chromeos::AuthErrorObserver;
 using ::chromeos::AuthErrorObserverFactory;
-using ::chromeos::EasyUnlockService;
 using ::chromeos::ProxyConfigServiceImpl;
 using ::content::BrowserThread;
 
@@ -150,7 +151,7 @@ std::string FullyCanonicalize(const std::string& email) {
 
 // Callback that is called after user removal is complete.
 void OnRemoveUserComplete(const AccountId& account_id,
-                          base::Optional<user_data_auth::RemoveReply> reply) {
+                          absl::optional<user_data_auth::RemoveReply> reply) {
   cryptohome::MountError error = user_data_auth::ReplyToMountError(reply);
   if (error != cryptohome::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Removal of cryptohome for " << account_id.Serialize()
@@ -258,7 +259,7 @@ bool PolicyHasWebTrustedAuthorityCertificate(
 }
 
 void CheckCryptohomeIsMounted(
-    base::Optional<user_data_auth::IsMountedReply> result) {
+    absl::optional<user_data_auth::IsMountedReply> result) {
   if (!result.has_value()) {
     LOG(ERROR) << "IsMounted call failed.";
     return;
@@ -366,8 +367,8 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       kAccountsPrefDeviceLocalAccounts,
       base::BindRepeating(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
                           weak_factory_.GetWeakPtr()));
-  multi_profile_user_controller_.reset(
-      new MultiProfileUserController(this, GetLocalState()));
+  multi_profile_user_controller_ =
+      std::make_unique<MultiProfileUserController>(this, GetLocalState());
 
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service =
       g_browser_process->platform_part()
@@ -454,8 +455,7 @@ UserImageManager* ChromeUserManagerImpl::GetUserImageManager(
   UserImageManagerMap::iterator ui = user_image_managers_.find(account_id);
   if (ui != user_image_managers_.end())
     return ui->second.get();
-  auto mgr =
-      std::make_unique<UserImageManagerImpl>(account_id.GetUserEmail(), this);
+  auto mgr = std::make_unique<UserImageManagerImpl>(account_id, this);
   UserImageManagerImpl* mgr_raw = mgr.get();
   user_image_managers_[account_id] = std::move(mgr);
   return mgr_raw;
@@ -708,8 +708,8 @@ void ChromeUserManagerImpl::PerformPostUserLoggedInActions(
     bool browser_restart) {
   // Initialize the session length limiter and start it only if
   // session limit is defined by the policy.
-  session_length_limiter_.reset(
-      new SessionLengthLimiter(NULL, browser_restart));
+  session_length_limiter_ =
+      base::WrapUnique(new SessionLengthLimiter(nullptr, browser_restart));
 }
 
 bool ChromeUserManagerImpl::IsDeviceLocalAccountMarkedForRemoval(
@@ -1173,7 +1173,7 @@ bool ChromeUserManagerImpl::IsUserAllowed(
 UserFlow* ChromeUserManagerImpl::GetDefaultUserFlow() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!default_flow_.get())
-    default_flow_.reset(new DefaultUserFlow());
+    default_flow_ = std::make_unique<DefaultUserFlow>();
   return default_flow_.get();
 }
 
@@ -1266,7 +1266,11 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   const base::ListValue& reporting_users =
       *(GetLocalState()->GetList(::prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
-  return !(reporting_users.Find(user_id_value) == reporting_users.end());
+  // TODO(crbug.com/1187106): Use base::Contains once |reporting_users| is not a
+  // ListValue.
+  return !(std::find(reporting_users.GetList().begin(),
+                     reporting_users.GetList().end(),
+                     user_id_value) == reporting_users.GetList().end());
 }
 
 bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
@@ -1306,8 +1310,9 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  users_update->AppendIfNotPresent(
-      std::make_unique<base::Value>(account_id.GetUserEmail()));
+  base::Value email_value(account_id.GetUserEmail());
+  if (!base::Contains(users_update->GetList(), email_value))
+    users_update->Append(std::move(email_value));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {

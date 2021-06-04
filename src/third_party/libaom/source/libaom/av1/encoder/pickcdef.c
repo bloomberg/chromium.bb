@@ -454,13 +454,13 @@ static AOM_INLINE void cdef_params_init(const YV12_BUFFER_CONFIG *frame,
       (mi_params->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   cdef_search_ctx->nhfb =
       (mi_params->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  cdef_search_ctx->coeff_shift = AOMMAX(cm->seq_params.bit_depth - 8, 0);
+  cdef_search_ctx->coeff_shift = AOMMAX(cm->seq_params->bit_depth - 8, 0);
   cdef_search_ctx->damping = 3 + (cm->quant_params.base_qindex >> 6);
   cdef_search_ctx->total_strengths = nb_cdef_strengths[pick_method];
   cdef_search_ctx->num_planes = num_planes;
   cdef_search_ctx->pick_method = pick_method;
   cdef_search_ctx->sb_count = 0;
-  av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, frame, 0, 0, 0,
+  av1_setup_dst_planes(xd->plane, cm->seq_params->sb_size, frame, 0, 0, 0,
                        num_planes);
   // Initialize plane wise information.
   for (int pli = 0; pli < num_planes; pli++) {
@@ -478,7 +478,7 @@ static AOM_INLINE void cdef_params_init(const YV12_BUFFER_CONFIG *frame,
   }
   // Function pointer initialization.
 #if CONFIG_AV1_HIGHBITDEPTH
-  if (cm->seq_params.use_highbitdepth) {
+  if (cm->seq_params->use_highbitdepth) {
     cdef_search_ctx->copy_fn = copy_sb16_16_highbd;
     cdef_search_ctx->compute_cdef_dist_fn = compute_cdef_dist_highbd;
   } else {
@@ -492,7 +492,7 @@ static AOM_INLINE void cdef_params_init(const YV12_BUFFER_CONFIG *frame,
 }
 
 static void pick_cdef_from_qp(AV1_COMMON *const cm) {
-  const int bd = cm->seq_params.bit_depth;
+  const int bd = cm->seq_params->bit_depth;
   const int q =
       av1_ac_quant_QTX(cm->quant_params.base_qindex, 0, bd) >> (bd - 8);
   CdefInfo *const cdef_info = &cm->cdef_info;

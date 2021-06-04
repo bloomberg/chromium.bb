@@ -43,7 +43,7 @@ class LoginDetectionBrowserTest : public InProcessBrowserTest {
             browser()->profile());
     optimization_guide_decider->AddHintForTesting(
         GURL("https://www.optguideloggedin.com/page.html"),
-        optimization_guide::proto::LOGIN_DETECTION, base::nullopt);
+        optimization_guide::proto::LOGIN_DETECTION, absl::nullopt);
 
     https_test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_test_server_.Start());
@@ -75,8 +75,11 @@ IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest,
   ui_test_utils::NavigateToURL(browser(), test_url);
   ExpectLoginDetectionTypeMetric(LoginDetectionType::kNoLogin);
 
-  // Use site-isolaiton to save the site to manual passworded list.
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), test_url);
+  // Use site isolation to save the site to manual passworded list.
+  content::SiteInstance::StartIsolatingSite(
+      browser()->profile(), test_url,
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource::
+          USER_TRIGGERED);
 
   // Subsequent navigation be detected as login.
   ResetHistogramTester();

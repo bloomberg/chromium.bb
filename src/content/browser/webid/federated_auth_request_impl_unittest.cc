@@ -9,35 +9,40 @@
 #include <string>
 #include <utility>
 
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
 #include "content/browser/webid/id_token_request_callback_data.h"
 #include "content/browser/webid/test/mock_identity_request_dialog_controller.h"
 #include "content/browser/webid/test/mock_idp_network_request_manager.h"
+#include "content/browser/webid/test/mock_request_permission_delegate.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "url/gurl.h"
 
+using blink::mojom::LogoutStatus;
 using blink::mojom::RequestIdTokenStatus;
 using blink::mojom::RequestMode;
 using AccountsResponse = content::IdpNetworkRequestManager::AccountsResponse;
-using TokenResponse = content::IdpNetworkRequestManager::TokenResponse;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
+using LogoutResponse = content::IdpNetworkRequestManager::LogoutResponse;
 using SigninResponse = content::IdpNetworkRequestManager::SigninResponse;
+using TokenResponse = content::IdpNetworkRequestManager::TokenResponse;
 using UserApproval = content::IdentityRequestDialogController::UserApproval;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace content {
 
 namespace {
 
+constexpr char kRpTestOrigin[] = "https://rp.example";
 constexpr char kIdpTestOrigin[] = "https://idp.example";
 constexpr char kIdpEndpoint[] = "https://idp.example/webid";
 constexpr char kAccountsEndpoint[] = "https://idp.example/accounts";
@@ -72,21 +77,21 @@ typedef struct {
 
 // Mock configuration values for test.
 typedef struct {
-  base::Optional<SigninResponse> signin_response;
+  absl::optional<SigninResponse> signin_response;
   const char* signin_url_or_token;
-  base::Optional<UserApproval> token_permission;
+  absl::optional<UserApproval> token_permission;
 } MockPermissionConfiguration;
 
 typedef struct {
-  base::Optional<AccountsResponse> accounts_response;
+  absl::optional<AccountsResponse> accounts_response;
   IdpNetworkRequestManager::AccountList accounts;
-  base::Optional<TokenResponse> token_response;
+  absl::optional<TokenResponse> token_response;
 } MockMediatedConfiguration;
 
 typedef struct {
   const char* token;
-  base::Optional<UserApproval> initial_permission;
-  base::Optional<FetchStatus> wellknown_fetch_status;
+  absl::optional<UserApproval> initial_permission;
+  absl::optional<FetchStatus> wellknown_fetch_status;
   const char* idp_endpoint;
   const char* accounts_endpoint;
   const char* token_endpoint;
@@ -94,7 +99,7 @@ typedef struct {
   MockMediatedConfiguration Mediated_conf;
 } MockConfiguration;
 
-// base::Optional fields should be nullopt to prevent the corresponding
+// absl::optional fields should be nullopt to prevent the corresponding
 // methods from having EXPECT_CALL set on the mocks.
 typedef struct {
   std::string test_name;
@@ -110,10 +115,10 @@ std::ostream& operator<<(std::ostream& os,
   return os << name;
 }
 
-static const MockMediatedConfiguration kMediatedNoop{base::nullopt, kAccounts,
-                                                     base::nullopt};
-static const MockPermissionConfiguration kPermissionNoop{base::nullopt, "",
-                                                         base::nullopt};
+static const MockMediatedConfiguration kMediatedNoop{absl::nullopt, kAccounts,
+                                                     absl::nullopt};
+static const MockPermissionConfiguration kPermissionNoop{absl::nullopt, "",
+                                                         absl::nullopt};
 
 static const AuthRequestTestCase kPermissionTestCases[]{
     {"Successful run with the IdP page loaded",
@@ -137,13 +142,13 @@ static const AuthRequestTestCase kPermissionTestCases[]{
       kIdpEndpoint,
       "",
       "",
-      {SigninResponse::kTokenGranted, kToken, base::nullopt},
+      {SigninResponse::kTokenGranted, kToken, absl::nullopt},
       kMediatedNoop}},
 
     {"Initial user permission denied",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kPermission},
      {RequestIdTokenStatus::kApprovalDeclined, kEmptyToken},
-     {kToken, UserApproval::kDenied, base::nullopt, "", "", "", kPermissionNoop,
+     {kToken, UserApproval::kDenied, absl::nullopt, "", "", "", kPermissionNoop,
       kMediatedNoop}},
 
     {"Wellknown file not found",
@@ -173,7 +178,7 @@ static const AuthRequestTestCase kPermissionTestCases[]{
       kIdpEndpoint,
       "",
       "",
-      {SigninResponse::kSigninError, "", base::nullopt},
+      {SigninResponse::kSigninError, "", absl::nullopt},
       kMediatedNoop}},
 
     {"Error parsing the idpendpoint response",
@@ -185,7 +190,7 @@ static const AuthRequestTestCase kPermissionTestCases[]{
       kIdpEndpoint,
       "",
       "",
-      {SigninResponse::kInvalidResponseError, "", base::nullopt},
+      {SigninResponse::kInvalidResponseError, "", absl::nullopt},
       kMediatedNoop}},
 
     {"IdP window closed before token provision",
@@ -197,7 +202,7 @@ static const AuthRequestTestCase kPermissionTestCases[]{
       kIdpEndpoint,
       "",
       "",
-      {SigninResponse::kLoadIdp, kSigninUrl, base::nullopt},
+      {SigninResponse::kLoadIdp, kSigninUrl, absl::nullopt},
       kMediatedNoop}},
 
     {"Token provision declined by user after IdP window closed",
@@ -216,44 +221,44 @@ static const AuthRequestTestCase kMediatedTestCases[]{
     {"Error parsing wellknown for Mediated mode missing token endpoint",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kMediated},
      {RequestIdTokenStatus::kErrorInvalidWellKnown, kEmptyToken},
-     {kToken, base::nullopt, FetchStatus::kInvalidResponseError, kIdpEndpoint,
+     {kToken, absl::nullopt, FetchStatus::kInvalidResponseError, kIdpEndpoint,
       kAccountsEndpoint, "", kPermissionNoop, kMediatedNoop}},
 
     {"Error parsing wellknown for Mediated mode missing accounts endpoint",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kMediated},
      {RequestIdTokenStatus::kErrorInvalidWellKnown, kEmptyToken},
-     {kToken, base::nullopt, FetchStatus::kInvalidResponseError, kIdpEndpoint,
+     {kToken, absl::nullopt, FetchStatus::kInvalidResponseError, kIdpEndpoint,
       "", kTokenEndpoint, kPermissionNoop, kMediatedNoop}},
 
     {"Error reaching Accounts endpoint",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kMediated},
      {RequestIdTokenStatus::kError, kEmptyToken},
      {kEmptyToken,
-      base::nullopt,
+      absl::nullopt,
       FetchStatus::kSuccess,
       "",
       kAccountsEndpoint,
       kTokenEndpoint,
       kPermissionNoop,
-      {AccountsResponse::kNetError, kAccounts, base::nullopt}}},
+      {AccountsResponse::kNetError, kAccounts, absl::nullopt}}},
 
     {"Error parsing Accounts response",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kMediated},
      {RequestIdTokenStatus::kErrorInvalidAccountsResponse, kEmptyToken},
      {kToken,
-      base::nullopt,
+      absl::nullopt,
       FetchStatus::kSuccess,
       "",
       kAccountsEndpoint,
       kTokenEndpoint,
       kPermissionNoop,
-      {AccountsResponse::kInvalidResponseError, kAccounts, base::nullopt}}},
+      {AccountsResponse::kInvalidResponseError, kAccounts, absl::nullopt}}},
 
     {"Successful Mediated flow",
      {kIdpTestOrigin, kAuthRequest, RequestMode::kMediated},
      {RequestIdTokenStatus::kSuccess, kToken},
      {kToken,
-      base::nullopt,
+      absl::nullopt,
       FetchStatus::kSuccess,
       "",
       kAccountsEndpoint,
@@ -273,11 +278,11 @@ class AuthRequestCallbackHelper {
       delete;
 
   RequestIdTokenStatus status() const { return status_; }
-  base::Optional<std::string> token() const { return token_; }
+  absl::optional<std::string> token() const { return token_; }
 
   // This can only be called once per lifetime of this object.
   base::OnceCallback<void(RequestIdTokenStatus,
-                          const base::Optional<std::string>&)>
+                          const absl::optional<std::string>&)>
   callback() {
     return base::BindOnce(&AuthRequestCallbackHelper::ReceiverMethod,
                           base::Unretained(this));
@@ -293,7 +298,7 @@ class AuthRequestCallbackHelper {
 
  private:
   void ReceiverMethod(RequestIdTokenStatus status,
-                      const base::Optional<std::string>& token) {
+                      const absl::optional<std::string>& token) {
     status_ = status;
     token_ = token;
     was_called_ = true;
@@ -303,7 +308,45 @@ class AuthRequestCallbackHelper {
   bool was_called_ = false;
   base::RunLoop wait_for_callback_loop_;
   RequestIdTokenStatus status_;
-  base::Optional<std::string> token_;
+  absl::optional<std::string> token_;
+};
+
+// Helper class for receiving the Logout method callback.
+class LogoutRequestCallbackHelper {
+ public:
+  LogoutRequestCallbackHelper() = default;
+  ~LogoutRequestCallbackHelper() = default;
+
+  LogoutRequestCallbackHelper(const LogoutRequestCallbackHelper&) = delete;
+  LogoutRequestCallbackHelper& operator=(const LogoutRequestCallbackHelper&) =
+      delete;
+
+  LogoutStatus status() const { return status_; }
+
+  // This can only be called once per lifetime of this object.
+  base::OnceCallback<void(LogoutStatus)> callback() {
+    return base::BindOnce(&LogoutRequestCallbackHelper::ReceiverMethod,
+                          base::Unretained(this));
+  }
+
+  // Returns when callback() is called, which can be immediately if it has
+  // already been called.
+  void WaitForCallback() {
+    if (was_called_)
+      return;
+    wait_for_callback_loop_.Run();
+  }
+
+ private:
+  void ReceiverMethod(LogoutStatus status) {
+    status_ = status;
+    was_called_ = true;
+    wait_for_callback_loop_.Quit();
+  }
+
+  bool was_called_ = false;
+  base::RunLoop wait_for_callback_loop_;
+  LogoutStatus status_;
 };
 
 }  // namespace
@@ -320,13 +363,16 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
     auth_request_impl_ = std::make_unique<FederatedAuthRequestImpl>(
         main_rfh(), request_remote_.BindNewPipeAndPassReceiver());
     mock_request_manager_ =
-        std::make_unique<NiceMock<MockIdpNetworkRequestManager>>(provider,
-                                                                 main_rfh());
+        std::make_unique<NiceMock<MockIdpNetworkRequestManager>>(
+            provider, url::Origin::Create(GURL(kRpTestOrigin)));
     mock_dialog_controller_ =
         std::make_unique<NiceMock<MockIdentityRequestDialogController>>();
+
+    mock_request_permission_delegate_ =
+        std::make_unique<NiceMock<MockRequestPermissionDelegate>>();
   }
 
-  std::pair<RequestIdTokenStatus, base::Optional<std::string>>
+  std::pair<RequestIdTokenStatus, absl::optional<std::string>>
   PerformAuthRequest(const std::string& request,
                      blink::mojom::RequestMode mode) {
     auth_request_impl_->SetNetworkManagerForTests(
@@ -339,6 +385,19 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
                                     auth_helper.callback());
     auth_helper.WaitForCallback();
     return std::make_pair(auth_helper.status(), auth_helper.token());
+  }
+
+  LogoutStatus PerformLogoutRequest(
+      const std::vector<std::string>& logout_endpoints) {
+    auth_request_impl_->SetNetworkManagerForTests(
+        std::move(mock_request_manager_));
+    auth_request_impl_->SetRequestPermissionDelegateForTests(
+        mock_request_permission_delegate_.get());
+
+    LogoutRequestCallbackHelper logout_helper;
+    request_remote_->Logout(logout_endpoints, logout_helper.callback());
+    logout_helper.WaitForCallback();
+    return logout_helper.status();
   }
 
   void SetPermissionMockExpectations(const MockPermissionConfiguration& conf,
@@ -453,6 +512,48 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
                                 test_case.config.token);
   }
 
+  // Expectations have to be set explicitly in advance using
+  // logout_return_status() and logout_endpoints().
+  void SetLogoutMockExpectations() {
+    if (logout_request_permissions_.size() == 0) {
+      EXPECT_CALL(*mock_request_permission_delegate_,
+                  HasRequestPermission(_, _))
+          .Times(0);
+    } else {
+      for (int i = logout_request_permissions_.size() - 1; i >= 0; i--) {
+        auto single_logout_request_permission = logout_request_permissions_[i];
+        EXPECT_CALL(*mock_request_permission_delegate_,
+                    HasRequestPermission(_, _))
+            .WillOnce(Return(single_logout_request_permission))
+            .RetiresOnSaturation();
+      }
+    }
+
+    if (logout_return_status_.size() == 0) {
+      EXPECT_CALL(*mock_request_manager_, SendLogout(_, _)).Times(0);
+    } else {
+      for (int i = logout_return_status_.size() - 1; i >= 0; i--) {
+        auto single_logout_return_status = logout_return_status_[i];
+        EXPECT_CALL(*mock_request_manager_, SendLogout(_, _))
+            .WillOnce(
+                Invoke([single_logout_return_status](
+                           const GURL& logout_endpoint,
+                           IdpNetworkRequestManager::LogoutCallback callback) {
+                  std::move(callback).Run(single_logout_return_status);
+                }))
+            .RetiresOnSaturation();
+      }
+    }
+  }
+
+  std::vector<LogoutResponse>& logout_return_status() {
+    return logout_return_status_;
+  }
+  std::vector<std::string>& logout_endpoints() { return logout_endpoints_; }
+  std::vector<bool>& logout_request_permissions() {
+    return logout_request_permissions_;
+  }
+
  private:
   mojo::Remote<blink::mojom::FederatedAuthRequest> request_remote_;
   std::unique_ptr<FederatedAuthRequestImpl> auth_request_impl_;
@@ -460,8 +561,15 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
   std::unique_ptr<NiceMock<MockIdpNetworkRequestManager>> mock_request_manager_;
   std::unique_ptr<NiceMock<MockIdentityRequestDialogController>>
       mock_dialog_controller_;
+  std::unique_ptr<NiceMock<MockRequestPermissionDelegate>>
+      mock_request_permission_delegate_;
 
   base::OnceClosure close_idp_window_callback_;
+
+  // Test case storage for Logout tests.
+  std::vector<LogoutResponse> logout_return_status_;
+  std::vector<std::string> logout_endpoints_;
+  std::vector<bool> logout_request_permissions_;
 
   GURL provider_;
 };
@@ -489,6 +597,75 @@ TEST_P(BasicFederatedAuthRequestImplTest, FederatedAuthRequests) {
       PerformAuthRequest(test_case.inputs.request, test_case.inputs.mode);
   EXPECT_EQ(auth_response.first, test_case.expected.return_status);
   EXPECT_EQ(auth_response.second, test_case.expected.token);
+}
+
+// Test Logout method success with multiple relying parties.
+TEST_F(BasicFederatedAuthRequestImplTest, LogoutSuccessMultiple) {
+  CreateAuthRequest(GURL(kIdpTestOrigin));
+
+  logout_endpoints().push_back("https://rp1.example");
+  logout_return_status().push_back(LogoutResponse::kSuccess);
+  logout_request_permissions().push_back(true);
+  logout_endpoints().push_back("https://rp2.example");
+  logout_return_status().push_back(LogoutResponse::kSuccess);
+  logout_request_permissions().push_back(true);
+  logout_endpoints().push_back("https://rp3.example");
+  logout_return_status().push_back(LogoutResponse::kSuccess);
+  logout_request_permissions().push_back(true);
+
+  SetLogoutMockExpectations();
+  auto logout_response = PerformLogoutRequest(logout_endpoints());
+  EXPECT_EQ(logout_response, LogoutStatus::kSuccess);
+}
+
+// Test Logout method with an invalid endpoint URL.
+TEST_F(BasicFederatedAuthRequestImplTest, LogoutInvalidEndpoint) {
+  CreateAuthRequest(GURL(kIdpTestOrigin));
+
+  logout_endpoints().push_back("Invalid string");
+
+  SetLogoutMockExpectations();
+  auto logout_response = PerformLogoutRequest(logout_endpoints());
+  EXPECT_EQ(logout_response, LogoutStatus::kError);
+}
+
+// Test an error is returned if one logout request fails.
+TEST_F(BasicFederatedAuthRequestImplTest, LogoutSingleFailure) {
+  CreateAuthRequest(GURL(kIdpTestOrigin));
+
+  logout_endpoints().push_back("https://rp1.example");
+  logout_return_status().push_back(LogoutResponse::kSuccess);
+  logout_request_permissions().push_back(true);
+  logout_endpoints().push_back("https://rp2.example");
+  logout_return_status().push_back(LogoutResponse::kError);
+  logout_request_permissions().push_back(true);
+
+  SetLogoutMockExpectations();
+  auto logout_response = PerformLogoutRequest(logout_endpoints());
+  EXPECT_EQ(logout_response, LogoutStatus::kSuccess);
+}
+
+// Test Logout method with an empty endpoint vector.
+TEST_F(BasicFederatedAuthRequestImplTest, LogoutNoEndpoints) {
+  CreateAuthRequest(GURL(kIdpTestOrigin));
+
+  SetLogoutMockExpectations();
+  auto logout_response = PerformLogoutRequest(logout_endpoints());
+  EXPECT_EQ(logout_response, LogoutStatus::kError);
+}
+
+// Test Logout without request permission granted.
+TEST_F(BasicFederatedAuthRequestImplTest, LogoutWithoutPermission) {
+  CreateAuthRequest(GURL(kIdpTestOrigin));
+
+  // logout_return_status() not set because there should be no
+  // attempt at dispatch.
+  logout_endpoints().push_back("https://rp1.example");
+  logout_request_permissions().push_back(false);
+
+  SetLogoutMockExpectations();
+  auto logout_response = PerformLogoutRequest(logout_endpoints());
+  EXPECT_EQ(logout_response, LogoutStatus::kError);
 }
 
 }  // namespace content

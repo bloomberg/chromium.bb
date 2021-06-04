@@ -25,6 +25,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/google/core/common/google_util.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
@@ -33,6 +34,7 @@
 #include "components/optimization_guide/core/hints_component_util.h"
 #include "components/optimization_guide/core/hints_fetcher_factory.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
+#include "components/optimization_guide/core/insertion_ordered_set.h"
 #include "components/optimization_guide/core/optimization_filter.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
@@ -120,9 +122,9 @@ bool IsOptimizationTypeAllowed(
         optimization_guide::proto::Optimization>& optimizations,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata,
-    base::Optional<uint64_t>* tuning_version) {
+    absl::optional<uint64_t>* tuning_version) {
   DCHECK(tuning_version);
-  *tuning_version = base::nullopt;
+  *tuning_version = absl::nullopt;
 
   for (const auto& optimization : optimizations) {
     if (optimization_type != optimization.optimization_type())
@@ -173,9 +175,9 @@ bool IsOptimizationTypeAllowed(
 // Logs an OptimizationAutotuning event for the navigation with |navigation_id|,
 // if |navigation_id| and |tuning_version| are non-null.
 void MaybeLogOptimizationAutotuningUKMForNavigation(
-    base::Optional<int64_t> navigation_id,
+    absl::optional<int64_t> navigation_id,
     optimization_guide::proto::OptimizationType optimization_type,
-    base::Optional<int64_t> tuning_version) {
+    absl::optional<int64_t> tuning_version) {
   if (!navigation_id || !tuning_version) {
     // Only log if we can correlate the tuning event with a navigation.
     return;
@@ -283,9 +285,6 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
                   GetOptimizationGuideServiceGetHintsURL(),
               pref_service,
               content::GetNetworkConnectionTracker())),
-      external_app_packages_approved_for_fetch_(
-          optimization_guide::features::
-              ExternalAppPackageNamesApprovedForFetch()),
       top_host_provider_(top_host_provider),
       tab_url_provider_(tab_url_provider),
       clock_(base::DefaultClock::GetInstance()),
@@ -698,7 +697,7 @@ void OptimizationGuideHintsManager::FetchHintsForActiveTabs() {
 void OptimizationGuideHintsManager::OnHintsForActiveTabsFetched(
     const base::flat_set<std::string>& hosts_fetched,
     const base::flat_set<GURL>& urls_fetched,
-    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+    absl::optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   if (!get_hints_response)
     return;
@@ -715,10 +714,10 @@ void OptimizationGuideHintsManager::OnHintsForActiveTabsFetched(
 
 void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
     base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
-    const base::Optional<GURL>& navigation_url,
+    const absl::optional<GURL>& navigation_url,
     const base::flat_set<GURL>& page_navigation_urls_requested,
     const base::flat_set<std::string>& page_navigation_hosts_requested,
-    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+    absl::optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   if (!get_hints_response.has_value() || !get_hints_response.value()) {
     if (navigation_url) {
@@ -756,13 +755,17 @@ void OptimizationGuideHintsManager::OnFetchedActiveTabsHintsStored() {
 
 void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
     base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
-    const base::Optional<GURL>& navigation_url,
+    const absl::optional<GURL>& navigation_url,
     const base::flat_set<std::string>& page_navigation_hosts_requested) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (navigation_data_weak_ptr) {
     navigation_data_weak_ptr->set_hints_fetch_end(base::TimeTicks::Now());
   }
+  base::UmaHistogramBoolean(
+      "OptimizationGuide.HintsManager."
+      "PageNavigationHintsReturnedBeforeDataFlushed",
+      navigation_data_weak_ptr.MaybeValid());
 
   if (navigation_url) {
     CleanUpFetcherForNavigation(*navigation_url);
@@ -829,76 +832,66 @@ bool OptimizationGuideHintsManager::IsGoogleURL(const GURL& url) const {
 }
 
 bool OptimizationGuideHintsManager::IsAllowedToFetchForNavigationPrediction(
-    const base::Optional<NavigationPredictorKeyedService::Prediction>
+    const absl::optional<NavigationPredictorKeyedService::Prediction>
         prediction) const {
   if (!prediction)
     return false;
 
-  if (prediction->prediction_source() ==
+  if (prediction->prediction_source() !=
       NavigationPredictorKeyedService::PredictionSource::
           kAnchorElementsParsedFromWebPage) {
-    const base::Optional<GURL> source_document_url =
-        prediction->source_document_url();
-    if (!source_document_url || source_document_url->is_empty())
-      return false;
-
-    // We only extract next predicted navigations from Google URLs.
-    return IsGoogleURL(*source_document_url);
+    // We only support predictions from page anchors.
+    return false;
   }
+  const absl::optional<GURL> source_document_url =
+      prediction->source_document_url();
+  if (!source_document_url || source_document_url->is_empty())
+    return false;
 
-  if (prediction->prediction_source() ==
-      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp) {
-    if (external_app_packages_approved_for_fetch_.empty())
-      return false;
-
-    const base::Optional<std::vector<std::string>> external_app_packages_name =
-        prediction->external_app_packages_name();
-    if (!external_app_packages_name || external_app_packages_name->empty())
-      return false;
-
-    for (const auto& package_name : *external_app_packages_name) {
-      if (external_app_packages_approved_for_fetch_.find(package_name) ==
-          external_app_packages_approved_for_fetch_.end())
-        return false;
-    }
-    // If we get here, all apps have been approved for fetching.
-    return true;
-  }
-
-  return false;
+  // We only extract next predicted navigations from Google URLs.
+  return IsGoogleURL(*source_document_url);
 }
 
 void OptimizationGuideHintsManager::OnPredictionUpdated(
-    const base::Optional<NavigationPredictorKeyedService::Prediction>
+    const absl::optional<NavigationPredictorKeyedService::Prediction>
         prediction) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!IsAllowedToFetchForNavigationPrediction(prediction))
+  if (!IsAllowedToFetchForNavigationPrediction(prediction)) {
     return;
+  }
 
-  // Extract the target hosts and URLs. Use a flat set to remove duplicates.
-  // |target_hosts_serialized| is the ordered list of non-duplicate hosts.
-  // TODO(sophiechang): See if we can make this logic simpler.
-  base::flat_set<std::string> target_hosts;
-  std::vector<std::string> target_hosts_serialized;
-  std::vector<GURL> target_urls;
+  // Per comments in NavigationPredictorKeyedService::Prediction, this pointer
+  // should be valid while OnPredictionUpdated is on the call stack.
+  content::WebContents* web_contents = prediction->web_contents();
+  auto* observer =
+      OptimizationGuideWebContentsObserver::FromWebContents(web_contents);
+  DCHECK(observer);
+
+  std::vector<GURL> urls_to_fetch;
   for (const auto& url : prediction->sorted_predicted_urls()) {
-    if (!IsAllowedToFetchNavigationHints(url))
+    if (!IsAllowedToFetchNavigationHints(url)) {
       continue;
+    }
+    if (IsGoogleURL(url)) {
+      // Don't prefetch hints for SRP links that point back to Google.
+      continue;
+    }
+    if (hint_cache_->HasURLKeyedEntryForURL(url)) {
+      continue;
+    }
+    urls_to_fetch.push_back(url);
+  }
+  observer->AddURLsToBatchFetchBasedOnPrediction(std::move(urls_to_fetch),
+                                                 web_contents);
+}
 
-    // Insert the host to |target_hosts|. The host is inserted to
-    // |target_hosts_serialized| only if it was not a duplicate insertion to
-    // |target_hosts|.
-    std::pair<base::flat_set<std::string>::iterator, bool> insert_result =
-        target_hosts.insert(url.host());
-    if (insert_result.second)
-      target_hosts_serialized.push_back(url.host());
-
-    // Ensure that the 2 data structures remain synchronized.
-    DCHECK_EQ(target_hosts.size(), target_hosts_serialized.size());
-
-    if (!hint_cache_->HasURLKeyedEntryForURL(url))
-      target_urls.push_back(url);
+void OptimizationGuideHintsManager::FetchHintsForPredictions(
+    std::vector<GURL> target_urls) {
+  // Collect hosts, stripping duplicates, but preserving the ordering.
+  InsertionOrderedSet<std::string> target_hosts;
+  for (const auto& url : target_urls) {
+    target_hosts.insert(url.host());
   }
 
   if (target_hosts.empty() && target_urls.empty())
@@ -914,13 +907,13 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   // the page navigation context. However, since we do want to load the hints
   // returned, we pass this through to the page navigation callback.
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
-      target_hosts_serialized, target_urls, registered_optimization_types_,
+      target_hosts.vector(), target_urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_BATCH_UPDATE,
       g_browser_process->GetApplicationLocale(),
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr(), nullptr, base::nullopt,
-          target_urls, target_hosts));
+          ui_weak_ptr_factory_.GetWeakPtr(), nullptr, absl::nullopt,
+          target_urls, target_hosts.set()));
 }
 
 void OptimizationGuideHintsManager::OnHintLoaded(
@@ -955,7 +948,7 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     }
     registered_optimization_types_.insert(optimization_type);
 
-    base::Optional<double> value = previously_registered_opt_types->FindBoolKey(
+    absl::optional<double> value = previously_registered_opt_types->FindBoolKey(
         optimization_guide::proto::OptimizationType_Name(optimization_type));
     if (!value) {
       if (!profile_->IsOffTheRecord() &&
@@ -1014,7 +1007,7 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationBlocklist(
 
 void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
     const GURL& navigation_url,
-    const base::Optional<int64_t>& navigation_id,
+    const absl::optional<int64_t>& navigation_id,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationGuideDecisionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1046,7 +1039,7 @@ void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
 optimization_guide::OptimizationTypeDecision
 OptimizationGuideHintsManager::CanApplyOptimization(
     const GURL& navigation_url,
-    const base::Optional<int64_t>& navigation_id,
+    const absl::optional<int64_t>& navigation_id,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1071,39 +1064,39 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   // Check if the URL should be filtered out if we have an optimization filter
   // for the type.
 
-    // Check if we have an allowlist loaded into memory for it, and if we do,
-    // see if the URL matches anything in the filter.
-    if (allowlist_optimization_filters_.find(optimization_type) !=
-        allowlist_optimization_filters_.end()) {
-      return allowlist_optimization_filters_[optimization_type]->Matches(
-                 navigation_url)
-                 ? optimization_guide::OptimizationTypeDecision::
-                       kAllowedByOptimizationFilter
-                 : optimization_guide::OptimizationTypeDecision::
-                       kNotAllowedByOptimizationFilter;
-    }
+  // Check if we have an allowlist loaded into memory for it, and if we do,
+  // see if the URL matches anything in the filter.
+  if (allowlist_optimization_filters_.find(optimization_type) !=
+      allowlist_optimization_filters_.end()) {
+    return allowlist_optimization_filters_[optimization_type]->Matches(
+               navigation_url)
+               ? optimization_guide::OptimizationTypeDecision::
+                     kAllowedByOptimizationFilter
+               : optimization_guide::OptimizationTypeDecision::
+                     kNotAllowedByOptimizationFilter;
+  }
 
-    // Check if we have a blocklist loaded into memory for it, and if we do, see
-    // if the URL matches anything in the filter.
-    if (blocklist_optimization_filters_.find(optimization_type) !=
-        blocklist_optimization_filters_.end()) {
-      return blocklist_optimization_filters_[optimization_type]->Matches(
-                 navigation_url)
-                 ? optimization_guide::OptimizationTypeDecision::
-                       kNotAllowedByOptimizationFilter
-                 : optimization_guide::OptimizationTypeDecision::
-                       kAllowedByOptimizationFilter;
-    }
+  // Check if we have a blocklist loaded into memory for it, and if we do, see
+  // if the URL matches anything in the filter.
+  if (blocklist_optimization_filters_.find(optimization_type) !=
+      blocklist_optimization_filters_.end()) {
+    return blocklist_optimization_filters_[optimization_type]->Matches(
+               navigation_url)
+               ? optimization_guide::OptimizationTypeDecision::
+                     kNotAllowedByOptimizationFilter
+               : optimization_guide::OptimizationTypeDecision::
+                     kAllowedByOptimizationFilter;
+  }
 
-    // Check if we had an optimization filter for it, but it was not loaded into
-    // memory.
-    if (optimization_types_with_filter_.find(optimization_type) !=
-        optimization_types_with_filter_.end()) {
-      return optimization_guide::OptimizationTypeDecision::
-          kHadOptimizationFilterButNotLoadedInTime;
-    }
+  // Check if we had an optimization filter for it, but it was not loaded into
+  // memory.
+  if (optimization_types_with_filter_.find(optimization_type) !=
+      optimization_types_with_filter_.end()) {
+    return optimization_guide::OptimizationTypeDecision::
+        kHadOptimizationFilterButNotLoadedInTime;
+  }
 
-  base::Optional<uint64_t> tuning_version;
+  absl::optional<uint64_t> tuning_version;
 
   // First, check if the optimization type is whitelisted by a URL-keyed hint.
   const optimization_guide::proto::Hint* url_keyed_hint =
@@ -1207,7 +1200,7 @@ void OptimizationGuideHintsManager::OnReadyToInvokeRegisteredCallbacks(
         opt_type_and_callbacks.first;
 
     for (auto& navigation_id_and_callback : opt_type_and_callbacks.second) {
-      base::Optional<int64_t> navigation_id = navigation_id_and_callback.first;
+      absl::optional<int64_t> navigation_id = navigation_id_and_callback.first;
       optimization_guide::OptimizationMetadata metadata;
       optimization_guide::OptimizationTypeDecision type_decision =
           CanApplyOptimization(navigation_url, navigation_id, opt_type,
@@ -1259,7 +1252,7 @@ bool OptimizationGuideHintsManager::IsAllowedToFetchNavigationHints(
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 
-  base::Optional<net::EffectiveConnectionType> ect_max_threshold =
+  absl::optional<net::EffectiveConnectionType> ect_max_threshold =
       optimization_guide::features::
           GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
   // If the threshold is unavailable, return early since there is no safe way to
@@ -1305,12 +1298,21 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
   ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder
       race_navigation_recorder(navigation_handle);
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+
   // We expect that if the URL is being fetched for, we have already run through
   // the logic to decide if we also require fetching hints for the host.
   if (IsHintBeingFetchedForNavigation(url)) {
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
             kRaceNavigationFetchAlreadyInProgress);
+
+    // Just set the hints fetch start to the start of the navigation, so we can
+    // track whether the hint came back before commit or not.
+    navigation_data->set_hints_fetch_start(
+        navigation_handle->NavigationStart());
     return;
   }
 
@@ -1345,11 +1347,7 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches",
       page_navigation_hints_fetchers_.size());
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-  navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
-  it->second->FetchOptimizationGuideServiceHints(
+  bool fetch_attempted = it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       g_browser_process->GetApplicationLocale(),
@@ -1358,11 +1356,18 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
           ui_weak_ptr_factory_.GetWeakPtr(), navigation_data->GetWeakPtr(), url,
           base::flat_set<GURL>({url}),
           base::flat_set<std::string>({url.host()})));
+  if (fetch_attempted) {
+    navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
 
-  if (!hosts.empty() && !urls.empty()) {
+    if (!hosts.empty() && !urls.empty()) {
+      race_navigation_recorder.set_race_attempt_status(
+          optimization_guide::RaceNavigationFetchAttemptStatus::
+              kRaceNavigationFetchHostAndURL);
+    }
+  } else {
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHostAndURL);
+            kRaceNavigationFetchNotAttempted);
   }
 }
 
@@ -1440,7 +1445,7 @@ void OptimizationGuideHintsManager::ClearHostKeyedHints() {
 void OptimizationGuideHintsManager::AddHintForTesting(
     const GURL& url,
     optimization_guide::proto::OptimizationType optimization_type,
-    const base::Optional<optimization_guide::OptimizationMetadata>& metadata) {
+    const absl::optional<optimization_guide::OptimizationMetadata>& metadata) {
   std::unique_ptr<optimization_guide::proto::Hint> hint =
       std::make_unique<optimization_guide::proto::Hint>();
   hint->set_key(url.spec());

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/permissions/permission_actions_history.h"
-#include "components/permissions/notification_permission_ui_selector.h"
+#include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/prediction_service/prediction_request_features.h"
 
 class PredictionServiceRequest;
@@ -23,7 +23,7 @@ class GeneratePredictionsResponse;
 // Each instance of this class is long-lived and can support multiple requests,
 // but only one at a time.
 class PredictionBasedPermissionUiSelector
-    : public permissions::NotificationPermissionUiSelector {
+    : public permissions::PermissionUiSelector {
  public:
   using PredictionGrantLikelihood =
       permissions::PermissionUmaUtil::PredictionGrantLikelihood;
@@ -42,7 +42,10 @@ class PredictionBasedPermissionUiSelector
 
   void Cancel() override;
 
-  base::Optional<PredictionGrantLikelihood> PredictedGrantLikelihoodForUKM()
+  bool IsPermissionRequestSupported(
+      permissions::RequestType request_type) override;
+
+  absl::optional<PredictionGrantLikelihood> PredictedGrantLikelihoodForUKM()
       override;
 
  private:
@@ -63,9 +66,9 @@ class PredictionBasedPermissionUiSelector
 
   Profile* profile_;
   std::unique_ptr<PredictionServiceRequest> request_;
-  base::Optional<PredictionGrantLikelihood> last_request_grant_likelihood_;
+  absl::optional<PredictionGrantLikelihood> last_request_grant_likelihood_;
 
-  base::Optional<PredictionGrantLikelihood> likelihood_override_for_testing_;
+  absl::optional<PredictionGrantLikelihood> likelihood_override_for_testing_;
 
   DecisionMadeCallback callback_;
 };

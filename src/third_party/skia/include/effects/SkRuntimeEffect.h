@@ -27,6 +27,7 @@ class SkShader;
 namespace SkSL {
 class FunctionDefinition;
 struct Program;
+enum class ProgramKind : int8_t;
 }  // namespace SkSL
 
 namespace skvm {
@@ -58,9 +59,7 @@ public:
 
         enum Flags {
             kArray_Flag         = 0x1,
-            kMarker_Flag        = 0x2,
-            kMarkerNormals_Flag = 0x4,
-            kSRGBUnpremul_Flag  = 0x8,
+            kSRGBUnpremul_Flag  = 0x2,
         };
 
         SkString  name;
@@ -68,21 +67,31 @@ public:
         Type      type;
         int       count;
         uint32_t  flags;
-        uint32_t  marker;
 
         bool isArray() const { return SkToBool(this->flags & kArray_Flag); }
         size_t sizeInBytes() const;
     };
 
-    struct Varying {
+    struct Child {
+        enum class Type {
+            kShader,
+            kColorFilter,
+        };
+
         SkString name;
-        int      width;  // 1 - 4 (floats)
+        Type     type;
+        int      index;
     };
 
     struct Options {
         // For testing purposes, completely disable the inliner. (Normally, Runtime Effects don't
         // run the inliner directly, but they still get an inlining pass once they are painted.)
         bool forceNoInline = false;
+        // For testing purposes only; only honored when GR_TEST_UTILS is enabled. This flag lifts
+        // the ES2 restrictions on Runtime Effects that are gated by the `strictES2Mode` check.
+        // Be aware that the software renderer and pipeline-stage effect are still largely
+        // ES3-unaware and can still fail or crash if post-ES2 features are used.
+        bool enforceES2Restrictions = true;
     };
 
     // If the effect is compiled successfully, `effect` will be non-null.
@@ -92,11 +101,35 @@ public:
         SkString errorText;
     };
 
-    static Result Make(SkString sksl, const Options& options);
+    // MakeForColorFilter and MakeForShader verify that the SkSL code is valid for those stages of
+    // the Skia pipeline. In all of the signatures described below, color parameters and return
+    // values are flexible. They are listed as being 'vec4', but they can also be 'half4' or
+    // 'float4'. ('vec4' is an alias for 'float4').
+
+    // Color filter SkSL requires an entry point that looks like:
+    //     vec4 main(vec4 inColor) { ... }
+    static Result MakeForColorFilter(SkString sksl, const Options&);
+
+    // Shader SkSL requires an entry point that looks like:
+    //     vec4 main(vec2 inCoords) { ... }
+    //   -or-
+    //     vec4 main(vec2 inCoords, vec4 inColor) { ... }
+    //
+    // Most shaders don't use the input color, so that parameter is optional.
+    static Result MakeForShader(SkString sksl, const Options&);
 
     // We can't use a default argument for `options` due to a bug in Clang.
     // https://bugs.llvm.org/show_bug.cgi?id=36684
-    static Result Make(SkString sksl) { return Make(std::move(sksl), Options{}); }
+    static Result MakeForColorFilter(SkString sksl) {
+        return MakeForColorFilter(std::move(sksl), Options{});
+    }
+    static Result MakeForShader(SkString sksl) {
+        return MakeForShader(std::move(sksl), Options{});
+    }
+
+    static Result MakeForColorFilter(std::unique_ptr<SkSL::Program> program);
+
+    static Result MakeForShader(std::unique_ptr<SkSL::Program> program);
 
     sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
                                sk_sp<SkShader> children[],
@@ -139,46 +172,62 @@ public:
     size_t uniformSize() const;
 
     ConstIterable<Uniform> uniforms() const { return ConstIterable<Uniform>(fUniforms); }
-    ConstIterable<SkString> children() const { return ConstIterable<SkString>(fChildren); }
-    ConstIterable<Varying> varyings() const { return ConstIterable<Varying>(fVaryings); }
+    ConstIterable<Child> children() const { return ConstIterable<Child>(fChildren); }
 
     // Returns pointer to the named uniform variable's description, or nullptr if not found
     const Uniform* findUniform(const char* name) const;
 
-    // Returns index of the named child, or -1 if not found
-    int findChild(const char* name) const;
+    // Returns pointer to the named child's description, or nullptr if not found
+    const Child* findChild(const char* name) const;
 
     static void RegisterFlattenables();
     ~SkRuntimeEffect() override;
 
 #if SK_SUPPORT_GPU
     // For internal use.
-    std::unique_ptr<GrFragmentProcessor> makeFP(GrRecordingContext*,
-                                                sk_sp<SkData> uniforms,
+    std::unique_ptr<GrFragmentProcessor> makeFP(sk_sp<SkData> uniforms,
                                                 std::unique_ptr<GrFragmentProcessor> children[],
                                                 size_t childCount) const;
 #endif
 
 private:
+    enum Flags {
+        kUsesSampleCoords_Flag = 0x1,
+        kAllowColorFilter_Flag = 0x2,
+        kAllowShader_Flag      = 0x4,
+    };
+
     SkRuntimeEffect(SkString sksl,
                     std::unique_ptr<SkSL::Program> baseProgram,
                     const Options& options,
                     const SkSL::FunctionDefinition& main,
                     std::vector<Uniform>&& uniforms,
-                    std::vector<SkString>&& children,
+                    std::vector<Child>&& children,
                     std::vector<SkSL::SampleUsage>&& sampleUsages,
-                    std::vector<Varying>&& varyings,
-                    bool usesSampleCoords,
-                    bool allowColorFilter);
+                    uint32_t flags);
+
+    static Result Make(std::unique_ptr<SkSL::Program> program, SkSL::ProgramKind kind);
+
+    static Result Make(SkString sksl, const Options& options, SkSL::ProgramKind kind);
+
+    static Result Make(SkString sksl, std::unique_ptr<SkSL::Program> program,
+                       const Options& options, SkSL::ProgramKind kind);
 
     uint32_t hash() const { return fHash; }
-    bool usesSampleCoords() const { return fUsesSampleCoords; }
+    bool usesSampleCoords() const { return (fFlags & kUsesSampleCoords_Flag); }
+    bool allowShader()      const { return (fFlags & kAllowShader_Flag);      }
+    bool allowColorFilter() const { return (fFlags & kAllowColorFilter_Flag); }
 
-    const skvm::Program* getFilterColorProgram();
+    struct FilterColorInfo {
+        const skvm::Program* program;         // May be nullptr if it's not possible to compute
+        bool                 alphaUnchanged;
+    };
+    void initFilterColorInfo();
+    FilterColorInfo getFilterColorInfo();
 
 #if SK_SUPPORT_GPU
-    friend class GrSkSLFP;      // fBaseProgram, fSampleUsages
-    friend class GrGLSLSkSLFP;  //
+    friend class GrSkSLFP;             // fBaseProgram, fSampleUsages
+    friend class GrGLSLSkSLFP;         //
 #endif
 
     friend class SkRTShader;            // fBaseProgram, fMain
@@ -190,15 +239,13 @@ private:
     std::unique_ptr<SkSL::Program> fBaseProgram;
     const SkSL::FunctionDefinition& fMain;
     std::vector<Uniform> fUniforms;
-    std::vector<SkString> fChildren;
+    std::vector<Child> fChildren;
     std::vector<SkSL::SampleUsage> fSampleUsages;
-    std::vector<Varying>  fVaryings;
 
-    SkOnce fColorFilterProgramOnce;
     std::unique_ptr<skvm::Program> fColorFilterProgram;
+    bool fColorFilterProgramLeavesAlphaUnchanged = false;
 
-    bool   fUsesSampleCoords;
-    bool   fAllowColorFilter;
+    uint32_t fFlags;  // Flags
 };
 
 /** Base class for SkRuntimeShaderBuilder, defined below. */
@@ -260,22 +307,30 @@ public:
 
     struct BuilderChild {
         template <typename C> BuilderChild& operator=(C&& val) {
-            if (fIndex < 0) {
+            // TODO(skbug:11813): Validate that the type of val lines up with the type of the child
+            // (SkShader vs. SkColorFilter).
+            if (!fChild) {
                 SkDEBUGFAIL("Assigning to missing child");
             } else {
-                fOwner->fChildren[fIndex] = std::forward<C>(val);
+                fOwner->fChildren[fChild->index] = std::forward<C>(val);
             }
             return *this;
         }
 
-        SkRuntimeEffectBuilder* fOwner;
-        int                     fIndex;  // -1 if the child was not found
+        SkRuntimeEffectBuilder*       fOwner;
+        const SkRuntimeEffect::Child* fChild;  // nullptr if the child was not found
+
+        // DEPRECATED - Left temporarily for Android
+        int                           fIndex;  // -1 if the child was not found
     };
 
     const SkRuntimeEffect* effect() const { return fEffect.get(); }
 
     BuilderUniform uniform(const char* name) { return { this, fEffect->findUniform(name) }; }
-    BuilderChild child(const char* name) { return { this, fEffect->findChild(name) }; }
+    BuilderChild child(const char* name) {
+        const SkRuntimeEffect::Child* child = fEffect->findChild(name);
+        return { this, child, child ? child->index : -1 };
+    }
 
 protected:
     SkRuntimeEffectBuilder() = delete;

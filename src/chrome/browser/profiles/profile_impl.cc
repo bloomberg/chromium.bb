@@ -30,7 +30,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -103,6 +102,10 @@
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
+#include "chrome/browser/webid/federated_identity_request_permission_context.h"
+#include "chrome/browser/webid/federated_identity_request_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
+#include "chrome/browser/webid/federated_identity_sharing_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -148,6 +151,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/federated_identity_request_permission_context_delegate.h"
+#include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -233,6 +238,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "components/signin/public/base/signin_switches.h"
 #endif
@@ -295,7 +301,7 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   return base::Time::Now();
 }
 
-// Converts the kSessionExitedCleanly pref to the corresponding EXIT_TYPE.
+// Converts the `kSessionExitType` pref to the corresponding EXIT_TYPE.
 Profile::ExitType SessionTypePrefValueToExitType(const std::string& value) {
   if (value == kPrefExitTypeSessionEnded)
     return Profile::EXIT_SESSION_ENDED;
@@ -501,23 +507,19 @@ ProfileImpl::ProfileImpl(
       &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 
-  set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
-  set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
-
-  // TODO(https://1169142): Replace this part with setting the
-  // BrowserContextType as the main reference for profile type and replacing the
-  // IsXProfile functions implementations with checking for this value.
-  if (IsGuestSession()) {
-    profile_metrics::SetBrowserContextType(
-        this, profile_metrics::BrowserProfileType::kGuest);
-  } else if (IsEphemeralGuestProfile()) {
-    profile_metrics::SetBrowserContextType(
-        this, profile_metrics::BrowserProfileType::kEphemeralGuest);
-  } else if (IsSystemProfile()) {
-    profile_metrics::SetBrowserContextType(
+  if (path == ProfileManager::GetGuestProfilePath()) {
+    if (IsEphemeralGuestProfileEnabled()) {
+      profile_metrics::SetBrowserProfileType(
+          this, profile_metrics::BrowserProfileType::kEphemeralGuest);
+    } else {
+      profile_metrics::SetBrowserProfileType(
+          this, profile_metrics::BrowserProfileType::kGuest);
+    }
+  } else if (path == ProfileManager::GetSystemProfilePath()) {
+    profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kSystem);
   } else {
-    profile_metrics::SetBrowserContextType(
+    profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kRegular);
   }
 
@@ -539,7 +541,7 @@ ProfileImpl::ProfileImpl(
 #if defined(OS_ANDROID)
   // On Android StartupData creates proto database provider for the profile
   // before profile is created, so move ownership to storage partition.
-  GetDefaultStoragePartition(this)->SetProtoDatabaseProvider(
+  GetDefaultStoragePartition()->SetProtoDatabaseProvider(
       startup_data->TakeProtoDatabaseProvider());
 #endif
 
@@ -756,8 +758,7 @@ void ProfileImpl::DoFinalInit() {
   ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
 
-  auto* db_provider =
-      GetDefaultStoragePartition(this)->GetProtoDatabaseProvider();
+  auto* db_provider = GetDefaultStoragePartition()->GetProtoDatabaseProvider();
   key_->SetProtoDatabaseProvider(db_provider);
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
@@ -767,7 +768,7 @@ void ProfileImpl::DoFinalInit() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   MigrateSigninScopedDeviceId(this);
 
-  if (chromeos::UserSessionManager::GetInstance()
+  if (ash::UserSessionManager::GetInstance()
           ->RestartToApplyPerSessionFlagsIfNeed(this, true)) {
     return;
   }
@@ -938,7 +939,7 @@ bool ProfileImpl::IsOffTheRecord() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool ProfileImpl::IsMainProfile() const {
   // Profile must be at "Default" path.
-  if (GetPath().BaseName().value() != chrome::kInitialProfile)
+  if (GetBaseName().value() != chrome::kInitialProfile)
     return false;
 
   // Until go/cros-dent-1-lacros is launched, the user could have signed into
@@ -950,7 +951,9 @@ bool ProfileImpl::IsMainProfile() const {
   // Device Account's certs to non-Device Accounts (Think of the case when the
   // Device Account has sensitive Enterprise SSL client certs).
   // TODO(sinhak): Remove this after launching go/cros-dent-1-lacros.
-  if (!base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade))
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (!init_params->use_new_account_manager)
     return IsDeviceAccountSignedIn(this);
 
   return true;
@@ -960,7 +963,7 @@ bool ProfileImpl::IsMainProfile() const {
 const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
   NOTREACHED();
   static base::NoDestructor<OTRProfileID> otr_profile_id(
-      "ProfileImp::NoOTRProfileID");
+      OTRProfileID::CreateUnique("ProfileImp::NoOTRProfileID"));
   return *otr_profile_id;
 }
 
@@ -1077,23 +1080,10 @@ void ProfileImpl::OnLocaleReady() {
   }
 #endif
 
-  // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
-  // value is empty fallback to checking for |kSessionExitedCleanly|.
-  const std::string exit_type_pref_value(
+  last_session_exit_type_ = SessionTypePrefValueToExitType(
       prefs_->GetString(prefs::kSessionExitType));
-  if (exit_type_pref_value.empty()) {
-    last_session_exit_type_ = prefs_->GetBoolean(prefs::kSessionExitedCleanly)
-                                  ? EXIT_NORMAL
-                                  : EXIT_CRASHED;
-  } else {
-    last_session_exit_type_ =
-        SessionTypePrefValueToExitType(exit_type_pref_value);
-  }
   // Mark the session as open.
   prefs_->SetString(prefs::kSessionExitType, kPrefExitTypeCrashed);
-  // Force this to true in case we fallback and use it.
-  // TODO(sky): remove this in a couple of releases (m28ish).
-  prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);
 
@@ -1133,7 +1123,7 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
     // or we are in tests. In both cases the first loaded locale is correct.
     OnLocaleReady();
   } else {
-    chromeos::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
+    ash::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
         this,
         base::BindOnce(&ProfileImpl::OnLocaleReady, base::Unretained(this)));
   }
@@ -1204,25 +1194,11 @@ const PrefService* ProfileImpl::GetPrefs() const {
 #if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
   return static_cast<ChromeZoomLevelPrefs*>(
-      GetDefaultStoragePartition(this)->GetZoomLevelDelegate());
+      GetDefaultStoragePartition()->GetZoomLevelDelegate());
 }
 #endif  // !defined(OS_ANDROID)
 
-PrefService* ProfileImpl::GetOffTheRecordPrefs() {
-  if (HasPrimaryOTRProfile()) {
-    return GetPrimaryOTRProfile()->GetPrefs();
-  } else {
-    // The extensions preference API and many tests call this method even when
-    // there's no OTR profile, in order to figure out what a pref value would
-    // have been returned if an OTR profile existed. To support that case we
-    // return a dummy PrefService here.
-    //
-    // TODO(crbug.com/734484): Don't call this method when there's no OTR
-    // profile (and return null for such calls).
-    return GetReadOnlyOffTheRecordPrefs();
-  }
-}
-
+// TODO(crbug.com/734484): Remove this function.
 PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
   if (!dummy_otr_prefs_) {
     dummy_otr_prefs_ = CreateIncognitoPrefServiceSyncable(
@@ -1275,8 +1251,7 @@ const policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector()
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ProfileImpl::GetURLLoaderFactory() {
-  return GetDefaultStoragePartition(this)
-      ->GetURLLoaderFactoryForBrowserProcess();
+  return GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess();
 }
 
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {
@@ -1344,6 +1319,16 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
 
 content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
   return ContentIndexProviderFactory::GetForProfile(this);
+}
+
+content::FederatedIdentityRequestPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityRequestPermissionContext() {
+  return FederatedIdentityRequestPermissionContextFactory::GetForProfile(this);
+}
+
+content::FederatedIdentitySharingPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentitySharingPermissionContext() {
+  return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
 }
 
 std::string ProfileImpl::GetMediaDeviceIDSalt() {
@@ -1486,7 +1471,7 @@ void ProfileImpl::OnLogin() {
 }
 
 void ProfileImpl::InitChromeOSPreferences() {
-  chromeos_preferences_.reset(new chromeos::Preferences());
+  chromeos_preferences_ = std::make_unique<chromeos::Preferences>();
   chromeos_preferences_->Init(
       this, chromeos::ProfileHelper::Get()->GetUserByProfile(this));
 }

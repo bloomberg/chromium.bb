@@ -34,7 +34,6 @@ src/common/tools/checklist.ts
 src/common/tools/crawl.ts
 src/common/tools/dev_server.ts
 src/common/tools/gen_listings.ts
-src/webgpu/listing.ts
 src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/version.ts
 src/unittests/unit_test.ts
@@ -55,9 +54,9 @@ src/unittests/params_builder_and_utils.spec.ts
 src/unittests/params_builder_toplevel.spec.ts
 src/unittests/preprocessor.spec.ts
 src/unittests/query_compare.spec.ts
+src/unittests/query_string.spec.ts
 src/unittests/test_group.spec.ts
 src/unittests/test_query.spec.ts
-src/unittests/url_query.spec.ts
 src/webgpu/constants.ts
 src/webgpu/capability_info.ts
 src/webgpu/util/buffer.ts
@@ -71,8 +70,9 @@ src/webgpu/util/conversion.ts
 src/webgpu/util/texture/texel_data.ts
 src/webgpu/gpu_test.ts
 src/webgpu/examples.spec.ts
-src/webgpu/api/operation/fences.spec.ts
+src/webgpu/listing.ts
 src/webgpu/api/operation/labels.spec.ts
+src/webgpu/api/operation/onSubmittedWorkDone.spec.ts
 src/webgpu/api/operation/uncapturederror.spec.ts
 src/webgpu/api/operation/buffers/mapping_test.ts
 src/webgpu/api/operation/buffers/map.spec.ts
@@ -117,6 +117,7 @@ src/webgpu/api/operation/resource_init/texture_zero.spec.ts
 src/webgpu/api/operation/sampling/anisotropy.spec.ts
 src/webgpu/api/operation/sampling/filter_mode.spec.ts
 src/webgpu/api/operation/sampling/lod_clamp.spec.ts
+src/webgpu/api/operation/shader_module/compilation_info.spec.ts
 src/webgpu/api/operation/texture_view/read.spec.ts
 src/webgpu/api/operation/texture_view/write.spec.ts
 src/webgpu/api/operation/vertex_state/basic.spec.ts
@@ -134,7 +135,6 @@ src/webgpu/api/validation/createTexture.spec.ts
 src/webgpu/api/validation/createView.spec.ts
 src/webgpu/api/validation/create_pipeline.spec.ts
 src/webgpu/api/validation/error_scope.spec.ts
-src/webgpu/api/validation/fences.spec.ts
 src/webgpu/api/validation/layout_shader_compat.spec.ts
 src/webgpu/api/validation/render_pass_descriptor.spec.ts
 src/webgpu/api/validation/vertex_access.spec.ts
@@ -161,6 +161,7 @@ src/webgpu/api/validation/encoding/cmds/render/dynamic_state.spec.ts
 src/webgpu/api/validation/encoding/cmds/render/other.spec.ts
 src/webgpu/api/validation/encoding/cmds/render/state_tracking.spec.ts
 src/webgpu/api/validation/encoding/programmable/pipeline_bind_group_compat.spec.ts
+src/webgpu/api/validation/encoding/queries/common.ts
 src/webgpu/api/validation/encoding/queries/begin_end.spec.ts
 src/webgpu/api/validation/encoding/queries/general.spec.ts
 src/webgpu/api/validation/encoding/queries/pipeline_statistics.spec.ts

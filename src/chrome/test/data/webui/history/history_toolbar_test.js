@@ -19,7 +19,7 @@ suite('history-toolbar', function() {
   setup(function() {
     document.body.innerHTML = '';
     testService = new TestBrowserService();
-    BrowserService.instance_ = testService;
+    BrowserService.setInstance(testService);
 
     app = document.createElement('history-app');
     document.body.appendChild(app);
@@ -64,7 +64,9 @@ suite('history-toolbar', function() {
     testService.resetResolver('queryHistory');
     testService.setQueryResult(
         {info: createHistoryInfo('Test'), value: TEST_HISTORY_RESULTS});
-    toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
+    toolbar.shadowRoot.querySelector('cr-toolbar')
+        .dispatchEvent(new CustomEvent(
+            'search-changed', {bubbles: true, composed: true, detail: 'Test'}));
     return testService.whenCalled('queryHistory').then(query => {
       assertEquals('Test', query);
     });
@@ -77,7 +79,10 @@ suite('history-toolbar', function() {
       info: createHistoryInfo('Test2'),
       value: TEST_HISTORY_RESULTS,
     });
-    toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
+    toolbar.shadowRoot.querySelector('cr-toolbar')
+        .dispatchEvent(new CustomEvent(
+            'search-changed',
+            {bubbles: true, composed: true, detail: 'Test2'}));
     return testService.whenCalled('queryHistory')
         .then(flushTasks)
         .then(() => {

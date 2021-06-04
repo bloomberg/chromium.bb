@@ -13,8 +13,13 @@ namespace ash {
 
 ProjectorImageButton::ProjectorImageButton(
     views::Button::PressedCallback callback,
-    const gfx::VectorIcon& icon)
-    : ProjectorButton(callback) {
+    const gfx::VectorIcon& icon,
+    const std::u16string& name)
+    : ProjectorButton(callback, name) {
+  SetVectorIcon(icon);
+}
+
+void ProjectorImageButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   auto* color_provider = AshColorProvider::Get();
   const SkColor normal_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColor);

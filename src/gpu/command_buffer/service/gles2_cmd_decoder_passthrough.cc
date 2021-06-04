@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/progress_reporter.h"
@@ -1277,6 +1278,27 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     }
   }
 
+  for (PendingQuery& pending_query : pending_queries_) {
+    if (!have_context) {
+      if (pending_query.commands_completed_fence) {
+        pending_query.commands_completed_fence->Invalidate();
+      }
+      if (pending_query.buffer_shadow_update_fence) {
+        pending_query.buffer_shadow_update_fence->Invalidate();
+      }
+    }
+  }
+  pending_queries_.clear();
+
+  for (PendingReadPixels& pending_read_pixels : pending_read_pixels_) {
+    if (!have_context) {
+      if (pending_read_pixels.fence) {
+        pending_read_pixels.fence->Invalidate();
+      }
+    }
+  }
+  pending_read_pixels_.clear();
+
   DeleteServiceObjects(&framebuffer_id_map_, have_context,
                        [this](GLuint client_id, GLuint framebuffer) {
                          api()->glDeleteFramebuffersEXTFn(1, &framebuffer);
@@ -1579,6 +1601,12 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.texture_format_etc1_npot =
       caps.texture_format_etc1 &&
       !feature_info_->workarounds().etc1_power_of_two_only;
+  // Vulkan currently doesn't support single-component cross-thread shared
+  // images.
+  caps.disable_one_component_textures =
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread() &&
+      features::IsUsingVulkan();
   caps.texture_rectangle = feature_info_->feature_flags().arb_texture_rectangle;
   caps.texture_usage = feature_info_->feature_flags().angle_texture_usage;
   caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
@@ -1785,7 +1813,7 @@ bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
 }
 
 TextureBase* GLES2DecoderPassthroughImpl::GetTextureBase(uint32_t client_id) {
-  scoped_refptr<TexturePassthrough> texture = nullptr;
+  scoped_refptr<TexturePassthrough> texture;
   if (resources_->texture_object_map.GetServiceID(client_id, &texture)) {
     return texture.get();
   } else {
@@ -1951,7 +1979,7 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
                                             uint32_t texture_target,
                                             gl::GLImage* image,
                                             bool can_bind_to_sampler) {
-  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
+  scoped_refptr<TexturePassthrough> passthrough_texture;
   if (!resources_->texture_object_map.GetServiceID(client_texture_id,
                                                    &passthrough_texture) ||
       passthrough_texture == nullptr) {
@@ -2850,7 +2878,7 @@ void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromTarget(GLenum target) {
 
 void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromClientID(
     GLuint client_id) {
-  scoped_refptr<TexturePassthrough> texture = nullptr;
+  scoped_refptr<TexturePassthrough> texture;
   if (resources_->texture_object_map.GetServiceID(client_id, &texture) &&
       texture != nullptr) {
     UpdateTextureSizeFromTexturePassthrough(texture.get(), client_id);
@@ -2972,7 +3000,7 @@ void GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult(
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
   // Handling of the out-fence should have already happened before reaching
   // this function, so we don't expect to get a valid fence here.
-  DCHECK(!result.gpu_fence);
+  DCHECK(result.release_fence.is_null());
 
   CheckSwapBuffersResult(result.swap_result, function_name);
 }

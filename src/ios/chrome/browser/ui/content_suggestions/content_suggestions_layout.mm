@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -19,22 +18,24 @@
 @interface ContentSuggestionsLayout ()
 
 // YES if the Discover Feed is currently visible.
-@property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
+@property(nonatomic, assign, getter=isRefactoredFeedVisible)
+    BOOL refactoredFeedVisible;
 
 @end
 
 @implementation ContentSuggestionsLayout
 
-- (instancetype)initWithOffset:(CGFloat)offset feedVisible:(BOOL)visible {
+- (instancetype)initWithOffset:(CGFloat)offset
+         refactoredFeedVisible:(BOOL)visible {
   if (self = [super init]) {
-    _feedVisible = visible;
+    _refactoredFeedVisible = visible;
     _offset = offset;
   }
   return self;
 }
 
 - (CGSize)collectionViewContentSize {
-  if (IsRefactoredNTP() && [self isFeedVisible]) {
+  if ([self isRefactoredFeedVisible]) {
     // In the refactored NTP and when the Feed is visible, we don't want to
     // extend the view height beyond its content.
     return [super collectionViewContentSize];
@@ -124,7 +125,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   if ([kind isEqualToString:UICollectionElementKindSectionHeader] &&
       indexPath.section == 0) {
     CGFloat contentOffset;
-    if (IsRefactoredNTP() && [self isFeedVisible]) {
+    if ([self isRefactoredFeedVisible]) {
       contentOffset = self.parentCollectionView.contentOffset.y +
                       self.collectionView.contentSize.height;
     } else {
@@ -145,13 +146,13 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
             [UIApplication sharedApplication].preferredContentSizeCategory) -
         self.collectionView.safeAreaInsets.top;
 
-    if (IsRefactoredNTP() && [self isFeedVisible]) {
+    if ([self isRefactoredFeedVisible]) {
       minY = [self.omniboxPositioner stickyOmniboxHeight];
     }
     // TODO(crbug.com/1114792): Remove mentioned of "refactored" from the
     // variable name once this launches.
     BOOL hasScrolledIntoRefactoredDiscoverFeed =
-        [self isFeedVisible] && self.isScrolledIntoFeed && IsRefactoredNTP();
+        [self isRefactoredFeedVisible] && self.isScrolledIntoFeed;
     if (contentOffset > minY && !hasScrolledIntoRefactoredDiscoverFeed) {
       origin.y = contentOffset - minY;
     }

@@ -103,7 +103,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       origin_(url::Origin::Create(contents->GetVisibleURL())),
       download_count_(0),
       download_seen_(false) {
-  observer_.Add(GetContentSettings(contents));
+  observation_.Observe(GetContentSettings(contents));
   NavigationEntry* last_entry =
       contents->GetController().GetLastCommittedEntry();
   if (last_entry)
@@ -300,8 +300,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       ui_status_(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT),
       download_count_(0),
-      download_seen_(false),
-      observer_(this) {}
+      download_seen_(false) {}
 
 bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
   return factory_.HasWeakPtrs();
@@ -517,7 +516,7 @@ void DownloadRequestLimiter::CanDownload(
     const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -549,7 +548,7 @@ void DownloadRequestLimiter::CanDownload(
 void DownloadRequestLimiter::OnCanDownloadDecided(
     const content::WebContents::Getter& web_contents_getter,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback orig_callback,
     bool allow) {
@@ -587,7 +586,7 @@ ContentSetting DownloadRequestLimiter::GetAutoDownloadContentSetting(
 void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK(originating_contents);

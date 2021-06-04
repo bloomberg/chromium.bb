@@ -9,6 +9,10 @@ for more details about the presubmit API built into depot_tools.
 """
 PRESUBMIT_VERSION = '2.0.0'
 
+# This line is 'magic' in that git-cl looks for it to decide whether to
+# use Python3 instead of Python2 when running the code in this file.
+USE_PYTHON3 = True
+
 _EXCLUDED_PATHS = (
     # Generated file.
     (r"^components[\\/]variations[\\/]proto[\\/]devtools[\\/]"
@@ -326,43 +330,6 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
       True,
     ),
 )
-
-# Directories that contain deprecated Bind() or Callback types.
-# Find sub-directories from a given directory by running:
-# for i in `find . -maxdepth 1 -type d|sort`; do
-#   echo "-- $i"
-#   (cd $i; git grep -nP \
-#     'base::(Bind\(|(Cancelable)?(Callback<|Closure))'|wc -l)
-# done
-#
-# TODO(crbug.com/714018): Remove (or narrow the scope of) paths from this list
-# when they have been converted to modern callback types (OnceCallback,
-# RepeatingCallback, BindOnce, BindRepeating) in order to enable presubmit
-# checks for them and prevent regressions.
-_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
-  '^base/callback.h',  # Intentional.
-  '^base/cancelable_callback.h',  # Intentional.
-  "^chrome/browser/ash/accessibility/",
-  "^chrome/browser/metrics/",
-  "^chrome/browser/prefetch/no_state_prefetch/",
-  '^chrome/browser/previews/',
-  '^chrome/browser/resources/chromeos/accessibility/',
-  '^chrome/browser/sync_file_system/',
-  "^components/browsing_data/content/",
-  "^components/feature_engagement/internal/",
-  "^docs/callback\\.md",  # Intentional
-  "^docs/webui_explainer\\.md",
-  "^docs/process/lsc/large_scale_changes\\.md",  # Intentional
-  "^docs/security/mojo\\.md",
-  "^docs/threading_and_tasks\\.md",
-  "^docs/ui/learn/bestpractices/layout\\.md",
-  '^extensions/browser/',
-  '^extensions/renderer/',
-  '^third_party/blink/PRESUBMIT_test.py', # Intentional.
-  '^third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py' # Intentional pylint: disable=line-too-long
-  '^tools/clang/base_bind_rewriters/',  # Intentional.
-  '^tools/gdb/gdb_chrome.py',  # Intentional.
-))
 
 # Format: Sequence of tuples containing:
 # * String pattern or, if starting with a slash, a regular expression.
@@ -684,9 +651,12 @@ _BANNED_CPP_FUNCTIONS = (
        # Needed for interop with third-party library.
        '^third_party/blink/renderer/core/typed_arrays/array_buffer/' +
          'array_buffer_contents\.(cc|h)',
-       'gin/array_buffer.cc',
-       'gin/array_buffer.h',
-       'chrome/services/sharing/nearby/',
+       '^gin/array_buffer\.(cc|h)',
+       '^chrome/services/sharing/nearby/',
+       # gRPC provides some C++ libraries that use std::shared_ptr<>.
+       '^chromeos/services/libassistant/grpc/',
+       # Fuchsia provides C++ libraries that use std::shared_ptr<>.
+       '.*fuchsia.*test\.(cc|h)',
        _THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     (
@@ -734,8 +704,9 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bstd::function\b',
       (
-        'std::function is banned. Instead use base::Callback which directly',
-        'supports Chromium\'s weak pointers, ref counting and more.',
+        'std::function is banned. Instead use base::OnceCallback or ',
+        'base::RepeatingCallback, which directly support Chromium\'s weak ',
+        'pointers, ref counting and more.',
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Do not warn in third_party folders.
@@ -773,51 +744,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (),
-    ),
-    (
-      r'/\bbase::Bind\(',
-      (
-          'Please use base::Bind{Once,Repeating} instead',
-          'of base::Bind. (crbug.com/714018)',
-      ),
-      False,
-      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
-    ),
-    (
-      r'/\bbase::Callback[<:]',
-      (
-          'Please use base::{Once,Repeating}Callback instead',
-          'of base::Callback. (crbug.com/714018)',
-      ),
-      False,
-      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
-    ),
-    (
-      r'/\bbase::Closure\b',
-      (
-          'Please use base::{Once,Repeating}Closure instead',
-          'of base::Closure. (crbug.com/714018)',
-      ),
-      False,
-      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
-    ),
-    (
-      r'/\bbase::CancelableCallback[<:]',
-      (
-          'Please use base::Cancelable{Once,Repeating}Callback instead',
-          'of base::CancelableCallback. (crbug.com/714018)',
-      ),
-      False,
-      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
-    ),
-    (
-      r'/\bbase::CancelableClosure\b',
-      (
-          'Please use base::Cancelable{Once,Repeating}Closure instead',
-          'of base::CancelableClosure. (crbug.com/714018)',
-      ),
-      False,
-      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
     ),
     (
       r'/\bRunMessageLoop\b',
@@ -1028,23 +954,25 @@ _BANNED_CPP_FUNCTIONS = (
           'Please use base::ScopedObservation for observing a single source,',
           'or base::ScopedMultiSourceObservation for observing multple sources',
       ),
-      False,
+      True,
       (),
     ),
     (
-      r'/\bASCIIToUTF16\("(\\.|[^\\"])*"\)',
+      'RoInitialize',
       (
-       'base::ASCIIToUTF16 should not be used with a string literal.',
-       'Consider using a UTF16 string literal (u"...") instead.',
+        'Improper use of [base::win]::RoInitialize() has been implicated in a ',
+        'few COM initialization leaks. Use base::win::ScopedWinrtInitializer ',
+        'instead. See http://crbug.com/1197722 for more information.'
       ),
-      False,
-      (),
+      True,
+      (
+          r'^base[\\/]win[\\/]scoped_winrt_initializer\.cc$'
+      ),
     ),
     (
-      r'/\bUTF8ToUTF16\("(\\.|[^\\"])*"\)',
+      r'/DISALLOW_(COPY|ASSIGN|COPY_AND_ASSIGN|IMPLICIT_CONSTRUCTORS)\(',
       (
-       'base::UTF8ToUTF16 should not be used with a string literal.',
-       'Consider using a UTF16 string literal (u"...") instead.',
+        'DISALLOW_xxx macros are deprecated. See base/macros.h for details.',
       ),
       False,
       (),
@@ -1055,27 +983,6 @@ _BANNED_CPP_FUNCTIONS = (
 # * String pattern or, if starting with a slash, a regular expression.
 # * Sequence of strings to show when the pattern matches.
 _DEPRECATED_MOJO_TYPES = (
-    (
-      r'/\bmojo::AssociatedBinding\b',
-      (
-        'mojo::AssociatedBinding<Interface> is deprecated.',
-        'Use mojo::AssociatedReceiver<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::AssociatedBindingSet\b',
-      (
-        'mojo::AssociatedBindingSet<Interface> is deprecated.',
-        'Use mojo::AssociatedReceiverSet<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::AssociatedInterfacePtr\b',
-      (
-        'mojo::AssociatedInterfacePtr<Interface> is deprecated.',
-        'Use mojo::AssociatedRemote<Interface> instead.',
-      ),
-    ),
     (
       r'/\bmojo::AssociatedInterfacePtrInfo\b',
       (
@@ -1088,20 +995,6 @@ _DEPRECATED_MOJO_TYPES = (
       (
         'mojo::AssociatedInterfaceRequest<Interface> is deprecated.',
         'Use mojo::PendingAssociatedReceiver<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::Binding\b',
-      (
-        'mojo::Binding<Interface> is deprecated.',
-        'Use mojo::Receiver<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::BindingSet\b',
-      (
-        'mojo::BindingSet<Interface> is deprecated.',
-        'Use mojo::ReceiverSet<Interface> instead.',
       ),
     ),
     (
@@ -1132,58 +1025,6 @@ _DEPRECATED_MOJO_TYPES = (
         'Use mojo::Remote::BindNewPipeAndPassReceiver() instead.',
       ),
     ),
-    (
-      r'/\bmojo::MakeRequestAssociatedWithDedicatedPipe\b',
-      (
-        'mojo::MakeRequest is deprecated.',
-        'Use mojo::AssociatedRemote::'
-        'BindNewEndpointAndPassDedicatedReceiver() instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::MakeStrongBinding\b',
-      (
-        'mojo::MakeStrongBinding is deprecated.',
-        'Either migrate to mojo::UniqueReceiverSet, if possible, or use',
-        'mojo::MakeSelfOwnedReceiver() instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::MakeStrongAssociatedBinding\b',
-      (
-        'mojo::MakeStrongAssociatedBinding is deprecated.',
-        'Either migrate to mojo::UniqueAssociatedReceiverSet, if possible, or',
-        'use mojo::MakeSelfOwnedAssociatedReceiver() instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::StrongAssociatedBinding\b',
-      (
-        'mojo::StrongAssociatedBinding<Interface> is deprecated.',
-        'Use mojo::MakeSelfOwnedAssociatedReceiver<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::StrongBinding\b',
-      (
-        'mojo::StrongBinding<Interface> is deprecated.',
-        'Use mojo::MakeSelfOwnedReceiver<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::StrongAssociatedBindingSet\b',
-      (
-        'mojo::StrongAssociatedBindingSet<Interface> is deprecated.',
-        'Use mojo::UniqueAssociatedReceiverSet<Interface> instead.',
-      ),
-    ),
-    (
-      r'/\bmojo::StrongBindingSet\b',
-      (
-        'mojo::StrongBindingSet<Interface> is deprecated.',
-        'Use mojo::UniqueReceiverSet<Interface> instead.',
-      ),
-    ),
 )
 
 _IPC_ENUM_TRAITS_DEPRECATED = (
@@ -1198,6 +1039,7 @@ _LONG_PATH_ERROR = (
 )
 
 _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
+    r".*[\\/]AppHooksImpl\.java",
     r".*[\\/]BuildHooksAndroidImpl\.java",
     r".*[\\/]LicenseContentProvider\.java",
     r".*[\\/]PlatformServiceBridgeImpl.java",
@@ -1292,6 +1134,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/java_cpp_features.pydeps',
     'build/android/gyp/java_cpp_strings.pydeps',
+    'build/android/gyp/java_google_api_keys.pydeps',
     'build/android/gyp/jetify_jar.pydeps',
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
@@ -1299,6 +1142,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/process_native_prebuilt.pydeps',
     'build/android/gyp/proguard.pydeps',
+    'build/android/gyp/resources_shrinker/shrinker.pydeps',
     'build/android/gyp/turbine.pydeps',
     'build/android/gyp/validate_static_library_dex_references.pydeps',
     'build/android/gyp/write_build_config.pydeps',
@@ -1326,6 +1170,7 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
+    'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]
@@ -1344,7 +1189,9 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
-          for s in ('chromium-internal-autoroll',))
+          for s in ('chromium-internal-autoroll',)
+  ) | set('%s@owners-cleanup-prod.google.com.iam.gserviceaccount.com' % s
+          for s in ('swarming-tasks',))
 
 
 def _IsCPlusPlusFile(input_api, file_path):
@@ -2007,7 +1854,7 @@ def CheckFilePermissions(input_api, output_api):
     for f in input_api.AffectedFiles():
       # checkperms.py file/directory arguments must be relative to the
       # repository.
-      file_list.write(f.LocalPath() + '\n')
+      file_list.write((f.LocalPath() + '\n').encode('utf8'))
     file_list.close()
     args += ['--file-list', file_list.name]
     try:
@@ -2036,6 +1883,36 @@ def CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
   if errors:
     results.append(output_api.PresubmitError(
       'Header files should not include ui/aura/window_property.h', errors))
+  return results
+
+
+def CheckNoInternalHeapIncludes(input_api, output_api):
+  """Makes sure we don't include any headers from
+  third_party/blink/renderer/platform/heap/impl or
+  third_party/blink/renderer/platform/heap/v8_wrapper from files outside of
+  third_party/blink/renderer/platform/heap
+  """
+  impl_pattern = input_api.re.compile(
+    r'^\s*#include\s*"third_party/blink/renderer/platform/heap/impl/.*"')
+  v8_wrapper_pattern = input_api.re.compile(
+    r'^\s*#include\s*"third_party/blink/renderer/platform/heap/v8_wrapper/.*"')
+  file_filter = lambda f: not input_api.re.match(
+    r"^third_party[\\/]blink[\\/]renderer[\\/]platform[\\/]heap[\\/].*",
+    f.LocalPath())
+  errors = []
+
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      if impl_pattern.match(line) or v8_wrapper_pattern.match(line):
+        errors.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+      'Do not include files from third_party/blink/renderer/platform/heap/impl'
+      ' or third_party/blink/renderer/platform/heap/v8_wrapper. Use the '
+      'relevant counterparts from third_party/blink/renderer/platform/heap',
+      errors))
   return results
 
 
@@ -2190,7 +2067,7 @@ def _ExtractAddRulesFromParsedDeps(parsed_deps):
       if rule.startswith('+') or rule.startswith('!')
   ])
   for _, rules in parsed_deps.get('specific_include_rules',
-                                              {}).iteritems():
+                                              {}).items():
     add_rules.update([
         rule[1:] for rule in rules
         if rule.startswith('+') or rule.startswith('!')
@@ -2218,7 +2095,8 @@ def _ParseDeps(contents):
       'Var': _VarImpl(local_scope).Lookup,
       'Str': str,
   }
-  exec contents in global_scope, local_scope
+
+  exec(contents, global_scope, local_scope)
   return local_scope
 
 
@@ -2379,9 +2257,7 @@ def CheckSpamLogging(input_api, output_api):
                     r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
                     r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
                     r"^fuchsia[\\/]engine[\\/]context_provider_main.cc$",
-                    # TODO(https://crbug.com/1181062): Temporary debugging.
-                    r"^fuchsia[\\/]engine[\\/]renderer[\\/]"
-                        r"web_engine_render_frame_observer.cc$",
+                    r"^fuchsia[\\/]runners[\\/]common[\\/]web_component.cc$",
                     r"^headless[\\/]app[\\/]headless_shell\.cc$",
                     r"^ipc[\\/]ipc_logging\.cc$",
                     r"^native_client_sdk[\\/]",
@@ -2951,11 +2827,11 @@ def CheckSecurityOwners(input_api, output_api):
 
   # Go through the OWNERS files to check, filtering out rules that are already
   # present in that OWNERS file.
-  for owners_file, patterns in to_check.iteritems():
+  for owners_file, patterns in to_check.items():
     try:
-      with file(owners_file) as f:
+      with open(owners_file) as f:
         lines = set(f.read().splitlines())
-        for entry in patterns.itervalues():
+        for entry in patterns.values():
           entry['rules'] = [rule for rule in entry['rules'] if rule not in lines
                            ]
     except IOError:
@@ -2964,10 +2840,10 @@ def CheckSecurityOwners(input_api, output_api):
 
   # All the remaining lines weren't found in OWNERS files, so emit an error.
   errors = []
-  for owners_file, patterns in to_check.iteritems():
+  for owners_file, patterns in to_check.items():
     missing_lines = []
     files = []
-    for _, entry in patterns.iteritems():
+    for _, entry in patterns.items():
       missing_lines.extend(entry['rules'])
       files.extend(['  %s' % f.LocalPath() for f in entry['files']])
     if missing_lines:
@@ -3783,7 +3659,7 @@ def CheckForRelativeIncludes(input_api, output_api):
     return []
 
   error_descriptions = []
-  for file_path, bad_lines in bad_files.iteritems():
+  for file_path, bad_lines in bad_files.items():
     error_description = file_path
     for line in bad_lines:
       error_description += '\n    ' + line
@@ -4334,9 +4210,16 @@ def ChecksCommon(input_api, output_api):
         # The PRESUBMIT.py file (and the directory containing it) might
         # have been affected by being moved or removed, so only try to
         # run the tests if they still exist.
+        use_python3 = False
+        with open(f.LocalPath()) as fp:
+            use_python3 = any(line.startswith('USE_PYTHON3 = True')
+                              for line in fp.readlines())
+
         results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
             input_api, output_api, full_path,
-            files_to_check=[r'^PRESUBMIT_test\.py$']))
+            files_to_check=[r'^PRESUBMIT_test\.py$'],
+            run_on_python2=not use_python3,
+            run_on_python3=use_python3))
   return results
 
 
@@ -4391,6 +4274,50 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
     errors.append('%s:%d %s macro is used without including build/'
                   'build_config.h.'
                   % (f.LocalPath(), found_line_number, found_macro))
+  if errors:
+    return [output_api.PresubmitPromptWarning('\n'.join(errors))]
+  return []
+
+
+def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
+  stl_include_re = input_api.re.compile(
+      r'^#include\s+<('
+      r'algorithm|'
+      r'array|'
+      r'limits|'
+      r'list|'
+      r'map|'
+      r'memory|'
+      r'queue|'
+      r'set|'
+      r'string|'
+      r'unordered_map|'
+      r'unordered_set|'
+      r'utility|'
+      r'vector)>')
+  std_namespace_re = input_api.re.compile(r'std::')
+  errors = []
+  for f in input_api.AffectedFiles():
+    if not _IsCPlusPlusHeaderFile(input_api, f.LocalPath()):
+      continue
+
+    uses_std_namespace = False
+    has_stl_include = False
+    for line in f.NewContents():
+      if has_stl_include and uses_std_namespace:
+        break
+
+      if not has_stl_include and stl_include_re.search(line):
+        has_stl_include = True
+        continue
+
+      if not uses_std_namespace and std_namespace_re.search(line):
+        uses_std_namespace = True
+        continue
+
+    if has_stl_include and not uses_std_namespace:
+      errors.append('%s: Includes STL header(s) but does not reference std::'
+                    % f.LocalPath())
   if errors:
     return [output_api.PresubmitPromptWarning('\n'.join(errors))]
   return []
@@ -4657,7 +4584,7 @@ def CheckForWindowsLineEndings(input_api, output_api):
   """Check source code and known ascii text files for Windows style line
   endings.
   """
-  known_text_files = r'.*\.(txt|html|htm|mhtml|py|gyp|gypi|gn|isolate)$'
+  known_text_files = r'.*\.(txt|html|htm|mhtml|py|gyp|gypi|gn|isolate|icon)$'
 
   file_inclusion_pattern = (
     known_text_files,
@@ -4681,6 +4608,16 @@ def CheckForWindowsLineEndings(input_api, output_api):
         '\n'.join(problems))]
 
   return []
+
+def CheckIconFilesForLicenseHeaders(input_api, output_api):
+  """Check that .icon files (which are fragments of C++) have license headers.
+  """
+
+  icon_files = (r'.*\.icon$',)
+
+  icons = lambda x: input_api.FilterSourceFile(x, files_to_check=icon_files)
+  return input_api.canned_checks.CheckLicense(
+      input_api, output_api, source_file_filter=icons)
 
 def CheckForUseOfChromeAppsDeprecations(input_api, output_api):
   """Check source code for use of Chrome App technologies being
@@ -4738,65 +4675,6 @@ def CheckForUseOfChromeAppsDeprecations(input_api, output_api):
       r'.+%s' % _IMPLEMENTATION_EXTENSIONS ),
     files_to_skip = [r"^ppapi[\\/]"] )
 
-  # Chrome Apps: any JS/TS file that references an API in the list below.
-  # This should include the list of Chrome Apps APIs that are not Chrome
-  # Extensions APIs as documented in:
-  # https://developer.chrome.com/docs/apps/migration/
-  detection_list_chrome_apps = [
-    'chrome.accessibilityFeatures',
-    'chrome.alarms',
-    'chrome.app.runtime',
-    'chrome.app.window',
-    'chrome.audio',
-    'chrome.bluetooth',
-    'chrome.bluetoothLowEnergy',
-    'chrome.bluetoothSocket',
-    'chrome.browser',
-    'chrome.commands',
-    'chrome.contextMenus',
-    'chrome.documentScan',
-    'chrome.events',
-    'chrome.extensionTypes',
-    'chrome.fileSystem',
-    'chrome.fileSystemProvider',
-    'chrome.gcm',
-    'chrome.hid',
-    'chrome.i18n',
-    'chrome.identity',
-    'chrome.idle',
-    'chrome.instanceID',
-    'chrome.mdns',
-    'chrome.mediaGalleries',
-    'chrome.networking.onc',
-    'chrome.notifications',
-    'chrome.permissions',
-    'chrome.power',
-    'chrome.printerProvider',
-    'chrome.runtime',
-    'chrome.serial',
-    'chrome.sockets.tcp',
-    'chrome.sockets.tcpServer',
-    'chrome.sockets.udp',
-    'chrome.storage',
-    'chrome.syncFileSystem',
-    'chrome.system.cpu',
-    'chrome.system.display',
-    'chrome.system.memory',
-    'chrome.system.network',
-    'chrome.system.storage',
-    'chrome.tts',
-    'chrome.types',
-    'chrome.usb',
-    'chrome.virtualKeyboard',
-    'chrome.vpnProvider',
-    'chrome.wallpaper'
-  ]
-  _JS_FILES = r'\.(js|ts)$'
-  problems += _CheckForDeprecatedTech(input_api, output_api,
-    detection_list = detection_list_chrome_apps,
-    files_to_check = [ r'.+%s' % _JS_FILES ],
-    files_to_skip = files_to_skip)
-
   if problems:
     return [output_api.PresubmitPromptWarning('You are adding/modifying code'
     'related to technologies which will soon be deprecated (Chrome Apps, NaCl,'
@@ -4833,30 +4711,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   return results
-
-
-def GetTryServerMasterForBot(bot):
-  """Returns the Try Server master for the given bot.
-
-  It tries to guess the master from the bot name, but may still fail
-  and return None.  There is no longer a default master.
-  """
-  # Potentially ambiguous bot names are listed explicitly.
-  master_map = {
-      'chromium_presubmit': 'master.tryserver.chromium.linux',
-      'tools_build_presubmit': 'master.tryserver.chromium.linux',
-  }
-  master = master_map.get(bot)
-  if not master:
-    if 'android' in bot:
-      master = 'master.tryserver.chromium.android'
-    elif 'linux' in bot or 'presubmit' in bot:
-      master = 'master.tryserver.chromium.linux'
-    elif 'win' in bot:
-      master = 'master.tryserver.chromium.win'
-    elif 'mac' in bot or 'ios' in bot:
-      master = 'master.tryserver.chromium.mac'
-  return master
 
 
 def CheckChangeOnCommit(input_api, output_api):
@@ -5115,18 +4969,18 @@ def CheckStrings(input_api, output_api):
     if file_path.endswith('.grdp'):
       if f.OldContents():
         old_id_to_msg_map = grd_helper.GetGrdpMessagesFromString(
-          unicode('\n'.join(f.OldContents())))
+          '\n'.join(f.OldContents()))
       if f.NewContents():
         new_id_to_msg_map = grd_helper.GetGrdpMessagesFromString(
-          unicode('\n'.join(f.NewContents())))
+          '\n'.join(f.NewContents()))
     else:
       file_dir = input_api.os_path.dirname(file_path) or '.'
       if f.OldContents():
         old_id_to_msg_map = grd_helper.GetGrdMessages(
-          StringIO(unicode('\n'.join(f.OldContents()))), file_dir)
+          StringIO('\n'.join(f.OldContents())), file_dir)
       if f.NewContents():
         new_id_to_msg_map = grd_helper.GetGrdMessages(
-          StringIO(unicode('\n'.join(f.NewContents()))), file_dir)
+          StringIO('\n'.join(f.NewContents())), file_dir)
 
     grd_name, ext = input_api.os_path.splitext(
         input_api.os_path.basename(file_path))
@@ -5244,7 +5098,7 @@ def CheckTranslationExpectations(input_api, output_api,
   # ui/webui/resoucres/tools/generate_grd.py.
   ignore_path = input_api.os_path.join(
       'ui', 'webui', 'resources', 'tools', 'tests')
-  grd_files = filter(lambda p: ignore_path not in p, grd_files)
+  grd_files = [p for p in grd_files if ignore_path not in p]
 
   try:
     translation_helper.get_translatable_grds(repo_root, grd_files,
@@ -5396,7 +5250,8 @@ def CheckDeprecationOfPreferences(input_api, output_api):
       'Please make sure to properly deprecate preferences by clearing their\n'
       'value for a couple of milestones before finally removing the code.\n'
       'Otherwise data may stay in the preferences files forever. See\n'
-      'Migrate*Prefs() in chrome/browser/prefs/browser_prefs.cc for examples.\n'
+      'Migrate*Prefs() in chrome/browser/prefs/browser_prefs.cc and\n'
+      'chrome/browser/prefs/README.md for examples.\n'
       'This may be a false positive warning (e.g. if you move preference\n'
       'registrations to a different place).\n',
       potential_problems

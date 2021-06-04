@@ -7,12 +7,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -35,18 +35,19 @@ class PermissionRequestImpl : public PermissionRequest {
 
   ~PermissionRequestImpl() override;
 
+// PermissionRequest:
+#if !defined(OS_ANDROID)
+  // Implementors can override this method to customize the message text.
+  std::u16string GetMessageTextFragment() const override;
+#endif
+
  private:
-  // PermissionRequest:
   RequestType GetRequestType() const override;
 #if defined(OS_ANDROID)
   std::u16string GetMessageText() const override;
-  std::u16string GetQuietTitleText() const override;
-  std::u16string GetQuietMessageText() const override;
+#else
+  absl::optional<std::u16string> GetChipText() const override;
 #endif
-#if !defined(OS_ANDROID)
-  base::Optional<std::u16string> GetChipText() const override;
-#endif
-  std::u16string GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted(bool is_one_time) override;
   void PermissionDenied() override;

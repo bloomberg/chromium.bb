@@ -5,6 +5,7 @@
 /* eslint-disable no-console */
 
 import * as puppeteer from 'puppeteer';
+import type {CoverageMapData} from 'istanbul-lib-coverage';
 
 import {clearPuppeteerState, getBrowserAndPages, registerHandlers, setBrowserAndPages, setTestServerPort} from './puppeteer-state.js';
 import {getTestRunnerConfigSetting} from './test_runner_config.js';
@@ -17,7 +18,7 @@ declare module 'puppeteer' {
   }
 }
 
-const EMPTY_PAGE = 'data:text/html,';
+const EMPTY_PAGE = 'data:text/html,<!DOCTYPE html>';
 const DEFAULT_TAB = {
   name: 'elements',
   selector: '.elements',
@@ -46,6 +47,8 @@ if (!TEST_SERVER_TYPE) {
 const ALLOWED_ASSERTION_FAILURES = [
   // Failure during shutdown. crbug.com/1145969
   'Session is unregistering, can\'t dispatch pending call to Debugger.setBlackboxPatterns',
+  // Failure during shutdown. crbug.com/1199322
+  'Session is unregistering, can\'t dispatch pending call to DOM.getDocument',
   // Expected failures in assertion_test.ts
   'expected failure 1',
   'expected failure 2',
@@ -59,6 +62,7 @@ const ALLOWED_ASSERTION_FAILURES = [
   // that all assertions and success criteria are met (e.g. autocompletions etc).
   // See: https://crbug.com/1192052
   'Request Runtime.evaluate failed. {"code":-32602,"message":"uniqueContextId not found"}',
+  'uniqueContextId not found',
 ];
 
 const logLevels = {
@@ -92,6 +96,7 @@ function launchChrome() {
     '--ignore-certificate-errors-spki-list=KLy6vv6synForXwI6lDIl+D3ZrMV6Y1EMTY6YpOcAos=',
     '--site-per-process',  // Default on Desktop anyway, but ensure that we always use out-of-process frames when we intend to.
     '--host-resolver-rules=MAP *.test 127.0.0.1',
+    '--disable-gpu',
   ];
   const opts: puppeteer.LaunchOptions&puppeteer.BrowserLaunchArgumentOptions&puppeteer.BrowserConnectOptions = {
     headless,
@@ -342,6 +347,12 @@ export async function postFileTeardown() {
   if (fatalErrors.length) {
     throw new Error('Fatal errors logged:\n' + fatalErrors.join('\n'));
   }
+}
+
+export function collectCoverageFromPage(): Promise<CoverageMapData|undefined> {
+  const {frontend} = getBrowserAndPages();
+
+  return frontend.evaluate('window.__coverage__');
 }
 
 export const fatalErrors: string[] = [];

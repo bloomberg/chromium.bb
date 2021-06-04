@@ -12,11 +12,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
@@ -82,7 +81,7 @@ public abstract class SignInPromo extends OptionalLeaf {
 
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(context);
         mSigninPromoController = new SigninPromoController(
-                SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SigninActivityLauncherImpl.get());
+                SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SyncConsentActivityLauncherImpl.get());
 
         mSigninObserver = new SigninObserver(signinManager);
     }
@@ -133,9 +132,6 @@ public abstract class SignInPromo extends OptionalLeaf {
     }
 
     public boolean isUserSignedInButNotSyncing() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            return false;
-        }
         IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
                 Profile.getLastUsedRegularProfile());
         return identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) != null

@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_transport_client.h"
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/abseil_string_conversions.h"
@@ -100,7 +101,7 @@ void QuicTransportClient::Connect() {
   DoLoop(OK);
 }
 
-const QuicTransportError& QuicTransportClient::error() const {
+const WebTransportError& QuicTransportClient::error() const {
   return error_;
 }
 
@@ -212,7 +213,7 @@ int QuicTransportClient::DoResolveHost() {
   next_connect_state_ = CONNECT_STATE_RESOLVE_HOST_COMPLETE;
   HostResolver::ResolveHostParameters parameters;
   resolve_host_request_ = context_->host_resolver()->CreateRequest(
-      HostPortPair::FromURL(url_), isolation_key_, net_log_, base::nullopt);
+      HostPortPair::FromURL(url_), isolation_key_, net_log_, absl::nullopt);
   return resolve_host_request_->Start(
       base::BindOnce(&QuicTransportClient::DoLoop, base::Unretained(this)));
 }
@@ -485,8 +486,8 @@ void QuicTransportClient::OnConnectionClosed(
 void QuicTransportClient::DatagramObserverProxy::OnDatagramProcessed(
     absl::optional<quic::MessageStatus> status) {
   client_->visitor_->OnDatagramProcessed(
-      status.has_value() ? base::Optional<quic::MessageStatus>(*status)
-                         : base::Optional<quic::MessageStatus>());
+      status.has_value() ? absl::optional<quic::MessageStatus>(*status)
+                         : absl::optional<quic::MessageStatus>());
 }
 
 }  // namespace net

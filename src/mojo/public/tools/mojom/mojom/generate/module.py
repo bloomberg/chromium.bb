@@ -289,6 +289,7 @@ PRIMITIVES = (
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
 ATTRIBUTE_DEFAULT = 'Default'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
+ATTRIBUTE_NO_INTERRUPT = 'NoInterrupt'
 ATTRIBUTE_STABLE = 'Stable'
 ATTRIBUTE_SYNC = 'Sync'
 ATTRIBUTE_UNLIMITED_SIZE = 'UnlimitedSize'
@@ -1051,6 +1052,11 @@ class Method(object):
         if self.attributes else None
 
   @property
+  def allow_interrupt(self):
+    return not self.attributes.get(ATTRIBUTE_NO_INTERRUPT) \
+        if self.attributes else True
+
+  @property
   def unlimited_message_size(self):
     return self.attributes.get(ATTRIBUTE_UNLIMITED_SIZE) \
         if self.attributes else False
@@ -1661,6 +1667,13 @@ def MethodPassesInterfaces(method):
 def HasSyncMethods(interface):
   for method in interface.methods:
     if method.sync:
+      return True
+  return False
+
+
+def HasUninterruptableMethods(interface):
+  for method in interface.methods:
+    if not method.allow_interrupt:
       return True
   return False
 

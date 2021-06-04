@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
@@ -10,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
@@ -23,14 +29,21 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/components/help_app_ui/help_app_manager.h"
+#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
+#include "chromeos/components/help_app_ui/search/search.mojom.h"
+#include "chromeos/components/help_app_ui/search/search_handler.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 
 namespace app_list {
 
@@ -44,7 +57,12 @@ class AppListSearchBrowserTest : public InProcessBrowserTest {
   using ResultType = ash::AppListSearchResultType;
   using DisplayType = ash::SearchResultDisplayType;
 
-  AppListSearchBrowserTest() {}
+  AppListSearchBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kHelpAppLauncherSearch,
+         chromeos::features::kHelpAppDiscoverTab},
+        {});
+  }
   ~AppListSearchBrowserTest() override = default;
 
   AppListSearchBrowserTest(const AppListSearchBrowserTest&) = delete;
@@ -129,6 +147,9 @@ class AppListSearchBrowserTest : public InProcessBrowserTest {
   //----------------
 
   Profile* GetProfile() { return browser()->profile(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Simply tests that neither zero-state nor query-based search cause a crash.
@@ -140,6 +161,49 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest, SearchDoesntCrash) {
       "", {ResultType::kInstalledApp, ResultType::kZeroStateFile});
   SearchAndWaitForProviders(
       "some query", {ResultType::kInstalledApp, ResultType::kFileSearch});
+}
+
+// Test that clicking the Discover tab suggestion chip launches the Help app on
+// the Discover page.
+IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
+                       ClickingDiscoverTabSuggestionChipLaunchesHelpApp) {
+  web_app::WebAppProvider::Get(GetProfile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+  GetProfile()->GetPrefs()->SetInteger(
+      prefs::kDiscoverTabSuggestionChipTimesLeftToShow, 3);
+
+  SearchAndWaitForProviders("", {ResultType::kHelpApp});
+
+  ChromeSearchResult* result = FindResult("help-app://discover");
+  ASSERT_TRUE(result);
+  EXPECT_EQ(base::UTF16ToASCII(result->title()), "Make your own game");
+  EXPECT_EQ(result->metrics_type(), ash::HELP_APP_DISCOVER);
+
+  // Open the search result. This should open the help app at the expected url.
+  size_t num_browsers = chrome::GetTotalBrowserCount();
+  const GURL expected_url("chrome://help-app/discover");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  GetClient()->OpenSearchResult(
+      GetClient()->GetModelUpdaterForTest()->model_id(), result->id(),
+      ash::AppListSearchResultType::kHelpApp,
+      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      ash::AppListLaunchType::kAppSearchResult, /*suggestion_index=*/0,
+      /*launch_as_default=*/false);
+
+  navigation_observer.Wait();
+
+  EXPECT_EQ(num_browsers + 1, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(expected_url, chrome::FindLastActive()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetVisibleURL());
+
+  // Clicking on the chip should stop showing it in the future.
+  EXPECT_EQ(0, GetProfile()->GetPrefs()->GetInteger(
+                   prefs::kDiscoverTabSuggestionChipTimesLeftToShow));
 }
 
 // Test that Help App shows up as Release notes if pref shows we have some times
@@ -157,6 +221,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
   auto* result = FindResult("help-app://updates");
   ASSERT_TRUE(result);
   EXPECT_EQ(base::UTF16ToASCII(result->title()), "What's new with Chrome OS");
+  EXPECT_EQ(result->metrics_type(), ash::HELP_APP_UPDATES);
   // Displayed in first position.
   EXPECT_EQ(result->position_priority(), 1.0f);
   EXPECT_EQ(result->display_type(), DisplayType::kChip);
@@ -180,6 +245,120 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
   const int times_left_to_show = GetProfile()->GetPrefs()->GetInteger(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow);
   EXPECT_EQ(times_left_to_show, 2);
+}
+
+// Test that clicking the Release Notes suggestion chip launches the Help app on
+// the What's New page.
+IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
+                       ClickingReleaseNotesSuggestionChipLaunchesHelpApp) {
+  web_app::WebAppProvider::Get(GetProfile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+  GetProfile()->GetPrefs()->SetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 3);
+
+  SearchAndWaitForProviders("", {ResultType::kHelpApp});
+
+  ChromeSearchResult* result = FindResult("help-app://updates");
+
+  // Open the search result. This should open the help app at the expected url.
+  size_t num_browsers = chrome::GetTotalBrowserCount();
+  const GURL expected_url("chrome://help-app/updates");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  GetClient()->OpenSearchResult(
+      GetClient()->GetModelUpdaterForTest()->model_id(), result->id(),
+      ash::AppListSearchResultType::kHelpApp,
+      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      ash::AppListLaunchType::kAppSearchResult, /*suggestion_index=*/0,
+      /*launch_as_default=*/false);
+
+  navigation_observer.Wait();
+
+  EXPECT_EQ(num_browsers + 1, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(expected_url, chrome::FindLastActive()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetVisibleURL());
+
+  // Clicking on the chip should stop showing it in the future.
+  const int times_left_to_show = GetProfile()->GetPrefs()->GetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow);
+  EXPECT_EQ(times_left_to_show, 0);
+}
+
+// Test that the help app provider provides list search results.
+IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
+                       HelpAppProviderProvidesListResults) {
+  // Need this because it sets up the icon.
+  web_app::WebAppProvider::Get(GetProfile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+  // Add some searchable content to the help app search handler.
+  std::vector<chromeos::help_app::mojom::SearchConceptPtr> search_concepts;
+  auto concept = chromeos::help_app::mojom::SearchConcept::New(
+      /*id=*/"6318213",
+      /*title=*/u"Fix connection problems",
+      /*main_category=*/u"Help",
+      /*tags=*/std::vector<std::u16string>{u"verycomplicatedsearchquery"},
+      /*url_path_with_parameters=*/"help/id/test",
+      /*locale=*/"");
+  search_concepts.push_back(std::move(concept));
+
+  base::RunLoop run_loop;
+  chromeos::help_app::HelpAppManagerFactory::GetForBrowserContext(GetProfile())
+      ->search_handler()
+      ->Update(std::move(search_concepts), base::BindLambdaForTesting([&]() {
+                 run_loop.QuitClosure().Run();
+               }));
+  // Wait until the update is complete.
+  run_loop.Run();
+
+  ChromeSearchResult* result = nullptr;
+  while (!result) {
+    // Search repeatedly until the desired result is found. Multiple searches
+    // are needed because it takes time for the icon to load.
+    SearchAndWaitForProviders("verycomplicatedsearchquery",
+                              {ResultType::kHelpApp});
+
+    // This gives a chance for the icon to load between searches.
+    web_app::FlushSystemWebAppLaunchesForTesting(GetProfile());
+
+    result = FindResult("chrome://help-app/help/id/test");
+  }
+
+  EXPECT_EQ(base::UTF16ToASCII(result->title()), "Fix connection problems");
+  EXPECT_EQ(base::UTF16ToASCII(result->details()), "Help");
+  // No priority for position.
+  EXPECT_EQ(result->position_priority(), 0);
+  EXPECT_EQ(result->display_type(), DisplayType::kList);
+
+  // Open the search result. This should open the help app at the expected url
+  // and log a metric indicating what content was launched.
+  const size_t num_browsers = chrome::GetTotalBrowserCount();
+  const GURL expected_url("chrome://help-app/help/id/test");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+  base::HistogramTester histogram_tester;
+
+  GetClient()->OpenSearchResult(
+      GetClient()->GetModelUpdaterForTest()->model_id(), result->id(),
+      ash::AppListSearchResultType::kHelpApp,
+      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::AppListLaunchType::kAppSearchResult, /*suggestion_index=*/0,
+      /*launch_as_default=*/false);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(num_browsers + 1, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(expected_url, chrome::FindLastActive()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetVisibleURL());
+  // -20424143 is the hash of the content id. This hash value can be found in
+  // the enum in the google-internal histogram file.
+  histogram_tester.ExpectUniqueSample("Discover.LauncherSearch.ContentLaunched",
+                                      -20424143, 1);
 }
 
 // Test that Help App shows up normally even when suggestion chip should show.
@@ -259,6 +438,26 @@ IN_PROC_BROWSER_TEST_F(AppListDriveSearchBrowserTest, DriveSearchTest) {
   ASSERT_EQ(results.size(), 1u);
   ASSERT_TRUE(results[0]);
   EXPECT_EQ(base::UTF16ToASCII(results[0]->title()), "my_file");
+}
+
+// Test that Drive folders can be searched.
+IN_PROC_BROWSER_TEST_F(AppListDriveSearchBrowserTest, DriveFolderTest) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  drive::DriveIntegrationService* drive_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
+  ASSERT_TRUE(drive_service->IsMounted());
+  base::FilePath mount_path = drive_service->GetMountPointPath();
+
+  ASSERT_TRUE(base::CreateDirectory(mount_path.Append("my_folder")));
+  ASSERT_TRUE(base::CreateDirectory(mount_path.Append("other_folder")));
+
+  SearchAndWaitForProviders("my", {ResultType::kDriveSearch});
+
+  const auto results = PublishedResultsForProvider(ResultType::kDriveSearch);
+  ASSERT_EQ(results.size(), 1u);
+  ASSERT_TRUE(results[0]);
+  EXPECT_EQ(base::UTF16ToASCII(results[0]->title()), "my_folder");
 }
 
 }  // namespace app_list

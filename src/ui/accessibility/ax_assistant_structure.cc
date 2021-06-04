@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -35,13 +35,8 @@ bool HasFocusableChild(const AXNode* node) {
 }
 
 // TODO(muyuanli): share with BrowserAccessibility.
-bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
-  return (node->data().role == ax::mojom::Role::kTextField ||
-          node->data().role == ax::mojom::Role::kTextFieldWithComboBox ||
-          node->data().role == ax::mojom::Role::kSearchBox ||
-          node->data().HasBoolAttribute(
-              ax::mojom::BoolAttribute::kEditableRoot)) &&
-         !node->data().HasState(ax::mojom::State::kRichlyEditable);
+bool IsTextField(const AXNode* node, uint32_t state) {
+  return node->data().IsTextField();
 }
 
 bool IsRichTextEditable(const AXNode* node) {
@@ -51,7 +46,7 @@ bool IsRichTextEditable(const AXNode* node) {
           !parent->data().HasState(ax::mojom::State::kRichlyEditable));
 }
 
-bool IsNativeTextControl(const AXNode* node) {
+bool IsAtomicTextField(const AXNode* node) {
   const std::string& html_tag =
       node->data().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
   if (html_tag == "input") {
@@ -70,7 +65,7 @@ bool IsLeaf(const AXNode* node) {
   if (node->children().empty())
     return true;
 
-  if (IsNativeTextControl(node) || node->IsText()) {
+  if (IsAtomicTextField(node) || node->IsText()) {
     return true;
   }
 
@@ -107,9 +102,8 @@ std::u16string GetValue(const AXNode* node) {
       node->data().GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
   if (value.empty() &&
-      (IsSimpleTextControl(node, node->data().state) ||
-       IsRichTextEditable(node)) &&
-      !IsNativeTextControl(node)) {
+      (IsTextField(node, node->data().state) || IsRichTextEditable(node)) &&
+      !IsAtomicTextField(node)) {
     value = GetInnerText(node);
   }
 
@@ -198,44 +192,44 @@ std::u16string GetText(const AXNode* node) {
 // Get string representation of ax::mojom::Role. We are not using ToString() in
 // ax_enums.h since the names are subject to change in the future and
 // we are only interested in a subset of the roles.
-base::Optional<std::string> AXRoleToString(ax::mojom::Role role) {
+absl::optional<std::string> AXRoleToString(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kArticle:
-      return base::Optional<std::string>("article");
+      return absl::optional<std::string>("article");
     case ax::mojom::Role::kBanner:
-      return base::Optional<std::string>("banner");
+      return absl::optional<std::string>("banner");
     case ax::mojom::Role::kCaption:
-      return base::Optional<std::string>("caption");
+      return absl::optional<std::string>("caption");
     case ax::mojom::Role::kComplementary:
-      return base::Optional<std::string>("complementary");
+      return absl::optional<std::string>("complementary");
     case ax::mojom::Role::kDate:
-      return base::Optional<std::string>("date");
+      return absl::optional<std::string>("date");
     case ax::mojom::Role::kDateTime:
-      return base::Optional<std::string>("date_time");
+      return absl::optional<std::string>("date_time");
     case ax::mojom::Role::kDefinition:
-      return base::Optional<std::string>("definition");
+      return absl::optional<std::string>("definition");
     case ax::mojom::Role::kDetails:
-      return base::Optional<std::string>("details");
+      return absl::optional<std::string>("details");
     case ax::mojom::Role::kDocument:
-      return base::Optional<std::string>("document");
+      return absl::optional<std::string>("document");
     case ax::mojom::Role::kFeed:
-      return base::Optional<std::string>("feed");
+      return absl::optional<std::string>("feed");
     case ax::mojom::Role::kHeading:
-      return base::Optional<std::string>("heading");
+      return absl::optional<std::string>("heading");
     case ax::mojom::Role::kIframe:
-      return base::Optional<std::string>("iframe");
+      return absl::optional<std::string>("iframe");
     case ax::mojom::Role::kIframePresentational:
-      return base::Optional<std::string>("iframe_presentational");
+      return absl::optional<std::string>("iframe_presentational");
     case ax::mojom::Role::kList:
-      return base::Optional<std::string>("list");
+      return absl::optional<std::string>("list");
     case ax::mojom::Role::kListItem:
-      return base::Optional<std::string>("list_item");
+      return absl::optional<std::string>("list_item");
     case ax::mojom::Role::kMain:
-      return base::Optional<std::string>("main");
+      return absl::optional<std::string>("main");
     case ax::mojom::Role::kParagraph:
-      return base::Optional<std::string>("paragraph");
+      return absl::optional<std::string>("paragraph");
     default:
-      return base::Optional<std::string>();
+      return absl::optional<std::string>();
   }
 }
 
@@ -318,16 +312,19 @@ void WalkAXTreeDepthFirst(const AXNode* node,
     }
     if (end_selection > 0)
       result->selection =
-          base::make_optional<gfx::Range>(start_selection, end_selection);
+          absl::make_optional<gfx::Range>(start_selection, end_selection);
   }
 
   result->html_tag =
       node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-  node->GetHtmlAttribute("id", &result->html_id);
-  result->html_class =
-      node->GetStringAttribute(ax::mojom::StringAttribute::kClassName);
   result->css_display =
       node->GetStringAttribute(ax::mojom::StringAttribute::kDisplay);
+  result->html_attributes = node->data().html_attributes;
+
+  std::string class_name =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kClassName);
+  if (!class_name.empty())
+    result->html_attributes.push_back({"class", class_name});
 
   for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
     AXNode* child = node->GetUnignoredChildAtIndex(i);

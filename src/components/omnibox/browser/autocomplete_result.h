@@ -56,6 +56,10 @@ class AutocompleteResult {
   base::android::ScopedJavaLocalRef<jobject> GetOrCreateJavaObject(
       JNIEnv* env) const;
 
+  // Notify the Java object that its native counterpart is about to be
+  // destroyed.
+  void DestroyJavaObject() const;
+
   // Construct an array of AutocompleteMatch objects arranged in the exact same
   // order as |matches_|.
   base::android::ScopedJavaLocalRef<jobjectArray> BuildJavaMatches(
@@ -68,6 +72,12 @@ class AutocompleteResult {
   void GroupSuggestionsBySearchVsURL(JNIEnv* env,
                                      int firstIndex,
                                      int lastIndex);
+
+  // Compares the set of AutocompleteMatch references held by Java with the
+  // AutocompleteMatch objects held by this instance of the AutocompleteResult
+  // and returns true if the two sets are same.
+  bool VerifyCoherency(JNIEnv* env,
+                       const base::android::JavaParamRef<jlongArray>& matches);
 #endif
 
   // Moves matches from |old_matches| to provide a consistent result set.
@@ -77,7 +87,7 @@ class AutocompleteResult {
                           TemplateURLService* template_url_service);
 
   // Adds a new set of matches to the result set.  Does not re-sort.  Calls
-  // PossiblySwapContentsAndDescriptionForURLSuggestion(input)" on all added
+  // PossiblySwapContentsAndDescriptionForURLSuggestion(input) on all added
   // matches; see comments there for more information.
   void AppendMatches(const AutocompleteInput& input,
                      const ACMatches& matches);

@@ -6,6 +6,7 @@
 */
 #include "include/core/SkString.h"
 #include "include/private/SkMutex.h"
+#include "include/private/SkOnce.h"
 #include "include/private/SkTFitsIn.h"
 #include "include/private/SkTHash.h"
 #include "include/private/SkTemplates.h"
@@ -169,6 +170,23 @@ class SkBreakIterator_icu : public SkBreakIterator {
     bool setText(const char utftext8[], int utf8Units) override {
         UErrorCode status = U_ZERO_ERROR;
         ICUUText text(utext_openUTF8(nullptr, &utftext8[0], utf8Units, &status));
+
+        if (U_FAILURE(status)) {
+            SkDEBUGF("Break error: %s", u_errorName(status));
+            return false;
+        }
+        SkASSERT(text);
+        ubrk_setUText(fBreakIterator.get(), text.get(), &status);
+        if (U_FAILURE(status)) {
+            SkDEBUGF("Break error: %s", u_errorName(status));
+            return false;
+        }
+        fLastResult = 0;
+        return true;
+    }
+    bool setText(const char16_t utftext16[], int utf16Units) override {
+        UErrorCode status = U_ZERO_ERROR;
+        ICUUText text(utext_openUChars(nullptr, reinterpret_cast<const UChar*>(&utftext16[0]), utf16Units, &status));
 
         if (U_FAILURE(status)) {
             SkDEBUGF("Break error: %s", u_errorName(status));
@@ -426,6 +444,9 @@ public:
         }
         return std::unique_ptr<SkBreakIterator>(new SkBreakIterator_icu(std::move(iterator)));
     }
+    std::unique_ptr<SkBreakIterator> makeBreakIterator(BreakType breakType) override {
+        return makeBreakIterator(uloc_getDefault(), breakType);
+    }
     std::unique_ptr<SkScriptIterator> makeScriptIterator() override {
         return SkScriptIterator_icu::makeScriptIterator();
     }
@@ -506,7 +527,8 @@ public:
 std::unique_ptr<SkUnicode> SkUnicode::Make() {
     #if defined(SK_USING_THIRD_PARTY_ICU)
     if (!SkLoadICU()) {
-        SkDEBUGF("SkLoadICU() failed!\n");
+        static SkOnce once;
+        once([] { SkDEBUGF("SkLoadICU() failed!\n"); });
         return nullptr;
     }
     #endif

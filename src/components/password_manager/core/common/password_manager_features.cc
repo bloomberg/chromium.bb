@@ -60,7 +60,13 @@ const base::Feature kEnableOverwritingPlaceholderUsernames{
 // Enables a second, Gaia-account-scoped password store for users who are signed
 // in but not syncing.
 const base::Feature kEnablePasswordsAccountStorage = {
-    "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnablePasswordsAccountStorage",
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature KEnablePasswordGenerationForClearTextFields = {
     "EnablePasswordGenerationForClearTextFields",
@@ -87,6 +93,10 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 // TODO(crbug.com/1164861): Remove once confirmed to be safe (around M92 or so).
 const base::Feature kInferConfirmationPasswordField = {
     "InferConfirmationPasswordField", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables respecting of insecure credential muting state.
+const base::Feature kMutingCompromisedCredentials{
+    "MutingCompromisedCredentials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables password change flow from leaked password dialog.
 const base::Feature kPasswordChange = {"PasswordChange",
@@ -137,6 +147,18 @@ const base::Feature kSyncingCompromisedCredentials = {
 // password generation on more forms, but could lead to false positives.
 const base::Feature kTreatNewPasswordHeuristicsAsReliable = {
     "TreatNewPasswordHeuristicsAsReliable", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether we should use the new header images for the legacy save
+// password bubble.
+const base::Feature kUseNewHeaderForLegacySavePasswordBubble{
+    "UseNewHeaderForLegacySavePasswordBubble",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether we should use the new header images for the save
+// password bubble with account store.
+const base::Feature kUseNewHeaderForSavePasswordWithAccountStoreBubble{
+    "UseNewHeaderForSavePasswordWithAccountStoreBubble",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables use of Hash Affiliation fetcher for all requests.
 const base::Feature kUseOfHashAffiliationFetcher = {

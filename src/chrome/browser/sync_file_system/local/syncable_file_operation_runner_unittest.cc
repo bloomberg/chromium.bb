@@ -260,12 +260,12 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy"), storage::FileSystemOperation::OPTION_NONE,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperationRunner::CopyProgressCallback(),
+      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Move(
-      URL(kDir),
-      URL("dest-move"),
-      storage::FileSystemOperation::OPTION_NONE,
+      URL(kDir), URL("dest-move"), storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
@@ -284,7 +284,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy2"), storage::FileSystemOperation::OPTION_NONE,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperationRunner::CopyProgressCallback(),
+      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
@@ -387,12 +387,9 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   EXPECT_EQ(1, callback_count_);
 
   // Now the file must have been created and have the same content as temp_path.
-  // TODO(mek): AdaptCallbackForRepeating is needed here because
-  // CannedSyncableFileSystem hasn't switched to OnceCallback yet.
   ResetCallbackStatus();
-  file_system_.DoVerifyFile(
-      URL(kFile), kTestData,
-      base::AdaptCallbackForRepeating(ExpectStatus(FROM_HERE, File::FILE_OK)));
+  file_system_.DoVerifyFile(URL(kFile), kTestData,
+                            ExpectStatus(FROM_HERE, File::FILE_OK));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }

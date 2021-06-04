@@ -941,7 +941,15 @@
     "policy_pref_mapping_tests": [
       {
         "policies": { "SyncDisabled": true },
-        "prefs": { "sync.managed": {} }
+        "prefs": { "sync.managed": { "value": true } }
+      },
+      {
+        "policies": { "SyncDisabled": false },
+        "prefs": { "sync.managed": { "value": false, "expect_default": true } }
+      },
+      {
+        "policies": { },
+        "prefs": { "sync.managed": { "value": false, "expect_default": true } }
       }
     ]
   },
@@ -2978,6 +2986,18 @@
     ]
   },
 
+  "AdditionalDnsQueryTypesEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "AdditionalDnsQueryTypesEnabled": false
+        },
+        "prefs": { "async_dns.additional_dns_query_types_enabled": { "location": "local_state" } }
+      }
+    ]
+  },
+
   "WPADQuickCheckEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_tests": [
@@ -3246,6 +3266,24 @@
     ]
   },
 
+  "TripleDESEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "TripleDESEnabled": true },
+        "prefs": {
+          "ssl.3des_enabled": { "value": true, "location": "local_state" }
+        }
+      },
+      {
+        "policies": { "TripleDESEnabled": false },
+        "prefs": {
+          "ssl.3des_enabled": { "value": false, "location": "local_state" }
+        }
+      }
+    ]
+  },
+
   "CertificateTransparencyEnforcementDisabledForUrls": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "policy_pref_mapping_tests": [
@@ -3504,6 +3542,28 @@
           "RelaunchHeadsUpPeriod": 86400000
         },
         "prefs": { "browser.relaunch_heads_up_period": { "location": "local_state" } }
+      }
+    ]
+  },
+
+  "RelaunchWindow": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "RelaunchWindow": {
+            "entries": [
+              {
+                "start": {
+                  "hour": 2,
+                  "minute": 15
+                },
+                "duration_mins": 240
+              }
+            ]
+          }
+        },
+        "prefs": { "browser.relaunch_window": { "location": "local_state" } }
       }
     ]
   },
@@ -6188,7 +6248,7 @@
   },
 
   "ContextAwareAccessSignalsAllowlist": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_tests": [
       {
         "policies": { "ContextAwareAccessSignalsAllowlist": ["https://example1.com", "https://[*.]example2.com", "https://foo.example3.com/path"] },
@@ -7436,6 +7496,8 @@
     ]
   },
 
+  "DeviceDebugPacketCaptureAllowed": {},
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {},
@@ -8343,6 +8405,16 @@
       }
     ]
   },
+  "DataLeakPreventionReportingEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "DataLeakPreventionReportingEnabled": true },
+        "prefs": { "policy.dlp_reporting_enabled": { "location": "local_state" } }
+      }
+    ]
+  },
   "DataLeakPreventionRulesList": {
     "os": ["chromeos"],
     "policy_pref_mapping_tests": [
@@ -8425,7 +8497,7 @@
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "policy_pref_mapping_tests": [
       {
-        "policies": { "BrowsingDataLifetime": [{"data_types": ["browsing_history"], "time_to_live_in_hours": 2}] },
+        "policies": { "BrowsingDataLifetime": [{"data_types": ["browsing_history"], "time_to_live_in_hours": 2}], "SyncDisabled": true },
         "prefs": { "browser.clear_data.browsing_data_lifetime": { "value": [{"data_types": ["browsing_history"], "time_to_live_in_hours": 2}]} }
       }
     ]
@@ -8456,7 +8528,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_tests": [
       {
-        "policies": { "ClearBrowsingDataOnExitList": ["browsing_history"] },
+        "policies": { "ClearBrowsingDataOnExitList": ["browsing_history"], "SyncDisabled": true },
         "prefs": { "browser.clear_data.clear_on_exit": { "value": ["browsing_history"]}}
       }
     ]
@@ -8699,5 +8771,80 @@
         }
       }
     ]
+  },
+  "SuggestLogoutAfterClosingLastWindow": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "suggest_logout_after_closing_last_window": {
+            "value": true,
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SuggestLogoutAfterClosingLastWindow": false
+        },
+        "prefs": {
+          "suggest_logout_after_closing_last_window": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "LacrosAvailability": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 1
+        }}
+      },
+      {
+        "policies": { "LacrosAvailability": "user_choice" },
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 0
+        }}
+      },
+      {
+        "policies": { "LacrosAvailability": "lacros_disallowed" },
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 1
+        }}
+      },
+      {
+        "policies": { "LacrosAvailability": "side_by_side" },
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 2
+        }}
+      },
+      {
+        "policies": { "LacrosAvailability": "lacros_primary" },
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 3
+        }}
+      },
+      {
+        "policies": { "LacrosAvailability": "lacros_only" },
+        "prefs": { "lacros_launch_switch": {
+          "location": "local_state",
+          "value": 4
+        }}
+      }
+    ]
+  },
+  "CloudUserPolicyMerge": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
   }
 }

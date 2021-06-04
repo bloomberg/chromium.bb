@@ -6,14 +6,17 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -86,7 +89,9 @@ ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance() {
 }
 
 ServiceWorkerNetworkProviderForFrame::ServiceWorkerNetworkProviderForFrame(
-    RenderFrameImpl* frame) {
+    RenderFrameImpl* frame)
+    : service_worker_subresource_filter_enabled_(base::FeatureList::IsEnabled(
+          features::kServiceWorkerSubresourceFilter)) {
   if (frame)
     observer_ = std::make_unique<NewDocumentObserver>(this, frame);
 }
@@ -135,6 +140,16 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
   // If GetSkipServiceWorker() returns true, do not intercept the request.
   if (request.GetSkipServiceWorker())
     return nullptr;
+
+  if (service_worker_subresource_filter_enabled_) {
+    std::string subresource_filter = context()->subresource_filter();
+    // If the document has a subresource filter set and the requested URL does
+    // not match it, do not intercept the request.
+    if (!subresource_filter.empty() &&
+        gurl.ref().find(subresource_filter) == std::string::npos) {
+      return nullptr;
+    }
+  }
 
   // Record use counter for intercepting requests from opaque stylesheets.
   // TODO(crbug.com/898497): Remove this feature usage once we have enough data.

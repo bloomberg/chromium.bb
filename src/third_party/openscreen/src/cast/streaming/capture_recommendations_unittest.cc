@@ -6,6 +6,7 @@
 
 #include "absl/types/optional.h"
 #include "cast/streaming/answer_messages.h"
+#include "cast/streaming/resolution.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "util/chrono_helpers.h"
@@ -15,64 +16,64 @@ namespace cast {
 namespace capture_recommendations {
 namespace {
 
-constexpr Recommendations kDefaultRecommendations{
+const Recommendations kDefaultRecommendations{
     Audio{BitRateLimits{32000, 256000}, milliseconds(400), 2, 48000, 16000},
-    Video{BitRateLimits{300000, 1920 * 1080 * 30}, Resolution{320, 240, 30},
-          Resolution{1920, 1080, 30}, false, milliseconds(400),
+    Video{BitRateLimits{300000, 1920 * 1080 * 30}, Resolution{320, 240},
+          Dimensions{1920, 1080, 30}, false, milliseconds(400),
           1920 * 1080 * 30 / 8}};
 
-constexpr DisplayDescription kEmptyDescription{};
+const DisplayDescription kEmptyDescription{};
 
-constexpr DisplayDescription kValidOnlyResolution{
+const DisplayDescription kValidOnlyResolution{
     Dimensions{1024, 768, SimpleFraction{60, 1}}, absl::nullopt, absl::nullopt};
 
-constexpr DisplayDescription kValidOnlyAspectRatio{
-    absl::nullopt, AspectRatio{4, 3}, absl::nullopt};
+const DisplayDescription kValidOnlyAspectRatio{absl::nullopt, AspectRatio{4, 3},
+                                               absl::nullopt};
 
-constexpr DisplayDescription kValidOnlyAspectRatioSixteenNine{
+const DisplayDescription kValidOnlyAspectRatioSixteenNine{
     absl::nullopt, AspectRatio{16, 9}, absl::nullopt};
 
-constexpr DisplayDescription kValidOnlyVariable{
-    absl::nullopt, absl::nullopt, AspectRatioConstraint::kVariable};
+const DisplayDescription kValidOnlyVariable{absl::nullopt, absl::nullopt,
+                                            AspectRatioConstraint::kVariable};
 
-constexpr DisplayDescription kInvalidOnlyFixed{absl::nullopt, absl::nullopt,
-                                               AspectRatioConstraint::kFixed};
+const DisplayDescription kInvalidOnlyFixed{absl::nullopt, absl::nullopt,
+                                           AspectRatioConstraint::kFixed};
 
-constexpr DisplayDescription kValidFixedAspectRatio{
+const DisplayDescription kValidFixedAspectRatio{
     absl::nullopt, AspectRatio{4, 3}, AspectRatioConstraint::kFixed};
 
-constexpr DisplayDescription kValidVariableAspectRatio{
+const DisplayDescription kValidVariableAspectRatio{
     absl::nullopt, AspectRatio{4, 3}, AspectRatioConstraint::kVariable};
 
-constexpr DisplayDescription kValidFixedMissingAspectRatio{
+const DisplayDescription kValidFixedMissingAspectRatio{
     Dimensions{1024, 768, SimpleFraction{60, 1}}, absl::nullopt,
     AspectRatioConstraint::kFixed};
 
-constexpr DisplayDescription kValidDisplayFhd{
+const DisplayDescription kValidDisplayFhd{
     Dimensions{1920, 1080, SimpleFraction{30, 1}}, AspectRatio{16, 9},
     AspectRatioConstraint::kVariable};
 
-constexpr DisplayDescription kValidDisplayXga{
+const DisplayDescription kValidDisplayXga{
     Dimensions{1024, 768, SimpleFraction{60, 1}}, AspectRatio{4, 3},
     AspectRatioConstraint::kFixed};
 
-constexpr DisplayDescription kValidDisplayTiny{
+const DisplayDescription kValidDisplayTiny{
     Dimensions{300, 200, SimpleFraction{30, 1}}, AspectRatio{3, 2},
     AspectRatioConstraint::kFixed};
 
-constexpr DisplayDescription kValidDisplayMismatched{
+const DisplayDescription kValidDisplayMismatched{
     Dimensions{300, 200, SimpleFraction{30, 1}}, AspectRatio{3, 4},
     AspectRatioConstraint::kFixed};
 
-constexpr Constraints kEmptyConstraints{};
+const Constraints kEmptyConstraints{};
 
-constexpr Constraints kValidConstraintsHighEnd{
+const Constraints kValidConstraintsHighEnd{
     {96100, 5, 96000, 500000, std::chrono::seconds(6)},
     {6000000, Dimensions{640, 480, SimpleFraction{30, 1}},
      Dimensions{3840, 2160, SimpleFraction{144, 1}}, 600000, 6000000,
      std::chrono::seconds(6)}};
 
-constexpr Constraints kValidConstraintsLowEnd{
+const Constraints kValidConstraintsLowEnd{
     {22000, 2, 24000, 50000, std::chrono::seconds(1)},
     {60000, Dimensions{120, 80, SimpleFraction{10, 1}},
      Dimensions{1200, 800, SimpleFraction{30, 1}}, 100000, 1000000,
@@ -92,7 +93,7 @@ TEST(CaptureRecommendationsTest, EmptyDisplayDescription) {
 
 TEST(CaptureRecommendationsTest, OnlyResolution) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.maximum = Resolution{1024, 768, 60.0};
+  expected.video.maximum = Dimensions{1024, 768, 60.0};
   expected.video.bit_rate_limits.maximum = 47185920;
   Answer answer;
   answer.display = kValidOnlyResolution;
@@ -101,8 +102,8 @@ TEST(CaptureRecommendationsTest, OnlyResolution) {
 
 TEST(CaptureRecommendationsTest, OnlyAspectRatioFourThirds) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{320, 240, 30.0};
-  expected.video.maximum = Resolution{1440, 1080, 30.0};
+  expected.video.minimum = Resolution{320, 240};
+  expected.video.maximum = Dimensions{1440, 1080, 30.0};
   Answer answer;
   answer.display = kValidOnlyAspectRatio;
 
@@ -111,8 +112,8 @@ TEST(CaptureRecommendationsTest, OnlyAspectRatioFourThirds) {
 
 TEST(CaptureRecommendationsTest, OnlyAspectRatioSixteenNine) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{426, 240, 30.0};
-  expected.video.maximum = Resolution{1920, 1080, 30.0};
+  expected.video.minimum = Resolution{426, 240};
+  expected.video.maximum = Dimensions{1920, 1080, 30.0};
   Answer answer;
   answer.display = kValidOnlyAspectRatioSixteenNine;
 
@@ -139,8 +140,8 @@ TEST(CaptureRecommendationsTest, OnlyInvalidAspectRatioConstraint) {
 
 TEST(CaptureRecommendationsTest, FixedAspectRatioConstraint) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{320, 240, 30.0};
-  expected.video.maximum = Resolution{1440, 1080, 30.0};
+  expected.video.minimum = Resolution{320, 240};
+  expected.video.maximum = Dimensions{1440, 1080, 30.0};
   expected.video.supports_scaling = false;
   Answer answer;
   answer.display = kValidFixedAspectRatio;
@@ -152,8 +153,8 @@ TEST(CaptureRecommendationsTest, FixedAspectRatioConstraint) {
 // frame sizes between minimum and maximum can be properly scaled.
 TEST(CaptureRecommendationsTest, VariableAspectRatioConstraint) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{320, 240, 30.0};
-  expected.video.maximum = Resolution{1440, 1080, 30.0};
+  expected.video.minimum = Resolution{320, 240};
+  expected.video.maximum = Dimensions{1440, 1080, 30.0};
   expected.video.supports_scaling = true;
   Answer answer;
   answer.display = kValidVariableAspectRatio;
@@ -162,8 +163,8 @@ TEST(CaptureRecommendationsTest, VariableAspectRatioConstraint) {
 
 TEST(CaptureRecommendationsTest, ResolutionWithFixedConstraint) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{320, 240, 30.0};
-  expected.video.maximum = Resolution{1024, 768, 60.0};
+  expected.video.minimum = Resolution{320, 240};
+  expected.video.maximum = Dimensions{1024, 768, 60.0};
   expected.video.supports_scaling = false;
   expected.video.bit_rate_limits.maximum = 47185920;
   Answer answer;
@@ -173,7 +174,7 @@ TEST(CaptureRecommendationsTest, ResolutionWithFixedConstraint) {
 
 TEST(CaptureRecommendationsTest, ExplicitFhdChangesMinimum) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{426, 240, 30.0};
+  expected.video.minimum = Resolution{426, 240};
   expected.video.supports_scaling = true;
   Answer answer;
   answer.display = kValidDisplayFhd;
@@ -182,8 +183,8 @@ TEST(CaptureRecommendationsTest, ExplicitFhdChangesMinimum) {
 
 TEST(CaptureRecommendationsTest, XgaResolution) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{320, 240, 30.0};
-  expected.video.maximum = Resolution{1024, 768, 60.0};
+  expected.video.minimum = Resolution{320, 240};
+  expected.video.maximum = Dimensions{1024, 768, 60.0};
   expected.video.supports_scaling = false;
   expected.video.bit_rate_limits.maximum = 47185920;
   Answer answer;
@@ -193,8 +194,8 @@ TEST(CaptureRecommendationsTest, XgaResolution) {
 
 TEST(CaptureRecommendationsTest, MismatchedDisplayAndAspectRatio) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{150, 200, 30.0};
-  expected.video.maximum = Resolution{150, 200, 30.0};
+  expected.video.minimum = Resolution{150, 200};
+  expected.video.maximum = Dimensions{150, 200, 30.0};
   expected.video.supports_scaling = false;
   expected.video.bit_rate_limits.maximum = 300 * 200 * 30;
   Answer answer;
@@ -204,8 +205,8 @@ TEST(CaptureRecommendationsTest, MismatchedDisplayAndAspectRatio) {
 
 TEST(CaptureRecommendationsTest, TinyDisplay) {
   Recommendations expected = kDefaultRecommendations;
-  expected.video.minimum = Resolution{300, 200, 30.0};
-  expected.video.maximum = Resolution{300, 200, 30.0};
+  expected.video.minimum = Resolution{300, 200};
+  expected.video.maximum = Dimensions{300, 200, 30.0};
   expected.video.supports_scaling = false;
   expected.video.bit_rate_limits.maximum = 300 * 200 * 30;
   Answer answer;
@@ -225,8 +226,8 @@ TEST(CaptureRecommendationsTest, EmptyConstraints) {
 TEST(CaptureRecommendationsTest, HandlesHighEnd) {
   const Recommendations kExpected{
       Audio{BitRateLimits{96000, 500000}, milliseconds(6000), 5, 96100, 16000},
-      Video{BitRateLimits{600000, 6000000}, Resolution{640, 480, 30},
-            Resolution{1920, 1080, 30}, false, milliseconds(6000), 6000000}};
+      Video{BitRateLimits{600000, 6000000}, Resolution{640, 480},
+            Dimensions{1920, 1080, 30}, false, milliseconds(6000), 6000000}};
   Answer answer;
   answer.constraints = kValidConstraintsHighEnd;
   EXPECT_EQ(kExpected, GetRecommendations(answer));
@@ -238,8 +239,8 @@ TEST(CaptureRecommendationsTest, HandlesHighEnd) {
 TEST(CaptureRecommendationsTest, HandlesLowEnd) {
   const Recommendations kExpected{
       Audio{BitRateLimits{32000, 50000}, milliseconds(1000), 2, 22000, 16000},
-      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240, 30},
-            Resolution{1200, 800, 30}, false, milliseconds(1000), 60000}};
+      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240},
+            Dimensions{1200, 800, 30}, false, milliseconds(1000), 60000}};
   Answer answer;
   answer.constraints = kValidConstraintsLowEnd;
   EXPECT_EQ(kExpected, GetRecommendations(answer));
@@ -248,20 +249,20 @@ TEST(CaptureRecommendationsTest, HandlesLowEnd) {
 TEST(CaptureRecommendationsTest, HandlesTooSmallScreen) {
   const Recommendations kExpected{
       Audio{BitRateLimits{32000, 50000}, milliseconds(1000), 2, 22000, 16000},
-      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240, 30},
-            Resolution{320, 240, 30}, false, milliseconds(1000), 60000}};
+      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240},
+            Dimensions{320, 240, 30}, false, milliseconds(1000), 60000}};
   Answer answer;
   answer.constraints = kValidConstraintsLowEnd;
   answer.constraints->video.max_dimensions =
-      answer.constraints->video.min_dimensions.value();
+      answer.constraints->video.min_resolution.value();
   EXPECT_EQ(kExpected, GetRecommendations(answer));
 }
 
 TEST(CaptureRecommendationsTest, HandlesMinimumSizeScreen) {
   const Recommendations kExpected{
       Audio{BitRateLimits{32000, 50000}, milliseconds(1000), 2, 22000, 16000},
-      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240, 30},
-            Resolution{320, 240, 30}, false, milliseconds(1000), 60000}};
+      Video{BitRateLimits{300000, 1000000}, Resolution{320, 240},
+            Dimensions{320, 240, 30}, false, milliseconds(1000), 60000}};
   Answer answer;
   answer.constraints = kValidConstraintsLowEnd;
   answer.constraints->video.max_dimensions =
@@ -272,11 +273,11 @@ TEST(CaptureRecommendationsTest, HandlesMinimumSizeScreen) {
 TEST(CaptureRecommendationsTest, UsesIntersectionOfDisplayAndConstraints) {
   const Recommendations kExpected{
       Audio{BitRateLimits{96000, 500000}, milliseconds(6000), 5, 96100, 16000},
-      Video{BitRateLimits{600000, 6000000}, Resolution{640, 480, 30},
+      Video{BitRateLimits{600000, 6000000}, Resolution{640, 480},
             // Max resolution should be 1080P, since that's the display
             // resolution. No reason to capture at 4K, even though the
             // receiver supports it.
-            Resolution{1920, 1080, 30}, true, milliseconds(6000), 6000000}};
+            Dimensions{1920, 1080, 30}, true, milliseconds(6000), 6000000}};
   Answer answer;
   answer.display = kValidDisplayFhd;
   answer.constraints = kValidConstraintsHighEnd;

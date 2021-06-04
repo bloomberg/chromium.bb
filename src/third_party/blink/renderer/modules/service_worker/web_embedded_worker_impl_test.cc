@@ -30,7 +30,6 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -51,13 +50,12 @@ class FakeWebURLLoader final : public WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient*,
       WebURLResponse&,
-      base::Optional<WebURLError>&,
+      absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -70,7 +68,6 @@ class FakeWebURLLoader final : public WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
@@ -131,8 +128,8 @@ class FakeWebServiceWorkerFetchContext final
   net::SiteForCookies SiteForCookies() const override {
     return net::SiteForCookies();
   }
-  base::Optional<WebSecurityOrigin> TopFrameOrigin() const override {
-    return base::Optional<WebSecurityOrigin>();
+  absl::optional<WebSecurityOrigin> TopFrameOrigin() const override {
+    return absl::optional<WebSecurityOrigin>();
   }
   WebString GetAcceptLanguages() const override { return WebString(); }
   CrossVariantMojoReceiver<mojom::blink::WorkerTimingContainerInterfaceBase>

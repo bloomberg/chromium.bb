@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/base/locale_util.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,7 +42,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 constexpr const char kRemoraRequisitionIdentifier[] = "remora";
@@ -86,6 +86,7 @@ constexpr const char kUserActionActivateRemoraRequisition[] =
     "activateRemoraRequisition";
 constexpr const char kUserActionEditDeviceRequisition[] =
     "editDeviceRequisition";
+constexpr const char kUserActionStartOsInstall[] = "startOsInstall";
 
 struct WelcomeScreenA11yUserAction {
   const char* name_;
@@ -151,7 +152,7 @@ bool IsRemoraRequisitionConfigurable() {
   return true;
 #else
   return policy::EnrollmentRequisitionManager::IsRemoraRequisition() ||
-         chromeos::switches::IsDeviceRequisitionConfigurable();
+         switches::IsDeviceRequisitionConfigurable();
 #endif
 }
 
@@ -169,6 +170,8 @@ std::string WelcomeScreen::GetResultString(Result result) {
       return "SetupDemo";
     case Result::ENABLE_DEBUGGING:
       return "EnableDebugging";
+    case Result::START_OS_INSTALL:
+      return "StartOsInstall";
   }
 }
 
@@ -384,7 +387,7 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
     return;
   }
   if (action_id == kUserActionSetupDemoModeGesture) {
-    HandleAccelerator(ash::LoginAcceleratorAction::kStartDemoMode);
+    HandleAccelerator(LoginAcceleratorAction::kStartDemoMode);
     return;
   }
   if (action_id == kUserActionActivateChromeVoxFromHint) {
@@ -402,12 +405,17 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
   }
 
   if (action_id == kUserActionActivateRemoraRequisition) {
-    HandleAccelerator(ash::LoginAcceleratorAction::kDeviceRequisitionRemora);
+    HandleAccelerator(LoginAcceleratorAction::kDeviceRequisitionRemora);
     return;
   }
 
   if (action_id == kUserActionEditDeviceRequisition) {
-    HandleAccelerator(ash::LoginAcceleratorAction::kEditDeviceRequisition);
+    HandleAccelerator(LoginAcceleratorAction::kEditDeviceRequisition);
+    return;
+  }
+
+  if (action_id == kUserActionStartOsInstall) {
+    OnStartOsInstall();
     return;
   }
 
@@ -451,8 +459,8 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
-  if (action == ash::LoginAcceleratorAction::kStartDemoMode) {
+bool WelcomeScreen::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kStartDemoMode) {
     if (!DemoSetupController::IsDemoModeAllowed())
       return true;
     if (!view_)
@@ -467,19 +475,19 @@ bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
 
     view_->ShowDemoModeConfirmationDialog();
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+  } else if (action == LoginAcceleratorAction::kStartEnrollment) {
     context()->enrollment_triggered_early = true;
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kEnableDebugging) {
+  } else if (action == LoginAcceleratorAction::kEnableDebugging) {
     OnEnableDebugging();
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kEditDeviceRequisition &&
+  } else if (action == LoginAcceleratorAction::kEditDeviceRequisition &&
              switches::IsDeviceRequisitionConfigurable()) {
     if (view_)
       view_->ShowEditRequisitionDialog(
           policy::EnrollmentRequisitionManager::GetDeviceRequisition());
     return true;
-  } else if (action == ash::LoginAcceleratorAction::kDeviceRequisitionRemora &&
+  } else if (action == LoginAcceleratorAction::kDeviceRequisitionRemora &&
              IsRemoraRequisitionConfigurable()) {
     if (view_)
       view_->ShowRemoraRequisitionDialog();
@@ -518,6 +526,11 @@ void WelcomeScreen::OnSetupDemoMode() {
 void WelcomeScreen::OnEnableDebugging() {
   demo_mode_detector_.reset();
   exit_callback_.Run(Result::ENABLE_DEBUGGING);
+}
+
+void WelcomeScreen::OnStartOsInstall() {
+  demo_mode_detector_.reset();
+  exit_callback_.Run(Result::START_OS_INSTALL);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(
@@ -568,7 +581,7 @@ void WelcomeScreen::OnLanguageListResolved(
 }
 
 void WelcomeScreen::NotifyLocaleChange() {
-  ash::LocaleUpdateController::Get()->OnLocaleChanged();
+  LocaleUpdateController::Get()->OnLocaleChanged();
 }
 
 void WelcomeScreen::CancelChromeVoxHintIdleDetection() {
@@ -588,4 +601,4 @@ ChromeVoxHintDetector* WelcomeScreen::GetChromeVoxHintDetectorForTesting() {
   return chromevox_hint_detector_.get();
 }
 
-}  // namespace chromeos
+}  // namespace ash

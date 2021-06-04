@@ -79,9 +79,13 @@ export const getElementPosition =
   };
 };
 
+interface ClickOptions extends puppeteer.ClickOptions {
+  modifier?: 'ControlOrMeta';
+}
+
 export const click = async (
     selector: string|puppeteer.JSHandle,
-    options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions, maxPixelsFromLeft?: number}) => {
+    options?: {root?: puppeteer.JSHandle, clickOptions?: ClickOptions, maxPixelsFromLeft?: number}) => {
   const {frontend} = getBrowserAndPages();
   const clickableElement =
       await getElementPosition(selector, options && options.root, options && options.maxPixelsFromLeft);
@@ -90,12 +94,20 @@ export const click = async (
     throw new Error(`Unable to locate clickable element "${selector}".`);
   }
 
+  const modifier = platform === 'mac' ? 'Meta' : 'Control';
+  if (options?.clickOptions?.modifier) {
+    await frontend.keyboard.down(modifier);
+  }
+
   // Click on the button and wait for the console to load. The reason we use this method
   // rather than elementHandle.click() is because the frontend attaches the behavior to
   // a 'mousedown' event (not the 'click' event). To avoid attaching the test behavior
   // to a specific event we instead locate the button in question and ask Puppeteer to
   // click on it instead.
   await frontend.mouse.click(clickableElement.x, clickableElement.y, options && options.clickOptions);
+  if (options?.clickOptions?.modifier) {
+    await frontend.keyboard.up(modifier);
+  }
 };
 
 export const doubleClick =
@@ -266,6 +278,35 @@ export const waitForFunction = async<T>(fn: () => Promise<T|undefined>, asyncSco
       await timeout(100);
     }
   });
+};
+
+export const waitForFunctionWithTries = async<T>(
+    fn: () => Promise<T|undefined>, options: {tries: number} = {
+      tries: Number.MAX_SAFE_INTEGER,
+    },
+    asyncScope = new AsyncScope()): Promise<T|undefined> => {
+  return await asyncScope.exec(async () => {
+    let tries = 0;
+    while (tries++ < options.tries) {
+      const result = await fn();
+      if (result) {
+        return result;
+      }
+      await timeout(100);
+    }
+    return undefined;
+  });
+};
+
+export const waitForWithTries = async (
+    selector: string, root?: puppeteer.JSHandle, options: {tries: number} = {
+      tries: Number.MAX_SAFE_INTEGER,
+    },
+    asyncScope = new AsyncScope(), handler?: string) => {
+  return await asyncScope.exec(() => waitForFunctionWithTries(async () => {
+                                 const element = await $(selector, root, handler);
+                                 return (element || undefined);
+                               }, options, asyncScope));
 };
 
 export const debuggerStatement = (frontend: puppeteer.Page) => {
@@ -510,9 +551,13 @@ export const getPendingEvents = function(frontend: puppeteer.Page, eventType: st
   }, eventType);
 };
 
+export const hasClass = async(element: puppeteer.ElementHandle<Element>, classname: string): Promise<boolean> => {
+  return await element.evaluate((el, classname) => el.classList.contains(classname), classname);
+};
+
 export const waitForClass = async(element: puppeteer.ElementHandle<Element>, classname: string): Promise<void> => {
   await waitForFunction(async () => {
-    return await element.evaluate((el, classname) => el.classList.contains(classname), classname);
+    return hasClass(element, classname);
   });
 };
 
@@ -523,3 +568,28 @@ export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
 // We export Puppeteer so other test utils can import it from here and not rely
 // on Node modules resolution to import it.
 export {getBrowserAndPages, getTestServerPort, reloadDevTools, puppeteer};
+
+export function matchArray(actual: Array<string>, expected: Array<string|RegExp>): true|string {
+  if (actual.length !== expected.length) {
+    return `Expected [${actual.map(x => `"${x}"`).join(', ')}] to have length ${expected.length}`;
+  }
+
+  for (let i = 0; i < expected.length; ++i) {
+    const expectedItem = expected[i];
+    if (typeof expectedItem === 'string') {
+      if (actual[i] !== expectedItem) {
+        return `Expected item at position ${i} which was "${actual[i]}" to equal "${expectedItem}"`;
+      }
+    } else if (!expectedItem.test(actual[i])) {
+      return `Expected item at position ${i} which was "${actual[i]}" to match "${expectedItem}"`;
+    }
+  }
+  return true;
+}
+
+export function assertMatchArray(actual: Array<string>, expected: Array<string|RegExp>) {
+  const result = matchArray(actual, expected);
+  if (result !== true) {
+    throw new AssertionError(result);
+  }
+}

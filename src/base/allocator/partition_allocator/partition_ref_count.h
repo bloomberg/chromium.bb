@@ -8,12 +8,12 @@
 #include <atomic>
 #include <cstdint>
 
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/base_export.h"
-#include "base/check_op.h"
-#include "base/notreached.h"
+#include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
@@ -147,7 +147,7 @@ ALWAYS_INLINE PartitionRefCount::PartitionRefCount()
 {
 }
 
-#if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 
 static_assert(base::kAlignment % alignof(PartitionRefCount) == 0,
               "kAlignment must be multiples of alignof(PartitionRefCount).");
@@ -192,7 +192,7 @@ ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
   }
 }
 
-#else  // BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+#else  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 
 // Allocate extra space for the reference count to satisfy the alignment
 // requirement.
@@ -209,7 +209,7 @@ ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
   return reinterpret_cast<PartitionRefCount*>(slot_start);
 }
 
-#endif  // BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+#endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 
 static_assert(sizeof(PartitionRefCount) <= kInSlotRefCountBufferSize,
               "PartitionRefCount should fit into the in-slot buffer.");

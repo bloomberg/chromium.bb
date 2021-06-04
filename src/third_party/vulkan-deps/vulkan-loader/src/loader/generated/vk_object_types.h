@@ -68,16 +68,20 @@ typedef enum VulkanObjectType {
     kVulkanObjectTypeSwapchainKHR = 29,
     kVulkanObjectTypeDisplayKHR = 30,
     kVulkanObjectTypeDisplayModeKHR = 31,
-    kVulkanObjectTypeDeferredOperationKHR = 32,
-    kVulkanObjectTypeDebugReportCallbackEXT = 33,
-    kVulkanObjectTypeDebugUtilsMessengerEXT = 34,
-    kVulkanObjectTypeValidationCacheEXT = 35,
-    kVulkanObjectTypeAccelerationStructureNV = 36,
-    kVulkanObjectTypePerformanceConfigurationINTEL = 37,
-    kVulkanObjectTypeIndirectCommandsLayoutNV = 38,
-    kVulkanObjectTypePrivateDataSlotEXT = 39,
-    kVulkanObjectTypeAccelerationStructureKHR = 40,
-    kVulkanObjectTypeMax = 41,
+    kVulkanObjectTypeVideoSessionKHR = 32,
+    kVulkanObjectTypeVideoSessionParametersKHR = 33,
+    kVulkanObjectTypeDeferredOperationKHR = 34,
+    kVulkanObjectTypeDebugReportCallbackEXT = 35,
+    kVulkanObjectTypeCuModuleNVX = 36,
+    kVulkanObjectTypeCuFunctionNVX = 37,
+    kVulkanObjectTypeDebugUtilsMessengerEXT = 38,
+    kVulkanObjectTypeValidationCacheEXT = 39,
+    kVulkanObjectTypeAccelerationStructureNV = 40,
+    kVulkanObjectTypePerformanceConfigurationINTEL = 41,
+    kVulkanObjectTypeIndirectCommandsLayoutNV = 42,
+    kVulkanObjectTypePrivateDataSlotEXT = 43,
+    kVulkanObjectTypeAccelerationStructureKHR = 44,
+    kVulkanObjectTypeMax = 45,
     // Aliases for backwards compatibilty of "promoted" types
     kVulkanObjectTypeDescriptorUpdateTemplateKHR = kVulkanObjectTypeDescriptorUpdateTemplate,
     kVulkanObjectTypeSamplerYcbcrConversionKHR = kVulkanObjectTypeSamplerYcbcrConversion,
@@ -117,8 +121,12 @@ static const char * const object_string[kVulkanObjectTypeMax] = {
     "SwapchainKHR",
     "DisplayKHR",
     "DisplayModeKHR",
+    "VideoSessionKHR",
+    "VideoSessionParametersKHR",
     "DeferredOperationKHR",
     "DebugReportCallbackEXT",
+    "CuModuleNVX",
+    "CuFunctionNVX",
     "DebugUtilsMessengerEXT",
     "ValidationCacheEXT",
     "AccelerationStructureNV",
@@ -162,8 +170,12 @@ const VkDebugReportObjectTypeEXT get_debug_report_enum[] = {
     VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT,   // kVulkanObjectTypeSwapchainKHR
     VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT,   // kVulkanObjectTypeDisplayKHR
     VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT,   // kVulkanObjectTypeDisplayModeKHR
+    VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeVideoSessionKHR
+    VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeVideoSessionParametersKHR
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeDeferredOperationKHR
     VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT,   // kVulkanObjectTypeDebugReportCallbackEXT
+    VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT,   // kVulkanObjectTypeCuModuleNVX
+    VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT,   // kVulkanObjectTypeCuFunctionNVX
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // kVulkanObjectTypeDebugUtilsMessengerEXT
     VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT,   // kVulkanObjectTypeValidationCacheEXT
     VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT,   // kVulkanObjectTypeAccelerationStructureNV
@@ -207,8 +219,12 @@ const VkObjectType get_object_type_enum[] = {
     VK_OBJECT_TYPE_SWAPCHAIN_KHR,   // kVulkanObjectTypeSwapchainKHR
     VK_OBJECT_TYPE_DISPLAY_KHR,   // kVulkanObjectTypeDisplayKHR
     VK_OBJECT_TYPE_DISPLAY_MODE_KHR,   // kVulkanObjectTypeDisplayModeKHR
+    VK_OBJECT_TYPE_VIDEO_SESSION_KHR,   // kVulkanObjectTypeVideoSessionKHR
+    VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR,   // kVulkanObjectTypeVideoSessionParametersKHR
     VK_OBJECT_TYPE_DEFERRED_OPERATION_KHR,   // kVulkanObjectTypeDeferredOperationKHR
     VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT,   // kVulkanObjectTypeDebugReportCallbackEXT
+    VK_OBJECT_TYPE_CU_MODULE_NVX,   // kVulkanObjectTypeCuModuleNVX
+    VK_OBJECT_TYPE_CU_FUNCTION_NVX,   // kVulkanObjectTypeCuFunctionNVX
     VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT,   // kVulkanObjectTypeDebugUtilsMessengerEXT
     VK_OBJECT_TYPE_VALIDATION_CACHE_EXT,   // kVulkanObjectTypeValidationCacheEXT
     VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV,   // kVulkanObjectTypeAccelerationStructureNV
@@ -288,6 +304,10 @@ static inline VkObjectType convertDebugReportObjectToCoreObject(VkDebugReportObj
         return VK_OBJECT_TYPE_DISPLAY_MODE_KHR;
     } else if (debug_report_obj == VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT) {
         return VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT;
+    } else if (debug_report_obj == VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT) {
+        return VK_OBJECT_TYPE_CU_MODULE_NVX;
+    } else if (debug_report_obj == VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT) {
+        return VK_OBJECT_TYPE_CU_FUNCTION_NVX;
     } else if (debug_report_obj == VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT) {
         return VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR;
     } else if (debug_report_obj == VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT) {
@@ -372,6 +392,10 @@ static inline VkDebugReportObjectTypeEXT convertCoreObjectToDebugReportObject(Vk
         return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT;
     } else if (core_report_obj == VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT) {
         return VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+    } else if (core_report_obj == VK_OBJECT_TYPE_CU_MODULE_NVX) {
+        return VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT;
+    } else if (core_report_obj == VK_OBJECT_TYPE_CU_FUNCTION_NVX) {
+        return VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT;
     } else if (core_report_obj == VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR) {
         return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT;
     } else if (core_report_obj == VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR) {

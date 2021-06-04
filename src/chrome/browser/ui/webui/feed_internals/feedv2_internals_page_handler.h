@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FEED_INTERNALS_FEEDV2_INTERNALS_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_FEED_INTERNALS_FEEDV2_INTERNALS_PAGE_HANDLER_H_
 
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -47,11 +46,11 @@ class FeedV2InternalsPageHandler : public feed_internals::mojom::PageHandler {
   void OverrideFeedHost(const GURL& host) override;
   void OverrideDiscoverApiEndpoint(const GURL& endpoint_url) override;
   void OverrideFeedStreamData(const std::vector<uint8_t>& data) override;
-  void SetWebFeedUIEnabled(const bool enabled) override;
+  void SetWebFeedFollowIntroDebugEnabled(const bool enabled) override;
 
  private:
   bool IsFeedAllowed();
-  bool IsWebFeedUIEnabled();
+  bool IsWebFeedFollowIntroDebugEnabled();
 
   mojo::Receiver<feed_internals::mojom::PageHandler> receiver_;
 

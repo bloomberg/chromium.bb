@@ -107,8 +107,9 @@ class CORE_EXPORT NGGridBlockTrackCollection
   // Sets the specified, implicit tracks, along with a given auto repeat value.
   void SetSpecifiedTracks(const NGGridTrackList* explicit_tracks,
                           const NGGridTrackList* implicit_tracks,
-                          wtf_size_t start_offset,
-                          wtf_size_t auto_repetitions);
+                          const wtf_size_t start_offset,
+                          const wtf_size_t auto_repetitions,
+                          const wtf_size_t named_grid_area_track_count);
   // Ensures that after FinalizeRanges is called, a range will start at the
   // |track_number|, and a range will end at |track_number| + |span_length|
   void EnsureTrackCoverage(wtf_size_t track_number, wtf_size_t span_length);
@@ -193,13 +194,13 @@ class CORE_EXPORT NGGridBlockTrackCollection
 class CORE_EXPORT NGGridSet {
  public:
   explicit NGGridSet(wtf_size_t track_count);
-  // |is_content_box_size_indefinite| is used to normalize percentage track
+  // |is_available_size_indefinite| is used to normalize percentage track
   // sizing functions; from https://drafts.csswg.org/css-grid-2/#track-sizes:
   //   "If the size of the grid container depends on the size of its tracks,
   //   then the <percentage> must be treated as 'auto'".
   NGGridSet(wtf_size_t track_count,
             const GridTrackSize& track_size,
-            bool is_content_box_size_indefinite);
+            bool is_available_size_indefinite);
 
   wtf_size_t TrackCount() const { return track_count_; }
   const GridTrackSize& TrackSize() const { return track_size_; }
@@ -306,11 +307,11 @@ class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
   typedef SetIteratorBase<true> ConstSetIterator;
 
   NGGridLayoutAlgorithmTrackCollection() = default;
-  // |is_content_box_size_indefinite| is used to normalize percentage track
+  // |is_available_size_indefinite| is used to normalize percentage track
   // sizing functions (see the constructor for |NGGridSet|).
   NGGridLayoutAlgorithmTrackCollection(
       const NGGridBlockTrackCollection& block_track_collection,
-      bool is_content_box_size_indefinite);
+      bool is_available_size_indefinite);
 
   wtf_size_t EndLineOfImplicitGrid() const;
   bool IsGridLineWithinImplicitGrid(wtf_size_t grid_line) const;
@@ -333,6 +334,11 @@ class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
   wtf_size_t RangeSetCount(wtf_size_t range_index) const;
   wtf_size_t RangeStartingSetIndex(wtf_size_t range_index) const;
 
+  // NGGridTrackCollectionBase overrides.
+  wtf_size_t RangeTrackNumber(wtf_size_t range_index) const override;
+  wtf_size_t RangeTrackCount(wtf_size_t range_index) const override;
+  wtf_size_t RangeCount() const override;
+
   // Returns true if the specified property has been set in the track span
   // properties bitmask of the range at position |range_index|.
   bool RangeHasTrackSpanProperty(
@@ -346,21 +352,29 @@ class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
   bool IsForColumns() const { return direction_ == kForColumns; }
   const Vector<Range>& Ranges() const { return ranges_; }
 
+  // If any of the tracks will change based on the available-size.
+  bool DependsOnAvailableSize() const { return depends_on_available_size_; }
+  bool IsSpanningFlexibleTrack() const { return is_spanning_flexible_track_; }
+  bool IsSpanningOnlyDefiniteTracks() const {
+    return is_spanning_only_definite_tracks_;
+  }
+
  protected:
-  // NGGridTrackCollectionBase overrides.
-  wtf_size_t RangeTrackNumber(wtf_size_t range_index) const override;
-  wtf_size_t RangeTrackCount(wtf_size_t range_index) const override;
+  // NGGridTrackCollectionBase override.
   bool IsRangeCollapsed(wtf_size_t range_index) const override;
-  wtf_size_t RangeCount() const override;
 
  private:
   void AppendTrackRange(
       const NGGridBlockTrackCollection::Range& block_track_range,
       const NGGridTrackList& specified_track_list,
-      bool is_content_box_size_indefinite);
+      bool is_available_size_indefinite);
 
   wtf_size_t non_collapsed_track_count_;
   GridTrackSizingDirection direction_;
+
+  bool depends_on_available_size_ : 1;
+  bool is_spanning_flexible_track_ : 1;
+  bool is_spanning_only_definite_tracks_ : 1;
 
   Vector<Range> ranges_;
   // A vector of every set element that compose the entire collection's ranges;

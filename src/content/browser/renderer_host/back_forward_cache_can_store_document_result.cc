@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
@@ -121,10 +122,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "postMessage from service worker";
     case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
       return "frame already in the cache when service worker host was added";
-    case Reason::kRenderFrameHostReused_SameSite:
-      return "RenderFrameHost is reused for a same-site navigation";
-    case Reason::kRenderFrameHostReused_CrossSite:
-      return "RenderFrameHost is reused for a cross-site navigation";
     case Reason::kNotMostRecentNavigationEntry:
       return "navigation entry is not the most recent one for this document";
     case Reason::kServiceWorkerClaim:
@@ -154,10 +151,21 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "BackForwardCache is disabled for Prerender";
     case Reason::kUserAgentOverrideDiffers:
       return "User-agent override differs";
-    case Reason::kNetworkRequestDatapipeDrainedAsDatapipe:
-      return "Network requests' datapipe has been passed to ScriptStreamer";
     case Reason::kNetworkRequestDatapipeDrainedAsBytesConsumer:
       return "Network requests' datapipe has been passed as bytes consumer";
+    case Reason::kBrowsingInstanceNotSwapped:
+      return "Browsing instance is not swapped";
+    case Reason::kBackForwardCacheDisabledForDelegate:
+      return "BackForwardCache is not supported by delegate";
+    case Reason::kOptInUnloadHeaderNotPresent:
+      return "BFCache-Opt-In header not present, or does not include `unload` "
+             "token, and an experimental config which requires it is active.";
+    case Reason::kUnloadHandlerExistsInMainFrame:
+      return "Unload handler exists in the main frame, and the current "
+             "experimental config doesn't permit it to be BFCached.";
+    case Reason::kUnloadHandlerExistsInSubFrame:
+      return "Unload handler exists in a sub frame, and the current "
+             "experimental config doesn't permit it to be BFCached.";
   }
 }
 
@@ -171,14 +179,6 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToFeatures(
   not_stored_reasons_.set(static_cast<size_t>(
       BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures));
   blocklisted_features_ |= features;
-}
-
-void BackForwardCacheCanStoreDocumentResult::NoDueToRelatedActiveContents(
-    base::Optional<ShouldSwapBrowsingInstance>
-        browsing_instance_not_swapped_reason) {
-  not_stored_reasons_.set(static_cast<size_t>(
-      BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist));
-  browsing_instance_not_swapped_reason_ = browsing_instance_not_swapped_reason;
 }
 
 void BackForwardCacheCanStoreDocumentResult::
@@ -195,10 +195,6 @@ void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
     const BackForwardCacheCanStoreDocumentResult& other) {
   not_stored_reasons_ |= other.not_stored_reasons();
   blocklisted_features_ |= other.blocklisted_features();
-  if (!browsing_instance_not_swapped_reason_) {
-    browsing_instance_not_swapped_reason_ =
-        other.browsing_instance_not_swapped_reason();
-  }
   for (const BackForwardCache::DisabledReason& reason :
        other.disabled_reasons()) {
     disabled_reasons_.insert(reason);

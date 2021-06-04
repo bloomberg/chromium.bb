@@ -11,13 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "chrome/browser/ash/login/user_flow.h"
 #include "chrome/browser/ash/login/users/affiliation.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"

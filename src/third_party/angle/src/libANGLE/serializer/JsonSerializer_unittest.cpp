@@ -6,7 +6,7 @@
 // JsonSerializer_unittests-cpp: Unit tests for the JSON based serializer
 //
 
-#if defined(ANGLE_HAVE_RAPIDJSON)
+#if defined(ANGLE_HAS_RAPIDJSON)
 #    include "JsonSerializer.h"
 
 #    include <gtest/gtest.h>
@@ -127,6 +127,68 @@ TEST_F(JsonSerializerTest, IntVectorValue)
             1,
             -1
         ]
+    }
+})";
+
+    check(expect);
+}
+
+// Test writing one vector of integer values
+TEST_F(JsonSerializerTest, IntVectorAsBlobValue)
+{
+    std::vector<int> v = {0, 1, -1};
+
+    js.addVectorAsHash("test2", v);
+    const std::string expect =
+        R"({
+    "context": {
+        "test2": "SHA1:6216A439C16A113E2F1E53AB63FB88877D3597F5"
+    }
+})";
+    check(expect);
+}
+
+// Test unsorted input gets sorted
+TEST_F(JsonSerializerTest, SortValues1)
+{
+    js.addScalar("b", 1.0);
+    js.addScalar("a", 2.0);
+    const std::string expect =
+        R"({
+    "context": {
+        "a": 2.0,
+        "b": 1.0
+    }
+})";
+    check(expect);
+}
+
+// Test writing one vector of short integer values
+TEST_F(JsonSerializerTest, ShortVectorAsBlobValue)
+{
+    std::vector<short> v = {0, 1, -1};
+
+    js.addVectorAsHash("test2", v);
+    const std::string expect =
+        R"({
+    "context": {
+        "test2": "SHA1:0BA7C0DE700CE0F8018D084B8CF447B150A9465D"
+    }
+})";
+    check(expect);
+}
+
+// Test adding the same key twice
+TEST_F(JsonSerializerTest, KeyUsedTwice)
+{
+    js.addScalar("a", 1.0);
+    js.addScalar("a", 1.0);
+
+    const std::string expect =
+        R"({
+    "context": {
+        "a": 1.0,
+        "a": 1.0
     }
 })";
 

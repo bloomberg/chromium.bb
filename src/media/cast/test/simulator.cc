@@ -45,6 +45,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -66,7 +67,6 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/encoding_event_subscriber.h"
 #include "media/cast/logging/logging_defines.h"
@@ -80,6 +80,7 @@
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/proto/network_simulation_model.pb.h"
+#include "media/cast/test/receiver/cast_receiver.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/default_config.h"
@@ -227,19 +228,19 @@ void AppendYuvToFile(const base::FilePath& path,
       &header, "FRAME W%d H%d\n",
       frame->coded_size().width(),
       frame->coded_size().height());
-  AppendToFile(path, header.data(), header.size());
+  AppendToFile(path, header);
   AppendToFile(path,
-      reinterpret_cast<char*>(frame->data(media::VideoFrame::kYPlane)),
-      frame->stride(media::VideoFrame::kYPlane) *
-          frame->rows(media::VideoFrame::kYPlane));
+               base::make_span(frame->data(media::VideoFrame::kYPlane),
+                               frame->stride(media::VideoFrame::kYPlane) *
+                                   frame->rows(media::VideoFrame::kYPlane)));
   AppendToFile(path,
-      reinterpret_cast<char*>(frame->data(media::VideoFrame::kUPlane)),
-      frame->stride(media::VideoFrame::kUPlane) *
-          frame->rows(media::VideoFrame::kUPlane));
+               base::make_span(frame->data(media::VideoFrame::kUPlane),
+                               frame->stride(media::VideoFrame::kUPlane) *
+                                   frame->rows(media::VideoFrame::kUPlane)));
   AppendToFile(path,
-      reinterpret_cast<char*>(frame->data(media::VideoFrame::kVPlane)),
-      frame->stride(media::VideoFrame::kVPlane) *
-          frame->rows(media::VideoFrame::kVPlane));
+               base::make_span(frame->data(media::VideoFrame::kVPlane),
+                               frame->stride(media::VideoFrame::kVPlane) *
+                                   frame->rows(media::VideoFrame::kVPlane)));
 }
 
 // A container to save output of GotVideoFrame() for computation based
@@ -437,8 +438,7 @@ void RunSimulation(const base::FilePath& source_path,
                                base::BindOnce(&LogAudioOperationalStatus));
   cast_sender->InitializeVideo(media_source.get_video_config(),
                                base::BindRepeating(&LogVideoOperationalStatus),
-                               CreateDefaultVideoEncodeAcceleratorCallback(),
-                               CreateDefaultVideoEncodeMemoryCallback());
+                               base::DoNothing());
   task_runner->RunTasks();
 
   // Truncate YUV files to prepare for writing.
@@ -452,7 +452,7 @@ void RunSimulation(const base::FilePath& source_path,
 
     // Write YUV4MPEG2 header.
     const std::string header("YUV4MPEG2 W1280 H720 F30000:1001 Ip A1:1 C420\n");
-    AppendToFile(yuv_output_path, header.data(), header.size());
+    AppendToFile(yuv_output_path, header);
   }
 
   // Start sending.

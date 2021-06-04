@@ -9,9 +9,13 @@ Specifically, this class fetches results from try bots for the current CL, then
 """
 
 import argparse
+import contextlib
 import copy
 import logging
+import os
 import re
+import shutil
+import tempfile
 from collections import defaultdict, namedtuple
 
 from blinkpy.common.memoized import memoized
@@ -19,9 +23,10 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
+from blinkpy.w3c.wpt_manifest import WPTManifest, BASE_MANIFEST_NAME
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port.android import (
-    PRODUCTS, PRODUCTS_TO_EXPECTATION_FILE_PATHS)
+    PRODUCTS, PRODUCTS_TO_EXPECTATION_FILE_PATHS, WPT_SMOKE_TESTS_FILE)
 
 _log = logging.getLogger(__name__)
 
@@ -146,6 +151,12 @@ class WPTExpectationsUpdater(object):
             help='Adds Pass to tests with failure expectations. '
                  'This command line argument can be used to mark tests '
                  'as flaky.')
+        parser.add_argument(
+            '--rebaseline-blink-try-bots-only',
+            action='store_true',
+            help='When set, only rebaselines using the results from blink-rel '
+            'trybots, and ignores CQ bots. By default, both CQ and blink '
+            'bots are used.')
 
     def update_expectations(self):
         """Downloads text new baselines and adds test expectations lines.
@@ -191,6 +202,10 @@ class WPTExpectationsUpdater(object):
         #         config3: AnotherSimpleTestResult
         #     }
         # }
+
+        self.add_results_for_configs_without_results(
+            test_expectations, self.configs_with_no_results)
+
         # And then we merge results for different platforms that had the same results.
         for test_name, platform_result in test_expectations.iteritems():
             # platform_result is a dict mapping platforms to results.
@@ -209,14 +224,60 @@ class WPTExpectationsUpdater(object):
         exp_lines_dict = self.write_to_test_expectations(test_expectations)
         return rebaselined_tests, exp_lines_dict
 
+    def add_results_for_configs_without_results(self, test_expectations,
+                                                configs_with_no_results):
+        # Handle any platforms with missing results.
+        def os_name(port_name):
+            # Port names are typically "os-os_version". So we can grab the os by
+            # taking everything up to the '-'
+            if '-' not in port_name:
+                return port_name
+            return port_name[:port_name.rfind('-')]
+
+        # When a config has no results, we try to guess at what its results are
+        # based on other results. We prefer to use results from other builds on
+        # the same OS, but fallback to all other builders otherwise (eg: there
+        # is usually only one Linux).
+        # In both cases, we union the results across the other builders (whether
+        # same OS or all builders), so we are usually over-expecting.
+        for config_no_result in configs_with_no_results:
+            _log.warning("No results for %s, inheriting from other builds" %
+                         str(config_no_result))
+            for test_name in test_expectations:
+                # The union of all other actual statuses is used when there is
+                # no similar OS to inherit from (eg: no results on Linux, and
+                # inheriting from Mac and Win).
+                union_actual_all = set()
+                # The union of statuses on the same OS is used when there are
+                # multiple versions of the same OS with results (eg: no results
+                # on Mac10.12, and inheriting from Mac10.15 and Mac11)
+                union_actual_sameos = set()
+                config_result_dict = test_expectations[test_name]
+                for config in config_result_dict.keys():
+                    result = config_result_dict[config]
+                    union_actual_all.add(result.actual)
+                    if os_name(config.port_name) == os_name(
+                            config_no_result.port_name):
+                        union_actual_sameos.add(result.actual)
+
+                statuses = union_actual_sameos or union_actual_all
+                union_result = SimpleTestResult(expected="",
+                                                actual=" ".join(statuses),
+                                                bug=self.UMBRELLA_BUG)
+                _log.debug("Inheriting result for test %s on config %s. "
+                           "Same-os? %s Result: %s." %
+                           (test_name, config_no_result,
+                            len(union_actual_sameos) > 0, union_result))
+                test_expectations[test_name][config_no_result] = union_result
+
     def get_issue_number(self):
         """Returns current CL number. Can be replaced in unit tests."""
         return self.git_cl.get_issue_number()
 
     def get_latest_try_jobs(self):
         """Returns the latest finished try jobs as Build objects."""
-        return self.git_cl.latest_try_jobs(
-            builder_names=self._get_try_bots(), patchset=self.patchset)
+        return self.git_cl.latest_try_jobs(builder_names=self._get_try_bots(),
+                                           patchset=self.patchset)
 
     def get_failing_results_dicts(self, build):
         """Returns a list of nested dicts of failing test results.
@@ -332,10 +393,14 @@ class WPTExpectationsUpdater(object):
                 continue
             test_dict[test_name] = {
                 config:
-                SimpleTestResult(
-                    expected=result.expected_results(),
-                    actual=result.actual_results(),
-                    bug=self.UMBRELLA_BUG)
+                # Note: we omit `expected` so that existing expectation lines
+                # don't prevent us from merging current results across platform.
+                # Eg: if a test FAILs everywhere, it should not matter that it
+                # has a pre-existing TIMEOUT expectation on Win7. This code is
+                # not currently capable of updating that existing expectation.
+                SimpleTestResult(expected="",
+                                 actual=result.actual_results(),
+                                 bug=self.UMBRELLA_BUG)
             }
         return test_dict
 
@@ -521,15 +586,6 @@ class WPTExpectationsUpdater(object):
             |test_name|.
         """
         lines = []
-        # The ports with no results are generally ports of builders that
-        # failed, maybe for unrelated reasons. It is possible to have multiple
-        # builders using the same port, where one gets results while the other
-        # does not.
-        # At this point, we add ports with no results to the list of platforms
-        # because we're guessing that this new expectation might be
-        # cross-platform and should also apply to any ports that we weren't able
-        # to get results for.
-        configs = tuple(set(configs) | set(self.configs_with_no_results))
 
         expectations = '[ %s ]' % \
             ' '.join(self.get_expectations(result, test_name))
@@ -729,6 +785,46 @@ class WPTExpectationsUpdater(object):
                                                  wont_fix_file_content)
         return line_dict
 
+    @contextlib.contextmanager
+    def prepare_smoke_tests(self):
+        """List test cases that should be run by the smoke test builder
+
+        Add new and modified test cases to WPT_SMOKE_TESTS_FILE,
+        builder android-weblayer-pie-x86-wpt-smoketest will run those
+        tests. wpt-importer will generate initial expectations for weblayer
+        based on the result. Save and restore WPT_SMOKE_TESTS_FILE as
+        necessary.
+        """
+        _log.info('Backup file WPTSmokeTestCases.')
+        temp_dir = tempfile.gettempdir()
+        base_path = os.path.basename(WPT_SMOKE_TESTS_FILE)
+        self._saved_test_cases_file = os.path.join(temp_dir, base_path)
+        shutil.copyfile(WPT_SMOKE_TESTS_FILE, self._saved_test_cases_file)
+        tests = (self._list_add_files()
+                 + self._list_modified_files())
+
+        manifest_path = os.path.join(
+            self.finder.web_tests_dir(), "external", BASE_MANIFEST_NAME)
+        manifest = WPTManifest(self.host, manifest_path)
+        with open(WPT_SMOKE_TESTS_FILE, 'w') as out_file:
+            _log.info('Test cases to run on smoke test builder:')
+            prelen = len('external/wpt/')
+            for test in sorted(tests):
+                if test.startswith('external/wpt/') \
+                        and manifest.is_test_file(test[prelen:]):
+                    # path should be the relative path of the test case to
+                    # out/Release dir, as that will be same as that on swarming
+                    # infra. We use path instead of the test case name, because
+                    # that is needed to correctly run cases in js files
+                    path = '../../third_party/blink/web_tests/' + test
+                    _log.info('  ' + path)
+                    out_file.write(path + '\n')
+        try:
+            yield
+        finally:
+            _log.info('Restore file WPTSmokeTestCases.')
+            shutil.copyfile(self._saved_test_cases_file, WPT_SMOKE_TESTS_FILE)
+
     def cleanup_test_expectations_files(self):
         """Removes deleted tests from expectations files.
 
@@ -741,26 +837,42 @@ class WPTExpectationsUpdater(object):
         """
         deleted_files = self._list_deleted_files()
         renamed_files = self._list_renamed_files()
+        modified_files = self._list_modified_files()
 
         for path in self._test_expectations.expectations_dict:
             _log.info('Updating %s for any removed or renamed tests.',
                       self.host.filesystem.basename(path))
-            self._clean_single_test_expectations_file(
-                path, deleted_files, renamed_files)
+            if path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
+                # Also delete any expectations for modified test cases at
+                # android side to avoid any conflict
+                # TODO: consider keep the triaged expectations when results do
+                # not change
+                self._clean_single_test_expectations_file(
+                    path, deleted_files + modified_files, renamed_files)
+            else:
+                self._clean_single_test_expectations_file(
+                    path, deleted_files, renamed_files)
         self._test_expectations.commit_changes()
 
-    def _list_deleted_files(self):
-        # TODO(robertma): Improve Git.changed_files so that we can use
-        # it here.
+    def _list_files(self, diff_filter):
         paths = self.git.run(
-            ['diff', 'origin/master', '--diff-filter=D',
+            ['diff', 'origin/main', '--diff-filter=' + diff_filter,
              '--name-only']).splitlines()
-        deleted_files = []
+        files = []
         for p in paths:
             rel_path = self._relative_to_web_test_dir(p)
             if rel_path:
-                deleted_files.append(rel_path)
-        return deleted_files
+                files.append(rel_path)
+        return files
+
+    def _list_add_files(self):
+        return self._list_files('A')
+
+    def _list_modified_files(self):
+        return self._list_files('M')
+
+    def _list_deleted_files(self):
+        return self._list_files('D')
 
     def _list_renamed_files(self):
         """Returns a dictionary mapping tests to their new name.
@@ -771,7 +883,7 @@ class WPTExpectationsUpdater(object):
         Returns a dictionary mapping source name to destination name.
         """
         out = self.git.run([
-            'diff', 'origin/master', '-M90%', '--diff-filter=R',
+            'diff', 'origin/main', '-M90%', '--diff-filter=R',
             '--name-status'
         ])
         renamed_tests = {}
@@ -905,6 +1017,9 @@ class WPTExpectationsUpdater(object):
             '--no-trigger-jobs',
             '--fill-missing',
         ]
+        if self.options.rebaseline_blink_try_bots_only:
+            command.append('--use-blink-try-bots-only')
+
         if self.patchset:
             command.append('--patchset=' + str(self.patchset))
         command += tests_to_rebaseline
@@ -961,5 +1076,11 @@ class WPTExpectationsUpdater(object):
 
     @memoized
     def _get_try_bots(self):
-        return self.host.builders.filter_builders(
-            is_try=True, exclude_specifiers={'android'})
+        builder_set = frozenset(
+            self.host.builders.filter_builders(is_try=True,
+                                               exclude_specifiers={'android'}))
+        # Omit the CQ bots if we are only using data from blink trybots.
+        if self.options.rebaseline_blink_try_bots_only:
+            builder_set -= frozenset(
+                self.host.builders.all_cq_try_builder_names())
+        return list(builder_set)

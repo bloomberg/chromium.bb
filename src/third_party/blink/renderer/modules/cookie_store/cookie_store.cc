@@ -6,9 +6,11 @@
 
 #include <utility>
 
-#include "base/optional.h"
+#include "base/containers/contains.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_init.h"
@@ -129,9 +131,10 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
   // automatically turn it into a secure cookie without any warning.
   //
   // The Cookie Store API can only set secure cookies, so it is unusable on
-  // insecure origins.
-  // TODO(crbug.com/1153336) Use network::IsUrlPotentiallyTrustworthy().
-  if (!SecurityOrigin::IsSecure(cookie_url)) {
+  // insecure origins. file:// are excluded too for consistency with
+  // document.cookie.
+  if (!network::IsUrlPotentiallyTrustworthy(cookie_url) ||
+      base::Contains(url::GetLocalSchemes(), cookie_url.Protocol().Ascii())) {
     exception_state.ThrowTypeError(
         "Cannot modify a secure cookie on insecure origin");
     return nullptr;

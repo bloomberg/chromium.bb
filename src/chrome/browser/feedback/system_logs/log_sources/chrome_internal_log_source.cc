@@ -38,6 +38,7 @@
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "ui/display/types/display_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/ash_interfaces.h"
@@ -362,9 +363,8 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
     PopulateArcPolicyStatus(response.get());
   }
   response->emplace(kAccountTypeKey, GetPrimaryAccountTypeString());
-  response->emplace(kDemoModeConfigKey,
-                    chromeos::DemoSession::DemoConfigToString(
-                        chromeos::DemoSession::GetDemoConfig()));
+  response->emplace(kDemoModeConfigKey, ash::DemoSession::DemoConfigToString(
+                                            ash::DemoSession::GetDemoConfig()));
   PopulateLocalStateSettings(response.get());
   PopulateOnboardingTime(response.get());
 
@@ -542,7 +542,7 @@ void ChromeInternalLogSource::PopulateInstallerBrandCode(
 void ChromeInternalLogSource::PopulateLastUpdateState(
     SystemLogsResponse* response) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  const base::Optional<UpdateState> update_state = GetLastUpdateState();
+  const absl::optional<UpdateState> update_state = GetLastUpdateState();
   if (!update_state)
     return;  // There is nothing to include if no update check has completed.
 

@@ -104,12 +104,10 @@ class CORE_EXPORT WebPluginContainerImpl final
   bool CanProcessDrag() const;
   bool WantsWheelEvents() const;
   void UpdateAllLifecyclePhases();
-  void InvalidateRect(const IntRect&);
   void SetFocused(bool, mojom::blink::FocusType);
   void HandleEvent(Event&);
   bool IsErrorplaceholder();
   void EventListenersRemoved();
-  void InvalidatePaint() {}
 
   // WebPluginContainer methods
   WebElement GetElement() override;
@@ -121,7 +119,6 @@ class CORE_EXPORT WebPluginContainerImpl final
                              const WebString& url) override;
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
   void Invalidate() override;
-  void InvalidateRect(const gfx::Rect&) override;
   void ScheduleAnimation() override;
   void ReportGeometry() override;
   v8::Local<v8::Object> V8ObjectForElement() override;
@@ -253,4 +250,4 @@ struct DowncastTraits<WebPluginContainerImpl> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PLUGIN_CONTAINER_IMPL_H_

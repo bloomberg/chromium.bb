@@ -40,7 +40,7 @@ base::StringPiece NativeThemeColorSchemeName(
 }
 
 // clang-format off
-base::Optional<ColorId>
+absl::optional<ColorId>
 NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
   using NTCID = NativeTheme::ColorId;
   static constexpr const auto map =
@@ -53,6 +53,12 @@ NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
         {NTCID::kColorId_AvatarIconIncognito, kColorAvatarIconIncognito},
         {NTCID::kColorId_BubbleBackground, kColorBubbleBackground},
         {NTCID::kColorId_BubbleBorder, kColorBubbleBorder},
+        {NTCID::kColorId_BubbleBorderShadowLarge,
+          kColorBubbleBorderShadowLarge},
+        {NTCID::kColorId_BubbleBorderShadowSmall,
+          kColorBubbleBorderShadowSmall},
+        {NTCID::kColorId_BubbleBorderWhenShadowPresent,
+          kColorBubbleBorderWhenShadowPresent},
         {NTCID::kColorId_BubbleFooterBackground,
           kColorBubbleFooterBackground},
         {NTCID::kColorId_ButtonBorderColor, kColorButtonBorder},
@@ -82,6 +88,7 @@ NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
         {NTCID::kColorId_DialogForeground, kColorDialogForeground},
         {NTCID::kColorId_DisabledButtonBorderColor, kColorButtonBorderDisabled},
         {NTCID::kColorId_DisabledIconColor, kColorIconDisabled},
+        {NTCID::kColorId_SecondaryIconColor, kColorIconSecondary},
         {NTCID::kColorId_DisabledMenuItemForegroundColor,
           kColorMenuItemForegroundDisabled},
         {NTCID::kColorId_DropdownBackgroundColor, kColorDropdownBackground},
@@ -92,6 +99,7 @@ NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
           kColorDropdownForegroundSelected},
         {NTCID::kColorId_EnabledMenuItemForegroundColor,
           kColorMenuItemForeground},
+        {NTCID::kColorId_FocusAuraColor, kColorFocusAura},
         {NTCID::kColorId_FocusedBorderColor, kColorFocusableBorderFocused},
         {NTCID::kColorId_FocusedMenuItemBackgroundColor,
           kColorMenuItemBackgroundSelected},
@@ -157,6 +165,15 @@ NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
         {NTCID::kColorId_SelectedMenuItemForegroundColor,
           kColorMenuItemForegroundSelected},
         {NTCID::kColorId_SeparatorColor, kColorSeparator},
+        {NTCID::kColorId_ShadowBase, kColorShadowBase},
+        {NTCID::kColorId_ShadowValueAmbientShadowElevationThree,
+          kColorShadowValueAmbientShadowElevationThree},
+        {NTCID::kColorId_ShadowValueKeyShadowElevationThree,
+          kColorShadowValueKeyShadowElevationThree},
+        {NTCID::kColorId_ShadowValueAmbientShadowElevationSixteen,
+          kColorShadowValueAmbientShadowElevationSixteen},
+        {NTCID::kColorId_ShadowValueKeyShadowElevationSixteen,
+          kColorShadowValueKeyShadowElevationSixteen},
         {NTCID::kColorId_SliderThumbDefault, kColorSliderThumb},
         {NTCID::kColorId_SliderThumbMinimal, kColorSliderThumbMinimal},
         {NTCID::kColorId_SliderTroughDefault, kColorSliderTrack},
@@ -234,7 +251,7 @@ NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id) {
   if (color_it != map.cend()) {
     return color_it->second;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 // clang-format on
 

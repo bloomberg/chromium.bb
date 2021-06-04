@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_MATCH_CELL_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_MATCH_CELL_VIEW_H_
 
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -24,6 +24,28 @@ class OmniboxMatchCellView : public views::View {
   static constexpr int kMarginLeft = 4;
   static constexpr int kMarginRight = 8;
   static constexpr int kImageBoundsWidth = 40;
+
+  // Computes the maximum width, in pixels, that can be allocated for the two
+  // parts of an autocomplete result, i.e. the contents and the description.
+  //
+  // When |description_on_separate_line| is true, the caller will be displaying
+  // two separate lines of text, so both contents and description can take up
+  // the full available width. Otherwise, the contents and description are
+  // assumed to be on the same line, with a separator between them.
+  //
+  // When |allow_shrinking_contents| is true, and the contents and description
+  // are together on a line without enough space for both, the code tries to
+  // divide the available space equally between the two, unless this would make
+  // one or both too narrow. Otherwise, the contents is given as much space as
+  // it wants and the description gets the remainder.
+  static void ComputeMatchMaxWidths(int contents_width,
+                                    int separator_width,
+                                    int description_width,
+                                    int available_width,
+                                    bool description_on_separate_line,
+                                    bool allow_shrinking_contents,
+                                    int* contents_max_width,
+                                    int* description_max_width);
 
   explicit OmniboxMatchCellView(OmniboxResultView* result_view);
   OmniboxMatchCellView(const OmniboxMatchCellView&) = delete;

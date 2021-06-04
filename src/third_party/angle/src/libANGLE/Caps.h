@@ -510,6 +510,12 @@ struct Extensions
     // GL_OES_texture_border_clamp
     bool textureBorderClampOES = false;
 
+    // GL_EXT_texture_border_clamp
+    bool textureBorderClampEXT = false;
+
+    // Any version of the texture border clamp extension
+    bool textureBorderClampAny() const { return (textureBorderClampOES || textureBorderClampEXT); }
+
     // GL_EXT_texture_sRGB_decode
     bool textureSRGBDecode = false;
 
@@ -595,6 +601,9 @@ struct Extensions
 
     // GL_ANGLE_multiview_multisample
     bool multiviewMultisample = false;
+
+    // GL_KHR_blend_equation_advanced
+    bool blendEquationAdvancedKHR = false;
 
     // GL_EXT_blend_func_extended
     bool blendFuncExtended          = false;
@@ -722,6 +731,9 @@ struct Extensions
 
     // GL_ANGLE_get_serialized_context_string
     bool getSerializedContextStringANGLE = false;
+
+    // GL_EXT_primitive_bounding_box
+    bool primitiveBoundingBoxEXT = false;
 };
 
 // Pointer to a boolean memeber of the Extensions struct
@@ -1138,6 +1150,9 @@ struct DisplayExtensions
 
     // EGL_ANGLE_iosurface_client_buffer
     bool iosurfaceClientBuffer = false;
+
+    // EGL_ANGLE_metal_texture_client_buffer
+    bool mtlTextureClientBuffer = false;
 
     // EGL_ANGLE_create_context_extensions_enabled
     bool createContextExtensionsEnabled = false;

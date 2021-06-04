@@ -222,6 +222,19 @@ void ManifestManager::RecordMetrics(const mojom::blink::Manifest& manifest) {
     UseCounter::Count(GetSupplementable(),
                       WebFeature::kWebAppManifestUrlHandlers);
   }
+
+  if (!manifest.protocol_handlers.IsEmpty()) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kWebAppManifestProtocolHandlers);
+  }
+
+  for (const mojom::blink::DisplayMode& display_override :
+       manifest.display_override) {
+    if (display_override == mojom::blink::DisplayMode::kWindowControlsOverlay) {
+      UseCounter::Count(GetSupplementable(),
+                        WebFeature::kWebAppWindowControlsOverlay);
+    }
+  }
 }
 
 void ManifestManager::ResolveCallbacks(ResolveState state) {

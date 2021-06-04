@@ -5,6 +5,7 @@
 package org.chromium.weblayer.test;
 
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.KeyEvent;
 
@@ -46,18 +47,29 @@ public class AutofillTest {
     private TestWebServer mWebServer;
     private InstrumentationActivity mActivity;
 
+    private ArrayList<Integer> mEventsObserved;
+    private CallbackHelper mHelper;
+
     @Before
     public void setUp() throws Exception {
+        mEventsObserved = new ArrayList<>();
+        mHelper = new CallbackHelper();
+        mActivity = mActivityTestRule.launchShell(new Bundle());
+        // There is no way to talk to TestWebLayer before the WebLayer is created.
+        // TestAutofillManagerWrapper can only replace AutofillProvider's AutofillMangerWrapper
+        // after initialization is done. So this test can't be used to test AutofillProvider's
+        // initialization. As WebLayer doesn't have specific code in AutofillProvider
+        // initialization, the AutofillProvider initialization is sufficiently tested via
+        // AwAutofillTest.
+        TestWebLayer.getTestWebLayer(mActivity.getApplicationContext())
+                .notifyOfAutofillEvents(
+                        mActivity.getBrowser(), () -> mHelper.notifyCalled(), mEventsObserved);
         mWebServer = TestWebServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
         mWebServer.shutdown();
-    }
-
-    private TestWebLayer getTestWebLayer() {
-        return TestWebLayer.getTestWebLayer(mActivity.getApplicationContext());
     }
 
     /**
@@ -84,19 +96,9 @@ public class AutofillTest {
                 + "</form></body></html>";
         final String url = mWebServer.setResponse(MAIN_FRAME_FILE, data, null);
 
-        ArrayList<Integer> eventsObserved = new ArrayList<>();
-        CallbackHelper helper = new CallbackHelper();
-
-        // Initialize the test shell, Browser and Tab objects should be created because they are
-        // needed by the TestWebLayer#notifyOfAutofillEvents() method.
-        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
-        TestWebLayer testWebLayer = getTestWebLayer();
-        testWebLayer.notifyOfAutofillEvents(
-                mActivity.getBrowser(), () -> helper.notifyCalled(), eventsObserved);
-
         // Load the test page.
         mActivityTestRule.navigateAndWait(url);
-
+        int callCount = mHelper.getCallCount();
         // Select the "text1" element.
         mActivityTestRule.executeScriptSync("document.getElementById('text1').select();", false);
         // Press "a" to trigger Autofill.
@@ -110,11 +112,11 @@ public class AutofillTest {
         }
 
         // Wait for Autofill events.
-        helper.waitForCallback(
-                /* currentCallCount */ 0, /* numberOfCallsToWaitFor */ expected.size(),
+        mHelper.waitForCallback(
+                /* currentCallCount */ callCount, /* numberOfCallsToWaitFor */ expected.size(),
                 CallbackHelper.WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        Assert.assertEquals(expected, eventsObserved);
+        Assert.assertEquals(expected, mEventsObserved);
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {

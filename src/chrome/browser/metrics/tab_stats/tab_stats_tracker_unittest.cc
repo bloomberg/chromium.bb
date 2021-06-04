@@ -8,7 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
@@ -159,10 +159,6 @@ class TabStatsTrackerTest : public ChromeRenderViewHostTestHarness {
       TestTabStatsTracker::UmaStatsReportingDelegate;
 
   TabStatsTrackerTest() {
-    power_monitor_source_ = new base::PowerMonitorTestSource();
-    base::PowerMonitor::Initialize(
-        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
-
     TabStatsTracker::RegisterPrefs(pref_service_.registry());
 
     // The tab stats tracker has to be created after the power monitor as it's
@@ -184,14 +180,13 @@ class TabStatsTrackerTest : public ChromeRenderViewHostTestHarness {
     tab_strip_model_ = nullptr;
     browser_.reset(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
-    base::PowerMonitor::ShutdownForTesting();
   }
 
   // The tabs stat tracker instance, it should be created in the SetUp
   std::unique_ptr<TestTabStatsTracker> tab_stats_tracker_;
 
   // Used to simulate power events.
-  base::PowerMonitorTestSource* power_monitor_source_;
+  base::test::ScopedPowerMonitorTestSource power_monitor_source_;
 
   // Used to make sure that the metrics are reported properly.
   base::HistogramTester histogram_tester_;
@@ -263,12 +258,12 @@ TEST_F(TabStatsTrackerTest, OnResume) {
   std::vector<base::Bucket> count_buckets;
   count_buckets.emplace_back(base::Bucket(expected_tab_count, 1));
 
-  EXPECT_FALSE(power_monitor_source_->IsOnBatteryPower());
+  EXPECT_FALSE(power_monitor_source_.IsOnBatteryPower());
 
   // Generates a resume event that should end up calling the
   // |ReportTabCountOnResume| method of the reporting delegate.
-  power_monitor_source_->GenerateSuspendEvent();
-  power_monitor_source_->GenerateResumeEvent();
+  power_monitor_source_.GenerateSuspendEvent();
+  power_monitor_source_.GenerateResumeEvent();
 
   // There should be only one sample for the |kNumberOfTabsOnResume| histogram.
   histogram_tester_.ExpectTotalCount(
@@ -291,11 +286,11 @@ TEST_F(TabStatsTrackerTest, OnResume) {
   count_buckets.emplace_back(base::Bucket(expected_tab_count, 1));
   std::sort(count_buckets.begin(), count_buckets.end(), CompareHistogramBucket);
 
-  power_monitor_source_->GeneratePowerStateEvent(true);
-  EXPECT_TRUE(power_monitor_source_->IsOnBatteryPower());
+  power_monitor_source_.GeneratePowerStateEvent(true);
+  EXPECT_TRUE(power_monitor_source_.IsOnBatteryPower());
   // Generates another resume event.
-  power_monitor_source_->GenerateSuspendEvent();
-  power_monitor_source_->GenerateResumeEvent();
+  power_monitor_source_.GenerateSuspendEvent();
+  power_monitor_source_.GenerateResumeEvent();
 
   // There should be 2 samples for this metric now.
   histogram_tester_.ExpectTotalCount(
@@ -332,7 +327,7 @@ TEST_F(TabStatsTrackerTest, StatsGetReportedDaily) {
 
   TabsStats stats = tab_stats_tracker_->data_store()->tab_stats();
 
-  EXPECT_FALSE(power_monitor_source_->IsOnBatteryPower());
+  EXPECT_FALSE(power_monitor_source_.IsOnBatteryPower());
   // Trigger the daily event.
   tab_stats_tracker_->TriggerDailyEvent();
 
@@ -379,8 +374,8 @@ TEST_F(TabStatsTrackerTest, StatsGetReportedDaily) {
   EXPECT_EQ(expected_window_count, static_cast<size_t>(pref_service_.GetInteger(
                                        prefs::kTabStatsWindowCountMax)));
 
-  power_monitor_source_->GeneratePowerStateEvent(true);
-  EXPECT_TRUE(power_monitor_source_->IsOnBatteryPower());
+  power_monitor_source_.GeneratePowerStateEvent(true);
+  EXPECT_TRUE(power_monitor_source_.IsOnBatteryPower());
 
   // Trigger the daily event.
   tab_stats_tracker_->TriggerDailyEvent();

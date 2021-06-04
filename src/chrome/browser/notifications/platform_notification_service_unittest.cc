@@ -68,11 +68,6 @@ const char kRequireInteraction[] = "RequireInteraction";
 const char kTimeUntilCloseMillis[] = "TimeUntilClose";
 const char kTimeUntilFirstClickMillis[] = "TimeUntilFirstClick";
 const char kTimeUntilLastClickMillis[] = "TimeUntilLastClick";
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL Origin() {
-  return GURL("https://example.com");
-}
 
 }  // namespace
 
@@ -128,12 +123,14 @@ class PlatformNotificationServiceTest : public testing::Test {
 };
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentThenClose) {
+  ASSERT_TRUE(profile_.CreateHistoryService());
   PlatformNotificationData data;
   data.title = u"My Notification";
   data.body = u"Hello, world!";
 
   service()->DisplayNotification(kNotificationId, GURL("https://chrome.com/"),
-                                 data, NotificationResources());
+                                 /*document_url=*/GURL(), data,
+                                 NotificationResources());
 
   EXPECT_EQ(1u, GetNotificationCountForType(
                     NotificationHandler::Type::WEB_NON_PERSISTENT));
@@ -145,6 +142,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentThenClose) {
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
+  ASSERT_TRUE(profile_.CreateHistoryService());
   PlatformNotificationData data;
   data.title = u"My notification's title";
   data.body = u"Hello, world!";
@@ -171,6 +169,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
+  ASSERT_TRUE(profile_.CreateHistoryService());
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
       kNotificationVibrationPattern +
@@ -183,7 +182,8 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
   data.silent = true;
 
   service()->DisplayNotification(kNotificationId, GURL("https://chrome.com/"),
-                                 data, NotificationResources());
+                                 /*document_url=*/GURL(), data,
+                                 NotificationResources());
 
   ASSERT_EQ(1u, GetNotificationCountForType(
                     NotificationHandler::Type::WEB_NON_PERSISTENT));
@@ -203,11 +203,11 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
+  ASSERT_TRUE(profile_.CreateHistoryService());
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
       kNotificationVibrationPattern +
           base::size(kNotificationVibrationPattern));
-
   PlatformNotificationData data;
   data.title = u"My notification's title";
   data.body = u"Hello, world!";
@@ -252,16 +252,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
 }
 
 TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
-  // Set up UKM recording conditions.
-  ASSERT_TRUE(profile_.CreateHistoryService());
-  auto* history_service = HistoryServiceFactory::GetForProfile(
-      &profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  history_service->AddPage(Origin(), base::Time::Now(),
-                           history::SOURCE_BROWSED);
-
   NotificationDatabaseData data;
   data.notification_id = "notification1";
-  data.origin = Origin();
+  data.origin = GURL("https://example.com");
   data.closed_reason = NotificationDatabaseData::ClosedReason::USER;
   data.replaced_existing_notification = true;
   data.notification_data.icon = GURL("https://icon.com");
@@ -281,6 +274,13 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   data.time_until_close_millis = base::TimeDelta::FromMilliseconds(10000);
   data.time_until_first_click_millis = base::TimeDelta::FromMilliseconds(2222);
   data.time_until_last_click_millis = base::TimeDelta::FromMilliseconds(3333);
+
+  // Set up UKM recording conditions.
+  ASSERT_TRUE(profile_.CreateHistoryService());
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      &profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->AddPage(data.origin, base::Time::Now(),
+                           history::SOURCE_BROWSED);
 
   // Initially there are no UKM entries.
   std::vector<const ukm::mojom::UkmEntry*> entries =

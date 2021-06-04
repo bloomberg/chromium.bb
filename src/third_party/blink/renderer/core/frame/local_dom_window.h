@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 
+#include <memory>
+
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -34,19 +36,20 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -64,6 +67,7 @@ class External;
 class FrameConsole;
 class History;
 class IdleRequestOptions;
+class LocalFrame;
 class MediaQueryList;
 class MessageEvent;
 class Modulator;
@@ -154,6 +158,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
+  void AddInspectorIssue(AuditsIssue) final;
   EventTarget* ErrorEventTarget() final { return this; }
   String OutgoingReferrer() const final;
   CoreProbeSink* GetProbeSink() final;
@@ -184,6 +189,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Count |feature| only when this window is associated with a cross-origin
   // iframe.
   void CountUseOnlyInCrossOriginIframe(mojom::blink::WebFeature feature);
+
+  // Count |feature| only when this window is associated with a cross-site
+  // iframe. A "site" is a scheme and registrable domain.
+  void CountUseOnlyInCrossSiteIframe(mojom::blink::WebFeature feature);
 
   Document* InstallNewDocument(const DocumentInit&);
 
@@ -344,13 +353,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                   const String& features,
                   ExceptionState&);
 
-  DOMWindow* open(v8::Isolate*,
-                  const String& url_string,
-                  const AtomicString& target,
-                  const String& features,
-                  bool unused,
-                  ExceptionState&);
-
   FrameConsole* GetFrameConsole() const;
 
   void PrintErrorMessage(const String&) const;
@@ -402,6 +404,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Returns true if this window is cross-site to the main frame. Defaults to
   // false in a detached window.
+  // Note: This uses an outdated definition of "site" which only includes the
+  // registrable domain and not the scheme. For recording metrics in 3rd party
+  // contexts, prefer CountUseOnlyInCrossSiteIframe() which uses HTML's
+  // definition of "site" as a registrable domain and scheme.
   bool IsCrossSiteSubframe() const;
 
   void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
@@ -419,6 +425,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   bool CrossOriginIsolatedCapability() const override;
+  bool DirectSocketCapability() const override;
 
   // These delegate to the document_.
   ukm::UkmRecorder* UkmRecorder() override;
@@ -450,6 +457,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;
+
+  // Count feature disabled by Permissions Policy through use counter.
+  // The method is marked const as its caller |ReportPermissionsPolicyViolation|
+  // is marked const.
+  void CountPermissionsPolicyViolation(
+      mojom::blink::PermissionsPolicyFeature feature) const;
 
   Member<ScriptController> script_controller_;
 

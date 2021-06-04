@@ -569,7 +569,7 @@ static INLINE CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
                                                       const MACROBLOCK *x) {
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  if (cm->seq_params.monochrome || !xd->is_chroma_ref) return CFL_DISALLOWED;
+  if (cm->seq_params->monochrome || !xd->is_chroma_ref) return CFL_DISALLOWED;
 
   if (!xd->is_chroma_ref) {
     // For non-chroma-reference blocks, we should always store the luma pixels,

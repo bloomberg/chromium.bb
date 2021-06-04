@@ -29,11 +29,10 @@
 //  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import {AreaBounds, Bounds} from './common.js';
-import {drawGridLabels, GridLabelState} from './css_grid_label_helpers.js';
+import type {AreaBounds, Bounds} from './common.js';
+import type {GridLabelState} from './css_grid_label_helpers.js';
+import {drawGridLabels} from './css_grid_label_helpers.js';
 import {applyMatrixToPoint, buildPath, emptyBounds, hatchFillPath} from './highlight_common.js';
-
-const DEFAULT_EXTENDED_LINE_COLOR = 'rgba(128, 128, 128, 0.3)';
 
 // TODO(alexrudenko): Grid label unit tests depend on this style so it cannot be extracted yet.
 export const gridStyle = `
@@ -298,12 +297,13 @@ export function drawLayoutGridHighlight(
   if (highlight.gridHighlightConfig.showGridExtensionLines) {
     if (rowBounds) {
       drawExtendedGridLines(
-          context, rowBounds, highlight.gridHighlightConfig.rowLineDash, writingModeMatrix, canvasWidth, canvasHeight);
+          context, rowBounds, highlight.gridHighlightConfig.rowLineColor, highlight.gridHighlightConfig.rowLineDash,
+          writingModeMatrix, canvasWidth, canvasHeight);
     }
     if (columnBounds) {
       drawExtendedGridLines(
-          context, columnBounds, highlight.gridHighlightConfig.columnLineDash, writingModeMatrix, canvasWidth,
-          canvasHeight);
+          context, columnBounds, highlight.gridHighlightConfig.columnLineColor,
+          highlight.gridHighlightConfig.columnLineDash, writingModeMatrix, canvasWidth, canvasHeight);
     }
   }
 
@@ -370,10 +370,10 @@ function drawGridLines(
 }
 
 function drawExtendedGridLines(
-    context: CanvasRenderingContext2D, bounds: Bounds, dash: boolean|undefined, writingModeMatrix: DOMMatrix,
-    canvasWidth: number, canvasHeight: number) {
+    context: CanvasRenderingContext2D, bounds: Bounds, color: string, dash: boolean|undefined,
+    writingModeMatrix: DOMMatrix, canvasWidth: number, canvasHeight: number) {
   context.save();
-  context.strokeStyle = DEFAULT_EXTENDED_LINE_COLOR;
+  context.strokeStyle = color;
   context.lineWidth = 1;
   context.translate(0.5, 0.5);
   if (dash) {

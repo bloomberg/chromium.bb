@@ -516,7 +516,7 @@ LayoutUnit LayoutMultiColumnSet::ColumnGap() const {
   NOT_DESTROYED();
   LayoutBlockFlow* parent_block = MultiColumnBlockFlow();
 
-  if (const base::Optional<Length>& column_gap =
+  if (const absl::optional<Length>& column_gap =
           parent_block->StyleRef().ColumnGap())
     return ValueForLength(*column_gap, AvailableLogicalWidth());
 
@@ -550,7 +550,7 @@ LayoutRect LayoutMultiColumnSet::FragmentsBoundingBox(
 
 void LayoutMultiColumnSet::ComputeVisualOverflow(bool recompute_floats) {
   NOT_DESTROYED();
-  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRectAllowingUnset();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
   AddVisualEffectOverflow();

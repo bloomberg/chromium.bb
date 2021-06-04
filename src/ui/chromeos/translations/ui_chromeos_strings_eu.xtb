@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Erreprodukzio-barra</translation>
 <translation id="1404323374378969387">Norvegiarra</translation>
 <translation id="1430915738399379752">Inprimatu</translation>
+<translation id="1433628812591023318">Fitxategiak Parallels Desktop-en jaregin ahal izateko, Windows-eko fitxategien karpetara eraman behar dira lehendabizi.</translation>
 <translation id="1435838927755162558">Partekatu karpeta Parallels Desktop aplikazioarekin</translation>
 <translation id="1467432559032391204">Ezkerrera</translation>
 <translation id="1471718551822868769">Eslovakiarra</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-en fitxategiak</translation>
 <translation id="3078461028045006476">Partekatu <ph name="EXTENSION_NAME" /> luzapenarekin</translation>
 <translation id="3083975830683400843">Chromebit-ak</translation>
+<translation id="3113153474486991170">Ezin izan da ireki "<ph name="PATH" />" kokapen honetatik. Irekitzeko, kopia ezazu "Nire fitxategiak" atalean.</translation>
 <translation id="3126026824346185272">Ktrl</translation>
 <translation id="3144126448740580210">EGINDA</translation>
 <translation id="3188257591659621405">Nire fitxategiak</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Bulgariarra, teklatu fonetikoarekin</translation>
 <translation id="5605830556594064952">Dvorak estatubatuarra</translation>
 <translation id="5625294776298156701">Tamildarra, Tamil99 teklatuarekin</translation>
+<translation id="5633226425545095130">Elementu hau mugituz gero, "<ph name="DESTINATION_NAME" />" karpeta partekatua ikus dezakeen edonorekin partekatuko da.</translation>
 <translation id="5649768706273821470">Entzun</translation>
 <translation id="5678784840044122290">Linux aplikazioa erabilgarri egongo da zure terminalean eta baliteke haren ikonoa abiarazlean agertzea.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Ezin da deskonektatu artxibotik edo disko birtualetik<ph name="END_BOLD" />
@@ -486,7 +489,7 @@
 <translation id="60357267506638014">QWERTY txekiarra</translation>
 <translation id="604001903249547235">Hodeiko babeskopia</translation>
 <translation id="6040143037577758943">Itxi</translation>
-<translation id="6074825444536523002">Google inprimakia</translation>
+<translation id="6074825444536523002">Google-ko inprimakia</translation>
 <translation id="6079871810119356840">Hungariarra, QWERTY teklatuarekin</translation>
 <translation id="6096979789310008754">Garbitu da bilaketa-testua. Fitxategi eta karpeta guztiak daude ikusgai.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> karpetara eramaten</translation>
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Teklatu etiopiarra</translation>
 <translation id="7417705661718309329">Google mapa</translation>
 <translation id="7460898608667578234">Ukrainarra</translation>
+<translation id="7486315294984620427">Fitxategiak Parallels Desktop-en jaregin ahal izateko, Windows-eko fitxategien karpetan kopiatu behar dira lehendabizi.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> aurkitu dira
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />-n babeskopia egiteko prest</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Dimentsioak</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8456681095658380701">Izenak ez du balio</translation>
+<translation id="8459404855768962328">Elementu hau kopiatuz gero, "<ph name="DESTINATION_NAME" />" karpeta partekatua ikus dezakeen edonorekin partekatuko da.</translation>
 <translation id="8461467696380332069">Egin klik eskuineko botoiarekin fitxategi batean eta hautatu "Ainguratu apalean"; horrela, apalean dauden fitxategietarako sarbide bizkorra izango duzu.</translation>
 <translation id="8463494891489624050">Vietnamdarra (VIQR)</translation>
 <translation id="8466234950814670489">Tar artxiboa</translation>

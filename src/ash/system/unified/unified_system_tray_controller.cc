@@ -64,6 +64,7 @@
 #include "base/numerics/ranges.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
@@ -356,6 +357,7 @@ void UnifiedSystemTrayController::ShowLocaleDetailedView() {
 
 void UnifiedSystemTrayController::ShowAudioDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedAudioDetailedViewController>(this));
+  showing_audio_detailed_view_ = true;
 }
 
 void UnifiedSystemTrayController::ShowDarkModeDetailedView() {
@@ -374,6 +376,7 @@ void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
 }
 
 void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
+  showing_audio_detailed_view_ = false;
   detailed_view_controller_.reset();
   unified_view_->ResetDetailedView();
   if (restore_focus)
@@ -397,6 +400,7 @@ void UnifiedSystemTrayController::EnsureCollapsed() {
 
 void UnifiedSystemTrayController::EnsureExpanded() {
   if (detailed_view_controller_) {
+    showing_audio_detailed_view_ = false;
     detailed_view_controller_.reset();
     unified_view_->ResetDetailedView();
   }
@@ -501,6 +505,7 @@ void UnifiedSystemTrayController::ShowDetailedView(
   if (manager && manager->GetFocusedView())
     manager->ClearFocus();
 
+  showing_audio_detailed_view_ = false;
   unified_view_->SetDetailedView(controller->CreateView());
   detailed_view_controller_ = std::move(controller);
 

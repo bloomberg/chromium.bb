@@ -10,17 +10,17 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "crypto/hmac.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class DictionaryValue;
 class Value;
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 namespace parent_access {
 
 // Configuration used to generate and verify parent access code.
@@ -28,7 +28,7 @@ class AccessCodeConfig {
  public:
   // Returns AccessCodeConfig created from a |dictionary|, if the |dictionary|
   // contains valid config data.
-  static base::Optional<AccessCodeConfig> FromDictionary(
+  static absl::optional<AccessCodeConfig> FromDictionary(
       const base::DictionaryValue& value);
 
   // TODO(agawronska): Make constructor private.
@@ -118,12 +118,12 @@ class Authenticator {
   // Generates parent access code from the given |timestamp|. Returns the code
   // if generation was successful. |timestamp| needs to be greater or equal Unix
   // Epoch.
-  base::Optional<AccessCode> Generate(base::Time timestamp) const;
+  absl::optional<AccessCode> Generate(base::Time timestamp) const;
 
   // Returns AccessCode structure with validity information, if |code| is
   // valid for the given timestamp. |timestamp| needs to be greater or equal
   // Unix Epoch.
-  base::Optional<AccessCode> Validate(const std::string& code,
+  absl::optional<AccessCode> Validate(const std::string& code,
                                       base::Time timestamp) const;
 
  private:
@@ -131,7 +131,7 @@ class Authenticator {
   // for the range [|valid_from|, |valid_to|). |valid_to| needs to be greater or
   // equal to |valid_from|. |valid_from| needs to be greater or equal Unix
   // Epoch.
-  base::Optional<AccessCode> ValidateInRange(const std::string& code,
+  absl::optional<AccessCode> ValidateInRange(const std::string& code,
                                              base::Time valid_from,
                                              base::Time valid_to) const;
 
@@ -145,6 +145,6 @@ class Authenticator {
 };
 
 }  // namespace parent_access
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_AUTHENTICATOR_H_

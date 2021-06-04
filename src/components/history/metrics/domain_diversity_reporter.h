@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_
 #define COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_
 
-#include <vector>
-
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
@@ -29,7 +27,7 @@ class DomainDiversityReporter : public KeyedService,
                           base::Clock* clock);
   ~DomainDiversityReporter() override;
 
-  // Registers Profile preferences in |registry|.
+  // Registers Profile preferences in `registry`.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Invokes ComputeDomainMetrics() if history backend is already loaded.
@@ -71,4 +69,4 @@ class DomainDiversityReporter : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(DomainDiversityReporter);
 };
 
-#endif  // COMPONENTS_HISTORY_MERICS_DOMAIN_DIVERSITY_REPORTER_H_
+#endif  // COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_

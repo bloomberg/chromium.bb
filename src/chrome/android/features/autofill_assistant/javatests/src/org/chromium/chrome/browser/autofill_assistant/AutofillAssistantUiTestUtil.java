@@ -11,7 +11,6 @@ import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POL
 import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -54,9 +53,14 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
+import org.chromium.chrome.browser.autofill_assistant.proto.DrawableProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptProto.TriggerScriptAction;
+import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptUIProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptUIProto.TriggerChip;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -507,23 +511,29 @@ class AutofillAssistantUiTestUtil {
         chromeCoordinatorView.addView(view, lp);
     }
 
-    /**
-     * Starts the CCT test rule on a blank page.
-     */
-    public static void startOnBlankPage(CustomTabActivityTestRule testRule) {
-        testRule.startCustomTabActivityWithIntent(
-                AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
-                        "about:blank", /* startImmediately = */ true));
-    }
-
-    /**
-     * Starts Autofill Assistant on the given {@code activity} and injects the given {@code
-     * testService}.
-     */
     public static void startAutofillAssistant(
             ChromeActivity activity, AutofillAssistantTestService testService) {
+        startAutofillAssistant(activity, testService, /* initialUrl = */ null);
+    }
+    /**
+     * Starts Autofill Assistant on the given {@code activity} and injects the given {@code
+     * testService}. {@code initialUrl} will, if provided, override the default initial url for
+     * the trigger context, which is the initial url of the activity.
+     */
+    public static void startAutofillAssistant(ChromeActivity activity,
+            AutofillAssistantTestService testService, @Nullable String initialUrl) {
         testService.scheduleForInjection();
-        TestThreadUtils.runOnUiThreadBlocking(() -> AutofillAssistantFacade.start(activity));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillAssistantFacade.start(activity,
+                                TriggerContext.newBuilder()
+                                        .addParameter("ENABLED", true)
+                                        .addParameter("START_IMMEDIATELY", true)
+                                        .withInitialUrl(initialUrl != null
+                                                        ? initialUrl
+                                                        : activity.getInitialIntent()
+                                                                  .getDataString())
+                                        .build()));
     }
 
     /** Performs a single tap on the center of the specified element. */
@@ -730,11 +740,60 @@ class AutofillAssistantUiTestUtil {
         return builder.toString();
     }
 
-    public static Intent createMinimalCustomTabIntentForAutobot(
-            String url, boolean startImmediately) {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(), url);
-        intent.putExtra(TriggerContext.PARAMETER_START_IMMEDIATELY, startImmediately);
-        return intent;
+    /**
+     * Creates a default trigger script UI, similar to the intended experience. It comprises three
+     * chips: 'Preferences', 'Not now', 'Continue'. 'Preferences' opens the cancel popup containing
+     * 'Not for this session' and 'Never show again'. Optionally, a blue message bubble and a
+     * default progress bar are shown.
+     */
+    public static TriggerScriptUIProto.Builder createDefaultTriggerScriptUI(
+            String statusMessage, String bubbleMessage, boolean withProgressBar) {
+        TriggerScriptUIProto.Builder builder =
+                TriggerScriptUIProto.newBuilder()
+                        .setStatusMessage(statusMessage)
+                        .setCalloutMessage(bubbleMessage)
+                        .addLeftAlignedChips(
+                                TriggerChip.newBuilder()
+                                        .setChip(ChipProto.newBuilder()
+                                                         .setType(ChipType.NORMAL_ACTION)
+                                                         .setIcon(ChipIcon.ICON_OVERFLOW))
+                                        .setAction(TriggerScriptAction.SHOW_CANCEL_POPUP))
+                        .addRightAlignedChips(
+                                TriggerChip.newBuilder()
+                                        .setChip(ChipProto.newBuilder()
+                                                         .setType(ChipType.NORMAL_ACTION)
+                                                         .setText("Not now"))
+                                        .setAction(TriggerScriptAction.NOT_NOW))
+                        .addRightAlignedChips(
+                                TriggerChip.newBuilder()
+                                        .setChip(ChipProto.newBuilder()
+                                                         .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                         .setText("Continue"))
+                                        .setAction(TriggerScriptAction.ACCEPT))
+                        .setCancelPopup(
+                                TriggerScriptUIProto.Popup.newBuilder()
+                                        .addChoices(
+                                                TriggerScriptUIProto.Popup.Choice.newBuilder()
+                                                        .setText("Not for this session")
+                                                        .setAction(
+                                                                TriggerScriptAction.CANCEL_SESSION))
+                                        .addChoices(TriggerScriptUIProto.Popup.Choice.newBuilder()
+                                                            .setText("Never show again")
+                                                            .setAction(TriggerScriptAction
+                                                                               .CANCEL_FOREVER)));
+        if (withProgressBar) {
+            builder.setProgressBar(
+                    TriggerScriptUIProto.ProgressBar.newBuilder()
+                            .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                    DrawableProto.Icon.PROGRESSBAR_DEFAULT_INITIAL_STEP))
+                            .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                    DrawableProto.Icon.PROGRESSBAR_DEFAULT_DATA_COLLECTION))
+                            .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                    DrawableProto.Icon.PROGRESSBAR_DEFAULT_PAYMENT))
+                            .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                    DrawableProto.Icon.PROGRESSBAR_DEFAULT_FINAL_STEP))
+                            .setActiveStep(1));
+        }
+        return builder;
     }
 }

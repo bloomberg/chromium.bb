@@ -28,6 +28,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -52,6 +53,7 @@
 #include "content/browser/tracing/startup_tracing_controller.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -123,7 +125,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_test_helper.h"
 #include "chromeos/startup/startup_switches.h"  // nogncheck
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -410,7 +412,8 @@ void BrowserTestBase::SetUp() {
     std::string socket_path =
         command_line->GetSwitchValueASCII("lacros-mojo-socket-for-testing");
     if (socket_path.empty()) {
-      chromeos::LacrosChromeServiceImpl::Get()->DisableCrosapiForTests();
+      disable_crosapi_ =
+          std::make_unique<chromeos::ScopedDisableCrosapiForTesting>();
     } else {
       auto channel = mojo::NamedPlatformChannel::ConnectToServer(socket_path);
       base::ScopedFD socket_fd = channel.TakePlatformHandle().TakeFD();
@@ -529,9 +532,9 @@ void BrowserTestBase::SetUp() {
   // FeatureList::SetInstance, which expects no instance to exist.
   base::FeatureList::ClearInstanceForTesting();
 
-  auto created_main_parts_closure =
-      std::make_unique<CreatedMainPartsClosure>(base::BindOnce(
-          &BrowserTestBase::CreatedBrowserMainParts, base::Unretained(this)));
+  auto created_main_parts_closure = std::make_unique<CreatedMainPartsClosure>(
+      base::BindOnce(&BrowserTestBase::CreatedBrowserMainPartsImpl,
+                     base::Unretained(this)));
 
   // If tracing is enabled, customise the output filename based on the name of
   // the test.
@@ -602,7 +605,7 @@ void BrowserTestBase::SetUp() {
 
     base::ThreadPoolInstance::Create("Browser");
 
-    delegate->PreCreateMainMessageLoop();
+    delegate->PreBrowserMain();
     BrowserTaskExecutor::Create();
     delegate->PostEarlyInitialization(/*is_running_tests=*/true);
 
@@ -679,13 +682,13 @@ void BrowserTestBase::SetUp() {
     discardable_shared_memory_manager.reset();
   }
 
+  // Like in BrowserMainLoop::ShutdownThreadsAndCleanUp(), allow IO during main
+  // thread tear down.
+  base::ThreadRestrictions::SetIOAllowed(true);
+
   base::PostTaskAndroid::SignalNativeSchedulerShutdownForTesting();
   BrowserTaskExecutor::Shutdown();
 
-  // Normally the BrowserMainLoop does this during shutdown but on Android we
-  // don't go through shutdown, so this doesn't happen there. We do need it
-  // for the test harness to be able to delete temp dirs.
-  base::ThreadRestrictions::SetIOAllowed(true);
 #else   // defined(OS_ANDROID)
   auto ui_task = std::make_unique<base::OnceClosure>(base::BindOnce(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
@@ -694,6 +697,7 @@ void BrowserTestBase::SetUp() {
       created_main_parts_closure.release();
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
 #endif  // defined(OS_ANDROID)
+
   TearDownInProcessBrowserTestFixture();
 }
 
@@ -768,7 +772,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   // set a ScopedLoopRunTimeout from their fixture's constructor (which
   // happens as part of setting up the test factory in gtest while
   // ProxyRunTestOnMainThreadLoop() happens later as part of SetUp()).
-  base::Optional<base::test::ScopedRunLoopTimeout> scoped_run_timeout;
+  absl::optional<base::test::ScopedRunLoopTimeout> scoped_run_timeout;
   if (!base::test::ScopedRunLoopTimeout::ExistsForCurrentThread()) {
     // TODO(https://crbug.com/918724): determine whether the timeout can be
     // reduced from action_max_timeout() to action_timeout().
@@ -799,6 +803,25 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 #endif
 
     PreRunTestOnMainThread();
+
+    // Flush startup tasks to reach the OnFirstIdle() phase before
+    // SetUpOnMainThread() (which must be right before RunTestOnMainThread()).
+    const bool io_allowed_value_before_flush =
+        base::ThreadRestrictions::SetIOAllowed(false);
+    {
+      TRACE_EVENT0("test", "FlushStartupTasks");
+      // Since ProxyRunTestOnMainThreadLoop() replaces the main message loop, we
+      // need to invoke the OnFirstIdle() phase ourselves.
+      base::RunLoop flush_startup_tasks;
+      flush_startup_tasks.RunUntilIdle();
+      // Make sure there isn't an odd caller which reached |flush_startup_tasks|
+      // statically via base::RunLoop::QuitCurrent*Deprecated().
+      DCHECK(!flush_startup_tasks.AnyQuitCalled());
+      if (browser_main_parts_)
+        browser_main_parts_->OnFirstIdle();
+    }
+    base::ThreadRestrictions::SetIOAllowed(io_allowed_value_before_flush);
+
     std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
     if (initial_web_contents_) {
       // Some tests may add host_resolver() rules in their SetUpOnMainThread
@@ -819,8 +842,8 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // to the network process if it's in use.
     InitializeNetworkProcess();
 
-    bool old_io_allowed_value = false;
-    old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
+    const bool old_io_allowed_value =
+        base::ThreadRestrictions::SetIOAllowed(false);
     {
       TRACE_EVENT0("test", "RunTestOnMainThread");
       RunTestOnMainThread();
@@ -990,6 +1013,12 @@ void BrowserTestBase::InitializeNetworkProcess() {
   base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
   network_service_test->AddRules(std::move(mojo_rules), loop.QuitClosure());
   loop.Run();
+}
+
+void BrowserTestBase::CreatedBrowserMainPartsImpl(
+    BrowserMainParts* browser_main_parts) {
+  browser_main_parts_ = browser_main_parts;
+  CreatedBrowserMainParts(browser_main_parts);
 }
 
 }  // namespace content

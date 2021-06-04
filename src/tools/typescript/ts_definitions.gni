@@ -14,19 +14,24 @@ template("ts_definitions") {
                              "js_files",
                            ])
 
-    inputs = []
-    outputs = []
+    inputs = [ "//tools/typescript/tsconfig_definitions_base.json" ]
+    outputs = [ "$target_gen_dir/tsconfig_definitions.json" ]
 
     root_dir = "."
     if (defined(invoker.root_dir)) {
       root_dir = invoker.root_dir
     }
 
+    out_dir = target_gen_dir
+    if (defined(invoker.out_dir)) {
+      out_dir = invoker.out_dir
+    }
+
     foreach(_js_file, js_files) {
       inputs += [ "$root_dir/$_js_file" ]
-      _dirname = get_path_info(_js_file, "gen_dir")
+      _dirname = rebase_path(get_path_info(_js_file, "gen_dir"), target_gen_dir)
       _filename = get_path_info(_js_file, "name")
-      outputs += [ "$_dirname/$_filename.d.ts" ]
+      outputs += [ "$out_dir/$_dirname/$_filename.d.ts" ]
     }
 
     args = [
@@ -34,6 +39,8 @@ template("ts_definitions") {
              rebase_path(root_dir, root_build_dir),
              "--gen_dir",
              rebase_path(target_gen_dir, root_build_dir),
+             "--out_dir",
+             rebase_path(out_dir, root_build_dir),
              "--js_files",
            ] + js_files
 
@@ -42,6 +49,25 @@ template("ts_definitions") {
         deps = []
       }
       deps += extra_deps
+    }
+
+    path_mappings = [
+      "chrome://resources/polymer/v3_0/*|" +
+          rebase_path("//third_party/polymer/v3_0/components-chromium/*",
+                      target_gen_dir),
+      "//resources/polymer/v3_0/*|" +
+          rebase_path("//third_party/polymer/v3_0/components-chromium/*",
+                      target_gen_dir),
+      "chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js|" + rebase_path(
+              "//third_party/polymer/v3_0/components-chromium/polymer/polymer-element.d.ts",
+              target_gen_dir),
+      "//resources/polymer/v3_0/polymer/polymer_bundled.min.js|" + rebase_path(
+              "//third_party/polymer/v3_0/components-chromium/polymer/polymer-element.d.ts",
+              target_gen_dir),
+    ]
+    args += [ "--path_mappings" ] + path_mappings
+    if (defined(invoker.path_mappings)) {
+      args += invoker.path_mappings
     }
   }
 }

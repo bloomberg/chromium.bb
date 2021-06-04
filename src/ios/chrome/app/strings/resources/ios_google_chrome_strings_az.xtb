@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1096883626080133124">Sadə, etibarlı və həmişəkindən daha sürətli bir Google Chrome ilə daha çox iş görün</translation>
 <translation id="1282031177488366470">Chrome'un Funksiyalarını və Performansını təkmilləşdirməyə kömək edin</translation>
 <translation id="1314663809820920746">Hələ də bu cihazda əlfəcin, tarixçə, parol və digər ayarları görə bilərsiniz. Dəyişiklik etsəniz, onlar Google Hesabınızla sinxronizasiya edilməyəcək.</translation>
 <translation id="1479202195792305274">Google Hesabınız ilə daxil olduqda Chrome parollarınızı yoxlaya bilər.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome güncəlləmələri yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
 <translation id="1682483655351012182">Chrome Datasını Sinxronizasiya Edin</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">İstifadə statistikası və qəza hesabatlarını Google'a göndərməklə Chrome'u təkmilləşdirməyə kömək edin</translation>
 <translation id="1917964099031477364">Bu hesab və bütün saxlanmamış data Chrome'dan və bu cihazdakı digər Google tətbiqlərindən silinəcək.</translation>
 <translation id="2009224836393115614">Chrome parollarınızı yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
 <translation id="2147651015520127414">Chrome təsdiq edir ki, <ph name="ISSUER" /> bu veb saytı sertifikatlaşdırıb.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome güncəlləmələri yoxlaya bilmədi. Sonra cəhd edin.</translation>
 <translation id="2732745070297234559">Chrome bütün parolları yoxlaya bilmədi. Sabah yenidən cəhd edin.</translation>
 <translation id="2740105938841089077">Keçidləri açmaq üçün Chrome istifadə edin</translation>
+<translation id="2869959624320573933">Chrome'a daxil olun</translation>
 <translation id="2919738076569633423">Chrome istifadə etməklə, <ph name="BEGIN_LINK_TOS" />Xidmət Şərtləri<ph name="END_LINK_TOS" /> ilə razılaşırsınız.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tərəfindən idarə edilən hesabdan çıxdığınıza görə Chrome datası bu cihazdan silinəcək. Datanız Google Hesabında qalacaq.</translation>
 <translation id="3167189358072330585">Hesabınız Google Chrome üzərində işləmir. Domen administratorunuzla əlaqə saxlayın, və ya adi Google Hesab girişi istifadə edin.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome hesablarınızı vebə gətirməklə vaxtınıza qənaət edir. Hesabları Ayarlar bölməsindən əlavə edə və ya silə bilərsiniz.</translation>
 <translation id="3282568296779691940">Chrome'a daxil olun</translation>
 <translation id="3345341804167540816">Chrome'u Hər yerdə İstifadə edin</translation>
+<translation id="3455456143708465450">Chrome'dan maksimum yararlanmaq üçün Google Hesabınızla daxil olun</translation>
 <translation id="3522659714780527202">Chrome istifadə etdiyiniz hər yerdən tabları görmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="3533694711092285624">Yadda saxlanmış parol yoxdur. Parollarınızı yadda saxladıqda Chrome onları yoxlaya bilər.</translation>
 <translation id="3706101708757577809">İndi istənilən vaxt mesajlar, sənədlər və digər tətbiqlərdə keçidlərə toxunduqda Chrome'u istifadə edə bilərsiniz.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Chrome'un məkanınızı bilməsinə icazə versəniz, Chrome onu icazə verdiyiniz saytlara göndərir. Yaxınlıqdakı mağazalar və ya xəbərlər kimi sizə göstərəcək yerli məlumatlar olduqda saytlar məkanınızı tələb edə bilər.</translation>
 <translation id="6036420186814142909">Google Chrome'un funksiyaları internet datanızı idarə etməyə və veb səhifələri tez yükləməyə kömək edir.
 <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Chrome girişinə icazə verin</translation>
 <translation id="6181930887571472871">Chrome'a keçin</translation>
 <translation id="6238746320622508509">Chrome'un Anonim tabları kilidləməsinə icazə verin.</translation>
 <translation id="6573431926118603307">Başqa cihaz ilə Chrome'da açdığınız panellər burada görünəcək.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Chrome datası bu cihazdan silinsin?</translation>
 <translation id="6822673484890854830">Chrome bütün parolları yoxlaya bilmədi. Sonra cəhd edin.</translation>
 <translation id="6964931465519938134">İndi istənilən vaxt mesajlar, sənədlər və digər tətbiqlərdə keçidlərə toxunduqda Chrome'u istifadə edə bilərsiniz.</translation>
+<translation id="7059914902409643750">Chrome'u fərdiləşdirin</translation>
 <translation id="7124339256045485976">Chrome'u yeni saxlayın</translation>
 <translation id="7161390184744336561">Google Chrome köhnəlib</translation>
 <translation id="7165736900384873061">Google Chrome QR skanerini istifadə etməyə başlayın</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome güncəldir</translation>
 <translation id="8022947259858476807">Defolt olaraq keçidləri açmaq, vidcetlərdən axtarış etmək və digər tətbiqlərdə parolları avtomatik doldurmaq üçün Chrome istifadə edin</translation>
 <translation id="8160472928944011082">Chrome güncəllənə bilmir</translation>
+<translation id="8263079278049777200">Bu sayta, Google hesabınıza və Chrome'a daxil olun. Sinxronlaşdırmanı daha sonra aktiv edə bilərsiniz.</translation>
 <translation id="8357607116237445042">Chrome datanızınız bu cihazdan silinməsi və ya saxlanmasını seçin</translation>
 <translation id="8370517070665726704">Müəllif hüquqları <ph name="YEAR" /> Google MMC. Bütün hüquqlar qorunur.</translation>
 <translation id="840168496893712993">Bəzi addonlar Chrome'da xətaya səbəb oldu. Lütfən, onları sistemdən silməyə cəhd edin.</translation>
@@ -95,5 +102,6 @@
   3. Chrome seçin.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Google Chrome ilə Təhlükəsiz Qalın</translation>
+<translation id="8772179140489533211">Chrome'a giriş tələblərini göstərir.</translation>
 <translation id="9112744793181547300">Chrome defolt olaraq ayarlansın?</translation>
 </translationbundle>

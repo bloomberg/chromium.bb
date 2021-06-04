@@ -6,10 +6,11 @@
 
 #include <iomanip>
 #include <ios>
+#include <ostream>
 
 #include "core/fxcrt/cfx_datetime.h"
 #include "core/fxcrt/fx_string.h"
-#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/span.h"
 
 std::ostream& operator<<(std::ostream& os, const CFX_DateTime& dt) {
@@ -74,6 +75,6 @@ ScopedFPDFWideString GetFPDFWideString(const std::wstring& wstr) {
 }
 
 std::vector<FPDF_WCHAR> GetFPDFWideStringBuffer(size_t length_bytes) {
-  DCHECK(length_bytes % sizeof(FPDF_WCHAR) == 0);
+  DCHECK_EQ(length_bytes % sizeof(FPDF_WCHAR), 0);
   return std::vector<FPDF_WCHAR>(length_bytes / sizeof(FPDF_WCHAR));
 }

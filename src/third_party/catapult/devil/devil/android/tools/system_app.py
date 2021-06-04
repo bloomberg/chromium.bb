@@ -22,6 +22,7 @@ from devil.android import decorators
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android.sdk import version_codes
+from devil.android.sdk import adb_wrapper
 from devil.android.tools import script_common
 from devil.utils import cmd_helper
 from devil.utils import parallelizer
@@ -126,13 +127,25 @@ _MODIFICATION_TIMEOUT = 300
 _MODIFICATION_RETRIES = 2
 _ENABLE_MODIFICATION_PROP = 'devil.modify_sys_apps'
 
+
+def _ShouldRetryModification(exc):
+  try:
+    if isinstance(exc, device_errors.CommandTimeoutError):
+      logger.info('Restarting the adb server')
+      adb_wrapper.RestartServer()
+    return True
+  except Exception: # pylint: disable=broad-except
+    logger.exception(('Caught an exception when deciding'
+                      ' to retry system modification'))
+    return False
+
+
 # timeout and retries are both required by the decorator, but neither
 # are used within the body of the function.
 # pylint: disable=unused-argument
 
 
-@decorators.WithExplicitTimeoutAndRetries(_MODIFICATION_TIMEOUT,
-                                          _MODIFICATION_RETRIES)
+@decorators.WithTimeoutAndConditionalRetries(_ShouldRetryModification)
 def _SetUpSystemAppModification(device, timeout=None, retries=None):
   # Ensure that the device is online & available before proceeding to
   # handle the case where something fails in the middle of set up and
@@ -177,13 +190,28 @@ def _SetUpSystemAppModification(device, timeout=None, retries=None):
   return should_restore_root
 
 
-@decorators.WithExplicitTimeoutAndRetries(_MODIFICATION_TIMEOUT,
-                                          _MODIFICATION_RETRIES)
+@decorators.WithTimeoutAndConditionalRetries(_ShouldRetryModification)
 def _TearDownSystemAppModification(device,
                                    should_restore_root,
                                    timeout=None,
                                    retries=None):
   try:
+    # The function may be re-entered after the the device loses root
+    # privilege. For instance if the adb server is restarted before
+    # re-entering the function then the device may lose root privilege.
+    # Therefore we need to do a sanity check for root privilege
+    # on the device and then re-enable root privilege if the device
+    # does not have it.
+    if not device.HasRoot():
+      logger.warning('Need to re-enable root.')
+      device.EnableRoot()
+
+      if not device.HasRoot():
+        raise device_errors.CommandFailedError(
+          ('Failed to tear down modification of '
+           'system apps on non-rooted device.'),
+          str(device))
+
     device.SetProp(_ENABLE_MODIFICATION_PROP, '0')
     device.Reboot()
     device.WaitUntilFullyBooted()
@@ -209,11 +237,16 @@ def EnableSystemAppModification(device):
     yield
     return
 
-  should_restore_root = _SetUpSystemAppModification(device)
+  should_restore_root = _SetUpSystemAppModification(
+      device, timeout=_MODIFICATION_TIMEOUT, retries=_MODIFICATION_RETRIES)
   try:
     yield
   finally:
-    _TearDownSystemAppModification(device, should_restore_root)
+    _TearDownSystemAppModification(
+        device,
+        should_restore_root,
+        timeout=_MODIFICATION_TIMEOUT,
+        retries=_MODIFICATION_RETRIES)
 
 
 @contextlib.contextmanager
@@ -226,9 +259,7 @@ def _RelocateApp(device, package_name, relocate_to):
         p: posixpath.join(relocate_to, posixpath.relpath(p, '/'))
         for p in system_package_paths
     }
-    relocation_dirs = [
-        posixpath.dirname(d) for _, d in relocation_map.iteritems()
-    ]
+    relocation_dirs = [posixpath.dirname(d) for _, d in relocation_map.items()]
     device.RunShellCommand(['mkdir', '-p'] + relocation_dirs, check_return=True)
     _MoveApp(device, relocation_map)
   else:
@@ -237,7 +268,7 @@ def _RelocateApp(device, package_name, relocate_to):
   try:
     yield
   finally:
-    _MoveApp(device, {v: k for k, v in relocation_map.iteritems()})
+    _MoveApp(device, {v: k for k, v in relocation_map.items()})
 
 
 @contextlib.contextmanager
@@ -261,7 +292,7 @@ def _MoveApp(device, relocation_map):
     device: (device_utils.DeviceUtils)
     relocation_map: (dict) A dict that maps src to dest
   """
-  movements = ['mv %s %s' % (k, v) for k, v in relocation_map.iteritems()]
+  movements = ['mv %s %s' % (k, v) for k, v in relocation_map.items()]
   cmd = ' && '.join(movements)
   with EnableSystemAppModification(device):
     device.RunShellCommand(cmd, as_root=True, check_return=True, shell=True)

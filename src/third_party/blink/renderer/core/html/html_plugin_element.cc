@@ -486,8 +486,16 @@ LayoutEmbeddedContent* HTMLPlugInElement::LayoutEmbeddedContentForJSBindings()
 bool HTMLPlugInElement::IsKeyboardFocusable() const {
   if (HTMLFrameOwnerElement::IsKeyboardFocusable())
     return true;
-  return GetDocument().IsActive() && PluginEmbeddedContentView() &&
-         PluginEmbeddedContentView()->SupportsKeyboardFocus() && IsFocusable();
+
+  WebPluginContainerImpl* embedded_content_view = nullptr;
+  if (LayoutEmbeddedContent* layout_embedded_content =
+          ExistingLayoutEmbeddedContent()) {
+    embedded_content_view = layout_embedded_content->Plugin();
+  }
+
+  return GetDocument().IsActive() && embedded_content_view &&
+         embedded_content_view->SupportsKeyboardFocus() &&
+         IsBaseElementFocusable();
 }
 
 bool HTMLPlugInElement::HasCustomFocusLogic() const {
@@ -721,7 +729,7 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
          !MixedContentChecker::ShouldBlockFetch(
              frame, mojom::blink::RequestContextType::OBJECT, url,
              ResourceRequest::RedirectStatus::kNoRedirect, url,
-             /* devtools_id= */ base::nullopt, ReportingDisposition::kReport,
+             /* devtools_id= */ absl::nullopt, ReportingDisposition::kReport,
              GetDocument().Loader()->GetContentSecurityNotifier());
 }
 

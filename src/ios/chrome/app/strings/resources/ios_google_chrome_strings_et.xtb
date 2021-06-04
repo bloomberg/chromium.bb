@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1096883626080133124">Google Chrome on nüüd lihtsam, turvalisem ja kiirem kui kunagi varem ning aitab teil veelgi rohkem toiminguid teha</translation>
 <translation id="1282031177488366470">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="1314663809820920746">Näete selles seadmes endiselt kõiki oma järjehoidjaid, ajalugu, paroole ja muid seadeid. Muudatuste tegemisel neid teie Google'i kontoga ei sünkroonita.</translation>
 <translation id="1479202195792305274">Chrome saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ei saanud värskendusi otsida. Kontrollige internetiühendust.</translation>
 <translation id="1682483655351012182">Chrome'i andmete sünkroonimine</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Aidake Chrome'i täiustada, saates Google'ile kasutusstatistikat ja krahhiaruandeid</translation>
 <translation id="1917964099031477364">See konto ja kõik salvestamata andmed eemaldatakse Chrome'ist ja muudest selles seadmes olevatest Google'i rakendustest.</translation>
 <translation id="2009224836393115614">Chrome'il ei õnnestunud teie paroole kontrollida. Kontrollige internetiühendust.</translation>
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ei saanud värskendusi otsida. Proovige hiljem uuesti.</translation>
 <translation id="2732745070297234559">Chrome'il ei õnnestunud kõiki paroole kontrollida. Proovige homme uuesti.</translation>
 <translation id="2740105938841089077">Kasuta linkide avamiseks Chrome'i</translation>
+<translation id="2869959624320573933">Logige Chromeʼi sisse</translation>
 <translation id="2919738076569633423">Chrome'i kasutamisel nõustute <ph name="BEGIN_LINK_TOS" />teenusetingimustega<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Kuna logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />, kustutatakse selles seadmes teie Chrome'i andmed. Google'i kontole jäävad teie andmed alles.</translation>
 <translation id="3167189358072330585">Teie konto ei tööta Google Chrome'is. Võtke ühendust domeeni administraatoriga või kasutage sisselogimiseks tavalist Google'i kontot.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome säästab aega, tuues teie kontod veebi. Saate kontosid lisada või eemaldada menüüs Seaded.</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3345341804167540816">Chrome'i kasutamine kõikjal</translation>
+<translation id="3455456143708465450">Chrome'i kasutamiseks parimal moel logige sisse oma Google'i kontoga</translation>
 <translation id="3522659714780527202">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, lülitage sisse sünkroonimine</translation>
 <translation id="3533694711092285624">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida, kui olete need salvestanud.</translation>
 <translation id="3706101708757577809">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Kui lubate Chrome'il teada teie asukohateavet, saadab Chrome selle saitidele, mille jaoks loa annate. Saidid võivad teilt küsida asukohateavet, kui neil on teile näidata kohalikku teavet, näiteks lähedalasuvaid poode või uudiseid.</translation>
 <translation id="6036420186814142909">Google Chrome'il on funktsioone, mis aitavad teil hallata oma Interneti-andmeid ja seda, kui kiiresti saate laadida veebilehti.
 <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Luba Chrome'i sisselogimine</translation>
 <translation id="6181930887571472871">Lülituge Chrome'ile</translation>
 <translation id="6238746320622508509">Laske Chrome'il oma inkognito vahelehed lukustada.</translation>
 <translation id="6573431926118603307">Siin kuvatakse teie teistes seadmetes Chrome'is avatud vahelehed.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Kas kustutada sellest seadmest Chrome'i andmed?</translation>
 <translation id="6822673484890854830">Chrome'il ei õnnestunud kõiki paroole kontrollida. Proovige hiljem uuesti.</translation>
 <translation id="6964931465519938134">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
+<translation id="7059914902409643750">Isikupärastage Chrome'i</translation>
 <translation id="7124339256045485976">Hoidke Chrome ajakohasena</translation>
 <translation id="7161390184744336561">Google Chrome on aegunud</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome on ajakohane</translation>
 <translation id="8022947259858476807">Kasutage linkide avamiseks, vidinatest otsimiseks ja muudes rakendustes paroolide automaatselt täitmiseks vaikimisi Chrome'i</translation>
 <translation id="8160472928944011082">Chrome'i ei saa värskendada</translation>
+<translation id="8263079278049777200">Logige sellele saidile, oma Google'i kontole ja Chrome'i sisse. Sünkroonimise saate hiljem sisse lülitada.</translation>
 <translation id="8357607116237445042">Valige, kas soovite oma Chrome'i andmed sellest seadmest kustutada või need säilitada</translation>
 <translation id="8370517070665726704">Autoriõigus <ph name="YEAR" /> Google LLC. Kõik õigused on kaitstud.</translation>
 <translation id="840168496893712993">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Proovige need desinstallida.</translation>
@@ -95,5 +102,6 @@
   3. Valige Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Turvalisus Google Chrome'iga</translation>
+<translation id="8772179140489533211">Kuvatakse viibad Chrome'i sisselogimiseks.</translation>
 <translation id="9112744793181547300">Kas määrata Chrome vaikebrauseriks?</translation>
 </translationbundle>

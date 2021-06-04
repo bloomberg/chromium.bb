@@ -22,7 +22,6 @@
 #include "components/autofill_assistant/browser/viewport_mode.h"
 #include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 
 class GURL;
@@ -131,12 +130,6 @@ class ActionDelegate {
   // will be ELEMENT_RESOLUTION_FAILED.
   virtual void FindAllElements(const Selector& selector,
                                ElementFinder::Callback callback) const = 0;
-
-  // Click or tap the |element|.
-  virtual void ClickOrTapElement(
-      ClickType click_type,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Have the UI enter the prompt mode and make the given actions available.
   //
@@ -397,7 +390,7 @@ class ActionDelegate {
   // Show |generic_ui| to the user and call |end_action_callback| when done.
   // Note that this callback needs to be tied to one or multiple interactions
   // specified in |generic_ui|, as otherwise it will never be called.
-  // |view_inflation_finished_callback| should be called immediately after
+  // |view_inflation_finished_callback| will be called immediately after
   // view inflation, with a status indicating whether view inflation succeeded.
   virtual void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
@@ -405,10 +398,23 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) = 0;
 
+  // Show |generic_ui| to the user.
+  // |view_inflation_finished_callback| will be called immediately after
+  // view inflation, with a status indicating whether view inflation succeeded.
+  virtual void SetPersistentGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) = 0;
+
   // Clears the generic UI. This will remove all corresponding views from the
   // view hierarchy and remove all corresponding interactions. Note that
   // |user_model| will persist and will not be affected by this call.
   virtual void ClearGenericUi() = 0;
+
+  // Clears the persistent generic UI. This will remove all corresponding views
+  // from the view hierarchy and remove all corresponding interactions. Note
+  // that |user_model| will persist and will not be affected by this call.
+  virtual void ClearPersistentGenericUi() = 0;
 
   // Sets the OverlayBehavior.
   virtual void SetOverlayBehavior(

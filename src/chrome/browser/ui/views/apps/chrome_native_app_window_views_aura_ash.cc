@@ -112,7 +112,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
                                                      widget);
   // Some windows need to be placed in special containers, for example to make
   // them visible at the login or lock screen.
-  base::Optional<int> container_id;
+  absl::optional<int> container_id;
   if (IsLoginFeedbackModalDialog(app_window()))
     container_id = ash::kShellWindowId_LockSystemModalContainer;
   else if (create_params.is_ime_window)
@@ -126,7 +126,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
       // This ensures calls to Activate() don't attempt to activate the window
       // locally, which can have side effects that should be avoided (such as
       // changing focus). See https://crbug.com/935274 for more details.
-      init_params->activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+      init_params->activatable = views::Widget::InitParams::Activatable::kNo;
     }
   }
 
@@ -226,10 +226,11 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
 
   if (is_fullscreen) {
     if (IsImmersiveModeEnabled()) {
-      // Restore windows which were previously in immersive fullscreen to
-      // maximized. Restoring the window to a different fullscreen type
-      // makes for a bad experience.
-      return ui::SHOW_STATE_MAXIMIZED;
+      // Restore windows which were previously in immersive fullscreen to their
+      // pre-fullscreen state. Restoring the window to a different fullscreen
+      // type makes for a bad experience.
+      return GetNativeWindow()->GetProperty(
+          aura::client::kPreFullscreenShowStateKey);
     }
     return ui::SHOW_STATE_FULLSCREEN;
   }

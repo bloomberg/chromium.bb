@@ -5,16 +5,12 @@
 #ifndef UI_GTK_GTK_UTIL_H_
 #define UI_GTK_GTK_UTIL_H_
 
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
-
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/color/color_id.h"
-#include "ui/gtk/gtk_buildflags.h"
 #include "ui/gtk/gtk_compat.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/window/frame_buttons.h"
@@ -33,11 +29,10 @@ class KeyEvent;
 
 namespace gtk {
 
-extern const char kGtkCSSMenu[];
-extern const char kGtkCSSMenuItem[];
-extern const char kGtkCSSMenuScrollbar[];
+const char* GtkCssMenu();
+const char* GtkCssMenuItem();
+const char* GtkCssMenuScrollbar();
 
-COMPONENT_EXPORT(GTK)
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
@@ -122,7 +117,6 @@ class GtkCssContext {
 
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
-#if BUILDFLAG(GTK_VERSION) < 4
 }  // namespace gtk
 
 // Template override cannot be in the gtk namespace.
@@ -150,12 +144,9 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
 }
 
 namespace gtk {
-#endif
 
 // Converts ui::NativeTheme::State to GtkStateFlags.
 GtkStateFlags StateToStateFlags(ui::NativeTheme::State state);
-
-SkColor GdkRgbaToSkColor(const GdkRGBA& color);
 
 // If |context| is nullptr, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
@@ -170,8 +161,6 @@ GtkCssContext AppendCssNodeToStyleContext(GtkCssContext context,
 // is "GtkButton.button.suggested-action:hover:active".  The caller
 // must g_object_unref() the returned context.
 GtkCssContext GetStyleContextFromCss(const std::string& css_selector);
-
-SkColor GetFgColorFromStyleContext(GtkStyleContext* context);
 
 SkColor GetBgColorFromStyleContext(GtkCssContext context);
 
@@ -249,7 +238,7 @@ float GetDeviceScaleFactor();
 GdkTexture* GetTextureFromRenderNode(GskRenderNode* node);
 
 // Gets the GTK theme color for a given `color_id`.
-base::Optional<SkColor> SkColorFromColorId(ui::ColorId color_id);
+absl::optional<SkColor> SkColorFromColorId(ui::ColorId color_id);
 
 }  // namespace gtk
 

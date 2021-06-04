@@ -514,7 +514,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
 
   NGInlineNodeForTest node = CreateInlineNode();
   MinMaxSizes sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(160, sizes.min_size);
+  EXPECT_EQ(10, sizes.min_size);
   EXPECT_EQ(170, sizes.max_size);
 }
 
@@ -598,8 +598,8 @@ struct StyleChangeData {
     kAll = kText | kParentAndAbove,
   };
   unsigned needs_collect_inlines;
-  base::Optional<bool> is_line_dirty;
-  base::Optional<bool> invalidate_ink_overflow;
+  absl::optional<bool> is_line_dirty;
+  absl::optional<bool> invalidate_ink_overflow;
 } style_change_data[] = {
     // Changing color, text-decoration, outline, etc. should not re-run
     // |CollectInlines()|.

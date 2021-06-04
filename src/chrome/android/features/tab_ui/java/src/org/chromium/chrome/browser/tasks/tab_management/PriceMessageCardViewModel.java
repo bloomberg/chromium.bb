@@ -42,6 +42,7 @@ public class PriceMessageCardViewModel {
         return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
                 .with(MessageCardViewProperties.MESSAGE_TYPE,
                         MessageService.MessageType.PRICE_MESSAGE)
+                .with(MessageCardViewProperties.MESSAGE_IDENTIFIER, data.getType())
                 .with(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, uiDismissActionProvider)
                 .with(MessageCardViewProperties.MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER,
                         data.getDismissActionProvider())
@@ -55,6 +56,7 @@ public class PriceMessageCardViewModel {
                 .with(MessageCardViewProperties.SHOULD_KEEP_AFTER_REVIEW, false)
                 .with(MessageCardViewProperties.IS_ICON_VISIBLE, isIconVisible)
                 .with(MessageCardViewProperties.IS_INCOGNITO, false)
+                .with(MessageCardViewProperties.SHOULD_SHOW_IN_INCOGNITO, false)
                 .with(MessageCardViewProperties.TITLE_TEXT, titleText)
                 .with(MessageCardViewProperties.PRICE_DROP, data.getPriceDrop())
                 .with(MessageCardViewProperties.ICON_PROVIDER,

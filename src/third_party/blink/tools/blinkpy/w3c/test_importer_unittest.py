@@ -22,6 +22,7 @@ from blinkpy.w3c.test_importer import TestImporter, ROTATIONS_URL, SHERIFF_EMAIL
 from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 from blinkpy.web_tests.port.android import PRODUCTS_TO_EXPECTATION_FILE_PATHS
+from blinkpy.web_tests.port.android import ANDROID_DISABLED_TESTS
 
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
 MANIFEST_INSTALL_CMD = [
@@ -36,6 +37,7 @@ class TestImporterTest(LoggingTestCase):
         host = MockHost()
         for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
             host.filesystem.write_text_file(path, '')
+        host.filesystem.write_text_file(ANDROID_DISABLED_TESTS, '')
         return host
 
     @staticmethod
@@ -108,6 +110,7 @@ class TestImporterTest(LoggingTestCase):
                 Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
             })
         importer.fetch_new_expectations_and_baselines = lambda: None
+        importer.fetch_wpt_override_expectations = lambda: None
         success = importer.update_expectations_for_cl()
         self.assertTrue(success)
         self.assertLog([
@@ -140,7 +143,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: If the rubber-stamper bot rejects the CL, you either need '
             'to modify the benign file patterns, or manually CR+1 and land the '
             'import yourself if it touches code files. See https://chromium.'
-            'googlesource.com/infra/infra/+/refs/heads/master/go/src/infra/'
+            'googlesource.com/infra/infra/+/refs/heads/main/go/src/infra/'
             'appengine/rubber-stamper/README.md\n',
             'INFO: Update completed.\n',
         ])
@@ -207,7 +210,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: If the rubber-stamper bot rejects the CL, you either need '
             'to modify the benign file patterns, or manually CR+1 and land the '
             'import yourself if it touches code files. See https://chromium.'
-            'googlesource.com/infra/infra/+/refs/heads/master/go/src/infra/'
+            'googlesource.com/infra/infra/+/refs/heads/main/go/src/infra/'
             'appengine/rubber-stamper/README.md\n',
             'ERROR: Cannot submit CL; aborting.\n',
         ])
@@ -296,7 +299,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: If the rubber-stamper bot rejects the CL, you either need '
             'to modify the benign file patterns, or manually CR+1 and land the '
             'import yourself if it touches code files. See https://chromium.'
-            'googlesource.com/infra/infra/+/refs/heads/master/go/src/infra/'
+            'googlesource.com/infra/infra/+/refs/heads/main/go/src/infra/'
             'appengine/rubber-stamper/README.md\n',
             'ERROR: Cannot submit CL; aborting.\n',
             'ERROR: CL is already merged; treating as success.\n',
@@ -422,7 +425,7 @@ class TestImporterTest(LoggingTestCase):
             'a few new failures, please fix the failures by adding new\n'
             'lines to TestExpectations rather than reverting. See:\n'
             'https://chromium.googlesource.com'
-            '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
+            '/chromium/src/+/main/docs/testing/web_platform_tests.md\n\n'
             'NOAUTOREVERT=true\n'
             'No-Export: true\n'
             'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'

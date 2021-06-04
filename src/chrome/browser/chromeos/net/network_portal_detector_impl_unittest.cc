@@ -24,10 +24,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
@@ -87,6 +89,7 @@ class NetworkPortalDetectorImplTest
         base::WrapUnique(user_manager));
 
     DBusThreadManager::Initialize();
+    ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     SetupNetworkHandler();
 
     ASSERT_TRUE(test_profile_manager_.SetUp());
@@ -102,8 +105,8 @@ class NetworkPortalDetectorImplTest
         test_account_id.GetUserEmail());
     EXPECT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 
-    network_portal_detector_.reset(
-        new NetworkPortalDetectorImpl(test_loader_factory()));
+    network_portal_detector_ =
+        std::make_unique<NetworkPortalDetectorImpl>(test_loader_factory());
     network_portal_detector_->Enable(false);
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
@@ -121,7 +124,8 @@ class NetworkPortalDetectorImplTest
   void TearDown() override {
     network_portal_detector_.reset();
     profile_ = nullptr;
-    NetworkHandler::Shutdown();
+    network_handler_test_helper_.reset();
+    ConciergeClient::Shutdown();
     DBusThreadManager::Shutdown();
     PortalDetectorStrategy::reset_fields_for_testing();
   }
@@ -233,7 +237,7 @@ class NetworkPortalDetectorImplTest
   }
 
   void SetBehindPortal(const std::string& service_path) {
-    DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+    ShillServiceClient::Get()->SetProperty(
         dbus::ObjectPath(service_path), shill::kStateProperty,
         base::Value(shill::kStateNoConnectivity), base::DoNothing(),
         base::BindOnce(&ErrorCallbackFunction));
@@ -248,14 +252,14 @@ class NetworkPortalDetectorImplTest
   }
 
   void SetConnected(const std::string& service_path) {
-    DBusThreadManager::Get()->GetShillServiceClient()->Connect(
-        dbus::ObjectPath(service_path), base::DoNothing(),
-        base::BindOnce(&ErrorCallbackFunction));
+    ShillServiceClient::Get()->Connect(dbus::ObjectPath(service_path),
+                                       base::DoNothing(),
+                                       base::BindOnce(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 
   void SetDisconnected(const std::string& service_path) {
-    DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
+    ShillServiceClient::Get()->Disconnect(
         dbus::ObjectPath(service_path), base::DoNothing(),
         base::BindOnce(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
@@ -263,20 +267,15 @@ class NetworkPortalDetectorImplTest
 
  private:
   void AddService(const std::string& network_id, const std::string& type) {
-    DBusThreadManager::Get()
-        ->GetShillServiceClient()
-        ->GetTestInterface()
-        ->AddService(network_id /* service_path */, network_id /* guid */,
-                     network_id /* name */, type, shill::kStateIdle,
-                     true /* add_to_visible */);
+    network_handler_test_helper_->service_test()->AddService(
+        network_id /* service_path */, network_id /* guid */,
+        network_id /* name */, type, shill::kStateIdle,
+        true /* add_to_visible */);
   }
 
   void SetupDefaultShillState() {
     base::RunLoop().RunUntilIdle();
-    DBusThreadManager::Get()
-        ->GetShillServiceClient()
-        ->GetTestInterface()
-        ->ClearServices();
+    network_handler_test_helper_->service_test()->ClearServices();
     AddService(kStubEthernet, shill::kTypeEthernet);
     AddService(kStubWireless1, shill::kTypeWifi);
     AddService(kStubWireless2, shill::kTypeWifi);
@@ -284,11 +283,12 @@ class NetworkPortalDetectorImplTest
   }
 
   void SetupNetworkHandler() {
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     SetupDefaultShillState();
-    NetworkHandler::Initialize();
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   Profile* profile_ = nullptr;
   std::unique_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
   std::unique_ptr<base::HistogramSamples> original_samples_;

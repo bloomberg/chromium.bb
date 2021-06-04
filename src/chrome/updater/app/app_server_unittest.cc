@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/optional.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/updater/constants.h"
@@ -22,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::Invoke;
 using testing::Return;
@@ -57,7 +57,7 @@ class AppServerTest : public AppServer {
 };
 
 void ClearPrefs() {
-  for (const base::Optional<base::FilePath>& path :
+  for (const absl::optional<base::FilePath>& path :
        {GetBaseDirectory(), GetVersionedDirectory()}) {
     ASSERT_TRUE(path);
     ASSERT_TRUE(
@@ -138,7 +138,7 @@ TEST_F(AppServerTestCase, SelfPromote) {
   }
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   EXPECT_FALSE(global_prefs->GetSwapping());
-  EXPECT_EQ(global_prefs->GetActiveVersion(), UPDATER_VERSION_STRING);
+  EXPECT_EQ(global_prefs->GetActiveVersion(), kUpdaterVersion);
 }
 
 TEST_F(AppServerTestCase, InstallAutoPromotes) {
@@ -155,7 +155,7 @@ TEST_F(AppServerTestCase, InstallAutoPromotes) {
   }
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   EXPECT_FALSE(global_prefs->GetSwapping());
-  EXPECT_EQ(global_prefs->GetActiveVersion(), UPDATER_VERSION_STRING);
+  EXPECT_EQ(global_prefs->GetActiveVersion(), kUpdaterVersion);
 }
 
 TEST_F(AppServerTestCase, SelfPromoteFails) {
@@ -181,7 +181,7 @@ TEST_F(AppServerTestCase, SelfPromoteFails) {
 TEST_F(AppServerTestCase, ActiveDutyAlready) {
   {
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
+    global_prefs->SetActiveVersion(kUpdaterVersion);
     PrefsCommitPendingWrites(global_prefs->GetPrefService());
     std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
     local_prefs->SetQualified(true);
@@ -198,13 +198,13 @@ TEST_F(AppServerTestCase, ActiveDutyAlready) {
   }
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   EXPECT_FALSE(global_prefs->GetSwapping());
-  EXPECT_EQ(global_prefs->GetActiveVersion(), UPDATER_VERSION_STRING);
+  EXPECT_EQ(global_prefs->GetActiveVersion(), kUpdaterVersion);
 }
 
 TEST_F(AppServerTestCase, StateDirty) {
   {
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
+    global_prefs->SetActiveVersion(kUpdaterVersion);
     global_prefs->SetSwapping(true);
     PrefsCommitPendingWrites(global_prefs->GetPrefService());
     std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
@@ -223,13 +223,13 @@ TEST_F(AppServerTestCase, StateDirty) {
   }
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   EXPECT_FALSE(global_prefs->GetSwapping());
-  EXPECT_EQ(global_prefs->GetActiveVersion(), UPDATER_VERSION_STRING);
+  EXPECT_EQ(global_prefs->GetActiveVersion(), kUpdaterVersion);
 }
 
 TEST_F(AppServerTestCase, StateDirtySwapFails) {
   {
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
+    global_prefs->SetActiveVersion(kUpdaterVersion);
     global_prefs->SetSwapping(true);
     PrefsCommitPendingWrites(global_prefs->GetPrefService());
     std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
@@ -247,7 +247,7 @@ TEST_F(AppServerTestCase, StateDirtySwapFails) {
   }
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   EXPECT_TRUE(global_prefs->GetSwapping());
-  EXPECT_EQ(global_prefs->GetActiveVersion(), UPDATER_VERSION_STRING);
+  EXPECT_EQ(global_prefs->GetActiveVersion(), kUpdaterVersion);
 }
 
 }  // namespace updater

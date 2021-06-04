@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chromeos/dbus/hermes/hermes_clients.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/media_session_service.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
@@ -113,14 +115,14 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
-void ShellBrowserMainParts::PreMainMessageLoopStart() {
+void ShellBrowserMainParts::PreCreateMainMessageLoop() {
 #if defined(USE_AURA) && defined(USE_X11)
   if (!features::IsUsingOzonePlatform())
     ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 
-void ShellBrowserMainParts::PostMainMessageLoopStart() {
+void ShellBrowserMainParts::PostCreateMainMessageLoop() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Perform initialization of D-Bus objects here rather than in the below
   // helper classes so those classes' tests can initialize stub versions of the
@@ -128,10 +130,12 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize();
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
   if (bus) {
+    chromeos::hermes_clients::Initialize(bus);
     bluez::BluezDBusManager::Initialize(bus);
     chromeos::CrasAudioClient::Initialize(bus);
     chromeos::PowerManagerClient::Initialize(bus);
   } else {
+    chromeos::hermes_clients::InitializeFakes();
     bluez::BluezDBusManager::InitializeFake();
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
@@ -140,9 +144,9 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::disks::DiskMountManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
-  network_controller_.reset(new ShellNetworkController(
+  network_controller_ = std::make_unique<ShellNetworkController>(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          switches::kAppShellPreferredNetwork)));
+          switches::kAppShellPreferredNetwork));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppShellAllowRoaming)) {
@@ -207,7 +211,7 @@ int ShellBrowserMainParts::PreMainMessageLoopRun() {
       std::move(media_controller_manager),
       base::MakeRefCounted<ash::AudioDevicesPrefHandlerImpl>(
           local_state_.get()));
-  audio_controller_.reset(new ShellAudioController());
+  audio_controller_ = std::make_unique<ShellAudioController>();
 #endif
 
   // Create BrowserContextKeyedServices now that we have an
@@ -238,7 +242,10 @@ int ShellBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<ShellNaClBrowserDelegate>(browser_context_.get()));
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
-  task_tracker_.PostTask(content::GetIOThreadTaskRunner({}).get(), FROM_HERE,
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_tracker_.PostTask(task_runner.get(), FROM_HERE,
                          base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif
 

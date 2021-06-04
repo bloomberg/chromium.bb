@@ -11,18 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "printing/mojom/print.mojom.h"
-#include "printing/print_job_constants.h"
-#include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include <stdint.h>
-#endif
 
 namespace base {
 class DictionaryValue;
@@ -33,7 +28,7 @@ namespace printing {
 
 using PrinterBasicInfoOptions = std::map<std::string, std::string>;
 
-struct PRINTING_EXPORT PrinterBasicInfo {
+struct COMPONENT_EXPORT(PRINT_BACKEND) PrinterBasicInfo {
   PrinterBasicInfo();
   PrinterBasicInfo(const std::string& printer_name,
                    const std::string& display_name,
@@ -61,9 +56,9 @@ struct PRINTING_EXPORT PrinterBasicInfo {
 
 using PrinterList = std::vector<PrinterBasicInfo>;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 
-struct PRINTING_EXPORT AdvancedCapabilityValue {
+struct COMPONENT_EXPORT(PRINT_BACKEND) AdvancedCapabilityValue {
   AdvancedCapabilityValue();
   AdvancedCapabilityValue(const std::string& name,
                           const std::string& display_name);
@@ -79,10 +74,11 @@ struct PRINTING_EXPORT AdvancedCapabilityValue {
   std::string display_name;
 };
 
-struct PRINTING_EXPORT AdvancedCapability {
+struct COMPONENT_EXPORT(PRINT_BACKEND) AdvancedCapability {
   enum class Type : uint8_t { kBoolean, kFloat, kInteger, kString };
 
   AdvancedCapability();
+  AdvancedCapability(const std::string& name, AdvancedCapability::Type type);
   AdvancedCapability(const std::string& name,
                      const std::string& display_name,
                      AdvancedCapability::Type type,
@@ -111,9 +107,9 @@ struct PRINTING_EXPORT AdvancedCapability {
 
 using AdvancedCapabilities = std::vector<AdvancedCapability>;
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
-struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
+struct COMPONENT_EXPORT(PRINT_BACKEND) PrinterSemanticCapsAndDefaults {
   PrinterSemanticCapsAndDefaults();
   PrinterSemanticCapsAndDefaults(const PrinterSemanticCapsAndDefaults& other);
   ~PrinterSemanticCapsAndDefaults();
@@ -121,9 +117,9 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   bool collate_capable = false;
   bool collate_default = false;
 
-  // If |copies_max| > 1, copies are supported.
-  // If |copies_max| = 1, copies are not supported.
-  // |copies_max| should never be < 1.
+  // If `copies_max` > 1, copies are supported.
+  // If `copies_max` = 1, copies are not supported.
+  // `copies_max` should never be < 1.
   int32_t copies_max = 1;
 
   std::vector<mojom::DuplexMode> duplex_modes;
@@ -134,7 +130,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   mojom::ColorModel color_model = mojom::ColorModel::kUnknownColorModel;
   mojom::ColorModel bw_model = mojom::ColorModel::kUnknownColorModel;
 
-  struct PRINTING_EXPORT Paper {
+  struct COMPONENT_EXPORT(PRINT_BACKEND) Paper {
     std::string display_name;
     std::string vendor_id;
     gfx::Size size_um;
@@ -149,13 +145,13 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   std::vector<gfx::Size> dpis;
   gfx::Size default_dpi;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   bool pin_supported = false;
   AdvancedCapabilities advanced_capabilities;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 };
 
-struct PRINTING_EXPORT PrinterCapsAndDefaults {
+struct COMPONENT_EXPORT(PRINT_BACKEND) PrinterCapsAndDefaults {
   PrinterCapsAndDefaults();
   PrinterCapsAndDefaults(const PrinterCapsAndDefaults& other);
   ~PrinterCapsAndDefaults();
@@ -173,32 +169,39 @@ struct PRINTING_EXPORT PrinterCapsAndDefaults {
 // print system specific. For example, CUPS is available on both Linux and Mac,
 // but not available on ChromeOS, etc. This design allows us to add more
 // functionality on some platforms, while reusing core (CUPS) functions.
-class PRINTING_EXPORT PrintBackend
+class COMPONENT_EXPORT(PRINT_BACKEND) PrintBackend
     : public base::RefCountedThreadSafe<PrintBackend> {
  public:
-  // Enumerates the list of installed local and network printers.
-  virtual bool EnumeratePrinters(PrinterList* printer_list) = 0;
+  // Enumerates the list of installed local and network printers.  It will
+  // return success when the available installed printers have been enumerated
+  // into `printer_list`.  Note that `printer_list` must not be null and also
+  // should be empty prior to this call.  If there are no printers installed
+  // then it will still return success, and `printer_list` remains empty.  The
+  // result code will return one of the error result codes when there is a
+  // failure in generating the list.
+  virtual mojom::ResultCode EnumeratePrinters(PrinterList* printer_list) = 0;
 
   // Gets the default printer name. Empty string if no default printer.
   virtual std::string GetDefaultPrinterName() = 0;
 
   // Gets the basic printer info for a specific printer. Implementations must
-  // check |printer_name| validity in the same way as IsValidPrinter().
-  virtual bool GetPrinterBasicInfo(const std::string& printer_name,
-                                   PrinterBasicInfo* printer_info) = 0;
+  // check `printer_name` validity in the same way as IsValidPrinter().
+  virtual mojom::ResultCode GetPrinterBasicInfo(
+      const std::string& printer_name,
+      PrinterBasicInfo* printer_info) = 0;
 
   // Gets the semantic capabilities and defaults for a specific printer.
   // This is usually a lighter implementation than GetPrinterCapsAndDefaults().
-  // Implementations must check |printer_name| validity in the same way as
+  // Implementations must check `printer_name` validity in the same way as
   // IsValidPrinter().
   // NOTE: on some old platforms (WinXP without XPS pack)
   // GetPrinterCapsAndDefaults() will fail, while this function will succeed.
-  virtual bool GetPrinterSemanticCapsAndDefaults(
+  virtual mojom::ResultCode GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) = 0;
 
   // Gets the capabilities and defaults for a specific printer.
-  virtual bool GetPrinterCapsAndDefaults(
+  virtual mojom::ResultCode GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) = 0;
 

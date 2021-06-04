@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -94,9 +95,9 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
   }
 
   ProcessLock ProcessLockFromUrl(const std::string& url) {
-    return ProcessLock(
-        SiteInfo(GURL(url), GURL(url), false /* is_origin_keyed */,
-                 CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated()));
+    return ProcessLock(SiteInfo(GURL(url), GURL(url),
+                                false /* is_origin_keyed */,
+                                WebExposedIsolationInfo::CreateNonIsolated()));
   }
 
   WebContentsImpl* web_contents() const {
@@ -112,9 +113,9 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
   // is_origin_keyed to true.
   ProcessLock GetStrictProcessLock(const GURL& url) {
     GURL origin_url = url::Origin::Create(url).GetURL();
-    return ProcessLock(
-        SiteInfo(origin_url, origin_url, false /* is_origin_keyed */,
-                 CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated()));
+    return ProcessLock(SiteInfo(origin_url, origin_url,
+                                false /* is_origin_keyed */,
+                                WebExposedIsolationInfo::CreateNonIsolated()));
   }
 
  private:
@@ -141,13 +142,13 @@ class IsolatedOriginTest : public IsolatedOriginTestBase {
   }
 
   void InjectAndClickLinkTo(GURL url) {
-    EXPECT_TRUE(ExecuteScript(web_contents(),
-                              "var link = document.createElement('a');"
-                              "link.href = '" +
-                                  url.spec() +
-                                  "';"
-                                  "document.body.appendChild(link);"
-                                  "link.click();"));
+    EXPECT_TRUE(ExecJs(web_contents(),
+                       "var link = document.createElement('a');"
+                       "link.href = '" +
+                           url.spec() +
+                           "';"
+                           "document.body.appendChild(link);"
+                           "link.click();"));
   }
 
  private:
@@ -237,7 +238,7 @@ class OriginIsolationOptInHeaderTest : public IsolatedOriginTestBase {
   net::EmbeddedTestServer https_server_;
   base::test::ScopedFeatureList feature_list_;
 
-  base::Optional<std::string> header_;
+  absl::optional<std::string> header_;
   std::queue<std::string> content_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginIsolationOptInHeaderTest);
@@ -481,9 +482,9 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   GURL origin_url = url::Origin::Create(isolated_suborigin_url).GetURL();
-  auto expected_isolated_suborigin_lock = ProcessLock(
-      SiteInfo(origin_url, origin_url, true /* is_origin_keyed */,
-               CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated()));
+  auto expected_isolated_suborigin_lock =
+      ProcessLock(SiteInfo(origin_url, origin_url, true /* is_origin_keyed */,
+                           WebExposedIsolationInfo::CreateNonIsolated()));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
 
@@ -678,6 +679,7 @@ IN_PROC_BROWSER_TEST_F(SameProcessNoWebSecurityOriginIsolationOptInHeaderTest,
   // Web security is disabled so everything should be same-origin and
   // accessible across browsing contexts.
   EXPECT_EQ(false, EvalJs(child_frame_node, "window.originAgentCluster"));
+
   std::string parent_body_content =
       EvalJs(root, "document.body.textContent").ExtractString();
   // Make sure that the child frame doesn't think it's isolated.
@@ -734,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   {
     // Navigate the child to an isolated origin.
     TestFrameNavigationObserver observer(child);
-    EXPECT_TRUE(ExecuteScript(
+    EXPECT_TRUE(ExecJs(
         child, "location.href = '" + isolated_sub_origin_url.spec() + "';"));
     observer.Wait();
   }
@@ -746,9 +748,8 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   {
     // Navigate the child to a non-isolated origin.
     TestFrameNavigationObserver observer(child);
-    EXPECT_TRUE(ExecuteScript(
-        child,
-        "location.href = '" + non_isolated_sub_origin_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(child, "location.href = '" +
+                                  non_isolated_sub_origin_url.spec() + "';"));
     observer.Wait();
   }
   EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
@@ -1139,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
 
   // Set cookie on |popup_child1| to make sure we don't get a renderer kill in
   // the process with the opener.
-  EXPECT_TRUE(ExecuteScript(popup_child1, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(popup_child1, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(popup_child1, "document.cookie"));
 
   // Verify state of various SiteIstances, BrowsingInstances and processes.
@@ -1232,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
 
   // Set cookie on |popup_child1| to make sure we don't get a renderer kill in
   // the process with the opener.
-  EXPECT_TRUE(ExecuteScript(popup_child1, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(popup_child1, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(popup_child1, "document.cookie"));
 
   // Verify state of various SiteIstances, BrowsingInstances and processes.
@@ -1382,7 +1383,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
           // override them.
           URLLoaderInterceptor::WriteResponse(
               "content/test/data/isolated_base_origin_with_subframe.html",
-              params->client.get(), &headers, base::Optional<net::SSLInfo>());
+              params->client.get(), &headers, absl::optional<net::SSLInfo>());
           return true;
         }
         if (params->url_request.url.host() == "a.foo.com" ||
@@ -1580,8 +1581,8 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, FrameTreeTest) {
   // Have tab1 call window.open() to create blank tab2.
   FrameTreeNode* tab1_root = web_contents()->GetFrameTree()->root();
   ShellAddedObserver new_shell_observer;
-  ASSERT_TRUE(ExecuteScript(tab1_root->current_frame_host(),
-                            "window.w = window.open()"));
+  ASSERT_TRUE(
+      ExecJs(tab1_root->current_frame_host(), "window.w = window.open()"));
   Shell* tab2_shell = new_shell_observer.GetShell();
 
   // Create iframe in tab2.
@@ -1589,9 +1590,9 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, FrameTreeTest) {
       static_cast<WebContentsImpl*>(tab2_shell->web_contents())
           ->GetFrameTree()
           ->root();
-  ASSERT_TRUE(ExecuteScript(tab2_root->current_frame_host(),
-                            "var iframe = document.createElement('iframe');"
-                            "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(tab2_root->current_frame_host(),
+                     "var iframe = document.createElement('iframe');"
+                     "document.body.appendChild(iframe);"));
   EXPECT_EQ(1U, tab2_root->child_count());
   FrameTreeNode* tab2_child = tab2_root->child_at(0);
   GURL isolated_origin_url(
@@ -1642,9 +1643,9 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, FrameTreeTest) {
   // Now, create a second frame in tab2 and navigate it to
   // |isolated_origin_url|. Even though isolation is requested, it should not
   // be isolated.
-  ASSERT_TRUE(ExecuteScript(tab2_root->current_frame_host(),
-                            "var iframe = document.createElement('iframe');"
-                            "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(tab2_root->current_frame_host(),
+                     "var iframe = document.createElement('iframe');"
+                     "document.body.appendChild(iframe);"));
   EXPECT_EQ(2U, tab2_root->child_count());
   FrameTreeNode* tab2_child2 = tab2_root->child_at(1);
   NavigateFrameToURL(tab2_child2, isolated_origin_url);
@@ -1652,14 +1653,10 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, FrameTreeTest) {
             tab2_child2->current_frame_host()->GetSiteInstance());
 
   // Check that the two child frames can script each other.
-  EXPECT_TRUE(ExecuteScript(tab2_child2, R"(
+  EXPECT_TRUE(ExecJs(tab2_child2, R"(
       parent.frames[0].cross_frame_property_test = 'hello from t2c2'; )"));
-  std::string message;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      tab2_child,
-      "domAutomationController.send(window.cross_frame_property_test);",
-      &message));
-  EXPECT_EQ("hello from t2c2", message);
+  EXPECT_EQ("hello from t2c2",
+            EvalJs(tab2_child, "window.cross_frame_property_test;"));
 }
 
 // Similar to FrameTreeTest, but we stop the navigation that's not requesting
@@ -2155,8 +2152,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Subframe) {
   GURL non_isolated_url(
       embedded_test_server()->GetURL("www.foo.com", "/title3.html"));
   TestFrameNavigationObserver observer(grandchild);
-  EXPECT_TRUE(ExecuteScript(
-      grandchild, "location.href = '" + non_isolated_url.spec() + "';"));
+  EXPECT_TRUE(
+      ExecJs(grandchild, "location.href = '" + non_isolated_url.spec() + "';"));
   observer.Wait();
   EXPECT_EQ(non_isolated_url, grandchild->current_url());
 
@@ -2328,7 +2325,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 
   // Open a blank popup from the iframe.
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(child, "window.w = window.open();"));
+  EXPECT_TRUE(ExecJs(child, "window.w = window.open();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Have the opener iframe navigate the popup to an isolated origin.
@@ -2336,7 +2333,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
   {
     TestNavigationManager manager(new_shell->web_contents(), isolated_url);
-    EXPECT_TRUE(ExecuteScript(
+    EXPECT_TRUE(ExecJs(
         child, "window.w.location.href = '" + isolated_url.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
@@ -2346,7 +2343,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   {
     TestNavigationManager manager(new_shell->web_contents(), bar_url2);
     EXPECT_TRUE(
-        ExecuteScript(new_shell, "location.href = '" + bar_url2.spec() + "';"));
+        ExecJs(new_shell, "location.href = '" + bar_url2.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
 
@@ -2356,11 +2353,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
             child->current_frame_host()->GetSiteInstance());
 
   // Check that the opener iframe can script the popup.
-  std::string popup_location;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      child, "domAutomationController.send(window.w.location.href);",
-      &popup_location));
-  EXPECT_EQ(bar_url2.spec(), popup_location);
+  EXPECT_EQ(bar_url2.spec(), EvalJs(child, "window.w.location.href;"));
 }
 
 // Check that when a non-isolated-origin page opens a popup, navigates it
@@ -2387,7 +2380,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 
   // Open a blank popup.
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(root, "window.w = window.open();"));
+  EXPECT_TRUE(ExecJs(root, "window.w = window.open();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Have the opener navigate the popup to an isolated origin.
@@ -2395,7 +2388,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
   {
     TestNavigationManager manager(new_shell->web_contents(), isolated_url);
-    EXPECT_TRUE(ExecuteScript(
+    EXPECT_TRUE(ExecJs(
         root, "window.w.location.href = '" + isolated_url.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
@@ -2404,8 +2397,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
   {
     TestNavigationManager manager(new_shell->web_contents(), bar_url);
-    EXPECT_TRUE(
-        ExecuteScript(new_shell, "location.href = '" + bar_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(new_shell, "location.href = '" + bar_url.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
 
@@ -2431,8 +2423,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   // Simulate the isolated origin in the popup navigating to www.foo.com.
   {
     TestNavigationManager manager(new_shell->web_contents(), foo_url);
-    EXPECT_TRUE(
-        ExecuteScript(new_shell, "location.href = '" + foo_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(new_shell, "location.href = '" + foo_url.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
 
@@ -2441,11 +2432,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
             root->current_frame_host()->GetSiteInstance());
 
   // Check that the popup can script the opener.
-  std::string opener_location;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      new_shell, "domAutomationController.send(window.opener.location.href);",
-      &opener_location));
-  EXPECT_EQ(foo_url.spec(), opener_location);
+  EXPECT_EQ(foo_url.spec(), EvalJs(new_shell, "window.opener.location.href;"));
 }
 
 // Check that with an ABA hierarchy, where B is an isolated origin, the root
@@ -2463,8 +2450,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   GURL bar_url(
       embedded_test_server()->GetURL("bar.com", "/page_with_iframe.html"));
   TestNavigationObserver observer(web_contents());
-  EXPECT_TRUE(
-      ExecuteScript(shell(), "location.href = '" + bar_url.spec() + "';"));
+  EXPECT_TRUE(ExecJs(shell(), "location.href = '" + bar_url.spec() + "';"));
   observer.Wait();
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -2491,11 +2477,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
             grandchild->current_frame_host()->GetSiteInstance());
 
   // Check that the root frame can script the same-site grandchild frame.
-  std::string location;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      root, "domAutomationController.send(frames[0][0].location.href);",
-      &location));
-  EXPECT_EQ(bar_url.spec(), location);
+  EXPECT_EQ(bar_url.spec(), EvalJs(root, "frames[0][0].location.href;"));
 }
 
 // Check that isolated origins can access cookies.  This requires cookie checks
@@ -2505,13 +2487,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Cookies) {
       embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
-  EXPECT_TRUE(ExecuteScript(web_contents(), "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(web_contents(), "document.cookie = 'foo=bar';"));
 
-  std::string cookie;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents(), "window.domAutomationController.send(document.cookie);",
-      &cookie));
-  EXPECT_EQ("foo=bar", cookie);
+  EXPECT_EQ("foo=bar", EvalJs(web_contents(), "document.cookie;"));
 }
 
 // Check that isolated origins won't be placed into processes for other sites
@@ -2868,13 +2846,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // Manipulating cookies from the main frame should not result in a renderer
   // kill.
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
-                            "document.cookie = 'foo=bar';"));
-  std::string cookie;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      root->current_frame_host(),
-      "window.domAutomationController.send(document.cookie);", &cookie));
-  EXPECT_EQ("foo=bar", cookie);
+  EXPECT_TRUE(
+      ExecJs(root->current_frame_host(), "document.cookie = 'foo=bar';"));
+  EXPECT_EQ("foo=bar", EvalJs(root->current_frame_host(), "document.cookie;"));
 }
 
 // Similar to the test above, but for a ServiceWorker.  When a process has a
@@ -2917,7 +2891,7 @@ IN_PROC_BROWSER_TEST_F(
   scoped_refptr<SiteInstanceImpl> sw_site_instance =
       SiteInstanceImpl::CreateForServiceWorker(
           web_contents()->GetBrowserContext(), hung_isolated_url,
-          CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated(),
+          WebExposedIsolationInfo::CreateNonIsolated(),
           /* can_reuse_process= */ true);
   RenderProcessHost* sw_host = sw_site_instance->GetProcess();
   EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetProcess(), sw_host);
@@ -2958,9 +2932,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
   // Now try navigating the main frame (renderer-initiated) to the isolated
   // origin's subdomain.  This should not swap processes.
   TestNavigationObserver observer(web_contents());
-  EXPECT_TRUE(
-      ExecuteScript(web_contents(),
-                    "location.href = '" + isolated_subdomain_url.spec() + "'"));
+  EXPECT_TRUE(ExecJs(web_contents(), "location.href = '" +
+                                         isolated_subdomain_url.spec() + "'"));
   observer.Wait();
   if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
     // If same-site ProactivelySwapBrowsingInstance is enabled, they should be
@@ -3067,8 +3040,8 @@ IN_PROC_BROWSER_TEST_F(
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
-                              "localStorage.length;"));
+  ignore_result(
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3106,8 +3079,8 @@ IN_PROC_BROWSER_TEST_F(
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
-                              "localStorage.length;"));
+  ignore_result(
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3131,8 +3104,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
-                              "localStorage.length;"));
+  ignore_result(
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3286,8 +3259,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
   {
     TestFrameNavigationObserver observer(child1);
     NavigationHandleObserver handle_observer(web_contents(), isolated_url);
-    EXPECT_TRUE(ExecuteScript(
-        child1, "location.href = '" + isolated_url.spec() + "';"));
+    EXPECT_TRUE(
+        ExecJs(child1, "location.href = '" + isolated_url.spec() + "';"));
     observer.Wait();
     EXPECT_EQ(child1->current_url(), isolated_url);
     EXPECT_TRUE(handle_observer.is_error());
@@ -3310,7 +3283,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
     TestFrameNavigationObserver observer(child2);
     NavigationHandleObserver handle_observer(web_contents(), regular_url);
     EXPECT_TRUE(
-        ExecuteScript(child2, "location.href = '" + regular_url.spec() + "';"));
+        ExecJs(child2, "location.href = '" + regular_url.spec() + "';"));
     observer.Wait();
     EXPECT_EQ(child2->current_url(), regular_url);
     EXPECT_TRUE(handle_observer.is_error());
@@ -3385,8 +3358,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, AIsolatedCA) {
   EXPECT_EQ(a->GetProcess()->GetID(), d->GetProcess()->GetID());
 
   // Verify that same-origin a and d frames can script each other.
-  EXPECT_TRUE(ExecuteScript(a, "window.name = 'a';"));
-  EXPECT_TRUE(ExecuteScript(d, R"(
+  EXPECT_TRUE(ExecJs(a, "window.name = 'a';"));
+  EXPECT_TRUE(ExecJs(d, R"(
       a = window.open('', 'a');
       a.cross_frame_property_test = 'hello from d'; )"));
   EXPECT_EQ("hello from d",
@@ -3459,11 +3432,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, NavigateToBlobURL) {
 
   // Now navigate the child frame to a Blob URL.
   TestNavigationObserver load_observer(shell()->web_contents());
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents()->GetMainFrame(),
-                            "const b = new Blob(['foo']);\n"
-                            "const u = URL.createObjectURL(b);\n"
-                            "frames[0].location = u;\n"
-                            "URL.revokeObjectURL(u);"));
+  EXPECT_TRUE(ExecJs(shell()->web_contents()->GetMainFrame(),
+                     "const b = new Blob(['foo']);\n"
+                     "const u = URL.createObjectURL(b);\n"
+                     "frames[0].location = u;\n"
+                     "URL.revokeObjectURL(u);"));
   load_observer.Wait();
   EXPECT_TRUE(base::StartsWith(child->current_url().spec(),
                                "blob:http://www.foo.com",
@@ -3585,15 +3558,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNoFlagOverrideTest,
   EXPECT_EQ(c1->GetProcess()->GetID(), c2->GetProcess()->GetID());
 
   // Verify that same-origin c1 and c2 frames can script each other.
-  EXPECT_TRUE(ExecuteScript(c1, "window.name = 'c1';"));
-  EXPECT_TRUE(ExecuteScript(c2, R"(
+  EXPECT_TRUE(ExecJs(c1, "window.name = 'c1';"));
+  EXPECT_TRUE(ExecJs(c2, R"(
       c1 = window.open('', 'c1');
       c1.cross_frame_property_test = 'hello from c2'; )"));
-  std::string actual_property_value;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      c1, "domAutomationController.send(window.cross_frame_property_test);",
-      &actual_property_value));
-  EXPECT_EQ("hello from c2", actual_property_value);
+  EXPECT_EQ("hello from c2", EvalJs(c1, "window.cross_frame_property_test;"));
 
   // The test assertions below are not strictly necessary - they just document
   // the current behavior and might be tweaked if needed.  In particular,
@@ -3878,9 +3847,9 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, OldProcessCanAccessCookies) {
 
   // Make sure both old and new foo.com processes can access cookies without
   // renderer kills.
-  EXPECT_TRUE(ExecuteScript(root, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(root, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(root, "document.cookie"));
-  EXPECT_TRUE(ExecuteScript(second_root, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(second_root, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(second_root, "document.cookie"));
 
   // Navigate to sub.foo.com in |second_shell|, staying in same
@@ -3897,7 +3866,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, OldProcessCanAccessCookies) {
 
   // Make sure the process locked to foo.com, which currently has sub.foo.com
   // committed in it, can still access sub.foo.com cookies.
-  EXPECT_TRUE(ExecuteScript(second_root, "document.cookie = 'foo=baz';"));
+  EXPECT_TRUE(ExecJs(second_root, "document.cookie = 'foo=baz';"));
   EXPECT_EQ("foo=baz", EvalJs(second_root, "document.cookie"));
 
   // Now, navigate to sub.foo.com in a new BrowsingInstance.  This should go
@@ -3917,7 +3886,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, OldProcessCanAccessCookies) {
                 second_root->current_frame_host()->GetProcess()->GetID()));
 
   // Make sure that process can also access sub.foo.com cookies.
-  EXPECT_TRUE(ExecuteScript(second_root, "document.cookie = 'foo=qux';"));
+  EXPECT_TRUE(ExecJs(second_root, "document.cookie = 'foo=qux';"));
   EXPECT_EQ("foo=qux", EvalJs(second_root, "document.cookie"));
 }
 
@@ -4052,8 +4021,8 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
 
   // In particular, make sure the bar.com iframe in the old foo.com process can
   // still access bar.com cookies.
-  EXPECT_TRUE(ExecuteScript(
-      child, "document.cookie = 'foo=bar;SameSite=None;Secure';"));
+  EXPECT_TRUE(
+      ExecJs(child, "document.cookie = 'foo=bar;SameSite=None;Secure';"));
   EXPECT_EQ("foo=bar", EvalJs(child, "document.cookie"));
 
   // Make sure the BrowsingInstanceId is cleaned up immediately.
@@ -4368,7 +4337,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Open and start navigating a popup to a URL that never finishes loading.
   GURL popup_url(embedded_test_server()->GetURL("a.com", "/hung"));
-  EXPECT_TRUE(ExecuteScript(root, JsReplace("window.open($1);", popup_url)));
+  EXPECT_TRUE(ExecJs(root, JsReplace("window.open($1);", popup_url)));
 
   // Start isolating foo.com.
   BrowserContext* context = shell()->web_contents()->GetBrowserContext();
@@ -4538,8 +4507,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
   {
     TestFrameNavigationObserver observer(child1);
     NavigationHandleObserver handle_observer(web_contents(), bar_url);
-    EXPECT_TRUE(
-        ExecuteScript(child1, "location.href = '" + bar_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(child1, "location.href = '" + bar_url.spec() + "';"));
     observer.Wait();
   }
 
@@ -4548,8 +4516,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
   {
     TestFrameNavigationObserver observer(child2);
     NavigationHandleObserver handle_observer(web_contents(), baz_url);
-    EXPECT_TRUE(
-        ExecuteScript(child2, "location.href = '" + baz_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(child2, "location.href = '" + baz_url.spec() + "';"));
     observer.Wait();
   }
 
@@ -4625,8 +4592,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
       embedded_test_server()->GetURL("www.bar.com", "/title3.html"));
   ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(non_isolated_url)));
   TestFrameNavigationObserver observer(grandchild);
-  EXPECT_TRUE(ExecuteScript(
-      grandchild, "location.href = '" + non_isolated_url.spec() + "';"));
+  EXPECT_TRUE(
+      ExecJs(grandchild, "location.href = '" + non_isolated_url.spec() + "';"));
   observer.Wait();
   EXPECT_EQ(non_isolated_url, grandchild->current_url());
 
@@ -4714,7 +4681,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
 
   // Open a blank popup.
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(root, "window.w = window.open();"));
+  EXPECT_TRUE(ExecJs(root, "window.w = window.open();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Have the opener navigate the popup to a non-isolated origin.
@@ -4722,7 +4689,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
       embedded_test_server()->GetURL("www.bar.com", "/title1.html"));
   {
     TestNavigationManager manager(new_shell->web_contents(), isolated_url);
-    EXPECT_TRUE(ExecuteScript(
+    EXPECT_TRUE(ExecJs(
         root, "window.w.location.href = '" + isolated_url.spec() + "';"));
     manager.WaitForNavigationFinished();
   }
@@ -4985,11 +4952,11 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, SameOrigin) {
 
   // Check that a cross-site subframe in a non-isolated site becomes an OOPIF
   // in a new, non-isolated SiteInstance.
-  ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
-      shell(),
-      "var iframe = document.createElement('iframe');"
-      "iframe.id = 'child';"
-      "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell(),
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
   GURL c_url(https_server()->GetURL("c.com", "/title1.html"));
@@ -5119,10 +5086,10 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, SiteGranularity) {
 
   // Check that a same-site cross-origin subframe stays in the same
   // SiteInstance and process.
-  ASSERT_TRUE(ExecuteScript(shell(),
-                            "var iframe = document.createElement('iframe');"
-                            "iframe.id = 'child';"
-                            "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell(),
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);"));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
   GURL c_url(https_server()->GetURL("baz.coop.com", "/title1.html"));
@@ -5161,7 +5128,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, COOPAndCOEP) {
   EXPECT_TRUE(coop_instance->RequiresDedicatedProcess());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   auto lock = policy->GetProcessLock(coop_instance->GetProcess()->GetID());
-  EXPECT_TRUE(lock.coop_coep_cross_origin_isolated_info().is_isolated());
+  EXPECT_TRUE(lock.web_exposed_isolation_info().is_isolated());
   EXPECT_TRUE(lock.is_locked_to_site());
   EXPECT_TRUE(
       lock.MatchesOrigin(url::Origin::Create(GURL("https://coop.com"))));
@@ -5187,7 +5154,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, COOPAndOriginAgentClusterNoPorts) {
               "Cross-Origin-Opener-Policy: same-origin\n";
           URLLoaderInterceptor::WriteResponse(
               "content/test/data" + params->url_request.url.path(),
-              params->client.get(), &headers, base::Optional<net::SSLInfo>());
+              params->client.get(), &headers, absl::optional<net::SSLInfo>());
           return true;
         } else if (params->url_request.url.host() == "a.foo.com" ||
                    params->url_request.url.host() == "b.foo.com") {
@@ -5265,10 +5232,10 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest,
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Add a subframe and navigate to foo.coop.com.
-  ASSERT_TRUE(ExecuteScript(shell(),
-                            "var iframe = document.createElement('iframe');"
-                            "iframe.id = 'child';"
-                            "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell(),
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);"));
   FrameTreeNode* child = root->child_at(0);
   GURL child_url(https_server()->GetURL("foo.coop.com", "/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(web_contents(), "child", child_url));
@@ -5315,6 +5282,9 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, SiteAlreadyRequiresDedicatedProcess) {
   GURL coop_url = https_server()->GetURL(
       "coop.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
   EXPECT_TRUE(NavigateToURL(shell(), coop_url));
+  // Simulate user activation, which normally triggers COOP isolation for
+  // future BrowsingInstances.
+  EXPECT_TRUE(ExecJs(shell(), "// no-op"));
   EXPECT_EQ(web_contents()->GetMainFrame()->cross_origin_opener_policy().value,
             network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin);
   SiteInstanceImpl* coop_instance =
@@ -5369,7 +5339,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivation) {
 
   // Simulate a user activation in the original COOP page by running a dummy
   // script (ExecuteScript sends user activation by default).
-  EXPECT_TRUE(ExecuteScript(coop_root, "// no-op"));
+  EXPECT_TRUE(ExecJs(coop_root, "// no-op"));
   EXPECT_TRUE(coop_root->HasTransientUserActivation());
 
   // Create a third window in a new BrowsingInstance and navigate it to a
@@ -5388,11 +5358,11 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivation) {
   // affected by the new isolation. Adding a b.com subframe or popup should
   // stay in the same SiteInstance. Navigating the popup out from and back to
   // b.com should also end up on the same SiteInstance.
-  ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
-      shell2,
-      "var iframe = document.createElement('iframe');"
-      "iframe.id = 'child';"
-      "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell2,
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
   FrameTreeNode* child = shell2_root->child_at(0);
   GURL another_b_url(https_server()->GetURL("b.com", "/title3.html"));
   EXPECT_TRUE(
@@ -5445,11 +5415,11 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivationInSubframe) {
   EXPECT_TRUE(coop_instance->RequiresDedicatedProcess());
 
   // Add a cross-site subframe.
-  ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
-      shell(),
-      "var iframe = document.createElement('iframe');"
-      "iframe.id = 'child';"
-      "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell(),
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
   GURL c_url(https_server()->GetURL("c.com", "/title1.html"));
@@ -5459,7 +5429,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivationInSubframe) {
   EXPECT_FALSE(child->HasTransientUserActivation());
 
   // Simulate a user activation in the subframe by running a dummy script.
-  EXPECT_TRUE(ExecuteScript(child, "// no-op"));
+  EXPECT_TRUE(ExecJs(child, "// no-op"));
   EXPECT_TRUE(child->HasTransientUserActivation());
 
   // Since the iframe is cross-origin, it shouldn't trigger isolation of b.com
@@ -5477,7 +5447,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivationInSubframe) {
   GURL b_url(https_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(web_contents(), "child", b_url));
 
-  EXPECT_TRUE(ExecuteScript(child, "// no-op"));
+  EXPECT_TRUE(ExecJs(child, "// no-op"));
 
   // Ensure that b.com is now isolated in a new tab and BrowsingInstance.
   {
@@ -5503,11 +5473,11 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivationInAboutBlankSubframe) {
   EXPECT_TRUE(coop_instance->RequiresDedicatedProcess());
 
   // Add a cross-site blank subframe.
-  ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
-      shell(),
-      "var iframe = document.createElement('iframe');"
-      "iframe.id = 'child';"
-      "document.body.appendChild(iframe);"));
+  ASSERT_TRUE(ExecJs(shell(),
+                     "var iframe = document.createElement('iframe');"
+                     "iframe.id = 'child';"
+                     "document.body.appendChild(iframe);",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
 
@@ -5515,7 +5485,7 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, UserActivationInAboutBlankSubframe) {
   EXPECT_FALSE(child->HasTransientUserActivation());
 
   // Simulate a user activation in the subframe by running a dummy script.
-  EXPECT_TRUE(ExecuteScript(child, "// no-op"));
+  EXPECT_TRUE(ExecJs(child, "// no-op"));
   EXPECT_TRUE(child->HasTransientUserActivation());
 
   // Ensure that b.com is isolated in a new tab and BrowsingInstance.

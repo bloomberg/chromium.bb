@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/layers/scrollbar_layer_base.h"
 #include "cc/paint/display_item_list.h"
@@ -142,10 +143,10 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::WrappedCcLayerForPendingLayer(
     // This is only OK if the ForeignLayer doesn't have hit test data.
     DCHECK(!pending_layer.FirstPaintChunk().hit_test_data);
     const auto& foreign_layer_display_item =
-        static_cast<const ForeignLayerDisplayItem&>(
-            pending_layer.FirstDisplayItem());
+        To<ForeignLayerDisplayItem>(pending_layer.FirstDisplayItem());
     layer = foreign_layer_display_item.GetLayer();
-    layer_offset = FloatPoint(foreign_layer_display_item.Offset());
+    layer_offset =
+        FloatPoint(foreign_layer_display_item.VisualRect().Location());
   }
   layer->SetOffsetToTransformParent(gfx::Vector2dF(
       layer_offset + pending_layer.offset_of_decomposited_transforms));
@@ -242,14 +243,8 @@ PaintArtifactCompositor::ScrollbarLayerForPendingLayer(
   // the layer's offset for decomposited transforms.
   DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
 
-  const auto& scrollbar_item = static_cast<const ScrollbarDisplayItem&>(item);
-  cc::ScrollbarLayerBase* existing_layer = nullptr;
-  for (auto& layer : scrollbar_layers_) {
-    if (layer->element_id() == scrollbar_item.ElementId()) {
-      existing_layer = layer.get();
-      break;
-    }
-  }
+  const auto& scrollbar_item = To<ScrollbarDisplayItem>(item);
+  auto* existing_layer = ScrollbarLayer(scrollbar_item.ElementId());
   return scrollbar_item.CreateOrReuseLayer(existing_layer);
 }
 
@@ -325,10 +320,8 @@ cc::Layer* ForeignLayer(const PaintChunk& chunk,
     return nullptr;
   const auto& first_display_item =
       artifact.GetDisplayItemList()[chunk.begin_index];
-  if (!first_display_item.IsForeignLayer())
-    return nullptr;
-  return static_cast<const ForeignLayerDisplayItem&>(first_display_item)
-      .GetLayer();
+  auto* foreign_layer = DynamicTo<ForeignLayerDisplayItem>(first_display_item);
+  return foreign_layer ? foreign_layer->GetLayer() : nullptr;
 }
 
 // True if the paint chunk change affects the result of |Update|, such as the
@@ -636,18 +629,18 @@ static bool ClipChainHasCompositedTransformTo(
 //    transform space.
 // 4. The local space of each clip and effect node on the ancestor chain must
 //    be within compositing boundary of the home transform space.
-base::Optional<PropertyTreeState> CanUpcastWith(const PropertyTreeState& guest,
+absl::optional<PropertyTreeState> CanUpcastWith(const PropertyTreeState& guest,
                                                 const PropertyTreeState& home) {
   DCHECK_EQ(&home.Effect(), &guest.Effect());
 
   if (home.Transform().IsBackfaceHidden() !=
       guest.Transform().IsBackfaceHidden())
-    return base::nullopt;
+    return absl::nullopt;
 
   auto* upcast_transform =
       NonCompositedLowestCommonAncestor(home.Transform(), guest.Transform());
   if (!upcast_transform)
-    return base::nullopt;
+    return absl::nullopt;
 
   const auto& clip_lca =
       home.Clip().LowestCommonAncestor(guest.Clip()).Unalias();
@@ -655,7 +648,7 @@ base::Optional<PropertyTreeState> CanUpcastWith(const PropertyTreeState& guest,
                                         *upcast_transform) ||
       ClipChainHasCompositedTransformTo(guest.Clip(), clip_lca,
                                         *upcast_transform))
-    return base::nullopt;
+    return absl::nullopt;
 
   return PropertyTreeState(*upcast_transform, clip_lca, home.Effect());
 }
@@ -677,7 +670,7 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
   if (&property_tree_state.Effect() != &guest_state.Effect())
     return false;
 
-  const base::Optional<PropertyTreeState>& merged_state =
+  const absl::optional<PropertyTreeState>& merged_state =
       CanUpcastWith(guest_state, property_tree_state);
   if (!merged_state)
     return false;
@@ -798,7 +791,7 @@ bool PaintArtifactCompositor::DecompositeEffect(
                                     ? effect.OutputClip()->Unalias()
                                     : layer.property_tree_state.Clip(),
                                 effect);
-  base::Optional<PropertyTreeState> upcast_state =
+  absl::optional<PropertyTreeState> upcast_state =
       CanUpcastWith(layer.property_tree_state, group_state);
   if (!upcast_state)
     return false;
@@ -882,12 +875,12 @@ static bool IsCompositedScrollHitTest(const PaintChunk& chunk) {
 }
 
 static bool IsCompositedScrollbar(const DisplayItem& item) {
-  if (!item.IsScrollbar())
-    return false;
-  const auto* scroll_translation =
-      static_cast<const ScrollbarDisplayItem&>(item).ScrollTranslation();
-  return scroll_translation &&
-         scroll_translation->HasDirectCompositingReasons();
+  if (const auto* scrollbar = DynamicTo<ScrollbarDisplayItem>(item)) {
+    const auto* scroll_translation = scrollbar->ScrollTranslation();
+    return scroll_translation &&
+           scroll_translation->HasDirectCompositingReasons();
+  }
+  return false;
 }
 
 void PaintArtifactCompositor::LayerizeGroup(
@@ -1490,15 +1483,7 @@ void PaintArtifactCompositor::UpdateRepaintedLayer(
     case PendingLayer::kScrollbarLayer: {
       // TODO(pdr): Share this code with ScrollbarLayerForPendingLayer.
       const auto& item = pending_layer.FirstDisplayItem();
-      DCHECK(item.IsScrollbar());
-      const auto& scrollbar_item =
-          static_cast<const ScrollbarDisplayItem&>(item);
-      for (auto& existing_layer : scrollbar_layers_) {
-        if (existing_layer->element_id() == scrollbar_item.ElementId()) {
-          layer = existing_layer.get();
-          break;
-        }
-      }
+      layer = ScrollbarLayer(To<ScrollbarDisplayItem>(item).ElementId());
     } break;
     default: {
       ContentLayerClientImpl* content_layer_client = nullptr;
@@ -1522,7 +1507,11 @@ void PaintArtifactCompositor::UpdateRepaintedLayer(
       // Checking |all_moved_from_cached_subsequence| is an optimization to
       // avoid the expensive call to |UpdateCcPictureLayer| when no repainting
       // occurs for this PendingLayer.
-      if (!all_moved_from_cached_subsequence) {
+      if (all_moved_from_cached_subsequence) {
+        // See RasterInvalidator::SetOldPaintArtifact() for the reason for this.
+        content_layer_client->GetRasterInvalidator().SetOldPaintArtifact(
+            &pending_layer.chunks.GetPaintArtifact());
+      } else {
         IntRect cc_combined_bounds = EnclosingIntRect(pending_layer.bounds);
         content_layer_client->UpdateCcPictureLayer(
             pending_layer.chunks, cc_combined_bounds,
@@ -1874,8 +1863,7 @@ void PaintArtifactCompositor::UpdateDebugInfo() const {
         layer = &pending_layer.graphics_layer->CcLayer();
         break;
       case PendingLayer::kForeignLayer:
-        layer = static_cast<const ForeignLayerDisplayItem&>(
-                    pending_layer.FirstDisplayItem())
+        layer = To<ForeignLayerDisplayItem>(pending_layer.FirstDisplayItem())
                     .GetLayer();
         break;
       case PendingLayer::kScrollbarLayer:
@@ -1898,6 +1886,15 @@ void PaintArtifactCompositor::UpdateDebugInfo() const {
         GetCompositingReasons(pending_layer, previous_pending_layer), tracking);
     previous_pending_layer = &pending_layer;
   }
+}
+
+cc::ScrollbarLayerBase* PaintArtifactCompositor::ScrollbarLayer(
+    CompositorElementId element_id) {
+  for (auto& layer : scrollbar_layers_) {
+    if (layer->element_id() == element_id)
+      return layer.get();
+  }
+  return nullptr;
 }
 
 CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
@@ -2004,6 +2001,12 @@ size_t PaintArtifactCompositor::ApproximateUnsharedMemoryUsage() const {
     result += chunks_size - sizeof(layer.chunks);
   }
   return result;
+}
+
+void PaintArtifactCompositor::SetScrollbarNeedsDisplay(
+    CompositorElementId element_id) {
+  if (auto* scrollbar_layer = ScrollbarLayer(element_id))
+    scrollbar_layer->SetNeedsDisplay();
 }
 
 void LayerListBuilder::Add(scoped_refptr<cc::Layer> layer) {

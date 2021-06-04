@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderBrowserTest, NoProviderInIncognitoMode) {
   ASSERT_TRUE(browser()->profile()->HasPrimaryOTRProfile());
 
   Profile* off_the_record_profile =
-      browser()->profile()->GetPrimaryOTRProfile();
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   ASSERT_TRUE(off_the_record_profile);
 
   FlocIdProvider* incognito_floc_id_provider =
@@ -289,7 +289,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
     g_browser_process->floc_sorting_lsh_clusters_service()->ApplySortingLsh(
         dummy_sim_hash,
         base::BindLambdaForTesting(
-            [&](base::Optional<uint64_t>, base::Version) { run_loop.Quit(); }));
+            [&](absl::optional<uint64_t>, base::Version) { run_loop.Quit(); }));
     run_loop.Run();
   }
 
@@ -307,7 +307,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
 
   void ClearCookiesBrowsingData() {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
+        browser()->profile()->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver observer(remover);
     remover->RemoveAndReply(
         base::Time(), base::Time::Max(),
@@ -432,7 +432,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
 
     auto remote_permission_service =
         std::make_unique<MockFlocRemotePermissionService>(
-            content::BrowserContext::GetDefaultStoragePartition(profile)
+            profile->GetDefaultStoragePartition()
                 ->GetURLLoaderFactoryForBrowserProcess());
     return std::move(remote_permission_service);
   }

@@ -30,8 +30,11 @@ const base::Feature kAutofillAlwaysReturnCloudTokenizedCard{
     "AutofillAlwaysReturnCloudTokenizedCard",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillCreditCardAblationExperiment{
-    "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, manual fallback will be auto-triggered on form interaction in
+// the case where autofill failed to fill a credit card form accurately.
+const base::Feature kAutofillAutoTriggerManualFallbackForCards{
+    "AutofillAutoTriggerManualFallbackForCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the use of platform authenticators through WebAuthn to retrieve
 // credit cards from Google payments.
@@ -60,6 +63,12 @@ const base::Feature kAutofillDownstreamCvcPromptUseGooglePayLogo{
 const base::Feature kAutofillEnableGoogleIssuedCard{
     "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, merchant bound virtual cards will be offered when users
+// interact with a payment form.
+const base::Feature kAutofillEnableMerchantBoundVirtualCards{
+    "AutofillEnableMerchantBoundVirtualCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible credit card linked offer or reward.
 const base::Feature kAutofillEnableOfferNotification{
@@ -86,6 +95,12 @@ const base::Feature kAutofillEnableOffersInDownstream{
 // and profile picture will appear at the bottom of SaveCardInfoBar.
 const base::Feature kAutofillEnableSaveCardInfoBarAccountIndicationFooter{
     "AutofillEnableSaveCardInfoBarAccountIndicationFooter",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, if the user interacts with the manual fallback bottom sheet
+// on Android, it'll remain sticky until the user dismisses it.
+const base::Feature kAutofillEnableStickyManualFallbackForCards{
+    "AutofillEnableStickyManualFallbackForCards",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill data related icons will be shown in the status
@@ -116,10 +131,22 @@ const base::Feature kAutofillSaveCardDismissOnNavigation{
 const base::Feature kAutofillSaveCardInfobarEditSupport{
     "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, the entire PAN and the CVC details of the unmasked cached card
+// will be shown in the manual filling view.
+const base::Feature kAutofillShowUnmaskedCachedCardInManualFillingView{
+    "AutofillShowUnmaskedCachedCardInManualFillingView",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, suggestions with offers will be shown at the top.
 const base::Feature kAutofillSortSuggestionsBasedOnOfferPresence{
     "AutofillSortSuggestionsBasedOnOfferPresence",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, merchant bound virtual cards will be suggested only if we
+// detect all of the card number, exp date and CVC fields in the payment form.
+const base::Feature kAutofillSuggestVirtualCardsOnlyOnFullFormDetection{
+    "AutofillSuggestVirtualCardsOnlyOnFullFormDetection",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, if the Autofill Assistant is running, credit card save (both
 // local and upload) will not be offered.
@@ -139,6 +166,11 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether we should use the new header images for the save card
+// bubble.
+const base::Feature kAutofillUseNewHeaderForSaveCardBubble{
+    "AutofillUseNewHeaderForSaveCardBubble", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch

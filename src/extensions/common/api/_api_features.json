@@ -182,7 +182,9 @@
       "channel": "stable",
       "contexts": ["webui"],
       "matches": [
-        "chrome://feedback/*"
+        "chrome://feedback/*",
+        "chrome://cast-feedback/*",
+        "chrome://os-feedback/*"
       ]
     }
   ],
@@ -307,6 +309,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
+      "chrome://download-shelf.top-chrome/*",
       "chrome://extensions/*",
       "chrome://new-tab-page/*",
       "chrome://os-settings/*",
@@ -416,14 +419,12 @@
   },
   "printerProvider": {
     "dependencies": ["permission:printerProvider"],
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": true
+    "contexts": ["blessed_extension"]
   },
   "printerProviderInternal": {
     "internal": true,
     "dependencies": ["permission:printerProvider"],
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": true
+    "contexts": ["blessed_extension"]
   },
   "runtime": {
     "channel": "stable",
@@ -554,6 +555,10 @@
   "storage": {
     "dependencies": ["permission:storage"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "storage.session": {
+    "channel": "canary"
+    // TODO(crbug.com/1185226): Restrict to Manifest V3.
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],

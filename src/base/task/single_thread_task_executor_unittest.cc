@@ -37,9 +37,11 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/java_handler_thread.h"
@@ -321,7 +323,7 @@ const wchar_t kMessageBoxTitle[] = L"SingleThreadTaskExecutor Unit Test";
 // can cause implicit message loops.
 void MessageBoxFunc(TaskList* order, int cookie, bool is_reentrant) {
   order->RecordStart(MESSAGEBOX, cookie);
-  Optional<CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>
+  absl::optional<CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>
       maybe_allow_nesting;
   if (is_reentrant)
     maybe_allow_nesting.emplace();
@@ -386,13 +388,41 @@ void RecursiveFuncWin(scoped_refptr<SingleThreadTaskRunner> task_runner,
 
 #endif  // defined(OS_WIN)
 
-void PostNTasksThenQuit(int posts_remaining) {
-  if (posts_remaining > 1) {
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&PostNTasksThenQuit, posts_remaining - 1));
-  } else {
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+void Post128KTasksThenQuit(SingleThreadTaskRunner* executor_task_runner,
+                           TimeTicks begin_ticks,
+                           TimeTicks last_post_ticks,
+                           TimeDelta slowest_delay,
+                           OnceClosure on_done,
+                           int num_posts_done = 0) {
+  const int kNumTimes = 128000;
+
+  // Tasks should be running on a decent heart beat. Some platforms/bots however
+  // have a hard time posting+running *all* tasks before test timeout, add
+  // detailed logging for diagnosis where this flakes.
+  const auto now = TimeTicks::Now();
+  const auto scheduling_delay = now - last_post_ticks;
+  if (scheduling_delay > slowest_delay)
+    slowest_delay = scheduling_delay;
+
+  if (num_posts_done == kNumTimes) {
+    std::move(on_done).Run();
+    return;
+  } else if (now - begin_ticks >= TestTimeouts::action_max_timeout()) {
+    ADD_FAILURE() << "Couldn't run all tasks."
+                  << "\nNumber of tasks remaining: "
+                  << kNumTimes - num_posts_done
+                  << "\nSlowest scheduling delay: " << slowest_delay
+                  << "\nAverage per task: "
+                  << (now - begin_ticks) / num_posts_done;
+    std::move(on_done).Run();
+    return;
   }
+
+  executor_task_runner->PostTask(
+      FROM_HERE,
+      BindOnce(&Post128KTasksThenQuit, Unretained(executor_task_runner),
+               begin_ticks, now, slowest_delay, std::move(on_done),
+               num_posts_done + 1));
 }
 
 #if defined(OS_WIN)
@@ -452,7 +482,7 @@ void RunTest_IOHandler() {
   Thread thread("IOHandler test");
   Thread::Options options;
   options.message_pump_type = MessagePumpType::IO;
-  ASSERT_TRUE(thread.StartWithOptions(options));
+  ASSERT_TRUE(thread.StartWithOptions(std::move(options)));
 
   TestIOHandler handler(kPipeName, callback_called.Get());
   thread.task_runner()->PostTask(
@@ -1253,27 +1283,29 @@ TEST_P(SingleThreadTaskExecutorTypedTest, RunLoopQuitOrderAfter) {
   EXPECT_EQ(static_cast<size_t>(task_index), order.Size());
 }
 
-// There was a bug in the MessagePumpGLib where posting tasks recursively
-// caused the message loop to hang, due to the buffer of the internal pipe
-// becoming full. Test all SingleThreadTaskExecutor types to ensure this issue
-// does not exist in other MessagePumps.
+// Regression test for crbug.com/170904 where posting tasks recursively caused
+// the message loop to hang in MessagePumpGLib, due to the buffer of the
+// internal pipe becoming full. Test all SingleThreadTaskExecutor types to
+// ensure this issue does not exist in other MessagePumps.
 //
-// On Linux, the pipe buffer size is 64KiB by default. The bug caused one
-// byte accumulated in the pipe per two posts, so we should repeat 128K
-// times to reproduce the bug.
-#if defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
-// TODO(crbug.com/810077): This is flaky on Fuchsia.
-// TODO(crbug.com/1188497): Also flaky on Chrome OS.
-#define MAYBE_RecursivePosts DISABLED_RecursivePosts
+// On Linux, the pipe buffer size is 64KiB by default. The bug caused one byte
+// accumulated in the pipe per two posts, so we should repeat 128K times to
+// reproduce the bug.
+#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1188497): This test is unreasonably slow on CrOS and flakily
+// times out (100x slower than other platforms which take < 1s to complete
+// it).
+#define MAYBE_RecursivePostsDoNotFloodPipe DISABLED_RecursivePostsDoNotFloodPipe
 #else
-#define MAYBE_RecursivePosts RecursivePosts
+#define MAYBE_RecursivePostsDoNotFloodPipe RecursivePostsDoNotFloodPipe
 #endif
-TEST_P(SingleThreadTaskExecutorTypedTest, MAYBE_RecursivePosts) {
-  const int kNumTimes = 1 << 17;
+TEST_P(SingleThreadTaskExecutorTypedTest, MAYBE_RecursivePostsDoNotFloodPipe) {
   SingleThreadTaskExecutor executor(GetParam());
-  executor.task_runner()->PostTask(FROM_HERE,
-                                   BindOnce(&PostNTasksThenQuit, kNumTimes));
-  RunLoop().Run();
+  const auto begin_ticks = TimeTicks::Now();
+  RunLoop run_loop;
+  Post128KTasksThenQuit(executor.task_runner().get(), begin_ticks, begin_ticks,
+                        TimeDelta(), run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 TEST_P(SingleThreadTaskExecutorTypedTest, NestableTasksAllowedAtTopLevel) {
@@ -1732,7 +1764,7 @@ void RunTest_NestingDenial2(MessagePumpType message_pump_type) {
   Thread worker("NestingDenial2_worker");
   Thread::Options options;
   options.message_pump_type = message_pump_type;
-  ASSERT_EQ(true, worker.StartWithOptions(options));
+  ASSERT_EQ(true, worker.StartWithOptions(std::move(options)));
   TaskList order;
   win::ScopedHandle event(CreateEvent(NULL, FALSE, FALSE, NULL));
   worker.task_runner()->PostTask(
@@ -1782,7 +1814,7 @@ TEST(SingleThreadTaskExecutorTest, NestingSupport2) {
   Thread worker("NestingSupport2_worker");
   Thread::Options options;
   options.message_pump_type = MessagePumpType::UI;
-  ASSERT_EQ(true, worker.StartWithOptions(options));
+  ASSERT_EQ(true, worker.StartWithOptions(std::move(options)));
   TaskList order;
   win::ScopedHandle event(CreateEvent(NULL, FALSE, FALSE, NULL));
   worker.task_runner()->PostTask(

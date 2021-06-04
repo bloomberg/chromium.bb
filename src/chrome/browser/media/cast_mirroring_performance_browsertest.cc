@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/trace_event_analyzer.h"
@@ -226,7 +227,7 @@ void QueryTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
                       base::StringPiece event_name,
                       trace_analyzer::TraceEventVector* events) {
   const trace_analyzer::Query kQuery =
-      trace_analyzer::Query::EventNameIs(event_name.as_string()) &&
+      trace_analyzer::Query::EventNameIs(std::string(event_name)) &&
       (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
@@ -834,7 +835,7 @@ class CastV2PerformanceTest : public InProcessBrowserTest,
 
  protected:
   // Ensure best effort tasks are not required for this test to pass.
-  base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
+  absl::optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
       best_effort_fence_;
 
   // HTTPS server for loading pages from the test data dir.

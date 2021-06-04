@@ -16,6 +16,7 @@
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/point.h"
@@ -40,15 +41,18 @@
 #include "ui/platform_window/wm/wm_drop_handler.h"
 #include "url/gurl.h"
 
-using testing::_;
-using testing::Mock;
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Values;
+using ui::mojom::DragOperation;
 
 namespace ui {
-
 namespace {
 
 constexpr char kSampleTextForDragAndDrop[] =
     "This is a sample text for drag-and-drop.";
+constexpr char16_t kSampleTextForDragAndDrop16[] =
+    u"This is a sample text for drag-and-drop.";
 
 constexpr FilenameToURLPolicy kFilenameToURLPolicy =
     FilenameToURLPolicy::CONVERT_FILENAMES;
@@ -69,9 +73,8 @@ PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
 class MockDragHandlerDelegate : public WmDragHandler::Delegate {
  public:
   MOCK_METHOD1(OnDragLocationChanged, void(const gfx::Point& location));
-  MOCK_METHOD1(OnDragOperationChanged,
-               void(DragDropTypes::DragOperation operation));
-  MOCK_METHOD1(OnDragFinished, void(int operation));
+  MOCK_METHOD1(OnDragOperationChanged, void(DragOperation operation));
+  MOCK_METHOD1(OnDragFinished, void(DragOperation operation));
 };
 
 class MockDropHandler : public WmDropHandler {
@@ -164,8 +167,7 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
   WaylandWindow* window() { return window_.get(); }
 
   std::u16string sample_text_for_dnd() const {
-    static auto text = base::ASCIIToUTF16(kSampleTextForDragAndDrop);
-    return text;
+    return kSampleTextForDragAndDrop16;
   }
 
   void RunDragLoopWithSampleData(WaylandWindow* origin_window, int operations) {
@@ -206,7 +208,9 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
           // If DnD was cancelled, or data was dropped where it was not
           // accepted, the operation result must be None (0).
           // Regression test for https://crbug.com/1136751.
-          EXPECT_CALL(*self->drag_handler(), OnDragFinished(0)).Times(1);
+          EXPECT_CALL(*self->drag_handler(),
+                      OnDragFinished(DragOperation::kNone))
+              .Times(1);
 
           self->Sync();
         },
@@ -307,6 +311,37 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
   window_->SetPointerFocus(restored_focus);
 }
 
+TEST_P(WaylandDataDragControllerTest, StartDragWithFileContents) {
+  bool restored_focus = window_->has_pointer_focus();
+  window_->SetPointerFocus(true);
+
+  // The client starts dragging offering text mime type.
+  OSExchangeData os_exchange_data;
+  os_exchange_data.SetFileContents(
+      base::FilePath(FILE_PATH_LITERAL("t\\est\".jpg")),
+      kSampleTextForDragAndDrop);
+  int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
+  drag_controller()->StartSession(os_exchange_data, operation);
+  Sync();
+
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
+        std::string result(data.begin(), data.end());
+        EXPECT_EQ(kSampleTextForDragAndDrop, result);
+        loop->Quit();
+      },
+      &run_loop);
+  data_device_manager_->data_source()->ReadData(
+      "application/octet-stream;name=\"t\\\\est\\\".jpg\"",
+      std::move(callback));
+  run_loop.Run();
+  EXPECT_EQ(1u, data_device_manager_->data_source()->mime_types().size());
+  EXPECT_EQ("application/octet-stream;name=\"t\\\\est\\\".jpg\"",
+            data_device_manager_->data_source()->mime_types().front());
+  window_->SetPointerFocus(restored_focus);
+}
+
 TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
   data_offer->OnOffer(kMimeTypeText,
@@ -350,9 +385,9 @@ TEST_P(WaylandDataDragControllerTest, DropSeveralMimeTypes) {
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
-  data_offer->OnOffer(kMimeTypeMozillaURL, ToClipboardData(base::UTF8ToUTF16(
-                                               "https://sample.com/\r\n"
-                                               "Sample")));
+  data_offer->OnOffer(
+      kMimeTypeMozillaURL,
+      ToClipboardData(std::u16string(u"https://sample.com/\r\nSample")));
   data_offer->OnOffer(
       kMimeTypeURIList,
       ToClipboardData(std::string("file:///home/user/file\r\n")));
@@ -442,21 +477,20 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedUriList) {
 // the console when this test is running are the expected and valid side effect.
 TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
   const struct {
-    std::string content;
+    std::u16string content;
     std::string expected_url;
-    std::string expected_title;
+    std::u16string expected_title;
   } kCases[] = {
       {{}, {}, {}},
-      {"http://sample.com/\r\nSample", "http://sample.com/", "Sample"},
-      {"http://title.must.be.set/", {}, {}},
-      {"url.must.be.valid/and/have.scheme\r\nInvalid URL", {}, {}},
-      {"file:///files/are/ok\r\nThe policy allows that", "file:///files/are/ok",
-       "The policy allows that"}};
+      {u"http://sample.com/\r\nSample", "http://sample.com/", u"Sample"},
+      {u"http://title.must.be.set/", {}, {}},
+      {u"url.must.be.valid/and/have.scheme\r\nInvalid URL", {}, {}},
+      {u"file:///files/are/ok\r\nThe policy allows that",
+       "file:///files/are/ok", u"The policy allows that"}};
 
   for (const auto& kCase : kCases) {
     auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
-    data_offer->OnOffer(kMimeTypeMozillaURL,
-                        ToClipboardData(base::UTF8ToUTF16(kCase.content)));
+    data_offer->OnOffer(kMimeTypeMozillaURL, ToClipboardData(kCase.content));
 
     EXPECT_CALL(*drop_handler_, MockOnDragEnter()).Times(1);
     gfx::Point entered_point(10, 10);
@@ -484,7 +518,7 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
       EXPECT_TRUE(
           dropped_data->GetURLAndTitle(kFilenameToURLPolicy, &url, &title));
       EXPECT_EQ(url.spec(), kCase.expected_url);
-      EXPECT_EQ(title, base::UTF8ToUTF16(kCase.expected_title));
+      EXPECT_EQ(title, kCase.expected_title);
     }
 
     EXPECT_CALL(*drop_handler_, OnDragLeave()).Times(1);
@@ -751,10 +785,12 @@ TEST_P(WaylandDataDragControllerTest, MenuRequestCreatesPopupWindow) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandDataDragControllerTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandDataDragControllerTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

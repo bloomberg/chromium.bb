@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Otsinguliugur</translation>
 <translation id="1404323374378969387">norra</translation>
 <translation id="1430915738399379752">Printimine</translation>
+<translation id="1433628812591023318">Failide pukseerimiseks Parallels Desktopile peab fail olema teisaldatud Windowsi failide hulka.</translation>
 <translation id="1435838927755162558">Kausta jagamine üksusega Parallels Desktop</translation>
 <translation id="1467432559032391204">Vasakule</translation>
 <translation id="1471718551822868769">slovaki</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windowsi failid</translation>
 <translation id="3078461028045006476">Jaga laiendusega <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebitid</translation>
+<translation id="3113153474486991170">Ei saanud faili „<ph name="PATH" />” sellest asukohast avada. Avamiseks kopeerige see asukohta „Minu failid”.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">VALMIS</translation>
 <translation id="3188257591659621405">Minu failid</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">bulgaaria, foneetilise klaviatuuriga</translation>
 <translation id="5605830556594064952">USA Dvorak</translation>
 <translation id="5625294776298156701">tamili, Tamil99-klaviatuuriga</translation>
+<translation id="5633226425545095130">Selle üksuse teisaldamisel jagatakse seda kõigiga, kes jagatud kausta „<ph name="DESTINATION_NAME" />“ näevad.</translation>
 <translation id="5649768706273821470">Esita</translation>
 <translation id="5678784840044122290">Linuxi rakendus on saadaval teie terminalis ja käivitajas võidakse kuvada ka ikoon.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Ühendust arhiivi või virtuaalse kettaga ei saa katkestada<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Etioopia klaviatuur</translation>
 <translation id="7417705661718309329">Google'i kaart</translation>
 <translation id="7460898608667578234">ukraina keel</translation>
+<translation id="7486315294984620427">Failide pukseerimiseks Parallels Desktopile peab fail olema kopeeritud Windowsi failide hulka.</translation>
 <translation id="7489215562877293245">Leiti <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive'i<ph name="END_LINK" /> varundamiseks valmis</translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimensioonid</translation>
 <translation id="8437209419043462667">USA</translation>
 <translation id="8456681095658380701">Kehtetu nimi</translation>
+<translation id="8459404855768962328">Selle üksuse kopeerimisel jagatakse seda kõigiga, kes jagatud kausta „<ph name="DESTINATION_NAME" />“ näevad.</translation>
 <translation id="8461467696380332069">Paremklõpsake failil ja tehke valik „Kinnita riiulile”, et riiulil olevatele failidele kiirelt juurde pääseda.</translation>
 <translation id="8463494891489624050">vietnami, VIQR</translation>
 <translation id="8466234950814670489">TAR-arhiiv</translation>

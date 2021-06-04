@@ -12,7 +12,7 @@ namespace autofill {
 TestPersonalDataManager::TestPersonalDataManager()
     : PersonalDataManager("en-US", "US") {}
 
-TestPersonalDataManager::~TestPersonalDataManager() {}
+TestPersonalDataManager::~TestPersonalDataManager() = default;
 
 void TestPersonalDataManager::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
@@ -291,6 +291,16 @@ CoreAccountInfo TestPersonalDataManager::GetAccountInfoForPaymentsServer()
   return account_info_;
 }
 
+const AutofillProfileSaveStrikeDatabase*
+TestPersonalDataManager::GetProfileSaveStrikeDatabase() const {
+  return &inmemory_profile_save_strike_database_;
+}
+
+const AutofillProfileUpdateStrikeDatabase*
+TestPersonalDataManager::GetProfileUpdateStrikeDatabase() const {
+  return &inmemory_profile_update_strike_database_;
+}
+
 void TestPersonalDataManager::ClearProfiles() {
   web_profiles_.clear();
 }
@@ -340,7 +350,7 @@ void TestPersonalDataManager::AddCloudTokenData(
   NotifyPersonalDataObserver();
 }
 
-void TestPersonalDataManager::AddCreditCardOfferData(
+void TestPersonalDataManager::AddAutofillOfferData(
     const AutofillOfferData& offer_data) {
   std::unique_ptr<AutofillOfferData> data =
       std::make_unique<AutofillOfferData>(offer_data);

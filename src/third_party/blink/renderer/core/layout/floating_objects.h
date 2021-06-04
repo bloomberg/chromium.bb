@@ -25,7 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_
 
-#include <memory>
+#include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -301,8 +301,8 @@ class FloatingObjects {
 
   struct FloatBottomCachedValue {
     FloatBottomCachedValue();
-    FloatingObject* floating_object;
-    bool dirty;
+    FloatingObject* floating_object = nullptr;
+    bool dirty = true;
   };
   FloatBottomCachedValue lowest_float_bottom_cache_[2];
   bool cached_horizontal_writing_mode_;

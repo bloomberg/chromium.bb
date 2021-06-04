@@ -29,12 +29,13 @@ import './source_select.js';
 import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getScanService} from './mojo_interface_provider.js';
-import {AppState, ScannerArr} from './scanning_app_types.js';
-import {colorModeFromString, fileTypeFromString, pageSizeFromString, tokenToString} from './scanning_app_util.js';
-import {ScanningBrowserProxy, ScanningBrowserProxyImpl} from './scanning_browser_proxy.js';
+import {AppState, MAX_NUM_SAVED_SCANNERS, ScannerArr, ScannerCapabilitiesResponse, ScannerInfo, ScannerSetting, ScanSettings} from './scanning_app_types.js';
+import {colorModeFromString, fileTypeFromString, getScannerDisplayName, pageSizeFromString, tokenToString} from './scanning_app_util.js';
+import {ScanningBrowserProxy, ScanningBrowserProxyImpl, SelectedPath} from './scanning_browser_proxy.js';
 
 /**
  * URL for the Scanning help page.
@@ -62,8 +63,8 @@ Polymer({
   /** @private {?ash.scanning.mojom.ScanServiceInterface} */
   scanService_: null,
 
-  /** @private {!Map<string, !mojoBase.mojom.UnguessableToken>} */
-  scannerIds_: new Map(),
+  /** @private {!Map<string, !ScannerInfo>} */
+  scannerInfoMap_: new Map(),
 
   /** @private {?ScanningBrowserProxy}*/
   browserProxy_: null,
@@ -272,6 +273,40 @@ Polymer({
       type: String,
       computed: 'computeScanFailedDialogTextKey_(scanResult_)',
     },
+
+    /** @private {boolean} */
+    scanAppStickySettingsEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('scanAppStickySettingsEnabled');
+      }
+    },
+
+    /** @private {!ScanSettings} */
+    savedScanSettings_: {
+      type: Object,
+      value() {
+        return {
+          lastUsedScannerName: '',
+          scanToPath: '',
+          scanners: [],
+        };
+      },
+    },
+
+    /** @private {string} */
+    lastUsedScannerId_: String,
+
+    /**
+     * Used to track the number of completed scans during a single session of
+     * the Scan app being open. This value is recorded whenever the app window
+     * is closed or refreshed.
+     * @private {number}
+     */
+    numCompletedScansInSession_: {
+      type: Number,
+      value: 0,
+    },
   },
 
   observers:
@@ -288,11 +323,25 @@ Polymer({
         /* @type {string} */ (myFilesPath) => {
           this.selectedFilePath = myFilesPath;
         });
+    if (this.scanAppStickySettingsEnabled_) {
+      this.browserProxy_.getScanSettings().then(
+          /* @type {string} */ (scanSettings) => {
+            if (!scanSettings) {
+              return;
+            }
+
+            this.savedScanSettings_ =
+                /** @type {!ScanSettings} */ (JSON.parse(scanSettings));
+          });
+    }
   },
 
   /** @override */
   ready() {
     window.addEventListener('beforeunload', event => {
+      this.browserProxy_.recordNumCompletedScans(
+          this.numCompletedScansInSession_);
+
       // When the user tries to close the app while a scan is in progress,
       // show the 'Leave site' dialog.
       if (this.appState_ === AppState.SCANNING) {
@@ -352,6 +401,7 @@ Polymer({
       return;
     }
 
+    ++this.numCompletedScansInSession_;
     this.scannedFilePaths_ = scannedFilePaths;
     this.setAppState_(AppState.DONE);
   },
@@ -388,16 +438,20 @@ Polymer({
   },
 
   /**
-   * @param {!{capabilities: !ash.scanning.mojom.ScannerCapabilities}}
-   *     response
+   * @param {!ash.scanning.mojom.ScannerCapabilities} capabilities
    * @private
    */
-  onCapabilitiesReceived_(response) {
-    this.capabilities_ = response.capabilities;
+  onCapabilitiesReceived_(capabilities) {
+    this.capabilities_ = capabilities;
     this.capabilities_.sources.forEach(
         (source) => this.sourceTypeMap_.set(source.name, source.type));
     this.selectedFileType = ash.scanning.mojom.FileType.kPdf.toString();
-    this.setAppState_(AppState.READY);
+
+    this.setAppState_(
+        this.scanAppStickySettingsEnabled_ &&
+                this.areSavedScanSettingsAvailable_() ?
+            AppState.SETTING_SAVED_SETTINGS :
+            AppState.READY);
   },
 
   /**
@@ -411,7 +465,10 @@ Polymer({
     }
 
     for (const scanner of response.scanners) {
-      this.scannerIds_.set(tokenToString(scanner.id), scanner.id);
+      this.setScannerInfo_(scanner);
+      if (this.isLastUsedScanner_(scanner)) {
+        this.lastUsedScannerId_ = tokenToString(scanner.id);
+      }
     }
 
     this.setAppState_(AppState.GOT_SCANNERS);
@@ -420,23 +477,17 @@ Polymer({
 
   /** @private */
   onSelectedScannerIdChange_() {
-    if (!this.scannerIds_.has(this.selectedScannerId)) {
-      return;
-    }
+    assert(this.isSelectedScannerKnown_());
 
     // If |selectedScannerId| is changed when the app's in a non-READY state,
     // that change was triggered by the app's initial load so it's not counted.
     this.numScanSettingChanges_ = this.appState_ === AppState.READY ? 1 : 0;
     this.setAppState_(AppState.GETTING_CAPS);
 
-    this.scanService_
-        .getScannerCapabilities(this.scannerIds_.get(this.selectedScannerId))
-        .then(
-            /*@type {!{capabilities:
-                   !ash.scanning.mojom.ScannerCapabilities}}*/
-            (response) => {
-              this.onCapabilitiesReceived_(response);
-            });
+    this.getSelectedScannerCapabilities_().then(
+        /*@type {!ScannerCapabilitiesResponse}*/ (response) => {
+          this.onCapabilitiesReceived_(response.capabilities);
+        });
   },
 
   /** @private */
@@ -455,7 +506,7 @@ Polymer({
     const fileType = fileTypeFromString(this.selectedFileType);
     const colorMode = colorModeFromString(this.selectedColorMode);
     const pageSize = pageSizeFromString(this.selectedPageSize);
-    const resolution = Number(this.selectedResolution)
+    const resolution = Number(this.selectedResolution);
 
     const settings = {
       sourceName: this.selectedSource,
@@ -477,12 +528,15 @@ Polymer({
 
     this.scanService_
         .startScan(
-            this.scannerIds_.get(this.selectedScannerId), settings,
+            this.getSelectedScannerToken_(), settings,
             this.scanJobObserverReceiver_.$.bindNewPipeAndPassRemote())
         .then(
             /*@type {!{success: boolean}}*/ (response) => {
               this.onStartScanResponse_(response);
             });
+    if (this.scanAppStickySettingsEnabled_) {
+      this.saveScanSettings_();
+    }
 
     const scanJobSettingsForMetrics = {
       sourceType: this.sourceTypeMap_.get(this.selectedSource),
@@ -578,9 +632,13 @@ Polymer({
             this.appState_ === AppState.GOT_SCANNERS ||
             this.appState_ === AppState.READY);
         break;
+      case (AppState.SETTING_SAVED_SETTINGS):
+        assert(this.appState_ === AppState.GETTING_CAPS);
+        break;
       case (AppState.READY):
         assert(
             this.appState_ === AppState.GETTING_CAPS ||
+            this.appState_ === AppState.SETTING_SAVED_SETTINGS ||
             this.appState_ === AppState.SCANNING ||
             this.appState_ === AppState.DONE ||
             this.appState_ === AppState.CANCELING);
@@ -620,7 +678,10 @@ Polymer({
     // Need to wait for elements to render after updating their disabled and
     // hidden attributes before they can be focused.
     afterNextRender(this, () => {
-      if (this.appState_ === AppState.READY) {
+      if (this.appState_ === AppState.SETTING_SAVED_SETTINGS) {
+        this.setScanSettingsFromSavedSettings_();
+        this.setAppState_(AppState.READY);
+      } else if (this.appState_ === AppState.READY) {
         this.$$('#scannerSelect').$$('#scannerSelect').focus();
       } else if (this.appState_ === AppState.SCANNING) {
         this.$$('#cancelButton').focus();
@@ -724,6 +785,235 @@ Polymer({
         return 'scanFailedDialogIoErrorText';
       default:
         return 'scanFailedDialogUnknownErrorText';
+    }
+  },
+
+  /** @private */
+  setScanSettingsFromSavedSettings_() {
+    if (!this.areSavedScanSettingsAvailable_()) {
+      return;
+    }
+
+    this.setScanToPathFromSavedSettings_();
+
+    const scannerSettings = this.getSelectedScannerSavedSettings_();
+    if (!scannerSettings) {
+      return;
+    }
+
+    this.setSelectedSourceTypeIfAvailable_(scannerSettings.sourceName);
+    this.setSelectedFileTypeIfAvailable_(scannerSettings.fileType);
+    this.setSelectedColorModeIfAvailable_(scannerSettings.colorMode);
+    this.setSelectedPageSizeIfAvailable_(scannerSettings.pageSize);
+    this.setSelectedResolutionIfAvailable_(scannerSettings.resolutionDpi);
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.Scanner} scanner
+     @return {!ScannerInfo}
+   * @private
+   */
+  createScannerInfo_(scanner) {
+    return {
+      token: scanner.id,
+      displayName: getScannerDisplayName(scanner),
+    };
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.Scanner} scanner
+   * @private
+   */
+  setScannerInfo_(scanner) {
+    this.scannerInfoMap_.set(
+        tokenToString(scanner.id), this.createScannerInfo_(scanner));
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.Scanner} scanner
+   * @return {boolean}
+   * @private
+   */
+  isLastUsedScanner_(scanner) {
+    return this.savedScanSettings_.lastUsedScannerName ===
+        getScannerDisplayName(scanner);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isSelectedScannerKnown_() {
+    return this.scannerInfoMap_.has(this.selectedScannerId);
+  },
+
+  /**
+   * @return {!mojoBase.mojom.UnguessableToken}
+   * @private
+   */
+  getSelectedScannerToken_() {
+    return this.scannerInfoMap_.get(this.selectedScannerId).token;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSelectedScannerDisplayName_() {
+    return this.scannerInfoMap_.get(this.selectedScannerId).displayName;
+  },
+
+  /**
+   * @return {!Promise<!ScannerCapabilitiesResponse>}
+   * @private
+   */
+  getSelectedScannerCapabilities_() {
+    return this.scanService_.getScannerCapabilities(
+        this.getSelectedScannerToken_());
+  },
+
+  /**
+   * @return {!ScannerSetting|undefined}
+   * @private
+   */
+  getSelectedScannerSavedSettings_() {
+    const selectedScannerDisplayName = this.getSelectedScannerDisplayName_();
+    return this.savedScanSettings_.scanners.find(
+        scanner => scanner.name === selectedScannerDisplayName);
+  },
+
+  /**
+   * Validates that the file path from saved settings still exists on the local
+   * filesystem then sets the proper display name for the 'Scan to' dropdown. If
+   * the file path no longer exists, leave the default 'Scan to' path.
+   * @private
+   */
+  setScanToPathFromSavedSettings_() {
+    this.browserProxy_.ensureValidFilePath(this.savedScanSettings_.scanToPath)
+        .then(
+            /* @type {!SelectedPath} */ (selectedPath) => {
+              const baseName = selectedPath.baseName;
+              const filePath = selectedPath.filePath;
+              if (!baseName || !filePath) {
+                return;
+              }
+
+              this.selectedFolder = baseName;
+              this.selectedFilePath = filePath;
+            });
+  },
+
+  /** @private */
+  saveScanSettings_() {
+    assert(this.scanAppStickySettingsEnabled_);
+
+    const scannerName = this.getSelectedScannerDisplayName_();
+    this.savedScanSettings_.lastUsedScannerName = scannerName;
+    this.savedScanSettings_.scanToPath = this.selectedFilePath;
+
+    // Search the scan settings array for the currently selected scanner. If
+    // found, replace it with the new scan settings. If not, add it to the list.
+    const newScannerSetting = this.createScannerSettingForSelectedScanner_();
+    const scannerIndex = this.savedScanSettings_.scanners.findIndex(
+        scanner => scanner.name === scannerName);
+    if (scannerIndex === -1) {
+      this.savedScanSettings_.scanners.push(newScannerSetting);
+    } else {
+      this.savedScanSettings_.scanners[scannerIndex] = newScannerSetting;
+    }
+
+    if (this.savedScanSettings_.scanners.length > MAX_NUM_SAVED_SCANNERS) {
+      this.evictScannersFromScanSettings_();
+    }
+
+    this.browserProxy_.saveScanSettings(
+        JSON.stringify(this.savedScanSettings_));
+  },
+
+  /**
+   * Sort the saved settings scanners array so the oldest scanners are moved to
+   * the back then dropped.
+   * @private
+   */
+  evictScannersFromScanSettings_() {
+    this.savedScanSettings_.scanners.sort((firstScanner, secondScanner) => {
+      return new Date(secondScanner.lastScanDate) -
+          new Date(firstScanner.lastScanDate);
+    });
+    this.savedScanSettings_.scanners.splice(MAX_NUM_SAVED_SCANNERS);
+  },
+
+  /**
+   * @return {!ScannerSetting}
+   * @private
+   */
+  createScannerSettingForSelectedScanner_() {
+    return /** @type {!ScannerSetting} */ ({
+      name: this.getSelectedScannerDisplayName_(),
+      lastScanDate: new Date(),
+      sourceName: this.selectedSource,
+      fileType: fileTypeFromString(this.selectedFileType),
+      colorMode: colorModeFromString(this.selectedColorMode),
+      pageSize: pageSizeFromString(this.selectedPageSize),
+      resolutionDpi: Number(this.selectedResolution),
+    });
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  areSavedScanSettingsAvailable_() {
+    return this.savedScanSettings_.scanners.length !== 0;
+  },
+
+  /**
+   * @param {string} sourceName
+   * @private
+   */
+  setSelectedSourceTypeIfAvailable_(sourceName) {
+    if (this.capabilities_.sources.find(source => source.name === sourceName)) {
+      this.selectedSource = sourceName;
+    }
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.FileType} fileType
+   * @private
+   */
+  setSelectedFileTypeIfAvailable_(fileType) {
+    if (Object.values(ash.scanning.mojom.FileType).includes(fileType)) {
+      this.selectedFileType = fileType.toString();
+    }
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.ColorMode} colorMode
+   * @private
+   */
+  setSelectedColorModeIfAvailable_(colorMode) {
+    if (this.capabilities_.colorModes.includes(colorMode)) {
+      this.selectedColorMode = colorMode.toString();
+    }
+  },
+
+  /**
+   * @param {!ash.scanning.mojom.PageSize} pageSize
+   * @private
+   */
+  setSelectedPageSizeIfAvailable_(pageSize) {
+    if (this.selectedSourcePageSizes_.includes(pageSize)) {
+      this.selectedPageSize = pageSize.toString();
+    }
+  },
+
+  /**
+   * @param {number} resolution
+   * @private
+   */
+  setSelectedResolutionIfAvailable_(resolution) {
+    if (this.capabilities_.resolutions.includes(resolution)) {
+      this.selectedResolution = resolution.toString();
     }
   },
 });

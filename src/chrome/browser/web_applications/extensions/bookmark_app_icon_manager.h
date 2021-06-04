@@ -15,8 +15,7 @@ class Profile;
 namespace extensions {
 
 // Class used to read icons of extensions-based bookmark apps.
-// TODO(crbug.com/877898): Erase this subclass once BookmarkApps are off
-// Extensions.
+// TODO(crbug.com/1065748): Erase this subclass.
 class BookmarkAppIconManager : public web_app::AppIconManager {
  public:
   explicit BookmarkAppIconManager(Profile* profile);
@@ -30,7 +29,7 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
   bool HasIcons(const web_app::AppId& app_id,
                 IconPurpose purpose,
                 const SortedSizesPx& icon_sizes_in_px) const override;
-  base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
+  absl::optional<IconSizeAndPurpose> FindIconMatchBigger(
       const web_app::AppId& app_id,
       const std::vector<IconPurpose>& purposes,
       SquareSizePx min_size) const override;

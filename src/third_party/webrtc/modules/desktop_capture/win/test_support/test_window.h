@@ -33,9 +33,12 @@ struct WindowInfo {
 
 WindowInfo CreateTestWindow(const WCHAR* window_title,
                             const int height = 0,
-                            const int width = 0);
+                            const int width = 0,
+                            const LONG extended_styles = 0);
 
 void ResizeTestWindow(const HWND hwnd, const int width, const int height);
+
+void MoveTestWindow(const HWND hwnd, const int x, const int y);
 
 void MinimizeTestWindow(const HWND hwnd);
 

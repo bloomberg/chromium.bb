@@ -34,12 +34,12 @@ public class AwComponentUpdateService extends JobService {
             "Android.WebView.ComponentUpdater.CPSDirectorySize";
     public static final String HISTOGRAM_COMPONENT_UPDATER_CUS_DIRECTORY_SIZE =
             "Android.WebView.ComponentUpdater.CUSDirectorySize";
-    public static final String HISTOGRAM_COMPONENT_UPDATER_UNEXPECTED_EXIT =
-            "Android.WebView.ComponentUpdater.UnexpectedExit";
     public static final String HISTOGRAM_COMPONENT_UPDATER_UPDATE_JOB_DURATION =
             "Android.WebView.ComponentUpdater.UpdateJobDuration";
     public static final String HISTOGRAM_AW_COMPONENT_UPDATE_SERVICE_FILES_CHANGED =
             "Android.WebView.ComponentUpdater.UpdateJobFilesChanged";
+    public static final String HISTOGRAM_COMPONENT_UPDATER_UNEXPECTED_EXIT =
+            "Android.WebView.ComponentUpdater.UnexpectedExit";
 
     private static final int BYTES_PER_KILOBYTE = 1024;
     private static final int DIRECTORY_SIZE_MIN_BUCKET = 100;
@@ -95,6 +95,16 @@ public class AwComponentUpdateService extends JobService {
                 DIRECTORY_SIZE_MAX_BUCKET, DIRECTORY_SIZE_NUM_BUCKETS);
     }
 
+    private void recordJobDuration(long duration) {
+        RecordHistogram.recordTimesHistogram(
+                HISTOGRAM_COMPONENT_UPDATER_UPDATE_JOB_DURATION, duration);
+    }
+
+    private void recordFilesChanged(int filesChanged) {
+        RecordHistogram.recordCount1000Histogram(
+                HISTOGRAM_AW_COMPONENT_UPDATE_SERVICE_FILES_CHANGED, filesChanged);
+    }
+
     private void maybeRecordUnexpectedExit() {
         final SharedPreferences sharedPreferences =
                 getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -108,16 +118,6 @@ public class AwComponentUpdateService extends JobService {
         final SharedPreferences sharedPreferences =
                 getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(KEY_UNEXPECTED_EXIT, unfinished).apply();
-    }
-
-    private void recordJobDuration(long duration) {
-        RecordHistogram.recordTimesHistogram(
-                HISTOGRAM_COMPONENT_UPDATER_UPDATE_JOB_DURATION, duration);
-    }
-
-    private void recordFilesChanged(int filesChanged) {
-        RecordHistogram.recordCount1000Histogram(
-                HISTOGRAM_AW_COMPONENT_UPDATE_SERVICE_FILES_CHANGED, filesChanged);
     }
 
     @NativeMethods

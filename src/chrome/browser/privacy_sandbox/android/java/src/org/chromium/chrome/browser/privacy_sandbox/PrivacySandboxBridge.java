@@ -24,11 +24,56 @@ public class PrivacySandboxBridge {
         PrivacySandboxBridgeJni.get().setPrivacySandboxEnabled(enabled);
     }
 
+    public static boolean isFlocEnabled() {
+        return PrivacySandboxBridgeJni.get().isFlocEnabled();
+    }
+
+    public static void setFlocEnabled(boolean enabled) {
+        PrivacySandboxBridgeJni.get().setFlocEnabled(enabled);
+    }
+
+    public static boolean isFlocIdResettable() {
+        return PrivacySandboxBridgeJni.get().isFlocIdResettable();
+    }
+
+    public static void resetFlocId() {
+        PrivacySandboxBridgeJni.get().resetFlocId();
+    }
+
+    public static String getFlocStatusString() {
+        return PrivacySandboxBridgeJni.get().getFlocStatusString();
+    }
+
+    public static String getFlocGroupString() {
+        return PrivacySandboxBridgeJni.get().getFlocGroupString();
+    }
+
+    public static String getFlocUpdateString() {
+        return PrivacySandboxBridgeJni.get().getFlocUpdateString();
+    }
+
+    public static String getFlocDescriptionString() {
+        return PrivacySandboxBridgeJni.get().getFlocDescriptionString();
+    }
+
+    public static String getFlocResetExplanationString() {
+        return PrivacySandboxBridgeJni.get().getFlocResetExplanationString();
+    }
+
     @NativeMethods
     interface Natives {
         boolean isPrivacySandboxSettingsFunctional();
         boolean isPrivacySandboxEnabled();
         boolean isPrivacySandboxManaged();
         void setPrivacySandboxEnabled(boolean enabled);
+        boolean isFlocEnabled();
+        void setFlocEnabled(boolean enabled);
+        boolean isFlocIdResettable();
+        void resetFlocId();
+        String getFlocStatusString();
+        String getFlocGroupString();
+        String getFlocUpdateString();
+        String getFlocDescriptionString();
+        String getFlocResetExplanationString();
     }
 }

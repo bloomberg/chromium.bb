@@ -18,6 +18,7 @@ struct PrinterBasicInfo {
 };
 
 // Paper used by printer semantic capabilities and defaults.
+[Stable]
 struct Paper {
   string display_name;
   string vendor_id;
@@ -25,23 +26,23 @@ struct Paper {
 };
 
 // An advanced capability value for ChromeOS printing.
-[EnableIf=is_chromeos]
+[Stable, EnableIf=is_chromeos]
 struct AdvancedCapabilityValue {
   string name;
   string display_name;
 };
 
 // The type of the values for advanced capabilities.
-[EnableIf=is_chromeos]
+[Stable, Extensible, EnableIf=is_chromeos]
 enum AdvancedCapabilityType {
+  [Default] kString,
   kBoolean,
   kFloat,
   kInteger,
-  kString
 };
 
 // An advanced capability for ChromeOS printing.
-[EnableIf=is_chromeos]
+[Stable, EnableIf=is_chromeos]
 struct AdvancedCapability {
   string name;
   string display_name;
@@ -51,6 +52,7 @@ struct AdvancedCapability {
 };
 
 // The semantic capabilities and defaults used for a printer.
+[Stable]
 struct PrinterSemanticCapsAndDefaults {
   bool collate_capable = false;
   bool collate_default = false;

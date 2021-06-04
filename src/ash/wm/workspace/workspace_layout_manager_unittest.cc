@@ -51,8 +51,8 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -61,6 +61,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
@@ -1184,7 +1185,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerBackdropTest);
 };
 
-constexpr base::Optional<Sound> kNoSoundKey = base::nullopt;
+constexpr absl::optional<Sound> kNoSoundKey = absl::nullopt;
 
 }  // namespace
 

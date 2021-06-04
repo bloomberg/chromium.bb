@@ -9,7 +9,7 @@
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_launch_watcher.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
-#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
 namespace borealis {
@@ -65,7 +65,7 @@ class CreateDiskImage : public BorealisTask {
  private:
   void OnCreateDiskImage(
       BorealisContext* context,
-      base::Optional<vm_tools::concierge::CreateDiskImageResponse> response);
+      absl::optional<vm_tools::concierge::CreateDiskImageResponse> response);
   base::WeakPtrFactory<CreateDiskImage> weak_factory_{this};
 };
 
@@ -79,7 +79,7 @@ class StartBorealisVm : public BorealisTask {
  private:
   void OnStartBorealisVm(
       BorealisContext* context,
-      base::Optional<vm_tools::concierge::StartVmResponse> response);
+      absl::optional<vm_tools::concierge::StartVmResponse> response);
   base::WeakPtrFactory<StartBorealisVm> weak_factory_{this};
 };
 
@@ -93,7 +93,7 @@ class AwaitBorealisStartup : public BorealisTask {
 
  private:
   void OnAwaitBorealisStartup(BorealisContext* context,
-                              base::Optional<std::string> container);
+                              absl::optional<std::string> container);
   BorealisLaunchWatcher watcher_;
   base::WeakPtrFactory<AwaitBorealisStartup> weak_factory_{this};
 };

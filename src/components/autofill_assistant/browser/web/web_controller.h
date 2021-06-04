@@ -25,6 +25,7 @@
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web/check_on_top_worker.h"
+#include "components/autofill_assistant/browser/web/click_or_tap_worker.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_position_getter.h"
 #include "components/autofill_assistant/browser/web/element_rect_getter.h"
@@ -95,11 +96,16 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Send a JS click to the |element|.
+  virtual void JsClickElement(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   // Perform a mouse left button click or a touch tap on the |element|
   // return the result through callback.
   virtual void ClickOrTapElement(
-      const ElementFinder::Result& element,
       ClickType click_type,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Get a stable position of the given element. Fail with ELEMENT_UNSTABLE if
@@ -145,6 +151,19 @@ class WebController {
       const std::string& re2,
       bool case_sensitive,
       SelectOptionProto::OptionComparisonAttribute option_comparison_attribute,
+      bool strict,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Set the selected |option| of the |element|.
+  virtual void SelectOptionElement(
+      const ElementFinder::Result& option,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Check if the selected option of the |element| is the expected |option|.
+  virtual void CheckSelectedOptionElement(
+      const ElementFinder::Result& option,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -343,6 +362,10 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnJavaScriptResultForInt(
+      base::OnceCallback<void(const ClientStatus&, int)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnJavaScriptResultForString(
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback,
@@ -361,32 +384,10 @@ class WebController {
       base::TimeTicks wait_time_start,
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback,
       const ClientStatus& status);
-  void TapOrClickOnCoordinates(
-      ElementPositionGetter* getter_to_release,
-      const std::string& node_frame_id,
-      ClickType click_type,
+  void OnClickOrTapElement(
+      ClickOrTapWorker* getter_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
-  void OnDispatchPressMouseEvent(
-      const std::string& node_frame_id,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      int x,
-      int y,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<input::DispatchMouseEventResult> result);
-  void OnDispatchReleaseMouseEvent(
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<input::DispatchMouseEventResult> result);
-  void OnDispatchTouchEventStart(
-      const std::string& node_frame_id,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<input::DispatchTouchEventResult> result);
-  void OnDispatchTouchEventEnd(
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnWaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -412,6 +413,35 @@ class WebController {
                               const autofill::FormFieldData&)> callback,
       const ClientStatus& element_status,
       std::unique_ptr<ElementFinder::Result> element_result);
+  void GetUniqueElementSelector(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
+          callback);
+  void OnGetElementTagForUniqueSelector(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
+          callback,
+      const ClientStatus& tag_status,
+      const std::string& tag);
+  void GetElementQueryIndex(
+      const std::string& query_selector,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&, int)> callback);
+  void OnGetElementQueryIndexForUniqueSelector(
+      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
+          callback,
+      const std::string& query_selector,
+      const ClientStatus& index_status,
+      int index);
+  void OnGetUniqueSelectorForFormAndFieldData(
+      base::OnceCallback<void(const ClientStatus&,
+                              autofill::ContentAutofillDriver* driver,
+                              const autofill::FormData&,
+                              const autofill::FormFieldData&)> callback,
+      std::unique_ptr<ElementFinder::Result> element,
+      const ClientStatus& selector_status,
+      const std::string& query_selector,
+      int index);
   void OnGetFormAndFieldData(
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
@@ -436,9 +466,17 @@ class WebController {
       autofill::ContentAutofillDriver* driver,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
-  void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
-                      const DevtoolsClient::ReplyStatus& reply_status,
-                      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  // Handling a JS result for a "SelectOption" action. This expects the JS
+  // result to contain an integer and returns the following status:
+  // * -1 -> INVALID_TARGET
+  // *  0 -> OPTION_ELEMENT_NOT_FOUND
+  // *  1 -> ACTION_APPLIED
+  // *  n -> TOO_MANY_OPTION_VALUES_FOUND
+  void OnSelectOptionJavascriptResult(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      ProcessedActionStatusProto status_if_zero,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   void OnSendKeyboardInputDone(
       SendKeyboardInputWorker* worker_to_release,

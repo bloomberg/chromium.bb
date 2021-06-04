@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "ash/components/audio/cras_audio_handler.h"
@@ -16,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/trace_event/trace_event.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_configuration.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -200,6 +200,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Resets login view and unbinds login display from the signin screen handler.
   void ResetLoginView();
 
+  // Updates default scaling for CfM devices.
+  void UpScaleOobe();
+
   // Sign in screen controller.
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
@@ -250,6 +253,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   FinalizeAnimationType finalize_animation_type_ = ANIMATION_WORKSPACE;
 
+  // Id of display that was already scaled for CfM devices.
+  int64_t primary_display_id_ = -1;
+
   // Time when login prompt visible signal is received. Used for
   // calculations of delay before startup sound.
   base::TimeTicks login_prompt_visible_time_;
@@ -261,6 +267,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;
+
+  // Measures OOBE WebUI load time.
+  absl::optional<base::ElapsedTimer> oobe_load_timer_;
 
   base::ObserverList<LoginDisplayHost::Observer> observers_;
 

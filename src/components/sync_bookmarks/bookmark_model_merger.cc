@@ -10,9 +10,11 @@
 
 #include "base/containers/contains.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
@@ -82,7 +84,10 @@ enum class BookmarksGUIDDuplicates {
 
 // Used in metrics: "Sync.ProblematicServerSideBookmarksDuringMerge". These
 // values are persisted to logs. Entries should not be renumbered and numeric
-// values should never be reused.
+// values should never be reused. Note the existence of gaps because the
+// metric enum is reused for another UMA metric,
+// Sync.ProblematicServerSideBookmarks, which logs the analogous error cases
+// for non-initial updates.
 enum class RemoteBookmarkUpdateError {
   // Invalid specifics.
   kInvalidSpecifics = 1,
@@ -94,8 +99,13 @@ enum class RemoteBookmarkUpdateError {
   kUnexpectedGuid = 9,
   // Parent is not a folder.
   kParentNotFolder = 10,
+  // Unknown/unsupported permanent folder.
+  kUnsupportedPermanentFolder = 13,
+  // A bookmark that is not contained in any permanent folder and is instead
+  // hanging (directly or indirectly) from the root node.
+  kDescendantOfRootNodeWithoutPermanentFolder = 14,
 
-  kMaxValue = kParentNotFolder,
+  kMaxValue = kDescendantOfRootNodeWithoutPermanentFolder,
 };
 
 void LogProblematicBookmark(RemoteBookmarkUpdateError problem) {
@@ -315,8 +325,7 @@ bool IsValidUpdate(const UpdateResponseData& update) {
   DCHECK(!update_entity.is_deleted());
   DCHECK(update_entity.server_defined_unique_tag.empty());
 
-  if (!syncer::UniquePosition::FromProto(update_entity.unique_position)
-           .IsValid()) {
+  if (!update_entity.unique_position.IsValid()) {
     // Ignore updates with invalid positions.
     DLOG(ERROR)
         << "Remote update with invalid position: "
@@ -355,21 +364,27 @@ struct GroupedUpdates {
 // are grouped in a dedicated |permanent_node_updates| list in a returned value.
 GroupedUpdates GroupValidUpdates(UpdateResponseDataList updates) {
   GroupedUpdates grouped_updates;
+  int num_valid_updates = 0;
   for (UpdateResponseData& update : updates) {
     const EntityData& update_entity = update.entity;
     if (update_entity.is_deleted()) {
       continue;
     }
     if (!update_entity.server_defined_unique_tag.empty()) {
+      ++num_valid_updates;
       grouped_updates.permanent_node_updates.push_back(std::move(update));
       continue;
     }
     if (!IsValidUpdate(update)) {
       continue;
     }
+    ++num_valid_updates;
     grouped_updates.updates_per_parent_id[update_entity.parent_id].push_back(
         std::move(update));
   }
+
+  base::UmaHistogramCounts100000("Sync.BookmarkModelMerger.ValidInputUpdates",
+                                 num_valid_updates);
 
   return grouped_updates;
 }
@@ -409,11 +424,7 @@ void BookmarkModelMerger::RemoteTreeNode::EmplaceSelfAndDescendantsByGUID(
 bool BookmarkModelMerger::RemoteTreeNode::UniquePositionLessThan(
     const RemoteTreeNode& lhs,
     const RemoteTreeNode& rhs) {
-  const syncer::UniquePosition a_pos =
-      syncer::UniquePosition::FromProto(lhs.entity().unique_position);
-  const syncer::UniquePosition b_pos =
-      syncer::UniquePosition::FromProto(rhs.entity().unique_position);
-  return a_pos.LessThan(b_pos);
+  return lhs.entity().unique_position.LessThan(rhs.entity().unique_position);
 }
 
 // static
@@ -479,11 +490,21 @@ BookmarkModelMerger::BookmarkModelMerger(
           FindGuidMatchesOrReassignLocal(remote_forest_, bookmark_model_)) {
   DCHECK(bookmark_tracker_->IsEmpty());
   DCHECK(favicon_service);
+
+  int num_updates_in_forest = 0;
+  for (const auto& tree_tag_and_root : remote_forest_) {
+    num_updates_in_forest +=
+        1 + CountRemoteTreeNodeDescendantsForUma(tree_tag_and_root.second);
+  }
+  base::UmaHistogramCounts100000(
+      "Sync.BookmarkModelMerger.ReachableInputUpdates", num_updates_in_forest);
 }
 
 BookmarkModelMerger::~BookmarkModelMerger() {}
 
 void BookmarkModelMerger::Merge() {
+  TRACE_EVENT0("sync", "BookmarkModelMerger::Merge");
+
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each remote node for the current remote (sync) parent node, either
@@ -504,9 +525,27 @@ void BookmarkModelMerger::Merge() {
   // selects the first one.
   // Associate permanent folders.
   for (const auto& tree_tag_and_root : remote_forest_) {
+    // Special-case the root folder to avoid recording
+    // |RemoteBookmarkUpdateError::kUnsupportedPermanentFolder|.
+    if (tree_tag_and_root.first ==
+        syncer::ModelTypeToRootTag(syncer::BOOKMARKS)) {
+      // The root folder is not expected to have children, because all children
+      // should themselves be permanent folders too and hence directly populate
+      // |tree_tag_and_root| without nesting.
+      const int num_unexpected_descendants_of_root_folder =
+          CountRemoteTreeNodeDescendantsForUma(tree_tag_and_root.second);
+      for (int i = 0; i < num_unexpected_descendants_of_root_folder; ++i) {
+        LogProblematicBookmark(RemoteBookmarkUpdateError::
+                                   kDescendantOfRootNodeWithoutPermanentFolder);
+      }
+      continue;
+    }
+
     const bookmarks::BookmarkNode* permanent_folder =
         GetPermanentFolder(bookmark_model_, tree_tag_and_root.first);
     if (!permanent_folder) {
+      LogProblematicBookmark(
+          RemoteBookmarkUpdateError::kUnsupportedPermanentFolder);
       continue;
     }
     MergeSubtree(/*local_subtree_root=*/permanent_folder,
@@ -524,6 +563,8 @@ void BookmarkModelMerger::Merge() {
 // static
 BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
     syncer::UpdateResponseDataList updates) {
+  TRACE_EVENT0("sync", "BookmarkModelMerger::BuildRemoteForest");
+
   // Filter out invalid remote updates and group the valid ones by the server ID
   // of their parent.
   GroupedUpdates grouped_updates = GroupValidUpdates(std::move(updates));
@@ -551,8 +592,7 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
   for (const auto& parent_id_and_updates :
        grouped_updates.updates_per_parent_id) {
     for (const UpdateResponseData& update : parent_id_and_updates.second) {
-      if (!update.entity.is_deleted() &&
-          update.entity.specifics.has_bookmark()) {
+      if (update.entity.specifics.has_bookmark()) {
         LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentEntity);
       }
     }
@@ -562,11 +602,23 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
 }
 
 // static
+int BookmarkModelMerger::CountRemoteTreeNodeDescendantsForUma(
+    const RemoteTreeNode& node) {
+  int descendants = 0;
+  for (const RemoteTreeNode& child : node.children()) {
+    descendants += 1 + CountRemoteTreeNodeDescendantsForUma(child);
+  }
+  return descendants;
+}
+
+// static
 std::unordered_map<base::GUID, BookmarkModelMerger::GuidMatch, base::GUIDHash>
 BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
     const RemoteForest& remote_forest,
     bookmarks::BookmarkModel* bookmark_model) {
   DCHECK(bookmark_model);
+
+  TRACE_EVENT0("sync", "BookmarkModelMerger::FindGuidMatchesOrReassignLocal");
 
   // Build a temporary lookup table for remote GUIDs.
   std::unordered_map<base::GUID, const RemoteTreeNode*, base::GUIDHash>
@@ -858,7 +910,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true);
   const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
-      node, sync_id, server_version, creation_time, pos.ToProto(), specifics);
+      node, sync_id, server_version, creation_time, pos, specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(entity);
   for (size_t i = 0; i < node->children().size(); ++i) {

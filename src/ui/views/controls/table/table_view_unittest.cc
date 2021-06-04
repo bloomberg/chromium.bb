@@ -13,6 +13,7 @@
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -131,7 +132,7 @@ class TableViewTestHelper {
 
 namespace {
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 constexpr int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
 #else
 constexpr int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
@@ -185,7 +186,7 @@ class TestTableModel2 : public ui::TableModel {
  private:
   ui::TableModelObserver* observer_ = nullptr;
 
-  base::Optional<std::u16string> tooltip_;
+  absl::optional<std::u16string> tooltip_;
 
   // The data.
   std::vector<std::vector<int>> rows_;
@@ -444,12 +445,13 @@ class TableViewTest : public ViewsTestBase,
     helper_ = std::make_unique<TableViewTestHelper>(table_);
 
     widget_ = std::make_unique<Widget>();
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(std::move(params));
-    widget_->GetContentsView()->AddChildView(std::move(scroll_view));
+    widget_->GetRootView()->AddChildView(std::move(scroll_view));
     widget_->Show();
   }
 
@@ -460,7 +462,6 @@ class TableViewTest : public ViewsTestBase,
 
   void ClickOnRow(int row, int flags) {
     ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
-    generator.set_assume_window_at_origin(false);
     generator.set_flags(flags);
     generator.set_current_screen_location(GetPointForRow(row));
     generator.PressLeftButton();
@@ -734,6 +735,29 @@ TEST_P(TableViewTest, GetVirtualAccessibilityCell) {
                        ax::mojom::IntAttribute::kTableCellColumnIndex)));
     }
   }
+}
+
+TEST_P(TableViewTest, ChangingCellFiresAccessibilityEvent) {
+  int text_changed_count = 0;
+  table_->GetViewAccessibility().set_accessibility_events_callback(
+      base::BindLambdaForTesting(
+          [&](const ui::AXPlatformNodeDelegate*, const ax::mojom::Event event) {
+            if (event == ax::mojom::Event::kTextChanged)
+              ++text_changed_count;
+          }));
+
+  // A kTextChanged event is fired when a cell's data is accessed and
+  // its computed accessible text isn't the same as the previously cached
+  // value. Ensure that the cached value is correctly updated so that
+  // retrieving the data multiple times doesn't result in firing additional
+  // kTextChanged events.
+  const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(0, 0);
+  ASSERT_TRUE(cell);
+  ui::AXNodeData cell_data;
+  for (int i = 0; i < 100; ++i)
+    cell_data = cell->GetData();
+
+  EXPECT_EQ(1, text_changed_count);
 }
 
 // Verifies SetColumnVisibility().
@@ -1440,7 +1464,7 @@ TEST_P(TableViewTest, SelectionNoSelectOnRemove) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 // Verifies selection works by way of a gesture.
 TEST_P(TableViewTest, SelectOnTap) {
   // Initially no selection.

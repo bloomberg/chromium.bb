@@ -52,14 +52,11 @@
 #include "ui/display/test/test_screen.h"
 #include "ui/views/test/test_views_delegate.h"
 
-using device::MockBluetoothAdapter;
-using testing::_;
-using testing::AnyNumber;
-using testing::Return;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::device::MockBluetoothAdapter;
+using ::testing::Return;
 
 class MockEasyUnlockNotificationController
     : public EasyUnlockNotificationController {
@@ -188,7 +185,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   }
 
   void SetLocalDevice(
-      const base::Optional<multidevice::RemoteDeviceRef>& local_device) {
+      const absl::optional<multidevice::RemoteDeviceRef>& local_device) {
     fake_device_sync_client_->set_local_device_metadata(test_local_device_);
     fake_device_sync_client_->NotifyEnrollmentFinished();
   }
@@ -483,4 +480,4 @@ TEST_F(EasyUnlockServiceRegularTest, AuthenticateWithEasyUnlockMultipleTimes) {
   histogram_tester_.ExpectBucketCount("SmartLock.AuthResult.Unlock", 1, 1);
 }
 
-}  // namespace chromeos
+}  // namespace ash

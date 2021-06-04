@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_submit_event_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_element_radionodelist.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -471,9 +472,18 @@ void HTMLFormElement::ScheduleFormSubmission(
     return;
   }
 
-  if (!GetExecutionContext()->GetContentSecurityPolicy()->AllowFormAction(
-          form_submission->Action())) {
-    return;
+  if (form_submission->Action().ProtocolIsJavaScript()) {
+    // For javascript URLs we need to do the CSP check for 'form-action' here.
+    // All other schemes are checked in the browser.
+    //
+    // TODO(antoniosartori): Should we keep the 'form-action' check for
+    // javascript: URLs? For 'frame-src' and 'navigate-to', we do not check
+    // javascript: URLs. Reading the specification, it looks like 'form-action'
+    // should not apply to javascript: URLs.
+    if (!GetExecutionContext()->GetContentSecurityPolicy()->AllowFormAction(
+            form_submission->Action())) {
+      return;
+    }
   }
 
   UseCounter::Count(GetDocument(), WebFeature::kFormsSubmitted);
@@ -865,6 +875,24 @@ void HTMLFormElement::FinishParsingChildren() {
   GetDocument().GetFormController().RestoreControlStateIn(*this);
   did_finish_parsing_children_ = true;
 }
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8UnionElementOrRadioNodeList* HTMLFormElement::AnonymousNamedGetter(
+    const AtomicString& name) {
+  RadioNodeListOrElement return_value;
+  // Delegate to the old IDL union implementation for the time being.
+  AnonymousNamedGetter(name, return_value);
+  if (return_value.IsElement()) {
+    return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(
+        return_value.GetAsElement());
+  }
+  if (return_value.IsRadioNodeList()) {
+    return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(
+        return_value.GetAsRadioNodeList());
+  }
+  return nullptr;
+}
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLFormElement::AnonymousNamedGetter(
     const AtomicString& name,

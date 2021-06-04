@@ -6,6 +6,7 @@
 
 #include "ash/fast_ink/view_tree_host_root_view.h"
 #include "ash/fast_ink/view_tree_host_widget.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/hud_display/graphs_container_view.h"
 #include "ash/hud_display/hud_constants.h"
 #include "ash/hud_display/hud_header_view.h"
@@ -19,12 +20,13 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -37,6 +39,7 @@ constexpr size_t kHUDGraphsInset = 5;
 
 // Default HUDDisplayView height.
 constexpr size_t kDefaultHUDGraphHeight = 300;
+constexpr size_t kDefaultHUDSettingHeight = 400;
 
 // Top border + Header height + margin + graph height + bottom border..
 constexpr int kHUDViewDefaultHeight =
@@ -68,6 +71,8 @@ class HTClientView : public views::ClientView {
     return hud_display_->NonClientHitTest(point);
   }
 
+  HUDDisplayView* GetHUDDisplayViewForTesting() { return hud_display_; }
+
  private:
   HUDDisplayView* hud_display_;
 };
@@ -82,12 +87,11 @@ std::unique_ptr<views::ClientView> MakeClientView(views::Widget* widget) {
 }
 
 void InitializeFrameView(views::WidgetDelegate* delegate) {
-  auto* frame_view = delegate->GetWidget()->non_client_view()->frame_view();
+  auto* frame_view = static_cast<NonClientFrameViewAsh*>(
+      delegate->GetWidget()->non_client_view()->frame_view());
   // TODO(oshima): support component type with TYPE_WINDOW_FLAMELESS widget.
-  if (frame_view) {
-    frame_view->SetEnabled(false);
-    frame_view->SetVisible(false);
-  }
+  if (frame_view)
+    frame_view->SetFrameEnabled(false);
 }
 
 }  // namespace
@@ -133,6 +137,11 @@ void HUDDisplayView::Toggle() {
   widget->Show();
 
   g_hud_widget = widget;
+}
+
+// static
+bool HUDDisplayView::IsShown() {
+  return g_hud_widget;
 }
 
 HUDDisplayView::HUDDisplayView() {
@@ -190,6 +199,14 @@ HUDDisplayView::~HUDDisplayView() {
 
 // There is only one button.
 void HUDDisplayView::OnSettingsToggle() {
+  gfx::Rect bounds = g_hud_widget->GetWindowBoundsInScreen();
+  constexpr int settings_height_addition =
+      kDefaultHUDSettingHeight - kDefaultHUDGraphHeight;
+  // Adjust window height.
+  bounds.set_height(bounds.height() + (settings_view_->GetVisible() ? -1 : 1) *
+                                          settings_height_addition);
+  g_hud_widget->SetBounds(bounds);
+
   settings_view_->ToggleVisibility();
   graphs_container_->SetVisible(!settings_view_->GetVisible());
 }
@@ -203,6 +220,28 @@ void HUDDisplayView::ToggleOverlay() {
   g_hud_overlay_mode = !g_hud_overlay_mode;
   static_cast<ViewTreeHostRootView*>(GetWidget()->GetRootView())
       ->SetIsOverlayCandidate(g_hud_overlay_mode);
+}
+
+// static
+HUDDisplayView* HUDDisplayView::GetForTesting() {
+  if (!g_hud_widget)
+    return nullptr;
+
+  HTClientView* client_view =
+      static_cast<HTClientView*>(g_hud_widget->client_view());
+
+  if (!client_view)
+    return nullptr;
+
+  return client_view->GetHUDDisplayViewForTesting();  // IN-TEST
+}
+
+HUDSettingsView* HUDDisplayView::GetSettingsViewForTesting() {
+  return settings_view_;
+}
+
+void HUDDisplayView::ToggleSettingsForTesting() {
+  OnSettingsToggle();
 }
 
 int HUDDisplayView::NonClientHitTest(const gfx::Point& point) {

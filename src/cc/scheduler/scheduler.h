@@ -15,10 +15,10 @@
 #include "cc/metrics/event_metrics.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/draw_result.h"
-#include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
+#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -42,6 +42,7 @@ struct FrameTimingDetails;
 namespace cc {
 struct BeginMainFrameMetrics;
 class CompositorTimingHistory;
+class CompositorFrameReportingController;
 
 enum class FrameSkippedReason {
   kRecoverLatency,
@@ -94,13 +95,16 @@ class SchedulerClient {
 
 class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
  public:
-  Scheduler(SchedulerClient* client,
-            const SchedulerSettings& scheduler_settings,
-            int layer_tree_host_id,
-            base::SingleThreadTaskRunner* task_runner,
-            std::unique_ptr<CompositorTimingHistory> compositor_timing_history,
-            gfx::RenderingPipeline* main_thread_pipeline,
-            gfx::RenderingPipeline* compositor_thread_pipeline);
+  Scheduler(
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      base::SingleThreadTaskRunner* task_runner,
+      std::unique_ptr<CompositorTimingHistory> compositor_timing_history,
+      gfx::RenderingPipeline* main_thread_pipeline,
+      gfx::RenderingPipeline* compositor_thread_pipeline,
+      CompositorFrameReportingController* compositor_frame_reporting_controller,
+      power_scheduler::PowerModeArbiter* power_mode_arbiter);
   Scheduler(const Scheduler&) = delete;
   ~Scheduler() override;
 
@@ -284,6 +288,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
 
+  // Owned by LayerTreeHostImpl and is destroyed when LayerTreeHostImpl is
+  // destroyed.
+  CompositorFrameReportingController* compositor_frame_reporting_controller_;
+
   // What the latest deadline was, and when it was scheduled.
   base::TimeTicks deadline_;
   base::TimeTicks deadline_scheduled_at_;
@@ -308,7 +316,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // Task posted for the deadline or drawing phase of the scheduler. This task
   // can be rescheduled e.g. when the condition for the deadline is met, it is
   // scheduled to run immediately.
-  // NOTE: Scheduler weak ptrs are not necessary if CancelableCallback is used.
+  // NOTE: Scheduler weak ptrs are not necessary if CancelableOnceCallback is
+  // used.
   base::CancelableOnceClosure begin_impl_frame_deadline_task_;
 
   // This is used for queueing begin frames while scheduler is waiting for
@@ -333,12 +342,16 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   base::TimeDelta last_frame_interval_;
 
   gfx::RenderingPipeline* const main_thread_pipeline_;
-  base::Optional<gfx::RenderingPipeline::ScopedPipelineActive>
+  absl::optional<gfx::RenderingPipeline::ScopedPipelineActive>
       main_thread_pipeline_active_;
 
   gfx::RenderingPipeline* const compositor_thread_pipeline_;
-  base::Optional<gfx::RenderingPipeline::ScopedPipelineActive>
+  absl::optional<gfx::RenderingPipeline::ScopedPipelineActive>
       compositor_thread_pipeline_active_;
+
+  std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
+  power_scheduler::PowerMode last_power_mode_vote_ =
+      power_scheduler::PowerMode::kIdle;
 
  private:
   // Posts the deadline task if needed by checking
@@ -395,6 +408,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
   }
+
+  void UpdatePowerModeVote();
 };
 
 }  // namespace cc

@@ -7,6 +7,7 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/inspect/cpp/vmo/types.h>
 #include <memory>
 #include <set>
 
@@ -35,7 +36,9 @@ class WebEngineDevToolsController;
 class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
  public:
   // |devtools_controller| must outlive ContextImpl.
+  // Diagnostics about the context will be placed in |inspect_node|.
   ContextImpl(std::unique_ptr<content::BrowserContext> browser_context,
+              inspect::Node inspect_node,
               WebEngineDevToolsController* devtools_controller);
 
   // Tears down the Context, destroying any active Frames in the process.
@@ -62,6 +65,11 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   WebEngineDevToolsController* devtools_controller() const {
     return devtools_controller_;
   }
+
+  // Controls whether the CastStreaming receiver is available in this instance.
+  // At most one ContextImpl per-process may have CastStreaming enabled.
+  void SetCastStreamingEnabled();
+  bool has_cast_streaming_enabled() const { return cast_streaming_enabled_; }
 
   // fuchsia::web::Context implementation.
   void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) final;
@@ -90,6 +98,9 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Reference to the class managing the DevTools remote debugging service.
   WebEngineDevToolsController* const devtools_controller_;
 
+  // Inspect node & properties for this browsing context.
+  inspect::Node inspect_node_;
+
   // CookieManager API implementation for this Context.
   CookieManagerImpl cookie_manager_;
   fidl::BindingSet<fuchsia::web::CookieManager> cookie_manager_bindings_;
@@ -97,6 +108,9 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // TODO(crbug.com/893236): Make this false by default, and allow it to be
   // initialized at Context creation time.
   bool allow_javascript_injection_ = true;
+
+  // True if this instance should allows Frames to use CastStreaming.
+  bool cast_streaming_enabled_ = false;
 
   // Tracks all active FrameImpl instances, so that we can request their
   // destruction when this ContextImpl is destroyed.

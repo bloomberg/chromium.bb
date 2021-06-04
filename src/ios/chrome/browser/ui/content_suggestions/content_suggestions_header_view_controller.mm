@@ -253,6 +253,8 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
     [self addFakeTapView];
     [self.headerView addSubview:self.fakeOmnibox];
     self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
+    self.logoVendor.view.accessibilityIdentifier =
+        ntp_home::NTPLogoAccessibilityID();
     self.fakeOmnibox.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.headerView addSeparatorToSearchField:self.fakeOmnibox];
@@ -404,7 +406,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 }
 
 - (void)loadVoiceSearch:(id)sender {
-  [self.commandHandler dismissModals];
+  [self.commandHandler prepareForVoiceSearchPresentation];
 
   if ([self.delegate ignoreLoadRequests])
     return;
@@ -534,8 +536,6 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
     [self.dispatcher onFakeboxBlur];
   }
   [self.collectionSynchronizer shiftTilesDown];
-
-  [self.commandHandler dismissModals];
 }
 
 - (void)shiftTilesUp {
@@ -692,7 +692,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
       setConstant:content_suggestions::doodleHeight(self.logoVendor.showingLogo,
                                                     doodleShowing,
                                                     self.traitCollection)];
-  [self.headerCommandHandler updateForHeaderSizeChange];
+  [self.commandHandler updateForHeaderSizeChange];
 }
 
 #pragma mark - NTPHomeConsumer
@@ -726,6 +726,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   }
 
   [self shiftTilesDown];
+  [self.commandHandler updateForLocationBarResignedFirstResponder];
 }
 
 - (void)setVoiceSearchIsEnabled:(BOOL)voiceSearchIsEnabled {

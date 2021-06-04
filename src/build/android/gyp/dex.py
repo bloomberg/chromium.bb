@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -38,6 +38,12 @@ _IGNORE_WARNINGS = (
     r'Missing class com.google.errorprone.annotations.RestrictedInheritance',
     # Caused by internal protobuf package: https://crbug.com/1183971
     r'referenced from: com.google.protobuf.GeneratedMessageLite$GeneratedExtension',  # pylint: disable=line-too-long
+    # Caused by using Bazel desugar instead of D8 for desugar, since Bazel
+    # desugar doesn't preserve interfaces in the same way. This should be
+    # removed when D8 is used for desugaring.
+    r'Warning: Cannot emulate interface ',
+    # Only relevant for R8 when optimizing an app that doesn't use proto.
+    r'Ignoring -shrinkunusedprotofields since the protobuf-lite runtime is',
 )
 
 
@@ -531,11 +537,14 @@ def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
         final_dex_inputs, options.output, tmp_dir, dex_cmd, options=options)
 
 
-def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar):
+def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar,
+                                  min_api):
   dex_cmd = build_utils.JavaCmd(verify=False) + [
       '-cp',
       r8_jar_path,
       'com.android.tools.r8.D8',
+      '--min-api',
+      min_api,
   ]
   with build_utils.TempDir() as tmp_dir:
     _CreateFinalDex(src_paths, dest_dex_jar, tmp_dir, dex_cmd)

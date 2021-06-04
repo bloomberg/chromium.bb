@@ -29,6 +29,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/tracing_ui.h"
@@ -264,7 +265,7 @@ TracingControllerImpl::GenerateMetadataDict() {
   // obtained from process maps since library can be mapped from apk directly.
   // This is not added as part of memory-infra os dumps since it is special case
   // only for chrome library.
-  base::Optional<base::StringPiece> soname =
+  absl::optional<base::StringPiece> soname =
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
     metadata_dict->SetString("chrome-library-name", *soname);
@@ -336,6 +337,9 @@ TracingControllerImpl::GenerateMetadataDict() {
   metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
   metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
 #endif
+  metadata_dict->SetDictionary(
+      "gpu-features", base::DictionaryValue::From(
+                          std::make_unique<base::Value>(GetFeatureStatus())));
 
   metadata_dict->SetString("clock-domain", GetClockString());
   metadata_dict->SetBoolean("highres-ticks",

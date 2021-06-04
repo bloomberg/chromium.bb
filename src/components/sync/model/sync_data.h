@@ -51,9 +51,8 @@ class SyncData {
                                   const sync_pb::EntitySpecifics& specifics);
 
   // Helper method for creating SyncData objects originating from the syncer.
-  static SyncData CreateRemoteData(
-      sync_pb::EntitySpecifics specifics,
-      const ClientTagHash& client_tag_hash = ClientTagHash());
+  static SyncData CreateRemoteData(sync_pb::EntitySpecifics specifics,
+                                   const ClientTagHash& client_tag_hash);
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -72,9 +71,6 @@ class SyncData {
   // Return the non unique title (for debugging). Currently only set for data
   // going TO the syncer, not from.
   const std::string& GetTitle() const;
-
-  // Whether this sync data is for local data or data coming from the syncer.
-  bool IsLocal() const;
 
   std::string ToString() const;
 
@@ -101,14 +97,11 @@ class SyncData {
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 
-  // Whether this SyncData represents a local change.
-  bool is_local_;
-
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
   // Clears |entity|.
-  SyncData(bool is_local_, sync_pb::SyncEntity* entity);
+  explicit SyncData(sync_pb::SyncEntity* entity);
 };
 
 // gmock printer helper.

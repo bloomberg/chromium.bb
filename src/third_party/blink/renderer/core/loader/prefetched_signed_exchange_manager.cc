@@ -8,9 +8,9 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -70,13 +69,12 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient* client,
       WebURLResponse& response,
-      base::Optional<WebURLError>& error,
+      absl::optional<WebURLError>& error,
       WebData& data,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -88,14 +86,13 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
       WebURLLoaderClient* client) override {
     if (url_loader_) {
       url_loader_->LoadAsynchronously(
-          std::move(request), std::move(url_request_extra_data), requestor_id,
+          std::move(request), std::move(url_request_extra_data),
           no_mime_sniffing, std::move(resource_load_info_notifier_wrapper),
           client);
       return;
@@ -105,8 +102,8 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     // |this| here.
     pending_method_calls_.push(WTF::Bind(
         &PrefetchedSignedExchangeLoader::LoadAsynchronously, GetWeakPtr(),
-        std::move(request), std::move(url_request_extra_data), requestor_id,
-        no_mime_sniffing, std::move(resource_load_info_notifier_wrapper),
+        std::move(request), std::move(url_request_extra_data), no_mime_sniffing,
+        std::move(resource_load_info_notifier_wrapper),
         WTF::Unretained(client)));
   }
   void SetDefersLoading(DeferType value) override {

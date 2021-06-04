@@ -32,11 +32,11 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -86,7 +86,6 @@ namespace {
 
 constexpr char kTestResourceFilename[] = "white-1x1.png";
 constexpr char kTestResourceMimeType[] = "image/png";
-constexpr uint32_t kTestResourceSize = 103;  // size of white-1x1.png
 
 const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
     network::mojom::IPAddressSpace address_space) {
@@ -157,12 +156,12 @@ class ResourceFetcherTest : public testing::Test {
                         const ResourceError&,
                         int64_t encoded_data_length,
                         IsInternalRequest is_internal_request) override {}
-    const base::Optional<PartialResourceRequest>& GetLastRequest() const {
+    const absl::optional<PartialResourceRequest>& GetLastRequest() const {
       return request_;
     }
 
    private:
-    base::Optional<PartialResourceRequest> request_;
+    absl::optional<PartialResourceRequest> request_;
   };
 
  protected:
@@ -537,7 +536,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
 
   EXPECT_EQ(resource, new_resource);
-  base::Optional<PartialResourceRequest> new_request =
+  absl::optional<PartialResourceRequest> new_request =
       observer->GetLastRequest();
   EXPECT_TRUE(new_request.has_value());
   EXPECT_TRUE(new_request.value().IsAdResource());
@@ -570,20 +569,6 @@ TEST_F(ResourceFetcherTest, Vary) {
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_NE(resource, new_resource);
   new_resource->Loader()->Cancel();
-}
-
-TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
-  auto info = ResourceTimingInfo::Create(
-      fetch_initiator_type_names::kDocument, base::TimeTicks::Now(),
-      mojom::blink::RequestContextType::UNSPECIFIED,
-      network::mojom::RequestDestination::kEmpty);
-  info->AddFinalTransferSize(5);
-  EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(5));
-  ResourceResponse redirect_response(KURL("https://example.com/original"));
-  redirect_response.SetHttpStatusCode(200);
-  redirect_response.SetEncodedDataLength(7);
-  info->AddRedirect(redirect_response, KURL("https://example.com/redirect"));
-  EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(12));
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {
@@ -853,50 +838,6 @@ class ScopedMockRedirectRequester {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMockRedirectRequester);
 };
-
-TEST_F(ResourceFetcherTest, SameOriginRedirect) {
-  const char kRedirectURL[] = "http://127.0.0.1:8000/redirect.html";
-  const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
-  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
-                                        context, CreateTaskRunner());
-  requester.RegisterRedirect(kRedirectURL, kFinalURL);
-  requester.RegisterFinalResource(kFinalURL);
-  requester.Request(kRedirectURL);
-
-  EXPECT_EQ(kRedirectResponseOverheadBytes + kTestResourceSize,
-            context->GetTransferSize());
-}
-
-TEST_F(ResourceFetcherTest, CrossOriginRedirect) {
-  const char kRedirectURL[] = "http://otherorigin.test/redirect.html";
-  const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
-  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
-                                        context, CreateTaskRunner());
-  requester.RegisterRedirect(kRedirectURL, kFinalURL);
-  requester.RegisterFinalResource(kFinalURL);
-  requester.Request(kRedirectURL);
-
-  EXPECT_EQ(kTestResourceSize, context->GetTransferSize());
-}
-
-TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
-  const char kRedirectURL1[] = "http://127.0.0.1:8000/redirect1.html";
-  const char kRedirectURL2[] = "http://otherorigin.test/redirect2.html";
-  const char kRedirectURL3[] = "http://127.0.0.1:8000/redirect3.html";
-  const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
-  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
-                                        context, CreateTaskRunner());
-  requester.RegisterRedirect(kRedirectURL1, kRedirectURL2);
-  requester.RegisterRedirect(kRedirectURL2, kRedirectURL3);
-  requester.RegisterRedirect(kRedirectURL3, kFinalURL);
-  requester.RegisterFinalResource(kFinalURL);
-  requester.Request(kRedirectURL1);
-
-  EXPECT_EQ(kTestResourceSize, context->GetTransferSize());
-}
 
 TEST_F(ResourceFetcherTest, SynchronousRequest) {
   KURL url("http://127.0.0.1:8000/foo.png");
@@ -1313,7 +1254,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
       ->RunUntilIdle();
-  base::Optional<PartialResourceRequest> swr_request =
+  absl::optional<PartialResourceRequest> swr_request =
       observer->GetLastRequest();
   ASSERT_TRUE(swr_request.has_value());
   EXPECT_EQ(ResourceLoadPriority::kVeryLow, swr_request->Priority());

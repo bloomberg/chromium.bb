@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
@@ -65,7 +67,8 @@ CreatePrefSyncData(const std::string& name, const base::Value& value) {
           : specifics.mutable_preference();
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncData::CreateRemoteData(specifics);
+  return syncer::SyncData::CreateRemoteData(
+      specifics, syncer::ClientTagHash::FromHashed("unused"));
 }
 
 }  // anonymous namespace
@@ -79,7 +82,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
    public:
     explicit State(MyMockInputMethodManager* manager)
         : MockInputMethodManagerImpl::State(manager), manager_(manager) {
-      input_method_extensions_.reset(new InputMethodDescriptors);
+      input_method_extensions_ = std::make_unique<InputMethodDescriptors>();
     }
 
     void ChangeInputMethod(const std::string& input_method_id,
@@ -140,8 +143,8 @@ class PreferencesTest : public testing::Test {
   ~PreferencesTest() override {}
 
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
     auto* user_manager = new FakeChromeUserManager();
@@ -169,7 +172,7 @@ class PreferencesTest : public testing::Test {
         &previous_input_method_, &current_input_method_);
     input_method::InitializeForTesting(mock_manager_);
 
-    prefs_.reset(new Preferences(mock_manager_));
+    prefs_ = std::make_unique<Preferences>(mock_manager_);
   }
 
   void TearDown() override {

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "apps/test/app_window_waiter.h"
+#include "base/format_macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -904,12 +905,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
   EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
-          function.get(), base::StringPrintf(
+          function.get(),
+          base::StringPrintf(
               "[%d, {\"url\":\"http://example.com\"}]",
               ExtensionTabUtil::GetTabId(
                   DevToolsWindowTesting::Get(devtools)->main_web_contents())),
           DevToolsWindowTesting::Get(devtools)->browser()),
-      tabs_constants::kNoCurrentWindowError));
+      tabs_constants::kNotAllowedForDevToolsError));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
@@ -1048,6 +1050,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
   scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
   scoped_refptr<const Extension> extension(ExtensionBuilder("Test").Build());
   function->set_extension(extension.get());
+  function->SetBrowserContextForTesting(browser()->profile());
 
   std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
@@ -1068,6 +1071,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
 
   function = new WindowsCreateFunction();
   function->set_extension(extension.get());
+  function->SetBrowserContextForTesting(browser()->profile());
   result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
       function.get(), "[{\"state\": \"fullscreen\"}]", browser(),
       api_test_utils::INCLUDE_INCOGNITO)));
@@ -1896,8 +1900,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetDefaultZoom) {
   // Change the default zoom level and verify GetDefaultZoom returns the
   // correct value.
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartition(
-          web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+      web_contents->GetBrowserContext()->GetStoragePartition(
+          web_contents->GetSiteInstance());
   ChromeZoomLevelPrefs* zoom_prefs =
       static_cast<ChromeZoomLevelPrefs*>(partition->GetZoomLevelDelegate());
 
@@ -1921,8 +1925,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetToDefaultZoom) {
   double new_default_zoom_level = default_zoom_level + 0.42;
 
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartition(
-          web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+      web_contents->GetBrowserContext()->GetStoragePartition(
+          web_contents->GetSiteInstance());
   ChromeZoomLevelPrefs* zoom_prefs =
       static_cast<ChromeZoomLevelPrefs*>(partition->GetZoomLevelDelegate());
 
@@ -2280,7 +2284,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
     // The url to use in chrome.windows.create().
     std::string url;
     // If set, its value will be used to specify |setSelfAsOpener|.
-    base::Optional<bool> set_self_as_opener;
+    absl::optional<bool> set_self_as_opener;
     // The origin we expect the new tab to be in, opaque origins will be "null".
     std::string expected_origin_str;
   } test_cases[] = {
@@ -2290,20 +2294,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
       // origin.
       {url::kAboutBlankURL, true, extension_origin_str},
       {url::kAboutBlankURL, false, "null"},
-      {url::kAboutBlankURL, base::nullopt, "null"},
+      {url::kAboutBlankURL, absl::nullopt, "null"},
 
       // data:... URLs.
       // With opener relationship or not, "data:..." URLs always gets unique
       // origin, so origin will always be "null" in these cases.
       {kDataURL, true, "null"},
       {kDataURL, false, "null"},
-      {kDataURL, base::nullopt, "null"},
+      {kDataURL, absl::nullopt, "null"},
 
       // chrome-extension:// URLs.
       // These always get extension origin.
       {extension_url_str, true, extension_origin_str},
       {extension_url_str, false, extension_origin_str},
-      {extension_url_str, base::nullopt, extension_origin_str},
+      {extension_url_str, absl::nullopt, extension_origin_str},
   };
 
   auto run_test_case = [&web_contents](const TestCase& test_case) {
@@ -2516,6 +2520,79 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToNonWAR) {
   EXPECT_EQ(extension_origin, test_frame->GetLastCommittedOrigin());
   EXPECT_EQ(extension_contents->GetMainFrame()->GetProcess(),
             test_contents->GetMainFrame()->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       ExtensionAPICannotCreateWindowForDevtools) {
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+  scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(),
+          base::StringPrintf(
+              R"([{"tabId": %d}])",
+              ExtensionTabUtil::GetTabId(
+                  DevToolsWindowTesting::Get(devtools)->main_web_contents())),
+          DevToolsWindowTesting::Get(devtools)->browser()),
+      tabs_constants::kNotAllowedForDevToolsError));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExtensionAPICannotMoveDevtoolsTab) {
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+  scoped_refptr<TabsMoveFunction> function = new TabsMoveFunction();
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(),
+          base::StringPrintf(
+              R"([%d, {"index": -1}])",
+              ExtensionTabUtil::GetTabId(
+                  DevToolsWindowTesting::Get(devtools)->main_web_contents())),
+          DevToolsWindowTesting::Get(devtools)->browser()),
+      tabs_constants::kNotAllowedForDevToolsError));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExtensionAPICannotGroupDevtoolsTab) {
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+  scoped_refptr<TabsGroupFunction> function = new TabsGroupFunction();
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(),
+          base::StringPrintf(
+              R"([{"tabIds": %d}])",
+              ExtensionTabUtil::GetTabId(
+                  DevToolsWindowTesting::Get(devtools)->main_web_contents())),
+          DevToolsWindowTesting::Get(devtools)->browser()),
+      tabs_constants::kNotAllowedForDevToolsError));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExtensionAPICannotDiscardDevtoolsTab) {
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+  scoped_refptr<TabsDiscardFunction> function = new TabsDiscardFunction();
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(),
+          base::StringPrintf(
+              "[%d]",
+              ExtensionTabUtil::GetTabId(
+                  DevToolsWindowTesting::Get(devtools)->main_web_contents())),
+          DevToolsWindowTesting::Get(devtools)->browser()),
+      tabs_constants::kNotAllowedForDevToolsError));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 }  // namespace extensions

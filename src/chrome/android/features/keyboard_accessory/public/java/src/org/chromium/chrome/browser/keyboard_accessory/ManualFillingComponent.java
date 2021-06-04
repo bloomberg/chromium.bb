@@ -11,11 +11,13 @@ import android.view.ViewStub;
 
 import androidx.annotation.Px;
 
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -72,6 +74,16 @@ public interface ManualFillingComponent {
         int calculateSoftKeyboardHeight(View rootView);
     }
 
+    /** A delegate that can be used to request updates for accessory sheets. */
+    interface UpdateAccessorySheetDelegate {
+        /**
+         * Requests a timely update to the accessory sheet of the given {@param sheetType}. If any
+         * sheet can be constructed, the native side will push it, even if it was pushed before.
+         * @param sheetType The {@link AccessoryTabType} of the sheet that should be updated.
+         */
+        void requestSheet(@AccessoryTabType int sheetType);
+    }
+
     /**
      * Initializes the manual filling component. Calls to this class are NoOps until this method
      * is called.
@@ -111,18 +123,29 @@ public interface ManualFillingComponent {
     /**
      * By registering a provider, an empty tab of the given tab type is created. Call
      * {@link PropertyProvider#notifyObservers(Object)} to fill or update the sheet.
+     * @param webContents The {@link WebContents} the provided data is meant for.
      * @param sheetType The type of sheet to instantiate and to provide data for.
      * @param sheetDataProvider The {@link PropertyProvider} the tab will get its data from.
      */
-    void registerSheetDataProvider(@AccessoryTabType int sheetType,
+    void registerSheetDataProvider(WebContents webContents, @AccessoryTabType int sheetType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);
+
+    /**
+     * Registers an updater delegate which requests new accessory sheets for a given `webContents`.
+     * @param webContents The {@link WebContents} the given `delegate` maintains sheets for.
+     * @param delegate A {@link UpdateAccessorySheetDelegate} to issue requests for recent sheets.
+     */
+    void registerSheetUpdateDelegate(
+            WebContents webContents, UpdateAccessorySheetDelegate delegate);
 
     /**
      * Registers a provider, to provide actions for the keyboard accessory bar. Call
      * {@link PropertyProvider#notifyObservers(Object)} to fill or update the actions.
+     * @param webContents The {@link WebContents} the provided data is meant for.
      * @param actionProvider The {@link PropertyProvider} providing actions.
      */
-    void registerActionProvider(PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider);
+    void registerActionProvider(WebContents webContents,
+            PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider);
 
     /**
      * Registers a provider, to provide autofill suggestions for the keyboard accessory bar. Call
@@ -170,6 +193,12 @@ public interface ManualFillingComponent {
      * @param view A {@link View} that is used to find the window root.
      */
     boolean isFillingViewShown(View view);
+
+    /**
+     * The filling UI extends or
+     * @return A {@link ObservableSupplier<Integer>} providing an inset to shrink the page by.
+     */
+    ObservableSupplier<Integer> getBottomInsetSupplier();
 
     /**
      * @param observer An {@link Observer} to add.

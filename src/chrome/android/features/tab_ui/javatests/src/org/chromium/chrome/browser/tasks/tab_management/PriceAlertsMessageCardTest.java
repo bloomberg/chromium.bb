@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -58,7 +60,7 @@ import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -114,7 +116,7 @@ public class PriceAlertsMessageCardTest {
         }
         PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(null);
         PriceDropNotificationManager.setNotificationManagerForTesting(null);
-        ActivityUtils.clearActivityOrientation(mActivityTestRule.getActivity());
+        ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
     }
 
     @Test
@@ -162,6 +164,22 @@ public class PriceAlertsMessageCardTest {
         assertFalse(PriceTrackingUtilities.isPriceAlertsMessageCardEnabled());
 
         enterTabSwitcher(cta);
+        onView(withId(R.id.large_message_card_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testMessageCardNotShowing_InIncognito() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        assertTrue(PriceTrackingUtilities.isPriceDropNotificationEligible());
+        mMockNotificationManager.setNotificationsEnabled(false);
+        assertFalse(mPriceDropNotificationManager.canPostNotification());
+        assertTrue(PriceTrackingUtilities.isPriceAlertsMessageCardEnabled());
+
+        createTabs(cta, true, 1);
+        enterTabSwitcher(cta);
+        assertTrue(cta.getTabModelSelector().getCurrentModel().isIncognito());
         onView(withId(R.id.large_message_card_item)).check(doesNotExist());
     }
 
@@ -246,6 +264,7 @@ public class PriceAlertsMessageCardTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @FlakyTest(message = "https://crbug.com/1201547")
     public void testSwipeMessage() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         mMockNotificationManager.setNotificationsEnabled(false);
@@ -351,7 +370,7 @@ public class PriceAlertsMessageCardTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         mMockNotificationManager.setNotificationsEnabled(true);
 
-        ActivityUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         enterTabSwitcher(cta);
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
@@ -368,7 +387,7 @@ public class PriceAlertsMessageCardTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         mMockNotificationManager.setNotificationsEnabled(false);
 
-        ActivityUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         enterTabSwitcher(cta);
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));

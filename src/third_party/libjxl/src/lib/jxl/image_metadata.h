@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "lib/jxl/color_encoding_internal.h"
-#include "lib/jxl/dec_xyb.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/headers.h"
 #include "lib/jxl/jpeg/jpeg_data.h"
@@ -113,11 +112,6 @@ struct ExtraChannelInfo : public Fields {
 
   Status VisitFields(Visitor* JXL_RESTRICT visitor) override;
 
-  size_t Size(size_t size) const {
-    const size_t mask = (1u << dim_shift) - 1;
-    return (size + mask) >> dim_shift;
-  }
-
   mutable bool all_default;
 
   ExtraChannel type;
@@ -137,22 +131,6 @@ struct OpsinInverseMatrix : public Fields {
   const char* Name() const override { return "OpsinInverseMatrix"; }
 
   Status VisitFields(Visitor* JXL_RESTRICT visitor) override;
-
-  OpsinParams ToOpsinParams(float intensity_target) const {
-    OpsinParams opsin_params;
-    InitSIMDInverseMatrix(inverse_matrix, opsin_params.inverse_opsin_matrix,
-                          intensity_target);
-    std::copy(std::begin(opsin_biases), std::end(opsin_biases),
-              opsin_params.opsin_biases);
-    for (int i = 0; i < 3; ++i) {
-      opsin_params.opsin_biases_cbrt[i] =
-          std::cbrt(opsin_params.opsin_biases[i]);
-    }
-    opsin_params.opsin_biases_cbrt[3] = opsin_params.opsin_biases[3] = 1;
-    std::copy(std::begin(quant_biases), std::end(quant_biases),
-              opsin_params.quant_biases);
-    return opsin_params;
-  }
 
   mutable bool all_default;
 
@@ -256,6 +234,12 @@ struct ImageMetadata : public Fields {
   void SetFloat32Samples() {
     bit_depth.bits_per_sample = 32;
     bit_depth.exponent_bits_per_sample = 8;
+    bit_depth.floating_point_sample = true;
+  }
+
+  void SetFloat16Samples() {
+    bit_depth.bits_per_sample = 16;
+    bit_depth.exponent_bits_per_sample = 5;
     bit_depth.floating_point_sample = true;
   }
 

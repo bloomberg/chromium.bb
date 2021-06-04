@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
@@ -590,7 +591,7 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
   media::VideoCaptureFormats formats;
 
   if (try_in_use_first) {
-    base::Optional<media::VideoCaptureFormat> format =
+    absl::optional<media::VideoCaptureFormat> format =
         video_capture_manager_->GetDeviceFormatInUse(
             blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id);
     if (format.has_value()) {
@@ -810,7 +811,7 @@ void MediaDevicesManager::GetAudioInputCapabilities(
 void MediaDevicesManager::GotAudioInputCapabilities(
     size_t state_id,
     size_t capabilities_index,
-    const base::Optional<media::AudioParameters>& parameters) {
+    const absl::optional<media::AudioParameters>& parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::Contains(enumeration_states_, state_id));
 

@@ -12,6 +12,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "cast/streaming/message_fields.h"
+#include "cast/streaming/resolution.h"
 #include "cast/streaming/rtp_defines.h"
 #include "cast/streaming/session_config.h"
 #include "json/value.h"
@@ -45,7 +46,8 @@ constexpr int kDefaultNumAudioChannels = 2;
 struct Stream {
   enum class Type : uint8_t { kAudioSource, kVideoSource };
 
-  ErrorOr<Json::Value> ToJson() const;
+  Json::Value ToJson() const;
+  bool IsValid() const;
 
   int index = 0;
   Type type = {};
@@ -66,22 +68,18 @@ struct Stream {
 };
 
 struct AudioStream {
-  ErrorOr<Json::Value> ToJson() const;
+  Json::Value ToJson() const;
+  bool IsValid() const;
 
   Stream stream = {};
   AudioCodec codec;
   int bit_rate = 0;
 };
 
-struct Resolution {
-  ErrorOr<Json::Value> ToJson() const;
-
-  int width = 0;
-  int height = 0;
-};
 
 struct VideoStream {
-  ErrorOr<Json::Value> ToJson() const;
+  Json::Value ToJson() const;
+  bool IsValid() const;
 
   Stream stream = {};
   VideoCodec codec;
@@ -98,12 +96,10 @@ enum class CastMode : uint8_t { kMirroring, kRemoting };
 
 struct Offer {
   static ErrorOr<Offer> Parse(const Json::Value& root);
-  ErrorOr<Json::Value> ToJson() const;
+  Json::Value ToJson() const;
+  bool IsValid() const;
 
   CastMode cast_mode = CastMode::kMirroring;
-  // This field is poorly named in the spec (receiverGetStatus), so we use
-  // a more descriptive name here.
-  bool supports_wifi_status_reporting = {};
   std::vector<AudioStream> audio_streams = {};
   std::vector<VideoStream> video_streams = {};
 };

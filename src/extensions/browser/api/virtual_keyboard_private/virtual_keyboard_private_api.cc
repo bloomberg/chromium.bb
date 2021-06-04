@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/optional.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event.h"
 
 namespace extensions {
@@ -261,9 +261,9 @@ VirtualKeyboardPrivateGetClipboardHistoryFunction::Run() {
 
   delegate()->GetClipboardHistory(
       item_id_filter,
-      base::Bind(&VirtualKeyboardPrivateGetClipboardHistoryFunction::
-                     OnGetClipboardHistory,
-                 this));
+      base::BindOnce(&VirtualKeyboardPrivateGetClipboardHistoryFunction::
+                         OnGetClipboardHistory,
+                     this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 

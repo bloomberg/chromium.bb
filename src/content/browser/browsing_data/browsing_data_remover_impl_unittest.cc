@@ -333,10 +333,9 @@ class RemoveDownloadsTester {
  public:
   explicit RemoveDownloadsTester(BrowserContext* browser_context)
       : download_manager_(new MockDownloadManager()) {
-    BrowserContext::SetDownloadManagerForTesting(
-        browser_context, base::WrapUnique(download_manager_));
-    EXPECT_EQ(download_manager_,
-              BrowserContext::GetDownloadManager(browser_context));
+    browser_context->SetDownloadManagerForTesting(
+        base::WrapUnique(download_manager_));
+    EXPECT_EQ(download_manager_, browser_context->GetDownloadManager());
     EXPECT_CALL(*download_manager_, Shutdown());
   }
 
@@ -356,7 +355,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
  public:
   BrowsingDataRemoverImplTest() : browser_context_(new TestBrowserContext()) {
     remover_ = static_cast<BrowsingDataRemoverImpl*>(
-        BrowserContext::GetBrowsingDataRemover(browser_context_.get()));
+        browser_context_->GetBrowsingDataRemover());
   }
 
   ~BrowsingDataRemoverImplTest() override = default;
@@ -1240,7 +1239,7 @@ class InspectableCompletionObserver
 
 TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+      GetBrowserContext()->GetBrowsingDataRemover());
 
   // The |completion_inhibitor| on the stack should prevent removal sessions
   // from completing until after ContinueToCompletion() is called.
@@ -1272,7 +1271,7 @@ TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
 
 TEST_F(BrowsingDataRemoverImplTest, EarlyShutdown) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+      GetBrowserContext()->GetBrowsingDataRemover());
   InspectableCompletionObserver completion_observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
   remover->RemoveAndReply(
@@ -1398,7 +1397,7 @@ class MultipleTasksObserver {
 
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+      GetBrowserContext()->GetBrowsingDataRemover());
   EXPECT_FALSE(remover->IsRemovingForTesting());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
@@ -1490,7 +1489,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
 // deletion and merge all following deletions.
 TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+      GetBrowserContext()->GetBrowsingDataRemover());
   EXPECT_FALSE(remover->IsRemovingForTesting());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
@@ -1544,7 +1543,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
 // executed correctly and doesn't crash.
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+      GetBrowserContext()->GetBrowsingDataRemover());
   EXPECT_FALSE(remover->IsRemovingForTesting());
 
   uint64_t test_removal_masks[] = {
@@ -1673,8 +1672,7 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSiteDespiteTimeRange) {
 
 TEST_F(BrowsingDataRemoverImplTest, DeferCookieDeletion) {
   TestBrowsingDataRemoverDelegate delegate;
-  BrowserContext::GetBrowsingDataRemover(GetBrowserContext())
-      ->SetEmbedderDelegate(&delegate);
+  GetBrowserContext()->GetBrowsingDataRemover()->SetEmbedderDelegate(&delegate);
   uint32_t dom_storage_mask =
       StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE |
       StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
@@ -1721,8 +1719,7 @@ TEST_F(BrowsingDataRemoverImplTest, DeferCookieDeletion) {
             deferred_domains);
 
   // Reset delegate.
-  BrowserContext::GetBrowsingDataRemover(GetBrowserContext())
-      ->SetEmbedderDelegate(nullptr);
+  GetBrowserContext()->GetBrowsingDataRemover()->SetEmbedderDelegate(nullptr);
 }
 
 // Tests that the failed_data_types mask is correctly plumbed from the embedder
@@ -1731,8 +1728,7 @@ TEST_F(BrowsingDataRemoverImplTest, FailedDataTypes) {
   const uint64_t kSomeEmbedderType = BrowsingDataRemover::DATA_TYPE_CONTENT_END
                                      << 1;
 
-  BrowsingDataRemover* remover =
-      BrowserContext::GetBrowsingDataRemover(GetBrowserContext());
+  BrowsingDataRemover* remover = GetBrowserContext()->GetBrowsingDataRemover();
 
   TestBrowsingDataRemoverDelegate delegate;
   remover->SetEmbedderDelegate(&delegate);

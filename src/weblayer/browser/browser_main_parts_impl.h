@@ -34,11 +34,12 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
   // BrowserMainParts overrides.
   int PreCreateThreads() override;
   int PreEarlyInitialization() override;
-  void PreMainMessageLoopStart() override;
+  void PreCreateMainMessageLoop() override;
   void PostCreateThreads() override;
   int PreMainMessageLoopRun() override;
   void WillRunMainMessageLoop(
       std::unique_ptr<base::RunLoop>& run_loop) override;
+  void OnFirstIdle() override;
   void PostMainMessageLoopRun() override;
 
  private:

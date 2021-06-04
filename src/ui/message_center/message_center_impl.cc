@@ -338,7 +338,7 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
 
   lock_screen_controller_->DismissLockScreenThenExecute(
       base::BindOnce(&MessageCenterImpl::ClickOnNotificationUnlocked,
-                     base::Unretained(this), id, base::nullopt, base::nullopt),
+                     base::Unretained(this), id, absl::nullopt, absl::nullopt),
       base::OnceClosure());
 }
 
@@ -350,7 +350,7 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
 
   lock_screen_controller_->DismissLockScreenThenExecute(
       base::BindOnce(&MessageCenterImpl::ClickOnNotificationUnlocked,
-                     base::Unretained(this), id, button_index, base::nullopt),
+                     base::Unretained(this), id, button_index, absl::nullopt),
       base::OnceClosure());
 }
 
@@ -370,8 +370,8 @@ void MessageCenterImpl::ClickOnNotificationButtonWithReply(
 
 void MessageCenterImpl::ClickOnNotificationUnlocked(
     const std::string& id,
-    const base::Optional<int>& button_index,
-    const base::Optional<std::u16string>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This method must be called under unlocked screen.
@@ -460,7 +460,7 @@ void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
     for (MessageCenterObserver& observer : observer_list_)
       observer.OnQuietModeChanged(in_quiet_mode);
   }
-  quiet_mode_timer_.reset();
+  quiet_mode_timer_.Stop();
 }
 
 void MessageCenterImpl::SetSpokenFeedbackEnabled(bool enabled) {
@@ -470,20 +470,17 @@ void MessageCenterImpl::SetSpokenFeedbackEnabled(bool enabled) {
 void MessageCenterImpl::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (quiet_mode_timer_) {
-    // Note that the capital Reset() is the method to restart the timer, not
-    // scoped_ptr::reset().
-    quiet_mode_timer_->Reset();
-  } else {
+
+  if (!quiet_mode_timer_.IsRunning()) {
     notification_list_->SetQuietMode(true);
     for (MessageCenterObserver& observer : observer_list_)
       observer.OnQuietModeChanged(true);
-
-    quiet_mode_timer_ = std::make_unique<base::OneShotTimer>();
-    quiet_mode_timer_->Start(FROM_HERE, expires_in,
-                             base::BindOnce(&MessageCenterImpl::SetQuietMode,
-                                            base::Unretained(this), false));
   }
+
+  // This will restart the timer if it is already running.
+  quiet_mode_timer_.Start(FROM_HERE, expires_in,
+                          base::BindOnce(&MessageCenterImpl::SetQuietMode,
+                                         base::Unretained(this), false));
 }
 
 void MessageCenterImpl::RestartPopupTimers() {

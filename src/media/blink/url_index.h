@@ -16,10 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/blink/lru.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -216,7 +214,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(UrlData);
 };
 

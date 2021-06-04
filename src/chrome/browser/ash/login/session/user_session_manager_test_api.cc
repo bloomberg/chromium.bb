@@ -6,7 +6,7 @@
 
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 
-namespace chromeos {
+namespace ash {
 namespace test {
 
 UserSessionManagerTestApi::UserSessionManagerTestApi(
@@ -39,5 +39,10 @@ void UserSessionManagerTestApi::SetAttemptRestartClosureInTests(
   session_manager_->SetAttemptRestartClosureInTests(attempt_restart_closure);
 }
 
+OnboardingUserActivityCounter*
+UserSessionManagerTestApi::get_onboarding_user_activity_counter() {
+  return session_manager_->onboarding_user_activity_counter_.get();
+}
+
 }  // namespace test
-}  // namespace chromeos
+}  // namespace ash

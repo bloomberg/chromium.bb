@@ -16,6 +16,7 @@ class CSSParserContext;
 class CSSParserTokenStream;
 class CSSParserObserver;
 class CSSSelectorList;
+class Node;
 class StyleSheetContents;
 
 // FIXME: We should consider building CSSSelectors directly instead of using
@@ -36,6 +37,13 @@ class CORE_EXPORT CSSSelectorParser {
 
   static bool SupportsComplexSelector(CSSParserTokenRange,
                                       const CSSParserContext*);
+
+  static CSSSelector::PseudoType ParsePseudoType(const AtomicString&,
+                                                 bool has_arguments);
+  static PseudoId ParsePseudoElement(const String&, const Node*);
+  // Returns the argument of a parameterized pseudo-element. For example, for
+  // '::highlight(foo)' it returns 'foo'.
+  static AtomicString ParsePseudoElementArgument(const String&);
 
  private:
   CSSSelectorParser(const CSSParserContext*, StyleSheetContents*);

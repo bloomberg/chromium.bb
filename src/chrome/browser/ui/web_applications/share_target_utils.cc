@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/web_applications/share_target_utils.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -105,8 +105,8 @@ NavigateParams NavigateParamsForShareTarget(
       // //chrome/browser/webshare/chromeos/sharesheet_client.cc
       for (const GURL& file_url : intent.file_urls.value()) {
         storage::FileSystemContext* file_system_context =
-            file_manager::util::GetFileSystemContextForExtensionId(
-                browser->profile(), extension_misc::kFilesManagerAppId);
+            file_manager::util::GetFileManagerFileSystemContext(
+                browser->profile());
         storage::FileSystemURL file_system_url =
             file_system_context->CrackURL(file_url);
         if (!file_system_url.is_valid()) {

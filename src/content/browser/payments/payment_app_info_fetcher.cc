@@ -10,8 +10,8 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "components/payments/content/icon/icon_size.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/manifest_icon_downloader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -38,7 +39,7 @@ void PaymentAppInfoFetcher::Start(
 
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids =
       service_worker_context->GetWindowClientFrameRoutingIds(
-          context_url.GetOrigin());
+          storage::StorageKey(url::Origin::Create(context_url)));
 
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,

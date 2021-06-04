@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,7 +42,6 @@
 #include "ui/views/buildflags.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/focus_manager_event_handler.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -71,7 +70,6 @@
 
 #if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
     (defined(OS_LINUX) || defined(OS_CHROMEOS))
-#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #endif
 
@@ -212,7 +210,7 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   if (!params.child) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
-    if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
+    if (parent && parent->GetType() != aura::client::WINDOW_TYPE_UNKNOWN) {
       wm::AddTransientChild(parent, window_);
       if (!context)
         context = parent;
@@ -862,6 +860,10 @@ ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
   return aura::Env::GetInstance()->gesture_recognizer();
 }
 
+ui::GestureConsumer* NativeWidgetAura::GetGestureConsumer() {
+  return window_;
+}
+
 void NativeWidgetAura::OnSizeConstraintsChanged() {
   SetResizeBehaviorFromDelegate(GetWidget()->widget_delegate(), window_);
 }
@@ -1099,6 +1101,13 @@ ui::mojom::DragOperation NativeWidgetAura::OnPerformDrop(
                               last_drop_operation_);
 }
 
+aura::client::DragDropDelegate::DropCallback NativeWidgetAura::GetDropCallback(
+    const ui::DropTargetEvent& event) {
+  // TODO(crbug.com/1197506): Return async drop callback function.
+  NOTIMPLEMENTED();
+  return base::NullCallback();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, protected:
 
@@ -1158,27 +1167,6 @@ void Widget::CloseAllSecondaryWidgets() {
     (defined(OS_LINUX) || defined(OS_CHROMEOS))
   DesktopWindowTreeHostLinux::CleanUpWindowList(CloseWindow);
 #endif
-}
-
-const ui::NativeTheme* Widget::GetNativeTheme() const {
-  if (base::FeatureList::IsEnabled(
-          features::kInheritNativeThemeFromParentWidget) &&
-      parent_) {
-    return parent_->GetNativeTheme();
-  }
-
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-    (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  const LinuxUI* linux_ui = LinuxUI::instance();
-  if (linux_ui) {
-    ui::NativeTheme* native_theme =
-        linux_ui->GetNativeTheme(native_widget_->GetNativeWindow());
-    if (native_theme)
-      return native_theme;
-  }
-#endif
-
-  return ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 namespace internal {

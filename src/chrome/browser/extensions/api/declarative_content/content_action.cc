@@ -175,9 +175,9 @@ class SetIcon : public ContentAction {
 // Helper for getting JS collections into C++.
 static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
                                         std::vector<std::string>* append_to) {
-  for (auto it = append_strings.begin(); it != append_strings.end(); ++it) {
+  for (const auto& entry : append_strings.GetList()) {
     std::string value;
-    if (it->GetAsString(&value)) {
+    if (entry.GetAsString(&value)) {
       append_to->push_back(value);
     } else {
       return false;
@@ -309,9 +309,8 @@ RequestContentScript::~RequestContentScript() {
   // associated `script_loader_` may have been deleted before this object which
   // means the loader has already removed `script_`.
   if (script_loader_) {
-    script_loader_->RemoveScripts(
-        {UserScriptIDPair(script_.id(), script_.host_id())},
-        UserScriptLoader::ScriptsLoadedCallback());
+    script_loader_->RemoveScripts({script_.id()},
+                                  UserScriptLoader::ScriptsLoadedCallback());
   }
 }
 
@@ -366,11 +365,17 @@ void RequestContentScript::InstructRenderProcessToInject(
   ContentScriptTracker::WillExecuteCode(base::PassKey<RequestContentScript>(),
                                         contents->GetMainFrame(), *extension);
 
-  ExtensionWebContentsObserver::GetForWebContents(contents)
-      ->GetLocalFrame(contents->GetMainFrame())
-      ->ExecuteDeclarativeScript(
-          sessions::SessionTabHelper::IdForTab(contents).id(), extension->id(),
-          script_.id(), contents->GetLastCommittedURL());
+  mojom::LocalFrame* local_frame =
+      ExtensionWebContentsObserver::GetForWebContents(contents)->GetLocalFrame(
+          contents->GetMainFrame());
+  if (!local_frame) {
+    // TODO(https://crbug.com/1203579): Need to review when this method is
+    // called with non-live frame.
+    return;
+  }
+  local_frame->ExecuteDeclarativeScript(
+      sessions::SessionTabHelper::IdForTab(contents).id(), extension->id(),
+      script_.id(), contents->GetLastCommittedURL());
 }
 
 void RequestContentScript::OnScriptsLoaded(

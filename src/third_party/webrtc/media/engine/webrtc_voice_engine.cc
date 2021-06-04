@@ -50,7 +50,6 @@
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/third_party/base64/base64.h"
-#include "rtc_base/thread.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/metrics.h"
 
@@ -330,7 +329,7 @@ void WebRtcVoiceEngine::Init() {
     config.audio_device_module = adm_;
     if (audio_frame_processor_)
       config.async_audio_processing_factory =
-          new rtc::RefCountedObject<webrtc::AsyncAudioProcessing::Factory>(
+          rtc::make_ref_counted<webrtc::AsyncAudioProcessing::Factory>(
               *audio_frame_processor_, *task_queue_factory_);
     audio_state_ = webrtc::AudioState::Create(config);
   }
@@ -377,7 +376,7 @@ VoiceMediaChannel* WebRtcVoiceEngine::CreateMediaChannel(
     const MediaConfig& config,
     const AudioOptions& options,
     const webrtc::CryptoOptions& crypto_options) {
-  RTC_DCHECK_RUN_ON(&worker_thread_checker_);
+  RTC_DCHECK_RUN_ON(call->worker_thread());
   return new WebRtcVoiceMediaChannel(this, config, options, crypto_options,
                                      call);
 }
@@ -624,19 +623,6 @@ WebRtcVoiceEngine::GetRtpHeaderExtensions() const {
     result.emplace_back(uri, id++, webrtc::RtpTransceiverDirection::kSendRecv);
   }
   return result;
-}
-
-void WebRtcVoiceEngine::RegisterChannel(WebRtcVoiceMediaChannel* channel) {
-  RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  RTC_DCHECK(channel);
-  channels_.push_back(channel);
-}
-
-void WebRtcVoiceEngine::UnregisterChannel(WebRtcVoiceMediaChannel* channel) {
-  RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  auto it = absl::c_find(channels_, channel);
-  RTC_DCHECK(it != channels_.end());
-  channels_.erase(it);
 }
 
 bool WebRtcVoiceEngine::StartAecDump(webrtc::FileWrapper file,
@@ -1395,19 +1381,17 @@ WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel(
     const AudioOptions& options,
     const webrtc::CryptoOptions& crypto_options,
     webrtc::Call* call)
-    : VoiceMediaChannel(config),
-      worker_thread_(rtc::Thread::Current()),
+    : VoiceMediaChannel(config, call->network_thread()),
+      worker_thread_(call->worker_thread()),
       engine_(engine),
       call_(call),
       audio_config_(config.audio),
       crypto_options_(crypto_options),
       audio_red_for_opus_trial_enabled_(
           IsEnabled(call->trials(), "WebRTC-Audio-Red-For-Opus")) {
-  RTC_DCHECK_RUN_ON(worker_thread_);
   network_thread_checker_.Detach();
   RTC_LOG(LS_VERBOSE) << "WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel";
   RTC_DCHECK(call);
-  engine->RegisterChannel(this);
   SetOptions(options);
 }
 
@@ -1423,7 +1407,6 @@ WebRtcVoiceMediaChannel::~WebRtcVoiceMediaChannel() {
   while (!recv_streams_.empty()) {
     RemoveRecvStream(recv_streams_.begin()->first);
   }
-  engine()->UnregisterChannel(this);
 }
 
 bool WebRtcVoiceMediaChannel::SetSendParameters(
@@ -2297,6 +2280,17 @@ void WebRtcVoiceMediaChannel::OnPacketReceived(rtc::CopyOnWriteBuffer packet,
   }));
 }
 
+void WebRtcVoiceMediaChannel::OnPacketSent(const rtc::SentPacket& sent_packet) {
+  RTC_DCHECK_RUN_ON(&network_thread_checker_);
+  // TODO(tommi): We shouldn't need to go through call_ to deliver this
+  // notification. We should already have direct access to
+  // video_send_delay_stats_ and transport_send_ptr_ via `stream_`.
+  // So we should be able to remove OnSentPacket from Call and handle this per
+  // channel instead. At the moment Call::OnSentPacket calls OnSentPacket for
+  // the video stats, which we should be able to skip.
+  call_->OnSentPacket(sent_packet);
+}
+
 void WebRtcVoiceMediaChannel::OnNetworkRouteChanged(
     const std::string& transport_name,
     const rtc::NetworkRoute& network_route) {
@@ -2558,6 +2552,18 @@ void WebRtcVoiceMediaChannel::SetDepacketizerToDecoderFrameTransformer(
   }
   matching_stream->second->SetDepacketizerToDecoderFrameTransformer(
       std::move(frame_transformer));
+}
+
+bool WebRtcVoiceMediaChannel::SendRtp(const uint8_t* data,
+                                      size_t len,
+                                      const webrtc::PacketOptions& options) {
+  MediaChannel::SendRtp(data, len, options);
+  return true;
+}
+
+bool WebRtcVoiceMediaChannel::SendRtcp(const uint8_t* data, size_t len) {
+  MediaChannel::SendRtcp(data, len);
+  return true;
 }
 
 bool WebRtcVoiceMediaChannel::MaybeDeregisterUnsignaledRecvStream(

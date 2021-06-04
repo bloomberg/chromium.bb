@@ -1,0 +1,31 @@
+{
+  "modules": [
+    { "name": "ui/legacy/components/utils", "type": "autostart"},
+    { "name": "panels/console_counters", "type": "autostart" },
+    { "name": "models/extensions", "type": "autostart" },
+    { "name": "entrypoints/main", "type": "autostart" },
+    { "name": "models/persistence", "type": "autostart" },
+    { "name": "ui/legacy", "type": "autostart" },
+
+    { "name": "panels/changes" },
+    { "name": "ui/legacy/components/color_picker" },
+    { "name": "panels/console" },
+    { "name": "panels/coverage" },
+    { "name": "ui/legacy/components/data_grid" },
+    { "name": "panels/event_listeners" },
+    { "name": "ui/legacy/components/inline_editor" },
+    { "name": "panels/input"},
+    { "name": "ui/legacy/components/object_ui" },
+    { "name": "ui/legacy/components/perf_ui" },
+    { "name": "panels/profiler" },
+    { "name": "panels/protocol_monitor"},
+    { "name": "ui/legacy/components/quick_open" },
+    { "name": "panels/search" },
+    { "name": "panels/settings" },
+    { "name": "panels/snippets" },
+    { "name": "ui/legacy/components/source_frame" },
+    { "name": "panels/sources" },
+    { "name": "ui/legacy/components/text_editor" },
+    { "name": "models/workspace_diff" }
+  ]
+}

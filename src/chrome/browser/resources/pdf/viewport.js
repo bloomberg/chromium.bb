@@ -404,10 +404,11 @@ export class Viewport {
    * @private
    */
   frameToPluginCoordinate_(coordinateInFrame) {
-    const container = this.content_.querySelector('#plugin');
+    const containerRect =
+        this.content_.querySelector('#plugin').getBoundingClientRect();
     return {
-      x: coordinateInFrame.x - container.getBoundingClientRect().left,
-      y: coordinateInFrame.y - container.getBoundingClientRect().top
+      x: coordinateInFrame.x - containerRect.left,
+      y: coordinateInFrame.y - containerRect.top
     };
   }
 
@@ -1409,7 +1410,8 @@ export class Viewport {
             this.documentNeedsScrollbars(this.zoomManager_.applyBrowserZoom(
                 this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
-        this.pinchCenter_ = center;
+        const centerInPlugin = this.frameToPluginCoordinate_(center);
+        this.pinchCenter_ = centerInPlugin;
 
         // If there's no horizontal scrolling, keep the content centered so
         // the user can't zoom in on the non-content area.
@@ -1423,15 +1425,13 @@ export class Viewport {
             y: this.window_.offsetHeight / 2
           };
         } else if (this.keepContentCentered_) {
-          this.oldCenterInContent_ =
-              this.frameToContent_(this.frameToPluginCoordinate_(center));
+          this.oldCenterInContent_ = this.frameToContent_(this.pinchCenter_);
           this.keepContentCentered_ = false;
         }
 
         this.fittingType_ = FittingType.NONE;
 
-        this.setPinchZoomInternal_(
-            scaleDelta, this.frameToPluginCoordinate_(center));
+        this.setPinchZoomInternal_(scaleDelta, centerInPlugin);
         this.updateViewport_();
         this.prevScale_ = /** @type {number} */ (startScaleRatio);
       });
@@ -1451,10 +1451,9 @@ export class Viewport {
         const {center, startScaleRatio} = e.detail;
         this.pinchPhase_ = PinchPhase.END;
         const scaleDelta = startScaleRatio / this.prevScale_;
-        this.pinchCenter_ = /** @type {!Point} */ (center);
+        this.pinchCenter_ = this.frameToPluginCoordinate_(center);
 
-        this.setPinchZoomInternal_(
-            scaleDelta, this.frameToPluginCoordinate_(center));
+        this.setPinchZoomInternal_(scaleDelta, this.pinchCenter_);
         this.updateViewport_();
       });
 

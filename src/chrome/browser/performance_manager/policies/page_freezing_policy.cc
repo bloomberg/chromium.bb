@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -180,7 +179,7 @@ void PageFreezingPolicy::OnPageIsHoldingIndexedDBLockChanged(
 
 void PageFreezingPolicy::OnFreezingVoteChanged(
     const PageNode* page_node,
-    base::Optional<performance_manager::freezing::FreezingVote> previous_vote) {
+    absl::optional<performance_manager::freezing::FreezingVote> previous_vote) {
   if (page_node == page_node_being_removed_)
     return;
 

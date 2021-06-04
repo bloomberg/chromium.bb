@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "net/dcsctp/public/strong_alias.h"
+#include "net/dcsctp/public/types.h"
 
 namespace dcsctp {
 
@@ -31,11 +32,19 @@ using TSN = StrongAlias<class TSNTag, uint32_t>;
 // Reconfiguration Request Sequence Number
 using ReconfigRequestSN = StrongAlias<class ReconfigRequestSNTag, uint32_t>;
 
-// Reconfiguration Response Sequence Number
-using ReconfigResponseSN = StrongAlias<class ReconfigResponseSNTag, uint32_t>;
-
 // Verification Tag, used for packet validation.
 using VerificationTag = StrongAlias<class VerificationTagTag, uint32_t>;
+
+// Tie Tag, used as a nonce when connecting.
+using TieTag = StrongAlias<class TieTagTag, uint64_t>;
+
+// Hasher for separated ordered/unordered stream identifiers.
+struct UnorderedStreamHash {
+  size_t operator()(const std::pair<IsUnordered, StreamID>& p) const {
+    return std::hash<IsUnordered::UnderlyingType>{}(*p.first) ^
+           (std::hash<StreamID::UnderlyingType>{}(*p.second) << 1);
+  }
+};
 
 }  // namespace dcsctp
 #endif  // NET_DCSCTP_COMMON_INTERNAL_TYPES_H_

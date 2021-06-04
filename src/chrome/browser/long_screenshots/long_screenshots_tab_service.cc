@@ -24,8 +24,9 @@ using paint_preview::DirectoryKey;
 using paint_preview::FileManager;
 
 namespace {
-// TODO(tgupta): Evaluate whether this is the right size.
-constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;  // 5 MB.
+// TODO(skare): Evaluate what to send, if anything; paint_preview team is changing
+// the logic around capture discarding.
+constexpr size_t kMaxPerCaptureSizeBytes = 20 * 1000L * 1000L;  // 20 MB.
 
 }  // namespace
 
@@ -98,7 +99,7 @@ void LongScreenshotsTabService::CaptureTabInternal(
     int clipY,
     int clipWidth,
     int clipHeight,
-    const base::Optional<base::FilePath>& file_path) {
+    const absl::optional<base::FilePath>& file_path) {
   if (!file_path.has_value()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_LongScreenshotsTabService_processCaptureTabStatus(

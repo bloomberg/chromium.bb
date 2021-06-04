@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/command_observer.h"
@@ -25,12 +24,13 @@
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "url/origin.h"
 
@@ -59,6 +59,10 @@ class BookmarkBubbleObserver;
 
 namespace media_router {
 class CastToolbarButton;
+}
+
+namespace send_tab_to_self {
+class SendTabToSelfToolbarButtonView;
 }
 
 namespace views {
@@ -125,7 +129,7 @@ class ToolbarView : public views::AccessiblePaneView,
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.
@@ -143,13 +147,17 @@ class ToolbarView : public views::AccessiblePaneView,
     return extensions_container_;
   }
   ExtensionsToolbarButton* GetExtensionsButton() const;
-  ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
+  ToolbarButton* left_side_panel_button() { return left_side_panel_button_; }
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
   ToolbarButton* read_later_button() const { return read_later_button_; }
   MediaToolbarButtonView* media_button() const { return media_button_; }
+  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button()
+      const {
+    return send_tab_to_self_button_;
+  }
   ToolbarAccountIconContainerView* toolbar_account_icon_container() const {
     return toolbar_account_icon_container_;
   }
@@ -249,17 +257,15 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   void OnShowHomeButtonChanged();
-  void UpdateHomeButtonVisibility();
 
   void OnTouchUiChanged();
-
-  void AppMenuButtonPressed(const ui::Event& event);
 
   gfx::SlideAnimation size_animation_{this};
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
   // |location_bar_| is guaranteed to exist. These pointers are owned by the
   // view hierarchy.
+  ToolbarButton* left_side_panel_button_ = nullptr;
   ToolbarButton* back_ = nullptr;
   ToolbarButton* forward_ = nullptr;
   ReloadButton* reload_ = nullptr;
@@ -273,13 +279,12 @@ class ToolbarView : public views::AccessiblePaneView,
   ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
+  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button_ =
+      nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;
   BrowserView* const browser_view_;
-
-  PrefService* profile_pref_service_;
-  std::unique_ptr<PrefChangeRegistrar> profile_registrar_;
 
   views::FlexLayout* layout_manager_ = nullptr;
 
@@ -289,6 +294,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
+
+  BooleanPrefMember show_chrome_labs_button_;
 
   // The display mode used when laying out the toolbar.
   const DisplayMode display_mode_;

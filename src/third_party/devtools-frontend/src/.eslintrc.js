@@ -85,25 +85,6 @@ module.exports = {
     'require-yield': 2,
     'template-curly-spacing': [2, 'never'],
 
-    // spacing details
-    'space-infix-ops': 2,
-    'space-in-parens': [2, 'never'],
-    'no-whitespace-before-property': 2,
-    'keyword-spacing': [
-      2, {
-        'overrides': {
-          'if': {'after': true},
-          'else': {'after': true},
-          'for': {'after': true},
-          'while': {'after': true},
-          'do': {'after': true},
-          'switch': {'after': true},
-          'return': {'after': true}
-        }
-      }
-    ],
-    'arrow-spacing': [2, {'after': true, 'before': true}],
-
     // file whitespace
     'no-multiple-empty-lines': [2, {'max': 2}],
     'no-mixed-spaces-and-tabs': 2,
@@ -186,6 +167,7 @@ module.exports = {
        * this.foo!.toLowerCase()
        */
       '@typescript-eslint/no-non-null-assertion': 2,
+      '@typescript-eslint/consistent-type-imports': 2,
       'rulesdir/const_enum': 2,
       'rulesdir/no_underscored_properties': 2,
       'rulesdir/prefer_readonly_keyword': 2,

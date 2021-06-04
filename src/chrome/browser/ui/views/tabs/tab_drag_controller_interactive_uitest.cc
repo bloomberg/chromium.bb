@@ -19,7 +19,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -63,8 +62,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/env.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -688,7 +689,7 @@ class DetachToBrowserTabDragControllerTest
   aura::Window* root_ = nullptr;
 #endif
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::Optional<web_app::AppId> tabbed_app_id_;
+  absl::optional<web_app::AppId> tabbed_app_id_;
 };
 
 // Creates a browser with four tabs. The first three belong in the same Tab
@@ -718,8 +719,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("0 1 3 2", IDString(model));
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(0, 2));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(3));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(2));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(3));
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
@@ -731,7 +732,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("0 3 1 2", IDString(model));
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(0, 1));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(1));
 }
 
 // Creates a browser with four tabs. The last three belong in the same Tab
@@ -762,8 +763,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("1 0 2 3", IDString(model));
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(2, 4));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(0));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(1));
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
@@ -775,7 +776,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("1 2 0 3", IDString(model));
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(3, 4));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(2));
 }
 
 // Creates a browser with four tabs. The first three belong in the same Tab
@@ -1144,8 +1145,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_EQ("0 3 1 2", IDString(model));
   EXPECT_EQ(group_model->GetTabGroup(group)->ListTabs(), gfx::Range(2, 4));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(0));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(1));
 
   // Drag the entire group left by its header.
   ASSERT_TRUE(
@@ -1156,8 +1157,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_EQ("1 2 0 3", IDString(model));
   EXPECT_EQ(group_model->GetTabGroup(group)->ListTabs(), gfx::Range(0, 2));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(3));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(2));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(3));
 }
 
 // Creates a browser with four tabs. The first two belong in Tab Group 1, and
@@ -1274,7 +1275,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("0 1 2 3", IDString(model));
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(1, 4));
-  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
+  EXPECT_EQ(absl::nullopt, model->GetTabGroupForTab(0));
 }
 
 // Drags a tab within the window (without dragging the whole window) then
@@ -2538,6 +2539,9 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_TRUE(PressInput(tab_1_center));
   ASSERT_TRUE(DragInputTo(tab_1_center +
                           gfx::Vector2d(TabStyle::GetStandardWidth(), 0)));
+  BrowserView::GetBrowserViewForBrowser(browser())
+      ->GetWidget()
+      ->LayoutRootViewIfNecessary();
   EXPECT_EQ(tab_strip_width + TabStyle::GetStandardWidth(), tab_strip->width());
   ASSERT_TRUE(ReleaseInput());
 }

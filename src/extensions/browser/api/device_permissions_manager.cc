@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -97,7 +98,9 @@ void SaveDevicePermissionEntry(BrowserContext* context,
   }
 
   std::unique_ptr<base::Value> device_entry(entry->ToValue());
-  DCHECK(devices->Find(*device_entry) == devices->end());
+  // TODO(crbug.com/1187106): Use base::Contains once |devices| not a ListValue.
+  DCHECK(std::find(devices->GetList().begin(), devices->GetList().end(),
+                   *device_entry) == devices->GetList().end());
   devices->Append(std::move(device_entry));
 }
 
@@ -248,7 +251,7 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
     return result;
   }
 
-  for (const auto& entry : *devices) {
+  for (const auto& entry : devices->GetList()) {
     const base::DictionaryValue* entry_dict;
     if (entry.GetAsDictionary(&entry_dict)) {
       scoped_refptr<DevicePermissionEntry> device_entry =

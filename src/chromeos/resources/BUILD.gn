@@ -40,7 +40,6 @@ grit("resources") {
     "//chromeos/components/multidevice/mojom:mojom_js",
     "//chromeos/services/cellular_setup/public/mojom:mojom_js",
     "//chromeos/services/device_sync/public/mojom:mojom_js",
-    "//chromeos/services/machine_learning/public/mojom:mojom_js",
     "//chromeos/services/multidevice_setup/public/mojom:mojom_js",
     "//chromeos/services/network_config/public/mojom:mojom_js",
     "//chromeos/services/network_health/public/mojom:mojom_js",
@@ -127,6 +126,7 @@ grit("help_app_resources") {
 
   deps = [
     "//chromeos/components/help_app_ui:mojo_bindings_js",
+    "//chromeos/components/help_app_ui/search:mojo_bindings_js",
     "//chromeos/components/local_search_service/public/mojom:mojom_js",
   ]
 }
@@ -152,6 +152,24 @@ grit("help_app_bundle_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
+grit("help_app_kids_magazine_bundle_resources") {
+  if (enable_cros_help_app) {
+    source = "../components/help_app_ui/resources/prod/help_app_kids_magazine_bundle_resources.grd"
+  } else {
+    source = "../components/help_app_ui/resources/mock/help_app_kids_magazine_bundle_mock_resources.grd"
+  }
+
+  use_brotli = true
+
+  outputs = [
+    "grit/chromeos_help_app_kids_magazine_bundle_resources.h",
+    "grit/chromeos_help_app_kids_magazine_bundle_resources_map.cc",
+    "grit/chromeos_help_app_kids_magazine_bundle_resources_map.h",
+    "chromeos_help_app_kids_magazine_bundle_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}
+
 if (!is_official_build) {
   # Resources used by chrome://sample-system-web-app
   grit("sample_system_web_app_resources") {
@@ -167,6 +185,21 @@ if (!is_official_build) {
       "grit/chromeos_sample_system_web_app_resources_map.cc",
       "grit/chromeos_sample_system_web_app_resources_map.h",
       "chromeos_sample_system_web_app_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chromeos"
+  }
+
+  # Resources used by chrome://demo-mode-app
+  grit("demo_mode_app_resources") {
+    enable_input_discovery_for_gn_analyze = false
+    demo_mode_app_gen_dir = "$root_gen_dir/chromeos/components/demo_mode_app_ui"
+    source = "$demo_mode_app_gen_dir/chromeos_demo_mode_app_resources.grd"
+    deps = [ "//chromeos/components/demo_mode_app_ui:build_grd" ]
+    outputs = [
+      "grit/chromeos_demo_mode_app_resources.h",
+      "grit/chromeos_demo_mode_app_resources_map.cc",
+      "grit/chromeos_demo_mode_app_resources_map.h",
+      "chromeos_demo_mode_app_resources.pak",
     ]
     output_dir = "$root_gen_dir/chromeos"
   }
@@ -201,7 +234,12 @@ grit("media_app_resources") {
 
   use_brotli = true
 
-  deps = [ "//chromeos/components/media_app_ui:mojo_bindings_js" ]
+  deps = [
+    "//chromeos/components/media_app_ui:mojo_bindings_js",
+    "//chromeos/components/media_app_ui/resources/js:launch_rollup",
+    "//chromeos/components/media_app_ui/resources/js:piex_rollup",
+    "//chromeos/components/media_app_ui/resources/js:receiver_rollup",
+  ]
 }
 
 # Resources automatically served by the chrome://media-app bundle, obtained via DEPS.

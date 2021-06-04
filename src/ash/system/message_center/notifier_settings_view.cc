@@ -22,17 +22,19 @@
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -460,8 +462,8 @@ NotifierSettingsView::NotifierSettingsView() {
     auto app_badging_label =
         std::make_unique<views::Label>(l10n_util::GetStringUTF16(
             IDS_ASH_MESSAGE_CENTER_APP_BADGING_BUTTON_TOOLTIP));
-    auto app_badging_toggle = base::WrapUnique<views::ToggleButton>(
-        TrayPopupUtils::CreateToggleButton(
+    auto app_badging_toggle =
+        base::WrapUnique<views::ToggleButton>(new TrayToggleButton(
             base::BindRepeating(&NotifierSettingsView::AppBadgingTogglePressed,
                                 base::Unretained(this)),
             IDS_ASH_MESSAGE_CENTER_APP_BADGING_BUTTON_TOOLTIP));
@@ -495,7 +497,7 @@ NotifierSettingsView::NotifierSettingsView() {
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
   auto quiet_mode_toggle =
-      base::WrapUnique<views::ToggleButton>(TrayPopupUtils::CreateToggleButton(
+      base::WrapUnique<views::ToggleButton>(new TrayToggleButton(
           base::BindRepeating(&NotifierSettingsView::QuietModeTogglePressed,
                               base::Unretained(this)),
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
@@ -523,7 +525,7 @@ NotifierSettingsView::NotifierSettingsView() {
   header_view_ = AddChildView(std::move(header_view));
 
   auto scroller = std::make_unique<views::ScrollView>();
-  scroller->SetBackgroundColor(base::nullopt);
+  scroller->SetBackgroundColor(absl::nullopt);
   scroll_bar_ = scroller->SetVerticalScrollBar(
       std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
   scroller->SetDrawOverflowIndicator(false);

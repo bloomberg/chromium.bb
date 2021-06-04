@@ -8,11 +8,13 @@ import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import type {ContrastIssue} from './CSSOverviewCompletedView.js';
 import {CSSOverviewCompletedView} from './CSSOverviewCompletedView.js';
 import {Events, OverviewController} from './CSSOverviewController.js';
-import {CSSOverviewModel, GlobalStyleStats} from './CSSOverviewModel.js';
+import type {GlobalStyleStats} from './CSSOverviewModel.js';
+import {CSSOverviewModel} from './CSSOverviewModel.js';
 import {CSSOverviewProcessingView} from './CSSOverviewProcessingView.js';
 import {CSSOverviewStartView} from './CSSOverviewStartView.js';
 import type {UnusedDeclaration} from './CSSOverviewUnusedDeclarations.js';

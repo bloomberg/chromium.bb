@@ -34,6 +34,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import type {LayerView, LayerViewHost, Selection, SnapshotSelection} from './LayerViewHost.js';
 import {ScrollRectSelection, Type} from './LayerViewHost.js';
@@ -229,7 +230,7 @@ export class LayerDetailsView extends UI.Widget.Widget implements LayerView {
       element.classList.add('active');
     }
     element.textContent = i18nString(UIStrings.scrollRectangleDimensions, {
-      PH1: slowScrollRectNames.get(scrollRect.type)?.(),
+      PH1: slowScrollRectNames.get(scrollRect.type as unknown as SDK.LayerTreeBase.Layer.ScrollRectType)?.(),
       PH2: scrollRect.rect.width,
       PH3: scrollRect.rect.height,
       PH4: scrollRect.rect.x,

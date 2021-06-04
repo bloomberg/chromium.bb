@@ -66,7 +66,8 @@ GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
       root_surface_(
           new gfx::SurfaceControl::Surface(window, root_surface_name_.c_str())),
       transaction_ack_timeout_manager_(task_runner),
-      gpu_task_runner_(std::move(task_runner)) {}
+      gpu_task_runner_(std::move(task_runner)),
+      using_on_commit_callback_(gfx::SurfaceControl::SupportsOnCommit()) {}
 
 GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() {
   Destroy();
@@ -269,6 +270,14 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       std::move(primary_plane_fences_));
   primary_plane_fences_.reset();
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
+
+  if (using_on_commit_callback_) {
+    gfx::SurfaceControl::Transaction::OnCommitCb callback = base::BindOnce(
+        &GLSurfaceEGLSurfaceControl::OnTransactionCommittedOnGpuThread,
+        weak_factory_.GetWeakPtr());
+    pending_transaction_->SetOnCommitCb(std::move(callback), gpu_task_runner_);
+  }
+
   pending_surfaces_count_ = 0u;
   frame_rate_update_pending_ = false;
 
@@ -387,8 +396,33 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     gfx::RectF scaled_rect =
         gfx::ScaleRect(crop_rect, buffer_size.width(), buffer_size.height());
 
-    gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
     gfx::Rect dst = bounds_rect;
+    gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
+
+    // When the video is being scrolled offscreen DisplayCompositor will crop it
+    // to only visible portion and adjust crop_rect accordingly. When the video
+    // is smaller than the surface is can lead to the crop rect being less than
+    // a pixel in size. This adjusts the crop rect size to at least 1 pixel as
+    // we want to stretch last visible pixel line/column in this case.
+    // Note: We will do it even if crop_rect width/height is exact 0.0f. In
+    // reality this should never happen and there is no way to display video
+    // with empty crop rect, so display compositor should not request this.
+
+    if (src.width() == 0) {
+      src.set_width(1);
+      if (src.right() > buffer_size.width())
+        src.set_x(buffer_size.width() - 1);
+    }
+    if (src.height() == 0) {
+      src.set_height(1);
+      if (src.bottom() > buffer_size.height())
+        src.set_y(buffer_size.height() - 1);
+    }
+
+    // When display compositor rounds up destination rect to integer coordinates
+    // it becomes slightly bigger. After we adjust source rect accordingly, it
+    // can become larger then a buffer so we clip it here. See crbug.com/1083412
+    src.Intersect(gfx::Rect(buffer_size));
 
     if (uninitialized || surface_state.src != src || surface_state.dst != dst ||
         surface_state.transform != transform) {
@@ -446,16 +480,13 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
     ResourceRefs released_resources,
-    base::Optional<PrimaryPlaneFences> primary_plane_fences,
+    absl::optional<PrimaryPlaneFences> primary_plane_fences,
     gfx::SurfaceControl::TransactionStats transaction_stats) {
   TRACE_EVENT0("gpu",
                "GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread");
 
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
-  DCHECK(transaction_ack_pending_);
-
   transaction_ack_timeout_manager_.OnTransactionAck();
-  transaction_ack_pending_ = false;
 
   const bool has_context = context_->MakeCurrent(this);
   for (auto& surface_stat : transaction_stats.surface_stats) {
@@ -500,6 +531,23 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   pending_presentation_callback_queue_.push(std::move(pending_cb));
 
   CheckPendingPresentationCallbacks();
+
+  // If we don't use OnCommit, we advance transaction queue after we received
+  // OnComplete.
+  if (!using_on_commit_callback_)
+    AdvanceTransactionQueue();
+}
+
+void GLSurfaceEGLSurfaceControl::OnTransactionCommittedOnGpuThread() {
+  TRACE_EVENT0("gpu",
+               "GLSurfaceEGLSurfaceControl::OnTransactionCommittedOnGpuThread");
+  DCHECK(using_on_commit_callback_);
+  AdvanceTransactionQueue();
+}
+
+void GLSurfaceEGLSurfaceControl::AdvanceTransactionQueue() {
+  DCHECK(transaction_ack_pending_);
+  transaction_ack_pending_ = false;
 
   if (!pending_transaction_queue_.empty()) {
     transaction_ack_pending_ = true;

@@ -94,7 +94,7 @@ g.test('v_0033')
 
     const code = `
       [[stage(vertex)]]
-      fn main() -> void {
+      fn main() {
         ${variableOrConstant} a : ${lhsType} = ${rhsType}();
       }
     `;
@@ -137,12 +137,37 @@ g.test('v_0038')
     const { storageClass, containerType, scalarType } = t.params;
     const type = containerType ? `${containerType}<${scalarType}>` : scalarType;
 
-    const code = `
-      [[location(0)]] var<${storageClass}> a : ${type} = ${type}();
-        [[stage(vertex)]]
-        fn main() -> void {
+    let code;
+    if (`${storageClass}` === 'in') {
+      code = `
+        struct MyInputs {
+          [[location(0)]] a : ${type};
+        };
+
+        [[stage(fragment)]]
+        fn main(inputs : MyInputs) {
         }
       `;
+    } else if (`${storageClass}` === 'out') {
+      code = `
+        struct MyOutputs {
+          [[location(0)]] a : ${type};
+        };
+
+        [[stage(fragment)]]
+        fn main() -> MyOutputs {
+          return MyOutputs();
+        }
+      `;
+    } else {
+      code = `
+      var<${storageClass}> a : ${type} = ${type}();
+
+      [[stage(fragment)]]
+      fn main() {
+      }
+      `;
+    }
 
     const expectation = storageClass === 'private' || scalarType !== 'bool' || 'v-0038';
     t.expectCompileResult(expectation, code);

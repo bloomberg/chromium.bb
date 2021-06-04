@@ -19,7 +19,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -42,6 +41,7 @@
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace assistant {
@@ -67,24 +67,25 @@ AssistantStatus ToAssistantStatus(AssistantManagerService::State state) {
   using State = AssistantManagerService::State;
 
   switch (state) {
-    case State::kStopped:
-    case State::kStarted:
+    case State::STOPPED:
+    case State::STARTING:
+    case State::STARTED:
       return AssistantStatus::NOT_READY;
-    case State::kRunning:
+    case State::RUNNING:
       return AssistantStatus::READY;
   }
 }
 
-base::Optional<std::string> GetS3ServerUriOverride() {
+absl::optional<std::string> GetS3ServerUriOverride() {
   if (g_s3_server_uri_override)
     return g_s3_server_uri_override;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<std::string> GetDeviceIdOverride() {
+absl::optional<std::string> GetDeviceIdOverride() {
   if (g_device_id_override)
     return g_device_id_override;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // In the signed-out mode, we are going to run Assistant service without
@@ -281,7 +282,7 @@ void Service::OnAssistantConsentStatusChanged(int consent_status) {
   // Notify device apps status when user accepts activity control.
   if (assistant_manager_service_ &&
       assistant_manager_service_->GetState() ==
-          AssistantManagerService::State::kRunning) {
+          AssistantManagerService::State::RUNNING) {
     assistant_manager_service_->SyncDeviceAppsStatus();
   }
 }
@@ -326,9 +327,9 @@ void Service::OnAuthenticationError() {
 void Service::OnStateChanged(AssistantManagerService::State new_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (new_state == AssistantManagerService::State::kStarted)
+  if (new_state == AssistantManagerService::State::STARTED)
     FinalizeAssistantManagerService();
-  if (new_state == AssistantManagerService::State::kRunning)
+  if (new_state == AssistantManagerService::State::RUNNING)
     DVLOG(1) << "Assistant is running";
 
   AssistantClient::Get()->OnAssistantStatusChanged(
@@ -352,7 +353,7 @@ void Service::UpdateAssistantManagerState() {
   if (IsSignedOutMode()) {
     // Clear |access_token_| in signed-out mode to keep it synced with what we
     // will pass to the |assistant_manager_service_|.
-    access_token_ = base::nullopt;
+    access_token_ = absl::nullopt;
   }
 
   if (!assistant_manager_service_)
@@ -360,13 +361,14 @@ void Service::UpdateAssistantManagerState() {
 
   auto state = assistant_manager_service_->GetState();
   switch (state) {
-    case AssistantManagerService::State::kStopped:
+    case AssistantManagerService::State::STOPPED:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->Start(GetUserInfo(), ShouldEnableHotword());
         DVLOG(1) << "Request Assistant start";
       }
       break;
-    case AssistantManagerService::State::kStarted:
+    case AssistantManagerService::State::STARTING:
+    case AssistantManagerService::State::STARTED:
       // If the Assistant is disabled by domain policy, the libassistant will
       // never becomes ready. Stop waiting for the state change and stop the
       // service.
@@ -384,7 +386,7 @@ void Service::UpdateAssistantManagerState() {
           FROM_HERE, update_assistant_manager_callback_.callback(),
           kUpdateAssistantManagerDelay);
       break;
-    case AssistantManagerService::State::kRunning:
+    case AssistantManagerService::State::RUNNING:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->SetUser(GetUserInfo());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
@@ -503,9 +505,9 @@ Service::CreateAndReturnAssistantManagerService() {
 void Service::FinalizeAssistantManagerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(assistant_manager_service_->GetState() ==
-             AssistantManagerService::State::kStarted ||
+             AssistantManagerService::STARTED ||
          assistant_manager_service_->GetState() ==
-             AssistantManagerService::State::kRunning);
+             AssistantManagerService::RUNNING);
 
   // Ensure one-time mojom initialization.
   if (is_assistant_manager_service_finalized_)
@@ -555,12 +557,12 @@ void Service::UpdateListeningState() {
                                             ShouldEnableHotword());
 }
 
-base::Optional<AssistantManagerService::UserInfo> Service::GetUserInfo() const {
+absl::optional<AssistantManagerService::UserInfo> Service::GetUserInfo() const {
   if (access_token_) {
     return AssistantManagerService::UserInfo(RetrievePrimaryAccountInfo().gaia,
                                              access_token_.value());
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool Service::ShouldEnableHotword() {

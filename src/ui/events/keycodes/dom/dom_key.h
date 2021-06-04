@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_KEYCODES_DOM3_DOM_KEY_H_
-#define UI_EVENTS_KEYCODES_DOM3_DOM_KEY_H_
+#ifndef UI_EVENTS_KEYCODES_DOM_DOM_KEY_H_
+#define UI_EVENTS_KEYCODES_DOM_DOM_KEY_H_
 
 #include <stdint.h>
 
 #include <ostream>
 
 #include "base/check.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ui {
 
@@ -105,9 +105,9 @@ class DomKey {
 
   // Factory that returns a DomKey for the specified value. Returns nullopt if
   // |value| is not a valid value (or NONE).
-  static base::Optional<DomKey> FromBase(Base value) {
+  static absl::optional<DomKey> FromBase(Base value) {
     if (value != 0 && !IsValidValue(value))
-      return base::nullopt;
+      return absl::nullopt;
     return Base(value);
   }
 
@@ -169,4 +169,4 @@ class DomKey {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_KEYCODES_DOM3_DOM_KEY_H_
+#endif  // UI_EVENTS_KEYCODES_DOM_DOM_KEY_H_

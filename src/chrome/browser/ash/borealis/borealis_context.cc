@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/ash/borealis/borealis_disk_manager_impl.h"
+#include "chrome/browser/ash/borealis/borealis_engagement_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_game_mode_controller.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
@@ -59,7 +61,9 @@ BorealisContext::BorealisContext(Profile* profile)
       guest_os_stability_monitor_(
           std::make_unique<guest_os::GuestOsStabilityMonitor>(
               kBorealisStabilityHistogram)),
-      game_mode_controller_(std::make_unique<BorealisGameModeController>()) {}
+      game_mode_controller_(std::make_unique<BorealisGameModeController>()),
+      engagement_metrics_(std::make_unique<BorealisEngagementMetrics>(profile)),
+      disk_manager_(std::make_unique<BorealisDiskManagerImpl>(this)) {}
 
 std::unique_ptr<BorealisContext>
 BorealisContext::CreateBorealisContextForTesting(Profile* profile) {

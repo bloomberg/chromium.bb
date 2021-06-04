@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import os
 import sys
@@ -108,7 +110,7 @@ class RunTestsCommand(command_line.OptparseCommand):
 
     try:
       possible_browser = browser_finder.FindBrowser(args)
-    except browser_finder_exceptions.BrowserFinderException, ex:
+    except browser_finder_exceptions.BrowserFinderException as ex:
       parser.error(ex)
 
     if not possible_browser:
@@ -142,6 +144,8 @@ class RunTestsCommand(command_line.OptparseCommand):
     runner = typ.Runner()
     if self.stream:
       runner.host.stdout = self.stream
+    if hasattr(args, 'disable_resultsink'):
+      runner.args.disable_resultsink = args.disable_resultsink
 
     if args.no_browser:
       possible_browser = None
@@ -171,7 +175,7 @@ class RunTestsCommand(command_line.OptparseCommand):
       runner.args.jobs = len(android_devs)
       if runner.args.jobs == 0:
         raise RuntimeError("No Android device found")
-      print 'Running tests with %d Android device(s).' % runner.args.jobs
+      print('Running tests with %d Android device(s).' % runner.args.jobs)
     elif platform.GetOSVersionName() == 'xp':
       # For an undiagnosed reason, XP falls over with more parallelism.
       # See crbug.com/388256
@@ -219,7 +223,7 @@ class RunTestsCommand(command_line.OptparseCommand):
     try:
       ret, _, _ = runner.run()
     except KeyboardInterrupt:
-      print >> sys.stderr, "interrupted, exiting"
+      print("interrupted, exiting", file=sys.stderr)
       ret = 130
     return ret
 

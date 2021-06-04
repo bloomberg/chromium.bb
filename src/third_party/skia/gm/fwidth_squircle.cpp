@@ -126,6 +126,7 @@ class FwidthSquircleTestProcessor::Impl : public GrGLSLGeometryProcessor {
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
+                 const GrShaderCaps&,
                  const GrGeometryProcessor& geomProc) override {
         const auto& proc = geomProc.cast<FwidthSquircleTestProcessor>();
         pdman.setSkMatrix(fViewMatrixHandle, proc.fViewMatrix);
@@ -159,8 +160,7 @@ private:
 
     const char* name() const override { return "FwidthSquircleTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 

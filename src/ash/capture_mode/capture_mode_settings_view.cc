@@ -13,11 +13,13 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 
 namespace ash {
@@ -77,6 +79,11 @@ void CaptureModeSettingsView::OnMicrophoneChanged(bool microphone_enabled) {
   microphone_view_->toggle_button_view()->SetIsOn(microphone_enabled);
   microphone_view_->SetIcon(microphone_enabled ? kCaptureModeMicIcon
                                                : kCaptureModeMicOffIcon);
+
+  // This view's widget is not activatable, so `this` will not get true focus.
+  // For spoken feedback to say the correct thing, we need to manually notify.
+  microphone_view_->toggle_button_view()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kCheckedStateChanged, true);
 }
 
 void CaptureModeSettingsView::OnMicrophoneToggled() {

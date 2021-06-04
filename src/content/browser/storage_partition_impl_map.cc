@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -340,7 +339,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   base::FilePath relative_partition_path = GetStoragePartitionPath(
       partition_config.partition_domain(), partition_config.partition_name());
 
-  base::Optional<StoragePartitionConfig> fallback_config =
+  absl::optional<StoragePartitionConfig> fallback_config =
       partition_config.GetFallbackForBlobUrls();
   StoragePartitionImpl* fallback_for_blob_urls =
       fallback_config.has_value() ? Get(*fallback_config, /*can_create=*/false)

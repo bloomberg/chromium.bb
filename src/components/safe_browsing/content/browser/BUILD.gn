@@ -16,6 +16,8 @@ source_set("browser") {
     "threat_details_cache.h",
     "threat_details_history.cc",
     "threat_details_history.h",
+    "web_api_handshake_checker.cc",
+    "web_api_handshake_checker.h",
   ]
   deps = [
     "//components/back_forward_cache",
@@ -64,18 +66,28 @@ source_set("client_side_model_loader") {
   ]
 }
 
-source_set("client_side_model_loader_unittest") {
+source_set("unit_tests") {
   testonly = true
-  sources = [ "client_side_model_loader_unittest.cc" ]
+  sources = [
+    "client_side_model_loader_unittest.cc",
+    "client_side_phishing_model_unittest.cc",
+    "web_api_handshake_checker_unittest.cc",
+  ]
 
   deps = [
+    ":client_side_detection",
     ":client_side_model_loader",
     "//base:base",
     "//base/test:test_support",
     "//components/safe_browsing:buildflags",
+    "//components/safe_browsing/content/browser:browser",
     "//components/safe_browsing/core:client_model_proto",
     "//components/safe_browsing/core:csd_proto",
     "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/browser:browser",
+    "//components/safe_browsing/core/db:test_database_manager",
+    "//components/safe_browsing/core/fbs:client_model",
+    "//components/security_interstitials/core:unsafe_resource",
     "//components/variations",
     "//content/test:test_support",
     "//services/network:test_support",
@@ -90,6 +102,8 @@ source_set("client_side_detection") {
     "client_side_detection_host.h",
     "client_side_detection_service.cc",
     "client_side_detection_service.h",
+    "client_side_phishing_model.cc",
+    "client_side_phishing_model.h",
   ]
   deps = [
     ":client_side_model_loader",
@@ -109,6 +123,7 @@ source_set("client_side_detection") {
     "//components/safe_browsing/core/db:allowlist_checker_client",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/safe_browsing/core/fbs:client_model",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/variations",
     "//content/public/browser",

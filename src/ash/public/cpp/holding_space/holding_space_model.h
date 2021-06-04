@@ -15,6 +15,7 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -53,15 +54,23 @@ class ASH_PUBLIC_EXPORT HoldingSpaceModel {
   // Removes multiple holding space items from the model.
   void RemoveItems(const std::set<std::string>& ids);
 
-  // Finalizes a partially initialized holding space item using the provided
-  // file system URL. The item will be removed if the file system url is empty.
-  void FinalizeOrRemoveItem(const std::string& id, const GURL& file_system_url);
+  // Fully initializes a partially initialized holding space item using the
+  // provided `file_system_url`. The item will be removed if `file_system_url`
+  // is empty.
+  void InitializeOrRemoveItem(const std::string& id,
+                              const GURL& file_system_url);
 
   // Updates the backing file for a single holding space item to the specified
   // `file_path` and `file_system_url`.
   void UpdateBackingFileForItem(const std::string& id,
                                 const base::FilePath& file_path,
                                 const GURL& file_system_url);
+
+  // Updates the progress for a single holding space item.
+  // NOTE: If present, `progress` must be >= `0.f` and <= `1.f`.
+  // NOTE: Once set to `1.f`, holding space item progress becomes read-only.
+  void UpdateProgressForItem(const std::string& id,
+                             const absl::optional<float>& progress);
 
   // Removes all holding space items from the model for which the specified
   // `predicate` returns true.
@@ -90,9 +99,9 @@ class ASH_PUBLIC_EXPORT HoldingSpaceModel {
   bool ContainsItem(HoldingSpaceItem::Type type,
                     const base::FilePath& file_path) const;
 
-  // Returns true if the model contains any finalized items of the specified
-  // `type`, false otherwise.
-  bool ContainsFinalizedItemOfType(HoldingSpaceItem::Type type) const;
+  // Returns `true` if the model contains any initialized items of the specified
+  // `type`, `false` otherwise.
+  bool ContainsInitializedItemOfType(HoldingSpaceItem::Type type) const;
 
   const ItemList& items() const { return items_; }
 
@@ -104,10 +113,10 @@ class ASH_PUBLIC_EXPORT HoldingSpaceModel {
   // the model.
   ItemList items_;
 
-  // Caches the count of finalized items in the model for each holding space
-  // item type. Used to quickly look up whether the model contains any finalized
-  // items of a given type.
-  std::map<HoldingSpaceItem::Type, size_t> finalized_item_counts_by_type_;
+  // Caches the count of initialized items in the model for each holding space
+  // item type. Used to quickly look up whether the model contains any
+  // initialized items of a given type.
+  std::map<HoldingSpaceItem::Type, size_t> initialized_item_counts_by_type_;
 
   base::ObserverList<HoldingSpaceModelObserver> observers_;
 };

@@ -45,9 +45,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/browser/validation.h"
@@ -339,6 +339,70 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     return std::move(response);
   }
 
+  const translate::LanguageState& GetLanguageState() {
+    auto* const client = ChromeTranslateClient::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    CHECK(client);
+
+    return client->GetLanguageState();
+  }
+
+  // This is largely a copy of CheckForTranslateUI() from Translate's
+  // translate_language_browsertest.cc.
+  void NavigateToContentAndWaitForLanguageDetection(const char* content) {
+    ASSERT_TRUE(browser());
+
+    auto waiter = CreateTranslateWaiter(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        translate::TranslateWaiter::WaitEvent::kLanguageDetermined);
+
+    SetTestUrlResponse(content);
+    ASSERT_NO_FATAL_FAILURE(
+        ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+    waiter->Wait();
+
+    // Language detection sometimes fires early with an "und" (= undetermined)
+    // detected code.
+    size_t wait_counter = 0;
+    constexpr size_t kMaxWaits = 2;
+    while (GetLanguageState().source_language() == "und" ||
+           GetLanguageState().source_language().empty()) {
+      ++wait_counter;
+      ASSERT_LE(wait_counter, kMaxWaits)
+          << "Translate reported no/undetermined language " << wait_counter
+          << " times";
+      CreateTranslateWaiter(
+          browser()->tab_strip_model()->GetActiveWebContents(),
+          translate::TranslateWaiter::WaitEvent::kLanguageDetermined)
+          ->Wait();
+    }
+
+    const TranslateBubbleModel* model =
+        translate::test_utils::GetCurrentModel(browser());
+    ASSERT_NE(nullptr, model);
+  }
+
+  // This is largely a copy of Translate() from Translate's
+  // translate_language_browsertest.cc.
+  void Translate(const bool first_translate) {
+    auto waiter = CreateTranslateWaiter(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        translate::TranslateWaiter::WaitEvent::kPageTranslated);
+
+    EXPECT_EQ(
+        TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+        translate::test_utils::GetCurrentModel(browser())->GetViewState());
+
+    translate::test_utils::PressTranslate(browser());
+    if (first_translate)
+      SimulateURLFetch();
+
+    waiter->Wait();
+    EXPECT_EQ(
+        TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
+        translate::test_utils::GetCurrentModel(browser())->GetViewState());
+  }
+
   void CreateTestProfile() {
     AutofillProfile profile;
     test::SetProfileInfo(&profile, "Milton", "C.", "Waddams",
@@ -427,7 +491,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         "        getDetectedLanguage : function() {"
         "          return \"ja\";"
         "        },"
-        "        translatePage : function(originalLang, targetLang,"
+        "        translatePage : function(sourceLang, targetLang,"
         "                                 onTranslateProgress) {"
         "          document.getElementsByTagName(\"body\")[0].innerHTML = '" +
         std::string(kTestShippingFormString) +
@@ -500,7 +564,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   // Make a pointless round trip to the renderer, giving the popup a chance to
   // show if it's going to. If it does show, an assert in
-  // AutofillManagerTestDelegateImpl will trigger.
+  // BrowserAutofillManagerTestDelegateImpl will trigger.
   void MakeSurePopupDoesntAppear() {
     int unused;
     ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -533,6 +597,27 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   void FillElementWithValue(const std::string& element_name,
                             const std::string& value) {
+    // Sends "|element_name|:|value|" to |msg_queue| if the |element_name|'s
+    // value has changed to |value|.
+    std::string script =
+        base::StringPrintf(R"(
+    (function() {
+      const element_name = '%s';
+      const value = '%s';
+      const field = document.getElementById(element_name);
+      const listener = function() {
+        if (field.value === value) {
+          field.removeEventListener('input', listener);
+          domAutomationController.send(element_name +':'+ field.value);
+        }
+      }
+      field.addEventListener('input', listener, false);
+      return 'done';
+    })();)",
+                           element_name.c_str(), value.c_str());
+    ASSERT_TRUE(ExecJs(GetWebContents(), script));
+
+    content::DOMMessageQueue msg_queue;
     for (char16_t character : value) {
       ui::DomKey dom_key = ui::DomKey::FromCharacter(character);
       const ui::PrintableCodeEntry* code_entry = std::find_if(
@@ -548,7 +633,9 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
                                 ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                                 false, shift, false, false);
     }
-    AssertFieldValue(element_name, value);
+    std::string reply;
+    ASSERT_TRUE(msg_queue.WaitForMessage(&reply));
+    ASSERT_EQ("\"" + element_name + ":" + value + "\"", reply);
   }
 
   void DeleteElementValue(const std::string& element_name) {
@@ -817,16 +904,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ClearTwoSection) {
   ExpectFilledTestForm();
 }
 
-// Test that autofill doesn't refill a text field initially modified by the
-// user.
-// TODO(https://crbug.com/1185439): This test is flaky on Mac, Linux, and
-// ChromeOS.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_ModifyTextFieldAndFill DISABLED_ModifyTextFieldAndFill
-#else
-#define MAYBE_ModifyTextFieldAndFill ModifyTextFieldAndFill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ModifyTextFieldAndFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifyTextFieldAndFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1910,17 +1988,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
   EXPECT_TRUE(select_blur_triggered);
 }
 
-// Test fails on Linux ASAN, see http://crbug.com/532737
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_AutofillAfterTranslate DISABLED_AutofillAfterTranslate
-#else
-#define MAYBE_AutofillAfterTranslate AutofillAfterTranslate
-#endif  // ADDRESS_SANITIZER
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
-
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
-
   CreateTestProfile();
 
   static const char kForm[] =
@@ -1960,36 +2030,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
       "彼にいくつかの素晴らしいを調達することができます。それから、いくつかの"
       "利";
 
-  // Set up an observer to be able to wait for the bubble to be shown.
-  auto language_waiter = translate::CreateTranslateWaiter(
-      GetWebContents(),
-      translate::TranslateWaiter::WaitEvent::kLanguageDetermined);
-
-  SetTestUrlResponse(kForm);
-  ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
-
-  language_waiter->Wait();
-
-  // Verify current translate step.
-  const TranslateBubbleModel* model =
-      translate::test_utils::GetCurrentModel(browser());
-  ASSERT_NE(nullptr, model);
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            model->GetViewState());
-
-  translate::test_utils::PressTranslate(browser());
-
-  // Wait for translation.
-  auto translate_waiter = translate::CreateTranslateWaiter(
-      GetWebContents(), translate::TranslateWaiter::WaitEvent::kPageTranslated);
-
-  // Simulate the translate script being retrieved.
-  // Pass fake google.translate lib as the translate script.
-  SimulateURLFetch();
-
-  translate_waiter->Wait();
-
+  NavigateToContentAndWaitForLanguageDetection(kForm);
+  ASSERT_EQ("ja", GetLanguageState().current_language());
+  ASSERT_NO_FATAL_FAILURE(Translate(true));
+  ASSERT_EQ("ja", GetLanguageState().source_language());
+  ASSERT_EQ("en", GetLanguageState().current_language());
   TryBasicFormFill();
 }
 
@@ -2537,7 +2582,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // There should a form we can trigger fill on (using the firstname field).
-  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
   TriggerFormFill("firstname");
 
   // Wait for the fill to happen.
@@ -2576,7 +2621,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
       "/autofill/formless_some_autocomplete.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
   TriggerFormFill("firstname");
 
   // Wait for the fill to happen.
@@ -2612,7 +2657,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_AllAutocomplete) {
       "/autofill/formless_all_autocomplete.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
   TriggerFormFill("firstname");
 
   // Wait for the fill to happen.
@@ -2646,7 +2691,7 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
     return !!static_cast<ChromeAutofillClient*>(
                  ContentAutofillDriverFactory::FromWebContents(GetWebContents())
                      ->DriverForFrame(GetWebContents()->GetMainFrame())
-                     ->autofill_manager()
+                     ->browser_autofill_manager()
                      ->client())
                  ->popup_controller_for_testing();
   }
@@ -2686,7 +2731,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
 
   // Focus the form in the iframe and simulate choosing a suggestion via
   // keyboard.
@@ -2727,7 +2772,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
 
   // Focus the form in the iframe and simulate choosing a suggestion via
   // keyboard.
@@ -2773,7 +2818,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
 
   // Focus the form in the iframe and simulate choosing a suggestion via
   // keyboard.

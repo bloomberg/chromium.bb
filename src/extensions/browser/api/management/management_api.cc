@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1094,12 +1094,12 @@ void ManagementEventRouter::BroadcastEvent(
     const char* event_name) {
   if (!extension->ShouldExposeViaManagementAPI())
     return;
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::vector<base::Value> args;
   if (event_name == management::OnUninstalled::kEventName) {
-    args->AppendString(extension->id());
+    args.push_back(base::Value(extension->id()));
   } else {
-    args->Append(
-        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue());
+    args.push_back(base::Value::FromUniquePtrValue(
+        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue()));
   }
 
   EventRouter::Get(browser_context_)

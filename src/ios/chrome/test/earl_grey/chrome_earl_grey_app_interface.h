@@ -340,6 +340,9 @@
 // Clears fake sync server data if the server is running.
 + (void)clearSyncServerData;
 
+// Clears the first sync setup preference.
++ (void)clearSyncFirstSetupComplete;
+
 // Starts the sync server. The server should not be running when calling this.
 + (void)startSync;
 
@@ -501,9 +504,6 @@
 
 // Returns whether the mobile version of the websites are requested by default.
 + (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
-
-// Returns whether the illustrated empty states feature is enabled.
-+ (BOOL)isIllustratedEmptyStatesEnabled;
 
 // Returns whether the native context menus feature is enabled or not.
 + (BOOL)isNativeContextMenusEnabled;

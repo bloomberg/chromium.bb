@@ -24,7 +24,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "build/chromeos_buildflags.h"
@@ -33,6 +32,7 @@
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_X11)
@@ -44,10 +44,6 @@ enum class BufferFormat;
 class NativePixmap;
 class NativePixmapDmaBuf;
 class Rect;
-}
-
-namespace gpu {
-class GpuDriverBugWorkarounds;
 }
 
 namespace media {
@@ -169,8 +165,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static VideoEncodeAccelerator::SupportedProfiles GetSupportedEncodeProfiles();
 
   // Return the supported video decode profiles.
-  static VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
-      const gpu::GpuDriverBugWorkarounds& workarounds);
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles();
 
   // Return true when decoding using |va_profile| is supported.
   static bool IsDecodeSupported(VAProfile va_profile);
@@ -269,7 +264,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::unique_ptr<ScopedVASurface> CreateContextAndScopedVASurface(
       unsigned int va_format,
       const gfx::Size& size,
-      const base::Optional<gfx::Size>& visible_size = base::nullopt);
+      const absl::optional<gfx::Size>& visible_size = absl::nullopt);
 
   // Attempts to create a protected session that will be attached to the
   // decoding context to enable encrypted video decoding. If it cannot be
@@ -315,7 +310,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::unique_ptr<ScopedVASurface> CreateScopedVASurface(
       unsigned int va_rt_format,
       const gfx::Size& size,
-      const base::Optional<gfx::Size>& visible_size = base::nullopt,
+      const absl::optional<gfx::Size>& visible_size = absl::nullopt,
       uint32_t va_fourcc = 0);
 
   // Creates a self-releasing VASurface from |pixmap|. The created VASurface
@@ -469,8 +464,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // be used to specify the area used in the blit.
   bool BlitSurface(const VASurface& va_surface_src,
                    const VASurface& va_surface_dest,
-                   base::Optional<gfx::Rect> src_rect = base::nullopt,
-                   base::Optional<gfx::Rect> dest_rect = base::nullopt,
+                   absl::optional<gfx::Rect> src_rect = absl::nullopt,
+                   absl::optional<gfx::Rect> dest_rect = absl::nullopt,
                    VideoRotation rotation = VIDEO_ROTATION_0)
       WARN_UNUSED_RESULT;
 

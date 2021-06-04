@@ -405,6 +405,14 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationArrayOOBGraphicsShaders) {
             gs = new VkShaderObj(m_device, iter.geometry_source, VK_SHADER_STAGE_GEOMETRY_BIT, this, "main", iter.debug);
             pipe.AddShader(gs);
         }
+        VkPipelineInputAssemblyStateCreateInfo iasci{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0,
+                                                         VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE};
+        VkPipelineTessellationDomainOriginStateCreateInfo tessellationDomainOriginStateInfo = {
+                VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO, VK_NULL_HANDLE,
+                VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT};
+
+        VkPipelineTessellationStateCreateInfo tsci{VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
+                                                       &tessellationDomainOriginStateInfo, 0, 3};
         if (iter.tess_ctrl_source && iter.tess_eval_source) {
             tcs = new VkShaderObj(m_device, iter.tess_ctrl_source, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, this, "main",
                                   iter.debug);
@@ -412,14 +420,6 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationArrayOOBGraphicsShaders) {
                                   iter.debug);
             pipe.AddShader(tcs);
             pipe.AddShader(tes);
-            VkPipelineInputAssemblyStateCreateInfo iasci{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0,
-                                                         VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE};
-            VkPipelineTessellationDomainOriginStateCreateInfo tessellationDomainOriginStateInfo = {
-                VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO, VK_NULL_HANDLE,
-                VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT};
-
-            VkPipelineTessellationStateCreateInfo tsci{VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-                                                       &tessellationDomainOriginStateInfo, 0, 3};
             pipe.SetTessellation(&tsci);
             pipe.SetInputAssembly(&iasci);
         }
@@ -464,14 +464,14 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationArrayOOBGraphicsShaders) {
             "   Data[(u_index.index - 1)].data = Data[u_index.index].data;\n"
             "}\n";
 
-        auto shader_module = new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this);
+        VkShaderObj shader_module(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this);
 
         VkPipelineShaderStageCreateInfo stage;
         stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stage.pNext = nullptr;
         stage.flags = 0;
         stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        stage.module = shader_module->handle();
+        stage.module = shader_module.handle();
         stage.pName = "main";
         stage.pSpecializationInfo = nullptr;
 
@@ -517,7 +517,6 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationArrayOOBGraphicsShaders) {
         vk::QueueWaitIdle(m_device->m_queue);
         m_errorMonitor->VerifyFound();
         vk::DestroyPipeline(m_device->handle(), c_pipeline, NULL);
-        vk::DestroyShaderModule(m_device->handle(), shader_module->handle(), NULL);
     }
     return;
 }
@@ -1668,6 +1667,377 @@ TEST_F(VkGpuAssistedLayerTest, GpuBuildAccelerationStructureValidationRestoresSt
     vk::DestroyPipeline(m_device->device(), compute_pipeline, nullptr);
 }
 
+TEST_F(VkGpuAssistedLayerTest, GpuDrawIndirectCountDeviceLimit) {
+    TEST_DESCRIPTION("GPU validation: Validate maxDrawIndirectCount limit");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    InitGpuAssistedFramework(false);
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%s GPU-Assisted validation test requires a driver that can draw.\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
+    } else {
+        printf("%s VK_KHR_draw_indirect_count extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    PFN_vkSetPhysicalDeviceLimitsEXT fpvkSetPhysicalDeviceLimitsEXT =
+        (PFN_vkSetPhysicalDeviceLimitsEXT)vk::GetInstanceProcAddr(instance(), "vkSetPhysicalDeviceLimitsEXT");
+    PFN_vkGetOriginalPhysicalDeviceLimitsEXT fpvkGetOriginalPhysicalDeviceLimitsEXT =
+        (PFN_vkGetOriginalPhysicalDeviceLimitsEXT)vk::GetInstanceProcAddr(instance(), "vkGetOriginalPhysicalDeviceLimitsEXT");
+
+    if (!(fpvkSetPhysicalDeviceLimitsEXT) || !(fpvkGetOriginalPhysicalDeviceLimitsEXT)) {
+        printf("%s Can't find device_profile_api functions; skipped.\n", kSkipPrefix);
+        return;
+    }
+    VkPhysicalDeviceProperties props;
+    fpvkGetOriginalPhysicalDeviceLimitsEXT(gpu(), &props.limits);
+    props.limits.maxDrawIndirectCount = 1;
+    fpvkSetPhysicalDeviceLimitsEXT(gpu(), &props.limits);
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto vkCmdDrawIndirectCountKHR =
+        (PFN_vkCmdDrawIndirectCountKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawIndirectCountKHR");
+    if (vkCmdDrawIndirectCountKHR == nullptr) {
+        printf("%s did not find vkCmdDrawIndirectCountKHR function pointer;  Skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = 2 * sizeof(VkDrawIndirectCommand);
+    buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    VkBufferObj draw_buffer;
+    draw_buffer.init(*m_device, buffer_create_info, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDrawIndirectCommand *draw_ptr = static_cast<VkDrawIndirectCommand *>(draw_buffer.memory().map());
+    memset(draw_ptr, 0, 2 * sizeof(VkDrawIndirectCommand));
+    draw_buffer.memory().unmap();
+
+    VkBufferCreateInfo count_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    count_buffer_create_info.size = sizeof(uint32_t);
+    count_buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    VkBufferObj count_buffer;
+    count_buffer.init(*m_device, count_buffer_create_info,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    uint32_t *count_ptr = static_cast<uint32_t *>(count_buffer.memory().map());
+    *count_ptr = 2;  // Fits in buffer but exceeds (fake) limit
+    count_buffer.memory().unmap();
+
+    VkPipelineLayout pipeline_layout;
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = LvlInitStruct<VkPipelineLayoutCreateInfo>();
+    VkResult err = vk::CreatePipelineLayout(m_device->handle(), &pipelineLayoutCreateInfo, NULL, &pipeline_layout);
+    ASSERT_VK_SUCCESS(err);
+
+    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddDefaultColorAttachment();
+    err = pipe.CreateVKPipeline(pipeline_layout, renderPass());
+    ASSERT_VK_SUCCESS(err);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBuffer-02717");
+    VkCommandBufferBeginInfo begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    VkViewport viewport = {0, 0, 16, 16, 0, 1};
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    VkRect2D scissor = {{0, 0}, {16, 16}};
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+
+    vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), 0, 2,
+                              sizeof(VkDrawIndirectCommand));
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyPipelineLayout(m_device->handle(), pipeline_layout, nullptr);
+}
+
+TEST_F(VkGpuAssistedLayerTest, GpuDrawIndirectCount) {
+    TEST_DESCRIPTION("GPU validation: Validate Draw*IndirectCount countBuffer contents");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    InitGpuAssistedFramework(false);
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%s GPU-Assisted validation test requires a driver that can draw.\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
+    } else {
+        printf("%s VK_KHR_draw_indirect_count extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    VkCommandPoolCreateFlags pool_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, NULL, pool_flags));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    auto vkCmdDrawIndirectCountKHR =
+        (PFN_vkCmdDrawIndirectCountKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawIndirectCountKHR");
+    if (vkCmdDrawIndirectCountKHR == nullptr) {
+        printf("%s did not find vkCmdDrawIndirectCountKHR function pointer;  Skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = sizeof(VkDrawIndirectCommand);
+    buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    VkBufferObj draw_buffer;
+    draw_buffer.init(*m_device, buffer_create_info, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDrawIndirectCommand *draw_ptr = static_cast<VkDrawIndirectCommand *>(draw_buffer.memory().map());
+    draw_ptr->firstInstance = 0;
+    draw_ptr->firstVertex = 0;
+    draw_ptr->instanceCount = 1;
+    draw_ptr->vertexCount = 3;
+    draw_buffer.memory().unmap();
+
+    VkBufferCreateInfo count_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    count_buffer_create_info.size = sizeof(uint32_t);
+    count_buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    VkBufferObj count_buffer;
+    count_buffer.init(*m_device, count_buffer_create_info,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    VkPipelineLayout pipeline_layout;
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = LvlInitStruct<VkPipelineLayoutCreateInfo>();
+    VkResult err = vk::CreatePipelineLayout(m_device->handle(), &pipelineLayoutCreateInfo, NULL, &pipeline_layout);
+    ASSERT_VK_SUCCESS(err);
+
+    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddDefaultColorAttachment();
+    err = pipe.CreateVKPipeline(pipeline_layout, renderPass());
+    ASSERT_VK_SUCCESS(err);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBuffer-03122");
+    uint32_t *count_ptr = static_cast<uint32_t *>(count_buffer.memory().map());
+    *count_ptr = 2;
+    count_buffer.memory().unmap();
+    VkCommandBufferBeginInfo begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    VkViewport viewport = {0, 0, 16, 16, 0, 1};
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    VkRect2D scissor = {{0, 0}, {16, 16}};
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+
+    vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), 0, 1,
+                              sizeof(VkDrawIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+    count_ptr = static_cast<uint32_t *>(count_buffer.memory().map());
+    *count_ptr = 1;
+    count_buffer.memory().unmap();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBuffer-03121");
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    // Offset of 4 should error
+    vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 4, count_buffer.handle(), 0, 1,
+                              sizeof(VkDrawIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+
+    auto vkCmdDrawIndexedIndirectCountKHR =
+        (PFN_vkCmdDrawIndexedIndirectCountKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawIndexedIndirectCountKHR");
+    if (vkCmdDrawIndexedIndirectCountKHR == nullptr) {
+        printf("%s did not find vkCmdDrawIndexedIndirectCountKHR function pointer;  Skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-03154");
+    VkBufferObj indexed_draw_buffer;
+    buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand);
+    indexed_draw_buffer.init(*m_device, buffer_create_info,
+                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDrawIndexedIndirectCommand *indexed_draw_ptr = (VkDrawIndexedIndirectCommand *)indexed_draw_buffer.memory().map();
+    indexed_draw_ptr->indexCount = 3;
+    indexed_draw_ptr->firstIndex = 0;
+    indexed_draw_ptr->instanceCount = 1;
+    indexed_draw_ptr->firstInstance = 0;
+    indexed_draw_ptr->vertexOffset = 0;
+    indexed_draw_buffer.memory().unmap();
+
+    count_ptr = static_cast<uint32_t *>(count_buffer.memory().map());
+    *count_ptr = 2;
+    count_buffer.memory().unmap();
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    VkBufferCreateInfo index_buffer_create_info = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    index_buffer_create_info.size = 3 * sizeof(uint32_t);
+    index_buffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    VkBufferObj index_buffer;
+    index_buffer.init(*m_device, index_buffer_create_info);
+    vk::CmdBindIndexBuffer(m_commandBuffer->handle(), index_buffer.handle(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), indexed_draw_buffer.handle(), 0, count_buffer.handle(), 0, 1,
+                                     sizeof(VkDrawIndexedIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+    count_ptr = static_cast<uint32_t *>(count_buffer.memory().map());
+    *count_ptr = 1;
+    count_buffer.memory().unmap();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-03153");
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    vk::CmdBindIndexBuffer(m_commandBuffer->handle(), index_buffer.handle(), 0, VK_INDEX_TYPE_UINT32);
+    // Offset of 4 should error
+    vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), indexed_draw_buffer.handle(), 4, count_buffer.handle(), 0, 1,
+                                     sizeof(VkDrawIndexedIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyPipelineLayout(m_device->handle(), pipeline_layout, nullptr);
+}
+
+TEST_F(VkGpuAssistedLayerTest, GpuDrawIndirectFirstInstance) {
+    TEST_DESCRIPTION("Validate illegal firstInstance values");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    InitGpuAssistedFramework(false);
+    if (IsPlatform(kGalaxyS10)) {
+        printf("%s This test should not run on Galaxy S10\n", kSkipPrefix);
+        return;
+    }
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%s GPU-Assisted validation test requires a driver that can draw.\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>();
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+    features2.features.drawIndirectFirstInstance = VK_FALSE;
+
+    VkCommandPoolCreateFlags pool_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, pool_flags));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = 4 * sizeof(VkDrawIndirectCommand);
+    buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    VkBufferObj draw_buffer;
+    draw_buffer.init(*m_device, buffer_create_info, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDrawIndirectCommand *draw_ptr = static_cast<VkDrawIndirectCommand *>(draw_buffer.memory().map());
+    for (uint32_t i = 0; i < 4; i++) {
+        draw_ptr->vertexCount = 3;
+        draw_ptr->instanceCount = 1;
+        draw_ptr->firstVertex = 0;
+        draw_ptr->firstInstance = (i == 3) ? 1 : 0;
+        draw_ptr++;
+    }
+    draw_buffer.memory().unmap();
+
+    VkPipelineLayout pipeline_layout;
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = LvlInitStruct<VkPipelineLayoutCreateInfo>();
+    VkResult err = vk::CreatePipelineLayout(m_device->handle(), &pipelineLayoutCreateInfo, NULL, &pipeline_layout);
+    ASSERT_VK_SUCCESS(err);
+
+    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddDefaultColorAttachment();
+    err = pipe.CreateVKPipeline(pipeline_layout, renderPass());
+    ASSERT_VK_SUCCESS(err);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirect-firstInstance-00478");
+    VkCommandBufferBeginInfo begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    VkViewport viewport = {0, 0, 16, 16, 0, 1};
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    VkRect2D scissor = {{0, 0}, {16, 16}};
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    vk::CmdDrawIndirect(m_commandBuffer->handle(), draw_buffer.handle(), 0, 4, sizeof(VkDrawIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+
+    // Now with an offset and indexed draw
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirect-firstInstance-00530");
+    VkBufferObj indexed_draw_buffer;
+    buffer_create_info.size = 4 * sizeof(VkDrawIndexedIndirectCommand);
+    indexed_draw_buffer.init(*m_device, buffer_create_info,
+                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDrawIndexedIndirectCommand *indexed_draw_ptr = (VkDrawIndexedIndirectCommand *)indexed_draw_buffer.memory().map();
+    for (uint32_t i = 0; i < 4; i++) {
+        indexed_draw_ptr->indexCount = 3;
+        indexed_draw_ptr->instanceCount = 1;
+        indexed_draw_ptr->firstIndex = 0;
+        indexed_draw_ptr->vertexOffset = 0;
+        indexed_draw_ptr->firstInstance = (i == 3) ? 1 : 0;
+        indexed_draw_ptr++;
+    }
+    indexed_draw_buffer.memory().unmap();
+
+    m_commandBuffer->begin(&begin_info);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    VkBufferCreateInfo index_buffer_create_info = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    index_buffer_create_info.size = 3 * sizeof(uint32_t);
+    index_buffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    VkBufferObj index_buffer;
+    index_buffer.init(*m_device, index_buffer_create_info);
+    vk::CmdBindIndexBuffer(m_commandBuffer->handle(), index_buffer.handle(), 0, VK_INDEX_TYPE_UINT32);
+    vk::CmdDrawIndexedIndirect(m_commandBuffer->handle(), indexed_draw_buffer.handle(), sizeof(VkDrawIndexedIndirectCommand), 3,
+                               sizeof(VkDrawIndexedIndirectCommand));
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    err = vk::QueueWaitIdle(m_device->m_queue);
+    ASSERT_VK_SUCCESS(err);
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyPipelineLayout(m_device->handle(), pipeline_layout, nullptr);
+}
+
 TEST_F(VkGpuAssistedLayerTest, GpuValidationInlineUniformBlockAndMiscGpu) {
     TEST_DESCRIPTION(
         "GPU validation: Make sure inline uniform blocks don't generate false validation errors, verify reserved descriptor slot "
@@ -1788,14 +2158,14 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationInlineUniformBlockAndMiscGpu) {
         "    u_index.index = inlineubo.val;\n"
         "}\n";
 
-    auto shader_module = new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this);
+    VkShaderObj shader_module(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this);
 
     VkPipelineShaderStageCreateInfo stage;
     stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     stage.pNext = nullptr;
     stage.flags = 0;
     stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    stage.module = shader_module->handle();
+    stage.module = shader_module.handle();
     stage.pName = "main";
     stage.pSpecializationInfo = nullptr;
 
@@ -1885,7 +2255,6 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationInlineUniformBlockAndMiscGpu) {
     m_commandBuffer->end();
     vk::QueueSubmit(c_queue->handle(), 1, &submit_info, VK_NULL_HANDLE);
     vk::QueueWaitIdle(m_device->m_queue);
-    vk::DestroyShaderModule(m_device->handle(), shader_module->handle(), NULL);
     vk::DestroyPipelineLayout(m_device->handle(), pl_layout, NULL);
     vk::DestroyPipeline(m_device->handle(), c_pipeline, NULL);
     for (uint32_t i = 0; i < set_count; i++) {
@@ -2158,6 +2527,9 @@ TEST_F(VkDebugPrintfTest, GpuDebugPrintf) {
             "                u64vec4 vecul = u64vec4(bigvar, bigvar, bigvar, bigvar);"
             "                debugPrintfEXT(\"Here's a vector of ul %v4ul\", vecul);\n"
             "                break;\n"
+            "            case 2:\n"
+            "                debugPrintfEXT(\"Unsigned long as decimal %lu and as hex 0x%lx\", bigvar, bigvar);\n"
+            "                break;\n"
             "        }\n"
             "    }\n"
             "    gl_Position = vec4(0.0, 0.0, 0.0, 0.0);\n"
@@ -2189,11 +2561,23 @@ TEST_F(VkDebugPrintfTest, GpuDebugPrintf) {
         err = vk::QueueWaitIdle(m_device->m_queue);
         ASSERT_VK_SUCCESS(err);
         m_errorMonitor->VerifyFound();
+
         data = (VkDeviceAddress *)buffer0.memory().map();
         data[0] = 1;
         buffer0.memory().unmap();
         m_errorMonitor->SetDesiredFailureMsg(
             kInformationBit, "Here's a vector of ul 2000000000000001, 2000000000000001, 2000000000000001, 2000000000000001");
+        err = vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+        ASSERT_VK_SUCCESS(err);
+        err = vk::QueueWaitIdle(m_device->m_queue);
+        ASSERT_VK_SUCCESS(err);
+        m_errorMonitor->VerifyFound();
+
+        data = (VkDeviceAddress *)buffer0.memory().map();
+        data[0] = 2;
+        buffer0.memory().unmap();
+        m_errorMonitor->SetDesiredFailureMsg(kInformationBit,
+                                             "Unsigned long as decimal 2305843009213693953 and as hex 0x2000000000000001");
         err = vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
         ASSERT_VK_SUCCESS(err);
         err = vk::QueueWaitIdle(m_device->m_queue);

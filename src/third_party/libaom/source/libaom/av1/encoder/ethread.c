@@ -11,6 +11,7 @@
 
 #include "av1/common/warped_motion.h"
 
+#include "av1/encoder/bitstream.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encoder_alloc.h"
@@ -53,7 +54,7 @@ static AOM_INLINE void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
 static AOM_INLINE void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-  const int mib_size = cm->seq_params.mib_size;
+  const int mib_size = cm->seq_params->mib_size;
   const int frame_lf_count =
       av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
   for (int row = 0; row < cm->tiles.rows; row++) {
@@ -69,7 +70,8 @@ static AOM_INLINE void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
           const int idx_str = cm->mi_params.mi_stride * mi_row + mi_col;
           MB_MODE_INFO **mi = cm->mi_params.mi_grid_base + idx_str;
           MB_MODE_INFO *mbmi = mi[0];
-          if (mbmi->skip_txfm == 1 && (mbmi->bsize == cm->seq_params.sb_size)) {
+          if (mbmi->skip_txfm == 1 &&
+              (mbmi->bsize == cm->seq_params->sb_size)) {
             for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
               mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id];
             mbmi->delta_lf_from_base = xd->delta_lf_from_base;
@@ -363,7 +365,7 @@ static AOM_INLINE void switch_tile_and_get_next_job(
     *cur_tile_id = tile_id;
     const int unit_height = mi_size_high[fp_block_size];
     get_next_job(&tile_data[tile_id], current_mi_row,
-                 is_firstpass ? unit_height : cm->seq_params.mib_size);
+                 is_firstpass ? unit_height : cm->seq_params->mib_size);
   }
 }
 
@@ -448,7 +450,7 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
     pthread_mutex_lock(enc_row_mt_mutex_);
 #endif
     if (!get_next_job(&cpi->tile_data[cur_tile_id], &current_mi_row,
-                      cm->seq_params.mib_size)) {
+                      cm->seq_params->mib_size)) {
       // No jobs are available for the current tile. Query for the status of
       // other tiles and get the next job if available
       switch_tile_and_get_next_job(cm, cpi->tile_data, &cur_tile_id,
@@ -483,7 +485,7 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
     av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), tile_row,
                            &td->mb.e_mbd);
 
-    cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
+    cfl_init(&td->mb.e_mbd.cfl, cm->seq_params);
     if (td->mb.txfm_search_info.txb_rd_records != NULL) {
       av1_crc32c_calculator_init(
           &td->mb.txfm_search_info.txb_rd_records->mb_rd_record.crc_calculator);
@@ -550,18 +552,20 @@ void av1_create_second_pass_workers(AV1_COMP *cpi, int num_workers) {
                     aom_malloc(sizeof(*(gm_sync->mutex_))));
     if (gm_sync->mutex_) pthread_mutex_init(gm_sync->mutex_, NULL);
   }
+#if !CONFIG_REALTIME_ONLY
   AV1TemporalFilterSync *tf_sync = &mt_info->tf_sync;
   if (tf_sync->mutex_ == NULL) {
     CHECK_MEM_ERROR(cm, tf_sync->mutex_, aom_malloc(sizeof(*tf_sync->mutex_)));
     if (tf_sync->mutex_) pthread_mutex_init(tf_sync->mutex_, NULL);
   }
+#endif  // !CONFIG_REALTIME_ONLY
   AV1CdefSync *cdef_sync = &mt_info->cdef_sync;
   if (cdef_sync->mutex_ == NULL) {
     CHECK_MEM_ERROR(cm, cdef_sync->mutex_,
                     aom_malloc(sizeof(*(cdef_sync->mutex_))));
     if (cdef_sync->mutex_) pthread_mutex_init(cdef_sync->mutex_, NULL);
   }
-#endif
+#endif  // CONFIG_MULTITHREAD
 
   for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &mt_info->workers[i];
@@ -577,7 +581,7 @@ void av1_create_second_pass_workers(AV1_COMP *cpi, int num_workers) {
 
       // Create threads
       if (!winterface->reset(worker))
-        aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+        aom_internal_error(cm->error, AOM_CODEC_ERROR,
                            "Tile encoder thread creation failed");
     } else {
       // Main thread acts as a worker and uses the thread data in cpi.
@@ -633,13 +637,14 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
                                  sizeof(*thread_data->td->tmp_pred_bufs[j])));
       }
 
+      const int plane_types = PLANE_TYPES >> cm->seq_params->monochrome;
       CHECK_MEM_ERROR(cm, thread_data->td->pixel_gradient_info,
                       aom_malloc(sizeof(*thread_data->td->pixel_gradient_info) *
-                                 PLANE_TYPES * MAX_SB_SQUARE));
+                                 plane_types * MAX_SB_SQUARE));
 
       if (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION) {
         const int num_64x64_blocks =
-            (cm->seq_params.sb_size == BLOCK_64X64) ? 1 : 4;
+            (cm->seq_params->sb_size == BLOCK_64X64) ? 1 : 4;
         CHECK_MEM_ERROR(
             cm, thread_data->td->vt64x64,
             aom_malloc(sizeof(*thread_data->td->vt64x64) * num_64x64_blocks));
@@ -729,7 +734,7 @@ static AOM_INLINE void fp_create_enc_workers(AV1_COMP *cpi, int num_workers) {
       if (create_workers) {
         // Create threads
         if (!winterface->reset(worker))
-          aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+          aom_internal_error(cm->error, AOM_CODEC_ERROR,
                              "Tile encoder thread creation failed");
       }
     } else {
@@ -769,7 +774,7 @@ static AOM_INLINE void sync_enc_workers(MultiThreadInfo *const mt_info,
   }
 
   if (had_error)
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+    aom_internal_error(cm->error, AOM_CODEC_ERROR,
                        "Failed to encode tile data");
 }
 
@@ -1298,10 +1303,10 @@ static int tpl_worker_hook(void *arg1, void *unused) {
   MACROBLOCKD *xd = &x->e_mbd;
   TplTxfmStats *tpl_txfm_stats = &thread_data->td->tpl_txfm_stats;
   CommonModeInfoParams *mi_params = &cm->mi_params;
-  BLOCK_SIZE bsize = convert_length_to_bsize(cpi->tpl_data.tpl_bsize_1d);
+  BLOCK_SIZE bsize = convert_length_to_bsize(cpi->ppi->tpl_data.tpl_bsize_1d);
   TX_SIZE tx_size = max_txsize_lookup[bsize];
   int mi_height = mi_size_high[bsize];
-  int num_active_workers = cpi->tpl_data.tpl_mt_sync.num_threads_working;
+  int num_active_workers = cpi->ppi->tpl_data.tpl_mt_sync.num_threads_working;
 
   memset(tpl_txfm_stats, 0, sizeof(*tpl_txfm_stats));
 
@@ -1403,7 +1408,7 @@ static AOM_INLINE void prepare_tpl_workers(AV1_COMP *cpi, AVxWorkerHook hook,
 static void tpl_accumulate_txfm_stats(AV1_COMP *cpi, int num_workers) {
   double *total_abs_coeff_sum = cpi->td.tpl_txfm_stats.abs_coeff_sum;
   int *txfm_block_count = &cpi->td.tpl_txfm_stats.txfm_block_count;
-  TplParams *tpl_data = &cpi->tpl_data;
+  TplParams *tpl_data = &cpi->ppi->tpl_data;
   int coeff_num = tpl_data->tpl_frame[tpl_data->frame_idx].coeff_num;
   for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->mt_info.workers[i];
@@ -1424,7 +1429,7 @@ void av1_mc_flow_dispenser_mt(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   CommonModeInfoParams *mi_params = &cm->mi_params;
   MultiThreadInfo *mt_info = &cpi->mt_info;
-  TplParams *tpl_data = &cpi->tpl_data;
+  TplParams *tpl_data = &cpi->ppi->tpl_data;
   AV1TplRowMultiThreadSync *tpl_sync = &tpl_data->tpl_mt_sync;
   int mb_rows = mi_params->mb_rows;
   int num_workers =
@@ -1798,6 +1803,335 @@ void av1_global_motion_estimation_mt(AV1_COMP *cpi) {
 }
 #endif  // !CONFIG_REALTIME_ONLY
 
+// Compare and order tiles based on tile size.
+static int compare_tile_order(const void *a, const void *b) {
+  const PackBSTileOrder *const tile_a = (const PackBSTileOrder *)a;
+  const PackBSTileOrder *const tile_b = (const PackBSTileOrder *)b;
+
+  if (tile_a->tile_size_mi > tile_b->tile_size_mi)
+    return -1;
+  else if (tile_a->tile_size_mi == tile_b->tile_size_mi)
+    return (tile_a->tile_idx > tile_b->tile_idx ? 1 : -1);
+  else
+    return 1;
+}
+
+// Get next tile index to be processed for pack bitstream
+static AOM_INLINE int get_next_pack_bs_tile_idx(
+    AV1EncPackBSSync *const pack_bs_sync, const int num_tiles) {
+  assert(pack_bs_sync->next_job_idx <= num_tiles);
+  if (pack_bs_sync->next_job_idx == num_tiles) return -1;
+
+  return pack_bs_sync->pack_bs_tile_order[pack_bs_sync->next_job_idx++]
+      .tile_idx;
+}
+
+// Calculates bitstream chunk size based on total buffer size and tile or tile
+// group size.
+static AOM_INLINE size_t get_bs_chunk_size(int tg_or_tile_size,
+                                           const int frame_or_tg_size,
+                                           size_t *remain_buf_size,
+                                           size_t max_buf_size,
+                                           int is_last_chunk) {
+  size_t this_chunk_size;
+  assert(*remain_buf_size > 0);
+  if (is_last_chunk) {
+    this_chunk_size = *remain_buf_size;
+    *remain_buf_size = 0;
+  } else {
+    const uint64_t size_scale = (uint64_t)max_buf_size * tg_or_tile_size;
+    this_chunk_size = (size_t)(size_scale / frame_or_tg_size);
+    *remain_buf_size -= this_chunk_size;
+    assert(*remain_buf_size > 0);
+  }
+  assert(this_chunk_size > 0);
+  return this_chunk_size;
+}
+
+// Initializes params required for pack bitstream tile.
+static void init_tile_pack_bs_params(AV1_COMP *const cpi, uint8_t *const dst,
+                                     struct aom_write_bit_buffer *saved_wb,
+                                     PackBSParams *const pack_bs_params_arr,
+                                     uint8_t obu_extn_header) {
+  MACROBLOCK *const x = &cpi->td.mb;
+  AV1_COMMON *const cm = &cpi->common;
+  const CommonTileParams *const tiles = &cm->tiles;
+  const int num_tiles = tiles->cols * tiles->rows;
+  // Fixed size tile groups for the moment
+  const int num_tg_hdrs = cpi->num_tg;
+  // Tile group size in terms of number of tiles.
+  const int tg_size_in_tiles = (num_tiles + num_tg_hdrs - 1) / num_tg_hdrs;
+  uint8_t *tile_dst = dst;
+  uint8_t *tile_data_curr = dst;
+  // Max tile group count can not be more than MAX_TILES.
+  int tg_size_mi[MAX_TILES] = { 0 };  // Size of tile group in mi units
+  int tile_idx;
+  int tg_idx = 0;
+  int tile_count_in_tg = 0;
+  int new_tg = 1;
+  // TODO(Cherma): As header preparation is moved out of multithreading scope,
+  // error_info need not be in thread specific memory. Modify error_info access
+  // from MACROBLOCK structure to AV1_COMMON in av1_write_obu_tg_tile_headers().
+  x->error_info = cm->error;
+
+  // Populate pack bitstream params of all tiles.
+  for (tile_idx = 0; tile_idx < num_tiles; tile_idx++) {
+    const TileInfo *const tile_info = &cpi->tile_data[tile_idx].tile_info;
+    PackBSParams *const pack_bs_params = &pack_bs_params_arr[tile_idx];
+    // Calculate tile size in mi units.
+    const int tile_size_mi = (tile_info->mi_col_end - tile_info->mi_col_start) *
+                             (tile_info->mi_row_end - tile_info->mi_row_start);
+    int is_last_tile_in_tg = 0;
+    tile_count_in_tg++;
+    if (tile_count_in_tg == tg_size_in_tiles || tile_idx == (num_tiles - 1))
+      is_last_tile_in_tg = 1;
+
+    // Populate pack bitstream params of this tile.
+    pack_bs_params->curr_tg_hdr_size = 0;
+    pack_bs_params->obu_extn_header = obu_extn_header;
+    pack_bs_params->saved_wb = saved_wb;
+    pack_bs_params->obu_header_size = 0;
+    pack_bs_params->is_last_tile_in_tg = is_last_tile_in_tg;
+    pack_bs_params->new_tg = new_tg;
+    pack_bs_params->tile_col = tile_info->tile_col;
+    pack_bs_params->tile_row = tile_info->tile_row;
+    pack_bs_params->tile_size_mi = tile_size_mi;
+    tg_size_mi[tg_idx] += tile_size_mi;
+
+    if (new_tg) new_tg = 0;
+    if (is_last_tile_in_tg) {
+      tile_count_in_tg = 0;
+      new_tg = 1;
+      tg_idx++;
+    }
+  }
+
+  assert(cpi->available_bs_size > 0);
+  size_t tg_buf_size[MAX_TILES] = { 0 };
+  size_t max_buf_size = cpi->available_bs_size;
+  size_t remain_buf_size = max_buf_size;
+  const int frame_size_mi = cm->mi_params.mi_rows * cm->mi_params.mi_cols;
+
+  tile_idx = 0;
+  // Prepare obu, tile group and frame header of each tile group.
+  for (tg_idx = 0; tg_idx < cpi->num_tg; tg_idx++) {
+    PackBSParams *const pack_bs_params = &pack_bs_params_arr[tile_idx];
+    int is_last_tg = tg_idx == cpi->num_tg - 1;
+    // Prorate bitstream buffer size based on tile group size and available
+    // buffer size. This buffer will be used to store headers and tile data.
+    tg_buf_size[tg_idx] =
+        get_bs_chunk_size(tg_size_mi[tg_idx], frame_size_mi, &remain_buf_size,
+                          max_buf_size, is_last_tg);
+
+    pack_bs_params->dst = tile_dst;
+    pack_bs_params->tile_data_curr = tile_dst;
+
+    // Write obu, tile group and frame header at first tile in the tile
+    // group.
+    av1_write_obu_tg_tile_headers(cpi, x, pack_bs_params, tile_idx);
+    tile_dst += tg_buf_size[tg_idx];
+
+    // Exclude headers from tile group buffer size.
+    tg_buf_size[tg_idx] -= pack_bs_params->curr_tg_hdr_size;
+    tile_idx += tg_size_in_tiles;
+  }
+
+  tg_idx = 0;
+  // Calculate bitstream buffer size of each tile in the tile group.
+  for (tile_idx = 0; tile_idx < num_tiles; tile_idx++) {
+    PackBSParams *const pack_bs_params = &pack_bs_params_arr[tile_idx];
+
+    if (pack_bs_params->new_tg) {
+      max_buf_size = tg_buf_size[tg_idx];
+      remain_buf_size = max_buf_size;
+    }
+
+    // Prorate bitstream buffer size of this tile based on tile size and
+    // available buffer size. For this proration, header size is not accounted.
+    const size_t tile_buf_size = get_bs_chunk_size(
+        pack_bs_params->tile_size_mi, tg_size_mi[tg_idx], &remain_buf_size,
+        max_buf_size, pack_bs_params->is_last_tile_in_tg);
+    pack_bs_params->tile_buf_size = tile_buf_size;
+
+    // Update base address of bitstream buffer for tile and tile group.
+    if (pack_bs_params->new_tg) {
+      tile_dst = pack_bs_params->dst;
+      tile_data_curr = pack_bs_params->tile_data_curr;
+      // Account header size in first tile of a tile group.
+      pack_bs_params->tile_buf_size += pack_bs_params->curr_tg_hdr_size;
+    } else {
+      pack_bs_params->dst = tile_dst;
+      pack_bs_params->tile_data_curr = tile_data_curr;
+    }
+
+    if (pack_bs_params->is_last_tile_in_tg) tg_idx++;
+    tile_dst += pack_bs_params->tile_buf_size;
+  }
+}
+
+// Worker hook function of pack bitsteam multithreading.
+static int pack_bs_worker_hook(void *arg1, void *arg2) {
+  EncWorkerData *const thread_data = (EncWorkerData *)arg1;
+  PackBSParams *const pack_bs_params = (PackBSParams *)arg2;
+  AV1_COMP *const cpi = thread_data->cpi;
+  AV1_COMMON *const cm = &cpi->common;
+  AV1EncPackBSSync *const pack_bs_sync = &cpi->mt_info.pack_bs_sync;
+  const CommonTileParams *const tiles = &cm->tiles;
+  const int num_tiles = tiles->cols * tiles->rows;
+
+  while (1) {
+#if CONFIG_MULTITHREAD
+    pthread_mutex_lock(pack_bs_sync->mutex_);
+#endif
+    const int tile_idx = get_next_pack_bs_tile_idx(pack_bs_sync, num_tiles);
+#if CONFIG_MULTITHREAD
+    pthread_mutex_unlock(pack_bs_sync->mutex_);
+#endif
+    if (tile_idx == -1) break;
+    TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
+    thread_data->td->mb.e_mbd.tile_ctx = &this_tile->tctx;
+
+    av1_pack_tile_info(cpi, thread_data->td, &pack_bs_params[tile_idx]);
+  }
+
+  return 1;
+}
+
+// Prepares thread data and workers of pack bitsteam multithreading.
+static void prepare_pack_bs_workers(AV1_COMP *const cpi,
+                                    PackBSParams *const pack_bs_params,
+                                    AVxWorkerHook hook, const int num_workers) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  for (int i = num_workers - 1; i >= 0; i--) {
+    AVxWorker *worker = &mt_info->workers[i];
+    EncWorkerData *const thread_data = &mt_info->tile_thr_data[i];
+    if (i == 0) thread_data->td = &cpi->td;
+
+    if (thread_data->td != &cpi->td) thread_data->td->mb = cpi->td.mb;
+
+    thread_data->cpi = cpi;
+    thread_data->start = i;
+    thread_data->thread_id = i;
+    av1_reset_pack_bs_thread_data(thread_data->td);
+
+    worker->hook = hook;
+    worker->data1 = thread_data;
+    worker->data2 = pack_bs_params;
+  }
+
+  AV1_COMMON *const cm = &cpi->common;
+  AV1EncPackBSSync *const pack_bs_sync = &mt_info->pack_bs_sync;
+  const uint16_t num_tiles = cm->tiles.rows * cm->tiles.cols;
+#if CONFIG_MULTITHREAD
+  if (pack_bs_sync->mutex_ == NULL) {
+    CHECK_MEM_ERROR(cm, pack_bs_sync->mutex_,
+                    aom_malloc(sizeof(*pack_bs_sync->mutex_)));
+    if (pack_bs_sync->mutex_) pthread_mutex_init(pack_bs_sync->mutex_, NULL);
+  }
+#endif
+  pack_bs_sync->next_job_idx = 0;
+
+  PackBSTileOrder *const pack_bs_tile_order = pack_bs_sync->pack_bs_tile_order;
+  // Reset tile order data of pack bitstream
+  av1_zero_array(pack_bs_tile_order, num_tiles);
+
+  // Populate pack bitstream tile order structure
+  for (uint16_t tile_idx = 0; tile_idx < num_tiles; tile_idx++) {
+    pack_bs_tile_order[tile_idx].tile_size_mi =
+        pack_bs_params[tile_idx].tile_size_mi;
+    pack_bs_tile_order[tile_idx].tile_idx = tile_idx;
+  }
+
+  // Sort tiles in descending order based on tile area.
+  qsort(pack_bs_tile_order, num_tiles, sizeof(*pack_bs_tile_order),
+        compare_tile_order);
+}
+
+// Accumulates data after pack bitsteam processing.
+static void accumulate_pack_bs_data(
+    AV1_COMP *const cpi, const PackBSParams *const pack_bs_params_arr,
+    uint8_t *const dst, uint32_t *total_size, const FrameHeaderInfo *fh_info,
+    int *const largest_tile_id, unsigned int *max_tile_size,
+    uint32_t *const obu_header_size, uint8_t **tile_data_start,
+    const int num_workers) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const CommonTileParams *const tiles = &cm->tiles;
+  const int tile_count = tiles->cols * tiles->rows;
+  // Fixed size tile groups for the moment
+  size_t curr_tg_data_size = 0;
+  int is_first_tg = 1;
+  uint8_t *curr_tg_start = dst;
+  size_t src_offset = 0;
+  size_t dst_offset = 0;
+
+  for (int tile_idx = 0; tile_idx < tile_count; tile_idx++) {
+    // PackBSParams stores all parameters required to pack tile and header
+    // info.
+    const PackBSParams *const pack_bs_params = &pack_bs_params_arr[tile_idx];
+    uint32_t tile_size = 0;
+
+    if (pack_bs_params->new_tg) {
+      curr_tg_start = dst + *total_size;
+      curr_tg_data_size = pack_bs_params->curr_tg_hdr_size;
+      *tile_data_start += pack_bs_params->curr_tg_hdr_size;
+      *obu_header_size = pack_bs_params->obu_header_size;
+    }
+    curr_tg_data_size +=
+        pack_bs_params->buf.size + (pack_bs_params->is_last_tile_in_tg ? 0 : 4);
+
+    if (pack_bs_params->buf.size > *max_tile_size) {
+      *largest_tile_id = tile_idx;
+      *max_tile_size = (unsigned int)pack_bs_params->buf.size;
+    }
+    tile_size +=
+        (uint32_t)pack_bs_params->buf.size + *pack_bs_params->total_size;
+
+    // Pack all the chunks of tile bitstreams together
+    if (tile_idx != 0) memmove(dst + dst_offset, dst + src_offset, tile_size);
+
+    if (pack_bs_params->is_last_tile_in_tg)
+      av1_write_last_tile_info(
+          cpi, fh_info, pack_bs_params->saved_wb, &curr_tg_data_size,
+          curr_tg_start, &tile_size, tile_data_start, largest_tile_id,
+          &is_first_tg, *obu_header_size, pack_bs_params->obu_extn_header);
+    src_offset += pack_bs_params->tile_buf_size;
+    dst_offset += tile_size;
+    *total_size += tile_size;
+  }
+
+  // Accumulate thread data
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  for (int idx = num_workers - 1; idx >= 0; idx--) {
+    ThreadData const *td = mt_info->tile_thr_data[idx].td;
+    av1_accumulate_pack_bs_thread_data(cpi, td);
+  }
+}
+
+void av1_write_tile_obu_mt(
+    AV1_COMP *const cpi, uint8_t *const dst, uint32_t *total_size,
+    struct aom_write_bit_buffer *saved_wb, uint8_t obu_extn_header,
+    const FrameHeaderInfo *fh_info, int *const largest_tile_id,
+    unsigned int *max_tile_size, uint32_t *const obu_header_size,
+    uint8_t **tile_data_start) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  const int num_workers = mt_info->num_mod_workers[MOD_PACK_BS];
+
+  PackBSParams pack_bs_params[MAX_TILES];
+  uint32_t tile_size[MAX_TILES] = { 0 };
+
+  for (int tile_idx = 0; tile_idx < MAX_TILES; tile_idx++)
+    pack_bs_params[tile_idx].total_size = &tile_size[tile_idx];
+
+  init_tile_pack_bs_params(cpi, dst, saved_wb, pack_bs_params, obu_extn_header);
+  prepare_pack_bs_workers(cpi, pack_bs_params, pack_bs_worker_hook,
+                          num_workers);
+  launch_workers(mt_info, num_workers);
+  sync_enc_workers(mt_info, &cpi->common, num_workers);
+  accumulate_pack_bs_data(cpi, pack_bs_params, dst, total_size, fh_info,
+                          largest_tile_id, max_tile_size, obu_header_size,
+                          tile_data_start, num_workers);
+}
+
 // Deallocate memory for CDEF search multi-thread synchronization.
 void av1_cdef_mt_dealloc(AV1CdefSync *cdef_sync) {
   (void)cdef_sync;
@@ -1826,6 +2160,9 @@ static void update_next_job_info(AV1CdefSync *cdef_sync, int nvfb, int nhfb) {
 
 // Initializes cdef_sync parameters.
 static AOM_INLINE void cdef_reset_job_info(AV1CdefSync *cdef_sync) {
+#if CONFIG_MULTITHREAD
+  if (cdef_sync->mutex_) pthread_mutex_init(cdef_sync->mutex_, NULL);
+#endif  // CONFIG_MULTITHREAD
   cdef_sync->end_of_frame = 0;
   cdef_sync->fbr = 0;
   cdef_sync->fbc = 0;
@@ -1942,6 +2279,12 @@ static AOM_INLINE int compute_num_lr_workers(AV1_COMP *cpi) {
   return compute_num_enc_workers(cpi, cpi->oxcf.max_threads);
 }
 
+// Computes num_workers for pack bitstream multi-threading.
+static AOM_INLINE int compute_num_pack_bs_workers(AV1_COMP *cpi) {
+  if (cpi->oxcf.max_threads <= 1) return 1;
+  return compute_num_enc_tile_mt_workers(&cpi->common, cpi->oxcf.max_threads);
+}
+
 int compute_num_mod_workers(AV1_COMP *cpi, MULTI_THREADED_MODULES mod_name) {
   int num_mod_workers = 0;
   switch (mod_name) {
@@ -1961,7 +2304,9 @@ int compute_num_mod_workers(AV1_COMP *cpi, MULTI_THREADED_MODULES mod_name) {
     case MOD_CDEF_SEARCH:
       num_mod_workers = compute_num_cdef_workers(cpi);
       break;
+    case MOD_CDEF: num_mod_workers = compute_num_cdef_workers(cpi); break;
     case MOD_LR: num_mod_workers = compute_num_lr_workers(cpi); break;
+    case MOD_PACK_BS: num_mod_workers = compute_num_pack_bs_workers(cpi); break;
     default: assert(0); break;
   }
   return (num_mod_workers);

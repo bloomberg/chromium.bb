@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/ipc/mojo_chrome_prompt_ipc.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -101,7 +102,8 @@ void MojoChromePromptIPC::InitializeChromePromptPtr() {
   mojo::ScopedMessagePipeHandle message_pipe_handle =
       incoming_invitation.ExtractMessagePipe(chrome_mojo_pipe_token_);
 
-  chrome_prompt_service_.reset(new chrome_cleaner::mojom::ChromePromptPtr);
+  chrome_prompt_service_ =
+      std::make_unique<chrome_cleaner::mojom::ChromePromptPtr>();
   chrome_prompt_service_->Bind(chrome_cleaner::mojom::ChromePromptPtrInfo(
       std::move(message_pipe_handle), 0));
   // No need to retain this object, since it will live until the process
@@ -127,7 +129,7 @@ void MojoChromePromptIPC::PromptUserCheckVersion(
     // deleted.
     (*chrome_prompt_service_)
         ->PromptUser(std::move(files_to_delete), std::move(registry_keys),
-                     base::nullopt, std::move(callback));
+                     absl::nullopt, std::move(callback));
   }
 }
 
@@ -155,14 +157,11 @@ void MojoChromePromptIPC::RunPromptUserTask(
       base::BindOnce(&MojoChromePromptIPC::OnChromeResponseReceived,
                      base::Unretained(this), std::move(callback));
 
-  const auto& version_callback = base::BindRepeating(
-      &MojoChromePromptIPC::PromptUserCheckVersion, base::Unretained(this),
-      std::move(files_to_delete), std::move(registry_keys),
-      // Uses the AdaptCallbackForRepeating because we are bound by the mojo API
-      // to use a RepeatingCallback even though this only should be called once.
-      std::move(extension_ids),
-      AdaptCallbackForRepeating(std::move(response_callback)));
-  (*chrome_prompt_service_).QueryVersion(version_callback);
+  (*chrome_prompt_service_)
+      .QueryVersion(base::BindOnce(
+          &MojoChromePromptIPC::PromptUserCheckVersion, base::Unretained(this),
+          std::move(files_to_delete), std::move(registry_keys),
+          std::move(extension_ids), std::move(response_callback)));
 }
 
 }  // namespace chrome_cleaner

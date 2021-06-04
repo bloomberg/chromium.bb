@@ -14,6 +14,8 @@ namespace content {
 class WebContents;
 }
 
+class GURL;
+
 namespace extensions {
 
 class ChromeExtensionFrameHost : public ExtensionFrameHost {
@@ -29,13 +31,10 @@ class ChromeExtensionFrameHost : public ExtensionFrameHost {
       mojom::InjectionType script_type,
       mojom::RunLocation run_location,
       RequestScriptInjectionPermissionCallback callback) override;
-
- private:
-  // This raw pointer is safe to use because ExtensionWebContentsObserver whose
-  // lifetime is tied to the WebContents owns this instance.
-  // The parent class ExtensionFrameHost uses WebContentsFrameReceiverSet with
-  // |web_contents_| for mojom::LocalFrameHost.
-  content::WebContents* web_contents_;
+  void GetAppInstallState(const GURL& url,
+                          GetAppInstallStateCallback callback) override;
+  void WatchedPageChange(
+      const std::vector<std::string>& css_selectors) override;
 };
 
 }  // namespace extensions

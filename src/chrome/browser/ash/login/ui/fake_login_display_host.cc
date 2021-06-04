@@ -9,7 +9,7 @@
 
 namespace chromeos {
 
-class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
+class FakeLoginDisplayHost::FakeBaseScreen : public BaseScreen {
  public:
   explicit FakeBaseScreen(chromeos::OobeScreenId screen_id)
       : BaseScreen(screen_id, OobeScreenPriority::DEFAULT) {}
@@ -17,7 +17,7 @@ class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
   ~FakeBaseScreen() override = default;
 
  private:
-  // chromeos::BaseScreen:
+  // BaseScreen:
   void ShowImpl() override {}
   void HideImpl() override {}
 
@@ -106,7 +106,7 @@ void FakeLoginDisplayHost::LoadSigninWallpaper() {}
 
 bool FakeLoginDisplayHost::IsUserAllowlisted(
     const AccountId& account_id,
-    const base::Optional<user_manager::UserType>& user_type) {
+    const absl::optional<user_manager::UserType>& user_type) {
   return false;
 }
 

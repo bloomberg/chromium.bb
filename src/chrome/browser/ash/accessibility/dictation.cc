@@ -6,7 +6,9 @@
 
 #include "ash/components/audio/sounds.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/network_speech_recognizer.h"
@@ -17,6 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
@@ -26,6 +29,18 @@
 
 namespace ash {
 namespace {
+
+// Length of timeout to cancel recognition if there's no speech heard.
+static const base::TimeDelta kNetworkNoSpeechTimeout =
+    base::TimeDelta::FromSeconds(5);
+static const base::TimeDelta kDeviceNoSpeechTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+// Length of timeout to cancel recognition if no different results are received.
+static const base::TimeDelta kNetworkNoNewSpeechTimeout =
+    base::TimeDelta::FromSeconds(2);
+static const base::TimeDelta kDeviceNoNewSpeechTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 const char kDefaultProfileLanguage[] = "en-US";
 
@@ -63,7 +78,9 @@ ui::IMEInputContextHandlerInterface* GetInputContext() {
 Dictation::Dictation(Profile* profile)
     : current_state_(SPEECH_RECOGNIZER_OFF),
       composition_(std::make_unique<ui::CompositionText>()),
-      profile_(profile) {
+      profile_(profile),
+      no_speech_timeout_(kNetworkNoSpeechTimeout),
+      no_new_speech_timeout_(kNetworkNoNewSpeechTimeout) {
   if (GetInputContext() && GetInputContext()->GetInputMethod())
     GetInputContext()->GetInputMethod()->AddObserver(this);
 }
@@ -80,23 +97,35 @@ bool Dictation::OnToggleDictation() {
   }
   has_committed_text_ = false;
   std::string language = GetUserLanguage(profile_);
+  // Log the language used with CLD3LanguageCode.
+  base::UmaHistogramSparse("Accessibility.CrosDictation.Language",
+                           base::HashMetricName(language));
+
   if (switches::IsExperimentalAccessibilityDictationOfflineEnabled() &&
       OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(language)) {
     // On-device recognition is behind a flag and then only available if
     // SODA is installed on-device.
     speech_recognizer_ = std::make_unique<OnDeviceSpeechRecognizer>(
-        weak_ptr_factory_.GetWeakPtr(), profile_, language);
+        weak_ptr_factory_.GetWeakPtr(), profile_, language,
+        /*recognition_mode_ime=*/true);
     base::UmaHistogramBoolean("Accessibility.CrosDictation.UsedOnDeviceSpeech",
                               true);
+    no_speech_timeout_ = kDeviceNoSpeechTimeout;
+    no_new_speech_timeout_ = kDeviceNoNewSpeechTimeout;
   } else {
     speech_recognizer_ = std::make_unique<NetworkSpeechRecognizer>(
         weak_ptr_factory_.GetWeakPtr(),
-        content::BrowserContext::GetDefaultStoragePartition(profile_)
+        profile_->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcessIOThread(),
         profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages),
         language);
     base::UmaHistogramBoolean("Accessibility.CrosDictation.UsedOnDeviceSpeech",
                               false);
+    no_speech_timeout_ =
+        features::IsExperimentalAccessibilityDictationListeningEnabled()
+            ? kDeviceNoSpeechTimeout
+            : kNetworkNoSpeechTimeout;
+    no_new_speech_timeout_ = kNetworkNoNewSpeechTimeout;
   }
   return true;
 }
@@ -104,7 +133,7 @@ bool Dictation::OnToggleDictation() {
 void Dictation::OnSpeechResult(
     const std::u16string& transcription,
     bool is_final,
-    const base::Optional<SpeechRecognizerDelegate::TranscriptTiming>&
+    const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
         word_offsets) {
   // If the first character of text isn't a space, add a space before it.
   // NetworkSpeechRecognizer adds the preceding space but
@@ -119,7 +148,16 @@ void Dictation::OnSpeechResult(
     composition_->text = transcription;
   }
 
-  if (!is_final) {
+  // Restart the timer when we have a final result. If we receive any new or
+  // changed text, restart the timer to give the user more time to speak. (The
+  // timer is recording the amount of time since the most recent utterance.)
+  if (is_final) {
+    StartSpeechTimeout(no_speech_timeout_);
+  } else {
+    StartSpeechTimeout(
+        features::IsExperimentalAccessibilityDictationListeningEnabled()
+            ? no_speech_timeout_
+            : no_new_speech_timeout_);
     // If ChromeVox is enabled, we don't want to show intermediate results
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
       return;
@@ -129,7 +167,7 @@ void Dictation::OnSpeechResult(
       input_context->UpdateCompositionText(*composition_, 0, true);
     return;
   }
-  if (switches::IsExperimentalAccessibilityDictationListeningEnabled()) {
+  if (features::IsExperimentalAccessibilityDictationListeningEnabled()) {
     CommitCurrentText();
   } else {
     // Turn off after finalized speech.
@@ -145,6 +183,9 @@ void Dictation::OnSpeechRecognitionStateChanged(
   if (new_state == SPEECH_RECOGNIZER_RECOGNIZING) {
     // If we are starting to listen to audio, play a tone for the user.
     audio::SoundsManager::Get()->Play(static_cast<int>(Sound::kDictationStart));
+    // Start a timeout to ensure if no speech happens we will eventually turn
+    // ourselves off.
+    StartSpeechTimeout(no_speech_timeout_);
   } else if (new_state == SPEECH_RECOGNIZER_ERROR) {
     DictationOff();
     next_state = SPEECH_RECOGNIZER_OFF;
@@ -176,6 +217,7 @@ void Dictation::OnTextInputStateChanged(const ui::TextInputClient* client) {
 
 void Dictation::DictationOff() {
   current_state_ = SPEECH_RECOGNIZER_OFF;
+  StopSpeechTimeout();
   if (!speech_recognizer_)
     return;
 
@@ -206,6 +248,20 @@ void Dictation::CommitCurrentText() {
   }
 
   composition_->text = std::u16string();
+}
+
+void Dictation::StartSpeechTimeout(base::TimeDelta timeout_duration) {
+  speech_timeout_.Start(FROM_HERE, timeout_duration,
+                        base::BindOnce(&Dictation::OnSpeechTimeout,
+                                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void Dictation::StopSpeechTimeout() {
+  speech_timeout_.Stop();
+}
+
+void Dictation::OnSpeechTimeout() {
+  DictationOff();
 }
 
 }  // namespace ash

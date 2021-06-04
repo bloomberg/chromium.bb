@@ -11,8 +11,9 @@
 #include "ash/public/cpp/assistant/assistant_client.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/service.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -78,6 +79,11 @@ class AssistantClientImpl : public ash::AssistantClient,
   void RequestNetworkConfig(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver) override;
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+  void RequestLibassistantService(
+      mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
+          receiver) override;
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 
  private:
   // signin::IdentityManager::Observer:
@@ -110,8 +116,8 @@ class AssistantClientImpl : public ash::AssistantClient,
   Profile* profile_ = nullptr;
   signin::IdentityManager* identity_manager_ = nullptr;
 
-  ScopedObserver<ash::AssistantStateBase, ash::AssistantStateObserver>
-      assistant_state_observer_{this};
+  base::ScopedObservation<ash::AssistantStateBase, ash::AssistantStateObserver>
+      assistant_state_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClientImpl);
 };

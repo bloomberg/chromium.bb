@@ -104,8 +104,8 @@ class MessageCenterImpl : public MessageCenter,
   THREAD_CHECKER(thread_checker_);
 
   void ClickOnNotificationUnlocked(const std::string& id,
-                                   const base::Optional<int>& button_index,
-                                   const base::Optional<std::u16string>& reply);
+                                   const absl::optional<int>& button_index,
+                                   const absl::optional<std::u16string>& reply);
 
   const std::unique_ptr<LockScreenController> lock_screen_controller_;
 
@@ -113,7 +113,7 @@ class MessageCenterImpl : public MessageCenter,
   NotificationList::Notifications visible_notifications_;
   base::ObserverList<MessageCenterObserver> observer_list_;
   std::unique_ptr<PopupTimersController> popup_timers_controller_;
-  std::unique_ptr<base::OneShotTimer> quiet_mode_timer_;
+  base::OneShotTimer quiet_mode_timer_;
   std::vector<NotificationBlocker*> blockers_;
 
   bool visible_ = false;
@@ -129,4 +129,4 @@ class MessageCenterImpl : public MessageCenter,
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
+#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_IMPL_H_

@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/media_app_page_handler.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
+#include "chromeos/components/web_applications/webui_test_prod_util.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_media_app_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -29,12 +29,7 @@ content::WebUIDataSource* CreateHostDataSource() {
 
   // Add resources from chromeos_media_app_resources.pak.
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
-  source->AddResourcePath("mojo_api_bootstrap.js",
-                          IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
-  source->AddResourcePath("media_app.mojom-lite.js",
-                          IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
-  source->AddResourcePath("media_app_index_scripts.js",
-                          IDR_MEDIA_APP_INDEX_SCRIPTS_JS);
+  source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
   source->AddLocalizedString("appTitle", IDS_MEDIA_APP_APP_NAME);
 
   // Redirects "system_assets/app_icon_*.png" (from manifest.json) to the icons
@@ -79,6 +74,12 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   host_source->OverrideCrossOriginOpenerPolicy("same-origin");
   host_source->OverrideCrossOriginEmbedderPolicy("require-corp");
 
+  if (MaybeConfigureTestableDataSource(host_source)) {
+    host_source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::TrustedTypes,
+        std::string("trusted-types test-harness;"));
+  }
+
   // Register auto-granted permissions.
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
   const url::Origin host_origin =
@@ -93,11 +94,6 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
                        ContentSettingsType::JAVASCRIPT,
                        ContentSettingsType::SOUND,
                    });
-
-  content::WebUIDataSource* untrusted_source =
-      CreateMediaAppUntrustedDataSource(delegate_.get());
-  content::WebUIDataSource::Add(browser_context, untrusted_source);
-
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 }

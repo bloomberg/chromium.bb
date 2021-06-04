@@ -129,14 +129,14 @@ class ParameterizedFormStructureTest
 TEST_F(FormStructureTestImpl, FieldCount) {
   CheckFormStructureTestData({{{.description_for_logging = "FieldCount",
                                 .fields = {{.role = ServerFieldType::USERNAME},
-                                           {.label = "Password",
-                                            .name = "password",
+                                           {.label = u"Password",
+                                            .name = u"password",
                                             .form_control_type = "password"},
-                                           {.label = "Submit",
-                                            .name = "",
+                                           {.label = u"Submit",
+                                            .name = u"",
                                             .form_control_type = "submit"},
-                                           {.label = "address1",
-                                            .name = "address1",
+                                           {.label = u"address1",
+                                            .name = u"address1",
                                             .should_autocomplete = false}}},
                                {
                                    .determine_heuristic_type = true,
@@ -148,16 +148,17 @@ TEST_F(FormStructureTestImpl, FieldCount) {
 TEST_F(FormStructureTestImpl, AutofillCount) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "AutofillCount",
-         .fields =
-             {{.role = ServerFieldType::USERNAME},
-              {.label = "Password",
-               .name = "password",
-               .form_control_type = "password"},
-              {.role = ServerFieldType::EMAIL_ADDRESS},
-              {.role = ServerFieldType::ADDRESS_HOME_CITY},
-              {.role = ServerFieldType::ADDRESS_HOME_STATE,
-               .form_control_type = "select-one"},
-              {.label = "Submit", .name = "", .form_control_type = "submit"}}},
+         .fields = {{.role = ServerFieldType::USERNAME},
+                    {.label = u"Password",
+                     .name = u"password",
+                     .form_control_type = "password"},
+                    {.role = ServerFieldType::EMAIL_ADDRESS},
+                    {.role = ServerFieldType::ADDRESS_HOME_CITY},
+                    {.role = ServerFieldType::ADDRESS_HOME_STATE,
+                     .form_control_type = "select-one"},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = "submit"}}},
         {
             .determine_heuristic_type = true,
             .autofill_count = 3,
@@ -167,16 +168,16 @@ TEST_F(FormStructureTestImpl, AutofillCount) {
        {{.description_for_logging = "AutofillCountWithNonFillableField",
          .fields =
              {{.role = ServerFieldType::USERNAME},
-              {.label = "Password",
-               .name = "password",
+              {.label = u"Password",
+               .name = u"password",
                .form_control_type = "password"},
               {.role = ServerFieldType::EMAIL_ADDRESS},
               {.role = ServerFieldType::ADDRESS_HOME_CITY},
               {.role = ServerFieldType::ADDRESS_HOME_STATE,
                .form_control_type = "select-one"},
-              {.label = "Submit", .name = "", .form_control_type = "submit"},
-              {.label = "address1",
-               .name = "address1",
+              {.label = u"Submit", .name = u"", .form_control_type = "submit"},
+              {.label = u"address1",
+               .name = u"address1",
                .should_autocomplete = false}}},
         {
             .determine_heuristic_type = true,
@@ -487,8 +488,8 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_TwoFields_HasAutocomplete) {
 TEST_F(FormStructureTestImpl, DetermineHeuristicTypes_AutocompleteFalse) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "DetermineHeuristicTypes_AutocompleteFalse",
-         .fields = {{.label = "Name",
-                     .name = "name",
+         .fields = {{.label = u"Name",
+                     .name = u"name",
                      .autocomplete_attribute = "false"},
                     {.role = ServerFieldType::EMAIL_ADDRESS,
                      .autocomplete_attribute = "false"},
@@ -507,16 +508,17 @@ TEST_F(FormStructureTestImpl, DetermineHeuristicTypes_AutocompleteFalse) {
 TEST_F(FormStructureTestImpl, HeuristicsContactInfo) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsContactInfo",
-         .fields =
-             {{.role = ServerFieldType::NAME_FIRST},
-              {.role = ServerFieldType::NAME_LAST},
-              {.role = ServerFieldType::EMAIL_ADDRESS},
-              {.role = ServerFieldType::PHONE_HOME_NUMBER},
-              {.label = "Ext:", .name = "phoneextension"},
-              {.label = "Address", .name = "address"},
-              {.role = ServerFieldType::ADDRESS_HOME_CITY},
-              {.role = ServerFieldType::ADDRESS_HOME_ZIP},
-              {.label = "Submit", .name = "", .form_control_type = "submit"}}},
+         .fields = {{.role = ServerFieldType::NAME_FIRST},
+                    {.role = ServerFieldType::NAME_LAST},
+                    {.role = ServerFieldType::EMAIL_ADDRESS},
+                    {.role = ServerFieldType::PHONE_HOME_NUMBER},
+                    {.label = u"Ext:", .name = u"phoneextension"},
+                    {.label = u"Address", .name = u"address"},
+                    {.role = ServerFieldType::ADDRESS_HOME_CITY},
+                    {.role = ServerFieldType::ADDRESS_HOME_ZIP},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = "submit"}}},
         {
             .determine_heuristic_type = true,
             .field_count = 9,
@@ -532,17 +534,17 @@ TEST_F(FormStructureTestImpl, HeuristicsContactInfo) {
 TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttribute) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsAutocompleteAttribute",
-         .fields = {{.label = "",
-                     .name = "field1",
+         .fields = {{.label = u"",
+                     .name = u"field1",
                      .autocomplete_attribute = "given-name"},
-                    {.label = "",
-                     .name = "field2",
+                    {.label = u"",
+                     .name = u"field2",
                      .autocomplete_attribute = "family-name"},
-                    {.label = "",
-                     .name = "field3",
+                    {.label = u"",
+                     .name = u"field3",
                      .autocomplete_attribute = "email"},
-                    {.label = "",
-                     .name = "field4",
+                    {.label = u"",
+                     .name = u"field4",
                      .autocomplete_attribute = "upi-vpa"}}},
         {
             .determine_heuristic_type = true,
@@ -819,18 +821,18 @@ TEST_F(FormStructureTestImpl,
 TEST_F(FormStructureTestImpl, StripCommonNamePrefix) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "StripCommonNamePrefix",
-         .fields = {{.role = ServerFieldType::NAME_FIRST,
-                     .name =
-                         "ctl01$ctl00$ShippingAddressCreditPhone$firstname"},
-                    {.role = ServerFieldType::NAME_LAST,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$lastname"},
-                    {.role = ServerFieldType::EMAIL_ADDRESS,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$email"},
-                    {.role = ServerFieldType::PHONE_HOME_NUMBER,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$phone"},
-                    {.label = "Submit",
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$submit",
-                     .form_control_type = "submit"}}},
+         .fields =
+             {{.role = ServerFieldType::NAME_FIRST,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$firstname"},
+              {.role = ServerFieldType::NAME_LAST,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$lastname"},
+              {.role = ServerFieldType::EMAIL_ADDRESS,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$email"},
+              {.role = ServerFieldType::PHONE_HOME_NUMBER,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$phone"},
+              {.label = u"Submit",
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit",
+               .form_control_type = "submit"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
          .field_count = 5,
@@ -844,9 +846,9 @@ TEST_F(FormStructureTestImpl, StripCommonNamePrefix) {
 TEST_F(FormStructureTestImpl, StripCommonNamePrefix_SmallPrefix) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "StripCommonNamePrefix_SmallPrefix",
-         .fields = {{.label = "Address 1", .name = "address1"},
-                    {.label = "Address 2", .name = "address2"},
-                    {.label = "Address 3", .name = "address3"}}},
+         .fields = {{.label = u"Address 1", .name = u"address1"},
+                    {.label = u"Address 2", .name = u"address2"},
+                    {.label = u"Address 3", .name = u"address3"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
          .field_count = 3,
@@ -859,7 +861,7 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Minimal) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_Minimal",
          .fields = {{.role = ServerFieldType::CREDIT_CARD_NUMBER},
-                    {.label = "Expiration", .name = "cc_exp"},
+                    {.label = u"Expiration", .name = u"cc_exp"},
                     {.role = ServerFieldType::ADDRESS_HOME_ZIP}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, true}},
@@ -869,13 +871,13 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Minimal) {
 TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Full) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_Full",
-         .fields = {{.label = "Name on Card", .name = "name_on_card"},
+         .fields = {{.label = u"Name on Card", .name = u"name_on_card"},
                     {.role = ServerFieldType::CREDIT_CARD_NUMBER},
-                    {.label = "Exp Month", .name = "ccmonth"},
-                    {.label = "Exp Year", .name = "ccyear"},
-                    {.label = "Verification", .name = "verification"},
-                    {.label = "Submit",
-                     .name = "submit",
+                    {.label = u"Exp Month", .name = u"ccmonth"},
+                    {.label = u"Exp Year", .name = u"ccyear"},
+                    {.label = u"Verification", .name = u"verification"},
+                    {.label = u"Submit",
+                     .name = u"submit",
                      .form_control_type = "submit"}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, true}},
@@ -896,13 +898,13 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_OnlyCCNumber) {
 TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_AddressForm) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_AddressForm",
-         .fields = {{.role = ServerFieldType::NAME_FIRST, .name = ""},
-                    {.role = ServerFieldType::NAME_LAST, .name = ""},
-                    {.role = ServerFieldType::EMAIL_ADDRESS, .name = ""},
-                    {.role = ServerFieldType::PHONE_HOME_NUMBER, .name = ""},
-                    {.label = "Address", .name = ""},
-                    {.label = "Address", .name = ""},
-                    {.role = ServerFieldType::ADDRESS_HOME_ZIP, .name = ""}}},
+         .fields = {{.role = ServerFieldType::NAME_FIRST, .name = u""},
+                    {.role = ServerFieldType::NAME_LAST, .name = u""},
+                    {.role = ServerFieldType::EMAIL_ADDRESS, .name = u""},
+                    {.role = ServerFieldType::PHONE_HOME_NUMBER, .name = u""},
+                    {.label = u"Address", .name = u""},
+                    {.label = u"Address", .name = u""},
+                    {.role = ServerFieldType::ADDRESS_HOME_ZIP, .name = u""}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, false}},
         {}}});
@@ -913,14 +915,14 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_AddressForm) {
 TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributePhoneTypes) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsAutocompleteAttributePhoneTypes",
-         .fields = {{.label = "",
-                     .name = "field1",
+         .fields = {{.label = u"",
+                     .name = u"field1",
                      .autocomplete_attribute = "tel-local"},
-                    {.label = "",
-                     .name = "field2",
+                    {.label = u"",
+                     .name = u"field2",
                      .autocomplete_attribute = "tel-local-prefix"},
-                    {.label = "",
-                     .name = "field3",
+                    {.label = u"",
+                     .name = u"field3",
                      .autocomplete_attribute = "tel-local-suffix"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
@@ -983,7 +985,7 @@ TEST_F(FormStructureTestImpl,
                                        "UnrecognizedAutocompleteAttribute",
             .fields = {{.role = ServerFieldType::NAME_FIRST,
                         .autocomplete_attribute = "unrecognized"},
-                       {.label = "Middle Name", .name = "middlename"},
+                       {.label = u"Middle Name", .name = u"middlename"},
                        {.role = ServerFieldType::NAME_LAST},
                        {.role = ServerFieldType::EMAIL_ADDRESS}},
         },
@@ -5005,11 +5007,11 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLongLabels) {
   form.fields.push_back(field);
 
   // This label will be truncated in the XML request.
-  field.label = ASCIIToUTF16(
-      "Enter Your Really Really Really (Really!) Long Email Address Which We "
-      "Hope To Get In Order To Send You Unwanted Publicity Because That's What "
-      "Marketers Do! We Know That Your Email Address Has The Possibility Of "
-      "Exceeding A Certain Number Of Characters...");
+  field.label =
+      u"Enter Your Really Really Really (Really!) Long Email Address Which We "
+      u"Hope To Get In Order To Send You Unwanted Publicity Because That's "
+      u"What Marketers Do! We Know That Your Email Address Has The Possibility "
+      u"Of Exceeding A Certain Number Of Characters...";
   field.name = u"email";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7684,6 +7686,109 @@ TEST_P(RationalizationFieldTypeRelationshipsTest,
             forms[0]->field(3)->Type().GetStorableType());
 }
 
+// When two fields have the same signature and the server response has multiple
+// predictions for that signature, apply the server predictions in the order
+// that they were received.
+TEST_F(FormStructureTestImpl, ParseQueryResponse_RankEqualSignatures) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = u"First Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"Last Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"email";
+  field.name = u"email";
+  field.autocomplete_attribute = "address-level2";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
+            CalculateFieldSignatureForField(form_data.fields[1]));
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr, nullptr);
+
+  // Setup the query response.
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+
+  std::string response_string = SerializeAndEncode(response);
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseApiQueryResponse(
+      response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->server_type());
+}
+
+// When two fields have the same signature and the server response has one
+// prediction, apply the prediction to every field with that signature.
+TEST_F(FormStructureTestImpl,
+       ParseQueryResponse_EqualSignaturesFewerPredictions) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = u"First Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"Last Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"email";
+  field.name = u"email";
+  field.autocomplete_attribute = "address-level2";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
+            CalculateFieldSignatureForField(form_data.fields[1]));
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr, nullptr);
+
+  // Setup the query response.
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+
+  std::string response_string = SerializeAndEncode(response);
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseApiQueryResponse(
+      response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  // This field gets the same signature as the previous one, because they have
+  // the same signature.
+  EXPECT_EQ(NAME_FIRST, form.field(1)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->server_type());
+}
+
 TEST_F(FormStructureTestImpl, AllowBigForms) {
   FormData form;
   form.url = GURL("http://foo.com");
@@ -8283,6 +8388,50 @@ TEST_F(FormStructureTestImpl, IgnoreAribtraryAutocompleteSectionName) {
 
   EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
   EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+}
+
+TEST_F(FormStructureTestImpl, FindFieldsEligibleForManualFilling) {
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  FieldRendererId full_name_renderer_id = MakeFieldRendererId();
+  field.label = u"Full Name";
+  field.name = u"fullName";
+  field.unique_renderer_id = full_name_renderer_id;
+  form.fields.push_back(field);
+
+  FieldRendererId country_renderer_id = MakeFieldRendererId();
+  field.label = u"Country";
+  field.name = u"country";
+  field.unique_renderer_id = country_renderer_id;
+  form.fields.push_back(field);
+
+  FieldRendererId unknown_renderer_id = MakeFieldRendererId();
+  field.label = u"Unknown";
+  field.name = u"unknown";
+  field.unique_renderer_id = unknown_renderer_id;
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_server_field_type_for_testing(0, CREDIT_CARD_NAME_FULL);
+  form_structure.set_server_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_server_field_type_for_testing(2, UNKNOWN_TYPE);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+  std::vector<FieldRendererId> expected_result;
+  // Only credit card related and unknown fields are elible for manual filling.
+  expected_result.push_back(full_name_renderer_id);
+  expected_result.push_back(unknown_renderer_id);
+
+  EXPECT_EQ(expected_result,
+            FormStructure::FindFieldsEligibleForManualFilling(forms));
 }
 
 }  // namespace autofill

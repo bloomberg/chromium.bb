@@ -222,6 +222,7 @@ function changeToLegacyGetStats() {
   selectElement.value = currentGetStatsMethod;
   requestStats();
 }
+window.changeToLegacyGetStats = changeToLegacyGetStats;
 
 /**
  * A helper function for getting a peer connection element id.
@@ -325,6 +326,36 @@ function addPeerConnection(data) {
     appendChildWithText(p, 'span', data.constraints);
   }
   peerConnectionElement.appendChild(p);
+
+  // Show deprecation notices as a list.
+  // Note: data.rtcConfiguration is not in JSON format and may
+  // not be defined in tests.
+  if (data.rtcConfiguration) {
+    const deprecationNotices = document.createElement('ul');
+    deprecationNotices.className = 'peerconnection-deprecations';
+    if (data.rtcConfiguration.indexOf('extmapAllowMixed: false') !== -1) {
+      // Hard deprecation, setting "false" will no longer work.
+      appendChildWithText(deprecationNotices, 'li',
+        'Note: The RTCPeerConnection offerAllowExtmapMixed ' +
+        'option is a non-standard feature. This feature will be removed ' +
+        'in M93 (Canary: July 15, 2021; Stable: August 24, 2021). For ' +
+        'interoperability with legacy WebRTC versions that throw errors ' +
+        'when attempting to parse the a=extmap-allow-mixed line in the ' +
+        'SDP remove the line from the SDP during signalling.');
+    }
+    if (data.rtcConfiguration.indexOf('sdpSemantics: "plan-b"') !== -1) {
+      appendChildWithText(deprecationNotices, 'li',
+        'Plan B SDP semantics, which is used when constructing an ' +
+        'RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy ' +
+        'version of the Session Description Protocol that has severe ' +
+        'compatibility issues on modern browsers. The standardized SDP ' +
+        'format, \"unified-plan\", has been used by default since M72 ' +
+        '(January, 2019). Dropping support for Plan B is targeted for ' +
+        'M93. See https://www.chromestatus.com/feature/5823036655665152 ' +
+        'for more details.');
+    }
+    peerConnectionElement.appendChild(deprecationNotices);
+  }
 
   return peerConnectionElement;
 }

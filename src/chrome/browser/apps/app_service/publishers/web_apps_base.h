@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -37,6 +37,10 @@ class WebAppLaunchManager;
 class WebAppProvider;
 class WebAppRegistrar;
 }  // namespace web_app
+
+namespace webapps {
+enum class WebappUninstallSource;
+}  // namespace webapps
 
 namespace apps {
 
@@ -65,9 +69,6 @@ class WebAppsBase : public apps::PublisherBase,
   void OnWebAppLastLaunchTimeChanged(
       const std::string& app_id,
       const base::Time& last_launch_time) override;
-
-  apps::mojom::AppPtr ConvertImpl(const web_app::WebApp* web_app,
-                                  apps::mojom::Readiness readiness);
 
   IconEffects GetIconEffects(const web_app::WebApp* web_app);
 
@@ -138,10 +139,6 @@ class WebAppsBase : public apps::PublisherBase,
   void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
                                             bool is_locally_installed) override;
 
-  void SetShowInFields(apps::mojom::AppPtr& app,
-                       const web_app::WebApp* web_app);
-  void PopulatePermissions(const web_app::WebApp* web_app,
-                           std::vector<mojom::PermissionPtr>* target);
   virtual apps::mojom::AppPtr Convert(const web_app::WebApp* web_app,
                                       apps::mojom::Readiness readiness) = 0;
   void ConvertWebApps(apps::mojom::Readiness readiness,
@@ -157,11 +154,11 @@ class WebAppsBase : public apps::PublisherBase,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
-  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
-      registrar_observer_{this};
+  base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      registrar_observation_{this};
 
-  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
-      content_settings_observer_{this};
+  base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observation_{this};
 
   web_app::WebAppProvider* provider_ = nullptr;
 
@@ -174,9 +171,6 @@ class WebAppsBase : public apps::PublisherBase,
   // are serving from Lacros, and the app type is kWeb for all other cases.
   apps::mojom::AppType app_type_;
 };
-
-void PopulateIntentFilters(const web_app::WebApp& web_app,
-                           std::vector<mojom::IntentFilterPtr>& target);
 
 }  // namespace apps
 

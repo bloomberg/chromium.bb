@@ -34,6 +34,7 @@
 #include <atomic>
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_job.h"
@@ -194,6 +195,7 @@ class PLATFORM_EXPORT ThreadState final {
   // call thread can start using the garbage collected heap infrastructure.
   // It also has to periodically check for safepoints.
   static ThreadState* AttachCurrentThread();
+  static ThreadState* AttachCurrentThreadForTesting(v8::Platform* platform);
 
   // Disassociate attached ThreadState from the current thread. The thread
   // can no longer use the garbage collected heap after this call.
@@ -613,6 +615,7 @@ class PLATFORM_EXPORT ThreadState final {
   v8::Isolate* isolate_ = nullptr;
   V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
+  std::unique_ptr<v8::EmbedderRootsHandler> embedder_roots_handler_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;

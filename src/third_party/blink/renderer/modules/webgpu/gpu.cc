@@ -19,8 +19,10 @@
 #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -158,7 +160,7 @@ void GPU::RecordAdapterForIdentifiability(
   IdentifiableTokenBuilder output_builder;
   if (adapter) {
     output_builder.AddToken(IdentifiabilityBenignStringToken(adapter->name()));
-    for (const auto& feature : adapter->features()) {
+    for (const auto& feature : adapter->features()->FeatureNameSet()) {
       output_builder.AddToken(IdentifiabilityBenignStringToken(feature));
     }
   }
@@ -175,6 +177,7 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
 
   if (!dawn_control_client_ || dawn_control_client_->IsContextLost()) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
     // TODO(natlee@microsoft.com): if GPU process is lost, wait for the GPU
     // process to come back instead of rejecting right away
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider =
@@ -190,7 +193,8 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
       // Make a new DawnControlClientHolder with the context provider we just
       // made and set the lost context callback
       dawn_control_client_ = base::MakeRefCounted<DawnControlClientHolder>(
-          std::move(context_provider));
+          std::move(context_provider),
+          execution_context->GetTaskRunner(TaskType::kWebGPU));
       dawn_control_client_->SetLostContextCallback();
     }
   }
@@ -208,6 +212,8 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
       WTF::Bind(&GPU::OnRequestAdapterCallback, WrapPersistent(this),
                 WrapPersistent(script_state), WrapPersistent(options),
                 WrapPersistent(resolver)));
+
+  UseCounter::Count(ExecutionContext::From(script_state), WebFeature::kWebGPU);
 
   return promise;
 }

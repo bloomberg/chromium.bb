@@ -24,7 +24,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,6 +31,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
@@ -46,9 +46,11 @@
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -58,7 +60,6 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/cookie_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
@@ -100,6 +101,7 @@
 #include "net/cert/x509_certificate.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
@@ -114,9 +116,24 @@ const char kAuthIframeParentName[] = "signin-frame";
 
 const char kEndpointGen[] = "1.0";
 
-bool IsSyncTrustedVaultKeysEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::switches::kSyncSupportTrustedVaultPassphraseRecovery);
+absl::optional<SyncTrustedVaultKeys> GetSyncTrustedVaultKeysForUserContext(
+    const base::DictionaryValue* js_object,
+    const std::string& gaia_id) {
+  if (!base::FeatureList::IsEnabled(
+          ::switches::kSyncSupportTrustedVaultPassphraseRecovery)) {
+    return absl::nullopt;
+  }
+
+  // |js_object| is not expected to be null, but as extra precaution, guard
+  // against crashes.
+  if (!js_object)
+    return absl::nullopt;
+
+  SyncTrustedVaultKeys parsed_keys = SyncTrustedVaultKeys::FromJs(*js_object);
+  if (parsed_keys.gaia_id() != gaia_id)
+    return absl::nullopt;
+
+  return absl::make_optional(std::move(parsed_keys));
 }
 
 // Must be kept consistent with ChromeOSSamlApiUsed in enums.xml
@@ -505,8 +522,8 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetBoolean("extractSamlPasswordAttributes",
                     login::ExtractSamlPasswordAttributesEnabled());
-  params.SetBoolean("enableSyncTrustedVaultKeys",
-                    IsSyncTrustedVaultKeysEnabled());
+  params.SetBoolean("enableCloseView",
+                    ash::features::IsGaiaCloseViewMessageEnabled());
 
   if (public_saml_url_fetcher_) {
     params.SetBoolean("startsOnSamlPage", true);
@@ -519,10 +536,9 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     if (public_saml_url_fetcher_->FetchSucceeded()) {
       params.SetString("frameUrl", public_saml_url_fetcher_->GetRedirectUrl());
     } else {
-      // TODO: make the string localized.
-      std::string msg = "Failed to fetch the SAML redirect URL from the server";
-      core_oobe_view_->ShowSignInError(
-          0, msg, std::string(), HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+      LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
+          SigninError::kFailedToFetchSamlRedirect, /*details=*/std::string(),
+          /*login_attempts=*/1);
       return;
     }
   }
@@ -682,7 +698,7 @@ void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
       !LoginDisplayHost::default_host()->IsUserAllowlisted(
           user_manager::known_user::GetAccountId(
               user_email, std::string() /* id */, AccountType::UNKNOWN),
-          base::nullopt)) {
+          absl::nullopt)) {
     ShowAllowlistCheckFailedError();
   }
 }
@@ -794,20 +810,18 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
                      base::Unretained(LoginDisplayHost::default_host())));
 
   pending_user_context_ = std::make_unique<UserContext>();
-  std::string error_message;
+  SigninError error;
   if (!login::BuildUserContextForGaiaSignIn(
           login::GetUsertypeFromServicesString(services),
           GetAccountId(email, gaia_id, AccountType::GOOGLE), using_saml,
           using_saml_api_, password,
           SamlPasswordAttributes::FromJs(*password_attributes),
-          IsSyncTrustedVaultKeysEnabled()
-              ? base::make_optional(
-                    SyncTrustedVaultKeys::FromJs(*sync_trusted_vault_keys))
-              : base::nullopt,
+          GetSyncTrustedVaultKeysForUserContext(sync_trusted_vault_keys,
+                                                gaia_id),
           *extension_provided_client_cert_usage_observer_,
-          pending_user_context_.get(), &error_message)) {
-    core_oobe_view_->ShowSignInError(0, error_message, std::string(),
-                                     HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+          pending_user_context_.get(), &error)) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
+        error, /*details=*/std::string(), /*login_attempts=*/1);
     pending_user_context_.reset();
     return;
   }
@@ -827,9 +841,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 
 void GaiaScreenHandler::OnCookieWaitTimeout() {
   LoadAuthExtension(true /* force */);
-  core_oobe_view_->ShowSignInError(
-      0, l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_AUTH_TOKEN),
-      std::string(), HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+  LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
+      SigninError::kCookieWaitTimeout, /*details=*/std::string(),
+      /*login_attempts=*/1);
 }
 
 void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
@@ -1014,16 +1028,16 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
       user_manager::UserManager::Get()->FindUser(account_id);
 
   UserContext user_context;
-  std::string error_message;
+  SigninError error;
   if (!login::BuildUserContextForGaiaSignIn(
           user ? user->GetType() : CalculateUserType(account_id),
           GetAccountId(typed_email, gaia_id, AccountType::GOOGLE), using_saml,
           using_saml_api_, password, SamlPasswordAttributes(),
-          /*sync_trusted_vault_keys=*/base::nullopt,
+          /*sync_trusted_vault_keys=*/absl::nullopt,
           *extension_provided_client_cert_usage_observer_, &user_context,
-          &error_message)) {
-    core_oobe_view_->ShowSignInError(0, error_message, std::string(),
-                                     HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+          &error)) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
+        error, /*details=*/std::string(), /*login_attempts=*/1);
     return;
   }
 
@@ -1167,6 +1181,11 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
   test_services_ = services;
   test_expects_complete_login_ = true;
 
+  LoginDisplayHost::default_host()
+      ->GetWizardController()
+      ->get_wizard_context_for_testing()  // IN-TEST
+      ->skip_to_login_for_tests = true;
+
   // Submit login form for test if gaia is ready. If gaia is loading, login
   // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
   // reload gaia then follow the loading case.
@@ -1184,7 +1203,7 @@ void GaiaScreenHandler::ShowSecurityTokenPinDialog(
     bool enable_user_input,
     security_token_pin::ErrorLabel error_label,
     int attempts_left,
-    const base::Optional<AccountId>& /*authenticating_user_account_id*/,
+    const absl::optional<AccountId>& /*authenticating_user_account_id*/,
     SecurityTokenPinEnteredCallback pin_entered_callback,
     SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
   DCHECK(is_security_token_pin_enabled_);
@@ -1280,11 +1299,10 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
   // TODO(crbug.com/1105387): Part of initial screen logic.
-  if (core_oobe_view_) {
-    PrefService* prefs = g_browser_process->local_state();
-    if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-      core_oobe_view_->ShowDeviceResetScreen();
-    }
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
   }
 }
 

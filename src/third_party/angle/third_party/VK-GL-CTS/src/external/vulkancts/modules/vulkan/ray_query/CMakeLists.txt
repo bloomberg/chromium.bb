@@ -9,6 +9,8 @@ set(DEQP_VK_RAY_QUERY_SRCS
 	vktRayQueryTraversalControlTests.hpp
 	vktRayQueryAccelerationStructuresTests.cpp
 	vktRayQueryAccelerationStructuresTests.hpp
+	vktRayQueryBarycentricCoordinatesTests.cpp
+	vktRayQueryBarycentricCoordinatesTests.hpp
 	vktRayQueryProceduralGeometryTests.cpp
 	vktRayQueryProceduralGeometryTests.hpp
 	vktRayQueryWatertightnessTests.cpp
@@ -19,6 +21,8 @@ set(DEQP_VK_RAY_QUERY_SRCS
 	vktRayQueryMiscTests.hpp
 	vktRayQueryDirectionTests.cpp
 	vktRayQueryDirectionTests.hpp
+	vktRayQueryNonUniformArgsTests.cpp
+	vktRayQueryNonUniformArgsTests.hpp
 	)
 
 set(DEQP_VK_RAY_QUERY_LIBS

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -52,33 +52,6 @@ class CORE_EXPORT FragmentData {
   }
   void SetLayer(std::unique_ptr<PaintLayer>);
 
-  // Covers the sub-rectangles of the object that need to be re-rastered, in the
-  // object's local coordinate space.  During PrePaint, the rect mapped into
-  // visual rect space will be added into PartialInvalidationVisualRect(), and
-  // cleared.
-  PhysicalRect PartialInvalidationLocalRect() const {
-    return rare_data_ ? rare_data_->partial_invalidation_local_rect
-                      : PhysicalRect();
-  }
-  // LayoutObject::InvalidatePaintRectangle() calls this method to accumulate
-  // the sub-rectangles needing re-rasterization.
-  void SetPartialInvalidationLocalRect(const PhysicalRect& r) {
-    if (rare_data_ || !r.IsEmpty())
-      EnsureRareData().partial_invalidation_local_rect = r;
-  }
-
-  // Covers the sub-rectangles of the object that need to be re-rastered, in
-  // visual rect space (see VisualRect()). It will be cleared after the raster
-  // invalidation is issued after paint.
-  IntRect PartialInvalidationVisualRect() const {
-    return rare_data_ ? rare_data_->partial_invalidation_visual_rect
-                      : IntRect();
-  }
-  void SetPartialInvalidationVisualRect(const IntRect& r) {
-    if (rare_data_ || !r.IsEmpty())
-      EnsureRareData().partial_invalidation_visual_rect = r;
-  }
-
   LayoutUnit LogicalTopInFlowThread() const {
     return rare_data_ ? rare_data_->logical_top_in_flow_thread : LayoutUnit();
   }
@@ -104,9 +77,9 @@ class CORE_EXPORT FragmentData {
   }
   void InvalidateClipPathCache();
 
-  base::Optional<IntRect> ClipPathBoundingBox() const {
+  absl::optional<IntRect> ClipPathBoundingBox() const {
     DCHECK(IsClipPathCacheValid());
-    return rare_data_ ? rare_data_->clip_path_bounding_box : base::nullopt;
+    return rare_data_ ? rare_data_->clip_path_bounding_box : absl::nullopt;
   }
   const RefCountedPath* ClipPathPath() const {
     DCHECK(IsClipPathCacheValid());
@@ -117,7 +90,7 @@ class CORE_EXPORT FragmentData {
   void ClearClipPathCache() {
     if (rare_data_) {
       rare_data_->is_clip_path_cache_valid = true;
-      rare_data_->clip_path_bounding_box = base::nullopt;
+      rare_data_->clip_path_bounding_box = absl::nullopt;
       rare_data_->clip_path_path = nullptr;
     }
   }
@@ -140,6 +113,7 @@ class CORE_EXPORT FragmentData {
       rare_data_->paint_properties = nullptr;
   }
   void EnsureId() { EnsureRareData(); }
+  bool HasUniqueId() const { return rare_data_ && rare_data_->unique_id; }
 
   // This is a complete set of property nodes that should be used as a
   // starting point to paint a LayoutObject. This data is cached because some
@@ -248,8 +222,6 @@ class CORE_EXPORT FragmentData {
     // avoid separate data structure for them.
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
-    PhysicalRect partial_invalidation_local_rect;
-    IntRect partial_invalidation_visual_rect;
 
     // Fragment specific data.
     PhysicalOffset legacy_pagination_offset;
@@ -257,7 +229,7 @@ class CORE_EXPORT FragmentData {
     std::unique_ptr<ObjectPaintProperties> paint_properties;
     std::unique_ptr<RefCountedPropertyTreeState> local_border_box_properties;
     bool is_clip_path_cache_valid = false;
-    base::Optional<IntRect> clip_path_bounding_box;
+    absl::optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;
     CullRect cull_rect_;
     CullRect contents_cull_rect_;

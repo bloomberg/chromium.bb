@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_uninstaller_notification.h"
@@ -17,6 +16,7 @@
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -98,7 +98,7 @@ class PluginVmManagerImpl
   void OnListVms(
       base::OnceCallback<void(bool default_vm_exists)> success_callback,
       base::OnceClosure error_callback,
-      base::Optional<vm_tools::plugin_dispatcher::ListVmResponse> reply);
+      absl::optional<vm_tools::plugin_dispatcher::ListVmResponse> reply);
 
   // The flow to launch a Plugin Vm. We'll probably want to add additional
   // abstraction around starting the services in the future but this is
@@ -106,12 +106,12 @@ class PluginVmManagerImpl
   void OnListVmsForLaunch(bool default_vm_exists);
   void StartVm();
   void OnStartVm(
-      base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply);
+      absl::optional<vm_tools::plugin_dispatcher::StartVmResponse> reply);
   void ShowVm();
   void OnShowVm(
-      base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply);
+      absl::optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply);
   void OnGetVmInfoForSharing(
-      base::Optional<vm_tools::concierge::GetVmInfoResponse> reply);
+      absl::optional<vm_tools::concierge::GetVmInfoResponse> reply);
   void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
   void UninstallSucceeded();
 
@@ -122,17 +122,17 @@ class PluginVmManagerImpl
 
   // The flow to relaunch Plugin Vm.
   void OnSuspendVmForRelaunch(
-      base::Optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply);
+      absl::optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply);
   void OnRelaunchVmComplete(bool success);
 
   // The flow to uninstall Plugin Vm.
   void OnListVmsForUninstall(bool default_vm_exists);
   void StopVmForUninstall();
   void OnStopVmForUninstall(
-      base::Optional<vm_tools::plugin_dispatcher::StopVmResponse> reply);
+      absl::optional<vm_tools::plugin_dispatcher::StopVmResponse> reply);
   void DestroyDiskImage();
   void OnDestroyDiskImage(
-      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
+      absl::optional<vm_tools::concierge::DestroyDiskImageResponse> response);
 
   // Called when UninstallPluginVm() is unsuccessful.
   void UninstallFailed(
@@ -151,35 +151,39 @@ class PluginVmManagerImpl
   vm_tools::plugin_dispatcher::VmState vm_state_ =
       vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN;
 
+  base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
+
+  // Members used in the launch flow.
+
+  std::vector<LaunchPluginVmCallback> launch_vm_callbacks_;
+  // We can't immediately start the VM when it is in states like suspending, so
+  // delay until an in progress operation finishes.
+  bool pending_start_vm_ = false;
+  // |launch_vm_callbacks_| cannot be run before the vm tools are installed, so
+  // delay until the tools are installed. This is set only after StartVm() runs
+  // successfully.
+  bool pending_vm_tools_installed_ = false;
+
+  // Members used in the relaunch flow.
+
   // Indicates that we are attempting to start the VM. This fact may not yet
   // be reflected in VM state as the dispatcher may not have had a chance
   // to update it, or maybe it even is not yet aware that we issued StartVm
   // request.
   bool vm_is_starting_ = false;
-
   // Indicates that we are executing VM relaunch.
   bool relaunch_in_progress_ = false;
-
-  // We can't immediately start the VM when it is in states like suspending, so
-  // delay until an in progress operation finishes.
-  bool pending_start_vm_ = false;
-
   // If we receive second or third relaunch request while already in the middle
   // of relaunch, we need to repeat it to ensure that privileges are set up
   // according to the latest settings.
   bool pending_relaunch_vm_ = false;
 
+  // Members used in the uninstall flow
+
+  std::unique_ptr<PluginVmUninstallerNotification> uninstaller_notification_;
   // We can't immediately destroy the VM when it is in states like
   // suspending, so delay until an in progress operation finishes.
   bool pending_destroy_disk_image_ = false;
-  // |launch_vm_callbacks_| cannot be run before the vm tools are installed, so
-  // delay until the tools are installed.
-  bool pending_vm_tools_installed_ = false;
-
-  std::unique_ptr<PluginVmUninstallerNotification> uninstaller_notification_;
-
-  base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
-  std::vector<LaunchPluginVmCallback> launch_vm_callbacks_;
 
   base::WeakPtrFactory<PluginVmManagerImpl> weak_ptr_factory_{this};
 

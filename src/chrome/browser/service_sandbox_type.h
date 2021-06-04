@@ -9,11 +9,14 @@
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/service_process_host.h"
 #include "media/base/media_switches.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/sandbox_type.h"
 
-#if defined(OS_MAC)
-#include "chrome/services/mac_notifications/public/mojom/mac_notifications.mojom.h"
-#endif  // defined(OS_MAC)
+#if (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+     defined(OS_CHROMEOS)) &&                                   \
+    BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/printing/print_backend_service_manager.h"
+#endif
 
 // This file maps service classes to sandbox types.  Services which
 // require a non-utility sandbox can be added here.  See
@@ -94,8 +97,22 @@ content::GetServiceSandboxType<media::mojom::SpeechRecognitionService>() {
 }
 #endif  // !defined(OS_ANDROID)
 
+// mirroring::mojom::MirroringService
+#if defined(OS_MAC)
+namespace mirroring {
+namespace mojom {
+class MirroringService;
+}
+}  // namespace mirroring
+template <>
+inline sandbox::policy::SandboxType
+content::GetServiceSandboxType<mirroring::mojom::MirroringService>() {
+  return sandbox::policy::SandboxType::kMirroring;
+}
+#endif  // OS_MAC
+
 // printing::mojom::PrintingService
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 namespace printing {
 namespace mojom {
 class PrintingService;
@@ -107,8 +124,12 @@ inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintingService>() {
   return sandbox::policy::SandboxType::kPdfConversion;
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+// printing::mojom::PrintBackendService
+#if (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+     defined(OS_CHROMEOS)) &&                                   \
+    BUILDFLAG(ENABLE_PRINTING)
 namespace printing {
 namespace mojom {
 class PrintBackendService;
@@ -118,8 +139,14 @@ class PrintBackendService;
 template <>
 inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintBackendService>() {
-  return sandbox::policy::SandboxType::kPrintBackend;
+  return printing::PrintBackendServiceManager::GetInstance()
+                 .ShouldSandboxPrintBackendService()
+             ? sandbox::policy::SandboxType::kPrintBackend
+             : sandbox::policy::SandboxType::kNoSandbox;
 }
+#endif  // (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
+        //  defined(OS_CHROMEOS)) &&
+        // BUILDFLAG(ENABLE_PRINTING)
 
 // proxy_resolver::mojom::ProxyResolverFactory
 #if defined(OS_WIN)
@@ -184,7 +211,14 @@ content::GetServiceSandboxType<recording::mojom::RecordingService>() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// mac_notifications::mojom::MacNotificationProvider
 #if defined(OS_MAC)
+namespace mac_notifications {
+namespace mojom {
+class MacNotificationProvider;
+}  // namespace mojom
+}  // namespace mac_notifications
+
 template <>
 inline sandbox::policy::SandboxType content::GetServiceSandboxType<
     mac_notifications::mojom::MacNotificationProvider>() {

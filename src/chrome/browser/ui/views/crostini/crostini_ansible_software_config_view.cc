@@ -6,17 +6,17 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/network_service_instance.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -122,7 +122,7 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::CONTROL));
+      views::DialogContentType::kText, views::DialogContentType::kControl));
 
   auto subtext_label = std::make_unique<views::Label>();
   subtext_label->SetMultiLine(true);

@@ -15,6 +15,7 @@
 <link rel="import" href="/components/oobe_i18n_behavior.html">
 <link rel="import" href="/components/login_screen_behavior.html">
 <link rel="import" href="/components/multi_step_behavior.html">
+<link rel="import" href="/components/oobe_icons.html">
 
 <dom-module id="enterprise-enrollment-element">
   <template>
@@ -50,6 +51,7 @@
         auth-flow="{{authFlow_}}"
         is-saml-sso-visible="[[isSaml_(authFlow_)]]"
         webview-name="authView"
+        on-authcompleted="onAuthCompleted_"
         on-backcancel="cancel"
         on-closesaml="cancel"
         on-ready="onReady">

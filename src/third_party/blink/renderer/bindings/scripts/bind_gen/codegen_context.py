@@ -96,6 +96,12 @@ class CodeGenContext(object):
             # world.
             "for_world": cls.ALL_WORLDS,
 
+            # True when generating a callback of [NoAllocDirectCall].
+            "no_alloc_direct_call": False,
+            # True when generating a (fake) callback of [NoAllocDirectCall] for
+            # testing.
+            "no_alloc_direct_call_for_testing": False,
+
             # Type of V8 callback function which implements IDL attribute,
             # IDL operation, etc.
             "v8_callback_type": cls.V8_FUNCTION_CALLBACK,
@@ -241,11 +247,8 @@ class CodeGenContext(object):
 
     @property
     def is_return_by_argument(self):
-        if self.does_override_idl_return_type:
-            return False
-        if self.return_type is None:
-            return False
-        return self.return_type.unwrap().is_union
+        # TODO(yukishiino): Remove `is_return_by_argument`.
+        return False
 
     @property
     def is_return_type_promise_type(self):

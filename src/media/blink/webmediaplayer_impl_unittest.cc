@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind.h"
@@ -44,6 +45,7 @@
 #include "media/blink/video_decode_stats_reporter.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/filters/pipeline_controller.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
@@ -318,6 +320,7 @@ class WebMediaPlayerImplTest
             /*is_hidden=*/false,
             /*is_inside_portal=*/false,
             /*compositing_enabled=*/false,
+            /*widgets_never_composited=*/false,
             /*opener=*/nullptr,
             mojo::NullAssociatedReceiver(),
             *agent_group_scheduler,
@@ -387,14 +390,14 @@ class WebMediaPlayerImplTest
     decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(nullptr);
 #if defined(OS_ANDROID)
     factory_selector->AddBaseFactory(
-        RendererFactoryType::kDefault,
+        RendererType::kDefault,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
             DefaultRendererFactory::GetGpuFactoriesCB()));
     factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
 #else
     factory_selector->AddBaseFactory(
-        RendererFactoryType::kDefault,
+        RendererType::kDefault,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
             DefaultRendererFactory::GetGpuFactoriesCB(), nullptr));
@@ -787,7 +790,7 @@ class WebMediaPlayerImplTest
 
   void CreateCdm() {
     // Must use a supported key system on a secure context.
-    auto key_system = base::ASCIIToUTF16("org.w3.clearkey");
+    std::u16string key_system = u"org.w3.clearkey";
     auto test_origin = blink::WebSecurityOrigin::CreateFromString(
         blink::WebString::FromUTF8("https://test.origin"));
 
@@ -1753,7 +1756,7 @@ TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
         return mock_renderer;
       })));
 
-  renderer_factory_selector_->AddFactory(RendererFactoryType::kMediaFoundation,
+  renderer_factory_selector_->AddFactory(RendererType::kMediaFoundation,
                                          std::move(mock_renderer_factory));
 
   // Create and set CDM. The CDM doesn't support a Decryptor and requires Media

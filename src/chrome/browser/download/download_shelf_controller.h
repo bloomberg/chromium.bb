@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_CONTROLLER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_CONTROLLER_H_
 
-#include <map>
-
 #include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/download/offline_item_model.h"
@@ -34,7 +32,7 @@ class DownloadShelfController : public OfflineContentProvider::Observer {
       const OfflineContentProvider::OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item,
-                     const base::Optional<UpdateDelta>& update_delta) override;
+                     const absl::optional<UpdateDelta>& update_delta) override;
   void OnContentProviderGoingDown() override;
 
   // Called when a new OfflineItem is to be displayed on UI.

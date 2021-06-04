@@ -74,7 +74,29 @@ int RetryForHistogramUntilCountReached(
 
 }  // namespace
 
-using TranslateModelServiceDisabledBrowserTest = InProcessBrowserTest;
+class TranslateModelServiceDisabledBrowserTest : public InProcessBrowserTest {
+ public:
+  TranslateModelServiceDisabledBrowserTest() = default;
+
+  void SetUp() override {
+    origin_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    origin_server_->ServeFilesFromSourceDirectory(
+        "chrome/test/data/optimization_guide");
+
+    ASSERT_TRUE(origin_server_->Start());
+    english_url_ = origin_server_->GetURL("/hello_world.html");
+    InProcessBrowserTest::SetUp();
+  }
+
+  ~TranslateModelServiceDisabledBrowserTest() override = default;
+
+  const GURL& english_url() const { return english_url_; }
+
+ private:
+  GURL english_url_;
+  std::unique_ptr<net::EmbeddedTestServer> origin_server_;
+};
 
 IN_PROC_BROWSER_TEST_F(TranslateModelServiceDisabledBrowserTest,
                        TranslateModelServiceDisabled) {
@@ -109,7 +131,8 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceWithoutOptimizationGuideBrowserTest,
 IN_PROC_BROWSER_TEST_F(TranslateModelServiceDisabledBrowserTest,
                        LanguageDetectionModelNotCreated) {
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), GURL("https://test.com"));
+
+  ui_test_utils::NavigateToURL(browser(), english_url());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "Translate.CLD3.TopLanguageEvaluationDuration", 1);
   histogram_tester.ExpectTotalCount(
@@ -192,7 +215,10 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
                        TranslateModelServiceEnabled_OffTheRecord) {
   EXPECT_TRUE(TranslateModelServiceFactory::GetOrBuildForKey(
-      browser()->profile()->GetPrimaryOTRProfile()->GetProfileKey()));
+      browser()
+          ->profile()
+          ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          ->GetProfileKey()));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
@@ -204,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -239,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -257,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, base::FilePath());
+          /*model_metadata=*/absl::nullopt, base::FilePath());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -283,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
   RetryForHistogramUntilCountReached(
       &histogram_tester,
       "TranslateModelService.LanguageDetectionModel.WasLoaded", 1);
@@ -301,13 +327,21 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
       "LanguageDetection.TFLiteModel.WasModelAvailableForDetection", true, 1);
 }
 
+// Disabled on macOS+ASAN due to high failure rate: crbug.com/1199854.
+#if (defined(OS_MAC) && defined(ADDRESS_SANITIZER)) || defined(OS_WIN)
+#define MAYBE_LanguageDetectionWithBackgroundTab \
+  DISABLED_LanguageDetectionWithBackgroundTab
+#else
+#define MAYBE_LanguageDetectionWithBackgroundTab \
+  LanguageDetectionWithBackgroundTab
+#endif
 IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
-                       LanguageDetectionWithBackgroundTab) {
+                       MAYBE_LanguageDetectionWithBackgroundTab) {
   base::HistogramTester histogram_tester;
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -346,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -367,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(TranslateModelServiceBrowserTest,
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
       ->OverrideTargetModelFileForTesting(
           optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-          /*model_metadata=*/base::nullopt, model_file_path());
+          /*model_metadata=*/absl::nullopt, model_file_path());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,

@@ -23,6 +23,11 @@ endif()
 
 project(AOM C CXX)
 
+# GENERATED source property global visibility.
+if(POLICY CMP0118)
+  cmake_policy(SET CMP0118 NEW)
+endif()
+
 if(NOT EMSCRIPTEN)
   if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE
@@ -32,22 +37,24 @@ if(NOT EMSCRIPTEN)
   endif()
 endif()
 
-# Updating version info.
+# Library version info. Update LT_CURRENT, LT_REVISION and LT_AGE when making a
+# public release by following the guidelines in the libtool document:
 # https://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
-# c=<current>, a=<age>, r=<revision>
 #
-# libtool generates .so file as .so.[c-a].a.r, while -version-info c:r:a is
+# c=<current>, r=<revision>, a=<age>
+#
+# libtool generates a .so file as .so.[c-a].a.r, while -version-info c:r:a is
 # passed to libtool.
 #
 # We set SO_FILE_VERSION = [c-a].a.r
-#
-# To determine those two variables, calculate c,a,r with current SO_FILE_VERSION
-# then follow the rules in the link to detemine the new version (c1, a1, r1) and
-# set SO_FILE_VERSION to [c1-a1].a1.r1
-#
-# SO_VERSION should be set to c1-a1
-set(SO_VERSION 3)
-set(SO_FILE_VERSION 3.0.0)
+set(LT_CURRENT 3)
+set(LT_REVISION 0)
+set(LT_AGE 0)
+math(EXPR SO_VERSION "${LT_CURRENT} - ${LT_AGE}")
+set(SO_FILE_VERSION "${SO_VERSION}.${LT_AGE}.${LT_REVISION}")
+unset(LT_CURRENT)
+unset(LT_REVISION)
+unset(LT_AGE)
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
@@ -127,6 +134,7 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/aom_codec.h"
             "${AOM_ROOT}/aom/aom_decoder.h"
             "${AOM_ROOT}/aom/aom_encoder.h"
+            "${AOM_ROOT}/aom/aom_external_partition.h"
             "${AOM_ROOT}/aom/aom_frame_buffer.h"
             "${AOM_ROOT}/aom/aom_image.h"
             "${AOM_ROOT}/aom/aom_integer.h"

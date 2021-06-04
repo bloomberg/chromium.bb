@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.app.Activity;
 import android.graphics.Point;
 import android.support.test.InstrumentationRegistry;
 import android.util.DisplayMetrics;
@@ -21,14 +20,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,6 +34,7 @@ import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -93,7 +91,8 @@ public class NavigationHandlerTest {
     }
 
     private Tab currentTab() {
-        return mActivityTestRule.getActivity().getActivityTabProvider().get();
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getActivityTabProvider().get());
     }
 
     private void loadNewTabPage() {
@@ -162,12 +161,8 @@ public class NavigationHandlerTest {
     @SmallTest
     public void testCloseChromeAtHistoryStackHead() {
         loadNewTabPage();
-        final Activity activity = mActivityTestRule.getActivity();
         swipeFromEdge(LEFT_EDGE);
-        CriteriaHelper.pollUiThread(() -> {
-            int state = ApplicationStatus.getStateForActivity(activity);
-            return state == ActivityState.STOPPED || state == ActivityState.DESTROYED;
-        }, "Chrome should be in background");
+        ChromeApplicationTestUtils.waitUntilChromeInBackground();
     }
 
     @Test
@@ -286,7 +281,7 @@ public class NavigationHandlerTest {
         Assert.assertTrue("Chrome should stay in tab switcher",
                 mActivityTestRule.getActivity().isInOverviewMode());
         setTabSwitcherModeAndWait(false);
-        Assert.assertEquals("Current page should not change", UrlConstants.RECENT_TABS_URL,
+        Assert.assertEquals("Current page should not change. ", UrlConstants.RECENT_TABS_URL,
                 ChromeTabUtils.getUrlStringOnUiThread(currentTab()));
     }
 
@@ -295,26 +290,14 @@ public class NavigationHandlerTest {
      * @param inSwitcher Whether to enter or exit the tab switcher.
      */
     private void setTabSwitcherModeAndWait(boolean inSwitcher) throws TimeoutException {
-        CallbackHelper switchHelper = new CallbackHelper();
-        LayoutStateProvider.LayoutStateObserver layoutObserver =
-                new LayoutStateProvider.LayoutStateObserver() {
-                    @Override
-                    public void onFinishedShowing(int layoutType) {
-                        if ((inSwitcher && layoutType == LayoutType.TAB_SWITCHER)
-                                || (!inSwitcher && layoutType == LayoutType.BROWSING)) {
-                            switchHelper.notifyCalled();
-                        }
-                    }
-                };
-
-        LayoutManagerChrome controller = mActivityTestRule.getActivity().getLayoutManager();
-        controller.addObserver(layoutObserver);
-        if (inSwitcher) {
-            TestThreadUtils.runOnUiThreadBlocking(() -> controller.showOverview(false));
-        } else {
-            TestThreadUtils.runOnUiThreadBlocking(() -> controller.hideOverview(false));
-        }
-        switchHelper.waitForCallback(0);
-        controller.removeObserver(layoutObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (inSwitcher) {
+                mActivityTestRule.getActivity().getLayoutManager().showOverview(false);
+            } else {
+                mActivityTestRule.getActivity().getLayoutManager().hideOverview(false);
+            }
+        });
+        LayoutTestUtils.waitForLayout(
+                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER);
     }
 }

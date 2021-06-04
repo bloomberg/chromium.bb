@@ -271,7 +271,11 @@ int main(int argc, char **argv) {
 
   printf("Using %s\n", aom_codec_iface_name(encoder));
 
+#if CONFIG_REALTIME_ONLY
+  res = aom_codec_enc_config_default(encoder, &cfg, 1);
+#else
   res = aom_codec_enc_config_default(encoder, &cfg, 0);
+#endif
   if (res) die_codec(&ecodec, "Failed to get default codec config.");
 
   cfg.g_w = info.frame_width;
@@ -333,6 +337,12 @@ int main(int argc, char **argv) {
       if (aom_codec_control(&ecodec, AV1_SET_REFERENCE, &ref))
         die_codec(&ecodec, "Failed to set encoder reference frame");
       printf(" <SET_REF>");
+
+#if CONFIG_REALTIME_ONLY
+      // Set cpu speed in encoder.
+      if (aom_codec_control(&ecodec, AOME_SET_CPUUSED, 7))
+        die_codec(&ecodec, "Failed to set cpu speed");
+#endif
 
       // If set_reference in decoder is commented out, the enc/dec mismatch
       // would be seen.

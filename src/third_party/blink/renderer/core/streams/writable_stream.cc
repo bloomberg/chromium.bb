@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 // Implementation of WritableStream for Blink.  See
 // https://streams.spec.whatwg.org/#ws. The implementation closely follows the
@@ -211,29 +210,39 @@ WritableStream* WritableStream::CreateWithCountQueueingStrategy(
     UnderlyingSinkBase* underlying_sink,
     size_t high_water_mark,
     std::unique_ptr<WritableStreamTransferringOptimizer> optimizer) {
-  // TODO(crbug.com/902633): This method of constructing a WritableStream
-  // introduces unnecessary trips through V8. Implement algorithms based on an
-  // UnderlyingSinkBase.
-  auto* init = QueuingStrategyInit::Create();
-  init->setHighWaterMark(static_cast<double>(high_water_mark));
-  auto* strategy = CountQueuingStrategy::Create(script_state, init);
-  ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
-  if (strategy_value.IsEmpty())
-    return nullptr;
-
-  auto underlying_sink_value = ScriptValue::From(script_state, underlying_sink);
-
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kConstructionContext,
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "WritableStream");
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   auto* stream = MakeGarbageCollected<WritableStream>();
-  stream->InitInternal(script_state, underlying_sink_value, strategy_value,
-                       exception_state);
+  stream->InitWithCountQueueingStrategy(script_state, underlying_sink,
+                                        high_water_mark, std::move(optimizer),
+                                        exception_state);
   if (exception_state.HadException())
     return nullptr;
 
-  stream->transferring_optimizer_ = std::move(optimizer);
   return stream;
+}
+
+void WritableStream::InitWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSinkBase* underlying_sink,
+    size_t high_water_mark,
+    std::unique_ptr<WritableStreamTransferringOptimizer> optimizer,
+    ExceptionState& exception_state) {
+  ScriptValue strategy_value =
+      CreateTrivialQueuingStrategy(script_state->GetIsolate(), high_water_mark);
+
+  auto underlying_sink_value = ScriptValue::From(script_state, underlying_sink);
+
+  // TODO(crbug.com/902633): This method of constructing a WritableStream
+  // introduces unnecessary trips through V8. Implement algorithms based on an
+  // UnderlyingSinkBase.
+  InitInternal(script_state, underlying_sink_value, strategy_value,
+               exception_state);
+
+  transferring_optimizer_ = std::move(optimizer);
 }
 
 void WritableStream::Serialize(ScriptState* script_state,
@@ -295,7 +304,8 @@ WritableStream* WritableStream::Deserialize(
   // In the standard |value| contains an unitialized WritableStream. In the
   // implementation, we create the stream here.
   auto* writable = CreateCrossRealmTransformWritable(
-      script_state, port, std::move(optimizer), exception_state);
+      script_state, port, AllowPerChunkTransferring(false),
+      std::move(optimizer), exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }

@@ -71,6 +71,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1336,25 +1337,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   NavigateToFile("/password/form_and_link.html");
 
-  // Get the position of the 'submit' button.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var submitRect = document.getElementById('input_submit_button')"
-      ".getBoundingClientRect();"));
-
-  int top;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(), "window.domAutomationController.send(submitRect.top);",
-      &top));
-  int left;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send(submitRect.left);", &left));
-
   NavigationObserver submit_observer(WebContents());
   // Submit the form via a tap on the submit button.
-  content::SimulateTapDownAt(WebContents(), gfx::Point(left + 1, top + 1));
-  content::SimulateTapAt(WebContents(), gfx::Point(left + 1, top + 1));
+  content::SimulateMouseClickOrTapElementWithId(WebContents(),
+                                                "input_submit_button");
   submit_observer.Wait();
   std::string query = WebContents()->GetURL().query();
   EXPECT_THAT(query, testing::HasSubstr("random_secret"));
@@ -2036,29 +2022,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
 
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var usernameRect = document.getElementById('username_field')"
-      ".getBoundingClientRect();"));
-
   // Trigger in page navigation.
   std::string in_page_navigate = "location.hash = '#blah';";
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
-                                                       in_page_navigate));
+  ASSERT_TRUE(content::ExecJs(RenderFrameHost(), in_page_navigate,
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Click on the username field to display the popup.
-  int top;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send(usernameRect.top);", &top));
-  int left;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send(usernameRect.left);", &left));
-
-  content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(left + 1, top + 1));
+  content::SimulateMouseClickOrTapElementWithId(WebContents(),
+                                                "username_field");
   // Make sure the popup would be shown.
   observing_autofill_client->WaitForAutofillPopup();
 }
@@ -2246,25 +2217,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Simulate the user interaction in the iframe which should trigger autofill.
   // Click in the middle of the frame to avoid the border.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var iframeRect = document.getElementById("
-      "'iframe').getBoundingClientRect();"));
-  int y;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send((iframeRect.top +"
-      "iframeRect.bottom) / 2);",
-      &y));
-  int x;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send((iframeRect.left + iframeRect.right)"
-      "/ 2);",
-      &x));
-
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
+  content::SimulateMouseClickOrTapElementWithId(WebContents(), "iframe");
 
   std::string username_field;
   std::string password_field;
@@ -2329,25 +2282,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Simulate the user interaction in the iframe which should trigger autofill.
   // Click in the middle of the frame to avoid the border.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var iframeRect = document.getElementById("
-      "'iframe').getBoundingClientRect();"));
-  int y;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send((iframeRect.top +"
-      "iframeRect.bottom) / 2);",
-      &y));
-  int x;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send((iframeRect.left + iframeRect.right)"
-      "/ 2);",
-      &x));
-
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
+  content::SimulateMouseClickOrTapElementWithId(WebContents(), "iframe");
 
   // Verify username is not autofilled
   std::string empty_username;
@@ -2392,23 +2327,20 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Simulate the user interaction in the iframe which should trigger autofill.
   // Click in the middle of the username to avoid the border.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+  ASSERT_TRUE(content::ExecJs(
       RenderFrameHost(),
       "var usernameRect = document.getElementById("
       "'iframe').contentDocument.getElementById('username_field')"
-      ".getBoundingClientRect();"));
-  int y = 0;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send(usernameRect.top + "
-      "usernameRect.bottom);",
-      &y));
-  int x = 0;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send(usernameRect.left + "
-      "usernameRect.right);",
-      &x));
+      ".getBoundingClientRect();",
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  int y = content::EvalJs(RenderFrameHost(),
+                          "usernameRect.top + usernameRect.bottom;",
+                          content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+              .ExtractInt();
+  int x = content::EvalJs(RenderFrameHost(),
+                          "usernameRect.left + usernameRect.right;",
+                          content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+              .ExtractInt();
 
   content::SimulateMouseClickAt(WebContents(), 0,
                                 blink::WebMouseEvent::Button::kLeft,
@@ -3510,24 +3442,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Simulate user interaction in the iframe which normally triggers
   // autofill. Click in the middle of the frame to avoid the border.
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(),
-      "var iframeRect = "
-      "    document.getElementById('iframe').getBoundingClientRect();"));
-  int x;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send("
-      "    parseInt((iframeRect.left + iframeRect.right) / 2));",
-      &x));
-  int y;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(),
-      "window.domAutomationController.send("
-      "    parseInt((iframeRect.top + iframeRect.bottom) / 2));",
-      &y));
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
+  content::SimulateMouseClickOrTapElementWithId(WebContents(), "iframe");
 
   // Verify password is not autofilled.  Blink has a timer for 0.3 seconds
   // before it updates the browser with the new dynamic form, so wait long
@@ -4068,7 +3983,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(
       WebContents(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   EXPECT_FALSE(rfh_deleted_observer.deleted());
-  EXPECT_TRUE(rfh->IsInBackForwardCache());
+  EXPECT_EQ(rfh->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // Restore the cached page.
   WebContents()->GetController().GoBack();
@@ -4124,7 +4040,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   // Navigate away.
   EXPECT_TRUE(NavigateToURL(
       WebContents(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  EXPECT_TRUE(rfh->IsInBackForwardCache());
+  EXPECT_EQ(rfh->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // Restore the cached page.
   WebContents()->GetController().GoBack();
@@ -4176,13 +4093,12 @@ class PasswordManagerBrowserTestWithSigninInterception
         browser()->profile(), "dummy_email@example.com", "dummy_gaia_id");
     IdentityManagerFactory::GetForProfile(browser()->profile())
         ->GetPrimaryAccountMutator()
-        ->SetUnconsentedPrimaryAccount(dummy_account);
+        ->SetPrimaryAccount(dummy_account, signin::ConsentLevel::kSignin);
   }
 
  protected:
   PasswordManagerSigninInterceptTestHelper helper_;
 };
-
 
 // Checks that password update suppresses signin interception.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithSigninInterception,
@@ -4315,5 +4231,91 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithSigninInterception,
 }
 #endif  // ENABLE_DICE_SUPPORT
 
+class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
+ public:
+  PasswordManagerPrerenderBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &PasswordManagerPrerenderBrowserTest::WebContents,
+            base::Unretained(this))) {}
+  ~PasswordManagerPrerenderBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+
+    // Register requests handler before the server is started.
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&HandleTestAuthRequest));
+
+    PasswordManagerBrowserTest::SetUpOnMainThread();
+  }
+
+  content::test::PrerenderTestHelper* prerender_helper() {
+    return &prerender_helper_;
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+};
+
+// Tests that the prerender doesn't proceed HTTP auth login and once the page
+// is loaded as the primary page the prompt is shown. As the page is
+// not loaded from the prerender, it also checks if it's not activated from the
+// prerender.
+IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
+                       ChromePasswordManagerClientInPrerender) {
+  content::NavigationController* nav_controller =
+      &WebContents()->GetController();
+  LoginPromptBrowserTestObserver login_observer;
+  login_observer.Register(
+      content::Source<content::NavigationController>(nav_controller));
+
+  GURL url = embedded_test_server()->GetURL("/prerender/add_prerender.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *WebContents());
+  auto prerender_url = embedded_test_server()->GetURL("/basic_auth");
+
+  // Loads a page requiring HTTP auth in the prerender.
+  prerender_helper()->AddPrerenderAsync(prerender_url);
+
+  // Ensure that the prerender has started.
+  registry_observer.WaitForTrigger(prerender_url);
+  auto prerender_id = prerender_helper()->GetHostForUrl(prerender_url);
+  EXPECT_NE(content::RenderFrameHost::kNoFrameTreeNodeId, prerender_id);
+  content::test::PrerenderHostObserver host_observer(*WebContents(),
+                                                     prerender_id);
+  // PrerenderHost is destroyed by net::INVALID_AUTH_CREDENTIALS and it stops
+  // prerendering.
+  host_observer.WaitForDestroyed();
+
+  BubbleObserver bubble_observer(WebContents());
+  EXPECT_FALSE(bubble_observer.IsSavePromptShownAutomatically());
+
+  WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+  // Navigates the primary page to the URL.
+  prerender_helper()->NavigatePrimaryPage(prerender_url);
+  auth_needed_observer.Wait();
+
+  NavigationObserver nav_observer(WebContents());
+  WindowedAuthSuppliedObserver auth_supplied_observer(nav_controller);
+  // Offer valid credentials on the auth challenge.
+  EXPECT_EQ(1u, login_observer.handlers().size());
+  LoginHandler* handler = *login_observer.handlers().begin();
+  EXPECT_TRUE(handler);
+  // Any username/password will work.
+  handler->SetAuth(u"user", u"pwd");
+  auth_supplied_observer.Wait();
+
+  // The password manager should be working correctly.
+  nav_observer.Wait();
+  WaitForPasswordStore();
+  EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
+
+  // Make sure that the prerender was not activated.
+  EXPECT_FALSE(host_observer.was_activated());
+}
+
 }  // namespace
+
 }  // namespace password_manager

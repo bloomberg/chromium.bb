@@ -61,7 +61,7 @@ void TestAccumulatePixelsAndPercent(
   EXPECT_EQ(expected_percent,
             To<CalculationExpressionLeafNode>(*value).Percent());
 
-  base::Optional<PixelsAndPercent> pixels_and_percent =
+  absl::optional<PixelsAndPercent> pixels_and_percent =
       expression->ToPixelsAndPercent(conversion_data);
   EXPECT_TRUE(pixels_and_percent.has_value());
   EXPECT_EQ(expected_pixels, pixels_and_percent->pixels);
@@ -159,7 +159,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 }
 
 TEST(CSSCalculationValue, RefCount) {
-  scoped_refptr<CalculationValue> calc =
+  scoped_refptr<const CalculationValue> calc =
       CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll);
 
   // FIXME: Test the Length construction without using the ref count value.

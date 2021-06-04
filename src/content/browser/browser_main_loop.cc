@@ -83,6 +83,7 @@
 #include "content/browser/scheduler/responsiveness/watcher.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_device_source.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/speech/tts_controller_impl.h"
@@ -193,10 +194,6 @@
 #include <glib-object.h>
 #endif
 
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
-#include "content/browser/gpu_data_manager_visual_proxy_ozone_linux.h"
-#endif
-
 #if defined(OS_WIN)
 #include "media/device_monitors/system_message_window_win.h"
 #include "sandbox/win/src/process_mitigations.h"
@@ -299,7 +296,7 @@ static void SetUpGLibLogHandler() {
 // NOINLINE so it's possible to tell what thread was unresponsive by inspecting
 // the callstack.
 NOINLINE void ResetThread_IO(
-    std::unique_ptr<BrowserProcessSubThread> io_thread) {
+    std::unique_ptr<BrowserProcessIOThread> io_thread) {
   io_thread.reset();
 }
 
@@ -475,7 +472,7 @@ BrowserMainLoop::BrowserMainLoop(
       ,
       // TODO(fdoray): Create the fence on Android too. Not enabled yet because
       // tests timeout. https://crbug.com/887407
-      scoped_best_effort_execution_fence_(base::in_place_t())
+      scoped_best_effort_execution_fence_(absl::in_place)
 #endif
 {
   DCHECK(!g_current_browser_main_loop);
@@ -628,19 +625,20 @@ int BrowserMainLoop::EarlyInitialization() {
   return RESULT_CODE_NORMAL_EXIT;
 }
 
-void BrowserMainLoop::PreMainMessageLoopStart() {
-  TRACE_EVENT0("startup",
-               "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
+void BrowserMainLoop::PreCreateMainMessageLoop() {
+  TRACE_EVENT0(
+      "startup",
+      "BrowserMainLoop::CreateMainMessageLoop:PreCreateMainMessageLoop");
   if (parts_) {
-    parts_->PreMainMessageLoopStart();
+    parts_->PreCreateMainMessageLoop();
   }
 }
 
-void BrowserMainLoop::MainMessageLoopStart() {
-  // DO NOT add more code here. Use PreMainMessageLoopStart() above or
-  // PostMainMessageLoopStart() below.
+void BrowserMainLoop::CreateMainMessageLoop() {
+  // DO NOT add more code here. Use PreCreateMainMessageLoop() above or
+  // PostCreateMainMessageLoop() below.
 
-  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
+  TRACE_EVENT0("startup", "BrowserMainLoop::CreateMainMessageLoop");
 
   base::PlatformThread::SetName("CrBrowserMain");
 
@@ -652,8 +650,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()));
 }
 
-void BrowserMainLoop::PostMainMessageLoopStart() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::PostMainMessageLoopStart");
+void BrowserMainLoop::PostCreateMainMessageLoop() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateMainMessageLoop");
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_ = std::make_unique<base::SystemMonitor>();
@@ -705,7 +703,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
 
   if (parts_)
-    parts_->PostMainMessageLoopStart();
+    parts_->PostCreateMainMessageLoop();
 
 #if defined(OS_ANDROID)
   {
@@ -721,7 +719,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
           switches::kDisableScreenOrientationLock)) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:ScreenOrientationProvider");
-    screen_orientation_delegate_.reset(new ScreenOrientationDelegateAndroid());
+    screen_orientation_delegate_ =
+        std::make_unique<ScreenOrientationDelegateAndroid>();
   }
 
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
@@ -762,7 +761,6 @@ int BrowserMainLoop::PreCreateThreads() {
   // Make sure no accidental call to initialize GpuDataManager earlier.
   DCHECK(!GpuDataManagerImpl::Initialized());
   if (parts_) {
-
     result_code_ = parts_->PreCreateThreads();
   }
 
@@ -804,15 +802,6 @@ int BrowserMainLoop::PreCreateThreads() {
   // We report Uma metrics on a periodic basis when running the full browser,
   // while avoiding doing so in unit tests by making it explicitly enabled here.
   GpuDataManagerImpl::GetInstance()->StartUmaTimer();
-
-// Temporarily used by both Ozone/Linux and X11/Linux. Once X11/Linux goes
-// away, will be used only by Ozone/Linux.
-// TODO(https://crbug.com/1085700): make sure it's only used by Ozone/Linux.
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
-  gpu_data_manager_visual_proxy_ =
-      std::make_unique<GpuDataManagerVisualProxyOzoneLinux>(
-          GpuDataManagerImpl::GetInstance());
-#endif
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID)
   // Single-process is an unsupported and not fully tested mode, so
@@ -971,8 +960,8 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 
   // If the UI thread blocks, the whole UI is unresponsive. Do not allow
   // unresponsive tasks from the UI thread and instantiate a
-  // responsiveness::Watcher to catch jank induced by any blocking tasks not
-  // instrumented with ScopedBlockingCall's assert.
+  // responsiveness::Watcher to catch jank induced by any unintentionally
+  // blocking tasks.
   base::DisallowUnresponsiveTasks();
   responsiveness_watcher_ = new responsiveness::Watcher;
   responsiveness_watcher_->SetUp();
@@ -984,12 +973,30 @@ void BrowserMainLoop::RunMainMessageLoop() {
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else   // defined(OS_ANDROID)
-
   auto main_run_loop = std::make_unique<base::RunLoop>();
   if (parts_)
     parts_->WillRunMainMessageLoop(main_run_loop);
-  if (main_run_loop)
-    main_run_loop->Run();
+  if (!main_run_loop)
+    return;
+
+  main_run_loop->RunUntilIdle();
+  // |parts_| may have captured a quit closure in WillRunMainMessageLoop(). If
+  // the above run is quit before it reaches idle on its own,
+  // RunMainMessageLoop() must return right away.
+  if (main_run_loop->AnyQuitCalled())
+    return;
+
+  // TODO(crbug.com/1175074): Figure out why (only) blink web tests goes through
+  // this code path multiple times...
+  static bool ran_once = false;
+  if (!ran_once) {
+    ran_once = true;
+    if (parts_)
+      parts_->OnFirstIdle();
+    responsiveness_watcher_->OnFirstIdle();
+  }
+
+  main_run_loop->Run();
 #endif  // defined(OS_ANDROID)
 }
 
@@ -1050,6 +1057,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   memory_pressure_monitor_.reset();
 
   ShutDownNetworkService();
+
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI))
+    BrowserProcessIOThread::ProcessHostCleanUp();
 
 #if defined(OS_MAC)
   BrowserCompositorMac::DisableRecyclingForShutdown();
@@ -1167,7 +1177,7 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
 
   HistogramSynchronizer::GetInstance();
 
-  field_trial_synchronizer_ = base::MakeRefCounted<FieldTrialSynchronizer>();
+  FieldTrialSynchronizer::CreateInstance();
 
   // cc assumes a single client name for metrics in a process, which is
   // is inconsistent with single process mode where both the renderer and
@@ -1184,10 +1194,11 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
   // Initialize the GPU shader cache. This needs to be initialized before
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
   // ShaderCacheFactory.
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  InitShaderCacheFactorySingleton(task_runner);
+  auto process_task_runner =
+      base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+          ? GetUIThreadTaskRunner({})
+          : GetIOThreadTaskRunner({});
+  InitShaderCacheFactorySingleton(process_task_runner);
 
   // Initialize the FontRenderParams on IO thread. This needs to be initialized
   // before gpu process initialization below.
@@ -1259,7 +1270,7 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
   }
 
 #if defined(OS_WIN)
-  system_message_window_.reset(new media::SystemMessageWindowWin);
+  system_message_window_ = std::make_unique<media::SystemMessageWindowWin>();
 #elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();
 #elif defined(OS_MAC)
@@ -1331,11 +1342,10 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
 #endif
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 
-  if (GpuDataManagerImpl::GetInstance()->GpuProcessStartAllowed() &&
-      !established_gpu_channel && always_uses_gpu) {
+  if (!established_gpu_channel && always_uses_gpu) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
-    GetIOThreadTaskRunner({})->PostTask(
+    process_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
                        GPU_PROCESS_KIND_SANDBOXED, true /* force_create */));

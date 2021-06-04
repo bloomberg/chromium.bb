@@ -73,6 +73,8 @@ constexpr size_t kP256X962Length = 1 /* type byte */ + 32 /* x */ + 32 /* y */;
 
 constexpr uint32_t kMinPinLength = 4;
 
+constexpr uint32_t kDefaultMaxTemplateFriendlyName = 64;
+
 // CTAP protocol device response code, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
 enum class CtapDeviceResponseCode : uint8_t {
@@ -90,7 +92,7 @@ enum class CtapDeviceResponseCode : uint8_t {
   kCtap2ErrMissingParameter = 0x14,
   kCtap2ErrLimitExceeded = 0x15,
   kCtap2ErrUnsupportedExtension = 0x16,
-  kCtap2ErrTooManyElements = 0x17,
+  kCtap2ErrFpDatabaseFull = 0x17,
   kCtap2ErrLargeBlobStorageFull = 0x18,
   kCtap2ErrCredentialExcluded = 0x19,
   kCtap2ErrProcesssing = 0x21,
@@ -148,7 +150,7 @@ constexpr auto kCtapResponseCodeList = base::MakeFixedFlatSet<uint8_t>({
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrMissingParameter),
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrLimitExceeded),
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension),
-    static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrTooManyElements),
+    static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrFpDatabaseFull),
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrLargeBlobStorageFull),
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded),
     static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrProcesssing),
@@ -349,6 +351,7 @@ extern const char kDefaultCredProtectKey[];
 extern const char kEnterpriseAttestationKey[];
 extern const char kLargeBlobsKey[];
 extern const char kAlwaysUvKey[];
+extern const char kMakeCredUvNotRqdKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;
@@ -447,6 +450,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2_1Version[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredBlob[];
 
 // Maximum number of seconds the browser waits for Bluetooth authenticator to
 // send packets that advertises that the device is in pairing mode before
@@ -479,6 +483,13 @@ enum class CredProtectRequest : uint8_t {
 enum class PINUVAuthProtocol : uint8_t {
   kV1 = 1,
   kV2 = 2,
+};
+
+// FidoRequestType enumerates the top-level, user-visable types of requests.
+// These correspond to the create() and get() calls at the Web Platform layer.
+enum class FidoRequestType {
+  kMakeCredential,
+  kGetAssertion,
 };
 
 }  // namespace device

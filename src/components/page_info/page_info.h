@@ -33,7 +33,7 @@ class X509Certificate;
 }
 
 namespace permissions {
-class ChooserContextBase;
+class ObjectPermissionContextBase;
 }
 
 namespace ui {
@@ -43,7 +43,6 @@ class Event;
 class HostContentSettingsMap;
 class PageInfoDelegate;
 class PageInfoUI;
-class PageInfoBubbleViewBrowserTest;
 
 using password_manager::metrics_util::PasswordType;
 
@@ -251,10 +250,10 @@ class PageInfo : public content::WebContentsObserver {
   // This method is called when the user pressed "Mark as legitimate" button.
   void OnAllowlistPasswordReuseButtonPressed();
 
-  // Return a pointer to the ChooserContextBase corresponding to the
+  // Return a pointer to the ObjectPermissionContextBase corresponding to the
   // content settings type, |type|. Returns nullptr for content settings
-  // for which there's no ChooserContextBase.
-  permissions::ChooserContextBase* GetChooserContextFromUIInfo(
+  // for which there's no ObjectPermissionContextBase.
+  permissions::ObjectPermissionContextBase* GetChooserContextFromUIInfo(
       const ChooserUIInfo& ui_info) const;
 
   // Accessors.
@@ -272,12 +271,20 @@ class PageInfo : public content::WebContentsObserver {
     return safe_browsing_status_;
   }
 
+  // Returns site origin in a concise and human-friendly way, without the
+  // HTTP/HTTPS scheme, the username and password, the path and trivial
+  // subdomains.
+  std::u16string GetSimpleSiteName() const;
+
+  // Retrieves all the permissions that are shown in Page Info.
+  // Exposed for testing.
+  static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsEmptyByDefault);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsDontShowAsk);
-  friend class PageInfoBubbleViewBrowserTest;
 
   // Populates this object's UI state with provided security context. This
   // function does not update visible UI-- that's part of Present*().
@@ -314,10 +321,6 @@ class PageInfo : public content::WebContentsObserver {
       security_state::MaliciousContentStatus malicious_content_status,
       PageInfo::SafeBrowsingStatus* status,
       std::u16string* details);
-
-  // Retrieves all the permissions that are shown in Page Info.
-  // Exposed for testing.
-  static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
 
   // Returns PageSpecificContentSettings for the observed WebContents if
   // present, nullptr otherwise.

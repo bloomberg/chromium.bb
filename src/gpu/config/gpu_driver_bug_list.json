@@ -711,16 +711,13 @@
           "value2": "5.1.99"
         }
       },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR Rogue.*",
+      "gl_vendor": ".*Imagination.*",
+      "gl_renderer": ".*PowerVR Rogue.*",
       "driver_version": {
         "op": "between",
         "value": "1.3",
         "value2": "1.4"
       },
-      "features": [
-        "avoid_egl_image_target_texture_reuse"
-      ],
       "disabled_extensions": [
         "EGL_KHR_wait_sync"
       ]
@@ -907,7 +904,7 @@
       "os": {
         "type": "android"
       },
-      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "gl_renderer": ".*Adreno \\(TM\\) 3.*",
       "features": [
         "disable_program_cache"
       ]
@@ -2115,21 +2112,6 @@
       "device_id": ["0x1626", "0x162B", "0x1622"],
       "features": [
         "clear_to_zero_or_one_broken"
-      ]
-    },
-    {
-      "id": 237,
-      "description": "eglSwapBuffers intermittently fails on Android when app goes to background",
-      "cr_bugs": [744678],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "9.0"
-        }
-      },
-      "features": [
-        "dont_disable_webgl_when_compositor_context_lost"
       ]
     },
     {
@@ -3433,9 +3415,7 @@
       "vendor_id": "0x8086",
       "intel_gpu_series": [
         "geminilake",
-        "kabylake",
-        "whiskeylake",
-        "cometlake"
+        "kabylake"
       ],
       "features": [
         "disable_accelerated_vp8_encode"
@@ -3637,18 +3617,6 @@
       ]
     },
     {
-      "id": 368,
-      "cr_bugs": [1181358],
-      "description": "High D3D11VideoDecoder error rates for AV1 content on Intel GPUs",
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "disable_accelerated_av1_decode_d3d11"
-      ]
-    },
-    {
       "id": 369,
       "cr_bugs": [1184340],
       "description": "Limit MSAA quality samples to 4 and storage samples 2 on Pollock",
@@ -3700,6 +3668,30 @@
       },
       "features": [
         "check_ycbcr_studio_g22_left_p709_for_nv12_support"
+      ]
+    },
+    {
+      "id": 373,
+      "cr_bugs": [1198714],
+      "description": "VP9 Profile 2 HW decoding on Qualcomm SC7180 is broken",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "freedreno",
+      "features": [
+        "disable_accelerated_vp9_profile2_decode"
+      ]
+    },
+    {
+      "id": 374,
+      "cr_bugs": [1087422],
+      "description": "VP9 resilient mode causes corruptions with AMD VCN HW decoders, using DXVA",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disallow_vp9_resilient_dxva_decoding"
       ]
     }
   ]

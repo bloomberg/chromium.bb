@@ -112,6 +112,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDisplayCutoutAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableDocumentPolicy(bool);
   BLINK_PLATFORM_EXPORT static void EnableDocumentPolicyNegotiation(bool);
+  BLINK_PLATFORM_EXPORT static void EnableFencedFrames(bool);
+  BLINK_PLATFORM_EXPORT static bool IsFencedFramesEnabled();
   BLINK_PLATFORM_EXPORT static void EnableFileSystem(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensorExtraClasses(bool);
   BLINK_PLATFORM_EXPORT static void EnableImplicitRootScroller(bool);
@@ -155,6 +157,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechSynthesis(bool);
   BLINK_PLATFORM_EXPORT static void EnableAutoLazyLoadOnReloads(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedArrayBuffer(bool);
+  BLINK_PLATFORM_EXPORT static void EnableSharedAutofill(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentAnchor(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentColorChange(bool);
@@ -167,6 +170,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebBluetooth(bool);
   BLINK_PLATFORM_EXPORT static void
   EnableWebBluetoothRemoteCharacteristicNewWriteValue(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebBluetoothManufacturerDataFilter(
+      bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLDraftExtensions(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGPU(bool);
@@ -247,4 +252,4 @@ class WebRuntimeFeatures {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RUNTIME_FEATURES_H_

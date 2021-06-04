@@ -83,7 +83,7 @@ ExtensionsAPIClient::CreateGuestViewManagerDelegate(
 std::unique_ptr<MimeHandlerViewGuestDelegate>
 ExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return std::unique_ptr<MimeHandlerViewGuestDelegate>();
+  return nullptr;
 }
 
 WebViewGuestDelegate* ExtensionsAPIClient::CreateWebViewGuestDelegate(
@@ -138,11 +138,6 @@ ExtensionsAPIClient::CreateDisplayInfoProvider() const {
 }
 
 MetricsPrivateDelegate* ExtensionsAPIClient::GetMetricsPrivateDelegate() {
-  return nullptr;
-}
-
-NetworkingCastPrivateDelegate*
-ExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
   return nullptr;
 }
 

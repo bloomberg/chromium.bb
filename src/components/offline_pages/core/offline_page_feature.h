@@ -10,7 +10,6 @@
 
 namespace offline_pages {
 
-extern const base::Feature kOffliningRecentPagesFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesLivePageSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
@@ -20,18 +19,13 @@ extern const base::Feature kOfflinePagesDescriptivePendingStatusFeature;
 extern const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature;
 extern const base::Feature kOfflinePagesDescriptiveFailStatusFeature;
 extern const base::Feature kOfflinePagesCTSuppressNotificationsFeature;
-extern const base::Feature kOfflinePagesShowAlternateDinoPageFeature;
 extern const base::Feature kOfflineIndicatorFeature;
-extern const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature;
 extern const base::Feature kOnTheFlyMhtmlHashComputationFeature;
 extern const base::Feature kOfflinePagesNetworkStateLikelyUnknown;
 
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.
 extern const char kPrefetchingOfflinePagesExperimentsOption[];
-
-// Returns true if offlining of recent pages (aka 'Last N pages') is enabled.
-bool IsOffliningRecentPagesEnabled();
 
 // Returns true if offline CT features are enabled.  See crbug.com/620421.
 bool IsOfflinePagesCTEnabled();
@@ -77,12 +71,6 @@ std::string GetPrefetchingOfflinePagesExperimentTag();
 // Returns true if offline indicator UI is shown when the user is offline.
 bool IsOfflineIndicatorFeatureEnabled();
 
-// Returns true if we should always do http probes to detect network
-// connectivity instead of retrieving it from the system. This enables the user
-// to test our http probe detection on Android devices with Marshmallow and
-// above.
-bool IsOfflineIndicatorAlwaysHttpProbeEnabled();
-
 // Returns true if we are saving MHTML files to the target location and
 // calculating their content digests in one step.
 bool IsOnTheFlyMhtmlHashComputationEnabled();
@@ -94,4 +82,4 @@ bool IsOfflinePagesNetworkStateLikelyUnknown();
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_FEATURE_H_

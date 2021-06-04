@@ -18,6 +18,7 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.url.GURL;
 import org.chromium.weblayer_private.WebLayerImpl;
 
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class WebLayerSiteSettingsDelegate
     }
 
     @Override
-    public void getFaviconImageForURL(String faviconUrl, Callback<Bitmap> callback) {
+    public void getFaviconImageForURL(GURL faviconUrl, Callback<Bitmap> callback) {
         // We don't currently support favicons on WebLayer.
         callback.onResult(null);
     }
@@ -55,9 +56,10 @@ public class WebLayerSiteSettingsDelegate
     @Override
     public boolean isCategoryVisible(@Type int type) {
         return type == Type.ADS || type == Type.ALL_SITES || type == Type.AUTOMATIC_DOWNLOADS
-                || type == Type.CAMERA || type == Type.COOKIES || type == Type.DEVICE_LOCATION
-                || type == Type.JAVASCRIPT || type == Type.MICROPHONE || type == Type.POPUPS
-                || type == Type.PROTECTED_MEDIA || type == Type.SOUND || type == Type.USE_STORAGE;
+                || type == Type.BACKGROUND_SYNC || type == Type.CAMERA || type == Type.COOKIES
+                || type == Type.DEVICE_LOCATION || type == Type.JAVASCRIPT
+                || type == Type.MICROPHONE || type == Type.POPUPS || type == Type.PROTECTED_MEDIA
+                || type == Type.SOUND || type == Type.USE_STORAGE;
     }
 
     @Override

@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_VR_DEVICE_H
-#define DEVICE_VR_VR_DEVICE_H
+#ifndef DEVICE_VR_VR_DEVICE_H_
+#define DEVICE_VR_VR_DEVICE_H_
 
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace device {
 
@@ -31,6 +29,7 @@ enum class VrViewerType {
 
 // Implemented in vr_device_base.cc
 void COMPONENT_EXPORT(DEVICE_VR_BASE) LogViewerType(VrViewerType);
+
 }  // namespace device
 
-#endif  // DEVICE_VR_VR_DEVICE_H
+#endif  // DEVICE_VR_VR_DEVICE_H_

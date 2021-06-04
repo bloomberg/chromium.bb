@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
+
+class GURL;
 
 namespace url {
 class Origin;

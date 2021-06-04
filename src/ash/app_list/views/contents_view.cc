@@ -23,10 +23,12 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -96,16 +98,16 @@ void ContentsView::Init(AppListModel* model) {
                       AppListState::kStateApps);
 
   // Search results UI.
-  auto search_results_page_view =
+  auto search_result_page_view =
       std::make_unique<SearchResultPageView>(view_delegate->GetSearchModel());
-  search_results_page_view->InitializeContainers(
+  search_result_page_view->InitializeContainers(
       view_delegate, GetAppListMainView(), GetSearchBoxView()->search_box());
 
   expand_arrow_view_ =
       AddChildView(std::make_unique<ExpandArrowView>(this, app_list_view_));
 
-  search_results_page_view_ = AddLauncherPage(
-      std::move(search_results_page_view), AppListState::kStateSearchResults);
+  search_result_page_view_ = AddLauncherPage(std::move(search_result_page_view),
+                                             AppListState::kStateSearchResults);
 
   auto assistant_page_view = std::make_unique<AssistantPageView>(
       view_delegate->GetAssistantViewDelegate());
@@ -138,7 +140,7 @@ void ContentsView::Init(AppListModel* model) {
 }
 
 void ContentsView::ResetForShow() {
-  target_page_for_last_view_state_update_ = base::nullopt;
+  target_page_for_last_view_state_update_ = absl::nullopt;
   apps_container_view_->ResetForShowApps();
   // SearchBoxView::ResetForShow() before SetActiveState(). It clears the search
   // query internally, which can show the search results page through
@@ -148,7 +150,7 @@ void ContentsView::ResetForShow() {
   // Make sure the default visibilities of the pages. This should be done before
   // SetActiveState() since it checks the visibility of the pages.
   apps_container_view_->SetVisible(true);
-  search_results_page_view_->SetVisible(false);
+  search_result_page_view_->SetVisible(false);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
   SetActiveState(AppListState::kStateApps, /*animate=*/false);
@@ -425,9 +427,9 @@ void ContentsView::UpdateExpandArrowBehavior(AppListViewState target_state) {
   // state.
   expand_arrow_view_->SetFocusBehavior(
       expand_arrow_enabled ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
-  expand_arrow_view_->SetInkDropMode(
-      expand_arrow_enabled ? views::InkDropHostView::InkDropMode::ON
-                           : views::InkDropHostView::InkDropMode::OFF);
+  expand_arrow_view_->ink_drop()->SetMode(
+      expand_arrow_enabled ? views::InkDropHost::InkDropMode::ON
+                           : views::InkDropHost::InkDropMode::OFF);
 
   // Allow ChromeVox to focus the expand arrow only when peeking launcher.
   expand_arrow_view_->GetViewAccessibility().OverrideIsIgnored(
@@ -905,7 +907,7 @@ ContentsView::CreateTransitionAnimationSettings(ui::Layer* layer) const {
 bool ContentsView::ShouldLayoutPage(AppListPage* page,
                                     AppListState current_state,
                                     AppListState target_state) const {
-  if (page == apps_container_view_ || page == search_results_page_view_) {
+  if (page == apps_container_view_ || page == search_result_page_view_) {
     return ((current_state == AppListState::kStateSearchResults &&
              target_state == AppListState::kStateApps) ||
             (current_state == AppListState::kStateApps &&
@@ -933,7 +935,7 @@ int ContentsView::GetSearchBoxTopForViewState(
     AppListState state,
     AppListViewState view_state) const {
   AppListPage* page = GetPageView(GetPageIndexForState(state));
-  base::Optional<int> value_for_page = page->GetSearchBoxTop(view_state);
+  absl::optional<int> value_for_page = page->GetSearchBoxTop(view_state);
   if (value_for_page.has_value())
     return value_for_page.value();
 

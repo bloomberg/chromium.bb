@@ -336,7 +336,8 @@ sk_sp<SkSpecialImage> SkDisplacementMapImageFilter::onFilterImage(const Context&
                                                    kNeedNewImageUniqueID_SpecialImage,
                                                    surfaceFillContext->readSurfaceView(),
                                                    surfaceFillContext->colorInfo().colorType(),
-                                                   surfaceFillContext->colorInfo().refColorSpace());
+                                                   surfaceFillContext->colorInfo().refColorSpace(),
+                                                   ctx.surfaceProps());
     }
 #endif
 
@@ -369,7 +370,7 @@ sk_sp<SkSpecialImage> SkDisplacementMapImageFilter::onFilterImage(const Context&
     offset->fX = bounds.left();
     offset->fY = bounds.top();
     return SkSpecialImage::MakeFromRaster(SkIRect::MakeWH(bounds.width(), bounds.height()),
-                                          dst);
+                                          dst, ctx.surfaceProps());
 }
 
 SkRect SkDisplacementMapImageFilter::computeFastBounds(const SkRect& src) const {
@@ -510,8 +511,9 @@ std::unique_ptr<GrFragmentProcessor> GrDisplacementMapEffect::TestCreate(GrProce
         static_cast<SkColorChannel>(d->fRandom->nextRangeU(1, kMaxComponent));
     SkColorChannel yChannelSelector =
         static_cast<SkColorChannel>(d->fRandom->nextRangeU(1, kMaxComponent));
-    SkVector scale = SkVector::Make(d->fRandom->nextRangeScalar(0, 100.0f),
-                                    d->fRandom->nextRangeScalar(0, 100.0f));
+    SkVector scale;
+    scale.fX = d->fRandom->nextRangeScalar(0, 100.0f);
+    scale.fY = d->fRandom->nextRangeScalar(0, 100.0f);
     SkISize colorDimensions;
     colorDimensions.fWidth = d->fRandom->nextRangeU(0, colorView.width());
     colorDimensions.fHeight = d->fRandom->nextRangeU(0, colorView.height());

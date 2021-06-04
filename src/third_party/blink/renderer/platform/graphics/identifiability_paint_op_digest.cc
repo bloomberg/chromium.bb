@@ -39,17 +39,14 @@ IdentifiabilityPaintOpDigest::IdentifiabilityPaintOpDigest(IntSize size,
     : max_digest_ops_(max_digest_ops),
       size_(size),
       paint_cache_(cc::ClientPaintCache::kNoCachingBudget),
-      nodraw_canvas_(size_.Width(), size_.Height()),
       serialize_options_(&image_provider_,
                          /*transfer_cache=*/nullptr,
                          &paint_cache_,
-                         &nodraw_canvas_,
                          /*strike_server=*/nullptr,
                          /*color_space=*/nullptr,
                          /*can_use_lcd_text=*/false,
                          /*content_supports_distance_field_text=*/false,
-                         /*max_texture_size=*/0,
-                         /*original_ctm=*/SkM44()) {
+                         /*max_texture_size=*/0) {
   serialize_options_.for_identifiability_study = true;
   constexpr size_t kInitialSize = 16 * 1024;
   if (IdentifiabilityStudySettings::Get()->IsTypeAllowed(
@@ -113,9 +110,9 @@ void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
 
     std::memset(SerializationBuffer().data(), 0, SerializationBuffer().size());
     size_t serialized_size;
-    while ((serialized_size = op->Serialize(SerializationBuffer().data(),
-                                            SerializationBuffer().size(),
-                                            serialize_options_)) == 0) {
+    while ((serialized_size = op->Serialize(
+                SerializationBuffer().data(), SerializationBuffer().size(),
+                serialize_options_, nullptr, SkM44(), SkM44())) == 0) {
       constexpr size_t kMaxBufferSize =
           gpu::raster::RasterInterface::kDefaultMaxOpSizeHint << 2;
       if (SerializationBuffer().size() >= kMaxBufferSize) {

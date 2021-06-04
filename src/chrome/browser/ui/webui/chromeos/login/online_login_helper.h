@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "chrome/browser/ash/login/login_client_cert_usage_observer.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chromeos/login/auth/cryptohome_authenticator.h"
 #include "components/login/base_screen_handler_utils.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -75,11 +76,11 @@ bool BuildUserContextForGaiaSignIn(
     bool using_saml_api,
     const std::string& password,
     const SamlPasswordAttributes& password_attributes,
-    const base::Optional<SyncTrustedVaultKeys>& sync_trusted_vault_keys,
+    const absl::optional<SyncTrustedVaultKeys>& sync_trusted_vault_keys,
     const LoginClientCertUsageObserver&
         extension_provided_client_cert_usage_observer,
     UserContext* user_context,
-    std::string* error_message);
+    SigninError* error);
 
 }  // namespace login
 

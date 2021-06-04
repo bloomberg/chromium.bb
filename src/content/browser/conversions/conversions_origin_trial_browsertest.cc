@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
 
   EXPECT_EQ(true, EvalJs(shell(),
                          "document.featurePolicy.features().includes('"
-                         "conversion-measurement')"));
+                         "attribution-reporting')"));
 }
 
 IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
@@ -113,8 +113,7 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
 
   ConversionManagerImpl* conversion_manager =
       static_cast<StoragePartitionImpl*>(
-          BrowserContext::GetDefaultStoragePartition(
-              web_contents()->GetBrowserContext()))
+          web_contents()->GetBrowserContext()->GetDefaultStoragePartition())
           ->GetConversionManager();
 
   base::RunLoop run_loop;
@@ -150,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialNoBrowserFeatureBrowserTest,
 
   EXPECT_EQ(false, EvalJs(shell(),
                           "document.featurePolicy.features().includes('"
-                          "conversion-measurement')"));
+                          "attribution-reporting')"));
 }
 
 }  // namespace content

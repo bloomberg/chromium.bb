@@ -191,13 +191,8 @@ class MediaControlsOrientationLockDelegateTest
   void SetUp() override {
     chrome_client_ =
         MakeGarbageCollected<MockChromeClientForOrientationLockDelegate>();
-
-    Page::PageClients clients;
-    FillWithEmptyClients(clients);
-    clients.chrome_client = chrome_client_.Get();
-
     SetupPageWithClients(
-        &clients,
+        chrome_client_,
         MakeGarbageCollected<StubLocalFrameClientForOrientationLockDelegate>());
     previous_orientation_event_value_ =
         RuntimeEnabledFeatures::OrientationEventEnabled();
@@ -313,11 +308,6 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   enum DeviceNaturalOrientation { kNaturalIsPortrait, kNaturalIsLandscape };
 
   void SetUp() override {
-    // Unset this to fix ScreenOrientationController::ComputeOrientation.
-    // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
-    was_running_web_test_ = WebTestSupport::IsRunningWebTest();
-    WebTestSupport::SetIsRunningWebTest(false);
-
     MediaControlsOrientationLockDelegateTest::SetUp();
 
     // Reset the <video> element now we've enabled the runtime feature.
@@ -332,7 +322,6 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
   void TearDown() override {
     MediaControlsOrientationLockDelegateTest::TearDown();
-    WebTestSupport::SetIsRunningWebTest(was_running_web_test_);
   }
 
   void SetIsAutoRotateEnabledByUser(bool enabled) {
@@ -435,7 +424,11 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
         ->orientation_lock_delegate_->ComputeDeviceOrientation(data);
   }
 
-  bool was_running_web_test_ = false;
+  // Disable web test mode to fix
+  // ScreenOrientationController::ComputeOrientation.
+  // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
+  ScopedWebTestMode web_test_mode_{false};
+
   bool natural_orientation_is_portrait_ = true;
 };
 

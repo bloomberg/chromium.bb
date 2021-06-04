@@ -83,6 +83,7 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
   switch (operation_type) {
     case FilterOperation::NONE:
     case FilterOperation::BOX_REFLECT:
+    case FilterOperation::CONVOLVE_MATRIX:
       NOTREACHED();
       return;
     case FilterOperation::REFERENCE:
@@ -99,6 +100,12 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
       break;
     case FilterOperation::HUE_ROTATE:
       feature = WebFeature::kCSSFilterHueRotate;
+      break;
+    case FilterOperation::LUMINANCE_TO_ALPHA:
+      feature = WebFeature::kCSSFilterLuminanceToAlpha;
+      break;
+    case FilterOperation::COLOR_MATRIX:
+      feature = WebFeature::kCSSFilterColorMatrix;
       break;
     case FilterOperation::INVERT:
       feature = WebFeature::kCSSFilterInvert;

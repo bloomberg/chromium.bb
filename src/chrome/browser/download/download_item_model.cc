@@ -36,8 +36,11 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/file_type_policies.h"
 #include "components/safe_browsing/core/proto/download_file_types.pb.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -122,7 +125,7 @@ DownloadItemModelData::DownloadItemModelData()
       danger_level_(DownloadFileType::NOT_DANGEROUS),
       is_being_revived_(false) {}
 
-} // namespace
+}  // namespace
 
 // -----------------------------------------------------------------------------
 // DownloadItemModel
@@ -173,8 +176,8 @@ std::u16string DownloadItemModel::GetTabProgressStatusText() const {
     base::i18n::AdjustStringForLocaleDirection(&total_text);
 
     base::i18n::AdjustStringForLocaleDirection(&received_size);
-    amount = l10n_util::GetStringFUTF16(
-        IDS_DOWNLOAD_TAB_PROGRESS_SIZE, received_size, total_text);
+    amount = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_SIZE,
+                                        received_size, total_text);
   } else {
     amount.assign(received_size);
   }
@@ -187,9 +190,9 @@ std::u16string DownloadItemModel::GetTabProgressStatusText() const {
   if (download_->IsPaused()) {
     time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   } else if (download_->TimeRemaining(&remaining)) {
-    time_remaining = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
-                                            ui::TimeFormat::LENGTH_SHORT,
-                                            remaining);
+    time_remaining =
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                               ui::TimeFormat::LENGTH_SHORT, remaining);
   }
 
   if (time_remaining.empty()) {
@@ -197,8 +200,8 @@ std::u16string DownloadItemModel::GetTabProgressStatusText() const {
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN, speed_text, amount);
   }
-  return l10n_util::GetStringFUTF16(
-      IDS_DOWNLOAD_TAB_PROGRESS_STATUS, speed_text, amount, time_remaining);
+  return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_STATUS,
+                                    speed_text, amount, time_remaining);
 }
 
 int64_t DownloadItemModel::GetCompletedBytes() const {
@@ -206,8 +209,8 @@ int64_t DownloadItemModel::GetCompletedBytes() const {
 }
 
 int64_t DownloadItemModel::GetTotalBytes() const {
-  return download_->AllDataSaved() ? download_->GetReceivedBytes() :
-                                     download_->GetTotalBytes();
+  return download_->AllDataSaved() ? download_->GetReceivedBytes()
+                                   : download_->GetTotalBytes();
 }
 
 // TODO(asanka,rdsmith): Once 'open' moves exclusively to the
@@ -237,6 +240,7 @@ bool DownloadItemModel::IsMalicious() const {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
       return true;
 
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -490,6 +494,10 @@ GURL DownloadItemModel::GetURL() const {
   return download_->GetURL();
 }
 
+bool DownloadItemModel::HasUserGesture() const {
+  return download_->HasUserGesture();
+}
+
 void DownloadItemModel::OnDownloadUpdated(DownloadItem* download) {
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();
@@ -649,22 +657,34 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
         safe_browsing::SafeBrowsingService* sb_service =
             g_browser_process->safe_browsing_service();
         // Compiles the uncommon download warning report.
-        safe_browsing::ClientSafeBrowsingReportRequest report;
-        report.set_type(safe_browsing::ClientSafeBrowsingReportRequest::
-                            DANGEROUS_DOWNLOAD_WARNING);
-        report.set_download_verdict(
+        auto report =
+            std::make_unique<safe_browsing::ClientSafeBrowsingReportRequest>();
+        report->set_type(safe_browsing::ClientSafeBrowsingReportRequest::
+                             DANGEROUS_DOWNLOAD_WARNING);
+        report->set_download_verdict(
             safe_browsing::ClientDownloadResponse::UNCOMMON);
-        report.set_url(GetURL().spec());
-        report.set_did_proceed(true);
+        report->set_url(GetURL().spec());
+        report->set_did_proceed(true);
         std::string token =
             safe_browsing::DownloadProtectionService::GetDownloadPingToken(
                 download_);
         if (!token.empty())
-          report.set_token(token);
+          report->set_token(token);
         std::string serialized_report;
-        if (report.SerializeToString(&serialized_report)) {
+        if (report->SerializeToString(&serialized_report)) {
           sb_service->SendSerializedDownloadReport(profile(),
                                                    serialized_report);
+
+          // The following is to log this ClientSafeBrowsingReportRequest on any
+          // open
+          // chrome://safe-browsing pages.
+          content::GetUIThreadTaskRunner({})->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  &safe_browsing::WebUIInfoSingleton::AddToCSBRRsSent,
+                  base::Unretained(
+                      safe_browsing::WebUIInfoSingleton::GetInstance()),
+                  std::move(report)));
         } else {
           DCHECK(false)
               << "Unable to serialize the uncommon download warning report.";

@@ -6,6 +6,8 @@ import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//chromeos/assistant/assistant.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
 component("policy") {
@@ -26,6 +28,7 @@ component("policy") {
     ":sanitizer_buildflags",
     "//base",
     "//build:chromeos_buildflags",
+    "//printing/buildflags",
     "//sandbox:common",
   ]
   public_deps = []
@@ -87,6 +90,14 @@ component("policy") {
       "linux/bpf_tts_policy_linux.cc",
       "linux/bpf_tts_policy_linux.h",
     ]
+    deps += [ "//chromeos/assistant:buildflags" ]
+
+    if (enable_libassistant_sandbox) {
+      sources += [
+        "linux/bpf_libassistant_policy_linux.cc",
+        "linux/bpf_libassistant_policy_linux.h",
+      ]
+    }
   }
   if (is_mac) {
     sources += [
@@ -160,6 +171,7 @@ source_set("tests") {
     ":policy",
     "//base",
     "//base/test:test_support",
+    "//printing/buildflags",
     "//testing/gtest",
   ]
 

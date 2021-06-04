@@ -32,8 +32,8 @@ bool MediaRouterActionController::IsActionShownByPolicy(Profile* profile) {
   const PrefService::Preference* pref =
       profile->GetPrefs()->FindPreference(prefs::kShowCastIconInToolbar);
   bool show = false;
-  if (pref->IsManaged())
-    pref->GetValue()->GetAsBoolean(&show);
+  if (pref->IsManaged() && pref->GetValue()->is_bool())
+    show = pref->GetValue()->GetBool();
   return show;
 }
 
@@ -157,7 +157,7 @@ MediaRouterActionController::MediaRouterActionController(
       prefs::kShowCastIconInToolbar,
       base::BindRepeating(&MediaRouterActionController::MaybeAddOrRemoveAction,
                           base::Unretained(this)));
-  if (profile_->IsRegularProfile()) {
+  if (!profile_->IsOffTheRecord()) {
     media_router::MediaRouterMetrics::RecordIconStateAtInit(
         MediaRouterActionController::GetAlwaysShowActionPref(profile_));
     media_router::MediaRouterMetrics::RecordCloudPrefAtInit(

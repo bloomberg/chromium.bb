@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -23,7 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
+#include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/grit/extensions_browser_resources.h"

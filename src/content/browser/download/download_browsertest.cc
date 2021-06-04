@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +23,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -78,6 +78,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/switches.h"
@@ -133,7 +134,7 @@ void ExpectRequestIsolationInfo(
   std::move(function).Run();
   monitor.WaitForUrls();
 
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(request_url);
   ASSERT_TRUE(request->trusted_params.has_value());
   EXPECT_TRUE(expected_isolation_info.IsEqualForTesting(
@@ -253,8 +254,7 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
   // We're in a content_browsertest; we know that the DownloadManager
   // is a DownloadManagerImpl.
   return static_cast<DownloadManagerImpl*>(
-      BrowserContext::GetDownloadManager(
-          shell->web_contents()->GetBrowserContext()));
+      shell->web_contents()->GetBrowserContext()->GetDownloadManager());
 }
 
 class DownloadFileWithDelay : public download::DownloadFileImpl {
@@ -1515,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   const GURL url = embedded_test_server()->GetURL(kOrigin, "/title1.html");
   const std::string script = "window.open('" + url.spec() + "', 'foo')";
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -1528,7 +1528,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       kOtherOrigin, "/download/download-test.lib");
   const std::string download_script =
       "window.open('" + download_url.spec() + "', 'foo')";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), download_script));
   observer->WaitForFinished();
 
   histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
@@ -1551,7 +1551,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, InitiatedByWindowOpener_SameSite) {
 
   const std::string script = "window.open('" + url.spec() + "', 'foo')";
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -1564,7 +1564,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, InitiatedByWindowOpener_SameSite) {
       kOtherOrigin, "/download/download-test.lib");
   const std::string download_script =
       "window.open('" + download_url.spec() + "', 'foo')";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), download_script));
   observer->WaitForFinished();
 
   histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
@@ -1589,7 +1589,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   const std::string script = "window.open('" + url.spec() + "', 'foo')";
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -1602,7 +1602,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       kOtherOrigin, "/download/download-test.lib");
   const std::string download_script =
       "window.open('" + download_url.spec() + "', 'foo')";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), download_script));
   observer->WaitForFinished();
 
   histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
@@ -1622,8 +1622,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // origin page.
   const GURL url = embedded_test_server()->GetURL(kOtherOrigin, "/title1.html");
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.open('" + url.spec() + "', 'foo')"));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     "window.open('" + url.spec() + "', 'foo')"));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -1636,7 +1636,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       kOtherOrigin, "/download/download-test.lib");
   const std::string download_script =
       "window.open('" + download_url.spec() + "', 'foo')";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), download_script));
   observer->WaitForFinished();
 
   histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
@@ -1655,8 +1655,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // From the initial tab, open a window named 'foo' and navigate it to
   // about:blank.
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.open('about:blank', 'foo')"));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), "window.open('about:blank', 'foo')"));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -1669,7 +1669,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       kOtherOrigin, "/download/download-test.lib");
   const std::string download_script =
       "window.open('" + download_url.spec() + "', 'foo')";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), download_script));
   observer->WaitForFinished();
 
   histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
@@ -1683,12 +1683,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 // downloaded even when a plugin can be found that handles the file type.
 // See https://crbug.com/104331 for the details.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
-  const char kTestPluginName[] = "TestPlugin";
+  const char16_t kTestPluginName[] = u"TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
   const char kTestFileType[] = "abc";
 
   WebPluginInfo plugin_info;
-  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.name = kTestPluginName;
   plugin_info.mime_types.push_back(
       WebPluginMimeType(kTestMimeType, kTestFileType, ""));
   plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
@@ -1708,14 +1708,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
 // This is regression test for https://crbug.com/896696.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadOctetStream_PassThroughServiceWorker) {
-  const char kTestPluginName[] = "TestPlugin";
+  const char16_t kTestPluginName[] = u"TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
   const char kTestFileType[] = "abc";
 
   RegisterServiceWorker(shell(), "/fetch_event_passthrough.js");
 
   WebPluginInfo plugin_info;
-  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.name = kTestPluginName;
   plugin_info.mime_types.push_back(
       WebPluginMimeType(kTestMimeType, kTestFileType, ""));
   plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
@@ -1734,14 +1734,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 // This is regression test for https://crbug.com/896696.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadOctetStream_OctetStreamServiceWorker) {
-  const char kTestPluginName[] = "TestPlugin";
+  const char16_t kTestPluginName[] = u"TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
   const char kTestFileType[] = "abc";
 
   RegisterServiceWorker(shell(), "/fetch_event_octet_stream.js");
 
   WebPluginInfo plugin_info;
-  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.name = kTestPluginName;
   plugin_info.mime_types.push_back(
       WebPluginMimeType(kTestMimeType, kTestFileType, ""));
   plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
@@ -1761,14 +1761,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 // This is regression test for https://crbug.com/896696.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadOctetStream_RespondWithFetchServiceWorker) {
-  const char kTestPluginName[] = "TestPlugin";
+  const char16_t kTestPluginName[] = u"TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
   const char kTestFileType[] = "abc";
 
   RegisterServiceWorker(shell(), "/fetch_event_respond_with_fetch.js");
 
   WebPluginInfo plugin_info;
-  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.name = kTestPluginName;
   plugin_info.mime_types.push_back(
       WebPluginMimeType(kTestMimeType, kTestFileType, ""));
   plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
@@ -4543,8 +4543,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 
   DownloadManager* download_manager = DownloadManagerForShell(shell());
 
-  std::unique_ptr<DownloadTestObserver> observer;
-  observer = std::make_unique<content::DownloadTestObserverInterrupted>(
+  auto observer = std::make_unique<content::DownloadTestObserverInterrupted>(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   download_manager->DownloadUrl(std::move(download_parameters));

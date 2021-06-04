@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/observer_list_types.h"
-#include "base/optional.h"
 #include "base/types/pass_key.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
@@ -22,24 +22,18 @@
 namespace content {
 
 class FrameTree;
-class NavigationController;
 class PrerenderHostRegistry;
 class RenderFrameHostImpl;
 class WebContentsImpl;
 
 // Prerender2:
-// PrerenderHost creates a new WebContents and starts prerendering with that.
-// Then navigation code is expected to find this host from PrerenderHostRegistry
-// and activate the prerendered WebContents upon navigation. This is created per
-// request from a renderer process via PrerenderProcessor or will directly be
-// created for browser-initiated prerendering (this code path is not implemented
-// yet). This is owned by PrerenderHostRegistry.
-//
-// TODO(https://crbug.com/1132746): This class has two different ways of
-// prerendering the page: a dedicated WebContents instance or using a separate
-// FrameTree instance (MPArch). You can choose one or the other via the feature
-// parameter "implementation". The MPArch code is still in its very early stages
-// but will eventually completely replace the WebContents approach.
+// PrerenderHost creates a new FrameTree in WebContents associated with the page
+// that triggered prerendering and starts prerendering. Then NavigationRequest
+// is expected to find this host from PrerenderHostRegistry and activate the
+// prerendered page upon navigation. This is created per request from a renderer
+// process via PrerenderProcessor or will directly be created for
+// browser-initiated prerendering (this code path is not implemented yet). This
+// is owned by PrerenderHostRegistry.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -66,9 +60,11 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kNavigationRequestFailure = 8,
     kNavigationRequestBlockedByCsp = 9,
     kMainFrameNavigation = 10,
-    kDisallowedMojoInterface = 11,
+    kMojoBinderPolicy = 11,
     kPlugin = 12,
-    kMaxValue = kPlugin
+    kRendererProcessCrashed = 13,
+    kRendererProcessKilled = 14,
+    kMaxValue = kRendererProcessKilled
   };
 
   PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
@@ -85,28 +81,18 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // WebContentsObserver implementation:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  // Activates the prerendered contents. This must be called after this host
-  // gets ready for activation. `old_render_frame_host` is the RenderFrameHost
-  // that will be swapped out and destroyed by the activation. For MPArch
-  // implementation, returns the activating page prepared for cross-FrameTree
-  // transfer. For multiple WebContents implementation, always returns nullptr.
-  //
-  // TODO(https://crbug.com/1154501): WebContents implementation will need to be
-  // removed.
-  //
-  // TODO(https://crbug.com/1170277): Potentially update implementation so that
-  // the |old_render_frame_host| parameter is not required.
+  // Activates the prerendered page and returns BackForwardCacheImpl::Entry
+  // containing the page. This must be called after this host gets ready for
+  // activation.
   //
   // TODO(https://crbug.com/1181263): Refactor BackForwardCacheImpl::Entry into
   // a generic "page" object to make clear that the same logic is also used for
   // prerendering.
-  std::unique_ptr<BackForwardCacheImpl::Entry> ActivatePrerenderedContents(
-      RenderFrameHostImpl& old_render_frame_host,
+  std::unique_ptr<BackForwardCacheImpl::Entry> Activate(
       NavigationRequest& navigation_request);
 
   // Returns the main RenderFrameHost of the prerendered page.
-  // This must be called after StartPrerendering() and before
-  // ActivatePrerenderedContents().
+  // This must be called after StartPrerendering() and before Activate().
   RenderFrameHostImpl* GetPrerenderedMainFrameHost();
 
   // Tells the reason of the destruction of this host. PrerenderHostRegistry
@@ -122,8 +108,6 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool IsAssociatedWith(const WebContentsImpl& web_contents);
-
   url::Origin initiator_origin() const { return initiator_origin_; }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
@@ -131,22 +115,11 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   bool is_ready_for_activation() const { return is_ready_for_activation_; }
 
  private:
-  // There are two implementations of this interface. One holds the page in a
-  // WebContents, and one holds it in a FrameTree (for MPArch).
-  // TODO(https://crbug.com/1170277): Remove once MPArch is the only
-  // implementation.
-  class PageHolderInterface;
-  class MPArchPageHolder;
-  class WebContentsPageHolder;
+  class PageHolder;
 
   void RecordFinalStatus(FinalStatus status);
 
-  // Returns the frame tree associated with |prerendered_contents_|;
-  FrameTree* GetPrerenderedFrameTree();
-
   void CreatePageHolder(WebContentsImpl& web_contents);
-
-  NavigationController& GetNavigationController();
 
   const blink::mojom::PrerenderAttributesPtr attributes_;
   const url::Origin initiator_origin_;
@@ -161,9 +134,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // this is also used for the ID of this PrerenderHost.
   int frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
-  base::Optional<FinalStatus> final_status_;
+  absl::optional<FinalStatus> final_status_;
 
-  std::unique_ptr<PageHolderInterface> page_holder_;
+  std::unique_ptr<PageHolder> page_holder_;
 
   base::ObserverList<Observer> observers_;
 };

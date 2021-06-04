@@ -37,7 +37,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "components/signin/public/base/signin_switches.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 namespace {
@@ -95,17 +96,17 @@ bool GetStyleSheet(const base::DictionaryValue& dict,
 
 }  // namespace safe_html
 
-base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
+absl::optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict)) {
     DVLOG(1) << "Parse error: top-level dictionary not found";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::DictionaryValue* update = nullptr;
   if (!dict->GetDictionary("update", &update)) {
     DVLOG(1) << "Parse error: no update";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::Value* language = nullptr;
@@ -117,7 +118,7 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
   const base::DictionaryValue* one_google_bar = nullptr;
   if (!update->GetDictionary("ogb", &one_google_bar)) {
     DVLOG(1) << "Parse error: no ogb";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   OneGoogleBarData result;
@@ -125,13 +126,13 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
 
   if (!safe_html::GetHtml(*one_google_bar, "html", &result.bar_html)) {
     DVLOG(1) << "Parse error: no html";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::DictionaryValue* page_hooks = nullptr;
   if (!one_google_bar->GetDictionary("page_hooks", &page_hooks)) {
     DVLOG(1) << "Parse error: no page_hooks";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   safe_html::GetScript(*page_hooks, "in_head_script", &result.in_head_script);
@@ -199,9 +200,10 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade)) {
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (!init_params->use_new_account_manager)
     return;
-  }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
@@ -225,7 +227,7 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
           /*is_header_request=*/true, api_url_,
           // Gaia ID is only needed for (drive|docs).google.com.
           /*gaia_id=*/std::string(),
-          /* is_child_account=*/base::nullopt, profile_mode,
+          /* is_child_account=*/absl::nullopt, profile_mode,
           signin::kChromeMirrorHeaderSource,
           /*force_account_consistency=*/false);
   if (!chrome_connected_header_value.empty()) {
@@ -360,7 +362,7 @@ void OneGoogleBarLoaderImpl::LoadDone(
     // This represents network errors (i.e. the server did not provide a
     // response).
     DVLOG(1) << "Request failed with error: " << simple_loader->NetError();
-    Respond(Status::TRANSIENT_ERROR, base::nullopt);
+    Respond(Status::TRANSIENT_ERROR, absl::nullopt);
     return;
   }
 
@@ -382,17 +384,17 @@ void OneGoogleBarLoaderImpl::JsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (!result.value) {
     DVLOG(1) << "Parsing JSON failed: " << *result.error;
-    Respond(Status::FATAL_ERROR, base::nullopt);
+    Respond(Status::FATAL_ERROR, absl::nullopt);
     return;
   }
 
-  base::Optional<OneGoogleBarData> data = JsonToOGBData(*result.value);
+  absl::optional<OneGoogleBarData> data = JsonToOGBData(*result.value);
   Respond(data.has_value() ? Status::OK : Status::FATAL_ERROR, data);
 }
 
 void OneGoogleBarLoaderImpl::Respond(
     Status status,
-    const base::Optional<OneGoogleBarData>& data) {
+    const absl::optional<OneGoogleBarData>& data) {
   for (auto& callback : callbacks_) {
     std::move(callback).Run(status, data);
   }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -21,7 +22,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -60,11 +61,12 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -105,6 +107,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_handler.h"
@@ -142,6 +145,14 @@ const int kCrashCountLimit = 5;
 
 // The default fade out animation time in ms.
 const int kDefaultFadeTimeMs = 200;
+
+struct DisplayScaleFactor {
+  int longest_side;
+  float scale_factor;
+};
+
+const DisplayScaleFactor k4KDisplay = {3840, 1.5f},
+                         kMediumDisplay = {1440, 4.f / 3};
 
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
@@ -423,7 +434,7 @@ class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
   // ui::EventHandler
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (event->key_code() == ui::VKEY_F6) {
-      SystemTrayClient::Get()->SetPrimaryTrayVisible(false);
+      SystemTrayClientImpl::Get()->SetPrimaryTrayVisible(false);
       event->StopPropagation();
     }
   }
@@ -573,8 +584,10 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
 
   VLOG(1) << "Login WebUI >> wizard";
 
-  if (!login_window_)
+  if (!login_window_) {
+    oobe_load_timer_ = base::ElapsedTimer();
     LoadURL(GURL(kOobeURL));
+  }
 
   DVLOG(1) << "Starting wizard, first_screen: " << first_screen;
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
@@ -752,11 +765,35 @@ void LoginDisplayHostWebUI::OnDisplayMetricsChanged(
     return;
   }
 
+  if (switches::ShouldScaleOobe() &&
+      policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
+    UpScaleOobe();
+  }
+
   if (GetOobeUI()) {
     GetOobeUI()->GetCoreOobeView()->UpdateClientAreaSize(
         primary_display.size());
     if (changed_metrics & DISPLAY_METRIC_PRIMARY)
       GetOobeUI()->OnDisplayConfigurationChanged();
+  }
+}
+
+void LoginDisplayHostWebUI::UpScaleOobe() {
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  if (primary_display_id_ == display_id) {
+    return;
+  }
+  primary_display_id_ = display_id;
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const gfx::Size size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area_size();
+  const int longest_side = std::max(size.width(), size.height());
+  if (longest_side >= k4KDisplay.longest_side) {
+    display_manager->UpdateZoomFactor(display_id, k4KDisplay.scale_factor);
+  } else if (longest_side >= kMediumDisplay.longest_side) {
+    display_manager->UpdateZoomFactor(display_id, kMediumDisplay.scale_factor);
   }
 }
 
@@ -848,6 +885,12 @@ void LoginDisplayHostWebUI::ShowWebUI() {
   login_view_->GetWebContents()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
+
+  if (oobe_load_timer_.has_value()) {
+    base::UmaHistogramTimes("OOBE.WebUI.LoadTime.FirstRun",
+                            oobe_load_timer_->Elapsed());
+    oobe_load_timer_.reset();
+  }
 }
 
 void LoginDisplayHostWebUI::InitLoginWindowAndView() {
@@ -859,7 +902,8 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
     focus_ring_controller_ = std::make_unique<ash::FocusRingController>();
     focus_ring_controller_->SetVisible(true);
 
-    keyboard_driven_oobe_key_handler_.reset(new KeyboardDrivenOobeKeyHandler);
+    keyboard_driven_oobe_key_handler_ =
+        std::make_unique<KeyboardDrivenOobeKeyHandler>();
   }
 
   views::Widget::InitParams params(
@@ -1046,8 +1090,8 @@ void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
 
   const base::TimeDelta time_since_login_prompt_visible =
       base::TimeTicks::Now() - login_prompt_visible_time_;
-  UMA_HISTOGRAM_TIMES("Accessibility.OOBEStartupSoundDelay",
-                      time_since_login_prompt_visible);
+  base::UmaHistogramTimes("Accessibility.OOBEStartupSoundDelay",
+                          time_since_login_prompt_visible);
 
   // Don't try to play startup sound if login prompt has been already visible
   // for a long time.
@@ -1215,7 +1259,8 @@ class WebUIToViewsSwitchMetricsReporter : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
               OobeUI::kGaiaSigninDisplay);
-    UMA_HISTOGRAM_TIMES("OOBE.WebUIToViewsSwitch.Duration", timer_.Elapsed());
+    base::UmaHistogramTimes("OOBE.WebUIToViewsSwitch.Duration",
+                            timer_.Elapsed());
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);

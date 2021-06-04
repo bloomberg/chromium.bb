@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
@@ -118,7 +117,7 @@ class PermissionAuditingServiceTest : public testing::Test {
     base::Time last_usage_time;
     service().GetLastPermissionUsageTime(
         type, origin,
-        base::BindLambdaForTesting([&](base::Optional<base::Time> time) {
+        base::BindLambdaForTesting([&](absl::optional<base::Time> time) {
           last_usage_time = time.value_or(base::Time());
           run_loop.QuitWhenIdle();
         }));

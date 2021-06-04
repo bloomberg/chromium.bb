@@ -253,7 +253,7 @@ void *loader_device_heap_realloc(const struct loader_device *device, void *pMemo
 }
 
 // Environment variables
-#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__) || defined(__QNXNTO__)
 
 static inline bool IsHighIntegrity() {
     return geteuid() != getuid() || getegid() != getgid();
@@ -267,7 +267,6 @@ static inline char *loader_getenv(const char *name, const struct loader_instance
 }
 
 static inline char *loader_secure_getenv(const char *name, const struct loader_instance *inst) {
-    char *out;
 #if defined(__APPLE__)
     // Apple does not appear to have a secure getenv implementation.
     // The main difference between secure getenv and getenv is that secure getenv
@@ -280,7 +279,8 @@ static inline char *loader_secure_getenv(const char *name, const struct loader_i
 #elif defined(__Fuchsia__)
     return loader_getenv(name, inst);
 #else
-// Linux
+    // Linux
+    char *out;
 #if defined(HAVE_SECURE_GETENV) && !defined(USE_UNSAFE_FILE_SEARCH)
     (void)inst;
     out = secure_getenv(name);
@@ -514,6 +514,18 @@ void loader_log(const struct loader_instance *inst, VkFlags msg_type, int32_t ms
 
     fputs(cmd_line_msg, stderr);
     fputc('\n', stderr);
+}
+
+// log error from to library loading
+void loader_log_load_library_error(const struct loader_instance *inst, const char *filename) {
+    const char *error_message = loader_platform_open_library_error(filename);
+    // If the error is due to incompatible ELF class, report it with INFO level
+    // Discussed in Github issue 262
+    VkFlags err_flag = VK_DEBUG_REPORT_ERROR_BIT_EXT;
+    if (strstr(error_message, "wrong ELF class:") != NULL) {
+        err_flag = VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+    }
+    loader_log(inst, err_flag, 0, error_message);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkSetInstanceDispatch(VkInstance instance, void *object) {
@@ -2299,7 +2311,7 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
     handle = loader_platform_open_library(filename);
 #endif
     if (NULL == handle) {
-        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0, loader_platform_open_library_error(filename));
+        loader_log_load_library_error(inst, filename);
         goto out;
     }
 
@@ -2609,7 +2621,7 @@ static void loader_get_fullpath(const char *file, const char *dirs, size_t out_s
 //            This returned buffer should be freed by caller.
 static VkResult loader_get_json(const struct loader_instance *inst, const char *filename, cJSON **json) {
     FILE *file = NULL;
-    char *json_buf;
+    char *json_buf = NULL;
     size_t len;
     VkResult res = VK_SUCCESS;
 
@@ -2635,7 +2647,7 @@ static VkResult loader_get_json(const struct loader_instance *inst, const char *
     } while (fread_ret_count == 256 && !feof(file));
     len = ftell(file);
     fseek(file, 0, SEEK_SET);
-    json_buf = (char *)loader_stack_alloc(len + 1);
+    json_buf = (char *)loader_instance_heap_alloc(inst, len + 1, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
     if (json_buf == NULL) {
         loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
                    "loader_get_json: Failed to allocate space for "
@@ -2669,6 +2681,9 @@ static VkResult loader_get_json(const struct loader_instance *inst, const char *
     }
 
 out:
+    if (NULL != json_buf) {
+        loader_instance_heap_free(inst, json_buf);
+    }
     if (NULL != file) {
         fclose(file);
     }
@@ -3557,8 +3572,9 @@ out:
 }
 
 static inline bool isValidLayerJsonVersion(const layer_json_version *layer_json) {
-    // Supported versions are: 1.0.0, 1.0.1, and 1.1.0 - 1.1.2.
-    if ((layer_json->major == 1 && layer_json->minor == 1 && layer_json->patch < 3) ||
+    // Supported versions are: 1.0.0, 1.0.1, 1.1.0 - 1.1.2, and 1.2.0.
+    if ((layer_json->major == 1 && layer_json->minor == 2 && layer_json->patch < 1) ||
+        (layer_json->major == 1 && layer_json->minor == 1 && layer_json->patch < 3) ||
         (layer_json->major == 1 && layer_json->minor == 0 && layer_json->patch < 2)) {
         return true;
     }
@@ -3940,7 +3956,7 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
     if (xdgdatadirs == NULL) {
         xdgdata_alloc = false;
     }
-#if !defined(__Fuchsia__)
+#if !defined(__Fuchsia__) && !defined(__QNXNTO__)
     if (xdgconfdirs == NULL || xdgconfdirs[0] == '\0') {
         xdgconfdirs = FALLBACK_CONFIG_DIRS;
     }
@@ -5012,7 +5028,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL loader_gpdpa_instance_internal(V
     if (loader_phys_dev_ext_gpa(loader_get_instance(inst), pName, true, NULL, &addr)) return addr;
 
     // Don't call down the chain, this would be an infinite loop
-    loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "loader_gpdpa_instance_internal() unrecognized name %s", pName);
+    loader_log(NULL, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0, "loader_gpdpa_instance_internal() unrecognized name %s", pName);
     return NULL;
 }
 
@@ -5039,7 +5055,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL loader_gpdpa_instance_terminator
     }
 
     // Don't call down the chain, this would be an infinite loop
-    loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "loader_gpdpa_instance_terminator() unrecognized name %s", pName);
+    loader_log(NULL, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0, "loader_gpdpa_instance_terminator() unrecognized name %s", pName);
     return NULL;
 }
 
@@ -5099,7 +5115,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL loader_gpa_instance_internal(VkI
     }
 
     // Don't call down the chain, this would be an infinite loop
-    loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "loader_gpa_instance_internal() unrecognized name %s", pName);
+    loader_log(NULL, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0, "loader_gpa_instance_internal() unrecognized name %s", pName);
     return NULL;
 }
 
@@ -5580,7 +5596,7 @@ struct loader_instance *loader_get_instance(const VkInstance instance) {
 static loader_platform_dl_handle loaderOpenLayerFile(const struct loader_instance *inst, const char *chain_type,
                                                      struct loader_layer_properties *prop) {
     if ((prop->lib_handle = loader_platform_open_library(prop->lib_name)) == NULL) {
-        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0, loader_platform_open_library_error(prop->lib_name));
+        loader_log_load_library_error(inst, prop->lib_name);
     } else {
         loader_log(inst, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0, "Loading layer library %s", prop->lib_name);
     }

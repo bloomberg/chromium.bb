@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 596 tests; 412 PASS, 184 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 606 tests; 416 PASS, 190 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -281,6 +281,12 @@ PASS Parsing: <http://%ef%b7%90zyx.com> against <http://other.com/>
 PASS Parsing: <https://�> against <about:blank>
 PASS Parsing: <https://%EF%BF%BD> against <about:blank>
 PASS Parsing: <https://x/�?�#�> against <about:blank>
+FAIL Parsing: <http://a.b.c.xn--pokxncvks> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <http://10.0.0.xn--pokxncvks> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
 PASS Parsing: <http://Ｇｏ.com> against <http://other.com/>
 FAIL Parsing: <http://％４１.com> against <http://other.com/> assert_throws_js: function "function() {
           bURL(expected.input, expected.base)
@@ -534,6 +540,14 @@ FAIL Parsing: </c:/foo/bar> against <file://host/path> assert_equals: href expec
 FAIL Parsing: <file://example.net/C:/> against <about:blank> assert_equals: href expected "file://example.net/C:/" but got "file:///C:/"
 FAIL Parsing: <file://1.2.3.4/C:/> against <about:blank> assert_equals: href expected "file://1.2.3.4/C:/" but got "file:///C:/"
 FAIL Parsing: <file://[1::8]/C:/> against <about:blank> assert_equals: href expected "file://[1::8]/C:/" but got "file:///C:/"
+FAIL Parsing: <C|/> against <file://host/> assert_equals: href expected "file://host/C:/" but got "file:///C:/"
+FAIL Parsing: </C:/> against <file://host/> assert_equals: href expected "file://host/C:/" but got "file:///C:/"
+FAIL Parsing: <file:C:/> against <file://host/> assert_equals: href expected "file://host/C:/" but got "file:///C:/"
+FAIL Parsing: <file:/C:/> against <file://host/> assert_equals: href expected "file://host/C:/" but got "file:///C:/"
+PASS Parsing: <//C:/> against <file://host/>
+PASS Parsing: <file://C:/> against <file://host/>
+PASS Parsing: <///C:/> against <file://host/>
+PASS Parsing: <file:///C:/> against <file://host/>
 PASS Parsing: <file:/C|/> against <about:blank>
 PASS Parsing: <file://C|/> against <about:blank>
 PASS Parsing: <file:> against <about:blank>
@@ -549,7 +563,7 @@ FAIL Parsing: <\\\.\Y:> against <about:blank> assert_throws_js: function "functi
 FAIL Parsing: <file:///y:> against <about:blank> assert_equals: href expected "file:///y:" but got "file:///Y:"
 FAIL Parsing: <file:///y:/> against <about:blank> assert_equals: href expected "file:///y:/" but got "file:///Y:/"
 PASS Parsing: <file:///./y> against <about:blank>
-PASS Parsing: <file:///./y:> against <about:blank>
+FAIL Parsing: <file:///./y:> against <about:blank> assert_equals: href expected "file:///y:" but got "file:///Y:"
 FAIL Parsing: <\\\.\y:> against <about:blank> assert_throws_js: function "function() {
           bURL(expected.input, expected.base)
         }" did not throw
@@ -651,7 +665,7 @@ FAIL Parsing: <test-a-colon-slash.html> against <a:/> assert_equals: href expect
 FAIL Parsing: <test-a-colon-slash-slash.html> against <a://> assert_equals: href expected "a:///test-a-colon-slash-slash.html" but got "file:///A://test-a-colon-slash-slash.html"
 FAIL Parsing: <test-a-colon-slash-b.html> against <a:/b> assert_equals: href expected "a:/test-a-colon-slash-b.html" but got "file:///A:/test-a-colon-slash-b.html"
 FAIL Parsing: <test-a-colon-slash-slash-b.html> against <a://b> assert_equals: href expected "a://b/test-a-colon-slash-slash-b.html" but got "file:///A://test-a-colon-slash-slash-b.html"
-FAIL Parsing: <http://example.org/test?a#b\0c> against <about:blank> assert_equals: href expected "http://example.org/test?a#b%00c" but got "http://example.org/test?a#bc"
+PASS Parsing: <http://example.org/test?a#b\0c> against <about:blank>
 FAIL Parsing: <non-spec://example.org/test?a#b\0c> against <about:blank> assert_equals: host expected "example.org" but got ""
 PASS Parsing: <non-spec:/test?a#b\0c> against <about:blank>
 PASS Parsing: <10.0.0.7:8080/foo.html> against <file:///some/dir/bar.html>

@@ -165,6 +165,20 @@ void TranslateAgent::PageCaptured(const std::u16string& contents) {
     return;
 
   WebDocument document = main_frame->GetDocument();
+  GURL url = GURL(document.Url());
+  // Limit detection to URLs that only detect the language of the content if the
+  // page is potentially a candidate for translation.  This should be strictly a
+  // subset of the conditions in TranslateService::IsTranslatableURL, however,
+  // due to layering they cannot be identical. Critically, this list should
+  // never filter anything that is eligible for translation. Under filtering is
+  // ok as the translate service will make the final call and only results in a
+  // slight overhead in running the model when unnecessary.
+  if (url.is_empty() || url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(content::kChromeDevToolsScheme) || url.IsAboutBlank() ||
+      url.SchemeIs(url::kFtpScheme)) {
+    return;
+  }
+
   WebLanguageDetectionDetails web_detection_details =
       WebLanguageDetectionDetails::CollectLanguageDetectionDetails(document);
   std::string content_language = web_detection_details.content_language.Utf8();
@@ -176,12 +190,6 @@ void TranslateAgent::PageCaptured(const std::u16string& contents) {
 
   std::string language;
   if (translate::IsTFLiteLanguageDetectionEnabled()) {
-    if (!document.Url().ProtocolIs(url::kHttpsScheme) &&
-        !document.Url().ProtocolIs(url::kHttpScheme)) {
-      // TFLite-based language detection only supports HTTP/HTTPS pages.
-      // Others should be ignored, for example the New Tab Page.
-      return;
-    }
     translate::LanguageDetectionModel& language_detection_model =
         GetLanguageDetectionModel();
     bool is_available = language_detection_model.IsAvailable();
@@ -277,7 +285,7 @@ bool TranslateAgent::StartTranslation() {
       BuildTranslationScript(source_lang_, target_lang_), false);
 }
 
-std::string TranslateAgent::GetOriginalPageLanguage() {
+std::string TranslateAgent::GetPageSourceLanguage() {
   return ExecuteScriptAndGetStringResult("cr.googleTranslate.sourceLang");
 }
 
@@ -293,7 +301,8 @@ void TranslateAgent::ExecuteScript(const std::string& script) {
     return;
 
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
-  main_frame->ExecuteScriptInIsolatedWorld(world_id_, source);
+  main_frame->ExecuteScriptInIsolatedWorld(
+      world_id_, source, blink::BackForwardCacheAware::kAllow);
 }
 
 bool TranslateAgent::ExecuteScriptAndGetBoolResult(const std::string& script,
@@ -305,7 +314,8 @@ bool TranslateAgent::ExecuteScriptAndGetBoolResult(const std::string& script,
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_, source);
+      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   if (result.IsEmpty() || !result->IsBoolean()) {
     NOTREACHED();
     return fallback;
@@ -324,7 +334,8 @@ std::string TranslateAgent::ExecuteScriptAndGetStringResult(
   v8::HandleScope handle_scope(isolate);
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_, source);
+      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   if (result.IsEmpty() || !result->IsString()) {
     NOTREACHED();
     return std::string();
@@ -349,7 +360,8 @@ double TranslateAgent::ExecuteScriptAndGetDoubleResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_, source);
+      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   if (result.IsEmpty() || !result->IsNumber()) {
     NOTREACHED();
     return 0.0;
@@ -367,7 +379,8 @@ int64_t TranslateAgent::ExecuteScriptAndGetIntegerResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_, source);
+      main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   if (result.IsEmpty() || !result->IsNumber()) {
     NOTREACHED();
     return 0;
@@ -458,7 +471,7 @@ void TranslateAgent::CheckTranslateStatus() {
     // Translation was successfull, if it was auto, retrieve the source
     // language the Translate Element detected.
     if (source_lang_ == kAutoDetectionLanguage) {
-      actual_source_lang = GetOriginalPageLanguage();
+      actual_source_lang = GetPageSourceLanguage();
       if (actual_source_lang.empty()) {
         NotifyBrowserTranslationFailed(TranslateErrors::UNKNOWN_LANGUAGE);
         return;

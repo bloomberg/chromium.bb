@@ -189,7 +189,9 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptViewSource) {
 
 // crbug.com/126257 -- content scripts should not get injected into other
 // extensions.
-IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptOtherExtensions) {
+// TODO(crbug.com/1196340): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
+                       DISABLED_ContentScriptOtherExtensions) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // First, load extension that sets up content script.
   ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/injector"))
@@ -1718,8 +1720,8 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CoepFrameTest) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  const auto kPassed = base::ASCIIToUTF16("PASSED");
-  const auto kFailed = base::ASCIIToUTF16("FAILED");
+  const std::u16string kPassed = u"PASSED";
+  const std::u16string kFailed = u"FAILED";
   content::TitleWatcher watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), kPassed);
   watcher.AlsoWaitForTitle(kFailed);

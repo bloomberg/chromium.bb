@@ -31,7 +31,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -59,8 +58,13 @@
 #endif
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_delegate.h"  // nogncheck
-#include "ui/ozone/platform/wayland/host/gtk_ui_delegate_wayland.h"  //nogncheck
+#include "ui/ozone/platform/wayland/host/linux_ui_delegate_wayland.h"  // nogncheck
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#else
+#include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
 #endif
 
 namespace ui {
@@ -174,7 +178,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
 #else
     cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
@@ -185,10 +189,8 @@ class OzonePlatformWayland : public OzonePlatform {
     supported_buffer_formats_ =
         connection_->buffer_manager_host()->GetSupportedBufferFormats();
 #if BUILDFLAG(USE_GTK)
-    DCHECK(!GtkUiDelegate::instance());
-    gtk_ui_delegate_ =
-        std::make_unique<GtkUiDelegateWayland>(connection_.get());
-    GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+    gtk_ui_platform_ =
+        std::make_unique<LinuxUiDelegateWayland>(connection_.get());
 #endif
 
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
@@ -287,7 +289,7 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_->AddBindingWaylandBufferManagerGpu(std::move(receiver));
   }
 
-  void PostMainMessageLoopStart(
+  void PostCreateMainMessageLoop(
       base::OnceCallback<void()> shutdown_cb) override {
     DCHECK(connection_);
     connection_->SetShutdownCb(std::move(shutdown_cb));
@@ -322,7 +324,7 @@ class OzonePlatformWayland : public OzonePlatform {
   DrmRenderNodePathFinder path_finder_;
 
 #if BUILDFLAG(USE_GTK)
-  std::unique_ptr<GtkUiDelegateWayland> gtk_ui_delegate_;
+  std::unique_ptr<LinuxUiDelegateWayland> gtk_ui_platform_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);

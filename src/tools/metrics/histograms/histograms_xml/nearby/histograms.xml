@@ -255,7 +255,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesHttpResult"
-    enum="NearbyShareHttpResult" expires_after="2021-08-19">
+    enum="NearbyShareHttpResult" expires_after="2021-10-25">
   <owner>cclem@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -279,7 +279,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesSuccessRate"
-    enum="BooleanSuccess" expires_after="2021-08-19">
+    enum="BooleanSuccess" expires_after="2021-10-25">
   <owner>cclem@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -291,7 +291,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Nearby.Share.Certificates.Manager.GetDecryptedPublicCertificateResult"
     enum="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult"
-    expires_after="2021-08-19">
+    expires_after="2021-10-25">
   <owner>cclem@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -319,6 +319,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     For individual initialization attempts of the Nearby Share certificate
     storage public certificate database, record the init status returned by
     leveldb_proto.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Certificates.Storage.InitializeSuccessDuration"
+    units="ms" expires_after="2021-10-25">
+  <owner>cvandermerwe@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the time necessary to successfully initialize the Nearby Share
+    public certificates database. Emitted once after sign-in when the Nearby
+    Share service starts.
   </summary>
 </histogram>
 
@@ -357,7 +368,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Connection.EstablishOutgoingConnectionStatus"
-    enum="NearbyShareFinalStatus" expires_after="2021-08-19">
+    enum="NearbyShareFinalStatus" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -370,7 +381,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Connection.TimeToEstablishOutgoingConnection"
-    units="ms" expires_after="2021-08-19">
+    units="ms" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -380,6 +391,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     after a successful connection is established. Because the sending device
     initiates the connection--via the Nearby Connections library--this metric is
     only emitted for outgoing transfers.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Contacts.CanGetProfileUserName"
+    enum="BooleanSuccess" expires_after="2021-08-19">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records whether or not we able to retrieve the profile user name--think
+    email address--from the Chromebook's profile data. This value is sent to the
+    Nearby Share server to allow sharing with other devices logged in with the
+    same account. Emitted every time contacts are downloaded for use in Nearby
+    Share. Because contacts are not stored locally, contacts are periodically
+    downloaded for users with Nearby Share enabled and additionally whenever a
+    user enters Nearby Share settings or participates in a sharing flow.
   </summary>
 </histogram>
 
@@ -527,7 +553,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Discovery.FurthestDiscoveryProgress"
-    enum="NearbyShareDiscoveryProgress" expires_after="2021-08-19">
+    enum="NearbyShareDiscoveryProgress" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -583,20 +609,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Enabled" enum="NearbyShareEnabledState"
-    expires_after="2021-08-19">
+    expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records if the user has the Nearby Share feature enabled, and if not,
     records why the feature is not enabled. For example, the feature is not
     allowed by policy, or the user onboarded but later disabled the feature.
-    Emitted when the Nearby Share service starts. This happens at login if the
-    feature flag is on.
+    Emitted on sign-in and whenever the feature state changes, for instance,
+    from disabled to enabled.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.EnabledStateChanged" enum="BooleanEnabled"
+    expires_after="2021-10-25">
+  <owner>nohle@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the enabled/disabled state of Nearby Share. Emitted when the feature
+    state changes from disabled to enabled or vice versa. This can happen after
+    Nearby Share onboarding or when the user enables/disables the Nearby Share
+    feature toggle in Settings.
   </summary>
 </histogram>
 
 <histogram name="Nearby.Share.IsKnownContact" enum="BooleanKnown"
-    expires_after="2021-08-19">
+    expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -607,7 +645,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.LocalDeviceData.DeviceDataUpdater.HttpResult"
-    enum="NearbyShareHttpResult" expires_after="2021-08-19">
+    enum="NearbyShareHttpResult" expires_after="2021-10-25">
   <owner>cclem@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -618,7 +656,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Medium.ChangedToMedium"
-    enum="NearbyConnectionsMedium" expires_after="2021-08-19">
+    enum="NearbyConnectionsMedium" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -649,7 +687,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Medium.InitiateBandwidthUpgradeResult"
-    enum="BooleanSuccess" expires_after="2021-08-19">
+    enum="BooleanSuccess" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -663,7 +701,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.Medium.RequestedBandwidthUpgradeResult"
-    enum="BooleanUpgraded" expires_after="2021-08-19">
+    enum="BooleanUpgraded" expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -1169,7 +1207,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Nearby.Share.VisibilityChoice" enum="NearbyShareVisibility"
-    expires_after="2021-08-19">
+    expires_after="2021-10-25">
   <owner>nohle@chromium.org</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>

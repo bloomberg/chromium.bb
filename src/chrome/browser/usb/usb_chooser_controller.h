@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
+#include "components/permissions/chooser_controller.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
@@ -26,7 +26,7 @@ class WebContents;
 }
 
 // UsbChooserController creates a chooser for WebUSB.
-class UsbChooserController : public ChooserController,
+class UsbChooserController : public permissions::ChooserController,
                              public UsbChooserContext::DeviceObserver {
  public:
   UsbChooserController(
@@ -35,7 +35,7 @@ class UsbChooserController : public ChooserController,
       blink::mojom::WebUsbService::GetPermissionCallback callback);
   ~UsbChooserController() override;
 
-  // ChooserController:
+  // permissions::ChooserController:
   std::u16string GetNoOptionsText() const override;
   std::u16string GetOkButtonLabel() const override;
   std::pair<std::u16string, std::u16string> GetThrobberLabelAndTooltip()
@@ -64,8 +64,8 @@ class UsbChooserController : public ChooserController,
 
   content::WebContents* const web_contents_;
   base::WeakPtr<UsbChooserContext> chooser_context_;
-  ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
-      observer_;
+  base::ScopedObservation<UsbChooserContext, UsbChooserContext::DeviceObserver>
+      observation_{this};
 
   // Each pair is a (device guid, device name).
   std::vector<std::pair<std::string, std::u16string>> devices_;

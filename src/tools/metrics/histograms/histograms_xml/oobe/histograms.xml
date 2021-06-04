@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.BootToSignInCompleted" units="ms"
-    expires_after="2021-08-08">
+    expires_after="2021-10-10">
   <owner>alemate@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -102,7 +102,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.FingerprintSetupScreen.UserActions"
-    enum="FingerprintSetupScreenUserAction" expires_after="2021-08-09">
+    enum="FingerprintSetupScreenUserAction" expires_after="2021-10-10">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -292,7 +292,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.StepCompletionTimeByExitReason" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>Time spent on specific OOBE screen grouped by exit reason.</summary>
@@ -310,7 +310,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.Behavior" enum="SyncConsentBehavior"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -332,7 +332,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -343,7 +343,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.UserChoice"
-    enum="SyncConsentUserChoice" expires_after="2021-08-09">
+    enum="SyncConsentUserChoice" expires_after="2021-10-10">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -403,6 +403,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="OOBE.WebUI.LoadTime.FirstRun" units="ms"
+    expires_after="2022-01-01">
+  <owner>rsorokin@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Time required for ChromeOS to load the First Run WebUI (i.e. out-of-box
+    experience). Recorded at most once per Chrome lifetime (if OOBE is shown).
+  </summary>
+</histogram>
+
 <histogram name="OOBE.WebUIToViewsSwitch.Duration" units="ms"
     expires_after="2021-09-19">
   <owner>rsorokin@chromium.org</owner>
@@ -424,7 +434,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.AcceptChromeVoxHint" enum="BooleanEnabled"
-    expires_after="2021-06-11">
+    expires_after="2022-01-01">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -434,7 +444,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.ChromeVoxHintSpokenSuccess"
-    enum="BooleanEnabled" expires_after="2021-06-11">
+    enum="BooleanEnabled" expires_after="2022-01-01">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

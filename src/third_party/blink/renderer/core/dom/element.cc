@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_boolean_scrollintoviewoptions.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -97,6 +99,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
@@ -842,7 +845,7 @@ Element* Element::GetElementAttribute(const QualifiedName& name) {
 
 void Element::SetElementArrayAttribute(
     const QualifiedName& name,
-    const base::Optional<HeapVector<Member<Element>>>& given_elements) {
+    const absl::optional<HeapVector<Member<Element>>>& given_elements) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
       GetDocument().GetExplicitlySetAttrElementsMap(this);
 
@@ -913,7 +916,7 @@ void Element::SetElementArrayAttribute(
   element_attribute_map->Set(name, stored_elements);
 }
 
-base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
+absl::optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
     const QualifiedName& name) {
   HeapVector<Member<Element>> result_elements;
   // TODO(chrishall): this will fail to preserve `e1.ariaFoo === e1.ariaFoo`,
@@ -940,6 +943,9 @@ base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
                : html_names::kAriaLabelledbyAttr;
   }
 
+  if (!hasAttribute(attr))
+    return absl::nullopt;
+
   String attribute_value = getAttribute(attr).GetString();
   Vector<String> tokens;
   attribute_value = attribute_value.SimplifyWhiteSpace();
@@ -953,8 +959,6 @@ base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
     if (candidate)
       result_elements.push_back(candidate);
   }
-  if (result_elements.IsEmpty())
-    return base::nullopt;
 
   return result_elements;
 }
@@ -1065,6 +1069,24 @@ void Element::setNonce(const AtomicString& nonce) {
   EnsureElementRareData().SetNonce(nonce);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void Element::scrollIntoView(const V8UnionBooleanOrScrollIntoViewOptions* arg) {
+  ScrollIntoViewOptions* options = nullptr;
+  switch (arg->GetContentType()) {
+    case V8UnionBooleanOrScrollIntoViewOptions::ContentType::kBoolean:
+      options = ScrollIntoViewOptions::Create();
+      options->setBlock(arg->GetAsBoolean() ? "start" : "end");
+      options->setInlinePosition("nearest");
+      break;
+    case V8UnionBooleanOrScrollIntoViewOptions::ContentType::
+        kScrollIntoViewOptions:
+      options = arg->GetAsScrollIntoViewOptions();
+      break;
+  }
+  DCHECK(options);
+  scrollIntoViewWithOptions(options);
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
   ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
   if (arg.IsBoolean()) {
@@ -1078,10 +1100,16 @@ void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
   }
   scrollIntoViewWithOptions(options);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void Element::scrollIntoView(bool align_to_top) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* arg =
+      MakeGarbageCollected<V8UnionBooleanOrScrollIntoViewOptions>(align_to_top);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScrollIntoViewOptionsOrBoolean arg;
   arg.SetBoolean(align_to_top);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   scrollIntoView(arg);
 }
 
@@ -1603,7 +1631,7 @@ void Element::setScrollLeft(double new_left) {
             gfx::ScrollOffset(
                 scrollable_area->ScrollOffsetToPosition(end_offset)),
             true, false);
-    base::Optional<FloatPoint> snap_point =
+    absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1656,7 +1684,7 @@ void Element::setScrollTop(double new_top) {
             gfx::ScrollOffset(
                 scrollable_area->ScrollOffsetToPosition(end_offset)),
             false, true);
-    base::Optional<FloatPoint> snap_point =
+    absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1849,7 +1877,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
             gfx::ScrollOffset(
                 scrollable_area->ScrollOffsetToPosition(new_offset)),
             scroll_to_options->hasLeft(), scroll_to_options->hasTop());
-    base::Optional<FloatPoint> snap_point =
+    absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
     if (snap_point.has_value()) {
       new_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -2125,7 +2153,7 @@ const AtomicString& Element::computedRole() {
   if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
       document.Lifecycle().GetState() <
           DocumentLifecycle::kCompositingAssignmentsClean) {
-    document.View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+    document.View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kJavaScript);
   }
   AXContext ax_context(document);
@@ -2139,7 +2167,7 @@ String Element::computedName() {
   if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
       document.Lifecycle().GetState() <
           DocumentLifecycle::kCompositingAssignmentsClean) {
-    document.View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+    document.View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kJavaScript);
   }
   AXContext ax_context(document);
@@ -3312,19 +3340,25 @@ EditContext* Element::editContext() const {
 }
 
 void Element::setEditContext(EditContext* edit_context) {
+  // If an element is in focus when being attached to a new EditContext,
+  // its old EditContext, if it has any, will get blurred,
+  // and the new EditContext will automatically get focused.
+  if (edit_context && IsFocusedElementInDocument()) {
+    if (auto* old_edit_context = editContext())
+      old_edit_context->blur();
+
+    edit_context->focus();
+  }
+
   EnsureElementRareData().SetEditContext(edit_context);
 
-  // An element is considered editable if there is an active EditContext
+  // An element is ready to receive text input if there is an EditContext
   // associated with the element.
-  if (auto* frame = GetDocument().GetFrame()) {
-    if (frame->GetInputMethodController().GetActiveEditContext()) {
-      MutableCSSPropertyValueSet& style = EnsureMutableInlineStyle();
-      AddPropertyToPresentationAttributeStyle(
-          &style, CSSPropertyID::kWebkitUserModify,
-          edit_context ? CSSValueID::kReadWrite : CSSValueID::kReadOnly);
-      InlineStyleChanged();
-    }
-  }
+  MutableCSSPropertyValueSet& style = EnsureMutableInlineStyle();
+  AddPropertyToPresentationAttributeStyle(
+      &style, CSSPropertyID::kWebkitUserModify,
+      edit_context ? CSSValueID::kReadWrite : CSSValueID::kReadOnly);
+  InlineStyleChanged();
 }
 
 void Element::PseudoStateChanged(CSSSelector::PseudoType pseudo) {
@@ -3500,8 +3534,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   auto slot_assignment = (shadow_root_init_dict->hasSlotAssignment() &&
                           shadow_root_init_dict->slotAssignment() == "manual")
                              ? SlotAssignmentMode::kManual
-                             : SlotAssignmentMode::kAuto;
-
+                             : SlotAssignmentMode::kNamed;
   if (const char* error_message = ErrorMessageForAttachShadow()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       error_message);
@@ -3777,20 +3810,29 @@ bool Element::ParseAttributeName(QualifiedName& out,
   return true;
 }
 
-void Element::setAttributeNS(
-    const AtomicString& namespace_uri,
-    const AtomicString& qualified_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
-        string_or_trusted,
-    ExceptionState& exception_state) {
+void Element::setAttributeNS(const AtomicString& namespace_uri,
+                             const AtomicString& qualified_name,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                             const V8TrustedString* trusted_string,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                             const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
+                                 string_or_trusted,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                             ExceptionState& exception_state) {
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
                           exception_state))
     return;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  AtomicString value(TrustedTypesCheckFor(
+      ExpectedTrustedTypeForAttribute(parsed_name), trusted_string,
+      GetExecutionContext(), exception_state));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   AtomicString value(TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(parsed_name), string_or_trusted,
       GetExecutionContext(), exception_state));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (exception_state.HadException())
     return;
 
@@ -3967,14 +4009,32 @@ void Element::focus(const FocusParams& params) {
 
   if (GetDocument().FocusedElement() == this &&
       GetDocument().GetFrame()->HasStickyUserActivation()) {
+    ChromeClient& chrome_client = GetDocument().GetPage()->GetChromeClient();
     // Bring up the keyboard in the context of anything triggered by a user
     // gesture. Since tracking that across arbitrary boundaries (eg.
     // animations) is difficult, for now we match IE's heuristic and bring
     // up the keyboard if there's been any gesture since load.
-    GetDocument()
-        .GetPage()
-        ->GetChromeClient()
-        .ShowVirtualKeyboardOnElementFocus(*GetDocument().GetFrame());
+    chrome_client.ShowVirtualKeyboardOnElementFocus(*GetDocument().GetFrame());
+
+    // Trigger a tooltip to show for the newly focused element only when the
+    // focus was set resulting from a keyboard action.
+    //
+    // TODO(bebeaudr): To also trigger a tooltip when the |params.type| is
+    // kSpatialNavigation, we'll first have to ensure that the fake mouse move
+    // event fired by `SpatialNavigationController::DispatchMouseMoveEvent` does
+    // not lead to a cursor triggered tooltip update. The only tooltip update
+    // that there should be in that case is the one triggered from the spatial
+    // navigation keypress. This issue is tracked in https://crbug.com/1206446.
+    switch (params.type) {
+      case mojom::blink::FocusType::kForward:
+      case mojom::blink::FocusType::kBackward:
+      case mojom::blink::FocusType::kAccessKey:
+        chrome_client.ElementFocusedFromKeypress(*GetDocument().GetFrame(),
+                                                 this);
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -4103,8 +4163,12 @@ bool Element::SupportsSpatialNavigationFocus() const {
           HasEventListeners(event_type_names::kFocusout));
 }
 
-bool Element::IsFocusable() const {
+bool Element::IsBaseElementFocusable() const {
   return Element::IsMouseFocusable() || Element::IsKeyboardFocusable();
+}
+
+bool Element::IsFocusable() const {
+  return IsMouseFocusable() || IsKeyboardFocusable();
 }
 
 bool Element::IsFocusableStyleAfterUpdate() const {
@@ -4772,9 +4836,9 @@ const AtomicString& Element::ShadowPseudoId() const {
 }
 
 void Element::SetShadowPseudoId(const AtomicString& id) {
-  DCHECK(CSSSelector::ParsePseudoType(id, false) ==
+  DCHECK(CSSSelectorParser::ParsePseudoType(id, false) ==
              CSSSelector::kPseudoWebKitCustomElement ||
-         CSSSelector::ParsePseudoType(id, false) ==
+         CSSSelectorParser::ParsePseudoType(id, false) ==
              CSSSelector::kPseudoBlinkInternalElement);
   setAttribute(html_names::kPseudoAttr, id);
 }
@@ -4816,7 +4880,8 @@ HeapVector<Member<Element>> CollectAncestorsToEnsure(Element& element) {
 }  // namespace
 
 const ComputedStyle* Element::EnsureComputedStyle(
-    PseudoId pseudo_element_specifier) {
+    PseudoId pseudo_element_specifier,
+    const AtomicString& pseudo_argument) {
   // Style computation should not be triggered when in a NoAllocationScope
   // because there is always a possibility that it could allocate something on
   // the V8 heap.
@@ -4866,12 +4931,14 @@ const ComputedStyle* Element::EnsureComputedStyle(
     ancestor->EnsureOwnComputedStyle(style_recalc_context, kPseudoIdNone);
   }
 
-  return EnsureOwnComputedStyle(style_recalc_context, pseudo_element_specifier);
+  return EnsureOwnComputedStyle(style_recalc_context, pseudo_element_specifier,
+                                pseudo_argument);
 }
 
 const ComputedStyle* Element::EnsureOwnComputedStyle(
     const StyleRecalcContext& style_recalc_context,
-    PseudoId pseudo_element_specifier) {
+    PseudoId pseudo_element_specifier,
+    const AtomicString& pseudo_argument) {
   // FIXME: Find and use the layoutObject from the pseudo element instead of the
   // actual element so that the 'length' properties, which are only known by the
   // layoutObject because it did the layout, will be correct and so that the
@@ -4910,7 +4977,8 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
     return element_style;
 
   if (const ComputedStyle* pseudo_element_style =
-          element_style->GetCachedPseudoElementStyle(pseudo_element_specifier))
+          element_style->GetCachedPseudoElementStyle(pseudo_element_specifier,
+                                                     pseudo_argument))
     return pseudo_element_style;
 
   const ComputedStyle* layout_parent_style = element_style;
@@ -4926,6 +4994,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
   style_request.type = StyleRequest::kForComputedStyle;
   style_request.parent_override = element_style;
   style_request.layout_parent_override = layout_parent_style;
+  style_request.pseudo_argument = pseudo_argument;
 
   scoped_refptr<ComputedStyle> result =
       GetDocument().GetStyleResolver().ResolveStyle(this, style_recalc_context,

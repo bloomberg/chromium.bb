@@ -22,6 +22,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
@@ -54,6 +55,40 @@ gfx::Point RightCenter(const gfx::Rect& rect) {
   return gfx::Point(rect.right(), rect.CenterPoint().y());
 }
 
+SkColor GetKeyShadowColor(int elevation, const ui::NativeTheme* theme) {
+  switch (elevation) {
+    case 3: {
+      return theme->GetSystemColor(
+          ui::NativeTheme::kColorId_ShadowValueKeyShadowElevationThree);
+    }
+    case 16: {
+      return theme->GetSystemColor(
+          ui::NativeTheme::kColorId_ShadowValueKeyShadowElevationSixteen);
+    }
+    default:
+      // This surface has not been updated for Refresh. Fall back to the
+      // deprecated style.
+      return theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase);
+  }
+}
+
+SkColor GetAmbientShadowColor(int elevation, const ui::NativeTheme* theme) {
+  switch (elevation) {
+    case 3: {
+      return theme->GetSystemColor(
+          ui::NativeTheme::kColorId_ShadowValueAmbientShadowElevationThree);
+    }
+    case 16: {
+      return theme->GetSystemColor(
+          ui::NativeTheme::kColorId_ShadowValueAmbientShadowElevationSixteen);
+    }
+    default:
+      // This surface has not been updated for Refresh. Fall back to the
+      // deprecated style.
+      return theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase);
+  }
+}
+
 }  // namespace
 
 BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
@@ -69,10 +104,10 @@ BubbleBorder::~BubbleBorder() = default;
 
 // static
 gfx::Insets BubbleBorder::GetBorderAndShadowInsets(
-    base::Optional<int> elevation) {
+    absl::optional<int> elevation) {
   // Borders with custom shadow elevations do not draw the 1px border.
   if (elevation.has_value())
-    return -gfx::ShadowValue::GetMargin(GetShadowValues(elevation));
+    return -gfx::ShadowValue::GetMargin(GetShadowValues(nullptr, elevation));
 
   constexpr gfx::Insets blur(kShadowBlur + kBorderThicknessDip);
   constexpr gfx::Insets offset(-kShadowVerticalOffset, 0, kShadowVerticalOffset,
@@ -217,7 +252,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
                                  true /*doAntiAlias*/);
 
   DrawBorderAndShadow(std::move(r_rect), &cc::PaintCanvas::drawRRect, canvas,
-                      md_shadow_elevation_, md_shadow_color_);
+                      view.GetNativeTheme(), md_shadow_elevation_);
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
@@ -236,8 +271,16 @@ gfx::Size BubbleBorder::GetMinimumSize() const {
 
 // static
 const gfx::ShadowValues& BubbleBorder::GetShadowValues(
-    base::Optional<int> elevation,
-    SkColor color) {
+    const ui::NativeTheme* theme,
+    absl::optional<int> elevation) {
+  // If the theme does not exist the shadow values are being created in
+  // order to calculate Insets. In that case the color plays no role so always
+  // set those colors to gfx::kPlaceholderColor.
+
+  SkColor color =
+      theme ? theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase)
+            : gfx::kPlaceholderColor;
+
   // The shadows are always the same for any elevation and color combination, so
   // construct them once and cache.
   static base::NoDestructor<std::map<ShadowCacheKey, gfx::ShadowValues>>
@@ -250,12 +293,25 @@ const gfx::ShadowValues& BubbleBorder::GetShadowValues(
   gfx::ShadowValues shadows;
   if (elevation.has_value()) {
     DCHECK_GE(elevation.value(), 0);
-    shadows = LayoutProvider::Get()->MakeShadowValues(elevation.value(), color);
+    SkColor key_shadow_color = theme
+                                   ? GetKeyShadowColor(elevation.value(), theme)
+                                   : gfx::kPlaceholderColor;
+    SkColor ambient_shadow_color =
+        theme ? GetAmbientShadowColor(elevation.value(), theme)
+              : gfx::kPlaceholderColor;
+    shadows = gfx::ShadowValue::MakeShadowValues(
+        elevation.value(), key_shadow_color, ambient_shadow_color);
   } else {
     constexpr int kSmallShadowVerticalOffset = 2;
     constexpr int kSmallShadowBlur = 4;
-    SkColor kSmallShadowColor = SkColorSetA(color, 0x33);
-    SkColor kLargeShadowColor = SkColorSetA(color, 0x1A);
+    SkColor kSmallShadowColor =
+        theme ? theme->GetSystemColor(
+                    ui::NativeTheme::kColorId_BubbleBorderShadowSmall)
+              : gfx::kPlaceholderColor;
+    SkColor kLargeShadowColor =
+        theme ? theme->GetSystemColor(
+                    ui::NativeTheme::kColorId_BubbleBorderShadowLarge)
+              : gfx::kPlaceholderColor;
     // gfx::ShadowValue counts blur pixels both inside and outside the shape,
     // whereas these blur values only describe the outside portion, hence they
     // must be doubled.
@@ -273,23 +329,24 @@ const gfx::ShadowValues& BubbleBorder::GetShadowValues(
 
 // static
 const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags(
-    base::Optional<int> elevation,
-    SkColor color) {
+    const ui::NativeTheme* theme,
+    absl::optional<int> elevation) {
   // The flags are always the same for any elevation and color combination, so
   // construct them once and cache.
   static base::NoDestructor<std::map<ShadowCacheKey, cc::PaintFlags>> flag_map;
-  ShadowCacheKey key(elevation.value_or(-1), color);
+  ShadowCacheKey key(
+      elevation.value_or(-1),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase));
 
   if (flag_map->find(key) != flag_map->end())
     return flag_map->find(key)->second;
 
   cc::PaintFlags flags;
-  constexpr SkColor kBlurredBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
-  flags.setColor(kBlurredBorderColor);
+  flags.setColor(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBorderWhenShadowPresent));
   flags.setAntiAlias(true);
   flags.setLooper(
-      gfx::CreateShadowDrawLooper(GetShadowValues(elevation, color)));
-
+      gfx::CreateShadowDrawLooper(GetShadowValues(theme, elevation)));
   flag_map->insert({key, flags});
   return flag_map->find(key)->second;
 }

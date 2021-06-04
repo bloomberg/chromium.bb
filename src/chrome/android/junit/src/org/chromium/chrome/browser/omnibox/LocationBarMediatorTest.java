@@ -255,7 +255,8 @@ public class LocationBarMediatorTest {
                 mLocationBarLayout, mLocationBarDataProvider, mProfileSupplier,
                 mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate, mLocaleManager,
                 mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate, mWindowAndroid,
-                /*isTablet=*/false, mSearchEngineLogoUtils, mLensController, noAction);
+                /*isTablet=*/false, mSearchEngineLogoUtils, mLensController, noAction, tab -> true,
+                (tab, transition) -> {});
         mMediator.setCoordinators(mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
         ObjectAnimatorShadow.setUrlAnimator(mUrlAnimator);
         GSAStateShadow.setGSAState(mGSAState);
@@ -264,7 +265,8 @@ public class LocationBarMediatorTest {
                 mLocationBarTablet, mLocationBarDataProvider, mProfileSupplier,
                 mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate, mLocaleManager,
                 mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate, mWindowAndroid,
-                /*isTablet=*/true, mSearchEngineLogoUtils, mLensController, noAction);
+                /*isTablet=*/true, mSearchEngineLogoUtils, mLensController, noAction, tab -> true,
+                (tab, transition) -> {});
         mTabletMediator.setCoordinators(
                 mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
     }
@@ -620,44 +622,6 @@ public class LocationBarMediatorTest {
         mMediator.setIsUrlBarFocusedWithoutAnimationsForTesting(true);
         assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_9, mKeyEvent));
         verify(mUrlCoordinator, times(2)).onUrlFocusChange(true);
-    }
-
-    @Test
-    public void testTemplateUrlServiceChanged() {
-        doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(mNonGoogleSearchEngine)
-                .when(mTemplateUrlService)
-                .getDefaultSearchEngineTemplateUrl();
-        mMediator.onTemplateURLServiceChanged();
-
-        verify(mStatusCoordinator)
-                .updateSearchEngineStatusIcon(
-                        false, mSearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
-
-        doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(mGoogleSearchEngine).when(mTemplateUrlService).getDefaultSearchEngineTemplateUrl();
-        mMediator.onTemplateURLServiceChanged();
-
-        verify(mStatusCoordinator)
-                .updateSearchEngineStatusIcon(
-                        true, mSearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
-
-        // Calling onTemplateURLServiceChanged with the exact same data shouldn't trigger any calls.
-        mMediator.onTemplateURLServiceChanged();
-
-        verify(mStatusCoordinator, times(1))
-                .updateSearchEngineStatusIcon(
-                        true, mSearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
-
-        doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(mNonGoogleSearchEngine)
-                .when(mTemplateUrlService)
-                .getDefaultSearchEngineTemplateUrl();
-        mMediator.onTemplateURLServiceChanged();
-
-        verify(mStatusCoordinator, times(2))
-                .updateSearchEngineStatusIcon(
-                        false, mSearchEngineLogoUtils.getSearchLogoUrl(mTemplateUrlService));
     }
 
     @Test

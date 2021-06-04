@@ -6,17 +6,22 @@
 
 #include <queue>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/bind.h"
@@ -35,7 +40,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -54,6 +59,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -410,16 +418,16 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
 // focus to the next ShelfItem instead of the last one
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
   const std::string title("MockApp");
-  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  ChromeShelfController* controller = ChromeShelfController::instance();
 
   // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
   // when an extension is enabled, the ShelfItems which are not recorded as
   // pinned apps in user preference will be removed.
   EnableChromeVox();
   sm_.Call([controller, title]() {
-    controller->CreateAppShortcutLauncherItem(
-        ShelfID("FakeApp"), controller->shelf_model()->item_count(),
-        base::ASCIIToUTF16(title));
+    controller->CreateAppShortcutItem(ShelfID("FakeApp"),
+                                      controller->shelf_model()->item_count(),
+                                      base::ASCIIToUTF16(title));
   });
 
   // Focus on the shelf.
@@ -455,7 +463,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
 
   sm_.Call([this]() {
     // Add three Shelf buttons. Wait for the change on ShelfModel to reach ash.
-    ChromeLauncherController* controller = ChromeLauncherController::instance();
+    ChromeShelfController* controller = ChromeShelfController::instance();
     const int base_index = controller->shelf_model()->item_count();
     const std::string title("MockApp");
     const std::string id("FakeApp");
@@ -463,8 +471,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
     for (int i = 0; i < insert_app_num; i++) {
       std::string app_title = title + base::NumberToString(i);
       std::string app_id = id + base::NumberToString(i);
-      controller->CreateAppShortcutLauncherItem(ShelfID(app_id), base_index + i,
-                                                base::ASCIIToUTF16(app_title));
+      controller->CreateAppShortcutItem(ShelfID(app_id), base_index + i,
+                                        base::ASCIIToUTF16(app_title));
     }
 
     // Enable the function of speaking text under mouse.
@@ -744,7 +752,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
       "Entered window overview mode. Swipe to navigate, or press tab if using "
       "a keyboard.");
 
-  sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern(
       "Chrom* - data:text slash html;charset equal utf-8, less than button "
       "autofocus greater than Click me less than slash button greater than");
@@ -961,8 +969,12 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
 
+  // Assert the right edge fits the below window.
+  ASSERT_GE(root_window->bounds().width(), 1280);
+  ASSERT_GE(root_window->bounds().height(), 800);
+
   // This is the right edge of the screen.
-  params.bounds = {1250, 0, 50, 700};
+  params.bounds = {1050, 0, 50, 700};
   widget->Init(std::move(params));
 
   views::View* view = new views::View();
@@ -975,21 +987,99 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   sm_.Call([widget, clock_ptr, generator_ptr]() {
     widget->Show();
     ui::TouchEvent touch_press(
-        ui::ET_TOUCH_PRESSED, gfx::Point(1280, 200), base::TimeTicks::Now(),
+        ui::ET_TOUCH_PRESSED, gfx::Point(1080, 200), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
     clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
 
     ui::TouchEvent touch_move(
-        ui::ET_TOUCH_MOVED, gfx::Point(1280, 300), base::TimeTicks::Now(),
+        ui::ET_TOUCH_MOVED, gfx::Point(1080, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
     clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
 
     ui::TouchEvent touch_move2(
-        ui::ET_TOUCH_MOVED, gfx::Point(1280, 400), base::TimeTicks::Now(),
+        ui::ET_TOUCH_MOVED, gfx::Point(1080, 400), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move2);
+  });
+
+  // This should trigger reading of the button.
+  sm_.ExpectSpeech("hello");
+  sm_.ExpectSpeech("Button");
+
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
+  std::vector<RootWindowController*> root_controllers =
+      Shell::GetAllRootWindowControllers();
+  EXPECT_EQ(1U, root_controllers.size());
+
+  // Make two displays, each 800 by 800, side by side.
+  ash::ShellTestApi shell_test_api;
+  display::test::DisplayManagerTestApi(shell_test_api.display_manager())
+      .UpdateDisplay("800x800,801+0-800x800");
+  ASSERT_EQ(2u, shell_test_api.display_manager()->GetNumDisplays());
+  display::test::DisplayManagerTestApi display_manager_test_api(
+      shell_test_api.display_manager());
+
+  display::Screen* screen = display::Screen::GetScreen();
+  int64_t display2 = display_manager_test_api.GetSecondaryDisplay().id();
+  screen->SetDisplayForNewWindows(display2);
+
+  root_controllers = Shell::GetAllRootWindowControllers();
+  EXPECT_EQ(2U, root_controllers.size());
+
+  EnableChromeVox();
+
+  base::SimpleTestTickClock clock;
+  auto* clock_ptr = &clock;
+  ui::SetEventTickClockForTesting(clock_ptr);
+
+  // Generate events to the secondary window which is at (800, 0).
+  auto* root_window = root_controllers[1]->GetRootWindow();
+  ui::test::EventGenerator generator(root_window);
+  auto* generator_ptr = &generator;
+
+  // Build a simple window with a button and position it at the right edge of
+  // the screen.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.parent = root_window;
+
+  // This is the right edge of the screen.
+  params.bounds = {1550, 0, 50, 700};
+  widget->Init(std::move(params));
+
+  views::View* view = new views::View();
+  view->GetViewAccessibility().OverrideName("hello");
+  view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
+  view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  widget->GetRootView()->AddChildView(view);
+
+  // Show the widget, then touch and slide on the right edge of the screen.
+  sm_.Call([widget, clock_ptr, generator_ptr]() {
+    widget->Show();
+
+    ui::TouchEvent touch_press(
+        ui::ET_TOUCH_PRESSED, gfx::Point(1580, 200), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_press);
+
+    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+
+    ui::TouchEvent touch_move(
+        ui::ET_TOUCH_MOVED, gfx::Point(1580, 300), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move);
+
+    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+
+    ui::TouchEvent touch_move2(
+        ui::ET_TOUCH_MOVED, gfx::Point(1580, 400), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move2);
   });
@@ -1216,11 +1306,106 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SmartStickyMode) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, HardwareKeysGetRewritten) {
+class TestBacklightsObserver : public ash::ScreenBacklightObserver {
+ public:
+  explicit TestBacklightsObserver(
+      ash::BacklightsForcedOffSetter* backlights_setter) {
+    backlights_forced_off_ = backlights_setter->backlights_forced_off();
+    scoped_observation_.Observe(backlights_setter);
+  }
+  ~TestBacklightsObserver() override = default;
+  TestBacklightsObserver(const TestBacklightsObserver&) = delete;
+  TestBacklightsObserver& operator=(const TestBacklightsObserver&) = delete;
+
+  // ScreenBacklightObserver:
+  void OnBacklightsForcedOffChanged(bool backlights_forced_off) override {
+    if (backlights_forced_off_ == backlights_forced_off)
+      return;
+
+    backlights_forced_off_ = backlights_forced_off;
+    if (run_loop_) {
+      run_loop_->Quit();
+    }
+  }
+
+  void WaitForBacklightStateChange() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+  bool backlights_forced_off() const { return backlights_forced_off_; }
+
+ private:
+  bool backlights_forced_off_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  base::ScopedObservation<ash::BacklightsForcedOffSetter,
+                          ash::ScreenBacklightObserver>
+      scoped_observation_{this};
+};
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   EnableChromeVox();
   StablizeChromeVoxState();
+  EXPECT_FALSE(ash::Shell::Get()
+                   ->backlights_forced_off_setter()
+                   ->backlights_forced_off());
+  ash::BacklightsForcedOffSetter* backlights_setter =
+      ash::Shell::Get()->backlights_forced_off_setter();
+  TestBacklightsObserver observer(backlights_setter);
+
+  // Try to darken screen and check the dialog is shown.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
-  sm_.ExpectSpeech("Darken screen");
+  sm_.ExpectSpeech("Continue");
+  sm_.ExpectSpeech("default");
+  sm_.ExpectSpeech("Button");
+  sm_.ExpectSpeech("Turn off screen?");
+  sm_.ExpectSpeech("Dialog");
+  sm_.ExpectSpeech(
+      "This improves privacy by turning off your screen so it isn’t visible to "
+      "others.");
+  sm_.ExpectSpeech(
+      "You can always turn the screen back on by pressing Search plus "
+      "Brightness up.");
+
+  sm_.Call([]() {
+    // Accept the dialog and see that the screen is darkened.
+    AccessibilityConfirmationDialog* dialog_ =
+        ash::Shell::Get()
+            ->accessibility_controller()
+            ->GetConfirmationDialogForTest();
+    ASSERT_TRUE(dialog_ != nullptr);
+    dialog_->Accept();
+  });
+  sm_.ExpectSpeech("Screen off");
+  // Make sure Ash gets the backlight change request.
+  sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
+    if (observer.backlights_forced_off())
+      return;
+    observer.WaitForBacklightStateChange();
+    EXPECT_TRUE(backlights_setter->backlights_forced_off());
+  });
+
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
+  sm_.ExpectNextSpeechIsNot("Continue");
+  sm_.ExpectSpeech("Screen on");
+  sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
+    if (!observer.backlights_forced_off())
+      return;
+    observer.WaitForBacklightStateChange();
+    EXPECT_FALSE(backlights_setter->backlights_forced_off());
+  });
+
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
+  sm_.ExpectNextSpeechIsNot("Continue");
+  sm_.ExpectSpeech("Screen off");
+  sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
+    if (observer.backlights_forced_off())
+      return;
+    observer.WaitForBacklightStateChange();
+    EXPECT_TRUE(backlights_setter->backlights_forced_off());
+  });
+
   sm_.Replay();
 }
 
@@ -1395,7 +1580,8 @@ class SigninToUserProfileSwitchTest : public OobeSpokenFeedbackTest {
 
 // Verifies that spoken feedback correctly handles profile switch (signin ->
 // user) and announces the sync consent screen correctly.
-IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, LoginAsNewUser) {
+// TODO(crbug.com/1184714): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   // Force sync screen.
   auto reset = WizardController::ForceBrandedBuildForTesting(true);
   AccessibilityManager::Get()->EnableSpokenFeedback(true);

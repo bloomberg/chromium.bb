@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -44,6 +44,7 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -55,7 +56,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
 
   // Returns the data we've gotten from the CrxDataCallback for ids passed to
   // the Update function.
-  std::vector<base::Optional<update_client::CrxComponent>>* data() {
+  std::vector<absl::optional<update_client::CrxComponent>>* data() {
     return &data_;
   }
 
@@ -150,7 +151,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
  protected:
   ~FakeUpdateClient() override = default;
 
-  std::vector<base::Optional<update_client::CrxComponent>> data_;
+  std::vector<absl::optional<update_client::CrxComponent>> data_;
   std::vector<UninstallPing> uninstall_pings_;
   std::vector<Observer*> observers_;
 
@@ -274,7 +275,7 @@ class FakeExtensionSystem : public MockExtensionSystem {
     if (!next_install_callback_.is_null()) {
       std::move(next_install_callback_).Run();
     }
-    std::move(install_update_callback).Run(base::nullopt);
+    std::move(install_update_callback).Run(absl::nullopt);
   }
 
   void PerformActionBasedOnOmahaAttributes(

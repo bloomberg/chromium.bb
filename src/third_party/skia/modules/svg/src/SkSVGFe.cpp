@@ -23,26 +23,7 @@ SkRect SkSVGFe::resolveBoundaries(const SkSVGRenderContext& ctx,
     const auto w = fWidth.isValid() ? *fWidth : SkSVGLength(100, SkSVGLength::Unit::kPercentage);
     const auto h = fHeight.isValid() ? *fHeight : SkSVGLength(100, SkSVGLength::Unit::kPercentage);
 
-    // Resolve the x/y/w/h boundary rect depending on primitiveUnits setting
-    SkRect boundaries;
-    switch (fctx.primitiveUnits().type()) {
-        case SkSVGObjectBoundingBoxUnits::Type::kUserSpaceOnUse:
-            boundaries = ctx.lengthContext().resolveRect(x, y, w, h);
-            break;
-        case SkSVGObjectBoundingBoxUnits::Type::kObjectBoundingBox: {
-            SkASSERT(ctx.node());
-            const SkRect objBounds = ctx.node()->objectBoundingBox(ctx);
-            boundaries = SkSVGLengthContext({1, 1}).resolveRect(x, y, w, h);
-            boundaries = SkRect::MakeXYWH(objBounds.fLeft + boundaries.fLeft * objBounds.width(),
-                                          objBounds.fTop + boundaries.fTop * objBounds.height(),
-                                          boundaries.width() * objBounds.width(),
-                                          boundaries.height() * objBounds.height());
-
-            break;
-        }
-    }
-
-    return boundaries;
+    return ctx.resolveOBBRect(x, y, w, h, fctx.primitiveUnits());
 }
 
 static bool AnyIsStandardInput(const SkSVGFilterContext& fctx,
@@ -78,13 +59,13 @@ SkRect SkSVGFe::resolveFilterSubregion(const SkSVGRenderContext& ctx,
     // default subregion is equal to the filter effects region
     // (https://www.w3.org/TR/SVG11/filters.html#FilterEffectsRegion).
     const std::vector<SkSVGFeInputType> inputs = this->getInputs();
-    SkRect subregion;
+    SkRect defaultSubregion;
     if (inputs.empty() || AnyIsStandardInput(fctx, inputs)) {
-        subregion = fctx.filterEffectsRegion();
+        defaultSubregion = fctx.filterEffectsRegion();
     } else {
-        subregion = fctx.filterPrimitiveSubregion(inputs[0]);
+        defaultSubregion = fctx.filterPrimitiveSubregion(inputs[0]);
         for (size_t i = 1; i < inputs.size(); i++) {
-            subregion.join(fctx.filterPrimitiveSubregion(inputs[i]));
+            defaultSubregion.join(fctx.filterPrimitiveSubregion(inputs[i]));
         }
     }
 
@@ -92,20 +73,12 @@ SkRect SkSVGFe::resolveFilterSubregion(const SkSVGRenderContext& ctx,
     // If those attributes were given, they override the corresponding attribute of the default
     // filter effect subregion calculated above.
     const SkRect boundaries = this->resolveBoundaries(ctx, fctx);
-    if (fX.isValid()) {
-        subregion.fLeft = boundaries.fLeft;
-    }
-    if (fY.isValid()) {
-        subregion.fTop = boundaries.fTop;
-    }
-    if (fWidth.isValid()) {
-        subregion.fRight = subregion.fLeft + boundaries.width();
-    }
-    if (fHeight.isValid()) {
-        subregion.fBottom = subregion.fTop + boundaries.height();
-    }
 
-    return subregion;
+    // Compute and return the fully resolved subregion.
+    return SkRect::MakeXYWH(fX.isValid() ? boundaries.fLeft : defaultSubregion.fLeft,
+                            fY.isValid() ? boundaries.fTop : defaultSubregion.fTop,
+                            fWidth.isValid() ? boundaries.width() : defaultSubregion.width(),
+                            fHeight.isValid() ? boundaries.height() : defaultSubregion.height());
 }
 
 SkSVGColorspace SkSVGFe::resolveColorspace(const SkSVGRenderContext& ctx,

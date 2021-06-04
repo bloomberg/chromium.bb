@@ -30,8 +30,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const int kUserKeyByteSize = 16;
@@ -280,10 +279,10 @@ void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
     return;
   }
 
-  challenge_creator_.reset(new ChallengeCreator(
+  challenge_creator_ = std::make_unique<ChallengeCreator>(
       user_key, session_key->key(), tpm_public_key_, device,
       base::BindOnce(&EasyUnlockCreateKeysOperation::OnChallengeCreated,
-                     weak_ptr_factory_.GetWeakPtr(), index)));
+                     weak_ptr_factory_.GetWeakPtr(), index));
   challenge_creator_->Start();
 }
 
@@ -363,7 +362,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
 void EasyUnlockCreateKeysOperation::OnKeyCreated(
     size_t index,
     const Key& user_key,
-    base::Optional<::user_data_auth::AddKeyReply> reply) {
+    absl::optional<::user_data_auth::AddKeyReply> reply) {
   DCHECK_EQ(key_creation_index_, index);
   cryptohome::MountError return_code = cryptohome::MOUNT_ERROR_FATAL;
   if (reply.has_value())
@@ -387,4 +386,4 @@ void EasyUnlockCreateKeysOperation::OnKeyCreated(
   CreateKeyForDeviceAtIndex(key_creation_index_);
 }
 
-}  // namespace chromeos
+}  // namespace ash

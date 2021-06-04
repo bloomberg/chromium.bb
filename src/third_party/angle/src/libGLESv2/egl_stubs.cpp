@@ -275,18 +275,41 @@ EGLSurface CreateWindowSurface(Thread *thread,
 
 EGLBoolean DestroyContext(Thread *thread, Display *display, gl::Context *context)
 {
+
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglDestroyContext",
                          GetDisplayIfValid(display), EGL_FALSE);
-    bool contextWasCurrent = context == thread->getContext();
 
-    ANGLE_EGL_TRY_RETURN(thread, display->destroyContext(thread, context), "eglDestroyContext",
-                         GetContextIfValid(display, context), EGL_FALSE);
+    gl::Context *contextForThread = thread->getContext();
+    bool contextWasCurrent        = context == contextForThread;
+
+    bool shouldMakeCurrent =
+        !contextWasCurrent && !context->isExternal() && context->getRefCount() <= 1;
+
+    // Display can't access the current global context, but does exhibit a context switch,
+    // so ensuring the current global context is correct needs to happen here.
+    Surface *currentDrawSurface = thread->getCurrentDrawSurface();
+    Surface *currentReadSurface = thread->getCurrentReadSurface();
+
+    if (shouldMakeCurrent)
+    {
+        SetContextCurrent(thread, context);
+    }
+
+    ANGLE_EGL_TRY_RETURN(
+        thread,
+        display->destroyContextWithSurfaces(thread, context, contextForThread, currentDrawSurface,
+                                            currentReadSurface),
+        "eglDestroyContext", GetContextIfValid(display, context), EGL_FALSE);
 
     if (contextWasCurrent)
     {
         ANGLE_EGL_TRY_RETURN(thread, display->makeCurrent(context, nullptr, nullptr, nullptr),
                              "eglDestroyContext", GetContextIfValid(display, context), EGL_FALSE);
         SetContextCurrent(thread, nullptr);
+    }
+    else if (shouldMakeCurrent)
+    {
+        SetContextCurrent(thread, contextForThread);
     }
 
     thread->setSuccess();
@@ -669,7 +692,15 @@ EGLBoolean Terminate(Thread *thread, Display *display)
 
 EGLBoolean WaitClient(Thread *thread)
 {
-    Display *display     = thread->getDisplay();
+    Display *display = thread->getDisplay();
+    if (display == nullptr)
+    {
+        // EGL spec says this about eglWaitClient -
+        //    If there is no current context for the current rendering API,
+        //    the function has no effect but still returns EGL_TRUE.
+        return EGL_TRUE;
+    }
+
     gl::Context *context = thread->getContext();
 
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglWaitClient",
@@ -684,6 +715,12 @@ EGLBoolean WaitClient(Thread *thread)
 EGLBoolean WaitGL(Thread *thread)
 {
     Display *display = thread->getDisplay();
+    if (display == nullptr)
+    {
+        // EGL spec says this about eglWaitGL -
+        //    eglWaitGL is ignored if there is no current EGL rendering context for OpenGL ES.
+        return EGL_TRUE;
+    }
 
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglWaitGL", GetDisplayIfValid(display),
                          EGL_FALSE);
@@ -700,6 +737,13 @@ EGLBoolean WaitGL(Thread *thread)
 EGLBoolean WaitNative(Thread *thread, EGLint engine)
 {
     Display *display = thread->getDisplay();
+    if (display == nullptr)
+    {
+        // EGL spec says this about eglWaitNative -
+        //    eglWaitNative is ignored if there is no current EGL rendering context.
+        return EGL_TRUE;
+    }
+
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglWaitNative",
                          GetDisplayIfValid(display), EGL_FALSE);
     ANGLE_EGL_TRY_RETURN(thread, display->waitNative(thread->getContext(), engine), "eglWaitNative",

@@ -20,6 +20,13 @@
 
 namespace {
 
+const ::libaom_test::TestMode kTestMode[] =
+#if CONFIG_REALTIME_ONLY
+    { ::libaom_test::kRealTime };
+#else
+    { ::libaom_test::kRealTime, ::libaom_test::kOnePassGood };
+#endif
+
 class QMTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
@@ -75,11 +82,10 @@ TEST_P(QMTest, TestNoMisMatchQM2) { DoTest(0, 8); }
 // encodes and decodes without a mismatch.
 TEST_P(QMTest, TestNoMisMatchQM3) { DoTest(9, 15); }
 
-AV1_INSTANTIATE_TEST_SUITE(QMTest,
-                           ::testing::Values(::libaom_test::kRealTime,
-                                             ::libaom_test::kOnePassGood),
+AV1_INSTANTIATE_TEST_SUITE(QMTest, ::testing::ValuesIn(kTestMode),
                            ::testing::Range(5, 9));
 
+#if !CONFIG_REALTIME_ONLY
 typedef struct {
   const unsigned int min_q;
   const unsigned int max_q;
@@ -173,4 +179,5 @@ AV1_INSTANTIATE_TEST_SUITE(QuantizerBoundsCheckTestLarge,
                                              ::libaom_test::kTwoPassGood),
                            ::testing::ValuesIn(QuantTestParams),
                            ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
+#endif  // !CONFIG_REALTIME_ONLY
 }  // namespace

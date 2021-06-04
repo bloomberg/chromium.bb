@@ -34,9 +34,19 @@
 #include "rlz/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
+namespace ash {
+namespace system {
 namespace {
+// TODO(https://crbug.com/1164001): remove when moved to ash::
+using ::chromeos::system::kRlzBrandCodeKey;
+using ::chromeos::system::ScopedFakeStatisticsProvider;
+}  // namespace
+}  // namespace system
+namespace {
+
+// TODO(https://crbug.com/1164001): remove when moved to ash::
+using ::chromeos::ScopedStubInstallAttributes;
+using ::chromeos::StubInstallAttributes;
 
 // Helper class to wait for user adding screen to finish.
 class UserAddingScreenWaiter : public UserAddingScreen::Observer {
@@ -260,11 +270,11 @@ class GuestSessionRlzTest : public InProcessBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(ash::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile, "hash");
     command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser,
+        ash::switches::kLoginUser,
         user_manager::GuestAccountId().GetUserEmail());
   }
 
@@ -297,4 +307,4 @@ INSTANTIATE_TEST_SUITE_P(GuestSessionRlzTest,
 
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
-}  // namespace chromeos
+}  // namespace ash

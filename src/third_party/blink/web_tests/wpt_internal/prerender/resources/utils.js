@@ -1,4 +1,4 @@
-const STORE_URL = '/wpt_internal/prerender/resources/key_value_store.py';
+const STORE_URL = '/wpt_internal/prerender/resources/key-value-store.py';
 
 // Starts prerendering for `url`.
 function startPrerendering(url) {
@@ -47,4 +47,43 @@ async function nextValueFromServer(key) {
 async function writeValueToServer(key, value) {
   const serverUrl = `${STORE_URL}?key=${key}&value=${value}`;
   await fetch(serverUrl);
+}
+
+// Loads the initiator page, and navigates to the prerendered page after it
+// receives the 'readyToActivate' message.
+function loadInitiatorPage() {
+  // Used to communicate with the prerendering page.
+  const prerenderChannel = new BroadcastChannel('prerender-channel');
+  window.addEventListener('unload', () => {
+    prerenderChannel.close();
+  });
+
+  // We need to wait for the 'readyToActivate' message before navigation
+  // since the prerendering implementation in Chromium can only activate if the
+  // response for the prerendering navigation has already been received and the
+  // prerendering document was created.
+  const readyToActivate = new Promise((resolve, reject) => {
+    prerenderChannel.addEventListener('message', e => {
+      if (e.data != 'readyToActivate')
+        reject(`The initiator page receives an unsupported message: ${e.data}`);
+      resolve(e.data);
+    });
+  });
+
+  const url = new URL(document.URL);
+  url.searchParams.append('prerendering', '');
+  // Prerender a page that notifies the initiator page of the page's ready to be
+  // activated via the 'readyToActivate'.
+  startPrerendering(url.toString());
+
+  // Navigate to the prerendered page after being informed.
+  readyToActivate.then(() => {
+    window.location = url.toString();
+  }).catch(e => {
+    const testChannel = new BroadcastChannel('test-channel');
+    testChannel.postMessage(
+        `Failed to navigate the prerendered page: ${e.toString()}`);
+    testChannel.close();
+    window.close();
+  });
 }

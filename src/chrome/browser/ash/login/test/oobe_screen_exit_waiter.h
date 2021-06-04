@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ASH_LOGIN_TEST_OOBE_SCREEN_EXIT_WAITER_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -45,7 +45,7 @@ class OobeScreenExitWaiter : public OobeUI::Observer,
 
   State state_ = State::IDLE;
 
-  ScopedObserver<OobeUI, OobeUI::Observer> oobe_ui_observer_{this};
+  base::ScopedObservation<OobeUI, OobeUI::Observer> oobe_ui_observation_{this};
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -53,5 +53,11 @@ class OobeScreenExitWaiter : public OobeUI::Observer,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::OobeScreenExitWaiter;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_OOBE_SCREEN_EXIT_WAITER_H_

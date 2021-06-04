@@ -495,8 +495,8 @@ Status WebViewImpl::CallUserSyncScript(const std::string& frame,
                                        std::unique_ptr<base::Value>* result) {
   base::ListValue sync_args;
   sync_args.AppendString(script);
-  // Deep-copy needed since ListValue only accepts unique_ptrs of Values.
-  sync_args.Append(args.CreateDeepCopy());
+  // Clone needed since Append only accepts Value as an rvalue.
+  sync_args.Append(args.Clone());
   return CallFunctionWithTimeout(frame, kExecuteScriptScript, sync_args,
                                  timeout, result);
 }
@@ -1184,7 +1184,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
     std::unique_ptr<base::Value>* result) {
   base::ListValue async_args;
   async_args.AppendString("return (" + function + ").apply(null, arguments);");
-  async_args.Append(args.CreateDeepCopy());
+  async_args.Append(args.Clone());
   async_args.AppendBoolean(is_user_supplied);
   std::unique_ptr<base::Value> tmp;
   Timeout local_timeout(timeout);
@@ -1233,7 +1233,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
 
     base::Value* value = NULL;
     if (result_info->Get("value", &value)) {
-      result->reset(value->DeepCopy());
+      *result = base::Value::ToUniquePtrValue(value->Clone());
       return Status(kOk);
     }
 
@@ -1324,14 +1324,14 @@ std::unique_ptr<base::Value> WebViewImpl::GetCastSinks() {
   if (!cast_tracker_)
     cast_tracker_ = std::make_unique<CastTracker>(client_.get());
   HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->sinks().DeepCopy());
+  return base::Value::ToUniquePtrValue(cast_tracker_->sinks().Clone());
 }
 
 std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
   if (!cast_tracker_)
     cast_tracker_ = std::make_unique<CastTracker>(client_.get());
   HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
+  return base::Value::ToUniquePtrValue(cast_tracker_->issue().Clone());
 }
 
 WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view) {
@@ -1444,7 +1444,7 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
     base::Value* value;
     if (!temp_result->Get("value", &value))
       return Status(kUnknownError, "Runtime.evaluate missing 'value'");
-    result->reset(value->DeepCopy());
+    *result = base::Value::ToUniquePtrValue(value->Clone());
   }
   return Status(kOk);
 }
@@ -1469,7 +1469,7 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
     // Missing 'value' indicates the JavaScript code didn't return a value.
     return Status(kOk);
   }
-  result->reset(unscoped_value->DeepCopy());
+  *result = base::Value::ToUniquePtrValue(unscoped_value->Clone());
   return Status(kOk);
 }
 

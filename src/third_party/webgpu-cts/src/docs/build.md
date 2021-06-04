@@ -19,6 +19,12 @@ unittests), use:
 npm test
 ```
 
+For checks only:
+
+```sh
+npm run check
+```
+
 For a quicker iterative build:
 
 ```sh

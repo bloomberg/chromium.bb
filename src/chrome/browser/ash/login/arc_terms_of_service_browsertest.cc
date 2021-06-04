@@ -11,6 +11,7 @@
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -214,7 +215,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
     on_screen_exit_called_ = std::move(on_screen_exit_called);
   }
 
-  const base::Optional<ArcTermsOfServiceScreen::Result>& screen_exit_result()
+  const absl::optional<ArcTermsOfServiceScreen::Result>& screen_exit_result()
       const {
     return screen_exit_result_;
   }
@@ -248,10 +249,9 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
   // The string will have the format "http://127.0.0.1:${PORT_NUMBER}" where
   // PORT_NUMBER is a randomly assigned port number.
   std::string TestServerBaseUrl() {
-    return base::TrimString(
-               embedded_test_server()->base_url().GetOrigin().spec(), "/",
-               base::TrimPositions::TRIM_TRAILING)
-        .as_string();
+    return std::string(
+        base::TrimString(embedded_test_server()->base_url().GetOrigin().spec(),
+                         "/", base::TrimPositions::TRIM_TRAILING));
   }
 
   // Handles both Terms of Service and Privacy policy requests.
@@ -291,7 +291,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
 
   bool serve_tos_with_privacy_policy_footer_ = false;
 
-  base::Optional<ArcTermsOfServiceScreen::Result> screen_exit_result_;
+  absl::optional<ArcTermsOfServiceScreen::Result> screen_exit_result_;
   ArcTermsOfServiceScreen::ScreenExitCallback original_callback_;
   base::OnceClosure on_screen_exit_called_ = base::DoNothing();
 

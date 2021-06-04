@@ -21,13 +21,19 @@ important cases that need to be covered. Here's an example:
 
 ```ts
 g.test('x,some_detail').desc(`
-Tests [some detail] about x. Tests calling x with various values of 'arg' and checks correctness
-of the result. Tries to trigger [some conditional path].
+Tests [some detail] about x. Tests calling x in various 'mode's { mode1, mode2 },
+with various values of 'arg', and checks correctness of the result.
+Tries to trigger [some conditional path].
 
-- Valid values (control case) // <- to make sure the test function works well).
-- Unaligned values (should fail) // <- only include cases like this in validation tests)
+- Valid values (control case) // <- (to make sure the test function works well)
+- Unaligned values (should fail) // <- (only validation tests need to intentionally hit invalid cases)
 - Extreme values`
-).params(poptions('arg', [ // <- If complex, params should be added during implementation, instead of planning.
+).cases(
+  poptions('mode', [
+    'mode1',
+    'mode2',
+  ])
+).subcases(poptions('arg', [
   // Valid  // <- Comment params as you see fit.
   4,
   8,
@@ -38,6 +44,13 @@ of the result. Tries to trigger [some conditional path].
   1e30,
 ])).unimplemented();
 ```
+
+"Cases" each appear as individual items in the `/standalone/` runner.
+"Subcases" run inside each case, like a for-loop wrapping the `.fn(`test function`)`.
+Documentation on the parameter builder can be found in the [helper index](../helper_index.md).
+
+It's often impossible to predict the exact case/subcase structure before implementing tests, so they
+can be added during implementation, instead of planning.
 
 For any notes which are not specific to a single test, or for preliminary notes for tests that
 haven't been planned in full detail, put them in the test file's `description` variable at

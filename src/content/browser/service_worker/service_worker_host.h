@@ -30,13 +30,14 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
-#include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
+#include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
+struct ServiceWorkerVersionBaseInfo;
 
 // ServiceWorkerHost is the host of a service worker execution context in the
 // renderer process. One ServiceWorkerHost instance hosts one service worker
@@ -63,8 +64,8 @@ class CONTENT_EXPORT ServiceWorkerHost {
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
 
-  void CreateQuicTransportConnector(
-      mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
+  void CreateWebTransportConnector(
+      mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver);
   // Used only when EagerCacheStorageSetupForServiceWorkers is disabled.
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
@@ -86,7 +87,8 @@ class CONTENT_EXPORT ServiceWorkerHost {
   // owns |this|.
   ServiceWorkerVersion* const version_;
 
-  BrowserInterfaceBrokerImpl<ServiceWorkerHost, const ServiceWorkerVersionInfo&>
+  BrowserInterfaceBrokerImpl<ServiceWorkerHost,
+                             const ServiceWorkerVersionBaseInfo&>
       broker_{this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};

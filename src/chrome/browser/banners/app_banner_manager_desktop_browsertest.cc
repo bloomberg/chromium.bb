@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
@@ -25,10 +27,11 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
@@ -44,7 +47,12 @@ using State = AppBannerManager::State;
 class AppBannerManagerDesktopBrowserTest
     : public AppBannerManagerBrowserTestBase {
  public:
-  AppBannerManagerDesktopBrowserTest() : AppBannerManagerBrowserTestBase() {}
+  AppBannerManagerDesktopBrowserTest() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // With Lacros, web apps are not installed using the Ash browser.
+    scoped_feature_list_.InitAndDisableFeature(features::kWebAppsCrosapi);
+#endif
+  }
 
   void SetUp() override {
     TestAppBannerManagerDesktop::SetUp();
@@ -67,6 +75,9 @@ class AppBannerManagerDesktopBrowserTest
       const AppBannerManagerDesktopBrowserTest&) = delete;
   AppBannerManagerDesktopBrowserTest& operator=(
       const AppBannerManagerDesktopBrowserTest&) = delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
@@ -267,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
       web_app::CreateInstallOptions(GetBannerURL());
   options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
   options.user_display_mode = web_app::DisplayMode::kBrowser;
-  web_app::PendingAppManagerInstall(browser()->profile(), options);
+  web_app::ExternallyManagedAppManagerInstall(browser()->profile(), options);
 
   // Run promotability check.
   {
@@ -296,13 +307,13 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
       web_app::CreateInstallOptions(GetBannerURL());
   options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
   options.user_display_mode = web_app::DisplayMode::kBrowser;
-  web_app::PendingAppManagerInstall(profile, options);
+  web_app::ExternallyManagedAppManagerInstall(profile, options);
 
   // Uninstall web app by policy.
   {
     base::RunLoop run_loop;
     web_app::WebAppProviderBase::GetProviderBase(profile)
-        ->pending_app_manager()
+        ->externally_managed_app_manager()
         .UninstallApps({GetBannerURL()},
                        web_app::ExternalInstallSource::kExternalPolicy,
                        base::BindLambdaForTesting(
@@ -410,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
           "/banners/manifest_display_override_contains_browser.json"));
   options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
   options.user_display_mode = web_app::DisplayMode::kBrowser;
-  web_app::PendingAppManagerInstall(browser()->profile(), options);
+  web_app::ExternallyManagedAppManagerInstall(browser()->profile(), options);
 
   // Run promotability check.
   {

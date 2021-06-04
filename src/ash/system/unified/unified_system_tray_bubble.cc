@@ -20,6 +20,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -346,6 +347,10 @@ void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
 void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,
                                                        bool send_native_event) {
   bubble_view_->NotifyAccessibilityEvent(event, send_native_event);
+}
+
+bool UnifiedSystemTrayBubble::ShowingAudioDetailedView() const {
+  return bubble_widget_ && controller_->showing_audio_detailed_view();
 }
 
 }  // namespace ash

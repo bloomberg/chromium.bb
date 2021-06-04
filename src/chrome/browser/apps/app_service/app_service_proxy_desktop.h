@@ -5,13 +5,25 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_DESKTOP_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_DESKTOP_H_
 
+#include <memory>
+#include <string>
+
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
-#include "chrome/browser/apps/app_service/publishers/extension_apps.h"
-#include "chrome/browser/apps/app_service/publishers/web_apps.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
 namespace apps {
+
+class ExtensionApps;
+class WebApps;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+class FakeLacrosWebAppsHost;
+class WebAppsPublisherHost;
+#endif
 
 // Singleton (per Profile) proxy and cache of an App Service's apps in Chrome
 // browser.
@@ -26,6 +38,7 @@ class AppServiceProxy : public AppServiceProxyBase {
 
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window) override;
   void FlushMojoCallsForTesting() override;
 
@@ -36,6 +49,11 @@ class AppServiceProxy : public AppServiceProxyBase {
 
   std::unique_ptr<WebApps> web_apps_;
   std::unique_ptr<ExtensionApps> extension_apps_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<FakeLacrosWebAppsHost> fake_lacros_web_apps_host_;
+  std::unique_ptr<WebAppsPublisherHost> web_apps_publisher_host_;
+#endif
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
 };

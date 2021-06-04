@@ -15,16 +15,23 @@ sksl_fp_error_tests = [
   "/sksl/errors/GrRecursion.fp",
 ]
 
+sksl_dsl_fp_tests = [
+  "/sksl/dslfp/GrDSLFPTest_Builtins.fp",
+  "/sksl/dslfp/GrDSLFPTest_DoStatement.fp",
+  "/sksl/dslfp/GrDSLFPTest_ForStatement.fp",
+  "/sksl/dslfp/GrDSLFPTest_HelloWorld.fp",
+  "/sksl/dslfp/GrDSLFPTest_IfStatement.fp",
+  "/sksl/dslfp/GrDSLFPTest_Sample.fp",
+  "/sksl/dslfp/GrDSLFPTest_SwitchStatement.fp",
+  "/sksl/dslfp/GrDSLFPTest_Swizzle.fp",
+  "/sksl/dslfp/GrDSLFPTest_Ternary.fp",
+  "/sksl/dslfp/GrDSLFPTest_WhileStatement.fp",
+]
+
 sksl_fp_tests = [
   "/sksl/fp/GrChildProcessorAndGlobal.fp",
   "/sksl/fp/GrChildProcessorSampleCoords.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixAndCoords.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixConstant.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixConstantAndCoords.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixMultipleUniforms.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixSingleInUniform.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixSingleUniform.fp",
-  "/sksl/fp/GrChildProcessorSampleMatrixSingleUniformExpr.fp",
+  "/sksl/fp/GrChildProcessorSampleWithColor.fp",
   "/sksl/fp/GrChildProcessorWithInputExpression.fp",
   "/sksl/fp/GrChildProcessors.fp",
   "/sksl/fp/GrChildProcessorsWithInput.fp",
@@ -56,7 +63,6 @@ sksl_fp_tests = [
   "/sksl/fp/GrSectionMake.fp",
   "/sksl/fp/GrSectionSetData.fp",
   "/sksl/fp/GrSectionTest.fp",
-  "/sksl/fp/GrTrackedInUniform.fp",
   "/sksl/fp/GrUniform.fp",
   "/sksl/fp/GrUniformArrays.fp",
   "/sksl/fp/GrUseExplicitReturn.fp",
@@ -108,10 +114,13 @@ sksl_error_tests = [
   "/sksl/errors/DuplicateFunction.sksl",
   "/sksl/errors/DuplicateOutput.sksl",
   "/sksl/errors/DuplicateSymbol.sksl",
+  "/sksl/errors/EmptyArray.sksl",
   "/sksl/errors/EmptyStruct.sksl",
+  "/sksl/errors/EnumTypeCoercion.sksl",
   "/sksl/errors/EnumValueMustBeConstInt.sksl",
   "/sksl/errors/ErrorsInDeadCode.sksl",
   "/sksl/errors/FloatRemainder.sksl",
+  "/sksl/errors/ForInitStmt.sksl",
   "/sksl/errors/ForTypeMismatch.sksl",
   "/sksl/errors/GenericArgumentMismatch.sksl",
   "/sksl/errors/IfTypeMismatch.sksl",
@@ -138,6 +147,8 @@ sksl_error_tests = [
   "/sksl/errors/Ossfuzz27614.sksl",
   "/sksl/errors/Ossfuzz27650.sksl",
   "/sksl/errors/Ossfuzz27663.sksl",
+  "/sksl/errors/Ossfuzz28050.sksl",
+  "/sksl/errors/Ossfuzz29444.sksl",
   "/sksl/errors/Ossfuzz29845.sksl",
   "/sksl/errors/Ossfuzz29849.sksl",
   "/sksl/errors/Ossfuzz31410.sksl",
@@ -230,6 +241,7 @@ sksl_spirv_tests = [
   "/sksl/spirv/OpaqueTypeInArray.sksl",
   "/sksl/workarounds/RewriteMatrixVectorMultiply.sksl",
   "/sksl/errors/UndefinedFunction.sksl",
+  "/sksl/errors/UnusedInterfaceBlock.sksl",
 ]
 
 sksl_shared_tests = [
@@ -317,6 +329,7 @@ sksl_shared_tests = [
   "/sksl/intrinsics/Trunc.sksl",
   "/sksl/intrinsics/UintBitsToFloat.sksl",
   "/sksl/intrinsics/Unpack.sksl",
+  "/sksl/shared/ArrayComparison.sksl",
   "/sksl/shared/ArrayConstructors.sksl",
   "/sksl/shared/ArrayIndexTypes.sksl",
   "/sksl/shared/ArrayTypes.sksl",
@@ -334,6 +347,7 @@ sksl_shared_tests = [
   "/sksl/shared/DeadDoWhileLoop.sksl",
   "/sksl/shared/DeadIfStatement.sksl",
   "/sksl/shared/DeadLoopVariable.sksl",
+  "/sksl/shared/DeadReturn.sksl",
   "/sksl/shared/DeadStripFunctions.sksl",
   "/sksl/shared/DependentInitializers.sksl",
   "/sksl/shared/DerivativesUnused.sksl",
@@ -343,6 +357,7 @@ sksl_shared_tests = [
   "/sksl/shared/EmptyBlocksES3.sksl",
   "/sksl/shared/Enum.sksl",
   "/sksl/shared/ForLoopControlFlow.sksl",
+  "/sksl/shared/ForLoopMultipleInit.sksl",
   "/sksl/shared/FragCoordsFlipY.sksl",
   "/sksl/shared/FragCoordsNew.sksl",
   "/sksl/shared/FragCoordsOld.sksl",
@@ -357,7 +372,6 @@ sksl_shared_tests = [
   "/sksl/shared/GeometryGSInvocations.geom",
   "/sksl/shared/GeometryNoGSInvocations.geom",
   "/sksl/shared/GeometryNoGSInvocationsReorder.geom",
-  "/sksl/shared/Height.sksl",
   "/sksl/shared/HelloWorld.sksl",
   "/sksl/shared/Hex.sksl",
   "/sksl/shared/HexUnsigned.sksl",
@@ -367,6 +381,7 @@ sksl_shared_tests = [
   "/sksl/shared/Matrices.sksl",
   "/sksl/shared/MatricesNonsquare.sksl",
   "/sksl/shared/MatrixEquality.sksl",
+  "/sksl/shared/MatrixScalarSplat.sksl",
   "/sksl/shared/MultipleAssignments.sksl",
   "/sksl/shared/NegatedVectorLiteral.sksl",
   "/sksl/shared/NoFragCoordsPos.vert",
@@ -380,11 +395,9 @@ sksl_shared_tests = [
   "/sksl/shared/OperatorsES3.sksl",
   "/sksl/shared/Ossfuzz26167.sksl",
   "/sksl/shared/Ossfuzz26759.sksl",
-  "/sksl/shared/Ossfuzz28050.sksl",
   "/sksl/shared/Ossfuzz28794.sksl",
   "/sksl/shared/Ossfuzz28904.sksl",
   "/sksl/shared/Ossfuzz29085.sksl",
-  "/sksl/shared/Ossfuzz29444.sksl",
   "/sksl/shared/Ossfuzz29494.sksl",
   "/sksl/shared/OutParams.sksl",
   "/sksl/shared/OutParamsNoInline.sksl",
@@ -441,13 +454,13 @@ sksl_shared_tests = [
   "/sksl/shared/VertexEarlyReturn.vert",
   "/sksl/shared/VertexID.vert",
   "/sksl/shared/WhileLoopControlFlow.sksl",
-  "/sksl/shared/Width.sksl",
 ]
 
 sksl_folding_tests = [
   "/sksl/folding/ArrayFolding.sksl",
   "/sksl/folding/AssignmentOps.sksl",
   "/sksl/folding/BoolFolding.sksl",
+  "/sksl/folding/CastFolding.sksl",
   "/sksl/folding/FloatFolding.sksl",
   "/sksl/folding/IntFoldingES2.sksl",
   "/sksl/folding/IntFoldingES3.sksl",
@@ -455,6 +468,7 @@ sksl_folding_tests = [
   "/sksl/folding/MatrixFoldingES3.sksl",
   "/sksl/folding/SelfAssignment.sksl",
   "/sksl/folding/ShortCircuitBoolFolding.sksl",
+  "/sksl/folding/SwizzleFolding.sksl",
   "/sksl/folding/VectorScalarFolding.sksl",
   "/sksl/folding/VectorVectorFolding.sksl",
 ]
@@ -554,38 +568,43 @@ sksl_settings_tests = [
 ]
 
 sksl_rte_tests = [
-  "/sksl/runtime/ArrayIndexing.rte",
-  "/sksl/runtime/ConstPreservation.rte",
-  "/sksl/runtime/ConversionConstructors.rte",
-  "/sksl/runtime/GlobalVariables.rte",
-  "/sksl/runtime/LoopInt.rte",
-  "/sksl/runtime/LoopFloat.rte",
-  "/sksl/runtime/SampleWithConstantMatrix.rte",
-  "/sksl/runtime/SampleWithExplicitCoord.rte",
-  "/sksl/runtime/SampleWithUniformMatrix.rte",
-  "/sksl/runtime/SampleWithVariableMatrix.rte",
-  "/sksl/runtime/VectorIndexing.rte",
+  "/sksl/runtime/ArrayIndexing.rts",
+  "/sksl/runtime/ConstPreservation.rts",
+  "/sksl/runtime/ConversionConstructors.rts",
+  "/sksl/runtime/GLSLTypeNames.rts",
+  "/sksl/runtime/GlobalVariables.rts",
+  "/sksl/runtime/LoopInt.rts",
+  "/sksl/runtime/LoopFloat.rts",
+  "/sksl/runtime/SampleWithExplicitCoord.rts",
+  "/sksl/runtime/VectorIndexing.rts",
 ]
 
 sksl_rte_error_tests = [
-  "/sksl/runtime_errors/FirstClassArrays.rte",
-  "/sksl/runtime_errors/IllegalArrayOps.rte",
-  "/sksl/runtime_errors/IllegalIndexing.rte",
-  "/sksl/runtime_errors/IllegalOperators.rte",
-  "/sksl/runtime_errors/IllegalShaderUse.rte",
-  "/sksl/runtime_errors/IllegalStatements.rte",
-  "/sksl/runtime_errors/LoopConditionErrors.rte",
-  "/sksl/runtime_errors/LoopExpressionErrors.rte",
-  "/sksl/runtime_errors/LoopInitializerErrors.rte",
-  "/sksl/runtime_errors/LoopStructureErrors.rte",
-  "/sksl/runtime_errors/UnsupportedTypeFragmentProcessor.rte",
-  "/sksl/runtime_errors/UnsupportedTypeSampler.rte",
-  "/sksl/runtime_errors/UnsupportedTypeTexture.rte",
+  "/sksl/runtime_errors/FirstClassArrays.rts",
+  "/sksl/runtime_errors/IllegalArrayOps.rts",
+  "/sksl/runtime_errors/IllegalIndexing.rts",
+  "/sksl/runtime_errors/IllegalOperators.rts",
+  "/sksl/runtime_errors/IllegalShaderUse.rts",
+  "/sksl/runtime_errors/IllegalStatements.rts",
+  "/sksl/runtime_errors/InvalidColorFilterFeatures.rtcf",
+  "/sksl/runtime_errors/InvalidColorFilterMain.rtcf",
+  "/sksl/runtime_errors/InvalidShaderMain.rts",
+  "/sksl/runtime_errors/LoopConditionErrors.rts",
+  "/sksl/runtime_errors/LoopExpressionErrors.rts",
+  "/sksl/runtime_errors/LoopInitializerErrors.rts",
+  "/sksl/runtime_errors/LoopStructureErrors.rts",
+  "/sksl/runtime_errors/UnsupportedTypeFragmentProcessor.rts",
+  "/sksl/runtime_errors/UnsupportedTypeSampler.rts",
+  "/sksl/runtime_errors/UnsupportedTypeTexture.rts",
 ]
 
 # Tests in sksl_fp_tests_sources will be compiled with --settings on, and are expected to generate
 # a .cpp and a .h output file.
 sksl_fp_tests_sources = sksl_fp_error_tests + sksl_fp_tests
+
+# Tests in sksl_dsl_fp_tests_sources will be compiled with --settings on, and are expected to
+# generate a .dsl.cpp and a .h output file.
+sksl_dsl_fp_tests_sources = sksl_dsl_fp_tests
 
 # Tests in sksl_glsl_tests_sources will be compiled with --settings on, and are expected to generate
 # a .glsl output file.

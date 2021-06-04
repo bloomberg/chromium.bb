@@ -166,22 +166,19 @@ void CFGAS_GEGraphics::SetFillColor(const CFGAS_GEColor& color) {
   m_info.fillColor = color;
 }
 
-void CFGAS_GEGraphics::StrokePath(CFGAS_GEPath* path,
-                                  const CFX_Matrix* matrix) {
-  if (path)
-    RenderDeviceStrokePath(path, matrix);
+void CFGAS_GEGraphics::StrokePath(const CFGAS_GEPath& path,
+                                  const CFX_Matrix& matrix) {
+  RenderDeviceStrokePath(path, matrix);
 }
 
-void CFGAS_GEGraphics::FillPath(CFGAS_GEPath* path,
+void CFGAS_GEGraphics::FillPath(const CFGAS_GEPath& path,
                                 CFX_FillRenderOptions::FillType fill_type,
-                                const CFX_Matrix* matrix) {
-  if (path)
-    RenderDeviceFillPath(path, fill_type, matrix);
+                                const CFX_Matrix& matrix) {
+  RenderDeviceFillPath(path, fill_type, matrix);
 }
 
-void CFGAS_GEGraphics::ConcatMatrix(const CFX_Matrix* matrix) {
-  if (matrix)
-    m_info.CTM.Concat(*matrix);
+void CFGAS_GEGraphics::ConcatMatrix(const CFX_Matrix& matrix) {
+  m_info.CTM.Concat(matrix);
 }
 
 const CFX_Matrix* CFGAS_GEGraphics::GetMatrix() const {
@@ -203,32 +200,29 @@ CFX_RenderDevice* CFGAS_GEGraphics::GetRenderDevice() {
   return m_renderDevice;
 }
 
-void CFGAS_GEGraphics::RenderDeviceStrokePath(const CFGAS_GEPath* path,
-                                              const CFX_Matrix* matrix) {
+void CFGAS_GEGraphics::RenderDeviceStrokePath(const CFGAS_GEPath& path,
+                                              const CFX_Matrix& matrix) {
   if (m_info.strokeColor.GetType() != CFGAS_GEColor::Solid)
     return;
 
   CFX_Matrix m = m_info.CTM;
-  if (matrix)
-    m.Concat(*matrix);
-
-  m_renderDevice->DrawPath(path->GetPathData(), &m, &m_info.graphState, 0x0,
+  m.Concat(matrix);
+  m_renderDevice->DrawPath(path.GetPathData(), &m, &m_info.graphState, 0x0,
                            m_info.strokeColor.GetArgb(),
                            CFX_FillRenderOptions());
 }
 
 void CFGAS_GEGraphics::RenderDeviceFillPath(
-    const CFGAS_GEPath* path,
+    const CFGAS_GEPath& path,
     CFX_FillRenderOptions::FillType fill_type,
-    const CFX_Matrix* matrix) {
+    const CFX_Matrix& matrix) {
   CFX_Matrix m = m_info.CTM;
-  if (matrix)
-    m.Concat(*matrix);
+  m.Concat(matrix);
 
   const CFX_FillRenderOptions fill_options(fill_type);
   switch (m_info.fillColor.GetType()) {
     case CFGAS_GEColor::Solid:
-      m_renderDevice->DrawPath(path->GetPathData(), &m, &m_info.graphState,
+      m_renderDevice->DrawPath(path.GetPathData(), &m, &m_info.graphState,
                                m_info.fillColor.GetArgb(), 0x0, fill_options);
       return;
     case CFGAS_GEColor::Pattern:
@@ -243,7 +237,7 @@ void CFGAS_GEGraphics::RenderDeviceFillPath(
 }
 
 void CFGAS_GEGraphics::FillPathWithPattern(
-    const CFGAS_GEPath* path,
+    const CFGAS_GEPath& path,
     const CFX_FillRenderOptions& fill_options,
     const CFX_Matrix& matrix) {
   RetainPtr<CFX_DIBitmap> bitmap = m_renderDevice->GetBitmap();
@@ -253,7 +247,8 @@ void CFGAS_GEGraphics::FillPathWithPattern(
   bmp->Create(width, height, FXDIB_Format::kArgb);
   m_renderDevice->GetDIBits(bmp, 0, 0);
 
-  FX_HatchStyle hatchStyle = m_info.fillColor.GetPattern()->m_hatchStyle;
+  CFGAS_GEPattern::HatchStyle hatchStyle =
+      m_info.fillColor.GetPattern()->GetHatchStyle();
   const FX_HATCHDATA& data =
       GetHatchBitmapData(static_cast<size_t>(hatchStyle));
 
@@ -261,39 +256,41 @@ void CFGAS_GEGraphics::FillPathWithPattern(
   mask->Create(data.width, data.height, FXDIB_Format::k1bppMask);
   memcpy(mask->GetBuffer(), data.maskBits, mask->GetPitch() * data.height);
   const CFX_FloatRect rectf =
-      matrix.TransformRect(path->GetPathData()->GetBoundingBox());
+      matrix.TransformRect(path.GetPathData()->GetBoundingBox());
   const FX_RECT rect = rectf.ToRoundedFxRect();
 
   CFX_DefaultRenderDevice device;
   device.Attach(bmp, false, nullptr, false);
-  device.FillRect(rect, m_info.fillColor.GetPattern()->m_backArgb);
+  device.FillRect(rect, m_info.fillColor.GetPattern()->GetBackArgb());
   for (int32_t j = rect.bottom; j < rect.top; j += mask->GetHeight()) {
-    for (int32_t i = rect.left; i < rect.right; i += mask->GetWidth())
-      device.SetBitMask(mask, i, j, m_info.fillColor.GetPattern()->m_foreArgb);
+    for (int32_t i = rect.left; i < rect.right; i += mask->GetWidth()) {
+      device.SetBitMask(mask, i, j,
+                        m_info.fillColor.GetPattern()->GetForeArgb());
+    }
   }
   CFX_RenderDevice::StateRestorer restorer(m_renderDevice);
-  m_renderDevice->SetClip_PathFill(path->GetPathData(), &matrix, fill_options);
+  m_renderDevice->SetClip_PathFill(path.GetPathData(), &matrix, fill_options);
   SetDIBitsWithMatrix(bmp, CFX_Matrix());
 }
 
 void CFGAS_GEGraphics::FillPathWithShading(
-    const CFGAS_GEPath* path,
+    const CFGAS_GEPath& path,
     const CFX_FillRenderOptions& fill_options,
     const CFX_Matrix& matrix) {
   RetainPtr<CFX_DIBitmap> bitmap = m_renderDevice->GetBitmap();
   int32_t width = bitmap->GetWidth();
   int32_t height = bitmap->GetHeight();
-  float start_x = m_info.fillColor.GetShading()->m_beginPoint.x;
-  float start_y = m_info.fillColor.GetShading()->m_beginPoint.y;
-  float end_x = m_info.fillColor.GetShading()->m_endPoint.x;
-  float end_y = m_info.fillColor.GetShading()->m_endPoint.y;
+  float start_x = m_info.fillColor.GetShading()->GetBeginPoint().x;
+  float start_y = m_info.fillColor.GetShading()->GetBeginPoint().y;
+  float end_x = m_info.fillColor.GetShading()->GetEndPoint().x;
+  float end_y = m_info.fillColor.GetShading()->GetEndPoint().y;
   auto bmp = pdfium::MakeRetain<CFX_DIBitmap>();
   bmp->Create(width, height, FXDIB_Format::kArgb);
   m_renderDevice->GetDIBits(bmp, 0, 0);
   int32_t pitch = bmp->GetPitch();
   bool result = false;
-  switch (m_info.fillColor.GetShading()->m_type) {
-    case FX_SHADING_Axial: {
+  switch (m_info.fillColor.GetShading()->GetType()) {
+    case CFGAS_GEShading::Type::kAxial: {
       float x_span = end_x - start_x;
       float y_span = end_y - start_y;
       float axis_len_square = (x_span * x_span) + (y_span * y_span);
@@ -308,25 +305,26 @@ void CFGAS_GEGraphics::FillPathWithShading(
             scale = (((x - start_x) * x_span) + ((y - start_y) * y_span)) /
                     axis_len_square;
             if (std::isnan(scale) || scale < 0.0f) {
-              if (!m_info.fillColor.GetShading()->m_isExtendedBegin)
+              if (!m_info.fillColor.GetShading()->IsExtendedBegin())
                 continue;
               scale = 0.0f;
             } else if (scale > 1.0f) {
-              if (!m_info.fillColor.GetShading()->m_isExtendedEnd)
+              if (!m_info.fillColor.GetShading()->IsExtendedEnd())
                 continue;
               scale = 1.0f;
             }
           }
-          int32_t index = static_cast<int32_t>(scale * (FX_SHADING_Steps - 1));
-          dib_buf[column] = m_info.fillColor.GetShading()->m_argbArray[index];
+          int32_t index =
+              static_cast<int32_t>(scale * (CFGAS_GEShading::kSteps - 1));
+          dib_buf[column] = m_info.fillColor.GetShading()->GetArgb(index);
         }
       }
       result = true;
       break;
     }
-    case FX_SHADING_Radial: {
-      float start_r = m_info.fillColor.GetShading()->m_beginRadius;
-      float end_r = m_info.fillColor.GetShading()->m_endRadius;
+    case CFGAS_GEShading::Type::kRadial: {
+      float start_r = m_info.fillColor.GetShading()->GetBeginRadius();
+      float end_r = m_info.fillColor.GetShading()->GetEndRadius();
       float a = ((start_x - end_x) * (start_x - end_x)) +
                 ((start_y - end_y) * (start_y - end_y)) -
                 ((start_r - end_r) * (start_r - end_r));
@@ -349,7 +347,8 @@ void CFGAS_GEGraphics::FillPathWithShading(
               continue;
             }
             float root = (sqrt(b2_4ac));
-            float s1, s2;
+            float s1;
+            float s2;
             if (a > 0) {
               s1 = (-b - root) / (2 * a);
               s2 = (-b + root) / (2 * a);
@@ -357,7 +356,7 @@ void CFGAS_GEGraphics::FillPathWithShading(
               s2 = (-b - root) / (2 * a);
               s1 = (-b + root) / (2 * a);
             }
-            if (s2 <= 1.0f || m_info.fillColor.GetShading()->m_isExtendedEnd) {
+            if (s2 <= 1.0f || m_info.fillColor.GetShading()->IsExtendedEnd()) {
               s = (s2);
             } else {
               s = (s1);
@@ -367,17 +366,17 @@ void CFGAS_GEGraphics::FillPathWithShading(
             }
           }
           if (std::isnan(s) || s < 0.0f) {
-            if (!m_info.fillColor.GetShading()->m_isExtendedBegin)
+            if (!m_info.fillColor.GetShading()->IsExtendedBegin())
               continue;
             s = 0.0f;
           }
           if (s > 1.0f) {
-            if (!m_info.fillColor.GetShading()->m_isExtendedEnd)
+            if (!m_info.fillColor.GetShading()->IsExtendedEnd())
               continue;
             s = 1.0f;
           }
-          int index = static_cast<int32_t>(s * (FX_SHADING_Steps - 1));
-          dib_buf[column] = m_info.fillColor.GetShading()->m_argbArray[index];
+          int index = static_cast<int32_t>(s * (CFGAS_GEShading::kSteps - 1));
+          dib_buf[column] = m_info.fillColor.GetShading()->GetArgb(index);
         }
       }
       result = true;
@@ -390,8 +389,7 @@ void CFGAS_GEGraphics::FillPathWithShading(
   }
   if (result) {
     CFX_RenderDevice::StateRestorer restorer(m_renderDevice);
-    m_renderDevice->SetClip_PathFill(path->GetPathData(), &matrix,
-                                     fill_options);
+    m_renderDevice->SetClip_PathFill(path.GetPathData(), &matrix, fill_options);
     SetDIBitsWithMatrix(bmp, matrix);
   }
 }

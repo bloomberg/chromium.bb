@@ -16,6 +16,7 @@
 #include "cc/layers/recording_source.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_filter.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_source.h"
@@ -155,7 +156,7 @@ class OopPixelTest : public testing::Test,
     viz::TestInProcessContextProvider::ScopedRasterContextLock lock(
         raster_context_provider_.get(), url.possibly_invalid_spec().c_str());
 
-    base::Optional<PlaybackImageProvider::Settings> settings;
+    absl::optional<PlaybackImageProvider::Settings> settings;
     settings.emplace(PlaybackImageProvider::Settings());
     settings->raster_mode = options.image_provider_raster_mode;
     PlaybackImageProvider image_provider(
@@ -198,13 +199,15 @@ class OopPixelTest : public testing::Test,
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
-        options.post_scale, options.requires_clear, &max_op_size_limit);
+        gfx::Vector2dF(options.post_scale, options.post_scale),
+        options.requires_clear, &max_op_size_limit);
     for (const auto& list : options.additional_lists) {
       raster_implementation->RasterCHROMIUM(
           list.get(), &image_provider, options.content_size,
           options.full_raster_rect, options.playback_rect,
-          options.post_translate, options.post_scale, options.requires_clear,
-          &max_op_size_limit);
+          options.post_translate,
+          gfx::Vector2dF(options.post_scale, options.post_scale),
+          options.requires_clear, &max_op_size_limit);
     }
     raster_implementation->EndRasterCHROMIUM();
     raster_implementation->OrderingBarrierCHROMIUM();
@@ -541,7 +544,9 @@ TEST_P(OopImagePixelTest, DrawImage) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
+
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
@@ -580,7 +585,8 @@ TEST_P(OopImagePixelTest, DrawImageScaled) {
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
   display_item_list->push<ScaleOp>(0.5f, 0.5f);
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
@@ -654,7 +660,8 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
       PaintImage::GetNextId());
   auto paint_image = builder.TakePaintImage();
   auto paint_record = sk_make_sp<PaintOpBuffer>();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling, nullptr);
   auto paint_record_shader = PaintShader::MakePaintRecord(
       paint_record, gfx::RectToSkRect(rect), SkTileMode::kRepeat,
@@ -752,7 +759,8 @@ TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
@@ -798,7 +806,8 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
@@ -843,7 +852,8 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
@@ -883,7 +893,8 @@ TEST_P(OopImagePixelTest, DrawImageWithSetMatrix) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  SkSamplingOptions sampling(FilterQuality());
+  SkSamplingOptions sampling(
+      PaintFlags::FilterQualityToSkSamplingOptions(FilterQuality()));
   display_item_list->push<SetMatrixOp>(SkM44::Scale(0.5f, 0.5f));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
                                        nullptr);
@@ -2345,9 +2356,18 @@ class OopPathPixelTest : public OopPixelTest,
     display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
     display_item_list->Finalize();
 
+    // Allow 8 pixels in 100x100 image to be different due to non-AA pixel
+    // rounding (hence 255 for error limit).
+    FuzzyPixelComparator comparator(
+        /*discard_alpha=*/false,
+        /*error_pixels_percentage_limit=*/0.08f,
+        /*small_error_pixels_percentage_limit=*/0.0f,
+        /*avg_abs_error_limit=*/255,
+        /*max_abs_error_limit=*/255,
+        /*small_error_threshold=*/0);
     auto expected = RasterExpectedBitmap(display_item_list, options);
     auto actual = Raster(display_item_list, options);
-    ExpectEquals(actual, expected);
+    ExpectEquals(actual, expected, comparator);
   }
 };
 

@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -41,9 +42,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/vector_icons.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;
@@ -85,7 +84,7 @@ TreeView::TreeView()
       drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   constexpr bool kUseMdIcons = true;
 #else
   constexpr bool kUseMdIcons = false;
@@ -245,7 +244,7 @@ TreeModelNode* TreeView::GetEditingNode() {
 }
 
 void TreeView::SetSelectedNode(TreeModelNode* model_node) {
-  UpdateSelection(model_node, kActiveAndSelected);
+  UpdateSelection(model_node, SelectionType::kActiveAndSelected);
 }
 
 const TreeModelNode* TreeView::GetSelectedNode() const {
@@ -253,7 +252,7 @@ const TreeModelNode* TreeView::GetSelectedNode() const {
 }
 
 void TreeView::SetActiveNode(TreeModelNode* model_node) {
-  UpdateSelection(model_node, kActive);
+  UpdateSelection(model_node, SelectionType::kActive);
 }
 
 const TreeModelNode* TreeView::GetActiveNode() const {
@@ -272,9 +271,9 @@ void TreeView::Collapse(ui::TreeModelNode* model_node) {
   bool was_expanded = IsExpanded(model_node);
   if (node->is_expanded()) {
     if (selected_node_ && selected_node_->HasAncestor(node))
-      UpdateSelection(model_node, kActiveAndSelected);
+      UpdateSelection(model_node, SelectionType::kActiveAndSelected);
     else if (active_node_ && active_node_->HasAncestor(node))
-      UpdateSelection(model_node, kActive);
+      UpdateSelection(model_node, SelectionType::kActive);
     node->set_is_expanded(false);
   }
   if (was_expanded) {
@@ -355,9 +354,9 @@ void TreeView::SetRootShown(bool root_shown) {
     const auto& children = model_->GetChildren(root_.model_node());
     TreeModelNode* first_child = children.empty() ? nullptr : children.front();
     if (selected_node_ == &root_)
-      UpdateSelection(first_child, kActiveAndSelected);
+      UpdateSelection(first_child, SelectionType::kActiveAndSelected);
     else if (active_node_ == &root_)
-      UpdateSelection(first_child, kActive);
+      UpdateSelection(first_child, SelectionType::kActive);
   }
 
   AXVirtualView* ax_view = root_.accessibility_view();
@@ -581,9 +580,9 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
       nearest_node = parent;
     }
     if (reset_selected_node)
-      UpdateSelection(nearest_node, kActiveAndSelected);
+      UpdateSelection(nearest_node, SelectionType::kActiveAndSelected);
     else if (reset_active_node)
-      UpdateSelection(nearest_node, kActive);
+      UpdateSelection(nearest_node, SelectionType::kActive);
   }
 
   if (IsExpanded(parent)) {
@@ -699,8 +698,9 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
 
     case ui::VKEY_UP:
     case ui::VKEY_DOWN:
-      IncrementSelection(event.key_code() == ui::VKEY_UP ? INCREMENT_PREVIOUS
-                                                         : INCREMENT_NEXT);
+      IncrementSelection(event.key_code() == ui::VKEY_UP
+                             ? IncrementType::kPrevious
+                             : IncrementType::kNext);
       return true;
 
     case ui::VKEY_LEFT:
@@ -788,8 +788,9 @@ void TreeView::UpdateSelection(TreeModelNode* model_node,
   // Force update if old value was nullptr to handle case of TreeNodesRemoved
   // explicitly resetting selected_node_ or active_node_ before invoking this.
   bool active_changed = (!active_node_ || active_node_ != node);
-  bool selection_changed = (selection_type == kActiveAndSelected &&
-                            (!selected_node_ || selected_node_ != node));
+  bool selection_changed =
+      (selection_type == SelectionType::kActiveAndSelected &&
+       (!selected_node_ || selected_node_ != node));
 
   // Update tree view states to new values.
   if (active_changed)
@@ -1117,7 +1118,7 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
                                   const gfx::Rect& node_bounds,
                                   bool expanded) {
   gfx::ImageSkia arrow = gfx::CreateVectorIcon(
-      kSubmenuArrowIcon,
+      vector_icons::kSubmenuArrowIcon,
       color_utils::DeriveDefaultIconColor(
           drawing_provider()->GetTextColorForNode(this, nullptr)));
   if (expanded) {
@@ -1322,7 +1323,7 @@ void TreeView::IncrementSelection(IncrementType type) {
     // If nothing is selected select the first or last node.
     if (root_.children().empty())
       return;
-    if (type == INCREMENT_PREVIOUS) {
+    if (type == IncrementType::kPrevious) {
       int row_count = GetRowCount();
       int depth = 0;
       DCHECK(row_count);
@@ -1337,7 +1338,7 @@ void TreeView::IncrementSelection(IncrementType type) {
   }
 
   int depth = 0;
-  int delta = type == INCREMENT_PREVIOUS ? -1 : 1;
+  int delta = type == IncrementType::kPrevious ? -1 : 1;
   int row = GetRowForInternalNode(active_node_, &depth);
   int new_row = base::ClampToRange(row + delta, 0, GetRowCount() - 1);
   if (new_row == row)

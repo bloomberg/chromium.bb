@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/user_education/feature_promo_registry.h"
 
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -26,6 +25,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -44,6 +44,11 @@ views::View* GetDesktopPwaInstallView(BrowserView* browser_view) {
       ->GetIconView(PageActionIconType::kPwaInstall);
 }
 
+// kIPHUpdatedConnectionSecurityIndicatorsFeature:
+views::View* GetLocationIconView(BrowserView* browser_view) {
+  return browser_view->toolbar()->location_bar()->location_icon_view();
+}
+
 // kIPHDesktopTabGroupsNewGroupFeature:
 views::View* GetTabGroupsAnchorView(BrowserView* browser_view) {
   constexpr int kPreferredAnchorTab = 2;
@@ -58,7 +63,7 @@ views::View* GetMediaButton(BrowserView* browser_view) {
 
 // kIPHReadingListDiscoveryFeature:
 views::View* GetReadingListButton(BrowserView* browser_view) {
-  if (browser_view->side_panel())
+  if (browser_view->right_aligned_side_panel())
     return browser_view->toolbar()->read_later_button();
 
   if (browser_view->bookmark_bar()->read_later_button()->IsDrawn())
@@ -112,7 +117,7 @@ FeaturePromoRegistry* FeaturePromoRegistry::GetInstance() {
   return instance.get();
 }
 
-base::Optional<FeaturePromoBubbleParams>
+absl::optional<FeaturePromoBubbleParams>
 FeaturePromoRegistry::GetParamsForFeature(const base::Feature& iph_feature,
                                           BrowserView* browser_view) {
   auto data_it = feature_promo_data_.find(&iph_feature);
@@ -121,7 +126,7 @@ FeaturePromoRegistry::GetParamsForFeature(const base::Feature& iph_feature,
   views::View* const anchor_view =
       data_it->second.get_anchor_view_callback.Run(browser_view);
   if (!anchor_view)
-    return base::nullopt;
+    return absl::nullopt;
 
   FeaturePromoBubbleParams params = data_it->second.params;
   params.anchor_view = anchor_view;
@@ -173,6 +178,18 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
   }
 
   {
+    // kIPHUpdatedConnectionSecurityIndicatorsFeature:
+    FeaturePromoBubbleParams params;
+    params.body_string_specifier =
+        IDS_UPDATED_CONNECTION_SECURITY_INDICATORS_PROMO;
+    params.arrow = views::BubbleBorder::Arrow::TOP_LEFT;
+
+    RegisterFeature(
+        feature_engagement::kIPHUpdatedConnectionSecurityIndicatorsFeature,
+        params, base::BindRepeating(GetLocationIconView));
+  }
+
+  {
     // kIPHDesktopTabGroupsNewGroupFeature:
     FeaturePromoBubbleParams params;
     params.body_string_specifier = IDS_TAB_GROUPS_NEW_GROUP_PROMO;
@@ -181,8 +198,7 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
     // Turn on IPH Snooze for Tab Group.
     if (base::FeatureList::IsEnabled(
             feature_engagement::kIPHDesktopSnoozeFeature)) {
-      params.allow_focus = true;
-      params.persist_on_blur = true;
+      params.focus_on_create = true;
       params.allow_snooze = true;
     }
 
@@ -235,8 +251,7 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
     // Turn on IPH Snooze for Read Later entry point.
     if (base::FeatureList::IsEnabled(
             feature_engagement::kIPHDesktopSnoozeFeature)) {
-      params.allow_focus = true;
-      params.persist_on_blur = true;
+      params.focus_on_create = true;
       params.allow_snooze = true;
     }
 

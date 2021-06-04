@@ -45,22 +45,22 @@ CrasInputStream::~CrasInputStream() {
   DCHECK(!client_);
 }
 
-bool CrasInputStream::Open() {
+AudioInputStream::OpenOutcome CrasInputStream::Open() {
   if (client_) {
     NOTREACHED() << "CrasInputStream already open";
-    return false;  // Already open.
+    return OpenOutcome::kAlreadyOpen;
   }
 
   // Sanity check input values.
   if (params_.sample_rate() <= 0) {
     DLOG(WARNING) << "Unsupported audio frequency.";
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   if (AudioParameters::AUDIO_PCM_LINEAR != params_.format() &&
       AudioParameters::AUDIO_PCM_LOW_LATENCY != params_.format()) {
     DLOG(WARNING) << "Unsupported audio format.";
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   // Create the client and connect to the CRAS server.
@@ -68,14 +68,14 @@ bool CrasInputStream::Open() {
   if (!client_) {
     DLOG(WARNING) << "Couldn't create CRAS client.\n";
     client_ = NULL;
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   if (libcras_client_connect(client_)) {
     DLOG(WARNING) << "Couldn't connect CRAS client.\n";
     libcras_client_destroy(client_);
     client_ = NULL;
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   // Then start running the client.
@@ -83,7 +83,7 @@ bool CrasInputStream::Open() {
     DLOG(WARNING) << "Couldn't run CRAS client.\n";
     libcras_client_destroy(client_);
     client_ = NULL;
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   if (is_loopback_) {
@@ -93,7 +93,7 @@ bool CrasInputStream::Open() {
       // cleanup code.
       libcras_client_destroy(client_);
       client_ = NULL;
-      return false;
+      return OpenOutcome::kFailed;
     }
 
     int rc = libcras_client_get_loopback_dev_idx(client_, &pin_device_);
@@ -101,11 +101,11 @@ bool CrasInputStream::Open() {
       DLOG(WARNING) << "Couldn't find CRAS loopback device.";
       libcras_client_destroy(client_);
       client_ = NULL;
-      return false;
+      return OpenOutcome::kFailed;
     }
   }
 
-  return true;
+  return OpenOutcome::kSuccess;
 }
 
 void CrasInputStream::Close() {
@@ -124,6 +124,14 @@ void CrasInputStream::Close() {
 
 inline bool CrasInputStream::UseCrasAec() const {
   return params_.effects() & AudioParameters::ECHO_CANCELLER;
+}
+
+inline bool CrasInputStream::UseCrasNs() const {
+  return params_.effects() & AudioParameters::NOISE_SUPPRESSION;
+}
+
+inline bool CrasInputStream::UseCrasAgc() const {
+  return params_.effects() & AudioParameters::AUTOMATIC_GAIN_CONTROL;
 }
 
 void CrasInputStream::Start(AudioInputCallback* callback) {
@@ -211,6 +219,12 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
 
   if (UseCrasAec())
     libcras_stream_params_enable_aec(stream_params);
+
+  if (UseCrasNs())
+    libcras_stream_params_enable_ns(stream_params);
+
+  if (UseCrasAgc())
+    libcras_stream_params_enable_agc(stream_params);
 
   // Adding the stream will start the audio callbacks.
   if (libcras_client_add_pinned_stream(client_, pin_device_, &stream_id_,

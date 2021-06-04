@@ -5,13 +5,11 @@
 #ifndef ASH_SHELF_SWIPE_HOME_TO_OVERVIEW_CONTROLLER_H_
 #define ASH_SHELF_SWIPE_HOME_TO_OVERVIEW_CONTROLLER_H_
 
-#include <vector>
-
 #include "ash/ash_export.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ash {
@@ -46,7 +44,7 @@ class ASH_EXPORT SwipeHomeToOverviewController {
             float scroll_x,
             float scroll_y);
   void EndDrag(const gfx::PointF& location_in_screen,
-               base::Optional<float> velocity_y);
+               absl::optional<float> velocity_y);
   void CancelDrag();
 
   base::OneShotTimer* overview_transition_timer_for_testing() {
@@ -89,7 +87,7 @@ class ASH_EXPORT SwipeHomeToOverviewController {
   // ScopedClosureRunner that while in scope disables background blur in home
   // screen. It will be set during home screen drag with a goal of improving
   // overall drag performance.
-  base::Optional<base::ScopedClosureRunner> home_screen_blur_disabler_;
+  absl::optional<base::ScopedClosureRunner> home_screen_blur_disabler_;
 
   DISALLOW_COPY_AND_ASSIGN(SwipeHomeToOverviewController);
 };

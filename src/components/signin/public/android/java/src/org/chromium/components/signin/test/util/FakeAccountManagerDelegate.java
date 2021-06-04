@@ -10,12 +10,9 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.GuardedBy;
-import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Log;
-import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerDelegate;
@@ -37,9 +34,6 @@ import java.util.UUID;
  *
  * Currently, this implementation supports adding and removing accounts, handling credentials
  * (including confirming them), and handling of dummy auth tokens.
- *
- * If you want to auto-approve a given authtokentype, use {@link #addAccount} with
- * an AccountHolder you have built with hasBeenAccepted("yourAuthTokenType", true).
  */
 public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     private static final String TAG = "FakeAccountManager";
@@ -48,9 +42,11 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccounts = new LinkedHashSet<>();
-    private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
+    private AccountsChangeObserver mObserver;
 
-    public FakeAccountManagerDelegate() {}
+    public FakeAccountManagerDelegate() {
+        mObserver = null;
+    }
 
     @Nullable
     @Override
@@ -70,20 +66,12 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public void registerObservers() {}
-
-    @Override
-    public void addObserver(AccountsChangeObserver observer) {
-        mObservers.addObserver(observer);
+    public void attachAccountsChangeObserver(AccountsChangeObserver observer) {
+        mObserver = observer;
     }
 
     @Override
-    public void removeObserver(AccountsChangeObserver observer) {
-        mObservers.removeObserver(observer);
-    }
-
-    @Override
-    public Account[] getAccountsSync() {
+    public Account[] getAccounts() {
         ArrayList<Account> result = new ArrayList<>();
         synchronized (mLock) {
             for (AccountHolder ah : mAccounts) {
@@ -101,7 +89,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             boolean added = mAccounts.add(accountHolder);
             assert added : "Account already added";
         }
-        ThreadUtils.runOnUiThreadBlocking(this::fireOnAccountsChangedNotification);
+        ThreadUtils.runOnUiThreadBlocking(mObserver::onAccountsChanged);
     }
 
     /**
@@ -112,31 +100,22 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             boolean removed = mAccounts.remove(accountHolder);
             assert removed : "Can't find account";
         }
-        ThreadUtils.runOnUiThreadBlocking(this::fireOnAccountsChangedNotification);
+        ThreadUtils.runOnUiThreadBlocking(mObserver::onAccountsChanged);
     }
 
     @Override
-    public AccessTokenData getAuthToken(Account account, String authTokenScope)
-            throws AuthException {
-        AccountHolder ah = tryGetAccountHolder(account);
-        if (ah == null) {
+    public AccessTokenData getAuthToken(Account account, String scope) throws AuthException {
+        AccountHolder accountHolder = tryGetAccountHolder(account);
+        if (accountHolder == null) {
             throw new AuthException(AuthException.NONTRANSIENT,
                     "Cannot get auth token for unknown account '" + account + "'");
         }
         synchronized (mLock) {
-            // Some tests register auth tokens with value null, and those should be preserved.
-            if (!ah.hasAuthTokenRegistered(authTokenScope)
-                    && ah.getAuthToken(authTokenScope) == null) {
-                // No authtoken registered. Need to create one.
-                String authToken = UUID.randomUUID().toString();
-                Log.d(TAG,
-                        "Created new auth token for " + ah.getAccount() + ": authTokenScope = "
-                                + authTokenScope + ", authToken = " + authToken);
-                ah = ah.withAuthToken(authTokenScope, authToken);
-                mAccounts.add(ah);
+            if (accountHolder.getAuthToken(scope) == null) {
+                accountHolder.updateAuthToken(scope, UUID.randomUUID().toString());
             }
         }
-        return ah.getAuthToken(authTokenScope);
+        return accountHolder.getAuthToken(scope);
     }
 
     @Override
@@ -177,18 +156,12 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public void updateCredentials(
             Account account, Activity activity, final Callback<Boolean> callback) {
-        ThreadUtils.assertOnUiThread();
-        if (callback == null) {
-            return;
+        if (callback != null) {
+            ThreadUtils.postOnUiThread(callback.bind(true));
         }
-
-        ThreadUtils.postOnUiThread(callback.bind(true));
     }
 
     private AccountHolder tryGetAccountHolder(Account account) {
-        if (account == null) {
-            throw new IllegalArgumentException("Account can not be null");
-        }
         synchronized (mLock) {
             for (AccountHolder accountHolder : mAccounts) {
                 if (account.equals(accountHolder.getAccount())) {
@@ -197,12 +170,5 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         return null;
-    }
-
-    @MainThread
-    private void fireOnAccountsChangedNotification() {
-        for (AccountsChangeObserver observer : mObservers) {
-            observer.onAccountsChanged();
-        }
     }
 }

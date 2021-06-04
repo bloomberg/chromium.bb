@@ -122,7 +122,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -224,7 +223,7 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container) {
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       std::move(policy_container), nullptr /* extra_data */);
 
-  CommitDocumentLoader(new_document_loader, base::nullopt, nullptr,
+  CommitDocumentLoader(new_document_loader, absl::nullopt, nullptr,
                        CommitReason::kInitialization);
 
   frame_->GetDocument()->CancelParsing();
@@ -307,7 +306,7 @@ void FrameLoader::SaveScrollState() {
 
 void FrameLoader::DispatchUnloadEvent(
     SecurityOrigin* committing_origin,
-    base::Optional<Document::UnloadEventTiming>* timing) {
+    absl::optional<Document::UnloadEventTiming>* timing) {
   FrameNavigationDisabler navigation_disabler(*frame_);
   SaveScrollState();
 
@@ -430,7 +429,7 @@ void FrameLoader::DidFinishSameDocumentNavigation(
   DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
 
   // onpopstate might change view state, so stash for later restore.
-  base::Optional<HistoryItem::ViewState> view_state;
+  absl::optional<HistoryItem::ViewState> view_state;
   if (history_item) {
     view_state = history_item->GetViewState();
   }
@@ -658,17 +657,20 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   // Perform same document navigation.
   if (same_document_navigation) {
+    DCHECK(origin_window);
     document_loader_->CommitSameDocumentNavigation(
         url, frame_load_type, nullptr, request.ClientRedirect(),
-        resource_request.HasUserGesture(), origin_window,
-        request.GetTriggeringEventInfo(), nullptr /* extra_data */);
+        resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
+        /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
+        nullptr /* extra_data */);
     return;
   }
 
   if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
     if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab) {
       if (!app_history->DispatchNavigateEvent(
-              url, request.Form(), false, frame_load_type,
+              url, request.Form(), NavigateEventType::kCrossDocument,
+              frame_load_type,
               request.GetTriggeringEventInfo() ==
                       mojom::blink::TriggeringEventInfo::kFromTrustedEvent
                   ? UserNavigationInvolvement::kActivation
@@ -802,7 +804,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       should_check_main_world_csp, request.GetBlobURLToken(),
       request.GetInputStartTime(), request.HrefTranslate().GetString(),
       request.Impression(), initiator_address_space,
-      request.GetInitiatorFrameToken(),
+      request.GetInitiatorFrameToken(), request.TakeSourceLocation(),
       request.TakeInitiatorPolicyContainerKeepAliveHandle());
 }
 
@@ -951,17 +953,6 @@ void FrameLoader::CommitNavigation(
     return;
   }
 
-  if (!navigation_params->is_browser_initiated) {
-    if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
-      app_history->DispatchNavigateEvent(
-          navigation_params->url, nullptr, false,
-          navigation_params->frame_load_type,
-          navigation_params->is_browser_initiated
-              ? UserNavigationInvolvement::kBrowserUI
-              : UserNavigationInvolvement::kNone);
-    }
-  }
-
   // TODO(dgozman): figure out the better place for this check
   // to cancel lazy load both on start and commit. Perhaps
   // CancelProvisionalLoaderForNewNavigation() is a good one.
@@ -1007,7 +998,7 @@ void FrameLoader::CommitNavigation(
     }
   }
 
-  base::Optional<Document::UnloadEventTiming> unload_timing;
+  absl::optional<Document::UnloadEventTiming> unload_timing;
   FrameSwapScope frame_swap_scope(frame_owner);
   {
     base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
@@ -1026,11 +1017,17 @@ void FrameLoader::CommitNavigation(
     scoped_refptr<SecurityOrigin> security_origin =
         SecurityOrigin::Create(navigation_params->url);
 
-    // If `frame_` is provisional, this is largely a no-op other than cleaning
-    // up the initial (and unused) empty document. Otherwise, this unloads the
-    // previous Document and detaches subframes. If `DetachDocument()` returns
-    // false, JS caused `frame_` to be removed, so just return.
+    // If `frame_` is provisional, `DetachDocument()` is largely a no-op other
+    // than cleaning up the initial (and unused) empty document. Otherwise, this
+    // unloads the previous Document and detaches subframes. If
+    // `DetachDocument()` returns false, JS caused `frame_` to be removed, so
+    // just return.
     const bool is_provisional = frame_->IsProvisional();
+    // For an XSLT document, set SentDidFinishLoad now to prevent the
+    // DocumentLoader from reporting an error when detaching the pre-XSLT
+    // document.
+    if (commit_reason == CommitReason::kXSLT && document_loader_)
+      document_loader_->SetSentDidFinishLoad();
     if (!DetachDocument(security_origin.get(), &unload_timing)) {
       DCHECK(!is_provisional);
       return;
@@ -1054,7 +1051,7 @@ void FrameLoader::CommitNavigation(
       navigation_params->frame_load_type,
       !navigation_params->http_body.IsNull(), false /* have_event */);
 
-  std::unique_ptr<PolicyContainer> policy_container = nullptr;
+  std::unique_ptr<PolicyContainer> policy_container;
   if (navigation_params->policy_container) {
     // Javascript and xslt documents should not change the PolicyContainer.
     DCHECK(commit_reason == CommitReason::kRegular);
@@ -1132,7 +1129,7 @@ void FrameLoader::DidAccessInitialDocument() {
 
 bool FrameLoader::DetachDocument(
     SecurityOrigin* committing_origin,
-    base::Optional<Document::UnloadEventTiming>* timing) {
+    absl::optional<Document::UnloadEventTiming>* timing) {
   DCHECK(frame_->GetDocument());
   DCHECK(document_loader_);
 
@@ -1188,7 +1185,7 @@ bool FrameLoader::DetachDocument(
 
 void FrameLoader::CommitDocumentLoader(
     DocumentLoader* document_loader,
-    const base::Optional<Document::UnloadEventTiming>& unload_timing,
+    const absl::optional<Document::UnloadEventTiming>& unload_timing,
     HistoryItem* previous_history_item,
     CommitReason commit_reason) {
   document_loader_ = document_loader;
@@ -1272,7 +1269,7 @@ String FrameLoader::UserAgent() const {
   return user_agent;
 }
 
-base::Optional<blink::UserAgentMetadata> FrameLoader::UserAgentMetadata()
+absl::optional<blink::UserAgentMetadata> FrameLoader::UserAgentMetadata()
     const {
   return Client()->UserAgentMetadata();
 }
@@ -1292,28 +1289,6 @@ void FrameLoader::Detach() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID("loading", "FrameLoader", this);
   state_ = State::kDetached;
   virtual_time_pauser_.UnpauseVirtualTime();
-}
-
-bool FrameLoader::MaybeRenderFallbackContent() {
-  DCHECK(frame_->Owner() && frame_->Owner()->CanRenderFallbackContent());
-  // |client_navigation_| can be null here:
-  // 1. We asked client to navigation through BeginNavigation();
-  // 2. Meanwhile, another navigation has been started, e.g. to about:srcdoc.
-  //    This navigation has been processed, |client_navigation_| has been
-  //    reset, and browser process was informed about cancellation.
-  // 3. Before the cancellation reached the browser process, it decided that
-  //    first navigation has failed and asks to commit the failed navigation.
-  // 4. We come here, while |client_navigation_| is null.
-  // TODO(dgozman): shouldn't we abandon the commit of navigation failure
-  // because we've already notified the client about cancellation? This needs
-  // to be double-checked, perhaps this is dead code.
-  if (!client_navigation_)
-    return false;
-
-  frame_->Owner()->RenderFallbackContent(frame_);
-  ClearClientNavigation();
-  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
-  return true;
 }
 
 bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
@@ -1677,7 +1652,7 @@ void FrameLoader::ReportLegacyTLSVersion(const KURL& url,
       console_message));
 }
 
-void FrameLoader::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void FrameLoader::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   {
     auto frame_dict = dict.AddDictionary("frame");

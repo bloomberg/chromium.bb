@@ -25,6 +25,8 @@ constexpr const char* kBatteryDischargeRateHistogramName =
     "Power.BatteryDischargeRate2";
 constexpr const char* kBatteryDischargeModeHistogramName =
     "Power.BatteryDischargeMode";
+constexpr const char* kZeroWindowSuffix = ".ZeroWindow";
+
 constexpr base::TimeDelta kExpectedMetricsCollectionInterval =
     base::TimeDelta::FromSeconds(120);
 constexpr double kTolerableTimeElapsedRatio = 0.10;
@@ -37,13 +39,15 @@ class PowerMetricsReporterAccess : public PowerMetricsReporter {
  public:
   using PowerMetricsReporter::BatteryDischargeMode;
   static void ReportBatteryHistograms(
+      const UsageScenarioDataStore::IntervalData& interval_data,
       base::TimeDelta sampling_interval,
       base::TimeDelta interval_duration,
       BatteryDischargeMode discharge_mode,
-      base::Optional<int64_t> discharge_rate_during_interval) {
+      absl::optional<int64_t> discharge_rate_during_interval,
+      const std::vector<const char*>& suffixes) {
     PowerMetricsReporter::ReportBatteryHistograms(
-        sampling_interval, interval_duration, discharge_mode,
-        std::move(discharge_rate_during_interval));
+        interval_data, sampling_interval, interval_duration, discharge_mode,
+        std::move(discharge_rate_during_interval), suffixes);
   }
 };
 
@@ -384,7 +388,7 @@ TEST_F(PowerMetricsReporterUnitTest, UKMsBatteryStateUnavailable) {
   task_environment_.FastForwardBy(kExpectedMetricsCollectionInterval);
   // A nullopt battery value indicates that the battery level is unavailable.
   battery_states_.push(BatteryLevelProvider::BatteryState{
-      1, 1, base::nullopt, true, base::TimeTicks::Now()});
+      1, 1, absl::nullopt, true, base::TimeTicks::Now()});
 
   UsageScenarioDataStore::IntervalData fake_interval_data;
   fake_interval_data.source_id_for_longest_visible_origin = 42;
@@ -470,12 +474,72 @@ TEST_F(PowerMetricsReporterUnitTest, UKMsBatteryStateIncrease) {
       1);
 }
 
-TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsTooEarly) {
+TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureZeroWindow) {
+  // Default value for interval_data.max_tab_count is zero.
+  UsageScenarioDataStore::IntervalData interval_data;
+
   PowerMetricsReporterAccess::ReportBatteryHistograms(
+      interval_data, kExpectedMetricsCollectionInterval,
       kExpectedMetricsCollectionInterval,
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
+
+  histogram_tester_.ExpectUniqueSample(kBatteryDischargeRateHistogramName, 2500,
+                                       1);
+  histogram_tester_.ExpectUniqueSample(
+      kBatteryDischargeModeHistogramName,
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 1);
+
+  // There were no tabs shown during the interval so no windows either.
+  // ZeroWindow suffix should be recorded.
+  histogram_tester_.ExpectUniqueSample(
+      base::JoinString({kBatteryDischargeRateHistogramName, kZeroWindowSuffix},
+                       ""),
+      2500, 1);
+  histogram_tester_.ExpectUniqueSample(
+      base::JoinString({kBatteryDischargeModeHistogramName, kZeroWindowSuffix},
+                       ""),
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 1);
+}
+
+TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureMultipleWindows) {
+  // Tabs were shown during interval so windows too.
+  UsageScenarioDataStore::IntervalData interval_data;
+  interval_data.max_tab_count = 1;
+
+  PowerMetricsReporterAccess::ReportBatteryHistograms(
+      interval_data, kExpectedMetricsCollectionInterval,
+      kExpectedMetricsCollectionInterval,
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
+
+  histogram_tester_.ExpectUniqueSample(kBatteryDischargeRateHistogramName, 2500,
+                                       1);
+  histogram_tester_.ExpectUniqueSample(
+      kBatteryDischargeModeHistogramName,
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 1);
+
+  // Tabs were shown during the interval so windows too. ZeroWindow
+  // suffix should not be recorded.
+  histogram_tester_.ExpectTotalCount(
+      base::JoinString({kBatteryDischargeRateHistogramName, kZeroWindowSuffix},
+                       ""),
+      0);
+  histogram_tester_.ExpectTotalCount(
+      base::JoinString({kBatteryDischargeModeHistogramName, kZeroWindowSuffix},
+                       ""),
+      0);
+}
+
+TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsTooEarly) {
+  UsageScenarioDataStore::IntervalData interval_data;
+
+  PowerMetricsReporterAccess::ReportBatteryHistograms(
+      interval_data, kExpectedMetricsCollectionInterval,
       (kExpectedMetricsCollectionInterval * kTolerableNegativeDrift) -
           base::TimeDelta::FromSeconds(1),
-      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500);
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
 
   histogram_tester_.ExpectTotalCount(kBatteryDischargeRateHistogramName, 0);
   histogram_tester_.ExpectUniqueSample(
@@ -484,11 +548,14 @@ TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsTooEarly) {
 }
 
 TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsEarly) {
+  UsageScenarioDataStore::IntervalData interval_data;
+
   PowerMetricsReporterAccess::ReportBatteryHistograms(
-      kExpectedMetricsCollectionInterval,
+      interval_data, kExpectedMetricsCollectionInterval,
       (kExpectedMetricsCollectionInterval * kTolerableNegativeDrift) +
           base::TimeDelta::FromSeconds(1),
-      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500);
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
 
   histogram_tester_.ExpectUniqueSample(kBatteryDischargeRateHistogramName, 2500,
                                        1);
@@ -498,11 +565,14 @@ TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsEarly) {
 }
 
 TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsTooLate) {
+  UsageScenarioDataStore::IntervalData interval_data;
+
   PowerMetricsReporterAccess::ReportBatteryHistograms(
-      kExpectedMetricsCollectionInterval,
+      interval_data, kExpectedMetricsCollectionInterval,
       (kExpectedMetricsCollectionInterval * kTolerablePositiveDrift) +
           base::TimeDelta::FromSeconds(1),
-      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500);
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
 
   histogram_tester_.ExpectTotalCount(kBatteryDischargeRateHistogramName, 0);
   histogram_tester_.ExpectUniqueSample(
@@ -511,11 +581,14 @@ TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsTooLate) {
 }
 
 TEST_F(PowerMetricsReporterUnitTest, BatteryDischargeCaptureIsLate) {
+  UsageScenarioDataStore::IntervalData interval_data;
+
   PowerMetricsReporterAccess::ReportBatteryHistograms(
-      kExpectedMetricsCollectionInterval,
+      interval_data, kExpectedMetricsCollectionInterval,
       (kExpectedMetricsCollectionInterval * kTolerablePositiveDrift) -
           base::TimeDelta::FromSeconds(1),
-      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500);
+      PowerMetricsReporterAccess::BatteryDischargeMode::kDischarging, 2500,
+      PowerMetricsReporter::GetSuffixesForTesting(interval_data));
 
   histogram_tester_.ExpectUniqueSample(kBatteryDischargeRateHistogramName, 2500,
                                        1);

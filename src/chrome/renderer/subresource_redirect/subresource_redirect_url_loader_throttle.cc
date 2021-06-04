@@ -45,7 +45,7 @@ void RecordMetricsOnLoadFinished(
     LoginRobotsCompressionMetrics* login_robots_compression_metrics,
     SubresourceRedirectResult redirect_result,
     uint64_t content_length,
-    base::Optional<float> ofcl) {
+    absl::optional<float> ofcl) {
   if (login_robots_compression_metrics) {
     login_robots_compression_metrics->RecordMetricsOnLoadFinished(
         redirect_result, content_length, ofcl);
@@ -128,6 +128,20 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
     bool* defer) {
   DCHECK_EQ(request->destination, network::mojom::RequestDestination::kImage);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
+
+  if (redirect_result_ ==
+      SubresourceRedirectResult::kIneligibleBlinkDisallowed) {
+    if (auto* public_resource_decider_agent =
+            GetPublicResourceDeciderAgent(render_frame_id_)) {
+      public_resource_decider_agent
+          ->NotifyIneligibleBlinkDisallowedSubresource();
+    }
+    if (login_robots_compression_metrics_) {
+      login_robots_compression_metrics_->NotifyRequestStart();
+      login_robots_compression_metrics_->NotifyRequestSent();
+    }
+    return;
+  }
 
   if (redirect_result_ != SubresourceRedirectResult::kRedirectable)
     return;
@@ -310,7 +324,7 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
       PublicResourceDeciderRedirectState::kRedirectAttempted) {
     RecordMetricsOnLoadFinished(
         base::OptionalOrNullptr(login_robots_compression_metrics_),
-        redirect_result_, content_length, base::nullopt);
+        redirect_result_, content_length, absl::nullopt);
     return;
   }
   DCHECK(ShouldCompressRedirectSubresource());
@@ -323,7 +337,7 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
   if (response_head->headers->response_code() != 200) {
     RecordMetricsOnLoadFinished(
         base::OptionalOrNullptr(login_robots_compression_metrics_),
-        redirect_result_, content_length, base::nullopt);
+        redirect_result_, content_length, absl::nullopt);
     return;
   }
 
@@ -335,7 +349,7 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
   if (ofcl <= 0) {
     RecordMetricsOnLoadFinished(
         base::OptionalOrNullptr(login_robots_compression_metrics_),
-        redirect_result_, content_length, base::nullopt);
+        redirect_result_, content_length, absl::nullopt);
     return;
   }
 

@@ -10,6 +10,7 @@ import android.view.ViewStub;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.password_manager.ConfirmationDialogHelper;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -91,15 +93,21 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     }
 
     @Override
-    public void registerActionProvider(
+    public void registerActionProvider(WebContents webContents,
             PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
-        mMediator.registerActionProvider(actionProvider);
+        mMediator.registerActionProvider(webContents, actionProvider);
     }
 
     @Override
-    public void registerSheetDataProvider(@AccessoryTabType int sheetType,
+    public void registerSheetDataProvider(WebContents webContents, @AccessoryTabType int sheetType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
-        mMediator.registerSheetDataProvider(sheetType, sheetDataProvider);
+        mMediator.registerSheetDataProvider(webContents, sheetType, sheetDataProvider);
+    }
+
+    @Override
+    public void registerSheetUpdateDelegate(
+            WebContents webContents, UpdateAccessorySheetDelegate delegate) {
+        mMediator.registerSheetUpdateDelegate(webContents, delegate);
     }
 
     @Override
@@ -131,6 +139,11 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     @Override
     public boolean isFillingViewShown(View view) {
         return mMediator.isFillingViewShown(view);
+    }
+
+    @Override
+    public ObservableSupplier<Integer> getBottomInsetSupplier() {
+        return mMediator.getBottomInsetSupplier();
     }
 
     @Override

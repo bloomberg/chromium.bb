@@ -46,6 +46,8 @@ public:
 
     ~DSLStatement();
 
+    DSLStatement& operator=(DSLStatement&& other) = default;
+
     std::unique_ptr<SkSL::Statement> release() {
         return std::move(fStatement);
     }
@@ -62,6 +64,7 @@ private:
     friend class DSLExpression;
     friend class DSLPossibleStatement;
     friend class DSLWriter;
+    friend DSLStatement operator,(DSLStatement left, DSLStatement right);
 };
 
 /**
@@ -89,6 +92,8 @@ private:
 
     friend class DSLStatement;
 };
+
+DSLStatement operator,(DSLStatement left, DSLStatement right);
 
 } // namespace dsl
 

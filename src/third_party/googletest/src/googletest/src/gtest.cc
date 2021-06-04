@@ -1044,7 +1044,7 @@ class Timer {
   }
 
  private:
-  std::chrono::time_point<std::chrono::steady_clock> start_;
+  std::chrono::steady_clock::time_point start_;
 };
 
 // Returns a timestamp as milliseconds since the epoch. Note this time may jump
@@ -2241,7 +2241,7 @@ void TestResult::RecordProperty(const std::string& xml_element,
   if (!ValidateTestProperty(xml_element, test_property)) {
     return;
   }
-  internal::MutexLock lock(&test_properites_mutex_);
+  internal::MutexLock lock(&test_properties_mutex_);
   const std::vector<TestProperty>::iterator property_with_matching_key =
       std::find_if(test_properties_.begin(), test_properties_.end(),
                    internal::TestPropertyKeyIs(test_property.key()));
@@ -4096,6 +4096,10 @@ static bool PortableLocaltime(time_t seconds, struct tm* out) {
   if (tm_ptr == nullptr) return false;
   *out = *tm_ptr;
   return true;
+#elif defined(__STDC_LIB_EXT1__)
+  // Uses localtime_s when available as localtime_r is only available from
+  // C23 standard.
+  return localtime_s(&seconds, out) != nullptr;
 #else
   return localtime_r(&seconds, out) != nullptr;
 #endif

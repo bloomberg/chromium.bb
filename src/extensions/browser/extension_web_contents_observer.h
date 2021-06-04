@@ -74,7 +74,8 @@ class ExtensionWebContentsObserver
 
   // Returns mojom::LocalFrame* corresponding |render_frame_host|. It emplaces
   // AssociatedRemote<mojom::LocalFrame> to |local_frame_map_| if the map
-  // doesn't have it. Note that it does not return nullptr.
+  // doesn't have it. Note that it could return nullptr if |render_frame_host|
+  // is not live.
   mojom::LocalFrame* GetLocalFrame(content::RenderFrameHost* render_frame_host);
 
  protected:
@@ -107,10 +108,6 @@ class ExtensionWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
-  // Subclasses should call this first before doing their own message handling.
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
-
   // Per the documentation in WebContentsObserver, these two methods are invoked
   // when a Pepper plugin instance is attached/detached in the page DOM.
   void PepperInstanceCreated() override;
@@ -122,9 +119,7 @@ class ExtensionWebContentsObserver
       content::RenderFrameHost* render_frame_host) const;
 
  private:
-  void OnRequest(content::RenderFrameHost* render_frame_host,
-                 const mojom::RequestParams& params);
-
+  friend class ExtensionFrameHostBrowserTest;
   // The BrowserContext associated with the WebContents being observed.
   content::BrowserContext* browser_context_;
 

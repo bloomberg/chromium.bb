@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -29,7 +29,7 @@ namespace optimization_guide {
 // to pass back the fetched hints response from the remote Optimization Guide
 // Service.
 using ModelsFetchedCallback = base::OnceCallback<void(
-    base::Optional<
+    absl::optional<
         std::unique_ptr<optimization_guide::proto::GetModelsResponse>>)>;
 
 // A class to handle requests for prediction models (and prediction data) from
@@ -51,7 +51,6 @@ class PredictionModelFetcher {
   // nullopt if the fetch failed or no fetch is needed. Virtualized for testing.
   virtual bool FetchOptimizationGuideServiceModels(
       const std::vector<proto::ModelInfo>& models_request_info,
-      const std::vector<std::string>& hosts,
       const std::vector<proto::FieldTrial>& active_field_trials,
       proto::RequestContext request_context,
       const std::string& locale,

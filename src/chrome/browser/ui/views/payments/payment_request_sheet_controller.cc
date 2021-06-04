@@ -12,6 +12,9 @@
 #include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
@@ -22,8 +25,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 
 namespace payments {
@@ -173,12 +174,6 @@ class BorderedScrollView : public views::ScrollView {
   BorderedScrollView() {
     SetBackground(views::CreateThemedSolidBackground(
         this, ui::NativeTheme::kColorId_DialogBackground));
-    SetBorder(views::CreateBorderPainter(
-        std::make_unique<BorderedScrollViewBorderPainter>(
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_SeparatorColor),
-            this),
-        gfx::Insets(1, 0)));
   }
 
   bool GetTopBorder() const { return GetVisibleRect().y() > 0; }
@@ -191,6 +186,15 @@ class BorderedScrollView : public views::ScrollView {
   void ScrollToPosition(views::ScrollBar* source, int position) override {
     views::ScrollView::ScrollToPosition(source, position);
     SchedulePaint();
+  }
+  void OnThemeChanged() override {
+    ScrollView::OnThemeChanged();
+    SetBorder(views::CreateBorderPainter(
+        std::make_unique<BorderedScrollViewBorderPainter>(
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_SeparatorColor),
+            this),
+        gfx::Insets(1, 0)));
   }
 };
 

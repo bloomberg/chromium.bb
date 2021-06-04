@@ -25,11 +25,11 @@ namespace ClipboardHistoryUtil {
 
 namespace {
 
-constexpr char kFileSystemSourcesType[] = "fs/sources";
+constexpr char16_t kFileSystemSourcesType[] = u"fs/sources";
 
 // The array of formats in order of decreasing priority.
 constexpr ui::ClipboardInternalFormat kPrioritizedFormats[] = {
-    ui::ClipboardInternalFormat::kBitmap,
+    ui::ClipboardInternalFormat::kPng,
     ui::ClipboardInternalFormat::kHtml,
     ui::ClipboardInternalFormat::kText,
     ui::ClipboardInternalFormat::kRtf,
@@ -40,20 +40,21 @@ constexpr ui::ClipboardInternalFormat kPrioritizedFormats[] = {
 
 }  // namespace
 
-base::Optional<ui::ClipboardInternalFormat> CalculateMainFormat(
+absl::optional<ui::ClipboardInternalFormat> CalculateMainFormat(
     const ui::ClipboardData& data) {
   for (const auto& format : kPrioritizedFormats) {
     if (ContainsFormat(data, format)) {
       return format;
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 ClipboardHistoryDisplayFormat CalculateDisplayFormat(
     const ui::ClipboardData& data) {
   switch (CalculateMainFormat(data).value()) {
-    case ui::ClipboardInternalFormat::kBitmap:
+    case ui::ClipboardInternalFormat::kPng:
+      // TODO(crbug.com/1207638): Rename this to kImage or kPng.
       return ClipboardHistoryDisplayFormat::kBitmap;
     case ui::ClipboardInternalFormat::kHtml:
       if ((data.markup_data().find("<img") == std::string::npos) &&
@@ -111,9 +112,8 @@ void GetSplitFileSystemData(const ui::ClipboardData& data,
   }
 
   // Split sources into a list.
-  *source_list =
-      base::SplitStringPiece(*sources, base::UTF8ToUTF16("\n"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  *source_list = base::SplitStringPiece(*sources, u"\n", base::TRIM_WHITESPACE,
+                                        base::SPLIT_WANT_NONEMPTY);
 }
 
 size_t GetCountOfCopiedFiles(const ui::ClipboardData& data) {
@@ -135,15 +135,15 @@ std::u16string GetFileSystemSources(const ui::ClipboardData& data) {
 
   // Attempt to read file system sources in the custom data.
   std::u16string sources;
-  ui::ReadCustomDataForType(
-      data.custom_data_data().c_str(), data.custom_data_data().size(),
-      base::UTF8ToUTF16(kFileSystemSourcesType), &sources);
+  ui::ReadCustomDataForType(data.custom_data_data().c_str(),
+                            data.custom_data_data().size(),
+                            kFileSystemSourcesType, &sources);
 
   return sources;
 }
 
 bool IsSupported(const ui::ClipboardData& data) {
-  const base::Optional<ui::ClipboardInternalFormat> format =
+  const absl::optional<ui::ClipboardInternalFormat> format =
       CalculateMainFormat(data);
 
   // Empty `data` is not supported.
@@ -185,18 +185,20 @@ gfx::ImageSkia GetIconForFileClipboardItem(const ClipboardHistoryItem& item,
   DCHECK_EQ(ClipboardHistoryDisplayFormat::kFile,
             CalculateDisplayFormat(item.data()));
   const int copied_files_count = GetCountOfCopiedFiles(item.data());
-  const SkColor icon_color = ash::AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorPrimary);
 
   if (copied_files_count == 0)
     return gfx::ImageSkia();
-  if (copied_files_count == 1)
-    return GetIconForPath(base::FilePath(file_name), icon_color);
+  if (copied_files_count == 1) {
+    return GetIconForPath(base::FilePath(file_name),
+                          ash::AshColorProvider::Get()->IsDarkModeEnabled());
+  }
   constexpr std::array<const gfx::VectorIcon*, 9> icons = {
       &kTwoFilesIcon,   &kThreeFilesIcon, &kFourFilesIcon,
       &kFiveFilesIcon,  &kSixFilesIcon,   &kSevenFilesIcon,
       &kEightFilesIcon, &kNineFilesIcon,  &kMoreThanNineFilesIcon};
   int icon_index = std::min(copied_files_count - 2, (int)icons.size() - 1);
+  const SkColor icon_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
   return CreateVectorIcon(*icons[icon_index], icon_color);
 }
 

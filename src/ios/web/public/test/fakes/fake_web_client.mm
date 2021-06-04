@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #import "ios/web/common/uikit_ui_util.h"
@@ -35,10 +34,6 @@ void FakeWebClient::AddAdditionalSchemes(Schemes* schemes) const {
 bool FakeWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme) || url.SchemeIs(kTestAppSpecificScheme);
 }
-
-void FakeWebClient::AddSerializableData(
-    web::SerializableUserDataManager* user_data_manager,
-    web::WebState* web_state) {}
 
 std::u16string FakeWebClient::GetPluginNotSupportedText() const {
   return plugin_not_supported_text_;
@@ -92,7 +87,7 @@ void FakeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
-    const base::Optional<net::SSLInfo>& info,
+    const absl::optional<net::SSLInfo>& info,
     int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   net::CertStatus cert_status = info.has_value() ? info.value().cert_status : 0;

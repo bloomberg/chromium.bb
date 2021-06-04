@@ -12,8 +12,10 @@
 #include "base/guid.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/visibility_timer_tab_helper.h"
@@ -96,7 +98,7 @@ void SharingServiceOperation::Share(
 
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
   StoragePartition* const partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context);
+      browser_context->GetDefaultStoragePartition();
   directory_ = partition->GetPath().Append(kWebShareDirname);
 
   prepare_directory_task_ = std::make_unique<PrepareDirectoryTask>(

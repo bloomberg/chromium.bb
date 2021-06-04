@@ -123,19 +123,15 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
 
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::FirstLineBoxBaseline() const {
-  // Please see |Paint()| for these DCHECKs.
-  DCHECK(!Base::CanTraversePhysicalFragments() ||
-         !Base::Parent()->CanTraversePhysicalFragments());
-  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
-
-  if (const base::Optional<LayoutUnit> baseline =
+  if (const absl::optional<LayoutUnit> baseline =
           Base::FirstLineBoxBaselineOverride())
     return *baseline;
 
-  if (Base::PhysicalFragmentCount()) {
-    const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
-    DCHECK(fragment);
-    if (base::Optional<LayoutUnit> offset = fragment->Baseline())
+  // Return the baseline of the first fragment that has a baseline.
+  // |OffsetFromOwnerLayoutBox| is not needed here, because the block offset of
+  // all fragments are 0 for multicol.
+  for (const NGPhysicalBoxFragment& fragment : Base::PhysicalFragments()) {
+    if (const absl::optional<LayoutUnit> offset = fragment.Baseline())
       return *offset;
   }
 
@@ -157,14 +153,14 @@ LayoutUnit LayoutNGBlockFlowMixin<Base>::InlineBlockBaseline(
          !Base::Parent()->CanTraversePhysicalFragments());
   DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
 
-  if (const base::Optional<LayoutUnit> baseline =
+  if (const absl::optional<LayoutUnit> baseline =
           Base::InlineBlockBaselineOverride(line_direction))
     return *baseline;
 
   if (Base::PhysicalFragmentCount()) {
     const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
     DCHECK(fragment);
-    if (base::Optional<LayoutUnit> offset = fragment->Baseline())
+    if (absl::optional<LayoutUnit> offset = fragment->Baseline())
       return *offset;
   }
 

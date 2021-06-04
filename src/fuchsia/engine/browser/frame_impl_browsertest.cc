@@ -23,13 +23,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/fit_adapter.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
-#include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/base/url_request_rewrite_test_util.h"
+#include "fuchsia/base/test/fit_adapter.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/result_receiver.h"
+#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia/base/test/url_request_rewrite_test_util.h"
+#include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/fake_semantics_manager.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/frame_impl_browser_test_base.h"
@@ -71,6 +72,7 @@ const char kPopupParentPath[] = "/popup_parent.html";
 const char kPopupRedirectPath[] = "/popup_child.html";
 const char kPopupMultiplePath[] = "/popup_multiple.html";
 const char kVisibilityPath[] = "/visibility.html";
+const char kWaitSizePath[] = "/wait-size.html";
 const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
 const char kPage3Title[] = "websql not available";
@@ -79,7 +81,7 @@ const char kDataUrl[] =
 const int64_t kOnLoadScriptId = 0;
 const char kChildQueryParamName[] = "child_url";
 const char kPopupChildFile[] = "popup_child.html";
-const char kAutoplayFileAndQuery[] = "play_vp8.html?autoplay=1";
+const char kAutoplayFileAndQuery[] = "play_video.html?autoplay=1&codecs=vp8";
 const char kAutoPlayBlockedTitle[] = "blocked";
 const char kAutoPlaySuccessTitle[] = "playing";
 
@@ -116,7 +118,7 @@ std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
 class FrameImplTest : public FrameImplTestBase {
  public:
   FrameImplTest() = default;
-  ~FrameImplTest() = default;
+  ~FrameImplTest() override = default;
 
   FrameImplTest(const FrameImplTest&) = delete;
   FrameImplTest& operator=(const FrameImplTest&) = delete;
@@ -129,7 +131,7 @@ class FrameImplTest : public FrameImplTestBase {
   // TODO(crbug.com/1155378): Remove |navigation_listener_| and use the parent's
   // implementation of this method after updating all tests to use the
   // appropriate base.
-  fuchsia::web::FramePtr CreateFrame() {
+  fuchsia::web::FramePtr CreateFrame() override {
     return WebEngineBrowserTest::CreateFrame(&navigation_listener_);
   }
 
@@ -1328,6 +1330,116 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
   }
 }
 
+// TODO(crbug.com/1058247): Re-enable this test on Arm64 when femu is available
+// for that architecture. This test requires Vulkan and Scenic to properly
+// signal the Views visibility.
+#if defined(ARCH_CPU_ARM_FAMILY)
+#define MAYBE_SetPageScale DISABLED_SetPageScale
+#else
+#define MAYBE_SetPageScale SetPageScale
+#endif
+IN_PROC_BROWSER_TEST_F(FrameImplTest, MAYBE_SetPageScale) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  auto view_tokens = scenic::ViewTokenPair::New();
+  frame->CreateView(std::move(view_tokens.view_token));
+
+  // Attach the View to a Presenter, the page should be visible.
+  auto presenter = base::ComponentContextForProcess()
+                       ->svc()
+                       ->Connect<::fuchsia::ui::policy::Presenter>();
+  presenter.set_error_handler(
+      [](zx_status_t) { ADD_FAILURE() << "Presenter disconnected."; });
+  presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
+                                  nullptr);
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
+  GURL url = embedded_test_server()->GetURL(kWaitSizePath);
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(url, "done");
+
+  absl::optional<base::Value> default_dpr =
+      cr_fuchsia::ExecuteJavaScript(frame.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(default_dpr);
+
+  // Update scale and verify that devicePixelRatio is updated accordingly.
+  const float kZoomInScale = 1.5;
+  frame->SetPageScale(kZoomInScale);
+
+  absl::optional<base::Value> scaled_dpr =
+      cr_fuchsia::ExecuteJavaScript(frame.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(scaled_dpr);
+
+  EXPECT_NEAR(scaled_dpr->GetDouble() / default_dpr->GetDouble(), kZoomInScale,
+              1e-6);
+
+  // Navigate to the same page on http://localhost. This is a different site,
+  // so it will be loaded in a new renderer process. Page scale value should be
+  // preserved.
+  GURL url2 = embedded_test_server()->GetURL("localhost", kWaitSizePath);
+  EXPECT_NE(url.host(), url2.host());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), url2.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(url2, "done");
+
+  absl::optional<base::Value> dpr_after_navigation =
+      cr_fuchsia::ExecuteJavaScript(frame.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(scaled_dpr);
+
+  EXPECT_EQ(dpr_after_navigation, scaled_dpr);
+
+  // Reset the scale to 1.0 (default) and verify that reported DPR is equal to
+  // the same as when the frame was created.
+  frame->SetPageScale(1.0);
+  absl::optional<base::Value> dpr_after_reset =
+      cr_fuchsia::ExecuteJavaScript(frame.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(dpr_after_reset);
+
+  EXPECT_EQ(dpr_after_reset.value(), default_dpr.value());
+
+  // Zoom out by setting scale to 0.5.
+  const float kZoomOutScale = 0.5;
+  frame->SetPageScale(kZoomOutScale);
+
+  absl::optional<base::Value> zoomed_out_dpr =
+      cr_fuchsia::ExecuteJavaScript(frame.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(zoomed_out_dpr);
+
+  EXPECT_NEAR(zoomed_out_dpr->GetDouble() / default_dpr->GetDouble(),
+              kZoomOutScale, 1e-6);
+
+  // Create another frame. Verify that the scale factor is not applied to the
+  // new frame.
+  cr_fuchsia::TestNavigationListener navigation_listener2;
+  fuchsia::web::FramePtr frame2 =
+      WebEngineBrowserTest::CreateFrame(&navigation_listener2);
+
+  view_tokens = scenic::ViewTokenPair::New();
+  frame2->CreateView(std::move(view_tokens.view_token));
+
+  presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
+                                  nullptr);
+
+  fuchsia::web::NavigationControllerPtr controller2;
+  frame2->GetNavigationController(controller2.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller2.get(), fuchsia::web::LoadUrlParams(), url.spec()));
+  navigation_listener2.RunUntilUrlAndTitleEquals(url, "done");
+
+  absl::optional<base::Value> frame2_dpr =
+      cr_fuchsia::ExecuteJavaScript(frame2.get(), "window.devicePixelRatio");
+  ASSERT_TRUE(frame2_dpr);
+
+  EXPECT_EQ(frame2_dpr.value(), default_dpr.value());
+}
+
 // Send a MessagePort to the content, then perform bidirectional messaging
 // over its channel.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
@@ -1992,7 +2104,7 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
   std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
   rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
   rewrites.push_back(
-      cr_fuchsia::CreateRewriteRemoveHeader(base::nullopt, "Test"));
+      cr_fuchsia::CreateRewriteRemoveHeader(absl::nullopt, "Test"));
   fuchsia::web::UrlRequestRewriteRule rule;
   rule.set_rewrites(std::move(rewrites));
   std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
@@ -2032,7 +2144,7 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
   std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
   rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
   rewrites.push_back(cr_fuchsia::CreateRewriteRemoveHeader(
-      base::make_optional("[pattern]"), "Test"));
+      absl::make_optional("[pattern]"), "Test"));
   fuchsia::web::UrlRequestRewriteRule rule;
   rule.set_rewrites(std::move(rewrites));
   std::vector<fuchsia::web::UrlRequestRewriteRule> rules;

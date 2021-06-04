@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_ENTERPRISE_PRINTERS_PROVIDER_H_
 
 #include <memory>
-#include <string>
-#include <unordered_map>
 
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"

@@ -8,9 +8,11 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
-#import "base/optional.h"
+#include <string>
+
 #import "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
 #import "ios/chrome/browser/link_to_text/link_generation_outcome.h"
+#import "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TimeDelta;
@@ -29,8 +31,8 @@ BOOL IsValidDictValue(const base::Value* value);
 // Attempts to convert a numerical |status| value from the
 // text-fragments-polyfill library into a LinkGenerationOutcome enum
 // value, representing outcomes for that library.
-base::Optional<LinkGenerationOutcome> ParseStatus(
-    base::Optional<double> status);
+absl::optional<LinkGenerationOutcome> ParseStatus(
+    absl::optional<double> status);
 
 // Converts a given text-fragments-polyfill library error |outcome| to its
 // LinkGenerationError counterpart.
@@ -38,13 +40,13 @@ shared_highlighting::LinkGenerationError OutcomeToError(
     LinkGenerationOutcome outcome);
 
 // Attempts to parse the given |value| into a CGRect. If |value| does not map
-// into the expected structure, an empty base::Optional instance will be
+// into the expected structure, an empty absl::optional instance will be
 // returned.
-base::Optional<CGRect> ParseRect(const base::Value* value);
+absl::optional<CGRect> ParseRect(const base::Value* value);
 
 // Attempts to parse the given |url_value| into a GURL instance. If |url_value|
-// is empty or invalid, an empty base::Optional instance will be returned.
-base::Optional<GURL> ParseURL(const std::string* url_value);
+// is empty or invalid, an empty absl::optional instance will be returned.
+absl::optional<GURL> ParseURL(const std::string* url_value);
 
 // Converts a given |web_view_rect| into its browser coordinates counterpart.
 // Uses the given |web_state| to do the conversion.

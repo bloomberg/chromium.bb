@@ -5,15 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_SYSTEM_WEB_APP_UI_UTILS_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_SYSTEM_WEB_APP_UI_UTILS_H_
 
-#include <utility>
-
-#include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -21,32 +19,51 @@ class Profile;
 namespace web_app {
 
 // Returns the system app type for the given App ID.
-base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
+absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
                                                           AppId app_id);
 
 // Returns the PWA system App ID for the given system app type.
-base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
+absl::optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
                                               SystemAppType app_type);
 
-base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
+absl::optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
     Profile* profile,
     SystemAppType app_type,
     int64_t display_id);
 
 // Additional parameters to control LaunchSystemAppAsync behaviors.
 struct SystemAppLaunchParams {
-  // If provided (i.e. the URL is valid), launches System Apps into |url|
-  // instead of it's start_url (as specified its WebApplicationInfo).
-  GURL url;
+  SystemAppLaunchParams();
+  ~SystemAppLaunchParams();
+
+  // If provided launches System Apps into |url|, instead of its start_url (as
+  // specified its WebApplicationInfo). Mutually exclusive with non-empty
+  // |launch_paths|.
+  absl::optional<GURL> url;
 
   // Where the app is launched from.
   apps::mojom::LaunchSource launch_source =
       apps::mojom::LaunchSource::kFromChromeInternal;
+
+  // If non-empty, specifies files passed to Web File Handling. Apps need to
+  // have "FileHandling" origin trial in its SystemAppInfo, and file handlers
+  // in its WebApplicationInfo. Mutually exclusive with |url|.
+  std::vector<base::FilePath> launch_paths;
 };
 
 // Launch the given System Web App |type|, |params| can be used to tweak the
 // launch behavior (e.g. launch to app's subpage, specifying launch source for
 // metrics). Terminal App should use crostini::LaunchTerminal*.
+//
+// This function will try to find an appropriate launch profile in these
+// circumstances:
+//
+//   - Incognito profile of a normal session: Launch to original profile, which
+//     the incognito profile is created from
+//   - Profiles in guest session: Launch to the primary off-the-record profile
+//     (the profile used to browser websites in guest sessions)
+//   - Other unsuitable profiles (e.g. Sign-in profile): Don't launch, and send
+//     a crash report
 //
 // In tests, remember to call FlushSystemWebAppLaunchesForTesting on the same
 // |profile|, or use TestNavigationObserver to wait the navigation.
@@ -79,7 +96,7 @@ Browser* FindSystemWebAppBrowser(
 bool IsSystemWebApp(Browser* browser);
 
 // Returns the SystemAppType that should capture the |url|.
-base::Optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
+absl::optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
                                                           const GURL& url);
 
 // Returns whether the |browser| hosts the system app |type|.

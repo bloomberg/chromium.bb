@@ -134,9 +134,7 @@ bool VulkanInProcessContextProvider::InitializeGrContext(
   backend_context.fDeviceFeatures2 =
       &device_queue_->enabled_device_features_2();
   backend_context.fGetProc = get_proc;
-  backend_context.fProtectedContext =
-      vulkan_implementation_->enforce_protected_memory() ? GrProtected::kYes
-                                                         : GrProtected::kNo;
+  backend_context.fProtectedContext = GrProtected::kNo;
 
   gr_context_ = GrDirectContext::MakeVulkan(backend_context, context_options);
 
@@ -192,15 +190,15 @@ void VulkanInProcessContextProvider::EnqueueSecondaryCBPostSubmitTask(
   NOTREACHED();
 }
 
-base::Optional<uint32_t> VulkanInProcessContextProvider::GetSyncCpuMemoryLimit()
+absl::optional<uint32_t> VulkanInProcessContextProvider::GetSyncCpuMemoryLimit()
     const {
   // Return false to indicate that there's no limit.
   if (!sync_cpu_memory_limit_)
-    return base::Optional<uint32_t>();
+    return absl::optional<uint32_t>();
   return base::TimeTicks::Now() < critical_memory_pressure_expiration_time_
-             ? base::Optional<uint32_t>(
+             ? absl::optional<uint32_t>(
                    kSyncCpuMemoryLimitAtMemoryPressureCritical)
-             : base::Optional<uint32_t>(sync_cpu_memory_limit_);
+             : absl::optional<uint32_t>(sync_cpu_memory_limit_);
 }
 
 void VulkanInProcessContextProvider::OnMemoryPressure(

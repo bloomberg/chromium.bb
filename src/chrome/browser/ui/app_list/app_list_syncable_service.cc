@@ -21,8 +21,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_switches.h"
@@ -199,7 +200,7 @@ bool IsSystemCreatedSyncFolder(AppListSyncableService::SyncItem* folder_item) {
   if (folder_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
     return false;
   return (folder_item->item_id == ash::kOemFolderId ||
-          folder_item->item_id == crostini::kCrostiniFolderId);
+          folder_item->item_id == ash::kCrostiniFolderId);
 }
 
 }  // namespace
@@ -945,7 +946,7 @@ void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
   }
 }
 
-base::Optional<syncer::ModelError>
+absl::optional<syncer::ModelError>
 AppListSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -1055,7 +1056,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
     on_initialized_.Signal();
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AppListSyncableService::StopSyncing(syncer::ModelType type) {
@@ -1075,7 +1076,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {
   return list;
 }
 
-base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
+absl::optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
@@ -1106,7 +1107,7 @@ base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
 
   GetModelUpdater()->NotifyProcessSyncChangesFinished();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AppListSyncableService::Shutdown() {

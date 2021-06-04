@@ -922,7 +922,6 @@ int get_glyph_run_intercepts(const SkGlyphRun& glyphRun,
 
 int SkTextBlob::getIntercepts(const SkScalar bounds[2], SkScalar intervals[],
                               const SkPaint* paint) const {
-
     SkTLazy<SkPaint> defaultPaint;
     if (paint == nullptr) {
         defaultPaint.init();
@@ -930,15 +929,40 @@ int SkTextBlob::getIntercepts(const SkScalar bounds[2], SkScalar intervals[],
     }
 
     SkGlyphRunBuilder builder;
-    builder.textBlobToGlyphRunListIgnoringRSXForm(*this, SkPoint{0, 0});
-    auto glyphRunList = builder.useGlyphRunList();
+    auto glyphRunList = builder.blobToGlyphRunList(*this, {0, 0});
 
     int intervalCount = 0;
     for (const SkGlyphRun& glyphRun : glyphRunList) {
-        intervalCount = get_glyph_run_intercepts(glyphRun, *paint, bounds, intervals, &intervalCount);
+        // Ignore RSXForm runs.
+        if (glyphRun.scaledRotations().empty()) {
+            intervalCount = get_glyph_run_intercepts(
+                glyphRun, *paint, bounds, intervals, &intervalCount);
+        }
     }
 
     return intervalCount;
+}
+
+std::vector<SkScalar> SkFont::getIntercepts(const SkGlyphID glyphs[], int count,
+                                            const SkPoint positions[],
+                                            SkScalar top, SkScalar bottom,
+                                            const SkPaint* paintPtr) const {
+    if (count <= 0) {
+        return std::vector<SkScalar>();
+    }
+
+    const SkPaint paint(paintPtr ? *paintPtr : SkPaint());
+    const SkScalar bounds[] = {top, bottom};
+    const SkGlyphRun run(*this,
+                         {positions, size_t(count)}, {glyphs, size_t(count)},
+                         {nullptr, 0}, {nullptr, 0}, {nullptr, 0});
+
+    std::vector<SkScalar> result;
+    result.resize(count * 2);   // worst case allocation
+    int intervalCount = 0;
+    intervalCount = get_glyph_run_intercepts(run, paint, bounds, result.data(), &intervalCount);
+    result.resize(intervalCount);
+    return result;
 }
 
 ////////
@@ -958,6 +982,24 @@ bool SkTextBlob::Iter::next(Run* rec) {
             rec->fUtf8Size_forTest = fRunRecord->textSize();
             rec->fUtf8_forTest = fRunRecord->textBuffer();
 #endif
+        }
+        if (fRunRecord->isLastRun()) {
+            fRunRecord = nullptr;
+        } else {
+            fRunRecord = RunRecord::Next(fRunRecord);
+        }
+        return true;
+    }
+    return false;
+}
+
+bool SkTextBlob::Iter::experimentalNext(ExperimentalRun* rec) {
+    if (fRunRecord) {
+        if (rec) {
+            rec->font = fRunRecord->font();
+            rec->count = fRunRecord->glyphCount();
+            rec->glyphs = fRunRecord->glyphBuffer();
+            rec->positions = fRunRecord->pointBuffer();
         }
         if (fRunRecord->isLastRun()) {
             fRunRecord = nullptr;

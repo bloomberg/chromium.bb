@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -28,7 +29,9 @@ const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
+#if BUILDFLAG(ENABLE_PRINTING)
 const char kPrintBackendSandbox[] = "print_backend";
+#endif
 const char kPrintCompositorSandbox[] = "print_compositor";
 const char kAudioSandbox[] = "audio";
 const char kServiceSandbox[] = "service";
@@ -43,9 +46,16 @@ const char kIconReaderSandbox[] = "icon_reader";
 const char kMediaFoundationCdmSandbox[] = "mf_cdm";
 #endif  // OS_WIN
 
+#if defined(OS_MAC)
+const char kMirroringSandbox[] = "mirroring";
+#endif  // OS_MAC
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kImeSandbox[] = "ime";
 const char kTtsSandbox[] = "tts";
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+const char kLibassistantSandbox[] = "libassistant";
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Flags owned by the service manager sandbox.

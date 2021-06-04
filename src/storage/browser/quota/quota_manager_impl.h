@@ -25,10 +25,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -39,6 +39,7 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "url/origin.h"
@@ -159,6 +160,19 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Returns a proxy object that can be used on any thread.
   QuotaManagerProxy* proxy() { return proxy_.get(); }
+
+  // Creates a bucket for `origin` with `bucket_name` and returns the BucketId
+  // to the callback. Will return a QuotaError to the callback on failure.
+  void CreateBucket(const url::Origin& origin,
+                    const std::string& bucket_name,
+                    base::OnceCallback<void(QuotaErrorOr<BucketId>)>);
+
+  // Retrieves the BucketId of the bucket with `bucket_name` for `origin` and
+  // returns it to the callback. Will return an empty BucketId if a bucket does
+  // not exist. Will return a QuotaError on operation failure.
+  void GetBucketId(const url::Origin& origin,
+                   const std::string& bucket_name,
+                   base::OnceCallback<void(QuotaErrorOr<BucketId>)>);
 
   // Called by clients or webapps. Returns usage per host.
   void GetUsageInfo(GetUsageInfoCallback callback);
@@ -289,7 +303,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   int GetOverrideHandleId();
   void OverrideQuotaForOrigin(int handle_id,
                               const url::Origin& origin,
-                              base::Optional<int64_t> quota_size);
+                              absl::optional<int64_t> quota_size);
   // Called when a DevTools client releases all overrides, however, overrides
   // will not be disabled for any origins for which there are other DevTools
   // clients/QuotaOverrideHandle with an active override.
@@ -348,7 +362,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   class HostDataDeleter;
   class GetModifiedSinceHelper;
   class DumpQuotaTableHelper;
-  class DumpOriginInfoTableHelper;
+  class DumpBucketTableHelper;
   class StorageCleanupHelper;
 
   struct QuotaOverride {
@@ -365,16 +379,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   };
 
   using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
-  using OriginInfoTableEntry = QuotaDatabase::OriginInfoTableEntry;
+  using BucketTableEntry = QuotaDatabase::BucketTableEntry;
   using QuotaTableEntries = std::vector<QuotaTableEntry>;
-  using OriginInfoTableEntries = std::vector<OriginInfoTableEntry>;
+  using BucketTableEntries = std::vector<BucketTableEntry>;
 
   using QuotaSettingsCallback = base::OnceCallback<void(const QuotaSettings&)>;
 
   using DumpQuotaTableCallback =
       base::OnceCallback<void(const QuotaTableEntries&)>;
-  using DumpOriginInfoTableCallback =
-      base::OnceCallback<void(const OriginInfoTableEntries&)>;
+  using DumpBucketTableCallback =
+      base::OnceCallback<void(const BucketTableEntries&)>;
 
   // The values returned total_space, available_space.
   using StorageCapacityCallback = base::OnceCallback<void(int64_t, int64_t)>;
@@ -422,7 +436,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   std::set<url::Origin> GetCachedOrigins(blink::mojom::StorageType type);
 
   void DumpQuotaTable(DumpQuotaTableCallback callback);
-  void DumpOriginInfoTable(DumpOriginInfoTableCallback callback);
+  void DumpBucketTable(DumpBucketTableCallback callback);
 
   void DeleteOriginDataInternal(const url::Origin& origin,
                                 blink::mojom::StorageType type,
@@ -446,12 +460,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                          int64_t available_space);
   void DidGetPersistentGlobalUsageForHistogram(int64_t usage,
                                                int64_t unlimited_usage);
-  void DidDumpOriginInfoTableForHistogram(
-      const OriginInfoTableEntries& entries);
+  void DidDumpBucketTableForHistogram(const BucketTableEntries& entries);
 
   std::set<url::Origin> GetEvictionOriginExceptions();
   void DidGetEvictionOrigin(GetOriginCallback callback,
-                            const base::Optional<url::Origin>& origin);
+                            const absl::optional<url::Origin>& origin);
 
   // QuotaEvictionHandler.
   void GetEvictionOrigin(blink::mojom::StorageType type,
@@ -471,16 +484,19 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                  QuotaCallback callback,
                                  const int64_t* new_quota,
                                  bool success);
-  void DidGetLRUOrigin(std::unique_ptr<base::Optional<url::Origin>> origin,
+  void DidGetLRUOrigin(std::unique_ptr<absl::optional<url::Origin>> origin,
                        bool success);
   void GetQuotaSettings(QuotaSettingsCallback callback);
-  void DidGetSettings(base::Optional<QuotaSettings> settings);
+  void DidGetSettings(absl::optional<QuotaSettings> settings);
   void GetStorageCapacity(StorageCapacityCallback callback);
   void ContinueIncognitoGetStorageCapacity(const QuotaSettings& settings);
   void DidGetStorageCapacity(
       const std::tuple<int64_t, int64_t>& total_and_available);
 
   void DidDatabaseWork(bool success);
+
+  void DidGetBucketId(base::OnceCallback<void(QuotaErrorOr<BucketId>)> callback,
+                      QuotaErrorOr<BucketId> result);
 
   void DeleteOnCorrectThread() const;
 
@@ -499,12 +515,19 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // TODO(crbug.com/1102433): Define and explain StoragePressure in the README.
   void DetermineStoragePressure(int64_t free_space, int64_t total_space);
 
-  base::Optional<int64_t> GetQuotaOverrideForOrigin(const url::Origin&);
+  absl::optional<int64_t> GetQuotaOverrideForOrigin(const url::Origin&);
 
+  // TODO(ayui): Replace instances to use result with QuotaErrorOr.
   void PostTaskAndReplyWithResultForDBThread(
       const base::Location& from_here,
       base::OnceCallback<bool(QuotaDatabase*)> task,
       base::OnceCallback<void(bool)> reply);
+
+  template <typename ValueType>
+  void PostTaskAndReplyWithResultForDBThread(
+      base::OnceCallback<QuotaErrorOr<ValueType>(QuotaDatabase*)> task,
+      base::OnceCallback<void(QuotaErrorOr<ValueType>)> reply,
+      const base::Location& from_here = base::Location::Current());
 
   static std::tuple<int64_t, int64_t> CallGetVolumeInfo(
       GetVolumeInfoFn get_volume_info_fn,
@@ -520,7 +543,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   bool db_disabled_;
   bool eviction_disabled_;
-  base::Optional<url::Origin> origin_for_pending_storage_pressure_callback_;
+  absl::optional<url::Origin> origin_for_pending_storage_pressure_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> db_runner_;
   mutable std::unique_ptr<QuotaDatabase> database_;

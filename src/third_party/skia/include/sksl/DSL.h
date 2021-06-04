@@ -19,9 +19,11 @@ using Case = DSLCase;
 using Expression = DSLExpression;
 using Field = DSLField;
 using Function = DSLFunction;
+using Layout = DSLLayout;
 using Modifiers = DSLModifiers;
 using Statement = DSLStatement;
 using Var = DSLVar;
+template<typename T> using Wrapper = DSLWrapper<T>;
 
 } // namespace dsl
 

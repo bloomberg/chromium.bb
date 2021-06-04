@@ -10,12 +10,14 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
+
+class WebAppIconManager;
 
 // Exclusively used from the UI thread.
 class AppIconManager {
@@ -28,6 +30,8 @@ class AppIconManager {
   virtual void Start() = 0;
   virtual void Shutdown() = 0;
 
+  virtual WebAppIconManager* AsWebAppIconManager();
+
   // Returns false if any icon in |icon_sizes_in_px| is missing from downloaded
   // icons for a given app and |purpose|.
   virtual bool HasIcons(const AppId& app_id,
@@ -39,7 +43,7 @@ class AppIconManager {
   };
   // For each of |purposes|, in the given order, looks for an icon with size at
   // least |min_icon_size|. Returns information on the first icon found.
-  virtual base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
+  virtual absl::optional<IconSizeAndPurpose> FindIconMatchBigger(
       const AppId& app_id,
       const std::vector<IconPurpose>& purposes,
       SquareSizePx min_size) const = 0;

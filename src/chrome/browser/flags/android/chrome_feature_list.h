@@ -13,11 +13,12 @@ namespace chrome {
 namespace android {
 
 // Alphabetical:
+extern const base::Feature kAdaptiveButtonInTopToolbar;
+extern const base::Feature kAdaptiveButtonInTopToolbarCustomization;
 extern const base::Feature kAddToHomescreenIPH;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
 extern const base::Feature kAndroidLayoutChangeTabReparenting;
-extern const base::Feature kAndroidManagedByMenuItem;
 extern const base::Feature kAndroidPartnerCustomizationPhenotype;
 extern const base::Feature kAndroidSearchEngineChoiceNotification;
 extern const base::Feature kAssistantIntentExperimentId;
@@ -25,7 +26,7 @@ extern const base::Feature kAssistantIntentPageUrl;
 extern const base::Feature kAssistantIntentTranslateInfo;
 extern const base::Feature kAppLaunchpad;
 extern const base::Feature kAppMenuMobileSiteOption;
-extern const base::Feature kBackgroundTaskComponentUpdate;
+extern const base::Feature kAppToWebAttribution;
 extern const base::Feature kBackgroundThreadPool;
 extern const base::Feature kBentoOffline;
 extern const base::Feature kBookmarkBottomSheet;
@@ -46,10 +47,8 @@ extern const base::Feature kCCTResourcePrefetch;
 extern const base::Feature kDontAutoHideBrowserControls;
 extern const base::Feature kChromeShareHighlightsAndroid;
 extern const base::Feature kChromeShareLongScreenshot;
-extern const base::Feature kChromeShareQRCode;
 extern const base::Feature kChromeShareScreenshot;
 extern const base::Feature kChromeSharingHub;
-extern const base::Feature kChromeSharingHubV15;
 extern const base::Feature kChromeStartupDelegate;
 extern const base::Feature kChromeSurveyNextAndroid;
 extern const base::Feature kCommandLineOnNonRooted;
@@ -83,7 +82,6 @@ extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadRename;
 extern const base::Feature kDuetTabStripIntegrationAndroid;
 extern const base::Feature kEnhancedProtectionPromoCard;
-extern const base::Feature kEphemeralTabUsingBottomSheet;
 extern const base::Feature kExperimentsForAgsa;
 extern const base::Feature kExploreSites;
 extern const base::Feature kFocusOmniboxInIncognitoTabIntents;
@@ -99,10 +97,12 @@ extern const base::Feature kKitKatSupported;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kLensCameraAssistedSearch;
 extern const base::Feature kNotificationSuspender;
+extern const base::Feature kNewWindowAppMenu;
 extern const base::Feature kOfflineIndicatorV2;
 extern const base::Feature kOfflineMeasurementsBackgroundTask;
 extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kPageAnnotationsService;
+extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 extern const base::Feature kProbabilisticCryptidRenderer;
 extern const base::Feature kReachedCodeProfiler;
 extern const base::Feature kReengagementNotification;
@@ -114,10 +114,10 @@ extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kServiceManagerForBackgroundPrefetch;
 extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kShareButtonInTopToolbar;
-extern const base::Feature kShoppingAssist;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kSpecialUserDecision;
+extern const base::Feature kStoreHoursAndroid;
 extern const base::Feature kSwapPixelFormatToFixConvertFromTranslucent;
 extern const base::Feature kTabEngagementReportingAndroid;
 extern const base::Feature kTabGroupsAndroid;
@@ -149,6 +149,7 @@ extern const base::Feature kTrustedWebActivityQualityEnforcementForced;
 extern const base::Feature kTrustedWebActivityQualityEnforcementWarning;
 extern const base::Feature kStartSurfaceAndroid;
 extern const base::Feature kUmaBackgroundSessions;
+extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 extern const base::Feature kUpdateNotificationSchedulingIntegration;
 extern const base::Feature
     kUpdateNotificationScheduleServiceImmediateShowOption;
@@ -157,6 +158,7 @@ extern const base::Feature kVoiceSearchAudioCapturePolicy;
 extern const base::Feature kVoiceButtonInTopToolbar;
 extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kPrefetchNotificationSchedulingIntegration;
+extern const base::Feature kWebNotesStylize;
 
 }  // namespace android
 }  // namespace chrome

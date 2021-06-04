@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
@@ -116,7 +117,7 @@ void MessageTransferOperation::Initialize() {
     return;
   }
 
-  base::Optional<multidevice::RemoteDeviceRef> local_device =
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
       device_sync_client_->GetLocalDeviceMetadata();
   if (!local_device) {
     PA_LOG(ERROR) << "MessageTransferOperation::" << __func__
@@ -149,7 +150,7 @@ void MessageTransferOperation::Initialize() {
 
 void MessageTransferOperation::OnMessageReceived(const std::string& device_id,
                                                  const std::string& payload) {
-  base::Optional<multidevice::RemoteDeviceRef> remote_device =
+  absl::optional<multidevice::RemoteDeviceRef> remote_device =
       GetRemoteDevice(device_id);
   if (!remote_device) {
     // If the device from which the message has been received does not
@@ -287,14 +288,14 @@ void MessageTransferOperation::OnTimeout(
   UnregisterDevice(remote_device);
 }
 
-base::Optional<multidevice::RemoteDeviceRef>
+absl::optional<multidevice::RemoteDeviceRef>
 MessageTransferOperation::GetRemoteDevice(const std::string& device_id) {
   for (auto& remote_device : remote_devices_) {
     if (remote_device.GetDeviceId() == device_id)
       return remote_device;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void MessageTransferOperation::SetTimerFactoryForTest(

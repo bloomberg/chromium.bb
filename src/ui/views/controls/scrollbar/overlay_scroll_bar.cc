@@ -7,16 +7,18 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 namespace {

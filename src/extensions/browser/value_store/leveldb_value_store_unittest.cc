@@ -94,7 +94,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
   result = store()->Get(kCorruptKey);
   EXPECT_TRUE(result.status().ok())
       << "Get result not OK: " << result.status().message;
-  EXPECT_TRUE(result.settings().empty());
+  EXPECT_TRUE(result.settings().DictEmpty());
 
   // Verify that the valid pair is still present.
   result = store()->Get(kNotCorruptKey);
@@ -186,5 +186,5 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   ASSERT_EQ(ValueStore::DB_RESTORE_REPAIR_SUCCESS,
             result.status().restore_status);
   EXPECT_TRUE(result.status().ok());
-  EXPECT_EQ(0u, result.settings().size());
+  EXPECT_EQ(0u, result.settings().DictSize());
 }

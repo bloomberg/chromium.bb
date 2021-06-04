@@ -5,6 +5,8 @@
 import '../../panels/network/network-legacy.js';
 import '../test_runner/test_runner.js';
 import '../console_test_runner/console_test_runner.js';
+import * as HAR from '../../models/har/har.js';
+import * as Logs from '../../models/logs/logs.js';
 
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
@@ -61,7 +63,7 @@ NetworkTestRunner.networkWaterfallColumn = function() {
 };
 
 NetworkTestRunner.networkRequests = function() {
-  return Array.from(SDK.NetworkLog.instance().requests());
+  return Array.from(Logs.NetworkLog.NetworkLog.instance().requests());
 };
 
 NetworkTestRunner.dumpNetworkRequests = function() {
@@ -79,27 +81,28 @@ NetworkTestRunner.dumpNetworkRequests = function() {
 };
 
 NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo = function() {
-  for (const request of SDK.NetworkLog.instance().requests()) {
+  for (const request of Logs.NetworkLog.NetworkLog.instance().requests()) {
     TestRunner.addResult(`* ${request.url()}`);
     TestRunner.addResult(`  failed: ${Boolean(request.failed)}`);
     TestRunner.addResult(`  statusCode: ${request.statusCode}`);
     TestRunner.addResult(`  resourceType: ${request.resourceType().name()}`);
     if (request.signedExchangeInfo()) {
       TestRunner.addResult('  SignedExchangeInfo');
-      if (request.signedExchangeInfo().header) {
-        const header = request.signedExchangeInfo().header;
+      const header = request.signedExchangeInfo()?.header;
+      if (header) {
         TestRunner.addResult(`    Request URL: ${header.requestUrl}`);
         for (const signature of header.signatures) {
           TestRunner.addResult(`    Certificate URL: ${signature.certUrl}`);
         }
       }
-      if (request.signedExchangeInfo().securityDetails) {
-        const securityDetails = request.signedExchangeInfo().securityDetails;
+      const securityDetails = request.signedExchangeInfo()?.securityDetails;
+      if (securityDetails) {
         TestRunner.addResult(`    Certificate Subject: ${securityDetails.subjectName}`);
         TestRunner.addResult(`    Certificate Issuer: ${securityDetails.issuer}`);
       }
-      if (request.signedExchangeInfo().errors) {
-        for (const errorMessage of request.signedExchangeInfo().errors) {
+      const errors = request.signedExchangeInfo()?.errors;
+      if (errors) {
+        for (const errorMessage of errors) {
           TestRunner.addResult(`    Error: ${JSON.stringify(errorMessage)}`);
         }
       }
@@ -199,6 +202,12 @@ NetworkTestRunner.HARPropertyFormatters = {
 
 NetworkTestRunner.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(NetworkTestRunner.HARPropertyFormatters));
 NetworkTestRunner.HARPropertyFormattersWithSize.size = 'formatAsTypeName';
+
+NetworkTestRunner.buildHARLog = HAR.Log.Log.build;
+NetworkTestRunner.buildHARLogEntry = HAR.Log.Entry.build;
+NetworkTestRunner.writeHARLog = HAR.Writer.Writer.write;
+NetworkTestRunner.networkLog = () => Logs.NetworkLog.NetworkLog.instance();
+NetworkTestRunner.NetworkLogEvents = Logs.NetworkLog.Events;
 
 TestRunner.deprecatedInitAsync(`
   let lastXHRIndex = 0;

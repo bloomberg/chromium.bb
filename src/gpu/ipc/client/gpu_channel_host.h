@@ -26,16 +26,17 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 #include "gpu/ipc/client/shared_image_interface_proxy.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
+#include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace IPC {
 struct PendingSyncMsg;
 class ChannelMojo;
 }
-struct GpuDeferredMessage;
 
 namespace gpu {
 class ClientSharedImageInterface;
@@ -77,6 +78,9 @@ class GPU_EXPORT GpuChannelHost
 
   int channel_id() const { return channel_id_; }
 
+  // Virtual for testing.
+  virtual mojom::GpuChannel& GetGpuChannel();
+
   // The GPU stats reported by the GPU process.
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
   const gpu::GpuFeatureInfo& gpu_feature_info() const {
@@ -97,7 +101,7 @@ class GPU_EXPORT GpuChannelHost
   // being released, but is handled in-order relative to other such IPCs and/or
   // OrderingBarriers. Returns a deferred message id just like OrderingBarrier.
   uint32_t EnqueueDeferredMessage(
-      const IPC::Message& message,
+      mojom::DeferredRequestParamsPtr params,
       std::vector<SyncToken> sync_token_fences = {});
 
   // Ensure that the all deferred messages prior upto |deferred_message_id| have
@@ -160,11 +164,11 @@ class GPU_EXPORT GpuChannelHost
   class GPU_EXPORT Listener : public IPC::Listener {
    public:
     Listener();
-
     ~Listener() override;
 
     // Called on the IO thread.
     void Initialize(mojo::ScopedMessagePipeHandle handle,
+                    mojo::PendingAssociatedReceiver<mojom::GpuChannel> receiver,
                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
     // Called on the IO thread.
@@ -253,6 +257,7 @@ class GPU_EXPORT GpuChannelHost
   // with base::Unretained(listener_).
   std::unique_ptr<Listener, base::OnTaskRunnerDeleter> listener_;
 
+  mojo::SharedAssociatedRemote<mojom::GpuChannel> gpu_channel_;
   SharedImageInterfaceProxy shared_image_interface_;
 
   // A client-side helper to send image decode requests to the GPU process.
@@ -267,8 +272,8 @@ class GPU_EXPORT GpuChannelHost
   // Protects |deferred_messages_|, |pending_ordering_barrier_| and
   // |*_deferred_message_id_|.
   mutable base::Lock context_lock_;
-  std::vector<GpuDeferredMessage> deferred_messages_;
-  base::Optional<OrderingBarrierInfo> pending_ordering_barrier_;
+  std::vector<mojom::DeferredRequestPtr> deferred_messages_;
+  absl::optional<OrderingBarrierInfo> pending_ordering_barrier_;
   uint32_t next_deferred_message_id_ = 1;
   // Highest deferred message id in |deferred_messages_|.
   uint32_t enqueued_deferred_message_id_ = 0;

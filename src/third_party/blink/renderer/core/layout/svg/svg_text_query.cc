@@ -34,6 +34,9 @@ namespace blink {
 
 // Base structure for callback user data
 struct QueryData {
+  STACK_ALLOCATED();
+
+ public:
   QueryData()
       : is_vertical_text(false),
         current_offset(0),

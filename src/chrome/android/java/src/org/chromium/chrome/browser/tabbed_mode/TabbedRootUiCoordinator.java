@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabbed_mode;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -21,6 +22,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpControllerFactory;
@@ -31,6 +33,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator;
+import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator.HeightObserver;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
@@ -40,17 +43,17 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.BackActionDelegate;
-import org.chromium.chrome.browser.gesturenav.BackActionDelegate.ActionType;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
+import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerV2;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorInProductHelpController;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -59,11 +62,14 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.ui.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsService;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
@@ -115,9 +121,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private ObservableSupplierImpl<Tab> mTabSupplier;
     private ActivityTabTabObserver mTabObserver;
     private ContinuousSearchContainerCoordinator mContinuousSearchContainerCoordinator;
-    private Callback<Integer> mContinuousSearchObserver;
+    private HeightObserver mContinuousSearchObserver;
     private TabObscuringHandler.Observer mContinuousSearchTabObscuringHandlerObserver;
     private MerchantTrustSignalsCoordinator mMerchantTrustSignalsCoordinator;
+    private CommerceSubscriptionsService mCommerceSubscriptionsService;
 
     private int mStatusIndicatorHeight;
     private int mContinuousSearchHeight;
@@ -150,11 +157,13 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             OneshotSupplier<StartSurface> startSurfaceSupplier,
             OneshotSupplier<LayoutStateProvider> layoutStateProviderOneshotSupplier,
-            Supplier<Tab> startSurfaceParentTabSupplier) {
+            Supplier<Tab> startSurfaceParentTabSupplier,
+            @NonNull BrowserControlsManager browserControlsManager) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, contextualSearchManagerSupplier,
                 tabModelSelectorSupplier, startSurfaceSupplier, intentMetadataOneshotSupplier,
-                layoutStateProviderOneshotSupplier, startSurfaceParentTabSupplier);
+                layoutStateProviderOneshotSupplier, startSurfaceParentTabSupplier,
+                browserControlsManager);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mCanAnimateBrowserControls = () -> {
             // These null checks prevent any exceptions that may be caused by callbacks after
@@ -163,10 +172,13 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             final Tab tab = mActivity.getActivityTabProvider().get();
             return tab != null && tab.isUserInteractable() && !tab.isNativePage();
         };
+
+        getAppBrowserControlsVisibilityDelegate().addDelegate(
+                browserControlsManager.getBrowserVisibilityDelegate());
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
         if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
 
@@ -226,7 +238,12 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             mMerchantTrustSignalsCoordinator = null;
         }
 
-        super.destroy();
+        if (mCommerceSubscriptionsService != null) {
+            mCommerceSubscriptionsService.destroy();
+            mCommerceSubscriptionsService = null;
+        }
+
+        super.onDestroy();
     }
 
     @Override
@@ -342,6 +359,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         initContinuousSearchCoordinator();
 
         initMerchantTrustSignals();
+        initCommerceSubscriptionsService();
     }
 
     private void initMerchantTrustSignals() {
@@ -458,20 +476,38 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (FeedFeatures.isWebFeedUIEnabled()) {
             mWebFeedFollowIntroController = new WebFeedFollowIntroController(mActivity,
-                    mTabSupplier, mToolbarManager.getMenuButtonView(),
-                    mActivity.getSnackbarManager(), new WebFeedBridge());
+                    mAppMenuCoordinator.getAppMenuHandler(), mTabSupplier,
+                    mToolbarManager.getMenuButtonView(),
+                    ()
+                            -> mActivity.getTabCreator(/*incognito=*/false)
+                                       .launchUrl(NewTabPageUtils.encodeNtpUrl(
+                                                          NewTabPageLaunchOrigin.WEB_FEED),
+                                               TabLaunchType.FROM_CHROME_UI),
+                    mActivity.getModalDialogManager(), mActivity.getSnackbarManager(),
+                    new WebFeedBridge());
         }
     }
 
-    private void updateTopControlsHeight() {
+    private void updateTopControlsHeight(boolean animate) {
         final BrowserControlsSizer browserControlsSizer = mActivity.getBrowserControlsManager();
         final int resourceId = mActivity.getControlContainerHeightResource();
         final int topControlsNewHeight = mActivity.getResources().getDimensionPixelSize(resourceId)
                 + mStatusIndicatorHeight + mContinuousSearchHeight;
 
-        browserControlsSizer.setAnimateBrowserControlsHeightChanges(true);
+        browserControlsSizer.setAnimateBrowserControlsHeightChanges(animate);
         browserControlsSizer.setTopControlsHeight(topControlsNewHeight, mStatusIndicatorHeight);
-        browserControlsSizer.setAnimateBrowserControlsHeightChanges(false);
+        if (animate) browserControlsSizer.setAnimateBrowserControlsHeightChanges(false);
+    }
+
+    private void initCommerceSubscriptionsService() {
+        if (!TabUiFeatureUtilities.ENABLE_PRICE_NOTIFICATION.getValue()) {
+            return;
+        }
+
+        CommerceSubscriptionsServiceFactory factory = new CommerceSubscriptionsServiceFactory();
+        mCommerceSubscriptionsService = factory.getForLastUsedProfile();
+        mCommerceSubscriptionsService.initDeferredStartupForActivity(
+                mActivity.getTabModelSelector(), mActivity.getLifecycleDispatcher());
     }
 
     private void initStatusIndicatorCoordinator(LayoutManagerImpl layoutManager) {
@@ -493,7 +529,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @Override
             public void onStatusIndicatorHeightChanged(int indicatorHeight) {
                 mStatusIndicatorHeight = indicatorHeight;
-                updateTopControlsHeight();
+                updateTopControlsHeight(/*animate=*/true);
             }
         };
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);
@@ -544,23 +580,15 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 mLayoutManager, mActivity.getCompositorViewHolder().getResourceManager(),
                 mTabSupplier, browserControlsSizer, mCanAnimateBrowserControls,
                 defaultTopContainerHeightSupplier, getTopUiThemeColorProvider(),
-                mActivity.getResources());
-        mContinuousSearchObserver = newHeight -> {
+                mActivity.getResources(), mToolbarManager::setForceHideShadow);
+        mContinuousSearchObserver = (newHeight, animate) -> {
             mContinuousSearchHeight = newHeight;
-            updateTopControlsHeight();
+            updateTopControlsHeight(animate);
         };
         mContinuousSearchContainerCoordinator.addHeightObserver(mContinuousSearchObserver);
         mContinuousSearchTabObscuringHandlerObserver =
                 isObscured -> mContinuousSearchContainerCoordinator.updateTabObscured(isObscured);
         getTabObscuringHandler().addObserver(mContinuousSearchTabObscuringHandlerObserver);
-    }
-
-    @Override
-    protected BrowserControlsManager createBrowserControlsManager() {
-        BrowserControlsManager manager = super.createBrowserControlsManager();
-        getAppBrowserControlsVisibilityDelegate().addDelegate(
-                manager.getBrowserVisibilityDelegate());
-        return manager;
     }
 
     /**
@@ -624,7 +652,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             // TODO(https://crbug.com/865801, pnoland): Unify promo dialog logic and move into a
             // single PromoDialogCoordinator.
             boolean isShowingPromo =
-                    LocaleManager.getInstance().hasShownSearchEnginePromoThisSession();
+                    AppHooks.get().getLocaleManager().hasShownSearchEnginePromoThisSession();
             // Promo dialogs in multiwindow mode are broken on some devices:
             // http://crbug.com/354696
             boolean isLegacyMultiWindow =
@@ -650,7 +678,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
     private boolean maybeShowPromo() {
         // Only one promo can be shown in one run to avoid nagging users too much.
-        if (SigninPromoUtil.launchSigninPromoIfNeeded(mActivity, SigninActivityLauncherImpl.get(),
+        if (SigninPromoUtil.launchSigninPromoIfNeeded(mActivity,
+                    SyncConsentActivityLauncherImpl.get(),
                     ChromeVersionInfo.getProductMajorVersion())) {
             return true;
         }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../devtools_image_files.gni")
+import("../../config/gni/devtools_image_files.gni")
 import("../../scripts/build/ninja/devtools_pre_built.gni")
 import("../../scripts/build/ninja/node.gni")
 
@@ -24,4 +24,11 @@ node_action("generate_css_vars") {
   ]
 
   data = [ "$target_gen_dir/Images.js" ]
+
+  metadata = {
+    grd_files = data
+    foreach(_image_file, devtools_image_files) {
+      grd_files += [ "$target_gen_dir/$_image_file" ]
+    }
+  }
 }

@@ -45,6 +45,8 @@ const char* SKPBench::onGetUniqueName() {
 
 void SKPBench::onPerCanvasPreDraw(SkCanvas* canvas) {
     SkIRect bounds = canvas->getDeviceClipBounds();
+    bounds.intersect(fClip);
+    bounds.intersect(fPic->cullRect().roundOut());
     SkAssertResult(!bounds.isEmpty());
 
     const bool gpu = canvas->recordingContext() != nullptr;
@@ -164,4 +166,17 @@ void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<
     direct->resetContext();
     direct->priv().getGpu()->resetShaderCacheForTesting();
     draw_pic_for_stats(canvas, direct, fPic.get(), keys, values);
+}
+
+bool SKPBench::getDMSAAStats(GrRecordingContext* rContext) {
+    if (!rContext || !rContext->asDirectContext()) {
+        return false;
+    }
+    // Clear the current DMSAA stats then do a single tiled draw that resets them to the specific
+    // values for our SKP.
+    rContext->asDirectContext()->flushAndSubmit();
+    rContext->priv().dmsaaStats() = {};
+    this->drawPicture();  // Draw tiled for DMSAA stats.
+    rContext->asDirectContext()->flush();
+    return true;
 }

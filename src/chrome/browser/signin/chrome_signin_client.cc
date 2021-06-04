@@ -56,12 +56,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/optional.h"
 #include "chrome/browser/lacros/account_manager_util.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -77,10 +77,8 @@ namespace {
 
 // List of sources for which sign out is always allowed.
 signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     // Allowed, because data has not been synced yet.
     signin_metrics::ProfileSignout::ABORT_SIGNIN,
-#endif
     // Allowed, because only used on Android and the primary account must be
     // cleared when the account is removed from device
     signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE,
@@ -135,12 +133,12 @@ ChromeSigninClient::GetURLLoaderFactory() {
   if (url_loader_factory_for_testing_)
     return url_loader_factory_for_testing_;
 
-  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+  return profile_->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
 network::mojom::CookieManager* ChromeSigninClient::GetCookieManager() {
-  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+  return profile_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess();
 }
 
@@ -259,7 +257,7 @@ void ChromeSigninClient::VerifySyncToken() {
   // We only verifiy the token once when Profile is just created.
   if (signin_util::IsForceSigninEnabled() && !force_signin_verifier_)
     force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(
-        IdentityManagerFactory::GetForProfile(profile_));
+        profile_, IdentityManagerFactory::GetForProfile(profile_));
 #endif
 }
 
@@ -290,18 +288,18 @@ bool ChromeSigninClient::IsNonEnterpriseUser(const std::string& username) {
 // Also note that this will be null for Secondary / non-Main Profiles in
 // Lacros, because they do not start with the Chrome OS Device Account
 // signed-in by default.
-base::Optional<account_manager::Account>
+absl::optional<account_manager::Account>
 ChromeSigninClient::GetInitialPrimaryAccount() {
   if (!IsAccountManagerAvailable(profile_)) {
     // Secondary Profiles in Lacros do not start with the Device Account signed
     // in.
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const crosapi::mojom::AccountPtr& device_account =
       chromeos::LacrosChromeServiceImpl::Get()->init_params()->device_account;
   if (!device_account)
-    return base::nullopt;
+    return absl::nullopt;
 
   return account_manager::FromMojoAccount(device_account);
 }

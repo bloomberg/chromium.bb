@@ -18,6 +18,7 @@ mojom("mojom") {
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
     "audio_stream_factory.mojom",
+    "capture_handle.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -536,6 +537,17 @@ mojom("mojom") {
         "//ui/gfx/geometry/mojom",
       ]
     },
+    {
+      types = [
+        {
+          mojom = "media.mojom.CdmCapability"
+          cpp = "::media::CdmCapability"
+        },
+      ]
+      traits_headers = [ "cdm_capability_mojom_traits.h" ]
+      traits_sources = [ "cdm_capability_mojom_traits.cc" ]
+      traits_public_deps = [ "//media" ]
+    },
   ]
 
   cpp_typemaps += shared_typemaps
@@ -554,8 +566,7 @@ source_set("shared_mojom_traits") {
 
   public_deps = [
     ":mojom_shared",
-    "//gpu/ipc/common:common",
-    "//gpu/ipc/common:mojom_traits",
+    "//gpu/ipc/common",
     "//media",
     "//media/base/ipc:ipc",
     "//mojo/public/mojom/base",

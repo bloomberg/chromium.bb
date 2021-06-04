@@ -17,6 +17,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace signin {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
@@ -25,16 +28,26 @@ class PrimaryAccountAccessTokenFetcher;
 // Handles requests for user Google Drive data.
 class DriveService : public KeyedService {
  public:
+  static const char kLastDismissedTimePrefName[];
+  static const base::TimeDelta kDismissDuration;
+
   DriveService(const DriveService&) = delete;
   DriveService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      signin::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager,
+      const std::string& application_locale,
+      PrefService* pref_service);
   ~DriveService() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   using GetFilesCallback = drive::mojom::DriveHandler::GetFilesCallback;
   // Retrieves Google Drive document suggestions from ItemSuggest API.
   void GetDriveFiles(GetFilesCallback callback);
-  std::string BuildRequestBody();
+  // Makes the service not return data for a specified amount of time.
+  void DismissModule();
+  // Makes the service return data again even if dimiss time is not yet over.
+  void RestoreModule();
 
  private:
   void OnTokenReceived(GoogleServiceAuthError error,
@@ -49,6 +62,8 @@ class DriveService : public KeyedService {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::vector<GetFilesCallback> callbacks_;
   signin::IdentityManager* identity_manager_;
+  std::string application_locale_;
+  PrefService* pref_service_;
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DriveService> weak_factory_{this};
 };

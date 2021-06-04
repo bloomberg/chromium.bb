@@ -52,7 +52,7 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
 
   // Limit to prevent callers accidentally overflowing an int size.
   STATIC_ASSERT_OR_PA_CHECK(
-      MaxDirectMapped() <= (1UL << 31) + PageAllocationGranularity(),
+      MaxDirectMapped() <= (1UL << 31) + DirectMapAllocationGranularity(),
       "maximum direct mapped allocation");
 
   // Check that some of our zanier calculations worked out as expected.
@@ -67,16 +67,14 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
 }
 
 void PartitionAllocGlobalUninitForTesting() {
+  internal::PCScan::UninitForTesting();  // IN-TEST
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  if (features::IsPartitionAllocGigaCageEnabled()) {
 #if defined(PA_HAS_64_BITS_POINTERS)
-    internal::PartitionAddressSpace::UninitForTesting();
+  internal::PartitionAddressSpace::UninitForTesting();
 #else
-    internal::AddressPoolManager::GetInstance()->ResetForTesting();
+  internal::AddressPoolManager::GetInstance()->ResetForTesting();
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
-  }
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  internal::PCScan::Instance().ClearRootsForTesting();  // IN-TEST
   internal::g_oom_handling_function = nullptr;
 }
 

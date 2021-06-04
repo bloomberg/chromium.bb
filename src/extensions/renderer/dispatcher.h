@@ -42,7 +42,6 @@ class GURL;
 class ModuleSystem;
 struct ExtensionMsg_DispatchEvent_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
-struct ExtensionMsg_Loaded_Params;
 struct ExtensionMsg_TabConnectionInfo;
 struct ExtensionMsg_UpdatePermissions_Params;
 
@@ -165,11 +164,6 @@ class Dispatcher : public content::RenderThreadObserver,
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame);
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame);
 
-  void OnExtensionResponse(int request_id,
-                           bool success,
-                           const base::ListValue& response,
-                           const std::string& error);
-
   // Dispatches the event named |event_name| to all render views.
   void DispatchEvent(const std::string& extension_id,
                      const std::string& event_name,
@@ -228,6 +222,8 @@ class Dispatcher : public content::RenderThreadObserver,
   // mojom::Renderer implementation:
   void ActivateExtension(const std::string& extension_id) override;
   void SetActivityLoggingEnabled(bool enabled) override;
+  void LoadExtensions(std::vector<extensions::mojom::ExtensionLoadedParamsPtr>
+                          loaded_extensions) override;
   void UnloadExtension(const std::string& extension_id) override;
   void SuspendExtension(
       const std::string& extension_id,
@@ -244,16 +240,14 @@ class Dispatcher : public content::RenderThreadObserver,
   void ShouldSuspend(ShouldSuspendCallback callback) override;
   void TransferBlobs(TransferBlobsCallback callback) override;
   void UpdateDefaultPolicyHostRestrictions(
-      const extensions::URLPatternSet& default_policy_blocked_hosts,
-      const extensions::URLPatternSet& default_policy_allowed_hosts) override;
+      extensions::URLPatternSet default_policy_blocked_hosts,
+      extensions::URLPatternSet default_policy_allowed_hosts) override;
   void UpdateTabSpecificPermissions(const std::string& extension_id,
-                                    const extensions::URLPatternSet& new_hosts,
+                                    extensions::URLPatternSet new_hosts,
                                     int tab_id,
                                     bool update_origin_whitelist) override;
   void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
-                         mojom::HostIDPtr host_id,
-                         std::vector<mojom::HostIDPtr> changed_hosts,
-                         bool allowlisted_only) override;
+                         mojom::HostIDPtr host_id) override;
   void ClearTabSpecificPermissions(
       const std::vector<std::string>& extension_ids,
       int tab_id,
@@ -273,15 +267,12 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnDispatchOnDisconnect(int worker_thread_id,
                               const PortId& port_id,
                               const std::string& error_message);
-  void OnLoaded(
-      const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
   void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
                        const base::ListValue& event_args);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
 
   // UserScriptSetManager::Observer implementation.
-  void OnUserScriptsUpdated(
-      const std::set<mojom::HostID>& changed_hosts) override;
+  void OnUserScriptsUpdated(const mojom::HostID& changed_host) override;
 
   void UpdateActiveExtensions();
 

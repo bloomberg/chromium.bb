@@ -23,9 +23,9 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/blink/public/platform/platform.h"

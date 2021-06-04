@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/buildflags.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_constants.h"
@@ -22,8 +24,6 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -89,21 +89,6 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
   ~FullSizeBubbleFrameView() override = default;
 
  private:
-  // Overridden from views::ViewTargeterDelegate:
-  bool DoesIntersectRect(const View* target,
-                         const gfx::Rect& rect) const override {
-    // Make sure click events can still reach the close button, even if the
-    // ClientView overlaps it.
-    // NOTE: |rect| is in the mirrored coordinate space, so we must use the
-    // close button's mirrored bounds to correctly target the close button when
-    // in RTL mode.
-    if (IsCloseButtonVisible() &&
-        GetCloseButtonMirroredBounds().Intersects(rect)) {
-      return true;
-    }
-    return views::BubbleFrameView::DoesIntersectRect(target, rect);
-  }
-
   // Overridden from views::BubbleFrameView:
   bool ExtendClientIntoTitle() const override { return true; }
 };

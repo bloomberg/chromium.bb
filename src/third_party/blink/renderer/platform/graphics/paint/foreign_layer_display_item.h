@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_
 
+#include "base/dcheck_is_on.h"
 #include "cc/layers/layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -27,18 +29,18 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
                           scoped_refptr<cc::Layer>,
                           const IntPoint& offset);
 
-  cc::Layer* GetLayer() const { return layer_.get(); }
-
-  // DisplayItem
-  bool Equals(const DisplayItem&) const final;
-#if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const final;
-#endif
-
-  IntPoint Offset() const { return offset_; }
+  cc::Layer* GetLayer() const {
+    DCHECK(!IsTombstone());
+    return layer_.get();
+  }
 
  private:
-  IntPoint offset_;
+  friend class DisplayItem;
+  bool EqualsForUnderInvalidationImpl(const ForeignLayerDisplayItem&) const;
+#if DCHECK_IS_ON()
+  void PropertiesAsJSONImpl(JSONObject&) const;
+#endif
+
   scoped_refptr<cc::Layer> layer_;
 };
 
@@ -53,6 +55,13 @@ class LiteralDebugNameClient : public DisplayItemClient {
 
  private:
   const char* name_;
+};
+
+template <>
+struct DowncastTraits<ForeignLayerDisplayItem> {
+  static bool AllowFrom(const DisplayItem& i) {
+    return !i.IsTombstone() && i.IsForeignLayer();
+  }
 };
 
 // Records a foreign layer into a GraphicsContext.

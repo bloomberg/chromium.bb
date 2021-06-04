@@ -195,6 +195,7 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetBoolPath("webauthn:virtualAuthenticators",
                     !capabilities.IsAndroid());
   caps->SetBoolPath("webauthn:extension:largeBlob", !capabilities.IsAndroid());
+  caps->SetBoolPath("webauthn:extension:credBlob", !capabilities.IsAndroid());
 
   // Chrome-specific extensions.
   const std::string chromedriverVersionKey = base::StringPrintf(
@@ -263,8 +264,7 @@ Status CheckSessionCreated(Session* session) {
   if (status.IsError())
     return Status(kSessionNotCreated, status);
 
-  int response;
-  if (!result->GetAsInteger(&response) || response != 1) {
+  if (!result->is_int() || result->GetInt() != 1) {
     return Status(kSessionNotCreated,
                   "unexpected response from browser");
   }

@@ -1084,7 +1084,8 @@ class SetBindGroupValidationTest : public ValidationTest {
 
     wgpu::RenderPipeline CreateRenderPipeline() {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-                [[stage(vertex)]] fn main() -> void {
+                [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+                    return vec4<f32>();
                 })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
@@ -1097,7 +1098,7 @@ class SetBindGroupValidationTest : public ValidationTest {
                 [[group(0), binding(2)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
                 [[group(0), binding(3)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
-                [[stage(fragment)]] fn main() -> void {
+                [[stage(fragment)]] fn main() {
                 })");
 
         utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
@@ -1120,7 +1121,7 @@ class SetBindGroupValidationTest : public ValidationTest {
                 [[group(0), binding(2)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
                 [[group(0), binding(3)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
-                [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
+                [[stage(compute), workgroup_size(4, 4, 1)]] fn main() {
                 })");
 
         wgpu::PipelineLayout pipelineLayout =
@@ -1487,7 +1488,8 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
         ValidationTest::SetUp();
 
         mVsModule = utils::CreateShaderModule(device, R"(
-                [[stage(vertex)]] fn main() -> void {
+                [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+                    return vec4<f32>();
                 })");
     }
 
@@ -1555,7 +1557,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
             }
         }
 
-        ss << "[[stage(fragment)]] fn main() -> void {}";
+        ss << "[[stage(fragment)]] fn main() {}";
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, ss.str().c_str());
 
@@ -1689,7 +1691,8 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
         const char* fsShader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-                [[stage(vertex)]] fn main() -> void {
+                [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+                    return vec4<f32>();
                 })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fsShader);
@@ -1714,7 +1717,9 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
             [[group(0), binding(0)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
             [[group(1), binding(0)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
-            [[stage(fragment)]] fn main() -> void {
+            [[stage(fragment)]] fn main() {
+                var val : vec2<f32> = sBufferDynamic.value;
+                val = sReadonlyBufferDynamic.value;
             })",
                                       std::move(bindGroupLayouts));
     }
@@ -1747,7 +1752,9 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
             [[group(0), binding(0)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
             [[group(1), binding(0)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
-            [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
+            [[stage(compute), workgroup_size(4, 4, 1)]] fn main() {
+                var val : vec2<f32> = sBufferDynamic.value;
+                val = sReadonlyBufferDynamic.value;
             })",
                                      std::move(bindGroupLayouts));
     }
@@ -1788,11 +1795,13 @@ TEST_F(BindGroupLayoutCompatibilityTest, ROStorageInBGLWithRWStorageInShader) {
 TEST_F(BindGroupLayoutCompatibilityTest, TextureViewDimension) {
     constexpr char kTexture2DShaderFS[] = R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
-        [[stage(fragment)]] fn main() -> void {
+        [[stage(fragment)]] fn main() {
+            textureDimensions(myTexture);
         })";
     constexpr char kTexture2DShaderCS[] = R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
+           textureDimensions(myTexture);
         })";
 
     // Render: Test that 2D texture with 2D view dimension works
@@ -1825,11 +1834,13 @@ TEST_F(BindGroupLayoutCompatibilityTest, TextureViewDimension) {
 
     constexpr char kTexture2DArrayShaderFS[] = R"(
         [[group(0), binding(0)]] var myTexture : texture_2d_array<f32>;
-        [[stage(fragment)]] fn main() -> void {
+        [[stage(fragment)]] fn main() {
+           textureDimensions(myTexture);
         })";
     constexpr char kTexture2DArrayShaderCS[] = R"(
         [[group(0), binding(0)]] var myTexture : texture_2d_array<f32>;
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
+           textureDimensions(myTexture);
         })";
 
     // Render: Test that 2D texture array with 2D array view dimension works
@@ -2053,7 +2064,8 @@ class ComparisonSamplerBindingTest : public ValidationTest {
     wgpu::RenderPipeline CreateFragmentPipeline(wgpu::BindGroupLayout* bindGroupLayout,
                                                 const char* fragmentSource) {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            [[stage(vertex)]] fn main() -> void {
+            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>();
             })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentSource);
@@ -2078,7 +2090,8 @@ TEST_F(ComparisonSamplerBindingTest, DISABLED_ShaderAndBGLMatches) {
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
             [[group(0), binding(0)]] var mySampler: sampler;
-            [[stage(fragment)]] fn main() -> void {
+            [[stage(fragment)]] fn main() {
+                let s : sampler = mySampler;
             })");
     }
 
@@ -2089,7 +2102,8 @@ TEST_F(ComparisonSamplerBindingTest, DISABLED_ShaderAndBGLMatches) {
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
             [[group(0), binding(0)]] var mySampler: sampler_comparison;
-            [[stage(fragment)]] fn main() -> void {
+            [[stage(fragment)]] fn main() {
+                let s : sampler_comparison = mySampler;
             })");
     }
 
@@ -2100,7 +2114,8 @@ TEST_F(ComparisonSamplerBindingTest, DISABLED_ShaderAndBGLMatches) {
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             [[group(0), binding(0)]] var mySampler: sampler_comparison;
-            [[stage(fragment)]] fn main() -> void {
+            [[stage(fragment)]] fn main() {
+                let s : sampler_comparison = mySampler;
             })"));
     }
 
@@ -2111,7 +2126,8 @@ TEST_F(ComparisonSamplerBindingTest, DISABLED_ShaderAndBGLMatches) {
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             [[group(0), binding(0)]] var mySampler: sampler;
-            [[stage(fragment)]] fn main() -> void {
+            [[stage(fragment)]] fn main() {
+                let s : sampler = mySampler;
             })"));
     }
 }

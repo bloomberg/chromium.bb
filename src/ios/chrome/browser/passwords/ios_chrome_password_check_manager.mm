@@ -69,23 +69,6 @@ PasswordCheckState ConvertBulkCheckState(State state) {
   NOTREACHED();
   return PasswordCheckState::kIdle;
 }
-
-// Function which returns duplicates of passed form.
-std::vector<password_manager::PasswordForm> GetDuplicatesOfForm(
-    const password_manager::PasswordForm& form,
-    SavedPasswordsView passwords) {
-  std::vector<password_manager::PasswordForm> duplicates;
-  auto tie = [](const auto& form) {
-    return std::tie(form.signon_realm, form.username_value,
-                    form.password_value);
-  };
-
-  for (const auto& item : passwords) {
-    if (tie(item) == tie(form))
-      duplicates.emplace_back(item);
-  }
-  return duplicates;
-}
 }  // namespace
 
 IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
@@ -102,9 +85,10 @@ IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
           IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(
               browser_state),
           browser_state->GetPrefs()) {
-  observed_saved_passwords_presenter_.Add(&saved_passwords_presenter_);
-  observed_insecure_credentials_manager_.Add(&insecure_credentials_manager_);
-  observed_bulk_leak_check_service_.Add(
+  observed_saved_passwords_presenter_.Observe(&saved_passwords_presenter_);
+  observed_insecure_credentials_manager_.Observe(
+      &insecure_credentials_manager_);
+  observed_bulk_leak_check_service_.Observe(
       IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(browser_state));
 
   // Instructs the presenter and manager to initialize and build their caches.
@@ -168,13 +152,8 @@ bool IOSChromePasswordCheckManager::EditPasswordForm(
     const password_manager::PasswordForm& form,
     base::StringPiece new_username,
     base::StringPiece new_password) {
-  auto duplicates =
-      GetDuplicatesOfForm(form, saved_passwords_presenter_.GetSavedPasswords());
-  if (duplicates.size() == 0)
-    return false;
   return saved_passwords_presenter_.EditSavedPasswords(
-      duplicates, base::UTF8ToUTF16(new_username),
-      base::UTF8ToUTF16(new_password));
+      form, base::UTF8ToUTF16(new_username), base::UTF8ToUTF16(new_password));
 }
 
 void IOSChromePasswordCheckManager::EditCompromisedPasswordForm(
@@ -186,11 +165,7 @@ void IOSChromePasswordCheckManager::EditCompromisedPasswordForm(
 
 void IOSChromePasswordCheckManager::DeletePasswordForm(
     const password_manager::PasswordForm& form) {
-  auto duplicates =
-      GetDuplicatesOfForm(form, saved_passwords_presenter_.GetSavedPasswords());
-  for (auto& duplicate : duplicates) {
-    password_store_->RemoveLogin(duplicate);
-  }
+  saved_passwords_presenter_.RemovePassword(form);
 }
 
 void IOSChromePasswordCheckManager::DeleteCompromisedPasswordForm(

@@ -8,11 +8,11 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {I18nBehavior, loadTimeData} from '../../i18n_setup.js';
 import {$$} from '../../utils.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
@@ -75,9 +75,6 @@ class ChromeCartModuleElement extends mixinBehaviors
 
       /** @private {string} */
       confirmDiscountConsentString_: String,
-
-      /** @private {string} */
-      discountConsentIconSrc_: String,
     };
   }
 
@@ -158,6 +155,7 @@ class ChromeCartModuleElement extends mixinBehaviors
    */
   onCartMenuButtonClick_(e) {
     e.preventDefault();
+    e.stopPropagation();
     this.currentMenuIndex_ =
         this.$.cartItemRepeat.indexForElement(e.target.parentElement);
     const merchant = this.cartItems[this.currentMenuIndex_].merchant;
@@ -345,10 +343,29 @@ class ChromeCartModuleElement extends mixinBehaviors
    * @param {!Event} e
    * @private
    */
-  onCartItemClick_(e) {
+  async onCartItemClick_(e) {
     const index = this.$.cartItemRepeat.indexForElement(e.target);
-    ChromeCartProxy.getInstance().handler.onCartItemClicked(index);
+    // When rule-based discount is enabled, clicking on the cart wouldn't
+    // trigger navigation immediately. Instead, we'll fetch discount URL from
+    // browser process and re-bind URL. Then, we create a new pointer event by
+    // cloning the initial one so that we can re-trigger a navigation with the
+    // new URL. This is to keep the navigation in render process for security
+    // reasons.
+    if (loadTimeData.getBoolean('ruleBasedDiscountEnabled') &&
+        (e.shouldNavigate === undefined || e.shouldNavigate === false)) {
+      e.preventDefault();
+      const {discountUrl} =
+          await ChromeCartProxy.getInstance().handler.getDiscountURL(
+              this.cartItems[index].cartUrl);
+      this.set(`cartItems.${index}.cartUrl`, discountUrl);
+      const cloneEvent = new PointerEvent(e.type, e);
+      cloneEvent.shouldNavigate = true;
+      this.$.cartCarousel.querySelectorAll('.cart-item')[index].dispatchEvent(
+          cloneEvent);
+      return;
+    }
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+    chrome.metricsPrivate.recordSmallCount('NewTabPage.Carts.ClickCart', index);
   }
 
   /** @private */
@@ -379,13 +396,18 @@ customElements.define(ChromeCartModuleElement.is, ChromeCartModuleElement);
 
 /** @return {!Promise<?HTMLElement>} */
 async function createCartElement() {
+  // getWarmWelcomeVisible makes server-side change and might flip the status of
+  // whether welcome surface should show or not. Anything whose visibility
+  // dependes on welcome surface (e.g. RBD consent) should check before
+  // getWarmWelcomeVisible.
+  const {consentVisible} = await ChromeCartProxy.getInstance()
+                               .handler.getDiscountConsentCardVisible();
   const {welcomeVisible} =
       await ChromeCartProxy.getInstance().handler.getWarmWelcomeVisible();
   const {carts} =
       await ChromeCartProxy.getInstance().handler.getMerchantCarts();
-  const {consentVisible} = await ChromeCartProxy.getInstance()
-                               .handler.getDiscountConsentCardVisible();
-  ChromeCartProxy.getInstance().handler.onModuleCreated(carts.length);
+  chrome.metricsPrivate.recordSmallCount(
+      'NewTabPage.Carts.CartCount', carts.length);
   if (carts.length === 0) {
     return null;
   }

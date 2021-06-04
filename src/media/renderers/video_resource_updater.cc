@@ -13,6 +13,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bit_cast.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -522,8 +523,7 @@ void VideoResourceUpdater::ObtainFrameResources(
   for (size_t i = 0; i < external_resources.resources.size(); ++i) {
     viz::ResourceId resource_id = resource_provider_->ImportResource(
         external_resources.resources[i],
-        viz::SingleReleaseCallback::Create(
-            std::move(external_resources.release_callbacks[i])));
+        std::move(external_resources.release_callbacks[i]));
     frame_resources_.emplace_back(resource_id,
                                   external_resources.resources[i].size);
   }
@@ -545,8 +545,7 @@ void VideoResourceUpdater::AppendQuads(
     gfx::Rect quad_rect,
     gfx::Rect visible_quad_rect,
     const gfx::MaskFilterInfo& mask_filter_info,
-    gfx::Rect clip_rect,
-    bool is_clipped,
+    absl::optional<gfx::Rect> clip_rect,
     bool contents_opaque,
     float draw_opacity,
     int sorting_context_id) {
@@ -554,10 +553,9 @@ void VideoResourceUpdater::AppendQuads(
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect,
-                            mask_filter_info, clip_rect, is_clipped,
-                            contents_opaque, draw_opacity,
-                            SkBlendMode::kSrcOver, sorting_context_id);
+  shared_quad_state->SetAll(
+      transform, quad_rect, visible_quad_rect, mask_filter_info, clip_rect,
+      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id);
 
   bool needs_blending = !contents_opaque;
 
@@ -912,6 +910,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           mailbox, GL_LINEAR, mailbox_holder.texture_target, sync_token,
           plane_size, video_frame->metadata().allow_overlay);
       transfer_resource.color_space = resource_color_space;
+      transfer_resource.hdr_metadata = video_frame->hdr_metadata();
       transfer_resource.read_lock_fences_enabled =
           video_frame->metadata().read_lock_fences_enabled;
       transfer_resource.format = viz::GetResourceFormat(buffer_formats[i]);

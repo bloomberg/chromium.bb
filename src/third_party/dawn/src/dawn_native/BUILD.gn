@@ -91,6 +91,8 @@ config("dawn_native_vulkan_rpath") {
 dawn_json_generator("dawn_native_utils_gen") {
   target = "dawn_native_utils"
   outputs = [
+    "src/dawn_native/ChainUtils_autogen.h",
+    "src/dawn_native/ChainUtils_autogen.cpp",
     "src/dawn_native/ProcTable.cpp",
     "src/dawn_native/wgpu_structs_autogen.h",
     "src/dawn_native/wgpu_structs_autogen.cpp",
@@ -182,6 +184,8 @@ source_set("dawn_native_sources") {
     "Buffer.h",
     "CachedObject.cpp",
     "CachedObject.h",
+    "CallbackTaskManager.cpp",
+    "CallbackTaskManager.h",
     "CommandAllocator.cpp",
     "CommandAllocator.h",
     "CommandBuffer.cpp",
@@ -202,8 +206,8 @@ source_set("dawn_native_sources") {
     "ComputePipeline.h",
     "CopyTextureForBrowserHelper.cpp",
     "CopyTextureForBrowserHelper.h",
-    "CreatePipelineAsyncTracker.cpp",
-    "CreatePipelineAsyncTracker.h",
+    "CreatePipelineAsyncTask.cpp",
+    "CreatePipelineAsyncTask.h",
     "Device.cpp",
     "Device.h",
     "DynamicUploader.cpp",
@@ -307,9 +311,27 @@ source_set("dawn_native_sources") {
     ]
   }
 
-  if (is_win) {
+  # Only win32 app needs to link with user32.lib
+  # In UWP, all availiable APIs are defined in WindowsApp.lib
+  if (is_win && !dawn_is_winuwp) {
     libs += [ "user32.lib" ]
   }
+
+  if (dawn_is_winuwp && is_debug) {
+    # DXGIGetDebugInterface1 is defined in dxgi.lib
+    # But this API is tagged as a development-only capability
+    # which implies that linking to this function will cause
+    # the application to fail Windows store certification
+    # So we only link to it in debug build when compiling for UWP.
+    # In win32 we load dxgi.dll using LoadLibrary
+    # so no need for static linking.
+    libs += [ "dxgi.lib" ]
+  }
+
+  # TODO(dawn:766):
+  # Should link dxcompiler.lib and WinPixEventRuntime_UAP.lib in UWP
+  # Somehow use dxcompiler.lib makes CoreApp unable to activate
+  # WinPIX should be added as third party tools and linked statically
 
   if (dawn_enable_d3d12) {
     libs += [ "dxguid.lib" ]

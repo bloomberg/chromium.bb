@@ -10,6 +10,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/gfx/vector_icon_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -45,7 +46,7 @@ class ColorTrackingVectorImageButton : public ImageButton {
 std::unique_ptr<ImageButton> CreateVectorImageButtonWithNativeTheme(
     Button::PressedCallback callback,
     const gfx::VectorIcon& icon,
-    base::Optional<int> dip_size) {
+    absl::optional<int> dip_size) {
   auto button = std::make_unique<ColorTrackingVectorImageButton>(
       std::move(callback), icon,
       dip_size.value_or(GetDefaultSizeOfVectorIcon(icon)));
@@ -68,7 +69,7 @@ std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
 }
 
 void ConfigureVectorImageButton(ImageButton* button) {
-  button->SetInkDropMode(Button::InkDropMode::ON);
+  button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   button->SetHasInkDropActionOnClick(true);
   button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
   button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
@@ -112,7 +113,7 @@ void SetImageFromVectorIconWithColor(ImageButton* button,
 
   button->SetImage(Button::STATE_NORMAL, normal_image);
   button->SetImage(Button::STATE_DISABLED, disabled_image);
-  button->SetInkDropBaseColor(icon_color);
+  button->ink_drop()->SetBaseColor(icon_color);
 }
 
 void SetToggledImageFromVectorIconWithColor(ToggleImageButton* button,

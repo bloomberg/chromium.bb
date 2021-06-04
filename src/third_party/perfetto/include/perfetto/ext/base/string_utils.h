@@ -98,6 +98,7 @@ inline Optional<double> StringToDouble(const std::string& s) {
 bool StartsWith(const std::string& str, const std::string& prefix);
 bool EndsWith(const std::string& str, const std::string& suffix);
 bool Contains(const std::string& haystack, const std::string& needle);
+bool Contains(const std::string& haystack, char needle);
 size_t Find(const StringView& needle, const StringView& haystack);
 bool CaseInsensitiveEqual(const std::string& first, const std::string& second);
 std::string Join(const std::vector<std::string>& parts,
@@ -122,7 +123,7 @@ std::string ReplaceAll(std::string str,
                        const std::string& to_replace,
                        const std::string& replacement);
 std::string TrimLeading(const std::string& str);
-std::string Base64Encode(const void* ptr, size_t size);
+std::string Base64Encode(const void* raw, size_t size);
 
 }  // namespace base
 }  // namespace perfetto

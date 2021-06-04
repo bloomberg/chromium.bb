@@ -32,7 +32,7 @@ MediaHistoryContentsObserver::~MediaHistoryContentsObserver() = default;
 
 void MediaHistoryContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   frozen_ = true;
@@ -40,7 +40,7 @@ void MediaHistoryContentsObserver::DidStartNavigation(
 
 void MediaHistoryContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   MaybeCommitMediaSession();
@@ -78,7 +78,7 @@ void MediaHistoryContentsObserver::MediaSessionInfoChanged(
 }
 
 void MediaHistoryContentsObserver::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    const absl::optional<media_session::MediaMetadata>& metadata) {
   if (!metadata.has_value() || frozen_)
     return;
 
@@ -101,7 +101,7 @@ void MediaHistoryContentsObserver::MediaSessionImagesChanged(
 }
 
 void MediaHistoryContentsObserver::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   if (!position.has_value() || frozen_)
     return;
 

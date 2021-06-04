@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
@@ -29,6 +30,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -58,7 +60,7 @@
 
 namespace {
 
-const unsigned expected_client_hints_number = 12u;
+const unsigned expected_client_hints_number = 13u;
 const int32_t uma_histogram_max_value = 1471228928;
 
 // An interceptor that records count of fetches and client hint headers for
@@ -263,7 +265,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
         "UserAgentClientHint,LangClientHintHeader,CriticalClientHint,"
-        "AcceptCHFrame",
+        "AcceptCHFrame,PrefersColorSchemeClientHintHeader",
         "");
     return feature_list;
   }
@@ -493,8 +495,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     if (request.GetURL().spec().find("redirect") == std::string::npos)
       return nullptr;
 
-    std::unique_ptr<net::test_server::BasicHttpResponse> response;
-    response = std::make_unique<net::test_server::BasicHttpResponse>();
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_FOUND);
     response->AddCustomHeader("Location",
                               without_accept_ch_without_lifetime_url().spec());
@@ -812,7 +813,8 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
   std::unique_ptr<base::FeatureList> EnabledFeatures() override {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "AllowClientHintsToThirdParty,UserAgentClientHint,LangClientHintHeader",
+        "AllowClientHintsToThirdParty,UserAgentClientHint,"
+        "LangClientHintHeader,PrefersColorSchemeClientHintHeader",
         "");
     return feature_list;
   }
@@ -2098,7 +2100,9 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,LangClientHintHeader", "");
+        "UserAgentClientHint,LangClientHintHeader,"
+        "PrefersColorSchemeClientHintHeader",
+        "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
@@ -2189,7 +2193,7 @@ class AcceptCHFrameObserverInterceptor {
   }
 
   content::URLLoaderInterceptor interceptor_;
-  base::Optional<std::vector<network::mojom::WebClientHintsType>>
+  absl::optional<std::vector<network::mojom::WebClientHintsType>>
       accept_ch_frame_;
 };
 
@@ -2255,4 +2259,19 @@ IN_PROC_BROWSER_TEST_F(ClientHintsAcceptCHFrameObserverBrowserTest,
   SetClientHintExpectationsOnMainFrame(false);
   SetClientHintExpectationsOnSubresources(false);
   ui_test_utils::NavigateToURL(browser(), gurl);
+}
+
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UseCounter) {
+  auto web_feature_waiter =
+      std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+          chrome_test_utils::GetActiveWebContents(this));
+
+  web_feature_waiter->AddWebFeatureExpectation(
+      blink::mojom::WebFeature::kClientHintsUAPlatform);
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  ui_test_utils::NavigateToURL(browser(), gurl);
+
+  web_feature_waiter->Wait();
 }

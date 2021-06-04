@@ -241,20 +241,20 @@ int WebMemoryTestHarness::GetNextUniqueId() {
 }
 
 FrameNodeImpl* WebMemoryTestHarness::AddFrameNodeImpl(
-    base::Optional<std::string> url,
+    absl::optional<std::string> url,
     int browsing_instance_id,
     Bytes memory_usage,
     FrameNodeImpl* parent,
     FrameNodeImpl* opener,
     ProcessNodeImpl* process,
-    base::Optional<std::string> id_attribute,
-    base::Optional<std::string> src_attribute) {
+    absl::optional<std::string> id_attribute,
+    absl::optional<std::string> src_attribute) {
   // If there's an opener, the new frame is also a new page.
   auto* page = pages_.front().get();
   if (opener) {
     pages_.push_back(CreateNode<PageNodeImpl>());
     page = pages_.back().get();
-    page->SetOpenerFrameNodeAndOpenedType(opener, PageNode::OpenedType::kPopup);
+    page->SetOpenerFrameNode(opener);
   }
 
   int frame_tree_node_id = GetNextUniqueId();

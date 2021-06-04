@@ -66,13 +66,14 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   int PreEarlyInitialization() override;
   void PostEarlyInitialization() override;
   void ToolkitInitialized() override;
-  void PreMainMessageLoopStart() override;
-  void PostMainMessageLoopStart() override;
+  void PreCreateMainMessageLoop() override;
+  void PostCreateMainMessageLoop() override;
   int PreCreateThreads() override;
   void PostCreateThreads() override;
   int PreMainMessageLoopRun() override;
   void WillRunMainMessageLoop(
       std::unique_ptr<base::RunLoop>& run_loop) override;
+  void OnFirstIdle() override;
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 

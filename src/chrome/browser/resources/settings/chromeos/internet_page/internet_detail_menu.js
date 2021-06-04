@@ -13,6 +13,8 @@ Polymer({
   // to show the actions for search result.
   behaviors: [
     settings.RouteObserverBehavior,
+    ESimManagerListenerBehavior,
+    DeepLinkingBehavior,
   ],
 
   properties: {
@@ -22,8 +24,11 @@ Polymer({
      */
     deviceState: Object,
 
-    /** @private {?OncMojo.NetworkStateProperties} */
-    networkState_: {
+    /**
+     * Null if current network on network detail page is not an eSIM network.
+     * @private {?OncMojo.NetworkStateProperties}
+     */
+    eSimNetworkState_: {
       type: Object,
       value: null,
     },
@@ -35,6 +40,66 @@ Polymer({
         return loadTimeData.getBoolean('updatedCellularActivationUi');
       }
     },
+
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isGuest');
+      },
+    },
+
+    /** @private*/
+    guid_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kCellularRenameESimNetwork,
+        chromeos.settings.mojom.Setting.kCellularRemoveESimNetwork,
+      ]),
+    },
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
+      menu.showAt(/** @type {!Element} */ (this.$$('#moreNetworkDetail')));
+
+      // Wait for menu to open.
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        let element;
+        if (settingId ===
+            chromeos.settings.mojom.Setting.kCellularRenameESimNetwork) {
+          element = this.$$('#renameBtn');
+        } else {
+          element = this.$$('#removeBtn');
+        }
+
+        if (!element) {
+          console.warn('Deep link element could not be found');
+          return;
+        }
+
+        this.showDeepLinkElement(element);
+        return;
+      });
+    });
+
+    // Stop deep link attempt since we completed it manually.
+    return false;
   },
 
   /**
@@ -44,11 +109,12 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route, oldRoute) {
+    this.eSimNetworkState_ = null;
+    this.guid_ = '';
     if (route !== settings.routes.NETWORK_DETAIL ||
         !this.isUpdatedCellularUiEnabled_) {
       return;
     }
-    this.networkState_ = null;
 
     // Check if the current network is Cellular using the GUID in the
     // current route. We can't use the 'type' parameter in the url
@@ -60,16 +126,39 @@ Polymer({
       console.error('No guid specified for page:' + route);
       return;
     }
+    this.guid_ = guid;
+
+    // Needed to set initial eSimNetworkState_.
+    this.setESimNetworkState_();
+    this.attemptDeepLink();
+  },
+
+  /**
+   * ESimManagerListenerBehavior override
+   * @param {!chromeos.cellularSetup.mojom.ESimProfileRemote} profile
+   */
+  onProfileChanged(profile) {
+    this.setESimNetworkState_();
+  },
+
+  /**
+   * Gets and sets current eSIM network state.
+   * @private
+   */
+  setESimNetworkState_() {
     const networkConfig = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
-    networkConfig.getNetworkState(guid).then(response => {
-      if (response.result.type !==
+    networkConfig.getNetworkState(this.guid_).then(response => {
+      if (!response.result ||
+          response.result.type !==
               chromeos.networkConfig.mojom.NetworkType.kCellular ||
           !response.result.typeState.cellular.eid ||
           !response.result.typeState.cellular.iccid) {
+        this.eSimNetworkState_ = null;
+        console.warn('Unable to find eSIM network with GUID: ', this.guid_);
         return;
       }
-      this.networkState_ = response.result;
+      this.eSimNetworkState_ = response.result;
     });
   },
 
@@ -87,7 +176,19 @@ Polymer({
    * @private
    */
   shouldShowDotsMenuButton_() {
-    return !!this.networkState_;
+    // Only shown if the flag is enabled.
+    if (!this.isUpdatedCellularUiEnabled_) {
+      return false;
+    }
+
+    // Not shown in guest mode.
+    if (this.isGuest_) {
+      return false;
+    }
+
+    // Show if |this.eSimNetworkState_| has been fetched. Note that this only
+    // occurs if this is a cellular network with an ICCID.
+    return !!this.eSimNetworkState_;
   },
 
   /**
@@ -106,8 +207,10 @@ Polymer({
    * @private
    */
   onRenameESimProfileTap_(e) {
+    this.closeMenu_();
     this.fire(
-        'show-esim-profile-rename-dialog', {networkState: this.networkState_});
+        'show-esim-profile-rename-dialog',
+        {networkState: this.eSimNetworkState_});
   },
 
   /**
@@ -115,7 +218,16 @@ Polymer({
    * @private
    */
   onRemoveESimProfileTap_(e) {
+    this.closeMenu_();
     this.fire(
-        'show-esim-remove-profile-dialog', {networkState: this.networkState_});
-  }
+        'show-esim-remove-profile-dialog',
+        {networkState: this.eSimNetworkState_});
+  },
+
+  /** @private */
+  closeMenu_() {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
+    actionMenu.close();
+  },
 });

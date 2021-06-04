@@ -39,7 +39,7 @@ class MEDIA_EXPORT CrasInputStream : public AgcAudioStream<AudioInputStream> {
   ~CrasInputStream() override;
 
   // Implementation of AudioInputStream.
-  bool Open() override;
+  AudioInputStream::OpenOutcome Open() override;
   void Start(AudioInputCallback* callback) override;
   void Stop() override;
   void Close() override;
@@ -75,6 +75,12 @@ class MEDIA_EXPORT CrasInputStream : public AgcAudioStream<AudioInputStream> {
 
   // Return true to use AEC in CRAS for this input stream.
   inline bool UseCrasAec() const;
+
+  // Return true to use NS in CRAS for this input stream.
+  inline bool UseCrasNs() const;
+
+  // Return true to use AGC in CRAS for this input stream.
+  inline bool UseCrasAgc() const;
 
   // Non-refcounted pointer back to the audio manager.
   // The AudioManager indirectly holds on to stream objects, so we don't

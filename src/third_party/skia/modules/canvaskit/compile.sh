@@ -103,13 +103,13 @@ if [[ $@ == *no_skottie* ]]; then
   SKOTTIE_BINDINGS=""
 fi
 
-GN_VIEWER="skia_use_expat=false skia_enable_ccpr=false"
+GN_VIEWER="skia_use_expat=false skia_enable_ccpr=false skia_enable_nga=false"
 VIEWER_BINDINGS=""
 VIEWER_LIB=""
 
 if [[ $@ == *viewer* ]]; then
   echo "Including viewer"
-  GN_VIEWER="skia_use_expat=true skia_enable_ccpr=true"
+  GN_VIEWER="skia_use_expat=true skia_enable_ccpr=true skia_enable_nga=false"
   VIEWER_BINDINGS="$BASE_DIR/viewer_bindings.cpp"
   VIEWER_LIB="$BUILD_DIR/libviewer_wasm.a"
   IS_OFFICIAL_BUILD="false"
@@ -223,7 +223,8 @@ fi
 PARAGRAPH_JS="--pre-js $BASE_DIR/paragraph.js"
 PARAGRAPH_LIB="$BUILD_DIR/libskparagraph.a"
 PARAGRAPH_BINDINGS="-DSK_INCLUDE_PARAGRAPH=1 \
-  $BASE_DIR/paragraph_bindings.cpp"
+  $BASE_DIR/paragraph_bindings.cpp \
+  $BASE_DIR/paragraph_bindings_gen.cpp"
 
 if [[ $@ == *no_paragraph* ]] || [[ $@ == *primitive_shaper* ]] || [[ $@ == *no_font* ]]; then
   echo "Omitting paragraph (must have fonts and non-primitive shaper)"

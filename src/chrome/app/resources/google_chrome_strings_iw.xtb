@@ -6,11 +6,11 @@
 <translation id="1051826050538111504">‏יש במחשב שלך תוכנה מזיקה. Chrome יכול להסיר אותה, לשחזר את ההגדרות שלך ולהשבית תוספים כדי שהדפדפן יחזור שוב לפעולה רגילה.</translation>
 <translation id="1065672644894730302">לא הייתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="1088300314857992706">‏בכתובת <ph name="USER_EMAIL_ADDRESS" /> השתמשו בעבר ב-Chrome</translation>
-<translation id="1097330777386562916">‏קובצי ה-Cookie ונתוני האתר ינוקו בכל יציאה מ-Chrome</translation>
 <translation id="110877069173485804">‏זה ה-Chrome שלך</translation>
 <translation id="1125124144982679672">‏מי משתמש/ת ב-Chrome?</translation>
 <translation id="1142745911746664600">‏לא ניתן לעדכן את Chrome</translation>
 <translation id="1154147086299354128">‏&amp;פתיחה ב-Chrome</translation>
+<translation id="1278833599417554002">‏הפעלה מחדש לצורך עדכון &amp;Chrome</translation>
 <translation id="1293325835983155583">‏<ph name="MANAGER" /> דורש לקרוא את התנאים וההגבלות הבאים ולהסכים להם לפני השימוש במכשיר הזה. תנאים אלה לא מרחיבים, משנים או מגבילים את התנאים לשימוש ב-Google Chrome OS</translation>
 <translation id="1302523850133262269">‏יש להמתין בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
 <translation id="137466361146087520">‏גרסת הבטא של Google Chrome</translation>
@@ -46,6 +46,7 @@
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, יש להיכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
+<translation id="2121284319307530122">‏הפעלה מחדש לצורך עדכון &amp;Chrome</translation>
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
 <translation id="2151406531797534936">‏יש להפעיל מחדש את Chrome עכשיו</translation>
 <translation id="2246246234298806438">‏Google Chrome לא יכול להציג תצוגה מקדימה של ההדפסה כאשר מציג ה-‏PDF המובנה חסר.</translation>
@@ -56,7 +57,6 @@
 <translation id="234869673307233423">‏Chrome לא יכול לבדוק את הסיסמאות שלך. כדאי לנסות שוב מאוחר יותר.</translation>
 <translation id="235650106824528204">‏המנהל של פרופיל העבודה יכול להסיר נתוני Chrome שמופקים בזמן השימוש בפרופיל (כמו יצירת סימניות, היסטוריה, סיסמאות והגדרות נוספות). <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
-<translation id="245659736593643560">‏השימוש ב-Chrome OS מתאפשר בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות כמו <ph name="BEGIN_LINK_LINUX_OSS" />סביבת הפיתוח של Linux (בטא)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">‏Google Chrome רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="2485422356828889247">הסרת התקנה</translation>
 <translation id="2534507159460261402">‏Google Pay (‏הועתק ל-Chrome)</translation>
@@ -69,6 +69,7 @@
 <translation id="2652691236519827073">‏פתיחת הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
 <translation id="2665296953892887393">‏שיפור Google Chrome על ידי שליחת <ph name="UMA_LINK" /> ודוחות קריסה אל Google</translation>
 <translation id="2689103672227170538">‏התוסף הזה שינה את הדף שמוצג כש-Chrome מופעל.</translation>
+<translation id="2742320827292110288">‏אזהרה: Google Chrome לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית את התוסף הזה במצב אנונימי, יש לבטל את הבחירה באפשרות הזו.</translation>
 <translation id="2765403129283291972">‏Chrome זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>
 <translation id="2770231113462710648">שינוי דפדפן ברירת המחדל ל:</translation>
 <translation id="2775140325783767197">‏Chrome לא יכול לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
@@ -162,11 +163,11 @@
 <translation id="5193136243808726294">‏מערכת ההפעלה של Google Chrome אינה יכולה לפתוח את הדף הזה.</translation>
 <translation id="521447420733633466">‏כשמשתפים מכשיר, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים</translation>
 <translation id="5251420635869119124">‏אורחים יכולים להשתמש ב-Chrome בלי להשאיר עקבות.</translation>
-<translation id="532046782124376502">‏אזהרה: Google Chrome לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית את התוסף הזה במצב אנונימי, יש לבטל את האפשרות הזו.</translation>
 <translation id="5386244825306882791">‏הגדרה זו גם קובעת איזה דף מוצג כשמפעילים את Chrome או כשמבצעים חיפוש מסרגל הכתובות.</translation>
 <translation id="5394833366792865639">‏שיתוף כרטיסיית Chrome</translation>
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5434383153637353914">‏הדף הזה מאפשר לך לנהל את חשבונות Google שאליהם נכנסת. החשבונות האלה יהיו זמינים בדפדפן Chrome ובאפליקציות מחנות Play, בנוסף לשירותים כמו Gmail, ‏Drive ו-YouTube‏. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">‏להתקנת Chrome OS</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
 <translation id="5657226924540934362">‏אם הגדרה מסוימת לא מופיעה בדף הזה, אפשר לחפש אותה <ph name="LINK_BEGIN" />
@@ -218,6 +219,7 @@
 <translation id="7106741999175697885">‏מנהל המשימות - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{‏יש עדכון חדש בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש.}=1{‏יש עדכון חדש בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש. החלון האנונימי לא ייפתח מחדש.}two{‏יש עדכון חדש בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש. # החלונות האנונימיים לא ייפתחו מחדש.}many{‏יש עדכון חדש בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש. # החלונות האנונימיים לא ייפתחו מחדש.}other{‏יש עדכון חדש בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש. # החלונות האנונימיים לא ייפתחו מחדש.}}</translation>
 <translation id="7155997830309522122">‏אם שינית את הסיסמה הזו, יש לערוך את הסיסמה השמורה ב-Chrome כך שהיא תתאים לסיסמה החדשה שלך.</translation>
+<translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>
 <translation id="7242029209006116544">‏בחרת להיכנס לחשבון מנוהל, ויינתן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון אפליקציות, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. ניתן למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא ניתן יהיה לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">‏זו השפה שבה מוצג ממשק המשתמש של Google Chrome</translation>
 <translation id="7296210096911315575">מידע חשוב על בטיחות ועל אופן השימוש</translation>
@@ -235,6 +237,7 @@
 <translation id="7629695634924605473">‏Chrome מודיע לך אם הסיסמאות שלך נמצאות בסיכון</translation>
 <translation id="7641148173327520642">‏לפי הגדרת מנהל המערכת, Google Chrome יפתח את <ph name="ALTERNATIVE_BROWSER_NAME" /> כדי לגשת אל <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">‏לוגו של Chrome Enterprise</translation>
+<translation id="7665553140559834626">‏הפעלה מחדש לצורך עדכון &amp;Chrome OS</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספרייה זמנית. יש לבדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="7761834446675418963">‏אפשר ללחוץ על השם שלך כדי לפתוח את Chrome ולהתחיל לגלוש.</translation>
 <translation id="7777080907402804672">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google. אפשר להשבית את האפשרות הזו בכל זמן דרך ההגדרות.</translation>
@@ -246,9 +249,10 @@
 <translation id="7855730255114109580">‏Google Chrome מעודכן</translation>
 <translation id="7890208801193284374">‏כשמשתפים מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7896673875602241923">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. יש ליצור משתמש חדש ל-Chrome כדי לשמור על הפרדת המידע שלך.</translation>
-<translation id="7905891027772979035">‏Chrome לא יכול לבדוק את התוספים שלך. כדאי לנסות שוב מאוחר יותר.</translation>
 <translation id="7930071585467473040">‏Google Chrome מנסה להעתיק את הסיסמאות.</translation>
+<translation id="7951988079884443914">‏ההמלצה של Chrome היא שלא להוריד או לפתוח את הקובץ הזה.</translation>
 <translation id="7962410387636238736">‏המחשב הזה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista</translation>
+<translation id="79947657522496226">‏השימוש ב-Chrome OS מתאפשר בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות כמו <ph name="BEGIN_LINK_LINUX_OSS" />סביבת הפיתוח של Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">‏התקנת Chrome מחדש</translation>
 <translation id="8013993649590906847">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google.</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>

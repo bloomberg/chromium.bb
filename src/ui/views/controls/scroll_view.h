@@ -12,11 +12,15 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/controls/separator.h"
+
+namespace cc {
+struct ElementId;
+}
 
 namespace gfx {
 class ScrollOffset;
@@ -65,8 +69,25 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   class Observer {
    public:
-    // Called when |contents_| scrolled.
+    // Called when |contents_| scrolled. This can be triggered by each single
+    // event that is able to scroll the contents. KeyEvents like ui::VKEY_LEFT,
+    // ui::VKEY_RIGHT, or only ui::ET_MOUSEWHEEL will only trigger this function
+    // but not OnContentsScrollEnded below, since they do not belong to any
+    // events sequence. This function will also be triggered by each
+    // ui::ET_GESTURE_SCROLL_UPDATE event in the gesture scroll sequence or
+    // each ui::ET_MOUSEWHEEL event that associated with the ScrollEvent in the
+    // scroll events sequence while the OnContentsScrollEnded below will only be
+    // triggered once at the end of the events sequence.
     virtual void OnContentsScrolled() {}
+
+    // Called at the end of a sequence of events that are generated to scroll
+    // the contents. The gesture scroll sequence {ui::ET_GESTURE_SCROLL_BEGIN,
+    // ui::ET_GESTURE_SCROLL_UPDATE, ..., ui::ET_GESTURE_SCROLL_UPDATE,
+    // ui::ET_GESTURE_SCROLL_END or ui::ET_SCROLL_FLING_START} or the scroll
+    // events sequence {ui::ET_SCROLL_FLING_CANCEL, ui::ET_SCROLL, ...,
+    // ui::ET_SCROLL, ui::ET_SCROLL_FLING_START} both will trigger this function
+    // on the events sequence end.
+    virtual void OnContentsScrollEnded() {}
   };
 
   ScrollView();
@@ -115,14 +136,14 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   //   called the background color comes from the theme (and changes if the
   //   theme changes).
   // . By way of setting an explicit color, i.e. SetBackgroundColor(). Use
-  //   base::nullopt if you don't want any color, but be warned this
+  //   absl::nullopt if you don't want any color, but be warned this
   //   produces awful results when layers are used with subpixel rendering.
-  base::Optional<SkColor> GetBackgroundColor() const;
-  void SetBackgroundColor(const base::Optional<SkColor>& color);
+  absl::optional<SkColor> GetBackgroundColor() const;
+  void SetBackgroundColor(const absl::optional<SkColor>& color);
 
-  base::Optional<ui::NativeTheme::ColorId> GetBackgroundThemeColorId() const;
+  absl::optional<ui::NativeTheme::ColorId> GetBackgroundThemeColorId() const;
   void SetBackgroundThemeColorId(
-      const base::Optional<ui::NativeTheme::ColorId>& color_id);
+      const absl::optional<ui::NativeTheme::ColorId>& color_id);
 
   // Returns the visible region of the content View.
   gfx::Rect GetVisibleRect() const;
@@ -163,11 +184,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   int GetScrollBarLayoutWidth() const;
   int GetScrollBarLayoutHeight() const;
 
-  // Returns the horizontal/vertical scrollbar. This may return null.
-  ScrollBar* horizontal_scroll_bar() { return horiz_sb_.get(); }
-  const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_.get(); }
-  ScrollBar* vertical_scroll_bar() { return vert_sb_.get(); }
-  const ScrollBar* vertical_scroll_bar() const { return vert_sb_.get(); }
+  // Returns the horizontal/vertical scrollbar.
+  ScrollBar* horizontal_scroll_bar() { return horiz_sb_; }
+  const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }
+  ScrollBar* vertical_scroll_bar() { return vert_sb_; }
+  const ScrollBar* vertical_scroll_bar() const { return vert_sb_; }
 
   // Customize the scrollbar design. |horiz_sb| and |vert_sb| cannot be null.
   ScrollBar* SetHorizontalScrollBar(std::unique_ptr<ScrollBar> horiz_sb);
@@ -197,6 +218,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   int GetScrollIncrement(ScrollBar* source,
                          bool is_page,
                          bool is_positive) override;
+  void OnScrollEnded() override;
+
+  bool is_scrolling() const {
+    return horiz_sb_->is_scrolling() || vert_sb_->is_scrolling();
+  }
 
  private:
   friend class test::ScrollViewTestApi;
@@ -287,10 +313,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   View* header_viewport_ = nullptr;
 
   // Horizontal scrollbar.
-  std::unique_ptr<ScrollBar> horiz_sb_;
+  ScrollBar* horiz_sb_;
 
   // Vertical scrollbar.
-  std::unique_ptr<ScrollBar> vert_sb_;
+  ScrollBar* vert_sb_;
 
   // Corner view.
   std::unique_ptr<View> corner_view_;
@@ -313,8 +339,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   int max_height_ = -1;
 
   // See description of SetBackgroundColor() for details.
-  base::Optional<SkColor> background_color_;
-  base::Optional<ui::NativeTheme::ColorId> background_color_id_ =
+  absl::optional<SkColor> background_color_;
+  absl::optional<ui::NativeTheme::ColorId> background_color_id_ =
       ui::NativeTheme::kColorId_DialogBackground;
 
   // How to handle the case when the contents overflow the viewport.
@@ -351,13 +377,13 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ScrollView, View)
 VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Contents)
 VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Header)
-VIEW_BUILDER_PROPERTY(base::Optional<ui::NativeTheme::ColorId>,
+VIEW_BUILDER_PROPERTY(absl::optional<ui::NativeTheme::ColorId>,
                       BackgroundThemeColorId)
 VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, HorizontalScrollBarMode)
 VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, VerticalScrollBarMode)
 VIEW_BUILDER_PROPERTY(bool, TreatAllScrollEventsAsHorizontal)
 VIEW_BUILDER_PROPERTY(bool, DrawOverflowIndicator)
-VIEW_BUILDER_PROPERTY(base::Optional<SkColor>, BackgroundColor)
+VIEW_BUILDER_PROPERTY(absl::optional<SkColor>, BackgroundColor)
 VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, HorizontalScrollBar)
 VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, VerticalScrollBar)
 VIEW_BUILDER_PROPERTY(bool, HasFocusIndicator)

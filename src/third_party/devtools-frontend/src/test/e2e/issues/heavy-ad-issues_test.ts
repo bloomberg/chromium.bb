@@ -6,11 +6,11 @@ import {assert} from 'chai';
 
 import {getBrowserAndPages, goToResource} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {expandIssue, expandResourceSection, extractTableFromResourceSection, getIssueByTitle, getResourcesElement, navigateToIssuesTab} from '../helpers/issues-helpers.js';
+import {ensureResourceSectionIsExpanded, expandIssue, extractTableFromResourceSection, getIssueByTitle, getResourcesElement, navigateToIssuesTab} from '../helpers/issues-helpers.js';
 
 describe('Heavy Ad issue', async () => {
   beforeEach(async () => {
-    await goToResource('issues/sab-issue.html');
+    await goToResource('empty.html');
   });
 
   it('should display correct information', async () => {
@@ -46,9 +46,8 @@ describe('Heavy Ad issue', async () => {
     const issueElement = await getIssueByTitle('An ad on your site has exceeded resource limits');
     assert.isNotNull(issueElement);
     if (issueElement) {
-      // TODO(crbug.com/1189877): Remove 2nd space after fixing l10n presubmit check
-      const section = await getResourcesElement('2  resources', issueElement);
-      await expandResourceSection(section);
+      const section = await getResourcesElement('2 resources', issueElement);
+      await ensureResourceSectionIsExpanded(section);
       const table = await extractTableFromResourceSection(section.content);
       assert.isNotNull(table);
       if (table) {

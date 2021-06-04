@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -23,12 +25,14 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
@@ -41,7 +45,11 @@ using FillingSource = ManualFillingController::FillingSource;
 
 namespace {
 
-FillingSource GetSourceForTab(const AccessorySheetData& accessory_sheet) {
+constexpr auto kAllowedFillingSources = base::MakeFixedFlatSet<FillingSource>(
+    {FillingSource::PASSWORD_FALLBACKS, FillingSource::CREDIT_CARD_FALLBACKS,
+     FillingSource::ADDRESS_FALLBACKS});
+
+FillingSource GetSourceForTabType(const AccessorySheetData& accessory_sheet) {
   switch (accessory_sheet.get_sheet_type()) {
     case AccessoryTabType::PASSWORDS:
       return FillingSource::PASSWORD_FALLBACKS;
@@ -49,14 +57,12 @@ FillingSource GetSourceForTab(const AccessorySheetData& accessory_sheet) {
       return FillingSource::CREDIT_CARD_FALLBACKS;
     case AccessoryTabType::ADDRESSES:
       return FillingSource::ADDRESS_FALLBACKS;
-    case AccessoryTabType::TOUCH_TO_FILL:
-      return FillingSource::TOUCH_TO_FILL;
+    case AccessoryTabType::OBSOLETE_TOUCH_TO_FILL:
     case AccessoryTabType::ALL:
     case AccessoryTabType::COUNT:
-      break;  // Intentional failure.
+      NOTREACHED() << "Cannot determine filling source";
+      return FillingSource::PASSWORD_FALLBACKS;
   }
-  NOTREACHED() << "Cannot determine filling source";
-  return FillingSource::PASSWORD_FALLBACKS;
 }
 
 }  // namespace
@@ -120,9 +126,9 @@ void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(
 void ManualFillingControllerImpl::RefreshSuggestions(
     const AccessorySheetData& accessory_sheet_data) {
   view_->OnItemsAvailable(accessory_sheet_data);
-  available_sheets_.insert_or_assign(GetSourceForTab(accessory_sheet_data),
+  available_sheets_.insert_or_assign(GetSourceForTabType(accessory_sheet_data),
                                      accessory_sheet_data);
-  UpdateSourceAvailability(GetSourceForTab(accessory_sheet_data),
+  UpdateSourceAvailability(GetSourceForTabType(accessory_sheet_data),
                            !accessory_sheet_data.user_info_list().empty());
 }
 
@@ -182,7 +188,7 @@ void ManualFillingControllerImpl::Hide() {
 void ManualFillingControllerImpl::OnFillingTriggered(
     AccessoryTabType type,
     const autofill::UserInfo::Field& selection) {
-  AccessoryController* controller = GetControllerForTab(type);
+  AccessoryController* controller = GetControllerForTabType(type);
   if (!controller)
     return;  // Controller not available anymore.
   controller->OnFillingTriggered(last_focused_field_id_, selection);
@@ -208,6 +214,24 @@ void ManualFillingControllerImpl::OnToggleChanged(
   controller->OnToggleChanged(toggled_action, enabled);
 }
 
+void ManualFillingControllerImpl::RequestAccessorySheet(
+    autofill::AccessoryTabType tab_type,
+    base::OnceCallback<void(const autofill::AccessorySheetData&)> callback) {
+  // TODO(crbug.com/1169167): Consider to execute this async to reduce jank.
+  absl::optional<AccessorySheetData> sheet =
+      GetControllerForTabType(tab_type)->GetSheetData();
+  // After they were loaded, all currently existing sheet types always return a
+  // value and will always result in a called callback.
+  // The only case where they are not available is before their first load (so
+  // if a user entered a tab but didn't focus any fields yet). In that case, the
+  // update is unnecessary since the first focus will push the correct sheet.
+  // TODO(crbug.com/1169167): Consider sending a null or default sheet to cover
+  // future cases where we can't rely on a sheet always being available.
+  if (sheet.has_value()) {
+    std::move(callback).Run(sheet.value());
+  }
+}
+
 gfx::NativeView ManualFillingControllerImpl::container_view() const {
   return web_contents_->GetNativeView();
 }
@@ -220,10 +244,9 @@ ManualFillingControllerImpl::AsWeakPtr() {
 
 void ManualFillingControllerImpl::Initialize() {
   DCHECK(FromWebContents(web_contents_)) << "Don't call from constructor!";
+  RegisterObserverForAllowedSources();
   if (address_controller_)
     address_controller_->RefreshSuggestions();
-  if (cc_controller_)
-    cc_controller_->RefreshSuggestions();
 }
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
@@ -234,12 +257,7 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
         ChromePasswordManagerClient::FromWebContents(web_contents_)
             ->GetOrCreatePasswordAccessory()
             ->AsWeakPtr();
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillKeyboardAccessory)) {
-      pwd_controller_->RegisterFillingSourceObserver(base::BindRepeating(
-          &ManualFillingControllerImpl::OnSourceAvailabilityChanged,
-          weak_factory_.GetWeakPtr(), FillingSource::PASSWORD_FALLBACKS));
-    }
+    DCHECK(pwd_controller_);
   }
   if (AddressAccessoryController::AllowedForWebContents(web_contents)) {
     address_controller_ =
@@ -267,12 +285,6 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       address_controller_(std::move(address_controller)),
       cc_controller_(std::move(cc_controller)),
       view_(std::move(view)) {
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillKeyboardAccessory)) {
-    pwd_controller_->RegisterFillingSourceObserver(base::BindRepeating(
-        &ManualFillingControllerImpl::OnSourceAvailabilityChanged,
-        weak_factory_.GetWeakPtr(), FillingSource::PASSWORD_FALLBACKS));
-  }
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ManualFillingCache", base::ThreadTaskRunnerHandle::Get());
 }
@@ -330,17 +342,24 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
     case FocusedFieldType::kUnknown:
       return false;
   }
-  NOTREACHED() << "Unhandled field type " << last_focused_field_type_;
-  return false;
 }
 
 void ManualFillingControllerImpl::UpdateVisibility() {
   TRACE_EVENT0("passwords", "ManualFillingControllerImpl::UpdateVisibility");
   if (ShouldShowAccessory()) {
     for (const FillingSource& source : available_sources_) {
-      if (!available_sheets_.contains(source))
+      if (available_sheets_.contains(source)) {
+        // Use a local cached copy if it exists. This will be deprecated with
+        // crbug.com/1169167.
+        view_->OnItemsAvailable(available_sheets_.find(source)->second);
         continue;
-      view_->OnItemsAvailable(available_sheets_.find(source)->second);
+      }
+      if (source == FillingSource::AUTOFILL)
+        continue;  // Autofill suggestions have no sheet.
+      absl::optional<AccessorySheetData> sheet =
+          GetControllerForFillingSource(source)->GetSheetData();
+      if (sheet.has_value())
+        view_->OnItemsAvailable(std::move(sheet.value()));
     }
     view_->ShowWhenKeyboardIsVisible();
   } else {
@@ -348,11 +367,27 @@ void ManualFillingControllerImpl::UpdateVisibility() {
   }
 }
 
+void ManualFillingControllerImpl::RegisterObserverForAllowedSources() {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory)) {
+    return;  // Observer mechanism only available for the modern accessory.
+  }
+  for (FillingSource source : kAllowedFillingSources) {
+    AccessoryController* sheet_controller =
+        GetControllerForFillingSource(source);
+    if (!sheet_controller)
+      continue;  // Ignore disallowed sheets.
+    sheet_controller->RegisterFillingSourceObserver(base::BindRepeating(
+        &ManualFillingControllerImpl::OnSourceAvailabilityChanged,
+        weak_factory_.GetWeakPtr(), source));
+  }
+}
+
 void ManualFillingControllerImpl::OnSourceAvailabilityChanged(
     FillingSource source,
     AccessoryController* source_controller,
     AccessoryController::IsFillingSourceAvailable is_source_available) {
-  base::Optional<AccessorySheetData> sheet = source_controller->GetSheetData();
+  absl::optional<AccessorySheetData> sheet = source_controller->GetSheetData();
   bool show_filling_source = sheet.has_value() && is_source_available;
   // TODO(crbug.com/1169167): Remove once all sheets pull this information
   // instead of waiting to get it pushed.
@@ -360,8 +395,8 @@ void ManualFillingControllerImpl::OnSourceAvailabilityChanged(
   UpdateSourceAvailability(source, show_filling_source);
 }
 
-AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
-    AccessoryTabType type) {
+AccessoryController* ManualFillingControllerImpl::GetControllerForTabType(
+    AccessoryTabType type) const {
   switch (type) {
     case AccessoryTabType::ADDRESSES:
       return address_controller_.get();
@@ -369,13 +404,13 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
       return pwd_controller_.get();
     case AccessoryTabType::CREDIT_CARDS:
       return cc_controller_.get();
-    case AccessoryTabType::TOUCH_TO_FILL:
+    case AccessoryTabType::OBSOLETE_TOUCH_TO_FILL:
     case AccessoryTabType::ALL:
     case AccessoryTabType::COUNT:
-      break;  // Intentional failure.
+      NOTREACHED() << "Controller not defined for tab: "
+                   << static_cast<int>(type);
+      return nullptr;
   }
-  NOTREACHED() << "Controller not defined for tab: " << static_cast<int>(type);
-  return nullptr;
 }
 
 AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
@@ -393,11 +428,26 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
       return cc_controller_.get();
     case AccessoryAction::AUTOFILL_SUGGESTION:
     case AccessoryAction::COUNT:
-      break;  // Intentional failure;
+      NOTREACHED() << "Controller not defined for action: "
+                   << static_cast<int>(action);
+      return nullptr;
   }
-  NOTREACHED() << "Controller not defined for action: "
-               << static_cast<int>(action);
-  return nullptr;
+}
+
+AccessoryController* ManualFillingControllerImpl::GetControllerForFillingSource(
+    const FillingSource& filling_source) const {
+  switch (filling_source) {
+    case FillingSource::PASSWORD_FALLBACKS:
+      return pwd_controller_.get();
+    case FillingSource::CREDIT_CARD_FALLBACKS:
+      return cc_controller_.get();
+    case FillingSource::ADDRESS_FALLBACKS:
+      return address_controller_.get();
+    case FillingSource::AUTOFILL:
+      NOTREACHED() << "Controller not defined for filling source: "
+                   << static_cast<int>(filling_source);
+      return nullptr;
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ManualFillingControllerImpl)

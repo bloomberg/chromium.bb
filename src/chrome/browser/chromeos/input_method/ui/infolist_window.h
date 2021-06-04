@@ -6,16 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_UI_INFOLIST_WINDOW_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/base/ime/infolist_entry.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 
 namespace ui {

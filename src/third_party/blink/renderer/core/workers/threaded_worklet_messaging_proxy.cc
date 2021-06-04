@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -40,7 +41,7 @@ ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
 void ThreadedWorkletMessagingProxy::Initialize(
     WorkerClients* worker_clients,
     WorkletModuleResponsesMap* module_responses_map,
-    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
+    const absl::optional<WorkerBackingThreadStartupData>& thread_startup_data) {
   DCHECK(IsMainThread());
   if (AskedToTerminate())
     return;
@@ -76,12 +77,13 @@ void ThreadedWorkletMessagingProxy::Initialize(
           BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
           window->GetAgentClusterID(), ukm::kInvalidSourceId,
           window->GetExecutionContextToken(),
-          window->CrossOriginIsolatedCapability());
+          window->CrossOriginIsolatedCapability(),
+          window->DirectSocketCapability());
 
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.
   InitializeWorkerThread(std::move(global_scope_creation_params),
-                         thread_startup_data, base::nullopt);
+                         thread_startup_data, absl::nullopt);
 }
 
 void ThreadedWorkletMessagingProxy::Trace(Visitor* visitor) const {

@@ -672,8 +672,7 @@
         "-/units",
         "-/unitsNarrow",
         "-/unitsShort",
-        "+/*/compound",
-        "-/*/compound/*/dnam",
+        "+/*/compound/per",
         "+/*/concentr/percent",
         "-/*/concentr/percent/dnam",
         "+/*/duration",
@@ -1283,6 +1282,7 @@
       "rules": [
         "-/*",
         "+/%%ALIAS",
+        "+/%%Parent",
         "+/LocaleScript",
         "+/layout",
         "+/Version"
@@ -1332,6 +1332,20 @@
         "+/Scripts%short/Hant",
         "+/Scripts%variant/Hant",
         "+/Scripts%stand-alone/Hant"
+      ]
+    },
+    {
+      "categories": [
+        "misc"
+      ],
+      "files": {
+        "includelist": [
+          "grammaticalFeatures"
+        ]
+      },
+      "rules": [
+        "-/*",
+        "+/grammaticalData/derivations/*/compound/gender/per"
       ]
     },
     {

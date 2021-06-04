@@ -59,7 +59,8 @@ void AddSecurityDomainMembership(
           membership->add_rotation_proofs();
       rotation_proof->set_new_epoch(trusted_vault_keys_versions[i]);
       AssignBytesToProtoString(
-          ComputeTrustedVaultHMAC(signing_keys[i], trusted_vault_keys[i]),
+          ComputeRotationProof(/*trusted_vault_key=*/trusted_vault_keys[i],
+                               /*prev_trusted_vault_key=*/signing_keys[i]),
           rotation_proof->mutable_rotation_proof());
     }
   }
@@ -98,7 +99,7 @@ class DownloadKeysResponseHandlerTest : public testing::Test {
 };
 
 // All HttpStatuses except kSuccess should end up in kOtherError or
-// kLocalDataObsolete reporting.
+// kMemberNotFoundOrCorrupted reporting.
 TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleHttpErrors) {
   EXPECT_THAT(
       handler()
@@ -106,21 +107,21 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleHttpErrors) {
               /*http_status=*/TrustedVaultRequest::HttpStatus::kNotFound,
               /*response_body=*/std::string())
           .status,
-      Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+      Eq(TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted));
   EXPECT_THAT(handler()
                   .ProcessResponse(
                       /*http_status=*/TrustedVaultRequest::HttpStatus::
                           kFailedPrecondition,
                       /*response_body=*/std::string())
                   .status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kOtherError));
   EXPECT_THAT(
       handler()
           .ProcessResponse(
               /*http_status=*/TrustedVaultRequest::HttpStatus::kOtherError,
               /*response_body=*/std::string())
           .status,
-      Eq(TrustedVaultRequestStatus::kOtherError));
+      Eq(TrustedVaultDownloadKeysStatus::kOtherError));
 }
 
 // Simplest legitimate case of key rotation, server side state corresponds to
@@ -137,7 +138,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleSingleKeyRotation) {
               /*signing_keys=*/{{}, kKnownTrustedVaultKey}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys, ElementsAre(kTrustedVaultKey1));
   EXPECT_THAT(processed_response.last_key_version,
               Eq(kKnownTrustedVaultKeyVersion + 1));
@@ -159,7 +160,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleMultipleKeyRotations) {
               /*signing_keys=*/{{}, kKnownTrustedVaultKey, kTrustedVaultKey1}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys,
               ElementsAre(kTrustedVaultKey1, kTrustedVaultKey2));
   EXPECT_THAT(processed_response.last_key_version,
@@ -191,7 +192,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandlePriorKeys) {
                kTrustedVaultKey2}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys,
               ElementsAre(kTrustedVaultKey2, kTrustedVaultKey3));
   EXPECT_THAT(processed_response.last_key_version,
@@ -219,7 +220,7 @@ TEST_F(DownloadKeysResponseHandlerTest,
               {kKnownTrustedVaultKey, kTrustedVaultKey1}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys,
               ElementsAre(kTrustedVaultKey1, kTrustedVaultKey2));
   EXPECT_THAT(processed_response.last_key_version,
@@ -228,7 +229,7 @@ TEST_F(DownloadKeysResponseHandlerTest,
 
 // Server can already clean-up kKnownTrustedVaultKey and the following key. In
 // this case client state is not sufficient to silently download keys and
-// kLocalDataObsolete should be reported.
+// kKeyProofsVerificationFailed should be reported.
 // Possible full key chain is: kKnownTrustedVaultKey -> kTrustedVaultKey1 ->
 // kTrustedVaultKey2 -> kTrustedVaultKey3.
 // Server side key chain is: kTrustedVaultKey2 -> kTrustedVaultKey3.
@@ -248,12 +249,12 @@ TEST_F(DownloadKeysResponseHandlerTest,
               {kTrustedVaultKey1, kTrustedVaultKey2}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kKeyProofsVerificationFailed));
   EXPECT_THAT(processed_response.new_keys, IsEmpty());
 }
 
 // The test populates undecryptable/corrupted |wrapped_key| field, handler
-// should return kLocalDataObsolete to allow client to restore Member by
+// should return kMemberNotFoundOrCorrupted to allow client to restore Member by
 // re-registration.
 TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleUndecryptableKey) {
   sync_pb::SecurityDomainMember member;
@@ -273,7 +274,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleUndecryptableKey) {
                       /*http_status=*/TrustedVaultRequest::HttpStatus::kSuccess,
                       /*response_body=*/member.SerializeAsString())
                   .status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted));
 }
 
 // The test populates invalid |rotation_proof| field for the single key
@@ -292,7 +293,7 @@ TEST_F(DownloadKeysResponseHandlerTest,
               /*signing_keys=*/{{}, kTrustedVaultKey2}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kKeyProofsVerificationFailed));
   EXPECT_THAT(processed_response.new_keys, IsEmpty());
 }
 
@@ -315,14 +316,11 @@ TEST_F(DownloadKeysResponseHandlerTest,
               /*signing_keys=*/{{}, kTrustedVaultKey2, kTrustedVaultKey1}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kKeyProofsVerificationFailed));
   EXPECT_THAT(processed_response.new_keys, IsEmpty());
 }
 
-// In this scenario client already has most recent trusted vault key. It should
-// be reported as kLocalDataObsolete, because by issuing the request client
-// indicates that there should be new keys and it's possible that key rotation
-// has happened by Member state wasn't updated (requires re-registration).
+// In this scenario client already has most recent trusted vault key.
 TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleAbsenseOfNewKeys) {
   EXPECT_THAT(handler()
                   .ProcessResponse(
@@ -334,7 +332,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleAbsenseOfNewKeys) {
                           {kKnownTrustedVaultKeyVersion},
                           /*signing_keys=*/{{}}))
                   .status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kNoNewKeys));
 }
 
 // Tests handling the situation, when response isn't a valid serialized
@@ -345,7 +343,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleCorruptedResponseProto) {
                       /*http_status=*/TrustedVaultRequest::HttpStatus::kSuccess,
                       /*response_body=*/"corrupted_proto")
                   .status,
-              Eq(TrustedVaultRequestStatus::kOtherError));
+              Eq(TrustedVaultDownloadKeysStatus::kOtherError));
 }
 
 // Client expects that the sync security domain membership exists, but the
@@ -357,7 +355,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleAbsenseOfMemberships) {
                       /*response_body=*/sync_pb::SecurityDomainMember()
                           .SerializeAsString())
                   .status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted));
 }
 
 // Same as above, but there is a different security domain membership.
@@ -374,7 +372,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleAbsenseOfSyncMembership) {
                       /*http_status=*/TrustedVaultRequest::HttpStatus::kSuccess,
                       /*response_body=*/member.SerializeAsString())
                   .status,
-              Eq(TrustedVaultRequestStatus::kLocalDataObsolete));
+              Eq(TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted));
 }
 
 // Tests handling presence of other security domain memberships.
@@ -400,7 +398,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleMultipleSecurityDomains) {
           /*response_body=*/member.SerializeAsString());
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys, ElementsAre(kTrustedVaultKey1));
   EXPECT_THAT(processed_response.last_key_version,
               Eq(kKnownTrustedVaultKeyVersion + 1));
@@ -412,7 +410,7 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleMultipleSecurityDomains) {
 TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleEmptyLastKnownKey) {
   // This test uses custom parameters for the handler ctor, so create new
   // handler instead of using one from the fixture.
-  DownloadKeysResponseHandler handler(base::nullopt, MakeTestKeyPair());
+  DownloadKeysResponseHandler handler(absl::nullopt, MakeTestKeyPair());
 
   const int kLastKeyVersion = 123;
   const DownloadKeysResponseHandler::ProcessedResponse processed_response =
@@ -425,9 +423,36 @@ TEST_F(DownloadKeysResponseHandlerTest, ShouldHandleEmptyLastKnownKey) {
               /*signing_keys=*/{{}}));
 
   EXPECT_THAT(processed_response.status,
-              Eq(TrustedVaultRequestStatus::kSuccess));
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
   EXPECT_THAT(processed_response.new_keys, ElementsAre(kTrustedVaultKey1));
   EXPECT_THAT(processed_response.last_key_version, Eq(kLastKeyVersion));
+}
+
+// Security domain member can contain constant key. Ensure that it's not exposed
+// to upper layers.
+TEST_F(DownloadKeysResponseHandlerTest, ShouldFilterOutConstantKey) {
+  // This test uses custom parameters for the handler ctor, so create new
+  // handler instead of using one from the fixture.
+  DownloadKeysResponseHandler handler(
+      /*last_trusted_vault_key_and_version=*/absl::nullopt, MakeTestKeyPair());
+
+  const int kFirstKeyVersion = 123;
+  const DownloadKeysResponseHandler::ProcessedResponse processed_response =
+      handler.ProcessResponse(
+          /*http_status=*/TrustedVaultRequest::HttpStatus::kSuccess,
+          /*response_body=*/
+          CreateGetSecurityDomainMemberResponseWithSyncMembership(
+              /*trusted_vault_keys=*/{GetConstantTrustedVaultKey(),
+                                      kTrustedVaultKey1},
+              /*trusted_vault_keys_versions=*/
+              {kFirstKeyVersion, kFirstKeyVersion + 1},
+              /*signing_keys=*/{{}, {GetConstantTrustedVaultKey()}}));
+
+  EXPECT_THAT(processed_response.status,
+              Eq(TrustedVaultDownloadKeysStatus::kSuccess));
+  // Constant key shouldn't be presented in |new_keys|.
+  EXPECT_THAT(processed_response.new_keys, ElementsAre(kTrustedVaultKey1));
+  EXPECT_THAT(processed_response.last_key_version, Eq(kFirstKeyVersion + 1));
 }
 
 }  // namespace

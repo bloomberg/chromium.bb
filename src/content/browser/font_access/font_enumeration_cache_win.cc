@@ -28,11 +28,11 @@ constexpr HRESULT kErrorNoFullNameOrPostScriptName =
 constexpr HRESULT kErrorNoFamilyName =
     MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD104);
 
-base::Optional<std::string> GetNativeString(
+absl::optional<std::string> GetNativeString(
     Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> names) {
   // Retrieve the native name. Try the "en-us" locale and if it's
   // not present, used the first available localized name.
-  base::Optional<std::string> native =
+  absl::optional<std::string> native =
       gfx::win::RetrieveLocalizedString(names.Get(), "en-us");
   if (!native) {
     native = gfx::win::RetrieveLocalizedString(names.Get(), "");
@@ -40,12 +40,55 @@ base::Optional<std::string> GetNativeString(
   return native;
 }
 
-base::Optional<std::string> GetLocalizedString(
+absl::optional<std::string> GetLocalizedString(
     Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> names,
     const std::string& locale) {
-  base::Optional<std::string> localized_name =
+  absl::optional<std::string> localized_name =
       gfx::win::RetrieveLocalizedString(names.Get(), locale);
   return localized_name;
+}
+
+// Map DWRITE_FONT_STYLE to a boolean for italic/oblique.
+bool DWriteStyleToWebItalic(DWRITE_FONT_STYLE style) {
+  return (style & (DWRITE_FONT_STYLE_ITALIC | DWRITE_FONT_STYLE_OBLIQUE)) != 0;
+}
+
+// Map DWRITE_FONT_WEIGHT to a font-weight (number in [1,1000]).
+// https://drafts.csswg.org/css-fonts-4/#font-weight-prop
+float DWriteWeightToWebWeight(DWRITE_FONT_WEIGHT weight) {
+  // DirectWrite values already correspond to the web definition of
+  // numbers in the range [1,1000] with 400 as normal.
+  return weight;
+}
+
+// Map DWRITE_FONT_STRETCH to a font-stretch value (percentage).
+// https://drafts.csswg.org/css-fonts-4/#propdef-font-stretch
+float DWriteStretchToWebStretch(DWRITE_FONT_STRETCH stretch) {
+  // DWRITE_FONT_STRETCH is an enumeration, so a more complex mapping or
+  // interpolation is not necessary.
+  switch (stretch) {
+    case DWRITE_FONT_STRETCH_ULTRA_CONDENSED:
+      return 0.5;
+    case DWRITE_FONT_STRETCH_EXTRA_CONDENSED:
+      return 0.625;
+    case DWRITE_FONT_STRETCH_CONDENSED:
+      return 0.75;
+    case DWRITE_FONT_STRETCH_SEMI_CONDENSED:
+      return 0.875;
+    case DWRITE_FONT_STRETCH_UNDEFINED:
+    case DWRITE_FONT_STRETCH_NORMAL:
+      return 1.0f;
+    case DWRITE_FONT_STRETCH_SEMI_EXPANDED:
+      return 1.125f;
+    case DWRITE_FONT_STRETCH_EXPANDED:
+      return 1.25f;
+    case DWRITE_FONT_STRETCH_EXTRA_EXPANDED:
+      return 1.5f;
+    case DWRITE_FONT_STRETCH_ULTRA_EXPANDED:
+      return 2.0f;
+  }
+  NOTREACHED();
+  return 1.0f;
 }
 
 std::unique_ptr<content::FontEnumerationCacheWin::FamilyDataResult>
@@ -72,7 +115,7 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
     family_result->exit_hresult = hr;
     return family_result;
   }
-  base::Optional<std::string> native_family_name =
+  absl::optional<std::string> native_family_name =
       GetNativeString(family_names);
   if (!native_family_name) {
     family_result->exit_hresult = kErrorNoFamilyName;
@@ -102,7 +145,7 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
 
     Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> postscript_name;
     Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> full_name;
-    Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> style;
+    Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> style_name;
 
     // DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME and
     // DWRITE_INFORMATIONAL_STRING_FULL_NAME are only supported on Windows 7
@@ -128,7 +171,7 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
       return family_result;
     }
 
-    base::Optional<std::string> native_postscript_name =
+    absl::optional<std::string> native_postscript_name =
         GetNativeString(postscript_name);
     if (!native_postscript_name) {
       family_result->exit_hresult = kErrorNoFullNameOrPostScriptName;
@@ -151,19 +194,19 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
       return family_result;
     }
 
-    base::Optional<std::string> localized_full_name =
+    absl::optional<std::string> localized_full_name =
         GetLocalizedString(full_name, locale);
     if (!localized_full_name)
       localized_full_name = GetLocalizedString(full_name, "");
     if (!localized_full_name)
       localized_full_name = native_postscript_name;
 
-    // Extracting Style.
+    // Extracting style name.
     {
       base::ScopedBlockingCall scoped_blocking_call(
           FROM_HERE, base::BlockingType::MAY_BLOCK);
       hr = font->GetInformationalStrings(
-          DWRITE_INFORMATIONAL_STRING_PREFERRED_SUBFAMILY_NAMES, &style,
+          DWRITE_INFORMATIONAL_STRING_PREFERRED_SUBFAMILY_NAMES, &style_name,
           &exists);
     }
     if (FAILED(hr)) {
@@ -175,23 +218,31 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
         base::ScopedBlockingCall scoped_blocking_call(
             FROM_HERE, base::BlockingType::MAY_BLOCK);
         hr = font->GetInformationalStrings(
-            DWRITE_INFORMATIONAL_STRING_WIN32_SUBFAMILY_NAMES, &style, &exists);
+            DWRITE_INFORMATIONAL_STRING_WIN32_SUBFAMILY_NAMES, &style_name,
+            &exists);
       }
       if (FAILED(hr)) {
         family_result->exit_hresult = hr;
         return family_result;
       }
     }
-    base::Optional<std::string> native_style_name;
+    absl::optional<std::string> native_style_name;
     if (exists) {
-      native_style_name = GetNativeString(style);
+      native_style_name = GetNativeString(style_name);
     }
+
+    DWRITE_FONT_STRETCH stretch = font->GetStretch();
+    DWRITE_FONT_STYLE style = font->GetStyle();
+    DWRITE_FONT_WEIGHT weight = font->GetWeight();
 
     blink::FontEnumerationTable_FontMetadata metadata;
     metadata.set_postscript_name(native_postscript_name.value());
     metadata.set_full_name(localized_full_name.value());
     metadata.set_family(native_family_name.value());
     metadata.set_style(native_style_name ? native_style_name.value() : "");
+    metadata.set_italic(DWriteStyleToWebItalic(style));
+    metadata.set_weight(DWriteWeightToWebWeight(weight));
+    metadata.set_stretch(DWriteStretchToWebStretch(stretch));
 
     family_result->fonts.push_back(std::move(metadata));
   }

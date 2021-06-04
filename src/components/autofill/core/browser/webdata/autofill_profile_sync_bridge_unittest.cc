@@ -47,7 +47,6 @@
 
 namespace autofill {
 
-using base::ASCIIToUTF16;
 using base::ScopedTempDir;
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
@@ -161,8 +160,7 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(EMAIL_ADDRESS, u"user@example.com");
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"1.800.555.1234");
 
-  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("123 Fake St.\n"
-                                                               "Apt. 42"));
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, u"123 Fake St.\nApt. 42");
   EXPECT_EQ(u"123 Fake St.", profile.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(u"Apt. 42", profile.GetRawInfo(ADDRESS_HOME_LINE2));
 
@@ -281,8 +279,7 @@ class AutofillProfileSyncBridgeTestBase : public testing::Test {
   void ResetProcessor() {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::AUTOFILL_PROFILE, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
+            syncer::AUTOFILL_PROFILE, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
   }
 
@@ -315,7 +312,7 @@ class AutofillProfileSyncBridgeTestBase : public testing::Test {
   }
 
   void ApplySyncChanges(EntityChangeList changes) {
-    const base::Optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
+    const absl::optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
         bridge()->CreateMetadataChangeList(), std::move(changes));
     EXPECT_FALSE(error) << error->ToString();
   }
@@ -1081,8 +1078,7 @@ TEST_P(AutofillProfileSyncBridgeTest, ApplySyncChanges_OmitsInvalidSpecifics) {
 // address line 1 and line 2 fields.
 TEST_P(AutofillProfileSyncBridgeTest, StreetAddress_SplitAutomatically) {
   AutofillProfile local;
-  local.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("123 Example St.\n"
-                                                             "Apt. 42"));
+  local.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, u"123 Example St.\nApt. 42");
   EXPECT_EQ(u"123 Example St.", local.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(u"Apt. 42", local.GetRawInfo(ADDRESS_HOME_LINE2));
 
@@ -1101,8 +1097,7 @@ TEST_P(AutofillProfileSyncBridgeTest, StreetAddress_JointAutomatically) {
   AutofillProfile local;
   local.SetRawInfo(ADDRESS_HOME_LINE1, u"123 Example St.");
   local.SetRawInfo(ADDRESS_HOME_LINE2, u"Apt. 42");
-  EXPECT_EQ(ASCIIToUTF16("123 Example St.\n"
-                         "Apt. 42"),
+  EXPECT_EQ(u"123 Example St.\nApt. 42",
             local.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 
   // The same does _not_ work for profile specifics.
@@ -1134,9 +1129,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   // Verify that full street address takes precedence over address lines.
   AutofillProfile local(kGuidA, kHttpsOrigin);
   local.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_ADDRESS,
-      ASCIIToUTF16("456 El Camino Real\n"
-                   "Suite #1337"),
+      ADDRESS_HOME_STREET_ADDRESS, u"456 El Camino Real\nSuite #1337",
       structured_address::VerificationStatus::kObserved);
   local.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_LINE1, u"456 El Camino Real",

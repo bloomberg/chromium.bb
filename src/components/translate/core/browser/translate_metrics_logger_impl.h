@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TickClock;
@@ -46,8 +47,6 @@ extern const char kTranslatePageLoadRankerDecision[];
 extern const char kTranslatePageLoadRankerTimerShouldOfferTranslation[];
 extern const char kTranslatePageLoadRankerVersion[];
 extern const char kTranslatePageLoadTriggerDecision[];
-extern const char kTranslatePageLoadTriggerDecisionAllTriggerDecisions[];
-extern const char kTranslatePageLoadTriggerDecisionTotalCount[];
 
 class NullTranslateMetricsLogger : public TranslateMetricsLogger {
  public:
@@ -86,6 +85,7 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void LogUIInteraction(UIInteraction ui_interaction) override {}
   TranslationType GetNextManualTranslationType() override;
   void SetHasHrefTranslateTarget(bool has_href_translate_target) override {}
+  void LogWasContentEmpty(bool was_content_empty) override {}
 };
 
 class TranslateManager;
@@ -143,6 +143,7 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   void LogUIInteraction(UIInteraction ui_interaction) override;
   TranslationType GetNextManualTranslationType() override;
   void SetHasHrefTranslateTarget(bool has_href_translate_target) override;
+  void LogWasContentEmpty(bool was_content_empty) override;
 
   // TODO(curranmax): Add appropriate functions for the Translate code to log
   // relevant events. https://crbug.com/1114868.
@@ -203,12 +204,11 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   RankerDecision ranker_decision_ = RankerDecision::kUninitialized;
   uint32_t ranker_version_ = 0;
   base::TimeTicks ranker_start_time_;
-  base::Optional<base::TimeDelta> ranker_duration_;
+  absl::optional<base::TimeDelta> ranker_duration_;
 
   // Stores the reason for the initial state of the page load. In the case there
   // are multiple reasons, only the first reported reason is stored.
   TriggerDecision trigger_decision_ = TriggerDecision::kUninitialized;
-  std::vector<TriggerDecision> all_trigger_decisions_;
   bool autofill_assistant_deferred_trigger_decision_ = false;
 
   // Tracks the different dimensions that determine the state of Translate.
@@ -289,6 +289,10 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   // Tracks if this page load has an href translate target language on a link
   // from Google Search.
   bool has_href_translate_target_ = false;
+
+  // Tracks whether the page content used to detect the page language
+  // was empty or not.
+  bool was_content_empty_ = true;
 
   base::WeakPtrFactory<TranslateMetricsLoggerImpl> weak_method_factory_{this};
 };

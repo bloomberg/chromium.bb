@@ -161,6 +161,30 @@ int av1_cyclic_refresh_estimate_bits_at_q(const struct AV1_COMP *cpi,
 int av1_cyclic_refresh_rc_bits_per_mb(const struct AV1_COMP *cpi, int i,
                                       double correction_factor);
 
+/*!\brief Update segment_id for blocks are skipped.
+ *
+ * After encoding a given prediction block, of size bsize at (mi_row, mi_col),
+ * check if we should reset the segment_id based on skip_txfm,
+ * and update the cyclic_refresh map and segmentation counters.
+ *
+ * \ingroup cyclic_refresh
+ * \callgraph
+ * \callergraph
+ *
+ * \param[in]   cpi       Top level encoder structure
+ * \param[in]   x         Pointer to MACROBLOCK structure
+ * \param[in]   mi_row    Row coordinate of the block in a step size of MI_SIZE
+ * \param[in]   mi_col    Col coordinate of the block in a step size of MI_SIZE
+ * \param[in]   bsize     Block size
+ *
+ * \return Update the \c mbmi->segment_id, the \c cpi->cyclic_refresh and
+ * the \c cm->cpi->enc_seg.map.
+ */
+
+void av1_cyclic_reset_segment_skip(const struct AV1_COMP *cpi,
+                                   MACROBLOCK *const x, int mi_row, int mi_col,
+                                   BLOCK_SIZE bsize);
+
 /*!\brief Update segment_id for block based on mode selected.
  *
  * Prior to coding a given prediction block, of size bsize at (mi_row, mi_col),

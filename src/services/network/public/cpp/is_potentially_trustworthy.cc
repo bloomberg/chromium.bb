@@ -9,10 +9,10 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
@@ -23,6 +23,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
 #include "url/url_canon.h"
@@ -180,7 +181,7 @@ std::vector<std::string> ParseSecureOriginAllowlistFromCmdline() {
   // For Crostini, we allow access to the default VM/container as a secure
   // origin via the hostname penguin.linux.test. We are required to use a
   // wildcard for the prefix because we do not know what the port number is.
-  // https://chromium.googlesource.com/chromiumos/docs/+/master/containers_and_vms.md
+  // https://chromium.googlesource.com/chromiumos/docs/+/main/containers_and_vms.md
   origin_patterns.push_back("*.linux.test");
 #endif
   return origin_patterns;

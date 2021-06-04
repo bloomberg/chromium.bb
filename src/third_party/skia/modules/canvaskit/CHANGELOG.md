@@ -6,8 +6,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.0] - 2021-05-20
+
 ### Added
+ - `Font.getGlyphIntercepts()`
+ 
+### Fixed
+ - Bug with images using certain exif metadata. (skbug.com/11968)
+
+### Removed
+ - `Canvas.flush`, which had been previously deprecated. `Surface.flush` is the preferred method.
+ - `AnimatedImage.getCurrentFrame`, which had been previously deprecated.
+   `AnimatedImage.makeImageAtCurrentFrame` is the replacement, which behaves exactly the same.
+
+## [0.26.0] - 2021-04-23
+
+### Added
+ - Add 'isEmbolden, setEmbolden' to 'Font'
+ - Add 'drawGlyphs' to 'Canvas'
  - Add `drawPatch` to `Canvas`.
+ - Add `Strut` as a `RectHeightStyle` enum.
+ - `CanvasKit.RuntimeEffect` now supports integer uniforms in the SkSL. These are still passed
+   to `RuntimeEffect.makeShader` as floats (like all other uniforms), and will be converted to
+   integers internally, to match the expectations of the shader.
+ - Add 'halfLeading' to `TextStyle` and `StrutStyle`.
+ - `ParagraphStyle` now accepts textHeightBehavior.
+
+### Removed
+ - `Picture.saveAsFile()`, in favor of `Picture.serialize()` where clients can control how to
+    store/encode the bytes.
 
 ## [0.25.1] - 2021-03-30
 

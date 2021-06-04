@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 
 class GURL;
 
@@ -32,6 +34,7 @@ struct IndexedRule {
   static ParseResult CreateIndexedRule(
       extensions::api::declarative_net_request::Rule parsed_rule,
       const GURL& base_url,
+      RulesetID ruleset_id,
       IndexedRule* indexed_rule);
 
   api::declarative_net_request::RuleActionType action_type =
@@ -60,9 +63,9 @@ struct IndexedRule {
   // Note: For redirect rules, exactly one of |redirect_url|,
   // |regex_substitution| or |url_transform|  will be set.
   // The redirect url for the rule.
-  base::Optional<std::string> redirect_url;
+  absl::optional<std::string> redirect_url;
   // The regex substitution for this rule.
-  base::Optional<std::string> regex_substitution;
+  absl::optional<std::string> regex_substitution;
   // UrlTransform for this rule.
   std::unique_ptr<api::declarative_net_request::URLTransform> url_transform;
 
@@ -72,6 +75,12 @@ struct IndexedRule {
   // List of response headers to modify. Valid iff this is a modify headers
   // rule.
   std::vector<api::declarative_net_request::ModifyHeaderInfo> response_headers;
+
+  // Set of tab IDs this rule applies to.
+  base::flat_set<int> tab_ids;
+
+  // Set of tab IDs this rule doesn't apply to.
+  base::flat_set<int> excluded_tab_ids;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import pprint
@@ -311,3 +312,9 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
 
   def GetUIDevtoolsBackend(self, port):
     return ui_devtools_client_backend.GetUIDevtoolsBackend(port, self)
+
+  def GetWindowForTarget(self, target_id):
+    return self.devtools_client.GetWindowForTarget(target_id)
+
+  def SetWindowBounds(self, window_id, bounds):
+    self.devtools_client.SetWindowBounds(window_id, bounds)

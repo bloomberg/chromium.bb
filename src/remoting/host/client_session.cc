@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,6 +28,8 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/mouse_shape_pump.h"
+#include "remoting/host/remote_open_url_constants.h"
+#include "remoting/host/remote_open_url_message_handler.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/control.pb.h"
@@ -42,6 +43,7 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_frame_pump.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace {
@@ -66,8 +68,8 @@ ClientSession::ClientSession(
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
       mouse_clamping_filter_(&remote_input_filter_),
-      pointer_lock_detector_(&mouse_clamping_filter_, this),
-      disable_input_filter_(&pointer_lock_detector_),
+      desktop_and_cursor_composer_notifier_(&mouse_clamping_filter_, this),
+      disable_input_filter_(&desktop_and_cursor_composer_notifier_),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
@@ -199,6 +201,13 @@ void ClientSession::SetCapabilities(
                             base::Unretained(this)));
   }
 
+  if (HasCapability(capabilities_, protocol::kRemoteOpenUrlCapability)) {
+    data_channel_manager_.RegisterCreateHandlerCallback(
+        kRemoteOpenUrlDataChannelName,
+        base::BindRepeating(&ClientSession::CreateRemoteOpenUrlMessageHandler,
+                            base::Unretained(this)));
+  }
+
   std::vector<ActionRequest::Action> supported_actions;
   if (HasCapability(capabilities_, protocol::kSendAttentionSequenceAction))
     supported_actions.push_back(ActionRequest::SEND_ATTENTION_SEQUENCE);
@@ -305,8 +314,8 @@ void ClientSession::ControlPeerConnection(
   if (!connection_->peer_connection_controls()) {
     return;
   }
-  base::Optional<int> min_bitrate_bps;
-  base::Optional<int> max_bitrate_bps;
+  absl::optional<int> min_bitrate_bps;
+  absl::optional<int> max_bitrate_bps;
   bool set_preferred_bitrates = false;
   if (parameters.has_preferred_min_bitrate_bps()) {
     min_bitrate_bps = parameters.preferred_min_bitrate_bps();
@@ -552,8 +561,12 @@ void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,
                                         ui::EventType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_local = remote_input_filter_.LocalPointerMoved(position, type);
-  if (is_local && desktop_environment_options_.terminate_upon_input())
-    DisconnectSession(protocol::OK);
+  if (is_local) {
+    if (desktop_environment_options_.terminate_upon_input())
+      DisconnectSession(protocol::OK);
+    else
+      desktop_and_cursor_composer_notifier_.OnLocalInput();
+  }
 }
 
 void ClientSession::SetDisableInputs(bool disable_inputs) {
@@ -577,10 +590,10 @@ ClientSessionControl* ClientSession::session_control() {
   return this;
 }
 
-void ClientSession::OnPointerLockChanged(bool active) {
+void ClientSession::SetComposeEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (desktop_and_cursor_composer_)
-    desktop_and_cursor_composer_->SetComposeEnabled(active);
+    desktop_and_cursor_composer_->SetComposeEnabled(enabled);
 }
 
 void ClientSession::OnMouseCursor(webrtc::MouseCursor* mouse_cursor) {
@@ -873,6 +886,15 @@ void ClientSession::CreateActionMessageHandler(
   // of |pipe|. Once |pipe| is closed, this instance will be cleaned up.
   new ActionMessageHandler(channel_name, capabilities, std::move(pipe),
                            std::move(action_executor));
+}
+
+void ClientSession::CreateRemoteOpenUrlMessageHandler(
+    const std::string& channel_name,
+    std::unique_ptr<protocol::MessagePipe> pipe) {
+  // RemoteOpenUrlMessageHandler manages its own lifetime and is tied to the
+  // lifetime of |pipe|. Once |pipe| is closed, this instance will be cleaned
+  // up.
+  new RemoteOpenUrlMessageHandler(channel_name, std::move(pipe));
 }
 
 }  // namespace remoting

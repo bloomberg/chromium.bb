@@ -6,14 +6,14 @@ import {assert} from 'chai';
 
 import {assertNotNull, getBrowserAndPages, goToResource} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {expandIssue, expandResourceSection, extractTableFromResourceSection, getIssueByTitle, getResourcesElement, navigateToIssuesTab} from '../helpers/issues-helpers.js';
+import {ensureResourceSectionIsExpanded, expandIssue, extractTableFromResourceSection, getIssueByTitle, getResourcesElement, navigateToIssuesTab} from '../helpers/issues-helpers.js';
 
 describe('Cors Private Network issue', async () => {
   beforeEach(async () => {
-    await goToResource('issues/sab-issue.html');
+    await goToResource('empty.html');
   });
 
-  it('should display correct information', async () => {
+  it('should display correct information for insecure contexts', async () => {
     await navigateToIssuesTab();
     const {frontend} = getBrowserAndPages();
     frontend.evaluate(() => {
@@ -58,9 +58,8 @@ describe('Cors Private Network issue', async () => {
     await expandIssue();
     const issueElement = await getIssueByTitle('Ensure private network requests are made from secure contexts');
     assertNotNull(issueElement);
-    // TODO(crbug.com/1189877): Remove 2nd space after fixing l10n presubmit check
-    const section = await getResourcesElement('2  items', issueElement);
-    await expandResourceSection(section);
+    const section = await getResourcesElement('2 requests', issueElement, '.cors-issue-affected-resource-label');
+    await ensureResourceSectionIsExpanded(section);
     const table = await extractTableFromResourceSection(section.content);
     assertNotNull(table);
     assert.strictEqual(table.length, 3);
@@ -84,6 +83,80 @@ describe('Cors Private Network issue', async () => {
       'Local',
       'Unknown',
       'insecure',
+    ]);
+  });
+
+  it('should display correct information for secure contexts', async () => {
+    await navigateToIssuesTab();
+    const {frontend} = getBrowserAndPages();
+    frontend.evaluate(() => {
+      const issue = {
+        code: 'CorsIssue',
+        details: {
+          corsIssueDetails: {
+            clientSecurityState: {
+              initiatorIsSecureContext: true,
+              initiatorIPAddressSpace: 'Public',
+              privateNetworkRequestPolicy: 'WarnFromInsecureToMorePrivate',
+            },
+            corsErrorStatus: {corsError: 'InsecurePrivateNetwork', failedParameter: ''},
+            isWarning: true,
+            request: {requestId: 'request-1', url: 'http://localhost/'},
+            resourceIPAddressSpace: 'Local',
+          },
+        },
+      };
+      // @ts-ignore
+      window.addIssueForTest(issue);
+      const issue2 = {
+        code: 'CorsIssue',
+        details: {
+          corsIssueDetails: {
+            clientSecurityState: {
+              initiatorIsSecureContext: true,
+              initiatorIPAddressSpace: 'Unknown',
+              privateNetworkRequestPolicy: 'WarnFromInsecureToMorePrivate',
+            },
+            corsErrorStatus: {corsError: 'InsecurePrivateNetwork', failedParameter: ''},
+            isWarning: true,
+            request: {requestId: 'request-1', url: 'http://example.com/'},
+            resourceIPAddressSpace: 'Local',
+          },
+        },
+      };
+      // @ts-ignore
+      window.addIssueForTest(issue2);
+    });
+
+    await expandIssue();
+    const issueElement =
+        await getIssueByTitle('Ensure private network requests are only made to resources that allow them');
+    assertNotNull(issueElement);
+    const section = await getResourcesElement('2 requests', issueElement, '.cors-issue-affected-resource-label');
+    await ensureResourceSectionIsExpanded(section);
+    const table = await extractTableFromResourceSection(section.content);
+    assertNotNull(table);
+    assert.strictEqual(table.length, 3);
+    assert.deepEqual(table[0], [
+      'Request',
+      'Status',
+      'Resource Address',
+      'Initiator Address',
+      'Initiator Context',
+    ]);
+    assert.deepEqual(table[1], [
+      'localhost/',
+      'warning',
+      'Local',
+      'Public',
+      'secure',
+    ]);
+    assert.deepEqual(table[2], [
+      'example.com/',
+      'warning',
+      'Local',
+      'Unknown',
+      'secure',
     ]);
   });
 });

@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableLongPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
@@ -33,6 +34,11 @@ public class MessageBannerProperties {
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
     public static final WritableObjectPropertyKey<CharSequence> DESCRIPTION =
             new WritableObjectPropertyKey<>();
+    /**
+     * DESCRIPTION_MAX_LINES allows limiting description view to the specified number of lines. The
+     * description will be ellipsized with TruncateAt.END option.
+     */
+    public static final WritableIntPropertyKey DESCRIPTION_MAX_LINES = new WritableIntPropertyKey();
 
     public static final WritableObjectPropertyKey<Drawable> ICON =
             new WritableObjectPropertyKey<>();
@@ -52,6 +58,8 @@ public class MessageBannerProperties {
             new WritableObjectPropertyKey<>();
     public static final WritableObjectPropertyKey<String> SECONDARY_ICON_CONTENT_DESCRIPTION =
             new WritableObjectPropertyKey<>();
+    // Unit: milliseconds.
+    public static final WritableLongPropertyKey DISMISSAL_DURATION = new WritableLongPropertyKey();
     /**
      * The callback invoked when the message is dismissed. DismissReason is passed through the
      * callback's parameter.
@@ -71,8 +79,9 @@ public class MessageBannerProperties {
             new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {PRIMARY_BUTTON_TEXT,
-            PRIMARY_BUTTON_CLICK_LISTENER, TITLE, DESCRIPTION, ICON, ICON_RESOURCE_ID,
-            ICON_TINT_COLOR, SECONDARY_ICON, SECONDARY_ICON_RESOURCE_ID, SECONDARY_BUTTON_MENU_TEXT,
-            SECONDARY_ICON_CONTENT_DESCRIPTION, TRANSLATION_X, TRANSLATION_Y, ALPHA,
-            ON_TOUCH_RUNNABLE, ON_PRIMARY_ACTION, ON_SECONDARY_ACTION, ON_DISMISSED};
+            PRIMARY_BUTTON_CLICK_LISTENER, TITLE, DESCRIPTION, DESCRIPTION_MAX_LINES, ICON,
+            ICON_RESOURCE_ID, ICON_TINT_COLOR, SECONDARY_ICON, SECONDARY_ICON_RESOURCE_ID,
+            SECONDARY_BUTTON_MENU_TEXT, SECONDARY_ICON_CONTENT_DESCRIPTION, DISMISSAL_DURATION,
+            TRANSLATION_X, TRANSLATION_Y, ALPHA, ON_TOUCH_RUNNABLE, ON_PRIMARY_ACTION,
+            ON_SECONDARY_ACTION, ON_DISMISSED};
 }

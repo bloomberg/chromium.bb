@@ -190,12 +190,11 @@ class DelayableBackend : public disk_cache::Backend {
  private:
   void OpenEntryDelayedImpl(const std::string& key,
                             EntryResultCallback callback) {
-    auto copyable_callback =
-        base::AdaptCallbackForRepeating(std::move(callback));
+    auto split_callback = base::SplitOnceCallback(std::move(callback));
     EntryResult result =
-        backend_->OpenEntry(key, net::HIGHEST, copyable_callback);
+        backend_->OpenEntry(key, net::HIGHEST, std::move(split_callback.first));
     if (result.net_error() != net::ERR_IO_PENDING)
-      copyable_callback.Run(std::move(result));
+      std::move(split_callback.second).Run(std::move(result));
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
@@ -361,7 +360,7 @@ std::string CopySideData(blink::mojom::Blob* actual_blob) {
   std::string output;
   base::RunLoop loop;
   actual_blob->ReadSideData(base::BindLambdaForTesting(
-      [&](const base::Optional<mojo_base::BigBuffer> data) {
+      [&](const absl::optional<mojo_base::BigBuffer> data) {
         if (data)
           output.append(data->data(), data->data() + data->size());
         loop.Quit();
@@ -670,7 +669,7 @@ class CacheStorageCacheTest : public testing::Test {
         network::mojom::FetchResponseSource::kUnspecified,
         base::flat_map<std::string, std::string>(kHeaders.cbegin(),
                                                  kHeaders.cend()),
-        /*mime_type=*/base::nullopt, net::HttpRequestHeaders::kGetMethod,
+        /*mime_type=*/absl::nullopt, net::HttpRequestHeaders::kGetMethod,
         /*blob=*/nullptr, blink::mojom::ServiceWorkerResponseError::kUnknown,
         response_time_, /*cache_storage_cache_name=*/std::string(),
         /*cors_exposed_header_names=*/std::vector<std::string>(),
@@ -680,7 +679,7 @@ class CacheStorageCacheTest : public testing::Test {
         net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
         /*alpn_negotiated_protocol=*/"unknown",
         /*was_fetched_via_spdy=*/false, /*has_range_requested=*/false,
-        /*auth_challenge_info=*/base::nullopt);
+        /*auth_challenge_info=*/absl::nullopt);
   }
 
   void CopySideDataToResponse(const std::string& uuid,
@@ -908,7 +907,7 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   void ErrorTypeCallback(base::RunLoop* run_loop, CacheStorageError error) {
-    callback_message_ = base::nullopt;
+    callback_message_ = absl::nullopt;
     callback_error_ = error;
     if (run_loop)
       run_loop->Quit();
@@ -1019,7 +1018,7 @@ class CacheStorageCacheTest : public testing::Test {
   std::string expected_blob_data_;
 
   CacheStorageError callback_error_ = CacheStorageError::kSuccess;
-  base::Optional<std::string> callback_message_ = base::nullopt;
+  absl::optional<std::string> callback_message_ = absl::nullopt;
   blink::mojom::FetchAPIResponsePtr callback_response_;
   std::vector<std::string> callback_strings_;
   std::string bad_message_reason_;

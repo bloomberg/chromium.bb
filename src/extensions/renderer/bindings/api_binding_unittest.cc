@@ -324,7 +324,7 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
     RunFunction(func, context, 1, argv);
     ASSERT_TRUE(last_request_) << script_source;
     EXPECT_EQ(expected_json_arguments,
-              ValueToString(*last_request_->arguments));
+              ValueToString(*last_request_->arguments_list));
     EXPECT_EQ(expect_callback, last_request_->has_callback) << script_source;
   } else {
     RunFunctionAndExpectError(func, context, 1, argv, expected_error);
@@ -518,12 +518,20 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   const char kEvents[] =
       "[{'name': 'allowedEvent'}, {'name': 'restrictedEvent'}]";
   SetEvents(kEvents);
+  const char kProperties[] =
+      R"({
+           "allowedProperty": { "type": "integer", "value": 3 },
+           "restrictedProperty": { "type": "string", "value": "restricted" }
+         })";
+  SetProperties(kProperties);
   auto is_available = [](v8::Local<v8::Context> context,
                          const std::string& name) {
     std::set<std::string> allowed = {"test.allowedOne", "test.allowedTwo",
-                                     "test.allowedEvent"};
+                                     "test.allowedEvent",
+                                     "test.allowedProperty"};
     std::set<std::string> restricted = {
-        "test.restrictedOne", "test.restrictedTwo", "test.restrictedEvent"};
+        "test.restrictedOne", "test.restrictedTwo", "test.restrictedEvent",
+        "test.restrictedProperty"};
     EXPECT_TRUE(allowed.count(name) || restricted.count(name)) << name;
     return allowed.count(name) != 0;
   };
@@ -546,9 +554,11 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   EXPECT_TRUE(is_defined("allowedOne"));
   EXPECT_TRUE(is_defined("allowedTwo"));
   EXPECT_TRUE(is_defined("allowedEvent"));
+  EXPECT_TRUE(is_defined("allowedProperty"));
   EXPECT_FALSE(is_defined("restrictedOne"));
   EXPECT_FALSE(is_defined("restrictedTwo"));
   EXPECT_FALSE(is_defined("restrictedEvent"));
+  EXPECT_FALSE(is_defined("restrictedProperty"));
 }
 
 // Tests that events specified in the API are created as properties of the API
@@ -1494,8 +1504,8 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
   SetHooksDelegate(std::move(hooks));
 
   auto on_silent_request =
-      [](base::Optional<std::string>* name_out,
-         base::Optional<std::vector<std::string>>* args_out,
+      [](absl::optional<std::string>* name_out,
+         absl::optional<std::vector<std::string>>* args_out,
          v8::Local<v8::Context> context, const std::string& call_name,
          const std::vector<v8::Local<v8::Value>>& arguments) {
         *name_out = call_name;
@@ -1504,8 +1514,8 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
         for (const auto& arg : arguments)
           (*args_out)->push_back(V8ToString(arg, context));
       };
-  base::Optional<std::string> silent_request;
-  base::Optional<std::vector<std::string>> request_arguments;
+  absl::optional<std::string> silent_request;
+  absl::optional<std::vector<std::string>> request_arguments;
   SetOnSilentRequest(base::BindRepeating(on_silent_request, &silent_request,
                                          &request_arguments));
 

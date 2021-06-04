@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">เลื่อน 2 นิ้วขึ้น</translation>
 <translation id="1126928665165112660">ไม่เป็นตัวเอียง</translation>
 <translation id="113582498867142724">คอลเล็กชัน <ph name="TAG" /> ที่มี <ph name="NUM" /> รายการ</translation>
+<translation id="1146441463334103638">สลับหน้าจอเป็นเปิดหรือปิด</translation>
 <translation id="1156488781945104845">เวลาปัจจุบัน</translation>
 <translation id="1161762950103988776">กระโดด</translation>
 <translation id="1164857107703583584">สามารถใช้คำสั่งข้ามเพื่อไปยังส่วนต่างๆ ของหน้าเว็บได้อย่างมีประสิทธิภาพ</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">URL ลิงก์: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">เลื่อนไปข้างหลัง 1 อักขระ</translation>
 <translation id="2220529011494928058">รายงานปัญหา</translation>
+<translation id="2243633977138166243">กดลูกศรซ้ายหรือขวาเพื่อไปยังส่วนต่างๆ แล้วกด Enter เพื่อเปิดใช้งาน</translation>
 <translation id="224426591676115802">ไม่มีเสียงสำหรับภาษา<ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">กำลังหยุดโหมดการเรียนรู้</translation>
 <translation id="225732394367814946">เพิ่มอัตราการพูด</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">สีโศก</translation>
 <translation id="2684412629217766642">ปิดบทแนะนำ ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">ตัวเลือกการแปลงข้อความ</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{วงเล็บเปิด}other{# วงเล็บเปิด}}</translation>
+<translation id="270523456882008230">คำแนะนำ: ใช้ 1 นิ้วแตะสองครั้งเพื่อเปิดใช้งานรายการปัจจุบัน</translation>
 <translation id="2705875883745373140">ไม่ได้กด</translation>
 <translation id="2708078563826046398">สีส้มพีชพัฟ</translation>
 <translation id="2713444072780614174">สีขาว</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">คุณยังใช้ 1 นิ้วปัดจากขวาไปซ้ายเพื่อเลื่อนไปยังรายการก่อนหน้าได้ด้วย ลองทำเลย</translation>
 <translation id="280499067616661124">การค้นหาในหน้าของ ChromeVox</translation>
-<translation id="2808001342598757276">เปิดแสงหน้าจอ</translation>
 <translation id="2811019999044652585">หากต้องการข้ามไปยังส่วนอื่นของหน้าจอ เช่น แถบเครื่องมือ หรือถาดระบบ ให้กด Control+เดินหน้า บน Chromebook ปุ่มเดินหน้าจะอยู่เหนือปุ่มเลข 2</translation>
 <translation id="2811204574343810641">แถว</translation>
 <translation id="2816868829355607410">พื้นที่ฝึกปฏิบัติ: คำสั่งข้าม</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">เคล็ดลับเครื่องมือ</translation>
 <translation id="2976476721782829799">คุณไปยังส่วนต่างๆ โดยลาก 1 นิ้วรอบๆ หน้าจอได้ด้วย วิธีนี้เรียกว่า "การแตะเพื่อสำรวจ" ลองลากนิ้วไปรอบๆ เพื่ออ่านเนื้อหาที่เหลือของบทเรียนนี้</translation>
 <translation id="297825089465017871">เลื่อน 2 นิ้วไปทางซ้าย</translation>
+<translation id="2988364959384217951">คำแนะนำ: ใช้ 2 นิ้วปัดจากขวาไปซ้ายหากต้องการออกจากบทแนะนำนี้</translation>
 <translation id="2998131015536248178">อักขระก่อนหน้า</translation>
 <translation id="2999559350546931576">ลดระดับเสียง</translation>
 <translation id="3009352964623081324">ค้นหา + O ตามด้วย S ใช้เพื่อติดตั้ง จัดการ และปรับแต่งเสียง</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">เลื่อนกลับ</translation>
 <translation id="3084806535845658316">ไม่พูดขณะพิมพ์</translation>
 <translation id="3086746722712840547">หมายเหตุ</translation>
+<translation id="308736057934395497">คำสั่งนี้จะเพิ่มความเป็นส่วนตัวโดยปิดหน้าจอไม่ให้ผู้อื่นเห็น คุณเปิดหน้าจออีกครั้งได้ทุกเมื่อโดยกดค้นหา + เพิ่มความสว่าง</translation>
 <translation id="3090227230165225418">ประกาศการแจ้งเตือนการดาวน์โหลด</translation>
 <translation id="3090532668523289635">กลุ่ม</translation>
 <translation id="3093176084511590672">จุดสังเกตถัดไป</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">ยุบแล้ว</translation>
 <translation id="311015743332597320">เลื่อน 4 นิ้วไปทางขวา</translation>
 <translation id="3112457281078985179">หากต้องการเปิดหรือปิด ChromeVox ให้ใช้ Control+Alt+Z</translation>
+<translation id="3115800313647508384">ปิดหน้าจอใช่ไหม</translation>
 <translation id="3131002934070407451">อ่านหมายเลขเป็น</translation>
 <translation id="3134461040845705080">อ่านอย่างเดียว</translation>
 <translation id="3137663468179739624">สีเขียวมะกอก</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">เทาอ่อน</translation>
 <translation id="6036135911048686884">แตะสำรวจ</translation>
 <translation id="6037602951055904232">เลื่อนไปข้างหน้า</translation>
-<translation id="6044160928851315051">ปิดแสงหน้าจอ</translation>
 <translation id="6082768461603900813">การนำทางเบื้องต้น</translation>
 <translation id="609281021724813947">ไม่มีแถบเลื่อนก่อนหน้า</translation>
 <translation id="6100239002225743044">เลื่อนขึ้น 1 บรรทัด</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">ส่วนนำ</translation>
 <translation id="6697092096875747123">ช่องตัวเลือกรวมก่อนหน้า</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{เครื่องหมายอัศเจรีย์}other{เครื่องหมายอัศเจรีย์ # ตัว}}</translation>
+<translation id="670717715607710284">ปิดหน้าจอ</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6714813999819678458">ส่วนหัวระดับ 2 ก่อนหน้า</translation>
 <translation id="6730312624811567147">ใช้แป้นค้นหาและลูกศรซ้ายหรือขวาเพื่อไปยังจุดเริ่มต้นหรือจุดสิ้นสุด ใช้แป้นค้นหา ปุ่ม Control และลูกศรซ้ายหรือขวาเพื่อควบคุมจุดเริ่มต้นหรือจุดสิ้นสุด ใช้แป้นค้นหาและลูกศรขึ้นหรือลงเพื่อเลื่อนหน้าขึ้นหรือลง</translation>
@@ -938,6 +944,7 @@
 <translation id="7776293189010177726">เปิดเมนู ChromeVox</translation>
 <translation id="7799302833060027366">กดขึ้น ลง ซ้าย หรือขวาเพื่อสำรวจคณิตศาสตร์</translation>
 <translation id="7800558923657349506">ปัจฉิมบท</translation>
+<translation id="7801768143868631306">คำแนะนำ: ใช้ 1 นิ้วปัดไปทางซ้ายหรือขวาเพื่อไปยังส่วนต่างๆ</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7810781339813764006">กลุ่มถัดไป</translation>
 <translation id="7813616274030162878">เมนูการเข้าถึงด้วยสวิตช์</translation>
@@ -991,6 +998,7 @@
 <translation id="816818801578874684">นี่คือหัวข้อแรก กดแป้น Search + H เพื่อไปยังหัวข้อต่อไป</translation>
 <translation id="8173092779156526980">เลื่อน 4 นิ้วไปทางซ้าย</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{เครื่องหมายขีดล่าง}other{# เครื่องหมายขีดล่าง}}</translation>
+<translation id="817529114347680055">เปิดหน้าจอ</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">แถว</translation>
 <translation id="8186185314313222077">เปลี่ยนเป็นเต็มหน้าจอ</translation>
@@ -1013,7 +1021,6 @@
 <translation id="8316881042119029234">สีส้มโอลด์เลซ</translation>
 <translation id="8324974933005349667">ปรับเปลี่ยนการตั้งค่าการอ่านออกเสียงข้อความในแบบของคุณ</translation>
 <translation id="8326783648485765113">สีเขียวลอว์นกรีน</translation>
-<translation id="8328063869313048659">เปิด/ปิดหน้าจอตอนกลางคืน</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{เครื่องหมายปอนด์}other{# เครื่องหมายปอนด์}}</translation>
 <translation id="8378855320830505539">ภูมิภาค</translation>
 <translation id="8382679411218029383">การเติมข้อความอัตโนมัติแบบในบรรทัดและเป็นรายการ</translation>

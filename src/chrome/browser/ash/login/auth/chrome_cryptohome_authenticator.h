@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_AUTH_CHROME_CRYPTOHOME_AUTHENTICATOR_H_
 #define CHROME_BROWSER_ASH_LOGIN_AUTH_CHROME_CRYPTOHOME_AUTHENTICATOR_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chromeos/login/auth/cryptohome_authenticator.h"
 
-namespace chromeos {
+namespace ash {
 
 class ChromeCryptohomeAuthenticator : public CryptohomeAuthenticator {
  public:
@@ -22,6 +20,12 @@ class ChromeCryptohomeAuthenticator : public CryptohomeAuthenticator {
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptohomeAuthenticator);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::ChromeCryptohomeAuthenticator;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_AUTH_CHROME_CRYPTOHOME_AUTHENTICATOR_H_

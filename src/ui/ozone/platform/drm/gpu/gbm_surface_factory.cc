@@ -279,8 +279,7 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 GbmSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
-                                              bool allow_protected_memory,
-                                              bool enforce_protected_memory) {
+                                              bool allow_protected_memory) {
   DCHECK(!use_swiftshader)
       << "Vulkan Swiftshader is not supported on this platform.";
   return std::make_unique<ui::VulkanImplementationGbm>();
@@ -369,7 +368,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   if (framebuffer_size &&
       !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size))) {
     return nullptr;

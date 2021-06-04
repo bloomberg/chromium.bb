@@ -42,6 +42,7 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -154,11 +155,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   ServiceWorkerClients* clients();
   ServiceWorkerRegistration* registration();
   ::blink::ServiceWorker* serviceWorker();
-
-  ScriptPromise fetch(ScriptState*,
-                      const RequestInfo&,
-                      const RequestInit*,
-                      ExceptionState&);
 
   ScriptPromise skipWaiting(ScriptState*);
 
@@ -316,6 +312,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   const ServiceWorkerToken& GetServiceWorkerToken() const { return token_; }
   WorkerToken GetWorkerToken() const final { return token_; }
   bool CrossOriginIsolatedCapability() const final;
+  bool DirectSocketCapability() const final;
   ExecutionContextToken GetExecutionContextToken() const final {
     return token_;
   }
@@ -507,7 +504,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void StartFetchEvent(
       mojom::blink::DispatchFetchEventParamsPtr params,
       base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
-      base::Optional<base::TimeTicks> created_time,
+      absl::optional<base::TimeTicks> created_time,
       int event_id);
   void StartInstallEvent(int event_id);
   void StartActivateEvent(int event_id);

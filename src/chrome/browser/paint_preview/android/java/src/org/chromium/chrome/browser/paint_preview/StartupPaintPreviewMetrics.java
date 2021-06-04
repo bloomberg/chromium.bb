@@ -8,7 +8,7 @@ import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -22,7 +22,8 @@ public class StartupPaintPreviewMetrics {
     /** Used for recording the cause for exiting the Paint Preview player. */
     @IntDef({ExitCause.PULL_TO_REFRESH, ExitCause.SNACK_BAR_ACTION, ExitCause.COMPOSITOR_FAILURE,
             ExitCause.TAB_FINISHED_LOADING, ExitCause.LINK_CLICKED, ExitCause.NAVIGATION_STARTED,
-            ExitCause.TAB_DESTROYED, ExitCause.TAB_HIDDEN, ExitCause.OFFLINE_AVAILABLE})
+            ExitCause.TAB_DESTROYED, ExitCause.TAB_HIDDEN, ExitCause.OFFLINE_AVAILABLE,
+            ExitCause.ACCESSIBILITY_NOT_SUPPORTED})
     @interface ExitCause {
         int PULL_TO_REFRESH = 0;
         int SNACK_BAR_ACTION = 1;
@@ -33,7 +34,19 @@ public class StartupPaintPreviewMetrics {
         int TAB_DESTROYED = 6;
         int TAB_HIDDEN = 7;
         int OFFLINE_AVAILABLE = 8;
-        int COUNT = 9;
+        int ACCESSIBILITY_NOT_SUPPORTED = 9;
+        int COUNT = 10;
+    }
+
+    /**
+     * An interface to get notified of various paint preview metric events
+     */
+    public interface PaintPreviewMetricsObserver {
+        /**
+         * Called on the first paint of a paint preview
+         * @param durationMs duration from activity creation to first paint. Reported in millis.
+         */
+        void onFirstPaint(long durationMs);
     }
 
     private static final Map<Integer, String> UPTIME_HISTOGRAM_MAP = new HashMap<>();
@@ -56,24 +69,26 @@ public class StartupPaintPreviewMetrics {
                 "Browser.PaintPreview.TabbedPlayer.UpTime.RemovedOnTabHidden");
         UPTIME_HISTOGRAM_MAP.put(ExitCause.OFFLINE_AVAILABLE,
                 "Browser.PaintPreview.TabbedPlayer.UpTime.RemovedOnOfflineAvailable");
+        UPTIME_HISTOGRAM_MAP.put(ExitCause.ACCESSIBILITY_NOT_SUPPORTED,
+                "Browser.PaintPreview.TabbedPlayer.UpTime.RemovedOnAccessibilityNotSupported");
     }
 
     private long mShownTime;
     private boolean mFirstPaintHappened;
+    private final ObserverList<PaintPreviewMetricsObserver> mObservers = new ObserverList<>();
 
     void onShown() {
         mShownTime = System.currentTimeMillis();
     }
 
-    void onFirstPaint(long activityOnCreateTimestamp, Supplier<Boolean> shouldRecordFirstPaint,
-            Callback<Long> visibleContentCallback) {
+    void onFirstPaint(long activityOnCreateTimestamp, Supplier<Boolean> shouldRecordFirstPaint) {
         mFirstPaintHappened = true;
         if (shouldRecordFirstPaint != null && shouldRecordFirstPaint.get()) {
             long durationMs = SystemClock.elapsedRealtime() - activityOnCreateTimestamp;
             RecordHistogram.recordLongTimesHistogram(
                     "Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap", durationMs);
-            if (visibleContentCallback != null) {
-                visibleContentCallback.onResult(durationMs);
+            for (PaintPreviewMetricsObserver observer : mObservers) {
+                observer.onFirstPaint(durationMs);
             }
         }
     }
@@ -108,5 +123,9 @@ public class StartupPaintPreviewMetrics {
 
         long upTime = System.currentTimeMillis() - mShownTime;
         RecordHistogram.recordLongTimesHistogram(UPTIME_HISTOGRAM_MAP.get(exitCause), upTime);
+    }
+
+    void addMetricsObserver(PaintPreviewMetricsObserver observer) {
+        mObservers.addObserver(observer);
     }
 }

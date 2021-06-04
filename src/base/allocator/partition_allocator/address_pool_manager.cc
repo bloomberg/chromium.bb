@@ -51,6 +51,7 @@ void DecommitPages(void* address, size_t size) {
                    MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   PA_CHECK(ptr == address);
 #else
+  static_assert(DecommittedMemoryIsAlwaysZeroed(), "");
   DecommitSystemPages(address, size, PageUpdatePermissions);
 #endif
 }
@@ -235,6 +236,11 @@ AddressPoolManager::Pool::~Pool() = default;
 
 #else  // defined(PA_HAS_64_BITS_POINTERS)
 
+#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+uint16_t AddressPoolManager::reservation_offset_table_
+    [AddressPoolManager::kReservationOffsetTableSize] = {};
+#endif  // BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+
 static_assert(
     kSuperPageSize % AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap ==
         0,
@@ -278,7 +284,7 @@ void ResetBitmap(std::bitset<bitsize>& bitmap,
 char* AddressPoolManager::Reserve(pool_handle handle,
                                   void* requested_address,
                                   size_t length) {
-  PA_DCHECK(!(length & PageAllocationGranularityOffsetMask()));
+  PA_DCHECK(!(length & DirectMapAllocationGranularityOffsetMask()));
   char* ptr = reinterpret_cast<char*>(
       AllocPages(requested_address, length, kSuperPageSize, PageInaccessible,
                  PageTag::kPartitionAlloc));
@@ -294,7 +300,7 @@ void AddressPoolManager::UnreserveAndDecommit(pool_handle handle,
                                               size_t length) {
   uintptr_t ptr_as_uintptr = reinterpret_cast<uintptr_t>(ptr);
   PA_DCHECK(!(ptr_as_uintptr & kSuperPageOffsetMask));
-  PA_DCHECK(!(length & PageAllocationGranularityOffsetMask()));
+  PA_DCHECK(!(length & DirectMapAllocationGranularityOffsetMask()));
   MarkUnused(handle, ptr_as_uintptr, length);
   FreePages(ptr, length);
 }
@@ -306,35 +312,34 @@ void AddressPoolManager::MarkUsed(pool_handle handle,
   AutoLock guard(AddressPoolManagerBitmap::GetLock());
   if (handle == kNonBRPPoolHandle) {
     SetBitmap(AddressPoolManagerBitmap::non_brp_pool_bits_,
-              ptr_as_uintptr / PageAllocationGranularity(),
-              length / PageAllocationGranularity());
+              ptr_as_uintptr / DirectMapAllocationGranularity(),
+              length / DirectMapAllocationGranularity());
   } else {
     PA_DCHECK(handle == kBRPPoolHandle);
-    PA_DCHECK(!(length & kSuperPageOffsetMask));
-    // If BUILDFLAG(MAKE_GIGACAGE_GRANULARITY_PARTITION_PAGE_SIZE) is defined,
-    // make IsManagedByBRPPoolPool return false when an address
-    // inside the first or the last PartitionPageSize()-bytes
-    // block is given:
+    PA_DCHECK(
+        (length % AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap) == 0);
+
+    // Make IsManagedByBRPPoolPool() return false when an address inside the
+    // first or the last PartitionPageSize()-bytes block is given:
     //
     //          ------+---+---------------+---+----
     // memory   ..... | B | managed by PA | B | ...
     // regions  ------+---+---------------+---+----
     //
-    // B: PartitionPageSize()-bytes block. This is used by
-    // PartitionAllocator and is not available for callers.
+    // B: PartitionPageSize()-bytes block. This is used internally by the
+    // allocator and is not available for callers.
     //
     // This is required to avoid crash caused by the following code:
+    //   {
+    //     // Assume this allocation happens outside of PartitionAlloc.
+    //     CheckedPtr<T> ptr = new T[20];
+    //     for (size_t i = 0; i < 20; i ++) { ptr++; }
+    //     // |ptr| may point to an address inside 'B'.
+    //   }
     //
-    // {
-    //   CheckedPtr<T> ptr = allocateFromNotPartitionAllocator(X * sizeof(T));
-    //   for (size_t i = 0; i < X; i ++) { ...; ptr++; }
-    //   // |ptr| may point an address inside 'B'.
-    // }
-    //
-    // Suppose that |ptr| points to an address inside B after the loop. So when
-    // exiting the scope, IsManagedByBRPPoolPool(ptr) returns true without
-    // the barrier blocks. Since the memory is not allocated by Partition
-    // Allocator, ~CheckedPtr will cause crash.
+    // Suppose that |ptr| points to an address inside B after the loop. If
+    // IsManagedByBRPPoolPool(ptr) were to return true, ~CheckedPtr would crash,
+    // since the memory is not allocated by Partition.
     SetBitmap(
         AddressPoolManagerBitmap::brp_pool_bits_,
         (ptr_as_uintptr >> AddressPoolManagerBitmap::kBitShiftOfBRPPoolBitmap) +
@@ -353,14 +358,15 @@ void AddressPoolManager::MarkUnused(pool_handle handle,
   // allocated from there. Thus LIKELY is used.
   if (LIKELY(handle == kNonBRPPoolHandle)) {
     ResetBitmap(AddressPoolManagerBitmap::non_brp_pool_bits_,
-                address / PageAllocationGranularity(),
-                length / PageAllocationGranularity());
+                address / DirectMapAllocationGranularity(),
+                length / DirectMapAllocationGranularity());
   } else {
     PA_DCHECK(handle == kBRPPoolHandle);
-    PA_DCHECK(!(length & kSuperPageOffsetMask));
-    // If BUILDFLAG(MAKE_GIGACAGE_GRANULARITY_PARTITION_PAGE_SIZE) is defined,
-    // make IsManagedByBRPPoolPool return false when an address
-    // inside the first or the last PartitionPageSize()-bytes block is given.
+    PA_DCHECK(
+        (length % AddressPoolManagerBitmap::kBytesPer1BitOfBRPPoolBitmap) == 0);
+
+    // Make IsManagedByBRPPoolPool() return false when an address inside the
+    // first or the last PartitionPageSize()-bytes block is given.
     // (See MarkUsed comment)
     ResetBitmap(
         AddressPoolManagerBitmap::brp_pool_bits_,

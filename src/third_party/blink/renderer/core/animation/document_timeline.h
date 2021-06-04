@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
@@ -70,7 +69,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void ScheduleNextService() override;
 
   bool IsActive() const override;
-  base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
+  absl::optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }
@@ -155,4 +154,4 @@ struct DowncastTraits<DocumentTimeline> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_

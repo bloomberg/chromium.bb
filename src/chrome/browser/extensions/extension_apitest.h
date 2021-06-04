@@ -18,6 +18,8 @@ namespace base {
 class FilePath;
 }
 
+class GURL;
+
 namespace extensions {
 class Extension;
 
@@ -31,27 +33,6 @@ class Extension;
 // TODO(erikkay): There should also be a way to drive events in these tests.
 class ExtensionApiTest : public ExtensionBrowserTest {
  public:
-  // Flags used to configure how the tests are run. These values are based on
-  // the last flag value defined by ExtensionBrowserTest. This ensures that
-  // the values won't overlap so we can check for accidentally mixing those
-  // flags and these.
-  enum Flags {
-    kFlagNone = 0,
-
-    // Launch the test page in an incognito window.
-    kFlagUseIncognito = ExtensionBrowserTest::kFlagNextValue << 0,
-
-    // Loads the extension with location COMPONENT.
-    kFlagLoadAsComponent = ExtensionBrowserTest::kFlagNextValue << 1,
-
-    // Launch the extension as a platform app.
-    kFlagLaunchPlatformApp = ExtensionBrowserTest::kFlagNextValue << 2,
-
-    // Load the extension using //extensions/test/data/ as the root path instead
-    // of loading from //chrome/test/data/extensions/api_test/.
-    kFlagUseRootExtensionsDir = ExtensionBrowserTest::kFlagNextValue << 3,
-  };
-
   struct RunOptions {
     // Load the specified extension for the test. This is a subdirectory
     // in "chrome/test/data/extensions/api_test".
@@ -71,11 +52,6 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // Launch the test page in an incognito window.
     bool open_in_incognito = false;
 
-    // TODO(https://crbug.com/1171429): Move to load options and
-    // refactor implementation into ExtensionBrowserTest.
-    // Loads the extension with location COMPONENT.
-    bool load_as_component = false;
-
     // Launch the extension as a platform app.
     bool launch_as_platform_app = false;
 
@@ -92,6 +68,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
+  // TODO(https://crbug.com/1171429): Remove these two member functions
+  // once all the call sites of been migrated.
   bool RunExtensionTest(const RunOptions& run_options,
                         const LoadOptions& load_options) WARN_UNUSED_RESULT;
 
@@ -101,13 +79,19 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // LoadOptions.
   bool RunExtensionTest(const char* extension_name) WARN_UNUSED_RESULT;
 
-  // If not empty, Load |extension_name|, load |page_url| and wait for pass /
-  // fail notification from the extension API on the page. Note that if
-  // |page_url| is not a valid url, it will be treated as a resource within
-  // the extension. |extension_name| is a directory in
-  // "test/data/extensions/api_test".
-  bool RunExtensionSubtest(const std::string& extension_name,
-                           const std::string& page_url) WARN_UNUSED_RESULT;
+  bool RunExtensionTest(const char* extension_name,
+                        const RunOptions& run_options) WARN_UNUSED_RESULT;
+
+  bool RunExtensionTest(const char* extension_name,
+                        const RunOptions& run_options,
+                        const LoadOptions& load_options) WARN_UNUSED_RESULT;
+
+  // Opens the given |url| and waits for the next result from the
+  // chrome.test API. If |open_in_incognito| is true, the URL is opened
+  // in an off-the-record browser profile. This API is different from
+  // RunExtensionTest as it doesn't load an extension.
+  bool OpenTestURL(const GURL& url,
+                   bool open_in_incognito = false) WARN_UNUSED_RESULT;
 
   // Start the test server, and store details of its state. Those details
   // will be available to JavaScript tests using chrome.test.getConfig().
@@ -163,11 +147,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   std::string message_;
 
  private:
-  bool RunExtensionTestImpl(const std::string& extension_name,
-                            const std::string& test_page,
-                            const char* custom_arg,
-                            int browser_test_flags,
-                            int api_test_flags) WARN_UNUSED_RESULT;
+  void OpenURL(const GURL& url, bool open_in_incognito);
 
   // Hold details of the test, set in C++, which can be accessed by
   // javascript using chrome.test.getConfig().

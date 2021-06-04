@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -95,13 +96,12 @@ class FailingLoader final : public WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient*,
       WebURLResponse&,
-      base::Optional<WebURLError>& error,
+      absl::optional<WebURLError>& error,
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -113,7 +113,6 @@ class FailingLoader final : public WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
@@ -482,7 +481,7 @@ bool SVGImage::ApplyShaderInternal(const DrawInfo& draw_info,
 
   const FloatRect bounds(FloatPoint(), draw_info.ContainerSize());
   flags.setShader(PaintShader::MakePaintRecord(
-      std::move(record), bounds, SkTileMode::kRepeat, SkTileMode::kRepeat,
+      std::move(record), bounds, SkTileMode::kClamp, SkTileMode::kClamp,
       &local_matrix));
 
   // Animation is normally refreshed in Draw() impls, which we don't reach when
@@ -551,6 +550,11 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
     view->UpdateAllLifecyclePhases(DocumentUpdateReason::kSVGImage);
     return view->GetPaintRecord();
   }
+
+  // TODO(crbug.com/1203406): This works around the bug. We may want to find
+  // and fix the root cause, or do nothing until pre-CAP code is removed.
+  if (!view->GetLayoutView() || !view->GetLayoutView()->Compositor())
+    return nullptr;
 
   view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kSVGImage);
   PaintRecordBuilder builder(*paint_controller_);
@@ -786,10 +790,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   CHECK_EQ(load_state_, kDataChangedNotStarted);
   load_state_ = kInDataChanged;
 
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<SVGImageChromeClient>(this);
-  page_clients.chrome_client = chrome_client_.Get();
 
   // FIXME: If this SVG ends up loading itself, we might leak the world.
   // The Cache code does not know about ImageResources holding Frames and
@@ -800,7 +801,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   Page* page;
   {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
-    page = Page::CreateNonOrdinary(page_clients, *agent_group_scheduler_);
+    page = Page::CreateNonOrdinary(*chrome_client_, *agent_group_scheduler_);
     page->GetSettings().SetScriptEnabled(false);
     page->GetSettings().SetPluginsEnabled(false);
 

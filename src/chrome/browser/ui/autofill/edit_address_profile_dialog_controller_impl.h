@@ -13,8 +13,6 @@
 
 namespace autofill {
 
-class AutofillBubbleBase;
-
 // The controller functionality for EditAddressProfileView.
 class EditAddressProfileDialogControllerImpl
     : public EditAddressProfileDialogController,
@@ -29,14 +27,18 @@ class EditAddressProfileDialogControllerImpl
   ~EditAddressProfileDialogControllerImpl() override;
 
   // Sets up the controller and offers to edit the |profile| before saving it.
-  // |address_profile_save_prompt_callback| will be invoked once the user makes
-  // a decision with respect to the offer-to-edit prompt.
+  // If `original_profile` is not nullptr, this indicates that this dialog is
+  // opened from an update prompt. The originating prompt (save or update) will
+  // be re-opened once the user makes a decision with respect to the
+  // offer-to-edit prompt.
   void OfferEdit(const AutofillProfile& profile,
+                 const AutofillProfile* original_profile,
                  AutofillClient::AddressProfileSavePromptCallback
                      address_profile_save_prompt_callback);
 
   // EditAddressProfileDialogController:
   std::u16string GetWindowTitle() const override;
+  std::u16string GetOkButtonLabel() const override;
   const AutofillProfile& GetProfileToEdit() const override;
   void OnUserDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision,
@@ -58,7 +60,10 @@ class EditAddressProfileDialogControllerImpl
   // before saving.
   AutofillProfile address_profile_to_edit_;
 
-  AutofillBubbleBase* edit_dialog_ = nullptr;
+  // If not nullptr, this dialog was opened from an update prompt. Contains the
+  // details of the address profile that will be updated if the user accepts
+  // that update prompt from which this edit dialog was opened..
+  absl::optional<AutofillProfile> original_profile_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

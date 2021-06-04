@@ -15,27 +15,28 @@ component("dbus") {
   public_deps = [
     ":common",
     "//chromeos/dbus/arc",
+    "//chromeos/dbus/cicerone",
+    "//chromeos/dbus/concierge",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/debug_daemon",
     "//chromeos/dbus/lorgnette_manager",
+    "//chromeos/dbus/seneschal",
     "//chromeos/dbus/shill",
     "//dbus",
   ]
   deps = [
     ":anomaly_detector_proto",
     ":chunneld_proto",
-    ":cicerone_proto",
-    ":concierge_proto",
     ":metrics_event_proto",
     ":oobe_config_proto",
     ":plugin_vm_service_proto",
     ":runtime_probe_proto",
-    ":seneschal_proto",
     ":smbprovider_proto",
     ":update_engine_proto",
     ":vm_applications_apps_proto",
     ":vm_permission_service_proto",
     ":vm_plugin_dispatcher_proto",
+    ":vm_sk_forwarding_proto",
     "//base",
     "//components/account_id",
     "//components/device_event_log",
@@ -50,10 +51,6 @@ component("dbus") {
     "cec_service_client.h",
     "chunneld_client.cc",
     "chunneld_client.h",
-    "cicerone_client.cc",
-    "cicerone_client.h",
-    "concierge_client.cc",
-    "concierge_client.h",
     "cros_disks_client.cc",
     "cros_disks_client.h",
     "dbus_client_implementation_type.h",
@@ -69,10 +66,6 @@ component("dbus") {
     "fake_cec_service_client.h",
     "fake_chunneld_client.cc",
     "fake_chunneld_client.h",
-    "fake_cicerone_client.cc",
-    "fake_cicerone_client.h",
-    "fake_concierge_client.cc",
-    "fake_concierge_client.h",
     "fake_cros_disks_client.cc",
     "fake_cros_disks_client.h",
     "fake_easy_unlock_client.cc",
@@ -87,8 +80,6 @@ component("dbus") {
     "fake_oobe_configuration_client.h",
     "fake_runtime_probe_client.cc",
     "fake_runtime_probe_client.h",
-    "fake_seneschal_client.cc",
-    "fake_seneschal_client.h",
     "fake_smb_provider_client.cc",
     "fake_smb_provider_client.h",
     "fake_update_engine_client.cc",
@@ -107,8 +98,6 @@ component("dbus") {
     "oobe_configuration_client.h",
     "runtime_probe_client.cc",
     "runtime_probe_client.h",
-    "seneschal_client.cc",
-    "seneschal_client.h",
     "smb_provider_client.cc",
     "smb_provider_client.h",
     "update_engine_client.cc",
@@ -193,6 +182,8 @@ source_set("unit_tests") {
     "//chromeos/dbus/lorgnette_manager:test_support",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/power:test_support",
+    "//chromeos/dbus/rmad:rmad_proto",
+    "//chromeos/dbus/rmad:test_support",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/shill:test_support",
     "//chromeos/dbus/tpm_manager",
@@ -322,6 +313,14 @@ proto_library("vm_applications_apps_proto") {
   sources = [ "//third_party/cros_system_api/dbus/vm_applications/apps.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("vm_sk_forwarding_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_sk_forwarding/sk_forwarding.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/vm_sk_forwarding"
 }
 
 proto_library("vm_permission_service_proto") {

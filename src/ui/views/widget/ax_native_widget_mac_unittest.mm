@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
@@ -96,18 +95,18 @@ class TestWidgetDelegate : public test::TestDesktopWidgetDelegate {
  public:
   TestWidgetDelegate() = default;
 
-  static constexpr char kAccessibleWindowTitle[] = "My Accessible Window";
+  static constexpr char16_t kAccessibleWindowTitle[] = u"My Accessible Window";
 
   // WidgetDelegate:
   std::u16string GetAccessibleWindowTitle() const override {
-    return base::ASCIIToUTF16(kAccessibleWindowTitle);
+    return kAccessibleWindowTitle;
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
-constexpr char TestWidgetDelegate::kAccessibleWindowTitle[];
+constexpr char16_t TestWidgetDelegate::kAccessibleWindowTitle[];
 
 // Widget-level tests for accessibility properties - these are actually mostly
 // tests of accessibility behavior for individual Views *as they appear* in
@@ -271,7 +270,7 @@ TEST_F(AXNativeWidgetMacTest, ChildrenAttribute) {
 
   // Check ignored children don't show up in the accessibility tree.
   widget()->GetContentsView()->AddChildView(
-      new FlexibleRoleTestView(ax::mojom::Role::kIgnored));
+      new FlexibleRoleTestView(ax::mojom::Role::kNone));
   EXPECT_EQ(kNumChildren, ax_node.accessibilityChildren.count);
 }
 
@@ -303,7 +302,7 @@ TEST_F(AXNativeWidgetMacTest, ParentAttribute) {
   EXPECT_NSEQ(NSAccessibilityGroupRole, ax_parent.accessibilityRole);
 
   // Test an ignored role parent is skipped in favor of the grandparent.
-  parent->set_role(ax::mojom::Role::kIgnored);
+  parent->set_role(ax::mojom::Role::kNone);
   ASSERT_NSNE(nil, AXParentOf(ax_child));
   EXPECT_NSEQ(NSAccessibilityGroupRole, AXParentOf(ax_child).accessibilityRole);
 }
@@ -348,7 +347,7 @@ TEST_F(AXNativeWidgetMacTest, NativeWindowProperties) {
   EXPECT_NSEQ(window, ax_view.accessibilityWindow);
   EXPECT_NSEQ(window, ax_view.accessibilityTopLevelUIElement);
   EXPECT_NSEQ(
-      base::SysUTF8ToNSString(TestWidgetDelegate::kAccessibleWindowTitle),
+      base::SysUTF16ToNSString(TestWidgetDelegate::kAccessibleWindowTitle),
       window.accessibilityTitle);
 }
 

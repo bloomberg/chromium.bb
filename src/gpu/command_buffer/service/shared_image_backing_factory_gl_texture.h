@@ -76,6 +76,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -98,6 +99,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   scoped_refptr<gl::GLImage> MakeGLImage(int client_id,
                                          gfx::GpuMemoryBufferHandle handle,
                                          gfx::BufferFormat format,
+                                         gfx::BufferPlane plane,
                                          SurfaceHandle surface_handle,
                                          const gfx::Size& size);
 

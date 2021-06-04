@@ -33,7 +33,7 @@
 #include <utility>
 
 #include "base/numerics/clamped_math.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -270,7 +270,7 @@ void AXInlineTextBox::SerializeMarkerAttributes(
   std::vector<int32_t> marker_ends;
 
   // First use ARIA markers for spelling/grammar if available.
-  base::Optional<DocumentMarker::MarkerType> aria_marker_type =
+  absl::optional<DocumentMarker::MarkerType> aria_marker_type =
       GetAriaSpellingOrGrammarMarker();
   if (aria_marker_type) {
     marker_types.push_back(ToAXMarkerType(aria_marker_type.value()));
@@ -360,6 +360,8 @@ void AXInlineTextBox::Init(AXObject* parent) {
   DCHECK(parent);
   DCHECK(ui::CanHaveInlineTextBoxChildren(parent->RoleValue()))
       << "Unexpected parent of inline text box: " << parent->RoleValue();
+  DCHECK(parent->CanHaveChildren())
+      << "Parent cannot have children: " << parent->ToString(true, true);
   SetParent(parent);
   UpdateCachedAttributeValuesIfNeeded(false);
 }
@@ -388,6 +390,10 @@ int AXInlineTextBox::TextLength() const {
   if (IsDetached())
     return 0;
   return int{inline_text_box_->Len()};
+}
+
+void AXInlineTextBox::ClearChildren() const {
+  // An AXInlineTextBox has no children to clear.
 }
 
 }  // namespace blink

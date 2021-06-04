@@ -8,11 +8,15 @@ component("ios") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":account_select_fill_data",
+    ":password_manager_feature",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/browser:util",
     "//components/autofill/ios/form_util",
+    "//components/autofill/ios/form_util:form_util_feature",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/common",
@@ -26,10 +30,6 @@ component("ios") {
   ]
 
   sources = [
-    "account_select_fill_data.cc",
-    "account_select_fill_data.h",
-    "js_password_manager.h",
-    "js_password_manager.mm",
     "password_form_helper.h",
     "password_form_helper.mm",
     "password_generation_provider.h",
@@ -44,6 +44,44 @@ component("ios") {
   ]
 }
 
+source_set("password_manager_feature") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":account_select_fill_data",
+    ":password_controller_js",
+    "//base",
+    "//components/autofill/core/common",
+    "//components/autofill/ios/browser:util",
+    "//components/autofill/ios/form_util:form_util_feature",
+    "//ios/web/public/js_messaging",
+  ]
+
+  sources = [
+    "password_manager_java_script_feature.h",
+    "password_manager_java_script_feature.mm",
+  ]
+}
+
+source_set("account_select_fill_data") {
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//components/autofill/ios/browser:util",
+    "//url",
+  ]
+
+  sources = [
+    "account_select_fill_data.cc",
+    "account_select_fill_data.h",
+  ]
+}
+
+js_compile_bundle("password_controller_js") {
+  closure_entry_point = "__crWeb.passwords"
+  sources = [ "resources/password_controller.js" ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -52,6 +90,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":account_select_fill_data",
     ":ios",
     "//base",
     "//components/autofill/core/common",
@@ -68,31 +107,23 @@ source_set("unit_tests") {
     "shared_password_controller_unittest.mm",
   ]
   deps = [
+    ":account_select_fill_data",
     ":ios",
-    ":test_bundle",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/autofill/ios/form_util",
+    "//components/autofill/ios/form_util:form_util_feature",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/ios:password_manager_feature",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
-  ]
-}
-
-js_compile_bundle("test_bundle") {
-  closure_entry_point = "__crWeb.testBundle"
-  testonly = true
-  sources = [
-    "//components/autofill/ios/form_util/resources/fill.js",
-    "//components/autofill/ios/form_util/resources/form.js",
-    "resources/password_controller.js",
-    "resources/test_bundle.js",
   ]
 }

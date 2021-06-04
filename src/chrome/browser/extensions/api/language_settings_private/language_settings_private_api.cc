@@ -14,6 +14,7 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,6 +66,9 @@ using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
 using chromeos::input_method::InputMethodManager;
 using chromeos::input_method::InputMethodUtil;
+
+// Number of IMEs that are needed to automatically enable the IME menu option.
+const size_t kNumImesToAutoEnableImeMenu = 2;
 
 // Returns the set of IDs of all enabled IMEs.
 std::unordered_set<std::string> GetEnabledIMEs(
@@ -268,7 +272,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (!allowed_ui_locales.empty() &&
         allowed_ui_locales.count(language.code) == 0) {
-      language.is_prohibited_language.reset(new bool(true));
+      language.is_prohibited_language = std::make_unique<bool>(true);
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -745,14 +749,14 @@ void PopulateInputMethodListFromDescriptors(
     input_method.language_codes = descriptor.language_codes();
     input_method.tags = GetInputMethodTags(&input_method);
     if (active_ids.count(input_method.id) > 0)
-      input_method.enabled.reset(new bool(true));
+      input_method.enabled = std::make_unique<bool>(true);
     if (descriptor.options_page_url().is_valid())
-      input_method.has_options_page.reset(new bool(true));
+      input_method.has_options_page = std::make_unique<bool>(true);
     if (!allowed_ids.empty() &&
         (util->IsKeyboardLayout(input_method.id) ||
          chromeos::extension_ime_util::IsArcIME(input_method.id)) &&
         allowed_ids.count(input_method.id) == 0) {
-      input_method.is_prohibited_by_policy.reset(new bool(true));
+      input_method.is_prohibited_by_policy = std::make_unique<bool>(true);
     }
     input_map[base::UTF8ToUTF16(util->GetLocalizedDisplayName(descriptor))] =
         std::move(input_method);
@@ -850,6 +854,26 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
 
   std::string input_methods = base::JoinString(input_method_list, ",");
   prefs->SetString(pref_name, input_methods);
+
+  // In LSV2 Update 2, we want to automatically enable "Show input options in
+  // shelf" when the user has multiple input methods.
+  // We don't want to repeatedly enable it every time the user adds an input
+  // method, as a user may want to intentionally turn it off - so we only enable
+  // it once the user reaches two input methods.
+  if (base::FeatureList::IsEnabled(ash::features::kLanguageSettingsUpdate2)) {
+    // As pref_name and input_method_set only refer to the preference related to
+    // the list of IMEs for which this newly-added IME is in, we need the other
+    // IME list to calculate the total number of IMEs.
+    const char* other_ime_list_pref_name = is_component_extension_ime
+                                               ? prefs::kLanguageEnabledImes
+                                               : prefs::kLanguagePreloadEngines;
+    std::unordered_set<std::string> other_input_method_set(
+        GetIMEsFromPref(prefs, other_ime_list_pref_name));
+    if (input_method_set.size() + other_input_method_set.size() ==
+        kNumImesToAutoEnableImeMenu) {
+      prefs->SetBoolean(prefs::kLanguageImeMenuActivated, true);
+    }
+  }
 #endif
   return RespondNow(NoArguments());
 }

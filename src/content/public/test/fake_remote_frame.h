@@ -65,6 +65,9 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
       const base::UnguessableToken& embedding_token) override;
   void SetPageFocus(bool is_focused) override;
   void RenderFallbackContent() override;
+  void RenderFallbackContentWithResourceTiming(
+      blink::mojom::ResourceTimingInfoPtr,
+      const std::string& server_timing_value) override;
   void AddResourceTimingFromChild(
       blink::mojom::ResourceTimingInfoPtr timing) override;
 
@@ -81,7 +84,7 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
           parsed_permissions_policy) override {}
   void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override {}
   void UpdateOpener(
-      const base::Optional<blink::FrameToken>& opener_frame_token) override;
+      const absl::optional<blink::FrameToken>& opener_frame_token) override;
   void DetachAndDispose() override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;

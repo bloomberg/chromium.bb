@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
@@ -75,6 +74,7 @@ enum Milestone {
   kM94 = 94,
   kM95 = 95,
   kM96 = 96,
+  kM97 = 97,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -140,11 +140,13 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
     case kM93:
       return {2021, 8, 0, 31, 4};
     case kM94:
-      return {2021, 10, 0, 12, 4};
+      return {2021, 9, 0, 21, 4};
     case kM95:
-      return {2021, 11, 0, 30, 4};
+      return {2021, 10, 0, 19, 4};
     case kM96:
-      return {2022, 1, 0, 25, 4};
+      return {2022, 11, 0, 16, 4};
+    case kM97:
+      return {2022, 1, 0, 4, 4};
   }
 
   NOTREACHED();
@@ -513,7 +515,7 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     case WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation:
       return {
-          "SharedArrayBufferConstructedWithoutIsolation", kM91,
+          "SharedArrayBufferConstructedWithoutIsolation", kM92,
           String::Format(
               "SharedArrayBuffer will require cross-origin isolation as of "
               "%s. See "
@@ -575,19 +577,19 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "compatibility issues on modern browsers. The standardized SDP "
               "format, \"unified-plan\", has been used by default since M72 "
               "(January, 2019). Dropping support for Plan B is targeted for "
-              "M93 (Canary: July 15, 2021; Stable: August 24, 2021)."};
+              "M93. See https://www.chromestatus.com/feature/5823036655665152 "
+              "for more details."};
 
     case WebFeature::kRTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial:
-      return {"RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial", kM96,
+      return {"RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial", kM97,
               "Plan B SDP semantics, which is used when constructing an "
               "RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy "
               "version of the Session Description Protocol that has severe "
               "compatibility issues on modern browsers. The standardized SDP "
               "format, \"unified-plan\", has been used by default since M72 "
               "(January, 2019). Dropping support for Plan B is targeted for "
-              "M93 (Canary: July 15, 2021; Stable: August 24, 2021), but "
-              "because you have opted in to the Reverse Origin Trial, you have "
-              "until M96 (Canary: November, 2021; Stable: January, 2022)."};
+              "M93, but this page may extend the deadline until M97 due to the "
+              "'RTCPeerConnection Plan B SDP Semantics' deprecation trial."};
 
     case WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedPrivate:
     case WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedLocal:
@@ -622,7 +624,7 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
 Report* CreateReportInternal(const KURL& context_url,
                              const DeprecationInfo& info) {
-  base::Optional<base::Time> optional_removal_date;
+  absl::optional<base::Time> optional_removal_date;
   if (info.anticipated_removal != kUnknown) {
     base::Time removal_date;
     bool result = base::Time::FromUTCExploded(

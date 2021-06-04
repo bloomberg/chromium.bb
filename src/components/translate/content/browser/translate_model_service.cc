@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -58,12 +58,12 @@ constexpr int kMaxPendingRequestsAllowed = 100;
 namespace translate {
 
 TranslateModelService::TranslateModelService(
-    optimization_guide::OptimizationGuideDecider* opt_guide,
+    optimization_guide::OptimizationGuideModelProvider* opt_guide,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner)
     : opt_guide_(opt_guide), background_task_runner_(background_task_runner) {
   opt_guide_->AddObserverForOptimizationTargetModel(
       optimization_guide::proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-      /*model_metadata=*/base::nullopt, this);
+      /*model_metadata=*/absl::nullopt, this);
 }
 
 TranslateModelService::~TranslateModelService() = default;
@@ -76,7 +76,7 @@ void TranslateModelService::Shutdown() {
 
 void TranslateModelService::OnModelFileUpdated(
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const base::Optional<optimization_guide::proto::Any>& model_metadata,
+    const absl::optional<optimization_guide::proto::Any>& model_metadata,
     const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (optimization_target !=

@@ -6,9 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -34,11 +37,12 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
-using proximity_auth::ScreenlockState;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+// TODO(https://crbug.com/1164001): remove after moving to ash::
+using ::chromeos::TPMTokenLoader;
+using ::proximity_auth::ScreenlockState;
 
 // The maximum allowed backoff interval when waiting for cryptohome to start.
 uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
@@ -197,9 +201,9 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
     if (device_data.public_key == device_public_key_base64) {
       PA_LOG(VERBOSE) << "Wrapping challenge for " << account_id.Serialize()
                       << "...";
-      challenge_wrapper_.reset(new EasyUnlockChallengeWrapper(
+      challenge_wrapper_ = std::make_unique<EasyUnlockChallengeWrapper>(
           device_data.challenge, channel_binding_data, account_id,
-          EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile())));
+          EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile()));
       challenge_wrapper_->WrapChallenge(std::move(callback));
       return;
     }
@@ -297,8 +301,9 @@ void EasyUnlockServiceSignin::InitializeInternal() {
 
   service_active_ = true;
 
-  pref_manager_.reset(new proximity_auth::ProximityAuthLocalStatePrefManager(
-      g_browser_process->local_state()));
+  pref_manager_ =
+      std::make_unique<proximity_auth::ProximityAuthLocalStatePrefManager>(
+          g_browser_process->local_state());
 
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
@@ -386,7 +391,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
   SetProximityAuthDevices(account_id_, multidevice::RemoteDeviceRefList(),
-                          base::nullopt /* local_device */);
+                          absl::nullopt /* local_device */);
   ResetScreenlockState();
 
   pref_manager_->SetActiveUser(account_id);
@@ -569,13 +574,13 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
   remote_device_cache_->SetRemoteDevices(remote_devices);
 
-  base::Optional<multidevice::RemoteDeviceRef> unlock_key_device =
+  absl::optional<multidevice::RemoteDeviceRef> unlock_key_device =
       remote_device_cache_->GetRemoteDevice(
-          base::nullopt /* instance_id */,
+          absl::nullopt /* instance_id */,
           unlock_key_id /* legacy_device_id */);
-  base::Optional<multidevice::RemoteDeviceRef> local_device =
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
       remote_device_cache_->GetRemoteDevice(
-          base::nullopt /* instance_id */,
+          absl::nullopt /* instance_id */,
           local_device_id /* legacy_device_id */);
 
   // TODO(hansberry): It is possible that there may not be an unlock key by this
@@ -628,4 +633,4 @@ void EasyUnlockServiceSignin::ShowInitialUserPodState() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

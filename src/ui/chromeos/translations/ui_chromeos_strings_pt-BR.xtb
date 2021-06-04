@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Controle deslizante de busca</translation>
 <translation id="1404323374378969387">Norueguês</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1433628812591023318">Para arrastar arquivos até o Parallels Desktop, é necessário primeiro movê-los para a pasta "Arquivos" do Windows.</translation>
 <translation id="1435838927755162558">Compartilhar pasta com o Parallels Desktop</translation>
 <translation id="1467432559032391204">À esquerda</translation>
 <translation id="1471718551822868769">Eslovaco</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Arquivos do Windows</translation>
 <translation id="3078461028045006476">Compartilhar com <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
+<translation id="3113153474486991170">Não foi possível abrir "<ph name="PATH" />" nesse local. Copie-o para "Meus arquivos" para abrir.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">CONCLUÍDO</translation>
 <translation id="3188257591659621405">Meus arquivos</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Búlgaro com teclado fonético</translation>
 <translation id="5605830556594064952">Dvorak americano</translation>
 <translation id="5625294776298156701">Tâmil com teclado Tamil99</translation>
+<translation id="5633226425545095130">Se você mover esse item, ele será compartilhado com todos que podem ver a pasta compartilhada "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Ouvir</translation>
 <translation id="5678784840044122290">O aplicativo Linux estará disponível no seu terminal e também poderá mostrar um ícone no acesso rápido.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Não é possível desconectar de um arquivo ou disco virtual<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa do Google</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
+<translation id="7486315294984620427">Para arrastar arquivos até o Parallels Desktop, é necessário primeiro copiá-los para a pasta "Arquivos" do Windows.</translation>
 <translation id="7489215562877293245">Total de arquivos encontrados: <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Pronto para fazer backup para o <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimensões</translation>
 <translation id="8437209419043462667">EUA</translation>
 <translation id="8456681095658380701">Nome inválido</translation>
+<translation id="8459404855768962328">Se você copiar esse item, ele será compartilhado com todos que podem ver a pasta compartilhada "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Clique com o botão direito do mouse em um arquivo e selecione "Fixar na estante" para ter acesso rápido a ele pela estante.</translation>
 <translation id="8463494891489624050">Vietnamita (VIQR)</translation>
 <translation id="8466234950814670489">Arquivo tar</translation>

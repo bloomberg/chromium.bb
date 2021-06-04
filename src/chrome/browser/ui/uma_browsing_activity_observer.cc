@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -95,10 +96,14 @@ void UMABrowsingActivityObserver::LogTimeBeforeUpdate() const {
       UpgradeDetector::GetInstance()->upgrade_detected_time();
   if (upgrade_detected_time.is_null())
     return;
-  const base::Time now = base::Time::Now();
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "UpgradeDetector.DaysBeforeUpgrade",
-      base::TimeDelta(now - upgrade_detected_time).InDays(), 30);
+  const base::TimeDelta time_since_upgrade =
+      base::Time::Now() - upgrade_detected_time;
+  constexpr int kMaxDays = 30;
+  base::UmaHistogramExactLinear("UpgradeDetector.DaysBeforeUpgrade",
+                                base::TimeDelta(time_since_upgrade).InDays(),
+                                kMaxDays);
+  base::UmaHistogramCounts1000("UpgradeDetector.HoursBeforeUpgrade",
+                               base::TimeDelta(time_since_upgrade).InHours());
 }
 
 void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
@@ -190,7 +195,7 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   const Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
   if (current_browser) {
     TabStripModel* const tab_strip_model = current_browser->tab_strip_model();
-    const base::Optional<tab_groups::TabGroupId> active_group =
+    const absl::optional<tab_groups::TabGroupId> active_group =
         tab_strip_model->GetTabGroupForTab(tab_strip_model->active_index());
     UMA_HISTOGRAM_COUNTS_100("Tabs.TabCountInGroupPerLoad",
                              active_group.has_value()

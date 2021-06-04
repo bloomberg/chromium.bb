@@ -69,7 +69,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   void SetImage(const gfx::ImageSkia& image);
 
   // Retrieve the image to show proxy operations.
-  const gfx::ImageSkia& GetImage() const;
+  gfx::ImageSkia GetImage() const;
 
   // |state| is or'd into the current state.
   void AddState(State state);
@@ -126,9 +126,6 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
  protected:
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // views::Button:
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;

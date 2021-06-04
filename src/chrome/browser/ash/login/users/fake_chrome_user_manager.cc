@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -310,7 +311,7 @@ user_manager::UserList FakeChromeUserManager::GetUsersAllowedForMultiProfile()
 
 UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
   if (!default_flow_.get())
-    default_flow_.reset(new DefaultUserFlow());
+    default_flow_ = std::make_unique<DefaultUserFlow>();
   return default_flow_.get();
 }
 
@@ -627,7 +628,7 @@ bool FakeChromeUserManager::IsUserAllowed(
 
 void FakeChromeUserManager::CreateLocalState() {
   local_state_ = std::make_unique<TestingPrefServiceSimple>();
-  user_manager::known_user::RegisterPrefs(local_state_->registry());
+  user_manager::KnownUser::RegisterPrefs(local_state_->registry());
 }
 
 void FakeChromeUserManager::SimulateUserProfileLoad(

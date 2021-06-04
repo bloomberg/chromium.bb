@@ -217,15 +217,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView does not and should not support WebAuthN.
     features.DisableIfNotSet(::features::kWebAuth);
 
-    // Enable VizForWebView by default.
-    features.EnableIfNotSet(::features::kVizForWebViewDefault);
-
-    // WebView doesn't support surface embedding without viz.The media code
-    // checks for both media::kDisableSurfaceLayerForVideo and VizForWebView to
-    // decide if it can embed, so we always enable kDisableSurfaceLayerForVideo
-    // here.
-    // https://crbug.com/853832
-    features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
+    // WebView requires SkiaRenderer.
+    features.EnableIfNotSet(::features::kUseSkiaRenderer);
 
     // WebView does not support overlay fullscreen yet for video overlays.
     features.DisableIfNotSet(media::kOverlayFullscreenVideo);
@@ -239,7 +232,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(::features::kBackgroundFetch);
 
-    // SurfaceControl is not supported on webview.
+    // SurfaceControl is controlled by kWebViewSurfaceControl flag.
     features.DisableIfNotSet(::features::kAndroidSurfaceControl);
 
     // TODO(https://crbug.com/963653): WebOTP is not yet supported on
@@ -279,8 +272,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   android_webview::RegisterPathProvider();
 
-  safe_browsing_api_handler_.reset(
-      new safe_browsing::SafeBrowsingApiHandlerBridge());
+  safe_browsing_api_handler_ =
+      std::make_unique<safe_browsing::SafeBrowsingApiHandlerBridge>();
   safe_browsing::SafeBrowsingApiHandler::SetInstance(
       safe_browsing_api_handler_.get());
 
@@ -428,8 +421,8 @@ content::ContentClient* AwMainDelegate::CreateContentClient() {
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
   DCHECK(!aw_feature_list_creator_);
   aw_feature_list_creator_ = std::make_unique<AwFeatureListCreator>();
-  content_browser_client_.reset(
-      new AwContentBrowserClient(aw_feature_list_creator_.get()));
+  content_browser_client_ =
+      std::make_unique<AwContentBrowserClient>(aw_feature_list_creator_.get());
   return content_browser_client_.get();
 }
 
@@ -445,9 +438,7 @@ gpu::SharedImageManager* GetSharedImageManager() {
 }
 
 viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {
-  return ::features::IsUsingVizForWebView()
-             ? VizCompositorThreadRunnerWebView::GetInstance()
-             : nullptr;
+  return VizCompositorThreadRunnerWebView::GetInstance();
 }
 
 }  // namespace
@@ -461,7 +452,7 @@ content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
 }
 
 content::ContentRendererClient* AwMainDelegate::CreateContentRendererClient() {
-  content_renderer_client_.reset(new AwContentRendererClient());
+  content_renderer_client_ = std::make_unique<AwContentRendererClient>();
   return content_renderer_client_.get();
 }
 

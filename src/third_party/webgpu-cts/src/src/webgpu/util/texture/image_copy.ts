@@ -61,7 +61,7 @@ function validateRowsPerImage({
 interface DataBytesForCopyArgs {
   layout: GPUImageDataLayout;
   format: SizedTextureFormat;
-  copySize: GPUExtent3D;
+  copySize: Readonly<GPUExtent3DDict> | readonly number[];
   method: ImageCopyType;
 }
 

@@ -29,6 +29,10 @@
 #include "ui/events/test/test_event_target.h"
 #include "ui/gfx/transform.h"
 
+#if defined(OS_WIN)
+#include "ui/events/win/events_win_utils.h"
+#endif
+
 namespace ui {
 
 TEST(EventTest, NoNativeEvent) {
@@ -652,19 +656,14 @@ TEST(EventTest, OrdinalMotionConversion) {
   EXPECT_FALSE(mouseev3.flags() & EF_UNADJUSTED_MOUSE);
 }
 
-// Checks that Event.Latency.OS.MOUSE_WHEEL histogram is computed properly.
+// Checks that Event.Latency.OS2.MOUSE_WHEEL histogram is computed properly.
 TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
 #if defined(OS_WIN)
   base::HistogramTester histogram_tester;
   MSG event = {nullptr, WM_MOUSEWHEEL, 0, 0};
   MouseWheelEvent mouseWheelEvent(event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
-  histogram_tester.ExpectTotalCount("Event.Latency.OS_WIN.HIGH_RES.MOUSE_WHEEL",
-                                    0);
-  histogram_tester.ExpectTotalCount("Event.Latency.OS_WIN.LOW_RES.MOUSE_WHEEL",
-                                    0);
-  histogram_tester.ExpectTotalCount("Event.Latency.OS_WIN_IS_VALID.MOUSE_WHEEL",
-                                    0);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS2.MOUSE_WHEEL", 1);
 #endif
 }
 
@@ -672,6 +671,8 @@ TEST(EventTest, UpdateForRootTransformation) {
   gfx::Transform identity_transform;
   const gfx::Point location(10, 10);
   const gfx::Point root_location(20, 20);
+  const gfx::PointF f_location(10, 10);
+  const gfx::PointF f_root_location(20, 20);
 
   // A mouse event that is untargeted should reset the root location when
   // transformed. Though the events start out with different locations and
@@ -683,6 +684,74 @@ TEST(EventTest, UpdateForRootTransformation) {
   EXPECT_EQ(location, untargeted.root_location());
 
   ui::test::TestEventTarget target;
+
+  // A touch event should behave the same way as others.
+  {
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, 0, 0);
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    targeted.UpdateForRootTransform(identity_transform, identity_transform);
+    EXPECT_EQ(location, targeted.location());
+    EXPECT_EQ(location, targeted.root_location());
+    EXPECT_EQ(pointer_details, targeted.pointer_details());
+  }
+
+  // A touch event should scale the same way as others.
+  {
+    // Targeted event with 2x and 3x scales.
+    gfx::Transform transform2x;
+    transform2x.Scale(2, 2);
+    gfx::Transform transform3x;
+    transform3x.Scale(3, 3);
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, 17.2 /* tilt_x */,
+                                   -28.3 /* tilt_y */);
+
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    targeted.UpdateForRootTransform(transform2x, transform3x);
+    auto updated_location = ScalePoint(f_location, 2.0f);
+    EXPECT_EQ(updated_location, targeted.location_f());
+    EXPECT_EQ(updated_location, targeted.root_location_f());
+    auto updated_pointer_details(pointer_details);
+    updated_pointer_details.radius_x *= 2;
+    updated_pointer_details.radius_y *= 2;
+    EXPECT_EQ(updated_pointer_details, targeted.pointer_details())
+        << " orig: " << pointer_details.ToString() << " vs "
+        << targeted.pointer_details().ToString();
+  }
+
+  // A touch event should rotate appropriately.
+  {
+    // Rotate by 90 degrees, then scale by a half or 0.75 (depending on axis),
+    // and then offset by 720/1080. Note that the offset should have no impact
+    // on vectors, i.e. radius.
+    // The scale happens after rotation, so x should be 0.75 * the y.
+    gfx::Transform rotate90;
+    rotate90.Rotate(90.0f);
+    rotate90.Translate(gfx::Vector2dF(720.0f, 1080.0f));
+    rotate90.Scale(0.5, 0.75);
+    gfx::Transform transform3x;
+    transform3x.Scale(3, 3);
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, -17.4 /* tilt_x */,
+                                   31.2 /* tilt_y */);
+
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    Event::DispatcherApi(&targeted).set_target(&target);
+    targeted.UpdateForRootTransform(rotate90, transform3x);
+    auto updated_pointer_details(pointer_details);
+    updated_pointer_details.radius_x = pointer_details.radius_y * 0.75;
+    updated_pointer_details.radius_y = pointer_details.radius_x * 0.5;
+    updated_pointer_details.tilt_x = -31.2;
+    updated_pointer_details.tilt_y = -17.4;
+
+    EXPECT_EQ(updated_pointer_details, targeted.pointer_details())
+        << " orig: " << updated_pointer_details.ToString() << " vs "
+        << targeted.pointer_details().ToString();
+  }
 
   // A mouse event that is targeted should not set the root location to the
   // local location. They start with different locations and should stay
@@ -841,104 +910,13 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Values(WM_CHAR),
                        ::testing::ValuesIn(kAltGraphEventTestCases)));
 
-// Tests for ComputeEventLatencyOSWin
+// Tests for ComputeEventLatencyOS variants.
 
-constexpr struct EventLatencyTickCountTestCase {
-  EventType event_type;
-  const char* histogram_suffix;
-} kEventLatencyTickCountTestCases[] = {
-    {
-        ET_KEY_PRESSED,
-        "KEY_PRESSED",
-    },
-    {
-        ET_MOUSE_PRESSED,
-        "MOUSE_PRESSED",
-    },
-    {
-        ET_TOUCH_PRESSED,
-        "TOUCH_PRESSED",
-    },
-};
-
-class EventLatencyTestBase : public ::testing::Test {
- protected:
-  static constexpr char kHighResHistogram[] = "Event.Latency.OS_WIN.HIGH_RES";
-  static constexpr char kLowResHistogram[] = "Event.Latency.OS_WIN.LOW_RES";
-  static constexpr char kIsValidHistogram[] = "Event.Latency.OS_WIN_IS_VALID";
-
-  std::string HighResEventHistogram(base::StringPiece suffix) const {
-    return base::StrCat({kHighResHistogram, ".", suffix});
-  }
-
-  std::string LowResEventHistogram(base::StringPiece suffix) const {
-    return base::StrCat({kLowResHistogram, ".", suffix});
-  }
-
-  std::string IsValidEventHistogram(base::StringPiece suffix) const {
-    return base::StrCat({kIsValidHistogram, ".", suffix});
-  }
-
-  // Tests for all expected histograms for an event that has a valid timestamp.
-  void ExpectValidHistograms(const base::HistogramTester& histogram_tester,
-                             base::TimeDelta delta,
-                             base::StringPiece suffix) {
-    // Expect both general and per-event histograms to be set.
-    histogram_tester.ExpectUniqueSample(kIsValidHistogram, true, 1);
-    histogram_tester.ExpectUniqueSample(IsValidEventHistogram(suffix), true, 1);
-    if (base::TimeTicks::IsHighResolution()) {
-      histogram_tester.ExpectUniqueTimeSample(kHighResHistogram, delta, 1);
-      histogram_tester.ExpectUniqueTimeSample(HighResEventHistogram(suffix),
-                                              delta, 1);
-      histogram_tester.ExpectTotalCount(kLowResHistogram, 0);
-      histogram_tester.ExpectTotalCount(LowResEventHistogram(suffix), 0);
-    } else {
-      histogram_tester.ExpectUniqueTimeSample(kLowResHistogram, delta, 1);
-      histogram_tester.ExpectUniqueTimeSample(LowResEventHistogram(suffix),
-                                              delta, 1);
-      histogram_tester.ExpectTotalCount(kHighResHistogram, 0);
-      histogram_tester.ExpectTotalCount(HighResEventHistogram(suffix), 0);
-    }
-  }
-
-  // Tests for all expected histograms for an event that has an invalid
-  // timestamp.
-  void ExpectInvalidHistograms(const base::HistogramTester& histogram_tester,
-                               base::StringPiece suffix) {
-    histogram_tester.ExpectUniqueSample(kIsValidHistogram, false, 1);
-    histogram_tester.ExpectUniqueSample(IsValidEventHistogram(suffix), false,
-                                        1);
-    histogram_tester.ExpectTotalCount(kHighResHistogram, 0);
-    histogram_tester.ExpectTotalCount(HighResEventHistogram(suffix), 0);
-    histogram_tester.ExpectTotalCount(kLowResHistogram, 0);
-    histogram_tester.ExpectTotalCount(LowResEventHistogram(suffix), 0);
-  }
-
-  // Tests that no histograms were recorded for the given event. (For example
-  // if it has a type that should be excluded from the metric.)
-  void ExpectNoHistograms(const base::HistogramTester& histogram_tester,
-                          base::StringPiece suffix) {
-    histogram_tester.ExpectTotalCount(kIsValidHistogram, 0);
-    histogram_tester.ExpectTotalCount(IsValidEventHistogram(suffix), 0);
-    histogram_tester.ExpectTotalCount(kHighResHistogram, 0);
-    histogram_tester.ExpectTotalCount(HighResEventHistogram(suffix), 0);
-    histogram_tester.ExpectTotalCount(kLowResHistogram, 0);
-    histogram_tester.ExpectTotalCount(LowResEventHistogram(suffix), 0);
-  }
-
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-};
-
-class EventLatencyTickCountTest
-    : public EventLatencyTestBase,
-      public ::testing::WithParamInterface<EventLatencyTickCountTestCase> {
+class EventLatencyTest : public ::testing::Test {
  public:
-  EventLatencyTickCountTest() {
-    SetEventLatencyTickClockForTesting(&tick_clock_);
-  }
+  EventLatencyTest() { SetEventLatencyTickClockForTesting(&tick_clock_); }
 
-  ~EventLatencyTickCountTest() { SetEventLatencyTickClockForTesting(nullptr); }
+  ~EventLatencyTest() override { SetEventLatencyTickClockForTesting(nullptr); }
 
  protected:
   void UpdateTickClock(DWORD timestamp) {
@@ -946,17 +924,25 @@ class EventLatencyTickCountTest
                             base::TimeDelta::FromMilliseconds(timestamp));
   }
 
-  // The inherited |task_environment_| mocks the base::TimeTicks clock while
-  // |tick_clock_| mocks ::GetTickCount.
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  // |task_environment_| mocks the base::TimeTicks clock while |tick_clock_|
+  // mocks ::GetTickCount.
   base::SimpleTestTickClock tick_clock_;
 };
 
-TEST_P(EventLatencyTickCountTest, ComputeEventLatencyOSWinFromTickCount) {
-  // Create an event whose timestamp is very close to the max range of
+TEST_F(EventLatencyTest, ComputeEventLatencyOSFromTickCount) {
+  // Create events whose timestamps are very close to the max range of
   // ::GetTickCount.
   constexpr DWORD timestamp_msec = std::numeric_limits<DWORD>::max() - 10;
-
-  const std::string suffix = GetParam().histogram_suffix;
+  constexpr TOUCHINPUT touch_input = {
+      .dwTime = timestamp_msec,
+  };
+  constexpr POINTER_INFO pointer_info = {
+      .dwTime = timestamp_msec,
+      .PerformanceCount = 0UL,
+  };
 
   // This test will create several events with the same timestamp, and change
   // the mocked result of ::GetTickCount for each measurement. This makes it
@@ -967,10 +953,16 @@ TEST_P(EventLatencyTickCountTest, ComputeEventLatencyOSWinFromTickCount) {
   UpdateTickClock(timestamp_msec + 5);
   {
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromTickCount(GetParam().event_type, timestamp_msec,
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
                                           base::TimeTicks::Now());
-    ExpectValidHistograms(histogram_tester,
-                          base::TimeDelta::FromMilliseconds(5), suffix);
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(5).InMicroseconds(), 2);
+    histogram_tester.ExpectUniqueTimeSample(
+        "Event.Latency.OS2.TOUCH_PRESSED", base::TimeDelta::FromMilliseconds(5),
+        2);
   }
 
   // Simulate ::GetTickCount advancing 15 msec, which wraps around past 0.
@@ -980,30 +972,34 @@ TEST_P(EventLatencyTickCountTest, ComputeEventLatencyOSWinFromTickCount) {
   UpdateTickClock(wrapped_timestamp_msec);
   {
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromTickCount(GetParam().event_type, timestamp_msec,
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
                                           base::TimeTicks::Now());
-    ExpectValidHistograms(histogram_tester,
-                          base::TimeDelta::FromMilliseconds(15), suffix);
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(15).InMicroseconds(), 2);
+    histogram_tester.ExpectUniqueTimeSample(
+        "Event.Latency.OS2.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(15), 2);
   }
 
-  // Simulate an event with a bogus timestamp.
+  // Simulate an event with a bogus timestamp. The delta should be recorded as
+  // 0.
   UpdateTickClock(timestamp_msec - 1000);
   {
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromTickCount(GetParam().event_type, timestamp_msec,
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
                                           base::TimeTicks::Now());
-    ExpectInvalidHistograms(histogram_tester, suffix);
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 2);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 2);
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         EventLatencyTickCountTest,
-                         ::testing::ValuesIn(kEventLatencyTickCountTestCases));
-
-using EventLatencyPerformanceCounterTest = EventLatencyTestBase;
-
-TEST_F(EventLatencyPerformanceCounterTest,
-       ComputeEventLatencyOSWinFromPerformanceCounter) {
+TEST_F(EventLatencyTest, ComputeEventLatencyOSFromPerformanceCounter) {
   // Make sure there's enough time before Now() to create an event that's
   // several minutes old.
   task_environment_.AdvanceClock(base::TimeDelta::FromMinutes(5));
@@ -1025,39 +1021,82 @@ TEST_F(EventLatencyPerformanceCounterTest,
 
   // Event created shortly before now.
   {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp - ticks_per_second,
+    };
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromPerformanceCounter(
-        ET_TOUCH_PRESSED, current_timestamp - ticks_per_second,
-        base::TimeTicks::Now());
-    ExpectValidHistograms(histogram_tester, base::TimeDelta::FromSeconds(1),
-                          "TOUCH_PRESSED");
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromSeconds(1).InMicroseconds(), 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta::FromSeconds(1), 1);
   }
 
   // Event created several minutes before now (IsValidTimebase should return
-  // false).
+  // false). The delta should be recorded as 0.
   {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp - 5 * 60 * ticks_per_second,
+    };
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromPerformanceCounter(
-        ET_TOUCH_PRESSED, current_timestamp - 5 * 60 * ticks_per_second,
-        base::TimeTicks::Now());
-    ExpectInvalidHistograms(histogram_tester, "TOUCH_PRESSED");
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 1);
   }
 
-  // Event created in the future (IsValidTimebase should return false).
+  // Event created in the future (IsValidTimebase should return false). The
+  // delta should be recorded as 0.
   {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp + ticks_per_second,
+    };
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromPerformanceCounter(
-        ET_TOUCH_PRESSED, current_timestamp + ticks_per_second,
-        base::TimeTicks::Now());
-    ExpectInvalidHistograms(histogram_tester, "TOUCH_PRESSED");
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 1);
   }
 
-  // Event that should not be recorded.
+  // Invalid event with no timestamp.
   {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = 0UL,
+    };
     base::HistogramTester histogram_tester;
-    ComputeEventLatencyOSWinFromPerformanceCounter(
-        ET_TOUCH_MOVED, current_timestamp - 10, base::TimeTicks::Now());
-    ExpectNoHistograms(histogram_tester, "TOUCH_MOVED");
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_PRESSED", 0);
+    histogram_tester.ExpectTotalCount("Event.Latency.OS2.TOUCH_PRESSED", 0);
+  }
+
+  // Invalid event with 2 timestamps should take the higher-precision one.
+  {
+    const DWORD now_msec = 1000;
+    UpdateTickClock(now_msec);
+
+    const POINTER_INFO pointer_info = {
+        // 10 milliseconds ago.
+        .dwTime = now_msec - 10,
+        // 1 second ago.
+        .PerformanceCount = current_timestamp - ticks_per_second,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromSeconds(1).InMicroseconds(), 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta::FromSeconds(1), 1);
   }
 }
 

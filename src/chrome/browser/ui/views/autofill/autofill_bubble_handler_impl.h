@@ -51,11 +51,19 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
       SaveUPIBubbleController* controller) override;
   AutofillBubbleBase* ShowSaveAddressProfileBubble(
       content::WebContents* web_contents,
-      SaveAddressProfileBubbleController* controller,
+      SaveUpdateAddressProfileBubbleController* controller,
+      bool is_user_gesture) override;
+  AutofillBubbleBase* ShowUpdateAddressProfileBubble(
+      content::WebContents* web_contents,
+      SaveUpdateAddressProfileBubbleController* controller,
       bool is_user_gesture) override;
   AutofillBubbleBase* ShowEditAddressProfileDialog(
       content::WebContents* web_contents,
       EditAddressProfileDialogController* controller) override;
+  AutofillBubbleBase* ShowVirtualCardManualFallbackBubble(
+      content::WebContents* web_contents,
+      VirtualCardManualFallbackBubbleController* controller,
+      bool is_user_gesture) override;
 
   void OnPasswordSaved() override;
 

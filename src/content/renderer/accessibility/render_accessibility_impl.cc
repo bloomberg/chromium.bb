@@ -18,6 +18,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,7 +111,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   content::RenderThread::Get()->BindHostReceiver(
       recorder.InitWithNewPipeAndPassReceiver());
   ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
-  WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+  WebView* web_view = render_frame_->GetWebView();
   WebSettings* settings = web_view->GetSettings();
 
   SetAccessibilityCrashKey(mode);
@@ -308,7 +309,7 @@ void RenderAccessibilityImpl::HitTest(
     // The following transformation of the input point is naive, but works
     // fairly well. It will fail with CSS transforms that rotate or shear.
     // https://crbug.com/981959.
-    WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+    WebView* web_view = render_frame_->GetWebView();
     gfx::PointF viewport_offset = web_view->VisualViewportOffset();
     transformed_point +=
         gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
@@ -476,9 +477,12 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
     return;
 
 #if defined(OS_ANDROID)
-  // Force the newly focused node to be re-serialized so we include its
-  // inline text boxes.
-  if (event.event_type == ax::mojom::Event::kFocus)
+  // Inline text boxes are needed to support moving by character/word/line.
+  // On Android, we don't load inline text boxes by default, only on-demand, or
+  // when part of the focused object. So, when focus moves to an editable text
+  // field, ensure we re-serialize the whole thing including its inline text
+  // boxes.
+  if (event.event_type == ax::mojom::Event::kFocus && obj.IsEditable())
     serializer_->InvalidateSubtree(obj);
 #endif
 
@@ -593,12 +597,12 @@ bool RenderAccessibilityImpl::ShouldSerializeNodeForEvent(
     return false;
 
   if (event.event_type == ax::mojom::Event::kTextSelectionChanged &&
-      !obj.IsNativeTextField()) {
-    // Selection changes on non-native text controls cause no change to the
+      !obj.IsAtomicTextField()) {
+    // Selection changes on non-atomic text fields cause no change to the
     // control node's data.
     //
     // Selection offsets exposed via kTextSelStart and kTextSelEnd are only used
-    // for plain text controls, (input of a text field type, and textarea). Rich
+    // for atomic text fields, (input of a text field type, and textarea). Rich
     // editable areas, such as contenteditables, use AXTreeData.
     //
     // TODO(nektar): Remove kTextSelStart and kTextSelEnd from the renderer.
@@ -825,6 +829,38 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // Save the page language.
   page_language_ = root.Language().Utf8();
 
+  // Popups have a document lifecycle managed separately from the main document
+  // but we need to return a combined accessibility tree for both.
+  // We ensured layout validity for the main document in the loop above; if a
+  // popup is open, do the same for it.
+  WebDocument popup_document = GetPopupDocument();
+  if (!popup_document.IsNull()) {
+    WebAXObject popup_root_obj = WebAXObject::FromWebDocument(popup_document);
+    if (!popup_root_obj.MaybeUpdateLayoutAndCheckValidity()) {
+      // If a popup is open but we can't ensure its validity, return without
+      // sending an update bundle, the same as we would for a node in the main
+      // document.
+      return;
+    }
+  }
+
+#if DCHECK_IS_ON()
+  // Protect against lifecycle changes in the popup document, if any.
+  // If no popup document, use the main document -- it's harmless to protect it
+  // twice, and some document is needed because this cannot be done in an if
+  // statement because it's scoped.
+  WebDocument popup_or_main_document =
+      popup_document.IsNull() ? document : popup_document;
+  blink::WebDisallowTransitionScope disallow2(&popup_or_main_document);
+#endif
+
+  // Keep track of if the host node for a plugin has been invalidated,
+  // because if so, the plugin subtree will need to be re-serialized.
+  bool invalidate_plugin_subtree = false;
+  if (plugin_tree_source_ && !plugin_host_node_.IsDetached()) {
+    invalidate_plugin_subtree = !serializer_->IsInClientTree(plugin_host_node_);
+  }
+
   // Loop over each event and generate an updated event message.
   for (ui::AXEvent& event : src_events) {
     if (event.event_type == ax::mojom::Event::kLayoutComplete)
@@ -851,7 +887,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       // possibly nodes attached to a different document.
       // TODO(accessibility) Remove once it's clear this never triggers.
 #if defined(AX_FAIL_FAST_BUILD)
-    SANITIZER_CHECK(tree_source_->IsInTree(obj));
+    SANITIZER_CHECK(tree_source_->IsInTree(obj))
+        << "\n* Object not in tree: " << obj.ToString(true).Utf8();
 #endif
 
     // If it's ignored, find the first ancestor that's not ignored.
@@ -871,7 +908,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       //
       // Consider the following tree :
       // ++(0) Role::kRootWebArea
-      // ++++<1> Role::kIgnored
+      // ++++<1> Role::kNone
       // ++++++[2] Role::kGenericContainer <body>
       // ++++++++[3] Role::kGenericContainer with 'visibility: hidden'
       //
@@ -913,38 +950,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       dirty_object.event_intents = event.event_intents;
       dirty_objects.push_back(dirty_object);
     }
-  }
-
-  // Popups have a document lifecycle managed separately from the main document
-  // but we need to return a combined accessibility tree for both.
-  // We ensured layout validity for the main document in the loop above; if a
-  // popup is open, do the same for it.
-  WebDocument popup_document = GetPopupDocument();
-  if (!popup_document.IsNull()) {
-    WebAXObject popup_root_obj = WebAXObject::FromWebDocument(popup_document);
-    if (!popup_root_obj.MaybeUpdateLayoutAndCheckValidity()) {
-      // If a popup is open but we can't ensure its validity, return without
-      // sending an update bundle, the same as we would for a node in the main
-      // document.
-      return;
-    }
-  }
-
-#if DCHECK_IS_ON()
-  // Protect against lifecycle changes in the popup document, if any.
-  // If no popup document, use the main document -- it's harmless to protect it
-  // twice, and some document is needed because this cannot be done in an if
-  // statement because it's scoped.
-  WebDocument popup_or_main_document =
-      popup_document.IsNull() ? document : popup_document;
-  blink::WebDisallowTransitionScope disallow2(&popup_or_main_document);
-#endif
-
-  // Keep track of if the host node for a plugin has been invalidated,
-  // because if so, the plugin subtree will need to be re-serialized.
-  bool invalidate_plugin_subtree = false;
-  if (plugin_tree_source_ && !plugin_host_node_.IsDetached()) {
-    invalidate_plugin_subtree = !serializer_->IsInClientTree(plugin_host_node_);
   }
 
   // Now serialize all dirty objects. Keep track of IDs serialized
@@ -1042,6 +1047,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     last_ukm_url_ = document.CanonicalUrlForSharing().GetString().Utf8();
     slowest_serialization_time_ = elapsed_time_ms;
   }
+  // Also log the time taken in this function to track serialization
+  // performance.
+  UMA_HISTOGRAM_TIMES(
+      "Accessibility.Performance.SendPendingAccessibilityEvents",
+      elapsed_time_ms);
 
   if (ukm_timer_->Elapsed() >= kMinUKMDelay)
     MaybeSendUKM();
@@ -1368,8 +1378,7 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
 }
 
 blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
-  blink::WebPagePopup* popup =
-      render_frame_->GetRenderView()->GetWebView()->GetPagePopup();
+  blink::WebPagePopup* popup = render_frame_->GetWebView()->GetPagePopup();
   if (popup)
     return popup->GetDocument();
   return WebDocument();

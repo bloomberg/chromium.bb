@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/render_accessibility.mojom.h"
@@ -86,7 +87,9 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node9 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node10 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node11 /* = ui::AXNodeData() */,
-    const ui::AXNodeData& node12 /* = ui::AXNodeData() */) {
+    const ui::AXNodeData& node12 /* = ui::AXNodeData() */,
+    const ui::AXNodeData& node13 /* = ui::AXNodeData() */,
+    const ui::AXNodeData& node14 /* = ui::AXNodeData() */) {
   static base::NoDestructor<ui::AXNodeData> empty_data;
   int32_t no_id = empty_data->id;
 
@@ -120,6 +123,10 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     update.nodes.push_back(node11);
   if (node12.id != no_id)
     update.nodes.push_back(node12);
+  if (node13.id != no_id)
+    update.nodes.push_back(node13);
+  if (node14.id != no_id)
+    update.nodes.push_back(node14);
   return update;
 }
 
@@ -196,6 +203,9 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   // Fire any events that need to be fired when tree nodes get deleted. For
   // example, events that fire every time "OnSubtreeWillBeDeleted" is called.
   ax_tree()->Destroy();
+  for (auto& key_value_pair : id_wrapper_map_) {
+    delete key_value_pair.second;
+  }
   delegate_ = nullptr;  // Guard against reentrancy by screen reader.
   if (last_focused_node_tree_id_ &&
       ax_tree_id_ == *last_focused_node_tree_id_) {
@@ -241,10 +251,10 @@ bool BrowserAccessibilityManager::never_suppress_or_delay_events_for_testing_ =
     false;
 
 // static
-base::Optional<int32_t> BrowserAccessibilityManager::last_focused_node_id_ = {};
+absl::optional<int32_t> BrowserAccessibilityManager::last_focused_node_id_ = {};
 
 // static
-base::Optional<ui::AXTreeID>
+absl::optional<ui::AXTreeID>
     BrowserAccessibilityManager::last_focused_node_tree_id_ = {};
 
 // static
@@ -1184,7 +1194,7 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
 
   const BrowserAccessibility* start_text_object = nullptr;
   const BrowserAccessibility* end_text_object = nullptr;
-  if (&start_object == &end_object && start_object.IsPlainTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     // We need to get to the shadow DOM that is inside the text control in order
     // to find the text-only objects.
     if (!start_object.InternalChildCount())
@@ -1240,7 +1250,7 @@ std::u16string BrowserAccessibilityManager::GetTextForRange(
   DCHECK_GE(start_offset, 0);
   DCHECK_GE(end_offset, 0);
 
-  if (&start_object == &end_object && start_object.IsPlainTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
@@ -1313,7 +1323,7 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
   DCHECK_GE(start_offset, 0);
   DCHECK_GE(end_offset, 0);
 
-  if (&start_object == &end_object && start_object.IsPlainTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
@@ -1374,6 +1384,11 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
   if (BrowserAccessibility* wrapper = GetFromAXNode(node)) {
     if (wrapper == GetLastFocusedNode())
       SetLastFocusedNode(nullptr);
+
+    // We fire these here, immediately, to ensure we can send platform
+    // notifications prior to the actual destruction of the object.
+    if (node->data().role == ax::mojom::Role::kMenu)
+      FireGeneratedEvent(ui::AXEventGenerator::Event::MENU_POPUP_END, wrapper);
   }
 }
 

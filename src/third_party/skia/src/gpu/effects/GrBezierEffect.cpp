@@ -25,11 +25,12 @@ public:
                               GrProcessorKeyBuilder*);
 
     void setData(const GrGLSLProgramDataManager& pdman,
+                 const GrShaderCaps& shaderCaps,
                  const GrGeometryProcessor& geomProc) override {
         const GrConicEffect& ce = geomProc.cast<GrConicEffect>();
 
-        this->setTransform(pdman, fViewMatrixUniform, ce.viewMatrix(), &fViewMatrix);
-        this->setTransform(pdman, fLocalMatrixUniform, ce.localMatrix(), &fLocalMatrix);
+        SetTransform(pdman, shaderCaps,  fViewMatrixUniform,  ce.viewMatrix(), &fViewMatrix);
+        SetTransform(pdman, shaderCaps, fLocalMatrixUniform, ce.localMatrix(), &fLocalMatrix);
 
         if (ce.color() != fColor) {
             pdman.set4fv(fColorUniform, 1, ce.color().vec());
@@ -80,15 +81,21 @@ void GrGLConicEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
     this->setupUniformColor(fragBuilder, uniformHandler, args.fOutputColor, &fColorUniform);
 
     // Setup position
-    this->writeOutputPosition(vertBuilder,
-                              uniformHandler,
-                              gpArgs,
-                              gp.inPosition().name(),
-                              gp.viewMatrix(),
-                              &fViewMatrixUniform);
+    WriteOutputPosition(vertBuilder,
+                        uniformHandler,
+                        *args.fShaderCaps,
+                        gpArgs,
+                        gp.inPosition().name(),
+                        gp.viewMatrix(),
+                        &fViewMatrixUniform);
     if (gp.usesLocalCoords()) {
-        this->writeLocalCoord(vertBuilder, uniformHandler, gpArgs, gp.inPosition().asShaderVar(),
-                              gp.localMatrix(), &fLocalMatrixUniform);
+        WriteLocalCoord(vertBuilder,
+                        uniformHandler,
+                        *args.fShaderCaps,
+                        gpArgs,
+                        gp.inPosition().asShaderVar(),
+                        gp.localMatrix(),
+                        &fLocalMatrixUniform);
     }
 
     // TODO: we should check on the number of bits float and half provide and use the smallest one
@@ -155,14 +162,16 @@ void GrGLConicEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 }
 
 void GrGLConicEffect::GenKey(const GrGeometryProcessor& gp,
-                             const GrShaderCaps&,
+                             const GrShaderCaps& shaderCaps,
                              GrProcessorKeyBuilder* b) {
     const GrConicEffect& ce = gp.cast<GrConicEffect>();
     uint32_t key = ce.isAntiAliased() ? (ce.isFilled() ? 0x0 : 0x1) : 0x2;
     key |= 0xff != ce.coverageScale() ? 0x8 : 0x0;
     key |= ce.usesLocalCoords() ? 0x10 : 0x0;
-    key = AddMatrixKeys(key, ce.viewMatrix(), ce.usesLocalCoords() ? ce.localMatrix()
-                                                                   : SkMatrix::I());
+    key = AddMatrixKeys(shaderCaps,
+                        key,
+                        ce.viewMatrix(),
+                        ce.usesLocalCoords() ? ce.localMatrix() : SkMatrix::I());
     b->add32(key);
 }
 
@@ -198,10 +207,16 @@ GR_DEFINE_GEOMETRY_PROCESSOR_TEST(GrConicEffect);
 
 #if GR_TEST_UTILS
 GrGeometryProcessor* GrConicEffect::TestCreate(GrProcessorTestData* d) {
+    GrColor color = GrRandomColor(d->fRandom);
+    SkMatrix viewMatrix = GrTest::TestMatrix(d->fRandom);
+    SkMatrix localMatrix = GrTest::TestMatrix(d->fRandom);
+    bool usesLocalCoords = d->fRandom->nextBool();
     return GrConicEffect::Make(d->allocator(),
-                               SkPMColor4f::FromBytes_RGBA(GrRandomColor(d->fRandom)),
-                               GrTest::TestMatrix(d->fRandom), *d->caps(),
-                               GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool());
+                               SkPMColor4f::FromBytes_RGBA(color),
+                               viewMatrix,
+                               *d->caps(),
+                               localMatrix,
+                               usesLocalCoords);
 }
 #endif
 
@@ -220,11 +235,12 @@ public:
                               GrProcessorKeyBuilder*);
 
     void setData(const GrGLSLProgramDataManager& pdman,
+                 const GrShaderCaps& shaderCaps,
                  const GrGeometryProcessor& geomProc) override {
         const GrQuadEffect& qe = geomProc.cast<GrQuadEffect>();
 
-        this->setTransform(pdman, fViewMatrixUniform, qe.viewMatrix(), &fViewMatrix);
-        this->setTransform(pdman, fLocalMatrixUniform, qe.localMatrix(), &fLocalMatrix);
+        SetTransform(pdman, shaderCaps,  fViewMatrixUniform,  qe.viewMatrix(), &fViewMatrix);
+        SetTransform(pdman, shaderCaps, fLocalMatrixUniform, qe.localMatrix(), &fLocalMatrix);
 
         if (qe.color() != fColor) {
             pdman.set4fv(fColorUniform, 1, qe.color().vec());
@@ -276,15 +292,21 @@ void GrGLQuadEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
     this->setupUniformColor(fragBuilder, uniformHandler, args.fOutputColor, &fColorUniform);
 
     // Setup position
-    this->writeOutputPosition(vertBuilder,
-                              uniformHandler,
-                              gpArgs,
-                              gp.inPosition().name(),
-                              gp.viewMatrix(),
-                              &fViewMatrixUniform);
+    WriteOutputPosition(vertBuilder,
+                        uniformHandler,
+                        *args.fShaderCaps,
+                        gpArgs,
+                        gp.inPosition().name(),
+                        gp.viewMatrix(),
+                        &fViewMatrixUniform);
     if (gp.usesLocalCoords()) {
-        this->writeLocalCoord(vertBuilder, uniformHandler, gpArgs, gp.inPosition().asShaderVar(),
-                              gp.localMatrix(), &fLocalMatrixUniform);
+        WriteLocalCoord(vertBuilder,
+                        uniformHandler,
+                        *args.fShaderCaps,
+                        gpArgs,
+                        gp.inPosition().asShaderVar(),
+                        gp.localMatrix(),
+                        &fLocalMatrixUniform);
     }
 
     fragBuilder->codeAppendf("half edgeAlpha;");
@@ -316,14 +338,16 @@ void GrGLQuadEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 }
 
 void GrGLQuadEffect::GenKey(const GrGeometryProcessor& gp,
-                            const GrShaderCaps&,
+                            const GrShaderCaps& shaderCaps,
                             GrProcessorKeyBuilder* b) {
     const GrQuadEffect& ce = gp.cast<GrQuadEffect>();
     uint32_t key = ce.isAntiAliased() ? (ce.isFilled() ? 0x0 : 0x1) : 0x2;
     key |= ce.coverageScale() != 0xff ? 0x8 : 0x0;
     key |= ce.usesLocalCoords()? 0x10 : 0x0;
-    key = AddMatrixKeys(key, ce.viewMatrix(), ce.usesLocalCoords() ? ce.localMatrix()
-                                                                   : SkMatrix::I());
+    key = AddMatrixKeys(shaderCaps,
+                        key,
+                        ce.viewMatrix(),
+                        ce.usesLocalCoords() ? ce.localMatrix() : SkMatrix::I());
     b->add32(key);
 }
 
@@ -359,9 +383,15 @@ GR_DEFINE_GEOMETRY_PROCESSOR_TEST(GrQuadEffect);
 
 #if GR_TEST_UTILS
 GrGeometryProcessor* GrQuadEffect::TestCreate(GrProcessorTestData* d) {
+    GrColor color = GrRandomColor(d->fRandom);
+    SkMatrix viewMatrix = GrTest::TestMatrix(d->fRandom);
+    SkMatrix localMatrix = GrTest::TestMatrix(d->fRandom);
+    bool usesLocalCoords = d->fRandom->nextBool();
     return GrQuadEffect::Make(d->allocator(),
-                              SkPMColor4f::FromBytes_RGBA(GrRandomColor(d->fRandom)),
-                              GrTest::TestMatrix(d->fRandom), *d->caps(),
-                              GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool());
+                              SkPMColor4f::FromBytes_RGBA(color),
+                              viewMatrix,
+                              *d->caps(),
+                              localMatrix,
+                              usesLocalCoords);
 }
 #endif

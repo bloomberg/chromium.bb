@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_base.h"
 #include "base/no_destructor.h"
 #include "base/test/metrics/histogram_enum_reader.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
@@ -83,7 +84,7 @@ class OsSettingsManagerTest : public testing::Test {
 };
 
 TEST_F(OsSettingsManagerTest, Initialization) {
-  base::Optional<base::HistogramEnumEntryMap> sections_enum_entry_map =
+  absl::optional<base::HistogramEnumEntryMap> sections_enum_entry_map =
       base::ReadEnumFromEnumsXml("OsSettingsSection");
   ASSERT_TRUE(sections_enum_entry_map);
   for (const auto& section : constants::AllSections()) {
@@ -107,7 +108,7 @@ TEST_F(OsSettingsManagerTest, Initialization) {
         << "Missing OsSettingsSection enums.xml entry for " << section;
   }
 
-  base::Optional<base::HistogramEnumEntryMap> subpages_enum_entry_map =
+  absl::optional<base::HistogramEnumEntryMap> subpages_enum_entry_map =
       base::ReadEnumFromEnumsXml("OsSettingsSubpage");
   ASSERT_TRUE(subpages_enum_entry_map);
   for (const auto& subpage : constants::AllSubpages()) {
@@ -121,7 +122,7 @@ TEST_F(OsSettingsManagerTest, Initialization) {
         << "Missing OsSettingsSubpage enums.xml entry for " << subpage;
   }
 
-  base::Optional<base::HistogramEnumEntryMap> settings_enum_entry_map =
+  absl::optional<base::HistogramEnumEntryMap> settings_enum_entry_map =
       base::ReadEnumFromEnumsXml("OsSetting");
   ASSERT_TRUE(settings_enum_entry_map);
   for (const auto& setting : constants::AllSettings()) {

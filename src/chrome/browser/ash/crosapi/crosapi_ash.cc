@@ -11,21 +11,30 @@
 #include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_ash.h"
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "base/dcheck_is_on.h"
+#include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
+#include "chrome/browser/apps/app_service/publishers/web_apps_crosapi_factory.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
 #include "chrome/browser/ash/crosapi/cert_database_ash.h"
 #include "chrome/browser/ash/crosapi/clipboard_ash.h"
+#include "chrome/browser/ash/crosapi/clipboard_history_ash.h"
+#include "chrome/browser/ash/crosapi/content_protection_ash.h"
 #include "chrome/browser/ash/crosapi/device_attributes_ash.h"
+#include "chrome/browser/ash/crosapi/download_controller_ash.h"
+#include "chrome/browser/ash/crosapi/drive_integration_service_ash.h"
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/keystore_service_ash.h"
+#include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
 #include "chrome/browser/ash/crosapi/screen_manager_ash.h"
 #include "chrome/browser/ash/crosapi/select_file_ash.h"
+#include "chrome/browser/ash/crosapi/system_display_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
 #include "chrome/browser/ash/crosapi/test_controller_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
@@ -35,10 +44,14 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
+#include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
@@ -50,17 +63,43 @@
 #include "content/public/browser/media_session_service.h"
 
 namespace crosapi {
+namespace {
+
+// Assumptions:
+// 1. TODO(crbug.com/1102768): Multi-Signin / Fast-User-Switching is disabled.
+// 2. ash-chrome has 1 and only 1 "regular" `Profile`.
+Profile* GetAshProfile() {
+#if DCHECK_IS_ON()
+  int num_regular_profiles = 0;
+  for (const Profile* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    if (ash::ProfileHelper::IsRegularProfile(profile))
+      ++num_regular_profiles;
+  }
+  DCHECK_EQ(1, num_regular_profiles);
+#endif  // DCHECK_IS_ON()
+  return ash::ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetActiveUser());
+}
+
+}  // namespace
 
 CrosapiAsh::CrosapiAsh()
     : automation_ash_(std::make_unique<AutomationAsh>()),
       browser_service_host_ash_(std::make_unique<BrowserServiceHostAsh>()),
       cert_database_ash_(std::make_unique<CertDatabaseAsh>()),
       clipboard_ash_(std::make_unique<ClipboardAsh>()),
+      clipboard_history_ash_(std::make_unique<ClipboardHistoryAsh>()),
+      content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
       device_attributes_ash_(std::make_unique<DeviceAttributesAsh>()),
+      download_controller_ash_(std::make_unique<DownloadControllerAsh>()),
+      drive_integration_service_ash_(
+          std::make_unique<DriveIntegrationServiceAsh>()),
       feedback_ash_(std::make_unique<FeedbackAsh>()),
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
       idle_service_ash_(std::make_unique<IdleServiceAsh>()),
       keystore_service_ash_(std::make_unique<KeystoreServiceAsh>()),
+      local_printer_ash_(std::make_unique<LocalPrinterAsh>()),
       message_center_ash_(std::make_unique<MessageCenterAsh>()),
       metrics_reporting_ash_(std::make_unique<MetricsReportingAsh>(
           g_browser_process->local_state())),
@@ -69,6 +108,7 @@ CrosapiAsh::CrosapiAsh()
                                      g_browser_process->local_state())),
       screen_manager_ash_(std::make_unique<ScreenManagerAsh>()),
       select_file_ash_(std::make_unique<SelectFileAsh>()),
+      system_display_ash_(std::make_unique<SystemDisplayAsh>()),
       task_manager_ash_(std::make_unique<TaskManagerAsh>()),
       test_controller_ash_(std::make_unique<TestControllerAsh>()),
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
@@ -105,31 +145,14 @@ void CrosapiAsh::BindAutomationFactory(
 
 void CrosapiAsh::BindAccountManager(
     mojo::PendingReceiver<mojom::AccountManager> receiver) {
-  // Assumptions:
-  // 1. TODO(https://crbug.com/1102768): Multi-Signin / Fast-User-Switching is
-  // disabled.
-  // 2. ash-chrome has 1 and only 1 "regular" |Profile|.
-#if DCHECK_IS_ON()
-  int num_regular_profiles = 0;
-  for (const Profile* profile :
-       g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    if (chromeos::ProfileHelper::IsRegularProfile(profile))
-      num_regular_profiles++;
-  }
-  DCHECK_EQ(1, num_regular_profiles);
-#endif  // DCHECK_IS_ON()
-  // Given these assumptions, there is 1 and only 1 AccountManagerAsh that
-  // can/should be contacted - the one attached to the regular |Profile| in
-  // ash-chrome, for the current |User|.
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  const Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  // Given `GetAshProfile()` assumptions, there is 1 and only 1
+  // `AccountManagerAsh` that can/should be contacted - the one attached to the
+  // regular `Profile` in ash-chrome for the active `User`.
   crosapi::AccountManagerAsh* const account_manager_ash =
       g_browser_process->platform_part()
           ->GetAccountManagerFactory()
           ->GetAccountManagerAsh(
-              /* profile_path = */ profile->GetPath().value());
+              /*profile_path=*/GetAshProfile()->GetPath().value());
   account_manager_ash->BindReceiver(std::move(receiver));
 }
 
@@ -144,6 +167,18 @@ void CrosapiAsh::BindFileManager(
   file_manager_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindHoldingSpaceService(
+    mojo::PendingReceiver<mojom::HoldingSpaceService> receiver) {
+  // Given `GetAshProfile()` assumptions, there is 1 and only 1
+  // `HoldingSpaceKeyedService` that can/should be contacted - the one attached
+  // to the regular `Profile` in ash-chrome for the active `User`.
+  ash::HoldingSpaceKeyedService* holding_space_keyed_service =
+      ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
+          GetAshProfile());
+  if (holding_space_keyed_service)
+    holding_space_keyed_service->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindIdleService(
     mojo::PendingReceiver<crosapi::mojom::IdleService> receiver) {
   idle_service_ash_->BindReceiver(std::move(receiver));
@@ -152,6 +187,11 @@ void CrosapiAsh::BindIdleService(
 void CrosapiAsh::BindKeystoreService(
     mojo::PendingReceiver<crosapi::mojom::KeystoreService> receiver) {
   keystore_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindLocalPrinter(
+    mojo::PendingReceiver<crosapi::mojom::LocalPrinter> receiver) {
+  local_printer_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindMessageCenter(
@@ -207,6 +247,11 @@ void CrosapiAsh::BindCertDatabase(
   cert_database_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindSystemDisplay(
+    mojo::PendingReceiver<mojom::SystemDisplay> receiver) {
+  system_display_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindTaskManager(
     mojo::PendingReceiver<mojom::TaskManager> receiver) {
   task_manager_ash_->BindReceiver(std::move(receiver));
@@ -222,9 +267,24 @@ void CrosapiAsh::BindClipboard(
   clipboard_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindClipboardHistory(
+    mojo::PendingReceiver<mojom::ClipboardHistory> receiver) {
+  clipboard_history_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindContentProtection(
+    mojo::PendingReceiver<mojom::ContentProtection> receiver) {
+  content_protection_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindDeviceAttributes(
     mojo::PendingReceiver<mojom::DeviceAttributes> receiver) {
   device_attributes_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindDownloadController(
+    mojo::PendingReceiver<mojom::DownloadController> receiver) {
+  download_controller_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindSensorHalClient(
@@ -252,6 +312,19 @@ void CrosapiAsh::BindMachineLearningService(
 void CrosapiAsh::BindVideoCaptureDeviceFactory(
     mojo::PendingReceiver<mojom::VideoCaptureDeviceFactory> receiver) {
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindAppPublisher(
+    mojo::PendingReceiver<mojom::AppPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  apps::WebAppsCrosapi* web_apps =
+      apps::WebAppsCrosapiFactory::GetForProfile(profile);
+  web_apps->RegisterWebAppsCrosapiHost(std::move(receiver));
+}
+
+void CrosapiAsh::BindDriveIntegrationService(
+    mojo::PendingReceiver<crosapi::mojom::DriveIntegrationService> receiver) {
+  drive_integration_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::OnBrowserStartup(mojom::BrowserInfoPtr browser_info) {

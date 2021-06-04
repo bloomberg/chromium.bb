@@ -16,10 +16,8 @@
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/wm_helper.h"
@@ -46,6 +44,40 @@ constexpr char kGmsProcessNamePrefix[] = "com.google.android.gms";
 constexpr char kBootProgressEnableScreen[] = "boot_progress_enable_screen";
 constexpr char kBootProgressArcUpgraded[] = "boot_progress_arc_upgraded";
 
+// App types to report.
+constexpr char kAppTypeArcAppLauncher[] = "ArcAppLauncher";
+constexpr char kAppTypeArcOther[] = "ArcOther";
+constexpr char kAppTypeFirstParty[] = "FirstParty";
+constexpr char kAppTypeGmsCore[] = "GmsCore";
+constexpr char kAppTypePlayStore[] = "PlayStore";
+constexpr char kAppTypeSystemServer[] = "SystemServer";
+constexpr char kAppTypeSystem[] = "SystemApp";
+constexpr char kAppTypeOther[] = "Other";
+
+std::string AnrSourceToTableName(mojom::AnrSource value) {
+  switch (value) {
+    case mojom::AnrSource::OTHER:
+      return kAppTypeOther;
+    case mojom::AnrSource::SYSTEM_SERVER:
+      return kAppTypeSystemServer;
+    case mojom::AnrSource::SYSTEM_APP:
+      return kAppTypeSystem;
+    case mojom::AnrSource::GMS_CORE:
+      return kAppTypeGmsCore;
+    case mojom::AnrSource::PLAY_STORE:
+      return kAppTypePlayStore;
+    case mojom::AnrSource::FIRST_PARTY:
+      return kAppTypeFirstParty;
+    case mojom::AnrSource::ARC_OTHER:
+      return kAppTypeArcOther;
+    case mojom::AnrSource::ARC_APP_LAUNCHER:
+      return kAppTypeArcAppLauncher;
+    default:
+      LOG(ERROR) << "Unrecognized source ANR " << value;
+      return kAppTypeOther;
+  }
+}
+
 std::string BootTypeToString(mojom::BootType boot_type) {
   switch (boot_type) {
     case mojom::BootType::UNKNOWN:
@@ -61,26 +93,12 @@ std::string BootTypeToString(mojom::BootType boot_type) {
   return "";
 }
 
-// Singleton factory for ArcMetricsService.
-class ArcMetricsServiceFactory
-    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
-          ArcMetricsService,
-          ArcMetricsServiceFactory> {
- public:
-  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
-  static constexpr const char* kName = "ArcMetricsServiceFactory";
-
-  static ArcMetricsServiceFactory* GetInstance() {
-    return base::Singleton<ArcMetricsServiceFactory>::get();
-  }
-
- private:
-  friend base::DefaultSingletonTraits<ArcMetricsServiceFactory>;
-  ArcMetricsServiceFactory() = default;
-  ~ArcMetricsServiceFactory() override = default;
-};
-
 }  // namespace
+
+// static
+ArcMetricsServiceFactory* ArcMetricsServiceFactory::GetInstance() {
+  return base::Singleton<ArcMetricsServiceFactory>::get();
+}
 
 // static
 ArcMetricsService* ArcMetricsService::GetForBrowserContext(
@@ -145,6 +163,25 @@ void ArcMetricsService::Shutdown() {
   app_kill_observers_.Clear();
 }
 
+// static
+void ArcMetricsService::RecordArcUserInteraction(
+    content::BrowserContext* context,
+    UserInteractionType type) {
+  DCHECK(context);
+  auto* service = GetForBrowserContext(context);
+  if (!service) {
+    LOG(WARNING) << "Cannot get ArcMetricsService for context " << context;
+    return;
+  }
+  service->RecordArcUserInteraction(type);
+}
+
+void ArcMetricsService::RecordArcUserInteraction(UserInteractionType type) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction", type);
+  for (auto& obs : user_interaction_observers_)
+    obs.OnUserInteraction(type);
+}
+
 void ArcMetricsService::SetHistogramNamer(HistogramNamer histogram_namer) {
   histogram_namer_ = histogram_namer;
 }
@@ -199,7 +236,7 @@ void ArcMetricsService::ParseProcessList(
 void ArcMetricsService::OnArcStartTimeRetrieved(
     std::vector<mojom::BootProgressEventPtr> events,
     mojom::BootType boot_type,
-    base::Optional<base::TimeTicks> arc_start_time) {
+    absl::optional<base::TimeTicks> arc_start_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!arc_start_time.has_value()) {
     LOG(ERROR) << "Failed to retrieve ARC start timeticks.";
@@ -240,7 +277,7 @@ void ArcMetricsService::ReportBootProgress(
     // For VM builds, do not call into session_manager since we don't use it
     // for the builds. The upgrade time is included in the events vector so we
     // can extract it here.
-    base::Optional<base::TimeTicks> arc_start_time =
+    absl::optional<base::TimeTicks> arc_start_time =
         GetArcStartTimeFromEvents(events);
     OnArcStartTimeRetrieved(std::move(events), boot_type, arc_start_time);
     return;
@@ -325,7 +362,7 @@ void ArcMetricsService::ReportArcCorePriAbiMigDowngradeDelay(
 
 void ArcMetricsService::OnArcStartTimeForPriAbiMigration(
     base::TimeTicks durationTicks,
-    base::Optional<base::TimeTicks> arc_start_time) {
+    absl::optional<base::TimeTicks> arc_start_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!arc_start_time.has_value()) {
     LOG(ERROR) << "Failed to retrieve ARC start timeticks.";
@@ -366,6 +403,14 @@ void ArcMetricsService::ReportClipboardDragDropEvent(
   base::UmaHistogramEnumeration("Arc.ClipboardDragDrop", event_type);
 }
 
+void ArcMetricsService::ReportAnr(mojom::AnrPtr anr) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramEnumeration("Arc.Anr.Overall", anr->type);
+
+  base::UmaHistogramEnumeration("Arc.Anr." + AnrSourceToTableName(anr->source),
+                                anr->type);
+}
+
 void ArcMetricsService::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -375,9 +420,7 @@ void ArcMetricsService::OnWindowActivated(
     gamepad_interaction_recorded_ = false;
     return;
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "Arc.UserInteraction",
-      UserInteractionType::APP_CONTENT_WINDOW_INTERACTION);
+  RecordArcUserInteraction(UserInteractionType::APP_CONTENT_WINDOW_INTERACTION);
 }
 
 void ArcMetricsService::OnGamepadEvent(const ui::GamepadEvent& event) {
@@ -386,8 +429,7 @@ void ArcMetricsService::OnGamepadEvent(const ui::GamepadEvent& event) {
   if (gamepad_interaction_recorded_)
     return;
   gamepad_interaction_recorded_ = true;
-  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
-                            UserInteractionType::GAMEPAD_INTERACTION);
+  RecordArcUserInteraction(UserInteractionType::GAMEPAD_INTERACTION);
 }
 
 void ArcMetricsService::OnTaskCreated(int32_t task_id,
@@ -418,7 +460,19 @@ void ArcMetricsService::RemoveAppKillObserver(AppKillObserver* obs) {
   app_kill_observers_.RemoveObserver(obs);
 }
 
-base::Optional<base::TimeTicks> ArcMetricsService::GetArcStartTimeFromEvents(
+void ArcMetricsService::AddUserInteractionObserver(
+    UserInteractionObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  user_interaction_observers_.AddObserver(obs);
+}
+
+void ArcMetricsService::RemoveUserInteractionObserver(
+    UserInteractionObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  user_interaction_observers_.RemoveObserver(obs);
+}
+
+absl::optional<base::TimeTicks> ArcMetricsService::GetArcStartTimeFromEvents(
     std::vector<mojom::BootProgressEventPtr>& events) {
   mojom::BootProgressEventPtr arc_upgraded_event;
   for (auto it = events.begin(); it != events.end(); ++it) {
@@ -430,7 +484,7 @@ base::Optional<base::TimeTicks> ArcMetricsService::GetArcStartTimeFromEvents(
              base::TimeTicks();
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 ArcMetricsService::ProcessObserver::ProcessObserver(
     ArcMetricsService* arc_metrics_service)

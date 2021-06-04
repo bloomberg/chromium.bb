@@ -62,22 +62,32 @@ public class SectionHeaderViewBinder
     @Override
     public void onItemsRemoved(PropertyListModel<PropertyModel, PropertyKey> model,
             SectionHeaderView view, int index, int count) {
-        // Do nothing. We don't expect to remove tabs.
-        assert false;
+        if (model.size() == 0) {
+            // All headers were removed.
+            view.removeAllTabs();
+            return;
+        }
+        for (int i = index + count - 1; i >= index; i--) {
+            view.removeTabAt(i);
+        }
     }
 
     @Override
     public void onItemsChanged(PropertyListModel<PropertyModel, PropertyKey> headers,
             SectionHeaderView view, int index, int count, PropertyKey payload) {
-        if (payload == null || payload == SectionHeaderProperties.HEADER_TEXT_KEY) {
-            PropertyModel header = headers.get(0);
+        PropertyModel header = headers.get(0);
+        if (payload == null || payload == SectionHeaderProperties.HEADER_TEXT_KEY
+                || payload == SectionHeaderProperties.UNREAD_CONTENT_KEY) {
             // Only use 1st tab for legacy headerText;
             view.setHeaderText(header.get(SectionHeaderProperties.HEADER_TEXT_KEY));
 
-            // Update header text properly.
+            // Update headers.
             for (int i = index; i < index + count; i++) {
-                view.setHeaderTextAt(
-                        headers.get(i).get(SectionHeaderProperties.HEADER_TEXT_KEY), i);
+                PropertyModel tabModel = headers.get(i);
+                boolean hasUnreadContent = tabModel.get(SectionHeaderProperties.UNREAD_CONTENT_KEY);
+
+                view.setHeaderAt(tabModel.get(SectionHeaderProperties.HEADER_TEXT_KEY),
+                        hasUnreadContent, i);
             }
         }
     }

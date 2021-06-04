@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -317,9 +316,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // For layer tree mode only.
   void SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds);
   void ClearBackdropFilterBounds();
-  base::Optional<gfx::RRectF> backdrop_filter_bounds() const {
+  absl::optional<gfx::RRectF> backdrop_filter_bounds() const {
     return layer_tree_inputs() ? layer_tree_inputs()->backdrop_filter_bounds
-                               : base::nullopt;
+                               : absl::nullopt;
   }
 
   // For layer tree mode only.
@@ -597,9 +596,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int mirror_count() const {
     return layer_tree_inputs() ? layer_tree_inputs()->mirror_count : 0;
   }
-
-  // Called on the scroll layer to trigger showing the overlay scrollbars.
-  void ShowScrollbars() { needs_show_scrollbars_ = true; }
 
   // Captures text content within the given |rect| and returns the associated
   // NodeInfo in |content|.
@@ -921,7 +917,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations backdrop_filters;
-    base::Optional<gfx::RRectF> backdrop_filter_bounds;
+    absl::optional<gfx::RRectF> backdrop_filter_bounds;
     float backdrop_filter_quality = 1.0f;
 
     int mirror_count = 0;
@@ -970,7 +966,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
-  bool needs_show_scrollbars_ : 1;
   bool has_transform_node_ : 1;
   bool has_clip_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true

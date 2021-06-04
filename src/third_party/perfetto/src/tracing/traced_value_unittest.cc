@@ -91,7 +91,7 @@ ASSERT_TYPE_SUPPORTED(int*);
 ASSERT_TYPE_SUPPORTED(const int*);
 ASSERT_TYPE_SUPPORTED(void*);
 ASSERT_TYPE_SUPPORTED(const void*);
-ASSERT_TYPE_SUPPORTED(nullptr_t);
+ASSERT_TYPE_SUPPORTED(std::nullptr_t);
 ASSERT_TYPE_NOT_SUPPORTED(NonSupportedType*);
 ASSERT_TYPE_NOT_SUPPORTED(const NonSupportedType*);
 
@@ -147,11 +147,9 @@ TEST(TracedValueTest, FlatDictionary_Explicit) {
     dict.AddItem("truncated_string").WriteString("truncated_string", 9);
     dict.AddItem("ptr").WritePointer(reinterpret_cast<void*>(0x1234));
   }
-  // TODO(altimin): Nested pointers are recorded as ints due to proto
-  // limitation. Fix after sorting out the NestedValue.
   EXPECT_EQ(
       "{bool:true,double:0,int:2014,string:string,truncated_string:truncated,"
-      "ptr:4660}",
+      "ptr:0x1234}",
       internal::DebugAnnotationToString(message.SerializeAsString()));
 }
 
@@ -166,9 +164,7 @@ TEST(TracedValueTest, FlatDictionary_Short) {
     dict.Add("string", "string");
     dict.Add("ptr", reinterpret_cast<void*>(0x1234));
   }
-  // TODO(altimin): Nested pointers are recorded as ints due to proto
-  // limitation. Fix after sorting out the NestedValue.
-  EXPECT_EQ("{bool:true,double:0,int:2014,string:string,ptr:4660}",
+  EXPECT_EQ("{bool:true,double:0,int:2014,string:string,ptr:0x1234}",
             internal::DebugAnnotationToString(message.SerializeAsString()));
 }
 
@@ -254,7 +250,7 @@ TEST(TracedValueTest, Hierarchy_Short) {
 
 namespace {
 
-class HasConvertorMember {
+class HasWriteIntoTracedValueConvertorMember {
  public:
   void WriteIntoTracedValue(TracedValue context) const {
     auto dict = std::move(context).WriteDictionary();
@@ -263,7 +259,17 @@ class HasConvertorMember {
   }
 };
 
-class HasExternalConvertor {};
+class HasWriteIntoTraceConvertorMember {
+ public:
+  void WriteIntoTrace(TracedValue context) const {
+    auto dict = std::move(context).WriteDictionary();
+    dict.Add("int", 42);
+    dict.Add("bool", false);
+  }
+};
+
+class HasExternalWriteIntoTraceConvertor {};
+class HasExternalWriteIntoTracedValueConvertor {};
 
 class HasAllConversionMethods {
  public:
@@ -306,9 +312,18 @@ class HasConstAndNonConstWriteMember {
 }  // namespace
 
 template <>
-struct TraceFormatTraits<HasExternalConvertor> {
-  static void WriteIntoTracedValue(TracedValue context,
-                                   const HasExternalConvertor&) {
+struct TraceFormatTraits<HasExternalWriteIntoTraceConvertor> {
+  static void WriteIntoTrace(TracedValue context,
+                             const HasExternalWriteIntoTraceConvertor&) {
+    std::move(context).WriteString("TraceFormatTraits::WriteIntoTrace");
+  }
+};
+
+template <>
+struct TraceFormatTraits<HasExternalWriteIntoTracedValueConvertor> {
+  static void WriteIntoTracedValue(
+      TracedValue context,
+      const HasExternalWriteIntoTracedValueConvertor&) {
     std::move(context).WriteString("TraceFormatTraits::WriteIntoTracedValue");
   }
 };
@@ -330,8 +345,10 @@ std::string ToStringWithFallback(T&& value, const std::string& fallback) {
   return internal::DebugAnnotationToString(message.SerializeAsString());
 }
 
-ASSERT_TYPE_SUPPORTED(HasConvertorMember);
-ASSERT_TYPE_SUPPORTED(HasExternalConvertor);
+ASSERT_TYPE_SUPPORTED(HasWriteIntoTraceConvertorMember);
+ASSERT_TYPE_SUPPORTED(HasWriteIntoTracedValueConvertorMember);
+ASSERT_TYPE_SUPPORTED(HasExternalWriteIntoTraceConvertor);
+ASSERT_TYPE_SUPPORTED(HasExternalWriteIntoTracedValueConvertor);
 ASSERT_TYPE_SUPPORTED(HasAllConversionMethods);
 
 ASSERT_TYPE_SUPPORTED(HasConstWriteMember);
@@ -368,19 +385,27 @@ ASSERT_TYPE_SUPPORTED(const HasConstAndNonConstWriteMember*);
 ASSERT_TYPE_SUPPORTED(std::unique_ptr<const HasConstAndNonConstWriteMember*>);
 
 TEST(TracedValueTest, UserDefinedConvertors) {
-  HasConvertorMember value1;
+  HasWriteIntoTraceConvertorMember value1;
   EXPECT_EQ(TracedValueToString(value1), "{int:42,bool:false}");
   EXPECT_EQ(TracedValueToString(&value1), "{int:42,bool:false}");
 
-  HasExternalConvertor value2;
-  EXPECT_EQ(TracedValueToString(value2),
+  HasWriteIntoTracedValueConvertorMember value2;
+  EXPECT_EQ(TracedValueToString(value2), "{int:42,bool:false}");
+  EXPECT_EQ(TracedValueToString(&value2), "{int:42,bool:false}");
+
+  HasExternalWriteIntoTracedValueConvertor value3;
+  EXPECT_EQ(TracedValueToString(value3),
             "TraceFormatTraits::WriteIntoTracedValue");
-  EXPECT_EQ(TracedValueToString(&value2),
+  EXPECT_EQ(TracedValueToString(&value3),
             "TraceFormatTraits::WriteIntoTracedValue");
 
-  HasAllConversionMethods value3;
-  EXPECT_EQ(TracedValueToString(value3), "T::WriteIntoTracedValue");
-  EXPECT_EQ(TracedValueToString(&value3), "T::WriteIntoTracedValue");
+  HasExternalWriteIntoTraceConvertor value4;
+  EXPECT_EQ(TracedValueToString(value4), "TraceFormatTraits::WriteIntoTrace");
+  EXPECT_EQ(TracedValueToString(&value4), "TraceFormatTraits::WriteIntoTrace");
+
+  HasAllConversionMethods value5;
+  EXPECT_EQ(TracedValueToString(value5), "T::WriteIntoTracedValue");
+  EXPECT_EQ(TracedValueToString(&value5), "T::WriteIntoTracedValue");
 }
 
 TEST(TracedValueTest, WriteAsLambda) {
@@ -577,6 +602,20 @@ TEST(TracedValueTest, DictionaryKeys) {
               auto dict = std::move(context).WriteDictionary();
               std::string key = "dynamic";
               dict.Add(DynamicString{key}, 1);
+            }));
+}
+
+TEST(TracedValueTest, EmptyDict) {
+  EXPECT_EQ("{}", TracedValueToString([&](TracedValue context) {
+              auto dict = std::move(context).WriteDictionary();
+            }));
+}
+
+TEST(TracedValueTest, EmptyArray) {
+  // For now we do not distinguish between empty arrays and empty dicts on proto
+  // level as trace processor ignores them anyway.
+  EXPECT_EQ("{}", TracedValueToString([&](TracedValue context) {
+              auto array = std::move(context).WriteArray();
             }));
 }
 

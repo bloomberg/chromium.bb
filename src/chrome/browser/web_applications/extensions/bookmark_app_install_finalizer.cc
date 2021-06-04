@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -37,6 +37,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using extensions::mojom::ManifestLocation;
@@ -155,14 +156,14 @@ void BookmarkAppInstallFinalizer::FinalizeUpdate(
 
 void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     const web_app::AppId& app_id,
-    web_app::ExternalInstallSource external_install_source,
+    webapps::WebappUninstallSource external_install_source,
     UninstallWebAppCallback callback) {
   // Bookmark apps don't support app installation from different sources.
   // |external_install_source| is ignored here.
   UninstallExtension(app_id, std::move(callback));
 }
 
-bool BookmarkAppInstallFinalizer::CanUserUninstallExternalApp(
+bool BookmarkAppInstallFinalizer::CanUserUninstallWebApp(
     const web_app::AppId& app_id) const {
   const Extension* app = GetEnabledExtension(app_id);
   return app ? extensions::ExtensionSystem::Get(profile_)
@@ -171,15 +172,16 @@ bool BookmarkAppInstallFinalizer::CanUserUninstallExternalApp(
              : false;
 }
 
-void BookmarkAppInstallFinalizer::UninstallExternalAppByUser(
+void BookmarkAppInstallFinalizer::UninstallWebApp(
     const web_app::AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
     UninstallWebAppCallback callback) {
   // Bookmark apps don't support app installation from different sources.
   // Uninstall extension completely:
   UninstallExtension(app_id, std::move(callback));
 }
 
-bool BookmarkAppInstallFinalizer::WasExternalAppUninstalledByUser(
+bool BookmarkAppInstallFinalizer::WasPreinstalledWebAppUninstalled(
     const web_app::AppId& app_id) const {
   return ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(app_id);
 }
@@ -226,7 +228,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     bool is_locally_installed,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
-    const base::Optional<CrxInstallError>& error) {
+    const absl::optional<CrxInstallError>& error) {
   if (error) {
     std::move(callback).Run(
         web_app::AppId(),
@@ -270,7 +272,7 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
-    const base::Optional<CrxInstallError>& error) {
+    const absl::optional<CrxInstallError>& error) {
   if (error) {
     std::move(callback).Run(
         web_app::AppId(),
@@ -292,10 +294,11 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     // Using an empty `old_shortcut` and `file_handlers_need_os_update` here
     // because BookmarkApp* is deprecated. Note that this code will not
     // correctly update File Handlers on Linux, if un-deprecated.
-    std::unique_ptr<web_app::ShortcutInfo> old_shortcut = nullptr;
+    std::unique_ptr<web_app::ShortcutInfo> old_shortcut;
     os_integration_manager().UpdateOsHooks(
         extension->id(), old_name, std::move(old_shortcut),
-        /*file_handlers_need_os_update=*/false, web_app_info);
+        /*file_handlers_need_os_update=*/
+        web_app::FileHandlerUpdateAction::kNoUpdate, web_app_info);
     registrar().NotifyWebAppManifestUpdated(extension->id(), old_name);
   }
   std::move(callback).Run(extension->id(),

@@ -118,7 +118,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   // This page is not shown to incognito or guest profiles. If one should end up
   // here, we return, causing a 404-like page.
-  if (!profile || !profile->IsRegularProfile()) {
+  if (!profile || profile->IsOffTheRecord()) {
     return;
   }
 
@@ -134,6 +134,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   // Add welcome strings.
   AddStrings(html_source);
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  html_source->AddResourcePath("images/background_svgs/logo.svg",
+                               IDR_PRODUCT_LOGO_24PX_1X);
+#endif
 
 #if defined(OS_WIN)
   html_source->AddBoolean("is_win10",

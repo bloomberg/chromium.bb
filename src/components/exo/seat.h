@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SEAT_H_
 #define COMPONENTS_EXO_SEAT_H_
 
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
@@ -39,10 +40,6 @@ class SeatObserver;
 class Surface;
 class XkbTracker;
 
-// The maximum number of different data types that we will write to the
-// clipboard (plain text, RTF, HTML, image, text/uri-list)
-constexpr int kMaxClipboardDataTypes = 5;
-
 // Seat object represent a group of input devices such as keyboard, pointer and
 // touch devices and keeps track of input focus.
 class Seat : public aura::client::FocusChangeObserver,
@@ -59,6 +56,11 @@ class Seat : public aura::client::FocusChangeObserver,
   Seat(const Seat&) = delete;
   Seat& operator=(const Seat&) = delete;
   ~Seat() override;
+
+  using FocusChangedCallback =
+      base::RepeatingCallback<void(Surface*, Surface*, bool)>;
+
+  void SetFocusChangedCallback(FocusChangedCallback callback);
 
   void Shutdown();
 
@@ -137,6 +139,8 @@ class Seat : public aura::client::FocusChangeObserver,
     return drag_drop_operation_;
   }
 
+  bool was_shutdown() const { return was_shutdown_; }
+
  private:
   class RefCountedScopedClipboardWriter;
 
@@ -190,7 +194,9 @@ class Seat : public aura::client::FocusChangeObserver,
 
   gfx::PointF last_pointer_location_;
 
-  bool shutdown_ = false;
+  FocusChangedCallback focus_changed_callback_;
+
+  bool was_shutdown_ = false;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<UILockController> ui_lock_controller_;

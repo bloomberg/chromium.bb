@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -70,6 +71,7 @@ import java.util.Map;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
+@LooperMode(LooperMode.Mode.LEGACY)
 public class WebApkUpdateManagerUnitTest {
 
     @Rule
@@ -199,6 +201,11 @@ public class WebApkUpdateManagerUnitTest {
 
         public Callback<Boolean> getStoreUpdateRequestCallback() {
             return mStoreUpdateRequestCallback;
+        }
+
+        @Override
+        protected boolean iconOrNameUpdateDialogEnabled() {
+            return false;
         }
 
         @Override
@@ -722,7 +729,7 @@ public class WebApkUpdateManagerUnitTest {
         updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        updateManager.destroy();
+        updateManager.onDestroy();
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertFalse(updateManager.updateRequested());

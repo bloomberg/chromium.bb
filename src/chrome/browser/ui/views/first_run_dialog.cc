@@ -8,51 +8,54 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/strings/grit/components_strings.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_WIN)
-#include "components/crash/content/app/breakpad_win.h"
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-#include "components/crash/core/app/breakpad_linux.h"
-#endif
-
 namespace {
 
+#if !defined(OS_MAC)
 void InitCrashReporterIfEnabled(bool enabled) {
-#if defined(OS_WIN)
-  if (enabled)
-    breakpad::InitCrashReporter(std::string());
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (!crash_reporter::IsCrashpadEnabled() && enabled)
     breakpad::InitCrashReporter(std::string());
-#endif
 }
+#endif
 
 }  // namespace
 
 namespace first_run {
 
 void ShowFirstRunDialog(Profile* profile) {
+#if defined(OS_MAC)
+  if (base::FeatureList::IsEnabled(features::kViewsFirstRunDialog))
+    ShowFirstRunDialogViews(profile);
+  else
+    ShowFirstRunDialogCocoa(profile);
+#else
+  ShowFirstRunDialogViews(profile);
+#endif
+}
+
+void ShowFirstRunDialogViews(Profile* profile) {
   FirstRunDialog::Show(profile);
 }
 
@@ -69,6 +72,7 @@ void FirstRunDialog::Show(Profile* profile) {
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile) {
+  SetTitle(l10n_util::GetStringUTF16(IDS_FIRST_RUN_DIALOG_WINDOW_TITLE));
   SetButtons(ui::DIALOG_BUTTON_OK);
   SetExtraView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)))
@@ -77,7 +81,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile) {
                                         GURL(chrome::kLearnMoreReportingURL)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
 
@@ -115,9 +119,13 @@ void FirstRunDialog::Done() {
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
+#if defined(OS_MAC)
+  ChangeMetricsReportingState(report_crashes_->GetChecked());
+#else
   ChangeMetricsReportingStateWithReply(
       report_crashes_->GetChecked(),
       base::BindOnce(&InitCrashReporterIfEnabled));
+#endif
 
   if (make_default_->GetChecked())
     shell_integration::SetAsDefaultBrowser();

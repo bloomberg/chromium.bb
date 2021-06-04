@@ -677,7 +677,7 @@ class _LogcatProcessor(object):
     self._found_initial_pid = self._primary_pid != None
     # Retrieve any additional patterns that are relevant for the User.
     self._user_defined_highlight = None
-    user_regex = os.environ['CHROMIUM_LOGCAT_HIGHLIGHT']
+    user_regex = os.environ.get('CHROMIUM_LOGCAT_HIGHLIGHT')
     if user_regex:
       self._user_defined_highlight = re.compile(user_regex)
       if not self._user_defined_highlight:
@@ -728,10 +728,19 @@ class _LogcatProcessor(object):
     def consume_token_or_default(default):
       return tokens.pop(0) if len(tokens) > 0 else default
 
+    def consume_integer_token_or_default(default):
+      if len(tokens) == 0:
+        return default
+
+      try:
+        return int(tokens.pop(0))
+      except ValueError:
+        return default
+
     date = consume_token_or_default('')
     invokation_time = consume_token_or_default('')
-    pid = int(consume_token_or_default(-1))
-    tid = int(consume_token_or_default(-1))
+    pid = consume_integer_token_or_default(-1)
+    tid = consume_integer_token_or_default(-1)
     priority = consume_token_or_default('')
     tag = consume_token_or_default('')
     original_message = consume_token_or_default('')

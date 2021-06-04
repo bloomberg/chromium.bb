@@ -18,7 +18,7 @@
 #include "components/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-namespace chromeos {
+namespace ash {
 
 EasyUnlockGetKeysOperation::EasyUnlockGetKeysOperation(
     const UserContext& user_context,
@@ -64,7 +64,7 @@ void EasyUnlockGetKeysOperation::GetKeyData() {
 }
 
 void EasyUnlockGetKeysOperation::OnGetKeyData(
-    base::Optional<user_data_auth::GetKeyDataReply> reply) {
+    absl::optional<user_data_auth::GetKeyDataReply> reply) {
   cryptohome::MountError return_code = user_data_auth::ReplyToMountError(reply);
   std::vector<cryptohome::KeyDefinition> key_definitions =
       user_data_auth::GetKeyDataReplyToKeyDefinitions(reply);
@@ -153,4 +153,4 @@ void EasyUnlockGetKeysOperation::OnGetKeyData(
   GetKeyData();
 }
 
-}  // namespace chromeos
+}  // namespace ash

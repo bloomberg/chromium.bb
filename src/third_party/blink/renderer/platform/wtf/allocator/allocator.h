@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace WTF {
@@ -377,7 +376,7 @@ ALWAYS_INLINE void AtomicWriteSwap(T& lhs, T& rhs) {
 }  // namespace WTF
 
 // This version of placement new omits a 0 check.
-enum NotNullTag { NotNull };
+enum class NotNullTag { kNotNull };
 inline void* operator new(size_t, NotNullTag, void* location) {
   DCHECK(location);
   return location;

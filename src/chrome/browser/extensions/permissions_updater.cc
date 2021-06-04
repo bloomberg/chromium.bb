@@ -42,6 +42,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/mojom/permission_set.mojom.h"
 #include "extensions/common/mojom/renderer.mojom.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -128,8 +129,12 @@ void SetCorsOriginAccessListForAllRelatedProfiles(
     content::BrowserContext* browser_context,
     const Extension& extension,
     base::OnceClosure closure) {
+  // Non-tab-specific extension permissions are shared across profiles (even for
+  // split-mode extensions), so we update all profiles the extension is enabled
+  // for.
   util::SetCorsOriginAccessListForExtension(
-      util::GetAllRelatedProfiles(Profile::FromBrowserContext(browser_context)),
+      util::GetAllRelatedProfiles(Profile::FromBrowserContext(browser_context),
+                                  extension),
       extension, std::move(closure));
 }
 
@@ -667,7 +672,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
         PackPermissionSet(*changed);
     value->Append(permissions->ToValue());
     auto event = std::make_unique<Event>(histogram_value, event_name,
-                                         std::move(value), browser_context);
+                                         value->TakeList(), browser_context);
     event_router->DispatchEventToExtension(extension->id(), std::move(event));
   }
 
@@ -695,7 +700,8 @@ void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
               ->GetRenderer(host);
       if (renderer) {
         renderer->UpdateDefaultPolicyHostRestrictions(
-            default_runtime_blocked_hosts, default_runtime_allowed_hosts);
+            default_runtime_blocked_hosts.Clone(),
+            default_runtime_allowed_hosts.Clone());
       }
     }
   }

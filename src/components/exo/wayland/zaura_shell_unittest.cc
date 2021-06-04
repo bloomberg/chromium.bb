@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -88,6 +89,8 @@ class MockSurfaceDelegate : public SurfaceDelegate {
   MOCK_METHOD(void, SetSnappedToRight, (), (override));
   MOCK_METHOD(void, SetSnappedToLeft, (), (override));
   MOCK_METHOD(void, UnsetSnap, (), (override));
+  MOCK_METHOD(void, SetCanGoBack, (), (override));
+  MOCK_METHOD(void, UnsetCanGoBack, (), (override));
 };
 
 }  // namespace
@@ -106,10 +109,10 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
     std::unique_ptr<Buffer> buffer(
         new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
-    surface_.reset(new Surface);
+    surface_ = std::make_unique<Surface>();
     surface_->Attach(buffer.get());
 
-    aura_surface_.reset(new TestAuraSurface(surface_.get()));
+    aura_surface_ = std::make_unique<TestAuraSurface>(surface_.get());
 
     gfx::Transform transform;
     transform.Scale(1.5f, 1.5f);

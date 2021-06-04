@@ -5,9 +5,11 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 
+#include <time.h>
 #include <memory>
 #include <vector>
 
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -17,6 +19,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 struct wl_cursor;
+struct wl_event_queue;
 
 namespace gfx {
 class Point;
@@ -41,11 +44,13 @@ class WaylandShm;
 class WaylandTouch;
 class WaylandZAuraShell;
 class WaylandZcrCursorShapes;
+class WaylandZwpPointerGestures;
 class WaylandZwpLinuxDmabuf;
 class WaylandDataDeviceManager;
 class WaylandCursorPosition;
 class WaylandWindowDragController;
 class GtkPrimarySelectionDeviceManager;
+class GtkShell1;
 class ZwpPrimarySelectionDeviceManager;
 class XdgForeignWrapper;
 
@@ -67,11 +72,25 @@ class WaylandConnection {
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
 
+  // Calls wl_display_roundtrip_queue. Might be required during initialization
+  // of some objects that should block until they are initialized.
+  void RoundTripQueue();
+
   // Sets a callback that that shutdowns the browser in case of unrecoverable
   // error. Called by WaylandEventWatcher.
   void SetShutdownCb(base::OnceCallback<void()> shutdown_cb);
 
+  // A correct display must be chosen when creating objects or calling
+  // roundrips.  That is, all the methods that deal with polling, pulling event
+  // queues, etc, must use original display. All the other methods that create
+  // various wayland objects must use |display_wrapper_| so that the new objects
+  // are associated with the correct event queue. Otherwise, they will use a
+  // default event queue, which we do not use. See the comment below about the
+  // |event_queue_|.
   wl_display* display() const { return display_.get(); }
+  wl_display* display_wrapper() const {
+    return reinterpret_cast<wl_display*>(wrapped_display_.get());
+  }
   wl_compositor* compositor() const { return compositor_.get(); }
   // The server version of the compositor interface (might be higher than the
   // version binded).
@@ -101,6 +120,11 @@ class WaylandConnection {
   }
   uint32_t serial() const { return serial_.serial; }
   EventSerial event_serial() const { return serial_; }
+
+  void set_pointer_enter_serial(uint32_t serial) {
+    pointer_enter_serial_ = serial;
+  }
+  uint32_t pointer_enter_serial() const { return pointer_enter_serial_; }
 
   void SetPlatformCursor(wl_cursor* cursor_data, int buffer_scale);
 
@@ -161,6 +185,8 @@ class WaylandConnection {
     return gtk_primary_selection_device_manager_.get();
   }
 
+  GtkShell1* gtk_shell1() { return gtk_shell1_.get(); }
+
   ZwpPrimarySelectionDeviceManager* zwp_primary_selection_device_manager()
       const {
     return zwp_primary_selection_device_manager_.get();
@@ -181,6 +207,17 @@ class WaylandConnection {
 
   // Creates a new wl_surface.
   wl::Object<wl_surface> CreateSurface();
+
+  // base::TimeTicks::Now() in posix uses CLOCK_MONOTONIC, wp_presentation
+  // timestamps are in clk_id sent in wp_presentation.clock_id event. This
+  // converts wp_presentation timestamp to base::TimeTicks.
+  // The approximation relies on presentation timestamp to be close to current
+  // time. The further it is from current time and the bigger the speed
+  // difference between the two clock domains, the bigger the conversion error.
+  // Conversion error due to system load is biased and unbounded.
+  base::TimeTicks ConvertPresentationTime(uint32_t tv_sec_hi,
+                                          uint32_t tv_sec_lo,
+                                          uint32_t tv_nsec);
 
  private:
   friend class WaylandConnectionTestApi;
@@ -216,8 +253,13 @@ class WaylandConnection {
   // xdg_wm_base_listener
   static void Ping(void* data, xdg_wm_base* shell, uint32_t serial);
 
+  // xdg_wm_base_listener
+  static void ClockId(void* data, wp_presentation* shell_v6, uint32_t clk_id);
+
   uint32_t compositor_version_ = 0;
   wl::Object<wl_display> display_;
+  wl::Object<wl_proxy> wrapped_display_;
+  wl::Object<wl_event_queue> event_queue_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
   wl::Object<wl_subcompositor> subcompositor_;
@@ -244,25 +286,33 @@ class WaylandConnection {
 
   std::unique_ptr<WaylandCursor> cursor_;
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
-  std::unique_ptr<WaylandClipboard> clipboard_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZAuraShell> zaura_shell_;
   std::unique_ptr<WaylandZcrCursorShapes> zcr_cursor_shapes_;
+  std::unique_ptr<WaylandZwpPointerGestures> wayland_zwp_pointer_gestures_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandDrm> drm_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
   std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
 
+  // Clipboard-related objects. |clipboard_| must be declared after all
+  // DeviceManager instances it depends on, otherwise tests may crash with
+  // UAFs while attempting to access already destroyed manager pointers.
   std::unique_ptr<GtkPrimarySelectionDeviceManager>
       gtk_primary_selection_device_manager_;
-
   std::unique_ptr<ZwpPrimarySelectionDeviceManager>
       zwp_primary_selection_device_manager_;
+  std::unique_ptr<WaylandClipboard> clipboard_;
+
+  std::unique_ptr<GtkShell1> gtk_shell1_;
 
   std::unique_ptr<WaylandDataDragController> data_drag_controller_;
   std::unique_ptr<WaylandWindowDragController> window_drag_controller_;
+
+  // Describes the clock domain that wp_presentation timestamps are in.
+  uint32_t presentation_clk_id_ = CLOCK_MONOTONIC;
 
   // Helper class that lets input emulation access some data of objects
   // that Wayland holds. For example, wl_surface and others. It's only
@@ -277,6 +327,8 @@ class WaylandConnection {
   bool scheduled_flush_ = false;
 
   EventSerial serial_;
+
+  uint32_t pointer_enter_serial_ = 0;
 };
 
 }  // namespace ui

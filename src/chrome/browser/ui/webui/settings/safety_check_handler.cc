@@ -18,6 +18,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
+#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version/version_ui.h"
@@ -90,6 +91,8 @@ SafetyCheckHandler::UpdateStatus ConvertToUpdateStatus(
     case VersionUpdater::DISABLED:
       return SafetyCheckHandler::UpdateStatus::kUnknown;
     case VersionUpdater::FAILED:
+    case VersionUpdater::FAILED_HTTP:
+    case VersionUpdater::FAILED_DOWNLOAD:
     case VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED:
       return SafetyCheckHandler::UpdateStatus::kFailed;
     case VersionUpdater::FAILED_OFFLINE:
@@ -280,8 +283,15 @@ void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
 void SafetyCheckHandler::PerformSafetyCheck() {
   // Checks common to desktop, Android, and iOS are handled by
   // safety_check::SafetyCheck.
-  safety_check_ = std::make_unique<safety_check::SafetyCheck>(this);
-  safety_check_->CheckSafeBrowsing(Profile::FromWebUI(web_ui())->GetPrefs());
+  safe_browsing_status_ =
+      safety_check::CheckSafeBrowsing(Profile::FromWebUI(web_ui())->GetPrefs());
+  if (safe_browsing_status_ != SafeBrowsingStatus::kChecking) {
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.SafeBrowsingResult",
+                                  safe_browsing_status_);
+  }
+  FireBasicSafetyCheckWebUiListener(
+      kSafeBrowsingEvent, static_cast<int>(safe_browsing_status_),
+      GetStringForSafeBrowsing(safe_browsing_status_));
 
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
@@ -289,8 +299,8 @@ void SafetyCheckHandler::PerformSafetyCheck() {
   DCHECK(version_updater_);
   if (!update_helper_) {
     update_helper_ = std::make_unique<safety_check::UpdateCheckHelper>(
-        content::BrowserContext::GetDefaultStoragePartition(
-            Profile::FromWebUI(web_ui()))
+        Profile::FromWebUI(web_ui())
+            ->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess());
   }
   DCHECK(update_helper_);
@@ -418,17 +428,10 @@ void SafetyCheckHandler::CheckExtensions() {
   int reenabled_by_user = 0;
   int reenabled_by_admin = 0;
   for (auto extension_id : extensions) {
-    extensions::BlocklistState state =
-        extension_prefs_->GetExtensionBlocklistState(extension_id);
-    if (state == extensions::BLOCKLISTED_UNKNOWN) {
-      // If any of the extensions are in the unknown blocklist state, that means
-      // there was an error the last time the blocklist was fetched. That means
-      // the results cannot be relied upon.
-      OnExtensionsCheckResult(ExtensionsStatus::kError, Blocklisted(0),
-                              ReenabledUser(0), ReenabledAdmin(0));
-      return;
-    }
-    if (state == extensions::NOT_BLOCKLISTED) {
+    extensions::BitMapBlocklistState state =
+        extensions::blocklist_prefs::GetExtensionBlocklistState(
+            extension_id, extension_prefs_);
+    if (state == extensions::BitMapBlocklistState::NOT_BLOCKLISTED) {
       continue;
     }
     ++blocklisted;
@@ -711,9 +714,6 @@ std::u16string SafetyCheckHandler::GetStringForExtensions(
   switch (status) {
     case ExtensionsStatus::kChecking:
       return u"";
-    case ExtensionsStatus::kError:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_ERROR);
     case ExtensionsStatus::kNoneBlocklisted:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SAFE);
@@ -925,19 +925,6 @@ void SafetyCheckHandler::OnVersionUpdaterResult(VersionUpdater::Status status,
   OnUpdateCheckResult(ConvertToUpdateStatus(status));
 }
 
-void SafetyCheckHandler::OnSafeBrowsingCheckResult(
-    SafetyCheckHandler::SafeBrowsingStatus status) {
-  safe_browsing_status_ = status;
-  if (safe_browsing_status_ != SafeBrowsingStatus::kChecking) {
-    base::UmaHistogramEnumeration("Settings.SafetyCheck.SafeBrowsingResult",
-                                  safe_browsing_status_);
-  }
-  FireBasicSafetyCheckWebUiListener(
-      kSafeBrowsingEvent, static_cast<int>(safe_browsing_status_),
-      GetStringForSafeBrowsing(safe_browsing_status_));
-  CompleteParentIfChildrenCompleted();
-}
-
 void SafetyCheckHandler::OnStateChanged(
     password_manager::BulkLeakCheckService::State state) {
   using password_manager::BulkLeakCheckService;
@@ -1067,8 +1054,6 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
   // Destroy the version updater to prevent getting a callback and firing a
   // WebUI event, which would cause a crash.
   version_updater_.reset();
-  // Stop observing safety check events.
-  safety_check_.reset(nullptr);
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Remove |this| as an observer for the Chrome cleaner.
   safe_browsing::ChromeCleanerController::GetInstance()->RemoveObserver(this);

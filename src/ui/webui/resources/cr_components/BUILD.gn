@@ -12,7 +12,9 @@ preprocess_folder =
     "$root_gen_dir/ui/webui/resources/preprocessed/cr_components"
 preprocess_gen_manifest = "preprocessed_gen_manifest.json"
 preprocess_mojom_manifest = "preprocessed_mojom_manifest.json"
-preprocess_polymer2_manifest = "preprocessed_polymer2_manifest.json"
+if (is_chromeos_ash) {
+  preprocess_polymer2_manifest = "preprocessed_polymer2_manifest.json"
+}
 preprocess_src_manifest = "preprocessed_src_manifest.json"
 
 generate_grd("build_grdp") {
@@ -43,6 +45,7 @@ generate_grd("build_grdp") {
       "chromeos/network/cellular_3.svg",
       "chromeos/network/cellular_4.svg",
       "chromeos/network/cellular_off.svg",
+      "chromeos/network/cellular_locked.svg",
       "chromeos/network/ethernet.svg",
       "chromeos/network/vpn.svg",
       "chromeos/network/wifi_0_with_x.svg",
@@ -119,7 +122,7 @@ preprocess_if_expr("preprocess_generated") {
     "customize_themes/customize_themes.js",
     "customize_themes/theme_icon.js",
     "managed_dialog/managed_dialog.js",
-    "managed_footnote/managed_footnote.m.js",
+    "managed_footnote/managed_footnote.js",
     "omnibox/cr_autocomplete_match_list.js",
   ]
 
@@ -145,6 +148,7 @@ preprocess_if_expr("preprocess_generated") {
     in_files += [
       "chromeos/bluetooth/bluetooth_dialog.m.js",
       "chromeos/cellular_setup/activation_code_page.m.js",
+      "chromeos/cellular_setup/activation_verification_page.m.js",
       "chromeos/cellular_setup/base_page.m.js",
       "chromeos/cellular_setup/button_bar.m.js",
       "chromeos/cellular_setup/cellular_setup_delegate.m.js",
@@ -161,7 +165,7 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/cellular_setup/profile_discovery_list_page.m.js",
       "chromeos/cellular_setup/provisioning_page.m.js",
       "chromeos/cellular_setup/psim_flow_ui.m.js",
-      "chromeos/cellular_setup/cellular_eid_popup.m.js",
+      "chromeos/cellular_setup/cellular_eid_dialog.m.js",
       "chromeos/cellular_setup/setup_loading_page.m.js",
       "chromeos/cellular_setup/subflow_behavior.m.js",
       "chromeos/cellular_setup/webview_post_util.m.js",
@@ -224,15 +228,12 @@ preprocess_if_expr("preprocess_generated") {
   }
 }
 
-preprocess_if_expr("preprocess_polymer2") {
-  in_folder = "./"
-  out_folder = "$preprocess_folder"
-  out_manifest = "$target_gen_dir/$preprocess_polymer2_manifest"
-  in_files = [
-    "managed_footnote/managed_footnote.html",
-    "managed_footnote/managed_footnote.js",
-  ]
-  if (is_chromeos_ash) {
+if (is_chromeos_ash) {
+  preprocess_if_expr("preprocess_polymer2") {
+    in_folder = "./"
+    out_folder = "$preprocess_folder"
+    out_manifest = "$target_gen_dir/$preprocess_polymer2_manifest"
+    in_files = []
     if (!optimize_webui) {
       in_files += [
         "chromeos/bluetooth/bluetooth_dialog.html",
@@ -275,6 +276,8 @@ preprocess_if_expr("preprocess_polymer2") {
     in_files += [
       "chromeos/cellular_setup/activation_code_page.html",
       "chromeos/cellular_setup/activation_code_page.js",
+      "chromeos/cellular_setup/activation_verification_page.html",
+      "chromeos/cellular_setup/activation_verification_page.js",
       "chromeos/cellular_setup/base_page.html",
       "chromeos/cellular_setup/base_page.js",
       "chromeos/cellular_setup/button_bar.html",
@@ -306,8 +309,8 @@ preprocess_if_expr("preprocess_polymer2") {
       "chromeos/cellular_setup/provisioning_page.js",
       "chromeos/cellular_setup/psim_flow_ui.html",
       "chromeos/cellular_setup/psim_flow_ui.js",
-      "chromeos/cellular_setup/cellular_eid_popup.html",
-      "chromeos/cellular_setup/cellular_eid_popup.js",
+      "chromeos/cellular_setup/cellular_eid_dialog.html",
+      "chromeos/cellular_setup/cellular_eid_dialog.js",
       "chromeos/cellular_setup/setup_loading_page.html",
       "chromeos/cellular_setup/setup_loading_page.js",
       "chromeos/cellular_setup/subflow_behavior.html",
@@ -396,7 +399,6 @@ group("closure_compile") {
     "customize_themes:closure_compile",
     "managed_dialog:closure_compile",
     "managed_footnote:closure_compile",
-    "managed_footnote:closure_compile_module",
     "omnibox:closure_compile",
   ]
 
@@ -410,7 +412,7 @@ group("polymer3_elements") {
     "certificate_manager:web_components",
     "customize_themes:web_components",
     "managed_dialog:web_components",
-    "managed_footnote:managed_footnote_module",
+    "managed_footnote:web_components",
     "omnibox:web_components",
   ]
   if (is_chromeos_ash) {

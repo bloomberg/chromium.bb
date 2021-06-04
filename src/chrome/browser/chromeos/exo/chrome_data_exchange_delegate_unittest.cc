@@ -11,15 +11,18 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_seneschal_client.h"
+#include "chromeos/dbus/seneschal/fake_seneschal_client.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/test/browser_task_environment.h"
@@ -63,6 +66,10 @@ class ChromeDataExchangeDelegateTest : public testing::Test {
  public:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
+    chromeos::SeneschalClient::InitializeFake();
+
     profile_ = std::make_unique<TestingProfile>();
     test_helper_ =
         std::make_unique<crostini::CrostiniTestHelper>(profile_.get());
@@ -95,8 +102,7 @@ class ChromeDataExchangeDelegateTest : public testing::Test {
         storage::FileSystemMountOption(), crostini_dir_);
 
     // DBus seneschal client.
-    fake_seneschal_client_ = static_cast<chromeos::FakeSeneschalClient*>(
-        chromeos::DBusThreadManager::Get()->GetSeneschalClient());
+    fake_seneschal_client_ = chromeos::FakeSeneschalClient::Get();
     ASSERT_TRUE(fake_seneschal_client_);
   }
 
@@ -104,6 +110,9 @@ class ChromeDataExchangeDelegateTest : public testing::Test {
     mount_points_->RevokeAllFileSystems();
     test_helper_.reset();
     profile_.reset();
+    chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -436,7 +445,7 @@ TEST_F(ChromeDataExchangeDelegateTest, HasUrlsInPickle) {
   EXPECT_EQ(true, data_exchange_delegate.HasUrlsInPickle(valid));
 }
 
-TEST_F(ChromeDataExchangeDelegateTest, ClipboardFilenamesPickle) {
+TEST_F(ChromeDataExchangeDelegateTest, ParseFileSystemSources) {
   ChromeDataExchangeDelegate data_exchange_delegate;
   base::FilePath shared_path = myfiles_dir_.Append("shared");
   auto* guest_os_share_path =
@@ -459,33 +468,19 @@ TEST_F(ChromeDataExchangeDelegateTest, ClipboardFilenamesPickle) {
       "Downloads-test%2540example.com-hash/shared/file2",
       base::UTF16ToUTF8(m[u"fs/sources"]));
 
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  {
-    auto files_app = std::make_unique<ui::DataTransferEndpoint>(
-        file_manager::util::GetFilesAppOrigin());
-    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste,
-                                     std::move(files_app));
-    writer.WritePickledData(pickle,
-                            ui::ClipboardFormatType::GetWebCustomDataType());
-  }
-
+  ui::DataTransferEndpoint files_app(url::Origin::Create(
+      GURL("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj")));
   std::vector<ui::FileInfo> file_info =
-      data_exchange_delegate.ParseClipboardFilenamesPickle(
-          ui::EndpointType::kDefault, *clipboard);
+      data_exchange_delegate.ParseFileSystemSources(&files_app, pickle);
   EXPECT_EQ(2, file_info.size());
   EXPECT_EQ(shared_path.Append("file1"), file_info[0].path);
   EXPECT_EQ(shared_path.Append("file2"), file_info[1].path);
   EXPECT_EQ(base::FilePath(), file_info[0].display_name);
   EXPECT_EQ(base::FilePath(), file_info[1].display_name);
 
-  // Should return empty if data_src is not FilesApp.
-  {
-    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-    writer.WritePickledData(pickle,
-                            ui::ClipboardFormatType::GetWebCustomDataType());
-  }
-  file_info = data_exchange_delegate.ParseClipboardFilenamesPickle(
-      ui::EndpointType::kDefault, *clipboard);
+  // Should return empty if source is not FilesApp.
+  ui::DataTransferEndpoint crostini(ui::EndpointType::kCrostini);
+  file_info = data_exchange_delegate.ParseFileSystemSources(&crostini, pickle);
   EXPECT_TRUE(file_info.empty());
 }
 

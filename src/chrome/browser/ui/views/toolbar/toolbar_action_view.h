@@ -7,12 +7,12 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 class ExtensionContextMenuController;
@@ -36,9 +36,6 @@ class ToolbarActionView : public views::MenuButton,
     // Whether the container supports showing extensions outside of the menu.
     virtual bool CanShowIconInToolbar() const;
 
-    // Notifies that a drag completed.
-    virtual void OnToolbarActionViewDragDone() = 0;
-
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
     virtual views::LabelButton* GetOverflowReferenceView() const = 0;
@@ -47,7 +44,7 @@ class ToolbarActionView : public views::MenuButton,
     virtual gfx::Size GetToolbarActionSize() = 0;
 
    protected:
-    ~Delegate() override {}
+    ~Delegate() override = default;
   };
 
   ToolbarActionView(ToolbarActionViewController* view_controller,
@@ -58,12 +55,10 @@ class ToolbarActionView : public views::MenuButton,
 
   // views::MenuButton:
   gfx::Rect GetAnchorBoundsInScreen() const override;
+  void OnThemeChanged() override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
-  SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // ToolbarActionViewDelegateViews:
@@ -76,6 +71,9 @@ class ToolbarActionView : public views::MenuButton,
 
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
+
+  // Calls views::View::GetDragOperations() (which is protected).
+  int GetDragOperationsForTest(const gfx::Point& point);
 
  private:
   // views::MenuButton:
@@ -91,6 +89,7 @@ class ToolbarActionView : public views::MenuButton,
   views::View* GetAsView() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
   views::Button* GetReferenceButtonForPopup() override;
+  void ShowContextMenuAsFallback() override;
   bool CanShowIconInToolbar() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;

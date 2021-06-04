@@ -1,15 +1,15 @@
 // v-0016 - This fails because of the duplicate function `my_func`.
 
-fn my_func() -> void {
+fn my_func() {
   return;
 }
 
-fn my_func() -> void {
+fn my_func() {
   return;
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }
 

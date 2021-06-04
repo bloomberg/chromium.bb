@@ -6,10 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
+#include "ui/base/interaction/element_identifier.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -27,9 +30,10 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/focus_ring.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/capture_client.h"
@@ -80,7 +84,7 @@ bool Button::DefaultButtonControllerDelegate::ShouldEnterHoveredState() {
 }
 
 InkDrop* Button::DefaultButtonControllerDelegate::GetInkDrop() {
-  return button()->GetInkDrop();
+  return button()->ink_drop()->GetInkDrop();
 }
 
 int Button::DefaultButtonControllerDelegate::GetDragOperations(
@@ -239,7 +243,7 @@ int Button::GetTriggerableEventFlags() const {
 void Button::SetRequestFocusOnPress(bool value) {
 // On Mac, buttons should not request focus on a mouse press. Hence keep the
 // default value i.e. false.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   if (request_focus_on_press_ == value)
     return;
   request_focus_on_press_ = value;
@@ -285,13 +289,6 @@ bool Button::GetShowInkDropWhenHotTracked() const {
   return show_ink_drop_when_hot_tracked_;
 }
 
-void Button::SetInkDropBaseColor(SkColor color) {
-  if (color == ink_drop_base_color_)
-    return;
-  ink_drop_base_color_ = color;
-  OnPropertyChanged(&ink_drop_base_color_, kPropertyEffectsNone);
-}
-
 void Button::SetHasInkDropActionOnClick(bool value) {
   if (value == has_ink_drop_action_on_click_)
     return;
@@ -323,9 +320,9 @@ void Button::SetHotTracked(bool is_hot_tracked) {
   if (state_ != STATE_DISABLED) {
     SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
     if (show_ink_drop_when_hot_tracked_) {
-      AnimateInkDrop(is_hot_tracked ? views::InkDropState::ACTIVATED
-                                    : views::InkDropState::HIDDEN,
-                     nullptr);
+      ink_drop()->AnimateToState(is_hot_tracked ? views::InkDropState::ACTIVATED
+                                                : views::InkDropState::HIDDEN,
+                                 nullptr);
     }
   }
 
@@ -342,9 +339,9 @@ void Button::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
 }
 
 void Button::SetHighlighted(bool bubble_visible) {
-  AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
-                                : views::InkDropState::DEACTIVATED,
-                 nullptr);
+  ink_drop()->AnimateToState(bubble_visible ? views::InkDropState::ACTIVATED
+                                            : views::InkDropState::DEACTIVATED,
+                             nullptr);
 }
 
 base::CallbackListSubscription Button::AddStateChangedCallback(
@@ -411,15 +408,17 @@ bool Button::OnMouseDragged(const ui::MouseEvent& event) {
         !InDrag();
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
-      if (should_show_pending && GetInkDrop()->GetTargetInkDropState() ==
-                                     views::InkDropState::HIDDEN) {
-        AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+      if (should_show_pending &&
+          ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
+              views::InkDropState::HIDDEN) {
+        ink_drop()->AnimateToState(views::InkDropState::ACTION_PENDING, &event);
       }
     } else {
       SetState(STATE_NORMAL);
-      if (should_show_pending && GetInkDrop()->GetTargetInkDropState() ==
-                                     views::InkDropState::ACTION_PENDING) {
-        AnimateInkDrop(views::InkDropState::HIDDEN, &event);
+      if (should_show_pending &&
+          ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
+              views::InkDropState::ACTION_PENDING) {
+        ink_drop()->AnimateToState(views::InkDropState::HIDDEN, &event);
       }
     }
   }
@@ -436,9 +435,9 @@ void Button::OnMouseCaptureLost() {
   // applies everywhere so gather any feedback and update.
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
-  GetInkDrop()->SetHovered(false);
-  InkDropHostView::OnMouseCaptureLost();
+  ink_drop()->AnimateToState(views::InkDropState::HIDDEN, nullptr /* event */);
+  ink_drop()->GetInkDrop()->SetHovered(false);
+  View::OnMouseCaptureLost();
 }
 
 void Button::OnMouseEntered(const ui::MouseEvent& event) {
@@ -492,10 +491,10 @@ void Button::ShowContextMenu(const gfx::Point& p,
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
   if (hide_ink_drop_when_showing_context_menu_) {
-    GetInkDrop()->SetHovered(false);
-    AnimateInkDrop(InkDropState::HIDDEN, nullptr /* event */);
+    ink_drop()->GetInkDrop()->SetHovered(false);
+    ink_drop()->AnimateToState(InkDropState::HIDDEN, nullptr /* event */);
   }
-  InkDropHostView::ShowContextMenu(p, source_type);
+  View::ShowContextMenu(p, source_type);
 }
 
 void Button::OnDragDone() {
@@ -503,11 +502,11 @@ void Button::OnDragDone() {
   // (since disabled buttons may still be able to be dragged).
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
-  AnimateInkDrop(InkDropState::HIDDEN, nullptr /* event */);
+  ink_drop()->AnimateToState(InkDropState::HIDDEN, nullptr /* event */);
 }
 
 void Button::OnPaint(gfx::Canvas* canvas) {
-  InkDropHostView::OnPaint(canvas);
+  View::OnPaint(canvas);
   PaintButtonContents(canvas);
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
@@ -540,7 +539,7 @@ void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void Button::VisibilityChanged(View* starting_from, bool visible) {
-  InkDropHostView::VisibilityChanged(starting_from, visible);
+  View::VisibilityChanged(starting_from, visible);
   if (state_ == STATE_DISABLED)
     return;
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
@@ -549,21 +548,23 @@ void Button::VisibilityChanged(View* starting_from, bool visible) {
 void Button::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
   if (!details.is_add && state_ != STATE_DISABLED && details.child == this)
     SetState(STATE_NORMAL);
-  InkDropHostView::ViewHierarchyChanged(details);
+  View::ViewHierarchyChanged(details);
 }
 
 void Button::OnFocus() {
-  InkDropHostView::OnFocus();
+  View::OnFocus();
   if (focus_painter_)
     SchedulePaint();
 }
 
 void Button::OnBlur() {
-  InkDropHostView::OnBlur();
+  View::OnBlur();
   if (IsHotTracked() || state_ == STATE_PRESSED) {
     SetState(STATE_NORMAL);
-    if (GetInkDrop()->GetTargetInkDropState() != views::InkDropState::HIDDEN)
-      AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
+    if (ink_drop()->GetInkDrop()->GetTargetInkDropState() !=
+        views::InkDropState::HIDDEN)
+      ink_drop()->AnimateToState(views::InkDropState::HIDDEN,
+                                 nullptr /* event */);
     // TODO(bruthig) : Fix Buttons to work well when multiple input
     // methods are interacting with a button. e.g. By animating to HIDDEN here
     // it is possible for a Mouse Release to trigger an action however there
@@ -573,30 +574,29 @@ void Button::OnBlur() {
     SchedulePaint();
 }
 
-std::unique_ptr<InkDrop> Button::CreateInkDrop() {
-  std::unique_ptr<InkDrop> ink_drop = InkDropHostView::CreateInkDrop();
-  ink_drop->SetShowHighlightOnFocus(!focus_ring_);
-  return ink_drop;
-}
-
-SkColor Button::GetInkDropBaseColor() const {
-  return ink_drop_base_color_;
-}
-
 void Button::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
 Button::Button(PressedCallback callback)
-    : AnimationDelegateViews(this),
-      callback_(std::move(callback)),
-      ink_drop_base_color_(gfx::kPlaceholderColor) {
+    : AnimationDelegateViews(this), callback_(std::move(callback)) {
   SetFocusBehavior(PlatformStyle::kDefaultFocusBehavior);
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   SetInstallFocusRingOnFocus(true);
   button_controller_ = std::make_unique<ButtonController>(
       this, std::make_unique<DefaultButtonControllerDelegate>(this));
+  ink_drop()->SetCreateInkDropCallback(base::BindRepeating(
+      [](Button* button) {
+        std::unique_ptr<InkDrop> ink_drop =
+            views::InkDrop::CreateInkDropForFloodFillRipple(button->ink_drop());
+        ink_drop->SetShowHighlightOnFocus(!button->focus_ring());
+        return ink_drop;
+      },
+      base::Unretained(this)));
+  // TODO(pbos): Investigate not setting a default color so that we can DCHECK
+  // if one hasn't been set.
+  ink_drop()->SetBaseColor(gfx::kPlaceholderColor);
 }
 
 void Button::RequestFocusFromEvent() {
@@ -606,8 +606,16 @@ void Button::RequestFocusFromEvent() {
 
 void Button::NotifyClick(const ui::Event& event) {
   if (has_ink_drop_action_on_click_) {
-    AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
-                   ui::LocatedEvent::FromIfValid(&event));
+    ink_drop()->AnimateToState(InkDropState::ACTION_TRIGGERED,
+                               ui::LocatedEvent::FromIfValid(&event));
+  }
+
+  // If we have an associated help context ID, notify that system that we have
+  // been activated.
+  const ui::ElementIdentifier element_id = GetProperty(kElementIdentifierKey);
+  if (element_id) {
+    views::ElementTrackerViews::GetInstance()->NotifyViewActivated(element_id,
+                                                                   this);
   }
 
   if (callback_)
@@ -616,12 +624,12 @@ void Button::NotifyClick(const ui::Event& event) {
 
 void Button::OnClickCanceled(const ui::Event& event) {
   if (ShouldUpdateInkDropOnClickCanceled()) {
-    if (GetInkDrop()->GetTargetInkDropState() ==
+    if (ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
             views::InkDropState::ACTION_PENDING ||
-        GetInkDrop()->GetTargetInkDropState() ==
+        ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
             views::InkDropState::ALTERNATE_ACTION_PENDING) {
-      AnimateInkDrop(views::InkDropState::HIDDEN,
-                     ui::LocatedEvent::FromIfValid(&event));
+      ink_drop()->AnimateToState(views::InkDropState::HIDDEN,
+                                 ui::LocatedEvent::FromIfValid(&event));
     }
   }
 }
@@ -675,26 +683,19 @@ void Button::OnEnabledChanged() {
   if (GetEnabled()) {
     bool should_enter_hover_state = ShouldEnterHoveredState();
     SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
-    GetInkDrop()->SetHovered(should_enter_hover_state);
+    ink_drop()->GetInkDrop()->SetHovered(should_enter_hover_state);
   } else {
     SetState(STATE_DISABLED);
-    GetInkDrop()->SetHovered(false);
+    ink_drop()->GetInkDrop()->SetHovered(false);
   }
 }
 
-DEFINE_ENUM_CONVERTERS(Button::ButtonState,
-                       {Button::STATE_NORMAL, u"STATE_NORMAL"},
-                       {Button::STATE_HOVERED, u"STATE_HOVERED"},
-                       {Button::STATE_PRESSED, u"STATE_PRESSED"},
-                       {Button::STATE_DISABLED, u"STATE_DISABLED"})
-
-BEGIN_METADATA(Button, InkDropHostView)
+BEGIN_METADATA(Button, View)
 ADD_PROPERTY_METADATA(std::u16string, AccessibleName)
 ADD_PROPERTY_METADATA(PressedCallback, Callback)
 ADD_PROPERTY_METADATA(bool, AnimateOnStateChange)
 ADD_PROPERTY_METADATA(bool, HasInkDropActionOnClick)
 ADD_PROPERTY_METADATA(bool, HideInkDropWhenShowingContextMenu)
-ADD_PROPERTY_METADATA(SkColor, InkDropBaseColor, metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, InstallFocusRingOnFocus)
 ADD_PROPERTY_METADATA(bool, RequestFocusOnPress)
 ADD_PROPERTY_METADATA(ButtonState, State)
@@ -703,3 +704,9 @@ ADD_PROPERTY_METADATA(int, TriggerableEventFlags)
 END_METADATA
 
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(views::Button::ButtonState,
+                       {views::Button::STATE_NORMAL, u"STATE_NORMAL"},
+                       {views::Button::STATE_HOVERED, u"STATE_HOVERED"},
+                       {views::Button::STATE_PRESSED, u"STATE_PRESSED"},
+                       {views::Button::STATE_DISABLED, u"STATE_DISABLED"})

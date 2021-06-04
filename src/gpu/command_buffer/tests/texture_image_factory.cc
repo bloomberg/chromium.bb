@@ -69,6 +69,7 @@ scoped_refptr<gl::GLImage> TextureImageFactory::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
+    gfx::BufferPlane plane,
     int client_id,
     SurfaceHandle surface_handle) {
   return nullptr;

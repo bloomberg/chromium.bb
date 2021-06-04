@@ -27,6 +27,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -57,6 +57,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -146,7 +147,8 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
       loading_slots_(kNumOfLoadingSlots),
       tab_load_tracker_(tab_load_tracker) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
+  delegate_ =
+      std::make_unique<TabManagerDelegate>(weak_ptr_factory_.GetWeakPtr());
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_ =

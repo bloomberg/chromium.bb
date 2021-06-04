@@ -53,18 +53,17 @@ namespace dawn_native {
         }
     }
 
-    void EncodingContext::HandleError(InternalErrorType type, const char* message) {
+    void EncodingContext::HandleError(std::unique_ptr<ErrorData> error) {
         if (!IsFinished()) {
             // Encoding should only generate validation errors.
-            ASSERT(type == InternalErrorType::Validation);
+            ASSERT(error->GetType() == InternalErrorType::Validation);
             // If the encoding context is not finished, errors are deferred until
             // Finish() is called.
-            if (!mGotError) {
-                mGotError = true;
-                mErrorMessage = message;
+            if (mError == nullptr) {
+                mError = std::move(error);
             }
         } else {
-            mDevice->HandleError(type, message);
+            mDevice->HandleError(error->GetType(), error->GetMessage().c_str());
         }
     }
 
@@ -76,25 +75,42 @@ namespace dawn_native {
         mCurrentEncoder = passEncoder;
     }
 
-    void EncodingContext::ExitPass(const ObjectBase* passEncoder, PassResourceUsage passUsage) {
-        // Assert we're not at the top level.
+    void EncodingContext::ExitPass(const ObjectBase* passEncoder, RenderPassResourceUsage usages) {
         ASSERT(mCurrentEncoder != mTopLevelEncoder);
-        // Assert the pass encoder is current.
         ASSERT(mCurrentEncoder == passEncoder);
 
         mCurrentEncoder = mTopLevelEncoder;
-        mPassUsages.push_back(std::move(passUsage));
+        mRenderPassUsages.push_back(std::move(usages));
     }
 
-    const PerPassUsages& EncodingContext::GetPassUsages() const {
-        ASSERT(!mWerePassUsagesAcquired);
-        return mPassUsages;
+    void EncodingContext::ExitPass(const ObjectBase* passEncoder, ComputePassResourceUsage usages) {
+        ASSERT(mCurrentEncoder != mTopLevelEncoder);
+        ASSERT(mCurrentEncoder == passEncoder);
+
+        mCurrentEncoder = mTopLevelEncoder;
+        mComputePassUsages.push_back(std::move(usages));
     }
 
-    PerPassUsages EncodingContext::AcquirePassUsages() {
-        ASSERT(!mWerePassUsagesAcquired);
-        mWerePassUsagesAcquired = true;
-        return std::move(mPassUsages);
+    const RenderPassUsages& EncodingContext::GetRenderPassUsages() const {
+        ASSERT(!mWereRenderPassUsagesAcquired);
+        return mRenderPassUsages;
+    }
+
+    RenderPassUsages EncodingContext::AcquireRenderPassUsages() {
+        ASSERT(!mWereRenderPassUsagesAcquired);
+        mWereRenderPassUsagesAcquired = true;
+        return std::move(mRenderPassUsages);
+    }
+
+    const ComputePassUsages& EncodingContext::GetComputePassUsages() const {
+        ASSERT(!mWereComputePassUsagesAcquired);
+        return mComputePassUsages;
+    }
+
+    ComputePassUsages EncodingContext::AcquireComputePassUsages() {
+        ASSERT(!mWereComputePassUsagesAcquired);
+        mWereComputePassUsagesAcquired = true;
+        return std::move(mComputePassUsages);
     }
 
     MaybeError EncodingContext::Finish() {
@@ -111,8 +127,8 @@ namespace dawn_native {
         mCurrentEncoder = nullptr;
         mTopLevelEncoder = nullptr;
 
-        if (mGotError) {
-            return DAWN_VALIDATION_ERROR(mErrorMessage);
+        if (mError != nullptr) {
+            return std::move(mError);
         }
         if (currentEncoder != topLevelEncoder) {
             return DAWN_VALIDATION_ERROR("Command buffer recording ended mid-pass");

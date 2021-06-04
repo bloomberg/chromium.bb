@@ -30,10 +30,11 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as CookieTable from '../../cookie_table/cookie_table.js';  // eslint-disable-line no-unused-vars
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
+import * as CookieTable from '../../ui/legacy/components/cookie_table/cookie_table.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../../ui/legacy/legacy.js';
 
 const UIStrings = {
@@ -144,12 +145,9 @@ export class RequestCookiesView extends UI.Widget.Widget {
 
   _getRequestCookies(): {
     requestCookies: Array<SDK.Cookie.Cookie>,
-    requestCookieToBlockedReasons: Map<SDK.Cookie.Cookie, Array<SDK.CookieModel.BlockedReason>>,
+    requestCookieToBlockedReasons: Map<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>,
   } {
-    const requestCookieToBlockedReasons = new Map<SDK.Cookie.Cookie, {
-      attribute: string | null,
-      uiString: string,
-    }[]>();
+    const requestCookieToBlockedReasons = new Map<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>();
     const requestCookies = this._request.includedRequestCookies().slice();
 
     if (this._showFilteredOutCookiesSetting.get()) {
@@ -173,10 +171,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
     malformedResponseCookies: Array<SDK.NetworkRequest.BlockedSetCookieWithReason>,
   } {
     let responseCookies: SDK.Cookie.Cookie[] = [];
-    const responseCookieToBlockedReasons = new Map<SDK.Cookie.Cookie, {
-      attribute: string | null,
-      uiString: string,
-    }[]>();
+    const responseCookieToBlockedReasons = new Map<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>();
     const malformedResponseCookies: SDK.NetworkRequest.BlockedSetCookieWithReason[] = [];
 
     if (this._request.responseCookies.length) {

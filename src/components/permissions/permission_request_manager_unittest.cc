@@ -8,16 +8,15 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/permissions/features.h"
-#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/request_type.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
@@ -25,11 +24,12 @@
 #include "components/permissions/test/test_permissions_client.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace permissions {
 
 namespace {
-using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+using QuietUiReason = PermissionUiSelector::QuietUiReason;
 }
 
 class PermissionRequestManagerTest
@@ -37,34 +37,33 @@ class PermissionRequestManagerTest
       public ::testing::WithParamInterface<bool> {
  public:
   PermissionRequestManagerTest()
-      : content::RenderViewHostTestHarness(),
-        request1_("test1",
+      : request1_(u"test1",
                   RequestType::kDiskQuota,
                   PermissionRequestGestureType::GESTURE),
-        request2_("test2",
+        request2_(u"test2",
                   RequestType::kMultipleDownloads,
                   PermissionRequestGestureType::NO_GESTURE),
-        request_mic_("mic",
+        request_mic_(u"mic",
                      RequestType::kMicStream,
                      PermissionRequestGestureType::NO_GESTURE),
-        request_camera_("cam",
+        request_camera_(u"cam",
                         RequestType::kCameraStream,
                         PermissionRequestGestureType::NO_GESTURE),
 #if !defined(OS_ANDROID)
-        request_ptz_("ptz",
+        request_ptz_(u"ptz",
                      RequestType::kCameraPanTiltZoom,
                      PermissionRequestGestureType::NO_GESTURE),
 #endif
-        iframe_request_same_domain_("iframe",
+        iframe_request_same_domain_(u"iframe",
                                     RequestType::kNotifications,
                                     GURL("http://www.google.com/some/url")),
-        iframe_request_other_domain_("iframe",
+        iframe_request_other_domain_(u"iframe",
                                      RequestType::kGeolocation,
                                      GURL("http://www.youtube.com")),
-        iframe_request_camera_other_domain_("iframe",
+        iframe_request_camera_other_domain_(u"iframe",
                                             RequestType::kCameraStream,
                                             GURL("http://www.youtube.com")),
-        iframe_request_mic_other_domain_("iframe",
+        iframe_request_mic_other_domain_(u"iframe",
                                          RequestType::kMicStream,
                                          GURL("http://www.youtube.com")) {
     feature_list_.InitWithFeatureState(permissions::features::kPermissionChip,
@@ -483,33 +482,33 @@ TEST_P(PermissionRequestManagerTest, DuplicateRequest) {
   WaitForBubbleToBeShown();
   manager_->AddRequest(web_contents()->GetMainFrame(), &request2_);
 
-  MockPermissionRequest dupe_request("test1");
-  manager_->AddRequest(web_contents()->GetMainFrame(), &dupe_request);
-  EXPECT_FALSE(dupe_request.finished());
+  auto dupe_request = request1_.CreateDuplicateRequest();
+  manager_->AddRequest(web_contents()->GetMainFrame(), dupe_request.get());
+  EXPECT_FALSE(dupe_request->finished());
   EXPECT_FALSE(request1_.finished());
 
-  MockPermissionRequest dupe_request2("test2");
-  manager_->AddRequest(web_contents()->GetMainFrame(), &dupe_request2);
-  EXPECT_FALSE(dupe_request2.finished());
+  auto dupe_request2 = request2_.CreateDuplicateRequest();
+  manager_->AddRequest(web_contents()->GetMainFrame(), dupe_request2.get());
+  EXPECT_FALSE(dupe_request2->finished());
   EXPECT_FALSE(request2_.finished());
 
   WaitForBubbleToBeShown();
   Accept();
   if (GetParam()) {
-    EXPECT_TRUE(dupe_request2.finished());
+    EXPECT_TRUE(dupe_request2->finished());
     EXPECT_TRUE(request2_.finished());
   } else {
-    EXPECT_TRUE(dupe_request.finished());
+    EXPECT_TRUE(dupe_request->finished());
     EXPECT_TRUE(request1_.finished());
   }
 
   WaitForBubbleToBeShown();
   Accept();
   if (GetParam()) {
-    EXPECT_TRUE(dupe_request.finished());
+    EXPECT_TRUE(dupe_request->finished());
     EXPECT_TRUE(request1_.finished());
   } else {
-    EXPECT_TRUE(dupe_request2.finished());
+    EXPECT_TRUE(dupe_request2->finished());
     EXPECT_TRUE(request2_.finished());
   }
 }
@@ -680,14 +679,13 @@ TEST_P(PermissionRequestManagerTest, UMAForTabSwitching) {
 // UI selectors
 ////////////////////////////////////////////////////////////////////////////////
 
-// Simulate a NotificationPermissionUiSelector that simply returns a
-// predefined |ui_to_use| every time.
-class MockNotificationPermissionUiSelector
-    : public NotificationPermissionUiSelector {
+// Simulate a PermissionUiSelector that simply returns a predefined |ui_to_use|
+// every time.
+class MockNotificationPermissionUiSelector : public PermissionUiSelector {
  public:
   explicit MockNotificationPermissionUiSelector(
-      base::Optional<QuietUiReason> quiet_ui_reason,
-      base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
+      absl::optional<QuietUiReason> quiet_ui_reason,
+      absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
           prediction_likelihood,
       bool async)
       : quiet_ui_reason_(quiet_ui_reason),
@@ -705,35 +703,69 @@ class MockNotificationPermissionUiSelector
     }
   }
 
-  base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
+  bool IsPermissionRequestSupported(RequestType request_type) override {
+    return request_type == RequestType::kNotifications ||
+           request_type == RequestType::kGeolocation;
+  }
+
+  absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
   PredictedGrantLikelihoodForUKM() override {
     return prediction_likelihood_;
   }
 
   static void CreateForManager(
       PermissionRequestManager* manager,
-      base::Optional<QuietUiReason> quiet_ui_reason,
+      absl::optional<QuietUiReason> quiet_ui_reason,
       bool async,
-      base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
-          prediction_likelihood = base::nullopt) {
-    manager->add_notification_permission_ui_selector_for_testing(
+      absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
+          prediction_likelihood = absl::nullopt) {
+    manager->add_permission_ui_selector_for_testing(
         std::make_unique<MockNotificationPermissionUiSelector>(
             quiet_ui_reason, prediction_likelihood, async));
   }
 
  private:
-  base::Optional<QuietUiReason> quiet_ui_reason_;
-  base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
+  absl::optional<QuietUiReason> quiet_ui_reason_;
+  absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
       prediction_likelihood_;
   bool async_;
 };
 
+// Same as the MockNotificationPermissionUiSelector but handling only the
+// Camera stream request type
+class MockCameraStreamPermissionUiSelector
+    : public MockNotificationPermissionUiSelector {
+ public:
+  explicit MockCameraStreamPermissionUiSelector(
+      absl::optional<QuietUiReason> quiet_ui_reason,
+      absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
+          prediction_likelihood,
+      bool async)
+      : MockNotificationPermissionUiSelector(quiet_ui_reason,
+                                             prediction_likelihood,
+                                             async) {}
+
+  bool IsPermissionRequestSupported(RequestType request_type) override {
+    return request_type == RequestType::kCameraStream;
+  }
+
+  static void CreateForManager(
+      PermissionRequestManager* manager,
+      absl::optional<QuietUiReason> quiet_ui_reason,
+      bool async,
+      absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
+          prediction_likelihood = absl::nullopt) {
+    manager->add_permission_ui_selector_for_testing(
+        std::make_unique<MockCameraStreamPermissionUiSelector>(
+            quiet_ui_reason, prediction_likelihood, async));
+  }
+};
+
 TEST_P(PermissionRequestManagerTest,
        UiSelectorNotUsedForPermissionsOtherThanNotification) {
-  manager_->clear_notification_permission_ui_selector_for_testing();
+  manager_->clear_permission_ui_selector_for_testing();
   MockNotificationPermissionUiSelector::CreateForManager(
-      manager_,
-      NotificationPermissionUiSelector::QuietUiReason::kEnabledInPrefs,
+      manager_, PermissionUiSelector::QuietUiReason::kEnabledInPrefs,
       false /* async */);
 
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_camera_);
@@ -750,22 +782,21 @@ TEST_P(PermissionRequestManagerTest,
 
 TEST_P(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
   const struct {
-    base::Optional<NotificationPermissionUiSelector::QuietUiReason>
-        quiet_ui_reason;
+    absl::optional<PermissionUiSelector::QuietUiReason> quiet_ui_reason;
     bool async;
   } kTests[] = {
       {QuietUiReason::kEnabledInPrefs, true},
-      {NotificationPermissionUiSelector::Decision::UseNormalUi(), true},
+      {PermissionUiSelector::Decision::UseNormalUi(), true},
       {QuietUiReason::kEnabledInPrefs, false},
-      {NotificationPermissionUiSelector::Decision::UseNormalUi(), false},
+      {PermissionUiSelector::Decision::UseNormalUi(), false},
   };
 
   for (const auto& test : kTests) {
-    manager_->clear_notification_permission_ui_selector_for_testing();
+    manager_->clear_permission_ui_selector_for_testing();
     MockNotificationPermissionUiSelector::CreateForManager(
         manager_, test.quiet_ui_reason, test.async);
 
-    MockPermissionRequest request("foo", RequestType::kNotifications,
+    MockPermissionRequest request(u"foo", RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
@@ -783,23 +814,21 @@ TEST_P(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
 
 TEST_P(PermissionRequestManagerTest,
        UiSelectionHappensSeparatelyForEachRequest) {
-  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
-  manager_->clear_notification_permission_ui_selector_for_testing();
+  manager_->clear_permission_ui_selector_for_testing();
   MockNotificationPermissionUiSelector::CreateForManager(
       manager_, QuietUiReason::kEnabledInPrefs, true);
-  MockPermissionRequest request1("request1", RequestType::kNotifications,
+  MockPermissionRequest request1(u"request1", RequestType::kNotifications,
                                  PermissionRequestGestureType::GESTURE);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request1);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
-  MockPermissionRequest request2("request2", RequestType::kNotifications,
+  MockPermissionRequest request2(u"request2", RequestType::kNotifications,
                                  PermissionRequestGestureType::GESTURE);
-  manager_->clear_notification_permission_ui_selector_for_testing();
+  manager_->clear_permission_ui_selector_for_testing();
   MockNotificationPermissionUiSelector::CreateForManager(
-      manager_, NotificationPermissionUiSelector::Decision::UseNormalUi(),
-      true);
+      manager_, PermissionUiSelector::Decision::UseNormalUi(), true);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request2);
   WaitForBubbleToBeShown();
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
@@ -807,12 +836,11 @@ TEST_P(PermissionRequestManagerTest,
 }
 
 TEST_P(PermissionRequestManagerTest, MultipleUiSelectors) {
-  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
 
   const struct {
-    std::vector<base::Optional<QuietUiReason>> quiet_ui_reasons;
+    std::vector<absl::optional<QuietUiReason>> quiet_ui_reasons;
     std::vector<bool> simulate_delayed_decision;
-    base::Optional<QuietUiReason> expected_reason;
+    absl::optional<QuietUiReason> expected_reason;
   } kTests[] = {
       // Simple sync selectors, first one should take priority.
       {{QuietUiReason::kTriggeredByCrowdDeny, QuietUiReason::kEnabledInPrefs},
@@ -824,43 +852,43 @@ TEST_P(PermissionRequestManagerTest, MultipleUiSelectors) {
        {true, false},
        QuietUiReason::kTriggeredByCrowdDeny},
       // The first selector that has a quiet ui decision should be used.
-      {{base::nullopt, base::nullopt,
+      {{absl::nullopt, absl::nullopt,
         QuietUiReason::kTriggeredDueToAbusiveContent,
         QuietUiReason::kEnabledInPrefs},
        {false, true, true, false},
        QuietUiReason::kTriggeredDueToAbusiveContent},
       // If all selectors return a normal ui, it should use a normal ui.
-      {{base::nullopt, base::nullopt}, {false, true}, base::nullopt},
+      {{absl::nullopt, absl::nullopt}, {false, true}, absl::nullopt},
 
       // Use a bunch of selectors both async and sync.
-      {{base::nullopt, base::nullopt, base::nullopt, base::nullopt,
-        base::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
-        base::nullopt, QuietUiReason::kEnabledInPrefs},
+      {{absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt,
+        absl::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
+        absl::nullopt, QuietUiReason::kEnabledInPrefs},
        {false, true, false, true, true, true, false, false},
        QuietUiReason::kTriggeredDueToAbusiveRequests},
       // Use a bunch of selectors all sync.
-      {{base::nullopt, base::nullopt, base::nullopt, base::nullopt,
-        base::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
-        base::nullopt, QuietUiReason::kEnabledInPrefs},
+      {{absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt,
+        absl::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
+        absl::nullopt, QuietUiReason::kEnabledInPrefs},
        {false, false, false, false, false, false, false, false},
        QuietUiReason::kTriggeredDueToAbusiveRequests},
       // Use a bunch of selectors all async.
-      {{base::nullopt, base::nullopt, base::nullopt, base::nullopt,
-        base::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
-        base::nullopt, QuietUiReason::kEnabledInPrefs},
+      {{absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt,
+        absl::nullopt, QuietUiReason::kTriggeredDueToAbusiveRequests,
+        absl::nullopt, QuietUiReason::kEnabledInPrefs},
        {true, true, true, true, true, true, true, true},
        QuietUiReason::kTriggeredDueToAbusiveRequests},
   };
 
   for (const auto& test : kTests) {
-    manager_->clear_notification_permission_ui_selector_for_testing();
+    manager_->clear_permission_ui_selector_for_testing();
     for (size_t i = 0; i < test.quiet_ui_reasons.size(); ++i) {
       MockNotificationPermissionUiSelector::CreateForManager(
           manager_, test.quiet_ui_reasons[i],
           test.simulate_delayed_decision[i]);
     }
 
-    MockPermissionRequest request("foo", RequestType::kNotifications,
+    MockPermissionRequest request(u"foo", RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
@@ -880,7 +908,6 @@ TEST_P(PermissionRequestManagerTest, MultipleUiSelectors) {
 }
 
 TEST_P(PermissionRequestManagerTest, SelectorsPredictionLikelihood) {
-  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
   using PredictionLikelihood = PermissionUmaUtil::PredictionGrantLikelihood;
   const auto VeryLikely = PredictionLikelihood::
       PermissionPrediction_Likelihood_DiscretizedLikelihood_VERY_LIKELY;
@@ -889,17 +916,17 @@ TEST_P(PermissionRequestManagerTest, SelectorsPredictionLikelihood) {
 
   const struct {
     std::vector<bool> enable_quiet_uis;
-    std::vector<base::Optional<PredictionLikelihood>> prediction_likelihoods;
-    base::Optional<PredictionLikelihood> expected_prediction_likelihood;
+    std::vector<absl::optional<PredictionLikelihood>> prediction_likelihoods;
+    absl::optional<PredictionLikelihood> expected_prediction_likelihood;
   } kTests[] = {
       // Sanity check: prediction likelihood is populated correctly.
       {{true}, {VeryLikely}, VeryLikely},
       {{false}, {Neutral}, Neutral},
 
       // Prediction likelihood is populated only if the selector was considered.
-      {{true, true}, {base::nullopt, VeryLikely}, base::nullopt},
-      {{false, true}, {base::nullopt, VeryLikely}, VeryLikely},
-      {{false, false}, {base::nullopt, VeryLikely}, VeryLikely},
+      {{true, true}, {absl::nullopt, VeryLikely}, absl::nullopt},
+      {{false, true}, {absl::nullopt, VeryLikely}, VeryLikely},
+      {{false, false}, {absl::nullopt, VeryLikely}, VeryLikely},
 
       // First considered selector is preserved.
       {{true, true}, {Neutral, VeryLikely}, Neutral},
@@ -908,17 +935,17 @@ TEST_P(PermissionRequestManagerTest, SelectorsPredictionLikelihood) {
   };
 
   for (const auto& test : kTests) {
-    manager_->clear_notification_permission_ui_selector_for_testing();
+    manager_->clear_permission_ui_selector_for_testing();
     for (size_t i = 0; i < test.enable_quiet_uis.size(); ++i) {
       MockNotificationPermissionUiSelector::CreateForManager(
           manager_,
           test.enable_quiet_uis[i]
-              ? base::Optional<QuietUiReason>(QuietUiReason::kEnabledInPrefs)
-              : base::nullopt,
+              ? absl::optional<QuietUiReason>(QuietUiReason::kEnabledInPrefs)
+              : absl::nullopt,
           false /* async */, test.prediction_likelihoods[i]);
     }
 
-    MockPermissionRequest request("foo", RequestType::kNotifications,
+    MockPermissionRequest request(u"foo", RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
@@ -932,6 +959,39 @@ TEST_P(PermissionRequestManagerTest, SelectorsPredictionLikelihood) {
     Accept();
     EXPECT_TRUE(request.granted());
   }
+}
+
+TEST_P(PermissionRequestManagerTest, SelectorRequestTypes) {
+  const struct {
+    RequestType request_type;
+    bool should_request_use_quiet_ui;
+  } kTests[] = {
+      {RequestType::kNotifications, true},
+      {RequestType::kGeolocation, true},
+      {RequestType::kCameraStream, false},
+  };
+  manager_->clear_permission_ui_selector_for_testing();
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_, QuietUiReason::kEnabledInPrefs, true);
+  for (const auto& test : kTests) {
+    MockPermissionRequest request(u"request", test.request_type,
+                                  PermissionRequestGestureType::GESTURE);
+    manager_->AddRequest(web_contents()->GetMainFrame(), &request);
+    WaitForBubbleToBeShown();
+    EXPECT_EQ(test.should_request_use_quiet_ui,
+              manager_->ShouldCurrentRequestUseQuietUI());
+    Accept();
+  }
+  // Adding a mock PermissionUiSelector that handles Camera stream.
+  MockCameraStreamPermissionUiSelector::CreateForManager(
+      manager_, QuietUiReason::kEnabledInPrefs, true);
+  // Now the RequestType::kCameraStream should show a quiet UI as well
+  MockPermissionRequest request2(u"request2", RequestType::kCameraStream,
+                                 PermissionRequestGestureType::GESTURE);
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request2);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  Accept();
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

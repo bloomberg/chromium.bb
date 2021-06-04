@@ -51,9 +51,7 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
       wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
-      animation_power_mode_voter_(
-          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Animation")) {
+      power_mode_voter_("PowerModeVoter.Animation") {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -143,7 +141,7 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
               frame.size_in_pixels().width());
   }
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list =
+  absl::optional<viz::HitTestRegionList> hit_test_region_list =
       client_->BuildHitTestData();
 
   if (show_hit_test_borders && hit_test_region_list)
@@ -160,7 +158,7 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
                                         last_hit_test_data_)) {
       DCHECK(!viz::HitTestRegionList::IsEqual(*hit_test_region_list,
                                               viz::HitTestRegionList()));
-      hit_test_region_list = base::nullopt;
+      hit_test_region_list = absl::nullopt;
     } else {
       last_hit_test_data_ = *hit_test_region_list;
     }
@@ -201,20 +199,24 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
                          "Event.Pipeline", TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_OUT, "step",
                          "SubmitHitTestData");
+  power_mode_voter_.OnFrameProduced();
 
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list), 0);
 }
 
-void AsyncLayerTreeFrameSink::DidNotProduceFrame(
-    const viz::BeginFrameAck& ack) {
+void AsyncLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                                 FrameSkippedReason reason) {
   DCHECK(compositor_frame_sink_ptr_);
   DCHECK(!ack.has_damage);
   DCHECK(ack.frame_id.IsSequenceValid());
-  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+  TRACE_EVENT_WITH_FLOW2("viz,benchmark", "Graphics.Pipeline",
                          TRACE_ID_GLOBAL(ack.trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "step", "DidNotProduceFrame");
+                         "step", "DidNotProduceFrame", "reason", reason);
+  bool frame_completed = reason == FrameSkippedReason::kNoDamage;
+  bool waiting_on_main = reason == FrameSkippedReason::kWaitingOnMain;
+  power_mode_voter_.OnFrameSkipped(frame_completed, waiting_on_main);
   compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
 }
 
@@ -232,9 +234,9 @@ void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
 }
 
 void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->ReclaimResources(resources);
+  client_->ReclaimResources(std::move(resources));
   client_->DidReceiveCompositorFrameAck();
 }
 
@@ -253,7 +255,8 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
     // sink know that we didn't use this BeginFrame. OnBeginFrame() can also be
     // called to deliver presentation feedback.
-    DidNotProduceFrame(viz::BeginFrameAck(args, false));
+    DidNotProduceFrame(viz::BeginFrameAck(args, false),
+                       FrameSkippedReason::kNoDamage);
     return;
   }
   TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
@@ -272,9 +275,9 @@ void AsyncLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
 }
 
 void AsyncLayerTreeFrameSink::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->ReclaimResources(resources);
+  client_->ReclaimResources(std::move(resources));
 }
 
 void AsyncLayerTreeFrameSink::OnCompositorFrameTransitionDirectiveProcessed(
@@ -288,13 +291,10 @@ void AsyncLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
     if (needs_begin_frames) {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc,benchmark", "NeedsBeginFrames",
                                         this);
-      animation_power_mode_voter_->VoteFor(
-          power_scheduler::PowerMode::kAnimation);
     } else {
       TRACE_EVENT_NESTABLE_ASYNC_END0("cc,benchmark", "NeedsBeginFrames", this);
-      animation_power_mode_voter_->ResetVoteAfterTimeout(
-          power_scheduler::PowerModeVoter::kAnimationTimeout);
     }
+    power_mode_voter_.OnNeedsBeginFramesChanged(needs_begin_frames);
   }
   needs_begin_frames_ = needs_begin_frames;
   compositor_frame_sink_ptr_->SetNeedsBeginFrame(needs_begin_frames);
@@ -303,7 +303,7 @@ void AsyncLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
 void AsyncLayerTreeFrameSink::OnMojoConnectionError(
     uint32_t custom_reason,
     const std::string& description) {
-  // TODO(sgilhuly): Use DLOG(FATAL) once crbug.com/1043899 is resolved.
+  // TODO(rivr): Use DLOG(FATAL) once crbug.com/1043899 is resolved.
   if (custom_reason)
     DLOG(ERROR) << description;
   if (client_)

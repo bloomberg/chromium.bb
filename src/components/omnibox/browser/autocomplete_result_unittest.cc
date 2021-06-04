@@ -121,7 +121,7 @@ class AutocompleteResultTest : public testing::Test {
     AutocompleteMatchType::Type type{AutocompleteMatchType::SEARCH_SUGGEST};
 
     // Suggestion Group ID for this suggestion
-    base::Optional<int> suggestion_group_id;
+    absl::optional<int> suggestion_group_id;
 
     // Inline autocompletion.
     std::string inline_autocompletion;
@@ -1925,11 +1925,6 @@ TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
 }
 
 TEST_F(AutocompleteResultTest, AttachesPedals) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {omnibox::kOmniboxPedalSuggestions, omnibox::kOmniboxSuggestionButtonRow},
-      {});
-  EXPECT_TRUE(OmniboxFieldTrial::IsPedalSuggestionsEnabled());
   FakeAutocompleteProviderClient client;
   EXPECT_NE(nullptr, client.GetPedalProvider());
 

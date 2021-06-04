@@ -7,7 +7,7 @@
 
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -30,6 +30,9 @@ class ASH_EXPORT AmbientInfoView : public views::View {
   AmbientInfoView(const AmbientInfoView&) = delete;
   AmbientInfoView& operator=(AmbientInfoView&) = delete;
   ~AmbientInfoView() override;
+
+  // views::View
+  void OnThemeChanged() override;
 
   void UpdateImageDetails(const std::u16string& details);
 

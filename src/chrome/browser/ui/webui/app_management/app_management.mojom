@@ -24,6 +24,7 @@ struct App {
   apps.mojom.InstallSource install_source;
   bool hide_more_settings;
   bool hide_pin_to_shelf;
+  bool is_preferred_app;
 };
 
 // Extension-based apps primarily use install-time permissions that cannot be
@@ -56,7 +57,6 @@ interface Page {
   OnAppAdded(App app);
   OnAppChanged(App update);
   OnAppRemoved(string app_id);
-  OnArcSupportChanged(bool supported);
 };
 
 // Permission Type Enums for each App Publisher. The App Publishers are

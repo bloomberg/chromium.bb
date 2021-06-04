@@ -7,20 +7,31 @@
 #include <memory>
 
 #include "ash/public/cpp/test/test_system_tray_client.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/hermes/hermes_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/network/cellular_esim_profile_handler_impl.h"
+#include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
+#include "chromeos/network/network_metadata_store.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/network/test_cellular_esim_profile_handler.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
@@ -28,6 +39,10 @@ namespace {
 
 const char kWiFi1Guid[] = "wifi1_guid";
 const char kCellular1Guid[] = "cellular1_guid";
+const char kCellular1NetworkName[] = "cellular1";
+const char16_t kCellular1NetworkName16[] = u"cellular1";
+const char kTestEsimProfileName[] = "test_profile_name";
+const char16_t kTestEsimProfileName16[] = u"test_profile_name";
 
 class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
  public:
@@ -66,9 +81,14 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    shill_clients::InitializeFakes();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
+    CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
+        local_state_.registry());
+    NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
+    NetworkMetadataStore::RegisterPrefs(local_state_.registry());
+    NetworkHandler::Get()->InitializePrefServices(&user_prefs_, &local_state_);
+
     SetupDefaultShillState();
-    NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
 
     auto notifier = std::make_unique<NetworkStateNotifier>();
@@ -83,19 +103,50 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
-    NetworkHandler::Shutdown();
-    shill_clients::Shutdown();
+    network_handler_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
+  void SetupESimNetwork() {
+    const char kCellularEsimServicePath[] = "/service/cellular_esim1";
+    const char kTestEuiccPath[] = "euicc_path";
+    const char kTestEidName[] = "eid";
+    const char kTestIccid[] = "iccid";
+
+    // Disable stub cellular networks so that eSIM profile and service can both
+    // be added at the same time without stub network interfering.
+    NetworkHandler::Get()
+        ->network_state_handler()
+        ->set_stub_cellular_networks_provider(nullptr);
+    ShillServiceClient::TestInterface* service_test =
+        ShillServiceClient::Get()->GetTestInterface();
+    service_test->ClearServices();
+
+    hermes_manager_test_ = HermesManagerClient::Get()->GetTestInterface();
+    hermes_euicc_test_ = HermesEuiccClient::Get()->GetTestInterface();
+
+    hermes_manager_test_->AddEuicc(dbus::ObjectPath(kTestEuiccPath),
+                                   kTestEidName, /*is_active=*/true,
+                                   /*physical_slot=*/0);
+
+    hermes_euicc_test_->AddCarrierProfile(
+        dbus::ObjectPath(kCellularEsimServicePath),
+        dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestEsimProfileName,
+        "service_provider", "activation_code", kCellularEsimServicePath,
+        hermes::profile::State::kActive,
+        hermes::profile::ProfileClass::kOperational,
+        HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+            kAddProfileWithService);
+    base::RunLoop().RunUntilIdle();
+  }
   void SetupDefaultShillState() {
     ShillDeviceClient::TestInterface* device_test =
-        ShillDeviceClient::Get()->GetTestInterface();
+        network_handler_test_helper_->device_test();
     device_test->ClearDevices();
 
     ShillServiceClient::TestInterface* service_test =
-        ShillServiceClient::Get()->GetTestInterface();
+        network_handler_test_helper_->service_test();
     service_test->ClearServices();
 
     // Set up Wi-Fi device, and add a single network with a passphrase failure.
@@ -118,8 +169,9 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     const char kCellular1Iccid[] = "iccid";
     device_test->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                            "stub_cellular_device1");
-    service_test->AddService(kCellular1ServicePath, kCellular1Guid, "cellular1",
-                             shill::kTypeCellular, shill::kStateIdle, true);
+    service_test->AddService(kCellular1ServicePath, kCellular1Guid,
+                             kCellular1NetworkName, shill::kTypeCellular,
+                             shill::kStateIdle, true);
     service_test->SetServiceProperty(kCellular1ServicePath,
                                      shill::kIccidProperty,
                                      base::Value(kCellular1Iccid));
@@ -145,8 +197,13 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  HermesManagerClient::TestInterface* hermes_manager_test_;
+  HermesEuiccClient::TestInterface* hermes_euicc_test_;
   ash::TestSystemTrayClient test_system_tray_client_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
+  TestingPrefServiceSimple user_prefs_;
+  TestingPrefServiceSimple local_state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifierTest);
@@ -171,15 +228,42 @@ TEST_F(NetworkStateNotifierTest, CellularLockedSimConnectionFailure) {
   base::RunLoop().RunUntilIdle();
 
   // Failure should spawn a notification.
-  base::Optional<message_center::Notification> notification =
+  absl::optional<message_center::Notification> notification =
       tester.GetNotification(
           NetworkStateNotifier::kNetworkConnectNotificationId);
   EXPECT_TRUE(notification);
 
+  EXPECT_EQ(
+      notification->message(),
+      l10n_util::GetStringFUTF16(
+          IDS_NETWORK_CONNECTION_ERROR_MESSAGE, kCellular1NetworkName16,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED)));
+
   // Clicking the notification should open SIM unlock settings.
-  notification->delegate()->Click(/*button_index=*/base::nullopt,
-                                  /*reply=*/base::nullopt);
+  notification->delegate()->Click(/*button_index=*/absl::nullopt,
+                                  /*reply=*/absl::nullopt);
   EXPECT_EQ(1, test_system_tray_client_.show_sim_unlock_settings_count());
+}
+
+TEST_F(NetworkStateNotifierTest, CellularEsimConnectionFailure) {
+  SetupESimNetwork();
+  TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+      std::make_unique<SystemNotificationHelper>());
+  NotificationDisplayServiceTester tester(nullptr /* profile */);
+  NetworkConnect::Get()->ConnectToNetworkId("esim_guidiccid");
+  base::RunLoop().RunUntilIdle();
+
+  // Failure should spawn a notification.
+  absl::optional<message_center::Notification> notification =
+      tester.GetNotification(
+          NetworkStateNotifier::kNetworkConnectNotificationId);
+  EXPECT_TRUE(notification);
+
+  EXPECT_EQ(
+      notification->message(),
+      l10n_util::GetStringFUTF16(
+          IDS_NETWORK_CONNECTION_ERROR_MESSAGE, kTestEsimProfileName16,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED)));
 }
 
 }  // namespace chromeos

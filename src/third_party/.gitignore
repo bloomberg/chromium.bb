@@ -5,6 +5,7 @@
 /accessibility_test_framework/lib/
 /adobe/flash/binaries
 /adobe/flash/symbols
+/aemu-linux-arm64
 /aemu-linux-x64
 /amd/
 /android_build_tools/aapt2/aapt2
@@ -223,6 +224,9 @@
 /smhasher/src
 /snappy/src
 /soda
+/soda-mac64
+/soda-win32
+/soda-win64
 /speex
 /sqlite/src
 /sqlite4java/lib/
@@ -265,5 +269,4 @@
 /wix
 /wuffs/src
 /xdg-utils
-/xstream/lib/
 /xulrunner-sdk

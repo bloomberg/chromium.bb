@@ -36,12 +36,13 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
+#include "base/logging.h"
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -279,6 +280,11 @@ class LayoutUnit {
   }
 
   static LayoutUnit Clamp(double value) { return FromFloatFloor(value); }
+
+  // Multiply by |m| and divide by |d| as a single ("fused") operation, avoiding
+  // any saturation of the intermediate result. Rounding matches that of the
+  // regular operations (i.e the result of the divide is rounded towards zero).
+  LayoutUnit MulDiv(LayoutUnit m, LayoutUnit d) const;
 
   String ToString() const;
 
@@ -558,6 +564,12 @@ inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
+inline LayoutUnit LayoutUnit::MulDiv(LayoutUnit m, LayoutUnit d) const {
+  int64_t n = static_cast<int64_t>(RawValue()) * m.RawValue();
+  int64_t q = n / d.RawValue();
+  return FromRawValue(base::saturated_cast<int>(q));
+}
+
 constexpr float operator/(const LayoutUnit& a, float b) {
   return a.ToFloat() / b;
 }
@@ -750,8 +762,7 @@ inline float& operator/=(float& a, const LayoutUnit& b) {
 inline int SnapSizeToPixel(LayoutUnit size, LayoutUnit location) {
   LayoutUnit fraction = location.Fraction();
   int result = (fraction + size).Round() - fraction.Round();
-  if (UNLIKELY(result == 0 &&
-               std::abs(size.ToFloat()) > LayoutUnit::Epsilon() * 4)) {
+  if (UNLIKELY(result == 0 && (size.RawValue() > 4 || size.RawValue() < -4))) {
     return size > 0 ? 1 : -1;
   }
   return result;

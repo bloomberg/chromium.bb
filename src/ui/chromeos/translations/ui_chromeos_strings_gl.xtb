@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Control desprazable de busca</translation>
 <translation id="1404323374378969387">Noruegués</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1433628812591023318">Para soltar ficheiros en Parallels Desktop, estes deben moverse a Ficheiros de Windows.</translation>
 <translation id="1435838927755162558">Compartir cartafol con Parallels Desktop</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1471718551822868769">Eslovaco</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Ficheiros de Windows</translation>
 <translation id="3078461028045006476">Compartir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
+<translation id="3113153474486991170">Non se puido abrir <ph name="PATH" /> desde esta localización. Se queres que se abra, cópiao en Os meus ficheiros.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">LISTO</translation>
 <translation id="3188257591659621405">Os meus ficheiros</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Búlgaro con teclado fonético</translation>
 <translation id="5605830556594064952">Dvorak para EUA</translation>
 <translation id="5625294776298156701">Támil con teclado Tamil99</translation>
+<translation id="5633226425545095130">Ao mover este elemento, compartirase con todas as persoas que poidan ver o cartafol compartido <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Escoitar</translation>
 <translation id="5678784840044122290">A aplicación Linux estará dispoñible dentro do terminal e tamén pode mostrar unha icona no menú de aplicacións.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Non se puido desconectar dun arquivo ou disco virtual<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
 <translation id="7460898608667578234">Ucraíno</translation>
+<translation id="7486315294984620427">Para soltar ficheiros en Parallels Desktop, estes deben copiarse en Ficheiros de Windows.</translation>
 <translation id="7489215562877293245">Atopáronse <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Listo para crear unha copia de seguranza en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Dimensións</translation>
 <translation id="8437209419043462667">EUA</translation>
 <translation id="8456681095658380701">Nome non válido</translation>
+<translation id="8459404855768962328">Ao copiar este elemento, compartirase con todas as persoas que poidan ver o cartafol compartido <ph name="DESTINATION_NAME" />.</translation>
 <translation id="8461467696380332069">Para acceder de forma rápida aos teus ficheiros no estante, fai clic co botón dereito nun ficheiro e selecciona Fixar no estante.</translation>
 <translation id="8463494891489624050">Vietnamita (VIQR)</translation>
 <translation id="8466234950814670489">Arquivo Tar</translation>

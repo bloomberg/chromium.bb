@@ -18,6 +18,7 @@ import {
   base64Encode,
 } from '../base/string_utils';
 import {Actions} from '../common/actions';
+import {TRACE_SUFFIX} from '../common/constants';
 import {
   AndroidLogConfig,
   AndroidLogId,
@@ -245,7 +246,7 @@ export function genConfig(
 
   let heapprofd: HeapprofdConfig|undefined = undefined;
   if (uiCfg.heapProfiling) {
-    // TODO(taylori): Check or inform user if buffer size are too small.
+    // TODO(hjd): Check or inform user if buffer size are too small.
     const cfg = new HeapprofdConfig();
     cfg.samplingIntervalBytes = uiCfg.hpSamplingIntervalBytes;
     if (uiCfg.hpSharedMemoryBuffer >= 8192 &&
@@ -329,6 +330,15 @@ export function genConfig(
     }
   }
 
+  if (uiCfg.androidFrameTimeline) {
+    const ds = new TraceConfig.DataSource();
+    ds.config = new DataSourceConfig();
+    ds.config.name = 'android.surfaceflinger.frametimeline';
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
+  }
+
   if (uiCfg.chromeLogs) {
     chromeCategories.add('log');
   }
@@ -396,7 +406,12 @@ export function genConfig(
     };
     if (chromeCategories.has('disabled-by-default-memory-infra')) {
       configStruct.memory_dump_config = {
-        triggers: [{mode: 'detailed', periodic_interval_ms: 10000}]
+        allowed_dump_modes: ['background', 'light', 'detailed'],
+        triggers: [{
+          min_time_between_dumps_ms: 10000,
+          mode: 'detailed',
+          type: 'periodic_interval',
+        }],
       };
     }
     const traceConfigJson = JSON.stringify(configStruct);
@@ -575,6 +590,7 @@ export class RecordController extends Controller<'main'> implements Consumer {
   private traceBuffer: Uint8Array[] = [];
   private bufferUpdateInterval: ReturnType<typeof setTimeout>|undefined;
   private adb = new AdbOverWebUsb();
+  private recordedTraceSuffix = TRACE_SUFFIX;
 
   // We have a different controller for each targetOS. The correct one will be
   // created when needed, and stored here. When the key is a string, it is the
@@ -694,8 +710,11 @@ export class RecordController extends Controller<'main'> implements Consumer {
       return;
     }
     const trace = this.generateTrace();
-    globals.dispatch(Actions.openTraceFromBuffer(
-        {title: 'Recorded trace', buffer: trace.buffer}));
+    globals.dispatch(Actions.openTraceFromBuffer({
+      title: 'Recorded trace',
+      buffer: trace.buffer,
+      fileName: `recorded_trace${this.recordedTraceSuffix}`,
+    }));
     this.traceBuffer = [];
   }
 
@@ -796,8 +815,12 @@ export class RecordController extends Controller<'main'> implements Consumer {
       _callback: RPCImplCallback) {
     try {
       const state = this.app.state;
-      (await this.getTargetController(state.recordingTarget))
-          .handleCommand(method.name, requestData);
+      // TODO(hjd): This is a bit weird. We implicity send each RPC message to
+      // whichever target is currently selected (creating that target if needed)
+      // it would be nicer if the setup/teardown was more explicit.
+      const target = await this.getTargetController(state.recordingTarget);
+      this.recordedTraceSuffix = target.getRecordedTraceSuffix();
+      target.handleCommand(method.name, requestData);
     } catch (e) {
       console.error(`error invoking ${method}: ${e.message}`);
     }

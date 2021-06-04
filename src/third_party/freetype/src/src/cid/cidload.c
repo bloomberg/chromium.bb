@@ -552,7 +552,7 @@
           goto Fail;
         }
 
-        if ( FT_RENEW_ARRAY( offsets, max_offsets, new_max ) )
+        if ( FT_QRENEW_ARRAY( offsets, max_offsets, new_max ) )
           goto Fail;
 
         max_offsets = new_max;
@@ -589,8 +589,8 @@
       /* allocate, and read them                     */
       data_len = offsets[num_subrs] - offsets[0];
 
-      if ( FT_NEW_ARRAY( subr->code, num_subrs + 1 ) ||
-           FT_ALLOC( subr->code[0], data_len )       )
+      if ( FT_QNEW_ARRAY( subr->code, num_subrs + 1 ) ||
+           FT_QALLOC( subr->code[0], data_len )       )
         goto Fail;
 
       if ( FT_STREAM_SEEK( cid->data_offset + offsets[0] ) ||
@@ -668,14 +668,15 @@
   cid_hex_to_binary( FT_Byte*  data,
                      FT_ULong  data_len,
                      FT_ULong  offset,
-                     CID_Face  face )
+                     CID_Face  face,
+                     FT_ULong* data_written )
   {
     FT_Stream  stream = face->root.stream;
     FT_Error   error;
 
     FT_Byte    buffer[256];
     FT_Byte   *p, *plimit;
-    FT_Byte   *d, *dlimit;
+    FT_Byte   *d = data, *dlimit;
     FT_Byte    val;
 
     FT_Bool    upper_nibble, done;
@@ -684,7 +685,6 @@
     if ( FT_STREAM_SEEK( offset ) )
       goto Exit;
 
-    d      = data;
     dlimit = d + data_len;
     p      = buffer;
     plimit = p;
@@ -758,6 +758,7 @@
     error = FT_Err_Ok;
 
   Exit:
+    *data_written = d - data;
     return error;
   }
 
@@ -812,15 +813,16 @@
       }
 
       /* we must convert the data section from hexadecimal to binary */
-      if ( FT_ALLOC( face->binary_data, parser->binary_length )    ||
+      if ( FT_QALLOC( face->binary_data, parser->binary_length )   ||
            FT_SET_ERROR( cid_hex_to_binary( face->binary_data,
                                             parser->binary_length,
                                             parser->data_offset,
-                                            face ) )               )
+                                            face,
+                                            &binary_length ) )     )
         goto Exit;
 
       FT_Stream_OpenMemory( face->cid_stream,
-                            face->binary_data, parser->binary_length );
+                            face->binary_data, binary_length );
       cid->data_offset = 0;
     }
     else

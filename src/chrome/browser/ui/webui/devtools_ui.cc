@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/ui/webui/devtools_ui_data_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -64,8 +65,9 @@ bool DevToolsUI::IsFrontendResourceURL(const GURL& url) {
 DevToolsUI::DevToolsUI(content::WebUI* web_ui)
     : WebUIController(web_ui), bindings_(web_ui->GetWebContents()) {
   web_ui->SetBindings(content::BINDINGS_POLICY_NONE);
-  auto factory = content::BrowserContext::GetDefaultStoragePartition(
-                     web_ui->GetWebContents()->GetBrowserContext())
+  auto factory = web_ui->GetWebContents()
+                     ->GetBrowserContext()
+                     ->GetDefaultStoragePartition()
                      ->GetURLLoaderFactoryForBrowserProcess();
   content::URLDataSource::Add(
       web_ui->GetWebContents()->GetBrowserContext(),

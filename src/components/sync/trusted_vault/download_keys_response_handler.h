@@ -21,25 +21,19 @@ class SecureBoxKeyPair;
 class DownloadKeysResponseHandler {
  public:
   struct ProcessedResponse {
-    explicit ProcessedResponse(TrustedVaultRequestStatus status);
-    ProcessedResponse(TrustedVaultRequestStatus status,
+    explicit ProcessedResponse(TrustedVaultDownloadKeysStatus status);
+    ProcessedResponse(TrustedVaultDownloadKeysStatus status,
                       std::vector<std::vector<uint8_t>> new_keys,
                       int last_key_version);
     ProcessedResponse(const ProcessedResponse& other);
     ProcessedResponse& operator=(const ProcessedResponse& other);
     ~ProcessedResponse();
 
-    // kSuccess is reported if extraction was successful and there are new
-    // trusted vault keys.
-    // kLocalDataObsolete is reported if it's impossible to extract keys due to
-    // data corruption or absence of sync SecurityDomainMembership or if there
-    // is no new keys.
-    // kOtherError is reported in case of http/network errors or if the response
-    // isn't valid serialized SecurityDomainMember proto.
-    TrustedVaultRequestStatus status;
+    TrustedVaultDownloadKeysStatus status;
 
     // Contains new keys (e.g. keys are stored by the server, excluding last
-    // known key and keys that predate it).
+    // known key and keys that predate it).  Excludes first key if it's a
+    // constant key.
     std::vector<std::vector<uint8_t>> new_keys;
     int last_key_version;
   };
@@ -48,7 +42,7 @@ class DownloadKeysResponseHandler {
   // is provided, then it will be verified that the new keys are result of
   // rotating the provided key.
   DownloadKeysResponseHandler(
-      const base::Optional<TrustedVaultKeyAndVersion>&
+      const absl::optional<TrustedVaultKeyAndVersion>&
           last_trusted_vault_key_and_version,
       std::unique_ptr<SecureBoxKeyPair> device_key_pair);
   DownloadKeysResponseHandler(const DownloadKeysResponseHandler& other) =
@@ -61,7 +55,7 @@ class DownloadKeysResponseHandler {
                                     const std::string& response_body) const;
 
  private:
-  const base::Optional<TrustedVaultKeyAndVersion>
+  const absl::optional<TrustedVaultKeyAndVersion>
       last_trusted_vault_key_and_version_;
   const std::unique_ptr<SecureBoxKeyPair> device_key_pair_;
 };

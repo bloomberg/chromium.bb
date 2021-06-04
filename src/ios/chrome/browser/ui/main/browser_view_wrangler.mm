@@ -97,7 +97,7 @@
 
 @interface BrowserViewWrangler () {
   ChromeBrowserState* _browserState;
-  SceneState* _sceneState;
+  __weak SceneState* _sceneState;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowsingDataCommands> _browsingDataCommandEndpoint;
   BOOL _isShutdown;
@@ -155,9 +155,14 @@
   DCHECK(_isShutdown) << "-shutdown must be called before -dealloc";
 }
 
-- (void)createMainBrowser {
+- (Browser*)createMainBrowser {
   _mainBrowser = [self buildBrowserForBrowserState:_browserState
                                     restoreSession:YES];
+  return _mainBrowser.get();
+}
+
+- (void)createMainCoordinatorAndInterface {
+  DCHECK(_mainBrowser);
 
   // Create the main coordinator, and thus the main interface.
   _mainBrowserCoordinator = [self coordinatorForBrowser:self.mainBrowser];

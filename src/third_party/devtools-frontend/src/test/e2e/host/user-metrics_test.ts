@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
 import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, pressKey, reloadDevTools, scrollElementIntoView, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
@@ -669,7 +669,7 @@ describe('User Metrics for Issue Panel', () => {
     await beginCatchEvents(frontend);
   });
 
-  it('dispatch events when expand an issue', async () => {
+  it('dispatch events when issue is expanded', async () => {
     await goToResource('host/cookie-issue.html');
     await waitFor('.issue');
 
@@ -715,9 +715,8 @@ describe('User Metrics for Issue Panel', () => {
     ]);
   });
 
-  // Skipped to allow chromium test binary to roll.
-  it.skip('[crbug.com/1196618] dispatches an event when a SharedArrayBufferIssue is created', async () => {
-    await goToResource('issues/sab-issue.html');
+  it('dispatches an event when a SharedArrayBufferIssue is created', async () => {
+    await goToResource('issues/sab-issue.rawresponse');
     await waitFor('.issue');
 
     await assertCapturedEvents([
@@ -786,6 +785,24 @@ describe('User Metrics for Issue Panel', () => {
       {
         name: 'DevTools.IssuesPanelResourceOpened',
         value: 12,  // ContentSecurityPolicyLearnMore
+      },
+    ]);
+  });
+
+  it('dispatches events when Quirks Mode issues are created', async () => {
+    await goToResource('elements/quirks-mode-iframes.html');
+    await waitFor('.issue');
+
+    const {frontend} = getBrowserAndPages();
+    const events = await retrieveCapturedEvents(frontend);
+    assert.deepEqual(events.sort((a, b) => Number(a.value) - Number(b.value)), [
+      {
+        name: 'DevTools.IssueCreated',
+        value: 58,  // QuirksModeIssue::QuirksMode
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 59,  // QuirksModeIssue::LimitedQuirksMode
       },
     ]);
   });

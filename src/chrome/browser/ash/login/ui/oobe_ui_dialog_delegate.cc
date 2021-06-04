@@ -28,14 +28,14 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/metadata/type_conversion.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -309,13 +309,12 @@ void OobeUIDialogDelegate::SetShouldDisplayCaptivePortal(bool should_display) {
 }
 
 void OobeUIDialogDelegate::Show() {
-  if (LoginScreenClient::Get()) {
-    scoped_system_tray_observer_ = std::make_unique<
-        base::ScopedObservation<LoginScreenClient, ash::SystemTrayObserver,
-                                &LoginScreenClient::AddSystemTrayObserver,
-                                &LoginScreenClient::RemoveSystemTrayObserver>>(
-        this);
-    scoped_system_tray_observer_->Observe(LoginScreenClient::Get());
+  if (LoginScreenClientImpl::Get()) {
+    scoped_system_tray_observer_ = std::make_unique<base::ScopedObservation<
+        LoginScreenClientImpl, ash::SystemTrayObserver,
+        &LoginScreenClientImpl::AddSystemTrayObserver,
+        &LoginScreenClientImpl::RemoveSystemTrayObserver>>(this);
+    scoped_system_tray_observer_->Observe(LoginScreenClientImpl::Get());
   }
   widget_->Show();
   if (state_ == ash::OobeDialogState::HIDDEN) {

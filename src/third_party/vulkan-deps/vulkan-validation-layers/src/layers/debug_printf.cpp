@@ -545,12 +545,25 @@ void DebugPrintf::AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQ
         for (auto &substring : format_substrings) {
             char temp_string[static_size];
             size_t needed = 0;
-            const size_t ul_pos = substring.string.find("%ul");
+            std::vector<std::string> format_strings = { "%ul", "%lu", "%lx" };
+            size_t ul_pos = 0;
+            bool print_hex = true;
+            for (auto ul_string : format_strings) {
+                ul_pos = substring.string.find(ul_string);
+                if (ul_pos != std::string::npos) {
+                    if (ul_string == "%lu") print_hex = false;
+                    break;
+                }
+            }
             if (ul_pos != std::string::npos) {
                 // Unsigned 64 bit value
                 substring.longval = *static_cast<uint64_t *>(values);
                 values = static_cast<uint64_t *>(values) + 1;
-                substring.string.replace(ul_pos + 1, 2, PRIx64);
+                if (print_hex) {
+                    substring.string.replace(ul_pos + 1, 2, PRIx64);
+                } else {
+                    substring.string.replace(ul_pos + 1, 2, PRIu64);
+                }
                 needed = snprintf(temp_string, static_size, substring.string.c_str(), substring.longval);
             } else {
                 if (substring.needs_value) {
@@ -621,11 +634,11 @@ void DebugPrintf::AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQ
 bool DebugPrintf::CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) {
     bool buffers_present = false;
     auto cb_node = GetCBState(command_buffer);
-    if (GetBufferInfo(cb_node->commandBuffer).size()) {
+    if (GetBufferInfo(cb_node->commandBuffer()).size()) {
         buffers_present = true;
     }
     for (const auto *secondaryCmdBuffer : cb_node->linkedCommandBuffers) {
-        if (GetBufferInfo(secondaryCmdBuffer->commandBuffer).size()) {
+        if (GetBufferInfo(secondaryCmdBuffer->commandBuffer()).size()) {
             buffers_present = true;
         }
     }
@@ -907,26 +920,25 @@ void DebugPrintf::AllocateDebugPrintfResources(const VkCommandBuffer cmd_buffer,
         vmaUnmapMemory(vmaAllocator, output_block.allocation);
     }
 
-    VkWriteDescriptorSet desc_writes[1] = {};
+    auto desc_writes = LvlInitStruct<VkWriteDescriptorSet>();
     const uint32_t desc_count = 1;
 
     // Write the descriptor
     output_desc_buffer_info.buffer = output_block.buffer;
     output_desc_buffer_info.offset = 0;
 
-    desc_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    desc_writes[0].descriptorCount = 1;
-    desc_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    desc_writes[0].pBufferInfo = &output_desc_buffer_info;
-    desc_writes[0].dstSet = desc_sets[0];
-    desc_writes[0].dstBinding = 3;
-    DispatchUpdateDescriptorSets(device, desc_count, desc_writes, 0, NULL);
+    desc_writes.descriptorCount = 1;
+    desc_writes.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    desc_writes.pBufferInfo = &output_desc_buffer_info;
+    desc_writes.dstSet = desc_sets[0];
+    desc_writes.dstBinding = 3;
+    DispatchUpdateDescriptorSets(device, desc_count, &desc_writes, 0, NULL);
 
     const auto lv_bind_point = ConvertToLvlBindPoint(bind_point);
     const auto *pipeline_state = cb_node->lastBound[lv_bind_point].pipeline_state;
     if (pipeline_state) {
         if (pipeline_state->pipeline_layout->set_layouts.size() <= desc_set_bind_index) {
-            DispatchCmdBindDescriptorSets(cmd_buffer, bind_point, pipeline_state->pipeline_layout->layout, desc_set_bind_index, 1,
+            DispatchCmdBindDescriptorSets(cmd_buffer, bind_point, pipeline_state->pipeline_layout->layout(), desc_set_bind_index, 1,
                                           desc_sets.data(), 0, nullptr);
         }
         // Record buffer and memory info in CB state tracking

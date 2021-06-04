@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_messages.h"
+#include "content/common/frame.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -90,11 +90,12 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       AgentSchedulingGroup& agent_scheduling_group,
       const blink::RemoteFrameToken& frame_token,
       int routing_id,
-      const base::Optional<blink::FrameToken>& opener_frame_token,
+      const absl::optional<blink::FrameToken>& opener_frame_token,
       int render_view_routing_id,
       int parent_routing_id,
       blink::mojom::FrameReplicationStatePtr replicated_state,
-      const base::UnguessableToken& devtools_frame_token);
+      const base::UnguessableToken& devtools_frame_token,
+      mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
 
   // Creates a RenderFrameProxy to be used with a portal owned by |parent|.
   // |routing_id| is the routing id of this new RenderFrameProxy.

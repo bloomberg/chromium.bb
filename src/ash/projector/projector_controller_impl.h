@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/projector/model/projector_session_impl.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
 class FilePath;
@@ -33,16 +34,21 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   // ProjectorController:
   void SetClient(ash::ProjectorClient* client) override;
   void OnSpeechRecognitionAvailable(bool available) override;
-  void OnTranscription(const std::u16string& text,
-                       base::TimeDelta audio_start_time,
-                       base::TimeDelta audio_end_time,
-                       const std::vector<base::TimeDelta>& word_offsets,
-                       bool is_final) override;
+  void OnTranscription(
+      const std::u16string& text,
+      absl::optional<base::TimeDelta> start_time,
+      absl::optional<base::TimeDelta> end_time,
+      const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
+      bool is_final) override;
   void SetProjectorToolsVisible(bool is_visible) override;
-  void StartProjectorSession(SourceType scope, aura::Window* window) override;
   bool IsEligible() const override;
-  // Set caption on/off state.
-  void SetCaptionState(bool is_on);
+
+  // Sets Caption bubble state to become opened/closed.
+  void SetCaptionBubbleState(bool is_on);
+
+  // Callback on when the caption bubble model state changes.
+  void OnCaptionBubbleModelStateChanged(bool is_on);
+
   // Mark a key idea.
   void MarkKeyIdea();
 
@@ -50,6 +56,7 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   // service after finalizing on the integration plan with recording mode.
   // Invoked when recording is started to start a screencast session.
   void OnRecordingStarted();
+  void OnRecordingEnded();
 
   // Saves the screencast including metadata.
   void SaveScreencast(const base::FilePath& saved_video_path);
@@ -58,6 +65,14 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void OnLaserPointerPressed();
   // Invoked when marker button is pressed.
   void OnMarkerPressed();
+  // Invoked when clear all markers button is pressed.
+  void OnClearAllMarkersPressed();
+  // Invoked when selfie cam button is pressed.
+  void OnSelfieCamPressed(bool enabled);
+  // Invoked when magnifier button is pressed.
+  void OnMagnifierButtonPressed(bool enabled);
+  // Invoked when the marker color has been requested to change.
+  void OnChangeMarkerColorPressed(SkColor new_color);
 
   void SetProjectorUiControllerForTest(
       std::unique_ptr<ProjectorUiController> ui_controller);

@@ -23,6 +23,7 @@ class CPDF_Annot;
 class CPDF_FormControl;
 class CPDF_FormField;
 class CPDF_RenderOptions;
+class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_InteractiveForm;
 class CPDFSDK_PageView;
 struct CPDFSDK_FieldAction;
@@ -65,7 +66,6 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
 
   int GetSelectedIndex(int nIndex) const;
   WideString GetValue() const;
-  WideString GetDefaultValue() const;
   WideString GetExportValue() const;
   WideString GetOptionLabel(int nIndex) const;
   int CountOptions() const;
@@ -75,10 +75,10 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   int GetAlignment() const;
   int GetMaxLen() const;
 
-  void SetCheck(bool bChecked, NotificationOption notify);
-  void SetValue(const WideString& sValue, NotificationOption notify);
-  void SetOptionSelection(int index, bool bSelected, NotificationOption notify);
-  void ClearSelection(NotificationOption notify);
+  void SetCheck(bool bChecked);
+  void SetValue(const WideString& sValue);
+  void SetOptionSelection(int index);
+  void ClearSelection();
   void SetTopVisibleIndex(int index);
 
 #ifdef PDF_ENABLE_XFA
@@ -134,6 +134,9 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   CXFA_FFWidgetHandler* GetXFAWidgetHandler() const;
   CXFA_FFWidget* GetGroupMixXFAWidget() const;
   WideString GetName() const;
+  bool HandleXFAAAction(CPDF_AAction::AActionType type,
+                        CPDFSDK_FieldAction* data,
+                        CPDFSDK_FormFillEnvironment* pFormFillEnv);
 #endif  // PDF_ENABLE_XFA
 
   UnownedPtr<CPDFSDK_InteractiveForm> const m_pInteractiveForm;

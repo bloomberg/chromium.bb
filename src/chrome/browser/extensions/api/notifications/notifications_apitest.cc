@@ -301,21 +301,21 @@ IN_PROC_BROWSER_TEST_P(NotificationsApiTestWithBackgroundType,
   const extensions::Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  const char kNewTitle[] = "Changed!";
-  const char kNewMessage[] = "Too late! The show ended yesterday";
+  const char16_t kNewTitle[] = u"Changed!";
+  const char16_t kNewMessage[] = u"Too late! The show ended yesterday";
   int kNewPriority = 2;
-  const char kButtonTitle[] = "NewButton";
+  const char16_t kButtonTitle[] = u"NewButton";
 
   message_center::Notification* notification =
       GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
-  EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
-  EXPECT_EQ(base::ASCIIToUTF16(kNewMessage), notification->message());
+  EXPECT_EQ(kNewTitle, notification->title());
+  EXPECT_EQ(kNewMessage, notification->message());
   EXPECT_EQ(kNewPriority, notification->priority());
   EXPECT_TRUE(notification->silent());
   EXPECT_EQ(1u, notification->buttons().size());
-  EXPECT_EQ(base::ASCIIToUTF16(kButtonTitle), notification->buttons()[0].title);
+  EXPECT_EQ(kButtonTitle, notification->buttons()[0].title);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
@@ -410,13 +410,13 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestUserGesture) {
     // Action button event.
     display_service_tester_->SimulateClick(
         NotificationHandler::Type::EXTENSION, notification->id(),
-        0 /* action_index */, base::nullopt /* reply */);
+        0 /* action_index */, absl::nullopt /* reply */);
     EXPECT_TRUE(catcher.GetNextResult());
 
     // Click event.
     display_service_tester_->SimulateClick(
         NotificationHandler::Type::EXTENSION, notification->id(),
-        base::nullopt /* action_index */, base::nullopt /* reply */);
+        absl::nullopt /* action_index */, absl::nullopt /* reply */);
     EXPECT_TRUE(catcher.GetNextResult());
 
     // Close event.
@@ -496,6 +496,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreen) {
 
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
+// Disabled since this tests constantly fails on windows 7.
+// http://crbug.com/1202553
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   // Start a fullscreen app, and then start another fullscreen app on top of the
   // first. Notifications from the first should not be displayed because it is
@@ -526,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   EXPECT_EQ(message_center::FullscreenVisibility::NONE,
             notification->fullscreen_visibility());
 }
-
+#endif
 // Verify that a notification is actually displayed when the app window that
 // creates it is fullscreen.
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest,

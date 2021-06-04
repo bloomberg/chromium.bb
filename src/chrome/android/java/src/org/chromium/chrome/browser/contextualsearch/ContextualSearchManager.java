@@ -28,6 +28,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.C
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -56,6 +58,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -208,7 +211,7 @@ public class ContextualSearchManager
     private ContextualSearchRequest mLastSearchRequestLoaded;
 
     @NonNull
-    private String[] mRelatedSearches = new String[] {};
+    private RelatedSearchesList mRelatedSearches;
 
     /** Whether the Accessibility Mode is enabled. */
     private boolean mIsAccessibilityModeEnabled;
@@ -247,7 +250,7 @@ public class ContextualSearchManager
 
     /**
      * Constructs the manager for the given activity, and will attach views to the given parent.
-     * @param activity The {@code ChromeActivity} in use.
+     * @param activity The {@link Activity} in use.
      * @param tabPromotionDelegate The {@link ContextualSearchTabPromotionDelegate} that is
      *        responsible for building tabs from contextual search {@link WebContents}.
      * @param scrimCoordinator A mechanism for showing and hiding the shared scrim.
@@ -316,9 +319,15 @@ public class ContextualSearchManager
      * @param layoutManager A means of attaching the OverlayPanel to the scene.
      * @param bottomSheetController The {@link BottomSheetController} that is used to show
      *                              {@link BottomSheetContent}.
+     * @param compositorViewHolder The {@link CompositorViewHolder} for the current activity.
+     * @param toolbarHeightDp The height of the toolbar in dp.
+     * @param toolbarManager The manager of the toolbar, used to query toolbar state.
+     * @param activityType The type of the current activity.
      */
-    public void initialize(ViewGroup parentView, LayoutManagerImpl layoutManager,
-            BottomSheetController bottomSheetController) {
+    public void initialize(@NonNull ViewGroup parentView, @NonNull LayoutManagerImpl layoutManager,
+            @NonNull BottomSheetController bottomSheetController,
+            @NonNull CompositorViewHolder compositorViewHolder, float toolbarHeightDp,
+            @NonNull ToolbarManager toolbarManager, @ActivityType int activityType) {
         mNativeContextualSearchManagerPtr = ContextualSearchManagerJni.get().init(this);
 
         mParentView = parentView;
@@ -332,8 +341,10 @@ public class ContextualSearchManager
             panel = new ContextualSearchPanelCoordinator(
                     mActivity, mWindowAndroid, bottomSheetController, this::getBasePageHeight);
         } else {
-            panel = new ContextualSearchPanel(
-                    mActivity, mLayoutManager, mLayoutManager.getOverlayPanelManager());
+            panel = new ContextualSearchPanel(mActivity, mLayoutManager,
+                    mLayoutManager.getOverlayPanelManager(), mBrowserControlsStateProvider,
+                    mWindowAndroid, compositorViewHolder, toolbarHeightDp, toolbarManager,
+                    activityType, mTabSupplier);
         }
 
         panel.setManagementDelegate(this);
@@ -476,7 +487,7 @@ public class ContextualSearchManager
         mWereSearchResultsSeen = false;
 
         mSearchRequest = null;
-        mRelatedSearches = new String[] {};
+        mRelatedSearches = null;
 
         mInProductHelp.onCloseContextualSearch(Profile.getLastUsedRegularProfile());
 
@@ -711,8 +722,7 @@ public class ContextualSearchManager
      * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
      * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
      * @param cocaCardTag The primary internal Coca card tag for the response, or {@code 0} if none.
-     * @param relatedSearches The queries known as Related Searches. These are suggested searches
-     *        related to the context.
+     * @param relatedSearchesJson A blob of JSON that contains the Related Searches and config data.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
@@ -722,7 +732,7 @@ public class ContextualSearchManager
             final String caption, final String quickActionUri,
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
             final String searchUrlFull, final String searchUrlPreload,
-            @CardTag final int cocaCardTag, final String[] relatedSearches) {
+            @CardTag final int cocaCardTag, final String relatedSearchesJson) {
         ContextualSearchUma.logResolveReceived(mSelectionController.isTapSelection());
         ResolvedSearchTerm resolvedSearchTerm =
                 new ResolvedSearchTerm
@@ -730,7 +740,7 @@ public class ContextualSearchManager
                                 alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
                                 quickActionUri, quickActionCategory, loggedEventId, searchUrlFull,
-                                searchUrlPreload, cocaCardTag, relatedSearches)
+                                searchUrlPreload, cocaCardTag, relatedSearchesJson)
                         .build();
         mNetworkCommunicator.handleSearchTermResolutionResponse(resolvedSearchTerm);
     }
@@ -761,13 +771,17 @@ public class ContextualSearchManager
 
         boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(resolvedSearchTerm.caption())
                 || !TextUtils.isEmpty(resolvedSearchTerm.thumbnailUrl());
-        mRelatedSearches = resolvedSearchTerm.relatedSearches();
 
+        mRelatedSearches = new RelatedSearchesList(resolvedSearchTerm.relatedSearchesJson());
+        int numRSearches = mRelatedSearches.getQueries().size();
+        String[] relatedSearches = new String[numRSearches];
+        for (int i = 0; i < numRSearches; i++) {
+            relatedSearches[i] = mRelatedSearches.getQueries().get(i);
+        }
         assert mSearchPanel != null;
-
         mSearchPanel.onSearchTermResolved(message, resolvedSearchTerm.thumbnailUrl(),
                 resolvedSearchTerm.quickActionUri(), resolvedSearchTerm.quickActionCategory(),
-                resolvedSearchTerm.cardTagEnum(), resolvedSearchTerm.relatedSearches());
+                resolvedSearchTerm.cardTagEnum(), relatedSearches);
         if (!TextUtils.isEmpty(resolvedSearchTerm.caption())) {
             // Call #onSetCaption() to set the caption. For entities, the caption should not be
             // regarded as an answer. In the future, when quick actions are added, doesAnswer will
@@ -1129,8 +1143,7 @@ public class ContextualSearchManager
                     mLastUserInteractionTimeSupplier.get(), RedirectHandler.INVALID_ENTRY_INDEX);
             ExternalNavigationParams params =
                     new ExternalNavigationParams
-                            .Builder(navigationParams.url.getSpec(), false,
-                                    navigationParams.referrer.getSpec(),
+                            .Builder(navigationParams.url, false, navigationParams.referrer,
                                     navigationParams.pageTransitionType,
                                     navigationParams.isRedirect)
                             .setApplicationMustBeInForeground(true)
@@ -1346,8 +1359,9 @@ public class ContextualSearchManager
     @Override
     public void onRelatedSearchesSuggestionClicked(int suggestionIndex) {
         // TODO(donnd): update metrics and the stamp for Related Searches (use params).
-        assert suggestionIndex < mRelatedSearches.length;
-        String searchQuery = mRelatedSearches[suggestionIndex];
+        assert suggestionIndex < mRelatedSearches.getQueries().size();
+        String searchQuery = mRelatedSearches.getQueries().get(suggestionIndex);
+        // TODO(donnd): use the returned URL instead of building one here.
         mSearchRequest = new ContextualSearchRequest(searchQuery);
         mSearchPanel.setSearchTerm(searchQuery);
         // TODO(donnd): determine what to show in the Caption.

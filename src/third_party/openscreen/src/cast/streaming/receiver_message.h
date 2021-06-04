@@ -17,18 +17,6 @@
 namespace openscreen {
 namespace cast {
 
-struct ReceiverWifiStatus {
-  Json::Value ToJson() const;
-  static ErrorOr<ReceiverWifiStatus> Parse(const Json::Value& value);
-
-  // Current WiFi signal to noise ratio in decibels.
-  double wifi_snr = 0.0;
-
-  // Min, max, average, and current bandwidth in bps in order of the WiFi link.
-  // Example: [1200, 1300, 1250, 1230].
-  std::vector<int32_t> wifi_speed;
-};
-
 enum class MediaCapability {
   kAudio,
   kAac,
@@ -59,6 +47,8 @@ struct ReceiverError {
   static ErrorOr<ReceiverError> Parse(const Json::Value& value);
 
   // Error code.
+  // TODO(issuetracker.google.com/184766188): Error codes should be well
+  // defined.
   int32_t code = -1;
 
   // Error description.
@@ -74,9 +64,6 @@ struct ReceiverMessage {
 
     // Response to OFFER message.
     kAnswer,
-
-    // Response to GET_STATUS message.
-    kStatusResponse,
 
     // Response to GET_CAPABILITIES message.
     kCapabilitiesResponse,
@@ -97,7 +84,6 @@ struct ReceiverMessage {
   absl::variant<absl::monostate,
                 Answer,
                 std::vector<uint8_t>,  // Binary-encoded RPC message.
-                ReceiverWifiStatus,
                 ReceiverCapability,
                 ReceiverError>
       body;

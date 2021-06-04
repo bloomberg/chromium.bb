@@ -19,7 +19,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
@@ -28,9 +28,9 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,7 +38,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
@@ -102,7 +101,7 @@ ExtensionAppsChromeOs::ExtensionAppsChromeOs(
 }
 
 ExtensionAppsChromeOs::~ExtensionAppsChromeOs() {
-  app_window_registry_.RemoveAll();
+  app_window_registry_.Reset();
 
   // In unit tests, AppServiceProxy might be ReInitializeForTesting, so
   // ExtensionApps might be destroyed without calling Shutdown, so arc_prefs_
@@ -157,11 +156,11 @@ void ExtensionAppsChromeOs::ObserveArc() {
 }
 
 void ExtensionAppsChromeOs::Initialize() {
-  app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile()));
+  app_window_registry_.Observe(extensions::AppWindowRegistry::Get(profile()));
 
   media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
 
-  notification_display_service_.Add(
+  notification_display_service_.Observe(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
   profile_pref_change_registrar_.Init(profile()->GetPrefs());
@@ -215,8 +214,8 @@ void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
     return;
   }
 
-  chromeos::app_time::AppTimeLimitInterface* app_limit =
-      chromeos::app_time::AppTimeLimitInterface::Get(profile());
+  ash::app_time::AppTimeLimitInterface* app_limit =
+      ash::app_time::AppTimeLimitInterface::Get(profile());
   DCHECK(app_limit);
   app_limit->PauseWebActivity(app_id);
 }
@@ -231,8 +230,8 @@ void ExtensionAppsChromeOs::UnpauseApps(const std::string& app_id) {
                                              app_id, kPaused),
           subscribers());
 
-  chromeos::app_time::AppTimeLimitInterface* app_time =
-      chromeos::app_time::AppTimeLimitInterface::Get(profile());
+  ash::app_time::AppTimeLimitInterface* app_time =
+      ash::app_time::AppTimeLimitInterface::Get(profile());
   DCHECK(app_time);
   app_time->ResumeWebActivity(app_id);
 }
@@ -249,7 +248,7 @@ void ExtensionAppsChromeOs::GetMenuModel(const std::string& app_id,
   }
 
   if (app_id == extension_misc::kChromeAppId) {
-    GetMenuModelForChromeBrowserApp(menu_type, std::move(callback));
+    std::move(callback).Run(CreateBrowserMenuItems(menu_type, profile()));
     return;
   }
 
@@ -298,7 +297,8 @@ void ExtensionAppsChromeOs::OnAppWindowAdded(
     return;
   }
 
-  DCHECK(!instance_registry_->Exists(app_window->GetNativeWindow()));
+  DCHECK(!instance_registry_->Exists(
+      apps::Instance::InstanceKey(app_window->GetNativeWindow())));
   app_window_to_aura_window_[app_window] = app_window->GetNativeWindow();
 
   // Attach window to multi-user manager now to let it manage visibility state
@@ -321,8 +321,8 @@ void ExtensionAppsChromeOs::OnAppWindowShown(extensions::AppWindow* app_window,
     return;
   }
 
-  InstanceState state =
-      instance_registry_->GetState(app_window->GetNativeWindow());
+  InstanceState state = instance_registry_->GetState(
+      apps::Instance::InstanceKey(app_window->GetNativeWindow()));
 
   // If the window is shown, it should be started, running and not hidden.
   state = static_cast<apps::InstanceState>(
@@ -407,7 +407,7 @@ void ExtensionAppsChromeOs::OnRequestUpdate(
     return;
   }
 
-  base::Optional<web_app::AppId> web_app_id =
+  absl::optional<web_app::AppId> web_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile(), web_contents->GetURL(),
                                               /*window_only=*/false);
   if (web_app_id.has_value()) {
@@ -491,7 +491,8 @@ void ExtensionAppsChromeOs::OnNotificationClosed(
 
 void ExtensionAppsChromeOs::OnNotificationDisplayServiceDestroyed(
     NotificationDisplayService* service) {
-  notification_display_service_.Remove(service);
+  DCHECK(notification_display_service_.IsObservingSource(service));
+  notification_display_service_.Reset();
 }
 
 bool ExtensionAppsChromeOs::MaybeAddNotification(
@@ -511,10 +512,20 @@ bool ExtensionAppsChromeOs::MaybeAddNotification(
 void ExtensionAppsChromeOs::MaybeAddWebPageNotifications(
     const message_center::Notification& notification,
     const NotificationCommon::Metadata* const metadata) {
-  const GURL& url =
-      metadata
-          ? PersistentNotificationMetadata::From(metadata)->service_worker_scope
-          : notification.origin_url();
+  const PersistentNotificationMetadata* persistent_metadata =
+      PersistentNotificationMetadata::From(metadata);
+
+  const NonPersistentNotificationMetadata* non_persistent_metadata =
+      NonPersistentNotificationMetadata::From(metadata);
+
+  GURL url = notification.origin_url();
+
+  if (persistent_metadata) {
+    url = persistent_metadata->service_worker_scope;
+  } else if (non_persistent_metadata &&
+             !non_persistent_metadata->document_url.is_empty()) {
+    url = non_persistent_metadata->document_url;
+  }
 
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());
@@ -735,7 +746,8 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
 
   // If the current state has been marked as |new_state|, we don't need to
   // update.
-  if (instance_registry_->GetState(window) == new_state) {
+  if (instance_registry_->GetState(apps::Instance::InstanceKey(window)) ==
+      new_state) {
     return;
   }
 
@@ -744,43 +756,14 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
     window = app_window_to_aura_window_[app_window];
   }
   std::vector<std::unique_ptr<apps::Instance>> deltas;
-  auto instance =
-      std::make_unique<apps::Instance>(app_window->extension_id(), window);
+  auto instance = std::make_unique<apps::Instance>(
+      app_window->extension_id(),
+      std::make_unique<apps::Instance::InstanceKey>(window));
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
   instance->SetBrowserContext(app_window->browser_context());
   deltas.push_back(std::move(instance));
   instance_registry_->OnInstances(deltas);
-}
-
-void ExtensionAppsChromeOs::GetMenuModelForChromeBrowserApp(
-    apps::mojom::MenuType menu_type,
-    GetMenuModelCallback callback) {
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-
-  // "Normal" windows are not allowed when incognito is enforced.
-  if (IncognitoModePrefs::GetAvailability(profile()->GetPrefs()) !=
-      IncognitoModePrefs::FORCED) {
-    AddCommandItem((menu_type == apps::mojom::MenuType::kAppList)
-                       ? ash::APP_CONTEXT_MENU_NEW_WINDOW
-                       : ash::MENU_NEW_WINDOW,
-                   IDS_APP_LIST_NEW_WINDOW, &menu_items);
-  }
-
-  // Incognito windows are not allowed when incognito is disabled.
-  if (!profile()->IsOffTheRecord() &&
-      IncognitoModePrefs::GetAvailability(profile()->GetPrefs()) !=
-          IncognitoModePrefs::DISABLED) {
-    AddCommandItem((menu_type == apps::mojom::MenuType::kAppList)
-                       ? ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW
-                       : ash::MENU_NEW_INCOGNITO_WINDOW,
-                   IDS_APP_LIST_NEW_INCOGNITO_WINDOW, &menu_items);
-  }
-
-  AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
-                 &menu_items);
-
-  std::move(callback).Run(std::move(menu_items));
 }
 
 content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
@@ -813,8 +796,8 @@ void ExtensionAppsChromeOs::UpdateAppDisabledState(
     int feature,
     const std::string& app_id,
     bool is_disabled_mode_changed) {
-  const bool is_disabled =
-      base::Contains(*disabled_system_features_pref, base::Value(feature));
+  const bool is_disabled = base::Contains(
+      disabled_system_features_pref->GetList(), base::Value(feature));
   // Sometimes the policy is updated before the app is installed, so this way
   // the disabled_apps_ is updated regardless the Publish should happen or not
   // and the app will be published with the correct readiness upon its

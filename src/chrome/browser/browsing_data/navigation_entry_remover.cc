@@ -37,7 +37,7 @@ namespace {
 
 bool ShouldDeleteUrl(base::Time begin,
                      base::Time end,
-                     const base::Optional<std::set<GURL>>& restrict_urls,
+                     const absl::optional<std::set<GURL>>& restrict_urls,
                      const GURL& url,
                      base::Time time_stamp) {
   return begin <= time_stamp && (time_stamp < end || end.is_null()) &&
@@ -48,7 +48,7 @@ bool ShouldDeleteUrl(base::Time begin,
 bool ShouldDeleteNavigationEntry(
     base::Time begin,
     base::Time end,
-    const base::Optional<std::set<GURL>>& restrict_urls,
+    const absl::optional<std::set<GURL>>& restrict_urls,
     content::NavigationEntry* entry) {
   return ShouldDeleteUrl(begin, end, restrict_urls, entry->GetURL(),
                          entry->GetTimestamp());
@@ -57,7 +57,7 @@ bool ShouldDeleteNavigationEntry(
 bool ShouldDeleteSerializedNavigationEntry(
     base::Time begin,
     base::Time end,
-    const base::Optional<std::set<GURL>>& restrict_urls,
+    const absl::optional<std::set<GURL>>& restrict_urls,
     const sessions::SerializedNavigationEntry& entry) {
   return ShouldDeleteUrl(begin, end, restrict_urls, entry.virtual_url(),
                          entry.timestamp());
@@ -95,7 +95,7 @@ void DeleteNavigationEntries(
 void DeleteTabNavigationEntries(
     Profile* profile,
     const history::DeletionTimeRange& time_range,
-    const base::Optional<std::set<GURL>>& restrict_urls,
+    const absl::optional<std::set<GURL>>& restrict_urls,
     const base::flat_set<GURL>& url_set) {
   auto predicate = time_range.IsValid()
                        ? base::BindRepeating(
@@ -178,7 +178,7 @@ class TabRestoreDeletionHelper : public sessions::TabRestoreServiceObserver {
 void DeleteTabRestoreEntries(
     Profile* profile,
     const history::DeletionTimeRange& time_range,
-    const base::Optional<std::set<GURL>>& restrict_urls,
+    const absl::optional<std::set<GURL>>& restrict_urls,
     const base::flat_set<GURL>& url_set) {
   sessions::TabRestoreService* tab_service =
       TabRestoreServiceFactory::GetForProfile(profile);
@@ -215,7 +215,7 @@ namespace browsing_data {
 
 void RemoveNavigationEntries(Profile* profile,
                              const history::DeletionInfo& deletion_info) {
-  DCHECK(profile->IsRegularProfile());
+  DCHECK(!profile->IsOffTheRecord());
   DCHECK(!deletion_info.is_from_expiration());
 
   base::flat_set<GURL> url_set;

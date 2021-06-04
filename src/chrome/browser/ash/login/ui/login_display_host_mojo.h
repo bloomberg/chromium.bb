@@ -13,17 +13,17 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/ash/login/screens/user_selection_screen.h"
 #include "chrome/browser/ash/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 #include "chrome/browser/ash/login/ui/oobe_ui_dialog_delegate.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/challenge_response_key.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -32,18 +32,16 @@ class View;
 }  // namespace views
 
 namespace chromeos {
-
 class ExistingUserController;
 class LoginDisplayMojo;
 class OobeUIDialogDelegate;
 class UserBoardViewMojo;
-class UserSelectionScreen;
 class MojoSystemInfoDispatcher;
 
 // A LoginDisplayHost instance that sends requests to the views-based signin
 // screen.
 class LoginDisplayHostMojo : public LoginDisplayHostCommon,
-                             public LoginScreenClient::Delegate,
+                             public LoginScreenClientImpl::Delegate,
                              public AuthStatusConsumer,
                              public OobeUI::Observer,
                              public views::ViewObserver {
@@ -97,7 +95,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 
-  // LoginScreenClient::Delegate:
+  // LoginScreenClientImpl::Delegate:
   void HandleAuthenticateUserWithPasswordOrPin(
       const AccountId& account_id,
       const std::string& password,
@@ -219,7 +217,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   bool added_as_oobe_observer_ = false;
 
   // Set if Gaia dialog is shown with prefilled email.
-  base::Optional<AccountId> gaia_reauth_account_id_;
+  absl::optional<AccountId> gaia_reauth_account_id_;
 
   // Store which screen is currently displayed.
   DisplayedScreen displayed_screen_ = DisplayedScreen::SIGN_IN_SCREEN;
@@ -229,7 +227,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   base::OnceClosure owner_verified_callback_;
   scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
 
-  ScopedObserver<views::View, views::ViewObserver> scoped_observer_{this};
+  base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
+      this};
 
   base::ObserverList<LoginDisplayHost::Observer> observers_;
 

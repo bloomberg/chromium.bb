@@ -1029,11 +1029,8 @@
       DialogType.FULL_PAGE,
     ]);
 
-    if (util.isFilesJsModulesEnabled()) {
-      ContentMetadataProvider.configure(
-          'foreground/js/metadata/metadata_dispatcher.m.js',
-          /*isModule=*/ true);
-    } else if (window.isSWA) {
+    if (window.isSWA) {
+      // TODO: Verify that SWA will work with module version for dispatcher.
       ContentMetadataProvider.configure(
           'foreground/js/metadata/metadata_dispatcher.js');
     }
@@ -1047,14 +1044,7 @@
 
     // Set the files-ng class for dialog header styling.
     const dialogHeader = queryRequiredElement('.dialog-header');
-    if (util.isFilesNg()) {
-      dialogHeader.classList.add('files-ng');
-      // Move the dialog header to the side of the splitter above the list view.
-      const dialogMain = queryRequiredElement('.dialog-main');
-      dialogMain.insertBefore(dialogHeader, dialogMain.firstChild);
-    } else {
-      dialogHeader.classList.remove('files-ng');
-    }
+    dialogHeader.classList.add('files-ng');
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
@@ -1351,9 +1341,14 @@
       case chrome.fileManagerPrivate.CrostiniEventType
           .DROP_FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
         if (this.ui_.dragInProcess) {
-          FileTasks.showPluginVmMoveDialog(
+          const moveMessage =
+              str('UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE');
+          const copyMessage =
+              str('UNABLE_TO_DROP_IN_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE');
+          FileTasks.showPluginVmNotSharedDialog(
               this.selectionHandler.selection.entries, this.volumeManager_,
-              assert(this.ui_), 'Windows', this.fileTransferController_,
+              assert(this.metadataModel_), assert(this.ui_), moveMessage,
+              copyMessage, this.fileTransferController_,
               assert(this.directoryModel_));
         }
         break;

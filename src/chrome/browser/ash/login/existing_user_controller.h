@@ -16,11 +16,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "base/time/time.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move KioskAppId to forward declaration
 // when moved to chrome/browser/ash/.
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/ash/login/ui/login_display.h"
 // TODO(https://crbug.com/1164001): move CrosSettings to forward declaration
 // when moved to chrome/browser/ash/.
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
@@ -94,8 +94,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // user data.
   void ResyncUserData();
 
+  // Returns name of the currently connected network, for error message,
+  std::u16string GetConnectedNetworkName() const;
+
   // LoginDisplay::Delegate: implementation
-  std::u16string GetConnectedNetworkName() override;
   bool IsSigninInProgress() const override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
@@ -112,7 +114,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
                               const std::string& given_name);
   bool IsUserAllowlisted(
       const AccountId& account_id,
-      const base::Optional<user_manager::UserType>& user_type);
+      const absl::optional<user_manager::UserType>& user_type);
 
   // user_manager::UserManager::Observer:
   void LocalStateChanged(user_manager::UserManager* user_manager) override;
@@ -183,10 +185,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Called when device settings change.
   void DeviceSettingsChanged();
 
-  // Show error message. `error_id` error message ID in resources.
-  // If `details` string is not empty, it specify additional error text
-  // provided by authenticator, it is not localized.
-  void ShowError(int error_id, const std::string& details);
+  // Show error message corresponding to `error`. If `details` string is not
+  // empty, it specify additional error text provided by authenticator, it is
+  // not localized.
+  void ShowError(SigninError error, const std::string& details);
 
   // Handles result of ownership check and starts enterprise or kiosk enrollment
   // if applicable.
@@ -389,7 +391,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // the store is not yet initialized when the login is attempted.
   std::unique_ptr<PolicyStoreLoadWaiter> policy_store_waiter_;
 
-  ScopedObserver<user_manager::UserManager, user_manager::UserManager::Observer>
+  base::ScopedObservation<user_manager::UserManager,
+                          user_manager::UserManager::Observer>
       observed_user_manager_{this};
 
   // Factory of callbacks.

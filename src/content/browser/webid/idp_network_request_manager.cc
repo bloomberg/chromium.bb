@@ -5,11 +5,14 @@
 #include "content/browser/webid/idp_network_request_manager.h"
 
 #include "base/base64url.h"
+#include "base/json/json_writer.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
 #include "net/cookies/site_for_cookies.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -35,12 +38,11 @@ constexpr char kSigninUrlKey[] = "signin_url";
 constexpr char kIdTokenKey[] = "id_token";
 constexpr char kAccountsKey[] = "accounts";
 
-constexpr char kAcceptMimeType[] = "application/json";
+// Token request body keys
+constexpr char kAccountKey[] = "sub";
+constexpr char kRequestKey[] = "request";
 
-// `Sec-` prefix makes this a forbidden header and cannot be added by
-// JavaScript.
-// See https://fetch.spec.whatwg.org/#forbidden-header-name
-constexpr char kSecWebIdHeader[] = "Sec-WebID";
+constexpr char kJSONMimeType[] = "application/json";
 
 // 1 MiB is an arbitrary upper bound that should account for any reasonable
 // response size that is a part of this protocol.
@@ -77,11 +79,6 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
         })");
 }
 
-scoped_refptr<network::SharedURLLoaderFactory> GetUrlLoaderFactory(
-    content::RenderFrameHost* host) {
-  return host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess();
-}
-
 std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
     GURL target_url,
     url::Origin initiator) {
@@ -92,12 +89,8 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
   resource_request->url = target_url;
   resource_request->site_for_cookies = site_for_cookies;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                      kAcceptMimeType);
-  // This header is present exclusively for CSRF resistance.
-  // TODO(kenrb): To avoid the value being depended on  set it to a random
-  // value. We can later change it if something more useful e.g., a version is
-  // needed. https://crbug.com/1196371
-  resource_request->headers.SetHeader(kSecWebIdHeader, "1.0");
+                                      kJSONMimeType);
+  resource_request->headers.SetHeader(kSecWebIdCsrfHeader, "");
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
@@ -108,7 +101,7 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
   return resource_request;
 }
 
-base::Optional<content::IdentityRequestAccount> ParseAccount(
+absl::optional<content::IdentityRequestAccount> ParseAccount(
     const base::Value& account) {
   auto* sub = account.FindStringKey("sub");
   auto* email = account.FindStringKey("email");
@@ -118,11 +111,29 @@ base::Optional<content::IdentityRequestAccount> ParseAccount(
 
   // required fields
   if (!(sub && email && name))
-    return base::nullopt;
+    return absl::nullopt;
 
   return content::IdentityRequestAccount(*sub, *email, *name,
                                          given_name ? *given_name : "",
                                          picture ? *picture : "");
+}
+
+// Parses accounts from given Value. Returns true if parse is successful and
+// adds parsed accounts to the |account_list|.
+bool ParseAccounts(const base::Value* accounts,
+                   IdpNetworkRequestManager::AccountList& account_list) {
+  if (!accounts->is_list())
+    return false;
+
+  for (auto& account : accounts->GetList()) {
+    if (!account.is_dict())
+      return false;
+
+    auto parsed_account = ParseAccount(account);
+    if (parsed_account)
+      account_list.push_back(parsed_account.value());
+  }
+  return true;
 }
 
 }  // namespace
@@ -138,12 +149,20 @@ std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
   if (!network::IsOriginPotentiallyTrustworthy(url::Origin::Create(provider)))
     return nullptr;
 
-  return std::make_unique<IdpNetworkRequestManager>(provider, host);
+  // Use the browser process URL loader factory because it has cross-origin
+  // read blocking disabled.
+  return std::make_unique<IdpNetworkRequestManager>(
+      provider, host->GetLastCommittedOrigin(),
+      host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess());
 }
 
-IdpNetworkRequestManager::IdpNetworkRequestManager(const GURL& provider,
-                                                   RenderFrameHost* host)
-    : provider_(provider), render_frame_host_(host) {}
+IdpNetworkRequestManager::IdpNetworkRequestManager(
+    const GURL& provider,
+    const url::Origin& relying_party_origin,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+    : provider_(provider),
+      relying_party_origin_(relying_party_origin),
+      loader_factory_(loader_factory) {}
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
@@ -171,13 +190,12 @@ void IdpNetworkRequestManager::FetchIdpWellKnown(
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                      kAcceptMimeType);
+                                      kJSONMimeType);
   // TODO(kenrb): Not following redirects is important for security because
   // this bypasses CORB. Ensure there is a test added.
   // https://crbug.com/1155312.
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;
-  resource_request->request_initiator =
-      render_frame_host_->GetLastCommittedOrigin();
+  resource_request->request_initiator = relying_party_origin_;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =
       net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
@@ -186,12 +204,8 @@ void IdpNetworkRequestManager::FetchIdpWellKnown(
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 
-  // Use the browser process URL loader factory because it has cross-origin
-  // read blocking disabled.
-  auto loader_factory = GetUrlLoaderFactory(render_frame_host_);
-
   url_loader_->DownloadToString(
-      loader_factory.get(),
+      loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnWellKnownLoaded,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
@@ -216,17 +230,14 @@ void IdpNetworkRequestManager::SendSigninRequest(
   // TODO: Should this be a POST, rather than a GET using query parameters?
   // https://crbug.com/1141125.
   GURL target_url = GURL(signin_url.spec() + "?" + encoded_request);
-  auto resource_request = CreateCredentialedResourceRequest(
-      target_url, render_frame_host_->GetLastCommittedOrigin());
+  auto resource_request =
+      CreateCredentialedResourceRequest(target_url, relying_party_origin_);
   auto traffic_annotation = CreateTrafficAnnotation();
   // TODO(kenrb): Make this not send cookies. https://crbug.com/1141125.
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
-
-  auto loader_factory = GetUrlLoaderFactory(render_frame_host_);
-
   url_loader_->DownloadToString(
-      loader_factory.get(),
+      loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnSigninRequestResponse,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
@@ -239,8 +250,8 @@ void IdpNetworkRequestManager::SendAccountsRequest(
   DCHECK(!accounts_request_callback_);
   accounts_request_callback_ = std::move(callback);
 
-  auto resource_request = CreateCredentialedResourceRequest(
-      accounts_url, render_frame_host_->GetLastCommittedOrigin());
+  auto resource_request =
+      CreateCredentialedResourceRequest(accounts_url, relying_party_origin_);
   // Use ReferrerPolicy::NO_REFERRER for this request so that relying party
   // identity is not exposed to the Identity provider via referror.
   resource_request->referrer_policy = net::ReferrerPolicy::NO_REFERRER;
@@ -249,13 +260,34 @@ void IdpNetworkRequestManager::SendAccountsRequest(
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 
-  auto loader_factory = GetUrlLoaderFactory(render_frame_host_);
-
   url_loader_->DownloadToString(
-      loader_factory.get(),
+      loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnAccountsRequestResponse,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
+}
+
+// TODO(majidvp): Should accept request in base::Value form instead of string.
+std::string CreateTokenRequestBody(const std::string& account,
+                                   const std::string& request) {
+  // Given account and id_request creates the following JSON
+  // ```json
+  // {
+  //   "sub": "1234",
+  //   "request": "nonce=abc987987cba&client_id=89898"
+  //   }
+  // }```
+  base::Value request_data(base::Value::Type::DICTIONARY);
+  request_data.SetStringKey(kAccountKey, account);
+  if (!request.empty())
+    request_data.SetStringKey(kRequestKey, request);
+
+  std::string request_body;
+  if (!base::JSONWriter::Write(request_data, &request_body)) {
+    LOG(ERROR) << "Not able to serialize token request body.";
+    return std::string();
+  }
+  return request_body;
 }
 
 void IdpNetworkRequestManager::SendTokenRequest(const GURL& token_url,
@@ -267,39 +299,55 @@ void IdpNetworkRequestManager::SendTokenRequest(const GURL& token_url,
 
   token_request_callback_ = std::move(callback);
 
-  // TODO(majidvp): Append account and request to the post body.
-  auto resource_request = CreateCredentialedResourceRequest(
-      token_url, render_frame_host_->GetLastCommittedOrigin());
+  std::string token_request_body = CreateTokenRequestBody(account, request);
+  if (token_request_body.empty()) {
+    std::move(token_request_callback_)
+        .Run(TokenResponse::kInvalidRequestError, std::string());
+    return;
+  }
+
+  auto resource_request =
+      CreateCredentialedResourceRequest(token_url, relying_party_origin_);
+  resource_request->method = net::HttpRequestHeaders::kPostMethod;
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                      kJSONMimeType);
+
   auto traffic_annotation = CreateTrafficAnnotation();
   // TODO(kenrb): Make this not send cookies. https://crbug.com/1141125.
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
-
-  auto loader_factory = GetUrlLoaderFactory(render_frame_host_);
+  url_loader_->AttachStringForUpload(token_request_body, kJSONMimeType);
 
   url_loader_->DownloadToString(
-      loader_factory.get(),
+      loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnTokenRequestResponse,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
 }
 
-// static
-bool IdpNetworkRequestManager::ParseAccounts(
-    const base::Value* accounts,
-    IdpNetworkRequestManager::AccountList& account_list) {
-  if (!accounts->is_list())
-    return false;
+void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
+                                          LogoutCallback callback) {
+  // TODO(kenrb): Add browser test verifying that the response to this can
+  // clear cookies. https://crbug.com/1155312.
+  DCHECK(!url_loader_);
+  DCHECK(!logout_callback_);
 
-  for (auto& account : accounts->GetList()) {
-    if (!account.is_dict())
-      return false;
+  logout_callback_ = std::move(callback);
 
-    auto parsed_account = ParseAccount(account);
-    if (parsed_account)
-      account_list.push_back(parsed_account.value());
-  }
-  return true;
+  auto resource_request =
+      CreateCredentialedResourceRequest(logout_url, relying_party_origin_);
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "*/*");
+
+  auto traffic_annotation = CreateTrafficAnnotation();
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+
+  url_loader_->DownloadToString(
+      loader_factory_.get(),
+      base::BindOnce(&IdpNetworkRequestManager::OnLogoutCompleted,
+                     weak_ptr_factory_.GetWeakPtr()),
+      maxResponseSizeInKiB * 1024);
 }
 
 void IdpNetworkRequestManager::OnWellKnownLoaded(
@@ -521,6 +569,22 @@ void IdpNetworkRequestManager::OnTokenRequestParsed(
   }
   std::move(token_request_callback_)
       .Run(TokenResponse::kSuccess, id_token->GetString());
+}
+
+void IdpNetworkRequestManager::OnLogoutCompleted(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+
+  url_loader_.reset();
+
+  if (!response_body) {
+    std::move(logout_callback_).Run(LogoutResponse::kError);
+    return;
+  }
+
+  std::move(logout_callback_).Run(LogoutResponse::kSuccess);
 }
 
 }  // namespace content

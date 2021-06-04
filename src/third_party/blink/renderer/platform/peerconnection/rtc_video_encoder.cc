@@ -638,8 +638,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     encoder_info_.preferred_pixel_formats = preferred_pixel_formats_;
   }
   const media::VideoEncodeAccelerator::Config config(
-      pixel_format, input_visible_size_, profile, bitrate * 1000, base::nullopt,
-      base::nullopt, base::nullopt, is_constrained_h264, storage_type,
+      pixel_format, input_visible_size_, profile, bitrate * 1000, absl::nullopt,
+      absl::nullopt, absl::nullopt, is_constrained_h264, storage_type,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera,
@@ -895,8 +895,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
 
   // Find RTP and capture timestamps by going through |pending_timestamps_|.
   // Derive it from current time otherwise.
-  base::Optional<uint32_t> rtp_timestamp;
-  base::Optional<int64_t> capture_timestamp_ms;
+  absl::optional<uint32_t> rtp_timestamp;
+  absl::optional<int64_t> capture_timestamp_ms;
   if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
     while (!pending_timestamps_.IsEmpty()) {
@@ -1133,7 +1133,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
       // Do a strided copy and scale (if necessary) the input frame to match
       // the input requirements for the encoder.
       // TODO(sheu): Support zero-copy from WebRTC. http://crbug.com/269312
-      // TODO(magjed): Downscale with kFilterBox in an image pyramid instead.
+      // TODO(magjed): Downscale with an image pyramid instead.
       rtc::scoped_refptr<webrtc::I420BufferInterface> i420_buffer =
           next_frame->video_frame_buffer()->ToI420();
       if (libyuv::I420Scale(i420_buffer->DataY(), i420_buffer->StrideY(),

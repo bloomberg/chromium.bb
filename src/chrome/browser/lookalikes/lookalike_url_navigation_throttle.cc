@@ -149,7 +149,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
           handle->IsSignedExchangeInnerResponse(), triggered_by_initial_url,
           std::move(controller)));
 
-  base::Optional<std::string> error_page_contents =
+  absl::optional<std::string> error_page_contents =
       blocking_page->GetHTMLContents();
 
   security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
@@ -421,7 +421,7 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
           &reputation::IsTargetHostAllowlistedBySafetyTipsComponent, proto);
   std::string matched_domain;
   if (GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
-                        &matched_domain, match_type)) {
+                        proto, &matched_domain, match_type)) {
     DCHECK(!matched_domain.empty());
 
     // matched_domain can be a top domain or an engaged domain. Simply use its

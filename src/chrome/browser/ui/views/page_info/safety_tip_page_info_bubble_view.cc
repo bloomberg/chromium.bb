@@ -100,8 +100,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
-  gfx::Insets insets =
-      layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  gfx::Insets insets = layout_provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText);
   set_margins(gfx::Insets(0, 0, insets.bottom(), 0));
 
   // Configure layout.
@@ -187,7 +187,8 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       action_taken_ = SafetyTipInteraction::kDismissWithClose;
       break;
     case views::Widget::ClosedReason::kCancelButtonClicked:
-      NOTREACHED();
+      // I don't know why, but ESC sometimes generates kCancelButtonClicked.
+      action_taken_ = SafetyTipInteraction::kDismissWithEsc;
       break;
   }
   std::move(close_callback_).Run(action_taken_);

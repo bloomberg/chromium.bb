@@ -41,17 +41,15 @@
 #ifndef UI_GFX_X_GENERATED_PROTOS_BIGREQ_H_
 #define UI_GFX_X_GENERATED_PROTOS_BIGREQ_H_
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <vector>
 
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/x/error.h"
 #include "ui/gfx/x/ref_counted_fd.h"
 #include "xproto.h"

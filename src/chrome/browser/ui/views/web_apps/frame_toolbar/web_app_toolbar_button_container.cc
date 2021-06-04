@@ -19,11 +19,12 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_utils.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_origin_text.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/hit_test_utils.h"
 
 namespace {
@@ -129,12 +130,8 @@ WebAppToolbarButtonContainer::WebAppToolbarButtonContainer(
     web_app_menu_button_ =
         AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
     web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
-    const bool is_browser_focus_mode =
-        browser_view_->browser()->is_focus_mode();
-    SetInsetsForWebAppToolbarButton(web_app_menu_button_,
-                                    is_browser_focus_mode);
-    web_app_menu_button_->SetMinSize(
-        toolbar_button_provider_->GetToolbarButtonSize());
+    ConfigureWebAppToolbarButton(web_app_menu_button_, toolbar_button_provider_,
+                                 browser_view_->browser()->is_focus_mode());
     web_app_menu_button_->SetProperty(views::kFlexBehaviorKey,
                                       views::FlexSpecification());
   }
@@ -195,9 +192,11 @@ void WebAppToolbarButtonContainer::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
-void WebAppToolbarButtonContainer::AddPageActionIcon(views::View* icon) {
-  AddChildViewAt(icon, page_action_insertion_point_++);
-  views::SetHitTestComponent(icon, static_cast<int>(HTCLIENT));
+void WebAppToolbarButtonContainer::AddPageActionIcon(
+    std::unique_ptr<views::View> icon) {
+  auto* icon_ptr =
+      AddChildViewAt(std::move(icon), page_action_insertion_point_++);
+  views::SetHitTestComponent(icon_ptr, static_cast<int>(HTCLIENT));
 }
 
 int WebAppToolbarButtonContainer::GetPageActionIconSize() const {

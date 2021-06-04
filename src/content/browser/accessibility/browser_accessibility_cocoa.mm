@@ -17,7 +17,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +29,7 @@
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -389,8 +389,11 @@ BrowserAccessibility::AXRange GetSelectedRange(BrowserAccessibility& owner) {
     return {};
 
   // |anchor_offset| and / or |focus_offset| refer to a character offset if
-  // |anchor_object| / |focus_object| are text-only objects or native text
-  // fields. Otherwise, they should be treated as child indices.
+  // |anchor_object| / |focus_object| are text-only objects or atomic text
+  // fields. Otherwise, they should be treated as child indices. An atomic text
+  // field does not expose its internal implementation to assistive software,
+  // appearing as a single leaf node in the accessibility tree. It includes
+  // <input>, <textarea> and Views-based text fields.
   int anchor_offset = unignored_selection.anchor_offset;
   int focus_offset = unignored_selection.focus_offset;
   DCHECK_GE(anchor_offset, 0);
@@ -946,7 +949,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaColumnCount {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> aria_col_count = _owner->node()->GetTableAriaColCount();
+  absl::optional<int> aria_col_count = _owner->node()->GetTableAriaColCount();
   if (!aria_col_count)
     return nil;
   return @(*aria_col_count);
@@ -955,7 +958,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaColumnIndex {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> ariaColIndex = _owner->node()->GetTableCellAriaColIndex();
+  absl::optional<int> ariaColIndex = _owner->node()->GetTableCellAriaColIndex();
   if (!ariaColIndex)
     return nil;
   return @(*ariaColIndex);
@@ -1001,7 +1004,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaPosInSet {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> posInSet = _owner->node()->GetPosInSet();
+  absl::optional<int> posInSet = _owner->node()->GetPosInSet();
   if (!posInSet)
     return nil;
   return @(*posInSet);
@@ -1017,7 +1020,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaRowCount {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> ariaRowCount = _owner->node()->GetTableAriaRowCount();
+  absl::optional<int> ariaRowCount = _owner->node()->GetTableAriaRowCount();
   if (!ariaRowCount)
     return nil;
   return @(*ariaRowCount);
@@ -1026,7 +1029,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaRowIndex {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> ariaRowIndex = _owner->node()->GetTableCellAriaRowIndex();
+  absl::optional<int> ariaRowIndex = _owner->node()->GetTableCellAriaRowIndex();
   if (!ariaRowIndex)
     return nil;
   return @(*ariaRowIndex);
@@ -1035,7 +1038,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (NSNumber*)ariaSetSize {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> setSize = _owner->node()->GetSetSize();
+  absl::optional<int> setSize = _owner->node()->GetSetSize();
   if (!setSize)
     return nil;
   return @(*setSize);
@@ -1139,7 +1142,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     }
   } else {
     // Otherwise this is a cell, return the column headers for this cell.
-    base::Optional<int> column = _owner->GetTableCellColIndex();
+    absl::optional<int> column = _owner->GetTableCellColIndex();
     if (!column)
       return nil;
 
@@ -1158,8 +1161,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  base::Optional<int> column = _owner->node()->GetTableCellColIndex();
-  base::Optional<int> colspan = _owner->node()->GetTableCellColSpan();
+  absl::optional<int> column = _owner->node()->GetTableCellColIndex();
+  absl::optional<int> colspan = _owner->node()->GetTableCellColSpan();
   if (column && colspan)
     return [NSValue valueWithRange:NSMakeRange(*column, *colspan)];
   return nil;
@@ -1352,7 +1355,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
   const BrowserAccessibility* text_field_ancestor =
-      _owner->GetTextFieldAncestor();
+      _owner->PlatformGetTextFieldAncestor();
   if (text_field_ancestor)
     return ToBrowserAccessibilityCocoa(text_field_ancestor);
   return nil;
@@ -1516,12 +1519,12 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     return [self treeItemRowIndex];
   } else if ([self internalRole] == ax::mojom::Role::kColumn) {
     DCHECK(_owner->node());
-    base::Optional<int> col_index = *_owner->node()->GetTableColColIndex();
+    absl::optional<int> col_index = *_owner->node()->GetTableColColIndex();
     if (col_index)
       return @(*col_index);
   } else if ([self internalRole] == ax::mojom::Role::kRow) {
     DCHECK(_owner->node());
-    base::Optional<int> row_index = _owner->node()->GetTableRowRowIndex();
+    absl::optional<int> row_index = _owner->node()->GetTableRowRowIndex();
     if (row_index)
       return @(*row_index);
   }
@@ -1995,9 +1998,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (role == ax::mojom::Role::kCanvas &&
       _owner->GetBoolAttribute(ax::mojom::BoolAttribute::kCanvasHasFallback)) {
     cocoa_role = NSAccessibilityGroupRole;
-  } else if ((_owner->IsPlainTextField() &&
-              _owner->HasState(ax::mojom::State::kMultiline)) ||
-             (_owner->IsRichTextField() && !ui::IsComboBox(role))) {
+  } else if (_owner->IsTextField() &&
+             _owner->HasState(ax::mojom::State::kMultiline)) {
     cocoa_role = NSAccessibilityTextAreaRole;
   } else if (role == ax::mojom::Role::kImage && _owner->GetChildCount()) {
     // An image map is an image with children, and exposed on Mac as a group.
@@ -2131,10 +2133,6 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     case ax::mojom::Role::kRegion:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_REGION));
-    case ax::mojom::Role::kSection:
-      // A <section> element uses the 'region' ARIA role mapping.
-      return base::SysUTF16ToNSString(
-          content_client->GetLocalizedString(IDS_AX_ROLE_REGION));
     case ax::mojom::Role::kSpinButton:
       // This control is similar to what VoiceOver calls a "stepper".
       return base::SysUTF16ToNSString(
@@ -2207,8 +2205,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  base::Optional<int> row = _owner->node()->GetTableCellRowIndex();
-  base::Optional<int> rowspan = _owner->node()->GetTableCellRowSpan();
+  absl::optional<int> row = _owner->node()->GetTableCellRowIndex();
+  absl::optional<int> rowspan = _owner->node()->GetTableCellRowSpan();
   if (row && rowspan)
     return [NSValue valueWithRange:NSMakeRange(*row, *rowspan)];
   return nil;
@@ -2385,7 +2383,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  if (_owner->IsPlainTextField() &&
+  if (_owner->IsAtomicTextField() &&
       GetState(_owner, ax::mojom::State::kProtected)) {
     return NSAccessibilitySecureTextFieldSubrole;
   }
@@ -2719,7 +2717,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 }
 
 - (NSRect)frameForRange:(NSRange)range {
-  if (!_owner->IsText() && !_owner->IsPlainTextField())
+  if (!_owner->IsText() && !_owner->IsAtomicTextField())
     return CGRectNull;
   gfx::Rect rect = _owner->GetUnclippedRootFrameInnerTextRangeBoundsRect(
       range.location, NSMaxRange(range));
@@ -3546,7 +3544,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     }
   }
 
-  if (_owner->GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
+  if (_owner->IsTextField()) {
     [ret addObjectsFromArray:@[
       NSAccessibilityInsertionPointLineNumberAttribute,
       NSAccessibilityNumberOfCharactersAttribute,
@@ -3824,8 +3822,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     NSRange range = [(NSValue*)value rangeValue];
     BrowserAccessibilityManager* manager = _owner->manager();
     manager->SetSelection(BrowserAccessibility::AXRange(
-        _owner->CreatePositionAt(range.location),
-        _owner->CreatePositionAt(NSMaxRange(range))));
+        _owner->CreatePositionAt(range.location)->AsLeafTextPosition(),
+        _owner->CreatePositionAt(NSMaxRange(range))->AsLeafTextPosition()));
   }
   if ([attribute
           isEqualToString:NSAccessibilitySelectedTextMarkerRangeAttribute]) {

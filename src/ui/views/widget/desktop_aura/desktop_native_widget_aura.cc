@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -91,6 +92,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   // This function creates a widget with the bounds passed in which eventually
   // becomes the parent of the child window passed in.
   static aura::Window* CreateParentWindow(aura::Window* child_window,
+                                          aura::Window* context,
                                           const gfx::Rect& bounds,
                                           bool full_screen,
                                           bool is_menu,
@@ -115,9 +117,14 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
-    init_params.activatable = full_screen ? Widget::InitParams::ACTIVATABLE_YES
-                                          : Widget::InitParams::ACTIVATABLE_NO;
+    init_params.activatable = full_screen
+                                  ? Widget::InitParams::Activatable::kYes
+                                  : Widget::InitParams::Activatable::kNo;
     init_params.z_order = root_z_order;
+    // Also provide the context, which Ozone (in particular - Wayland) will use
+    // to parent this newly created toplevel native widget to. Please refer to
+    // https://crrev.com/c/2831291 for more details.
+    init_params.context = context;
 
     // This widget instance will get deleted when the window is
     // destroyed.
@@ -203,7 +210,7 @@ class DesktopNativeWidgetAuraWindowParentingClient
                                  const gfx::Rect& bounds) override {
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
                          ui::SHOW_STATE_FULLSCREEN;
-    bool is_menu = window->type() == aura::client::WINDOW_TYPE_MENU;
+    bool is_menu = window->GetType() == aura::client::WINDOW_TYPE_MENU;
 
     if (is_fullscreen || is_menu) {
       ui::ZOrderLevel root_z_order = ui::ZOrderLevel::kNormal;
@@ -213,7 +220,8 @@ class DesktopNativeWidgetAuraWindowParentingClient
         root_z_order = native_widget->GetZOrderLevel();
 
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
-          window, bounds, is_fullscreen, is_menu, root_z_order);
+          window, root_window_ /* context */, bounds, is_fullscreen, is_menu,
+          root_z_order);
     }
     return root_window_;
   }
@@ -1041,6 +1049,10 @@ ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
   return aura::Env::GetInstance()->gesture_recognizer();
 }
 
+ui::GestureConsumer* DesktopNativeWidgetAura::GetGestureConsumer() {
+  return content_window_;
+}
+
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   NativeWidgetAura::SetResizeBehaviorFromDelegate(
       GetWidget()->widget_delegate(), content_window_);
@@ -1091,12 +1103,16 @@ void DesktopNativeWidgetAura::OnCaptureLost() {
 }
 
 void DesktopNativeWidgetAura::OnPaint(const ui::PaintContext& context) {
+  desktop_window_tree_host_->UpdateWindowShapeIfNeeded(context);
   native_widget_delegate_->OnNativeWidgetPaint(context);
 }
 
 void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
-    float new_device_scale_factor) {}
+    float new_device_scale_factor) {
+  GetWidget()->DeviceScaleFactorChanged(old_device_scale_factor,
+                                        new_device_scale_factor);
+}
 
 void DesktopNativeWidgetAura::OnWindowDestroying(aura::Window* window) {
   // Cleanup happens in OnHostClosed().
@@ -1253,6 +1269,13 @@ ui::mojom::DragOperation DesktopNativeWidgetAura::OnPerformDrop(
     Activate();
   return drop_helper_->OnDrop(event.data(), event.location(),
                               last_drop_operation_);
+}
+
+aura::client::DragDropDelegate::DropCallback
+DesktopNativeWidgetAura::GetDropCallback(const ui::DropTargetEvent& event) {
+  // TODO(crbug.com/1197505): Return drop callback.
+  NOTREACHED();
+  return base::NullCallback();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

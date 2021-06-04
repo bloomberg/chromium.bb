@@ -1,9 +1,11 @@
 /*
  * rdgif.c
  *
+ * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2019 by Guido Vollbeding.
- * This file is part of the Independent JPEG Group's software.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2021, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -404,6 +406,13 @@ start_input_gif(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     ERREXIT(cinfo, JERR_INPUT_EOF);
   width = LM_to_uint(hdrbuf, 0);
   height = LM_to_uint(hdrbuf, 2);
+  if (width == 0 || height == 0)
+    ERREXIT(cinfo, JERR_GIF_EMPTY);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  if (sinfo->max_pixels &&
+      (unsigned long long)width * height > sinfo->max_pixels)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+#endif
   /* we ignore the color resolution, sort flag, and background color index */
   aspectRatio = UCH(hdrbuf[6]);
   if (aspectRatio != 0 && aspectRatio != 49)
@@ -446,6 +455,13 @@ start_input_gif(j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* we ignore top/left position info, also sort flag */
     width = LM_to_uint(hdrbuf, 4);
     height = LM_to_uint(hdrbuf, 6);
+    if (width == 0 || height == 0)
+      ERREXIT(cinfo, JERR_GIF_EMPTY);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+    if (sinfo->max_pixels &&
+        (unsigned long long)width * height > sinfo->max_pixels)
+      ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+#endif
     source->is_interlaced = (BitSet(hdrbuf[8], INTERLACE) != 0);
 
     /* Read local colormap if header indicates it is present */
@@ -669,6 +685,9 @@ jinit_read_gif(j_compress_ptr cinfo)
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_gif;
   source->pub.finish_input = finish_input_gif;
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  source->pub.max_pixels = 0;
+#endif
 
   return (cjpeg_source_ptr)source;
 }

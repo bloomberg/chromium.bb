@@ -86,8 +86,8 @@ static_library("test_support") {
     "perf_test_suite.h",
     "perf_time_logger.cc",
     "perf_time_logger.h",
-    "power_monitor_test_base.cc",
-    "power_monitor_test_base.h",
+    "power_monitor_test.cc",
+    "power_monitor_test.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_environment_variable_override.cc",
@@ -319,6 +319,8 @@ static_library("test_support") {
       "../trace_event/trace_config_memory_test_util.h",
       "trace_event_analyzer.cc",
       "trace_event_analyzer.h",
+      "trace_test_utils.cc",
+      "trace_test_utils.h",
     ]
     if (!is_nacl_nonsfi) {
       sources += [
@@ -479,13 +481,13 @@ if (is_android) {
 
   android_library("test_support_java") {
     testonly = true
+
     deps = [
       "//base:base_java",
-      "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
+
     srcjar_deps = [ ":test_support_java_aidl" ]
     sources = [
       "android/java/src/org/chromium/base/GarbageCollectionTestUtils.java",

@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import shutil
-import thread
 import time
+import six.moves._thread  # pylint: disable=import-error
 
 import py_utils
 from py_utils import exc_util
@@ -87,9 +89,9 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
 
   def _ReformatArg(self, startup_args, arg_name):
     arg_str = '--' + arg_name + '='
-    for i in range(len(startup_args)): # pylint: disable=consider-using-enumerate
-      if arg_str in startup_args[i]:
-        new_arg = startup_args[i]
+    for i, arg in enumerate(startup_args):
+      if arg_str in arg:
+        new_arg = arg
         new_arg = new_arg.replace(arg_str, arg_str + "'")
         new_arg = new_arg + "'"
         new_arg = new_arg.replace(';', '\\;')
@@ -134,12 +136,13 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     self._is_browser_running = False
 
   def LaunchLacrosChrome(self, startup_args):
-    thread.start_new_thread(self._LaunchLacrosChromeHelper, (startup_args,))
+    six.moves._thread.start_new_thread(
+        self._LaunchLacrosChromeHelper, (startup_args,))
     py_utils.WaitFor(self._IsDevtoolsUp, 40)
     self._is_browser_running = self._IsDevtoolsUp()
     # TODO(crbug/1150455) - Find another condtion to wait on.
     time.sleep(1)
-    print 'Is Lacros up? ' + str(self._is_browser_running)
+    print('Is Lacros up? ' + str(self._is_browser_running))
 
   def Start(self, startup_args):
     self._cri.OpenConnection()

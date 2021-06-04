@@ -21,8 +21,6 @@ const char* ProcessNameFromSandboxType(
   switch (sandbox_type) {
     case sandbox::policy::SandboxType::kNoSandbox:
       return nullptr;
-    case sandbox::policy::SandboxType::kWebContext:
-      return "context";
     case sandbox::policy::SandboxType::kRenderer:
       return "renderer";
     case sandbox::policy::SandboxType::kUtility:
@@ -73,7 +71,7 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  return std::unique_ptr<FileMappedForLaunch>();
+  return nullptr;
 }
 
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(

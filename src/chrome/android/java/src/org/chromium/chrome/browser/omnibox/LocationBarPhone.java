@@ -37,11 +37,6 @@ class LocationBarPhone extends LocationBarLayout {
 
         mUrlBar = findViewById(R.id.url_bar);
         mStatusView = findViewById(R.id.location_bar_status);
-        // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
-        // See onFinishNativeInitialization ready for when this variable is set for the DSE icon
-        // case.
-        mFirstVisibleFocusedView =
-                mFirstVisibleFocusedView == null ? mUrlBar : mFirstVisibleFocusedView;
 
         Rect delegateArea = new Rect();
         mUrlActionContainer.getHitRect(delegateArea);
@@ -79,17 +74,15 @@ class LocationBarPhone extends LocationBarLayout {
     public void setShowIconsWhenUrlFocused(boolean showIcon) {
         super.setShowIconsWhenUrlFocused(showIcon);
         mFirstVisibleFocusedView = showIcon ? mStatusView : mUrlBar;
-        mStatusCoordinator.setShowIconsWhenUrlFocused(showIcon);
-    }
-
-    @Override
-    protected void onNtpStartedLoading() {
-        super.onNtpStartedLoading();
-        updateStatusVisibility();
     }
 
     /* package */ void setFirstVisibleFocusedView(boolean toStatusView) {
         mFirstVisibleFocusedView = toStatusView ? mStatusView : mUrlBar;
+        // It's possible that the fade animators hid the new first visible focused view if it was
+        // to the start of the previous first visible focused view. This happens while
+        // transitioning between incognito in some start surface scenarios.
+        mFirstVisibleFocusedView.setAlpha(1f);
+        mFirstVisibleFocusedView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -110,6 +103,7 @@ class LocationBarPhone extends LocationBarLayout {
      * Returns the first child view that would be visible when location bar is focused. The first
      * visible, focused view should be either url bar or status icon.
      */
+    // TODO(crbug.com/1194642): Remove the idea of firstVisibleFocusedView.
     /* package */ View getFirstVisibleFocusedView() {
         return mFirstVisibleFocusedView;
     }
@@ -123,23 +117,5 @@ class LocationBarPhone extends LocationBarLayout {
      */
     public FrameLayout.LayoutParams getFrameLayoutParams() {
         return (FrameLayout.LayoutParams) getLayoutParams();
-    }
-
-    /** Update the status visibility according to the current state held in LocationBar. */
-    @Override
-    /* package */ void updateStatusVisibility() {
-        boolean shouldShowLogo = mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                mLocationBarDataProvider.isIncognito());
-        setShowIconsWhenUrlFocused(shouldShowLogo);
-
-        if (!shouldShowLogo) return;
-
-        if (mLocationBarDataProvider.isInOverviewAndShowingOmnibox()) {
-            mStatusCoordinator.setStatusIconShown(true);
-        } else if (mSearchEngineLogoUtils.currentlyOnNTP(mLocationBarDataProvider)) {
-            mStatusCoordinator.setStatusIconShown(hasFocus());
-        } else {
-            mStatusCoordinator.setStatusIconShown(true);
-        }
     }
 }

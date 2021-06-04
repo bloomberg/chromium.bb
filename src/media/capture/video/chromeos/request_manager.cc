@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -43,7 +44,8 @@ RequestManager::RequestManager(
     VideoCaptureBufferType buffer_type,
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
     BlobifyCallback blobify_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+    uint32_t device_api_version)
     : device_id_(device_id),
       callback_ops_(this, std::move(callback_ops_receiver)),
       capture_interface_(std::move(capture_interface)),
@@ -58,7 +60,8 @@ RequestManager::RequestManager(
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
       partial_result_count_(1),
-      first_frame_shutter_time_(base::TimeTicks()) {
+      first_frame_shutter_time_(base::TimeTicks()),
+      device_api_version_(device_api_version) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(callback_ops_.is_bound());
   DCHECK(device_context_);
@@ -287,7 +290,7 @@ void RequestManager::PrepareCaptureRequest() {
   std::set<StreamType> stream_types;
   cros::mojom::CameraMetadataPtr settings;
   TakePhotoCallback callback = base::NullCallback();
-  base::Optional<uint64_t> input_buffer_id;
+  absl::optional<uint64_t> input_buffer_id;
   cros::mojom::Effect reprocess_effect = cros::mojom::Effect::NO_EFFECT;
 
   bool is_reprocess_request = false;
@@ -369,6 +372,10 @@ void RequestManager::PrepareCaptureRequest() {
   if (!is_reprocess_request) {
     UpdateCaptureSettings(&capture_request->settings);
   }
+  if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+    capture_request->physcam_settings =
+        std::vector<cros::mojom::Camera3PhyscamMetadataPtr>();
+  }
   capture_interface_->ProcessCaptureRequest(
       std::move(capture_request),
       base::BindOnce(&RequestManager::OnProcessedCaptureRequest, GetWeakPtr()));
@@ -378,7 +385,7 @@ bool RequestManager::TryPrepareReprocessRequest(
     std::set<StreamType>* stream_types,
     cros::mojom::CameraMetadataPtr* settings,
     TakePhotoCallback* callback,
-    base::Optional<uint64_t>* input_buffer_id,
+    absl::optional<uint64_t>* input_buffer_id,
     cros::mojom::Effect* reprocess_effect) {
   if (buffer_id_reprocess_job_info_map_.empty() ||
       !stream_buffer_manager_->HasFreeBuffers(kYUVReprocessStreams)) {
@@ -882,7 +889,7 @@ void RequestManager::SubmitCapturedPreviewRecordingBuffer(
   auto client_type = kStreamClientTypeMap[static_cast<int>(stream_type)];
   if (video_capture_use_gmb_) {
     VideoCaptureFormat format;
-    base::Optional<VideoCaptureDevice::Client::Buffer> buffer =
+    absl::optional<VideoCaptureDevice::Client::Buffer> buffer =
         stream_buffer_manager_->AcquireBufferForClientById(
             stream_type, buffer_ipc_id, &format);
     CHECK(buffer);

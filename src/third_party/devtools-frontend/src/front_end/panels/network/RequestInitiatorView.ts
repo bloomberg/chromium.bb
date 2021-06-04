@@ -4,9 +4,10 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Components from '../../components/components.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Logs from '../../models/logs/logs.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 const UIStrings = {
@@ -67,7 +68,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
   }
 
   _buildRequestChainTree(
-      initiatorGraph: SDK.NetworkLog.InitiatorGraph, title: string,
+      initiatorGraph: Logs.NetworkLog.InitiatorGraph, title: string,
       tree: UI.TreeOutline.TreeOutlineInShadow): UI.TreeOutline.TreeElement {
     const root = new UI.TreeOutline.TreeElement(title);
 
@@ -147,7 +148,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
       this._buildStackTraceSection(stackTracePreview.element, i18nString(UIStrings.requestCallStack), containerTree);
     }
 
-    const initiatorGraph = SDK.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
+    const initiatorGraph = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
 
     if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {
       initiatorDataPresent = true;

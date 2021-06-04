@@ -5,13 +5,14 @@
 #include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 
 #include <stddef.h>
+
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
@@ -25,11 +26,13 @@
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -161,8 +164,9 @@ class WebMediaPlayerMS::FrameDeliverer {
 
     if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
                              true /* for_media_stream */)) {
-      gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
-          media_task_runner, worker_task_runner, gpu_factories));
+      gpu_memory_buffer_pool_ =
+          std::make_unique<media::GpuMemoryBufferVideoFramePool>(
+              media_task_runner, worker_task_runner, gpu_factories);
     }
   }
 
@@ -449,11 +453,11 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   SendLogMessage(
       String::Format("%s => (stream_id=%s)", __func__, stream_id.c_str()));
 
-  frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
+  frame_deliverer_ = std::make_unique<WebMediaPlayerMS::FrameDeliverer>(
       weak_this_,
       CrossThreadBindRepeating(&WebMediaPlayerMSCompositor::EnqueueFrame,
                                compositor_),
-      media_task_runner_, worker_task_runner_, gpu_factories_));
+      media_task_runner_, worker_task_runner_, gpu_factories_);
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream_,
       ConvertToBaseRepeatingCallback(frame_deliverer_->GetRepaintCallback()),
@@ -612,10 +616,10 @@ int WebMediaPlayerMS::GetDelegateId() {
   return delegate_id_;
 }
 
-base::Optional<viz::SurfaceId> WebMediaPlayerMS::GetSurfaceId() {
+absl::optional<viz::SurfaceId> WebMediaPlayerMS::GetSurfaceId() {
   if (bridge_)
     return bridge_->GetSurfaceId();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 base::WeakPtr<WebMediaPlayer> WebMediaPlayerMS::AsWeakPtr() {
@@ -1345,7 +1349,7 @@ void WebMediaPlayerMS::MaybeCreateWatchTimeReporter() {
   if (!HasAudio() && !HasVideo())
     return;
 
-  base::Optional<media::mojom::MediaStreamType> media_stream_type =
+  absl::optional<media::mojom::MediaStreamType> media_stream_type =
       GetMediaStreamType();
   if (!media_stream_type)
     return;
@@ -1465,10 +1469,10 @@ media::PipelineStatistics WebMediaPlayerMS::GetPipelineStatistics() {
   return stats;
 }
 
-base::Optional<media::mojom::MediaStreamType>
+absl::optional<media::mojom::MediaStreamType>
 WebMediaPlayerMS::GetMediaStreamType() {
   if (web_stream_.IsNull())
-    return base::nullopt;
+    return absl::nullopt;
 
   // If either the first video or audio source is remote, the media stream is
   // of remote source.
@@ -1484,13 +1488,13 @@ WebMediaPlayerMS::GetMediaStreamType() {
     media_source = audio_components[0]->Source();
   }
   if (!media_source)
-    return base::nullopt;
+    return absl::nullopt;
   if (media_source->Remote())
     return media::mojom::MediaStreamType::kRemote;
 
   auto* platform_source = media_source->GetPlatformSource();
   if (!platform_source)
-    return base::nullopt;
+    return absl::nullopt;
   switch (platform_source->device().type) {
     case mojom::blink::MediaStreamType::NO_SERVICE:
       // Element capture uses the default NO_SERVICE value since it does not set
@@ -1511,10 +1515,10 @@ WebMediaPlayerMS::GetMediaStreamType() {
       return media::mojom::MediaStreamType::kLocalDisplayCapture;
     case mojom::blink::MediaStreamType::NUM_MEDIA_TYPES:
       NOTREACHED();
-      return base::nullopt;
+      return absl::nullopt;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace blink

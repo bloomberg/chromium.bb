@@ -16,6 +16,7 @@
 #include "sandbox/policy/mac/cdm.sb.h"
 #include "sandbox/policy/mac/common.sb.h"
 #include "sandbox/policy/mac/gpu.sb.h"
+#include "sandbox/policy/mac/mirroring.sb.h"
 #include "sandbox/policy/mac/nacl_loader.sb.h"
 #include "sandbox/policy/mac/network.sb.h"
 #include "sandbox/policy/mac/ppapi.sb.h"
@@ -28,25 +29,7 @@
 namespace sandbox {
 namespace policy {
 
-const char* SandboxMac::kSandboxBrowserPID = "BROWSER_PID";
-const char* SandboxMac::kSandboxBundlePath = "BUNDLE_PATH";
-const char* SandboxMac::kSandboxChromeBundleId = "BUNDLE_ID";
-const char* SandboxMac::kSandboxSodaComponentPath = "SODA_COMPONENT_PATH";
-const char* SandboxMac::kSandboxSodaLanguagePackPath =
-    "SODA_LANGUAGE_PACK_PATH";
-const char* SandboxMac::kSandboxComponentPath = "COMPONENT_PATH";
-const char* SandboxMac::kSandboxDisableDenialLogging =
-    "DISABLE_SANDBOX_DENIAL_LOGGING";
-const char* SandboxMac::kSandboxEnableLogging = "ENABLE_LOGGING";
-const char* SandboxMac::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
-const char* SandboxMac::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
-const char* SandboxMac::kSandboxOSVersion = "OS_VERSION";
-const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
-const char* SandboxMac::kSandboxDisableMetalShaderCache =
-    "DISABLE_METAL_SHADER_CACHE";
-
-// static
-base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
+base::FilePath GetCanonicalPath(const base::FilePath& path) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
     DPLOG(ERROR) << "GetCanonicalSandboxPath() failed for: " << path.value();
@@ -62,8 +45,7 @@ base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
   return base::FilePath(canonical_path);
 }
 
-// static
-std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
+std::string GetSandboxProfile(SandboxType sandbox_type) {
   std::string profile = std::string(kSeatbeltPolicyString_common);
 
   switch (sandbox_type) {
@@ -75,6 +57,9 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
       break;
     case SandboxType::kGpu:
       profile += kSeatbeltPolicyString_gpu;
+      break;
+    case SandboxType::kMirroring:
+      profile += kSeatbeltPolicyString_mirroring;
       break;
     case SandboxType::kNaClLoader:
       profile += kSeatbeltPolicyString_nacl_loader;

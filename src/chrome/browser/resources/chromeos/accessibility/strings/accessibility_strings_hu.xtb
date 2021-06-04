@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Csúsztassa két ujját felfelé</translation>
 <translation id="1126928665165112660">Nem dőlt</translation>
 <translation id="113582498867142724"><ph name="TAG" /> gyűjtemény <ph name="NUM" /> elemmel</translation>
+<translation id="1146441463334103638">Képernyő be- vagy kikapcsolása</translation>
 <translation id="1156488781945104845">Pontos idő</translation>
 <translation id="1161762950103988776">Ugrás</translation>
 <translation id="1164857107703583584">Az ugrási parancsokkal hatékonyan navigálhat a weboldalakon.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">Link URL-címe: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Ugrás visszább egy karakterrel</translation>
 <translation id="2220529011494928058">Probléma bejelentése</translation>
+<translation id="2243633977138166243">A bal és jobb nyíl lenyomásával navigálhat; az Enter billentyű lenyomásával aktiválhat</translation>
 <translation id="224426591676115802">A következő nyelvhez nincs használható hang: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">A tanulási mód leállítása</translation>
 <translation id="225732394367814946">Beszédsebesség növelése</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">Neonzöld</translation>
 <translation id="2684412629217766642">ChromeVox-útmutató bezárása</translation>
 <translation id="2697408785920771974">szövegközi automatikus kiegészítés</translation>
+<translation id="2697786971245905543">Szövegátalakítás – jelölt</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{nyitó zárójel}other{# nyitó zárójel}}</translation>
+<translation id="270523456882008230">Tipp: Koppintson duplán egy ujjal az aktuális elem aktiválásához.</translation>
 <translation id="2705875883745373140">Nincs megnyomva</translation>
 <translation id="2708078563826046398">Őszibarackfelfújt</translation>
 <translation id="2713444072780614174">Fehér</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Egy ujjal jobbról balra csúsztatva pedig az előző elemre léphet. Próbálja ki most.</translation>
 <translation id="280499067616661124">ChromeVox-keresés az oldalon</translation>
-<translation id="2808001342598757276">Képernyő sötétítésének visszavonása</translation>
 <translation id="2811019999044652585">A képernyő más részeihez, például az eszköztárakhoz vagy a tálcához való ugráshoz nyomja le a Control + „előre” billentyűkombinációt. A Chromebookokon az „előre” billentyű közvetlenül a 2-es gomb felett található.</translation>
 <translation id="2811204574343810641">Sor</translation>
 <translation id="2816868829355607410">Gyakorlóterület: Ugrási parancsok</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Elemleírás</translation>
 <translation id="2976476721782829799">Egy ujja húzásával is mozoghat a képernyőn. Ennek a funkciónak az a neve, hogy Felfedezés érintéssel. Az ujja képernyőn való húzásával olvassa el a lecke hátralevő részét.</translation>
 <translation id="297825089465017871">Csúsztassa két ujját balra</translation>
+<translation id="2988364959384217951">Tipp: Csúsztasson balról jobbra két ujjal, ha ki szeretne lépni ebből az útmutatóból.</translation>
 <translation id="2998131015536248178">Előző karakter</translation>
 <translation id="2999559350546931576">Hangszín csökkentése</translation>
 <translation id="3009352964623081324">Keresés + O, majd S. Használja a hangok telepítéséhez, kezeléséhez és személyre szabásához.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Görgetés vissza</translation>
 <translation id="3084806535845658316">nincs gépelési visszaolvasás</translation>
 <translation id="3086746722712840547">jegyzet</translation>
+<translation id="308736057934395497">Hatékonyabban védheti az adatait a képernyő kikapcsolásával, amelynek tartalmát így nem látják mások. A képernyőt bármikor újra bekapcsolhatja a Keresés + Fényerő fel billentyűkombinációval.</translation>
 <translation id="3090227230165225418">Letöltési értesítések bejelentése</translation>
 <translation id="3090532668523289635">csop</translation>
 <translation id="3093176084511590672">Következő határjel</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Összecsukott</translation>
 <translation id="311015743332597320">Csúsztasson négy ujjal jobbra</translation>
 <translation id="3112457281078985179">A ChromeVox be- vagy kikapcsolásához használja a Control + Alt + Z billentyűparancsot.</translation>
+<translation id="3115800313647508384">Kikapcsolja a képernyőt?</translation>
 <translation id="3131002934070407451">Számok olvasása:</translation>
 <translation id="3134461040845705080">csak olv</translation>
 <translation id="3137663468179739624">Olajzöld</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Világosszürke</translation>
 <translation id="6036135911048686884">Felfedezés érintéssel</translation>
 <translation id="6037602951055904232">Pászt előre</translation>
-<translation id="6044160928851315051">Képernyő sötétítése</translation>
 <translation id="6082768461603900813">Alapvető navigáció</translation>
 <translation id="609281021724813947">Nincs előző csúszka</translation>
 <translation id="6100239002225743044">Ugrás feljebb egy sorral</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Bevezető</translation>
 <translation id="6697092096875747123">Előző legördülő lista</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{felkiáltójel}other{# felkiáltójel}}</translation>
+<translation id="670717715607710284">Képernyő kikapcsolása</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6714813999819678458">Előző 2. szintű fejléc</translation>
 <translation id="6730312624811567147">Keresés és balra vagy jobbra használata Home vagy End billentyűként, Keresés és Control és balra vagy jobbra használata Control és Home vagy End billentyűparancsként, Keresés és fel vagy le használata Page Up vagy Down billentyűként</translation>
@@ -938,6 +944,7 @@
 <translation id="7776293189010177726">ChromeVox-menük megnyitása</translation>
 <translation id="7799302833060027366">A matematikai tartalmak felfedezéséhez használja a fel, le, balra és jobbra nyílbillentyűket</translation>
 <translation id="7800558923657349506">Végszó</translation>
+<translation id="7801768143868631306">Tipp: Egy ujjal balra vagy jobbra csúsztatva navigálhat.</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7810781339813764006">Következő csoport</translation>
 <translation id="7813616274030162878">A kapcsolóalapú hozzáférés menüje</translation>
@@ -991,6 +998,7 @@
 <translation id="816818801578874684">Ez az első címsor. A Keresés + H billentyűparanccsal a következő címsorra léphet.</translation>
 <translation id="8173092779156526980">Csúsztasson négy ujjal balra</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alulvonás}other{# alulvonás}}</translation>
+<translation id="817529114347680055">Képernyő bekapcsolása</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">sor</translation>
 <translation id="8186185314313222077">váltás teljes képernyős módra</translation>
@@ -1013,7 +1021,6 @@
 <translation id="8316881042119029234">Csipkefehér</translation>
 <translation id="8324974933005349667">A szövegfelolvasóhoz tartozó beállítások személyre szabása</translation>
 <translation id="8326783648485765113">Fűzöld</translation>
-<translation id="8328063869313048659">Sötét képernyő be- vagy kikapcsolása</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{kettős kereszt}other{# kettős kereszt jel}}</translation>
 <translation id="8378855320830505539">Terület</translation>
 <translation id="8382679411218029383">Automatikus kiegészítés soron belül és listaként</translation>

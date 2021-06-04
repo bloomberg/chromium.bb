@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Soekglyer</translation>
 <translation id="1404323374378969387">Noors</translation>
 <translation id="1430915738399379752">Druk uit</translation>
+<translation id="1433628812591023318">Die lêer moet na Windows-lêers geskuif word om in Parallels Desktop gelos te word.</translation>
 <translation id="1435838927755162558">Deel vouer met Parallels Desktop</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1471718551822868769">Slowaaks</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-lêers</translation>
 <translation id="3078461028045006476">Deel met <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
+<translation id="3113153474486991170">Kon nie "<ph name="PATH" />" van hierdie ligging af oopmaak nie. Kopieer asseblief na "My lêers" toe om oop te maak.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">KLAAR</translation>
 <translation id="3188257591659621405">My lêers</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Bulgaars met fonetiese sleutelbord</translation>
 <translation id="5605830556594064952">VSA Dvorak</translation>
 <translation id="5625294776298156701">Tamil met Tamil99-sleutelbord</translation>
+<translation id="5633226425545095130">As hierdie item geskuif word, sal dit gedeel word met almal wat die vouer "<ph name="DESTINATION_NAME" />" kan sien.</translation>
 <translation id="5649768706273821470">Luister</translation>
 <translation id="5678784840044122290">Die Linux-program sal binne jou terminaal beskikbaar wees en kan dalk ook 'n ikoon in jou Lanseerder wys.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Kan nie van 'n argief- of virtuele skyf ontkoppel nie<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Etiopiese sleutelbord</translation>
 <translation id="7417705661718309329">Google-kaart</translation>
 <translation id="7460898608667578234">Oekraïens</translation>
+<translation id="7486315294984620427">Die lêer moet na Windows-lêers gekopieer word om in Parallels Desktop gelos te word.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> gevind
     <ph name="LINE_BREAK1" />
     Gereed om na <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> te rugsteun</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Afmetings</translation>
 <translation id="8437209419043462667">VSA</translation>
 <translation id="8456681095658380701">Ongeldige naam</translation>
+<translation id="8459404855768962328">As hierdie item gekopieer word, sal dit gedeel word met almal wat die vouer "<ph name="DESTINATION_NAME" />" kan sien.</translation>
 <translation id="8461467696380332069">Regsklik 'n lêer en kies "Speld aan rak vas" vir kitstoegang tot jou lêers in die rak.</translation>
 <translation id="8463494891489624050">Viëtnamees-VIQR</translation>
 <translation id="8466234950814670489">Teerargief</translation>

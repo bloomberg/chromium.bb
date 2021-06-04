@@ -4,7 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
+#include "base/format_macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -40,6 +40,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -99,10 +100,7 @@ void CopyFileAndGetContentUri(const base::FilePath& file,
 
 std::string ExecuteAndGetString(const ToRenderFrameHost& adapter,
                                 const std::string& script) {
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      adapter, "domAutomationController.send(" + script + ")", &result));
-  return result;
+  return EvalJs(adapter, script).ExtractString();
 }
 
 void NavigateAndWaitForTitle(content::WebContents* web_contents,
@@ -347,8 +345,8 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
   }
 
   void RunTestScript(const std::string& script) {
-    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                              "loadScript('" + script + "');"));
+    EXPECT_TRUE(
+        ExecJs(shell()->web_contents(), "loadScript('" + script + "');"));
     std::u16string ok = u"OK";
     TitleWatcher title_watcher(shell()->web_contents(), ok);
     title_watcher.AlsoWaitForTitle(u"FAIL");
@@ -359,7 +357,7 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
                                     const std::string& title) {
     std::u16string title16 = base::ASCIIToUTF16(title);
     TitleWatcher title_watcher(shell()->web_contents(), title16);
-    EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+    EXPECT_TRUE(ExecJs(shell()->web_contents(), script));
     EXPECT_EQ(title16, title_watcher.WaitAndGetTitle());
   }
 
@@ -411,14 +409,14 @@ class FinishNavigationObserver : public WebContentsObserver {
     navigations_remaining_ = navigations_remaining;
   }
 
-  const base::Optional<net::Error>& error_code() const { return error_code_; }
+  const absl::optional<net::Error>& error_code() const { return error_code_; }
   const std::vector<NavigationType>& navigation_types() const {
     return navigation_types_;
   }
 
  private:
   base::OnceClosure done_closure_;
-  base::Optional<net::Error> error_code_;
+  absl::optional<net::Error> error_code_;
 
   int navigations_remaining_ = 1;
   std::vector<NavigationType> navigation_types_;
@@ -617,36 +615,33 @@ void SetUpSubPageTest(net::EmbeddedTestServer* primary_server,
 
 std::string AddIframeAndWaitForMessage(const ToRenderFrameHost& adapter,
                                        const GURL& url) {
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(adapter,
-                                                     base::StringPrintf(
-                                                         R"(
+  return EvalJs(adapter,
+                JsReplace(
+                    R"(
   (function(){
     const iframe = document.createElement('iframe');
-    iframe.src = '%s';
+    iframe.src = $1;
     document.body.appendChild(iframe);
   })();
   )",
-                                                         url.spec().c_str()),
-                                                     &result));
-  return result;
+                    url),
+                EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      .ExtractString();
 }
 
 std::string WindowOpenAndWaitForMessage(const ToRenderFrameHost& adapter,
                                         const GURL& url) {
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      adapter,
-      base::StringPrintf(R"(
+  return EvalJs(adapter,
+                JsReplace(R"(
         if (document.last_win) {
           // Close the latest window to avoid OOM-killer on Android.
           document.last_win.close();
         }
-        document.last_win = window.open('%s', '_blank');
+        document.last_win = window.open($1, '_blank');
       )",
-                         url.spec().c_str()),
-      &result));
-  return result;
+                          url),
+                EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      .ExtractString();
 }
 
 // Runs tests for subpages  (iframe / window.open()). This function calls
@@ -729,7 +724,6 @@ void AddHtmlAndScriptForNavigationTest(
 }
 
 std::string GetLoadResultForNavigationTest(const ToRenderFrameHost& adapter) {
-  std::string result;
   std::string script = R"(
     (async () => {
       const script = document.createElement('script');
@@ -751,8 +745,8 @@ std::string GetLoadResultForNavigationTest(const ToRenderFrameHost& adapter) {
       document.body.appendChild(script);
     })()
     )";
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(adapter, script, &result));
-  return result;
+  return EvalJs(adapter, script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      .ExtractString();
 }
 
 // Sets up |server| to return server generated page HTML files and JavaScript
@@ -1999,7 +1993,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NoLocalFileScheme) {
       test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
                          test_data_url, GURL(kTestPageUrl)));
 
-  auto expected_title = base::ASCIIToUTF16("load failed");
+  auto* expected_title = u"load failed";
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(u"Local Script");
 
@@ -2011,7 +2005,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NoLocalFileScheme) {
     script.src = "%s";
     document.body.appendChild(script);)",
                                                 script_file_url.spec().c_str());
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), script));
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -2268,7 +2262,7 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     base::RunLoop run_loop;
     FinishNavigationObserver finish_navigation_observer(web_contents,
                                                         run_loop.QuitClosure());
-    EXPECT_TRUE(ExecuteScript(web_contents, "history.back();"));
+    EXPECT_TRUE(ExecJs(web_contents, "history.back();"));
 
     run_loop.Run();
     ASSERT_TRUE(finish_navigation_observer.error_code());
@@ -2365,8 +2359,8 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Download) {
   SetContents(CreateSimpleWebBundle(primary_url));
   WebContents* web_contents = shell()->web_contents();
   std::unique_ptr<DownloadObserver> download_observer =
-      std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
-          web_contents->GetBrowserContext()));
+      std::make_unique<DownloadObserver>(
+          web_contents->GetBrowserContext()->GetDownloadManager());
 
   EXPECT_FALSE(NavigateToURL(web_contents, wbn_url));
   download_observer->WaitUntilDownloadCreated();

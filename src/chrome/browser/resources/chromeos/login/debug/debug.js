@@ -183,6 +183,10 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      id: 'os-install',
+      kind: ScreenKind.OTHER,
+    },
+    {
       id: 'debugging',
       kind: ScreenKind.OTHER,
     },
@@ -194,6 +198,19 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'network-selection',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'no-error',
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setError(
+                'Chrome OS was unable to connect to Public Wifi. ' +
+                'Please select another network or try again.');
+          }
+        },
+      ],
     },
     {
       id: 'oobe-eula-md',
@@ -448,6 +465,17 @@ cr.define('cr.ui.login.debug', function() {
           id: 'MISSING_GAIA_INFO',
           data: {
             errorState: 3,
+          },
+        },
+        {
+          id: 'CRYPTOHOME_ERROR',
+          data: {
+            errorState: 4,
+            errorText:
+                'Sorry, your password could not be verified. Please try again',
+            keyboardHint: 'Check your keyboard layout and try again',
+            details: 'Could not mount cryptohome.',
+            helpLinkText: 'Learn more',
           },
         },
       ]
@@ -731,23 +759,53 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
-      id: 'supervision-transition',
+      id: 'management-transition',
       kind: ScreenKind.OTHER,
-      handledSteps: 'progress',
+      handledSteps: 'progress,error',
       states: [
         {
-          id: 'adding',
+          id: 'add-supervision',
           trigger: (screen) => {
-            screen.setIsRemovingSupervision(false);
+            screen.setArcTransition(2);
             screen.setUIStep('progress');
           },
         },
         {
-          id: 'removing',
+          id: 'remove-supervision',
           trigger: (screen) => {
-            screen.setIsRemovingSupervision(true);
+            screen.setArcTransition(1);
             screen.setUIStep('progress');
           },
+        },
+        {
+          id: 'add-management',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setManagementEntity('example.com');
+            screen.setUIStep('progress');
+          }
+        },
+        {
+          id: 'add-management-unknown-admin',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setManagementEntity('');
+            screen.setUIStep('progress');
+          }
+        },
+        {
+          id: 'error-supervision',
+          trigger: (screen) => {
+            screen.setArcTransition(1);
+            screen.setUIStep('error');
+          }
+        },
+        {
+          id: 'error-management',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setUIStep('error');
+          }
         },
       ],
     },

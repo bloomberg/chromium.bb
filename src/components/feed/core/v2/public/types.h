@@ -9,18 +9,20 @@
 #include <map>
 #include <string>
 
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/id_type.h"
 #include "base/version.h"
 #include "components/version_info/channel.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace feed {
 
 enum class RefreshTaskId {
   kRefreshForYouFeed,
+  // TODO(1152592): Refresh is not currently used for the Web Feed. Remove this
+  // code if we don't need it.
   kRefreshWebFeed,
 };
 
@@ -62,6 +64,8 @@ struct NetworkResponseInfo {
   bool was_signed_in = false;
 };
 
+std::ostream& operator<<(std::ostream& os, const NetworkResponseInfo& o);
+
 struct NetworkResponse {
   // HTTP response body.
   std::string response_bytes;
@@ -82,30 +86,42 @@ struct DebugStreamData {
   DebugStreamData(const DebugStreamData&);
   DebugStreamData& operator=(const DebugStreamData&);
 
-  base::Optional<NetworkResponseInfo> fetch_info;
-  base::Optional<NetworkResponseInfo> upload_info;
+  absl::optional<NetworkResponseInfo> fetch_info;
+  absl::optional<NetworkResponseInfo> upload_info;
   std::string load_stream_status;
 };
 
 std::string SerializeDebugStreamData(const DebugStreamData& data);
-base::Optional<DebugStreamData> DeserializeDebugStreamData(
+absl::optional<DebugStreamData> DeserializeDebugStreamData(
     base::StringPiece base64_encoded);
 
 // Information about a web page which may be used to determine an associated web
 // feed.
 class WebFeedPageInformation {
  public:
-  WebFeedPageInformation() = default;
+  WebFeedPageInformation();
+  ~WebFeedPageInformation();
+  WebFeedPageInformation(const WebFeedPageInformation&);
+  WebFeedPageInformation(WebFeedPageInformation&&);
+  WebFeedPageInformation& operator=(const WebFeedPageInformation&);
+  WebFeedPageInformation& operator=(WebFeedPageInformation&&);
+
   // The URL for the page. `url().has_ref()` is always false.
-  GURL url() const { return url_; }
+  const GURL& url() const { return url_; }
+  // The list of RSS urls embedded in the page with the <link> tag.
+  const std::vector<GURL>& GetRssUrls() const { return rss_urls_; }
 
   // Set the URL for the page. Trims off the URL ref.
   void SetUrl(const GURL& url);
 
+  void SetRssUrls(const std::vector<GURL>& rss_urls);
+
  private:
   GURL url_;
+  std::vector<GURL> rss_urls_;
   // TODO(crbug/1152592): There will be additional optional information.
 };
+std::ostream& operator<<(std::ostream& os, const WebFeedPageInformation& value);
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feed.webfeed
 enum class WebFeedSubscriptionStatus {

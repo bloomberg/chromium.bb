@@ -5,16 +5,15 @@
 #include "chrome/browser/metrics/family_link_user_metrics_provider.h"
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/child_accounts/family_features.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/guest_session_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/child_accounts/family_features.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_service.h"
@@ -82,7 +81,7 @@ class FamilyLinkUserMetricsProviderTest
  public:
   FamilyLinkUserMetricsProviderTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::kFamilyLinkUserMetricsProvider);
+        ash::kFamilyLinkUserMetricsProvider);
   }
 
  protected:
@@ -139,7 +138,7 @@ class FamilyLinkUserMetricsProviderGuestModeTest
  public:
   FamilyLinkUserMetricsProviderGuestModeTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::kFamilyLinkUserMetricsProvider);
+        ash::kFamilyLinkUserMetricsProvider);
   }
 
  private:

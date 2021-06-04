@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_H_
-#define UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_EVDEV_H_
+#define UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_EVDEV_H_
 
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/devices/gamepad_device.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -59,7 +59,7 @@ struct COMPONENT_EXPORT(EVDEV) MouseMoveEventParams {
   int device_id;
   int flags;
   gfx::PointF location;
-  base::Optional<gfx::Vector2dF> ordinal_delta;
+  absl::optional<gfx::Vector2dF> ordinal_delta;
   PointerDetails pointer_details;
   base::TimeTicks timestamp;
 };
@@ -192,6 +192,7 @@ class COMPONENT_EXPORT(EVDEV) DeviceEventDispatcherEvdev {
   virtual void DispatchScrollEvent(const ScrollEventParams& params) = 0;
   virtual void DispatchTouchEvent(const TouchEventParams& params) = 0;
   virtual void DispatchGamepadEvent(const GamepadEvent& event) = 0;
+  virtual void DispatchMicrophoneMuteSwitchValueChanged(bool muted) = 0;
 
   // Device lifecycle events.
   virtual void DispatchKeyboardDevicesUpdated(
@@ -214,4 +215,4 @@ class COMPONENT_EXPORT(EVDEV) DeviceEventDispatcherEvdev {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_DEVICE_EVENT_DISPATCHER_EVDEV_H_

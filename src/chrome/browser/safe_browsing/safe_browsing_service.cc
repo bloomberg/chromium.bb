@@ -39,6 +39,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/browser/client_side_phishing_model.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
@@ -146,7 +147,7 @@ void SafeBrowsingService::ShutDown() {
   // Remove Profile creation/destruction observers.
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->RemoveObserver(this);
-  observed_profiles_.RemoveAll();
+  observed_profiles_.RemoveAllObservations();
 
   // Delete the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
@@ -398,7 +399,7 @@ void SafeBrowsingService::OnOffTheRecordProfileCreated(
 }
 
 void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
-  observed_profiles_.Remove(profile);
+  observed_profiles_.RemoveObservation(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveSafeBrowsingNetworkContext(profile);
 
@@ -410,7 +411,7 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
   services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   services_delegate_->CreateTelemetryService(profile);
-  observed_profiles_.Add(profile);
+  observed_profiles_.AddObservation(profile);
 }
 
 base::CallbackListSubscription SafeBrowsingService::RegisterStateCallback(

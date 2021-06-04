@@ -6,6 +6,6 @@ fn func() -> i32 {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   func();
 }

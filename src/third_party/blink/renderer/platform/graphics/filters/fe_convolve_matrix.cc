@@ -37,7 +37,7 @@ FEConvolveMatrix::FEConvolveMatrix(Filter* filter,
                                    float divisor,
                                    float bias,
                                    const IntPoint& target_offset,
-                                   EdgeModeType edge_mode,
+                                   FEConvolveMatrix::EdgeModeType edge_mode,
                                    bool preserve_alpha,
                                    const Vector<float>& kernel_matrix)
     : FilterEffect(filter),
@@ -79,7 +79,7 @@ bool FEConvolveMatrix::SetTargetOffset(const IntPoint& target_offset) {
   return true;
 }
 
-bool FEConvolveMatrix::SetEdgeMode(EdgeModeType edge_mode) {
+bool FEConvolveMatrix::SetEdgeMode(FEConvolveMatrix::EdgeModeType edge_mode) {
   if (edge_mode_ == edge_mode)
     return false;
   edge_mode_ = edge_mode;
@@ -93,13 +93,13 @@ bool FEConvolveMatrix::SetPreserveAlpha(bool preserve_alpha) {
   return true;
 }
 
-static SkTileMode ToSkiaTileMode(EdgeModeType edge_mode) {
+static SkTileMode ToSkiaTileMode(FEConvolveMatrix::EdgeModeType edge_mode) {
   switch (edge_mode) {
-    case EDGEMODE_DUPLICATE:
+    case FEConvolveMatrix::EDGEMODE_DUPLICATE:
       return SkTileMode::kClamp;
-    case EDGEMODE_WRAP:
+    case FEConvolveMatrix::EDGEMODE_WRAP:
       return SkTileMode::kRepeat;
-    case EDGEMODE_NONE:
+    case FEConvolveMatrix::EDGEMODE_NONE:
       return SkTileMode::kDecal;
     default:
       return SkTileMode::kClamp;
@@ -141,25 +141,25 @@ sk_sp<PaintFilter> FEConvolveMatrix::CreateImageFilter() {
   auto kernel = std::make_unique<SkScalar[]>(num_elements);
   for (int i = 0; i < num_elements; ++i)
     kernel[i] = SkFloatToScalar(kernel_matrix_[num_elements - 1 - i]);
-  base::Optional<PaintFilter::CropRect> crop_rect = GetCropRect();
+  absl::optional<PaintFilter::CropRect> crop_rect = GetCropRect();
   return sk_make_sp<MatrixConvolutionPaintFilter>(
       kernel_size, kernel.get(), gain, bias, target, tile_mode, convolve_alpha,
       std::move(input), base::OptionalOrNullptr(crop_rect));
 }
 
 static WTF::TextStream& operator<<(WTF::TextStream& ts,
-                                   const EdgeModeType& type) {
+                                   const FEConvolveMatrix::EdgeModeType& type) {
   switch (type) {
-    case EDGEMODE_UNKNOWN:
+    case FEConvolveMatrix::EDGEMODE_UNKNOWN:
       ts << "UNKNOWN";
       break;
-    case EDGEMODE_DUPLICATE:
+    case FEConvolveMatrix::EDGEMODE_DUPLICATE:
       ts << "DUPLICATE";
       break;
-    case EDGEMODE_WRAP:
+    case FEConvolveMatrix::EDGEMODE_WRAP:
       ts << "WRAP";
       break;
-    case EDGEMODE_NONE:
+    case FEConvolveMatrix::EDGEMODE_NONE:
       ts << "NONE";
       break;
   }

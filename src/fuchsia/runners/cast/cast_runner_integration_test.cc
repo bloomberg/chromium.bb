@@ -34,15 +34,15 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "fuchsia/base/agent_impl.h"
-#include "fuchsia/base/context_provider_test_connector.h"
-#include "fuchsia/base/fake_component_context.h"
-#include "fuchsia/base/fit_adapter.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
-#include "fuchsia/base/test_devtools_list_fetcher.h"
-#include "fuchsia/base/url_request_rewrite_test_util.h"
+#include "fuchsia/base/test/context_provider_test_connector.h"
+#include "fuchsia/base/test/fake_component_context.h"
+#include "fuchsia/base/test/fit_adapter.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/result_receiver.h"
+#include "fuchsia/base/test/test_devtools_list_fetcher.h"
+#include "fuchsia/base/test/url_request_rewrite_test_util.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/cast_runner_switches.h"
 #include "fuchsia/runners/cast/fake_api_bindings.h"
@@ -130,7 +130,7 @@ class FakeApplicationContext : public chromium::cast::ApplicationContext {
     return controller_.get();
   }
 
-  base::Optional<int64_t> WaitForApplicationTerminated() {
+  absl::optional<int64_t> WaitForApplicationTerminated() {
     base::RunLoop loop;
     on_application_terminated_ = loop.QuitClosure();
     loop.Run();
@@ -155,7 +155,7 @@ class FakeApplicationContext : public chromium::cast::ApplicationContext {
 
   chromium::cast::ApplicationControllerPtr controller_;
 
-  base::Optional<int64_t> application_exit_code_;
+  absl::optional<int64_t> application_exit_code_;
   base::OnceClosure on_application_terminated_;
 };
 
@@ -213,7 +213,7 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       app_config_binding_;
   const base::ScopedServiceBinding<chromium::cast::ApiBindings>
       bindings_manager_binding_;
-  base::Optional<base::ScopedServiceBinding<
+  absl::optional<base::ScopedServiceBinding<
       chromium::cast::UrlRequestRewriteRulesProvider>>
       url_request_rules_provider_binding_;
 
@@ -225,7 +225,7 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
 
 class TestCastComponent {
  public:
-  TestCastComponent(fuchsia::sys::Runner* cast_runner)
+  explicit TestCastComponent(fuchsia::sys::Runner* cast_runner)
       : app_config_manager_binding_(&component_services_, &app_config_manager_),
         cast_runner_(cast_runner) {
     DCHECK(cast_runner_);
@@ -494,7 +494,7 @@ class TestCastComponent {
   fuchsia::web::MessagePortPtr test_port_;
 
   base::OnceClosure component_state_created_callback_;
-  fuchsia::sys::Runner* cast_runner_;
+  fuchsia::sys::Runner* const cast_runner_;
 };
 
 enum CastRunnerFeatures {
@@ -651,9 +651,15 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 }
 
 // Verify that the Runner can continue to be used even after its Context has
-// crashed. Regression test for https://crbug.com/1066826).
-// TODO(https://crbug.com/1066833): Make this a WebRunner test.
-TEST_F(CastRunnerIntegrationTest, CanRecreateContext) {
+// crashed. Regression test for https://crbug.com/1066826.
+// TODO(crbug.com/1066833): Replace this with a WebRunner test, ideally a
+//   unit-test, which can simulate Context disconnection more simply.
+// TODO(crbug.com/1010222): Once CastRunner migrates to creating the WebEngine
+//   component directly, it should be possible to rehabilitate and re-enable
+//   this test. At present it is not straightforward to terminate the
+//   WebEngine component instance, only the ContextProvider, which will not
+//   result in the WebEngine instance being torn-down.
+TEST_F(CastRunnerIntegrationTest, DISABLED_CanRecreateContext) {
   TestCastComponent component(cast_runner_.get());
   const GURL app_url = test_server_.GetURL(kBlankAppUrl);
   component.app_config_manager()->AddApp(kTestAppId, app_url);
@@ -1130,7 +1136,7 @@ TEST_F(CastRunnerIntegrationTest, OnApplicationTerminated_WindowClose) {
 
   // Have the web content close itself, and wait for OnApplicationTerminated().
   EXPECT_EQ(component.ExecuteJavaScript("window.close()"), "undefined");
-  base::Optional<zx_status_t> exit_code = component.component_state()
+  absl::optional<zx_status_t> exit_code = component.component_state()
                                               ->application_context()
                                               ->WaitForApplicationTerminated();
   ASSERT_TRUE(exit_code);

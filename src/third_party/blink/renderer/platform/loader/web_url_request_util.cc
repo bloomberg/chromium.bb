@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom-blink.h"
@@ -85,7 +86,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
       }
       case network::DataElement::Tag::kFile: {
         const auto& file = element.As<network::DataElementFile>();
-        base::Optional<base::Time> modification_time;
+        absl::optional<base::Time> modification_time;
         if (!file.expected_modification_time().is_null())
           modification_time = file.expected_modification_time();
         http_body.AppendFileRange(

@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_clipboard.h"
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -147,6 +148,15 @@ void HeadlessClipboard::ReadRTF(ui::ClipboardBuffer buffer,
   auto it = store.data.find(ui::ClipboardFormatType::GetRtfType());
   if (it != store.data.end())
     *result = it->second;
+}
+
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+void HeadlessClipboard::ReadPng(ui::ClipboardBuffer buffer,
+                                const ui::DataTransferEndpoint* data_dst,
+                                ReadPngCallback callback) const {
+  // TODO(crbug.com/1201018): Implement this.
+  NOTIMPLEMENTED();
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other

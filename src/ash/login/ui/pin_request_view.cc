@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
@@ -444,7 +445,7 @@ void PinRequestView::OnTabletControllerDestroyed() {
 }
 
 void PinRequestView::SubmitCode() {
-  base::Optional<std::string> code = access_code_view_->GetCode();
+  absl::optional<std::string> code = access_code_view_->GetCode();
   DCHECK(code.has_value());
 
   SubmissionResult result = delegate_->OnPinSubmitted(*code);

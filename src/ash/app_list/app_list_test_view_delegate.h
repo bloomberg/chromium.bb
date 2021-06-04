@@ -64,6 +64,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void StartAssistant() override {}
   void StartSearch(const std::u16string& raw_query) override {}
   void OpenSearchResult(const std::string& result_id,
+                        ash::AppListSearchResultType result_type,
                         int event_flags,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
@@ -112,6 +113,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool AppListTargetVisibility() const override;
   bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
+  int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

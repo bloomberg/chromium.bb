@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/action_value.pb.h"
@@ -224,8 +225,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       return;
     }
 
-    web_controller_->ClickOrTapElement(element, click_type,
-                                       std::move(callback));
+    if (click_type == ClickType::JAVASCRIPT) {
+      web_controller_->JsClickElement(element, std::move(callback));
+    } else {
+      web_controller_->ClickOrTapElement(click_type, element,
+                                         std::move(callback));
+    }
   }
 
   void WaitForElementRemove(const Selector& selector) {
@@ -317,11 +322,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                        std::move(done_callback), result_output));
   }
 
-  ClientStatus SelectOption(const Selector& selector,
-                            const std::string& re2,
-                            bool case_sensitive,
-                            SelectOptionProto::OptionComparisonAttribute
-                                option_comparison_attribute) {
+  ClientStatus SelectOption(
+      const Selector& selector,
+      const std::string& re2,
+      bool case_sensitive,
+      SelectOptionProto::OptionComparisonAttribute option_comparison_attribute,
+      bool strict) {
     base::RunLoop run_loop;
     ClientStatus result;
 
@@ -330,7 +336,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
         base::BindOnce(
             &WebControllerBrowserTest::FindSelectOptionElementCallback,
             base::Unretained(this), re2, case_sensitive,
-            option_comparison_attribute, run_loop.QuitClosure(), &result));
+            option_comparison_attribute, strict, run_loop.QuitClosure(),
+            &result));
 
     run_loop.Run();
     return result;
@@ -340,6 +347,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       const std::string& re2,
       bool case_sensitive,
       SelectOptionProto::OptionComparisonAttribute option_comparison_attribute,
+      bool strict,
       base::OnceClosure done_callback,
       ClientStatus* result_output,
       const ClientStatus& status,
@@ -353,10 +361,57 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(element_result != nullptr);
     const ElementFinder::Result* element_result_ptr = element_result.get();
     web_controller_->SelectOption(
-        re2, case_sensitive, option_comparison_attribute, *element_result_ptr,
+        re2, case_sensitive, option_comparison_attribute, strict,
+        *element_result_ptr,
         base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
                        base::Unretained(this), std::move(element_result),
                        std::move(done_callback), result_output));
+  }
+
+  ClientStatus SelectOptionElement(const Selector& selector,
+                                   const ElementFinder::Result& option) {
+    base::RunLoop run_loop;
+    ClientStatus result;
+
+    web_controller_->FindElement(
+        selector, /* strict= */ true,
+        base::BindOnce(
+            &WebControllerBrowserTest::FindSelectOptionElementElementCallback,
+            base::Unretained(this), option, run_loop.QuitClosure(), &result));
+
+    run_loop.Run();
+    return result;
+  }
+
+  void FindSelectOptionElementElementCallback(
+      const ElementFinder::Result& option,
+      base::OnceClosure done_callback,
+      ClientStatus* result_output,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result) {
+    EXPECT_EQ(ACTION_APPLIED, element_status.proto_status());
+    ASSERT_TRUE(element_result != nullptr);
+    const ElementFinder::Result* element_result_ptr = element_result.get();
+    web_controller_->SelectOptionElement(
+        option, *element_result_ptr,
+        base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
+                       base::Unretained(this), std::move(element_result),
+                       std::move(done_callback), result_output));
+  }
+
+  ClientStatus CheckSelectedOptionElement(const ElementFinder::Result& select,
+                                          const ElementFinder::Result& option) {
+    base::RunLoop run_loop;
+    ClientStatus result;
+
+    web_controller_->CheckSelectedOptionElement(
+        option, select,
+        base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+
+    run_loop.Run();
+    return result;
   }
 
   void OnClientStatus(base::OnceClosure done_callback,
@@ -1046,6 +1101,61 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       *rect_output = rect;
     }
     *result_output = rect_status;
+    std::move(done_callback).Run();
+  }
+
+  ClientStatus GetElementQueryIndex(const std::string& query_selector,
+                                    const ElementFinder::Result& element,
+                                    int* index) {
+    ClientStatus status;
+
+    base::RunLoop run_loop;
+    web_controller_->GetElementQueryIndex(
+        query_selector, element,
+        base::BindOnce(&WebControllerBrowserTest::OnGetElementQueryIndex,
+                       base::Unretained(this), run_loop.QuitClosure(), &status,
+                       index));
+    run_loop.Run();
+
+    return status;
+  }
+
+  void OnGetElementQueryIndex(base::OnceClosure done_callback,
+                              ClientStatus* result_output,
+                              int* index_output,
+                              const ClientStatus& query_status,
+                              int index) {
+    *result_output = query_status;
+    *index_output = index;
+    std::move(done_callback).Run();
+  }
+
+  ClientStatus GetUniqueElementSelector(const ElementFinder::Result& element,
+                                        std::string* query,
+                                        int* index) {
+    ClientStatus status;
+
+    base::RunLoop run_loop;
+    web_controller_->GetUniqueElementSelector(
+        element,
+        base::BindOnce(&WebControllerBrowserTest::OnGetUniqueElementSelector,
+                       base::Unretained(this), run_loop.QuitClosure(), &status,
+                       query, index));
+    run_loop.Run();
+
+    return status;
+  }
+
+  void OnGetUniqueElementSelector(base::OnceClosure done_callback,
+                                  ClientStatus* result_output,
+                                  std::string* query_output,
+                                  int* index_output,
+                                  const ClientStatus& query_status,
+                                  const std::string& query,
+                                  int index) {
+    *result_output = query_status;
+    *query_output = query;
+    *index_output = index;
     std::move(done_callback).Run();
   }
 
@@ -1946,43 +2056,62 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
     select.options[select.selectedIndex].label;
   )";
 
+  // Selecting on a non-<select> element.
+  EXPECT_EQ(INVALID_TARGET,
+            SelectOption(Selector({"#input1"}), std::string(),
+                         /* case_sensitive= */ false, SelectOptionProto::LABEL,
+                         /* strict= */ true)
+                .proto_status());
+
   // Fails if no comparison attribute is set.
   EXPECT_EQ(INVALID_ACTION,
             SelectOption(selector, "one", /* case_sensitive= */ false,
-                         SelectOptionProto::NOT_SET)
+                         SelectOptionProto::NOT_SET, /* strict= */ true)
                 .proto_status());
 
   // Select value not matching anything.
   EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
             SelectOption(selector, "incorrect label",
-                         /* case_sensitive= */ false, SelectOptionProto::LABEL)
+                         /* case_sensitive= */ false, SelectOptionProto::LABEL,
+                         /* strict= */ true)
                 .proto_status());
+
+  // Select value matching everything.
+  EXPECT_EQ(TOO_MANY_OPTION_VALUES_FOUND,
+            SelectOption(selector, ".*", /* case_sensitive= */ false,
+                         SelectOptionProto::LABEL, /* strict= */ true)
+                .proto_status());
+  EXPECT_EQ(ACTION_APPLIED,
+            SelectOption(selector, ".*", /* case_sensitive= */ false,
+                         SelectOptionProto::LABEL, /* strict= */ false)
+                .proto_status());
+  EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 
   // Select value matching the option's label.
   EXPECT_EQ(ACTION_APPLIED,
             SelectOption(selector, "^ZÜRICH", /* case_sensitive= */ false,
-                         SelectOptionProto::LABEL)
+                         SelectOptionProto::LABEL, /* strict= */ true)
                 .proto_status());
   EXPECT_EQ("Zürich Hauptbahnhof", content::EvalJs(shell(), javascript));
 
   // Select value matching the option's value.
   EXPECT_EQ(ACTION_APPLIED,
             SelectOption(selector, "^Aü万𠜎$", /* case_sensitive= */ false,
-                         SelectOptionProto::VALUE)
+                         SelectOptionProto::VALUE, /* strict= */ true)
                 .proto_status());
   EXPECT_EQ("Character Test Entry", content::EvalJs(shell(), javascript));
 
   // With a regular expression matching the option's value.
   EXPECT_EQ(ACTION_APPLIED,
             SelectOption(selector, "^O.E$", /* case_sensitive= */ false,
-                         SelectOptionProto::VALUE)
+                         SelectOptionProto::VALUE, /* strict= */ true)
                 .proto_status());
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 
   // With a regular expression matching the option's value case sensitive.
   EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
             SelectOption(selector, "^O.E$", /* case_sensitive= */ true,
-                         SelectOptionProto::VALUE)
+                         SelectOptionProto::VALUE, /* strict= */ true)
                 .proto_status());
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 }
@@ -1992,7 +2121,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
   Selector select_selector({"#iframe", "select[name=state]"});
   EXPECT_EQ(ACTION_APPLIED,
             SelectOption(select_selector, "^NY", /* case_sensitive= */ false,
-                         SelectOptionProto::LABEL)
+                         SelectOptionProto::LABEL, /* strict= */ true)
                 .proto_status());
 
   const std::string javascript = R"(
@@ -2007,7 +2136,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
   select_selector = Selector({"#iframeExternal", "select[name=pet]"});
   EXPECT_EQ(ACTION_APPLIED,
             SelectOption(select_selector, "^Cat", /* case_sensitive= */ false,
-                         SelectOptionProto::LABEL)
+                         SelectOptionProto::LABEL, /* strict= */ true)
                 .proto_status());
 
   Selector result_selector({"#iframeExternal", "#myPet"});
@@ -2193,6 +2322,18 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
                               /* use_js_focus= */ true)
                 .proto_status());
   GetFieldsValue(selectors, {expected_output, expected_output});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SendKeyboardInputAndCheckPasswordField) {
+  auto input = UTF8ToUnicode("password");
+  std::string output;
+
+  Selector selector({"#input_password"});
+  EXPECT_EQ(ACTION_APPLIED, SendKeyboardInput(selector, input).proto_status());
+  EXPECT_EQ(ACTION_APPLIED,
+            GetStringAttribute(selector, {"value"}, &output).proto_status());
+  EXPECT_EQ("password", output);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInputWithDelay) {
@@ -2762,6 +2903,89 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   ClientStatus status = WaitUntilElementIsStable(
       element, 10, base::TimeDelta::FromMilliseconds(100));
   EXPECT_EQ(UNEXPECTED_JS_ERROR, status.proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementQueryIndex) {
+  ClientStatus element_status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#input3"}), &element_status, &element);
+  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
+
+  int index;
+  EXPECT_EQ(ACTION_APPLIED,
+            GetElementQueryIndex("input", element, &index).proto_status());
+  EXPECT_EQ(2, index);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, UniqueElementSelector) {
+  ClientStatus element_status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#input3"}), &element_status, &element);
+  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
+
+  std::string query;
+  int index;
+  EXPECT_EQ(ACTION_APPLIED,
+            GetUniqueElementSelector(element, &query, &index).proto_status());
+  EXPECT_EQ("INPUT", query);
+  EXPECT_EQ(2, index);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionElement) {
+  ClientStatus option_status;
+  ElementFinder::Result option;
+  FindElement(Selector({"#select option:nth-child(2)"}), &option_status,
+              &option);
+  ASSERT_EQ(ACTION_APPLIED, option_status.proto_status());
+
+  Selector selector({"#select"});
+
+  GetFieldsValue({selector}, {"one"});
+  EXPECT_EQ(ACTION_APPLIED,
+            SelectOptionElement(selector, option).proto_status());
+  GetFieldsValue({selector}, {"two"});
+
+  // Using on a non-<select> element.
+  EXPECT_EQ(INVALID_TARGET,
+            SelectOptionElement(Selector({"#input1"}), option).proto_status());
+
+  // Random element that is certainly not an option in the <select>.
+  FindElement(Selector({"#input1"}), &option_status, &option);
+  ASSERT_EQ(ACTION_APPLIED, option_status.proto_status());
+  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
+            SelectOptionElement(selector, option).proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, CheckSelectedOptionElement) {
+  ClientStatus status;
+
+  ElementFinder::Result input;
+  FindElement(Selector({"#input1"}), &status, &input);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
+  ElementFinder::Result select;
+  FindElement(Selector({"#select"}), &status, &select);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
+  ElementFinder::Result selected_option;
+  FindElement(Selector({"#select option:nth-child(1)"}), &status,
+              &selected_option);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
+  ElementFinder::Result not_selected_option;
+  FindElement(Selector({"#select option:nth-child(2)"}), &status,
+              &not_selected_option);
+  ASSERT_EQ(ACTION_APPLIED, status.proto_status());
+
+  EXPECT_EQ(ACTION_APPLIED,
+            CheckSelectedOptionElement(select, selected_option).proto_status());
+  EXPECT_EQ(
+      ELEMENT_MISMATCH,
+      CheckSelectedOptionElement(select, not_selected_option).proto_status());
+
+  // Using on a non-<select> element.
+  EXPECT_EQ(INVALID_TARGET,
+            CheckSelectedOptionElement(input, selected_option).proto_status());
 }
 
 }  // namespace autofill_assistant

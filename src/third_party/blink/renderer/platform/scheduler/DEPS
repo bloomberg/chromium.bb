@@ -8,6 +8,7 @@ include_rules = [
   # Dependencies.
   "+base/atomic_sequence_num.h",
   "+base/atomicops.h",
+  "+base/barrier_closure.h",
   "+base/callback_helpers.h",
   "+base/cancelable_callback.h",
   "+base/command_line.h",
@@ -26,7 +27,6 @@ include_rules = [
   "+base/metrics/histogram_functions.h",
   "+base/metrics/histogram_macros.h",
   "+base/observer_list.h",
-  "+base/optional.h",
   "+base/pending_task.h",
   "+base/profiler/sample_metadata.h",
   "+base/run_loop.h",
@@ -53,6 +53,7 @@ include_rules = [
   "+components/scheduling_metrics",
   "+services/metrics",
 
+  "+third_party/abseil-cpp/absl/types/optional.h",
   "+third_party/blink/renderer/platform/back_forward_cache_utils.h",
   "+third_party/blink/renderer/platform/bindings/parkable_string_manager.h",
   "+third_party/blink/renderer/platform/instrumentation",

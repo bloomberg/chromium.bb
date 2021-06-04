@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-layout(tracked) in uniform half bias;
-layout(tracked) in uniform half scale;
+in uniform half bias;
+in uniform half scale;
 
 half4 main(float2 coord) {
     // On some devices they incorrectly implement atan2(y,x) as atan(y/x). In actuality it is
@@ -59,8 +59,9 @@ half4 main(float2 coord) {
 
 @test(d) {
     SkScalar scale = GrGradientShader::RandomParams::kGradientScale;
-    SkPoint center = {d->fRandom->nextRangeScalar(0.0f, scale),
-                      d->fRandom->nextRangeScalar(0.0f, scale)};
+    SkPoint center;
+    center.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+    center.fY = d->fRandom->nextRangeScalar(0.0f, scale);
 
     GrGradientShader::RandomParams params(d->fRandom);
     auto shader = params.fUseColors4f ?

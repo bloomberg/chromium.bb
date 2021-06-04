@@ -12,7 +12,10 @@ import("../namespace_rewrites.gni")
 preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir"
-  in_files = [ "route_tests.js" ]
+  in_files = [
+    "privacy_page_test.js",
+    "route_tests.js",
+  ]
 }
 
 js_type_check("closure_compile") {
@@ -64,10 +67,10 @@ js_type_check("closure_compile") {
     #":import_data_dialog_test",
     #":incompatible_applications_page_test",
     ":languages_page_metrics_test_browser",
-    ":languages_page_metrics_test_cros",
 
     #":languages_page_tests",
     #":languages_subpage_tests",
+    #":languages_subpage_details_tests",
     #":languages_tests",
     #":metrics_reporting_tests",
     #":on_startup_page_tests",
@@ -239,20 +242,6 @@ js_library("fake_settings_private") {
     "..:chai_assert",
     "..:fake_chrome_event.m",
   ]
-}
-
-js_library("languages_page_metrics_test_cros") {
-  deps = [
-    ":fake_language_settings_private",
-    ":fake_settings_private",
-    ":test_languages_browser_proxy",
-    ":test_languages_metrics_proxy",
-    "..:chai_assert",
-    "..:test_util.m",
-    "//chrome/browser/resources/settings:lazy_load",
-    "//chrome/browser/resources/settings:settings",
-  ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("languages_page_metrics_test_browser") {

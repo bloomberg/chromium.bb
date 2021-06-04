@@ -287,14 +287,18 @@ public:
     }
 #endif
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip*, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip*,
+                                      GrClampType clampType) override {
         SkASSERT(fMetadata.colorType() == ColorType::kNone);
         auto iter = fQuads.metadata();
         while(iter.next()) {
             auto colorType = GrQuadPerEdgeAA::MinColorType(iter->fColor);
-            fMetadata.fColorType = std::max(fMetadata.fColorType, static_cast<uint16_t>(colorType));
+            colorType = std::max(static_cast<GrQuadPerEdgeAA::ColorType>(fMetadata.fColorType),
+                                 colorType);
+            if (caps.reducedShaderMode()) {
+                colorType = std::max(colorType, GrQuadPerEdgeAA::ColorType::kByte);
+            }
+            fMetadata.fColorType = static_cast<uint16_t>(colorType);
         }
         return GrProcessorSet::EmptySetAnalysis();
     }
@@ -620,11 +624,8 @@ private:
 
     int appendQuad(DrawQuad* quad, const SkPMColor4f& color, const SkRect& subset) {
         DrawQuad extra;
-        // Only clip when there's anti-aliasing. When non-aa, the GPU clips just fine and there's
-        // no inset/outset math that requires w > 0.
-        int quadCount = quad->fEdgeFlags != GrQuadAAFlags::kNone
-                                    ? GrQuadUtils::ClipToW0(quad, &extra)
-                                    : 1;
+        // Always clip to W0 to stay consistent with GrQuad::bounds
+        int quadCount = GrQuadUtils::ClipToW0(quad, &extra);
         if (quadCount == 0) {
             // We can't discard the op at this point, but disable AA flags so it won't go through
             // inset/outset processing

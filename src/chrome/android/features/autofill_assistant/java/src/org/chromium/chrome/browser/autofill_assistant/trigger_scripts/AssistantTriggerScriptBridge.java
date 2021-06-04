@@ -6,25 +6,15 @@ package org.chromium.chrome.browser.autofill_assistant.trigger_scripts;
 
 import android.content.Context;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.AssistantCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.AssistantDependenciesImpl;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantClient;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
-import org.chromium.chrome.browser.autofill_assistant.TriggerContext;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
-import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptFinishedState;
-import org.chromium.chrome.browser.autofill_assistant.onboarding.AssistantOnboardingResult;
-import org.chromium.chrome.browser.autofill_assistant.onboarding.BaseOnboardingCoordinator;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
@@ -38,30 +28,13 @@ import java.util.List;
 public class AssistantTriggerScriptBridge {
     private final AssistantDependenciesImpl mStartupDependencies;
 
-    private AssistantTriggerScript mTriggerScript;
+    private final AssistantTriggerScript mTriggerScript;
     private long mNativeBridge;
-    private Delegate mDelegate;
     private KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
-    private ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
-    private TriggerContext mTriggerContext;
 
-    private BaseOnboardingCoordinator mOnboardingCoordinator;
-
-    /** Interface for delegates of the {@code start} method. */
-    public interface Delegate {
-        void onTriggerScriptFinished(@LiteScriptFinishedState int finishedState);
-    }
+    @CalledByNative
     public AssistantTriggerScriptBridge(AssistantDependenciesImpl startupDependencies) {
         mStartupDependencies = startupDependencies;
-    }
-
-    /**
-     * Starts the trigger script for {@code initialUrl} and reports the finished state to {@code
-     * delegate}.
-     */
-    public void start(TriggerContext triggerContext, Delegate delegate) {
-        mTriggerContext = triggerContext;
-        mDelegate = delegate;
         mTriggerScript = new AssistantTriggerScript(mStartupDependencies.getContext(),
                 new AssistantTriggerScript.Delegate() {
                     @Override
@@ -93,32 +66,7 @@ public class AssistantTriggerScriptBridge {
                 mStartupDependencies.getBottomSheetController(),
                 mStartupDependencies.getBottomInsetProvider());
 
-        if (mKeyboardVisibilityListener != null) {
-            mStartupDependencies.getKeyboardVisibilityDelegate().removeKeyboardVisibilityListener(
-                    mKeyboardVisibilityListener);
-        }
         mKeyboardVisibilityListener = this::safeNativeOnKeyboardVisibilityChanged;
-        mStartupDependencies.getKeyboardVisibilityDelegate().addKeyboardVisibilityListener(
-                mKeyboardVisibilityListener);
-
-        mActivityTabObserver =
-                new ActivityTabProvider.ActivityTabTabObserver(
-                        mStartupDependencies.getActivityTabProvider(), true) {
-                    @Override
-                    public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
-                        safeNativeOnTabInteractabilityChanged(isInteractable);
-                    }
-                };
-
-        // Request the client to start the trigger script. Native will then bind itself to this java
-        // instance via setNativePtr.
-        AutofillAssistantClient.fromWebContents(mStartupDependencies.getWebContents())
-                .startTriggerScript(mTriggerContext, this);
-    }
-
-    @Nullable
-    public BaseOnboardingCoordinator getOnboardingCoordinator() {
-        return mOnboardingCoordinator;
     }
 
     /**
@@ -134,12 +82,6 @@ public class AssistantTriggerScriptBridge {
     @CalledByNative
     private Context getContext() {
         return mStartupDependencies.getContext();
-    }
-
-    /** Returns whether the user has seen a trigger script before or not. */
-    @CalledByNative
-    private static boolean isFirstTimeTriggerScriptUser() {
-        return AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeTriggerScriptUser();
     }
 
     /**
@@ -165,9 +107,12 @@ public class AssistantTriggerScriptBridge {
         mTriggerScript.setRightAlignedChips(rightAlignedChips, rightAlignedChipsActions);
         boolean shown = mTriggerScript.show(resizeVisualViewport, scrollToHide);
 
-        // A trigger script was displayed, users are no longer considered first-time users.
+        // Track keyboard visibility while a trigger script is being shown.
         if (shown) {
-            AutofillAssistantPreferencesUtil.setAutofillAssistantFirstTimeTriggerScriptUser(false);
+            mStartupDependencies.getKeyboardVisibilityDelegate().removeKeyboardVisibilityListener(
+                    mKeyboardVisibilityListener);
+            mStartupDependencies.getKeyboardVisibilityDelegate().addKeyboardVisibilityListener(
+                    mKeyboardVisibilityListener);
         }
         return shown;
     }
@@ -175,30 +120,8 @@ public class AssistantTriggerScriptBridge {
     @CalledByNative
     private void hideTriggerScript() {
         mTriggerScript.hide();
-    }
-
-    @CalledByNative
-    private void onOnboardingRequested(boolean isDialogOnboardingEnabled) {
-        if (!AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-            safeNativeOnOnboardingFinished(
-                    /* onboardingShown= */ false, /* result= */ AssistantOnboardingResult.ACCEPTED);
-            return;
-        }
-
-        showOnboardingForTriggerScript(isDialogOnboardingEnabled);
-    }
-
-    @CalledByNative
-    private void onTriggerScriptFinished(@LiteScriptFinishedState int state) {
-        if (state == LiteScriptFinishedState.LITE_SCRIPT_PROMPT_FAILED_CANCEL_FOREVER) {
-            AutofillAssistantPreferencesUtil.setProactiveHelpSwitch(false);
-        }
-        mDelegate.onTriggerScriptFinished(state);
-    }
-
-    @CalledByNative
-    private static boolean isProactiveHelpEnabled() {
-        return AutofillAssistantPreferencesUtil.isProactiveHelpOn();
+        mStartupDependencies.getKeyboardVisibilityDelegate().removeKeyboardVisibilityListener(
+                mKeyboardVisibilityListener);
     }
 
     @CalledByNative
@@ -212,16 +135,6 @@ public class AssistantTriggerScriptBridge {
         mTriggerScript.destroy();
         mStartupDependencies.getKeyboardVisibilityDelegate().removeKeyboardVisibilityListener(
                 mKeyboardVisibilityListener);
-        mActivityTabObserver.destroy();
-    }
-
-    // On finishing of onboarding for trigger scripts.
-    private void safeNativeOnOnboardingFinished(
-            boolean onboardingShown, @AssistantOnboardingResult int result) {
-        if (mNativeBridge != 0) {
-            AssistantTriggerScriptBridgeJni.get().onOnboardingFinished(
-                    mNativeBridge, AssistantTriggerScriptBridge.this, onboardingShown, result);
-        }
     }
 
     private void safeNativeOnTriggerScriptAction(int action) {
@@ -253,18 +166,6 @@ public class AssistantTriggerScriptBridge {
         }
     }
 
-    private void safeNativeOnTabInteractabilityChanged(boolean interactable) {
-        if (mNativeBridge != 0) {
-            AssistantTriggerScriptBridgeJni.get().onTabInteractabilityChanged(
-                    mNativeBridge, AssistantTriggerScriptBridge.this, interactable);
-        }
-    }
-
-    private void showOnboardingForTriggerScript(boolean isDialogOnboardingEnabled) {
-        mStartupDependencies.showOnboarding(isDialogOnboardingEnabled, mTriggerContext,
-                result -> { safeNativeOnOnboardingFinished(/* onboardingShown= */ true, result); });
-    }
-
     @NativeMethods
     interface Natives {
         void onTriggerScriptAction(long nativeTriggerScriptBridgeAndroid,
@@ -275,10 +176,5 @@ public class AssistantTriggerScriptBridge {
                 long nativeTriggerScriptBridgeAndroid, AssistantTriggerScriptBridge caller);
         void onKeyboardVisibilityChanged(long nativeTriggerScriptBridgeAndroid,
                 AssistantTriggerScriptBridge caller, boolean visible);
-        void onTabInteractabilityChanged(long nativeTriggerScriptBridgeAndroid,
-                AssistantTriggerScriptBridge caller, boolean interactable);
-        void onOnboardingFinished(long nativeTriggerScriptBridgeAndroid,
-                AssistantTriggerScriptBridge caller, boolean onboardingShown,
-                @AssistantOnboardingResult int result);
     }
 }

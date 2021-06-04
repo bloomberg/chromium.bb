@@ -104,7 +104,11 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     DCHECK(!Host() || !Host()->IsOffscreenCanvas());
     return static_cast<HTMLCanvasElement*>(Host());
   }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8RenderingContext* AsV8RenderingContext() final;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetCanvasGetContextResult(RenderingContext&) final;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool isContextLost() const override;
 
@@ -240,7 +244,14 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   }
 
  protected:
-  CanvasColorParams GetCanvas2DColorParams() const override;
+  // This reports CanvasColorParams to the CanvasRenderingContext interface.
+  CanvasColorParams CanvasRenderingContextColorParams() const override {
+    return color_params_;
+  }
+  // This reports CanvasColorParams to the BaseRenderingContext2D interface.
+  CanvasColorParams GetCanvas2DColorParams() const override {
+    return color_params_;
+  }
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
                    size_t row_bytes,
@@ -313,6 +324,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   static constexpr float kRasterMetricProbability = 0.01;
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
+  CanvasColorParams color_params_;
 };
 
 }  // namespace blink

@@ -13,8 +13,14 @@
 #include "base/macros.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "url/gurl.h"
 
 class AccountId;
+class ValueStore;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 // Handles chrome-side wallpaper control alongside the ash-side controller.
 class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
@@ -34,6 +40,10 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
 
   static WallpaperControllerClientImpl* Get();
 
+  // Returns a suffix to be appended to the base url of Backdrop (online)
+  // wallpapers.
+  static std::string GetBackdropWallpaperSuffix();
+
   // Returns files identifier for the |account_id|.
   std::string GetFilesId(const AccountId& account_id) const;
 
@@ -42,6 +52,7 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
   void MaybeClosePreviewWallpaper() override;
   void SetDefaultWallpaper(const AccountId& account_id,
                            bool show_wallpaper) override;
+  void MigrateCollectionIdFromChromeApp() override;
 
   // Wrappers around the ash::WallpaperController interface.
   void SetCustomWallpaper(const AccountId& account_id,
@@ -50,19 +61,25 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode);
+  void SetOnlineWallpaper(
+      const AccountId& account_id,
+      const GURL& url,
+      ash::WallpaperLayout layout,
+      bool preview_mode,
+      ash::WallpaperController::SetOnlineWallpaperCallback callback);
   void SetOnlineWallpaperIfExists(
       const AccountId& account_id,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
-      ash::WallpaperController::SetOnlineWallpaperIfExistsCallback callback);
+      ash::WallpaperController::SetOnlineWallpaperCallback callback);
   void SetOnlineWallpaperFromData(
       const AccountId& account_id,
       const std::string& image_data,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
-      ash::WallpaperController::SetOnlineWallpaperFromDataCallback callback);
+      ash::WallpaperController::SetOnlineWallpaperCallback callback);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path);
@@ -97,6 +114,7 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
   bool IsActiveUserWallpaperControlledByPolicy();
   ash::WallpaperInfo GetActiveUserWallpaperInfo();
   bool ShouldShowWallpaperSetting();
+  void MigrateCollectionIdFromValueStoreForTesting(ValueStore* storage);
 
  private:
   // Initialize the controller for this client and some wallpaper directories.
@@ -114,6 +132,16 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
 
   base::FilePath GetDeviceWallpaperImageFilePath();
 
+  // Used as callback to |MigrateCollectionIdFromChromeApp|. Called on backend
+  // task runner. Extracts the daily refresh collection id and calls
+  // |SetDailyRefreshCollectionId| on main task runner.
+  void OnGetWallpaperChromeAppValueStore(
+      scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+      ValueStore* value_store);
+
+  // Passes |collection_id| to wallpaper controller on main task runner.
+  void SetDailyRefreshCollectionId(const std::string& collection_id);
+
   // WallpaperController interface in ash.
   ash::WallpaperController* wallpaper_controller_;
 
@@ -128,6 +156,8 @@ class WallpaperControllerClientImpl : public ash::WallpaperControllerClient {
   base::CallbackListSubscription show_user_names_on_signin_subscription_;
 
   base::WeakPtrFactory<WallpaperControllerClientImpl> weak_factory_{this};
+  base::WeakPtrFactory<WallpaperControllerClientImpl> storage_weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerClientImpl);
 };

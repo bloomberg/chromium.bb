@@ -11,6 +11,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
@@ -71,7 +72,7 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
             IncognitoStateProvider incognitoStateProvider,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             LocationBarDataProvider locationBarDataProvider,
-            Supplier<TemplateUrlService> templateUrlServiceSupplier,
+            OneshotSupplier<TemplateUrlService> templateUrlServiceSupplier,
             SearchEngineLogoUtils searchEngineLogoUtils, Supplier<Profile> profileSupplier,
             WindowAndroid windowAndroid, PageInfoAction pageInfoAction) {
         mIsTablet = isTablet;
@@ -84,22 +85,13 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
 
-        Runnable forceModelViewReconciliationRunnable = () -> {
-            final View securityIconView = getSecurityIconView();
-            mStatusView.setAlpha(1f);
-            securityIconView.setAlpha(mModel.get(StatusProperties.STATUS_ICON_ALPHA));
-            securityIconView.setVisibility(
-                    mModel.get(StatusProperties.SHOW_STATUS_ICON) ? View.VISIBLE : View.GONE);
-        };
-
         PageInfoIPHController pageInfoIPHController = new PageInfoIPHController(
                 ContextUtils.activityFromContext(mStatusView.getContext()), getSecurityIconView());
 
         mMediator = new StatusMediator(mModel, mStatusView.getResources(), mStatusView.getContext(),
-                urlBarEditingTextStateProvider, isTablet, forceModelViewReconciliationRunnable,
-                locationBarDataProvider, PermissionDialogController.getInstance(),
-                searchEngineLogoUtils, templateUrlServiceSupplier, profileSupplier,
-                pageInfoIPHController, windowAndroid);
+                urlBarEditingTextStateProvider, isTablet, locationBarDataProvider,
+                PermissionDialogController.getInstance(), searchEngineLogoUtils,
+                templateUrlServiceSupplier, profileSupplier, pageInfoIPHController, windowAndroid);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -146,6 +138,7 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
     public void onNativeInitialized() {
         mMediator.updateLocationBarIcon(StatusView.IconTransitionType.CROSSFADE);
         mMediator.setStatusClickListener(this);
+        mMediator.updateStatusVisibility();
     }
 
     /** @param urlHasFocus Whether the url currently has focus. */
@@ -153,11 +146,6 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
         mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
         updateVerboseStatusVisibility();
-    }
-
-    /** @param showExpandedState Whether the url bar is expanded currently. */
-    public void onUrlAnimationFinished(boolean showExpandedState) {
-        mMediator.setUrlAnimationFinished(showExpandedState);
     }
 
     /** @param show Whether the status icon should be VISIBLE, otherwise GONE. */
@@ -184,10 +172,14 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
     }
 
     // LocationBarData.Observer implementation
-    // Using the default empty onNtpStartedLoading.
     // Using the default empty onPrimaryColorChanged.
     // Using the default empty onTitleChanged.
     // Using the default empty onUrlChanged.
+
+    @Override
+    public void onNtpStartedLoading() {
+        mMediator.updateStatusVisibility();
+    }
 
     @Override
     public void onIncognitoStateChanged() {
@@ -288,17 +280,6 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
         mMediator.setShowIconsWhenUrlFocused(showIconsWithUrlFocused);
     }
 
-    /**
-     * Update information required to display the search engine icon.
-     * @param isSearchEngineGoogle Whether the current search engine is google.
-     * @param searchEngineUrl The URL for the current URL for the search engine.
-     */
-    public void updateSearchEngineStatusIcon(boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mMediator.updateSearchEngineStatusIcon(isSearchEngineGoogle, searchEngineUrl);
-        // TODO(crbug.com/1109369): Do not use the StatusView here
-        mStatusView.updateSearchEngineStatusIcon();
-    }
-
     /** Returns width of the status icon including start/end margins. */
     public int getStatusIconWidth() {
         // TODO(crbug.com/1109369): try to hide this method
@@ -324,6 +305,13 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
      */
     public void onDefaultMatchClassified(boolean defaultMatchIsSearch) {
         mMediator.updateLocationBarIconForDefaultMatchCategory(defaultMatchIsSearch);
+    }
+
+    /** Returns the additional end margin for the url container. */
+    public int getAdditionalUrlContainerMarginEnd() {
+        return mMediator.shouldDisplaySearchEngineIcon() && isSearchEngineStatusIconVisible()
+                ? getEndPaddingPixelSizeOnFocusDelta()
+                : 0;
     }
 
     public void destroy() {

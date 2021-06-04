@@ -4,12 +4,14 @@
 
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 
-#include <algorithm>
-
 #include <lib/sys/cpp/component_context.h>
+#include <lib/sys/inspect/cpp/component.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 
+#include <algorithm>
+
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/logging.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -24,6 +26,12 @@ constexpr size_t kMaxNodesPerUpdate = 16;
 
 // Error allowed for each edge when converting from gfx::RectF to gfx::Rect.
 constexpr float kRectConversionError = 0.5;
+
+// Inspect node/property names.
+constexpr char kSemanticTreesInspectNodeName[] = "trees";
+constexpr char kSemanticTreeContentsInspectPropertyName[] = "contents";
+constexpr char kParentTreeInspectPropertyName[] = "parent_tree";
+constexpr char kParentNodeInspectPropertyName[] = "parent_node";
 
 // Returns the id of the offset container for |node|, or the root node id if
 // |node| does not specify an offset container.
@@ -41,10 +49,12 @@ AccessibilityBridge::AccessibilityBridge(
     fuchsia::accessibility::semantics::SemanticsManager* semantics_manager,
     fuchsia::ui::views::ViewRef view_ref,
     content::WebContents* web_contents,
-    base::OnceCallback<void(zx_status_t)> on_error_callback)
+    base::OnceCallback<void(zx_status_t)> on_error_callback,
+    inspect::Node inspect_node)
     : binding_(this),
       web_contents_(web_contents),
-      on_error_callback_(std::move(on_error_callback)) {
+      on_error_callback_(std::move(on_error_callback)),
+      inspect_node_(std::move(inspect_node)) {
   DCHECK(web_contents_);
   Observe(web_contents_);
 
@@ -54,6 +64,44 @@ AccessibilityBridge::AccessibilityBridge(
     ZX_LOG(ERROR, status) << "SemanticTree disconnected";
     std::move(on_error_callback_).Run(ZX_ERR_INTERNAL);
   });
+}
+
+inspect::Inspector AccessibilityBridge::FillInspectData() {
+  DCHECK(enable_semantic_updates_);
+
+  inspect::Inspector inspector;
+
+  // Add a node for each AXTree of which the accessibility bridge is aware.
+  // The output for each tree has the following form:
+  //
+  // <tree id>:
+  //  contents: <string representation of tree contents>
+  //  parent_tree: <tree id of this tree's parent, if it has one>
+  //  parent_node: <node id of this tree's parent, if it has one>
+  for (const auto& ax_tree : ax_trees_) {
+    const ui::AXTree* ax_tree_ptr = ax_tree.second.get();
+
+    inspect::Node inspect_node =
+        inspector.GetRoot().CreateChild(ax_tree_ptr->GetAXTreeID().ToString());
+
+    inspect_node.CreateString(kSemanticTreeContentsInspectPropertyName,
+                              ax_tree_ptr->ToString(), &inspector);
+
+    auto tree_id_and_connection =
+        tree_connections_.find(ax_tree_ptr->GetAXTreeID());
+    if (tree_id_and_connection != tree_connections_.end()) {
+      const TreeConnection& connection = tree_id_and_connection->second;
+      inspect_node.CreateString(kParentTreeInspectPropertyName,
+                                connection.parent_tree_id.ToString(),
+                                &inspector);
+      inspect_node.CreateUint(kParentNodeInspectPropertyName,
+                              connection.parent_node_id, &inspector);
+    }
+
+    inspector.emplace(std::move(inspect_node));
+  }
+
+  return inspector;
 }
 
 AccessibilityBridge::~AccessibilityBridge() {
@@ -246,6 +294,10 @@ void AccessibilityBridge::OnSemanticsModeChanged(
     // The first call to AccessibilityEventReceived after this call will be
     // the entire semantic tree.
     web_contents_->EnableWebContentsOnlyAccessibilityMode();
+    // Set up inspect node for semantic trees.
+    inspect_node_tree_dump_ = inspect_node_.CreateLazyNode(
+        kSemanticTreesInspectNodeName,
+        [this]() { return fit::make_ok_promise(FillInspectData()); });
   } else {
     // The SemanticsManager will clear all state in this case, which is
     // mirrored here.
@@ -259,6 +311,7 @@ void AccessibilityBridge::OnSemanticsModeChanged(
     tree_connections_.clear();
     frame_id_to_tree_id_.clear();
     InterruptPendingActions();
+    inspect_node_tree_dump_ = inspect::LazyNode();
   }
 
   // Notify the SemanticsManager that this request was handled.
@@ -359,6 +412,7 @@ void AccessibilityBridge::OnAtomicUpdateFinished(
     }
   }
   UpdateTreeConnections();
+  UpdateFocus();
   // TODO(https://crbug.com/1134737): Separate updates of atomic updates and
   // don't allow all of them to be in the same commit.
   TryCommit();
@@ -432,28 +486,53 @@ void AccessibilityBridge::UpdateTreeConnections() {
     if (kv.second.is_connected)
       continue;  // No work to do, trees connected and present.
 
-    int32_t offset_container_id =
-        GetOffsetContainerId(parent_tree, ax_node->data());
-    const auto* container = parent_tree->GetFromId(offset_container_id);
-    DCHECK(container);
-
-    auto fuchsia_node =
-        AXNodeDataToSemanticNode(ax_node->data(), container->data(),
-                                 parent_ax_tree_id, false, id_mapper_.get());
-
+    auto* fuchsia_node = GetUpdatedNode(parent_ax_tree_id, ax_node->id());
+    DCHECK(fuchsia_node);
     // Now, the connection really happens:
     // This node, from the parent tree, will have a child that points to the
     // root of the child tree.
     auto child_tree_root_id = id_mapper_->ToFuchsiaNodeID(
         child_tree->GetAXTreeID(), child_tree->root()->id(), false);
-    fuchsia_node.mutable_child_ids()->push_back(child_tree_root_id);
-    to_update_.push_back(std::move(fuchsia_node));
+    fuchsia_node->mutable_child_ids()->push_back(child_tree_root_id);
     kv.second.is_connected = true;  // Trees are connected!
   }
 
   for (const auto& to_delete : connections_to_remove) {
     tree_connections_.erase(to_delete);
   }
+}
+
+void AccessibilityBridge::UpdateFocus() {
+  auto new_focused_node = GetFocusedNodeId();
+  if (!new_focused_node && !last_focused_node_id_)
+    return;  // no node in focus, no new node in focus.
+
+  const bool focus_changed = last_focused_node_id_ != new_focused_node;
+
+  if (new_focused_node) {
+    // If the new focus is the same as the old focus, we only want to set the
+    // value in the node if it is part of the current update, meaning that its
+    // data changed. This makes sure that it contains the focus information. If
+    // it is not part of the current update, no need to send this information,
+    // as it is redundant.
+    auto* node =
+        focus_changed
+            ? GetUpdatedNode(new_focused_node->first, new_focused_node->second)
+            : GetNodeIfChangingInUpdate(new_focused_node->first,
+                                        new_focused_node->second);
+    if (node)
+      node->mutable_states()->set_has_input_focus(true);
+  }
+
+  if (last_focused_node_id_) {
+    auto* node = focus_changed ? GetUpdatedNode(last_focused_node_id_->first,
+                                                last_focused_node_id_->second)
+                               : nullptr /*already updated above*/;
+    if (node)
+      node->mutable_states()->set_has_input_focus(false);
+  }
+
+  last_focused_node_id_ = std::move(new_focused_node);
 }
 
 bool AccessibilityBridge::ShouldHoldCommit() {
@@ -543,4 +622,95 @@ void AccessibilityBridge::MaybeDisconnectTreeFromParentTree(ui::AXTree* tree) {
   auto it = tree_connections_.find(key);
   if (it != tree_connections_.end())
     it->second.is_connected = false;
+}
+
+absl::optional<AccessibilityBridge::AXNodeID>
+AccessibilityBridge::GetFocusedNodeId() const {
+  const auto& main_frame_tree_id = web_contents_->GetMainFrame()->GetAXTreeID();
+  const auto main_tree_it = ax_trees_.find(main_frame_tree_id);
+  if (main_tree_it == ax_trees_.end())
+    return absl::nullopt;
+
+  const ui::AXSerializableTree* main_tree = main_tree_it->second.get();
+  DCHECK(main_tree);
+  const ui::AXTreeID& focused_tree_id = main_tree->data().focused_tree_id;
+  if (focused_tree_id == ui::AXTreeIDUnknown())
+    return absl::nullopt;
+
+  const auto focused_tree_it = ax_trees_.find(focused_tree_id);
+  if (focused_tree_it == ax_trees_.end())
+    return absl::nullopt;
+
+  const ui::AXSerializableTree* focused_tree = focused_tree_it->second.get();
+  DCHECK(focused_tree);
+
+  return GetFocusFromThisOrDescendantFrame(focused_tree);
+}
+
+absl::optional<AccessibilityBridge::AXNodeID>
+AccessibilityBridge::GetFocusFromThisOrDescendantFrame(
+    const ui::AXSerializableTree* tree) const {
+  DCHECK(tree);
+  const auto focused_node_id = tree->data().focus_id;
+  const auto* node = tree->GetFromId(focused_node_id);
+  const auto root_id = tree->root() ? tree->root()->id() : ui::kInvalidAXNodeID;
+  if (!node) {
+    if (root_id != ui::kInvalidAXNodeID)
+      return std::make_pair(tree->GetAXTreeID(), root_id);
+
+    return absl::nullopt;
+  }
+
+  if (node->data().HasStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId)) {
+    const auto child_tree_id =
+        ui::AXTreeID::FromString(node->data().GetStringAttribute(
+            ax::mojom::StringAttribute::kChildTreeId));
+    const auto child_tree_it = ax_trees_.find(child_tree_id);
+    if (child_tree_it != ax_trees_.end())
+      return GetFocusFromThisOrDescendantFrame(child_tree_it->second.get());
+  }
+
+  return std::make_pair(tree->GetAXTreeID(), node->id());
+}
+
+fuchsia::accessibility::semantics::Node*
+AccessibilityBridge::GetNodeIfChangingInUpdate(const ui::AXTreeID& tree_id,
+                                               ui::AXNodeID node_id) {
+  auto fuchsia_node_id = id_mapper_->ToFuchsiaNodeID(tree_id, node_id, false);
+  auto result = std::find_if(
+      to_update_.rbegin(), to_update_.rend(),
+      [&fuchsia_node_id](const fuchsia::accessibility::semantics::Node& node) {
+        return node.node_id() == fuchsia_node_id;
+      });
+  if (result == to_update_.rend())
+    return nullptr;
+
+  return &(*result);
+}
+
+fuchsia::accessibility::semantics::Node* AccessibilityBridge::GetUpdatedNode(
+    const ui::AXTreeID& tree_id,
+    ui::AXNodeID node_id) {
+  auto* fuchsia_node = GetNodeIfChangingInUpdate(tree_id, node_id);
+  if (fuchsia_node)
+    return fuchsia_node;
+
+  auto ax_tree_it = ax_trees_.find(tree_id);
+  if (ax_tree_it == ax_trees_.end())
+    return nullptr;
+
+  auto* tree = ax_tree_it->second.get();
+  auto* ax_node = tree->GetFromId(node_id);
+  if (!ax_node)
+    return nullptr;
+
+  int32_t offset_container_id = GetOffsetContainerId(tree, ax_node->data());
+  const auto* container = tree->GetFromId(offset_container_id);
+  DCHECK(container);
+
+  auto new_fuchsia_node = AXNodeDataToSemanticNode(
+      ax_node->data(), container->data(), tree_id, false, id_mapper_.get());
+  to_update_.push_back(std::move(new_fuchsia_node));
+  return &to_update_.back();
 }

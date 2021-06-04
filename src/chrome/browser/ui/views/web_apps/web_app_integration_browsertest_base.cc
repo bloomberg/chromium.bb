@@ -7,7 +7,6 @@
 #include "base/base_paths.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -43,12 +43,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -85,26 +87,6 @@ class TestAppLauncherHandler : public AppLauncherHandler {
     set_web_ui(test_web_ui);
   }
 };
-
-std::string BuildScopedTrace(const std::string& action_string,
-                             const std::vector<std::string>& testing_actions,
-                             bool is_sync_test) {
-  const std::string test_case = base::JoinString(testing_actions, ", ");
-  return base::StringPrintf(
-      "\nFailed test case: %s\n"
-      "Failed action: %s\n"
-      "To disable this test, add the following line to "
-      "//chrome/test/data/web_apps/TestExpectations:\n"
-      "crbug.com/XXXXX [ %s ] [ Skip ] %s\n"
-      "To run this test in isolation, run the following command:\n"
-      "out/Default/%s_tests --gtest_filter=\"*%s*\" "
-      "--web-app-integration-test-case=%s\n",
-      test_case.c_str(), action_string.c_str(), kPlatformName,
-      test_case.c_str(), is_sync_test ? "sync_integration" : "browser",
-      is_sync_test ? "TwoClientWebAppsIntegrationSyncTest"
-                   : "WebAppIntegrationBrowserTest",
-      test_case.c_str());
-}
 
 }  // anonymous namespace
 
@@ -177,7 +159,7 @@ WebAppIntegrationBrowserTestBase::WebAppIntegrationBrowserTestBase(
 WebAppIntegrationBrowserTestBase::~WebAppIntegrationBrowserTestBase() = default;
 
 // static
-base::Optional<ProfileState>
+absl::optional<ProfileState>
 WebAppIntegrationBrowserTestBase::GetStateForProfile(
     StateSnapshot* state_snapshot,
     Profile* profile) {
@@ -185,36 +167,36 @@ WebAppIntegrationBrowserTestBase::GetStateForProfile(
   DCHECK(profile);
   auto it = state_snapshot->profiles.find(profile);
   return it == state_snapshot->profiles.end()
-             ? base::nullopt
-             : base::make_optional<ProfileState>(it->second);
+             ? absl::nullopt
+             : absl::make_optional<ProfileState>(it->second);
 }
 
 // static
-base::Optional<BrowserState>
+absl::optional<BrowserState>
 WebAppIntegrationBrowserTestBase::GetStateForBrowser(
     StateSnapshot* state_snapshot,
     Profile* profile,
     Browser* browser) {
-  base::Optional<ProfileState> profile_state =
+  absl::optional<ProfileState> profile_state =
       GetStateForProfile(state_snapshot, profile);
   if (!profile_state) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto it = profile_state->browsers.find(browser);
   return it == profile_state->browsers.end()
-             ? base::nullopt
-             : base::make_optional<BrowserState>(it->second);
+             ? absl::nullopt
+             : absl::make_optional<BrowserState>(it->second);
 }
 
-base::Optional<AppState> WebAppIntegrationBrowserTestBase::GetAppByScope(
+absl::optional<AppState> WebAppIntegrationBrowserTestBase::GetAppByScope(
     StateSnapshot* state_snapshot,
     Profile* profile,
     const std::string& action_param) {
-  base::Optional<ProfileState> profile_state =
+  absl::optional<ProfileState> profile_state =
       GetStateForProfile(state_snapshot, profile);
   if (!profile_state) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   GURL scope = GetURLForScope(action_param);
@@ -225,37 +207,37 @@ base::Optional<AppState> WebAppIntegrationBrowserTestBase::GetAppByScope(
                    });
 
   return it == profile_state->apps.end()
-             ? base::nullopt
-             : base::make_optional<AppState>(it->second);
+             ? absl::nullopt
+             : absl::make_optional<AppState>(it->second);
 }
 
 // static
-base::Optional<TabState> WebAppIntegrationBrowserTestBase::GetStateForActiveTab(
+absl::optional<TabState> WebAppIntegrationBrowserTestBase::GetStateForActiveTab(
     BrowserState browser_state) {
   if (!browser_state.active_tab) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto it = browser_state.tabs.find(browser_state.active_tab);
   DCHECK(it != browser_state.tabs.end());
-  return base::make_optional<TabState>(it->second);
+  return absl::make_optional<TabState>(it->second);
 }
 
 // static
-base::Optional<AppState> WebAppIntegrationBrowserTestBase::GetStateForAppId(
+absl::optional<AppState> WebAppIntegrationBrowserTestBase::GetStateForAppId(
     StateSnapshot* state_snapshot,
     Profile* profile,
     web_app::AppId id) {
-  base::Optional<ProfileState> profile_state =
+  absl::optional<ProfileState> profile_state =
       GetStateForProfile(state_snapshot, profile);
   if (!profile_state) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto it = profile_state->apps.find(id);
   return it == profile_state->apps.end()
-             ? base::nullopt
-             : base::make_optional<AppState>(it->second);
+             ? absl::nullopt
+             : absl::make_optional<AppState>(it->second);
 }
 
 // static
@@ -404,8 +386,10 @@ WebAppIntegrationBrowserTestBase::BuildAllPlatformTestCaseSet(
 // alphabetical order.
 void WebAppIntegrationBrowserTestBase::ExecuteAction(
     const std::string& action_string) {
-  SCOPED_TRACE(BuildScopedTrace(action_string, testing_actions(),
-                                delegate_->IsSyncTest()));
+  // Useful for sheriffs and developers in test failures since this test
+  // framework differs from that of traditional browser tests.
+  LOG(INFO) << base::StringPrintf("Current testing action: %s",
+                                  action_string.c_str());
 
   std::string action_param;
   RE2::PartialMatch(action_string, "(site_(a_foo|a_bar|a|b|c))", &action_param);
@@ -427,10 +411,20 @@ void WebAppIntegrationBrowserTestBase::ExecuteAction(
 
   if (action_base == "add_policy_app_internal_tabbed") {
     AddPolicyAppInternal(action_param,
-                         base::Value(kDefaultLaunchContainerTabValue));
+                         base::Value(kDefaultLaunchContainerTabValue),
+                         /*create_shortcut=*/true);
+  } else if (action_base == "add_policy_app_internal_tabbed_no_shortcut") {
+    AddPolicyAppInternal(action_param,
+                         base::Value(kDefaultLaunchContainerTabValue),
+                         /*create_shortcut=*/false);
   } else if (action_base == "add_policy_app_internal_windowed") {
     AddPolicyAppInternal(action_param,
-                         base::Value(kDefaultLaunchContainerWindowValue));
+                         base::Value(kDefaultLaunchContainerWindowValue),
+                         /*create_shortcut=*/true);
+  } else if (action_base == "add_policy_app_internal_windowed_no_shortcut") {
+    AddPolicyAppInternal(action_param,
+                         base::Value(kDefaultLaunchContainerWindowValue),
+                         /*create_shortcut=*/false);
   } else if (action_base == "close_pwa") {
     ClosePWA();
   } else if (action_base == "install_create_shortcut_tabbed") {
@@ -526,7 +520,8 @@ void WebAppIntegrationBrowserTestBase::ExecuteAction(
 // Automated Testing Actions
 void WebAppIntegrationBrowserTestBase::AddPolicyAppInternal(
     const std::string& action_param,
-    base::Value default_launch_container) {
+    base::Value default_launch_container,
+    const bool create_shortcut) {
   GURL url = GetInstallableAppURL(action_param);
   auto* web_app_registrar =
       WebAppProvider::Get(profile())->registrar().AsWebAppRegistrar();
@@ -547,6 +542,7 @@ void WebAppIntegrationBrowserTestBase::AddPolicyAppInternal(
     item.SetKey(kUrlKey, base::Value(url.spec()));
     item.SetKey(kDefaultLaunchContainerKey,
                 std::move(default_launch_container));
+    item.SetKey(kCreateDesktopShortcutKey, base::Value(create_shortcut));
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kWebAppInstallForceList);
     update->Append(item.Clone());
@@ -620,7 +616,7 @@ web_app::AppId WebAppIntegrationBrowserTestBase::InstallOmniboxOrMenu() {
 
 void WebAppIntegrationBrowserTestBase::LaunchInternal(
     const std::string& action_param) {
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(before_action_state_.get(), profile(), action_param);
   ASSERT_TRUE(app_state.has_value())
       << "No app installed for scope: " << action_param;
@@ -682,7 +678,7 @@ void WebAppIntegrationBrowserTestBase::RemovePolicyApp(
 
 void WebAppIntegrationBrowserTestBase::SetOpenInTabInternal(
     const std::string& action_param) {
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(before_action_state_.get(), profile(), action_param);
   ASSERT_TRUE(app_state.has_value())
       << "No app installed for scope: " << action_param;
@@ -695,7 +691,7 @@ void WebAppIntegrationBrowserTestBase::SetOpenInTabInternal(
 
 void WebAppIntegrationBrowserTestBase::SetOpenInWindowInternal(
     const std::string& action_param) {
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(before_action_state_.get(), profile(), action_param);
   ASSERT_TRUE(app_state.has_value())
       << "No app installed for scope: " << action_param;
@@ -766,7 +762,7 @@ void WebAppIntegrationBrowserTestBase::UninstallFromMenu() {
 
 void WebAppIntegrationBrowserTestBase::UninstallInternal(
     const std::string& action_param) {
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(before_action_state_.get(), profile(), action_param);
   ASSERT_TRUE(app_state.has_value())
       << "No app installed for scope: " << action_param;
@@ -775,9 +771,10 @@ void WebAppIntegrationBrowserTestBase::UninstallInternal(
       WebAppProviderBase::GetProviderBase(profile());
   base::RunLoop run_loop;
 
-  DCHECK(provider->install_finalizer().CanUserUninstallExternalApp(app_id));
-  provider->install_finalizer().UninstallExternalAppByUser(
-      app_id, base::BindLambdaForTesting([&](bool uninstalled) {
+  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+  provider->install_finalizer().UninstallWebApp(
+      app_id, webapps::WebappUninstallSource::kAppMenu,
+      base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_TRUE(uninstalled);
         run_loop.Quit();
       }));
@@ -802,7 +799,7 @@ void WebAppIntegrationBrowserTestBase::UserSigninInternal() {
 // Assert Actions
 void WebAppIntegrationBrowserTestBase::AssertAppNotLocallyInstalledInternal() {
   DCHECK(after_action_state_);
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetStateForAppId(after_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_FALSE(app_state->is_installed_locally);
@@ -811,17 +808,17 @@ void WebAppIntegrationBrowserTestBase::AssertAppNotLocallyInstalledInternal() {
 void WebAppIntegrationBrowserTestBase::AssertAppNotInList(
     const std::string& action_param) {
   DCHECK(after_action_state_);
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(after_action_state_.get(), profile(), action_param);
   EXPECT_FALSE(app_state.has_value());
 }
 
 void WebAppIntegrationBrowserTestBase::AssertInstallable() {
   DCHECK(after_action_state_);
-  base::Optional<BrowserState> browser_state =
+  absl::optional<BrowserState> browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
   ASSERT_TRUE(browser_state.has_value());
-  base::Optional<TabState> active_tab =
+  absl::optional<TabState> active_tab =
       GetStateForActiveTab(browser_state.value());
   ASSERT_TRUE(active_tab.has_value());
   EXPECT_TRUE(active_tab->is_installable);
@@ -829,7 +826,7 @@ void WebAppIntegrationBrowserTestBase::AssertInstallable() {
 
 void WebAppIntegrationBrowserTestBase::AssertInstallIconShown() {
   DCHECK(after_action_state_);
-  base::Optional<BrowserState> browser_state =
+  absl::optional<BrowserState> browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
   ASSERT_TRUE(browser_state.has_value());
   EXPECT_TRUE(browser_state->install_icon_shown);
@@ -837,7 +834,7 @@ void WebAppIntegrationBrowserTestBase::AssertInstallIconShown() {
 }
 
 void WebAppIntegrationBrowserTestBase::AssertInstallIconNotShown() {
-  base::Optional<BrowserState> browser_state =
+  absl::optional<BrowserState> browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
   ASSERT_TRUE(browser_state.has_value());
   EXPECT_FALSE(browser_state->install_icon_shown);
@@ -846,7 +843,7 @@ void WebAppIntegrationBrowserTestBase::AssertInstallIconNotShown() {
 
 void WebAppIntegrationBrowserTestBase::AssertLaunchIconShown() {
   DCHECK(after_action_state_);
-  base::Optional<BrowserState> browser_state =
+  absl::optional<BrowserState> browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
   ASSERT_TRUE(browser_state.has_value());
   EXPECT_TRUE(browser_state->launch_icon_shown);
@@ -854,7 +851,7 @@ void WebAppIntegrationBrowserTestBase::AssertLaunchIconShown() {
 
 void WebAppIntegrationBrowserTestBase::AssertLaunchIconNotShown() {
   DCHECK(after_action_state_);
-  base::Optional<BrowserState> browser_state =
+  absl::optional<BrowserState> browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
   ASSERT_TRUE(browser_state.has_value());
   EXPECT_FALSE(browser_state->launch_icon_shown);
@@ -863,7 +860,7 @@ void WebAppIntegrationBrowserTestBase::AssertLaunchIconNotShown() {
 void WebAppIntegrationBrowserTestBase::AssertManifestDisplayModeInternal(
     DisplayMode display_mode) {
   DCHECK(after_action_state_);
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetStateForAppId(after_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_EQ(display_mode, app_state->effective_display_mode);
@@ -872,16 +869,16 @@ void WebAppIntegrationBrowserTestBase::AssertManifestDisplayModeInternal(
 void WebAppIntegrationBrowserTestBase::AssertTabCreated() {
   DCHECK(before_action_state_);
   DCHECK(after_action_state_);
-  base::Optional<BrowserState> most_recent_browser_state =
+  absl::optional<BrowserState> most_recent_browser_state =
       GetStateForBrowser(after_action_state_.get(), profile(), browser());
-  base::Optional<BrowserState> previous_browser_state =
+  absl::optional<BrowserState> previous_browser_state =
       GetStateForBrowser(before_action_state_.get(), profile(), browser());
   ASSERT_TRUE(most_recent_browser_state.has_value());
   ASSERT_TRUE(previous_browser_state.has_value());
   EXPECT_GT(most_recent_browser_state->tabs.size(),
             previous_browser_state->tabs.size());
 
-  base::Optional<TabState> active_tab =
+  absl::optional<TabState> active_tab =
       GetStateForActiveTab(most_recent_browser_state.value());
   ASSERT_TRUE(active_tab.has_value());
 }
@@ -889,7 +886,7 @@ void WebAppIntegrationBrowserTestBase::AssertTabCreated() {
 void WebAppIntegrationBrowserTestBase::AssertUserDisplayModeInternal(
     DisplayMode display_mode) {
   DCHECK(after_action_state_);
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetStateForAppId(after_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_EQ(display_mode, app_state->user_display_mode);
@@ -898,9 +895,9 @@ void WebAppIntegrationBrowserTestBase::AssertUserDisplayModeInternal(
 void WebAppIntegrationBrowserTestBase::AssertWindowClosed() {
   DCHECK(before_action_state_);
   DCHECK(after_action_state_);
-  base::Optional<ProfileState> after_action_profile =
+  absl::optional<ProfileState> after_action_profile =
       GetStateForProfile(after_action_state_.get(), profile());
-  base::Optional<ProfileState> before_action_profile =
+  absl::optional<ProfileState> before_action_profile =
       GetStateForProfile(before_action_state_.get(), profile());
   ASSERT_TRUE(after_action_profile.has_value());
   ASSERT_TRUE(before_action_profile.has_value());
@@ -911,9 +908,9 @@ void WebAppIntegrationBrowserTestBase::AssertWindowClosed() {
 void WebAppIntegrationBrowserTestBase::AssertWindowCreated() {
   DCHECK(before_action_state_);
   DCHECK(after_action_state_);
-  base::Optional<ProfileState> after_action_profile =
+  absl::optional<ProfileState> after_action_profile =
       GetStateForProfile(after_action_state_.get(), profile());
-  base::Optional<ProfileState> before_action_profile =
+  absl::optional<ProfileState> before_action_profile =
       GetStateForProfile(before_action_state_.get(), profile());
   ASSERT_TRUE(after_action_profile.has_value());
   ASSERT_TRUE(before_action_profile.has_value());
@@ -925,7 +922,7 @@ void WebAppIntegrationBrowserTestBase::AssertWindowDisplayMode(
     blink::mojom::DisplayMode display_mode) {
   DCHECK(app_browser());
   DCHECK(app_browser()->app_controller()->AsWebAppBrowserController());
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetStateForAppId(after_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
 
@@ -949,6 +946,25 @@ void WebAppIntegrationBrowserTestBase::AssertWindowDisplayMode(
 }
 
 // Helpers
+std::string WebAppIntegrationBrowserTestBase::BuildLogForTest(
+    const std::vector<std::string>& testing_actions,
+    bool is_sync_test) {
+  const std::string test_case = base::JoinString(testing_actions, ", ");
+  return base::StringPrintf(
+      "Current test case: %s\n"
+      "To disable this test, add the following line to "
+      "//chrome/test/data/web_apps/TestExpectations (without the quotes):\n"
+      "\"crbug.com/XXXXX [ %s ] [ Skip ] %s\"\n"
+      "To run this test in isolation, run the following command:\n"
+      "out/Default/%s_tests --gtest_filter=\"*%s*\" "
+      "--web-app-integration-test-case=%s\n",
+      test_case.c_str(), kPlatformName, test_case.c_str(),
+      is_sync_test ? "sync_integration" : "browser",
+      is_sync_test ? "TwoClientWebAppsIntegrationSyncTest"
+                   : "WebAppIntegrationBrowserTest",
+      test_case.c_str());
+}
+
 std::vector<AppId> WebAppIntegrationBrowserTestBase::GetAppIdsForProfile(
     Profile* profile) {
   return WebAppProvider::Get(profile)->registrar().GetAppIds();
@@ -994,7 +1010,7 @@ content::WebContents* WebAppIntegrationBrowserTestBase::GetCurrentTab(
 void WebAppIntegrationBrowserTestBase::ForceUpdateManifestContents(
     const std::string& app_scope,
     GURL app_url_with_manifest_param) {
-  base::Optional<AppState> app_state =
+  absl::optional<AppState> app_state =
       GetAppByScope(before_action_state_.get(), profile(), app_scope);
   ASSERT_TRUE(app_state.has_value());
   auto app_id = app_state->id;

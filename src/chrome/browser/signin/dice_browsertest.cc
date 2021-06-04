@@ -405,8 +405,8 @@ class DiceBrowserTest : public InProcessBrowserTest,
   // Signin with a main account and add token for a secondary account.
   void SetupSignedInAccounts() {
     // Signin main account.
-    AccountInfo primary_account_info =
-        signin::MakePrimaryAccountAvailable(GetIdentityManager(), main_email_);
+    AccountInfo primary_account_info = signin::MakePrimaryAccountAvailable(
+        GetIdentityManager(), main_email_, signin::ConsentLevel::kSync);
     ASSERT_TRUE(
         GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
     ASSERT_FALSE(
@@ -1094,7 +1094,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
 // Checks that Dice is disabled in incognito mode.
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Incognito) {
   Browser* incognito_browser = Browser::Create(Browser::CreateParams(
-      browser()->profile()->GetPrimaryOTRProfile(), true));
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      true));
 
   // Check that Dice is disabled.
   EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -1162,6 +1163,8 @@ IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
       local_state->GetList(prefs::kProfilesDeleted);
   EXPECT_TRUE(deleted_profiles);
   EXPECT_EQ(1U, deleted_profiles->GetList().size());
+
+  content::RunAllTasksUntilIdle();
 
   // Verify that there is an active profile.
   Profile* initial_profile = browser()->profile();

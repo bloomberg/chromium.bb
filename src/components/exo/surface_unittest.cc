@@ -20,6 +20,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
@@ -1306,7 +1307,7 @@ TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   sub_surface.reset();
   EXPECT_EQ(1, observer.num_occlusion_changes());
   EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
-            child_surface->window()->occlusion_state());
+            child_surface->window()->GetOcclusionState());
 }
 
 }  // namespace

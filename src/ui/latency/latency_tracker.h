@@ -5,7 +5,6 @@
 #ifndef UI_LATENCY_LATENCY_TRACKER_H_
 #define UI_LATENCY_LATENCY_TRACKER_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/latency/latency_info.h"
 
@@ -37,6 +36,10 @@ class LatencyTracker {
 
   base::TimeDelta prev_duration_;
   bool prev_scroll_update_reported_ = false;
+  int total_update_events_ = 0;
+  int janky_update_events_ = 0;
+  base::TimeDelta total_update_duration_;
+  base::TimeDelta janky_update_duration_;
 
   void ReportUkmScrollLatency(
       const InputMetricEvent& metric_event,

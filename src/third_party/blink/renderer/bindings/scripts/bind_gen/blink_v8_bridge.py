@@ -56,21 +56,11 @@ def v8_bridge_class_name(idl_definition):
     return "V8{}".format(idl_definition.identifier)
 
 
-def blink_type_info(idl_type, use_new_union=False):
+def blink_type_info(idl_type, use_new_union=True):
     """
-    Returns the types of Blink implementation corresponding to the given IDL
-    type.  The returned object has the following attributes.
-
-      ref_t: The type of a local variable that references to an already-existing
-          value.  E.g. String => String&
-      const_ref_t: A const-qualified reference type.
-      value_t: The type of a variable that behaves as a value.  E.g. String =>
-          String
-      member_t: The type of a member variable.  E.g. T => Member<T>
-      member_ref_t: The type used for input to and output from a member
-          variable.  E.g. T* for Member<T> and const String& for String.
-      has_null_value: True if the Blink implementation type can represent IDL
-          null value by itself without use of base::Optional<T>.
+    Returns an object that represents the types of Blink implementation
+    corresponding to the given IDL type, such as reference type, value type,
+    member type, etc.
     """
     assert isinstance(idl_type, web_idl.IdlType)
 
@@ -82,28 +72,97 @@ def blink_type_info(idl_type, use_new_union=False):
                      const_ref_fmt="const {}",
                      value_fmt="{}",
                      has_null_value=False,
+                     is_gc_type=False,
+                     is_move_effective=False,
                      clear_member_var_fmt="{}.Clear()"):
-            self.typename = typename
-            self.is_gc_type = is_gc_type(idl_type)
-            self.ref_t = ref_fmt.format(typename)
-            self.const_ref_t = const_ref_fmt.format(typename)
-            self.value_t = value_fmt.format(typename)
-            self.member_t = member_fmt.format(typename)
-            self.member_ref_t = (self.ref_t
-                                 if self.is_gc_type else self.const_ref_t)
-            self.has_null_value = has_null_value
+            self._typename = typename
+            self._has_null_value = has_null_value
+            self._is_gc_type = is_gc_type
+            self._is_move_effective = is_move_effective
             self._clear_member_var_fmt = clear_member_var_fmt
 
-        def clear_member_var_expr(self, var_name):
-            """Returns an expression to reset the given member variable."""
-            return self._clear_member_var_fmt.format(var_name)
+            self._ref_t = ref_fmt.format(typename)
+            self._const_ref_t = const_ref_fmt.format(typename)
+            self._value_t = value_fmt.format(typename)
+            self._member_t = member_fmt.format(typename)
+            self._member_ref_t = (self._ref_t
+                                  if self._is_gc_type else self._const_ref_t)
 
-    def is_gc_type(idl_type):
-        idl_type = idl_type.unwrap()
-        return bool(
-            idl_type.is_buffer_source_type or
-            (idl_type.type_definition_object and not idl_type.is_enumeration)
-            or (idl_type.new_union_definition_object and use_new_union))
+        @property
+        def typename(self):
+            """Returns the internal-use-only name.  Do not use this."""
+            return self._typename
+
+        @property
+        def ref_t(self):
+            """
+            Returns the type of a local variable that references to an existing
+            value.  E.g. String => String&
+            """
+            return self._ref_t
+
+        @property
+        def const_ref_t(self):
+            """
+            Returns the const-qualified version of |ref_t|.  E.g. String =>
+            const String&
+            """
+            return self._const_ref_t
+
+        @property
+        def value_t(self):
+            """
+            Returns the type of a variable that behaves as a value.  E.g. String =>
+            String
+            """
+            return self._value_t
+
+        @property
+        def member_t(self):
+            """
+            Returns the type of a member variable.  E.g. Node => Member<Node>
+            """
+            return self._member_t
+
+        @property
+        def member_ref_t(self):
+            """
+            Returns the type used for input to and output from a member
+            variable.  E.g. Node* for Member<Node> and const String& for String
+            """
+            return self._member_ref_t
+
+        @property
+        def has_null_value(self):
+            """
+            Returns True if the Blink implementation type can represent IDL
+            null value without use of absl::optional<T>.  E.g. pointer type =>
+            True and int32_t => False
+            """
+            return self._has_null_value
+
+        @property
+        def is_gc_type(self):
+            """
+            Returns True if the Blink implementation type is a GarbageCollected
+            type.
+            """
+            return self._is_gc_type
+
+        @property
+        def is_move_effective(self):
+            """
+            Returns True if support of std::move is effective and desired.
+            E.g. Vector => True and int32_t => False
+            """
+            return self._is_move_effective
+
+        def clear_member_var_expr(self, var_name):
+            """
+            Returns an expression to reset the given member variable.  E.g.
+            Vector => var_name.clear() and int32_t => var_name = 0
+            """
+            return self._clear_member_var_fmt.format(var_name)
 
     def vector_element_type(idl_type):
         # Use |Member<T>| explicitly so that the complete type definition of
@@ -144,33 +203,38 @@ def blink_type_info(idl_type, use_new_union=False):
                         clear_member_var_fmt="{} = String()")
 
     if real_type.is_array_buffer:
-        assert "AllowShared" not in real_type.extended_attributes
-        return TypeInfo(
-            'DOM{}'.format(real_type.keyword_typename),
-            member_fmt="Member<{}>",
-            ref_fmt="{}*",
-            const_ref_fmt="const {}*",
-            value_fmt="{}*",
-            has_null_value=True)
+        if "AllowShared" in idl_type.effective_annotations:
+            typename = "DOMSharedArrayBuffer"
+        else:
+            typename = "DOMArrayBuffer"
+        return TypeInfo(typename,
+                        member_fmt="Member<{}>",
+                        ref_fmt="{}*",
+                        const_ref_fmt="const {}*",
+                        value_fmt="{}*",
+                        has_null_value=True,
+                        is_gc_type=True)
 
     if real_type.is_buffer_source_type:
-        if "FlexibleArrayBufferView" in real_type.extended_attributes:
-            assert "AllowShared" in real_type.extended_attributes
-            return TypeInfo(
-                "Flexible{}".format(real_type.keyword_typename),
-                member_fmt="void",
-                ref_fmt="{}",
-                const_ref_fmt="const {}",
-                value_fmt="{}",
-                has_null_value=True)
-        elif "AllowShared" in real_type.extended_attributes:
-            return TypeInfo(
-                "MaybeShared<DOM{}>".format(real_type.keyword_typename),
-                has_null_value=True)
+        if "FlexibleArrayBufferView" in idl_type.effective_annotations:
+            assert "AllowShared" in idl_type.effective_annotations
+            return TypeInfo("Flexible{}".format(real_type.keyword_typename),
+                            member_fmt="void",
+                            ref_fmt="{}",
+                            const_ref_fmt="const {}",
+                            value_fmt="{}",
+                            has_null_value=True,
+                            is_gc_type=True)
+        elif "AllowShared" in idl_type.effective_annotations:
+            return TypeInfo("MaybeShared<DOM{}>".format(
+                real_type.keyword_typename),
+                            has_null_value=True,
+                            is_gc_type=True)
         else:
-            return TypeInfo(
-                "NotShared<DOM{}>".format(real_type.keyword_typename),
-                has_null_value=True)
+            return TypeInfo("NotShared<DOM{}>".format(
+                real_type.keyword_typename),
+                            has_null_value=True,
+                            is_gc_type=True)
 
     if real_type.is_symbol:
         assert False, "Blink does not support/accept IDL symbol type."
@@ -186,16 +250,16 @@ def blink_type_info(idl_type, use_new_union=False):
         assert False, "Blink does not support/accept IDL void type."
 
     if real_type.type_definition_object:
-        blink_impl_type = blink_class_name(real_type.type_definition_object)
+        typename = blink_class_name(real_type.type_definition_object)
         if real_type.is_enumeration:
-            return TypeInfo(blink_impl_type, clear_member_var_fmt="")
-        return TypeInfo(
-            blink_impl_type,
-            member_fmt="Member<{}>",
-            ref_fmt="{}*",
-            const_ref_fmt="const {}*",
-            value_fmt="{}*",
-            has_null_value=True)
+            return TypeInfo(typename, clear_member_var_fmt="")
+        return TypeInfo(typename,
+                        member_fmt="Member<{}>",
+                        ref_fmt="{}*",
+                        const_ref_fmt="const {}*",
+                        value_fmt="{}*",
+                        has_null_value=True,
+                        is_gc_type=True)
 
     if (real_type.is_sequence or real_type.is_frozen_array
             or real_type.is_variadic):
@@ -204,6 +268,7 @@ def blink_type_info(idl_type, use_new_union=False):
         return TypeInfo(typename,
                         ref_fmt="{}&",
                         const_ref_fmt="const {}&",
+                        is_move_effective=True,
                         clear_member_var_fmt="{}.clear()")
 
     if real_type.is_record:
@@ -213,6 +278,7 @@ def blink_type_info(idl_type, use_new_union=False):
         return TypeInfo(typename,
                         ref_fmt="{}&",
                         const_ref_fmt="const {}&",
+                        is_move_effective=True,
                         clear_member_var_fmt="{}.clear()")
 
     if real_type.is_promise:
@@ -220,30 +286,30 @@ def blink_type_info(idl_type, use_new_union=False):
             "ScriptPromise", ref_fmt="{}&", const_ref_fmt="const {}&")
 
     if real_type.is_union and use_new_union:
-        blink_impl_type = blink_class_name(
-            real_type.new_union_definition_object)
-        return TypeInfo(blink_impl_type,
+        typename = blink_class_name(real_type.new_union_definition_object)
+        return TypeInfo(typename,
                         member_fmt="Member<{}>",
                         ref_fmt="{}*",
                         const_ref_fmt="const {}*",
                         value_fmt="{}*",
-                        has_null_value=True)
+                        has_null_value=True,
+                        is_gc_type=True)
 
     if real_type.is_union:
-        blink_impl_type = blink_class_name(real_type.union_definition_object)
-        return TypeInfo(
-            blink_impl_type,
-            ref_fmt="{}&",
-            const_ref_fmt="const {}&",
-            has_null_value=True)
+        typename = blink_class_name(real_type.union_definition_object)
+        return TypeInfo(typename,
+                        ref_fmt="{}&",
+                        const_ref_fmt="const {}&",
+                        has_null_value=True)
 
     if real_type.is_nullable:
         inner_type = blink_type_info(real_type.inner_type)
         if inner_type.has_null_value:
             return inner_type
-        return TypeInfo("base::Optional<{}>".format(inner_type.value_t),
+        return TypeInfo("absl::optional<{}>".format(inner_type.value_t),
                         ref_fmt="{}&",
                         const_ref_fmt="const {}&",
+                        is_move_effective=inner_type.is_move_effective,
                         clear_member_var_fmt="{}.reset()")
 
     assert False, "Unknown type: {}".format(idl_type.syntactic_form)
@@ -316,10 +382,7 @@ def _native_value_tag_impl(idl_type):
         return "IDLPromise"
 
     if real_type.is_union:
-        class_name = blink_class_name(real_type.union_definition_object)
-        if real_type.does_include_nullable_type:
-            return "IDLUnionINT<{}>".format(class_name)
-        return "IDLUnionNotINT<{}>".format(class_name)
+        return blink_class_name(real_type.union_definition_object)
 
     if real_type.is_nullable:
         return "IDLNullable<{}>".format(
@@ -368,7 +431,7 @@ def make_blink_to_v8_value(
     return SymbolNode(v8_var_name, definition_constructor=create_definition)
 
 
-def make_default_value_expr(idl_type, default_value, use_new_union=False):
+def make_default_value_expr(idl_type, default_value, use_new_union=True):
     """
     Returns a set of C++ expressions to be used for initialization with default
     values.  The returned object has the following attributes.
@@ -499,8 +562,8 @@ def make_default_value_expr(idl_type, default_value, use_new_union=False):
     assignment_deps = []
     if default_value.idl_type.is_nullable:
         if not type_info.has_null_value:
-            initializer_expr = None  # !base::Optional::has_value() by default
-            assignment_value = "base::nullopt"
+            initializer_expr = None  # !absl::optional::has_value() by default
+            assignment_value = "absl::nullopt"
         elif idl_type.unwrap().type_definition_object is not None:
             initializer_expr = "nullptr"
             is_initialization_lightweight = True

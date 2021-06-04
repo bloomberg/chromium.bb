@@ -9,13 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -28,6 +28,16 @@ class WebContents;
 namespace url {
 class Origin;
 }
+
+namespace blink {
+class AssociatedInterfaceRegistry;
+}
+
+namespace service_manager {
+template <typename...>
+class BinderRegistryWithArgs;
+using BinderRegistry = BinderRegistryWithArgs<>;
+}  // namespace service_manager
 
 namespace extensions {
 
@@ -115,6 +125,10 @@ class ChromeContentBrowserClientExtensionsPart
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) override;
+  void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
+      content::RenderProcessHost* render_process_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientExtensionsPart);
 };

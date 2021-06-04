@@ -23,7 +23,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
  public:
   struct PhaseAndTime {
     TimelinePhase phase;
-    base::Optional<base::TimeDelta> time;
+    absl::optional<base::TimeDelta> time;
     bool operator==(const PhaseAndTime& other) const {
       return phase == other.phase && time == other.time;
     }
@@ -35,12 +35,20 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   AnimationTimeline(Document*);
   ~AnimationTimeline() override = default;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  virtual V8CSSNumberish* currentTime();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual void currentTime(CSSNumberish&);
-  base::Optional<AnimationTimeDelta> CurrentTime();
-  base::Optional<double> CurrentTimeMilliseconds();
-  base::Optional<double> CurrentTimeSeconds();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  absl::optional<AnimationTimeDelta> CurrentTime();
+  absl::optional<double> CurrentTimeMilliseconds();
+  absl::optional<double> CurrentTimeSeconds();
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  virtual V8CSSNumberish* duration();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual void duration(CSSNumberish&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   String phase();
   TimelinePhase Phase() { return CurrentPhaseAndTime().phase; }
@@ -62,7 +70,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   //
   // Changing scroll-linked animation start_time initialization is under
   // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
-  virtual base::Optional<base::TimeDelta> InitialStartTimeForAnimations() = 0;
+  virtual absl::optional<base::TimeDelta> InitialStartTimeForAnimations() = 0;
   Document* GetDocument() { return document_; }
   virtual void AnimationAttached(Animation*);
   virtual void AnimationDetached(Animation*);
@@ -119,9 +127,9 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 
-  base::Optional<PhaseAndTime> last_current_phase_and_time_;
+  absl::optional<PhaseAndTime> last_current_phase_and_time_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TIMELINE_H_

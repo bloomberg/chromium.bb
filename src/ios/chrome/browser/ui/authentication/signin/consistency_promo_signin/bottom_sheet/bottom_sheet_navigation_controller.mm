@@ -8,7 +8,7 @@
 
 #import "base/check.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/child_bottom_sheet_view_controller.h"
-#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/background_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,26 +22,14 @@ CGFloat kMaxBottomSheetHeightRatioWithWindow = .75;
 
 }  // namespace
 
+@interface BottomSheetNavigationController ()
+
+// View to get transparent blurred background.
+@property(nonatomic, strong, readwrite) UIView* backgroundView;
+
+@end
+
 @implementation BottomSheetNavigationController
-
-- (void)viewDidLoad {
-  [super viewDidLoad];
-  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-  [super viewDidDisappear:animated];
-  [self.presentationDelegate bottomSheetNavigationControllerDidDisappear:self];
-}
-
-- (void)pushViewController:(UIViewController*)viewController
-                  animated:(BOOL)animated {
-  // |viewController.view| has to be a UIScrollView.
-  DCHECK([viewController.view isKindOfClass:[UIScrollView class]]);
-  DCHECK([viewController
-      conformsToProtocol:@protocol(ChildBottomSheetViewController)]);
-  [super pushViewController:viewController animated:animated];
-}
 
 - (CGSize)layoutFittingSize {
   CGFloat width = self.view.frame.size.width;
@@ -57,6 +45,44 @@ CGFloat kMaxBottomSheetHeightRatioWithWindow = .75;
   CGFloat maxViewHeight =
       self.view.window.frame.size.height * kMaxBottomSheetHeightRatioWithWindow;
   return CGSizeMake(width, std::min(height, maxViewHeight));
+}
+
+- (void)didUpdateControllerViewFrame {
+  self.backgroundView.frame = self.view.bounds;
+  // The dimmer view should never be under the bottom sheet view, since the
+  // background of the botther sheet is transparent.
+  CGRect dimmerViewFrame = self.backgroundDimmerView.superview.bounds;
+  dimmerViewFrame.size.height = self.view.frame.origin.y;
+  self.backgroundDimmerView.frame = dimmerViewFrame;
+}
+
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.backgroundView = PrimaryBackgroundBlurView();
+  [self.view insertSubview:self.backgroundView atIndex:0];
+  self.backgroundView.frame = self.view.bounds;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self.navigationBar setBackgroundImage:[[UIImage alloc] init]
+                           forBarMetrics:UIBarMetricsDefault];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  [self didUpdateControllerViewFrame];
+}
+
+#pragma mark - UINavigationController
+
+- (void)pushViewController:(UIViewController*)viewController
+                  animated:(BOOL)animated {
+  DCHECK([viewController
+      conformsToProtocol:@protocol(ChildBottomSheetViewController)]);
+  [super pushViewController:viewController animated:animated];
 }
 
 @end

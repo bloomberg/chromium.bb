@@ -21,23 +21,14 @@
 #include <utility>
 
 const char* gNoop = R"(
-    uniform shader input;
-    half4 main() {
-        return sample(input);
+    half4 main(half4 color) {
+        return color;
     }
 )";
 
 const char* gLumaSrc = R"(
-    uniform shader input;
-    half4 main() {
-        return dot(sample(input).rgb, half3(0.3, 0.6, 0.1)).000r;
-    }
-)";
-
-const char* gLumaSrcWithCoords = R"(
-    uniform shader input;
-    half4 main(float2 p) {
-        return dot(sample(input).rgb, half3(0.3, 0.6, 0.1)).000r;
+    half4 main(half4 color) {
+        return dot(color.rgb, half3(0.3, 0.6, 0.1)).000r;
     }
 )";
 
@@ -46,9 +37,7 @@ const char* gLumaSrcWithCoords = R"(
 
 // Simplest to run; hardest to write?
 const char* gTernary = R"(
-    uniform shader input;
-    half4 main() {
-        half4 color = sample(input);
+    half4 main(half4 color) {
         half luma = dot(color.rgb, half3(0.3, 0.6, 0.1));
 
         half scale = luma < 0.33333 ? 0.5
@@ -60,9 +49,7 @@ const char* gTernary = R"(
 
 // Uses conditional if statements but no early return.
 const char* gIfs = R"(
-    uniform shader input;
-    half4 main() {
-        half4 color = sample(input);
+    half4 main(half4 color) {
         half luma = dot(color.rgb, half3(0.3, 0.6, 0.1));
 
         half scale = 0;
@@ -79,9 +66,7 @@ const char* gIfs = R"(
 
 // Distilled from AOSP tone mapping shaders, more like what people tend to write.
 const char* gEarlyReturn = R"(
-    uniform shader input;
-    half4 main() {
-        half4 color = sample(input);
+    half4 main(half4 color) {
         half luma = dot(color.rgb, half3(0.3, 0.6, 0.1));
 
         half scale = 0;
@@ -101,22 +86,21 @@ DEF_SIMPLE_GM(runtimecolorfilter, canvas, 256 * 3, 256 * 2) {
     sk_sp<SkImage> img = GetResourceAsImage("images/mandrill_256.png");
 
     auto draw_filter = [&](const char* src) {
-        auto [effect, err] = SkRuntimeEffect::Make(SkString(src));
+        auto [effect, err] = SkRuntimeEffect::MakeForColorFilter(SkString(src));
         if (!effect) {
             SkDebugf("%s\n%s\n", src, err.c_str());
         }
         SkASSERT(effect);
         SkPaint p;
-        sk_sp<SkColorFilter> input = nullptr;
-        p.setColorFilter(effect->makeColorFilter(nullptr, &input, 1));
+        p.setColorFilter(effect->makeColorFilter(nullptr));
         canvas->drawImage(img, 0, 0, SkSamplingOptions(), &p);
         canvas->translate(256, 0);
     };
 
-    for (const char* src : { gNoop, gLumaSrc, gLumaSrcWithCoords}) {
+    for (const char* src : { gNoop, gLumaSrc }) {
         draw_filter(src);
     }
-    canvas->translate(-256*3, 256);
+    canvas->translate(-256*2, 256);
     for (const char* src : { gTernary, gIfs, gEarlyReturn}) {
         draw_filter(src);
     }

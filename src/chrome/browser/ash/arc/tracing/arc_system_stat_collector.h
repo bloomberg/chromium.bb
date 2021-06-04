@@ -5,17 +5,20 @@
 #ifndef CHROME_BROWSER_ASH_ARC_TRACING_ARC_SYSTEM_STAT_COLLECTOR_H_
 #define CHROME_BROWSER_ASH_ARC_TRACING_ARC_SYSTEM_STAT_COLLECTOR_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/timer/timer.h"
 
 namespace base {
-class TimeDelta;
 class SequencedTaskRunner;
+class TimeDelta;
+class Value;
 }  // namespace base
 
 namespace arc {
@@ -80,6 +83,15 @@ class ArcSystemStatCollector {
   void Flush(const base::TimeTicks& min_timestamp,
              const base::TimeTicks& max_timestamp,
              ArcSystemModel* system_model);
+
+  // Serializes the model to |base::Value|.
+  std::unique_ptr<base::Value> Serialize() const;
+  // Serializes the model to Json string.
+  std::string SerializeToJson() const;
+  // Loads the model from |base::Value|.
+  bool LoadFromValue(const base::Value& root);
+  // Loads the model from Json string.
+  bool LoadFromJson(const std::string& json_data);
 
   base::TimeDelta max_interval() const { return max_interval_; }
 

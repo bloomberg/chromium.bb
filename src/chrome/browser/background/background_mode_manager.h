@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
@@ -227,10 +227,11 @@ class BackgroundModeManager : public content::NotificationObserver,
    private:
     BackgroundModeManager* const manager_;
 
-    ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
-    ScopedObserver<extensions::ForceInstalledTracker,
-                   extensions::ForceInstalledTracker::Observer>
-        force_installed_tracker_observer_{this};
+    base::ScopedObservation<Profile, ProfileObserver> profile_observation_{
+        this};
+    base::ScopedObservation<extensions::ForceInstalledTracker,
+                            extensions::ForceInstalledTracker::Observer>
+        force_installed_tracker_observation_{this};
 
     // The cached list of BackgroundApplications.
     std::unique_ptr<BackgroundApplicationListModel> applications_;
@@ -468,7 +469,7 @@ class BackgroundModeManager : public content::NotificationObserver,
   // Set to true when background mode is suspended.
   bool background_mode_suspended_ = false;
 
-  base::Optional<bool> launch_on_startup_enabled_;
+  absl::optional<bool> launch_on_startup_enabled_;
 
   // Task runner for making startup/login configuration changes that may
   // require file system or registry access.

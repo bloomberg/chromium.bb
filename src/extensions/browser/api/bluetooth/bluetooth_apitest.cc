@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -175,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceEvents) {
 
   EXPECT_CALL(*device2_, GetName())
       .WillRepeatedly(
-          testing::Return(base::Optional<std::string>("the real d2")));
+          testing::Return(absl::optional<std::string>("the real d2")));
   EXPECT_CALL(*device2_, GetNameForDisplay())
       .WillRepeatedly(testing::Return(u"the real d2"));
   event_router()->DeviceChanged(mock_adapter_, device2_.get());
@@ -400,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
       .WillRepeatedly(testing::Return("A4:17:31:00:00:00"));
   EXPECT_CALL(*device1_, GetName())
       .WillRepeatedly(
-          testing::Return(base::Optional<std::string>("Chromebook Pixel")));
+          testing::Return(absl::optional<std::string>("Chromebook Pixel")));
   EXPECT_CALL(*device1_, GetNameForDisplay())
       .WillRepeatedly(testing::Return(u"Chromebook Pixel"));
   EXPECT_CALL(*device1_, GetBluetoothClass())

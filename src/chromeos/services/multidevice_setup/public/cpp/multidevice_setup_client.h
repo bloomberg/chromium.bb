@@ -12,9 +12,9 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -25,7 +25,7 @@ class MultiDeviceSetupClient {
  public:
   using HostStatusWithDevice =
       std::pair<mojom::HostStatus,
-                base::Optional<multidevice::RemoteDeviceRef>>;
+                absl::optional<multidevice::RemoteDeviceRef>>;
   using FeatureStatesMap = base::flat_map<mojom::Feature, mojom::FeatureState>;
 
   class Observer {
@@ -68,7 +68,7 @@ class MultiDeviceSetupClient {
   virtual void SetFeatureEnabledState(
       mojom::Feature feature,
       bool enabled,
-      const base::Optional<std::string>& auth_token,
+      const absl::optional<std::string>& auth_token,
       mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) = 0;
   virtual const FeatureStatesMap& GetFeatureStates() const = 0;
   mojom::FeatureState GetFeatureState(mojom::Feature feature) const;
@@ -94,5 +94,13 @@ class MultiDeviceSetupClient {
 }  // namespace multidevice_setup
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace multidevice_setup {
+using ::chromeos::multidevice_setup::MultiDeviceSetupClient;
+}
+}  // namespace ash
 
 #endif  // CHROMEOS_SERVICES_MULTIDEVICE_SETUP_PUBLIC_CPP_MULTIDEVICE_SETUP_CLIENT_H_

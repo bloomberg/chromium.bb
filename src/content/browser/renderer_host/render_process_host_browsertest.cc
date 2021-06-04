@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/waitable_event.h"
@@ -48,6 +47,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -277,8 +278,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   RenderProcessHost* rph =
       shell()->web_contents()->GetMainFrame()->GetProcess();
   // Make it believe it's a guest.
-  static_cast<RenderProcessHostImpl*>(rph)->set_is_for_guests_only_for_testing(
-      true);
+  static_cast<RenderProcessHostImpl*>(rph)->SetForGuestsOnlyForTesting();
   EXPECT_EQ(1, RenderProcessHost::GetCurrentRenderProcessCountForTesting());
 
   // Navigate to a different page.
@@ -488,9 +488,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererDuringClosing) {
 
 // Class that simulates the fact that some //content embedders (e.g. by
 // overriding ChromeContentBrowserClient::GetStoragePartitionConfigForSite) can
-// cause BrowserContext::GetDefaultStoragePartition(browser_context) to differ
-// from BrowserContext::GetStoragePartition(browser_context, site_instance) even
-// if |site_instance| is not for guests.
+// cause `browser_context->GetDefaultStoragePartition()` to differ from
+// `browser_context->GetStoragePartition(site_instance)` even if `site_instance`
+// is not for guests.
 class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
  public:
   explicit CustomStoragePartitionForSomeSites(const GURL& site_to_isolate)
@@ -541,9 +541,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&modified_client);
   StoragePartition* default_storage =
-      BrowserContext::GetDefaultStoragePartition(browser_context);
-  StoragePartition* custom_storage = BrowserContext::GetStoragePartition(
-      browser_context, test_site_instance.get());
+      browser_context->GetDefaultStoragePartition();
+  StoragePartition* custom_storage =
+      browser_context->GetStoragePartition(test_site_instance.get());
   EXPECT_NE(default_storage, custom_storage);
 
   // Open a test window - it should be associated with the default storage
@@ -756,8 +756,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // We can't use NavigateToURL here since it accesses the shell() after
   // navigating, which the shell_closer deletes.
   ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), GURL(kChromeUICrashURL), 1);
+  NavigateToURLBlockUntilNavigationsComplete(shell(),
+                                             GURL(blink::kChromeUICrashURL), 1);
 
   // The key here is that all the RenderProcessExited callbacks precede all the
   // RenderProcessHostDestroyed callbacks.
@@ -870,8 +870,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
                                 run_loop.QuitClosure());
 
     std::string result;
-    EXPECT_TRUE(
-        ExecuteScriptAndExtractString(shell(), "StartOscillator();", &result))
+    EXPECT_EQ("OK", EvalJs(shell(), "StartOscillator();",
+                           EXECUTE_SCRIPT_USE_MANUAL_REPLY))
         << "Failed to execute javascript.";
     run_loop.Run();
 
@@ -940,8 +940,9 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "getUserMediaAndExpectSuccess({video: true});", &result))
+  EXPECT_EQ("OK",
+            EvalJs(shell(), "getUserMediaAndExpectSuccess({video: true});",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "Failed to execute javascript.";
   EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
 }
@@ -956,8 +957,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "getUserMediaAndStop({video: true});", &result))
+  EXPECT_EQ("OK", EvalJs(shell(), "getUserMediaAndStop({video: true});",
+                         EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "Failed to execute javascript.";
   EXPECT_EQ(0, rph->get_media_stream_count_for_testing());
 }
@@ -973,8 +974,9 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "getUserMediaAndExpectSuccess({video: true});", &result))
+  EXPECT_EQ("OK",
+            EvalJs(shell(), "getUserMediaAndExpectSuccess({video: true});",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "Failed to execute javascript.";
   EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
 
@@ -1017,9 +1019,10 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "getUserMediaAndExpectSuccess({video: false, audio: true});",
-      &result))
+  EXPECT_EQ("OK",
+            EvalJs(shell(),
+                   "getUserMediaAndExpectSuccess({video: false, audio: true});",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "Failed to execute javascript.";
   EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
 }
@@ -1035,9 +1038,10 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "getUserMediaAndExpectSuccess({video: false, audio: true});",
-      &result))
+  EXPECT_EQ("OK",
+            EvalJs(shell(),
+                   "getUserMediaAndExpectSuccess({video: false, audio: true});",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "Failed to execute javascript.";
   EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
 
@@ -1278,15 +1282,15 @@ class IsProcessBackgroundedObserver : public RenderProcessHostInternalObserver {
 
   // Returns the latest recorded value if there was one and resets the recorded
   // value to |nullopt|.
-  base::Optional<bool> TakeValue() {
+  absl::optional<bool> TakeValue() {
     auto value = backgrounded_;
-    backgrounded_ = base::nullopt;
+    backgrounded_ = absl::nullopt;
     return value;
   }
 
  private:
   // Stores the last observed value of IsProcessBackgrounded for a host.
-  base::Optional<bool> backgrounded_;
+  absl::optional<bool> backgrounded_;
   base::ScopedObservation<RenderProcessHostImpl,
                           RenderProcessHostInternalObserver,
                           &RenderProcessHostImpl::AddInternalObserver,

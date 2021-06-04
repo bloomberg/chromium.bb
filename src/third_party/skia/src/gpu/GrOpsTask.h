@@ -10,6 +10,7 @@
 
 #include "include/core/SkMatrix.h"
 #include "include/core/SkRefCnt.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrRecordingContext.h"
@@ -17,7 +18,6 @@
 #include "include/private/SkTDArray.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkClipStack.h"
-#include "src/core/SkSpan.h"
 #include "src/core/SkStringUtils.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrAppliedClip.h"
@@ -37,14 +37,14 @@ private:
     using DstProxyView = GrXferProcessor::DstProxyView;
 
 public:
-    // The Arenas must outlive the GrOpsTask, either by preserving the context that owns
-    // the pool, or by moving the pool to the DDL that takes over the GrOpsTask.
-    GrOpsTask(GrDrawingManager*, GrSurfaceProxyView, GrAuditTrail*);
+    // Manage the arenas life time by maintaining are reference to it.
+    GrOpsTask(GrDrawingManager*, GrSurfaceProxyView, GrAuditTrail*, sk_sp<GrArenas>);
     ~GrOpsTask() override;
 
     GrOpsTask* asOpsTask() override { return this; }
 
     bool isEmpty() const { return fOpChains.empty(); }
+    bool usesMSAASurface() const { return fUsesMSAASurface; }
 
     /**
      * Empties the draw buffer of any queued up draws.
@@ -71,8 +71,9 @@ public:
 
     void addOp(GrDrawingManager*, GrOp::Owner, GrTextureResolveManager, const GrCaps&);
 
-    void addDrawOp(GrDrawingManager*, GrOp::Owner, const GrProcessorSet::Analysis&,
-                   GrAppliedClip&&, const DstProxyView&, GrTextureResolveManager, const GrCaps&);
+    void addDrawOp(GrDrawingManager*, GrOp::Owner, GrDrawOp::FixedFunctionFlags,
+                   const GrProcessorSet::Analysis&, GrAppliedClip&&, const DstProxyView&,
+                   GrTextureResolveManager, const GrCaps&);
 
     void discard();
 
@@ -222,7 +223,7 @@ private:
         SkRect fBounds;
     };
 
-    void onCanSkip() override;
+    void onMakeSkippable() override;
 
     bool onIsUsed(GrSurfaceProxy*) const override;
 
@@ -248,6 +249,7 @@ private:
 
     GrAuditTrail* fAuditTrail;
 
+    bool fUsesMSAASurface;
     GrSwizzle fTargetSwizzle;
     GrSurfaceOrigin fTargetOrigin;
 
@@ -265,9 +267,7 @@ private:
     // For ops/opsTask we have mean: 5 stdDev: 28
     SkSTArray<25, OpChain> fOpChains;
 
-    // MDB TODO: 4096 for the first allocation may be huge overkill. Gather statistics to determine
-    // the correct size.
-    SkSTArray<1, std::unique_ptr<SkArenaAlloc>> fAllocators;
+    sk_sp<GrArenas> fArenas;
     SkDEBUGCODE(int fNumClips;)
 
     // TODO: We could look into this being a set if we find we're adding a lot of duplicates that is

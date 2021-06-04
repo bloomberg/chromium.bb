@@ -97,8 +97,8 @@ void OnGetSessions(const Status& status,
   ASSERT_TRUE(sessions->GetDictionary(0, &session1));
   ASSERT_TRUE(sessions->GetDictionary(1, &session2));
 
-  ASSERT_EQ(static_cast<size_t>(2), session1->size());
-  ASSERT_EQ(static_cast<size_t>(2), session2->size());
+  ASSERT_EQ(static_cast<size_t>(2), session1->DictSize());
+  ASSERT_EQ(static_cast<size_t>(2), session2->DictSize());
 
   std::string session1_id;
   std::string session2_id;
@@ -110,8 +110,8 @@ void OnGetSessions(const Status& status,
   ASSERT_TRUE(session1->GetDictionary("capabilities", &session1_capabilities));
   ASSERT_TRUE(session2->GetDictionary("capabilities", &session2_capabilities));
 
-  ASSERT_EQ((size_t) 2, session1_capabilities->size());
-  ASSERT_EQ((size_t) 2, session2_capabilities->size());
+  ASSERT_EQ((size_t)2, session1_capabilities->DictSize());
+  ASSERT_EQ((size_t)2, session2_capabilities->DictSize());
   ASSERT_EQ("id", session1_id);
   ASSERT_EQ("id2", session2_id);
 
@@ -356,7 +356,7 @@ class FindElementWebView : public StubWebView {
           base::ListValue list;
           list.Append(element1.CreateDeepCopy());
           list.Append(element2.CreateDeepCopy());
-          result_ = list.CreateDeepCopy();
+          result_ = base::Value::ToUniquePtrValue(list.Clone());
         }
         break;
       }
@@ -373,7 +373,7 @@ class FindElementWebView : public StubWebView {
 
   void Verify(const std::string& expected_frame,
               const base::ListValue* expected_args,
-              const base::Value* actrual_result) {
+              const base::Value* actual_result) {
     EXPECT_EQ(expected_frame, frame_);
     std::string function;
     if (only_one_)
@@ -383,8 +383,8 @@ class FindElementWebView : public StubWebView {
     EXPECT_EQ(function, function_);
     ASSERT_TRUE(args_.get());
     EXPECT_TRUE(expected_args->Equals(args_.get()));
-    ASSERT_TRUE(actrual_result);
-    EXPECT_TRUE(result_->Equals(actrual_result));
+    ASSERT_TRUE(actual_result);
+    EXPECT_TRUE(result_->Equals(actual_result));
   }
 
   // Overridden from WebView:
@@ -419,7 +419,7 @@ class FindElementWebView : public StubWebView {
       *result = result_->CreateDeepCopy();
       frame_ = frame;
       function_ = function;
-      args_ = args.CreateDeepCopy();
+      args_ = base::Value::ToUniquePtrValue(args.Clone());
     }
     return Status(kOk);
   }
@@ -430,7 +430,7 @@ class FindElementWebView : public StubWebView {
   int current_count_;
   std::string frame_;
   std::string function_;
-  std::unique_ptr<base::ListValue> args_;
+  std::unique_ptr<base::Value> args_;
   std::unique_ptr<base::Value> result_;
 };
 

@@ -1,7 +1,7 @@
 export const description = `
 Validation for encoding begin/endable queries.
 
-TODO:
+TODO: tests for pipeline statistics queries:
 - balance: {
     - begin 0, end 1
     - begin 1, end 0
@@ -17,6 +17,12 @@ TODO:
 import { pbool } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { ValidationTest } from '../../validation_test.js';
+
+import {
+  beginRenderPassWithQuerySet,
+  createQuerySetWithType,
+  createRenderEncoderWithQuerySet,
+} from './common.js';
 
 export const g = makeTestGroup(ValidationTest);
 
@@ -37,7 +43,22 @@ Tests that begin/end occlusion queries mismatch on render pass:
         { begin: 2, end: 1 },
       ] as const
   )
-  .unimplemented();
+  .fn(async t => {
+    const { begin, end } = t.params;
+    const querySet = createQuerySetWithType(t, 'occlusion', 2);
+
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    for (let i = 0; i < begin; i++) {
+      encoder.encoder.beginOcclusionQuery(i);
+    }
+    for (let j = 0; j < end; j++) {
+      encoder.encoder.endOcclusionQuery();
+    }
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, begin !== end);
+  });
 
 g.test('occlusion_query,begin_end_invalid_nesting')
   .desc(
@@ -51,12 +72,28 @@ Tests the invalid nesting of begin/end occlusion queries:
   .subcases(
     () =>
       [
-        { calls: [0, 'end', 1, 'end'] }, // control case
-        { calls: [0, 0, 'end', 'end'] },
-        { calls: [0, 1, 'end', 'end'] },
+        { calls: [0, 'end', 1, 'end'], _valid: true }, // control case
+        { calls: [0, 0, 'end', 'end'], _valid: false },
+        { calls: [0, 1, 'end', 'end'], _valid: false },
       ] as const
   )
-  .unimplemented();
+  .fn(async t => {
+    const querySet = createQuerySetWithType(t, 'occlusion', 2);
+
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+
+    for (const i of t.params.calls) {
+      if (i !== 'end') {
+        encoder.encoder.beginOcclusionQuery(i);
+      } else {
+        encoder.encoder.endOcclusionQuery();
+      }
+    }
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, !t.params._valid);
+  });
 
 g.test('occlusion_query,disjoint_queries_with_same_query_index')
   .desc(
@@ -67,7 +104,30 @@ Tests that two disjoint occlusion queries cannot be begun with same query index 
   `
   )
   .subcases(() => pbool('isOnSameRenderPass'))
-  .unimplemented();
+  .fn(async t => {
+    const querySet = createQuerySetWithType(t, 'occlusion', 1);
+
+    const encoder = t.device.createCommandEncoder();
+    const pass = beginRenderPassWithQuerySet(t, encoder, querySet);
+    pass.beginOcclusionQuery(0);
+    pass.endOcclusionQuery();
+
+    if (t.params.isOnSameRenderPass) {
+      pass.beginOcclusionQuery(0);
+      pass.endOcclusionQuery();
+      pass.endPass();
+    } else {
+      pass.endPass();
+      const otherPass = beginRenderPassWithQuerySet(t, encoder, querySet);
+      otherPass.beginOcclusionQuery(0);
+      otherPass.endOcclusionQuery();
+      otherPass.endPass();
+    }
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, t.params.isOnSameRenderPass);
+  });
 
 g.test('nesting')
   .desc(

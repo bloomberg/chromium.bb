@@ -48,6 +48,8 @@ class AccessibilityTreeFormatterUia : public ui::AXTreeFormatterBase {
                      int root_x,
                      int root_y,
                      base::DictionaryValue* dict) const;
+  void AddAnnotationProperties(IUIAutomationElement* node,
+                               base::DictionaryValue* dict) const;
   void AddExpandCollapseProperties(IUIAutomationElement* node,
                                    base::DictionaryValue* dict) const;
   void AddGridProperties(IUIAutomationElement* node,
@@ -102,6 +104,8 @@ class AccessibilityTreeFormatterUia : public ui::AXTreeFormatterBase {
   void ProcessValueForOutput(const std::string& name,
                              const base::Value* value,
                              std::string& line) const;
+  std::map<long, std::string>& GetCustomPropertiesMap() const;
+
   Microsoft::WRL::ComPtr<IUIAutomation> uia_;
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> element_cache_request_;
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> children_cache_request_;

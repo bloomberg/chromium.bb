@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "xfa/fgas/layout/cfgas_break.h"
 #include "xfa/fgas/layout/cfgas_char.h"
 
@@ -71,8 +72,8 @@ class CFGAS_TxtBreak final : public CFGAS_Break {
   void SetCombWidth(float fCombWidth);
   CFGAS_Char::BreakType EndBreak(CFGAS_Char::BreakType dwStatus);
 
-  size_t GetDisplayPos(const Run* pTxtRun, TextCharPos* pCharPos) const;
-  std::vector<CFX_RectF> GetCharRects(const Run* pTxtRun, bool bCharBBox) const;
+  size_t GetDisplayPos(const Run& run, TextCharPos* pCharPos) const;
+  std::vector<CFX_RectF> GetCharRects(const Run& run) const;
   CFGAS_Char::BreakType AppendChar(wchar_t wch);
 
  private:
@@ -97,8 +98,8 @@ class CFGAS_TxtBreak final : public CFGAS_Break {
                      CFGAS_BreakLine* pNextLine,
                      bool bAllChars);
 
-  int32_t m_iAlignment;
-  int32_t m_iCombWidth;
+  int32_t m_iAlignment = CFX_TxtLineAlignment_Left;
+  int32_t m_iCombWidth = 360000;
 };
 
 #endif  // XFA_FGAS_LAYOUT_CFGAS_TXTBREAK_H_

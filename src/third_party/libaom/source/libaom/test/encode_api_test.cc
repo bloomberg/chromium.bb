@@ -20,6 +20,12 @@
 
 namespace {
 
+#if CONFIG_REALTIME_ONLY
+const int kUsage = 1;
+#else
+const int kUsage = 0;
+#endif
+
 TEST(EncodeAPI, InvalidParams) {
   uint8_t buf[1] = { 0 };
   aom_image_t img;
@@ -45,7 +51,7 @@ TEST(EncodeAPI, InvalidParams) {
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, iface, NULL, 0));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_enc_config_default(iface, &cfg, 3));
-  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, kUsage));
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
   EXPECT_EQ(NULL, aom_codec_get_global_headers(NULL));
 
@@ -63,13 +69,14 @@ TEST(EncodeAPI, InvalidControlId) {
   aom_codec_iface_t *iface = aom_codec_av1_cx();
   aom_codec_ctx_t enc;
   aom_codec_enc_cfg_t cfg;
-  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, kUsage));
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
   EXPECT_EQ(AOM_CODEC_ERROR, aom_codec_control(&enc, -1, 0));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_control(&enc, 0, 0));
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
 
+#if !CONFIG_REALTIME_ONLY
 TEST(EncodeAPI, AllIntraMode) {
   aom_codec_iface_t *iface = aom_codec_av1_cx();
   aom_codec_ctx_t enc;
@@ -93,5 +100,6 @@ TEST(EncodeAPI, AllIntraMode) {
   cfg.kf_max_dist = 1;
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, iface, &cfg, 0));
 }
+#endif
 
 }  // namespace

@@ -121,8 +121,33 @@ struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
 // ComputedStyle.
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
+StyleCachedData& ComputedStyle::EnsureCachedData() const {
+  if (!cached_data_)
+    cached_data_ = std::make_unique<StyleCachedData>();
+  return *cached_data_;
+}
+
+bool ComputedStyle::HasCachedPseudoElementStyles() const {
+  return cached_data_ && cached_data_->pseudo_element_styles_ &&
+         cached_data_->pseudo_element_styles_->size();
+}
+
+PseudoElementStyleCache* ComputedStyle::GetPseudoElementStyleCache() const {
+  if (cached_data_)
+    return cached_data_->pseudo_element_styles_.get();
+  return nullptr;
+}
+
+PseudoElementStyleCache& ComputedStyle::EnsurePseudoElementStyleCache() const {
+  if (!cached_data_ || !cached_data_->pseudo_element_styles_) {
+    EnsureCachedData().pseudo_element_styles_ =
+        std::make_unique<PseudoElementStyleCache>();
+  }
+  return *cached_data_->pseudo_element_styles_;
+}
+
 scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyleSingleton() {
-  return base::AdoptRef(new ComputedStyle(PassKey()));
+  return base::MakeRefCounted<ComputedStyle>(PassKey());
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
@@ -454,16 +479,19 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
 }
 
 const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
-    PseudoId pid) const {
-  if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
+    PseudoId pseudo_id,
+    const AtomicString& pseudo_argument) const {
+  if (!HasCachedPseudoElementStyles())
     return nullptr;
 
   if (StyleType() != kPseudoIdNone &&
       StyleType() != kPseudoIdFirstLineInherited)
     return nullptr;
 
-  for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
-    if (pseudo_style->StyleType() == pid)
+  for (const auto& pseudo_style : *GetPseudoElementStyleCache()) {
+    if (pseudo_style->StyleType() == pseudo_id &&
+        (!PseudoElementHasArguments(pseudo_id) ||
+         pseudo_style->PseudoArgument() == pseudo_argument))
       return pseudo_style.get();
   }
 
@@ -471,12 +499,12 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
 }
 
 bool ComputedStyle::CachedPseudoElementStylesDependOnFontMetrics() const {
-  if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
+  if (!HasCachedPseudoElementStyles())
     return false;
 
   DCHECK_EQ(StyleType(), kPseudoIdNone);
 
-  for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
+  for (const auto& pseudo_style : *GetPseudoElementStyleCache()) {
     if (pseudo_style->DependsOnFontMetrics())
       return true;
   }
@@ -491,12 +519,14 @@ const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
 
   const ComputedStyle* result = pseudo.get();
 
-  if (!cached_pseudo_element_styles_)
-    cached_pseudo_element_styles_ = std::make_unique<PseudoElementStyleCache>();
-
-  cached_pseudo_element_styles_->push_back(std::move(pseudo));
+  EnsurePseudoElementStyleCache().push_back(std::move(pseudo));
 
   return result;
+}
+
+void ComputedStyle::ClearCachedPseudoElementStyles() const {
+  if (cached_data_ && cached_data_->pseudo_element_styles_)
+    cached_data_->pseudo_element_styles_->clear();
 }
 
 bool ComputedStyle::InheritedEqual(const ComputedStyle& other) const {
@@ -921,8 +951,10 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetCompositingReasonsChanged();
   }
 
-  if (HasCurrentBackgroundColorAnimation() !=
-      other.HasCurrentBackgroundColorAnimation()) {
+  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+      (HasCurrentBackgroundColorAnimation() !=
+           other.HasCurrentBackgroundColorAnimation() ||
+       CompositablePaintAnimationChanged())) {
     diff.SetCompositablePaintEffectChanged();
   }
 }
@@ -1931,20 +1963,24 @@ int ComputedStyle::ComputedLineHeight() const {
   return std::min(lh.Value(), LayoutUnit::Max().ToFloat());
 }
 
-LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
+LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
   const Length& lh = LineHeight();
 
   // Negative value means the line height is not set. Use the font's built-in
-  // spacing, if avalible.
-  if (lh.IsNegative() && GetFont().PrimaryFont())
-    return GetFont().PrimaryFont()->GetFontMetrics().FixedLineSpacing();
+  // spacing, if available.
+  if (lh.IsNegative() && font.PrimaryFont())
+    return font.PrimaryFont()->GetFontMetrics().FixedLineSpacing();
 
   if (lh.IsPercentOrCalc()) {
     return LayoutUnit(
-        MinimumValueForLength(lh, ComputedFontSizeAsFixed()).ToInt());
+        MinimumValueForLength(lh, ComputedFontSizeAsFixed(font)).ToInt());
   }
 
   return LayoutUnit(floorf(lh.Value()));
+}
+
+LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
+  return ComputedLineHeightAsFixed(GetFont());
 }
 
 void ComputedStyle::SetWordSpacing(float word_spacing) {
@@ -2393,10 +2429,10 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
   return GetListStyleType()->GetStringValue();
 }
 
-base::Optional<Color> ComputedStyle::AccentColorResolved() const {
+absl::optional<Color> ComputedStyle::AccentColorResolved() const {
   const StyleAutoColor& auto_color = AccentColor();
-  if (auto_color.IsAutoColor())
-    return base::nullopt;
+  if (auto_color.IsAutoColor() || ShouldForceColor(auto_color))
+    return absl::nullopt;
   return auto_color.Resolve(GetCurrentColor(), UsedColorScheme());
 }
 

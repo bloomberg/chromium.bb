@@ -19,6 +19,8 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -26,18 +28,18 @@ namespace web_app {
 
 // A struct used to configure a periodic background task for a SWA.
 struct SystemAppBackgroundTaskInfo {
-  SystemAppBackgroundTaskInfo() = default;
-  SystemAppBackgroundTaskInfo(const base::TimeDelta& period,
+  SystemAppBackgroundTaskInfo();
+  SystemAppBackgroundTaskInfo(const SystemAppBackgroundTaskInfo& other);
+  SystemAppBackgroundTaskInfo(const absl::optional<base::TimeDelta>& period,
                               const GURL& url,
-                              bool open_immediately = false)
-      : period(period), url(url), open_immediately(open_immediately) {}
-
+                              bool open_immediately = false);
+  ~SystemAppBackgroundTaskInfo();
   // The amount of time between each opening of the background url.
   // The url is opened using the same WebContents, so if the
   // previous task is still running, it will be closed.
-  // If using open_immediately, this should be greater than 120 seconds,
-  // which how long the immediate background tasks will wait.
-  base::TimeDelta period;
+  // You should have at least one of period or open_immediately set for the task
+  // to do anything.
+  absl::optional<base::TimeDelta> period;
 
   // The url of the background page to open. This should do one specific thing.
   // (Probably opening a shared worker, waiting for a response, and closing)
@@ -53,6 +55,28 @@ struct SystemAppBackgroundTaskInfo {
 // Used to manage a running periodic background task for a SWA.
 class SystemAppBackgroundTask {
  public:
+  enum TimerState {
+    INITIAL_WAIT = 0,
+    WAIT_PERIOD = 1,
+    WAIT_IDLE = 2,
+    INACTIVE = 3
+  };
+
+  // Wait for 2 minutes before starting background tasks. User login is busy,
+  // and this will give a little time to settle down. We could get even more
+  // sophisticated, and smear all the different start_immediately tasks across a
+  // couple minutes instead of setting their start timers to the same time.
+  static const int kInitialWaitForBackgroundTasksSeconds = 120;
+
+  // User idle for 2 minutes
+  static const int kIdleThresholdSeconds = 120;
+
+  // Else, poll every 30 seconds
+  static const int kIdlePollIntervalSeconds = 30;
+
+  // For up to an hour.
+  static const int kIdlePollMaxTimeToWaitSeconds = 3600;
+
   SystemAppBackgroundTask(Profile* profile,
                           const SystemAppBackgroundTaskInfo& info);
   ~SystemAppBackgroundTask();
@@ -70,12 +94,20 @@ class SystemAppBackgroundTask {
 
   GURL url_for_testing() const { return url_; }
 
-  base::TimeDelta period_for_testing() const { return period_; }
+  content::WebContents* web_contents_for_testing() const {
+    return web_contents_.get();
+  }
+
+  absl::optional<base::TimeDelta> period_for_testing() const { return period_; }
 
   unsigned long opened_count_for_testing() const { return opened_count_; }
 
   unsigned long timer_activated_count_for_testing() const {
     return timer_activated_count_;
+  }
+
+  base::Time polling_since_time_for_testing() const {
+    return polling_since_time_;
   }
 
   WebAppUrlLoader* UrlLoaderForTesting() { return web_app_url_loader_.get(); }
@@ -85,30 +117,44 @@ class SystemAppBackgroundTask {
     web_app_url_loader_ = std::move(loader);
   }
 
-  base::OneShotTimer* get_start_timer_for_testing() {
-    return start_immediately_timer_.get();
-  }
+  TimerState get_state_for_testing() const { return state_; }
 
-  base::RepeatingTimer* get_repeating_timer_for_testing() {
-    return timer_.get();
-  }
+  base::OneShotTimer* get_timer_for_testing() { return timer_.get(); }
 
  private:
-  void NavigateTimerBackgroundPage();
+  // A delegate to reset the WebContents owned by this background task and free
+  // up the resources. Called when the page calls window.close() to exit.
+  class CloseDelegate : public content::WebContentsDelegate {
+   public:
+    explicit CloseDelegate(SystemAppBackgroundTask* task) : task_(task) {}
+    void CloseContents(content::WebContents* contents) override;
+
+   private:
+    SystemAppBackgroundTask* task_;
+  };
+  // A state machine to either poll and fail, stop polling and succeed, or stop
+  // polling and fail
+  void MaybeOpenPage();
+
+  void NavigateBackgroundPage();
   void OnLoaderReady(WebAppUrlLoader::Result);
   void OnPageReady(WebAppUrlLoader::Result);
+
+  void CloseWebContents(content::WebContents* contents);
 
   Profile* profile_;
   SystemAppType app_type_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<WebAppUrlLoader> web_app_url_loader_;
-  std::unique_ptr<base::RepeatingTimer> timer_;
-  std::unique_ptr<base::OneShotTimer> start_immediately_timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
+  TimerState state_;
   GURL url_;
-  base::TimeDelta period_;
+  absl::optional<base::TimeDelta> period_;
   unsigned long opened_count_;
   unsigned long timer_activated_count_;
   bool open_immediately_;
+  base::Time polling_since_time_;
+  CloseDelegate delegate_;
 
   base::WeakPtrFactory<SystemAppBackgroundTask> weak_ptr_factory_{this};
 };

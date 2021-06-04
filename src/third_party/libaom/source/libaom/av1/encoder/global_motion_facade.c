@@ -108,10 +108,10 @@ static AOM_INLINE void compute_global_motion_for_ref_frame(
   const int do_adaptive_gm_estimation = 0;
 
   const int ref_frame_dist = get_relative_dist(
-      &cm->seq_params.order_hint_info, cm->current_frame.order_hint,
+      &cm->seq_params->order_hint_info, cm->current_frame.order_hint,
       cm->cur_frame->ref_order_hints[frame - LAST_FRAME]);
   const GlobalMotionEstimationType gm_estimation_type =
-      cm->seq_params.order_hint_info.enable_order_hint &&
+      cm->seq_params->order_hint_info.enable_order_hint &&
               abs(ref_frame_dist) <= 2 && do_adaptive_gm_estimation
           ? GLOBAL_MOTION_DISFLOW_BASED
           : GLOBAL_MOTION_FEATURE_BASED;
@@ -126,7 +126,7 @@ static AOM_INLINE void compute_global_motion_for_ref_frame(
 
     av1_compute_global_motion(model, src_buffer, src_width, src_height,
                               src_stride, src_corners, num_src_corners,
-                              ref_buf[frame], cpi->common.seq_params.bit_depth,
+                              ref_buf[frame], cpi->common.seq_params->bit_depth,
                               gm_estimation_type, inliers_by_motion,
                               params_by_motion, RANSAC_NUM_MOTIONS);
     int64_t ref_frame_error = 0;
@@ -284,7 +284,7 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
   AV1_COMMON *const cm = &cpi->common;
   int *num_past_ref_frames = &num_ref_frames[0];
   int *num_future_ref_frames = &num_ref_frames[1];
-  const GF_GROUP *gf_group = &cpi->gf_group;
+  const GF_GROUP *gf_group = &cpi->ppi->gf_group;
   int ref_pruning_enabled = is_frame_eligible_for_ref_pruning(
       gf_group, cpi->sf.inter_sf.selective_ref_frame, 1, cpi->gf_frame_index);
 
@@ -368,7 +368,7 @@ static AOM_INLINE void setup_global_motion_info_params(AV1_COMP *cpi) {
     // The source buffer is 16-bit, so we need to convert to 8 bits for the
     // following code. We cache the result until the source frame is released.
     gm_info->src_buffer =
-        av1_downconvert_frame(source, cpi->common.seq_params.bit_depth);
+        av1_downconvert_frame(source, cpi->common.seq_params->bit_depth);
   }
 
   gm_info->segment_map_w =

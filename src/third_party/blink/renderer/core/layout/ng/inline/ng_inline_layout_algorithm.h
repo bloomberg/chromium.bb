@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_LAYOUT_ALGORITHM_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
@@ -114,7 +115,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                        const NGLineInfo&);
 
   LayoutUnit ApplyTextAlign(NGLineInfo*);
-  base::Optional<LayoutUnit> ApplyJustify(LayoutUnit space, NGLineInfo*);
+  absl::optional<LayoutUnit> ApplyJustify(LayoutUnit space, NGLineInfo*);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
                                 const NGExclusionSpace&,

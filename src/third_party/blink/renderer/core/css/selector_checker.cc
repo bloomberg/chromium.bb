@@ -956,8 +956,18 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
+    case CSSSelector::kPseudoPaused: {
+      DCHECK(RuntimeEnabledFeatures::CSSPseudoPlayingPausedEnabled());
+      auto* media_element = DynamicTo<HTMLMediaElement>(element);
+      return media_element && media_element->paused();
+    }
     case CSSSelector::kPseudoPictureInPicture:
       return PictureInPictureController::IsElementInPictureInPicture(&element);
+    case CSSSelector::kPseudoPlaying: {
+      DCHECK(RuntimeEnabledFeatures::CSSPseudoPlayingPausedEnabled());
+      auto* media_element = DynamicTo<HTMLMediaElement>(element);
+      return media_element && !media_element->paused();
+    }
     case CSSSelector::kPseudoVideoPersistent: {
       DCHECK(is_ua_rule_);
       auto* video_element = DynamicTo<HTMLVideoElement>(element);
@@ -1120,6 +1130,11 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       if (MatchSelector(sub_context, sub_result) != kSelectorMatches)
         return false;
       return true;
+    }
+    case CSSSelector::kPseudoHighlight: {
+      const AtomicString& highlight_name = selector.Argument();
+      result.dynamic_pseudo = PseudoId::kPseudoIdHighlight;
+      return highlight_name == pseudo_argument_;
     }
     case CSSSelector::kPseudoTargetText:
       if (!is_ua_rule_) {

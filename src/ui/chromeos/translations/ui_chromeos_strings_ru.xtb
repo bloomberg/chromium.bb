@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Ползунок воспроизведения</translation>
 <translation id="1404323374378969387">Норвежский</translation>
 <translation id="1430915738399379752">Печать</translation>
+<translation id="1433628812591023318">Чтобы загрузить файлы в Parallels Desktop, переместите их в папку "Файлы Windows".</translation>
 <translation id="1435838927755162558">Предоставление Parallels Desktop доступа к папке</translation>
 <translation id="1467432559032391204">Слева</translation>
 <translation id="1471718551822868769">Словацкий</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Файлы Windows</translation>
 <translation id="3078461028045006476">Поделиться с помощью приложения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3083975830683400843">Устройства Chromebit</translation>
+<translation id="3113153474486991170">Не удалось открыть "<ph name="PATH" />" из этого каталога. Чтобы открыть объект, скопируйте его в каталог "Мои файлы".</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ГОТОВО</translation>
 <translation id="3188257591659621405">Мои файлы</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Болгарский, фонетическая раскладка</translation>
 <translation id="5605830556594064952">США (раскладка Дворака)</translation>
 <translation id="5625294776298156701">Тамильский, раскладка Tamil99</translation>
+<translation id="5633226425545095130">Если вы переместите этот объект, то его увидят все пользователи, у которых есть доступ к общей папке "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Прослушать</translation>
 <translation id="5678784840044122290">Приложение Linux будет доступно в терминале. Кроме того, на панель запуска мог быть добавлен значок.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Не удалось отключиться от архива или электронного диска<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Эфиопская раскладка</translation>
 <translation id="7417705661718309329">Карта Google</translation>
 <translation id="7460898608667578234">Украинский</translation>
+<translation id="7486315294984620427">Чтобы загрузить файлы в Parallels Desktop, скопируйте их в папку "Файлы Windows".</translation>
 <translation id="7489215562877293245">Обнаружены файлы (<ph name="FILE_COUNT" />).
     <ph name="LINE_BREAK1" />
     Файлы готовы к сохранению на <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" />.</translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Размеры</translation>
 <translation id="8437209419043462667">США</translation>
 <translation id="8456681095658380701">Недопустимое название</translation>
+<translation id="8459404855768962328">Если вы скопируете этот объект, то его увидят все пользователи, у которых есть доступ к общей папке "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Нажмите на файл правой кнопкой мыши и выберите "Закрепить на панели запуска".</translation>
 <translation id="8463494891489624050">Вьетнамский, раскладка VIQR</translation>
 <translation id="8466234950814670489">Архив TAR</translation>

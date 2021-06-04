@@ -55,7 +55,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
         all_data_(all_data),
         callback_(std::move(callback)),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
-        remover_(content::BrowserContext::GetBrowsingDataRemover(profile)) {
+        remover_(profile->GetBrowsingDataRemover()) {
     remover_->AddObserver(this);
 
     if (all_data) {
@@ -184,7 +184,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
     const CoreAccountInfo& account,
     RegisterPolicyWithAccountCallback callback) {
   if (!ShouldLoadPolicyForUser(account.email)) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -193,7 +193,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
       base::BindOnce(
           [](RegisterPolicyWithAccountCallback callback,
              const std::string& dm_token, const std::string& client_id) {
-            base::Optional<ManagementCredentials> credentials;
+            absl::optional<ManagementCredentials> credentials;
             if (!dm_token.empty()) {
               credentials.emplace(dm_token, client_id);
             }
@@ -220,7 +220,7 @@ void SigninManagerAndroid::FetchAndApplyCloudPolicy(
 void SigninManagerAndroid::OnPolicyRegisterDone(
     const CoreAccountInfo& account,
     base::OnceCallback<void()> policy_callback,
-    const base::Optional<ManagementCredentials>& credentials) {
+    const absl::optional<ManagementCredentials>& credentials) {
   if (credentials) {
     FetchPolicyBeforeSignIn(account, std::move(policy_callback),
                             credentials.value());
@@ -235,7 +235,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     base::OnceCallback<void()> policy_callback,
     const ManagementCredentials& credentials) {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess();
   user_policy_signin_service_->FetchPolicyForSignedInUser(
       AccountIdFromAccountInfo(account), credentials.dm_token,
@@ -256,7 +256,7 @@ void SigninManagerAndroid::IsAccountManaged(
       account,
       base::BindOnce(
           [](base::android::ScopedJavaGlobalRef<jobject> callback,
-             const base::Optional<ManagementCredentials>& credentials) {
+             const absl::optional<ManagementCredentials>& credentials) {
             base::android::RunBooleanCallbackAndroid(callback,
                                                      credentials.has_value());
           },
@@ -275,13 +275,6 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env) {
   }
 
   return domain;
-}
-
-void SigninManagerAndroid::
-    LogOutAllAccountsForMobileIdentityConsistencyRollback(JNIEnv* env) {
-  identity_manager_->GetAccountsCookieMutator()->LogOutAllAccounts(
-      gaia::GaiaSource::kAccountReconcilorMirror,
-      base::DoNothing::Once<const GoogleServiceAuthError&>());
 }
 
 void SigninManagerAndroid::WipeProfileData(

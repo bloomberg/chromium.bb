@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
@@ -79,7 +78,7 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
     receiver_.set_disconnect_handler(
         base::BindOnce(&DnsLookupClient::OnComplete, base::Unretained(this),
                        net::ERR_NAME_NOT_RESOLVED,
-                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
+                       net::ResolveErrorInfo(net::ERR_FAILED), absl::nullopt));
   }
   ~DnsLookupClient() override {}
 
@@ -87,7 +86,7 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
   void OnComplete(
       int32_t error,
       const net::ResolveErrorInfo& resolve_error_info,
-      const base::Optional<net::AddressList>& resolved_addresses) override {
+      const absl::optional<net::AddressList>& resolved_addresses) override {
     std::string result;
     if (error == net::OK) {
       CHECK(resolved_addresses->size() == 1);
@@ -233,7 +232,9 @@ void NetInternalsTest::MessageHandler::DnsLookup(
   new DnsLookupClient(client.InitWithNewPipeAndPassReceiver(),
                       base::BindOnce(&MessageHandler::RunJavascriptCallback,
                                      weak_factory_.GetWeakPtr()));
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->ResolveHost(net::HostPortPair(hostname, 80), network_isolation_key_,
                     std::move(resolve_host_parameters), std::move(client));

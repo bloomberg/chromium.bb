@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import collections
 import contextlib
 import copy
@@ -16,6 +17,8 @@ import sys
 import tempfile
 import time
 
+from six.moves import range  # pylint: disable=redefined-builtin
+from six.moves import zip  # pylint: disable=redefined-builtin
 from devil import base_error
 from devil.android import apk_helper
 from devil.android import crash_handler
@@ -108,8 +111,10 @@ _DEVICE_GOLD_DIR = 'skia_gold'
 RENDER_TEST_MODEL_SDK_CONFIGS = {
     # Android x86 emulator.
     'Android SDK built for x86': [23],
+    'Pixel 2': [28],
 }
 
+_BATCH_SUFFIX = '_batch'
 _TEST_BATCH_MAX_GROUP_SIZE = 256
 
 
@@ -131,7 +136,7 @@ def DidPackageCrashOnDevice(package_name, device):
   # Dismiss any error dialogs. Limit the number in case we have an error
   # loop or we are failing to dismiss.
   try:
-    for _ in xrange(10):
+    for _ in range(10):
       package = device.DismissCrashDialogIfNeeded(timeout=10, retries=1)
       if not package:
         return False
@@ -559,8 +564,8 @@ class LocalDeviceInstrumentationTestRun(
       if not device.PathExists(coverage_directory):
         device.RunShellCommand(['mkdir', '-p', coverage_directory],
                                check_return=True)
-      coverage_device_file = os.path.join(coverage_directory, coverage_basename,
-                                          '.exec')
+      coverage_device_file = os.path.join(coverage_directory, coverage_basename)
+      coverage_device_file += '.exec'
       extras['coverageFile'] = coverage_device_file
     # Save screenshot if screenshot dir is specified (save locally) or if
     # a GS bucket is passed (save in cloud).
@@ -591,9 +596,10 @@ class LocalDeviceInstrumentationTestRun(
         i = self._GetTimeoutFromAnnotations(t['annotations'], n)
         return (n, i)
 
-      test_names, timeouts = zip(*(name_and_timeout(t) for t in test))
+      test_names, timeouts = list(zip(*(name_and_timeout(t) for t in test)))
 
-      test_name = instrumentation_test_instance.GetTestName(test[0]) + '_batch'
+      test_name = instrumentation_test_instance.GetTestName(
+          test[0]) + _BATCH_SUFFIX
       extras['class'] = ','.join(test_names)
       test_display_name = test_name
       timeout = min(MAX_BATCH_TEST_TIMEOUT,
@@ -860,7 +866,53 @@ class LocalDeviceInstrumentationTestRun(
           # We don't always detect crashes correctly. In this case,
           # associate with the first test.
           results[0].SetLink('tombstones', tombstone_file.Link())
-    return results, None
+
+    unknown_tests = set(r.GetName() for r in results
+                        if r.GetType() == base_test_result.ResultType.UNKNOWN)
+
+    # If a test that is batched crashes, the rest of the tests in that batch
+    # won't be ran and will have their status left as unknown in results,
+    # so rerun the tests. (see crbug/1127935)
+    # Need to "unbatch" the tests, so that on subsequent tries, the tests can
+    # get ran individually. This prevents an unrecognized crash from preventing
+    # the tests in the batch from being ran. Running the test as unbatched does
+    # not happen until a retry happens at the local_device_test_run/environment
+    # level.
+    tests_to_rerun = []
+    for t in iterable_test:
+      if self._GetUniqueTestName(t) in unknown_tests:
+        prior_attempts = t.get('run_attempts', 0)
+        t['run_attempts'] = prior_attempts + 1
+        # It's possible every test in the batch could crash, so need to
+        # try up to as many times as tests that there are.
+        if prior_attempts < len(results):
+          if t['annotations']:
+            t['annotations'].pop('Batch', None)
+          tests_to_rerun.append(t)
+
+    # If we have a crash that isn't recognized as a crash in a batch, the tests
+    # will be marked as unknown. Sometimes a test failure causes a crash, but
+    # the crash isn't recorded because the failure was detected first.
+    # When the UNKNOWN tests are reran while unbatched and pass,
+    # they'll have an UNKNOWN, PASS status, so will be improperly marked as
+    # flaky, so change status to NOTRUN and don't try rerunning. They will
+    # get rerun individually at the local_device_test_run/environment level.
+    # as the "Batch" annotation was removed.
+    found_crash_or_fail = False
+    for r in results:
+      if (r.GetType() == base_test_result.ResultType.CRASH
+          or r.GetType() == base_test_result.ResultType.FAIL):
+        found_crash_or_fail = True
+        break
+    if not found_crash_or_fail:
+      # Don't bother rerunning since the unrecognized crashes in
+      # the batch will keep failing.
+      tests_to_rerun = None
+      for r in results:
+        if r.GetType() == base_test_result.ResultType.UNKNOWN:
+          r.SetType(base_test_result.ResultType.NOTRUN)
+
+    return results, tests_to_rerun if tests_to_rerun else None
 
   def _GetTestsFromRunner(self):
     test_apk_path = self._test_instance.test_apk.path
@@ -934,9 +986,9 @@ class LocalDeviceInstrumentationTestRun(
 
   @contextlib.contextmanager
   def _ArchiveLogcat(self, device, test_name):
-    stream_name = 'logcat_%s_%s_%s' % (test_name.replace(
-        '#', '.'), time.strftime('%Y%m%dT%H%M%S-UTC',
-                                 time.gmtime()), device.serial)
+    stream_name = 'logcat_%s_shard%s_%s_%s' % (
+        test_name.replace('#', '.'), self._test_instance.external_shard_index,
+        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()), device.serial)
 
     logcat_file = None
     logmon = None
@@ -1077,10 +1129,6 @@ class LocalDeviceInstrumentationTestRun(
         # that implies that we aren't actively maintaining baselines for the
         # test. This helps prevent unrelated CLs from getting comments posted to
         # them.
-        # Additionally, add the ignore if we're running on a trybot and this is
-        # not our final retry attempt in order to prevent unrelated CLs from
-        # getting spammed if a test is flaky.
-        optional_keys = {}
         should_rewrite = False
         with open(json_path) as infile:
           # All the key/value pairs in the JSON file are strings, so convert
@@ -1097,27 +1145,21 @@ class LocalDeviceInstrumentationTestRun(
           if 'full_test_name' in json_dict:
             should_rewrite = True
             del json_dict['full_test_name']
-        if should_rewrite:
-          with open(json_path, 'w') as outfile:
-            json.dump(json_dict, outfile)
+
         running_on_unsupported = (
             device.build_version_sdk not in RENDER_TEST_MODEL_SDK_CONFIGS.get(
                 device.product_model, []) and not fail_on_unsupported)
-        # TODO(skbug.com/10787): Remove the ignore on non-final retry once we
-        # fully switch over to using the Gerrit plugin for surfacing Gold
-        # information since it does not spam people with emails due to automated
-        # comments.
-        not_final_retry = self._env.current_try + 1 != self._env.max_tries
-        tryjob_but_not_final_retry =\
-            not_final_retry and gold_properties.IsTryjobRun()
-        should_ignore_in_gold =\
-            running_on_unsupported or tryjob_but_not_final_retry
+        should_ignore_in_gold = running_on_unsupported
         # We still want to fail the test even if we're ignoring the image in
         # Gold if we're running on a supported configuration, so
         # should_ignore_in_gold != should_hide_failure.
         should_hide_failure = running_on_unsupported
         if should_ignore_in_gold:
-          optional_keys['ignore'] = '1'
+          should_rewrite = True
+          json_dict['ignore'] = '1'
+        if should_rewrite:
+          with open(json_path, 'w') as outfile:
+            json.dump(json_dict, outfile)
 
         gold_session = self._skia_gold_session_manager.GetSkiaGoldSession(
             keys_input=json_path)
@@ -1127,8 +1169,7 @@ class LocalDeviceInstrumentationTestRun(
               name=render_name,
               png_file=image_path,
               output_manager=self._env.output_manager,
-              use_luci=use_luci,
-              optional_keys=optional_keys)
+              use_luci=use_luci)
         except Exception as e:  # pylint: disable=broad-except
           _FailTestIfNecessary(results, full_test_name)
           _AppendToLog(results, full_test_name,
@@ -1416,7 +1457,7 @@ def _ShouldReportNoMatchingResult(full_test_name):
     False if the failure to find a matching result is expected and should not
     be reported, otherwise True.
   """
-  if full_test_name is not None and full_test_name.endswith('_batch'):
+  if full_test_name is not None and full_test_name.endswith(_BATCH_SUFFIX):
     # Handle batched tests, whose reported name is the first test's name +
     # "_batch".
     return False

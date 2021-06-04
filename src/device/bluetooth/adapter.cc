@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
@@ -239,7 +240,7 @@ void Adapter::ConnectToServiceInsecurely(
   // to previously. Use the ConnectDevice() API, if available, to connect to it.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   adapter_->ConnectDevice(
-      address, /*address_type=*/base::nullopt,
+      address, /*address_type=*/absl::nullopt,
       base::BindOnce(&Adapter::OnDeviceFetchedForInsecureServiceConnection,
                      weak_ptr_factory_.GetWeakPtr(), request_id),
       base::BindOnce(&Adapter::OnConnectToServiceError,
@@ -511,7 +512,7 @@ void Adapter::OnConnectToServiceError(int request_id,
   ExecuteConnectToServiceCallback(request_id, /*result=*/nullptr);
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  base::Optional<ConnectToServiceInsecurelyResult> result =
+  absl::optional<ConnectToServiceInsecurelyResult> result =
       ExtractResultFromErrorString(message);
   if (result) {
     RecordConnectToServiceInsecurelyResult(*result);

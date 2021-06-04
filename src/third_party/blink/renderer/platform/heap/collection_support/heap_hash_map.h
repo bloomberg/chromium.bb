@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_HASH_MAP_H_
 
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -32,10 +32,9 @@ class HeapHashMap final : public GarbageCollected<HeapHashMap<KeyArg,
   DISALLOW_NEW();
 
  public:
-  HeapHashMap() = default;
+  HeapHashMap() { CheckType(); }
 
   void Trace(Visitor* visitor) const {
-    CheckType();
     HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg,
             HeapAllocator>::Trace(visitor);
   }

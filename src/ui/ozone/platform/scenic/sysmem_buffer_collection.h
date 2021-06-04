@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -60,7 +60,6 @@ class SysmemBufferCollection
                   gfx::BufferUsage usage,
                   VkDevice vk_device,
                   size_t min_buffer_count,
-                  bool force_protected,
                   bool register_with_image_pipe);
 
   // Must not be called more than once.
@@ -79,7 +78,7 @@ class SysmemBufferCollection
                      VkImageCreateInfo* vk_image_info,
                      VkDeviceMemory* vk_device_memory,
                      VkDeviceSize* mem_allocation_size,
-                     base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info);
+                     absl::optional<gpu::VulkanYCbCrInfo>* ycbcr_info);
 
   gfx::SysmemBufferCollectionId id() const { return id_; }
   size_t num_buffers() const { return buffers_info_.buffer_count; }

@@ -197,7 +197,7 @@ StructTraits<AssistantNotificationDataView, AssistantNotification>::
   return input.obfuscated_gaia_id;
 }
 
-const base::Optional<base::Time>&
+const absl::optional<base::Time>&
 StructTraits<AssistantNotificationDataView, AssistantNotification>::expiry_time(
     const AssistantNotification& input) {
   return input.expiry_time;
@@ -438,8 +438,6 @@ MojomQuerySource EnumTraits<MojomQuerySource, AssistantQuerySource>::ToMojom(
       return MojomType::kSuggestionChip;
     case NativeType::kVoiceInput:
       return MojomType::kVoiceInput;
-    case NativeType::kProactiveSuggestions:
-      return MojomType::kProactiveSuggestions;
     case NativeType::kLibAssistantInitiated:
       return MojomType::kLibAssistantInitiated;
     case NativeType::kConversationStarter:
@@ -476,9 +474,6 @@ bool EnumTraits<MojomQuerySource, AssistantQuerySource>::FromMojom(
       return true;
     case MojomType::kVoiceInput:
       *output = NativeType::kVoiceInput;
-      return true;
-    case MojomType::kProactiveSuggestions:
-      *output = NativeType::kProactiveSuggestions;
       return true;
     case MojomType::kLibAssistantInitiated:
       *output = NativeType::kLibAssistantInitiated;

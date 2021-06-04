@@ -18,6 +18,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -36,7 +37,7 @@ bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new SyncErrorInfoBarDelegate(browser_state, presenter));
   return !!infobar_manager->AddInfoBar(
-      infobar_manager->CreateConfirmInfoBar(std::move(delegate)));
+      CreateConfirmInfoBar(std::move(delegate)));
 }
 
 SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
@@ -92,7 +93,7 @@ gfx::Image SyncErrorInfoBarDelegate::GetIcon() const {
 }
 
 bool SyncErrorInfoBarDelegate::Accept() {
-  if (ShouldShowSyncSignin(error_state_)) {
+  if (error_state_ == SyncSetupService::kSyncServiceSignInNeedsUpdate) {
     [presenter_ showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(error_state_)) {
     if (signin::IsMobileIdentityConsistencyEnabled()) {
@@ -100,9 +101,10 @@ bool SyncErrorInfoBarDelegate::Accept() {
     } else {
       [presenter_ showGoogleServicesSettings];
     }
-  } else if (ShouldShowSyncPassphraseSettings(error_state_)) {
+  } else if (error_state_ == SyncSetupService::kSyncServiceNeedsPassphrase) {
     [presenter_ showSyncPassphraseSettings];
-  } else if (ShouldShowTrustedVaultReauthentication(error_state_)) {
+  } else if (error_state_ ==
+             SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
     [presenter_ showTrustedVaultReauthenticationWithRetrievalTrigger:
                     syncer::KeyRetrievalTriggerForUMA::kNewTabPageInfobar];
   }
@@ -128,9 +130,8 @@ void SyncErrorInfoBarDelegate::OnStateChanged(syncer::SyncService* sync) {
     if (infobar_manager) {
       std::unique_ptr<ConfirmInfoBarDelegate> new_infobar_delegate(
           new SyncErrorInfoBarDelegate(browser_state_, presenter_));
-      infobar_manager->ReplaceInfoBar(infobar,
-                                      infobar_manager->CreateConfirmInfoBar(
-                                          std::move(new_infobar_delegate)));
+      infobar_manager->ReplaceInfoBar(
+          infobar, CreateConfirmInfoBar(std::move(new_infobar_delegate)));
     }
   }
 }

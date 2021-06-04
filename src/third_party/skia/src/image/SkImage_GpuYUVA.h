@@ -23,8 +23,6 @@ class GrTexture;
 // proxy will be stored and used for any future rendering.
 class SkImage_GpuYUVA final : public SkImage_GpuBase {
 public:
-    friend class GrYUVAImageTextureMaker;
-
     SkImage_GpuYUVA(sk_sp<GrImageContext>,
                     uint32_t uniqueID,
                     GrYUVATextureProxies proxies,
@@ -34,11 +32,7 @@ public:
 
     GrSemaphoresSubmitted onFlush(GrDirectContext*, const GrFlushInfo&) override;
 
-    bool onIsTextureBacked() const override {
-        // We should have YUVA proxies or a RGBA proxy,but not both.
-        SkASSERT(fYUVAProxies.isValid() != SkToBool(fRGBView));
-        return true;
-    }
+    bool onIsTextureBacked() const override { return true; }
 
     size_t onTextureSize() const override;
 
@@ -47,17 +41,10 @@ public:
 
     sk_sp<SkImage> onReinterpretColorSpace(sk_sp<SkColorSpace>) const final;
 
+public:
     bool isYUVA() const override { return true; }
 
     bool setupMipmapsForPlanes(GrRecordingContext*) const;
-
-#if GR_TEST_UTILS
-    bool testingOnly_IsFlattened() const {
-        // We should only have the flattened proxy or the planar proxies at one point in time.
-        SkASSERT(SkToBool(fRGBView) != fYUVAProxies.isValid());
-        return SkToBool(fRGBView.proxy());
-    }
-#endif
 
 private:
     SkImage_GpuYUVA(sk_sp<GrImageContext>, const SkImage_GpuYUVA* image, sk_sp<SkColorSpace>);
@@ -66,14 +53,14 @@ private:
                                                          GrMipmapped,
                                                          GrImageTexGenPolicy) const override;
 
-    bool flattenToRGB(GrRecordingContext*, GrMipmapped) const;
+    std::unique_ptr<GrFragmentProcessor> onAsFragmentProcessor(GrRecordingContext*,
+                                                               SkSamplingOptions,
+                                                               const SkTileMode[],
+                                                               const SkMatrix&,
+                                                               const SkRect*,
+                                                               const SkRect*) const override;
 
     mutable GrYUVATextureProxies     fYUVAProxies;
-
-    // This is only allocated when the image needs to be flattened rather than
-    // using the separate YUVA planes. From thence forth we will only use the
-    // the RGBView.
-    mutable GrSurfaceProxyView       fRGBView;
 
     // If this is non-null then the planar data should be converted from fFromColorSpace to
     // this->colorSpace(). Otherwise we assume the planar data (post YUV->RGB conversion) is already

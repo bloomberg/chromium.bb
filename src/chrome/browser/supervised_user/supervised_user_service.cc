@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -264,11 +265,6 @@ std::u16string SupervisedUserService::GetExtensionsLockedMessage() const {
                                     base::UTF8ToUTF16(GetCustodianName()));
 }
 
-bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
-  return base::FeatureList::IsEnabled(
-      supervised_users::kSupervisedUserIframeFilter);
-}
-
 // static
 std::string SupervisedUserService::GetEduCoexistenceLoginUrl() {
   return base::FeatureList::IsEnabled(supervised_users::kEduCoexistenceFlowV2)
@@ -310,7 +306,7 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       denylist_state_(DenylistLoadState::NOT_LOADED) {
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
+  registry_observation_.Observe(extensions::ExtensionRegistry::Get(profile));
 #endif
 }
 
@@ -612,7 +608,7 @@ void SupervisedUserService::UpdateAsyncUrlChecker() {
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
       url_filter_.InitAsyncURLChecker(
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
+          profile_->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess());
     } else {
       url_filter_.ClearAsyncURLChecker();
@@ -676,13 +672,13 @@ void SupervisedUserService::OnDenylistFileChecked(const base::FilePath& path,
           }
         })");
 
-  auto factory = content::BrowserContext::GetDefaultStoragePartition(profile_)
+  auto factory = profile_->GetDefaultStoragePartition()
                      ->GetURLLoaderFactoryForBrowserProcess();
-  denylist_downloader_.reset(new FileDownloader(
+  denylist_downloader_ = std::make_unique<FileDownloader>(
       url, path, false, std::move(factory),
       base::BindOnce(&SupervisedUserService::OnDenylistDownloadDone,
                      base::Unretained(this), path),
-      traffic_annotation));
+      traffic_annotation);
 }
 
 void SupervisedUserService::LoadDenylistFromFile(const base::FilePath& path) {
@@ -723,10 +719,8 @@ void SupervisedUserService::UpdateManualHosts() {
       profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
   std::map<std::string, bool> host_map;
   for (auto it : dict->DictItems()) {
-    bool allow = false;
-    bool result = it.second.GetAsBoolean(&allow);
-    DCHECK(result);
-    host_map[it.first] = allow;
+    DCHECK(it.second.is_bool());
+    host_map[it.first] = it.second.GetIfBool().value_or(false);
   }
   url_filter_.SetManualHosts(std::move(host_map));
 
@@ -739,10 +733,8 @@ void SupervisedUserService::UpdateManualURLs() {
       profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
   std::map<GURL, bool> url_map;
   for (auto it : dict->DictItems()) {
-    bool allow = false;
-    bool result = it.second.GetAsBoolean(&allow);
-    DCHECK(result);
-    url_map[GURL(it.first)] = allow;
+    DCHECK(it.second.is_bool());
+    url_map[GURL(it.first)] = it.second.GetIfBool().value_or(false);
   }
   url_filter_.SetManualURLs(std::move(url_map));
 
@@ -1000,7 +992,7 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-bool SupervisedUserService::IsEncryptEverythingAllowed() const {
+bool SupervisedUserService::IsCustomPassphraseAllowed() const {
   return !active_;
 }
 

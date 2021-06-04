@@ -10,8 +10,8 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -149,6 +149,10 @@ bool FindExactlyOneInnerImageInMaxDepthThree(WebAXObject obj,
   return SearchForExactlyOneInnerImage(obj, inner_image, /* max_depth = */ 3);
 }
 
+// Ignore code that limits based on the protocol (like https, file, etc.)
+// to enable tests to run.
+bool g_ignore_protocol_checks_for_testing;
+
 }  // namespace
 
 ScopedFreezeBlinkAXTreeSource::ScopedFreezeBlinkAXTreeSource(
@@ -193,6 +197,9 @@ void BlinkAXTreeSource::Freeze() {
 void BlinkAXTreeSource::Thaw() {
   CHECK(frozen_);
   WebAXObject::Thaw(document_);
+  document_ = WebDocument();
+  focus_ = WebAXObject();
+  root_ = WebAXObject();
   frozen_ = false;
 }
 
@@ -276,7 +283,7 @@ void BlinkAXTreeSource::PopulateAXRelativeBounds(WebAXObject obj,
     bounds->offset_container_id = offset_container.AxID();
 
   if (content::AXShouldIncludePageScaleFactorInRoot() && obj.Equals(root())) {
-    const WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+    const WebView* web_view = render_frame_->GetWebView();
     std::unique_ptr<gfx::Transform> container_transform =
         std::make_unique<gfx::Transform>(web_container_transform);
     container_transform->Scale(web_view->PageScaleFactor(),
@@ -521,10 +528,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (!node.IsNull() && node.IsElementNode()) {
     WebElement element = node.To<WebElement>();
     is_iframe = element.HasHTMLTagName("iframe");
-
-    // Presence of other ARIA attributes.
-    if (src.HasAriaAttribute())
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
   }
 
   if (dst->id == image_data_node_id_) {
@@ -817,6 +820,11 @@ blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
   return document_;
 }
 
+// static
+void BlinkAXTreeSource::IgnoreProtocolChecksForTesting() {
+  g_ignore_protocol_checks_for_testing = true;
+}
+
 WebAXObject BlinkAXTreeSource::ComputeRoot() const {
   if (!explicit_root_.IsNull())
     return explicit_root_;
@@ -926,9 +934,10 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
   }
 
   // Skip images in documents which are not http, https, file and data schemes.
-  GURL gurl = document().Url();
-  if (!(gurl.SchemeIsHTTPOrHTTPS() || gurl.SchemeIsFile() ||
-        gurl.SchemeIs(url::kDataScheme))) {
+  blink::WebString protocol = document().GetSecurityOrigin().Protocol();
+  if (!g_ignore_protocol_checks_for_testing && protocol != url::kHttpScheme &&
+      protocol != url::kHttpsScheme && protocol != url::kFileScheme &&
+      protocol != url::kDataScheme) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme);
     return;

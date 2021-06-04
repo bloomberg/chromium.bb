@@ -5,6 +5,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -471,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
   EXPECT_EQ(view_source_url, view_source_contents->GetLastCommittedURL());
 
   // Verify the request for the view-source tab had the correct IsolationInfo.
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       loader_monitor.GetRequestInfo(url);
   ASSERT_TRUE(request);
   ASSERT_TRUE(request->trusted_params);

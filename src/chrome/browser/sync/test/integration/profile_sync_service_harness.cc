@@ -278,7 +278,7 @@ bool ProfileSyncServiceHarness::SetupSync() {
 bool ProfileSyncServiceHarness::SetupSyncNoWaitForCompletion(
     syncer::UserSelectableTypeSet selected_types) {
   return SetupSyncImpl(selected_types, EncryptionSetupMode::kNoEncryption,
-                       /*encryption_passphrase=*/base::nullopt);
+                       /*encryption_passphrase=*/absl::nullopt);
 }
 
 bool ProfileSyncServiceHarness::
@@ -300,7 +300,7 @@ bool ProfileSyncServiceHarness::
 bool ProfileSyncServiceHarness::SetupSyncImpl(
     syncer::UserSelectableTypeSet selected_types,
     EncryptionSetupMode encryption_mode,
-    const base::Optional<std::string>& passphrase) {
+    const absl::optional<std::string>& passphrase) {
   DCHECK(encryption_mode == EncryptionSetupMode::kNoEncryption ||
          passphrase.has_value());
 
@@ -376,7 +376,7 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   }
   DVLOG(1) << "Engine Initialized successfully.";
 
-  if (service()->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+  if (service()->GetUserSettings()->IsUsingExplicitPassphrase()) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
                   " until SetDecryptionPassphrase is called.";
     return false;

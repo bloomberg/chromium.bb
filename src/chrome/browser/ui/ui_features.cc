@@ -30,14 +30,23 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables an extension menu in the toolbar. See https://crbug.com/943702
-const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables the hosting of an extension in the left aligned side panel of the
+// browser window. Currently used for a hosted extension experiment.
+const base::Feature kExtensionsSidePanel{"ExtensionsSidePanel",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<std::string> kExtensionsSidePanelId{
+    &kExtensionsSidePanel, "ExtensionsSidePanelId", ""};
+
+// Enables the reauth flow for authenticated profiles with invalid credentials
+// when the force sign-in policy is enabled.
+const base::Feature kForceSignInReauth{"ForceSignInReauth",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the new profile picker.
 // https:://crbug.com/1063856
 const base::Feature kNewProfilePicker{"NewProfilePicker",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables updated tabstrip animations, required for a scrollable tabstrip.
 // https://crbug.com/958173
@@ -64,12 +73,15 @@ const char kMinimumTabWidthFeatureParameterName[] = "minTabWidth";
 const base::Feature kScrollableTabStripButtons{
     "ScrollableTabStripButtons", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(ANDROID)
+// Changes the layout of the chrome://settings page to only show one section at
+// a time, crbug.com/1204457.
+const base::Feature kSettingsLandingPageRedesign{
+    "SettingsLandingPageRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Hosts some content in a side panel. https://crbug.com/1149995
 const base::Feature kSidePanel{"SidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Displays a prototype of the side panel. https://crbug.com/1181931
-const base::Feature kSidePanelPrototype{"SidePanelPrototype",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Updated managed profile sign-in popup. https://crbug.com/1141224
 const base::Feature kSyncConfirmationUpdatedText{
@@ -166,10 +178,8 @@ const base::FeatureParam<int> kTabSearchRecentlyClosedMaxEntries{
 const base::Feature kToolbarUseHardwareBitmapDraw{
     "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a web-based separator that's only used for performance testing. See
-// https://crbug.com/993502.
-const base::Feature kWebFooterExperiment{"WebFooterExperiment",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseRelaunchToUpdateString{
+    "UseRelaunchToUpdateString", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This enables enables persistence of a WebContents in a 1-to-1 association
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
@@ -186,6 +196,11 @@ const base::Feature kWebUIDownloadShelf{"WebUIDownloadShelf",
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether the new tab button is in the tab strip or the toolbar when WebUI tab
+// strip is enabled.
+const base::Feature kWebUITabStripNewTabButtonInTabStrip{
+    "WebUITabStripNewTabButtonInTabStrip", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a WebUI Feedback UI, as opposed to the Chrome App UI. See
 // https://crbug.com/1167223.
 const base::Feature kWebUIFeedback{"WebUIFeedback",
@@ -197,5 +212,13 @@ const base::Feature kWebUIFeedback{"WebUIFeedback",
 const base::Feature kHiddenNetworkWarning{"HiddenNetworkWarning",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_MAC)
+const base::Feature kViewsFirstRunDialog{"ViewsFirstRunDialog",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kViewsTaskManager{"ViewsTaskManager",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features

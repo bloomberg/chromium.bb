@@ -78,8 +78,9 @@ def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name,
 
   if should_check_owner_email and not _IsValidPrimaryOwnerEmail(owner_tag_text):
     raise Error(
-        'The histogram {} must have a valid primary owner, i.e. a '
-        'Googler with an @google.com or @chromium.org email address.'.format(
+        'The histogram {} must have a valid primary owner, i.e. a Googler '
+        'with an @google.com or @chromium.org email address. Please '
+        'manually update the histogram with a valid primary owner.'.format(
             histogram_name))
 
   return is_email or is_placeholder
@@ -252,11 +253,14 @@ def _ExtractComponentViaDirmd(path):
     dirmd_exe = 'dirmd.bat'
   dirmd_path = os.path.join(*(DIR_ABOVE_TOOLS +
                               ['third_party', 'depot_tools', dirmd_exe]))
-  dirmd = subprocess.Popen([dirmd_path, 'compute', '--root', root_path, path],
-                           stdout=subprocess.PIPE)
+  dirmd_command = [dirmd_path, 'compute', '--root', root_path, path]
+  dirmd = subprocess.Popen(dirmd_command, stdout=subprocess.PIPE)
   if dirmd.wait() != 0:
     raise Error('dirmd failed.')
   json_out = json.load(dirmd.stdout)
+  # On Windows, dirmd output still uses Unix path separators.
+  if sys.platform == 'win32':
+    subpath = subpath.replace('\\', '/')
   return _ComponentFromDirmd(json_out, subpath)
 
 

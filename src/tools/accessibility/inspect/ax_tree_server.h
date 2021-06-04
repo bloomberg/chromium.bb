@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/platform/inspect/ax_tree_formatter.h"
 
 #if defined(OS_WIN)
@@ -32,7 +33,7 @@ class AXTreeServer final {
   void Run(BuildTree build_tree, const base::FilePath& filters_path);
 
   // Generates property filters.
-  std::vector<ui::AXPropertyFilter> GetPropertyFilters(
+  absl::optional<std::vector<ui::AXPropertyFilter>> GetPropertyFilters(
       const base::FilePath& filters_path);
 
 #if defined(OS_WIN)

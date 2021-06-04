@@ -131,7 +131,8 @@ ClientGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    gpu::SurfaceHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle,
+    base::WaitableEvent* shutdown_event) {
   // Note: this can be called from multiple threads at the same time. Some of
   // those threads may not have a TaskRunner set.
   DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle);
@@ -176,6 +177,15 @@ void ClientGpuMemoryBufferManager::CopyGpuMemoryBufferAsync(
     gfx::GpuMemoryBufferHandle buffer_handle,
     base::UnsafeSharedMemoryRegion memory_region,
     base::OnceCallback<void(bool)> callback) {
+  if (!thread_.task_runner()->BelongsToCurrentThread()) {
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ClientGpuMemoryBufferManager::CopyGpuMemoryBufferAsync,
+                       base::Unretained(this), std::move(buffer_handle),
+                       std::move(memory_region), std::move(callback)));
+    return;
+  }
+
   gpu_->CopyGpuMemoryBuffer(std::move(buffer_handle), std::move(memory_region),
                             std::move(callback));
 }

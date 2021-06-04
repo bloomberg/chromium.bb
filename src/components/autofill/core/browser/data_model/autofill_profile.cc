@@ -269,6 +269,8 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   if (this == &profile)
     return *this;
 
+  set_disallow_settings_visible_updates(
+      profile.disallow_settings_visible_updates());
   set_use_count(profile.use_count());
   set_use_date(profile.use_date());
   set_previous_use_date(profile.previous_use_date());
@@ -276,6 +278,8 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   set_guid(profile.guid());
   set_origin(profile.origin());
+
+  set_profile_label(profile.profile_label());
 
   record_type_ = profile.record_type_;
 
@@ -691,7 +695,11 @@ bool AutofillProfile::MergeStructuredDataFrom(const AutofillProfile& profile,
 bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
                                     const std::string& app_locale) {
   // Verified profiles should never be overwritten with unverified data.
-  DCHECK(!IsVerified() || profile.IsVerified());
+  // This is not true anymore when explicit save prompts are used.
+  DCHECK(!IsVerified() || profile.IsVerified() ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillAddressProfileSavePrompt));
+
   AutofillProfileComparator comparator(app_locale);
   DCHECK(comparator.AreMergeable(*this, profile));
 
@@ -956,6 +964,12 @@ void AutofillProfile::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
                             (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
+  LogVerificationStatuses();
+}
+
+void AutofillProfile::LogVerificationStatuses() {
+  AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(*this);
+  AutofillMetrics::LogVerificationStatusOfAddressTokensOnProfileUsage(*this);
 }
 
 bool AutofillProfile::HasGreaterFrescocencyThan(
@@ -1314,7 +1328,10 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
   return origin() == profile.origin() &&
-         language_code() == profile.language_code() && Compare(profile) == 0;
+         disallow_settings_visible_updates() ==
+             profile.disallow_settings_visible_updates() &&
+         language_code() == profile.language_code() &&
+         profile_label() == profile.profile_label() && Compare(profile) == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
@@ -1323,6 +1340,7 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
              : base::HexEncode(profile.server_id().data(),
                                profile.server_id().size()))
      << " " << profile.origin() << " "
+     << "label: " << profile.profile_label() << " "
      << profile.GetClientValidityBitfieldValue() << " "
      << profile.has_converted() << " " << profile.use_count() << " "
      << profile.use_date() << " " << profile.language_code() << std::endl;

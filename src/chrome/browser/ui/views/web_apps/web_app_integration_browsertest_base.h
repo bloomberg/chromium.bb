@@ -102,16 +102,16 @@ class WebAppIntegrationBrowserTestBase {
   explicit WebAppIntegrationBrowserTestBase(TestDelegate* delegate);
   ~WebAppIntegrationBrowserTestBase();
 
-  static base::Optional<ProfileState> GetStateForProfile(
+  static absl::optional<ProfileState> GetStateForProfile(
       StateSnapshot* state_snapshot,
       Profile* profile);
-  static base::Optional<BrowserState> GetStateForBrowser(
+  static absl::optional<BrowserState> GetStateForBrowser(
       StateSnapshot* state_snapshot,
       Profile* profile,
       Browser* browser);
-  static base::Optional<TabState> GetStateForActiveTab(
+  static absl::optional<TabState> GetStateForActiveTab(
       BrowserState browser_state);
-  static base::Optional<AppState> GetStateForAppId(
+  static absl::optional<AppState> GetStateForAppId(
       StateSnapshot* state_snapshot,
       Profile* profile,
       web_app::AppId id);
@@ -122,7 +122,7 @@ class WebAppIntegrationBrowserTestBase {
   //  * site_a/bar
   //  * site_b
   //  * site_c
-  base::Optional<AppState> GetAppByScope(StateSnapshot* state_snapshot,
+  absl::optional<AppState> GetAppByScope(StateSnapshot* state_snapshot,
                                          Profile* profile,
                                          const std::string& scope);
 
@@ -150,7 +150,8 @@ class WebAppIntegrationBrowserTestBase {
 
   // Automated Testing Actions
   void AddPolicyAppInternal(const std::string& action_param,
-                            base::Value default_launch_container);
+                            base::Value default_launch_container,
+                            const bool create_shortcut);
   void ClosePWA();
   void InstallCreateShortcut(bool open_in_window);
   void InstallLocally();
@@ -186,6 +187,8 @@ class WebAppIntegrationBrowserTestBase {
   void AssertWindowDisplayMode(blink::mojom::DisplayMode display_mode);
 
   // Helpers
+  std::string BuildLogForTest(const std::vector<std::string>& testing_actions,
+                              bool is_sync_test);
   std::vector<std::string>& testing_actions() { return testing_actions_; }
   std::vector<AppId> GetAppIdsForProfile(Profile* profile);
 

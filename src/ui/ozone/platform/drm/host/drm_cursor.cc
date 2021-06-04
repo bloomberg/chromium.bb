@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
@@ -71,25 +72,22 @@ void DrmCursor::ResetDrmCursorProxy() {
 }
 
 gfx::Point DrmCursor::GetBitmapLocationLocked() {
-  return gfx::ToFlooredPoint(location_) - bitmap_->hotspot().OffsetFromOrigin();
+  return gfx::ToFlooredPoint(location_) - cursor_->hotspot().OffsetFromOrigin();
 }
 
 void DrmCursor::SetCursor(gfx::AcceleratedWidget window,
-                          PlatformCursor platform_cursor) {
+                          scoped_refptr<BitmapCursorOzone> platform_cursor) {
   TRACE_EVENT0("drmcursor", "DrmCursor::SetCursor");
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(window, gfx::kNullAcceleratedWidget);
   DCHECK(platform_cursor);
 
-  scoped_refptr<BitmapCursorOzone> bitmap =
-      BitmapCursorFactoryOzone::GetBitmapCursor(platform_cursor);
-
   base::AutoLock lock(lock_);
 
-  if (window_ != window || bitmap_ == bitmap)
+  if (window_ != window || cursor_ == platform_cursor)
     return;
 
-  bitmap_ = bitmap;
+  cursor_ = platform_cursor;
 
   SendCursorShowLocked();
 }
@@ -211,7 +209,7 @@ void DrmCursor::MoveCursor(const gfx::Vector2dF& delta) {
 
 bool DrmCursor::IsCursorVisible() {
   base::AutoLock lock(lock_);
-  return bitmap_ != nullptr && bitmap_->type() != CursorType::kNone;
+  return cursor_ != nullptr && cursor_->type() != CursorType::kNone;
 }
 
 gfx::PointF DrmCursor::GetLocation() {
@@ -244,13 +242,13 @@ void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {
 }
 
 void DrmCursor::SendCursorShowLocked() {
-  if (!bitmap_ || bitmap_->type() == CursorType::kNone) {
+  if (!cursor_ || cursor_->type() == CursorType::kNone) {
     SendCursorHideLocked();
     return;
   }
 
-  CursorSetLockTested(window_, bitmap_->bitmaps(), GetBitmapLocationLocked(),
-                      bitmap_->frame_delay());
+  CursorSetLockTested(window_, cursor_->bitmaps(), GetBitmapLocationLocked(),
+                      cursor_->frame_delay());
 }
 
 void DrmCursor::SendCursorHideLocked() {
@@ -259,7 +257,7 @@ void DrmCursor::SendCursorHideLocked() {
 }
 
 void DrmCursor::SendCursorMoveLocked() {
-  if (!bitmap_ || bitmap_->type() == CursorType::kNone)
+  if (!cursor_ || cursor_->type() == CursorType::kNone)
     return;
 
   MoveLockTested(window_, GetBitmapLocationLocked());

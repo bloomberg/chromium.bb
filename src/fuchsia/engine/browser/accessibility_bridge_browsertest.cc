@@ -6,17 +6,21 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <zircon/types.h>
 
+#include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/test_navigation_listener.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
+#include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/fake_semantics_manager.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -1015,4 +1019,79 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
   // should be present.
   num_frames = frame_impl_->web_contents_for_test()->GetAllFrames().size();
   EXPECT_EQ(num_frames, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, UpdatesFocusInformation) {
+  LoadPage(kPage1Path, kPage1Title);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  ASSERT_FALSE(semantics_manager_.semantic_tree()
+                   ->GetNodeWithId(0u)
+                   ->states()
+                   .has_has_input_focus());
+
+  // Focus the root node.
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  action_data.target_tree_id = bridge->ax_tree_for_test()->GetAXTreeID();
+  action_data.target_node_id = bridge->ax_tree_for_test()->root()->id();
+
+  frame_impl_->web_contents_for_test()
+      ->GetMainFrame()
+      ->AccessibilityPerformAction(action_data);
+
+  auto* semantic_tree = semantics_manager_.semantic_tree();
+
+  semantic_tree->RunUntilCondititionIsTrue(
+      base::BindLambdaForTesting([semantic_tree]() {
+        auto* node = semantic_tree->GetNodeWithId(0u);
+        if (!node)
+          return false;
+
+        return node->has_states() && node->states().has_has_input_focus() &&
+               node->states().has_input_focus();
+      }));
+
+  ASSERT_TRUE(semantics_manager_.semantic_tree()
+                  ->GetNodeWithId(0u)
+                  ->states()
+                  .has_input_focus());
+
+  // Changes the focus to a different node and checks that the old value is
+  // cleared.
+  auto new_focus_id = semantics_manager_.semantic_tree()
+                          ->GetNodeFromLabel(kButtonName1)
+                          ->node_id();
+  action_data.target_node_id =
+      bridge->node_id_mapper_for_test()->ToAXNodeID(new_focus_id)->second;
+
+  frame_impl_->web_contents_for_test()
+      ->GetMainFrame()
+      ->AccessibilityPerformAction(action_data);
+
+  semantic_tree->RunUntilCondititionIsTrue(
+      base::BindLambdaForTesting([semantic_tree, new_focus_id]() {
+        auto* root = semantic_tree->GetNodeWithId(0u);
+        auto* node = semantic_tree->GetNodeWithId(new_focus_id);
+
+        if (!node || !root)
+          return false;
+
+        // Node has the focus, root does not.
+        return (node->has_states() && node->states().has_has_input_focus() &&
+                node->states().has_input_focus()) &&
+               (root->has_states() && root->states().has_has_input_focus() &&
+                !root->states().has_input_focus());
+      }));
+
+  ASSERT_FALSE(semantics_manager_.semantic_tree()
+                   ->GetNodeWithId(0u)
+                   ->states()
+                   .has_input_focus());
+  ASSERT_TRUE(semantics_manager_.semantic_tree()
+                  ->GetNodeWithId(new_focus_id)
+                  ->states()
+                  .has_input_focus());
 }

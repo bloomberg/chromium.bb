@@ -11,7 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -35,6 +35,9 @@ namespace wl {
 // Wayland protocol objects.
 class Clipboard {
  public:
+  using ClipboardDataChangedCallback =
+      ui::PlatformClipboard::ClipboardDataChangedCallback;
+
   virtual ~Clipboard() = default;
 
   // Synchronously retrieves the mime types list currently available to be read.
@@ -51,9 +54,9 @@ class Clipboard {
   // Tells if this clipboard instance is the current selection owner.
   virtual bool IsSelectionOwner() const = 0;
 
-  // Sets the callback in charge of updating the clipboard sequence number.
-  virtual void SetSequenceNumberUpdateCb(
-      ui::PlatformClipboard::SequenceNumberUpdateCb callback) = 0;
+  // Sets the callback to be executed when clipboard data changes.
+  virtual void SetClipboardDataChangedCallback(
+      ClipboardDataChangedCallback callback) = 0;
 };
 
 // Templated wl::Clipboard implementation. Whereas DataSource is the data source
@@ -81,11 +84,10 @@ class ClipboardImpl final : public Clipboard,
   bool Read(const std::string& mime_type,
             ui::PlatformClipboard::RequestDataClosure callback) final {
     requested_mime_type_ = mime_type;
-    if (GetDevice()->RequestSelectionData(GetMimeTypeForRequest(mime_type))) {
-      read_clipboard_closure_ = std::move(callback);
+    read_clipboard_closure_ = std::move(callback);
+    if (GetDevice()->RequestSelectionData(GetMimeTypeForRequest(mime_type)))
       return true;
-    }
-    SetData(base::MakeRefCounted<base::RefCountedBytes>(), mime_type);
+    DeliverData(nullptr, mime_type);
     return false;
   }
 
@@ -107,17 +109,18 @@ class ClipboardImpl final : public Clipboard,
       offered_data_ = *data;
       source_ = manager_->CreateSource(this);
       source_->Offer(GetOfferedMimeTypes());
-      GetDevice()->SetSelectionSource(source_.get());
     }
+    GetDevice()->SetSelectionSource(source_.get());
+
+    if (!clipboard_changed_callback_.is_null())
+      clipboard_changed_callback_.Run(buffer_);
   }
 
   bool IsSelectionOwner() const final { return !!source_; }
 
-  void SetSequenceNumberUpdateCb(
-      ui::PlatformClipboard::SequenceNumberUpdateCb callback) final {
-    CHECK(update_sequence_cb_.is_null())
-        << "The callback can be installed only once.";
-    update_sequence_cb_ = callback;
+  void SetClipboardDataChangedCallback(
+      ClipboardDataChangedCallback callback) final {
+    clipboard_changed_callback_ = std::move(callback);
   }
 
  private:
@@ -146,8 +149,8 @@ class ClipboardImpl final : public Clipboard,
     return mime_type;
   }
 
-  void SetData(ui::PlatformClipboard::Data contents,
-               const std::string& mime_type) {
+  void DeliverData(ui::PlatformClipboard::Data contents,
+                   const std::string& mime_type) {
     CHECK_EQ(GetMimeTypeForRequest(requested_mime_type_), mime_type);
     if (!read_clipboard_closure_.is_null())
       std::move(read_clipboard_closure_).Run(contents);
@@ -156,16 +159,16 @@ class ClipboardImpl final : public Clipboard,
 
   // WaylandDataDeviceBase::SelectionDelegate:
   void OnSelectionOffer(ui::WaylandDataOfferBase* offer) final {
-    if (!update_sequence_cb_.is_null())
-      update_sequence_cb_.Run(buffer_);
+    if (IsSelectionOwner())
+      return;
 
-    if (!offer)
-      SetData({}, {});
+    if (!clipboard_changed_callback_.is_null())
+      clipboard_changed_callback_.Run(buffer_);
   }
 
   void OnSelectionDataReceived(const std::string& mime_type,
                                ui::PlatformClipboard::Data contents) final {
-    SetData(contents, mime_type);
+    DeliverData(contents, mime_type);
   }
 
   // WaylandDataSource::Delegate:
@@ -202,8 +205,8 @@ class ClipboardImpl final : public Clipboard,
   // Last mime type requested to be read from the clipboard.
   std::string requested_mime_type_;
 
-  // Notifies when clipboard sequence must change. Can be empty if not set.
-  ui::PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
+  // Notifies when clipboard data changes. Can be empty if not set.
+  ClipboardDataChangedCallback clipboard_changed_callback_;
 };
 
 }  // namespace wl
@@ -249,11 +252,11 @@ bool WaylandClipboard::IsSelectionOwner(ClipboardBuffer buffer) {
   return false;
 }
 
-void WaylandClipboard::SetSequenceNumberUpdateCb(
-    PlatformClipboard::SequenceNumberUpdateCb cb) {
-  copypaste_clipboard_->SetSequenceNumberUpdateCb(cb);
+void WaylandClipboard::SetClipboardDataChangedCallback(
+    ClipboardDataChangedCallback data_changed_callback) {
+  copypaste_clipboard_->SetClipboardDataChangedCallback(data_changed_callback);
   if (auto* selection_clipboard = GetClipboard(ClipboardBuffer::kSelection))
-    selection_clipboard->SetSequenceNumberUpdateCb(cb);
+    selection_clipboard->SetClipboardDataChangedCallback(data_changed_callback);
 }
 
 void WaylandClipboard::GetAvailableMimeTypes(

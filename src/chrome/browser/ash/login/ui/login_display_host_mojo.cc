@@ -31,8 +31,8 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/login_screen_client_impl.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/view.h"
 
 namespace chromeos {
@@ -96,7 +97,7 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
         ->pin_dialog_manager()
         ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
   }
-  LoginScreenClient::Get()->SetDelegate(nullptr);
+  LoginScreenClientImpl::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
     StopObservingOobeUI();
@@ -193,7 +194,7 @@ void LoginDisplayHostMojo::OnFinalize() {
 }
 
 void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
-  SystemTrayClient::Get()->SetPrimaryTrayVisible(visible);
+  SystemTrayClientImpl::Get()->SetPrimaryTrayVisible(visible);
 }
 
 void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
@@ -235,10 +236,10 @@ void LoginDisplayHostMojo::CancelUserAdding() {
 }
 
 void LoginDisplayHostMojo::OnStartSignInScreen() {
-  // This function may be called early in startup flow, before LoginScreenClient
-  // has been initialized. Wait until LoginScreenClient is initialized as it is
-  // a common dependency.
-  if (!LoginScreenClient::HasInstance()) {
+  // This function may be called early in startup flow, before
+  // LoginScreenClientImpl has been initialized. Wait until
+  // LoginScreenClientImpl is initialized as it is a common dependency.
+  if (!LoginScreenClientImpl::HasInstance()) {
     // TODO(jdufault): Add a timeout here / make sure we do not post infinitely.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&LoginDisplayHostMojo::OnStartSignInScreen,
@@ -553,14 +554,14 @@ void LoginDisplayHostMojo::OnDestroyingOobeUI() {
 
 // views::ViewObserver:
 void LoginDisplayHostMojo::OnViewBoundsChanged(views::View* observed_view) {
-  DCHECK(scoped_observer_.IsObserving(observed_view));
+  DCHECK(scoped_observation_.IsObservingSource(observed_view));
   for (auto& observer : observers_)
     observer.WebDialogViewBoundsChanged(observed_view->GetBoundsInScreen());
 }
 
 void LoginDisplayHostMojo::OnViewIsDeleting(views::View* observed_view) {
-  DCHECK(scoped_observer_.IsObserving(observed_view));
-  scoped_observer_.Remove(observed_view);
+  DCHECK(scoped_observation_.IsObservingSource(observed_view));
+  scoped_observation_.Reset();
 }
 
 bool LoginDisplayHostMojo::IsOobeUIDialogVisible() const {
@@ -576,7 +577,7 @@ void LoginDisplayHostMojo::LoadOobeDialog() {
       login_display_.get());
 
   views::View* web_dialog_view = dialog_->GetWebDialogView();
-  scoped_observer_.Add(web_dialog_view);
+  scoped_observation_.Observe(web_dialog_view);
 }
 
 void LoginDisplayHostMojo::OnChallengeResponseKeysPrepared(
@@ -680,7 +681,7 @@ void LoginDisplayHostMojo::MaybeUpdateOfflineLoginLinkVisibility(
     return;
   bool offline_limit_expired = false;
 
-  const base::Optional<base::TimeDelta> offline_signin_interval =
+  const absl::optional<base::TimeDelta> offline_signin_interval =
       user_manager::known_user::GetOfflineSigninLimit(account_id);
 
   // Check if the limit is set only.

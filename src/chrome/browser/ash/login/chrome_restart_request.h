@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_CHROME_RESTART_REQUEST_H_
 #define CHROME_BROWSER_ASH_LOGIN_CHROME_RESTART_REQUEST_H_
 
-#include <string>
+#include <stdint.h>
 
 class GURL;
 
@@ -26,7 +26,6 @@ enum class RestartChromeReason : uint32_t {
 
 // Determines the `command_line` to be used for the OTR process.
 void GetOffTheRecordCommandLine(const GURL& start_url,
-                                bool is_oobe_completed,
                                 const base::CommandLine& base_command_line,
                                 base::CommandLine* command_line);
 
@@ -37,5 +36,12 @@ void RestartChrome(const base::CommandLine& command_line,
                    RestartChromeReason reason);
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::GetOffTheRecordCommandLine;
+using ::chromeos::RestartChromeReason;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_CHROME_RESTART_REQUEST_H_

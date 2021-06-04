@@ -7,14 +7,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/highlight_path_generator.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
@@ -89,8 +91,13 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
   RefreshLayer();
 }
 
-void FocusRing::SetColor(base::Optional<SkColor> color) {
+void FocusRing::SetColor(absl::optional<SkColor> color) {
   color_ = color;
+  SchedulePaint();
+}
+
+void FocusRing::SetShouldPaintFocusAura(bool should_paint_focus_aura) {
+  should_paint_focus_aura_ = should_paint_focus_aura;
   SchedulePaint();
 }
 
@@ -152,6 +159,16 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   DCHECK(IsPathUsable(path));
   DCHECK_EQ(GetFlipCanvasOnPaintForRTLUI(),
             parent()->GetFlipCanvasOnPaintForRTLUI());
+
+  if (should_paint_focus_aura_) {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_FocusAuraColor));
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawPath(path, flags);
+  }
+
   SkRect bounds;
   SkRRect rbounds;
   if (path.isRect(&bounds)) {

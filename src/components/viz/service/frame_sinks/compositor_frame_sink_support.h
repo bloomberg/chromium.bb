@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -31,6 +30,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 
@@ -124,8 +124,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void OnSurfaceWillDraw(Surface* surface) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
-  void UnrefResources(const std::vector<ReturnedResource>& resources) override;
-  void ReturnResources(const std::vector<ReturnedResource>& resources) override;
+  void UnrefResources(std::vector<ReturnedResource> resources) override;
+  void ReturnResources(std::vector<ReturnedResource> resources) override;
   void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) override;
   // Takes the CopyOutputRequests that were requested for a surface with at
@@ -153,7 +153,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void SubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      base::Optional<HitTestRegionList> hit_test_region_list = base::nullopt,
+      absl::optional<HitTestRegionList> hit_test_region_list = absl::nullopt,
       uint64_t submit_time = 0);
   // Returns false if the notification was not valid (a duplicate).
   bool DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
@@ -175,13 +175,15 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SubmitResult MaybeSubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      base::Optional<HitTestRegionList> hit_test_region_list,
+      absl::optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback);
 
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
   void DetachCaptureClient(CapturableFrameSink::Client* client) override;
+  void OnClientCaptureStarted() override;
+  void OnClientCaptureStopped() override;
   gfx::Size GetActiveFrameSize() override;
   void RequestCopyOfOutput(
       PendingCopyOutputRequest pending_copy_output_request) override;
@@ -273,7 +275,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // If this contains a value then a surface reference from the top-level root
   // to SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()) was
   // added. This will not contain a value if |is_root_| is false.
-  base::Optional<LocalSurfaceId> referenced_local_surface_id_;
+  absl::optional<LocalSurfaceId> referenced_local_surface_id_;
 
   SurfaceResourceHolder surface_resource_holder_;
 
@@ -373,13 +375,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // single-page-app transitions.
   SurfaceAnimationManager surface_animation_manager_;
 
-  std::unique_ptr<power_scheduler::PowerModeVoter> animation_power_mode_voter_;
-
-  // Represents whether the DocumentTransition feature is enabled.
-  bool document_transitions_enabled_;
+  std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
 
   // Number of frames skipped during throttling since last BeginFrame sent.
   uint64_t frames_throttled_since_last_ = 0;
+
+  // Number of clients that have started video capturing.
+  uint32_t number_clients_capturing_ = 0;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_{this};
 

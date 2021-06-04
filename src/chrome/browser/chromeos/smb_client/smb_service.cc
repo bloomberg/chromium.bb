@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,11 +17,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/file_system_provider/mount_path_util.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_host_locator.h"
@@ -78,13 +79,14 @@ net::NetworkInterfaceList GetInterfaces() {
 
 std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
   auto* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetNetworkContext();
+      profile->GetDefaultStoragePartition()->GetNetworkContext();
   return std::make_unique<NetBiosClient>(network_context);
 }
 
+// TODO(crbug.com/1203884): Remove this method and any code conditional on it
+// being false.
 bool IsSmbFsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSmbFs);
+  return true;
 }
 
 // Metric recording functions.
@@ -120,16 +122,16 @@ void RecordAuthenticationMethod(AuthMethod method) {
 base::ScopedFD MakeFdWithContents(const std::string& contents) {
   const size_t content_size = contents.size();
 
-  base::ScopedFD read_fd, write_fd;
+  base::ScopedFD read_fd;
+  base::ScopedFD write_fd;
   if (!base::CreatePipe(&read_fd, &write_fd, true /* non_blocking */)) {
     LOG(ERROR) << "Unable to create pipe";
     return {};
   }
   bool success =
-      base::WriteFileDescriptor(write_fd.get(),
-                                reinterpret_cast<const char*>(&content_size),
-                                sizeof(content_size)) &&
-      base::WriteFileDescriptor(write_fd.get(), contents.data(), content_size);
+      base::WriteFileDescriptor(
+          write_fd.get(), base::as_bytes(base::make_span(&content_size, 1))) &&
+      base::WriteFileDescriptor(write_fd.get(), contents);
   if (!success) {
     PLOG(ERROR) << "Unable to write contents to pipe";
     return {};
@@ -182,9 +184,6 @@ SmbService::SmbService(Profile* profile,
 
 SmbService::~SmbService() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  if (chromeos::PowerManagerClient::Get()) {
-    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-  }
 }
 
 void SmbService::Shutdown() {
@@ -458,12 +457,12 @@ void SmbService::MountInternal(
     if (info.use_kerberos()) {
       if (user->IsActiveDirectoryUser()) {
         smbfs_options.kerberos_options =
-            base::make_optional<SmbFsShare::KerberosOptions>(
+            absl::make_optional<SmbFsShare::KerberosOptions>(
                 SmbFsShare::KerberosOptions::Source::kActiveDirectory,
                 user->GetAccountId().GetObjGuid());
       } else if (smb_credentials_updater_) {
         smbfs_options.kerberos_options =
-            base::make_optional<SmbFsShare::KerberosOptions>(
+            absl::make_optional<SmbFsShare::KerberosOptions>(
                 SmbFsShare::KerberosOptions::Source::kKerberos,
                 smb_credentials_updater_->active_account_name());
       } else {
@@ -665,7 +664,7 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
 
     ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
   } else {
-    base::Optional<std::string> user_workgroup =
+    absl::optional<std::string> user_workgroup =
         GetUserFromFileSystemId(file_system_info.file_system_id());
     if (user_workgroup &&
         !ParseUserName(*user_workgroup, &username, &workgroup)) {
@@ -820,9 +819,6 @@ void SmbService::CompleteSetup() {
                           base::Unretained(this))));
   RestoreMounts();
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  if (chromeos::PowerManagerClient::Get()) {
-    chromeos::PowerManagerClient::Get()->AddObserver(this);
-  }
 
   if (setup_complete_callback_) {
     std::move(setup_complete_callback_).Run();
@@ -1024,65 +1020,6 @@ void SmbService::RecordMountCount() const {
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
   UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
                            file_systems.size() + smbfs_shares_.size());
-}
-
-void SmbService::SuspendImminent(
-    power_manager::SuspendImminent::Reason reason) {
-  for (auto it = smbfs_shares_.begin(); it != smbfs_shares_.end(); ++it) {
-    SmbFsShare* share = it->second.get();
-
-    // For each share, block suspend until the unmount has completed, to ensure
-    // that no smbfs instances are active when the system goes to sleep.
-    auto token = base::UnguessableToken::Create();
-    chromeos::PowerManagerClient::Get()->BlockSuspend(token, "SmbService");
-    share->Unmount(
-        base::BindOnce(&SmbService::OnSuspendUnmountDone, AsWeakPtr(), token));
-  }
-}
-
-void SmbService::OnSuspendUnmountDone(
-    base::UnguessableToken power_manager_suspend_token,
-    chromeos::MountError result) {
-  LOG_IF(ERROR, result != chromeos::MountError::MOUNT_ERROR_NONE)
-      << "Could not unmount smbfs share during suspension: "
-      << static_cast<int>(result);
-  // Regardless of the outcome, unblock suspension for this share.
-  chromeos::PowerManagerClient::Get()->UnblockSuspend(
-      power_manager_suspend_token);
-}
-
-void SmbService::SuspendDone(base::TimeDelta sleep_duration) {
-  // Don't iterate directly over the share map during the remount
-  // process as shares can be removed on failure in OnSmbfsMountDone.
-  std::vector<std::string> mount_ids;
-  for (const auto& s : smbfs_shares_)
-    mount_ids.push_back(s.first);
-
-  for (const auto& mount_id : mount_ids) {
-    auto share_it = smbfs_shares_.find(mount_id);
-    if (share_it == smbfs_shares_.end()) {
-      LOG(WARNING) << "Smbfs mount id " << mount_id
-                   << " no longer present during remount after suspend";
-      continue;
-    }
-    SmbFsShare* share = share_it->second.get();
-
-    // Don't try to reconnect as we race the network stack in getting an IP
-    // address.
-    SmbFsShare::MountOptions options = share->options();
-    options.skip_connect = true;
-    // Observing power management changes from SmbService allows us to remove
-    // the share in OnSmbfsMountDone if remount fails.
-    share->Remount(
-        options, base::BindOnce(
-                     &SmbService::OnSmbfsMountDone, AsWeakPtr(), mount_id,
-                     base::BindOnce([](SmbMountResult result,
-                                       const base::FilePath& mount_path) {
-                       LOG_IF(ERROR, result != SmbMountResult::kSuccess)
-                           << "Error remounting smbfs share after suspension: "
-                           << static_cast<int>(result);
-                     })));
-  }
 }
 
 }  // namespace smb_client

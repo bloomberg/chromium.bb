@@ -8,7 +8,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +30,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -73,7 +73,7 @@ std::string GetClassifyURLRequestString(
 // ClassifyUrlResponse proto object.
 std::unique_ptr<kids_chrome_management::ClassifyUrlResponse>
 GetClassifyURLResponseProto(const std::string& response) {
-  base::Optional<base::Value> optional_value = base::JSONReader::Read(response);
+  absl::optional<base::Value> optional_value = base::JSONReader::Read(response);
   const base::DictionaryValue* dict = nullptr;
 
   auto response_proto =
@@ -163,9 +163,8 @@ struct KidsChromeManagementClient::KidsChromeManagementRequest {
 };
 
 KidsChromeManagementClient::KidsChromeManagementClient(Profile* profile) {
-  url_loader_factory_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  url_loader_factory_ = profile->GetDefaultStoragePartition()
+                            ->GetURLLoaderFactoryForBrowserProcess();
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
 }
@@ -250,7 +249,7 @@ void KidsChromeManagementClient::OnAccessTokenFetchComplete(
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Token error: " << error.ToString();
 
-    std::unique_ptr<google::protobuf::MessageLite> response_proto = nullptr;
+    std::unique_ptr<google::protobuf::MessageLite> response_proto;
     DispatchResult(it, std::move(response_proto),
                    KidsChromeManagementClient::ErrorCode::kTokenError);
     return;
@@ -271,7 +270,7 @@ void KidsChromeManagementClient::OnAccessTokenFetchComplete(
             req->request_proto.get()));
   } else {
     DVLOG(1) << "Could not detect the request proto's class.";
-    std::unique_ptr<google::protobuf::MessageLite> response_proto = nullptr;
+    std::unique_ptr<google::protobuf::MessageLite> response_proto;
     DispatchResult(it, std::move(response_proto),
                    KidsChromeManagementClient::ErrorCode::kServiceError);
     return;
@@ -319,7 +318,7 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
     }
   }
 
-  std::unique_ptr<google::protobuf::MessageLite> response_proto = nullptr;
+  std::unique_ptr<google::protobuf::MessageLite> response_proto;
 
   int net_error = simple_url_loader->NetError();
 

@@ -34,7 +34,6 @@
 #include "quic/test_tools/quic_framer_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
 #include "quic/test_tools/simple_data_producer.h"
-#include "common/platform/api/quiche_text_utils.h"
 #include "common/test_tools/quiche_test_utils.h"
 
 using testing::_;
@@ -1479,9 +1478,6 @@ TEST_P(QuicFramerTest, ClientConnectionIdFromShortHeaderToClient) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(FramerTestConnectionId(),
             visitor_.header_->destination_connection_id);
-  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
-    EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
-  }
 }
 
 // In short header packets from client to server, the client connection ID
@@ -1515,9 +1511,6 @@ TEST_P(QuicFramerTest, ClientConnectionIdFromShortHeaderToServer) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(FramerTestConnectionId(),
             visitor_.header_->destination_connection_id);
-  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
-    EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
-  }
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
@@ -1567,9 +1560,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_THAT(framer_.error(), IsError(QUIC_MISSING_PAYLOAD));
   ASSERT_TRUE(visitor_.header_.get());
-  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
-    EXPECT_EQ(FramerTestConnectionId(), visitor_.header_->source_connection_id);
-  }
   EXPECT_FALSE(visitor_.header_->reset_flag);
   EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
@@ -9248,7 +9238,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithEndpointId) {
 }
 
 TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
-  if (GetQuicReloadableFlag(quic_fix_stateless_reset)) {
+  if (GetQuicRestartFlag(quic_fix_stateless_reset2)) {
     // clang-format off
     unsigned char packet[] = {
       // 1st byte 01XX XXXX
@@ -9282,13 +9272,12 @@ TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
 
     // Packets with length <= minimal stateless reset does not trigger stateless
     // reset.
-    EXPECT_QUIC_BUG(
-        std::unique_ptr<QuicEncryptedPacket> data2(
-            framer_.BuildIetfStatelessResetPacket(
-                FramerTestConnectionId(),
-                QuicFramer::GetMinStatelessResetPacketLength(),
-                kTestStatelessResetToken)),
-        "Tried to build stateless reset packet with received packet length");
+    std::unique_ptr<QuicEncryptedPacket> data2(
+        framer_.BuildIetfStatelessResetPacket(
+            FramerTestConnectionId(),
+            QuicFramer::GetMinStatelessResetPacketLength(),
+            kTestStatelessResetToken));
+    ASSERT_FALSE(data2);
 
     // Do not send stateless reset >= minimal stateless reset + 1 + max
     // connection ID length.
@@ -15230,7 +15219,6 @@ TEST_P(QuicFramerTest, KeyUpdateOnFirstReceivedPacket) {
     // Key update is only used in QUIC+TLS.
     return;
   }
-  SetQuicReloadableFlag(quic_fix_key_update_on_first_packet, true);
   ASSERT_TRUE(framer_.version().KnowsWhichDecrypterToUse());
   // Doesn't use SetDecrypterLevel since we want to use StrictTaggingDecrypter
   // instead of TestDecrypter.
@@ -15262,8 +15250,7 @@ TEST_P(QuicFramerTest, KeyUpdateOnFirstReceivedPacket) {
 }
 
 TEST_P(QuicFramerTest, ErrorWhenUnexpectedFrameTypeEncountered) {
-  if (!GetQuicReloadableFlag(quic_reject_unexpected_ietf_frame_types) ||
-      !VersionHasIetfQuicFrames(framer_.transport_version()) ||
+  if (!VersionHasIetfQuicFrames(framer_.transport_version()) ||
       !QuicVersionHasLongHeaderLengths(framer_.transport_version()) ||
       !framer_.version().HasLongHeaderLengths()) {
     return;

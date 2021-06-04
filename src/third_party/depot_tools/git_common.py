@@ -641,8 +641,11 @@ def parse_commitrefs(*commitrefs):
 RebaseRet = collections.namedtuple('RebaseRet', 'success stdout stderr')
 
 
-def rebase(parent, start, branch, abort=False):
+def rebase(parent, start, branch, abort=False, allow_gc=False):
   """Rebases |start|..|branch| onto the branch |parent|.
+
+  Sets 'gc.auto=0' for the duration of this call to prevent the rebase from
+  running a potentially slow garbage collection cycle.
 
   Args:
     parent - The new parent ref for the rebased commits.
@@ -650,6 +653,10 @@ def rebase(parent, start, branch, abort=False):
     branch - The branch to rebase
     abort  - If True, will call git-rebase --abort in the event that the rebase
              doesn't complete successfully.
+    allow_gc - If True, sets "-c gc.auto=1" on the rebase call, rather than
+               "-c gc.auto=0". Usually if you're doing a series of rebases,
+               you'll only want to run a single gc pass at the end of all the
+               rebase activity.
 
   Returns a namedtuple with fields:
     success - a boolean indicating that the rebase command completed
@@ -658,10 +665,16 @@ def rebase(parent, start, branch, abort=False):
               rebase.
   """
   try:
-    args = ['--onto', parent, start, branch]
+    args = [
+      '-c', 'gc.auto={}'.format('1' if allow_gc else '0'),
+      'rebase',
+    ]
     if TEST_MODE:
-      args.insert(0, '--committer-date-is-author-date')
-    run('rebase', *args)
+      args.append('--committer-date-is-author-date')
+    args += [
+      '--onto', parent, start, branch,
+    ]
+    run(*args)
     return RebaseRet(True, '', '')
   except subprocess2.CalledProcessError as cpe:
     if abort:
@@ -1064,7 +1077,7 @@ def get_branches_info(include_tracking_status):
     behind = int(behind_match.group(1)) if behind_match else None
 
     info_map[branch] = BranchesInfo(
-        hash=branch_hash, upstream=upstream_branch, commits=commits, 
+        hash=branch_hash, upstream=upstream_branch, commits=commits,
         behind=behind)
 
   # Set None for upstreams which are not branches (e.g empty upstream, remotes

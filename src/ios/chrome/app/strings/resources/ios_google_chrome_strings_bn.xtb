@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1096883626080133124">সহজ, সুরক্ষিত ও এখনও পর্যন্ত উপলভ্য সবচেয়ে দ্রুত ভার্সনের Google Chrome-এর সাহায্যে আরও কাজ করুন</translation>
 <translation id="1282031177488366470">Chrome-এর ফিচার এবং পারফর্ম্যান্স উন্নত করতে সাহায্য করুন</translation>
 <translation id="1314663809820920746">এখনও এই ডিভাইসে আপনার সব বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্য সেটিংস দেখতে পাবেন। আপনি কোনও পরিবর্তন করলে, সেগুলি আপনার Google অ্যাকাউন্টে সিঙ্ক হবে না।</translation>
 <translation id="1479202195792305274">Google অ্যাকাউন্ট ব্যবহার করে আপনি সাইন-ইন করলে Chrome পাসওয়ার্ড চেক করে দেখতে পারবে।</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome-এ আপডেট চেক করা যায়নি। ডিভাইসের ইন্টারনেট কানেকশন চেক করে দেখুন।</translation>
 <translation id="1682483655351012182">আপনার Chrome ডেটা সিঙ্ক করুন</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">ব্যবহারের পরিসংখ্যান ও ক্র্যাশ রিপোর্ট Google-এ পাঠিয়ে Chrome-কে আরও উন্নত করতে সাহায্য করুন</translation>
 <translation id="1917964099031477364">এই ডিভাইসের Chrome এবং অন্যান্য Google অ্যাপ থেকে এই অ্যাকাউন্টটি এবং কোনও সেভ না করা ডেটা থাকলে তা সরানো হবে।</translation>
 <translation id="2009224836393115614">Chrome আপনার পাসওয়ার্ড চেক করতে পারেনি। ডিভাইসের ইন্টারনেট কানেকশন চেক করে দেখুন।</translation>
 <translation id="2147651015520127414"><ph name="ISSUER" /> যে এই ওয়েবসাইটের সার্টিফিকেট প্রকাশ করেছে Chrome তা যাচাই করেছে।</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome-এ আপডেট চেক করা যায়নি। পরে আবার চেষ্টা করুন।</translation>
 <translation id="2732745070297234559">Chrome সব পাসওয়ার্ড চেক করতে পারেনি। আগামীকাল আবার চেষ্টা করে দেখুন।</translation>
 <translation id="2740105938841089077">Chrome ব্যবহার করে লিঙ্ক খুলুন</translation>
+<translation id="2869959624320573933">Chrome-এ সাইন-ইন করুন</translation>
 <translation id="2919738076569633423">Chrome ব্যবহার করে আপনি <ph name="BEGIN_LINK_TOS" />পরিষেবার শর্তাবলী<ph name="END_LINK_TOS" />তে সম্মতি জানাচ্ছেন।</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> দ্বারা ম্যানেজ করা একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন বলে, এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে যাবে। আপনার Google অ্যাকাউন্টে এই ডেটা থেকে যাবে।</translation>
 <translation id="3167189358072330585">আপনার অ্যাকাউন্ট Google Chrome-এ কাজ করে না৷ সাইন-ইন করার জন্য আপনার ডোমেন অ্যাডমিনিস্ট্রেটরের সঙ্গে যোগাযোগ করুন বা কোন সাধারণ Google অ্যাকাউন্ট ব্যবহার করুন৷</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome আপনার অ্যাকাউন্টগুলিকে ওয়েবে নিয়ে এসে আপনার সময় বাঁচায়। আপনি সেটিংস থেকে অ্যাকাউন্ট জুড়তে বা সরাতে পারবেন।</translation>
 <translation id="3282568296779691940">Chrome-এ সাইন-ইন করুন</translation>
 <translation id="3345341804167540816">Chrome সব জায়গায় ব্যবহার করুন</translation>
+<translation id="3455456143708465450">Chrome থেকে সবচেয়ে বেশি সুবিধা পেতে, আপনার Google অ্যাকাউন্ট দিয়ে সাইন-ইন করুন</translation>
 <translation id="3522659714780527202">সিঙ্ক চালু করে রাখুন, যাতে আপনি যেখান থেকেই Chrome ব্যবহার করুন না কেন, সেখানেই আপনি নিজের ট্যাবগুলি দেখতে পারেন</translation>
 <translation id="3533694711092285624">কোনও পাসওয়ার্ড সেভ করা নেই। আপনি পাসওয়ার্ড সেভ করলে Chrome সেটি চেক করতে পারবে।</translation>
 <translation id="3706101708757577809">এখন থেকে আপনি চাইলে মেসেজ, ডকুমেন্ট এবং অন্যান্য অ্যাপে থাকা বিভিন্ন লিঙ্কে ট্যাপ করে তা Chrome ব্রাউজারে খুলতে পারেন।</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">আপনি Chrome-কে আপনার লোকেশন জানার অনুমতি দিলে আপনি যেসব সাইটকে লোকেশন অ্যাক্সেস করার অনুমতি দেবেন, Chrome সেই সব সাইটে এই তথ্য পাঠিয়ে দেবে। কাছাকাছি দোকান অথবা সংশ্লিষ্ট এলাকার খবরের মতো স্থানীয় তথ্য আপনাকে দেখাতে হলে, কোনও সাইট আপনার লোকেশন জানতে চাইতে পারে।</translation>
 <translation id="6036420186814142909">Google Chrome-এর একটি বৈশিষ্ট্য যা আপনাকে আপনার ইন্টারনেট ডেটা পরিচালনা করতে এবং কিভাবে আপনি ওয়েবপৃষ্ঠাগুলি দ্রুত লোড করতে পারবেন সে বিষয়ে সহায়তা করে৷
 <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Chrome-এ সাইন-ইন করার অনুমতি দিন</translation>
 <translation id="6181930887571472871">Chrome-এ পাল্টান</translation>
 <translation id="6238746320622508509">Chrome-কে আপনার ছদ্মবেশী ট্যাব লক করার অনুমতি দিন।</translation>
 <translation id="6573431926118603307">আপনার অন্য ডিভাইসগুলিতে Chrome এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">এই ডিভাইস থেকে Chrome ডেটা সরিয়ে ফেলবেন?</translation>
 <translation id="6822673484890854830">Chrome সব পাসওয়ার্ড চেক করতে পারেনি। পরে আবার চেষ্টা করুন।</translation>
 <translation id="6964931465519938134">এখন থেকে আপনি চাইলে মেসেজ, ডকুমেন্ট এবং অন্যান্য অ্যাপে থাকা বিভিন্ন লিঙ্কে ট্যাপ করে তা সরাসরি Chrome ব্রাউজারে খুলতে পারেন।</translation>
+<translation id="7059914902409643750">Chrome-এ সাইন-ইন করুন</translation>
 <translation id="7124339256045485976">Chrome আপ-টু-ডেট রাখুন</translation>
 <translation id="7161390184744336561">Google Chrome-এর এই ভার্সন পুরনো হয়ে গেছে</translation>
 <translation id="7165736900384873061">Google Chrome QR স্ক্যানারের ব্যবহার শুরু করুন</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome আপ টু ডেট আছে</translation>
 <translation id="8022947259858476807">লিঙ্ক খুলতে, উইজেট থেকে সার্চ করতে এবং অন্যান্য অ্যাপে পাসওয়ার্ড অটোফিল করতে ডিফল্ট হিসেবে Chrome ব্যবহার করুন</translation>
 <translation id="8160472928944011082">Chrome আপডেট করা যাচ্ছে না</translation>
+<translation id="8263079278049777200">এই সাইট, আপনার Google অ্যাকাউন্ট ও Chrome-এ সাইন-ইন করুন। আপনি পরে সিঙ্ক করার সুবিধা চালু করতে পারবেন।</translation>
 <translation id="8357607116237445042">এই ডিভাইস থেকে আপনার Chrome ডেটা মুছবেন না রাখবেন তা বেছে নিন</translation>
 <translation id="8370517070665726704">কপিরাইট <ph name="YEAR" /> Google LLC সব স্বত্ব সংরক্ষিত আছে।</translation>
 <translation id="840168496893712993">কিছু অ্যাড-অনের কারণে Chrome ক্র্যাশ করতে পারে৷ দয়া করে সেগুলিকে আনইনস্টল করার চেষ্টা করুন৷</translation>
@@ -95,5 +102,6 @@
   ৩. Chrome বেছে নিন।</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Google Chrome-এর সাহায্যে নিরাপদে থাকুন</translation>
+<translation id="8772179140489533211">Chrome-এ সাইন-ইন করার প্রম্পট দেখাবে।</translation>
 <translation id="9112744793181547300">Chrome ডিফল্ট হিসেবে সেট করতে চান?</translation>
 </translationbundle>

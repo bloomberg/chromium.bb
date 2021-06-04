@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 
-#include <vector>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/chromeos_buildflags.h"
@@ -58,15 +56,12 @@ class BrowserCommandController : public CommandUpdater,
   // prevent changing the state of enabled shortcuts while in this mode (so the
   // other *Changed() functions will be a NO-OP in this state).
   void LockedFullscreenStateChanged();
-  // Called when a desk is created/removed. Used to determine send
-  // to desk command states.
-  void DesksStateChanged(int num_desks);
 #endif
   void PrintingStateChanged();
   void LoadingStateChanged(bool is_loading, bool force);
   void FindBarVisibilityChanged();
   void ExtensionStateChanged();
-  void TabKeyboardFocusChangedTo(base::Optional<int> index);
+  void TabKeyboardFocusChangedTo(absl::optional<int> index);
   void WebContentsFocusChanged();
 
   // Overriden from CommandUpdater:
@@ -164,9 +159,6 @@ class BrowserCommandController : public CommandUpdater,
   // Update commands whose state depends on whether the window is in locked
   // fullscreen mode or not.
   void UpdateCommandsForLockedFullscreenMode();
-
-  // Update commands whose state depends on how many desks exist.
-  void UpdateCommandsForDesks(int num_desks);
 #endif
 
   // Updates the printing command state.
@@ -200,7 +192,7 @@ class BrowserCommandController : public CommandUpdater,
   // Updates commands for tab keyboard focus state. If |target_index| is
   // populated, it is the index of the tab with focus; if it is not populated,
   // no tab has keyboard focus.
-  void UpdateCommandsForTabKeyboardFocus(base::Optional<int> target_index);
+  void UpdateCommandsForTabKeyboardFocus(absl::optional<int> target_index);
 
   // Updates commands that depend on whether web contents is focused or not.
   void UpdateCommandsForWebContentsFocus();

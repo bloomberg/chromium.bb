@@ -4214,6 +4214,19 @@ void GL_APIENTRY glRenderbufferStorageMultisampleEXT(GLenum target,
 
 // GL_EXT_occlusion_query_boolean
 
+// GL_EXT_primitive_bounding_box
+void GL_APIENTRY glPrimitiveBoundingBoxEXT(GLfloat minX,
+                                           GLfloat minY,
+                                           GLfloat minZ,
+                                           GLfloat minW,
+                                           GLfloat maxX,
+                                           GLfloat maxY,
+                                           GLfloat maxZ,
+                                           GLfloat maxW)
+{
+    return GL_PrimitiveBoundingBoxEXT(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+}
+
 // GL_EXT_read_format_bgra
 
 // GL_EXT_robustness
@@ -4624,6 +4637,47 @@ void GL_APIENTRY glPatchParameteriEXT(GLenum pname, GLint value)
     return GL_PatchParameteriEXT(pname, value);
 }
 
+// GL_EXT_texture_border_clamp
+void GL_APIENTRY glGetSamplerParameterIivEXT(GLuint sampler, GLenum pname, GLint *params)
+{
+    return GL_GetSamplerParameterIivEXT(sampler, pname, params);
+}
+
+void GL_APIENTRY glGetSamplerParameterIuivEXT(GLuint sampler, GLenum pname, GLuint *params)
+{
+    return GL_GetSamplerParameterIuivEXT(sampler, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIivEXT(GLenum target, GLenum pname, GLint *params)
+{
+    return GL_GetTexParameterIivEXT(target, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIuivEXT(GLenum target, GLenum pname, GLuint *params)
+{
+    return GL_GetTexParameterIuivEXT(target, pname, params);
+}
+
+void GL_APIENTRY glSamplerParameterIivEXT(GLuint sampler, GLenum pname, const GLint *param)
+{
+    return GL_SamplerParameterIivEXT(sampler, pname, param);
+}
+
+void GL_APIENTRY glSamplerParameterIuivEXT(GLuint sampler, GLenum pname, const GLuint *param)
+{
+    return GL_SamplerParameterIuivEXT(sampler, pname, param);
+}
+
+void GL_APIENTRY glTexParameterIivEXT(GLenum target, GLenum pname, const GLint *params)
+{
+    return GL_TexParameterIivEXT(target, pname, params);
+}
+
+void GL_APIENTRY glTexParameterIuivEXT(GLenum target, GLenum pname, const GLuint *params)
+{
+    return GL_TexParameterIuivEXT(target, pname, params);
+}
+
 // GL_EXT_texture_buffer
 void GL_APIENTRY glTexBufferEXT(GLenum target, GLenum internalformat, GLuint buffer)
 {
@@ -4657,6 +4711,8 @@ void GL_APIENTRY glTexBufferRangeEXT(GLenum target,
 
 // GL_EXT_texture_sRGB_R8
 
+// GL_EXT_texture_sRGB_RG8
+
 // GL_EXT_texture_storage
 void GL_APIENTRY glTexStorage1DEXT(GLenum target,
                                    GLsizei levels,
@@ -4683,6 +4739,12 @@ void GL_APIENTRY glTexStorage3DEXT(GLenum target,
                                    GLsizei depth)
 {
     return GL_TexStorage3DEXT(target, levels, internalformat, width, height, depth);
+}
+
+// GL_KHR_blend_equation_advanced
+void GL_APIENTRY glBlendBarrierKHR()
+{
+    return GL_BlendBarrierKHR();
 }
 
 // GL_KHR_debug
@@ -5571,6 +5633,11 @@ void GL_APIENTRY glBindVertexBufferContextANGLE(GLeglContext ctx,
 void GL_APIENTRY glBlendBarrierContextANGLE(GLeglContext ctx)
 {
     return GL_BlendBarrierContextANGLE(ctx);
+}
+
+void GL_APIENTRY glBlendBarrierKHRContextANGLE(GLeglContext ctx)
+{
+    return GL_BlendBarrierKHRContextANGLE(ctx);
 }
 
 void GL_APIENTRY
@@ -7693,6 +7760,14 @@ void GL_APIENTRY glGetSamplerParameterIivContextANGLE(GLeglContext ctx,
     return GL_GetSamplerParameterIivContextANGLE(ctx, sampler, pname, params);
 }
 
+void GL_APIENTRY glGetSamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                         GLuint sampler,
+                                                         GLenum pname,
+                                                         GLint *params)
+{
+    return GL_GetSamplerParameterIivEXTContextANGLE(ctx, sampler, pname, params);
+}
+
 void GL_APIENTRY glGetSamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                          GLuint sampler,
                                                          GLenum pname,
@@ -7707,6 +7782,14 @@ void GL_APIENTRY glGetSamplerParameterIuivContextANGLE(GLeglContext ctx,
                                                        GLuint *params)
 {
     return GL_GetSamplerParameterIuivContextANGLE(ctx, sampler, pname, params);
+}
+
+void GL_APIENTRY glGetSamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                          GLuint sampler,
+                                                          GLenum pname,
+                                                          GLuint *params)
+{
+    return GL_GetSamplerParameterIuivEXTContextANGLE(ctx, sampler, pname, params);
 }
 
 void GL_APIENTRY glGetSamplerParameterIuivOESContextANGLE(GLeglContext ctx,
@@ -7871,6 +7954,14 @@ void GL_APIENTRY glGetTexParameterIivContextANGLE(GLeglContext ctx,
     return GL_GetTexParameterIivContextANGLE(ctx, target, pname, params);
 }
 
+void GL_APIENTRY glGetTexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                     GLenum target,
+                                                     GLenum pname,
+                                                     GLint *params)
+{
+    return GL_GetTexParameterIivEXTContextANGLE(ctx, target, pname, params);
+}
+
 void GL_APIENTRY glGetTexParameterIivOESContextANGLE(GLeglContext ctx,
                                                      GLenum target,
                                                      GLenum pname,
@@ -7885,6 +7976,14 @@ void GL_APIENTRY glGetTexParameterIuivContextANGLE(GLeglContext ctx,
                                                    GLuint *params)
 {
     return GL_GetTexParameterIuivContextANGLE(ctx, target, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                      GLenum target,
+                                                      GLenum pname,
+                                                      GLuint *params)
+{
+    return GL_GetTexParameterIuivEXTContextANGLE(ctx, target, pname, params);
 }
 
 void GL_APIENTRY glGetTexParameterIuivOESContextANGLE(GLeglContext ctx,
@@ -8678,6 +8777,20 @@ void GL_APIENTRY glPrimitiveBoundingBoxContextANGLE(GLeglContext ctx,
                                                     GLfloat maxW)
 {
     return GL_PrimitiveBoundingBoxContextANGLE(ctx, minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+}
+
+void GL_APIENTRY glPrimitiveBoundingBoxEXTContextANGLE(GLeglContext ctx,
+                                                       GLfloat minX,
+                                                       GLfloat minY,
+                                                       GLfloat minZ,
+                                                       GLfloat minW,
+                                                       GLfloat maxX,
+                                                       GLfloat maxY,
+                                                       GLfloat maxZ,
+                                                       GLfloat maxW)
+{
+    return GL_PrimitiveBoundingBoxEXTContextANGLE(ctx, minX, minY, minZ, minW, maxX, maxY, maxZ,
+                                                  maxW);
 }
 
 void GL_APIENTRY glProgramBinaryContextANGLE(GLeglContext ctx,
@@ -9531,6 +9644,14 @@ void GL_APIENTRY glSamplerParameterIivContextANGLE(GLeglContext ctx,
     return GL_SamplerParameterIivContextANGLE(ctx, sampler, pname, param);
 }
 
+void GL_APIENTRY glSamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                      GLuint sampler,
+                                                      GLenum pname,
+                                                      const GLint *param)
+{
+    return GL_SamplerParameterIivEXTContextANGLE(ctx, sampler, pname, param);
+}
+
 void GL_APIENTRY glSamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                       GLuint sampler,
                                                       GLenum pname,
@@ -9545,6 +9666,14 @@ void GL_APIENTRY glSamplerParameterIuivContextANGLE(GLeglContext ctx,
                                                     const GLuint *param)
 {
     return GL_SamplerParameterIuivContextANGLE(ctx, sampler, pname, param);
+}
+
+void GL_APIENTRY glSamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                       GLuint sampler,
+                                                       GLenum pname,
+                                                       const GLuint *param)
+{
+    return GL_SamplerParameterIuivEXTContextANGLE(ctx, sampler, pname, param);
 }
 
 void GL_APIENTRY glSamplerParameterIuivOESContextANGLE(GLeglContext ctx,
@@ -9897,6 +10026,14 @@ void GL_APIENTRY glTexParameterIivContextANGLE(GLeglContext ctx,
     return GL_TexParameterIivContextANGLE(ctx, target, pname, params);
 }
 
+void GL_APIENTRY glTexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                  GLenum target,
+                                                  GLenum pname,
+                                                  const GLint *params)
+{
+    return GL_TexParameterIivEXTContextANGLE(ctx, target, pname, params);
+}
+
 void GL_APIENTRY glTexParameterIivOESContextANGLE(GLeglContext ctx,
                                                   GLenum target,
                                                   GLenum pname,
@@ -9911,6 +10048,14 @@ void GL_APIENTRY glTexParameterIuivContextANGLE(GLeglContext ctx,
                                                 const GLuint *params)
 {
     return GL_TexParameterIuivContextANGLE(ctx, target, pname, params);
+}
+
+void GL_APIENTRY glTexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                   GLenum target,
+                                                   GLenum pname,
+                                                   const GLuint *params)
+{
+    return GL_TexParameterIuivEXTContextANGLE(ctx, target, pname, params);
 }
 
 void GL_APIENTRY glTexParameterIuivOESContextANGLE(GLeglContext ctx,

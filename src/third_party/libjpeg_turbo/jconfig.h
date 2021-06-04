@@ -1,13 +1,13 @@
 /* Version ID for the JPEG library.
  * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
  */
-#define JPEG_LIB_VERSION 62
+#define JPEG_LIB_VERSION  62
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION 2.0.90
+#define LIBJPEG_TURBO_VERSION  2.1.0
 
 /* libjpeg-turbo version in integer form */
-#define LIBJPEG_TURBO_VERSION_NUMBER 2000090
+#define LIBJPEG_TURBO_VERSION_NUMBER  2001000
 
 /* Support arithmetic encoding */
 /* #define C_ARITH_CODING_SUPPORTED 1 */
@@ -30,7 +30,7 @@
  * We do not support run-time selection of data precision, sorry.
  */
 
-#define BITS_IN_JSAMPLE 8      /* use 8 or 12 */
+#define BITS_IN_JSAMPLE  8      /* use 8 or 12 */
 
 /* Define to 1 if you have the <locale.h> header file. */
 #define HAVE_LOCALE_H 1

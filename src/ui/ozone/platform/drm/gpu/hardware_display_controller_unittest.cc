@@ -9,12 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/gfx/native_pixmap.h"
@@ -90,7 +92,7 @@ std::unique_ptr<gfx::GpuFence> FakeFenceFD::GetGpuFence() const {
 }
 
 void FakeFenceFD::Signal() const {
-  base::WriteFileDescriptor(write_fd.get(), "a", 1);
+  base::WriteFileDescriptor(write_fd.get(), "a");
 }
 
 class HardwareDisplayControllerTest : public testing::Test {
@@ -104,7 +106,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   void InitializeDrmDevice(bool use_atomic);
   void SchedulePageFlip(ui::DrmOverlayPlaneList planes);
   void OnSubmission(gfx::SwapResult swap_result,
-                    std::unique_ptr<gfx::GpuFence> out_fence);
+                    gfx::GpuFenceHandle release_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
   uint64_t GetPlanePropertyValue(uint32_t plane,
                                  const std::string& property_name);
@@ -123,7 +125,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   }
 
  protected:
-  bool ModesetWithPlane(const ui::DrmOverlayPlane& plane);
+  bool ModesetWithPlanes(const ui::DrmOverlayPlaneList& modeset_planes);
   bool DisableController();
 
   std::unique_ptr<ui::HardwareDisplayController> controller_;
@@ -211,7 +213,7 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
 
         plane.properties.push_back(
             {/* .id = */ pair.first, /*.value = */ value});
-      };
+      }
 
       drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
           kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
@@ -242,16 +244,15 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
       gfx::Point());
 }
 
-bool HardwareDisplayControllerTest::ModesetWithPlane(
-    const ui::DrmOverlayPlane& plane) {
+bool HardwareDisplayControllerTest::ModesetWithPlanes(
+    const ui::DrmOverlayPlaneList& modeset_planes) {
   ui::CommitRequest commit_request;
-  controller_->GetModesetProps(&commit_request, plane, kDefaultMode);
+  controller_->GetModesetProps(&commit_request, modeset_planes, kDefaultMode);
   ui::CommitRequest request_for_update = commit_request;
   bool status = drm_->plane_manager()->Commit(std::move(commit_request),
                                               DRM_MODE_ATOMIC_ALLOW_MODESET);
-  controller_->UpdateState(
-      /*enable_requested=*/true,
-      ui::DrmOverlayPlane::GetPrimaryPlane(request_for_update[0].overlays()));
+  for (const ui::CrtcCommitRequest& crtc_request : commit_request)
+    controller_->UpdateState(crtc_request);
 
   return status;
 }
@@ -262,7 +263,8 @@ bool HardwareDisplayControllerTest::DisableController() {
   ui::CommitRequest request_for_update = commit_request;
   bool status = drm_->plane_manager()->Commit(std::move(commit_request),
                                               DRM_MODE_ATOMIC_ALLOW_MODESET);
-  controller_->UpdateState(/*enable_requested=*/false, nullptr);
+  for (const ui::CrtcCommitRequest& crtc_request : commit_request)
+    controller_->UpdateState(crtc_request);
 
   return status;
 }
@@ -279,7 +281,7 @@ void HardwareDisplayControllerTest::SchedulePageFlip(
 
 void HardwareDisplayControllerTest::OnSubmission(
     gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> out_fence) {
+    gfx::GpuFenceHandle release_fence) {
   last_swap_result_ = result;
 }
 
@@ -301,15 +303,18 @@ uint64_t HardwareDisplayControllerTest::GetPlanePropertyValue(
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
-  ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
 
-  EXPECT_TRUE(ModesetWithPlane(plane));
-  EXPECT_FALSE(plane.buffer->HasOneRef());
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
+  EXPECT_FALSE(ui::DrmOverlayPlane::GetPrimaryPlane(modeset_planes)
+                   ->buffer->HasOneRef());
 }
 
 TEST_F(HardwareDisplayControllerTest, CrtcPropsAfterModeset) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   ui::ScopedDrmObjectPropertyPtr crtc_props =
       drm_->GetObjectProperties(kPrimaryCrtc, DRM_MODE_OBJECT_CRTC);
@@ -328,8 +333,9 @@ TEST_F(HardwareDisplayControllerTest, CrtcPropsAfterModeset) {
 }
 
 TEST_F(HardwareDisplayControllerTest, ConnectorPropsAfterModeset) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   ui::ScopedDrmObjectPropertyPtr connector_props =
       drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
@@ -343,11 +349,15 @@ TEST_F(HardwareDisplayControllerTest, ConnectorPropsAfterModeset) {
 
 TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
   const FakeFenceFD fake_fence_fd;
-  ui::DrmOverlayPlane plane1(CreateBuffer(), fake_fence_fd.GetGpuFence());
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), fake_fence_fd.GetGpuFence());
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   ui::ScopedDrmObjectPropertyPtr plane_props =
       drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
+  const ui::DrmOverlayPlane* primary_plane =
+      ui::DrmOverlayPlane::GetPrimaryPlane(modeset_planes);
+
   {
     ui::DrmDevice::Property prop = {};
     ui::GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_ID", &prop);
@@ -358,13 +368,13 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
     ui::DrmDevice::Property prop = {};
     ui::GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_X", &prop);
     EXPECT_EQ(kCrtcX, prop.id);
-    EXPECT_EQ(plane1.display_bounds.x(), static_cast<int>(prop.value));
+    EXPECT_EQ(primary_plane->display_bounds.x(), static_cast<int>(prop.value));
   }
   {
     ui::DrmDevice::Property prop = {};
     ui::GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_Y", &prop);
     EXPECT_EQ(kCrtcY, prop.id);
-    EXPECT_EQ(plane1.display_bounds.y(), static_cast<int>(prop.value));
+    EXPECT_EQ(primary_plane->display_bounds.y(), static_cast<int>(prop.value));
   }
   {
     ui::DrmDevice::Property prop = {};
@@ -382,13 +392,13 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
     ui::DrmDevice::Property prop = {};
     ui::GetDrmPropertyForName(drm_.get(), plane_props.get(), "FB_ID", &prop);
     EXPECT_EQ(kPlaneFbId, prop.id);
-    EXPECT_EQ(plane1.buffer->opaque_framebuffer_id(),
+    EXPECT_EQ(primary_plane->buffer->opaque_framebuffer_id(),
               static_cast<uint32_t>(prop.value));
   }
 
-  gfx::RectF crop_rectf = plane1.crop_rect;
-  crop_rectf.Scale(plane1.buffer->size().width(),
-                   plane1.buffer->size().height());
+  gfx::RectF crop_rectf = primary_plane->crop_rect;
+  crop_rectf.Scale(primary_plane->buffer->size().width(),
+                   primary_plane->buffer->size().height());
   gfx::Rect crop_rect = gfx::ToNearestRect(crop_rectf);
   gfx::Rect fixed_point_rect =
       gfx::Rect(crop_rect.x() << 16, crop_rect.y() << 16,
@@ -427,8 +437,10 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
 }
 
 TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
+  modeset_planes.push_back(plane.Clone());
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   // Test invalid fence fd
   {
@@ -443,9 +455,9 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
   }
 
   const FakeFenceFD fake_fence_fd;
-  plane1.gpu_fence = fake_fence_fd.GetGpuFence();
+  plane.gpu_fence = fake_fence_fd.GetGpuFence();
   std::vector<ui::DrmOverlayPlane> planes = {};
-  planes.push_back(plane1.Clone());
+  planes.push_back(plane.Clone());
   SchedulePageFlip(std::move(planes));
 
   // Verify fence FD after a GPU Fence is added to the plane.
@@ -460,8 +472,10 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
               static_cast<int>(fence_fd_prop.value));
   }
 
-  plane1.gpu_fence = nullptr;
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  plane.gpu_fence = nullptr;
+  modeset_planes.clear();
+  modeset_planes.push_back(plane.Clone());
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   // Test an invalid FD again after the fence is removed.
   {
@@ -477,9 +491,9 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
   // Test props values after disabling.
   DisableController();
@@ -581,20 +595,21 @@ TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
   EXPECT_EQ(1, drm_->get_commit_count());
 
-  ui::DrmOverlayPlane plane2(CreateBuffer(), nullptr);
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane2.Clone());
+  ui::DrmOverlayPlane page_flip_plane(CreateBuffer(), nullptr);
+  std::vector<ui::DrmOverlayPlane> page_flip_planes;
+  page_flip_planes.push_back(page_flip_plane.Clone());
 
-  SchedulePageFlip(std::move(planes));
+  SchedulePageFlip(std::move(page_flip_planes));
 
   drm_->RunCallbacks();
-  EXPECT_TRUE(plane1.buffer->HasOneRef());
-  EXPECT_FALSE(plane2.buffer->HasOneRef());
+  EXPECT_TRUE(ui::DrmOverlayPlane::GetPrimaryPlane(modeset_planes)
+                  ->buffer->HasOneRef());
+  EXPECT_FALSE(page_flip_plane.buffer->HasOneRef());
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
@@ -608,23 +623,20 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   InitializeDrmDevice(/* use_atomic */ false);
   drm_->set_set_crtc_expectation(false);
 
-  ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
-
-  EXPECT_FALSE(ModesetWithPlane(plane));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_FALSE(ModesetWithPlanes(modeset_planes));
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  ui::DrmOverlayPlane plane2(
-      CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
-      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF), true, nullptr);
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  planes.emplace_back(CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
+                      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF),
+                      true, nullptr);
 
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  EXPECT_TRUE(ModesetWithPlanes(planes));
   EXPECT_EQ(1, drm_->get_commit_count());
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  planes.push_back(plane2.Clone());
 
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
@@ -637,17 +649,14 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  ui::DrmOverlayPlane plane2(
-      CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
-      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF), true, nullptr);
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  planes.emplace_back(CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
+                      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF),
+                      true, nullptr);
 
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  EXPECT_TRUE(ModesetWithPlanes(planes));
   EXPECT_EQ(1, drm_->get_commit_count());
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  planes.push_back(plane2.Clone());
 
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   EXPECT_EQ(2, drm_->get_commit_count());
@@ -674,16 +683,13 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
 }
 
 TEST_F(HardwareDisplayControllerTest, AcceptUnderlays) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  ui::DrmOverlayPlane plane2(CreateBuffer(), -1, gfx::OVERLAY_TRANSFORM_NONE,
-                             gfx::Rect(kDefaultModeSize),
-                             gfx::RectF(kDefaultModeSizeF), true, nullptr);
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  planes.emplace_back(CreateBuffer(), -1, gfx::OVERLAY_TRANSFORM_NONE,
+                      gfx::Rect(kDefaultModeSize),
+                      gfx::RectF(kDefaultModeSizeF), true, nullptr);
 
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  planes.push_back(plane2.Clone());
+  EXPECT_TRUE(ModesetWithPlanes(planes));
 
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
@@ -695,13 +701,12 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
   controller_->AddCrtc(std::make_unique<ui::CrtcController>(
       drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1));
 
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+
+  EXPECT_TRUE(ModesetWithPlanes(planes));
   EXPECT_EQ(1, drm_->get_commit_count());
 
-  ui::DrmOverlayPlane plane2(CreateBuffer(), nullptr);
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane2.Clone());
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -720,10 +725,10 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   controller_->AddCrtc(std::make_unique<ui::CrtcController>(
       drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1));
 
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -762,10 +767,10 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -790,10 +795,10 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
   controller_->AddCrtc(std::make_unique<ui::CrtcController>(
       drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1));
 
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -807,8 +812,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 
   ASSERT_TRUE(primary_crtc_plane != nullptr);
 
-  std::unique_ptr<ui::HardwareDisplayController> hdc_controller;
-  hdc_controller = std::make_unique<ui::HardwareDisplayController>(
+  auto hdc_controller = std::make_unique<ui::HardwareDisplayController>(
       controller_->RemoveCrtc(drm_, kPrimaryCrtc), controller_->origin());
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
@@ -835,53 +839,52 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 }
 
 TEST_F(HardwareDisplayControllerTest, ModesetWhilePageFlipping) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  SchedulePageFlip(std::move(planes));
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
 
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
+
+  EXPECT_TRUE(ModesetWithPlanes(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
 }
 
 TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
-  ASSERT_TRUE(ModesetWithPlane(ui::DrmOverlayPlane(CreateBuffer(), nullptr)));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  ASSERT_TRUE(ModesetWithPlanes(modeset_planes));
+
+  std::vector<ui::DrmOverlayPlane> page_flip_planes;
+  page_flip_planes.emplace_back(CreateBuffer(), nullptr);
 
   drm_->set_commit_expectation(false);
-  ui::DrmOverlayPlane post_modeset_plane(CreateBuffer(), nullptr);
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(post_modeset_plane.Clone());
-  EXPECT_DEATH_IF_SUPPORTED(SchedulePageFlip(std::move(planes)),
+  EXPECT_DEATH_IF_SUPPORTED(SchedulePageFlip(std::move(page_flip_planes)),
                             "SchedulePageFlip failed");
 }
 
 TEST_F(HardwareDisplayControllerTest,
        RecreateBuffersOnOldPlanesPageFlipFailure) {
-  ui::DrmOverlayPlane pre_modeset_plane(CreateBuffer(), nullptr);
-  ASSERT_TRUE(ModesetWithPlane(pre_modeset_plane));
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  ASSERT_TRUE(ModesetWithPlanes(planes));
 
   drm_->set_commit_expectation(false);
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(pre_modeset_plane.Clone());
   SchedulePageFlip(std::move(planes));
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS, last_swap_result_);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlaneOnFlip) {
-  ui::DrmOverlayPlane modeset_primary_plane(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(modeset_primary_plane));
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
 
-  ui::DrmOverlayPlane plane1(CreateBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
-                             gfx::Rect(kDefaultModeSize),
-                             gfx::RectF(0, 0, 1, 1), true, nullptr);
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  SchedulePageFlip(std::move(planes));
+  std::vector<ui::DrmOverlayPlane> page_flip_planes;
+  page_flip_planes.emplace_back(CreateBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
+                                gfx::Rect(kDefaultModeSize),
+                                gfx::RectF(0, 0, 1, 1), true, nullptr);
+  SchedulePageFlip(std::move(page_flip_planes));
 
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -889,10 +892,10 @@ TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlaneOnFlip) {
 }
 
 TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+
   SchedulePageFlip(std::move(planes));
 
   controller_->AddCrtc(std::make_unique<ui::CrtcController>(
@@ -904,10 +907,10 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
 }
 
 TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+
   SchedulePageFlip(std::move(planes));
 
   controller_->RemoveCrtc(drm_, kPrimaryCrtc);
@@ -921,16 +924,13 @@ TEST_F(HardwareDisplayControllerTest, Disable) {
   // Page flipping overlays is only supported on atomic configurations.
   InitializeDrmDevice(/* use_atomic= */ true);
 
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(ModesetWithPlane(plane1));
+  ui::DrmOverlayPlaneList planes;
+  planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
 
-  ui::DrmOverlayPlane plane2(
-      CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
-      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF), true, nullptr);
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  planes.push_back(plane2.Clone());
-
+  planes.emplace_back(CreateOverlayBuffer(), 1, gfx::OVERLAY_TRANSFORM_NONE,
+                      gfx::Rect(kOverlaySize), gfx::RectF(kDefaultModeSizeF),
+                      true, nullptr);
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
@@ -947,49 +947,70 @@ TEST_F(HardwareDisplayControllerTest, Disable) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PageflipAfterModeset) {
+  ui::DrmOverlayPlaneList planes;
   scoped_refptr<ui::DrmFramebuffer> buffer = CreateBuffer();
-  ui::DrmOverlayPlane plane1(buffer, nullptr);
+  planes.emplace_back(buffer, nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
 
-  ModesetWithPlane(plane1);
+  for (const auto& plane : planes) {
+    EXPECT_TRUE(base::Contains(drm_->plane_manager()
+                                   ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                                   .modeset_framebuffers,
+                               plane.buffer));
+  }
 
-  EXPECT_EQ(drm_->plane_manager()
-                ->GetCrtcStateForCrtcId(kPrimaryCrtc)
-                .modeset_framebuffer,
-            buffer);
-
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
   SchedulePageFlip(std::move(planes));
   drm_->RunCallbacks();
 
-  // modeset_framebuffer should be cleared after the pageflip is complete.
-  EXPECT_EQ(drm_->plane_manager()
-                ->GetCrtcStateForCrtcId(kPrimaryCrtc)
-                .modeset_framebuffer,
-            nullptr);
+  // modeset_framebuffers should be cleared after the pageflip is complete.
+  EXPECT_TRUE(drm_->plane_manager()
+                  ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                  .modeset_framebuffers.empty());
 }
 
 TEST_F(HardwareDisplayControllerTest, PageflipBeforeModeset) {
+  ui::DrmOverlayPlaneList planes;
   scoped_refptr<ui::DrmFramebuffer> buffer = CreateBuffer();
-  ui::DrmOverlayPlane plane1(buffer, nullptr);
+  planes.emplace_back(buffer, nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(planes));
 
-  EXPECT_TRUE(ModesetWithPlane(ui::DrmOverlayPlane(CreateBuffer(), nullptr)));
+  SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
 
-  std::vector<ui::DrmOverlayPlane> planes;
-  planes.push_back(plane1.Clone());
-  SchedulePageFlip(std::move(planes));
+  EXPECT_TRUE(ModesetWithPlanes(planes));
+  for (const auto& plane : planes) {
+    EXPECT_TRUE(base::Contains(drm_->plane_manager()
+                                   ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                                   .modeset_framebuffers,
+                               plane.buffer));
+  }
 
-  EXPECT_TRUE(ModesetWithPlane(plane1));
-  EXPECT_EQ(drm_->plane_manager()
-                ->GetCrtcStateForCrtcId(kPrimaryCrtc)
-                .modeset_framebuffer,
-            buffer);
-
-  // modeset_framebuffer should not be cleared when a pageflip callback is run
+  // modeset_framebuffers should not be cleared when a pageflip callback is run
   // after a modeset
   drm_->RunCallbacks();
+  EXPECT_FALSE(drm_->plane_manager()
+                   ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                   .modeset_framebuffers.empty());
+  for (const auto& plane : planes) {
+    EXPECT_TRUE(base::Contains(drm_->plane_manager()
+                                   ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                                   .modeset_framebuffers,
+                               plane.buffer));
+  }
+}
+
+TEST_F(HardwareDisplayControllerTest, MultiplePlanesModeset) {
+  ui::DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  ASSERT_TRUE(ModesetWithPlanes(modeset_planes));
   EXPECT_EQ(drm_->plane_manager()
                 ->GetCrtcStateForCrtcId(kPrimaryCrtc)
-                .modeset_framebuffer,
-            buffer);
+                .modeset_framebuffers.size(),
+            2UL);
+  for (const auto& plane : modeset_planes) {
+    EXPECT_TRUE(base::Contains(drm_->plane_manager()
+                                   ->GetCrtcStateForCrtcId(kPrimaryCrtc)
+                                   .modeset_framebuffers,
+                               plane.buffer));
+  }
 }

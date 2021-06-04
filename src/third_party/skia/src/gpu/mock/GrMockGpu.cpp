@@ -56,13 +56,14 @@ sk_sp<GrGpu> GrMockGpu::Make(const GrMockOptions* mockOptions,
 }
 
 GrOpsRenderPass* GrMockGpu::onGetOpsRenderPass(GrRenderTarget* rt,
-                                             GrAttachment*,
-                                             GrSurfaceOrigin origin,
-                                             const SkIRect& bounds,
-                                             const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
-                                             const GrOpsRenderPass::StencilLoadAndStoreInfo&,
-                                             const SkTArray<GrSurfaceProxy*, true>& sampledProxies,
-                                             GrXferBarrierFlags renderPassXferBarriers) {
+                                               bool /*useMSAASurface*/,
+                                               GrAttachment*,
+                                               GrSurfaceOrigin origin,
+                                               const SkIRect& bounds,
+                                               const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
+                                               const GrOpsRenderPass::StencilLoadAndStoreInfo&,
+                                               const SkTArray<GrSurfaceProxy*,true>& sampledProxies,
+                                               GrXferBarrierFlags renderPassXferBarriers) {
     return new GrMockOpsRenderPass(this, rt, origin, colorInfo);
 }
 
@@ -209,14 +210,12 @@ sk_sp<GrGpuBuffer> GrMockGpu::onCreateBuffer(size_t sizeInBytes, GrGpuBufferType
     return sk_sp<GrGpuBuffer>(new GrMockBuffer(this, sizeInBytes, type, accessPattern));
 }
 
-sk_sp<GrAttachment> GrMockGpu::makeStencilAttachmentForRenderTarget(const GrRenderTarget* rt,
-                                                                    SkISize dimensions,
-                                                                    int numStencilSamples) {
-    SkASSERT(numStencilSamples == rt->numSamples());
+sk_sp<GrAttachment> GrMockGpu::makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,
+                                                     SkISize dimensions, int numStencilSamples) {
     fStats.incStencilAttachmentCreates();
     return sk_sp<GrAttachment>(
             new GrMockAttachment(this, dimensions, GrAttachment::UsageFlags::kStencilAttachment,
-                                 rt->numSamples()));
+                                 numStencilSamples));
 }
 
 GrBackendTexture GrMockGpu::onCreateBackendTexture(SkISize dimensions,

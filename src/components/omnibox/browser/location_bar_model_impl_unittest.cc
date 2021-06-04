@@ -273,14 +273,12 @@ TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   delegate()->SetShouldPreventElision(true);
   delegate()->SetURL(GURL("https://www.google.com/search?q=foo+query+unelide"));
 
-  EXPECT_EQ(base::ASCIIToUTF16(
-                "https://www.google.com/search?q=foo+query+unelide/TestSuffix"),
+  EXPECT_EQ(u"https://www.google.com/search?q=foo+query+unelide/TestSuffix",
             model()->GetURLForDisplay());
 
   // Test that HTTP elisions are prevented.
   delegate()->SetURL(GURL("http://www.google.com/search?q=foo+query+unelide"));
-  EXPECT_EQ(base::ASCIIToUTF16(
-                "http://www.google.com/search?q=foo+query+unelide/TestSuffix"),
+  EXPECT_EQ(u"http://www.google.com/search?q=foo+query+unelide/TestSuffix",
             model()->GetURLForDisplay());
 }
 
@@ -290,8 +288,8 @@ TEST_F(LocationBarModelImplTest, GetVectorIcon) {
   delegate()->SetSecurityLevel(security_state::SecurityLevel::WARNING);
 
   gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, gfx::kFaviconSize,
-                            gfx::kPlaceholderColor);
+      gfx::CreateVectorIcon(vector_icons::kNotSecureWarningIcon,
+                            gfx::kFaviconSize, gfx::kPlaceholderColor);
 
   gfx::ImageSkia icon = gfx::CreateVectorIcon(
       model()->GetVectorIcon(), gfx::kFaviconSize, gfx::kPlaceholderColor);

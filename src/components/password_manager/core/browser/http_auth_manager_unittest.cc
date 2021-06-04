@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -29,8 +28,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
@@ -161,8 +160,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
     EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&consumer));
     httpauth_manager()->SetObserverAndDeliverCredentials(&observer,
                                                          observed_form);
-    EXPECT_CALL(observer, OnAutofillDataAvailable(ASCIIToUTF16("user"),
-                                                  ASCIIToUTF16("1234")))
+    EXPECT_CALL(observer, OnAutofillDataAvailable(std::u16string(u"user"),
+                                                  std::u16string(u"1234")))
         .Times(filling_enabled);
     ASSERT_TRUE(consumer);
     std::vector<std::unique_ptr<PasswordForm>> result;

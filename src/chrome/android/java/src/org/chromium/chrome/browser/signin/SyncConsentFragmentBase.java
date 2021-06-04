@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -21,19 +20,14 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
-import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.ui.ConfirmSyncDataStateMachine;
@@ -42,19 +36,15 @@ import org.chromium.chrome.browser.signin.ui.ConsentTextTracker;
 import org.chromium.chrome.browser.signin.ui.SigninUtils;
 import org.chromium.chrome.browser.signin.ui.SigninView;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerCoordinator;
-import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerDialogFragment;
+import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerDialogCoordinator;
 import org.chromium.chrome.browser.sync.SyncUserDataWiper;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.externalauth.UserRecoverableErrorHandler;
-import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.AccountManagerResult;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.GmsAvailabilityException;
-import org.chromium.components.signin.GmsJustUpdatedException;
-import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoService;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -75,8 +65,6 @@ import java.util.List;
  */
 public abstract class SyncConsentFragmentBase
         extends Fragment implements AccountPickerCoordinator.Listener {
-    private static final String TAG = "SigninFragmentBase";
-
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
 
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
@@ -87,11 +75,7 @@ public abstract class SyncConsentFragmentBase
             "SigninFragmentBase.ChildAccountStatus";
     private static final String ARGUMENT_SIGNIN_FLOW_TYPE = "SigninFragmentBase.SigninFlowType";
 
-    private static final String ACCOUNT_PICKER_DIALOG_TAG =
-            "SigninFragmentBase.AccountPickerDialogFragment";
-
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
-    private static final int ACCOUNT_PICKER_DIALOG_REQUEST_CODE = 2;
 
     @IntDef({SigninFlowType.DEFAULT, SigninFlowType.CHOOSE_ACCOUNT, SigninFlowType.ADD_ACCOUNT})
     @Retention(RetentionPolicy.SOURCE)
@@ -115,17 +99,14 @@ public abstract class SyncConsentFragmentBase
     private final AccountsChangeObserver mAccountsChangedObserver;
     private final ProfileDataCache.Observer mProfileDataCacheObserver;
     private ProfileDataCache mProfileDataCache;
-    private List<String> mAccountNames;
     private boolean mDestroyed;
     private boolean mIsSigninInProgress;
-    private boolean mHasGmsError;
+    private boolean mCanUseGooglePlayServices;
     private boolean mRecordUndoSignin;
     protected @SigninAccessPoint int mSigninAccessPoint;
 
-    private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
-    private AlertDialog mGmsIsUpdatingDialog;
-    private long mGmsIsUpdatingDialogShowTime;
     private ConfirmSyncDataStateMachine mConfirmSyncDataStateMachine;
+    private AccountPickerDialogCoordinator mAccountPickerDialogCoordinator;
 
     /**
      * Creates an argument bundle for the default {@link SyncConsentFragment} flow.
@@ -185,6 +166,7 @@ public abstract class SyncConsentFragmentBase
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
         mAccountsChangedObserver = this::triggerUpdateAccounts;
         mProfileDataCacheObserver = this::updateProfileData;
+        mCanUseGooglePlayServices = true;
     }
 
     /** The sign-in was refused. */
@@ -220,7 +202,8 @@ public abstract class SyncConsentFragmentBase
             // If this fragment is being recreated from a saved state there's no need to show
             // account picked or starting AddAccount flow.
             if (signinFlowType == SigninFlowType.CHOOSE_ACCOUNT) {
-                showAccountPicker();
+                mAccountPickerDialogCoordinator =
+                        new AccountPickerDialogCoordinator(requireContext(), this);
             } else if (signinFlowType == SigninFlowType.ADD_ACCOUNT) {
                 addAccount();
             }
@@ -232,6 +215,7 @@ public abstract class SyncConsentFragmentBase
                 ? ProfileDataCache.createWithDefaultImageSize(
                         requireContext(), R.drawable.ic_account_child_20dp)
                 : ProfileDataCache.createWithDefaultImageSizeAndNoBadge(requireContext());
+        mProfileDataCache.addObserver(mProfileDataCacheObserver);
 
         // By default this is set to true so that when system back button is pressed user action
         // is recorded in onDestroy().
@@ -243,8 +227,7 @@ public abstract class SyncConsentFragmentBase
     @Override
     public void onDestroy() {
         super.onDestroy();
-        dismissGmsErrorDialog();
-        dismissGmsUpdatingDialog();
+        mProfileDataCache.removeObserver(mProfileDataCacheObserver);
         if (mConfirmSyncDataStateMachine != null) {
             mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ true);
             mConfirmSyncDataStateMachine = null;
@@ -290,6 +273,15 @@ public abstract class SyncConsentFragmentBase
             updateProfileData(mSelectedAccountName);
         }
         return mView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        boolean cancelable = !ChildAccountStatus.isChild(mChildAccountStatus);
+        mCanUseGooglePlayServices = ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+                new UserRecoverableErrorHandler.ModalDialog(requireActivity(), cancelable));
+        mView.getAcceptButton().setEnabled(mCanUseGooglePlayServices);
     }
 
     /**
@@ -372,7 +364,8 @@ public abstract class SyncConsentFragmentBase
 
     private void onAccountPickerClicked() {
         if (ChildAccountStatus.isChild(mChildAccountStatus) || !areControlsEnabled()) return;
-        showAccountPicker();
+        mAccountPickerDialogCoordinator =
+                new AccountPickerDialogCoordinator(requireContext(), this);
     }
 
     private void onRefuseButtonClicked(View button) {
@@ -408,24 +401,16 @@ public abstract class SyncConsentFragmentBase
     private boolean areControlsEnabled() {
         // Ignore clicks if the fragment is being removed or the app is being backgrounded.
         if (!isResumed() || isStateSaved()) return false;
-        return !mAccountSelectionPending && !mIsSigninInProgress && !mHasGmsError;
+        return !mAccountSelectionPending && !mIsSigninInProgress && mCanUseGooglePlayServices;
     }
 
     private void seedAccountsAndSignin(boolean settingsClicked, View confirmationView) {
-        // Ensure that the AccountTrackerService has a fully up to date GAIA id <-> email mapping,
-        // as this is needed for the previous account check.
-        final long seedingStartTime = SystemClock.elapsedRealtime();
-        IdentityServicesProvider.get()
-                .getAccountTrackerService(Profile.getLastUsedRegularProfile())
-                .seedAccountsIfNeeded(() -> {
-                    final CoreAccountInfo accountInfo =
-                            AccountInfoService.get().getAccountInfoByEmail(mSelectedAccountName);
+        AccountInfoService.get()
+                .getAccountInfoByEmailAsync(mSelectedAccountName)
+                .then(accountInfo -> {
                     assert accountInfo != null : "The seeded CoreAccountInfo shouldn't be null";
                     mConsentTextTracker.recordConsent(accountInfo.getId(),
                             ConsentAuditorFeature.CHROME_SYNC, (TextView) confirmationView, mView);
-                    RecordHistogram.recordTimesHistogram(
-                            "Signin.AndroidAccountSigninViewSeedingTime",
-                            SystemClock.elapsedRealtime() - seedingStartTime);
                     if (isResumed()) {
                         runStateMachineAndSignin(settingsClicked);
                     }
@@ -458,27 +443,11 @@ public abstract class SyncConsentFragmentBase
                 });
     }
 
-    private void showAccountPicker() {
-        // Account picker is already shown
-        if (getAccountPickerDialogFragment() != null) return;
-
-        AccountPickerDialogFragment dialog =
-                AccountPickerDialogFragment.create(mSelectedAccountName);
-        dialog.setTargetFragment(this, ACCOUNT_PICKER_DIALOG_REQUEST_CODE);
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.add(dialog, ACCOUNT_PICKER_DIALOG_TAG);
-        transaction.commitAllowingStateLoss();
-    }
-
-    private AccountPickerDialogFragment getAccountPickerDialogFragment() {
-        return (AccountPickerDialogFragment) getFragmentManager().findFragmentByTag(
-                ACCOUNT_PICKER_DIALOG_TAG);
-    }
-
     @Override
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
         selectAccount(accountName, isDefaultAccount);
-        getAccountPickerDialogFragment().dismissAllowingStateLoss();
+        mAccountPickerDialogCoordinator.dismissDialog();
+        mAccountPickerDialogCoordinator = null;
     }
 
     @Override
@@ -504,18 +473,14 @@ public abstract class SyncConsentFragmentBase
             String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
             if (addedAccountName == null) return;
 
-            // Found the account name, dismiss the account picker dialog if it is shown.
-            AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
-            if (accountPickerFragment != null) {
-                accountPickerFragment.dismissAllowingStateLoss();
+            // Found the account name, dismiss the dialog if it is shown
+            if (mAccountPickerDialogCoordinator != null) {
+                mAccountPickerDialogCoordinator.dismissDialog();
+                mAccountPickerDialogCoordinator = null;
             }
-
             // Wait for the account cache to be updated and select newly-added account.
-            mAccountManagerFacade.waitForPendingUpdates(() -> {
-                mAccountSelectionPending = true;
-                mRequestedAccountName = addedAccountName;
-                triggerUpdateAccounts();
-            });
+            mAccountSelectionPending = true;
+            mRequestedAccountName = addedAccountName;
         }
     }
 
@@ -523,7 +488,6 @@ public abstract class SyncConsentFragmentBase
     public void onResume() {
         super.onResume();
         mAccountManagerFacade.addObserver(mAccountsChangedObserver);
-        mProfileDataCache.addObserver(mProfileDataCacheObserver);
         triggerUpdateAccounts();
 
         mView.startAnimations();
@@ -532,7 +496,6 @@ public abstract class SyncConsentFragmentBase
     @Override
     public void onPause() {
         super.onPause();
-        mProfileDataCache.removeObserver(mProfileDataCacheObserver);
         mAccountManagerFacade.removeObserver(mAccountsChangedObserver);
 
         mView.stopAnimations();
@@ -542,28 +505,18 @@ public abstract class SyncConsentFragmentBase
         mSelectedAccountName = accountName;
         mIsDefaultAccountSelected = isDefaultAccount;
         updateProfileData(mSelectedAccountName);
-
-        AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
-        if (accountPickerFragment != null) {
-            accountPickerFragment.updateSelectedAccount(accountName);
-        }
     }
 
     private void triggerUpdateAccounts() {
-        mAccountManagerFacade.getGoogleAccounts(this::updateAccounts);
+        mAccountManagerFacade.tryGetGoogleAccounts(accounts -> {
+            if (isResumed() && mCanUseGooglePlayServices) {
+                updateAccounts(accounts);
+            }
+        });
     }
 
-    private void updateAccounts(AccountManagerResult<List<Account>> accounts) {
-        if (!isResumed()) {
-            return;
-        }
-
-        mAccountNames = getAccountNames(accounts);
-        mHasGmsError = mAccountNames == null;
-        mView.getAcceptButton().setEnabled(!mHasGmsError);
-        if (mHasGmsError) return;
-
-        if (mAccountNames.isEmpty()) {
+    private void updateAccounts(List<Account> accounts) {
+        if (accounts.isEmpty()) {
             mSelectedAccountName = null;
             mAccountSelectionPending = false;
             setHasAccounts(false);
@@ -571,9 +524,8 @@ public abstract class SyncConsentFragmentBase
         } else {
             setHasAccounts(true);
         }
-
         if (mAccountSelectionPending) {
-            String defaultAccount = mAccountNames.get(0);
+            String defaultAccount = accounts.get(0).name;
             String accountToSelect =
                     mRequestedAccountName != null ? mRequestedAccountName : defaultAccount;
             selectAccount(accountToSelect, accountToSelect.equals(defaultAccount));
@@ -581,7 +533,10 @@ public abstract class SyncConsentFragmentBase
             mRequestedAccountName = null;
         }
 
-        if (mSelectedAccountName != null && mAccountNames.contains(mSelectedAccountName)) return;
+        if (mSelectedAccountName != null
+                && AccountUtils.findAccountByName(accounts, mSelectedAccountName) != null) {
+            return;
+        }
 
         if (mConfirmSyncDataStateMachine != null) {
             // Any dialogs that may have been showing are now invalid (they were created
@@ -596,78 +551,9 @@ public abstract class SyncConsentFragmentBase
             return;
         }
 
-        selectAccount(mAccountNames.get(0), true);
-        showAccountPicker(); // Show account picker so user can confirm the account selection.
-    }
-
-    @Nullable
-    private List<String> getAccountNames(AccountManagerResult<List<Account>> accounts) {
-        try {
-            List<String> result = AccountUtils.toAccountNames(accounts.get());
-            dismissGmsErrorDialog();
-            dismissGmsUpdatingDialog();
-            return result;
-        } catch (GmsAvailabilityException e) {
-            dismissGmsUpdatingDialog();
-            if (e.isUserResolvableError()) {
-                showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
-            } else {
-                Log.e(TAG, "Unresolvable GmsAvailabilityException.", e);
-            }
-            return null;
-        } catch (GmsJustUpdatedException e) {
-            dismissGmsErrorDialog();
-            showGmsUpdatingDialog();
-            return null;
-        } catch (AccountManagerDelegateException e) {
-            Log.e(TAG, "Unknown exception from AccountManagerFacade.", e);
-            dismissGmsErrorDialog();
-            dismissGmsUpdatingDialog();
-            return null;
-        }
-    }
-
-    private void showGmsErrorDialog(int gmsErrorCode) {
-        if (mGooglePlayServicesUpdateErrorHandler != null
-                && mGooglePlayServicesUpdateErrorHandler.isShowing()) {
-            return;
-        }
-        boolean cancelable = !IdentityServicesProvider.get()
-                                      .getSigninManager(Profile.getLastUsedRegularProfile())
-                                      .isForceSigninEnabled();
-        mGooglePlayServicesUpdateErrorHandler =
-                new UserRecoverableErrorHandler.ModalDialog(getActivity(), cancelable);
-        mGooglePlayServicesUpdateErrorHandler.handleError(getActivity(), gmsErrorCode);
-    }
-
-    private void showGmsUpdatingDialog() {
-        if (mGmsIsUpdatingDialog != null) {
-            return;
-        }
-        // TODO(https://crbug.com/814728): Use DialogFragment here.
-        mGmsIsUpdatingDialog = new AlertDialog.Builder(getActivity())
-                                       .setCancelable(false)
-                                       .setView(R.layout.updating_gms_progress_view)
-                                       .create();
-        mGmsIsUpdatingDialog.show();
-        mGmsIsUpdatingDialogShowTime = SystemClock.elapsedRealtime();
-    }
-
-    private void dismissGmsErrorDialog() {
-        if (mGooglePlayServicesUpdateErrorHandler == null) {
-            return;
-        }
-        mGooglePlayServicesUpdateErrorHandler.cancelDialog();
-        mGooglePlayServicesUpdateErrorHandler = null;
-    }
-
-    private void dismissGmsUpdatingDialog() {
-        if (mGmsIsUpdatingDialog == null) {
-            return;
-        }
-        mGmsIsUpdatingDialog.dismiss();
-        mGmsIsUpdatingDialog = null;
-        RecordHistogram.recordTimesHistogram("Signin.AndroidGmsUpdatingDialogShownTime",
-                SystemClock.elapsedRealtime() - mGmsIsUpdatingDialogShowTime);
+        selectAccount(accounts.get(0).name, true);
+        // Show account picker to user to confirm the account selection
+        mAccountPickerDialogCoordinator =
+                new AccountPickerDialogCoordinator(requireContext(), this);
     }
 }

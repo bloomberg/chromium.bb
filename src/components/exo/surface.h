@@ -41,6 +41,7 @@ class TracedValue;
 namespace gfx {
 class ColorSpace;
 class GpuFence;
+struct PresentationFeedback;
 }
 
 namespace viz {
@@ -184,9 +185,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have a specific application ID string.
   void SetApplicationId(const char* application_id);
 
-  // Whether to hide the shelf when fullscreen. If true, shelf is inaccessible
-  // (plain fullscreen). If false, shelf auto-hides and can be shown with a
-  // mouse gesture (immersive fullscreen).
+  // Whether to show/hide the shelf when fullscreen. If true, the titlebar/shelf
+  // will show when the mouse moves to the top/bottom of the screen. If false
+  // (plain fullscreen), the titlebar and shelf are always hidden.
   void SetUseImmersiveForFullscreen(bool value);
 
   // Called to show the snap preview to the right or left, or to hide it.
@@ -198,6 +199,10 @@ class Surface final : public ui::PropertyHandler {
   void SetSnappedToRight();
   void SetSnappedToLeft();
   void UnsetSnap();
+
+  // Whether the current client window can go back, as per its navigation list.
+  void SetCanGoBack();
+  void UnsetCanGoBack();
 
   // This sets the color space for the buffer for this surface.
   void SetColorSpace(gfx::ColorSpace color_space);
@@ -342,7 +347,7 @@ class Surface final : public ui::PropertyHandler {
     bool operator!=(const State& other) const { return !(*this == other); }
 
     cc::Region opaque_region;
-    base::Optional<cc::Region> input_region;
+    absl::optional<cc::Region> input_region;
     int input_outset = 0;
     float buffer_scale = 1.0f;
     Transform buffer_transform = Transform::NORMAL;

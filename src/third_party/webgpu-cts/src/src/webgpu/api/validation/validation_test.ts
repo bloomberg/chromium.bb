@@ -123,14 +123,6 @@ export class ValidationTest extends GPUTest {
     return this.createBufferWithState('invalid');
   }
 
-  getSampler(): GPUSampler {
-    return this.device.createSampler();
-  }
-
-  getComparisonSampler(): GPUSampler {
-    return this.device.createSampler({ compare: 'never' });
-  }
-
   getErrorSampler(): GPUSampler {
     this.device.pushErrorScope('validation');
     const sampler = this.device.createSampler({ lodMinClamp: -1 });
@@ -193,10 +185,12 @@ export class ValidationTest extends GPUTest {
         return { buffer: this.getUniformBuffer() };
       case 'storageBuf':
         return { buffer: this.getStorageBuffer() };
-      case 'plainSamp':
-        return this.getSampler();
+      case 'filtSamp':
+        return this.device.createSampler({ minFilter: 'linear' });
+      case 'nonFiltSamp':
+        return this.device.createSampler();
       case 'compareSamp':
-        return this.getComparisonSampler();
+        return this.device.createSampler({ compare: 'never' });
       case 'sampledTex':
         return this.getSampledTexture(1).createView();
       case 'sampledTexMS':
@@ -210,13 +204,13 @@ export class ValidationTest extends GPUTest {
     return this.device.createRenderPipeline({
       vertex: {
         module: this.device.createShaderModule({
-          code: '[[stage(vertex)]] fn main() -> void {}',
+          code: '[[stage(vertex)]] fn main() {}',
         }),
         entryPoint: 'main',
       },
       fragment: {
         module: this.device.createShaderModule({
-          code: '[[stage(fragment)]] fn main() -> void {}',
+          code: '[[stage(fragment)]] fn main() {}',
         }),
         entryPoint: 'main',
         targets: [{ format: 'rgba8unorm' }],
@@ -227,9 +221,9 @@ export class ValidationTest extends GPUTest {
 
   createNoOpComputePipeline(): GPUComputePipeline {
     return this.device.createComputePipeline({
-      computeStage: {
+      compute: {
         module: this.device.createShaderModule({
-          code: '[[stage(compute)]] fn main() -> void {}',
+          code: '[[stage(compute)]] fn main() {}',
         }),
         entryPoint: 'main',
       },
@@ -239,7 +233,7 @@ export class ValidationTest extends GPUTest {
   createErrorComputePipeline(): GPUComputePipeline {
     this.device.pushErrorScope('validation');
     const pipeline = this.device.createComputePipeline({
-      computeStage: {
+      compute: {
         module: this.device.createShaderModule({
           code: '',
         }),
@@ -290,7 +284,7 @@ export class ValidationTest extends GPUTest {
       }
       case 'render pass': {
         const commandEncoder = this.device.createCommandEncoder();
-        const attachment = this.device
+        const view = this.device
           .createTexture({
             format: colorFormat,
             size: { width: 16, height: 16, depthOrArrayLayers: 1 },
@@ -300,8 +294,9 @@ export class ValidationTest extends GPUTest {
         const encoder = commandEncoder.beginRenderPass({
           colorAttachments: [
             {
-              attachment,
+              view,
               loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+              storeOp: 'store',
             },
           ],
         });

@@ -25,7 +25,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -136,17 +135,14 @@ class MetricsService : public base::HistogramFlattener {
   // Called when the application is coming out of background mode.
   void OnAppEnterForeground(bool force_open_new_log = false);
 #else
-  // Set the dirty flag, which will require a later call to LogCleanShutdown().
+  // Signals that the session has not yet exited cleanly. Calling this later
+  // requires a call to LogCleanShutdown().
   void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   bool recording_active() const;
   bool reporting_active() const;
   bool has_unsent_logs() const;
-
-  // Redundant test to ensure that we are notified of a clean exit.
-  // This value should be true when process has completed shutdown.
-  static bool UmaMetricsProperlyShutdown();
 
   // Register the specified |provider| to provide additional metrics into the
   // UMA log. Should be called during MetricsService initialization only.
@@ -202,17 +198,12 @@ class MetricsService : public base::HistogramFlattener {
     INITIALIZED,          // InitializeMetricsRecordingState() was called.
     INIT_TASK_SCHEDULED,  // Waiting for deferred init tasks to finish.
     INIT_TASK_DONE,       // Waiting for timer to send initial log.
-    SENDING_LOGS,         // Sending logs an creating new ones when we run out.
+    SENDING_LOGS,         // Sending logs and creating new ones when we run out.
   };
 
   State state() const { return state_; }
 
  private:
-  enum ShutdownCleanliness {
-    CLEANLY_SHUTDOWN = 0xdeadbeef,
-    NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
-  };
-
   // The current state of recording for the MetricsService. The state is UNSET
   // until set to something else, at which point it remains INACTIVE or ACTIVE
   // for the lifetime of the object.
@@ -268,8 +259,7 @@ class MetricsService : public base::HistogramFlattener {
   void CloseCurrentLog();
 
   // Pushes the text of the current and staged logs into persistent storage.
-  // Called when Chrome shuts down.
-  void PushPendingLogsToPersistentStorage();
+  bool PushPendingLogsToPersistentStorage();
 
   // Ensures that scheduler is running, assuming the current settings are such
   // that metrics should be reported. If not, this is a no-op.
@@ -289,14 +279,6 @@ class MetricsService : public base::HistogramFlattener {
   // to validate the version number recovered from the system profile.  Returns
   // true if a log was created.
   bool PrepareInitialStabilityLog(const std::string& prefs_previous_version);
-
-  // Prepares the initial metrics log, which includes startup histograms and
-  // profiler data, as well as incremental stability-related metrics.
-  void PrepareInitialMetricsLog();
-
-  // Reads, increments and then sets the specified long preference that is
-  // stored as a string.
-  void IncrementLongPrefsValue(const char* path);
 
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown(bool end_completed);
@@ -371,11 +353,6 @@ class MetricsService : public base::HistogramFlattener {
   // state.
   State state_;
 
-  // The initial metrics log, used to record startup metrics (histograms and
-  // profiler data). Note that if a crash occurred in the previous session, an
-  // initial stability log may be sent before this.
-  std::unique_ptr<MetricsLog> initial_metrics_log_;
-
   // Whether the MetricsService object has received any notifications since
   // the last time a transmission was sent.
   bool idle_since_last_transmission_;
@@ -402,10 +379,6 @@ class MetricsService : public base::HistogramFlattener {
   // (false) was called.
   bool is_in_foreground_ = false;
 #endif
-
-  // Redundant marker to check that we completed our shutdown, and set the
-  // exited-cleanly bit in the prefs.
-  static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ActiveFieldTrialsReported);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);

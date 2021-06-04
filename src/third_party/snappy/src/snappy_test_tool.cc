@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <random>
 #include <string>
@@ -41,23 +42,24 @@
 #include "snappy.h"
 #include "snappy_test_data.h"
 
-DEFINE_int32(start_len, -1,
-             "Starting prefix size for testing (-1: just full file contents)");
-DEFINE_int32(end_len, -1,
-             "Starting prefix size for testing (-1: just full file contents)");
-DEFINE_int32(bytes, 10485760,
-             "How many bytes to compress/uncompress per file for timing");
+SNAPPY_FLAG(int32_t, start_len, -1,
+            "Starting prefix size for testing (-1: just full file contents)");
+SNAPPY_FLAG(int32_t, end_len, -1,
+            "Starting prefix size for testing (-1: just full file contents)");
+SNAPPY_FLAG(int32_t, bytes, 10485760,
+            "How many bytes to compress/uncompress per file for timing");
 
-DEFINE_bool(zlib, true,
+SNAPPY_FLAG(bool, zlib, true,
             "Run zlib compression (http://www.zlib.net)");
-DEFINE_bool(lzo, true,
+SNAPPY_FLAG(bool, lzo, true,
             "Run LZO compression (http://www.oberhumer.com/opensource/lzo/)");
-DEFINE_bool(lz4, true, "Run LZ4 compression (https://github.com/lz4/lz4)");
-DEFINE_bool(snappy, true, "Run snappy compression");
+SNAPPY_FLAG(bool, lz4, true,
+            "Run LZ4 compression (https://github.com/lz4/lz4)");
+SNAPPY_FLAG(bool, snappy, true, "Run snappy compression");
 
-DEFINE_bool(write_compressed, false,
+SNAPPY_FLAG(bool, write_compressed, false,
             "Write compressed versions of each file to <file>.comp");
-DEFINE_bool(write_uncompressed, false,
+SNAPPY_FLAG(bool, write_uncompressed, false,
             "Write uncompressed versions of each file to <file>.uncomp");
 
 namespace snappy {
@@ -202,7 +204,7 @@ bool Compress(const char* input, size_t input_size, CompressorType comp,
       int destlen = compressed->size();
       destlen = LZ4_compress_default(input, string_as_array(compressed),
                                      input_size, destlen);
-      CHECK(destlen != 0);
+      CHECK_NE(destlen, 0);
       if (!compressed_is_preallocated) {
         compressed->resize(destlen);
       }
@@ -231,6 +233,8 @@ bool Compress(const char* input, size_t input_size, CompressorType comp,
 
 bool Uncompress(const std::string& compressed, CompressorType comp, int size,
                 std::string* output) {
+  // TODO: Switch to [[maybe_unused]] when we can assume C++17.
+  (void)size;
   switch (comp) {
 #ifdef ZLIB_VERSION
     case ZLIB: {
@@ -270,7 +274,7 @@ bool Uncompress(const std::string& compressed, CompressorType comp, int size,
       int destlen = output->size();
       destlen = LZ4_decompress_safe(compressed.data(), string_as_array(output),
                                     compressed.size(), destlen);
-      CHECK(destlen != 0);
+      CHECK_NE(destlen, 0);
       CHECK_EQ(size, destlen);
       break;
     }
@@ -416,21 +420,27 @@ void MeasureFile(const char* fname) {
   CHECK_OK(file::GetContents(fname, &fullinput, file::Defaults()));
   std::printf("%-40s :\n", fname);
 
-  int start_len = (FLAGS_start_len < 0) ? fullinput.size() : FLAGS_start_len;
+  int start_len = (snappy::GetFlag(FLAGS_start_len) < 0)
+                      ? fullinput.size()
+                      : snappy::GetFlag(FLAGS_start_len);
   int end_len = fullinput.size();
-  if (FLAGS_end_len >= 0) {
-    end_len = std::min<int>(fullinput.size(), FLAGS_end_len);
+  if (snappy::GetFlag(FLAGS_end_len) >= 0) {
+    end_len = std::min<int>(fullinput.size(), snappy::GetFlag(FLAGS_end_len));
   }
   for (int len = start_len; len <= end_len; ++len) {
     const char* const input = fullinput.data();
-    int repeats = (FLAGS_bytes + len) / (len + 1);
-    if (FLAGS_zlib) Measure(input, len, ZLIB, repeats, 1024 << 10);
-    if (FLAGS_lzo) Measure(input, len, LZO, repeats, 1024 << 10);
-    if (FLAGS_lz4) Measure(input, len, LZ4, repeats, 1024 << 10);
-    if (FLAGS_snappy) Measure(input, len, SNAPPY, repeats, 4096 << 10);
+    int repeats = (snappy::GetFlag(FLAGS_bytes) + len) / (len + 1);
+    if (snappy::GetFlag(FLAGS_zlib))
+      Measure(input, len, ZLIB, repeats, 1024 << 10);
+    if (snappy::GetFlag(FLAGS_lzo))
+      Measure(input, len, LZO, repeats, 1024 << 10);
+    if (snappy::GetFlag(FLAGS_lz4))
+      Measure(input, len, LZ4, repeats, 1024 << 10);
+    if (snappy::GetFlag(FLAGS_snappy))
+      Measure(input, len, SNAPPY, repeats, 4096 << 10);
 
     // For block-size based measurements
-    if (0 && FLAGS_snappy) {
+    if (0 && snappy::GetFlag(FLAGS_snappy)) {
       Measure(input, len, SNAPPY, repeats, 8<<10);
       Measure(input, len, SNAPPY, repeats, 16<<10);
       Measure(input, len, SNAPPY, repeats, 32<<10);
@@ -449,9 +459,9 @@ int main(int argc, char** argv) {
   InitGoogle(argv[0], &argc, &argv, true);
 
   for (int arg = 1; arg < argc; ++arg) {
-    if (FLAGS_write_compressed) {
+    if (snappy::GetFlag(FLAGS_write_compressed)) {
       snappy::CompressFile(argv[arg]);
-    } else if (FLAGS_write_uncompressed) {
+    } else if (snappy::GetFlag(FLAGS_write_uncompressed)) {
       snappy::UncompressFile(argv[arg]);
     } else {
       snappy::MeasureFile(argv[arg]);

@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
@@ -150,9 +149,9 @@ class AutoConnectHandlerTest : public testing::Test {
     ASSERT_TRUE(test_nssdb_.is_open());
 
     // Use the same DB for public and private slot.
-    test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+    test_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())));
 
     SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
@@ -175,11 +174,11 @@ class AutoConnectHandlerTest : public testing::Test {
         network_config_handler_.get(), nullptr /* network_device_handler */,
         nullptr /* prohibited_technologies_handler */);
 
-    test_network_connection_handler_.reset(
-        new TestNetworkConnectionHandler(base::BindOnce(
-            &AutoConnectHandlerTest::SetDisconnected, base::Unretained(this))));
+    test_network_connection_handler_ =
+        std::make_unique<TestNetworkConnectionHandler>(base::BindOnce(
+            &AutoConnectHandlerTest::SetDisconnected, base::Unretained(this)));
 
-    client_cert_resolver_.reset(new ClientCertResolver());
+    client_cert_resolver_ = std::make_unique<ClientCertResolver>();
     client_cert_resolver_->Init(helper_.network_state_handler(),
                                 managed_config_handler_.get());
 

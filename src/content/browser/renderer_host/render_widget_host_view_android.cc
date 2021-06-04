@@ -92,6 +92,7 @@
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -227,7 +228,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                         this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
-      using_viz_for_webview_(features::IsUsingVizForWebView()),
       synchronous_compositor_client_(nullptr),
       observing_root_window_(false),
       prev_top_shown_pix_(0.f),
@@ -251,24 +251,22 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (is_showing_)
     local_surface_id_allocator_.GenerateId();
 
-  if (using_browser_compositor_ || using_viz_for_webview_) {
-    delegated_frame_host_client_ =
-        std::make_unique<DelegatedFrameHostClientAndroid>(this);
-    delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
-        &view_, GetHostFrameSinkManager(), delegated_frame_host_client_.get(),
-        host()->GetFrameSinkId());
-    if (is_showing_) {
-      delegated_frame_host_->WasShown(
-          local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-          GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen());
-    }
+  delegated_frame_host_client_ =
+      std::make_unique<DelegatedFrameHostClientAndroid>(this);
+  delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
+      &view_, GetHostFrameSinkManager(), delegated_frame_host_client_.get(),
+      host()->GetFrameSinkId());
+  if (is_showing_) {
+    delegated_frame_host_->WasShown(
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen());
+  }
 
-    // Let the page-level input event router know about our frame sink ID
-    // for surface-based hit testing.
-    if (ShouldRouteEvents()) {
-      host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-          GetFrameSinkId(), this);
-    }
+  // Let the page-level input event router know about our frame sink ID
+  // for surface-based hit testing.
+  if (ShouldRouteEvents()) {
+    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
+        GetFrameSinkId(), this);
   }
 
   host()->SetView(this);
@@ -352,7 +350,7 @@ bool RenderWidgetHostViewAndroid::ShouldVirtualKeyboardOverlayContent() {
 
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
-    const base::Optional<viz::LocalSurfaceId>& child_local_surface_id) {
+    const absl::optional<viz::LocalSurfaceId>& child_local_surface_id) {
   if (child_local_surface_id) {
     local_surface_id_allocator_.UpdateFromChild(*child_local_surface_id);
   } else {
@@ -556,7 +554,7 @@ void RenderWidgetHostViewAndroid::DismissTextHandles(
 jint RenderWidgetHostViewAndroid::GetBackgroundColor(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  base::Optional<SkColor> color =
+  absl::optional<SkColor> color =
       RenderWidgetHostViewAndroid::GetCachedBackgroundColor();
   if (!color)
     return SK_ColorTRANSPARENT;
@@ -578,7 +576,7 @@ void RenderWidgetHostViewAndroid::OnViewportInsetBottomChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt);
+                              absl::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::WriteContentBitmapToDiskAsync(
@@ -1029,8 +1027,13 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
 }
 
 void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
-  if (view_.parent())
+  // Move to front only if we are the primary page (we don't want to receive
+  // events in the Prerender)
+  if (view_.parent() &&
+      RenderViewHost::From(host())->GetMainFrame()->GetLifecycleState() ==
+          RenderFrameHost::LifecycleState::kActive) {
     view_.parent()->MoveToFront(&view_);
+  }
   ResetGestureDetection();
   if (delegated_frame_host_)
     delegated_frame_host_->OnNavigateToNewPage();
@@ -1072,9 +1075,9 @@ void RenderWidgetHostViewAndroid::Destroy() {
   delete this;
 }
 
-void RenderWidgetHostViewAndroid::SetTooltipText(
+void RenderWidgetHostViewAndroid::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text) {
-  // Tooltips don't makes sense on Android.
+  // Tooltips don't make sense on Android.
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {
@@ -1125,7 +1128,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
-                              base::nullopt);
+                              absl::nullopt);
 }
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
@@ -1149,8 +1152,7 @@ RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
 
 bool RenderWidgetHostViewAndroid::ShouldRouteEvents() const {
   DCHECK(host());
-  return using_browser_compositor_ && host()->delegate() &&
-         host()->delegate()->GetInputEventRouter();
+  return host()->delegate() && host()->delegate()->GetInputEventRouter();
 }
 
 void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
@@ -1169,7 +1171,7 @@ void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
 
 bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
   return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                     base::nullopt);
+                                     absl::nullopt);
 }
 
 
@@ -1181,13 +1183,7 @@ void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
   sync_compositor_last_frame_token_ = frame_token;
 
   if (host() && frame_token) {
-    if (!using_viz_for_webview_) {
-      // For viz it's reported through FrameSinkManager.
-      // For non-viz we are not interested in a non-surface activation parallel,
-      // use the current time for |activation_time|.
-      host()->DidProcessFrame(frame_token, base::TimeTicks::Now());
-    }
-
+    DCHECK(!using_browser_compositor_);
     // DevTools ScreenCast support for Android WebView. Don't call this if
     // we're currently in SynchronousCopyContents, as this can lead to
     // redundant copies.
@@ -1366,7 +1362,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   canvas.scale(
       (float)output_width / (float)input_size_in_pixel.width(),
       (float)output_height / (float)input_size_in_pixel.height());
-  sync_compositor_->DemandDrawSw(&canvas);
+  sync_compositor_->DemandDrawSw(&canvas, /*software_canvas=*/true);
   std::move(callback).Run(bitmap);
 }
 
@@ -1509,7 +1505,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
             ? cc::DeadlinePolicy::UseSpecifiedDeadline(
                   ui::DelegatedFrameHostAndroid::FirstFrameTimeoutFrames())
             : cc::DeadlinePolicy::UseDefaultDeadline(),
-        base::nullopt);
+        absl::nullopt);
     // If we navigated while hidden, we need to update the fallback surface only
     // after we've completed navigation, and embedded the new surface. The
     // |delegated_frame_host_| is always valid when |navigation_while_hidden_|
@@ -1960,7 +1956,7 @@ void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(
   SetTextHandlesHiddenInternal();
 }
 
-base::Optional<SkColor>
+absl::optional<SkColor>
 RenderWidgetHostViewAndroid::GetCachedBackgroundColor() {
   return RenderWidgetHostViewBase::GetBackgroundColor();
 }
@@ -2057,7 +2053,7 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
     SynchronizeVisualProperties(
         cc::DeadlinePolicy::UseSpecifiedDeadline(
             ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),
-        base::nullopt);
+        absl::nullopt);
   }
 
   if (!touch_selection_controller_) {
@@ -2104,6 +2100,16 @@ void RenderWidgetHostViewAndroid::OnRendererWidgetCreated() {
 
 bool RenderWidgetHostViewAndroid::OnMouseEvent(
     const ui::MotionEventAndroid& event) {
+  // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT because every mouse-down on
+  // Android follows a hover-exit and is followed by a hover-enter.
+  // https://crbug.com/715114 filed on distinguishing actual hover
+  // enter/exit from these bogus ones.
+  auto action = event.GetAction();
+  if (action == ui::MotionEventAndroid::Action::HOVER_ENTER ||
+      action == ui::MotionEventAndroid::Action::HOVER_EXIT) {
+    return false;
+  }
+
   RecordToolTypeForActionDown(event);
   SendMouseEvent(event, event.GetActionButton());
   return true;
@@ -2142,7 +2148,7 @@ bool RenderWidgetHostViewAndroid::RequiresDoubleTapGestureEvents() const {
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged(
-    base::Optional<base::TimeDelta> deadline_override) {
+    absl::optional<base::TimeDelta> deadline_override) {
   // We may need to update the background color to match pre-surface-sync
   // behavior of EvictFrameIfNecessary.
   UpdateWebViewBackgroundColorIfNecessary();
@@ -2165,7 +2171,7 @@ void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged(
 
   SynchronizeVisualProperties(
       cc::DeadlinePolicy::UseSpecifiedDeadline(deadline_in_frames),
-      base::nullopt);
+      absl::nullopt);
   if (in_rotation) {
     DCHECK(!rotation_metrics_.empty());
     rotation_metrics_.back().second =
@@ -2309,25 +2315,24 @@ void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
 void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
       const ui::MotionEvent& event) {
   base::TimeTicks event_time = event.GetEventTime();
-  base::TimeDelta delta = base::TimeTicks::Now() - event_time;
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  ui::EventType event_type;
   switch (event.GetAction()) {
     case ui::MotionEvent::Action::DOWN:
     case ui::MotionEvent::Action::POINTER_DOWN:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_PRESSED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
+      event_type = ui::ET_TOUCH_PRESSED;
+      break;
     case ui::MotionEvent::Action::MOVE:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_MOVED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
+      event_type = ui::ET_TOUCH_MOVED;
+      break;
     case ui::MotionEvent::Action::UP:
     case ui::MotionEvent::Action::POINTER_UP:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
+      event_type = ui::ET_TOUCH_RELEASED;
+      break;
     default:
       return;
   }
+  ui::ComputeEventLatencyOS(event_type, event_time, current_time);
 }
 
 void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
@@ -2405,10 +2410,10 @@ void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged(
         TRACE_ID_LOCAL(delta.InNanoseconds()));
   }
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt);
+                              absl::nullopt);
 }
 
-base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor() {
+absl::optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor() {
   return default_background_color_;
 }
 
@@ -2430,7 +2435,7 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
           local_surface_id_allocator_.GetCurrentLocalSurfaceId());
     } else {
       SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                  base::nullopt);
+                                  absl::nullopt);
     }
     // Only notify of navigation once a surface has been embedded.
     delegated_frame_host_->DidNavigate();
@@ -2477,18 +2482,18 @@ void RenderWidgetHostViewAndroid::TransferTouches(
   // Touch transfer for Android is not implemented in content/.
 }
 
-base::Optional<DisplayFeature>
+absl::optional<DisplayFeature>
 RenderWidgetHostViewAndroid::GetDisplayFeature() {
   gfx::Size view_size(view_.GetSize());
   if (view_size.IsEmpty())
-    return base::nullopt;
+    return absl::nullopt;
 
   // On Android, the display feature is exposed as a rectangle as a generic
   // concept. Here in the content layer, we translate that to a more
   // constrained concept, see content::DisplayFeature.
-  base::Optional<gfx::Rect> display_feature_rect = view_.GetDisplayFeature();
+  absl::optional<gfx::Rect> display_feature_rect = view_.GetDisplayFeature();
   if (!display_feature_rect)
-    return base::nullopt;
+    return absl::nullopt;
 
   // The display feature and view location are both provided in device pixels,
   // relative to the window. Convert this to DIP and view relative coordinates,
@@ -2520,7 +2525,7 @@ RenderWidgetHostViewAndroid::GetDisplayFeature() {
                        transformed_display_feature.x(),
                        transformed_display_feature.width()};
   } else {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return display_feature;

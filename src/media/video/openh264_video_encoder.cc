@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -191,7 +190,7 @@ Status OpenH264VideoEncoder::DrainOutputs(const SFrameBSInfo& frame_info,
   if (!h264_converter_) {
     result.size = total_chunk_size;
 
-    output_cb_.Run(std::move(result), base::Optional<CodecDescription>());
+    output_cb_.Run(std::move(result), absl::optional<CodecDescription>());
     return OkStatus();
   }
 
@@ -207,7 +206,7 @@ Status OpenH264VideoEncoder::DrainOutputs(const SFrameBSInfo& frame_info,
 
   result.size = converted_output_size;
 
-  base::Optional<CodecDescription> desc;
+  absl::optional<CodecDescription> desc;
   if (config_changed) {
     const auto& config = h264_converter_->GetCurrentConfig();
     desc = CodecDescription();

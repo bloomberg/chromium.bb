@@ -6,22 +6,22 @@
 #define COMPONENTS_OPTIMIZATION_GUIDE_CONTENT_BROWSER_PAGE_CONTENT_ANNOTATIONS_MODEL_MANAGER_H_
 
 #include "components/history/core/browser/url_row.h"
-#include "components/optimization_guide/content/browser/bert_model_executor.h"
+#include "components/optimization_guide/core/bert_model_executor.h"
 #include "components/optimization_guide/proto/page_topics_model_metadata.pb.h"
 
 namespace optimization_guide {
 
-class OptimizationGuideDecider;
+class OptimizationGuideModelProvider;
 
 // Callback to inform the caller that the page content has been annotated.
 using PageContentAnnotatedCallback = base::OnceCallback<void(
-    const base::Optional<history::VisitContentModelAnnotations>&)>;
+    const absl::optional<history::VisitContentModelAnnotations>&)>;
 
 // Manages the loading and execution of models used to annotate page content.
 class PageContentAnnotationsModelManager {
  public:
   explicit PageContentAnnotationsModelManager(
-      OptimizationGuideDecider* optimization_guide_decider);
+      OptimizationGuideModelProvider* optimization_guide_model_provider);
   ~PageContentAnnotationsModelManager();
   PageContentAnnotationsModelManager(
       const PageContentAnnotationsModelManager&) = delete;
@@ -32,9 +32,9 @@ class PageContentAnnotationsModelManager {
   void Annotate(const std::string& text, PageContentAnnotatedCallback callback);
 
   // Returns the version of the page topics model that is currently being used
-  // to annotate page content. Will return |base::nullopt| if no model is being
+  // to annotate page content. Will return |absl::nullopt| if no model is being
   // used to annotate page topics for received page content.
-  base::Optional<int64_t> GetPageTopicsModelVersion() const;
+  absl::optional<int64_t> GetPageTopicsModelVersion() const;
 
  private:
   friend class PageContentAnnotationsModelManagerTest;
@@ -43,7 +43,7 @@ class PageContentAnnotationsModelManager {
   void OnPageTopicsModelExecutionCompleted(
       PageContentAnnotatedCallback callback,
       const proto::PageTopicsModelMetadata& model_metadata,
-      const base::Optional<std::vector<tflite::task::core::Category>>& output);
+      const absl::optional<std::vector<tflite::task::core::Category>>& output);
 
   // Converts |model_output| into content model annotations based on
   // |model_metadata|.
@@ -52,7 +52,7 @@ class PageContentAnnotationsModelManager {
       const std::vector<tflite::task::core::Category>& model_output) const;
 
   // The model executor responsible for executing the page topics model.
-  std::unique_ptr<BertModelExecutor> page_topics_model_executor_;
+  std::unique_ptr<BertModelExecutorHandle> page_topics_model_executor_handle_;
 
   base::WeakPtrFactory<PageContentAnnotationsModelManager> weak_ptr_factory_{
       this};

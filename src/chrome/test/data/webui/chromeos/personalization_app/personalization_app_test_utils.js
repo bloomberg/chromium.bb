@@ -7,20 +7,22 @@
  * SWA.
  */
 
-import {setWallpaperProviderForTesting} from 'chrome://personalization/mojo_interface_provider.js';
+import {setWallpaperProviderForTesting} from 'chrome://personalization/trusted/mojo_interface_provider.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertTrue} from '../../chai_assert.js';
+import {flushTasks} from '../../test_util.m.js';
 import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
 
 /**
- * Constructs the given element with attributes and appends it to body.
+ * Constructs the given element with properties and appends it to body.
  * @param {!string} tag
- * @param {!Object} attributes
+ * @param {!Object} properties
  * @returns {!HTMLElement}
  */
-export function initElement(tag, attributes = {}) {
+export function initElement(tag, properties = {}) {
   const element = /** @type {!HTMLElement} **/ (document.createElement(tag));
-  for (const [key, value] of Object.entries(attributes)) {
-    element.setAttribute(key, value);
+  for (const [key, value] of Object.entries(properties)) {
+    element[key] = value;
   }
   document.body.appendChild(element);
   flush();
@@ -28,12 +30,52 @@ export function initElement(tag, attributes = {}) {
 }
 
 /**
+ * Tear down an element. Make sure the iframe load callback
+ * has completed to avoid weird race condition with loading.
+ * @see {b/185905694, crbug/466089}
+ * @param {*} element
+ */
+export async function teardownElement(element) {
+  if (!element) {
+    return;
+  }
+  const iframe = await element.iframePromise_;
+  if (iframe) {
+    iframe.remove();
+    await flushTasks();
+  }
+  element.remove();
+  await flushTasks();
+}
+
+/**
  * Sets up the test wallpaper provider and clears the page.
- * @returns {!TestWallpaperProvider}
+ * @return {!TestWallpaperProvider}
  */
 export function baseSetup() {
   const wallpaperProvider = new TestWallpaperProvider();
   setWallpaperProviderForTesting(wallpaperProvider);
   document.body.innerHTML = '';
   return wallpaperProvider;
+}
+
+function getDebugString(w) {
+  if (w === window) {
+    return w.location.href;
+  }
+  return 'iframe';
+}
+
+/**
+ * Helper function to test if two window objects are the same.
+ * Plain |assertEquals| fails when it attempts to get a debug string
+ * representation of cross-origin iframe window.
+ * @param {!Object} x
+ * @param {!Object} y
+ */
+export function assertWindowObjectsEqual(x, y) {
+  assertTrue(
+      x === y,
+      `Window objects are not identical: ${getDebugString(x)}, ${
+          getDebugString(y)}`);
 }

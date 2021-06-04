@@ -6,9 +6,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
-#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -23,7 +23,9 @@ TEST(OmniboxPedals, DataLoadsForAllLocales) {
   std::unique_ptr<base::Environment> env = base::Environment::Create();
   MockAutocompleteProviderClient client;
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxPedalsBatch2);
+  feature_list.InitWithFeatures(
+      {omnibox::kOmniboxPedalsBatch2, omnibox::kOmniboxPedalsBatch2NonEnglish},
+      {});
 
   struct TestCase {
     std::string locale;

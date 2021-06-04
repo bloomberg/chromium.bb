@@ -15,7 +15,6 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/account_id/account_id.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
@@ -53,6 +53,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 namespace printing {
@@ -69,6 +75,15 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
     return g_browser_process->GetApplicationLocale();
   }
 };
+
+const AccountId& GetAccountId(Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const auto* user = ash::ProfileHelper::Get()->GetUserByProfile(profile);
+  return user ? user->GetAccountId() : EmptyAccountId();
+#else
+  return EmptyAccountId();
+#endif
+}
 
 gfx::Size GetDefaultPdfMediaSizeMicrons() {
   PrintingContextDelegate delegate;
@@ -140,12 +155,35 @@ base::Value GetPdfCapabilities(
 
 // Callback that stores a PDF file on disk.
 void PrintToPdfCallback(scoped_refptr<base::RefCountedMemory> data,
-                        const base::FilePath& path,
-                        base::OnceClosure pdf_file_saved_closure) {
+                        const base::FilePath& path) {
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->front()),
                          base::checked_cast<int>(data->size()));
+}
+
+// Callback that runs after `PrintToPdfCallback()` returns.
+void OnPdfPrintedCallback(const AccountId& account_id,
+                          bool from_incognito_profile,
+                          const base::FilePath& path,
+                          base::OnceClosure pdf_file_saved_closure) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  Profile* profile =
+      ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  if (profile) {
+    ash::HoldingSpaceKeyedService* holding_space_keyed_service =
+        ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
+            profile);
+    if (holding_space_keyed_service)
+      holding_space_keyed_service->AddPrintedPdf(path, from_incognito_profile);
+  }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* service = chromeos::LacrosService::Get();
+  if (service && service->IsAvailable<crosapi::mojom::HoldingSpaceService>()) {
+    service->GetRemote<crosapi::mojom::HoldingSpaceService>()->AddPrintedPdf(
+        path, from_incognito_profile);
+  }
+#endif
   if (!pdf_file_saved_closure.is_null())
     std::move(pdf_file_saved_closure).Run();
 }
@@ -284,6 +322,11 @@ void PdfPrinterHandler::SetPdfSavedClosureForTesting(
   pdf_file_saved_closure_ = std::move(closure);
 }
 
+void PdfPrinterHandler::SetPrintToPdfPathForTesting(
+    const base::FilePath& path) {
+  print_to_pdf_path_ = path;
+}
+
 // static
 base::FilePath PdfPrinterHandler::GetFileNameForPrintJobTitle(
     const std::u16string& job_title) {
@@ -394,12 +437,17 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
 }
 
 void PdfPrinterHandler::PostPrintToPdfTask() {
-  base::ThreadPool::PostTask(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&PrintToPdfCallback, print_data_, print_to_pdf_path_,
+      base::BindOnce(&PrintToPdfCallback, print_data_, print_to_pdf_path_),
+      base::BindOnce(&OnPdfPrintedCallback, GetAccountId(profile_),
+                     profile_->IsIncognitoProfile(), print_to_pdf_path_,
                      std::move(pdf_file_saved_closure_)));
+
   print_to_pdf_path_.clear();
-  std::move(print_callback_).Run(base::Value());
+
+  if (print_callback_)
+    std::move(print_callback_).Run(base::Value());
 }
 
 void PdfPrinterHandler::OnGotUniqueFileName(const base::FilePath& path) {

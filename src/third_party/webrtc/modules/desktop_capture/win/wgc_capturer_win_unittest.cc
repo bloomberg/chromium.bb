@@ -22,8 +22,10 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/thread.h"
+#include "rtc_base/time_utils.h"
 #include "rtc_base/win/scoped_com_initializer.h"
 #include "rtc_base/win/windows_version.h"
+#include "system_wrappers/include/metrics.h"
 #include "test/gtest.h"
 
 namespace webrtc {
@@ -31,6 +33,21 @@ namespace {
 
 const char kWindowThreadName[] = "wgc_capturer_test_window_thread";
 const WCHAR kWindowTitle[] = L"WGC Capturer Test Window";
+
+const char kCapturerImplHistogram[] =
+    "WebRTC.DesktopCapture.Win.DesktopCapturerImpl";
+
+const char kCapturerResultHistogram[] =
+    "WebRTC.DesktopCapture.Win.WgcCapturerResult";
+const int kSuccess = 0;
+const int kSessionStartFailure = 4;
+
+const char kCaptureSessionResultHistogram[] =
+    "WebRTC.DesktopCapture.Win.WgcCaptureSessionStartResult";
+const int kSourceClosed = 1;
+
+const char kCaptureTimeHistogram[] =
+    "WebRTC.DesktopCapture.Win.WgcCapturerFrameTime";
 
 const int kSmallWindowWidth = 200;
 const int kSmallWindowHeight = 100;
@@ -60,7 +77,7 @@ class WgcCapturerWinTest : public ::testing::TestWithParam<CaptureType>,
   void SetUp() override {
     if (rtc::rtc_win::GetVersion() < rtc::rtc_win::Version::VERSION_WIN10_RS5) {
       RTC_LOG(LS_INFO)
-          << "Skipping WgcWindowCaptureTests on Windows versions < RS5.";
+          << "Skipping WgcCapturerWinTests on Windows versions < RS5.";
       GTEST_SKIP();
     }
 
@@ -181,6 +198,10 @@ class WgcCapturerWinTest : public ::testing::TestWithParam<CaptureType>,
 
     EXPECT_EQ(result_, DesktopCapturer::Result::SUCCESS);
     EXPECT_TRUE(frame_);
+
+    EXPECT_GT(metrics::NumEvents(kCapturerResultHistogram, kSuccess),
+              successful_captures_);
+    ++successful_captures_;
   }
 
   void ValidateFrame(int expected_width, int expected_height) {
@@ -233,6 +254,7 @@ class WgcCapturerWinTest : public ::testing::TestWithParam<CaptureType>,
   intptr_t source_id_;
   bool window_open_ = false;
   DesktopCapturer::Result result_;
+  int successful_captures_ = 0;
   std::unique_ptr<DesktopFrame> frame_;
   std::unique_ptr<DesktopCapturer> capturer_;
 };
@@ -271,9 +293,40 @@ TEST_P(WgcCapturerWinTest, Capture) {
   EXPECT_TRUE(capturer_->SelectSource(source_id_));
 
   capturer_->Start(this);
+  EXPECT_GE(metrics::NumEvents(kCapturerImplHistogram,
+                               DesktopCapturerId::kWgcCapturerWin),
+            1);
+
   DoCapture();
   EXPECT_GT(frame_->size().width(), 0);
   EXPECT_GT(frame_->size().height(), 0);
+}
+
+TEST_P(WgcCapturerWinTest, CaptureTime) {
+  if (GetParam() == CaptureType::kWindowCapture) {
+    SetUpForWindowCapture();
+  } else {
+    SetUpForScreenCapture();
+  }
+
+  EXPECT_TRUE(capturer_->SelectSource(source_id_));
+  capturer_->Start(this);
+
+  int64_t start_time;
+  do {
+    start_time = rtc::TimeNanos();
+    capturer_->CaptureFrame();
+  } while (result_ == DesktopCapturer::Result::ERROR_TEMPORARY);
+
+  int capture_time_ms =
+      (rtc::TimeNanos() - start_time) / rtc::kNumNanosecsPerMillisec;
+  EXPECT_TRUE(frame_);
+
+  // The test may measure the time slightly differently than the capturer. So we
+  // just check if it's within 5 ms.
+  EXPECT_NEAR(frame_->capture_time_ms(), capture_time_ms, 5);
+  EXPECT_GE(
+      metrics::NumEvents(kCaptureTimeHistogram, frame_->capture_time_ms()), 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(SourceAgnostic,
@@ -282,10 +335,17 @@ INSTANTIATE_TEST_SUITE_P(SourceAgnostic,
                                            CaptureType::kScreenCapture));
 
 // Monitor specific tests.
+TEST_F(WgcCapturerWinTest, FocusOnMonitor) {
+  SetUpForScreenCapture();
+  EXPECT_TRUE(capturer_->SelectSource(0));
+
+  // You can't set focus on a monitor.
+  EXPECT_FALSE(capturer_->FocusOnSelectedSource());
+}
+
 TEST_F(WgcCapturerWinTest, CaptureAllMonitors) {
   SetUpForScreenCapture();
-  // 0 (or a NULL HMONITOR) leads to WGC capturing all displays.
-  EXPECT_TRUE(capturer_->SelectSource(0));
+  EXPECT_TRUE(capturer_->SelectSource(kFullDesktopScreenId));
 
   capturer_->Start(this);
   DoCapture();
@@ -294,6 +354,22 @@ TEST_F(WgcCapturerWinTest, CaptureAllMonitors) {
 }
 
 // Window specific tests.
+TEST_F(WgcCapturerWinTest, FocusOnWindow) {
+  capturer_ = WgcCapturerWin::CreateRawWindowCapturer(
+      DesktopCaptureOptions::CreateDefault());
+  window_info_ = CreateTestWindow(kWindowTitle);
+  source_id_ = GetScreenIdFromSourceList();
+
+  EXPECT_TRUE(capturer_->SelectSource(source_id_));
+  EXPECT_TRUE(capturer_->FocusOnSelectedSource());
+
+  HWND hwnd = reinterpret_cast<HWND>(source_id_);
+  EXPECT_EQ(hwnd, ::GetActiveWindow());
+  EXPECT_EQ(hwnd, ::GetForegroundWindow());
+  EXPECT_EQ(hwnd, ::GetFocus());
+  DestroyTestWindow(window_info_);
+}
+
 TEST_F(WgcCapturerWinTest, SelectMinimizedWindow) {
   SetUpForWindowCapture();
   MinimizeTestWindow(reinterpret_cast<HWND>(source_id_));
@@ -309,6 +385,25 @@ TEST_F(WgcCapturerWinTest, SelectClosedWindow) {
 
   CloseTestWindow();
   EXPECT_FALSE(capturer_->SelectSource(source_id_));
+}
+
+TEST_F(WgcCapturerWinTest, UnsupportedWindowStyle) {
+  // Create a window with the WS_EX_TOOLWINDOW style, which WGC does not
+  // support.
+  window_info_ = CreateTestWindow(kWindowTitle, kMediumWindowWidth,
+                                  kMediumWindowHeight, WS_EX_TOOLWINDOW);
+  capturer_ = WgcCapturerWin::CreateRawWindowCapturer(
+      DesktopCaptureOptions::CreateDefault());
+  DesktopCapturer::SourceList sources;
+  EXPECT_TRUE(capturer_->GetSourceList(&sources));
+  auto it = std::find_if(
+      sources.begin(), sources.end(), [&](const DesktopCapturer::Source& src) {
+        return src.id == reinterpret_cast<intptr_t>(window_info_.hwnd);
+      });
+
+  // We should not find the window, since we filter for unsupported styles.
+  EXPECT_EQ(it, sources.end());
+  DestroyTestWindow(window_info_);
 }
 
 TEST_F(WgcCapturerWinTest, IncreaseWindowSizeMidCapture) {
@@ -403,6 +498,10 @@ TEST_F(WgcCapturerWinTest, CloseWindowMidCapture) {
   if (result_ == DesktopCapturer::Result::SUCCESS)
     capturer_->CaptureFrame();
 
+  EXPECT_GE(metrics::NumEvents(kCapturerResultHistogram, kSessionStartFailure),
+            1);
+  EXPECT_GE(metrics::NumEvents(kCaptureSessionResultHistogram, kSourceClosed),
+            1);
   EXPECT_EQ(result_, DesktopCapturer::Result::ERROR_PERMANENT);
 }
 

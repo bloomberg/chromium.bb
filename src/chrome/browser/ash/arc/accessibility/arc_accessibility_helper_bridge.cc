@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/ash/arc/accessibility/geometry_util.h"
@@ -32,6 +33,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -39,6 +41,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -464,11 +467,11 @@ void ArcAccessibilityHelperBridge::OnAction(
     return;
   }
 
-  base::Optional<int32_t> window_id = tree_source->window_id();
+  absl::optional<int32_t> window_id = tree_source->window_id();
   if (!window_id)
     return;
 
-  const base::Optional<mojom::AccessibilityActionType> action =
+  const absl::optional<mojom::AccessibilityActionType> action =
       ConvertToAndroidAction(data.action);
   if (!action.has_value())
     return;
@@ -620,9 +623,8 @@ ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
   if (accessibility_manager->IsSelectToSpeakEnabled() ||
       accessibility_manager->IsSwitchAccessEnabled() ||
       accessibility_manager->IsSpokenFeedbackEnabled() ||
-      (features::IsMagnifierNewFocusFollowingEnabled() &&
-       (magnification_manager->IsMagnifierEnabled() ||
-        magnification_manager->IsDockedMagnifierEnabled()))) {
+      magnification_manager->IsMagnifierEnabled() ||
+      magnification_manager->IsDockedMagnifierEnabled()) {
     return arc::mojom::AccessibilityFilterType::ALL;
   }
 
@@ -663,7 +665,7 @@ void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
 
 void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
     const ui::AXActionData& data,
-    const base::Optional<gfx::Rect>& result_rect) const {
+    const absl::optional<gfx::Rect>& result_rect) const {
   AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
 
   if (!tree_source)
@@ -673,16 +675,16 @@ void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
       data, OnGetTextLocationDataResultInternal(result_rect));
 }
 
-base::Optional<gfx::Rect>
+absl::optional<gfx::Rect>
 ArcAccessibilityHelperBridge::OnGetTextLocationDataResultInternal(
-    const base::Optional<gfx::Rect>& result_rect) const {
+    const absl::optional<gfx::Rect>& result_rect) const {
   if (!result_rect)
-    return base::nullopt;
+    return absl::nullopt;
 
   DCHECK(exo::WMHelper::HasInstance());
   aura::Window* focused_window = GetFocusedArcWindow();
   if (!focused_window)
-    return base::nullopt;
+    return absl::nullopt;
 
   const gfx::RectF& rect_f =
       ScaleAndroidPxToChromePx(result_rect.value(), focused_window);
@@ -739,11 +741,7 @@ void ArcAccessibilityHelperBridge::UpdateEnabledFeature() {
   if (!accessibility_manager || !magnification_manager)
     return;
 
-  is_focus_event_enabled_ =
-      (!features::IsMagnifierNewFocusFollowingEnabled() &&
-       (magnification_manager->IsMagnifierEnabled() ||
-        magnification_manager->IsDockedMagnifierEnabled())) ||
-      accessibility_manager->IsFocusHighlightEnabled();
+  is_focus_event_enabled_ = accessibility_manager->IsFocusHighlightEnabled();
 
   use_full_focus_mode_ = accessibility_manager->IsSwitchAccessEnabled() ||
                          accessibility_manager->IsSpokenFeedbackEnabled();
@@ -985,7 +983,7 @@ void ArcAccessibilityHelperBridge::DispatchEventTextAnnouncement(
   if (!event_data->event_text.has_value())
     return;
 
-  std::unique_ptr<base::ListValue> event_args(
+  auto event_args(
       extensions::api::accessibility_private::OnAnnounceForAccessibility::
           Create(*(event_data->event_text)));
   std::unique_ptr<extensions::Event> event(new extensions::Event(
@@ -998,9 +996,8 @@ void ArcAccessibilityHelperBridge::DispatchEventTextAnnouncement(
 
 void ArcAccessibilityHelperBridge::DispatchCustomSpokenFeedbackToggled(
     bool enabled) const {
-  std::unique_ptr<base::ListValue> event_args(
-      extensions::api::accessibility_private::OnCustomSpokenFeedbackToggled::
-          Create(enabled));
+  auto event_args(extensions::api::accessibility_private::
+                      OnCustomSpokenFeedbackToggled::Create(enabled));
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::
           ACCESSIBILITY_PRIVATE_ON_CUSTOM_SPOKEN_FEEDBACK_TOGGLED,

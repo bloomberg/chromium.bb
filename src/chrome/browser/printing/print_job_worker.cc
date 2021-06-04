@@ -47,6 +47,10 @@
 #include "printing/printing_features.h"
 #endif
 
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_CUPS)
+#include "printing/mojom/print.mojom.h"
+#endif
+
 using content::BrowserThread;
 
 namespace printing {
@@ -194,7 +198,7 @@ void PrintJobWorker::SetSettings(base::Value new_settings,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void PrintJobWorker::SetSettingsFromPOD(
-    std::unique_ptr<printing::PrintSettings> new_settings,
+    std::unique_ptr<PrintSettings> new_settings,
     SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -224,9 +228,10 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
         print_backend->GetPrinterDriverInfo(printer_name));
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_CUPS)
+#if defined(OS_LINUX) && defined(USE_CUPS)
     PrinterBasicInfo basic_info;
-    if (print_backend->GetPrinterBasicInfo(printer_name, &basic_info)) {
+    if (print_backend->GetPrinterBasicInfo(printer_name, &basic_info) ==
+        mojom::ResultCode::kSuccess) {
       base::Value advanced_settings(base::Value::Type::DICTIONARY);
       for (const auto& pair : basic_info.options)
         advanced_settings.SetStringKey(pair.first, pair.second);
@@ -234,8 +239,7 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
       new_settings.SetKey(kSettingAdvancedSettings,
                           std::move(advanced_settings));
     }
-#endif  // (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) &&
-        // defined(USE_CUPS)
+#endif  // defined(OS_LINUX) && defined(USE_CUPS)
   }
 
   PrintingContext::Result result;
@@ -252,7 +256,7 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void PrintJobWorker::UpdatePrintSettingsFromPOD(
-    std::unique_ptr<printing::PrintSettings> new_settings,
+    std::unique_ptr<PrintSettings> new_settings,
     SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintingContext::Result result =
@@ -390,7 +394,7 @@ void PrintJobWorker::OnNewPage() {
 #if defined(OS_WIN)
   const bool source_is_pdf =
       !print_job_->document()->settings().is_modifiable();
-  if (!printing::features::ShouldPrintUsingXps(source_is_pdf)) {
+  if (!features::ShouldPrintUsingXps(source_is_pdf)) {
     // Using the Windows GDI print API.
     if (!OnNewPageHelperGdi())
       return;

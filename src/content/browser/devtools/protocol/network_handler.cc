@@ -15,7 +15,6 @@
 #include "base/containers/queue.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -149,7 +148,7 @@ Network::CookieSourceScheme BuildCookieSourceScheme(
       return Network::CookieSourceSchemeEnum::Secure;
   }
 }
-base::Optional<Network::CookieSameSite> BuildCookieSameSite(
+absl::optional<Network::CookieSameSite> BuildCookieSameSite(
     net::CookieSameSite same_site) {
   switch (same_site) {
     case net::CookieSameSite::STRICT_MODE:
@@ -159,7 +158,7 @@ base::Optional<Network::CookieSameSite> BuildCookieSameSite(
     case net::CookieSameSite::NO_RESTRICTION:
       return Network::CookieSameSiteEnum::None;
     case net::CookieSameSite::UNSPECIFIED:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 }  // namespace
@@ -185,7 +184,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSourcePort(cookie.SourcePort())
           .Build();
 
-  base::Optional<Network::CookieSourceScheme> maybe_same_site =
+  absl::optional<Network::CookieSourceScheme> maybe_same_site =
       BuildCookieSameSite(cookie.SameSite());
   if (maybe_same_site) {
     devtools_cookie->SetSameSite(*maybe_same_site);
@@ -885,7 +884,7 @@ BuildProtocolAssociatedCookies(const net::CookieAccessResultList& net_list) {
 
 using SourceTypeEnum = net::SourceStream::SourceType;
 namespace ContentEncodingEnum = protocol::Network::ContentEncodingEnum;
-base::Optional<SourceTypeEnum> SourceTypeFromProtocol(
+absl::optional<SourceTypeEnum> SourceTypeFromProtocol(
     const protocol::Network::ContentEncoding& encoding) {
   if (ContentEncodingEnum::Gzip == encoding)
     return SourceTypeEnum::TYPE_GZIP;
@@ -893,7 +892,7 @@ base::Optional<SourceTypeEnum> SourceTypeFromProtocol(
     return SourceTypeEnum::TYPE_BROTLI;
   if (ContentEncodingEnum::Deflate == encoding)
     return SourceTypeEnum::TYPE_DEFLATE;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -1262,7 +1261,7 @@ Response NetworkHandler::SetAcceptedEncodings(
 }
 
 Response NetworkHandler::ClearAcceptedEncodingsOverride() {
-  accepted_stream_types_ = base::nullopt;
+  accepted_stream_types_ = absl::nullopt;
   return Response::FallThrough();
 }
 
@@ -1295,7 +1294,7 @@ void NetworkHandler::ClearBrowserCache(
     return;
   }
   content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(browser_context_);
+      browser_context_->GetBrowsingDataRemover();
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(),
       content::BrowsingDataRemover::DATA_TYPE_CACHE,
@@ -1869,7 +1868,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
     return;
 
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(nav_request.begin_params()->headers);
+  headers.AddHeadersFromString(nav_request.begin_params().headers);
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
@@ -1918,8 +1917,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
   request->SetMixedContentType(Security::MixedContentTypeEnum::None);
 
   std::unique_ptr<Network::Initiator> initiator;
-  const base::Optional<base::Value>& initiator_optional =
-      nav_request.begin_params()->devtools_initiator;
+  const absl::optional<base::Value>& initiator_optional =
+      nav_request.begin_params().devtools_initiator;
   if (initiator_optional.has_value()) {
     initiator = protocol::ValueTypeConverter<Network::Initiator>::FromValue(
         *toProtocolValue(&initiator_optional.value(), 1000));
@@ -1935,10 +1934,10 @@ void NetworkHandler::NavigationRequestWillBeSent(
   std::string frame_token =
       nav_request.frame_tree_node()->devtools_frame_token().ToString();
 
-  const mojom::BeginNavigationParams* begin_params = nav_request.begin_params();
-  if (begin_params->trust_token_params) {
+  const mojom::BeginNavigationParams& begin_params = nav_request.begin_params();
+  if (begin_params.trust_token_params) {
     request->SetTrustTokenParams(
-        BuildTrustTokenParams(*begin_params->trust_token_params));
+        BuildTrustTokenParams(*begin_params.trust_token_params));
   }
 
   frontend_->RequestWillBeSent(
@@ -1953,7 +1952,7 @@ void NetworkHandler::RequestSent(
     const std::string& loader_id,
     const network::ResourceRequest& request,
     const char* initiator_type,
-    const base::Optional<GURL>& initiator_url,
+    const absl::optional<GURL>& initiator_url,
     const std::string& initiator_devtools_request_id,
     base::TimeTicks timestamp) {
   if (!enabled_)
@@ -2125,12 +2124,12 @@ void NetworkHandler::LoadingComplete(
 }
 
 void NetworkHandler::OnSignedExchangeReceived(
-    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    absl::optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
     const network::mojom::URLResponseHead& outer_response,
-    const base::Optional<SignedExchangeEnvelope>& envelope,
+    const absl::optional<SignedExchangeEnvelope>& envelope,
     const scoped_refptr<net::X509Certificate>& certificate,
-    const base::Optional<net::SSLInfo>& ssl_info,
+    const absl::optional<net::SSLInfo>& ssl_info,
     const std::vector<SignedExchangeError>& errors) {
   if (!enabled_)
     return;
@@ -2276,7 +2275,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     body_offset = header_size;
   }
 
-  base::Optional<net::Error> error;
+  absl::optional<net::Error> error;
   if (error_reason.isJust()) {
     bool ok;
     error = NetErrorFromString(error_reason.fromJust(), &ok);
@@ -2460,7 +2459,7 @@ void NetworkHandler::ApplyOverrides(
     net::HttpRequestHeaders* headers,
     bool* skip_service_worker,
     bool* disable_cache,
-    base::Optional<std::vector<net::SourceStream::SourceType>>*
+    absl::optional<std::vector<net::SourceStream::SourceType>>*
         accepted_stream_types) {
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
@@ -2551,7 +2550,7 @@ makeCrossOriginEmbedderPolicyValue(
   switch (value) {
     case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
       return protocol::Network::CrossOriginEmbedderPolicyValueEnum::None;
-    case network::mojom::CrossOriginEmbedderPolicyValue::kCorsOrCredentialless:
+    case network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless:
       return protocol::Network::CrossOriginEmbedderPolicyValueEnum::
           CorsOrCredentialless;
     case network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp:
@@ -2633,7 +2632,7 @@ void NetworkHandler::OnResponseReceivedExtraInfo(
     const std::string& devtools_request_id,
     const net::CookieAndLineAccessResultList& response_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
-    const base::Optional<std::string>& response_headers_text,
+    const absl::optional<std::string>& response_headers_text,
     network::mojom::IPAddressSpace resource_address_space) {
   if (!enabled_)
     return;
@@ -2872,12 +2871,12 @@ String NetworkHandler::BuildPrivateNetworkRequestPolicy(
   switch (policy) {
     case network::mojom::PrivateNetworkRequestPolicy::kAllow:
       return protocol::Network::PrivateNetworkRequestPolicyEnum::Allow;
-    case network::mojom::PrivateNetworkRequestPolicy::
-        kBlockFromInsecureToMorePrivate:
+    case network::mojom::PrivateNetworkRequestPolicy::kBlock:
+      // TODO(https://crbug.com/1141824): Fix this.
       return protocol::Network::PrivateNetworkRequestPolicyEnum::
           BlockFromInsecureToMorePrivate;
-    case network::mojom::PrivateNetworkRequestPolicy::
-        kWarnFromInsecureToMorePrivate:
+    case network::mojom::PrivateNetworkRequestPolicy::kWarn:
+      // TODO(https://crbug.com/1141824): Fix this.
       return protocol::Network::PrivateNetworkRequestPolicyEnum::
           WarnFromInsecureToMorePrivate;
   }

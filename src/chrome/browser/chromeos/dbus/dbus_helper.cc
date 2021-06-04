@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
@@ -19,6 +20,8 @@
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
@@ -31,9 +34,14 @@
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
+#include "chromeos/dbus/missive/missive_client.h"
+#include "chromeos/dbus/os_install/os_install_client.h"
 #include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/resourced/resourced_client.h"
+#include "chromeos/dbus/rmad/rmad_client.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
@@ -89,6 +97,8 @@ void InitializeDBus() {
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
   InitializeDBusClient<CdmFactoryDaemonClient>(bus);
+  InitializeDBusClient<CiceroneClient>(bus);
+  InitializeDBusClient<ConciergeClient>(bus);  // depends on CiceroneClient.
   InitializeDBusClient<CrasAudioClient>(bus);
   InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeMiscClient>(bus);
@@ -102,9 +112,13 @@ void InitializeDBus() {
   InitializeDBusClient<KerberosClient>(bus);
   InitializeDBusClient<MachineLearningClient>(bus);
   InitializeDBusClient<MediaAnalyticsClient>(bus);
+  InitializeDBusClient<MissiveClient>(bus);
+  InitializeDBusClient<OsInstallClient>(bus);
   InitializeDBusClient<PciguardClient>(bus);
   InitializeDBusClient<PermissionBrokerClient>(bus);
   InitializeDBusClient<PowerManagerClient>(bus);
+  InitializeDBusClient<ResourcedClient>(bus);
+  InitializeDBusClient<SeneschalClient>(bus);
   InitializeDBusClient<SessionManagerClient>(bus);
   InitializeDBusClient<SystemClockClient>(bus);
   InitializeDBusClient<SystemProxyClient>(bus);
@@ -129,6 +143,9 @@ void InitializeFeatureListDependentDBus() {
     InitializeDBusClient<CfmHotlineClient>(bus);
   }
 #endif
+  if (ash::features::IsShimlessRMAFlowEnabled()) {
+    InitializeDBusClient<RmadClient>(bus);
+  }
   InitializeDBusClient<WilcoDtcSupportdClient>(bus);
 }
 
@@ -152,9 +169,15 @@ void ShutdownDBus() {
   SystemProxyClient::Shutdown();
   SystemClockClient::Shutdown();
   SessionManagerClient::Shutdown();
+  SeneschalClient::Shutdown();
+  ResourcedClient::Shutdown();
+  if (ash::features::IsShimlessRMAFlowEnabled()) {
+    RmadClient::Shutdown();
+  }
   PowerManagerClient::Shutdown();
   PermissionBrokerClient::Shutdown();
   PciguardClient::Shutdown();
+  OsInstallClient::Shutdown();
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
@@ -168,6 +191,8 @@ void ShutdownDBus() {
   CryptohomeMiscClient::Shutdown();
   CrosHealthdClient::Shutdown();
   CrasAudioClient::Shutdown();
+  ConciergeClient::Shutdown();
+  CiceroneClient::Shutdown();
   CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();

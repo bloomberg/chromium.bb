@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 
+#include "base/containers/contains.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
@@ -114,8 +115,11 @@ void TestOsIntegrationManager::UpdateOsHooks(
     const AppId& app_id,
     base::StringPiece old_name,
     std::unique_ptr<ShortcutInfo> old_shortcut,
-    bool file_handlers_need_os_update,
-    const WebApplicationInfo& web_app_info) {}
+    FileHandlerUpdateAction file_handlers_need_os_update,
+    const WebApplicationInfo& web_app_info) {
+  if (file_handlers_need_os_update != FileHandlerUpdateAction::kNoUpdate)
+    ++num_update_file_handlers_calls_;
+}
 
 void TestOsIntegrationManager::SetFileHandlerManager(
     std::unique_ptr<FileHandlerManager> file_handler_manager) {

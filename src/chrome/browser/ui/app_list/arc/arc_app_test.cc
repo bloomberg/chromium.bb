@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -65,8 +66,7 @@ ArcAppTest::ArcAppTest() {
   CreateFakeAppsAndPackages();
 }
 
-ArcAppTest::~ArcAppTest() {
-}
+ArcAppTest::~ArcAppTest() = default;
 
 ash::FakeChromeUserManager* ArcAppTest::GetUserManager() {
   return static_cast<ash::FakeChromeUserManager*>(
@@ -77,6 +77,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
   }
   arc::SetArcAvailableCommandLineForTesting(
       base::CommandLine::ForCurrentProcess());
@@ -185,7 +186,7 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName1 /* package_name */, 1 /* package_version */,
       1 /* last_backup_android_id */, 1 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, base::nullopt, std::move(permissions1)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions1)));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions2;
@@ -199,7 +200,7 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName2 /* package_name */, 2 /* package_version */,
       2 /* last_backup_android_id */, 2 /* last_backup_time */, true /* sync */,
       false /* system */, false /* vpn_provider */, nullptr /* web_app_info */,
-      base::nullopt, std::move(permissions2)));
+      absl::nullopt, std::move(permissions2)));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions3;
@@ -216,7 +217,7 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName3 /* package_name */, 3 /* package_version */,
       3 /* last_backup_android_id */, 3 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, base::nullopt, std::move(permissions3)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions3)));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;
@@ -243,10 +244,11 @@ void ArcAppTest::TearDown() {
   if (!persist_service_manager_)
     arc_service_manager_.reset();
   arc::ResetArcAllowedCheckForTesting(profile_);
+  // DBusThreadManager may be initialized from other testing utility, such as
+  // ash::AshTestHelper::SetUp(), so Shutdown() only when it is initialized in
+  // ArcAppTest::SetUp().
   if (dbus_thread_manager_initialized_) {
-    // DBusThreadManager may be initialized from other testing utility,
-    // such as ash::AshTestHelper::SetUp(), so Shutdown() only when
-    // it is initialized in ArcAppTest::SetUp().
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;
   }

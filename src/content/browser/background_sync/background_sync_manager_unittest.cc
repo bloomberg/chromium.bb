@@ -24,6 +24,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_sync/background_sync_launcher.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
@@ -134,8 +135,8 @@ class BackgroundSyncManagerTest
     // Create a StoragePartition with the correct BrowserContext so that the
     // BackgroundSyncManager can find the BrowserContext through it.
     storage_partition_impl_ = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartitionForUrl(helper_->browser_context(),
-                                                  GURL("https://example.com")));
+        helper_->browser_context()->GetStoragePartitionForUrl(
+            GURL("https://example.com")));
     helper_->context_wrapper()->set_storage_partition(storage_partition_impl_);
 
     SetMaxSyncAttemptsAndRestartManager(1);
@@ -162,16 +163,18 @@ class BackgroundSyncManagerTest
     bool called_2 = false;
     blink::mojom::ServiceWorkerRegistrationOptions options1;
     options1.scope = GURL(kScope1);
+    storage::StorageKey key1(url::Origin::Create(GURL(kScope1)));
     blink::mojom::ServiceWorkerRegistrationOptions options2;
     options2.scope = GURL(kScope2);
+    storage::StorageKey key2(url::Origin::Create(GURL(kScope2)));
     helper_->context()->RegisterServiceWorker(
-        GURL(kScript1), options1,
+        GURL(kScript1), key1, options1,
         blink::mojom::FetchClientSettingsObject::New(),
         base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
                        &sw_registration_id_1_));
 
     helper_->context()->RegisterServiceWorker(
-        GURL(kScript2), options2,
+        GURL(kScript2), key2, options2,
         blink::mojom::FetchClientSettingsObject::New(),
         base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
                        &sw_registration_id_2_));
@@ -182,12 +185,12 @@ class BackgroundSyncManagerTest
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_1_, url::Origin::Create(GURL(kScope1)),
+        sw_registration_id_1_, key1,
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_1_));
 
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_2_, url::Origin::Create(GURL(kScope1)),
+        sw_registration_id_2_, key1,
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_2_));
     base::RunLoop().RunUntilIdle();
@@ -531,8 +534,10 @@ class BackgroundSyncManagerTest
 
   void UnregisterServiceWorker(uint64_t sw_registration_id) {
     bool called = false;
+    const GURL scope = ScopeForSWId(sw_registration_id);
     helper_->context()->UnregisterServiceWorker(
-        ScopeForSWId(sw_registration_id), /*is_immediate=*/false,
+        scope, storage::StorageKey(url::Origin::Create(scope)),
+        /*is_immediate=*/false,
         base::BindOnce(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);

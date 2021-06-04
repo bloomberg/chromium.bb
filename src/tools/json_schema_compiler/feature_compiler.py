@@ -25,6 +25,7 @@ HEADER_FILE_TEMPLATE = """
 
 // GENERATED FROM THE FEATURES FILE:
 //   %(source_files)s
+// by tools/json_schema_compiler.
 // DO NOT EDIT.
 
 #ifndef %(header_guard)s
@@ -48,6 +49,7 @@ CC_FILE_BEGIN = """
 
 // GENERATED FROM THE FEATURES FILE:
 //   %(source_files)s
+// by tools/json_schema_compiler.
 // DO NOT EDIT.
 
 #include "%(header_file_path)s"
@@ -377,8 +379,8 @@ def DoesNotHaveAllowlistForHostedApps(value):
   # what the allowlist looks like) to a python list of strings.
   def cpp_list_to_list(cpp_list):
     assert type(cpp_list) is str
-    assert cpp_list[0] is '{'
-    assert cpp_list[-1] is '}'
+    assert cpp_list[0] == '{'
+    assert cpp_list[-1] == '}'
     new_list = json.loads('[%s]' % cpp_list[1:-1])
     assert type(new_list) is list
     return new_list

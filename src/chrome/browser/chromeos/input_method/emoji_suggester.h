@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 
 class Profile;
 
@@ -30,13 +31,15 @@ class EmojiSuggester : public Suggester {
   // Suggester overrides:
   void OnFocus(int context_id) override;
   void OnBlur() override;
+  void OnExternalSuggestionsUpdated(
+      const std::vector<ime::TextSuggestion>& suggestions) override;
   SuggestionStatus HandleKeyEvent(const ui::KeyEvent& event) override;
   bool Suggest(const std::u16string& text) override;
   bool AcceptSuggestion(size_t index) override;
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
   bool HasSuggestions() override;
-  std::vector<std::u16string> GetSuggestions() override;
+  std::vector<ime::TextSuggestion> GetSuggestions() override;
 
   bool ShouldShowSuggestion(const std::u16string& text);
 

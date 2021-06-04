@@ -344,7 +344,7 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
     extensions::events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
+    std::vector<base::Value> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
@@ -598,7 +598,8 @@ void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
     }
   }
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue);
-  results->SetWithoutPathExpansion("mediaFileSystems", std::move(list));
+  results->SetKey("mediaFileSystems",
+                  base::Value::FromUniquePtrValue(std::move(list)));
   results->SetKey("selectedFileSystemIndex", base::Value(index));
   Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(results))));
 }
@@ -733,8 +734,8 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
   result_dictionary->Set(kAttachedImagesBlobInfoKey,
                          std::make_unique<base::ListValue>());
   metadata::AttachedImage* first_image = &attached_images->front();
-  content::BrowserContext::CreateMemoryBackedBlob(
-      browser_context(), base::as_bytes(base::make_span(first_image->data)), "",
+  browser_context()->CreateMemoryBackedBlob(
+      base::as_bytes(base::make_span(first_image->data)), "",
       base::BindOnce(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
                      this, std::move(result_dictionary),
                      std::move(attached_images),
@@ -788,9 +789,8 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
   if (blob_uuids->size() < attached_images->size()) {
     metadata::AttachedImage* next_image =
         &(*attached_images)[blob_uuids->size()];
-    content::BrowserContext::CreateMemoryBackedBlob(
-        browser_context(), base::as_bytes(base::make_span(next_image->data)),
-        "",
+    browser_context()->CreateMemoryBackedBlob(
+        base::as_bytes(base::make_span(next_image->data)), "",
         base::BindOnce(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
                        this, std::move(result_dictionary),
                        std::move(attached_images), std::move(blob_uuids)));

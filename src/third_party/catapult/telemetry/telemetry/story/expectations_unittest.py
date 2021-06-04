@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
+import six
 
 
 from telemetry.core import os_version as os_version_module
@@ -42,7 +44,7 @@ class MockBrowserFinderOptions(object):
 
   @browser_type.setter
   def browser_type(self, t):
-    assert isinstance(t, basestring)
+    assert isinstance(t, six.string_types)
     self._browser_type = t
 
 

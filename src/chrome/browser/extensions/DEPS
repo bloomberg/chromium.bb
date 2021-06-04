@@ -1,8 +1,8 @@
 include_rules = [
   "+components/crash/content/browser/error_reporting",
+  "+components/live_caption",
   "+extensions/strings/grit/extensions_strings.h",
   "+services/network/public",
-  "+third_party/ink/grit",
   "+ui/base",
 
   # For access to testing command line switches.

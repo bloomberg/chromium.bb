@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Posúvač hľadania</translation>
 <translation id="1404323374378969387">Nórska klávesnica</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
+<translation id="1433628812591023318">Ak chcete vložiť súbory do aplikácie Parallels Desktop, musíte ich presunúť do súborov pre Windows.</translation>
 <translation id="1435838927755162558">Zdieľanie priečinka aplikáciou Parallels Desktop</translation>
 <translation id="1467432559032391204">Doľava</translation>
 <translation id="1471718551822868769">Slovenská klávesnica</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Súbory systému Windows</translation>
 <translation id="3078461028045006476">Zdieľať s rozšírením <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebity</translation>
+<translation id="3113153474486991170"><ph name="PATH" /> sa v tomto umiestnení nepodarilo otvoriť. Ak chcete túto položku otvoriť, skopírujte ju do sekcie Moje súbory.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">OK</translation>
 <translation id="3188257591659621405">Moje súbory</translation>
@@ -449,6 +451,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5602622065581044566">Bulharská fonetická klávesnica</translation>
 <translation id="5605830556594064952">Americká klávesnica s rozložením klávesov Dvorak</translation>
 <translation id="5625294776298156701">Tamilská klávesnica s rozložením Tamil99</translation>
+<translation id="5633226425545095130">Ak presuniete túto položku, budete ju zdieľať so všetkými používateľmi, ktorí vidia zdieľaný priečinok <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Počúvať</translation>
 <translation id="5678784840044122290">Aplikácia Linux bude k dispozícii v termináli a jej ikona sa môže tiež zobraziť v Spúšťači.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nedá sa odpojiť od archívu či virtuálneho disku<ph name="END_BOLD" />
@@ -610,6 +613,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7417453074306512035">Etiópska klávesnica</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
 <translation id="7460898608667578234">Ukrajinčina</translation>
+<translation id="7486315294984620427">Ak chcete vložiť súbory do aplikácie Parallels Desktop, musíte ich skopírovať do súborov pre Windows.</translation>
 <translation id="7489215562877293245">Počet nájdených: <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Môžete začať zálohovať na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8395901698320285466">Rozmery</translation>
 <translation id="8437209419043462667">Americká klávesnica</translation>
 <translation id="8456681095658380701">Neplatný názov</translation>
+<translation id="8459404855768962328">Ak skopírujete túto položku, budete ju zdieľať so všetkými používateľmi, ktorí vidia zdieľaný priečinok <ph name="DESTINATION_NAME" />.</translation>
 <translation id="8461467696380332069">Ak chcete získať rýchly prístup k súborom na poličke, kliknite na požadovaný súbor a vyberte Pripnúť na položku.</translation>
 <translation id="8463494891489624050">Vietnamská klávesnica s rozložením VIQR</translation>
 <translation id="8466234950814670489">Archív vo formáte Tar</translation>

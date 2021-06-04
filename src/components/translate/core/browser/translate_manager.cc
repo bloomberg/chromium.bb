@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/language/core/browser/language_model.h"
@@ -71,7 +70,7 @@ TranslateManager::LanguageDetectedCallbackList* g_detection_callback_list_ =
 const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
 
-// Used in kReportLanguageDetectionErrorURL to specify the original page
+// Used in kReportLanguageDetectionErrorURL to specify the page source
 // language.
 const char kSourceLanguageQueryName[] = "sl";
 
@@ -278,7 +277,7 @@ bool TranslateManager::CanManuallyTranslate(bool menuLogging) {
     can_translate = false;
   }
 
-  const std::string source_language = language_state_.original_language();
+  const std::string source_language = language_state_.source_language();
   if (source_language.empty()) {
     if (!menuLogging)
       return false;
@@ -346,7 +345,7 @@ void TranslateManager::InitiateManualTranslation(bool auto_translate,
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
   const std::string source_code = TranslateDownloadManager::GetLanguageCode(
-      language_state_.original_language());
+      language_state_.source_language());
   const std::string target_lang = GetManualTargetLanguage(
       source_code, language_state_, translate_prefs.get(), language_model_);
 
@@ -467,7 +466,7 @@ void TranslateManager::RevertTranslation() {
 
   // Revert the translation.
   translate_driver_->RevertTranslation(page_seq_no_);
-  language_state_.SetCurrentLanguage(language_state_.original_language());
+  language_state_.SetCurrentLanguage(language_state_.source_language());
 
   GetActiveTranslateMetricsLogger()->LogReversion();
 }
@@ -483,7 +482,7 @@ void TranslateManager::ReportLanguageDetectionError() {
 
   report_error_url =
       net::AppendQueryParameter(report_error_url, kSourceLanguageQueryName,
-                                language_state_.original_language());
+                                language_state_.source_language());
 
   report_error_url = translate::AddHostLocaleToUrl(report_error_url);
   report_error_url = translate::AddApiKeyToUrl(report_error_url);
@@ -544,8 +543,8 @@ void TranslateManager::PageTranslated(const std::string& source_lang,
                                       TranslateErrors::Type error_type) {
   if (error_type == TranslateErrors::NONE) {
     // The user could have updated the source language before translating, so
-    // update the language state with both original and current.
-    language_state_.SetOriginalLanguage(source_lang);
+    // update the language state with both source and current.
+    language_state_.SetSourceLanguage(source_lang);
     language_state_.SetCurrentLanguage(target_lang);
   }
 
@@ -687,10 +686,10 @@ std::string TranslateManager::GetTargetLanguage(
 
 // static
 std::string TranslateManager::GetAutoTargetLanguage(
-    const std::string& original_language,
+    const std::string& source_language,
     TranslatePrefs* translate_prefs) {
   std::string auto_target_lang;
-  if (translate_prefs->ShouldAutoTranslate(original_language,
+  if (translate_prefs->ShouldAutoTranslate(source_language,
                                            &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.
     // Also, GetLanguageCode will take care of removing country code if any.
@@ -746,36 +745,21 @@ void TranslateManager::RecordTranslateEvent(int event_type) {
       event_type, translate_driver_->GetUkmSourceId(), translate_event_.get());
 }
 
-bool TranslateManager::ShouldOverrideDecision(int event_type) {
-  return translate_ranker_->ShouldOverrideDecision(
-      event_type, translate_driver_->GetUkmSourceId(), translate_event_.get());
+bool TranslateManager::ShouldOverrideMatchesPreviousLanguageDecision() {
+  return translate_ranker_->ShouldOverrideMatchesPreviousLanguageDecision(
+      translate_driver_->GetUkmSourceId(), translate_event_.get());
 }
 
-bool TranslateManager::ShouldSuppressBubbleUI(
-    bool triggered_from_menu,
-    const std::string& source_language) {
+bool TranslateManager::ShouldSuppressBubbleUI() {
   // Suppress the UI if the user navigates to a page with
   // the same language as the previous page. In the new UI,
   // continue offering translation after the user navigates
   // to another page.
   if (!language_state_.HasLanguageChanged() &&
-      !ShouldOverrideDecision(
-          metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE)) {
+      !ShouldOverrideMatchesPreviousLanguageDecision()) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::
             INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE);
-    return true;
-  }
-
-  // Suppress the UI if the user denied translation for this language
-  // too often.
-  if (!triggered_from_menu &&
-      translate_client_->GetTranslatePrefs()->IsTooOftenDenied(
-          source_language) &&
-      !ShouldOverrideDecision(
-          metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_TOO_OFTEN_DENIED);
     return true;
   }
 
@@ -1158,7 +1142,7 @@ bool TranslateManager::MaterializeDecision(
                   GetLanguageState()->InTranslateNavigation()
                       ? TranslationType::kAutomaticTranslationByLink
                       : TranslationType::kAutomaticTranslationByPref);
-    return false;
+    return true;
   }
 
   if (decision.can_auto_href_translate()) {
@@ -1168,7 +1152,7 @@ bool TranslateManager::MaterializeDecision(
                       : TranslationType::kAutomaticTranslationByPref);
     GetActiveTranslateMetricsLogger()->LogTriggerDecision(
         TriggerDecision::kAutomaticTranslationByHref);
-    return false;
+    return true;
   }
 
   // Auto-translate didn't happen, so check if the UI should be shown. It must

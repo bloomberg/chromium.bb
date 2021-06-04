@@ -6,9 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
@@ -24,6 +22,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::_;
 using testing::DoAll;
@@ -119,7 +118,7 @@ TEST_F(SearchSuggestLoaderImplTest, RequestReturns) {
   std::string blocklist;
   search_suggest_loader()->Load(blocklist, callback.Get());
 
-  base::Optional<SearchSuggestData> data;
+  absl::optional<SearchSuggestData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback,
               Run(SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS, _))
@@ -139,7 +138,7 @@ TEST_F(SearchSuggestLoaderImplTest, HandlesResponsePreamble) {
   std::string blocklist;
   search_suggest_loader()->Load(blocklist, callback.Get());
 
-  base::Optional<SearchSuggestData> data;
+  absl::optional<SearchSuggestData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback,
               Run(SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS, _))
@@ -156,7 +155,7 @@ TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
   std::string blocklist;
   search_suggest_loader()->Load(blocklist, callback.Get());
 
-  base::Optional<SearchSuggestData> data;
+  absl::optional<SearchSuggestData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback,
               Run(SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS, _))
@@ -178,7 +177,7 @@ TEST_F(SearchSuggestLoaderImplTest, ParsesValidResponseWithNoSuggestions) {
   std::string blocklist;
   search_suggest_loader()->Load(blocklist, callback.Get());
 
-  base::Optional<SearchSuggestData> data;
+  absl::optional<SearchSuggestData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback,
               Run(SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS, _))
@@ -206,8 +205,8 @@ TEST_F(SearchSuggestLoaderImplTest, CoalescesMultipleRequests) {
   search_suggest_loader()->Load(blocklist, second_callback.Get());
 
   // Make sure that a single response causes both callbacks to be called.
-  base::Optional<SearchSuggestData> first_data;
-  base::Optional<SearchSuggestData> second_data;
+  absl::optional<SearchSuggestData> first_data;
+  absl::optional<SearchSuggestData> second_data;
 
   base::RunLoop loop;
   EXPECT_CALL(first_callback,
@@ -232,7 +231,7 @@ TEST_F(SearchSuggestLoaderImplTest, NetworkErrorIsTransient) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(SearchSuggestLoader::Status::TRANSIENT_ERROR,
-                            Eq(base::nullopt)))
+                            Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -248,7 +247,7 @@ TEST_F(SearchSuggestLoaderImplTest, DISABLED_InvalidJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(SearchSuggestLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(SearchSuggestLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -262,7 +261,7 @@ TEST_F(SearchSuggestLoaderImplTest, IncompleteJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(SearchSuggestLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(SearchSuggestLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }

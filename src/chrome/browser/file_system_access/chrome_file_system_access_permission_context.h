@@ -8,9 +8,15 @@
 #include <map>
 #include <vector>
 
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/timer/timer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -22,28 +28,40 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace features {
+// Enables persistent permissions for the File System Access API.
+extern const base::Feature kFileSystemAccessPersistentPermissions;
+}  // namespace features
+
 // Chrome implementation of FileSystemAccessPermissionContext. This class
 // implements a permission model where permissions are shared across an entire
-// origin. When the last tab for an origin is closed all permissions for that
-// origin are revoked.
+// origin.
+//
+// There are two orthogonal permission models at work in this class:
+// 1. Active permissions are scoped to the lifetime of the handles that
+//    reference the grants. When the last tab for an origin is closed, all
+//    active permissions for that origin are revoked.
+// 2. Persistent permissions allow for auto-granting permissions which the user
+//    had given access to prior, within a given time window. These are stored
+//    using ObjectPermissionContextBase.
 //
 // All methods must be called on the UI thread.
-//
-// This class does not inherit from ChooserContextBase because the model this
-// API uses doesn't really match what ChooserContextBase has to provide. The
-// limited lifetime of File System Access permission grants (scoped to the
-// lifetime of the handles that reference the grants), and the possible
-// interactions between grants for directories and grants for children of those
-// directories as well as possible interactions between read and write grants
-// make it harder to squeeze this into a shape that fits with
-// ChooserContextBase.
 class ChromeFileSystemAccessPermissionContext
     : public content::FileSystemAccessPermissionContext,
-      public KeyedService {
+      public permissions::ObjectPermissionContextBase {
  public:
   explicit ChromeFileSystemAccessPermissionContext(
-      content::BrowserContext* context);
+      content::BrowserContext* context,
+      const base::Clock* clock = base::DefaultClock::GetInstance());
   ~ChromeFileSystemAccessPermissionContext() override;
+
+  // permissions::ObjectPermissionContextBase
+  std::vector<std::unique_ptr<Object>> GetGrantedObjects(
+      const url::Origin& origin) override;
+  std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
+  std::string GetKeyForObject(const base::Value& object) override;
+  bool IsValidObject(const base::Value& object) override;
+  std::u16string GetObjectDisplayName(const base::Value& object) override;
 
   // content::FileSystemAccessPermissionContext:
   scoped_refptr<content::FileSystemAccessPermissionGrant>
@@ -86,9 +104,14 @@ class ChromeFileSystemAccessPermissionContext
     max_ids_per_origin_ = max_ids;
   }
 
-  // Returns a snapshot of the currently granted permissions.
-  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from this
-  // method when grants stop being scoped to a frame.
+  enum class GrantType { kRead, kWrite };
+
+  enum class PersistedPermissionOptions {
+    kDoNotUpdatePersistedPermission,
+    kUpdatePersistedPermission,
+  };
+
+  // Returns a snapshot of the currently granted active permissions.
   struct Grants {
     Grants();
     ~Grants();
@@ -103,8 +126,10 @@ class ChromeFileSystemAccessPermissionContext
   Grants GetPermissionGrants(const url::Origin& origin);
 
   // Revokes write access and directory read access for the given origin.
-  void RevokeGrants(const url::Origin& origin);
+  void RevokeGrants(const url::Origin& origin,
+                    PersistedPermissionOptions persisted_status);
 
+  // Returns whether active permissions exist for the origin of the given type.
   bool OriginHasReadAccess(const url::Origin& origin);
   bool OriginHasWriteAccess(const url::Origin& origin);
 
@@ -116,12 +141,43 @@ class ChromeFileSystemAccessPermissionContext
 
   void TriggerTimersForTesting();
 
+  // Return all persisted objects, including those which have expired.
+  std::vector<std::unique_ptr<ObjectPermissionContextBase::Object>>
+  GetAllGrantedOrExpiredObjects();
+  void UpdatePersistedPermissionsForTesting();
+  bool HasPersistedPermissionForTesting(const url::Origin& origin,
+                                        const base::FilePath& path,
+                                        HandleType handle_type,
+                                        GrantType grant_type);
+
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
+
+  // This long after the handle has last been used, revoke the persisted
+  // permission.
+  static constexpr base::TimeDelta
+      kPersistentPermissionExpirationTimeoutNonPWA =
+          base::TimeDelta::FromHours(5);
+  static constexpr base::TimeDelta kPersistentPermissionExpirationTimeoutPWA =
+      base::TimeDelta::FromDays(30);
+  // Amount of time a persisted permission will remain persisted after its
+  // expiry. Used for metrics.
+  static constexpr base::TimeDelta kPersistentPermissionGracePeriod =
+      base::TimeDelta::FromDays(1);
 
  protected:
   SEQUENCE_CHECKER(sequence_checker_);
 
+  base::RepeatingTimer&
+  periodic_sweep_persisted_permissions_timer_for_testing() {
+    return periodic_sweep_persisted_permissions_timer_;
+  }
+
+  // Overridden in tests.
+  virtual bool OriginIsInstalledPWA(const url::Origin& origin);
+
  private:
+  enum class MetricsOptions { kRecord, kDoNotRecord };
+
   class PermissionGrantImpl;
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
 
@@ -149,9 +205,35 @@ class ChromeFileSystemAccessPermissionContext
   // windows.
   void DoUsageIconUpdate();
 
-  // Checks if any tabs are open for |origin|, and if not revokes all
+  // Checks if any tabs are open for |origin|, and if not revokes all active
   // permissions for that origin.
-  void MaybeCleanupPermissions(const url::Origin& origin);
+  void MaybeCleanupActivePermissions(const url::Origin& origin);
+
+  // Sweeps HostContentSettingsMap, revoking expired persisted permissions and
+  // auto-extending persisted permissions with active grants.
+  void UpdatePersistedPermissions();
+  // Only sweep persisted permissions for the given |origin|.
+  void UpdatePersistedPermissionsForOrigin(const url::Origin& origin);
+
+  // Renew the persisted permission if it has active permissions, or
+  // revoke the persisted permission if it has expired.
+  void MaybeRenewOrRevokePersistedPermission(const url::Origin& origin,
+                                             base::Value grant,
+                                             bool is_installed_pwa);
+
+  bool AncestorHasActivePermission(const url::Origin& origin,
+                                   const base::FilePath& path,
+                                   GrantType grant_type);
+  absl::optional<base::Value> GetPersistedPermission(
+      const url::Origin& origin,
+      const base::FilePath& path);
+  bool HasPersistedPermission(const url::Origin& origin,
+                              const base::FilePath& path,
+                              HandleType handle_type,
+                              GrantType grant_type,
+                              MetricsOptions options);
+  bool PersistentPermissionIsExpired(const base::Time& last_used,
+                                     bool is_installed_pwa);
 
   base::WeakPtr<ChromeFileSystemAccessPermissionContext> GetWeakPtr();
 
@@ -167,6 +249,9 @@ class ChromeFileSystemAccessPermissionContext
 
   // Number of custom IDs an origin can specify.
   size_t max_ids_per_origin_ = 32u;
+
+  const base::Clock* const clock_;
+  base::RepeatingTimer periodic_sweep_persisted_permissions_timer_;
 
   base::WeakPtrFactory<ChromeFileSystemAccessPermissionContext> weak_factory_{
       this};

@@ -16,13 +16,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -34,7 +34,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
@@ -48,6 +50,7 @@
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/compute_pressure/compute_pressure_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -113,6 +116,7 @@
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -481,7 +485,7 @@ class LoginHandlerDelegate {
 
   void ContinueAfterInterceptor(
       bool use_fallback,
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
+      const absl::optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!(use_fallback && auth_credentials.has_value()));
     if (!use_fallback) {
@@ -491,7 +495,7 @@ class LoginHandlerDelegate {
 
     WebContents* web_contents = web_contents_getter_.Run();
     if (!web_contents) {
-      OnAuthCredentials(base::nullopt);
+      OnAuthCredentials(absl::nullopt);
       return;
     }
 
@@ -504,13 +508,13 @@ class LoginHandlerDelegate {
                        weak_factory_.GetWeakPtr()));
     creating_login_delegate_ = false;
     if (!login_delegate_) {
-      OnAuthCredentials(base::nullopt);
+      OnAuthCredentials(absl::nullopt);
       return;
     }
   }
 
   void OnAuthCredentials(
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
+      const absl::optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // CreateLoginDelegate must not call the callback reentrantly. For
     // robustness, detect this mistake.
@@ -549,7 +553,7 @@ void OnAuthRequiredContinuation(
   if (!web_contents_getter || !web_contents_getter.Run()) {
     mojo::Remote<network::mojom::AuthChallengeResponder>
         auth_challenge_responder_remote(std::move(auth_challenge_responder));
-    auth_challenge_responder_remote->OnAuthCredentials(base::nullopt);
+    auth_challenge_responder_remote->OnAuthCredentials(absl::nullopt);
     return;
   }
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
@@ -840,7 +844,7 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   QuotaManagedDataDeletionHelper(
       uint32_t remove_mask,
       uint32_t quota_storage_remove_mask,
-      const base::Optional<url::Origin>& storage_origin,
+      const absl::optional<url::Origin>& storage_origin,
       base::OnceClosure callback)
       : remove_mask_(remove_mask),
         quota_storage_remove_mask_(quota_storage_remove_mask),
@@ -877,7 +881,7 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   // All of these data are accessed on IO thread.
   uint32_t remove_mask_;
   uint32_t quota_storage_remove_mask_;
-  base::Optional<url::Origin> storage_origin_;
+  absl::optional<url::Origin> storage_origin_;
   base::OnceClosure callback_;
   int task_count_;
 
@@ -982,8 +986,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
       new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
           remove_mask_, quota_storage_remove_mask_,
           storage_origin.is_empty()
-              ? base::nullopt
-              : base::make_optional(url::Origin::Create(storage_origin)),
+              ? absl::nullopt
+              : absl::make_optional(url::Origin::Create(storage_origin)),
           std::move(callback));
   helper->ClearDataOnIOThread(quota_manager, begin, end, special_storage_policy,
                               std::move(origin_matcher),
@@ -1020,7 +1024,7 @@ class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
       network::mojom::CookieAccessDetailsPtr details) {
     std::vector<GlobalFrameRoutingId> destinations =
         *service_worker_context->GetWindowClientFrameRoutingIds(
-            details->url.GetOrigin());
+            storage::StorageKey(url::Origin::Create(details->url)));
     if (destinations.empty())
       return;
     RunOrPostTaskOnThread(
@@ -1328,10 +1332,7 @@ void StoragePartitionImpl::Initialize(
   }
 
   font_access_manager_ = std::make_unique<FontAccessManagerImpl>();
-
-  if (blink::features::IsPrerender2Enabled()) {
-    prerender_host_registry_ = std::make_unique<PrerenderHostRegistry>();
-  }
+  compute_pressure_manager_ = ComputePressureManager::Create();
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1345,6 +1346,10 @@ void StoragePartitionImpl::OnStorageServiceDisconnected() {
 
 base::FilePath StoragePartitionImpl::GetPath() {
   return partition_path_;
+}
+
+base::FilePath StoragePartitionImpl::GetBucketBasePath() {
+  return partition_path_.Append(storage::kWebStorageDirectory);
 }
 
 std::string StoragePartitionImpl::GetPartitionDomain() {
@@ -1458,6 +1463,12 @@ storage::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
 DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
   DCHECK(initialized_);
   return dom_storage_context_.get();
+}
+
+storage::mojom::LocalStorageControl*
+StoragePartitionImpl::GetLocalStorageControl() {
+  DCHECK(initialized_);
+  return GetDOMStorageContext()->GetLocalStorageControl();
 }
 
 LockManager* StoragePartitionImpl::GetLockManager() {
@@ -1601,10 +1612,9 @@ InterestGroupManager* StoragePartitionImpl::GetInterestGroupStorage() {
   return interest_group_manager_.get();
 }
 
-PrerenderHostRegistry* StoragePartitionImpl::GetPrerenderHostRegistry() {
-  DCHECK(blink::features::IsPrerender2Enabled());
+ComputePressureManager* StoragePartitionImpl::GetComputePressureManager() {
   DCHECK(initialized_);
-  return prerender_host_registry_.get();
+  return compute_pressure_manager_.get();
 }
 
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
@@ -1674,7 +1684,7 @@ void StoragePartitionImpl::BindSessionStorageArea(
 }
 
 void StoragePartitionImpl::OnAuthRequired(
-    const base::Optional<base::UnguessableToken>& window_id,
+    const absl::optional<base::UnguessableToken>& window_id,
     uint32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
@@ -1715,7 +1725,7 @@ void StoragePartitionImpl::OnAuthRequired(
 }
 
 void StoragePartitionImpl::OnCertificateRequested(
-    const base::Optional<base::UnguessableToken>& window_id,
+    const absl::optional<base::UnguessableToken>& window_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
         cert_responder) {
@@ -1836,7 +1846,7 @@ void StoragePartitionImpl::OnCanSendReportingReports(
     OnCanSendReportingReportsCallback callback) {
   DCHECK(initialized_);
   PermissionController* permission_controller =
-      BrowserContext::GetPermissionController(browser_context_);
+      browser_context_->GetPermissionController();
   DCHECK(permission_controller);
 
   std::vector<url::Origin> origins_out;
@@ -1857,7 +1867,7 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
     OnCanSendDomainReliabilityUploadCallback callback) {
   DCHECK(initialized_);
   PermissionController* permission_controller =
-      BrowserContext::GetPermissionController(browser_context_);
+      browser_context_->GetPermissionController();
   std::move(callback).Run(
       permission_controller->GetPermissionStatus(
           content::PermissionType::BACKGROUND_SYNC, origin, origin) ==
@@ -2094,13 +2104,13 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
   // The logic below (via CheckQuotaManagedDataDeletionStatus) only
   // invokes the callback when all processing is complete.
-  base::RepeatingClosure done_callback = base::AdaptCallbackForRepeating(
+  base::OnceClosure done_callback =
       perform_storage_cleanup
           ? base::BindOnce(&PerformQuotaManagerStorageCleanup,
                            base::WrapRefCounted(quota_manager),
                            quota_storage_type, quota_client_types,
                            std::move(callback))
-          : std::move(callback));
+          : std::move(callback);
 
   size_t* deletion_task_count = new size_t(0u);
   (*deletion_task_count)++;
@@ -2114,15 +2124,19 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
       continue;
     }
 
+    auto split_callback = base::SplitOnceCallback(std::move(done_callback));
+    done_callback = std::move(split_callback.first);
+
     (*deletion_task_count)++;
     quota_manager->DeleteOriginData(
         origin, quota_storage_type, quota_client_types,
         base::BindOnce(&OnQuotaManagedOriginDeleted, origin, quota_storage_type,
-                       deletion_task_count, done_callback));
+                       deletion_task_count, std::move(split_callback.second)));
   }
   (*deletion_task_count)--;
 
-  CheckQuotaManagedDataDeletionStatus(deletion_task_count, done_callback);
+  CheckQuotaManagedDataDeletionStatus(deletion_task_count,
+                                      std::move(done_callback));
 }
 
 base::OnceClosure
@@ -2444,7 +2458,7 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
 
 storage::mojom::Partition* StoragePartitionImpl::GetStorageServicePartition() {
   if (!remote_partition_) {
-    base::Optional<base::FilePath> storage_path;
+    absl::optional<base::FilePath> storage_path;
     if (!is_in_memory_) {
       storage_path =
           browser_context_->GetPath().Append(relative_partition_path_);

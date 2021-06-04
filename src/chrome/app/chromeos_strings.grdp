@@ -303,38 +303,26 @@
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE" desc="Message displayed under title in final screen of cellular setup when ChromeOS encountered an error completing activation.">
     An error occured during activation.
   </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_SUCCESS_HEADER" desc="Header displayed at the top of the success screen of the eSIM installation flow that tells user that a new eSIM profile has been added.">
+    Network added
+  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_MESSAGE" desc="Message displayed under title in final success screen of eSIM cellular setup that tells user that their profile has been activated.">
-    Profile has been added successfully.
+    This mobile network will be available to all users on this device
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_ERROR_MESSAGE" desc="Message displayed under title in final screen of eSIM cellular setup when ChromeOS encountered an error installing eSIM profiles.">
-    Unable to connect to a mobile network. For technical support, please contact your carrier.
-  </message>
-  <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_LABEL" desc="Label for physical SIM (pSIM) setup flow card radio select button during cellular setup">
-    Physical SIM
-  </message>
-  <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_MESSAGE" desc="Message for physical SIM (pSIM) setup flow card radio select button during cellular setup, informing the user to insert a physical SIM.">
-    Insert SIM before proceeding
-  </message>
-  <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL" desc="Label for electronic SIM (eSIM) setup flow card radio select button during cellular setup">
-    eSIM setup
+    Couldn't install eSIM profile. For help, please contact your carrier.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles.">
     Looking for available profiles...
   </message>
-  <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_MESSAGE" desc="Message for electronic SIM (eSIM) setup flow card radio select button during cellular setup, informing the user to establish an internet connection before proceeding.">
-    Establish an internet connection first
-  </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_CONNECTION_WARNING" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles informing the user that cellular setup may disconnect their current cellular network connection.">
-    This may cause a brief cellular network disconnection.
+  <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_DURING_ACTIVE_CELLULAR_CONNECTION_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles informing the user that cellular setup may disconnect their current cellular network connection.">
+    Looking for available profiles. This may cause your mobile network to disconnect for a few minutes.
   </message>
   <message name="IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE" desc="Label informing the user that they are able to select multiple eSIM profiles for downloading.">
     We've found multiple profiles available to download. Select the ones you would like to download before proceeding.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE" desc="Label for informing the user on ways to retrieve an eSim profile">
-    Scan QR code using device camera or enter activation code provided by your carrier.
-  </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_NO_PROFILES" desc="Label for informing the user on ways to retrieve an eSim profile after no eSIM profiles have been found.">
-    No profiles were discovered. To setup a new network, scan QR code using device camera or enter activation code provided by your carrier.
+    Scan a QR code using your device camera or enter the activation code provided by your carrier
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ENTER_ACTIVATION_CODE" desc="Label for informing the user to enter activation code when no media devices have been found">
     Please enter your activation code
@@ -345,11 +333,17 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SWITCH_CAMERA" desc="Label for button that toggles the camera between user-facing and environment-facing.">
     Flip camera
   </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_ON" desc="Accessibility announcement provided during the eSIM setup flow which alerts the user about how to set up an eSIM profile to use for a cellular connection. The flow involves clicking a button to cause the device's webcam to turn on, then the user showing a QR code to the camera to continue.">
+    Device camera has turned on. Please place your eSIM QR code in front of the camera.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_SCAN_SUCCESS" desc="Accessibility announcement provided during the eSIM setup flow which alerts the user that a qr code has been succesfully scanned by the device camera.">
+    QR code has been scanned.
+  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_SUCCESS" desc="Label informing the user that an an activation code was scanned successfully.">
     Activation code detected
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_USE_CAMERA_AGAIN" desc="Label for button informing the user to click to use the camera to rescan for QR codes.">
-    use camera again
+    Use camera again
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ERROR" desc="Label informing the user that there was an error detecting activation code.">
     Error detecting code
@@ -360,20 +354,26 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING" desc="Label informing the user that the activation code is currently being verified.">
     Verifying activation code...
   </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_VERIFYING_ACTIVATION_CODE" desc="Label informing the user that the activation code is currently being verified, and that it may take a couple of minutes before it is complete.">
+    Verifying activation code. This may take a few minutes.
+  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INVALID" desc="Label informing the user that the code used to install an eSIM profile is invalid.">
     Invalid code. Please try again.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
   </message>
+  <message name="IDS_CELLULAR_SETUP_EID_MENU_ITEM_TITLE" desc="Title for menu item in the eSIM list triple dot menu that shows the EID and QR code dialog when clicked.">
+    Show device EID
+  </message>
   <message name="IDS_CELLULAR_SETUP_EID_POPUP_TITLE" desc="Label shown when vewing EID and QR code popup describing device EID">
     Your device EID
   </message>
   <message name="IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION" desc="Label shown when veiwing EID and QR code popup describing what an EID number is used for">
-    A customer service rep can use the EID number to help you activate service.
+    A customer service rep can use this EID number to help you activate service
   </message>
-  <message name="IDS_CELLULAR_SETUP_CLOSE_EID_POPUP_BUTTON_LABEL" desc="A11y and tooltip label for EID and QR code popup close button when viewing EID and QR code popup">
-    Close EID and QR code popup
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_A11Y_LABEL" desc="A11y label for EID and QR code dialog describing what the device's EID number is and what it's used for">
+    Your device EID is <ph name="EID_NUMBER">$1<ex>123456789</ex></ph>. A customer service rep can use the EID number to help you activate service.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_MESSAGE" desc="Message, prompting the user to enter the confirmation code to activate an eSIM profile.">
     Please enter your confirmation code.
@@ -1570,6 +1570,12 @@
   <message name="IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED" desc="Network error details in notifications: Certificates not loaded">
     Certificates not loaded
   </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_NOT_REGISTERED" desc="Network error details in notifications: NOT_REGISTERED. Error when a connect attempt fails because the modem is not registered.">
+    Modem not registered
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_WRONG_STATE" desc="Network error details in notifications: NOT_REGISTERED. Error when a connect attempt fails because the modem is in a busy state.">
+    Device is busy
+  </message>
   <message name="IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG" desc="Network error message shown when attempting to change a shared network configuration if the operation is not allowed">
     Changing shared network configurations is not allowed
   </message>
@@ -1605,6 +1611,9 @@
   <message name="IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR" desc="Error message shown when client certificate attributes extraction failed during the challenge-response based authentication.">
     Invalid client certificate
   </message>
+  <message name="IDS_FAILED_TO_FETCH_SAML_REDIRECT" desc="Error message shown when SAML redirect URL failed to be fetched">
+    Failed to fetch the SAML redirect URL from the server
+  </message>
 
   <!-- Strings used in <network-list>, used in Settings and OOBE -->
   <message name="IDS_NETWORK_LIST_INITIALIZING" desc="Text in the network list element when a Cellular network is initiailizing.">
@@ -1630,6 +1639,9 @@
   </message>
   <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
     <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_TITLE" desc="Label for a network shown in a list in settings and oobe displaying its name and subtitle.">
+    <ph name="NETWORK_NAME">$1<ex>My Verizon eSIM</ex></ph> · <ph name="CARRIER_NAME">$2<ex>Verizon Wireless</ex></ph>
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL" desc="A11y label for a button which links to details about a network, shown in settings.">
     <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, Details
@@ -1682,6 +1694,12 @@
   <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe.  Includes connection status and provider name. Clicking the network navigates to the details page.">
     Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Managed by your Administrator, Details
   </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED" desc="A11y label for a cellular network in a list in settings and oobe that has not been activated to be available for use. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Unactivated, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED_WITH_CONNECTION_STATUS" desc="A11y label for a cellular network in a list in settings and oobe that has not been activated to be available for use. Includes connection status. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Unactivated, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Details
+  </message>
   <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER" desc="A11y label for a phone tether network in a list in settings and oobe. Clicking the network navigates to the details page.">
     Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$5<ex>80</ex></ph>%, Connect
   </message>
@@ -1706,13 +1724,13 @@
   <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe. Includes the provider name.">
     Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
   </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE" desc="Text for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked." translateable="false">
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE" desc="Text for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked.">
     Activate
   </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE_A11Y_LABEL" desc="A11Y label for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked. Includes network name." translateable="false">
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE_A11Y_LABEL" desc="A11Y label for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked. Includes network name.">
     Activate, <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
   </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATING" desc="Loading text indicating that the SIM network is currently being set up so that the user can connect to it to access the Internet." translateable="false">
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATING" desc="Loading text indicating that the SIM network is currently being set up so that the user can connect to it to access the Internet.">
     Activating...
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_UNAVAILABLE_SIM_NETWORK" desc="Text for label displayed for SIM networks that are not available to be setup.">
@@ -1949,8 +1967,11 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_LOCKED" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when SIM card is locked.">
     SIM card is locked
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for checkbox to enable SIM card locking.">
-    Enable SIM card locking (require PIN to use mobile data)
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for toggle to enable SIM card locking.">
+   Lock SIM card
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE_SUBLABEL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Sublabel for toggle to enable SIM card locking.">
+    PIN is required to use mobile data
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
     Change
@@ -1962,7 +1983,13 @@
     Unlock
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for enter PIN dialog.">
-    Enter SIM PIN
+    Enter PIN
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION" desc="Settings > Internet > Network details > Lock/unlock SIM card: Description for enter PIN dialog.">
+    Anyone using this device will need to enter the PIN to connect to this mobile network
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION_TEXT_LABEL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for the text input.">
+    Enter at least 4 numbers
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for change PIN dialog.">
     Change SIM PIN
@@ -1971,10 +1998,19 @@
     Connect to this network to change SIM lock setting
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for SIM locked dialog.">
-    SIM Card is locked
+    SIM card is locked
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title informing the user to enter a PIN provided by the carrier in order unlock network">
-    Enter the 8-digit PIN Unblocking Key provided by your carrier
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title informing the user to enter a PIN provided by the carrier in order unlock network.">
+    An incorrect PIN was entered too many times. To set up a new PIN, enter the 8-digit Personal Unblocking Key (PUK) provided by your carrier.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_NO_FAILURES" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up.">
+    You won't be able to use this network until you set up a new PIN
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up and alerting the user that they have one attempt left to enter the correct code.">
+    You have 1 remaining attempt. You won't be able to use this network until you set up a new PIN.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURES" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up and alerting the user about the number of attempts they have left to enter the correct code.">
+    You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts. You won't be able to use this network until you set up a new PIN.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_SUBTITLE" desc="Subtitle for Network Summary item when the SIM is locked.">
     SIM Locked
@@ -1986,7 +2022,7 @@
     Enter PIN
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
-    Enter old PIN
+    Enter current PIN
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a new PIN.">
     Enter new PIN
@@ -1995,7 +2031,7 @@
     Re-enter new PIN
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
-    Enter PIN Unlock Key
+    Enter Personal Unblocking Key (PUK)
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered and there is only a single retry attempt remaining.">
     Incorrect PIN. You have 1 remaining attempt.
@@ -2004,10 +2040,7 @@
     Incorrect PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered.">
-    Incorrect PUK. You have 1 remaining attempt before you must contact your carrier to regain network access.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered and there is only a single retry attempte remaining.">
-    Incorrect PUK. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts before you must contact your carrier to regain network access.
+    Incorrect PUK
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered.">
     Invalid PIN. You have 1 remaining attempt.
@@ -2016,10 +2049,7 @@
     Invalid PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered and there is only a single retry attempt remaining.">
-      Invalid PUK. You have 1 remaining attempt.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered and there are multiple retry attempts remaining.">
-      Invalid PUK. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
+    Invalid PUK
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
     PIN values do not match.
@@ -2374,7 +2404,7 @@
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN" desc="Status when signing in.">
     Signing in.
   </message>
-  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in incognito.">
+  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in Incognito.">
     Entering as Guest.
   </message>
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT" desc="Status when signing in into a public account.">
@@ -3547,6 +3577,12 @@
   <message name="IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT" desc="Text displayed when the cellular activation UI cannot be opened because no cellular network exists.">
     No cellular network exists
   </message>
+  <message name="IDS_NETWORK_UI_RESET_ESIM_PROFILES_LABEL" desc="Label for section of the debug networking page which allows developers and QA testers to reset the cache of eSIM profile metadata stored in Chrome OS.">
+    Reset eSIM profiles
+  </message>
+  <message name="IDS_NETWORK_UI_RESET_ESIM_PROFILES_BUTTON_TEXT" desc="Text for button in the debug networking page which allows developers and QA testers to reset the cache of eSIM profile metadata stored in Chrome OS. After this button is clicked, Chrome needs to request that the hardware re-scan for installed profiles.">
+    Reset eSIM profile cache
+  </message>
   <message name="IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL" desc="Label for section dealing with showing the 'Add new Wi-Fi network' dialog.">
     New Wi-Fi Network Dialog
   </message>
@@ -4201,6 +4237,12 @@
   </message>
 
   <!-- Supervision transition OOBE screen. -->
+  <message name="IDS_ADDING_MANAGEMENT_TITLE" desc="Title of the management transition OOBE scree when user transitions to managed state. MANAGER can be a domain or an email address.">
+    Setting up management by <ph name="MANAGER">$1<ex>example.com</ex></ph>
+  </message>
+  <message name="IDS_ADDING_MANAGEMENT_TITLE_UNKNOWN_ADMIN" desc="Title of the management transition OOBE scree when user transitions to managed state and managment entity is unknown.">
+    Setting up management
+  </message>
   <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
     Stopping supervision...
   </message>
@@ -4417,17 +4459,14 @@
   <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER" desc="Text shown in the crostini terminal when it is starting the Linux container">
     Starting the Linux container
   </message>
-  <message name="IDS_CROSTINI_TERMINAL_STATUS_FETCH_SSH_KEYS" desc="Text shown in the crostini terminal when it is fetching the Linux container ssh keys">
-    Fetching the Linux container ssh keys
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER" desc="Text shown in the crostini terminal when it is mounting container sshfs (ssh filesystem)">
-    Mounting the Linux container sshfs
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_CONNECT_CONTAINER" desc="Text shown in the crostini terminal when it is connecting to the container">
+    Connecting to the container
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_READY" desc="Text shown in the crostini terminal when it just finished the initialization and it is ready to use.">
     Ready
   </message>
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing Linux.">
-    Set up Linux development environment (Beta)
+    Set up Linux development environment
   </message>
   <message name="IDS_CROSTINI_INSTALLER_BODY" desc="Description for the Crostini installer, a dialog for installing Linux.">
     Get tools for developing websites, Android apps, and more. Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of data.
@@ -5206,6 +5245,111 @@
     Looking for file shares
   </message>
 
+  <!-- Strings for the VM status page (chrome://vm). -->
+  <message name="IDS_VM_STATUS_INDEX_PAGE_TITLE" desc="The title for the VM (virtual machine) status index page. This string is used both for the heading and the page title.">
+    VM status
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_TITLE" desc="The title for the VM (virtual machine) status page of a particular product (e.g. 'Parallels Desktop' or 'Crostini').">
+    <ph name="VM_NAME">$1<ex>Parallels Desktop</ex></ph> status
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_PASS_LABEL" desc="Status indicating that we passed a check that is required for running the software.">
+    Pass
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_FAIL_LABEL" desc="Status indicating that we failed a check that is required for running the software.">
+    Fail
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_NOT_APPLICABLE_LABEL" desc="Status indicating that a check required for running the software does not apply or could not be checked.">
+    N/A
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_NOT_ENABLED_MESSAGE" desc="A message to tell the user why the VM (virtual machine) either cannot be installed or is not installed.">
+    Not enabled: <ph name="REASON">$1<ex>Drallion is not supported</ex></ph>
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_REQUIREMENT_LABEL" desc="The heading for the 'requirement' column in a VM status page table. The requirement column specifies the requirements for running a VM (virtual machine).">
+    Requirement
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_STATUS_LABEL" desc="The heading for the 'status' column in a VM status page table. The status can be either 'pass', 'fail', or 'N/A'.">
+    Status
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_EXPLANATION_LABEL" desc="The heading for the 'explanation' column in a VM status page table. This column provides additional information for checks that have failed.">
+    Explanation
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEVICE_IS_SUPPORTED_REQUIREMENT" desc="The requirement that the device being used supports the VM software (e.g. Parallels Desktop).">
+    Device is supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEVICE_IS_SUPPORTED_EXPLANATION" desc="The explanation that the device being used does not support the VM software (e.g. Parallels Desktop).">
+    <ph name="DEVICE_NAME">$1<ex>Drallion</ex></ph> is not supported.
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_PROFILE_IS_SUPPORTED_REQUIREMENT" desc="The requirement that the profile the user has logged in to supports the VM software (e.g. Parallels Desktop).">
+    Profile is supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_SECONDARY_PROFILE_EXPLANATION" desc="The explanation that secondary profiles cannot use the VM software (e.g. Parallels Desktop). The user has logged in to multiple accounts at the same time and only the account logged in to first can be used.">
+    Secondary profiles are not supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_CHILD_PROFILE_EXPLANATION" desc="The explanation that child accounts cannot use the VM software (e.g. Parallels Desktop).">
+    Child accounts are not supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_GUEST_PROFILE_EXPLANATION" desc="The explanation that guest accounts cannot use the VM software (e.g. Parallels Desktop). The user must be signed in.">
+    Guest profiles are not supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_EPHEMERAL_PROFILE_EXPLANATION" desc="The explanation that device is set up to use 'ephemeral mode' so the user cannot use the VM software (e.g. Parallels Desktop).">
+    Ephemeral mode is not supported. Please contact your administrator
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_UNSUPPORTED_PROFILE_EXPLANATION" desc="The explanation that the current user profile cannot use the VM software (e.g. Parallels Desktop).">
+    The profile is not supported
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_POLICIES_REQUIREMENT" desc="The requirement that policies must be configured correctly before the VM software (e.g. Parallels Desktop) can be used.">
+    Policies are configured correctly
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_INCORRECT_POLICIES_ERROR" desc="The error message shown when some policies are not configured correctly.">
+    One or more policies are not configured correctly. Please contact your administrator
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_IMAGE_URL_POLICY_EXPLANATION" desc="The message explaining that the policy specifying the virtual machine image's URL is not configured correctly">
+    Image url is invalid
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_IMAGE_HASH_POLICY_EXPLANATION" desc="The message explaining that the policy specifying the virtual machine image's hash (i.e. checksum) is not configured correctly">
+    Image hash is not set
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_UNABLE_TO_CHECK_POLICIES_EXPLANATION" desc="The message explaining that we are not able to check policies">
+    Unable to check policies
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEVICE_NOT_ENROLLED_EXPLANATION" desc="The message explaining that the device is not enterprise enrolled">
+    Device is not enrolled
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEVICE_NOT_ENROLLED_ERROR" desc="The error message shown when the device is not enterprise enrolled">
+    You must be on an enterprise-enrolled device
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_USER_NOT_AFFILIATED_EXPLANATION" desc="The message explaining that the user is not affiliated with the enterprise domain">
+    User is not affiliated with domain
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_UNABLE_TO_CHECK_DEVICE_ALLOW_EXPLANATION" desc="The message explaining that we encountered an error when checking whether the device is allowed by enterprise policy to run the VM (virtual machine)">
+    Unable to check whether the device is allowed
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEVICE_NOT_ALLOW_EXPLANATION" desc="The message explaining that the enterprise policy does not allow running the VM (virtual machine) on the device being used.">
+    Device is not allowed
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_USER_NOT_ALLOW_EXPLANATION" desc="The message explaining that the enterprise policy does not allow the current user to run the VM (virtual machine)">
+    User is not allowed
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_LICENSE_NOT_SET_UP_EXPLANATION" desc="The message explaining that the the license for running the VM (virtual machine) is not set up">
+    License is not set up
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_DEFAULT_VM_EXISTS_REQUIREMENT" desc="The message for the requirement that a VM (virtual machine) with the default name should exist">
+    VM "<ph name="DEFAULT_VM_NAME">$1<ex>PvmDefault</ex></ph>" exists
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_MISSING_DEFAULT_VM_ERROR" desc="The error message shown when the default VM (virtual machine) does not exist">
+    A required virtual machine does not exist. Please try setting up <ph name="VM_TYPE">$1<ex>Parallels Desktop</ex></ph> to continue
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_FAILED_TO_CHECK_VM_EXPLANATION" desc="The message explaining that we failed to enumerate existing VMs (virtual machine)">
+    Failed to check VMs
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_MISSING_DEFAULT_VM_EXPLANATION" desc="When the default VM is missing, we want to show a message listing the VM(s) that we did find. Examples are: 'No Parallels Desktop VMs found', '1 Parallels Desktop VM found: vm_name1', '3 Parallels Desktop VMs found: vm_name1, vm_name2, vm_name3' ">
+    {NUM_VMS, plural,
+      =0 {No <ph name="VM_TYPE">$1<ex>Parallels Desktop</ex></ph> VMs found}
+      =1 {1 <ph name="VM_TYPE">$1<ex>Parallels Desktop</ex></ph> VM found: <ph name="VM_NAME_LIST">$2<ex>vm_name1</ex></ph>}
+      other {{NUM_VMS} <ph name="VM_TYPE">$1<ex>Parallels Desktop</ex></ph> VMs found: <ph name="VM_NAME_LIST">$2<ex>vm_name1, vm_name2, vm_name3</ex></ph>}
+    }
+  </message>
+
   <!-- Strings for Plugin VM -->
   <message name="IDS_PLUGIN_VM_APP_NAME" desc="Product name for 'Parallels Desktop'. Should not be translated as it is a third party name." translateable="false">
     Parallels Desktop
@@ -5371,7 +5515,10 @@
     Camera is off
   </message>
   <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use a camera while the camera privacy switch, which disables camera feed, is turned on">
-    An app is trying to access camera. Turn off the camera privacy switch to allow access.
+    An app is trying to access the camera. Turn off the camera privacy switch to allow access.
+  </message>
+  <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE_WITH_APP_NAME" desc="Message for a notification shown to the users when an app tries to use a camera while the camera privacy switch, which disables camera feed, is turned on">
+    <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is trying to access the camera. Turn off the camera privacy switch to allow access.
   </message>
 
   <!-- Strings for Account Manager error screen -->
@@ -5399,9 +5546,9 @@
     Add another Google Account for <ph name="USER_NAME">$1<ex>John</ex></ph>
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog.">
-    You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest or browse the web in an <ph name="LINK_2_BEGIN">&lt;a id="incognitoLink" href="#"&gt;</ph>incognito window<ph name="LINK_2_END">&lt;/a&gt;</ph>.
+    You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest or browse the web in an <ph name="LINK_2_BEGIN">&lt;a id="incognitoLink" href="#"&gt;</ph>Incognito window<ph name="LINK_2_END">&lt;/a&gt;</ph>.
   </message>
-  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_WITHOUT_INCOGNITO" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog without incognito link.">
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_WITHOUT_INCOGNITO" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog without Incognito link.">
     You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest.
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_CHECKBOX" desc="Checkbox text for the Welcome screen in Chrome OS 'Add account' dialog. If user checks this checkbox, this screen will not be shown the next time they open the dialog.">
@@ -5567,7 +5714,7 @@
   <!--
     ==================================================================================
     If you change any IDS_EDU_LOGIN_INFO_* string, update kConsentScreenTextVersion in
-    chrome/browser/chromeos/child_accounts/secondary_account_consent_logger.cc
+    chrome/browser/ash/child_accounts/secondary_account_consent_logger.cc
     to the value of "v<GERRIT_CL_NUMBER>"
   -->
   <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE" desc="Title for the screen explaining co-existence to a parent.">
@@ -5903,5 +6050,10 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
       Continue where you left off.
     </message>
   </if>
+
+   <!-- Strings for Projector-->
+  <message name="IDS_SELFIE_CAM_TITLE" desc="The title for the selfie camera dialog.">
+    Selfie Camera
+  </message>
 
 </grit-part>

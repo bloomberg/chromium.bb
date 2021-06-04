@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
@@ -1152,7 +1153,7 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
 void UmaPageLoadMetricsObserver::RecordForegroundDurationHistograms(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     base::TimeTicks app_background_time) {
-  base::Optional<base::TimeDelta> foreground_duration =
+  absl::optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
                                                       app_background_time);
   if (!foreground_duration)

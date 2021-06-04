@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_EXCLUSIONS_NG_EXCLUSION_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_EXCLUSIONS_NG_EXCLUSION_SPACE_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
@@ -209,7 +210,10 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   //  - When we create an opportunity, making sure it has "solid" edges.
   //  - The opportunity also holds onto a list of these edges to support
   //    css-shapes.
-  struct NGShelf {
+  struct NGShelf final {
+    DISALLOW_NEW();
+
+   public:
     NGShelf(LayoutUnit block_offset, bool track_shape_exclusions)
         : block_offset(block_offset),
           line_left(LayoutUnit::Min()),
@@ -239,10 +243,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     LayoutUnit line_left;
     LayoutUnit line_right;
 
-    // TODO(crbug.com/1195345): restore inline buffer removed in
-    // https://crrev.com/c/2801713
-    Vector<NGShelfEdge> line_left_edges;
-    Vector<NGShelfEdge> line_right_edges;
+    Vector<NGShelfEdge, 1> line_left_edges;
+    Vector<NGShelfEdge, 1> line_right_edges;
 
     // shape_exclusions contains all the floats which sit below this shelf. The
     // has_shape_exclusions member will be true if shape_exclusions contains an
@@ -283,19 +285,20 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // Once a closed-off area has been created, it can never be changed due to
   // the property that floats always align their block-start edges.
   struct NGClosedArea {
+    DISALLOW_NEW();
+
+   public:
     NGClosedArea(NGLayoutOpportunity opportunity,
-                 const Vector<NGShelfEdge>& line_left_edges,
-                 const Vector<NGShelfEdge>& line_right_edges)
+                 const Vector<NGShelfEdge, 1>& line_left_edges,
+                 const Vector<NGShelfEdge, 1>& line_right_edges)
         : opportunity(opportunity),
           line_left_edges(line_left_edges),
           line_right_edges(line_right_edges) {}
 
     const NGLayoutOpportunity opportunity;
 
-    // TODO(crbug.com/1195345): restore inline buffer removed in
-    // https://crrev.com/c/2801713
-    const Vector<NGShelfEdge> line_left_edges;
-    const Vector<NGShelfEdge> line_right_edges;
+    const Vector<NGShelfEdge, 1> line_left_edges;
+    const Vector<NGShelfEdge, 1> line_right_edges;
   };
 
  private:
@@ -309,7 +312,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // num_exclusions_ is how many exclusions *this* instance of an exclusion
   // space has, which may differ to the number of exclusions in the Vector.
   scoped_refptr<NGExclusionPtrArray> exclusions_;
-  wtf_size_t num_exclusions_;
+  wtf_size_t num_exclusions_ = 0;
 
   // These members are used for keeping track of the "lowest" offset for each
   // type of float. This is used for implementing float clearance.
@@ -325,7 +328,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // we initially ignore exclusions with shape data. When we first see an
   // exclusion with shape data, we set this flag, and rebuild the
   // DerivedGeometry data-structure, to perform the additional bookkeeping.
-  bool track_shape_exclusions_;
+  bool track_shape_exclusions_ = false;
 
   // The derived geometry struct, is the data-structure which handles all of the
   // queries on the exclusion space. It can always be rebuilt from exclusions_
@@ -409,7 +412,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
       LayoutUnit block_offset_limit) const;
 
   // See DerivedGeometry struct description.
-  mutable std::unique_ptr<DerivedGeometry> derived_geometry_;
+  mutable std::unique_ptr<DerivedGeometry> derived_geometry_ = nullptr;
 };
 
 // The exclusion space represents all of the exclusions within a block

@@ -34,8 +34,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import type {DataDisplayDelegate} from './ProfileHeader.js';
-import {ProfileEvents as ProfileTypeEvents, ProfileHeader, ProfileType} from './ProfileHeader.js';
+import type {DataDisplayDelegate, ProfileHeader, ProfileType} from './ProfileHeader.js';
+import {ProfileEvents as ProfileTypeEvents} from './ProfileHeader.js';
 import {Events as ProfileLauncherEvents, ProfileLauncherView} from './ProfileLauncherView.js';
 import {ProfileSidebarTreeElement, setSharedFileSelectorElement} from './ProfileSidebarTreeElement.js';
 import {instance} from './ProfileTypeRegistry.js';
@@ -102,7 +102,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
     this._profileTypes = profileTypes;
     this.registerRequiredCSS('panels/profiler/heapProfiler.css', {enableLegacyPatching: false});
     this.registerRequiredCSS('panels/profiler/profilesPanel.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
 
     const mainContainer = new UI.Widget.VBox();
     this.splitWidget().setMainWidget(mainContainer);
@@ -144,6 +144,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
     toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
 
     this._profileViewToolbar = new UI.Toolbar.Toolbar('', this._toolbarElement);
+    this._profileViewToolbar.makeWrappable(true);
 
     this._profileGroups = {};
     this._launcherView = new ProfileLauncherView(this);

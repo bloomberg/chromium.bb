@@ -11,7 +11,7 @@ require (
 	github.com/lucas-clemente/quic-go-certificates v0.0.0-20160823095156-d2f86524cced // indirect
 	github.com/miekg/dns v1.1.2 // indirect
 	github.com/ugorji/go/codec v0.0.0-20181209151446-772ced7fd4c2
-	github.com/zserge/webview v0.0.0-20181018084947-f390a2df9ec5
+	github.com/zserge/webview v0.0.0-20200121135717-9c1b0a888aa4
 	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc // indirect
 	golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e // indirect
 	golang.org/x/sys v0.0.0-20190109145017-48ac38b7c8cb // indirect

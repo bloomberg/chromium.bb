@@ -6,16 +6,13 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
-#include "base/callback_forward.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
@@ -117,13 +114,6 @@ class RootWindowDeskSwitchAnimatorTest
     run_loop.Run();
   }
 
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnhancedDeskAnimations);
-    AshTestBase::SetUp();
-  }
-
   // RootWindowDeskSwitchAnimator::Delegate:
   void OnStartingDeskScreenshotTaken(int ending_desk_index) override {
     ++starting_desk_screenshot_taken_count_;
@@ -142,8 +132,6 @@ class RootWindowDeskSwitchAnimatorTest
   void OnDeskSwitchAnimationFinished() override {}
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   // The RootWindowDeskSwitchAnimator we are testing.
   std::unique_ptr<RootWindowDeskSwitchAnimator> animator_;
 

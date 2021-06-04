@@ -145,7 +145,8 @@ public:
 
 protected:
     GrVkCommandBuffer(VkCommandBuffer cmdBuffer, bool isWrapped = false)
-            : fCmdBuffer(cmdBuffer)
+            : fIsActive(isWrapped) // All wrapped command buffers start as active
+            , fCmdBuffer(cmdBuffer)
             , fIsWrapped(isWrapped) {
         this->invalidateState();
     }
@@ -168,7 +169,7 @@ protected:
 
     // Tracks whether we are in the middle of a command buffer begin/end calls and thus can add
     // new commands to the buffer;
-    bool                      fIsActive = false;
+    bool                      fIsActive;
     bool                      fHasWork = false;
 
     // Stores a pointer to the current active render pass (i.e. begin has been called but not
@@ -215,9 +216,10 @@ public:
     // Begins render pass on this command buffer. The framebuffer from GrVkRenderTarget will be used
     // in the render pass.
     bool beginRenderPass(GrVkGpu* gpu,
-                         const GrVkRenderPass* renderPass,
+                         const GrVkRenderPass*,
+                         sk_sp<const GrVkFramebuffer>,
                          const VkClearValue clearValues[],
-                         GrVkRenderTarget* target,
+                         const GrSurface* target,
                          const SkIRect& bounds,
                          bool forSecondaryCB);
     void endRenderPass(const GrVkGpu* gpu);
@@ -340,7 +342,8 @@ class GrVkSecondaryCommandBuffer : public GrVkCommandBuffer {
 public:
     static GrVkSecondaryCommandBuffer* Create(GrVkGpu* gpu, GrVkCommandPool* cmdPool);
     // Used for wrapping an external secondary command buffer.
-    static GrVkSecondaryCommandBuffer* Create(VkCommandBuffer externalSecondaryCB);
+    static GrVkSecondaryCommandBuffer* Create(VkCommandBuffer externalSecondaryCB,
+                                              const GrVkRenderPass* externalRenderPass);
 
     void begin(GrVkGpu* gpu, const GrVkFramebuffer* framebuffer,
                const GrVkRenderPass* compatibleRenderPass);
@@ -351,8 +354,11 @@ public:
     VkCommandBuffer vkCommandBuffer() { return fCmdBuffer; }
 
 private:
-    explicit GrVkSecondaryCommandBuffer(VkCommandBuffer cmdBuffer, bool isWrapped)
-        : INHERITED(cmdBuffer, isWrapped) {}
+    explicit GrVkSecondaryCommandBuffer(VkCommandBuffer cmdBuffer,
+                                        const GrVkRenderPass* externalRenderPass)
+            : INHERITED(cmdBuffer, SkToBool(externalRenderPass)) {
+        fActiveRenderPass = externalRenderPass;
+    }
 
     void onFreeGPUData(const GrVkGpu* gpu) const override {}
 

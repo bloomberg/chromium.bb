@@ -71,6 +71,12 @@ config("dawn_internal") {
   if (dawn_enable_opengl) {
     defines += [ "DAWN_ENABLE_BACKEND_OPENGL" ]
   }
+  if (dawn_enable_desktop_gl) {
+    defines += [ "DAWN_ENABLE_BACKEND_DESKTOP_GL" ]
+  }
+  if (dawn_enable_opengles) {
+    defines += [ "DAWN_ENABLE_BACKEND_OPENGLES" ]
+  }
   if (dawn_enable_vulkan) {
     defines += [ "DAWN_ENABLE_BACKEND_VULKAN" ]
   }
@@ -89,8 +95,11 @@ config("dawn_internal") {
 
   cflags = []
 
-  # Enable more warnings that were found when using Dawn in other projects
-  if (is_clang) {
+  # Enable more warnings that were found when using Dawn in other projects.
+  # Add them only when building in standalone because we control which clang
+  # version we use. Otherwise we risk breaking projects depending on Dawn when
+  # the use a different clang version.
+  if (dawn_standalone && is_clang) {
     cflags += [
       "-Wconditional-uninitialized",
       "-Wcstring-format-directive",
@@ -129,6 +138,16 @@ config("dawn_internal") {
     # Dawn extends wgpu enums with internal enums.
     # MSVC considers these invalid switch values. crbug.com/dawn/397.
     cflags += [ "/wd4063" ]
+    if (dawn_is_winuwp) {
+      # /ZW makes sure we don't add calls that are forbidden in UWP.
+      # and /EHsc is required to be used in combination with it,
+      # even if it is already added by the windows GN defaults,
+      # we still add it to make every /ZW paired with a /EHsc
+      cflags_cc = [
+        "/ZW:nostdlib",
+        "/EHsc",
+      ]
+    }
   }
 }
 
@@ -164,6 +183,7 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "NonCopyable.h",
       "PlacementAllocated.h",
       "Platform.h",
+      "Preprocessor.h",
       "RefBase.h",
       "RefCounted.cpp",
       "RefCounted.h",

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/url_handler_launch_params.h"
 #include "chrome/browser/web_applications/components/url_handler_manager.h"
@@ -38,15 +37,13 @@ class UrlHandlerManagerImpl : public UrlHandlerManager {
   static std::vector<UrlHandlerLaunchParams> GetUrlHandlerMatches(
       const base::CommandLine& command_line);
 
-  // Returns false if blink::features::kWebAppEnableUrlHandlers is disabled.
   void RegisterUrlHandlers(
       const AppId& app_id,
       base::OnceCallback<void(bool success)> callback) override;
 
   bool UnregisterUrlHandlers(const AppId& app_id) override;
 
-  // Returns false and unregisters url handlers for |app_id| if
-  // blink::features::kWebAppEnableUrlHandlers is disabled.
+  // Unregisters url handlers for |app_id|.
   void UpdateUrlHandlers(
       const AppId& app_id,
       base::OnceCallback<void(bool success)> callback) override;

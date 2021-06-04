@@ -703,7 +703,7 @@ On OSX:
 
     export ANDROID_SDK_HOME=$HOME/Library/Android/sdk
     export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk-bundle
-    export PATH=$ANDROID_NDK_PATH:$PATH
+    export PATH=$ANDROID_NDK_HOME:$PATH
     export PATH=$ANDROID_SDK_HOME/build-tools/26.0.3:$PATH
 
 Note: If `jarsigner` is missing from your platform, you can find it in the
@@ -865,6 +865,7 @@ To create and open an Xcode project:
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
           -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
           -DROBIN_HOOD_HASHING_INSTALL_DIR=absolute_path_to_install_dir \
           -GXcode ..
     open VULKAN.xcodeproj

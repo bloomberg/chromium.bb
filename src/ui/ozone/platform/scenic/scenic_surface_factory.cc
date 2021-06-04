@@ -221,7 +221,7 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
   auto collection = sysmem_buffer_manager_.CreateCollection(vk_device, size,
                                                             format, usage, 1);
@@ -244,13 +244,10 @@ void ScenicSurfaceFactory::CreateNativePixmapAsync(
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-ScenicSurfaceFactory::CreateVulkanImplementation(
-    bool use_swiftshader,
-    bool allow_protected_memory,
-    bool enforce_protected_memory) {
+ScenicSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
+                                                 bool allow_protected_memory) {
   return std::make_unique<ui::VulkanImplementationScenic>(
-      this, &sysmem_buffer_manager_, allow_protected_memory,
-      enforce_protected_memory);
+      this, &sysmem_buffer_manager_, allow_protected_memory);
 }
 #endif
 

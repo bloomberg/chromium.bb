@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
+#include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -42,6 +43,8 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"a11yFoundTabs", IDS_TAB_SEARCH_A11Y_FOUND_TABS},
       {"a11yFoundTabFor", IDS_TAB_SEARCH_A11Y_FOUND_TAB_FOR},
       {"a11yFoundTabsFor", IDS_TAB_SEARCH_A11Y_FOUND_TABS_FOR},
+      {"a11yOpenTab", IDS_TAB_SEARCH_A11Y_OPEN_TAB},
+      {"a11yRecentlyClosedTab", IDS_TAB_SEARCH_A11Y_RECENTLY_CLOSED_TAB},
       {"openTabs", IDS_TAB_SEARCH_OPEN_TABS},
       {"recentlyClosedTabs", IDS_TAB_SEARCH_RECENTLY_CLOSED_TABS},
   };

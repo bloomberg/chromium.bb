@@ -86,7 +86,7 @@ bool FindInListValue(const std::string& needle, const base::Value* haystack) {
   const base::ListValue* list;
   if (!haystack->GetAsList(&list))
     return false;
-  return list->end() != list->Find(base::Value(needle));
+  return list->GetList().end() != list->Find(base::Value(needle));
 }
 
 }  // namespace
@@ -101,9 +101,9 @@ class OwnerSettingsServiceAshTest : public DeviceSettingsTestBase {
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    provider_.reset(new DeviceSettingsProvider(
+    provider_ = std::make_unique<DeviceSettingsProvider>(
         base::BindRepeating(&OnPrefChanged), device_settings_service_.get(),
-        TestingBrowserProcess::GetGlobal()->local_state()));
+        TestingBrowserProcess::GetGlobal()->local_state());
     owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
     InitOwner(
         AccountId::FromUserEmail(device_policy_->policy_data().username()),
@@ -382,9 +382,9 @@ class OwnerSettingsServiceAshNoOwnerTest
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    provider_.reset(new DeviceSettingsProvider(
+    provider_ = std::make_unique<DeviceSettingsProvider>(
         base::BindRepeating(&OnPrefChanged), device_settings_service_.get(),
-        TestingBrowserProcess::GetGlobal()->local_state()));
+        TestingBrowserProcess::GetGlobal()->local_state());
     FlushDeviceSettings();
     service_ =
         OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_.get());

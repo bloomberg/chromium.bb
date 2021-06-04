@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -91,8 +92,8 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
         is_platform_app_(extension->is_platform_app()),
         extension_id_(extension->id()) {}
 
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<std::u16string>& reply) override {
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
     // Pass arguments by value as HandleClick() might destroy *this.
     HandleClick(is_hosted_app_, is_platform_app_, extension_id_, profile_);
     // *this might be destroyed now, do not access any members anymore!
@@ -313,7 +314,7 @@ void BackgroundContentsService::StartObserving() {
                  content::Source<Profile>(profile_));
 
   // Listen for extension uninstall, load, unloaded notification.
-  extension_registry_observer_.Add(
+  extension_registry_observation_.Observe(
       extensions::ExtensionRegistry::Get(profile_));
 }
 
@@ -633,7 +634,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
-  pref->SetWithoutPathExpansion(appid, std::move(dict));
+  pref->SetKey(appid, base::Value::FromUniquePtrValue(std::move(dict)));
 }
 
 bool BackgroundContentsService::HasRegisteredBackgroundContents(

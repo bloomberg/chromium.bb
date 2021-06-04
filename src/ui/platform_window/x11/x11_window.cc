@@ -4,6 +4,7 @@
 
 #include "ui/platform_window/x11/x11_window.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -12,7 +13,9 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/platform_cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test_x11.h"
 #include "ui/base/ui_base_features.h"
@@ -50,8 +53,9 @@
 #endif
 
 namespace ui {
-
 namespace {
+
+using mojom::DragOperation;
 
 // Opacity for drag widget windows.
 constexpr float kDragWidgetOpacity = .75f;
@@ -203,8 +207,7 @@ X11Window::~X11Window() {
 }
 
 void X11Window::Initialize(PlatformWindowInitProperties properties) {
-  PlatformWindowOpacity opacity = properties.opacity;
-  CreateXWindow(properties, opacity);
+  CreateXWindow(properties);
 
   // It can be a status icon window.  If it fails to initialize, don't provide
   // it with a native window handle, close ourselves and let the client destroy
@@ -321,7 +324,7 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   if (is_always_on_top_)
     window_properties_.insert(x11::GetAtom("_NET_WM_STATE_ABOVE"));
 
-  workspace_ = base::nullopt;
+  workspace_ = absl::nullopt;
   if (properties.visible_on_all_workspaces) {
     window_properties_.insert(x11::GetAtom("_NET_WM_STATE_STICKY"));
     x11::SetProperty(xwindow_, x11::GetAtom("_NET_WM_DESKTOP"),
@@ -396,10 +399,8 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   if (properties.icon)
     SetWindowIcons(gfx::ImageSkia(), *properties.icon);
 
-  if (properties.type == PlatformWindowType::kDrag &&
-      opacity == PlatformWindowOpacity::kTranslucentWindow) {
+  if (properties.type == PlatformWindowType::kDrag)
     SetOpacity(kDragWidgetOpacity);
-  }
 
   SetWmDragHandler(this, this);
 
@@ -758,10 +759,10 @@ bool X11Window::ShouldUseNativeFrame() const {
   return use_native_frame_;
 }
 
-void X11Window::SetCursor(PlatformCursor cursor) {
+void X11Window::SetCursor(scoped_refptr<PlatformCursor> cursor) {
   DCHECK(cursor);
 
-  last_cursor_ = static_cast<X11Cursor*>(cursor);
+  last_cursor_ = X11Cursor::FromPlatformCursor(cursor);
   on_cursor_loaded_.Reset(base::BindOnce(DefineCursor, xwindow_));
   last_cursor_->OnCursorLoaded(on_cursor_loaded_.callback());
 }
@@ -957,10 +958,13 @@ void X11Window::SizeConstraintsChanged() {
 }
 
 bool X11Window::IsTranslucentWindowOpacitySupported() const {
-  // This function may be called before InitX11Window() (which
-  // initializes |visual_has_alpha_|), so we cannot simply return
-  // |visual_has_alpha_|.
-  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
+  // If this function may be called before InitX11Window() (which
+  // initializes |visual_has_alpha_|), return whether it is possible
+  // to create windows with ARGB visuals.
+  if (xwindow_ == x11::Window::None)
+    ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
+
+  return visual_has_alpha_;
 }
 
 void X11Window::SetOpacity(float opacity) {
@@ -983,7 +987,7 @@ void X11Window::SetOpacity(float opacity) {
 }
 
 std::string X11Window::GetWorkspace() const {
-  base::Optional<int> workspace_id = workspace_;
+  absl::optional<int> workspace_id = workspace_;
   return workspace_id.has_value() ? base::NumberToString(workspace_id.value())
                                   : std::string();
 }
@@ -1287,11 +1291,11 @@ void X11Window::OnXWindowDragDropEvent(const x11::ClientMessageEvent& xev) {
   drag_drop_client_->HandleXdndEvent(xev);
 }
 
-base::Optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {
+absl::optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {
   return platform_window_delegate_->GetMinimumSizeForWindow();
 }
 
-base::Optional<gfx::Size> X11Window::GetMaximumSizeForXWindow() {
+absl::optional<gfx::Size> X11Window::GetMaximumSizeForXWindow() {
   return platform_window_delegate_->GetMaximumSizeForWindow();
 }
 
@@ -1328,7 +1332,7 @@ bool X11Window::StartDrag(const OSExchangeData& data,
 
   drag_handler_delegate_ = delegate;
   drag_drop_client_->InitDrag(operation, &data);
-  drag_operation_ = 0;
+  allowed_drag_operations_ = 0;
   notified_enter_ = false;
 
   drag_loop_ = std::make_unique<X11WholeScreenMoveLoop>(this);
@@ -1385,14 +1389,13 @@ int X11Window::UpdateDrag(const gfx::Point& screen_point) {
                               GetKeyModifiers(source_client));
     notified_enter_ = true;
   }
-  drag_operation_ = drop_handler->OnDragMotion(gfx::PointF(screen_point),
-                                               suggested_operations,
-                                               GetKeyModifiers(source_client));
-  return drag_operation_;
+  allowed_drag_operations_ = drop_handler->OnDragMotion(
+      gfx::PointF(screen_point), suggested_operations,
+      GetKeyModifiers(source_client));
+  return allowed_drag_operations_;
 }
 
-void X11Window::UpdateCursor(
-    DragDropTypes::DragOperation negotiated_operation) {
+void X11Window::UpdateCursor(DragOperation negotiated_operation) {
   DCHECK(drag_handler_delegate_);
   drag_handler_delegate_->OnDragOperationChanged(negotiated_operation);
 }
@@ -1415,10 +1418,10 @@ void X11Window::OnBeforeDragLeave() {
   notified_enter_ = false;
 }
 
-int X11Window::PerformDrop() {
+DragOperation X11Window::PerformDrop() {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler || !notified_enter_)
-    return DragDropTypes::DRAG_NONE;
+    return DragOperation::kNone;
 
   // The drop data has been supplied on entering the window.  The drop handler
   // should have it since then.
@@ -1427,13 +1430,14 @@ int X11Window::PerformDrop() {
   drop_handler->OnDragDrop({}, GetKeyModifiers(XDragDropClient::GetForWindow(
                                    target_current_context->source_window())));
   notified_enter_ = false;
-  return drag_operation_;
+  return PreferredDragOperation(allowed_drag_operations_);
 }
 
 void X11Window::EndDragLoop() {
   DCHECK(drag_handler_delegate_);
 
-  drag_handler_delegate_->OnDragFinished(drag_operation_);
+  drag_handler_delegate_->OnDragFinished(
+      PreferredDragOperation(allowed_drag_operations_));
   drag_loop_->EndMoveLoop();
 }
 
@@ -1515,19 +1519,13 @@ void X11Window::ConvertEventLocationToTargetLocation(
                                              located_event);
 }
 
-void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties,
-                              PlatformWindowOpacity& opacity) {
+void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
   auto bounds = properties.bounds;
   gfx::Size adjusted_size_in_pixels = AdjustSizeForDisplay(bounds.size());
   bounds.set_size(adjusted_size_in_pixels);
   const auto override_redirect =
       properties.x11_extension_delegate &&
       properties.x11_extension_delegate->IsOverrideRedirect(IsWmTiling());
-  if (properties.type == PlatformWindowType::kDrag) {
-    opacity = ui::IsCompositingManagerPresent()
-                  ? PlatformWindowOpacity::kTranslucentWindow
-                  : PlatformWindowOpacity::kOpaqueWindow;
-  }
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;
@@ -1571,7 +1569,7 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties,
   override_redirect_ = req.override_redirect.has_value();
 
   bool enable_transparent_visuals;
-  switch (opacity) {
+  switch (properties.opacity) {
     case PlatformWindowOpacity::kOpaqueWindow:
       enable_transparent_visuals = false;
       break;
@@ -1733,7 +1731,7 @@ void X11Window::OnWorkspaceUpdated() {
   if (GetWindowDesktop(xwindow_, &workspace))
     workspace_ = workspace;
   else
-    workspace_ = base::nullopt;
+    workspace_ = absl::nullopt;
 
   if (workspace_ != old_workspace)
     OnXWindowWorkspaceChanged();
@@ -1758,8 +1756,8 @@ void X11Window::SetFlashFrameHint(bool flash_frame) {
 }
 
 void X11Window::UpdateMinAndMaxSize() {
-  base::Optional<gfx::Size> minimum_in_pixels = GetMinimumSizeForXWindow();
-  base::Optional<gfx::Size> maximum_in_pixels = GetMaximumSizeForXWindow();
+  absl::optional<gfx::Size> minimum_in_pixels = GetMinimumSizeForXWindow();
+  absl::optional<gfx::Size> maximum_in_pixels = GetMaximumSizeForXWindow();
   if ((!minimum_in_pixels ||
        min_size_in_pixels_ == minimum_in_pixels.value()) &&
       (!maximum_in_pixels || max_size_in_pixels_ == maximum_in_pixels.value()))

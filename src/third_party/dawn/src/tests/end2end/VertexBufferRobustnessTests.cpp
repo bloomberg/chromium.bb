@@ -30,20 +30,18 @@ class VertexBufferRobustnessTest : public DawnTest {
     // Creates a vertex module that tests an expression with given attributes. If successful, the
     // point drawn would be moved out of the viewport. On failure, the point is kept inside the
     // viewport.
-    wgpu::ShaderModule CreateVertexModule(const std::string& attributes,
+    wgpu::ShaderModule CreateVertexModule(const std::string& attribute,
                                           const std::string& successExpression) {
-        return utils::CreateShaderModule(device, (attributes + R"(
-                [[builtin(position)]] var<out> Position : vec4<f32>;
-
-                [[stage(vertex)]] fn main() -> void {
+        return utils::CreateShaderModule(device, (R"(
+                [[stage(vertex)]] fn main(
+                    )" + attribute + R"(
+                ) -> [[builtin(position)]] vec4<f32> {
                     if ()" + successExpression + R"() {
                         // Success case, move the vertex out of the viewport
-                        Position = vec4<f32>(-10.0, 0.0, 0.0, 1.0);
-                    } else {
-                        // Failure case, move the vertex inside the viewport
-                        Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                        return vec4<f32>(-10.0, 0.0, 0.0, 1.0);
                     }
-                    return;
+                    // Failure case, move the vertex inside the viewport
+                    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                 }
             )")
                                                      .c_str());
@@ -58,11 +56,8 @@ class VertexBufferRobustnessTest : public DawnTest {
                 bool expectation) {
         wgpu::ShaderModule vsModule = CreateVertexModule(attributes, successExpression);
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-                [[location(0)]] var<out> outColor : vec4<f32>;
-
-                [[stage(fragment)]] fn main() -> void {
-                    outColor = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-                    return;
+                [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                    return vec4<f32>(1.0, 1.0, 1.0, 1.0);
                 }
             )");
 
@@ -109,7 +104,7 @@ TEST_P(VertexBufferRobustnessTest, DetectInvalidValues) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", vertexState, vertexBuffer, 0, false);
+    DoTest("[[location(0)]] a : f32", "a == 473.0", vertexState, vertexBuffer, 0, false);
 }
 
 TEST_P(VertexBufferRobustnessTest, FloatClamp) {
@@ -126,7 +121,7 @@ TEST_P(VertexBufferRobustnessTest, FloatClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", vertexState, vertexBuffer, 4, true);
+    DoTest("[[location(0)]] a : f32", "a == 473.0", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, IntClamp) {
@@ -143,7 +138,7 @@ TEST_P(VertexBufferRobustnessTest, IntClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : i32;", "a == 473", vertexState, vertexBuffer, 4, true);
+    DoTest("[[location(0)]] a : i32", "a == 473", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, UIntClamp) {
@@ -160,7 +155,7 @@ TEST_P(VertexBufferRobustnessTest, UIntClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : u32;", "a == 473u", vertexState, vertexBuffer, 4, true);
+    DoTest("[[location(0)]] a : u32", "a == 473u", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, Float2Clamp) {
@@ -177,7 +172,7 @@ TEST_P(VertexBufferRobustnessTest, Float2Clamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : vec2<f32>;", "a[0] == 473.0 && a[1] == 473.0",
+    DoTest("[[location(0)]] a : vec2<f32>", "a[0] == 473.0 && a[1] == 473.0",
            std::move(vertexState), vertexBuffer, 8, true);
 }
 
@@ -195,7 +190,7 @@ TEST_P(VertexBufferRobustnessTest, Float3Clamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : vec3<f32>;",
+    DoTest("[[location(0)]] a : vec3<f32>",
            "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0", vertexState, vertexBuffer, 12, true);
 }
 
@@ -213,7 +208,7 @@ TEST_P(VertexBufferRobustnessTest, Float4Clamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : vec4<f32>;",
+    DoTest("[[location(0)]] a : vec4<f32>",
            "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0 && a[3] == 473.0", vertexState,
            vertexBuffer, 16, true);
 }

@@ -160,8 +160,8 @@ const char* kBeforeUnloadHTML =
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "</body></html>";
 
-const char* kOpenNewBeforeUnloadPage =
-    "w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
+const char16_t* kOpenNewBeforeUnloadPage =
+    u"w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
 
 const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const base::FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
@@ -418,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitleFileUrl) {
   for (const auto& c : cases) {
     SCOPED_TRACE(c.message);
     GURL url(prefix_url.spec() + c.suffix);
-    test_title = ASCIIToUTF16("title1.html" + c.suffix);
+    test_title = u"title1.html" + ASCIIToUTF16(c.suffix);
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(), test_title);
     ui_test_utils::NavigateToURL(browser(), url);
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DownloadDoesntDismissDialog) {
   // not be deferred or dismiss the dialog.
   std::unique_ptr<content::DownloadTestObserver> download_waiter(
       new content::DownloadTestObserverTerminal(
-          content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+          browser()->profile()->GetDownloadManager(), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   GURL url2(embedded_test_server()->GetURL("/download-test3.gif"));
   content::TestNavigationManager manager(contents, url2);
@@ -759,9 +759,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   js_dialog_manager->SetDialogShownCallbackForTesting(
       dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("f = document.createElement('iframe');"
-                   "f.srcdoc = '<script>alert(1)</script>';"
-                   "document.body.appendChild(f);"),
+      u"f = document.createElement('iframe');"
+      u"f.srcdoc = '<script>alert(1)</script>';"
+      u"document.body.appendChild(f);",
       base::NullCallback());
   dialog_wait.Run();
   EXPECT_TRUE(js_dialog_manager->IsShowingDialogForTesting());
@@ -811,8 +811,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptWithUserGestureForTests(
-          ASCIIToUTF16(kOpenNewBeforeUnloadPage));
+      ->ExecuteJavaScriptWithUserGestureForTests(kOpenNewBeforeUnloadPage);
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
@@ -1075,86 +1074,6 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
   // But wait there's more! If this test times out, it likely means that the
   // browser has not been able to quit correctly, indicating there's a
   // regression of the bug noted above.
-}
-
-// Test that scripts can fork a new renderer process for a cross-site popup,
-// based on http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab.
-// The script must open a new tab, set its window.opener to null, and navigate
-// it to a cross-site URL.  It should also work for meta-refreshes.
-// See http://crbug.com/93517.
-IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      embedder_support::kDisablePopupBlocking);
-
-  // Create http and https servers for a cross-site transition.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  net::EmbeddedTestServer https_test_server(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-  ASSERT_TRUE(https_test_server.Start());
-  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
-  GURL https_url(https_test_server.GetURL("/title2.html"));
-
-  // Start with an http URL.
-  ui_test_utils::NavigateToURL(browser(), http_url);
-  WebContents* oldtab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderProcessHost* process = oldtab->GetMainFrame()->GetProcess();
-
-  // Now open a tab to a blank page, set its opener to null, and redirect it
-  // cross-site.
-  std::string redirect_popup = "w=window.open();";
-  redirect_popup += "w.opener=null;";
-  redirect_popup += "w.document.location=\"";
-  redirect_popup += https_url.spec();
-  redirect_popup += "\";";
-  EXPECT_TRUE(content::ExecJs(oldtab->GetMainFrame(), redirect_popup));
-
-  // The tab should be created by the time the script finished running.
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  WebContents* newtab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(newtab);
-  EXPECT_NE(oldtab, newtab);
-
-  // New tab should be in the middle of document.location navigation.
-  EXPECT_TRUE(newtab->IsLoading());
-  content::WaitForLoadStop(newtab);
-
-  ASSERT_TRUE(newtab->GetController().GetLastCommittedEntry());
-  EXPECT_EQ(https_url.spec(),
-            newtab->GetController().GetLastCommittedEntry()->GetURL().spec());
-
-  // Popup window should not be in the opener's process.
-  content::RenderProcessHost* popup_process =
-      newtab->GetMainFrame()->GetProcess();
-  EXPECT_NE(process, popup_process);
-
-  // Now open a tab to a blank page, set its opener to null, and use a
-  // meta-refresh to navigate it instead.
-  std::string refresh_popup = "w=window.open();";
-  refresh_popup += "w.opener=null;";
-  refresh_popup += "w.document.write(";
-  refresh_popup += "'<META HTTP-EQUIV=\"refresh\" content=\"0; url=";
-  refresh_popup += https_url.spec();
-  refresh_popup += "\">');w.document.close();";
-  EXPECT_TRUE(content::ExecJs(oldtab->GetMainFrame(), refresh_popup));
-
-  // The tab should be created by the time the script finished running.
-  ASSERT_EQ(3, browser()->tab_strip_model()->count());
-  WebContents* newtab2 = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(newtab2);
-  EXPECT_NE(oldtab, newtab2);
-
-  // Wait for the refresh navigation.
-  content::TestNavigationObserver(newtab2, 1).Wait();
-
-  ASSERT_TRUE(newtab2->GetController().GetLastCommittedEntry());
-  EXPECT_EQ(https_url.spec(),
-            newtab2->GetController().GetLastCommittedEntry()->GetURL().spec());
-
-  // This popup window should also not be in the opener's process.
-  content::RenderProcessHost* popup_process2 =
-      newtab2->GetMainFrame()->GetProcess();
-  EXPECT_NE(process, popup_process2);
 }
 
 // Tests that other popup navigations that do not follow the steps at
@@ -1707,7 +1626,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
 
   // Create a new browser.
   Browser* new_browser = Browser::Create(Browser::CreateParams(
-      browser()->profile()->GetPrimaryOTRProfile(), true));
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      true));
   CommandUpdater* new_command_updater = new_browser->command_controller();
   // It should have Bookmarks & Settings commands disabled by default.
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
@@ -2291,8 +2211,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AboutVersion) {
 
 static const base::FilePath::CharType* kTestDir =
     FILE_PATH_LITERAL("click_modifier");
-static const char kFirstPageTitle[] = "First window";
-static const char kSecondPageTitle[] = "New window!";
+static const char16_t kFirstPageTitle[] = u"First window";
+static const char16_t kSecondPageTitle[] = u"New window!";
 
 class ClickModifierTest : public InProcessBrowserTest {
  public:
@@ -2315,13 +2235,9 @@ class ClickModifierTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("href.html")));
   }
 
-  std::u16string GetFirstPageTitle() const {
-    return ASCIIToUTF16(kFirstPageTitle);
-  }
+  std::u16string GetFirstPageTitle() const { return kFirstPageTitle; }
 
-  std::u16string GetSecondPageTitle() const {
-    return ASCIIToUTF16(kSecondPageTitle);
-  }
+  std::u16string GetSecondPageTitle() const { return kSecondPageTitle; }
 
   // Loads our test page and simulates a single click using the supplied button
   // and modifiers.  The click will cause either a navigation or the creation of
@@ -2880,8 +2796,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestActiveBrowserChangedUserAction) {
   EXPECT_EQ(user_action_tester.GetActionCount("ActiveBrowserChanged"), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest,
-                       SameDocumentNavigationWithNothingCommittedAfterCrash) {
+// DISABLED for flakiness. See https://crbug.com/1184168
+IN_PROC_BROWSER_TEST_F(
+    BrowserTest,
+    DISABLED_SameDocumentNavigationWithNothingCommittedAfterCrash) {
   // The test sets this closure before each navigation to /sometimes-slow in
   // order to control the response for that navigation.
   content::SlowHttpResponse::GotRequestCallback got_slow_request;
@@ -2956,9 +2874,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_FALSE(nav_observer.was_same_document());
 }
 
+// DISABLED for flakiness. See https://crbug.com/1184168
 IN_PROC_BROWSER_TEST_F(
     BrowserTest,
-    SameDocumentHistoryNavigationWithNothingCommittedAfterCrash) {
+    DISABLED_SameDocumentHistoryNavigationWithNothingCommittedAfterCrash) {
   content::SlowHttpResponse::GotRequestCallback got_slow_request;
 
   embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(

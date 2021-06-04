@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#import "build/branding_buildflags.h"
 #import "ios/web/browsing_data/browsing_data_remover.h"
 #import "ios/web/common/crw_input_view_provider.h"
 #import "ios/web/common/crw_web_view_content_view.h"
@@ -47,6 +48,7 @@
 #import "ios/web/public/web_client.h"
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/crw_ssl_status_updater.h"
+#import "ios/web/text_fragments/text_fragments_manager_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
@@ -57,6 +59,7 @@
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler_delegate.h"
+#import "ios/web/web_state/ui/webkit_session_restore_buildflags.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -306,6 +309,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
+    web::TextFragmentsManagerImpl::CreateForWebState(_webStateImpl);
     _cookieBlockingErrorLogger =
         std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
 
@@ -356,7 +360,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // it is enabled again.
       [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     } else {
-      self.webStateImpl->ClearTransientContent();
       if (_touchTrackingRecognizer) {
         [_containerView removeGestureRecognizer:_touchTrackingRecognizer];
         _touchTrackingRecognizer.touchTrackingDelegate = nil;
@@ -665,7 +668,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)stopLoading {
   base::RecordAction(base::UserMetricsAction("Stop"));
-  // Discard all pending and transient items before notifying WebState observers
+  // Discard all pending items before notifying WebState observers
   self.navigationManagerImpl->DiscardNonCommittedItems();
   for (__strong id navigation in
        [self.navigationHandler.navigationStates pendingNavigations]) {
@@ -883,10 +886,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)createFullPagePDFWithCompletion:(void (^)(NSData*))completionBlock {
   // Invoke the |completionBlock| with nil rather than a blank PDF for certain
-  // URLs.
+  // URLs or if there is a javascript dialog running.
   const GURL& URL = self.webState->GetLastCommittedURL();
   if (![self contentIsHTML] || !URL.is_valid() ||
-      web::GetWebClient()->IsAppSpecificURL(URL)) {
+      web::GetWebClient()->IsAppSpecificURL(URL) ||
+      self.webStateImpl->IsJavaScriptDialogRunning()) {
     dispatch_async(dispatch_get_main_queue(), ^{
       completionBlock(nil);
     });
@@ -901,6 +905,79 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)addWebViewToViewHierarchy {
   [self displayWebView];
+}
+
+// TODO(crbug.com/1174560) This depends on iOS TBA logic landed in WebKit's
+// opensource repository, and currently includes not-to-be-shipped logic to use
+// private APIs, so the rest of the Chromium logic can be tested. When iOS TBA
+// is released with the necessary logic, the private implementation can be
+// removed. See https://bugs.webkit.org/show_bug.cgi?id=220958 for details.
+- (BOOL)setSessionStateData:(NSData*)data {
+#if BUILDFLAG(CHROMIUM_BRANDING)
+  [self ensureWebViewCreated];
+  self.navigationHandler.blockUniversalLinksOnNextDecidePolicy = true;
+#if BUILDFLAG(WEBKIT_SESSION_RESTORE)
+  if (@available(iOS TBA, *)) {
+    NSError* error = nil;
+    id interactionState = [NSKeyedUnarchiver
+        unarchivedObjectOfClass:[(id)[self.webView interactionState] class]
+                       fromData:data
+                          error:&error];
+    if (error)
+      return NO;
+    [self.webView setInteractionState:interactionState];
+    return YES;
+#else  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+  Class SessionStateClass = NSClassFromString(@"_WKSessionState");
+  id sessionState = [[SessionStateClass alloc] initWithData:data];
+  if (!sessionState)
+    return NO;
+  SEL selector = @selector(_restoreSessionState:andNavigate:);
+  NSMethodSignature* method_signature =
+      [self.webView methodSignatureForSelector:selector];
+  NSInvocation* invocation =
+      [NSInvocation invocationWithMethodSignature:method_signature];
+  invocation.target = self.webView;
+  invocation.selector = selector;
+  [invocation setArgument:&sessionState atIndex:2];
+  BOOL navigate = YES;
+  [invocation setArgument:&navigate atIndex:3];
+  [invocation invoke];
+  return YES;
+#pragma clang diagnostic pop
+#endif  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
+#else   // BUILDFLAG(CHROMIUM_BRANDING)
+  return NO;
+#endif  // BUILDFLAG(CHROMIUM_BRANDING)
+}
+
+// TODO(crbug.com/1174560) This depends on iOS TBA logic landed in WebKit's
+// opensource repository, and currently includes not-to-be-shipped logic to use
+// private APIs, so the rest of the Chromium logic can be tested. When iOS TBA
+// is released with the necessary logic, the private implementation can be
+// removed. See https://bugs.webkit.org/show_bug.cgi?id=220958 for details.
+- (NSData*)sessionStateData {
+#if BUILDFLAG(CHROMIUM_BRANDING)
+#if BUILDFLAG(WEBKIT_SESSION_RESTORE)
+  if (@available(iOS TBA, *)) {
+    NSError* error = nil;
+    return [NSKeyedArchiver
+        archivedDataWithRootObject:self.webView.interactionState
+             requiringSecureCoding:YES
+                             error:&error];
+  }
+  return nil;
+#else  // #BUILDFLAG(WEBKIT_SESSION_RESTORE)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+  return [[self.webView performSelector:@selector(_sessionState)] data];
+#pragma clang diagnostic pop
+#endif  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
+#else
+  return nil;
+#endif  // BUILDFLAG(CHROMIUM_BRANDING)
 }
 
 #pragma mark - CRWTouchTrackingDelegate (Public)
@@ -2047,14 +2124,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     __weak CRWWebController* weakSelf = self;
     [session loadObjectsOfClass:[NSURL class]
                      completion:^(NSArray<NSURL*>* objects) {
-                       GURL URL = net::GURLWithNSURL([objects firstObject]);
-                       if (!_isBeingDestroyed && URL.is_valid()) {
-                         web::NavigationManager::WebLoadParams params(URL);
-                         params.transition_type = ui::PAGE_TRANSITION_TYPED;
-                         weakSelf.webStateImpl->GetNavigationManager()
-                             ->LoadURLWithParams(params);
-                       }
+                       [weakSelf loadUrlObjectsCompletion:objects];
                      }];
+  }
+}
+
+- (void)loadUrlObjectsCompletion:(NSArray<NSURL*>*)objects {
+  GURL URL = net::GURLWithNSURL([objects firstObject]);
+  if (!_isBeingDestroyed && URL.is_valid()) {
+    web::NavigationManager::WebLoadParams params(URL);
+    params.transition_type = ui::PAGE_TRANSITION_TYPED;
+    self.webStateImpl->GetNavigationManager()->LoadURLWithParams(params);
   }
 }
 

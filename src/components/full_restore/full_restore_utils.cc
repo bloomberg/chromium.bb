@@ -22,6 +22,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kRestoreWindowIdKey, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIdKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(int32_t, kActivationIndexKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kParentToHiddenContainerKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLaunchedFromFullRestoreKey, false)
 
 void SaveAppLaunchInfo(const base::FilePath& profile_path,
                        std::unique_ptr<AppLaunchInfo> app_launch_info) {
@@ -64,6 +65,10 @@ bool ShouldRestore(const AccountId& account_id) {
   return FullRestoreInfo::GetInstance()->ShouldRestore(account_id);
 }
 
+bool CanPerformRestore(const AccountId& account_id) {
+  return FullRestoreInfo::GetInstance()->CanPerformRestore(account_id);
+}
+
 void SetActiveProfilePath(const base::FilePath& profile_path) {
   if (!ash::features::IsFullRestoreEnabled())
     return;
@@ -80,13 +85,13 @@ bool HasWindowInfo(int32_t restore_window_id) {
       restore_window_id);
 }
 
-bool ModifyWidgetParams(int32_t restore_window_id,
+void ModifyWidgetParams(int32_t restore_window_id,
                         views::Widget::InitParams* out_params) {
   if (!ash::features::IsFullRestoreEnabled())
-    return false;
+    return;
 
-  return FullRestoreReadHandler::GetInstance()->ModifyWidgetParams(
-      restore_window_id, out_params);
+  FullRestoreReadHandler::GetInstance()->ModifyWidgetParams(restore_window_id,
+                                                            out_params);
 }
 
 void OnTaskCreated(const std::string& app_id,
@@ -101,6 +106,13 @@ void OnTaskCreated(const std::string& app_id,
 void OnTaskDestroyed(int32_t task_id) {
   FullRestoreReadHandler::GetInstance()->OnTaskDestroyed(task_id);
   FullRestoreSaveHandler::GetInstance()->OnTaskDestroyed(task_id);
+}
+
+void OnTaskThemeColorUpdated(int32_t task_id,
+                             uint32_t primary_color,
+                             uint32_t status_bar_color) {
+  FullRestoreSaveHandler::GetInstance()->OnTaskThemeColorUpdated(
+      task_id, primary_color, status_bar_color);
 }
 
 }  // namespace full_restore

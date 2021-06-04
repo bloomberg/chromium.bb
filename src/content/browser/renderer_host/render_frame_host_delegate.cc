@@ -36,7 +36,7 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
     const std::u16string& message,
     int32_t line_no,
     const std::u16string& source_id,
-    const base::Optional<std::u16string>& untrusted_stack_trace) {
+    const absl::optional<std::u16string>& untrusted_stack_trace) {
   return false;
 }
 
@@ -150,6 +150,11 @@ RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
   return nullptr;
 }
 
+std::vector<FrameTreeNode*> RenderFrameHostDelegate::GetUnattachedOwnedNodes(
+    RenderFrameHostImpl* owner) {
+  return {};
+}
+
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
 RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback() {
   return base::NullCallback();
@@ -168,6 +173,10 @@ bool RenderFrameHostDelegate::HasSeenRecentScreenOrientationChange() {
 }
 
 bool RenderFrameHostDelegate::IsTransientAllowFullscreenActive() const {
+  return false;
+}
+
+bool RenderFrameHostDelegate::IsBackForwardCacheSupported() {
   return false;
 }
 
@@ -198,6 +207,10 @@ std::vector<RenderFrameHostImpl*>
 RenderFrameHostDelegate::GetActiveTopLevelDocumentsInBrowsingContextGroup(
     RenderFrameHostImpl* render_frame_host) {
   return std::vector<RenderFrameHostImpl*>();
+}
+
+PrerenderHostRegistry* RenderFrameHostDelegate::GetPrerenderHostRegistry() {
+  return nullptr;
 }
 
 bool RenderFrameHostDelegate::IsAllowedToGoToEntryAtOffset(int32_t offset) {

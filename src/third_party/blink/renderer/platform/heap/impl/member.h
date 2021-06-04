@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_IMPL_MEMBER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_IMPL_MEMBER_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/impl/heap_page.h"
@@ -503,7 +504,7 @@ class MemberConstructTraits {
  public:
   template <typename... Args>
   static T* Construct(void* location, Args&&... args) {
-    return new (NotNull, location) T(std::forward<Args>(args)...);
+    return new (NotNullTag::kNotNull, location) T(std::forward<Args>(args)...);
   }
 
   static void NotifyNewElement(T* element) { element->WriteBarrier(); }

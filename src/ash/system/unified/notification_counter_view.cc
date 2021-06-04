@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/media/media_notification_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -24,10 +23,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/vector_icon_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 
 namespace ash {
 
@@ -38,6 +39,8 @@ constexpr double kTrayNotificationCircleIconRadius = 8;
 // The size of the number font inside the icon. Should be updated when
 // kUnifiedTrayIconSize is changed.
 constexpr int kNumberIconFontSize = 11;
+
+constexpr gfx::Insets kSeparatorPadding(6, 4);
 
 gfx::FontList GetNumberIconFontList() {
   // |kNumberIconFontSize| is hard-coded as 11, which whould be updated when
@@ -50,6 +53,13 @@ gfx::FontList GetNumberIconFontList() {
                                        gfx::Font::Weight::BOLD);
   DCHECK_EQ(kNumberIconFontSize, font.GetFontSize());
   return gfx::FontList(font);
+}
+
+SkColor SeparatorIconColor(session_manager::SessionState state) {
+  if (state == session_manager::SessionState::OOBE)
+    return kIconColorInOobe;
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSeparatorColor);
 }
 
 class NumberIconImageSource : public gfx::CanvasImageSource {
@@ -184,6 +194,29 @@ void QuietModeView::HandleLocaleChange() {
 
 const char* QuietModeView::GetClassName() const {
   return "QuietModeView";
+}
+
+SeparatorTrayItemView::SeparatorTrayItemView(Shelf* shelf)
+    : TrayItemView(shelf) {
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(SeparatorIconColor(
+      Shell::Get()->session_controller()->GetSessionState()));
+  separator->SetBorder(views::CreateEmptyBorder(kSeparatorPadding));
+  separator_ = AddChildView(separator);
+
+  set_use_scale_in_animation(false);
+}
+
+SeparatorTrayItemView::~SeparatorTrayItemView() = default;
+
+void SeparatorTrayItemView::HandleLocaleChange() {}
+
+const char* SeparatorTrayItemView::GetClassName() const {
+  return "SeparatorTrayItemView";
+}
+
+void SeparatorTrayItemView::UpdateColor(session_manager::SessionState state) {
+  separator_->SetColor(SeparatorIconColor(state));
 }
 
 }  // namespace ash

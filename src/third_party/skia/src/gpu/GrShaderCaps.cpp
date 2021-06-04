@@ -21,6 +21,7 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fDstReadInShaderSupport = false;
     fDualSourceBlendingSupport = false;
     fIntegerSupport = false;
+    fNonsquareMatrixSupport = false;
     fFBFetchSupport = false;
     fFBFetchNeedsCustomOutput = false;
     fUsesPrecisionModifiers = false;
@@ -54,12 +55,14 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
     fHasLowFragmentPrecision = false;
+    fReducedShaderMode = false;
     fColorSpaceMathNeedsFloat = false;
     fBuiltinFMASupport = false;
     fBuiltinDeterminantSupport = false;
     fCanUseDoLoops = true;
     fCanUseFastMath = false;
     fUseNodePools = true;
+    fAvoidDfDxForGradientsWhenPossible = false;
 
     fVersionDeclString = nullptr;
     fShaderDerivativeExtensionString = nullptr;
@@ -89,6 +92,7 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Dst Read In Shader Support", fDstReadInShaderSupport);
     writer->appendBool("Dual Source Blending Support", fDualSourceBlendingSupport);
     writer->appendBool("Integer Support", fIntegerSupport);
+    writer->appendBool("Nonsquare Matrix Support", fNonsquareMatrixSupport);
 
     static const char* kAdvBlendEqInteractionStr[] = {
         "Not Supported",
@@ -188,6 +192,9 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
     if (options.fMaxTessellationSegmentsOverride > 0) {
         fMaxTessellationSegments = std::min(options.fMaxTessellationSegmentsOverride,
                                             fMaxTessellationSegments);
+    }
+    if (options.fReducedShaderVariations) {
+        fReducedShaderMode = true;
     }
 #endif
 }

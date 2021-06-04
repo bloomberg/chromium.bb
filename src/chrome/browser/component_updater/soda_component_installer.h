@@ -9,6 +9,7 @@
 
 #include "components/component_updater/component_installer.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/constants.h"
 #include "components/update_client/update_client.h"
 
 namespace component_updater {
@@ -18,6 +19,8 @@ using OnSodaComponentInstalledCallback =
     base::RepeatingCallback<void(const base::FilePath&)>;
 
 using OnSodaComponentReadyCallback = base::OnceClosure;
+using OnSodaLanguagePackComponentReadyCallback =
+    base::OnceCallback<void(speech::LanguageCode)>;
 
 class SodaComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
@@ -61,22 +64,19 @@ class SodaComponentInstallerPolicy : public ComponentInstallerPolicy {
   OnSodaComponentReadyCallback on_ready_callback_;
 };
 
-// Registers user preferences related to the Speech On-Device API (SODA)
-// component.
-void RegisterPrefsForSodaComponent(PrefRegistrySimple* registry);
-
 // Call once during startup to make the component update service aware of
-// the File Type Policies component.
+// the File Type Policies component. Should only be called by SodaInstaller.
 void RegisterSodaComponent(ComponentUpdateService* cus,
-                           PrefService* profile_prefs,
                            PrefService* global_prefs,
                            base::OnceClosure on_ready_callback,
                            base::OnceClosure on_registered_callback);
 
-void RegisterSodaLanguageComponent(ComponentUpdateService* cus,
-                                   PrefService* profile_prefs,
-                                   PrefService* global_prefs,
-                                   base::OnceClosure on_ready_callback);
+// Should only be called by SodaInstaller.
+void RegisterSodaLanguageComponent(
+    ComponentUpdateService* cus,
+    const std::string& language,
+    PrefService* global_prefs,
+    OnSodaLanguagePackComponentReadyCallback on_ready_callback);
 
 }  // namespace component_updater
 

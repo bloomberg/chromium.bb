@@ -5,13 +5,14 @@
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api_ash.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -21,11 +22,13 @@
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "chromeos/crosapi/cpp/keystore_service_util.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using PublicKeyInfo = chromeos::platform_keys::PublicKeyInfo;
 
@@ -63,7 +66,7 @@ const char kErrorInvalidX509Cert[] =
 const char kTokenIdUser[] = "user";
 const char kTokenIdSystem[] = "system";
 
-base::Optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
+absl::optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
     const std::string& token_id) {
   if (token_id == kTokenIdUser)
     return chromeos::platform_keys::TokenId::kUser;
@@ -71,7 +74,7 @@ base::Optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
   if (token_id == kTokenIdSystem)
     return chromeos::platform_keys::TokenId::kSystem;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::string PlatformKeysTokenIdToApiId(
@@ -192,7 +195,7 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
 
   std::unique_ptr<net::CertificateList> client_certs;
   if (params->details.client_certs) {
-    client_certs.reset(new net::CertificateList);
+    client_certs = std::make_unique<net::CertificateList>();
     for (const std::vector<uint8_t>& client_cert_der :
          *params->details.client_certs) {
       if (client_cert_der.empty())
@@ -280,7 +283,7 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
       api_pki::Sign::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id;
+  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id;
   // If |params->token_id| is not specified (empty string), the key will be
   // searched for in all available tokens.
   if (!params->token_id.empty()) {
@@ -346,14 +349,16 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
 
 void PlatformKeysInternalSignFunction::OnSigned(
     const std::string& signature,
-    chromeos::platform_keys::Status status) {
+    absl::optional<crosapi::mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (status == chromeos::platform_keys::Status::kSuccess)
+  if (!error) {
     Respond(ArgumentList(api_pki::Sign::Results::Create(
         std::vector<uint8_t>(signature.begin(), signature.end()))));
-  else
-    Respond(Error(chromeos::platform_keys::StatusToString(status)));
+  } else {
+    Respond(
+        Error(chromeos::platform_keys::KeystoreErrorToString(error.value())));
+  }
 }
 
 PlatformKeysVerifyTLSServerCertificateFunction::

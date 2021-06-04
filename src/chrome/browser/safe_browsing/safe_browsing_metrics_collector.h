@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 
@@ -118,7 +119,7 @@ class SafeBrowsingMetricsCollector : public KeyedService {
   // Helper functions for Safe Browsing events in pref.
   void AddSafeBrowsingEventAndUserStateToPref(UserState user_state,
                                               EventType event_type);
-  base::Optional<SafeBrowsingMetricsCollector::Event>
+  absl::optional<SafeBrowsingMetricsCollector::Event>
   GetLatestEventFromEventType(UserState user_state, EventType event_type);
   const base::Value* GetSafeBrowsingEventDictionary(UserState user_state);
   int GetEventCountSince(UserState user_state,

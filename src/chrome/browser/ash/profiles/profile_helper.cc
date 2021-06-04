@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/profiles/profile_helper.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -135,7 +136,8 @@ Profile* GetIncognitoProfile(base::FilePath profile_dir) {
     return nullptr;
   }
 
-  return profile_manager->GetProfile(profile_dir)->GetPrimaryOTRProfile();
+  return profile_manager->GetProfile(profile_dir)
+      ->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 }
 
 }  // anonymous namespace
@@ -275,7 +277,7 @@ std::string ProfileHelper::GetUserIdHashFromProfile(const Profile* profile) {
   if (!profile)
     return std::string();
 
-  std::string profile_dir = profile->GetPath().BaseName().value();
+  std::string profile_dir = profile->GetBaseName().value();
 
   // Don't strip prefix if the dir is not supposed to be prefixed.
   if (!ShouldAddProfileDirPrefix(profile_dir))
@@ -302,7 +304,7 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 
 // static
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
-  return profile && IsSigninProfilePath(profile->GetPath().BaseName());
+  return profile && IsSigninProfilePath(profile->GetBaseName());
 }
 
 // static
@@ -314,7 +316,7 @@ bool ProfileHelper::IsSigninProfileInitialized() {
 
 // static
 bool ProfileHelper::IsLockScreenAppProfile(const Profile* profile) {
-  return profile && IsLockScreenAppProfilePath(profile->GetPath().BaseName());
+  return profile && IsLockScreenAppProfilePath(profile->GetBaseName());
 }
 
 // static
@@ -339,7 +341,7 @@ Profile* ProfileHelper::GetLockScreenIncognitoProfile() {
 
 // static
 bool ProfileHelper::IsLockScreenProfile(const Profile* profile) {
-  return profile && IsLockScreenProfilePath(profile->GetPath().BaseName());
+  return profile && IsLockScreenProfilePath(profile->GetBaseName());
 }
 
 // static
@@ -476,8 +478,7 @@ void ProfileHelperImpl::ClearSigninProfile(
       3, base::BindOnce(&ProfileHelperImpl::OnSigninProfileCleared,
                         weak_factory_.GetWeakPtr()));
   LOG_ASSERT(!browsing_data_remover_);
-  browsing_data_remover_ =
-      content::BrowserContext::GetBrowsingDataRemover(GetSigninProfile());
+  browsing_data_remover_ = GetSigninProfile()->GetBrowsingDataRemover();
   browsing_data_remover_->AddObserver(this);
   browsing_data_remover_->RemoveAndReply(
       base::Time(), base::Time::Max(),
@@ -547,7 +548,7 @@ Profile* ProfileHelperImpl::GetProfileByUser(const user_manager::User* user) {
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its off-the-record profile should be used.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetPrimaryOTRProfile();
+    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   return profile;
 }
@@ -576,7 +577,7 @@ Profile* ProfileHelperImpl::GetProfileByUserUnsafe(
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its off-the-record profile should be used.
   if (profile && user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetPrimaryOTRProfile();
+    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   return profile;
 }
 
@@ -717,7 +718,7 @@ void ProfileHelperImpl::SetActiveUserIdForTesting(const std::string& user_id) {
 
 void ProfileHelperImpl::FlushProfile(Profile* profile) {
   if (!profile_flusher_)
-    profile_flusher_.reset(new FileFlusher);
+    profile_flusher_ = std::make_unique<FileFlusher>();
 
   // Flushes files directly under profile path since these are the critical
   // ones.

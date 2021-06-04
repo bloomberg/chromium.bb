@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/account_manager_facade_factory.h"
@@ -49,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace arc {
 
@@ -81,7 +81,7 @@ mojom::ChromeAccountType GetAccountType(const Profile* profile) {
   if (IsActiveDirectoryUserForProfile(profile))
     return mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT;
 
-  chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+  auto* demo_session = ash::DemoSession::Get();
   if (demo_session && demo_session->started()) {
     // Internally, demo mode is implemented as a public session, and should
     // generally follow normal robot account provisioning flow. Offline enrolled
@@ -110,7 +110,7 @@ mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
     account_info->enrollment_token = auth_info;
   } else {
     if (!is_enforced)
-      account_info->auth_code = base::nullopt;
+      account_info->auth_code = absl::nullopt;
     else
       account_info->auth_code = auth_info;
   }
@@ -143,7 +143,7 @@ bool IsPrimaryOrDeviceLocalAccount(
   if (user->IsDeviceLocalAccount())
     return true;
 
-  const base::Optional<AccountInfo> account_info =
+  const absl::optional<AccountInfo> account_info =
       identity_manager
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
@@ -166,7 +166,7 @@ void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
     // since there are no accounts to be migrated in that case.
     return;
   }
-  const base::Optional<ash::AccountMigrationRunner::MigrationResult>
+  const absl::optional<ash::AccountMigrationRunner::MigrationResult>
       last_migration_run_result = migrator->GetLastMigrationRunResult();
 
   if (!last_migration_run_result)
@@ -237,9 +237,8 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
     : profile_(Profile::FromBrowserContext(browser_context)),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
       arc_bridge_service_(arc_bridge_service),
-      url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess()) {
+      url_loader_factory_(profile_->GetDefaultStoragePartition()
+                              ->GetURLLoaderFactoryForBrowserProcess()) {
   arc_bridge_service_->auth()->SetHost(this);
   arc_bridge_service_->auth()->AddObserver(this);
 
@@ -374,28 +373,28 @@ void ArcAuthService::ReportAccountCheckStatus(
   UpdateAuthAccountCheckStatus(status, profile_);
 }
 
-void ArcAuthService::ReportSupervisionChangeStatus(
-    mojom::SupervisionChangeStatus status) {
+void ArcAuthService::ReportManagementChangeStatus(
+    mojom::ManagementChangeStatus status) {
   UpdateSupervisionTransitionResultUMA(status);
   switch (status) {
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLED:
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_DISABLED:
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLED:
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_ENABLED:
+    case mojom::ManagementChangeStatus::CLOUD_DPC_DISABLED:
+    case mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_DISABLED:
+    case mojom::ManagementChangeStatus::CLOUD_DPC_ENABLED:
+    case mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_ENABLED:
       profile_->GetPrefs()->SetInteger(
           prefs::kArcSupervisionTransition,
           static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
       // TODO(brunokim): notify potential observers.
       break;
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLING_FAILED:
-    case mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLING_FAILED:
-      LOG(ERROR) << "Child transition failed: " << status;
+    case mojom::ManagementChangeStatus::CLOUD_DPC_DISABLING_FAILED:
+    case mojom::ManagementChangeStatus::CLOUD_DPC_ENABLING_FAILED:
+      LOG(ERROR) << "Management transition failed: " << status;
       ShowDataRemovalConfirmationDialog(
           profile_, base::BindOnce(&ArcAuthService::OnDataRemovalAccepted,
                                    weak_ptr_factory_.GetWeakPtr()));
       break;
-    case mojom::SupervisionChangeStatus::INVALID_SUPERVISION_STATE:
-      NOTREACHED() << "Invalid status of child transition: " << status;
+    case mojom::ManagementChangeStatus::INVALID_MANAGEMENT_STATE:
+      NOTREACHED() << "Invalid status of management transition: " << status;
   }
 }
 
@@ -646,8 +645,7 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
                           full_account_id, GetAccountType(profile_),
                           policy_util::IsAccountManaged(profile_)));
-  } else if (chromeos::DemoSession::Get() &&
-             chromeos::DemoSession::Get()->started()) {
+  } else if (ash::DemoSession::Get() && ash::DemoSession::Get()->started()) {
     // For demo sessions, if auth code fetch failed (e.g. because the device is
     // offline), fall back to accountless offline demo mode provisioning.
     std::move(callback).Run(
@@ -667,7 +665,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     const std::string& account_name,
     RequestAccountInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::Optional<AccountInfo> account_info =
+  absl::optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
@@ -724,7 +722,7 @@ void ArcAuthService::OnSecondaryAccountAuthCodeFetched(
     return;
   }
 
-  base::Optional<AccountInfo> account_info =
+  absl::optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
@@ -781,7 +779,7 @@ std::unique_ptr<ArcBackgroundAuthCodeFetcher>
 ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const CoreAccountId& account_id,
     bool initial_signin) {
-  base::Optional<AccountInfo> account_info =
+  absl::optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
               account_id);

@@ -9,9 +9,10 @@
 #include <memory>
 #include <vector>
 
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_id.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/surfaces/surface_saved_frame.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -27,10 +28,7 @@ class VIZ_SERVICE_EXPORT TransferableResourceTracker {
   // This represents a resource that is positioned somewhere on screen.
   struct VIZ_SERVICE_EXPORT PositionedResource {
     TransferableResource resource;
-    // This is the resource's initial rect.
-    gfx::Rect rect;
-    // This is the transform that takes `rect` into root render pass space.
-    gfx::Transform target_transform;
+    SurfaceSavedFrame::RenderPassDrawData draw_data;
   };
 
   // A resource frame consists of a root PositionedResource and a set of
@@ -44,10 +42,11 @@ class VIZ_SERVICE_EXPORT TransferableResourceTracker {
     ResourceFrame& operator=(ResourceFrame&& other);
 
     PositionedResource root;
-    std::vector<base::Optional<PositionedResource>> shared;
+    std::vector<absl::optional<PositionedResource>> shared;
   };
 
-  TransferableResourceTracker();
+  explicit TransferableResourceTracker(
+      SharedBitmapManager* shared_bitmap_manager);
   TransferableResourceTracker(const TransferableResourceTracker&) = delete;
   ~TransferableResourceTracker();
 
@@ -73,7 +72,7 @@ class VIZ_SERVICE_EXPORT TransferableResourceTracker {
 
   // Ref count management for the resources returned by `ImportResources`.
   void RefResource(ResourceId id);
-  void UnrefResource(ResourceId id);
+  void UnrefResource(ResourceId id, int count);
 
   bool is_empty() const { return managed_resources_.empty(); }
 
@@ -92,18 +91,21 @@ class VIZ_SERVICE_EXPORT TransferableResourceTracker {
   const uint32_t starting_id_;
   uint32_t next_id_;
 
+  SharedBitmapManager* const shared_bitmap_manager_;
+
   struct TransferableResourceHolder {
+    using ResourceReleaseCallback =
+        base::OnceCallback<void(const TransferableResource&)>;
+
     TransferableResourceHolder();
+    TransferableResourceHolder(const TransferableResource& resource,
+                               ResourceReleaseCallback release_callback);
     TransferableResourceHolder(TransferableResourceHolder&& other);
-    TransferableResourceHolder(
-        const TransferableResource& resource,
-        std::unique_ptr<SingleReleaseCallback> release_callback);
+    TransferableResourceHolder& operator=(TransferableResourceHolder&& other);
     ~TransferableResourceHolder();
 
-    TransferableResourceHolder& operator=(TransferableResourceHolder&& other);
-
     TransferableResource resource;
-    std::unique_ptr<SingleReleaseCallback> release_callback;
+    ResourceReleaseCallback release_callback;
     uint8_t ref_count = 0u;
   };
 

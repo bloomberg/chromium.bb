@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -21,12 +22,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
@@ -149,7 +151,7 @@ void OnOpenWindowFinished(
     blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
-  base::Optional<std::string> error_msg;
+  absl::optional<std::string> error_msg;
   if (!success) {
     DCHECK(!client_info);
     error_msg.emplace("Something went wrong while trying to open the window.");
@@ -183,7 +185,7 @@ void DidNavigateClient(
     blink::mojom::ServiceWorkerClientInfoPtr client) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
-  base::Optional<std::string> error_msg;
+  absl::optional<std::string> error_msg;
   if (!success) {
     DCHECK(!client);
     error_msg.emplace("Cannot navigate to URL: " + url.spec());
@@ -381,7 +383,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_existence(), script_url(),
-      origin(), registration_id(), version_id(),
+      scope(), origin(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id(), ukm_source_id());
   for (const auto& controllee : controllee_map_) {
@@ -464,7 +466,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   // get associated with it in
   // ServiceWorkerHost::CompleteStartWorkerPreparation.
   context_->registry()->FindRegistrationForId(
-      registration_id_, origin_,
+      registration_id_, storage::StorageKey(origin_),
       base::BindOnce(
           &ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
           weak_factory_.GetWeakPtr(), purpose, status_,
@@ -582,7 +584,7 @@ void ServiceWorkerVersion::StartUpdate() {
   if (!context_)
     return;
   context_->registry()->FindRegistrationForId(
-      registration_id_, origin_,
+      registration_id_, storage::StorageKey(origin_),
       base::BindOnce(&ServiceWorkerVersion::FoundRegistrationForUpdate,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1345,7 +1347,7 @@ void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
 
   registration->ClaimClients();
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt);
+                          absl::nullopt);
 }
 
 void ServiceWorkerVersion::GetClients(

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <set>
-#include <string>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -108,7 +107,7 @@ class PageTextObserver : public content::WebContentsObserver,
   friend class content::WebContentsUserData<PageTextObserver>;
 
   void OnFrameTextDumpCompleted(
-      base::Optional<FrameTextDumpResult> frame_result);
+      absl::optional<FrameTextDumpResult> frame_result);
 
   void DispatchResponses();
 

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
@@ -39,9 +37,6 @@ class LoginDisplayMojo : public LoginDisplay,
             bool show_new_user) override;
   void OnPreferencesChanged() override;
   void SetUIEnabled(bool is_enabled) override;
-  void ShowError(int error_msg_id,
-                 int login_attempts,
-                 HelpAppLauncher::HelpTopic help_topic_id) override;
   void ShowAllowlistCheckFailedError() override;
 
   // SigninScreenHandlerDelegate:
@@ -52,7 +47,6 @@ class LoginDisplayMojo : public LoginDisplay,
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
-  void CancelUserAdding() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;

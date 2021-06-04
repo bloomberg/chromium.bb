@@ -104,6 +104,7 @@ mojom::PaintPreviewCaptureParamsPtr ToMojoParams(
   params_ptr->guid = params.inner.document_guid;
   params_ptr->is_main_frame = params.inner.is_main_frame;
   params_ptr->clip_rect = params.inner.clip_rect;
+  params_ptr->skip_accelerated_content = params.inner.skip_accelerated_content;
   return params_ptr;
 }
 
@@ -161,7 +162,7 @@ TEST_P(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
   GURL expected_url = rfh->GetLastCommittedURL();
 
   auto response = NewMockPaintPreviewCaptureResponse();
-  response->embedding_token = base::nullopt;
+  response->embedding_token = absl::nullopt;
   response->scroll_offsets = gfx::Size(5, 10);
 
   PaintPreviewProto expected_proto;
@@ -290,11 +291,12 @@ TEST_P(PaintPreviewClientRenderViewHostTest, RenderFrameDeletedDuringCapture) {
   PaintPreviewClient::PaintPreviewParams params(GetParam());
   params.root_dir = temp_dir_.GetPath();
   params.inner.is_main_frame = true;
+  params.inner.skip_accelerated_content = true;
 
   content::RenderFrameHost* rfh = main_rfh();
 
   auto response = NewMockPaintPreviewCaptureResponse();
-  response->embedding_token = base::nullopt;
+  response->embedding_token = absl::nullopt;
 
   base::RunLoop loop;
   auto callback = base::BindOnce(

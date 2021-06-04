@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {

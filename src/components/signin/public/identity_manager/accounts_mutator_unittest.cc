@@ -5,7 +5,6 @@
 #include "components/signin/internal/identity_manager/accounts_mutator_impl.h"
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "build/chromeos_buildflags.h"
@@ -18,6 +17,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -157,7 +157,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
   accounts_mutator()->UpdateAccountInfo(
       account_id,
       /*is_child_account=*/true,
-      /*is_under_advanced_protection=*/base::nullopt);
+      /*is_under_advanced_protection=*/absl::nullopt);
   AccountInfo updated_account_info_1 =
       identity_manager()
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
@@ -175,7 +175,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
             original_account_info.is_under_advanced_protection);
 
   accounts_mutator()->UpdateAccountInfo(account_id,
-                                        /*is_child_account=*/base::nullopt,
+                                        /*is_child_account=*/absl::nullopt,
                                         /*is_under_advanced_protection=*/true);
   AccountInfo updated_account_info_2 =
       identity_manager()
@@ -334,8 +334,8 @@ TEST_F(AccountsMutatorTest,
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info =
-      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
+  AccountInfo primary_account_info = MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email, signin::ConsentLevel::kSync);
 
   // Now try invalidating the primary account, and check that it gets updated.
   base::RunLoop run_loop;
@@ -372,8 +372,8 @@ TEST_F(
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info =
-      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
+  AccountInfo primary_account_info = MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email, signin::ConsentLevel::kSync);
 
   // Next, add a secondary account.
   base::RunLoop run_loop;

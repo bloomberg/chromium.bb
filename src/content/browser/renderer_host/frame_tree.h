@@ -64,6 +64,8 @@ class CONTENT_EXPORT FrameTree {
     ~NodeIterator();
 
     NodeIterator& operator++();
+    // Advances the iterator and excludes the children of the current node
+    NodeIterator& AdvanceSkippingChildren();
 
     bool operator==(const NodeIterator& rhs) const;
     bool operator!=(const NodeIterator& rhs) const { return !(*this == rhs); }
@@ -73,26 +75,36 @@ class CONTENT_EXPORT FrameTree {
    private:
     friend class NodeRange;
 
-    NodeIterator(FrameTreeNode* starting_node,
-                 FrameTreeNode* root_of_subtree_to_skip);
+    NodeIterator(const std::vector<FrameTreeNode*>& starting_nodes,
+                 const FrameTreeNode* root_of_subtree_to_skip,
+                 bool should_descend_into_inner_trees);
+
+    void AdvanceNode();
 
     FrameTreeNode* current_node_;
-    FrameTreeNode* const root_of_subtree_to_skip_;
+    const FrameTreeNode* const root_of_subtree_to_skip_;
+    const bool should_descend_into_inner_trees_;
     base::queue<FrameTreeNode*> queue_;
   };
 
   class CONTENT_EXPORT NodeRange {
    public:
+    NodeRange(const NodeRange&);
+    ~NodeRange();
+
     NodeIterator begin();
     NodeIterator end();
 
    private:
     friend class FrameTree;
 
-    NodeRange(FrameTreeNode* root, FrameTreeNode* root_of_subtree_to_skip);
+    NodeRange(const std::vector<FrameTreeNode*>& starting_nodes,
+              const FrameTreeNode* root_of_subtree_to_skip,
+              bool should_descend_into_inner_trees);
 
-    FrameTreeNode* const root_;
-    FrameTreeNode* const root_of_subtree_to_skip_;
+    const std::vector<FrameTreeNode*> starting_nodes_;
+    const FrameTreeNode* const root_of_subtree_to_skip_;
+    const bool should_descend_into_inner_trees_;
   };
 
   class CONTENT_EXPORT Delegate {
@@ -118,18 +130,6 @@ class CONTENT_EXPORT FrameTree {
     virtual bool IsHidden() = 0;
   };
 
-  // A set of delegates are remembered here so that we can create
-  // RenderFrameHostManagers.
-  FrameTree(BrowserContext* browser_context,
-            Delegate* delegate,
-            NavigationControllerDelegate* navigation_controller_delegate,
-            NavigatorDelegate* navigator_delegate,
-            RenderFrameHostDelegate* render_frame_delegate,
-            RenderViewHostDelegate* render_view_delegate,
-            RenderWidgetHostDelegate* render_widget_delegate,
-            RenderFrameHostManager::Delegate* manager_delegate);
-  ~FrameTree();
-
   // Type of FrameTree instance.
   enum class Type {
     // This FrameTree is the primary frame tree for the WebContents, whose main
@@ -140,7 +140,19 @@ class CONTENT_EXPORT FrameTree {
     // invisible to the user.
     kPrerender
   };
-  Type type() { return type_; }
+
+  // A set of delegates are remembered here so that we can create
+  // RenderFrameHostManagers.
+  FrameTree(BrowserContext* browser_context,
+            Delegate* delegate,
+            NavigationControllerDelegate* navigation_controller_delegate,
+            NavigatorDelegate* navigator_delegate,
+            RenderFrameHostDelegate* render_frame_delegate,
+            RenderViewHostDelegate* render_view_delegate,
+            RenderWidgetHostDelegate* render_widget_delegate,
+            RenderFrameHostManager::Delegate* manager_delegate,
+            Type type);
+  ~FrameTree();
 
   // Initializes the main frame for this FrameTree. That is it creates the
   // initial RenderFrameHost in the root node's RenderFrameHostManager. This
@@ -150,16 +162,11 @@ class CONTENT_EXPORT FrameTree {
   // constructor so we do not leave objects in a half initialized state.
   void Init(SiteInstance* main_frame_site_instance,
             bool renderer_initiated_creation,
-            const std::string& main_frame_name,
-            Type type);
+            const std::string& main_frame_name);
+
+  Type type() const { return type_; }
 
   FrameTreeNode* root() const { return root_; }
-
-  // Sets |type_| to FrameTree::Type::kPrimary and activates the Prerendered
-  // page.
-  // TODO(https://crbug.com/1154501): Remove once MPArch is enabled, as this is
-  // only used in the multiple WebContents implementation of prerendering.
-  void ActivatePrerenderedFrameTree();
 
   bool is_prerendering() const { return type_ == FrameTree::Type::kPrerender; }
 
@@ -210,6 +217,11 @@ class CONTENT_EXPORT FrameTree {
   // Returns a range to iterate over all FrameTreeNodes in a subtree of the
   // frame tree, starting from |subtree_root|.
   NodeRange SubtreeNodes(FrameTreeNode* subtree_root);
+
+  // Returns a range to iterate over all FrameTreeNodes in a subtree, starting
+  // from, but not including |parent|, as well as any FrameTreeNodes of inner
+  // frame trees.
+  static NodeRange SubtreeAndInnerTreeNodes(RenderFrameHostImpl* parent);
 
   // Adds a new child frame to the frame tree. |process_id| is required to
   // disambiguate |new_routing_id|, and it must match the process of the
@@ -382,16 +394,6 @@ class CONTENT_EXPORT FrameTree {
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
 
-  // Prerender2:
-  // Indicates whether this frame tree is being prerendered.
-  // Set to true when frame tree is created (PrerenderHost()) and to false once
-  // the prerendered page is activated
-  // (PrerenderHost::ActivatePrerenderedContents()).
-  // TODO(https://crbug.com/1174926): Migrate this parameter to FrameTreeType
-  // once activation path is migrated onto MPArch and WebContents-swap-based
-  // activation logic is removed.
-  bool is_prerendering_ = false;
-
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order, skipping the subtree rooted at
   // |node|, but including |node| itself.
@@ -433,11 +435,8 @@ class CONTENT_EXPORT FrameTree {
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_main_document_ = false;
 
-  // Indicates type of frame tree. The default value is set to kPrimary until
-  // the initialization is moved to the constructor.
-  // TODO(https://crbug.com/1174926): Make FrameTree::Type const once
-  // WebContents-swap-based activation logic is removed.
-  Type type_ = Type::kPrimary;
+  // Indicates type of frame tree.
+  const Type type_;
 
 #if DCHECK_IS_ON()
   // Whether Shutdown() was called.

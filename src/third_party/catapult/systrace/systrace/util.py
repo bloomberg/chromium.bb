@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 import optparse
 import os
 import sys
@@ -69,8 +70,8 @@ def get_tracing_path(device_serial=None):
     options, _ = parser.parse_args()
     device_serial = options.device_serial
 
-  adb_output, adb_return_code = run_adb_shell(mount_info_args, device_serial)
-  if adb_return_code == 0 and 'debugfs' not in adb_output:
+  adb_output, adb_return_code = run_adb_shell(mount_info_args, device_serial, )
+  if adb_return_code == 0 and 'tracefs on /sys/kernel/tracing' in adb_output:
     return '/sys/kernel/tracing'
   return '/sys/kernel/debug/tracing'
 
@@ -110,7 +111,7 @@ def get_device_sdk_version():
           success = True
 
   if not success:
-    print >> sys.stderr, adb_output
+    print(adb_output, file=sys.stderr)
     raise Exception("Failed to get device sdk version")
 
   return version

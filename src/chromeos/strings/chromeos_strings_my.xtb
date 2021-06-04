@@ -18,7 +18,7 @@
 <translation id="1290331692326790741">လိုင်းအား မကောင်းပါ</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">ပင်မ ကွန်ရက်၊ ရိုမင်း မဟုတ်ပါ</translation>
-<translation id="1327977588028644528">ဝင်ပေါက်</translation>
+<translation id="1327977588028644528">ဂိတ်ဝ</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">စကင်လုပ်မည့်နေရာနှင့် ကွက်တိ လုပ်ပေးရန်</translation>
 <translation id="1387854245479784695">၎င်းသည် core အားလုံး၏ ပေါင်းစည်းဆောင်ရွက်မှု ဖြစ်သည်</translation>
@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">စကင်ဖတ်စက်ပေါ်တွင် သင်၏စာရွက်စာတမ်းကို ထားရှိပြီး စတင်ရန်အတွက် 'စကင်ဖတ်ရန်' ကို ရွေးပါ</translation>
 <translation id="2872961005593481000">ပိတ်ရန်</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> စက္ကန့်အတွင်း <ph name="RATE" /> အားလျော့သွားသည်။</translation>
+<translation id="2983662233540284543">ဂိမ်းထုတ်လုပ်သူထံမှ လေ့လာခြင်း၊ ဂိမ်းဒီဇိုင်းအက်ပ်များ ရယူခြင်း စသည်</translation>
 <translation id="3008341117444806826">ပြန်လည်စတင်ရန်</translation>
 <translation id="3009958530611748826">သိမ်းရန် ဖိုင်တွဲကို ရွေးပါ</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">အထောက်အထားစိစစ်မှု</translation>
 <translation id="5154917547274118687">မှတ်ဉာဏ်</translation>
 <translation id="5168185087976003268">ဘက်ထရီအခြေအနေ</translation>
+<translation id="5170568018924773124">ဖိုလ်ဒါ ထဲမှာ ပြရန်</translation>
+<translation id="519607504553633437">သင့်ကိုယ်ပိုင်ဂိမ်းများ ဒီဇိုင်းပြုလုပ် ရေးဆွဲခြင်း</translation>
 <translation id="5212543919916444558">သင့်မျက်နှာပြင်တွင် ကျွန်ုပ်ကူညီနိုင်သည့် အကြောင်းအရာများကို မတွေ့ပါ။ မိုက်ကို တို့ပြီး နှစ်သက်ရာ မေးနိုင်ပါသည်။</translation>
 <translation id="5222676887888702881">ထွက်ခွာရန်</translation>
 <translation id="5252456968953390977">ရွမ်မင်း</translation>
@@ -200,6 +203,7 @@
 <translation id="5275828089655680674">ပုံမှန်အစီအစဉ်များသို့ ပြန်သွားရန်</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">ဗားရှင်း <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">ဝင်းဒိုးကို မျက်နှာပြင်နေရာသို့ ရွှေ့ရန်</translation>
 <translation id="5315873049536339193">အထောက်အထား</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
 <translation id="5318334351163689047">TCP တောင်းဆိုချက် ချွတ်ယွင်းမှုများ</translation>
@@ -221,6 +225,7 @@
 <translation id="5669267381087807207">အစပြုနေသည်</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">မိသားစု</translation>
+<translation id="5752751666635965375">ကိုယ်ပိုင်ဂိမ်း ရေးရန်</translation>
 <translation id="5760715441271661976">စာမျက်နှာအခြေအနေ</translation>
 <translation id="5797428682393400134">အောင်မြင်ပါသည်</translation>
 <translation id="5832805196449965646">လူကို ထည့်ပေးရန်</translation>
@@ -293,6 +298,7 @@
 <translation id="7216409898977639127">ဆယ်လူလာဝန်ဆောင်မှုပေးသူ</translation>
 <translation id="7271040990581020067">စကင်ဖတ်စက်ကို လက်ရှိ သုံးနေသည်။ နောက်မှ ထပ်စမ်းပါ။</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">ကွန်ရက်ရှိ စက်များ</translation>
 <translation id="7359657277149375382">ဖိုင်အမျိုးအစား</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -341,6 +347,7 @@
 <translation id="8372477600026034341">အပို ဆာဗာပင်ရင်းများ</translation>
 <translation id="8395584934117017006">ဤ <ph name="DEVICE_TYPE" /> ကို လုပ်ငန်းက စီမံပါသည်</translation>
 <translation id="8398927464629426868">စက်ပစ္စည်း၏ လက်ရှိအားသွင်းနှုန်း (သို့) အားလျော့နှုန်း</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">ပင်မထောက်ပံ့သူအမည်</translation>
 <translation id="8475690821716466388">WiFi ကွန်ရက်ကို အားနည်းသောပရိုတိုကော WEP PSK ဖြင့် လုံခြုံအောင်ထားသည်</translation>
 <translation id="8477551185774834963">DNS တုံ့ပြန်ချိန်က ခွင့်ပြုနိုင်သောသတ်မှတ်ကာလကို အနည်းငယ်ကျော်နေသည်</translation>
@@ -350,6 +357,7 @@
 <translation id="8575298406870537639">သင့်မိုဘိုင်းဖုန်းကုမ္ပဏီသည် ၎င်း၏ကွန်ရက်သို့ ချိတ်ဆက်ရန် ဤရွေးချယ်စရာကို သတ်မှတ်ထားနိုင်သည်။ အသေးစိတ်အတွက် သင့်မိုဘိုင်းဖုန်းကုမ္ပဏီကို ဆက်သွယ်ပါ။</translation>
 <translation id="8576249514688522074">စတင်မထားပါ</translation>
 <translation id="8620617069779373398">ကွန်ရက်ပြင်ပဒေတာသုံးခြင်း အခြေအနေ</translation>
+<translation id="8660881923941176839">ပေါင်</translation>
 <translation id="8675354002693747642">ကြိုတင်မျှဝေထားသည့် ကီး</translation>
 <translation id="871560550817059752">မအောင်မြင်ပါ - မင်ကုန်နေသည်</translation>
 <translation id="8723108084122415655">တုံ့ပြန်ချိန် သတ်မှတ်ကာလအထက်ရှိနေသော မူရင်းမဟုတ်သည့်ကွန်ရက်</translation>
@@ -365,6 +373,7 @@
 <translation id="8881098542468797602">စစ်ဆေးမှု အောင်မြင်သည်</translation>
 <translation id="8898840733695078011">လိုင်းဆွဲအား</translation>
 <translation id="8910721771319628100">တုံ့ပြန်ချိန် သတ်မှတ်ကာလအထက်ရှိနေသော မူလကွန်ရက်</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" /> ၏ <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">မအောင်မြင်ပါ - ဗန်းမရှိပါ</translation>
 <translation id="8928727111548978589">မအောင်မြင်ပါ - စာရွက်ကုန်နေသည်</translation>
 <translation id="8930622219860340959">ကြိုးမဲ့</translation>
@@ -382,6 +391,7 @@
 <translation id="9149391708638971077">မှတ်ဉာဏ်စစ်ဆေးရန်</translation>
 <translation id="9173638680043580060">တစ်မိနစ်ပင် မကျန်တော့ပါ</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ကြိုတင်-မျှဝေထား သော့</translation>
+<translation id="9211490828691860325">မျက်နှာပြင်နေရာအားလုံး</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">ဖွင့်မသုံးရသေး</translation>
 <translation id="960719561871045870">မိုဘိုင်းဝန်ဆောင်မှုဌာန ကုဒ်</translation>

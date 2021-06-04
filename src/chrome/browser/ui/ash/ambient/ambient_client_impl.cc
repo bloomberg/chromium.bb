@@ -84,7 +84,7 @@ AmbientClientImpl::~AmbientClientImpl() = default;
 bool AmbientClientImpl::IsAmbientModeAllowed() {
   DCHECK(chromeos::features::IsAmbientModeEnabled());
 
-  if (chromeos::DemoSession::IsDeviceInDemoMode())
+  if (ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
   const user_manager::User* const active_user = GetActiveUser();
@@ -105,7 +105,7 @@ bool AmbientClientImpl::IsAmbientModeAllowed() {
   if (!HasPrimaryAccount(profile))
     return false;
 
-  if (!profile->IsRegularProfile())
+  if (profile->IsOffTheRecord())
     return false;
 
   return true;

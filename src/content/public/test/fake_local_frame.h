@@ -5,12 +5,13 @@
 #ifndef CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
 #define CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
 
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -63,11 +64,14 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void ReportBlinkFeatureUsage(
       const std::vector<blink::mojom::WebFeature>&) override;
   void RenderFallbackContent() override;
+  void RenderFallbackContentWithResourceTiming(
+      blink::mojom::ResourceTimingInfoPtr,
+      const std::string& server_timing_value) override;
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override;
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
   void AdvanceFocusInFrame(blink::mojom::FocusType focus_type,
-                           const base::Optional<blink::RemoteFrameToken>&
+                           const absl::optional<blink::RemoteFrameToken>&
                                source_frame_token) override;
   void AdvanceFocusInForm(blink::mojom::FocusType focus_type) override;
   void ReportContentSecurityPolicyViolation(
@@ -75,10 +79,31 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override;
   void OnScreensChange() override;
   void PostMessageEvent(
-      const base::Optional<blink::RemoteFrameToken>& source_frame_token,
+      const absl::optional<blink::RemoteFrameToken>& source_frame_token,
       const std::u16string& source_origin,
       const std::u16string& target_origin,
       blink::TransferableMessage message) override;
+  void JavaScriptMethodExecuteRequest(
+      const std::u16string& object_name,
+      const std::u16string& method_name,
+      base::Value arguments,
+      bool wants_result,
+      JavaScriptMethodExecuteRequestCallback callback) override;
+  void JavaScriptExecuteRequest(
+      const std::u16string& javascript,
+      bool wants_result,
+      JavaScriptExecuteRequestCallback callback) override;
+  void JavaScriptExecuteRequestForTests(
+      const std::u16string& javascript,
+      bool wants_result,
+      bool has_user_gesture,
+      int32_t world_id,
+      JavaScriptExecuteRequestForTestsCallback callback) override;
+  void JavaScriptExecuteRequestInIsolatedWorld(
+      const std::u16string& javascript,
+      bool wants_result,
+      int32_t world_id,
+      JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
   void GetSavableResourceLinks(
       GetSavableResourceLinksCallback callback) override;
 #if defined(OS_MAC)
@@ -90,7 +115,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) override;
   void UpdateOpener(
-      const base::Optional<blink::FrameToken>& opener_frame_token) override;
+      const absl::optional<blink::FrameToken>& opener_frame_token) override;
   void MixedContentFound(
       const GURL& main_resource_url,
       const GURL& mixed_content_url,
@@ -100,10 +125,18 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       bool had_redirect,
       network::mojom::SourceLocationPtr source_location) override;
   void ActivateForPrerendering() override;
+  void BindDevToolsAgent(
+      mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)
+      override;
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(const gfx::Rect& rect,
                             ExtractSmartClipDataCallback callback) override;
 #endif
+  void HandleRendererDebugURL(const GURL& url) override;
+  void GetCanonicalUrlForSharing(
+      GetCanonicalUrlForSharingCallback callback) override;
+
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);
 

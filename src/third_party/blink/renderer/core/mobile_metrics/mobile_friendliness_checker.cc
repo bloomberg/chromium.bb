@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
+
 #include "third_party/blink/public/mojom/mobile_metrics/mobile_friendliness.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -13,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
@@ -441,16 +444,16 @@ void MobileFriendlinessChecker::ComputeTextContentOutsideViewport(
     const ComputedStyle* style = text->Style();
     if (style->Visibility() != EVisibility::kVisible ||
         style->ContentVisibility() != EContentVisibility::kVisible ||
-        CheckParentHasOverflowXHidden(&object))
+        style->Opacity() == 0.0 || CheckParentHasOverflowXHidden(&object))
       return;
     total_text_width = text->PhysicalRightOffset().ToInt();
   } else if (const auto* image = DynamicTo<LayoutImage>(object)) {
     const ComputedStyle* style = image->Style();
     if (style->Visibility() != EVisibility::kVisible ||
-        CheckParentHasOverflowXHidden(&object))
+        style->ContentVisibility() != EContentVisibility::kVisible ||
+        style->Opacity() == 0.0 || CheckParentHasOverflowXHidden(&object))
       return;
-    PhysicalRect rect = image->ReplacedContentRect();
-    total_text_width = (rect.offset.left + rect.size.width).ToInt();
+    total_text_width = image->FrameRect().MaxX().ToInt();
   } else {
     return;
   }

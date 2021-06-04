@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -34,7 +33,10 @@ v8::Local<v8::Promise> PromiseRejectInternal(ScriptState* script_state,
                                              v8::Local<v8::Value> value,
                                              int recursion_depth) {
   auto context = script_state->GetContext();
-  v8::TryCatch trycatch(script_state->GetIsolate());
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  v8::TryCatch trycatch(isolate);
   // TODO(ricea): Can this fail for reasons other than memory exhaustion? Can we
   // recover if it does?
   auto resolver = v8::Promise::Resolver::New(context).ToLocalChecked();
@@ -52,7 +54,7 @@ v8::Local<v8::Promise> PromiseRejectInternal(ScriptState* script_state,
 
 class DefaultSizeAlgorithm final : public StrategySizeAlgorithm {
  public:
-  base::Optional<double> Run(ScriptState*,
+  absl::optional<double> Run(ScriptState*,
                              v8::Local<v8::Value>,
                              ExceptionState&) override {
     return 1;
@@ -64,7 +66,7 @@ class JavaScriptSizeAlgorithm final : public StrategySizeAlgorithm {
   JavaScriptSizeAlgorithm(v8::Isolate* isolate, v8::Local<v8::Function> size)
       : function_(isolate, size) {}
 
-  base::Optional<double> Run(ScriptState* script_state,
+  absl::optional<double> Run(ScriptState* script_state,
                              v8::Local<v8::Value> chunk,
                              ExceptionState& exception_state) override {
     auto* isolate = script_state->GetIsolate();
@@ -79,7 +81,7 @@ class JavaScriptSizeAlgorithm final : public StrategySizeAlgorithm {
     v8::Local<v8::Value> result;
     if (!result_maybe.ToLocal(&result)) {
       exception_state.RethrowV8Exception(trycatch.Exception());
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     // This conversion to double comes from the EnqueueValueWithSize
@@ -89,7 +91,7 @@ class JavaScriptSizeAlgorithm final : public StrategySizeAlgorithm {
     v8::Local<v8::Number> number;
     if (!number_maybe.ToLocal(&number)) {
       exception_state.RethrowV8Exception(trycatch.Exception());
-      return base::nullopt;
+      return absl::nullopt;
     }
     return number->Value();
   }
@@ -403,6 +405,20 @@ CORE_EXPORT StreamAlgorithm* CreateTrivialStreamAlgorithm() {
   return MakeGarbageCollected<TrivialStreamAlgorithm>();
 }
 
+CORE_EXPORT ScriptValue CreateTrivialQueuingStrategy(v8::Isolate* isolate,
+                                                     size_t high_water_mark) {
+  v8::Local<v8::Name> high_water_mark_string =
+      V8AtomicString(isolate, "highWaterMark");
+  v8::Local<v8::Value> high_water_mark_value =
+      v8::Number::New(isolate, high_water_mark);
+
+  auto strategy =
+      v8::Object::New(isolate, v8::Null(isolate), &high_water_mark_string,
+                      &high_water_mark_value, 1);
+
+  return ScriptValue(isolate, strategy);
+}
+
 CORE_EXPORT v8::MaybeLocal<v8::Value> CallOrNoop1(
     ScriptState* script_state,
     v8::Local<v8::Object> object,
@@ -458,7 +474,10 @@ CORE_EXPORT v8::Local<v8::Promise> PromiseCall(ScriptState* script_state,
                                                int argc,
                                                v8::Local<v8::Value> argv[]) {
   DCHECK_GE(argc, 0);
-  v8::TryCatch trycatch(script_state->GetIsolate());
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::TryCatch trycatch(isolate);
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
   // https://streams.spec.whatwg.org/#promise-call
   // 4. Let returnValue be Call(F, V, args).
@@ -529,7 +548,10 @@ CORE_EXPORT v8::Local<v8::Promise> PromiseResolve(ScriptState* script_state,
     return value.As<v8::Promise>();
   }
   auto context = script_state->GetContext();
-  v8::TryCatch trycatch(script_state->GetIsolate());
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  v8::TryCatch trycatch(isolate);
   // TODO(ricea): Can this fail for reasons other than memory exhaustion? Can we
   // recover if it does?
   auto resolver = v8::Promise::Resolver::New(context).ToLocalChecked();

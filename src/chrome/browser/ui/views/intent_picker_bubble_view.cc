@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
@@ -26,6 +27,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -39,8 +42,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -104,30 +105,30 @@ class IntentPickerLabelButton : public views::LabelButton {
                     base::UTF8ToUTF16(base::StringPiece(display_name))) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     SetMinSize(gfx::Size(kMaxIntentPickerLabelButtonWidth, kRowHeight));
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
     if (!icon_model.IsEmpty()) {
       SetImageModel(views::ImageButton::STATE_NORMAL, icon_model);
     }
     SetBorder(views::CreateEmptyBorder(8, 16, 8, 0));
-    SetInkDropBaseColor(SK_ColorGRAY);
-    SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
+    ink_drop()->SetBaseColor(SK_ColorGRAY);
+    ink_drop()->SetVisibleOpacity(kToolbarInkDropVisibleOpacity);
   }
   IntentPickerLabelButton(const IntentPickerLabelButton&) = delete;
   IntentPickerLabelButton& operator=(const IntentPickerLabelButton&) = delete;
   ~IntentPickerLabelButton() override = default;
 
   void MarkAsUnselected(const ui::Event* event) {
-    AnimateInkDrop(views::InkDropState::HIDDEN,
-                   ui::LocatedEvent::FromIfValid(event));
+    ink_drop()->AnimateToState(views::InkDropState::HIDDEN,
+                               ui::LocatedEvent::FromIfValid(event));
   }
 
   void MarkAsSelected(const ui::Event* event) {
-    AnimateInkDrop(views::InkDropState::ACTIVATED,
-                   ui::LocatedEvent::FromIfValid(event));
+    ink_drop()->AnimateToState(views::InkDropState::ACTIVATED,
+                               ui::LocatedEvent::FromIfValid(event));
   }
 
   views::InkDropState GetTargetInkDropState() {
-    return GetInkDrop()->GetTargetInkDropState();
+    return ink_drop()->GetInkDrop()->GetTargetInkDropState();
   }
 };
 
@@ -146,7 +147,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse intent_picker_cb) {
   if (intent_picker_bubble_) {
     intent_picker_bubble_->CloseBubble();
@@ -202,7 +203,7 @@ IntentPickerBubbleView::CreateBubbleViewForTesting(
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents) {
   auto bubble = std::make_unique<IntentPickerBubbleView>(
@@ -273,7 +274,7 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     content::WebContents* web_contents,
     bool show_stay_in_chrome,
     bool show_remember_selection,
-    const base::Optional<url::Origin>& initiating_origin)
+    const absl::optional<url::Origin>& initiating_origin)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),

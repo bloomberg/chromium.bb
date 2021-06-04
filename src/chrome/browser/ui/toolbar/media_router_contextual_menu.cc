@@ -9,6 +9,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
@@ -75,16 +76,19 @@ MediaRouterContextualMenu::CreateMenuModel() {
         IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
         IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
   }
+
   menu_model->AddCheckItemWithStringId(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
                                        IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
-  if (!browser_->profile()->IsOffTheRecord()) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (!browser_->profile()->IsOffTheRecord() &&
+      browser_->profile()->GetPrefs()->GetBoolean(
+          prefs::kUserFeedbackAllowed)) {
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-    if (browser_->profile()->GetPrefs()->GetBoolean(
-            prefs::kUserFeedbackAllowed)) {
-      menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
-                                      IDS_MEDIA_ROUTER_REPORT_ISSUE);
-    }
+    menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
+                                    IDS_MEDIA_ROUTER_REPORT_ISSUE);
   }
+#endif
+
   return menu_model;
 }
 
@@ -137,15 +141,17 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       break;
     case IDC_MEDIA_ROUTER_HELP:
       ShowSingletonTab(browser_, GURL(kCastHelpCenterPageUrl));
-      base::RecordAction(base::UserMetricsAction(
-          "MediaRouter_Ui_Navigate_Help"));
+      base::RecordAction(
+          base::UserMetricsAction("MediaRouter_Ui_Navigate_Help"));
       break;
     case IDC_MEDIA_ROUTER_LEARN_MORE:
       ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));
       break;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
       ReportIssue();
       break;
+#endif
     case IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING:
       ToggleMediaRemoting();
       break;
@@ -170,7 +176,15 @@ void MediaRouterContextualMenu::ToggleMediaRemoting() {
           media_router::prefs::kMediaRouterMediaRemotingEnabled));
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void MediaRouterContextualMenu::ReportIssue() {
+  if (base::FeatureList::IsEnabled(media_router::kCastFeedbackDialog)) {
+    ShowSingletonTab(
+        browser_,
+        GURL(base::StrCat({"chrome://", chrome::kChromeUICastFeedbackHost})));
+    return;
+  }
+
   // Opens feedback page loaded from the media router extension.
   // This is temporary until feedback UI is redesigned.
   media_router::EventPageRequestManager* request_manager =
@@ -184,3 +198,4 @@ void MediaRouterContextualMenu::ReportIssue() {
       request_manager->media_route_provider_extension_id() + "/feedback.html");
   ShowSingletonTab(browser_, GURL(feedback_url));
 }
+#endif

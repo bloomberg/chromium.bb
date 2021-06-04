@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -31,6 +32,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/layers/video_layer.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -44,6 +46,7 @@
 #include "media/base/text_renderer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
+#include "media/blink/power_status_helper.h"
 #include "media/blink/texttrack_impl.h"
 #include "media/blink/url_index.h"
 #include "media/blink/video_decode_stats_reporter.h"
@@ -53,11 +56,15 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/memory_data_source.h"
+#include "media/filters/pipeline_controller.h"
+#include "media/learning/common/learning_task_controller.h"
+#include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/media_buildflags.h"
 #include "media/remoting/remoting_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
+#include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/common/media/watch_time_reporter.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -78,6 +85,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -97,7 +105,7 @@ namespace {
 
 const char kWatchTimeHistogram[] = "Media.WebMediaPlayerImpl.WatchTime";
 
-void RecordSimpleWatchTimeUMA(RendererFactoryType type) {
+void RecordSimpleWatchTimeUMA(RendererType type) {
   UMA_HISTOGRAM_ENUMERATION(kWatchTimeHistogram, type);
 }
 
@@ -1037,7 +1045,7 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 void WebMediaPlayerImpl::SetLatencyHint(double seconds) {
   DVLOG(1) << __func__ << "(" << seconds << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  base::Optional<base::TimeDelta> latency_hint;
+  absl::optional<base::TimeDelta> latency_hint;
   if (std::isfinite(seconds)) {
     DCHECK_GE(seconds, 0);
     latency_hint = base::TimeDelta::FromSecondsD(seconds);
@@ -1124,7 +1132,7 @@ void WebMediaPlayerImpl::SelectedVideoTrackChanged(
     blink::WebMediaPlayer::TrackId* selectedTrackId) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  base::Optional<MediaTrack::Id> selected_video_track_id;
+  absl::optional<MediaTrack::Id> selected_video_track_id;
   if (selectedTrackId && !video_track_disabled_)
     selected_video_track_id = MediaTrack::Id(selectedTrackId->Utf8().data());
   MEDIA_LOG(INFO, media_log_.get())
@@ -1791,8 +1799,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
         "Media.WebMediaPlayerImpl.HLS.IsMixedContent",
         frame_url_is_cryptographic && !manifest_url_is_cryptographic);
 
-    renderer_factory_selector_->SetBaseFactoryType(
-        RendererFactoryType::kMediaPlayer);
+    renderer_factory_selector_->SetBaseRendererType(RendererType::kMediaPlayer);
 
     loaded_url_ = mb_data_source_->GetUrlAfterRedirects();
     DCHECK(data_source_);
@@ -2342,7 +2349,7 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
     bridge_->SetContentsOpaque(opaque_);
 }
 
-void WebMediaPlayerImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
+void WebMediaPlayerImpl::OnVideoFrameRateChange(absl::optional<int> fps) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (power_status_helper_)
     power_status_helper_->SetAverageFrameRate(fps);
@@ -2717,7 +2724,7 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
-    base::Optional<RendererFactoryType> factory_type) {
+    absl::optional<RendererType> renderer_type) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Make sure that overlays are enabled if they're always allowed.
@@ -2730,13 +2737,14 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
       &WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
 
-  if (factory_type) {
+  if (renderer_type) {
     DVLOG(1) << __func__
-             << ": factory_type=" << static_cast<int>(factory_type.value());
-    renderer_factory_selector_->SetBaseFactoryType(factory_type.value());
+             << ": renderer_type=" << static_cast<int>(renderer_type.value());
+    renderer_factory_selector_->SetBaseRendererType(renderer_type.value());
   }
 
-  reported_renderer_type_ = renderer_factory_selector_->GetCurrentFactoryType();
+  reported_renderer_type_ =
+      renderer_factory_selector_->GetCurrentRendererType();
 
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
@@ -3423,9 +3431,9 @@ int WebMediaPlayerImpl::GetDelegateId() {
   return delegate_id_;
 }
 
-base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
+absl::optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   if (!surface_layer_for_video_enabled_)
-    return base::nullopt;
+    return absl::nullopt;
   return bridge_->GetSurfaceId();
 }
 
@@ -3615,7 +3623,7 @@ void WebMediaPlayerImpl::DisableVideoTrackIfNeeded() {
 
 void WebMediaPlayerImpl::SetPipelineStatisticsForTest(
     const PipelineStatistics& stats) {
-  pipeline_statistics_for_test_ = base::make_optional(stats);
+  pipeline_statistics_for_test_ = absl::make_optional(stats);
 }
 
 PipelineStatistics WebMediaPlayerImpl::GetPipelineStatistics() const {
@@ -3627,7 +3635,7 @@ PipelineStatistics WebMediaPlayerImpl::GetPipelineStatistics() const {
 
 void WebMediaPlayerImpl::SetPipelineMediaDurationForTest(
     base::TimeDelta duration) {
-  pipeline_media_duration_for_test_ = base::make_optional(duration);
+  pipeline_media_duration_for_test_ = absl::make_optional(duration);
 }
 
 base::TimeDelta WebMediaPlayerImpl::GetPipelineMediaDuration() const {

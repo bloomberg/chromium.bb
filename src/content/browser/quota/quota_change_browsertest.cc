@@ -89,8 +89,10 @@ class QuotaChangeBrowserTest : public ContentBrowserTest,
   bool is_incognito() const { return is_incognito_; }
 
   QuotaManager* quota_manager() {
-    return BrowserContext::GetDefaultStoragePartition(
-               browser()->web_contents()->GetBrowserContext())
+    return browser()
+        ->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition()
         ->GetQuotaManager();
   }
 
@@ -125,10 +127,7 @@ IN_PROC_BROWSER_TEST_P(QuotaChangeBrowserTest, DispatchEvent) {
   observer.WaitForNavigationFinished();
   const GURL& last_url = browser()->web_contents()->GetLastCommittedURL();
   if (last_url.ref() != "pass") {
-    std::string js_result;
-    ASSERT_TRUE(ExecuteScriptAndExtractString(
-        browser(), "window.domAutomationController.send(getLog())",
-        &js_result));
+    std::string js_result = EvalJs(browser(), "getLog()").ExtractString();
     FAIL() << "Failed: " << last_url << "\n" << js_result;
   }
 }

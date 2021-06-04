@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PRIMARY_ACCOUNT_MUTATOR_IMPL_H_
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PRIMARY_ACCOUNT_MUTATOR_IMPL_H_
 
-#include <string>
-
 #include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -31,8 +29,8 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   ~PrimaryAccountMutatorImpl() override;
 
   // PrimaryAccountMutator implementation.
-  bool SetPrimaryAccount(const CoreAccountId& account_id) override;
-  void SetUnconsentedPrimaryAccount(const CoreAccountId& account_id) override;
+  bool SetPrimaryAccount(const CoreAccountId& account_id,
+                         ConsentLevel consent_level) override;
   void RevokeSyncConsent(signin_metrics::ProfileSignout source_metric,
                          signin_metrics::SignoutDelete delete_metric) override;
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

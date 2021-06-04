@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom.h"
 
 namespace content {
 
@@ -139,7 +140,7 @@ void FakeServiceWorker::DispatchNotificationClickEvent(
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
     int action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<std::u16string>& reply,
     DispatchNotificationClickEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
@@ -152,7 +153,7 @@ void FakeServiceWorker::DispatchNotificationCloseEvent(
 }
 
 void FakeServiceWorker::DispatchPushEvent(
-    const base::Optional<std::string>& payload,
+    const absl::optional<std::string>& payload,
     DispatchPushEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }

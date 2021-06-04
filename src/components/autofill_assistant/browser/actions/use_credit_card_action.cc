@@ -10,9 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -24,6 +22,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -74,16 +73,16 @@ void UseCreditCardAction::InternalProcessAction(
               << *credit_card_value;
     }
     auto* credit_card = delegate_->GetUserModel()->GetCreditCard(
-        credit_card_value->credit_cards().values(0).guid());
+        credit_card_value->credit_cards().values(0));
     if (credit_card == nullptr) {
-      VLOG(1) << "UseCreditCard failed: card not found for guid "
+      VLOG(1) << "UseCreditCard failed: card not found for: "
               << *credit_card_value;
       EndAction(ClientStatus(PRECONDITION_FAILED));
       return;
     }
     credit_card_ = std::make_unique<autofill::CreditCard>(*credit_card);
   } else {
-    auto* credit_card = delegate_->GetUserData()->selected_card_.get();
+    const auto* credit_card = delegate_->GetUserData()->selected_card();
     if (credit_card == nullptr) {
       VLOG(1) << "UseCreditCard failed: card not found in user_data";
       EndAction(ClientStatus(PRECONDITION_FAILED));

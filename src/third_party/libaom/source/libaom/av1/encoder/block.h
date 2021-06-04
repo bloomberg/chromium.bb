@@ -917,6 +917,8 @@ typedef struct macroblock {
   CompoundTypeRdBuffers comp_rd_buffer;
   //! Buffer to store convolution during averaging process in compound mode.
   CONV_BUF_TYPE *tmp_conv_dst;
+  //! Pointer to error_info.
+  struct aom_internal_error_info *error_info;
 
   /*! \brief Temporary buffer to hold prediction.
    *

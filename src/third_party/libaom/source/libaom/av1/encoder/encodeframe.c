@@ -151,7 +151,7 @@ unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                            BLOCK_SIZE bs) {
   unsigned int sse;
   const unsigned int var =
-      cpi->fn_ptr[bs].vf(ref->buf, ref->stride, AV1_VAR_OFFS, 0, &sse);
+      cpi->ppi->fn_ptr[bs].vf(ref->buf, ref->stride, AV1_VAR_OFFS, 0, &sse);
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
@@ -164,9 +164,9 @@ unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
   const uint16_t *high_var_offs[3] = { AV1_HIGH_VAR_OFFS_8,
                                        AV1_HIGH_VAR_OFFS_10,
                                        AV1_HIGH_VAR_OFFS_12 };
-  var =
-      cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                         CONVERT_TO_BYTEPTR(high_var_offs[off_index]), 0, &sse);
+  var = cpi->ppi->fn_ptr[bs].vf(ref->buf, ref->stride,
+                                CONVERT_TO_BYTEPTR(high_var_offs[off_index]), 0,
+                                &sse);
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
@@ -182,7 +182,8 @@ static unsigned int get_sby_perpixel_diff_variance(const AV1_COMP *const cpi,
   assert(last != NULL);
   last_y =
       &last->y_buffer[mi_row * MI_SIZE * last->y_stride + mi_col * MI_SIZE];
-  var = cpi->fn_ptr[bs].vf(ref->buf, ref->stride, last_y, last->y_stride, &sse);
+  var = cpi->ppi->fn_ptr[bs].vf(ref->buf, ref->stride, last_y, last->y_stride,
+                                &sse);
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
@@ -243,7 +244,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   assert(delta_q_info->delta_q_present_flag);
 
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
   // Delta-q modulation based on variance
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
@@ -308,7 +309,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
         (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
     const int frame_lf_count =
         av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-    const int mib_size = cm->seq_params.mib_size;
+    const int mib_size = cm->seq_params->mib_size;
 
     // pre-set the delta lf for loop filter. Note that this value is set
     // before mi is assigned for each block in current superblock
@@ -327,11 +328,11 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
 static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
                                  int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MACROBLOCK *x = &td->mb;
   const int frame_idx = cpi->gf_frame_index;
-  TplParams *const tpl_data = &cpi->tpl_data;
+  TplParams *const tpl_data = &cpi->ppi->tpl_data;
   TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
   const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
 
@@ -342,7 +343,8 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   if (frame_idx >= MAX_TPL_FRAME_IDX) return;
   if (cpi->oxcf.q_cfg.aq_mode != NO_AQ) return;
 
-  const int is_overlay = cpi->gf_group.update_type[frame_idx] == OVERLAY_UPDATE;
+  const int is_overlay =
+      cpi->ppi->gf_group.update_type[frame_idx] == OVERLAY_UPDATE;
   if (is_overlay) {
     memset(x->tpl_keep_ref_frame, 1, sizeof(x->tpl_keep_ref_frame));
     return;
@@ -352,7 +354,7 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   const int tpl_stride = tpl_frame->stride;
   int64_t inter_cost[INTER_REFS_PER_FRAME] = { 0 };
   const int step = 1 << block_mis_log2;
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
 
   const int mi_row_end =
       AOMMIN(mi_size_high[sb_size] + mi_row, mi_params->mi_rows);
@@ -427,15 +429,15 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
 
 static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
                                                int mi_row, int mi_col) {
-  const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cpi->common.seq_params->sb_size;
   const int orig_rdmult = cpi->rd.RDMULT;
 
-  assert(IMPLIES(cpi->gf_group.size > 0,
-                 cpi->gf_frame_index < cpi->gf_group.size));
+  assert(IMPLIES(cpi->ppi->gf_group.size > 0,
+                 cpi->gf_frame_index < cpi->ppi->gf_group.size));
   const int gf_group_index = cpi->gf_frame_index;
   if (cpi->oxcf.algo_cfg.enable_tpl_model && cpi->oxcf.q_cfg.aq_mode == NO_AQ &&
       cpi->oxcf.q_cfg.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
-      cpi->gf_group.update_type[gf_group_index] == ARF_UPDATE) {
+      cpi->ppi->gf_group.update_type[gf_group_index] == ARF_UPDATE) {
     const int dr =
         av1_get_rdmult_delta(cpi, sb_size, mi_row, mi_col, orig_rdmult);
     x->rdmult = dr;
@@ -452,7 +454,7 @@ static void get_estimated_pred(AV1_COMP *cpi, const TileInfo *const tile,
   MACROBLOCKD *xd = &x->e_mbd;
 
   // TODO(kyslov) Extend to 128x128
-  assert(cm->seq_params.sb_size == BLOCK_64X64);
+  assert(cm->seq_params->sb_size == BLOCK_64X64);
 
   av1_set_offsets(cpi, tile, x, mi_row, mi_col, BLOCK_64X64);
 
@@ -513,7 +515,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   const TileInfo *const tile_info = &tile_data->tile_info;
   MB_MODE_INFO **mi = cm->mi_params.mi_grid_base +
                       get_mi_grid_idx(&cm->mi_params, mi_row, mi_col);
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
 
   // Grade the temporal variation of the sb, the grade will be used to decide
   // fast mode search strategy for coding blocks
@@ -600,7 +602,7 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
     if (gather_tpl_data) {
       if (cm->delta_q_info.delta_q_present_flag) {
         const int num_planes = av1_num_planes(cm);
-        const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+        const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
         setup_delta_q(cpi, td, x, tile_info, mi_row, mi_col, num_planes);
         av1_tpl_rdmult_setup_sb(cpi, x, sb_size, mi_row, mi_col);
       }
@@ -638,7 +640,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   const TileInfo *const tile_info = &tile_data->tile_info;
   MB_MODE_INFO **mi = cm->mi_params.mi_grid_base +
                       get_mi_grid_idx(&cm->mi_params, mi_row, mi_col);
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
   const int num_planes = av1_num_planes(cm);
   int dummy_rate;
   int64_t dummy_dist;
@@ -785,9 +787,9 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
-  const int mib_size = cm->seq_params.mib_size;
-  const int mib_size_log2 = cm->seq_params.mib_size_log2;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
+  const int mib_size = cm->seq_params->mib_size;
+  const int mib_size_log2 = cm->seq_params->mib_size_log2;
   const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
   const int use_nonrd_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
   const CostUpdateFreq *const cost_upd_freq = &cpi->oxcf.cost_upd_freq;
@@ -901,10 +903,10 @@ static AOM_INLINE void init_encode_frame_mb_context(AV1_COMP *cpi) {
 
   // Copy data over into macro block data structures.
   av1_setup_src_planes(x, cpi->source, 0, 0, num_planes,
-                       cm->seq_params.sb_size);
+                       cm->seq_params->sb_size);
 
-  av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
-                         cm->seq_params.subsampling_y, num_planes);
+  av1_setup_block_planes(xd, cm->seq_params->subsampling_x,
+                         cm->seq_params->subsampling_y, num_planes);
 }
 
 void av1_alloc_tile_data(AV1_COMP *cpi) {
@@ -946,9 +948,9 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       if (pre_tok != NULL && tplist != NULL) {
         token_info->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
         pre_tok = token_info->tile_tok[tile_row][tile_col];
-        tile_tok = allocated_tokens(*tile_info,
-                                    cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
-                                    num_planes);
+        tile_tok = allocated_tokens(
+            *tile_info, cm->seq_params->mib_size_log2 + MI_SIZE_LOG2,
+            num_planes);
         token_info->tplist[tile_row][tile_col] = tplist + tplist_count;
         tplist = token_info->tplist[tile_row][tile_col];
         tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
@@ -976,14 +978,14 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TokenExtra *tok = NULL;
   TokenList *const tplist = cpi->token_info.tplist[tile_row][tile_col];
   const int sb_row_in_tile =
-      (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
+      (mi_row - tile_info->mi_row_start) >> cm->seq_params->mib_size_log2;
   const int tile_mb_cols =
       (tile_info->mi_col_end - tile_info->mi_col_start + 2) >> 2;
   const int num_mb_rows_in_sb =
-      ((1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2)) + 8) >> 4;
+      ((1 << (cm->seq_params->mib_size_log2 + MI_SIZE_LOG2)) + 8) >> 4;
 
   get_start_tok(cpi, tile_row, tile_col, mi_row, &tok,
-                cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
+                cm->seq_params->mib_size_log2 + MI_SIZE_LOG2, num_planes);
   assert(tplist != NULL);
   tplist[sb_row_in_tile].start = tok;
 
@@ -994,7 +996,7 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   assert((unsigned int)(tok - tplist[sb_row_in_tile].start) <=
          get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
-                         cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
+                         cm->seq_params->mib_size_log2 + MI_SIZE_LOG2,
                          num_planes));
 
   (void)tile_mb_cols;
@@ -1020,7 +1022,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
                          &td->mb.e_mbd);
 
   if (cpi->oxcf.intra_mode_cfg.enable_cfl_intra)
-    cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
+    cfl_init(&td->mb.e_mbd.cfl, cm->seq_params);
 
   if (td->mb.txfm_search_info.txb_rd_records != NULL) {
     av1_crc32c_calculator_init(
@@ -1028,7 +1030,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   }
 
   for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
-       mi_row += cm->seq_params.mib_size) {
+       mi_row += cm->seq_params->mib_size) {
     av1_encode_sb_row(cpi, td, tile_row, tile_col, mi_row);
   }
 }
@@ -1151,10 +1153,10 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   const int cur_offset = (int)cm->current_frame.order_hint;
   int ref_offset[2];
   get_skip_mode_ref_offsets(cm, ref_offset);
-  const int cur_to_ref0 = get_relative_dist(&cm->seq_params.order_hint_info,
+  const int cur_to_ref0 = get_relative_dist(&cm->seq_params->order_hint_info,
                                             cur_offset, ref_offset[0]);
-  const int cur_to_ref1 = abs(get_relative_dist(&cm->seq_params.order_hint_info,
-                                                cur_offset, ref_offset[1]));
+  const int cur_to_ref1 = abs(get_relative_dist(
+      &cm->seq_params->order_hint_info, cur_offset, ref_offset[1]));
   if (abs(cur_to_ref0 - cur_to_ref1) > 1) return 0;
 
   // High Latency: Turn off skip mode if all refs are fwd.
@@ -1289,7 +1291,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   if (features->allow_warped_motion &&
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type =
-        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     if (frame_probs->warped_probs[update_type] <
         cpi->sf.inter_sf.prune_warped_prob_thresh)
       features->allow_warped_motion = 0;
@@ -1327,7 +1329,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     // Hash data generated for screen contents is used for intraBC ME
     const int min_alloc_size = block_size_wide[mi_params->mi_alloc_bsize];
     const int max_sb_size =
-        (1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2));
+        (1 << (cm->seq_params->mib_size_log2 + MI_SIZE_LOG2));
     int src_idx = 0;
     for (int size = 4; size <= max_sb_size; size *= 2, src_idx = !src_idx) {
       const int dst_idx = !src_idx;
@@ -1388,7 +1390,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     // is used for ineligible frames. That effectively will turn off row_mt
     // usage. Note objective delta_q and tpl eligible frames are only altref
     // frames currently.
-    const GF_GROUP *gf_group = &cpi->gf_group;
+    const GF_GROUP *gf_group = &cpi->ppi->gf_group;
     if (cm->delta_q_info.delta_q_present_flag) {
       if (deltaq_mode == DELTA_Q_OBJECTIVE &&
           !is_frame_tpl_eligible(gf_group, cpi->gf_frame_index))
@@ -1512,8 +1514,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     const FRAME_UPDATE_TYPE update_type =
-        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
-
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     for (i = 0; i < TX_SIZES_ALL; i++) {
       int sum = 0;
       int j;
@@ -1538,7 +1539,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   if (cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
       cpi->sf.inter_sf.prune_obmc_prob_thresh < INT_MAX) {
     const FRAME_UPDATE_TYPE update_type =
-        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
 
     for (i = 0; i < BLOCK_SIZES_ALL; i++) {
       int sum = 0;
@@ -1554,7 +1555,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   if (features->allow_warped_motion &&
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type =
-        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     int sum = 0;
     for (i = 0; i < 2; i++) sum += cpi->td.rd_counts.warped_used[i];
     const int new_prob = sum ? 128 * cpi->td.rd_counts.warped_used[1] / sum : 0;
@@ -1566,7 +1567,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->sf.interp_sf.adaptive_interp_filter_search == 2 &&
       features->interp_filter == SWITCHABLE) {
     const FRAME_UPDATE_TYPE update_type =
-        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
 
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++) {
       int sum = 0;

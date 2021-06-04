@@ -28,14 +28,13 @@ namespace {
             ValidationTest::SetUp();
 
             vsModule = utils::CreateShaderModule(device, R"(
-                [[location(0)]] var<in> pos : vec2<f32>;
-
                 [[block]] struct S {
                     transform : mat2x2<f32>;
                 };
                 [[group(0), binding(0)]] var<uniform> uniforms : S;
 
-                [[stage(vertex)]] fn main() -> void {
+                [[stage(vertex)]] fn main([[location(0)]] pos : vec2<f32>) -> [[builtin(position)]] vec4<f32> {
+                    return vec4<f32>();
                 })");
 
             fsModule = utils::CreateShaderModule(device, R"(
@@ -49,7 +48,7 @@ namespace {
                 };
                 [[group(1), binding(1)]] var<storage> ssbo : [[access(read_write)]] Storage;
 
-                [[stage(fragment)]] fn main() -> void {
+                [[stage(fragment)]] fn main() {
                 })");
 
             wgpu::BindGroupLayout bgls[] = {

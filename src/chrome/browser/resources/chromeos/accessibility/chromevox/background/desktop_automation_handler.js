@@ -47,6 +47,16 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {AutomationNode} */
     this.lastValueTarget_ = null;
 
+    /**
+     * The last time we handled an alert event.
+     * @type {!Date}
+     * @private
+     */
+    this.lastAlertTime_ = new Date(0);
+
+    /** @private {string} */
+    this.lastAlertText_ = '';
+
     /** @private {string} */
     this.lastRootUrl_ = '';
 
@@ -74,7 +84,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
     this.addListener_(EventType.MENU_END, this.onMenuEnd);
-    this.addListener_(EventType.MENU_START, this.onMenuStart);
+    this.addListener_(EventType.MENU_START, this.onEventDefault);
     this.addListener_(EventType.RANGE_VALUE_CHANGED, this.onValueChanged);
     this.addListener_(
         EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
@@ -153,7 +163,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       // results should generate output.
       const range = cursors.Range.fromNode(focus);
       ChromeVoxState.instance.setCurrentRange(range);
-      output.withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
+      output.withRichSpeechAndBraille(range, null, OutputEventType.NAVIGATE)
           .go();
     });
   }
@@ -177,13 +187,21 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     const range = cursors.Range.fromNode(node);
-
     const output = new Output()
                        .withSpeechCategory(TtsCategory.LIVE)
                        .withSpeechAndBraille(range, null, evt.type);
 
+    const alertDelayMet = new Date() - this.lastAlertTime_ >
+        DesktopAutomationHandler.MIN_ALERT_DELAY_MS;
+    if (!alertDelayMet && output.toString() === this.lastAlertText_) {
+      return;
+    }
+
+    this.lastAlertTime_ = new Date();
+    this.lastAlertText_ = output.toString();
+
     // A workaround for alert nodes that contain no actual content.
-    if (output.toString() !== (Msgs.getMsg('role_alert'))) {
+    if (output.toString()) {
       output.go();
     }
   }
@@ -510,8 +528,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       if (fromDesktop &&
           (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
         const range = cursors.Range.fromNode(t);
-        output.withRichSpeechAndBraille(
-            range, range, Output.EventType.NAVIGATE);
+        output.withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE);
         this.lastValueTarget_ = t;
       } else {
         output.format(
@@ -579,25 +596,36 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         return;
       }
 
-      // Some cases (e.g. in overview mode), require overriding the assumption
-      // that focus is an ancestor of a selection target.
-      const override = AutomationPredicate.menuItem(evt.target) ||
+      let override = false;
+      const isDesktop =
           (evt.target.root === focus.root &&
-           focus.root.role === RoleType.DESKTOP) ||
-          evt.target.role === RoleType.IME_CANDIDATE;
+           focus.root.role === RoleType.DESKTOP);
+
+      // Menu items and IME candidates always announce on selection events,
+      // independent of focus.
+      if (AutomationPredicate.menuItem(evt.target) ||
+          evt.target.role === RoleType.IME_CANDIDATE) {
+        override = true;
+      }
+
+      // Selection events that happen in native UI (the desktop tree) should
+      // generally announce as long as focus isn't in some other tree; this is
+      // all first-party code that's firing the event for a good reason.
+      if (isDesktop) {
+        // TableView is an exception; it fires selection events on rows/cells
+        // and we want to ignore those because it also fires focus events.
+        if (evt.target.role === RoleType.CELL ||
+            evt.target.role === RoleType.ROW) {
+          return;
+        }
+
+        override = true;
+      }
+
       if (override || AutomationUtil.isDescendantOf(evt.target, focus)) {
         this.onEventDefault(evt);
       }
     });
-  }
-
-  /**
-   * Provides all feedback once a menu start event fires.
-   * @param {!ChromeVoxEvent} evt
-   */
-  onMenuStart(evt) {
-    ChromeVoxState.instance.markCurrentRange();
-    this.onEventDefault(evt);
   }
 
   /**
@@ -761,6 +789,12 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
  * @const {number}
  */
 DesktopAutomationHandler.MIN_VALUE_CHANGE_DELAY_MS = 50;
+
+/**
+ * Time to wait until processing more alert events with the same text content.
+ * @const {number}
+ */
+DesktopAutomationHandler.MIN_ALERT_DELAY_MS = 50;
 
 /**
  * Time to wait before announcing attribute changes that are otherwise too

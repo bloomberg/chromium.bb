@@ -112,10 +112,10 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
         std::move(frame), hit_test_data_changed, show_hit_test_borders);
   }
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override {
+      std::vector<viz::ReturnedResource> resources) override {
     DCHECK(frame_ack_pending_);
     frame_ack_pending_ = false;
-    TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(resources);
+    TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(std::move(resources));
     InvalidateIfPossible();
   }
 
@@ -471,7 +471,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidSubmitCompositorFrame() override {}
   void DidLoseLayerTreeFrameSink() override {}
-  void RequestScheduleComposite() override { test_hooks_->ScheduleComposite(); }
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrameNotExpectedSoon() override {
     test_hooks_->BeginMainFrameNotExpectedSoon();
@@ -677,7 +676,7 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
     init_vulkan = true;
 #elif defined(OS_WIN)
-    // TODO(sgilhuly): Initialize D3D12 for Windows.
+    // TODO(rivr): Initialize D3D12 for Windows.
 #else
     NOTREACHED();
 #endif

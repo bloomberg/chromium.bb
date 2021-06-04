@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -37,6 +37,7 @@
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
@@ -172,8 +173,7 @@ void PlatformNotificationServiceImpl::OnContentSettingChanged(
     return;
 
   auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();
-  content::BrowserContext::ForEachStoragePartition(
-      profile_,
+  profile_->ForEachStoragePartition(
       base::BindRepeating(
           [](scoped_refptr<RevokeDeleteCountRecorder> recorder,
              content::StoragePartition* partition) {
@@ -193,6 +193,7 @@ bool PlatformNotificationServiceImpl::WasClosedProgrammatically(
 void PlatformNotificationServiceImpl::DisplayNotification(
     const std::string& notification_id,
     const GURL& origin,
+    const GURL& document_url,
     const blink::PlatformNotificationData& notification_data,
     const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -208,10 +209,16 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 
   message_center::Notification notification = CreateNotificationFromData(
       origin, notification_id, notification_data, notification_resources);
+  auto metadata = std::make_unique<NonPersistentNotificationMetadata>();
+  metadata->document_url = document_url;
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::WEB_NON_PERSISTENT, notification,
-      /*metadata=*/nullptr);
+      std::move(metadata));
+
+  permissions::PermissionUmaUtil::RecordPermissionUsage(
+      ContentSettingsType::NOTIFICATIONS, profile_, nullptr,
+      notification.origin_url());
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
@@ -243,6 +250,10 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 
   NotificationMetricsLoggerFactory::GetForBrowserContext(profile_)
       ->LogPersistentNotificationShown();
+
+  permissions::PermissionUmaUtil::RecordPermissionUsage(
+      ContentSettingsType::NOTIFICATIONS, profile_, nullptr,
+      notification.origin_url());
 }
 
 void PlatformNotificationServiceImpl::CloseNotification(
@@ -353,7 +364,7 @@ PlatformNotificationServiceImpl::GetNotificationTriggerScheduler() {
 void PlatformNotificationServiceImpl::DidGetBackgroundSourceId(
     base::OnceClosure recorded_closure,
     const content::NotificationDatabaseData& data,
-    base::Optional<ukm::SourceId> source_id) {
+    absl::optional<ukm::SourceId> source_id) {
   // This background event did not meet the requirements for the UKM service.
   if (!source_id)
     return;

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_STARTER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_STARTER_ANDROID_H_
 
-#include <string>
+#include <memory>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -42,6 +43,16 @@ class StarterAndroid : public StarterPlatformDelegate,
   void Detach(JNIEnv* env, const base::android::JavaParamRef<jobject>& jcaller);
 
   // Implements StarterPlatformDelegate:
+  std::unique_ptr<TriggerScriptCoordinator::UiDelegate>
+  CreateTriggerScriptUiDelegate() override;
+  std::unique_ptr<ServiceRequestSender> GetTriggerScriptRequestSenderToInject()
+      override;
+  void StartRegularScript(
+      GURL url,
+      std::unique_ptr<TriggerContext> trigger_context,
+      const absl::optional<TriggerScriptProto>& trigger_script) override;
+  bool IsRegularScriptRunning() const override;
+  bool IsRegularScriptVisible() const override;
   WebsiteLoginManager* GetWebsiteLoginManager() const override;
   version_info::Channel GetChannel() const override;
   bool GetFeatureModuleInstalled() const override;
@@ -62,6 +73,24 @@ class StarterAndroid : public StarterPlatformDelegate,
   bool GetProactiveHelpSettingEnabled() const override;
   void SetProactiveHelpSettingEnabled(bool enabled) override;
   bool GetMakeSearchesAndBrowsingBetterEnabled() const override;
+  bool GetIsCustomTab() const override;
+
+  // Called by Java to start an autofill-assistant flow for an incoming intent.
+  void Start(JNIEnv* env,
+             const base::android::JavaParamRef<jobject>& jcaller,
+             const base::android::JavaRef<jstring>& jexperiment_ids,
+             const base::android::JavaRef<jobjectArray>& jparameter_names,
+             const base::android::JavaRef<jobjectArray>& jparameter_values,
+             const base::android::JavaRef<jstring>& jinitial_url);
+
+  // Called by Java to start an autofill-assistant flow for an incoming intent.
+  void Start(JNIEnv* env,
+             const base::android::JavaParamRef<jobject>& jcaller,
+             const base::android::JavaRef<jstring>& jexperiment_ids,
+             const base::android::JavaRef<jobjectArray>& jparameter_names,
+             const base::android::JavaRef<jobjectArray>& jparameter_values,
+             jboolean is_cct,
+             const base::android::JavaRef<jstring>& jinitial_url);
 
   // Called by Java when the feature module installation has finished.
   void OnFeatureModuleInstalled(
@@ -81,14 +110,23 @@ class StarterAndroid : public StarterPlatformDelegate,
       const base::android::JavaParamRef<jobject>& jcaller,
       jboolean is_interactable);
 
+  // Called by Java when the activity attachment of the tab has changed, such as
+  // when transitioning from a custom tab to a regular tab.
+  void OnActivityAttachmentChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+
  private:
   friend class content::WebContentsUserData<StarterAndroid>;
   explicit StarterAndroid(content::WebContents* web_contents);
+
+  void CreateJavaDependenciesIfNecessary();
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
   content::WebContents* web_contents_;
   std::unique_ptr<Starter> starter_;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  base::android::ScopedJavaGlobalRef<jobject> java_dependencies_;
   std::unique_ptr<WebsiteLoginManager> website_login_manager_;
   base::OnceCallback<void(Metrics::FeatureModuleInstallation result)>
       feature_module_installation_finished_callback_;

@@ -22,7 +22,6 @@
 // #import {FileOperationManagerImpl} from './file_operation_manager.m.js';
 // #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {volumeManagerFactory} from './volume_manager_factory.m.js';
-// #import {LauncherSearch} from './launcher_search.m.js';
 // #import {MountMetrics} from './mount_metrics.m.js';
 // #import {CrostiniImpl} from './crostini.m.js';
 // #import {mediaImport} from './media_import_handler.m.js';
@@ -126,12 +125,6 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
      */
     this.stringData = null;
 
-    /**
-     * Provides drive search to app launcher.
-     * @private {!LauncherSearch}
-     */
-    this.launcherSearch_ = new LauncherSearch();
-
     if (!window.isSWA) {
       // Initialize listener for importer.handlePhotosAppMessage messages to
       // the files app back-end. FIXME: Files SWA needs to support photos
@@ -143,9 +136,6 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
       chrome.contextMenus.onClicked.addListener(
           this.onContextMenuClicked_.bind(this));
     }
-
-    chrome.contextMenus.onClicked.addListener(
-        this.onContextMenuClicked_.bind(this));
 
     // Initialize string and volume manager related stuffs.
     this.initializationPromise_.then(strings => {

@@ -219,6 +219,9 @@ VkDeviceSize ExternalMemoryHostBaseTestInstance::getMinImportedHostPointerAlignm
 	if (externalMemoryHostProperties.minImportedHostPointerAlignment > 65536)
 		TCU_FAIL("minImportedHostPointerAlignment is exceeding the supported limit");
 
+	if (!deIntIsPow2((int)externalMemoryHostProperties.minImportedHostPointerAlignment))
+		TCU_FAIL("minImportedHostPointerAlignment is not a power of two");
+
 	return externalMemoryHostProperties.minImportedHostPointerAlignment;
 }
 
@@ -325,7 +328,7 @@ tcu::TestStatus ExternalMemoryHostRenderImageTestInstance::iterate ()
 	const deUint32						queueFamilyIndex				= m_context.getUniversalQueueFamilyIndex();
 	deUint32							memoryTypeIndexToTest;
 	VkMemoryRequirements				imageMemoryRequirements;
-	const VkImageTiling					tiling							= VK_IMAGE_TILING_OPTIMAL;
+	const VkImageTiling					tiling							= VK_IMAGE_TILING_LINEAR;
 	const VkImageUsageFlags				usageFlags						= (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |	VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 
 	// Verify image format properties before proceeding.

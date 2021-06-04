@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
@@ -66,7 +67,8 @@ class MediaStreamRemoteVideoSourceUnderTest
 class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
  public:
   MediaStreamRemoteVideoSourceTest()
-      : mock_factory_(new blink::MockPeerConnectionDependencyFactory()),
+      : mock_factory_(
+            MakeGarbageCollected<MockPeerConnectionDependencyFactory>()),
         webrtc_video_source_(blink::MockWebRtcVideoTrackSource::Create(
             /*supports_encoded_output=*/true)),
         webrtc_video_track_(
@@ -89,8 +91,8 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
                webrtc::MediaStreamTrackInterface* webrtc_track,
                std::unique_ptr<blink::TrackObserver>* track_observer,
                base::WaitableEvent* waitable_event) {
-              track_observer->reset(
-                  new blink::TrackObserver(main_thread, webrtc_track));
+              *track_observer = std::make_unique<blink::TrackObserver>(
+                  main_thread, webrtc_track);
               waitable_event->Signal();
             },
             main_thread, CrossThreadUnretained(webrtc_video_track_.get()),
@@ -166,7 +168,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
   }
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
-  std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
+  Persistent<blink::MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackSourceInterface> webrtc_video_source_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |source_|.
@@ -399,13 +401,14 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
 
   webrtc::RtpPacketInfos::vector_type packet_infos;
   for (int i = 0; i < 4; ++i) {
-    packet_infos.emplace_back(kSsrc, kCsrcs, kRtpTimestamp, absl::nullopt,
-                              absl::nullopt, kProcessingStart.ms() - 100 + i);
+    packet_infos.emplace_back(
+        kSsrc, kCsrcs, kRtpTimestamp, absl::nullopt, absl::nullopt,
+        kProcessingStart - webrtc::TimeDelta::Micros(10000 - i * 30));
   }
   // Expected receive time should be the same as the last arrival time.
   base::TimeTicks kExpectedReceiveTime =
-      base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(kProcessingStart.ms() - 100 + 3);
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                              kProcessingStart.us() - (10000 - 3 * 30));
 
   webrtc::VideoFrame input_frame =
       webrtc::VideoFrame::Builder()

@@ -25,6 +25,7 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -59,6 +60,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
@@ -100,7 +102,7 @@ bool GetCertificateFromNotificationParams(base::DictionaryValue* params,
   if (!params->GetList("explanations", &explanations)) {
     return false;
   }
-  for (const auto& explanation : *explanations) {
+  for (const auto& explanation : explanations->GetList()) {
     const base::DictionaryValue* explanation_dict;
     if (explanation.GetAsDictionary(&explanation_dict) &&
         explanation_dict->GetList("certificate", certificate) &&
@@ -227,7 +229,7 @@ class SyntheticMouseEventTest : public DevToolsProtocolTest {
 IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
-  ASSERT_TRUE(content::ExecuteScript(
+  ASSERT_TRUE(content::ExecJs(
       shell()->web_contents(),
       "function handleKeyEvent(event) {"
       "domAutomationController.send(event.key);"
@@ -261,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
 IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, DISABLED_KeyboardEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
-  ASSERT_TRUE(content::ExecuteScript(
+  ASSERT_TRUE(content::ExecJs(
       shell()->web_contents(),
       "document.body.addEventListener('keydown', () => {debugger;});"));
 
@@ -290,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, DISABLED_KeyboardEventAck) {
 IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
-  ASSERT_TRUE(content::ExecuteScript(
+  ASSERT_TRUE(content::ExecJs(
       shell()->web_contents(),
       "document.body.addEventListener('mousedown', () => {debugger;});"));
 
@@ -492,7 +494,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
             << " ...";
 
     // Draw a blue box of provided size in the horizontal center of the page.
-    EXPECT_TRUE(content::ExecuteScript(
+    EXPECT_TRUE(content::ExecJs(
         shell()->web_contents(),
         base::StringPrintf(
             "var style = document.body.style;                             "
@@ -899,14 +901,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
   Attach();
 
-  int old_width;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(window.innerWidth)", &old_width));
+  int old_width = EvalJs(shell(), "window.innerWidth").ExtractInt();
 
-  int old_height;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(window.innerHeight)",
-      &old_height));
+  int old_height = EvalJs(shell(), "window.innerHeight").ExtractInt();
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetInteger("x", old_width / 2);
@@ -914,15 +911,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
   params->SetDouble("scaleFactor", 2.0);
   SendCommand("Input.synthesizePinchGesture", std::move(params));
 
-  int new_width;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(window.innerWidth)", &new_width));
+  int new_width = EvalJs(shell(), "window.innerWidth").ExtractInt();
   ASSERT_DOUBLE_EQ(2.0, static_cast<double>(old_width) / new_width);
 
-  int new_height;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(window.innerHeight)",
-      &new_height));
+  int new_height = EvalJs(shell(), "window.innerHeight").ExtractInt();
   ASSERT_DOUBLE_EQ(2.0, static_cast<double>(old_height) / new_height);
 }
 
@@ -931,11 +923,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeScrollGesture) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
   Attach();
 
-  int scroll_top;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(document.body.scrollTop)",
-      &scroll_top));
-  ASSERT_EQ(0, scroll_top);
+  ASSERT_EQ(0, EvalJs(shell(), "document.body.scrollTop"));
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetInteger("x", 0);
@@ -944,10 +932,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeScrollGesture) {
   params->SetInteger("yDistance", -100);
   SendCommand("Input.synthesizeScrollGesture", std::move(params));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(document.body.scrollTop)",
-      &scroll_top));
-  ASSERT_EQ(100, scroll_top);
+  ASSERT_EQ(100, EvalJs(shell(), "document.body.scrollTop"));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
@@ -955,11 +940,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
   Attach();
 
-  int scroll_top;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(document.body.scrollTop)",
-      &scroll_top));
-  ASSERT_EQ(0, scroll_top);
+  ASSERT_EQ(0, EvalJs(shell(), "document.body.scrollTop"));
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetInteger("x", 16);
@@ -971,10 +952,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
   // new value of |document.body.scrollTop| will depend on the screen dimensions
   // of the device that we're testing on, but in any case it should be greater
   // than 0.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell(), "domAutomationController.send(document.body.scrollTop)",
-      &scroll_top));
-  ASSERT_GT(scroll_top, 0);
+  ASSERT_GT(EvalJs(shell(), "document.body.scrollTop").ExtractInt(), 0);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -1088,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageCrashClearsPendingCommands) {
 
   {
     content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    shell()->LoadURL(GURL(blink::kChromeUICrashURL));
     params = WaitForNotification("Target.targetCrashed", true);
   }
   ClearNotifications();
@@ -1202,7 +1180,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
 
   {
     ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    shell()->LoadURL(GURL(blink::kChromeUICrashURL));
     WaitForNotification("Inspector.targetCrashed");
   }
 
@@ -1227,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
 
   {
     ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    shell()->LoadURL(GURL(blink::kChromeUICrashURL));
     WaitForNotification("Inspector.targetCrashed");
   }
 
@@ -1251,7 +1229,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
 
   {
     ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    shell()->LoadURL(GURL(blink::kChromeUICrashURL));
     WaitForNotification("Inspector.targetCrashed");
   }
 
@@ -1285,7 +1263,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   Attach();
   SendCommand("Debugger.enable", nullptr);
 
-  ASSERT_TRUE(content::ExecuteScript(
+  ASSERT_TRUE(content::ExecJs(
       shell(),
       "window.onbeforeunload = function() { debugger; return null; }"));
 
@@ -1306,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
 
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell(), "window.open('about:blank','foo');"));
+  EXPECT_TRUE(ExecJs(shell(), "window.open('about:blank','foo');"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
@@ -1328,12 +1306,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   // regardless of whether it's a crash or not.  RenderProcessHostWatcher
   // should be fixed to support waiting on both WATCH_FOR_PROCESS_EXIT and
   // WATCH_FOR_HOST_DESTRUCTION, and then used here.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
-                                          "window.domAutomationController.send("
-                                          "    !!window.open('', 'foo'));",
-                                          &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "!!window.open('', 'foo');"));
 
   GURL test_url3 =
       embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
@@ -1343,12 +1316,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
 
   // Ensure that the A.com process is still alive by executing a script in the
   // original tab.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
-                                          "window.domAutomationController.send("
-                                          "    !!window.open('', 'foo'));",
-                                          &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "!!window.open('', 'foo');"));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DoubleCrash) {
@@ -2031,6 +1999,58 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   EXPECT_EQ(2u, found);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       AutoAttachToOOPIFAfterNavigationStarted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"b.com"});
+  GURL a_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  // Create iframe and start navigation.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), b_url);
+  EXPECT_TRUE(ExecJs(
+      main_frame, JsReplace("const iframe = document.createElement('iframe');\n"
+                            "iframe.src = $1;\n"
+                            "document.body.appendChild(iframe);\n",
+                            b_url)));
+  // Pause subframe navigation.
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+
+  // Attach to DevTools after subframe starts navigating (but before it
+  // finishes).
+  Attach();
+
+  DevToolsAgentHostImpl* main_frame_agent =
+      RenderFrameDevToolsAgentHost::GetFor(main_frame);
+  EXPECT_NE(main_frame_agent, nullptr);
+
+  // Start auto-attach.
+  std::unique_ptr<base::DictionaryValue> command_params;
+  command_params = std::make_unique<base::DictionaryValue>();
+  command_params->SetBoolean("autoAttach", true);
+  command_params->SetBoolean("waitForDebuggerOnStart", false);
+  command_params->SetBoolean("flatten", true);
+  SendCommand("Target.setAutoAttach", std::move(command_params));
+
+  // Child frame should be created at this point, but isn't an OOPIF yet, so
+  // shouldn't have its own DevToolsAgentHost yet.
+  FrameTreeNode* child = main_frame->child_at(0);
+  EXPECT_NE(child, nullptr);
+  EXPECT_EQ(RenderFrameDevToolsAgentHost::GetFor(child), main_frame_agent);
+
+  // Resume navigation.
+  navigation_manager.WaitForNavigationFinished();
+
+  // Target for OOPIF should get attached.
+  auto notification = WaitForNotification("Target.attachedToTarget", true);
+  EXPECT_NE(RenderFrameDevToolsAgentHost::GetFor(child), main_frame_agent);
+  EXPECT_FALSE(notification->FindBoolPath("waitingForDebugger").value());
+}
+
 class DevToolsProtocolDeviceEmulationTest : public DevToolsProtocolTest {
  public:
   ~DevToolsProtocolDeviceEmulationTest() override {}
@@ -2106,7 +2126,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest,
   {
     ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
     NavigateToURLBlockUntilNavigationsComplete(
-        shell(), GURL(content::kChromeUICrashURL), 1);
+        shell(), GURL(blink::kChromeUICrashURL), 1);
   }
 
   SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
@@ -2126,7 +2146,6 @@ class DevToolsProtocolTouchTest : public DevToolsProtocolTest {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
   std::unique_ptr<base::DictionaryValue> params;
-  bool result;
 
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2140,43 +2159,28 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
   params = std::make_unique<base::DictionaryValue>();
   SendCommand("Page.enable", std::move(params), true);
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(checkProtos(false))", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), "checkProtos(false)"));
 
   params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("enabled", true);
   SendCommand("Emulation.setTouchEmulationEnabled", std::move(params), true);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(checkProtos(false))", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), "checkProtos(false)"));
 
   params = std::make_unique<base::DictionaryValue>();
   params->SetString("url", test_url2.spec());
   SendCommand("Page.navigate", std::move(params), false);
   WaitForNotification("Page.frameStoppedLoading");
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(checkProtos(true))", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), "checkProtos(true)"));
 
   params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("enabled", false);
   SendCommand("Emulation.setTouchEmulationEnabled", std::move(params), true);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(checkProtos(true))", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), "checkProtos(true)"));
 
   params = std::make_unique<base::DictionaryValue>();
   SendCommand("Page.reload", std::move(params), false);
   WaitForNotification("Page.frameStoppedLoading");
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(checkProtos(false))", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), "checkProtos(false)"));
 }
 
 // Tests that when a security explanation contains a certificate, it is properly
@@ -2217,7 +2221,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
   const base::ListValue* certificate;
   ASSERT_TRUE(GetCertificateFromNotificationParams(params.get(), &certificate));
   std::vector<std::string> der_certs;
-  for (const auto& cert : *certificate) {
+  for (const auto& cert : certificate->GetList()) {
     std::string decoded;
     ASSERT_TRUE(base::Base64Decode(cert.GetString(), &decoded));
     der_certs.push_back(decoded);
@@ -2244,6 +2248,9 @@ class DevToolsProtocolBackForwardCacheTest : public DevToolsProtocolTest {
         {features::kBackForwardCacheMemoryControls});
   }
   ~DevToolsProtocolBackForwardCacheTest() override = default;
+
+  // content::WebContentsDelegate:
+  bool IsBackForwardCacheSupported() override { return true; }
 
   std::string Evaluate(std::string script, base::Location location) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
@@ -2309,8 +2316,7 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
   // We're in a content_browsertest; we know that the DownloadManager
   // is a DownloadManagerImpl.
   return static_cast<DownloadManagerImpl*>(
-      content::BrowserContext::GetDownloadManager(
-          shell->web_contents()->GetBrowserContext()));
+      shell->web_contents()->GetBrowserContext()->GetDownloadManager());
 }
 
 static void RemoveShellDelegate(Shell* shell) {

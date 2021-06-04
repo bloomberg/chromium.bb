@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -20,6 +19,12 @@
 
 #if defined(HEADLESS_USE_PREFS)
 class PrefService;
+#endif
+
+#if defined(HEADLESS_USE_POLICY)
+namespace policy {
+class PolicyService;
+}  // namespace policy
 #endif
 
 namespace ui {
@@ -100,6 +105,10 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
 
 #if defined(HEADLESS_USE_PREFS)
   PrefService* GetPrefs();
+#endif
+
+#if defined(HEADLESS_USE_POLICY)
+  policy::PolicyService* GetPolicyService();
 #endif
 
  protected:

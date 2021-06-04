@@ -20,15 +20,28 @@ inline constexpr int kStreamCallbackFailureStatus =
     NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
 inline constexpr int kCancelStatus = NGHTTP2_ERR_CANCEL;
 
+using CallbacksDeleter = void (&)(nghttp2_session_callbacks*);
+using SessionDeleter = void (&)(nghttp2_session*);
+
+using nghttp2_session_callbacks_unique_ptr =
+    std::unique_ptr<nghttp2_session_callbacks, CallbacksDeleter>;
+using nghttp2_session_unique_ptr =
+    std::unique_ptr<nghttp2_session, SessionDeleter>;
+
+nghttp2_session_callbacks_unique_ptr MakeCallbacksPtr(
+    nghttp2_session_callbacks* callbacks);
+nghttp2_session_unique_ptr MakeSessionPtr(nghttp2_session* session);
+
 uint8_t* ToUint8Ptr(char* str);
 uint8_t* ToUint8Ptr(const char* str);
 
 absl::string_view ToStringView(nghttp2_rcbuf* rc_buffer);
 absl::string_view ToStringView(uint8_t* pointer, size_t length);
+absl::string_view ToStringView(const uint8_t* pointer, size_t length);
 
-// Returns the nghttp2 header structure from the given request |headers|, which
+// Returns the nghttp2 header structure from the given |headers|, which
 // must have the correct pseudoheaders preceding other headers.
-std::vector<nghttp2_nv> GetRequestNghttp2Nvs(absl::Span<const Header> headers);
+std::vector<nghttp2_nv> GetNghttp2Nvs(absl::Span<const Header> headers);
 
 // Returns the nghttp2 header structure from the given response |headers|, with
 // the :status pseudoheader first based on the given |response_code|. The

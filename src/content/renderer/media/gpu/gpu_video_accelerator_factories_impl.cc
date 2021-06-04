@@ -394,7 +394,7 @@ GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   return gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-      size, format, usage, gpu::kNullSurfaceHandle);
+      size, format, usage, gpu::kNullSurfaceHandle, nullptr);
 }
 bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames(
     bool for_media_stream) const {
@@ -498,7 +498,7 @@ GpuVideoAcceleratorFactoriesImpl::GetTaskRunner() {
   return task_runner_;
 }
 
-base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
+absl::optional<media::VideoEncodeAccelerator::SupportedProfiles>
 GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
   base::AutoLock lock(supported_profiles_lock_);
   return supported_vea_profiles_;

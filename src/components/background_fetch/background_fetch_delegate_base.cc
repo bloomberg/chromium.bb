@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace background_fetch {
@@ -50,40 +51,6 @@ void BackgroundFetchDelegateBase::GetIconDisplaySize(
   display_size = gfx::Size(192, 192);
 #endif
   std::move(callback).Run(display_size);
-}
-
-void BackgroundFetchDelegateBase::GetPermissionForOrigin(
-    const url::Origin& origin,
-    const content::WebContents::Getter& wc_getter,
-    GetPermissionForOriginCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (wc_getter) {
-    // The fetch should be thought of as one download. So the origin will be
-    // used as the URL, and the |request_method| is set to GET.
-    content::BrowserContext::GetDownloadManager(context_)
-        ->GetDelegate()
-        ->CheckDownloadAllowed(
-            wc_getter, origin.GetURL(), "GET", base::nullopt,
-            false /* from_download_cross_origin_redirect */,
-            true /* content_initiated */,
-            base::BindOnce(&BackgroundFetchDelegateBase::
-                               DidGetPermissionFromDownloadRequestLimiter,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           std::move(callback)));
-    return;
-  }
-
-  GetPermissionForOriginWithoutWebContents(origin, std::move(callback));
-}
-
-void BackgroundFetchDelegateBase::DidGetPermissionFromDownloadRequestLimiter(
-    GetPermissionForOriginCallback callback,
-    bool has_permission) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(callback).Run(has_permission
-                              ? content::BackgroundFetchPermission::ALLOWED
-                              : content::BackgroundFetchPermission::BLOCKED);
 }
 
 void BackgroundFetchDelegateBase::CreateDownloadJob(
@@ -143,11 +110,11 @@ void BackgroundFetchDelegateBase::DownloadUrl(
   }
 
   if (job_details->job_state == JobDetails::State::kStartedButPaused) {
-    job_details->on_resume =
-        base::BindOnce(&BackgroundFetchDelegateBase::StartDownload,
-                       GetWeakPtr(), job_id, params, has_request_body);
+    job_details->on_resume = base::BindOnce(
+        &BackgroundFetchDelegateBase::StartDownload, GetWeakPtr(), job_id,
+        std::move(params), has_request_body);
   } else {
-    StartDownload(job_id, params, has_request_body);
+    StartDownload(job_id, std::move(params), has_request_body);
   }
 
   DoUpdateUi(job_id);
@@ -229,15 +196,14 @@ JobDetails* BackgroundFetchDelegateBase::GetJobDetails(
   return &job_details_iter->second;
 }
 
-void BackgroundFetchDelegateBase::StartDownload(
-    const std::string& job_id,
-    const download::DownloadParams& params,
-    bool has_request_body) {
+void BackgroundFetchDelegateBase::StartDownload(const std::string& job_id,
+                                                download::DownloadParams params,
+                                                bool has_request_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GetJobDetails(job_id)->current_fetch_guids.emplace(params.guid,
                                                      has_request_body);
-  GetDownloadService()->StartDownload(params);
+  GetDownloadService()->StartDownload(std::move(params));
 }
 
 void BackgroundFetchDelegateBase::Abort(const std::string& job_id) {

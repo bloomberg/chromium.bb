@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
@@ -27,7 +29,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/login/localized_values_builder.h"
@@ -79,9 +83,8 @@ void WelcomeScreenHandler::Show() {
   // TODO(crbug.com/1105387): Part of initial screen logic.
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_view_)
-      core_oobe_view_->ShowDeviceResetScreen();
-
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
     return;
   }
 
@@ -145,6 +148,7 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   }
 
   builder->Add("welcomeScreenGetStarted", IDS_LOGIN_GET_STARTED);
+  builder->Add("welcomeScreenOsInstall", IDS_OOBE_WELCOME_START_OS_INSTALL);
 
   // MD-OOBE (oobe-welcome-element)
   builder->Add("debuggingFeaturesLink", IDS_WELCOME_ENABLE_DEV_FEATURES_LINK);
@@ -290,6 +294,10 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   dict->Set("timezoneList", GetTimezoneList());
   dict->Set("demoModeCountryList",
             base::Value::ToUniquePtrValue(DemoSession::GetCountryList()));
+
+  // This switch is set by the session manager if the OS install
+  // service is enabled and the OS is running from a USB installer.
+  dict->SetKey("osInstallEnabled", base::Value(switches::IsOsInstallAllowed()));
 }
 
 void WelcomeScreenHandler::Initialize() {

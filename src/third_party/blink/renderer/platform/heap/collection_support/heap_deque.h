@@ -7,9 +7,9 @@
 
 // Include heap_vector.h to also make general VectorTraits available.
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
@@ -21,9 +21,10 @@ class HeapDeque final : public GarbageCollected<HeapDeque<T>>,
   DISALLOW_NEW();
 
  public:
-  HeapDeque() = default;
+  HeapDeque() { CheckType(); }
 
   explicit HeapDeque(wtf_size_t size) : Deque<T, 0, HeapAllocator>(size) {
+    CheckType();
   }
 
   HeapDeque(wtf_size_t size, const T& val)
@@ -39,7 +40,6 @@ class HeapDeque final : public GarbageCollected<HeapDeque<T>>,
   HeapDeque(const HeapDeque<T>& other) : Deque<T, 0, HeapAllocator>(other) {}
 
   void Trace(Visitor* visitor) const {
-    CheckType();
     Deque<T, 0, HeapAllocator>::Trace(visitor);
   }
 

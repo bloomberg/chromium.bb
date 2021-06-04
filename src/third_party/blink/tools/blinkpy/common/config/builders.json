@@ -153,12 +153,26 @@
         "is_try_builder": true,
         "is_cq_builder":true
     },
-    "android-pie-arm64-wpt-rel-non-cq": {
+    "android-weblayer-pie-x86-wpt-fyi-rel": {
         "port_name": "android-android-pie",
+        "master": "chromium.android.fyi",
         "specifiers": [
-            "Android", "android_weblayer", "android_webview",
-            "chrome_android", "Release"],
+            "Android", "android_weblayer", "Release"
+        ]
+    },
+    "android-weblayer-pie-x86-wpt-smoketest": {
+        "port_name": "android-android-pie",
+        "master": "chromium.android.fyi",
+        "specifiers": [
+            "Android", "android_weblayer", "Release"
+        ],
         "is_try_builder": true
+    },
+    "android-web-platform-pie-x86-fyi-rel": {
+        "port_name": "android-android-pie",
+        "master": "chromium.android.fyi",
+        "specifiers": [
+            "Android", "chrome_android", "Release"]
     },
     "linux-blink-optional-highdpi-rel": {
         "master": "tryserver.blink",

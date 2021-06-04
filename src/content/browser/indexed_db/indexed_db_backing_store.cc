@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,6 +59,7 @@
 #include "storage/browser/file_system/local_file_stream_writer.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/file_system/file_system_mount_option.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -405,7 +406,7 @@ bool DecodeExternalObjects(const std::string& data,
 
 bool IsPathTooLong(storage::FilesystemProxy* filesystem,
                    const base::FilePath& leveldb_dir) {
-  base::Optional<int> limit =
+  absl::optional<int> limit =
       filesystem->GetMaximumPathComponentLength(leveldb_dir.DirName());
   if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
@@ -921,7 +922,7 @@ Status IndexedDBBackingStore::UpgradeBlobEntriesToV4(
           base::FilePath path =
               GetBlobFileName(metadata.id, object.blob_number());
 
-          base::Optional<base::File::Info> info =
+          absl::optional<base::File::Info> info =
               filesystem_proxy_->GetFileInfo(path);
           if (!info.has_value()) {
             return leveldb::Status::Corruption(
@@ -996,7 +997,7 @@ Status IndexedDBBackingStore::ValidateBlobFiles(
                  leveldb_env::MakeSlice(iterator->Key()), max_key) < 0;
            status = iterator->Next()) {
         std::vector<IndexedDBExternalObject> temp_external_objects;
-        DecodeExternalObjects(iterator->Value().as_string(),
+        DecodeExternalObjects(std::string(iterator->Value()),
                               &temp_external_objects);
         for (auto& object : temp_external_objects) {
           if (object.object_type() !=
@@ -1009,7 +1010,7 @@ Status IndexedDBBackingStore::ValidateBlobFiles(
 
           base::FilePath path =
               GetBlobFileName(metadata.id, object.blob_number());
-          base::Optional<base::File::Info> info =
+          absl::optional<base::File::Info> info =
               filesystem_proxy_->GetFileInfo(path);
           if (!info.has_value()) {
             return leveldb::Status::Corruption(
@@ -1261,7 +1262,7 @@ Status IndexedDBBackingStore::GetRecord(
     return InternalInconsistencyStatus();
   }
 
-  record->bits = slice.as_string();
+  record->bits = std::string(slice);
   return transaction->GetExternalObjectsForRecord(database_id, leveldb_key,
                                                   record);
 }
@@ -2010,7 +2011,7 @@ Status IndexedDBBackingStore::FindKeyInIndex(
       INTERNAL_READ_ERROR(FIND_KEY_IN_INDEX);
       return InternalInconsistencyStatus();
     }
-    *found_encoded_primary_key = slice.as_string();
+    *found_encoded_primary_key = std::string(slice);
 
     bool exists = false;
     s = indexed_db::VersionExists(leveldb_transaction, database_id,
@@ -2354,13 +2355,13 @@ IndexedDBBackingStore::Cursor::ContinuePrevious(const IndexedDBKey* key,
       // If we've found a new key, remember it and keep going.
       if (!duplicate_key.IsValid()) {
         duplicate_key = *current_key_;
-        earliest_duplicate = iterator_->Key().as_string();
+        earliest_duplicate = std::string(iterator_->Key());
         continue;
       }
 
       // If we're still seeing duplicates, keep going.
       if (duplicate_key.Equals(*current_key_)) {
-        earliest_duplicate = iterator_->Key().as_string();
+        earliest_duplicate = std::string(iterator_->Key());
         continue;
       }
     }
@@ -2597,11 +2598,11 @@ bool ObjectStoreCursorImpl::LoadCurrentRow(Status* s) {
   record_identifier_.Reset(encoded_key, version);
 
   *s = transaction_->GetExternalObjectsForRecord(
-      database_id_, iterator_->Key().as_string(), &current_value_);
+      database_id_, std::string(iterator_->Key()), &current_value_);
   if (!s->ok())
     return false;
 
-  current_value_.bits = value_slice.as_string();
+  current_value_.bits = std::string(value_slice);
   return true;
 }
 
@@ -2883,7 +2884,7 @@ bool IndexCursorImpl::LoadCurrentRow(Status* s) {
     return false;
   }
 
-  current_value_.bits = slice.as_string();
+  current_value_.bits = std::string(slice);
   *s = transaction_->GetExternalObjectsForRecord(
       database_id_, primary_leveldb_key_, &current_value_);
   return s->ok();
@@ -3591,11 +3592,11 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
           // Android doesn't seem to consistently be able to set file
           // modification times. The timestamp is not checked during reading
           // on Android either. https://crbug.com/1045488
-          base::Optional<base::Time> last_modified;
+          absl::optional<base::Time> last_modified;
 #if !defined(OS_ANDROID)
           last_modified = entry.last_modified().is_null()
-                              ? base::nullopt
-                              : base::make_optional(entry.last_modified());
+                              ? absl::nullopt
+                              : absl::make_optional(entry.last_modified());
 #endif
           blob_storage_context->WriteBlobToFile(
               std::move(pending_blob),

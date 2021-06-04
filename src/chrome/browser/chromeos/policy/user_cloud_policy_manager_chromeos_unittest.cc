@@ -37,6 +37,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
@@ -120,8 +121,8 @@ class UserCloudPolicyManagerChromeOSTest
   void MakeManagerWithPreloadedStore(const base::TimeDelta& fetch_timeout) {
     std::unique_ptr<MockCloudPolicyStore> store =
         std::make_unique<MockCloudPolicyStore>();
-    store->policy_.reset(new em::PolicyData(policy_data_));
-    store->policy_map_.CopyFrom(policy_map_);
+    store->policy_ = std::make_unique<em::PolicyData>(policy_data_);
+    store->policy_map_ = policy_map_.Clone();
     store->NotifyStoreLoaded();
     CreateManager(std::move(store), fetch_timeout,
                   PolicyEnforcement::kPolicyRequired);
@@ -147,6 +148,7 @@ class UserCloudPolicyManagerChromeOSTest
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     scoped_feature_list_.InitWithFeatures(
         GetParam() /* enabled_features */,
@@ -154,8 +156,8 @@ class UserCloudPolicyManagerChromeOSTest
 
     // The initialization path that blocks on the initial policy fetch requires
     // a signin Profile to use its URLRequestContext.
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     TestingProfile::TestingFactories factories =
         IdentityTestEnvironmentProfileAdaptor::
@@ -183,8 +185,8 @@ class UserCloudPolicyManagerChromeOSTest
     policy_map_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                     base::Value("http://chromium.org"), nullptr);
-    expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .CopyFrom(policy_map_);
+    expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())) =
+        policy_map_.Clone();
 
     // Create fake policy blobs to deliver to the client.
     em::DeviceRegisterResponse* register_response =
@@ -229,6 +231,7 @@ class UserCloudPolicyManagerChromeOSTest
     test_system_shared_loader_factory_->Detach();
     test_signin_shared_loader_factory_->Detach();
 
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -340,7 +343,7 @@ class UserCloudPolicyManagerChromeOSTest
       // Notifying that the store has cached the fetched policy completes the
       // process, and initializes the manager.
       EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-      store_->policy_map_.CopyFrom(policy_map_);
+      store_->policy_map_ = policy_map_.Clone();
       store_->NotifyStoreLoaded();
     }
     EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
@@ -391,7 +394,7 @@ class UserCloudPolicyManagerChromeOSTest
     external_data_manager_ = new MockCloudExternalDataManager;
     external_data_manager_->SetPolicyStore(store_);
     const user_manager::User* active_user = user_manager_->GetActiveUser();
-    manager_.reset(new UserCloudPolicyManagerChromeOS(
+    manager_ = std::make_unique<UserCloudPolicyManagerChromeOS>(
         chromeos::ProfileHelper::Get()->GetProfileByUser(active_user),
         std::move(store),
         base::WrapUnique<MockCloudExternalDataManager>(external_data_manager_),
@@ -399,7 +402,7 @@ class UserCloudPolicyManagerChromeOSTest
         base::BindOnce(
             &UserCloudPolicyManagerChromeOSTest::OnFatalErrorEncountered,
             base::Unretained(this)),
-        active_user->GetAccountId(), task_runner_));
+        active_user->GetAccountId(), task_runner_);
     manager_->AddObserver(&observer_);
     manager_->SetSignInURLLoaderFactoryForTests(
         test_signin_shared_loader_factory_);
@@ -505,7 +508,7 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.
-  store_->policy_.reset(new em::PolicyData(policy_data_));
+  store_->policy_ = std::make_unique<em::PolicyData>(policy_data_);
   FetchPolicy(base::BindOnce(&MockCloudPolicyStore::NotifyStoreLoaded,
                              base::Unretained(store_)),
               false);
@@ -798,8 +801,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetchWithTimeout) {
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->policy_.reset(new em::PolicyData(policy_data_));
-  store_->policy_map_.CopyFrom(policy_map_);
+  store_->policy_ = std::make_unique<em::PolicyData>(policy_data_);
+  store_->policy_map_ = policy_map_.Clone();
 
   // Mock out the initial policy fetch and have it trigger a timeout.
   FetchPolicy(base::BindOnce(&MockCloudPolicyStore::NotifyStoreLoaded,
@@ -1185,7 +1188,7 @@ class UserCloudPolicyManagerChromeOSChildTest
   // Sets the initially cached data and initializes the CloudPolicyService.
   void LoadStoreWithCachedData() {
     store_->policy_ = std::make_unique<em::PolicyData>(policy_data_);
-    store_->policy_map_.CopyFrom(policy_map_);
+    store_->policy_map_ = policy_map_.Clone();
     store_->NotifyStoreLoaded();
     EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   }

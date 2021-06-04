@@ -171,6 +171,8 @@
                     "$i18n{siteSettingsBackgroundSyncAllowed}"
                 allow-option-icon="cr:sync"
                 block-option-label="$i18n{siteSettingsBackgroundSyncBlocked}"
+                block-option-sub-label=
+                    "$i18n{siteSettingsBackgroundSyncBlockedSubLabel}"
                 block-option-icon="settings:sync-off">
             </settings-category-default-radio-group>
             <category-setting-exceptions
@@ -276,6 +278,8 @@
                 allow-option-label="$i18n{siteSettingsImagesAllowed}"
                 allow-option-icon="settings:photo"
                 block-option-label="$i18n{siteSettingsImagesBlocked}"
+                block-option-sub-label=
+                    "$i18n{siteSettingsImagesBlockedSubLabel}"
                 block-option-icon="settings:photo-off">
             </settings-category-default-radio-group>
             <category-setting-exceptions
@@ -474,6 +478,7 @@
                 allow-option-label="$i18n{siteSettingsSoundAllowed}"
                 allow-option-icon="settings:volume-up"
                 block-option-label="$i18n{siteSettingsSoundBlocked}"
+                block-option-sub-label="$i18n{siteSettingsSoundBlockedSubLabel}"
                 block-option-icon="settings:volume-up-off">
             </settings-category-default-radio-group>
           </template>
@@ -1003,6 +1008,8 @@
                 <settings-collapse-radio-button no-collapse
                     pref="[[prefs.webkit.webprefs.encrypted_media_enabled]]"
                     label="$i18n{siteSettingsProtectedContentBlocked}"
+                    sub-label=
+                        "$i18n{siteSettingsProtectedContentBlockedSubLabel}"
                     name="false"
                     disabled$="[[isGuest_]]"
                     icon="settings:protected-content-off">
@@ -1022,34 +1029,46 @@
           <div class="cr-row first two-line cr-padded-text">
             $i18n{siteSettingsProtectedContentIdentifiersExplanation}
           </div>
-          <settings-toggle-button
-              pref="{{prefs.settings.privacy.drm_enabled}}"
-              label="[[getProtectedContentIdentifiersLabel_(
-                  prefs.settings.privacy.drm_enabled.value)]]"
-              disabled$="[[isGuest_]]">
-          </settings-toggle-button>
+          <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
+             <div class="radio-group">
+              <settings-category-default-radio-group
+                category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
+                block-option-label="$i18n{siteSettingsProtectedContentBlocked}"
+                block-option-icon="settings:protected-content-off"
+                allow-option-label="$i18n{siteSettingsProtectedContentAllowed}"
+                allow-option-icon="settings:protected-content"
+                disabled$="[[isGuest_]]">
+              </settings-category-default-radio-group>
+            </div>
+          </template>
+          <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
+            <category-default-setting
+                category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
+                toggle-off-label="$i18n{siteSettingsBlocked}"
+                toggle-on-label=
+                    "$i18n{siteSettingsProtectedContentEnableIdentifiers}"
+                disabled$="[[isGuest_]]">
+            </category-default-setting>
+          </template>
 </if>
 <if expr="chromeos">
-          <template is="dom-if"
-              if="[[prefs.settings.privacy.drm_enabled.value]]">
-            <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
-                  allow-header=
-                      "$i18n{siteSettingsProtectedContentAllowedExceptions}"
-                  block-header=
-                      "$i18n{siteSettingsProtectedContentBlockedExceptions}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
-            <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
-                  block-header="$i18n{siteSettingsBlock}"
-                  allow-header="$i18n{siteSettingsAllow}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
+          <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
+                allow-header=
+                    "$i18n{siteSettingsProtectedContentAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsProtectedContentBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </template>
+          <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.PROTECTED_CONTENT]]"
+                block-header="$i18n{siteSettingsBlock}"
+                allow-header="$i18n{siteSettingsAllow}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
           </template>
 </if>
         </settings-subpage>
@@ -1293,84 +1312,80 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" if="[[enableFontAccessContentSetting_]]">
-        <template is="dom-if" route-path="/content/fontAccess" no-search>
-          <settings-subpage page-title="$i18n{fonts}"
-              search-label="$i18n{siteSettingsAllSitesSearch}"
-              search-term="{{searchFilter_}}">
-            <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
-              <div class="content-settings-header secondary">
-                $i18n{siteSettingsFontsDescription}
-              </div>
-              <settings-category-default-radio-group
-                  category="[[ContentSettingsTypes.FONT_ACCESS]]"
-                  allow-option-label="$i18n{siteSettingsFontsAllowed}"
-                  allow-option-icon="settings:font-access"
-                  block-option-label="$i18n{siteSettingsFontsBlocked}"
-                  block-option-icon="settings:font-access-off">
-              </settings-category-default-radio-group>
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.FONT_ACCESS]]"
-                  block-header="$i18n{siteSettingsFontsBlockedExceptions}"
-                  allow-header="$i18n{siteSettingsFontsAllowedExceptions}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
-            <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
-              <category-default-setting
-                  toggle-off-label="$i18n{siteSettingsFontAccessBlock}"
-                  toggle-on-label="$i18n{siteSettingsFontAccessAsk}"
-                  category="[[ContentSettingsTypes.FONT_ACCESS]]">
-              </category-default-setting>
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.FONT_ACCESS]]"
-                  block-header="$i18n{siteSettingsBlock}"
-                  allow-header="$i18n{siteSettingsAllow}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/content/fontAccess" no-search>
+        <settings-subpage page-title="$i18n{fonts}"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}">
+          <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsFontsDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[ContentSettingsTypes.FONT_ACCESS]]"
+                allow-option-label="$i18n{siteSettingsFontsAllowed}"
+                allow-option-icon="settings:font-access"
+                block-option-label="$i18n{siteSettingsFontsBlocked}"
+                block-option-icon="settings:font-access-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.FONT_ACCESS]]"
+                block-header="$i18n{siteSettingsFontsBlockedExceptions}"
+                allow-header="$i18n{siteSettingsFontsAllowedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </template>
+          <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsFontAccessBlock}"
+                toggle-on-label="$i18n{siteSettingsFontAccessAsk}"
+                category="[[ContentSettingsTypes.FONT_ACCESS]]">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.FONT_ACCESS]]"
+                block-header="$i18n{siteSettingsBlock}"
+                allow-header="$i18n{siteSettingsAllow}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </template>
+        </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enableFileHandlingContentSetting_]]">
-        <template is="dom-if" route-path="/content/fileHandlers" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsFileHandling}"
-              search-label="$i18n{siteSettingsAllSitesSearch}"
-              search-term="{{searchFilter_}}">
-            <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
-              <div class="content-settings-header secondary">
-                $i18n{siteSettingsFileHandlingDescription}
-              </div>
-              <settings-category-default-radio-group
-                  category="[[ContentSettingsTypes.FILE_HANDLING]]"
-                  allow-option-label="$i18n{siteSettingsFileHandlingAllowed}"
-                  allow-option-icon="settings:file-handling"
-                  block-option-label="$i18n{siteSettingsFileHandlingBlocked}"
-                  block-option-icon="settings:file-handling-off">
-              </settings-category-default-radio-group>
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.FILE_HANDLING]]"
-                  block-header=
-                      "$i18n{siteSettingsFileHandlingBlockedExceptions}"
-                  allow-header=
-                      "$i18n{siteSettingsFileHandlingAllowedExceptions}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
-            <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
-              <category-default-setting
-                  toggle-off-label="$i18n{siteSettingsFileHandlingBlock}"
-                  toggle-on-label="$i18n{siteSettingsFileHandlingAsk}"
-                  category="[[ContentSettingsTypes.FILE_HANDLING]]">
-              </category-default-setting>
-              <category-setting-exceptions
-                  category="[[ContentSettingsTypes.FILE_HANDLING]]"
-                  block-header="$i18n{siteSettingsBlock}"
-                  allow-header="$i18n{siteSettingsAllow}"
-                  search-filter="[[searchFilter_]]">
-              </category-setting-exceptions>
-            </template>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/content/fileHandlers" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsFileHandling}"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}">
+          <template is="dom-if" if="[[enableContentSettingsRedesign_]]">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsFileHandlingDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[ContentSettingsTypes.FILE_HANDLING]]"
+                allow-option-label="$i18n{siteSettingsFileHandlingAllowed}"
+                allow-option-icon="settings:file-handling"
+                block-option-label="$i18n{siteSettingsFileHandlingBlocked}"
+                block-option-icon="settings:file-handling-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.FILE_HANDLING]]"
+                block-header=
+                    "$i18n{siteSettingsFileHandlingBlockedExceptions}"
+                allow-header=
+                    "$i18n{siteSettingsFileHandlingAllowedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </template>
+          <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsFileHandlingBlock}"
+                toggle-on-label="$i18n{siteSettingsFileHandlingAsk}"
+                category="[[ContentSettingsTypes.FILE_HANDLING]]">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="[[ContentSettingsTypes.FILE_HANDLING]]"
+                block-header="$i18n{siteSettingsBlock}"
+                allow-header="$i18n{siteSettingsAllow}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </template>
+        </settings-subpage>
       </template>
     </settings-animated-pages>

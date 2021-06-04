@@ -243,7 +243,7 @@ void ProtoTraceParser::ParseTraceStats(ConstBytes blob) {
 }
 
 void ProtoTraceParser::ParseProfilePacket(
-    int64_t,
+    int64_t ts,
     PacketSequenceStateGeneration* sequence_state,
     uint32_t seq_id,
     ConstBytes blob) {
@@ -297,6 +297,8 @@ void ProtoTraceParser::ParseProfilePacket(
     int64_t timestamp = *maybe_timestamp;
 
     int pid = static_cast<int>(entry.pid());
+    context_->storage->SetIndexedStats(stats::heapprofd_last_profile_timestamp,
+                                       pid, ts);
 
     if (entry.disconnected())
       context_->storage->IncrementIndexedStats(
@@ -335,6 +337,14 @@ void ProtoTraceParser::ParseProfilePacket(
     context_->storage->IncrementIndexedStats(
         stats::heapprofd_unwind_samples, static_cast<int>(entry.pid()),
         static_cast<int64_t>(stats.heap_samples()));
+    context_->storage->IncrementIndexedStats(
+        stats::heapprofd_client_spinlock_blocked, static_cast<int>(entry.pid()),
+        static_cast<int64_t>(stats.client_spinlock_blocked_us()));
+
+    // orig_sampling_interval_bytes was introduced slightly after a bug with
+    // self_max_count was fixed in the producer. We use this as a proxy
+    // whether or not we are getting this data from a fixed producer or not.
+    bool trustworthy_max_count = entry.orig_sampling_interval_bytes() > 0;
 
     for (auto sample_it = entry.samples(); sample_it; ++sample_it) {
       protos::pbzero::ProfilePacket::HeapSample::Decoder sample(*sample_it);
@@ -351,7 +361,8 @@ void ProtoTraceParser::ParseProfilePacket(
       src_allocation.callstack_id = sample.callstack_id();
       if (sample.has_self_max()) {
         src_allocation.self_allocated = sample.self_max();
-        src_allocation.alloc_count = sample.self_max_count();
+        if (trustworthy_max_count)
+          src_allocation.alloc_count = sample.self_max_count();
       } else {
         src_allocation.self_allocated = sample.self_allocated();
         src_allocation.self_freed = sample.self_freed();

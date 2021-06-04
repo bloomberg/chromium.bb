@@ -41,6 +41,7 @@
 
 #include "base/cfi_buildflags.h"
 #include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
@@ -420,15 +421,22 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   PrintToStderr("[end of stack trace]\n");
 
 #if defined(OS_MAC)
-  if (::signal(signal, SIG_DFL) == SIG_ERR)
-    _exit(1);
-#else
-  // Non-Mac OSes should probably reraise the signal as well, but the Linux
-  // sandbox tests break on CrOS devices.
-  // https://code.google.com/p/chromium/issues/detail?id=551681
-  PrintToStderr("Calling _exit(1). Core file will not be generated.\n");
-  _exit(1);
-#endif  // defined(OS_MAC)
+  if (::signal(signal, SIG_DFL) == SIG_ERR) {
+    _exit(EXIT_FAILURE);
+  }
+#elif !defined(OS_LINUX)
+  // For all operating systems but Linux we do not reraise the signal that
+  // brought us here but terminate the process immediately.
+  // Otherwise various tests break on different operating systems, see
+  // https://code.google.com/p/chromium/issues/detail?id=551681 amongst others.
+  PrintToStderr(
+      "Calling _exit(EXIT_FAILURE). Core file will not be generated.\n");
+  _exit(EXIT_FAILURE);
+#endif  // !defined(OS_LINUX)
+
+  // After leaving this handler control flow returns to the point where the
+  // signal was raised, raising the current signal once again but executing the
+  // default handler instead of this one.
 }
 
 class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
@@ -827,7 +835,11 @@ size_t CollectStackTrace(void** trace, size_t count) {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 
-#if !defined(__UCLIBC__) && !defined(_AIX)
+#if defined(NO_UNWIND_TABLES) && BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+  // If we do not have unwind tables, then try tracing using frame pointers.
+  return base::debug::TraceStackFramePointers(const_cast<const void**>(trace),
+                                              count, 0);
+#elif !defined(__UCLIBC__) && !defined(_AIX)
   // Though the backtrace API man page does not list any possible negative
   // return values, we take no chance.
   return base::saturated_cast<size_t>(backtrace(trace, count));

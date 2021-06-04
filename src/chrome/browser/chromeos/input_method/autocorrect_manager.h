@@ -8,10 +8,24 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
+#include "chrome/browser/chromeos/input_method/diacritics_insensitive_string_comparator.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 
 namespace chromeos {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Needs to match ImeAutocorrectActions
+// in enums.xml.
+enum class AutocorrectActions {
+  kWindowShown = 0,
+  kUnderlined = 1,
+  kReverted = 2,
+  kUserAcceptedAutocorrect = 3,
+  kUserActionClearedUnderline = 4,
+  kUserExitedTextFieldWithUnderline = 5,
+  kMaxValue = kUserExitedTextFieldWithUnderline,
+};
 
 // Implements functionality for chrome.input.ime.autocorrect() extension API.
 // This function shows UI to indicate that autocorrect has happened and allows
@@ -54,14 +68,19 @@ class AutocorrectManager {
 
  private:
   void ClearUnderline();
+  void LogAssistiveAutocorrectAction(AutocorrectActions action);
 
   SuggestionHandlerInterface* suggestion_handler_;
   int context_id_ = 0;
   int key_presses_until_underline_hide_ = 0;
   std::u16string original_text_;
-  bool window_visible = false;
-  bool button_highlighted = false;
+  bool window_visible_ = false;
+  bool button_highlighted_ = false;
   base::TimeTicks autocorrect_time_;
+
+  DiacriticsInsensitiveStringComparator
+      diacritics_insensitive_string_comparator_;
+  bool in_diacritical_autocorrect_session_ = false;
 };
 
 }  // namespace chromeos

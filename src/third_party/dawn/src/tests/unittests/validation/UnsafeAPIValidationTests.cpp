@@ -28,6 +28,22 @@ class UnsafeAPIValidationTest : public ValidationTest {
     }
 };
 
+// Check that 3D Texture creation is disallowed as part of unsafe APIs.
+TEST_F(UnsafeAPIValidationTest, 3DTextureCreationDisallowed) {
+    wgpu::TextureDescriptor baseDesc;
+    baseDesc.size = {32, 32, 6};
+    baseDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    baseDesc.usage = wgpu::TextureUsage::Sampled;
+
+    // Control case: 2D (array) texture creation is allowed.
+    device.CreateTexture(&baseDesc);
+
+    // 3D texture creation is disallowed.
+    wgpu::TextureDescriptor texture3DDesc = baseDesc;
+    texture3DDesc.dimension = wgpu::TextureDimension::e3D;
+    ASSERT_DEVICE_ERROR(device.CreateTexture(&texture3DDesc));
+}
+
 // Check that DrawIndexedIndirect is disallowed as part of unsafe APIs.
 TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
     // Create the index and indirect buffers.
@@ -49,10 +65,12 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
     bundleDesc.cColorFormats[0] = renderPass.attachmentFormat;
 
     utils::ComboRenderPipelineDescriptor2 desc;
-    desc.vertex.module =
-        utils::CreateShaderModule(device, "[[stage(vertex)]] fn main() -> void {}");
-    desc.cFragment.module =
-        utils::CreateShaderModule(device, "[[stage(fragment)]] fn main() -> void {}");
+    desc.vertex.module = utils::CreateShaderModule(
+        device,
+        R"([[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>();
+        })");
+    desc.cFragment.module = utils::CreateShaderModule(device, "[[stage(fragment)]] fn main() {}");
     wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
 
     // Control cases: DrawIndirect and DrawIndexed are allowed inside a render pass.
@@ -118,7 +136,7 @@ TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
     wgpu::ComputePipelineDescriptor pipelineDesc;
     pipelineDesc.computeStage.entryPoint = "main";
     pipelineDesc.computeStage.module =
-        utils::CreateShaderModule(device, "[[stage(compute)]] fn main() -> void {}");
+        utils::CreateShaderModule(device, "[[stage(compute)]] fn main() {}");
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     // Control case: dispatch is allowed.
@@ -181,34 +199,5 @@ TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
         entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
         entry.buffer.hasDynamicOffset = true;
         ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&desc));
-    }
-}
-
-// Check that occlusion query is disallowed as part of unsafe APIs.
-TEST_F(UnsafeAPIValidationTest, OcclusionQueryDisallowed) {
-    DummyRenderPass renderPass(device);
-
-    // Control case: BeginRenderPass without occlusionQuerySet is allowed.
-    {
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
-
-        pass.EndPass();
-        encoder.Finish();
-    }
-
-    // Error case: BeginRenderPass with occlusionQuerySet is disallowed.
-    {
-        wgpu::QuerySetDescriptor descriptor;
-        descriptor.type = wgpu::QueryType::Occlusion;
-        descriptor.count = 1;
-        wgpu::QuerySet querySet = device.CreateQuerySet(&descriptor);
-        renderPass.occlusionQuerySet = querySet;
-
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
-
-        pass.EndPass();
-        ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }

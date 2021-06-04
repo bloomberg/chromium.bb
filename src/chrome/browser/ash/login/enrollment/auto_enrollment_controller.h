@@ -12,17 +12,17 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class CommandLine;
 }
 
-namespace chromeos {
+namespace ash {
 
 // Drives the forced re-enrollment check (for historical reasons called
 // auto-enrollment check), running an AutoEnrollmentClient if appropriate to
@@ -219,7 +219,7 @@ class AutoEnrollmentController {
   // the FWMP is used only for newer devices.
   // This also starts the VPD clearing process.
   void OnFirmwareManagementParametersRemoved(
-      base::Optional<user_data_auth::RemoveFirmwareManagementParametersReply>
+      absl::optional<user_data_auth::RemoveFirmwareManagementParametersReply>
           reply);
 
   // Makes a D-Bus call to session_manager to set block_devmode=0 and
@@ -296,6 +296,18 @@ class AutoEnrollmentController {
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentController);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::AutoEnrollmentController;
+}
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::AutoEnrollmentController;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CONTROLLER_H_

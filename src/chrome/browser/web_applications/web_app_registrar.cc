@@ -52,6 +52,11 @@ std::vector<AppId> WebAppRegistrar::GetAppsInSyncInstall() {
   return app_ids;
 }
 
+bool WebAppRegistrar::WasInstalledByDefaultOnly(const AppId& app_id) const {
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && web_app->HasOnlySource(Source::Type::kDefault);
+}
+
 void WebAppRegistrar::Start() {
   // Profile manager can be null in unit tests.
   if (g_browser_process->profile_manager())
@@ -103,16 +108,16 @@ std::string WebAppRegistrar::GetAppDescription(const AppId& app_id) const {
   return web_app ? web_app->description() : std::string();
 }
 
-base::Optional<SkColor> WebAppRegistrar::GetAppThemeColor(
+absl::optional<SkColor> WebAppRegistrar::GetAppThemeColor(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->theme_color() : base::nullopt;
+  return web_app ? web_app->theme_color() : absl::nullopt;
 }
 
-base::Optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
+absl::optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->background_color() : base::nullopt;
+  return web_app ? web_app->background_color() : absl::nullopt;
 }
 
 const GURL& WebAppRegistrar::GetAppStartUrl(const AppId& app_id) const {
@@ -147,18 +152,30 @@ const apps::FileHandlers* WebAppRegistrar::GetAppFileHandlers(
   return web_app ? &web_app->file_handlers() : nullptr;
 }
 
-base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
+const apps::ProtocolHandlers* WebAppRegistrar::GetAppProtocolHandlers(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? &web_app->protocol_handlers() : nullptr;
+}
+
+bool WebAppRegistrar::IsAppFileHandlerPermissionBlocked(
+    const web_app::AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->file_handler_permission_blocked() : false;
+}
+
+absl::optional<GURL> WebAppRegistrar::GetAppScopeInternal(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (!web_app)
-    return base::nullopt;
+    return absl::nullopt;
 
   // TODO(crbug.com/910016): Treat shortcuts as PWAs.
   // Shortcuts on the WebApp system have empty scopes, while the implementation
-  // of IsShortcutApp just checks if the scope is |base::nullopt|, so make sure
-  // we return |base::nullopt| rather than an empty scope.
+  // of IsShortcutApp just checks if the scope is |absl::nullopt|, so make sure
+  // we return |absl::nullopt| rather than an empty scope.
   if (web_app->scope().is_empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return web_app->scope();
 }
@@ -251,6 +268,10 @@ RunOnOsLoginMode WebAppRegistrar::GetAppRunOnOsLoginMode(
 }
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
+  return this;
+}
+
+const WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() const {
   return this;
 }
 

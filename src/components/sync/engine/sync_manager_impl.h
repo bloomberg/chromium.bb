@@ -75,6 +75,8 @@ class SyncManagerImpl
   void ShutdownOnSyncThread() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
+  WeakHandle<JsBackend> GetJsBackend() override;
+  WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() override;
   std::string cache_guid() override;
   std::string birthday() override;
   std::string bag_of_chips() override;
@@ -130,30 +132,8 @@ class SyncManagerImpl
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
 
- protected:
-  // Helper functions.  Virtual for testing.
-  virtual void NotifyInitializationSuccess();
-  virtual void NotifyInitializationFailure();
-
  private:
-  friend class SyncManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
-
-  struct NotificationInfo {
-    NotificationInfo();
-    ~NotificationInfo();
-
-    int total_count;
-    std::string payload;
-
-    // Returned pointer owned by the caller.
-    base::DictionaryValue* ToValue() const;
-  };
-
-  using NotificationInfoMap = std::map<ModelType, NotificationInfo>;
-
-  void RequestNudgeForDataTypes(const base::Location& nudge_location,
-                                ModelTypeSet type);
+  void NotifyInitializationSuccess();
 
   const std::string name_;
 
@@ -187,10 +167,6 @@ class SyncManagerImpl
   bool initialized_;
 
   bool observing_network_connectivity_changes_;
-
-  // Map used to store the notification info to be displayed in
-  // chrome://sync-internals page.
-  NotificationInfoMap notification_info_map_;
 
   // These are for interacting with chrome://sync-internals.
   JsSyncManagerObserver js_sync_manager_observer_;

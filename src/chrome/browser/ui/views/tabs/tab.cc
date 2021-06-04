@@ -57,11 +57,13 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
@@ -76,7 +78,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
@@ -220,20 +221,17 @@ Tab::Tab(TabController* controller)
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
-  icon_ = new TabIcon;
-  AddChildView(icon_);
+  icon_ = AddChildView(std::make_unique<TabIcon>());
 
-  alert_indicator_ = new AlertIndicator(this);
-  AddChildView(alert_indicator_);
+  alert_indicator_ = AddChildView(std::make_unique<AlertIndicator>(this));
 
   // Unretained is safe here because this class outlives its close button, and
   // the controller outlives this Tab.
-  close_button_ = new TabCloseButton(
+  close_button_ = AddChildView(std::make_unique<TabCloseButton>(
       base::BindRepeating(&Tab::CloseButtonPressed, base::Unretained(this)),
       base::BindRepeating(&TabController::OnMouseEventInTab,
-                          base::Unretained(controller_)));
+                          base::Unretained(controller_))));
   close_button_->SetHasInkDropActionOnClick(true);
-  AddChildView(close_button_);
 
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
@@ -732,9 +730,9 @@ void Tab::SetClosing(bool closing) {
   }
 }
 
-base::Optional<SkColor> Tab::GetGroupColor() const {
+absl::optional<SkColor> Tab::GetGroupColor() const {
   if (closing_ || !group().has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   return controller_->GetPaintedGroupColor(
       controller_->GetGroupColorId(group().value()));
@@ -880,7 +878,7 @@ void Tab::ReleaseFreezingVoteToken() {
 
 // static
 std::u16string Tab::GetTooltipText(const std::u16string& title,
-                                   base::Optional<TabAlertState> alert_state) {
+                                   absl::optional<TabAlertState> alert_state) {
   if (!alert_state)
     return title;
 
@@ -892,10 +890,10 @@ std::u16string Tab::GetTooltipText(const std::u16string& title,
 }
 
 // static
-base::Optional<TabAlertState> Tab::GetAlertStateToShow(
+absl::optional<TabAlertState> Tab::GetAlertStateToShow(
     const std::vector<TabAlertState>& alert_states) {
   if (alert_states.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return alert_states[0];
 }

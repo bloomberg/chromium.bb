@@ -94,13 +94,6 @@ bool IsIChromeAccessibleEnabled() {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kMagnifierNewFocusFollowing{
-    "MagnifierNewFocusFollowing", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMagnifierNewFocusFollowingEnabled() {
-  return base::FeatureList::IsEnabled(::features::kMagnifierNewFocusFollowing);
-}
-
 const base::Feature kMagnifierPanningImprovements{
     "MagnifierPanningImprovements", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -119,11 +112,20 @@ bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
 }
 
 const base::Feature kEnableSwitchAccessPointScanning{
-    "EnableSwitchAccessPointScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableSwitchAccessPointScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsSwitchAccessPointScanningEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kEnableSwitchAccessPointScanning);
+}
+
+const base::Feature kExperimentalAccessibilityDictationListening{
+    "ExperimentalAccessibilityDictationListening",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationListeningEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationListening);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -158,5 +160,14 @@ bool IsSelectToSpeakNavigationControlEnabled() {
       ::features::kSelectToSpeakNavigationControl);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+const base::Feature kComputeAXMode{"ComputeAXMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsComputeAXModeEnabled() {
+  return base::FeatureList::IsEnabled(::features::kComputeAXMode);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace features

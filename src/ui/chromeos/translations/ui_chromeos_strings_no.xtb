@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Fremdriftsbryter</translation>
 <translation id="1404323374378969387">Norsk</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
+<translation id="1433628812591023318">For å slippe filer i Parallels Desktop må du flytte filen til Windows-filene.</translation>
 <translation id="1435838927755162558">Del mappen med Parallels Desktop</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1471718551822868769">Slovakisk</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-filer</translation>
 <translation id="3078461028045006476">Del med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-enheter</translation>
+<translation id="3113153474486991170">Kunne ikke åpne «<ph name="PATH" />» fra denne plasseringen. Kopiér filen til «Mine filer» for å åpne den.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">FERDIG</translation>
 <translation id="3188257591659621405">Mine filer</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Bulgarsk med fonetisk tastatur</translation>
 <translation id="5605830556594064952">Amerikansk Dvorak</translation>
 <translation id="5625294776298156701">Tamil med Tamil99-tastatur</translation>
+<translation id="5633226425545095130">Hvis du flytter dette elementet, deles det med alle som kan se den delte mappen «<ph name="DESTINATION_NAME" />».</translation>
 <translation id="5649768706273821470">Lytt</translation>
 <translation id="5678784840044122290">Linux-appen blir tilgjengelig i terminalen din og kan også vise et ikon i appoversikten.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Kan ikke koble fra et arkiv eller en virtuell disk<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Etiopisk tastatur</translation>
 <translation id="7417705661718309329">Google Maps</translation>
 <translation id="7460898608667578234">Ukrainsk</translation>
+<translation id="7486315294984620427">For å slippe filer i Parallels Desktop må du kopiere filen til Windows-filene.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> ble funnet
     <ph name="LINE_BREAK1" />
     Klar for å sikkerhetskopiere til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimensjoner</translation>
 <translation id="8437209419043462667">Amerikansk</translation>
 <translation id="8456681095658380701">Ugyldig navn</translation>
+<translation id="8459404855768962328">Hvis du kopierer dette elementet, deles det med alle som kan se den delte mappen «<ph name="DESTINATION_NAME" />».</translation>
 <translation id="8461467696380332069">Høyreklikk på en fil, og velg «Fest til hyllen» for rask tilgang til filene dine på hyllen.</translation>
 <translation id="8463494891489624050">Vietnamesisk VIQR</translation>
 <translation id="8466234950814670489">Tar-arkiv</translation>

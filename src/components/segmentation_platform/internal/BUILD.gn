@@ -1,0 +1,103 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+import("//components/optimization_guide/features.gni")
+
+static_library("internal") {
+  visibility = [
+    ":*",
+    "//chrome/browser",
+  ]
+
+  sources = [
+    "database/segment_info_database.h",
+    "database/user_action_database.h",
+    "segmentation_platform_service_impl.cc",
+    "segmentation_platform_service_impl.h",
+    "signals/signal_filter_processor.cc",
+    "signals/signal_filter_processor.h",
+    "signals/user_action_signal_handler.cc",
+    "signals/user_action_signal_handler.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/leveldb_proto",
+    "//components/segmentation_platform/internal/proto",
+    "//components/segmentation_platform/public",
+  ]
+
+  public_deps =
+      [ "//components/optimization_guide/proto:optimization_guide_proto" ]
+
+  if (build_with_tflite_lib) {
+    sources += [
+      "execution/segmentation_model_executor.cc",
+      "execution/segmentation_model_executor.h",
+      "execution/segmentation_model_handler.cc",
+      "execution/segmentation_model_handler.h",
+    ]
+
+    deps += [
+      "//third_party/tflite:tflite_public_headers",
+      "//third_party/tflite-support",
+    ]
+
+    public_deps += [ "//components/optimization_guide/core" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  visibility = [ "//components/segmentation_platform:unit_tests" ]
+
+  # IMPORTANT NOTE: When adding new tests, also remember to update the list of
+  # tests in //components/segmentation_platform/components_unittests.filter
+  sources = [
+    "database/test_segment_info_database.cc",
+    "database/test_segment_info_database.h",
+    "segmentation_platform_service_impl_unittest.cc",
+    "signals/signal_filter_processor_unittest.cc",
+    "signals/user_action_signal_handler_unittest.cc",
+  ]
+
+  deps = [
+    ":internal",
+    "//base/test:test_support",
+    "//components/leveldb_proto:test_support",
+    "//components/segmentation_platform/public",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (build_with_tflite_lib) {
+    # IMPORTANT NOTE: When adding new tests, also remember to update the list of
+    # tests in //components/segmentation_platform/components_unittests.filter
+    sources += [ "execution/segmentation_model_executor_unittest.cc" ]
+
+    deps += [
+      "//base",
+      "//components/optimization_guide/core:test_support",
+    ]
+  }
+}
+
+if (is_android) {
+  android_library("internal_java") {
+    visibility = [ "//chrome/android:chrome_all_java" ]
+    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
+
+    deps = [
+      "//base:base_java",
+      "//components/segmentation_platform/public:public_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
+    ]
+  }
+}

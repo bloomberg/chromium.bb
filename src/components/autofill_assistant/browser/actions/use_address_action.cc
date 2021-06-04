@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -20,6 +19,7 @@
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -96,9 +96,9 @@ void UseAddressAction::InternalProcessAction(
         return;
       }
       auto* profile = delegate_->GetUserModel()->GetProfile(
-          profile_value->profiles().values(0).guid());
+          profile_value->profiles().values(0));
       if (profile == nullptr) {
-        VLOG(1) << "UseAddress failed: profile not found for guid "
+        VLOG(1) << "UseAddress failed: profile not found for: "
                 << *profile_value;
         EndAction(ClientStatus(PRECONDITION_FAILED));
         return;

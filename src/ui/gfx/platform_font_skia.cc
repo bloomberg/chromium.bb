@@ -37,9 +37,9 @@ namespace {
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 #if defined(OS_ANDROID)
-const char* kFallbackFontFamilyName = "serif";
+const char kFallbackFontFamilyName[] = "serif";
 #else
-const char* kFallbackFontFamilyName = "sans";
+const char kFallbackFontFamilyName[] = "sans";
 #endif
 
 constexpr SkGlyphID kUnsupportedGlyph = 0;
@@ -112,7 +112,7 @@ PlatformFontSkia::PlatformFontSkia(const std::string& font_name,
 PlatformFontSkia::PlatformFontSkia(
     sk_sp<SkTypeface> typeface,
     int font_size_pixels,
-    const base::Optional<FontRenderParams>& params) {
+    const absl::optional<FontRenderParams>& params) {
   DCHECK(typeface);
 
   SkString family_name;
@@ -461,7 +461,7 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
 PlatformFont* PlatformFont::CreateFromSkTypeface(
     sk_sp<SkTypeface> typeface,
     int font_size_pixels,
-    const base::Optional<FontRenderParams>& params) {
+    const absl::optional<FontRenderParams>& params) {
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
   return new PlatformFontSkia(typeface, font_size_pixels, params);
 }

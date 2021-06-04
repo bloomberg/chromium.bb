@@ -40,7 +40,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
-#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -69,7 +68,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -187,8 +185,9 @@ class TestWebFrameWidgetHost : public mojom::blink::WidgetHost,
 
   // mojom::blink::WidgetHost overrides:
   void SetCursor(const ui::Cursor& cursor) override;
-  void SetToolTipText(const String& tooltip_text,
-                      base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipUnderCursor(
+      const String& tooltip_text,
+      base::i18n::TextDirection text_direction_hint) override;
   void TextInputStateChanged(
       ui::mojom::blink::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
@@ -254,8 +253,6 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
     return injected_scroll_events_;
   }
 
-  cc::TaskGraphRunner* task_graph_runner() { return &test_task_graph_runner_; }
-
   scheduler::WebThreadScheduler* main_thread_scheduler() {
     return &fake_thread_scheduler_;
   }
@@ -293,7 +290,6 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   }
 
  private:
-  cc::TestTaskGraphRunner test_task_graph_runner_;
   cc::FakeLayerTreeFrameSink* last_created_frame_sink_ = nullptr;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
@@ -313,7 +309,6 @@ class TestWebViewClient : public WebViewClient {
   void DestroyChildViews();
 
   // WebViewClient overrides.
-  bool CanUpdateLayout() override { return true; }
   WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
                       const WebWindowFeatures&,
@@ -322,7 +317,7 @@ class TestWebViewClient : public WebViewClient {
                       network::mojom::blink::WebSandboxFlags,
                       const SessionStorageNamespaceId&,
                       bool& consumed_user_gesture,
-                      const base::Optional<WebImpression>&) override;
+                      const absl::optional<WebImpression>&) override;
 
  private:
   WTF::Vector<std::unique_ptr<WebViewHelper>> child_web_views_;

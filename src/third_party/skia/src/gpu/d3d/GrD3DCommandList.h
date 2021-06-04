@@ -49,11 +49,18 @@ public:
     // GraphicsCommandList commands
     ////////////////////////////////////////////////////////////////////////////
 
-    // For the moment we only support Transition barriers
     // All barriers should reference subresources of managedResource
     void resourceBarrier(sk_sp<GrManagedResource> managedResource,
                          int numBarriers,
                          const D3D12_RESOURCE_TRANSITION_BARRIER* barriers);
+
+    void uavBarrier(sk_sp<GrManagedResource> managedResource,
+                    ID3D12Resource* uavResource);
+
+    void aliasingBarrier(sk_sp<GrManagedResource> beforeManagedResource,
+                         ID3D12Resource* beforeResource,
+                         sk_sp<GrManagedResource> afterManagedResource,
+                         ID3D12Resource* afterResource);
 
     // Helper method that calls copyTextureRegion multiple times, once for each subresource
     // The srcBuffer comes from a staging buffer so we don't need to take any refs to it. Instead,
@@ -78,6 +85,10 @@ public:
                                     sk_sp<GrManagedResource> src,
                                     const D3D12_TEXTURE_COPY_LOCATION* srcLocation,
                                     const D3D12_BOX* srcBox);
+
+     void copyTextureToTexture(const GrD3DTexture* dst,
+                               const GrD3DTexture* src,
+                               UINT subresourceIndex = -1);
 
     // We don't take a ref to the src buffer because we assume the src buffer is coming from a
     // staging buffer which will get ref'd during submit.

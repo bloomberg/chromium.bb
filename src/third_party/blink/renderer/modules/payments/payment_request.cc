@@ -833,6 +833,9 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
           GetExecutionContext())) {
     payment_request_allowed |= local_frame->IsPaymentRequestTokenActive();
     if (!payment_request_allowed) {
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPaymentRequestShowWithoutGestureOrToken);
+
       String message =
           "PaymentRequest.show() requires either transient user activation or "
           "delegated payment request capability";
@@ -1149,7 +1152,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
   }
 
   if (!options_->requestShipping())
-    validated_details->shipping_options = base::nullopt;
+    validated_details->shipping_options = absl::nullopt;
 
   if (is_waiting_for_show_promise_to_resolve_) {
     is_waiting_for_show_promise_to_resolve_ = false;
@@ -1320,7 +1323,7 @@ PaymentRequest::PaymentRequest(
       skip_to_gpay_ready = false;
     }
   } else {
-    validated_details->shipping_options = base::nullopt;
+    validated_details->shipping_options = absl::nullopt;
   }
 
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
@@ -1725,7 +1728,9 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
                                              FROM_HERE);
 
   event_target->DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
+  // Check whether the execution context still exists, because DispatchEvent()
+  // could have destroyed it.
+  if (GetExecutionContext() && !event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()
     // returns false if the merchant did not call event.updateWith() within the
     // event handler, which is optional, so the renderer sends a message to the

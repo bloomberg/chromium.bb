@@ -166,6 +166,9 @@ def main():
   if args.build_mac_arm and sys.platform != 'darwin':
     print('--build-mac-arm only valid on macOS')
     return 1
+  if args.build_mac_arm and platform.machine() == 'arm64':
+    print('--build-mac-arm only valid on intel to cross-build arm')
+    return 1
 
   expected_stamp = GetExpectedStamp()
   pdir = 'clang-' + expected_stamp
@@ -177,8 +180,7 @@ def main():
     # 'Mac_arm64' here when there's no flag and 'Mac' when --build-mac-intel is
     # passed. Also update the build script to explicitly pass a default triple
     # then.
-    assert platform.machine() != 'arm64'
-    if args.build_mac_arm:
+    if args.build_mac_arm or platform.machine() == 'arm64':
       gcs_platform = 'Mac_arm64'
     else:
       gcs_platform = 'Mac'
@@ -224,8 +226,8 @@ def main():
     'bin/llvm-undname' + exe_ext,
     # Copy built-in headers (lib/clang/3.x.y/include).
     'lib/clang/$V/include/*',
-    'lib/clang/$V/share/asan_blacklist.txt',
-    'lib/clang/$V/share/cfi_blacklist.txt',
+    'lib/clang/$V/share/asan_*list.txt',
+    'lib/clang/$V/share/cfi_*list.txt',
   ]
   if sys.platform == 'win32':
     want.extend([
@@ -237,13 +239,16 @@ def main():
       'bin/clang',
 
       # Include libclang_rt.builtins.a for Fuchsia targets.
-      'lib/clang/$V/lib/aarch64-fuchsia/libclang_rt.builtins.a',
-      'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.builtins.a',
+      'lib/clang/$V/lib/aarch64-unknown-fuchsia/libclang_rt.builtins.a',
+      'lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.builtins.a',
     ])
     if not args.build_mac_arm:
       # TODO(thakis): Figure out why this doesn't build in --build-mac-arm
       # builds.
-      want.append('lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.profile.a')
+      want.append('lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.profile.a')
+    if sys.platform != 'darwin':
+      # The Fuchsia asan runtime is only built on non-Mac platforms.
+      want.append('lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.asan.a')
   if sys.platform == 'darwin':
     want.extend([
       # AddressSanitizer runtime.
@@ -335,8 +340,8 @@ def main():
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
 
-        # Blacklist for MemorySanitizer (used on Linux only).
-        'lib/clang/$V/share/msan_blacklist.txt',
+        # Ignorelist for MemorySanitizer (used on Linux only).
+        'lib/clang/$V/share/msan_*list.txt',
     ])
   elif sys.platform == 'win32':
     want.extend([
@@ -398,14 +403,21 @@ def main():
         subprocess.call([EU_STRIP, '-g', dest])
 
   stripped_binaries = ['clang',
+                       'clang-tidy',
+                       'lld',
+                       'llvm-ar',
+                       'llvm-bcanalyzer',
+                       'llvm-cov',
+                       'llvm-cxxfilt',
+                       'llvm-nm',
+                       'llvm-objcopy',
+                       'llvm-objdump',
                        'llvm-pdbutil',
+                       'llvm-profdata',
+                       'llvm-readobj',
                        'llvm-symbolizer',
                        'llvm-undname',
                        ]
-  if sys.platform.startswith('linux'):
-    stripped_binaries.append('lld')
-    stripped_binaries.append('llvm-ar')
-    stripped_binaries.append('llvm-objcopy')
   for f in stripped_binaries:
     if sys.platform != 'win32':
       subprocess.call(['strip', os.path.join(pdir, 'bin', f)])
@@ -469,6 +481,7 @@ def main():
     f.write(expected_stamp)
     f.write('\n')
   if sys.platform != 'win32':
+    os.symlink('llvm-objdump', os.path.join(objdumpdir, 'bin', 'llvm-otool'))
     os.symlink('llvm-readobj', os.path.join(objdumpdir, 'bin', 'llvm-readelf'))
   with tarfile.open(objdumpdir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(objdumpdir, 'bin'), arcname='bin',

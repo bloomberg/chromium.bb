@@ -56,9 +56,13 @@ const TestVideoParam kTestVectors[] = {
 };
 
 const TestEncodeParam kEncodeVectors[] = {
-  { ::libaom_test::kOnePassGood, 2 }, { ::libaom_test::kOnePassGood, 5 },
-  { ::libaom_test::kTwoPassGood, 1 }, { ::libaom_test::kTwoPassGood, 2 },
-  { ::libaom_test::kTwoPassGood, 5 }, { ::libaom_test::kRealTime, 5 },
+#if CONFIG_REALTIME_ONLY
+  { ::libaom_test::kRealTime, 5 },
+#else
+  { ::libaom_test::kRealTime, 5 },    { ::libaom_test::kOnePassGood, 2 },
+  { ::libaom_test::kOnePassGood, 5 }, { ::libaom_test::kTwoPassGood, 1 },
+  { ::libaom_test::kTwoPassGood, 2 }, { ::libaom_test::kTwoPassGood, 5 },
+#endif
 };
 
 const int kMinArfVectors[] = {

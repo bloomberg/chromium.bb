@@ -47,6 +47,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
+namespace ash {
+
+constexpr StaticOobeScreenId EnrollmentScreenView::kScreenId;
+
+}
+
 namespace chromeos {
 namespace {
 
@@ -166,8 +172,6 @@ authpolicy::KerberosEncryptionTypes TranslateEncryptionTypesString(
 }
 
 }  // namespace
-
-constexpr StaticOobeScreenId EnrollmentScreenView::kScreenId;
 
 // EnrollmentScreenHandler, public ------------------------------
 
@@ -628,11 +632,11 @@ void EnrollmentScreenHandler::GetAdditionalParameters(
   parameters->SetKey("encryptionTypesList", GetEncryptionTypesList());
 }
 
-bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
+bool EnrollmentScreenHandler::IsOnEnrollmentScreen() {
   return (GetCurrentScreen() == kScreenId);
 }
 
-bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
+bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() {
   return (GetCurrentScreen() == ErrorScreenView::kScreenId &&
           error_screen_->GetParentScreen() == kScreenId);
 }
@@ -647,7 +651,7 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
     return;
   }
   active_directory_domain_join_config_.clear();
-  base::Optional<base::Value> options = base::JSONReader::Read(
+  absl::optional<base::Value> options = base::JSONReader::Read(
       unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
   if (!options || !options->is_list()) {
     ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);

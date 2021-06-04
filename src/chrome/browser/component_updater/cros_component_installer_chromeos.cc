@@ -39,9 +39,9 @@ const ComponentConfig kConfigs[] = {
      "5.0", "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"},
     {"cros-termina", ComponentConfig::PolicyType::kEnvVersion, "900.1",
      "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"},
-    {"rtanalytics-light", ComponentConfig::PolicyType::kEnvVersion, "90.0",
+    {"rtanalytics-light", ComponentConfig::PolicyType::kEnvVersion, "92.0",
      "69f09d33c439c2ab55bbbe24b47ab55cb3f6c0bd1f1ef46eefea3216ec925038"},
-    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "90.0",
+    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "92.0",
      "c93c3e1013c52100a20038b405ac854d69fa889f6dc4fa6f188267051e05e444"},
     {"star-cups-driver", ComponentConfig::PolicyType::kEnvVersion, "1.1",
      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"},
@@ -51,7 +51,7 @@ const ComponentConfig kConfigs[] = {
      "93c093ebac788581389015e9c59c5af111d2fa5174d206eb795042e6376cbd10"},
     // NOTE: If you change the lacros component names, you must also update
     // chrome/browser/ash/crosapi/browser_loader.cc.
-    {"lacros-fishfood", ComponentConfig::PolicyType::kLacros, nullptr,
+    {"lacros-dogfood-canary", ComponentConfig::PolicyType::kLacros, nullptr,
      "7a85ffb4b316a3b89135a3f43660ef3049950a61a2f8df4237e1ec213852b848"},
     {"lacros-dogfood-dev", ComponentConfig::PolicyType::kLacros, nullptr,
      "b3e1ef1780c0acd2d3fa44b4d73c657a0f1ed3ad83fd8c964a18a3502ccf5f4f"},
@@ -80,7 +80,7 @@ const ComponentConfig* FindConfig(const std::string& name) {
 }
 
 // TODO(xiaochu): add metrics for component usage (https://crbug.com/793052).
-void LogCustomUninstall(base::Optional<bool> result) {}
+void LogCustomUninstall(absl::optional<bool> result) {}
 
 void FinishCustomUninstallOnUIThread(const std::string& name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -439,7 +439,7 @@ void CrOSComponentInstaller::LoadInternal(const std::string& name,
 void CrOSComponentInstaller::FinishLoad(LoadCallback load_callback,
                                         const base::TimeTicks start_time,
                                         const std::string& name,
-                                        base::Optional<base::FilePath> result) {
+                                        absl::optional<base::FilePath> result) {
   // Report component image mount time.
   UMA_HISTOGRAM_LONG_TIMES("ComponentUpdater.ChromeOS.MountTime",
                            base::TimeTicks::Now() - start_time);

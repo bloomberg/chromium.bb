@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/files/file.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace storage {
 
@@ -21,7 +21,7 @@ class FileErrorOr {
   explicit FileErrorOr() = default;
   FileErrorOr(base::File::Error error) : error_(error) {}
   FileErrorOr(ValueType&& value)
-      : maybe_value_(base::in_place, std::move(value)) {}
+      : maybe_value_(absl::in_place, std::move(value)) {}
   FileErrorOr(const FileErrorOr&) = delete;
   FileErrorOr(FileErrorOr&&) = default;
   FileErrorOr& operator=(const FileErrorOr&) = delete;
@@ -39,7 +39,7 @@ class FileErrorOr {
 
  private:
   base::File::Error error_ = base::File::FILE_ERROR_FAILED;
-  base::Optional<ValueType> maybe_value_;
+  absl::optional<ValueType> maybe_value_;
 };
 
 }  // namespace storage

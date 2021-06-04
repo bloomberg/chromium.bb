@@ -133,7 +133,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     return PROXY_PREF_NOT_CLEARED;
 
   // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172.
-  if (dict->empty()) {
+  if (dict->DictEmpty()) {
     prefs->ClearPref(proxy_config::prefs::kProxy);
     return PROXY_PREF_CLEARED_EMPTY;
   }
@@ -241,7 +241,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
 
   PrefService* profile_prefs = profile->GetPrefs();
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess();
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(

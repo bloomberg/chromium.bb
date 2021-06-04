@@ -237,6 +237,19 @@ SiteInstance* GuestViewManager::GetGuestSiteInstance(
   return nullptr;
 }
 
+void GuestViewManager::ForEachUnattachedGuest(
+    content::WebContents* owner_web_contents,
+    base::RepeatingCallback<void(content::WebContents*)> callback) {
+  for (const auto& guest : guest_web_contents_by_instance_id_) {
+    auto* guest_view = GuestViewBase::FromWebContents(guest.second);
+
+    if (guest_view->owner_web_contents() == owner_web_contents &&
+        !guest_view->attached()) {
+      callback.Run(guest_view->web_contents());
+    }
+  }
+}
+
 bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
                                     const GuestCallback& callback) {
   for (const auto& guest : guest_web_contents_by_instance_id_) {
@@ -520,8 +533,7 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
 
 GuestViewManager::ElementInstanceKey::ElementInstanceKey()
     : embedder_process_id(content::ChildProcessHost::kInvalidUniqueID),
-      element_instance_id(content::ChildProcessHost::kInvalidUniqueID) {
-}
+      element_instance_id(kInstanceIDNone) {}
 
 GuestViewManager::ElementInstanceKey::ElementInstanceKey(
     int embedder_process_id,

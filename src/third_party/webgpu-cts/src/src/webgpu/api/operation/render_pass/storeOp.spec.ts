@@ -89,13 +89,13 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           loadValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
           storeOp: t.params.colorStoreOperation,
         },
       ],
       depthStencilAttachment: {
-        attachment: depthStencilAttachment.createView(),
+        view: depthStencilAttachment.createView(),
         depthLoadValue: 1.0,
         depthStoreOp: t.params.depthStencilStoreOperation,
         stencilLoadValue: 1.0,
@@ -175,7 +175,7 @@ g.test('render_pass_store_op,color_attachment_only')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
           storeOp: t.params.storeOperation,
         },
@@ -227,10 +227,10 @@ g.test('render_pass_store_op,multiple_color_attachments')
     // Color load operation will clear to {1.0, 1.0, 1.0, 1.0}
     // Color store operation is determined by test params. Use storeOperation1 for even numbered
     // attachments and storeOperation2 for odd numbered attachments.
-    const renderPassColorAttachmentDescriptors: GPURenderPassColorAttachmentDescriptor[] = [];
+    const renderPassColorAttachments: GPURenderPassColorAttachment[] = [];
     for (let i = 0; i < t.params.colorAttachments; i++) {
-      renderPassColorAttachmentDescriptors.push({
-        attachment: colorAttachments[i].createView(),
+      renderPassColorAttachments.push({
+        view: colorAttachments[i].createView(),
         loadValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
         storeOp: i % 2 === 0 ? t.params.storeOperation1 : t.params.storeOperation2,
       });
@@ -238,7 +238,7 @@ g.test('render_pass_store_op,multiple_color_attachments')
 
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
-      colorAttachments: renderPassColorAttachmentDescriptors,
+      colorAttachments: renderPassColorAttachments,
     });
     pass.endPass();
     t.device.queue.submit([encoder.finish()]);
@@ -246,10 +246,10 @@ g.test('render_pass_store_op,multiple_color_attachments')
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
     for (let i = 0; i < t.params.colorAttachments; i++) {
-      if (renderPassColorAttachmentDescriptors[i].storeOp === 'clear') {
+      if (renderPassColorAttachments[i].storeOp === 'clear') {
         // If colorStoreOp was clear, the texture should now contain {0.0, 0.0, 0.0, 0.0}.
         expectedValue = { R: 0.0, G: 0.0, B: 0.0, A: 0.0 };
-      } else if (renderPassColorAttachmentDescriptors[i].storeOp === 'store') {
+      } else if (renderPassColorAttachments[i].storeOp === 'store') {
         // If colorStoreOP was store, the texture should still contain {1.0, 1.0, 1.0, 1.0}.
         expectedValue = { R: 1.0, G: 1.0, B: 1.0, A: 1.0 };
       }
@@ -301,7 +301,7 @@ TODO: Also test unsized depth/stencil formats
     const pass = encoder.beginRenderPass({
       colorAttachments: [],
       depthStencilAttachment: {
-        attachment: depthStencilAttachmentView,
+        view: depthStencilAttachmentView,
         depthLoadValue: 1.0,
         depthStoreOp: t.params.storeOperation,
         stencilLoadValue: 1.0,

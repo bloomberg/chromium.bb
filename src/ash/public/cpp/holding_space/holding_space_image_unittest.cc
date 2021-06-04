@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/file_icon_util.h"
-#include "ash/public/cpp/holding_space/holding_space_color_provider.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -33,7 +32,6 @@ namespace {
 // Appearance.
 constexpr gfx::Size kImageSize(32, 32);
 constexpr int kFileTypeIconSize = 20;
-constexpr SkColor kFileTypeIconColor(gfx::kPlaceholderColor);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -54,24 +52,17 @@ gfx::ImageSkia ExtractFileTypeIcon(const gfx::ImageSkia& image) {
 bool ContainsFileTypeIcon(const gfx::ImageSkia& image,
                           const base::FilePath& file_path) {
   gfx::ImageSkia actual = ExtractFileTypeIcon(image);
-  gfx::ImageSkia expected = GetIconForPath(file_path, kFileTypeIconColor);
+  gfx::ImageSkia expected =
+      GetIconForPath(file_path, /*dark_background=*/false);
   return gfx::test::AreImagesEqual(gfx::Image(actual), gfx::Image(expected));
 }
 
 bool ContainsFolderTypeIcon(const gfx::ImageSkia& image) {
   gfx::ImageSkia actual = ExtractFileTypeIcon(image);
   gfx::ImageSkia expected = gfx::CreateVectorIcon(
-      chromeos::kFiletypeFolderIcon, kFileTypeIconSize, kFileTypeIconColor);
+      chromeos::kFiletypeFolderIcon, kFileTypeIconSize, gfx::kGoogleGrey700);
   return gfx::test::AreImagesEqual(gfx::Image(actual), gfx::Image(expected));
 }
-
-// Fake implementation of HoldingSpaceColorProvider.
-class FakeHoldingSpaceColorProvider : public HoldingSpaceColorProvider {
- public:
-  // HoldingSpaceColorProvider:
-  SkColor GetBackgroundColor() const override { return gfx::kPlaceholderColor; }
-  SkColor GetFileIconColor() const override { return kFileTypeIconColor; }
-};
 
 // Helper class that provides a test implementation for the async bitmap
 // resolver callback used to generate holding space image representations.
@@ -197,7 +188,6 @@ class HoldingSpaceImageTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  FakeHoldingSpaceColorProvider holding_space_color_provider_;
 };
 
 // Tests the basic flow for generating holding space image bitmaps.

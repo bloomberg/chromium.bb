@@ -21,7 +21,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -74,8 +73,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
@@ -118,6 +119,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/send_tab_to_self/metrics_util.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -225,6 +227,14 @@
 #include "chrome/browser/ash/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/ash/arc/intent_helper/start_smart_selection_action_menu.h"
 #include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
+#include "ui/aura/window.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "ui/aura/window.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1058,8 +1068,9 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.MisspelledWord", enum_id,
         GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
-  } else if (!params_.selection_text.empty() &&
-             params_.media_type == ContextMenuDataMediaType::kNone) {
+  } else if ((!params_.selection_text.empty() ||
+              params_.opened_from_highlight) &&
+              params_.media_type == ContextMenuDataMediaType::kNone) {
     // Probably just text.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.SelectedText", enum_id,
@@ -1139,10 +1150,13 @@ std::string RenderViewContextMenu::GetTargetLanguage() const {
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  // Do not Show Inspect Element for DevTools.
-  bool show_developer_items = !IsDevToolsURL(params_.page_url);
+  // Do not Show Inspect Element for DevTools unless DevTools runs with the
+  // debugFrontend query param.
+  bool hide_developer_items =
+      IsDevToolsURL(params_.page_url) &&
+      params_.page_url.query().find("debugFrontend=true") == std::string::npos;
 
-  if (!show_developer_items)
+  if (hide_developer_items)
     return;
 
   // In the DevTools popup menu, "developer items" is normally the only
@@ -1209,7 +1223,7 @@ void RenderViewContextMenu::AppendLinkItems() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     // g_browser_process->profile_manager() is null during unit tests.
     if (g_browser_process->profile_manager() &&
-        GetProfile()->IsRegularProfile()) {
+        !GetProfile()->IsOffTheRecord()) {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       // Find all regular profiles other than the current one which have at
       // least one open window.
@@ -1364,7 +1378,7 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return;
 
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, params_.link_url);
   if (!app_id)
     return;
@@ -1784,6 +1798,15 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* service = chromeos::LacrosService::Get();
+  if (service && service->IsAvailable<crosapi::mojom::ClipboardHistory>()) {
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
+        IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
+  }
+#endif
+
   if (!has_misspelled_word) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
                                     IDS_CONTENT_CONTEXT_SELECTALL);
@@ -1906,11 +1929,11 @@ void RenderViewContextMenu::AppendSharingItems() {
 
 void RenderViewContextMenu::AppendClickToCallItem() {
   SharingClickToCallEntryPoint entry_point;
-  base::Optional<std::string> phone_number;
+  absl::optional<std::string> phone_number;
   std::string selection_text;
   if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
     entry_point = SharingClickToCallEntryPoint::kRightClickLink;
-    phone_number = GetUnescapedURLContent(params_.link_url);
+    phone_number = params_.link_url.GetContent();
   } else if (!params_.selection_text.empty()) {
     entry_point = SharingClickToCallEntryPoint::kRightClickSelection;
     selection_text = base::UTF16ToUTF8(params_.selection_text);
@@ -2185,11 +2208,16 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       if (chromeos::features::IsClipboardHistoryEnabled())
         return ash::ClipboardHistoryController::Get()->CanShowMenu();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+    {
+      auto* service = chromeos::LacrosService::Get();
+      return service &&
+             service->IsAvailable<crosapi::mojom::ClipboardHistory>();
+    }
 #else
       NOTREACHED();
 #endif
       return false;
-
     default:
       NOTREACHED();
       return false;
@@ -2371,16 +2399,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
       send_tab_to_self::ShareToSingleTarget(
           GetBrowser()->tab_strip_model()->GetActiveWebContents());
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::RecordDeviceClicked(
+          send_tab_to_self::ShareEntryPoint::kContentMenu);
       break;
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET:
       send_tab_to_self::ShareToSingleTarget(
           GetBrowser()->tab_strip_model()->GetActiveWebContents(),
           params_.link_url);
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::RecordDeviceClicked(
+          send_tab_to_self::ShareEntryPoint::kLinkMenu);
       break;
 
     case IDC_CONTENT_CONTEXT_GENERATE_QR_CODE: {
@@ -2533,7 +2561,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU: {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       // Calculate the anchor point in screen coordinates.
       gfx::Point anchor_point_in_screen =
           GetRenderFrameHost()->GetNativeView()->GetBoundsInScreen().origin();
@@ -2548,9 +2576,23 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       else
         source_type = ui::MENU_SOURCE_KEYBOARD;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       ash::ClipboardHistoryController::Get()->ShowMenu(
           gfx::Rect(anchor_point_in_screen, gfx::Size()), source_type,
-          ash::ClipboardHistoryController::ShowSource::kRenderViewContextMenu);
+          crosapi::mojom::ClipboardHistoryControllerShowSource::
+              kRenderViewContextMenu);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+      {
+        auto* service = chromeos::LacrosService::Get();
+        if (service &&
+            service->IsAvailable<crosapi::mojom::ClipboardHistory>()) {
+          service->GetRemote<crosapi::mojom::ClipboardHistory>()->ShowClipboard(
+              gfx::Rect(anchor_point_in_screen, gfx::Size()), source_type,
+              crosapi::mojom::ClipboardHistoryControllerShowSource::
+                  kRenderViewContextMenu);
+        }
+      }
+#endif
 #else
       NOTREACHED();
 #endif
@@ -2664,16 +2706,16 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
           source_web_contents_)) {
     return false;
   }
-  std::string original_lang =
-      chrome_translate_client->GetLanguageState().original_language();
+  std::string source_lang =
+      chrome_translate_client->GetLanguageState().source_language();
   std::string target_lang = GetTargetLanguage();
-  // Note that we intentionally enable the menu even if the original and
+  // Note that we intentionally enable the menu even if the source and
   // target languages are identical.  This is to give a way to user to
   // translate a page that might contains text fragments in a different
   // language.
   return ((params_.edit_flags & ContextMenuDataEditFlags::kCanTranslate) !=
           0) &&
-         !original_lang.empty() &&  // Did we receive the page language yet?
+         !source_lang.empty() &&  // Did we receive the page language yet?
          // There are some application locales which can't be used as a
          // target language for translation. In that case GetTargetLanguage()
          // may return empty.
@@ -2805,9 +2847,8 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
   if (!entry)
     return false;
 
-  bool incognito = browser_context_->IsOffTheRecord();
   return qrcode_generator::QRCodeGeneratorBubbleController::
-      IsGeneratorAvailable(entry->GetURL(), incognito);
+      IsGeneratorAvailable(entry->GetURL());
 }
 
 void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
@@ -2877,7 +2918,7 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
 }
 
 void RenderViewContextMenu::ExecOpenWebApp() {
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(
           Profile::FromBrowserContext(browser_context_), params_.link_url);
   // |app_id| could be nullopt if it has been uninstalled since the user
@@ -2979,8 +3020,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   dl_params->set_prompt(true);
   dl_params->set_download_source(download::DownloadSource::CONTEXT_MENU);
 
-  BrowserContext::GetDownloadManager(browser_context_)
-      ->DownloadUrl(std::move(dl_params));
+  browser_context_->GetDownloadManager()->DownloadUrl(std::move(dl_params));
 }
 
 void RenderViewContextMenu::ExecSaveAs() {
@@ -3157,9 +3197,6 @@ void RenderViewContextMenu::ExecPrint() {
 }
 
 void RenderViewContextMenu::ExecRouteMedia() {
-  if (!media_router::MediaRouterEnabled(browser_context_))
-    return;
-
   media_router::MediaRouterDialogController* dialog_controller =
       media_router::MediaRouterDialogController::GetOrCreateForWebContents(
           embedder_web_contents_);

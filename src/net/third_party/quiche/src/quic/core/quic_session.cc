@@ -25,7 +25,7 @@
 #include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_server_stats.h"
 #include "quic/platform/api/quic_stack_trace.h"
-#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_text_utils.h"
 
 using spdy::SpdyPriority;
 
@@ -686,11 +686,8 @@ bool QuicSession::WillingAndAbleToWrite() const {
     if (HasPendingHandshake()) {
       return true;
     }
-    if (GetQuicReloadableFlag(quic_fix_willing_and_able_to_write2)) {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_fix_willing_and_able_to_write2);
-      if (!IsEncryptionEstablished()) {
-        return false;
-      }
+    if (!IsEncryptionEstablished()) {
+      return false;
     }
   }
   if (control_frame_manager_.WillingToWrite() ||
@@ -773,10 +770,24 @@ QuicConsumedData QuicSession::WritevData(
                     perspective() == Perspective::IS_CLIENT);
       QUIC_BUG_IF(quic_bug_12435_3, type == NOT_RETRANSMISSION)
           << ENDPOINT << "Try to send new data on stream " << id
-          << "before 1-RTT keys are available while 0-RTT is rejected.";
+          << "before 1-RTT keys are available while 0-RTT is rejected. "
+             "Version: "
+          << ParsedQuicVersionToString(version());
+    } else if (version().UsesTls() || perspective() == Perspective::IS_SERVER) {
+      QUIC_BUG(quic_bug_10866_2)
+          << ENDPOINT << "Try to send data of stream " << id
+          << " before encryption is established. Version: "
+          << ParsedQuicVersionToString(version());
     } else {
-      QUIC_BUG(quic_bug_10866_2) << ENDPOINT << "Try to send data of stream "
-                                 << id << " before encryption is established.";
+      // In QUIC crypto, this could happen when the client sends full CHLO and
+      // 0-RTT request, then receives an inchoate REJ and sends an inchoate
+      // CHLO. The client then gets the ACK of the inchoate CHLO or the client
+      // gets the full REJ and needs to verify the proof (before it sends the
+      // full CHLO), such that there is no outstanding crypto data.
+      // Retransmission alarm fires in TLP mode which tries to retransmit the
+      // 0-RTT request (without encryption).
+      QUIC_DLOG(INFO) << ENDPOINT << "Try to send data of stream " << id
+                      << " before encryption is established.";
     }
     return QuicConsumedData(0, false);
   }
@@ -920,15 +931,12 @@ void QuicSession::SendGoAway(QuicErrorCode error_code,
                              const std::string& reason) {
   // GOAWAY frame is not supported in IETF QUIC.
   QUICHE_DCHECK(!VersionHasIetfQuicFrames(transport_version()));
-  if (GetQuicReloadableFlag(quic_encrypted_goaway)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_encrypted_goaway, 1, 2);
-    if (!IsEncryptionEstablished()) {
-      QUIC_CODE_COUNT(quic_goaway_before_encryption_established);
-      connection_->CloseConnection(
-          error_code, reason,
-          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-      return;
-    }
+  if (!IsEncryptionEstablished()) {
+    QUIC_CODE_COUNT(quic_goaway_before_encryption_established);
+    connection_->CloseConnection(
+        error_code, reason,
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
   }
   if (transport_goaway_sent_) {
     return;
@@ -1666,10 +1674,7 @@ void QuicSession::OnTlsHandshakeComplete() {
     // Server sends HANDSHAKE_DONE to signal confirmation of the handshake
     // to the client.
     control_frame_manager_.WriteOrBufferHandshakeDone();
-    if (GetQuicReloadableFlag(quic_enable_token_based_address_validation) &&
-        connection()->version().HasIetfQuicFrames()) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_enable_token_based_address_validation,
-                                   1, 2);
+    if (connection()->version().HasIetfQuicFrames()) {
       MaybeSendAddressToken();
     }
   }
@@ -1773,6 +1778,11 @@ void QuicSession::OnHandshakeCallbackDone() {
   if (!connection()->is_processing_packet()) {
     connection()->MaybeProcessUndecryptablePackets();
   }
+}
+
+bool QuicSession::PacketFlusherAttached() const {
+  QUICHE_DCHECK(connection_->connected());
+  return connection()->packet_creator().PacketFlusherAttached();
 }
 
 void QuicSession::OnCryptoHandshakeMessageSent(
@@ -2096,12 +2106,14 @@ void QuicSession::SendAckFrequency(const QuicAckFrequencyFrame& frame) {
 }
 
 void QuicSession::SendNewConnectionId(const QuicNewConnectionIdFrame& frame) {
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_connection_migration_use_new_cid_v2, 1, 5);
   control_frame_manager_.WriteOrBufferNewConnectionId(
       frame.connection_id, frame.sequence_number, frame.retire_prior_to,
       frame.stateless_reset_token);
 }
 
 void QuicSession::SendRetireConnectionId(uint64_t sequence_number) {
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_connection_migration_use_new_cid_v2, 2, 5);
   control_frame_manager_.WriteOrBufferRetireConnectionId(sequence_number);
 }
 
@@ -2495,11 +2507,6 @@ QuicPacketLength QuicSession::GetGuaranteedLargestMessagePayload() const {
   return connection_->GetGuaranteedLargestMessagePayload();
 }
 
-void QuicSession::SendStopSending(QuicRstStreamErrorCode code,
-                                  QuicStreamId stream_id) {
-  control_frame_manager_.WriteOrBufferStopSending(code, stream_id);
-}
-
 QuicStreamId QuicSession::next_outgoing_bidirectional_stream_id() const {
   if (VersionHasIetfQuicFrames(transport_version())) {
     return ietf_streamid_manager_.next_outgoing_bidirectional_stream_id();
@@ -2609,15 +2616,19 @@ bool QuicSession::HasPendingPathValidation() const {
   return connection_->HasPendingPathValidation();
 }
 
-void QuicSession::MigratePath(const QuicSocketAddress& self_address,
+bool QuicSession::MigratePath(const QuicSocketAddress& self_address,
                               const QuicSocketAddress& peer_address,
                               QuicPacketWriter* writer,
                               bool owns_writer) {
-  connection_->MigratePath(self_address, peer_address, writer, owns_writer);
+  return connection_->MigratePath(self_address, peer_address, writer,
+                                  owns_writer);
 }
 
 bool QuicSession::ValidateToken(absl::string_view token) const {
   QUICHE_DCHECK_EQ(perspective_, Perspective::IS_SERVER);
+  if (GetQuicFlag(FLAGS_quic_reject_retry_token_in_initial_packet)) {
+    return false;
+  }
   if (token.empty() || token[0] != 0) {
     // Validate the prefix for token received in NEW_TOKEN frame.
     return false;

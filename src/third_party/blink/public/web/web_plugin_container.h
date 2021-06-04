@@ -77,7 +77,6 @@ class WebPluginContainer {
   virtual void EnqueueMessageEvent(const WebDOMMessageEvent&) = 0;
 
   virtual void Invalidate() = 0;
-  virtual void InvalidateRect(const gfx::Rect&) = 0;
 
   // Schedules an animation of the WebView that contains the plugin, as well as
   // the plugin.
@@ -167,4 +166,4 @@ class WebPluginContainer {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_CONTAINER_H_

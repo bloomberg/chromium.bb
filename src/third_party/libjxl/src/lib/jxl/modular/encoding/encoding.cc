@@ -30,13 +30,10 @@
 #include "lib/jxl/common.h"
 #include "lib/jxl/dec_ans.h"
 #include "lib/jxl/dec_bit_reader.h"
-#include "lib/jxl/enc_ans.h"
-#include "lib/jxl/enc_bit_writer.h"
 #include "lib/jxl/entropy_coder.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/image_ops.h"
 #include "lib/jxl/modular/encoding/context_predict.h"
-#include "lib/jxl/modular/encoding/ma.h"
 #include "lib/jxl/modular/options.h"
 #include "lib/jxl/modular/transform/transform.h"
 #include "lib/jxl/toc.h"
@@ -387,7 +384,6 @@ Status ModularDecode(BitReader *br, Image &image, GroupHeader &header,
   for (Transform &transform : image.transform) {
     JXL_RETURN_IF_ERROR(transform.MetaApply(image));
   }
-  if (options->identify) return true;
   if (image.error) {
     return JXL_FAILURE("Corrupt file. Aborting.");
   }
@@ -395,7 +391,7 @@ Status ModularDecode(BitReader *br, Image &image, GroupHeader &header,
   size_t nb_channels = image.channel.size();
 
   size_t num_chans = 0;
-  for (size_t i = options->skipchannels; i < nb_channels; i++) {
+  for (size_t i = 0; i < nb_channels; i++) {
     if (!image.channel[i].w || !image.channel[i].h) {
       continue;  // skip empty channels
     }
@@ -431,7 +427,7 @@ Status ModularDecode(BitReader *br, Image &image, GroupHeader &header,
   }
 
   size_t distance_multiplier = 0;
-  for (size_t i = options->skipchannels; i < nb_channels; i++) {
+  for (size_t i = 0; i < nb_channels; i++) {
     Channel &channel = image.channel[i];
     if (!channel.w || !channel.h) {
       continue;  // skip empty channels
@@ -446,7 +442,7 @@ Status ModularDecode(BitReader *br, Image &image, GroupHeader &header,
   }
   // Read channels
   ANSSymbolReader reader(code, br, distance_multiplier);
-  for (size_t i = options->skipchannels; i < nb_channels; i++) {
+  for (size_t i = 0; i < nb_channels; i++) {
     Channel &channel = image.channel[i];
     if (!channel.w || !channel.h) {
       continue;  // skip empty channels

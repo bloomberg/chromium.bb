@@ -318,7 +318,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
   def PrintAndCollectTraceEventMetrics(self, trace_cpu_time_metrics, results):
     unit = 'ms'
     print()
-    for trace_event_name, cpu_times in trace_cpu_time_metrics.iteritems():
+    for trace_event_name, cpu_times in trace_cpu_time_metrics.items():
       print('CPU times of trace event "%s":' % trace_event_name)
       cpu_times_string = ', '.join(['{0:.10f}'.format(t) for t in cpu_times])
       print('values %s %s' % (cpu_times_string, unit))
@@ -639,6 +639,23 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
   @classmethod
   def Name(cls):
     return 'blink_perf.parser'
+
+
+@benchmark.Info(component='Blink>Security>SanitizerAPI',
+                emails=['lyf@chromium.org'],
+                documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfSanitizerAPI(_BlinkPerfBenchmark):
+  SUBDIR = 'sanitizer-api'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.sanitizer-api'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-blink-features=SanitizerAPI',
+    ])
 
 
 @benchmark.Info(emails=['fs@opera.com', 'pdr@chromium.org'],

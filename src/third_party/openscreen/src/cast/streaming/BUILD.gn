@@ -11,16 +11,37 @@ fuzzable_proto_library("remoting_proto") {
   sources = [ "remoting.proto" ]
 }
 
+source_set("streaming_configs") {
+  sources = [
+    "capture_configs.h",
+    "constants.h",
+    "message_fields.cc",
+    "message_fields.h",
+    "resolution.cc",
+    "resolution.h",
+  ]
+
+  public_configs = [ "../../build:openscreen_include_dirs" ]
+
+  public_deps = [
+    "../../third_party/abseil",
+    "../../third_party/jsoncpp",
+  ]
+
+  deps = [
+    "../../platform:base",
+    "../../util:base",
+  ]
+}
+
 source_set("common") {
   sources = [
     "answer_messages.cc",
     "answer_messages.h",
-    "capture_configs.h",
     "capture_recommendations.cc",
     "capture_recommendations.h",
     "clock_drift_smoother.cc",
     "clock_drift_smoother.h",
-    "constants.h",
     "encoded_frame.cc",
     "encoded_frame.h",
     "environment.cc",
@@ -30,8 +51,6 @@ source_set("common") {
     "frame_crypto.h",
     "frame_id.cc",
     "frame_id.h",
-    "message_fields.cc",
-    "message_fields.h",
     "ntp_time.cc",
     "ntp_time.h",
     "offer_messages.cc",
@@ -64,6 +83,7 @@ source_set("common") {
 
   public_deps = [
     ":remoting_proto",
+    ":streaming_configs",
     "../../third_party/abseil",
     "../../third_party/boringssl",
     "../common:channel",
@@ -91,6 +111,8 @@ source_set("receiver") {
     "packet_receive_stats_tracker.h",
     "receiver.cc",
     "receiver.h",
+    "receiver_base.cc",
+    "receiver_base.h",
     "receiver_packet_router.cc",
     "receiver_packet_router.h",
     "receiver_session.cc",

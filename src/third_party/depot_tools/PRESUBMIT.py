@@ -12,6 +12,12 @@ import fnmatch
 import os
 import sys
 
+# Whether to run the checks under Python2 or Python3.
+# TODO: Uncomment this to run the checks under Python3, and change the tests
+# in _CommonChecks in this file and the values and tests in
+# //tests/PRESUBMIT.py as well to keep the test coverage of all three cases
+# (true, false, and default/not specified).
+# USE_PYTHON3 = False
 
 # CIPD ensure manifest for checking CIPD client itself.
 CIPD_CLIENT_ENSURE_FILE_TEMPLATE = r'''
@@ -61,10 +67,21 @@ def DepotToolsPylint(input_api, output_api):
       disabled_warnings=disabled_warnings)
 
 
-def CommonChecks(input_api, output_api, tests_to_skip_list, run_on_python3):
+def CommonChecks(input_api, output_api, tests_to_skip_list):
   input_api.SetTimeout(TEST_TIMEOUT_S)
 
   results = []
+
+  # The tests here are assuming this is not defined, so raise an error
+  # if it is.
+  if 'USE_PYTHON3' in globals():
+    results.append(output_api.PresubmitError(
+        'USE_PYTHON3 is defined; update the tests in //PRESUBMIT.py and '
+        '//tests/PRESUBMIT.py.'))
+  elif sys.version_info.major != 2:
+    results.append(output_api.PresubmitError(
+        'Did not use Python2 for //PRESUBMIT.py by default.'))
+
   results.extend(input_api.canned_checks.CheckJsonParses(
       input_api, output_api))
 
@@ -90,7 +107,7 @@ def CommonChecks(input_api, output_api, tests_to_skip_list, run_on_python3):
       'tests',
       files_to_check=test_to_run_list,
       files_to_skip=tests_to_skip_list,
-      run_on_python3=run_on_python3))
+      run_on_python3=False))
 
   # Validate CIPD manifests.
   root = input_api.os_path.normpath(
@@ -138,15 +155,13 @@ def CheckChangeOnUpload(input_api, output_api):
       input_api, output_api, allow_tbr=False))
   results.extend(input_api.canned_checks.CheckOwnersFormat(
       input_api, output_api))
-  # TODO(ehmaldonado): Run Python 3 tests on upload once Python 3 is
-  # bootstrapped on Linux and Mac.
-  results.extend(CommonChecks(input_api, output_api, tests_to_skip_list, False))
+  results.extend(CommonChecks(input_api, output_api, tests_to_skip_list))
   return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
   output = []
-  output.extend(CommonChecks(input_api, output_api, [], True))
+  output.extend(CommonChecks(input_api, output_api, []))
   output.extend(input_api.canned_checks.CheckDoNotSubmit(
       input_api,
       output_api))

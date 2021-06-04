@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_read_only.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_frame.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_handle.h"
@@ -26,14 +26,48 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
-#include "third_party/blink/renderer/modules/webcodecs/audio_frame.h"
-#include "third_party/blink/renderer/modules/webcodecs/audio_frame_attachment.h"
-#include "third_party/blink/renderer/modules/webcodecs/audio_frame_serialization_data.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data_attachment.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_attachment.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_transfer_list.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
+
+// static
+bool V8ScriptValueSerializerForModules::ExtractTransferable(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> object,
+    wtf_size_t object_index,
+    Transferables& transferables,
+    ExceptionState& exception_state) {
+  // Give the core/ implementation a chance to try first.
+  // If it didn't recognize the kind of object, try the modules types.
+  if (V8ScriptValueSerializer::ExtractTransferable(
+          isolate, object, object_index, transferables, exception_state)) {
+    return true;
+  }
+  if (exception_state.HadException())
+    return false;
+
+  if (V8VideoFrame::HasInstance(object, isolate)) {
+    VideoFrame* video_frame =
+        V8VideoFrame::ToImpl(v8::Local<v8::Object>::Cast(object));
+    VideoFrameTransferList* transfer_list =
+        transferables.GetOrCreateTransferList<VideoFrameTransferList>();
+    if (transfer_list->video_frames.Contains(video_frame)) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "VideoFrame at index " + String::Number(object_index) +
+              " is a duplicate of an earlier VideoFrame.");
+      return false;
+    }
+    transfer_list->video_frames.push_back(video_frame);
+    return true;
+  }
+  return false;
+}
 
 bool V8ScriptValueSerializerForModules::WriteDOMObject(
     ScriptWrappable* wrappable,
@@ -122,25 +156,24 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     }
     return WriteVideoFrameHandle(std::move(handle));
   }
-  if (wrapper_type_info == V8AudioFrame::GetWrapperTypeInfo() &&
+  if (wrapper_type_info == V8AudioData::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::WebCodecsEnabled(
           ExecutionContext::From(GetScriptState()))) {
     if (IsForStorage()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataCloneError,
-          "An AudioFrame cannot be serialized for "
-          "storage.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "AudioData cannot be serialized for "
+                                        "storage.");
       return false;
     }
-    std::unique_ptr<AudioFrameSerializationData> data =
-        wrappable->ToImpl<AudioFrame>()->GetSerializationData();
+    scoped_refptr<media::AudioBuffer> data =
+        wrappable->ToImpl<AudioData>()->data();
     if (!data) {
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
-                                        "An AudioFrame could not be cloned "
+                                        "AudioData could not be cloned "
                                         "because it was closed.");
       return false;
     }
-    return WriteAudioFrameSerializationData(std::move(data));
+    return WriteMediaAudioBuffer(std::move(data));
   }
   return false;
 }
@@ -382,15 +415,15 @@ bool V8ScriptValueSerializerForModules::WriteVideoFrameHandle(
   return true;
 }
 
-bool V8ScriptValueSerializerForModules::WriteAudioFrameSerializationData(
-    std::unique_ptr<AudioFrameSerializationData> audio_data) {
+bool V8ScriptValueSerializerForModules::WriteMediaAudioBuffer(
+    scoped_refptr<media::AudioBuffer> audio_data) {
   auto* attachment =
-      GetSerializedScriptValue()->GetOrCreateAttachment<AudioFrameAttachment>();
-  auto& serialization_data = attachment->SerializationData();
-  serialization_data.push_back(std::move(audio_data));
-  const uint32_t index = static_cast<uint32_t>(serialization_data.size() - 1);
+      GetSerializedScriptValue()->GetOrCreateAttachment<AudioDataAttachment>();
+  auto& audio_buffers = attachment->AudioBuffers();
+  audio_buffers.push_back(std::move(audio_data));
+  const uint32_t index = static_cast<uint32_t>(audio_buffers.size() - 1);
 
-  WriteTag(kAudioFrameTag);
+  WriteTag(kAudioDataTag);
   WriteUint32(index);
 
   return true;

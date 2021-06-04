@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -37,7 +38,7 @@ namespace {
 class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
  public:
   explicit ProtocolHandlerChangeWaiter(ProtocolHandlerRegistry* registry) {
-    registry_observer_.Add(registry);
+    registry_observation_.Observe(registry);
   }
   ProtocolHandlerChangeWaiter(const ProtocolHandlerChangeWaiter&) = delete;
   ProtocolHandlerChangeWaiter& operator=(const ProtocolHandlerChangeWaiter&) =
@@ -49,8 +50,9 @@ class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
   void OnProtocolHandlerRegistryChanged() override { run_loop_.Quit(); }
 
  private:
-  ScopedObserver<ProtocolHandlerRegistry, ProtocolHandlerRegistry::Observer>
-      registry_observer_{this};
+  base::ScopedObservation<ProtocolHandlerRegistry,
+                          ProtocolHandlerRegistry::Observer>
+      registry_observation_{this};
   base::RunLoop run_loop_;
 };
 
@@ -116,11 +118,11 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     ContextMenuEntryAppearsForHandledUrls) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/")));
+      CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
   AddProtocolHandler(std::string("web+search"),
-                     GURL("http://www.google.com/%s"));
+                     GURL("https://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(
@@ -133,11 +135,11 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     UnregisterProtocolHandler) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/")));
+      CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
   AddProtocolHandler(std::string("web+search"),
-                     GURL("http://www.google.com/%s"));
+                     GURL("https://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(
@@ -146,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
   RemoveProtocolHandler(std::string("web+search"),
-                        GURL("http://www.google.com/%s"));
+                        GURL("https://www.google.com/%s"));
   ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
@@ -262,8 +264,9 @@ class RegisterProtocolHandlerAndServiceWorkerInterceptor
   }
 };
 
+// TODO(crbug.com/1204127): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerAndServiceWorkerInterceptor,
-                       RegisterFetchListenerForHTMLHandler) {
+                       DISABLED_RegisterFetchListenerForHTMLHandler) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

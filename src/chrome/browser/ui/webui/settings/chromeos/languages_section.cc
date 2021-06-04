@@ -19,8 +19,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace settings {
@@ -234,8 +236,8 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_BUTTON_DESCRIPTION},
       {"languagesPreferenceTitle",
        IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PREFERENCE_TITLE},
-      {"languagesPreferenceDescription",
-       IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PREFERENCE_DESCRIPTION},
+      {"websiteLanguagesTitle",
+       IDS_OS_SETTINGS_LANGUAGES_WEBSITE_LANGUAGES_TITLE},
       {"translateTargetLabel",
        IDS_OS_SETTINGS_LANGUAGES_TRANSLATE_TARGET_LABEL},
       {"offerToTranslateThisLanguage",
@@ -244,6 +246,8 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_LABEL},
       {"offerTranslationSublabel",
        IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_SUBLABEL},
+      {"offerGoogleTranslateLabel",
+       IDS_OS_SETTINGS_LANGUAGES_OFFER_GOOGLE_TRANSLATE_LABEL},
       {"changeDeviceLanguageDialogTitle",
        IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_DIALOG_TITLE},
       {"selectedDeviceLanguageInstruction",
@@ -252,6 +256,12 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_NOT_SELECTED_DEVICE_LANGUAGE_INSTRUCTION},
       {"changeDeviceLanguageConfirmButtonLabel",
        IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_CONFIRM_BUTTON_LABEL},
+      {"googleAccountLanguageTitle",
+       IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_TITLE},
+      {"googleAccountLanguageDescription",
+       IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_DESCRIPTION},
+      {"manageGoogleAccountLanguageLabel",
+       IDS_OS_SETTINGS_LANGUAGES_MANAGE_GOOGLE_ACCOUNT_LANGUAGE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -261,10 +271,21 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
           IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PREFERENCE_DESCRIPTION,
           base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl)));
   html_source->AddString(
+      "websiteLanguagesDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_OS_SETTINGS_LANGUAGES_WEBSITE_LANGUAGES_DESCRIPTION,
+          base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl)));
+  html_source->AddString(
       "changeDeviceLanguageDialogDescription",
       l10n_util::GetStringFUTF16(
           IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_DIALOG_DESCRIPTION,
           base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl)));
+
+  html_source->AddString(
+      "googleAccountLanguagesURL",
+      net::AppendQueryParameter(GURL(chrome::kGoogleAccountLanguagesURL),
+                                "utm_source", "chrome-settings")
+          .spec());
 }
 
 void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
@@ -292,6 +313,12 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_DESCRIPTION},
       {"addSpellCheckLanguagesTitle",
        IDS_OS_SETTINGS_LANGUAGES_ADD_SPELL_CHECK_LANGUAGES_TITLE},
+      {"searchSpellCheckLanguagesLabel",
+       IDS_OS_SETTINGS_LANGUAGES_SEARCH_SPELL_CHECK_LANGUAGES_LABEL},
+      {"suggestedSpellcheckLanguages",
+       IDS_OS_SETTINGS_LANGUAGES_SUGGESTED_SPELL_CHECK_LANGUAGES_LABEL},
+      {"allSpellcheckLanguages",
+       IDS_OS_SETTINGS_LANGUAGES_ALL_SPELL_CHECK_LANGUAGES_LABEL},
       {"spellCheckLanguageNotAllowed",
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGE_NOT_ALLOWED},
       {"removeSpellCheckLanguageTooltip",
@@ -315,6 +342,12 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_DELETE_DICTIONARY_WORD_TOOLTIP},
       {"noDictionaryWordsLabel",
        IDS_OS_SETTINGS_LANGUAGES_NO_DICTIONARY_WORDS_LABEL},
+      {"imeShortcutReminderTitle",
+       IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_TITLE},
+      {"imeShortcutReminderLastUsed",
+       IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_LAST_USED_IME_DESCRIPTION},
+      {"imeShortcutReminderNext",
+       IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_NEXT_IME_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -350,35 +383,19 @@ LanguagesSection::~LanguagesSection() = default;
 
 void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"orderLanguagesInstructions",
-       IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
       {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
       {"languagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PAGE_TITLE},
       {"inputPageTitle", IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE},
-      {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
-      {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
-      {"inputMethodsListTitle",
-       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
+      {"inputPageTitleV2", IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE_V2},
       {"inputMethodEnabled", IDS_SETTINGS_LANGUAGES_INPUT_METHOD_ENABLED},
-      {"inputMethodsExpandA11yLabel",
-       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL},
       {"inputMethodsManagedbyPolicy",
        IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGED_BY_POLICY},
-      {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
-      {"manageInputMethodsPageTitle",
-       IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
       {"showImeMenu", IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU},
-      {"displayLanguageRestart",
-       IDS_SETTINGS_LANGUAGES_RESTART_TO_DISPLAY_LANGUAGE},
       {"moveDown", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_DOWN},
-      {"displayInThisLanguage",
-       IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
       {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
       {"addLanguagesDialogTitle",
        IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
       {"moveToTop", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_TO_TOP},
-      {"isDisplayedInThisLanguage",
-       IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
       {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
       {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
       {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
@@ -390,14 +407,9 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddLanguagesPageStringsV2(html_source);
   AddInputPageStringsV2(html_source);
 
-  html_source->AddString(
-      "languagesLearnMoreURL",
-      base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
   html_source->AddBoolean("imeOptionsInSettings",
                           base::FeatureList::IsEnabled(
                               ::chromeos::features::kImeOptionsInSettings));
-  // TODO(crbug.com/1097328): Delete this.
-  html_source->AddBoolean("enableLanguageSettingsV2", true);
   html_source->AddBoolean("enableLanguageSettingsV2Update2",
                           IsLanguageSettingsV2Update2Enabled());
 }
@@ -461,13 +473,6 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
       mojom::kEditDictionarySubpagePath);
 
-  // Languages and input details.
-  generator->RegisterTopLevelSubpage(
-      IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE,
-      mojom::Subpage::kLanguagesAndInputDetails,
-      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
-      mojom::kLanguagesAndInputDetailsSubpagePath);
-
   generator->RegisterNestedSetting(mojom::Setting::kAddLanguage,
                                    mojom::Subpage::kLanguages);
   generator->RegisterNestedSetting(mojom::Setting::kShowInputOptionsInShelf,
@@ -479,14 +484,6 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kInputMethodOptions, mojom::Subpage::kInput,
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
       mojom::kInputMethodOptionsSubpagePath);
-
-  // Manage input methods.
-  generator->RegisterNestedSubpage(
-      IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE,
-      mojom::Subpage::kManageInputMethods,
-      mojom::Subpage::kLanguagesAndInputDetails,
-      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
-      mojom::kManageInputMethodsSubpagePath);
 
   // Smart inputs.
   generator->RegisterTopLevelSubpage(

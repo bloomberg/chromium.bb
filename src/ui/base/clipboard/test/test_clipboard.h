@@ -66,6 +66,9 @@ class TestClipboard : public Clipboard {
   void ReadRTF(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                std::string* result) const override;
+  void ReadPng(ClipboardBuffer buffer,
+               const DataTransferEndpoint* data_dst,
+               ReadPngCallback callback) const override;
   void ReadImage(ClipboardBuffer buffer,
                  const DataTransferEndpoint* data_dst,
                  ReadImageCallback callback) const override;
@@ -128,7 +131,7 @@ class TestClipboard : public Clipboard {
     std::string html_src_url;
     SkBitmap image;
     std::vector<ui::FileInfo> filenames;
-    std::unique_ptr<DataTransferEndpoint> data_src = nullptr;
+    std::unique_ptr<DataTransferEndpoint> data_src;
   };
 
   // The non-const versions increment the sequence number as a side effect.

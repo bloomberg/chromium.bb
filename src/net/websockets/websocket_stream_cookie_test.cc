@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -156,7 +155,7 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
   base::RunLoop run_loop;
   auto cookie =
       CanonicalCookie::Create(cookie_url, cookie_line, base::Time::Now(),
-                              base::nullopt /* server_time */);
+                              absl::nullopt /* server_time */);
   store->SetCanonicalCookieAsync(
       std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieHelperFunction, run_loop.QuitClosure(),

@@ -23,7 +23,6 @@ group("resources") {
     public_deps += [
       ":component_extension_resources",
       ":dev_ui_paks",
-      ":local_ntp_resources",
       ":webid_resources",
       "bookmarks:resources",
       "commander:resources",
@@ -34,11 +33,15 @@ group("resources") {
       "history:resources",
       "memories:resources",
       "new_tab_page:resources",
+      "new_tab_page_instant:resources",
       "new_tab_page_third_party:resources",
       "read_later:resources",
       "settings:resources",
       "tab_search:resources",
     ]
+    if (is_chrome_branded) {
+      public_deps += [ "media_router:cast_feedback_ui_resources" ]
+    }
   }
 
   if (is_chromeos_ash) {
@@ -52,6 +55,7 @@ group("resources") {
       "chromeos/login:resources",
       "chromeos/multidevice_internals:resources",
       "chromeos/network_ui:resources",
+      "chromeos/projector:resources",
       "nearby_internals:resources",
       "nearby_share:resources",
       "settings/chromeos:resources",
@@ -112,12 +116,12 @@ if (enable_js_type_check) {
         "history:closure_compile",
         "inline_login:closure_compile",
         "internals/user_education:closure_compile",
-        "local_ntp:closure_compile",
         "management:closure_compile",
         "media_router:closure_compile",
         "memories:closure_compile",
         "nearby_internals:closure_compile",
         "new_tab_page:closure_compile",
+        "new_tab_page_instant:closure_compile",
         "new_tab_page_third_party:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
@@ -140,13 +144,11 @@ if (enable_js_type_check) {
     if (is_chromeos_ash) {
       deps += [
         "chromeos:closure_compile",
+        "chromeos/projector:closure_compile",
         "nearby_share:closure_compile",
         "nearby_share/shared:closure_compile",
         "nearby_share/shared:closure_compile_module",
       ]
-    }
-    if (!is_android && !is_chromeos_ash) {
-      deps += [ "welcome:closure_compile" ]
     }
     if (enable_extensions) {
       deps += [ "extensions:closure_compile" ]
@@ -167,6 +169,7 @@ if (enable_js_type_check) {
       deps += [
         "explore_sites_internals:closure_compile",
         "feed_internals:closure_compile",
+        "internals/lens:closure_compile",
         "internals/notifications:closure_compile",
         "internals/query_tiles:closure_compile",
         "offline_pages:closure_compile",
@@ -205,16 +208,6 @@ if (!is_android) {
       "grit/component_extension_resources_map.cc",
       "grit/component_extension_resources_map.h",
       "component_extension_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
-  grit("local_ntp_resources") {
-    source = "local_ntp/local_ntp_resources.grd"
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/local_ntp_resources.h",
-      "local_ntp_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

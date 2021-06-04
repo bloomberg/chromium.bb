@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1096883626080133124">Get more done with a simple, secure and faster-than-ever Google Chrome</translation>
 <translation id="1282031177488366470">Help improve Chrome's features and performance</translation>
 <translation id="1314663809820920746">You can still see all your bookmarks, history, passwords and other settings on this device. If you make changes, they won't sync to your Google Account.</translation>
 <translation id="1479202195792305274">Chrome can check your passwords when you sign in with your Google Account.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome couldn't check for updates. Try checking your Internet connection.</translation>
 <translation id="1682483655351012182">Sync your Chrome data</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Help improve Chrome by sending usage statistics and crash reports to Google</translation>
 <translation id="1917964099031477364">This account and any unsaved data will be removed from Chrome and other Google apps on this device.</translation>
 <translation id="2009224836393115614">Chrome couldn't check your passwords. Try checking your Internet connection.</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome couldn't check for updates. Try again later.</translation>
 <translation id="2732745070297234559">Chrome couldn't check all passwords. Try again tomorrow.</translation>
 <translation id="2740105938841089077">Use Chrome to open links</translation>
+<translation id="2869959624320573933">Sign in to Chrome</translation>
 <translation id="2919738076569633423">By using Chrome, you agree to the <ph name="BEGIN_LINK_TOS" />Terms of Service<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />, your Chrome data will be deleted from this device. Your data will remain in your Google Account.</translation>
 <translation id="3167189358072330585">Your account does not work on Google Chrome. Please contact your domain administrator or use a regular Google Account to sign in.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
+<translation id="3455456143708465450">To get the most out of Chrome, sign in with your Google Account</translation>
 <translation id="3522659714780527202">To see your tabs from wherever you use Chrome, turn on sync</translation>
 <translation id="3533694711092285624">No saved passwords. Chrome can check your passwords when you save them.</translation>
 <translation id="3706101708757577809">You can now use Chrome any time that you tap links in messages, documents and other apps.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">If you allow Chrome to know your location, Chrome sends it to any sites that you allow. Sites may ask for your location when they have local info to show you, like nearby shops or news.</translation>
 <translation id="6036420186814142909">Google Chrome has features that help you manage your internet data and how quickly you're able to load web pages.
 <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Allow Chrome sign-in</translation>
 <translation id="6181930887571472871">Switch to Chrome</translation>
 <translation id="6238746320622508509">Let Chrome lock your incognito tabs.</translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Clear your Chrome data from this device?</translation>
 <translation id="6822673484890854830">Chrome couldn't check all passwords. Try again later.</translation>
 <translation id="6964931465519938134">You can now use Chrome whenever you tap on links in messages, documents and other apps.</translation>
+<translation id="7059914902409643750">Make Chrome your own</translation>
 <translation id="7124339256045485976">Keep Chrome up to date</translation>
 <translation id="7161390184744336561">Google Chrome is out of date</translation>
 <translation id="7165736900384873061">Start Using Google Chrome QR Scanner</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome is up to date</translation>
 <translation id="8022947259858476807">Use Chrome by default to open links, search from widgets and auto-fill passwords in other apps</translation>
 <translation id="8160472928944011082">Chrome can't update</translation>
+<translation id="8263079278049777200">Sign in to this site, your Google Account and Chrome. You can turn on sync later.</translation>
 <translation id="8357607116237445042">Choose whether to clear your Chrome data from this device or keep it</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">Some add-ons cause Chrome to crash. Please try uninstalling them.</translation>
@@ -95,5 +102,6 @@
   3. Select Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Stay safe with Google Chrome</translation>
+<translation id="8772179140489533211">Shows prompts to sign in to Chrome.</translation>
 <translation id="9112744793181547300">Set Chrome as default?</translation>
 </translationbundle>

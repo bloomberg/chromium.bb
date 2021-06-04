@@ -36,6 +36,7 @@
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/pem.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -200,9 +201,8 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
       return new CertVerifyProcWin();
 #endif
     case CERT_VERIFY_PROC_BUILTIN:
-      return CreateCertVerifyProcBuiltin(
-          std::move(cert_net_fetcher),
-          SystemTrustStoreProvider::CreateDefaultForSSL());
+      return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
+                                         CreateSslSystemTrustStore());
     default:
       return nullptr;
   }
@@ -2948,7 +2948,7 @@ class CertVerifyProcInternalWithNetFetchingTest
     // initialization to complete on that thread.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     network_thread_ = std::make_unique<base::Thread>("network_thread");
-    CHECK(network_thread_->StartWithOptions(options));
+    CHECK(network_thread_->StartWithOptions(std::move(options)));
 
     base::WaitableEvent initialization_complete_event(
         base::WaitableEvent::ResetPolicy::MANUAL,

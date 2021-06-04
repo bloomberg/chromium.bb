@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -43,7 +42,7 @@ WaylandInputEmulate::WaylandInputEmulate() {
 
   wayland_proxy->SetDelegate(this);
 
-  registry_ = wl_display_get_registry(wayland_proxy->GetDisplay());
+  registry_ = wl_display_get_registry(wayland_proxy->GetDisplayWrapper());
   if (!registry_)
     LOG(FATAL) << "Failed to get Wayland registry";
 
@@ -53,7 +52,7 @@ WaylandInputEmulate::WaylandInputEmulate() {
   wl_registry_add_listener(registry_, &registry_listener, this);
 
   // Roundtrip one time to get the weston-test global.
-  wl_display_roundtrip(wayland_proxy->GetDisplay());
+  wayland_proxy->RoundTripQueue();
   if (!weston_test_)
     LOG(FATAL) << "weston-test is not available.";
 

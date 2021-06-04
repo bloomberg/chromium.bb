@@ -59,7 +59,7 @@ DomStorageDatabase::KeyValuePair MakeKeyValuePair(base::StringPiece key,
 }
 
 std::string MakePrefixedKey(base::StringPiece prefix, base::StringPiece key) {
-  return prefix.as_string() + key.as_string();
+  return std::string(prefix) + std::string(key);
 }
 
 class StorageServiceDomStorageDatabaseTest : public testing::Test {
@@ -75,7 +75,7 @@ class StorageServiceDomStorageDatabaseTest : public testing::Test {
     base::SequenceBound<DomStorageDatabase> result;
     base::RunLoop loop;
     DomStorageDatabase::OpenInMemory(
-        db_name, /*memory_dump_id=*/base::nullopt, blocking_task_runner_,
+        db_name, /*memory_dump_id=*/absl::nullopt, blocking_task_runner_,
         base::BindLambdaForTesting(
             [&](base::SequenceBound<DomStorageDatabase> database,
                 leveldb::Status status) {
@@ -94,7 +94,7 @@ class StorageServiceDomStorageDatabaseTest : public testing::Test {
     base::SequenceBound<DomStorageDatabase> result;
     base::RunLoop loop;
     DomStorageDatabase::OpenDirectory(
-        directory, db_name, options, /*memory_dump_id=*/base::nullopt,
+        directory, db_name, options, /*memory_dump_id=*/absl::nullopt,
         blocking_task_runner_,
         base::BindLambdaForTesting(
             [&](base::SequenceBound<DomStorageDatabase> database,

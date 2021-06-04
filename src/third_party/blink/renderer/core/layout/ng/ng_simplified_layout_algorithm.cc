@@ -27,6 +27,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     : NGLayoutAlgorithm(params),
       previous_result_(result),
       writing_direction_(Style().GetWritingDirection()) {
+  DCHECK(!Node().IsReplaced());
+
   const bool is_block_flow = Node().IsBlockFlow();
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
@@ -61,8 +63,6 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     if (result.IsPushedByFloats())
       container_builder_.SetIsPushedByFloats();
     container_builder_.SetAdjoiningObjectTypes(result.AdjoiningObjectTypes());
-    container_builder_.SetUnpositionedListMarker(
-        result.UnpositionedListMarker());
 
     if (physical_fragment.LastBaseline())
       container_builder_.SetLastBaseline(*physical_fragment.LastBaseline());
@@ -98,7 +98,6 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     DCHECK(!result.IsSelfCollapsing());
     DCHECK(!result.IsPushedByFloats());
     DCHECK_EQ(result.AdjoiningObjectTypes(), kAdjoiningNone);
-    DCHECK(!result.UnpositionedListMarker());
 
     DCHECK(!physical_fragment.LastBaseline());
 
@@ -178,8 +177,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
       To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment());
 
   for (const auto& child_link : previous_fragment.Children()) {
-    const auto& child_fragment =
-        *To<NGPhysicalContainerFragment>(child_link.get());
+    const auto& child_fragment = *child_link.get();
 
     // We'll add OOF-positioned candidates below.
     if (child_fragment.IsOutOfFlowPositioned())
@@ -249,6 +247,8 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
   }
   container_builder_.SetMayHaveDescendantAboveBlockStart(
       previous_fragment.MayHaveDescendantAboveBlockStart());
+  container_builder_.SetHasDescendantThatDependsOnPercentageBlockSize(
+      previous_result_.HasDescendantThatDependsOnPercentageBlockSize());
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
@@ -276,7 +276,7 @@ NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
 
 void NGSimplifiedLayoutAlgorithm::AddChildFragment(
     const NGLink& old_fragment,
-    const NGPhysicalContainerFragment& new_fragment,
+    const NGPhysicalFragment& new_fragment,
     const NGMarginStrut* margin_strut,
     bool is_self_collapsing) {
   DCHECK_EQ(old_fragment->Size(), new_fragment.Size());
@@ -286,12 +286,13 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
       WritingModeConverter(writing_direction_,
                            previous_physical_container_size_)
           .ToLogical(old_fragment.Offset(), new_fragment.Size());
+  // Any relative offset will have already been applied, avoid re-adding one.
+  absl::optional<LogicalOffset> relative_offset = LogicalOffset();
 
   // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset,
                               /* inline_container */ nullptr, margin_strut,
-                              is_self_collapsing,
-                              /* offset_includes_relative_position */ true);
+                              is_self_collapsing, relative_offset);
 }
 
 }  // namespace blink

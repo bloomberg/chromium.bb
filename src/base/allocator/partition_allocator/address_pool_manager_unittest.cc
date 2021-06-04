@@ -45,7 +45,7 @@ class AddressPoolManagerTest : public testing::Test {
 
   AddressPoolManager* GetAddressPoolManager() { return manager_.get(); }
 
-  static constexpr size_t kPageCnt = 8192;
+  static constexpr size_t kPageCnt = 4096;
   static constexpr size_t kPoolSize = kSuperPageSize * kPageCnt;
 
   std::unique_ptr<AddressPoolManagerForTesting> manager_;
@@ -192,16 +192,18 @@ TEST(AddressPoolManagerTest, IsManagedByNonBRPPool) {
   void* addrs[kAllocCount];
   for (size_t i = 0; i < kAllocCount; ++i) {
     addrs[i] = AddressPoolManager::GetInstance()->Reserve(
-        GetNonBRPPool(), nullptr, PageAllocationGranularity() * kNumPages[i]);
+        GetNonBRPPool(), nullptr,
+        DirectMapAllocationGranularity() * kNumPages[i]);
     EXPECT_TRUE(addrs[i]);
     EXPECT_TRUE(
         !(reinterpret_cast<uintptr_t>(addrs[i]) & kSuperPageOffsetMask));
   }
   for (size_t i = 0; i < kAllocCount; ++i) {
     const char* ptr = reinterpret_cast<const char*>(addrs[i]);
-    size_t num_pages = bits::AlignUp(kNumPages[i] * PageAllocationGranularity(),
-                                     kSuperPageSize) /
-                       PageAllocationGranularity();
+    size_t num_pages =
+        bits::AlignUp(kNumPages[i] * DirectMapAllocationGranularity(),
+                      kSuperPageSize) /
+        DirectMapAllocationGranularity();
     for (size_t j = 0; j < num_pages; ++j) {
       if (j < kNumPages[i]) {
         EXPECT_TRUE(AddressPoolManager::IsManagedByNonBRPPool(ptr));
@@ -209,12 +211,13 @@ TEST(AddressPoolManagerTest, IsManagedByNonBRPPool) {
         EXPECT_FALSE(AddressPoolManager::IsManagedByNonBRPPool(ptr));
       }
       EXPECT_FALSE(AddressPoolManager::IsManagedByBRPPool(ptr));
-      ptr += PageAllocationGranularity();
+      ptr += DirectMapAllocationGranularity();
     }
   }
   for (size_t i = 0; i < kAllocCount; ++i) {
     AddressPoolManager::GetInstance()->UnreserveAndDecommit(
-        GetNonBRPPool(), addrs[i], PageAllocationGranularity() * kNumPages[i]);
+        GetNonBRPPool(), addrs[i],
+        DirectMapAllocationGranularity() * kNumPages[i]);
     EXPECT_FALSE(AddressPoolManager::IsManagedByNonBRPPool(addrs[i]));
     EXPECT_FALSE(AddressPoolManager::IsManagedByBRPPool(addrs[i]));
   }

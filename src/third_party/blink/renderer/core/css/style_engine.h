@@ -186,7 +186,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   void InitialViewportChanged();
   void ViewportRulesChanged();
-  void HtmlImportAddedOrRemoved();
 
   void InjectSheet(const StyleSheetKey&, StyleSheetContents*,
                    WebDocument::CSSOrigin =
@@ -196,16 +195,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                WebDocument::kAuthorOrigin);
   CSSStyleSheet& EnsureInspectorStyleSheet();
   RuleSet* WatchedSelectorsRuleSet() {
-    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     return global_rule_set_->WatchedSelectorsRuleSet();
   }
 
   RuleSet* RuleSetForSheet(CSSStyleSheet&);
   void MediaQueryAffectingValueChanged(MediaValueChange change);
-  void UpdateActiveStyleSheetsInImport(
-      StyleEngine& root_engine,
-      DocumentStyleSheetCollector& parent_collector);
   void UpdateActiveStyle();
 
   String PreferredStylesheetSetName() const {
@@ -274,7 +269,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool MediaQueryAffectedByViewportChange();
   bool MediaQueryAffectedByDeviceChange();
   bool HasViewportDependentMediaQueries() {
-    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     UpdateActiveStyle();
     return !global_rule_set_->GetRuleFeatureSet()
@@ -473,8 +467,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void MarkTreeScopeDirty(TreeScope&);
   void MarkUserStyleDirty();
 
-  bool IsHTMLImport() const { return is_html_import_; }
-  Document* HTMLImportRootDocument();
   Document& GetDocument() const { return *document_; }
 
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
@@ -488,7 +480,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                        MediaValueChange);
 
   const RuleFeatureSet& GetRuleFeatureSet() const {
-    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     return global_rule_set_->GetRuleFeatureSet();
   }
@@ -572,9 +563,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void RecalcStyle(StyleRecalcChange, const StyleRecalcContext&);
 
   Member<Document> document_;
-
-  // True if this StyleEngine is for an HTML Import document.
-  bool is_html_import_{false};
 
   // Tracks the number of currently loading top-level stylesheets. Sheets loaded
   // using the @import directive are not included in this count. We use this
@@ -721,4 +709,4 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ENGINE_H_

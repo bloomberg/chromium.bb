@@ -39,8 +39,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
-import {Icon} from './Icon.js';                            // eslint-disable-line no-unused-vars
-import {Config, InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
+import type {Icon} from './Icon.js'; // eslint-disable-line no-unused-vars
+import type {Config} from './InplaceEditor.js';
+import {InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
 import {Keys} from './KeyboardShortcut.js';
 import {Tooltip} from './Tooltip.js';
 import {deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing} from './UIUtils.js';
@@ -63,6 +64,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
   _useLightSelectionColor: boolean;
   _treeElementToScrollIntoView: TreeElement|null;
   _centerUponScrollIntoView: boolean;
+
   constructor() {
     super();
     this._rootElement = this._createRootElement();
@@ -435,6 +437,7 @@ export class TreeElement {
   _leadingIconsElement: HTMLElement|null;
   _trailingIconsElement: HTMLElement|null;
   _selectionElement: HTMLElement|null;
+  _disableSelectFocus: boolean;
   constructor(title?: string|Node, expandable?: boolean) {
     this.treeOutline = null;
     this.parent = null;
@@ -474,6 +477,7 @@ export class TreeElement {
     this._leadingIconsElement = null;
     this._trailingIconsElement = null;
     this._selectionElement = null;
+    this._disableSelectFocus = false;
   }
 
   static getTreeElementBylistItemNode(node: Node): TreeElement|undefined {
@@ -1133,6 +1137,7 @@ export class TreeElement {
   }
 
   select(omitFocus?: boolean, selectedByUser?: boolean): boolean {
+    omitFocus = omitFocus || this._disableSelectFocus;
     if (!this.treeOutline || !this.selectable || this.selected) {
       if (!omitFocus) {
         this.listItemElement.focus();
@@ -1350,5 +1355,9 @@ export class TreeElement {
     const computedLeftPadding = parseFloat(paddingLeftValue);
     const left = this._listItemNode.totalOffsetLeft() + computedLeftPadding;
     return event.pageX >= left && event.pageX <= left + arrowToggleWidth && this._expandable;
+  }
+
+  setDisableSelectFocus(toggle: boolean): void {
+    this._disableSelectFocus = toggle;
   }
 }

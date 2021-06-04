@@ -29,11 +29,13 @@ LoadStreamFromStoreTask::Result& LoadStreamFromStoreTask::Result::operator=(
 
 LoadStreamFromStoreTask::LoadStreamFromStoreTask(
     LoadType load_type,
+    FeedStream* feed_stream,
     const StreamType& stream_type,
     FeedStore* store,
     bool missed_last_refresh,
     base::OnceCallback<void(Result)> callback)
     : load_type_(load_type),
+      feed_stream_(feed_stream),
       stream_type_(stream_type),
       store_(store),
       missed_last_refresh_(missed_last_refresh),
@@ -56,29 +58,33 @@ void LoadStreamFromStoreTask::LoadStreamDone(
   }
   pending_actions_ = std::move(result.pending_actions);
 
-  if (load_type_ == LoadType::kPendingActionsOnly) {
-    Complete(LoadStreamStatus::kLoadedFromStore);
-    return;
-  }
-
   if (result.stream_structures.empty()) {
     Complete(LoadStreamStatus::kNoStreamDataInStore);
     return;
   }
+  content_ids_ = feedstore::GetContentIds(result.stream_data);
   if (!ignore_staleness_) {
-    last_added_time_ = feedstore::GetLastAddedTime(result.stream_data);
-    content_age_ = base::Time::Now() - last_added_time_;
+    content_age_ =
+        base::Time::Now() - feedstore::GetLastAddedTime(result.stream_data);
+
     if (content_age_ > GetFeedConfig().content_expiration_threshold) {
       Complete(LoadStreamStatus::kDataInStoreIsExpired);
       return;
     }
     if (content_age_ < base::TimeDelta()) {
       stale_reason_ = LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture;
-    } else if (ShouldWaitForNewContent(true, content_age_)) {
+    } else if (ShouldWaitForNewContent(feed_stream_->GetMetadata(),
+                                       result.stream_type, true,
+                                       content_age_)) {
       stale_reason_ = LoadStreamStatus::kDataInStoreIsStale;
     } else if (missed_last_refresh_) {
       stale_reason_ = LoadStreamStatus::kDataInStoreStaleMissedLastRefresh;
     }
+  }
+
+  if (load_type_ == LoadType::kLoadNoContent) {
+    Complete(LoadStreamStatus::kLoadedFromStore);
+    return;
   }
 
   std::vector<ContentId> referenced_content_ids;
@@ -147,7 +153,7 @@ void LoadStreamFromStoreTask::Complete(LoadStreamStatus status) {
     task_result.status = status;
   }
   task_result.content_age = content_age_;
-  task_result.last_added_time = last_added_time_;
+  task_result.content_ids = content_ids_;
   std::move(result_callback_).Run(std::move(task_result));
   TaskComplete();
 }

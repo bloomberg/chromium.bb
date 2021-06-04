@@ -73,8 +73,7 @@ public class MerchantTrustSignalsCoordinator {
 
         mMediator = new MerchantTrustSignalsMediator(tabModelSelector, this::maybeDisplayMessage);
         mMessageScheduler = messageScheduler;
-        mDetailsTabCoordinator = new MerchantTrustDetailsTabCoordinator(
-                context, windowAndroid, bottomSheetController, tabSupplier, layoutView, mMetrics);
+        mDetailsTabCoordinator = detailsTabCoordinator;
     }
 
     /** Cleans up internal state. */
@@ -107,7 +106,8 @@ public class MerchantTrustSignalsCoordinator {
         }
     }
 
-    private void onMessageEnqueued(MerchantTrustMessageContext messageContext) {
+    @VisibleForTesting
+    void onMessageEnqueued(MerchantTrustMessageContext messageContext) {
         if (messageContext == null) {
             return;
         }

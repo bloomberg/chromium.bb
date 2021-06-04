@@ -22,7 +22,7 @@
 #         release release-x64 ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
-#         apple apple-apple-m1 apple-metal-renderer:-apple-m1
+#         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
@@ -88,7 +88,7 @@ crbug.com/1009860 [ chromeos ] SwapChainTraceTest_* [ Skip ]
 crbug.com/1009860 [ win7 ] SwapChainTraceTest_* [ Skip ]
 crbug.com/1009860 [ fuchsia ] SwapChainTraceTest_* [ Skip ]
 
-# Playing videos not yet supported in Fuchsia.
+# Playing videos not supported in Fuchsia emulators.
 crbug.com/1096431 [ fuchsia fuchsia-board-qemu-x64 ] TraceTest_Video_BackdropFilter [ Skip ]
 crbug.com/1096431 [ fuchsia fuchsia-board-qemu-x64 ] TraceTest_Video_MP4 [ Skip ]
 crbug.com/1096431 [ fuchsia fuchsia-board-qemu-x64 ] TraceTest_Video_MP4_DXVA [ Skip ]
@@ -143,7 +143,7 @@ crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Un
 crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Video_MP4_Fullsize [ Failure ]
 
 # Fuchsia Flakes.
-crbug.com/1058255 [ fuchsia ] TraceTest_WebGLGreenTriangle_AA_Alpha [ Skip ]
+crbug.com/1058255 [ fuchsia ] TraceTest_WebGLGreenTriangle_AA_Alpha [ Failure ]
 
 # Software compositing is not supported on Android/ChromeOS/Fuchsia: we skip the
 # tests that disable GPU compositing (--disable-gpu-compositing).
@@ -170,3 +170,7 @@ crbug.com/1119491 [ win intel ] OverlayModeTraceTest_DirectComposition_Video_VP9
 # Failed to create YUY2 swap chain on Win10 AMD RX 5500 XT
 crbug.com/1151767 [ win10 amd-0x7340 ] VideoPathTraceTest_DirectComposition_Video_MP4_YUY2 [ Failure ]
 crbug.com/1151767 [ win10 amd-0x7340 ] VideoPathTraceTest_DirectComposition_Video_VP9_YUY2 [ Failure ]
+
+# Flakes on Linux
+crbug.com/1209284 [ linux nvidia-0x1cb3 skia-renderer-gl ] TraceTest_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
+crbug.com/1209284 [ linux nvidia-0x1cb3 skia-renderer-gl ] TraceTest_WebGLReadPixelsTabSwitch [ RetryOnFailure ]

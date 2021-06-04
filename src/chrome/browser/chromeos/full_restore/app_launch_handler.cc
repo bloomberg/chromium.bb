@@ -10,13 +10,19 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
+#include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_read_handler.h"
 #include "components/full_restore/full_restore_save_handler.h"
@@ -29,6 +35,39 @@
 
 namespace chromeos {
 namespace full_restore {
+
+namespace {
+
+constexpr char kRestoredAppLaunchHistogramPrefix[] = "Apps.RestoredAppLaunch";
+constexpr char kArcGhostWindowLaunchHistogramPrefix[] =
+    "Apps.ArcGhostWindowLaunch";
+
+// Returns apps::AppTypeName used for metrics.
+apps::AppTypeName GetHistogrameAppType(apps::mojom::AppType app_type) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+      return apps::AppTypeName::kUnknown;
+    case apps::mojom::AppType::kArc:
+      return apps::AppTypeName::kArc;
+    case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kCrostini:
+      return apps::AppTypeName::kUnknown;
+    case apps::mojom::AppType::kExtension:
+      return apps::AppTypeName::kChromeApp;
+    case apps::mojom::AppType::kWeb:
+      return apps::AppTypeName::kWeb;
+    case apps::mojom::AppType::kMacOs:
+    case apps::mojom::AppType::kPluginVm:
+    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::mojom::AppType::kRemote:
+    case apps::mojom::AppType::kBorealis:
+      return apps::AppTypeName::kUnknown;
+    case apps::mojom::AppType::kSystemWeb:
+      return apps::AppTypeName::kSystemWeb;
+  }
+}
+
+}  // namespace
 
 AppLaunchHandler::AppLaunchHandler(Profile* profile) : profile_(profile) {
   // FullRestoreReadHandler reads the full restore data from the full restore
@@ -161,7 +200,19 @@ void AppLaunchHandler::LaunchBrowser() {
     return;
   }
 
+  RecordRestoredAppLaunch(apps::AppTypeName::kChromeBrowser);
+
   restore_data_->RemoveApp(extension_misc::kChromeAppId);
+
+  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kHideCrashRestoreBubble);
+  }
+
+  // Modify the command line to restore browser sessions.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kRestoreLastSession);
+
   UserSessionManager::GetInstance()->LaunchBrowser(profile_);
   UserSessionManager::GetInstance()->MaybeLaunchSettings(profile_);
 }
@@ -195,14 +246,14 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
       FALLTHROUGH;
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
-      LaunchSystemWebAppOrChromeApp(app_id, it->second);
+      LaunchSystemWebAppOrChromeApp(app_type, app_id, it->second);
       break;
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
       NOTREACHED();
@@ -212,6 +263,7 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
 }
 
 void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
+    apps::mojom::AppType app_type,
     const std::string& app_id,
     const ::full_restore::RestoreData::LaunchList& launch_list) {
   auto* launcher = apps::AppServiceProxyFactory::GetForProfile(profile_)
@@ -220,6 +272,8 @@ void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
     return;
 
   for (const auto& it : launch_list) {
+    RecordRestoredAppLaunch(GetHistogrameAppType(app_type));
+
     DCHECK(it.second->container.has_value());
     DCHECK(it.second->disposition.has_value());
     DCHECK(it.second->display_id.has_value());
@@ -243,10 +297,15 @@ void AppLaunchHandler::LaunchArcApp(
     const ::full_restore::RestoreData::LaunchList& launch_list) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
+  auto* arc_handler = FullRestoreArcTaskHandler::GetForProfile(profile_);
 
   for (const auto& it : launch_list) {
+    RecordRestoredAppLaunch(apps::AppTypeName::kArc);
+
     DCHECK(it.second->event_flag.has_value());
-    apps::mojom::WindowInfoPtr window_info = it.second->GetAppWindowInfo();
+
+    apps::mojom::WindowInfoPtr window_info =
+        HandleArcWindowInfo(it.second->GetAppWindowInfo());
 
     // Set an ARC session id to find the restore window id based on the new
     // created ARC task id in FullRestoreReadHandler.
@@ -256,6 +315,17 @@ void AppLaunchHandler::LaunchArcApp(
     window_info->window_id = arc_session_id;
     ::full_restore::FullRestoreReadHandler::GetInstance()
         ->SetArcSessionIdForWindowId(arc_session_id, it.first);
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+    if (!window_info->bounds.is_null() && arc_handler &&
+        arc_handler->window_handler()) {
+      RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/true);
+      arc_handler->window_handler()->LaunchArcGhostWindow(
+          app_id, arc_session_id, it.second.get());
+    } else {
+      RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/false);
+    }
+#endif
 
     if (it.second->intent.has_value()) {
       proxy->LaunchAppWithIntent(app_id, it.second->event_flag.value(),
@@ -268,6 +338,17 @@ void AppLaunchHandler::LaunchArcApp(
                     std::move(window_info));
     }
   }
+}
+
+void AppLaunchHandler::RecordRestoredAppLaunch(
+    apps::AppTypeName app_type_name) {
+  base::UmaHistogramEnumeration(kRestoredAppLaunchHistogramPrefix,
+                                app_type_name);
+}
+
+void AppLaunchHandler::RecordArcGhostWindowLaunch(bool is_arc_ghost_window) {
+  base::UmaHistogramBoolean(kArcGhostWindowLaunchHistogramPrefix,
+                            is_arc_ghost_window);
 }
 
 }  // namespace full_restore

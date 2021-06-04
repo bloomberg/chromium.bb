@@ -113,8 +113,8 @@ for message parameters.
 
 Every Mojom file may optionally specify a single **module** to which it belongs.
 
-This is used strictly for aggregaging all defined symbols therein within a
-common Mojom namespace. The specific impact this has on generated binidngs code
+This is used strictly for aggregating all defined symbols therein within a
+common Mojom namespace. The specific impact this has on generated bindings code
 varies for each target language. For example, if the following Mojom is used to
 generate bindings:
 
@@ -132,7 +132,7 @@ Generated C++ bindings will define a class interface `MoneyGenerator` in the
 bindings at this time are unaffected by module declarations.
 
 **NOTE:** By convention in the Chromium codebase, **all** Mojom files should
-declare a module name with at least (and preferrably exactly) one top-level name
+declare a module name with at least (and preferably exactly) one top-level name
 as well as an inner `mojom` module suffix. *e.g.*, `chrome.mojom`,
 `business.mojom`, *etc.*
 
@@ -271,7 +271,7 @@ code, see
 ### Unions
 
 Mojom supports tagged unions using the **union** keyword. A union is a
-collection of fields which may taken the value of any single one of those fields
+collection of fields which may take the value of any single one of those fields
 at a time. Thus they provide a way to represent a variant value type while
 minimizing storage requirements.
 
@@ -320,7 +320,7 @@ enum definition. By default, values are based at zero and increment by
 1 sequentially.
 
 The effect of nested definitions on generated bindings varies depending on the
-target language. See [documentation for individual target languages](#Generated-Code-For-Target-Languages)
+target language. See [documentation for individual target languages](#Generated-Code-For-Target-Languages).
 
 ### Constants
 
@@ -346,7 +346,7 @@ struct Employee {
 ```
 
 The effect of nested definitions on generated bindings varies depending on the
-target language. See [documentation for individual target languages](#Generated-Code-For-Target-Languages)
+target language. See [documentation for individual target languages](#Generated-Code-For-Target-Languages).
 
 ### Interfaces
 
@@ -386,6 +386,14 @@ interesting attributes supported today.
   Calls](/mojo/public/cpp/bindings/README.md#Synchronous-Calls) in the C++
   bindings documentation. Note that sync methods are only actually synchronous
   when called from C++.
+
+* **`[NoInterrupt]`**:
+  When a thread is waiting for a reply to a `Sync` message, it's possible to be
+  woken up to dispatch other unrelated incoming `Sync` messages. This measure
+  helps to avoid deadlocks. If a `Sync` message is also marked as `NoInterrupt`
+  however, this behavior is disabled: instead the calling thread will only wake
+  up for the precise message being waited upon. This attribute must be used with
+  extreme caution, because it can lead to deadlocks otherwise.
 
 * **`[Default]`**:
   The `Default` attribute may be used to specify an enumerator value that
@@ -446,7 +454,7 @@ interesting attributes supported today.
 
 When the bindings generator successfully processes an input Mojom file, it emits
 corresponding code for each supported target language. For more details on how
-Mojom concepts translate to a given target langauge, please refer to the
+Mojom concepts translate to a given target language, please refer to the
 bindings API documentation for that language:
 
 * [C++ Bindings](/mojo/public/cpp/bindings/README.md)
@@ -457,7 +465,7 @@ bindings API documentation for that language:
 
 Regardless of target language, all interface messages are validated during
 deserialization before they are dispatched to a receiving implementation of the
-interface. This helps to ensure consitent validation across interfaces without
+interface. This helps to ensure consistent validation across interfaces without
 leaving the burden to developers and security reviewers every time a new message
 is added.
 
@@ -571,7 +579,8 @@ struct Employee {
 };
 ```
 
-and you would like to add birthday and nickname fields. You can do:
+and you would like to add birthday and nickname fields. You can add them as
+optional types with a `MinVersion` like so:
 
 ``` cpp
 struct Employee {
@@ -581,6 +590,12 @@ struct Employee {
   [MinVersion=1] string? nickname;
 };
 ```
+
+*** note
+**NOTE:** Mojo object or handle types added with a `MinVersion` **MUST** be
+optional (nullable). See [Primitive Types](#Primitive-Types) for details on
+nullable values.
+***
 
 By default, fields belong to version 0. New fields must be appended to the
 struct definition (*i.e*., existing fields must not change **ordinal value**)
@@ -626,11 +641,6 @@ struct Employee {
   [MinVersion=1] string? nickname@3;
 };
 ```
-
-*** note
-**NOTE:** Newly added fields of Mojo object or handle types MUST be nullable.
-See [Primitive Types](#Primitive-Types).
-***
 
 ### Versioned Interfaces
 
@@ -757,7 +767,7 @@ where you would use `component` for non-mojom files.
 **NOTE**: by default, components for both blink and non-blink bindings are generated.
 Use the `disable_variants` target parameter to generate only non-blink bindings.
 You can also generate a `source_set` for one of the variants by defining
-[export_*](https://source.chromium.org/chromium/chromium/src/+/master:mojo/public/tools/bindings/mojom.gni;drc=739b9fbce50310c1dd2b59c279cd90a9319cb6e8;l=318)
+[export_*](https://source.chromium.org/chromium/chromium/src/+/main:mojo/public/tools/bindings/mojom.gni;drc=739b9fbce50310c1dd2b59c279cd90a9319cb6e8;l=318)
 parameters for the `mojom_component` target.
 ***
 

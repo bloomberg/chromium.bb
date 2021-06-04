@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">ब्यानर</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> वस्तुहरू</translation>
 <translation id="1480676835519562650">धेरै विकल्प चयन गर्ने सुविधा, <ph name="COUNT" /> मध्ये <ph name="SELECTED" /> चयन गरियो।</translation>
+<translation id="1588438908519853928">सामान्य</translation>
 <translation id="1589122976691792535">क्षेत्र</translation>
 <translation id="1591562245178063882">यो महिना</translation>
 <translation id="1637811476055996098">फाइलहरू छान्नुहोस्</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">टाइमर</translation>
 <translation id="3199563858620722075">कम्बो बाकस</translation>
 <translation id="3220661731597678625">हालको चरण</translation>
+<translation id="3321030238473337787">प्लेब्याकको गति</translation>
 <translation id="3329013043687509092">संतृप्तीकरण</translation>
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM" /> भन्दा थोरै वा बराबर हुनै पर्छ।</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">मेनु बार</translation>
 <translation id="4293574643247337246">पेज हेडर</translation>
 <translation id="4360991593054037559">कृपया एउटा वैध मान प्रविष्टि गर्नुहोस्। दुईवा सबैभण्दा नजिकका वैध मानहरू <ph name="VALID_VALUE_LOW" /> र <ph name="VALID_VALUE_HIGHER" /> हुन्।</translation>
+<translation id="4371899966896349864">प्लेब्याकको गति नामक मेनु लुकाइयोस्</translation>
 <translation id="4384249794467006333">यो फोटोमा लेबल प्रदान गरिएको छैन। फोटोका विवरणहरू प्राप्त गर्न सिरानको दायाँपट्टि रहेको थप विकल्पहरू नामक मेनु खोल्नुहोस्।</translation>
 <translation id="4384583879834880242">प्रश्नोत्तर</translation>
 <translation id="4444765639179266822">निम्न कुरा भन्न खोजे जस्तो छ: <ph name="OCR_TEXT" /></translation>
@@ -147,6 +150,7 @@
 <translation id="512758898067543763">तेर्सो पंक्ति हेडर</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
 <translation id="5164977714490026579">मान <ph name="MINIMUM" /> भन्दा धेरै वा बराबर हुनै पर्छ।</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> पीबी</translation>
 <translation id="5307600278924710095">कृपया '<ph name="ATSIGN" />' पछिको भाग प्रविष्टि गर्नुहोस्। '<ph name="INVALIDADDRESS" />' अपूरो छ।</translation>
 <translation id="5334352251556557839">मिडिया प्ले गर्न सकिएन।</translation>
@@ -157,6 +161,7 @@
 <translation id="5453733299334684579">ट्री वस्तु</translation>
 <translation id="5466621249238537318">कृपया एक वा बढी फाइलहरू चयन गर्नुहोस्।</translation>
 <translation id="5468998798572797635">पूर्ण स्क्रिनबाट निस्कनुहोस्</translation>
+<translation id="5516235301412634559">०.७५</translation>
 <translation id="5516424706154626233">मिति टिप्ने</translation>
 <translation id="5537725057119320332">कास्ट गर्नु</translation>
 <translation id="5546461542133609677">ध्वनि नरोक्नुहोस्</translation>
@@ -168,6 +173,7 @@
 <translation id="5677946354068040947">थप विकल्पहरू</translation>
 <translation id="576709008726043716">परिचय</translation>
 <translation id="57838592816432529">म्यूट गर्नुहोस्</translation>
+<translation id="5786442179789148008">प्लेब्याकको गति नामक मेनु देखाइयोस्</translation>
 <translation id="5787939484346677755">विस्तृत गरियो, यो शब्द स्वतः पूरा गर्ने विकल्पहरू उपलब्ध छन्।</translation>
 <translation id="5860033963881614850">बन्द</translation>
 <translation id="588258955323874662">पूर्णस्क्रिन</translation>
@@ -176,6 +182,7 @@
 <translation id="5916664084637901428">अन</translation>
 <translation id="5939518447894949180">रिसेट गर्नुहोस्</translation>
 <translation id="5966707198760109579">हप्ता</translation>
+<translation id="5985507339671257014">०.५</translation>
 <translation id="5987525920412732405">स्पिन बटन</translation>
 <translation id="6011459053400940133">भोल्युम स्लाइडर</translation>
 <translation id="6015796118275082299">वर्ष</translation>
@@ -214,6 +221,7 @@
 <translation id="6843725295806269523">मौन</translation>
 <translation id="6885760532393684712">निर्देशिका</translation>
 <translation id="689129560213475294">कोलोफन</translation>
+<translation id="6919891270253167948">१.५</translation>
 <translation id="6934078000481955284">ब्लककोट</translation>
 <translation id="693476918119313863">हेडर</translation>
 <translation id="6941933287844615239">मिडिया डाउनलोड गर्नुहोस्</translation>
@@ -250,6 +258,7 @@
 <translation id="7745230546936012372">छविका हराएका वर्णनहरू प्राप्त गर्न सन्दर्भ मेनु खोल्नुहोस्।</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
 <translation id="775297008183122718">अमान्य प्रविष्टि</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">पज गर्नुहोस्</translation>
 <translation id="7802800022689234070">डिस्क्लोजर त्रिकोण</translation>
 <translation id="7852167693871241274">ह्यु स्लाइडर</translation>
@@ -263,6 +272,7 @@
 <translation id="8105797009065549151">टिपोटको सन्दर्भ</translation>
 <translation id="811583516810654505">विवरण प्राप्त गर्दै...</translation>
 <translation id="8117451130807776954">यो हप्ता</translation>
+<translation id="8131955114056917397">०.२५</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">स्थानीय मिति र समय चयनकर्ता</translation>
 <translation id="8261464734335370856">हिज्जेसम्बन्धी त्रुटि</translation>
@@ -287,6 +297,7 @@
 <translation id="8613126697340063924">टाढाको प्लेब्याक नियन्त्रण गर्नुहोस्</translation>
 <translation id="862370744433916922">उपशीर्षक</translation>
 <translation id="8634971699417195529">महिना चयनकर्ता देखाउनुहोस्</translation>
+<translation id="8637593834423658414">१.७५</translation>
 <translation id="8668988909814782445">लाइन र्‍याप गरियोस्</translation>
 <translation id="8711688047404765493">आउटपुट</translation>
 <translation id="8750798805984357768">कृपया यी विकल्पहरू मध्ये एउटा चयन गर्नुहोस्।</translation>

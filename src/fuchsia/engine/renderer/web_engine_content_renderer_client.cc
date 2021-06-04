@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
+#include "components/cast_streaming/renderer/cast_streaming_demuxer.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/on_load_script_injector/renderer/on_load_script_injector.h"
@@ -16,10 +17,10 @@
 #include "content/public/renderer/render_view.h"
 #include "fuchsia/engine/common/cast_streaming.h"
 #include "fuchsia/engine/features.h"
-#include "fuchsia/engine/renderer/cast_streaming_demuxer.h"
 #include "fuchsia/engine/renderer/web_engine_url_loader_throttle_provider.h"
 #include "fuchsia/engine/switches.h"
 #include "media/base/eme_constants.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -66,7 +67,8 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
 
   media::EmeConfigRule GetRobustnessConfigRule(
       media::EmeMediaType media_type,
-      const std::string& requested_robustness) const override {
+      const std::string& requested_robustness,
+      const bool* /*hw_secure_requirement*/) const override {
     // Only empty robustness string is currently supported.
     if (requested_robustness.empty()) {
       return media::EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
@@ -112,12 +114,7 @@ WebEngineRenderFrameObserver*
 WebEngineContentRendererClient::GetWebEngineRenderFrameObserverForRenderFrameId(
     int render_frame_id) const {
   auto iter = render_frame_id_to_observer_map_.find(render_frame_id);
-
-  // TODO(https://crbug.com/1181062): Change this back to a DCHECK once the root
-  // cause of this bug has been found.
-  CHECK(iter != render_frame_id_to_observer_map_.end())
-      << "No WebEngineRenderFrameObserver for RenderFrame ID "
-      << render_frame_id;
+  DCHECK(iter != render_frame_id_to_observer_map_.end());
   return iter->second.get();
 }
 
@@ -144,8 +141,7 @@ void WebEngineContentRendererClient::RenderFrameCreated(
   // Both the RenderView and WebView should be guaranteed to be non-null, since
   // the |render_frame| was only just created.
   if (render_frame->IsMainFrame()) {
-    render_frame->GetRenderView()->GetWebView()->SetBaseBackgroundColor(
-        SK_AlphaTRANSPARENT);
+    render_frame->GetWebView()->SetBaseBackgroundColor(SK_AlphaTRANSPARENT);
   }
 
   // Add WebEngine services to the new RenderFrame.
@@ -240,10 +236,9 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
 
 bool WebEngineContentRendererClient::IsSupportedVideoType(
     const media::VideoType& type) {
-  // Fall back to default codec querying logic if software codecs aren't
-  // disabled.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSoftwareVideoDecoders)) {
+  // Fall back to default codec querying logic if software-only codecs are
+  // enabled.
+  if (base::FeatureList::IsEnabled(features::kEnableSoftwareOnlyVideoCodecs)) {
     return ContentRendererClient::IsSupportedVideoType(type);
   }
 
@@ -275,7 +270,7 @@ WebEngineContentRendererClient::OverrideDemuxerForUrl(
     // CastStreamingDemuxer once the CastStreamingReceiver Component has been
     // implemented.
     if (iter->second->cast_streaming_receiver()->IsBound()) {
-      return std::make_unique<CastStreamingDemuxer>(
+      return std::make_unique<cast_streaming::CastStreamingDemuxer>(
           iter->second->cast_streaming_receiver(), media_task_runner);
     }
   }

@@ -24,7 +24,8 @@ import os
 import pathlib
 import subprocess
 import sys
-from typing import Dict, List
+import zipfile
+from typing import Dict, List, Set
 
 _SRC_DIR = pathlib.Path(__file__).parents[4].resolve()
 
@@ -39,13 +40,16 @@ def main():
   arg_parser.add_argument('-C',
                           '--output-directory',
                           help='Build output directory.')
+  arg_parser.add_argument('--build',
+                          action='store_true',
+                          help='Build all .build_config files.')
   arg_parser.add_argument('classes',
                           nargs='+',
-                          help=f'Java classes to search for')
+                          help='Java classes to search for')
   arg_parser.add_argument('-v',
                           '--verbose',
                           action='store_true',
-                          help=f'Verbose logging.')
+                          help='Verbose logging.')
 
   arguments = arg_parser.parse_args()
 
@@ -57,11 +61,28 @@ def main():
   if arguments.output_directory:
     constants.SetOutputDirectory(arguments.output_directory)
   constants.CheckOutputDirectory()
-  out_dir: str = constants.GetOutDirectory()
+  abs_out_dir: pathlib.Path = pathlib.Path(
+      constants.GetOutDirectory()).resolve()
 
-  index = ClassLookupIndex(pathlib.Path(out_dir))
-  for class_name in arguments.classes:
-    class_entries = index.match(class_name)
+  index = ClassLookupIndex(abs_out_dir, arguments.build)
+  matches = {c: index.match(c) for c in arguments.classes}
+
+  if not arguments.build:
+    # Try finding match without building because it is faster.
+    for class_name, match_list in matches.items():
+      if len(match_list) == 0:
+        arguments.build = True
+        break
+    if arguments.build:
+      index = ClassLookupIndex(abs_out_dir, True)
+      matches = {c: index.match(c) for c in arguments.classes}
+
+  if not arguments.build:
+    print('Showing potentially stale results. Run lookup.dep.py with --build '
+          '(slower) to build any unbuilt GN targets and get full results.')
+    print()
+
+  for (class_name, class_entries) in matches.items():
     if not class_entries:
       print(f'Could not find build target for class "{class_name}"')
     elif len(class_entries) == 1:
@@ -89,8 +110,9 @@ class ClassLookupIndex:
 
   A class might be in multiple targets if it's bytecode rewritten."""
 
-  def __init__(self, build_output_dir: pathlib.Path):
-    self._build_output_dir = build_output_dir
+  def __init__(self, abs_build_output_dir: pathlib.Path, should_build: bool):
+    self._abs_build_output_dir = abs_build_output_dir
+    self._should_build = should_build
     self._class_index = self._index_root()
 
   def match(self, search_string: str) -> List[ClassEntry]:
@@ -131,10 +153,13 @@ class ClassLookupIndex:
     """Create the class to target index."""
     logging.debug('Running list_java_targets.py...')
     list_java_targets_command = [
-        'build/android/list_java_targets.py', '--type=java_library',
-        '--gn-labels', '--build', '--print-build-config-paths',
-        f'--output-directory={self._build_output_dir}'
+        'build/android/list_java_targets.py', '--gn-labels',
+        '--print-build-config-paths',
+        f'--output-directory={self._abs_build_output_dir}'
     ]
+    if self._should_build:
+      list_java_targets_command += ['--build']
+
     list_java_targets_run = subprocess.run(list_java_targets_command,
                                            cwd=_SRC_DIR,
                                            capture_output=True,
@@ -155,29 +180,127 @@ class ClassLookupIndex:
       assert len(target_line_parts) == 2, target_line_parts
       target, build_config_path = target_line_parts
 
-      # Read the location of the java_sources_file from the build_config
+      if not os.path.exists(build_config_path):
+        assert not self._should_build
+        continue
+
       with open(build_config_path) as build_config_contents:
         build_config: Dict = json.load(build_config_contents)
       deps_info = build_config['deps_info']
-      sources_path = deps_info.get('java_sources_file')
-      if not sources_path:
-        # TODO(crbug.com/1108362): Handle targets that have no
-        # deps_info.sources_path but contain srcjars.
+      # Checking the library type here instead of in list_java_targets.py avoids
+      # reading each .build_config file twice.
+      if deps_info['type'] != 'java_library':
         continue
 
-      # Read the java_sources_file, indexing the classes found
-      with open(self._build_output_dir / sources_path) as sources_contents:
-        sources_lines = sources_contents
-        for source_line in sources_lines:
-          source_path = pathlib.Path(source_line.strip())
-          java_class = self._parse_full_java_class(source_path)
-          if java_class:
-            class_index[java_class].append(target)
-          continue
+      target = self._compute_toplevel_target(target)
+      full_class_names = self._compute_full_class_names_for_build_config(
+          deps_info)
+      for full_class_name in full_class_names:
+        class_index[full_class_name].append(target)
 
     return class_index
 
-  def _parse_full_java_class(self, source_path: pathlib.Path) -> str:
+  @staticmethod
+  def _compute_toplevel_target(target: str) -> str:
+    """Computes top level target from the passed-in sub-target."""
+    if target.endswith('_java'):
+      return target
+
+    # Handle android_aar_prebuilt() sub targets.
+    index = target.find('_java__subjar')
+    if index >= 0:
+      return target[0:index + 5]
+    index = target.find('_java__classes')
+    if index >= 0:
+      return target[0:index + 5]
+
+    return target
+
+  def _compute_full_class_names_for_build_config(self,
+                                                 deps_info: Dict) -> Set[str]:
+    """Returns set of fully qualified class names for build config."""
+
+    full_class_names = set()
+
+    # Read the location of the java_sources_file from the build_config
+    sources_path = deps_info.get('java_sources_file')
+    if sources_path:
+      # Read the java_sources_file, indexing the classes found
+      with open(self._abs_build_output_dir / sources_path) as sources_contents:
+        for source_line in sources_contents:
+          source_path = pathlib.Path(source_line.strip())
+          java_class = self._parse_full_java_class(source_path)
+          if java_class:
+            full_class_names.add(java_class)
+
+    # |unprocessed_jar_path| is set for prebuilt targets. (ex:
+    # android_aar_prebuilt())
+    # |unprocessed_jar_path| might be set but not exist if not all targets have
+    # been built.
+    unprocessed_jar_path = deps_info.get('unprocessed_jar_path')
+    if unprocessed_jar_path:
+      abs_unprocessed_jar_path = (self._abs_build_output_dir /
+                                  unprocessed_jar_path)
+      if abs_unprocessed_jar_path.exists():
+        # Normalize path but do not follow symlink if .jar is symlink.
+        abs_unprocessed_jar_path = (abs_unprocessed_jar_path.parent.resolve() /
+                                    abs_unprocessed_jar_path.name)
+
+        full_class_names.update(
+            self._extract_full_class_names_from_jar(self._abs_build_output_dir,
+                                                    abs_unprocessed_jar_path))
+
+    return full_class_names
+
+  @staticmethod
+  def _extract_full_class_names_from_jar(abs_build_output_dir: pathlib.Path,
+                                         abs_jar_path: pathlib.Path
+                                         ) -> Set[str]:
+    """Returns set of fully qualified class names in passed-in jar."""
+    out = set()
+    jar_namelist = ClassLookupIndex._read_jar_namelist(abs_build_output_dir,
+                                                       abs_jar_path)
+    for zip_entry_name in jar_namelist:
+      if not zip_entry_name.endswith('.class'):
+        continue
+      # Remove .class suffix
+      full_java_class = zip_entry_name[:-6]
+
+      full_java_class = full_java_class.replace('/', '.')
+      dollar_index = full_java_class.find('$')
+      if dollar_index >= 0:
+        full_java_class[0:dollar_index]
+
+      out.add(full_java_class)
+    return out
+
+  @staticmethod
+  def _read_jar_namelist(abs_build_output_dir: pathlib.Path,
+                         abs_jar_path: pathlib.Path) -> list[str]:
+    """Returns list of jar members by name."""
+
+    # Caching namelist speeds up lookup_dep.py runtime by 1.5s.
+    cache_path = abs_jar_path.with_suffix(abs_jar_path.suffix +
+                                          '.namelist_cache')
+    if not abs_jar_path.is_relative_to(abs_build_output_dir):
+      cache_path = (abs_build_output_dir / 'gen' /
+                    cache_path.relative_to(_SRC_DIR))
+    if (cache_path.exists()
+        and os.path.getmtime(cache_path) > os.path.getmtime(abs_jar_path)):
+      with open(cache_path) as f:
+        return [s.strip() for s in f.readlines()]
+
+    with zipfile.ZipFile(abs_jar_path) as z:
+      namelist = z.namelist()
+
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(cache_path, 'w') as f:
+      f.write('\n'.join(namelist))
+
+    return namelist
+
+  @staticmethod
+  def _parse_full_java_class(source_path: pathlib.Path) -> str:
     """Guess the fully qualified class name from the path to the source file."""
     if source_path.suffix != '.java':
       logging.warning(f'"{source_path}" does not have the .java suffix')

@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_CLIENT_SHARED_IMAGE_INTERFACE_PROXY_H_
 #define GPU_IPC_CLIENT_SHARED_IMAGE_INTERFACE_PROXY_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -35,6 +36,7 @@ class SharedImageInterfaceProxy {
                             base::span<const uint8_t> pixel_data);
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                            gfx::BufferPlane plane,
                             const gfx::ColorSpace& color_space,
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,

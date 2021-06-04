@@ -130,7 +130,7 @@ void MoveAndClearDictionaryPrefs(PrefService* pref_service,
   base::DictionaryValue* pref_dict_src = pref_update_src.Get();
   pref_dict_dst->Clear();
   pref_dict_dst->Swap(pref_dict_src);
-  DCHECK(pref_dict_src->empty());
+  DCHECK(pref_dict_src->DictEmpty());
 }
 
 void MaybeInitWeeklyAggregateDataUsePrefs(const base::Time& now,
@@ -173,9 +173,9 @@ void RecordDictionaryToHistogram(const std::string& histogram_name,
                                  const base::DictionaryValue* dictionary) {
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
       histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  for (const auto& entry : *dictionary) {
+  for (const auto& entry : dictionary->DictItems()) {
     int key;
-    int value = entry.second->GetInt();
+    int value = entry.second.GetInt();
     if (value > 0 && base::StringToInt(entry.first, &key)) {
       histogram->AddCount(key, value);
     }
@@ -626,10 +626,9 @@ void DataReductionProxyCompressionStats::DelayedWritePrefs() {
 }
 
 void DataReductionProxyCompressionStats::TransferList(
-    const base::ListValue& from_list,
-    base::ListValue* to_list) {
-  to_list->Clear();
-  from_list.CreateDeepCopy()->Swap(to_list);
+    const base::Value& from_list,
+    base::Value* to_list) {
+  *to_list = from_list.Clone();
 }
 
 void DataReductionProxyCompressionStats::RecordRequestSizePrefs(

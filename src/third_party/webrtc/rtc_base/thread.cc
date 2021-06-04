@@ -362,7 +362,9 @@ Thread::ScopedCountBlockingCalls::ScopedCountBlockingCalls(
       result_callback_(std::move(callback)) {}
 
 Thread::ScopedCountBlockingCalls::~ScopedCountBlockingCalls() {
-  result_callback_(GetBlockingCallCount(), GetCouldBeBlockingCallCount());
+  if (GetTotalBlockedCallCount() >= min_blocking_calls_for_callback_) {
+    result_callback_(GetBlockingCallCount(), GetCouldBeBlockingCallCount());
+  }
 }
 
 uint32_t Thread::ScopedCountBlockingCalls::GetBlockingCallCount() const {
@@ -427,13 +429,11 @@ void Thread::DoDestroy() {
   // The signal is done from here to ensure
   // that it always gets called when the queue
   // is going away.
-  SignalQueueDestroyed();
-  ThreadManager::Remove(this);
-  ClearInternal(nullptr, MQID_ANY, nullptr);
-
   if (ss_) {
     ss_->SetMessageQueue(nullptr);
   }
+  ThreadManager::Remove(this);
+  ClearInternal(nullptr, MQID_ANY, nullptr);
 }
 
 SocketServer* Thread::socketserver() {

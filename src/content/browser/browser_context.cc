@@ -106,124 +106,98 @@ BrowserContext::~BrowserContext() {
                                   "browser_context", static_cast<void*>(this));
 }
 
-// static
-DownloadManager* BrowserContext::GetDownloadManager(BrowserContext* self) {
+DownloadManager* BrowserContext::GetDownloadManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return self->impl()->GetDownloadManager();
+  return impl()->GetDownloadManager();
 }
 
-// static
-storage::ExternalMountPoints* BrowserContext::GetMountPoints(
-    BrowserContext* self) {
-  return self->impl()->GetMountPoints();
+storage::ExternalMountPoints* BrowserContext::GetMountPoints() {
+  return impl()->GetMountPoints();
 }
 
-// static
-BrowsingDataRemover* BrowserContext::GetBrowsingDataRemover(
-    BrowserContext* self) {
-  return self->impl()->GetBrowsingDataRemover();
+BrowsingDataRemover* BrowserContext::GetBrowsingDataRemover() {
+  return impl()->GetBrowsingDataRemover();
 }
 
-// static
-PermissionController* BrowserContext::GetPermissionController(
-    BrowserContext* self) {
+PermissionController* BrowserContext::GetPermissionController() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return self->impl()->GetPermissionController();
+  return impl()->GetPermissionController();
 }
 
-// static
 StoragePartition* BrowserContext::GetStoragePartition(
-    BrowserContext* self,
     SiteInstance* site_instance,
     bool can_create) {
   if (site_instance)
-    DCHECK_EQ(self, site_instance->GetBrowserContext());
+    DCHECK_EQ(this, site_instance->GetBrowserContext());
 
   auto* site_instance_impl = static_cast<SiteInstanceImpl*>(site_instance);
   auto partition_config =
       site_instance_impl
-          ? site_instance_impl->GetSiteInfo().GetStoragePartitionConfig(self)
-          : StoragePartitionConfig::CreateDefault(self);
-  return GetStoragePartition(self, partition_config, can_create);
+          ? site_instance_impl->GetSiteInfo().GetStoragePartitionConfig(this)
+          : StoragePartitionConfig::CreateDefault(this);
+  return GetStoragePartition(partition_config, can_create);
 }
 
-// static
 StoragePartition* BrowserContext::GetStoragePartition(
-    BrowserContext* self,
     const StoragePartitionConfig& storage_partition_config,
     bool can_create) {
-  if (self->IsOffTheRecord()) {
+  if (IsOffTheRecord()) {
     // An off the record profile MUST only use in memory storage partitions.
     CHECK(storage_partition_config.in_memory());
   }
 
-  return self->impl()->GetOrCreateStoragePartitionMap()->Get(
-      storage_partition_config, can_create);
+  return impl()->GetOrCreateStoragePartitionMap()->Get(storage_partition_config,
+                                                       can_create);
 }
 
-// static
 StoragePartition* BrowserContext::GetStoragePartitionForUrl(
-    BrowserContext* self,
     const GURL& url,
     bool can_create) {
   auto storage_partition_config = SiteInfo::GetStoragePartitionConfigForUrl(
-      self, url, /*is_site_url=*/false);
+      this, url, /*is_site_url=*/false);
 
-  return GetStoragePartition(self, storage_partition_config, can_create);
+  return GetStoragePartition(storage_partition_config, can_create);
 }
 
-// static
 void BrowserContext::ForEachStoragePartition(
-    BrowserContext* self,
     StoragePartitionCallback callback) {
-  StoragePartitionImplMap* partition_map =
-      self->impl()->storage_partition_map();
+  StoragePartitionImplMap* partition_map = impl()->storage_partition_map();
   if (!partition_map)
     return;
 
   partition_map->ForEach(std::move(callback));
 }
 
-// static
-size_t BrowserContext::GetStoragePartitionCount(BrowserContext* self) {
-  StoragePartitionImplMap* partition_map =
-      self->impl()->storage_partition_map();
+size_t BrowserContext::GetStoragePartitionCount() {
+  StoragePartitionImplMap* partition_map = impl()->storage_partition_map();
   return partition_map ? partition_map->size() : 0;
 }
 
-// static
 void BrowserContext::AsyncObliterateStoragePartition(
-    BrowserContext* self,
     const std::string& partition_domain,
     base::OnceClosure on_gc_required) {
-  self->impl()->GetOrCreateStoragePartitionMap()->AsyncObliterate(
+  impl()->GetOrCreateStoragePartitionMap()->AsyncObliterate(
       partition_domain, std::move(on_gc_required));
 }
 
-// static
 void BrowserContext::GarbageCollectStoragePartitions(
-    BrowserContext* self,
     std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
     base::OnceClosure done) {
-  self->impl()->GetOrCreateStoragePartitionMap()->GarbageCollect(
+  impl()->GetOrCreateStoragePartitionMap()->GarbageCollect(
       std::move(active_paths), std::move(done));
 }
 
-// static
-StoragePartition* BrowserContext::GetDefaultStoragePartition(
-    BrowserContext* self) {
-  return GetStoragePartition(self, StoragePartitionConfig::CreateDefault(self));
+StoragePartition* BrowserContext::GetDefaultStoragePartition() {
+  return GetStoragePartition(StoragePartitionConfig::CreateDefault(this));
 }
 
-// static
-void BrowserContext::CreateMemoryBackedBlob(BrowserContext* self,
-                                            base::span<const uint8_t> data,
+void BrowserContext::CreateMemoryBackedBlob(base::span<const uint8_t> data,
                                             const std::string& content_type,
                                             BlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ChromeBlobStorageContext* blob_context =
-      ChromeBlobStorageContext::GetFor(self);
+      ChromeBlobStorageContext::GetFor(this);
   GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
@@ -231,41 +205,33 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* self,
       std::move(callback));
 }
 
-// static
-BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
-    BrowserContext* self) {
+BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<ChromeBlobStorageContext> chrome_blob_context =
-      ChromeBlobStorageContext::GetFor(self);
+      ChromeBlobStorageContext::GetFor(this);
   return base::BindRepeating(&BlobStorageContextGetterForBrowser,
                              chrome_blob_context);
 }
 
-// static
 mojo::PendingRemote<blink::mojom::Blob> BrowserContext::GetBlobRemote(
-    BrowserContext* self,
     const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return ChromeBlobStorageContext::GetBlobRemote(self, uuid);
+  return ChromeBlobStorageContext::GetBlobRemote(this, uuid);
 }
 
-// static
 void BrowserContext::DeliverPushMessage(
-    BrowserContext* self,
     const GURL& origin,
     int64_t service_worker_registration_id,
     const std::string& message_id,
-    base::Optional<std::string> payload,
+    absl::optional<std::string> payload,
     base::OnceCallback<void(blink::mojom::PushEventStatus)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingRouter::DeliverMessage(
-      self, origin, service_worker_registration_id, message_id,
+      this, origin, service_worker_registration_id, message_id,
       std::move(payload), std::move(callback));
 }
 
-// static
 void BrowserContext::FirePushSubscriptionChangeEvent(
-    BrowserContext* self,
     const GURL& origin,
     int64_t service_worker_registration_id,
     blink::mojom::PushSubscriptionPtr new_subscription,
@@ -273,17 +239,15 @@ void BrowserContext::FirePushSubscriptionChangeEvent(
     base::OnceCallback<void(blink::mojom::PushEventStatus)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingRouter::FireSubscriptionChangeEvent(
-      self, origin, service_worker_registration_id, std::move(new_subscription),
+      this, origin, service_worker_registration_id, std::move(new_subscription),
       std::move(old_subscription), std::move(callback));
 }
 
-// static
-void BrowserContext::NotifyWillBeDestroyed(BrowserContext* self) {
-  self->impl()->NotifyWillBeDestroyed();
+void BrowserContext::NotifyWillBeDestroyed() {
+  impl()->NotifyWillBeDestroyed();
 }
 
-// static
-void BrowserContext::EnsureResourceContextInitialized(BrowserContext* self) {
+void BrowserContext::EnsureResourceContextInitialized() {
   // This will be enough to tickle initialization of BrowserContext if
   // necessary, which initializes ResourceContext. The reason we don't call
   // ResourceContext::InitializeResourceContext() directly here is that
@@ -292,13 +256,11 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* self) {
   // end up rewriting the same value but this still causes a race condition.
   //
   // See http://crbug.com/115678.
-  GetDefaultStoragePartition(self);
+  GetDefaultStoragePartition();
 }
 
-// static
-void BrowserContext::SaveSessionState(BrowserContext* self) {
-  StoragePartition* storage_partition =
-      BrowserContext::GetDefaultStoragePartition(self);
+void BrowserContext::SaveSessionState() {
+  StoragePartition* storage_partition = GetDefaultStoragePartition();
 
   storage::DatabaseTracker* database_tracker =
       storage_partition->GetDatabaseTracker();
@@ -329,28 +291,21 @@ void BrowserContext::SaveSessionState(BrowserContext* self) {
   indexed_db_control.SetForceKeepSessionState();
 }
 
-// static
 void BrowserContext::SetDownloadManagerForTesting(
-    BrowserContext* self,
     std::unique_ptr<DownloadManager> download_manager) {
-  self->impl()->SetDownloadManagerForTesting(  // IN-TEST
-      std::move(download_manager));
+  impl()->SetDownloadManagerForTesting(std::move(download_manager));  // IN-TEST
 }
 
-// static
 void BrowserContext::SetPermissionControllerForTesting(
-    BrowserContext* self,
     std::unique_ptr<PermissionController> permission_controller) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(permission_controller);
-  self->impl()->SetPermissionControllerForTesting(  // IN-TEST
+  impl()->SetPermissionControllerForTesting(  // IN-TEST
       std::move(permission_controller));
 }
 
-// static
-SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList(
-    BrowserContext* self) {
-  return self->impl()->shared_cors_origin_access_list();
+SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
+  return impl()->shared_cors_origin_access_list();
 }
 
 void BrowserContext::ShutdownStoragePartitions() {
@@ -383,7 +338,7 @@ std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
   return base::UnguessableToken::Create().ToString();
 }
 
-void BrowserContext::WriteIntoTracedValue(perfetto::TracedValue context) {
+void BrowserContext::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
 
   // `impl()` is destroyed by the destuctor of BrowserContext and might not
@@ -436,8 +391,8 @@ BrowserContext::CreateVideoDecodePerfHistory() {
   if (use_in_memory_db) {
     stats_db = std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
   } else {
-    auto* db_provider = BrowserContext::GetDefaultStoragePartition(this)
-                            ->GetProtoDatabaseProvider();
+    auto* db_provider =
+        GetDefaultStoragePartition()->GetProtoDatabaseProvider();
 
     stats_db = media::VideoDecodeStatsDBImpl::Create(
         GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")), db_provider);
@@ -445,6 +400,16 @@ BrowserContext::CreateVideoDecodePerfHistory() {
 
   return std::make_unique<media::VideoDecodePerfHistory>(
       std::move(stats_db), BrowserFeatureProvider::GetFactoryCB());
+}
+
+FederatedIdentityRequestPermissionContextDelegate*
+BrowserContext::GetFederatedIdentityRequestPermissionContext() {
+  return nullptr;
+}
+
+FederatedIdentitySharingPermissionContextDelegate*
+BrowserContext::GetFederatedIdentitySharingPermissionContext() {
+  return nullptr;
 }
 
 }  // namespace content

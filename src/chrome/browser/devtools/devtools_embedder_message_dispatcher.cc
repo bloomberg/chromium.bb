@@ -14,19 +14,35 @@ namespace {
 using DispatchCallback = DevToolsEmbedderMessageDispatcher::DispatchCallback;
 
 bool GetValue(const base::Value& value, std::string* result) {
-  return value.GetAsString(result);
+  if (result && value.is_string()) {
+    *result = value.GetString();
+    return true;
+  }
+  return value.is_string();
 }
 
 bool GetValue(const base::Value& value, int* result) {
-  return value.GetAsInteger(result);
+  if (result && value.is_int()) {
+    *result = value.GetInt();
+    return true;
+  }
+  return value.is_int();
 }
 
 bool GetValue(const base::Value& value, double* result) {
-  return value.GetAsDouble(result);
+  if (result && (value.is_double() || value.is_int())) {
+    *result = value.GetDouble();
+    return true;
+  }
+  return value.is_double() || value.is_int();
 }
 
 bool GetValue(const base::Value& value, bool* result) {
-  return value.GetAsBoolean(result);
+  if (result && value.is_bool()) {
+    *result = value.GetBool();
+    return true;
+  }
+  return value.is_bool();
 }
 
 bool GetValue(const base::Value& value, gfx::Rect* rect) {
@@ -60,7 +76,7 @@ template <typename... Ts>
 struct ParamTuple {
   bool Parse(const base::ListValue& list,
              const base::ListValue::const_iterator& it) {
-    return it == list.end();
+    return it == list.GetList().end();
   }
 
   template <typename H, typename... As>
@@ -73,7 +89,8 @@ template <typename T, typename... Ts>
 struct ParamTuple<T, Ts...> {
   bool Parse(const base::ListValue& list,
              const base::ListValue::const_iterator& it) {
-    return it != list.end() && GetValue(*it, &head) && tail.Parse(list, it + 1);
+    return it != list.GetList().end() && GetValue(*it, &head) &&
+           tail.Parse(list, it + 1);
   }
 
   template <typename H, typename... As>
@@ -90,7 +107,7 @@ bool ParseAndHandle(const base::RepeatingCallback<void(As...)>& handler,
                     DispatchCallback callback,
                     const base::ListValue& list) {
   ParamTuple<As...> tuple;
-  if (!tuple.Parse(list, list.begin()))
+  if (!tuple.Parse(list, list.GetList().begin()))
     return false;
   tuple.Apply(handler);
   return true;
@@ -102,7 +119,7 @@ bool ParseAndHandleWithCallback(
     DispatchCallback callback,
     const base::ListValue& list) {
   ParamTuple<As...> tuple;
-  if (!tuple.Parse(list, list.begin()))
+  if (!tuple.Parse(list, list.GetList().begin()))
     return false;
   tuple.Apply(handler, std::move(callback));
   return true;

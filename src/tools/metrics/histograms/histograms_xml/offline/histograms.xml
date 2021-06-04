@@ -90,8 +90,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Offline.Measurements.UserState"
+    enum="OfflineMeasurementsUserState" expires_after="M95">
+  <owner>curranmax@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    The state of the phone and how the user is interacting with it when the
+    Offline Measurements background task runs.
+
+    Each time the background task runs, it determines the user state, and then
+    that value is stored to prefs. At a later time, when Chrome is starting up,
+    all stored values are recorded to this histogram. The stored values are then
+    cleared so they are only recorded once each.
+  </summary>
+</histogram>
+
 <histogram name="OfflineIndicator.ConnectivityChanged.DeviceState.Offline"
-    enum="OfflineIndicatorSurfaceState" expires_after="2021-09-12">
+    enum="OfflineIndicatorSurfaceState" expires_after="2021-11-14">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <owner>sinansahin@google.com</owner>
@@ -254,7 +269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.AccessPageCount"
-    enum="OfflinePagesNamespaceEnumeration" expires_after="2021-08-29">
+    enum="OfflinePagesNamespaceEnumeration" expires_after="2021-10-31">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -729,7 +744,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.DownloadRequestTimeSinceDuplicateRequested"
-    units="seconds" expires_after="2021-09-05">
+    units="seconds" expires_after="2021-11-07">
   <owner>dewittj@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
@@ -798,7 +813,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.OfflineUsage" enum="OfflinePagesOfflineUsage"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -876,7 +891,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.PrefetchEnabled" enum="BooleanEnabled"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -933,7 +948,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.Prefetching.FinishedItemErrorCode"
-    enum="OfflinePrefetchItemErrorCode" expires_after="2021-08-29">
+    enum="OfflinePrefetchItemErrorCode" expires_after="2021-10-31">
   <owner>carlosk@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -1031,7 +1046,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.PrefetchUsage" enum="OfflinePagesPrefetchUsage"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>

@@ -13,6 +13,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/internals/lens/lens_internals_ui_message_handler.h"
 #include "chrome/browser/ui/webui/internals/notifications/notifications_internals_ui_message_handler.h"
 #include "chrome/browser/ui/webui/internals/query_tiles/query_tiles_internals_ui_message_handler.h"
 #else
@@ -21,16 +22,52 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #endif  // defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/ui/webui/internals/sessions/session_service_internals_handler.h"
+#endif
+
+namespace {
+
+bool ShouldHandleWebUIRequestCallback(const std::string& path) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  if (SessionServiceInternalsHandler::ShouldHandleWebUIRequestCallback(path))
+    return true;
+#endif
+  return false;
+}
+
+void HandleWebUIRequestCallback(
+    Profile* profile,
+    const std::string& path,
+    content::WebUIDataSource::GotDataCallback callback) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  if (SessionServiceInternalsHandler::ShouldHandleWebUIRequestCallback(path)) {
+    return SessionServiceInternalsHandler::HandleWebUIRequestCallback(
+        profile, path, std::move(callback));
+  }
+#endif
+  NOTREACHED();
+}
+
+}  // namespace
+
 InternalsUI::InternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   profile_ = Profile::FromWebUI(web_ui);
   source_ = content::WebUIDataSource::Create(chrome::kChromeUIInternalsHost);
   source_->AddResourcePaths(
       base::make_span(kInternalsResources, kInternalsResourcesSize));
+  source_->DisableTrustedTypesCSP();
+
+  // chrome://internals/
+  // Redirects to: chrome://chrome-urls/#internals
+  source_->AddResourcePath("", IDR_INTERNALS_INTERNALS_HTML);
 
   // Add your sub-URL internals WebUI here.
   // Keep this set of sub-URLs in sync with |kChromeInternalsPathURLs|.
 #if defined(OS_ANDROID)
+  // chrome://internals/lens
+  AddLensInternals(web_ui);
   // chrome://internals/notifications
   source_->AddResourcePath(
       "notifications",
@@ -43,11 +80,17 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
     AddQueryTilesInternals(web_ui);
 #else
   source_->AddResourcePath("hello-ts", IDR_HELLO_TS_HELLO_TS_HTML);
+  source_->AddResourcePath("user-education",
+                           IDR_USER_EDUCATION_INTERNALS_INDEX_HTML);
 
   // chrome://internals/web-app
   WebAppInternalsPageHandlerImpl::AddPageResources(source_);
-  UserEducationInternalsPageHandlerImpl::AddPageResources(source_);
 #endif  // defined(OS_ANDROID)
+
+  // chrome://internals/session-service
+  source_->SetRequestFilter(
+      base::BindRepeating(&ShouldHandleWebUIRequestCallback),
+      base::BindRepeating(&HandleWebUIRequestCallback, profile_));
 
   content::WebUIDataSource::Add(profile_, source_);
 }
@@ -55,6 +98,13 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
 InternalsUI::~InternalsUI() = default;
 
 #if defined(OS_ANDROID)
+void InternalsUI::AddLensInternals(content::WebUI* web_ui) {
+  source_->AddResourcePath("lens", IDR_LENS_INTERNALS_LENS_INTERNALS_HTML);
+
+  web_ui->AddMessageHandler(
+      std::make_unique<LensInternalsUIMessageHandler>(profile_));
+}
+
 void InternalsUI::AddQueryTilesInternals(content::WebUI* web_ui) {
   source_->AddResourcePath("query_tiles_internals.js",
                            IDR_QUERY_TILES_INTERNALS_JS);

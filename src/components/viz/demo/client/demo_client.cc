@@ -98,14 +98,14 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
 
     viz::SharedQuadState* quad_state =
         render_pass->CreateAndAppendSharedQuadState();
-    quad_state->SetAll(
-        transform,
-        /*quad_layer_rect=*/child_bounds,
-        /*visible_quad_layer_rect=*/child_bounds,
-        /*mask_filter_info=*/gfx::MaskFilterInfo(),
-        /*clip_rect=*/gfx::Rect(),
-        /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-        /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+    quad_state->SetAll(transform,
+                       /*quad_layer_rect=*/child_bounds,
+                       /*visible_layer_rect=*/child_bounds,
+                       /*mask_filter_info=*/gfx::MaskFilterInfo(),
+                       /*clip_rect=*/absl::nullopt,
+                       /*are_contents_opaque=*/false, /*opacity=*/1.f,
+                       /*blend_mode=*/SkBlendMode::kSrcOver,
+                       /*sorting_context_id=*/0);
 
     viz::SurfaceDrawQuad* embed =
         render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
@@ -123,14 +123,14 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
   // content-area of the client.
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(
-      gfx::Transform(),
-      /*quad_layer_rect=*/output_rect,
-      /*visible_quad_layer_rect=*/output_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(),
-      /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  quad_state->SetAll(gfx::Transform(),
+                     /*quad_layer_rect=*/output_rect,
+                     /*visible_layer_rect=*/output_rect,
+                     /*mask_filter_info=*/gfx::MaskFilterInfo(),
+                     /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+                     /*opacity=*/1.f,
+                     /*blend_mode=*/SkBlendMode::kSrcOver,
+                     /*sorting_context_id=*/0);
 
   viz::SolidColorDrawQuad* color_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -163,7 +163,7 @@ void DemoClient::InitializeOnThread(
 }
 
 void DemoClient::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   // See documentation in mojom for how this can be used.
 }
 
@@ -176,11 +176,11 @@ void DemoClient::OnBeginFrame(
   // deadline for the client before it needs to submit the compositor-frame.
   base::AutoLock lock(lock_);
   GetPtr()->SubmitCompositorFrame(local_surface_id_, CreateFrame(args),
-                                  base::Optional<viz::HitTestRegionList>(),
+                                  absl::optional<viz::HitTestRegionList>(),
                                   /*trace_time=*/0);
 }
 void DemoClient::OnBeginFramePausedChanged(bool paused) {}
 void DemoClient::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {}
+    std::vector<viz::ReturnedResource> resources) {}
 
 }  // namespace demo

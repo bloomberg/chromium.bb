@@ -9,6 +9,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -59,9 +60,12 @@ class WebAppHandlerRegistrationUtilsWinTest : public testing::Test {
                    const std::wstring& app_name,
                    const std::wstring& app_name_extension,
                    const base::FilePath& profile_path) {
-    base::Optional<base::FilePath> launcher_path = CreateAppLauncherFile(
-        app_name, app_name_extension,
-        GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id, GURL()));
+    base::FilePath web_app_path(
+        web_app::GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id,
+                                                          GURL()));
+
+    absl::optional<base::FilePath> launcher_path =
+        CreateAppLauncherFile(app_name, app_name_extension, web_app_path);
     ASSERT_TRUE(launcher_path.has_value());
 
     base::CommandLine launcher_command =
@@ -70,13 +74,16 @@ class WebAppHandlerRegistrationUtilsWinTest : public testing::Test {
     std::wstring user_visible_app_name(app_name);
     user_visible_app_name.append(app_name_extension);
 
-    ASSERT_TRUE(ShellUtil::AddApplicationClass(
-        prog_id, launcher_command, user_visible_app_name, std::wstring(),
-        base::FilePath()));
+    base::FilePath icon_path =
+        internals::GetIconFilePath(web_app_path, base::AsString16(app_name));
+
+    ASSERT_TRUE(ShellUtil::AddApplicationClass(prog_id, launcher_command,
+                                               user_visible_app_name,
+                                               std::wstring(), icon_path));
   }
 
-  // Tests that an app with |app_id| is registered with the expected name /
-  // extension.
+  // Tests that an app with |app_id| is registered with the expected name,
+  // icon and extension.
   void TestRegisteredApp(const AppId& app_id,
                          const std::wstring& expected_app_name,
                          const std::wstring& expected_app_name_extension,
@@ -85,9 +92,15 @@ class WebAppHandlerRegistrationUtilsWinTest : public testing::Test {
     std::wstring expected_user_visible_app_name(app_name());
     expected_user_visible_app_name.append(expected_app_name_extension);
     std::wstring app_progid = GetProgIdForApp(profile_path, app_id);
-    ShellUtil::FileAssociationsAndAppName registered_app =
-        ShellUtil::GetFileAssociationsAndAppName(app_progid);
-    EXPECT_EQ(expected_user_visible_app_name, registered_app.app_name);
+    ShellUtil::ApplicationInfo registered_app =
+        ShellUtil::GetApplicationInfoForProgId(app_progid);
+
+    EXPECT_EQ(expected_user_visible_app_name, registered_app.application_name);
+
+    // Ensure that the OS registry contains the expected icon path.
+    EXPECT_EQ(registered_app.application_icon_path,
+              profile_path.Append(base::FilePath(FILE_PATH_LITERAL(
+                  "Web Applications\\_crx_app_id\\app_name.ico"))));
 
     // Ensure that the launcher file contains the expected app name.
     // On Windows 7 the extension is omitted.
@@ -172,7 +185,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
 
   // Update installations external to profile 2 (i.e. profile1).
   CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
-                                      base::DoNothing());
+                                      base::DoNothing::Once<bool>());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Test that the profile1 installation is updated with a profile-specific
@@ -193,7 +206,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   Profile* profile2 =
       testing_profile_manager()->CreateTestingProfile("Profile 2");
   CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
-                                      base::DoNothing());
+                                      base::DoNothing::Once<bool>());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Ensure that after updating from profile2 (which has no installation),
@@ -220,7 +233,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   // in other profiles shouldn't change the original 2 installations since they
   // already have app-specific names.
   CheckAndUpdateExternalInstallations(profile3->GetPath(), app_id(),
-                                      base::DoNothing());
+                                      base::DoNothing::Once<bool>());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   TestRegisteredApp(app_id(), app_name(), L" (Default)", profile1->GetPath());
@@ -229,7 +242,7 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
 
 TEST_F(WebAppHandlerRegistrationUtilsWinTest, CreateAppLauncherFile) {
   std::wstring app_name_extension = L" extension";
-  base::Optional<base::FilePath> launcher_path =
+  absl::optional<base::FilePath> launcher_path =
       CreateAppLauncherFile(app_name(), app_name_extension,
                             GetOsIntegrationResourcesDirectoryForApp(
                                 profile()->GetPath(), app_id(), GURL()));

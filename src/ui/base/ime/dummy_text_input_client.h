@@ -38,6 +38,7 @@ class DummyTextInputClient : public TextInputClient {
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
@@ -69,12 +70,15 @@ class DummyTextInputClient : public TextInputClient {
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const gfx::Range& range) override;
+  bool ClearGrammarFragments(const gfx::Range& range) override;
+  bool AddGrammarFragments(
+      const std::vector<GrammarFragment>& fragments) override;
 #endif
 
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,
@@ -93,6 +97,10 @@ class DummyTextInputClient : public TextInputClient {
     return selection_history_;
   }
 
+  std::vector<GrammarFragment> get_grammar_fragments() const {
+    return grammar_fragments_;
+  }
+
   TextInputType text_input_type_;
   TextInputMode text_input_mode_;
 
@@ -105,6 +113,7 @@ class DummyTextInputClient : public TextInputClient {
   std::vector<CompositionText> composition_history_;
   std::vector<gfx::Range> selection_history_;
   gfx::Range autocorrect_range_;
+  std::vector<GrammarFragment> grammar_fragments_;
 };
 
 }  // namespace ui

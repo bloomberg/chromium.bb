@@ -824,11 +824,12 @@ TEST(DiceResponseHandlerFactoryTest, NotInOffTheRecord) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   EXPECT_THAT(DiceResponseHandler::GetForProfile(&profile), testing::NotNull());
-  EXPECT_THAT(
-      DiceResponseHandler::GetForProfile(profile.GetPrimaryOTRProfile()),
-      testing::IsNull());
+  EXPECT_THAT(DiceResponseHandler::GetForProfile(
+                  profile.GetPrimaryOTRProfile(/*create_if_needed=*/true)),
+              testing::IsNull());
   EXPECT_THAT(DiceResponseHandler::GetForProfile(profile.GetOffTheRecordProfile(
-                  Profile::OTRProfileID("Test::Dice"))),
+                  Profile::OTRProfileID::CreateUniqueForTesting(),
+                  /*create_if_needed=*/true)),
               testing::IsNull());
 }
 

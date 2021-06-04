@@ -10,6 +10,18 @@ source_set("ime_types") {
   sources = [ "ime_keyset.h" ]
 }
 
+source_set("typing_session_manager") {
+  sources = [
+    "typing_session_manager.cc",
+    "typing_session_manager.h",
+  ]
+
+  public_deps = [
+    "//base:base",
+    "//third_party/abseil-cpp:absl",
+  ]
+}
+
 component("chromeos") {
   output_name = "ui_base_ime_chromeos"
 
@@ -42,6 +54,8 @@ component("chromeos") {
     "input_method_descriptor.h",
     "input_method_manager.cc",
     "input_method_manager.h",
+    "input_method_ukm.cc",
+    "input_method_ukm.h",
     "input_method_util.cc",
     "input_method_util.h",
   ]
@@ -55,10 +69,13 @@ component("chromeos") {
 
   deps = [
     ":ime_types",
+    ":typing_session_manager",
     "//build:branding_buildflags",
     "//chromeos/services/ime/public/mojom",
     "//chromeos/system",
+    "//services/metrics/public/cpp:ukm_builders",
     "//third_party/icu",
+    "//ui/base",
     "//ui/base",
     "//ui/chromeos/strings",
     "//ui/ozone:ozone_base",

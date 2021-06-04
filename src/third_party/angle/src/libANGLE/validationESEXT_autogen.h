@@ -1041,6 +1041,17 @@ bool ValidateRenderbufferStorageMultisampleEXT(const Context *context,
 
 // GL_EXT_occlusion_query_boolean
 
+// GL_EXT_primitive_bounding_box
+bool ValidatePrimitiveBoundingBoxEXT(const Context *context,
+                                     GLfloat minX,
+                                     GLfloat minY,
+                                     GLfloat minZ,
+                                     GLfloat minW,
+                                     GLfloat maxX,
+                                     GLfloat maxY,
+                                     GLfloat maxZ,
+                                     GLfloat maxW);
+
 // GL_EXT_read_format_bgra
 
 // GL_EXT_robustness
@@ -1327,6 +1338,40 @@ bool ValidateFramebufferFetchBarrierEXT(const Context *context);
 // GL_EXT_tessellation_shader
 bool ValidatePatchParameteriEXT(const Context *context, GLenum pname, GLint value);
 
+// GL_EXT_texture_border_clamp
+bool ValidateGetSamplerParameterIivEXT(const Context *context,
+                                       SamplerID samplerPacked,
+                                       GLenum pname,
+                                       const GLint *params);
+bool ValidateGetSamplerParameterIuivEXT(const Context *context,
+                                        SamplerID samplerPacked,
+                                        GLenum pname,
+                                        const GLuint *params);
+bool ValidateGetTexParameterIivEXT(const Context *context,
+                                   TextureType targetPacked,
+                                   GLenum pname,
+                                   const GLint *params);
+bool ValidateGetTexParameterIuivEXT(const Context *context,
+                                    TextureType targetPacked,
+                                    GLenum pname,
+                                    const GLuint *params);
+bool ValidateSamplerParameterIivEXT(const Context *context,
+                                    SamplerID samplerPacked,
+                                    GLenum pname,
+                                    const GLint *param);
+bool ValidateSamplerParameterIuivEXT(const Context *context,
+                                     SamplerID samplerPacked,
+                                     GLenum pname,
+                                     const GLuint *param);
+bool ValidateTexParameterIivEXT(const Context *context,
+                                TextureType targetPacked,
+                                GLenum pname,
+                                const GLint *params);
+bool ValidateTexParameterIuivEXT(const Context *context,
+                                 TextureType targetPacked,
+                                 GLenum pname,
+                                 const GLuint *params);
+
 // GL_EXT_texture_buffer
 bool ValidateTexBufferEXT(const Context *context,
                           TextureType targetPacked,
@@ -1357,6 +1402,8 @@ bool ValidateTexBufferRangeEXT(const Context *context,
 
 // GL_EXT_texture_sRGB_R8
 
+// GL_EXT_texture_sRGB_RG8
+
 // GL_EXT_texture_storage
 bool ValidateTexStorage1DEXT(const Context *context,
                              GLenum target,
@@ -1376,6 +1423,9 @@ bool ValidateTexStorage3DEXT(const Context *context,
                              GLsizei width,
                              GLsizei height,
                              GLsizei depth);
+
+// GL_KHR_blend_equation_advanced
+bool ValidateBlendBarrierKHR(const Context *context);
 
 // GL_KHR_debug
 bool ValidateDebugMessageCallbackKHR(const Context *context,

@@ -30,6 +30,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
@@ -51,8 +53,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
@@ -140,8 +140,9 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
     return ImageViewFromVectorIcon(omnibox::kHttpIcon);
 
   if (icon_str == "httpsInvalid") {
-    return ImageViewFromImageSkia(gfx::CreateVectorIcon(
-        omnibox::kNotSecureWarningIcon, gfx::kFaviconSize, gfx::kGoogleRed700));
+    return ImageViewFromImageSkia(
+        gfx::CreateVectorIcon(vector_icons::kNotSecureWarningIcon,
+                              gfx::kFaviconSize, gfx::kGoogleRed700));
   }
 
   if (icon_str == "keyIcon")
@@ -1132,8 +1133,8 @@ void AutofillPopupViewNativeViews::Hide() {
 }
 
 void AutofillPopupViewNativeViews::OnSelectedRowChanged(
-    base::Optional<int> previous_row_selection,
-    base::Optional<int> current_row_selection) {
+    absl::optional<int> previous_row_selection,
+    absl::optional<int> current_row_selection) {
   if (previous_row_selection) {
     rows_[*previous_row_selection]->SetSelected(false);
   }
@@ -1147,8 +1148,8 @@ void AutofillPopupViewNativeViews::OnSuggestionsChanged() {
   DoUpdateBoundsAndRedrawPopup();
 }
 
-base::Optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
-  return base::Optional<int32_t>(
+absl::optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
+  return absl::optional<int32_t>(
       AutofillPopupBaseView::GetViewAccessibility().GetUniqueId());
 }
 

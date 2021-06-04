@@ -37,7 +37,6 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
-#import "components/password_manager/ios/js_password_manager.h"
 #include "components/password_manager/ios/password_manager_ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
@@ -77,7 +76,6 @@ using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
 using password_manager::PasswordManagerInterface;
-using password_manager::SerializePasswordFormFillData;
 
 namespace {
 
@@ -226,9 +224,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     return;
   }
 
-  if (webState->ContentIsHTML()) {
-    [self findPasswordFormsAndSendThemToPasswordStore];
-  } else {
+  if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
     UniqueIDDataTabHelper* uniqueIDDataTabHelper =
         UniqueIDDataTabHelper::FromWebState(_webState);
@@ -251,6 +247,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       uniqueIDDataTabHelper->GetNextAvailableRendererID();
   [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
                                              inFrame:web_frame];
+  // Form parsing is run via the main frame for all same origin iframes.
+  if (web_frame->IsMainFrame() && webState->ContentIsHTML()) {
+    [self findPasswordFormsAndSendThemToPasswordStore];
+  }
 }
 
 // Track detaching iframes.
@@ -282,6 +282,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   _lastTypedValue = nil;
   _lastFocusedFormIdentifier = FormRendererId();
   _lastFocusedFieldIdentifier = FieldRendererId();
+  _passwordManager = nullptr;
 }
 
 #pragma mark - FormSuggestionProvider
@@ -387,7 +388,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                              requiresReauth:requiresReauth];
     [suggestions addObject:suggestion];
   }
-  base::Optional<PasswordDropdownState> suggestionState;
+  absl::optional<PasswordDropdownState> suggestionState;
   if (suggestions.count) {
     suggestionState = PasswordDropdownState::kStandard;
   }
@@ -674,21 +675,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   FieldRendererId confirmPasswordUniqueId =
       generationData->confirmation_password_renderer_id;
 
+  __weak SharedPasswordController* weakSelf = self;
   auto generatedPasswordInjected = ^(BOOL success) {
-    auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
-      if (found) {
-        _passwordManager->PresaveGeneratedPassword(
-            _delegate.passwordManagerDriver, form,
-            SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
-      }
-      // If the form isn't found, it disappeared between fillPasswordForm below
-      // and here. There isn't much that can be done.
-    };
     if (success) {
-      [self.formHelper extractPasswordFormData:formIdentifier
-                             completionHandler:passwordPresaved];
-      self.isPasswordGenerated = YES;
-      self.passwordGeneratedIdentifier = newPasswordUniqueId;
+      [weakSelf onFilledPasswordForm:formIdentifier
+               withGeneratedPassword:generatedPassword
+                    passwordUniqueId:newPasswordUniqueId];
     }
     if (completionHandler) {
       completionHandler();
@@ -700,6 +692,39 @@ NSString* const kSuggestionSuffix = @" ••••••••";
           confirmPasswordIdentifier:confirmPasswordUniqueId
                   generatedPassword:generatedPassword
                   completionHandler:generatedPasswordInjected];
+}
+
+- (void)onFilledPasswordForm:(FormRendererId)formIdentifier
+       withGeneratedPassword:(NSString*)generatedPassword
+            passwordUniqueId:(FieldRendererId)newPasswordUniqueId {
+  __weak SharedPasswordController* weakSelf = self;
+  auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
+    // If the form isn't found, it disappeared between the call to
+    // [self.formHelper fillPasswordForm:newPasswordIdentifier:...]
+    // and here. There isn't much that can be done.
+    if (!found)
+      return;
+
+    [weakSelf presaveGeneratedPassword:generatedPassword
+                      passwordUniqueId:newPasswordUniqueId
+                              formData:form];
+  };
+
+  [self.formHelper extractPasswordFormData:formIdentifier
+                         completionHandler:passwordPresaved];
+  self.isPasswordGenerated = YES;
+  self.passwordGeneratedIdentifier = newPasswordUniqueId;
+}
+
+- (void)presaveGeneratedPassword:(NSString*)generatedPassword
+                passwordUniqueId:(FieldRendererId)newPasswordUniqueId
+                        formData:(const autofill::FormData&)formData {
+  if (!_passwordManager)
+    return;
+
+  _passwordManager->PresaveGeneratedPassword(
+      _delegate.passwordManagerDriver, formData,
+      SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
 }
 
 #pragma mark - FormActivityObserver

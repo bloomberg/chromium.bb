@@ -10,7 +10,7 @@
 
 #import "base/ios/block_types.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -85,12 +85,15 @@ class AuthenticationService : public KeyedService,
   // Virtual for testing.
   virtual ChromeIdentity* GetAuthenticatedIdentity() const;
 
-  // Signs |identity| in to Chrome with |hosted_domain| as its hosted domain,
-  // pauses sync and logs |identity| in to http://google.com.
+  // Grants signin::ConsentLevel::kSignin to |identity|.
+  // This method does not set up Sync-the-feature for the identity.
   // Virtual for testing.
   virtual void SignIn(ChromeIdentity* identity);
 
-  // Grants consent for |identity| to enable syncing the account.
+  // Grants signin::ConsentLevel::kSync to |identity|.
+  // This starts setting up Sync-the-feature, but the setup will only complete
+  // once SyncUserSettings::SetFirstSetupComplete() is called.
+  // Virtual for testing.
   virtual void GrantSyncConsent(ChromeIdentity* identity);
 
   // Signs the authenticated user out of Chrome and clears the browsing
@@ -231,12 +234,13 @@ class AuthenticationService : public KeyedService,
   // Map between account IDs and their associated MDM error.
   mutable std::map<CoreAccountId, NSDictionary*> cached_mdm_infos_;
 
-  ScopedObserver<ios::ChromeIdentityService,
-                 ios::ChromeIdentityService::Observer>
-      identity_service_observer_;
+  base::ScopedObservation<ios::ChromeIdentityService,
+                          ios::ChromeIdentityService::Observer>
+      identity_service_observation_{this};
 
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   base::WeakPtrFactory<AuthenticationService> weak_pointer_factory_;
 

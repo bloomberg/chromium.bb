@@ -12,13 +12,14 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/auth.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
 class RequestSystemProxyCredentialsView;
@@ -61,7 +62,18 @@ namespace chromeos {
 // managed network changes to another class.
 class SystemProxyManager : public NetworkStateHandlerObserver {
  public:
-  SystemProxyManager(PrefService* local_state);
+  enum class SystemProxyState {
+    // System-proxy is not enabled by feature nor policy.
+    kDisabled = 0,
+    // System proxy is enabled via feature flag; only available to system
+    // services which explicitly opt to use system-proxy.
+    kEnabledForSystemServices,
+    // System proxy is enabled via policy for all system services and the
+    // PlayStore.
+    kEnabledForAll
+  };
+
+  explicit SystemProxyManager(PrefService* local_state);
   SystemProxyManager(const SystemProxyManager&) = delete;
 
   SystemProxyManager& operator=(const SystemProxyManager&) = delete;
@@ -90,7 +102,9 @@ class SystemProxyManager : public NetworkStateHandlerObserver {
   // that authenticates system services, in PAC format, e.g.
   //     PROXY localhost:3128
   // otherwise it returns an empty string.
-  std::string SystemServicesProxyPacString() const;
+  std::string SystemServicesProxyPacString(
+      SystemProxyOverride system_proxy_override) const;
+
   void StartObservingPrimaryProfilePrefs(Profile* profile);
   void StopObservingPrimaryProfilePrefs();
   // If System-proxy is enabled, it will send a request via D-Bus to clear the
@@ -160,6 +174,8 @@ class SystemProxyManager : public NetworkStateHandlerObserver {
   // Sets the value of the pref |kSystemProxyUserTrafficHostAndPort|.
   void SetUserTrafficProxyPref(const std::string& user_traffic_address);
   bool IsArcEnabled() const;
+  // Returns true if system-proxy is enabled by policy or flag.
+  bool IsEnabled() const;
 
   // Sends the authentication details for |protection_space| to System-proxy via
   // D-Bus.
@@ -186,6 +202,13 @@ class SystemProxyManager : public NetworkStateHandlerObserver {
   void SendEmptyCredentials(
       const system_proxy::ProtectionSpace& protection_space);
 
+  // Sends a shut-down command to the system-proxy daemon. Since system-proxy is
+  // started via dbus activation, if the daemon is inactive, this command will
+  // start the daemon and tell it to exit.
+  // TODO(crbug.com/1055245,acostinas): Do not send shut-down command if
+  // System-proxy is inactive.
+  void SendShutDownRequest(system_proxy::TrafficOrigin traffic);
+
   // This function is called when the |WorkerActive| dbus signal is received.
   void OnWorkerActive(const system_proxy::WorkerActiveSignalDetails& details);
 
@@ -200,7 +223,7 @@ class SystemProxyManager : public NetworkStateHandlerObserver {
   // available.
   void LookupProxyAuthCredentialsCallback(
       const system_proxy::ProtectionSpace& protection_space,
-      const base::Optional<net::AuthCredentials>& credentials);
+      const absl::optional<net::AuthCredentials>& credentials);
 
   void ShowAuthenticationNotification(
       const system_proxy::ProtectionSpace& protection_space,
@@ -220,7 +243,8 @@ class SystemProxyManager : public NetworkStateHandlerObserver {
   // Closes the authentication notification or dialog if shown.
   void CloseAuthenticationUI();
 
-  bool system_proxy_enabled_ = false;
+  SystemProxyState system_proxy_state_ = SystemProxyState::kDisabled;
+
   // The authority URI in the format host:port of the local proxy worker for
   // system services.
   std::string system_services_address_;

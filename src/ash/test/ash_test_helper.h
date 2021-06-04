@@ -17,9 +17,9 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/test/aura_test_helper.h"
 
 class PrefService;
@@ -27,6 +27,12 @@ class PrefService;
 namespace aura {
 class Window;
 }
+
+namespace chromeos {
+namespace input_method {
+class MockInputMethodManager;
+}  // namespace input_method
+}  // namespace chromeos
 
 namespace display {
 class Display;
@@ -152,6 +158,11 @@ class AshTestHelper : public aura::test::AuraTestHelper {
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
   std::unique_ptr<AmbientAshTestHelper> ambient_ash_test_helper_;
+
+  // InputMethodManager is not owned by this class. It is stored in a
+  // global that is registered via InputMethodManager::Initialize().
+  chromeos::input_method::MockInputMethodManager* input_method_manager_ =
+      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

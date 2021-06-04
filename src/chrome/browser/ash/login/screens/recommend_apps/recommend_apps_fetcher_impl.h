@@ -33,8 +33,7 @@ class URLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-namespace chromeos {
-
+namespace ash {
 class RecommendAppsFetcherDelegate;
 
 // This class handles the network request for the Recommend Apps screen. It is
@@ -61,8 +60,7 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
  public:
   RecommendAppsFetcherImpl(
       RecommendAppsFetcherDelegate* delegate,
-      mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
-          display_config,
+      mojo::PendingRemote<mojom::CrosDisplayConfigController> display_config,
       network::mojom::URLLoaderFactory* url_loader_factory);
   ~RecommendAppsFetcherImpl() override;
 
@@ -72,7 +70,7 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   void Retry() override;
 
   using ArcFeaturesGetter = base::RepeatingCallback<void(
-      base::OnceCallback<void(base::Optional<arc::ArcFeatures> callback)>)>;
+      base::OnceCallback<void(absl::optional<arc::ArcFeatures> callback)>)>;
   void set_arc_features_getter_for_testing(const ArcFeaturesGetter& getter) {
     arc_features_getter_ = getter;
   }
@@ -91,12 +89,11 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
 
   // Callback function called when display unit info list is retrieved from ash.
   // It will populate the device config info related to the screen density.
-  void OnAshResponse(
-      std::vector<ash::mojom::DisplayUnitInfoPtr> all_displays_info);
+  void OnAshResponse(std::vector<mojom::DisplayUnitInfoPtr> all_displays_info);
 
   // Callback function called when ARC features are read by the parser.
   // It will populate the device config info related to ARC features.
-  void OnArcFeaturesRead(base::Optional<arc::ArcFeatures> read_result);
+  void OnArcFeaturesRead(absl::optional<arc::ArcFeatures> read_result);
 
   // Callback function called when the proto message has been compressed and
   // encoded.
@@ -113,8 +110,8 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   // Callback function called when SimpleURLLoader completes.
   void OnDownloaded(std::unique_ptr<std::string> response_body);
 
-  // If the response is not a valid JSON, return base::nullopt.
-  // If the response contains no app, return base::nullopt;
+  // If the response is not a valid JSON, return absl::nullopt.
+  // If the response contains no app, return absl::nullopt;
   // Value output, in true, is a list containing:
   // 1. name: the title of the app.
   // 2. package_name
@@ -127,7 +124,7 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   //  {"title_" : "title of second app",
   //   "packageName_": "second package name.",
   //  }]
-  base::Optional<base::Value> ParseResponse(base::StringPiece response);
+  absl::optional<base::Value> ParseResponse(base::StringPiece response);
 
   device_configuration::DeviceConfigurationProto device_config_;
 
@@ -155,12 +152,12 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
 
   ArcFeaturesGetter arc_features_getter_;
 
-  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
+  mojo::Remote<mojom::CrosDisplayConfigController> cros_display_config_;
   base::WeakPtrFactory<RecommendAppsFetcherImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsFetcherImpl);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_RECOMMEND_APPS_RECOMMEND_APPS_FETCHER_IMPL_H_

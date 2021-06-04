@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
@@ -23,9 +24,6 @@
 
 #if defined(USE_AURA)
 #include "ui/views/accessibility/ax_virtual_view_wrapper.h"
-#else
-// Currently unused.
-class AXVirtualViewWrapper {};
 #endif
 
 namespace ui {
@@ -38,6 +36,7 @@ class AXUniqueId;
 namespace views {
 
 class AXAuraObjCache;
+class AXVirtualViewWrapper;
 class View;
 class ViewAccessibility;
 class ViewAXPlatformNodeDelegate;
@@ -156,10 +155,10 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
-  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
+  absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
   std::vector<int32_t> GetColHeaderNodeIds() const override;
   std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
-  base::Optional<int32_t> GetCellId(int row_index,
+  absl::optional<int32_t> GetCellId(int row_index,
                                     int col_index) const override;
 
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
@@ -193,8 +192,17 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool HandleAccessibleActionInOwnerView(const ui::AXActionData& action_data);
 
  private:
+  // Needed in order to access set_cache(), so that AXAuraObjCache can
+  // track when an AXVirtualViewWrapper is deleted.
+  friend class AXAuraObjCache;
+  friend class AXVirtualViewWrapper;
+
   // Internal class name.
   static const char kViewClassName[];
+
+  // The AXAuraObjCache associated with our wrapper, if any. This is
+  // called by friend classes AXAuraObjCache and AXVirtualViewWrapper.
+  void set_cache(AXAuraObjCache* cache) { ax_aura_obj_cache_ = cache; }
 
   // Sets the parent ViewAccessibility if the parent is a real View and not an
   // AXVirtualView. It is invalid to set both |parent_view_| and
@@ -219,11 +227,13 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // We own our children.
   AXVirtualViews children_;
 
+  // The AXAuraObjCache that owns the AXVirtualViewWrapper associated with
+  // this object, if any.
+  AXAuraObjCache* ax_aura_obj_cache_ = nullptr;
+
   ui::AXUniqueId unique_id_;
   ui::AXNodeData custom_data_;
   base::RepeatingCallback<void(ui::AXNodeData*)> populate_data_callback_;
-
-  std::unique_ptr<AXVirtualViewWrapper> wrapper_;
 
   friend class ViewAccessibility;
 };

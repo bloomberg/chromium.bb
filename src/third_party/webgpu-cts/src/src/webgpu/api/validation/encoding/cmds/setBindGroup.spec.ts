@@ -106,7 +106,7 @@ g.test('state_and_binding_index')
   )
   .fn(async t => {
     const { encoderType, state, resourceType } = t.params;
-    const { maxBindGroups } = t.device.adapter.limits || { maxBindGroups: 4 };
+    const maxBindGroups = t.device.limits?.maxBindGroups ?? 4;
 
     async function runTest(index: number) {
       const { encoder, finish } = t.createEncoder(encoderType);

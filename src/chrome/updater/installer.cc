@@ -11,18 +11,19 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/policy_service.h"
+#include "chrome/updater/policy/service.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -36,10 +37,10 @@ static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
 
 // Returns the full path to the installation directory for the application
 // identified by the |app_id|.
-base::Optional<base::FilePath> GetAppInstallDir(const std::string& app_id) {
-  base::Optional<base::FilePath> app_install_dir = GetBaseDirectory();
+absl::optional<base::FilePath> GetAppInstallDir(const std::string& app_id) {
+  absl::optional<base::FilePath> app_install_dir = GetBaseDirectory();
   if (!app_install_dir)
-    return base::nullopt;
+    return absl::nullopt;
 
   return app_install_dir->AppendASCII(kAppsDir).AppendASCII(app_id);
 }
@@ -96,7 +97,7 @@ void Installer::DeleteOlderInstallPaths() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
-  const base::Optional<base::FilePath> app_install_dir =
+  const absl::optional<base::FilePath> app_install_dir =
       GetAppInstallDir(app_id_);
   if (!app_install_dir || !base::PathExists(*app_install_dir)) {
     return;
@@ -123,13 +124,15 @@ Installer::Result Installer::InstallHelper(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
-  auto local_manifest = update_client::ReadManifest(unpack_path);
-  if (!local_manifest)
+  base::Value local_manifest = update_client::ReadManifest(unpack_path);
+  if (!local_manifest.is_dict())
     return Result(update_client::InstallError::BAD_MANIFEST);
 
-  std::string version_ascii;
-  local_manifest->GetStringASCII("version", &version_ascii);
-  const base::Version manifest_version(version_ascii);
+  const std::string* version_ascii = local_manifest.FindStringKey("version");
+  if (!version_ascii || !base::IsStringASCII(*version_ascii))
+    return Result(update_client::InstallError::INVALID_VERSION);
+
+  const base::Version manifest_version(*version_ascii);
 
   VLOG(1) << "Installed version=" << pv_
           << ", installing version=" << manifest_version.GetString();
@@ -139,7 +142,7 @@ Installer::Result Installer::InstallHelper(
   if (pv_.CompareTo(manifest_version) > 0)
     return Result(update_client::InstallError::VERSION_NOT_UPGRADED);
 
-  const base::Optional<base::FilePath> app_install_dir =
+  const absl::optional<base::FilePath> app_install_dir =
       GetAppInstallDir(app_id_);
   if (!app_install_dir)
     return Result(update_client::InstallError::NO_DIR_COMPONENT_USER);
@@ -239,12 +242,12 @@ bool Installer::Uninstall() {
   return false;
 }
 
-base::Optional<base::FilePath> Installer::GetCurrentInstallDir() const {
+absl::optional<base::FilePath> Installer::GetCurrentInstallDir() const {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
-  base::Optional<base::FilePath> path = GetAppInstallDir(app_id_);
+  absl::optional<base::FilePath> path = GetAppInstallDir(app_id_);
   if (!path)
-    return base::nullopt;
+    return absl::nullopt;
   return path->AppendASCII(pv_.GetString());
 }
 

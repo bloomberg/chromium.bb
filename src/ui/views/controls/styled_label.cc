@@ -15,12 +15,12 @@
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
@@ -158,12 +158,12 @@ void StyledLabel::SetLineHeight(int line_height) {
   OnPropertyChanged(&line_height_, kPropertyEffectsPreferredSizeChanged);
 }
 
-base::Optional<SkColor> StyledLabel::GetDisplayedOnBackgroundColor() const {
+absl::optional<SkColor> StyledLabel::GetDisplayedOnBackgroundColor() const {
   return displayed_on_background_color_;
 }
 
 void StyledLabel::SetDisplayedOnBackgroundColor(
-    const base::Optional<SkColor>& color) {
+    const absl::optional<SkColor>& color) {
   if (displayed_on_background_color_ == color)
     return;
 
@@ -579,7 +579,7 @@ ADD_PROPERTY_METADATA(int, TextContext)
 ADD_PROPERTY_METADATA(int, DefaultTextStyle)
 ADD_PROPERTY_METADATA(int, LineHeight)
 ADD_PROPERTY_METADATA(bool, AutoColorReadabilityEnabled)
-ADD_PROPERTY_METADATA(base::Optional<SkColor>, DisplayedOnBackgroundColor)
+ADD_PROPERTY_METADATA(absl::optional<SkColor>, DisplayedOnBackgroundColor)
 END_METADATA
 
 }  // namespace views

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_PROXY_H_
 
 #include <jni.h>
-#include <memory>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
@@ -63,6 +62,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void WebContentsDestroyed() override;
   void DidChangeThemeColor() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
   bool SetToBaseURLForDataURLIfNeeded(GURL* url);
   void ViewportFitChanged(blink::mojom::ViewportFit value) override;
   void OnWebContentsFocused(RenderWidgetHost*) override;

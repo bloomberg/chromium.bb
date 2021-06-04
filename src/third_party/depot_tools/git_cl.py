@@ -666,13 +666,12 @@ def _GetYapfIgnorePatterns(top_dir):
   if not os.path.exists(yapfignore_file):
     return ignore_patterns
 
-  with open(yapfignore_file) as f:
-    for line in f.readlines():
-      stripped_line = line.strip()
-      # Comments and blank lines should be ignored.
-      if stripped_line.startswith('#') or stripped_line == '':
-        continue
-      ignore_patterns.add(stripped_line)
+  for line in gclient_utils.FileRead(yapfignore_file).split('\n'):
+    stripped_line = line.strip()
+    # Comments and blank lines should be ignored.
+    if stripped_line.startswith('#') or stripped_line == '':
+      continue
+    ignore_patterns.add(stripped_line)
   return ignore_patterns
 
 
@@ -1321,6 +1320,23 @@ class Changelist(object):
     if all_files:
       args.append('--all_files')
 
+    if resultdb and not realm:
+      # TODO (crbug.com/1113463): store realm somewhere and look it up so
+      # it is not required to pass the realm flag
+      print('Note: ResultDB reporting will NOT be performed because --realm'
+            ' was not specified. To enable ResultDB, please run the command'
+            ' again with the --realm argument to specify the LUCI realm.')
+
+    py2_results = self._RunPresubmit(args, resultdb, realm, description,
+                                     use_python3=False)
+    py3_results = self._RunPresubmit(args, resultdb, realm, description,
+                                     use_python3=True)
+    return self._MergePresubmitResults(py2_results, py3_results)
+
+  def _RunPresubmit(self, args, resultdb, realm, description, use_python3):
+    args = args[:]
+    vpython = 'vpython3' if use_python3 else 'vpython'
+
     with gclient_utils.temporary_file() as description_file:
       with gclient_utils.temporary_file() as json_output:
         gclient_utils.FileWrite(description_file, description)
@@ -1328,15 +1344,9 @@ class Changelist(object):
         args.extend(['--description_file', description_file])
 
         start = time_time()
-        cmd = ['vpython', PRESUBMIT_SUPPORT] + args
+        cmd = [vpython, PRESUBMIT_SUPPORT] + args
         if resultdb and realm:
           cmd = ['rdb', 'stream', '-new', '-realm', realm, '--'] + cmd
-        elif resultdb:
-          # TODO (crbug.com/1113463): store realm somewhere and look it up so
-          # it is not required to pass the realm flag
-          print('Note: ResultDB reporting will NOT be performed because --realm'
-                ' was not specified. To enable ResultDB, please run the command'
-                ' again with the --realm argument to specify the LUCI realm.')
 
         p = subprocess2.Popen(cmd)
         exit_code = p.wait()
@@ -1352,6 +1362,19 @@ class Changelist(object):
 
         json_results = gclient_utils.FileRead(json_output)
         return json.loads(json_results)
+
+  def _MergePresubmitResults(self, py2_results, py3_results):
+    return {
+        'more_cc': sorted(set(py2_results.get('more_cc', []) +
+                              py3_results.get('more_cc', []))),
+        'errors': (
+            py2_results.get('errors', []) + py3_results.get('errors', [])),
+        'notifications': (
+            py2_results.get('notifications', []) +
+            py3_results.get('notifications', [])),
+        'warnings': (
+            py2_results.get('warnings', []) + py3_results.get('warnings', []))
+    }
 
   def RunPostUploadHook(self, verbose, upstream, description):
     args = self._GetCommonPresubmitArgs(verbose, upstream)
@@ -1433,6 +1456,10 @@ class Changelist(object):
     if options.force or options.skip_title:
       return title
     user_title = gclient_utils.AskForData('Title for patchset [%s]: ' % title)
+
+    # Use the default title if the user confirms the default with a 'y'.
+    if user_title.lower() == 'y':
+      return title
     return user_title or title
 
   def CMDUpload(self, options, git_diff_args, orig_args):
@@ -2205,6 +2232,17 @@ class Changelist(object):
       push_stdout = push_stdout.decode('utf-8', 'replace')
     except subprocess2.CalledProcessError as e:
       push_returncode = e.returncode
+      if 'blocked keyword' in str(e.stdout):
+        raise GitPushError(
+            'Failed to create a change, very likely due to blocked keyword. '
+            'Please examine output above for the reason of the failure.\n'
+            'If this is a false positive, you can try to bypass blocked '
+            'keyword by using push option '
+            '-o uploadvalidator~skip, e.g.:\n'
+            'git cl upload -o uploadvalidator~skip\n\n'
+            'If git-cl is not working correctly, file a bug under the '
+            'Infra>SDK component.')
+
       raise GitPushError(
           'Failed to create a change. Please examine output above for the '
           'reason of the failure.\n'
@@ -2304,17 +2342,26 @@ class Changelist(object):
         ref_to_push = RunGit(
             ['commit-tree', tree, '-p', parent, '-F', desc_tempfile]).strip()
     else:  # if not options.squash
-      if not git_footers.get_footer_change_id(change_desc.description):
-        DownloadGerritHook(False)
-        change_desc.set_description(
-            self._AddChangeIdToCommitMessage(
-                change_desc.description, git_diff_args))
+      if options.no_add_changeid:
+        pass
+      else:  # adding Change-Ids is okay.
+        if not git_footers.get_footer_change_id(change_desc.description):
+          DownloadGerritHook(False)
+          change_desc.set_description(
+              self._AddChangeIdToCommitMessage(change_desc.description,
+                                               git_diff_args))
       ref_to_push = 'HEAD'
       # For no-squash mode, we assume the remote called "origin" is the one we
       # want. It is not worthwhile to support different workflows for
       # no-squash mode.
       parent = 'origin/%s' % branch
-      change_id = git_footers.get_footer_change_id(change_desc.description)[0]
+      # attempt to extract the changeid from the current description
+      # fail informatively if not possible.
+      change_id_candidates = git_footers.get_footer_change_id(
+          change_desc.description)
+      if not change_id_candidates:
+        DieWithError("Unable to extract change-id from message.")
+      change_id = change_id_candidates[0]
 
     SaveDescriptionBackup(change_desc)
     commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
@@ -4217,6 +4264,10 @@ def CMDupload(parser, args):
                     help='Transmit the given string to the server when '
                     'performing git push (pass-through). See git-push '
                     'documentation for more details.')
+  parser.add_option('--no-add-changeid',
+                    action='store_true',
+                    dest='no_add_changeid',
+                    help='Do not add change-ids to messages.')
 
   orig_args = args
   (options, args) = parser.parse_args(args)
@@ -5296,7 +5347,7 @@ class OptionParser(optparse.OptionParser):
       global settings
       settings = Settings()
 
-      if not metrics.DISABLE_METRICS_COLLECTION:
+      if metrics.collector.config.should_collect_metrics:
         # GetViewVCUrl ultimately calls logging method.
         project_url = settings.GetViewVCUrl().strip('/+')
         if project_url in metrics_utils.KNOWN_PROJECT_URLS:

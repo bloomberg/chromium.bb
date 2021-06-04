@@ -22,6 +22,7 @@ import {
   AdbRecordingTarget,
   getBuiltinChromeCategoryList,
   getDefaultRecordingTargets,
+  hasActiveProbes,
   isAdbTarget,
   isAndroidP,
   isAndroidTarget,
@@ -55,44 +56,43 @@ const LOCAL_STORAGE_SHOW_CONFIG = 'showConfigs';
 const POLL_INTERVAL_MS = [250, 500, 1000, 2500, 5000, 30000, 60000];
 
 const ATRACE_CATEGORIES = new Map<string, string>();
+ATRACE_CATEGORIES.set('adb', 'ADB');
+ATRACE_CATEGORIES.set('aidl', 'AIDL calls');
+ATRACE_CATEGORIES.set('am', 'Activity Manager');
+ATRACE_CATEGORIES.set('audio', 'Audio');
+ATRACE_CATEGORIES.set('binder_driver', 'Binder Kernel driver');
+ATRACE_CATEGORIES.set('binder_lock', 'Binder global lock trace');
+ATRACE_CATEGORIES.set('bionic', 'Bionic C library');
+ATRACE_CATEGORIES.set('camera', 'Camera');
+ATRACE_CATEGORIES.set('dalvik', 'ART & Dalvik');
+ATRACE_CATEGORIES.set('database', 'Database');
 ATRACE_CATEGORIES.set('gfx', 'Graphics');
+ATRACE_CATEGORIES.set('hal', 'Hardware Modules');
 ATRACE_CATEGORIES.set('input', 'Input');
+ATRACE_CATEGORIES.set('network', 'Network');
+ATRACE_CATEGORIES.set('nnapi', 'Neural Network API');
+ATRACE_CATEGORIES.set('pm', 'Package Manager');
+ATRACE_CATEGORIES.set('power', 'Power Management');
+ATRACE_CATEGORIES.set('res', 'Resource Loading');
+ATRACE_CATEGORIES.set('rro', 'Resource Overlay');
+ATRACE_CATEGORIES.set('rs', 'RenderScript');
+ATRACE_CATEGORIES.set('sm', 'Sync Manager');
+ATRACE_CATEGORIES.set('ss', 'System Server');
+ATRACE_CATEGORIES.set('vibrator', 'Vibrator');
+ATRACE_CATEGORIES.set('video', 'Video');
 ATRACE_CATEGORIES.set('view', 'View System');
 ATRACE_CATEGORIES.set('webview', 'WebView');
 ATRACE_CATEGORIES.set('wm', 'Window Manager');
-ATRACE_CATEGORIES.set('am', 'Activity Manager');
-ATRACE_CATEGORIES.set('sm', 'Sync Manager');
-ATRACE_CATEGORIES.set('audio', 'Audio');
-ATRACE_CATEGORIES.set('video', 'Video');
-ATRACE_CATEGORIES.set('camera', 'Camera');
-ATRACE_CATEGORIES.set('hal', 'Hardware Modules');
-ATRACE_CATEGORIES.set('res', 'Resource Loading');
-ATRACE_CATEGORIES.set('dalvik', 'ART & Dalvik');
-ATRACE_CATEGORIES.set('rs', 'RenderScript');
-ATRACE_CATEGORIES.set('bionic', 'Bionic C library');
-ATRACE_CATEGORIES.set('gfx', 'Graphics');
-ATRACE_CATEGORIES.set('power', 'Power Management');
-ATRACE_CATEGORIES.set('pm', 'Package Manager');
-ATRACE_CATEGORIES.set('ss', 'System Server');
-ATRACE_CATEGORIES.set('database', 'Database');
-ATRACE_CATEGORIES.set('network', 'Network');
-ATRACE_CATEGORIES.set('adb', 'ADB');
-ATRACE_CATEGORIES.set('vibrator', 'Vibrator');
-ATRACE_CATEGORIES.set('aidl', 'AIDL calls');
-ATRACE_CATEGORIES.set('nnapi', 'Neural Network API');
-ATRACE_CATEGORIES.set('rro', 'Resource Overlay');
-ATRACE_CATEGORIES.set('binder_driver', 'Binder Kernel driver');
-ATRACE_CATEGORIES.set('binder_lock', 'Binder global lock trace');
 
 const LOG_BUFFERS = new Map<string, string>();
-LOG_BUFFERS.set('LID_DEFAULT', 'Main');
-LOG_BUFFERS.set('LID_RADIO', 'Radio');
-LOG_BUFFERS.set('LID_EVENTS', 'Binary events');
-LOG_BUFFERS.set('LID_SYSTEM', 'System');
 LOG_BUFFERS.set('LID_CRASH', 'Crash');
-LOG_BUFFERS.set('LID_STATS', 'Stats');
-LOG_BUFFERS.set('LID_SECURITY', 'Security');
+LOG_BUFFERS.set('LID_DEFAULT', 'Main');
+LOG_BUFFERS.set('LID_EVENTS', 'Binary events');
 LOG_BUFFERS.set('LID_KERNEL', 'Kernel');
+LOG_BUFFERS.set('LID_RADIO', 'Radio');
+LOG_BUFFERS.set('LID_SECURITY', 'Security');
+LOG_BUFFERS.set('LID_STATS', 'Stats');
+LOG_BUFFERS.set('LID_SYSTEM', 'System');
 
 const FTRACE_CATEGORIES = new Map<string, string>();
 FTRACE_CATEGORIES.set('binder/*', 'binder');
@@ -290,8 +290,9 @@ function CpuSettings(cssClass: string) {
       } as ProbeAttrs),
       m(Probe, {
         title: 'Syscalls',
-        img: null,
-        descr: `Tracks the enter and exit of all syscalls.`,
+        img: 'rec_syscalls.png',
+        descr: `Tracks the enter and exit of all syscalls. On Android
+                requires a userdebug or eng build.`,
         setEnabled: (cfg, val) => cfg.cpuSyscall = val,
         isEnabled: (cfg) => cfg.cpuSyscall
       } as ProbeAttrs));
@@ -406,7 +407,7 @@ sample from those.`,
         setEnabled: (cfg, val) => cfg.hpAllHeaps = val,
         isEnabled: (cfg) => cfg.hpAllHeaps
       } as ToggleAttrs)
-      // TODO(taylori): Add advanced options.
+      // TODO(hjd): Add advanced options.
   );
 }
 
@@ -627,7 +628,15 @@ function AndroidSettings(cssClass: string) {
           options: LOG_BUFFERS,
           set: (cfg, val) => cfg.androidLogBuffers = val,
           get: (cfg) => cfg.androidLogBuffers
-        } as DropdownAttrs)));
+        } as DropdownAttrs)),
+      m(Probe, {
+        title: 'Frame timeline',
+        img: 'rec_frame_timeline.png',
+        descr: `Records expected/actual frame timings from surface_flinger.
+                    Requires Android 12 (S) or above.`,
+        setEnabled: (cfg, val) => cfg.androidFrameTimeline = val,
+        isEnabled: (cfg) => cfg.androidFrameTimeline
+      } as ProbeAttrs));
 }
 
 
@@ -709,18 +718,15 @@ function ChromeCategoriesSelection() {
 
   // Show "disabled-by-default" categories last.
   const categoriesMap = new Map<string, string>();
-  const disabledByDefaultCategories: string[] = [];
   const disabledPrefix = 'disabled-by-default-';
+  const overheadSuffix = '(high overhead)';
   categories.forEach(cat => {
     if (cat.startsWith(disabledPrefix)) {
-      disabledByDefaultCategories.push(cat);
+      categoriesMap.set(
+          cat, `${cat.replace(disabledPrefix, '')} ${overheadSuffix}`);
     } else {
       categoriesMap.set(cat, cat);
     }
-  });
-  disabledByDefaultCategories.forEach(cat => {
-    categoriesMap.set(
-        cat, `${cat.replace(disabledPrefix, '')} (high overhead)`);
   });
 
   return m(Dropdown, {
@@ -728,7 +734,16 @@ function ChromeCategoriesSelection() {
     cssClass: '.multicolumn.two-columns',
     options: categoriesMap,
     set: (cfg, val) => cfg.chromeCategoriesSelected = val,
-    get: (cfg) => cfg.chromeCategoriesSelected
+    get: (cfg) => cfg.chromeCategoriesSelected,
+    sort: (a, b) => {
+      const aIsDisabled = a.includes(overheadSuffix);
+      const bIsDisabled = b.includes(overheadSuffix);
+      if (aIsDisabled === bIsDisabled) {
+        return a.localeCompare(b);
+      } else {
+        return Number(aIsDisabled) - Number(bIsDisabled);
+      }
+    },
   } as DropdownAttrs);
 }
 
@@ -878,7 +893,7 @@ function onTargetChange(target: string) {
 function Instructions(cssClass: string) {
   return m(
       `.record-section.instructions${cssClass}`,
-      m('header', 'Trace command'),
+      m('header', 'Recording command'),
       localStorage.hasOwnProperty(LOCAL_STORAGE_SHOW_CONFIG) ?
           m('button.permalinkconfig',
             {
@@ -1036,6 +1051,15 @@ function RecordingNotes() {
       m('a',
         {href: cmdlineUrl, target: '_blank'},
         `collect the trace using ADB.`));
+
+  const msgZeroProbes =
+      m('.note',
+        'It looks like you didn\'t add any probes. ' +
+            'Please add at least one to get a non-empty trace.');
+
+  if (!hasActiveProbes(globals.state.recordConfig)) {
+    notes.push(msgZeroProbes);
+  }
 
   if (isAdbTarget(globals.state.recordingTarget)) {
     notes.push(msgRecordingNotSupported);
@@ -1302,7 +1326,7 @@ function recordMenu(routePage: string) {
         m('a[href="#!/record?p=instructions"]',
           m(`li${routePage === 'instructions' ? '.active' : ''}`,
             m('i.material-icons.rec', 'fiber_manual_record'),
-            m('.title', 'Trace command'),
+            m('.title', 'Recording command'),
             m('.sub', 'Manually record trace'))),
         localStorage.hasOwnProperty(LOCAL_STORAGE_SHOW_CONFIG) ?
             m('a[href="#!/record?p=config"]',

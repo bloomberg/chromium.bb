@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -53,6 +54,7 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 namespace chrome_service_worker_browser_test {
 
@@ -127,8 +129,9 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
   }
 
   content::ServiceWorkerContext* GetServiceWorkerContext() {
-    return content::BrowserContext::GetDefaultStoragePartition(
-               browser()->profile())
+    return browser()
+        ->profile()
+        ->GetDefaultStoragePartition()
         ->GetServiceWorkerContext();
   }
 
@@ -409,7 +412,7 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
 class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
  public:
   explicit FaviconUpdateWaiter(content::WebContents* web_contents) {
-    scoped_observer_.Add(
+    scoped_observation_.Observe(
         favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
   ~FaviconUpdateWaiter() override = default;
@@ -435,8 +438,9 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
   }
 
   bool updated_ = false;
-  ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
-      scoped_observer_{this};
+  base::ScopedObservation<favicon::FaviconDriver,
+                          favicon::FaviconDriverObserver>
+      scoped_observation_{this};
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
@@ -945,7 +949,7 @@ class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // The request that hit the "test" endpoint.
-  base::Optional<net::test_server::HttpRequest> received_request_;
+  absl::optional<net::test_server::HttpRequest> received_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerNavigationPreloadTest);
 };

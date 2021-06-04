@@ -10,20 +10,23 @@
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_running_on_chromeos.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/plugin_vm/fake_plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/mock_plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/ui/ash/launcher/app_window_base.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
+#include "chrome/browser/ui/ash/shelf/app_window_base.h"
+#include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cicerone_client.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -92,9 +95,20 @@ class PluginVmFilesTest : public testing::Test {
   }
 
   struct ScopedDBusThreadManager {
-    ScopedDBusThreadManager() { chromeos::DBusThreadManager::Initialize(); }
-    ~ScopedDBusThreadManager() { chromeos::DBusThreadManager::Shutdown(); }
+    ScopedDBusThreadManager() {
+      chromeos::DBusThreadManager::Initialize();
+      chromeos::CiceroneClient::InitializeFake();
+      chromeos::ConciergeClient::InitializeFake();
+      chromeos::SeneschalClient::InitializeFake();
+    }
+    ~ScopedDBusThreadManager() {
+      chromeos::SeneschalClient::Shutdown();
+      chromeos::ConciergeClient::Shutdown();
+      chromeos::CiceroneClient::Shutdown();
+      chromeos::DBusThreadManager::Shutdown();
+    }
   } dbus_thread_manager_;
+
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   FakePluginVmFeatures fake_plugin_vm_features_;
@@ -145,11 +159,11 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
                 return std::make_unique<MockPluginVmManager>();
               })));
   ash::ShelfModel shelf_model;
-  ChromeLauncherController chrome_launcher_controller(&profile_, &shelf_model);
-  chrome_launcher_controller.SetProfileForTest(&profile_);
-  chrome_launcher_controller.SetLauncherControllerHelperForTest(
-      std::make_unique<LauncherControllerHelper>(&profile_));
-  chrome_launcher_controller.Init();
+  ChromeShelfController chrome_shelf_controller(&profile_, &shelf_model);
+  chrome_shelf_controller.SetProfileForTest(&profile_);
+  chrome_shelf_controller.SetShelfControllerHelperForTest(
+      std::make_unique<ShelfControllerHelper>(&profile_));
+  chrome_shelf_controller.Init();
 
   AppLaunchedCallback app_launched_callback;
   PluginVmManager::LaunchPluginVmCallback launch_plugin_vm_callback;
@@ -164,9 +178,8 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   ASSERT_FALSE(launch_plugin_vm_callback.is_null());
 
   LaunchContainerApplicationCallback cicerone_response_callback;
-  static_cast<chromeos::FakeCiceroneClient*>(
-      chromeos::DBusThreadManager::Get()->GetCiceroneClient())
-      ->SetOnLaunchContainerApplicationCallback(base::BindLambdaForTesting(
+  chromeos::FakeCiceroneClient::Get()->SetOnLaunchContainerApplicationCallback(
+      base::BindLambdaForTesting(
           [&](const vm_tools::cicerone::LaunchContainerApplicationRequest&
                   request,
               LaunchContainerApplicationCallback callback) {
@@ -177,13 +190,13 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   ASSERT_FALSE(cicerone_response_callback.is_null());
 
   ash::ShelfID shelf_id(kPluginVmShelfAppId);
-  auto launcher_item_controller =
-      std::make_unique<AppWindowLauncherItemController>(shelf_id);
+  auto shelf_item_controller =
+      std::make_unique<AppWindowShelfItemController>(shelf_id);
   MockAppWindowBase mock_window(shelf_id, nullptr);
-  launcher_item_controller->AddWindow(&mock_window);
-  mock_window.SetController(launcher_item_controller.get());
+  shelf_item_controller->AddWindow(&mock_window);
+  mock_window.SetController(shelf_item_controller.get());
   shelf_model.SetShelfItemDelegate(ash::ShelfID(kPluginVmShelfAppId),
-                                   std::move(launcher_item_controller));
+                                   std::move(shelf_item_controller));
   vm_tools::cicerone::LaunchContainerApplicationResponse response;
   response.set_success(true);
   EXPECT_CALL(mock_window, Activate());

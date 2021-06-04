@@ -47,6 +47,7 @@ class SkDrawable;
 struct SkDrawShadowRec;
 class SkFont;
 class SkGlyphRunBuilder;
+class SkGlyphRunList;
 class SkImage;
 class SkImageFilter;
 class SkMarkerStack;
@@ -1737,6 +1738,75 @@ public:
         this->drawSimpleText(str.c_str(), str.size(), SkTextEncoding::kUTF8, x, y, font, paint);
     }
 
+    /** Draws count glyphs, at positions relative to origin styled with font and paint with
+        supporting utf8 and cluster information.
+
+       This function draw glyphs at the given positions relative to the given origin.
+       It does not perform typeface fallback for glyphs not found in the SkTypeface in font.
+
+       The drawing obeys the current transform matrix and clipping.
+
+       All elements of paint: SkPathEffect, SkMaskFilter, SkShader,
+       SkColorFilter, and SkImageFilter; apply to text. By
+       default, draws filled black glyphs.
+
+       @param count           number of glyphs to draw
+       @param glyphs          the array of glyphIDs to draw
+       @param positions       where to draw each glyph relative to origin
+       @param clusters        array of size count of cluster information
+       @param textByteCount   size of the utf8text
+       @param utf8text        utf8text supporting information for the glyphs
+       @param origin          the origin of all the positions
+       @param font            typeface, text size and so, used to describe the text
+       @param paint           blend, color, and so on, used to draw
+    */
+    void drawGlyphs(int count, const SkGlyphID glyphs[], const SkPoint positions[],
+                    const uint32_t clusters[], int textByteCount, const char utf8text[],
+                    SkPoint origin, const SkFont& font, const SkPaint& paint);
+
+    /** Draws count glyphs, at positions relative to origin styled with font and paint.
+
+        This function draw glyphs at the given positions relative to the given origin.
+        It does not perform typeface fallback for glyphs not found in the SkTypeface in font.
+
+        The drawing obeys the current transform matrix and clipping.
+
+        All elements of paint: SkPathEffect, SkMaskFilter, SkShader,
+        SkColorFilter, and SkImageFilter; apply to text. By
+        default, draws filled black glyphs.
+
+        @param count       number of glyphs to draw
+        @param glyphs      the array of glyphIDs to draw
+        @param positions   where to draw each glyph relative to origin
+        @param origin      the origin of all the positions
+        @param font        typeface, text size and so, used to describe the text
+        @param paint       blend, color, and so on, used to draw
+    */
+    void drawGlyphs(int count, const SkGlyphID glyphs[], const SkPoint positions[],
+                    SkPoint origin, const SkFont& font, const SkPaint& paint);
+
+    /** Draws count glyphs, at positions relative to origin styled with font and paint.
+
+        This function draw glyphs using the given scaling and rotations. They are positioned
+        relative to the given origin. It does not perform typeface fallback for glyphs not found
+        in the SkTypeface in font.
+
+        The drawing obeys the current transform matrix and clipping.
+
+        All elements of paint: SkPathEffect, SkMaskFilter, SkShader,
+        SkColorFilter, and SkImageFilter; apply to text. By
+        default, draws filled black glyphs.
+
+        @param count    number of glyphs to draw
+        @param glyphs   the array of glyphIDs to draw
+        @param xforms   where to draw and orient each glyph
+        @param origin   the origin of all the positions
+        @param font     typeface, text size and so, used to describe the text
+        @param paint    blend, color, and so on, used to draw
+    */
+    void drawGlyphs(int count, const SkGlyphID glyphs[], const SkRSXform xforms[],
+                    SkPoint origin, const SkFont& font, const SkPaint& paint);
+
     /** Draws SkTextBlob blob at (x, y), using clip, SkMatrix, and SkPaint paint.
 
         blob contains glyphs, their positions, and paint attributes specific to text:
@@ -2147,6 +2217,8 @@ protected:
     virtual void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                 const SkPaint& paint);
 
+    virtual void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint);
+
     virtual void onDrawPatch(const SkPoint cubics[12], const SkColor colors[4],
                            const SkPoint texCoords[4], SkBlendMode mode, const SkPaint& paint);
     virtual void onDrawPoints(PointMode mode, size_t count, const SkPoint pts[],
@@ -2268,6 +2340,7 @@ private:
     friend class AutoLayerForImageFilter;
     friend class SkSurface_Raster;  // needs getDevice()
     friend class SkNoDrawCanvas;    // needs resetForNextPicture()
+    friend class SkNWayCanvas;
     friend class SkPictureRecord;   // predrawNotify (why does it need it? <reed>)
     friend class SkOverdrawCanvas;
     friend class SkRasterHandleAllocator;
@@ -2350,16 +2423,13 @@ private:
 
     virtual SkPaintFilterCanvas* internal_private_asPaintFilterCanvas() const { return nullptr; }
 
-    /**
-     *  Keep track of the device clip bounds and if the matrix is scale-translate.  This allows
-     *  us to do a fast quick reject in the common case.
-     */
-    bool   fIsScaleTranslate;
+    // Keep track of the device clip bounds in the canvas' global space to reject draws before
+    // invoking the top-level device.
     SkRect fQuickRejectBounds;
 
     // Compute the clip's bounds based on all clipped SkDevice's reported device bounds transformed
     // into the canvas' global space.
-    SkRect computeDeviceClipBounds() const;
+    SkRect computeDeviceClipBounds(bool outsetForAA=true) const;
 
     class AutoUpdateQRBounds;
     void validateClip() const;

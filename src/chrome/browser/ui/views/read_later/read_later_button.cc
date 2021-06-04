@@ -30,11 +30,11 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -45,7 +45,6 @@
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/dot_indicator.h"
 #include "ui/views/controls/highlight_path_generator.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "url/gurl.h"
 
 namespace {
@@ -112,9 +111,11 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
       })),
       highlight_color_animation_(
           std::make_unique<HighlightColorAnimation>(this)) {
+  ConfigureInkDropForToolbar(this);
   // Note: BrowserView may not exist during tests.
   if (BrowserView::GetBrowserViewForBrowser(browser_))
-    DCHECK(!BrowserView::GetBrowserViewForBrowser(browser_)->side_panel());
+    DCHECK(!BrowserView::GetBrowserViewForBrowser(browser_)
+                ->right_aligned_side_panel());
 
   dot_indicator_ = views::DotIndicator::Install(image());
 
@@ -127,9 +128,6 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
 
   views::InstallPillHighlightPathGenerator(this);
-  SetInkDropMode(InkDropMode::ON);
-  SetHasInkDropActionOnClick(true);
-  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_READ_LATER_TITLE));
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
@@ -143,22 +141,6 @@ ReadLaterButton::~ReadLaterButton() = default;
 void ReadLaterButton::CloseBubble() {
   if (webui_bubble_manager_->GetBubbleWidget())
     webui_bubble_manager_->CloseBubble();
-}
-
-std::unique_ptr<views::InkDrop> ReadLaterButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(false);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-ReadLaterButton::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight(this);
-}
-
-SkColor ReadLaterButton::GetInkDropBaseColor() const {
-  return GetToolbarInkDropBaseColor(this);
 }
 
 void ReadLaterButton::OnThemeChanged() {
@@ -178,6 +160,8 @@ void ReadLaterButton::OnThemeChanged() {
           ui::NativeTheme::kColorId_AlertSeverityHigh),
       /*border_color=*/theme_provider->GetColor(
           ThemeProperties::COLOR_TOOLBAR));
+
+  ToolbarButton::UpdateFocusRingColor(this, focus_ring());
 }
 
 void ReadLaterButton::Layout() {
@@ -258,7 +242,7 @@ void ReadLaterButton::UpdateColors() {
       views::Button::STATE_NORMAL,
       ui::ImageModel::FromVectorIcon(
           kReadLaterIcon, highlight_color_animation_->GetIconColor()));
-  base::Optional<SkColor> background_color =
+  absl::optional<SkColor> background_color =
       highlight_color_animation_->GetBackgroundColor();
   if (background_color) {
     SetBackground(views::CreateBackgroundFromPainter(
@@ -315,10 +299,10 @@ SkColor ReadLaterButton::HighlightColorAnimation::GetTextColor() const {
   return FadeWithAnimation(highlight_color_, original_text_color);
 }
 
-base::Optional<SkColor>
+absl::optional<SkColor>
 ReadLaterButton::HighlightColorAnimation::GetBackgroundColor() const {
   if (!highlight_color_animation_.is_animating())
-    return base::nullopt;
+    return absl::nullopt;
   SkColor original_bg_color = SkColorSetA(
       ToolbarButton::GetDefaultBackgroundColor(parent_->GetThemeProvider()),
       kBackgroundBaseLayerAlpha);

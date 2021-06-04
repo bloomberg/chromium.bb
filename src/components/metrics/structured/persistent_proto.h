@@ -5,15 +5,13 @@
 #ifndef COMPONENTS_METRICS_STRUCTURED_PERSISTENT_PROTO_H_
 #define COMPONENTS_METRICS_STRUCTURED_PERSISTENT_PROTO_H_
 
-#include <string>
-
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace metrics {
 namespace structured {

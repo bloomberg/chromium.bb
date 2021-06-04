@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -29,11 +28,13 @@
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
@@ -203,7 +204,7 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
 }
 
 void UpdateFinalizerClientData(
-    const base::Optional<InstallManager::InstallParams>& params,
+    const absl::optional<InstallManager::InstallParams>& params,
     InstallFinalizer::FinalizeOptions* options) {
   if (params) {
     if (IsChromeOs()) {
@@ -441,7 +442,7 @@ void WebAppInstallTask::OnWebAppUrlLoadedCheckAndRetrieveManifest(
 }
 
 void WebAppInstallTask::OnWebAppInstallabilityChecked(
-    base::Optional<blink::Manifest> manifest,
+    absl::optional<blink::Manifest> manifest,
     const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     bool is_installable) {
@@ -518,7 +519,7 @@ void WebAppInstallTask::ApplyParamsToWebApplicationInfo(
 void WebAppInstallTask::OnDidPerformInstallableCheck(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     bool force_shortcut_app,
-    base::Optional<blink::Manifest> manifest,
+    absl::optional<blink::Manifest> manifest,
     const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     bool is_installable) {
@@ -570,7 +571,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 }
 
 void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
-    base::Optional<blink::Manifest> manifest,
+    absl::optional<blink::Manifest> manifest,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     std::vector<GURL> icon_urls,
     ForInstallableSite for_installable_site,
@@ -881,6 +882,8 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
     options.add_to_desktop = install_params_->add_to_desktop;
     options.add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
   }
+
+  MaybeDisableOsIntegration(registrar_, app_id, &options);
 
   auto hooks_created_callback =
       base::BindOnce(&WebAppInstallTask::OnOsHooksCreated, GetWeakPtr(),

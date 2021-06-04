@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -29,7 +30,6 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_id.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
@@ -122,7 +122,7 @@ bool IsDeskContainer(aura::Window* container) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash::desks_util::IsDeskContainer(container);
 #else
-  return container->id() == ash::kShellWindowId_DefaultContainerDeprecated;
+  return container->GetId() == ash::kShellWindowId_DefaultContainerDeprecated;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -167,7 +167,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
   void OnWindowOcclusionChanged(
-      aura::Window::OcclusionState occlusion_state) override {
+      aura::Window::OcclusionState GetOcclusionState) override {
     surface_->OnWindowOcclusionChanged();
   }
   bool HasHitTestMask() const override { return true; }
@@ -346,7 +346,7 @@ void Surface::SetInputRegion(const cc::Region& region) {
 void Surface::ResetInputRegion() {
   TRACE_EVENT0("exo", "Surface::ResetInputRegion");
 
-  pending_state_.basic_state.input_region = base::nullopt;
+  pending_state_.basic_state.input_region = absl::nullopt;
 }
 
 void Surface::SetInputOutset(int outset) {
@@ -381,6 +381,10 @@ void Surface::AddSubSurface(Surface* sub_surface) {
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
   sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
   sub_surfaces_changed_ = true;
+
+  // Propagate the kSkipImeProcessing property to the new child.
+  if (window_->GetProperty(aura::client::kSkipImeProcessing))
+    sub_surface->window()->SetProperty(aura::client::kSkipImeProcessing, true);
 
   // The shell might have not be added to the root yet.
   if (window_->GetRootWindow()) {
@@ -594,6 +598,16 @@ void Surface::SetSnappedToLeft() {
 void Surface::UnsetSnap() {
   if (delegate_)
     delegate_->UnsetSnap();
+}
+
+void Surface::SetCanGoBack() {
+  if (delegate_)
+    delegate_->SetCanGoBack();
+}
+
+void Surface::UnsetCanGoBack() {
+  if (delegate_)
+    delegate_->UnsetCanGoBack();
 }
 
 void Surface::SetColorSpace(gfx::ColorSpace color_space) {
@@ -1214,13 +1228,12 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
 
-  quad_state->SetAll(quad_to_target_transform, quad_rect /*quad_layer_rect=*/,
-                     quad_rect /*visible_quad_layer_rect=*/,
-                     gfx::MaskFilterInfo() /*mask_filter_info=*/,
-                     gfx::Rect() /*clip_rect=*/, false /*is_clipped=*/,
-                     are_contents_opaque, state_.basic_state.alpha /*opacity=*/,
-                     SkBlendMode::kSrcOver /*blend_mode=*/,
-                     0 /*sorting_context_id=*/);
+  quad_state->SetAll(
+      quad_to_target_transform, quad_rect /*quad_layer_rect=*/,
+      quad_rect /*visible_quad_layer_rect=*/,
+      gfx::MaskFilterInfo() /*mask_filter_info=*/, absl::nullopt /*clip_rect=*/,
+      are_contents_opaque, state_.basic_state.alpha /*opacity=*/,
+      SkBlendMode::kSrcOver /*blend_mode=*/, 0 /*sorting_context_id=*/);
   quad_state->no_damage = damage_rect.IsEmpty();
 
   if (current_resource_.id) {
@@ -1258,7 +1271,6 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       if (latest_embedded_surface_id_.is_valid() &&
           !embedded_surface_size_.IsEmpty()) {
         if (!state_.basic_state.crop.IsEmpty()) {
-          quad_state->is_clipped = true;
           quad_state->clip_rect = output_rect;
         }
         viz::SurfaceDrawQuad* surface_quad =

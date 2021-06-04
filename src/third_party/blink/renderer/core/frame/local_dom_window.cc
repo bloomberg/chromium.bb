@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
@@ -102,6 +103,8 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
@@ -460,6 +463,8 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
     GetFrame()->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kViolation,
         mojom::blink::ConsoleMessageLevel::kError, body->message()));
+
+    CountPermissionsPolicyViolation(feature);
   }
 }
 
@@ -502,7 +507,7 @@ void LocalDOMWindow::ReportDocumentPolicyViolation(
   document_policy_violation_reports_sent_.insert(report_id);
 
   // Send the document policy violation report to any ReportingObservers.
-  const base::Optional<std::string> endpoint =
+  const absl::optional<std::string> endpoint =
       relevant_document_policy->GetFeatureEndpoint(feature);
 
   if (is_report_only) {
@@ -574,7 +579,15 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
 void LocalDOMWindow::AddInspectorIssue(
     mojom::blink::InspectorIssueInfoPtr info) {
   if (GetFrame()) {
-    GetFrame()->AddInspectorIssue(std::move(info));
+    GetFrame()->GetPage()->GetInspectorIssueStorage().AddInspectorIssue(
+        this, std::move(info));
+  }
+}
+
+void LocalDOMWindow::AddInspectorIssue(AuditsIssue issue) {
+  if (GetFrame()) {
+    GetFrame()->GetPage()->GetInspectorIssueStorage().AddInspectorIssue(
+        this, std::move(issue));
   }
 }
 
@@ -585,10 +598,35 @@ void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
     loader->CountUse(feature);
 }
 
+void LocalDOMWindow::CountPermissionsPolicyViolation(
+    mojom::blink::PermissionsPolicyFeature feature) const {
+  if (!GetFrame())
+    return;
+  if (auto* loader = GetFrame()->Loader().GetDocumentLoader()) {
+    loader->GetUseCounter().CountPermissionsPolicyViolation(feature,
+                                                            *GetFrame());
+  }
+}
+
 void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
     mojom::blink::WebFeature feature) {
   if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame())
     CountUse(feature);
+}
+
+void LocalDOMWindow::CountUseOnlyInCrossSiteIframe(
+    mojom::blink::WebFeature feature) {
+  if (!GetFrame())
+    return;
+
+  if (top()->GetFrame() &&
+      !top()
+           ->GetFrame()
+           ->GetSecurityContext()
+           ->GetSecurityOrigin()
+           ->IsSameSiteWith(GetSecurityContext().GetSecurityOrigin())) {
+    CountUse(feature);
+  }
 }
 
 bool LocalDOMWindow::HasInsecureContextInAncestors() {
@@ -625,17 +663,6 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
       GetFrame()->IsCrossOriginToMainFrame());
 
   GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
-
-#if !defined(OS_ANDROID)
-  // On desktop, enable SharedArrayBuffer for the reverse Origin Trial,
-  // or if the Finch "kill switch" is on, or if enabled by Enterprise Policy.
-  if (RuntimeEnabledFeatures::UnrestrictedSharedArrayBufferEnabled(this) ||
-      RuntimeEnabledFeatures::SharedArrayBufferOnDesktopEnabled() ||
-      RuntimeEnabledFeatures::
-          SharedArrayBufferUnrestrictedAccessAllowedEnabled()) {
-    v8::V8::SetIsCrossOriginIsolated();
-  }
-#endif
 
   return document_;
 }
@@ -1924,23 +1951,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                                 const String& url_string,
                                 const AtomicString& target,
                                 const String& features,
-                                bool unused,
-                                ExceptionState& exception_state) {
-  UseCounter::Count(this, WebFeature::kWindowOpenWithAdditionalBoolParameter);
-
-  PrintErrorMessage(
-      "A boolean is being passed as a fourth parameter to "
-      "window.open. This is not used and may cause an "
-      "exception in a future release.");
-
-  // Ignore the unused bool argument.
-  return open(isolate, url_string, target, features, exception_state);
-}
-
-DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
-                                const String& url_string,
-                                const AtomicString& target,
-                                const String& features,
                                 ExceptionState& exception_state) {
   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
@@ -1977,7 +1987,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     return nullptr;
   }
 
-  WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
+  WebWindowFeatures window_features =
+      GetWindowFeaturesFromString(features, incumbent_window);
 
   FrameLoadRequest frame_request(incumbent_window,
                                  ResourceRequest(completed_url));
@@ -2000,6 +2011,10 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   bool has_user_gesture = LocalFrame::HasTransientUserActivation(GetFrame());
   frame_request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
   GetFrame()->MaybeLogAdClickNavigation();
+
+  if (has_user_gesture && window_features.impression) {
+    frame_request.SetImpression(*window_features.impression);
+  }
 
   FrameTree::FindResult result =
       GetFrame()->Tree().FindOrCreateFrameForNavigation(
@@ -2080,6 +2095,12 @@ bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated() &&
          IsFeatureEnabled(
              mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated);
+}
+
+bool LocalDOMWindow::DirectSocketCapability() const {
+  return Agent::IsDirectSocketEnabled() &&
+         IsFeatureEnabled(
+             mojom::blink::PermissionsPolicyFeature::kDirectSockets);
 }
 
 ukm::UkmRecorder* LocalDOMWindow::UkmRecorder() {

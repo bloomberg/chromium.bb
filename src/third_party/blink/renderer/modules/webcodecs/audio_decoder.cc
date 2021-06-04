@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
@@ -20,8 +21,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_support.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder_broker.h"
-#include "third_party/blink/renderer/modules/webcodecs/audio_frame.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -89,6 +90,10 @@ void AudioDecoderTraits::UpdateDecoderLog(const MediaDecoderType& decoder,
       decoder.IsPlatformDecoder());
   media_log->SetProperty<media::MediaLogProperty::kAudioTracks>(
       std::vector<MediaConfigType>{media_config});
+  MEDIA_LOG(INFO, media_log)
+      << "Initialized AudioDecoder: " << media_config.AsHumanReadableString();
+  UMA_HISTOGRAM_ENUMERATION("Blink.WebCodecs.AudioDecoder.Codec",
+                            media_config.codec(), media::kAudioCodecMax + 1);
 }
 
 // static
@@ -124,6 +129,7 @@ media::StatusOr<AudioDecoderTraits::OutputType*> AudioDecoderTraits::MakeOutput(
 // static
 void AudioDecoderTraits::InitializeDecoder(
     MediaDecoderType& decoder,
+    bool /*low_delay*/,
     const MediaConfigType& media_config,
     MediaDecoderType::InitCB init_cb,
     MediaDecoderType::OutputCB output_cb) {
@@ -134,6 +140,11 @@ void AudioDecoderTraits::InitializeDecoder(
 // static
 int AudioDecoderTraits::GetMaxDecodeRequests(const MediaDecoderType& decoder) {
   return 1;
+}
+
+// static
+const char* AudioDecoderTraits::GetName() {
+  return "AudioDecoder";
 }
 
 // static

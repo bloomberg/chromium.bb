@@ -24,7 +24,7 @@ namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.
 extern const char kChildAccountStatusKnown[];
-extern const char kDefaultApps[];
+extern const char kPreinstalledApps[];
 extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
 extern const char kDownloadRestrictions[];
@@ -41,7 +41,6 @@ extern const char kChromeCleanerScanCompletionTime[];
 extern const char kNewTabPageLocationOverride[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
-extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
 #if !defined(OS_ANDROID)
 extern const char kManagedSerialAllowAllPortsForUrls[];
@@ -187,13 +186,6 @@ extern const char kAccessibilityImageLabelsOnlyOnWifi[];
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kAccessibilityFocusHighlightEnabled[];
 #endif
-extern const char kAccessibilityCaptionsTextSize[];
-extern const char kAccessibilityCaptionsTextFont[];
-extern const char kAccessibilityCaptionsTextColor[];
-extern const char kAccessibilityCaptionsTextOpacity[];
-extern const char kAccessibilityCaptionsBackgroundColor[];
-extern const char kAccessibilityCaptionsTextShadow[];
-extern const char kAccessibilityCaptionsBackgroundOpacity[];
 #if !defined(OS_ANDROID)
 extern const char kLiveCaptionEnabled[];
 extern const char kLiveCaptionLanguageCode[];
@@ -211,7 +203,7 @@ extern const char kNetworkEasterEggHighScore[];
 extern const char kLastPolicyCheckTime[];
 #endif
 extern const char kNetworkPredictionOptions[];
-extern const char kDefaultAppsInstallState[];
+extern const char kPreinstalledAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
 extern const char kAttestationExtensionAllowlist[];
@@ -327,6 +319,8 @@ extern const char kLastChildScreenTimeSaved[];
 extern const char kLastChildScreenTimeReset[];
 extern const char kReleaseNotesLastShownMilestone[];
 extern const char kReleaseNotesSuggestionChipTimesLeftToShow[];
+extern const char kDiscoverTabNotificationLastShownMilestone[];
+extern const char kDiscoverTabSuggestionChipTimesLeftToShow[];
 extern const char kNTLMShareAuthenticationEnabled[];
 extern const char kNetworkFileSharesPreconfiguredShares[];
 extern const char kMostRecentlyUsedNetworkFileShareURL[];
@@ -665,7 +659,7 @@ extern const char kWebAppsDailyMetricsDate[];
 extern const char kWebAppsExtensionIDs[];
 extern const char kWebAppsAppAgnosticIphState[];
 extern const char kWebAppsLastPreinstallSynchronizeVersion[];
-extern const char kWebAppsMigratedDefaultApps[];
+extern const char kWebAppsMigratedPreinstalledApps[];
 extern const char kWebAppsDidMigrateDefaultChromeApps[];
 extern const char kWebAppsUninstalledDefaultChromeApps[];
 extern const char kWebAppsPreferences[];
@@ -828,10 +822,12 @@ extern const char kCipherSuiteBlacklist[];
 extern const char kH2ClientCertCoalescingHosts[];
 extern const char kHSTSPolicyBypassList[];
 extern const char kCECPQ2Enabled[];
+extern const char kTripleDESEnabled[];
 
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsMode[];
 extern const char kDnsOverHttpsTemplates[];
+extern const char kAdditionalDnsQueryTypesEnabled[];
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];
@@ -873,6 +869,7 @@ extern const char kShowCastIconInToolbar[];
 #if !defined(OS_ANDROID)
 extern const char kRelaunchNotification[];
 extern const char kRelaunchNotificationPeriod[];
+extern const char kRelaunchWindow[];
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -907,7 +904,7 @@ extern const char kAppListLocalState[];
 extern const char kAppShortcutsVersion[];
 extern const char kAppShortcutsArch[];
 
-extern const char kEnableDRM[];
+extern const char kProtectedContentDefault[];
 
 extern const char kWatchdogExtensionActive[];
 
@@ -1130,6 +1127,7 @@ extern const char kCartModuleHidden[];
 extern const char kCartModuleWelcomeSurfaceShownTimes[];
 extern const char kCartDiscountAcknowledged[];
 extern const char kCartDiscountEnabled[];
+extern const char kCartUsedDiscounts[];
 #endif
 
 #if defined(OS_ANDROID)

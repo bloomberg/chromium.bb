@@ -375,8 +375,14 @@ typedef struct FIRST_PASS_SPEED_FEATURES {
 
 /*!\cond */
 typedef struct TPL_SPEED_FEATURES {
-  // Enable/disable GOP length adaptive decision.
-  int disable_gop_length_decision;
+  // GOP length adaptive decision.
+  // If set to 0, tpl model decides whether a shorter gf interval is better.
+  // If set to 1, tpl stats of ARFs from base layer, (base+1) layer and
+  // (base+2) layer decide whether a shorter gf interval is better.
+  // If set to 2, tpl stats of ARFs from base layer, (base+1) layer and GF boost
+  // decide whether a shorter gf interval is better.
+  // If set to 3, gop length adaptive decision is disabled.
+  int gop_length_decision_method;
   // Prune the intra modes search by tpl.
   // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
   // If set to 1, we only search DC_PRED, V_PRED, and H_PRED.
@@ -432,7 +438,8 @@ typedef struct PARTITION_SPEED_FEATURES {
   // Used if partition_search_type = FIXED_PARTITION
   BLOCK_SIZE fixed_partition_size;
 
-  // Prune extended partition types search
+  // Prune extended partition types search based on the current partition type
+  // and the rdcost found in the subblocks.
   // Can take values 0 - 2, 0 referring to no pruning, and 1 - 2 increasing
   // aggressiveness of pruning in order.
   int prune_ext_partition_types_search_level;
@@ -517,10 +524,12 @@ typedef struct PARTITION_SPEED_FEATURES {
   // perform split/no_split decision on intra-frames.
   int intra_cnn_split;
 
-  // Disable extended partition search for lower block sizes.
-  int ext_partition_eval_thresh;
+  // Disable extended partition search if the current bsize is greater than the
+  // threshold.
+  BLOCK_SIZE ext_partition_eval_thresh;
 
-  // prune extended partition search
+  // Prune extended partition search based on whether the split/rect partitions
+  // provided an improvement in the previous search.
   // 0 : no pruning
   // 1 : prune 1:4 partition search using winner info from split partitions
   // 2 : prune 1:4 and AB partition search using split and HORZ/VERT info
@@ -796,6 +805,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 
   // Enable/disable fast search for wedge masks
   int enable_fast_wedge_mask_search;
+
+  // Early breakout from transform search of inter modes
+  int inter_mode_txfm_breakout;
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {

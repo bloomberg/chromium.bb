@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -7,6 +7,7 @@
 """Creates size-info/*.info files used by SuperSize."""
 
 import argparse
+import collections
 import os
 import re
 import sys
@@ -17,6 +18,10 @@ from util import jar_info_utils
 
 
 _AAR_VERSION_PATTERN = re.compile(r'/[^/]*?(\.aar/|\.jar/)')
+
+
+def _RemoveDuplicatesFromList(source_list):
+  return collections.OrderedDict.fromkeys(source_list).keys()
 
 
 def _TransformAarPaths(path):
@@ -170,7 +175,7 @@ def main(args):
   options.uncompressed_assets = build_utils.ParseGnList(
       options.uncompressed_assets)
 
-  jar_inputs = _FindJarInputs(set(options.jar_files))
+  jar_inputs = _FindJarInputs(_RemoveDuplicatesFromList(options.jar_files))
   pak_inputs = _PakInfoPathsForAssets(options.assets +
                                       options.uncompressed_assets)
   res_inputs = options.in_res_info_path

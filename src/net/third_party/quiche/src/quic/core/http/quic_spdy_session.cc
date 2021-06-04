@@ -30,7 +30,6 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_stack_trace.h"
-#include "common/platform/api/quiche_text_utils.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
 
 using http2::Http2DecoderAdapter;
@@ -497,7 +496,6 @@ QuicSpdySession::QuicSpdySession(
       spdy_framer_visitor_(new SpdyFramerVisitor(this)),
       debug_visitor_(nullptr),
       destruction_indicator_(123456789),
-      server_push_enabled_(true),
       next_available_datagram_flow_id_(perspective() == Perspective::IS_SERVER
                                            ? kFirstDatagramFlowIdServer
                                            : kFirstDatagramFlowIdClient) {
@@ -798,15 +796,12 @@ void QuicSpdySession::SendHttp3GoAway(QuicErrorCode error_code,
                                       const std::string& reason) {
   QUICHE_DCHECK_EQ(perspective(), Perspective::IS_SERVER);
   QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-  if (GetQuicReloadableFlag(quic_encrypted_goaway)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_encrypted_goaway, 2, 2);
-    if (!IsEncryptionEstablished()) {
-      QUIC_CODE_COUNT(quic_h3_goaway_before_encryption_established);
-      connection()->CloseConnection(
-          error_code, reason,
-          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-      return;
-    }
+  if (!IsEncryptionEstablished()) {
+    QUIC_CODE_COUNT(quic_h3_goaway_before_encryption_established);
+    connection()->CloseConnection(
+        error_code, reason,
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
   }
   QuicStreamId stream_id;
 
@@ -856,10 +851,6 @@ void QuicSpdySession::WritePushPromise(QuicStreamId original_stream_id,
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(push_promise));
   headers_stream()->WriteOrBufferData(
       absl::string_view(frame.data(), frame.size()), false, nullptr);
-}
-
-bool QuicSpdySession::server_push_enabled() const {
-  return VersionUsesHttp3(transport_version()) ? false : server_push_enabled_;
 }
 
 void QuicSpdySession::SendInitialData() {
@@ -1239,8 +1230,7 @@ bool QuicSpdySession::OnSetting(uint64_t id, uint64_t value) {
           return true;
         }
         QUIC_DVLOG(1) << ENDPOINT << "SETTINGS_ENABLE_PUSH received with value "
-                      << value;
-        server_push_enabled_ = value;
+                      << value << ", ignoring.";
         break;
       } else {
         QUIC_DLOG(ERROR)
@@ -1458,14 +1448,7 @@ QuicStream* QuicSpdySession::ProcessPendingStream(PendingStream* pending) {
     default:
       break;
   }
-  if (GetQuicReloadableFlag(quic_unify_stop_sending)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_unify_stop_sending);
-    MaybeSendStopSendingFrame(pending->id(), QUIC_STREAM_STREAM_CREATION_ERROR);
-  } else {
-    // TODO(renjietang): deprecate SendStopSending() when the flag is
-    // deprecated.
-    SendStopSending(QUIC_STREAM_STREAM_CREATION_ERROR, pending->id());
-  }
+  MaybeSendStopSendingFrame(pending->id(), QUIC_STREAM_STREAM_CREATION_ERROR);
   pending->StopReading();
   return nullptr;
 }

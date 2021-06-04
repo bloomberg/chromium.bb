@@ -68,10 +68,8 @@ public interface TabObserver {
      * @param params   The params describe the page being loaded.
      * @param loadType The type of load that was performed.
      *
-     * @see TabLoadStatus#PAGE_LOAD_FAILED
-     * @see TabLoadStatus#DEFAULT_PAGE_LOAD
-     * @see TabLoadStatus#PARTIAL_PRERENDERED_PAGE_LOAD
-     * @see TabLoadStatus#FULL_PRERENDERED_PAGE_LOAD
+     * @see Tab$TabLoadStatus#PAGE_LOAD_FAILED
+     * @see Tab$TabLoadStatus#DEFAULT_PAGE_LOAD
      */
     void onLoadUrl(Tab tab, LoadUrlParams params, int loadType);
 
@@ -331,4 +329,11 @@ public interface TabObserver {
      * @param scrolling {@code true} if scrolling started; {@code false} if stopped.
      */
     void onContentViewScrollingStateChanged(boolean scrolling);
+
+    /**
+     * Called when the Tab is scrolling.
+     * @param verticalScrollDelta The delta between the vertical offsets when the scroll started and
+     *         currently. It is negative when scrolling down and positive when scrolling up.
+     */
+    void onContentViewScrollOffsetChanged(int verticalScrollDelta);
 }

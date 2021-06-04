@@ -33,6 +33,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -120,7 +121,7 @@ void WebIDBCallbacksImpl::SuccessCursor(
     mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
-    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
+    absl::optional<std::unique_ptr<IDBValue>> optional_value) {
   if (!request_)
     return;
 
@@ -247,7 +248,7 @@ void WebIDBCallbacksImpl::Success() {
 void WebIDBCallbacksImpl::SuccessCursorContinue(
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
-    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
+    absl::optional<std::unique_ptr<IDBValue>> optional_value) {
   if (!request_)
     return;
 

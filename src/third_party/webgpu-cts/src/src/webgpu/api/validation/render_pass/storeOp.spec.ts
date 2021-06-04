@@ -58,7 +58,7 @@ g.test('store_op_and_read_only')
     const pass = encoder.beginRenderPass({
       colorAttachments: [],
       depthStencilAttachment: {
-        attachment: depthAttachmentView,
+        view: depthAttachmentView,
         depthLoadValue: 'load',
         depthStoreOp,
         depthReadOnly,

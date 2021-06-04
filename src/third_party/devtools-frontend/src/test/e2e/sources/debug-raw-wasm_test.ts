@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
 import {$, click, getBrowserAndPages, goToResource, installEventListener, step, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
@@ -448,7 +448,7 @@ describe('Raw-Wasm', async () => {
 
     assert.isAbove(titles.length, 1);
     assert.isAbove(locations.length, 1);
-    assert.strictEqual(titles[1], 'foo');
+    assert.strictEqual(titles[1], '$foo');
     assert.strictEqual(locations[1], 'callstack-wasm-to-js.wasm:0x32');
 
     // Select second call frame.

@@ -8,10 +8,13 @@
          name by JavaScript -->
     <title>&#xfeff;</title>
     <meta charset="utf-8">
+    <!-- main.css contains all :root styles require to be loaded first. -->
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/focus_ring.css">
+    <link rel="stylesheet" href="/css/inkdrop.css">
     <link rel="stylesheet" href="/css/ptz_panel.css">
-    <link rel="stylesheet" href="/css/ripple.css">
     <link rel="stylesheet" href="/css/ptz_toast.css">
+    <link rel="stylesheet" href="/css/ripple.css">
     <script src="/js/mojo/mojo_bindings_lite.js"></script>
     <script src="/js/mojo/time.mojom-lite.js"></script>
     <script src="/js/mojo/camera_metadata_tags.mojom-lite.js"></script>
@@ -248,18 +251,32 @@
       </div>
     </div>
     <div id="view-ptz-panel">
-      <div id="panel-container">
-        <button id="tilt-up" i18n-label="tilt_up_button"></button>
-        <button id="pan-right" i18n-label="pan_right_button"></button>
-        <button id="tilt-down" i18n-label="tilt_down_button"></button>
-        <button id="pan-left" i18n-label="pan_left_button"></button>
-        <button id="zoom-in" i18n-label="zoom_in_button"></button>
-        <button id="zoom-out" i18n-label="zoom_out_button"></button>
-        <div id="ptz-divider1" class="ptz-divider"></div>
-        <div id="ptz-divider2" class="ptz-divider"></div>
-        <div id="ptz-divider3" class="ptz-divider"></div>
-        <div id="ptz-divider4" class="ptz-divider"></div>
-        <div id="ptz-zoom-divider" class="ptz-divider"></div>
+      <div id="ptz-panel">
+        <div id="reset-all-container">
+          <button id="ptz-reset-all" class="inkdrop" tabindex="0">
+            <div class="icon"></div>
+            <div class="text" i18n-text="ptz_reset_all_button"></div>
+          </button>
+        </div>
+        <div id="panel-container">
+          <button id="tilt-up" class="inkdrop" i18n-label="tilt_up_button"
+            tabindex="0"></button>
+          <button id="pan-right" class="inkdrop" i18n-label="pan_right_button"
+            tabindex="0"></button>
+          <button id="tilt-down" class="inkdrop" i18n-label="tilt_down_button"
+            tabindex="0"></button>
+          <button id="pan-left" class="inkdrop" i18n-label="pan_left_button"
+            tabindex="0"></button>
+          <button id="zoom-in" class="inkdrop" i18n-label="zoom_in_button"
+            tabindex="0"></button>
+          <button id="zoom-out" class="inkdrop" i18n-label="zoom_out_button"
+            tabindex="0"></button>
+          <div id="ptz-divider1" class="ptz-divider"></div>
+          <div id="ptz-divider2" class="ptz-divider"></div>
+          <div id="ptz-divider3" class="ptz-divider"></div>
+          <div id="ptz-divider4" class="ptz-divider"></div>
+          <div id="ptz-zoom-divider" class="ptz-divider"></div>
+        </div>
       </div>
     </div>
     <div id="view-settings">
@@ -268,7 +285,7 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-text="settings_button"></div>
         </div>
-        <button id="settings-gridtype" class="menu-item" tabindex="0"
+        <button id="settings-gridtype" class="menu-item inkdrop" tabindex="0"
                 aria-describedby="gridtype-desc">
           <div class="icon"></div>
           <div>
@@ -281,7 +298,7 @@
           </div>
           <div class="icon end"></div>
         </button>
-        <button id="settings-timerdur" class="menu-item" tabindex="0"
+        <button id="settings-timerdur" class="menu-item inkdrop" tabindex="0"
                 aria-describedby="timerdur-desc">
           <div class="icon"></div>
           <div>
@@ -293,23 +310,23 @@
           </div>
           <div class="icon end"></div>
         </button>
-        <button id="settings-resolution" class="menu-item" tabindex="0">
+        <button id="settings-resolution" class="menu-item inkdrop" tabindex="0">
           <div class="icon"></div>
           <div i18n-text="camera_resolution_button">
           </div>
           <div class="icon end"></div>
         </button>
-        <button id="settings-expert" class="menu-item" tabindex="0">
+        <button id="settings-expert" class="menu-item inkdrop" tabindex="0">
           <div class="icon"></div>
           <div i18n-text="expert_mode_button">
           </div>
           <div class="icon end"></div>
         </button>
-        <button id="settings-feedback" class="menu-item" tabindex="0">
+        <button id="settings-feedback" class="menu-item inkdrop" tabindex="0">
           <div class="icon"></div>
           <div i18n-text="feedback_button"></div>
         </button>
-        <button id="settings-help" class="menu-item" tabindex="0">
+        <button id="settings-help" class="menu-item inkdrop" tabindex="0">
           <div class="icon"></div>
           <div i18n-text="help_button"></div>
         </button>
@@ -321,18 +338,18 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-text="grid_type_button"></div>
         </div>
-        <label class="menu-item circle">
+        <label class="menu-item circle inkdrop">
           <input id="grid-3x3" class="icon" type="radio" tabindex="0"
                  name="gridtype" data-state="grid-3x3" data-key="toggle3x3"
                  checked>
           <span i18n-text="label_grid_3x3" i18n-aria="aria_grid_3x3"></span>
         </label>
-        <label class="menu-item circle">
+        <label class="menu-item circle inkdrop">
           <input id="grid-4x4" class="icon" type="radio" tabindex="0"
                  name="gridtype" data-state="grid-4x4" data-key="toggle4x4">
           <span i18n-text="label_grid_4x4" i18n-aria="aria_grid_4x4"></span>
         </label>
-        <label class="menu-item circle">
+        <label class="menu-item circle inkdrop">
           <input id="grid-golden" class="icon" type="radio" tabindex="0"
                  name="gridtype" data-state="grid-golden"
                  data-key="toggleGolden">
@@ -346,13 +363,13 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-text="timer_duration_button"></div>
         </div>
-        <label class="menu-item circle">
+        <label class="menu-item circle inkdrop">
           <input id="timer-3s" class="icon" type="radio" tabindex="0"
                  name="timerdur" data-state="timer-3s" data-key="toggle3sec"
                  checked>
           <span i18n-text="label_timer_3s"></span>
         </label>
-        <label class="menu-item circle">
+        <label class="menu-item circle inkdrop">
           <input id="timer-10s" class="icon" type="radio" tabindex="0"
                  name="timerdur" data-state="timer-10s" data-key="toggle10sec">
           <span i18n-text="label_timer_10s"></span>
@@ -368,7 +385,7 @@
         <div id="builtin-photo-header" class="menu-item"
           i18n-text="label_switch_take_photo_button"></div>
         <button id="settings-front-photores"
-                class="menu-item resol-item photo-item" tabindex="0"
+                class="menu-item resol-item photo-item inkdrop" tabindex="0"
                 aria-describedby="front-photores-desc">
           <div>
             <div i18n-text="label_front_camera"></div>
@@ -380,7 +397,7 @@
           <div class="icon end"></div>
         </button>
         <button id="settings-back-photores"
-                class="menu-item resol-item photo-item" tabindex="0"
+                class="menu-item resol-item photo-item inkdrop" tabindex="0"
                 aria-describedby="back-photores-desc">
           <div>
             <div i18n-text="label_back_camera"></div>
@@ -393,7 +410,7 @@
         <div id="builtin-video-header" class="menu-item"
           i18n-text="label_switch_record_video_button"></div>
         <button id="settings-front-videores"
-                class="menu-item resol-item video-item" tabindex="0"
+                class="menu-item resol-item video-item inkdrop" tabindex="0"
                 aria-describedby="front-videores-desc">
           <div>
             <div i18n-text="label_front_camera"></div>
@@ -405,7 +422,7 @@
           <div class="icon end"></div>
         </button>
         <button id="settings-back-videores"
-                class="menu-item resol-item video-item" tabindex="0"
+                class="menu-item resol-item video-item inkdrop" tabindex="0"
                 aria-describedby="back-videores-desc">
           <div>
             <div i18n-text="label_back_camera"></div>
@@ -439,32 +456,25 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-text="expert_mode_button"></div>
         </div>
-        <label class="menu-item">
+        <label class="menu-item inkdrop">
           <input id="expert-show-metadata" class="icon" type="checkbox"
                  tabindex="0" data-state="show-metadata"
                  data-key="showMetadata">
           <span i18n-text="expert_preview_metadata"></span>
         </label>
-        <label class="menu-item">
+        <label class="menu-item inkdrop">
           <input id="expert-save-metadata" class="icon" type="checkbox"
                  tabindex="0" data-state="save-metadata"
                  data-key="saveMetadata">
           <span i18n-text="expert_save_metadata"></span>
         </label>
-        <label class="menu-item">
+        <label class="menu-item inkdrop">
           <input id="expert-print-performance-logs" class="icon" type="checkbox"
                  tabindex="0" data-state="print-performance-logs"
                  data-key="printPerformanceLogs">
           <span i18n-text="expert_print_performance_logs"></span>
         </label>
-        <label class="menu-item">
-          <input class="icon" id="expert-show-ptz-options"
-                 type="checkbox" tabindex="0"
-                 data-state="show-ptz-options"
-                 data-key="showPtzOptions">
-          <span i18n-text="expert_show_ptz_options"></span>
-        </label>
-        <label class="menu-item">
+        <label class="menu-item inkdrop">
           <input class="icon" id="custom-video-parameters"
                  type="checkbox" tabindex="0"
                  data-state="custom-video-parameters"
@@ -490,6 +500,7 @@
       </div>
     </div>
     <div id="toast" class="centered-overlay" aria-live="polite"></div>
+    <div id="focus-ring"></div>
     <div id="tooltip" aria-hidden="true"></div>
     <audio id="sound-tick-final" src="/sounds/tick_final.ogg">
     <audio id="sound-tick-inc" src="/sounds/tick_inc.ogg">
@@ -503,7 +514,7 @@
         muted></video>
     </template>
     <template id="resolution-item-template">
-      <label class="menu-item circle resolution-option">
+      <label class="menu-item circle resolution-option inkdrop">
         <input class="icon" type="radio" tabindex="0">
         <span></span>
       </label>
@@ -511,7 +522,7 @@
     <template id="extcam-resolution-item-template">
         <div class="menu-item external-camera title-item"
           i18n-text="label_external_camera"></div>
-        <button class="menu-item external-camera resol-item photo-item"
+        <button class="menu-item external-camera resol-item photo-item inkdrop"
               tabindex="0">
           <div>
             <div i18n-text="photo_resolution_button"></div>
@@ -521,7 +532,7 @@
           </div>
           <div class="icon end"></div>
         </button>
-        <button class="menu-item external-camera resol-item video-item"
+        <button class="menu-item external-camera resol-item video-item inkdrop"
               tabindex="0">
           <div>
             <div i18n-text="video_resolution_button"></div>
@@ -534,6 +545,9 @@
     </template>
     <template id="video-profile-option-template">
       <option></option>
+    </template>
+    <template id="inkdrop-template">
+      <div class="inkdrop-ripple"></div>
     </template>
   </body>
 </html>

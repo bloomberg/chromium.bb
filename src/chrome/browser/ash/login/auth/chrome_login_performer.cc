@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_user_login_flow.h"
@@ -19,7 +21,7 @@
 #include "components/account_id/account_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace chromeos {
+namespace ash {
 
 ChromeLoginPerformer::ChromeLoginPerformer(Delegate* delegate)
     : LoginPerformer(base::ThreadTaskRunnerHandle::Get(), delegate) {}
@@ -81,7 +83,7 @@ void ChromeLoginPerformer::DidRunTrustedCheck(base::OnceClosure* callback) {
 bool ChromeLoginPerformer::IsUserAllowlisted(
     const AccountId& account_id,
     bool* wildcard_match,
-    const base::Optional<user_manager::UserType>& user_type) {
+    const absl::optional<user_manager::UserType>& user_type) {
   return CrosSettings::Get()->IsUserAllowlisted(account_id.GetUserEmail(),
                                                 wildcard_match, user_type);
 }
@@ -97,7 +99,7 @@ void ChromeLoginPerformer::RunOnlineAllowlistCheck(
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector->IsCloudManaged() && wildcard_match &&
       !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
-    wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
+    wildcard_login_checker_ = std::make_unique<policy::WildcardLoginChecker>();
     if (refresh_token.empty()) {
       NOTREACHED() << "Refresh token must be present.";
       OnlineWildcardLoginCheckCompleted(
@@ -154,4 +156,4 @@ void ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

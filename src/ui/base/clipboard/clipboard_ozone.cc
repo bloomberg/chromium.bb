@@ -10,17 +10,17 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -72,8 +72,8 @@ class StubPlatformClipboard : public PlatformClipboard {
   bool IsSelectionOwner(ClipboardBuffer buffer) override {
     return is_owner_[buffer];
   }
-  void SetSequenceNumberUpdateCb(
-      PlatformClipboard::SequenceNumberUpdateCb cb) override {}
+  void SetClipboardDataChangedCallback(
+      PlatformClipboard::ClipboardDataChangedCallback cb) override {}
   bool IsSelectionBufferAvailable() const override { return false; }
 
  private:
@@ -94,9 +94,9 @@ class ClipboardOzone::AsyncClipboardOzone {
     // Set a callback to listen to requests to increase the clipboard sequence
     // number.
     auto update_sequence_cb =
-        base::BindRepeating(&AsyncClipboardOzone::UpdateClipboardSequenceNumber,
+        base::BindRepeating(&AsyncClipboardOzone::OnClipboardDataChanged,
                             weak_factory_.GetWeakPtr());
-    platform_clipboard_->SetSequenceNumberUpdateCb(
+    platform_clipboard_->SetClipboardDataChangedCallback(
         std::move(update_sequence_cb));
   }
 
@@ -108,6 +108,9 @@ class ClipboardOzone::AsyncClipboardOzone {
 
   base::span<uint8_t> ReadClipboardDataAndWait(ClipboardBuffer buffer,
                                                const std::string& mime_type) {
+    if (buffer == ClipboardBuffer::kSelection && !IsSelectionBufferAvailable())
+      return {};
+
     // We can use a fastpath if we are the owner of the selection.
     if (platform_clipboard_->IsSelectionOwner(buffer)) {
       auto it = offered_data_[buffer].find(mime_type);
@@ -122,6 +125,9 @@ class ClipboardOzone::AsyncClipboardOzone {
   }
 
   std::vector<std::string> RequestMimeTypes(ClipboardBuffer buffer) {
+    if (buffer == ClipboardBuffer::kSelection && !IsSelectionBufferAvailable())
+      return {};
+
     // We can use a fastpath if we are the owner of the selection.
     if (platform_clipboard_->IsSelectionOwner(buffer)) {
       std::vector<std::string> mime_types;
@@ -133,15 +139,19 @@ class ClipboardOzone::AsyncClipboardOzone {
     return GetMimeTypes(buffer);
   }
 
+  void PrepareForWriting() { data_to_offer_.clear(); }
+
   void OfferData(ClipboardBuffer buffer) {
+    if (buffer == ClipboardBuffer::kSelection && !IsSelectionBufferAvailable())
+      return;
     Offer(buffer, std::move(data_to_offer_));
-    UpdateClipboardSequenceNumber(buffer);
   }
 
   void Clear(ClipboardBuffer buffer) {
+    if (buffer == ClipboardBuffer::kSelection && !IsSelectionBufferAvailable())
+      return;
     data_to_offer_.clear();
     OfferData(buffer);
-    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   void InsertData(std::vector<uint8_t> data,
@@ -152,11 +162,11 @@ class ClipboardOzone::AsyncClipboardOzone {
       DCHECK_EQ(data_to_offer_.count(mime_type), 0U);
       data_to_offer_[mime_type] = wrapped_data;
     }
-    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) {
-    return clipboard_sequence_number_[buffer];
+    return buffer == ClipboardBuffer::kCopyPaste ? clipboard_sequence_number_
+                                                 : selection_sequence_number_;
   }
 
  private:
@@ -261,8 +271,19 @@ class ClipboardOzone::AsyncClipboardOzone {
     request.TakeResultSync();
   }
 
-  void UpdateClipboardSequenceNumber(ClipboardBuffer buffer) {
-    ++clipboard_sequence_number_[buffer];
+  void OnClipboardDataChanged(ClipboardBuffer buffer) {
+    DCHECK(buffer == ClipboardBuffer::kCopyPaste ||
+           platform_clipboard_->IsSelectionBufferAvailable());
+    if (buffer == ClipboardBuffer::kCopyPaste)
+      clipboard_sequence_number_++;
+    else
+      selection_sequence_number_++;
+    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
+  }
+
+  bool IsBufferSupported(ClipboardBuffer buffer) const {
+    return buffer == ClipboardBuffer::kCopyPaste ||
+           platform_clipboard_->IsSelectionBufferAvailable();
   }
 
   // Clipboard data accumulated for writing.
@@ -275,7 +296,8 @@ class ClipboardOzone::AsyncClipboardOzone {
   // Provides communication to a system clipboard under ozone level.
   PlatformClipboard* const platform_clipboard_ = nullptr;
 
-  base::flat_map<ClipboardBuffer, uint64_t> clipboard_sequence_number_;
+  uint64_t clipboard_sequence_number_ = 0;
+  uint64_t selection_sequence_number_ = 0;
 
   base::WeakPtrFactory<AsyncClipboardOzone> weak_factory_;
 
@@ -443,6 +465,14 @@ void ClipboardOzone::ReadRTF(ClipboardBuffer buffer,
 }
 
 // TODO(crbug.com/1103194): |data_dst| should be supported.
+void ClipboardOzone::ReadPng(ClipboardBuffer buffer,
+                             const DataTransferEndpoint* data_dst,
+                             ReadPngCallback callback) const {
+  // TODO(crbug.com/1201018): Implement this.
+  NOTIMPLEMENTED();
+}
+
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadImage(ClipboardBuffer buffer,
                                const DataTransferEndpoint* data_dst,
                                ReadImageCallback callback) const {
@@ -508,22 +538,20 @@ void ClipboardOzone::WritePortableRepresentations(
     std::unique_ptr<DataTransferEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
 
+  async_clipboard_ozone_->PrepareForWriting();
   for (const auto& object : objects)
     DispatchPortableRepresentation(object.first, object.second);
-
   async_clipboard_ozone_->OfferData(buffer);
 
   // Just like Non-Backed/X11 implementation does, copy text data from the
   // copy/paste selection to the primary selection.
-  if (buffer == ClipboardBuffer::kCopyPaste) {
+  if (buffer == ClipboardBuffer::kCopyPaste && IsSelectionBufferAvailable()) {
     auto text_iter = objects.find(PortableFormat::kText);
-    if (text_iter != objects.end()) {
-      const ObjectMapParams& params_vector = text_iter->second;
-      if (!params_vector.empty()) {
-        const ObjectMapParam& char_vector = params_vector[0];
-        if (!char_vector.empty())
-          WriteText(&char_vector.front(), char_vector.size());
-      }
+    if (text_iter != objects.end() && !text_iter->second.empty()) {
+      const auto& char_vector = text_iter->second[0];
+      async_clipboard_ozone_->PrepareForWriting();
+      if (!char_vector.empty())
+        WriteText(&char_vector.front(), char_vector.size());
       async_clipboard_ozone_->OfferData(ClipboardBuffer::kSelection);
     }
   }
@@ -537,8 +565,9 @@ void ClipboardOzone::WritePlatformRepresentations(
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
-  DispatchPlatformRepresentations(std::move(platform_representations));
 
+  async_clipboard_ozone_->PrepareForWriting();
+  DispatchPlatformRepresentations(std::move(platform_representations));
   async_clipboard_ozone_->OfferData(buffer);
 
   data_src_[buffer] = std::move(data_src);

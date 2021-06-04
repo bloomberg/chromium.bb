@@ -167,6 +167,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
@@ -458,6 +459,7 @@ WebView* WebView::Create(
     bool is_hidden,
     bool is_inside_portal,
     bool compositing_enabled,
+    bool widgets_never_composited,
     WebView* opener,
     CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
         page_handle,
@@ -467,9 +469,9 @@ WebView* WebView::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      is_inside_portal, compositing_enabled, static_cast<WebViewImpl*>(opener),
-      std::move(page_handle), agent_group_scheduler,
-      session_storage_namespace_id);
+      is_inside_portal, compositing_enabled, widgets_never_composited,
+      static_cast<WebViewImpl*>(opener), std::move(page_handle),
+      agent_group_scheduler, session_storage_namespace_id);
 }
 
 WebViewImpl* WebViewImpl::Create(
@@ -477,6 +479,7 @@ WebViewImpl* WebViewImpl::Create(
     mojom::blink::PageVisibilityState visibility,
     bool is_inside_portal,
     bool compositing_enabled,
+    bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
@@ -485,8 +488,8 @@ WebViewImpl* WebViewImpl::Create(
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(
       new WebViewImpl(client, visibility, is_inside_portal, compositing_enabled,
-                      opener, std::move(page_handle), agent_group_scheduler,
-                      session_storage_namespace_id));
+                      widgets_never_composited, opener, std::move(page_handle),
+                      agent_group_scheduler, session_storage_namespace_id));
   web_view->AddRef();
   return web_view.get();
 }
@@ -542,11 +545,13 @@ WebViewImpl::WebViewImpl(
     mojom::blink::PageVisibilityState visibility,
     bool is_inside_portal,
     bool does_composite,
+    bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const SessionStorageNamespaceId& session_storage_namespace_id)
-    : web_view_client_(client),
+    : widgets_never_composited_(widgets_never_composited),
+      web_view_client_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
@@ -558,11 +563,9 @@ WebViewImpl::WebViewImpl(
       session_storage_namespace_id_(session_storage_namespace_id) {
   if (!web_view_client_)
     DCHECK(!does_composite_);
-  Page::PageClients page_clients;
-  page_clients.chrome_client = chrome_client_.Get();
-  page_ =
-      Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr,
-                           agent_group_scheduler);
+  page_ = Page::CreateOrdinary(*chrome_client_,
+                               opener ? opener->GetPage() : nullptr,
+                               agent_group_scheduler);
   CoreInitializer::GetInstance().ProvideModulesToPage(
       *page_, session_storage_namespace_id_);
 
@@ -774,27 +777,17 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
       GetPage()->GetVisualViewport().ClampDocumentOffsetAtScale(scroll, scale);
 }
 
-static Node* FindCursorDefiningAncestor(Node* node) {
+static Node* FindLinkHighlightAncestor(Node* node) {
   // Go up the tree to find the node that defines a mouse cursor style
   while (node) {
-    if (node->GetLayoutObject()) {
-      ECursor cursor = node->GetLayoutObject()->Style()->Cursor();
-      if (cursor != ECursor::kAuto || EventHandler::UsesHandCursor(node))
-        break;
-    }
+    const LinkHighlightCandidate type = node->IsLinkHighlightCandidate();
+    if (type == LinkHighlightCandidate::kYes)
+      return node;
+    if (type == LinkHighlightCandidate::kNo)
+      return nullptr;
     node = LayoutTreeBuilderTraversal::Parent(*node);
   }
-
-  return node;
-}
-
-static bool ShowsHandCursor(Node* node) {
-  if (!node || !node->GetLayoutObject())
-    return false;
-
-  ECursor cursor = node->GetLayoutObject()->Style()->Cursor();
-  return cursor == ECursor::kPointer ||
-         (cursor == ECursor::kAuto && EventHandler::UsesHandCursor(node));
+  return nullptr;
 }
 
 // This is for tap (link) highlight and is tested in
@@ -823,23 +816,21 @@ Node* WebViewImpl::BestTapNode(
   if (HasEditableStyle(*best_touch_node))
     return nullptr;
 
-  Node* cursor_defining_ancestor = FindCursorDefiningAncestor(best_touch_node);
+  Node* hand_cursor_ancestor = FindLinkHighlightAncestor(best_touch_node);
   // We show a highlight on tap only when the current node shows a hand cursor
-  if (!cursor_defining_ancestor || !ShowsHandCursor(cursor_defining_ancestor)) {
+  if (!hand_cursor_ancestor) {
     return nullptr;
   }
 
   // We should pick the largest enclosing node with hand cursor set. We do this
-  // by first jumping up to cursorDefiningAncestor (which is already known to
-  // have hand cursor set). Then we locate the next cursor-defining ancestor up
-  // in the the tree and repeat the jumps as long as the node has hand cursor
-  // set.
+  // by first jumping up to the closest ancestor with hand cursor set. Then we
+  // locate the next ancestor up in the the tree and repeat the jumps as long as
+  // the node has hand cursor set.
   do {
-    best_touch_node = cursor_defining_ancestor;
-    cursor_defining_ancestor = FindCursorDefiningAncestor(
+    best_touch_node = hand_cursor_ancestor;
+    hand_cursor_ancestor = FindLinkHighlightAncestor(
         LayoutTreeBuilderTraversal::Parent(*best_touch_node));
-  } while (cursor_defining_ancestor &&
-           ShowsHandCursor(cursor_defining_ancestor));
+  } while (hand_cursor_ancestor);
 
   // This happens in cases like:
   // <div style="display: contents; cursor: pointer">Text</div>.
@@ -970,15 +961,47 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   CancelPagePopup();
   DCHECK(!page_popup_);
 
-  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
-      client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
-  WebPagePopup* popup_widget = web_view_client_->CreatePopup(frame);
+  LocalFrame* opener_frame = client->OwnerElement().GetDocument().GetFrame();
+  WebLocalFrameImpl* web_opener_frame =
+      WebLocalFrameImpl::FromFrame(opener_frame);
+
+  mojo::PendingAssociatedRemote<mojom::blink::Widget> widget;
+  mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
+      widget.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<mojom::blink::WidgetHost> widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
+      widget_host_receiver = widget_host.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<mojom::blink::PopupWidgetHost>
+      popup_widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::PopupWidgetHost>
+      popup_widget_host_receiver =
+          popup_widget_host.InitWithNewEndpointAndPassReceiver();
+
+  opener_frame->GetLocalFrameHostRemote().CreateNewPopupWidget(
+      std::move(popup_widget_host_receiver), std::move(widget_host_receiver),
+      std::move(widget));
+  WebFrameWidgetImpl* opener_widget = web_opener_frame->LocalRootFrameWidget();
+
+  scheduler::WebAgentGroupScheduler& agent_group_scheduler =
+      opener_frame->GetPage()->GetPageScheduler()->GetAgentGroupScheduler();
+  // The returned WebPagePopup is self-referencing, so the pointer here is not
+  // an owning pointer. It is de-referenced by the PopupWidgetHost disconnecting
+  // and calling Close().
+  WebPagePopup* popup_widget = WebPagePopup::Create(
+      std::move(popup_widget_host), std::move(widget_host),
+      std::move(widget_receiver), agent_group_scheduler.DefaultTaskRunner());
+  popup_widget->InitializeCompositing(agent_group_scheduler,
+                                      opener_widget->GetOriginalScreenInfos(),
+                                      /*settings=*/nullptr);
+
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
   page_popup_ = To<WebPagePopupImpl>(popup_widget);
   page_popup_->Initialize(this, client);
-  EnablePopupMouseWheelEventListener(frame);
+  EnablePopupMouseWheelEventListener(web_opener_frame->LocalRoot());
   return page_popup_.get();
 }
 
@@ -1201,10 +1224,9 @@ void WebViewImpl::ResizeViewWhileAnchored(
 
   fullscreen_controller_->UpdateSize();
 
-  // Update lifecycle phases immediately to recalculate the minimum scale limit
-  // for rotation anchoring, and to make sure that no lifecycle states are
-  // stale if this WebView is embedded in another one.
-  MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kAll,
+  // Page scale constraints may need to be updated; running layout now will
+  // do that.
+  MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kLayout,
                                      DocumentUpdateReason::kSizeChange);
 }
 
@@ -1292,7 +1314,7 @@ void WebViewImpl::Resize(const gfx::Size& new_size) {
 }
 
 void WebViewImpl::SetScreenOrientationOverrideForTesting(
-    base::Optional<blink::mojom::ScreenOrientation> orientation) {
+    absl::optional<blink::mojom::ScreenOrientation> orientation) {
   screen_orientation_override_ = orientation;
 
   // Since we updated the override value, notify all widgets.
@@ -1315,7 +1337,7 @@ void WebViewImpl::SetWindowRectSynchronouslyForTesting(
   web_widget_->SetWindowRectSynchronouslyForTesting(new_window_rect);
 }
 
-base::Optional<mojom::blink::ScreenOrientation>
+absl::optional<mojom::blink::ScreenOrientation>
 WebViewImpl::ScreenOrientationOverride() {
   return screen_orientation_override_;
 }
@@ -1618,8 +1640,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       prefs.css_hex_alpha_color_enabled);
   RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(
       prefs.scroll_top_left_interop_enabled);
-  RuntimeEnabledFeatures::SetSurfaceEmbeddingFeaturesEnabled(
-      !prefs.disable_features_depending_on_viz);
   RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(
       !prefs.disable_accelerated_small_canvases);
 #endif  // defined(OS_ANDROID)
@@ -1771,14 +1791,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 }
 
 void WebViewImpl::ThemeChanged() {
-  if (!GetPage())
-    return;
-  if (!GetPage()->MainFrame()->IsLocalFrame())
-    return;
-  LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
-
-  IntRect damaged_rect(0, 0, size_.width(), size_.height());
-  view->InvalidateRect(damaged_rect);
+  if (auto* page = GetPage())
+    page->InvalidatePaint();
 }
 
 void WebViewImpl::EnterFullscreen(LocalFrame& frame,
@@ -1893,6 +1907,11 @@ WebFrame* WebViewImpl::MainFrame() {
   return WebFrame::FromCoreFrame(page ? page->MainFrame() : nullptr);
 }
 
+const WebFrame* WebViewImpl::MainFrame() const {
+  Page* page = page_.Get();
+  return WebFrame::FromCoreFrame(page ? page->MainFrame() : nullptr);
+}
+
 WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
   Page* page = page_.Get();
   if (!page)
@@ -1939,18 +1958,19 @@ void WebViewImpl::DidAttachLocalMainFrame() {
   }
 }
 
-void WebViewImpl::DidAttachRemoteMainFrame() {
+void WebViewImpl::DidAttachRemoteMainFrame(
+    CrossVariantMojoAssociatedRemote<
+        mojom::blink::RemoteMainFrameHostInterfaceBase> main_frame_host,
+    CrossVariantMojoAssociatedReceiver<
+        mojom::blink::RemoteMainFrameInterfaceBase> main_frame) {
+  DCHECK(main_frame_host);
+  DCHECK(main_frame);
   DCHECK(!MainFrameImpl());
 
   RemoteFrame* remote_frame = DynamicTo<RemoteFrame>(GetPage()->MainFrame());
-  remote_frame->WasAttachedAsRemoteMainFrame();
+  remote_frame->WasAttachedAsRemoteMainFrame(std::move(main_frame));
 
-  remote_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-      remote_main_frame_host_remote_.BindNewEndpointAndPassReceiver(
-          GetPage()
-              ->GetPageScheduler()
-              ->GetAgentGroupScheduler()
-              .DefaultTaskRunner()));
+  remote_main_frame_host_remote_.Bind(std::move(main_frame_host));
 
   auto& viewport = GetPage()->GetVisualViewport();
   viewport.Reset();
@@ -3029,7 +3049,7 @@ void WebViewImpl::SetBaseBackgroundColorOverrideTransparent(
 }
 
 void WebViewImpl::SetBaseBackgroundColorOverrideForInspector(
-    base::Optional<SkColor> optional_color) {
+    absl::optional<SkColor> optional_color) {
   if (base_background_color_override_for_inspector_ == optional_color)
     return;
   base_background_color_override_for_inspector_ = optional_color;
@@ -3040,11 +3060,8 @@ void WebViewImpl::UpdateBaseBackgroundColor() {
   if (MainFrameImpl()) {
     // Force lifecycle update to ensure we're good to call
     // LocalFrameView::setBaseBackgroundColor().
-    MainFrameImpl()
-        ->GetFrame()
-        ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling(
-            DocumentUpdateReason::kBaseColor);
+    MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kBaseColor);
   }
 
   Color color = BaseBackgroundColor();
@@ -3121,7 +3138,7 @@ void WebViewImpl::SetRendererPreferences(
   UpdateRendererPreferences(preferences);
 }
 
-const RendererPreferences& WebViewImpl::GetRendererPreferences() {
+const RendererPreferences& WebViewImpl::GetRendererPreferences() const {
   return renderer_preferences_;
 }
 
@@ -3133,9 +3150,7 @@ void WebViewImpl::UpdateRendererPreferences(
   for (auto& watcher : renderer_preference_watchers_)
     watcher->NotifyUpdate(renderer_preferences_);
 
-  // TODO(crbug.com/1102442): Remove once we no longer need to update theme
-  // preferences on Windows via content::WebThemeEngineDefault.
-  web_view_client_->DidUpdateRendererPreferences();
+  WebThemeEngineHelper::DidUpdateRendererPreferences(preferences);
   UpdateFontRenderingFromRendererPrefs();
 
   blink::SetCaretBlinkInterval(
@@ -3188,7 +3203,7 @@ void WebViewImpl::SetHistoryOffsetAndLength(int32_t history_offset,
 
 void WebViewImpl::SetHistoryListFromNavigation(
     int32_t history_offset,
-    base::Optional<int32_t> history_length) {
+    absl::optional<int32_t> history_length) {
   if (!history_length.has_value()) {
     history_list_offset_ = history_offset;
     return;
@@ -3205,11 +3220,11 @@ void WebViewImpl::IncreaseHistoryListFromNavigation() {
   history_list_length_ = history_list_offset_ + 1;
 }
 
-int32_t WebViewImpl::HistoryBackListCount() {
+int32_t WebViewImpl::HistoryBackListCount() const {
   return std::max(history_list_offset_, 0);
 }
 
-int32_t WebViewImpl::HistoryForwardListCount() {
+int32_t WebViewImpl::HistoryForwardListCount() const {
   return history_list_length_ - HistoryBackListCount() - 1;
 }
 
@@ -3276,7 +3291,7 @@ void WebViewImpl::DidCommitCompositorFrameForLocalMainFrame() {
 void WebViewImpl::ResizeAfterLayout() {
   DCHECK(MainFrameImpl());
 
-  if (!web_view_client_ || !web_view_client_->CanUpdateLayout())
+  if (!web_view_client_)
     return;
 
   if (should_auto_resize_) {
@@ -3371,7 +3386,7 @@ void WebViewImpl::TextAutosizerPageInfoChanged(
 }
 
 void WebViewImpl::SetBackgroundColorOverrideForFullscreenController(
-    base::Optional<SkColor> optional_color) {
+    absl::optional<SkColor> optional_color) {
   DCHECK(does_composite_);
 
   background_color_override_for_fullscreen_controller_ = optional_color;
@@ -3459,10 +3474,10 @@ void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
   }
 }
 
-void WebViewImpl::InvalidateRect(const IntRect& rect) {
-  // This is only for WebViewPlugin.
+void WebViewImpl::InvalidateContainer() {
+  // This is only for non-composited WebViewPlugin.
   if (!does_composite_ && web_view_client_)
-    web_view_client_->DidInvalidateRect(rect);
+    web_view_client_->InvalidateContainer();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3555,7 +3570,6 @@ void WebViewImpl::SetVisibilityState(
   DCHECK(GetPage());
   if (!is_initial_state) {
     // Preserve the side effects of visibility change.
-    web_view_client_->OnPageVisibilityChanged(visibility_state);
     for (auto& observer : observers_)
       observer.OnPageVisibilityChanged(visibility_state);
   }

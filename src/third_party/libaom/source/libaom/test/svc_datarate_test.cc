@@ -89,8 +89,8 @@ class DatarateTestSVC
     if (video->frame() == 0) {
       initialize_svc(number_temporal_layers_, number_spatial_layers_,
                      &svc_params_);
-      svc_params_.ksvc_fixed_mode = 0;
       encoder->Control(AV1E_SET_SVC_PARAMS, &svc_params_);
+      // TODO(aomedia:3032): Configure KSVC in fixed mode.
       encoder->Control(AV1E_SET_ENABLE_ORDER_HINT, 0);
       encoder->Control(AV1E_SET_ENABLE_TPL_MODEL, 0);
       encoder->Control(AV1E_SET_DELTAQ_MODE, 0);

@@ -37,8 +37,8 @@ class EolNotification final : public message_center::NotificationObserver {
   // message_center::NotificationObserver:
   void Close(bool by_user) override;
 
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<std::u16string>& reply) override;
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override;
 
  private:
   friend class EolNotificationTest;
@@ -68,7 +68,7 @@ class EolNotification final : public message_center::NotificationObserver {
   Profile* const profile_;
 
   // Pref which determines which warning should be displayed to the user.
-  base::Optional<std::string> dismiss_pref_;
+  absl::optional<std::string> dismiss_pref_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<EolNotification> weak_ptr_factory_{this};
@@ -77,5 +77,11 @@ class EolNotification final : public message_center::NotificationObserver {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::EolNotification;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_EOL_NOTIFICATION_H_

@@ -47,6 +47,7 @@ public:
     bool dstReadInShaderSupport() const { return fDstReadInShaderSupport; }
     bool dualSourceBlendingSupport() const { return fDualSourceBlendingSupport; }
     bool integerSupport() const { return fIntegerSupport; }
+    bool nonsquareMatrixSupport() const { return fNonsquareMatrixSupport; }
 
     /**
      * Some helper functions for encapsulating various extensions to read FB Buffer on openglES
@@ -83,6 +84,10 @@ public:
     bool halfIs32Bits() const { return fHalfIs32Bits; }
 
     bool hasLowFragmentPrecision() const { return fHasLowFragmentPrecision; }
+
+    // Use a reduced set of rendering algorithms or less optimal effects in order to
+    // reduce the number of unique shaders generated.
+    bool reducedShaderMode() const { return fReducedShaderMode; }
 
     // SkSL only.
     bool builtinFMASupport() const { return fBuiltinFMASupport; }
@@ -182,6 +187,11 @@ public:
     // helpful to disable that feature.
     bool useNodePools() const { return fUseNodePools; }
 
+    // When we have the option of using either dFdx or dfDy in a shader, this returns whether we
+    // should avoid using dFdx. We have found some drivers have bugs or lower precision when using
+    // dFdx.
+    bool avoidDfDxForGradientsWhenPossible() const { return fAvoidDfDxForGradientsWhenPossible; }
+
     // Returns the string of an extension that must be enabled in the shader to support
     // derivatives. If nullptr is returned then no extension needs to be enabled. Before calling
     // this function, the caller should check that shaderDerivativeSupport exists.
@@ -269,6 +279,7 @@ private:
     bool fDstReadInShaderSupport            : 1;
     bool fDualSourceBlendingSupport         : 1;
     bool fIntegerSupport                    : 1;
+    bool fNonsquareMatrixSupport            : 1;
     bool fFBFetchSupport                    : 1;
     bool fFBFetchNeedsCustomOutput          : 1;
     bool fUsesPrecisionModifiers            : 1;
@@ -282,6 +293,7 @@ private:
     bool fFloatIs32Bits                     : 1;
     bool fHalfIs32Bits                      : 1;
     bool fHasLowFragmentPrecision           : 1;
+    bool fReducedShaderMode                 : 1;
 
     // Used by SkSL to know when to generate polyfills.
     bool fBuiltinFMASupport : 1;
@@ -311,6 +323,7 @@ private:
     bool fColorSpaceMathNeedsFloat                    : 1;
     bool fCanUseDoLoops                               : 1;
     bool fCanUseFastMath                              : 1;
+    bool fAvoidDfDxForGradientsWhenPossible           : 1;
 
     // This controls behavior of the SkSL compiler, not the code we generate
     bool fUseNodePools : 1;

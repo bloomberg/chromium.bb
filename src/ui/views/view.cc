@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -18,7 +19,6 @@
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -29,6 +29,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
@@ -56,7 +57,8 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
@@ -1203,6 +1205,13 @@ const ui::ThemeProvider* View::GetThemeProvider() const {
   return widget ? widget->GetThemeProvider() : nullptr;
 }
 
+const LayoutProvider* View::GetLayoutProvider() const {
+  if (!GetWidget())
+    return nullptr;
+  // TODO(pbos): Ask the widget for a layout provider.
+  return LayoutProvider::Get();
+}
+
 const ui::ColorProvider* View::GetColorProvider() const {
   const auto* widget = GetWidget();
   return widget ? widget->GetColorProvider() : nullptr;
@@ -1355,6 +1364,11 @@ void View::SetMouseAndGestureHandler(View* new_handler) {
   // |new_handler| may be nullptr.
   if (parent_)
     parent_->SetMouseAndGestureHandler(new_handler);
+}
+
+void View::SetMouseHandler(View* new_handler) {
+  if (parent_)
+    parent_->SetMouseHandler(new_handler);
 }
 
 bool View::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1740,6 +1754,10 @@ ui::mojom::DragOperation View::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 void View::OnDragDone() {}
 
+View::DropCallback View::GetDropCallback(const ui::DropTargetEvent& event) {
+  return base::NullCallback();
+}
+
 // static
 bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
   return (abs(delta.x()) > GetHorizontalDragThreshold() ||
@@ -2060,6 +2078,9 @@ void View::OnPaintLayer(const ui::PaintContext& context) {
 void View::OnLayerTransformed(const gfx::Transform& old_transform,
                               ui::PropertyChangeReason reason) {
   NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
+
+  for (ViewObserver& observer : observers_)
+    observer.OnViewLayerTransformed(this);
 }
 
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -2258,31 +2279,28 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
     SchedulePaint();
 }
 
-base::CallbackListSubscription View::AddPropertyChangedCallback(
-    PropertyKey property,
-    PropertyChangedCallback callback) {
-  auto entry = property_changed_vectors_.find(property);
-  if (entry == property_changed_vectors_.end()) {
-    entry = property_changed_vectors_
-                .emplace(property, std::make_unique<PropertyChangedCallbacks>())
-                .first;
+void View::AfterPropertyChange(const void* key, int64_t old_value) {
+  if (key == kElementIdentifierKey) {
+    const ui::ElementIdentifier old_element_id =
+        ui::ElementIdentifier::FromRawValue(old_value);
+    if (old_element_id) {
+      views::ElementTrackerViews::GetInstance()->UnregisterView(old_element_id,
+                                                                this);
+    }
+    const ui::ElementIdentifier new_element_id =
+        GetProperty(kElementIdentifierKey);
+    if (new_element_id) {
+      views::ElementTrackerViews::GetInstance()->RegisterView(new_element_id,
+                                                              this);
+    }
   }
-  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
-
-  return property_changed_callbacks->Add(std::move(callback));
 }
 
-void View::OnPropertyChanged(PropertyKey property,
+void View::OnPropertyChanged(ui::metadata::PropertyKey property,
                              PropertyEffects property_effects) {
   if (property_effects != kPropertyEffectsNone)
     HandlePropertyChangeEffects(property_effects);
-
-  auto entry = property_changed_vectors_.find(property);
-  if (entry == property_changed_vectors_.end())
-    return;
-
-  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
-  property_changed_callbacks->Notify();
+  TriggerChangedCallback(property);
 }
 
 int View::GetX() const {
@@ -2464,13 +2482,10 @@ void View::AddChildViewAtImpl(View* view, int index) {
   }
 
   // Remove |view| from its parent, if any.
-  ui::NativeTheme* old_theme = nullptr;
-  Widget* old_widget = nullptr;
-  if (parent) {
-    old_theme = view->GetNativeTheme();
-    old_widget = view->GetWidget();
+  Widget* old_widget = view->GetWidget();
+  ui::NativeTheme* old_theme = old_widget ? view->GetNativeTheme() : nullptr;
+  if (parent)
     parent->DoRemoveChildView(view, true, false, this);
-  }
 
   view->parent_ = this;
 #if DCHECK_IS_ON()
@@ -2502,11 +2517,8 @@ void View::AddChildViewAtImpl(View* view, int index) {
   if (HasLayoutManager())
     GetLayoutManager()->ViewAdded(this, view);
 
-  if (widget) {
-    const ui::NativeTheme* new_theme = view->GetNativeTheme();
-    if (new_theme != old_theme)
-      view->PropagateThemeChanged();
-  }
+  if (widget && (view->GetNativeTheme() != old_theme))
+    view->PropagateThemeChanged();
 
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
@@ -3225,12 +3237,6 @@ int View::DefaultFillLayout::GetPreferredHeightForWidth(const View* host,
   return preferred_height;
 }
 
-DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
-                       {View::FocusBehavior::ACCESSIBLE_ONLY,
-                        u"ACCESSIBLE_ONLY"},
-                       {View::FocusBehavior::ALWAYS, u"ALWAYS"},
-                       {View::FocusBehavior::NEVER, u"NEVER"})
-
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
 BEGIN_METADATA_BASE(View)
@@ -3262,3 +3268,9 @@ ADD_CLASS_PROPERTY_METADATA(bool, kViewIgnoredByLayoutKey)
 END_METADATA
 
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(views::View::FocusBehavior,
+                       {views::View::FocusBehavior::ACCESSIBLE_ONLY,
+                        u"ACCESSIBLE_ONLY"},
+                       {views::View::FocusBehavior::ALWAYS, u"ALWAYS"},
+                       {views::View::FocusBehavior::NEVER, u"NEVER"})

@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_save_address_profile_delegate_ios.h"
+#include "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
@@ -26,6 +26,7 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/security_state/ios/security_state_utils.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -39,6 +40,7 @@
 #include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -256,7 +258,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
 
 void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo(
               signin::ConsentLevel::kSync));
@@ -321,19 +323,25 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
 
 void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
+    const AutofillProfile* original_profile,
+    SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillAddressProfileSavePrompt));
   if (IsInfobarOverlayUIEnabled()) {
-    auto delegate = std::make_unique<AutofillSaveAddressProfileDelegateIOS>(
-        profile, std::move(callback));
+    // TODO(crbug.com/1167062): Respect SaveAddressProfilePromptOptions.
+    auto delegate =
+        std::make_unique<AutofillSaveUpdateAddressProfileDelegateIOS>(
+            profile, original_profile,
+            GetApplicationContext()->GetApplicationLocale(),
+            std::move(callback));
     infobar_manager_->AddInfoBar(std::make_unique<InfoBarIOS>(
         InfobarType::kInfobarTypeSaveAutofillAddressProfile,
         std::move(delegate)));
   } else {
     // Fallback to the default behavior to saving without the confirmation.
     std::move(callback).Run(
-        AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
+        AutofillClient::SaveAddressProfileOfferUserDecision::kUserNotAsked,
         profile);
   }
 }
@@ -392,6 +400,11 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
   password_manager_->ProcessAutofillPredictions(/*driver=*/nullptr, forms);
+  auto* generationHelper =
+      PasswordTabHelper::FromWebState(web_state_)->GetGenerationHelper();
+  if (generationHelper) {
+    generationHelper->ProcessPasswordRequirements(forms);
+  }
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewField(

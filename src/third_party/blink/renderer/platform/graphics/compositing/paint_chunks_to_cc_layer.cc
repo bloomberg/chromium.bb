@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "cc/base/features.h"
 #include "cc/input/layer_selection_bound.h"
@@ -242,7 +243,7 @@ class ConversionContext {
     // The transform space when the SaveLayer[Alpha]Op was emitted.
     const TransformPaintPropertyNode* transform;
     // Records the bounds of the effect which initiated the entry. Note that
-    // the effect is not |this->effect| (which is the previous effect), but the
+    // the effect is not |effect| (which is the previous effect), but the
     // |current_effect_| when this entry is the top of the stack.
     FloatRect bounds;
   };
@@ -712,10 +713,10 @@ void ConversionContext::Convert(const PaintChunkSubset& chunks) {
 
     for (const auto& item : it.DisplayItems()) {
       sk_sp<const PaintRecord> record;
-      if (item.IsScrollbar())
-        record = static_cast<const ScrollbarDisplayItem&>(item).Paint();
-      else if (item.IsDrawing())
-        record = static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
+      if (auto* scrollbar = DynamicTo<ScrollbarDisplayItem>(item))
+        record = scrollbar->Paint();
+      else if (auto* drawing = DynamicTo<DrawingDisplayItem>(item))
+        record = drawing->GetPaintRecord();
       else
         continue;
 

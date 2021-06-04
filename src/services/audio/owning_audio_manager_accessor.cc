@@ -27,16 +27,16 @@ namespace audio {
 
 namespace {
 
-base::Optional<base::TimeDelta> GetAudioThreadHangDeadline() {
+absl::optional<base::TimeDelta> GetAudioThreadHangDeadline() {
   if (!base::FeatureList::IsEnabled(
           features::kAudioServiceOutOfProcessKillAtHang)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   const std::string timeout_string = base::GetFieldTrialParamValueByFeature(
       features::kAudioServiceOutOfProcessKillAtHang, "timeout_seconds");
   int timeout_int = 0;
   if (!base::StringToInt(timeout_string, &timeout_int) || timeout_int == 0)
-    return base::nullopt;
+    return absl::nullopt;
   return base::TimeDelta::FromSeconds(timeout_int);
 }
 
@@ -118,7 +118,7 @@ base::SingleThreadTaskRunner* MainThread::GetWorkerTaskRunner() {
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_NONE;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
-    CHECK(worker_thread_.StartWithOptions(options));
+    CHECK(worker_thread_.StartWithOptions(std::move(options)));
     worker_task_runner_ = worker_thread_.task_runner();
   }
   return worker_task_runner_.get();

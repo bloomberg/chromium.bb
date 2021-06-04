@@ -13,7 +13,6 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,8 +39,11 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "sandbox/policy/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
 
@@ -134,7 +136,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   using UserspaceSwapInit =
       chromeos::memory::userspace_swap::UserspaceSwapRendererInitializationImpl;
-  base::Optional<UserspaceSwapInit> swap_init;
+  absl::optional<UserspaceSwapInit> swap_init;
   if (UserspaceSwapInit::UserspaceSwapSupportedAndEnabled()) {
     swap_init.emplace();
 
@@ -142,6 +144,13 @@ int RendererMain(const MainFunctionParams& parameters) {
         << "Unable to complete presandbox userspace swap initialization";
   }
 #endif
+
+  if (command_line.HasSwitch(switches::kTimeZoneForTesting)) {
+    std::string time_zone =
+        command_line.GetSwitchValueASCII(switches::kTimeZoneForTesting);
+    icu::TimeZone::adoptDefault(
+        icu::TimeZone::createTimeZone(icu::UnicodeString(time_zone.c_str())));
+  }
 
   InitializeSkia();
 

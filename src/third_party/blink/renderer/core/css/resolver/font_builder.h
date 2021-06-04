@@ -84,7 +84,7 @@ class CORE_EXPORT FontBuilder {
   void UpdateFontDescription(FontDescription&,
                              FontOrientation = FontOrientation::kHorizontal);
   void CreateFont(ComputedStyle&, const ComputedStyle* parent_style);
-  void CreateFontForDocument(ComputedStyle&);
+  void CreateInitialFont(ComputedStyle&);
 
   bool FontDirty() const { return flags_; }
 
@@ -185,4 +185,4 @@ class CORE_EXPORT FontBuilder {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_

@@ -32,6 +32,7 @@
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "url/gurl.h"
@@ -151,7 +152,7 @@ class NET_EXPORT HostResolverManager
       const HostPortPair& host,
       const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters,
+      const absl::optional<ResolveHostParameters>& optional_parameters,
       ResolveContext* resolve_context,
       HostCache* host_cache);
   // |resolve_context| is the context to use for the probes, and it is expected
@@ -169,7 +170,8 @@ class NET_EXPORT HostResolverManager
   // DnsConfig, a new config is fetched from NetworkChangeNotifier.
   //
   // Setting to |true| has no effect if |ENABLE_BUILT_IN_DNS| not defined.
-  virtual void SetInsecureDnsClientEnabled(bool enabled);
+  virtual void SetInsecureDnsClientEnabled(bool enabled,
+                                           bool additional_dns_types_enabled);
 
   base::Value GetDnsConfigAsValue() const;
 
@@ -278,7 +280,7 @@ class NET_EXPORT HostResolverManager
   //
   // If results are returned from the host cache, |out_stale_info| will be
   // filled in with information on how stale or fresh the result is. Otherwise,
-  // |out_stale_info| will be set to |base::nullopt|.
+  // |out_stale_info| will be set to |absl::nullopt|.
   //
   // If |cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED|, then
   // stale cache entries can be returned.
@@ -288,7 +290,7 @@ class NET_EXPORT HostResolverManager
       DnsQueryType requested_address_family,
       HostResolverSource source,
       HostResolverFlags flags,
-      base::Optional<SecureDnsMode> secure_dns_mode_override,
+      SecureDnsPolicy secure_dns_policy,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
       HostCache* cache,
@@ -297,7 +299,7 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags* out_effective_host_resolver_flags,
       SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks,
-      base::Optional<HostCache::EntryStaleness>* out_stale_info);
+      absl::optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Creates and starts a Job to asynchronously attempt to resolve
   // |request|.
@@ -309,26 +311,26 @@ class NET_EXPORT HostResolverManager
 
   // Tries to resolve |key| and its possible IP address representation,
   // |ip_address|. Returns a results entry iff the input can be resolved.
-  base::Optional<HostCache::Entry> ResolveAsIP(DnsQueryType query_type,
+  absl::optional<HostCache::Entry> ResolveAsIP(DnsQueryType query_type,
                                                bool resolve_canonname,
                                                const IPAddress* ip_address);
 
   // Returns the result iff |cache_usage| permits cache lookups and a positive
   // match is found for |key| in |cache|. |out_stale_info| must be non-null, and
   // will be filled in with details of the entry's staleness if an entry is
-  // returned, otherwise it will be set to |base::nullopt|.
-  base::Optional<HostCache::Entry> MaybeServeFromCache(
+  // returned, otherwise it will be set to |absl::nullopt|.
+  absl::optional<HostCache::Entry> MaybeServeFromCache(
       HostCache* cache,
       const HostCache::Key& key,
       ResolveHostParameters::CacheUsage cache_usage,
       bool ignore_secure,
       const NetLogWithSource& source_net_log,
-      base::Optional<HostCache::EntryStaleness>* out_stale_info);
+      absl::optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Iff we have a DnsClient with a valid DnsConfig and we're not about to
   // attempt a system lookup, then try to resolve the query using the HOSTS
   // file.
-  base::Optional<HostCache::Entry> ServeFromHosts(
+  absl::optional<HostCache::Entry> ServeFromHosts(
       base::StringPiece hostname,
       DnsQueryType query_type,
       bool default_family_due_to_no_ipv6,
@@ -336,17 +338,14 @@ class NET_EXPORT HostResolverManager
 
   // Iff |key| is for a localhost name (RFC 6761) and address DNS query type,
   // returns a results entry with the loopback IP.
-  base::Optional<HostCache::Entry> ServeLocalhost(
+  absl::optional<HostCache::Entry> ServeLocalhost(
       base::StringPiece hostname,
       DnsQueryType query_type,
       bool default_family_due_to_no_ipv6);
 
   // Returns the secure dns mode to use for a job, taking into account the
-  // global DnsConfig mode and any per-request override. Requests matching DoH
-  // server hostnames are downgraded to off mode to avoid infinite loops.
-  SecureDnsMode GetEffectiveSecureDnsMode(
-      const std::string& hostname,
-      base::Optional<SecureDnsMode> secure_dns_mode_override);
+  // global DnsConfig mode and any per-request policy.
+  SecureDnsMode GetEffectiveSecureDnsMode(SecureDnsPolicy secure_dns_policy);
 
   // Returns true if a catch-all DNS block has been set for unit tests. No
   // DnsTasks should be issued in this case.
@@ -365,16 +364,15 @@ class NET_EXPORT HostResolverManager
 
   // Initialized the sequence of tasks to run to resolve a request. The sequence
   // may be adjusted later and not all tasks need to be run.
-  void CreateTaskSequence(
-      const std::string& hostname,
-      DnsQueryType dns_query_type,
-      HostResolverSource source,
-      HostResolverFlags flags,
-      base::Optional<SecureDnsMode> secure_dns_mode_override,
-      ResolveHostParameters::CacheUsage cache_usage,
-      ResolveContext* resolve_context,
-      SecureDnsMode* out_effective_secure_dns_mode,
-      std::deque<TaskType>* out_tasks);
+  void CreateTaskSequence(const std::string& hostname,
+                          DnsQueryType dns_query_type,
+                          HostResolverSource source,
+                          HostResolverFlags flags,
+                          SecureDnsPolicy secure_dns_policy,
+                          ResolveHostParameters::CacheUsage cache_usage,
+                          ResolveContext* resolve_context,
+                          SecureDnsMode* out_effective_secure_dns_mode,
+                          std::deque<TaskType>* out_tasks);
 
   // Determines "effective" request parameters using manager properties and IPv6
   // reachability.
@@ -383,7 +381,7 @@ class NET_EXPORT HostResolverManager
       DnsQueryType dns_query_type,
       HostResolverSource source,
       HostResolverFlags flags,
-      base::Optional<SecureDnsMode> secure_dns_mode_override,
+      SecureDnsPolicy secure_dns_policy,
       ResolveHostParameters::CacheUsage cache_usage,
       const IPAddress* ip_address,
       const NetLogWithSource& net_log,
@@ -442,7 +440,7 @@ class NET_EXPORT HostResolverManager
       NetworkChangeNotifier::ConnectionType type) override;
 
   // SystemDnsConfigChangeNotifier::Observer:
-  void OnSystemDnsConfigChanged(base::Optional<DnsConfig> config) override;
+  void OnSystemDnsConfigChanged(absl::optional<DnsConfig> config) override;
 
   void UpdateJobsForChangedConfig();
 

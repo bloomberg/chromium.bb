@@ -30,6 +30,7 @@ class InstalledVersionUpdaterTest : public ::testing::Test {
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
     fake_update_engine_client_ = fake_update_engine_client.get();
+    chromeos::DBusThreadManager::Initialize();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::move(fake_update_engine_client));
 
@@ -80,7 +81,7 @@ TEST_F(InstalledVersionUpdaterTest, Update) {
                               Eq(BuildState::UpdateType::kNormalUpdate)),
                      Property(&BuildState::installed_version, IsTrue()),
                      Property(&BuildState::installed_version,
-                              Eq(base::Optional<base::Version>(
+                              Eq(absl::optional<base::Version>(
                                   base::Version(new_version)))),
                      Property(&BuildState::critical_version, IsFalse()))));
   NotifyStatusChanged(std::move(status));
@@ -104,7 +105,7 @@ TEST_F(InstalledVersionUpdaterTest, Rollback) {
                               Eq(BuildState::UpdateType::kEnterpriseRollback)),
                      Property(&BuildState::installed_version, IsTrue()),
                      Property(&BuildState::installed_version,
-                              Eq(base::Optional<base::Version>(
+                              Eq(absl::optional<base::Version>(
                                   base::Version(new_version)))),
                      Property(&BuildState::critical_version, IsFalse()))));
   NotifyStatusChanged(std::move(status));
@@ -129,7 +130,7 @@ TEST_F(InstalledVersionUpdaterTest, ChannelChange) {
           Property(&BuildState::installed_version, IsTrue()),
           Property(
               &BuildState::installed_version,
-              Eq(base::Optional<base::Version>(base::Version(new_version)))),
+              Eq(absl::optional<base::Version>(base::Version(new_version)))),
           Property(&BuildState::critical_version, IsFalse()))));
   NotifyStatusChanged(std::move(status));
   task_environment_.RunUntilIdle();

@@ -4,8 +4,11 @@
 
 #include "chromeos/network/network_connection_handler_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -418,7 +421,8 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
   }
   const std::string connection_state = network->connection_state();
   if (!NetworkState::StateIsConnected(connection_state) &&
-      !NetworkState::StateIsConnecting(connection_state)) {
+      !NetworkState::StateIsConnecting(connection_state) &&
+      !GetPendingRequest(service_path)) {
     NET_LOG(ERROR) << "Disconnect Error: Not Connected: " << NetworkId(network);
     network_handler::RunErrorCallback(std::move(error_callback), service_path,
                                       kErrorNotConnected, "");
@@ -520,7 +524,7 @@ void NetworkConnectionHandlerImpl::OnPrepareCellularNetworkForConnectionFailure(
 void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     bool check_error_state,
     const std::string& service_path,
-    base::Optional<base::Value> properties) {
+    absl::optional<base::Value> properties) {
   if (!properties) {
     HandleConfigurationFailure(service_path, "GetShillProperties failed",
                                nullptr);
@@ -703,7 +707,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     }
   }
 
-  if (!config_properties.empty()) {
+  if (!config_properties.DictEmpty()) {
     NET_LOG(EVENT) << "Configuring Network: " << NetworkPathId(service_path);
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
@@ -744,10 +748,9 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
   }
 
   NET_LOG(EVENT) << "Connect Request Queued: " << NetworkPathId(service_path);
-  queued_connect_.reset(new ConnectRequest(request->mode, service_path,
-                                           request->profile_path,
-                                           std::move(request->success_callback),
-                                           std::move(request->error_callback)));
+  queued_connect_ = std::make_unique<ConnectRequest>(
+      request->mode, service_path, request->profile_path,
+      std::move(request->success_callback), std::move(request->error_callback));
   pending_requests_.erase(service_path);
 
   // Post a delayed task to check to see if certificates have loaded. If they
@@ -846,15 +849,8 @@ void NetworkConnectionHandlerImpl::HandleShillConnectSuccess(
         << NetworkPathId(service_path);
     return;
   }
-  if (request->mode == ConnectCallbackMode::ON_STARTED) {
-    if (!request->success_callback.is_null())
-      std::move(request->success_callback).Run();
-    // Request started; do not invoke success or error callbacks on
-    // completion.
-    request->success_callback.Reset();
-    request->error_callback = network_handler::ErrorCallback();
-  }
-  request->connect_state = ConnectRequest::CONNECT_STARTED;
+
+  HandleNetworkConnectStarted(request);
   NET_LOG(EVENT) << "Connect Request Acknowledged: "
                  << NetworkPathId(service_path);
   // Do not call success_callback here, wait for one of the following
@@ -875,6 +871,21 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
         << NetworkPathId(service_path);
     return;
   }
+
+  // Ignore failure if Shill returns an in progress error. This indicates that a
+  // connection attempt is already progress. This connect request will be
+  // completed with a success or failure in CheckPendingRequest when the network
+  // state changes.
+  if (dbus_error_name == shill::kErrorResultInProgress) {
+    NET_LOG(DEBUG)
+        << "Ignoring connect request in progress error. service_path="
+        << service_path;
+    // Set connection request to started and check if service has connected.
+    HandleNetworkConnectStarted(request);
+    CheckPendingRequest(service_path);
+    return;
+  }
+
   network_handler::ErrorCallback error_callback =
       std::move(request->error_callback);
   ClearPendingRequest(service_path);
@@ -882,8 +893,6 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   std::string error;
   if (dbus_error_name == shill::kErrorResultAlreadyConnected) {
     error = kErrorConnected;
-  } else if (dbus_error_name == shill::kErrorResultInProgress) {
-    error = kErrorConnecting;
   } else {
     network_state_handler_->SetShillConnectError(service_path, dbus_error_name);
     error = kErrorConnectFailed;
@@ -891,6 +900,19 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   NET_LOG(ERROR) << "Connect Failure: " << NetworkPathId(service_path)
                  << " Error: " << error << " Shill error: " << dbus_error_name;
   InvokeConnectErrorCallback(service_path, std::move(error_callback), error);
+}
+
+void NetworkConnectionHandlerImpl::HandleNetworkConnectStarted(
+    ConnectRequest* request) {
+  if (request->mode == ConnectCallbackMode::ON_STARTED) {
+    if (!request->success_callback.is_null())
+      std::move(request->success_callback).Run();
+    // Request started; do not invoke success or error callbacks on
+    // completion.
+    request->success_callback.Reset();
+    request->error_callback = network_handler::ErrorCallback();
+  }
+  request->connect_state = ConnectRequest::CONNECT_STARTED;
 }
 
 void NetworkConnectionHandlerImpl::CheckPendingRequest(

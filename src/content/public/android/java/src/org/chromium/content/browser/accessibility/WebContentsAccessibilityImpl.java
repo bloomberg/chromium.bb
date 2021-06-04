@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.accessibility;
 
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
@@ -73,7 +72,7 @@ import java.util.Set;
 @JNINamespace("content")
 public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         implements AccessibilityStateChangeListener, WebContentsAccessibility, WindowEventObserver,
-                   UserData {
+                   UserData, BrowserAccessibilityState.Listener {
     // The following constants have been hard coded so we can support actions newer than our
     // minimum SDK without having to break methods into a series of subclasses.
     // Constants defined by AccessibilityNodeInfo per SDK
@@ -243,9 +242,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (mDelegate.getWebContents() != null) {
             mCaptioningController = new CaptioningController(mDelegate.getWebContents());
             WindowEventObserverManager.from(mDelegate.getWebContents()).addObserver(this);
+        } else {
+            refreshState();
         }
         mDelegate.setOnScrollPositionChangedCallback(
                 () -> handleScrollPositionChanged(mAccessibilityFocusId));
+
+        BrowserAccessibilityState.addListener(this);
 
         // Define our delays on a per event type basis.
         Map<Integer, Integer> eventThrottleDelays = new HashMap<Integer, Integer>();
@@ -468,8 +471,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             onNativeInit();
         }
         if (!isEnabled()) {
+            boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
             WebContentsAccessibilityImplJni.get().enable(
-                    mNativeObj, WebContentsAccessibilityImpl.this);
+                    mNativeObj, WebContentsAccessibilityImpl.this, screenReaderMode);
             return null;
         }
         return this;
@@ -565,10 +569,23 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     // AccessibilityStateChangeListener
+    // TODO(dmazzoni): have BrowserAccessibilityState monitor this and merge
+    // into BrowserAccessibilityStateListener.
 
     @Override
     public void onAccessibilityStateChanged(boolean enabled) {
         setState(enabled);
+    }
+
+    // BrowserAccessibilityStateListener
+
+    @Override
+    public void onBrowserAccessibilityStateChanged() {
+        if (!isAccessibilityEnabled()) return;
+
+        boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
+        WebContentsAccessibilityImplJni.get().setAXMode(
+                mNativeObj, WebContentsAccessibilityImpl.this, screenReaderMode);
     }
 
     // WebContentsAccessibility
@@ -690,6 +707,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         // versions, and for scenarios where HtmlInfo is stripped.
         Bundle extras = viewNode.getExtras();
         extras.putCharSequence("htmlTag", node.htmlTag);
+        for (String[] attr : node.htmlAttributes) extras.putCharSequence(attr[0], attr[1]);
 
         for (int i = 0; i < node.children.size(); i++) {
             createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
@@ -949,6 +967,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mIsHovering = true;
         mUserHasTouchExplored = true;
         return true;
+    }
+
+    @Override
+    public boolean onHoverEventNoRenderer(MotionEvent event) {
+        if (!onHoverEvent(event.getAction())) return false;
+
+        float x = event.getX() + mDelegate.getAccessibilityCoordinates().getScrollX();
+        float y = event.getY() + mDelegate.getAccessibilityCoordinates().getScrollY();
+        return WebContentsAccessibilityImplJni.get().onHoverEventNoRenderer(mNativeObj, this, x, y);
     }
 
     /**
@@ -2015,70 +2042,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 == 1);
     }
 
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all event types that they listen to.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceEventTypeMask() {
-        int eventTypeMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            eventTypeMask |= service.eventTypes;
-        }
-        return eventTypeMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all feedback types that they provide.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceFeedbackTypeMask() {
-        int feedbackTypeMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            feedbackTypeMask |= service.feedbackType;
-        }
-        return feedbackTypeMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all accessibility service flags from any of them.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceFlagsMask() {
-        int flagsMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            flagsMask |= service.flags;
-        }
-        return flagsMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all service capabilities.
-     * @return
-     */
-    @CalledByNative
-    protected int getAccessibilityServiceCapabilitiesMask() {
-        int capabilitiesMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            capabilitiesMask |= service.getCapabilities();
-        }
-        return capabilitiesMask;
-    }
-
     @NativeMethods
     interface Natives {
         long init(WebContentsAccessibilityImpl caller, WebContents webContents);
@@ -2149,8 +2112,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         boolean isEnabled(
                 long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
-        void enable(
-                long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
+        void enable(long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller,
+                boolean screenReaderMode);
+        void setAXMode(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, boolean screenReaderMode);
         boolean areInlineTextBoxesLoaded(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
         void loadInlineTextBoxes(long nativeWebContentsAccessibilityAndroid,
@@ -2167,5 +2132,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         void signalEndOfTestForTesting(long nativeWebContentsAccessibilityAndroid);
         void setIsRunningAsWebView(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, boolean isWebView);
+        boolean onHoverEventNoRenderer(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, float x, float y);
     }
 }

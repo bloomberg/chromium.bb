@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
@@ -101,6 +102,13 @@ MediaSessionNotificationProducer::Session::Session(
   SetController(std::move(controller));
   if (presentation_manager_)
     presentation_manager_->AddObserver(this);
+
+  bool has_presentation_request =
+      presentation_manager_ &&
+      presentation_manager_->HasDefaultPresentationRequest();
+  base::UmaHistogramBoolean(
+      "Media.GlobalMediaControls.HasDefaultPresentationRequest",
+      has_presentation_request);
 }
 
 MediaSessionNotificationProducer::Session::~Session() {
@@ -170,7 +178,7 @@ void MediaSessionNotificationProducer::Session::MediaSessionActionsChanged(
 }
 
 void MediaSessionNotificationProducer::Session::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   OnSessionInteractedWith();
 }
 
@@ -418,7 +426,7 @@ void MediaSessionNotificationProducer::OnFocusLost(
                      base::Unretained(this), id));
   active_controllable_session_ids_.erase(id);
   frozen_session_ids_.insert(id);
-  service_->OnNotificationChanged(&id);
+  service_->OnNotificationChanged();
 }
 
 void MediaSessionNotificationProducer::OnContainerClicked(
@@ -429,18 +437,10 @@ void MediaSessionNotificationProducer::OnContainerClicked(
 
   it->second.OnSessionInteractedWith();
 
-  content::WebContents* web_contents = it->second.web_contents();
-  if (!web_contents)
-    return;
-
-  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
-  if (!delegate)
-    return;
-
   base::UmaHistogramEnumeration("Media.Notification.Click",
                                 MediaNotificationClickSource::kMedia);
 
-  delegate->ActivateContents(web_contents);
+  it->second.item()->Raise();
 }
 
 void MediaSessionNotificationProducer::OnContainerDismissed(
@@ -485,7 +485,7 @@ void MediaSessionNotificationProducer::OnContainerDraggedOut(
   dragged_out_session_ids_.insert(id);
   overlay_media_notifications_manager_.ShowOverlayNotification(
       id, std::move(overlay_notification));
-  service_->OnNotificationChanged(&id);
+  service_->OnNotificationChanged();
 }
 
 void MediaSessionNotificationProducer::OnAudioSinkChosen(
@@ -708,5 +708,5 @@ void MediaSessionNotificationProducer::OnItemUnfrozen(const std::string& id) {
   if (!base::Contains(dragged_out_session_ids_, id))
     active_controllable_session_ids_.insert(id);
 
-  service_->OnNotificationChanged(&id);
+  service_->OnNotificationChanged();
 }

@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Hasteko, kokatu dokumentua eskanerrean eta hautatu Eskaneatu</translation>
 <translation id="2872961005593481000">Itzali</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> deskargatu da <ph name="NUM_SECONDS" /> segundoan.</translation>
+<translation id="2983662233540284543">Ikasi joko-sortzaileengandik, lortu jokoak diseinatzeko aplikazioak, eta beste</translation>
 <translation id="3008341117444806826">FRESKATU</translation>
 <translation id="3009958530611748826">Hautatu zer karpetatan gorde nahi duzun</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Autentifikazioa</translation>
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="5168185087976003268">Bateriaren egoera</translation>
+<translation id="5170568018924773124">Erakutsi karpetan</translation>
+<translation id="519607504553633437">Diseinatu eta sortu zeure jokoak</translation>
 <translation id="5212543919916444558">Ezin dizut lagundu pantailako ezerekin.
 Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5222676887888702881">Amaitu saioa</translation>
@@ -201,6 +204,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5275828089655680674">Berrabiarazi errutinak</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029"><ph name="MILESTONE_VERSION" /> bertsioa</translation>
+<translation id="5300814202279832142">Eraman leihoa lan-eremura</translation>
 <translation id="5315873049536339193">Identitatea</translation>
 <translation id="5317780077021120954">Gorde</translation>
 <translation id="5318334351163689047">TCP bidezko eskaeren hutsegiteak</translation>
@@ -222,6 +226,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5669267381087807207">Aktibatzen</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familia</translation>
+<translation id="5752751666635965375">Sortu zeure jokoa</translation>
 <translation id="5760715441271661976">Atariaren egoera</translation>
 <translation id="5797428682393400134">GAINDITU DA</translation>
 <translation id="5832805196449965646">Gehitu pertsona bat</translation>
@@ -294,6 +299,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="7216409898977639127">Zerbitzu mugikorraren hornitzailea</translation>
 <translation id="7271040990581020067">Eskanerra erabiltzen ari zara. Saiatu berriro geroago.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCIDa</translation>
 <translation id="7343649194310845056">Sareko gailuak</translation>
 <translation id="7359657277149375382">Fitxategi mota</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="8372477600026034341">Ostalari gehigarriak</translation>
 <translation id="8395584934117017006">Enpresa batek kudeatzen du <ph name="DEVICE_TYPE" /> gailua</translation>
 <translation id="8398927464629426868">Gailua zer abiaduratan kargatzen edo deskargatzen ari den</translation>
+<translation id="8422748173858722634">IMEIa</translation>
 <translation id="8461329675984532579">Hasierako hornitzailearen izena</translation>
 <translation id="8475690821716466388">WEP PSK protokolo ahulak babesten du wifi-sarea</translation>
 <translation id="8477551185774834963">DNSaren itxarote-denbora onartzen den atalasetik apur bat gorago dago</translation>
@@ -351,6 +358,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="8575298406870537639">Baliteke zure operadoreak aukera hau eskatzea haren sarera konektatzeko. Horri buruzko xehetasunak lortzeko, jarri operadorearekin harremanetan.</translation>
 <translation id="8576249514688522074">Hasieratu gabe</translation>
 <translation id="8620617069779373398">Ibiltaritza-egoera</translation>
+<translation id="8660881923941176839">libra</translation>
 <translation id="8675354002693747642">Aurrez partekatutako gakoa</translation>
 <translation id="871560550817059752">Hutsegitea - Ez dago tintarik</translation>
 <translation id="8723108084122415655">Lehenetsi gabeko sarea itxarote-denboraren atalasetik gora dago</translation>
@@ -366,6 +374,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="8881098542468797602">Gainditu da proba</translation>
 <translation id="8898840733695078011">Seinalearen indarra</translation>
 <translation id="8910721771319628100">Sare lehenetsia itxarote-denboraren atalasetik gora dago</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" /> erabiltzailearen <ph name="DEVICE_TYPE" /> gailua</translation>
 <translation id="8919837981463578619">Hutsegitea - Erretilua falta da</translation>
 <translation id="8928727111548978589">Hutsegitea - Ez dago paperik</translation>
 <translation id="8930622219860340959">Hari gabekoa</translation>
@@ -383,6 +392,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="9149391708638971077">Egin memoriaren proba</translation>
 <translation id="9173638680043580060">Minutu bat baino gutxiago geratzen da</translation>
 <translation id="9190063653747922532">L2TP/IPsec + aurrez partekatutako gakoa</translation>
+<translation id="9211490828691860325">Lan-eremu guztiak</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Ez da aktibatu</translation>
 <translation id="960719561871045870">Operadorearen kodea</translation>

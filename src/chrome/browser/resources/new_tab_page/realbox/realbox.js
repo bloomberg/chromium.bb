@@ -7,9 +7,10 @@ import './realbox_icon.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {I18nBehavior, loadTimeData} from '../i18n_setup.js';
 import {decodeString16, mojoString16, mojoTimeDelta} from '../utils.js';
 
 import {RealboxBrowserProxy} from './realbox_browser_proxy.js';
@@ -26,8 +27,13 @@ let Input;
  */
 let InputUpdate;
 
-// A real search box that behaves just like the Omnibox.
-class RealboxElement extends PolymerElement {
+/**
+ * A real search box that behaves just like the Omnibox.
+ * @polymer
+ * @extends {PolymerElement}
+ */
+class RealboxElement extends mixinBehaviors
+([I18nBehavior], PolymerElement) {
   static get is() {
     return 'ntp-realbox';
   }
@@ -150,7 +156,7 @@ class RealboxElement extends PolymerElement {
       },
 
       /**
-       * @type {?search.mojom.AutocompleteResult}
+       * @type {?realbox.mojom.AutocompleteResult}
        * @private
        */
       result_: {
@@ -159,7 +165,7 @@ class RealboxElement extends PolymerElement {
 
       /**
        * The currently selected match, if any.
-       * @type {?search.mojom.AutocompleteMatch}
+       * @type {?realbox.mojom.AutocompleteMatch}
        * @private
        */
       selectedMatch_: {
@@ -264,7 +270,7 @@ class RealboxElement extends PolymerElement {
 
   /**
    * @private
-   * @param {search.mojom.AutocompleteResult} result
+   * @param {realbox.mojom.AutocompleteResult} result
    */
   onAutocompleteResultChanged_(result) {
     if (this.lastQueriedInput_ === null ||
@@ -590,7 +596,7 @@ class RealboxElement extends PolymerElement {
     }
 
     // Do not handle the following keys if there are key modifiers.
-    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+    if (hasKeyModifiers(e)) {
       return;
     }
 
@@ -689,7 +695,7 @@ class RealboxElement extends PolymerElement {
   //============================================================================
 
   /**
-   * @return {?search.mojom.AutocompleteMatch}
+   * @return {?realbox.mojom.AutocompleteMatch}
    * @private
    */
   computeSelectedMatch_() {

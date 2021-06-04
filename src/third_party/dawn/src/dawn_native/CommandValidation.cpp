@@ -28,39 +28,31 @@
 
 namespace dawn_native {
 
-    // Performs the per-pass usage validation checks
-    // This will eventually need to differentiate between render and compute passes.
-    // It will be valid to use a buffer both as uniform and storage in the same compute pass.
-    // TODO(yunchao.he@intel.com): add read/write usage tracking for compute
-    MaybeError ValidatePassResourceUsage(const PassResourceUsage& pass) {
-        // TODO(cwallez@chromium.org): Remove this special casing once the PassResourceUsage is a
-        // SyncScopeResourceUsage.
-        if (pass.passType != PassType::Render) {
-            return {};
-        }
-
+    // Performs validation of the "synchronization scope" rules of WebGPU.
+    MaybeError ValidateSyncScopeResourceUsage(const SyncScopeResourceUsage& scope) {
         // Buffers can only be used as single-write or multiple read.
-        for (size_t i = 0; i < pass.buffers.size(); ++i) {
-            wgpu::BufferUsage usage = pass.bufferUsages[i];
+        for (wgpu::BufferUsage usage : scope.bufferUsages) {
             bool readOnly = IsSubset(usage, kReadOnlyBufferUsages);
             bool singleUse = wgpu::HasZeroOrOneBits(usage);
 
             if (!readOnly && !singleUse) {
                 return DAWN_VALIDATION_ERROR(
-                    "Buffer used as writable usage and another usage in pass");
+                    "Buffer used as writable usage and another usage in the same synchronization "
+                    "scope");
             }
         }
 
         // Check that every single subresource is used as either a single-write usage or a
         // combination of readonly usages.
-        for (const PassTextureUsage& textureUsage : pass.textureUsages) {
+        for (const TextureSubresourceUsage& textureUsage : scope.textureUsages) {
             MaybeError error = {};
             textureUsage.Iterate([&](const SubresourceRange&, const wgpu::TextureUsage& usage) {
                 bool readOnly = IsSubset(usage, kReadOnlyTextureUsages);
                 bool singleUse = wgpu::HasZeroOrOneBits(usage);
                 if (!readOnly && !singleUse && !error.IsError()) {
                     error = DAWN_VALIDATION_ERROR(
-                        "Texture used as writable usage and another usage in render pass");
+                        "Texture used as writable usage and another usage in the same "
+                        "synchronization scope");
                 }
             });
             DAWN_TRY(std::move(error));
@@ -429,12 +421,13 @@ namespace dawn_native {
         }
 
         if (src.texture == dst.texture && src.mipLevel == dst.mipLevel) {
-            ASSERT(src.texture->GetDimension() == wgpu::TextureDimension::e2D &&
-                   dst.texture->GetDimension() == wgpu::TextureDimension::e2D);
-            if (IsRangeOverlapped(src.origin.z, dst.origin.z, copySize.depthOrArrayLayers)) {
+            wgpu::TextureDimension dimension = src.texture->GetDimension();
+            ASSERT(dimension != wgpu::TextureDimension::e1D);
+            if ((dimension == wgpu::TextureDimension::e2D &&
+                 IsRangeOverlapped(src.origin.z, dst.origin.z, copySize.depthOrArrayLayers)) ||
+                dimension == wgpu::TextureDimension::e3D) {
                 return DAWN_VALIDATION_ERROR(
-                    "Copy subresources cannot be overlapped when copying within the same "
-                    "texture.");
+                    "Cannot copy between overlapping subresources of the same texture.");
             }
         }
 
@@ -462,8 +455,8 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Source texture must have sampled usage");
         }
 
-        if (!(dst.texture->GetUsage() & wgpu::TextureUsage::OutputAttachment)) {
-            return DAWN_VALIDATION_ERROR("Dest texture must have outputAttachment usage");
+        if (!(dst.texture->GetUsage() & wgpu::TextureUsage::RenderAttachment)) {
+            return DAWN_VALIDATION_ERROR("Dest texture must have RenderAttachment usage");
         }
 
         return ValidateTextureToTextureCopyCommonRestrictions(src, dst, copySize);

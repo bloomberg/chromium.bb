@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -21,7 +22,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -34,6 +34,7 @@
 #include "media/midi/midi_service.mojom.h"
 #include "media/midi/midi_switches.h"
 #include "services/device/public/cpp/usb/usb_ids.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace midi {
 
@@ -118,7 +119,7 @@ base::Lock* GetInstanceIdLock() {
 }
 
 // Issues unique MidiManager instance ID.
-int64_t IssueNextInstanceId(base::Optional<int64_t> override_id) {
+int64_t IssueNextInstanceId(absl::optional<int64_t> override_id) {
   static int64_t id = kInvalidInstanceId;
   if (override_id) {
     int64_t result = ++id;
@@ -633,7 +634,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
   if (IsRunningInsideMidiInGetNumDevs())
     GetTaskLock()->AssertAcquired();
   else
-    task_lock.reset(new base::AutoLock(*GetTaskLock()));
+    task_lock = std::make_unique<base::AutoLock>(*GetTaskLock());
   {
     base::AutoLock lock(*GetInstanceIdLock());
     if (instance_id != g_active_instance_id)
@@ -702,7 +703,7 @@ void MidiManagerWin::OverflowInstanceIdForTesting() {
 
 MidiManagerWin::MidiManagerWin(MidiService* service)
     : MidiManager(service),
-      instance_id_(IssueNextInstanceId(base::nullopt)),
+      instance_id_(IssueNextInstanceId(absl::nullopt)),
       port_manager_(std::make_unique<PortManager>()) {
   base::AutoLock lock(*GetInstanceIdLock());
   CHECK_EQ(kInvalidInstanceId, g_active_instance_id);

@@ -5,8 +5,6 @@
 #ifndef CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_PARAMS_H_
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_PARAMS_H_
 
-#include <string>
-
 #include "base/time/time.h"
 #include "url/origin.h"
 
@@ -35,6 +33,11 @@ size_t GetFirstKSubresourceLimit();
 // be received, after which the subresource should be fetched directly from the
 // origin.
 base::TimeDelta GetRobotsRulesReceiveFirstKSubresourceTimeout();
+
+// Returns the count of first k subresources for which redirect compression
+// should be disabled. Value of 0 means this first k subresource disabling
+// feature is turned off.
+size_t GetFirstKDisableSubresourceRedirectLimit();
 
 // The maximum number of robots rules parsers the renderer should cache locally
 // for reuse by the renderframes in the renderer process.

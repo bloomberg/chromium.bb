@@ -17,6 +17,10 @@ base::FilePath TestStoragePartition::GetPath() {
   return file_path_;
 }
 
+base::FilePath TestStoragePartition::GetBucketBasePath() {
+  return file_path_.Append(storage::kWebStorageDirectory);
+}
+
 network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
   return network_context_;
 }
@@ -81,6 +85,15 @@ storage::DatabaseTracker* TestStoragePartition::GetDatabaseTracker() {
 
 DOMStorageContext* TestStoragePartition::GetDOMStorageContext() {
   return dom_storage_context_;
+}
+
+storage::mojom::LocalStorageControl*
+TestStoragePartition::GetLocalStorageControl() {
+  // Bind and throw away the receiver. If testing is required, then add a method
+  // to set the remote.
+  if (!local_storage_control_.is_bound())
+    ignore_result(local_storage_control_.BindNewPipeAndPassReceiver());
+  return local_storage_control_.get();
 }
 
 storage::mojom::IndexedDBControl& TestStoragePartition::GetIndexedDBControl() {

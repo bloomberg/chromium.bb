@@ -4,9 +4,15 @@
 
 #include "components/sync_device_info/device_info.h"
 
+// device_info.h's size can impact build time. Try not to raise this limit
+// unless absolutely necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#pragma clang max_tokens_here 505000
+
 #include <utility>
 
 #include "base/values.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -70,8 +76,8 @@ DeviceInfo::DeviceInfo(
     base::Time last_updated_timestamp,
     base::TimeDelta pulse_interval,
     bool send_tab_to_self_receiving_enabled,
-    const base::Optional<SharingInfo>& sharing_info,
-    const base::Optional<PhoneAsASecurityKeyInfo>& paask_info,
+    const absl::optional<SharingInfo>& sharing_info,
+    const absl::optional<PhoneAsASecurityKeyInfo>& paask_info,
     const std::string& fcm_registration_token,
     const ModelTypeSet& interested_data_types)
     : guid_(guid),
@@ -145,12 +151,12 @@ bool DeviceInfo::send_tab_to_self_receiving_enabled() const {
   return send_tab_to_self_receiving_enabled_;
 }
 
-const base::Optional<DeviceInfo::SharingInfo>& DeviceInfo::sharing_info()
+const absl::optional<DeviceInfo::SharingInfo>& DeviceInfo::sharing_info()
     const {
   return sharing_info_;
 }
 
-const base::Optional<DeviceInfo::PhoneAsASecurityKeyInfo>&
+const absl::optional<DeviceInfo::PhoneAsASecurityKeyInfo>&
 DeviceInfo::paask_info() const {
   return paask_info_;
 }
@@ -247,7 +253,7 @@ void DeviceInfo::set_send_tab_to_self_receiving_enabled(bool new_value) {
 }
 
 void DeviceInfo::set_sharing_info(
-    const base::Optional<SharingInfo>& sharing_info) {
+    const absl::optional<SharingInfo>& sharing_info) {
   sharing_info_ = sharing_info;
 }
 

@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -64,6 +63,7 @@
 #include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
@@ -226,7 +226,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       download::DownloadDangerType danger_type,
       download::DownloadItem::MixedContentStatus mcs,
       const base::FilePath& intermediate_path,
-      base::Optional<download::DownloadSchedule> download_schedule,
+      absl::optional<download::DownloadSchedule> download_schedule,
       download::DownloadInterruptReason reason) {
     std::move(callback).Run(target_path, disp,
                             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
@@ -291,7 +291,7 @@ class BrowserCloseManagerBrowserTest : public InProcessBrowserTest {
         content::SlowDownloadHttpResponse::kKnownSizeUrl);
 
     content::DownloadTestObserverInProgress observer(
-        content::BrowserContext::GetDownloadManager(browser->profile()), 1);
+        browser->profile()->GetDownloadManager(), 1);
     ui_test_utils::NavigateToURLWithDisposition(
         browser, slow_download_url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_NONE);
@@ -948,8 +948,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
   content::DownloadTestObserverInterrupted observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      1,
+      browser()->profile()->GetDownloadManager(), 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(download_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
@@ -957,10 +956,11 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   observer.WaitForFinished();
 
   // Check that the download manager has the expected state.
-  EXPECT_EQ(1, content::BrowserContext::GetDownloadManager(
-      browser()->profile())->InProgressCount());
-  EXPECT_EQ(0, content::BrowserContext::GetDownloadManager(
-      browser()->profile())->NonMaliciousInProgressCount());
+  EXPECT_EQ(1, browser()->profile()->GetDownloadManager()->InProgressCount());
+  EXPECT_EQ(0, browser()
+                   ->profile()
+                   ->GetDownloadManager()
+                   ->NonMaliciousInProgressCount());
 
   // Close the browser with no user action.
   TestBrowserCloseManager::AttemptClose(
@@ -996,7 +996,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
 // Test shutdown with a download in progress in an off-the-record profile.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        TestWithOffTheRecordDownloads) {
-  Profile* otr_profile = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   Browser* otr_browser = CreateBrowser(otr_profile);
   {
     browser()->window()->Close();
@@ -1028,7 +1029,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // call to AttemptClose.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        DISABLED_TestWithOffTheRecordWindowAndRegularDownload) {
-  Profile* otr_profile = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   Browser* otr_browser = CreateBrowser(otr_profile);
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 

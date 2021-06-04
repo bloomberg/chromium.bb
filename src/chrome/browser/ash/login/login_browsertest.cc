@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/login/test/offline_login_test_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/test/user_adding_screen_utils.h"
@@ -33,11 +34,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
@@ -107,6 +110,42 @@ class LoginOfflineTest : public LoginManagerTest {
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 };
+
+class LoginOnlineCryptohomeError : public LoginManagerTest {
+ public:
+  LoginOnlineCryptohomeError() = default;
+
+ protected:
+  LoginManagerMixin::TestUserInfo reauth_user_{
+      AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
+                                     FakeGaiaMixin::kFakeUserGaiaId),
+      user_manager::USER_TYPE_REGULAR,
+      /* invalid token status to force online signin */
+      user_manager::User::OAUTH2_TOKEN_STATUS_INVALID};
+  LoginManagerMixin login_manager_{&mixin_host_, {reauth_user_}};
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+};
+
+IN_PROC_BROWSER_TEST_F(LoginOnlineCryptohomeError, FatalScreenShown) {
+  const auto& account_id = reauth_user_.account_id;
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsForcedOnlineSignin(account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id));
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  chromeos::FakeUserDataAuthClient::Get()->set_cryptohome_error(
+      user_data_auth::CRYPTOHOME_ERROR_MOUNT_FATAL);
+
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetView<GaiaScreenHandler>()
+      ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
+                                FakeGaiaMixin::kFakeUserPassword,
+                                FakeGaiaMixin::kEmptyUserServices);
+  OobeScreenWaiter(SignInFatalErrorView::kScreenId).Wait();
+  test::ClickSignInFatalScreenActionButton();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+}
 
 class LoginOfflineManagedTest : public LoginManagerTest {
  public:
@@ -201,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   Profile* profile = browser()->profile();
   std::string profile_base_path("hash");
   profile_base_path.insert(0, chrome::kProfileDirPrefix);
-  EXPECT_EQ(profile_base_path, profile->GetPath().BaseName().value());
+  EXPECT_EQ(profile_base_path, profile->GetBaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
 
   TestSystemTrayIsVisible();
@@ -292,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, FullEmailDontMatchProvided) {
   TestSystemTrayIsVisible();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, DISABLED_BackButtonTest) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, BackButtonTest) {
   std::string domain = gaia::ExtractDomainName(managed_user_id_.GetUserEmail());
 
   ConfigurePolicy(domain);
@@ -303,6 +342,9 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, DISABLED_BackButtonTest) {
                                              LoginManagerTest::kPassword);
 
   test::OobeJS().ClickOnPath(kOfflineLoginBackButton);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  // Send network state update once again.
+  offline_login_test_mixin_.GoOffline();
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }

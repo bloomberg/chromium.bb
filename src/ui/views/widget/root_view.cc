@@ -16,16 +16,17 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view_targeter.h"
@@ -113,7 +114,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
     if (owner_->GetFocusManager())  // Can be NULL in unittests.
       v = owner_->GetFocusManager()->GetFocusedView();
 // macOS doesn't have keyboard-triggered context menus.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
     // Special case to handle keyboard-triggered context menus.
     if (v && v->GetEnabled() &&
         ((event->key_code() == ui::VKEY_APPS) ||
@@ -267,7 +268,7 @@ void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
 // Accessibility ---------------------------------------------------------------
 
 void RootView::AnnounceText(const std::u16string& text) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   gfx::NativeViewAccessible native = GetViewAccessibility().GetNativeObject();
   auto* ax_node = ui::AXPlatformNode::FromNativeViewAccessible(native);
   if (ax_node)
@@ -471,11 +472,10 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
 
-    // The gesture handler should not be reset when handling the mouse release.
-    // Otherwise, the gesture movements in progress such as the gesture scroll
-    // is interrupted.
-    SetMouseHandler(nullptr);
-
+    // During mouse event handling, `SetMouseAndGestureHandler()` may be called
+    // to set the gesture handler. Therefore we should reset the gesture handler
+    // when mouse is released.
+    SetMouseAndGestureHandler(nullptr);
     ui::EventDispatchDetails dispatch_details =
         DispatchEvent(mouse_pressed_handler, &mouse_released);
     if (dispatch_details.dispatcher_destroyed)
@@ -637,9 +637,34 @@ bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return event.handled();
 }
 
+void RootView::MaybeNotifyGestureHandlerBeforeReplacement() {
+  ui::GestureRecognizer* gesture_recognizer =
+      (gesture_handler_ && widget_ ? widget_->GetGestureRecognizer() : nullptr);
+  if (!gesture_recognizer)
+    return;
+
+  ui::GestureConsumer* gesture_consumer = widget_->GetGestureConsumer();
+  if (!gesture_recognizer->DoesConsumerHaveActiveTouch(gesture_consumer))
+    return;
+
+  gesture_recognizer->SendSynthesizedEndEvents(gesture_consumer);
+}
+
 void RootView::SetMouseAndGestureHandler(View* new_handler) {
   SetMouseHandler(new_handler);
+
+  if (new_handler == gesture_handler_)
+    return;
+
+  MaybeNotifyGestureHandlerBeforeReplacement();
   gesture_handler_ = new_handler;
+}
+
+void RootView::SetMouseHandler(View* new_mouse_handler) {
+  // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
+  explicit_mouse_handler_ = (new_mouse_handler != nullptr);
+  mouse_pressed_handler_ = new_mouse_handler;
+  drag_info_.Reset();
 }
 
 void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -753,13 +778,6 @@ ui::EventDispatchDetails RootView::NotifyEnterExitOfDescendant(
     }
   }
   return ui::EventDispatchDetails();
-}
-
-void RootView::SetMouseHandler(View* new_mouse_handler) {
-  // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
-  explicit_mouse_handler_ = (new_mouse_handler != nullptr);
-  mouse_pressed_handler_ = new_mouse_handler;
-  drag_info_.Reset();
 }
 
 bool RootView::CanDispatchToTarget(ui::EventTarget* target) {

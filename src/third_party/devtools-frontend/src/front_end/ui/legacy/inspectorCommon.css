@@ -22,45 +22,31 @@
    * Chat to jacktfranklin@ or petermueller@ if you have questions.
    * https://crbug.com/1122511
    */
-  --accent-color: #1a73e8;
-  --accent-fg-color: #1a73e8;
-  --accent-color-hover: #3b86e8;
-  --accent-fg-color-hover: #1567d3;
-  --active-control-bg-color: #5a5a5a;
-  --focus-bg-color: hsl(214deg 40% 92%);
-  --focus-ring-inactive-shadow-color: #e0e0e0;
-  --input-validation-error: #db1600;
-  --toolbar-bg-color: var(--color-background-elevation-1);
-  --toolbar-hover-bg-color: #eaeaea;
-  --selection-fg-color: #fff;
-  --selection-bg-color: var(--accent-color);
-  --selection-inactive-fg-color: #5a5a5a;
-  --selection-inactive-bg-color: #dadada;
-  --tab-selected-fg-color: #333;
-  --tab-selected-bg-color: var(--toolbar-bg-color);
-  --divider-border: 1px solid var(--color-details-hairline);
-  --focus-ring-inactive-shadow: 0 0 0 1px var(--focus-ring-inactive-shadow-color);
-  --focus-ring-active-shadow: 0 0 0 1px var(--accent-color);
-  --item-selection-bg-color: #cfe8fc;
-  --item-selection-inactive-bg-color: #e0e0e0;
+  --legacy-accent-color: #1a73e8;
+  --legacy-accent-fg-color: #1a73e8;
+  --legacy-accent-color-hover: #3b86e8;
+  --legacy-accent-fg-color-hover: #1567d3;
+  --legacy-active-control-bg-color: #5a5a5a;
+  --legacy-focus-bg-color: hsl(214deg 40% 92%);
+  --legacy-focus-ring-inactive-shadow-color: #e0e0e0;
+  --legacy-input-validation-error: #db1600;
+  --legacy-toolbar-hover-bg-color: #eaeaea;
+  --legacy-selection-fg-color: #fff;
+  --legacy-selection-bg-color: var(--legacy-accent-color);
+  --legacy-selection-inactive-fg-color: #5a5a5a;
+  --legacy-selection-inactive-bg-color: #dadada;
+  --legacy-tab-selected-fg-color: #333;
+  --legacy-divider-border: 1px solid var(--color-details-hairline);
+  --legacy-focus-ring-inactive-shadow: 0 0 0 1px var(--legacy-focus-ring-inactive-shadow-color);
+  --legacy-focus-ring-active-shadow: 0 0 0 1px var(--legacy-accent-color);
+  --legacy-item-selection-bg-color: #cfe8fc;
+  --legacy-item-selection-inactive-bg-color: #e0e0e0;
   --item-hover-color: rgb(56 121 217 / 10%);
-  --network-grid-default-color: rgb(255 255 255 / 100%);
-  --network-grid-stripe-color: rgb(245 245 245 / 100%);
-  --network-grid-navigation-color: rgb(221 238 255 / 100%);
-  --network-grid-hovered-color: rgb(235 242 252 / 70%);
-  --network-grid-initiator-path-color: rgb(58 217 58 / 40%);
-  --network-grid-initiated-path-color: rgb(217 58 58 / 40%);
-  --network-grid-selected-color: #dadce0;
-  --network-grid-focus-selected-color: var(--selection-bg-color);
-  --network-grid-focus-selected-color-has-error: #fad2cf;
-  --network-grid-from-frame-color: rgb(224 247 250 / 40%);
-  --network-grid-is-product-color: rgb(255 252 225 / 60%);
-  --network-frame-divider-color: #fccc49;
-  --link-color: rgb(17 85 204);
   --monospace-font-size: 10px;
   --monospace-font-family: monospace;
   --source-code-font-size: 11px;
   --source-code-font-family: monospace;
+  --override-force-white-icons-background: #fafafa;
 }
 
 .-theme-with-dark-background {
@@ -70,34 +56,21 @@
    * Chat to jacktfranklin@ or petermueller@ if you have questions.
    * https://crbug.com/1122511
    */
-  --accent-color: #0e639c;
-  --accent-fg-color: #ccc;
-  --accent-fg-color-hover: #fff;
-  --accent-color-hover: rgb(17 119 187);
-  --active-control-bg-color: #cdcdcd;
-  --focus-bg-color: hsl(214deg 19% 27%);
-  --focus-ring-inactive-shadow-color: #5a5a5a;
-  --toolbar-hover-bg-color: #202020;
-  --selection-fg-color: #cdcdcd;
-  --selection-inactive-fg-color: #cdcdcd;
-  --selection-inactive-bg-color: hsl(0deg 0% 28%);
-  --tab-selected-fg-color: #eaeaea;
-  --tab-selected-bg-color: #000;
-  --focus-ring-inactive-shadow: 0 0 0 1px var(--focus-ring-inactive-shadow-color);
-  --item-selection-bg-color: hsl(207deg 88% 22%);
-  --item-selection-inactive-bg-color: #454545;
-  --network-grid-default-color: rgb(36 36 36 / 100%);
-  --network-grid-stripe-color: rgb(41 41 41 / 100%);
-  --network-grid-navigation-color: rgb(221 238 255 / 100%);
-  --network-grid-hovered-color: rgb(20 37 63 / 70%);
-  --network-grid-initiator-path-color: rgb(58 217 58 / 40%);
-  --network-grid-initiated-path-color: rgb(217 58 58 / 40%);
-  --network-grid-selected-color: #454545;
-  --network-grid-focus-selected-color: var(--selection-bg-color);
-  --network-grid-focus-selected-color-has-error: #482422;
-  --network-grid-from-frame-color: rgb(224 247 250 / 40%);
-  --network-grid-is-product-color: rgb(255 252 225 / 60%);
-  --link-color: rgb(171 171 171);
+  --legacy-accent-color: #0e639c;
+  --legacy-accent-fg-color: #ccc;
+  --legacy-accent-fg-color-hover: #fff;
+  --legacy-accent-color-hover: rgb(17 119 187);
+  --legacy-active-control-bg-color: #cdcdcd;
+  --legacy-focus-bg-color: hsl(214deg 19% 27%);
+  --legacy-focus-ring-inactive-shadow-color: #5a5a5a;
+  --legacy-toolbar-hover-bg-color: #202020;
+  --legacy-selection-fg-color: #cdcdcd;
+  --legacy-selection-inactive-fg-color: #cdcdcd;
+  --legacy-selection-inactive-bg-color: hsl(0deg 0% 28%);
+  --legacy-tab-selected-fg-color: #eaeaea;
+  --legacy-focus-ring-inactive-shadow: 0 0 0 1px var(--legacy-focus-ring-inactive-shadow-color);
+  --legacy-item-selection-bg-color: hsl(207deg 88% 22%);
+  --legacy-item-selection-inactive-bg-color: #454545;
 }
 
 body {
@@ -111,22 +84,24 @@ body {
   font-size: 12px;
   tab-size: 4;
   user-select: none;
-  color: #222; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-primary);
   background: var(--color-background);
 }
 
 /* Default fonts */
 .platform-linux {
-  color: rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
   font-family: Roboto, Ubuntu, Arial, sans-serif;
 }
 
 .platform-mac {
-  color: rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
   font-family: '.SFNSDisplay-Regular', 'Helvetica Neue', 'Lucida Grande', sans-serif;
+}
+
+.platform-mac,
+.platform-linux {
+  --override-text-color: rgb(48 57 66);
+
+  color: var(--override-text-color);
 }
 
 .platform-windows {
@@ -162,14 +137,21 @@ body {
   --source-code-font-family: dejavu sans mono, monospace;
 }
 
+.-theme-with-dark-background .platform-linux,
+.-theme-with-dark-background .platform-mac,
+:host-context(.-theme-with-dark-background) .platform-linux,
+:host-context(.-theme-with-dark-background) .platform-mac {
+  --override-text-color: rgb(189 198 207);
+}
+
 .monospace {
   font-family: var(--monospace-font-family);
-  font-size: var(--monospace-font-size) !important;
+  font-size: var(--monospace-font-size) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .source-code {
   font-family: var(--source-code-font-family);
-  font-size: var(--source-code-font-size) !important;
+  font-size: var(--source-code-font-size) !important; /* stylelint-disable-line declaration-no-important */
   white-space: pre-wrap;
 }
 
@@ -203,19 +185,18 @@ iframe.fill {
 
 .hbox {
   display: flex;
-  flex-direction: row !important;
+  flex-direction: row !important; /* stylelint-disable-line declaration-no-important */
   position: relative;
 }
 
 .vbox {
   display: flex;
-  flex-direction: column !important;
+  flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
   position: relative;
 }
 
 .view-container > .toolbar {
-  border-bottom: 1px solid #eee; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border-bottom: 1px solid var(--color-details-hairline);
 }
 
 .flex-auto {
@@ -247,20 +228,21 @@ iframe.widget {
 }
 
 .hidden {
-  display: none !important;
+  display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .highlighted-search-result {
+  --override-highlighted-search-result-background-color: rgb(255 255 0 / 80%);
+
   border-radius: 1px;
-  background-color: rgb(255 255 0 / 80%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  outline: 1px solid rgb(255 255 0 / 80%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--override-highlighted-search-result-background-color);
+  outline: 1px solid var(--override-highlighted-search-result-background-color);
 }
 
 .-theme-with-dark-background .highlighted-search-result,
 :host-context(.-theme-with-dark-background) .highlighted-search-result {
-  background-color: hsl(133deg 100% 30%);
+  --override-highlighted-search-result-background-color: hsl(133deg 100% 30%);
+
   color: #333;
 }
 
@@ -289,8 +271,14 @@ input {
 }
 
 input::placeholder {
-  color: rgb(0 0 0 / 54%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-input-placeholder-color: rgb(0 0 0 / 54%);
+
+  color: var(--override-input-placeholder-color);
+}
+
+.-theme-with-dark-background input::placeholder,
+:host-context(.-theme-with-dark-background) input::placeholder {
+  --override-input-placeholder-color: rgb(230 230 230 / 54%);
 }
 
 :host-context(.-theme-with-dark-background) input[type="checkbox"]:not(.-theme-preserve) {
@@ -303,7 +291,7 @@ input::placeholder {
   padding: 3px 6px;
   height: 24px;
   border: none;
-  box-shadow: var(--focus-ring-inactive-shadow);
+  box-shadow: var(--legacy-focus-ring-inactive-shadow);
 }
 
 .harmony-input:not([type]).error-input,
@@ -312,28 +300,29 @@ input::placeholder {
 .harmony-input:not([type]):invalid,
 .harmony-input[type=number]:invalid,
 .harmony-input[type=text]:invalid {
-  box-shadow: 0 0 0 1px #ff1a00; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  box-shadow: 0 0 0 1px var(--color-red);
 }
 
 .harmony-input:not([type]):not(.error-input):not(:invalid):hover,
 .harmony-input[type=number]:not(.error-input):not(:invalid):hover,
 .harmony-input[type=text]:not(.error-input):not(:invalid):hover {
-  box-shadow: var(--focus-ring-inactive-shadow);
+  box-shadow: var(--legacy-focus-ring-inactive-shadow);
 }
 
 .harmony-input:not([type]):not(.error-input):not(:invalid):focus,
 .harmony-input[type=number]:not(.error-input):not(:invalid):focus,
 .harmony-input[type=text]:not(.error-input):not(:invalid):focus {
-  box-shadow: var(--focus-ring-active-shadow);
+  box-shadow: var(--legacy-focus-ring-active-shadow);
 }
 
 .highlighted-search-result.current-search-result {
+  /* Note: this value is used in light & dark mode */
+  --override-current-search-result-background-color: rgb(255 127 0 / 80%);
+
   border-radius: 1px;
   padding: 1px;
   margin: -1px;
-  background-color: rgb(255 127 0 / 80%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--override-current-search-result-background-color);
 }
 
 .dimmed {
@@ -343,39 +332,37 @@ input::placeholder {
 .editing {
   box-shadow: var(--drop-shadow);
   background-color: var(--color-background);
-  text-overflow: clip !important;
+  text-overflow: clip !important; /* stylelint-disable-line declaration-no-important */
   padding-left: 2px;
   margin-left: -2px;
   padding-right: 2px;
   margin-right: -2px;
   margin-bottom: -1px;
   padding-bottom: 1px;
-  opacity: 100% !important;
+  opacity: 100% !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .editing,
 .editing * {
-  color: #222 !important; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  text-decoration: none !important;
+  color: var(--color-text-primary) !important; /* stylelint-disable-line declaration-no-important */
+  text-decoration: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .chrome-select {
+  --override-chrome-select-border-color: rgb(0 0 0 / 20%);
+
   appearance: none;
   user-select: none;
-  border: 1px solid rgb(0 0 0 / 20%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border: 1px solid var(--override-chrome-select-border-color);
   border-radius: 2px;
-  color: #333; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-primary);
   font: inherit;
   margin: 0;
   outline: none;
   padding-right: 20px;
   padding-left: 6px;
   background-image: var(--image-file-chromeSelect);
-  background-color: hsl(0deg 0% 98%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-0);
   background-position: right center;
   background-repeat: no-repeat;
   min-height: 24px;
@@ -387,28 +374,47 @@ input::placeholder {
   opacity: 38%;
 }
 
+.-theme-with-dark-background .chrome-select,
 :host-context(.-theme-with-dark-background) .chrome-select {
+  --override-chrome-select-border-color: rgb(230 230 230 / 20%);
+
   background-image: var(--image-file-chromeSelectDark);
 }
 
 .chrome-select:enabled:active,
 .chrome-select:enabled:focus,
 .chrome-select:enabled:hover {
-  background-color: hsl(0deg 0% 96%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  box-shadow: 0 1px 2px rgb(0 0 0 / 10%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-select-box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+
+  background-color: var(--color-background-elevation-1);
+  box-shadow: var(--override-select-box-shadow);
 }
 
 .chrome-select:enabled:active {
-  background-color: #f2f2f2; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-2);
 }
 
 .chrome-select:enabled:focus {
+  --override-extra-box-shadow-focus: 0 0 0 2px rgb(66 133 244 / 40%);
+
   border-color: transparent;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 10%), 0 0 0 2px rgb(66 133 244 / 40%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  box-shadow: var(--override-select-box-shadow), var(--override-extra-box-shadow-focus));
+}
+
+.-theme-with-dark-background .chrome-select:enabled:active,
+.-theme-with-dark-background .chrome-select:enabled:focus,
+.-theme-with-dark-background .chrome-select:enabled:hover,
+:host-context(.-theme-with-dark-background) .chrome-select:enabled:active,
+:host-context(.-theme-with-dark-background) .chrome-select:enabled:focus,
+:host-context(.-theme-with-dark-background) .chrome-select:enabled:hover {
+  --override-select-box-shadow: 0 1px 2px rgb(230 230 230 / 10%);
+}
+
+/* Disabled so we can keep all the selectors above in one block */
+/* stylelint-disable-next-line no-descending-specificity */
+.-theme-with-dark-background .chrome-select:enabled:focus,
+:host-context(.-theme-with-dark-background) .chrome-select:enabled:focus {
+  --override-extra-box-shadow-focus: 0 0 0 2px rgb(11 78 189 / 40%);
 }
 
 .chrome-select-label {
@@ -418,24 +424,20 @@ input::placeholder {
 
 .chrome-select-label p {
   margin-top: 0;
-  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-secondary);
 }
 
 .chrome-select optgroup,
 .chrome-select option {
-  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  color: #222; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-1);
+  color: var(--color-text-primary);
 }
 
 .gray-info-message {
   text-align: center;
   font-style: italic;
   padding: 6px;
-  color: #888; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -448,8 +450,7 @@ span[is=dt-icon-label] {
 }
 
 .full-widget-dimmed-banner {
-  color: #777; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-secondary);
   background-color: var(--color-background);
   display: flex;
   justify-content: center;
@@ -477,9 +478,15 @@ span[is=dt-icon-label] {
 }
 
 [is=ui-icon].icon-mask {
-  background-color: rgb(110 110 110); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-icon-mask-background-color: rgb(110 110 110);
+
+  background-color: var(--override-icon-mask-background-color);
   -webkit-mask-position: var(--spritesheet-position);
+}
+
+.-theme-with-dark-background [is=ui-icon].icon-mask,
+:host-context(.-theme-with-dark-background) [is=ui-icon].icon-mask {
+  --override-icon-mask-background-color: rgb(145 145 145);
 }
 
 [is=ui-icon]:not(.icon-mask) {
@@ -520,8 +527,7 @@ span[is=dt-icon-label] {
 .-theme-preserve {
   -webkit-mask-image: var(--image-file-smallIcons);
   -webkit-mask-position: var(--spritesheet-position);
-  background: #fafafa !important; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--override-force-white-icons-background) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .force-white-icons [is=ui-icon].spritesheet-largeicons,
@@ -530,8 +536,7 @@ span[is=dt-icon-label] {
 .-theme-preserve {
   -webkit-mask-image: var(--image-file-largeIcons);
   -webkit-mask-position: var(--spritesheet-position);
-  background: #fafafa !important; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--override-force-white-icons-background) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .force-white-icons [is=ui-icon].spritesheet-mediumicons,
@@ -540,15 +545,12 @@ span[is=dt-icon-label] {
 .-theme-preserve {
   -webkit-mask-image: var(--image-file-mediumIcons);
   -webkit-mask-position: var(--spritesheet-position);
-  background: #fafafa !important; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--override-force-white-icons-background) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .expandable-inline-button {
-  background-color: #dedede; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  color: #333; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-2);
+  color: var(--color-text-primary);
   cursor: pointer;
   border-radius: 3px;
 }
@@ -569,24 +571,23 @@ span[is=dt-icon-label] {
 }
 
 .undisplayable-text {
-  color: rgb(128 128 128); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  color: var(--color-text-disabled);
   font-style: italic;
 }
 
-.expandable-inline-button:hover {
-  background-color: #d5d5d5; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+.expandable-inline-button:hover,
+.expandable-inline-button:focus-visible {
+  background-color: var(--color-background-elevation-1);
 }
 
 .expandable-inline-button:focus-visible {
-  background-color: #bbb; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-1);
 }
 
 ::selection {
-  background-color: rgb(141 199 248 / 60%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-selection-background-color: rgb(141 199 248 / 60%);
+
+  background-color: var(--override-selection-background-color);
 }
 
 .-theme-with-dark-background *::selection,
@@ -606,12 +607,18 @@ button.link {
 }
 
 button.link:focus-visible {
-  background-color: rgb(0 0 0 / 8%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-link-focus-background-color: rgb(0 0 0 / 8%);
+
+  background-color: var(--override-link-focus-background-color);
   border-radius: 2px;
 }
-/* See ARIAUtils.js */
 
+.-theme-with-dark-background button.link:focus-visible,
+:host-context(.-theme-with-dark-background) button.link:focus-visible {
+  --override-link-focus-background-color: rgb(230 230 230 / 8%);
+}
+
+/* See ARIAUtils.js */
 [data-aria-utils-animation-hack] {
   animation: ANIMATION-HACK 0s;
 }
@@ -646,6 +653,12 @@ button.link:focus-visible {
   .harmony-input[type=text] {
     border: 1px solid ButtonText;
   }
+
+  .harmony-input:not([type]):focus,
+  .harmony-input[type=number]:focus,
+  .harmony-input[type=text]:focus {
+    border: 1px solid Highlight;
+  }
 }
 /* search input with customized styling */
 input.custom-search-input::-webkit-search-cancel-button {
@@ -662,9 +675,7 @@ input.custom-search-input::-webkit-search-cancel-button {
   display: block;
   width: var(--dimension, 24px);
   height: var(--dimension, 24px);
-  border: var(--spinner-size, 3px) solid var(--spinner-color, #808080); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */ /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border: var(--override-spinner-size, 3px) solid var(--override-spinner-color, var(--color-text-secondary));
   border-radius: 12px;
   clip: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
   content: "";
@@ -712,7 +723,7 @@ input.custom-search-input::-webkit-search-cancel-button {
 
 .panel-sidebar {
   overflow-x: hidden;
-  background-color: var(--toolbar-bg-color);
+  background-color: var(--color-background-elevation-1);
 }
 
 iframe.extension {
@@ -728,7 +739,7 @@ iframe.panel.extension {
 
 @media (forced-colors: active) {
   :root {
-    --accent-color: Highlight;
-    --focus-ring-inactive-shadow-color: ButtonText;
+    --legacy-accent-color: Highlight;
+    --legacy-focus-ring-inactive-shadow-color: ButtonText;
   }
 }

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import {WallpaperCollectionsTest} from './wallpaper_collections_element_test.js';
 import {WallpaperImagesTest} from './wallpaper_images_element_test.js';
+
+// Mute console.warn during tests. Several tests intentionally hit asserts to
+// verify errors are thrown, and fill test logs with misleading stacktraces.
+window.console.warn = () => {};
 
 const testCases = [
   WallpaperCollectionsTest,

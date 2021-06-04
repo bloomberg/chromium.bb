@@ -32,8 +32,10 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
   _agent: ProtocolProxyApi.ApplicationCacheApi;
@@ -80,7 +82,7 @@ export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
   }
 
   _frameDetached(event: Common.EventTarget.EventTargetEvent): void {
-    const frame = (event.data as SDK.ResourceTreeModel.ResourceTreeFrame);
+    const frame = (event.data.frame as SDK.ResourceTreeModel.ResourceTreeFrame);
     this._frameManifestRemoved(frame.id);
   }
 
@@ -166,7 +168,7 @@ export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(ApplicationCacheModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(ApplicationCacheModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -14,9 +15,9 @@
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "cc/layers/layer.h"
+#include "components/android_autofill/browser/android_autofill_manager.h"
+#include "components/android_autofill/browser/autofill_provider.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/blocked_content/popup_blocker.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
@@ -27,6 +28,7 @@
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/js_injection/browser/js_communication_host.h"
 #include "components/js_injection/browser/web_message_host.h"
 #include "components/js_injection/browser/web_message_host_factory.h"
@@ -35,6 +37,8 @@
 #include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/webapps/browser/installable/installable_manager.h"
@@ -67,7 +71,6 @@
 #include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
-#include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/js_communication/web_message_host_factory_wrapper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/navigation_entry_data.h"
@@ -79,7 +82,8 @@
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/subresource_filter_client_impl.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_service.h"
+#include "weblayer/browser/subresource_filter_profile_context_factory.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/weblayer_features.h"
 #include "weblayer/common/isolated_world_ids.h"
@@ -99,12 +103,13 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
-#include "components/autofill/android/provider/autofill_provider_android.h"
+#include "components/android_autofill/android/autofill_provider_android.h"
 #include "components/browser_ui/sms/android/sms_infobar.h"
 #include "components/download/content/public/context_menu_download.h"
 #include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
+#include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -254,6 +259,38 @@ class WebContentsTracker : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents) {}
 };
 
+// Returns a scoped refptr to the SafeBrowsingService's database manager, if
+// available. Otherwise returns nullptr.
+const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+GetDatabaseManagerFromSafeBrowsingService() {
+#if defined(OS_ANDROID)
+  SafeBrowsingService* safe_browsing_service =
+      BrowserProcess::GetInstance()->GetSafeBrowsingService();
+  return safe_browsing_service
+             ? scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>(
+                   safe_browsing_service->GetSafeBrowsingDBManager())
+             : nullptr;
+#else
+  return nullptr;
+#endif
+}
+
+// Creates a ContentSubresourceFilterThrottleManager for |web_contents|, passing
+// it the needed embedder-level state.
+void CreateContentSubresourceFilterThrottleManagerForWebContents(
+    content::WebContents* web_contents) {
+  subresource_filter::RulesetService* ruleset_service =
+      BrowserProcess::GetInstance()->subresource_filter_ruleset_service();
+  subresource_filter::VerifiedRulesetDealer::Handle* dealer =
+      ruleset_service ? ruleset_service->GetRulesetDealer() : nullptr;
+  subresource_filter::ContentSubresourceFilterThrottleManager::
+      CreateForWebContents(
+          web_contents,
+          SubresourceFilterProfileContextFactory::GetForBrowserContext(
+              web_contents->GetBrowserContext()),
+          GetDatabaseManagerFromSafeBrowsingService(), dealer);
+}
+
 }  // namespace
 
 #if defined(OS_ANDROID)
@@ -322,7 +359,13 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   TranslateClientImpl::CreateForWebContents(web_contents_.get());
 
-  SubresourceFilterClientImpl::CreateThrottleManagerWithClientForWebContents(
+#if defined(OS_ANDROID)
+  // infobars::ContentInfoBarManager must be created before
+  // SubresourceFilterClientImpl as the latter depends on it.
+  infobars::ContentInfoBarManager::CreateForWebContents(web_contents_.get());
+#endif
+
+  CreateContentSubresourceFilterThrottleManagerForWebContents(
       web_contents_.get());
 
   sessions::SessionTabHelper::CreateForWebContents(
@@ -347,7 +390,6 @@ TabImpl::TabImpl(ProfileImpl* profile,
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents_.get());
 
 #if defined(OS_ANDROID)
-  InfoBarService::CreateForWebContents(web_contents_.get());
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(
       web_contents_.get(),
       std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(
@@ -640,29 +682,13 @@ void TabImpl::SetJavaImpl(JNIEnv* env, const JavaParamRef<jobject>& impl) {
   java_impl_ = impl;
 }
 
-void TabImpl::OnAutofillProviderChanged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& autofill_provider) {
+void TabImpl::InitializeAutofillIfNecessary(JNIEnv* env) {
   if (g_system_autofill_disabled_for_testing)
     return;
-
-  if (!autofill_provider_) {
-    // The first invocation should be when instantiating the autofill
-    // infrastructure, at which point the Java-side object should not be null.
-    DCHECK(autofill_provider);
-
-    // Initialize the native side of the autofill infrastructure.
-    autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
-        autofill_provider, web_contents_.get());
-    InitializeAutofill();
-    return;
+  if (!autofill::ContentAutofillDriverFactory::FromWebContents(
+          web_contents_.get())) {
+    InitializeAutofillDriver();
   }
-
-  // The AutofillProvider Java object has been changed; inform
-  // |autofill_provider_|.
-  auto* provider =
-      static_cast<autofill::AutofillProviderAndroid*>(autofill_provider_.get());
-  provider->OnJavaAutofillProviderChanged(env, autofill_provider);
 }
 
 void TabImpl::UpdateBrowserControlsConstraint(JNIEnv* env,
@@ -984,8 +1010,9 @@ void TabImpl::CreateSmsPrompt(content::RenderFrameHost* render_frame_host,
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   sms::SmsInfoBar::Create(
-      web_contents, InfoBarService::FromWebContents(web_contents), origin_list,
-      one_time_code, std::move(on_confirm), std::move(on_cancel));
+      web_contents,
+      infobars::ContentInfoBarManager::FromWebContents(web_contents),
+      origin_list, one_time_code, std::move(on_confirm), std::move(on_cancel));
 #else
   NOTREACHED();
 #endif
@@ -1059,6 +1086,10 @@ bool TabImpl::OnlyExpandTopControlsAtPageTop() {
 #else
   return false;
 #endif
+}
+
+bool TabImpl::IsBackForwardCacheSupported() {
+  return true;
 }
 
 void TabImpl::RequestMediaAccessPermission(
@@ -1329,40 +1360,35 @@ void TabImpl::SetBrowserControlsConstraint(
 }
 #endif
 
-void TabImpl::InitializeAutofillForTests(
-    std::unique_ptr<autofill::AutofillProvider> provider) {
-  DCHECK(!autofill_provider_);
-
-  autofill_provider_ = std::move(provider);
-  InitializeAutofill();
+void TabImpl::InitializeAutofillForTests() {
+  InitializeAutofillDriver();
 }
 
-void TabImpl::InitializeAutofill() {
-  DCHECK(autofill_provider_);
-
+void TabImpl::InitializeAutofillDriver() {
   content::WebContents* web_contents = web_contents_.get();
   DCHECK(
       !autofill::ContentAutofillDriverFactory::FromWebContents(web_contents));
+  DCHECK(autofill::AutofillProvider::FromWebContents(web_contents));
 
   AutofillClientImpl::CreateForWebContents(web_contents);
 
-  autofill::AutofillHandler::AutofillDownloadManagerState
+  autofill::AutofillManager::AutofillDownloadManagerState
       enable_autofill_download_manager =
-          autofill::AutofillHandler::DISABLE_AUTOFILL_DOWNLOAD_MANAGER;
+          autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER;
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           autofill::features::kAndroidAutofillQueryServerFieldTypes) &&
       (!autofill::AutofillProvider::
            is_download_manager_disabled_for_testing())) {
     enable_autofill_download_manager =
-        autofill::AutofillHandler::ENABLE_AUTOFILL_DOWNLOAD_MANAGER;
+        autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER;
   }
 #endif  // OS_ANDROID
 
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AutofillClientImpl::FromWebContents(web_contents),
       i18n::GetApplicationLocale(), enable_autofill_download_manager,
-      autofill_provider_.get());
+      base::BindRepeating(&autofill::AndroidAutofillManager::Create));
 }
 
 find_in_page::FindTabHelper* TabImpl::GetFindTabHelper() {

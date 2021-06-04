@@ -1,11 +1,13 @@
 <style>
 :host {
-  --item-width: 245px;
+  --button-hover-color: rgba(var(--google-grey-900-rgb), .1);
+  --button-icon-stroke-color: var(--google-grey-refresh-700);
   --pi: 3.14159265358979;
-  --google-green-700: 76, 175, 80;
-  --google-blue-600: 30, 136, 229;
-  --google-blue-700: 25, 118, 210;
-  --google-grey-500: 158, 158, 158;
+  --spinner-color: var(--google-grey-900-rgb);
+  --text-width: 140px;
+  --warn-text-width: 241px;
+  --warn-save-text-width: 318px;
+  --transparent-button-color: rgba(0, 0, 0, 0);
 }
 
 .download-item {
@@ -15,37 +17,26 @@
   flex-direction: row;
   height: 100%;
   overflow: hidden;
-  padding: 6px 8px;
+  padding: 6px 0 6px 8px;
   position: relative;
   user-select: none;
-  width: var(--item-width);
 }
 
 .progress {
-  --width: 24px;
+  --width: 26px;
   --radius: calc(var(--width) / 2);
-  --stroke-width: 2px;
+  --stroke-width: 1.2px;
 
   --download-progress: 0;
-  --indicator-color: var(--google-blue-600);
+  --indicator-color: var(--spinner-color);
 
   align-items: center;
   display: flex;
   flex: 0 0 var(--width);
   height: var(--width);
   justify-content: center;
-  margin: 0 0 0 8px;
   position: relative;
   width: var(--width);
-}
-
-[data-state=complete] .progress {
-  --indicator-color: var(--google-green-700);
-}
-
-[data-paused] .progress,
-[data-state=interrupted] .progress {
-  --indicator-color: var(--google-grey-500);
 }
 
 .progress-indicator {
@@ -61,8 +52,8 @@
 }
 
 .progress-circle {
-  fill: rgba(var(--indicator-color), 0.15);
-  r: var(--radius);
+  fill: rgba(var(--indicator-color), 0.2);
+  r: calc(var(--radius) - var(--stroke-width) / 2.0);
 }
 
 .progress-spinner {
@@ -81,27 +72,177 @@
   stroke-width: var(--stroke-width);
 }
 
-#filename {
-  flex: 1 0 0;
-  margin-bottom: 1px;
+/* Display progress spinner only when state=DownloadState.kInProgress. */
+.download-item:not([data-state='2']) .progress-circle,
+.download-item:not([data-state='2']) .progress-spinner {
+  display: none;
+}
+
+#text-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  padding-inline-start: 10px;
+  width: var(--text-width);
+}
+
+#filename,
+#status-text {
   overflow: hidden;
-  padding-inline-start: 14px;
+  padding-bottom: 2px;
+  padding-top: 2px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#fileIcon {
-  height: 15px;
-  position: absolute;
+#status-text {
+  font-size: 85%;
 }
+
+#dropdown-button {
+  background-color: var(--transparent-button-color);
+  border: none;
+  border-radius: 4px;
+  height: 32px;
+  margin-inline-end: 4px;
+  margin-inline-start: 8px;
+  transition: background-color 300ms;
+  width: 32px;
+  z-index: 2;
+}
+
+#dropdown-button:hover {
+  background-color: var(--button-hover-color);
+}
+
+#shadow-mask {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transition: background-color 300ms;
+  width: 100%;
+  z-index: 1;
+}
+
+#shadow-mask:hover {
+  background-color: var(--button-hover-color)
+}
+
+#dropdown-icon {
+  fill: transparent;
+  stroke: var(--button-icon-stroke-color);
+  stroke-width: 1.2;
+  z-index: 2;
+}
+
+#icon {
+  display: flex;
+  z-index: 1;
+}
+
+#file-icon {
+  height: 16px;
+}
+
+#error-icon {
+  display: none;
+  fill: var(--google-red-600);
+  height: 26px;
+  width: 26px;
+}
+
+#separator {
+  background-color: rgba(0, 0, 0, .1);
+  height: 90%;
+  margin-inline-start: 4px;
+  width: 1px;
+}
+
+#warning-text {
+  display: none;
+  line-height: 150%;
+}
+
+#save-button {
+  display: none;
+  margin-inline-start: 4px;
+  z-index: 2;
+}
+
+#discard-button {
+  display: none;
+  margin-inline-start: 4px;
+  z-index: 2;
+}
+
+[data-display-mode='warn'] #text-container {
+  width: var(--warn-text-width);
+}
+
+[data-display-mode='warn-save'] #text-container {
+  width: var(--warn-save-text-width);
+}
+
+[data-display-mode^='warn'] .progress {
+  padding: 0 0 0 3px;
+}
+
+[data-display-mode^='warn'] #discard-button,
+[data-display-mode^='warn'] #error-icon,
+[data-display-mode^='warn'] #warning-text {
+  display: block;
+}
+
+[data-display-mode^='warn'] #shadow-mask,
+[data-display-mode^='warn'] #file-icon,
+[data-display-mode^='warn'] #filename,
+[data-display-mode^='warn'] #status-text,
+[data-display-mode^='warn'] .progress-indicator {
+  display: none;
+}
+
+[data-display-mode='warn-save'] #save-button {
+  display: block;
+}
+
+[data-display-mode='warn-save'] #dropdown-button {
+  display: none;
+}
+
 </style>
 <div class="download-item">
+  <div id="shadow-mask"></div>
   <div class="progress">
     <svg class="progress-indicator">
       <circle class="progress-circle"></circle>
       <circle class="progress-spinner"></circle>
     </svg>
-    <img id="fileIcon">
+    <div id="icon">
+      <img id="file-icon">
+      <svg id='error-icon' viewBox="0 0 26 26">
+        <g>
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+          </path>
+        </g>
+      </svg>
+    </div>
   </div>
-  <div id="filename"></div>
+  <div id="text-container">
+    <div id="filename"></div>
+    <div id="status-text"></div>
+    <div id="warning-text"></div>
+  </div>
+  <download-button id="save-button"></download-button>
+  <download-button id="discard-button"></download-button>
+  <button id="dropdown-button">
+    <svg id="dropdown-icon" viewBox="0 0 16 16">
+      <g>
+        <path d="M 4 10 l 4 -4 l 4 4">
+        </path>
+      </g>
+    </svg>
+  </button>
+  <div id="separator"></div>
 </div>

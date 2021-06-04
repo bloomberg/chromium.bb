@@ -14,7 +14,8 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/cursor/platform_cursor.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -33,6 +34,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -43,6 +45,7 @@ namespace ui {
 namespace {
 
 using mojom::CursorType;
+using mojom::DragOperation;
 
 bool OverlayStackOrderCompare(
     const ui::ozone::mojom::WaylandOverlayConfigPtr& i,
@@ -81,7 +84,9 @@ WaylandWindow::~WaylandWindow() {
   if (root_surface_)
     connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
-  if (parent_window_)
+  // This might have already been hidden and another window has been shown.
+  // Thus, the parent will have another child window. Do not reset it.
+  if (parent_window_ && parent_window_->child_window() == this)
     parent_window_->set_child_window(nullptr);
 }
 
@@ -117,6 +122,12 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
 
   int32_t old_scale = buffer_scale();
   root_surface_->SetBufferScale(new_scale, update_bounds);
+  if (primary_subsurface_)
+    primary_subsurface_->wayland_surface()->SetBufferScale(new_scale,
+                                                           update_bounds);
+  for (auto& subsurface : wayland_subsurfaces_)
+    subsurface->wayland_surface()->SetBufferScale(new_scale, update_bounds);
+
   // We need to keep DIP size of the window the same whenever the scale changes.
   if (update_bounds)
     SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / old_scale));
@@ -142,7 +153,9 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
   if (entered_outputs_.empty())
     return 0;
 
-  DCHECK_EQ(PlatformWindowType::kWindow, type());
+  // PlatformWindowType::kPopup are created as toplevel windows as well.
+  DCHECK(type() == PlatformWindowType::kWindow ||
+         type() == PlatformWindowType::kPopup);
 
   // A window can be located on two or more displays. Thus, return the id of the
   // output that has the biggest scale factor. Otherwise, use the very first one
@@ -160,23 +173,11 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
 void WaylandWindow::SetPointerFocus(bool focus) {
   has_pointer_focus_ = focus;
 
-  // Whenever the window gets the pointer focus back, we must reinitialize the
-  // cursor. Otherwise, it is invalidated whenever the pointer leaves the
-  // surface and is not restored by the Wayland compositor.
-  if (has_pointer_focus_ && bitmap_ && bitmap_->type() != CursorType::kNone) {
-    // Check for theme-provided cursor.
-    if (bitmap_->platform_data()) {
-      connection_->SetPlatformCursor(
-          reinterpret_cast<wl_cursor*>(bitmap_->platform_data()),
-          buffer_scale());
-    } else {
-      // Translate physical pixels to DIPs.
-      gfx::Point hotspot_in_dips =
-          gfx::ScaleToRoundedPoint(bitmap_->hotspot(), 1.0f / ui_scale_);
-      connection_->SetCursorBitmap(bitmap_->bitmaps(), hotspot_in_dips,
-                                   buffer_scale());
-    }
-  }
+  // Whenever the window gets the pointer focus back, the cursor shape must be
+  // updated. Otherwise, it is invalidated upon wl_pointer::leave and is not
+  // restored by the Wayland compositor.
+  if (has_pointer_focus_ && cursor_)
+    UpdateCursorShape(cursor_);
 }
 
 bool WaylandWindow::StartDrag(const ui::OSExchangeData& data,
@@ -228,7 +229,7 @@ bool WaylandWindow::IsVisible() const {
 
 void WaylandWindow::PrepareForShutdown() {
   if (drag_handler_delegate_)
-    OnDragSessionClose(DragDropTypes::DRAG_NONE);
+    OnDragSessionClose(DragOperation::kNone);
 }
 
 void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
@@ -317,49 +318,13 @@ bool WaylandWindow::ShouldUseNativeFrame() const {
   return false;
 }
 
-void WaylandWindow::SetCursor(PlatformCursor cursor) {
-  DCHECK(cursor);
+void WaylandWindow::SetCursor(scoped_refptr<PlatformCursor> platform_cursor) {
+  DCHECK(platform_cursor);
 
-  scoped_refptr<BitmapCursorOzone> bitmap =
-      BitmapCursorFactoryOzone::GetBitmapCursor(cursor);
-  if (bitmap_ == bitmap)
+  if (cursor_ == platform_cursor)
     return;
 
-  bitmap_ = bitmap;
-
-  if (bitmap_->type() == CursorType::kNone) {
-    // Hide the cursor.
-    connection_->SetCursorBitmap(std::vector<SkBitmap>(), gfx::Point(),
-                                 buffer_scale());
-    return;
-  }
-  // Check for theme-provided cursor.
-  if (bitmap_->platform_data()) {
-    connection_->SetPlatformCursor(
-        reinterpret_cast<wl_cursor*>(bitmap_->platform_data()), buffer_scale());
-    return;
-  }
-  // Check for Wayland server-side cursor support (e.g. exo for lacros).
-  if (connection_->zcr_cursor_shapes()) {
-    base::Optional<int32_t> shape =
-        WaylandZcrCursorShapes::ShapeFromType(bitmap->type());
-    // If the server supports this cursor type, use a server-side cursor.
-    if (shape.has_value()) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-      // Lacros should not load image assets for default cursors. See
-      // BitmapCursorFactoryOzone::GetDefaultCursor().
-      DCHECK(bitmap_->bitmaps().empty());
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-      connection_->zcr_cursor_shapes()->SetCursorShape(shape.value());
-      return;
-    }
-    // Fall through to client-side bitmap cursors.
-  }
-  // Translate physical pixels to DIPs.
-  gfx::Point hotspot_in_dips =
-      gfx::ScaleToRoundedPoint(bitmap_->hotspot(), 1.0f / ui_scale_);
-  connection_->SetCursorBitmap(bitmap_->bitmaps(), hotspot_in_dips,
-                               buffer_scale());
+  UpdateCursorShape(BitmapCursorOzone::FromPlatformCursor(platform_cursor));
 }
 
 void WaylandWindow::MoveCursorTo(const gfx::Point& location) {
@@ -394,12 +359,12 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 
 void WaylandWindow::SizeConstraintsChanged() {}
 
-bool WaylandWindow::ShouldUseLayerForShapedWindow() const {
-  return true;
+bool WaylandWindow::ShouldUpdateWindowShape() const {
+  return false;
 }
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
-  if (event->IsMouseEvent())
+  if (event->IsMouseEvent() || event->IsPinchEvent())
     return has_pointer_focus_;
   if (event->IsKeyEvent())
     return has_keyboard_focus_;
@@ -479,8 +444,8 @@ void WaylandWindow::OnCloseRequest() {
   delegate_->OnCloseRequest();
 }
 
-base::Optional<std::vector<gfx::Rect>> WaylandWindow::GetWindowShape() const {
-  return base::nullopt;
+absl::optional<std::vector<gfx::Rect>> WaylandWindow::GetWindowShape() const {
+  return absl::nullopt;
 }
 
 void WaylandWindow::UpdateWindowMask() {
@@ -537,9 +502,9 @@ void WaylandWindow::OnDragLeave() {
   drop_handler->OnDragLeave();
 }
 
-void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
+void WaylandWindow::OnDragSessionClose(DragOperation operation) {
   DCHECK(drag_handler_delegate_);
-  drag_handler_delegate_->OnDragFinished(dnd_action);
+  drag_handler_delegate_->OnDragFinished(operation);
   drag_handler_delegate_ = nullptr;
   connection()->event_source()->ResetPointerFlags();
   std::move(drag_loop_quit_closure_).Run();
@@ -586,8 +551,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
-  // Will do nothing for menus because they have got their scale above.
-  UpdateBufferScale(false);
   root_surface_->SetOpaqueRegion(gfx::Rect(bounds_px_.size()));
 
   return true;
@@ -601,7 +564,7 @@ void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
-  if (wl::IsMenuType(type()) || type() == ui::PlatformWindowType::kTooltip)
+  if (AsWaylandPopup())
     return;
 
   entered_outputs_.emplace_back(
@@ -614,7 +577,7 @@ void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
-  if (wl::IsMenuType(type()))
+  if (AsWaylandPopup())
     return;
 
   auto entered_outputs_it_ =
@@ -687,6 +650,10 @@ bool WaylandWindow::IsActive() const {
   return false;
 }
 
+WaylandPopup* WaylandWindow::AsWaylandPopup() {
+  return nullptr;
+}
+
 uint32_t WaylandWindow::DispatchEventToDelegate(
     const PlatformEvent& native_event) {
   bool handled = DispatchEventFromNativeUiEvent(
@@ -747,6 +714,9 @@ bool WaylandWindow::ArrangeSubsurfaceStack(size_t above, size_t below) {
 
 bool WaylandWindow::CommitOverlays(
     std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr>& overlays) {
+  if (overlays.empty())
+    return true;
+
   // |overlays| is sorted from bottom to top.
   std::sort(overlays.begin(), overlays.end(), OverlayStackOrderCompare);
 
@@ -770,8 +740,10 @@ bool WaylandWindow::CommitOverlays(
   if (!ArrangeSubsurfaceStack(above, below))
     return false;
 
-  if (wayland_overlay_delegation_enabled_)
+  if (wayland_overlay_delegation_enabled_) {
+    primary_subsurface()->Show();
     connection_->buffer_manager_host()->StartFrame(root_surface());
+  }
 
   {
     // Iterate through |subsurface_stack_below_|, setup subsurfaces and place
@@ -839,7 +811,7 @@ bool WaylandWindow::CommitOverlays(
     }
   }
 
-  if (!num_primary_planes && overlays.front()->z_order == INT32_MIN)
+  if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
     split = overlays.begin();
   UpdateVisualSize((*split)->bounds_rect.size());
 
@@ -862,7 +834,9 @@ bool WaylandWindow::CommitOverlays(
     // with viewport.destination == buffer.size. So do not set
     // viewport.destination to primary planes if crop_rect is uniform.
     // TODO(fangzhoug): Refactor some of this logic s.t. the decision of whether
-    //   to apply viewport.destination is made at commit time.
+    //   to apply viewport.destination is made at commit time. Right now PIP
+    //   would have incorrect size b/c it is fullscreen overlay scheduled at
+    //   z_order=0.
     primary_subsurface_->ConfigureAndShowSurface(
         (*split)->transform, (*split)->crop_rect,
         (*split)->crop_rect == gfx::RectF(1.f, 1.f) ? gfx::Rect()
@@ -895,6 +869,37 @@ bool WaylandWindow::CommitOverlays(
   }
 
   return true;
+}
+
+void WaylandWindow::UpdateCursorShape(scoped_refptr<BitmapCursorOzone> cursor) {
+  DCHECK(cursor);
+  absl::optional<int32_t> shape =
+      WaylandZcrCursorShapes::ShapeFromType(cursor->type());
+
+  if (cursor->type() == CursorType::kNone) {  // Hide the cursor.
+    connection_->SetCursorBitmap({}, gfx::Point(), buffer_scale());
+  } else if (cursor->platform_data()) {  // Check for theme-provided cursor.
+    connection_->SetPlatformCursor(
+        reinterpret_cast<wl_cursor*>(cursor->platform_data()), buffer_scale());
+  } else if (connection_->zcr_cursor_shapes() &&
+             shape.has_value()) {  // Check for Wayland server-side cursor
+                                   // support (e.g. exo for lacros).
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Lacros should not load image assets for default cursors. See
+    // BitmapCursorFactoryOzone::GetDefaultCursor().
+    DCHECK(cursor->bitmaps().empty());
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+    connection_->zcr_cursor_shapes()->SetCursorShape(shape.value());
+  } else {  // Use client-side bitmap cursors as fallback.
+    // Translate physical pixels to DIPs.
+    gfx::Point hotspot_in_dips =
+        gfx::ScaleToRoundedPoint(cursor->hotspot(), 1.0f / ui_scale_);
+    connection_->SetCursorBitmap(cursor->bitmaps(), hotspot_in_dips,
+                                 buffer_scale());
+  }
+  // The new cursor needs to be stored last to avoid deleting the old cursor
+  // while it's still in use.
+  cursor_ = cursor;
 }
 
 }  // namespace ui

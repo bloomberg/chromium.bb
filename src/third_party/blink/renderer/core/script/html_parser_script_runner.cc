@@ -27,7 +27,6 @@
 
 #include <inttypes.h>
 #include <memory>
-#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
@@ -131,11 +130,8 @@ static KURL DocumentURLForScriptExecution(Document* document) {
   if (!document)
     return KURL();
 
-  if (!document->GetFrame()) {
-    if (document->ImportsController())
-      return document->Url();
+  if (!document->GetFrame())
     return KURL();
-  }
 
   // Use the URL of the currently active document for this frame.
   return document->GetFrame()->GetDocument()->Url();

@@ -600,10 +600,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceAsyncReadPixels, reporter, ctxInfo) {
     for (GrSurfaceOrigin origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
         auto factory = std::function<GpuSrcFactory<Surface>>(
                 [context = ctxInfo.directContext(), origin](const SkPixmap& src) {
-                    // skbug.com/8862
-                    if (src.colorType() == kRGB_888x_SkColorType) {
-                        return Surface();
-                    }
                     auto surf = SkSurface::MakeRenderTarget(context,
                                                             SkBudgeted::kYes,
                                                             src.info(),
@@ -679,10 +675,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ImageAsyncReadPixels, reporter, ctxInfo) {
     for (auto origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
         for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
             auto factory = std::function<GpuSrcFactory<Image>>([&](const SkPixmap& src) {
-                // skbug.com/8862
-                if (src.colorType() == kRGB_888x_SkColorType) {
-                    return Image();
-                }
                 return sk_gpu_test::MakeBackendTextureImage(ctxInfo.directContext(), src,
                                                             renderable, origin);
             });
@@ -715,9 +707,10 @@ DEF_GPUTEST(AsyncReadPixelsContextShutdown, reporter, options) {
                               ShutdownSequence::kAbandon_FreeResult_DestroyContext,
                               ShutdownSequence::kReleaseAndAbandon_DestroyContext_FreeResult,
                               ShutdownSequence::kAbandon_DestroyContext_FreeResult}) {
-            // Vulkan context abandoning without resource release has issues outside of the scope of
-            // this test.
-            if (type == sk_gpu_test::GrContextFactory::kVulkan_ContextType &&
+            // Vulkan and D3D context abandoning without resource release has issues outside of the
+            // scope of this test.
+            if ((type == sk_gpu_test::GrContextFactory::kVulkan_ContextType ||
+                 type == sk_gpu_test::GrContextFactory::kDirect3D_ContextType) &&
                 (sequence == ShutdownSequence::kFreeResult_ReleaseAndAbandon_DestroyContext ||
                  sequence == ShutdownSequence::kFreeResult_Abandon_DestroyContext ||
                  sequence == ShutdownSequence::kReleaseAndAbandon_FreeResult_DestroyContext ||
@@ -1123,10 +1116,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
 
     for (int c = 0; c < kGrColorTypeCnt; ++c) {
         auto ct = static_cast<GrColorType>(c);
-        // skbug.com/8862
-        if (ct == GrColorType::kRGB_888x) {
-            continue;
-        }
         // Below we use rendering to read the level pixels back.
         auto format = direct->priv().caps()->getDefaultBackendFormat(ct, GrRenderable::kYes);
         if (!format.isValid()) {
@@ -1192,7 +1181,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SurfaceContextWritePixelsMipped, reporter, ct
                                                           info.colorType(),
                                                           info.refColorSpace(),
                                                           SkBackingFit::kExact,
-                                                          info.dimensions());
+                                                          info.dimensions(),
+                                                          SkSurfaceProps());
                     SkASSERT(dst);
                     GrSamplerState sampler(SkFilterMode::kNearest, SkMipmapMode::kNearest);
                     for (int i = 1; i <= 1; ++i) {

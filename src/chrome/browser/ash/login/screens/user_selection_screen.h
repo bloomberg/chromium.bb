@@ -16,7 +16,8 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/values.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_checkers_collection.h"
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
@@ -33,9 +34,10 @@
 class AccountId;
 
 namespace chromeos {
-
-class EasyUnlockService;
 class UserBoardView;
+}
+
+namespace ash {
 
 enum class DisplayedScreen { SIGN_IN_SCREEN, USER_ADDING_SCREEN, LOCK_SCREEN };
 
@@ -49,7 +51,7 @@ class UserSelectionScreen
   explicit UserSelectionScreen(DisplayedScreen display_type);
   ~UserSelectionScreen() override;
 
-  void SetView(UserBoardView* view);
+  void SetView(chromeos::UserBoardView* view);
 
   static const user_manager::UserList PrepareUserListForSending(
       const user_manager::UserList& users,
@@ -106,14 +108,13 @@ class UserSelectionScreen
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
   // Builds a `UserAvatar` instance which contains the current image for `user`.
-  static ash::UserAvatar BuildAshUserAvatarForUser(
-      const user_manager::User& user);
+  static UserAvatar BuildAshUserAvatarForUser(const user_manager::User& user);
 
-  std::vector<ash::LoginUserInfo> UpdateAndReturnUserListForAsh();
+  std::vector<LoginUserInfo> UpdateAndReturnUserListForAsh();
   void SetUsersLoaded(bool loaded);
 
  protected:
-  UserBoardView* view_ = nullptr;
+  chromeos::UserBoardView* view_ = nullptr;
 
   // Map from public session account IDs to recommended locales set by policy.
   std::map<AccountId, std::vector<std::string>>
@@ -158,13 +159,13 @@ class UserSelectionScreen
   user_manager::UserList users_to_send_;
 
   AccountId focused_pod_account_id_;
-  base::Optional<system::SystemClock::ScopedHourClockType>
+  absl::optional<system::SystemClock::ScopedHourClockType>
       focused_user_clock_type_;
 
   // Sometimes we might get focused pod while user session is still active. e.g.
   // while creating lock screen. So postpone any work until after the session
   // state changes.
-  base::Optional<AccountId> pending_focused_account_id_;
+  absl::optional<AccountId> pending_focused_account_id_;
 
   // Input Method Engine state used at the user selection screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
@@ -187,6 +188,13 @@ class UserSelectionScreen
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreen);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::DisplayedScreen;
+using ::ash::UserSelectionScreen;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_USER_SELECTION_SCREEN_H_

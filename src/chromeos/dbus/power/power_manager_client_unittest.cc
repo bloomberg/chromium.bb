@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -196,16 +196,17 @@ class TestDelegate : public PowerManagerClient::RenderProcessManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-// Local implementation of base::PowerMonitorTestObserver to add callback to
-// OnThermalStateChange.
-class PowerMonitorTestObserverLocal : public base::PowerMonitorTestObserver {
+// Local implementation of base::test::PowerMonitorTestObserver to add callback
+// to OnThermalStateChange.
+class PowerMonitorTestObserverLocal
+    : public base::test::PowerMonitorTestObserver {
  public:
-  using base::PowerMonitorTestObserver::PowerMonitorTestObserver;
+  using base::test::PowerMonitorTestObserver::PowerMonitorTestObserver;
 
   void OnThermalStateChange(
       PowerThermalObserver::DeviceThermalState new_state) override {
     ASSERT_TRUE(cb);
-    base::PowerMonitorTestObserver::OnThermalStateChange(new_state);
+    base::test::PowerMonitorTestObserver::OnThermalStateChange(new_state);
     std::move(cb).Run();
   }
 
@@ -645,11 +646,9 @@ TEST_F(PowerManagerClientTest, ChangeAmbientColorTemperature) {
 
 // Tests that base::PowerMonitor observers are notified about thermal event.
 TEST_F(PowerManagerClientTest, ChangeThermalState) {
+  base::test::ScopedPowerMonitorTestSource power_monitor_source;
   PowerMonitorTestObserverLocal observer;
   base::PowerMonitor::AddPowerThermalObserver(&observer);
-
-  base::PowerMonitor::Initialize(
-      std::make_unique<base::PowerMonitorTestSource>());
 
   typedef struct {
     power_manager::ThermalEvent::ThermalState dbus_state;
@@ -694,7 +693,6 @@ TEST_F(PowerManagerClientTest, ChangeThermalState) {
   }
 
   base::PowerMonitor::RemovePowerThermalObserver(&observer);
-  base::PowerMonitor::ShutdownForTesting();
 }
 
 }  // namespace chromeos

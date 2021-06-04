@@ -38,8 +38,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/floating_accessibility_controller.h"
-#include "ash/system/accessibility/select_to_speak_menu_bubble_controller.h"
-#include "ash/system/accessibility/switch_access_menu_bubble_controller.h"
+#include "ash/system/accessibility/select_to_speak/select_to_speak_menu_bubble_controller.h"
+#include "ash/system/accessibility/switch_access/switch_access_menu_bubble_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
@@ -228,7 +228,7 @@ bool IsSigninPrefService(PrefService* pref_service) {
 
 // Returns true if the current session is the guest session.
 bool IsCurrentSessionGuest() {
-  const base::Optional<user_manager::UserType> user_type =
+  const absl::optional<user_manager::UserType> user_type =
       Shell::Get()->session_controller()->GetUserType();
   return user_type && *user_type == user_manager::USER_TYPE_GUEST;
 }

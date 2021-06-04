@@ -5,8 +5,9 @@
 module printing.mojom;
 
 // Print job color mode values.
+[Stable, Extensible]
 enum ColorModel {
-  kUnknownColorModel,
+  [Default] kUnknownColorModel,
   kGray,
   kColor,
   kCMYK,
@@ -41,8 +42,9 @@ enum ColorModel {
 };
 
 // Print job duplex mode values.
+[Stable, Extensible]
 enum DuplexMode {
-  kUnknownDuplexMode = -1,
+  [Default] kUnknownDuplexMode = -1,
   kSimplex,
   kLongEdge,
   kShortEdge,
@@ -94,4 +96,42 @@ enum MarginType {
   kNoMargins,
   kPrintableAreaMargins,
   kCustomMargins,
+};
+
+// Allowed printing modes as a bitmask.
+// This is used in pref file and should never change.
+[Stable, Extensible, EnableIf=is_chromeos]
+enum ColorModeRestriction {
+  [Default] kUnset = 0x0,
+  kMonochrome = 0x1,
+  kColor = 0x2,
+};
+
+// Allowed duplex modes as a bitmask.
+// This is used in pref file and should never change.
+[Stable, Extensible, EnableIf=is_chromeos]
+enum DuplexModeRestriction {
+  [Default] kUnset = 0x0,
+  kSimplex = 0x1,
+  kLongEdge = 0x2,
+  kShortEdge = 0x4,
+  kDuplex = 0x6,
+};
+
+// Allowed PIN printing modes.
+// This is used in pref file and should never change.
+[Stable, Extensible, EnableIf=is_chromeos]
+enum PinModeRestriction {
+  [Default] kUnset = 0,
+  kPin = 1,
+  kNoPin = 2,
+};
+
+// Result codes distilled from system error codes.
+enum ResultCode {
+  kSuccess,
+  // Generic code for uncategorized errors.
+  kFailed,
+  // Insufficient permissions to perform the operation.
+  kAccessDenied,
 };

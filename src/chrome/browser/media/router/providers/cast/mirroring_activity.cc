@@ -15,13 +15,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/enum_table.h"
@@ -33,7 +34,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using blink::mojom::PresentationConnectionMessagePtr;
 using cast_channel::Result;
@@ -86,11 +89,11 @@ const std::string GetMirroringNamespace(const base::Value& message) {
 // usually ignored here, because mirroring typically only happens with a special
 // URL that includes the tab ID it needs, which should be the same as the tab ID
 // selected by the media router.
-base::Optional<MirroringActivity::MirroringType> GetMirroringType(
+absl::optional<MirroringActivity::MirroringType> GetMirroringType(
     const MediaRoute& route,
     int target_tab_id) {
   if (!route.is_local())
-    return base::nullopt;
+    return absl::nullopt;
 
   const auto source = route.media_source();
   if (source.IsTabMirroringSource() || source.IsLocalFileSource())
@@ -115,7 +118,7 @@ base::Optional<MirroringActivity::MirroringType> GetMirroringType(
         return MirroringActivity::MirroringType::kTab;
       } else {
         NOTREACHED() << "Non-mirroring Cast app: " << source;
-        return base::nullopt;
+        return absl::nullopt;
       }
     } else if (source.url().SchemeIsHTTPOrHTTPS()) {
       return MirroringActivity::MirroringType::kOffscreenTab;
@@ -123,7 +126,7 @@ base::Optional<MirroringActivity::MirroringType> GetMirroringType(
   }
 
   NOTREACHED() << "Invalid source: " << source;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -265,16 +268,6 @@ void MirroringActivity::Send(mirroring::mojom::CastMessagePtr message) {
                      weak_ptr_factory_.GetWeakPtr(), route().media_route_id()));
 }
 
-void MirroringActivity::SendMessageToClient(
-    const std::string& client_id,
-    blink::mojom::PresentationConnectionMessagePtr message) {
-  // A client exists if this is a site-initiated mirroring session. Given client
-  // ID is a Cast SDK concept, the client may not have an ID if it joined by
-  // directly using the Presentation API, and we wouldn't be able to distinguish
-  // them. We also do not expect the mirroring receiver to send any messages, so
-  // we drop them.
-}
-
 void MirroringActivity::OnAppMessage(
     const cast::channel::CastMessage& message) {
   if (!route_.is_local())
@@ -328,6 +321,23 @@ void MirroringActivity::OnInternalMessage(
 void MirroringActivity::CreateMediaController(
     mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer) {}
+
+std::string MirroringActivity::GetRouteDescription(
+    const CastSession& session) const {
+  if (!mirroring_type_) {
+    return CastActivity::GetRouteDescription(session);
+  }
+  switch (*mirroring_type_) {
+    case MirroringActivity::MirroringType::kTab:
+      return l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_CASTING_TAB);
+    case MirroringActivity::MirroringType::kDesktop:
+      return l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_CASTING_DESKTOP);
+    case MirroringActivity::MirroringType::kOffscreenTab:
+      return l10n_util::GetStringFUTF8(
+          IDS_MEDIA_ROUTER_PRESENTATION_ROUTE_DESCRIPTION,
+          base::UTF8ToUTF16(route().media_source().url().host()));
+  }
+}
 
 void MirroringActivity::HandleParseJsonResult(
     const std::string& route_id,

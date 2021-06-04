@@ -8,14 +8,15 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace safe_browsing {
 
@@ -282,7 +283,7 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
       base::DictionaryValue::From(content_settings->GetWebsiteSetting(
           hostname, GURL(), contents_setting_type, nullptr));
 
-  if (!cache_dictionary || cache_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->DictEmpty())
     return T::VERDICT_TYPE_UNSPECIFIED;
 
   base::Value* verdict_dictionary =
@@ -377,9 +378,9 @@ typename T::VerdictType GetMostMatchingCachedVerdictWithHostAndPathMatching(
 VerdictCacheManager::VerdictCacheManager(
     history::HistoryService* history_service,
     scoped_refptr<HostContentSettingsMap> content_settings)
-    : stored_verdict_count_password_on_focus_(base::nullopt),
-      stored_verdict_count_password_entry_(base::nullopt),
-      stored_verdict_count_real_time_url_check_(base::nullopt),
+    : stored_verdict_count_password_on_focus_(absl::nullopt),
+      stored_verdict_count_password_entry_(absl::nullopt),
+      stored_verdict_count_real_time_url_check_(absl::nullopt),
       content_settings_(content_settings) {
   if (history_service)
     history_service_observation_.Observe(history_service);
@@ -387,7 +388,8 @@ VerdictCacheManager::VerdictCacheManager(
     ScheduleNextCleanUpAfterInterval(
         base::TimeDelta::FromSeconds(kCleanUpIntervalInitSecond));
   }
-  CacheArtificialVerdict();
+  CacheArtificialRealTimeUrlVerdict();
+  CacheArtificialPhishGuardVerdict();
 }
 
 void VerdictCacheManager::Shutdown() {
@@ -432,7 +434,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
   // Increases stored verdict count if we haven't seen this cache expression
   // before.
   if (!verdict_dictionary->FindKey(GetCacheExpression(verdict))) {
-    base::Optional<size_t>* stored_verdict_count =
+    absl::optional<size_t>* stored_verdict_count =
         trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
             ? &stored_verdict_count_password_on_focus_
             : &stored_verdict_count_password_entry_;
@@ -471,7 +473,7 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
   DCHECK(content_settings_);
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
-  base::Optional<size_t>* stored_verdict_count =
+  absl::optional<size_t>* stored_verdict_count =
       trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
           ? &stored_verdict_count_password_on_focus_
           : &stored_verdict_count_password_entry_;
@@ -815,7 +817,7 @@ size_t VerdictCacheManager::GetPhishGuardVerdictCountForURL(
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
           url, GURL(), ContentSettingsType::PASSWORD_PROTECTION, nullptr));
-  if (!cache_dictionary || cache_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->DictEmpty())
     return 0;
 
   int verdict_cnt = 0;
@@ -841,14 +843,14 @@ size_t VerdictCacheManager::GetRealTimeUrlCheckVerdictCountForURL(
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
           url, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
           nullptr));
-  if (!cache_dictionary || cache_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->DictEmpty())
     return 0;
   base::Value* verdict_dictionary =
       cache_dictionary->FindKey(kRealTimeUrlCacheKey);
   return verdict_dictionary ? verdict_dictionary->DictSize() : 0;
 }
 
-void VerdictCacheManager::CacheArtificialVerdict() {
+void VerdictCacheManager::CacheArtificialRealTimeUrlVerdict() {
   std::string phishing_url_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kUnsafeUrlFlag);
@@ -875,6 +877,32 @@ void VerdictCacheManager::CacheArtificialVerdict() {
                                      {history::URLRow(artificial_unsafe_url)});
   CacheRealTimeUrlVerdict(artificial_unsafe_url, response, base::Time::Now(),
                           /*store_old_cache=*/false);
+}
+
+void VerdictCacheManager::CacheArtificialPhishGuardVerdict() {
+  std::string phishing_url_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kArtificialCachedPhishGuardVerdictFlag);
+  if (phishing_url_string.empty())
+    return;
+
+  GURL artificial_unsafe_url(phishing_url_string);
+  if (!artificial_unsafe_url.is_valid())
+    return;
+
+  has_artificial_unsafe_url_ = true;
+
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+
+  LoginReputationClientResponse verdict;
+  verdict.set_verdict_type(LoginReputationClientResponse::PHISHING);
+  verdict.set_cache_expression(artificial_unsafe_url.GetContent());
+  verdict.set_cache_duration_sec(3000);
+  CachePhishGuardVerdict(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                         reused_password_account_type, verdict,
+                         base::Time::Now());
 }
 
 void VerdictCacheManager::StopCleanUpTimerForTesting() {

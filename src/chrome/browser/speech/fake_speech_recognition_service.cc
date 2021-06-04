@@ -4,6 +4,8 @@
 
 #include "chrome/browser/speech/fake_speech_recognition_service.h"
 
+#include <utility>
+
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +23,7 @@ void FakeSpeechRecognitionService::Create(
 void FakeSpeechRecognitionService::BindRecognizer(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
   recognizer_receiver_.Bind(std::move(receiver));
   recognizer_client_remote_.Bind(std::move(client));
@@ -33,6 +36,7 @@ void FakeSpeechRecognitionService::BindRecognizer(
 void FakeSpeechRecognitionService::BindAudioSourceFetcher(
     mojo::PendingReceiver<media::mojom::AudioSourceFetcher> fetcher_receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
   fetcher_receiver_.Bind(std::move(fetcher_receiver));
   recognizer_client_remote_.Bind(std::move(client));
@@ -56,7 +60,7 @@ void FakeSpeechRecognitionService::Start(
 void FakeSpeechRecognitionService::Stop() {
   capturing_audio_ = false;
   device_id_ = "";
-  audio_parameters_ = base::nullopt;
+  audio_parameters_ = absl::nullopt;
 }
 
 void FakeSpeechRecognitionService::SendAudioToSpeechRecognitionService(
@@ -69,7 +73,15 @@ void FakeSpeechRecognitionService::SendSpeechRecognitionResult(
   ASSERT_TRUE(recognizer_client_remote_.is_bound());
   EXPECT_TRUE(capturing_audio_ || has_received_audio_);
   recognizer_client_remote_->OnSpeechRecognitionRecognitionEvent(
-      std::move(result));
+      std::move(result),
+      base::BindOnce(&FakeSpeechRecognitionService::
+                         OnSpeechRecognitionRecognitionEventCallback,
+                     base::Unretained(this)));
+}
+
+void FakeSpeechRecognitionService::OnSpeechRecognitionRecognitionEventCallback(
+    bool success) {
+  capturing_audio_ = success;
 }
 
 void FakeSpeechRecognitionService::SendSpeechRecognitionError() {
@@ -90,7 +102,7 @@ void FakeSpeechRecognitionService::OnRecognizerClientDisconnected() {
   recognizer_receiver_.reset();
   capturing_audio_ = false;
   device_id_ = "";
-  audio_parameters_ = base::nullopt;
+  audio_parameters_ = absl::nullopt;
 }
 
 }  // namespace speech

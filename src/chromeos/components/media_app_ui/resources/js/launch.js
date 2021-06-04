@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as error_reporter from './error_reporter.js';
+import {assertCast, MessagePipe} from './message_pipe.m.js';
+import {DeleteFileMessage, FileContext, LoadFilesMessage, Message, NavigateMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.m.js';
+import {mediaAppPageHandler} from './mojo_api_bootstrap.js';
+
+const EMPTY_WRITE_ERROR_NAME = 'EmptyWriteError';
+
 /**
  * Sort order for files in the navigation ring.
  * @enum
@@ -119,6 +126,9 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   try {
     await saveBlobToFile(originalHandle, overwrite.blob);
   } catch (/** @type {!DOMException|!Error} */ e) {
+    if (e.name === EMPTY_WRITE_ERROR_NAME) {
+      throw e;
+    }
     // TODO(b/160843424): Collect UMA.
     console.warn('Showing a picker due to', e);
     return pickFileForFailedOverwrite(originalHandle.name, e.name, overwrite);
@@ -152,13 +162,14 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
       assertFileAndDirectoryMutable(deleteMsg.token, 'Delete');
 
   if (!(await isHandleInCurrentDirectory(handle))) {
-    return {deleteResult: DeleteResult.FILE_MOVED};
+    // removeEntry() silently "succeeds" in this case, but that gives poor UX.
+    console.warn(`"${handle.name}" not found in the last opened folder.`);
+    const error = new Error('Ignoring delete request: file not found');
+    error.name = 'NotFoundError';
+    throw error;
   }
 
-  // Get the name from the file reference. Handles file renames.
-  const currentFilename = (await handle.getFile()).name;
-
-  await directory.removeEntry(currentFilename);
+  await directory.removeEntry(handle.name);
 
   // Remove the file that was deleted.
   currentFiles.splice(entryIndex, 1);
@@ -167,8 +178,6 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   // `currentFiles[entryIndex]`, where `entryIndex` was previously the index of
   // the deleted file.
   await advance(0);
-
-  return {deleteResult: DeleteResult.SUCCESS};
 });
 
 /** Handler to rename the currently focused file. */
@@ -212,7 +221,6 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   // Remove the entry for `originalFile` in current files, replace it with a
   // FileDescriptor for the renamed file.
 
-  const renamedFile = await renamedFileHandle.getFile();
   // Ensure the file is still in `currentFiles` after all the above `awaits`. If
   // missing it means either new files have loaded (or tried to), see
   // b/164985809.
@@ -226,7 +234,7 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
 
   currentFiles.splice(originalFileIndex, 1, {
     token: renameMsg.token,
-    file: renamedFile,
+    file: null,
     handle: renamedFileHandle,
     inCurrentDirectory: true
   });
@@ -333,17 +341,20 @@ function pickWritableFile(suggestedName, mimeType) {
   // Strip non-alphnumeric characters: showSaveFilePicker() will reject them if
   // they appear in the extension. See b/175625372. This regex should be
   // consistent with IsValidSuffixCodePoint() in global_file_system_access.cc.
-  // The extension also can not be empty, so provide a dummy backup since we'd
-  // be renaming anyway if all characters are stripped.
-  const extension = '.' + (suffix.replaceAll(/[^A-Za-z0-9.+]+/g, '') || 'ext');
-  // TODO(b/161087799): Add a default filename when it's supported by the
-  // File System Access API.
+  // The extension also cannot be empty, so provide a dummy backup since we'd
+  // be renaming anyway if all characters are stripped. showSaveFilePicker()
+  // also rejects extensions longer than 16 characters (including the .).
+  let extension = '.' + (suffix.replaceAll(/[^A-Za-z0-9.+]+/g, '') || 'ext');
+  extension = extension.substr(0, 16);
+  // TODO(b/162541613): Add a `startIn` option when the file token is plumbed
+  // through from receiver.js.
   /** @type {!FilePickerOptions} */
   const options = {
     types: [
       {description: extension, accept: {[mimeType]: [extension]}},
     ],
     excludeAcceptAllOption: true,
+    suggestedName,
   };
   // This may throw an error, but we can handle and recover from it on the
   // unprivileged side.
@@ -472,9 +483,15 @@ function getMimeTypeFromFilename(filename) {
     'xslt': 'text/xml',
     'mpeg': 'video/mpeg',
     'mpg': 'video/mpeg',
-    // Add .mkv explicitly because it is not a web-supported type, but is in
-    // common use on ChromeOS.
-    'mkv': 'video/x-matroska'
+
+    // Add more video file types. These are not web-supported types, but are
+    // supported on ChromeOS, and have file handlers in media_web_app_info.cc.
+    'mkv': 'video/x-matroska',
+    '3gp': 'video/3gpp',
+    'mov': 'video/quicktime',
+    'avi': 'video/x-msvideo',
+    'mpeg4': 'video/mp4',
+    'mpg4': 'video/mp4',
   };
 
   const fileParts = filename.split('.');
@@ -513,6 +530,13 @@ function fileHandleForToken(token) {
  * @return {!Promise<undefined>}
  */
 async function saveBlobToFile(handle, data) {
+  if (data.size === 0) {
+    // Bugs or error states in the app could cause an unexpected write of zero
+    // bytes to a file, which could cause data loss. Reject it here.
+    const error = new Error('saveBlobToFile(): Refusing to write zero bytes.');
+    error.name = EMPTY_WRITE_ERROR_NAME;
+    throw error;
+  }
   const writer = await handle.createWritable();
   await writer.write(data);
   await writer.truncate(data.size);
@@ -711,8 +735,17 @@ async function getFileHandleFromCurrentDirectory(
   try {
     return (
         await currentDirectoryHandle.getFileHandle(filename, {create: false}));
-  } catch (/** @type {?Object} */ e) {
+  } catch (/** @type {!DOMException|!Error} */ e) {
     if (!suppressError) {
+      // Some filenames (e.g. "thumbs.db") can't be opened (or deleted) by
+      // filename. TypeError doesn't give a good error message in the app, so
+      // convert to a new Error.
+      if (e.name === 'TypeError' && e.message === 'Name is not allowed.') {
+        console.warn(e);  // Warn so a crash report is not generated.
+        throw new DOMException(
+            'File has a reserved name and can not be opened',
+            'InvalidModificationError');
+      }
       console.error(e);
     }
     return null;
@@ -1191,3 +1224,45 @@ const guest = assertCast(
 guest.addEventListener('load', () => {
   guest.focus();
 });
+
+export const TEST_ONLY = {
+  Message,
+  SortOrder,
+  advance,
+  currentDirectoryHandle,
+  currentFiles,
+  fileHandleForToken,
+  globalLaunchNumber,
+  guestMessagePipe,
+  launchConsumer,
+  launchWithDirectory,
+  loadOtherRelatedFiles,
+  pickWritableFile,
+  processOtherFilesInDirectory,
+  sendFilesToGuest,
+  setCurrentDirectory,
+  sortOrder,
+  tokenGenerator,
+  tokenMap,
+  mediaAppPageHandler,
+  error_reporter,
+  getGlobalLaunchNumber: () => globalLaunchNumber,
+  incrementLaunchNumber: () => ++globalLaunchNumber,
+  setCurrentDirectoryHandle: d => {
+    currentDirectoryHandle = d;
+  },
+  setSortOrder: s => {
+    sortOrder = s;
+  },
+  getEntryIndex: () => entryIndex,
+  setEntryIndex: i => {
+    entryIndex = i;
+  },
+};
+
+// Small, auxiliary file that adds hooks to support test cases relying on the
+// "real" app context (e.g. for stack traces).
+import './app_context_test_support.js';
+
+// Expose `advance()` for MediaAppIntegrationTest.FileOpenCanTraverseDirectory.
+window['advance'] = advance;

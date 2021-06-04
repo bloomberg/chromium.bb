@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "build/chromeos_buildflags.h"
@@ -22,11 +21,14 @@
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using web_app::AppId;
 
@@ -39,7 +41,7 @@ AppId InstallTestWebApp(Profile* profile) {
   web_app_info->start_url = example_url;
   web_app_info->scope = example_url;
   web_app_info->open_as_window = true;
-  return web_app::InstallWebApp(profile, std::move(web_app_info));
+  return web_app::test::InstallWebApp(profile, std::move(web_app_info));
 }
 
 }  // namespace
@@ -71,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
 
   base::RunLoop run_loop;
   bool was_uninstalled = false;
-  dialog->ConfirmUninstall(app_id,
+  dialog->ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
                            base::BindLambdaForTesting([&](bool uninstalled) {
                              was_uninstalled = uninstalled;
                              run_loop.Quit();
@@ -94,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
 
   base::RunLoop run_loop;
   bool was_uninstalled = false;
-  dialog->ConfirmUninstall(app_id,
+  dialog->ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
                            base::BindLambdaForTesting([&](bool uninstalled) {
                              was_uninstalled = uninstalled;
                              run_loop.Quit();
@@ -125,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
 
   base::RunLoop run_loop;
   bool was_uninstalled = false;
-  dialog->ConfirmUninstall(app_id,
+  dialog->ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
                            base::BindLambdaForTesting([&](bool uninstalled) {
                              was_uninstalled = uninstalled;
                              run_loop.Quit();
@@ -149,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   bool was_uninstalled = false;
 
   dialog.SetDialogShownCallbackForTesting(callback);
-  dialog.ConfirmUninstall(app_id,
+  dialog.ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
                           base::BindLambdaForTesting([&](bool uninstalled) {
                             was_uninstalled = uninstalled;
                             callback.Run();
@@ -173,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   bool was_uninstalled = false;
 
   dialog.SetDialogShownCallbackForTesting(callback);
-  dialog.ConfirmUninstall(app_id,
+  dialog.ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
                           base::BindLambdaForTesting([&](bool uninstalled) {
                             was_uninstalled = uninstalled;
                             callback.Run();
@@ -202,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
 
   {
     base::RunLoop run_loop;
-    dialog->ConfirmUninstall(app_id, base::DoNothing());
+    dialog->ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
+                             base::DoNothing());
     run_loop.RunUntilIdle();
   }
 }
@@ -220,7 +223,8 @@ class WebAppUninstallDialogViewInteractiveBrowserTest
     base::RunLoop run_loop;
     dialog_->SetDialogShownCallbackForTesting(run_loop.QuitClosure());
 
-    dialog_->ConfirmUninstall(app_id, base::DoNothing());
+    dialog_->ConfirmUninstall(app_id, webapps::WebappUninstallSource::kAppMenu,
+                              base::DoNothing());
 
     run_loop.Run();
   }

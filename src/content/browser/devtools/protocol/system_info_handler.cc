@@ -26,6 +26,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/base/video_codecs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "gpu/config/gpu_util.h"
 #endif
@@ -230,7 +231,8 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   enumerator.EndAuxAttributes();
 
   std::unique_ptr<base::DictionaryValue> base_feature_status =
-      GetFeatureStatus();
+      base::DictionaryValue::From(
+          std::make_unique<base::Value>(GetFeatureStatus()));
   std::unique_ptr<protocol::DictionaryValue> feature_status =
       protocol::DictionaryValue::cast(
           protocol::toProtocolValue(base_feature_status.get(), 1000));

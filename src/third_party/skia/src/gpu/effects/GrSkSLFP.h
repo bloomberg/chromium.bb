@@ -14,7 +14,6 @@
 #include "src/gpu/GrFragmentProcessor.h"
 #include <atomic>
 
-class GrContext_Base;
 class GrShaderCaps;
 class SkData;
 class SkRuntimeEffect;
@@ -26,8 +25,7 @@ public:
      * for all of the 'uniform' variables in the SkSL source. The layout of the uniforms blob is
      * dictated by the SkRuntimeEffect.
      */
-    static std::unique_ptr<GrSkSLFP> Make(GrContext_Base* context,
-                                          sk_sp<SkRuntimeEffect> effect,
+    static std::unique_ptr<GrSkSLFP> Make(sk_sp<SkRuntimeEffect> effect,
                                           const char* name,
                                           sk_sp<SkData> uniforms);
 
@@ -38,10 +36,7 @@ public:
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
 private:
-    using ShaderErrorHandler = GrContextOptions::ShaderErrorHandler;
-
-    GrSkSLFP(ShaderErrorHandler* shaderErrorHandler, sk_sp<SkRuntimeEffect> effect,
-             const char* name, sk_sp<SkData> uniforms);
+    GrSkSLFP(sk_sp<SkRuntimeEffect> effect, const char* name, sk_sp<SkData> uniforms);
 
     GrSkSLFP(const GrSkSLFP& other);
 
@@ -52,8 +47,6 @@ private:
     bool onIsEqual(const GrFragmentProcessor&) const override;
 
     SkPMColor4f constantOutputForConstantInput(const SkPMColor4f&) const override;
-
-    ShaderErrorHandler*       fShaderErrorHandler;
 
     sk_sp<SkRuntimeEffect> fEffect;
     const char*            fName;
@@ -72,8 +65,10 @@ class GrRuntimeFPBuilder : public SkRuntimeEffectBuilder<std::unique_ptr<GrFragm
 public:
     ~GrRuntimeFPBuilder();
 
-    template <const char* CODE> static GrRuntimeFPBuilder Make() {
-        static const SkRuntimeEffect::Result gResult = SkRuntimeEffect::Make(SkString(CODE));
+    // NOTE: We use a static variable as a cache. CODE and MAKE must remain template parameters.
+    template <const char* CODE, SkRuntimeEffect::Result (*MAKE)(SkString sksl)>
+    static GrRuntimeFPBuilder Make() {
+        static const SkRuntimeEffect::Result gResult = MAKE(SkString(CODE));
 #ifdef SK_DEBUG
         if (!gResult.effect) {
             SK_ABORT("Code failed: %s", gResult.errorText.c_str());
@@ -82,7 +77,7 @@ public:
         return GrRuntimeFPBuilder(gResult.effect);
     }
 
-    std::unique_ptr<GrFragmentProcessor> makeFP(GrRecordingContext*);
+    std::unique_ptr<GrFragmentProcessor> makeFP();
 
 private:
     explicit GrRuntimeFPBuilder(sk_sp<SkRuntimeEffect>);

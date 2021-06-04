@@ -15,7 +15,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/view.h"
 
-class Profile;
+class ChromePageInfoUiDelegate;
+class PageInfoSecurityContentView;
+class PageInfoNavigationHandler;
 
 // The main view of the page info, contains security information, permissions
 // and  site-related settings. This is used in the experimental
@@ -27,12 +29,10 @@ class PageInfoMainView : public views::View,
  public:
   // The width of the column size for permissions and chosen object icons.
   static constexpr int kIconColumnWidth = 16;
-  // The column set id of the permissions table for |permissions_view_|.
-  static constexpr int kPermissionColumnSetId = 0;
 
   PageInfoMainView(PageInfo* presenter,
-                   PageInfoUiDelegate* ui_delegate,
-                   Profile* profile);
+                   ChromePageInfoUiDelegate* ui_delegate,
+                   PageInfoNavigationHandler* navigation_handler);
   ~PageInfoMainView() override;
 
   enum PageInfoBubbleViewID {
@@ -47,6 +47,7 @@ class PageInfoMainView : public views::View,
     VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION,
     VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE,
     VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION,
   };
 
   // PageInfoUI implementations.
@@ -57,7 +58,6 @@ class PageInfoMainView : public views::View,
   void SetPageFeatureInfo(const PageFeatureInfo& info) override;
 
   void LayoutPermissionsLikeUiRow(views::GridLayout* layout,
-                                  bool is_list_empty,
                                   int column_id);
 
   gfx::Size CalculatePreferredSize() const override;
@@ -74,8 +74,9 @@ class PageInfoMainView : public views::View,
   const std::u16string details_text() const { return details_text_; }
 
  private:
-  // Creates the contents of the |site_settings_view_|.
-  std::unique_ptr<views::View> CreateSiteSettingsView() WARN_UNUSED_RESULT;
+  // Creates a view with vertical box layout that will used a container for
+  // other views.
+  std::unique_ptr<views::View> CreateContainerView() WARN_UNUSED_RESULT;
 
   // Creates bubble header view for this page, contains the title and the close
   // button.
@@ -89,21 +90,17 @@ class PageInfoMainView : public views::View,
   // be alive to finish handling the mouse or keyboard click.
   void HandleMoreInfoRequestAsync(int view_id);
 
-  void ResetDecisionsClicked();
-
-  void SecurityDetailsClicked(const ui::Event& event);
-
-  PageInfoUI::SecurityDescriptionType GetSecurityDescriptionType() const;
-
-  void SetSecurityDescriptionType(
-      const PageInfoUI::SecurityDescriptionType& type);
-
   PageInfo* presenter_;
 
-  PageInfoUiDelegate* ui_delegate_;
+  ChromePageInfoUiDelegate* ui_delegate_;
+
+  PageInfoNavigationHandler* navigation_handler_;
 
   // The raw details of the status of the identity check for this site.
   std::u16string details_text_ = std::u16string();
+
+  // The button that opens the "Connection" subpage.
+  PageInfoHoverButton* connection_button_ = nullptr;
 
   // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_ = nullptr;
@@ -111,23 +108,20 @@ class PageInfoMainView : public views::View,
   // The button that opens the "Cookies" dialog.
   PageInfoHoverButton* cookie_button_ = nullptr;
 
-  // The button that opens the "Certificate" dialog.
-  PageInfoHoverButton* certificate_button_ = nullptr;
-
   // The button that opens up "Site Settings".
-  views::View* site_settings_link = nullptr;
+  views::View* site_settings_link_ = nullptr;
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_ = nullptr;
+
+  // The view that contains `SecurityInformationView` and a certificate button.
+  PageInfoSecurityContentView* security_content_view_ = nullptr;
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
   // The view that contains ui related to features on a page, like a presenting
   // VR page.
   views::View* page_feature_info_view_ = nullptr;
 #endif
-
-  // The certificate provided by the site, if one exists.
-  scoped_refptr<net::X509Certificate> certificate_;
 
   // These rows bundle together all the |View|s involved in a single row of the
   // permissions section, and keep those views updated when the underlying
@@ -136,12 +130,7 @@ class PageInfoMainView : public views::View,
 
   views::Label* title_ = nullptr;
 
-  SecurityInformationView* security_view_ = nullptr;
-
-  // TODO(olesiamarukhno): Was used for tests, will update it after redesigning
-  // moves forward.
-  PageInfoUI::SecurityDescriptionType security_description_type_ =
-      PageInfoUI::SecurityDescriptionType::CONNECTION;
+  views::View* security_container_view_ = nullptr;
 
   base::WeakPtrFactory<PageInfoMainView> weak_factory_{this};
 };

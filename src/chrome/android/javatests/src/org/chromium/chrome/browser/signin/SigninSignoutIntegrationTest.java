@@ -12,9 +12,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.when;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -28,6 +29,9 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -45,9 +49,10 @@ import org.chromium.chrome.browser.signin.services.SigninMetricsUtilsJni;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -83,6 +88,12 @@ public class SigninSignoutIntegrationTest {
     @Rule
     public final JniMocker mocker = new JniMocker();
 
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
+    @Mock
+    private ExternalAuthUtils mExternalAuthUtilsMock;
+
     @Mock
     private SigninMetricsUtils.Natives mSigninMetricsUtilsNativeMock;
 
@@ -95,7 +106,6 @@ public class SigninSignoutIntegrationTest {
 
     @Before
     public void setUp() {
-        initMocks(this);
         mocker.mock(SigninMetricsUtilsJni.TEST_HOOKS, mSigninMetricsUtilsNativeMock);
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -113,18 +123,20 @@ public class SigninSignoutIntegrationTest {
     @Test
     @LargeTest
     public void testSignIn() {
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
         CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccountAndWaitForSeeding(
                 AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
-        SyncConsentActivity syncConsentActivity = ActivityUtils.waitForActivity(
+        SyncConsentActivity syncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
-                    SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
+                    SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
                             mActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS,
                             AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
                 });
         assertSignedOut();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { syncConsentActivity.findViewById(R.id.positive_button).performClick(); });
-        CriteriaHelper.pollUiThread(this::assertSignedIn);
+        CriteriaHelper.pollUiThread(mSigninManager.getIdentityManager()::hasPrimaryAccount);
         verify(mSignInStateObserverMock).onSignedIn();
         verify(mSignInStateObserverMock, never()).onSignedOut();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

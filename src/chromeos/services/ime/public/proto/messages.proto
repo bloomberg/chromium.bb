@@ -42,6 +42,8 @@ message PublicMessage {
     HandleAutocorrect handle_autocorrect = 14;
     SuggestionsRequest suggestions_request = 15;
     SuggestionsResponse suggestions_response = 16;
+    DisplaySuggestions display_suggestions = 17;
+    RecordUkm record_ukm = 18;
   }
 }
 
@@ -217,11 +219,21 @@ message CompletionCandidate {
   optional float normalized_score = 2;
 }
 
+// Protobuf version of SuggestionMode in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+enum SuggestionMode {
+  SUGGESTION_MODE_UNSPECIFIED = 0;
+  SUGGESTION_MODE_COMPLETION = 1;
+  SUGGESTION_MODE_PREDICTION = 2;
+}
+
 // Protobuf version of SuggestionType in
 // chromeos/services/ime/public/mojom/input_engine.mojom
 enum SuggestionType {
-  COMPLETION = 0;
-  PREDICTION = 1;
+  SUGGESTION_TYPE_UNSPECIFIED = 0;
+  SUGGESTION_TYPE_ASSISTIVE_PERSONAL_INFO = 1;
+  SUGGESTION_TYPE_ASSISTIVE_EMOJI = 2;
+  SUGGESTION_TYPE_MULTI_WORD = 3;
 }
 
 // Protobuf version of SuggestionsRequest in
@@ -229,24 +241,44 @@ enum SuggestionType {
 message SuggestionsRequest {
   optional string text = 1;
   repeated CompletionCandidate completion_candidates = 2;
-  optional SuggestionType suggestion_type = 3;
-}
-
-// Protobuf version of MultiWordSuggestionCandidate in
-// chromeos/services/ime/public/mojom/input_engine.mojom
-message MultiWordSuggestionCandidate {
-  optional string text = 1;
-  optional float normalized_score = 2;
+  optional SuggestionMode suggestion_mode = 3;
 }
 
 // Protobuf version of SuggestionCandidate in
 // chromeos/services/ime/public/mojom/input_engine.mojom
 message SuggestionCandidate {
-  oneof candidate { MultiWordSuggestionCandidate multi_word = 1; }
+  optional SuggestionMode mode = 1;
+  optional SuggestionType type = 2;
+  optional string text = 3;
 }
 
 // Protobuf version of SuggestionsResponse in
 // chromeos/services/ime/public/mojom/input_engine.mojom
 message SuggestionsResponse {
   repeated SuggestionCandidate candidates = 1;
+}
+
+// Protobuf version of DisplaySuggestions in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message DisplaySuggestions {
+  repeated SuggestionCandidate candidates = 1;
+}
+
+// Protobuf version of InputEngine::RecordUkm in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message RecordUkm {
+  oneof entry { NonCompliantApiMetric non_compliant_api = 1; }
+}
+
+// Protobuf version of NonCompliantApiMetric in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message NonCompliantApiMetric {
+  enum InputMethodApiOperation {
+    OPERATION_UNSPECIFIED = 0;  // Reserved
+    OPERATION_COMMIT_TEXT = 1;
+    OPERATION_SET_COMPOSITION_TEXT = 2;
+    OPERATION_DELETE_SURROUNDING_TEXT = 3;
+  }
+
+  optional InputMethodApiOperation non_compliant_operation = 1;
 }

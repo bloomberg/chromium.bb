@@ -583,7 +583,7 @@ void AccessibilityWinBrowserTest::CheckTextAtOffset(
     LONG expected_start_offset,
     LONG expected_end_offset,
     const std::wstring& expected_text) {
-  testing::Message message;
+  ::testing::Message message;
   message << "While checking for \'" << expected_text << "\' at "
           << expected_start_offset << '-' << expected_end_offset << '.';
   SCOPED_TRACE(message);
@@ -988,8 +988,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the active descendant of the radio group
-  waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus));
+  waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
   ExecuteScript(
       u"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
   waiter->WaitForNotification();
@@ -3683,11 +3683,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Place an e acute, and two emoticons in the text field.
-  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+  ExecuteScript(
+      uR"SCRIPT(
       const input = document.querySelector('input');
       input.value =
           'e\u0301\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69\uD83D\uDC36';
-      )SCRIPT"));
+      )SCRIPT");
   waiter.WaitForNotification();
 
   LONG n_characters;
@@ -4035,10 +4036,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Add a blank line at the end of the textarea.
-  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+  ExecuteScript(
+      uR"SCRIPT(
       const textarea = document.querySelector('textarea');
       textarea.value += '\n';
-      )SCRIPT"));
+      )SCRIPT");
   waiter.WaitForNotification();
 
   // The second last line should have an additional trailing newline. Also,
@@ -4583,13 +4585,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
       <!DOCTYPE html>
       <html>
         <body>
-          <div aria-label='not'>
+          <div aria-label='not' role='group'>
             not scrollable
           </div>
-          <div style='width:100px; overflow:auto' aria-label='x'>
+          <div style='width:100px; overflow:auto' aria-label='x' role='group'>
               <div style='width:200px; height:100px'></div>
           </div>
-          <div style='height:100px; overflow:auto' aria-label='y'>
+          <div style='height:100px; overflow:auto' aria-label='y' role='group'>
               <div style='width:100px; height:200px'></div>
           </div>
         </body>
@@ -4609,7 +4611,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
                                               {"y", false, true, 0.0, 50.0}};
   for (auto& expected : all_expected) {
     BrowserAccessibility* browser_accessibility =
-        FindNode(ax::mojom::Role::kGenericContainer, expected.node_name);
+        FindNode(ax::mojom::Role::kGroup, expected.node_name);
     EXPECT_NE(browser_accessibility, nullptr);
 
     BrowserAccessibilityComWin* browser_accessibility_com_win =

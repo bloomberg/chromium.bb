@@ -101,9 +101,8 @@ XmlDownloader::XmlDownloader(Profile* profile,
     : service_(service), all_done_callback_(std::move(all_done_callback)) {
   file_url_factory_.Bind(
       content::CreateFileURLLoaderFactory(base::FilePath(), nullptr));
-  other_url_factory_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  other_url_factory_ = profile->GetDefaultStoragePartition()
+                           ->GetURLLoaderFactoryForBrowserProcess();
 
   sources_ = service_->GetRulesetSources();
 
@@ -319,10 +318,10 @@ std::vector<RulesetSource> BrowserSwitcherService::GetRulesetSources() {
 void BrowserSwitcherService::LoadRulesFromPrefs() {
   if (prefs().GetExternalSitelistUrl().is_valid())
     sitelist()->SetExternalSitelist(
-        ParsedXml(prefs().GetCachedExternalSitelist(), base::nullopt));
+        ParsedXml(prefs().GetCachedExternalSitelist(), absl::nullopt));
   if (prefs().GetExternalGreylistUrl().is_valid())
     sitelist()->SetExternalGreylist(
-        ParsedXml(prefs().GetCachedExternalGreylist(), base::nullopt));
+        ParsedXml(prefs().GetCachedExternalGreylist(), absl::nullopt));
 }
 
 void BrowserSwitcherService::OnAllRulesetsParsed() {

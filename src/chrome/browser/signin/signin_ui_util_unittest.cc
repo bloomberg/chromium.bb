@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -486,11 +487,14 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
 TEST_F(DiceSigninUiUtilTest,
        ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiProfiles) {
   const char kSecondProfile[] = "SecondProfile";
+  const char16_t kSecondProfile16[] = u"SecondProfile";
   const base::FilePath profile_path =
       profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = kSecondProfile16;
   profile_manager()->profile_attributes_storage()->AddProfile(
-      profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
-      std::u16string(), false, 0, std::string(), EmptyAccountId());
+      std::move(params));
 
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));

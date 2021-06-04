@@ -182,7 +182,7 @@ static double calc_correction_factor(double err_per_mb, int q) {
 
 // Based on history adjust expectations of bits per macroblock.
 static void twopass_update_bpm_factor(AV1_COMP *cpi, int rate_err_tol) {
-  TWO_PASS *twopass = &cpi->twopass;
+  TWO_PASS *twopass = &cpi->ppi->twopass;
   const RATE_CONTROL *const rc = &cpi->rc;
   int err_estimate = rc->rate_error_estimate;
 
@@ -194,14 +194,14 @@ static void twopass_update_bpm_factor(AV1_COMP *cpi, int rate_err_tol) {
   const double max_fac = 1.0 + adj_limit;
 
   if (rc->vbr_bits_off_target && rc->total_actual_bits > 0) {
-    if (cpi->lap_enabled) {
+    if (cpi->ppi->lap_enabled) {
       rate_err_factor =
           (double)twopass->rolling_arf_group_actual_bits /
           DOUBLE_DIVIDE_CHECK((double)twopass->rolling_arf_group_target_bits);
     } else {
       rate_err_factor =
           1.0 - ((double)(rc->vbr_bits_off_target) /
-                 AOMMAX(rc->total_actual_bits, cpi->twopass.bits_left));
+                 AOMMAX(rc->total_actual_bits, cpi->ppi->twopass.bits_left));
     }
 
     rate_err_factor = AOMMAX(min_fac, AOMMIN(max_fac, rate_err_factor));
@@ -209,7 +209,7 @@ static void twopass_update_bpm_factor(AV1_COMP *cpi, int rate_err_tol) {
     // Adjustment is damped if this is 1 pass with look ahead processing
     // (as there are only ever a few frames of data) and for all but the first
     // GOP in normal two pass.
-    if ((twopass->bpm_factor != 1.0) || cpi->lap_enabled) {
+    if ((twopass->bpm_factor != 1.0) || cpi->ppi->lap_enabled) {
       rate_err_factor = 1.0 + ((rate_err_factor - 1.0) / damp_fac);
     }
   }
@@ -302,9 +302,9 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double av_frame_err,
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
-        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
-        av_err_per_mb, cpi->twopass.bpm_factor, rate_err_tol, rc->best_quality,
-        rc->worst_quality);
+        target_norm_bits_per_mb, cpi->common.seq_params->bit_depth,
+        av_err_per_mb, cpi->ppi->twopass.bpm_factor, rate_err_tol,
+        rc->best_quality, rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
     if (rc_cfg->mode == AOM_CQ) q = AOMMAX(q, rc_cfg->cq_level);
@@ -618,8 +618,8 @@ static double calc_kf_frame_boost(const RATE_CONTROL *rc,
   return AOMMIN(frame_boost, max_boost * boost_q_correction);
 }
 
-static int get_projected_gfu_boost(const RATE_CONTROL *rc, int gfu_boost,
-                                   int frames_to_project,
+static int get_projected_gfu_boost(const PRIMARY_RATE_CONTROL *p_rc,
+                                   int gfu_boost, int frames_to_project,
                                    int num_stats_used_for_gfu_boost) {
   /*
    * If frames_to_project is equal to num_stats_used_for_gfu_boost,
@@ -629,7 +629,7 @@ static int get_projected_gfu_boost(const RATE_CONTROL *rc, int gfu_boost,
    */
   if (num_stats_used_for_gfu_boost >= frames_to_project) return gfu_boost;
 
-  double min_boost_factor = sqrt(rc->baseline_gf_interval);
+  double min_boost_factor = sqrt(p_rc->baseline_gf_interval);
   // Get the current tpl factor (number of frames = frames_to_project).
   double tpl_factor = av1_get_gfu_boost_projection_factor(
       min_boost_factor, MAX_GFUBOOST_FACTOR, frames_to_project);
@@ -642,11 +642,13 @@ static int get_projected_gfu_boost(const RATE_CONTROL *rc, int gfu_boost,
 }
 
 #define GF_MAX_BOOST 90.0
+#define GF_MIN_BOOST 50
 #define MIN_DECAY_FACTOR 0.01
-int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
+int av1_calc_arf_boost(const TWO_PASS *twopass,
+                       const PRIMARY_RATE_CONTROL *p_rc, const RATE_CONTROL *rc,
                        FRAME_INFO *frame_info, int offset, int f_frames,
                        int b_frames, int *num_fpstats_used,
-                       int *num_fpstats_required) {
+                       int *num_fpstats_required, int project_gfu_boost) {
   int i;
   GF_GROUP_STATS gf_stats;
   init_gf_stats(&gf_stats);
@@ -719,16 +721,16 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
   }
   arf_boost += (int)boost_score;
 
-  if (num_fpstats_required) {
+  if (project_gfu_boost) {
+    assert(num_fpstats_required != NULL);
+    assert(num_fpstats_used != NULL);
     *num_fpstats_required = f_frames + b_frames;
-    if (num_fpstats_used) {
-      arf_boost = get_projected_gfu_boost(rc, arf_boost, *num_fpstats_required,
-                                          *num_fpstats_used);
-    }
+    arf_boost = get_projected_gfu_boost(p_rc, arf_boost, *num_fpstats_required,
+                                        *num_fpstats_used);
   }
 
-  if (arf_boost < ((b_frames + f_frames) * 50))
-    arf_boost = ((b_frames + f_frames) * 50);
+  if (arf_boost < ((b_frames + f_frames) * GF_MIN_BOOST))
+    arf_boost = ((b_frames + f_frames) * GF_MIN_BOOST);
 
   return arf_boost;
 }
@@ -767,7 +769,8 @@ static int calculate_section_intra_ratio(const FIRSTPASS_STATS *begin,
 static int64_t calculate_total_gf_group_bits(AV1_COMP *cpi,
                                              double gf_group_err) {
   const RATE_CONTROL *const rc = &cpi->rc;
-  const TWO_PASS *const twopass = &cpi->twopass;
+  const PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  const TWO_PASS *const twopass = &cpi->ppi->twopass;
   const int max_bits = frame_max_bits(rc, &cpi->oxcf);
   int64_t total_group_bits;
 
@@ -787,8 +790,8 @@ static int64_t calculate_total_gf_group_bits(AV1_COMP *cpi,
                                : total_group_bits;
 
   // Clip based on user supplied data rate variability limit.
-  if (total_group_bits > (int64_t)max_bits * rc->baseline_gf_interval)
-    total_group_bits = (int64_t)max_bits * rc->baseline_gf_interval;
+  if (total_group_bits > (int64_t)max_bits * p_rc->baseline_gf_interval)
+    total_group_bits = (int64_t)max_bits * p_rc->baseline_gf_interval;
 
   return total_group_bits;
 }
@@ -834,7 +837,8 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
                                               int64_t group_bits,
                                               int frame_type) {
   const AV1_COMMON *const cm = &cpi->common;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
   for (int index = 0; index < seq_params->operating_points_cnt_minus_1 + 1;
@@ -845,7 +849,7 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
     }
 
     const AV1_LEVEL target_level =
-        cpi->level_params.target_seq_level_idx[index];
+        cpi->ppi->level_params.target_seq_level_idx[index];
     if (target_level >= SEQ_LEVELS) continue;
 
     assert(is_valid_seq_level_idx(target_level));
@@ -859,18 +863,20 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
       const int level_enforced_max_kf_bits = target_bits_per_frame * 8;
       if (bits_assigned > level_enforced_max_kf_bits) {
         const int frames = rc->frames_to_key - 1;
-        rc->kf_boost = calculate_boost_factor(
+        p_rc->kf_boost = calculate_boost_factor(
             frames, level_enforced_max_kf_bits, group_bits);
-        bits_assigned = calculate_boost_bits(frames, rc->kf_boost, group_bits);
+        bits_assigned =
+            calculate_boost_bits(frames, p_rc->kf_boost, group_bits);
       }
     } else if (frame_type == 1) {
       // Maximum bits for arf is 4 times the target_bits_per_frame.
       const int level_enforced_max_arf_bits = target_bits_per_frame * 4;
       if (bits_assigned > level_enforced_max_arf_bits) {
-        rc->gfu_boost = calculate_boost_factor(
-            rc->baseline_gf_interval, level_enforced_max_arf_bits, group_bits);
-        bits_assigned = calculate_boost_bits(rc->baseline_gf_interval,
-                                             rc->gfu_boost, group_bits);
+        p_rc->gfu_boost =
+            calculate_boost_factor(p_rc->baseline_gf_interval,
+                                   level_enforced_max_arf_bits, group_bits);
+        bits_assigned = calculate_boost_bits(p_rc->baseline_gf_interval,
+                                             p_rc->gfu_boost, group_bits);
       }
     } else {
       assert(0);
@@ -883,7 +889,9 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
 // Allocate bits to each frame in a GF / ARF group
 double layer_fraction[MAX_ARF_LAYERS + 1] = { 1.0,  0.70, 0.55, 0.60,
                                               0.60, 1.0,  1.0 };
-static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
+static void allocate_gf_group_bits(GF_GROUP *gf_group,
+                                   PRIMARY_RATE_CONTROL *const p_rc,
+                                   RATE_CONTROL *const rc,
                                    int64_t gf_group_bits, int gf_arf_bits,
                                    int key_frame, int use_arf) {
   int64_t total_group_bits = gf_group_bits;
@@ -900,7 +908,7 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   if (use_arf) total_group_bits -= gf_arf_bits;
 
   int num_frames =
-      AOMMAX(1, rc->baseline_gf_interval - (rc->frames_since_key == 0));
+      AOMMAX(1, p_rc->baseline_gf_interval - (rc->frames_since_key == 0));
   base_frame_bits = (int)(total_group_bits / num_frames);
 
   // Check the number of frames in each layer in case we have a
@@ -968,7 +976,7 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
                                 int active_min_gf_interval,
                                 GF_GROUP_STATS *gf_stats) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   InitialDimensions *const initial_dimensions = &cpi->initial_dimensions;
   // Motion breakout threshold for loop below depends on image size.
   const double mv_ratio_accumulator_thresh =
@@ -998,10 +1006,67 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
   // so we can continue for more frames.
   if (((frame_index - cur_start) >= active_max_gf_interval + 1) &&
       !is_almost_static(gf_stats->zero_motion_accumulator,
-                        twopass->kf_zeromotion_pct, cpi->lap_enabled)) {
+                        twopass->kf_zeromotion_pct, cpi->ppi->lap_enabled)) {
     return 1;
   }
   return 0;
+}
+
+static int is_shorter_gf_interval_better(AV1_COMP *cpi,
+                                         EncodeFrameParams *frame_params,
+                                         const EncodeFrameInput *frame_input) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  int gop_length_decision_method = cpi->sf.tpl_sf.gop_length_decision_method;
+  int shorten_gf_interval;
+
+  if (gop_length_decision_method == 2) {
+    // GF group length is decided based on GF boost and tpl stats of ARFs from
+    // base layer, (base+1) layer.
+    shorten_gf_interval =
+        (p_rc->gfu_boost <
+         p_rc->num_stats_used_for_gfu_boost * GF_MIN_BOOST * 1.4) &&
+        !av1_tpl_setup_stats(cpi, 3, frame_params, frame_input);
+  } else {
+    int do_complete_tpl = 1;
+    GF_GROUP *const gf_group = &cpi->ppi->gf_group;
+    int is_temporal_filter_enabled =
+        (rc->frames_since_key > 0 && gf_group->arf_index > -1);
+
+    if (is_temporal_filter_enabled) {
+      int arf_src_index = gf_group->arf_src_offset[gf_group->arf_index];
+      FRAME_UPDATE_TYPE arf_update_type =
+          gf_group->update_type[gf_group->arf_index];
+      int is_forward_keyframe = 0;
+      av1_temporal_filter(cpi, arf_src_index, arf_update_type,
+                          is_forward_keyframe, NULL);
+      aom_extend_frame_borders(&cpi->ppi->alt_ref_buffer,
+                               av1_num_planes(&cpi->common));
+    }
+
+    if (gop_length_decision_method == 1) {
+      // Check if tpl stats of ARFs from base layer, (base+1) layer,
+      // (base+2) layer can decide the GF group length.
+      int gop_length_eval =
+          av1_tpl_setup_stats(cpi, 2, frame_params, frame_input);
+
+      if (gop_length_eval != 2) {
+        do_complete_tpl = 0;
+        shorten_gf_interval = !gop_length_eval;
+      }
+    }
+
+    if (do_complete_tpl) {
+      // Decide GF group length based on complete tpl stats.
+      shorten_gf_interval =
+          !av1_tpl_setup_stats(cpi, 1, frame_params, frame_input);
+      // Tpl stats is reused when the ARF is temporally filtered and GF
+      // interval is not shortened.
+      if (is_temporal_filter_enabled && !shorten_gf_interval)
+        cpi->skip_tpl_setup_stats = 1;
+    }
+  }
+  return shorten_gf_interval;
 }
 
 #define MIN_FWD_KF_INTERVAL 8
@@ -1015,17 +1080,16 @@ const double smooth_filt[SMOOTH_FILT_LEN] = { 0.006, 0.061, 0.242, 0.383,
                                               0.242, 0.061, 0.006 };
 
 // Smooth filter intra_error and coded_error in firstpass stats.
-// If ignore[i]==1, the ith element should not be used in the filtering.
-static void smooth_filter_stats(const FIRSTPASS_STATS *stats, const int *ignore,
-                                int start_idx, int last_idx,
-                                double *filt_intra_err,
+// If stats[i].is_flash==1, the ith element should not be used in the filtering.
+static void smooth_filter_stats(const FIRSTPASS_STATS *stats, int start_idx,
+                                int last_idx, double *filt_intra_err,
                                 double *filt_coded_err) {
   int i, j;
   for (i = start_idx; i <= last_idx; i++) {
     double total_wt = 0;
     for (j = -HALF_FILT_LEN; j <= HALF_FILT_LEN; j++) {
       int idx = AOMMIN(AOMMAX(i + j, start_idx), last_idx);
-      if (ignore[idx]) continue;
+      if (stats[idx].is_flash) continue;
 
       filt_intra_err[i] +=
           smooth_filt[j + HALF_FILT_LEN] * stats[idx].intra_error;
@@ -1042,7 +1106,7 @@ static void smooth_filter_stats(const FIRSTPASS_STATS *stats, const int *ignore,
     for (j = -HALF_FILT_LEN; j <= HALF_FILT_LEN; j++) {
       int idx = AOMMIN(AOMMAX(i + j, start_idx), last_idx);
       // Coded error involves idx and idx - 1.
-      if (ignore[idx] || (idx > 0 && ignore[idx - 1])) continue;
+      if (stats[idx].is_flash || (idx > 0 && stats[idx - 1].is_flash)) continue;
 
       filt_coded_err[i] +=
           smooth_filt[j + HALF_FILT_LEN] * stats[idx].coded_error;
@@ -1071,7 +1135,7 @@ static void get_gradient(const double *values, int start, int last,
 }
 
 static int find_next_scenecut(const FIRSTPASS_STATS *const stats_start,
-                              int first, int last, int *ignore) {
+                              int first, int last) {
   // Identify unstable areas caused by scenecuts.
   // Find the max and 2nd max coded error, and the average of the rest frames.
   // If there is only one frame that yields a huge coded error, it is likely a
@@ -1082,14 +1146,16 @@ static int find_next_scenecut(const FIRSTPASS_STATS *const stats_start,
   if (last - first == 0) return -1;
 
   for (int i = first; i <= last; i++) {
-    if (ignore[i] || (i > 0 && ignore[i - 1])) continue;
+    if (stats_start[i].is_flash || (i > 0 && stats_start[i - 1].is_flash))
+      continue;
     double temp_intra = AOMMAX(stats_start[i].intra_error, 0.01);
     this_ratio = stats_start[i].coded_error / temp_intra;
     // find the avg ratio in the preceding neighborhood
     max_prev_ratio = 0;
     max_prev_coded = 0;
     for (int j = AOMMAX(first, i - HALF_WIN); j < i; j++) {
-      if (ignore[j] || (j > 0 && ignore[j - 1])) continue;
+      if (stats_start[j].is_flash || (j > 0 && stats_start[j - 1].is_flash))
+        continue;
       temp_intra = AOMMAX(stats_start[j].intra_error, 0.01);
       double temp_ratio = stats_start[j].coded_error / temp_intra;
       if (temp_ratio > max_prev_ratio) {
@@ -1103,7 +1169,8 @@ static int find_next_scenecut(const FIRSTPASS_STATS *const stats_start,
     max_next_ratio = 0;
     max_next_coded = 0;
     for (int j = i + 1; j <= AOMMIN(i + HALF_WIN, last); j++) {
-      if (ignore[j] || (j > 0 && ignore[j - 1])) continue;
+      if (stats_start[i].is_flash || (i > 0 && stats_start[i - 1].is_flash))
+        continue;
       temp_intra = AOMMAX(stats_start[j].intra_error, 0.01);
       double temp_ratio = stats_start[j].coded_error / temp_intra;
       if (temp_ratio > max_next_ratio) {
@@ -1134,19 +1201,6 @@ static int find_next_scenecut(const FIRSTPASS_STATS *const stats_start,
     return i;
   }
   return -1;
-}
-
-static void mark_flashes(const FIRSTPASS_STATS *stats, int start_idx,
-                         int last_idx, int *is_flash) {
-  int i;
-  for (i = start_idx; i < last_idx; i++) {
-    if (stats[i + 1].pcnt_second_ref > stats[i + 1].pcnt_inter &&
-        stats[i + 1].pcnt_second_ref >= 0.5) {
-      // this is a new flash frame
-      is_flash[i] = 1;
-      continue;
-    }
-  }
 }
 
 // Remove the region with index next_region.
@@ -1221,113 +1275,9 @@ static void insert_region(int start, int last, REGION_TYPES type,
   *cur_region_idx = k;
 }
 
-// Estimate the noise variance of each frame from the first pass stats
-// TODO(bohanli): maybe handling of flashes should be done when using the stats,
-// instead of generating them.
-static void estimate_noise(const FIRSTPASS_STATS *stats, const int *is_flash,
-                           int start, int last, double *noise_arr) {
-  double C1, C2, C3, noise;
-  int count = 0;
-  for (int i = AOMMAX(start, 2); i <= last; i++) {
-    noise_arr[i] = 0.0;
-    if (is_flash[i] || is_flash[i - 1] || is_flash[i - 2]) continue;
-
-    C1 = stats[i - 1].intra_error *
-         (stats[i].intra_error - stats[i].coded_error);
-    C2 = stats[i - 2].intra_error *
-         (stats[i - 1].intra_error - stats[i - 1].coded_error);
-    C3 = stats[i - 2].intra_error *
-         (stats[i].intra_error - stats[i].sr_coded_error);
-    if (C1 <= 0 || C2 <= 0 || C3 <= 0) continue;
-    C1 = sqrt(C1);
-    C2 = sqrt(C2);
-    C3 = sqrt(C3);
-
-    noise = stats[i - 1].intra_error - C1 * C2 / C3;
-    noise = AOMMAX(noise, 0.01);
-    noise_arr[i] = noise;
-    count++;
-  }
-
-  // Copy noise from the neighbor if the noise value is not trustworthy
-  for (int i = AOMMAX(start, 2); i <= last; i++) {
-    if (is_flash[i] || is_flash[i - 1] || is_flash[i - 2]) continue;
-    if (noise_arr[i] < 1) {
-      int found = 0;
-      for (int c = i + 1; c <= last; c++) {
-        if (is_flash[c] || is_flash[c - 1] || is_flash[c - 2] ||
-            noise_arr[c] < 1)
-          continue;
-        found = 1;
-        noise_arr[i] = noise_arr[c];
-        break;
-      }
-      if (found) continue;
-      for (int c = i - 1; c >= start + 2; c--) {
-        if (is_flash[c] || is_flash[c - 1] || is_flash[c - 2] ||
-            noise_arr[c] < 1)
-          continue;
-        found = 1;
-        noise_arr[i] = noise_arr[c];
-        break;
-      }
-      if (found) continue;
-      noise_arr[i] = 0;
-    }
-  }
-
-  // copy the noise if this is a flash
-  for (int i = AOMMAX(start, 2); i <= last; i++) {
-    if (is_flash[i] || is_flash[i - 1] || is_flash[i - 2]) {
-      int found = 0;
-      for (int c = i + 1; c <= last; c++) {
-        if (is_flash[c] || is_flash[c - 1] || is_flash[c - 2]) continue;
-        found = 1;
-        noise_arr[i] = noise_arr[c];
-        break;
-      }
-      if (found) continue;
-      for (int c = i - 1; c >= start + 2; c--) {
-        if (is_flash[c] || is_flash[c - 1] || is_flash[c - 2]) continue;
-        found = 1;
-        noise_arr[i] = noise_arr[c];
-        break;
-      }
-      if (found) continue;
-      noise_arr[i] = 0;
-    }
-  }
-
-  // if we are at the first 2 frames, copy the noise
-  for (int i = start; i < AOMMAX(start, 2); i++) {
-    noise_arr[i] = noise_arr[2];
-  }
-}
-
-// Estimate correlation coefficient of each frame with its previous frame.
-static void estimate_coeff(const FIRSTPASS_STATS *stats, int start, int last,
-                           double *noise, double *coeff) {
-  for (int i = start; i <= last; i++) {
-    const double C =
-        sqrt(AOMMAX(stats[i - 1].intra_error *
-                        (stats[i].intra_error - stats[i].coded_error),
-                    0.001));
-    const double cor_coeff =
-        C / AOMMAX(stats[i - 1].intra_error - noise[i], 0.001);
-
-    coeff[i] =
-        cor_coeff * sqrt(AOMMAX(stats[i - 1].intra_error - noise[i], 0.001) /
-                         AOMMAX(stats[i].intra_error - noise[i], 0.001));
-    // clip correlation coefficient.
-    coeff[i] = AOMMIN(AOMMAX(coeff[i], 0), 1);
-  }
-}
-
 // Get the average of stats inside a region.
-// Before calling this function, the region's noise variance and correlation
-// coefficients are needed.
 static void analyze_region(const FIRSTPASS_STATS *stats, int k,
-                           REGIONS *regions, double *coeff, double *noise) {
+                           REGIONS *regions) {
   int i;
   regions[k].avg_cor_coeff = 0;
   regions[k].avg_sr_fr_ratio = 0;
@@ -1353,25 +1303,26 @@ static void analyze_region(const FIRSTPASS_STATS *stats, int k,
         stats[i].coded_error / (double)(regions[k].last - regions[k].start + 1);
 
     regions[k].avg_cor_coeff +=
-        coeff[i] / (double)(regions[k].last - regions[k].start + 1);
+        AOMMAX(stats[i].cor_coeff, 0.001) /
+        (double)(regions[k].last - regions[k].start + 1);
     regions[k].avg_noise_var +=
-        noise[i] / (double)(regions[k].last - regions[k].start + 1);
+        AOMMAX(stats[i].noise_var, 0.001) /
+        (double)(regions[k].last - regions[k].start + 1);
   }
 }
 
 // Calculate the regions stats of every region.
 static void get_region_stats(const FIRSTPASS_STATS *stats, REGIONS *regions,
-                             double *coeff, double *noise, int num_regions) {
+                             int num_regions) {
   for (int k = 0; k < num_regions; k++) {
-    analyze_region(stats, k, regions, coeff, noise);
+    analyze_region(stats, k, regions);
   }
 }
 
 // Find tentative stable regions
 static int find_stable_regions(const FIRSTPASS_STATS *stats,
-                               const double *grad_coded, const int *ignore,
-                               int this_start, int this_last,
-                               REGIONS *regions) {
+                               const double *grad_coded, int this_start,
+                               int this_last, REGIONS *regions) {
   int i, j, k = 0;
   regions[k].start = this_start;
   for (i = this_start; i <= this_last; i++) {
@@ -1381,7 +1332,7 @@ static int find_stable_regions(const FIRSTPASS_STATS *stats,
     int count = 0;
     for (j = -HALF_WIN; j <= HALF_WIN; j++) {
       int idx = AOMMIN(AOMMAX(i + j, this_start), this_last);
-      if (ignore[idx] || (idx > 0 && ignore[idx - 1])) continue;
+      if (stats[idx].is_flash || (idx > 0 && stats[idx - 1].is_flash)) continue;
       mean_intra += stats[idx].intra_error;
       var_intra += stats[idx].intra_error * stats[idx].intra_error;
       mean_coded += stats[idx].coded_error;
@@ -1455,14 +1406,13 @@ static void remove_short_regions(REGIONS *regions, int *num_regions,
 }
 
 static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
-                                          REGIONS *regions, double *coeff,
-                                          double *noise, int *num_regions) {
+                                          REGIONS *regions, int *num_regions) {
   int i, j, k;
   // Remove regions that are too short. Likely noise.
   remove_short_regions(regions, num_regions, STABLE_REGION, HALF_WIN);
   remove_short_regions(regions, num_regions, HIGH_VAR_REGION, HALF_WIN);
 
-  get_region_stats(stats, regions, coeff, noise, *num_regions);
+  get_region_stats(stats, regions, *num_regions);
 
   // Adjust region boundaries. The thresholds are empirically obtained, but
   // overall the performance is not very sensitive to small changes to them.
@@ -1488,7 +1438,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
           const int intra_close =
               fabs(stats[j].intra_error - avg_intra_err) / avg_intra_err < 0.1;
           const int coded_small = stats[j].coded_error / avg_intra_err < 0.1;
-          const int coeff_close = coeff[j] > 0.995;
+          const int coeff_close = stats[j].cor_coeff > 0.995;
           if (!coeff_close || !coded_small) count_coded--;
           if (intra_close && count_coded >= 0 && count_grad >= 0) {
             // this frame probably belongs to the previous stable region
@@ -1521,7 +1471,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
               fabs(stats[j].intra_error - avg_intra_err) / avg_intra_err < 0.1;
           const int coded_small =
               stats[j + 1].coded_error / avg_intra_err < 0.1;
-          const int coeff_close = coeff[j] > 0.995;
+          const int coeff_close = stats[j].cor_coeff > 0.995;
           if (!coeff_close || !coded_small) count_coded--;
           if (intra_close && count_coded >= 0 && count_grad >= 0) {
             // this frame probably belongs to the next stable region
@@ -1537,7 +1487,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
 
   cleanup_regions(regions, num_regions);
   remove_short_regions(regions, num_regions, HIGH_VAR_REGION, HALF_WIN);
-  get_region_stats(stats, regions, coeff, noise, *num_regions);
+  get_region_stats(stats, regions, *num_regions);
 
   // If a stable regions has higher error than neighboring high var regions,
   // or if the stable region has a lower average correlation,
@@ -1554,7 +1504,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
            regions[k].avg_cor_coeff < regions[k + 1].avg_cor_coeff * 0.999)))) {
       // merge current region with the previous and next regions
       remove_region(2, regions, num_regions, &k);
-      analyze_region(stats, k - 1, regions, coeff, noise);
+      analyze_region(stats, k - 1, regions);
     } else if (regions[k].type == HIGH_VAR_REGION &&
                (regions[k].last - regions[k].start + 1) < 2 * WINDOW_SIZE &&
                ((k > 0 &&  // previous regions
@@ -1569,7 +1519,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
                       regions[k + 1].avg_cor_coeff * 1.001)))) {
       // merge current region with the previous and next regions
       remove_region(2, regions, num_regions, &k);
-      analyze_region(stats, k - 1, regions, coeff, noise);
+      analyze_region(stats, k - 1, regions);
     } else {
       k++;
     }
@@ -1581,9 +1531,7 @@ static void adjust_unstable_region_bounds(const FIRSTPASS_STATS *stats,
 
 // Identify blending regions.
 static void find_blending_regions(const FIRSTPASS_STATS *stats,
-                                  const int *is_flash, REGIONS *regions,
-                                  int *num_regions, double *coeff,
-                                  double *noise) {
+                                  REGIONS *regions, int *num_regions) {
   int i, k = 0;
   // Blending regions will have large content change, therefore will have a
   // large consistent change in intra error.
@@ -1598,7 +1546,8 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
     int start = 0, last;
     for (i = regions[k].start; i <= regions[k].last; i++) {
       // First mark the regions that has consistent large change of intra error.
-      if (is_flash[i] || (i > 0 && is_flash[i - 1])) continue;
+      if (k == 0 && i == regions[k].start) continue;
+      if (stats[i].is_flash || (i > 0 && stats[i - 1].is_flash)) continue;
       double grad = stats[i].intra_error - stats[i - 1].intra_error;
       int large_change = fabs(grad) / AOMMAX(stats[i].intra_error, 0.01) > 0.05;
       int this_dir = 0;
@@ -1613,7 +1562,11 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
         insert_region(start, last, BLENDING_REGION, regions, num_regions, &k);
       }
       dir = this_dir;
-      start = i;
+      if (k == 0 && i == regions[k].start + 1) {
+        start = i - 1;
+      } else {
+        start = i;
+      }
     }
     if (dir != 0) {
       last = regions[k].last;
@@ -1624,14 +1577,14 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
 
   // If the blending region has very low correlation, mark it as high variance
   // since we probably cannot benefit from it anyways.
-  get_region_stats(stats, regions, coeff, noise, *num_regions);
+  get_region_stats(stats, regions, *num_regions);
   for (k = 0; k < *num_regions; k++) {
     if (regions[k].type != BLENDING_REGION) continue;
     if (regions[k].last == regions[k].start || regions[k].avg_cor_coeff < 0.6 ||
         count_stable == 0)
       regions[k].type = HIGH_VAR_REGION;
   }
-  get_region_stats(stats, regions, coeff, noise, *num_regions);
+  get_region_stats(stats, regions, *num_regions);
 
   // It is possible for blending to result in a "dip" in intra error (first
   // decrease then increase). Therefore we need to find the dip and combine the
@@ -1660,7 +1613,7 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
           if (regions[k].avg_sr_fr_ratio > ratio_thres) {
             regions[k].type = BLENDING_REGION;
             remove_region(2, regions, num_regions, &k);
-            analyze_region(stats, k - 1, regions, coeff, noise);
+            analyze_region(stats, k - 1, regions);
             continue;
           }
         }
@@ -1718,7 +1671,7 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
 
       if (to_merge) {
         remove_region(0, regions, num_regions, &k);
-        analyze_region(stats, k - 1, regions, coeff, noise);
+        analyze_region(stats, k - 1, regions);
         continue;
       } else {
         // These are possibly two separate blending regions. Mark the boundary
@@ -1726,9 +1679,9 @@ static void find_blending_regions(const FIRSTPASS_STATS *stats,
         int prev_k = k - 1;
         insert_region(regions[prev_k].last, regions[prev_k].last,
                       HIGH_VAR_REGION, regions, num_regions, &prev_k);
-        analyze_region(stats, prev_k, regions, coeff, noise);
+        analyze_region(stats, prev_k, regions);
         k = prev_k + 1;
-        analyze_region(stats, k, regions, coeff, noise);
+        analyze_region(stats, k, regions);
       }
     }
     k++;
@@ -1784,56 +1737,42 @@ static void cleanup_blendings(REGIONS *regions, int *num_regions) {
 // pointing to.
 static void identify_regions(const FIRSTPASS_STATS *const stats_start,
                              int total_frames, int offset, REGIONS *regions,
-                             int *total_regions, double *cor_coeff,
-                             double *noise_var) {
+                             int *total_regions) {
   int k;
   if (total_frames <= 1) return;
-
-  double *coeff = cor_coeff + offset;
-  double *noise = noise_var + offset;
 
   // store the initial decisions
   REGIONS temp_regions[MAX_FIRSTPASS_ANALYSIS_FRAMES];
   av1_zero_array(temp_regions, MAX_FIRSTPASS_ANALYSIS_FRAMES);
-  int is_flash[MAX_FIRSTPASS_ANALYSIS_FRAMES] = { 0 };
   // buffers for filtered stats
   double filt_intra_err[MAX_FIRSTPASS_ANALYSIS_FRAMES] = { 0 };
   double filt_coded_err[MAX_FIRSTPASS_ANALYSIS_FRAMES] = { 0 };
   double grad_coded[MAX_FIRSTPASS_ANALYSIS_FRAMES] = { 0 };
 
-  int cur_region = 0, this_start = 0, this_last = total_frames - 1;
+  int cur_region = 0, this_start = 0, this_last;
 
-  // find possible flash frames
-  mark_flashes(stats_start, 0, total_frames - 1, is_flash);
-
-  // first get the obvious scenecuts
   int next_scenecut = -1;
-
-  estimate_noise(stats_start, is_flash, this_start, this_last, noise);
-  estimate_coeff(stats_start, this_start, this_last, noise, coeff);
-
   do {
+    // first get the obvious scenecuts
     next_scenecut =
-        find_next_scenecut(stats_start, this_start, total_frames - 1, is_flash);
+        find_next_scenecut(stats_start, this_start, total_frames - 1);
     this_last = (next_scenecut >= 0) ? (next_scenecut - 1) : total_frames - 1;
 
     // low-pass filter the needed stats
-    smooth_filter_stats(stats_start, is_flash, this_start, this_last,
-                        filt_intra_err, filt_coded_err);
+    smooth_filter_stats(stats_start, this_start, this_last, filt_intra_err,
+                        filt_coded_err);
     get_gradient(filt_coded_err, this_start, this_last, grad_coded);
 
     // find tentative stable regions and unstable regions
-    int num_regions = find_stable_regions(stats_start, grad_coded, is_flash,
-                                          this_start, this_last, temp_regions);
+    int num_regions = find_stable_regions(stats_start, grad_coded, this_start,
+                                          this_last, temp_regions);
 
-    adjust_unstable_region_bounds(stats_start, temp_regions, coeff, noise,
-                                  &num_regions);
+    adjust_unstable_region_bounds(stats_start, temp_regions, &num_regions);
 
-    get_region_stats(stats_start, temp_regions, coeff, noise, num_regions);
+    get_region_stats(stats_start, temp_regions, num_regions);
 
     // Try to identify blending regions in the unstable regions
-    find_blending_regions(stats_start, is_flash, temp_regions, &num_regions,
-                          coeff, noise);
+    find_blending_regions(stats_start, temp_regions, &num_regions);
     cleanup_blendings(temp_regions, &num_regions);
 
     // The flash points should all be considered high variance points
@@ -1846,7 +1785,7 @@ static void identify_regions(const FIRSTPASS_STATS *const stats_start,
       int start = temp_regions[k].start;
       int last = temp_regions[k].last;
       for (int i = start; i <= last; i++) {
-        if (is_flash[i]) {
+        if (stats_start[i].is_flash) {
           insert_region(i, i, HIGH_VAR_REGION, temp_regions, &num_regions, &k);
         }
       }
@@ -1877,20 +1816,21 @@ static void identify_regions(const FIRSTPASS_STATS *const stats_start,
   } while (next_scenecut >= 0);
 
   *total_regions = cur_region;
-  get_region_stats(stats_start, regions, coeff, noise, *total_regions);
+  get_region_stats(stats_start, regions, *total_regions);
 
   for (k = 0; k < *total_regions; k++) {
     // If scenecuts are very minor, mark them as high variance.
     if (regions[k].type != SCENECUT_REGION ||
         regions[k].avg_cor_coeff *
-                (1 - noise[regions[k].start] / regions[k].avg_intra_err) <
+                (1 - stats_start[regions[k].start].noise_var /
+                         regions[k].avg_intra_err) <
             0.8) {
       continue;
     }
     regions[k].type = HIGH_VAR_REGION;
   }
   cleanup_regions(regions, total_regions);
-  get_region_stats(stats_start, regions, coeff, noise, *total_regions);
+  get_region_stats(stats_start, regions, *total_regions);
 
   for (k = 0; k < *total_regions; k++) {
     regions[k].start += offset;
@@ -1917,15 +1857,17 @@ static int find_regions_index(const REGIONS *regions, int num_regions,
  * \param[in]    max_gop_length   Maximum length of the GF group
  * \param[in]    max_intervals    Maximum number of intervals to decide
  *
- * \return Nothing is returned. Instead, cpi->rc.gf_intervals is
+ * \return Nothing is returned. Instead, cpi->ppi->rc.gf_intervals is
  * changed to store the decided GF group lengths.
  */
 static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
                                 int max_intervals) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   FIRSTPASS_STATS next_frame;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
+  const FIRSTPASS_STATS *const stats = start_pos - (rc->frames_since_key == 0);
   FRAME_INFO *frame_info = &cpi->frame_info;
   int i;
 
@@ -1936,9 +1878,9 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
 
   if (has_no_stats_stage(cpi)) {
     for (i = 0; i < MAX_NUM_GF_INTERVALS; i++) {
-      rc->gf_intervals[i] = AOMMIN(rc->max_gf_interval, max_gop_length);
+      p_rc->gf_intervals[i] = AOMMIN(rc->max_gf_interval, max_gop_length);
     }
-    rc->cur_gf_index = 0;
+    p_rc->cur_gf_index = 0;
     rc->intervals_till_gf_calculate_due = MAX_NUM_GF_INTERVALS;
     return;
   }
@@ -1950,17 +1892,17 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
   const int min_shrink_int = AOMMAX(MIN_SHRINK_LEN, active_min_gf_interval);
 
   i = (rc->frames_since_key == 0);
-  max_intervals = cpi->lap_enabled ? 1 : max_intervals;
+  max_intervals = cpi->ppi->lap_enabled ? 1 : max_intervals;
   int count_cuts = 1;
   // If cpi->gf_state.arf_gf_boost_lst is 0, we are starting with a KF or GF.
-  int cur_start = -1 + !cpi->gf_state.arf_gf_boost_lst, cur_last;
+  int cur_start = -1 + !cpi->ppi->gf_state.arf_gf_boost_lst, cur_last;
   int cut_pos[MAX_NUM_GF_INTERVALS + 1] = { -1 };
   int cut_here;
   GF_GROUP_STATS gf_stats;
   init_gf_stats(&gf_stats);
   while (count_cuts < max_intervals + 1) {
     // reaches next key frame, break here
-    if (i >= rc->frames_to_key + rc->next_is_fwd_key) {
+    if (i >= rc->frames_to_key + p_rc->next_is_fwd_key) {
       cut_here = 2;
     } else if (i - cur_start >= rc->static_scene_max_gf_interval) {
       // reached maximum len, but nothing special yet (almost static)
@@ -1987,10 +1929,10 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
       int ori_last = cur_last;
       // The region frame idx does not start from the same frame as cur_start
       // and cur_last. Need to offset them.
-      int offset = rc->frames_since_key - rc->regions_offset;
-      REGIONS *regions = rc->regions;
-      int num_regions = rc->num_regions;
-      if (cpi->oxcf.kf_cfg.fwd_kf_enabled && rc->next_is_fwd_key) {
+      int offset = rc->frames_since_key - p_rc->regions_offset;
+      REGIONS *regions = p_rc->regions;
+      int num_regions = p_rc->num_regions;
+      if (cpi->oxcf.kf_cfg.fwd_kf_enabled && p_rc->next_is_fwd_key) {
         const int frames_left = rc->frames_to_key - i;
         const int min_int = AOMMIN(MIN_FWD_KF_INTERVAL, active_min_gf_interval);
         if (frames_left < min_int && frames_left > 0) {
@@ -2029,7 +1971,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
           // the next gop start from the scenecut with GF
           int is_minor_sc =
               (regions[scenecut_idx].avg_cor_coeff *
-                   (1 - rc->noise_var[regions[scenecut_idx].start] /
+                   (1 - stats[regions[scenecut_idx].start - offset].noise_var /
                             regions[scenecut_idx].avg_intra_err) >
                0.6);
           cur_last = regions[scenecut_idx].last - offset - !is_minor_sc;
@@ -2051,14 +1993,17 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
             double base_score = 0.0;
             // Accumulate base_score in
             for (int j = cur_start + 1; j < cur_start + min_shrink_int; j++) {
-              base_score = (base_score + 1.0) * rc->cor_coeff[j + offset];
+              if (stats + j >= twopass->stats_buf_ctx->stats_in_end) break;
+              base_score = (base_score + 1.0) * stats[j].cor_coeff;
             }
             int met_blending = 0;   // Whether we have met blending areas before
             int last_blending = 0;  // Whether the previous frame if blending
             for (int j = cur_start + min_shrink_int; j <= cur_last; j++) {
-              base_score = (base_score + 1.0) * rc->cor_coeff[j + offset];
+              if (stats + j >= twopass->stats_buf_ctx->stats_in_end) break;
+              base_score = (base_score + 1.0) * stats[j].cor_coeff;
               int this_reg =
                   find_regions_index(regions, num_regions, j + offset);
+              if (this_reg < 0) continue;
               // A GOP should include at most 1 blending region.
               if (regions[this_reg].type == BLENDING_REGION) {
                 last_blending = 1;
@@ -2080,20 +2025,23 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
               // following frames
               int count_f = 0;
               for (int n = j + 1; n <= j + 3 && n <= last_frame; n++) {
-                temp_accu_coeff *= rc->cor_coeff[n + offset];
+                if (stats + n >= twopass->stats_buf_ctx->stats_in_end) break;
+                temp_accu_coeff *= stats[n].cor_coeff;
                 this_score +=
-                    temp_accu_coeff * (1 - rc->noise_var[n + offset] /
-                                               regions[this_reg].avg_intra_err);
+                    temp_accu_coeff *
+                    (1 - stats[n].noise_var /
+                             AOMMAX(regions[this_reg].avg_intra_err, 0.001));
                 count_f++;
               }
               // preceding frames
               temp_accu_coeff = 1.0;
-              for (int n = j; n > j - 3 * 2 + count_f && n >= first_frame;
-                   n--) {
-                temp_accu_coeff *= rc->cor_coeff[n + offset];
+              for (int n = j; n > j - 3 * 2 + count_f && n > first_frame; n--) {
+                if (stats + n < twopass->stats_buf_ctx->stats_in_start) break;
+                temp_accu_coeff *= stats[n].cor_coeff;
                 this_score +=
-                    temp_accu_coeff * (1 - rc->noise_var[n + offset] /
-                                               regions[this_reg].avg_intra_err);
+                    temp_accu_coeff *
+                    (1 - stats[n].noise_var /
+                             AOMMAX(regions[this_reg].avg_intra_err, 0.001));
               }
 
               if (this_score > best_score) {
@@ -2149,9 +2097,9 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
   // save intervals
   rc->intervals_till_gf_calculate_due = count_cuts - 1;
   for (int n = 1; n < count_cuts; n++) {
-    rc->gf_intervals[n - 1] = cut_pos[n] - cut_pos[n - 1];
+    p_rc->gf_intervals[n - 1] = cut_pos[n] - cut_pos[n - 1];
   }
-  rc->cur_gf_index = 0;
+  p_rc->cur_gf_index = 0;
   twopass->stats_in = start_pos;
 }
 
@@ -2160,12 +2108,13 @@ static void correct_frames_to_key(AV1_COMP *cpi) {
       (int)av1_lookahead_depth(cpi->ppi->lookahead, cpi->compressor_stage);
   if (lookahead_size <
       av1_lookahead_pop_sz(cpi->ppi->lookahead, cpi->compressor_stage)) {
-    assert(IMPLIES(cpi->oxcf.pass != 0 && cpi->frames_left > 0,
-                   lookahead_size == cpi->frames_left));
+    assert(IMPLIES(cpi->oxcf.pass != 0 && cpi->ppi->frames_left > 0,
+                   lookahead_size == cpi->ppi->frames_left));
     cpi->rc.frames_to_key = AOMMIN(cpi->rc.frames_to_key, lookahead_size);
-  } else if (cpi->frames_left > 0) {
+  } else if (cpi->ppi->frames_left > 0) {
     // Correct frames to key based on limit
-    cpi->rc.frames_to_key = AOMMIN(cpi->rc.frames_to_key, cpi->frames_left);
+    cpi->rc.frames_to_key =
+        AOMMIN(cpi->rc.frames_to_key, cpi->ppi->frames_left);
   }
 }
 
@@ -2179,11 +2128,12 @@ static void correct_frames_to_key(AV1_COMP *cpi) {
  *
  * \param[in]    cpi             Top-level encoder structure
  *
- * \return Nothing is returned. Instead, cpi->gf_group is changed.
+ * \return Nothing is returned. Instead, cpi->ppi->gf_group is changed.
  */
 static void define_gf_group_pass0(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
-  GF_GROUP *const gf_group = &cpi->gf_group;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const GFConfig *const gf_cfg = &oxcf->gf_cfg;
   int target;
@@ -2191,28 +2141,28 @@ static void define_gf_group_pass0(AV1_COMP *cpi) {
   if (oxcf->q_cfg.aq_mode == CYCLIC_REFRESH_AQ) {
     av1_cyclic_refresh_set_golden_update(cpi);
   } else {
-    rc->baseline_gf_interval = rc->gf_intervals[rc->cur_gf_index];
+    p_rc->baseline_gf_interval = p_rc->gf_intervals[p_rc->cur_gf_index];
     rc->intervals_till_gf_calculate_due--;
-    rc->cur_gf_index++;
+    p_rc->cur_gf_index++;
   }
 
   // correct frames_to_key when lookahead queue is flushing
   correct_frames_to_key(cpi);
 
-  if (rc->baseline_gf_interval > rc->frames_to_key)
-    rc->baseline_gf_interval = rc->frames_to_key;
+  if (p_rc->baseline_gf_interval > rc->frames_to_key)
+    p_rc->baseline_gf_interval = rc->frames_to_key;
 
-  rc->gfu_boost = DEFAULT_GF_BOOST;
-  rc->constrained_gf_group =
-      (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
+  p_rc->gfu_boost = DEFAULT_GF_BOOST;
+  p_rc->constrained_gf_group =
+      (p_rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
 
   gf_group->max_layer_depth_allowed = oxcf->gf_cfg.gf_max_pyr_height;
 
   // Rare case when the look-ahead is less than the target GOP length, can't
   // generate ARF frame.
-  if (rc->baseline_gf_interval > gf_cfg->lag_in_frames ||
+  if (p_rc->baseline_gf_interval > gf_cfg->lag_in_frames ||
       !is_altref_enabled(gf_cfg->lag_in_frames, gf_cfg->enable_auto_arf) ||
-      rc->baseline_gf_interval < rc->min_gf_interval)
+      p_rc->baseline_gf_interval < rc->min_gf_interval)
     gf_group->max_layer_depth_allowed = 0;
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
@@ -2244,7 +2194,8 @@ static INLINE void set_baseline_gf_interval(AV1_COMP *cpi, int arf_position,
                                             int use_alt_ref,
                                             int is_final_pass) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   // Set the interval until the next gf.
   // If forward keyframes are enabled, ensure the final gf group obeys the
   // MIN_FWD_KF_INTERVAL.
@@ -2253,27 +2204,28 @@ static INLINE void set_baseline_gf_interval(AV1_COMP *cpi, int arf_position,
       twopass->stats_buf_ctx->stats_in_end;
 
   if (cpi->oxcf.kf_cfg.fwd_kf_enabled && use_alt_ref && !is_last_kf &&
-      cpi->rc.next_is_fwd_key) {
+      cpi->ppi->p_rc.next_is_fwd_key) {
     if (arf_position == rc->frames_to_key + 1) {
-      rc->baseline_gf_interval = arf_position;
+      p_rc->baseline_gf_interval = arf_position;
       // if the last gf group will be smaller than MIN_FWD_KF_INTERVAL
     } else if (rc->frames_to_key + 1 - arf_position <
                AOMMAX(MIN_FWD_KF_INTERVAL, rc->min_gf_interval)) {
       // if possible, merge the last two gf groups
       if (rc->frames_to_key + 1 <= active_max_gf_interval) {
-        rc->baseline_gf_interval = rc->frames_to_key + 1;
+        p_rc->baseline_gf_interval = rc->frames_to_key + 1;
         if (is_final_pass) rc->intervals_till_gf_calculate_due = 0;
         // if merging the last two gf groups creates a group that is too long,
         // split them and force the last gf group to be the MIN_FWD_KF_INTERVAL
       } else {
-        rc->baseline_gf_interval = rc->frames_to_key + 1 - MIN_FWD_KF_INTERVAL;
+        p_rc->baseline_gf_interval =
+            rc->frames_to_key + 1 - MIN_FWD_KF_INTERVAL;
         if (is_final_pass) rc->intervals_till_gf_calculate_due = 0;
       }
     } else {
-      rc->baseline_gf_interval = arf_position;
+      p_rc->baseline_gf_interval = arf_position;
     }
   } else {
-    rc->baseline_gf_interval = arf_position;
+    p_rc->baseline_gf_interval = arf_position;
   }
 }
 
@@ -2319,18 +2271,19 @@ static void init_gf_stats(GF_GROUP_STATS *gf_stats) {
  * \param[in]    is_final_pass   Whether this is the final pass for the
  *                               GF group, or a trial (non-zero)
  *
- * \return Nothing is returned. Instead, cpi->gf_group is changed.
+ * \return Nothing is returned. Instead, cpi->ppi->gf_group is changed.
  */
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                             EncodeFrameParams *frame_params, int max_gop_length,
                             int is_final_pass) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   FIRSTPASS_STATS next_frame;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
-  GF_GROUP *gf_group = &cpi->gf_group;
+  GF_GROUP *gf_group = &cpi->ppi->gf_group;
   FRAME_INFO *frame_info = &cpi->frame_info;
   const GFConfig *const gf_cfg = &oxcf->gf_cfg;
   const RateControlCfg *const rc_cfg = &oxcf->rc_cfg;
@@ -2344,7 +2297,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
   if (!is_intra_only) {
-    av1_zero(cpi->gf_group);
+    av1_zero(cpi->ppi->gf_group);
     cpi->gf_frame_index = 0;
   }
 
@@ -2357,7 +2310,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 
   // correct frames_to_key when lookahead queue is emptying
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     correct_frames_to_key(cpi);
   }
 
@@ -2387,8 +2340,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       AOMMIN(rc->max_gf_interval, max_gop_length);
 
   i = is_intra_only;
-  // get the determined gf group length from rc->gf_intervals
-  while (i < rc->gf_intervals[rc->cur_gf_index]) {
+  // get the determined gf group length from p_rc->gf_intervals
+  while (i < p_rc->gf_intervals[p_rc->cur_gf_index]) {
     // read in the next frame
     if (EOF == input_stats(twopass, &next_frame)) break;
     // Accumulate error score of frames in this gf group.
@@ -2411,7 +2364,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   i = is_intra_only;
   input_stats(twopass, &next_frame);
-  while (i < rc->gf_intervals[rc->cur_gf_index]) {
+  while (i < p_rc->gf_intervals[p_rc->cur_gf_index]) {
     // read in the next frame
     if (EOF == input_stats(twopass, &next_frame)) break;
 
@@ -2426,7 +2379,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     ++i;
   }
 
-  i = rc->gf_intervals[rc->cur_gf_index];
+  i = p_rc->gf_intervals[p_rc->cur_gf_index];
 
   // save the errs for the last frame
   last_frame_stats.frame_coded_error = next_frame.coded_error;
@@ -2435,11 +2388,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   if (is_final_pass) {
     rc->intervals_till_gf_calculate_due--;
-    rc->cur_gf_index++;
+    p_rc->cur_gf_index++;
   }
 
   // Was the group length constrained by the requirement for a new KF?
-  rc->constrained_gf_group = (i >= rc->frames_to_key) ? 1 : 0;
+  p_rc->constrained_gf_group = (i >= rc->frames_to_key) ? 1 : 0;
 
   const int num_mbs = (oxcf->resize_cfg.resize_mode != RESIZE_NONE)
                           ? cpi->initial_mbs
@@ -2465,8 +2418,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   if (can_disable_arf) {
     use_alt_ref =
         !is_almost_static(gf_stats.zero_motion_accumulator,
-                          twopass->kf_zeromotion_pct, cpi->lap_enabled) &&
-        rc->use_arf_in_this_kf_group && (i < gf_cfg->lag_in_frames) &&
+                          twopass->kf_zeromotion_pct, cpi->ppi->lap_enabled) &&
+        p_rc->use_arf_in_this_kf_group && (i < gf_cfg->lag_in_frames) &&
         (i >= MIN_GF_INTERVAL);
 
     // TODO(urvang): Improve and use model for VBR, CQ etc as well.
@@ -2475,15 +2428,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       float features[21];
       get_features_from_gf_stats(
           &gf_stats, &first_frame_stats, &last_frame_stats, num_mbs,
-          rc->constrained_gf_group, twopass->kf_zeromotion_pct, i, features);
+          p_rc->constrained_gf_group, twopass->kf_zeromotion_pct, i, features);
       // Infer using ML model.
       float score;
       av1_nn_predict(features, &av1_use_flat_gop_nn_config, 1, &score);
       use_alt_ref = (score <= 0.0);
     }
   } else {
-    use_alt_ref =
-        rc->use_arf_in_this_kf_group && (i < gf_cfg->lag_in_frames) && (i > 2);
+    use_alt_ref = p_rc->use_arf_in_this_kf_group &&
+                  (i < gf_cfg->lag_in_frames) && (i > 2);
   }
 
 #define REDUCE_GF_LENGTH_THRESH 4
@@ -2536,48 +2489,48 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                                    : AOMMAX(0, rc->frames_to_key - i);
 
     // Calculate the boost for alt ref.
-    rc->gfu_boost = av1_calc_arf_boost(
-        twopass, rc, frame_info, alt_offset, forward_frames, ext_len,
-        cpi->lap_enabled ? &rc->num_stats_used_for_gfu_boost : NULL,
-        cpi->lap_enabled ? &rc->num_stats_required_for_gfu_boost : NULL);
+    p_rc->gfu_boost = av1_calc_arf_boost(
+        twopass, p_rc, rc, frame_info, alt_offset, forward_frames, ext_len,
+        &p_rc->num_stats_used_for_gfu_boost,
+        &p_rc->num_stats_required_for_gfu_boost, cpi->ppi->lap_enabled);
   } else {
     reset_fpf_position(twopass, start_pos);
     gf_group->max_layer_depth_allowed = 0;
     set_baseline_gf_interval(cpi, i, active_max_gf_interval, use_alt_ref,
                              is_final_pass);
 
-    rc->gfu_boost = AOMMIN(
+    p_rc->gfu_boost = AOMMIN(
         MAX_GF_BOOST,
-        av1_calc_arf_boost(
-            twopass, rc, frame_info, alt_offset, ext_len, 0,
-            cpi->lap_enabled ? &rc->num_stats_used_for_gfu_boost : NULL,
-            cpi->lap_enabled ? &rc->num_stats_required_for_gfu_boost : NULL));
+        av1_calc_arf_boost(twopass, p_rc, rc, frame_info, alt_offset, ext_len,
+                           0, &p_rc->num_stats_used_for_gfu_boost,
+                           &p_rc->num_stats_required_for_gfu_boost,
+                           cpi->ppi->lap_enabled));
   }
 
 #define LAST_ALR_BOOST_FACTOR 0.2f
-  rc->arf_boost_factor = 1.0;
+  p_rc->arf_boost_factor = 1.0;
   if (use_alt_ref && !is_lossless_requested(rc_cfg)) {
     // Reduce the boost of altref in the last gf group
     if (rc->frames_to_key - ext_len == REDUCE_GF_LENGTH_BY ||
         rc->frames_to_key - ext_len == 0) {
-      rc->arf_boost_factor = LAST_ALR_BOOST_FACTOR;
+      p_rc->arf_boost_factor = LAST_ALR_BOOST_FACTOR;
     }
   }
 
-  rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+  rc->frames_till_gf_update_due = p_rc->baseline_gf_interval;
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
 
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     // Since we don't have enough stats to know the actual error of the
     // gf group, we assume error of each frame to be equal to 1 and set
     // the error of the group as baseline_gf_interval.
-    gf_stats.gf_group_err = rc->baseline_gf_interval;
+    gf_stats.gf_group_err = p_rc->baseline_gf_interval;
   }
   // Calculate the bits to be allocated to the gf/arf group as a whole
   gf_group_bits = calculate_total_gf_group_bits(cpi, gf_stats.gf_group_err);
-  rc->gf_group_bits = gf_group_bits;
+  p_rc->gf_group_bits = gf_group_bits;
 
 #if GROUP_ADAPTIVE_MAXQ
   // Calculate an estimate of the maxq needed for the group.
@@ -2585,17 +2538,17 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // where there could be significant overshoot than for easier
   // sections where we do not wish to risk creating an overshoot
   // of the allocated bit budget.
-  if ((rc_cfg->mode != AOM_Q) && (rc->baseline_gf_interval > 1) &&
+  if ((rc_cfg->mode != AOM_Q) && (p_rc->baseline_gf_interval > 1) &&
       is_final_pass) {
     const int vbr_group_bits_per_frame =
-        (int)(gf_group_bits / rc->baseline_gf_interval);
+        (int)(gf_group_bits / p_rc->baseline_gf_interval);
     const double group_av_err =
-        gf_stats.gf_group_raw_error / rc->baseline_gf_interval;
+        gf_stats.gf_group_raw_error / p_rc->baseline_gf_interval;
     const double group_av_skip_pct =
-        gf_stats.gf_group_skip_pct / rc->baseline_gf_interval;
+        gf_stats.gf_group_skip_pct / p_rc->baseline_gf_interval;
     const double group_av_inactive_zone =
         ((gf_stats.gf_group_inactive_zone_rows * 2) /
-         (rc->baseline_gf_interval * (double)cm->mi_params.mb_rows));
+         (p_rc->baseline_gf_interval * (double)cm->mi_params.mb_rows));
 
     int tmp_q;
     tmp_q = get_twopass_worst_quality(
@@ -2619,7 +2572,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   if (rc->frames_since_key != 0) {
     twopass->section_intra_rating = calculate_section_intra_ratio(
         start_pos, twopass->stats_buf_ctx->stats_in_end,
-        rc->baseline_gf_interval);
+        p_rc->baseline_gf_interval);
   }
 
   av1_gop_bit_allocation(cpi, rc, gf_group, rc->frames_since_key == 0,
@@ -2633,7 +2586,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   // TODO(jingning): Generalize this condition.
   if (is_final_pass) {
-    cpi->gf_state.arf_gf_boost_lst = use_alt_ref;
+    cpi->ppi->gf_state.arf_gf_boost_lst = use_alt_ref;
 
     // Reset rolling actual and target bits counters for ARF groups.
     twopass->rolling_arf_group_target_bits = 1;
@@ -2648,12 +2601,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                             GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits) {
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   // Calculate the extra bits to be used for boosted frame(s)
 #ifdef FIXED_ARF_BITS
   int gf_arf_bits = (int)(ARF_BITS_FRACTION * gf_group_bits);
 #else
   int gf_arf_bits = calculate_boost_bits(
-      rc->baseline_gf_interval - (rc->frames_since_key == 0), rc->gfu_boost,
+      p_rc->baseline_gf_interval - (rc->frames_since_key == 0), p_rc->gfu_boost,
       gf_group_bits);
 #endif
 
@@ -2661,8 +2615,8 @@ void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                                                    gf_group_bits, 1);
 
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(gf_group, rc, gf_group_bits, gf_arf_bits, is_key_frame,
-                         use_arf);
+  allocate_gf_group_bits(gf_group, p_rc, rc, gf_group_bits, gf_arf_bits,
+                         is_key_frame, use_arf);
 }
 
 // Minimum % intra coding observed in first pass (1.0 = 100%)
@@ -2837,10 +2791,10 @@ static int test_candidate_kf(TWO_PASS *twopass,
 #define MIN_STATIC_KF_BOOST 5400  // Minimum boost for static KF interval
 
 static int detect_app_forced_key(AV1_COMP *cpi) {
-  if (cpi->oxcf.kf_cfg.fwd_kf_enabled) cpi->rc.next_is_fwd_key = 1;
+  if (cpi->oxcf.kf_cfg.fwd_kf_enabled) cpi->ppi->p_rc.next_is_fwd_key = 1;
   int num_frames_to_app_forced_key = is_forced_keyframe_pending(
       cpi->ppi->lookahead, cpi->ppi->lookahead->max_sz, cpi->compressor_stage);
-  if (num_frames_to_app_forced_key != -1) cpi->rc.next_is_fwd_key = 0;
+  if (num_frames_to_app_forced_key != -1) cpi->ppi->p_rc.next_is_fwd_key = 0;
   return num_frames_to_app_forced_key;
 }
 
@@ -2850,16 +2804,16 @@ static int get_projected_kf_boost(AV1_COMP *cpi) {
    * all stats needed for prior boost calculation are available.
    * Hence projecting the prior boost is not needed in this cases.
    */
-  if (cpi->rc.num_stats_used_for_kf_boost >= cpi->rc.frames_to_key)
-    return cpi->rc.kf_boost;
+  if (cpi->ppi->p_rc.num_stats_used_for_kf_boost >= cpi->rc.frames_to_key)
+    return cpi->ppi->p_rc.kf_boost;
 
   // Get the current tpl factor (number of frames = frames_to_key).
   double tpl_factor = av1_get_kf_boost_projection_factor(cpi->rc.frames_to_key);
   // Get the tpl factor when number of frames = num_stats_used_for_kf_boost.
-  double tpl_factor_num_stats =
-      av1_get_kf_boost_projection_factor(cpi->rc.num_stats_used_for_kf_boost);
+  double tpl_factor_num_stats = av1_get_kf_boost_projection_factor(
+      cpi->ppi->p_rc.num_stats_used_for_kf_boost);
   int projected_kf_boost =
-      (int)rint((tpl_factor * cpi->rc.kf_boost) / tpl_factor_num_stats);
+      (int)rint((tpl_factor * cpi->ppi->p_rc.kf_boost) / tpl_factor_num_stats);
   return projected_kf_boost;
 }
 
@@ -2879,8 +2833,9 @@ static int get_projected_kf_boost(AV1_COMP *cpi) {
 static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                               double *kf_group_err,
                               int num_frames_to_detect_scenecut) {
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   RATE_CONTROL *const rc = &cpi->rc;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const KeyFrameCfg *const kf_cfg = &oxcf->kf_cfg;
   double recent_loop_decay[FRAMES_TO_CHECK_DECAY];
@@ -2925,7 +2880,7 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     input_stats(twopass, this_frame);
 
     // Provided that we are not at the end of the file...
-    if ((cpi->rc.enable_scenecut_detection > 0) && kf_cfg->auto_key &&
+    if ((cpi->ppi->p_rc.enable_scenecut_detection > 0) && kf_cfg->auto_key &&
         twopass->stats_in < twopass->stats_buf_ctx->stats_in_end) {
       double loop_decay_rate;
 
@@ -2933,7 +2888,7 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       if (frames_since_key >= kf_cfg->key_freq_min &&
           test_candidate_kf(twopass, &last_frame, this_frame, twopass->stats_in,
                             frames_since_key, oxcf->rc_cfg.mode,
-                            cpi->rc.enable_scenecut_detection)) {
+                            cpi->ppi->p_rc.enable_scenecut_detection)) {
         scenecut_detected = 1;
         break;
       }
@@ -2960,7 +2915,7 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
         // In the case of transition followed by a static scene, the key frame
         // could be a good predictor for the following frames, therefore we
         // do not use an arf.
-        rc->use_arf_in_this_kf_group = 0;
+        p_rc->use_arf_in_this_kf_group = 0;
         break;
       }
 
@@ -2979,14 +2934,14 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 
   if (kf_group_err != NULL)
-    rc->num_stats_used_for_kf_boost = num_stats_used_for_kf_boost;
+    p_rc->num_stats_used_for_kf_boost = num_stats_used_for_kf_boost;
 
-  if (cpi->lap_enabled && !scenecut_detected)
+  if (cpi->ppi->lap_enabled && !scenecut_detected)
     frames_to_key = num_frames_to_next_key;
 
   if (!kf_cfg->fwd_kf_enabled || scenecut_detected ||
       twopass->stats_in >= twopass->stats_buf_ctx->stats_in_end)
-    rc->next_is_fwd_key = 0;
+    p_rc->next_is_fwd_key = 0;
 
   return frames_to_key;
 }
@@ -3015,9 +2970,9 @@ static double get_kf_group_avg_error(TWO_PASS *twopass,
 static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err,
                                  double kf_group_avg_error) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   int64_t kf_group_bits;
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     kf_group_bits = (int64_t)rc->frames_to_key * rc->avg_frame_bandwidth;
     if (cpi->oxcf.rc_cfg.vbr_corpus_complexity_lap) {
       const int num_mbs = (cpi->oxcf.resize_cfg.resize_mode != RESIZE_NONE)
@@ -3041,7 +2996,7 @@ static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err,
 
 static int calc_avg_stats(AV1_COMP *cpi, FIRSTPASS_STATS *avg_frame_stat) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   FIRSTPASS_STATS cur_frame;
   av1_zero(cur_frame);
   int num_frames = 0;
@@ -3090,7 +3045,7 @@ static double get_kf_boost_score(AV1_COMP *cpi, double kf_raw_err,
                                  double *zero_motion_accumulator,
                                  double *sr_accumulator, int use_avg_stat) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   FRAME_INFO *const frame_info = &cpi->frame_info;
   FIRSTPASS_STATS frame_stat;
   av1_zero(frame_stat);
@@ -3153,8 +3108,9 @@ static double get_kf_boost_score(AV1_COMP *cpi, double kf_raw_err,
  */
 static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &cpi->gf_group;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   FRAME_INFO *const frame_info = &cpi->frame_info;
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -3166,7 +3122,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   rc->frames_since_key = 0;
   // Use arfs if possible.
-  rc->use_arf_in_this_kf_group = is_altref_enabled(
+  p_rc->use_arf_in_this_kf_group = is_altref_enabled(
       oxcf->gf_cfg.lag_in_frames, oxcf->gf_cfg.enable_auto_arf);
 
   // Reset the GF group data structures.
@@ -3178,14 +3134,14 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   if (has_no_stats_stage(cpi)) {
     int num_frames_to_app_forced_key = detect_app_forced_key(cpi);
-    rc->this_key_frame_forced =
+    p_rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;
     if (num_frames_to_app_forced_key != -1)
       rc->frames_to_key = num_frames_to_app_forced_key;
     else
       rc->frames_to_key = AOMMAX(1, kf_cfg->key_freq_max);
     correct_frames_to_key(cpi);
-    rc->kf_boost = DEFAULT_KF_BOOST;
+    p_rc->kf_boost = DEFAULT_KF_BOOST;
     gf_group->update_type[0] = KF_UPDATE;
     return;
   }
@@ -3203,7 +3159,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int64_t kf_group_bits_clipped = INT64_MAX;
 
   // Is this a forced key frame by interval.
-  rc->this_key_frame_forced = rc->next_key_frame_forced;
+  p_rc->this_key_frame_forced = p_rc->next_key_frame_forced;
 
   twopass->kf_group_bits = 0;        // Total bits available to kf group
   twopass->kf_group_error_left = 0;  // Group modified error score.
@@ -3219,7 +3175,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   else
     rc->frames_to_key = kf_cfg->key_freq_max;
 
-  if (cpi->lap_enabled) correct_frames_to_key(cpi);
+  if (cpi->ppi->lap_enabled) correct_frames_to_key(cpi);
 
   // If there is a max kf interval set by the user we must obey it.
   // We already breakout of the loop above at 2x max.
@@ -3241,28 +3197,29 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
           calculate_modified_err(frame_info, twopass, oxcf, &tmp_frame);
       if (EOF == input_stats(twopass, &tmp_frame)) break;
     }
-    rc->next_key_frame_forced = 1;
+    p_rc->next_key_frame_forced = 1;
   } else if ((twopass->stats_in == twopass->stats_buf_ctx->stats_in_end &&
               is_stat_consumption_stage_twopass(cpi)) ||
              rc->frames_to_key >= kf_cfg->key_freq_max) {
-    rc->next_key_frame_forced = 1;
+    p_rc->next_key_frame_forced = 1;
   } else {
-    rc->next_key_frame_forced = 0;
+    p_rc->next_key_frame_forced = 0;
   }
 
-  if (kf_cfg->fwd_kf_enabled) rc->next_is_fwd_key |= rc->next_key_frame_forced;
+  if (kf_cfg->fwd_kf_enabled)
+    p_rc->next_is_fwd_key |= p_rc->next_key_frame_forced;
 
   // Special case for the last key frame of the file.
   if (twopass->stats_in >= twopass->stats_buf_ctx->stats_in_end) {
     // Accumulate kf group error.
     kf_group_err +=
         calculate_modified_err(frame_info, twopass, oxcf, this_frame);
-    rc->next_is_fwd_key = 0;
+    p_rc->next_is_fwd_key = 0;
   }
 
   // Calculate the number of bits that should be assigned to the kf group.
   if ((twopass->bits_left > 0 && twopass->modified_error_left > 0.0) ||
-      (cpi->lap_enabled && oxcf->rc_cfg.mode != AOM_Q)) {
+      (cpi->ppi->lap_enabled && oxcf->rc_cfg.mode != AOM_Q)) {
     // Maximum number of bits for a single normal frame (not key frame).
     const int max_bits = frame_max_bits(rc, oxcf);
 
@@ -3287,7 +3244,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   }
   twopass->kf_group_bits = AOMMAX(0, twopass->kf_group_bits);
 
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     // In the case of single pass based on LAP, frames to  key may have an
     // inaccurate value, and hence should be clipped to an appropriate
     // interval.
@@ -3318,17 +3275,17 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->section_intra_rating = calculate_section_intra_ratio(
       start_position, twopass->stats_buf_ctx->stats_in_end, rc->frames_to_key);
 
-  rc->kf_boost = (int)boost_score;
+  p_rc->kf_boost = (int)boost_score;
 
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     if (oxcf->rc_cfg.mode == AOM_Q) {
-      rc->kf_boost = get_projected_kf_boost(cpi);
+      p_rc->kf_boost = get_projected_kf_boost(cpi);
     } else {
       // TODO(any): Explore using average frame stats for AOM_Q as well.
       boost_score = get_kf_boost_score(
           cpi, kf_raw_err, &zero_motion_accumulator, &sr_accumulator, 1);
       reset_fpf_position(twopass, start_position);
-      rc->kf_boost += (int)boost_score;
+      p_rc->kf_boost += (int)boost_score;
     }
   }
 
@@ -3336,13 +3293,13 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // if the kf group is very short.
   if ((zero_motion_accumulator > STATIC_KF_GROUP_FLOAT_THRESH) &&
       (rc->frames_to_key > 8)) {
-    rc->kf_boost = AOMMAX(rc->kf_boost, MIN_STATIC_KF_BOOST);
+    p_rc->kf_boost = AOMMAX(p_rc->kf_boost, MIN_STATIC_KF_BOOST);
   } else {
     // Apply various clamps for min and max boost
-    rc->kf_boost = AOMMAX(rc->kf_boost, (rc->frames_to_key * 3));
-    rc->kf_boost = AOMMAX(rc->kf_boost, MIN_KF_BOOST);
+    p_rc->kf_boost = AOMMAX(p_rc->kf_boost, (rc->frames_to_key * 3));
+    p_rc->kf_boost = AOMMAX(p_rc->kf_boost, MIN_KF_BOOST);
 #ifdef STRICT_RC
-    rc->kf_boost = AOMMIN(rc->kf_boost, MAX_KF_BOOST);
+    p_rc->kf_boost = AOMMIN(p_rc->kf_boost, MAX_KF_BOOST);
 #endif
   }
 
@@ -3351,9 +3308,10 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // very high, we calculate the bits based on a clipped value of
   // frames_to_key.
   kf_bits = calculate_boost_bits(
-      AOMMIN(rc->frames_to_key, frames_to_key_clipped) - 1, rc->kf_boost,
+      AOMMIN(rc->frames_to_key, frames_to_key_clipped) - 1, p_rc->kf_boost,
       AOMMIN(twopass->kf_group_bits, kf_group_bits_clipped));
-  // printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n", rc->kf_boost,
+  // printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n",
+  // p_rc->kf_boost,
   //        kf_bits, twopass->kf_zeromotion_pct);
   kf_bits = adjust_boost_bits_for_target_level(cpi, rc, kf_bits,
                                                twopass->kf_group_bits, 0);
@@ -3365,7 +3323,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   gf_group->update_type[0] = KF_UPDATE;
 
   // Note the total error score of the kf group minus the key frame itself.
-  if (cpi->lap_enabled)
+  if (cpi->ppi->lap_enabled)
     // As we don't have enough stats to know the actual error of the group,
     // we assume the complexity of each frame to be equal to 1, and set the
     // error as the number of frames in the group(minus the keyframe).
@@ -3385,7 +3343,7 @@ static int is_skippable_frame(const AV1_COMP *cpi) {
   // first  pass, and so do its previous and forward frames, then this frame
   // can be skipped for partition check, and the partition size is assigned
   // according to the variance
-  const TWO_PASS *const twopass = &cpi->twopass;
+  const TWO_PASS *const twopass = &cpi->ppi->twopass;
 
   return (!frame_is_intra_only(&cpi->common) &&
           twopass->stats_in - 2 > twopass->stats_buf_ctx->stats_in_start &&
@@ -3408,11 +3366,11 @@ static int get_section_target_bandwidth(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   int section_target_bandwidth;
   const int frames_left = (int)(twopass->stats_buf_ctx->total_stats->count -
                                 current_frame->frame_number);
-  if (cpi->lap_enabled)
+  if (cpi->ppi->lap_enabled)
     section_target_bandwidth = (int)rc->avg_frame_bandwidth;
   else
     section_target_bandwidth = (int)(twopass->bits_left / frames_left);
@@ -3424,18 +3382,19 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
 
   if (cpi->oxcf.rc_cfg.mode != AOM_Q && current_frame->frame_number == 0 &&
-      cpi->gf_frame_index == 0 && cpi->twopass.stats_buf_ctx->total_stats &&
-      cpi->twopass.stats_buf_ctx->total_left_stats) {
-    if (cpi->lap_enabled) {
+      cpi->gf_frame_index == 0 &&
+      cpi->ppi->twopass.stats_buf_ctx->total_stats &&
+      cpi->ppi->twopass.stats_buf_ctx->total_left_stats) {
+    if (cpi->ppi->lap_enabled) {
       /*
        * Accumulate total_stats using available limited number of stats,
        * and assign it to total_left_stats.
        */
-      *cpi->twopass.stats_buf_ctx->total_left_stats =
-          *cpi->twopass.stats_buf_ctx->total_stats;
+      *cpi->ppi->twopass.stats_buf_ctx->total_left_stats =
+          *cpi->ppi->twopass.stats_buf_ctx->total_stats;
     }
     // Special case code for first frame.
     const int section_target_bandwidth = get_section_target_bandwidth(cpi);
@@ -3456,14 +3415,14 @@ static void process_first_pass_stats(AV1_COMP *cpi,
     rc->active_worst_quality = tmp_q;
     rc->ni_av_qi = tmp_q;
     rc->last_q[INTER_FRAME] = tmp_q;
-    rc->avg_q = av1_convert_qindex_to_q(tmp_q, cm->seq_params.bit_depth);
+    rc->avg_q = av1_convert_qindex_to_q(tmp_q, cm->seq_params->bit_depth);
     rc->avg_frame_qindex[INTER_FRAME] = tmp_q;
     rc->last_q[KEY_FRAME] = (tmp_q + cpi->oxcf.rc_cfg.best_allowed_q) / 2;
     rc->avg_frame_qindex[KEY_FRAME] = rc->last_q[KEY_FRAME];
   }
 
   int err = 0;
-  if (cpi->lap_enabled) {
+  if (cpi->ppi->lap_enabled) {
     err = input_stats_lap(twopass, this_frame);
   } else {
     err = input_stats(twopass, this_frame);
@@ -3490,7 +3449,7 @@ static void process_first_pass_stats(AV1_COMP *cpi,
 
 static void setup_target_rate(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
-  GF_GROUP *const gf_group = &cpi->gf_group;
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
 
   int target_rate = gf_group->bit_allocation[cpi->gf_frame_index];
 
@@ -3502,13 +3461,148 @@ static void setup_target_rate(AV1_COMP *cpi) {
   rc->base_frame_target = target_rate;
 }
 
+static void mark_flashes(FIRSTPASS_STATS *first_stats,
+                         FIRSTPASS_STATS *last_stats) {
+  FIRSTPASS_STATS *this_stats = first_stats, *next_stats;
+  while (this_stats < last_stats - 1) {
+    next_stats = this_stats + 1;
+    if (next_stats->pcnt_second_ref > next_stats->pcnt_inter &&
+        next_stats->pcnt_second_ref >= 0.5) {
+      this_stats->is_flash = 1;
+    } else {
+      this_stats->is_flash = 0;
+    }
+    this_stats = next_stats;
+  }
+  // We always treat the last one as none flash.
+  if (last_stats - 1 >= first_stats) {
+    (last_stats - 1)->is_flash = 0;
+  }
+}
+
+// Estimate the noise variance of each frame from the first pass stats
+static void estimate_noise(FIRSTPASS_STATS *first_stats,
+                           FIRSTPASS_STATS *last_stats) {
+  FIRSTPASS_STATS *this_stats, *next_stats;
+  double C1, C2, C3, noise;
+  int count = 0;
+  for (this_stats = first_stats + 2; this_stats < last_stats; this_stats++) {
+    this_stats->noise_var = 0.0;
+    // flashes tend to have high correlation of innovations, so ignore them.
+    if (this_stats->is_flash || (this_stats - 1)->is_flash ||
+        (this_stats - 2)->is_flash)
+      continue;
+
+    C1 = (this_stats - 1)->intra_error *
+         (this_stats->intra_error - this_stats->coded_error);
+    C2 = (this_stats - 2)->intra_error *
+         ((this_stats - 1)->intra_error - (this_stats - 1)->coded_error);
+    C3 = (this_stats - 2)->intra_error *
+         (this_stats->intra_error - this_stats->sr_coded_error);
+    if (C1 <= 0 || C2 <= 0 || C3 <= 0) continue;
+    C1 = sqrt(C1);
+    C2 = sqrt(C2);
+    C3 = sqrt(C3);
+
+    noise = (this_stats - 1)->intra_error - C1 * C2 / C3;
+    noise = AOMMAX(noise, 0.01);
+    this_stats->noise_var = noise;
+    count++;
+  }
+
+  // Copy noise from the neighbor if the noise value is not trustworthy
+  for (this_stats = first_stats + 2; this_stats < last_stats; this_stats++) {
+    if (this_stats->is_flash || (this_stats - 1)->is_flash ||
+        (this_stats - 2)->is_flash)
+      continue;
+    if (this_stats->noise_var < 1.0) {
+      int found = 0;
+      // TODO(bohanli): consider expanding to two directions at the same time
+      for (next_stats = this_stats + 1; next_stats < last_stats; next_stats++) {
+        if (next_stats->is_flash || (next_stats - 1)->is_flash ||
+            (next_stats - 2)->is_flash || next_stats->noise_var < 1.0)
+          continue;
+        found = 1;
+        this_stats->noise_var = next_stats->noise_var;
+        break;
+      }
+      if (found) continue;
+      for (next_stats = this_stats - 1; next_stats >= first_stats + 2;
+           next_stats--) {
+        if (next_stats->is_flash || (next_stats - 1)->is_flash ||
+            (next_stats - 2)->is_flash || next_stats->noise_var < 1.0)
+          continue;
+        this_stats->noise_var = next_stats->noise_var;
+        break;
+      }
+    }
+  }
+
+  // copy the noise if this is a flash
+  for (this_stats = first_stats + 2; this_stats < last_stats; this_stats++) {
+    if (this_stats->is_flash || (this_stats - 1)->is_flash ||
+        (this_stats - 2)->is_flash) {
+      int found = 0;
+      for (next_stats = this_stats + 1; next_stats < last_stats; next_stats++) {
+        if (next_stats->is_flash || (next_stats - 1)->is_flash ||
+            (next_stats - 2)->is_flash)
+          continue;
+        found = 1;
+        this_stats->noise_var = next_stats->noise_var;
+        break;
+      }
+      if (found) continue;
+      for (next_stats = this_stats - 1; next_stats >= first_stats + 2;
+           next_stats--) {
+        if (next_stats->is_flash || (next_stats - 1)->is_flash ||
+            (next_stats - 2)->is_flash)
+          continue;
+        this_stats->noise_var = next_stats->noise_var;
+        break;
+      }
+    }
+  }
+
+  // if we are at the first 2 frames, copy the noise
+  for (this_stats = first_stats;
+       this_stats < first_stats + 2 && (first_stats + 2) < last_stats;
+       this_stats++) {
+    this_stats->noise_var = (first_stats + 2)->noise_var;
+  }
+}
+
+// Estimate correlation coefficient of each frame with its previous frame.
+static void estimate_coeff(FIRSTPASS_STATS *first_stats,
+                           FIRSTPASS_STATS *last_stats) {
+  FIRSTPASS_STATS *this_stats;
+  for (this_stats = first_stats + 1; this_stats < last_stats; this_stats++) {
+    const double C =
+        sqrt(AOMMAX((this_stats - 1)->intra_error *
+                        (this_stats->intra_error - this_stats->coded_error),
+                    0.001));
+    const double cor_coeff =
+        C /
+        AOMMAX((this_stats - 1)->intra_error - this_stats->noise_var, 0.001);
+
+    this_stats->cor_coeff =
+        cor_coeff *
+        sqrt(AOMMAX((this_stats - 1)->intra_error - this_stats->noise_var,
+                    0.001) /
+             AOMMAX(this_stats->intra_error - this_stats->noise_var, 0.001));
+    // clip correlation coefficient.
+    this_stats->cor_coeff = AOMMIN(AOMMAX(this_stats->cor_coeff, 0), 1);
+  }
+  first_stats->cor_coeff = 1.0;
+}
+
 void av1_get_second_pass_params(AV1_COMP *cpi,
                                 EncodeFrameParams *const frame_params,
                                 const EncodeFrameInput *const frame_input,
                                 unsigned int frame_flags) {
   RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &cpi->gf_group;
+  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
@@ -3609,7 +3703,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
            cpi->gf_frame_index == gf_group->size);
     const FIRSTPASS_STATS *const start_position = twopass->stats_in;
 
-    if (cpi->lap_enabled && cpi->rc.enable_scenecut_detection) {
+    if (cpi->ppi->lap_enabled && cpi->ppi->p_rc.enable_scenecut_detection) {
       int num_frames_to_detect_scenecut, frames_to_key;
       num_frames_to_detect_scenecut = MAX_GF_LENGTH_LAP + 1;
       frames_to_key = define_kf_interval(cpi, &this_frame, NULL,
@@ -3628,41 +3722,45 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
             : MAX_GF_LENGTH_LAP;
 
     // Identify regions if needed.
+    // TODO(bohanli): identify regions for all stats available.
     if (rc->frames_since_key == 0 || rc->frames_since_key == 1 ||
-        (rc->frames_till_regions_update - rc->frames_since_key <
+        (p_rc->frames_till_regions_update - rc->frames_since_key <
              rc->frames_to_key &&
-         rc->frames_till_regions_update - rc->frames_since_key <
+         p_rc->frames_till_regions_update - rc->frames_since_key <
              max_gop_length + 1)) {
-      int is_first_stat =
-          twopass->stats_in == twopass->stats_buf_ctx->stats_in_start;
-      const FIRSTPASS_STATS *stats_start = twopass->stats_in + is_first_stat;
-      // offset of stats_start from the current frame
-      int offset = is_first_stat || (rc->frames_since_key == 0);
-      // offset of the region indices from the previous key frame
-      rc->regions_offset = rc->frames_since_key;
       // how many frames we can analyze from this frame
-      int rest_frames = AOMMIN(rc->frames_to_key + rc->next_is_fwd_key,
+      int rest_frames = AOMMIN(rc->frames_to_key + p_rc->next_is_fwd_key,
                                MAX_FIRSTPASS_ANALYSIS_FRAMES);
-      rest_frames =
-          AOMMIN(rest_frames,
-                 (int)(twopass->stats_buf_ctx->stats_in_end - stats_start + 1) +
-                     offset);
+      rest_frames = AOMMIN(
+          rest_frames, (int)(twopass->stats_buf_ctx->stats_in_end -
+                             twopass->stats_in + (rc->frames_since_key == 0)));
+      p_rc->frames_till_regions_update = rest_frames;
 
-      rc->frames_till_regions_update = rest_frames;
-
-      identify_regions(stats_start, rest_frames - offset, offset, rc->regions,
-                       &rc->num_regions, rc->cor_coeff, rc->noise_var);
+      if (cpi->ppi->lap_enabled) {
+        mark_flashes(twopass->stats_buf_ctx->stats_in_start,
+                     twopass->stats_buf_ctx->stats_in_end);
+        estimate_noise(twopass->stats_buf_ctx->stats_in_start,
+                       twopass->stats_buf_ctx->stats_in_end);
+        estimate_coeff(twopass->stats_buf_ctx->stats_in_start,
+                       twopass->stats_buf_ctx->stats_in_end);
+        identify_regions(twopass->stats_in, rest_frames,
+                         (rc->frames_since_key == 0), p_rc->regions,
+                         &p_rc->num_regions);
+      } else {
+        identify_regions(twopass->stats_in - (rc->frames_since_key == 0),
+                         rest_frames, 0, p_rc->regions, &p_rc->num_regions);
+      }
     }
 
     int cur_region_idx =
-        find_regions_index(rc->regions, rc->num_regions,
-                           rc->frames_since_key - rc->regions_offset);
+        find_regions_index(p_rc->regions, p_rc->num_regions,
+                           rc->frames_since_key - p_rc->regions_offset);
     if ((cur_region_idx >= 0 &&
-         rc->regions[cur_region_idx].type == SCENECUT_REGION) ||
+         p_rc->regions[cur_region_idx].type == SCENECUT_REGION) ||
         rc->frames_since_key == 0) {
       // If we start from a scenecut, then the last GOP's arf boost is not
       // needed for this GOP.
-      cpi->gf_state.arf_gf_boost_lst = 0;
+      cpi->ppi->gf_state.arf_gf_boost_lst = 0;
     }
 
     // TODO(jingning): Resoleve the redundant calls here.
@@ -3671,49 +3769,35 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     }
 
     if (max_gop_length > 16 && oxcf->algo_cfg.enable_tpl_model &&
-        !cpi->sf.tpl_sf.disable_gop_length_decision) {
-      int this_idx = rc->frames_since_key + rc->gf_intervals[rc->cur_gf_index] -
-                     rc->regions_offset - 1;
+        cpi->sf.tpl_sf.gop_length_decision_method != 3) {
+      int this_idx = rc->frames_since_key +
+                     p_rc->gf_intervals[p_rc->cur_gf_index] -
+                     p_rc->regions_offset - 1;
       int this_region =
-          find_regions_index(rc->regions, rc->num_regions, this_idx);
+          find_regions_index(p_rc->regions, p_rc->num_regions, this_idx);
       int next_region =
-          find_regions_index(rc->regions, rc->num_regions, this_idx + 1);
+          find_regions_index(p_rc->regions, p_rc->num_regions, this_idx + 1);
       int is_last_scenecut =
-          (rc->gf_intervals[rc->cur_gf_index] >= rc->frames_to_key ||
-           rc->regions[this_region].type == SCENECUT_REGION ||
-           rc->regions[next_region].type == SCENECUT_REGION);
-      int ori_gf_int = rc->gf_intervals[rc->cur_gf_index];
+          (p_rc->gf_intervals[p_rc->cur_gf_index] >= rc->frames_to_key ||
+           p_rc->regions[this_region].type == SCENECUT_REGION ||
+           p_rc->regions[next_region].type == SCENECUT_REGION);
+      int ori_gf_int = p_rc->gf_intervals[p_rc->cur_gf_index];
 
-      if (rc->gf_intervals[rc->cur_gf_index] > 16) {
+      if (p_rc->gf_intervals[p_rc->cur_gf_index] > 16) {
         // The calculate_gf_length function is previously used with
         // max_gop_length = 32 with look-ahead gf intervals.
         define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 0);
         this_frame = this_frame_copy;
-        int is_temporal_filter_enabled =
-            (rc->frames_since_key > 0 && gf_group->arf_index > -1);
-        if (is_temporal_filter_enabled) {
-          int arf_src_index = gf_group->arf_src_offset[gf_group->arf_index];
-          FRAME_UPDATE_TYPE arf_update_type =
-              gf_group->update_type[gf_group->arf_index];
-          int is_forward_keyframe = 0;
-          av1_temporal_filter(cpi, arf_src_index, arf_update_type,
-                              is_forward_keyframe, NULL);
-          aom_extend_frame_borders(&cpi->alt_ref_buffer,
-                                   av1_num_planes(&cpi->common));
-        }
-        if (!av1_tpl_setup_stats(cpi, 1, frame_params, frame_input)) {
-          // Tpl decides that a shorter gf interval is better.
+
+        if (is_shorter_gf_interval_better(cpi, frame_params, frame_input)) {
+          // A shorter gf interval is better.
           // TODO(jingning): Remove redundant computations here.
           max_gop_length = 16;
           calculate_gf_length(cpi, max_gop_length, 1);
           if (is_last_scenecut &&
-              (ori_gf_int - rc->gf_intervals[rc->cur_gf_index] < 4)) {
-            rc->gf_intervals[rc->cur_gf_index] = ori_gf_int;
+              (ori_gf_int - p_rc->gf_intervals[p_rc->cur_gf_index] < 4)) {
+            p_rc->gf_intervals[p_rc->cur_gf_index] = ori_gf_int;
           }
-        } else {
-          // Tpl stats is reused only when the ARF frame is temporally filtered
-          if (is_temporal_filter_enabled)
-            cpi->tpl_data.skip_tpl_setup_stats = 1;
         }
       }
     }
@@ -3725,7 +3809,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
     define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 1);
 
-    rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+    rc->frames_till_gf_update_due = p_rc->baseline_gf_interval;
     assert(cpi->gf_frame_index == 0);
 #if ARF_STATS_OUTPUT
     {
@@ -3734,8 +3818,8 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
       ++arf_count;
       fprintf(fpfile, "%10d %10d %10d %10d %10d\n",
               cpi->common.current_frame.frame_number,
-              rc->frames_till_gf_update_due, rc->kf_boost, arf_count,
-              rc->gfu_boost);
+              rc->frames_till_gf_update_due, cpi->ppi->p_rc.kf_boost, arf_count,
+              p_rc->gfu_boost);
 
       fclose(fpfile);
     }
@@ -3766,12 +3850,19 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
 void av1_init_second_pass(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   FRAME_INFO *const frame_info = &cpi->frame_info;
   double frame_rate;
   FIRSTPASS_STATS *stats;
 
   if (!twopass->stats_buf_ctx->stats_in_end) return;
+
+  mark_flashes(twopass->stats_buf_ctx->stats_in_start,
+               twopass->stats_buf_ctx->stats_in_end);
+  estimate_noise(twopass->stats_buf_ctx->stats_in_start,
+                 twopass->stats_buf_ctx->stats_in_end);
+  estimate_coeff(twopass->stats_buf_ctx->stats_in_start,
+                 twopass->stats_buf_ctx->stats_in_end);
 
   stats = twopass->stats_buf_ctx->total_stats;
 
@@ -3829,7 +3920,7 @@ void av1_init_second_pass(AV1_COMP *cpi) {
 }
 
 void av1_init_single_pass_lap(AV1_COMP *cpi) {
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
 
   if (!twopass->stats_buf_ctx->stats_in_end) return;
 
@@ -3863,7 +3954,7 @@ void av1_init_single_pass_lap(AV1_COMP *cpi) {
 #define MINQ_ADJ_LIMIT_CQ 20
 #define HIGH_UNDERSHOOT_RATIO 2
 void av1_twopass_postencode_update(AV1_COMP *cpi) {
-  TWO_PASS *const twopass = &cpi->twopass;
+  TWO_PASS *const twopass = &cpi->ppi->twopass;
   RATE_CONTROL *const rc = &cpi->rc;
   const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
 
@@ -3890,7 +3981,8 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
 
   // Update the active best quality pyramid.
   if (!rc->is_src_frame_alt_ref) {
-    const int pyramid_level = cpi->gf_group.layer_depth[cpi->gf_frame_index];
+    const int pyramid_level =
+        cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index];
     int i;
     for (i = pyramid_level; i <= MAX_ARF_LAYERS; ++i) {
       rc->active_best_quality[i] = cpi->common.quant_params.base_qindex;
@@ -3921,9 +4013,9 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
                 (double)twopass->rolling_arf_group_target_bits,
             twopass->bpm_factor,
             av1_convert_qindex_to_q(cpi->common.quant_params.base_qindex,
-                                    cm->seq_params.bit_depth),
+                                    cm->seq_params->bit_depth),
             av1_convert_qindex_to_q(rc->active_worst_quality,
-                                    cm->seq_params.bit_depth));
+                                    cm->seq_params->bit_depth));
     fclose(fpfile);
   }
 #endif

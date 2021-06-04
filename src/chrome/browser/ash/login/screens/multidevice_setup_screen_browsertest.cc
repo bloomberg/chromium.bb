@@ -20,7 +20,12 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "content/public/test/browser_test.h"
 
-namespace chromeos {
+namespace ash {
+
+// TODO(https://crbug.com/1164001): remove when migrated to ash::
+namespace multidevice_setup {
+namespace mojom = ::chromeos::multidevice_setup::mojom;
+}
 
 constexpr test::UIPath kMultideviceSetupPath = {"multidevice-setup-screen",
                                                 "impl", "multideviceSetup"};
@@ -102,7 +107,7 @@ class MultiDeviceSetupScreenTest : public OobeBaseTest {
         !Accepted);
   }
 
-  base::Optional<MultiDeviceSetupScreen::Result> screen_result_;
+  absl::optional<MultiDeviceSetupScreen::Result> screen_result_;
   base::HistogramTester histogram_tester_;
 
  private:
@@ -166,4 +171,4 @@ IN_PROC_BROWSER_TEST_F(MultiDeviceSetupScreenTest, Skipped) {
       "OOBE.StepCompletionTime.Multidevice-setup-screen", 0);
 }
 
-}  // namespace chromeos
+}  // namespace ash

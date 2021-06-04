@@ -4,6 +4,8 @@
 
 #include "components/sync/base/sync_base_switches.h"
 
+#include "base/metrics/field_trial_params.h"
+
 namespace switches {
 
 // Overrides the default server used for profile sync.
@@ -26,11 +28,5 @@ const base::Feature kSyncForceDisableScryptForCustomPassphrase{
 
 const base::Feature kSyncE2ELatencyMeasurement = {
     "SyncE2ELatencyMeasurement", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSyncCustomSharingMessageNudgeDelay = {
-    "SyncCustomSharingMessageNudgeDelay", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::FeatureParam<int> kSyncSharingMessageNudgeDelayMilliseconds{
-    &kSyncCustomSharingMessageNudgeDelay,
-    "SyncSharingMessageNudgeDelayMilliseconds", 50};
 
 }  // namespace switches

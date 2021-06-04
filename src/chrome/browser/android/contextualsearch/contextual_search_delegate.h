@@ -58,12 +58,6 @@ class ContextualSearchDelegate
       base::WeakPtr<ContextualSearchContext> contextual_search_context,
       content::WebContents* web_contents);
 
-  // If the caller chooses not to call |GatherAndSaveSurroundingText| then they
-  // must call this method to set the active context before calling
-  // |StartSearchTermResolutionRequest|.
-  void SetActiveContext(
-      base::WeakPtr<ContextualSearchContext> contextual_search_context);
-
   // Starts an asynchronous search term resolution request.
   // The given context includes some content from a web page and must be able
   // to resolve.
@@ -155,7 +149,7 @@ class ContextualSearchDelegate
       std::string* search_url_full,
       std::string* search_url_preload,
       int* coca_card_tag,
-      std::vector<std::string>* related_searches);
+      std::string* related_searches_json);
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.

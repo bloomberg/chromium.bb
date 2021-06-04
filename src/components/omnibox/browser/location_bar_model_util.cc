@@ -4,8 +4,11 @@
 
 #include "components/omnibox/browser/location_bar_model_util.h"
 
+#include "base/feature_list.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/buildflags.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "ui/gfx/vector_icon_types.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
@@ -21,13 +24,17 @@ const gfx::VectorIcon& GetSecurityVectorIcon(
   switch (security_level) {
     case security_state::NONE:
       return omnibox::kHttpIcon;
-    case security_state::SECURE:
-      return omnibox::kHttpsValidIcon;
+    case security_state::SECURE: {
+      return base::FeatureList::IsEnabled(
+                 omnibox::kUpdatedConnectionSecurityIndicators)
+                 ? vector_icons::kHttpsValidArrowIcon
+                 : vector_icons::kHttpsValidIcon;
+    }
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::WARNING:
     case security_state::DANGEROUS:
-      return omnibox::kNotSecureWarningIcon;
+      return vector_icons::kNotSecureWarningIcon;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return omnibox::kHttpIcon;

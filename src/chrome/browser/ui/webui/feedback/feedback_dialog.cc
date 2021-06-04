@@ -39,6 +39,11 @@ using extensions::api::feedback_private::FeedbackInfo;
 FeedbackDialog* FeedbackDialog::current_instance_ = nullptr;
 
 // static
+FeedbackDialog* FeedbackDialog::GetInstanceForTest() {
+  return current_instance_;
+}
+
+// static
 void FeedbackDialog::CreateOrShow(
     const extensions::api::feedback_private::FeedbackInfo& info) {
   // Focus the window hosting the dialog that has already been created.
@@ -112,6 +117,10 @@ void FeedbackDialog::Show() const {
   // Therefore, it is safer to check whether the widget_ is null
   if (this->widget_)
     this->widget_->Show();
+}
+
+views::Widget* FeedbackDialog::GetWidget() const {
+  return this->widget_;
 }
 
 void FeedbackDialog::RequestMediaAccessPermission(

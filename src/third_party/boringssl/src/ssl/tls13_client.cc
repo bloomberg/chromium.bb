@@ -388,6 +388,7 @@ static enum ssl_hs_wait_t do_read_server_hello(SSL_HANDSHAKE *hs) {
     }
 
     ssl->s3->session_reused = true;
+    hs->can_release_private_key = true;
     // Only authentication information carries over in TLS 1.3.
     hs->new_session =
         SSL_SESSION_dup(ssl->session.get(), SSL_SESSION_DUP_AUTH_ONLY);
@@ -400,7 +401,7 @@ static enum ssl_hs_wait_t do_read_server_hello(SSL_HANDSHAKE *hs) {
     // Resumption incorporates fresh key material, so refresh the timeout.
     ssl_session_renew_timeout(ssl, hs->new_session.get(),
                               ssl->session_ctx->session_psk_dhe_timeout);
-  } else if (!ssl_get_new_session(hs, 0)) {
+  } else if (!ssl_get_new_session(hs)) {
     ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_INTERNAL_ERROR);
     return ssl_hs_error;
   }
@@ -817,6 +818,7 @@ static enum ssl_hs_wait_t do_send_client_certificate_verify(SSL_HANDSHAKE *hs) {
 
 static enum ssl_hs_wait_t do_complete_second_flight(SSL_HANDSHAKE *hs) {
   SSL *const ssl = hs->ssl;
+  hs->can_release_private_key = true;
 
   // Send a Channel ID assertion if necessary.
   if (ssl->s3->channel_id_valid) {
@@ -1051,8 +1053,8 @@ UniquePtr<SSL_SESSION> tls13_create_session_with_ticket(SSL *ssl, CBS *body) {
     }
   }
 
-  // Generate a session ID for this session. Some callers expect all sessions to
-  // have a session ID.
+  // Historically, OpenSSL filled in fake session IDs for ticket-based sessions.
+  // TODO(davidben): Are external callers relying on this? Try removing this.
   SHA256(CBS_data(&ticket), CBS_len(&ticket), session->session_id);
   session->session_id_length = SHA256_DIGEST_LENGTH;
 

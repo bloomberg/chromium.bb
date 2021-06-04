@@ -66,6 +66,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       // Search and Assistant section.
       chromeos::settings::mojom::kSearchAndAssistantSectionPath,
       chromeos::settings::mojom::kAssistantSubpagePath,
+      chromeos::settings::mojom::kSearchSubpagePath,
 
       // Apps section.
       chromeos::settings::mojom::kAppsSectionPath,
@@ -73,6 +74,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kAppDetailsSubpagePath,
       chromeos::settings::mojom::kGooglePlayStoreSubpagePath,
       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath,
+      chromeos::settings::mojom::kOnStartupSubpagePath,
 
       // Crostini section.
       chromeos::settings::mojom::kCrostiniSectionPath,
@@ -83,9 +85,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kCrostiniDevelopAndroidAppsSubpagePath,
       chromeos::settings::mojom::kCrostiniPortForwardingSubpagePath,
 
-      // On Startup section.
-      chromeos::settings::mojom::kOnStartupSectionPath,
-
       // Date and Time section.
       chromeos::settings::mojom::kDateAndTimeSectionPath,
       chromeos::settings::mojom::kTimeZoneSubpagePath,
@@ -95,8 +94,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
 
       // Languages and Input section.
       chromeos::settings::mojom::kLanguagesAndInputSectionPath,
-      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath,
-      chromeos::settings::mojom::kManageInputMethodsSubpagePath,
       chromeos::settings::mojom::kSmartInputsSubpagePath,
       chromeos::settings::mojom::kInputMethodOptionsSubpagePath,
       chromeos::settings::mojom::kLanguagesSubpagePath,

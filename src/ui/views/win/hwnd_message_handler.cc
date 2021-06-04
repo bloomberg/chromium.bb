@@ -17,6 +17,7 @@
 #include "base/callback_helpers.h"
 #include "base/debug/gdi_debug_util_win.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
@@ -35,6 +36,7 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
+#include "ui/base/cursor/win/win_cursor.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_features.h"
@@ -402,7 +404,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       waiting_for_close_now_(false),
       use_system_default_icon_(false),
       restored_enabled_(false),
-      current_cursor_(nullptr),
+      current_cursor_(base::MakeRefCounted<ui::WinCursor>()),
       dpi_(0),
       called_enable_non_client_dpi_scaling_(false),
       active_mouse_tracking_flags_(0),
@@ -863,10 +865,12 @@ bool HWNDMessageHandler::SetTitle(const std::u16string& title) {
   return true;
 }
 
-void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
+void HWNDMessageHandler::SetCursor(scoped_refptr<ui::WinCursor> cursor) {
+  DCHECK(cursor);
+
   TRACE_EVENT1("ui,input", "HWNDMessageHandler::SetCursor", "cursor",
-               static_cast<const void*>(cursor));
-  ::SetCursor(cursor);
+               static_cast<const void*>(cursor->hcursor()));
+  ::SetCursor(cursor->hcursor());
   current_cursor_ = cursor;
 }
 
@@ -992,7 +996,7 @@ HICON HWNDMessageHandler::GetSmallWindowIcon() const {
 LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
-  TRACE_EVENT("ui", "HWNDMessageHandler::OnWndProc",
+  TRACE_EVENT("ui,toplevel", "HWNDMessageHandler::OnWndProc",
               [&](perfetto::EventContext ctx) {
                 perfetto::protos::pbzero::ChromeWindowHandleEventInfo* args =
                     ctx.event()->set_chrome_window_handle_event_info();
@@ -2491,12 +2495,15 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
   if (is_pen_active_in_client_area_)
     return 1;
 
+  // current_cursor_ must be a ui::WinCursor, so that custom image cursors are
+  // properly ref-counted. cursor below is only used for system cursors and
+  // doesn't replace the current cursor so an HCURSOR can be used directly.
+  wchar_t* cursor = IDC_ARROW;
   // Reimplement the necessary default behavior here. Calling DefWindowProc can
   // trigger weird non-client painting for non-glass windows with custom frames.
   // Using a ScopedRedrawLock to prevent caption rendering artifacts may allow
   // content behind this window to incorrectly paint in front of this window.
   // Invalidating the window to paint over either set of artifacts is not ideal.
-  wchar_t* cursor = IDC_ARROW;
   switch (LOWORD(l_param)) {
     case HTSIZE:
       cursor = IDC_SIZENWSE;
@@ -2724,8 +2731,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_ids_.insert(input[i].dwID);
         GenerateTouchEvent(ui::ET_TOUCH_PRESSED, touch_point, touch_id,
                            event_time, &touch_events);
-        ui::ComputeEventLatencyOSWinFromTickCount(ui::ET_TOUCH_PRESSED,
-                                                  input[i].dwTime, event_time);
+        ui::ComputeEventLatencyOSFromTOUCHINPUT(ui::ET_TOUCH_PRESSED, input[i],
+                                                event_time);
         touch_down_contexts_++;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
@@ -2736,16 +2743,16 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
           GenerateTouchEvent(ui::ET_TOUCH_MOVED, touch_point, touch_id,
                              event_time, &touch_events);
-          ui::ComputeEventLatencyOSWinFromTickCount(
-              ui::ET_TOUCH_MOVED, input[i].dwTime, event_time);
+          ui::ComputeEventLatencyOSFromTOUCHINPUT(ui::ET_TOUCH_MOVED, input[i],
+                                                  event_time);
         }
 
         if (input[i].dwFlags & TOUCHEVENTF_UP) {
           touch_ids_.erase(input[i].dwID);
           GenerateTouchEvent(ui::ET_TOUCH_RELEASED, touch_point, touch_id,
                              event_time, &touch_events);
-          ui::ComputeEventLatencyOSWinFromTickCount(
-              ui::ET_TOUCH_RELEASED, input[i].dwTime, event_time);
+          ui::ComputeEventLatencyOSFromTOUCHINPUT(ui::ET_TOUCH_RELEASED,
+                                                  input[i], event_time);
           id_generator_.ReleaseNumber(input[i].dwID);
         }
       }
@@ -3239,14 +3246,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
       ui::PointerDetails(ui::EventPointerType::kTouch, mapped_pointer_id,
                          radius_x, radius_y, pressure, rotation_angle),
       ui::GetModifiersFromKeyState());
-  if (pointer_info.PerformanceCount) {
-    ui::ComputeEventLatencyOSWinFromPerformanceCounter(
-        event_type, pointer_info.PerformanceCount, event_time);
-  } else {
-    ui::ComputeEventLatencyOSWinFromTickCount(event_type, pointer_info.dwTime,
-                                              event_time);
-  }
-
+  ui::ComputeEventLatencyOSFromPOINTER_INFO(event_type, pointer_info,
+                                            event_time);
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, event_time);
 

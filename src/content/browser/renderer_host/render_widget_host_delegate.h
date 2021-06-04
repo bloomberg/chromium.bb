@@ -136,7 +136,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Send OS Cut/Copy/Paste actions to the focused frame.
   virtual void ExecuteEditCommand(
       const std::string& command,
-      const base::Optional<std::u16string>& value) = 0;
+      const absl::optional<std::u16string>& value) = 0;
   virtual void Undo() = 0;
   virtual void Redo() = 0;
   virtual void Cut() = 0;
@@ -251,13 +251,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Returns the TextInputManager tracking text input state.
   virtual TextInputManager* GetTextInputManager();
-
-  // Returns true if this RenderWidgetHost should remain hidden. This is used by
-  // the RenderWidgetHost to ask the delegate if it can be shown in the event of
-  // something other than the WebContents attempting to enable visibility of
-  // this RenderWidgetHost.
-  // TODO(nasko): Move this to RenderViewHostDelegate.
-  virtual bool IsHidden();
 
   // Returns the associated RenderViewHostDelegateView*, if possible.
   virtual RenderViewHostDelegateView* GetDelegateView();

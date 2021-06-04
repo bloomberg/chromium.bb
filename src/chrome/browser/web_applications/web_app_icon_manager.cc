@@ -20,12 +20,13 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -171,9 +172,8 @@ bool WriteShortcutsMenuIcons(
     FileUtilsWrapper* utils,
     const base::FilePath& app_manifest_resources_directory,
     const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps) {
-  // TODO(crbug.com/1114638): Write monochrome icons too.
-  std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                         IconPurpose::MASKABLE};
+  std::array<IconPurpose, 3> purposes = {
+      IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
   for (IconPurpose purpose : purposes) {
     const base::FilePath shortcuts_menu_icons_dir =
         GetAppShortcutsMenuIconsDirectory(app_manifest_resources_directory,
@@ -227,18 +227,15 @@ bool WriteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
     return false;
   }
 
-  if (!WriteIcons(
-          utils.get(),
-          GetAppIconsDirectory(app_temp_dir.GetPath(), IconPurpose::ANY),
-          icon_bitmaps.any)) {
-    return false;
-  }
-  // TODO (crbug.com/1114638): Write Monochrome icons here.
-  if (!WriteIcons(
-          utils.get(),
-          GetAppIconsDirectory(app_temp_dir.GetPath(), IconPurpose::MASKABLE),
-          icon_bitmaps.maskable)) {
-    return false;
+  // Iterates over each icon purpose.
+  for (int p = static_cast<int>(IconPurpose::kMinValue);
+       p <= static_cast<int>(IconPurpose::kMaxValue); ++p) {
+    auto purpose = static_cast<IconPurpose>(p);
+    if (!WriteIcons(utils.get(),
+                    GetAppIconsDirectory(app_temp_dir.GetPath(), purpose),
+                    icon_bitmaps.GetBitmapsForPurpose(purpose))) {
+      return false;
+    }
   }
 
   base::FilePath manifest_resources_directory =
@@ -490,9 +487,8 @@ ShortcutsMenuIconBitmaps ReadShortcutsMenuIconsBlocking(
   for (const auto& icon_sizes : shortcuts_menu_icons_sizes) {
     IconBitmaps result;
 
-    // TODO(crbug.com/1114638): Read monochrome icons too.
-    std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                           IconPurpose::MASKABLE};
+    std::array<IconPurpose, 3> purposes = {
+        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
     for (IconPurpose purpose : purposes) {
       std::map<SquareSizePx, SkBitmap> bitmaps;
 
@@ -540,6 +536,38 @@ void WrapReadCompressedIconWithPurposeCallback(
     IconPurpose purpose,
     std::vector<uint8_t> data) {
   std::move(callback).Run(purpose, std::move(data));
+}
+
+gfx::ImageSkia ConvertUiScaleFactorsBitmapsToImageSkia(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    SquareSizeDip size_in_dip) {
+  gfx::ImageSkia image_skia;
+  auto it = icon_bitmaps.begin();
+  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+    float icon_scale = ui::GetScaleForScaleFactor(scale_factor);
+    SquareSizePx icon_size_in_px =
+        gfx::ScaleToFlooredSize(gfx::Size(size_in_dip, size_in_dip), icon_scale)
+            .width();
+
+    while (it != icon_bitmaps.end() && it->first < icon_size_in_px)
+      ++it;
+
+    if (it == icon_bitmaps.end() || it->second.empty())
+      break;
+
+    SkBitmap bitmap = it->second;
+
+    // Resize |bitmap| to match |icon_scale|.
+    if (bitmap.width() != icon_size_in_px) {
+      bitmap = skia::ImageOperations::Resize(bitmap,
+                                             skia::ImageOperations::RESIZE_BEST,
+                                             icon_size_in_px, icon_size_in_px);
+    }
+
+    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, icon_scale));
+  }
+
+  return image_skia;
 }
 
 constexpr base::TaskTraits kTaskTraits = {
@@ -593,11 +621,15 @@ void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
       std::move(callback));
 }
 
+WebAppIconManager* WebAppIconManager::AsWebAppIconManager() {
+  return this;
+}
+
 void WebAppIconManager::Start() {
   for (const AppId& app_id : registrar_.GetAppIds()) {
     ReadFavicon(app_id);
   }
-  registrar_observer_.Add(&registrar_);
+  registrar_observation_.Observe(&registrar_);
 }
 
 void WebAppIconManager::Shutdown() {}
@@ -614,14 +646,14 @@ bool WebAppIconManager::HasIcons(const AppId& app_id,
                                 icon_sizes);
 }
 
-base::Optional<AppIconManager::IconSizeAndPurpose>
+absl::optional<AppIconManager::IconSizeAndPurpose>
 WebAppIconManager::FindIconMatchBigger(const AppId& app_id,
                                        const std::vector<IconPurpose>& purposes,
                                        SquareSizePx min_size) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const WebApp* web_app = registrar_.GetAppById(app_id);
   if (!web_app)
-    return base::nullopt;
+    return absl::nullopt;
 
   // Must iterate through purposes in order given.
   for (IconPurpose purpose : purposes) {
@@ -633,7 +665,7 @@ WebAppIconManager::FindIconMatchBigger(const AppId& app_id,
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool WebAppIconManager::HasSmallestIcon(
@@ -710,7 +742,7 @@ void WebAppIconManager::ReadSmallestIcon(
     ReadIconWithPurposeCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Optional<IconSizeAndPurpose> best_icon =
+  absl::optional<IconSizeAndPurpose> best_icon =
       FindIconMatchBigger(app_id, purposes, min_size_in_px);
   DCHECK(best_icon.has_value());
   IconId icon_id(app_id, best_icon->purpose, best_icon->size_px);
@@ -731,7 +763,7 @@ void WebAppIconManager::ReadSmallestCompressedIcon(
     ReadCompressedIconWithPurposeCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Optional<IconSizeAndPurpose> best_icon =
+  absl::optional<IconSizeAndPurpose> best_icon =
       FindIconMatchBigger(app_id, purposes, min_size_in_px);
   DCHECK(best_icon.has_value());
   IconId icon_id(app_id, best_icon->purpose, best_icon->size_px);
@@ -750,7 +782,18 @@ SkBitmap WebAppIconManager::GetFavicon(const AppId& app_id) const {
   auto iter = favicon_cache_.find(app_id);
   if (iter == favicon_cache_.end())
     return SkBitmap();
-  return iter->second;
+
+  const gfx::ImageSkia& image_skia = iter->second;
+
+  // A representation for 1.0 UI scale factor is mandatory. GetRepresentation()
+  // should create one.
+  return image_skia.GetRepresentation(1.0f).GetBitmap();
+}
+
+gfx::ImageSkia WebAppIconManager::GetFaviconImageSkia(
+    const AppId& app_id) const {
+  auto iter = favicon_cache_.find(app_id);
+  return iter != favicon_cache_.end() ? iter->second : gfx::ImageSkia();
 }
 
 void WebAppIconManager::OnWebAppInstalled(const AppId& app_id) {
@@ -758,14 +801,14 @@ void WebAppIconManager::OnWebAppInstalled(const AppId& app_id) {
 }
 
 void WebAppIconManager::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
+  registrar_observation_.Reset();
 }
 
 void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
                                           IconPurpose purpose,
                                           SquareSizePx desired_icon_size,
                                           ReadIconsCallback callback) const {
-  base::Optional<IconSizeAndPurpose> best_icon =
+  absl::optional<IconSizeAndPurpose> best_icon =
       FindIconMatchBigger(app_id, {purpose}, desired_icon_size);
   if (!best_icon) {
     best_icon = FindIconMatchSmaller(app_id, {purpose}, desired_icon_size);
@@ -785,12 +828,46 @@ void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
       std::move(callback));
 }
 
+void WebAppIconManager::ReadUiScaleFactorsIcons(
+    const AppId& app_id,
+    SquareSizeDip size_in_dip,
+    ReadImageSkiaCallback callback) {
+  SortedSizesPx ui_scale_factors_px_sizes;
+  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+    auto size_and_purpose = FindIconMatchBigger(
+        app_id, {IconPurpose::ANY},
+        gfx::ScaleToFlooredSize(gfx::Size(size_in_dip, size_in_dip),
+                                ui::GetScaleForScaleFactor(scale_factor))
+            .width());
+    if (size_and_purpose.has_value())
+      ui_scale_factors_px_sizes.insert(size_and_purpose->size_px);
+  }
+
+  if (ui_scale_factors_px_sizes.empty()) {
+    std::move(callback).Run(gfx::ImageSkia());
+    return;
+  }
+
+  ReadIcons(app_id, IconPurpose::ANY, ui_scale_factors_px_sizes,
+            base::BindOnce(&WebAppIconManager::OnReadUiScaleFactorsIcons,
+                           weak_ptr_factory_.GetWeakPtr(), size_in_dip,
+                           std::move(callback)));
+}
+
+void WebAppIconManager::OnReadUiScaleFactorsIcons(
+    SquareSizeDip size_in_dip,
+    ReadImageSkiaCallback callback,
+    std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+  std::move(callback).Run(
+      ConvertUiScaleFactorsBitmapsToImageSkia(icon_bitmaps, size_in_dip));
+}
+
 void WebAppIconManager::SetFaviconReadCallbackForTesting(
     FaviconReadCallback callback) {
   favicon_read_callback_ = std::move(callback);
 }
 
-base::Optional<AppIconManager::IconSizeAndPurpose>
+absl::optional<AppIconManager::IconSizeAndPurpose>
 WebAppIconManager::FindIconMatchSmaller(
     const AppId& app_id,
     const std::vector<IconPurpose>& purposes,
@@ -798,7 +875,7 @@ WebAppIconManager::FindIconMatchSmaller(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const WebApp* web_app = registrar_.GetAppById(app_id);
   if (!web_app)
-    return base::nullopt;
+    return absl::nullopt;
 
   // Must check purposes in the order given.
   for (IconPurpose purpose : purposes) {
@@ -810,24 +887,21 @@ WebAppIconManager::FindIconMatchSmaller(
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void WebAppIconManager::ReadFavicon(const AppId& app_id) {
-  if (!HasSmallestIcon(app_id, {IconPurpose::ANY}, gfx::kFaviconSize))
-    return;
-
-  ReadIconAndResize(app_id, IconPurpose::ANY, gfx::kFaviconSize,
-                    base::BindOnce(&WebAppIconManager::OnReadFavicon,
-                                   weak_ptr_factory_.GetWeakPtr(), app_id));
+  ReadUiScaleFactorsIcons(
+      app_id, gfx::kFaviconSize,
+      base::BindOnce(&WebAppIconManager::OnReadFavicon,
+                     weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
-void WebAppIconManager::OnReadFavicon(
-    const AppId& app_id,
-    const std::map<SquareSizePx, SkBitmap> icons) {
-  const auto it = icons.find(gfx::kFaviconSize);
-  if (it != icons.end())
-    favicon_cache_[app_id] = it->second;
+void WebAppIconManager::OnReadFavicon(const AppId& app_id,
+                                      gfx::ImageSkia image_skia) {
+  if (!image_skia.isNull())
+    favicon_cache_[app_id] = image_skia;
+
   if (favicon_read_callback_)
     favicon_read_callback_.Run(app_id);
 }

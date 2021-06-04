@@ -65,7 +65,7 @@ class CORE_EXPORT NGHighlightPainter {
         Node* node,
         const Document& document,
         const ComputedStyle& style,
-        const base::Optional<AffineTransform>& rotation);
+        const absl::optional<AffineTransform>& rotation);
 
     void MapSelectionRectIntoRotatedSpace(const AffineTransform& rotation);
 
@@ -86,8 +86,8 @@ class CORE_EXPORT NGHighlightPainter {
     const LayoutSelectionStatus selection_status_;
     TextPaintStyle selection_style_;
     const SelectionState state_;
-    base::Optional<PhysicalRect> selection_rect_;
-    base::Optional<PhysicalRect> selection_rect_before_rotation_;
+    absl::optional<PhysicalRect> selection_rect_;
+    absl::optional<PhysicalRect> selection_rect_before_rotation_;
     const NGInlineCursor& containing_block_;
     bool paint_selected_text_only_;
   };
@@ -98,13 +98,18 @@ class CORE_EXPORT NGHighlightPainter {
                               const NGFragmentItem& fragment_item,
                               const PhysicalOffset& box_origin,
                               const ComputedStyle& style,
-                              base::Optional<SelectionPaintState>,
+                              absl::optional<SelectionPaintState>,
                               bool is_printing);
 
   enum Phase { kBackground, kForeground };
   void Paint(Phase phase);
 
-  base::Optional<SelectionPaintState>& Selection() { return selection_; }
+  absl::optional<SelectionPaintState>& Selection() { return selection_; }
+  absl::optional<AppliedTextDecoration> SelectionDecoration() {
+    return selection_
+               ? selection_->GetSelectionStyle().selection_text_decoration
+               : absl::nullopt;
+  }
 
  private:
   NGTextPainter& text_painter_;
@@ -113,7 +118,7 @@ class CORE_EXPORT NGHighlightPainter {
   const NGFragmentItem& fragment_item_;
   const PhysicalOffset& box_origin_;
   const ComputedStyle& style_;
-  base::Optional<SelectionPaintState> selection_;
+  absl::optional<SelectionPaintState> selection_;
   const LayoutObject* layout_object_;
   Node* node_;
   const DocumentMarkerVector markers_;
@@ -122,4 +127,4 @@ class CORE_EXPORT NGHighlightPainter {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_HIGHLIGHT_PAINTER_H_

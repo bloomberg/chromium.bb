@@ -13,9 +13,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/compiler_specific.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
-#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -24,7 +22,9 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/display/display.h"
@@ -325,6 +325,17 @@ class AutotestPrivateGetRegisteredSystemWebAppsFunction
 
  private:
   ~AutotestPrivateGetRegisteredSystemWebAppsFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateIsSystemWebAppOpenFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateIsSystemWebAppOpenFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isSystemWebAppOpen",
+                             AUTOTESTPRIVATE_ISSYSTEMWEBAPPOPENFUNCTION)
+
+ private:
+  ~AutotestPrivateIsSystemWebAppOpenFunction() override;
   ResponseAction Run() override;
 };
 
@@ -641,7 +652,7 @@ class AutotestPrivateSetAssistantEnabledFunction
   // will respond with an error.
   void Timeout();
 
-  base::Optional<bool> enabled_;
+  absl::optional<bool> enabled_;
   base::OneShotTimer timeout_timer_;
 };
 
@@ -681,7 +692,7 @@ class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   // Called when the interaction finished with non-empty response.
-  void OnInteractionFinishedCallback(const base::Optional<std::string>& error);
+  void OnInteractionFinishedCallback(const absl::optional<std::string>& error);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.
@@ -705,7 +716,7 @@ class AutotestPrivateWaitForAssistantQueryStatusFunction
   ResponseAction Run() override;
 
   // Called when the current interaction finished with non-empty response.
-  void OnInteractionFinishedCallback(const base::Optional<std::string>& error);
+  void OnInteractionFinishedCallback(const absl::optional<std::string>& error);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.
@@ -774,8 +785,8 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI,
   // ui::ClipboardObserver
   void OnClipboardDataChanged() override;
 
-  ScopedObserver<ui::ClipboardMonitor, ui::ClipboardObserver>
-      clipboard_observer_;
+  base::ScopedObservation<ui::ClipboardMonitor, ui::ClipboardObserver>
+      clipboard_observation_{this};
 
   content::BrowserContext* const browser_context_;
   bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
@@ -1008,7 +1019,7 @@ class AutotestPrivateWaitForDisplayRotationFunction
   ResponseValue CheckScreenRotationAnimation();
 
   int64_t display_id_ = display::kInvalidDisplayId;
-  base::Optional<display::Display::Rotation> target_rotation_;
+  absl::optional<display::Display::Rotation> target_rotation_;
   // A reference to keep the instance alive while waiting for rotation.
   scoped_refptr<ExtensionFunction> self_;
 };
@@ -1038,6 +1049,16 @@ class AutotestPrivateSetAppWindowStateFunction : public ExtensionFunction {
                           bool success);
 
   std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
+};
+
+class AutotestPrivateActivateAppWindowFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.activateAppWindow",
+                             AUTOTESTPRIVATE_ACTIVATEAPPWINDOW)
+
+ private:
+  ~AutotestPrivateActivateAppWindowFunction() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateCloseAppWindowFunction : public ExtensionFunction {
@@ -1347,8 +1368,6 @@ class AutotestPrivateWaitForAmbientPhotoAnimationFunction
   // Called when photo transition animations fail to finish in a certain amount
   // of time. We will respond with an error.
   void Timeout();
-
-  base::OneShotTimer timeout_timer_;
 };
 
 class AutotestPrivateDisableSwitchAccessDialogFunction

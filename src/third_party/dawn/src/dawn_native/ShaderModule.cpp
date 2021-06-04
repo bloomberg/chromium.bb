@@ -14,8 +14,10 @@
 
 #include "dawn_native/ShaderModule.h"
 
+#include "common/HashUtils.h"
 #include "common/VertexFormatUtils.h"
 #include "dawn_native/BindGroupLayout.h"
+#include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/CompilationMessages.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/ObjectContentHasher.h"
@@ -191,6 +193,10 @@ namespace dawn_native {
                 case tint::inspector::ResourceBinding::ResourceType::kReadOnlyStorageTexture:
                 case tint::inspector::ResourceBinding::ResourceType::kWriteOnlyStorageTexture:
                     return BindingInfoType::StorageTexture;
+
+                default:
+                    UNREACHABLE();
+                    return BindingInfoType::Buffer;
             }
         }
 
@@ -426,25 +432,6 @@ namespace dawn_native {
             }
 
             return std::move(program);
-        }
-
-        MaybeError ValidateModule(const tint::Program* program,
-                                  OwnedCompilationMessages* outMessages) {
-            std::ostringstream errorStream;
-            errorStream << "Tint program validation" << std::endl;
-
-            tint::Validator validator;
-            bool isValid = validator.Validate(program);
-            if (outMessages != nullptr) {
-                outMessages->AddMessages(validator.diagnostics());
-            }
-            if (!isValid) {
-                auto err = validator.diagnostics().str();
-                errorStream << "Validation: " << err << std::endl;
-                return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
-            }
-
-            return {};
         }
 
         ResultOrError<std::vector<uint32_t>> ModuleToSPIRV(const tint::Program* program) {
@@ -1066,6 +1053,17 @@ namespace dawn_native {
         return tintProgram != nullptr || spirv.size() > 0;
     }
 
+    // TintSource is a PIMPL container for a tint::Source::File, which needs to be kept alive for as
+    // long as tint diagnostics are inspected / printed.
+    class TintSource {
+      public:
+        template <typename... ARGS>
+        TintSource(ARGS&&... args) : file(std::forward<ARGS>(args)...) {
+        }
+
+        tint::Source::File file;
+    };
+
     MaybeError ValidateShaderModuleDescriptor(DeviceBase* device,
                                               const ShaderModuleDescriptor* descriptor,
                                               ShaderModuleParseResult* parseResult) {
@@ -1076,72 +1074,58 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Shader module descriptor missing chained descriptor");
         }
         // For now only a single SPIRV or WGSL subdescriptor is allowed.
-        if (chainedDescriptor->nextInChain != nullptr) {
-            return DAWN_VALIDATION_ERROR(
-                "Shader module descriptor chained nextInChain must be nullptr");
-        }
+        DAWN_TRY(ValidateSingleSType(chainedDescriptor, wgpu::SType::ShaderModuleSPIRVDescriptor,
+                                     wgpu::SType::ShaderModuleWGSLDescriptor));
 
         OwnedCompilationMessages* outMessages = parseResult->compilationMessages.get();
 
         ScopedTintICEHandler scopedICEHandler(device);
 
-        switch (chainedDescriptor->sType) {
-            case wgpu::SType::ShaderModuleSPIRVDescriptor: {
-                const auto* spirvDesc =
-                    static_cast<const ShaderModuleSPIRVDescriptor*>(chainedDescriptor);
-                std::vector<uint32_t> spirv(spirvDesc->code, spirvDesc->code + spirvDesc->codeSize);
-                if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
-                    tint::Program program;
-                    DAWN_TRY_ASSIGN(program, ParseSPIRV(spirv, outMessages));
-                    if (device->IsValidationEnabled()) {
-                        DAWN_TRY(ValidateModule(&program, outMessages));
-                    }
-                    parseResult->tintProgram = std::make_unique<tint::Program>(std::move(program));
-                } else {
-                    if (device->IsValidationEnabled()) {
-                        DAWN_TRY(ValidateSpirv(spirv.data(), spirv.size()));
-                    }
-                    parseResult->spirv = std::move(spirv);
-                }
-                break;
-            }
+        const ShaderModuleSPIRVDescriptor* spirvDesc = nullptr;
+        FindInChain(chainedDescriptor, &spirvDesc);
+        const ShaderModuleWGSLDescriptor* wgslDesc = nullptr;
+        FindInChain(chainedDescriptor, &wgslDesc);
 
-            case wgpu::SType::ShaderModuleWGSLDescriptor: {
-                const auto* wgslDesc =
-                    static_cast<const ShaderModuleWGSLDescriptor*>(chainedDescriptor);
-
-                tint::Source::File file("", wgslDesc->source);
-
+        if (spirvDesc) {
+            std::vector<uint32_t> spirv(spirvDesc->code, spirvDesc->code + spirvDesc->codeSize);
+            if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
                 tint::Program program;
-                DAWN_TRY_ASSIGN(program, ParseWGSL(&file, outMessages));
-
-                if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
-                    if (device->IsValidationEnabled()) {
-                        DAWN_TRY(ValidateModule(&program, outMessages));
-                    }
-                    parseResult->tintProgram = std::make_unique<tint::Program>(std::move(program));
-                } else {
-                    tint::transform::Manager transformManager;
-                    transformManager.append(
-                        std::make_unique<tint::transform::EmitVertexPointSize>());
-                    transformManager.append(std::make_unique<tint::transform::Spirv>());
-                    DAWN_TRY_ASSIGN(program,
-                                    RunTransforms(&transformManager, &program, outMessages));
-
-                    if (device->IsValidationEnabled()) {
-                        DAWN_TRY(ValidateModule(&program, outMessages));
-                    }
-
-                    std::vector<uint32_t> spirv;
-                    DAWN_TRY_ASSIGN(spirv, ModuleToSPIRV(&program));
+                DAWN_TRY_ASSIGN(program, ParseSPIRV(spirv, outMessages));
+                parseResult->tintProgram = std::make_unique<tint::Program>(std::move(program));
+            } else {
+                if (device->IsValidationEnabled()) {
                     DAWN_TRY(ValidateSpirv(spirv.data(), spirv.size()));
-
-                    parseResult->spirv = std::move(spirv);
                 }
-                break;
+                parseResult->spirv = std::move(spirv);
             }
-            default:
-                return DAWN_VALIDATION_ERROR("Unsupported sType");
+        } else if (wgslDesc) {
+            auto tintSource = std::make_unique<TintSource>("", wgslDesc->source);
+
+            tint::Program program;
+            DAWN_TRY_ASSIGN(program, ParseWGSL(&tintSource->file, outMessages));
+
+            if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
+                parseResult->tintProgram = std::make_unique<tint::Program>(std::move(program));
+                parseResult->tintSource = std::move(tintSource);
+            } else {
+                tint::transform::Manager transformManager;
+                transformManager.Add<tint::transform::Spirv>();
+
+                tint::transform::DataMap transformInputs;
+
+                tint::transform::Spirv::Config spirv_cfg;
+                spirv_cfg.emit_vertex_point_size = true;
+                transformInputs.Add<tint::transform::Spirv::Config>(spirv_cfg);
+
+                DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, &program, transformInputs,
+                                                       nullptr, outMessages));
+
+                std::vector<uint32_t> spirv;
+                DAWN_TRY_ASSIGN(spirv, ModuleToSPIRV(&program));
+                DAWN_TRY(ValidateSpirv(spirv.data(), spirv.size()));
+
+                parseResult->spirv = std::move(spirv);
+            }
         }
 
         return {};
@@ -1160,8 +1144,10 @@ namespace dawn_native {
 
     ResultOrError<tint::Program> RunTransforms(tint::transform::Transform* transform,
                                                const tint::Program* program,
+                                               const tint::transform::DataMap& inputs,
+                                               tint::transform::DataMap* outputs,
                                                OwnedCompilationMessages* outMessages) {
-        tint::transform::Transform::Output output = transform->Run(program);
+        tint::transform::Output output = transform->Run(program, inputs);
         if (outMessages != nullptr) {
             outMessages->AddMessages(output.program.Diagnostics());
         }
@@ -1169,13 +1155,16 @@ namespace dawn_native {
             std::string err = "Tint program failure: " + output.program.Diagnostics().str();
             return DAWN_VALIDATION_ERROR(err.c_str());
         }
+        if (outputs != nullptr) {
+            *outputs = std::move(output.data);
+        }
         return std::move(output.program);
     }
 
-    std::unique_ptr<tint::transform::VertexPulling> MakeVertexPullingTransform(
-        const VertexState& vertexState,
-        const std::string& entryPoint,
-        BindGroupIndex pullingBufferBindingSet) {
+    void AddVertexPullingTransformConfig(const VertexState& vertexState,
+                                         const std::string& entryPoint,
+                                         BindGroupIndex pullingBufferBindingSet,
+                                         tint::transform::DataMap* transformInputs) {
         tint::transform::VertexPulling::Config cfg;
         cfg.entry_point_name = entryPoint;
         cfg.pulling_group = static_cast<uint32_t>(pullingBufferBindingSet);
@@ -1197,7 +1186,7 @@ namespace dawn_native {
 
             cfg.vertex_state.push_back(std::move(layout));
         }
-        return std::make_unique<tint::transform::VertexPulling>(cfg);
+        transformInputs->Add<tint::transform::VertexPulling::Config>(cfg);
     }
 
     MaybeError ValidateCompatibilityWithPipelineLayout(DeviceBase* device,
@@ -1225,23 +1214,18 @@ namespace dawn_native {
     ShaderModuleBase::ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor)
         : CachedObject(device), mType(Type::Undefined) {
         ASSERT(descriptor->nextInChain != nullptr);
-        switch (descriptor->nextInChain->sType) {
-            case wgpu::SType::ShaderModuleSPIRVDescriptor: {
-                mType = Type::Spirv;
-                const auto* spirvDesc =
-                    static_cast<const ShaderModuleSPIRVDescriptor*>(descriptor->nextInChain);
-                mOriginalSpirv.assign(spirvDesc->code, spirvDesc->code + spirvDesc->codeSize);
-                break;
-            }
-            case wgpu::SType::ShaderModuleWGSLDescriptor: {
-                mType = Type::Wgsl;
-                const auto* wgslDesc =
-                    static_cast<const ShaderModuleWGSLDescriptor*>(descriptor->nextInChain);
-                mWgsl = std::string(wgslDesc->source);
-                break;
-            }
-            default:
-                UNREACHABLE();
+        const ShaderModuleSPIRVDescriptor* spirvDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &spirvDesc);
+        const ShaderModuleWGSLDescriptor* wgslDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &wgslDesc);
+        ASSERT(spirvDesc || wgslDesc);
+
+        if (spirvDesc) {
+            mType = Type::Spirv;
+            mOriginalSpirv.assign(spirvDesc->code, spirvDesc->code + spirvDesc->codeSize);
+        } else if (wgslDesc) {
+            mType = Type::Wgsl;
+            mWgsl = std::string(wgslDesc->source);
         }
     }
 
@@ -1330,19 +1314,27 @@ namespace dawn_native {
         errorStream << "Tint vertex pulling failure:" << std::endl;
 
         tint::transform::Manager transformManager;
-        transformManager.append(
-            MakeVertexPullingTransform(vertexState, entryPoint, pullingBufferBindingSet));
-        transformManager.append(std::make_unique<tint::transform::EmitVertexPointSize>());
-        transformManager.append(std::make_unique<tint::transform::Spirv>());
+        transformManager.Add<tint::transform::VertexPulling>();
+        transformManager.Add<tint::transform::Spirv>();
         if (GetDevice()->IsRobustnessEnabled()) {
-            transformManager.append(std::make_unique<tint::transform::BoundArrayAccessors>());
+            transformManager.Add<tint::transform::BoundArrayAccessors>();
         }
 
+        tint::transform::DataMap transformInputs;
+
+        tint::transform::Spirv::Config spirv_cfg;
+        spirv_cfg.emit_vertex_point_size = true;
+        transformInputs.Add<tint::transform::Spirv::Config>(spirv_cfg);
+
+        AddVertexPullingTransformConfig(vertexState, entryPoint, pullingBufferBindingSet,
+                                        &transformInputs);
+
         // A nullptr is passed in for the CompilationMessages here since this method is called
-        // during RenderPipeline creation, by which point the shader module's CompilationInfo may
-        // have already been queried.
+        // during RenderPipeline creation, by which point the shader module's CompilationInfo
+        // may have already been queried.
         tint::Program program;
-        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, programIn, nullptr));
+        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, programIn, transformInputs,
+                                               nullptr, nullptr));
 
         tint::writer::spirv::Generator generator(&program);
         if (!generator.Generate()) {
@@ -1357,6 +1349,7 @@ namespace dawn_native {
 
     MaybeError ShaderModuleBase::InitializeBase(ShaderModuleParseResult* parseResult) {
         mTintProgram = std::move(parseResult->tintProgram);
+        mTintSource = std::move(parseResult->tintSource);
         mSpirv = std::move(parseResult->spirv);
         mCompilationMessages = std::move(parseResult->compilationMessages);
 
@@ -1391,6 +1384,13 @@ namespace dawn_native {
             result[entryPoint.name] = std::move(metadata);
         }
         return std::move(result);
+    }
+
+    size_t PipelineLayoutEntryPointPairHashFunc::operator()(
+        const PipelineLayoutEntryPointPair& pair) const {
+        size_t hash = 0;
+        HashCombine(&hash, pair.first, pair.second);
+        return hash;
     }
 
 }  // namespace dawn_native

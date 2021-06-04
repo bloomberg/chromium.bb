@@ -32,7 +32,7 @@
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -87,7 +87,7 @@ void PwaInstallView::OnTabStripModelChanged(
   bool active_tab_changed = selection.active_tab_changed();
   bool web_content_replaced =
       change.type() == TabStripModelChange::Type::kReplaced;
-  if (active_tab_changed || web_content_replaced) {
+  if ((active_tab_changed || web_content_replaced)) {
     FeaturePromoControllerViews* controller =
         FeaturePromoControllerViews::GetForView(this);
     controller->CloseBubble(feature_engagement::kIPHDesktopPwaInstallFeature);
@@ -111,7 +111,7 @@ void PwaInstallView::UpdateImpl() {
 
   bool is_probably_promotable = manager->IsProbablyPromotableWebApp();
   if (is_probably_promotable && manager->MaybeConsumeInstallAnimation())
-    AnimateIn(base::nullopt);
+    AnimateIn(absl::nullopt);
   else
     ResetSlideAnimation(false);
 

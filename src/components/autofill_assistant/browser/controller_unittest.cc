@@ -2088,9 +2088,10 @@ TEST_F(ControllerTest, UserDataFormCreditCard) {
   controller_->SetCreditCard(
       std::make_unique<autofill::CreditCard>(*credit_card),
       std::make_unique<autofill::AutofillProfile>(*billing_address));
-  EXPECT_THAT(GetUserData()->selected_card_->Compare(*credit_card), Eq(0));
-  EXPECT_THAT(GetUserData()->selected_addresses_["billing_address"]->Compare(
-                  *billing_address),
+  EXPECT_THAT(GetUserData()->selected_card()->Compare(*credit_card), Eq(0));
+  EXPECT_THAT(GetUserData()
+                  ->selected_address("billing_address")
+                  ->Compare(*billing_address),
               Eq(0));
 }
 
@@ -2130,11 +2131,11 @@ TEST_F(ControllerTest, UserDataChangesByOutOfLoopWrite) {
                                   Property(&UserAction::enabled, Eq(false)))))
       .Times(1);
   // Can be called by a PDM update.
-  controller_->WriteUserData(base::BindOnce(
-      [](UserData* user_data, UserData::FieldChange* field_change) {
-        auto it = user_data->selected_addresses_.find("selected_profile");
-        if (it != user_data->selected_addresses_.end()) {
-          user_data->selected_addresses_.erase(it);
+  controller_->WriteUserData(base::BindLambdaForTesting(
+      [this](UserData* user_data, UserData::FieldChange* field_change) {
+        if (user_data->has_selected_address("selected_profile")) {
+          controller_->GetUserModel()->SetSelectedAutofillProfile(
+              "selected_profile", nullptr, user_data);
           *field_change = UserData::FieldChange::CONTACT_PROFILE;
         }
       }));
@@ -2213,8 +2214,9 @@ TEST_F(ControllerTest, SetShippingAddress) {
       .Times(1);
   controller_->SetShippingAddress(
       std::make_unique<autofill::AutofillProfile>(*shipping_address));
-  EXPECT_THAT(GetUserData()->selected_addresses_["shipping_address"]->Compare(
-                  *shipping_address),
+  EXPECT_THAT(GetUserData()
+                  ->selected_address("shipping_address")
+                  ->Compare(*shipping_address),
               Eq(0));
 }
 
@@ -2381,7 +2383,7 @@ TEST_F(ControllerTest, SetDateTimeRangeStartDateAfterEndDate) {
             1);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_start_date_->day(), 21);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_end_date_,
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST_F(ControllerTest, SetDateTimeRangeEndDateBeforeStartDate) {
@@ -2421,7 +2423,7 @@ TEST_F(ControllerTest, SetDateTimeRangeEndDateBeforeStartDate) {
   EXPECT_EQ(controller_->GetUserData()->date_time_range_end_date_->month(), 1);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_end_date_->day(), 19);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_start_date_,
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST_F(ControllerTest, SetDateTimeRangeSameDatesStartTimeAfterEndTime) {
@@ -2458,7 +2460,7 @@ TEST_F(ControllerTest, SetDateTimeRangeSameDatesStartTimeAfterEndTime) {
   controller_->SetDateTimeRangeStartTimeSlot(1);
   EXPECT_EQ(*controller_->GetUserData()->date_time_range_start_timeslot_, 1);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_end_timeslot_,
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST_F(ControllerTest, SetDateTimeRangeSameDatesEndTimeBeforeStartTime) {
@@ -2495,7 +2497,7 @@ TEST_F(ControllerTest, SetDateTimeRangeSameDatesEndTimeBeforeStartTime) {
   controller_->SetDateTimeRangeEndTimeSlot(0);
   EXPECT_EQ(*controller_->GetUserData()->date_time_range_end_timeslot_, 0);
   EXPECT_EQ(controller_->GetUserData()->date_time_range_start_timeslot_,
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST_F(ControllerTest, SetDateTimeRangeSameDateValidTime) {
@@ -3002,6 +3004,39 @@ TEST_F(ControllerTest, OnScriptErrorWillAppendVanishingFeedbackChip) {
   EXPECT_CALL(mock_client_,
               Shutdown(Metrics::DropOutReason::UI_CLOSED_UNEXPECTEDLY));
   EXPECT_TRUE(controller_->PerformUserAction(0));
+}
+
+// The chip should be hidden if and only if the keyboard is visible and the
+// focus is on a bottom sheet input text.
+TEST_F(ControllerTest, UpdateChipVisibility) {
+  InSequence seq;
+
+  UserAction user_action(ChipProto(), DirectActionProto(), true, std::string());
+  EXPECT_CALL(mock_observer_,
+              OnUserActionsChanged(UnorderedElementsAre(Property(
+                  &UserAction::chip, Field(&Chip::visible, Eq(true))))))
+      .Times(1);
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  user_actions->emplace_back(std::move(user_action));
+  controller_->SetUserActions(std::move(user_actions));
+
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(_)).Times(0);
+  controller_->OnKeyboardVisibilityChanged(true);
+
+  EXPECT_CALL(mock_observer_,
+              OnUserActionsChanged(UnorderedElementsAre(Property(
+                  &UserAction::chip, Field(&Chip::visible, Eq(false))))))
+      .Times(1);
+  controller_->OnInputTextFocusChanged(true);
+
+  EXPECT_CALL(mock_observer_,
+              OnUserActionsChanged(UnorderedElementsAre(Property(
+                  &UserAction::chip, Field(&Chip::visible, Eq(true))))))
+      .Times(1);
+  controller_->OnKeyboardVisibilityChanged(false);
+
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(_)).Times(0);
+  controller_->OnInputTextFocusChanged(false);
 }
 
 }  // namespace autofill_assistant

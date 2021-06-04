@@ -22,6 +22,7 @@
 <translation id="1911763535808217981">この設定を無効にすると、Chromium にログインすることなく Gmail などの Google サイトにログインできます</translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1966382378801805537">Chromium では既定のブラウザを判定または設定できません</translation>
+<translation id="1981611865800294956">再起動して Chromium OS を更新(&amp;C)</translation>
 <translation id="2008474315282236005">このデバイスから 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="2020032459870799438">他のパスワードにデータ侵害などセキュリティに関する問題がないかどうかを確認するには、<ph name="BEGIN_LINK" />Chromium にログイン<ph name="END_LINK" />してください。</translation>
 <translation id="2174178932569897599">Chromium をカスタマイズ</translation>
@@ -37,6 +38,7 @@
 <translation id="2560420686485554789">ファイルをダウンロードするには、Chromium でストレージへのアクセスを許可する必要があります</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2577788541081224677">お使いのすべてのデバイスで Chromium の設定やデータを使用するには、ログインしてください。ログインすると同期を有効にできます。</translation>
+<translation id="2580426763510374355">Chromium OS をインストール</translation>
 <translation id="2583187216237139145">このプロファイルの使用中に生成された Chromium データ（ブックマーク、履歴、パスワード、他の設定など）は、仕事用プロファイルの管理者によって削除される場合があります。<ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">アップデートを適用するには Chromium OS を再起動する必要があります。</translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
@@ -50,7 +52,6 @@
 <translation id="2847479871509788944">Chromium から削除...</translation>
 <translation id="2885378588091291677">タスク マネージャ</translation>
 <translation id="2910007522516064972">Chromium について(&amp;C)</translation>
-<translation id="2942419255987443909">Chromium OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux 開発環境（ベータ版）<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="2977470724722393594">Chromium は最新版です</translation>
 <translation id="2983934633046890458">Chromium でパスワードを編集しようとしています。</translation>
 <translation id="3032706164202344641">Chromium でパスワードを確認できません。しばらくしてからもう一度お試しください。</translation>
@@ -110,6 +111,7 @@
 <translation id="454579500955453258">新しい Chromium プロフィールで続行しますか？</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
+<translation id="4665829708273112819">警告: 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Chromium プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="469338717132742108">Chromium OS のヘルプを見る</translation>
 <translation id="4708774505295300557">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chromium にログインしました。情報を個別に保持するには、新しい Chromium ユーザーを作成してください。</translation>
@@ -119,6 +121,7 @@
 <translation id="4788777615168560705">Chromium でパスワードを確認できません。24 時間後にもう一度お試しいただくか、<ph name="BEGIN_LINK" />Google アカウントでパスワードをご確認ください<ph name="END_LINK" />。</translation>
 <translation id="479167709087336770">Google 検索と同じスペルチェックが使用されます。ブラウザに入力したテキストは Google に送信されます。この動作はいつでも設定で変更できます。</translation>
 <translation id="4888717733111232871">mDNS トラフィックを許可する Chromium のインバウンド ルールです。</translation>
+<translation id="4893347770495441059">再起動して Chromium を更新(&amp;C)</translation>
 <translation id="4943838377383847465">Chromium はバックグラウンド モードです。</translation>
 <translation id="4987820182225656817">ゲスト ユーザーは、記録を残さずに Chromium を使用できます。</translation>
 <translation id="4994636714258228724">Chromium に自分を追加</translation>
@@ -134,6 +137,7 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS ではこのページを開けません。</translation>
 <translation id="5480860683791598150">このサイトで現在地を共有するには、Chromium で位置情報の使用を許可する必要があります</translation>
+<translation id="5481338274774984070">このファイルのダウンロードや表示は推奨されません。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="5496810170689441661">Chromium でパスワードを編集しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="5527463683072221100">Chromium で PDF を開く</translation>
@@ -142,6 +146,7 @@
 <translation id="5653831366781983928">今すぐ Chromium を再起動してください</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
+<translation id="5854740544000584380">Chromium OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux 開発環境<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ネットワークにログイン</translation>
@@ -196,7 +201,6 @@
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="6978145336957848883">脆弱なパスワードは簡単に推測されてしまいます。Chromium で<ph name="BEGIN_LINK" />安全性の高いパスワードを自動生成して保存する<ph name="END_LINK" />ことができます。</translation>
 <translation id="6990124437352146030">このサイトを利用するには、Chromium でマイクの使用を許可する必要があります</translation>
-<translation id="701244094609242530">Chromium で拡張機能を確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7067091210845072982">画像に有効な説明が設定されていない場合に、Chromium で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="7196312274710523067">Chromium を起動できませんでした。もう一度お試しください。</translation>
@@ -227,9 +231,7 @@
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="7745317241717453663">このデバイスから閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
-<translation id="7773960292263897147">警告: 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
-<translation id="7827169012280634081">Chromium の終了時に Cookie とサイトデータを削除する</translation>
 <translation id="7828947555739565424">このアカウントの Chromium プロファイルは、このデバイスにすでに存在します</translation>
 <translation id="7857220146454061152">今後、Chromium のアップデートを受信するには、OS X 10.11 以降が必要となります。このパソコンでは OS X 10.10 が実行されています。</translation>
 <translation id="7867198900892795913">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
@@ -273,6 +275,7 @@
 <translation id="91086099826398415">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="9158494823179993217">システム管理者が、<ph name="TARGET_URL_HOSTNAME" /> へのアクセスに代替ブラウザを開くよう Chromium を設定しています。</translation>
+<translation id="9185526690718004400">再起動して Chromium を更新(&amp;C)</translation>
 <translation id="9190841055450128916">Chromium（mDNS インバウンド）</translation>
 <translation id="9214764063801632699">Chromium OS システム</translation>
 <translation id="93478295209880648">Windows XP と Windows Vista はサポートされなくなったため、Chromium は正常に機能しない可能性があります</translation>

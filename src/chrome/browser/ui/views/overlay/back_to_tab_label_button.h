@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OVERLAY_BACK_TO_TAB_LABEL_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_OVERLAY_BACK_TO_TAB_LABEL_BUTTON_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 // A button representing a back-to-tab button.
 class BackToTabLabelButton : public views::LabelButton {
@@ -31,7 +31,7 @@ class BackToTabLabelButton : public views::LabelButton {
  private:
   void UpdateSizingAndPosition();
 
-  base::Optional<gfx::Size> window_size_;
+  absl::optional<gfx::Size> window_size_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OVERLAY_BACK_TO_TAB_LABEL_BUTTON_H_

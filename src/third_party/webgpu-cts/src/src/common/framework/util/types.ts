@@ -5,6 +5,14 @@ export type ResolveType<T> = T extends object
     : never
   : T;
 
+/** Returns the type `true` iff X and Y are exactly equal */
+export type TypeEqual<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+  ? true
+  : false;
+
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+export function assertTypeTrue<T extends true>() {}
+
 /**
  * Computes the intersection of a set of types, given the union of those types.
  *

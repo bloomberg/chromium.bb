@@ -7,6 +7,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -18,6 +19,7 @@
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/feed_feature_list.h"
 
 #if defined(OS_ANDROID)
@@ -110,6 +112,7 @@ feedwire::Version GetAppVersionMessage(const ChromeInfo& chrome_info) {
 }
 
 feedwire::Request CreateFeedQueryRequest(
+    const StreamType& stream_type,
     feedwire::FeedQuery::RequestReason request_reason,
     const RequestMetadata& request_metadata,
     const std::string& consistency_token,
@@ -127,14 +130,19 @@ feedwire::Request CreateFeedQueryRequest(
   if (base::FeatureList::IsEnabled(kFeedShare)) {
     feed_request.add_client_capability(feedwire::Capability::SHARE);
   }
+  if (stream_type.IsWebFeed()) {
+    feed_request.add_client_capability(feedwire::Capability::WEB_FEEDS);
+  }
   for (auto capability : GetFeedConfig().experimental_capabilities)
     feed_request.add_client_capability(capability);
   if (base::FeatureList::IsEnabled(kInterestFeedV2Hearts)) {
     feed_request.add_client_capability(feedwire::Capability::HEART);
   }
-  if (base::FeatureList::IsEnabled(kInterestFeedV2Autoplay)) {
+  if (request_metadata.autoplay_enabled) {
     feed_request.add_client_capability(
         feedwire::Capability::INLINE_VIDEO_AUTOPLAY);
+    feed_request.add_client_capability(
+        feedwire::Capability::OPEN_VIDEO_COMMAND);
   }
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
@@ -244,11 +252,22 @@ feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
 }
 
 feedwire::Request CreateFeedQueryRefreshRequest(
+    const StreamType& stream_type,
     feedwire::FeedQuery::RequestReason request_reason,
     const RequestMetadata& request_metadata,
     const std::string& consistency_token) {
-  feedwire::Request request = CreateFeedQueryRequest(
-      request_reason, request_metadata, consistency_token, std::string());
+  feedwire::Request request =
+      CreateFeedQueryRequest(stream_type, request_reason, request_metadata,
+                             consistency_token, std::string());
+  if (stream_type.IsWebFeed()) {
+    // A special token that requests content for followed Web Feeds.
+    constexpr char kChromeFollowToken[] = "\"\004\022\002\b5*\tFollowing";
+    request.mutable_feed_request()
+        ->mutable_feed_query()
+        ->mutable_web_feed_token()
+        ->mutable_web_feed_token()
+        ->set_web_feed_token(kChromeFollowToken);
+  }
   SetNoticeCardAcknowledged(&request, request_metadata);
   return request;
 }
@@ -257,9 +276,9 @@ feedwire::Request CreateFeedQueryLoadMoreRequest(
     const RequestMetadata& request_metadata,
     const std::string& consistency_token,
     const std::string& next_page_token) {
-  return CreateFeedQueryRequest(feedwire::FeedQuery::NEXT_PAGE_SCROLL,
-                                request_metadata, consistency_token,
-                                next_page_token);
+  return CreateFeedQueryRequest(
+      kForYouStream, feedwire::FeedQuery::NEXT_PAGE_SCROLL, request_metadata,
+      consistency_token, next_page_token);
 }
 
 }  // namespace feed

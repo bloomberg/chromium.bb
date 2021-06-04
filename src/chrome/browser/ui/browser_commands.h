@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -119,7 +119,7 @@ bool CanMoveTabsToNewWindow(Browser* browser,
 void MoveTabsToNewWindow(
     Browser* browser,
     const std::vector<int>& tab_indices,
-    base::Optional<tab_groups::TabGroupId> group = base::nullopt);
+    absl::optional<tab_groups::TabGroupId> group = absl::nullopt);
 bool CanCloseTabsToRight(const Browser* browser);
 bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);
@@ -153,10 +153,12 @@ void ShowOffersAndRewardsForPage(Browser* browser);
 void SaveCreditCard(Browser* browser);
 void MigrateLocalCards(Browser* browser);
 void SaveAutofillAddress(Browser* browser);
+void ShowVirtualCardManualFallbackBubble(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 void SendTabToSelfFromPageAction(Browser* browser);
 void GenerateQRCodeFromPageAction(Browser* browser);
+void SharingHubFromPageAction(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void Print(Browser* browser);
@@ -192,6 +194,7 @@ void ToggleDevToolsWindow(Browser* browser,
                           DevToolsToggleAction action,
                           DevToolsOpenedByAction opened_by);
 bool CanOpenTaskManager();
+// Opens task manager UI. Note that |browser| can be nullptr as input.
 void OpenTaskManager(Browser* browser);
 void OpenFeedbackDialog(
     Browser* browser,
@@ -224,7 +227,7 @@ void PromptToNameWindow(Browser* browser);
 void ToggleCommander(Browser* browser);
 void ExecuteUIDebugCommand(int id, const Browser* browser);
 
-base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser);
+absl::optional<int> GetKeyboardFocusedTabIndex(const Browser* browser);
 
 }  // namespace chrome
 

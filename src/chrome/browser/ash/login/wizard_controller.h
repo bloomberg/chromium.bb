@@ -14,14 +14,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move KioskAppType to forward declaration
 // when moved to chrome/browser/ash/.
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/screen_manager.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/ash/login/screens/eula_screen.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
@@ -46,6 +49,7 @@
 #include "chrome/browser/ash/login/screens/multidevice_setup_screen.h"
 #include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
+#include "chrome/browser/ash/login/screens/os_install_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
 #include "chrome/browser/ash/login/screens/parental_handoff_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
@@ -70,8 +74,6 @@ namespace login {
 class NetworkStateHelper;
 }  // namespace login
 
-class DemoSetupController;
-class ErrorScreen;
 struct Geoposition;
 class SimpleGeolocationProvider;
 class TimeZoneProvider;
@@ -164,7 +166,7 @@ class WizardController {
   // is explicitly set on DemoSetupController and going through demo settings
   // screens can be skipped.
   void SimulateDemoModeSetupForTesting(
-      base::Optional<DemoSession::DemoModeConfig> demo_config = base::nullopt);
+      absl::optional<DemoSession::DemoModeConfig> demo_config = absl::nullopt);
 
   // Stores authorization data that will be used to configure extra auth factors
   // during user onboarding.
@@ -273,7 +275,7 @@ class WizardController {
   void ShowHIDDetectionScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
-  void ShowSupervisionTransitionScreen();
+  void ShowManagementTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
   void ShowMultiDeviceSetupScreen();
@@ -283,6 +285,7 @@ class WizardController {
   void ShowPackagedLicenseScreen();
   void ShowEduCoexistenceLoginScreen();
   void ShowParentalHandoffScreen();
+  void ShowOsInstallScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -298,6 +301,10 @@ class WizardController {
   // Shared actions to be performed on a screen exit.
   // `exit_reason` is the screen specific exit reason reported by the screen.
   void OnScreenExit(OobeScreenId screen, const std::string& exit_reason);
+
+  // Advances either to Gaia screen or Active Directory login screen, depending
+  // on the device state.
+  void AdvanceToSigninScreen();
 
   // Exit handlers:
   void OnWrongHWIDScreenExit();
@@ -333,7 +340,7 @@ class WizardController {
   void OnMarketingOptInScreenExit(MarketingOptInScreen::Result result);
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
-  void OnSupervisionTransitionScreenExit();
+  void OnManagementTransitionScreenExit();
   void OnUpdateRequiredScreenExit();
   void OnOobeFlowFinished();
   void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
@@ -491,7 +498,7 @@ class WizardController {
   friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
   friend class WizardControllerScreenPriorityTest;
-  friend class WizardControllerSupervisionTransitionOobeTest;
+  friend class WizardControllerManagementTransitionOobeTest;
 
   base::CallbackListSubscription accessibility_subscription_;
 

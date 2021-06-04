@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
-#include "third_party/blink/renderer/core/html/imports/html_import.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -150,6 +149,7 @@ void ScriptLoader::HandleAsyncAttribute() {
   // is set has an async content attribute added, the element's "non-blocking"
   // flag must be unset.</spec>
   non_blocking_ = false;
+  dynamic_async_ = true;
 }
 
 void ScriptLoader::DetachPendingScript() {
@@ -339,7 +339,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return false;
 
   Document& element_document = element_->GetDocument();
-  LocalDOMWindow* context_window = element_document.ExecutingWindow();
+  LocalDOMWindow* context_window = element_document.domWindow();
 
   // <spec step="7">... Determine the script's type as follows: ...</spec>
   script_type_ = GetScriptTypeAtPrepare(element_->TypeAttributeValue(),
@@ -501,8 +501,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   DCHECK(!prepared_pending_script_);
 
   RenderBlockingBehavior render_blocking_behavior =
-      non_blocking_ ? RenderBlockingBehavior::kNonBlocking
-                    : RenderBlockingBehavior::kBlocking;
+      non_blocking_ || dynamic_async_ ? RenderBlockingBehavior::kNonBlocking
+                                      : RenderBlockingBehavior::kBlocking;
 
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
@@ -644,11 +644,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         //
         // Fetch a classic script given url, settings object, options, classic
         // script CORS setting, and encoding.</spec>
-        Document* document_for_origin = &element_document;
-        if (element_document.ImportsController()) {
-          document_for_origin = context_window->document();
-        }
-        FetchClassicScript(url, *document_for_origin, options, cross_origin,
+        FetchClassicScript(url, element_document, options, cross_origin,
                            encoding);
         break;
       }

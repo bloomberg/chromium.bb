@@ -14,16 +14,15 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
-#include "chromeos/dbus/cicerone_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace borealis {
 
 void BorealisAppLauncher::Launch(const BorealisContext& ctx,
                                  const std::string& app_id,
                                  OnLaunchedCallback callback) {
-  Launch(std::move(ctx), std::move(app_id), {}, std::move(callback));
+  Launch(ctx, app_id, {}, std::move(callback));
 }
 
 void BorealisAppLauncher::Launch(const BorealisContext& ctx,
@@ -38,7 +37,7 @@ void BorealisAppLauncher::Launch(const BorealisContext& ctx,
     return;
   }
 
-  base::Optional<guest_os::GuestOsRegistryService::Registration> reg =
+  absl::optional<guest_os::GuestOsRegistryService::Registration> reg =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(ctx.profile())
           ->GetRegistration(app_id);
   if (!reg) {
@@ -56,30 +55,27 @@ void BorealisAppLauncher::Launch(const BorealisContext& ctx,
       args.begin(), args.end(),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetCiceroneClient()
-      ->LaunchContainerApplication(
-          std::move(request),
-          base::BindOnce(
-              [](OnLaunchedCallback callback,
-                 base::Optional<
-                     vm_tools::cicerone::LaunchContainerApplicationResponse>
-                     response) {
-                if (!response) {
-                  LOG(ERROR)
-                      << "Failed to launch app: No response from cicerone";
-                  std::move(callback).Run(LaunchResult::kNoResponse);
-                  return;
-                }
-                if (!response->success()) {
-                  LOG(ERROR)
-                      << "Failed to launch app: " << response->failure_reason();
-                  std::move(callback).Run(LaunchResult::kError);
-                  return;
-                }
-                std::move(callback).Run(LaunchResult::kSuccess);
-              },
-              std::move(callback)));
+  chromeos::CiceroneClient::Get()->LaunchContainerApplication(
+      std::move(request),
+      base::BindOnce(
+          [](OnLaunchedCallback callback,
+             absl::optional<
+                 vm_tools::cicerone::LaunchContainerApplicationResponse>
+                 response) {
+            if (!response) {
+              LOG(ERROR) << "Failed to launch app: No response from cicerone";
+              std::move(callback).Run(LaunchResult::kNoResponse);
+              return;
+            }
+            if (!response->success()) {
+              LOG(ERROR) << "Failed to launch app: "
+                         << response->failure_reason();
+              std::move(callback).Run(LaunchResult::kError);
+              return;
+            }
+            std::move(callback).Run(LaunchResult::kSuccess);
+          },
+          std::move(callback)));
 }
 
 BorealisAppLauncher::BorealisAppLauncher(Profile* profile)

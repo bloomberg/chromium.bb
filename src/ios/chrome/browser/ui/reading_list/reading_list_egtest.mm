@@ -306,11 +306,6 @@ void AddEntriesAndEnterEdit() {
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
-// Returns a match for the Reading List Empty Collection Background.
-id<GREYMatcher> EmptyBackground() {
-  return grey_accessibilityID(kTableViewEmptyViewID);
-}
-
 // Adds the current page to the Reading List.
 void AddCurrentPageToReadingList() {
   NSString* snackBarLabel =
@@ -793,7 +788,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-- (void)testSavingToReadingListAndLoadBadNetwork {
+// TODO(crbug.com/1198411): Fix flakiness.
+- (void)DISABLED_testSavingToReadingListAndLoadBadNetwork {
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -1132,21 +1128,24 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
   OpenReadingList();
 
-  // Make sure the Reading List view is not empty.
-  if ([ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kTableViewIllustratedEmptyViewID)]
-        assertWithMatcher:grey_nil()];
-    id<GREYMatcher> noReadingListMessageMatcher = grey_allOf(
-        grey_text(
-            l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE)),
-        grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:noReadingListMessageMatcher]
-        assertWithMatcher:grey_nil()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:EmptyBackground()]
-        assertWithMatcher:grey_nil()];
-  }
+  // Make sure the Reading List view is not empty. Therefore, the illustration,
+  // title and subtitles shoud not be present.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTableViewIllustratedEmptyViewID)]
+      assertWithMatcher:grey_nil()];
+
+  id<GREYMatcher> noReadingListTitleMatcher = grey_allOf(
+      grey_text(l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_TITLE)),
+      grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:noReadingListTitleMatcher]
+      assertWithMatcher:grey_nil()];
+
+  id<GREYMatcher> noReadingListMessageMatcher = grey_allOf(
+      grey_text(
+          l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE)),
+      grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:noReadingListMessageMatcher]
+      assertWithMatcher:grey_nil()];
 
   // Delete them from the Reading List view.
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
@@ -1279,7 +1278,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [self addURLToReadingList:distillablePageURL];
   LongPressEntry(kDistillableTitle);
 
-  [ChromeEarlGrey verifyShareActionWithPageTitle:kDistillableTitle];
+  [ChromeEarlGrey verifyShareActionWithURL:distillablePageURL
+                                 pageTitle:kDistillableTitle];
 }
 
 // Tests the Delete context menu action for a reading list entry.
@@ -1315,20 +1315,23 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 #pragma mark - Helper Methods
 
 - (void)verifyReadingListIsEmpty {
-  if ([ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                             kTableViewIllustratedEmptyViewID)]
         assertWithMatcher:grey_notNil()];
+
+    id<GREYMatcher> noReadingListTitleMatcher = grey_allOf(
+        grey_text(
+            l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_TITLE)),
+        grey_sufficientlyVisible(), nil);
+    [[EarlGrey selectElementWithMatcher:noReadingListTitleMatcher]
+        assertWithMatcher:grey_notNil()];
+
     id<GREYMatcher> emptyReadingListMatcher = grey_allOf(
         grey_text(
             l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE)),
-        grey_sufficientlyVisible(), nil);
+        grey_sufficientlyVisible(), /*nil_termination*/ nil);
     [[EarlGrey selectElementWithMatcher:emptyReadingListMatcher]
         assertWithMatcher:grey_notNil()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:EmptyBackground()]
-        assertWithMatcher:grey_notNil()];
-  }
 }
 
 - (void)addURLToReadingList:(const GURL&)URL {

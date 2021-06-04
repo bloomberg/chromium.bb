@@ -118,14 +118,12 @@ StatusBox.prototype = {
    */
   initialize(scope, status) {
     const notSpecifiedString = loadTimeData.getString('notSpecified');
-    if (scope === 'device') {
-      // For device policy, set the appropriate title and populate the topmost
-      // status item with the domain the device is enrolled into.
-      this.querySelector('.legend').textContent =
-          loadTimeData.getString('statusDevice');
-      this.setLabelAndShow_(
-          '.enterprise-enrollment-domain', status.enterpriseEnrollmentDomain);
 
+    // Set appropriate box legend based on status key
+    this.querySelector('.legend').textContent =
+        loadTimeData.getString(status.boxLegendKey);
+
+    if (scope === 'device') {
       // Populate the device naming information.
       // Populate the asset identifier.
       this.setLabelAndShow_('.asset-id', status.assetId || notSpecifiedString);
@@ -146,30 +144,21 @@ StatusBox.prototype = {
                                           'offHoursNotActive'));
       }
     } else if (scope === 'machine') {
-      // For machine policy, set the appropriate title and populate
-      // machine enrollment status with the information that applies
-      // to this machine.
-      this.querySelector('.legend').textContent =
-          loadTimeData.getString('statusMachine');
       this.setLabelAndShow_('.machine-enrollment-device-id', status.deviceId);
       this.setLabelAndShow_(
           '.machine-enrollment-token', status.enrollmentToken);
-      this.setLabelAndShow_('.machine-enrollment-name', status.machine);
+      if (status.machine) {
+        this.setLabelAndShow_('.machine-enrollment-name', status.machine);
+      }
       this.setLabelAndShow_('.machine-enrollment-domain', status.domain);
     } else if (scope === 'updater') {
-      this.querySelector('.legend').textContent =
-          loadTimeData.getString('statusUpdater');
       if (status.version) {
         this.setLabelAndShow_('.version', status.version);
       }
       if (status.domain) {
-        this.setLabelAndShow_('.enterprise-enrollment-domain', status.domain);
+        this.setLabelAndShow_('.machine-enrollment-domain', status.domain);
       }
     } else {
-      // For user policy, set the appropriate title and populate the topmost
-      // status item with the username that policies apply to.
-      this.querySelector('.legend').textContent =
-          loadTimeData.getString('statusUser');
       // Populate the topmost item with the username.
       this.setLabelAndShow_('.username', status.username);
       // Populate the user gaia id.
@@ -200,6 +189,13 @@ StatusBox.prototype = {
           loadTimeData.getString(
               status.policiesPushAvailable ? 'policiesPushOn' :
                                              'policiesPushOff'));
+    }
+
+    if (status.lastCloudReportSentTimestamp) {
+      this.setLabelAndShow_(
+          '.last-cloud-report-sent-timestamp',
+          status.lastCloudReportSentTimestamp + ' (' +
+              status.timeSinceLastCloudReportSent + ')');
     }
   },
 };

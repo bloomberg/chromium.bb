@@ -9,6 +9,7 @@
 
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -30,7 +31,11 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
       const SiteForCookies& site_for_cookies) const override;
   bool IsContextSamePartyWithSite(
       const net::SchemefulSite& site,
-      const base::Optional<net::SchemefulSite>& top_frame_site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::set<net::SchemefulSite>& party_context) const override;
+  FirstPartySetsContextType ComputeFirstPartySetsContextType(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const override;
   bool IsInNontrivialFirstPartySet(
       const net::SchemefulSite& site) const override;

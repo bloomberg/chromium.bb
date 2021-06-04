@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Sökningsreglage</translation>
 <translation id="1404323374378969387">norska</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
+<translation id="1433628812591023318">För att kunna släppa en fil i Parallels Desktop behöver du först flytta den till Windows.</translation>
 <translation id="1435838927755162558">Dela mappen med Parallels Desktop</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1471718551822868769">slovakiska</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-filer</translation>
 <translation id="3078461028045006476">Dela med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-modeller</translation>
+<translation id="3113153474486991170">Det gick inte att öppna <ph name="PATH" /> från den här platsen. Kopiera den till Mina filer innan du öppnar.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">KLART</translation>
 <translation id="3188257591659621405">Mina filer</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">bulgariskt fonetiskt tangentbord</translation>
 <translation id="5605830556594064952">USA (dvorak)</translation>
 <translation id="5625294776298156701">tamilskt tangentbord (Tamil99)</translation>
+<translation id="5633226425545095130">Om du flyttar det här objektet delas det med alla som har åtkomst till den delade mappen <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Lyssna</translation>
 <translation id="5678784840044122290">Linux-programmet blir tillgängligt via terminalen och det kan också finnas en ikon för det i startprogrammet.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Det gick inte att koppla från ett arkiv eller en virtuell hårddisk<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Tangentbord för etiopiska</translation>
 <translation id="7417705661718309329">Google-karta</translation>
 <translation id="7460898608667578234">ukrainska</translation>
+<translation id="7486315294984620427">För att kunna släppa en fil i Parallels Desktop behöver du först kopiera den till Windows.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> hittades
     <ph name="LINE_BREAK1" />
     Klar att säkerhetskopiera på <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimensioner</translation>
 <translation id="8437209419043462667">USA</translation>
 <translation id="8456681095658380701">Ogiltigt namn</translation>
+<translation id="8459404855768962328">Om du kopierar det här objektet delas det med alla som har åtkomst till den delade mappen <ph name="DESTINATION_NAME" />.</translation>
 <translation id="8461467696380332069">Högerklicka på en fil som du vill ha snabbt tillgänglig i hyllan och välj Fäst på hyllan.</translation>
 <translation id="8463494891489624050">vietnamesiska (VIQR)</translation>
 <translation id="8466234950814670489">Tar-arkiv</translation>

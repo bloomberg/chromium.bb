@@ -6,11 +6,11 @@
  * @fileoverview
  * 'settings-main' displays the selected settings page.
  */
-import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/js/search_highlight_utils.m.js';
+import 'chrome://resources/js/search_highlight_utils.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../about_page/about_page.js';
 import '../basic_page/basic_page.js';
@@ -107,6 +107,7 @@ Polymer({
 
   /** @private */
   overscrollChanged_() {
+    assert(!loadTimeData.getBoolean('enableLandingPageRedesign'));
     if (!this.overscroll_ && this.boundScroll_) {
       this.offsetParent.removeEventListener('scroll', this.boundScroll_);
       window.removeEventListener('resize', this.boundScroll_);
@@ -179,6 +180,8 @@ Polymer({
    * @private
    */
   onShowingSection_(e) {
+    assert(!loadTimeData.getBoolean('enableLandingPageRedesign'));
+
     const section = e.detail;
     // Calculate the height that the overscroll padding should be set to, so
     // that the given section is displayed at the top of the viewport.

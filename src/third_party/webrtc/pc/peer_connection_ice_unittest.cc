@@ -768,8 +768,8 @@ TEST_P(PeerConnectionIceTest,
   ASSERT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
 
   // Chain an operation that will block AddIceCandidate() from executing.
-  rtc::scoped_refptr<MockCreateSessionDescriptionObserver> answer_observer(
-      new rtc::RefCountedObject<MockCreateSessionDescriptionObserver>());
+  auto answer_observer =
+      rtc::make_ref_counted<MockCreateSessionDescriptionObserver>();
   callee->pc()->CreateAnswer(answer_observer, RTCOfferAnswerOptions());
 
   auto jsep_candidate =
@@ -816,8 +816,8 @@ TEST_P(PeerConnectionIceTest,
   ASSERT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
 
   // Chain an operation that will block AddIceCandidate() from executing.
-  rtc::scoped_refptr<MockCreateSessionDescriptionObserver> answer_observer(
-      new rtc::RefCountedObject<MockCreateSessionDescriptionObserver>());
+  auto answer_observer =
+      rtc::make_ref_counted<MockCreateSessionDescriptionObserver>();
   callee->pc()->CreateAnswer(answer_observer, RTCOfferAnswerOptions());
 
   auto jsep_candidate =
@@ -1404,6 +1404,36 @@ TEST_F(PeerConnectionIceConfigTest, SetStunCandidateKeepaliveInterval) {
   actual_stun_keepalive_interval =
       port_allocator_->stun_candidate_keepalive_interval();
   EXPECT_EQ(actual_stun_keepalive_interval.value_or(-1), 321);
+}
+
+TEST_F(PeerConnectionIceConfigTest, SetStableWritableConnectionInterval) {
+  RTCConfiguration config;
+  config.stable_writable_connection_ping_interval_ms = 3500;
+  CreatePeerConnection(config);
+  EXPECT_TRUE(pc_->SetConfiguration(config).ok());
+  EXPECT_EQ(pc_->GetConfiguration().stable_writable_connection_ping_interval_ms,
+            config.stable_writable_connection_ping_interval_ms);
+}
+
+TEST_F(PeerConnectionIceConfigTest,
+       SetStableWritableConnectionInterval_FailsValidation) {
+  RTCConfiguration config;
+  CreatePeerConnection(config);
+  ASSERT_TRUE(pc_->SetConfiguration(config).ok());
+  config.stable_writable_connection_ping_interval_ms = 5000;
+  config.ice_check_interval_strong_connectivity = 7500;
+  EXPECT_FALSE(pc_->SetConfiguration(config).ok());
+}
+
+TEST_F(PeerConnectionIceConfigTest,
+       SetStableWritableConnectionInterval_DefaultValue_FailsValidation) {
+  RTCConfiguration config;
+  CreatePeerConnection(config);
+  ASSERT_TRUE(pc_->SetConfiguration(config).ok());
+  config.ice_check_interval_strong_connectivity = 2500;
+  EXPECT_TRUE(pc_->SetConfiguration(config).ok());
+  config.ice_check_interval_strong_connectivity = 2501;
+  EXPECT_FALSE(pc_->SetConfiguration(config).ok());
 }
 
 TEST_P(PeerConnectionIceTest, IceCredentialsCreateOffer) {

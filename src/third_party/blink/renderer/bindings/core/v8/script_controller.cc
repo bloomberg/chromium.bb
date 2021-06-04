@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -244,6 +243,7 @@ void ScriptController::ExecuteJavaScriptURL(
   String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
   WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",
                                           StringUTF8Adaptor(result));
+  params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   window_->GetFrame()->Loader().CommitNavigation(std::move(params), nullptr,
                                                  CommitReason::kJavascriptUrl);
 }

@@ -65,7 +65,7 @@ std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     }
 
     CHECK(value->type() == i.value().type());
-    to->Set(i.key(), value->CreateDeepCopy());
+    to->Set(i.key(), base::Value::ToUniquePtrValue(value->Clone()));
   }
 
   return to;
@@ -101,7 +101,7 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
     // TODO(lukasza): Removing this somewhat brittle filtering will be possible
     //                after having separate, Chromoting-specific schema.
     if (key.find(kPolicyNameSubstring) != std::string::npos) {
-      policy_dict->Set(key, value->CreateDeepCopy());
+      policy_dict->Set(key, base::Value::ToUniquePtrValue(value->Clone()));
     }
   }
 
@@ -297,7 +297,7 @@ void CopyDictionaryValue(const base::DictionaryValue& from,
                          std::string key) {
   const base::Value* value;
   if (from.Get(key, &value)) {
-    to.Set(key, value->CreateDeepCopy());
+    to.Set(key, base::Value::ToUniquePtrValue(value->Clone()));
   }
 }
 }  // namespace
@@ -312,8 +312,9 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
   while (!iter.IsAtEnd()) {
     base::Value* old_policy;
     if (!(effective_policies_->Get(iter.key(), &old_policy) &&
-          old_policy->Equals(&iter.value()))) {
-      changed_policies->Set(iter.key(), iter.value().CreateDeepCopy());
+          *old_policy == iter.value())) {
+      changed_policies->Set(
+          iter.key(), base::Value::ToUniquePtrValue(iter.value().Clone()));
     }
     iter.Advance();
   }
@@ -358,7 +359,7 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   // Limit reporting to only the policies that were changed.
   std::unique_ptr<base::DictionaryValue> changed_policies =
       StoreNewAndReturnChangedPolicies(std::move(filled_policies));
-  if (changed_policies->empty()) {
+  if (changed_policies->DictEmpty()) {
     return;
   }
 
@@ -412,8 +413,8 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   // Chromium.
   std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if defined(OS_WIN)
-  policy_loader.reset(new policy::PolicyLoaderWin(
-      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome"));
+  policy_loader = std::make_unique<policy::PolicyLoaderWin>(
+      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome");
 #elif defined(OS_APPLE)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader = std::make_unique<policy::PolicyLoaderMac>(
@@ -421,10 +422,10 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
       policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
       new MacPreferences(), bundle_id);
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  policy_loader.reset(new policy::ConfigDirPolicyLoader(
+  policy_loader = std::make_unique<policy::ConfigDirPolicyLoader>(
       file_task_runner,
       base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies")),
-      policy::POLICY_SCOPE_MACHINE));
+      policy::POLICY_SCOPE_MACHINE);
 #elif defined(OS_ANDROID)
   NOTIMPLEMENTED();
   policy::PolicyServiceImpl::Providers providers;

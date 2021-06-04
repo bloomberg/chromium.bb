@@ -27,6 +27,7 @@
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -304,9 +305,9 @@ class LoginUserView::UserLabel : public NonAccessibleView {
                                        gfx::ElideBehavior::ELIDE_TAIL));
   }
 
-  // views::View:
+  // NonAccessibleView:
   void OnThemeChanged() override {
-    views::View::OnThemeChanged();
+    NonAccessibleView::OnThemeChanged();
     user_name_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorPrimary));
   }

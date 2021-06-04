@@ -413,12 +413,6 @@ function sinkIconTypeToMojo(type) {
       return mediaRouter.mojom.SinkIconType.CAST_AUDIO_GROUP;
     case 'cast_audio':
       return mediaRouter.mojom.SinkIconType.CAST_AUDIO;
-    case 'meeting':
-      return mediaRouter.mojom.SinkIconType.MEETING;
-    case 'hangout':
-      return mediaRouter.mojom.SinkIconType.HANGOUT;
-    case 'education':
-      return mediaRouter.mojom.SinkIconType.EDUCATION;
     case 'generic':
       return mediaRouter.mojom.SinkIconType.GENERIC;
     default:
@@ -446,9 +440,10 @@ function routeToMojo_(route) {
     'isLocalPresentation': route.isOffscreenPresentation,
     'controllerType': route.controllerType,
     'presentationId': route.presentationId,
+    'mediaSinkName': route.sinkName,
     // Begin newly added properties, followed by the milestone they were
     // added.  The guard should be safe to remove N+2 milestones later.
-    'mediaSinkName': route.sinkName || ''  // M81
+    'isConnecting':route.isConnecting || false  // M92
   });
 }
 

@@ -52,7 +52,7 @@ class MojoPageTimingSender : public PageTimingSender {
   void SendTiming(
       const mojom::PageLoadTimingPtr& timing,
       const mojom::FrameMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
+      const std::vector<blink::UseCounterFeature>& new_features,
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       const mojom::FrameRenderDataUpdate& render_data,
       const mojom::CpuTimingPtr& cpu_timing,
@@ -62,7 +62,7 @@ class MojoPageTimingSender : public PageTimingSender {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(
         limited_sending_mode_ ? CreatePageLoadTiming() : timing->Clone(),
-        metadata->Clone(), std::move(new_features), std::move(resources),
+        metadata->Clone(), new_features, std::move(resources),
         render_data.Clone(), cpu_timing->Clone(),
         std::move(new_deferred_resource_data), std::move(input_timing_delta),
         std::move(mobile_friendliness));
@@ -126,18 +126,9 @@ void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
 }
 
 void MetricsRenderFrameObserver::DidObserveNewFeatureUsage(
-    blink::mojom::WebFeature feature) {
+    const blink::UseCounterFeature& feature) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveNewFeatureUsage(feature);
-}
-
-void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
-    blink::mojom::CSSSampleId css_property,
-    bool is_animated) {
-  if (page_timing_metrics_sender_) {
-    page_timing_metrics_sender_->DidObserveNewCssPropertyUsage(css_property,
-                                                               is_animated);
-  }
 }
 
 void MetricsRenderFrameObserver::DidObserveLayoutShift(
@@ -156,13 +147,17 @@ void MetricsRenderFrameObserver::DidObserveInputForLayoutShiftTracking(
   }
 }
 
-void MetricsRenderFrameObserver::DidObserveLayoutNg(uint32_t all_block_count,
-                                                    uint32_t ng_block_count,
-                                                    uint32_t all_call_count,
-                                                    uint32_t ng_call_count) {
+void MetricsRenderFrameObserver::DidObserveLayoutNg(
+    uint32_t all_block_count,
+    uint32_t ng_block_count,
+    uint32_t all_call_count,
+    uint32_t ng_call_count,
+    uint32_t flexbox_ng_block_count,
+    uint32_t grid_ng_block_count) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLayoutNg(
-        all_block_count, ng_block_count, all_call_count, ng_call_count);
+        all_block_count, ng_block_count, all_call_count, ng_call_count,
+        flexbox_ng_block_count, grid_ng_block_count);
 }
 
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
@@ -259,7 +254,7 @@ void MetricsRenderFrameObserver::WillDetach() {
 
 void MetricsRenderFrameObserver::DidStartNavigation(
     const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
+    absl::optional<blink::WebNavigationType> navigation_type) {
   // Send current metrics, as we might create a new RenderFrame later due to
   // this navigation (that might end up in a different process entirely, and
   // won't notify us until the current RenderFrameHost in the browser changed).
@@ -543,7 +538,7 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     for (const auto& restore_timing : restore_timings) {
       double navigation_start = restore_timing.navigation_start;
       double first_paint = restore_timing.first_paint;
-      base::Optional<base::TimeDelta> first_input_delay =
+      absl::optional<base::TimeDelta> first_input_delay =
           restore_timing.first_input_delay;
 
       auto back_forward_cache_timing = mojom::BackForwardCacheTiming::New();
@@ -667,6 +662,15 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     timing->paint_timing->portal_activated_paint =
         *perf.LastPortalActivatedPaint();
   }
+
+  if (perf.UserTimingMarkFullyLoaded().has_value())
+    timing->user_timing_mark_fully_loaded = perf.UserTimingMarkFullyLoaded();
+
+  if (perf.UserTimingMarkFullyVisible().has_value())
+    timing->user_timing_mark_fully_visible = perf.UserTimingMarkFullyVisible();
+
+  if (perf.UserTimingMarkInteractive().has_value())
+    timing->user_timing_mark_interactive = perf.UserTimingMarkInteractive();
 
   return Timing(std::move(timing), monotonic_timing);
 }

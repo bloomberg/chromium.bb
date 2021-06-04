@@ -185,12 +185,11 @@ DEF_SIMPLE_GM(AlternateLuma, canvas, 384,128) {
     canvas->translate(128,0);
 
     // Splatting the Y channel of XYZ on the right should result in (near) greyscale.
-    auto [effect, err] = SkRuntimeEffect::Make(SkString{
-            "uniform shader input; half4 main() { return sample(input).yyya; }"});
+    auto [effect, err] = SkRuntimeEffect::MakeForColorFilter(SkString{
+            "half4 main(half4 inColor) { return inColor.yyya; }"});
     SkASSERT(effect && err.isEmpty());
 
-    sk_sp<SkColorFilter> input = nullptr,
-                        filter = effect->makeColorFilter(SkData::MakeEmpty(), &input, 1);
+    sk_sp<SkColorFilter> filter = effect->makeColorFilter(SkData::MakeEmpty());
     SkASSERT(filter);
 
     SkAlphaType unpremul = kUnpremul_SkAlphaType;

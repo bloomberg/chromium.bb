@@ -280,7 +280,7 @@ void CPDFSDK_InteractiveForm::OnCalculate(CPDF_FormField* pFormField) {
     pContext->OnField_Calculate(pFormField, pField, &sValue, &bRC);
 
     Optional<IJS_Runtime::JS_Error> err = pContext->RunScript(csJS);
-    if (!err && bRC && sValue.Compare(sOldValue) != 0)
+    if (!err && bRC && sValue != sOldValue)
       pField->SetValue(sValue, NotificationOption::kNotify);
   }
 }
@@ -433,7 +433,7 @@ bool CPDFSDK_InteractiveForm::DoAction_SubmitForm(const CPDF_Action& action) {
   if (!m_pInteractiveForm->CheckRequiredFields(nullptr, true))
     return false;
 
-  return SubmitForm(sDestination, false);
+  return SubmitForm(sDestination);
 }
 
 bool CPDFSDK_InteractiveForm::SubmitFields(
@@ -463,8 +463,7 @@ ByteString CPDFSDK_InteractiveForm::ExportFieldsToFDFTextBuf(
   return pFDF ? pFDF->WriteToString() : ByteString();
 }
 
-bool CPDFSDK_InteractiveForm::SubmitForm(const WideString& sDestination,
-                                         bool bUrlEncoded) {
+bool CPDFSDK_InteractiveForm::SubmitForm(const WideString& sDestination) {
   if (sDestination.IsEmpty())
     return false;
 
@@ -479,9 +478,6 @@ bool CPDFSDK_InteractiveForm::SubmitForm(const WideString& sDestination,
 
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> buffer(fdfBuffer.begin(),
                                                          fdfBuffer.end());
-  if (bUrlEncoded && !FDFToURLEncodedData(&buffer))
-    return false;
-
   m_pFormFillEnv->SubmitForm(buffer, sDestination);
   return true;
 }
@@ -497,14 +493,13 @@ void CPDFSDK_InteractiveForm::DoAction_ResetForm(const CPDF_Action& action) {
   DCHECK(action.GetDict());
   const CPDF_Dictionary* pActionDict = action.GetDict();
   if (!pActionDict->KeyExist("Fields")) {
-    m_pInteractiveForm->ResetForm(NotificationOption::kNotify);
+    m_pInteractiveForm->ResetForm();
     return;
   }
   uint32_t dwFlags = action.GetFlags();
   std::vector<CPDF_FormField*> fields =
       GetFieldFromObjects(action.GetAllFields());
-  m_pInteractiveForm->ResetForm(fields, !(dwFlags & 0x01),
-                                NotificationOption::kNotify);
+  m_pInteractiveForm->ResetForm(fields, !(dwFlags & 0x01));
 }
 
 std::vector<CPDF_FormField*> CPDFSDK_InteractiveForm::GetFieldFromObjects(

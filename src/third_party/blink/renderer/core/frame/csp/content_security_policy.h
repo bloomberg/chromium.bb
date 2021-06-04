@@ -61,7 +61,6 @@ class OrdinalNumber;
 
 namespace blink {
 
-class ContentSecurityPolicyResponseHeaders;
 class ConsoleMessage;
 class DOMWrapperWorld;
 class Element;
@@ -105,7 +104,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   // See https://w3c.github.io/webappsec-csp/#create-violation-for-global.
   // These functions are used to create the violation object.
   virtual std::unique_ptr<SourceLocation> GetSourceLocation() = 0;
-  virtual base::Optional<uint16_t> GetStatusCode() = 0;
+  virtual absl::optional<uint16_t> GetStatusCode() = 0;
   // If the Delegate is not bound to a document, a null string should be
   // returned as the referrer.
   virtual String GetDocumentReferrer() = 0;
@@ -184,29 +183,12 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   static const size_t kMaxSampleLength = 40;
 
-  // Parse raw Content Security Policy strings into mojo types.
-  static WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
-  ParseHeaders(const ContentSecurityPolicyResponseHeaders& headers);
-
   ContentSecurityPolicy();
   ~ContentSecurityPolicy();
   void Trace(Visitor*) const;
 
   bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);
-
-  // Parse and store Content Security Policies from the received headers. Return
-  // a copy of the policies which have just been parsed.
-  Vector<network::mojom::blink::ContentSecurityPolicyPtr> DidReceiveHeaders(
-      const ContentSecurityPolicyResponseHeaders&);
-
-  // Parse and store Content Security Policies from a raw string. Return
-  // a copy of the policies which have just been parsed.
-  Vector<network::mojom::blink::ContentSecurityPolicyPtr> DidReceiveHeader(
-      const String&,
-      const SecurityOrigin& self_origin,
-      network::mojom::ContentSecurityPolicyType,
-      network::mojom::ContentSecurityPolicySource);
 
   void AddPolicies(
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies);
@@ -328,27 +310,8 @@ class CORE_EXPORT ContentSecurityPolicy final
   // |m_executionContext|.
   void LogToConsole(ConsoleMessage*, LocalFrame* = nullptr);
 
-  void ReportDirectiveAsSourceExpression(const String& directive_name,
-                                         const String& source_expression);
-  void ReportDuplicateDirective(const String&);
-  void ReportInvalidDirectiveValueCharacter(const String& directive_name,
-                                            const String& value);
-  void ReportInvalidPathCharacter(const String& directive_name,
-                                  const String& value,
-                                  const char);
-  void ReportInvalidRequireTrustedTypesFor(const String&);
-  void ReportInvalidSandboxFlags(const String&);
-  void ReportInvalidSourceExpression(const String& directive_name,
-                                     const String& source);
-  void ReportMultipleReportToEndpoints();
-  void ReportUnsupportedDirective(const String&);
-  void ReportInvalidInReportOnly(const String&);
-  void ReportInvalidDirectiveInMeta(const String& directive_name);
   void ReportReportOnlyInMeta(const String&);
   void ReportMetaOutsideHead(const String&);
-  void ReportValueForEmptyDirective(const String& directive_name,
-                                    const String& value);
-  void ReportMixedContentReportURI(const String& endpoint);
 
   // If a frame is passed in, the report will be sent using it as a context. If
   // no frame is passed in, the report will be sent via this object's
@@ -397,8 +360,6 @@ class CORE_EXPORT ContentSecurityPolicy final
   }
 
   bool ExperimentalFeaturesEnabled() const;
-
-  bool ShouldSendCSPHeader(ResourceType) const;
 
   // Whether the main world's CSP should be bypassed based on the current
   // javascript world we are in.
@@ -468,11 +429,6 @@ class CORE_EXPORT ContentSecurityPolicy final
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextTest,
                            PopulateResourceRequestChecksReportOnlyCSP);
 
-  Vector<network::mojom::blink::ContentSecurityPolicyPtr> Parse(
-      const String&,
-      const SecurityOrigin& self_origin,
-      network::mojom::ContentSecurityPolicyType,
-      network::mojom::ContentSecurityPolicySource);
   void ApplyPolicySideEffectsToDelegate();
   void ReportUseCounters(
       const Vector<network::mojom::blink::ContentSecurityPolicyPtr>& policies);
@@ -548,8 +504,6 @@ class CORE_EXPORT ContentSecurityPolicy final
   bool require_trusted_types_;
   String disable_eval_error_message_;
   mojom::blink::InsecureRequestPolicy insecure_request_policy_;
-
-  String self_protocol_;
 
   bool supports_wasm_eval_ = false;
 };

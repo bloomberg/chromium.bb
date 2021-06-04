@@ -4,10 +4,10 @@
 
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
 
-#include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/child_accounts/family_features.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/guest_session_mixin.h"
@@ -15,7 +15,6 @@
 #include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/child_accounts/family_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +25,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -48,7 +48,7 @@ chromeos::LoggedInUserMixin::LogInType GetPrimaryLogInType(
 }
 
 // Returns the account id for the primary test account for logging in.
-base::Optional<AccountId> GetPrimaryAccountId(
+absl::optional<AccountId> GetPrimaryAccountId(
     FamilyUserMetricsProvider::FamilyUserLogSegment log_segment) {
   if (log_segment ==
       FamilyUserMetricsProvider::FamilyUserLogSegment::kStudentAtHome) {
@@ -64,7 +64,7 @@ base::Optional<AccountId> GetPrimaryAccountId(
         chromeos::FakeGaiaMixin::kEnterpriseUser1GaiaId);
   }
   // Use the default FakeGaiaMixin::kFakeUserEmail consumer test account id.
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void ProvideCurrentSessionData() {
@@ -89,8 +89,7 @@ class FamilyUserMetricsProviderTest
           FamilyUserMetricsProvider::FamilyUserLogSegment> {
  public:
   FamilyUserMetricsProviderTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::kFamilyUserMetricsProvider);
+    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -191,8 +190,7 @@ class FamilyUserMetricsProviderGuestModeTest
     : public MixinBasedInProcessBrowserTest {
  public:
   FamilyUserMetricsProviderGuestModeTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::kFamilyUserMetricsProvider);
+    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
   }
 
  private:
@@ -224,8 +222,7 @@ class FamilyUserMetricsProviderEphemeralUserTest
     : public MixinBasedInProcessBrowserTest {
  protected:
   FamilyUserMetricsProviderEphemeralUserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::kFamilyUserMetricsProvider);
+    scoped_feature_list_.InitAndEnableFeature(ash::kFamilyUserMetricsProvider);
   }
 
   // MixinBasedInProcessBrowserTest:

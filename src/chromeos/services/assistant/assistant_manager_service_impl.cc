@@ -14,7 +14,6 @@
 #include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -62,7 +61,7 @@ constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
 
 std::vector<chromeos::libassistant::mojom::AuthenticationTokenPtr>
 ToAuthenticationTokens(
-    const base::Optional<AssistantManagerService::UserInfo>& user) {
+    const absl::optional<AssistantManagerService::UserInfo>& user) {
   std::vector<chromeos::libassistant::mojom::AuthenticationTokenPtr> result;
 
   if (user.has_value()) {
@@ -77,8 +76,8 @@ ToAuthenticationTokens(
 }
 
 chromeos::libassistant::mojom::BootupConfigPtr CreateBootupConfig(
-    const base::Optional<std::string>& s3_server_uri_override,
-    const base::Optional<std::string>& device_id_override) {
+    const absl::optional<std::string>& s3_server_uri_override,
+    const absl::optional<std::string>& device_id_override) {
   auto result = chromeos::libassistant::mojom::BootupConfig::New();
   result->s3_server_uri_override = s3_server_uri_override;
   result->device_id_override = device_id_override;
@@ -155,11 +154,11 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     ServiceContext* context,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
-    base::Optional<std::string> s3_server_uri_override,
-    base::Optional<std::string> device_id_override,
+    absl::optional<std::string> s3_server_uri_override,
+    absl::optional<std::string> device_id_override,
     std::unique_ptr<LibassistantServiceHost> libassistant_service_host)
     : assistant_settings_(std::make_unique<AssistantSettingsImpl>(context)),
-      assistant_proxy_(std::make_unique<AssistantProxy>()),
+      assistant_host_(std::make_unique<AssistantHost>()),
       platform_delegate_(std::make_unique<PlatformDelegateImpl>()),
       context_(context),
       device_settings_host_(std::make_unique<DeviceSettingsHost>(context)),
@@ -185,44 +184,46 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
         std::make_unique<LibassistantServiceHostImpl>();
   }
 
-  assistant_proxy_->Initialize(libassistant_service_host_.get());
+  assistant_host_->Initialize(libassistant_service_host_.get());
 
   service_controller().AddAndFireStateObserver(
       state_observer_receiver_.BindNewPipeAndPassRemote());
-  assistant_proxy_->AddSpeechRecognitionObserver(
+  assistant_host_->AddSpeechRecognitionObserver(
       speech_recognition_observer_->BindNewPipeAndPassRemote());
   AddRemoteConversationObserver(this);
 
-  audio_output_delegate_->Bind(assistant_proxy_->ExtractAudioOutputDelegate());
-  platform_delegate_->Bind(assistant_proxy_->ExtractPlatformDelegate());
+  audio_output_delegate_->Bind(assistant_host_->ExtractAudioOutputDelegate());
+  platform_delegate_->Bind(assistant_host_->ExtractPlatformDelegate());
   audio_input_host_ = std::make_unique<AudioInputHostImpl>(
-      assistant_proxy_->ExtractAudioInputController(),
+      assistant_host_->ExtractAudioInputController(),
       context_->cras_audio_handler(), context_->power_manager_client(),
       context_->assistant_state()->locale().value());
 
   assistant_settings_->Initialize(
-      assistant_proxy_->ExtractSpeakerIdEnrollmentController(),
-      &assistant_proxy_->settings_controller());
+      assistant_host_->ExtractSpeakerIdEnrollmentController(),
+      &assistant_host_->settings_controller());
 
-  media_host_->Initialize(&assistant_proxy_->media_controller(),
-                          assistant_proxy_->ExtractMediaDelegate());
-  timer_host_->Initialize(&assistant_proxy_->timer_controller(),
-                          assistant_proxy_->ExtractTimerDelegate());
+  media_host_->Initialize(&assistant_host_->media_controller(),
+                          assistant_host_->ExtractMediaDelegate());
+  timer_host_->Initialize(&assistant_host_->timer_controller(),
+                          assistant_host_->ExtractTimerDelegate());
 
-  device_settings_host_->Bind(
-      assistant_proxy_->ExtractDeviceSettingsDelegate());
+  device_settings_host_->Bind(assistant_host_->ExtractDeviceSettingsDelegate());
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
   // Destroy the Assistant Proxy first so the background thread is flushed
   // before any of the other objects are destroyed.
-  assistant_proxy_ = nullptr;
+  assistant_host_ = nullptr;
 }
 
-void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
+void AssistantManagerServiceImpl::Start(const absl::optional<UserInfo>& user,
                                         bool enable_hotword) {
   DCHECK(!IsServiceStarted());
-  DCHECK_EQ(GetState(), State::kStopped);
+  DCHECK_EQ(GetState(), State::STOPPED);
+
+  // Set the flag to avoid starting the service multiple times.
+  SetStateAndInformObservers(State::STARTING);
 
   started_time_ = base::TimeTicks::Now();
 
@@ -232,6 +233,11 @@ void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
 }
 
 void AssistantManagerServiceImpl::Stop() {
+  // We cannot cleanly stop the service if it is in the process of starting up.
+  DCHECK_NE(GetState(), State::STARTING);
+
+  SetStateAndInformObservers(State::STOPPED);
+
   media_host_->Stop();
   scoped_app_list_event_subscriber_.Reset();
 
@@ -247,7 +253,7 @@ AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
 }
 
 void AssistantManagerServiceImpl::SetUser(
-    const base::Optional<UserInfo>& user) {
+    const absl::optional<UserInfo>& user) {
   if (!IsServiceStarted())
     return;
 
@@ -264,13 +270,13 @@ void AssistantManagerServiceImpl::EnableHotword(bool enable) {
 }
 
 void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
-  DCHECK(GetState() == State::kRunning);
+  DCHECK(GetState() == State::RUNNING);
   if (assistant::features::IsAppSupportEnabled())
     display_controller().SetArcPlayStoreEnabled(enable);
 }
 
 void AssistantManagerServiceImpl::SetAssistantContextEnabled(bool enable) {
-  DCHECK(GetState() == State::kRunning);
+  DCHECK(GetState() == State::RUNNING);
 
   media_host_->SetRelatedInfoEnabled(enable);
   display_controller().SetRelatedInfoEnabled(enable);
@@ -283,7 +289,7 @@ AssistantSettings* AssistantManagerServiceImpl::GetAssistantSettings() {
 void AssistantManagerServiceImpl::AddAuthenticationStateObserver(
     AuthenticationStateObserver* observer) {
   DCHECK(observer);
-  assistant_proxy_->AddAuthenticationStateObserver(
+  assistant_host_->AddAuthenticationStateObserver(
       observer->BindNewPipeAndPassRemote());
 }
 
@@ -425,13 +431,12 @@ void AssistantManagerServiceImpl::OnStateChanged(
       OnServiceRunning();
       break;
     case ServiceState::kStopped:
-      OnServiceStopped();
       break;
   }
 }
 
 void AssistantManagerServiceImpl::InitAssistant(
-    const base::Optional<UserInfo>& user) {
+    const absl::optional<UserInfo>& user) {
   DCHECK(!IsServiceStarted());
 
   auto bootup_config = bootup_config_.Clone();
@@ -450,11 +455,13 @@ base::Thread& AssistantManagerServiceImpl::GetBackgroundThreadForTesting() {
 }
 
 void AssistantManagerServiceImpl::OnServiceStarted() {
+  DCHECK_EQ(GetState(), State::STARTING);
+
   const base::TimeDelta time_since_started =
       base::TimeTicks::Now() - started_time_;
   UMA_HISTOGRAM_TIMES("Assistant.ServiceStartTime", time_since_started);
 
-  SetStateAndInformObservers(State::kStarted);
+  SetStateAndInformObservers(State::STARTED);
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport))
     scoped_app_list_event_subscriber_.Observe(device_actions());
@@ -462,10 +469,11 @@ void AssistantManagerServiceImpl::OnServiceStarted() {
 
 bool AssistantManagerServiceImpl::IsServiceStarted() const {
   switch (state_) {
-    case State::kStopped:
+    case State::STOPPED:
+    case State::STARTING:
       return false;
-    case State::kStarted:
-    case State::kRunning:
+    case State::STARTED:
+    case State::RUNNING:
       return true;
   }
 }
@@ -479,10 +487,10 @@ AssistantManagerServiceImpl::BindURLLoaderFactory() {
 
 void AssistantManagerServiceImpl::OnServiceRunning() {
   // Try to avoid double run by checking |GetState()|.
-  if (GetState() == State::kRunning)
+  if (GetState() == State::RUNNING)
     return;
 
-  SetStateAndInformObservers(State::kRunning);
+  SetStateAndInformObservers(State::RUNNING);
 
   if (is_first_init) {
     is_first_init = false;
@@ -501,10 +509,6 @@ void AssistantManagerServiceImpl::OnServiceRunning() {
 
   if (assistant_state()->arc_play_store_enabled().has_value())
     SetArcPlayStoreEnabled(assistant_state()->arc_play_store_enabled().value());
-}
-
-void AssistantManagerServiceImpl::OnServiceStopped() {
-  SetStateAndInformObservers(State::kStopped);
 }
 
 void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
@@ -536,7 +540,7 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
   // The device apps state sync should only be sent after service is running.
   // Check state here to prevent timing issue when the service is restarting.
-  if (GetState() != State::kRunning)
+  if (GetState() != State::RUNNING)
     return;
 
   display_controller().SetDeviceAppsEnabled(enabled);
@@ -567,7 +571,7 @@ void AssistantManagerServiceImpl::AddRemoteConversationObserver(
 
 mojo::PendingReceiver<chromeos::libassistant::mojom::NotificationDelegate>
 AssistantManagerServiceImpl::GetPendingNotificationDelegate() {
-  return assistant_proxy_->ExtractNotificationDelegate();
+  return assistant_host_->ExtractNotificationDelegate();
 }
 
 void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
@@ -633,12 +637,12 @@ AssistantManagerServiceImpl::main_task_runner() {
 
 chromeos::libassistant::mojom::DisplayController&
 AssistantManagerServiceImpl::display_controller() {
-  return assistant_proxy_->display_controller();
+  return assistant_host_->display_controller();
 }
 
 chromeos::libassistant::mojom::ServiceController&
 AssistantManagerServiceImpl::service_controller() {
-  return assistant_proxy_->service_controller();
+  return assistant_host_->service_controller();
 }
 
 void AssistantManagerServiceImpl::SetMicState(bool mic_open) {
@@ -648,22 +652,19 @@ void AssistantManagerServiceImpl::SetMicState(bool mic_open) {
 
 chromeos::libassistant::mojom::ConversationController&
 AssistantManagerServiceImpl::conversation_controller() {
-  return assistant_proxy_->conversation_controller();
+  return assistant_host_->conversation_controller();
 }
 
 chromeos::libassistant::mojom::SettingsController&
 AssistantManagerServiceImpl::settings_controller() {
-  return assistant_proxy_->settings_controller();
+  return assistant_host_->settings_controller();
 }
 
 base::Thread& AssistantManagerServiceImpl::background_thread() {
-  return assistant_proxy_->background_thread();
+  return assistant_host_->background_thread();
 }
 
 void AssistantManagerServiceImpl::SetStateAndInformObservers(State new_state) {
-  if (state_ == new_state)
-    return;
-
   state_ = new_state;
 
   for (auto& observer : state_observers_)

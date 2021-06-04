@@ -30,13 +30,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Workspace from '../../workspace/workspace.js';
 import * as TextUtils from '../text_utils/text_utils.js';
+import * as Workspace from '../workspace/workspace.js';
+import * as Protocol from '../../generated/protocol.js';
 
 import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';
-import {LiveLocation, LiveLocationPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
+import type {LiveLocation} from './LiveLocation.js';
+import {LiveLocationPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
 
 const debuggerModelToMessageHelperMap =
     new WeakMap<SDK.DebuggerModel.DebuggerModel, PresentationConsoleMessageHelper>();
@@ -68,7 +70,7 @@ export class PresentationConsoleMessageManager implements
   _consoleMessageAdded(message: SDK.ConsoleModel.ConsoleMessage): void {
     const runtimeModel = message.runtimeModel();
     if (!message.isErrorOrWarning() || !message.runtimeModel() ||
-        message.source === SDK.ConsoleModel.MessageSource.Violation || !runtimeModel) {
+        message.source === Protocol.Log.LogEntrySource.Violation || !runtimeModel) {
       return;
     }
     const helper = debuggerModelToMessageHelperMap.get(runtimeModel.debuggerModel());
@@ -196,8 +198,8 @@ export class PresentationConsoleMessage extends Workspace.UISourceCode.Message {
   constructor(
       message: SDK.ConsoleModel.ConsoleMessage, rawLocation: SDK.DebuggerModel.Location,
       locationPool: LiveLocationPool) {
-    const level = message.level === SDK.ConsoleModel.MessageLevel.Error ? Workspace.UISourceCode.Message.Level.Error :
-                                                                          Workspace.UISourceCode.Message.Level.Warning;
+    const level = message.level === Protocol.Log.LogEntryLevel.Error ? Workspace.UISourceCode.Message.Level.Error :
+                                                                       Workspace.UISourceCode.Message.Level.Warning;
     super(level, message.messageText);
     DebuggerWorkspaceBinding.instance().createLiveLocation(rawLocation, this._updateLocation.bind(this), locationPool);
   }

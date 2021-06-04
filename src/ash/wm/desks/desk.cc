@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -29,9 +28,11 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
 
@@ -78,7 +79,7 @@ bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
   // The desks bar widget is an activatable window placed in the active desk's
   // container, therefore it should be allowed to move outside of its desk when
   // its desk is removed.
-  if (window->id() == kShellWindowId_DesksBarWindow)
+  if (window->GetId() == kShellWindowId_DesksBarWindow)
     return true;
 
   // We never move transient descendants directly, this is taken care of by
@@ -160,7 +161,7 @@ class DeskContainerObserver : public aura::WindowObserver {
  public:
   DeskContainerObserver(Desk* owner, aura::Window* container)
       : owner_(owner), container_(container) {
-    DCHECK_EQ(container_->id(), owner_->container_id());
+    DCHECK_EQ(container_->GetId(), owner_->container_id());
     container->AddObserver(this);
   }
 
@@ -300,8 +301,7 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   }
 
   // Update the window's workspace to this parent desk.
-  if ((features::IsBentoEnabled() || features::IsFullRestoreEnabled()) &&
-      !is_desk_being_removed_) {
+  if (!is_desk_being_removed_) {
     auto* desks_controller = DesksController::Get();
     window->SetProperty(aura::client::kWindowWorkspaceKey,
                         desks_controller->GetDeskIndex(this));
@@ -487,7 +487,7 @@ void Desk::MoveWindowToDesk(aura::Window* window,
   DCHECK(this != target_desk);
   // The desks bar should not be allowed to move individually to another desk.
   // Only as part of `MoveWindowsToDesk()` when the desk is removed.
-  DCHECK_NE(window->id(), kShellWindowId_DesksBarWindow);
+  DCHECK_NE(window->GetId(), kShellWindowId_DesksBarWindow);
 
   {
     ScopedWindowPositionerDisabler window_positioner_disabler;
@@ -636,7 +636,7 @@ void Desk::MoveWindowToDeskInternal(aura::Window* window,
                                      display::Screen::GetScreen()
                                          ->GetDisplayNearestWindow(target_root)
                                          .id());
-    DCHECK_EQ(target_desk->container_id_, window->parent()->id());
+    DCHECK_EQ(target_desk->container_id_, window->parent()->GetId());
   }
 }
 

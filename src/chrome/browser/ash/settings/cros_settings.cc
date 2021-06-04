@@ -129,8 +129,10 @@ bool CrosSettings::GetBoolean(const std::string& path,
                               bool* bool_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsBoolean(bool_value);
+  if (value && value->is_bool()) {
+    *bool_value = value->GetBool();
+    return true;
+  }
   return false;
 }
 
@@ -138,8 +140,10 @@ bool CrosSettings::GetInteger(const std::string& path,
                               int* out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsInteger(out_value);
+  if (value && value->is_int()) {
+    *out_value = value->GetInt();
+    return true;
+  }
   return false;
 }
 
@@ -183,7 +187,7 @@ bool CrosSettings::GetDictionary(
 bool CrosSettings::IsUserAllowlisted(
     const std::string& username,
     bool* wildcard_match,
-    const base::Optional<user_manager::UserType>& user_type) const {
+    const absl::optional<user_manager::UserType>& user_type) const {
   // Skip allowlist check for tests.
   if (chromeos::switches::ShouldSkipOobePostLogin()) {
     return true;
@@ -234,16 +238,13 @@ bool CrosSettings::FindEmailInList(const base::ListValue* list,
     *wildcard_match = false;
 
   bool found_wildcard_match = false;
-  for (base::ListValue::const_iterator entry(list->begin());
-       entry != list->end();
-       ++entry) {
-    std::string entry_string;
-    if (!entry->GetAsString(&entry_string)) {
+  for (const auto& entry : list->GetList()) {
+    if (!entry.is_string()) {
       NOTREACHED();
       continue;
     }
     std::string canonicalized_entry(
-        gaia::CanonicalizeEmail(gaia::SanitizeEmail(entry_string)));
+        gaia::CanonicalizeEmail(gaia::SanitizeEmail(entry.GetString())));
 
     if (canonicalized_entry != wildcard_email &&
         canonicalized_entry == canonicalized_email) {

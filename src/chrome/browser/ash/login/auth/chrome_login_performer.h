@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
@@ -28,7 +28,7 @@ namespace policy {
 class WildcardLoginChecker;
 }
 
-namespace chromeos {
+namespace ash {
 
 // This class implements chrome-specific elements of Login Performer.
 
@@ -41,7 +41,7 @@ class ChromeLoginPerformer : public LoginPerformer {
   bool IsUserAllowlisted(
       const AccountId& account_id,
       bool* wildcard_match,
-      const base::Optional<user_manager::UserType>& user_type) override;
+      const absl::optional<user_manager::UserType>& user_type) override;
 
  protected:
   bool RunTrustedCheck(base::OnceClosure callback) override;
@@ -76,11 +76,12 @@ class ChromeLoginPerformer : public LoginPerformer {
   DISALLOW_COPY_AND_ASSIGN(ChromeLoginPerformer);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove when moved to chrome/browser/ash/.
-namespace ash {
-using ::chromeos::ChromeLoginPerformer;
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::ChromeLoginPerformer;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_AUTH_CHROME_LOGIN_PERFORMER_H_

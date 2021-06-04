@@ -3625,7 +3625,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
-      'future_on': ['android'],
+      'future_on': ['android','ios'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5752,8 +5752,6 @@
 
       Leaving the policy unset results in the use of <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME">DefaultCookiesSetting</ph> for all sites, if it's set. If not, the user's personal setting applies. URLs not covered by the patterns specified also result in the use of defaults.
 
-      If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in Background mode, the session might stay active until the user exits the browser, not just closes the last window. See <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME">BackgroundModeEnabled</ph> for details about configuring this behavior.
-
       While no specific policy takes precedence, see <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME">CookiesBlockedForUrls</ph> and <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME">CookiesAllowedForUrls</ph>. URL patterns among these 3 policies must not conflict.''',
     },
     {
@@ -6918,8 +6916,6 @@
 
       Leaving the policy unset results in the use of <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME">DefaultCookiesSetting</ph> for all sites, if it's set. If not, the user's personal setting applies. URLs not covered by the patterns specified also result in the use of defaults.
 
-      If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in Background mode, the session might stay active until the user exits the browser, not just closes the last window. See <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME">BackgroundModeEnabled</ph> for details about configuring this behavior.
-
       While no specific policy takes precedence, see <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME">CookiesBlockedForUrls</ph> and <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME">CookiesAllowedForUrls</ph>. URL patterns among these 3 policies must not conflict.
 
       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
@@ -7137,7 +7133,7 @@
       'owners': [ 'yusuyoutube@google.com', 'benwgold@google.com', 'wylieb@chromium.org', 'fgorski@chromium.org', 'lens-chrome@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['android'],
+      'supported_on': ['android:91-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -8552,6 +8548,8 @@
 
       From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 73, you can block javascript://* URLs. However, it affects only JavaScript entered in the address bar (or, for example, bookmarklets). In-page JavaScript URLs with dynamically loaded data aren't subject to this policy. For example, if you block example.com/abc, then example.com can still load example.com/abc using XMLHTTPRequest.
 
+      From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 92, this policy is also supported in the headless mode.
+
       Note: Blocking internal chrome://* URLs can lead to unexpected errors.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
@@ -8583,6 +8581,8 @@
       This policy also allows enabling the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:".
 
       Leaving the policy unset allows no exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>.
+
+      From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 92, this policy is also supported in the headless mode.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
@@ -8704,6 +8704,39 @@
       'label': '''Allow merging dictionary policies from different sources''',
     },
     {
+      'name': 'CloudUserPolicyMerge',
+      'owners': ['igorruvinov@google.com', 'pastarmovj@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:92-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable merging of user-level cloud policies.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable merging of user-level cloud policies.',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 859,
+      'caption': '''Enables merging of user cloud policies into machine-level policies''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled allows policies associated with a <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> account to be merged into machine-level policies.
+
+      Only policies originating from secure users can be merged. A secure user is affiliated with the organization that manages their browser using <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. All other user-level policies will always be ignored.
+
+      Policies that need to be merged also need to be set in either <ph name="POLICY_POLICYLISTMULTIPLESOURCEMERGELIST">PolicyListMultipleSourceMergeList</ph> or <ph name="POLICY_POLICYDICTIONARYMULTIPLESOURCEMERGELIST">PolicyDictionaryMultipleSourceMergeList</ph>. This policy will be ignored if neither of the two aforementioned policies is configured.
+
+      Leaving the policy unset or setting it to Disabled prevents user-level cloud policies from being merged with policies from any other sources.''',
+    },
+    {
       'name': 'EnableExperimentalPolicies',
       'owners': ['file://components/policy/resources/OWNERS', 'zmin@chromium.org'],
       'type': 'list',
@@ -8737,7 +8770,7 @@
       'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/HEAD/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'features': {
         'dynamic_refresh': True,
@@ -8755,7 +8788,7 @@
       'owners': ['file://components/policy/resources/OWNERS', 'pmarko@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/HEAD/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'device_only': True,
       'features': {
@@ -9294,7 +9327,7 @@
       'type': 'int',
       'schema': {
         'type': 'integer',
-        'minimum': -1,
+        'minimum': -2,
         'maximum': 365
       },
       'future_on': ['chrome_os'],
@@ -9309,7 +9342,9 @@
       'tags': [],
       'desc': '''While logging in through the lock screen, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
 
-      When this policy is unset, or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
+      When this policy is set to -2, it will match the value of the login screen offline signin time limit which comes from <ph name="POLICY">GaiaOfflineSigninTimeLimitDays</ph>.
+
+      When the policy is unset, or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
 
       If the policy is set to a value of 0, online authentication will always be required.
 
@@ -9325,7 +9360,7 @@
       'type': 'int',
       'schema': {
         'type': 'integer',
-        'minimum': -1,
+        'minimum': -2,
         'maximum': 365
       },
       'future_on': ['chrome_os'],
@@ -9340,7 +9375,9 @@
       'tags': [],
       'desc': '''While logging in through the lock screen, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
 
-      When this policy is unset or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
+      When this policy is set to -2, it will match the value of the login screen offline signin time limit which comes from <ph name="POLICY">SAMLOfflineSigninTimeLimit</ph>.
+
+      When the policy is unset or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
 
       If the policy is set to a value of 0, online authentication will always be required.
 
@@ -10460,10 +10497,15 @@
         'dynamic_refresh': True,
       },
       'example_value': False,
+      'default_for_managed_devices_doc_only': True,
       'id': 242,
-      'caption': '''Auto update p2p enabled''',
+      'caption': '''Auto update P2P enabled''',
       'tags': [],
-      'desc': '''Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.''',
+      'desc': '''Specifies whether P2P is to be used for OS update payloads.
+      If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server.
+      If set to False, P2P will not be used.
+
+      NOTE: The default behavior for consumer and enterprise devices differs: on managed devices P2P will be enabled, while on non-managed devices it will not be enabled.''',
     },
     {
       'name': 'DeviceRollbackAllowedMilestones',
@@ -10818,7 +10860,7 @@
       'id': 138,
       'caption': '''Continue running background apps when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is closed''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled turns background mode on. In backgroudn mode, a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS sign-in and keeps running when the last browser window is closed, allowing background apps and the browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
+      'desc': '''Setting the policy to Enabled turns background mode on. In background mode, a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS sign-in and keeps running when the last browser window is closed, allowing background apps and the browsing session to remain active. The background process displays an icon in the system tray and can always be closed from there.
 
       Setting the policy to Disabled turns background mode off.
 
@@ -10897,7 +10939,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': '.*@example.com',
+      'example_value': '.*@example\\.com',
       'id': 147,
       'caption': '''Restrict which Google accounts are allowed to be set as browser primary accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
@@ -11228,7 +11270,7 @@
     },
     {
       'name': 'BuiltInDnsClientEnabled',
-      'owners': ['szym@chromium.org', 'pmarko@chromium.org'],
+      'owners': ['ericorth@chromium.org', 'pmarko@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
@@ -11254,7 +11296,7 @@
     },
     {
       'name': 'DnsOverHttpsMode',
-      'owners': ['dalyk@chromium.org', 'ericorth@chromium.org', 'bingler@chromium.org'],
+      'owners': ['ericorth@chromium.org', 'bingler@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -11309,7 +11351,7 @@
     },
     {
       'name': 'DnsOverHttpsTemplates',
-      'owners': ['dalyk@chromium.org', 'ericorth@chromium.org', 'bingler@chromium.org'],
+      'owners': ['ericorth@chromium.org', 'bingler@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': [
@@ -11334,6 +11376,43 @@
       If the URI template contains a <ph name="HTTP_VARIABLE_DNS">dns</ph> variable, requests to the resolver will use <ph name="HTTP_METHOD_GET">GET</ph>; otherwise requests will use <ph name="HTTP_METHOD_POST">POST</ph>.
 
       Incorrectly formatted templates will be ignored.''',
+    },
+    {
+      'name': 'AdditionalDnsQueryTypesEnabled',
+      'owners': ['ericorth@chromium.org', 'file://net/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [
+        'android:92-',
+        'chrome.*:92-',
+        'chrome_os:92-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow additional DNS query types',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent additional DNS query types',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 857,
+      'caption': '''Allow DNS queries for additional DNS record types''',
+      'tags': [],
+      'desc': '''This policy controls whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may query additional DNS record types when making insecure DNS requests. This policy has no effect on DNS queries made via Secure DNS, which may always query additional DNS types.
+
+      If this policy is unset or set to Enabled, additional types such as <ph name="DNS_TYPE_HTTPS">HTTPS</ph> (DNS type 65) may be queried in addition to <ph name="DNS_TYPE_A">A</ph> (DNS type 1) and <ph name="DNS_TYPE_AAAA">AAAA</ph> (DNS type 28).
+
+      If this policy is set to Disabled, DNS will only be queried for <ph name="DNS_TYPE_A">A</ph> (DNS type 1) and/or <ph name="DNS_TYPE_AAAA">AAAA</ph> (DNS type 28).
+
+      This policy is a temporary measure and will be removed in future versions of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. After removal of the policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always be able to query additional DNS types.''',
     },
     {
       'name': 'ShelfAutoHideBehavior',
@@ -14463,11 +14542,21 @@
           'name': 'TLSv1',
           'value': 'tls1',
           'caption': 'TLS 1.0',
+          'supported_on': [
+            'chrome.*:66-90',
+            'chrome_os:66-90',
+            'android:66-90',
+          ],
         },
         {
           'name': 'TLSv1.1',
           'value': 'tls1.1',
           'caption': 'TLS 1.1',
+          'supported_on': [
+            'chrome.*:66-90',
+            'chrome_os:66-90',
+            'android:66-90',
+          ],
         },
         {
           'name': 'TLSv1.2',
@@ -15697,11 +15786,11 @@
       },
       'example_value': 'managedchrome.com,example.com',
       'id': 331,
-      'caption': '''Define domains allowed to access G Suite''',
+      'caption': '''Define domains allowed to access <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph>''',
       'tags': ['filtering'],
-      'desc': '''Setting the policy turns on Chrome's restricted sign-in feature in G Suite and prevents users from changing this setting. Users can only access Google tools using accounts from the specified domains (to allow gmail or googlemail accounts, add consumer_accounts to the list of domains). This setting prevents users from signing in and adding a Secondary Account on a managed device that requires Google authentication, if that account doesn't belong to one of the explicitly allowed domains.
+      'desc': '''Setting the policy turns on Chrome's restricted sign-in feature in <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> and prevents users from changing this setting. Users can only access Google tools using accounts from the specified domains (to allow gmail or googlemail accounts, add consumer_accounts to the list of domains). This setting prevents users from signing in and adding a Secondary Account on a managed device that requires Google authentication, if that account doesn't belong to one of the explicitly allowed domains.
 
-      Leaving this setting empty or unset means users can access G Suite with any account.
+      Leaving this setting empty or unset means users can access <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> with any account.
 
       Users cannot change or override this setting.
 
@@ -15856,6 +15945,7 @@
           'caption': 'Do not show content suggestions on the New Tab page',
         },
       ],
+      'future_on': [ 'ios' ],
       'example_value': True,
       'default': True,
       'id': 338,
@@ -17300,11 +17390,11 @@
       'items': [
         {
           'value': True,
-          'caption': 'Enables PCIe tunneling for Thunderbolt/USB4 peripheral devices, limiting the device capabilities',
+          'caption': 'Enables PCIe tunneling for Thunderbolt/USB4 peripheral devices, peripheral devices will function at their full capabilities',
         },
         {
           'value': False,
-          'caption': 'Disables PCIe tunneling. Supported Thunderbolt/USB4 peripheral devices will function at their full capabilities',
+          'caption': 'Disables PCIe tunneling for Thunderbolt/USB4 peripheral devices, limiting the device capabilities',
         },
       ],
       'example_value': False,
@@ -17771,7 +17861,7 @@
       'owners': ['macourteau@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean'},
-      'supported_on': ['chrome.*:64-', 'chrome_os:64-'],
+      'supported_on': ['chrome.*:64-', 'chrome_os:64-', 'android:92-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -18501,6 +18591,77 @@
       If not set, the default period of 259200000 milliseconds (three days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.''',
     },
     {
+      'id': 854,
+      'name': 'RelaunchWindow',
+      'owners': ['snijhara@google.com', 'file://chrome/browser/upgrade_detector/OWNERS'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future_on': ['chrome.*', 'chrome_os'],
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'entries': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'start': {
+                  'type': 'object',
+                  'description': '''Time interpreted in local wall-clock 24h format.''',
+                  'id': 'Time',
+                  'properties': {
+                    'hour': {
+                      'type': 'integer',
+                      'minimum': 0,
+                      'maximum': 23
+                    },
+                    'minute': {
+                      'type': 'integer',
+                      'minimum': 0,
+                      'maximum': 59
+                    }
+                  },
+                  'required': ['hour', 'minute']
+                },
+                'duration_mins': {
+                  'description': '''Time period (minutes) that specifies the length of the relaunch window.''',
+                  'type': 'integer',
+                  'minimum': 1,
+                  'maximum': 1440
+                }
+              },
+              'required': ['start', 'duration_mins']
+            }
+          }
+        }
+      },
+      'caption': '''Set the time interval for relaunch''',
+      'label': '''Relaunch time window''',
+      'example_value': {
+        'entries': [
+          {
+            'start': {
+              'hour': 2,
+              'minute': 15
+            },
+            'duration_mins': 240
+          }
+        ]
+      },
+      'desc': '''Specify a target time window for the end of the relaunch notification period.
+
+      Users are notified of the need for a browser relaunch or device restart based on the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> and <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy settings. Browsers and devices are forcibly restarted at the end of the notification period when the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy is set to 'Required'. This <ph name="RELAUNCH_WINDOW_POLICY_NAME">RelaunchWindow</ph> policy can be used to defer the end of the notification period so that it falls within a specific time window.
+
+      If this policy is not set, the default target time window for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is between 2 AM and 4 AM. The default target time window for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is the whole day (i.e., the end of the notification period is never deferred).
+
+      Note: Though the policy can accept multiple items in <ph name="ENTRIES_FIELD_NAME">entries</ph>, all but the first item are ignored.
+      Warning: Setting this policy may delay application of software updates.''',
+    },
+    {
       'name': 'VirtualMachinesAllowed',
       'owners': ['timzheng@chromium.org', 'aoldemeier@chromium.org'],
       'type': 'main',
@@ -18770,7 +18931,7 @@
       'tags': [],
       'desc': '''Setting the policy to Enabled means Safe Browsing will trust the domains you designate. It won't check them for dangerous resources such as phishing, malware, or unwanted software. Safe Browsing's download protection service won't check downloads hosted on these domains. Its password protection service won't check for password reuse.
 
-      Setting the policy to Disabled or leaving it unset means default Safe Browsing protection applies to all resources.
+      Leaving the policy unset means default Safe Browsing protection applies to all resources.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
@@ -18869,6 +19030,7 @@
         'chrome.*:72-',
         'ios:88-',
       ],
+      'future_on': ['android'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -18939,7 +19101,7 @@
       'deprecated': True,
       'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 431,
-      'caption': '''Allow media autoplay on a allowlist of URL patterns''',
+      'caption': '''Allow media autoplay on a whitelist of URL patterns''',
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME">AutoplayAllowlist</ph>' policy instead.
 
@@ -18962,7 +19124,7 @@
       },
       'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 742,
-      'caption': '''Allow media autoplay on a whitelist of URL patterns''',
+      'caption': '''Allow media autoplay on a allowlist of URL patterns''',
       'tags': [],
       'desc': '''Setting the policy lets videos play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If <ph name="AUTOPLAY_ALLOWED_POLICY_NAME">AutoplayAllowed</ph> policy is set to True, then this policy has no effect. If <ph name="AUTOPLAY_ALLOWED_POLICY_NAME">AutoplayAllowed</ph> is set to False, then any URL patterns set in this policy can still play. If this policy changes while <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running, it only applies to newly opened tabs.
 
@@ -19212,23 +19374,7 @@
                   'type': 'object',
                   'properties': {
                     'effective_day': { '$ref': 'WeekDay' },
-                    'starts_at': {
-                      'type': 'object',
-                      'id': 'Time',
-                      'properties': {
-                        'hour': {
-                          'type': 'integer',
-                          'minimum': 0,
-                          'maximum': 23
-                        },
-                        'minute': {
-                          'type': 'integer',
-                          'minimum': 0,
-                          'maximum': 59
-                        },
-                      },
-                      'required': ['hour', 'minute']
-                    },
+                    'starts_at': { '$ref': 'Time' },
                     'ends_at': { '$ref': 'Time' },
                     'last_updated_millis': { 'type': 'string' }
                   }
@@ -20136,6 +20282,7 @@
         'chrome_os:81-',
         'ios:88-',
       ],
+      'future_on': ['android'],
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting which uploads information about the browser operation to Google Admin console.
@@ -20745,7 +20892,7 @@
     },
     {
       'name': 'ParentAccessCodeConfig',
-      'owners': ['file://chrome/browser/chromeos/child_accounts/OWNERS', 'agawronska@chromium.org'],
+      'owners': ['file://chrome/browser/ash/child_accounts/OWNERS', 'agawronska@chromium.org'],
       'type': 'dict',
       'schema': {
         'sensitiveValue': True,
@@ -21297,7 +21444,7 @@
     {
       'name': 'ContextAwareAccessSignalsAllowlist',
       'owners': ['rodmartin@google.com', 'rogerta@chromium.org', 'mad@chromium.org'],
-      'future_on': ['chrome.*'],
+      'future_on': ['chrome.*', 'chrome_os'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -21321,6 +21468,8 @@
       URLs must have HTTPS scheme, e.g. "https://example.com".
 
       Note: Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed.
+
+      For ChromeOS, this policy is related to remote attestation where a certificate is automatically generated and uploaded to the Device Management Server.
 
       For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
@@ -21690,7 +21839,7 @@
     },
     {
       'name': 'KerberosEnabled',
-      'owners': ['file://chrome/browser/chromeos/kerberos/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'fsandrade@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21711,7 +21860,7 @@
     },
     {
       'name': 'KerberosRememberPasswordEnabled',
-      'owners': ['file://chrome/browser/chromeos/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21732,7 +21881,7 @@
     },
     {
       'name': 'KerberosAddAccountsAllowed',
-      'owners': ['file://chrome/browser/chromeos/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21753,7 +21902,7 @@
     },
     {
       'name': 'KerberosAccounts',
-      'owners': ['file://chrome/browser/chromeos/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
       'type': 'dict',
       'schema': {
         'type': 'array',
@@ -22570,7 +22719,7 @@
 
       Setting the policy to Disabled has a detrimental effect on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s security and stability as unknown and potentially hostile code can load inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes. Only turn off the policy if there are compatibility issues with third-party software that must run inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes.
 
-      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies ).''',
+      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
     },
     {
       'name': 'HSTSPolicyBypassList',
@@ -24396,6 +24545,38 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       Setting this policy to Disabled or leaving it unset will result in privet printers not appearing in print preview, as this printing method is deprecated.''',
     },
     {
+      'name': 'DataLeakPreventionReportingEnabled',
+      'owners': ['file://chrome/browser/chromeos/policy/dlp/OWNERS', 'jkopanski@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:92-'],
+      'features': {
+        'can_be_recommended': False,
+        # TODO(crbug.com/1203390): Enable dynamic refresh
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable reporting of data leak prevention events',
+        },
+        {
+          'value': False,
+          'caption': 'Disable reporting of data leak prevention events',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 856,
+      'caption': '''Enable data leak prevention reporting''',
+      'tags': [],
+      'desc': '''This policy is a general switch for all rules defined in the DataLeakPreventionRulesList policy.
+      Setting this policy to True will switch on real-time reporting of data leak prevention events.
+      Setting this policy to False or leaving it unset will switch off the reporting.
+      Rules defined with ALLOW level restrictions in DataLeakPreventionRulesList will not report events in both cases.'''
+    },
+    {
       'name': 'DataLeakPreventionRulesList',
       'owners': ['file://chrome/browser/chromeos/policy/dlp/OWNERS', 'ayaelattar@chromium.org'],
       'type': 'dict',
@@ -24460,7 +24641,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
                     'type': 'string',
                     'enum': [
                       'BLOCK',
-                      'ALLOW'
+                      'ALLOW',
+                      'REPORT'
                     ]
                   }
                 }
@@ -24469,7 +24651,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           }
         }
       },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:92-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': False,
@@ -24516,7 +24698,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
             },
             {
               'class': 'SCREEN_SHARE',
-              'level': 'BLOCK'
+              'level': 'REPORT'
             }
           ]
         },
@@ -24565,9 +24747,10 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       - Control the privacy screen when any of the sources is visible.
       - Control screen sharing of any of the sources.
 
-      The restriction level can be set to BLOCK, ALLOW.
-      - If the restriction is set to BLOCK, the action won't be allowed.
-      - If the resriction is set to ALLOW, the action will be allowed.
+      The restriction level can be set to BLOCK, ALLOW, REPORT.
+      - If the restriction level is set to BLOCK, the action won't be allowed. If <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED">DataLeakPreventionReportingEnabled</ph> is set to True, the blocked action will be reported to the admin.
+      - If the resriction level is set to ALLOW, the action will be allowed.
+      - If the resriction level is set to REPORT and <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED">DataLeakPreventionReportingEnabled</ph> is set to True, the action will be reported to the admin.
 
       Notes:
       - PRIVACY_SCREEN restriction doesn't block the ability to turn on privacy screen, but enforces it when the restriction class is set to BLOCK.
@@ -24737,7 +24920,9 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       The available data types are <ph name="DATA_TYPE_BROWSING_HISTORY">'browsing_history'</ph>, <ph name="DATA_TYPE_DOWNLOAD_HISTORY">'download_history'</ph>, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">'cookies_and_other_site_data'</ph>, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES">'cached_images_and_files'</ph>, <ph name="DATA_TYPE_PASSWORD">'password_signin'</ph>, <ph name="DATA_TYPE_AUTOFILL">'autofill'</ph>, <ph name="DATA_TYPE_SITE_SETTINGS">'site_settings'</ph> and <ph name="DATA_TYPE_HOSTED_APP_DATA">'hosted_app_data'</ph>.
 
-      The browser will automatically remove data of selected types that is older than <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>. The minimum value that can be set is 1 hour. In some rare cases the data may take longer to delete, but the data will eventually be deleted.'''
+      The browser will automatically remove data of selected types that is older than <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>. The minimum value that can be set is 1 hour.
+
+      The deletion of expired data will happen 15 seconds after the browser starts then every hour while the browser is running.'''
     },
     {
       'name': 'LacrosAllowed',
@@ -24786,26 +24971,92 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'items': [
         {
           'value': True,
-          'caption': 'Allow users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
+          'caption': 'Allow users to create and use secondary profiles, and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
         },
         {
           'value': False,
-          'caption': 'Prevent users from creating secondary profiles and from using guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
+          'caption': 'Prevent users from creating and using secondary profiles, and from using guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
         },
       ],
       'example_value': True,
       'default': True,
       'default_for_enterprise_users': False,
       'id': 832,
-      'caption': '''Allow users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser''',
+      'caption': '''Allow users to create and use secondary profiles, and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser''',
       'tags': [],
-      'desc': '''This setting allows users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser.
+      'desc': '''This setting allows users to create and use secondary profiles, and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser.
 
-      Similar to both BrowserAddPersonEnabled and BrowserGuestModeEnabled, if this policy is set to false or unset, the user cannot create secondary profiles and use guest mode.
+      Similar to both BrowserAddPersonEnabled and BrowserGuestModeEnabled, if this policy is set to false or unset, the user cannot create or use secondary profiles, and use guest mode. Previously created secondary profiles, if any, will be unavailable.
 
-      If this policy is set to true, the user can create secondary profiles and use guest mode.
+      If this policy is set to true, the user can create and use secondary profiles, and use guest mode.
 
       Note, that if this policy is set to true but BrowserAddPersonEnabled is set to false, the user cannot create secondary profiles. The same for BrowserGuestModeEnabled and guest mode.''',
+    },
+    {
+      'name': 'LacrosAvailability',
+      'owners': ['asumaneev@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'user_choice',
+          'lacros_disallowed',
+          'side_by_side',
+          'lacros_primary',
+          'lacros_only'
+        ],
+      },
+      'items': [
+        {
+          'name': 'user_choice',
+          'value': 'user_choice',
+          'caption': '''Allow users to enable <ph name="LACROS_NAME">Lacros</ph> and make it the primary browser''',
+        },
+        {
+          'name': 'lacros_disallowed',
+          'value': 'lacros_disallowed',
+          'caption': '''Prevent users from using <ph name="LACROS_NAME">Lacros</ph>''',
+        },
+        {
+          'name': 'side_by_side',
+          'value': 'side_by_side',
+          'caption': '''Enable <ph name="LACROS_NAME">Lacros</ph>''',
+        },
+        {
+          'name': 'lacros_primary',
+          'value': 'lacros_primary',
+          'caption': '''Enable <ph name="LACROS_NAME">Lacros</ph> and make it the primary browser''',
+        },
+        {
+          'name': 'lacros_only',
+          'value': 'lacros_only',
+          'caption': '''Make <ph name="LACROS_NAME">Lacros</ph> the only available browser (not implemented yet)''',
+        },
+      ],
+      'supported_on': ['chrome_os:92-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': "lacros_primary",
+      'default': "user_choice",
+      'id': 855,
+      'default_for_enterprise_users': "lacros_disallowed",
+      'caption': '''Make the <ph name="LACROS_NAME">Lacros</ph> browser available''',
+      'tags': [],
+      'desc': '''This setting provides several availability options for the <ph name="LACROS_NAME">Lacros</ph> browser.
+
+      If the policy is set to <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph>, the user can enable <ph name="LACROS_NAME">Lacros</ph> and make it primary. <ph name="LACROS_NAME">Lacros</ph> can still be disallowed with <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy.
+
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph>, the user cannot use <ph name="LACROS_NAME">Lacros</ph>. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+
+      If the policy is set to <ph name="LACROS_AVAILABILITY_SIDE_BY_SIDE_VALUE">side_by_side</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled but is not the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_PRIMARY_VALUE">lacros_primary</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled and is the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+
+      If the policy is unset, the default is <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph> for enterprise-managed users and <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph> for non-managed users.
+
+      In the future it will be possible to make <ph name="LACROS_NAME">Lacros</ph> the only available browser in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> with <ph name="LACROS_AVAILABILITY_LACROS_ONLY_VALUE">lacros_only</ph> value.''',
     },
     {
       'name': 'IntegratedWebAuthenticationAllowed',
@@ -24919,13 +25170,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 809,
       'caption': 'Clear Browsing Data on Exit',
       'tags': [],
-      'desc': '''Configures a list of browsing data types that should be deleted when the browser is closed.
-      The available data types are browsing history (<ph name="DATA_TYPE_BROWSING_HISTORY">browsing_history</ph>), download history (<ph name="DATA_TYPE_DOWNLOAD_HISTORY">download_history</ph>), cookies (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">cookies_and_other_site_data</ph>), cache<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES"> (cached_images_and_files)</ph>, autofill (<ph name="DATA_TYPE_AUTOFILL">autofill</ph>), passwords (<ph name="DATA_TYPE_PASSWORD">password_signin</ph>), site settings (<ph name="DATA_TYPE_SITE_SETTINGS">site_settings</ph>) and hosted apps data (<ph name="DATA_TYPE_HOSTED_APP_DATA">hosted_app_data</ph>).
-      This policy does not take precedence over <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME">AllowDeletingBrowserHistory</ph>.
-      This policy requires the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy to be set to true, otherwise it will be ignored.
-      If this policy is set at platform level, Sync should be disabled at platform level.
-      If this policy is set at user level, Sync should be disabled for that user in order for this policy to take effect.
-      '''
+      'desc': '''Configures a list of browsing data types that should be deleted when the user closes all browser windows. The available data types are browsing history (<ph name="DATA_TYPE_BROWSING_HISTORY">browsing_history</ph>), download history (<ph name="DATA_TYPE_DOWNLOAD_HISTORY">download_history</ph>), cookies (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">cookies_and_other_site_data</ph>), cache<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES"> (cached_images_and_files)</ph>, autofill (<ph name="DATA_TYPE_AUTOFILL">autofill</ph>), passwords (<ph name="DATA_TYPE_PASSWORD">password_signin</ph>), site settings (<ph name="DATA_TYPE_SITE_SETTINGS">site_settings</ph>) and hosted apps data (<ph name="DATA_TYPE_HOSTED_APP_DATA">hosted_app_data</ph>). This policy does not take precedence over <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME">AllowDeletingBrowserHistory</ph>.
+
+      This policy requires the <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy to be set to true, otherwise it will be ignored. If this policy is set at platform level, Sync should be disabled at platform level. If this policy is set at user level, Sync should be disabled for that user in order for this policy to take effect.
+
+      If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not exit cleanly (for example, if the browser or the OS crashes), the browsing data will be cleared the next time the profile is loaded.'''
     },
     {
       'name': 'ProfilePickerOnStartupAvailability',
@@ -25535,6 +25784,12 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'name': '554',
           'value': '554',
           'caption': '''port 554 (expires 2021/10/15)''',
+          'supported_on': [
+            'chrome.*:91-95',
+            'android:91-95',
+            'chrome_os:91-95',
+            'webview_android:91-95'
+          ],
         },
         {
           'name': '10080',
@@ -25566,6 +25821,111 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       Leaving the value empty or unset means that all restricted ports will be blocked. If there is a mixture of valid and invalid values, the valid ones will be applied.
 
       This policy overrides the "--explicitly-allowed-ports" command-line option.''',
+    },
+    {
+      'name': 'DeviceDebugPacketCaptureAllowed',
+      'owners': ['iremuguz@google.com', 'pmarko@chromium.org', 'file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:92-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'can_be_recommended': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'The user will be able to perform network packet captures',
+        },
+        {
+          'value': False,
+          'caption': 'The user will not be able to perform network packet captures',
+        },
+      ],
+      'example_value': False,
+      'default': True,
+      'id': 850,
+      'caption': '''Allow debug network packet captures''',
+      'tags': [],
+      'desc': '''Allow network packet captures on device for debugging.
+
+      If the policy is set to true or left unset, user will be able to perform network packet captures on device.
+      If set to false, network packet capture won't be available on the device.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'SuggestLogoutAfterClosingLastWindow',
+      'owners': ['mpetrisor@chromium.org', 'hendrich@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:92-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show logout dialog on last window closed.',
+        },
+        {
+          'value': False,
+          'caption': 'Suppress showing logout dialog on last window closed.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 851,
+      'caption': '''Display the logout confirmation dialog''',
+      'tags': [],
+      'desc': '''The policy only applies to managed guest sessions.
+      Setting the policy to True or leaving it unset will show a dialog asking the user to confirm or deny logout when the last window is closed.
+      Setting the policy to False will prevent the dialog from being displayed and therefore also disables auto-logout after closing the last window.''',
+    },
+    {
+      'name': 'TripleDESEnabled',
+      'owners': ['file://net/ssl/OWNERS', 'davidben@chromium.org'],
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'supported_on': [
+        'chrome.*:92-',
+        'chrome_os:92-',
+        'android:92-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '3DES cipher suites will be enabled in TLS',
+        },
+        {
+          'value': False,
+          'caption': '3DES cipher suites will be disabled in TLS',
+        },
+        {
+          'value': None,
+          'caption': 'Use the default setting for 3DES cipher suites in TLS',
+        },
+      ],
+      'default': None,
+      'example_value': False,
+      'id': 858,
+      'caption': '''Enable 3DES cipher suites in TLS''',
+      # TODO(davidben): Add the 'system-security' tag when we flip the default.
+      'tags': [],
+      'desc': '''Warning: 3DES will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> in version 95 (around October 2021) and this policy will stop working then.
+
+      If the policy is set to true, then 3DES cipher suites in TLS will be enabled. If it is set to false, they will be disabled. If the policy is unset, 3DES cipher suites are currently enabled by default. They will be disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 93.
+
+      In <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 92, this policy may be used to preview the change and test for incompatibilities. In <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 93 and later, it may be used to temporarily retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
+      ''',
     },
   ],
   'messages': {
@@ -26009,6 +26369,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DevicePciPeripheralDataAccessEnabled': 'device_pci_peripheral_data_access_enabled.enabled',
     'DeviceBorealisAllowed': 'device_borealis_allowed.allowed',
     'DeviceAllowedBluetoothServices': 'device_allowed_bluetooth_services.allowlist',
+    'DeviceDebugPacketCaptureAllowed': 'device_debug_packet_capture_allowed.allowed',
   },
   'policy_atomic_group_definitions': [
     {
@@ -26495,8 +26856,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 850, 851],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 853,
+  'highest_id_currently_used': 859,
   'highest_atomic_group_id_currently_used': 40
 }

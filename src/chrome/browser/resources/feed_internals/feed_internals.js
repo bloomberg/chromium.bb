@@ -26,7 +26,9 @@ function updatePageWithProperties() {
     $('load-stream-status').textContent = properties.loadStreamStatus;
     $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
     $('feed-actions-url').textContent = properties.feedActionsUrl.url;
-    $('webfeed-ui-enabled-status').textContent = properties.isWebFeedUiEnabled;
+    $('enable-webfeed-follow-intro-debug').checked =
+        properties.isWebFeedFollowIntroDebugEnabled;
+    $('enable-webfeed-follow-intro-debug').disabled = false;
   });
 }
 
@@ -168,8 +170,10 @@ function setupEventListeners() {
     }
   });
 
-  $('enable-webfeed-ui-apply').addEventListener('click', function() {
-    pageHandler.setWebFeedUIEnabled($('enable-webfeed-ui').checked);
+  $('enable-webfeed-follow-intro-debug').addEventListener('click', function() {
+    pageHandler.setWebFeedFollowIntroDebugEnabled(
+        $('enable-webfeed-follow-intro-debug').checked);
+    $('enable-webfeed-follow-intro-debug').disabled = true;
   });
 }
 

@@ -14,12 +14,17 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
+#include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -230,7 +235,7 @@ void OverviewSession::Init(const WindowList& windows,
   overview_focus_widget_->SetContentsView(
       std::make_unique<OverviewFocusButton>());
 
-  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
+  UMA_HISTOGRAM_COUNTS_100("Ash.Overview.Items", num_items_);
 
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
 
@@ -294,9 +299,9 @@ void OverviewSession::Shutdown() {
     overview_grid->Shutdown();
 
   DCHECK(num_items_ >= remaining_items);
-  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.OverviewClosedItems",
+  UMA_HISTOGRAM_COUNTS_100("Ash.Overview.OverviewClosedItems",
                            num_items_ - remaining_items);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
+  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Overview.TimeInOverview",
                              base::Time::Now() - overview_start_time_);
 
   grid_list_.clear();
@@ -337,10 +342,8 @@ void OverviewSession::IncrementSelection(bool forward) {
 }
 
 bool OverviewSession::AcceptSelection() {
-  if (!highlight_controller_->GetHighlightedItem())
-    return false;
-  SelectWindow(highlight_controller_->GetHighlightedItem());
-  return true;
+  // Activate selected window or desk.
+  return highlight_controller_->MaybeActivateHighlightedViewOnOverviewExit();
 }
 
 void OverviewSession::SelectWindow(OverviewItem* item) {
@@ -360,7 +363,7 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
     const auto it = std::find(window_list.begin(), window_list.end(), window);
     if (it != window_list.end()) {
       // Record 1-based index so that selecting a top MRU window will record 1.
-      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.SelectionDepth",
+      UMA_HISTOGRAM_COUNTS_100("Ash.Overview.SelectionDepth",
                                1 + it - window_list.begin());
     }
   }
@@ -388,7 +391,12 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
           }
           wm::ActivateWindow(window_state->window());
         }));
-    window->Show();
+    // If we are in split mode, use Show() here to delegate un-minimizing to
+    // SplitViewController as it handles auto snapping cases.
+    if (SplitViewController::Get(window)->InSplitViewMode())
+      window->Show();
+    else
+      window_state->Unminimize();
     return;
   }
 
@@ -714,7 +722,7 @@ void OverviewSession::OnWindowActivating(
     return;
 
   // Activating the Desks bar should not end overview.
-  if (gained_active && gained_active->id() == kShellWindowId_DesksBarWindow)
+  if (gained_active && gained_active->GetId() == kShellWindowId_DesksBarWindow)
     return;
 
   if (DesksController::Get()->AreDesksBeingModified()) {
@@ -731,6 +739,28 @@ void OverviewSession::OnWindowActivating(
     RestoreWindowActivation(false);
     EndOverview();
     return;
+  }
+
+  // The message center takes activation when someone clicks one of its buttons.
+  // We shouldn't close overview in that case. There are two different possible
+  // message center widgets. The stand alone one, and the one that is part of
+  // the unified system tray bubble.
+  if (gained_active->GetName() ==
+      AshMessagePopupCollection::kMessagePopupWidgetName) {
+    return;
+  }
+
+  for (RootWindowController* root_window_controller :
+       Shell::GetAllRootWindowControllers()) {
+    UnifiedSystemTray* system_tray =
+        root_window_controller->GetStatusAreaWidget()->unified_system_tray();
+    if (system_tray->IsBubbleShown()) {
+      if (gained_active == system_tray->message_center_bubble()
+                               ->GetBubbleWidget()
+                               ->GetNativeWindow()) {
+        return;
+      }
+    }
   }
 
   // If app list is open in clamshell mode, end overview. Note: we have special
@@ -833,9 +863,8 @@ void OverviewSession::RestoreWindowActivation(bool restore) {
 }
 
 void OverviewSession::OnHighlightedItemActivated(OverviewItem* item) {
-  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
-                           num_key_presses_);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
+  UMA_HISTOGRAM_COUNTS_100("Ash.Overview.ArrowKeyPresses", num_key_presses_);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.Overview.KeyPressesOverItemsRatio",
                               (num_key_presses_ * 100) / num_items_, 1, 300,
                               30);
   base::RecordAction(
@@ -941,7 +970,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // overview + applist case.
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode() &&
-      shell->app_list_controller()->IsVisible(base::nullopt)) {
+      shell->app_list_controller()->IsVisible(absl::nullopt)) {
     return;
   }
 
@@ -1221,10 +1250,10 @@ void OverviewSession::UpdateAccessibilityFocus() {
     a11y_widgets.push_back(overview_focus_widget_.get());
 
   for (auto& grid : grid_list_) {
-    if (grid->desks_widget())
-      a11y_widgets.push_back(const_cast<views::Widget*>(grid->desks_widget()));
     for (const auto& item : grid->window_list())
       a11y_widgets.push_back(item->item_widget());
+    if (grid->desks_widget())
+      a11y_widgets.push_back(const_cast<views::Widget*>(grid->desks_widget()));
   }
   if (no_windows_widget_.get())
     a11y_widgets.push_back(no_windows_widget_.get());

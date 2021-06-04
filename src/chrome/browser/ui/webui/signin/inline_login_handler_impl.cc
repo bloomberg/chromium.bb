@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/search/selected_colors_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -83,7 +84,6 @@
 
 #if defined(OS_WIN)
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #endif  // defined(OS_WIN)
 
@@ -92,8 +92,9 @@ namespace {
 // Subset of signin_metrics::Reason that is supported by the
 // InlineLoginHandlerImpl.
 enum class HandlerSigninReason {
-  FORCED_SIGNIN_PRIMARY_ACCOUNT,
-  FETCH_LST_ONLY
+  kForcedSigninPrimaryAccount,
+  kReauthentication,
+  kFetchLstOnly
 };
 
 // Decodes the signin reason from the URL parameter.
@@ -102,12 +103,14 @@ HandlerSigninReason GetHandlerSigninReason(const GURL& url) {
       signin::GetSigninReasonForEmbeddedPromoURL(url);
   switch (reason) {
     case signin_metrics::Reason::kForcedSigninPrimaryAccount:
-      return HandlerSigninReason::FORCED_SIGNIN_PRIMARY_ACCOUNT;
+      return HandlerSigninReason::kForcedSigninPrimaryAccount;
+    case signin_metrics::Reason::kReauthentication:
+      return HandlerSigninReason::kReauthentication;
     case signin_metrics::Reason::kFetchLstOnly:
-      return HandlerSigninReason::FETCH_LST_ONLY;
+      return HandlerSigninReason::kFetchLstOnly;
     default:
       NOTREACHED() << "Unexpected signin reason: " << static_cast<int>(reason);
-      return HandlerSigninReason::FORCED_SIGNIN_PRIMARY_ACCOUNT;
+      return HandlerSigninReason::kForcedSigninPrimaryAccount;
   }
 }
 
@@ -183,26 +186,6 @@ void LogHistogramValue(signin_metrics::AccessPointAction action) {
                             signin_metrics::HISTOGRAM_MAX);
 }
 
-void RedirectToNtpOrAppsPage(content::WebContents* contents,
-                             signin_metrics::AccessPoint access_point) {
-  // Do nothing if a navigation is pending, since this call can be triggered
-  // from DidStartLoading. This avoids deleting the pending entry while we are
-  // still navigating to it. See crbug/346632.
-  if (contents->GetController().GetPendingEntry())
-    return;
-
-  VLOG(1) << "RedirectToNtpOrAppsPage";
-  // Redirect to NTP/Apps page and display a confirmation bubble
-  GURL url(access_point ==
-                   signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK
-               ? chrome::kChromeUIAppsURL
-               : chrome::kChromeUINewTabURL);
-  content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
-  contents->OpenURL(params);
-}
-
 void SetProfileLocked(const base::FilePath profile_path, bool locked) {
   if (!profile_path.empty()) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -218,20 +201,6 @@ void SetProfileLocked(const base::FilePath profile_path, bool locked) {
       }
     }
   }
-}
-
-void SetProfileName(const base::FilePath& profile_path,
-                    const std::u16string name) {
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_path);
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-
-  entry->SetLocalProfileName(name, /*is_default_name=*/false);
 }
 
 void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
@@ -267,11 +236,10 @@ void OnSyncSetupComplete(Profile* profile,
             SAVED_ON_CHROME_SIGNIN);
   }
 
-  if (has_primary_account && is_force_sign_in_with_usermanager &&
-      base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
+  if (has_primary_account && is_force_sign_in_with_usermanager) {
     CoreAccountInfo primary_account =
         identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-    base::Optional<AccountInfo> primary_account_info =
+    absl::optional<AccountInfo> primary_account_info =
         identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             primary_account);
     std::u16string profile_name;
@@ -283,7 +251,26 @@ void OnSyncSetupComplete(Profile* profile,
           profiles::GetDefaultNameForNewSignedInProfileWithIncompleteInfo(
               primary_account);
     }
-    SetProfileName(profile->GetPath(), profile_name);
+    ProfileAttributesEntry* entry =
+        g_browser_process->profile_manager()
+            ->GetProfileAttributesStorage()
+            .GetProfileAttributesWithPath(profile->GetPath());
+    if (entry) {
+      entry->SetLocalProfileName(profile_name, /*is_default_name=*/false);
+      // TODO(https://crbug.com/1186969): move the following code into a new
+      // `Profile::SetIsHidden()` method.
+      entry->SetIsOmitted(false);
+      if (!profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
+        // Unmark this profile ephemeral so that it isn't deleted upon next
+        // startup. Profiles should never be made non-ephemeral if ephemeral
+        // mode is forced by policy.
+        entry->SetIsEphemeral(false);
+      }
+    } else {
+      DVLOG(1) << "ProfileAttributesEntry not found for profile:"
+               << profile->GetPath();
+    }
+
     Browser* browser = chrome::FindBrowserWithProfile(profile);
 
     // Don't show the customization bubble if a valid policy theme is set.
@@ -345,6 +332,8 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     // If user sign in in UserManager with force sign in enabled, the browser
     // window won't be opened until now.
     UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
+    // TODO(https://crbug.com/1205147): In case of reauth, wait until cookies
+    // are set before opening a browser window.
     profiles::OpenBrowserWindowForProfile(
         base::BindRepeating(
             &InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened,
@@ -360,7 +349,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     Profile* /*profile*/,
     Profile::CreateStatus /*status*/) {
   HandlerSigninReason reason = GetHandlerSigninReason(current_url_);
-  if (reason == HandlerSigninReason::FETCH_LST_ONLY) {
+  if (reason == HandlerSigninReason::kFetchLstOnly) {
     // Constants are only available on Windows for the Google Credential
     // Provider for Windows.
 #if defined(OS_WIN)
@@ -405,18 +394,35 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
   }
 
-  if (confirm_untrusted_signin_) {
-    // Display a confirmation dialog to the user.
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
-    Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-    browser->window()->ShowOneClickSigninConfirmation(
-        base::UTF8ToUTF16(email_),
-        base::BindOnce(&InlineSigninHelper::UntrustedSigninConfirmed,
-                       base::Unretained(this), result.refresh_token));
-    return;
+  if (reason == HandlerSigninReason::kReauthentication) {
+    DCHECK(!identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                .IsEmpty());
+
+    identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+        gaia_id_, email_, result.refresh_token,
+        result.is_under_advanced_protection,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kInlineLoginHandler_Signin);
+
+    identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
+        identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
+        gaia::GaiaSource::kPrimaryAccountManager, {});
+
+    signin_metrics::LogSigninReason(signin_metrics::Reason::kReauthentication);
+  } else {
+    if (confirm_untrusted_signin_) {
+      // Display a confirmation dialog to the user.
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
+      Browser* browser = chrome::FindLastActiveWithProfile(profile_);
+      browser->window()->ShowOneClickSigninConfirmation(
+          base::UTF8ToUTF16(email_),
+          base::BindOnce(&InlineSigninHelper::UntrustedSigninConfirmed,
+                         base::Unretained(this), result.refresh_token));
+      return;
+    }
+    CreateSyncStarter(result.refresh_token);
   }
-  CreateSyncStarter(result.refresh_token);
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
@@ -477,7 +483,7 @@ void InlineSigninHelper::OnClientOAuthFailure(
   }
 
   HandlerSigninReason reason = GetHandlerSigninReason(current_url_);
-  if (reason != HandlerSigninReason::FETCH_LST_ONLY) {
+  if (reason != HandlerSigninReason::kFetchLstOnly) {
     AboutSigninInternals* about_signin_internals =
         AboutSigninInternalsFactory::GetForProfile(profile_);
     about_signin_internals->OnRefreshTokenReceived("Failure");
@@ -511,7 +517,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("gaiaPath", url.path().substr(1));
 
 #if defined(OS_WIN)
-  if (reason == HandlerSigninReason::FETCH_LST_ONLY) {
+  if (reason == HandlerSigninReason::kFetchLstOnly) {
     std::string email_domains;
     if (net::GetValueForKeyInQuery(
             current_url, credential_provider::kEmailDomainsSigninPromoParameter,
@@ -553,10 +559,13 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
 
   std::string flow;
   switch (reason) {
-    case HandlerSigninReason::FORCED_SIGNIN_PRIMARY_ACCOUNT:
+    case HandlerSigninReason::kReauthentication:
+      flow = "reauth";
+      break;
+    case HandlerSigninReason::kForcedSigninPrimaryAccount:
       flow = "enterprisefsi";
       break;
-    case HandlerSigninReason::FETCH_LST_ONLY: {
+    case HandlerSigninReason::kFetchLstOnly: {
 #if defined(OS_WIN)
       // Treat a sign in request that specifies a gaia id that must be validated
       // as a reauth request. We only get a gaia id from GCPW when trying to
@@ -615,7 +624,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (reason == HandlerSigninReason::FETCH_LST_ONLY ||
+  if (reason == HandlerSigninReason::kFetchLstOnly ||
       !profile->IsSystemProfile()) {
     FinishCompleteLogin(FinishCompleteLoginParams(
                             this, partition, current_url, base::FilePath(),
@@ -625,7 +634,8 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
     return;
   }
 
-  DCHECK(reason == HandlerSigninReason::FORCED_SIGNIN_PRIMARY_ACCOUNT);
+  DCHECK(reason == HandlerSigninReason::kForcedSigninPrimaryAccount ||
+         reason == HandlerSigninReason::kReauthentication);
   DCHECK(signin_util::IsForceSigninEnabled());
 
   ProfileManager* manager = g_browser_process->profile_manager();
@@ -690,7 +700,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   net::GetValueForKeyInQuery(params.url, "validateEmail", &validate_email);
 
 #if defined(OS_WIN)
-  if (reason == HandlerSigninReason::FETCH_LST_ONLY) {
+  if (reason == HandlerSigninReason::kFetchLstOnly) {
     std::string validate_gaia_id;
     net::GetValueForKeyInQuery(
         params.url, credential_provider::kValidateGaiaIdSigninPromoParameter,
@@ -738,8 +748,14 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
                         : signin_metrics::HISTOGRAM_WITH_DEFAULTS);
 
   SigninUIError can_offer_error = SigninUIError::Ok();
-  if (reason != HandlerSigninReason::FETCH_LST_ONLY)
-    can_offer_error = CanOfferSignin(profile, params.gaia_id, params.email);
+  switch (reason) {
+    case HandlerSigninReason::kReauthentication:
+    case HandlerSigninReason::kForcedSigninPrimaryAccount:
+      can_offer_error = CanOfferSignin(profile, params.gaia_id, params.email);
+      break;
+    case HandlerSigninReason::kFetchLstOnly:
+      break;
+  }
 
   if (!can_offer_error.IsOk()) {
     params.handler->HandleLoginError(can_offer_error);
@@ -765,7 +781,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   // If opened from user manager to unlock a profile, make sure the user manager
   // is closed and that the profile is marked as unlocked.
-  if (reason != HandlerSigninReason::FETCH_LST_ONLY &&
+  if (reason != HandlerSigninReason::kFetchLstOnly &&
       !params.is_force_sign_in_with_usermanager) {
     UnlockProfileAndHideLoginUI(params.profile_path, params.handler);
   }
@@ -776,7 +792,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const SigninUIError& error) {
   const GURL& current_url = contents->GetURL();
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
-  if (reason == HandlerSigninReason::FETCH_LST_ONLY) {
+  if (reason == HandlerSigninReason::kFetchLstOnly) {
     base::Value error_value(base::Value::Type::DICTIONARY);
 #if defined(OS_WIN)
     // If the error contains an integer error code, send it as part of the
@@ -827,23 +843,10 @@ void InlineLoginHandlerImpl::SyncSetupFailed() {
     return;
   }
 
-  const GURL& current_url = contents->GetLastCommittedURL();
-  signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForEmbeddedPromoURL(current_url);
-  RedirectToNtpOrAppsPage(contents, access_point);
-}
-
-void InlineLoginHandlerImpl::CloseTab() {
-  content::WebContents* tab = web_ui()->GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(tab);
-  if (browser) {
-    TabStripModel* tab_strip_model = browser->tab_strip_model();
-    if (tab_strip_model) {
-      int index = tab_strip_model->GetIndexOfWebContents(tab);
-      if (index != TabStripModel::kNoTab) {
-        tab_strip_model->ExecuteContextMenuCommand(
-            index, TabStripModel::CommandCloseTab);
-      }
-    }
-  }
+  // Redirect to NTP.
+  GURL url(chrome::kChromeUINewTabURL);
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
+  contents->OpenURL(params);
 }

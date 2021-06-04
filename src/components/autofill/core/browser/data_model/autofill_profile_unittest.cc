@@ -13,7 +13,6 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -28,7 +27,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 
 namespace autofill {
@@ -38,7 +36,7 @@ constexpr VerificationStatus kObserved = VerificationStatus::kObserved;
 
 namespace {
 
-std::u16string GetLabel(AutofillProfile* profile) {
+std::u16string GetSuggestionLabel(AutofillProfile* profile) {
   std::vector<AutofillProfile*> profiles;
   profiles.push_back(profile);
   std::vector<std::u16string> labels;
@@ -95,7 +93,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   // Case 0/null: ""
   AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
   // Empty profile - nothing to update.
-  std::u16string summary0 = GetLabel(&profile0);
+  std::u16string summary0 = GetSuggestionLabel(&profile0);
   EXPECT_EQ(std::u16string(), summary0);
 
   // Case 0a/empty name and address, so the first two fields of the rest of the
@@ -103,7 +101,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile00(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile00, "", "", "", "johnwayne@me.xyz", "Fox", "",
                        "", "Hollywood", "CA", "91601", "US", "16505678910");
-  std::u16string summary00 = GetLabel(&profile00);
+  std::u16string summary00 = GetSuggestionLabel(&profile00);
   EXPECT_EQ(u"Hollywood, CA", summary00);
 
   // Case 1: "<address>" without line 2.
@@ -111,7 +109,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile1, "", "", "", "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.", "", "Hollywood", "CA", "91601", "US",
                        "16505678910");
-  std::u16string summary1 = GetLabel(&profile1);
+  std::u16string summary1 = GetSuggestionLabel(&profile1);
   EXPECT_EQ(u"123 Zoo St., Hollywood", summary1);
 
   // Case 1a: "<address>" with line 2.
@@ -119,7 +117,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile1a, "", "", "", "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601",
                        "US", "16505678910");
-  std::u16string summary1a = GetLabel(&profile1a);
+  std::u16string summary1a = GetSuggestionLabel(&profile1a);
   EXPECT_EQ(u"123 Zoo St., unit 5", summary1a);
 
   // Case 2: "<lastname>"
@@ -127,7 +125,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile2, "", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
                        "91601", "US", "16505678910");
-  std::u16string summary2 = GetLabel(&profile2);
+  std::u16string summary2 = GetSuggestionLabel(&profile2);
   // Summary includes full name, to the maximal extent available.
   EXPECT_EQ(u"Mitchell Morrison, Hollywood", summary2);
 
@@ -136,7 +134,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile3, "", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "",
                        "Hollywood", "CA", "91601", "US", "16505678910");
-  std::u16string summary3 = GetLabel(&profile3);
+  std::u16string summary3 = GetSuggestionLabel(&profile3);
   EXPECT_EQ(u"Mitchell Morrison, 123 Zoo St.", summary3);
 
   // Case 4: "<firstname>"
@@ -144,7 +142,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile4, "Marion", "Mitchell", "", "johnwayne@me.xyz",
                        "Fox", "", "", "Hollywood", "CA", "91601", "US",
                        "16505678910");
-  std::u16string summary4 = GetLabel(&profile4);
+  std::u16string summary4 = GetSuggestionLabel(&profile4);
   EXPECT_EQ(u"Marion Mitchell, Hollywood", summary4);
 
   // Case 5: "<firstname>, <address>"
@@ -152,7 +150,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile5, "Marion", "Mitchell", "", "johnwayne@me.xyz",
                        "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
                        "91601", "US", "16505678910");
-  std::u16string summary5 = GetLabel(&profile5);
+  std::u16string summary5 = GetSuggestionLabel(&profile5);
   EXPECT_EQ(u"Marion Mitchell, 123 Zoo St.", summary5);
 
   // Case 6: "<firstname> <lastname>"
@@ -160,7 +158,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile6, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
                        "91601", "US", "16505678910");
-  std::u16string summary6 = GetLabel(&profile6);
+  std::u16string summary6 = GetSuggestionLabel(&profile6);
   EXPECT_EQ(u"Marion Mitchell Morrison, Hollywood", summary6);
 
   // Case 7: "<firstname> <lastname>, <address>"
@@ -168,7 +166,7 @@ TEST_P(AutofillProfileTest, PreviewSummaryString) {
   test::SetProfileInfo(&profile7, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "16505678910");
-  std::u16string summary7 = GetLabel(&profile7);
+  std::u16string summary7 = GetSuggestionLabel(&profile7);
   EXPECT_EQ(u"Marion Mitchell Morrison, 123 Zoo St.", summary7);
 
   // Case 7a: "<firstname> <lastname>, <address>" - same as #7, except for
@@ -277,11 +275,9 @@ TEST_P(AutofillProfileTest, AdjustInferredLabels) {
   ASSERT_EQ(5U, labels.size());
   EXPECT_EQ(u"John Doe, 666 Erebus St., CA", labels[0]);
   EXPECT_EQ(u"Jane Doe, 123 Letha Shore.", labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, johndoe@hades.com,"
-                         " 16502111111"),
+  EXPECT_EQ(u"John Doe, 666 Erebus St., CO, johndoe@hades.com, 16502111111",
             labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, johndoe@hades.com,"
-                         " 16504444444"),
+  EXPECT_EQ(u"John Doe, 666 Erebus St., CO, johndoe@hades.com, 16504444444",
             labels[3]);
   // This one differs from other ones by unique e-mail, so no need for extra
   // information.
@@ -1325,23 +1321,26 @@ TEST_P(AutofillProfileTest, IsPresentButInvalid) {
 TEST_P(AutofillProfileTest, SetRawInfoPreservesLineBreaks) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
 
-  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("123 Super St.\n"
-                                                               "Apt. #42"));
-  EXPECT_EQ(ASCIIToUTF16("123 Super St.\n"
-                         "Apt. #42"),
-            profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     u"123 Super St.\n"
+                     u"Apt. #42");
+  EXPECT_EQ(
+      u"123 Super St.\n"
+      u"Apt. #42",
+      profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
 
 TEST_P(AutofillProfileTest, SetInfoPreservesLineBreaks) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
 
   profile.SetInfo(ADDRESS_HOME_STREET_ADDRESS,
-                  ASCIIToUTF16("123 Super St.\n"
-                               "Apt. #42"),
+                  u"123 Super St.\n"
+                  u"Apt. #42",
                   "en-US");
-  EXPECT_EQ(ASCIIToUTF16("123 Super St.\n"
-                         "Apt. #42"),
-            profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(
+      u"123 Super St.\n"
+      u"Apt. #42",
+      profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
 
 TEST_P(AutofillProfileTest, SetRawInfoDoesntTrimWhitespace) {
@@ -1366,11 +1365,11 @@ TEST_P(AutofillProfileTest, FullAddress) {
 
   AutofillType full_address(HTML_TYPE_FULL_ADDRESS, HTML_MODE_NONE);
   std::u16string formatted_address(
-      ASCIIToUTF16("Marion Mitchell Morrison\n"
-                   "Fox\n"
-                   "123 Zoo St.\n"
-                   "unit 5\n"
-                   "Hollywood, CA 91601"));
+      u"Marion Mitchell Morrison\n"
+      u"Fox\n"
+      u"123 Zoo St.\n"
+      u"unit 5\n"
+      u"Hollywood, CA 91601");
   EXPECT_EQ(formatted_address, profile.GetInfo(full_address, "en-US"));
   // This should fail and leave the profile unchanged.
   EXPECT_FALSE(profile.SetInfo(full_address, u"foobar", "en-US"));
@@ -1379,11 +1378,12 @@ TEST_P(AutofillProfileTest, FullAddress) {
   // Some things can be missing...
   profile.SetInfo(ADDRESS_HOME_LINE2, std::u16string(), "en-US");
   profile.SetInfo(EMAIL_ADDRESS, std::u16string(), "en-US");
-  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison\n"
-                         "Fox\n"
-                         "123 Zoo St.\n"
-                         "Hollywood, CA 91601"),
-            profile.GetInfo(full_address, "en-US"));
+  EXPECT_EQ(
+      u"Marion Mitchell Morrison\n"
+      u"Fox\n"
+      u"123 Zoo St.\n"
+      u"Hollywood, CA 91601",
+      profile.GetInfo(full_address, "en-US"));
 
   // ...but nothing comes out if a required field is missing.
   profile.SetInfo(ADDRESS_HOME_STATE, std::u16string(), "en-US");
@@ -2083,6 +2083,60 @@ TEST(AutofillProfileTest,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
                                      AutofillDataModel::CLIENT));
   EXPECT_FALSE(profile.IsValidByClient());
+}
+
+// Test that the label is correctly set and retrieved from the profile.
+TEST_P(AutofillProfileTest, SetAndGetProfileLabels) {
+  AutofillProfile p;
+  EXPECT_EQ(p.profile_label(), std::string());
+
+  p.set_profile_label("my label");
+  EXPECT_EQ(p.profile_label(), "my label");
+}
+
+TEST_P(AutofillProfileTest, LabelsInAssignmentAndComparisonOperator) {
+  AutofillProfile p1;
+  p1.set_profile_label("my label");
+
+  AutofillProfile p2;
+  p2 = p1;
+
+  // Check that the label was assigned correctly to p2.
+  EXPECT_EQ(p2.profile_label(), "my label");
+
+  // Now test that the comparison returns false if the label is not the same.
+  ASSERT_EQ(p1, p2);
+  p2.set_profile_label("another label");
+  EXPECT_NE(p1, p2);
+}
+
+// Test that the state to disallow confirmable merges is correctly set and
+// retrieved from the profile.
+TEST_P(AutofillProfileTest, SetAndGetProfileDisallowConfirmableMergestate) {
+  AutofillProfile p;
+  EXPECT_EQ(p.disallow_settings_visible_updates(), false);
+
+  p.set_disallow_settings_visible_updates(true);
+  EXPECT_EQ(p.disallow_settings_visible_updates(), true);
+}
+
+TEST_P(AutofillProfileTest, LockStateInAssignmentAndComparisonOperator) {
+  AutofillProfile p1;
+  p1.set_disallow_settings_visible_updates(true);
+
+  AutofillProfile p2;
+  EXPECT_EQ(p2.disallow_settings_visible_updates(), false);
+
+  p2 = p1;
+
+  // Check that the lock state was assigned correctly to p2.
+  EXPECT_EQ(p2.disallow_settings_visible_updates(), true);
+
+  // Now test that the comparison returns false if the lock state is not the
+  // same.
+  ASSERT_EQ(p1, p2);
+  p2.set_disallow_settings_visible_updates(false);
+  EXPECT_NE(p1, p2);
 }
 
 TEST_P(AutofillProfileTest, SetClientValidityFromBitfieldValue_Email) {

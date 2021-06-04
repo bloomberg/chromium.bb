@@ -9,6 +9,7 @@
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_service_manager.h"
@@ -113,7 +116,7 @@ void RemoveNotification(Profile* profile, const std::string& notification_id) {
 
 void UninstallApp(Profile* profile, const std::string& app_id) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
-  proxy->UninstallSilently(app_id, apps::mojom::UninstallSource::kUser);
+  proxy->UninstallSilently(app_id, apps::mojom::UninstallSource::kAppList);
   proxy->FlushMojoCallsForTesting();
 }
 
@@ -284,8 +287,8 @@ class AppNotificationsWebNotificationTest
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = url;
     web_app_info->scope = scope;
-    std::string app_id =
-        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
+    std::string app_id = web_app::test::InstallWebApp(browser()->profile(),
+                                                      std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(url);
     navigation_observer.StartWatchingNewWebContents();
     web_app::LaunchWebAppBrowser(browser()->profile(), app_id);

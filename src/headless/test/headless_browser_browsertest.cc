@@ -10,9 +10,9 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -41,11 +41,13 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/geometry/size.h"
@@ -493,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
   browser_context_ = browser()->CreateBrowserContextBuilder().Build();
 
   web_contents_ = browser_context_->CreateWebContentsBuilder()
-                      .SetInitialURL(GURL(content::kChromeUICrashURL))
+                      .SetInitialURL(GURL(blink::kChromeUICrashURL))
                       .Build();
 
   web_contents_->AddObserver(this);
@@ -856,6 +858,37 @@ INSTANTIATE_TEST_CASE_P(
 IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithHeadlessModePolicy,
                        HeadlessModePolicySettings) {
   EXPECT_EQ(actual_enabled(), expected_enabled());
+}
+
+class HeadlessBrowserTestWithUrlBlockPolicy
+    : public HeadlessBrowserTestWithPolicy {
+ protected:
+  void SetPolicy() override {
+    base::Value::ListStorage storage;
+    storage.emplace_back("*/blocked.html");
+    base::Value value(std::move(storage));
+
+    policy::PolicyMap policy;
+    policy.Set("URLBlocklist", policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               std::move(value), /*external_data_fetcher=*/nullptr);
+    mock_provider_->UpdateChromePolicy(policy);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithUrlBlockPolicy, BlockUrl) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  GURL url = embedded_test_server()->GetURL("/blocked.html");
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder().SetInitialURL(url).Build();
+
+  net::Error error = net::OK;
+  EXPECT_FALSE(WaitForLoad(web_contents, &error));
+  EXPECT_EQ(error, net::ERR_BLOCKED_BY_ADMINISTRATOR);
 }
 
 }  // namespace headless

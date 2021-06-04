@@ -1,3 +1,0 @@
-#
-# This file contains llvm saigo regression tests that are known to fail.
-#

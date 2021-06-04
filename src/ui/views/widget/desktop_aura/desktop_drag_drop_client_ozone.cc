@@ -21,8 +21,10 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -30,8 +32,9 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
-
 namespace {
+
+using ::ui::mojom::DragOperation;
 
 aura::Window* GetTargetWindow(aura::Window* root_window,
                               const gfx::Point& point) {
@@ -119,15 +122,15 @@ DesktopDragDropClientOzone::~DesktopDragDropClientOzone() {
   ResetDragDropTarget(true);
 }
 
-int DesktopDragDropClientOzone::StartDragAndDrop(
+DragOperation DesktopDragDropClientOzone::StartDragAndDrop(
     std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& root_location,
-    int operation,
+    int allowed_operations,
     ui::mojom::DragEventSource source) {
   if (!drag_handler_)
-    return ui::DragDropTypes::DragOperation::DRAG_NONE;
+    return DragOperation::kNone;
 
   DCHECK(!drag_context_);
   drag_context_ = std::make_unique<DragContext>();
@@ -142,7 +145,6 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
       aura::client::GetCursorClient(root_window);
 
   auto initial_cursor = source_window->GetHost()->last_cursor();
-  drag_operation_ = operation;
   if (cursor_client) {
     cursor_client->SetCursor(ui::mojom::CursorType::kGrabbing);
   }
@@ -164,14 +166,14 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   auto alive = weak_factory_.GetWeakPtr();
 
   const bool drag_succeeded = drag_handler_->StartDrag(
-      *data.get(), operation, cursor_client->GetCursor(),
+      *data.get(), allowed_operations, cursor_client->GetCursor(),
       !source_window->HasCapture(), this);
 
   if (!alive)
-    return ui::DragDropTypes::DRAG_NONE;
+    return DragOperation::kNone;
 
   if (!drag_succeeded)
-    drag_operation_ = ui::DragDropTypes::DRAG_NONE;
+    drag_operation_ = DragOperation::kNone;
 
   if (cursor_client)
     cursor_client->SetCursor(initial_cursor);
@@ -185,7 +187,7 @@ void DesktopDragDropClientOzone::DragCancel() {
     return;
 
   drag_handler_->CancelDrag();
-  drag_operation_ = ui::DragDropTypes::DRAG_NONE;
+  drag_operation_ = DragOperation::kNone;
 }
 
 bool DesktopDragDropClientOzone::IsDragDropInProgress() {
@@ -308,7 +310,7 @@ void DesktopDragDropClientOzone::OnDragLocationChanged(
 }
 
 void DesktopDragDropClientOzone::OnDragOperationChanged(
-    ui::DragDropTypes::DragOperation operation) {
+    DragOperation operation) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_);
   if (!cursor_client)
@@ -316,24 +318,24 @@ void DesktopDragDropClientOzone::OnDragOperationChanged(
 
   ui::mojom::CursorType cursor_type = ui::mojom::CursorType::kNull;
   switch (operation) {
-    case ui::DragDropTypes::DRAG_NONE:
+    case DragOperation::kNone:
       cursor_type = ui::mojom::CursorType::kDndNone;
       break;
-    case ui::DragDropTypes::DRAG_MOVE:
+    case DragOperation::kMove:
       cursor_type = ui::mojom::CursorType::kDndMove;
       break;
-    case ui::DragDropTypes::DRAG_COPY:
+    case DragOperation::kCopy:
       cursor_type = ui::mojom::CursorType::kDndCopy;
       break;
-    case ui::DragDropTypes::DRAG_LINK:
+    case DragOperation::kLink:
       cursor_type = ui::mojom::CursorType::kDndLink;
       break;
   }
   cursor_client->SetCursor(cursor_type);
 }
 
-void DesktopDragDropClientOzone::OnDragFinished(int dnd_action) {
-  drag_operation_ = dnd_action;
+void DesktopDragDropClientOzone::OnDragFinished(DragOperation operation) {
+  drag_operation_ = operation;
 }
 
 std::unique_ptr<ui::DropTargetEvent>

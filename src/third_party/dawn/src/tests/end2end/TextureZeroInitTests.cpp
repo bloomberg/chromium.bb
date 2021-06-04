@@ -69,9 +69,9 @@ class TextureZeroInitTest : public DawnTest {
         utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
         pipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest(depth);
         const char* fs = R"(
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-               fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            ;
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
         )";
         pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, fs);
@@ -83,7 +83,7 @@ class TextureZeroInitTest : public DawnTest {
     }
     wgpu::ShaderModule CreateBasicVertexShaderForTest(float depth = 0.f) {
         std::string source = R"(
-            const pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+            let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
                 vec2<f32>(-1.0, -1.0),
                 vec2<f32>(-1.0,  1.0),
                 vec2<f32>( 1.0, -1.0),
@@ -92,11 +92,9 @@ class TextureZeroInitTest : public DawnTest {
                 vec2<f32>( 1.0, -1.0)
             );
 
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-                Position = vec4<f32>(pos[VertexIndex], )" +
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>(pos[VertexIndex], )" +
                              std::to_string(depth) + R"(, 1.0);
             })";
         return utils::CreateShaderModule(device, source.c_str());
@@ -104,10 +102,14 @@ class TextureZeroInitTest : public DawnTest {
     wgpu::ShaderModule CreateSampledTextureFragmentShaderForTest() {
         return utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var texture0 : texture_2d<f32>;
-            [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-                fragColor = textureLoad(texture0, vec2<i32>(FragCoord.xy), 0);
+            struct FragmentOut {
+                [[location(0)]] color : vec4<f32>;
+            };
+            [[stage(fragment)]]
+            fn main([[builtin(position)]] FragCoord : vec4<f32>) -> FragmentOut {
+                var output : FragmentOut;
+                output.color = textureLoad(texture0, vec2<i32>(FragCoord.xy), 0);
+                return output;
             }
         )");
     }
@@ -201,7 +203,7 @@ TEST_P(TextureZeroInitTest, RenderingMipMapClearsToZero) {
     renderPass.renderPassInfo.cColorAttachments[0].loadOp = wgpu::LoadOp::Load;
     // Specify non-zero clear color. It should still be cleared to zero.
     renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    renderPass.renderPassInfo.cColorAttachments[0].attachment = view;
+    renderPass.renderPassInfo.cColorAttachments[0].view = view;
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
@@ -246,7 +248,7 @@ TEST_P(TextureZeroInitTest, RenderingArrayLayerClearsToZero) {
     renderPass.renderPassInfo.cColorAttachments[0].loadOp = wgpu::LoadOp::Load;
     // Specify non-zero clear color. It should still be cleared to zero.
     renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    renderPass.renderPassInfo.cColorAttachments[0].attachment = view;
+    renderPass.renderPassInfo.cColorAttachments[0].view = view;
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
@@ -977,7 +979,7 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
             value : vec4<f32>;
         };
         [[group(0), binding(1)]] var<storage> result : [[access(read_write)]] Result;
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
            result.value = textureLoad(tex, vec2<i32>(0,0), 0);
         }
     )";

@@ -148,7 +148,7 @@ SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
 // TODO(crbug.com/1092093): Use separate hard coded colors instead of deferring
 // to the dark color scheme for contrast.
 ui::NativeTheme::ColorScheme ColorSchemeForAccentColor(
-    const base::Optional<SkColor>& accent_color,
+    const absl::optional<SkColor>& accent_color,
     const ui::NativeTheme::ColorScheme& color_scheme) {
   if (!accent_color)
     return color_scheme;
@@ -259,18 +259,24 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
                             const gfx::Rect& rect,
                             const ExtraParams& extra,
                             ColorScheme color_scheme,
-                            const base::Optional<SkColor>& accent_color) const {
+                            const absl::optional<SkColor>& accent_color) const {
   if (rect.IsEmpty())
     return;
 
   canvas->save();
   canvas->clipRect(gfx::RectToSkRect(rect));
 
+  // Form control accents shouldn't be drawn with any transparency.
+  absl::optional<SkColor> accent_color_opaque;
+  if (accent_color) {
+    accent_color_opaque = SkColorSetA(accent_color.value(), SK_AlphaOPAQUE);
+  }
+
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
       PaintCheckbox(canvas, state, rect, extra.button, color_scheme,
-                    accent_color);
+                    accent_color_opaque);
       break;
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -300,13 +306,14 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
       break;
     case kProgressBar:
       PaintProgressBar(canvas, state, rect, extra.progress_bar, color_scheme,
-                       accent_color);
+                       accent_color_opaque);
       break;
     case kPushButton:
       PaintButton(canvas, state, rect, extra.button, color_scheme);
       break;
     case kRadio:
-      PaintRadio(canvas, state, rect, extra.button, color_scheme, accent_color);
+      PaintRadio(canvas, state, rect, extra.button, color_scheme,
+                 accent_color_opaque);
       break;
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
@@ -336,11 +343,11 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
       break;
     case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider, color_scheme,
-                       accent_color);
+                       accent_color_opaque);
       break;
     case kSliderThumb:
       PaintSliderThumb(canvas, state, rect, extra.slider, color_scheme,
-                       accent_color);
+                       accent_color_opaque);
       break;
     case kTabPanelBackground:
       NOTIMPLEMENTED();
@@ -622,7 +629,7 @@ void NativeThemeBase::PaintCheckbox(
     const gfx::Rect& rect,
     const ButtonExtraParams& button,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     color_scheme = ColorSchemeForAccentColor(accent_color, color_scheme);
 
@@ -715,7 +722,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     bool is_checkbox,
     const SkScalar border_radius,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     color_scheme = ColorSchemeForAccentColor(accent_color, color_scheme);
 
@@ -882,7 +889,7 @@ void NativeThemeBase::PaintRadio(
     const gfx::Rect& rect,
     const ButtonExtraParams& button,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     color_scheme = ColorSchemeForAccentColor(accent_color, color_scheme);
 
@@ -1199,7 +1206,7 @@ void NativeThemeBase::PaintSliderTrack(
     const gfx::Rect& rect,
     const SliderExtraParams& slider,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     color_scheme = ColorSchemeForAccentColor(accent_color, color_scheme);
 
@@ -1272,7 +1279,7 @@ void NativeThemeBase::PaintSliderThumb(
     const gfx::Rect& rect,
     const SliderExtraParams& slider,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     color_scheme = ColorSchemeForAccentColor(accent_color, color_scheme);
 
@@ -1373,7 +1380,7 @@ void NativeThemeBase::PaintProgressBar(
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar,
     ColorScheme color_scheme,
-    const base::Optional<SkColor>& accent_color) const {
+    const absl::optional<SkColor>& accent_color) const {
   if (features::IsFormControlsRefreshEnabled()) {
     DCHECK(!rect.IsEmpty());
 

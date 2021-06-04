@@ -31,6 +31,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -39,7 +40,6 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -133,7 +133,7 @@ void AvatarToolbarButton::Layout() {
 }
 
 void AvatarToolbarButton::UpdateText() {
-  base::Optional<SkColor> color;
+  absl::optional<SkColor> color;
   std::u16string text;
 
   switch (delegate_->GetState()) {
@@ -178,7 +178,6 @@ void AvatarToolbarButton::UpdateText() {
                                               guest_window_count);
       break;
     }
-    case State::kGenericProfile:
     case State::kNormal:
       if (delegate_->IsHighlightAnimationVisible()) {
         color = AdjustHighlightColorForContrast(
@@ -282,8 +281,6 @@ std::u16string AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
     case State::kGuestSession:
       return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_GUEST_TOOLTIP);
-    case State::kGenericProfile:
-      return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
     case State::kAnimatedUserIdentity:
       return delegate_->GetShortProfileName();
     case State::kPasswordsOnlySyncError:
@@ -317,7 +314,6 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
                                             icon_size);
     case State::kGuestSession:
       return profiles::GetGuestAvatar(icon_size);
-    case State::kGenericProfile:
     case State::kAnimatedUserIdentity:
     case State::kPasswordsOnlySyncError:
     case State::kSyncError:

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -475,7 +476,7 @@ void VideoCaptureController::ReturnBuffer(
   OnClientFinishedConsumingBuffer(client, buffer_id, feedback);
 }
 
-const base::Optional<media::VideoCaptureFormat>
+const absl::optional<media::VideoCaptureFormat>
 VideoCaptureController::GetVideoCaptureFormat() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return video_capture_format_;

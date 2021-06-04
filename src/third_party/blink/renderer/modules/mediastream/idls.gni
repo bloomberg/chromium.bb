@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 modules_idl_files = [
+  "capture_handle_change_event.idl",
   "input_device_info.idl",
   "media_device_info.idl",
   "media_devices.idl",
@@ -10,12 +11,13 @@ modules_idl_files = [
   "media_stream_event.idl",
   "media_stream_track.idl",
   "media_stream_track_event.idl",
-  "media_stream_track_generator.idl",
-  "media_stream_track_processor.idl",
   "overconstrained_error.idl",
 ]
 
 modules_dictionary_idl_files = [
+  "capture_handle.idl",
+  "capture_handle_change_event_init.idl",
+  "capture_handle_config.idl",
   "constrain_boolean_parameters.idl",
   "constrain_dom_string_parameters.idl",
   "constrain_double_range.idl",
@@ -25,9 +27,6 @@ modules_dictionary_idl_files = [
   "media_stream_constraints.idl",
   "media_stream_event_init.idl",
   "media_stream_track_event_init.idl",
-  "media_stream_track_generator_init.idl",
-  "media_stream_track_processor_init.idl",
-  "media_stream_track_signal.idl",
   "media_track_capabilities.idl",
   "media_track_constraint_set.idl",
   "media_track_constraints.idl",

@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -87,7 +86,7 @@ class ShutdownPolicyBaseTest
 
   // Refreshes device policy and waits for it to be applied.
   void SyncRefreshDevicePolicy() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     DeviceSettingsService::Get()->AddObserver(this);
     RefreshDevicePolicy();
     run_loop_->Run();
@@ -173,8 +172,9 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
-    zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+    zero_duration_mode_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
   void SetUpOnMainThread() override {

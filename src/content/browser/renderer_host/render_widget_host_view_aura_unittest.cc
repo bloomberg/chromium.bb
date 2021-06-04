@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -119,7 +120,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/mojom/delegated_ink_point.mojom.h"
+#include "ui/gfx/mojom/delegated_ink_point_renderer.mojom.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/core/window_util.h"
 
@@ -364,8 +365,8 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     last_forwarded_gesture_event_ = gesture_event;
   }
 
-  base::Optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
-    base::Optional<WebGestureEvent> ret;
+  absl::optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
+    absl::optional<WebGestureEvent> ret;
     last_forwarded_gesture_event_.swap(ret);
     return ret;
   }
@@ -447,7 +448,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   bool new_content_rendering_timeout_fired_ = false;
   MockWidgetInputHandler input_handler_;
   MockWidget widget_;
-  base::Optional<WebGestureEvent> last_forwarded_gesture_event_;
+  absl::optional<WebGestureEvent> last_forwarded_gesture_event_;
 };
 
 class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
@@ -465,7 +466,7 @@ class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
 
  private:
   bool keyboard_lock_active_ = false;
-  base::Optional<ui::DomCode> locked_key_;
+  absl::optional<ui::DomCode> locked_key_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScopedKeyboardHook);
 };
@@ -808,7 +809,8 @@ class RenderWidgetHostViewAuraOverscrollTest
     gfx::Size display_size = display::Screen::GetScreen()
                                  ->GetDisplayNearestView(view_->GetNativeView())
                                  .size();
-    overscroll_delegate_.reset(new TestOverscrollDelegate(display_size));
+    overscroll_delegate_ =
+        std::make_unique<TestOverscrollDelegate>(display_size);
     view_->overscroll_controller()->set_delegate(
         overscroll_delegate_->GetWeakPtr());
 
@@ -2370,7 +2372,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // cancel to cancel any ongoing flings before the start of this scroll.
   view_->OnScrollEvent(&scroll_event);
   base::RunLoop().RunUntilIdle();
-  base::Optional<WebGestureEvent> last_gesture =
+  absl::optional<WebGestureEvent> last_gesture =
       widget_host_->GetAndResetLastForwardedGestureEvent();
   ASSERT_TRUE(last_gesture);
   EXPECT_EQ(WebInputEvent::Type::kGestureFlingCancel, last_gesture->GetType());
@@ -2708,6 +2710,34 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_NE(renderer_local_surface_id,
               visual_properties.local_surface_id.value());
   }
+}
+
+// Verifies that when synchronizing the visual properties after disabling the
+// auto resize mode, both the view size and the auto resize state get updated at
+// the same time (https://crbug.com/1200601).
+TEST_F(RenderWidgetHostViewAuraTest,
+       VerifyVisualPropertiesWhenDisablingAutoResize) {
+  InitViewForFrame(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  // Enable the auto resize.
+  widget_host_->ClearVisualProperties();
+  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, widget_host_->visual_properties().size());
+
+  widget_host_->ClearVisualProperties();
+
+  // Disable the auto resize and verify the received visual properties.
+  const gfx::Size size_after_disabling(200, 200);
+  view_->DisableAutoResize(size_after_disabling);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_host_->visual_properties().size());
+  const auto& received_property = widget_host_->visual_properties()[0];
+  EXPECT_EQ(false, received_property.auto_resize_enabled);
+  EXPECT_EQ(size_after_disabling, received_property.new_size);
 }
 
 // This test verifies that in AutoResize mode a new
@@ -5370,7 +5400,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
 
   // Simulate a tooltip.
   std::u16string tooltip_text(u"The tooltip!");
-  view_->SetTooltipText(tooltip_text);
+  view_->UpdateTooltipUnderCursor(tooltip_text);
   EXPECT_FALSE(widget_host_->is_hidden());
   EXPECT_EQ(tooltip_text, view_->tooltip_);
 
@@ -6199,9 +6229,9 @@ TEST_F(InputMethodStateAuraTest, GetCaretBounds) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     gfx::Rect anchor_rect = gfx::Rect(0, 0, 10, 10);
     gfx::Rect focus_rect = gfx::Rect(10 + index, 10 + index, 10, 10);
-    views_[index]->SelectionBoundsChanged(anchor_rect,
-                                          base::i18n::LEFT_TO_RIGHT, focus_rect,
-                                          base::i18n::LEFT_TO_RIGHT, true);
+    views_[index]->SelectionBoundsChanged(
+        anchor_rect, base::i18n::LEFT_TO_RIGHT, focus_rect,
+        base::i18n::LEFT_TO_RIGHT, /*bounding_box=*/gfx::Rect(), true);
 
     // Calculate the bounds.
     gfx::SelectionBound anchor_bound = GetSelectionBoundFromRect(
@@ -6529,7 +6559,8 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest, OnCaretBoundsChanged) {
 
   parent_view_->SelectionBoundsChanged(
       gfx::Rect(0, 0, 10, 10), base::i18n::LEFT_TO_RIGHT,
-      gfx::Rect(10, 10, 10, 10), base::i18n::LEFT_TO_RIGHT, true);
+      gfx::Rect(10, 10, 10, 10), base::i18n::LEFT_TO_RIGHT,
+      /*bounding_box=*/gfx::Rect(), true);
   EXPECT_EQ(parent_view_, text_input_client_);
 
   input_method->RemoveObserver(this);
@@ -6730,10 +6761,10 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
 // Mock the DelegatedInkPointRenderer to grab the delegated ink points as they
 // are shipped off to viz from the browser process.
 class MockDelegatedInkPointRenderer
-    : public viz::mojom::DelegatedInkPointRenderer {
+    : public gfx::mojom::DelegatedInkPointRenderer {
  public:
   explicit MockDelegatedInkPointRenderer(
-      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver)
       : receiver_(this, std::move(receiver)) {}
 
   void StoreDelegatedInkPoint(const gfx::DelegatedInkPoint& point) override {
@@ -6763,8 +6794,8 @@ class MockDelegatedInkPointRenderer
   bool ReceiverIsBound() { return receiver_.is_bound(); }
 
  private:
-  mojo::Receiver<viz::mojom::DelegatedInkPointRenderer> receiver_;
-  base::Optional<gfx::DelegatedInkPoint> delegated_ink_point_;
+  mojo::Receiver<gfx::mojom::DelegatedInkPointRenderer> receiver_;
+  absl::optional<gfx::DelegatedInkPoint> delegated_ink_point_;
   bool prediction_reset_ = false;
 };
 
@@ -6781,7 +6812,7 @@ class MockCompositor : public ui::Compositor {
                        compositor->is_pixel_canvas()) {}
 
   void SetDelegatedInkPointRenderer(
-      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver)
       override {
     delegated_ink_point_renderer_ =
         std::make_unique<MockDelegatedInkPointRenderer>(std::move(receiver));

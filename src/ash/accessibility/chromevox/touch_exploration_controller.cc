@@ -5,6 +5,7 @@
 #include "ash/accessibility/chromevox/touch_exploration_controller.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -27,6 +28,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 #define SET_STATE(state) SetState(state, __func__)
 #define VLOG_EVENT(event) \
@@ -377,7 +379,7 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     most_recent_press_timestamp_ = event.time_stamp();
     // This will update as the finger moves before a possible passthrough, and
     // will determine the offset.
-    last_unused_finger_event_.reset(new ui::TouchEvent(event));
+    last_unused_finger_event_ = std::make_unique<ui::TouchEvent>(event);
     last_unused_finger_continuation_ = continuation;
     return DiscardEvent(continuation);
   }
@@ -466,8 +468,16 @@ ui::EventDispatchDetails TouchExplorationController::InTouchExploration(
     return SendEvent(continuation, &event);
   }
 
+  // |location| is in window DIP coordinates.
+  gfx::PointF location(event.location());
+
+  // APIs taking this point e.g.
+  // chrome.accessibilityPrivate.sendSyntheticMouseEvent,
+  // chrome.automation.AutomationNode.prototype.hitTest, all take screen
+  // coordinates.
+  ::wm::ConvertPointToScreen(root_window_, &location);
   delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kTouchExplore,
-                                        event.location_f());
+                                        location);
 
   last_touch_exploration_ = std::make_unique<ui::TouchEvent>(event);
   if (anchor_point_state_ != ANCHOR_POINT_EXPLICITLY_SET)
@@ -627,18 +637,16 @@ void TouchExplorationController::SendSimulatedClick() {
 
 void TouchExplorationController::SendSimulatedTap(
     const Continuation continuation) {
-  std::unique_ptr<ui::TouchEvent> touch_press;
-  touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
-                                       Now(),
-                                       initial_press_->pointer_details()));
+  auto touch_press = std::make_unique<ui::TouchEvent>(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), Now(),
+      initial_press_->pointer_details());
   touch_press->set_location_f(anchor_point_dip_);
   touch_press->set_root_location_f(anchor_point_dip_);
   DispatchEvent(touch_press.get(), continuation);
 
-  std::unique_ptr<ui::TouchEvent> touch_release;
-  touch_release.reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                                         Now(),
-                                         initial_press_->pointer_details()));
+  auto touch_release = std::make_unique<ui::TouchEvent>(
+      ui::ET_TOUCH_RELEASED, gfx::Point(), Now(),
+      initial_press_->pointer_details());
   touch_release->set_location_f(anchor_point_dip_);
   touch_release->set_root_location_f(anchor_point_dip_);
   DispatchEvent(touch_release.get(), continuation);
@@ -1210,7 +1218,7 @@ bool TouchExplorationController::IsTargetedToArcVirtualKeyboard(
   if (!container)
     return false;
 
-  return container->id() == kShellWindowId_ArcVirtualKeyboardContainer;
+  return container->GetId() == kShellWindowId_ArcVirtualKeyboardContainer;
 }
 
 bool TouchExplorationController::ShouldEnableVolumeSlideGesture(

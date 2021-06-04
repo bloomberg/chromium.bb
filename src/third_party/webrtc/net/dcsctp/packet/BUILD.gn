@@ -33,7 +33,10 @@ rtc_library("tlv_trait") {
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/strings:strings" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/strings:strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
   sources = [
     "tlv_trait.cc",
     "tlv_trait.h",
@@ -45,6 +48,8 @@ rtc_source_set("data") {
     "../../../rtc_base",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
+    "../common:internal_types",
+    "../public:types",
   ]
   sources = [ "data.h" ]
 }
@@ -55,6 +60,7 @@ rtc_library("crc32c") {
     "../../../rtc_base",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
+    "//third_party/crc32c",
   ]
   sources = [
     "crc32c.cc",
@@ -64,14 +70,17 @@ rtc_library("crc32c") {
 
 rtc_library("parameter") {
   deps = [
+    ":bounded_io",
     ":data",
     ":tlv_trait",
     "../../../api:array_view",
     "../../../rtc_base",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
+    "../common:internal_types",
     "../common:math",
     "../common:str_join",
+    "../public:types",
   ]
   sources = [
     "parameter/add_incoming_streams_request_parameter.cc",
@@ -97,6 +106,11 @@ rtc_library("parameter") {
     "parameter/supported_extensions_parameter.cc",
     "parameter/supported_extensions_parameter.h",
   ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 rtc_library("error_cause") {
@@ -108,8 +122,11 @@ rtc_library("error_cause") {
     "../../../rtc_base",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
+    "../common:internal_types",
     "../common:math",
     "../common:str_join",
+    "../packet:bounded_io",
+    "../public:types",
   ]
   sources = [
     "error_cause/cookie_received_while_shutting_down_cause.cc",
@@ -141,6 +158,11 @@ rtc_library("error_cause") {
     "error_cause/user_initiated_abort_cause.cc",
     "error_cause/user_initiated_abort_cause.h",
   ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 rtc_library("chunk") {
@@ -155,6 +177,7 @@ rtc_library("chunk") {
     "../../../rtc_base:rtc_base_approved",
     "../common:math",
     "../common:str_join",
+    "../packet:bounded_io",
   ]
   sources = [
     "chunk/abort_chunk.cc",
@@ -196,6 +219,47 @@ rtc_library("chunk") {
     "chunk/shutdown_complete_chunk.cc",
     "chunk/shutdown_complete_chunk.h",
   ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
+}
+
+rtc_library("chunk_validators") {
+  deps = [
+    ":chunk",
+    "../../../rtc_base",
+    "../../../rtc_base:checks",
+    "../../../rtc_base:rtc_base_approved",
+  ]
+  sources = [
+    "chunk_validators.cc",
+    "chunk_validators.h",
+  ]
+}
+
+rtc_library("sctp_packet") {
+  deps = [
+    ":bounded_io",
+    ":chunk",
+    ":crc32c",
+    "../../../api:array_view",
+    "../../../rtc_base",
+    "../../../rtc_base:checks",
+    "../../../rtc_base:rtc_base_approved",
+    "../common:internal_types",
+    "../common:math",
+    "../public:types",
+  ]
+  sources = [
+    "sctp_packet.cc",
+    "sctp_packet.h",
+  ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/memory:memory",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 if (rtc_include_tests) {
@@ -205,15 +269,21 @@ if (rtc_include_tests) {
     deps = [
       ":bounded_io",
       ":chunk",
+      ":chunk_validators",
       ":crc32c",
       ":error_cause",
       ":parameter",
+      ":sctp_packet",
       ":tlv_trait",
       "../../../api:array_view",
       "../../../rtc_base:checks",
       "../../../rtc_base:gunit_helpers",
       "../../../rtc_base:rtc_base_approved",
       "../../../test:test_support",
+      "../common:internal_types",
+      "../common:math",
+      "../public:types",
+      "../testing:testing_macros",
     ]
     sources = [
       "bounded_byte_reader_test.cc",
@@ -235,6 +305,7 @@ if (rtc_include_tests) {
       "chunk/shutdown_ack_chunk_test.cc",
       "chunk/shutdown_chunk_test.cc",
       "chunk/shutdown_complete_chunk_test.cc",
+      "chunk_validators_test.cc",
       "crc32c_test.cc",
       "error_cause/cookie_received_while_shutting_down_cause_test.cc",
       "error_cause/invalid_mandatory_parameter_cause_test.cc",
@@ -250,6 +321,7 @@ if (rtc_include_tests) {
       "error_cause/unresolvable_address_cause_test.cc",
       "error_cause/user_initiated_abort_cause_test.cc",
       "parameter/add_incoming_streams_request_parameter_test.cc",
+      "parameter/add_outgoing_streams_request_parameter_test.cc",
       "parameter/forward_tsn_supported_parameter_test.cc",
       "parameter/incoming_ssn_reset_request_parameter_test.cc",
       "parameter/outgoing_ssn_reset_request_parameter_test.cc",
@@ -258,7 +330,9 @@ if (rtc_include_tests) {
       "parameter/ssn_tsn_reset_request_parameter_test.cc",
       "parameter/state_cookie_parameter_test.cc",
       "parameter/supported_extensions_parameter_test.cc",
+      "sctp_packet_test.cc",
       "tlv_trait_test.cc",
     ]
+    absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
   }
 }

@@ -10,6 +10,7 @@ underscore are intended to be implementation details, and should not
 be subclassed; however, some, like FakeBrowser, have public APIs that
 may need to be called in tests.
 """
+from __future__ import absolute_import
 import types
 
 from telemetry.core import debug_data
@@ -227,6 +228,7 @@ class FakePossibleBrowser(object):
     self.execute_on_startup = execute_on_startup
     self.execute_after_browser_creation = execute_after_browser_creation
     self.browser_options = None  # This is set in SetUpEnvironment.
+    self.target_os = os_name
 
   @property
   def returned_browser(self):
@@ -304,6 +306,7 @@ class _FakeBrowserFinderOptions(browser_options_module.BrowserFinderOptions):
       FakePossibleBrowser(
           execute_on_startup=execute_on_startup,
           execute_after_browser_creation=execute_after_browser_creation)
+    self.capture_screen_video = False
 
 def CreateBrowserFinderOptions(browser_type=None, execute_on_startup=None,
                                execute_after_browser_creation=None):

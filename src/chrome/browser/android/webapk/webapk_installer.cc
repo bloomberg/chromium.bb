@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/webapk/webapk_installer.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,18 +20,17 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/android/chrome_jni_headers/WebApkInstaller_jni.h"
-#include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
+#include "components/webapk/webapk.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +49,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/android/color_helpers.h"
@@ -189,6 +191,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   webapk->set_package_name(package_name);
   webapk->set_version(version);
   webapk->set_stale_manifest(is_manifest_stale);
+  webapk->set_android_version(base::SysInfo::OperatingSystemVersion());
 
   for (auto update_reason : update_reasons)
     webapk->add_update_reasons(ConvertUpdateReasonToProtoEnum(update_reason));
@@ -532,9 +535,10 @@ void WebApkInstaller::InstallAsync(const webapps::ShortcutInfo& shortcut_info,
                                    const SkBitmap& primary_icon,
                                    bool is_primary_icon_maskable,
                                    FinishCallback finish_callback) {
-  install_duration_timer_.reset(new base::ElapsedTimer());
+  install_duration_timer_ = std::make_unique<base::ElapsedTimer>();
 
-  install_shortcut_info_.reset(new webapps::ShortcutInfo(shortcut_info));
+  install_shortcut_info_ =
+      std::make_unique<webapps::ShortcutInfo>(shortcut_info);
   install_primary_icon_ = primary_icon;
   is_primary_icon_maskable_ = is_primary_icon_maskable;
   short_name_ = shortcut_info.short_name;
@@ -566,7 +570,7 @@ void WebApkInstaller::OnGotSpaceStatus(
 
   if (space_status == SpaceStatus::ENOUGH_SPACE_AFTER_FREE_UP_CACHE) {
     CacheClearer::FreeCacheAsync(
-        content::BrowserContext::GetBrowsingDataRemover(browser_context_),
+        browser_context_->GetBrowsingDataRemover(),
         base::BindOnce(&WebApkInstaller::OnHaveSufficientSpaceForInstall,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
@@ -648,7 +652,7 @@ void WebApkInstaller::OnURLLoaderComplete(
 
 network::SharedURLLoaderFactory* GetURLLoaderFactory(
     content::BrowserContext* browser_context) {
-  return content::BrowserContext::GetDefaultStoragePartition(browser_context)
+  return browser_context->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess()
       .get();
 }
@@ -684,7 +688,7 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
 }
 
 void WebApkInstaller::OnGotIconMurmur2Hashes(
-    base::Optional<std::map<std::string, WebApkIconHasher::Icon>> hashes) {
+    absl::optional<std::map<std::string, WebApkIconHasher::Icon>> hashes) {
   if (!hashes) {
     OnResult(WebApkInstallResult::FAILURE);
     return;

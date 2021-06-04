@@ -83,13 +83,13 @@ li.wait .spinner::before {
 li.wait.small .spinner::before {
   --dimension: 14px;
   --clip-size: 9px;
-  --spinner-size: 2px;
+  --override-spinner-size: 2px;
 
   margin: 1px;
 }
 
 li.wait.selected .spinner::before {
-  --spinner-color: #fff;
+  --override-spinner-color: #fff;
 }
 
 @keyframes spinner-animation {
@@ -137,11 +137,11 @@ li.small .subtitle {
 /* Launcher */
 
 .profile-launcher-view-tree-item {
-  margin-left: 0 !important;
+  margin-left: 0 !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .profile-launcher-view-tree-item > .icon {
-  width: 8px !important;
+  width: 8px !important; /* stylelint-disable-line declaration-no-important */
   visibility: hidden;
 }
 /* Heap profiles and CPU profiles */

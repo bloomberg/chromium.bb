@@ -43,8 +43,6 @@ component("evdev") {
     "event_converter_evdev.h",
     "event_converter_evdev_impl.cc",
     "event_converter_evdev_impl.h",
-    "event_device_info.cc",
-    "event_device_info.h",
     "event_factory_evdev.cc",
     "event_factory_evdev.h",
     "event_thread_evdev.cc",
@@ -63,10 +61,14 @@ component("evdev") {
     "input_injector_evdev.h",
     "keyboard_evdev.cc",
     "keyboard_evdev.h",
+    "microphone_mute_switch_event_converter_evdev.cc",
+    "microphone_mute_switch_event_converter_evdev.h",
     "mouse_button_map_evdev.cc",
     "mouse_button_map_evdev.h",
     "stylus_button_event_converter_evdev.cc",
     "stylus_button_event_converter_evdev.h",
+    "switches.cc",
+    "switches.h",
     "tablet_event_converter_evdev.cc",
     "tablet_event_converter_evdev.h",
     "touch_evdev_debug_buffer.cc",
@@ -106,6 +108,7 @@ component("evdev") {
   defines = [ "IS_EVDEV_IMPL" ]
 
   deps = [
+    ":event_device_info",
     "//base",
     "//build:chromeos_buildflags",
     "//ui/display",
@@ -156,6 +159,40 @@ component("evdev") {
   ]
 }
 
+source_set("event_device_info") {
+  sources = [
+    "event_device_info.cc",
+    "event_device_info.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/events/devices",
+  ]
+
+  visibility += [
+    "//chromeos/components/diagnostics_ui/backend:*",
+    "//ui/chromeos/*",
+  ]
+}
+
+source_set("event_device_info_test_utils") {
+  testonly = true
+
+  sources = [
+    "event_device_test_util.cc",
+    "event_device_test_util.h",
+  ]
+
+  deps = [
+    ":evdev",
+    ":event_device_info",
+    "//base",
+  ]
+
+  visibility += [ "//chromeos/components/diagnostics_ui/backend:unit_tests" ]
+}
+
 source_set("unittests") {
   testonly = true
 
@@ -164,12 +201,11 @@ source_set("unittests") {
     "event_converter_test_util.cc",
     "event_converter_test_util.h",
     "event_device_info_unittest.cc",
-    "event_device_test_util.cc",
-    "event_device_test_util.h",
     "event_factory_evdev_unittest.cc",
     "gamepad_event_converter_evdev_unittest.cc",
     "input_controller_evdev_unittest.cc",
     "input_injector_evdev_unittest.cc",
+    "microphone_mute_switch_event_converter_evdev_unittest.cc",
     "stylus_button_event_converter_evdev_unittest.cc",
     "tablet_event_converter_evdev_unittest.cc",
     "testing/fake_cursor_delegate_evdev.h",
@@ -185,6 +221,8 @@ source_set("unittests") {
 
   deps = [
     ":evdev",
+    ":event_device_info",
+    ":event_device_info_test_utils",
     "//base",
     "//base/test:test_support",
     "//build:chromeos_buildflags",

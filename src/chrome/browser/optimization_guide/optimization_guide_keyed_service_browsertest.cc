@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -685,7 +686,8 @@ IN_PROC_BROWSER_TEST_F(
   // Instantiate off the record Optimization Guide Service.
   OptimizationGuideKeyedService* otr_ogks =
       OptimizationGuideKeyedServiceFactory::GetForProfile(
-          browser()->profile()->GetPrimaryOTRProfile());
+          browser()->profile()->GetPrimaryOTRProfile(
+              /*create_if_needed=*/true));
   otr_ogks->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
 
   // Navigate to a URL that has a hint from a component and wait for that hint
@@ -711,7 +713,8 @@ IN_PROC_BROWSER_TEST_F(
   // Instantiate off the record Optimization Guide Service.
   OptimizationGuideKeyedService* otr_ogks =
       OptimizationGuideKeyedServiceFactory::GetForProfile(
-          browser()->profile()->GetPrimaryOTRProfile());
+          browser()->profile()->GetPrimaryOTRProfile(
+              /*create_if_needed=*/true));
 
   base::HistogramTester histogram_tester;
 

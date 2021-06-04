@@ -5,7 +5,6 @@
 <translation id="104962181688258143">打开“文件”应用</translation>
 <translation id="1122869341872663659">目前显示的是与“<ph name="QUERY" />”相符的 <ph name="N" /> 条搜索结果</translation>
 <translation id="1195667586424773550">将链接拖到标签页的地址栏中</translation>
-<translation id="1204450209689312104">在无痕模式下打开新窗口</translation>
 <translation id="1251638888133819822">开启或关闭全屏放大镜</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -15,6 +14,7 @@
 <translation id="1477442857810932985">转至行末</translation>
 <translation id="1499072997694708844">关闭所有已打开的查找窗口，或停止加载当前网页</translation>
 <translation id="1510238584712386396">启动器</translation>
+<translation id="1516966594427080024">在无痕模式下打开新窗口</translation>
 <translation id="152892567002884378">调高音量</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="ESC" /> 键</translation>
 <translation id="1652741121070700329">移到上一个字词的开头</translation>

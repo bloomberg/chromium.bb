@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
@@ -76,7 +77,7 @@ base::FilePath ComputeCorruptionFileName(const url::Origin& origin) {
 
 bool IsPathTooLong(storage::FilesystemProxy* filesystem,
                    const base::FilePath& leveldb_dir) {
-  base::Optional<int> limit =
+  absl::optional<int> limit =
       filesystem->GetMaximumPathComponentLength(leveldb_dir.DirName());
   if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
@@ -114,7 +115,7 @@ std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
 
   const int64_t kMaxJsonLength = 4096;
 
-  base::Optional<base::File::Info> file_info =
+  absl::optional<base::File::Info> file_info =
       filesystem_proxy->GetFileInfo(info_path);
   if (!file_info.has_value())
     return message;
@@ -131,7 +132,7 @@ std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
       std::string input_js(file_info->size, '\0');
       if (file_info->size ==
           file.Read(0, base::data(input_js), file_info->size)) {
-        base::Optional<base::Value> val = base::JSONReader::Read(input_js);
+        absl::optional<base::Value> val = base::JSONReader::Read(input_js);
         if (val && val->is_dict()) {
           std::string* s = val->FindStringKey("message");
           if (s)
@@ -500,7 +501,7 @@ bool FindGreatestKeyLessThanOrEqual(
   }
 
   do {
-    *found_key = it->Key().as_string();
+    *found_key = std::string(it->Key());
 
     // There can be several index keys that compare equal. We want the last one.
     *s = it->Next();

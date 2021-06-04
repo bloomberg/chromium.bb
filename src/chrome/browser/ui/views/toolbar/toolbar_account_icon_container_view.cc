@@ -20,10 +20,10 @@
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -40,6 +40,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
       PageActionIconType::kManagePasswords,
       PageActionIconType::kLocalCardMigration,
       PageActionIconType::kSaveCard,
+      PageActionIconType::kVirtualCardManualFallback,
   };
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillAddressProfileSavePrompt)) {
@@ -113,10 +114,11 @@ void ToolbarAccountIconContainerView::OnThemeChanged() {
   UpdateAllIcons();
 }
 
-void ToolbarAccountIconContainerView::AddPageActionIcon(views::View* icon) {
+void ToolbarAccountIconContainerView::AddPageActionIcon(
+    std::unique_ptr<views::View> icon) {
   // Add the page action icons to the end of the container, just before the
   // avatar icon.
-  AddChildViewAt(icon, GetIndexOf(avatar_));
+  AddChildViewAt(std::move(icon), GetIndexOf(avatar_));
 }
 
 BEGIN_METADATA(ToolbarAccountIconContainerView, ToolbarIconContainerView)

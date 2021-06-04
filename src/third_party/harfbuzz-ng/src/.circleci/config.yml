@@ -10,19 +10,6 @@ executors:
 
 jobs:
 
-  macos-10_13_6-aat-fonts:
-    macos:
-      xcode: "10.1.0"
-    steps:
-      - checkout
-      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install pkg-config ragel freetype glib cairo python3 ninja
-      - run: pip3 install meson --upgrade
-      - run: meson build
-      - run: meson compile -Cbuild
-      - run: meson test -Cbuild --print-errorlogs
-      - store_artifacts:
-          path: build/meson-logs/
-
   macos-10_14_4-aat-fonts:
     macos:
       xcode: "11.1.0"
@@ -43,7 +30,7 @@ jobs:
       - checkout
       - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install pkg-config ragel freetype glib cairo python3 icu4c graphite2 gobject-introspection gtk-doc ninja
       - run: pip3 install meson --upgrade
-      - run: PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" meson build -Dcoretext=enabled -Dgraphite=enabled -Dauto_features=enabled
+      - run: PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" meson build -Dcoretext=enabled -Dgraphite=enabled -Dauto_features=enabled -Dchafa=disabled
       - run: meson compile -Cbuild
       - run: meson test -Cbuild --print-errorlogs
       - store_artifacts:
@@ -54,13 +41,12 @@ jobs:
     executor: autotools-executor
     steps:
       - checkout
-      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y git ninja-build binutils libtool autoconf automake make gcc g++ pkg-config ragel gtk-doc-tools gobject-introspection libfontconfig1-dev libfreetype6-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip
+      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y git ninja-build binutils libtool autoconf automake make gcc g++ pkg-config ragel gtk-doc-tools gobject-introspection libfreetype6-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip
       - run: pip3 install fonttools meson --upgrade
       - run: ./autogen.sh
-      - run: make -j32
-      - run: make distcheck
+      - run: make -j2 distcheck
       - run: rm harfbuzz-* && make distdir
-      - run: cd harfbuzz-* && meson build && ninja -Cbuild test
+      - run: cd harfbuzz-* && meson build && ninja -j2 -Cbuild test
       - run: make dist
       - persist_to_workspace:
           root: .
@@ -77,7 +63,7 @@ jobs:
 
   fedora-valgrind:
     docker:
-      - image: fedora
+      - image: fedora:33
     steps:
       - checkout
       - run: dnf install -y pkg-config ragel valgrind gcc gcc-c++ meson git glib2-devel freetype-devel cairo-devel libicu-devel gobject-introspection-devel graphite2-devel redhat-rpm-config python python-pip || true
@@ -158,7 +144,6 @@ workflows:
 
   build:
     jobs:
-      - macos-10_13_6-aat-fonts
       - macos-10_14_4-aat-fonts
       - macos-10_15_3-aat-fonts
       - distcheck: # will be dropped with autotools removal

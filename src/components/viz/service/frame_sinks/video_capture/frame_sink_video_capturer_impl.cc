@@ -226,7 +226,7 @@ void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void FrameSinkVideoCapturerImpl::ChangeTarget(
-    const base::Optional<FrameSinkId>& frame_sink_id,
+    const absl::optional<FrameSinkId>& frame_sink_id,
     const SubtreeCaptureId& subtree_capture_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -247,8 +247,13 @@ void FrameSinkVideoCapturerImpl::Start(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(consumer);
 
-  Stop();
+  if (video_capture_started_)
+    Stop();
+
   video_capture_started_ = true;
+
+  if (resolved_target_)
+    resolved_target_->OnClientCaptureStarted();
 
   consumer_.Bind(std::move(consumer));
   // In the future, if the connection to the consumer is lost before a call to
@@ -259,6 +264,9 @@ void FrameSinkVideoCapturerImpl::Start(
 }
 
 void FrameSinkVideoCapturerImpl::Stop() {
+  if (!video_capture_started_)
+    return;
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   refresh_frame_retry_timer_->Stop();
@@ -275,6 +283,9 @@ void FrameSinkVideoCapturerImpl::Stop() {
     consumer_->OnStopped();
     consumer_.reset();
   }
+
+  if (resolved_target_)
+    resolved_target_->OnClientCaptureStopped();
 
   video_capture_started_ = false;
 }
@@ -563,9 +574,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
     content_rect =
         media::ComputeLetterboxRegion(frame->visible_rect(), source_size);
+    // The media letterboxing computation explicitly allows for off-by-one
+    // errors due to computation, so we address those here.
+    if (content_rect.ApproximatelyEqual(frame->visible_rect(), 1)) {
+      content_rect = frame->visible_rect();
+    }
   }
 
-  // Determine what rectangluar region has changed since the last captured
+  // Determine what rectangular region has changed since the last captured
   // frame.
   gfx::Rect update_rect;
   if (dirty_rect_ == kMaxRect ||

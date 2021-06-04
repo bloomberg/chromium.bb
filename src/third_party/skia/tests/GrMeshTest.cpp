@@ -112,7 +112,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
 
     auto rtc = GrSurfaceDrawContext::Make(
             dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
-            {kImageWidth, kImageHeight});
+            {kImageWidth, kImageHeight}, SkSurfaceProps());
     if (!rtc) {
         ERRORF(reporter, "could not create render target context.");
         return;
@@ -417,8 +417,7 @@ private:
 
     const char* name() const override { return "GrMeshTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
@@ -494,7 +493,9 @@ private:
 };
 
 class GLSLMeshTestProcessor : public GrGLSLGeometryProcessor {
-    void setData(const GrGLSLProgramDataManager&, const GrGeometryProcessor&) final {}
+    void setData(const GrGLSLProgramDataManager&,
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor&) final {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) final {
         const GrMeshTestProcessor& mp = args.fGeomProc.cast<GrMeshTestProcessor>();
@@ -556,7 +557,6 @@ GrOpsRenderPass* DrawMeshHelper::bindPipeline(GrPrimitiveType primitiveType, boo
                           GrProcessorAnalysisCoverage::kNone,
                           fState->appliedClip(),
                           nullptr,
-                          false,
                           fState->caps(),
                           GrClampType::kAuto,
                           &overrideColor);

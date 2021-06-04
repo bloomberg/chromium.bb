@@ -21,6 +21,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
 <translation id="1119348796022671382">La modalità colore A tema usa i colori estratti dallo sfondo per colorare leggermente l'interfaccia.</translation>
 <translation id="112308213915226829">Nascondi automaticamente barra delle app</translation>
+<translation id="1148499908455722006">Apri la finestra di dialogo delle informazioni per <ph name="USER_NAME" /></translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
 <translation id="1165712434476988950">È necessario riavviare il dispositivo per applicare l'aggiornamento.</translation>
 <translation id="1175572348579024023">Scorri</translation>
@@ -39,6 +40,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Che tempo fa?</translation>
+<translation id="1266097335951928626">Apri fotocamera per selfie</translation>
 <translation id="1267032506238418139">Modifica alla scorciatoia</translation>
 <translation id="1269405891096105529">Periferica non supportata in modalità Ospite</translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
@@ -80,8 +82,10 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1546492247443594934">Scrivania 2</translation>
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
+<translation id="1555130319947370107">Blu</translation>
 <translation id="1570871743947603115">Attiva/disattiva Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedere a tutte le tue attività in questa sessione.</translation>
+<translation id="159255010947577753">Indicatore</translation>
 <translation id="1611993646327628135">On</translation>
 <translation id="1615402009686901181">Il criterio dell'amministratore disattiva l'acquisizione schermo se sono visibili contenuti riservati</translation>
 <translation id="1632985212731562677">È possibile disattivare Switch Access in Impostazioni &gt; Accessibilità.</translation>
@@ -99,6 +103,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1746730358044914197">I metodi di immissione vengono configurati dall'amministratore.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
+<translation id="1768366657309696705">La scorciatoia da tastiera <ph name="LAUNCHER_KEY_NAME" /> + Punto è cambiata. Per usare il tasto Ins, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Maiusc + Backspace.</translation>
 <translation id="1771761307086386028">Scorri a destra</translation>
 <translation id="1782199038061388045">traduzione</translation>
 <translation id="1787955149152357925">Off</translation>
@@ -108,7 +113,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
 <translation id="1838895407229022812">Luminosità notturna non attiva.</translation>
-<translation id="1850504506766569011">Wi-Fi non attivo.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882814835921407042">Nessuna rete mobile</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
@@ -130,22 +134,28 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1993072747612765854">Leggi ulteriori informazioni sull'ultimo aggiornamento di <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="1998100899771863792">Scrivania corrente</translation>
-<translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
 <translation id="2016340657076538683">Digita un messaggio</translation>
 <translation id="2018630726571919839">Raccontami una barzelletta</translation>
 <translation id="2021864487439853900">Fai clic per sbloccare</translation>
+<translation id="2047639699071423250">Aggiungi idea chiave</translation>
 <translation id="2049240716062114887">Il nome della scrivania è stato modificato in <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Verticale</translation>
+<translation id="2066708475850724665">Interrompi ingrandimento</translation>
 <translation id="2067602449040652523">Luminosità della tastiera</translation>
 <translation id="2078034614700056995">Scorri verso destra con quattro dita per passare alla scrivania successiva</translation>
 <translation id="2079504693865562705">Nascondi app nella barra delle app</translation>
+<translation id="2079545284768500474">Annulla</translation>
 <translation id="2083190527011054446">Buonanotte <ph name="GIVEN_NAME" />,</translation>
 <translation id="209965399369889474">Nessuna connessione alla rete</translation>
+<translation id="2108303511227308752">La scorciatoia da tastiera Alt + Backspace è cambiata. Per usare il tasto Canc, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Backspace.</translation>
+<translation id="211328683600082144">ATTIVA MICROFONO</translation>
 <translation id="2126242104232412123">Nuova scrivania</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2132302418721800944">Registra schermo intero</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
+<translation id="2146800439053023141">Posizione della barra di attivazione</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />. Riprova</translation>
+<translation id="2167870087604746126">+ V</translation>
 <translation id="2170530631236737939">Scorri con tre dita verso il basso per uscire dalla modalità Panoramica</translation>
 <translation id="2208323208084708176">Modalità desktop unificato</translation>
 <translation id="2220572644011485463">PIN o password</translation>
@@ -207,6 +217,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2704781753052663061">Visualizza altre reti Wi-Fi</translation>
 <translation id="2705001408393684014">Attiva/disattiva il microfono. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">Su</translation>
+<translation id="2713444072780614174">Bianco</translation>
 <translation id="2718395828230677721">Luce notturna</translation>
 <translation id="2726420622004325180">Il telefono deve avere i dati mobili per poter fornire un hotspot</translation>
 <translation id="2727175239389218057">Rispondi</translation>
@@ -234,6 +245,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Installare app, estensioni e temi.</translation>
 <translation id="2977598380246111477">Numero successivo</translation>
+<translation id="2992327365391326550">Il pulsante del microfono del dispositivo è disattivato.</translation>
 <translation id="2995447421581609334">Mostra dispositivi di trasmissione.</translation>
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
 <translation id="3000461861112256445">Audio in formato mono</translation>
@@ -244,6 +256,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3038571455154067151">Per accedere, inserisci il codice accesso genitori di Family Link</translation>
 <translation id="3039939407102840004">Batteria dello stilo: <ph name="PERCENTAGE" /> percento.</translation>
 <translation id="3045488863354895414">Buon pomeriggio,</translation>
+<translation id="3051189971848907985">Ridenominazione del profilo in corso… Attendi qualche minuto.</translation>
 <translation id="3055162170959710888">Oggi hai utilizzato questo dispositivo per <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="3081696990447829002">Espandi il menu</translation>
@@ -267,7 +280,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3207953481422525583">Impostazioni utente</translation>
 <translation id="3217205077783620295">Il volume è attivo. Selezionalo per disattivarlo.</translation>
 <translation id="3226991577105957773">+ altre <ph name="COUNT" /></translation>
-<translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> è stata spostata dalla scrivania <ph name="ACTIVE_DESK" /> alla scrivania <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3269597722229482060">Clic con il pulsante destro</translation>
@@ -278,7 +290,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
 <translation id="3321628682574733415">Codice genitore errato</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
-<translation id="3333741161915951567">Riavvio modem. Attendi 30 secondi prima di riprovare.</translation>
 <translation id="3341303451326249809">Screenshot acquisito</translation>
 <translation id="334252345105450327">Acquisisci uno screenshot</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
@@ -286,6 +297,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3368922792935385530">Connesso</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3375634426936648815">Connessa</translation>
+<translation id="3378442621503952303">Connessione al profilo in corso… Attendi qualche minuto.</translation>
 <translation id="3386978599540877378">la lente d'ingrandimento a schermo intero</translation>
 <translation id="3400357268283240774">Impostazioni aggiuntive</translation>
 <translation id="3410336247007142655">Mostra le impostazioni del tema scuro</translation>
@@ -304,6 +316,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3486220673238053218">definizione</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
+<translation id="3552189655002856821">Il Wi-Fi non è attivo</translation>
 <translation id="3563775809269155755">Attiva hotspot</translation>
 <translation id="3571734092741541777">Configura</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
@@ -322,6 +335,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3638400994746983214">Attiva/disattiva Schermata sulla privacy. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Utente gestito <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">Registra microfono</translation>
+<translation id="3680908746918359504">Cancella tutti gli indicatori</translation>
 <translation id="36813544980941320">Il tuo telefono e il dispositivo <ph name="DEVICE_NAME" /> useranno le stesse reti Wi-Fi</translation>
 <translation id="3702809606464356667">Dalla visualizzazione delle finestre della scrivania corrente, premi il tasto Freccia su per mostrare le finestre di tutte le scrivanie</translation>
 <translation id="3702846122927433391">Popolazione della Nigeria</translation>
@@ -352,6 +366,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3899995891769452915">Input vocale</translation>
 <translation id="3900355044994618856">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
+<translation id="3923494859158167397">Nessuna rete mobile configurata</translation>
 <translation id="3943857333388298514">Incolla</translation>
 <translation id="394485226368336402">Impostazioni audio</translation>
 <translation id="3945319193631853098">Tocca per completare la configurazione</translation>
@@ -372,6 +387,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Off per un'app}other{Off per # app}}</translation>
 <translation id="4066027111132117168">On, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Segnale medio</translation>
+<translation id="4095366824370681039">Penna stilografica</translation>
 <translation id="4112140312785995938">Vai indietro</translation>
 <translation id="4114315158543974537">Attiva Phone Hub</translation>
 <translation id="412298498316631026">finestra</translation>
@@ -382,6 +398,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4195877955194704651">Pulsante Clic automatici</translation>
 <translation id="4197790712631116042">Off</translation>
 <translation id="4201033867194214117">La funzionalità <ph name="FEATURE_NAME" /> non è disponibile.</translation>
+<translation id="4209973997261364186">Il Wi-Fi è attivo</translation>
 <translation id="4212472694152630271">Passa al PIN</translation>
 <translation id="4215497585250573029">Impostazioni VPN</translation>
 <translation id="4217571870635786043">Dettatura</translation>
@@ -391,6 +408,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="425364040945105958">Nessuna SIM rilevata</translation>
 <translation id="4261870227682513959">Mostra impostazioni di notifica. Le notifiche sono disattivate</translation>
 <translation id="4269883910223712419">L'amministratore di questo dispositivo ha la possibilità di:</translation>
+<translation id="4274537685965975248">La scorciatoia da tastiera Ctrl + Alt + Freccia giù è cambiata. Per usare il tasto Fine, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia destra.</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4285498937028063278">Sblocca</translation>
 <translation id="4294319844246081198">Buongiorno <ph name="GIVEN_NAME" />,</translation>
@@ -399,6 +417,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4303223480529385476">Espandi area di stato</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Hai premuto la scorciatoia da tastiera per l'alto contrasto. Vuoi attivarlo?</translation>
+<translation id="4322742403972824594">La scorciatoia da tastiera Ctrl + Alt + Freccia su è cambiata. Per usare il tasto Home, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia sinistra.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4333628967105022692">Lacros non è supportato quando più utenti hanno effettuato l'accesso.</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
@@ -416,9 +435,9 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4445159312344259901">Accedi per sbloccare</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notifica importante}other{# notifiche importanti}}</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
+<translation id="4451374464530248585">La scorciatoia da tastiera Alt + Freccia giù è cambiata. Per usare il tasto Pagina giù, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia giù.</translation>
 <translation id="445864333228800152">Buonasera,</translation>
 <translation id="4458688154122353284">Interrompi registrazione dello schermo</translation>
-<translation id="4467143075433126295">Tieni premuto [Esc] per uscire dalla modalità a schermo intero</translation>
 <translation id="4472575034687746823">Come iniziare</translation>
 <translation id="4477350412780666475">Traccia successiva</translation>
 <translation id="4477892968187500306">Questo dispositivo potrebbe contenere app che non sono state verificate da Google.</translation>
@@ -437,9 +456,15 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4570957409596482333">Pulsante Seleziona per ascoltare</translation>
 <translation id="4577274620589681794">Tempo scaduto · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Mostra anteprime</translation>
+<translation id="4578196883126898996">II microfono non è attivo. Attiva il pulsante del microfono del dispositivo.</translation>
 <translation id="4578906031062871102">Menu Impostazioni aperto</translation>
+<translation id="4581047786858252841">Il microfono è attivo</translation>
 <translation id="4585337515783392668">Interrompi la trasmissione su ricevitore sconosciuto</translation>
+<translation id="4586483766170476230">Chiudi fotocamera per selfie</translation>
+<translation id="4587299710837179226">Il microfono non è attivo</translation>
 <translation id="4596144739579517758">Tema scuro disattivato</translation>
+<translation id="4611292653554630842">Accedi</translation>
+<translation id="4614295562446151104">Espandi strumenti indicatore</translation>
 <translation id="4623167406982293031">Verifica account</translation>
 <translation id="4628757576491864469">Dispositivi</translation>
 <translation id="4642092649622328492">Acquisisce lo screenshot parziale</translation>
@@ -450,6 +475,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4705716602320768426">Invia feedback</translation>
 <translation id="4731797938093519117">Accesso genitore</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
+<translation id="4735498845456076464">La scorciatoia da tastiera <ph name="LAUNCHER_KEY_NAME" /> + Numero è cambiata. Per usare i tasti funzione, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + un tasto nella fila superiore.</translation>
 <translation id="4744944742468440486">Informazioni relative al testo selezionato</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4774338217796918551">Puoi riprendere domani alle ore <ph name="COME_BACK_TIME" />.</translation>
@@ -467,7 +493,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4890408602550914571">Assicurati che il tuo telefono sia nelle vicinanze e che il Bluetooth sia attivo.</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="490375751687810070">Verticale</translation>
-<translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240">Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Accetto</translation>
@@ -497,6 +522,8 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5035236842988137213">Il dispositivo <ph name="DEVICE_NAME" /> si è connesso a un nuovo telefono</translation>
 <translation id="5035389544768382859">Conferma la configurazione del display</translation>
 <translation id="504465286040788597">Paragrafo precedente</translation>
+<translation id="5071064518267176975">Un'app vuole usare il microfono</translation>
+<translation id="5075554201838155866">Avvia sottotitoli</translation>
 <translation id="5078796286268621944">PIN errato</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
@@ -559,6 +586,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5689633613396158040">Con la funzione Luminosità notturna, potrai guardare lo schermo senza sforzare la vista o leggere in condizioni di luce attenuata. Tocca per cambiare l'ora di attivazione della funzione Luminosità notturna o disattiva completamente la funzione.</translation>
 <translation id="5691772641933328258">Impronta digitale non riconosciuta</translation>
 <translation id="5710450975648804523">Funzione Non disturbare attiva</translation>
+<translation id="571295407079589142">I dati mobili non sono attivi</translation>
 <translation id="573413375004481890">Questo dispositivo non può supportare tutti i tuoi display, pertanto uno è stato scollegato</translation>
 <translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
@@ -569,8 +597,10 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="5779721926447984944">File bloccati</translation>
 <translation id="5790085346892983794">Completato</translation>
+<translation id="5805809050170488595">Fai clic per attivare <ph name="NETWORK_NAME" /></translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5825969630400862129">Impostazioni dei dispositivi connessi</translation>
+<translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5837036133683224804">Interrompi <ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860491529813859533">Attiva</translation>
@@ -586,7 +616,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5946788582095584774">La funzionalità <ph name="FEATURE_NAME" /> è attiva.</translation>
 <translation id="5947494881799873997">Ripristina</translation>
 <translation id="595202126637698455">Rilevamento del rendimento attivo</translation>
-<translation id="5957083217255311415">I dati mobili non sono attivi.</translation>
 <translation id="5958529069007801266">Utente supervis.</translation>
 <translation id="5960825221082587934">Consenti all'assistente di mostrare informazioni come la definizione, la traduzione o la conversione di unità per gli elementi selezionati.</translation>
 <translation id="5977415296283489383">Cuffia</translation>
@@ -665,6 +694,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6612802754306526077">Modalità Registrazione dello schermo selezionata</translation>
 <translation id="6614169507485700968">Schermata sulla privacy attiva</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
+<translation id="6629480180092995136"><ph name="APP_NAME" /> vuole usare il microfono</translation>
 <translation id="6637729079642709226">Modifica tempo</translation>
 <translation id="6641720045729354415">Attiva o disattiva Sottotitoli in tempo reale. <ph name="STATE_TEXT" /></translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> vorrebbe verificare la tua identità</translation>
@@ -674,7 +704,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6667908387435388584">Connettiti all'hotspot del tuo telefono, disattiva i suoni del dispositivo, individualo e visualizza le schede recenti di Chrome aperte sul telefono</translation>
 <translation id="6670153871843998651">Scrivania 3</translation>
 <translation id="6671495933530132209">Copia immagine</translation>
-<translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6692996468359469499">Ricevi informazioni correlate alla tua selezione</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
@@ -706,6 +735,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6919251195245069855">Impossibile riconoscere la smart card. Riprova.</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6961121602502368900">La funzionalità Disattiva audio non è disponibile sul profilo di lavoro</translation>
+<translation id="6961840794482373852">La scorciatoia da tastiera Alt + Freccia su è cambiata. Per usare il tasto Pagina su, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia su.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
@@ -718,6 +748,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Assistente Google</translation>
 <translation id="7042322267639375032">Comprimi area di stato</translation>
+<translation id="7045595904618419789">Avvia ingrandimento</translation>
 <translation id="7055910611768509537">Lo stilo non viene usato da più di una settimana</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
@@ -738,6 +769,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
 <translation id="726276584504105859">Trascina qui per utilizzare la modalità Schermo diviso</translation>
 <translation id="7262906531272962081">Crea promemoria</translation>
+<translation id="7279434993080105272">Colore indicatore <ph name="COLOR_PARAMETER" /></translation>
 <translation id="7302889331339392448">La funzionalità Sottotitoli in tempo reale è disattivata.</translation>
 <translation id="7303365578352795231">Risposta su un altro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -767,6 +799,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7466449121337984263">Tocca il sensore</translation>
 <translation id="7477793887173910789">Gestisci la tua musica, i tuoi video e altro ancora</translation>
 <translation id="7483025031359818980">Area di selezione impostata su Schermo intero</translation>
+<translation id="7486227320194954040">Comprimi strumenti indicatore</translation>
 <translation id="7497767806359279797">Scegli la lingua e la tastiera</translation>
 <translation id="7509246181739783082">Verifica la tua identità</translation>
 <translation id="7513622367902644023">Modalità screenshot selezionata</translation>
@@ -777,6 +810,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7561982940498449837">Chiudi menu</translation>
 <translation id="7564874036684306347">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti. Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
+<translation id="7569983096843329377">Nero</translation>
 <translation id="7579778809502851308">Acquisizione schermo</translation>
 <translation id="7590883480672980941">Impostazioni di immissione</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
@@ -784,6 +818,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7607002721634913082">In pausa</translation>
 <translation id="7618774594543487847">Neutra</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
+<translation id="7631906263969450674">Evidenziatore</translation>
 <translation id="7633755430369750696">Mostra impostazioni di Condivisione nelle vicinanze.</translation>
 <translation id="7641938616688887143">Registra</translation>
 <translation id="7642647758716480637">Apri le impostazioni relative a <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
@@ -799,6 +834,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7724603315864178912">Taglia</translation>
 <translation id="7745560842763881396">Mostra app nella barra delle app</translation>
 <translation id="7749443890790263709">Numero massimo di scrivanie raggiunto.</translation>
+<translation id="7749640678855296659">Al momento il microfono non è attivo</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
 <translation id="7780159184141939021">Ruota lo schermo</translation>
 <translation id="7796353162336583443">Tocca il pulsante dello stilo nella barra delle app per creare note, acquisire screenshot, usare l'Assistente Google, il puntatore laser o la lente d'ingrandimento.</translation>
@@ -846,6 +882,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8113423164597455979">On, tutte</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Conferma</translation>
+<translation id="8132487352815776550">Interrompi sottotitoli</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8142441511840089262">Doppio clic</translation>
@@ -886,7 +923,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella barra delle app è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8444246603146515890">Scrivania <ph name="DESK_TITILE" /> attivata</translation>
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
-<translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="8462305545768648477">Chiudi Seleziona per ascoltare</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ha <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
@@ -903,6 +939,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8631727435199967028">Impostazioni di accessibilità</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, gestita dall'amministratore</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
+<translation id="8641805545866562088">Aggiornamento dell'elenco di profili in corso… Attendi qualche minuto.</translation>
 <translation id="8646417893960517480">Timer: <ph name="TOTAL_TIME" /></translation>
 <translation id="8647931990447795414">Per aggiungere una persona, inserisci il codice accesso genitori di Family Link</translation>
 <translation id="8649101189709089199">Seleziona per ascoltare</translation>
@@ -930,6 +967,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="881757059229893486">Impostazioni metodi di immissione</translation>
+<translation id="8818320199597151042">Rimozione del profilo in corso… Attendi qualche minuto.</translation>
 <translation id="8825863694328519386">Scorri da sinistra per tornare indietro</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Pulsante Indietro</translation>
@@ -975,6 +1013,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9098969848082897657">Disattiva audio</translation>
 <translation id="9099154003160514616">Aggiornamento di Lacros disponibile</translation>
+<translation id="9100887602489003640">Aggiunta del profilo in corso… Attendi qualche minuto.</translation>
 <translation id="9105450214093926548">L'accesso di un secondo utente non è supportato durante l'uso del browser Lacros. Usa invece un secondo profilo del browser in Lacros oppure chiudi Lacros e riprova.</translation>
 <translation id="9133335900048457298">Impossibile registrare contenuti protetti</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>

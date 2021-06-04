@@ -75,7 +75,7 @@ class PLATFORM_EXPORT AudioDestination
   AudioDestination(AudioIOCallback&,
                    unsigned number_of_output_channels,
                    const WebAudioLatencyHint&,
-                   base::Optional<float> context_sample_rate,
+                   absl::optional<float> context_sample_rate,
                    unsigned render_quantum_frames);
   ~AudioDestination() override;
 
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT AudioDestination
       AudioIOCallback&,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
-      base::Optional<float> context_sample_rate,
+      absl::optional<float> context_sample_rate,
       unsigned render_quantum_frames);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
@@ -123,7 +123,8 @@ class PLATFORM_EXPORT AudioDestination
   // hardware.
   int FramesPerBuffer() const;
 
-  // The information from the actual audio hardware. (via Platform::current)
+  // The information from the actual audio hardware. (via Platform::Current)
+  static size_t HardwareBufferSize();
   static float HardwareSampleRate();
   static uint32_t MaxChannelCount();
 
@@ -141,8 +142,6 @@ class PLATFORM_EXPORT AudioDestination
 
   // Check if the buffer size chosen by the WebAudioDevice is too large.
   bool CheckBufferSize(unsigned render_quantum_frames);
-
-  size_t HardwareBufferSize();
 
   void SendLogMessage(const String& message);
 

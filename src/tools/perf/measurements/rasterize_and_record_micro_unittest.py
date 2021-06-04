@@ -18,7 +18,7 @@ class RasterizeAndRecordMicroUnitTest(legacy_page_test_case.LegacyPageTestCase):
 
   # Fails or flaky on some bots.  See http://crbug.com/956798
   # TODO(crbug.com/1197307): Re-enable on mojave.
-  @decorators.Disabled('win', 'chromeos', 'linux', 'mojave')
+  @decorators.Disabled('win', 'chromeos', 'linux', 'win7', 'mojave')
   def testRasterizeAndRecordMicro(self):
     pate_test = rasterize_and_record_micro.RasterizeAndRecordMicro(
         rasterize_repeat=1, record_repeat=1, start_wait_time=0.0,
@@ -42,8 +42,8 @@ class RasterizeAndRecordMicroUnitTest(legacy_page_test_case.LegacyPageTestCase):
     ]
     for name in expected_positve_scalar:
       samples = measurements[name]['samples']
-      self.assertEqual(len(samples), 1)
-      self.assertGreater(samples[0], 0)
+      self.assertEqual(len(samples), 1, '%s did not have 1 sample' % name)
+      self.assertGreater(samples[0], 0, 'Sample from %s was not > 0' % name)
 
     samples = measurements['total_picture_layers_off_screen']['samples']
     self.assertEqual(len(samples), 1)

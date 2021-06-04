@@ -43,6 +43,7 @@ if (is_android) {
       ":filevideo_java",
       ":hwcodecs_java",
       ":java_audio_device_module_java",
+      ":libaom_av1_java",
       ":libjingle_peerconnection_java",
       ":libjingle_peerconnection_metrics_default_java",
       ":libvpx_vp8_java",
@@ -120,19 +121,6 @@ if (is_android) {
       ":peerconnection_jni",
       ":video_jni",
       "../../api:create_peerconnection_factory",
-    ]
-  }
-
-  rtc_library("libjingle_peerconnection_metrics_default_jni") {
-    visibility = [ "*" ]
-    sources = [ "src/jni/android_metrics.cc" ]
-    deps = [
-      ":base_jni",
-      ":generated_metrics_jni",
-      ":native_api_jni",
-      ":peerconnection_jni",
-      "../../pc:peerconnection",
-      "../../system_wrappers:metrics",
     ]
   }
 
@@ -262,6 +250,7 @@ if (is_android) {
   rtc_android_library("peerconnection_java") {
     visibility = [ "*" ]
     sources = [
+      "api/org/webrtc/AddIceObserver.java",
       "api/org/webrtc/AudioProcessingFactory.java",
       "api/org/webrtc/AudioSource.java",
       "api/org/webrtc/AudioTrack.java",
@@ -512,6 +501,20 @@ if (is_android) {
     ]
   }
 
+  rtc_android_library("libaom_av1_java") {
+    visibility = [ "*" ]
+    sources = [
+      "api/org/webrtc/LibaomAv1Decoder.java",
+      "api/org/webrtc/LibaomAv1Encoder.java",
+    ]
+    deps = [
+      ":base_java",
+      ":video_api_java",
+      ":video_java",
+      "//rtc_base:base_java",
+    ]
+  }
+
   rtc_android_library("swcodecs_java") {
     visibility = [ "*" ]
     sources = [
@@ -521,6 +524,7 @@ if (is_android) {
 
     deps = [
       ":base_java",
+      ":libaom_av1_java",
       ":libvpx_vp8_java",
       ":libvpx_vp9_java",
       ":video_api_java",
@@ -692,6 +696,8 @@ if (current_os == "linux" || is_android) {
     visibility = [ "*" ]
 
     sources = [
+      "src/jni/pc/add_ice_candidate_observer.cc",
+      "src/jni/pc/add_ice_candidate_observer.h",
       "src/jni/pc/android_network_monitor.h",
       "src/jni/pc/audio_track.cc",
       "src/jni/pc/call_session_file_rotating_log_sink.cc",
@@ -758,7 +764,6 @@ if (current_os == "linux" || is_android) {
       "../../api/video_codecs:video_codecs_api",
       "../../call:call_interfaces",
       "../../media:rtc_audio_video",
-      "../../media:rtc_data",
       "../../media:rtc_media_base",
       "../../modules/audio_device",
       "../../modules/audio_processing:api",
@@ -787,6 +792,19 @@ if (current_os == "linux" || is_android) {
       ":base_jni",
       ":generated_java_audio_jni",
       ":java_audio_device_module",
+    ]
+  }
+
+  rtc_library("libjingle_peerconnection_metrics_default_jni") {
+    visibility = [ "*" ]
+    sources = [ "src/jni/android_metrics.cc" ]
+    deps = [
+      ":base_jni",
+      ":generated_metrics_jni",
+      ":native_api_jni",
+      ":peerconnection_jni",
+      "../../pc:peerconnection",
+      "../../system_wrappers:metrics",
     ]
   }
 
@@ -823,10 +841,24 @@ if (current_os == "linux" || is_android) {
     ]
   }
 
+  rtc_library("libaom_av1_jni") {
+    visibility = [ "*" ]
+    allow_poison = [ "software_video_codecs" ]
+    sources = [ "src/jni/av1_codec.cc" ]
+    deps = [
+      ":base_jni",
+      ":generated_libaom_av1_jni",
+      ":video_jni",
+      "../../modules/video_coding/codecs/av1:libaom_av1_decoder",
+      "../../modules/video_coding/codecs/av1:libaom_av1_encoder",
+    ]
+  }
+
   rtc_library("swcodecs_jni") {
     visibility = [ "*" ]
     allow_poison = [ "software_video_codecs" ]
     deps = [
+      ":libaom_av1_jni",
       ":libvpx_vp8_jni",
       ":libvpx_vp9_jni",
     ]
@@ -1262,8 +1294,19 @@ if (current_os == "linux" || is_android) {
     jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"
   }
 
+  generate_jni("generated_libaom_av1_jni") {
+    sources = [
+      "api/org/webrtc/LibaomAv1Decoder.java",
+      "api/org/webrtc/LibaomAv1Encoder.java",
+    ]
+
+    namespace = "webrtc::jni"
+    jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"
+  }
+
   generate_jni("generated_peerconnection_jni") {
     sources = [
+      "api/org/webrtc/AddIceObserver.java",
       "api/org/webrtc/AudioTrack.java",
       "api/org/webrtc/CallSessionFileRotatingLogSink.java",
       "api/org/webrtc/CandidatePairChangeEvent.java",

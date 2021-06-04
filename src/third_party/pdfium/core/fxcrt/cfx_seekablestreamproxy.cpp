@@ -6,10 +6,6 @@
 
 #include "core/fxcrt/cfx_seekablestreamproxy.h"
 
-#if defined(OS_WIN)
-#include <io.h>
-#endif
-
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -17,7 +13,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
@@ -105,10 +100,7 @@ void SwapByteOrder(uint16_t* pStr, size_t iLength) {
 
 CFX_SeekableStreamProxy::CFX_SeekableStreamProxy(
     const RetainPtr<IFX_SeekableReadStream>& stream)
-    : m_wCodePage(FX_CODEPAGE_DefANSI),
-      m_wBOMLength(0),
-      m_iPosition(0),
-      m_pStream(stream) {
+    : m_pStream(stream) {
   DCHECK(m_pStream);
 
   Seek(From::Begin, 0);

@@ -4,11 +4,12 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
 import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';                        // eslint-disable-line no-unused-vars
-import * as TextUtils from '../../models/text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
-import * as Search from '../../search/search.js';                    // eslint-disable-line no-unused-vars
+import type * as SDK from '../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import * as Logs from '../../models/logs/logs.js';
+import type * as TextUtils from '../../models/text_utils/text_utils.js'; // eslint-disable-line no-unused-vars
+import type * as Search from '../search/search.js';                      // eslint-disable-line no-unused-vars
 
 const UIStrings = {
   /**
@@ -30,7 +31,7 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
       searchResultCallback: (arg0: Search.SearchConfig.SearchResult) => void,
       searchFinishedCallback: (arg0: boolean) => void): Promise<void> {
     const promises = [];
-    const requests = SDK.NetworkLog.NetworkLog.instance().requests().filter(
+    const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(
         request => searchConfig.filePathMatchesFileQuery(request.url()));
     progress.setTotalWork(requests.length);
     for (const request of requests) {
@@ -106,41 +107,55 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
   }
 }
 
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum UIHeaderSection {
+  General = 'General',
+  Request = 'Request',
+  Response = 'Response',
+}
+
+interface UIHeaderLocation {
+  section: UIHeaderSection;
+  header: SDK.NetworkRequest.NameValue|null;
+}
+
 export class UIRequestLocation {
   request: SDK.NetworkRequest.NetworkRequest;
-  requestHeader: SDK.NetworkRequest.NameValue|null;
-  responseHeader: SDK.NetworkRequest.NameValue|null;
+  header: UIHeaderLocation|null;
   searchMatch: TextUtils.ContentProvider.SearchMatch|null;
   isUrlMatch: boolean;
 
-  constructor(
-      request: SDK.NetworkRequest.NetworkRequest, requestHeader: SDK.NetworkRequest.NameValue|null,
-      responseHeader: SDK.NetworkRequest.NameValue|null, searchMatch: TextUtils.ContentProvider.SearchMatch|null,
-      urlMatch: boolean) {
+  private constructor(
+      request: SDK.NetworkRequest.NetworkRequest, header: UIHeaderLocation|null,
+      searchMatch: TextUtils.ContentProvider.SearchMatch|null, urlMatch: boolean) {
     this.request = request;
-    this.requestHeader = requestHeader;
-    this.responseHeader = responseHeader;
+    this.header = header;
     this.searchMatch = searchMatch;
     this.isUrlMatch = urlMatch;
   }
 
   static requestHeaderMatch(request: SDK.NetworkRequest.NetworkRequest, header: SDK.NetworkRequest.NameValue|null):
       UIRequestLocation {
-    return new UIRequestLocation(request, header, null, null, false);
+    return new UIRequestLocation(request, {section: UIHeaderSection.Request, header}, null, false);
   }
 
   static responseHeaderMatch(request: SDK.NetworkRequest.NetworkRequest, header: SDK.NetworkRequest.NameValue|null):
       UIRequestLocation {
-    return new UIRequestLocation(request, null, header, null, false);
+    return new UIRequestLocation(request, {section: UIHeaderSection.Response, header}, null, false);
   }
 
   static bodyMatch(request: SDK.NetworkRequest.NetworkRequest, searchMatch: TextUtils.ContentProvider.SearchMatch|null):
       UIRequestLocation {
-    return new UIRequestLocation(request, null, null, searchMatch, false);
+    return new UIRequestLocation(request, null, searchMatch, false);
   }
 
   static urlMatch(request: SDK.NetworkRequest.NetworkRequest): UIRequestLocation {
-    return new UIRequestLocation(request, null, null, null, true);
+    return new UIRequestLocation(request, null, null, true);
+  }
+
+  static header(request: SDK.NetworkRequest.NetworkRequest, section: UIHeaderSection, name: string): UIRequestLocation {
+    return new UIRequestLocation(request, {section, header: {name, value: ''}}, null, true);
   }
 }
 
@@ -174,7 +189,7 @@ export class NetworkSearchResult implements Search.SearchConfig.SearchResult {
     if (location.isUrlMatch) {
       return this._request.url();
     }
-    const header = location.requestHeader || location.responseHeader;
+    const header = location?.header?.header;
     if (header) {
       return header.value;
     }
@@ -190,7 +205,7 @@ export class NetworkSearchResult implements Search.SearchConfig.SearchResult {
     if (location.isUrlMatch) {
       return i18nString(UIStrings.url);
     }
-    const header = location.requestHeader || location.responseHeader;
+    const header = location?.header?.header;
     if (header) {
       return `${header.name}:`;
     }

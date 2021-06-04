@@ -16,8 +16,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 
 namespace aura {
 class Window;
@@ -62,6 +62,12 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
   // Shows the clipboard history menu through the keyboard accelerator.
   void ShowMenuByAccelerator();
 
+  // ClipboardHistoryController:
+  void ShowMenu(const gfx::Rect& anchor_rect,
+                ui::MenuSourceType source_type,
+                crosapi::mojom::ClipboardHistoryControllerShowSource
+                    show_source) override;
+
   // Returns bounds for the contextual menu in screen coordinates.
   gfx::Rect GetMenuBoundsInScreenForTest() const;
 
@@ -101,11 +107,9 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
 
   // ClipboardHistoryController:
   bool CanShowMenu() const override;
-  void ShowMenu(const gfx::Rect& anchor_rect,
-                ui::MenuSourceType source_type,
-                ShowSource show_source) override;
   bool ShouldShowNewFeatureBadge() const override;
   void MarkNewFeatureBadgeShown() override;
+  void OnScreenshotNotificationCreated() override;
   std::unique_ptr<ScopedClipboardHistoryPause> CreateScopedPause() override;
   base::Value GetHistoryValues(
       const std::set<std::string>& item_id_filter) const override;

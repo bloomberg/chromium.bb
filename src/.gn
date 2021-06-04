@@ -8,6 +8,10 @@ import("//third_party/angle/dotfile_settings.gni")
 # The location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
 
+# The python interpreter to use by default. On Windows, this will look
+# for python3.exe and python3.bat.
+script_executable = "python3"
+
 # These arguments override the default values for items in a declare_args
 # block. "gn args" in turn can override these.
 #
@@ -34,10 +38,6 @@ default_args = {
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
 
-  # TODO(jochen): Remove this. http://crbug.com/v8/5830,
-  # http://crbug.com/728583.
-  v8_check_microtasks_scopes_consistency = false
-
   # Don't include webrtc's builtin task queue implementation.
   rtc_link_task_queue_impl = false
 
@@ -63,14 +63,13 @@ default_args = {
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
 no_check_targets = [
-  # //chrome/*, https://crbug.com/949535
-  "//chrome/browser/media/router/discovery:*",  # 4 errors
-  "//chrome/browser/safe_browsing/android:*",  # 3 errors
-  "//chrome/browser/safety_check/android:*",  # 3 errors
-  "//chrome/browser/storage_access_api:*",  # 2 errors
-  "//chrome/browser/touch_to_fill/android:*",  # 8 errors
-  "//chrome/test:*",  # 2682 errors
-  "//extensions/browser/api/declarative_net_request:*",  # 18 errors
+  "//chrome/test:browser_tests",
+  "//chrome/test:browser_tests_runner",
+  "//chrome/test:interactive_ui_tests",
+  "//chrome/test:unit_tests",
+  "//chrome/test:unit_tests__library",
+  "//chrome/test:usage_time_limit_unittests",
+  "//chrome/test:xr_browser_tests_common",
   "//extensions/browser/api:*",  # 7 errors
   "//extensions/browser:*",  # 20 errors
   "//extensions:*",  # 75 errors
@@ -82,13 +81,10 @@ no_check_targets = [
   "//ppapi/proxy:*",  # 31 errors
   "//ppapi/thunk:*",  # 1071 errors
   "//ppapi:*",  # 3 errors
-  "//remoting/codec:*",  # 32 errors
   "//remoting/host/file_transfer:*",  # 43 errors
   "//remoting/host/installer/mac:*",  # 1 error
-  "//remoting/host/it2me:*",  # 18 errors
   "//remoting/host/mac:*",  # 49 errors
   "//remoting/host/security_key:*",  # 68 errors
-  "//remoting/host/setup:*",  # 9 errors
   "//remoting/host/win:*",  # 43 errors
   "//remoting/ios/app/settings:*",  # 6 errors
   "//remoting/ios/app:*",  # 9 errors
@@ -103,18 +99,14 @@ no_check_targets = [
   "//sandbox/win:*",  # 7 errors
 
   "//third_party/icu/*",
-  "//third_party/libvpx:*",  # 164 errors
   "//third_party/libwebp:*",  # 80 errors, https://crbug.com/800762
 
-  # //v8/*, https://crbug.com/v8/7330
-  "//v8/src/inspector:*",  # 20 errors
-  "//v8/test/cctest:*",  # 26 errors
-  "//v8/test/unittests:*",  # 11 errors
-  "//v8/test/wasm-api-tests:*",  # 13 errors
-  "//v8/third_party/inspector_protocol:*",  # 2 errors
-  "//v8/tools/debug_helper:*",  # 9 errors
-  "//v8/tools/v8windbg:*",  # 2 errors
-  "//v8:*",  # 1871 errors
+  # //v8, https://crbug.com/v8/7330
+  "//v8/src/inspector:inspector",  # 20 errors
+  "//v8/test/cctest:cctest_sources",  # 2 errors
+  "//v8:cppgc_base",  # 1 error
+  "//v8:v8_internal_headers",  # 11 errors
+  "//v8:v8_libplatform",  # 2 errors
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists

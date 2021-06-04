@@ -68,6 +68,7 @@ enum class PerfettoStatsdAtom {
   kTracedEnableTracingOom = 34,
   kTracedEnableTracingUnknown = 35,
   kTracedStartTracingInvalidSessionState = 36,
+  kTracedEnableTracingInvalidFilter = 37,  // TODO actually add this
 
   // Checkpoints inside perfetto_cmd after tracing has finished.
   kOnTracingDisabled = 4,
@@ -112,6 +113,9 @@ enum PerfettoTriggerAtom {
 
   kTracedLimitProbability = 5,
   kTracedLimitMaxPer24h = 6,
+
+  kProbesProducerTrigger = 7,
+  kProbesProducerTriggerFail = 8,
 };
 
 }  // namespace perfetto

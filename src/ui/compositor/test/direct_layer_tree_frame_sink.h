@@ -51,7 +51,8 @@ class DirectLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void SubmitCompositorFrame(viz::CompositorFrame frame,
                              bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                          cc::FrameSkippedReason reason) override;
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
@@ -74,11 +75,10 @@ class DirectLayerTreeFrameSink : public cc::LayerTreeFrameSink,
  private:
   // viz::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
+      std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
                     const viz::FrameTimingDetailsMap& timing_details) override;
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void OnCompositorFrameTransitionDirectiveProcessed(
       uint32_t sequence_id) override {}
@@ -87,7 +87,7 @@ class DirectLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   void DidReceiveCompositorFrameAckInternal(
-      const std::vector<viz::ReturnedResource>& resources);
+      std::vector<viz::ReturnedResource> resources);
 
   // This class is only meant to be used on a single thread.
   THREAD_CHECKER(thread_checker_);

@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Паўзунок пераходу</translation>
 <translation id="1404323374378969387">Нарвежская</translation>
 <translation id="1430915738399379752">Друк</translation>
+<translation id="1433628812591023318">Каб перацягнуць файл у Parallels Desktop, яго неабходна перамясціць у папку "Файлы Windows".</translation>
 <translation id="1435838927755162558">Абагульванне папкі з Parallels Desktop</translation>
 <translation id="1467432559032391204">Злева</translation>
 <translation id="1471718551822868769">Славацкая</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Файлы Windows</translation>
 <translation id="3078461028045006476">Абагуліць праз пашырэнне "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Не ўдалося адкрыць архіў "<ph name="PATH" />" з гэтага месца. Каб адкрыць яго, скапіруйце архіў у папку "Мае файлы".</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ГАТОВА</translation>
 <translation id="3188257591659621405">Мае файлы</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Балгарская (фанетычная раскладка)</translation>
 <translation id="5605830556594064952">ЗША (раскладка Дворака)</translation>
 <translation id="5625294776298156701">Тамільская (раскладка Tamil99)</translation>
+<translation id="5633226425545095130">Пры перамяшчэнні гэтага элемента ён будзе абагулены з усімі карыстальнікамі, якія могуць бачыць абагуленую папку "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Праслухаць</translation>
 <translation id="5678784840044122290">Linux-праграма будзе даступна ў тэрмінале, а таксама на панэлі запуску можа паказвацца яе значок.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Не ўдаецца адключыцца ад архіва або віртуальнага дыска<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Эфіопская раскладка</translation>
 <translation id="7417705661718309329">Карта Google</translation>
 <translation id="7460898608667578234">Украінская</translation>
+<translation id="7486315294984620427">Каб перацягнуць файл у Parallels Desktop, яго неабходна скапіраваць у папку "Файлы Windows".</translation>
 <translation id="7489215562877293245">Знойдзена: <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Гатова для рэзервовага капіравання на <ph name="BEGIN_LINK" />Google Дыск<ph name="END_LINK" /></translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Памеры</translation>
 <translation id="8437209419043462667">ЗША</translation>
 <translation id="8456681095658380701">Недапушчальная назва</translation>
+<translation id="8459404855768962328">Пры капіраванні гэтага элемента ён будзе абагулены з усімі карыстальнікамі, якія могуць бачыць абагуленую папку "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Каб атрымаць хуткі доступ да файла праз паліцу, націсніце на яго правай кнопкай мышы і выберыце пункт "Замацаваць на паліцы".</translation>
 <translation id="8463494891489624050">В'етнамская (раскладка VIQR)</translation>
 <translation id="8466234950814670489">Архіў .tar</translation>

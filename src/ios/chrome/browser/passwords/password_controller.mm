@@ -29,7 +29,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/autofill/ios/browser/autofill_util.h"
-#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -42,7 +41,6 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
-#import "components/password_manager/ios/js_password_manager.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
@@ -83,7 +81,6 @@
 
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
-using autofill::JsSuggestionManager;
 using autofill::PasswordFormGenerationData;
 using password_manager::PasswordForm;
 using autofill::FormRendererId;
@@ -103,7 +100,6 @@ using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
-using password_manager::SerializePasswordFormFillData;
 using web::WebFrame;
 using web::WebState;
 
@@ -350,8 +346,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
                                   URL:(const GURL&)URL {
-  [self.passwordBreachDispatcher showPasswordBreachForLeakType:leakType
-                                                           URL:URL];
+  [self.passwordBreachDispatcher showPasswordBreachForLeakType:leakType];
 }
 
 - (void)showPasswordProtectionWarning:(NSString*)warningText
@@ -365,26 +360,20 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 // The dispatcher used for ApplicationCommands.
 - (id<ApplicationCommands>)applicationCommandsHandler {
-  DCHECK(self.browser);
-  DCHECK(self.browser->GetCommandDispatcher());
-  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            ApplicationCommands);
+  DCHECK(self.dispatcher);
+  return HandlerForProtocol(self.dispatcher, ApplicationCommands);
 }
 
 // The dispatcher used for PasswordBreachCommands.
 - (id<PasswordBreachCommands>)passwordBreachDispatcher {
-  DCHECK(self.browser);
-  DCHECK(self.browser->GetCommandDispatcher());
-  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            PasswordBreachCommands);
+  DCHECK(self.dispatcher);
+  return HandlerForProtocol(self.dispatcher, PasswordBreachCommands);
 }
 
 // The dispatcher used for PasswordProtectionCommands.
 - (id<PasswordProtectionCommands>)passwordProtectionDispatcher {
-  DCHECK(self.browser);
-  DCHECK(self.browser->GetCommandDispatcher());
-  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            PasswordProtectionCommands);
+  DCHECK(self.dispatcher);
+  return HandlerForProtocol(self.dispatcher, PasswordProtectionCommands);
 }
 
 - (InfoBarIOS*)findInfobarOfType:(InfobarType)infobarType manual:(BOOL)manual {
@@ -561,7 +550,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   // TODO(crbug.com/886583): add eg tests
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                         browser:self.browser
+                         browser:nullptr
                            title:@""
                          message:@""
                             rect:self.baseViewController.view.frame
@@ -586,8 +575,6 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     }
     FormInputAccessoryViewHandler* handler =
         [[FormInputAccessoryViewHandler alloc] init];
-    handler.JSSuggestionManager =
-        JsSuggestionManager::GetOrCreateForWebState(weakSelf.webState);
     NSString* mainFrameID =
         SysUTF8ToNSString(web::GetMainWebFrameId(weakSelf.webState));
     [handler setLastFocusFormActivityWebFrameID:mainFrameID];

@@ -207,11 +207,9 @@ class BufferZeroInitTest : public DawnTest {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, vertexShader);
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[location(0)]] var<in> i_color : vec4<f32>;
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-
-            [[stage(fragment)]] fn main() -> void {
-                fragColor = i_color;
+            [[stage(fragment)]]
+            fn main([[location(0)]] i_color : vec4<f32>) -> [[location(0)]] vec4<f32> {
+                return i_color;
             })");
 
         ASSERT(vertexBufferCount <= 1u);
@@ -248,18 +246,20 @@ class BufferZeroInitTest : public DawnTest {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
         wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(R"(
-            [[location(0)]] var<in> pos : vec4<f32>;
-            [[location(0)]] var<out> o_color : vec4<f32>;
+            struct VertexOut {
+                [[location(0)]] color : vec4<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
 
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
+            [[stage(vertex)]] fn main([[location(0)]] pos : vec4<f32>) -> VertexOut {
+                var output : VertexOut;
                 if (all(pos == vec4<f32>(0.0, 0.0, 0.0, 0.0))) {
-                    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+                    output.color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
                 } else {
-                    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                    output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
                 }
-                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return output;
             })");
 
         constexpr uint64_t kVertexAttributeSize = sizeof(float) * 4;
@@ -290,18 +290,21 @@ class BufferZeroInitTest : public DawnTest {
 
         wgpu::RenderPipeline renderPipeline =
             CreateRenderPipelineForTest(R"(
-            [[location(0)]] var<out> o_color : vec4<f32>;
+            struct VertexOut {
+                [[location(0)]] color : vec4<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
 
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
+                var output : VertexOut;
                 if (VertexIndex == 0u) {
-                    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+                    output.color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
                 } else {
-                    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                    output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
                 }
-                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return output;
             })",
                                         0 /* vertexBufferCount */);
 
@@ -337,13 +340,16 @@ class BufferZeroInitTest : public DawnTest {
         // As long as the vertex shader is executed once, the output color will be red.
         wgpu::RenderPipeline renderPipeline =
             CreateRenderPipelineForTest(R"(
-            [[location(0)]] var<out> o_color : vec4<f32>;
+            struct VertexOut {
+                [[location(0)]] color : vec4<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
 
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-                o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
-                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            [[stage(vertex)]] fn main() -> VertexOut {
+                var output : VertexOut;
+                output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return output;
             })",
                                         0 /* vertexBufferCount */);
 
@@ -375,13 +381,16 @@ class BufferZeroInitTest : public DawnTest {
         // As long as the vertex shader is executed once, the output color will be red.
         wgpu::RenderPipeline renderPipeline =
             CreateRenderPipelineForTest(R"(
-            [[location(0)]] var<out> o_color : vec4<f32>;
+            struct VertexOut {
+                [[location(0)]] color : vec4<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
 
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-                o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
-                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            [[stage(vertex)]] fn main() -> VertexOut {
+                var output : VertexOut;
+                output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return output;
             })",
                                         0 /* vertexBufferCount */);
         wgpu::Buffer indexBuffer =
@@ -418,7 +427,7 @@ class BufferZeroInitTest : public DawnTest {
         const char* computeShader = R"(
             [[group(0), binding(0)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
-            [[stage(compute)]] fn main() -> void {
+            [[stage(compute)]] fn main() {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             })";
 
@@ -990,7 +999,7 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
         [[group(0), binding(0)]] var<uniform> ubo : UBO;
         [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             if (all(ubo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
@@ -1029,7 +1038,7 @@ TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
         [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             if (all(ssbo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
@@ -1068,7 +1077,7 @@ TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
         [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
         [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
             if (all(ssbo.value[0] == vec4<u32>(0u, 0u, 0u, 0u)) &&
                 all(ssbo.value[1] == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
@@ -1186,9 +1195,6 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDispatchIndirect) {
 
 // Test the buffer will be lazily initialized correctly when its first use is in resolveQuerySet
 TEST_P(BufferZeroInitTest, ResolveQuerySet) {
-    // TODO(crbug.com/tint/682): error: runtime array not supported yet
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
     // Timestamp query is not supported on OpenGL
     DAWN_SKIP_TEST_IF(IsOpenGL());
 

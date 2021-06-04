@@ -50,7 +50,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2021-08-22">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2021-10-25">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -64,7 +64,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2021-08-29">
+    enum="WebSchedulerTrackedFeature" expires_after="2021-10-31">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -81,7 +81,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -143,7 +143,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2021-08-15">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -157,9 +157,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="BackForwardCache.CountEntriesWithoutRendererAck" units="count"
+    expires_after="2021-10-01">
+  <owner>yuzus@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    This metric is emitted when we try to enforce the cache size limit, which is
+    1) when a page enters BackForwardCache and 2) when a page entering
+    BackForwardCache receives an acknowledgement from the renderer.
+
+    This reports the number of the entries that have not received an
+    acknowledgement from the renderer.
+  </summary>
+</histogram>
+
 <histogram name="BackForwardCache.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -243,7 +257,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2021-08-15">
+    enum="WebSchedulerTrackedFeature" expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -261,7 +275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -324,7 +338,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2021-08-15">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2021-10-17">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -708,7 +722,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.HTTPS" units="ms"
-    expires_after="M94">
+    expires_after="2021-10-31">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -717,7 +731,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Navigation.EngagementTime.Ratio" units="%" expires_after="M94">
+<histogram name="Navigation.EngagementTime.Ratio" units="%"
+    expires_after="2021-10-31">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -786,7 +801,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.IsSameBrowsingInstance"
-    enum="NavigationIsSameBrowsingInstance" expires_after="2021-08-09">
+    enum="NavigationIsSameBrowsingInstance" expires_after="2021-10-10">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
@@ -803,7 +818,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.IsSameSiteInstance"
-    enum="NavigationIsSameSiteInstance" expires_after="2021-09-12">
+    enum="NavigationIsSameSiteInstance" expires_after="2021-11-14">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
@@ -852,7 +867,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrame.SiteEngagementLevel"
-    enum="SiteEngagementLevel" expires_after="2021-08-09">
+    enum="SiteEngagementLevel" expires_after="2021-10-10">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -882,7 +897,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomainDifferentPage2" enum="Boolean"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -927,7 +942,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeDifferentPageOTR2"
-    enum="NavigationScheme" expires_after="2021-08-09">
+    enum="NavigationScheme" expires_after="2021-10-10">
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -1177,7 +1192,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.VerifyDidCommitParams"
-    enum="VerifyDidCommitParamsDifference" expires_after="2021-08-22">
+    enum="VerifyDidCommitParamsDifference" expires_after="2021-10-25">
   <owner>rakina@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -1191,6 +1206,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="NavigationPredictor.ActionTaken"
     enum="NavigationPredictorActionTaken" expires_after="M85">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <summary>
     Tracks action taken by navigation predictor. Recorded at the time of page
@@ -1200,6 +1218,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="NavigationPredictor.CountOfStartedPrerenders"
     units="count" expires_after="M85">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -1211,6 +1232,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="NavigationPredictor.CountOfURLsAboveThreshold"
     units="count" expires_after="M85">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -1222,6 +1246,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="NavigationPredictor.CountOfURLsInPredictedSet"
     units="count" expires_after="M89">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -1233,6 +1260,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NavigationPredictor.ExternalAndroidApp.CountPredictedURLs"
     units="Count" expires_after="2021-07-26">
+  <obsolete>
+    Predictions from external Android apps are no longer supported. Removed
+    2021/04.
+  </obsolete>
   <owner>sophiechang@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -1244,6 +1275,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NavigationPredictor.IsPubliclyRoutable" enum="Boolean"
     expires_after="2021-08-22">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -1255,6 +1289,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="NavigationPredictor.LinkClickedPrerenderResult"
     enum="NavigationPredictorLinkClickedPrerenderResult" expires_after="M85">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -1267,6 +1304,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="NavigationPredictor.SearchEnginePreconnector.IsBrowserAppLikelyInForeground"
     enum="BooleanForeground" expires_after="M95">
+  <obsolete>
+    Removed 04/2020.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -1314,7 +1354,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NavigationSuggestion.Event2" enum="NavigationSuggestionEvent"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>

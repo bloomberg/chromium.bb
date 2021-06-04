@@ -47,6 +47,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -442,7 +443,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
 }
 
 void OverviewItem::CloseWindow() {
-  SetShadowBounds(base::nullopt);
+  SetShadowBounds(absl::nullopt);
 
   gfx::RectF inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
@@ -645,7 +646,7 @@ void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
         transform_window_.IsMinimized()
             ? std::make_unique<DragWindowController>(
                   item_widget_->GetNativeWindow(), is_touch_dragging,
-                  base::make_optional(shadow_->content_bounds()))
+                  absl::make_optional(shadow_->content_bounds()))
             : std::make_unique<DragWindowController>(GetWindow(),
                                                      is_touch_dragging);
   }
@@ -657,7 +658,7 @@ void OverviewItem::DestroyPhantomsForDragging() {
 }
 
 void OverviewItem::SetShadowBounds(
-    base::Optional<gfx::RectF> bounds_in_screen) {
+    absl::optional<gfx::RectF> bounds_in_screen) {
   // Shadow is normally turned off during animations and reapplied when they
   // are finished. On destruction, |shadow_| is cleaned up before
   // |transform_window_|, which may call this function, so early exit if
@@ -714,9 +715,9 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
     const gfx::RectF shadow_bounds = unclipped_size_
                                          ? GetWindowTargetBoundsWithInsets()
                                          : GetUnclippedShadowBounds();
-    SetShadowBounds(base::make_optional(shadow_bounds));
+    SetShadowBounds(absl::make_optional(shadow_bounds));
   } else {
-    SetShadowBounds(base::nullopt);
+    SetShadowBounds(absl::nullopt);
   }
 }
 
@@ -1053,7 +1054,7 @@ void OverviewItem::OnItemBoundsAnimationStarted() {
   // performance. The shadow will be added back once the animation is completed.
   // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
   // to update the rounded corners.
-  SetShadowBounds(base::nullopt);
+  SetShadowBounds(absl::nullopt);
 }
 
 void OverviewItem::OnItemBoundsAnimationEnded() {
@@ -1192,8 +1193,7 @@ void OverviewItem::CreateItemWidget() {
   params.visible_on_all_workspaces = true;
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.name = "OverviewModeLabel";
-  params.activatable =
-      views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
+  params.activatable = views::Widget::InitParams::Activatable::kDefault;
   params.accept_events = true;
   params.parent = transform_window_.window()->parent();
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);

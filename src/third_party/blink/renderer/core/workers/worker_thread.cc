@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
@@ -167,7 +166,7 @@ WorkerThread::~WorkerThread() {
 
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
-    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    const absl::optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   devtools_worker_token_ = devtools_params->devtools_worker_token;
@@ -580,6 +579,7 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
       TaskType::kUserInteraction,
       TaskType::kWakeLock,
       TaskType::kWebGL,
+      TaskType::kWebGPU,
       TaskType::kWebLocks,
       TaskType::kWebSocket,
       TaskType::kWorkerAnimation};
@@ -594,7 +594,7 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 
 void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
-    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    const absl::optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK(IsCurrentThread());
   worker_reporting_proxy_.WillInitializeWorkerContext();
@@ -617,7 +617,6 @@ void WorkerThread::InitializeOnWorkerThread(
     const KURL url_for_debugger = global_scope_creation_params->script_url;
 
     console_message_storage_ = MakeGarbageCollected<ConsoleMessageStorage>();
-    inspector_issue_storage_ = MakeGarbageCollected<InspectorIssueStorage>();
     global_scope_ =
         CreateWorkerGlobalScope(std::move(global_scope_creation_params));
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());

@@ -51,8 +51,11 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void EndUpdateLayers() override {}
   void UpdateVisualState() override {}
   void WillBeginMainFrame() override {}
+  void RunPaintBenchmark(int repeat_count,
+                         cc::PaintBenchmarkResult& result) override {}
+  void ScheduleAnimationForWebTests() override {}
 };
 
 }  // namespace blink
 
-#endif  // _THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_COMPOSITING_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_COMPOSITING_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_

@@ -9,14 +9,15 @@
 
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 struct WebApplicationInfo;
@@ -33,6 +34,12 @@ namespace web_app {
 bool HaveFileHandlersChanged(
     const apps::FileHandlers* old_handlers,
     const std::vector<blink::Manifest::FileHandler>& new_handlers);
+
+// Checks whether protocol handlers have changed. Ignores differences in
+// ordering, which may change after being inserted into a set or map.
+bool HaveProtocolHandlersChanged(
+    const apps::ProtocolHandlers* old_handlers,
+    const std::vector<blink::Manifest::ProtocolHandler>& new_handlers);
 
 class AppIconManager;
 class AppRegistrar;
@@ -146,8 +153,8 @@ class ManifestUpdateTask final
   OsIntegrationManager& os_integration_manager_;
 
   Stage stage_;
-  base::Optional<WebApplicationInfo> web_application_info_;
-  base::Optional<WebAppIconDownloader> icon_downloader_;
+  absl::optional<WebApplicationInfo> web_application_info_;
+  absl::optional<WebAppIconDownloader> icon_downloader_;
 
   const GURL url_;
   const AppId app_id_;

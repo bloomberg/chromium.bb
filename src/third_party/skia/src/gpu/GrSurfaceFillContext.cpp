@@ -95,7 +95,7 @@ std::unique_ptr<GrSurfaceFillContext> GrSurfaceFillContext::Make(GrRecordingCont
                                           writeSwizzle,
                                           origin,
                                           budgeted,
-                                          /* surface props*/ nullptr);
+                                          SkSurfaceProps());
     }
 
     sk_sp<GrTextureProxy> proxy = context->priv().proxyProvider()->createProxy(format,
@@ -134,12 +134,12 @@ std::unique_ptr<GrSurfaceFillContext> GrSurfaceFillContext::Make(GrRecordingCont
                                           info.refColorSpace(),
                                           fit,
                                           info.dimensions(),
+                                          SkSurfaceProps(),
                                           sampleCount,
                                           mipmapped,
                                           isProtected,
                                           origin,
-                                          budgeted,
-                                          nullptr);
+                                          budgeted);
     }
     GrBackendFormat format = context->priv().caps()->getDefaultBackendFormat(info.colorType(),
                                                                              GrRenderable::kYes);
@@ -182,12 +182,12 @@ std::unique_ptr<GrSurfaceFillContext> GrSurfaceFillContext::MakeWithFallback(
                                                       info.refColorSpace(),
                                                       fit,
                                                       info.dimensions(),
+                                                      SkSurfaceProps(),
                                                       sampleCount,
                                                       mipmapped,
                                                       isProtected,
                                                       origin,
-                                                      budgeted,
-                                                      nullptr);
+                                                      budgeted);
     }
     auto [ct, _] = GetFallbackColorTypeAndFormat(context, info.colorType(), sampleCount);
     if (ct == GrColorType::kUnknown) {
@@ -220,7 +220,7 @@ std::unique_ptr<GrSurfaceFillContext> GrSurfaceFillContext::MakeFromBackendTextu
                                                             tex,
                                                             sampleCount,
                                                             origin,
-                                                            nullptr,
+                                                            SkSurfaceProps(),
                                                             std::move(releaseHelper));
     }
     const GrBackendFormat& format = tex.getBackendFormat();
@@ -291,10 +291,7 @@ void GrSurfaceFillContext::addDrawOp(GrOp::Owner owner) {
     GrClampType clampType = GrColorTypeClampType(this->colorInfo().colorType());
     auto clip = GrAppliedClip::Disabled();
     const GrCaps& caps = *this->caps();
-    GrProcessorSet::Analysis analysis = op->finalize(caps,
-                                                     &clip,
-                                                     /*mixed sample coverage*/ false,
-                                                     clampType);
+    GrProcessorSet::Analysis analysis = op->finalize(caps, &clip, clampType);
     SkASSERT(!(op->fixedFunctionFlags() & GrDrawOp::FixedFunctionFlags::kUsesStencil));
     SkASSERT(!analysis.requiresDstTexture());
     SkRect bounds = owner->bounds();
@@ -309,6 +306,7 @@ void GrSurfaceFillContext::addDrawOp(GrOp::Owner owner) {
     GrXferProcessor::DstProxyView dstProxyView;
     this->getOpsTask()->addDrawOp(fContext->priv().drawingManager(),
                                   std::move(owner),
+                                  op->fixedFunctionFlags(),
                                   analysis,
                                   std::move(clip),
                                   dstProxyView,
@@ -342,11 +340,9 @@ GrOpsTask* GrSurfaceFillContext::getOpsTask() {
     SkDEBUGCODE(this->validate();)
 
     if (!fOpsTask || fOpsTask->isClosed()) {
-        sk_sp<GrOpsTask> newOpsTask = this->drawingManager()->newOpsTask(this->writeSurfaceView(),
-                                                                         fFlushTimeOpsTask);
-        if (fOpsTask) {
-            this->willReplaceOpsTask(fOpsTask.get(), newOpsTask.get());
-        }
+        sk_sp<GrOpsTask> newOpsTask = this->drawingManager()->newOpsTask(
+                this->writeSurfaceView(), this->arenas(), fFlushTimeOpsTask);
+        this->willReplaceOpsTask(fOpsTask.get(), newOpsTask.get());
         fOpsTask = std::move(newOpsTask);
     }
     SkASSERT(!fOpsTask->isClosed());

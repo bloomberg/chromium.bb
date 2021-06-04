@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/optional.h"
-#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace assistant {

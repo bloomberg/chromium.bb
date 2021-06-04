@@ -3,12 +3,15 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/chromeos/rules.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("./tast_control.gni")
+
+if (is_chromeos_device) {
+  import("//build/config/chromeos/rules.gni")
+}
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
@@ -27,7 +30,7 @@ declare_args() {
 
 component("chromeos") {
   public_deps = []
-  deps = []
+  deps = [ "//chromeos/crosapi/mojom" ]
   sources = []
 
   if (is_chromeos_ash) {
@@ -175,12 +178,14 @@ test("chromeos_unittests") {
       ":test_support",
       "//chromeos/attestation:unit_tests",
       "//chromeos/crosapi/cpp:unit_tests",
+      "//chromeos/crosapi/mojom:unit_tests",
       "//chromeos/cryptohome:unit_tests",
       "//chromeos/dbus:test_support",
       "//chromeos/dbus:unit_tests",
       "//chromeos/dbus/services:unit_tests",
       "//chromeos/disks:unit_tests",
       "//chromeos/geolocation:unit_tests",
+      "//chromeos/language/language_packs:unit_tests",
       "//chromeos/login/auth:unit_tests",
       "//chromeos/login/login_state:unit_tests",
       "//chromeos/login/session:unit_tests",

@@ -4,7 +4,7 @@
 
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 
 namespace media {
@@ -24,7 +24,7 @@ CameraBufferFactory::CreateGpuMemoryBuffer(const gfx::Size& size,
     return nullptr;
   }
   return buf_manager->CreateGpuMemoryBuffer(size, format, usage,
-                                            gpu::kNullSurfaceHandle);
+                                            gpu::kNullSurfaceHandle, nullptr);
 }
 
 // There's no good way to resolve the HAL pixel format to the platform-specific

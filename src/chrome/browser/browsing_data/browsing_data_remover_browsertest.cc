@@ -86,7 +86,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -288,7 +287,7 @@ bool SetGaiaCookieForProfile(Profile* profile) {
         loop.Quit();
       });
   network::mojom::CookieManager* cookie_manager =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetCookieManagerForBrowserProcess();
   cookie_manager->SetCanonicalCookie(*cookie, google_url,
                                      net::CookieOptions::MakeAllInclusive(),
@@ -304,8 +303,7 @@ class BrowsingDataRemoverBrowserTest
     : public BrowsingDataRemoverBrowserTestBase {
  public:
   BrowsingDataRemoverBrowserTest() {
-    std::vector<base::Feature> enabled_features = {
-        leveldb::kLevelDBRewriteFeature};
+    std::vector<base::Feature> enabled_features = {};
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif
@@ -328,8 +326,7 @@ class BrowsingDataRemoverBrowserTest
                      base::Time delete_begin,
                      base::Time delete_end) {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(
-            GetBrowser()->profile());
+        GetBrowser()->profile()->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
         delete_begin, delete_end, remove_mask,
@@ -342,8 +339,7 @@ class BrowsingDataRemoverBrowserTest
       uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(
-            GetBrowser()->profile());
+        GetBrowser()->profile()->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveWithFilterAndReply(
         base::Time(), base::Time::Max(), remove_mask,
@@ -401,8 +397,7 @@ class BrowsingDataRemoverBrowserTest
     base::RunLoop run_loop;
     int count = -1;
     content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        browser()->profile()->GetDefaultStoragePartition();
     scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper =
         BrowsingDataMediaLicenseHelper::Create(
             partition->GetFileSystemContext());
@@ -437,8 +432,9 @@ class BrowsingDataRemoverBrowserTest
   }
 
   network::mojom::NetworkContext* network_context() const {
-    return content::BrowserContext::GetDefaultStoragePartition(
-               GetBrowser()->profile())
+    return GetBrowser()
+        ->profile()
+        ->GetDefaultStoragePartition()
         ->GetNetworkContext();
   }
 
@@ -460,7 +456,7 @@ class BrowsingDataRemoverBrowserTest
   std::unique_ptr<CookiesTreeModel> GetCookiesTreeModel() {
     Profile* profile = GetBrowser()->profile();
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile);
+        profile->GetDefaultStoragePartition();
     content::ServiceWorkerContext* service_worker_context =
         storage_partition->GetServiceWorkerContext();
     storage::FileSystemContext* file_system_context =
@@ -519,7 +515,8 @@ class DiceBrowsingDataRemoverBrowserTest
     if (is_primary) {
       DCHECK(!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
       return signin::MakePrimaryAccountAvailable(identity_manager,
-                                                 account_id + "@gmail.com");
+                                                 account_id + "@gmail.com",
+                                                 signin::ConsentLevel::kSync);
     }
     auto account_info =
         signin::MakeAccountAvailable(identity_manager, account_id);

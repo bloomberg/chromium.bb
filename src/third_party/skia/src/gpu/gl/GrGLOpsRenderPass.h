@@ -30,7 +30,7 @@ public:
         state->doUpload(upload);
     }
 
-    void set(GrRenderTarget*, const SkIRect& contentBounds, GrSurfaceOrigin,
+    void set(GrRenderTarget*, bool useMSAASurface, const SkIRect& contentBounds, GrSurfaceOrigin,
              const LoadAndStoreInfo&, const StencilLoadAndStoreInfo&);
 
     void reset() {
@@ -77,7 +77,9 @@ private:
     void onClear(const GrScissorState& scissor, std::array<float, 4> color) override;
     void onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) override;
 
-    GrGLGpu* fGpu;
+    GrGLGpu* const fGpu;
+
+    bool fUseMultisampleFBO;
     SkIRect fContentBounds;
     LoadAndStoreInfo fColorLoadAndStoreInfo;
     StencilLoadAndStoreInfo fStencilLoadAndStoreInfo;

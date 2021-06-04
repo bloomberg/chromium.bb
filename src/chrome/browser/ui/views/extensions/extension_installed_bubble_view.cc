@@ -12,6 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
@@ -30,15 +31,15 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
@@ -78,20 +79,17 @@ views::View* AnchorViewForBrowser(const ExtensionInstalledBubbleModel* model,
   return reference_view;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 std::unique_ptr<views::View> CreateSigninPromoView(
     Profile* profile,
     BubbleSyncPromoDelegate* delegate) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeOS does not show the signin promo.
-  return nullptr;
-#else
   return std::make_unique<DiceBubbleSyncPromoView>(
       profile, delegate,
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
       IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE,
       /*dice_signin_button_prominent=*/true);
-#endif
 }
+#endif
 
 }  // namespace
 
@@ -172,7 +170,10 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   if (model_->show_sign_in_promo()) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    // Promo view requires DICE, so show it only if DICE support is enabled.
     SetFootnoteView(CreateSigninPromoView(browser->profile(), this));
+#endif
   }
   SetIcon(model_->MakeIconOfSize(kMaxIconSize));
   SetShowIcon(true);

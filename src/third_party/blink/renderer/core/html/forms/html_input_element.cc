@@ -624,17 +624,17 @@ bool HTMLInputElement::CanStartSelection() const {
   return TextControlElement::CanStartSelection();
 }
 
-base::Optional<uint32_t> HTMLInputElement::selectionStartForBinding(
+absl::optional<uint32_t> HTMLInputElement::selectionStartForBinding(
     ExceptionState& exception_state) const {
   if (!input_type_->SupportsSelectionAPI())
-    return base::nullopt;
+    return absl::nullopt;
   return TextControlElement::selectionStart();
 }
 
-base::Optional<uint32_t> HTMLInputElement::selectionEndForBinding(
+absl::optional<uint32_t> HTMLInputElement::selectionEndForBinding(
     ExceptionState& exception_state) const {
   if (!input_type_->SupportsSelectionAPI())
-    return base::nullopt;
+    return absl::nullopt;
   return TextControlElement::selectionEnd();
 }
 
@@ -647,7 +647,7 @@ String HTMLInputElement::selectionDirectionForBinding(
 }
 
 void HTMLInputElement::setSelectionStartForBinding(
-    base::Optional<uint32_t> start,
+    absl::optional<uint32_t> start,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -660,7 +660,7 @@ void HTMLInputElement::setSelectionStartForBinding(
 }
 
 void HTMLInputElement::setSelectionEndForBinding(
-    base::Optional<uint32_t> end,
+    absl::optional<uint32_t> end,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -1024,6 +1024,10 @@ void HTMLInputElement::DispatchInputAndChangeEventIfNeeded() {
   }
 }
 
+bool HTMLInputElement::IsCheckable() const {
+  return input_type_->IsCheckable();
+}
+
 bool HTMLInputElement::checked() const {
   input_type_->ReadingChecked();
   return is_checked_;
@@ -1246,7 +1250,7 @@ void HTMLInputElement::UpdateView() {
 ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
   UseCounter::Count(GetDocument(), WebFeature::kInputElementValueAsDateGetter);
   // TODO(crbug.com/988343): InputType::ValueAsDate() should return
-  // base::Optional<base::Time>.
+  // absl::optional<base::Time>.
   double date = input_type_->ValueAsDate();
   v8::Isolate* isolate = script_state->GetIsolate();
   if (!std::isfinite(date))
@@ -1258,7 +1262,7 @@ void HTMLInputElement::setValueAsDate(ScriptState* script_state,
                                       const ScriptValue& value,
                                       ExceptionState& exception_state) {
   UseCounter::Count(GetDocument(), WebFeature::kInputElementValueAsDateSetter);
-  base::Optional<base::Time> date =
+  absl::optional<base::Time> date =
       NativeValueTraits<IDLNullable<IDLDate>>::NativeValue(
           script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException())
@@ -1614,11 +1618,11 @@ bool HTMLInputElement::IsRequiredFormControl() const {
 }
 
 bool HTMLInputElement::MatchesReadOnlyPseudoClass() const {
-  return input_type_->SupportsReadOnly() && IsReadOnly();
+  return !input_type_->SupportsReadOnly() || IsDisabledOrReadOnly();
 }
 
 bool HTMLInputElement::MatchesReadWritePseudoClass() const {
-  return input_type_->SupportsReadOnly() && !IsReadOnly();
+  return input_type_->SupportsReadOnly() && !IsDisabledOrReadOnly();
 }
 
 void HTMLInputElement::OnSearch() {
@@ -1850,7 +1854,7 @@ int HTMLInputElement::scrollHeight() {
 }
 
 bool HTMLInputElement::ShouldAppearChecked() const {
-  return checked() && input_type_->IsCheckable();
+  return checked() && IsCheckable();
 }
 
 void HTMLInputElement::SetPlaceholderVisibility(bool visible) {

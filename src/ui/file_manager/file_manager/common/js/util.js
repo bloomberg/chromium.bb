@@ -1465,27 +1465,11 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
- * Returns true when FilesNG is enabled.
- * @return {boolean}
- */
-util.isFilesNg = () => {
-  return true;
-};
-
-/**
  * Returns true when copy image to clipboard is enabled.
  * @return {boolean}
  */
 util.isCopyImageEnabled = () => {
   return loadTimeData.getBoolean('COPY_IMAGE_ENABLED');
-};
-
-/**
- * Returns true if the unified media view is enabled.
- * @return {boolean}
- */
-util.isUnifiedMediaViewEnabled = () => {
-  return loadTimeData.getBoolean('UNIFIED_MEDIA_VIEW_ENABLED');
 };
 
 /**
@@ -1529,22 +1513,6 @@ util.isZipUnpackEnabled = () => {
  */
 util.isSinglePartitionFormatEnabled = () => {
   return loadTimeData.getBoolean('FILES_SINGLE_PARTITION_FORMAT_ENABLED');
-};
-
-/**
- * Returns true if  flag is enabled.
- * @return {boolean}
- */
-util.isFilesJsModulesEnabled = () => {
-  return loadTimeData.getBoolean('FILES_JS_MODULES_ENABLED');
-};
-
-/**
- * Returns true if  flag is enabled.
- * @return {boolean}
- */
-util.isAudioPlayerJsModulesEnabled = () => {
-  return loadTimeData.getBoolean('AUDIO_PLAYER_JS_MODULES_ENABLED');
 };
 
 /**

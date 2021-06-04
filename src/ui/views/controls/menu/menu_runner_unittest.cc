@@ -266,7 +266,7 @@ TEST_F(MenuRunnerTest, PrefixSelect) {
 
 // This test is Mac-specific: Mac is the only platform where VKEY_SPACE
 // activates menu items.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 TEST_F(MenuRunnerTest, SpaceActivatesItem) {
   if (!MenuConfig::instance().all_menus_use_prefix_selection)
     return;
@@ -291,7 +291,7 @@ TEST_F(MenuRunnerTest, SpaceActivatesItem) {
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 // Tests that attempting to nest a menu within a drag-and-drop menu does not
 // cause a crash. Instead the drag and drop action should be canceled, and the
@@ -403,6 +403,7 @@ TEST_F(MenuRunnerWidgetTest, WidgetDoesntTakeCapture) {
             internal::NativeWidgetPrivate::GetGlobalCapture(
                 widget()->GetNativeView()));
   auto generator(EventGeneratorForWidget(widget()));
+  generator->MoveMouseTo(widget()->GetClientAreaBoundsInScreen().CenterPoint());
   // Implicit capture should not be held by |widget|.
   generator->PressLeftButton();
   EXPECT_EQ(1, event_count_view()->GetEventCount(ui::ET_MOUSE_PRESSED));
@@ -435,7 +436,7 @@ TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
 
   // Click on the first view to show the menu.
   auto generator(EventGeneratorForWidget(widget()));
-  generator->MoveMouseTo(event_count_view()->bounds().CenterPoint());
+  generator->MoveMouseTo(event_count_view()->GetBoundsInScreen().CenterPoint());
   generator->PressLeftButton();
 
   // Pretend we dismissed the menu using normal means, as it doesn't matter.
@@ -449,7 +450,8 @@ TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
   generator.reset();
   generator = EventGeneratorForWidget(widget());
 
-  generator->MoveMouseTo(second_event_count_view->bounds().CenterPoint());
+  generator->MoveMouseTo(
+      second_event_count_view->GetBoundsInScreen().CenterPoint());
   generator->PressLeftButton();
   EXPECT_EQ(1, second_event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
 }

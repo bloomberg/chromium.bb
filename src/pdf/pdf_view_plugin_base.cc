@@ -26,7 +26,6 @@
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -46,13 +45,19 @@
 #include "pdf/ui/document_properties.h"
 #include "pdf/ui/file_name.h"
 #include "pdf/ui/thumbnail.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/skia_util.h"
 
 namespace chrome_pdf {
@@ -361,6 +366,36 @@ void PdfViewPluginBase::DocumentFocusChanged(bool document_has_focus) {
   message.SetStringKey("type", "documentFocusChanged");
   message.SetBoolKey("hasFocus", document_has_focus);
   SendMessage(std::move(message));
+}
+
+// TODO(crbug.com/1191817): Add tests for input events. Unit testing should be
+// feasible now that the Pepper dependency is removed for input events.
+bool PdfViewPluginBase::HandleInputEvent(const blink::WebInputEvent& event) {
+  // Ignore user input in read-only mode.
+  if (engine()->IsReadOnly())
+    return false;
+
+  // `engine()` expects input events in device coordinates.
+  std::unique_ptr<blink::WebInputEvent> transformed_event =
+      ui::TranslateAndScaleWebInputEvent(
+          event, gfx::Vector2dF(-available_area_.x() / device_scale_, 0),
+          device_scale_);
+
+  const blink::WebInputEvent& event_to_handle =
+      transformed_event ? *transformed_event : event;
+
+  if (engine()->HandleInputEvent(event_to_handle))
+    return true;
+
+  // Middle click is used for scrolling and is handled by the container page.
+  if (blink::WebInputEvent::IsMouseEventType(event_to_handle.GetType()) &&
+      static_cast<const blink::WebMouseEvent&>(event_to_handle).button ==
+          blink::WebPointerProperties::Button::kMiddle) {
+    return false;
+  }
+
+  // Return true for unhandled clicks so the plugin takes focus.
+  return event_to_handle.GetType() == blink::WebInputEvent::Type::kMouseDown;
 }
 
 void PdfViewPluginBase::HandleMessage(const base::Value& message) {
@@ -707,7 +742,7 @@ void PdfViewPluginBase::HandleGetNamedDestinationMessage(
       message.FindStringKey("namedDestination");
   CHECK(destination_name);
 
-  base::Optional<PDFEngine::NamedDestination> named_destination =
+  absl::optional<PDFEngine::NamedDestination> named_destination =
       engine()->GetNamedDestination(*destination_name);
 
   const int page_number = named_destination.has_value()

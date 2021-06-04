@@ -27,7 +27,7 @@ namespace dawn_native {
         RenderPassEncoder(DeviceBase* device,
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
-                          PassResourceUsageTracker usageTracker,
+                          RenderPassResourceUsageTracker usageTracker,
                           Ref<AttachmentState> attachmentState,
                           QuerySetBase* occlusionQuerySet,
                           uint32_t renderTargetWidth,
@@ -40,7 +40,8 @@ namespace dawn_native {
         void APIEndPass();
 
         void APISetStencilReference(uint32_t reference);
-        void APISetBlendColor(const Color* color);
+        void APISetBlendConstant(const Color* color);
+        void APISetBlendColor(const Color* color);  // Deprecated
         void APISetViewport(float x,
                             float y,
                             float width,

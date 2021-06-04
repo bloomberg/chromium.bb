@@ -56,7 +56,7 @@ sk_sp<GrTextureProxy> GrDynamicAtlas::MakeLazyAtlasProxy(
     GrBackendFormat format = caps.getDefaultBackendFormat(colorType, GrRenderable::kYes);
 
     int sampleCount = 1;
-    if (!caps.mixedSamplesSupport() && InternalMultisample::kYes == internalMultisample) {
+    if (InternalMultisample::kYes == internalMultisample) {
         sampleCount = caps.internalMultisampleCount(format);
     }
 
@@ -190,7 +190,7 @@ std::unique_ptr<GrSurfaceDrawContext> GrDynamicAtlas::instantiate(
         fBackingTexture = std::move(backingTexture);
     }
     auto rtc = onFlushRP->makeRenderTargetContext(fTextureProxy, kTextureOrigin, fColorType,
-                                                  nullptr, nullptr);
+                                                  nullptr, SkSurfaceProps());
     if (!rtc) {
         onFlushRP->printWarningMessage(SkStringPrintf(
                 "WARNING: failed to allocate a %ix%i atlas. Some masks will not be drawn.\n",

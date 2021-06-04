@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1837,8 +1838,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(service->pending_extension_manager()
-                  ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  EXPECT_TRUE(
+      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
+          kGoodCrxId));
   registry_observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1920,8 +1922,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(service->pending_extension_manager()
-                  ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  EXPECT_TRUE(
+      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
+          kGoodCrxId));
   observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1995,8 +1998,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are not going to reinstall the extension, but we have
   // detected a corruption.
-  EXPECT_FALSE(service->pending_extension_manager()
-                   ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  EXPECT_FALSE(
+      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
+          kGoodCrxId));
   histogram_tester.ExpectUniqueSample(
       "Extensions.CorruptPolicyExtensionDetected3",
       extensions::PendingExtensionManager::PolicyReinstallReason::
@@ -2248,7 +2252,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
 
   // As long as the policy is not present, extensions are considered dangerous.
   content::DownloadTestObserverTerminal download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+      browser()->profile()->GetDownloadManager(), 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY);
   PerformClick(0, 0);
   download_observer.WaitForFinished();
@@ -2515,7 +2519,7 @@ class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
  protected:
   std::string test_page_;
   GURL policy_app_url_;
-  base::Optional<std::string> fallback_app_name_;
+  absl::optional<std::string> fallback_app_name_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
@@ -2523,7 +2527,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
           ->registrar();
   web_app::WebAppInstallObserver install_observer(browser()->profile());
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.AwaitNextInstall();
@@ -2555,7 +2559,7 @@ IN_PROC_BROWSER_TEST_F(
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
           ->registrar();
   web_app::WebAppInstallObserver install_observer(browser()->profile());
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.AwaitNextInstall();
@@ -2587,7 +2591,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicySAATest,
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
           ->registrar();
   web_app::WebAppInstallObserver install_observer(browser()->profile());
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.AwaitNextInstall();
@@ -2616,7 +2620,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyWithAppFallbackNameSAATest,
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
           ->registrar();
   web_app::WebAppInstallObserver install_observer(browser()->profile());
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.AwaitNextInstall();
@@ -2649,7 +2653,7 @@ IN_PROC_BROWSER_TEST_F(
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
           ->registrar();
   web_app::WebAppInstallObserver install_observer(browser()->profile());
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.AwaitNextInstall();

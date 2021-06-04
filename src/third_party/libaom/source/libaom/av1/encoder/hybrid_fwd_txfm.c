@@ -14,6 +14,7 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "av1/common/idct.h"
+#include "av1/common/blockd.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
 /* 4-point reversible, orthonormal Walsh-Hadamard in 3.5 adds, 0.5 shifts per
@@ -311,5 +312,28 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
       break;
 #endif
     default: assert(0); break;
+  }
+}
+
+void av1_quick_txfm(int use_hadamard, TX_SIZE tx_size, BitDepthInfo bd_info,
+                    const int16_t *src_diff, int src_stride,
+                    tran_low_t *coeff) {
+  if (use_hadamard) {
+    switch (tx_size) {
+      case TX_4X4: aom_hadamard_4x4(src_diff, src_stride, coeff); break;
+      case TX_8X8: aom_hadamard_8x8(src_diff, src_stride, coeff); break;
+      case TX_16X16: aom_hadamard_16x16(src_diff, src_stride, coeff); break;
+      case TX_32X32: aom_hadamard_32x32(src_diff, src_stride, coeff); break;
+      default: assert(0);
+    }
+  } else {
+    TxfmParam txfm_param;
+    txfm_param.tx_type = DCT_DCT;
+    txfm_param.tx_size = tx_size;
+    txfm_param.lossless = 0;
+    txfm_param.bd = bd_info.bit_depth;
+    txfm_param.is_hbd = bd_info.use_highbitdepth_buf;
+    txfm_param.tx_set_type = EXT_TX_SET_ALL16;
+    av1_fwd_txfm(src_diff, coeff, src_stride, &txfm_param);
   }
 }

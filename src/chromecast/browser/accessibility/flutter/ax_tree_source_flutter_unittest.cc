@@ -71,6 +71,7 @@ class MockTtsPlatformImpl : public TtsPlatform {
   const std::string& GetLastSpokenUtterance() { return last_spoken_utterance_; }
   void ClearLastSpokenUtterance() { last_spoken_utterance_ = ""; }
   void Shutdown() override {}
+  bool PreferEngineDelegateVoices() override { return false; }
 
  private:
   std::vector<VoiceData> voices_;
@@ -121,7 +122,7 @@ class MockAutomationEventRouter
               (override));
   void DispatchGetTextLocationDataResult(
       const ui::AXActionData& data,
-      const base::Optional<gfx::Rect>& rect) override {}
+      const absl::optional<gfx::Rect>& rect) override {}
 
   std::map<ax::mojom::Event, int> event_count_;
 };

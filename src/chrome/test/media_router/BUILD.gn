@@ -20,7 +20,6 @@ source_set("browser_tests") {
     "media_router_integration_browsertest.cc",
     "media_router_integration_browsertest.h",
     "media_router_integration_ui_browsertest.cc",
-    "media_router_native_integration_browsertest.cc",
     "media_router_one_ua_integration_browsertest.cc",
     "media_router_ui_for_test.cc",
     "media_router_ui_for_test.h",
@@ -51,10 +50,7 @@ source_set("browser_tests") {
     "//ui/views:test_support",
     "//url",
   ]
-  data_deps = [
-    ":browser_test_resources",
-    "//chrome/browser/resources/media_router/extension:media_router",
-  ]
+  data_deps = [ ":browser_test_resources" ]
 }
 
 copy("browser_test_resources") {
@@ -126,8 +122,6 @@ if (enable_downstream_media_tests) {
 source_set("test_support") {
   testonly = true
   sources = [
-    "media_router_base_browsertest.cc",
-    "media_router_base_browsertest.h",
     "test_media_sinks_observer.cc",
     "test_media_sinks_observer.h",
   ]

@@ -9,10 +9,9 @@
 #include <set>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
-#include "base/optional.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace performance_manager {
 namespace execution_context_priority {
@@ -74,6 +73,8 @@ class BoostingVote {
 class BoostingVoteAggregator : public VoteObserver {
  public:
   BoostingVoteAggregator();
+  BoostingVoteAggregator(const BoostingVoteAggregator&) = delete;
+  BoostingVoteAggregator& operator=(const BoostingVoteAggregator&) = delete;
   ~BoostingVoteAggregator() override;
 
   // Both of these must be called in order for the aggregator to be setup
@@ -137,7 +138,7 @@ class BoostingVoteAggregator : public VoteObserver {
     }
     void RemoveIncomingVote() {
       DCHECK(incoming_vote_.has_value());
-      incoming_vote_ = base::nullopt;
+      incoming_vote_ = absl::nullopt;
     }
     // Updates the incoming vote.
     void UpdateIncomingVote(const Vote& incoming_vote) {
@@ -152,7 +153,7 @@ class BoostingVoteAggregator : public VoteObserver {
     }
     void CancelOutgoingVote() {
       DCHECK(outgoing_vote_.has_value());
-      outgoing_vote_ = base::nullopt;
+      outgoing_vote_ = absl::nullopt;
     }
     // Updates the outgoing vote. Returns true if it changed.
     bool UpdateOutgoingVote(const Vote& outgoing_vote) {
@@ -192,10 +193,10 @@ class BoostingVoteAggregator : public VoteObserver {
     size_t edge_count_ = 0;
 
     // The input vote we've received, if any.
-    base::Optional<Vote> incoming_vote_;
+    absl::optional<Vote> incoming_vote_;
 
     // The output vote we're emitted, if any.
-    base::Optional<Vote> outgoing_vote_;
+    absl::optional<Vote> outgoing_vote_;
   };
 
   // NOTE: It is important that NodeDataMap preserve pointers to NodeData
@@ -397,8 +398,6 @@ class BoostingVoteAggregator : public VoteObserver {
   // NodeData.
   ForwardEdges forward_edges_;
   ReverseEdges reverse_edges_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoostingVoteAggregator);
 };
 
 }  // namespace execution_context_priority

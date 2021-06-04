@@ -545,7 +545,7 @@ de::MovePtr<BufferWithMemory> RayTracingBuildIndirectTestInstance::runTest (cons
 																				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL,
 																				**image, imageSubresourceRange);
 	const VkMemoryBarrier				postTraceMemoryBarrier				= makeMemoryBarrier(VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
-	const VkMemoryBarrier				postCopyMemoryBarrier				= makeMemoryBarrier(VK_ACCESS_TRANSFER_READ_BIT, 0);
+	const VkMemoryBarrier				postCopyMemoryBarrier				= makeMemoryBarrier(VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT);
 	const VkClearValue					clearValue							= makeClearValueColorU32(5u, 5u, 5u, 255u);
 	const deUint32						indirectAccelerationStructureStride	= sizeof(VkAccelerationStructureBuildRangeInfoKHR);
 
@@ -632,7 +632,7 @@ VkBuffer	RayTracingBuildIndirectTestInstance::initIndirectBottomAccelerationStru
 {
 	VkBuffer result	= DE_NULL;
 
-	m_indirectAccelerationStructureBottom	= prepareBuffer(sizeof(VkAccelerationStructureBuildRangeInfoKHR), "wr-asb");
+	m_indirectAccelerationStructureBottom	= prepareBuffer(sizeof(VkAccelerationStructureBuildRangeInfoKHR) * m_data.geometriesGroupCount, "wr-asb");
 	result									= **m_indirectAccelerationStructureBottom;
 
 	return result;

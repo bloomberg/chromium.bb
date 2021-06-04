@@ -9,5 +9,5 @@ struct Params {
 var<uniform> u : Params;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

@@ -8,6 +8,9 @@
       "--spec",
       "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'string_var': 'string_val', 'true_var': True}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
     ],
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -35,6 +38,9 @@
       "--output-json",
       "/path/to/tmp/json"
     ],
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -64,6 +70,9 @@
       "user.name",
       "local_bot"
     ],
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -83,6 +92,9 @@
       "user.email",
       "local_bot@example.com"
     ],
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -101,6 +113,9 @@
       "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'Angle', 'url': 'https://chromium.googlesource.com/angle/angle.git'}]"
     ],
     "cwd": "[START_DIR]/src/third_party",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -131,6 +146,9 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[START_DIR]/src/third_party",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -165,6 +183,9 @@
       "local_bot"
     ],
     "cwd": "[START_DIR]/src/third_party",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -185,6 +206,9 @@
       "local_bot@example.com"
     ],
     "cwd": "[START_DIR]/src/third_party",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -225,6 +249,9 @@
       "runhooks"
     ],
     "cwd": "[START_DIR]/src",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/try/builder/8945511751514863184"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"

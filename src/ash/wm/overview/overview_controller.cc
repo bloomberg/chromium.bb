@@ -32,6 +32,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -447,7 +448,7 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
       OnStartingAnimationComplete(/*canceled=*/false);
 
     if (!last_overview_session_time_.is_null()) {
-      UMA_HISTOGRAM_LONG_TIMES("Ash.WindowSelector.TimeBetweenUse",
+      UMA_HISTOGRAM_LONG_TIMES("Ash.Overview.TimeBetweenUse",
                                base::Time::Now() - last_overview_session_time_);
     }
   }

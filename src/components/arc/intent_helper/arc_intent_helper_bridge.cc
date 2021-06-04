@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -25,6 +24,7 @@
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
 #include "url/url_constants.h"
 
@@ -91,7 +91,13 @@ ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
 }
 
 // static
-KeyedServiceBaseFactory* ArcIntentHelperBridge::GetFactory() {
+ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcIntentHelperBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
+// static
+BrowserContextKeyedServiceFactory* ArcIntentHelperBridge::GetFactory() {
   return ArcIntentHelperBridgeFactory::GetInstance();
 }
 
@@ -143,7 +149,7 @@ void ArcIntentHelperBridge::OnIntentFiltersUpdated(
     intent_filters_[filter.package_name()].push_back(std::move(filter));
 
   for (auto& observer : observer_list_)
-    observer.OnIntentFiltersUpdated(base::nullopt);
+    observer.OnIntentFiltersUpdated(absl::nullopt);
 }
 
 void ArcIntentHelperBridge::OnOpenDownloads() {
@@ -301,6 +307,24 @@ void ArcIntentHelperBridge::OnPreferredAppsChanged(
   deleted_preferred_apps_ = std::move(deleted);
   for (auto& observer : observer_list_)
     observer.OnPreferredAppsChanged();
+}
+
+void ArcIntentHelperBridge::OnDownloadAdded(
+    const std::string& relative_path_as_string,
+    const std::string& owner_package_name) {
+  const base::FilePath download_folder("Download/");
+  const base::FilePath relative_path(relative_path_as_string);
+
+  // Observers should *not* be called when a download is added outside of the
+  // Download/ folder. This would be an unexpected event coming from ARC but
+  // we protect against it because ARC is treated as an untrusted source.
+  if (!download_folder.IsParent(relative_path) ||
+      relative_path.ReferencesParent()) {
+    return;
+  }
+
+  for (auto& observer : observer_list_)
+    observer.OnArcDownloadAdded(relative_path, owner_package_name);
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(

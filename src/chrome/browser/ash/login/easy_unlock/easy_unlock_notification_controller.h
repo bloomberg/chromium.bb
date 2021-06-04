@@ -16,7 +16,7 @@
 
 class Profile;
 
-namespace chromeos {
+namespace ash {
 
 class EasyUnlockNotificationController {
  public:
@@ -49,8 +49,8 @@ class EasyUnlockNotificationController {
                              notification_controller);
 
     // message_center::NotificationDelegate:
-    void Click(const base::Optional<int>& button_index,
-               const base::Optional<std::u16string>& reply) override;
+    void Click(const absl::optional<int>& button_index,
+               const absl::optional<std::u16string>& reply) override;
 
    private:
     ~NotificationDelegate() override;
@@ -73,6 +73,6 @@ class EasyUnlockNotificationController {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockNotificationController);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_

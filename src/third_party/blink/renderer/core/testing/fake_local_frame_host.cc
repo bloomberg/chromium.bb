@@ -52,7 +52,7 @@ void FakeLocalFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 
 void FakeLocalFrameHost::DidChangeThemeColor(
-    base::Optional<::SkColor> theme_color) {}
+    absl::optional<::SkColor> theme_color) {}
 
 void FakeLocalFrameHost::DidChangeBackgroundColor(SkColor background_color,
                                                   bool color_adjust) {}
@@ -103,8 +103,6 @@ void FakeLocalFrameHost::DispatchLoad() {}
 
 void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
                                            bool has_user_gesture) {}
-
-void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
 void FakeLocalFrameHost::UpdateTitle(
     const WTF::String& title,
@@ -175,6 +173,12 @@ void FakeLocalFrameHost::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {}
 
+void FakeLocalFrameHost::CreateNewPopupWidget(
+    mojo::PendingAssociatedReceiver<mojom::blink::PopupWidgetHost>
+        popup_widget_host,
+    mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost> widget_host,
+    mojo::PendingAssociatedRemote<mojom::blink::Widget> widget) {}
+
 void FakeLocalFrameHost::ShowContextMenu(
     mojo::PendingAssociatedRemote<mojom::blink::ContextMenuClient>
         context_menu_client,
@@ -191,7 +195,7 @@ void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
     mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) {}
 
 void FakeLocalFrameHost::DidChangeOpener(
-    const base::Optional<LocalFrameToken>& opener_frame) {}
+    const absl::optional<LocalFrameToken>& opener_frame) {}
 
 void FakeLocalFrameHost::DidChangeCSPAttribute(
     const blink::FrameToken& child_frame_token,

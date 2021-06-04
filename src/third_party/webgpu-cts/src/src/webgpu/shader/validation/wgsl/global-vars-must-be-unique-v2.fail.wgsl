@@ -7,6 +7,6 @@ fn a()->void {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }

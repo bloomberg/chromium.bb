@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 
+#include <memory>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -131,9 +133,10 @@ void OobeBaseTest::CreatedBrowserMainParts(
     content::BrowserMainParts* browser_main_parts) {
   // If the test initially shows views login screen, this notification might
   // come before SetUpOnMainThread(), so the observer has to be set up early.
-  login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources()));
+  login_screen_load_observer_ =
+      std::make_unique<content::WindowedNotificationObserver>(
+          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+          content::NotificationService::AllSources());
 
   MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 }
@@ -145,10 +148,8 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   // based on timer. It is nice simulation for chromeos-on-linux, but
   // may lead to flakiness in debug/*SAN tests.
   // Set up FakeUpdateEngineClient that does not have any timer-based logic.
-  std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-      chromeos::DBusThreadManager::GetSetterForTesting();
   update_engine_client_ = new FakeUpdateEngineClient;
-  dbus_setter->SetUpdateEngineClient(
+  chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
       std::unique_ptr<UpdateEngineClient>(update_engine_client_));
 }
 
@@ -241,12 +242,11 @@ test::JSChecker OobeBaseTest::SigninFrameJS() {
 
 // static
 OobeScreenId OobeBaseTest::GetFirstSigninScreen() {
-  bool childSpecificSigninEnabled = features::IsChildSpecificSigninEnabled() &&
-                                    !g_browser_process->platform_part()
-                                         ->browser_policy_connector_chromeos()
-                                         ->IsEnterpriseManaged();
-  return childSpecificSigninEnabled ? UserCreationView::kScreenId
-                                    : GaiaView::kScreenId;
+  bool isEnterpriseManaged = !g_browser_process->platform_part()
+                                  ->browser_policy_connector_chromeos()
+                                  ->IsEnterpriseManaged();
+  return isEnterpriseManaged ? UserCreationView::kScreenId
+                             : GaiaView::kScreenId;
 }
 
 void OobeBaseTest::MaybeWaitForLoginScreenLoad() {

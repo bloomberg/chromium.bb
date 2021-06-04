@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/default_browser/default_browser_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
@@ -281,6 +282,22 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   return nc;
 }
 
++ (instancetype)
+    defaultBrowserControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate {
+  DCHECK(browser);
+  DefaultBrowserSettingsTableViewController* controller =
+      [[DefaultBrowserSettingsTableViewController alloc] init];
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                         browser:browser
+                        delegate:delegate];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
+  return nc;
+}
+
 #pragma mark - Lifecycle
 
 - (instancetype)initWithRootViewController:(UIViewController*)rootViewController
@@ -314,8 +331,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     self.toolbar.translucent = NO;
     self.navigationBar.barTintColor =
         [UIColor colorNamed:kSecondaryBackgroundColor];
-    self.toolbar.barTintColor = [UIColor colorNamed:kSecondaryBackgroundColor];
-    self.view.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
+    self.toolbar.barTintColor =
+        [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
+    self.view.backgroundColor =
+        [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
   }
 
   self.navigationBar.prefersLargeTitles = YES;
@@ -643,6 +662,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
           initWithBrowser:self.browser];
+  controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+- (void)showDefaultBrowserSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  DefaultBrowserSettingsTableViewController* controller =
+      [[DefaultBrowserSettingsTableViewController alloc] init];
   controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
   [self pushViewController:controller animated:YES];
 }

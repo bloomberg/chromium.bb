@@ -752,8 +752,12 @@ angle::Result CreateRenderPass2(Context *context,
     }
     else
     {
+        RendererVk *renderer = context->getRenderer();
+
         ASSERT(isRenderToTexture);
+        ASSERT(renderer->getFeatures().supportsMultisampledRenderToSingleSampled.enabled);
         ASSERT(subpassDescriptions.size() == 1);
+
         subpassDescriptions.back().pNext = &renderToTextureInfo;
     }
 
@@ -1197,13 +1201,10 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
         createInfo.pDependencies   = subpassDependencies.data();
     }
 
-    const bool hasRenderToTextureEXT =
-        renderer->getFeatures().supportsMultisampledRenderToSingleSampled.enabled;
-
     // If depth/stencil resolve is used, we need to create the render pass with
     // vkCreateRenderPass2KHR.  Same when using the VK_EXT_multisampled_render_to_single_sampled
     // extension.
-    if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr || hasRenderToTextureEXT)
+    if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr || desc.isRenderToTexture())
     {
         ANGLE_TRY(CreateRenderPass2(contextVk, createInfo, depthStencilResolve,
                                     desc.hasDepthUnresolveAttachment(),
@@ -3024,6 +3025,41 @@ bool UniformsAndXfbDescriptorDesc::operator==(const UniformsAndXfbDescriptorDesc
     return memcmp(&mBufferSerials, &other.mBufferSerials, sizeof(BufferSerial) * mBufferCount) == 0;
 }
 
+// ShaderBuffersDescriptorDesc implementation.
+ShaderBuffersDescriptorDesc::ShaderBuffersDescriptorDesc()
+{
+    reset();
+}
+
+ShaderBuffersDescriptorDesc::~ShaderBuffersDescriptorDesc() = default;
+
+ShaderBuffersDescriptorDesc::ShaderBuffersDescriptorDesc(const ShaderBuffersDescriptorDesc &other) =
+    default;
+
+ShaderBuffersDescriptorDesc &ShaderBuffersDescriptorDesc::operator=(
+    const ShaderBuffersDescriptorDesc &other) = default;
+
+size_t ShaderBuffersDescriptorDesc::hash() const
+{
+    return angle::ComputeGenericHash(mPayload.data(), sizeof(mPayload[0]) * mPayload.size());
+}
+
+void ShaderBuffersDescriptorDesc::reset()
+{
+    mPayload.clear();
+}
+
+bool ShaderBuffersDescriptorDesc::operator==(const ShaderBuffersDescriptorDesc &other) const
+{
+    return mPayload == other.mPayload;
+}
+
+void ShaderBuffersDescriptorDesc::append64BitValue(uint64_t value)
+{
+    mPayload.push_back(static_cast<uint32_t>(value & (angle::Bit<uint64_t>(32u) - 1u)));
+    mPayload.push_back(value >> 32);
+}
+
 // FramebufferDesc implementation.
 
 FramebufferDesc::FramebufferDesc()
@@ -3184,6 +3220,16 @@ void SamplerDesc::update(const angle::FeaturesVk &featuresVk,
                          uint64_t externalFormat)
 {
     mMipLodBias = 0.0f;
+    for (size_t lodOffsetFeatureIdx = 0;
+         lodOffsetFeatureIdx < featuresVk.forceTextureLODOffset.size(); lodOffsetFeatureIdx++)
+    {
+        if (featuresVk.forceTextureLODOffset[lodOffsetFeatureIdx].enabled)
+        {
+            // Make sure only one forceTextureLODOffset feature is set.
+            ASSERT(mMipLodBias == 0.0f);
+            mMipLodBias = static_cast<float>(lodOffsetFeatureIdx + 1);
+        }
+    }
 
     mMaxAnisotropy = samplerState.getMaxAnisotropy();
     mMinLod        = samplerState.getMinLod();
@@ -3205,6 +3251,15 @@ void SamplerDesc::update(const angle::FeaturesVk &featuresVk,
 
     GLenum magFilter = samplerState.getMagFilter();
     GLenum minFilter = samplerState.getMinFilter();
+    if (featuresVk.forceNearestFiltering.enabled)
+    {
+        magFilter = gl::ConvertToNearestFilterMode(magFilter);
+        minFilter = gl::ConvertToNearestFilterMode(minFilter);
+    }
+    if (featuresVk.forceNearestMipFiltering.enabled)
+    {
+        minFilter = gl::ConvertToNearestMipFilterMode(minFilter);
+    }
 
     SetBitField(mMagFilter, gl_vk::GetFilter(magFilter));
     SetBitField(mMinFilter, gl_vk::GetFilter(minFilter));
@@ -3498,7 +3553,7 @@ GraphicsPipelineCache::~GraphicsPipelineCache()
 
 void GraphicsPipelineCache::destroy(RendererVk *rendererVk)
 {
-    rendererVk->accumulateCacheStats(VulkanCacheType::GraphicsPipeline, mCacheStats);
+    accumulateCacheStats(rendererVk);
 
     VkDevice device = rendererVk->getDevice();
 
@@ -3641,7 +3696,7 @@ PipelineLayoutCache::~PipelineLayoutCache()
 
 void PipelineLayoutCache::destroy(RendererVk *rendererVk)
 {
-    rendererVk->accumulateCacheStats(VulkanCacheType::PipelineLayout, mCacheStats);
+    accumulateCacheStats(rendererVk);
 
     VkDevice device = rendererVk->getDevice();
 
@@ -3849,22 +3904,28 @@ angle::Result SamplerCache::getSampler(ContextVk *contextVk,
 // DriverUniformsDescriptorSetCache implementation.
 void DriverUniformsDescriptorSetCache::destroy(RendererVk *rendererVk)
 {
-    rendererVk->accumulateCacheStats(VulkanCacheType::DescriptorSet, mCacheStats);
+    accumulateCacheStats(rendererVk);
     mPayload.clear();
 }
 
 // DescriptorSetCache implementation.
-template <typename key, VulkanCacheType cacheType>
-void DescriptorSetCache<key, cacheType>::destroy(RendererVk *rendererVk)
+template <typename Key, VulkanCacheType CacheType>
+void DescriptorSetCache<Key, CacheType>::destroy(RendererVk *rendererVk)
 {
-    rendererVk->accumulateCacheStats(cacheType, mCacheStats);
+    this->accumulateCacheStats(rendererVk);
     mPayload.clear();
 }
 
 // RendererVk's methods are not accessible in vk_cache_utils.h
 // Below declarations are needed to avoid linker errors.
+// Unclear why Clang warns about weak vtables in this case.
+ANGLE_DISABLE_WEAK_TEMPLATE_VTABLES_WARNING
 template class DescriptorSetCache<vk::TextureDescriptorDesc, VulkanCacheType::TextureDescriptors>;
 
 template class DescriptorSetCache<vk::UniformsAndXfbDescriptorDesc,
                                   VulkanCacheType::UniformsAndXfbDescriptors>;
+
+template class DescriptorSetCache<vk::ShaderBuffersDescriptorDesc,
+                                  VulkanCacheType::ShaderBuffersDescriptors>;
+ANGLE_REENABLE_WEAK_TEMPLATE_VTABLES_WARNING
 }  // namespace rx

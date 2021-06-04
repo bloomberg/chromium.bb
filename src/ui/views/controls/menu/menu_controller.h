@@ -29,7 +29,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 #include "ui/views/controls/menu/menu_cocoa_watcher_mac.h"
 #endif
@@ -751,7 +751,7 @@ class VIEWS_EXPORT MenuController
   // location. Otherwise it will be null. This is used to ignore mouse move
   // events triggered by the menu opening, to avoid selecting the menu item
   // over the mouse.
-  base::Optional<gfx::Point> menu_open_mouse_loc_;
+  absl::optional<gfx::Point> menu_open_mouse_loc_;
 
   // Controls behavior differences between a combobox and other types of menu
   // (like a context menu).
@@ -778,7 +778,7 @@ class VIEWS_EXPORT MenuController
   // A mask of the EventFlags for the mouse buttons currently pressed.
   int current_mouse_pressed_state_ = 0;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   std::unique_ptr<MenuClosureAnimationMac> menu_closure_animation_;
   std::unique_ptr<MenuCocoaWatcherMac> menu_cocoa_watcher_;
 #endif

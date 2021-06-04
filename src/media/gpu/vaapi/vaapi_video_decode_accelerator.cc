@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/cpu.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_writer.h"
@@ -21,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -151,7 +153,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
       input_ready_(&lock_),
-      vaapi_picture_factory_(new VaapiPictureFactory()),
       buffer_allocation_mode_(BufferAllocationMode::kNormal),
       surfaces_available_(&lock_),
       va_surface_format_(VA_INVALID_ID),
@@ -189,6 +190,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   if (features::IsUsingOzonePlatform())
     return false;
 #endif
+
+  vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
 
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -646,7 +649,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
            << " pictures of size: " << requested_pic_size_.ToString()
            << " and visible rectangle = " << requested_visible_rect_.ToString();
 
-  const base::Optional<VideoPixelFormat> format =
+  const absl::optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(
           vaapi_picture_factory_->GetBufferFormat());
   CHECK(format);
@@ -1196,10 +1199,9 @@ void VaapiVideoDecodeAccelerator::RecycleVASurface(
 
 // static
 VideoDecodeAccelerator::SupportedProfiles
-VaapiVideoDecodeAccelerator::GetSupportedProfiles(
-    const gpu::GpuDriverBugWorkarounds& workarounds) {
+VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles =
-      VaapiWrapper::GetSupportedDecodeProfiles(workarounds);
+      VaapiWrapper::GetSupportedDecodeProfiles();
   // VaVDA never supported VP9 Profile 2, AV1 and HEVC, but VaapiWrapper does.
   // Filter them out.
   base::EraseIf(profiles, [](const auto& profile) {

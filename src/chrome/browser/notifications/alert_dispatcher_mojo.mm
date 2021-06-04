@@ -64,7 +64,8 @@
 }
 
 - (void)closeAllNotifications {
-  [[self serviceProxy] closeAllNotifications];
+  if (_mojoService)
+    [[self serviceProxy] closeAllNotifications];
   // We know that there are no more notifications after this.
   [self onServiceDisconnectedGracefully:YES];
 }
@@ -107,13 +108,11 @@
     alertIdentifiers.reserve([alerts count]);
 
     for (NSDictionary* alert in alerts) {
-      NSString* notificationId =
-          [alert objectForKey:notification_constants::kNotificationId];
+      NSString* notificationId = alert[notification_constants::kNotificationId];
       NSString* profileId =
-          [alert objectForKey:notification_constants::kNotificationProfileId];
+          alert[notification_constants::kNotificationProfileId];
       bool incognito =
-          [[alert objectForKey:notification_constants::kNotificationIncognito]
-              boolValue];
+          [alert[notification_constants::kNotificationIncognito] boolValue];
 
       alertIdentifiers.push_back({base::SysNSStringToUTF8(notificationId),
                                   base::SysNSStringToUTF8(profileId),

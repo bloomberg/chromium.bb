@@ -82,9 +82,9 @@ class SyncUserSettings {
   // Note that all of this state may only be queried or modified if the Sync
   // engine is initialized.
 
-  // Whether the user is allowed to encrypt all their Sync data. For example,
-  // child accounts are not allowed to encrypt their data.
-  virtual bool IsEncryptEverythingAllowed() const = 0;
+  // Whether the user is allowed to set a custom passphrase to encrypt all
+  // their Sync data. For example, child accounts aren't allowed to do.
+  virtual bool IsCustomPassphraseAllowed() const = 0;
   // Whether we are currently set to encrypt all the Sync data.
   virtual bool IsEncryptEverythingEnabled() const = 0;
 
@@ -110,10 +110,10 @@ class SyncUserSettings {
   // Whether recoverability of the trusted vault keys is degraded and user
   // action is required, affecting currently enabled data types.
   virtual bool IsTrustedVaultRecoverabilityDegraded() const = 0;
-  // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
-  // means either a custom or a frozen implicit passphrase.
-  virtual bool IsUsingSecondaryPassphrase() const = 0;
-  // The time the current explicit passphrase (if any) was set. If no secondary
+  // Whether an explicit passphrase is in use, which means either a custom
+  // passphrase or a legacy frozen implicit passphrase.
+  virtual bool IsUsingExplicitPassphrase() const = 0;
+  // The time the current explicit passphrase (if any) was set. If no explicit
   // passphrase is in use, or no time is available, returns an unset base::Time.
   virtual base::Time GetExplicitPassphraseTime() const = 0;
   // The type of the passphrase currently in use.

@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_setup_icons.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_utils.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/cellular_utils.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
@@ -129,10 +130,12 @@
 
       <template is="dom-if" route-path="/networkDetail" no-search restamp>
         <settings-subpage page-title="$i18n{internetDetailPageTitle}">
-          <settings-internet-detail-menu
-              slot="subpage-title-extra"
-              device-state="[[getDeviceState_(subpageType_, deviceStates)]]">
-          </settings-internet-detail-menu>
+          <template is="dom-if" if="[[isUpdatedCellularUiEnabled_]]" restamp>
+            <settings-internet-detail-menu
+                slot="subpage-title-extra"
+                device-state="[[getDeviceState_(subpageType_, deviceStates)]]">
+            </settings-internet-detail-menu>
+          </template>
           <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
               global-policy="[[globalPolicy_]]"
@@ -160,7 +163,8 @@
               global-policy="[[globalPolicy_]]"
               vpn-providers="[[vpnProviders_]]"
               show-spinner="{{showSpinner_}}"
-              is-connected-to-non-cellular-network="[[isConnectedToNonCellularNetwork_]]">
+              is-connected-to-non-cellular-network="[[isConnectedToNonCellularNetwork_]]"
+              is-cellular-setup-active="[[showCellularSetupDialog_]]">
           </settings-internet-subpage>
         </settings-subpage>
       </template>
@@ -183,7 +187,7 @@
       <esim-rename-dialog id="esimRenameDialog"
           on-close="onCloseESimProfileRenameDialog_"
           network-state="[[eSimNetworkState_]]"
-          show-cellular-disconnect-warning="[[hasActivePSimNetwork_]]">
+          show-cellular-disconnect-warning="[[hasActiveCellularNetwork_]]">
       </esim-rename-dialog>
     </template>
 
@@ -192,7 +196,7 @@
           on-close="onCloseESimRemoveProfileDialog_"
           on-show-error-toast="onShowErrorToast_"
           network-state="[[eSimNetworkState_]]"
-          show-cellular-disconnect-warning="[[hasActivePSimNetwork_]]">
+          show-cellular-disconnect-warning="[[hasActiveCellularNetwork_]]">
       </esim-remove-profile-dialog>
     </template>
 

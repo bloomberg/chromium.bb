@@ -7,6 +7,6 @@ struct SArr{
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var s : SArr;
 }

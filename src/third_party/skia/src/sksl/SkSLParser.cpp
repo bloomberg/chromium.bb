@@ -50,7 +50,6 @@ static int parse_modifier_token(Token::Kind token) {
         case Token::Kind::TK_FLAT:           return Modifiers::kFlat_Flag;
         case Token::Kind::TK_NOPERSPECTIVE:  return Modifiers::kNoPerspective_Flag;
         case Token::Kind::TK_HASSIDEEFFECTS: return Modifiers::kHasSideEffects_Flag;
-        case Token::Kind::TK_VARYING:        return Modifiers::kVarying_Flag;
         case Token::Kind::TK_INLINE:         return Modifiers::kInline_Flag;
         case Token::Kind::TK_NOINLINE:       return Modifiers::kNoInline_Flag;
         default:                             return 0;
@@ -95,8 +94,6 @@ void Parser::InitLayoutMap() {
     TOKEN(BUILTIN,                      "builtin");
     TOKEN(INPUT_ATTACHMENT_INDEX,       "input_attachment_index");
     TOKEN(ORIGIN_UPPER_LEFT,            "origin_upper_left");
-    TOKEN(OVERRIDE_COVERAGE,            "override_coverage");
-    TOKEN(EARLY_FRAGMENT_TESTS,         "early_fragment_tests");
     TOKEN(BLEND_SUPPORT_ALL_EQUATIONS,  "blend_support_all_equations");
     TOKEN(PUSH_CONSTANT,                "push_constant");
     TOKEN(POINTS,                       "points");
@@ -108,10 +105,8 @@ void Parser::InitLayoutMap() {
     TOKEN(TRIANGLES_ADJACENCY,          "triangles_adjacency");
     TOKEN(MAX_VERTICES,                 "max_vertices");
     TOKEN(INVOCATIONS,                  "invocations");
-    TOKEN(MARKER,                       "marker");
     TOKEN(WHEN,                         "when");
     TOKEN(KEY,                          "key");
-    TOKEN(TRACKED,                      "tracked");
     TOKEN(SRGB_UNPREMUL,                "srgb_unpremul");
     TOKEN(CTYPE,                        "ctype");
     TOKEN(SKPMCOLOR4F,                  "SkPMColor4f");
@@ -514,7 +509,14 @@ ASTNode::ID Parser::declaration() {
 
 /* (varDeclarations | expressionStatement) */
 ASTNode::ID Parser::varDeclarationsOrExpressionStatement() {
-    if (this->isType(this->text(this->peek()))) {
+    Token nextToken = this->peek();
+    if (nextToken.fKind == Token::Kind::TK_CONST) {
+        // Statements that begin with `const` might be variable declarations, but can't be legal
+        // SkSL expression-statements. (SkSL constructors don't take a `const` modifier.)
+        return this->varDeclarations();
+    }
+
+    if (this->isType(this->text(nextToken))) {
         // Statements that begin with a typename are most often variable declarations, but
         // occasionally the type is part of a constructor, and these are actually expression-
         // statements in disguise. First, attempt the common case: parse it as a vardecl.
@@ -882,14 +884,12 @@ Layout Parser::layout() {
     Layout::Primitive primitive = Layout::kUnspecified_Primitive;
     int maxVertices = -1;
     int invocations = -1;
-    StringFragment marker;
     StringFragment when;
     Layout::CType ctype = Layout::CType::kDefault;
     if (this->checkNext(Token::Kind::TK_LAYOUT)) {
         if (!this->expect(Token::Kind::TK_LPAREN, "'('")) {
             return Layout(flags, location, offset, binding, index, set, builtin,
-                          inputAttachmentIndex, primitive, maxVertices, invocations, marker, when,
-                          ctype);
+                          inputAttachmentIndex, primitive, maxVertices, invocations, when, ctype);
         }
         for (;;) {
             Token t = this->nextToken();
@@ -914,20 +914,11 @@ Layout Parser::layout() {
                     case LayoutToken::ORIGIN_UPPER_LEFT:
                         setFlag(Layout::kOriginUpperLeft_Flag);
                         break;
-                    case LayoutToken::OVERRIDE_COVERAGE:
-                        setFlag(Layout::kOverrideCoverage_Flag);
-                        break;
-                    case LayoutToken::EARLY_FRAGMENT_TESTS:
-                        setFlag(Layout::kEarlyFragmentTests_Flag);
-                        break;
                     case LayoutToken::PUSH_CONSTANT:
                         setFlag(Layout::kPushConstant_Flag);
                         break;
                     case LayoutToken::BLEND_SUPPORT_ALL_EQUATIONS:
                         setFlag(Layout::kBlendSupportAllEquations_Flag);
-                        break;
-                    case LayoutToken::TRACKED:
-                        setFlag(Layout::kTracked_Flag);
                         break;
                     case LayoutToken::SRGB_UNPREMUL:
                         setFlag(Layout::kSRGBUnpremul_Flag);
@@ -992,10 +983,6 @@ Layout Parser::layout() {
                         setFlag(Layout::kInvocations_Flag);
                         invocations = this->layoutInt();
                         break;
-                    case LayoutToken::MARKER:
-                        setFlag(Layout::kMarker_Flag);
-                        marker = this->layoutCode();
-                        break;
                     case LayoutToken::WHEN:
                         setFlag(Layout::kWhen_Flag);
                         when = this->layoutCode();
@@ -1020,11 +1007,10 @@ Layout Parser::layout() {
         }
     }
     return Layout(flags, location, offset, binding, index, set, builtin, inputAttachmentIndex,
-                  primitive, maxVertices, invocations, marker, when, ctype);
+                  primitive, maxVertices, invocations, when, ctype);
 }
 
-/* layout? (UNIFORM | CONST | IN | OUT | INOUT | LOWP | MEDIUMP | HIGHP | FLAT | NOPERSPECTIVE |
-            VARYING | INLINE)* */
+/* layout? (UNIFORM | CONST | IN | OUT | INOUT | FLAT | NOPERSPECTIVE | INLINE)* */
 Modifiers Parser::modifiers() {
     Layout layout = this->layout();
     int flags = 0;
@@ -1083,7 +1069,6 @@ ASTNode::ID Parser::statement() {
             this->nextToken();
             return this->createNode(start.fOffset, ASTNode::Kind::kBlock);
         case Token::Kind::TK_CONST:
-            return this->varDeclarations();
         case Token::Kind::TK_IDENTIFIER:
             return this->varDeclarationsOrExpressionStatement();
         default:
@@ -1371,38 +1356,18 @@ ASTNode::ID Parser::forStatement() {
         return ASTNode::ID::Invalid();
     }
     ASTNode::ID result = this->createNode(start.fOffset, ASTNode::Kind::kFor);
-    ASTNode::ID initializer;
     Token nextToken = this->peek();
-    switch (nextToken.fKind) {
-        case Token::Kind::TK_SEMICOLON:
-            this->nextToken();
-            this->createEmptyChild(result);
-            break;
-        case Token::Kind::TK_CONST: {
-            initializer = this->varDeclarations();
-            if (!initializer) {
-                return ASTNode::ID::Invalid();
-            }
-            getNode(result).addChild(initializer);
-            break;
+    if (nextToken.fKind == Token::Kind::TK_SEMICOLON) {
+        // An empty init-statement.
+        this->nextToken();
+        this->createEmptyChild(result);
+    } else {
+        // The init-statement must be an expression or variable declaration.
+        ASTNode::ID initializer = this->varDeclarationsOrExpressionStatement();
+        if (!initializer) {
+            return ASTNode::ID::Invalid();
         }
-        case Token::Kind::TK_IDENTIFIER: {
-            if (this->isType(this->text(nextToken))) {
-                initializer = this->varDeclarations();
-                if (!initializer) {
-                    return ASTNode::ID::Invalid();
-                }
-                getNode(result).addChild(initializer);
-                break;
-            }
-            [[fallthrough]];
-        }
-        default:
-            initializer = this->expressionStatement();
-            if (!initializer) {
-                return ASTNode::ID::Invalid();
-            }
-            getNode(result).addChild(initializer);
+        getNode(result).addChild(initializer);
     }
     ASTNode::ID test;
     if (this->peek().fKind != Token::Kind::TK_SEMICOLON) {

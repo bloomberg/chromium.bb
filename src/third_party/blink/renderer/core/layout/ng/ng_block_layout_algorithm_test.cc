@@ -51,7 +51,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
       const NGConstraintSpace& space,
       const NGBlockNode& node) {
     NGLayoutCacheStatus cache_status;
-    base::Optional<NGFragmentGeometry> initial_fragment_geometry;
+    absl::optional<NGFragmentGeometry> initial_fragment_geometry;
     return To<LayoutBlockFlow>(node.GetLayoutBox())
         ->CachedLayoutResult(space, nullptr, nullptr,
                              &initial_fragment_geometry, &cache_status);
@@ -2499,6 +2499,21 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutRubyTextCrash) {
   SetBodyInnerHTML(R"HTML(
     <ruby>base<rt style="writing-mode:vertical-rl">annotation</ruby>
   )HTML");
+  UpdateAllLifecyclePhasesForTest();
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, HandleTextControlPlaceholderCrash) {
+  // crbug.com/1209025. This test passes if no crash.
+  SetBodyInnerHTML(R"HTML(
+<style>
+input::first-line {
+ color: red;
+}
+</style>
+<input id="i1" readonly>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  auto* input = GetDocument().getElementById("i1");
+  input->setAttribute(html_names::kPlaceholderAttr, "z");
   UpdateAllLifecyclePhasesForTest();
 }
 

@@ -149,15 +149,8 @@ private:
                    const GrFragmentProcessor& _proc) override {
         const GrTwoPointConicalGradientLayout& _outer =
                 _proc.cast<GrTwoPointConicalGradientLayout>();
-        {
-            const SkPoint& focalParamsValue = _outer.focalParams;
-            if (focalParamsPrev != focalParamsValue) {
-                focalParamsPrev = focalParamsValue;
-                pdman.set2f(focalParamsVar, focalParamsValue.fX, focalParamsValue.fY);
-            }
-        }
+        { pdman.set2f(focalParamsVar, _outer.focalParams.fX, _outer.focalParams.fY); }
     }
-    SkPoint focalParamsPrev = SkPoint::Make(SK_FloatNaN, SK_FloatNaN);
     UniformHandle focalParamsVar;
 };
 std::unique_ptr<GrGLSLFragmentProcessor> GrTwoPointConicalGradientLayout::onMakeProgramImpl()
@@ -223,10 +216,11 @@ std::unique_ptr<GrFragmentProcessor> GrTwoPointConicalGradientLayout::TestCreate
     SkScalar scale = GrGradientShader::RandomParams::kGradientScale;
     SkScalar offset = scale / 32.0f;
 
-    SkPoint center1 = {d->fRandom->nextRangeScalar(0.0f, scale),
-                       d->fRandom->nextRangeScalar(0.0f, scale)};
-    SkPoint center2 = {d->fRandom->nextRangeScalar(0.0f, scale),
-                       d->fRandom->nextRangeScalar(0.0f, scale)};
+    SkPoint center1, center2;
+    center1.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+    center1.fY = d->fRandom->nextRangeScalar(0.0f, scale);
+    center2.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+    center2.fY = d->fRandom->nextRangeScalar(0.0f, scale);
     SkScalar radius1 = d->fRandom->nextRangeScalar(0.0f, scale);
     SkScalar radius2 = d->fRandom->nextRangeScalar(0.0f, scale);
 

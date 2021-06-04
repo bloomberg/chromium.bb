@@ -321,9 +321,6 @@ public:
     //commands supported?
     bool baseVertexBaseInstanceSupport() const { return fBaseVertexBaseInstanceSupport; }
 
-    /// Use indices or vertices in CPU arrays rather than VBOs for dynamic content.
-    bool useNonVBOVertexAndIndexDynamicData() const { return fUseNonVBOVertexAndIndexDynamicData; }
-
     SurfaceReadPixelsSupport surfaceSupportsReadPixels(const GrSurface*) const override;
 
     SupportedWrite supportedWritePixelsColorType(GrColorType surfaceColorType,
@@ -348,12 +345,6 @@ public:
     bool doManualMipmapping() const { return fDoManualMipmapping; }
 
     void onDumpJSON(SkJSONWriter*) const override;
-
-    bool rgba8888PixelsOpsAreSlow() const { return fRGBA8888PixelsOpsAreSlow; }
-    bool partialFBOReadIsSlow() const { return fPartialFBOReadIsSlow; }
-    bool rgbaToBgraReadbackConversionsAreSlow() const {
-        return fRGBAToBGRAReadbackConversionsAreSlow;
-    }
 
     bool useBufferDataNullHint() const { return fUseBufferDataNullHint; }
 
@@ -384,11 +375,6 @@ public:
     // face culling on and off seems to resolve this.
     bool requiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines() const {
         return fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines;
-    }
-
-    // Some Adreno drivers refuse to ReadPixels from an MSAA buffer that has stencil attached.
-    bool detachStencilFromMSAABuffersBeforeReadPixels() const {
-        return fDetachStencilFromMSAABuffersBeforeReadPixels;
     }
 
     // Older Android versions seem to have an issue with setting GL_TEXTURE_BASE_LEVEL or
@@ -488,6 +474,7 @@ private:
         bool fDontDisableTexStorageOnAndroid = false;
         bool fDisallowDirectRG8ReadPixels = false;
         bool fDisallowBGRA8ReadPixels = false;
+        bool fDisallowR8ForPowerVRSGX54x = false;
     };
 
     void applyDriverCorrectnessWorkarounds(const GrGLContextInfo&, const GrContextOptions&,
@@ -518,6 +505,20 @@ private:
 
     GrDstSampleType onGetDstSampleTypeForProxy(const GrRenderTargetProxy*) const override;
 
+    bool onSupportsDynamicMSAA(const GrRenderTargetProxy*) const override {
+        switch (fMSFBOType) {
+            // The Apple extension doesn't support blitting from single to multisample.
+            case kES_Apple_MSFBOType:
+            case kNone_MSFBOType:
+                return false;
+            case kStandard_MSFBOType:
+            case kES_IMG_MsToTexture_MSFBOType:
+            case kES_EXT_MsToTexture_MSFBOType:
+                return true;
+        }
+        SkUNREACHABLE;
+    }
+
     GrGLStandard fStandard = kNone_GrGLStandard;
 
     SkTArray<GrGLFormat, true> fStencilFormats;
@@ -539,17 +540,13 @@ private:
     bool fES2CompatibilitySupport : 1;
     bool fDrawRangeElementsSupport : 1;
     bool fBaseVertexBaseInstanceSupport : 1;
-    bool fUseNonVBOVertexAndIndexDynamicData : 1;
     bool fIsCoreProfile : 1;
     bool fBindFragDataLocationSupport : 1;
-    bool fRGBA8888PixelsOpsAreSlow : 1;
-    bool fPartialFBOReadIsSlow : 1;
     bool fBindUniformLocationSupport : 1;
     bool fRectangleTextureSupport : 1;
     bool fMipmapLevelControlSupport : 1;
     bool fMipmapLodControlSupport : 1;
-    bool fRGBAToBGRAReadbackConversionsAreSlow : 1;
-    bool fUseBufferDataNullHint                : 1;
+    bool fUseBufferDataNullHint : 1;
     bool fClearTextureSupport : 1;
     bool fProgramBinarySupport : 1;
     bool fProgramParameterSupport : 1;
@@ -568,7 +565,6 @@ private:
     bool fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO : 1;
     bool fUseDrawInsteadOfAllRenderTargetWrites : 1;
     bool fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines : 1;
-    bool fDetachStencilFromMSAABuffersBeforeReadPixels : 1;
     bool fDontSetBaseOrMaxLevelForExternalTextures : 1;
     bool fNeverDisableColorWrites : 1;
     bool fMustSetAnyTexParameterToEnableMipmapping : 1;

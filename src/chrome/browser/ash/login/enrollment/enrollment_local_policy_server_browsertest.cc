@@ -8,7 +8,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/ash/app_mode/fake_cws.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/network_portal_detector_mixin.h"
@@ -53,9 +53,11 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+// TODO(https://crbug.com/1164001): remove when migrated to ash::
+using ::chromeos::InstallAttributes;
 
 constexpr test::UIPath kEnterprisePrimaryButton = {
     "enterprise-enrollment", "step-signin", "primary-action-button"};
@@ -80,8 +82,6 @@ void AllowlistSimpleChallengeSigningKey() {
               chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
               ""));
 }
-
-}  // namespace
 
 class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
  public:
@@ -123,17 +123,18 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
   }
 
   void TriggerEnrollmentAndSignInSuccessfully() {
-    host()->HandleAccelerator(ash::LoginAcceleratorAction::kStartEnrollment);
+    host()->HandleAccelerator(LoginAcceleratorAction::kStartEnrollment);
     OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 
     ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
     ASSERT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
     WaitForGaiaPageBackButtonUpdate();
 
-    SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
+    SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
+                                 FakeGaiaMixin::kEmailPath);
     test::OobeJS().ClickOnPath(kEnterprisePrimaryButton);
     SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword,
-                                 {"password"});
+                                 FakeGaiaMixin::kPasswordPath);
     test::OobeJS().ClickOnPath(kEnterprisePrimaryButton);
   }
 
@@ -832,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, EnrollmentForced) {
           INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED;
   policy_server_.SetDeviceInitialEnrollmentResponse(
       test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
-      test::kTestDomain, base::nullopt /* is_license_packaged_with_device */);
+      test::kTestDomain, absl::nullopt /* is_license_packaged_with_device */);
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
@@ -859,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, ZeroTouchForcedAttestationFail) {
           INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
   policy_server_.SetDeviceInitialEnrollmentResponse(
       test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
-      test::kTestDomain, base::nullopt /* is_license_packaged_with_device */);
+      test::kTestDomain, absl::nullopt /* is_license_packaged_with_device */);
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
@@ -923,13 +924,13 @@ IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
 
   ASSERT_EQ(GetParam(),
             user_manager::UserManager::Get()->IsGuestSessionAllowed());
-  EXPECT_EQ(GetParam(), ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_EQ(GetParam(), LoginScreenTestApi::IsGuestButtonShown());
 
   test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [false]);");
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
 
   test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [true]);");
-  EXPECT_EQ(GetParam(), ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_EQ(GetParam(), LoginScreenTestApi::IsGuestButtonShown());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, OobeGuestButtonPolicy, ::testing::Bool());
@@ -939,7 +940,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViews) {
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
@@ -950,36 +951,28 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
-  EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 1);
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_EQ(LoginScreenTestApi::GetUsersCount(), 1);
   histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViewsLocales) {
-  auto initial_label = ash::LoginScreenTestApi::GetShutDownButtonLabel();
+  auto initial_label = LoginScreenTestApi::GetShutDownButtonLabel();
 
   SetLoginScreenLocale("ru-RU");
   base::HistogramTester histogram_tester;
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
-  EXPECT_NE(ash::LoginScreenTestApi::GetShutDownButtonLabel(), initial_label);
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_NE(LoginScreenTestApi::GetShutDownButtonLabel(), initial_label);
   histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
-namespace {
-
-// Test kiosk app that creates a window and closes it.
-const char kTestAppId[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
-const char kTestAppFile[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn.crx";
-const char kTestAppVersion[] = "1.0.0";
-
-}  // namespace
-
 class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
  public:
-  KioskEnrollmentTest() : fake_cws_(new FakeCWS) {}
+  KioskEnrollmentTest() = default;
+
   // EnrollmentLocalPolicyServerBase:
   void SetUp() override {
     needs_background_networking_ = true;
@@ -988,19 +981,14 @@ class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
     EnrollmentLocalPolicyServerBase::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
-    fake_cws_->Init(embedded_test_server());
-  }
-
   void SetupAutoLaunchApp(FakeOwnerSettingsService* service) {
-    fake_cws_->SetUpdateCrx(kTestAppId, kTestAppFile, kTestAppVersion);
-    KioskAppManager::Get()->AddApp(kTestAppId, service);
-    KioskAppManager::Get()->SetAutoLaunchApp(kTestAppId, service);
+    KioskAppManager::Get()->AddApp(KioskAppsMixin::kKioskAppId, service);
+    KioskAppManager::Get()->SetAutoLaunchApp(KioskAppsMixin::kKioskAppId,
+                                             service);
   }
 
  private:
-  std::unique_ptr<FakeCWS> fake_cws_;
+  KioskAppsMixin kiosk_apps_{&mixin_host_, embedded_test_server()};
   std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
 };
 
@@ -1021,4 +1009,5 @@ IN_PROC_BROWSER_TEST_F(KioskEnrollmentTest,
   KioskSessionInitializedWaiter().Wait();
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

@@ -15,10 +15,12 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
   explicit LayoutNGSVGText(Element* element);
 
   void SubtreeStructureChanged(LayoutInvalidationReasonForTracing);
-  void SetNeedsTextMetricsUpdate() {
-    NOT_DESTROYED();
-    needs_text_metrics_update_ = true;
-  }
+  // This is called whenever a text layout attribute on the <text> or a
+  // descendant <tspan> is changed.
+  void SetNeedsPositioningValuesUpdate();
+  void SetNeedsTextMetricsUpdate();
+
+  bool IsObjectBoundingBoxValid() const;
 
  private:
   // LayoutObject override:
@@ -27,6 +29,9 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
   bool IsChildAllowed(LayoutObject* child, const ComputedStyle&) const override;
   void AddChild(LayoutObject* child, LayoutObject* before_child) override;
   void RemoveChild(LayoutObject* child) override;
+  FloatRect ObjectBoundingBox() const override;
+  FloatRect StrokeBoundingBox() const override;
+  FloatRect VisualRectInLocalSVGCoordinates() const override;
 
   // LayoutBox override:
   bool CreatesNewFormattingContext() const override;
@@ -35,6 +40,10 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
   void UpdateBlockLayout(bool relayout_children) override;
 
   void UpdateFont();
+
+  // bounding_box_* are mutable for on-demand computation in a const method.
+  mutable FloatRect bounding_box_;
+  mutable bool needs_update_bounding_box_ : 1;
 
   bool needs_text_metrics_update_ : 1;
 };

@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history_clusters/memories_service_factory.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_backend.h"
@@ -19,18 +19,19 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
-#include "components/history_clusters/core/memories_service.h"
+#include "components/history_clusters/core/history_clusters_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "content/public/browser/web_contents.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
+#else  // defined(OS_ANDROID)
 #include "base/containers/contains.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/ntp_tiles/custom_links_store.h"
-#else  // defined(OS_ANDROID)
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {
@@ -39,8 +40,8 @@ using UrlAndVisitCallback =
     base::OnceCallback<void(history::URLRow, history::VisitVector)>;
 
 // Gets the 2 most recent visits to a URL. Used to associate a memories visit
-// with its history rows and compute the |duration_since_last_visit_seconds|
-// context signal.
+// with its history rows and compute the `duration_since_last_visit`
+// context annotation.
 class GetMostRecentVisitsToUrl : public history::HistoryDBTask {
  public:
   GetMostRecentVisitsToUrl(const GURL& url, UrlAndVisitCallback callback)
@@ -87,7 +88,7 @@ bool IsPageInTabGroup(content::WebContents* contents) {
   return false;
 }
 
-// Pass in a separate |url| parameter to ensure that we check the same URL that
+// Pass in a separate `url` parameter to ensure that we check the same URL that
 // is being logged in History.
 bool IsPageBookmarked(content::WebContents* contents, const GURL& url) {
   DCHECK(contents);
@@ -119,92 +120,117 @@ void HistoryClustersTabHelper::OnOmniboxUrlCopied() {
   // were opened in a new tab (e.g. chrome://crash or chrome://invalid-page).
   if (navigation_ids_.empty())
     return;
-  auto* memories_service = GetMemoriesService();
+  auto* history_clusters_service = GetHistoryClustersService();
   // It's possible that the last navigation is complete if the tab crashed and a
   // new navigation hasn't began.
-  if (!memories_service->HasIncompleteVisit(navigation_ids_.back()))
+  if (!history_clusters_service->HasIncompleteVisitContextAnnotations(
+          navigation_ids_.back()))
     return;
-  memories_service->GetIncompleteVisit(navigation_ids_.back())
-      .context_signals.omnibox_url_copied = true;
+  history_clusters_service
+      ->GetIncompleteVisitContextAnnotations(navigation_ids_.back())
+      .context_annotations.omnibox_url_copied = true;
+}
+
+void HistoryClustersTabHelper::OnOmniboxUrlShared() {
+  // TODO(crbug.com/1171352): possibly update a different context annotation.
+  OnOmniboxUrlCopied();
 }
 
 void HistoryClustersTabHelper::OnUpdatedHistoryForNavigation(
     int64_t navigation_id,
     const GURL& url) {
   StartNewNavigationIfNeeded(navigation_id);
-  auto* memories_service = GetMemoriesService();
-  auto& visit = memories_service->GetOrCreateIncompleteVisit(navigation_id);
-  visit.context_signals.is_existing_part_of_tab_group =
-      IsPageInTabGroup(web_contents());
-  visit.context_signals.is_existing_bookmark =
-      IsPageBookmarked(web_contents(), url);
+  auto* history_clusters_service = GetHistoryClustersService();
+  auto& incomplete_visit_context_annotations =
+      history_clusters_service->GetOrCreateIncompleteVisitContextAnnotations(
+          navigation_id);
+  incomplete_visit_context_annotations.context_annotations
+      .is_existing_part_of_tab_group = IsPageInTabGroup(web_contents());
+  incomplete_visit_context_annotations.context_annotations
+      .is_existing_bookmark = IsPageBookmarked(web_contents(), url);
 
   if (auto* history_service = GetHistoryService()) {
-    // This |GetMostRecentVisitsToUrl| task will find at least 1 visit since
-    // |HistoryTabHelper::UpdateHistoryForNavigation()|, invoked prior to
-    // |OnUpdatedHistoryForNavigation()|, will have posted a task to add the
-    // visit represented by |visit|.
+    // This `GetMostRecentVisitsToUrl` task will find at least 1 visit since
+    // `HistoryTabHelper::UpdateHistoryForNavigation()`, invoked prior to
+    // `OnUpdatedHistoryForNavigation()`, will have posted a task to add the
+    // visit associated to `incomplete_visit_context_annotations`.
     history_service->ScheduleDBTask(
         FROM_HERE,
         std::make_unique<GetMostRecentVisitsToUrl>(
             url,
             base::BindOnce(
                 [](HistoryClustersTabHelper* history_clusters_tab_helper,
-                   memories::MemoriesService* memories_service,
-                   int64_t navigation_id, memories::MemoriesVisit& visit,
+                   history_clusters::HistoryClustersService*
+                       history_clusters_service,
+                   int64_t navigation_id,
+                   history_clusters::IncompleteVisitContextAnnotations&
+                       incomplete_visit_context_annotations,
                    history::URLRow url_row, history::VisitVector visits) {
                   DCHECK(history_clusters_tab_helper);
-                  DCHECK(memories_service);
+                  DCHECK(history_clusters_service);
                   DCHECK(url_row.id());
                   DCHECK(visits[0].visit_id);
                   DCHECK_EQ(url_row.id(), visits[0].url_id);
-                  visit.url_row = url_row;
-                  visit.visit_row = visits[0];
+                  incomplete_visit_context_annotations.url_row = url_row;
+                  incomplete_visit_context_annotations.visit_row = visits[0];
                   if (visits.size() > 1) {
-                    visit.context_signals.duration_since_last_visit_seconds =
-                        TimeElapsedBetweenVisits(visits[1], visits[0])
-                            .InSeconds();
+                    incomplete_visit_context_annotations.context_annotations
+                        .duration_since_last_visit =
+                        TimeElapsedBetweenVisits(visits[1], visits[0]);
                   }
                   // If the navigation has already ended, record the page end
                   // metrics.
-                  visit.status.history_rows = true;
-                  if (visit.status.navigation_ended) {
-                    DCHECK(!visit.status.navigation_end_signals);
+                  incomplete_visit_context_annotations.status.history_rows =
+                      true;
+                  if (incomplete_visit_context_annotations.status
+                          .navigation_ended) {
+                    DCHECK(!incomplete_visit_context_annotations.status
+                                .navigation_end_signals);
                     history_clusters_tab_helper->RecordPageEndMetricsIfNeeded(
                         navigation_id);
                   }
                 },
-                this, memories_service, navigation_id, std::ref(visit))),
+                this, history_clusters_service, navigation_id,
+                std::ref(incomplete_visit_context_annotations))),
         &task_tracker_);
   }
 }
 
 void HistoryClustersTabHelper::TagNavigationAsExpectingUkmNavigationComplete(
     int64_t navigation_id) {
-  GetMemoriesService()
-      ->GetOrCreateIncompleteVisit(navigation_id)
+  GetHistoryClustersService()
+      ->GetOrCreateIncompleteVisitContextAnnotations(navigation_id)
       .status.expect_ukm_page_end_signals = true;
   StartNewNavigationIfNeeded(navigation_id);
 }
 
-memories::VisitContextSignals HistoryClustersTabHelper::OnUkmNavigationComplete(
+history::VisitContextAnnotations
+HistoryClustersTabHelper::OnUkmNavigationComplete(
     int64_t navigation_id,
     const page_load_metrics::PageEndReason page_end_reason) {
-  auto* memories_service = GetMemoriesService();
-  auto& visit = memories_service->GetIncompleteVisit(navigation_id);
-  visit.context_signals.page_end_reason = page_end_reason;
-  // |RecordPageEndMetricsIfNeeded()| will fail to complete the visit as
-  // |ukm_page_end_signals| hasn't been set yet, but it will record metrics
-  // if needed (i.e. not already recorded) and possible (i.e. the history
-  // request has resolved and |history_rows| have been recorded).
+  auto* history_clusters_service = GetHistoryClustersService();
+  auto& incomplete_visit_context_annotations =
+      history_clusters_service->GetIncompleteVisitContextAnnotations(
+          navigation_id);
+  incomplete_visit_context_annotations.context_annotations.page_end_reason =
+      page_end_reason;
+  // `RecordPageEndMetricsIfNeeded()` will fail to complete the
+  // `IncompleteVisitContextAnnotations` as `ukm_page_end_signals` hasn't been
+  // set yet, but it will record metrics if needed (i.e. not already recorded)
+  // and possible (i.e. the history request has resolved and `history_rows` have
+  // been recorded).
   RecordPageEndMetricsIfNeeded(navigation_id);
-  // Make a copy of the context signals as the referenced visit may be
-  // destroyed in |CompleteVisitIfReady()|.
-  auto context_signals_copy = visit.context_signals;
-  DCHECK(visit.status.expect_ukm_page_end_signals);
-  visit.status.ukm_page_end_signals = true;
-  memories_service->CompleteVisitIfReady(navigation_id);
-  return context_signals_copy;
+  // Make a copy of the context annotations as the referenced
+  // incomplete_visit_context_annotations may be destroyed in
+  // `CompleteVisitContextAnnotationsIfReady()`.
+  auto context_annotations_copy =
+      incomplete_visit_context_annotations.context_annotations;
+  DCHECK(
+      incomplete_visit_context_annotations.status.expect_ukm_page_end_signals);
+  incomplete_visit_context_annotations.status.ukm_page_end_signals = true;
+  history_clusters_service->CompleteVisitContextAnnotationsIfReady(
+      navigation_id);
+  return context_annotations_copy;
 }
 
 void HistoryClustersTabHelper::StartNewNavigationIfNeeded(
@@ -223,28 +249,35 @@ void HistoryClustersTabHelper::StartNewNavigationIfNeeded(
 
 void HistoryClustersTabHelper::RecordPageEndMetricsIfNeeded(
     int64_t navigation_id) {
-  auto* memories_service = GetMemoriesService();
-  if (!memories_service->HasIncompleteVisit(navigation_id))
+  auto* history_clusters_service = GetHistoryClustersService();
+  if (!history_clusters_service->HasIncompleteVisitContextAnnotations(
+          navigation_id))
     return;
-  auto& visit = memories_service->GetIncompleteVisit(navigation_id);
-  if (visit.status.navigation_end_signals) {
-    DCHECK(visit.status.navigation_ended);
+  auto& incomplete_visit_context_annotations =
+      history_clusters_service->GetIncompleteVisitContextAnnotations(
+          navigation_id);
+  if (incomplete_visit_context_annotations.status.navigation_end_signals) {
+    DCHECK(incomplete_visit_context_annotations.status.navigation_ended);
     return;
   }
-  visit.status.navigation_ended = true;
+  incomplete_visit_context_annotations.status.navigation_ended = true;
   // Don't record page end metrics if the history rows request hasn't resolved
   // because some of the metrics rely on |url_row.url()|. Setting
-  // |navigation_ended| above will ensure |RecordPageEndMetricsIfNeeded()| is
+  // `navigation_ended` above will ensure `RecordPageEndMetricsIfNeeded()` is
   // re-invoked once the history request resolves.
-  if (!visit.status.history_rows)
+  if (!incomplete_visit_context_annotations.status.history_rows)
     return;
 
-  visit.context_signals.is_placed_in_tab_group =
-      !visit.context_signals.is_existing_part_of_tab_group &&
+  incomplete_visit_context_annotations.context_annotations
+      .is_placed_in_tab_group =
+      !incomplete_visit_context_annotations.context_annotations
+           .is_existing_part_of_tab_group &&
       IsPageInTabGroup(web_contents());
-  visit.context_signals.is_new_bookmark =
-      !visit.context_signals.is_existing_bookmark &&
-      IsPageBookmarked(web_contents(), visit.url_row.url());
+  incomplete_visit_context_annotations.context_annotations.is_new_bookmark =
+      !incomplete_visit_context_annotations.context_annotations
+           .is_existing_bookmark &&
+      IsPageBookmarked(web_contents(),
+                       incomplete_visit_context_annotations.url_row.url());
   // Android does not have NTP Custom Links.
 #if !defined(OS_ANDROID)
   // This queries the prefs directly if the visit URL is stored as an NTP
@@ -253,13 +286,15 @@ void HistoryClustersTabHelper::RecordPageEndMetricsIfNeeded(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())
           ->GetPrefs();
   ntp_tiles::CustomLinksStore custom_link_store(pref_service);
-  visit.context_signals.is_ntp_custom_link =
-      base::Contains(custom_link_store.RetrieveLinks(), visit.url_row.url(),
+  incomplete_visit_context_annotations.context_annotations.is_ntp_custom_link =
+      base::Contains(custom_link_store.RetrieveLinks(),
+                     incomplete_visit_context_annotations.url_row.url(),
                      [](const auto& link) { return link.url; });
 #endif  // !defined(OS_ANDROID)
 
-  visit.status.navigation_end_signals = true;
-  memories_service->CompleteVisitIfReady(navigation_id);
+  incomplete_visit_context_annotations.status.navigation_end_signals = true;
+  history_clusters_service->CompleteVisitContextAnnotationsIfReady(
+      navigation_id);
 }
 
 void HistoryClustersTabHelper::WebContentsDestroyed() {
@@ -267,12 +302,13 @@ void HistoryClustersTabHelper::WebContentsDestroyed() {
     RecordPageEndMetricsIfNeeded(navigation_id);
 }
 
-memories::MemoriesService* HistoryClustersTabHelper::GetMemoriesService() {
+history_clusters::HistoryClustersService*
+HistoryClustersTabHelper::GetHistoryClustersService() {
   if (!web_contents()) {
     NOTREACHED();
     return nullptr;
   }
-  auto* service = MemoriesServiceFactory::GetForBrowserContext(
+  auto* service = HistoryClustersServiceFactory::GetForBrowserContext(
       web_contents()->GetBrowserContext());
   DCHECK(service);
   return service;

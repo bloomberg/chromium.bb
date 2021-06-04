@@ -5,13 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
 
-#include "base/callback_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -85,15 +84,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   views::Label* description_label_ = nullptr;
 
-  views::Checkbox* presenter_tools_checkbox_ = nullptr;
-
-  base::CallbackListSubscription presenter_tools_checked_subscription_;
-
   views::Checkbox* audio_share_checkbox_ = nullptr;
-
-  // Contains |presenter_tools_checkbox_| and |audio_share_checkbox_| if
-  // present.
-  views::View* extra_views_container_ = nullptr;
 
   views::TabbedPane* tabbed_pane_ = nullptr;
   std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
@@ -101,7 +92,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   DialogSource dialog_source_;
 
-  base::Optional<content::DesktopMediaID> accepted_source_;
+  absl::optional<content::DesktopMediaID> accepted_source_;
 };
 
 // Implementation of DesktopMediaPicker for Views.

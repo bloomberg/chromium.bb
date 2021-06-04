@@ -20,7 +20,7 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_params_helper.h"
-#include "content/browser/webtransport/quic_transport_connector_impl.h"
+#include "content/browser/webtransport/web_transport_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -237,15 +237,15 @@ void SharedWorkerHost::Start(
   // Send the CreateSharedWorker message.
   factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
-      std::move(info), token_, instance_.constructor_origin(),
+      std::move(info), token_, instance_.storage_key().origin(),
       GetContentClient()->browser()->GetUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
       std::move(renderer_preferences), std::move(preference_watcher_receiver),
       std::move(content_settings), service_worker_handle_->TakeContainerInfo(),
       appcache_handle_
-          ? base::make_optional(appcache_handle_->appcache_host_id())
-          : base::nullopt,
+          ? absl::make_optional(appcache_handle_->appcache_host_id())
+          : absl::nullopt,
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
@@ -294,7 +294,7 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       GetProcessHost()->GetBrowserContext(),
       /*frame=*/nullptr, GetProcessHost()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
-      /*navigation_id=*/base::nullopt,
+      /*navigation_id=*/absl::nullopt,
       ukm::SourceIdObj::FromInt64(ukm_source_id_), &default_factory_receiver,
       &factory_params->header_client, bypass_redirect_checks,
       /*disable_secure_dns=*/nullptr, &factory_params->factory_override);
@@ -311,13 +311,13 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
 
 network::mojom::URLLoaderFactoryParamsPtr
 SharedWorkerHost::CreateNetworkFactoryParamsForSubresources() {
-  url::Origin origin = url::Origin::Create(instance_.url());
+  url::Origin origin = instance().storage_key().origin();
 
   // TODO(https://crbug.com/1060832): Implement COEP reporter for shared
   // workers.
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
-          GetProcessHost(), instance_.constructor_origin(),
+          GetProcessHost(), origin,
           net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
                                      origin, origin,
                                      net::SiteForCookies::FromOrigin(origin)),
@@ -373,11 +373,11 @@ void SharedWorkerHost::CreateAppCacheBackend(
                                   std::move(receiver));
 }
 
-void SharedWorkerHost::CreateQuicTransportConnector(
-    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+void SharedWorkerHost::CreateWebTransportConnector(
+    mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const url::Origin origin = url::Origin::Create(instance().url());
-  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebTransportConnectorImpl>(
                                   GetProcessHost()->GetID(), /*frame=*/nullptr,
                                   origin, GetNetworkIsolationKey()),
                               std::move(receiver));
@@ -474,11 +474,11 @@ base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
 }
 
 net::NetworkIsolationKey SharedWorkerHost::GetNetworkIsolationKey() const {
-  const url::Origin origin = url::Origin::Create(instance().url());
   // TODO(https://crbug.com/1147281): This is the NetworkIsolationKey of a
   // top-level browsing context, which shouldn't be use for SharedWorkers used
   // in iframes.
-  return net::NetworkIsolationKey::ToDoUseTopFrameOriginAsWell(origin);
+  return net::NetworkIsolationKey::ToDoUseTopFrameOriginAsWell(
+      instance().storage_key().origin());
 }
 
 void SharedWorkerHost::ReportNoBinderForInterface(const std::string& error) {

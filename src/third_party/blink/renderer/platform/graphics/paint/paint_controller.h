@@ -8,13 +8,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "cc/input/layer_selection_bound.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
-#include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -39,6 +38,7 @@ enum class PaintBenchmarkMode {
   // The above modes don't additionally invalidate paintings, i.e. during
   // repeated benchmarking, the PaintController is fully cached.
   kPartialInvalidation,
+  kSmallInvalidation,
   kSubsequenceCachingDisabled,
   kCachingDisabled,
 };
@@ -116,8 +116,8 @@ class PLATFORM_EXPORT PaintController {
       const TransformPaintPropertyNode* scroll_translation,
       const IntRect&);
 
-  void RecordSelection(base::Optional<PaintedSelectionBound> start,
-                       base::Optional<PaintedSelectionBound> end);
+  void RecordSelection(absl::optional<PaintedSelectionBound> start,
+                       absl::optional<PaintedSelectionBound> end);
 
   void SetPossibleBackgroundColor(const DisplayItemClient&,
                                   Color,
@@ -132,15 +132,6 @@ class PLATFORM_EXPORT PaintController {
 
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
-    static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,
-                  "Can only createAndAppend subclasses of DisplayItem.");
-    static_assert(
-        sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
-        "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
-    static_assert(kDisplayItemAlignment % alignof(DisplayItemClass) == 0,
-                  "DisplayItem subclass alignment is not a factor of "
-                  "kDisplayItemAlignment.");
-
     DisplayItemClass& display_item =
         new_paint_artifact_->GetDisplayItemList()
             .AllocateAndConstruct<DisplayItemClass>(
@@ -159,11 +150,13 @@ class PLATFORM_EXPORT PaintController {
   // true. Otherwise returns false.
   bool UseCachedSubsequenceIfPossible(const DisplayItemClient&);
 
-  // Returns the index of the paint chunk that is forced for the subsequence.
-  wtf_size_t BeginSubsequence();
+  void BeginSubsequence(wtf_size_t& subsequence_index,
+                        wtf_size_t& start_chunk_index);
   // The |start| parameter should be the return value of the corresponding
   // BeginSubsequence().
-  void EndSubsequence(const DisplayItemClient&, wtf_size_t start_chunk_index);
+  void EndSubsequence(const DisplayItemClient&,
+                      wtf_size_t subsequence_index,
+                      wtf_size_t start_chunk_index);
 
   void BeginSkippingCache() {
     if (usage_ == kTransient)
@@ -293,7 +286,6 @@ class PLATFORM_EXPORT PaintController {
   void ProcessNewItem(DisplayItem&);
 
   void CheckNewItem(DisplayItem&);
-  DisplayItem& MoveItemFromCurrentListToNewList(wtf_size_t);
   void CheckNewChunk();
 
   struct IdAsHashKey {
@@ -346,9 +338,10 @@ class PLATFORM_EXPORT PaintController {
 
   wtf_size_t FindCachedItem(const DisplayItem::Id&);
   wtf_size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
-  void CopyCachedSubsequence(wtf_size_t start_chunk_index,
-                             wtf_size_t end_chunk_index);
-  void AppendChunkByMoving(PaintChunk&&);
+  void AppendSubsequenceByMoving(const DisplayItemClient&,
+                                 wtf_size_t subsequence_index,
+                                 wtf_size_t start_chunk_index,
+                                 wtf_size_t end_chunk_index);
 
   // Resets the indices (e.g. next_item_to_match_) of
   // current_paint_artifact_.GetDisplayItemList() to their initial values. This
@@ -372,13 +365,16 @@ class PLATFORM_EXPORT PaintController {
   }
 
   struct SubsequenceMarkers {
+    const DisplayItemClient* client = nullptr;
     // The start and end (not included) index of paint chunks in this
     // subsequence.
     wtf_size_t start_chunk_index = 0;
     wtf_size_t end_chunk_index = 0;
   };
 
-  SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);
+  wtf_size_t GetSubsequenceIndex(const DisplayItemClient&) const;
+  const SubsequenceMarkers* GetSubsequenceMarkers(
+      const DisplayItemClient&) const;
 
   void ValidateNewChunkId(const PaintChunk::Id&);
 
@@ -465,11 +461,14 @@ class PLATFORM_EXPORT PaintController {
 
   String under_invalidation_message_prefix_;
 
-  using CachedSubsequenceMap =
-      HashMap<const DisplayItemClient*, SubsequenceMarkers>;
-  CachedSubsequenceMap current_cached_subsequences_;
-  CachedSubsequenceMap new_cached_subsequences_;
-  wtf_size_t last_cached_subsequence_end_ = 0;
+  struct SubsequencesData {
+    // Map a client to the index into |tree|.
+    HashMap<const DisplayItemClient*, wtf_size_t> map;
+    // A pre-order list of the subsequence tree.
+    Vector<SubsequenceMarkers> tree;
+  };
+  SubsequencesData current_subsequences_;
+  SubsequencesData new_subsequences_;
 
   wtf_size_t current_fragment_ = 0;
 

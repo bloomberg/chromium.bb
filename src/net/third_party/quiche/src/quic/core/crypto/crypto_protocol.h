@@ -28,7 +28,7 @@ using ServerConfigID = std::string;
 
 // The following tags have been deprecated and should not be reused:
 // "1CON", "BBQ4", "NCON", "RCID", "SREJ", "TBKP", "TB10", "SCLS", "SMHL",
-// "QNZR", "B2HI", "H2PR", "FIFO", "LIFO", "RRWS"
+// "QNZR", "B2HI", "H2PR", "FIFO", "LIFO", "RRWS", "QNSP"
 
 // clang-format off
 const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello
@@ -127,9 +127,10 @@ const QuicTag kIW50 = TAG('I', 'W', '5', '0');   // Force ICWND to 50
 const QuicTag kB2ON = TAG('B', '2', 'O', 'N');   // Enable BBRv2
 const QuicTag kB2NA = TAG('B', '2', 'N', 'A');   // For BBRv2, do not add ack
                                                  // height to queueing threshold
-const QuicTag kB2NE = TAG('B', '2', 'N', 'E');   // For BBRv2, do not exit
-                                                 // STARTUP if there's enough
-                                                 // bandwidth growth
+const QuicTag kB2NE = TAG('B', '2', 'N', 'E');   // For BBRv2, always exit
+                                                 // STARTUP on loss, even if
+                                                 // bandwidth growth exceeds
+                                                 // threshold.
 const QuicTag kB2RP = TAG('B', '2', 'R', 'P');   // For BBRv2, run PROBE_RTT on
                                                  // the regular schedule
 const QuicTag kB2CL = TAG('B', '2', 'C', 'L');   // For BBRv2, allow PROBE_BW
@@ -342,6 +343,7 @@ const QuicTag kMTUL = TAG('M', 'T', 'U', 'L');  // Low-target MTU discovery.
 
 const QuicTag kNSLC = TAG('N', 'S', 'L', 'C');  // Always send connection close
                                                 // for idle timeout.
+const QuicTag kCHSP = TAG('C', 'H', 'S', 'P');  // Chaos protection.
 
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
@@ -400,9 +402,6 @@ const QuicTag kPDP5 = TAG('P', 'D', 'P', '5');   // Path degrading triggered
                                                  // at 5PTO.
 
 const QuicTag kQNZ2 = TAG('Q', 'N', 'Z', '2');   // Turn off QUIC crypto 0-RTT.
-
-const QuicTag kQNSP = TAG('Q', 'N', 'S', 'P');   // Turn off server push in
-                                                 // gQUIC.
 
 const QuicTag kMAD  = TAG('M', 'A', 'D', 0);     // Max Ack Delay (IETF QUIC)
 

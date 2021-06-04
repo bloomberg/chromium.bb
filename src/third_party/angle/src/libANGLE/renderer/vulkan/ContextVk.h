@@ -440,12 +440,6 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     vk::DescriptorSetLayoutDesc getDriverUniformsDescriptorSetDesc(
         VkShaderStageFlags shaderStages) const;
 
-    // We use textureSerial to optimize texture binding updates. Each permutation of a
-    // {VkImage/VkSampler} generates a unique serial. These object ids are combined to form a unique
-    // signature for each descriptor set. This allows us to keep a cache of descriptor sets and
-    // avoid calling vkAllocateDesctiporSets each texture update.
-    const vk::TextureDescriptorDesc &getActiveTexturesDesc() const { return mActiveTexturesDesc; }
-
     void updateScissor(const gl::State &glState);
 
     bool emulateSeamfulCubeMapSampling() const { return mEmulateSeamfulCubeMapSampling; }
@@ -615,6 +609,12 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     // Implementation of MultisampleTextureInitializer
     angle::Result initializeMultisampleTextureToBlack(const gl::Context *context,
                                                       gl::Texture *glTexture) override;
+
+    // TODO(http://anglebug.com/5624): rework updateActiveTextures(), createPipelineLayout(),
+    // handleDirtyGraphicsPipeline(), and ProgramPipelineVk::link().
+    void resetCurrentGraphicsPipeline() { mCurrentGraphicsPipeline = nullptr; }
+
+    void onProgramExecutableReset(ProgramExecutableVk *executableVk);
 
   private:
     // Dirty bits.
@@ -861,7 +861,6 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     void writeAtomicCounterBufferDriverUniformOffsets(uint32_t *offsetsOut, size_t offsetsSize);
 
     angle::Result submitFrame(const vk::Semaphore *signalSemaphore);
-    angle::Result memoryBarrierImpl(GLbitfield barriers, VkPipelineStageFlags stageMask);
 
     angle::Result synchronizeCpuGpuTime();
     angle::Result traceGpuEventImpl(vk::CommandBuffer *commandBuffer,
@@ -995,6 +994,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     // The offset we had the last time we bound the index buffer.
     const GLvoid *mLastIndexBufferOffset;
+    VkDeviceSize mCurrentIndexBufferOffset;
     gl::DrawElementsType mCurrentDrawElementsType;
     angle::PackedEnumMap<gl::DrawElementsType, VkIndexType> mIndexTypeMap;
 
@@ -1031,7 +1031,14 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     // This cache should also probably include the texture index (shader location) and array
     // index (also in the shader). This info is used in the descriptor update step.
     gl::ActiveTextureArray<vk::TextureUnit> mActiveTextures;
+
+    // We use textureSerial to optimize texture binding updates. Each permutation of a
+    // {VkImage/VkSampler} generates a unique serial. These object ids are combined to form a unique
+    // signature for each descriptor set. This allows us to keep a cache of descriptor sets and
+    // avoid calling vkAllocateDesctiporSets each texture update.
     vk::TextureDescriptorDesc mActiveTexturesDesc;
+
+    vk::ShaderBuffersDescriptorDesc mShaderBuffersDescriptorDesc;
 
     gl::ActiveTextureArray<TextureVk *> mActiveImages;
 

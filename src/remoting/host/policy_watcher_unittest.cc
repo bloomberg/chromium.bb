@@ -95,12 +95,11 @@ class PolicyWatcherTest : public testing::Test {
     nat_false_.SetBoolean(key::kRemoteAccessHostFirewallTraversal, false);
     nat_one_.SetInteger(key::kRemoteAccessHostFirewallTraversal, 1);
     nat_one_domain_full_.SetInteger(key::kRemoteAccessHostFirewallTraversal, 1);
-    nat_one_domain_full_.Set(key::kRemoteAccessHostDomainList,
-                             host_domain.CreateDeepCopy());
+    nat_one_domain_full_.SetPath(key::kRemoteAccessHostDomainList,
+                                 host_domain.Clone());
     domain_empty_.Set(key::kRemoteAccessHostDomainList,
                       std::make_unique<base::ListValue>());
-    domain_full_.Set(key::kRemoteAccessHostDomainList,
-                     host_domain.CreateDeepCopy());
+    domain_full_.SetPath(key::kRemoteAccessHostDomainList, host_domain.Clone());
     SetDefaults(nat_true_others_default_);
     nat_true_others_default_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                         true);
@@ -111,24 +110,24 @@ class PolicyWatcherTest : public testing::Test {
     domain_empty_others_default_.Set(key::kRemoteAccessHostDomainList,
                                      std::make_unique<base::ListValue>());
     SetDefaults(domain_full_others_default_);
-    domain_full_others_default_.Set(key::kRemoteAccessHostDomainList,
-                                    host_domain.CreateDeepCopy());
+    domain_full_others_default_.SetPath(key::kRemoteAccessHostDomainList,
+                                        host_domain.Clone());
     nat_true_domain_empty_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                       true);
     nat_true_domain_empty_.Set(key::kRemoteAccessHostDomainList,
                                std::make_unique<base::ListValue>());
     nat_true_domain_full_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                      true);
-    nat_true_domain_full_.Set(key::kRemoteAccessHostDomainList,
-                              host_domain.CreateDeepCopy());
+    nat_true_domain_full_.SetPath(key::kRemoteAccessHostDomainList,
+                                  host_domain.Clone());
     nat_false_domain_empty_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                        false);
     nat_false_domain_empty_.Set(key::kRemoteAccessHostDomainList,
                                 std::make_unique<base::ListValue>());
     nat_false_domain_full_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                       false);
-    nat_false_domain_full_.Set(key::kRemoteAccessHostDomainList,
-                               host_domain.CreateDeepCopy());
+    nat_false_domain_full_.SetPath(key::kRemoteAccessHostDomainList,
+                                   host_domain.Clone());
     SetDefaults(nat_true_domain_empty_others_default_);
     nat_true_domain_empty_others_default_.SetBoolean(
         key::kRemoteAccessHostFirewallTraversal, true);
@@ -151,8 +150,8 @@ class PolicyWatcherTest : public testing::Test {
     port_range_malformed_.SetString(key::kRemoteAccessHostUdpPortRange,
                                     "malformed");
     port_range_malformed_domain_full_.MergeDictionary(&port_range_malformed_);
-    port_range_malformed_domain_full_.Set(key::kRemoteAccessHostDomainList,
-                                          host_domain.CreateDeepCopy());
+    port_range_malformed_domain_full_.SetPath(key::kRemoteAccessHostDomainList,
+                                              host_domain.Clone());
 
     curtain_true_.SetBoolean(key::kRemoteAccessHostRequireCurtain, true);
     curtain_false_.SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
@@ -179,27 +178,26 @@ class PolicyWatcherTest : public testing::Test {
                                    kClientDomain);
     // Deprecated policies should get converted if new ones aren't present.
     SetDefaults(deprecated_policies_expected_);
-    deprecated_policies_expected_.Set(key::kRemoteAccessHostDomainList,
-                                      host_domain.CreateDeepCopy());
-    deprecated_policies_expected_.Set(key::kRemoteAccessHostClientDomainList,
-                                      client_domain.CreateDeepCopy());
+    deprecated_policies_expected_.SetPath(key::kRemoteAccessHostDomainList,
+                                          host_domain.Clone());
+    deprecated_policies_expected_.SetPath(
+        key::kRemoteAccessHostClientDomainList, client_domain.Clone());
 
     deprecated_and_new_policies_.SetString(key::kRemoteAccessHostDomain,
                                            kHostDomain);
     deprecated_and_new_policies_.SetString(key::kRemoteAccessHostClientDomain,
                                            kClientDomain);
-    deprecated_and_new_policies_.Set(key::kRemoteAccessHostDomainList,
-                                     multiple_host_domains.CreateDeepCopy());
-    deprecated_and_new_policies_.Set(key::kRemoteAccessHostClientDomainList,
-                                     multiple_client_domains.CreateDeepCopy());
+    deprecated_and_new_policies_.SetPath(key::kRemoteAccessHostDomainList,
+                                         multiple_host_domains.Clone());
+    deprecated_and_new_policies_.SetPath(key::kRemoteAccessHostClientDomainList,
+                                         multiple_client_domains.Clone());
     // Deprecated policies should just be dropped in new ones are present.
     SetDefaults(deprecated_and_new_policies_expected_);
-    deprecated_and_new_policies_expected_.Set(
-        key::kRemoteAccessHostDomainList,
-        multiple_host_domains.CreateDeepCopy());
-    deprecated_and_new_policies_expected_.Set(
+    deprecated_and_new_policies_expected_.SetPath(
+        key::kRemoteAccessHostDomainList, multiple_host_domains.Clone());
+    deprecated_and_new_policies_expected_.SetPath(
         key::kRemoteAccessHostClientDomainList,
-        multiple_client_domains.CreateDeepCopy());
+        multiple_client_domains.Clone());
 
     // Empty strings should be treated as not set.
     deprecated_empty_strings_.SetString(key::kRemoteAccessHostDomain, "");
@@ -802,7 +800,7 @@ TEST_F(PolicyWatcherTest, GetEffectivePoliciesError) {
   StartWatching();
   std::unique_ptr<base::DictionaryValue> effective_policies =
       policy_watcher_->GetEffectivePolicies();
-  ASSERT_EQ(0u, effective_policies->size());
+  ASSERT_EQ(0u, effective_policies->DictSize());
 }
 
 TEST_F(PolicyWatcherTest, GetPlatformPolicies) {
@@ -813,9 +811,9 @@ TEST_F(PolicyWatcherTest, GetPlatformPolicies) {
               OnPolicyUpdatePtr(IsPolicies(&nat_false_)));
 
   StartWatching();
-  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->DictSize());
   SetPolicies(nat_false_);
-  ASSERT_EQ(1u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(1u, policy_watcher_->GetPlatformPolicies()->DictSize());
 }
 
 TEST_F(PolicyWatcherTest, GetPlatformPoliciesMultipleOverrides) {
@@ -830,13 +828,13 @@ TEST_F(PolicyWatcherTest, GetPlatformPoliciesMultipleOverrides) {
               OnPolicyUpdatePtr(IsPolicies(&nat_true_domain_empty_)));
 
   StartWatching();
-  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->DictSize());
   SetPolicies(domain_full_);
-  ASSERT_EQ(1u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(1u, policy_watcher_->GetPlatformPolicies()->DictSize());
   SetPolicies(nat_false_domain_full_);
-  ASSERT_EQ(2u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(2u, policy_watcher_->GetPlatformPolicies()->DictSize());
   SetPolicies(nat_true_domain_empty_);
-  ASSERT_EQ(2u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(2u, policy_watcher_->GetPlatformPolicies()->DictSize());
 }
 
 TEST_F(PolicyWatcherTest, GetPlatformPoliciesError) {
@@ -844,7 +842,7 @@ TEST_F(PolicyWatcherTest, GetPlatformPoliciesError) {
 
   SetPolicies(nat_one_);
   StartWatching();
-  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->size());
+  ASSERT_EQ(0u, policy_watcher_->GetPlatformPolicies()->DictSize());
 }
 
 }  // namespace remoting

@@ -9,9 +9,9 @@
 #define CHROME_COMMON_WEBUI_URL_CONSTANTS_H_
 
 #include <stddef.h>
-#include <string>
 
 #include "base/strings/string_piece_forward.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
@@ -148,7 +148,7 @@ extern const char kChromeUIRestartURL[];
 extern const char kChromeUISafetyPixelbookURL[];
 extern const char kChromeUISafetyPixelSlateURL[];
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-extern const char kChromeUISessionServiceInternalsHost[];
+extern const char kChromeUISessionServiceInternalsPath[];
 #endif
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISettingsURL[];
@@ -259,7 +259,6 @@ extern const char kChromeUILockScreenNetworkHost[];
 extern const char kChromeUILockScreenNetworkURL[];
 extern const char kChromeUILockScreenStartReauthHost[];
 extern const char kChromeUILockScreenStartReauthURL[];
-extern const char kChromeUIMachineLearningInternalsHost[];
 extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUIMobileSetupURL[];
 extern const char kChromeUIMultiDeviceInternalsHost[];
@@ -274,6 +273,8 @@ extern const char kChromeUIPasswordChangeHost[];
 extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPrintManagementUrl[];
 extern const char kChromeUIPowerHost[];
+extern const char kChromeUIProjectorSelfieCamHost[];
+extern const char kChromeUIProjectorSelfieCamURL[];
 extern const char kChromeUIScanningAppURL[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];
@@ -412,6 +413,10 @@ extern const char kPrivacySandboxSubPagePath[];
 
 #if defined(OS_WIN)
 extern const char kCleanupSubPage[];
+#endif
+
+#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+extern const char kChromeUICastFeedbackHost[];
 #endif
 
 // Extensions sub pages.

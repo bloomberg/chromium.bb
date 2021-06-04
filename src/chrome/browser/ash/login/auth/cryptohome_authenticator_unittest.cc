@@ -55,14 +55,13 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
 
+namespace ash {
+namespace {
+
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::WithArg;
 using ::testing::_;
-
-namespace chromeos {
-
-namespace {
 
 // A fake sanitized username used for testing.
 constexpr char kFakeSanitizedUsername[] = "01234567890ABC";
@@ -267,7 +266,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     // Testing profile must be initialized after user_manager_ +
     // user_manager_enabler_, because it will create another UserManager
     // instance if UserManager instance has not been registed before.
-    profile_.reset(new TestingProfile);
+    profile_ = std::make_unique<TestingProfile>();
     OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
         owner_key_util_);
     Key key("fakepass");
@@ -298,7 +297,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     SystemSaltGetter::Initialize();
 
     auth_ = new ChromeCryptohomeAuthenticator(&consumer_);
-    state_.reset(new TestAttemptState(user_context_));
+    state_ = std::make_unique<TestAttemptState>(user_context_);
   }
 
   // Tears down the test fixture.
@@ -397,7 +396,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     request.mutable_authorization_request();
     fake_userdataauth_client_->AddKey(
         request,
-        base::BindOnce([](base::Optional<::user_data_auth::AddKeyReply> reply) {
+        base::BindOnce([](absl::optional<::user_data_auth::AddKeyReply> reply) {
           ASSERT_TRUE(reply.has_value());
           EXPECT_EQ(
               reply->error(),
@@ -551,8 +550,8 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   crypto::ScopedTestNSSChromeOSUser user_slot(user_context_.GetUserIDHash());
   owner_key_util_->SetPublicKey(GetOwnerPublicKey());
 
-  profile_manager_.reset(
-      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  profile_manager_ = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager_->SetUp());
 
   FailOnLoginSuccess();  // Set failing on success as the default...
@@ -579,7 +578,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // verification.
   content::RunAllTasksUntilIdle();
 
-  state_.reset(new TestAttemptState(user_context_));
+  state_ = std::make_unique<TestAttemptState>(user_context_);
   state_->PresetCryptohomeStatus(cryptohome::MOUNT_ERROR_NONE);
 
   // The owner key util should not have found the owner key, so login should
@@ -603,8 +602,8 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
       crypto::GetPublicSlotForChromeOSUser(user_context_.GetUserIDHash()));
   ASSERT_TRUE(CreateOwnerKeyInSlot(user_slot.get()));
 
-  profile_manager_.reset(
-      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  profile_manager_ = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager_->SetUp());
 
   ExpectLoginSuccess(user_context_);
@@ -629,7 +628,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
   // verification.
   content::RunAllTasksUntilIdle();
 
-  state_.reset(new TestAttemptState(user_context_));
+  state_ = std::make_unique<TestAttemptState>(user_context_);
   state_->PresetCryptohomeStatus(cryptohome::MOUNT_ERROR_NONE);
 
   // The owner key util should find the owner key, so login should succeed.
@@ -868,4 +867,4 @@ TEST_F(CryptohomeAuthenticatorTest, FailLoginWithMissingSalt) {
   run_loop_.Run();
 }
 
-}  // namespace chromeos
+}  // namespace ash

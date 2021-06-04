@@ -29,7 +29,7 @@ class ProtocolHandlerManager {
   // for the app indicated by |app_id|, this method will translate the protocol
   // to a full app URL.
   // If no matching handler is installed, no URL is returned.
-  base::Optional<GURL> TranslateProtocolUrl(const AppId& app_id,
+  absl::optional<GURL> TranslateProtocolUrl(const AppId& app_id,
                                             const GURL& protocol_url) const;
 
   // Get the list of handlers for the given protocol.
@@ -56,15 +56,9 @@ class ProtocolHandlerManager {
       const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers,
       base::OnceCallback<void(bool)> callback);
 
-  // Unregisters OS specific protocol handlers for OSs that need them, using the
-  // protocol handler information supplied in the app manifest.
-  void UnregisterOsProtocolHandlers(const AppId& app_id);
-
-  // Unregisters OS specific protocol handlers for OSs that need them, using
-  // arbitrary protocol handler information.
-  void UnregisterOsProtocolHandlers(
-      const AppId& app_id,
-      const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers);
+  // Unregisters OS specific protocol handlers for an app.
+  void UnregisterOsProtocolHandlers(const AppId& app_id,
+                                    base::OnceCallback<void(bool)> callback);
 
   AppRegistrar* app_registrar_;
 

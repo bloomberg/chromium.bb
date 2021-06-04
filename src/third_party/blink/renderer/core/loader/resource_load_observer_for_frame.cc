@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -27,6 +28,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -40,7 +42,10 @@ ResourceLoadObserverForFrame::ResourceLoadObserverForFrame(
     const ResourceFetcherProperties& fetcher_properties)
     : document_loader_(loader),
       document_(document),
-      fetcher_properties_(fetcher_properties) {}
+      fetcher_properties_(fetcher_properties),
+      power_mode_voter_(
+          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
+              "PowerModeVoter.ResourceLoads")) {}
 ResourceLoadObserverForFrame::~ResourceLoadObserverForFrame() = default;
 
 void ResourceLoadObserverForFrame::DidStartRequest(
@@ -86,11 +91,12 @@ void ResourceLoadObserverForFrame::WillSendRequest(
       GetProbe(), document_loader_,
       fetcher_properties_->GetFetchClientSettingsObject().GlobalObjectUrl(),
       request, redirect_response, options, resource_type,
-      render_blocking_behavior);
+      render_blocking_behavior, base::TimeTicks::Now());
   if (auto* idleness_detector = frame->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(document_->Fetcher());
   if (auto* interactive_detector = InteractiveDetector::From(*document_))
-    interactive_detector->OnResourceLoadBegin(base::nullopt);
+    interactive_detector->OnResourceLoadBegin(absl::nullopt);
+  UpdatePowerModeVote();
 }
 
 void ResourceLoadObserverForFrame::DidChangePriority(
@@ -245,6 +251,7 @@ void ResourceLoadObserverForFrame::DidFinishLoading(
   if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector()) {
     idleness_detector->OnDidLoadResource();
   }
+  UpdatePowerModeVote();
   document_->CheckCompleted();
 }
 
@@ -261,6 +268,8 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   probe::DidFailLoading(GetProbe(), identifier, document_loader_, error,
                         frame->GetDevToolsFrameToken());
 
+  RecordAddressSpaceFeature(FetchType::kSubresource, frame, error);
+
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request) {
@@ -269,11 +278,12 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   if (auto* interactive_detector = InteractiveDetector::From(*document_)) {
     // We have not yet recorded load_finish_time. Pass nullopt here; we will
     // call base::TimeTicks::Now() lazily when we need it.
-    interactive_detector->OnResourceLoadEnd(base::nullopt);
+    interactive_detector->OnResourceLoadEnd(absl::nullopt);
   }
   if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector()) {
     idleness_detector->OnDidLoadResource();
   }
+  UpdatePowerModeVote();
   document_->CheckCompleted();
 }
 
@@ -290,6 +300,24 @@ CoreProbeSink* ResourceLoadObserverForFrame::GetProbe() {
 
 void ResourceLoadObserverForFrame::CountUsage(WebFeature feature) {
   document_loader_->GetUseCounter().Count(feature, document_->GetFrame());
+}
+
+void ResourceLoadObserverForFrame::UpdatePowerModeVote() {
+  // Vote for loading as long as there are at least three pending requests.
+  int request_count = document_->Fetcher()->ActiveRequestCount();
+  bool should_vote_loading = request_count > 2;
+
+  if (should_vote_loading == power_mode_vote_is_loading_)
+    return;
+
+  if (should_vote_loading) {
+    power_mode_voter_->VoteFor(power_scheduler::PowerMode::kLoading);
+  } else {
+    power_mode_voter_->ResetVoteAfterTimeout(
+        power_scheduler::PowerModeVoter::kLoadingTimeout);
+  }
+
+  power_mode_vote_is_loading_ = should_vote_loading;
 }
 
 }  // namespace blink

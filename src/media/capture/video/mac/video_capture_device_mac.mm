@@ -37,7 +37,8 @@ using ScopedIOUSBInterfaceInterface =
 
 @implementation DeviceNameAndTransportType
 
-- (id)initWithName:(NSString*)deviceName transportType:(int32_t)transportType {
+- (instancetype)initWithName:(NSString*)deviceName
+               transportType:(int32_t)transportType {
   if (self = [super init]) {
     _deviceName.reset([deviceName copy]);
     _transportType = transportType;
@@ -450,8 +451,8 @@ static void GetZoomControlRangeAndCurrent(
 static void SetPanTiltInUsbDevice(
     IOUSBInterfaceInterface220** control_interface,
     int unit_id,
-    base::Optional<int> pan,
-    base::Optional<int> tilt) {
+    absl::optional<int> pan,
+    absl::optional<int> tilt) {
   if (!pan.has_value() && !tilt.has_value())
     return;
 
@@ -620,8 +621,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     LogMessage("Using AVFoundation for device: " +
                device_descriptor_.display_name());
 
-  NSString* deviceId =
-      [NSString stringWithUTF8String:device_descriptor_.device_id.c_str()];
+  NSString* deviceId = base::SysUTF8ToNSString(device_descriptor_.device_id);
 
   [capture_device_ setFrameReceiver:this];
 
@@ -750,10 +750,10 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
     if (settings->has_pan || settings->has_tilt) {
       SetPanTiltInUsbDevice(
           control_interface, unit_id,
-          settings->has_pan ? base::make_optional(settings->pan)
-                            : base::nullopt,
-          settings->has_tilt ? base::make_optional(settings->tilt)
-                             : base::nullopt);
+          settings->has_pan ? absl::make_optional(settings->pan)
+                            : absl::nullopt,
+          settings->has_tilt ? absl::make_optional(settings->tilt)
+                             : absl::nullopt);
     }
     if (settings->has_zoom) {
       SetZoomInUsbDevice(control_interface, unit_id, settings->zoom);

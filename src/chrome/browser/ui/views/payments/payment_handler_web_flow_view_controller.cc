@@ -34,6 +34,8 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -47,8 +49,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace payments {
 namespace {
@@ -296,9 +296,10 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
 std::unique_ptr<views::Background>
 PaymentHandlerWebFlowViewController::GetHeaderBackground(
     views::View* header_view) {
+  DCHECK(header_view);
   auto default_header_background =
       PaymentRequestSheetController::GetHeaderBackground(header_view);
-  if (web_contents()) {
+  if (web_contents() && header_view->GetWidget()) {
     return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
         web_contents()->GetThemeColor().value_or(SK_ColorTRANSPARENT),
         default_header_background->get_color()));
@@ -359,11 +360,13 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  // The navigation must be committed because WebContents::GetLastCommittedURL()
-  // is assumed to be the URL loaded in the payment handler window.
-  DCHECK(navigation_handle->HasCommitted());
-
-  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
+  // Checking uncommitted navigations (e.g., Network errors) is unnecessary
+  // because the new pages have no chance to be loaded, rendered nor execute js.
+  // TODO(crbug.com/1198274): Only main frame is checked because unsafe iframes
+  // are blocked by the MixContentNavigationThrottle. But this design is
+  // fragile.
+  if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame() &&
+      !SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
     AbortPayment();
     return;

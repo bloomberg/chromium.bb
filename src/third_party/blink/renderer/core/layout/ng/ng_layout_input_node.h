@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_INPUT_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_INPUT_NODE_H_
 
-#include "base/optional.h"
+#include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
@@ -88,6 +89,7 @@ class CORE_EXPORT NGLayoutInputNode {
     return IsFloating() || IsOutOfFlowPositioned();
   }
   bool IsReplaced() const { return box_->IsLayoutReplaced(); }
+  bool IsFrame() const { return box_->IsFrame(); }
   bool IsAbsoluteContainer() const {
     return box_->CanContainAbsolutePositionObjects();
   }
@@ -105,6 +107,9 @@ class CORE_EXPORT NGLayoutInputNode {
     return box_->ShouldBeConsideredAsReplaced();
   }
   bool IsListItem() const { return IsBlock() && box_->IsLayoutNGListItem(); }
+  // Returns the list marker if |this.IsListItem()| with an outside list marker.
+  // Otherwise |nullptr|.
+  NGBlockNode ListMarkerBlockNodeIfListItem() const;
   bool IsListMarker() const {
     return IsBlock() && box_->IsLayoutNGOutsideListMarker();
   }
@@ -201,8 +206,8 @@ class CORE_EXPORT NGLayoutInputNode {
   // ComputeReplacedSize can use it to compute actual replaced size.
   // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
   // Use NGBlockNode::GetAspectRatio to get the aspect ratio.
-  void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
-                     base::Optional<LayoutUnit>* computed_block_size) const;
+  void IntrinsicSize(absl::optional<LayoutUnit>* computed_inline_size,
+                     absl::optional<LayoutUnit>* computed_block_size) const;
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling() const;
@@ -318,8 +323,8 @@ class CORE_EXPORT NGLayoutInputNode {
       : box_(box), type_(type) {}
 
   void GetOverrideIntrinsicSize(
-      base::Optional<LayoutUnit>* computed_inline_size,
-      base::Optional<LayoutUnit>* computed_block_size) const;
+      absl::optional<LayoutUnit>* computed_inline_size,
+      absl::optional<LayoutUnit>* computed_block_size) const;
 
   LayoutBox* box_;
 

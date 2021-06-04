@@ -141,6 +141,7 @@ static_library("safe_browsing") {
       ":metrics_collector",
       ":verdict_cache_manager_factory",
       "//build:branding_buildflags",
+      "//build:chromeos_buildflags",
       "//chrome/browser:browser_process",
       "//chrome/browser/profiles:profile",
       "//chrome/common/safe_browsing:proto",
@@ -164,6 +165,7 @@ static_library("safe_browsing") {
       "//components/safe_browsing/core:verdict_cache_manager",
       "//components/safe_browsing/core/browser",
       "//components/safe_browsing/core/browser:network_context",
+      "//components/safe_browsing/core/browser/download:download_stats",
       "//components/safe_browsing/core/browser/sync",
       "//components/safe_browsing/core/common",
       "//components/safe_browsing/core/common:safe_browsing_prefs",
@@ -178,6 +180,7 @@ static_library("safe_browsing") {
       "//components/sync_user_events",
       "//components/unified_consent",
       "//components/variations/service",
+      "//components/version_info",
       "//content/public/browser",
       "//services/preferences/public/mojom:mojom",
     ]

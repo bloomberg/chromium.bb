@@ -29,10 +29,10 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "media/mojo/mojom/media_player.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
@@ -223,7 +223,7 @@ class CORE_EXPORT HTMLMediaElement
   bool Loop() const;
   void SetLoop(bool);
   ScriptPromise playForBindings(ScriptState*);
-  base::Optional<DOMExceptionCode> Play();
+  absl::optional<DOMExceptionCode> Play();
   void pause();
   double latencyHint() const;
   void setLatencyHint(double);
@@ -250,6 +250,7 @@ class CORE_EXPORT HTMLMediaElement
   bool muted() const;
   void setMuted(bool);
   virtual bool SupportsPictureInPicture() const { return false; }
+  void SetUserWantsControlsVisible(bool visible);
 
   void TogglePlayState();
 
@@ -665,7 +666,7 @@ class CORE_EXPORT HTMLMediaElement
   double volume_;
   double last_seek_time_;
 
-  base::Optional<base::ElapsedTimer> previous_progress_time_;
+  absl::optional<base::ElapsedTimer> previous_progress_time_;
 
   // Cached duration to suppress duplicate events if duration unchanged.
   double duration_;
@@ -749,6 +750,10 @@ class CORE_EXPORT HTMLMediaElement
   bool processing_preference_change_ : 1;
 
   bool was_always_muted_ : 1;
+
+  // Set if the user has used the context menu to set the visibility of the
+  // controls.
+  absl::optional<bool> user_wants_controls_visible_;
 
   // Whether or not |web_media_player_| should apply pitch adjustments at
   // playback raters other than 1.0.

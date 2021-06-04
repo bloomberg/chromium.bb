@@ -214,9 +214,7 @@ class VertexAttributeTest : public ANGLETest
         glEnableVertexAttribArray(mExpectedAttrib);
     }
 
-    void checkPixels() { checkRGBPixels(true); }
-
-    void checkRGBPixels(bool checkAlpha)
+    void checkPixels()
     {
         GLint viewportSize[4];
         glGetIntegerv(GL_VIEWPORT, viewportSize);
@@ -227,20 +225,10 @@ class VertexAttributeTest : public ANGLETest
         // We need to offset our checks from triangle edges to ensure we don't fall on a single tri
         // Avoid making assumptions of drawQuad with four checks to check the four possible tri
         // regions
-        if (checkAlpha)
-        {
-            EXPECT_PIXEL_EQ((midPixelX + viewportSize[0]) / 2, midPixelY, 255, 255, 255, 255);
-            EXPECT_PIXEL_EQ((midPixelX + viewportSize[2]) / 2, midPixelY, 255, 255, 255, 255);
-            EXPECT_PIXEL_EQ(midPixelX, (midPixelY + viewportSize[1]) / 2, 255, 255, 255, 255);
-            EXPECT_PIXEL_EQ(midPixelX, (midPixelY + viewportSize[3]) / 2, 255, 255, 255, 255);
-        }
-        else
-        {
-            EXPECT_PIXEL_RGB_EQUAL((midPixelX + viewportSize[0]) / 2, midPixelY, 255, 255, 255);
-            EXPECT_PIXEL_RGB_EQUAL((midPixelX + viewportSize[2]) / 2, midPixelY, 255, 255, 255);
-            EXPECT_PIXEL_RGB_EQUAL(midPixelX, (midPixelY + viewportSize[1]) / 2, 255, 255, 255);
-            EXPECT_PIXEL_RGB_EQUAL(midPixelX, (midPixelY + viewportSize[3]) / 2, 255, 255, 255);
-        }
+        EXPECT_PIXEL_EQ((midPixelX + viewportSize[0]) / 2, midPixelY, 255, 255, 255, 255);
+        EXPECT_PIXEL_EQ((midPixelX + viewportSize[2]) / 2, midPixelY, 255, 255, 255, 255);
+        EXPECT_PIXEL_EQ(midPixelX, (midPixelY + viewportSize[1]) / 2, 255, 255, 255, 255);
+        EXPECT_PIXEL_EQ(midPixelX, (midPixelY + viewportSize[3]) / 2, 255, 255, 255, 255);
     }
 
     void checkPixelsUnEqual()
@@ -284,16 +272,7 @@ class VertexAttributeTest : public ANGLETest
 
             if (checkPixelEqual)
             {
-                if ((test.type == GL_HALF_FLOAT || test.type == GL_HALF_FLOAT_OES) && IsVulkan() &&
-                    typeSize == 3)
-                {  // We need a special case for RGB16F format on a Vulkan backend due to the fact
-                   // that in such a usecase, we need to ignore the alpha channel.
-                    checkRGBPixels(false);
-                }
-                else
-                {
-                    checkPixels();
-                }
+                checkPixels();
             }
             else
             {
@@ -3631,6 +3610,15 @@ void main()
     }
 }
 
+// VAO emulation fails on Mac but is not used on Mac in the wild. http://anglebug.com/5577
+#if !defined(__APPLE__)
+#    define EMULATED_VAO_CONFIGS                                          \
+        WithEmulatedVAOs(ES2_OPENGL()), WithEmulatedVAOs(ES2_OPENGLES()), \
+            WithEmulatedVAOs(ES3_OPENGL()), WithEmulatedVAOs(ES3_OPENGLES()),
+#else
+#    define EMULATED_VAO_CONFIGS
+#endif
+
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 // D3D11 Feature Level 9_3 uses different D3D formats for vertex attribs compared to Feature Levels
@@ -3642,7 +3630,8 @@ ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(
                                              /* cheapRenderPass */ true),
     WithMetalMemoryBarrierAndCheapRenderPass(ES3_METAL(),
                                              /* hasBarrier */ false,
-                                             /* cheapRenderPass */ false));
+                                             /* cheapRenderPass */ false),
+    EMULATED_VAO_CONFIGS);
 
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(
     VertexAttributeOORTest,

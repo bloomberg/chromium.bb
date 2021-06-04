@@ -10,300 +10,117 @@ import("../third_party/typescript/typescript.gni")
 
 group("front_end") {
   public_deps = [
-    ":devtools_app",
     ":embedder-scripts",
     ":html_entrypoints",
-    ":inspector",
     ":integration_test_runner",
-    ":js_app",
     ":legacy_css",
     ":legacy_entrypoints",
-    ":ndb_app",
-    ":node_app",
-    ":shell",
-    ":toolbox",
-    ":ts_library-verification",
-    ":worker_app",
-    "color_picker:bundle",
-    "component_helpers:bundle",
-    "components:bundle",
-    "cookie_table:bundle",
-    "core/common:bundle",
-    "core/i18n:bundle",
-    "core/i18n:i18n_locales",
-    "core/protocol_client:bundle",
-    "data_grid:bundle",
-    "diff:bundle",
+    "Images",
+    "Images:generate_css_vars",
+    "core/i18n:i18n_bundled_locales",
+    "core/i18n:i18n_remote_locales",
     "emulated_devices/optimized:optimized_emulated_devices",
-    "formatter:bundle",
-    "formatter_worker:worker_entrypoint",
-    "har_importer:bundle",
-    "heap_snapshot_worker:worker_entrypoint",
-    "inline_editor:bundle",
-    "js_main:bundle",
+    "entrypoints/devtools_app",
+    "entrypoints/formatter_worker:worker_entrypoint",
+    "entrypoints/heap_snapshot_worker:worker_entrypoint",
+    "entrypoints/inspector",
+    "entrypoints/js_app",
+    "entrypoints/lighthouse_worker:bundle",
+    "entrypoints/ndb_app",
+    "entrypoints/node_app",
+    "entrypoints/shell",
+    "entrypoints/toolbox",
+    "entrypoints/wasmparser_worker:worker_entrypoint",
+    "entrypoints/worker_app",
     "legacy_test_runner",
-    "lighthouse_worker:bundle",
-    "models/bindings:bundle",
-    "models/extensions:bundle",
-    "models/heap_snapshot_model:bundle",
-    "models/javascript_metadata:bundle",
-    "models/text_utils:bundle",
-    "models/timeline_model:bundle",
-    "panels/event_listeners:bundle",
-    "recorder:bundle",
-    "render_coordinator:bundle",
-    "screencast:bundle",
-    "search:bundle",
-    "snippets:bundle",
-    "startup:bundle",
-    "text_editor:bundle",
-    "theme_support:bundle",
-    "third_party/lighthouse",
-    "third_party/puppeteer:bundle",
-    "ui/components:bundle",
-    "ui/legacy:bundle",
-    "wasmparser_worker:worker_entrypoint",
-    "worker_main:bundle",
-    "workspace:bundle",
-    "workspace_diff:bundle",
+    "models/issues_manager:descriptions",
   ]
 }
 
 group("legacy_css") {
   public_deps = [
-    "cm:legacy_css",
-    "components:legacy_css",
-    "data_grid:legacy_css",
-    "inline_editor:legacy_css",
-    "inspector_main:legacy_css",
+    "entrypoints/inspector_main:legacy_css",
     "models/persistence:legacy_css",
-    "object_ui:legacy_css",
     "panels/application:legacy_css",
     "panels/console:legacy_css",
     "panels/elements:legacy_css",
     "panels/emulation:legacy_css",
     "panels/help:legacy_css",
     "panels/mobile_throttling:legacy_css",
-    "text_editor:legacy_css",
+    "third_party/codemirror:legacy_css",
     "ui/legacy:legacy_css",
+    "ui/legacy/components/data_grid:legacy_css",
+    "ui/legacy/components/inline_editor:legacy_css",
+    "ui/legacy/components/object_ui:legacy_css",
+    "ui/legacy/components/text_editor:legacy_css",
+    "ui/legacy/components/utils:legacy_css",
   ]
 }
 
 group("legacy_entrypoints") {
   public_deps = [
-    "color_picker:legacy",
-    "components:legacy",
-    "cookie_table:legacy",
     "core/common:legacy",
     "core/host:legacy",
     "core/protocol_client:legacy",
     "core/root:legacy",
     "core/sdk:legacy",
-    "data_grid:legacy",
-    "diff:legacy",
-    "formatter:legacy",
-    "har_importer:legacy",
-    "heap_snapshot_worker:legacy",
-    "inline_editor:legacy",
-    "linear_memory_inspector:legacy",
-    "main:legacy",
+    "entrypoints/heap_snapshot_worker:legacy",
+    "entrypoints/main:legacy",
     "models/bindings:legacy",
     "models/extensions:legacy",
+    "models/formatter:legacy",
     "models/heap_snapshot_model:legacy",
-    "models/javascript_metadata:legacy",
     "models/persistence:legacy",
     "models/text_utils:legacy",
     "models/timeline_model:legacy",
-    "object_ui:legacy",
+    "models/workspace:legacy",
+    "models/workspace_diff:legacy",
     "panels/accessibility:legacy",
     "panels/animation:legacy",
     "panels/application:legacy",
     "panels/browser_debugger:legacy",
     "panels/changes:legacy",
     "panels/console:legacy",
-    "panels/console_counters:legacy",
     "panels/coverage:legacy",
-    "panels/developer_resources:legacy",
     "panels/elements:legacy",
     "panels/emulation:legacy",
-    "panels/event_listeners:legacy",
-    "panels/help:legacy",
     "panels/layer_viewer:legacy",
-    "panels/layers:legacy",
     "panels/lighthouse:legacy",
     "panels/mobile_throttling:legacy",
     "panels/network:legacy",
     "panels/profiler:legacy",
-    "perf_ui:legacy",
-    "quick_open:legacy",
-    "search:legacy",
-    "security:legacy",
-    "settings:legacy",
-    "snippets:legacy",
-    "source_frame:legacy",
-    "sources:legacy",
-    "text_editor:legacy",
-    "timeline:legacy",
+    "panels/search:legacy",
+    "panels/security:legacy",
+    "panels/settings:legacy",
+    "panels/snippets:legacy",
+    "panels/sources:legacy",
+    "panels/timeline:legacy",
+    "panels/web_audio:legacy",
+    "third_party/diff:legacy",
     "ui/legacy:legacy",
-    "web_audio:legacy",
-    "workspace:legacy",
-    "workspace_diff:legacy",
+    "ui/legacy/components/color_picker:legacy",
+    "ui/legacy/components/cookie_table:legacy",
+    "ui/legacy/components/data_grid:legacy",
+    "ui/legacy/components/inline_editor:legacy",
+    "ui/legacy/components/object_ui:legacy",
+    "ui/legacy/components/perf_ui:legacy",
+    "ui/legacy/components/quick_open:legacy",
+    "ui/legacy/components/source_frame:legacy",
+    "ui/legacy/components/text_editor:legacy",
+    "ui/legacy/components/utils:legacy",
   ]
 }
 
-ts_library("shell") {
-  no_emit = true
-  sources = [ "shell.js" ]
-
-  deps = [
-    "Images:generate_css_vars",
-    "browser_sdk:meta",
-    "components:legacy",
-    "core/dom_extension:bundle",
-    "core/host:legacy",
-    "core/protocol_client:legacy",
-    "core/sdk:legacy",
-    "core/sdk:meta",
-    "linear_memory_inspector:meta",
-    "main:meta",
-    "models/bindings:legacy",
-    "models/extensions:legacy",
-    "models/persistence:legacy",
-    "models/persistence:meta",
-    "object_ui:meta",
-    "panels/changes:meta",
-    "panels/console:meta",
-    "panels/console_counters:legacy",
-    "panels/console_counters:meta",
-    "panels/coverage:meta",
-    "panels/input:meta",
-    "panels/profiler:meta",
-    "panels/protocol_monitor:meta",
-    "perf_ui:meta",
-    "quick_open:meta",
-    "settings:meta",
-    "source_frame:meta",
-    "sources:meta",
-    "startup:bundle",
-    "ui/legacy:legacy",
-    "workspace:legacy",
-  ]
-}
-
-ts_library("devtools_app") {
-  no_emit = true
-  sources = [ "devtools_app.js" ]
-
-  deps = [
-    ":shell",
-    "inspector_main:meta",
-    "issues:meta",
-    "panels/accessibility:meta",
-    "panels/animation:meta",
-    "panels/application:meta",
-    "panels/browser_debugger:meta",
-    "panels/css_overview:meta",
-    "panels/developer_resources:meta",
-    "panels/elements:meta",
-    "panels/emulation:meta",
-    "panels/help:meta",
-    "panels/layer_viewer:meta",
-    "panels/layers:meta",
-    "panels/lighthouse:meta",
-    "panels/media:meta",
-    "panels/mobile_throttling:meta",
-    "panels/network:meta",
-    "panels/performance_monitor:meta",
-    "security:meta",
-    "startup:bundle",
-    "timeline:meta",
-    "web_audio:meta",
-    "webauthn:meta",
-  ]
-}
-
-ts_library("inspector") {
-  no_emit = true
-  sources = [ "inspector.js" ]
-
-  deps = [
-    ":devtools_app",
-    "screencast:meta",
-    "startup:bundle",
-  ]
-}
-
-ts_library("js_app") {
-  no_emit = true
-  sources = [ "js_app.js" ]
-
-  deps = [
-    ":shell",
-    "js_profiler:meta",
-    "startup:bundle",
-  ]
-}
-
-ts_library("ndb_app") {
-  no_emit = true
-  sources = [ "ndb_app.js" ]
-
-  deps = [
-    ":shell",
-    "startup:bundle",
-  ]
-}
-
-ts_library("node_app") {
-  no_emit = true
-  sources = [ "node_app.js" ]
-
-  deps = [
-    ":shell",
-    "js_profiler:meta",
-    "node_debugger:meta",
-    "node_main:meta",
-    "startup:bundle",
-  ]
-}
-
-devtools_entrypoint("toolbox") {
-  entrypoint = "toolbox.ts"
-
-  deps = [
-    "Images:generate_css_vars",
-    "core/dom_extension:bundle",
-    "core/platform:bundle",
-  ]
-}
-
-ts_library("worker_app") {
-  no_emit = true
-  sources = [ "worker_app.js" ]
-
-  deps = [
-    ":shell",
-    "issues:meta",
-    "panels/application:meta",
-    "panels/browser_debugger:meta",
-    "panels/developer_resources:meta",
-    "panels/elements:meta",
-    "panels/help:meta",
-    "panels/layer_viewer:meta",
-    "panels/mobile_throttling:meta",
-    "panels/network:meta",
-    "startup:bundle",
-    "timeline:meta",
-  ]
+copy_to_gen("integration_test_runner-gen") {
+  sources = [ "integration_test_runner.html" ]
 }
 
 group("integration_test_runner") {
   public_deps = [ ":integration_test_runner-gen" ]
   data_deps = public_deps
-}
-
-copy_to_gen("integration_test_runner-gen") {
-  sources = [ "integration_test_runner.html" ]
+  metadata = {
+    grd_files = get_target_outputs(":integration_test_runner-gen")
+  }
 }
 
 node_action("html_entrypoints") {
@@ -327,41 +144,23 @@ node_action("html_entrypoints") {
     "$target_gen_dir/toolbox.html",
     "$target_gen_dir/worker_app.html",
   ]
+
+  metadata = {
+    grd_files = outputs
+  }
 }
 
-copy_to_gen("embedder-scripts") {
+copy_to_gen("embedder-scripts-gen") {
   sources = [
     "Tests.js",
     "devtools_compatibility.js",
   ]
 }
 
-# This target is used to perform checks on all generated `.d.ts` files.
-# Previously we would only run these checks when `is_debug=false`, but
-# this complicated debugging. Therefore, this target now always perform
-# the check, but we only check the `.d.ts` files once (rather than for
-# every single defined `ts_library`).
-#
-# Whenever a folder is fully checked by the TypeScript compiler, add
-# the folder to the `deps` of this target AND add a corresponding
-# `import`-statement to the `verification.ts` file. Without adding
-# the `import`-statement, TypeScript will be "smart" and ignore all
-# declaration files it doesn't have to use.
-ts_library("ts_library-verification") {
-  verify_lib_check = true
-
-  sources = [ "verification.ts" ]
-
-  deps = [
-    "browser_sdk:bundle",
-    "color_picker:bundle",
-    "core/common:bundle",
-    "core/dom_extension:bundle",
-    "core/host:bundle",
-    "core/protocol_client:bundle",
-    "core/root:bundle",
-    "core/sdk:bundle",
-    "models/bindings:bundle",
-    "workspace:bundle",
-  ]
+group("embedder-scripts") {
+  public_deps = [ ":embedder-scripts-gen" ]
+  data_deps = public_deps
+  metadata = {
+    grd_files = get_target_outputs(":embedder-scripts-gen")
+  }
 }

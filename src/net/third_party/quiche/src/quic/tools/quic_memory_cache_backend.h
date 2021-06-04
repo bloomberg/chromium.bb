@@ -90,6 +90,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // some server push resources(resource path, corresponding response status and
   // path) associated with it.
   // Push resource implicitly come from the same host.
+  // TODO(b/171463363): Remove.
   void AddSimpleResponseWithServerPushResources(
       absl::string_view host,
       absl::string_view path,
@@ -139,7 +140,10 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // generated response of that many bytes.
   void GenerateDynamicResponses();
 
+  void EnableWebTransport();
+
   // Find all the server push resources associated with |request_url|.
+  // TODO(b/171463363): Remove.
   std::list<QuicBackendResponse::ServerPushInfo> GetServerPushResources(
       std::string request_url);
 
@@ -153,6 +157,10 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
       QuicSimpleServerBackend::RequestHandler* quic_server_stream) override;
   void CloseBackendResponseStream(
       QuicSimpleServerBackend::RequestHandler* quic_server_stream) override;
+  WebTransportResponse ProcessWebTransportRequest(
+      const spdy::Http2HeaderBlock& request_headers,
+      WebTransportSession* session) override;
+  bool SupportsWebTransport() override { return enable_webtransport_; }
 
  private:
   void AddResponseImpl(absl::string_view host,
@@ -167,6 +175,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
 
   // Add some server push urls with given responses for specified
   // request if these push resources are not associated with this request yet.
+  // TODO(b/171463363): Remove.
   void MaybeAddServerPushResources(
       absl::string_view request_host,
       absl::string_view request_path,
@@ -174,6 +183,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
 
   // Check if push resource(push_host/push_path) associated with given request
   // url already exists in server push map.
+  // TODO(b/171463363): Remove.
   bool PushResourceExistsInCache(std::string original_request_url,
                                  QuicBackendResponse::ServerPushInfo resource);
 
@@ -190,6 +200,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
       QUIC_GUARDED_BY(response_mutex_);
 
   // A map from request URL to associated server push responses (if any).
+  // TODO(b/171463363): Remove.
   std::multimap<std::string, QuicBackendResponse::ServerPushInfo>
       server_push_resources_ QUIC_GUARDED_BY(response_mutex_);
 
@@ -197,6 +208,8 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // server threads accessing those responses.
   mutable QuicMutex response_mutex_;
   bool cache_initialized_;
+
+  bool enable_webtransport_ = false;
 };
 
 }  // namespace quic

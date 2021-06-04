@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -20,8 +21,9 @@
 namespace content {
 
 ServiceWorkerOfflineCapabilityChecker::ServiceWorkerOfflineCapabilityChecker(
-    const GURL& url)
-    : url_(url) {
+    const GURL& url,
+    const storage::StorageKey& key)
+    : url_(url), key_(key) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
@@ -33,11 +35,12 @@ void ServiceWorkerOfflineCapabilityChecker::Start(
     ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
   callback_ = std::move(callback);
   registry->FindRegistrationForClientUrl(
-      url_, base::BindOnce(
-                &ServiceWorkerOfflineCapabilityChecker::DidFindRegistration,
-                // We can use base::Unretained(this) because |this| is expected
-                // to be alive until the |callback_| is called.
-                base::Unretained(this)));
+      url_, key_,
+      base::BindOnce(
+          &ServiceWorkerOfflineCapabilityChecker::DidFindRegistration,
+          // We can use base::Unretained(this) because |this| is expected
+          // to be alive until the |callback_| is called.
+          base::Unretained(this)));
 }
 
 void ServiceWorkerOfflineCapabilityChecker::DidFindRegistration(

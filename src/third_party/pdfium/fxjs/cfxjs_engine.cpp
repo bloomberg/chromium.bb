@@ -14,6 +14,7 @@
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_runtimedata.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/stl_util.h"
 #include "v8/include/v8-util.h"
 
@@ -28,9 +29,12 @@ CFX_V8ArrayBufferAllocator* g_arrayBufferAllocator = nullptr;
 v8::Global<v8::ObjectTemplate>* g_DefaultGlobalObjectTemplate = nullptr;
 
 // Only the address matters, values are for humans debugging. ASLR should
-// ensure that these values are unlikely to arise otherwise.
-const char kPerObjectDataTag[] = "CFXJS_PerObjectData";
-const char kPerIsolateDataTag[] = "FXJS_PerIsolateData";
+// ensure that these values are unlikely to arise otherwise. Keep these
+// wchar_t to prevent the compiler from doing something clever, like
+// aligning them on a byte boundary to save space, which would make them
+// incompatible for use as V8 aligned pointers.
+const wchar_t kPerObjectDataTag[] = L"CFXJS_PerObjectData";
+const wchar_t kPerIsolateDataTag[] = L"FXJS_PerIsolateData";
 
 void* GetAlignedPointerForPerObjectDataTag() {
   return const_cast<void*>(static_cast<const void*>(kPerObjectDataTag));
@@ -169,7 +173,7 @@ class CFXJS_ObjDefinition {
       return;
     }
     v8::Local<v8::Object> holder = info.Holder();
-    DCHECK(holder->InternalFieldCount() == 2);
+    DCHECK_EQ(holder->InternalFieldCount(), 2);
     holder->SetAlignedPointerInInternalField(0, nullptr);
     holder->SetAlignedPointerInInternalField(1, nullptr);
   }
@@ -276,8 +280,8 @@ V8TemplateMapTraits::MapType* V8TemplateMapTraits::MapFromWeakCallbackInfo(
 
 void FXJS_Initialize(unsigned int embedderDataSlot, v8::Isolate* pIsolate) {
   if (g_isolate) {
-    DCHECK(g_embedderDataSlot == embedderDataSlot);
-    DCHECK(g_isolate == pIsolate);
+    DCHECK_EQ(g_embedderDataSlot, embedderDataSlot);
+    DCHECK_EQ(g_isolate, pIsolate);
     return;
   }
   g_embedderDataSlot = embedderDataSlot;

@@ -5,11 +5,11 @@
 #include "chrome/browser/ash/login/screens/kiosk_enable_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 constexpr const char kClose[] = "close";
@@ -90,4 +90,4 @@ void KioskEnableScreen::OnEnableConsumerKioskAutoLaunch(bool success) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

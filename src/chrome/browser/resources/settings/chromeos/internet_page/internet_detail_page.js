@@ -337,6 +337,13 @@ Polymer({
    */
   applyingChanges_: false,
 
+  /**
+   * Flag, if true, indicating that the next deviceState_ update
+   * should call deepLinkToSimLockElement_().
+   * @private {boolean}
+   */
+  pendingSimLockDeepLink_: false,
+
   /** @override */
   attached() {
     if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
@@ -448,14 +455,13 @@ Polymer({
     }
 
     if (settingId === chromeos.settings.mojom.Setting.kCellularSimLock) {
-      // In this rare case, toggle not focusable until after a second wait.
-      // This is slightly preferable to requestAnimationFrame used within
-      // network-siminfo to focus elements since it can be reproduced in
-      // testing.
-      Polymer.RenderStatus.afterNextRender(this, () => {
-        this.afterRenderShowDeepLink(
-            settingId, () => this.$$('network-siminfo').getSimLockToggle());
-      });
+      this.advancedExpanded_ = true;
+
+      // If the page just loaded, deviceState_ will not be fully initialized
+      // yet, so we won't know which SIM info element to focus. Set
+      // pendingSimLockDeepLink_ to indicate that a SIM info element should be
+      // focused next deviceState_ update.
+      this.pendingSimLockDeepLink_ = true;
       return false;
     }
 
@@ -668,6 +674,14 @@ Polymer({
     }
     const type = this.managedProperties_.type;
     this.networkConfig_.getDeviceStateList().then(response => {
+      // If there is no GUID, the page was closed between requesting the device
+      // state and receiving it. If this occurs, there is no need to process the
+      // response. Note that if this subpage is reopened later, we'll request
+      // this data again.
+      if (!this.guid) {
+        return;
+      }
+
       const devices = response.result;
       const newDeviceState =
           devices.find(device => device.type === type) || null;
@@ -699,6 +713,30 @@ Polymer({
       if (shouldGetNetworkDetails) {
         this.getNetworkDetails_();
       }
+      if (this.pendingSimLockDeepLink_) {
+        this.pendingSimLockDeepLink_ = false;
+        this.deepLinkToSimLockElement_();
+      }
+    });
+  },
+
+  /** @private */
+  deepLinkToSimLockElement_() {
+    const settingId = chromeos.settings.mojom.Setting.kCellularSimLock;
+    const simLockStatus = this.deviceState_.simLockStatus;
+
+    // In this rare case, element not focusable until after a second wait.
+    // This is slightly preferable to requestAnimationFrame used within
+    // network-siminfo to focus elements since it can be reproduced in
+    // testing.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      if (simLockStatus && !!simLockStatus.lockType) {
+        this.afterRenderShowDeepLink(
+            settingId, () => this.$$('network-siminfo').getUnlockButton());
+        return;
+      }
+      this.afterRenderShowDeepLink(
+          settingId, () => this.$$('network-siminfo').getSimLockToggle());
     });
   },
 
@@ -1616,7 +1654,14 @@ Polymer({
       // A forgotten network no longer has a valid GUID, close the subpage.
       this.close();
     });
-    settings.recordSettingChange();
+
+    if (this.managedProperties_.type ===
+        chromeos.networkConfig.mojom.NetworkType.kWiFi) {
+      settings.recordSettingChange(
+          chromeos.settings.mojom.Setting.kForgetWifiNetwork);
+    } else {
+      settings.recordSettingChange();
+    }
   },
 
   /** @private */
@@ -1643,8 +1688,7 @@ Polymer({
 
   /** @private */
   onViewAccountTap_() {
-    // Currently 'Account Details' is the same as the activation UI.
-    this.browserProxy_.showCellularSetupUI(this.guid);
+    this.browserProxy_.showCarrierAccountDetail(this.guid);
   },
 
   /** @type {string} */
@@ -2403,5 +2447,33 @@ Polymer({
     // If this is a cellular device and inhibited, state cannot be changed, so
     // the page's inputs should be disabled.
     return OncMojo.deviceIsInhibited(this.deviceState_);
+  },
+
+  /**
+   * @returns {boolean}
+   * @private
+   */
+  shouldShowMacAddress_() {
+    return !!this.getMacAddress_();
+  },
+
+  /**
+   * @returns {string}
+   * @private
+   */
+  getMacAddress_() {
+    if (!this.deviceState_) {
+      return '';
+    }
+
+    // 00:00:00:00:00:00 is provided when device MAC address cannot be
+    // retrieved.
+    const MISSING_MAC_ADDRESS = '00:00:00:00:00:00';
+    if (this.deviceState_ && this.deviceState_.macAddress &&
+        this.deviceState_.macAddress !== MISSING_MAC_ADDRESS) {
+      return this.deviceState_.macAddress;
+    }
+
+    return '';
   }
 });

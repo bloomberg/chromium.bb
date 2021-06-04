@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/hash/hash.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
+#include "base/strings/stringprintf.h"
 #include "base/types/pass_key.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -186,7 +188,7 @@ class Handler : public content::WebContentsObserver {
                              int render_frame_id,
                              const std::string& error,
                              const GURL& on_url,
-                             base::Optional<base::Value> result) {
+                             absl::optional<base::Value> result) {
     auto* render_frame_host =
         content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     if (!render_frame_host)
@@ -247,7 +249,7 @@ class Handler : public content::WebContentsObserver {
 
   // The id of the primary frame of the injection, if only a single frame is
   // explicitly specified.
-  base::Optional<int> root_rfh_id_;
+  absl::optional<int> root_rfh_id_;
 
   // The hosts of the still-running injections. Note: this is a vector because
   // order matters (some tests - and therefore perhaps some extensions - rely on

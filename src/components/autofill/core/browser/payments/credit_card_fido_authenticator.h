@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
 
 namespace autofill {
 
@@ -144,7 +144,7 @@ class CreditCardFIDOAuthenticator
   Flow current_flow() { return current_flow_; }
 
  private:
-  friend class AutofillManagerTest;
+  friend class BrowserAutofillManagerTest;
   friend class CreditCardAccessManagerTest;
   friend class CreditCardFIDOAuthenticatorTest;
   friend class TestCreditCardFIDOAuthenticator;

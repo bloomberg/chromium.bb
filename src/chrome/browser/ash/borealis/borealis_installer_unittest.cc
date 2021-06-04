@@ -21,9 +21,10 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/network_service_instance.h"
@@ -57,6 +58,7 @@ class BorealisInstallerTest : public testing::Test {
  protected:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     CreateProfile();
 
@@ -79,6 +81,7 @@ class BorealisInstallerTest : public testing::Test {
     profile_.reset();
     histogram_tester_.reset();
 
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::DlcserviceClient::Shutdown();
   }
@@ -408,9 +411,8 @@ TEST_F(BorealisUninstallerTest, ErrorIfShutdownFails) {
 
   // Shutdown failed, so borealis's disk will still be there.
   chromeos::FakeConciergeClient* fake_concierge_client =
-      static_cast<chromeos::FakeConciergeClient*>(
-          chromeos::DBusThreadManager::Get()->GetConciergeClient());
-  EXPECT_FALSE(fake_concierge_client->destroy_disk_image_called());
+      chromeos::FakeConciergeClient::Get();
+  EXPECT_EQ(fake_concierge_client->destroy_disk_image_call_count(), 0);
 
   // Borealis is still "installed" according to the prefs.
   EXPECT_TRUE(
@@ -423,9 +425,8 @@ TEST_F(BorealisUninstallerTest, ErrorIfDiskNotRemoved) {
               Call(BorealisUninstallResult::kRemoveDiskFailed));
 
   chromeos::FakeConciergeClient* fake_concierge_client =
-      static_cast<chromeos::FakeConciergeClient*>(
-          chromeos::DBusThreadManager::Get()->GetConciergeClient());
-  fake_concierge_client->set_destroy_disk_image_response(base::nullopt);
+      chromeos::FakeConciergeClient::Get();
+  fake_concierge_client->set_destroy_disk_image_response(absl::nullopt);
 
   installer_->Uninstall(callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
@@ -488,9 +489,8 @@ TEST_F(BorealisUninstallerTest, UninstallationRemovesAllNecessaryPieces) {
 
   // Borealis has no stateful disk.
   chromeos::FakeConciergeClient* fake_concierge_client =
-      static_cast<chromeos::FakeConciergeClient*>(
-          chromeos::DBusThreadManager::Get()->GetConciergeClient());
-  EXPECT_TRUE(fake_concierge_client->destroy_disk_image_called());
+      chromeos::FakeConciergeClient::Get();
+  EXPECT_GE(fake_concierge_client->destroy_disk_image_call_count(), 1);
 
   // Borealis's DLC is not installed
   UpdateCurrentDlcs();

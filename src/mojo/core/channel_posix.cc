@@ -210,15 +210,16 @@ bool ChannelPosix::GetReadPlatformHandles(const void* payload,
 void ChannelPosix::StartOnIOThread() {
   DCHECK(!read_watcher_);
   DCHECK(!write_watcher_);
-  read_watcher_.reset(new base::MessagePumpForIO::FdWatchController(FROM_HERE));
+  read_watcher_ =
+      std::make_unique<base::MessagePumpForIO::FdWatchController>(FROM_HERE);
   base::CurrentThread::Get()->AddDestructionObserver(this);
   if (server_.is_valid()) {
     base::CurrentIOThread::Get()->WatchFileDescriptor(
         server_.platform_handle().GetFD().get(), false /* persistent */,
         base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
   } else {
-    write_watcher_.reset(
-        new base::MessagePumpForIO::FdWatchController(FROM_HERE));
+    write_watcher_ =
+        std::make_unique<base::MessagePumpForIO::FdWatchController>(FROM_HERE);
     base::CurrentIOThread::Get()->WatchFileDescriptor(
         socket_.get(), true /* persistent */,
         base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
@@ -389,8 +390,8 @@ bool ChannelPosix::WriteNoLock(MessageView message_view) {
         // letting us know that it is now safe to close the file
         // descriptor. For more information, see:
         // http://crbug.com/298276
-        MessagePtr fds_message(new Channel::Message(
-            sizeof(int) * fds.size(), 0, Message::MessageType::HANDLES_SENT));
+        MessagePtr fds_message = Message::CreateMessage(
+            sizeof(int) * fds.size(), 0, Message::MessageType::HANDLES_SENT);
         int* fd_data = reinterpret_cast<int*>(fds_message->mutable_payload());
         for (size_t i = 0; i < fds.size(); ++i)
           fd_data[i] = fds[i].get();
@@ -490,13 +491,11 @@ bool ChannelPosix::FlushOutgoingMessagesNoLock() {
 }
 
 void ChannelPosix::RejectUpgradeOffer() {
-  Write(std::make_unique<Channel::Message>(
-      0, 0, Message::MessageType::UPGRADE_REJECT));
+  Write(Message::CreateMessage(0, 0, Message::MessageType::UPGRADE_REJECT));
 }
 
 void ChannelPosix::AcceptUpgradeOffer() {
-  Write(std::make_unique<Channel::Message>(
-      0, 0, Message::MessageType::UPGRADE_ACCEPT));
+  Write(Message::CreateMessage(0, 0, Message::MessageType::UPGRADE_ACCEPT));
 }
 
 void ChannelPosix::OnWriteError(Error error) {
@@ -637,8 +636,8 @@ bool ChannelPosix::OnControlMessage(Message::MessageType message_type,
     case Message::MessageType::HANDLES_SENT: {
       if (payload_size == 0)
         break;
-      MessagePtr message(new Channel::Message(
-          payload_size, 0, Message::MessageType::HANDLES_SENT_ACK));
+      MessagePtr message = Message::CreateMessage(
+          payload_size, 0, Message::MessageType::HANDLES_SENT_ACK);
       memcpy(message->mutable_payload(), payload, payload_size);
       Write(std::move(message));
       return true;

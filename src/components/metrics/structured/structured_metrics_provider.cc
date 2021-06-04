@@ -12,6 +12,7 @@
 #include "components/metrics/structured/external_metrics.h"
 #include "components/metrics/structured/histogram_util.h"
 #include "components/metrics/structured/storage.pb.h"
+#include "components/metrics/structured/structured_metrics_features.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics {
@@ -25,6 +26,13 @@ constexpr int kSaveDelayMs = 1000;
 
 // The interval between chrome's collection of metrics logged from cros.
 constexpr int kExternalMetricsIntervalMins = 10;
+
+// The minimum waiting time between successive deliveries of independent metrics
+// to the metrics service via ProvideIndependentMetrics. This is set carefully:
+// metrics logs are stored in a queue of limited size, and are uploaded roughly
+// every 30 minutes.
+constexpr base::TimeDelta kMinIndependentMetricsInterval =
+    base::TimeDelta::FromMinutes(45);
 
 // Directory containing serialized event protos to read.
 constexpr char kExternalMetricsDir[] = "/var/lib/metrics/structured/events";
@@ -165,9 +173,29 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
 
   DCHECK(key_data_->is_initialized());
 
-  // TODO(crbug.com/1148168): use the identifier type for an event to choose
-  // which list of events to save to: uma or non-uma.
-  auto* event_proto = events_.get()->get()->add_uma_events();
+  // TODO(crbug.com/1148168): We are transitioning to new upload behaviour for
+  // non-client_id-identified metrics. See structured_metrics_features.h for
+  // more information. If IsIndependentMetricsUploadEnabled below returns false,
+  // this reverts to the old behaviour. The call can be removed once we are
+  // confident with the change.
+
+  // The |events_| persistent proto contains two repeated fields, uma_events
+  // and non_uma_events. uma_events is added to the ChromeUserMetricsExtension
+  // on a call to ProvideCurrentSessionData, which is the standard UMA upload
+  // and contains the UMA client_id. non_uma_events is added to the proto on
+  // a call to ProvideIndependentMetrics, which is a separate upload that does
+  // _not_ contain the UMA client_id.
+  //
+  // We decide which field to add this event to based on the event's IdType.
+  // kUmaId events should go in the UMA upload, and all others in the non-UMA
+  // upload.
+  StructuredEventProto* event_proto;
+  if (event.id_type() == EventBase::IdType::kUmaId ||
+      !IsIndependentMetricsUploadEnabled()) {
+    event_proto = events_.get()->get()->add_uma_events();
+  } else {
+    event_proto = events_.get()->get()->add_non_uma_events();
+  }
 
   event_proto->set_profile_event_id(key_data_->Id(event.project_name_hash()));
   event_proto->set_event_name_hash(event.name_hash());
@@ -192,7 +220,8 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
 
 void StructuredMetricsProvider::OnRecordingEnabled() {
   DCHECK(base::CurrentUIThread::IsSet());
-  recording_enabled_ = true;
+  // Enable recording only if structured metrics' feature flag is enabled.
+  recording_enabled_ = base::FeatureList::IsEnabled(kStructuredMetrics);
 }
 
 void StructuredMetricsProvider::OnRecordingDisabled() {
@@ -220,11 +249,10 @@ void StructuredMetricsProvider::OnRecordingDisabled() {
 void StructuredMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
   DCHECK(base::CurrentUIThread::IsSet());
-  if (!recording_enabled_ || init_state_ != InitState::kInitialized)
+  if (!recording_enabled_ || init_state_ != InitState::kInitialized) {
     return;
+  }
 
-  // TODO(crbug.com/1148168): Consider splitting this into two metrics, one for
-  // UMA metrics and one for non-UMA metrics.
   LogNumEventsInUpload(events_.get()->get()->uma_events_size());
 
   auto* structured_data = uma_proto->mutable_structured_data();
@@ -235,10 +263,20 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
 }
 
 bool StructuredMetricsProvider::HasIndependentMetrics() {
-  // TODO(crbug.com/1148168): We cannot enable independent metrics uploads yet,
-  // because we will overwhelm the unsent log store shared across UMA, resulting
-  // in logs being dropped for long sessions.
-  return false;
+  if (!IsIndependentMetricsUploadEnabled()) {
+    return false;
+  }
+
+  if (!recording_enabled_ || init_state_ != InitState::kInitialized) {
+    return false;
+  }
+
+  if (base::Time::Now() - last_provided_independent_metrics_ <
+      kMinIndependentMetricsInterval) {
+    return false;
+  }
+
+  return events_.get()->get()->non_uma_events_size() != 0;
 }
 
 void StructuredMetricsProvider::ProvideIndependentMetrics(
@@ -251,16 +289,15 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
     return;
   }
 
-  // TODO(crbug.com/1148168): Add unit tests for independent metrics once we are
-  // able to record them.
+  last_provided_independent_metrics_ = base::Time::Now();
 
-  // TODO(crbug.com/1148168): Add histograms for independent metrics upload
-  // size.
+  LogNumEventsInUpload(events_.get()->get()->non_uma_events_size());
 
   auto* structured_data = uma_proto->mutable_structured_data();
   structured_data->mutable_events()->Swap(
       events_.get()->get()->mutable_non_uma_events());
   events_.get()->get()->clear_non_uma_events();
+  events_->StartWrite();
 
   // Independent events should not be associated with the client_id, so clear
   // it.
@@ -270,6 +307,15 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
 
 void StructuredMetricsProvider::WriteNowForTest() {
   events_->StartWrite();
+}
+
+void StructuredMetricsProvider::SetExternalMetricsDirForTest(
+    const base::FilePath& dir) {
+  external_metrics_ = std::make_unique<ExternalMetrics>(
+      dir, base::TimeDelta::FromMinutes(kExternalMetricsIntervalMins),
+      base::BindRepeating(
+          &StructuredMetricsProvider::OnExternalMetricsCollected,
+          weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace structured

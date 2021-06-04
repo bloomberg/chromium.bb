@@ -20,6 +20,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_observer.h"
+#include "extensions/browser/api/storage/storage_area_namespace.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,14 +52,13 @@ class MockSettingsObserver : public SettingsObserver {
  public:
   MOCK_METHOD3(OnSettingsChangedJSON,
                void(const std::string& extension_id,
-                    settings_namespace::Namespace settings_namespace,
+                    StorageAreaNamespace storage_area,
                     const std::string& changes_json));
 
   void OnSettingsChanged(const std::string& extension_id,
-                         settings_namespace::Namespace settings_namespace,
+                         StorageAreaNamespace storage_area,
                          const base::Value& changes) override {
-    OnSettingsChangedJSON(extension_id, settings_namespace,
-                          ValueToJson(changes));
+    OnSettingsChangedJSON(extension_id, storage_area, ValueToJson(changes));
   }
 };
 
@@ -135,14 +135,13 @@ class PolicyValueStoreTest : public testing::Test {
     GetBackendTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&PolicyValueStoreTest::SetCurrentPolicyOnBackendSequence,
-                       base::Unretained(this), policies.DeepCopy()));
+                       base::Unretained(this), policies.Clone()));
     content::RunAllTasksUntilIdle();
   }
 
-  void SetCurrentPolicyOnBackendSequence(
-      std::unique_ptr<policy::PolicyMap> policies) {
+  void SetCurrentPolicyOnBackendSequence(const policy::PolicyMap& policies) {
     DCHECK(IsOnBackendSequence());
-    store_->SetCurrentPolicy(*policies);
+    store_->SetCurrentPolicy(policies);
   }
 
   base::ScopedTempDir scoped_temp_dir_;
@@ -165,7 +164,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
 
   ValueStore::ReadResult result = store_->Get();
   ASSERT_TRUE(result.status().ok());
-  EXPECT_EQ(1u, result.settings().size());
+  EXPECT_EQ(1u, result.settings().DictSize());
   base::Value* value = NULL;
   EXPECT_FALSE(result.settings().Get("may", &value));
   EXPECT_TRUE(result.settings().Get("must", &value));
@@ -194,9 +193,9 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   const base::Value value("111");
   {
     ValueStoreChangeList changes;
-    changes.push_back(ValueStoreChange("aaa", base::nullopt, value.Clone()));
+    changes.push_back(ValueStoreChange("aaa", absl::nullopt, value.Clone()));
     EXPECT_CALL(observer_, OnSettingsChangedJSON(
-                               kTestExtensionId, settings_namespace::MANAGED,
+                               kTestExtensionId, StorageAreaNamespace::kManaged,
                                ValueStoreChangeToJson(std::move(changes))));
   }
 
@@ -209,9 +208,9 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   // Notify when new policies are added.
   {
     ValueStoreChangeList changes;
-    changes.push_back(ValueStoreChange("bbb", base::nullopt, value.Clone()));
+    changes.push_back(ValueStoreChange("bbb", absl::nullopt, value.Clone()));
     EXPECT_CALL(observer_, OnSettingsChangedJSON(
-                               kTestExtensionId, settings_namespace::MANAGED,
+                               kTestExtensionId, StorageAreaNamespace::kManaged,
                                ValueStoreChangeToJson(std::move(changes))));
   }
 
@@ -227,7 +226,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
     changes.push_back(
         ValueStoreChange("bbb", value.Clone(), new_value.Clone()));
     EXPECT_CALL(observer_, OnSettingsChangedJSON(
-                               kTestExtensionId, settings_namespace::MANAGED,
+                               kTestExtensionId, StorageAreaNamespace::kManaged,
                                ValueStoreChangeToJson(std::move(changes))));
   }
 
@@ -240,9 +239,9 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   {
     ValueStoreChangeList changes;
     changes.push_back(
-        ValueStoreChange("bbb", new_value.Clone(), base::nullopt));
+        ValueStoreChange("bbb", new_value.Clone(), absl::nullopt));
     EXPECT_CALL(observer_, OnSettingsChangedJSON(
-                               kTestExtensionId, settings_namespace::MANAGED,
+                               kTestExtensionId, StorageAreaNamespace::kManaged,
                                ValueStoreChangeToJson(std::move(changes))));
   }
 

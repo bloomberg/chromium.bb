@@ -34,6 +34,10 @@ using ScaleToSize = std::map<float, int>;
 //
 // It derives from a uint32_t because it needs to be the same size as the
 // uint32_t IconKey.icon_effects field.
+
+// This enum is used to mask the icon_effects value in crosapi, which is a
+// stable interface that needs to be backwards compatible. Do not change the
+// masks here.
 enum IconEffects : uint32_t {
   kNone = 0x00,
 
@@ -46,9 +50,6 @@ enum IconEffects : uint32_t {
   kRoundCorners = 0x08,  // Bookmark apps get round corners.
   kPaused = 0x10,  // Paused apps are grayed out and badged to indicate they
                    // cannot be launched.
-  kPendingLocalLaunch = 0x20,  // Apps that are installed through sync, but
-                               // have not been launched locally yet. They
-                               // should appear gray until they are launched.
   kCrOsStandardBackground =
       0x40,                   // Add the white background to the standard icon.
   kCrOsStandardMask = 0x80,   // Apply the mask to the standard icon.
@@ -118,11 +119,12 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
     int size_hint_in_dip);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// Modifies |image_skia| to apply icon post-processing effects like badging and
+// Modifies |iv| to apply icon post-processing effects like badging and
 // desaturation to gray.
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
-                      gfx::ImageSkia* image_skia);
+                      apps::mojom::IconValuePtr iv,
+                      apps::mojom::Publisher::LoadIconCallback callback);
 
 // Loads an icon from an extension.
 void LoadIconFromExtension(apps::mojom::IconType icon_type,

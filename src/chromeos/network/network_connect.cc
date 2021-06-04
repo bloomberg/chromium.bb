@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
@@ -29,9 +30,6 @@ namespace chromeos {
 
 namespace {
 
-// TODO(b/162987250): Use shill constant once cros_system_api roll occurs.
-const char kErrorDisconnect[] = "disconnect-failure";
-
 void IgnoreDisconnectError(const std::string& error_name,
                            std::unique_ptr<base::DictionaryValue> error_data) {}
 
@@ -45,7 +43,7 @@ const NetworkState* GetNetworkStateFromId(const std::string& network_id) {
 bool PreviousConnectAttemptHadError(const NetworkState* network) {
   const std::string& network_error = network->GetError();
   if (network_error.empty() || !network->IsSecure() ||
-      network_error == kErrorDisconnect) {
+      network_error == shill::kErrorDisconnect) {
     return false;
   }
   NET_LOG(USER) << "Previous connect attempt for: " << NetworkId(network)
@@ -155,6 +153,12 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
       ShowCarrierAccountDetail(network_id);
       return;
     }
+
+    // If network is unconfigured because it's SIM locked, do nothing, as this
+    // is handled by NetworkStateNotifier.
+    if (network->GetError() == shill::kErrorSimLocked)
+      return;
+
     // No special configure or setup for |network|, show the settings UI.
     if (LoginState::Get()->IsUserLoggedIn())
       delegate_->ShowNetworkSettings(network_id);

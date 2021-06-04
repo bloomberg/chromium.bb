@@ -9,6 +9,7 @@
 <translation id="1431818719585918472">Leiskite „Chromium“ užrakinti jūsų inkognito skirtukus.</translation>
 <translation id="1472013873724362412">Paskyra neveikia sistemoje „Chromium“. Susisiekite su domeno administratoriumi arba prisijungdami naudokite įprastą „Google“ paskyrą.</translation>
 <translation id="1507010443238049608">Padėti tobulinti „Chromium“ funkcijas ir našumą</translation>
+<translation id="1531155317299575425">Rodomi raginimai prisijungti prie „Chromium“.</translation>
 <translation id="1617663976202781617">„Chromium“ sinchronizavimo duomenys</translation>
 <translation id="1736662517232558588">Išvalyti „Chromium“ duomenys</translation>
 <translation id="1838412507805038478">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
@@ -20,6 +21,7 @@
 <translation id="2168108852149185974">Naudojant kai kuriuos priedus „Chromium“ užstringa. Pašalinkite:</translation>
 <translation id="2178608107313874732">„Chromium“ šiuo metu negali naudoti fotoaparato</translation>
 <translation id="2195025571279539885">Ar norėtumėte, kad kitą kartą „Chromium“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE_NAME" /> k.?</translation>
+<translation id="2567507405773541360">Nuveikite daugiau naudodami paprastą, saugią ir spartesnę nei bet kada anksčiau „Chromium“</translation>
 <translation id="2590893390871230428">Sinchronizuoti „Chromium“ duomenis</translation>
 <translation id="2650312721222849884">Kad matytumėte skirtukus iš visų įrenginių, kuriuose naudojate „Chromium“, įjunkite sinchronizavimą</translation>
 <translation id="2684230048001240293">Nustatykite „Chromium“ kaip numatytąjį nustatymą, kad būtų sinchronizuojami skirtukai, slaptažodžiai ir mokėjimo informacija visuose įrenginiuose</translation>
@@ -41,9 +43,12 @@
 <translation id="4681781466797808448">Įjunkite „Chromium“ skaitytuvą</translation>
 <translation id="4736424910885271643">Jūsų paskyrą tvarko <ph name="HOSTED_DOMAIN" />, todėl jūsų „Chromium“ duomenys bus išvalyti iš šio įrenginio</translation>
 <translation id="4787850887676698916">Čia bus rodomi kituose įrenginiuose atidaryti „Chromium“ skirtukai.</translation>
+<translation id="4806326830773390517">Padėkite tobulinti „Chromium“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas</translation>
 <translation id="4828317641996116749">„Chromium“ nepavyko patikrinti visų slaptažodžių. Bandykite dar kartą vėliau.</translation>
+<translation id="4852878756222711218">Jei norite išnaudoti visas „Chromium“ galimybes, prisijunkite naudodami „Google“ paskyrą</translation>
 <translation id="4985291216379576555">Neprisijungta, todėl „Chromium“ nepavyko patikrinti, ar yra naujinių</translation>
 <translation id="4999538639245140991">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />, todėl „Chromium“ duomenys bus ištrinti iš šio įrenginio. Duomenys išliks jūsų „Google“ paskyroje.</translation>
+<translation id="5171868502429358653">Prisijunkite prie „Chromium“</translation>
 <translation id="5224391634244552924">Nėra išsaugotų slaptažodžių. „Chromium“ gali tikrinti jūsų slaptažodžius, kai juos išsaugote.</translation>
 <translation id="5308226104666789935">„Chromium“ nepavyko patikrinti, ar yra naujinių.</translation>
 <translation id="5396916991083608703">Nustatyti „Chromium“ kaip numatytąją?</translation>
@@ -59,12 +64,15 @@
 1. Atidarykite skiltį „Nustatymai“.
 2. Palieskite „Numatytoji naršyklės programa“.
 3. Pasirinkite „Chromium“.</translation>
+<translation id="6155422572367400359">Prisijunkite prie šios svetainės, „Google“ paskyros ir „Chromium“. Sinchronizavimą galėsite įjungti vėliau.</translation>
 <translation id="6268381023930128611">Atsijungti nuo „Chromium“?</translation>
+<translation id="632825460376924298">Leisti „Chromium“ prisijungimą</translation>
 <translation id="6337530241089703714">Pasirinkite, ar norite išvalyti „Chromium“ duomenis iš šio įrenginio ar juos palikti</translation>
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
 <translation id="6820823224820483452">„Chromium“ nepavyko patikrinti visų slaptažodžių. Rytoj bandykite dar kartą.</translation>
 <translation id="6827294685447036764">Jei leidžiate „Chromium“ nustatyti jūsų vietovę, „Chromium“ siunčia ją bet kurioms svetainėms, kurioms suteikiate leidimą. Svetainės gali prašyti jūsų vietovės, kai jose yra jums rodytinos vietinės informacijos, pvz., netoliese esančių parduotuvių ar naujienų.</translation>
 <translation id="7018284295775193585">Nepavyko atnaujinti „Chromium“</translation>
+<translation id="7045244423563602563">Suasmeninkite „Chromium“</translation>
 <translation id="7099326575020694068">„Chromium“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
 <translation id="7118091470949186573">Dabar galite naudoti „Chromium“ bet kada palietę nuorodas pranešimuose, dokumentuose ir kitose programose.</translation>
 <translation id="7208566199746267865">„Chromium“ taupo laiką naudodama paskyras žiniatinklyje. Paskyras galite pridėti arba pašalinti nustatymuose.</translation>

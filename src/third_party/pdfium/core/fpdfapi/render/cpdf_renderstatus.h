@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_clippath.h"
+#include "core/fpdfapi/page/cpdf_colorspace.h"
 #include "core/fpdfapi/page/cpdf_graphicstates.h"
 #include "core/fpdfapi/page/cpdf_transparency.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -59,7 +60,9 @@ class CPDF_RenderStatus {
   void SetDropObjects(bool bDropObjects) { m_bDropObjects = bDropObjects; }
   void SetLoadMask(bool bLoadMask) { m_bLoadMask = bLoadMask; }
   void SetStdCS(bool bStdCS) { m_bStdCS = bStdCS; }
-  void SetGroupFamily(uint32_t family) { m_GroupFamily = family; }
+  void SetGroupFamily(CPDF_ColorSpace::Family family) {
+    m_GroupFamily = family;
+  }
   void SetTransparency(const CPDF_Transparency& transparency) {
     m_Transparency = transparency;
   }
@@ -77,7 +80,7 @@ class CPDF_RenderStatus {
   void ProcessClipPath(const CPDF_ClipPath& ClipPath,
                        const CFX_Matrix& mtObj2Device);
 
-  uint32_t GetGroupFamily() const { return m_GroupFamily; }
+  CPDF_ColorSpace::Family GetGroupFamily() const { return m_GroupFamily; }
   bool GetLoadMask() const { return m_bLoadMask; }
   bool GetDropObjects() const { return m_bDropObjects; }
   bool IsPrint() const { return m_bPrint; }
@@ -163,7 +166,7 @@ class CPDF_RenderStatus {
                                const CFX_Matrix& mtObj2Device,
                                CPDF_Font* pFont,
                                float font_size,
-                               const CFX_Matrix* pTextMatrix,
+                               const CFX_Matrix& mtTextMatrix,
                                bool fill,
                                bool stroke);
   bool ProcessForm(const CPDF_FormObject* pFormObj,
@@ -175,19 +178,19 @@ class CPDF_RenderStatus {
                                       int* top);
   RetainPtr<CFX_DIBitmap> LoadSMask(CPDF_Dictionary* pSMaskDict,
                                     FX_RECT* pClipRect,
-                                    const CFX_Matrix* pMatrix);
+                                    const CFX_Matrix& mtMatrix);
   // Optionally write the colorspace family value into |pCSFamily|.
   FX_ARGB GetBackColor(const CPDF_Dictionary* pSMaskDict,
                        const CPDF_Dictionary* pGroupDict,
-                       int* pCSFamily);
+                       CPDF_ColorSpace::Family* pCSFamily);
   FX_ARGB GetStrokeArgb(CPDF_PageObject* pObj) const;
   FX_RECT GetObjectClippedRect(const CPDF_PageObject* pObj,
                                const CFX_Matrix& mtObj2Device) const;
 
   CPDF_RenderOptions m_Options;
   RetainPtr<const CPDF_Dictionary> m_pFormResource;
-  RetainPtr<CPDF_Dictionary> m_pPageResource;
-  std::vector<UnownedPtr<CPDF_Type3Font>> m_Type3FontCache;
+  RetainPtr<const CPDF_Dictionary> m_pPageResource;
+  std::vector<UnownedPtr<const CPDF_Type3Font>> m_Type3FontCache;
   UnownedPtr<CPDF_RenderContext> const m_pContext;
   UnownedPtr<CFX_RenderDevice> const m_pDevice;
   CFX_Matrix m_DeviceMatrix;
@@ -196,14 +199,14 @@ class CPDF_RenderStatus {
   UnownedPtr<const CPDF_PageObject> m_pStopObj;
   CPDF_GraphicStates m_InitialStates;
   std::unique_ptr<CPDF_ImageRenderer> m_pImageRenderer;
+  UnownedPtr<const CPDF_Type3Char> m_pType3Char;
   CPDF_Transparency m_Transparency;
   bool m_bStopped = false;
   bool m_bPrint = false;
   bool m_bDropObjects = false;
   bool m_bStdCS = false;
   bool m_bLoadMask = false;
-  uint32_t m_GroupFamily = 0;
-  UnownedPtr<CPDF_Type3Char> m_pType3Char;
+  CPDF_ColorSpace::Family m_GroupFamily = CPDF_ColorSpace::Family::kUnknown;
   FX_ARGB m_T3FillColor = 0;
   BlendMode m_curBlend = BlendMode::kNormal;
 };

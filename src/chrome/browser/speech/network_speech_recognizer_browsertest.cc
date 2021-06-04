@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -27,6 +26,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::DoDefault;
 using ::testing::InvokeWithoutArgs;
@@ -43,7 +43,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
       OnSpeechResult,
       void(const std::u16string& text,
            bool is_final,
-           const base::Optional<SpeechRecognizerDelegate::TranscriptTiming>&
+           const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
                timing));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
@@ -83,7 +83,9 @@ class NetworkSpeechRecognizerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkSpeechRecognizerBrowserTest, RecognizeSpeech) {
   NetworkSpeechRecognizer recognizer(
       mock_speech_delegate_->GetWeakPtr(),
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),
       "en" /* accept_language */, "en" /* locale */);
 
@@ -103,9 +105,9 @@ IN_PROC_BROWSER_TEST_F(NetworkSpeechRecognizerBrowserTest, RecognizeSpeech) {
   EXPECT_CALL(*mock_speech_delegate_,
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_IN_SPEECH))
       .Times(1);
-  EXPECT_CALL(*mock_speech_delegate_,
-              OnSpeechResult(base::ASCIIToUTF16("Pictures of the moon"), true,
-                             testing::_))
+  EXPECT_CALL(
+      *mock_speech_delegate_,
+      OnSpeechResult(std::u16string(u"Pictures of the moon"), true, testing::_))
       .WillOnce(InvokeWithoutArgs(&first_response_loop, &base::RunLoop::Quit))
       .RetiresOnSaturation();
   fake_speech_recognition_manager_->SendFakeResponse(
@@ -117,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(NetworkSpeechRecognizerBrowserTest, RecognizeSpeech) {
   base::RunLoop second_response_loop;
   EXPECT_CALL(
       *mock_speech_delegate_,
-      OnSpeechResult(base::ASCIIToUTF16("Pictures of mars!"), true, testing::_))
+      OnSpeechResult(std::u16string(u"Pictures of mars!"), true, testing::_))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_delegate_,

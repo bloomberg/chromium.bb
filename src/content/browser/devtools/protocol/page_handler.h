@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
@@ -98,6 +97,9 @@ class PageHandler : public DevToolsDomainHandler,
 
   WebContentsImpl* GetWebContents();
 
+  void BackForwardCacheNotUsed(const NavigationRequest* nav_request);
+  bool ShouldBypassCSP();
+
   Response Enable() override;
   Response Disable() override;
 
@@ -174,6 +176,8 @@ class PageHandler : public DevToolsDomainHandler,
   void GetManifestIcons(
       std::unique_ptr<GetManifestIconsCallback> callback) override;
 
+  Response SetBypassCSP(bool enabled) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 
@@ -195,7 +199,7 @@ class PageHandler : public DevToolsDomainHandler,
       const gfx::Size& original_view_size,
       const gfx::Size& requested_image_size,
       const blink::DeviceEmulationParams& original_params,
-      const base::Optional<blink::web_pref::WebPreferences>& original_web_prefs,
+      const absl::optional<blink::web_pref::WebPreferences>& original_web_prefs,
       const gfx::Image& image);
 
   void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
@@ -213,6 +217,7 @@ class PageHandler : public DevToolsDomainHandler,
   void OnDownloadDestroyed(download::DownloadItem* item) override;
 
   bool enabled_;
+  bool bypass_csp_ = false;
 
   bool screencast_enabled_;
   std::string screencast_format_;
@@ -221,7 +226,7 @@ class PageHandler : public DevToolsDomainHandler,
   int screencast_max_height_;
   int capture_every_nth_frame_;
   int capture_retry_count_;
-  base::Optional<cc::RenderFrameMetadata> frame_metadata_;
+  absl::optional<cc::RenderFrameMetadata> frame_metadata_;
   int session_id_;
   int frame_counter_;
   int frames_in_flight_;

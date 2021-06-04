@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"

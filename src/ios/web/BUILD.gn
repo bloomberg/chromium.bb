@@ -348,6 +348,7 @@ source_set("ios_web_text_fragments_unittests") {
     "//components/shared_highlighting/core/common",
     "//components/ukm:test_support",
     "//ios/web/common:features",
+    "//ios/web/navigation:core",
     "//ios/web/public/navigation:referrer",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
@@ -361,7 +362,7 @@ source_set("ios_web_text_fragments_unittests") {
     "//url",
   ]
 
-  sources = [ "text_fragments/crw_text_fragments_handler_unittest.mm" ]
+  sources = [ "text_fragments/text_fragments_manager_impl_unittest.mm" ]
 }
 
 source_set("ios_web_web_state_unittests") {

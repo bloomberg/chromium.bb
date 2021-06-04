@@ -73,10 +73,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEntriesStatusWithLink,
   ItemTypeActivityIndicator,
 };
-// Name of the asset to use when history is empty.
-// TODO(crbug.com/1101842): When changing this const with the new asset, delete
-// the old asset.
-NSString* const kEmptyStateImage = @"legacy_empty_history";
 // Section identifier for the header (sync information) section.
 const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 // Maximum number of entries to retrieve in a single query to history service.
@@ -283,13 +279,17 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                    queryResultsInfo
                         continuationClosure:
                             (base::OnceClosure)continuationClosure {
+  if (!self.browser)
+    return;
+
   self.loading = NO;
   _query_history_continuation = std::move(continuationClosure);
 
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(_browser->GetBrowserState());
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   if (syncSetupService->IsSyncEnabled() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
@@ -543,6 +543,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Deletes selected items from browser history and removes them from the
 // tableView.
 - (void)deleteSelectedItemsFromHistory {
+  if (!self.browser)
+    return;
+
   NSArray* toDeleteIndexPaths = self.tableView.indexPathsForSelectedRows;
 
   // Delete items from Browser History.
@@ -559,13 +562,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.historyService->RemoveVisits(entries);
 
   // Delete items from |self.tableView| using performBatchUpdates.
-  [self.tableView performBatchUpdates:^{
-    [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
-                        deleteItemsFromTableView:YES];
-  }
+  __weak __typeof(self) weakSelf = self;
+  [self.tableView
+      performBatchUpdates:^{
+        [weakSelf deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
+                                deleteItemsFromTableView:YES];
+      }
       completion:^(BOOL) {
-        [self updateTableViewAfterDeletingEntries];
-        [self configureViewsForNonEditModeWithAnimation:YES];
+        [weakSelf updateTableViewAfterDeletingEntries];
+        [weakSelf configureViewsForNonEditModeWithAnimation:YES];
       }];
   base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
 }
@@ -770,6 +775,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // recent results are fetched, otherwise the results more recent than the
 // previous query will be returned.
 - (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation {
+  if (!self.browser)
+    return;
+
   self.loading = YES;
   // Add loading indicator if no items are shown.
   if (self.empty && !self.searchInProgress) {
@@ -1025,10 +1033,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     AddSameConstraints(self.scrimView, self.view.superview);
     self.tableView.accessibilityElementsHidden = YES;
     self.tableView.scrollEnabled = NO;
+    __weak __typeof(self) weakSelf = self;
     [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                      animations:^{
-                       self.scrimView.alpha = 1.0f;
-                       [self.view layoutIfNeeded];
+                       weakSelf.scrimView.alpha = 1.0f;
+                       [weakSelf.view layoutIfNeeded];
                      }];
   }
 }
@@ -1037,14 +1046,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)hideScrim {
   if (self.scrimView.alpha > 0.0f) {
     self.navigationController.toolbarHidden = NO;
+    __weak __typeof(self) weakSelf = self;
     [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
         animations:^{
-          self.scrimView.alpha = 0.0f;
+          weakSelf.scrimView.alpha = 0.0f;
         }
         completion:^(BOOL finished) {
-          [self.scrimView removeFromSuperview];
-          self.tableView.accessibilityElementsHidden = NO;
-          self.tableView.scrollEnabled = YES;
+          [weakSelf.scrimView removeFromSuperview];
+          weakSelf.tableView.accessibilityElementsHidden = NO;
+          weakSelf.tableView.scrollEnabled = YES;
         }];
   }
 }
@@ -1093,18 +1103,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Configure the navigationItem contents for the current state.
 - (void)updateNavigationBar {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
-    if ([self isEmptyState]) {
-      self.navigationItem.searchController = nil;
-      self.navigationItem.largeTitleDisplayMode =
-          UINavigationItemLargeTitleDisplayModeNever;
-    } else {
-      self.navigationItem.searchController = self.searchController;
-      self.navigationItem.largeTitleDisplayMode =
-          UINavigationItemLargeTitleDisplayModeAutomatic;
-    }
+  if ([self isEmptyState]) {
+    self.navigationItem.searchController = nil;
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
   } else {
     self.navigationItem.searchController = self.searchController;
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeAutomatic;
   }
 }
 
@@ -1141,7 +1147,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   self.contextMenuCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.navigationController
-                         browser:_browser
+                         browser:self.browser
                            title:menuTitle
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y,
@@ -1200,9 +1206,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   base::RecordAction(
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveRegularTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
   }];
 }
 
@@ -1222,13 +1228,28 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       "MobileHistoryPage_EntryLinkOpenNewIncognitoTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveIncognitoTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:YES];
   }];
 }
 
 #pragma mark Helper Methods
+
+// Loads and opens a tab using |params|. If |incognito| is YES the tab will be
+// opened in incognito mode.
+- (void)loadAndActivateTabFromHistoryWithParams:(const UrlLoadParams&)params
+                                      incognito:(BOOL)incognito {
+  if (!self.browser)
+    return;
+
+  UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
+  if (incognito) {
+    [self.presentationDelegate showActiveIncognitoTabFromHistory];
+  } else {
+    [self.presentationDelegate showActiveRegularTabFromHistory];
+  }
+}
 
 // Returns YES if the history is actually empty, and the user is neither
 // searching nor editing.
@@ -1245,8 +1266,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Returns the toolbar buttons for the current state.
 - (NSArray<UIBarButtonItem*>*)toolbarButtons {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
-      [self isEmptyState]) {
+  if ([self isEmptyState]) {
     return @[
       [self createSpacerButton], self.clearBrowsingDataButton,
       [self createSpacerButton]
@@ -1262,20 +1282,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Adds a view as background of the TableView.
 - (void)addEmptyTableViewBackground {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
-    [self addEmptyTableViewWithImage:[UIImage imageNamed:@"history_empty"]
-                               title:l10n_util::GetNSString(
-                                         IDS_IOS_HISTORY_EMPTY_TITLE)
-                            subtitle:l10n_util::GetNSString(
-                                         IDS_IOS_HISTORY_EMPTY_MESSAGE)];
-    [self updateNavigationBar];
-  } else {
-    UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
-                                           IDS_HISTORY_NO_RESULTS)
-                                 image:emptyImage];
-  }
+  [self addEmptyTableViewWithImage:[UIImage imageNamed:@"history_empty"]
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_HISTORY_EMPTY_TITLE)
+                          subtitle:l10n_util::GetNSString(
+                                       IDS_IOS_HISTORY_EMPTY_MESSAGE)];
+  [self updateNavigationBar];
 }
 
 // Clears the background of the TableView.
@@ -1287,15 +1299,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
   new_tab_page_uma::RecordAction(
-      _browser->GetBrowserState(),
-      _browser->GetWebStateList()->GetActiveWebState(),
+      self.browser->GetBrowserState(),
+      self.browser->GetWebStateList()->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveRegularTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
   }];
 }
 

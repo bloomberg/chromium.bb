@@ -13,12 +13,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
-#include "chrome/browser/chromeos/file_manager/devtools_listener.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/test/base/devtools_listener.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 
 class NotificationDisplayServiceTester;
@@ -94,12 +94,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test needs a native SMB file system provider.
     bool native_smb = true;
 
-    // Whether test needs smbfs for native SMB integration.
-    bool smbfs = false;
-
-    // Whether test needs the unified media view feature.
-    bool unified_media_view = false;
-
     // Whether FilesApp should start with volumes mounted.
     bool mount_volumes = true;
 
@@ -114,9 +108,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
     // Whether test should enable trash.
     bool enable_trash = false;
-
-    // Whether test should enable holding space.
-    bool enable_holding_space = false;
 
     // Whether test should run Files app UI as JS modules.
     bool enable_js_modules = true;
@@ -230,9 +221,11 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   base::HistogramTester histograms_;
   base::UserActionTester user_actions_;
 
+  using DevToolsAgentMap =
+      std::map<content::DevToolsAgentHost*,
+               std::unique_ptr<coverage::DevToolsListener>>;
   base::FilePath devtools_code_coverage_dir_;
-  std::map<content::DevToolsAgentHost*, std::unique_ptr<DevToolsListener>>
-      devtools_agent_;
+  DevToolsAgentMap devtools_agent_;
   uint32_t process_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestBase);

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -27,7 +28,6 @@
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
-#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/update_client/network.h"
 #include "url/gurl.h"
 
@@ -79,7 +79,7 @@ class DefaultConfigurator : public DMClient::Configurator {
   }
 
   std::string GetAgentParameter() const override {
-    return "Updater-" UPDATER_VERSION_STRING;
+    return base::StrCat({"Updater-", kUpdaterVersion});
   }
 
   std::string GetPlatformParameter() const override;
@@ -354,9 +354,7 @@ void DMClient::RegisterDevice(std::unique_ptr<Configurator> config,
   auto dm_fetch = base::MakeRefCounted<DMFetch>(std::move(config), storage);
   dm_fetch->PostRequest(kRegistrationRequestType,
                         DMFetch::TokenType::kEnrollmentToken,
-                        GetRegisterBrowserRequestData(policy::GetMachineName(),
-                                                      policy::GetOSPlatform(),
-                                                      policy::GetOSVersion()),
+                        GetRegisterBrowserRequestData(),
                         base::BindOnce(OnDMRegisterRequestComplete, dm_fetch,
                                        std::move(callback)));
 }

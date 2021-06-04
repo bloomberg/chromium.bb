@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/bits.h"
+#include "base/dcheck_is_on.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -568,7 +569,7 @@ struct Mover {
   STATIC_ONLY(Mover);
   static void Move(T&& from, T& to) {
     to.~T();
-    new (NotNull, &to) T(std::move(from));
+    new (NotNullTag::kNotNull, &to) T(std::move(from));
   }
 };
 
@@ -578,7 +579,7 @@ struct Mover<T, Allocator, Traits, true> {
   static void Move(T&& from, T& to) {
     Allocator::EnterGCForbiddenScope();
     to.~T();
-    new (NotNull, &to) T(std::move(from));
+    new (NotNullTag::kNotNull, &to) T(std::move(from));
     Allocator::LeaveGCForbiddenScope();
   }
 };
@@ -1759,7 +1760,7 @@ void HashTable<Key,
       }
     }
   }
-  Allocator::FreeHashTableBacking(table);
+  Allocator::template FreeHashTableBacking<ValueType, HashTable>(table);
 }
 
 template <typename Key,
@@ -1798,8 +1799,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   success = false;
   DCHECK_LT(table_size_, new_table_size);
   CHECK(Allocator::IsAllocationAllowed());
-  if (!Allocator::ExpandHashTableBacking(table_,
-                                         new_table_size * sizeof(ValueType)))
+  if (!table_ ||
+      !Allocator::template ExpandHashTableBacking<ValueType, HashTable>(
+          table_, new_table_size * sizeof(ValueType)))
     return nullptr;
 
   success = true;

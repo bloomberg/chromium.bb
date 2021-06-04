@@ -33,6 +33,7 @@
 #include "components/arc/mojom/disk_quota.mojom.h"
 #include "components/arc/mojom/enterprise_reporting.mojom.h"
 #include "components/arc/mojom/file_system.mojom.h"
+#include "components/arc/mojom/iio_sensor.mojom.h"
 #include "components/arc/mojom/ime.mojom.h"
 #include "components/arc/mojom/input_method_manager.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
@@ -68,6 +69,7 @@
 #include "components/arc/mojom/volume_mounter.mojom.h"
 #include "components/arc/mojom/wake_lock.mojom.h"
 #include "components/arc/mojom/wallpaper.mojom.h"
+#include "components/arc/mojom/webapk.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/mojo_channel.h"
 
@@ -426,6 +428,11 @@ void ArcBridgeHostImpl::OnWallpaperInstanceReady(
     mojo::PendingRemote<mojom::WallpaperInstance> wallpaper_remote) {
   OnInstanceReady(arc_bridge_service_->wallpaper(),
                   std::move(wallpaper_remote));
+}
+
+void ArcBridgeHostImpl::OnWebApkInstanceReady(
+    mojo::PendingRemote<mojom::WebApkInstance> webapk_remote) {
+  OnInstanceReady(arc_bridge_service_->webapk(), std::move(webapk_remote));
 }
 
 size_t ArcBridgeHostImpl::GetNumMojoChannelsForTesting() const {

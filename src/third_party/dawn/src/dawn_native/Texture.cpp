@@ -248,26 +248,6 @@ namespace dawn_native {
 
     }  // anonymous namespace
 
-    MaybeError FixUpDeprecatedGPUExtent3DDepth(DeviceBase* device, Extent3D* extent) {
-        if (extent->depth != 1) {
-            // deprecated depth is assigned
-            if (extent->depthOrArrayLayers != 1) {
-                // both deprecated and updated API is used
-                return DAWN_VALIDATION_ERROR(
-                    "Deprecated GPUExtent3D.depth and updated GPUExtent3D.depthOrArrayLengths are "
-                    "both assigned.");
-            }
-
-            extent->depthOrArrayLayers = extent->depth;
-
-            device->EmitDeprecationWarning(
-                "GPUExtent3D.depth is deprecated. Please use GPUExtent3D.depthOrArrayLayers "
-                "instead.");
-        }
-
-        return {};
-    }
-
     MaybeError ValidateTextureDescriptor(const DeviceBase* device,
                                          const TextureDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
@@ -301,12 +281,20 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Compressed texture must be 2D");
         }
 
+        // Depth/stencil formats are valid for 2D textures only. Metal has this limit. And D3D12
+        // doesn't support depth/stencil formats on 3D textures.
+        if (descriptor->dimension != wgpu::TextureDimension::e2D &&
+            (format->aspects & (Aspect::Depth | Aspect::Stencil)) != 0) {
+            return DAWN_VALIDATION_ERROR("Depth/stencil formats are valid for 2D textures only");
+        }
+
         DAWN_TRY(ValidateTextureSize(descriptor, format));
 
         return {};
     }
 
-    MaybeError ValidateTextureViewDescriptor(const TextureBase* texture,
+    MaybeError ValidateTextureViewDescriptor(const DeviceBase* device,
+                                             const TextureBase* texture,
                                              const TextureViewDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
@@ -322,6 +310,13 @@ namespace dawn_native {
         DAWN_TRY(ValidateTextureViewDimension(descriptor->dimension));
         if (descriptor->dimension == wgpu::TextureViewDimension::e1D) {
             return DAWN_VALIDATION_ERROR("1D texture views aren't supported (yet).");
+        }
+
+        // Disallow 3D views as unsafe until they are fully implemented.
+        if (descriptor->dimension == wgpu::TextureViewDimension::e3D &&
+            device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
+            return DAWN_VALIDATION_ERROR(
+                "3D views are disallowed because they are not fully implemented");
         }
 
         DAWN_TRY(ValidateTextureFormat(descriptor->format));
@@ -426,7 +421,7 @@ namespace dawn_native {
         mIsSubresourceContentInitializedAtIndex = std::vector<bool>(subresourceCount, false);
 
         // Add readonly storage usage if the texture has a storage usage. The validation rules in
-        // ValidatePassResourceUsage will make sure we don't use both at the same time.
+        // ValidateSyncScopeResourceUsage will make sure we don't use both at the same time.
         if (mUsage & wgpu::TextureUsage::Storage) {
             mUsage |= kReadOnlyStorageTexture;
         }
@@ -611,7 +606,13 @@ namespace dawn_native {
     }
 
     TextureViewBase* TextureBase::APICreateView(const TextureViewDescriptor* descriptor) {
-        return GetDevice()->CreateTextureView(this, descriptor);
+        DeviceBase* device = GetDevice();
+
+        Ref<TextureViewBase> result;
+        if (device->ConsumedError(device->CreateTextureView(this, descriptor), &result)) {
+            return TextureViewBase::MakeError(device);
+        }
+        return result.Detach();
     }
 
     void TextureBase::APIDestroy() {

@@ -23,8 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "content/public/test/browser_test.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr char kUserCreationId[] = "user-creation";
@@ -41,14 +40,9 @@ const test::UIPath kChildSignInButton = {kUserCreationId, "childSignInButton"};
 const test::UIPath kChildBackButton = {kUserCreationId, "childBackButton"};
 const test::UIPath kChildNextButton = {kUserCreationId, "childNextButton"};
 
-}  // namespace
-
 class UserCreationScreenTest : public OobeBaseTest {
  public:
-  UserCreationScreenTest() {
-    feature_list_.InitAndEnableFeature(
-        chromeos::features::kChildSpecificSignin);
-  }
+  UserCreationScreenTest() = default;
   ~UserCreationScreenTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -62,7 +56,7 @@ class UserCreationScreenTest : public OobeBaseTest {
   }
 
   void SelectUserTypeOnUserCreationScreen(test::UIPath element_id) {
-    ASSERT_TRUE(ash::LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
+    ASSERT_TRUE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
     test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
     test::OobeJS().ExpectHasAttribute("checked", kSelfButton);
     test::OobeJS().ClickOnPath(element_id);
@@ -70,7 +64,7 @@ class UserCreationScreenTest : public OobeBaseTest {
   }
 
   void SelectSetUpMethodOnChildScreen(test::UIPath element_id) {
-    ASSERT_FALSE(ash::LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
+    ASSERT_FALSE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
     test::OobeJS().ExpectHiddenPath(kUserCreationDialog);
     test::OobeJS().ExpectVisiblePath(kChildSignInDialog);
     test::OobeJS().ClickOnPath(element_id);
@@ -85,7 +79,7 @@ class UserCreationScreenTest : public OobeBaseTest {
     run_loop.Run();
   }
 
-  base::Optional<UserCreationScreen::Result> screen_result_;
+  absl::optional<UserCreationScreen::Result> screen_result_;
 
  protected:
   chromeos::DeviceStateMixin device_state_{
@@ -171,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, Cancel) {
 // Verify enterprise enrollment button is available during the oobe flow (when
 // no existing users).
 IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, EnterpriseEnroll) {
-  ASSERT_TRUE(ash::LoginScreenTestApi::ClickEnterpriseEnrollmentButton());
+  ASSERT_TRUE(LoginScreenTestApi::ClickEnterpriseEnrollmentButton());
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
             UserCreationScreen::Result::ENTERPRISE_ENROLL);
@@ -207,10 +201,10 @@ class UserCreationScreenLoginTest : public UserCreationScreenTest {
 // existing users) and clicking it closes the oobe dialog. Enterprise
 // enrollment button is hidden when there are existing users.
 IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginTest, Cancel) {
-  EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   OobeScreenWaiter(UserCreationView::kScreenId).Wait();
-  ASSERT_FALSE(ash::LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
+  ASSERT_FALSE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
 
   test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
   test::OobeJS().ClickOnPath(kChildButton);
@@ -227,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginTest, Cancel) {
 
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::CANCEL);
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
 }
 
 class UserCreationScreenEnrolledTest : public UserCreationScreenTest {
@@ -246,12 +240,13 @@ class UserCreationScreenEnrolledTest : public UserCreationScreenTest {
 // managed device.
 IN_PROC_BROWSER_TEST_F(UserCreationScreenEnrolledTest,
                        ShouldSkipUserCreationScreen) {
-  EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   test::OobeJS().ClickOnPath(
       {"gaia-signin", "signin-frame-dialog", "signin-back-button"});
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

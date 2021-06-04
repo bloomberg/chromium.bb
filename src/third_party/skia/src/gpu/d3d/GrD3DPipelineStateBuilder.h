@@ -28,9 +28,12 @@ public:
      * @return the created pipeline if generation was successful; nullptr otherwise
      */
     static std::unique_ptr<GrD3DPipelineState> MakePipelineState(GrD3DGpu*,
-                                                                 GrRenderTarget*,
+                                                                 GrD3DRenderTarget*,
                                                                  const GrProgramDesc&,
                                                                  const GrProgramInfo&);
+
+    static sk_sp<GrD3DPipeline> MakeComputePipeline(GrD3DGpu*, GrD3DRootSignature*,
+                                                    const char* shader);
 
     const GrCaps* caps() const override;
 
@@ -42,7 +45,7 @@ public:
     void finalizeFragmentSecondaryColor(GrShaderVar& outputColor) override;
 
 private:
-    GrD3DPipelineStateBuilder(GrD3DGpu*, GrRenderTarget*, const GrProgramDesc&,
+    GrD3DPipelineStateBuilder(GrD3DGpu*, GrD3DRenderTarget*, const GrProgramDesc&,
                               const GrProgramInfo&);
 
     std::unique_ptr<GrD3DPipelineState> finalize();
@@ -62,6 +65,7 @@ private:
     GrD3DGpu* fGpu;
     GrSPIRVVaryingHandler fVaryingHandler;
     GrSPIRVUniformHandler fUniformHandler;
+    GrD3DRenderTarget* fRenderTarget;
 
     using INHERITED = GrGLSLProgramBuilder;
 };

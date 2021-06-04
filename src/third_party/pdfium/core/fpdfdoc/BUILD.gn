@@ -7,8 +7,6 @@ import("../../testing/test.gni")
 
 source_set("fpdfdoc") {
   sources = [
-    "cba_fontmap.cpp",
-    "cba_fontmap.h",
     "cpdf_aaction.cpp",
     "cpdf_aaction.h",
     "cpdf_action.cpp",
@@ -19,6 +17,8 @@ source_set("fpdfdoc") {
     "cpdf_annotlist.h",
     "cpdf_apsettings.cpp",
     "cpdf_apsettings.h",
+    "cpdf_bafontmap.cpp",
+    "cpdf_bafontmap.h",
     "cpdf_bookmark.cpp",
     "cpdf_bookmark.h",
     "cpdf_bookmarktree.cpp",
@@ -35,6 +35,8 @@ source_set("fpdfdoc") {
     "cpdf_formcontrol.h",
     "cpdf_formfield.cpp",
     "cpdf_formfield.h",
+    "cpdf_generateap.cpp",
+    "cpdf_generateap.h",
     "cpdf_icon.cpp",
     "cpdf_icon.h",
     "cpdf_iconfit.cpp",
@@ -57,19 +59,17 @@ source_set("fpdfdoc") {
     "cpdf_structelement.h",
     "cpdf_structtree.cpp",
     "cpdf_structtree.h",
-    "cpdf_variabletext.cpp",
-    "cpdf_variabletext.h",
     "cpdf_viewerpreferences.cpp",
     "cpdf_viewerpreferences.h",
     "cpvt_floatrect.h",
     "cpvt_fontmap.cpp",
     "cpvt_fontmap.h",
-    "cpvt_generateap.cpp",
-    "cpvt_generateap.h",
     "cpvt_line.h",
     "cpvt_lineinfo.h",
     "cpvt_section.cpp",
     "cpvt_section.h",
+    "cpvt_variabletext.cpp",
+    "cpvt_variabletext.h",
     "cpvt_word.h",
     "cpvt_wordinfo.cpp",
     "cpvt_wordinfo.h",
@@ -77,7 +77,7 @@ source_set("fpdfdoc") {
     "cpvt_wordrange.h",
     "ipvt_fontmap.h",
   ]
-  configs += [ "../../:pdfium_core_config" ]
+  configs += [ "../../:pdfium_strict_config" ]
   deps = [
     "../../constants",
     "../fpdfapi/font",
@@ -92,6 +92,7 @@ source_set("fpdfdoc") {
 
 pdfium_unittest_source_set("unittests") {
   sources = [
+    "cpdf_action_unittest.cpp",
     "cpdf_annot_unittest.cpp",
     "cpdf_defaultappearance_unittest.cpp",
     "cpdf_dest_unittest.cpp",

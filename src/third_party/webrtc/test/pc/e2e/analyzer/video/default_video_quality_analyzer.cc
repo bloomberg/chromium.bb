@@ -21,6 +21,7 @@
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "rtc_base/cpu_time.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/platform_thread.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/time_utils.h"
 #include "rtc_tools/frame_analyzer/video_geometry_aligner.h"
@@ -141,12 +142,9 @@ void DefaultVideoQualityAnalyzer::Start(
     int max_threads_count) {
   test_label_ = std::move(test_case_name);
   for (int i = 0; i < max_threads_count; i++) {
-    auto thread = std::make_unique<rtc::PlatformThread>(
-        &DefaultVideoQualityAnalyzer::ProcessComparisonsThread, this,
-        ("DefaultVideoQualityAnalyzerWorker-" + std::to_string(i)).data(),
-        rtc::ThreadPriority::kNormalPriority);
-    thread->Start();
-    thread_pool_.push_back(std::move(thread));
+    thread_pool_.push_back(rtc::PlatformThread::SpawnJoinable(
+        [this] { ProcessComparisons(); },
+        "DefaultVideoQualityAnalyzerWorker-" + std::to_string(i)));
   }
   {
     MutexLock lock(&lock_);
@@ -352,17 +350,16 @@ void DefaultVideoQualityAnalyzer::OnFramePreDecode(
   stream_frame_counters_.at(key).received++;
   // Determine the time of the last received packet of this video frame.
   RTC_DCHECK(!input_image.PacketInfos().empty());
-  int64_t last_receive_time =
+  Timestamp last_receive_time =
       std::max_element(input_image.PacketInfos().cbegin(),
                        input_image.PacketInfos().cend(),
                        [](const RtpPacketInfo& a, const RtpPacketInfo& b) {
-                         return a.receive_time_ms() < b.receive_time_ms();
+                         return a.receive_time() < b.receive_time();
                        })
-          ->receive_time_ms();
-  it->second.OnFramePreDecode(
-      peer_index,
-      /*received_time=*/Timestamp::Millis(last_receive_time),
-      /*decode_start_time=*/Now());
+          ->receive_time();
+  it->second.OnFramePreDecode(peer_index,
+                              /*received_time=*/last_receive_time,
+                              /*decode_start_time=*/Now());
 }
 
 void DefaultVideoQualityAnalyzer::OnFrameDecoded(
@@ -466,7 +463,7 @@ void DefaultVideoQualityAnalyzer::OnFrameRendered(
                                   frame_in_flight->rendered_time(peer_index));
   {
     MutexLock cr(&comparison_lock_);
-    stream_stats_[stats_key].skipped_between_rendered.AddSample(
+    stream_stats_.at(stats_key).skipped_between_rendered.AddSample(
         StatsSample(dropped_count, Now()));
   }
 
@@ -519,6 +516,7 @@ void DefaultVideoQualityAnalyzer::RegisterParticipantInCall(
     counters.encoded = frames_count;
     stream_frame_counters_.insert({key, std::move(counters)});
 
+    stream_stats_.insert({key, StreamStats()});
     stream_last_freeze_end_time_.insert({key, start_time_});
   }
   // Ensure, that frames states are handled correctly
@@ -546,10 +544,6 @@ void DefaultVideoQualityAnalyzer::Stop() {
   }
   StopMeasuringCpuProcessTime();
   comparison_available_event_.Set();
-  for (auto& thread : thread_pool_) {
-    thread->Stop();
-  }
-  // PlatformThread have to be deleted on the same thread, where it was created
   thread_pool_.clear();
 
   // Perform final Metrics update. On this place analyzer is stopped and no one
@@ -674,10 +668,6 @@ void DefaultVideoQualityAnalyzer::AddComparison(
   }
   comparison_available_event_.Set();
   StopExcludingCpuThreadTime();
-}
-
-void DefaultVideoQualityAnalyzer::ProcessComparisonsThread(void* obj) {
-  static_cast<DefaultVideoQualityAnalyzer*>(obj)->ProcessComparisons();
 }
 
 void DefaultVideoQualityAnalyzer::ProcessComparisons() {
@@ -925,6 +915,9 @@ void DefaultVideoQualityAnalyzer::ReportResults(
                         frame_counters.dropped,
                     "count",
                     /*important=*/false, ImproveDirection::kSmallerIsBetter);
+  test::PrintResult("rendered_frames", "", test_case_name,
+                    frame_counters.rendered, "count", /*important=*/false,
+                    ImproveDirection::kBiggerIsBetter);
   ReportResult("max_skipped", test_case_name, stats.skipped_between_rendered,
                "count", ImproveDirection::kSmallerIsBetter);
   ReportResult("target_encode_bitrate", test_case_name,

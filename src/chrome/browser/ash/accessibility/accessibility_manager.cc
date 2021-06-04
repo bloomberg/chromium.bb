@@ -38,7 +38,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
-#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -66,6 +65,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/soda_installer.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,7 +97,6 @@ namespace ash {
 namespace {
 
 namespace extension_ime_util = ::chromeos::extension_ime_util;
-namespace input_method = ::chromeos::input_method;
 using ::extensions::api::braille_display_private::BrailleController;
 using ::extensions::api::braille_display_private::DisplayState;
 using ::extensions::api::braille_display_private::KeyEvent;
@@ -556,11 +555,6 @@ void AccessibilityManager::OnLocaleChanged() {
 void AccessibilityManager::OnViewFocusedInArc(const gfx::Rect& bounds_in_screen,
                                               bool is_editable) {
   AccessibilityController::Get()->SetFocusHighlightRect(bounds_in_screen);
-
-  MagnificationManager* magnification_manager = MagnificationManager::Get();
-  if (magnification_manager)
-    magnification_manager->HandleFocusedRectChangedIfEnabled(bounds_in_screen,
-                                                             is_editable);
 }
 
 bool AccessibilityManager::PlayEarcon(Sound sound_key, PlaySoundOption option) {
@@ -581,11 +575,10 @@ void AccessibilityManager::OnTwoFingerTouchStart() {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
-  auto event_args = std::make_unique<base::ListValue>();
   auto event = std::make_unique<extensions::Event>(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_START,
       extensions::api::accessibility_private::OnTwoFingerTouchStart::kEventName,
-      std::move(event_args));
+      std::vector<base::Value>());
   event_router->BroadcastEvent(std::move(event));
 }
 
@@ -596,11 +589,10 @@ void AccessibilityManager::OnTwoFingerTouchStop() {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
-  auto event_args = std::make_unique<base::ListValue>();
   auto event = std::make_unique<extensions::Event>(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_STOP,
       extensions::api::accessibility_private::OnTwoFingerTouchStop::kEventName,
-      std::move(event_args));
+      std::vector<base::Value>());
   event_router->BroadcastEvent(std::move(event));
 }
 
@@ -621,11 +613,10 @@ void AccessibilityManager::HandleAccessibilityGesture(
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
-  std::unique_ptr<base::ListValue> event_args =
-      std::make_unique<base::ListValue>();
-  event_args->AppendString(ui::ToString(gesture));
-  event_args->AppendInteger(location.x());
-  event_args->AppendInteger(location.y());
+  std::vector<base::Value> event_args;
+  event_args.push_back(base::Value(ui::ToString(gesture)));
+  event_args.push_back(base::Value(location.x()));
+  event_args.push_back(base::Value(location.y()));
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
       extensions::api::accessibility_private::OnAccessibilityGesture::
@@ -702,9 +693,9 @@ void AccessibilityManager::RequestAutoclickScrollableBoundsForPoint(
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
-  std::unique_ptr<base::ListValue> event_args = extensions::api::
-      accessibility_private::OnScrollableBoundsForPointRequested::Create(
-          point_in_screen.x(), point_in_screen.y());
+  auto event_args = extensions::api::accessibility_private::
+      OnScrollableBoundsForPointRequested::Create(point_in_screen.x(),
+                                                  point_in_screen.y());
   std::unique_ptr<extensions::Event> event =
       std::make_unique<extensions::Event>(
           extensions::events::
@@ -918,14 +909,12 @@ void AccessibilityManager::RequestSelectToSpeakStateChange() {
       extensions::EventRouter::Get(profile_);
 
   // Send an event to the Select-to-Speak extension requesting a state change.
-  std::unique_ptr<base::ListValue> event_args =
-      std::make_unique<base::ListValue>();
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::
           ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_STATE_CHANGE_REQUESTED,
       extensions::api::accessibility_private::
           OnSelectToSpeakStateChangeRequested::kEventName,
-      std::move(event_args)));
+      std::vector<base::Value>()));
   event_router->DispatchEventWithLazyListener(
       extension_misc::kSelectToSpeakExtensionId, std::move(event));
 }
@@ -1032,8 +1021,8 @@ bool AccessibilityManager::IsBrailleDisplayConnected() const {
 
 void AccessibilityManager::CheckBrailleState() {
   BrailleController* braille_controller = GetBrailleController();
-  if (!scoped_braille_observer_.IsObserving(braille_controller))
-    scoped_braille_observer_.Add(braille_controller);
+  if (!scoped_braille_observation_.IsObservingSource(braille_controller))
+    scoped_braille_observation_.Observe(braille_controller);
   content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&BrailleController::GetDisplayState,
@@ -1125,8 +1114,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     return;
 
   if (profile_)
-    profile_observer_.Remove(profile_);
-  DCHECK(!profile_observer_.IsObservingSources());
+    DCHECK(profile_observation_.IsObservingSource(profile_));
+  profile_observation_.Reset();
+  DCHECK(!profile_observation_.IsObserving());
 
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -1143,7 +1133,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
   if (profile) {
     // TODO(yoshiki): Move following code to PrefHandler.
-    pref_change_registrar_.reset(new PrefChangeRegistrar);
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
         prefs::kShouldAlwaysShowAccessibilityMenu,
@@ -1209,7 +1199,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                        base::Unretained(this)));
     }
 
-    local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
+    local_state_pref_change_registrar_ =
+        std::make_unique<PrefChangeRegistrar>();
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
     local_state_pref_change_registrar_->Add(
         language::prefs::kApplicationLocale,
@@ -1225,10 +1216,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
-    if (!extension_registry_observer_.IsObserving(registry))
-      extension_registry_observer_.Add(registry);
+    if (!extension_registry_observations_.IsObservingSource(registry))
+      extension_registry_observations_.AddObservation(registry);
 
-    profile_observer_.Add(profile);
+    profile_observation_.Observe(profile);
   }
 
   bool had_profile = (profile_ != NULL);
@@ -1438,7 +1429,7 @@ void AccessibilityManager::OnExtensionUnloaded(
 }
 
 void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
-  extension_registry_observer_.Remove(registry);
+  extension_registry_observations_.RemoveObservation(registry);
 }
 
 void AccessibilityManager::PostLoadChromeVox() {
@@ -1468,20 +1459,19 @@ void AccessibilityManager::PostLoadChromeVox() {
 
   const std::string& extension_id = extension_misc::kChromeVoxExtensionId;
 
-  std::unique_ptr<base::ListValue> event_args =
-      std::make_unique<base::ListValue>();
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
       extensions::api::accessibility_private::OnIntroduceChromeVox::kEventName,
-      std::move(event_args)));
+      std::vector<base::Value>()));
   event_router->DispatchEventWithLazyListener(extension_id, std::move(event));
 
   if (!chromevox_panel_) {
     chromevox_panel_ = new ChromeVoxPanel(profile_);
-    chromevox_panel_widget_observer_.reset(new AccessibilityPanelWidgetObserver(
-        chromevox_panel_->GetWidget(),
-        base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
-                       base::Unretained(this))));
+    chromevox_panel_widget_observer_ =
+        std::make_unique<AccessibilityPanelWidgetObserver>(
+            chromevox_panel_->GetWidget(),
+            base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
+                           base::Unretained(this)));
   }
 
   audio_focus_manager_->SetEnforcementMode(
@@ -1523,10 +1513,11 @@ void AccessibilityManager::PostSwitchChromeVoxProfile() {
     chromevox_panel_ = nullptr;
   }
   chromevox_panel_ = new ChromeVoxPanel(profile_);
-  chromevox_panel_widget_observer_.reset(new AccessibilityPanelWidgetObserver(
-      chromevox_panel_->GetWidget(),
-      base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
-                     base::Unretained(this))));
+  chromevox_panel_widget_observer_ =
+      std::make_unique<AccessibilityPanelWidgetObserver>(
+          chromevox_panel_->GetWidget(),
+          base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
+                         base::Unretained(this)));
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
@@ -1587,8 +1578,9 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
 
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(context);
-  if (!extension_registry_observer_.IsObserving(registry) && !id.empty())
-    extension_registry_observer_.Add(registry);
+  if (!extension_registry_observations_.IsObservingSource(registry) &&
+      !id.empty())
+    extension_registry_observations_.AddObservation(registry);
 }
 
 bool AccessibilityManager::ToggleDictation() {
@@ -1770,10 +1762,10 @@ void AccessibilityManager::OnSelectToSpeakPanelAction(
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
-  auto event_args = std::make_unique<base::ListValue>();
-  event_args->AppendString(AccessibilityPrivateEnumForAction(action));
+  std::vector<base::Value> event_args;
+  event_args.push_back(base::Value(AccessibilityPrivateEnumForAction(action)));
   if (value != 0.0) {
-    event_args->AppendDouble(value);
+    event_args.push_back(base::Value(value));
   }
 
   auto event = std::make_unique<extensions::Event>(
@@ -1783,6 +1775,26 @@ void AccessibilityManager::OnSelectToSpeakPanelAction(
       std::move(event_args));
   event_router->DispatchEventWithLazyListener(
       extension_misc::kSelectToSpeakExtensionId, std::move(event));
+}
+
+void AccessibilityManager::ShowChromeVoxTutorial() {
+  if (!profile_)
+    return;
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+
+  auto event_args =
+      extensions::api::accessibility_private::OnShowChromeVoxTutorial::Create();
+
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_SHOW_CHROMEVOX_TUTORIAL,
+      extensions::api::accessibility_private::OnShowChromeVoxTutorial::
+          kEventName,
+      std::move(event_args));
+
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kChromeVoxExtensionId, std::move(event));
 }
 
 }  // namespace ash

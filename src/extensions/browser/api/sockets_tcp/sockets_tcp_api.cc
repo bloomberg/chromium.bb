@@ -124,13 +124,17 @@ SocketsTcpCreateFunction::~SocketsTcpCreateFunction() {}
 
 bool SocketsTcpCreateFunction::Prepare() {
   params_ = sockets_tcp::Create::Params::Create(*args_);
+  browser_context_ = browser_context();
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SocketsTcpCreateFunction::Work() {
+  // TODO(crbug.com/1191472): |browser_context_| is unsafe to access when
+  // DestroyProfileOnBrowserClose is enabled, since it could've been deleted by
+  // now. Fix this by creating the TCPSocket on the UI thread instead.
   ResumableTCPSocket* socket =
-      new ResumableTCPSocket(browser_context(), extension_->id());
+      new ResumableTCPSocket(browser_context_, extension_->id());
 
   sockets_tcp::SocketProperties* properties = params_->properties.get();
   if (properties) {
@@ -139,7 +143,8 @@ void SocketsTcpCreateFunction::Work() {
 
   sockets_tcp::CreateInfo create_info;
   create_info.socket_id = AddSocket(socket);
-  results_ = sockets_tcp::Create::Results::Create(create_info);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::Create::Results::Create(create_info));
 }
 
 SocketsTcpUpdateFunction::SocketsTcpUpdateFunction() {}
@@ -160,7 +165,8 @@ void SocketsTcpUpdateFunction::Work() {
   }
 
   SetSocketProperties(socket, &params_->properties);
-  results_ = sockets_tcp::Update::Results::Create();
+  results_ =
+      std::make_unique<base::ListValue>(sockets_tcp::Update::Results::Create());
 }
 
 SocketsTcpSetPausedFunction::SocketsTcpSetPausedFunction()
@@ -196,7 +202,8 @@ void SocketsTcpSetPausedFunction::Work() {
     }
   }
 
-  results_ = sockets_tcp::SetPaused::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::SetPaused::Results::Create());
 }
 
 SocketsTcpSetKeepAliveFunction::SocketsTcpSetKeepAliveFunction() {}
@@ -213,7 +220,8 @@ void SocketsTcpSetKeepAliveFunction::AsyncWorkStart() {
   ResumableTCPSocket* socket = GetTcpSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
-    results_ = sockets_tcp::SetKeepAlive::Results::Create(net::ERR_FAILED);
+    results_ = std::make_unique<base::ListValue>(
+        sockets_tcp::SetKeepAlive::Results::Create(net::ERR_FAILED));
     AsyncWorkCompleted();
     return;
   }
@@ -227,7 +235,8 @@ void SocketsTcpSetKeepAliveFunction::AsyncWorkStart() {
 
 void SocketsTcpSetKeepAliveFunction::OnCompleted(bool success) {
   int net_result = (success ? net::OK : net::ERR_FAILED);
-  results_ = sockets_tcp::SetKeepAlive::Results::Create(net_result);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::SetKeepAlive::Results::Create(net_result));
   if (net_result != net::OK)
     error_ = net::ErrorToString(net_result);
   AsyncWorkCompleted();
@@ -247,7 +256,8 @@ void SocketsTcpSetNoDelayFunction::AsyncWorkStart() {
   ResumableTCPSocket* socket = GetTcpSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
-    results_ = sockets_tcp::SetNoDelay::Results::Create(net::ERR_FAILED);
+    results_ = std::make_unique<base::ListValue>(
+        sockets_tcp::SetNoDelay::Results::Create(net::ERR_FAILED));
     AsyncWorkCompleted();
     return;
   }
@@ -258,7 +268,8 @@ void SocketsTcpSetNoDelayFunction::AsyncWorkStart() {
 
 void SocketsTcpSetNoDelayFunction::OnCompleted(bool success) {
   int net_result = (success ? net::OK : net::ERR_FAILED);
-  results_ = sockets_tcp::SetNoDelay::Results::Create(net_result);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::SetNoDelay::Results::Create(net_result));
   if (net_result != net::OK)
     error_ = net::ErrorToString(net_result);
   AsyncWorkCompleted();
@@ -333,7 +344,8 @@ void SocketsTcpConnectFunction::OnCompleted(int net_result) {
 
   if (net_result != net::OK)
     error_ = net::ErrorToString(net_result);
-  results_ = sockets_tcp::Connect::Results::Create(net_result);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::Connect::Results::Create(net_result));
   AsyncWorkCompleted();
 }
 
@@ -355,7 +367,8 @@ void SocketsTcpDisconnectFunction::Work() {
   }
 
   socket->Disconnect(false /* socket_destroying */);
-  results_ = sockets_tcp::Disconnect::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::Disconnect::Results::Create());
 }
 
 SocketsTcpSendFunction::SocketsTcpSendFunction() : io_buffer_size_(0) {}
@@ -402,7 +415,8 @@ void SocketsTcpSendFunction::SetSendResult(int net_result, int bytes_sent) {
 
   if (net_result != net::OK)
     error_ = net::ErrorToString(net_result);
-  results_ = sockets_tcp::Send::Results::Create(send_info);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::Send::Results::Create(send_info));
   AsyncWorkCompleted();
 }
 
@@ -424,7 +438,8 @@ void SocketsTcpCloseFunction::Work() {
   }
 
   RemoveSocket(params_->socket_id);
-  results_ = sockets_tcp::Close::Results::Create();
+  results_ =
+      std::make_unique<base::ListValue>(sockets_tcp::Close::Results::Create());
 }
 
 SocketsTcpGetInfoFunction::SocketsTcpGetInfoFunction() {}
@@ -446,7 +461,8 @@ void SocketsTcpGetInfoFunction::Work() {
 
   sockets_tcp::SocketInfo socket_info =
       CreateSocketInfo(params_->socket_id, socket);
-  results_ = sockets_tcp::GetInfo::Results::Create(socket_info);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::GetInfo::Results::Create(socket_info));
 }
 
 SocketsTcpGetSocketsFunction::SocketsTcpGetSocketsFunction() {}
@@ -466,7 +482,8 @@ void SocketsTcpGetSocketsFunction::Work() {
       }
     }
   }
-  results_ = sockets_tcp::GetSockets::Results::Create(socket_infos);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp::GetSockets::Results::Create(socket_infos));
 }
 
 SocketsTcpSecureFunction::SocketsTcpSecureFunction() {
@@ -545,7 +562,8 @@ void SocketsTcpSecureFunction::TlsConnectDone(
   if (result != net::OK) {
     RemoveSocket(params_->socket_id);
     error_ = net::ErrorToString(result);
-    results_ = api::sockets_tcp::Secure::Results::Create(result);
+    results_ = std::make_unique<base::ListValue>(
+        api::sockets_tcp::Secure::Results::Create(result));
     AsyncWorkCompleted();
     return;
   }
@@ -556,7 +574,8 @@ void SocketsTcpSecureFunction::TlsConnectDone(
   socket->set_persistent(persistent_);
   socket->set_paused(paused_);
   ReplaceSocket(params_->socket_id, socket.release());
-  results_ = api::sockets_tcp::Secure::Results::Create(result);
+  results_ = std::make_unique<base::ListValue>(
+      api::sockets_tcp::Secure::Results::Create(result));
   AsyncWorkCompleted();
 }
 

@@ -48,8 +48,8 @@ sync_pb::EntitySpecifics GetTestSpecifics(const std::string& name = "name") {
   return specifics;
 }
 
-MATCHER_P(SyncDataRemoteMatches, name, "") {
-  return arg.IsValid() && !arg.IsLocal() && arg.GetDataType() == kModelType &&
+MATCHER_P(SyncDataMatches, name, "") {
+  return arg.IsValid() && arg.GetDataType() == kModelType &&
          arg.GetSpecifics().preference().name() == name;
 }
 
@@ -66,7 +66,7 @@ MATCHER_P(HasName, name, "") {
 class MockSyncableService : public SyncableService {
  public:
   MOCK_METHOD(void, WaitUntilReadyToSync, (base::OnceClosure done), (override));
-  MOCK_METHOD(base::Optional<syncer::ModelError>,
+  MOCK_METHOD(absl::optional<syncer::ModelError>,
               MergeDataAndStartSyncing,
               (ModelType type,
                const SyncDataList& initial_sync_data,
@@ -74,7 +74,7 @@ class MockSyncableService : public SyncableService {
                std::unique_ptr<SyncErrorFactory> sync_error_factory),
               (override));
   MOCK_METHOD(void, StopSyncing, (ModelType type), (override));
-  MOCK_METHOD(base::Optional<ModelError>,
+  MOCK_METHOD(absl::optional<ModelError>,
               ProcessSyncChanges,
               (const base::Location& from_here,
                const SyncChangeList& change_list),
@@ -95,7 +95,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
                 std::unique_ptr<SyncChangeProcessor> sync_processor,
                 std::unique_ptr<SyncErrorFactory> sync_error_factory) {
               start_syncing_sync_processor_ = std::move(sync_processor);
-              return base::nullopt;
+              return absl::nullopt;
             });
   }
 
@@ -104,8 +104,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   void InitializeBridge(ModelType model_type = kModelType) {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            model_type, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
+            model_type, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     bridge_ = std::make_unique<SyncableServiceBasedBridge>(
         model_type,
@@ -207,9 +206,9 @@ TEST_F(SyncableServiceBasedBridgeTest,
   // Once the initial data is fetched from the server,
   // MergeDataAndStartSyncing() should be exercised.
   EXPECT_CALL(syncable_service_,
-              MergeDataAndStartSyncing(
-                  kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
-                  NotNull(), NotNull()));
+              MergeDataAndStartSyncing(kModelType,
+                                       ElementsAre(SyncDataMatches("name1")),
+                                       NotNull(), NotNull()));
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
 }
@@ -336,9 +335,9 @@ TEST_F(SyncableServiceBasedBridgeTest,
   InitializeBridge();
 
   EXPECT_CALL(syncable_service_,
-              MergeDataAndStartSyncing(
-                  kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
-                  NotNull(), NotNull()));
+              MergeDataAndStartSyncing(kModelType,
+                                       ElementsAre(SyncDataMatches("name1")),
+                                       NotNull(), NotNull()));
   StartSyncing();
 }
 
@@ -367,10 +366,10 @@ TEST_F(SyncableServiceBasedBridgeTest,
         change_list.emplace_back(
             FROM_HERE, SyncChange::ACTION_ADD,
             SyncData::CreateLocalData(kClientTag, "title", GetTestSpecifics()));
-        const base::Optional<ModelError> error =
+        const absl::optional<ModelError> error =
             sync_processor->ProcessSyncChanges(FROM_HERE, change_list);
         EXPECT_FALSE(error.has_value());
-        return base::nullopt;
+        return absl::nullopt;
       });
 
   InitializeBridge();
@@ -396,7 +395,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalCreation) {
   change_list.emplace_back(
       FROM_HERE, SyncChange::ACTION_ADD,
       SyncData::CreateLocalData(kClientTag, "title", GetTestSpecifics()));
-  const base::Optional<ModelError> error =
+  const absl::optional<ModelError> error =
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value());
   EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
@@ -417,7 +416,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalUpdate) {
   change_list.emplace_back(FROM_HERE, SyncChange::ACTION_UPDATE,
                            SyncData::CreateLocalData(
                                kClientTag, "title", GetTestSpecifics("name2")));
-  const base::Optional<ModelError> error =
+  const absl::optional<ModelError> error =
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value());
   EXPECT_THAT(GetAllData(),
@@ -438,7 +437,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalDeletion) {
   change_list.emplace_back(FROM_HERE, SyncChange::ACTION_DELETE,
                            SyncData::CreateLocalDelete(kClientTag, kModelType));
 
-  const base::Optional<ModelError> error =
+  const absl::optional<ModelError> error =
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value());
   EXPECT_THAT(GetAllData(), IsEmpty());
@@ -464,7 +463,7 @@ TEST_F(SyncableServiceBasedBridgeTest,
   change_list.emplace_back(
       FROM_HERE, SyncChange::ACTION_ADD,
       SyncData::CreateLocalData(kClientTag, "title", GetTestSpecifics()));
-  const base::Optional<ModelError> error =
+  const absl::optional<ModelError> error =
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_TRUE(error.has_value());
   EXPECT_THAT(GetAllData(), IsEmpty());

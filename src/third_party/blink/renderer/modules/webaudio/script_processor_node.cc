@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -158,7 +159,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   scoped_refptr<AudioBus> input_bus = Input(0).Bus();
   AudioBus* output_bus = Output(0).Bus();
 
-  uint32_t double_buffer_index = this->DoubleBufferIndex();
+  uint32_t double_buffer_index = DoubleBufferIndex();
   DCHECK_LT(double_buffer_index, 2u);
   DCHECK_LT(double_buffer_index, shared_input_buffers_.size());
   DCHECK_LT(double_buffer_index, shared_output_buffers_.size());

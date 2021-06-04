@@ -7,6 +7,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {AXAttributes, AXNativeSourceTypes, AXSourceTypes} from './AccessibilityStrings.js';
@@ -230,8 +231,8 @@ export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
 
   static createSimpleValueElement(type: Protocol.Accessibility.AXValueType|null, value: string): Element {
     let valueElement;
-    const AXValueType = Protocol.Accessibility.AXValueType;
-    if (!type || type === AXValueType.ValueUndefined || type === AXValueType.ComputedString) {
+    if (!type || type === Protocol.Accessibility.AXValueType.ValueUndefined ||
+        type === Protocol.Accessibility.AXValueType.ComputedString) {
       valueElement = document.createElement('span');
     } else {
       valueElement = document.createElement('span');
@@ -281,9 +282,10 @@ export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
   }
 
   appendValueElement(value: Protocol.Accessibility.AXValue): void {
-    const AXValueType = Protocol.Accessibility.AXValueType;
-    if (value.type === AXValueType.Idref || value.type === AXValueType.Node || value.type === AXValueType.IdrefList ||
-        value.type === AXValueType.NodeList) {
+    if (value.type === Protocol.Accessibility.AXValueType.Idref ||
+        value.type === Protocol.Accessibility.AXValueType.Node ||
+        value.type === Protocol.Accessibility.AXValueType.IdrefList ||
+        value.type === Protocol.Accessibility.AXValueType.NodeList) {
       this.appendRelatedNodeListValueElement(value);
       return;
     }
@@ -458,12 +460,11 @@ export class AXValueSourceTreeElement extends AXNodePropertyTreeElement {
 
   appendSourceNameElement(source: Protocol.Accessibility.AXValueSource): void {
     const nameElement = document.createElement('span');
-    const AXValueSourceType = Protocol.Accessibility.AXValueSourceType;
     const type = source.type;
     switch (type) {
-      case AXValueSourceType.Attribute:
-      case AXValueSourceType.Placeholder:
-      case AXValueSourceType.RelatedElement:
+      case Protocol.Accessibility.AXValueSourceType.Attribute:
+      case Protocol.Accessibility.AXValueSourceType.Placeholder:
+      case Protocol.Accessibility.AXValueSourceType.RelatedElement:
         if (source.nativeSource) {
           const nativeSource = source.nativeSource;
           nameElement.textContent = AXNativeSourceTypes[nativeSource].name();

@@ -21,10 +21,11 @@
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/fake_profile_manager.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
@@ -42,20 +43,6 @@ namespace ash {
 
 // TODO(https://crbug.com/1164001): remove after the class is migrated
 using ::chromeos::SystemSaltGetter;
-
-class UnittestProfileManager : public ::ProfileManagerWithoutInit {
- public:
-  explicit UnittestProfileManager(const base::FilePath& user_data_dir)
-      : ::ProfileManagerWithoutInit(user_data_dir) {}
-
- protected:
-  std::unique_ptr<Profile> CreateProfileHelper(
-      const base::FilePath& path) override {
-    if (!base::PathExists(path) && !base::CreateDirectory(path))
-      return nullptr;
-    return std::make_unique<TestingProfile>(path);
-  }
-};
 
 class UnittestRemoveUserDelegate : public user_manager::RemoveUserDelegate {
  public:
@@ -104,14 +91,15 @@ class UserManagerTest : public testing::Test {
     SetDeviceSettings(false, "", false);
 
     // Register an in-memory local settings instance.
-    local_state_.reset(
-        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
+    local_state_ = std::make_unique<ScopedTestingLocalState>(
+        TestingBrowserProcess::GetGlobal());
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.GetPath()));
+        std::make_unique<FakeProfileManager>(temp_dir_.GetPath()));
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     ResetUserManager();
 
@@ -125,12 +113,13 @@ class UserManagerTest : public testing::Test {
 
     // Shut down the DeviceSettingsService.
     DeviceSettingsService::Get()->UnsetSessionManager();
-    TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 
     // Unregister the in-memory local settings instance.
     local_state_.reset();
 
     base::RunLoop().RunUntilIdle();
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -344,7 +333,7 @@ TEST_F(UserManagerTest, ProfileRequiresPolicyUnknown) {
   user_manager::UserManager::Get()->UserLoggedIn(
       owner_account_id_at_invalid_domain_,
       owner_account_id_at_invalid_domain_.GetUserEmail(), false, false);
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 owner_account_id_at_invalid_domain_));
   ResetUserManager();

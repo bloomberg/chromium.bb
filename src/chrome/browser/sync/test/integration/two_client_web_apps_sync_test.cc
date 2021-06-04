@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
@@ -15,11 +16,11 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -29,7 +30,12 @@ namespace web_app {
 
 class TwoClientWebAppsSyncTest : public SyncTest {
  public:
-  TwoClientWebAppsSyncTest() : SyncTest(TWO_CLIENT) {}
+  TwoClientWebAppsSyncTest() : SyncTest(TWO_CLIENT) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
+    scoped_feature_list_.InitAndDisableFeature(features::kWebAppsCrosapi);
+#endif
+  }
 
   ~TwoClientWebAppsSyncTest() override = default;
 
@@ -48,7 +54,7 @@ class TwoClientWebAppsSyncTest : public SyncTest {
   }
 
   bool AllProfilesHaveSameWebAppIds() {
-    base::Optional<base::flat_set<AppId>> app_ids;
+    absl::optional<base::flat_set<AppId>> app_ids;
     for (Profile* profile : GetAllProfiles()) {
       base::flat_set<AppId> profile_app_ids(GetRegistrar(profile).GetAppIds());
       if (!app_ids) {
@@ -62,6 +68,7 @@ class TwoClientWebAppsSyncTest : public SyncTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   ScopedOsHooksSuppress os_hooks_suppress_;
 
   DISALLOW_COPY_AND_ASSIGN(TwoClientWebAppsSyncTest);
@@ -316,12 +323,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
 
   Profile* source_profile = GetProfile(0);
   Profile* dest_profile = GetProfile(1);
-
-  // Both bookmark app sync and web app sync happen at the same time. Disable
-  // one of them to simulate the other winning the "race".
-  InstallManager& install_manager =
-      WebAppProvider::Get(dest_profile)->install_manager();
-  install_manager.DisableBookmarkAppSyncInstallForTesting();
 
   WebAppInstallObserver dest_install_observer(dest_profile);
 

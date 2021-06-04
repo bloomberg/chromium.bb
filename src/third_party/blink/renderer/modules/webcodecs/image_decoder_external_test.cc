@@ -100,15 +100,14 @@ TEST_F(ImageDecoderTest, IsTypeSupported) {
 
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/webp"));
 
-  EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/x-icon"));
-  EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/vnd.microsoft.icon"));
-
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/bmp"));
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/x-xbitmap"));
 
   EXPECT_EQ(IsTypeSupported(&v8_scope, "image/avif"),
             BUILDFLAG(ENABLE_AV1_DECODER));
 
+  EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/x-icon"));
+  EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/vnd.microsoft.icon"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/svg+xml"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/heif"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/pcx"));
@@ -189,7 +188,7 @@ TEST_F(ImageDecoderTest, DecodeUnsupported) {
   EXPECT_FALSE(v8_scope.GetExceptionState().HadException());
 
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     EXPECT_TRUE(tester.IsRejected());
@@ -224,7 +223,7 @@ TEST_F(ImageDecoderTest, DecodeGif) {
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
 
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     ASSERT_TRUE(tester.IsFulfilled());
@@ -249,6 +248,7 @@ TEST_F(ImageDecoderTest, DecodeGif) {
     EXPECT_TRUE(result->complete());
 
     auto* frame = result->image();
+    EXPECT_EQ(frame->timestamp(), absl::nullopt);
     EXPECT_EQ(frame->duration(), 0u);
     EXPECT_EQ(frame->displayWidth(), 16u);
     EXPECT_EQ(frame->displayHeight(), 16u);
@@ -263,6 +263,7 @@ TEST_F(ImageDecoderTest, DecodeGif) {
     EXPECT_TRUE(result->complete());
 
     auto* frame = result->image();
+    EXPECT_EQ(frame->timestamp(), absl::nullopt);
     EXPECT_EQ(frame->duration(), 0u);
     EXPECT_EQ(frame->displayWidth(), 16u);
     EXPECT_EQ(frame->displayHeight(), 16u);
@@ -273,6 +274,23 @@ TEST_F(ImageDecoderTest, DecodeGif) {
   ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
   tester.WaitUntilSettled();
   ASSERT_TRUE(tester.IsRejected());
+}
+
+TEST_F(ImageDecoderTest, DecodeCompleted) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/gif";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+  auto* decoder =
+      CreateDecoder(&v8_scope, "images/resources/animated.gif", kImageType);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  {
+    auto promise = decoder->completed(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
 }
 
 TEST_F(ImageDecoderTest, DecoderReset) {
@@ -288,7 +306,7 @@ TEST_F(ImageDecoderTest, DecoderReset) {
 
   // Ensure decoding works properly after reset.
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     ASSERT_TRUE(tester.IsFulfilled());
@@ -331,7 +349,7 @@ TEST_F(ImageDecoderTest, DecoderClose) {
   decoder->close();
 
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     EXPECT_TRUE(tester.IsRejected());
@@ -359,7 +377,7 @@ TEST_F(ImageDecoderTest, DecoderContextDestroyed) {
   // pending activity.
   EXPECT_TRUE(decoder->HasPendingActivity());
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     EXPECT_TRUE(tester.IsFulfilled());
@@ -377,11 +395,10 @@ TEST_F(ImageDecoderTest, DecoderContextDestroyed) {
   EXPECT_FALSE(decoder->HasPendingActivity());
 
   // Promises won't resolve or reject now that the context is destroyed, but we
-  // should ensure decodeMetadata() and decode() don't trigger any issues.
-  decoder->decodeMetadata();
+  // should ensure decode() doesn't trigger any issues.
   decoder->decode(MakeOptions(0, true));
 
-  // This will fail if a decode() or decodeMetadata() was queued.
+  // This will fail if a decode() or metadata decode was queued.
   EXPECT_FALSE(decoder->HasPendingActivity());
 }
 
@@ -419,10 +436,10 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
 
   // Ensure we have metadata.
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
-    ASSERT_TRUE(tester.IsFulfilled());
+    EXPECT_TRUE(tester.IsFulfilled());
   }
 
   // Deselect the current track.
@@ -437,12 +454,19 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
                        v8_scope.GetScriptState())));
   underlying_source->Close();
 
+  // Completed will not resolve while we have no selected track.
+  auto completed_promise = decoder->completed(v8_scope.GetScriptState());
+  ScriptPromiseTester completed_tester(v8_scope.GetScriptState(),
+                                       completed_promise);
+  EXPECT_FALSE(completed_tester.IsFulfilled());
+  EXPECT_FALSE(completed_tester.IsRejected());
+
   // Metadata should resolve okay while no track is selected.
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
-    ASSERT_TRUE(tester.IsFulfilled());
+    EXPECT_TRUE(tester.IsFulfilled());
   }
 
   // Decodes should be rejected while no track is selected.
@@ -453,8 +477,14 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
     EXPECT_TRUE(tester.IsRejected());
   }
 
+  EXPECT_FALSE(completed_tester.IsFulfilled());
+  EXPECT_FALSE(completed_tester.IsRejected());
+
   // Select a track again.
   decoder->tracks().AnonymousIndexedGetter(0)->setSelected(true);
+
+  completed_tester.WaitUntilSettled();
+  EXPECT_TRUE(completed_tester.IsFulfilled());
 
   // Verify a decode completes successfully.
   {
@@ -466,6 +496,8 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
     EXPECT_TRUE(result->complete());
 
     auto* frame = result->image();
+    EXPECT_EQ(frame->timestamp(), absl::nullopt);
+    EXPECT_EQ(*frame->duration(), 100000u);
     EXPECT_EQ(frame->displayWidth(), 100u);
     EXPECT_EQ(frame->displayHeight(), 100u);
   }
@@ -501,7 +533,7 @@ TEST_F(ImageDecoderTest, DecoderReadableStreamAvif) {
       v8_scope.GetIsolate(),
       ToV8(DOMUint8Array::Create(data_ptr, 1), v8_scope.GetScriptState())));
 
-  auto metadata_promise = decoder->decodeMetadata();
+  auto metadata_promise = decoder->tracks().ready(v8_scope.GetScriptState());
   auto decode_promise = decoder->decode();
   base::RunLoop().RunUntilIdle();
 
@@ -533,8 +565,79 @@ TEST_F(ImageDecoderTest, DecoderReadableStreamAvif) {
   EXPECT_TRUE(result->complete());
 
   auto* frame = result->image();
+  EXPECT_EQ(frame->timestamp(), absl::nullopt);
+  EXPECT_EQ(*frame->duration(), 100000u);
   EXPECT_EQ(frame->displayWidth(), 159u);
   EXPECT_EQ(frame->displayHeight(), 159u);
+}
+
+TEST_F(ImageDecoderTest, ReadableStreamAvifStillYuvDecoding) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/avif";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+
+  auto data = ReadFile("images/resources/avif/red-limited-range-420-8bpc.avif");
+
+  Persistent<TestUnderlyingSource> underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(v8_scope.GetScriptState());
+  Persistent<ReadableStream> stream =
+      ReadableStream::CreateWithCountQueueingStrategy(v8_scope.GetScriptState(),
+                                                      underlying_source, 0);
+
+  auto* init = MakeGarbageCollected<ImageDecoderInit>();
+  init->setType(kImageType);
+  init->setData(
+      ArrayBufferOrArrayBufferViewOrReadableStream::FromReadableStream(stream));
+
+  Persistent<ImageDecoderExternal> decoder = ImageDecoderExternal::Create(
+      v8_scope.GetScriptState(), init, IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+  EXPECT_EQ(decoder->type(), kImageType);
+
+  // Append all data, but don't mark the stream as complete yet.
+  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
+  underlying_source->Enqueue(ScriptValue(
+      v8_scope.GetIsolate(), ToV8(DOMUint8Array::Create(data_ptr, data->size()),
+                                  v8_scope.GetScriptState())));
+
+  // Wait for metadata so we know the append has occurred.
+  {
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  // Attempt to decode a frame greater than the first.
+  auto bad_promise = decoder->decode(MakeOptions(1, true));
+  base::RunLoop().RunUntilIdle();
+
+  // Mark the stream as complete.
+  underlying_source->Close();
+
+  // Now that all data is in we see only 1 frame and request should be rejected.
+  {
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), bad_promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsRejected());
+  }
+
+  {
+    auto promise = decoder->decode();
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+    auto* result = ToImageDecodeResult(&v8_scope, tester.Value());
+    EXPECT_TRUE(result->complete());
+
+    auto* frame = result->image();
+    EXPECT_EQ(frame->format(), "I420");
+    EXPECT_EQ(frame->timestamp(), absl::nullopt);
+    EXPECT_EQ(frame->duration(), absl::nullopt);
+    EXPECT_EQ(frame->displayWidth(), 3u);
+    EXPECT_EQ(frame->displayHeight(), 3u);
+  }
 }
 
 TEST_F(ImageDecoderTest, DecodePartialImage) {
@@ -558,7 +661,7 @@ TEST_F(ImageDecoderTest, DecodePartialImage) {
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
 
   {
-    auto promise = decoder->decodeMetadata();
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
     ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
     tester.WaitUntilSettled();
     ASSERT_TRUE(tester.IsFulfilled());
@@ -578,6 +681,154 @@ TEST_F(ImageDecoderTest, DecodePartialImage) {
 
     tester1.WaitUntilSettled();
     ASSERT_TRUE(tester1.IsRejected());
+  }
+}
+
+TEST_F(ImageDecoderTest, DecodeClosedDuringReadableStream) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/gif";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+
+  auto data = ReadFile("images/resources/animated-10color.gif");
+
+  Persistent<TestUnderlyingSource> underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(v8_scope.GetScriptState());
+  Persistent<ReadableStream> stream =
+      ReadableStream::CreateWithCountQueueingStrategy(v8_scope.GetScriptState(),
+                                                      underlying_source, 0);
+
+  auto* init = MakeGarbageCollected<ImageDecoderInit>();
+  init->setType(kImageType);
+  init->setData(
+      ArrayBufferOrArrayBufferViewOrReadableStream::FromReadableStream(stream));
+
+  Persistent<ImageDecoderExternal> decoder = ImageDecoderExternal::Create(
+      v8_scope.GetScriptState(), init, IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+  EXPECT_EQ(decoder->type(), kImageType);
+
+  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
+  underlying_source->Enqueue(
+      ScriptValue(v8_scope.GetIsolate(),
+                  ToV8(DOMUint8Array::Create(data_ptr, data->size() / 2),
+                       v8_scope.GetScriptState())));
+
+  // Ensure we have metadata.
+  {
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsFulfilled());
+  }
+
+  auto promise = decoder->completed(v8_scope.GetScriptState());
+  ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(tester.IsFulfilled());
+  EXPECT_FALSE(tester.IsRejected());
+  decoder->close();
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsRejected());
+}
+
+TEST_F(ImageDecoderTest, DecodeInvalidFileViaReadableStream) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/webp";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+
+  auto data = ReadFile("images/resources/invalid-animated-webp.webp");
+
+  Persistent<TestUnderlyingSource> underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(v8_scope.GetScriptState());
+  Persistent<ReadableStream> stream =
+      ReadableStream::CreateWithCountQueueingStrategy(v8_scope.GetScriptState(),
+                                                      underlying_source, 0);
+
+  auto* init = MakeGarbageCollected<ImageDecoderInit>();
+  init->setType(kImageType);
+  init->setData(
+      ArrayBufferOrArrayBufferViewOrReadableStream::FromReadableStream(stream));
+
+  Persistent<ImageDecoderExternal> decoder = ImageDecoderExternal::Create(
+      v8_scope.GetScriptState(), init, IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+  EXPECT_EQ(decoder->type(), kImageType);
+
+  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
+  underlying_source->Enqueue(
+      ScriptValue(v8_scope.GetIsolate(),
+                  ToV8(DOMUint8Array::Create(data_ptr, data->size() / 2),
+                       v8_scope.GetScriptState())));
+
+  // Ensure we have metadata.
+  {
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsFulfilled());
+  }
+
+  auto completed_promise = decoder->completed(v8_scope.GetScriptState());
+  ScriptPromiseTester completed_tester(v8_scope.GetScriptState(),
+                                       completed_promise);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed_tester.IsFulfilled());
+  EXPECT_FALSE(completed_tester.IsRejected());
+
+  {
+    auto promise = decoder->decode(MakeOptions(
+        decoder->tracks().selectedTrack().value()->frameCount() - 1, true));
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsRejected());
+  }
+
+  completed_tester.WaitUntilSettled();
+  EXPECT_TRUE(completed_tester.IsRejected());
+}
+
+TEST_F(ImageDecoderTest, DecodeYuv) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/jpeg";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+  auto* decoder =
+      CreateDecoder(&v8_scope, "images/resources/ycbcr-420.jpg", kImageType);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  {
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  const auto& tracks = decoder->tracks();
+  ASSERT_EQ(tracks.length(), 1u);
+  EXPECT_EQ(tracks.AnonymousIndexedGetter(0)->animated(), false);
+  EXPECT_EQ(tracks.selectedTrack().value()->animated(), false);
+
+  EXPECT_EQ(decoder->type(), kImageType);
+  EXPECT_EQ(tracks.selectedTrack().value()->frameCount(), 1u);
+  EXPECT_EQ(tracks.selectedTrack().value()->repetitionCount(), 0);
+  EXPECT_EQ(decoder->complete(), true);
+
+  {
+    auto promise = decoder->decode(MakeOptions(0, true));
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+    auto* result = ToImageDecodeResult(&v8_scope, tester.Value());
+    EXPECT_TRUE(result->complete());
+
+    auto* frame = result->image();
+    EXPECT_EQ(frame->format(), "I420");
+    EXPECT_EQ(frame->timestamp(), absl::nullopt);
+    EXPECT_EQ(frame->duration(), absl::nullopt);
+    EXPECT_EQ(frame->displayWidth(), 99u);
+    EXPECT_EQ(frame->displayHeight(), 99u);
   }
 }
 

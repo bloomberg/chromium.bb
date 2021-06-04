@@ -290,7 +290,7 @@ void SetCurrentValueIndices(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         break;
       if (array[i] < static_cast<uint32_t>(pFormField->CountOptions()) &&
           !pFormField->IsItemSelected(array[i])) {
-        pFormField->SetItemSelection(array[i], true,
+        pFormField->SetItemSelection(array[i],
                                      NotificationOption::kDoNotNotify);
       }
     }
@@ -451,7 +451,7 @@ void SetFieldValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       GetFormFieldsForName(pFormFillEnv, swFieldName);
 
   for (CPDF_FormField* pFormField : FieldArray) {
-    if (pFormField->GetFullName().Compare(swFieldName) != 0)
+    if (pFormField->GetFullName() != swFieldName)
       continue;
 
     switch (pFormField->GetFieldType()) {
@@ -482,8 +482,7 @@ void SetFieldValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
           for (const auto& str : strArray) {
             int index = pFormField->FindOption(str);
             if (!pFormField->IsItemSelected(index))
-              pFormField->SetItemSelection(index, true,
-                                           NotificationOption::kNotify);
+              pFormField->SetItemSelection(index, NotificationOption::kNotify);
           }
           UpdateFormField(pFormFillEnv, pFormField, true, false, true);
         }
@@ -1297,26 +1296,24 @@ CJS_Result CJS_Field::get_fill_color(CJS_Runtime* pRuntime) {
   if (!pFormControl)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  int iColorType;
-  pFormControl->GetBackgroundColor(iColorType);
-
   CFX_Color color;
-  if (iColorType == CFX_Color::kTransparent) {
-    color = CFX_Color(CFX_Color::kTransparent);
-  } else if (iColorType == CFX_Color::kGray) {
-    color = CFX_Color(CFX_Color::kGray,
-                      pFormControl->GetOriginalBackgroundColor(0));
-  } else if (iColorType == CFX_Color::kRGB) {
-    color =
-        CFX_Color(CFX_Color::kRGB, pFormControl->GetOriginalBackgroundColor(0),
-                  pFormControl->GetOriginalBackgroundColor(1),
-                  pFormControl->GetOriginalBackgroundColor(2));
-  } else if (iColorType == CFX_Color::kCMYK) {
-    color =
-        CFX_Color(CFX_Color::kCMYK, pFormControl->GetOriginalBackgroundColor(0),
-                  pFormControl->GetOriginalBackgroundColor(1),
-                  pFormControl->GetOriginalBackgroundColor(2),
-                  pFormControl->GetOriginalBackgroundColor(3));
+  CFX_Color::Type iColorType = pFormControl->GetBackgroundColor().first;
+  if (iColorType == CFX_Color::Type::kTransparent) {
+    color = CFX_Color(CFX_Color::Type::kTransparent);
+  } else if (iColorType == CFX_Color::Type::kGray) {
+    color = CFX_Color(CFX_Color::Type::kGray,
+                      pFormControl->GetOriginalBackgroundColorComponent(0));
+  } else if (iColorType == CFX_Color::Type::kRGB) {
+    color = CFX_Color(CFX_Color::Type::kRGB,
+                      pFormControl->GetOriginalBackgroundColorComponent(0),
+                      pFormControl->GetOriginalBackgroundColorComponent(1),
+                      pFormControl->GetOriginalBackgroundColorComponent(2));
+  } else if (iColorType == CFX_Color::Type::kCMYK) {
+    color = CFX_Color(CFX_Color::Type::kCMYK,
+                      pFormControl->GetOriginalBackgroundColorComponent(0),
+                      pFormControl->GetOriginalBackgroundColorComponent(1),
+                      pFormControl->GetOriginalBackgroundColorComponent(2),
+                      pFormControl->GetOriginalBackgroundColorComponent(3));
   } else {
     return CJS_Result::Failure(JSMessage::kValueError);
   }
@@ -1826,24 +1823,24 @@ CJS_Result CJS_Field::get_stroke_color(CJS_Runtime* pRuntime) {
   if (!pFormControl)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  int iColorType;
-  pFormControl->GetBorderColor(iColorType);
-
   CFX_Color color;
-  if (iColorType == CFX_Color::kTransparent) {
-    color = CFX_Color(CFX_Color::kTransparent);
-  } else if (iColorType == CFX_Color::kGray) {
-    color =
-        CFX_Color(CFX_Color::kGray, pFormControl->GetOriginalBorderColor(0));
-  } else if (iColorType == CFX_Color::kRGB) {
-    color = CFX_Color(CFX_Color::kRGB, pFormControl->GetOriginalBorderColor(0),
-                      pFormControl->GetOriginalBorderColor(1),
-                      pFormControl->GetOriginalBorderColor(2));
-  } else if (iColorType == CFX_Color::kCMYK) {
-    color = CFX_Color(CFX_Color::kCMYK, pFormControl->GetOriginalBorderColor(0),
-                      pFormControl->GetOriginalBorderColor(1),
-                      pFormControl->GetOriginalBorderColor(2),
-                      pFormControl->GetOriginalBorderColor(3));
+  CFX_Color::Type iColorType = pFormControl->GetBorderColorARGB().first;
+  if (iColorType == CFX_Color::Type::kTransparent) {
+    color = CFX_Color(CFX_Color::Type::kTransparent);
+  } else if (iColorType == CFX_Color::Type::kGray) {
+    color = CFX_Color(CFX_Color::Type::kGray,
+                      pFormControl->GetOriginalBorderColorComponent(0));
+  } else if (iColorType == CFX_Color::Type::kRGB) {
+    color = CFX_Color(CFX_Color::Type::kRGB,
+                      pFormControl->GetOriginalBorderColorComponent(0),
+                      pFormControl->GetOriginalBorderColorComponent(1),
+                      pFormControl->GetOriginalBorderColorComponent(2));
+  } else if (iColorType == CFX_Color::Type::kCMYK) {
+    color = CFX_Color(CFX_Color::Type::kCMYK,
+                      pFormControl->GetOriginalBorderColorComponent(0),
+                      pFormControl->GetOriginalBorderColorComponent(1),
+                      pFormControl->GetOriginalBorderColorComponent(2),
+                      pFormControl->GetOriginalBorderColorComponent(3));
   } else {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
   }
@@ -1932,21 +1929,20 @@ CJS_Result CJS_Field::get_text_color(CJS_Runtime* pRuntime) {
   if (!pFormControl)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  Optional<CFX_Color::Type> iColorType;
-  FX_ARGB color;
   CPDF_DefaultAppearance FieldAppearance = pFormControl->GetDefaultAppearance();
-  std::tie(iColorType, color) = FieldAppearance.GetColor();
+  Optional<std::pair<CFX_Color::Type, FX_ARGB>> maybe_type_argb_pair =
+      FieldAppearance.GetColorARGB();
 
   CFX_Color crRet;
-  if (!iColorType || *iColorType == CFX_Color::kTransparent) {
-    crRet = CFX_Color(CFX_Color::kTransparent);
-  } else {
+  if (maybe_type_argb_pair.has_value() &&
+      maybe_type_argb_pair.value().first != CFX_Color::Type::kTransparent) {
     int32_t a;
     int32_t r;
     int32_t g;
     int32_t b;
-    std::tie(a, r, g, b) = ArgbDecode(color);
-    crRet = CFX_Color(CFX_Color::kRGB, r / 255.0f, g / 255.0f, b / 255.0f);
+    std::tie(a, r, g, b) = ArgbDecode(maybe_type_argb_pair.value().second);
+    crRet =
+        CFX_Color(CFX_Color::Type::kRGB, r / 255.0f, g / 255.0f, b / 255.0f);
   }
 
   v8::Local<v8::Value> array =

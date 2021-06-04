@@ -63,11 +63,16 @@ void FlagsUIHandler::Init(flags_ui::FlagsStorage* flags_storage,
 
 void FlagsUIHandler::HandleRequestExperimentalFeatures(
     const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value& callback_id = args->GetList()[0];
+
   experimental_features_requested_ = true;
   // Bail out if the handler hasn't been initialized yet. The request will be
   // handled after the initialization.
-  if (!flags_storage_)
+  if (!flags_storage_) {
+    ResolveJavascriptCallback(callback_id, base::Value());
     return;
+  }
 
   base::DictionaryValue results;
 
@@ -103,8 +108,7 @@ void FlagsUIHandler::HandleRequestExperimentalFeatures(
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
 #endif
-  web_ui()->CallJavascriptFunctionUnsafe(flags_ui::kReturnExperimentalFeatures,
-                                         results);
+  ResolveJavascriptCallback(callback_id, results);
 }
 
 void FlagsUIHandler::HandleEnableExperimentalFeatureMessage(
@@ -156,7 +160,7 @@ void FlagsUIHandler::HandleRestartBrowser(const base::ListValue* args) {
   // Adhere to policy-enforced command-line switch handling when applying
   // modified flags.
   auto flags = flags_storage_->GetFlags();
-  chromeos::UserSessionManager::ApplyUserPolicyToFlags(
+  ash::UserSessionManager::ApplyUserPolicyToFlags(
       Profile::FromWebUI(web_ui())->GetPrefs(), &flags);
 
   AccountId account_id =

@@ -39,14 +39,15 @@ class MODULES_EXPORT ScreenAdvanced final : public Screen {
   bool isInternal() const;
   float devicePixelRatio() const;
   const String& id() const override;
-  HeapVector<String> pointerTypes() const;
+  Vector<String> pointerTypes() const;
   const String& label() const;
 
   // Not web-exposed; for internal usage only (see Screen).
   int64_t DisplayId() const override;
+  void UpdateDisplayId(int64_t display_id) { display_id_ = display_id; }
 
  private:
-  const int64_t display_id_;
+  int64_t display_id_;
 };
 
 }  // namespace blink

@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -87,6 +86,7 @@ class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
       const std::vector<InputDevice>& devices);
   void DispatchDeviceListsComplete();
   void DispatchStylusStateChanged(StylusState stylus_state);
+  void DispatchMicrophoneMuteSwitchValueChanged(bool muted);
 
   // Gamepad event and gamepad device event. These events are dispatched to
   // GamepadObserver through GamepadProviderOzone.

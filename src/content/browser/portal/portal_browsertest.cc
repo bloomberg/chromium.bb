@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -69,6 +68,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
@@ -76,7 +76,7 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-using testing::_;
+using ::testing::_;
 using trace_analyzer::Query;
 using trace_analyzer::TraceAnalyzer;
 using trace_analyzer::TraceEventVector;
@@ -690,18 +690,18 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest,
     // The hit test region for the portal frame should be at index 1 after
     // activation, so we wait for the hit test data to update until it's in
     // this state.
-    auto hit_test_index = [&]() -> base::Optional<size_t> {
+    auto hit_test_index = [&]() -> absl::optional<size_t> {
       const auto& display_hit_test_query_map =
           GetHostFrameSinkManager()->display_hit_test_query();
       auto it = display_hit_test_query_map.find(root_frame_sink_id);
       // On Mac, we create a new root layer after activation, so the hit test
       // data may not have anything for the new layer yet.
       if (it == display_hit_test_query_map.end())
-        return base::nullopt;
+        return absl::nullopt;
       CHECK_EQ(portal_frame->GetRenderWidgetHost()->GetView(), view);
       size_t index;
       if (!it->second->FindIndexOfFrameSink(view->GetFrameSinkId(), &index))
-        return base::nullopt;
+        return absl::nullopt;
       return index;
     };
     hit_test_observer.WaitForHitTestData();
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
   std::unique_ptr<SyntheticTapGesture> gesture =
       std::make_unique<SyntheticTapGesture>(params);
 
-  base::Optional<PortalActivatedObserver> predecessor_activated;
+  absl::optional<PortalActivatedObserver> predecessor_activated;
   {
     PortalCreatedObserver adoption_observer(portal_frame);
     adoption_observer.set_created_callback(base::BindLambdaForTesting(
@@ -1004,7 +1004,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   params.position = gfx::PointF(20, 20);
 
   // Activate the portal, and then wait for the predecessor to be reactivated.
-  base::Optional<PortalActivatedObserver> adopted_activated;
+  absl::optional<PortalActivatedObserver> adopted_activated;
   {
     PortalCreatedObserver adoption_observer(portal_frame);
     adoption_observer.set_created_callback(base::BindLambdaForTesting(
@@ -1074,7 +1074,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
   params.duration_ms = 1;
 
   // Simulate a tap and activate the portal.
-  base::Optional<PortalActivatedObserver> adopted_activated;
+  absl::optional<PortalActivatedObserver> adopted_activated;
   {
     PortalCreatedObserver adoption_observer(portal_frame);
     adoption_observer.set_created_callback(base::BindLambdaForTesting(
@@ -1278,7 +1278,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RemovePortalWhenUnloading) {
 
 class PortalOrphanedNavigationBrowserTest
     : public PortalBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   PortalOrphanedNavigationBrowserTest()
       : cross_site_(std::get<0>(GetParam())),
@@ -1286,7 +1286,7 @@ class PortalOrphanedNavigationBrowserTest
 
   // Provides meaningful param names instead of /0, /1, ...
   static std::string DescribeParams(
-      const testing::TestParamInfo<ParamType>& info) {
+      const ::testing::TestParamInfo<ParamType>& info) {
     bool cross_site;
     bool commit_after_adoption;
     std::tie(cross_site, commit_after_adoption) = info.param;
@@ -1308,7 +1308,8 @@ class PortalOrphanedNavigationBrowserTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PortalOrphanedNavigationBrowserTest,
-                         testing::Combine(testing::Bool(), testing::Bool()),
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()),
                          PortalOrphanedNavigationBrowserTest::DescribeParams);
 
 // Tests that a portal can navigate while orphaned.
@@ -1898,7 +1899,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdvanceFocusIntoPortal) {
       main_frame->GetProcess());
   outer_delegate_proxy->AdvanceFocus(blink::mojom::FocusType::kNone,
                                      main_frame->GetFrameToken());
-  base::Optional<bad_message::BadMessageReason> result = rph_kill_waiter.Wait();
+  absl::optional<bad_message::BadMessageReason> result = rph_kill_waiter.Wait();
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);
 }
@@ -2352,8 +2353,9 @@ namespace {
 class DownloadObserver : public DownloadManager::Observer {
  public:
   DownloadObserver()
-      : manager_(BrowserContext::GetDownloadManager(
-            ShellContentBrowserClient::Get()->browser_context())) {
+      : manager_(ShellContentBrowserClient::Get()
+                     ->browser_context()
+                     ->GetDownloadManager()) {
     manager_->AddObserver(this);
   }
 
@@ -2691,7 +2693,7 @@ class PortalOriginTrialBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  base::Optional<URLLoaderInterceptor> url_loader_interceptor_;
+  absl::optional<URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 IN_PROC_BROWSER_TEST_F(PortalOriginTrialBrowserTest, WithoutTrialToken) {

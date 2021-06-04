@@ -15,6 +15,7 @@
 #include "common/vulkan/vk_headers.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Display.h"
+#include "libANGLE/ErrorStrings.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/renderer/renderer_utils.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
@@ -1458,16 +1459,18 @@ angle::Result FramebufferVk::resolveColorWithCommand(ContextVk *contextVk,
     return angle::Result::Continue;
 }
 
-bool FramebufferVk::checkStatus(const gl::Context *context) const
+gl::FramebufferStatus FramebufferVk::checkStatus(const gl::Context *context) const
 {
     // if we have both a depth and stencil buffer, they must refer to the same object
     // since we only support packed_depth_stencil and not separate depth and stencil
     if (mState.hasSeparateDepthAndStencilAttachments())
     {
-        return false;
+        return gl::FramebufferStatus::Incomplete(
+            GL_FRAMEBUFFER_UNSUPPORTED,
+            gl::err::kFramebufferIncompleteUnsupportedSeparateDepthStencilBuffers);
     }
 
-    return true;
+    return gl::FramebufferStatus::Complete();
 }
 
 angle::Result FramebufferVk::invalidateImpl(ContextVk *contextVk,
@@ -2020,7 +2023,8 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
 
     // Gather VkImageViews over all FBO attachments, also size of attached region.
     std::vector<VkImageView> attachments;
-    gl::Extents attachmentsSize;
+    gl::Extents attachmentsSize = mState.getExtents();
+    ASSERT(attachmentsSize.width != 0 && attachmentsSize.height != 0);
 
     // Color attachments.
     const auto &colorRenderTargets = mRenderTargetCache.getColors();
@@ -2034,9 +2038,6 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
             contextVk, mCurrentFramebufferDesc.getWriteControlMode(), &imageView));
 
         attachments.push_back(imageView->getHandle());
-
-        ASSERT(attachmentsSize.empty() || attachmentsSize == colorRenderTarget->getExtents());
-        attachmentsSize = colorRenderTarget->getExtents();
     }
 
     // Depth/stencil attachment.
@@ -2047,10 +2048,6 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
         ANGLE_TRY(depthStencilRenderTarget->getImageView(contextVk, &imageView));
 
         attachments.push_back(imageView->getHandle());
-
-        ASSERT(attachmentsSize.empty() ||
-               attachmentsSize == depthStencilRenderTarget->getExtents());
-        attachmentsSize = depthStencilRenderTarget->getExtents();
     }
 
     // Color resolve attachments.
@@ -2076,8 +2073,6 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
                 ANGLE_TRY(colorRenderTarget->getResolveImageView(contextVk, &resolveImageView));
 
                 attachments.push_back(resolveImageView->getHandle());
-
-                ASSERT(!attachmentsSize.empty());
             }
         }
     }
@@ -2089,17 +2084,8 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
         ANGLE_TRY(depthStencilRenderTarget->getResolveImageView(contextVk, &imageView));
 
         attachments.push_back(imageView->getHandle());
-
-        ASSERT(!attachmentsSize.empty());
     }
 
-    if (attachmentsSize.empty())
-    {
-        // No attachments, so use the default values.
-        attachmentsSize.height = mState.getDefaultHeight();
-        attachmentsSize.width  = mState.getDefaultWidth();
-        attachmentsSize.depth  = 0;
-    }
     VkFramebufferCreateInfo framebufferInfo = {};
 
     framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -2708,10 +2694,6 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
 gl::Extents FramebufferVk::getReadImageExtents() const
 {
     RenderTargetVk *readRenderTarget = mRenderTargetCache.getColorRead(mState);
-
-    ASSERT(readRenderTarget->getExtents().width == mState.getDimensions().width);
-    ASSERT(readRenderTarget->getExtents().height == mState.getDimensions().height);
-
     return readRenderTarget->getExtents();
 }
 

@@ -12,13 +12,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -784,8 +784,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     weak_partition_factory_ =
         std::make_unique<base::WeakPtrFactory<StoragePartitionImpl>>(
             static_cast<StoragePartitionImpl*>(
-                BrowserContext::GetDefaultStoragePartition(
-                    browser_context_.get())));
+                browser_context_->GetDefaultStoragePartition()));
 
     ChildProcessSecurityPolicyImpl::GetInstance()->AddForTesting(
         process_id_, browser_context_.get());

@@ -7,10 +7,13 @@
 #include "media/base/win/mf_helpers.h"
 #include "media/cdm/win/media_foundation_cdm_factory.h"
 #include "media/mojo/services/media_foundation_renderer_wrapper.h"
+#include "media/mojo/services/mojo_cdm_helper.h"
 
 namespace media {
 
-MediaFoundationMojoMediaClient::MediaFoundationMojoMediaClient() {
+MediaFoundationMojoMediaClient::MediaFoundationMojoMediaClient(
+    const base::FilePath& user_data_dir)
+    : user_data_dir_(user_data_dir) {
   DVLOG_FUNC(1);
 }
 
@@ -32,7 +35,8 @@ MediaFoundationMojoMediaClient::CreateMediaFoundationRenderer(
 std::unique_ptr<CdmFactory> MediaFoundationMojoMediaClient::CreateCdmFactory(
     mojom::FrameInterfaceFactory* frame_interfaces) {
   DVLOG_FUNC(1);
-  return std::make_unique<MediaFoundationCdmFactory>();
+  return std::make_unique<MediaFoundationCdmFactory>(
+      std::make_unique<MojoCdmHelper>(frame_interfaces), user_data_dir_);
 }
 
 }  // namespace media

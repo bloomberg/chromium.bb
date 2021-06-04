@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/task_traits.h"
@@ -180,7 +182,18 @@ v8::Local<v8::Context> AuctionV8Helper::CreateContext(
       v8::Context::New(isolate(), nullptr /* extensions */, global_template);
   auto result =
       context->Global()->Delete(context, CreateStringFromLiteral("Date"));
-  DCHECK(!result.IsNothing());
+
+  v8::Local<v8::ObjectTemplate> console_emulation =
+      console_.GetConsoleTemplate();
+  v8::Local<v8::Object> console_obj;
+  if (console_emulation->NewInstance(context).ToLocal(&console_obj)) {
+    result = context->Global()->Set(context, CreateStringFromLiteral("console"),
+                                    console_obj);
+    DCHECK(!result.IsNothing());
+  } else {
+    DCHECK(false);
+  }
+
   return context;
 }
 
@@ -274,7 +287,8 @@ bool AuctionV8Helper::ExtractJson(v8::Local<v8::Context> context,
 
 v8::MaybeLocal<v8::UnboundScript> AuctionV8Helper::Compile(
     const std::string& src,
-    const GURL& src_url) {
+    const GURL& src_url,
+    absl::optional<std::string>& error_out) {
   v8::Isolate* v8_isolate = isolate();
 
   v8::MaybeLocal<v8::String> src_string = CreateUtf8String(src);
@@ -283,20 +297,30 @@ v8::MaybeLocal<v8::UnboundScript> AuctionV8Helper::Compile(
     return v8::MaybeLocal<v8::UnboundScript>();
 
   // Compile script.
+  v8::TryCatch try_catch(isolate());
   v8::ScriptCompiler::Source script_source(
       src_string.ToLocalChecked(),
       v8::ScriptOrigin(v8_isolate, origin_string.ToLocalChecked()));
-  return v8::ScriptCompiler::CompileUnboundScript(
+  auto result = v8::ScriptCompiler::CompileUnboundScript(
       v8_isolate, &script_source, v8::ScriptCompiler::kNoCompileOptions,
       v8::ScriptCompiler::NoCacheReason::kNoCacheNoReason);
+  if (try_catch.HasCaught()) {
+    error_out = FormatExceptionMessage(v8_isolate->GetCurrentContext(),
+                                       try_catch.Message());
+  }
+  return result;
 }
 
 v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
     v8::Local<v8::Context> context,
     v8::Local<v8::UnboundScript> script,
     base::StringPiece script_name,
-    std::vector<v8::Local<v8::Value>> args) {
+    base::span<v8::Local<v8::Value>> args,
+    std::vector<std::string>& error_out) {
   DCHECK_EQ(isolate(), context->GetIsolate());
+
+  ScopedConsoleTarget direct_console(
+      this, FormatValue(isolate(), script->GetScriptName()), &error_out);
 
   v8::Local<v8::String> v8_script_name;
   if (!CreateUtf8String(script_name).ToLocal(&v8_script_name))
@@ -308,18 +332,97 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
   v8::TryCatch try_catch(isolate());
   ScriptTimeoutHelper timeout_helper(isolate(), script_timeout_);
   auto result = local_script->Run(context);
-  if (result.IsEmpty() || try_catch.HasCaught())
+
+  if (try_catch.HasTerminated()) {
+    error_out.push_back(
+        base::StrCat({FormatValue(isolate(), script->GetScriptName()),
+                      " top-level execution timed out."}));
+    return v8::MaybeLocal<v8::Value>();
+  }
+
+  if (try_catch.HasCaught()) {
+    error_out.push_back(FormatExceptionMessage(context, try_catch.Message()));
+    return v8::MaybeLocal<v8::Value>();
+  }
+
+  if (result.IsEmpty())
     return v8::MaybeLocal<v8::Value>();
 
   v8::Local<v8::Value> function;
-  if (!context->Global()->Get(context, v8_script_name).ToLocal(&function))
+  if (!context->Global()->Get(context, v8_script_name).ToLocal(&function)) {
+    error_out.push_back(
+        base::StrCat({FormatValue(isolate(), script->GetScriptName()),
+                      " function `", script_name, "` not found."}));
     return v8::MaybeLocal<v8::Value>();
+  }
 
-  if (!function->IsFunction())
+  if (!function->IsFunction()) {
+    error_out.push_back(
+        base::StrCat({FormatValue(isolate(), script->GetScriptName()), " `",
+                      script_name, "` is not a function."}));
     return v8::MaybeLocal<v8::Value>();
+  }
 
-  return v8::Function::Cast(*function)->Call(context, context->Global(),
-                                             args.size(), args.data());
+  v8::MaybeLocal<v8::Value> func_result = v8::Function::Cast(*function)->Call(
+      context, context->Global(), args.size(), args.data());
+  if (try_catch.HasTerminated()) {
+    error_out.push_back(
+        base::StrCat({FormatValue(isolate(), script->GetScriptName()),
+                      " execution of `", script_name, "` timed out."}));
+    return v8::MaybeLocal<v8::Value>();
+  }
+  if (try_catch.HasCaught()) {
+    error_out.push_back(FormatExceptionMessage(context, try_catch.Message()));
+    return v8::MaybeLocal<v8::Value>();
+  }
+  return func_result;
+}
+
+AuctionV8Helper::ScopedConsoleTarget::ScopedConsoleTarget(
+    AuctionV8Helper* owner,
+    const std::string& console_script_name,
+    std::vector<std::string>* out)
+    : owner_(owner) {
+  DCHECK(!owner_->console_buffer_);
+  DCHECK(owner_->console_script_name_.empty());
+  owner_->console_buffer_ = out;
+  owner_->console_script_name_ = console_script_name;
+}
+
+AuctionV8Helper::ScopedConsoleTarget::~ScopedConsoleTarget() {
+  owner_->console_buffer_ = nullptr;
+  owner_->console_script_name_ = std::string();
+}
+
+// static
+std::string AuctionV8Helper::FormatExceptionMessage(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Message> message) {
+  if (message.IsEmpty()) {
+    return "Unknown exception.";
+  } else {
+    v8::Isolate* isolate = message->GetIsolate();
+    int line_num;
+    return base::StrCat(
+        {FormatValue(isolate, message->GetScriptResourceName()),
+         !context.IsEmpty() && message->GetLineNumber(context).To(&line_num)
+             ? std::string(":") + base::NumberToString(line_num)
+             : std::string(),
+         " ", FormatValue(isolate, message->Get()), "."});
+  }
+}
+
+// static
+std::string AuctionV8Helper::FormatValue(v8::Isolate* isolate,
+                                         v8::Local<v8::Value> val) {
+  if (val.IsEmpty()) {
+    return "\"\"";
+  } else {
+    v8::String::Utf8Value val_utf8(isolate, val);
+    if (*val_utf8 == nullptr)
+      return std::string();
+    return std::string(*val_utf8, val_utf8.length());
+  }
 }
 
 }  // namespace auction_worklet

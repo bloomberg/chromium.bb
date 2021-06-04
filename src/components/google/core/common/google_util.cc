@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -145,7 +146,7 @@ bool HasGoogleSearchQueryParam(base::StringPiece str) {
   url::Component query(0, static_cast<int>(str.length())), key, value;
   while (url::ExtractQueryKeyValue(str.data(), &query, &key, &value)) {
     base::StringPiece key_str = str.substr(key.begin, key.len);
-    if (key_str == "q" || key_str == "as_q")
+    if (key_str == "q" || key_str == "as_q" || key_str == "imgurl")
       return true;
   }
   return false;
@@ -181,7 +182,7 @@ std::string GetGoogleCountryCode(const GURL& google_homepage_url) {
   // so use Spain instead.
   if (country_code == "cat")
     return "es";
-  return country_code.as_string();
+  return std::string(country_code);
 }
 
 GURL GetGoogleSearchURL(const GURL& google_homepage_url) {
@@ -257,7 +258,7 @@ bool IsGoogleSearchUrl(const GURL& url) {
   // Make sure the path is a known search path.
   base::StringPiece path(url.path_piece());
   bool is_home_page_base = IsPathHomePageBase(path);
-  if (!is_home_page_base && (path != "/search"))
+  if (!is_home_page_base && path != "/search" && path != "/imgres")
     return false;
 
   // Check for query parameter in URL parameter and hash fragment, depending on

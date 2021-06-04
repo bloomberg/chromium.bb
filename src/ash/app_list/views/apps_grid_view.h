@@ -24,10 +24,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/throughput_tracker.h"
@@ -358,6 +358,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   views::BoundsAnimator* bounds_animator_for_testing() {
     return bounds_animator_.get();
   }
+
+  bool cardified_state_for_testing() const { return cardified_state_; }
+
+  int BackgroundCardCountForTesting() const { return background_cards_.size(); }
 
  private:
   class FadeoutLayerDelegate;
@@ -913,7 +917,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   bool cardified_state_ = false;
 
   // Records smoothness of pagination animation.
-  base::Optional<ui::ThroughputTracker> pagination_metrics_tracker_;
+  absl::optional<ui::ThroughputTracker> pagination_metrics_tracker_;
 
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

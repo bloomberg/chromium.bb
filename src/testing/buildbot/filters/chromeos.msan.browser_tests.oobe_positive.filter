@@ -25,6 +25,7 @@ All/WebviewLoginWithIframeTest.*
 All/WizardControllerDeviceStateExplicitRequirementTest.*
 All/WizardControllerUpdateAfterCompletedOobeTest.*
 AppDownloadingScreenTest.*
+AutoLaunchedKioskEphemeralUsersTest.*
 ArcTermsOfServiceScreenTest.*
 AssistantOptInFlowTest.*
 AutoEnrollmentLocalPolicyServer.*
@@ -89,6 +90,7 @@ MarketingOptInExtendedContries/MarketingOptInScreenTest.*
 MarketingOptInScreenTestDisabled.*
 NetworkErrorScreenTest.*
 OAuth2Test.*
+OnboardingUserActivityTest.*
 OobeBaseTest.*
 OobeCompletedUnownedTest.*
 OobeConfigurationEnrollmentTest.*

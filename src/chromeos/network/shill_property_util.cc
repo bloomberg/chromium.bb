@@ -14,7 +14,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
@@ -327,7 +326,7 @@ bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& new_properties,
     return false;
   }
 
-  return new_identifying.Equals(&old_identifying);
+  return new_identifying == old_identifying;
 }
 
 bool IsLoggableShillProperty(const std::string& key) {

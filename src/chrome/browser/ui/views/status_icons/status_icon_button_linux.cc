@@ -10,13 +10,13 @@
 #include "chrome/browser/shell_integration_linux.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/wm_role_names_linux.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -60,7 +60,7 @@ void StatusIconButtonLinux::OnSetDelegate() {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.bounds =
       gfx::Rect(kInitialWindowPos, kInitialWindowPos, width, height);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

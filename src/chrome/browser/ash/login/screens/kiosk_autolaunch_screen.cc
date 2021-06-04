@@ -5,11 +5,11 @@
 #include "chrome/browser/ash/login/screens/kiosk_autolaunch_screen.h"
 
 #include "base/check.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 
-namespace chromeos {
+namespace ash {
 
 // static
 std::string KioskAutolaunchScreen::GetResultString(Result result) {
@@ -56,4 +56,4 @@ void KioskAutolaunchScreen::ShowImpl() {
 
 void KioskAutolaunchScreen::HideImpl() {}
 
-}  // namespace chromeos
+}  // namespace ash

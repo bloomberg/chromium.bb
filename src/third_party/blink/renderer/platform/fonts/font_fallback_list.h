@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -140,4 +139,4 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FALLBACK_LIST_H_

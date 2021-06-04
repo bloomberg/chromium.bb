@@ -73,7 +73,7 @@ AtomicString AtomicString::FromUTF8(const char* chars) {
 }
 
 AtomicString AtomicString::LowerASCII() const {
-  StringImpl* impl = this->Impl();
+  StringImpl* impl = Impl();
   if (UNLIKELY(!impl))
     return *this;
   scoped_refptr<StringImpl> new_impl = impl->LowerASCII();
@@ -83,7 +83,7 @@ AtomicString AtomicString::LowerASCII() const {
 }
 
 AtomicString AtomicString::UpperASCII() const {
-  StringImpl* impl = this->Impl();
+  StringImpl* impl = Impl();
   if (UNLIKELY(!impl))
     return *this;
   return AtomicString(impl->UpperASCII());
@@ -98,7 +98,7 @@ std::ostream& operator<<(std::ostream& out, const AtomicString& s) {
   return out << s.GetString();
 }
 
-void AtomicString::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void AtomicString::WriteIntoTrace(perfetto::TracedValue context) const {
   perfetto::WriteIntoTracedValue(std::move(context), GetString());
 }
 

@@ -120,6 +120,45 @@ static VKAPI_ATTR VkResult VKAPI_CALL StubCreateWin32SurfaceKHR(VkInstance insta
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 static VKAPI_ATTR VkBool32 VKAPI_CALL StubGetPhysicalDeviceWin32PresentationSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex) { return VK_FALSE; };
 #endif // VK_USE_PLATFORM_WIN32_KHR
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetPhysicalDeviceVideoCapabilitiesKHR(VkPhysicalDevice physicalDevice, const VkVideoProfileKHR* pVideoProfile, VkVideoCapabilitiesKHR* pCapabilities) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetPhysicalDeviceVideoFormatPropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceVideoFormatInfoKHR* pVideoFormatInfo, uint32_t* pVideoFormatPropertyCount, VkVideoFormatPropertiesKHR* pVideoFormatProperties) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubCreateVideoSessionKHR(VkDevice device, const VkVideoSessionCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkVideoSessionKHR* pVideoSession) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubDestroyVideoSessionKHR(VkDevice device, VkVideoSessionKHR videoSession, const VkAllocationCallbacks* pAllocator) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetVideoSessionMemoryRequirementsKHR(VkDevice device, VkVideoSessionKHR videoSession, uint32_t* pVideoSessionMemoryRequirementsCount, VkVideoGetMemoryPropertiesKHR* pVideoSessionMemoryRequirements) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubBindVideoSessionMemoryKHR(VkDevice device, VkVideoSessionKHR videoSession, uint32_t videoSessionBindMemoryCount, const VkVideoBindMemoryKHR* pVideoSessionBindMemories) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubCreateVideoSessionParametersKHR(VkDevice device, const VkVideoSessionParametersCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkVideoSessionParametersKHR* pVideoSessionParameters) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR VkResult VKAPI_CALL StubUpdateVideoSessionParametersKHR(VkDevice device, VkVideoSessionParametersKHR videoSessionParameters, const VkVideoSessionParametersUpdateInfoKHR* pUpdateInfo) { return VK_SUCCESS; };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubDestroyVideoSessionParametersKHR(VkDevice device, VkVideoSessionParametersKHR videoSessionParameters, const VkAllocationCallbacks* pAllocator) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubCmdBeginVideoCodingKHR(VkCommandBuffer commandBuffer, const VkVideoBeginCodingInfoKHR* pBeginInfo) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubCmdEndVideoCodingKHR(VkCommandBuffer commandBuffer, const VkVideoEndCodingInfoKHR* pEndCodingInfo) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubCmdControlVideoCodingKHR(VkCommandBuffer commandBuffer, const VkVideoCodingControlInfoKHR* pCodingControlInfo) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubCmdDecodeVideoKHR(VkCommandBuffer commandBuffer, const VkVideoDecodeInfoKHR* pFrameInfo) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
 static VKAPI_ATTR void VKAPI_CALL StubGetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) {  };
 static VKAPI_ATTR void VKAPI_CALL StubGetPhysicalDeviceProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties) {  };
 static VKAPI_ATTR void VKAPI_CALL StubGetPhysicalDeviceFormatProperties2KHR(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties2* pFormatProperties) {  };
@@ -205,6 +244,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL StubDeferredOperationJoinKHR(VkDevice devi
 static VKAPI_ATTR VkResult VKAPI_CALL StubGetPipelineExecutablePropertiesKHR(VkDevice                        device, const VkPipelineInfoKHR*        pPipelineInfo, uint32_t* pExecutableCount, VkPipelineExecutablePropertiesKHR* pProperties) { return VK_SUCCESS; };
 static VKAPI_ATTR VkResult VKAPI_CALL StubGetPipelineExecutableStatisticsKHR(VkDevice                        device, const VkPipelineExecutableInfoKHR*  pExecutableInfo, uint32_t* pStatisticCount, VkPipelineExecutableStatisticKHR* pStatistics) { return VK_SUCCESS; };
 static VKAPI_ATTR VkResult VKAPI_CALL StubGetPipelineExecutableInternalRepresentationsKHR(VkDevice                        device, const VkPipelineExecutableInfoKHR*  pExecutableInfo, uint32_t* pInternalRepresentationCount, VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations) { return VK_SUCCESS; };
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+static VKAPI_ATTR void VKAPI_CALL StubCmdEncodeVideoKHR(VkCommandBuffer commandBuffer, const VkVideoEncodeInfoKHR* pEncodeInfo) {  };
+#endif // VK_ENABLE_BETA_EXTENSIONS
 static VKAPI_ATTR void VKAPI_CALL StubCmdSetEvent2KHR(VkCommandBuffer                   commandBuffer, VkEvent                                             event, const VkDependencyInfoKHR*                          pDependencyInfo) {  };
 static VKAPI_ATTR void VKAPI_CALL StubCmdResetEvent2KHR(VkCommandBuffer                   commandBuffer, VkEvent                                             event, VkPipelineStageFlags2KHR                            stageMask) {  };
 static VKAPI_ATTR void VKAPI_CALL StubCmdWaitEvents2KHR(VkCommandBuffer                   commandBuffer, uint32_t                                            eventCount, const VkEvent*                     pEvents, const VkDependencyInfoKHR*         pDependencyInfos) {  };
@@ -233,6 +275,11 @@ static VKAPI_ATTR void VKAPI_CALL StubCmdEndTransformFeedbackEXT(VkCommandBuffer
 static VKAPI_ATTR void VKAPI_CALL StubCmdBeginQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags, uint32_t index) {  };
 static VKAPI_ATTR void VKAPI_CALL StubCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, uint32_t index) {  };
 static VKAPI_ATTR void VKAPI_CALL StubCmdDrawIndirectByteCountEXT(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t firstInstance, VkBuffer counterBuffer, VkDeviceSize counterBufferOffset, uint32_t counterOffset, uint32_t vertexStride) {  };
+static VKAPI_ATTR VkResult VKAPI_CALL StubCreateCuModuleNVX(VkDevice device, const VkCuModuleCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuModuleNVX* pModule) { return VK_SUCCESS; };
+static VKAPI_ATTR VkResult VKAPI_CALL StubCreateCuFunctionNVX(VkDevice device, const VkCuFunctionCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuFunctionNVX* pFunction) { return VK_SUCCESS; };
+static VKAPI_ATTR void VKAPI_CALL StubDestroyCuModuleNVX(VkDevice device, VkCuModuleNVX module, const VkAllocationCallbacks* pAllocator) {  };
+static VKAPI_ATTR void VKAPI_CALL StubDestroyCuFunctionNVX(VkDevice device, VkCuFunctionNVX function, const VkAllocationCallbacks* pAllocator) {  };
+static VKAPI_ATTR void VKAPI_CALL StubCmdCuLaunchKernelNVX(VkCommandBuffer commandBuffer, const VkCuLaunchInfoNVX* pLaunchInfo) {  };
 static VKAPI_ATTR uint32_t VKAPI_CALL StubGetImageViewHandleNVX(VkDevice device, const VkImageViewHandleInfoNVX* pInfo) { return 0; };
 static VKAPI_ATTR VkResult VKAPI_CALL StubGetImageViewAddressNVX(VkDevice device, VkImageView imageView, VkImageViewAddressPropertiesNVX* pProperties) { return VK_SUCCESS; };
 static VKAPI_ATTR void VKAPI_CALL StubCmdDrawIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {  };
@@ -393,12 +440,31 @@ static VKAPI_ATTR VkResult VKAPI_CALL StubCreateDirectFBSurfaceEXT(VkInstance in
 #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
 static VKAPI_ATTR VkBool32 VKAPI_CALL StubGetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, IDirectFB* dfb) { return VK_FALSE; };
 #endif // VK_USE_PLATFORM_DIRECTFB_EXT
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetVertexInputEXT(VkCommandBuffer commandBuffer, uint32_t vertexBindingDescriptionCount, const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions, uint32_t vertexAttributeDescriptionCount, const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) {  };
+#ifdef VK_USE_PLATFORM_FUCHSIA
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetMemoryZirconHandleFUCHSIA(VkDevice device, const VkMemoryGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo, zx_handle_t* pZirconHandle) { return VK_SUCCESS; };
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetMemoryZirconHandlePropertiesFUCHSIA(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, zx_handle_t zirconHandle, VkMemoryZirconHandlePropertiesFUCHSIA* pMemoryZirconHandleProperties) { return VK_SUCCESS; };
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+static VKAPI_ATTR VkResult VKAPI_CALL StubImportSemaphoreZirconHandleFUCHSIA(VkDevice device, const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo) { return VK_SUCCESS; };
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+static VKAPI_ATTR VkResult VKAPI_CALL StubGetSemaphoreZirconHandleFUCHSIA(VkDevice device, const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo, zx_handle_t* pZirconHandle) { return VK_SUCCESS; };
+#endif // VK_USE_PLATFORM_FUCHSIA
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetPatchControlPointsEXT(VkCommandBuffer commandBuffer, uint32_t patchControlPoints) {  };
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetRasterizerDiscardEnableEXT(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {  };
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetDepthBiasEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {  };
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetLogicOpEXT(VkCommandBuffer commandBuffer, VkLogicOp logicOp) {  };
+static VKAPI_ATTR void VKAPI_CALL StubCmdSetPrimitiveRestartEnableEXT(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {  };
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 static VKAPI_ATTR VkResult VKAPI_CALL StubCreateScreenSurfaceQNX(VkInstance instance, const VkScreenSurfaceCreateInfoQNX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) { return VK_SUCCESS; };
 #endif // VK_USE_PLATFORM_SCREEN_QNX
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 static VKAPI_ATTR VkBool32 VKAPI_CALL StubGetPhysicalDeviceScreenPresentationSupportQNX(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, struct _screen_window* window) { return VK_FALSE; };
 #endif // VK_USE_PLATFORM_SCREEN_QNX
+static VKAPI_ATTR void                                    VKAPI_CALL StubCmdSetColorWriteEnableEXT(VkCommandBuffer       commandBuffer, uint32_t                                attachmentCount, const VkBool32*   pColorWriteEnables) {  };
 static VKAPI_ATTR VkResult VKAPI_CALL StubCreateAccelerationStructureKHR(VkDevice                                           device, const VkAccelerationStructureCreateInfoKHR*        pCreateInfo, const VkAllocationCallbacks*       pAllocator, VkAccelerationStructureKHR*                        pAccelerationStructure) { return VK_SUCCESS; };
 static VKAPI_ATTR void VKAPI_CALL StubDestroyAccelerationStructureKHR(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks* pAllocator) {  };
 static VKAPI_ATTR void VKAPI_CALL StubCmdBuildAccelerationStructuresKHR(VkCommandBuffer                                    commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {  };
@@ -435,6 +501,7 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkBindBufferMemory2KHR", "VK_KHR_bind_memory2"},
     {"vkBindImageMemory2", "VK_VERSION_1_1"},
     {"vkBindImageMemory2KHR", "VK_KHR_bind_memory2"},
+    {"vkBindVideoSessionMemoryKHR", "VK_KHR_video_queue"},
     {"vkBuildAccelerationStructuresKHR", "VK_KHR_acceleration_structure"},
     {"vkCmdBeginConditionalRenderingEXT", "VK_EXT_conditional_rendering"},
     {"vkCmdBeginDebugUtilsLabelEXT", "VK_EXT_debug_utils"},
@@ -442,6 +509,7 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdBeginRenderPass2", "VK_VERSION_1_2"},
     {"vkCmdBeginRenderPass2KHR", "VK_KHR_create_renderpass2"},
     {"vkCmdBeginTransformFeedbackEXT", "VK_EXT_transform_feedback"},
+    {"vkCmdBeginVideoCodingKHR", "VK_KHR_video_queue"},
     {"vkCmdBindPipelineShaderGroupNV", "VK_NV_device_generated_commands"},
     {"vkCmdBindShadingRateImageNV", "VK_NV_shading_rate_image"},
     {"vkCmdBindTransformFeedbackBuffersEXT", "VK_EXT_transform_feedback"},
@@ -450,6 +518,7 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdBuildAccelerationStructureNV", "VK_NV_ray_tracing"},
     {"vkCmdBuildAccelerationStructuresIndirectKHR", "VK_KHR_acceleration_structure"},
     {"vkCmdBuildAccelerationStructuresKHR", "VK_KHR_acceleration_structure"},
+    {"vkCmdControlVideoCodingKHR", "VK_KHR_video_queue"},
     {"vkCmdCopyAccelerationStructureKHR", "VK_KHR_acceleration_structure"},
     {"vkCmdCopyAccelerationStructureNV", "VK_NV_ray_tracing"},
     {"vkCmdCopyAccelerationStructureToMemoryKHR", "VK_KHR_acceleration_structure"},
@@ -458,9 +527,11 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdCopyImage2KHR", "VK_KHR_copy_commands2"},
     {"vkCmdCopyImageToBuffer2KHR", "VK_KHR_copy_commands2"},
     {"vkCmdCopyMemoryToAccelerationStructureKHR", "VK_KHR_acceleration_structure"},
+    {"vkCmdCuLaunchKernelNVX", "VK_NVX_binary_import"},
     {"vkCmdDebugMarkerBeginEXT", "VK_EXT_debug_marker"},
     {"vkCmdDebugMarkerEndEXT", "VK_EXT_debug_marker"},
     {"vkCmdDebugMarkerInsertEXT", "VK_EXT_debug_marker"},
+    {"vkCmdDecodeVideoKHR", "VK_KHR_video_decode_queue"},
     {"vkCmdDispatchBase", "VK_VERSION_1_1"},
     {"vkCmdDispatchBaseKHR", "VK_KHR_device_group"},
     {"vkCmdDrawIndexedIndirectCount", "VK_VERSION_1_2"},
@@ -473,12 +544,14 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdDrawMeshTasksIndirectCountNV", "VK_NV_mesh_shader"},
     {"vkCmdDrawMeshTasksIndirectNV", "VK_NV_mesh_shader"},
     {"vkCmdDrawMeshTasksNV", "VK_NV_mesh_shader"},
+    {"vkCmdEncodeVideoKHR", "VK_KHR_video_encode_queue"},
     {"vkCmdEndConditionalRenderingEXT", "VK_EXT_conditional_rendering"},
     {"vkCmdEndDebugUtilsLabelEXT", "VK_EXT_debug_utils"},
     {"vkCmdEndQueryIndexedEXT", "VK_EXT_transform_feedback"},
     {"vkCmdEndRenderPass2", "VK_VERSION_1_2"},
     {"vkCmdEndRenderPass2KHR", "VK_KHR_create_renderpass2"},
     {"vkCmdEndTransformFeedbackEXT", "VK_EXT_transform_feedback"},
+    {"vkCmdEndVideoCodingKHR", "VK_KHR_video_queue"},
     {"vkCmdExecuteGeneratedCommandsNV", "VK_NV_device_generated_commands"},
     {"vkCmdInsertDebugUtilsLabelEXT", "VK_EXT_debug_utils"},
     {"vkCmdNextSubpass2", "VK_VERSION_1_2"},
@@ -491,7 +564,9 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdResolveImage2KHR", "VK_KHR_copy_commands2"},
     {"vkCmdSetCheckpointNV", "VK_NV_device_diagnostic_checkpoints"},
     {"vkCmdSetCoarseSampleOrderNV", "VK_NV_shading_rate_image"},
+    {"vkCmdSetColorWriteEnableEXT", "VK_EXT_color_write_enable"},
     {"vkCmdSetCullModeEXT", "VK_EXT_extended_dynamic_state"},
+    {"vkCmdSetDepthBiasEnableEXT", "VK_EXT_extended_dynamic_state2"},
     {"vkCmdSetDepthBoundsTestEnableEXT", "VK_EXT_extended_dynamic_state"},
     {"vkCmdSetDepthCompareOpEXT", "VK_EXT_extended_dynamic_state"},
     {"vkCmdSetDepthTestEnableEXT", "VK_EXT_extended_dynamic_state"},
@@ -505,15 +580,20 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCmdSetFragmentShadingRateKHR", "VK_KHR_fragment_shading_rate"},
     {"vkCmdSetFrontFaceEXT", "VK_EXT_extended_dynamic_state"},
     {"vkCmdSetLineStippleEXT", "VK_EXT_line_rasterization"},
+    {"vkCmdSetLogicOpEXT", "VK_EXT_extended_dynamic_state2"},
+    {"vkCmdSetPatchControlPointsEXT", "VK_EXT_extended_dynamic_state2"},
     {"vkCmdSetPerformanceMarkerINTEL", "VK_INTEL_performance_query"},
     {"vkCmdSetPerformanceOverrideINTEL", "VK_INTEL_performance_query"},
     {"vkCmdSetPerformanceStreamMarkerINTEL", "VK_INTEL_performance_query"},
+    {"vkCmdSetPrimitiveRestartEnableEXT", "VK_EXT_extended_dynamic_state2"},
     {"vkCmdSetPrimitiveTopologyEXT", "VK_EXT_extended_dynamic_state"},
+    {"vkCmdSetRasterizerDiscardEnableEXT", "VK_EXT_extended_dynamic_state2"},
     {"vkCmdSetRayTracingPipelineStackSizeKHR", "VK_KHR_ray_tracing_pipeline"},
     {"vkCmdSetSampleLocationsEXT", "VK_EXT_sample_locations"},
     {"vkCmdSetScissorWithCountEXT", "VK_EXT_extended_dynamic_state"},
     {"vkCmdSetStencilOpEXT", "VK_EXT_extended_dynamic_state"},
     {"vkCmdSetStencilTestEnableEXT", "VK_EXT_extended_dynamic_state"},
+    {"vkCmdSetVertexInputEXT", "VK_EXT_vertex_input_dynamic_state"},
     {"vkCmdSetViewportShadingRatePaletteNV", "VK_NV_shading_rate_image"},
     {"vkCmdSetViewportWScalingNV", "VK_NV_clip_space_w_scaling"},
     {"vkCmdSetViewportWithCountEXT", "VK_EXT_extended_dynamic_state"},
@@ -532,6 +612,8 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCopyMemoryToAccelerationStructureKHR", "VK_KHR_acceleration_structure"},
     {"vkCreateAccelerationStructureKHR", "VK_KHR_acceleration_structure"},
     {"vkCreateAccelerationStructureNV", "VK_NV_ray_tracing"},
+    {"vkCreateCuFunctionNVX", "VK_NVX_binary_import"},
+    {"vkCreateCuModuleNVX", "VK_NVX_binary_import"},
     {"vkCreateDeferredOperationKHR", "VK_KHR_deferred_host_operations"},
     {"vkCreateDescriptorUpdateTemplate", "VK_VERSION_1_1"},
     {"vkCreateDescriptorUpdateTemplateKHR", "VK_KHR_descriptor_update_template"},
@@ -546,11 +628,15 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkCreateSharedSwapchainsKHR", "VK_KHR_display_swapchain"},
     {"vkCreateSwapchainKHR", "VK_KHR_swapchain"},
     {"vkCreateValidationCacheEXT", "VK_EXT_validation_cache"},
+    {"vkCreateVideoSessionKHR", "VK_KHR_video_queue"},
+    {"vkCreateVideoSessionParametersKHR", "VK_KHR_video_queue"},
     {"vkDebugMarkerSetObjectNameEXT", "VK_EXT_debug_marker"},
     {"vkDebugMarkerSetObjectTagEXT", "VK_EXT_debug_marker"},
     {"vkDeferredOperationJoinKHR", "VK_KHR_deferred_host_operations"},
     {"vkDestroyAccelerationStructureKHR", "VK_KHR_acceleration_structure"},
     {"vkDestroyAccelerationStructureNV", "VK_NV_ray_tracing"},
+    {"vkDestroyCuFunctionNVX", "VK_NVX_binary_import"},
+    {"vkDestroyCuModuleNVX", "VK_NVX_binary_import"},
     {"vkDestroyDeferredOperationKHR", "VK_KHR_deferred_host_operations"},
     {"vkDestroyDescriptorUpdateTemplate", "VK_VERSION_1_1"},
     {"vkDestroyDescriptorUpdateTemplateKHR", "VK_KHR_descriptor_update_template"},
@@ -560,6 +646,8 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkDestroySamplerYcbcrConversionKHR", "VK_KHR_sampler_ycbcr_conversion"},
     {"vkDestroySwapchainKHR", "VK_KHR_swapchain"},
     {"vkDestroyValidationCacheEXT", "VK_EXT_validation_cache"},
+    {"vkDestroyVideoSessionKHR", "VK_KHR_video_queue"},
+    {"vkDestroyVideoSessionParametersKHR", "VK_KHR_video_queue"},
     {"vkDisplayPowerControlEXT", "VK_EXT_display_control"},
     {"vkGetAccelerationStructureBuildSizesKHR", "VK_KHR_acceleration_structure"},
     {"vkGetAccelerationStructureDeviceAddressKHR", "VK_KHR_acceleration_structure"},
@@ -604,6 +692,8 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkGetMemoryWin32HandleKHR", "VK_KHR_external_memory_win32"},
     {"vkGetMemoryWin32HandleNV", "VK_NV_external_memory_win32"},
     {"vkGetMemoryWin32HandlePropertiesKHR", "VK_KHR_external_memory_win32"},
+    {"vkGetMemoryZirconHandleFUCHSIA", "VK_FUCHSIA_external_memory"},
+    {"vkGetMemoryZirconHandlePropertiesFUCHSIA", "VK_FUCHSIA_external_memory"},
     {"vkGetPastPresentationTimingGOOGLE", "VK_GOOGLE_display_timing"},
     {"vkGetPerformanceParameterINTEL", "VK_INTEL_performance_query"},
     {"vkGetPipelineExecutableInternalRepresentationsKHR", "VK_KHR_pipeline_executable_properties"},
@@ -621,15 +711,18 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkGetSemaphoreCounterValueKHR", "VK_KHR_timeline_semaphore"},
     {"vkGetSemaphoreFdKHR", "VK_KHR_external_semaphore_fd"},
     {"vkGetSemaphoreWin32HandleKHR", "VK_KHR_external_semaphore_win32"},
+    {"vkGetSemaphoreZirconHandleFUCHSIA", "VK_FUCHSIA_external_semaphore"},
     {"vkGetShaderInfoAMD", "VK_AMD_shader_info"},
     {"vkGetSwapchainCounterEXT", "VK_EXT_display_control"},
     {"vkGetSwapchainImagesKHR", "VK_KHR_swapchain"},
     {"vkGetSwapchainStatusKHR", "VK_KHR_shared_presentable_image"},
     {"vkGetValidationCacheDataEXT", "VK_EXT_validation_cache"},
+    {"vkGetVideoSessionMemoryRequirementsKHR", "VK_KHR_video_queue"},
     {"vkImportFenceFdKHR", "VK_KHR_external_fence_fd"},
     {"vkImportFenceWin32HandleKHR", "VK_KHR_external_fence_win32"},
     {"vkImportSemaphoreFdKHR", "VK_KHR_external_semaphore_fd"},
     {"vkImportSemaphoreWin32HandleKHR", "VK_KHR_external_semaphore_win32"},
+    {"vkImportSemaphoreZirconHandleFUCHSIA", "VK_FUCHSIA_external_semaphore"},
     {"vkInitializePerformanceApiINTEL", "VK_INTEL_performance_query"},
     {"vkMergeValidationCachesEXT", "VK_EXT_validation_cache"},
     {"vkQueueBeginDebugUtilsLabelEXT", "VK_EXT_debug_utils"},
@@ -657,6 +750,7 @@ const layer_data::unordered_map<std::string, std::string> api_extension_map {
     {"vkUninitializePerformanceApiINTEL", "VK_INTEL_performance_query"},
     {"vkUpdateDescriptorSetWithTemplate", "VK_VERSION_1_1"},
     {"vkUpdateDescriptorSetWithTemplateKHR", "VK_KHR_descriptor_update_template"},
+    {"vkUpdateVideoSessionParametersKHR", "VK_KHR_video_queue"},
     {"vkWaitSemaphores", "VK_VERSION_1_2"},
     {"vkWaitSemaphoresKHR", "VK_KHR_timeline_semaphore"},
     {"vkWriteAccelerationStructuresPropertiesKHR", "VK_KHR_acceleration_structure"},
@@ -881,6 +975,50 @@ static inline void layer_init_device_dispatch_table(VkDevice device, VkLayerDisp
     if (table->AcquireNextImage2KHR == nullptr) { table->AcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR)StubAcquireNextImage2KHR; }
     table->CreateSharedSwapchainsKHR = (PFN_vkCreateSharedSwapchainsKHR) gpa(device, "vkCreateSharedSwapchainsKHR");
     if (table->CreateSharedSwapchainsKHR == nullptr) { table->CreateSharedSwapchainsKHR = (PFN_vkCreateSharedSwapchainsKHR)StubCreateSharedSwapchainsKHR; }
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CreateVideoSessionKHR = (PFN_vkCreateVideoSessionKHR) gpa(device, "vkCreateVideoSessionKHR");
+    if (table->CreateVideoSessionKHR == nullptr) { table->CreateVideoSessionKHR = (PFN_vkCreateVideoSessionKHR)StubCreateVideoSessionKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->DestroyVideoSessionKHR = (PFN_vkDestroyVideoSessionKHR) gpa(device, "vkDestroyVideoSessionKHR");
+    if (table->DestroyVideoSessionKHR == nullptr) { table->DestroyVideoSessionKHR = (PFN_vkDestroyVideoSessionKHR)StubDestroyVideoSessionKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->GetVideoSessionMemoryRequirementsKHR = (PFN_vkGetVideoSessionMemoryRequirementsKHR) gpa(device, "vkGetVideoSessionMemoryRequirementsKHR");
+    if (table->GetVideoSessionMemoryRequirementsKHR == nullptr) { table->GetVideoSessionMemoryRequirementsKHR = (PFN_vkGetVideoSessionMemoryRequirementsKHR)StubGetVideoSessionMemoryRequirementsKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->BindVideoSessionMemoryKHR = (PFN_vkBindVideoSessionMemoryKHR) gpa(device, "vkBindVideoSessionMemoryKHR");
+    if (table->BindVideoSessionMemoryKHR == nullptr) { table->BindVideoSessionMemoryKHR = (PFN_vkBindVideoSessionMemoryKHR)StubBindVideoSessionMemoryKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CreateVideoSessionParametersKHR = (PFN_vkCreateVideoSessionParametersKHR) gpa(device, "vkCreateVideoSessionParametersKHR");
+    if (table->CreateVideoSessionParametersKHR == nullptr) { table->CreateVideoSessionParametersKHR = (PFN_vkCreateVideoSessionParametersKHR)StubCreateVideoSessionParametersKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->UpdateVideoSessionParametersKHR = (PFN_vkUpdateVideoSessionParametersKHR) gpa(device, "vkUpdateVideoSessionParametersKHR");
+    if (table->UpdateVideoSessionParametersKHR == nullptr) { table->UpdateVideoSessionParametersKHR = (PFN_vkUpdateVideoSessionParametersKHR)StubUpdateVideoSessionParametersKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->DestroyVideoSessionParametersKHR = (PFN_vkDestroyVideoSessionParametersKHR) gpa(device, "vkDestroyVideoSessionParametersKHR");
+    if (table->DestroyVideoSessionParametersKHR == nullptr) { table->DestroyVideoSessionParametersKHR = (PFN_vkDestroyVideoSessionParametersKHR)StubDestroyVideoSessionParametersKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdBeginVideoCodingKHR = (PFN_vkCmdBeginVideoCodingKHR) gpa(device, "vkCmdBeginVideoCodingKHR");
+    if (table->CmdBeginVideoCodingKHR == nullptr) { table->CmdBeginVideoCodingKHR = (PFN_vkCmdBeginVideoCodingKHR)StubCmdBeginVideoCodingKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdEndVideoCodingKHR = (PFN_vkCmdEndVideoCodingKHR) gpa(device, "vkCmdEndVideoCodingKHR");
+    if (table->CmdEndVideoCodingKHR == nullptr) { table->CmdEndVideoCodingKHR = (PFN_vkCmdEndVideoCodingKHR)StubCmdEndVideoCodingKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdControlVideoCodingKHR = (PFN_vkCmdControlVideoCodingKHR) gpa(device, "vkCmdControlVideoCodingKHR");
+    if (table->CmdControlVideoCodingKHR == nullptr) { table->CmdControlVideoCodingKHR = (PFN_vkCmdControlVideoCodingKHR)StubCmdControlVideoCodingKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdDecodeVideoKHR = (PFN_vkCmdDecodeVideoKHR) gpa(device, "vkCmdDecodeVideoKHR");
+    if (table->CmdDecodeVideoKHR == nullptr) { table->CmdDecodeVideoKHR = (PFN_vkCmdDecodeVideoKHR)StubCmdDecodeVideoKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
     table->GetDeviceGroupPeerMemoryFeaturesKHR = (PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR) gpa(device, "vkGetDeviceGroupPeerMemoryFeaturesKHR");
     if (table->GetDeviceGroupPeerMemoryFeaturesKHR == nullptr) { table->GetDeviceGroupPeerMemoryFeaturesKHR = (PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR)StubGetDeviceGroupPeerMemoryFeaturesKHR; }
     table->CmdSetDeviceMaskKHR = (PFN_vkCmdSetDeviceMaskKHR) gpa(device, "vkCmdSetDeviceMaskKHR");
@@ -999,6 +1137,10 @@ static inline void layer_init_device_dispatch_table(VkDevice device, VkLayerDisp
     if (table->GetPipelineExecutableStatisticsKHR == nullptr) { table->GetPipelineExecutableStatisticsKHR = (PFN_vkGetPipelineExecutableStatisticsKHR)StubGetPipelineExecutableStatisticsKHR; }
     table->GetPipelineExecutableInternalRepresentationsKHR = (PFN_vkGetPipelineExecutableInternalRepresentationsKHR) gpa(device, "vkGetPipelineExecutableInternalRepresentationsKHR");
     if (table->GetPipelineExecutableInternalRepresentationsKHR == nullptr) { table->GetPipelineExecutableInternalRepresentationsKHR = (PFN_vkGetPipelineExecutableInternalRepresentationsKHR)StubGetPipelineExecutableInternalRepresentationsKHR; }
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->CmdEncodeVideoKHR = (PFN_vkCmdEncodeVideoKHR) gpa(device, "vkCmdEncodeVideoKHR");
+    if (table->CmdEncodeVideoKHR == nullptr) { table->CmdEncodeVideoKHR = (PFN_vkCmdEncodeVideoKHR)StubCmdEncodeVideoKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
     table->CmdSetEvent2KHR = (PFN_vkCmdSetEvent2KHR) gpa(device, "vkCmdSetEvent2KHR");
     if (table->CmdSetEvent2KHR == nullptr) { table->CmdSetEvent2KHR = (PFN_vkCmdSetEvent2KHR)StubCmdSetEvent2KHR; }
     table->CmdResetEvent2KHR = (PFN_vkCmdResetEvent2KHR) gpa(device, "vkCmdResetEvent2KHR");
@@ -1049,6 +1191,16 @@ static inline void layer_init_device_dispatch_table(VkDevice device, VkLayerDisp
     if (table->CmdEndQueryIndexedEXT == nullptr) { table->CmdEndQueryIndexedEXT = (PFN_vkCmdEndQueryIndexedEXT)StubCmdEndQueryIndexedEXT; }
     table->CmdDrawIndirectByteCountEXT = (PFN_vkCmdDrawIndirectByteCountEXT) gpa(device, "vkCmdDrawIndirectByteCountEXT");
     if (table->CmdDrawIndirectByteCountEXT == nullptr) { table->CmdDrawIndirectByteCountEXT = (PFN_vkCmdDrawIndirectByteCountEXT)StubCmdDrawIndirectByteCountEXT; }
+    table->CreateCuModuleNVX = (PFN_vkCreateCuModuleNVX) gpa(device, "vkCreateCuModuleNVX");
+    if (table->CreateCuModuleNVX == nullptr) { table->CreateCuModuleNVX = (PFN_vkCreateCuModuleNVX)StubCreateCuModuleNVX; }
+    table->CreateCuFunctionNVX = (PFN_vkCreateCuFunctionNVX) gpa(device, "vkCreateCuFunctionNVX");
+    if (table->CreateCuFunctionNVX == nullptr) { table->CreateCuFunctionNVX = (PFN_vkCreateCuFunctionNVX)StubCreateCuFunctionNVX; }
+    table->DestroyCuModuleNVX = (PFN_vkDestroyCuModuleNVX) gpa(device, "vkDestroyCuModuleNVX");
+    if (table->DestroyCuModuleNVX == nullptr) { table->DestroyCuModuleNVX = (PFN_vkDestroyCuModuleNVX)StubDestroyCuModuleNVX; }
+    table->DestroyCuFunctionNVX = (PFN_vkDestroyCuFunctionNVX) gpa(device, "vkDestroyCuFunctionNVX");
+    if (table->DestroyCuFunctionNVX == nullptr) { table->DestroyCuFunctionNVX = (PFN_vkDestroyCuFunctionNVX)StubDestroyCuFunctionNVX; }
+    table->CmdCuLaunchKernelNVX = (PFN_vkCmdCuLaunchKernelNVX) gpa(device, "vkCmdCuLaunchKernelNVX");
+    if (table->CmdCuLaunchKernelNVX == nullptr) { table->CmdCuLaunchKernelNVX = (PFN_vkCmdCuLaunchKernelNVX)StubCmdCuLaunchKernelNVX; }
     table->GetImageViewHandleNVX = (PFN_vkGetImageViewHandleNVX) gpa(device, "vkGetImageViewHandleNVX");
     if (table->GetImageViewHandleNVX == nullptr) { table->GetImageViewHandleNVX = (PFN_vkGetImageViewHandleNVX)StubGetImageViewHandleNVX; }
     table->GetImageViewAddressNVX = (PFN_vkGetImageViewAddressNVX) gpa(device, "vkGetImageViewAddressNVX");
@@ -1255,6 +1407,36 @@ static inline void layer_init_device_dispatch_table(VkDevice device, VkLayerDisp
     if (table->GetPrivateDataEXT == nullptr) { table->GetPrivateDataEXT = (PFN_vkGetPrivateDataEXT)StubGetPrivateDataEXT; }
     table->CmdSetFragmentShadingRateEnumNV = (PFN_vkCmdSetFragmentShadingRateEnumNV) gpa(device, "vkCmdSetFragmentShadingRateEnumNV");
     if (table->CmdSetFragmentShadingRateEnumNV == nullptr) { table->CmdSetFragmentShadingRateEnumNV = (PFN_vkCmdSetFragmentShadingRateEnumNV)StubCmdSetFragmentShadingRateEnumNV; }
+    table->CmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT) gpa(device, "vkCmdSetVertexInputEXT");
+    if (table->CmdSetVertexInputEXT == nullptr) { table->CmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT)StubCmdSetVertexInputEXT; }
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    table->GetMemoryZirconHandleFUCHSIA = (PFN_vkGetMemoryZirconHandleFUCHSIA) gpa(device, "vkGetMemoryZirconHandleFUCHSIA");
+    if (table->GetMemoryZirconHandleFUCHSIA == nullptr) { table->GetMemoryZirconHandleFUCHSIA = (PFN_vkGetMemoryZirconHandleFUCHSIA)StubGetMemoryZirconHandleFUCHSIA; }
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    table->GetMemoryZirconHandlePropertiesFUCHSIA = (PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA) gpa(device, "vkGetMemoryZirconHandlePropertiesFUCHSIA");
+    if (table->GetMemoryZirconHandlePropertiesFUCHSIA == nullptr) { table->GetMemoryZirconHandlePropertiesFUCHSIA = (PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA)StubGetMemoryZirconHandlePropertiesFUCHSIA; }
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    table->ImportSemaphoreZirconHandleFUCHSIA = (PFN_vkImportSemaphoreZirconHandleFUCHSIA) gpa(device, "vkImportSemaphoreZirconHandleFUCHSIA");
+    if (table->ImportSemaphoreZirconHandleFUCHSIA == nullptr) { table->ImportSemaphoreZirconHandleFUCHSIA = (PFN_vkImportSemaphoreZirconHandleFUCHSIA)StubImportSemaphoreZirconHandleFUCHSIA; }
+#endif // VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    table->GetSemaphoreZirconHandleFUCHSIA = (PFN_vkGetSemaphoreZirconHandleFUCHSIA) gpa(device, "vkGetSemaphoreZirconHandleFUCHSIA");
+    if (table->GetSemaphoreZirconHandleFUCHSIA == nullptr) { table->GetSemaphoreZirconHandleFUCHSIA = (PFN_vkGetSemaphoreZirconHandleFUCHSIA)StubGetSemaphoreZirconHandleFUCHSIA; }
+#endif // VK_USE_PLATFORM_FUCHSIA
+    table->CmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT) gpa(device, "vkCmdSetPatchControlPointsEXT");
+    if (table->CmdSetPatchControlPointsEXT == nullptr) { table->CmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT)StubCmdSetPatchControlPointsEXT; }
+    table->CmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT) gpa(device, "vkCmdSetRasterizerDiscardEnableEXT");
+    if (table->CmdSetRasterizerDiscardEnableEXT == nullptr) { table->CmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT)StubCmdSetRasterizerDiscardEnableEXT; }
+    table->CmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT) gpa(device, "vkCmdSetDepthBiasEnableEXT");
+    if (table->CmdSetDepthBiasEnableEXT == nullptr) { table->CmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT)StubCmdSetDepthBiasEnableEXT; }
+    table->CmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT) gpa(device, "vkCmdSetLogicOpEXT");
+    if (table->CmdSetLogicOpEXT == nullptr) { table->CmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT)StubCmdSetLogicOpEXT; }
+    table->CmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT) gpa(device, "vkCmdSetPrimitiveRestartEnableEXT");
+    if (table->CmdSetPrimitiveRestartEnableEXT == nullptr) { table->CmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT)StubCmdSetPrimitiveRestartEnableEXT; }
+    table->CmdSetColorWriteEnableEXT = (PFN_vkCmdSetColorWriteEnableEXT) gpa(device, "vkCmdSetColorWriteEnableEXT");
+    if (table->CmdSetColorWriteEnableEXT == nullptr) { table->CmdSetColorWriteEnableEXT = (PFN_vkCmdSetColorWriteEnableEXT)StubCmdSetColorWriteEnableEXT; }
     table->CreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR) gpa(device, "vkCreateAccelerationStructureKHR");
     if (table->CreateAccelerationStructureKHR == nullptr) { table->CreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)StubCreateAccelerationStructureKHR; }
     table->DestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR) gpa(device, "vkDestroyAccelerationStructureKHR");
@@ -1401,6 +1583,14 @@ static inline void layer_init_instance_dispatch_table(VkInstance instance, VkLay
     table->GetPhysicalDeviceWin32PresentationSupportKHR = (PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR) gpa(instance, "vkGetPhysicalDeviceWin32PresentationSupportKHR");
     if (table->GetPhysicalDeviceWin32PresentationSupportKHR == nullptr) { table->GetPhysicalDeviceWin32PresentationSupportKHR = (PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)StubGetPhysicalDeviceWin32PresentationSupportKHR; }
 #endif // VK_USE_PLATFORM_WIN32_KHR
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->GetPhysicalDeviceVideoCapabilitiesKHR = (PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR) gpa(instance, "vkGetPhysicalDeviceVideoCapabilitiesKHR");
+    if (table->GetPhysicalDeviceVideoCapabilitiesKHR == nullptr) { table->GetPhysicalDeviceVideoCapabilitiesKHR = (PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR)StubGetPhysicalDeviceVideoCapabilitiesKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    table->GetPhysicalDeviceVideoFormatPropertiesKHR = (PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR) gpa(instance, "vkGetPhysicalDeviceVideoFormatPropertiesKHR");
+    if (table->GetPhysicalDeviceVideoFormatPropertiesKHR == nullptr) { table->GetPhysicalDeviceVideoFormatPropertiesKHR = (PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR)StubGetPhysicalDeviceVideoFormatPropertiesKHR; }
+#endif // VK_ENABLE_BETA_EXTENSIONS
     table->GetPhysicalDeviceFeatures2KHR = (PFN_vkGetPhysicalDeviceFeatures2KHR) gpa(instance, "vkGetPhysicalDeviceFeatures2KHR");
     if (table->GetPhysicalDeviceFeatures2KHR == nullptr) { table->GetPhysicalDeviceFeatures2KHR = (PFN_vkGetPhysicalDeviceFeatures2KHR)StubGetPhysicalDeviceFeatures2KHR; }
     table->GetPhysicalDeviceProperties2KHR = (PFN_vkGetPhysicalDeviceProperties2KHR) gpa(instance, "vkGetPhysicalDeviceProperties2KHR");

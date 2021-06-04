@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
@@ -22,11 +21,13 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
@@ -51,7 +52,7 @@ AndroidSmsAppSetupControllerImpl::PwaDelegate::PwaDelegate() = default;
 
 AndroidSmsAppSetupControllerImpl::PwaDelegate::~PwaDelegate() = default;
 
-base::Optional<web_app::AppId>
+absl::optional<web_app::AppId>
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(
     const GURL& install_url,
     Profile* profile) {
@@ -62,7 +63,7 @@ network::mojom::CookieManager*
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetCookieManager(
     const GURL& app_url,
     Profile* profile) {
-  return content::BrowserContext::GetStoragePartitionForUrl(profile, app_url)
+  return profile->GetStoragePartitionForUrl(app_url)
       ->GetCookieManagerForBrowserProcess();
 }
 
@@ -77,16 +78,16 @@ void AndroidSmsAppSetupControllerImpl::PwaDelegate::RemovePwa(
   }
 
   provider->install_finalizer().UninstallExternalWebApp(
-      app_id, web_app::ExternalInstallSource::kInternalDefault,
+      app_id, webapps::WebappUninstallSource::kInternalPreinstalled,
       std::move(callback));
 }
 
 AndroidSmsAppSetupControllerImpl::AndroidSmsAppSetupControllerImpl(
     Profile* profile,
-    web_app::PendingAppManager* pending_app_manager,
+    web_app::ExternallyManagedAppManager* externally_managed_app_manager,
     HostContentSettingsMap* host_content_settings_map)
     : profile_(profile),
-      pending_app_manager_(pending_app_manager),
+      externally_managed_app_manager_(externally_managed_app_manager),
       host_content_settings_map_(host_content_settings_map),
       pwa_delegate_(std::make_unique<PwaDelegate>()) {}
 
@@ -122,7 +123,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
                          std::move(callback)));
 }
 
-base::Optional<web_app::AppId> AndroidSmsAppSetupControllerImpl::GetPwa(
+absl::optional<web_app::AppId> AndroidSmsAppSetupControllerImpl::GetPwa(
     const GURL& install_url) {
   return pwa_delegate_->GetPwaForUrl(install_url, profile_);
 }
@@ -151,7 +152,7 @@ void AndroidSmsAppSetupControllerImpl::RemoveApp(
     const GURL& install_url,
     const GURL& migrated_to_app_url,
     SuccessCallback callback) {
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       pwa_delegate_->GetPwaForUrl(install_url, profile_);
 
   // If there is no app installed at |url|, there is nothing more to do.
@@ -252,7 +253,7 @@ void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
   // bypass it as a workaround.
   options.bypass_service_worker_check = true;
   options.require_manifest = true;
-  pending_app_manager_->Install(
+  externally_managed_app_manager_->Install(
       std::move(options),
       base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnAppInstallResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -264,7 +265,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     size_t num_attempts_so_far,
     const GURL& app_url,
     const GURL& install_url,
-    web_app::PendingAppManager::InstallResult result) {
+    web_app::ExternallyManagedAppManager::InstallResult result) {
   UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", result.code);
   const bool install_succeeded = web_app::IsSuccess(result.code);
 

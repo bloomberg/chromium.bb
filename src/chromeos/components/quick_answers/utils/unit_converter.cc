@@ -17,7 +17,7 @@ namespace {
 
 using base::Value;
 
-bool IsLinearFormula(const base::Optional<double> rate_a) {
+bool IsLinearFormula(const absl::optional<double> rate_a) {
   return rate_a.has_value() && rate_a.value() != 0;
 }
 
@@ -46,7 +46,8 @@ const std::string UnitConverter::Convert(const double src_value,
       (src_rate_a.value() / dst_rate_a.value()) * src_value;
 
   return BuildUnitConversionResultText(
-      base::StringPrintf(kResultValueTemplate, result_value), *dst_name);
+      base::StringPrintf(kResultValueTemplate, result_value),
+      GetUnitDisplayText(*dst_name));
 }
 
 const Value* UnitConverter::FindProperDestinationUnit(

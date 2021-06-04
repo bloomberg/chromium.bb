@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_LAYOUT_NG_TABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_LAYOUT_NG_TABLE_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
@@ -119,7 +120,9 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
   PhysicalRect OverflowClipRect(const PhysicalOffset&,
                                 OverlayScrollbarClipBehavior) const override;
 
+#if DCHECK_IS_ON()
   void AddVisualEffectOverflow() final;
+#endif
 
   bool VisualRectRespectsVisibility() const override {
     NOT_DESTROYED();

@@ -42,9 +42,12 @@ void GrRenderTask::disown(GrDrawingManager* drawingMgr) {
     }
 }
 
-void GrRenderTask::canSkip() {
+void GrRenderTask::makeSkippable() {
     SkASSERT(this->isClosed());
-    this->onCanSkip();
+    if (!this->isSkippable()) {
+        this->setFlag(kSkippable_Flag);
+        this->onMakeSkippable();
+    }
 }
 
 #ifdef SK_DEBUG
@@ -214,6 +217,26 @@ void GrRenderTask::addDependency(GrDrawingManager* drawingMgr, GrSurfaceProxy* d
 
     if (dependedOnTask) {
         this->addDependency(dependedOnTask);
+    }
+}
+
+void GrRenderTask::replaceDependency(const GrRenderTask* toReplace, GrRenderTask* replaceWith) {
+    for (auto& target : fDependencies) {
+        if (target == toReplace) {
+            target = replaceWith;
+            replaceWith->fDependents.push_back(this);
+            break;
+        }
+    }
+}
+
+void GrRenderTask::replaceDependent(const GrRenderTask* toReplace, GrRenderTask* replaceWith) {
+    for (auto& target : fDependents) {
+        if (target == toReplace) {
+            target = replaceWith;
+            replaceWith->fDependencies.push_back(this);
+            break;
+        }
     }
 }
 

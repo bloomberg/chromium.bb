@@ -30,6 +30,7 @@
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
@@ -798,6 +799,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_HasEditableText,
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPPdf_ReplaceSelection,
                     PP_Instance /* instance */,
                     std::string /* text */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPdf_SelectAll, PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_CanUndo,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)

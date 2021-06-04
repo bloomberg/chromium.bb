@@ -59,9 +59,13 @@ void XrFrameSinkClientImpl::SurfaceDestroyed() {
   root_frame_sink_id_ = viz::FrameSinkId();
 }
 
-base::Optional<viz::SurfaceId> XrFrameSinkClientImpl::GetDOMSurface() {
+absl::optional<viz::SurfaceId> XrFrameSinkClientImpl::GetDOMSurface() {
   base::AutoLock lock(dom_surface_lock_);
   return dom_surface_id_;
+}
+
+viz::FrameSinkId XrFrameSinkClientImpl::FrameSinkId() {
+  return root_frame_sink_id_;
 }
 
 void XrFrameSinkClientImpl::InitializeRootCompositorFrameSink(

@@ -5,7 +5,6 @@
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_mac.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "content/browser/accessibility/accessibility_tools_utils_mac.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "ui/accessibility/platform/inspect/ax_property_node.h"
 
@@ -45,65 +44,6 @@ namespace {
   return nil;
 
 }  // namespace
-
-// Line indexers
-
-LineIndexer::LineIndexer(const gfx::NativeViewAccessible node) {
-  int counter = 0;
-  Build(node, &counter);
-}
-
-LineIndexer::~LineIndexer() {}
-
-constexpr bool LineIndexer::NodeComparator::operator()(
-    const gfx::NativeViewAccessible& lhs,
-    const gfx::NativeViewAccessible& rhs) const {
-  if (IsAXUIElement(lhs)) {
-    DCHECK(IsAXUIElement(rhs));
-    return CFHash(lhs) < CFHash(rhs);
-  }
-  DCHECK(IsBrowserAccessibilityCocoa(lhs));
-  DCHECK(IsBrowserAccessibilityCocoa(rhs));
-  return lhs < rhs;
-}
-
-std::string LineIndexer::IndexBy(const gfx::NativeViewAccessible node) const {
-  std::string line_index = ":unknown";
-  auto iter = map.find(node);
-  if (iter != map.end()) {
-    line_index = iter->second.line_index;
-  }
-  return line_index;
-}
-
-gfx::NativeViewAccessible LineIndexer::NodeBy(
-    const std::string& identifier) const {
-  // Finds a first match either by a line number in :LINE_NUM format or by DOM
-  // id.
-  for (auto& item : map) {
-    if (item.second.line_index == identifier ||
-        item.second.DOMid == identifier) {
-      return item.first;
-    }
-  }
-  return nil;
-}
-
-void LineIndexer::Build(const gfx::NativeViewAccessible node, int* counter) {
-  const std::string line_index =
-      std::string(1, ':') + base::NumberToString(++(*counter));
-
-  const id domid_value =
-      AttributeValueOf(node, base::SysUTF8ToNSString("AXDOMIdentifier"));
-  const std::string domid =
-      base::SysNSStringToUTF8(static_cast<NSString*>(domid_value));
-
-  map.insert({node, {line_index, domid}});
-  NSArray* children = ChildrenOf(node);
-  for (gfx::NativeViewAccessible child in children) {
-    Build(child, counter);
-  }
-}
 
 // OptionalNSObject
 
@@ -251,7 +191,7 @@ OptionalNSObject AttributeInvoker::ParamByPropertyNode(
 // NSNumber. Format: integer.
 NSNumber* AttributeInvoker::PropertyNodeToInt(
     const AXPropertyNode& intnode) const {
-  base::Optional<int> param = intnode.AsInt();
+  absl::optional<int> param = intnode.AsInt();
   if (!param) {
     INT_FAIL(intnode, "not a number")
   }
@@ -268,7 +208,7 @@ NSArray* AttributeInvoker::PropertyNodeToIntArray(
   NSMutableArray* array =
       [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
   for (const auto& paramnode : arraynode.parameters) {
-    base::Optional<int> param = paramnode.AsInt();
+    absl::optional<int> param = paramnode.AsInt();
     if (!param) {
       INTARRAY_FAIL(arraynode, paramnode.name_or_value + " is not a number")
     }
@@ -284,12 +224,12 @@ NSValue* AttributeInvoker::PropertyNodeToRange(
     NSRANGE_FAIL(dictnode, "dictionary is expected")
   }
 
-  base::Optional<int> loc = dictnode.FindIntKey("loc");
+  absl::optional<int> loc = dictnode.FindIntKey("loc");
   if (!loc) {
     NSRANGE_FAIL(dictnode, "no loc or loc is not a number")
   }
 
-  base::Optional<int> len = dictnode.FindIntKey("len");
+  absl::optional<int> len = dictnode.FindIntKey("len");
   if (!len) {
     NSRANGE_FAIL(dictnode, "no len or len is not a number")
   }
@@ -324,7 +264,7 @@ id AttributeInvoker::DictNodeToTextMarker(
     TEXTMARKER_FAIL(dictnode, "1st argument: wrong anchor")
   }
 
-  base::Optional<int> offset = dictnode.parameters[1].AsInt();
+  absl::optional<int> offset = dictnode.parameters[1].AsInt();
   if (!offset) {
     TEXTMARKER_FAIL(dictnode, "2nd argument: wrong offset")
   }

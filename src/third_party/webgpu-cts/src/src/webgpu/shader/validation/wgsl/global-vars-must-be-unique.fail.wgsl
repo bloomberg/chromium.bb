@@ -1,9 +1,9 @@
 // v-0011 - This fails because of the duplicated `a` variable.
 
-const a : vec2<f32> = vec2<f32>(0.1, 1.0);
-[[location (0)]] var<in> a : vec4<f32>;
+let a : vec2<f32> = vec2<f32>(0.1, 1.0);
+var<private> a : vec4<f32>;
 
-[[stage(vertex)]]
-fn main() -> void {
+[[stage(compute)]]
+fn main() {
   return;
 }

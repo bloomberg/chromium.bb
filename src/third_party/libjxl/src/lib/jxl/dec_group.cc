@@ -238,9 +238,13 @@ Status DecodeGroupImpl(GetBlock* JXL_RESTRICT get_block,
       }
       for (size_t i = 0; i < 64; i++) {
         // Transpose the matrix, as it will be used on the transposed block.
+        int n = qe[0].qraw.qtable->at(64 + i);
+        int d = qe[0].qraw.qtable->at(64 * c + i);
+        if (n <= 0 || d <= 0 || n >= 65536 || d >= 65536) {
+          return JXL_FAILURE("Invalid JPEG quantization table");
+        }
         scaled_qtable[64 * c + (i % 8) * 8 + (i / 8)] =
-            (1 << kCFLFixedPointPrecision) * (*qe[0].qraw.qtable)[64 + i] /
-            (*qe[0].qraw.qtable)[64 * c + i];
+            (1 << kCFLFixedPointPrecision) * n / d;
       }
     }
   }
@@ -406,7 +410,8 @@ Status DecodeGroupImpl(GetBlock* JXL_RESTRICT get_block,
                 StoreU(DemoteTo(di16, in + cfl_factor), di16, jpeg_pos + i);
               }
             }
-            jpeg_pos[0] = dc_rows[c][sbx[c]] - dcoff[c];
+            jpeg_pos[0] =
+                Clamp1<float>(dc_rows[c][sbx[c]] - dcoff[c], -2047, 2047);
           }
         } else {
           HWY_ALIGN float* const block = group_dec_cache->dec_group_block;
@@ -416,7 +421,8 @@ Status DecodeGroupImpl(GetBlock* JXL_RESTRICT get_block,
               dec_state->b_dm_multiplier, x_cc_mul, b_cc_mul, acs.RawStrategy(),
               size, dec_state->shared->quantizer, dequant_matrices,
               acs.covered_blocks_y() * acs.covered_blocks_x(), sbx, dc_rows,
-              dc_stride, dec_state->shared->opsin_params.quant_biases, qblock,
+              dc_stride,
+              dec_state->output_encoding_info.opsin_params.quant_biases, qblock,
               block);
 
           for (size_t c : {1, 0, 2}) {
@@ -530,7 +536,7 @@ Status DecodeGroupImpl(GetBlock* JXL_RESTRICT get_block,
       Rect group_data_rect(kGroupDataXBorder + r.x0() - x0,
                            kGroupDataYBorder + r.y0() - y0, r.xsize(),
                            r.ysize());
-      JXL_RETURN_IF_ERROR(FinalizeImageRect(group_data, group_data_rect,
+      JXL_RETURN_IF_ERROR(FinalizeImageRect(group_data, group_data_rect, {},
                                             dec_state, thread, decoded, r));
     }
   }
@@ -806,7 +812,7 @@ Status DecodeGroup(BitReader* JXL_RESTRICT* JXL_RESTRICT readers,
                       PassesDecoderState::kGroupDataYBorder, dst_rect.xsize(),
                       dst_rect.ysize());
     }
-    dec_state->dc_upsampler.UpsampleRect(
+    dec_state->upsamplers[2].UpsampleRect(
         dec_state->filter_input_storage[thread], copy_rect, upsampling_dst,
         dst_rect,
         static_cast<ssize_t>(src_rect.y0()) -

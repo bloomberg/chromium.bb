@@ -10,8 +10,8 @@
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_utils.h"
 
@@ -33,10 +33,10 @@ class GlobalManager : public ColorProviderManager {
 
 static_assert(sizeof(GlobalManager) == sizeof(ColorProviderManager),
               "Global manager is intended to provide constructor visibility to "
-              "base::Optional, nothing more.");
+              "absl::optional, nothing more.");
 
-base::Optional<GlobalManager>& GetGlobalManager() {
-  static base::NoDestructor<base::Optional<GlobalManager>> manager;
+absl::optional<GlobalManager>& GetGlobalManager() {
+  static base::NoDestructor<absl::optional<GlobalManager>> manager;
   return *manager;
 }
 
@@ -50,13 +50,14 @@ ColorProviderManager::~ColorProviderManager() = default;
 
 // static
 ColorProviderManager& ColorProviderManager::Get() {
-  base::Optional<GlobalManager>& manager = GetGlobalManager();
+  absl::optional<GlobalManager>& manager = GetGlobalManager();
   if (!manager.has_value()) {
     manager.emplace();
 #if !defined(OS_ANDROID)
     manager.value().AppendColorProviderInitializer(base::BindRepeating(
         [](ColorProvider* provider, ColorProviderManager::ColorMode color_mode,
-           ColorProviderManager::ContrastMode contrast_mode) {
+           ColorProviderManager::ContrastMode contrast_mode,
+           ColorProviderManager::ThemeName theme_name) {
           const bool dark_mode =
               color_mode == ColorProviderManager::ColorMode::kDark;
           const bool high_contrast =
@@ -75,7 +76,7 @@ ColorProviderManager& ColorProviderManager::Get() {
 
 // static
 ColorProviderManager& ColorProviderManager::GetForTesting() {
-  base::Optional<GlobalManager>& manager = GetGlobalManager();
+  absl::optional<GlobalManager>& manager = GetGlobalManager();
   if (!manager.has_value())
     manager.emplace();
   return manager.value();
@@ -112,9 +113,11 @@ ColorProvider* ColorProviderManager::GetColorProviderFor(ColorProviderKey key) {
       DVLOG(2) << "ColorProviderManager: Initializing Color Provider"
                << " - ColorMode: " << ColorModeName(std::get<ColorMode>(key))
                << " - ContrastMode: "
-               << ContrastModeName(std::get<ContrastMode>(key));
+               << ContrastModeName(std::get<ContrastMode>(key))
+               << " - ThemeName: " << std::get<ThemeName>(key);
       initializer_list_->Notify(provider.get(), std::get<ColorMode>(key),
-                                std::get<ContrastMode>(key));
+                                std::get<ContrastMode>(key),
+                                std::get<ThemeName>(key));
     }
 
     iter = color_providers_.emplace(key, std::move(provider)).first;

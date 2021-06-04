@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 
@@ -41,6 +42,25 @@ class ASH_EXPORT ClipboardNudgeController
       public SessionObserver,
       public ClipboardHistoryController::Observer {
  public:
+  class TimeMetricHelper {
+   public:
+    TimeMetricHelper() = default;
+    TimeMetricHelper(const TimeMetricHelper&) = delete;
+    TimeMetricHelper& operator=(const TimeMetricHelper&) = delete;
+    ~TimeMetricHelper() = default;
+
+    bool ShouldLogFeatureUsedTime() const;
+    bool ShouldLogFeatureOpenTime() const;
+    base::TimeDelta GetTimeSinceShown(base::Time current_time) const;
+    void ResetTime();
+    void set_was_logged_as_used() { was_logged_as_used_ = true; }
+    void set_was_logged_as_opened() { was_logged_as_opened_ = true; }
+
+   private:
+    base::Time last_shown_time_;
+    bool was_logged_as_used_ = false;
+    bool was_logged_as_opened_ = false;
+  };
   ClipboardNudgeController(
       ClipboardHistory* clipboard_history,
       ClipboardHistoryControllerImpl* clipboard_history_controller);
@@ -70,9 +90,13 @@ class ASH_EXPORT ClipboardNudgeController
   // Increment the 'new' feature badge shown count.
   void MarkNewFeatureBadgeShown();
 
+  // Increment the screenshot notification shown count.
+  void MarkScreenshotNotificationShown();
+
   // ClipboardHistoryControllerImpl:
   void OnClipboardHistoryMenuShown(
-      ClipboardHistoryController::ShowSource show_source) override;
+      crosapi::mojom::ClipboardHistoryControllerShowSource show_source)
+      override;
   void OnClipboardHistoryPasted() override;
 
   // Shows the nudge widget.
@@ -92,25 +116,6 @@ class ASH_EXPORT ClipboardNudgeController
   void FireHideNudgeTimerForTesting();
 
  private:
-  class TimeMetricHelper {
-   public:
-    TimeMetricHelper() = default;
-    TimeMetricHelper(const TimeMetricHelper&) = delete;
-    TimeMetricHelper& operator=(const TimeMetricHelper&) = delete;
-    ~TimeMetricHelper() = default;
-
-    bool ShouldLogFeatureUsedTime() const;
-    bool ShouldLogFeatureOpenTime() const;
-    base::TimeDelta GetTimeSinceShown(base::Time current_time) const;
-    void ResetTime();
-    void set_was_logged_as_used() { was_logged_as_used_ = true; }
-    void set_was_logged_as_opened() { was_logged_as_opened_ = true; }
-
-   private:
-    base::Time last_shown_time_;
-    bool was_logged_as_used_ = false;
-    bool was_logged_as_opened_ = false;
-  };
   // Gets the number of times the nudge has been shown.
   int GetShownCount(PrefService* prefs);
   // Gets the last time the nudge was shown.
@@ -136,6 +141,9 @@ class ASH_EXPORT ClipboardNudgeController
 
   // Time the new feature badge was last shown.
   TimeMetricHelper new_feature_last_shown_time_;
+
+  // Time the screenshot notification nudge was last shown.
+  TimeMetricHelper screenshot_notification_last_shown_time_;
 
   // Owned by ClipboardHistoryController.
   const ClipboardHistory* clipboard_history_;

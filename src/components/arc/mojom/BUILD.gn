@@ -71,6 +71,7 @@ if (is_chromeos_ash) {
       "volume_mounter.mojom",
       "wake_lock.mojom",
       "wallpaper.mojom",
+      "webapk.mojom",
     ]
 
     public_deps = [
@@ -87,7 +88,7 @@ if (is_chromeos_ash) {
       "//services/media_session/public/mojom",
       "//services/resource_coordinator/public/mojom",
       "//third_party/blink/public/mojom:android_mojo_bindings",
-      "//ui/accessibility/mojom",
+      "//ui/accessibility/mojom:ax_assistant_mojom",
       "//ui/gfx/geometry/mojom",
       "//url/mojom:url_mojom_gurl",
     ]

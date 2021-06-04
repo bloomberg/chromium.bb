@@ -1365,9 +1365,6 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kIframePresentational:
       // No role description.
       break;
-    case ax::mojom::Role::kIgnored:
-      // No role description.
-      break;
     case ax::mojom::Role::kImage:
       message_id = IDS_AX_ROLE_GRAPHIC;
       break;
@@ -1488,9 +1485,6 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kPre:
       // No role description.
       break;
-    case ax::mojom::Role::kPresentational:
-      // No role description.
-      break;
     case ax::mojom::Role::kProgressIndicator:
       message_id = IDS_AX_ROLE_PROGRESS_INDICATOR;
       break;
@@ -1522,8 +1516,7 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
       // No role description.
       break;
     case ax::mojom::Role::kSection:
-      // A <section> element uses the 'region' ARIA role mapping.
-      message_id = IDS_AX_ROLE_REGION;
+      // No role description.
       break;
     case ax::mojom::Role::kSvgRoot:
       message_id = IDS_AX_ROLE_GRAPHIC;
@@ -1649,7 +1642,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
     if (max > min && value >= min && value <= max)
       index = static_cast<int>(((value - min)) * 100 / (max - min));
   } else {
-    base::Optional<int> pos_in_set = node()->GetPosInSet();
+    absl::optional<int> pos_in_set = node()->GetPosInSet();
     if (pos_in_set && *pos_in_set > 0)
       index = *pos_in_set - 1;
   }
@@ -1913,7 +1906,7 @@ std::u16string BrowserAccessibilityAndroid::GetTextChangeBeforeText() const {
 
 int BrowserAccessibilityAndroid::GetSelectionStart() const {
   int sel_start = 0;
-  if (IsPlainTextField() &&
+  if (IsAtomicTextField() &&
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start)) {
     return sel_start;
   }
@@ -1935,7 +1928,7 @@ int BrowserAccessibilityAndroid::GetSelectionStart() const {
 
 int BrowserAccessibilityAndroid::GetSelectionEnd() const {
   int sel_end = 0;
-  if (IsPlainTextField() &&
+  if (IsAtomicTextField() &&
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &sel_end)) {
     return sel_end;
   }
@@ -2029,7 +2022,7 @@ int BrowserAccessibilityAndroid::ColumnCount() const {
 }
 
 int BrowserAccessibilityAndroid::RowIndex() const {
-  base::Optional<int> pos_in_set = node()->GetPosInSet();
+  absl::optional<int> pos_in_set = node()->GetPosInSet();
   if (pos_in_set && pos_in_set > 0)
     return *pos_in_set - 1;
   return node()->GetTableCellRowIndex().value_or(0);
@@ -2184,7 +2177,7 @@ void BrowserAccessibilityAndroid::GetSuggestions(
   DCHECK(suggestion_starts);
   DCHECK(suggestion_ends);
 
-  if (!IsRichTextField() && !IsPlainTextField())
+  if (!IsTextField())
     return;
 
   // TODO(accessibility): using FindTextOnlyObjectsInRange or NextInTreeOrder

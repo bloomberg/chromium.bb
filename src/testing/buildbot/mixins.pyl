@@ -301,6 +301,21 @@
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
+  'chromium-webrtc-rel-7': {
+    'perf_builder_name_alias': 'chromium-webrtc-rel-7',
+  },
+  'chromium-webrtc-rel-linux': {
+    'perf_builder_name_alias': 'chromium-webrtc-rel-linux',
+  },
+  'chromium-webrtc-rel-mac': {
+    'perf_builder_name_alias': 'chromium-webrtc-rel-mac',
+  },
+  'chromium-webrtc-rel-win10': {
+    'perf_builder_name_alias': 'chromium-webrtc-rel-win10',
+  },
+  'chromium-webrtc-rel-win8': {
+    'perf_builder_name_alias': 'chromium-webrtc-rel-win8',
+  },
   'dawn_end2end_gpu_test': {
     '$mixin_append': {
       'args': [
@@ -429,6 +444,66 @@
       ],
     },
   },
+  'ios_runtime_cache_12_4': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_12_4',
+            'path': 'Runtime-ios-12.4',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_13_5': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_13_5',
+            'path': 'Runtime-ios-13.5',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_13_6': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_13_6',
+            'path': 'Runtime-ios-13.6',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_14_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_14_0',
+            'path': 'Runtime-ios-14.0',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_14_4': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_14_4',
+            'path': 'Runtime-ios-14.4',
+          },
+        ],
+      },
+    },
+  },
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
@@ -488,15 +563,6 @@
         'pool': 'chromium.tests.gpu.experimental',
       },
     },
-  },
-  'linux_intel_hd_530': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:1912',
-        'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu',
-      }
-    }
   },
   'linux_intel_hd_630_experimental': {
     # Similar to stable, but with a newer Mesa version.
@@ -566,6 +632,7 @@
   'mac_10.11': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'os': 'Mac-10.11',
       },
     },
@@ -573,6 +640,7 @@
   'mac_10.13': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'os': 'Mac-10.13.6',
       },
     },
@@ -580,6 +648,7 @@
   'mac_10.14': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'os': 'Mac-10.14.6',
       },
     },
@@ -587,21 +656,24 @@
   'mac_10.15': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'os': 'Mac-10.15',
       },
     },
   },
-  'mac_11': {
+  'mac_11_beta_x64': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-11|Mac-10.16',
+        'cpu': 'x86-64',
+        'os': 'Mac-11.3',
       },
     },
   },
-  'mac_11_beta': {
+  'mac_11_x64': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-11.3',
+        'cpu': 'x86-64',
+        'os': 'Mac-11|Mac-10.16',
       },
     },
   },
@@ -614,9 +686,20 @@
       },
     },
   },
+  'mac_arm64_apple_dtk_gpu_experimental': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-11',
+        'pool': 'chromium.tests.mac-arm64',
+        'display_attached': '1',
+      },
+    },
+  },
   'mac_mini_10.12': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '8086:0a2e',
         'os': 'Mac-10.12.6',
       },
@@ -625,6 +708,7 @@
   'mac_mini_10.14': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '8086:0a2e',
         'os': 'Mac-10.14.6',
       },
@@ -633,16 +717,20 @@
   'mac_mini_intel_gpu_experimental': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '8086:0a2e',
         'os': 'Mac-10.15.5',
+        'display_attached': '1',
       },
     },
   },
   'mac_mini_intel_gpu_stable': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '8086:0a2e',
         'os': 'Mac-10.15.5',
+        'display_attached': '1',
       },
     },
   },
@@ -653,8 +741,10 @@
     'swarming': {
       'dimension_sets': [
         {
+          'cpu': 'x86-64',
           'gpu': '8086:0a2e',
           'os': 'Mac-10.15.5',
+          'display_attached': '1',
         },
       ],
     },
@@ -662,17 +752,21 @@
   'mac_mini_intel_uhd_630_gpu_stable': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '8086:3e9b',
         'os': 'Mac-10.15.7',
+        'display_attached': '1',
       },
     },
   },
   'mac_pro_amd_gpu': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '1002:679e',
         'os': 'Mac-10.12.6',
         'pool': 'chromium.tests.gpu',
+        'display_attached': '1',
       },
     },
   },
@@ -680,20 +774,24 @@
     # Currently same configuration as stable version below.
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
         'pool': 'chromium.tests.gpu',
+        'display_attached': '1',
       },
     },
   },
   'mac_retina_amd_gpu_stable': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
         'pool': 'chromium.tests.gpu',
+        'display_attached': '1',
       },
     },
   },
@@ -704,10 +802,12 @@
     'swarming': {
       'dimension_sets': [
         {
+          'cpu': 'x86-64',
           'gpu': '1002:6821',
           'hidpi': '1',
           'os': 'Mac-10.14.6',
           'pool': 'chromium.tests.gpu',
+          'display_attached': '1',
         },
       ],
     },
@@ -716,20 +816,24 @@
     # Currently the same as the stable version.
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '10de:0fe9',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
         'pool': 'chromium.tests.gpu',
+        'display_attached': '1',
       },
     },
   },
   'mac_retina_nvidia_gpu_stable': {
     'swarming': {
       'dimensions': {
+        'cpu': 'x86-64',
         'gpu': '10de:0fe9',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
         'pool': 'chromium.tests.gpu',
+        'display_attached': '1',
       },
     },
   },
@@ -739,8 +843,20 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:8811b82233df02ee372cae1e19e379ca8c6a2776',
+          'revision': 'git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1',
         },
+      ],
+    },
+  },
+  # mac_x64 is used as a prefered OS dimension for mac platform instead of any
+  # mac OS version. It selects the most representative dimension on Swarming.
+  'mac_x64': {
+    'swarming': {
+      'dimension_sets': [
+         {
+           'os': 'Mac-10.15',
+           'cpu': 'x86-64',
+         },
       ],
     },
   },
@@ -1082,14 +1198,14 @@
         '--xcode-build-version',
         '11e608c'
       ],
-    },
-    'swarming': {
-      'named_caches': [
-        {
-          'name': 'xcode_ios_11e608c',
-          'path': 'Xcode.app',
-        },
-      ],
+     'swarming': {
+        'named_caches': [
+          {
+            'name': 'xcode_ios_11e608c',
+            'path': 'Xcode.app',
+          },
+        ],
+      },
     },
   },
   # (default in Chromium iOS) xcode 12.4 gm seed
@@ -1099,14 +1215,15 @@
         '--xcode-build-version',
         '12d4e'
       ],
-    },
-    'swarming': {
-      'named_caches': [
-        {
-          'name': 'xcode_ios_12d4e',
-          'path': 'Xcode.app',
-        },
-      ],
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'xcode_ios_12d4e',
+            'path': 'Xcode.app',
+          },
+        ],
+      },
+
     },
   },
   'xcode_parallelization': {

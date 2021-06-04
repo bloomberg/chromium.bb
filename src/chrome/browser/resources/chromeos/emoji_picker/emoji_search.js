@@ -52,6 +52,9 @@ export class EmojiSearch extends PolymerElement {
         'base.keywords',
       ]
     });
+    this.addEventListener('scroll', () => {
+      this.onSearchScroll();
+    });
   }
 
   ready() {
@@ -120,7 +123,8 @@ export class EmojiSearch extends PolymerElement {
 
     const isDown = ev.key === 'ArrowDown';
     const isEnter = ev.key === 'Enter';
-    if (isDown || isEnter) {
+    const isTab = ev.key === 'Tab';
+    if (isDown || isEnter || isTab) {
       ev.preventDefault();
       ev.stopPropagation();
 
@@ -157,6 +161,13 @@ export class EmojiSearch extends PolymerElement {
               emoji.base.keywords.map(keyword => ' ' + keyword);
           return [emoji.base.string, emoji];
         })).values());
+  }
+
+  onSearchScroll() {
+    this.$['search-shadow'].style.boxShadow =
+        this.shadowRoot.getElementById('results').scrollTop > 0 ?
+        'var(--cr-elevation-3)' :
+        'none';
   }
 
   /**

@@ -35,7 +35,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/gurl.h"
 
 using metrics::OmniboxEventProto;
@@ -66,24 +65,7 @@ std::u16string GetSearchTermsFromURL(const GURL& url,
 // Invoked early, confirms all the conditions for zero suggestions are met.
 bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
   // Flag is default-enabled on Android and Desktop.
-  if (base::FeatureList::IsEnabled(omnibox::kLocalHistoryZeroSuggest)) {
-    return true;
-  }
-
-  const auto current_page_classification = input.current_page_classification();
-  // Reactive Zero-Prefix Suggestions (rZPS) and basically all remote ZPS on the
-  // NTP are expected to be displayed alongside local history zero-prefix
-  // suggestions. Enable local history ZPS if rZPS is enabled.
-  // NTP Omnibox.
-  if ((current_page_classification == OmniboxEventProto::NTP ||
-       current_page_classification ==
-           OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
-      base::FeatureList::IsEnabled(
-          omnibox::kReactiveZeroSuggestionsOnNTPOmnibox)) {
-    return true;
-  }
-
-  return false;
+  return base::FeatureList::IsEnabled(omnibox::kLocalHistoryZeroSuggest);
 }
 
 }  // namespace
@@ -101,12 +83,6 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   done_ = true;
   matches_.clear();
-
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kOmniboxLocalZeroSuggestForAuthenticatedUsers) &&
-      client_->IsAuthenticated()) {
-    return;
-  }
 
   // Allow local history query suggestions only when the user is not in an
   // off-the-record context.
@@ -199,13 +175,6 @@ LocalHistoryZeroSuggestProvider::LocalHistoryZeroSuggestProvider(
 
 LocalHistoryZeroSuggestProvider::~LocalHistoryZeroSuggestProvider() {}
 
-bool LocalHistoryZeroSuggestProvider::IsSignedIn() {
-  const auto* identity_manager = client_->GetIdentityManager();
-  return identity_manager ? identity_manager->HasPrimaryAccount(
-                                signin::ConsentLevel::kSignin)
-                          : false;
-}
-
 void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
     const AutocompleteInput& input) {
   done_ = true;
@@ -232,22 +201,18 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
       template_url_service->GetDefaultSearchProvider()->id(),
       OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold());
 
-  bool frecency_ranking = base::FeatureList::IsEnabled(
-      omnibox::kOmniboxLocalZeroSuggestFrecencyRanking);
   const base::Time now = base::Time::Now();
   const int kRecencyDecayUnitSec = 60;
   const double kFrequencyExponent = 1.15;
   auto CompareByFrecency = [&](const auto& a, const auto& b) {
-    return frecency_ranking
-               ? a.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent) >
-                     b.GetFrecency(now, kRecencyDecayUnitSec,
-                                   kFrequencyExponent)
-               : a.most_recent_visit_time > b.most_recent_visit_time;
+    return a.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent) >
+           b.GetFrecency(now, kRecencyDecayUnitSec, kFrequencyExponent);
   };
   std::sort(results.begin(), results.end(), CompareByFrecency);
 
-  int relevance = IsSignedIn() ? kLocalHistoryZPSAuthenticatedRelevance
-                               : kLocalHistoryZPSUnauthenticatedRelevance;
+  int relevance = client_->IsAuthenticated()
+                      ? kLocalHistoryZPSAuthenticatedRelevance
+                      : kLocalHistoryZPSUnauthenticatedRelevance;
   for (const auto& result : results) {
     SearchSuggestionParser::SuggestResult suggestion(
         /*suggestion=*/result.normalized_term,

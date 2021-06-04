@@ -80,7 +80,7 @@ bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
 
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
-  if (focus && !focus->IsPlainTextField())
+  if (focus && !focus->IsAtomicTextField())
     return GetActiveDescendant(focus);
   return focus;
 }
@@ -302,6 +302,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::MENU_POPUP_END:
+    case ui::AXEventGenerator::Event::MENU_POPUP_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::MULTILINE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
@@ -521,6 +523,40 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
 
   if (root_changed) {
     wcax->HandleNavigate();
+  }
+}
+
+void BrowserAccessibilityManagerAndroid::OnNodeCreated(ui::AXTree* tree,
+                                                       ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeCreated(tree, node);
+  if (node->data().GetBoolAttribute(
+          ax::mojom::BoolAttribute::kTouchPassthrough)) {
+    auto* root =
+        static_cast<BrowserAccessibilityManagerAndroid*>(GetRootManager());
+    if (root)
+      root->EnableTouchPassthrough();
+    else
+      EnableTouchPassthrough();
+  }
+}
+
+void BrowserAccessibilityManagerAndroid::OnBoolAttributeChanged(
+    ui::AXTree* tree,
+    ui::AXNode* node,
+    ax::mojom::BoolAttribute attr,
+    bool new_value) {
+  BrowserAccessibilityManager::OnBoolAttributeChanged(tree, node, attr,
+                                                      new_value);
+  if (new_value && attr == ax::mojom::BoolAttribute::kTouchPassthrough) {
+    // TODO(accessibility): there's a tiny chance we could get this
+    // called on an iframe before it's attached to the root manager.
+    // If this ever becomes an issue in practice, make this more robust.
+    auto* root =
+        static_cast<BrowserAccessibilityManagerAndroid*>(GetRootManager());
+    if (root)
+      root->EnableTouchPassthrough();
+    else
+      EnableTouchPassthrough();
   }
 }
 

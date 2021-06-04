@@ -669,8 +669,9 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr,
       /*is_hidden=*/false, /*is_inside_portal=*/false,
-      /*compositing_enabled=*/false, /*opener=*/nullptr,
-      mojo::NullAssociatedReceiver(), *source_frame.GetAgentGroupScheduler(),
+      /*compositing_enabled=*/false, /*widgets_never_composited=*/false,
+      /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
+      *source_frame.GetAgentGroupScheduler(),
       /*session_storage_namespace_id=*/base::EmptyString());
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
@@ -908,9 +909,9 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
 }
 
 void PrepareFrameAndViewForPrint::StartPrinting() {
-  ResizeForPrinting();
   blink::WebView* web_view = frame_.view();
   web_view->GetSettings()->SetShouldPrintBackgrounds(should_print_backgrounds_);
+  ResizeForPrinting();
   expected_pages_count_ =
       frame()->PrintBegin(web_print_params_, node_to_print_);
   is_printing_started_ = true;
@@ -947,6 +948,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*is_hidden=*/false,
       /*is_inside_portal=*/false,
       /*compositing_enabled=*/false,
+      /*widgets_never_composited=*/false,
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       agent_group_scheduler_,
       /*session_storage_namespace_id=*/base::EmptyString());
@@ -1135,7 +1137,7 @@ bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
 
 void PrintRenderFrameHelper::DidStartNavigation(
     const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
+    absl::optional<blink::WebNavigationType> navigation_type) {
   is_loading_ = true;
 }
 
@@ -1230,6 +1232,7 @@ void PrintRenderFrameHelper::PrintRequestedPages() {
   // just return.
 }
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::PrintForSystemDialog() {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > 1)
@@ -1259,7 +1262,6 @@ void PrintRenderFrameHelper::PrintForSystemDialog() {
   // just return.
 }
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::SetPrintPreviewUI(
     mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) {
   preview_ui_.Bind(std::move(preview));
@@ -1463,7 +1465,7 @@ void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
 
 void PrintRenderFrameHelper::UpdateFrameMarginsCssInfo(
     const base::DictionaryValue& settings) {
-  base::Optional<int> margins_type = settings.FindIntKey(kSettingMarginsType);
+  absl::optional<int> margins_type = settings.FindIntKey(kSettingMarginsType);
   ignore_css_margins_ = margins_type.value_or(static_cast<int>(
                             mojom::MarginType::kDefaultMargins)) !=
                         static_cast<int>(mojom::MarginType::kDefaultMargins);
@@ -2192,7 +2194,7 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     blink::WebLocalFrame* frame,
     const blink::WebNode& node,
     const base::DictionaryValue& passed_job_settings) {
-  if (passed_job_settings.empty()) {
+  if (passed_job_settings.DictEmpty()) {
     // TODO(thestig): Remove this block in the future, when we are certain this
     // is not reachable.
     NOTREACHED();
@@ -2728,17 +2730,12 @@ void PrintRenderFrameHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
       (base::TimeTicks::Now() - begin_time) + document_render_time_;
   base::TimeDelta avg_time_per_page = total_time / pages_to_render_.size();
 
-  base::UmaHistogramMediumTimes(is_for_arc_ ? "Arc.PrintPreview.RenderToPDFTime"
-                                            : "PrintPreview.RenderToPDFTime",
+  base::UmaHistogramMediumTimes("PrintPreview.RenderToPDFTime",
                                 document_render_time_);
+  base::UmaHistogramMediumTimes("PrintPreview.RenderAndGeneratePDFTime",
+                                total_time);
   base::UmaHistogramMediumTimes(
-      is_for_arc_ ? "Arc.PrintPreview.RenderAndGeneratePDFTime"
-                  : "PrintPreview.RenderAndGeneratePDFTime",
-      total_time);
-  base::UmaHistogramMediumTimes(
-      is_for_arc_ ? "Arc.PrintPreview.RenderAndGeneratePDFTimeAvgPerPage"
-                  : "PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
-      avg_time_per_page);
+      "PrintPreview.RenderAndGeneratePDFTimeAvgPerPage", avg_time_per_page);
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::Finished() {

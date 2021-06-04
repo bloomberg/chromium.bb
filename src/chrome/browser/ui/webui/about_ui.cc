@@ -84,10 +84,10 @@
 #include "base/base64.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/language/core/common/locale_util.h"
@@ -237,8 +237,8 @@ class ChromeOSTermsHandler
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
 
-    const chromeos::StartupCustomizationDocument* customization =
-        chromeos::StartupCustomizationDocument::GetInstance();
+    const ash::StartupCustomizationDocument* customization =
+        ash::StartupCustomizationDocument::GetInstance();
     if (!customization->IsReady())
       return;
 
@@ -557,7 +557,9 @@ std::string ChromeURLs() {
         "<li><a href='chrome://" + host + "/'>chrome://" + host + "</a></li>\n";
   }
 
-  html += "</ul><h2>List of chrome://internals pages</h2>\n<ul>\n";
+  html +=
+      "</ul><a id=\"internals\"><h2>List of chrome://internals "
+      "pages</h2></a>\n<ul>\n";
   std::vector<std::string> internals_paths(
       chrome::kChromeInternalsPathURLs,
       chrome::kChromeInternalsPathURLs +

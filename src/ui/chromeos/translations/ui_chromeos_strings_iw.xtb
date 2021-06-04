@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">מחוון חיפוש</translation>
 <translation id="1404323374378969387">נורווגית</translation>
 <translation id="1430915738399379752">הדפסה</translation>
+<translation id="1433628812591023318">‏כדי לשחרר קובץ ב-Parallels Desktop, צריך להעביר אותו לקובצי Windows.</translation>
 <translation id="1435838927755162558">‏שיתוף תיקייה באמצעות Parallels Desktop</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1471718551822868769">סלובקית</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">‏קובצי Windows</translation>
 <translation id="3078461028045006476">שיתוף באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">‏מכשירי Chromebit</translation>
+<translation id="3113153474486991170">לא ניתן היה לפתוח את "<ph name="PATH" />" מהמיקום הזה. יש להעתיק כדי לפתוח את "הקבצים שלי".</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">סיום</translation>
 <translation id="3188257591659621405">הקבצים שלי</translation>
@@ -450,6 +452,7 @@
 <translation id="5602622065581044566">בולגרית עם מקלדת פונטית</translation>
 <translation id="5605830556594064952">‏ארה"ב - Dvorak</translation>
 <translation id="5625294776298156701">‏טמילית עם מקלדת Tamil99</translation>
+<translation id="5633226425545095130">לאחר העברת הפריט הזה, הוא ישותף עם כל מי שיכול לראות את התיקייה המשותפת '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">האזנה</translation>
 <translation id="5678784840044122290">‏אפליקציית Linux תהיה זמינה דרך המסוף שלך, ובחלק מהמקרים הסמל שלה יופיע במרכז האפליקציות.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />לא ניתן להתנתק מהארכיון או מהדיסק הווירטואלי<ph name="END_BOLD" />
@@ -611,6 +614,7 @@
 <translation id="7417453074306512035">מקלדת אתיופית</translation>
 <translation id="7417705661718309329">‏מפת Google</translation>
 <translation id="7460898608667578234">אוקראינית</translation>
+<translation id="7486315294984620427">‏כדי לשחרר קובץ ב-Parallels Desktop, צריך להעתיק אותו לקובצי Windows.</translation>
 <translation id="7489215562877293245">‏נמצאו <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     הקבצים מוכנים לגיבוי ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -723,6 +727,7 @@
 <translation id="8395901698320285466">מידות</translation>
 <translation id="8437209419043462667">ארה"ב</translation>
 <translation id="8456681095658380701">שם לא חוקי</translation>
+<translation id="8459404855768962328">לאחר העתקת הפריט הזה, הוא ישותף עם כל מי שיכול לראות את התיקייה המשותפת '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="8461467696380332069">כדי לגשת במהירות לקבצים שבמדף, יש ללחוץ לחיצה ימנית על הקובץ ולבחור באפשרות "הצמדה למדף".</translation>
 <translation id="8463494891489624050">‏מקלדת וייטנאמית VIQR</translation>
 <translation id="8466234950814670489">‏ארכיון TAR</translation>

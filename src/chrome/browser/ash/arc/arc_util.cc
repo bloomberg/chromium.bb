@@ -42,7 +42,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_features.h"
@@ -319,7 +319,7 @@ bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user) {
   if (!user)
     return false;
 
-  // chromeos::UserSessionManager does the actual file system check and stores
+  // ash::UserSessionManager does the actual file system check and stores
   // the result to prefs, so that it survives crash-restart.
   FileSystemCompatibilityState filesystem_compatibility =
       GetFileSystemCompatibilityPref(user->GetAccountId());
@@ -539,7 +539,7 @@ bool IsArcStatsReportingEnabled() {
 }
 
 bool IsArcDemoModeSetupFlow() {
-  return chromeos::DemoSetupController::IsOobeDemoSetupFlowInProgress();
+  return ash::DemoSetupController::IsOobeDemoSetupFlowInProgress();
 }
 
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(
@@ -585,6 +585,8 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
       base::FeatureList::IsEnabled(kEnableChildToRegularTransitionFeature);
   const bool is_regular_to_child_enabled =
       base::FeatureList::IsEnabled(kEnableRegularToChildTransitionFeature);
+  const bool is_unmanaged_to_managed_enabled =
+      base::FeatureList::IsEnabled(kEnableUnmanagedToManagedTransitionFeature);
 
   switch (supervision_transition) {
     case ArcSupervisionTransition::NO_TRANSITION:
@@ -598,6 +600,9 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
       if (!is_regular_to_child_enabled)
         return ArcSupervisionTransition::NO_TRANSITION;
       break;
+    case ArcSupervisionTransition::UNMANAGED_TO_MANAGED:
+      if (!is_unmanaged_to_managed_enabled)
+        return ArcSupervisionTransition::NO_TRANSITION;
   }
   return supervision_transition;
 }
@@ -610,12 +615,12 @@ bool IsPlayStoreAvailable() {
     return true;
 
   // Demo Mode is the only public session scenario that can launch Play.
-  if (!chromeos::DemoSession::IsDeviceInDemoMode())
+  if (!ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
   // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when fixed
   //                    in Play Store.
-  return !chromeos::DemoSession::IsDemoModeOfflineEnrolled() &&
+  return !ash::DemoSession::IsDemoModeOfflineEnrolled() &&
          chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 
@@ -626,7 +631,7 @@ bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {
 }
 
 aura::Window* GetArcWindow(int32_t task_id) {
-  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+  for (auto* window : ChromeShelfController::instance()->GetArcWindows()) {
     if (arc::GetWindowTaskId(window) == task_id)
       return window;
   }
@@ -682,7 +687,7 @@ std::string GetHistogramNameByUserType(const std::string& base_name,
     profile = ProfileManager::GetPrimaryUserProfile();
   }
   if (IsRobotOrOfflineDemoAccountMode()) {
-    chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+    auto* demo_session = ash::DemoSession::Get();
     if (demo_session && demo_session->started()) {
       return demo_session->offline_enrolled() ? base_name + ".OfflineDemoMode"
                                               : base_name + ".DemoMode";

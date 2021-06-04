@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_model_provider.h"
 
 namespace optimization_guide {
 
@@ -26,7 +26,7 @@ const int kNoneCategoryId = -2;
 }  // namespace
 
 PageContentAnnotationsModelManager::PageContentAnnotationsModelManager(
-    optimization_guide::OptimizationGuideDecider* optimization_guide_decider) {
+    OptimizationGuideModelProvider* optimization_guide_model_provider) {
   proto::Any model_metadata;
   model_metadata.set_type_url(kPageTopicsModelMetadataTypeUrl);
   proto::PageTopicsModelMetadata page_topics_model_metadata;
@@ -36,11 +36,12 @@ PageContentAnnotationsModelManager::PageContentAnnotationsModelManager(
       proto::PAGE_TOPICS_SUPPORTED_OUTPUT_CATEGORIES);
   page_topics_model_metadata.SerializeToString(model_metadata.mutable_value());
 
-  page_topics_model_executor_ = std::make_unique<BertModelExecutor>(
-      optimization_guide_decider, proto::OPTIMIZATION_TARGET_PAGE_TOPICS,
-      model_metadata,
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+  page_topics_model_executor_handle_ =
+      std::make_unique<BertModelExecutorHandle>(
+          optimization_guide_model_provider,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+          proto::OPTIMIZATION_TARGET_PAGE_TOPICS, model_metadata);
 }
 
 PageContentAnnotationsModelManager::~PageContentAnnotationsModelManager() =
@@ -49,15 +50,21 @@ PageContentAnnotationsModelManager::~PageContentAnnotationsModelManager() =
 void PageContentAnnotationsModelManager::Annotate(
     const std::string& text,
     PageContentAnnotatedCallback callback) {
-  base::Optional<proto::PageTopicsModelMetadata> model_metadata =
-      page_topics_model_executor_->ParsedSupportedFeaturesForLoadedModel<
-          proto::PageTopicsModelMetadata>();
-  if (!model_metadata) {
+  if (!page_topics_model_executor_handle_->ModelAvailable()) {
     // TODO(crbug/1177102): Figure out if we want to enqueue it for later if
     // model isn't ready, but if we call this when the model isn't ready, it
-    // will just return base::nullopt for now.
+    // will just return absl::nullopt for now.
     return;
   }
+
+  absl::optional<proto::PageTopicsModelMetadata> model_metadata =
+      page_topics_model_executor_handle_->ParsedSupportedFeaturesForLoadedModel<
+          proto::PageTopicsModelMetadata>();
+  if (!model_metadata) {
+    NOTREACHED();
+    return;
+  }
+
   bool has_supported_output = false;
   for (const auto supported_output : model_metadata->supported_output()) {
     if (supported_output == proto::PAGE_TOPICS_SUPPORTED_OUTPUT_CATEGORIES ||
@@ -71,7 +78,7 @@ void PageContentAnnotationsModelManager::Annotate(
     // TODO(crbug/1177102): Add histogram.
     return;
   }
-  page_topics_model_executor_->ExecuteModelWithInput(
+  page_topics_model_executor_handle_->ExecuteModelWithInput(
       base::BindOnce(&PageContentAnnotationsModelManager::
                          OnPageTopicsModelExecutionCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -82,8 +89,8 @@ void PageContentAnnotationsModelManager::Annotate(
 void PageContentAnnotationsModelManager::OnPageTopicsModelExecutionCompleted(
     PageContentAnnotatedCallback callback,
     const proto::PageTopicsModelMetadata& model_metadata,
-    const base::Optional<std::vector<tflite::task::core::Category>>& output) {
-  base::Optional<history::VisitContentModelAnnotations> content_annotations;
+    const absl::optional<std::vector<tflite::task::core::Category>>& output) {
+  absl::optional<history::VisitContentModelAnnotations> content_annotations;
   if (output) {
     content_annotations =
         GetContentModelAnnotationsFromOutput(model_metadata, *output);
@@ -91,21 +98,21 @@ void PageContentAnnotationsModelManager::OnPageTopicsModelExecutionCompleted(
   std::move(callback).Run(content_annotations);
 }
 
-base::Optional<int64_t>
+absl::optional<int64_t>
 PageContentAnnotationsModelManager::GetPageTopicsModelVersion() const {
-  base::Optional<proto::PageTopicsModelMetadata> model_metadata =
-      page_topics_model_executor_->ParsedSupportedFeaturesForLoadedModel<
+  absl::optional<proto::PageTopicsModelMetadata> model_metadata =
+      page_topics_model_executor_handle_->ParsedSupportedFeaturesForLoadedModel<
           proto::PageTopicsModelMetadata>();
   if (model_metadata)
     return model_metadata->version();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 history::VisitContentModelAnnotations
 PageContentAnnotationsModelManager::GetContentModelAnnotationsFromOutput(
     const proto::PageTopicsModelMetadata& model_metadata,
     const std::vector<tflite::task::core::Category>& model_output) const {
-  base::Optional<std::string> floc_protected_category_name;
+  absl::optional<std::string> floc_protected_category_name;
   if (model_metadata.output_postprocessing_params()
           .has_floc_protected_params()) {
     floc_protected_category_name = model_metadata.output_postprocessing_params()
@@ -150,7 +157,7 @@ PageContentAnnotationsModelManager::GetContentModelAnnotationsFromOutput(
   size_t max_categories = static_cast<size_t>(category_params.max_categories());
   float total_weight = 0.0;
   float sum_positive_scores = 0.0;
-  base::Optional<std::pair<size_t, float>> none_idx_and_weight;
+  absl::optional<std::pair<size_t, float>> none_idx_and_weight;
   std::vector<std::pair<int, float>> categories;
   categories.reserve(max_categories);
   for (size_t i = 0; i < category_candidates.size() && i < max_categories;

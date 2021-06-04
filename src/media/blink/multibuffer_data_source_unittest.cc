@@ -22,6 +22,7 @@
 #include "media/blink/multibuffer_reader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/test_response_generator.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 
@@ -1405,7 +1406,6 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
 
   // Issue a pending read but trigger an error to force a retry.
   EXPECT_CALL(*this, ReadCallback(kDataSize - 10));
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReadAt(kDataSize + 10, kDataSize - 10);
   base::RunLoop run_loop;
   data_provider()->DidFail(response_generator_->GenerateError());
@@ -1417,9 +1417,11 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+
   FinishLoading();
   EXPECT_FALSE(loading());
   Stop();

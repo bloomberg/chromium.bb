@@ -34,7 +34,6 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -42,6 +41,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -61,6 +61,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/referrer_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -152,6 +153,8 @@ std::string GetDownloadDangerNames(DownloadDangerType type) {
       return "POTENTIALLY_UNWANTED";
     case DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY:
       return "ALLOWLISTED_BY_POLICY";
+    case DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
+      return "DANGEROUS_ACCOUNT_COMPROMISE";
     default:
       NOTREACHED();
       return "UNKNOWN_DANGER_TYPE";
@@ -228,7 +231,7 @@ DownloadItemImpl::RequestInfo::RequestInfo(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
-    const base::Optional<url::Origin>& request_initiator,
+    const absl::optional<url::Origin>& request_initiator,
     const std::string& suggested_filename,
     const base::FilePath& forced_file_path,
     ui::PageTransition transition_type,
@@ -295,7 +298,7 @@ DownloadItemImpl::DownloadItemImpl(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_refererr_url,
-    const base::Optional<url::Origin>& request_initiator,
+    const absl::optional<url::Origin>& request_initiator,
     const std::string& mime_type,
     const std::string& original_mime_type,
     base::Time start_time,
@@ -315,7 +318,7 @@ DownloadItemImpl::DownloadItemImpl(
     base::Time last_access_time,
     bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
-    base::Optional<DownloadSchedule> download_schedule,
+    absl::optional<DownloadSchedule> download_schedule,
     std::unique_ptr<DownloadEntry> download_entry)
     : request_info_(url_chain,
                     referrer_url,
@@ -644,14 +647,14 @@ void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
   }
 
   auto_resume_count_ = user_resume ? 0 : ++auto_resume_count_;
-  download_schedule_ = base::nullopt;
+  download_schedule_ = absl::nullopt;
   RecordDownloadLaterEvent(DownloadLaterEvent::kScheduleRemoved);
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
-  download_schedule_ = base::nullopt;
+  download_schedule_ = absl::nullopt;
   InterruptAndDiscardPartialState(
       user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
                   : DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
@@ -862,7 +865,7 @@ const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
   return request_info_.tab_referrer_url;
 }
 
-const base::Optional<url::Origin>& DownloadItemImpl::GetRequestInitiator()
+const absl::optional<url::Origin>& DownloadItemImpl::GetRequestInitiator()
     const {
   return request_info_.request_initiator;
 }
@@ -999,7 +1002,8 @@ bool DownloadItemImpl::IsDangerous() const {
          danger_type_ == DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
          danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
          danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK ||
-         danger_type_ == DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING;
+         danger_type_ == DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING ||
+         danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE;
 }
 
 bool DownloadItemImpl::IsMixedContent() const {
@@ -1124,7 +1128,7 @@ DownloadItem::DownloadCreationType DownloadItemImpl::GetDownloadCreationType()
   return download_type_;
 }
 
-const base::Optional<DownloadSchedule>& DownloadItemImpl::GetDownloadSchedule()
+const absl::optional<DownloadSchedule>& DownloadItemImpl::GetDownloadSchedule()
     const {
   return download_schedule_;
 }
@@ -1163,7 +1167,7 @@ void DownloadItemImpl::OnAsyncScanningCompleted(
 }
 
 void DownloadItemImpl::OnDownloadScheduleChanged(
-    base::Optional<DownloadSchedule> schedule) {
+    absl::optional<DownloadSchedule> schedule) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!base::FeatureList::IsEnabled(features::kDownloadLater) ||
       state_ != INTERRUPTED_INTERNAL) {
@@ -1581,7 +1585,12 @@ void DownloadItemImpl::Start(
     destination_info_.hash.clear();
     deferred_interrupt_reason_ = new_create_info.result;
     TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
-    DetermineDownloadTarget();
+    // We're posting the call to DetermineDownloadTarget() instead of calling it
+    // directly to ensure that OnDownloadTargetDetermined() is not called
+    // synchronously. See crbug.com/1209856 for more details.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadItemImpl::DetermineDownloadTarget,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -1629,7 +1638,7 @@ void DownloadItemImpl::Start(
 
   job_->Start(download_file_.get(),
               base::BindRepeating(&DownloadItemImpl::OnDownloadFileInitialized,
-                         weak_ptr_factory_.GetWeakPtr()),
+                                  weak_ptr_factory_.GetWeakPtr()),
               GetReceivedSlices());
 }
 
@@ -1665,7 +1674,7 @@ void DownloadItemImpl::DetermineDownloadTarget() {
                                 download_source_);
   delegate_->DetermineDownloadTarget(
       this, base::BindOnce(&DownloadItemImpl::OnDownloadTargetDetermined,
-                       weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 // Called by delegate_ when the download target path has been determined.
@@ -1675,7 +1684,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     DownloadDangerType danger_type,
     MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
-    base::Optional<DownloadSchedule> download_schedule,
+    absl::optional<DownloadSchedule> download_schedule,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ == CANCELLED_INTERNAL)
@@ -1755,7 +1764,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   DCHECK(!IsSavePackageDownload());
   DownloadFile::RenameCompletionCallback callback =
       base::BindOnce(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
-                 weak_ptr_factory_.GetWeakPtr());
+                     weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_ANDROID)
   if ((download_type_ == TYPE_ACTIVE_DOWNLOAD && !transient_ &&
        DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) ||
@@ -1845,7 +1854,7 @@ void DownloadItemImpl::OnTargetResolved() {
     return;
   }
 
-  download_schedule_ = base::nullopt;
+  download_schedule_ = absl::nullopt;
 
   TransitionTo(IN_PROGRESS_INTERNAL);
   // TODO(asanka): Calling UpdateObservers() prior to MaybeCompleteDownload() is
@@ -1889,7 +1898,7 @@ bool DownloadItemImpl::ShouldDownloadLater() const {
 }
 
 void DownloadItemImpl::SwapDownloadSchedule(
-    base::Optional<DownloadSchedule> download_schedule) {
+    absl::optional<DownloadSchedule> download_schedule) {
   if (!base::FeatureList::IsEnabled(features::kDownloadLater))
     return;
   download_schedule_ = std::move(download_schedule);
@@ -2223,7 +2232,7 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
-  base::Optional<int> change_in_file_size;
+  absl::optional<int> change_in_file_size;
   if (total_bytes_ >= 0) {
     change_in_file_size = total_bytes_ - resulting_file_size;
   }

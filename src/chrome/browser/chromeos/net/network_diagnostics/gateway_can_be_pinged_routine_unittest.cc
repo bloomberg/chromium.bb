@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/net/network_diagnostics/gateway_can_be_pinged_routine.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -83,7 +82,7 @@ class FakeDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
   void TestICMP(const std::string& ip_address,
                 TestICMPCallback callback) override {
     // Invoke the test callback with fake output.
-    std::move(callback).Run(base::Optional<std::string>{icmp_output_});
+    std::move(callback).Run(absl::optional<std::string>{icmp_output_});
   }
 
  private:

@@ -23,10 +23,11 @@
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -217,8 +218,8 @@ std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
 void SuggestionContainerView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility) &&
       entry_point.value() != AssistantEntryPoint::kLauncherSearchResult) {
     // Show conversation starters at the start of a new Assistant session except

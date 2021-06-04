@@ -33,20 +33,24 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as BrowserSDK from '../../browser_sdk/browser_sdk.js';
-import * as Components from '../../components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ConsoleCounters from '../console_counters/console_counters.js';
 
 import {ConsoleContextSelector} from './ConsoleContextSelector.js';
-import {ConsoleFilter, FilterType, LevelsMask} from './ConsoleFilter.js';
+
+import type {LevelsMask} from './ConsoleFilter.js';
+import {ConsoleFilter, FilterType} from './ConsoleFilter.js';
 import {ConsolePinPane} from './ConsolePinPane.js';
 import {ConsolePrompt, Events as ConsolePromptEvents} from './ConsolePrompt.js';
 import {ConsoleSidebar, Events} from './ConsoleSidebar.js';
@@ -275,15 +279,16 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _innerSearchTimeoutId?: number;
   _muteViewportUpdates?: boolean;
   _waitForScrollTimeout?: number;
-  _issueCounter: ConsoleCounters.IssueCounter.IssueCounter;
+  _issueCounter: IssueCounter.IssueCounter.IssueCounter;
   private pendingSidebarMessages: ConsoleViewMessage[] = [];
   private userHasOpenedSidebarAtLeastOnce = false;
+  private issueToolbarThrottle: Common.Throttler.Throttler;
 
   constructor() {
     super();
     this.setMinimumSize(0, 35);
-    this.registerRequiredCSS('panels/console/consoleView.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/console/consoleView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
 
     this._searchableView = new UI.SearchableView.SearchableView(this, null);
     this._searchableView.element.classList.add('console-searchable-view');
@@ -373,7 +378,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     toolbar.appendToolbarItem(this._filter._levelMenuButton);
     toolbar.appendToolbarItem(this._progressToolbarItem);
     toolbar.appendSeparator();
-    this._issueCounter = new ConsoleCounters.IssueCounter.IssueCounter();
+    this._issueCounter = new IssueCounter.IssueCounter.IssueCounter();
     this._issueCounter.id = 'console-issues-counter';
     const issuesToolbarItem = new UI.Toolbar.ToolbarItem(this._issueCounter);
     this._issueCounter.data = {
@@ -381,9 +386,9 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
         Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
         UI.ViewManager.ViewManager.instance().showView('issues-pane');
       },
-      issuesManager: BrowserSDK.IssuesManager.IssuesManager.instance(),
+      issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
       accessibleName: i18nString(UIStrings.issueToolbarTooltipGeneral),
-      displayMode: ConsoleCounters.IssueCounter.DisplayMode.OmitEmpty,
+      displayMode: IssueCounter.IssueCounter.DisplayMode.OmitEmpty,
     };
     toolbar.appendToolbarItem(issuesToolbarItem);
     rightToolbar.appendSeparator();
@@ -481,7 +486,13 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
     this._messagesElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
 
-    this._linkifier = new Components.Linkifier.Linkifier(MaxLengthForLinks);
+    // Filters need to be re-applied to a console message when the message's live location changes.
+    // All relevant live locations are created by the same linkifier, so it is enough to subscribe to
+    // the linkifiers live location change event.
+    const throttler = new Common.Throttler.Throttler(100);
+    const refilterMessages = (): Promise<void> => throttler.schedule(async () => this._onFilterChanged());
+    this._linkifier =
+        new Components.Linkifier.Linkifier(MaxLengthForLinks, /* useLinkDecorator */ undefined, refilterMessages);
 
     this._consoleMessages = [];
     this._viewMessageSymbol = Symbol('viewMessage');
@@ -535,9 +546,11 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
         SDK.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
     SDK.ConsoleModel.ConsoleModel.instance().messages().forEach(this._addConsoleMessage, this);
 
-    const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+    this.issueToolbarThrottle = new Common.Throttler.Throttler(100);
     issuesManager.addEventListener(
-        BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._updateIssuesToolbarItem, this);
+        IssuesManager.IssuesManager.Events.IssuesCountUpdated,
+        () => this.issueToolbarThrottle.schedule(async () => this._updateIssuesToolbarItem()), this);
   }
 
   static instance(): ConsoleView {
@@ -608,22 +621,22 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   _addSinkMessage(message: Common.Console.Message): void {
-    let level: Protocol.Log.LogEntryLevel = SDK.ConsoleModel.MessageLevel.Verbose;
+    let level: Protocol.Log.LogEntryLevel = Protocol.Log.LogEntryLevel.Verbose;
     switch (message.level) {
       case Common.Console.MessageLevel.Info:
-        level = SDK.ConsoleModel.MessageLevel.Info;
+        level = Protocol.Log.LogEntryLevel.Info;
         break;
       case Common.Console.MessageLevel.Error:
-        level = SDK.ConsoleModel.MessageLevel.Error;
+        level = Protocol.Log.LogEntryLevel.Error;
         break;
       case Common.Console.MessageLevel.Warning:
-        level = SDK.ConsoleModel.MessageLevel.Warning;
+        level = Protocol.Log.LogEntryLevel.Warning;
         break;
     }
 
     const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(
-        null, SDK.ConsoleModel.MessageSource.Other, level, message.text, SDK.ConsoleModel.MessageType.System, undefined,
-        undefined, undefined, undefined, undefined, message.timestamp);
+        null, Protocol.Log.LogEntrySource.Other, level, message.text, SDK.ConsoleModel.FrontendMessageType.System,
+        undefined, undefined, undefined, undefined, undefined, message.timestamp);
     this._addConsoleMessage(consoleMessage);
   }
 
@@ -703,8 +716,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   _updateIssuesToolbarItem(): void {
-    const manager = BrowserSDK.IssuesManager.IssuesManager.instance();
-    const issueEnumeration = ConsoleCounters.IssueCounter.getIssueCountsEnumeration(manager);
+    const manager = IssuesManager.IssuesManager.IssuesManager.instance();
+    const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(manager);
     const issuesTitleGotoIssues = manager.numberOfIssues() === 0 ?
         i18nString(UIStrings.issueToolbarClickToGoToTheIssuesTab) :
         i18nString(UIStrings.issueToolbarClickToView, {issueEnumeration});
@@ -756,7 +769,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _addConsoleMessage(message: SDK.ConsoleModel.ConsoleMessage): void {
     const viewMessage = this._createViewMessage(message);
     consoleMessageToViewMessage.set(message, viewMessage);
-    if (message.type === SDK.ConsoleModel.MessageType.Command || message.type === SDK.ConsoleModel.MessageType.Result) {
+    if (message.type === SDK.ConsoleModel.FrontendMessageType.Command ||
+        message.type === SDK.ConsoleModel.FrontendMessageType.Result) {
       const lastMessage = this._consoleMessages[this._consoleMessages.length - 1];
       const newTimestamp = lastMessage && messagesSortedBySymbol.get(lastMessage) || 0;
       messagesSortedBySymbol.set(viewMessage, newTimestamp);
@@ -852,7 +866,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     }
 
     const lastMessage = this._visibleViewMessages[this._visibleViewMessages.length - 1];
-    if (viewMessage.consoleMessage().type === SDK.ConsoleModel.MessageType.EndGroup) {
+    if (viewMessage.consoleMessage().type === Protocol.Runtime.ConsoleAPICalledEventType.EndGroup) {
       if (lastMessage && !this._currentGroup.messagesHidden()) {
         lastMessage.incrementCloseGroupDecorationCount();
       }
@@ -883,15 +897,15 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _createViewMessage(message: SDK.ConsoleModel.ConsoleMessage): ConsoleViewMessage {
     const nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
-      case SDK.ConsoleModel.MessageType.Command:
+      case SDK.ConsoleModel.FrontendMessageType.Command:
         return new ConsoleCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
-      case SDK.ConsoleModel.MessageType.Result:
+      case SDK.ConsoleModel.FrontendMessageType.Result:
         return new ConsoleCommandResult(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
-      case SDK.ConsoleModel.MessageType.StartGroupCollapsed:
-      case SDK.ConsoleModel.MessageType.StartGroup:
+      case Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed:
+      case Protocol.Runtime.ConsoleAPICalledEventType.StartGroup:
         return new ConsoleGroupViewMessage(
             message, this._linkifier, nestingLevel, this._updateMessageList.bind(this), this._onMessageResizedBound);
-      case SDK.ConsoleModel.MessageType.Table:
+      case Protocol.Runtime.ConsoleAPICalledEventType.Table:
         return new ConsoleTableMessageView(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
       default:
         return new ConsoleViewMessage(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
@@ -962,7 +976,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     }
 
     if (consoleMessage) {
-      const request = SDK.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
+      const request = Logs.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
       if (request && SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
         contextMenu.debugSection().appendItem(
             i18nString(UIStrings.replayXhr), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request));
@@ -1009,8 +1023,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _tryToCollapseMessages(viewMessage: ConsoleViewMessage, lastMessage?: ConsoleViewMessage): boolean {
     const timestampsShown = this._timestampsSetting.get();
     if (!timestampsShown && lastMessage && !viewMessage.consoleMessage().isGroupMessage() &&
-        viewMessage.consoleMessage().type !== SDK.ConsoleModel.MessageType.Command &&
-        viewMessage.consoleMessage().type !== SDK.ConsoleModel.MessageType.Result &&
+        viewMessage.consoleMessage().type !== SDK.ConsoleModel.FrontendMessageType.Command &&
+        viewMessage.consoleMessage().type !== SDK.ConsoleModel.FrontendMessageType.Result &&
         viewMessage.consoleMessage().isEqual(lastMessage.consoleMessage())) {
       lastMessage.incrementRepeatCount();
       if (viewMessage.isLastInSimilarGroup()) {
@@ -1053,18 +1067,18 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this._currentGroup = this._topGroup;
     this._regexMatchRanges = [];
     this._hiddenByFilterCount = 0;
-    for (let i = 0; i < this._visibleViewMessages.length; ++i) {
-      this._visibleViewMessages[i].resetCloseGroupDecorationCount();
-      this._visibleViewMessages[i].resetIncrementRepeatCount();
+    for (const visibleViewMessage of this._visibleViewMessages) {
+      visibleViewMessage.resetCloseGroupDecorationCount();
+      visibleViewMessage.resetIncrementRepeatCount();
     }
     this._visibleViewMessages = [];
     if (this._groupSimilarSetting.get()) {
       this._addGroupableMessagesToEnd();
     } else {
-      for (let i = 0; i < this._consoleMessages.length; ++i) {
-        this._consoleMessages[i].setInSimilarGroup(false);
+      for (const consoleMessage of this._consoleMessages) {
+        consoleMessage.setInSimilarGroup(false);
         this._appendMessageToEnd(
-            this._consoleMessages[i],
+            consoleMessage,
             true /* crbug.com/1082963: prevent collapse of same messages when "Group similar" is false */);
       }
     }
@@ -1076,8 +1090,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _addGroupableMessagesToEnd(): void {
     const alreadyAdded = new Set<SDK.ConsoleModel.ConsoleMessage>();
     const processedGroupKeys = new Set<string>();
-    for (let i = 0; i < this._consoleMessages.length; ++i) {
-      const viewMessage = this._consoleMessages[i];
+    for (const viewMessage of this._consoleMessages) {
       const message = viewMessage.consoleMessage();
       if (alreadyAdded.has(message)) {
         continue;
@@ -1116,7 +1129,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       if (!startGroupViewMessage) {
         const startGroupMessage = new SDK.ConsoleModel.ConsoleMessage(
             null, message.source, message.level, viewMessage.groupTitle(),
-            SDK.ConsoleModel.MessageType.StartGroupCollapsed);
+            Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed);
         startGroupViewMessage = this._createViewMessage(startGroupMessage);
         this._groupableMessageTitle.set(key, startGroupViewMessage);
       }
@@ -1131,7 +1144,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       }
 
       const endGroupMessage = new SDK.ConsoleModel.ConsoleMessage(
-          null, message.source, message.level, message.messageText, SDK.ConsoleModel.MessageType.EndGroup);
+          null, message.source, message.level, message.messageText,
+          Protocol.Runtime.ConsoleAPICalledEventType.EndGroup);
       this._appendMessageToEnd(this._createViewMessage(endGroupMessage));
     }
   }
@@ -1199,15 +1213,15 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       return;
     }
 
-    const level = Boolean(exceptionDetails) ? SDK.ConsoleModel.MessageLevel.Error : SDK.ConsoleModel.MessageLevel.Info;
+    const level = Boolean(exceptionDetails) ? Protocol.Log.LogEntryLevel.Error : Protocol.Log.LogEntryLevel.Info;
     let message;
     if (!exceptionDetails) {
       message = new SDK.ConsoleModel.ConsoleMessage(
-          result.runtimeModel(), SDK.ConsoleModel.MessageSource.Javascript, level, '',
-          SDK.ConsoleModel.MessageType.Result, undefined, undefined, undefined, [result]);
+          result.runtimeModel(), Protocol.Log.LogEntrySource.Javascript, level, '',
+          SDK.ConsoleModel.FrontendMessageType.Result, undefined, undefined, undefined, [result]);
     } else {
       message = SDK.ConsoleModel.ConsoleMessage.fromException(
-          result.runtimeModel(), exceptionDetails, SDK.ConsoleModel.MessageType.Result, undefined, undefined);
+          result.runtimeModel(), exceptionDetails, SDK.ConsoleModel.FrontendMessageType.Result, undefined, undefined);
     }
     message.setOriginatingMessage(originatingConsoleMessage);
     SDK.ConsoleModel.ConsoleModel.instance().addMessage(message);
@@ -1230,8 +1244,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
   searchCanceled(): void {
     this._cleanupAfterSearch();
-    for (let i = 0; i < this._visibleViewMessages.length; ++i) {
-      const message = this._visibleViewMessages[i];
+    for (const message of this._visibleViewMessages) {
       message.setSearchRegex(null);
     }
     this._currentMatchRangeIndex = -1;
@@ -1469,10 +1482,10 @@ export class ConsoleViewFilter {
     this._currentFilter = new ConsoleFilter('', [], null, this._messageLevelFiltersSetting.get());
     this._updateCurrentFilter();
     this._levelLabels = new Map(([
-      [SDK.ConsoleModel.MessageLevel.Verbose, i18nString(UIStrings.verbose)],
-      [SDK.ConsoleModel.MessageLevel.Info, i18nString(UIStrings.info)],
-      [SDK.ConsoleModel.MessageLevel.Warning, i18nString(UIStrings.warnings)],
-      [SDK.ConsoleModel.MessageLevel.Error, i18nString(UIStrings.errors)],
+      [Protocol.Log.LogEntryLevel.Verbose, i18nString(UIStrings.verbose)],
+      [Protocol.Log.LogEntryLevel.Info, i18nString(UIStrings.info)],
+      [Protocol.Log.LogEntryLevel.Warning, i18nString(UIStrings.warnings)],
+      [Protocol.Log.LogEntryLevel.Error, i18nString(UIStrings.errors)],
     ]));
 
     this._levelMenuButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.logLevels));
@@ -1486,8 +1499,8 @@ export class ConsoleViewFilter {
   }
 
   onMessageAdded(message: SDK.ConsoleModel.ConsoleMessage): void {
-    if (message.type === SDK.ConsoleModel.MessageType.Command || message.type === SDK.ConsoleModel.MessageType.Result ||
-        message.isGroupMessage()) {
+    if (message.type === SDK.ConsoleModel.FrontendMessageType.Command ||
+        message.type === SDK.ConsoleModel.FrontendMessageType.Result || message.isGroupMessage()) {
       return;
     }
     if (message.context) {
@@ -1519,7 +1532,7 @@ export class ConsoleViewFilter {
     const parsedFilters = this._filterParser.parse(this._textFilterUI.value());
     if (this._hideNetworkMessagesSetting.get()) {
       parsedFilters.push(
-          {key: FilterType.Source, text: SDK.ConsoleModel.MessageSource.Network, negative: true, regex: undefined});
+          {key: FilterType.Source, text: Protocol.Log.LogEntrySource.Network, negative: true, regex: undefined});
     }
 
     this._currentFilter.executionContext = this._filterByExecutionContextSetting.get() ?
@@ -1542,7 +1555,13 @@ export class ConsoleViewFilter {
 
     let text: Common.UIString.LocalizedString|null = null;
     const levels = this._messageLevelFiltersSetting.get();
-    for (const name of Object.values(SDK.ConsoleModel.MessageLevel)) {
+    const allLevels: Protocol.EnumerableEnum<typeof Protocol.Log.LogEntryLevel> = {
+      Verbose: Protocol.Log.LogEntryLevel.Verbose,
+      Info: Protocol.Log.LogEntryLevel.Info,
+      Warning: Protocol.Log.LogEntryLevel.Warning,
+      Error: Protocol.Log.LogEntryLevel.Error,
+    };
+    for (const name of Object.values(allLevels)) {
       isAll = isAll && levels[name] === allValue[name];
       isDefault = isDefault && levels[name] === defaultValue[name];
       if (levels[name]) {

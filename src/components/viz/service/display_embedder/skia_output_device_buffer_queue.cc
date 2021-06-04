@@ -134,6 +134,11 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.preserve_buffer_content = true;
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
+#if defined(OS_ANDROID)
+  if (::features::IncreaseBufferCountForHighFrameRate()) {
+    capabilities_.number_of_buffers = 5;
+  }
+#endif
   capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
 
   // Force the number of max pending frames to one when the switch
@@ -178,18 +183,21 @@ OutputPresenter::Image* SkiaOutputDeviceBufferQueue::GetNextImage() {
 }
 
 void SkiaOutputDeviceBufferQueue::PageFlipComplete(
-    OutputPresenter::Image* image) {
+    OutputPresenter::Image* image,
+    gfx::GpuFenceHandle release_fence) {
   if (displayed_image_) {
     DCHECK_EQ(displayed_image_->skia_representation()->size(), image_size_);
     DCHECK_EQ(displayed_image_->GetPresentCount() > 1,
               displayed_image_ == image);
-    displayed_image_->EndPresent();
+    // MakeCurrent is necessary for inserting release fences and for
+    // BeginWriteSkia below.
+    context_state_->MakeCurrent(/*surface=*/nullptr);
+    displayed_image_->EndPresent(std::move(release_fence));
     if (!displayed_image_->GetPresentCount()) {
       available_images_.push_back(displayed_image_);
       // Call BeginWriteSkia() for the next frame here to avoid some expensive
       // operations on the critical code path.
-      if (!available_images_.front()->sk_surface() &&
-          context_state_->MakeCurrent(nullptr)) {
+      if (!available_images_.front()->sk_surface()) {
         // BeginWriteSkia() may alter GL's state.
         context_state_->set_need_context_state_reset(true);
         available_images_.front()->BeginWriteSkia();
@@ -214,7 +222,7 @@ bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
 }
 
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
-    const base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
+    const absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
         plane) {
   if (background_image_ && !background_image_is_scheduled_) {
     background_image_->BeginPresent();
@@ -443,6 +451,9 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   for (const auto& mailbox : overlay_mailboxes) {
     auto it = overlays_.find(mailbox);
     DCHECK(it != overlays_.end());
+    if (!result.release_fence.is_null())
+      it->scoped_read_access()->SetReleaseFence(result.release_fence.Clone());
+
     it->Unref();
   }
 
@@ -480,13 +491,13 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   bool should_reallocate =
       result.swap_result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
 
-  DCHECK(!result.gpu_fence);
   const auto& mailbox =
       image ? image->skia_representation()->mailbox() : gpu::Mailbox();
+  auto release_fence = result.release_fence.Clone();
   FinishSwapBuffers(std::move(result), size, std::move(frame),
-                    /*damage_area=*/base::nullopt, std::move(released_overlays),
+                    /*damage_area=*/absl::nullopt, std::move(released_overlays),
                     mailbox);
-  PageFlipComplete(image.get());
+  PageFlipComplete(image.get(), std::move(release_fence));
 
   if (should_reallocate)
     RecreateImages();

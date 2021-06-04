@@ -48,7 +48,7 @@ def invoke_mb(args):
 
     if is_standalone:
         logging.info('Standalone mode detected.')
-        mb_args += ['-i', os.path.join('infra', 'gn_isolate_map.pyl')]
+        mb_args += ['-i', os.path.join('infra', 'specs', 'gn_isolate_map.pyl')]
 
     logging.info('Invoking mb: %s' % ' '.join(mb_args))
     return subprocess.check_output(mb_args)
@@ -112,7 +112,7 @@ def main():
     if args.device_os:
         swarming_args += ['-d', 'device_os=' + args.device_os]
 
-    cmd_args = ['-relative-cwd', args.gn_path, '-raw-cmd', '--'] + swarming_cmd
+    cmd_args = ['-relative-cwd', args.gn_path, '--'] + swarming_cmd
     if unknown:
         cmd_args += unknown
 

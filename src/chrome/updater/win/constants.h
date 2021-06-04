@@ -7,8 +7,6 @@
 
 #include <windows.h>
 
-#include <string>
-
 #include "chrome/updater/updater_branding.h"
 
 namespace updater {
@@ -43,6 +41,16 @@ extern const wchar_t kRegValueInstallerProgress[];
 extern const wchar_t kRegValueInstallerResult[];
 extern const wchar_t kRegValueInstallerResultUIString[];
 extern const wchar_t kRegValueInstallerSuccessLaunchCmdLine[];
+
+// Device management.
+//
+// Registry for enrollment token.
+extern const wchar_t kRegKeyCompanyCloudManagement[];
+extern const wchar_t kRegValueEnrollmentToken[];
+
+// Registry for DM token.
+extern const wchar_t kRegKeyCompanyEnrollment[];
+extern const wchar_t kRegValueDmToken[];
 
 extern const wchar_t kWindowsServiceName[];
 

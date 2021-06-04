@@ -155,8 +155,8 @@ constexpr char ModellerImpl::kPersonalCurveFileName[];
 constexpr char ModellerImpl::kModelIterationCountFileName[];
 
 Model::Model() = default;
-Model::Model(const base::Optional<MonotoneCubicSpline>& global_curve,
-             const base::Optional<MonotoneCubicSpline>& personal_curve,
+Model::Model(const absl::optional<MonotoneCubicSpline>& global_curve,
+             const absl::optional<MonotoneCubicSpline>& personal_curve,
              int iteration_count)
     : global_curve(global_curve),
       personal_curve(personal_curve),
@@ -265,7 +265,7 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
   DCHECK(log_als_values_);
   const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
-  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+  const absl::optional<AlsAvgStdDev> log_als_avg_stddev =
       log_als_values_->AverageAmbientWithStdDev(now);
   if (!log_als_avg_stddev)
     return;
@@ -279,7 +279,7 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
 void ModellerImpl::OnUserBrightnessChangeRequested() {}
 
 void ModellerImpl::OnModelConfigLoaded(
-    base::Optional<ModelConfig> model_config) {
+    absl::optional<ModelConfig> model_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!model_config_exists_.has_value());
 
@@ -313,14 +313,14 @@ std::unique_ptr<ModellerImpl> ModellerImpl::CreateForTesting(
       tick_clock, true /* is_testing */));
 }
 
-base::Optional<double> ModellerImpl::AverageAmbientForTesting(
+absl::optional<double> ModellerImpl::AverageAmbientForTesting(
     base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_als_values_);
-  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+  const absl::optional<AlsAvgStdDev> log_als_avg_stddev =
       log_als_values_->AverageAmbientWithStdDev(now);
   if (!log_als_avg_stddev)
-    return base::nullopt;
+    return absl::nullopt;
 
   return log_als_avg_stddev->avg;
 }
@@ -375,10 +375,6 @@ ModellerImpl::ModellerImpl(
     const base::TickClock* tick_clock,
     bool is_testing)
     : is_testing_(is_testing),
-      als_reader_observer_(this),
-      brightness_monitor_observer_(this),
-      model_config_loader_observer_(this),
-      user_activity_observer_(this),
       blocking_task_runner_(blocking_task_runner),
       trainer_(trainer.release(),
                base::OnTaskRunnerDeleter(blocking_task_runner_)),
@@ -401,11 +397,11 @@ ModellerImpl::ModellerImpl(
     return;
   }
 
-  als_reader_observer_.Add(als_reader);
-  brightness_monitor_observer_.Add(brightness_monitor);
-  model_config_loader_observer_.Add(model_config_loader);
+  als_reader_observation_.Observe(als_reader);
+  brightness_monitor_observation_.Observe(brightness_monitor);
+  model_config_loader_observation_.Observe(model_config_loader);
 
-  user_activity_observer_.Add(user_activity_detector);
+  user_activity_observation_.Observe(user_activity_detector);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -675,7 +671,7 @@ void ModellerImpl::OnTrainingFinished(const TrainingResult& result) {
 }
 
 void ModellerImpl::ErasePersonalCurve() {
-  model_.personal_curve = base::nullopt;
+  model_.personal_curve = absl::nullopt;
   model_.iteration_count = 0;
 }
 

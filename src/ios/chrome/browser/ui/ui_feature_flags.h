@@ -32,8 +32,7 @@ extern const base::Feature kEnableIOSManagedSettingsUI;
 // Feature flag to enable new illustrations and UI on empty states.
 extern const base::Feature kIllustratedEmptyStates;
 
-// Feature flag to enable Shared Highlighting (Link to Text). Also enable
-// kScrollToTextIOS to successfully open these links.
+// Feature flag to enable Shared Highlighting (Link to Text).
 extern const base::Feature kSharedHighlightingIOS;
 
 // Feature flag that enables using the FRE UI module to show first run screens.
@@ -52,6 +51,9 @@ extern const base::Feature kModernTabStrip;
 
 // Adds a setting to enable biometric authentication for incognito tabs.
 extern const base::Feature kIncognitoAuthentication;
+
+// Enables the usage of dark mode color while in Incognito mode.
+extern const base::Feature kIncognitoBrandConsistencyForIOS;
 
 // Feature flag that experiments with new location permissions user experiences.
 extern const base::Feature kLocationPermissionsPrompt;
@@ -77,5 +79,9 @@ extern const base::Feature kIOSPersistCrashRestore;
 
 // Enables the Search History Link in Clear Browsing Data for iOS.
 extern const base::Feature kSearchHistoryLinkIOS;
+
+// Feature flag to enable removing any entry points to the history UI from
+// Incognito mode.
+extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -128,7 +130,7 @@ SyncAndNotificationPermissions GetBackgroundSyncPermission(
     return {PermissionStatus::DENIED, PermissionStatus::DENIED};
 
   PermissionController* permission_controller =
-      BrowserContext::GetPermissionController(browser_context);
+      browser_context->GetPermissionController();
   DCHECK(permission_controller);
 
   // The requesting origin always matches the embedding origin.
@@ -485,11 +487,6 @@ void BackgroundSyncManager::UnregisterForOriginImpl(
         service_worker_and_registration.first);
   }
 
-  for (auto service_worker_registration_id :
-       service_worker_registrations_affected) {
-    active_registrations_.erase(service_worker_registration_id);
-  }
-
   if (service_worker_registrations_affected.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
@@ -507,13 +504,17 @@ void BackgroundSyncManager::UnregisterForOriginImpl(
     StoreRegistrations(
         service_worker_registration_id,
         base::BindOnce(&BackgroundSyncManager::UnregisterForOriginDidStore,
-                       weak_ptr_factory_.GetWeakPtr(), barrier_closure));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       service_worker_registration_id, barrier_closure));
   }
 }
 
 void BackgroundSyncManager::UnregisterForOriginDidStore(
+    int64_t service_worker_registration_id_to_remove,
     base::OnceClosure done_closure,
     blink::ServiceWorkerStatusCode status) {
+  active_registrations_.erase(service_worker_registration_id_to_remove);
+
   if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // The service worker registration is gone.
     std::move(done_closure).Run();
@@ -1314,7 +1315,8 @@ void BackgroundSyncManager::StoreDataInBackend(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   service_worker_context_->StoreRegistrationUserData(
-      sw_registration_id, origin, {{backend_key, data}}, std::move(callback));
+      sw_registration_id, storage::StorageKey(origin), {{backend_key, data}},
+      std::move(callback));
 }
 
 void BackgroundSyncManager::GetDataFromBackend(
@@ -1345,18 +1347,17 @@ void BackgroundSyncManager::DispatchSyncEvent(
     return;
   }
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   int request_id = active_version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::SYNC, repeating_callback,
+      ServiceWorkerMetrics::EventType::SYNC, std::move(split_callback.first),
       parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   active_version->endpoint()->DispatchSyncEvent(
       tag, last_chance, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
-                     std::move(repeating_callback)));
+                     std::move(split_callback.second)));
 
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kBackgroundSync)) {
@@ -1388,18 +1389,17 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
     return;
   }
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   int request_id = active_version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::PERIODIC_SYNC, repeating_callback,
-      parameters_->max_sync_event_duration,
+      ServiceWorkerMetrics::EventType::PERIODIC_SYNC,
+      std::move(split_callback.first), parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   active_version->endpoint()->DispatchPeriodicSyncEvent(
       tag, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
-                     std::move(repeating_callback)));
+                     std::move(split_callback.second)));
 
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kPeriodicBackgroundSync)) {
@@ -1414,7 +1414,7 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
 
 void BackgroundSyncManager::HasMainFrameWindowClient(const url::Origin& origin,
                                                      BoolCallback callback) {
-  service_worker_context_->HasMainFrameWindowClient(origin.GetURL(),
+  service_worker_context_->HasMainFrameWindowClient(storage::StorageKey(origin),
                                                     std::move(callback));
 }
 
@@ -1950,9 +1950,12 @@ void BackgroundSyncManager::FireReadyEventsImpl(
 
     int64_t service_worker_registration_id =
         registration_info->service_worker_registration_id;
+    // If BackgroundSync becomes usable from a 3p context then
+    // BackgroundSyncRegistrations should be changed to use StorageKey.
     service_worker_context_->FindReadyRegistrationForId(
         service_worker_registration_id,
-        active_registrations_[service_worker_registration_id].origin,
+        storage::StorageKey(
+            active_registrations_[service_worker_registration_id].origin),
         base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
             weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),

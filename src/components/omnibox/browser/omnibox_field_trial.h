@@ -14,10 +14,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
@@ -120,15 +121,6 @@ typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
 // {3, 1.5}}, the score for 2 is inferred to be 1.5.  Values beyond the
 // end of the vector are assumed to have scores of 1.0.
 typedef std::vector<std::pair<size_t, double>> NumMatchesScores;
-
-// Do not change these values as they need to be in sync with values
-// specified in experiment configs on the variations server.
-enum EmphasizeTitlesCondition {
-  EMPHASIZE_WHEN_NONEMPTY = 0,
-  EMPHASIZE_WHEN_TITLE_MATCHES = 1,
-  EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
-  EMPHASIZE_NEVER = 3
-};
 
 // ---------------------------------------------------------
 // For any experiment that's part of the bundled omnibox field trial.
@@ -360,17 +352,6 @@ bool HUPSearchDatabase();
 int KeywordScoreForSufficientlyCompleteMatch();
 
 // ---------------------------------------------------------
-// For the EmphasizeTitles experiment that's part of the bundled omnibox
-// field trial.
-
-// Returns the conditions under which the UI code should display the title
-// of a URL more prominently than the URL for input |input|. Normally the URL
-// is displayed more prominently. Returns NEVER_EMPHASIZE if the experiment
-// isn't active.
-EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
-    const AutocompleteInput& input);
-
-// ---------------------------------------------------------
 // For UI experiments.
 
 // Short bookmarks.
@@ -384,18 +365,15 @@ bool ShortBookmarkSuggestionsByTotalInputLengthCounterfactual();
 // Returns the minimum input length to enable prefix matches.
 size_t ShortBookmarkSuggestionsByTotalInputLengthThreshold();
 
-// Whether a single row of buttons is shown on suggestions with actionable
-// elements like keywords, tab-switch buttons, and Pedals.
-bool IsSuggestionButtonRowEnabled();
-
 // Returns true if the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if the Pedals and suggestion button row features are enabled.
-bool IsPedalSuggestionsEnabled();
-
 // Returns true if the second batch of Pedals is enabled.
 bool IsPedalsBatch2Enabled();
+
+// Returns true if the second batch of Pedals is enabled for non-English
+// locales. This is only meaningful if batch 2 is enabled.
+bool IsPedalsBatch2NonEnglishEnabled();
 
 // Returns true if the default icon used for Pedal buttons should be colored.
 bool IsPedalsDefaultIconColored();
@@ -413,20 +391,28 @@ bool IsRefinedFocusStateEnabled();
 
 // Rich autocompletion.
 bool IsRichAutocompletionEnabled();
-bool RichAutocompletionAutocompleteTitles();
-bool RichAutocompletionAutocompleteTitlesShortcutProvider();
-bool RichAutocompletionAutocompleteTitlesNoInputsWithSpaces();
-size_t RichAutocompletionAutocompleteTitlesMinChar();
-bool RichAutocompletionAutocompleteNonPrefixAll();
-bool RichAutocompletionAutocompleteNonPrefixShortcutProvider();
-bool RichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces();
-size_t RichAutocompletionAutocompleteNonPrefixMinChar();
+extern const base::FeatureParam<bool> kRichAutocompletionAutocompleteTitles;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteTitlesShortcutProvider;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteTitlesNoInputsWithSpaces;
+extern const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteTitlesMinChar;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteNonPrefixAll;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteNonPrefixShortcutProvider;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces;
+extern const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteNonPrefixMinChar;
 bool RichAutocompletionShowAdditionalText();
-bool RichAutocompletionSplitTitleCompletion();
-bool RichAutocompletionSplitUrlCompletion();
-size_t RichAutocompletionSplitCompletionMinChar();
-bool RichAutocompletionCounterfactual();
-bool RichAutocompletionAutocompletePreferUrlsOverPrefixes();
+extern const base::FeatureParam<bool> kRichAutocompletionSplitTitleCompletion;
+extern const base::FeatureParam<bool> kRichAutocompletionSplitUrlCompletion;
+extern const base::FeatureParam<int> kRichAutocompletionSplitCompletionMinChar;
+extern const base::FeatureParam<bool> kRichAutocompletionCounterfactual;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompletePreferUrlsOverPrefixes;
 
 // On Device Head Suggestions feature and its helper functions.
 bool IsOnDeviceHeadSuggestEnabledForIncognito();
@@ -451,16 +437,6 @@ int UnelideURLOnHoverThresholdMs();
 // Returns true if CGI parameter names should not be considered when scoring
 // suggestions.
 bool ShouldDisableCGIParamMatching();
-
-enum KeywordSpaceTrigger {
-  SPACE_TRIGGERING_DISABLED = 0,
-  SINGLE_SPACE_TRIGGERS_KEYWORD = 1,
-  DOUBLE_SPACE_TRIGGERS_KEYWORD = 2,
-};
-
-// Returns whether space triggering is disabled, triggered by single space
-// (default), or double space (double space keyword triggering is enabled).
-KeywordSpaceTrigger GetKeywordSpaceTrigger();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -561,25 +537,6 @@ extern const char
     kShortBookmarkSuggestionsByTotalInputLengthCounterfactualParam[];
 extern const char kShortBookmarkSuggestionsByTotalInputLengthThresholdParam[];
 
-// Parameter names used for rich autocompletion variations.
-extern const char kRichAutocompletionAutocompleteTitlesParam[];
-extern const char kRichAutocompletionAutocompleteTitlesShortcutProviderParam[];
-extern const char
-    kRichAutocompletionAutocompleteTitlesNoInputsWithSpacesParam[];
-extern const char kRichAutocompletionAutocompleteTitlesMinCharParam[];
-extern const char kRichAutocompletionAutocompleteNonPrefixAllParam[];
-extern const char
-    kRichAutocompletionAutocompleteNonPrefixShortcutProviderParam[];
-extern const char
-    kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpacesParam[];
-extern const char kRichAutocompletionAutocompleteNonPrefixMinCharParam[];
-extern const char kRichAutocompletionShowAdditionalTextParam[];
-extern const char kRichAutocompletionSplitTitleCompletionParam[];
-extern const char kRichAutocompletionSplitUrlCompletionParam[];
-extern const char kRichAutocompletionSplitCompletionMinCharParam[];
-extern const char kRichAutocompletionCounterfactualParam[];
-extern const char kRichAutocompletionAutocompletePreferUrlsOverPrefixesParam[];
-
 // Parameter names used by omnibox experiments that hide the path (and
 // optionally subdomains) in the steady state.
 extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
@@ -598,9 +555,6 @@ extern const char kBookmarkPathsUiReplaceTitle[];
 extern const char kBookmarkPathsUiReplaceUrl[];
 extern const char kBookmarkPathsUiAppendAfterTitle[];
 extern const char kBookmarkPathsUiDynamicReplaceUrl[];
-
-// Parameter names used for scoped search/keyword mode experiments.
-extern const char kKeywordSpaceTriggeringDoubleSpaceParam[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

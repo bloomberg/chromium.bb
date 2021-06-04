@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -87,32 +88,19 @@ namespace {
 const double kTolerance = 0.1;  // In CSS pixels.
 
 double GetMainframeWindowBorder(const ToRenderFrameHost& adapter) {
-  double border;
-  const char kGetMainframeBorder[] = "window.domAutomationController.send("
-      "window.outerWidth - window.innerWidth"
-      ");";
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractDouble(adapter, kGetMainframeBorder, &border));
-  return border;
+  return EvalJs(adapter, "window.outerWidth - window.innerWidth")
+      .ExtractDouble();
 }
 
 double GetMainFrameZoomFactor(const ToRenderFrameHost& adapter, double border) {
-  double zoom_factor;
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(
-      adapter,
-      JsReplace("window.domAutomationController.send("
-                "   (window.outerWidth - $1) / window.innerWidth);",
-                border),
-      &zoom_factor));
-  return zoom_factor;
+  return EvalJs(
+             adapter,
+             JsReplace("(window.outerWidth - $1) / window.innerWidth;", border))
+      .ExtractDouble();
 }
 
 double GetSubframeWidth(const ToRenderFrameHost& adapter) {
-  double width;
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(
-      adapter, "window.domAutomationController.send(window.innerWidth);",
-      &width));
-  return width;
+  return EvalJs(adapter, "window.innerWidth").ExtractDouble();
 }
 
 // This struct is used to track changes to subframes after a main frame zoom
@@ -137,7 +125,7 @@ struct FrameResizeObserver {
         "document.body.onresize = function(){"
         "  window.domAutomationController.send('%s ' + window.innerWidth);"
         "};";
-    EXPECT_TRUE(ExecuteScript(
+    EXPECT_TRUE(ExecJs(
         adapter, base::StringPrintf(kOnResizeCallbackSetup, label.c_str())));
   }
 
@@ -170,8 +158,7 @@ struct ResizeObserver {
         "document.body.onresize = function(){"
         "  window.domAutomationController.send('Resized');"
         "};";
-    EXPECT_TRUE(ExecuteScript(
-        adapter, kOnResizeCallbackSetup));
+    EXPECT_TRUE(ExecJs(adapter, kOnResizeCallbackSetup));
   }
 
   bool IsResizeCallback(const std::string& status_msg) {
@@ -627,20 +614,12 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
   // Navigate forward in the same RFH to a site with that host via a
   // renderer-initiated navigation.
   {
-    const char kReplacePortNumber[] =
-        "window.domAutomationController.send(setPortNumber(%d));";
     uint16_t port_number = embedded_test_server()->port();
-    bool success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell(), base::StringPrintf(kReplacePortNumber, port_number),
-        &success));
+    EXPECT_EQ(true, EvalJs(shell(), base::StringPrintf("setPortNumber(%d)",
+                                                       port_number)));
     TestNavigationObserver observer(shell()->web_contents());
     GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
-    success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell(), "window.domAutomationController.send(clickCrossSiteLink());",
-        &success));
-    EXPECT_TRUE(success);
+    EXPECT_EQ(true, EvalJs(shell(), "clickCrossSiteLink();"));
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());

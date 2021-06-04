@@ -85,13 +85,18 @@ bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
 template <typename Base>
 RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
   RecalcLayoutOverflowResult child_result;
-  if (Base::ChildNeedsLayoutOverflowRecalc())
+  if (!RuntimeEnabledFeatures::LayoutNGLayoutOverflowRecalcEnabled() &&
+      Base::ChildNeedsLayoutOverflowRecalc())
     child_result = Base::RecalcChildLayoutOverflow();
 
   // Don't attempt to rebuild the fragment tree or recalculate
   // scrollable-overflow, layout will do this for us.
   if (Base::NeedsLayout())
     return RecalcLayoutOverflowResult();
+
+  if (RuntimeEnabledFeatures::LayoutNGLayoutOverflowRecalcEnabled() &&
+      Base::ChildNeedsLayoutOverflowRecalc())
+    child_result = RecalcChildLayoutOverflow();
 
   bool should_recalculate_layout_overflow =
       Base::SelfNeedsLayoutOverflowRecalc() ||
@@ -100,11 +105,10 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
   bool layout_overflow_changed = false;
 
   if (rebuild_fragment_tree || should_recalculate_layout_overflow) {
-    for (scoped_refptr<const NGLayoutResult>& layout_result :
-         Base::layout_results_) {
+    for (auto& layout_result : Base::layout_results_) {
       const auto& fragment =
           To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
-      base::Optional<PhysicalRect> layout_overflow;
+      absl::optional<PhysicalRect> layout_overflow;
 
       // Recalculate our layout-overflow if a child had its layout-overflow
       // changed, or if we are marked as dirty.
@@ -146,6 +150,39 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
                             !Base::ShouldClipOverflowAlongBothAxis();
 
   return {layout_overflow_changed, rebuild_fragment_tree};
+}
+
+template <typename Base>
+RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcChildLayoutOverflow() {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLayoutOverflowRecalcEnabled());
+  DCHECK(Base::ChildNeedsLayoutOverflowRecalc());
+  Base::ClearChildNeedsLayoutOverflowRecalc();
+
+  RecalcLayoutOverflowResult result;
+  for (auto& layout_result : Base::layout_results_) {
+    const auto& fragment =
+        To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
+    if (fragment.HasItems()) {
+      for (NGInlineCursor cursor(fragment); cursor; cursor.MoveToNext()) {
+        if (const NGPhysicalBoxFragment* child =
+                cursor.Current()->PostLayoutBoxFragment()) {
+          if (child->GetLayoutObject()->IsBox()) {
+            result.Unite(
+                child->MutableOwnerLayoutBox()->RecalcLayoutOverflow());
+          }
+        }
+      }
+    }
+
+    for (const auto& child : fragment.PostLayoutChildren()) {
+      if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child.get())) {
+        if (box->GetLayoutObject()->IsBox())
+          result.Unite(box->MutableOwnerLayoutBox()->RecalcLayoutOverflow());
+      }
+    }
+  }
+
+  return result;
 }
 
 template <typename Base>
@@ -294,7 +331,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position,
       DynamicTo<LayoutInline>(css_container));
 
-  base::Optional<LogicalSize> initial_containing_block_fixed_size;
+  absl::optional<LogicalSize> initial_containing_block_fixed_size;
   auto* layout_view = DynamicTo<LayoutView>(container);
   if (layout_view && !Base::GetDocument().Printing()) {
     if (LocalFrameView* frame_view = layout_view->GetFrameView()) {
@@ -319,7 +356,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
   // These are the unpositioned OOF descendants of the current OOF block.
   for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
-    descendant.node.InsertIntoLegacyPositionedObjects();
+    descendant.Node().InsertIntoLegacyPositionedObjects();
 
   const auto& fragment = result->PhysicalFragment();
   DCHECK_GT(fragment.Children().size(), 0u);
@@ -367,7 +404,7 @@ LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
 
   for (const auto& descendant :
        physical_fragment.OutOfFlowPositionedDescendants())
-    descendant.node.InsertIntoLegacyPositionedObjects();
+    descendant.Node().InsertIntoLegacyPositionedObjects();
 
   // Even if we are a layout root, our baseline may have shifted. In this
   // (rare) case, mark our containing-block for layout.

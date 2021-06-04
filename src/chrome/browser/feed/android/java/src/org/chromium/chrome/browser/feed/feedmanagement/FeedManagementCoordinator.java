@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.feed.feedmanagement;
 
-import android.content.Context;
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 
-import org.chromium.chrome.browser.feed.webfeed.R; // TODO(petewil): move to feed.feedmanagement?
+import org.chromium.chrome.browser.feed.feedmanagement.FeedManagementMediator.FollowManagementLauncher;
+import org.chromium.chrome.browser.feed.webfeed.R;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -19,9 +21,12 @@ import org.chromium.ui.modelutil.ModelListAdapter;
  */
 public class FeedManagementCoordinator {
     private FeedManagementMediator mMediator;
+    private Activity mActivity;
     private final View mView;
 
-    public FeedManagementCoordinator(Context context) {
+    public FeedManagementCoordinator(
+            Activity activity, FollowManagementLauncher followManagementLauncher) {
+        mActivity = activity;
         ModelList listItems = new ModelList();
 
         // Once this is attached to the ListView, there is no need to hold a reference to it.
@@ -31,14 +36,23 @@ public class FeedManagementCoordinator {
                 FeedManagementItemViewBinder::bind);
 
         // Inflate the XML.
-        mView = LayoutInflater.from(context).inflate(R.layout.feed_management_activity, null);
+        mView = LayoutInflater.from(mActivity).inflate(R.layout.feed_management_activity, null);
         ListView listView = (ListView) mView.findViewById(R.id.feed_management_menu);
         listView.setAdapter(adapter);
 
-        mMediator = new FeedManagementMediator(context, listItems);
+        // Set up a handler for the header to act as a back button.
+        ImageView backArrowView = (ImageView) mView.findViewById(R.id.feed_management_back_arrow);
+        backArrowView.setOnClickListener(this::handleBackArrowClick);
+
+        mMediator = new FeedManagementMediator(mActivity, listItems, followManagementLauncher);
     }
 
     public View getView() {
         return mView;
+    }
+
+    private void handleBackArrowClick(View view) {
+        // Navigate back.
+        mActivity.finish();
     }
 }

@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/web_test/renderer/test_runner.h"
 #include "content/web_test/renderer/web_test_spell_checker.h"
@@ -1253,7 +1252,7 @@ EventSender::EventSender(blink::WebFrameWidget* web_frame_widget,
 EventSender::~EventSender() {}
 
 void EventSender::Reset() {
-  current_drag_data_ = base::nullopt;
+  current_drag_data_ = absl::nullopt;
   current_drag_effect_ = ui::mojom::DragOperation::kNone;
   current_drag_effects_allowed_ = blink::kDragOperationNone;
   current_pointer_state_.clear();
@@ -2633,7 +2632,7 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& event,
   } else {
     MainFrameWidget()->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
   }
-  current_drag_data_ = base::nullopt;
+  current_drag_data_ = absl::nullopt;
   MainFrameWidget()->DragSourceEndedAt(event.PositionInWidget(),
                                        event.PositionInScreen(),
                                        current_drag_effect_, base::DoNothing());

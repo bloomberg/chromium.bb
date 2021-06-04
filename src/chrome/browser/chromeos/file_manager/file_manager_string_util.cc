@@ -5,15 +5,14 @@
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_features.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -114,6 +113,10 @@ void AddStringsForDrive(base::DictionaryValue* dict) {
              IDS_FILE_BROWSER_DRIVE_BUY_MORE_SPACE_LINK);
   SET_STRING("DRIVE_CANNOT_REACH", IDS_FILE_BROWSER_DRIVE_CANNOT_REACH);
   SET_STRING("DRIVE_DIRECTORY_LABEL", IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
+  SET_STRING("DRIVE_CONFIRM_COPY_TO_SHARED_DRIVE",
+             IDS_FILE_BROWSER_DRIVE_CONFIRM_COPY_TO_SHARED_DRIVE);
+  SET_STRING("DRIVE_CONFIRM_MOVE_TO_SHARED_DRIVE",
+             IDS_FILE_BROWSER_DRIVE_CONFIRM_MOVE_TO_SHARED_DRIVE);
   SET_STRING("DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS",
              IDS_FILE_BROWSER_DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS);
   SET_STRING("DRIVE_CONFIRM_CANNOT_MOVE_BACK_TO_TEAM_DRIVE",
@@ -452,6 +455,8 @@ std::unique_ptr<base::DictionaryValue> GetFileManagerStrings() {
   SET_STRING("ALL_FILES_FILTER", IDS_FILE_BROWSER_ALL_FILES_FILTER);
   SET_STRING("ARCHIVE_MOUNT_FAILED", IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED);
   SET_STRING("ARCHIVE_MOUNT_MESSAGE", IDS_FILE_BROWSER_ARCHIVE_MOUNT_MESSAGE);
+  SET_STRING("ARCHIVE_MOUNT_INVALID_PATH",
+             IDS_FILE_BROWSER_ARCHIVE_MOUNT_INVALID_PATH);
   SET_STRING("CALCULATING_SIZE", IDS_FILE_BROWSER_CALCULATING_SIZE);
   SET_STRING("CAMERA_DIRECTORY_LABEL", IDS_FILE_BROWSER_CAMERA_DIRECTORY_LABEL);
   SET_STRING("CANCEL_ACTIVITY_LABEL", IDS_FILE_BROWSER_CANCEL_ACTIVITY_LABEL);
@@ -872,6 +877,12 @@ std::unique_ptr<base::DictionaryValue> GetFileManagerStrings() {
   SET_STRING("MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL",
              IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL);
   SET_STRING(
+      "UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE",
+      IDS_FILE_BROWSER_UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE);
+  SET_STRING(
+      "UNABLE_TO_DROP_IN_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE",
+      IDS_FILE_BROWSER_UNABLE_TO_DROP_IN_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE);
+  SET_STRING(
       "UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE",
       IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE);
   SET_STRING(
@@ -1036,22 +1047,16 @@ void AddFileManagerFeatureStrings(const std::string& locale,
                                   base::DictionaryValue* dict) {
   DCHECK(profile);
 
-  dict->SetBoolean("HIDE_SPACE_INFO",
-                   chromeos::DemoSession::IsDeviceInDemoMode());
+  dict->SetBoolean("HIDE_SPACE_INFO", ash::DemoSession::IsDeviceInDemoMode());
   dict->SetBoolean("ARC_USB_STORAGE_UI_ENABLED",
                    base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
   dict->SetBoolean("CROSTINI_ENABLED",
                    crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->SetBoolean("PLUGIN_VM_ENABLED",
                    plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
-  dict->SetBoolean("FILES_NG_ENABLED",
-                   base::FeatureList::IsEnabled(chromeos::features::kFilesNG));
   dict->SetBoolean("COPY_IMAGE_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kEnableFilesAppCopyImage));
-  dict->SetBoolean(
-      "UNIFIED_MEDIA_VIEW_ENABLED",
-      base::FeatureList::IsEnabled(chromeos::features::kUnifiedMediaView));
   dict->SetBoolean("FILES_TRASH_ENABLED", base::FeatureList::IsEnabled(
                                               chromeos::features::kFilesTrash));
   dict->SetBoolean("ZIP_MOUNT", base::FeatureList::IsEnabled(
@@ -1069,14 +1074,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->SetBoolean(
       "FILTERS_IN_RECENTS_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kFiltersInRecents));
-  dict->SetBoolean("HOLDING_SPACE_ENABLED",
-                   ash::features::IsTemporaryHoldingSpaceEnabled());
   dict->SetBoolean("FILES_SINGLE_PARTITION_FORMAT_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kFilesSinglePartitionFormat));
-  dict->SetBoolean("FILES_JS_MODULES_ENABLED", true);
-  dict->SetBoolean("AUDIO_PLAYER_JS_MODULES_ENABLED", true);
-  dict->SetBoolean("VIDEO_PLAYER_JS_MODULES_ENABLED", true);
 
   dict->SetString("UI_LOCALE", locale);
 }

@@ -610,8 +610,8 @@ void DevToolsHttpHandler::OnJsonRequest(
     GURL url(net::UnescapeBinaryURLComponent(query));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_refptr<DevToolsAgentHost> agent_host = nullptr;
-    agent_host = delegate_->CreateNewTarget(url);
+    scoped_refptr<DevToolsAgentHost> agent_host =
+        delegate_->CreateNewTarget(url);
     if (!agent_host) {
       SendJson(connection_id, net::HTTP_INTERNAL_SERVER_ERROR, nullptr,
                "Could not create new page");
@@ -772,7 +772,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
       new base::Thread(kDevToolsHandlerThreadName));
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
-  if (thread->StartWithOptions(options)) {
+  if (thread->StartWithOptions(std::move(options))) {
     auto task_runner = thread->task_runner();
     task_runner->PostTask(
         FROM_HERE,

@@ -27,7 +27,7 @@ const char kChildAccountStatusKnown[] = "child_account_status_known";
 // "noinstall" to disable them.  This property is usually set in the
 // master_preferences and copied into the profile preferences on first run.
 // Defaults apps are installed only when creating a new profile.
-const char kDefaultApps[] = "default_apps";
+const char kPreinstalledApps[] = "default_apps";
 
 // Disable SafeBrowsing checks for files coming from trusted URLs when false.
 const char kSafeBrowsingForTrustedSourcesEnabled[] =
@@ -87,13 +87,6 @@ const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
 const char kProfileIconVersion[] = "profile.icon_version";
-
-// Used to determine if the last session exited cleanly. Set to false when
-// first opened, and to true when closing. On startup if the value is false,
-// it means the profile didn't exit cleanly.
-// DEPRECATED: this is replaced by kSessionExitType and exists for backwards
-// compatibility.
-const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 
 // A string pref whose values is one of the values defined by
 // |ProfileImpl::kPrefExitTypeXXX|. Set to |kPrefExitTypeCrashed| on startup and
@@ -460,7 +453,7 @@ const char kNetworkPredictionOptions[] = "net.network_prediction_options";
 // the profile is opened, the process will continue from where it left off.
 //
 // See possible values in external_provider_impl.cc.
-const char kDefaultAppsInstallState[] = "default_apps_install_state";
+const char kPreinstalledAppsInstallState[] = "default_apps_install_state";
 
 // A boolean pref set to true if the Chrome Web Store icons should be hidden
 // from the New Tab Page and app launcher.
@@ -951,6 +944,15 @@ const char kReleaseNotesLastShownMilestone[] =
 const char kReleaseNotesSuggestionChipTimesLeftToShow[] =
     "times_left_to_show_release_notes_suggestion_chip";
 
+// Last milestone on which the Discover Tab notification was shown.
+const char kDiscoverTabNotificationLastShownMilestone[] =
+    "discover_tab_notification_last_shown_milestone";
+
+// Amount of times the discover tab suggestion chip should be shown before it
+// disappears.
+const char kDiscoverTabSuggestionChipTimesLeftToShow[] =
+    "times_left_to_show_discover_tab_suggestion_chip";
+
 // Boolean pref indicating whether the NTLM authentication protocol should be
 // enabled when mounting an SMB share with a user credential by the Network File
 // Shares for Chrome OS feature.
@@ -1183,34 +1185,6 @@ const char kResetCheckDefaultBrowser[] =
 const char kDefaultBrowserSettingEnabled[] =
     "browser.default_browser_setting_enabled";
 
-// String indicating the size of the captions text as a percentage.
-const char kAccessibilityCaptionsTextSize[] =
-    "accessibility.captions.text_size";
-
-// String indicating the font of the captions text.
-const char kAccessibilityCaptionsTextFont[] =
-    "accessibility.captions.text_font";
-
-// Comma-separated string indicating the RGB values of the captions text color.
-const char kAccessibilityCaptionsTextColor[] =
-    "accessibility.captions.text_color";
-
-// Integer indicating the opacity of the captions text from 0 - 100.
-const char kAccessibilityCaptionsTextOpacity[] =
-    "accessibility.captions.text_opacity";
-
-// Comma-separated string indicating the RGB values of the background color.
-const char kAccessibilityCaptionsBackgroundColor[] =
-    "accessibility.captions.background_color";
-
-// CSS string indicating the shadow of the captions text.
-const char kAccessibilityCaptionsTextShadow[] =
-    "accessibility.captions.text_shadow";
-
-// Integer indicating the opacity of the captions text background from 0 - 100.
-const char kAccessibilityCaptionsBackgroundOpacity[] =
-    "accessibility.captions.background_opacity";
-
 // Boolean that indicates whether chrome://accessibility should show the
 // internal accessibility tree.
 const char kShowInternalAccessibilityTree[] =
@@ -1242,16 +1216,6 @@ const char kAccessibilityImageLabelsOnlyOnWifi[] =
 // A boolean pref which determines whether focus highlighting is enabled.
 const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
-#endif
-
-#if !defined(OS_ANDROID)
-// Whether the Live Caption feature is enabled.
-const char kLiveCaptionEnabled[] =
-    "accessibility.captions.live_caption_enabled";
-
-// The language to use with the Live Caption feature.
-const char kLiveCaptionLanguageCode[] =
-    "accessibility.captions.live_caption_language";
 #endif
 
 #if defined(OS_MAC)
@@ -1977,7 +1941,8 @@ const char kWebAppsLastPreinstallSynchronizeVersion[] =
     "web_apps.last_preinstall_synchronize_version";
 
 // A list of all apps that have been migrated to web apps.
-const char kWebAppsMigratedDefaultApps[] = "web_apps.migrated_default_apps";
+const char kWebAppsMigratedPreinstalledApps[] =
+    "web_apps.migrated_default_apps";
 
 // A list of migrated features for migrating default chrome apps.
 const char kWebAppsDidMigrateDefaultChromeApps[] =
@@ -2166,6 +2131,9 @@ const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
 // If false, disable post-quantum key agreement in TLS connections.
 const char kCECPQ2Enabled[] = "ssl.cecpq2_enabled";
 
+// Boolean that specifies whether 3DES cipher suites are enabled in TLS.
+const char kTripleDESEnabled[] = "ssl.3des_enabled";
+
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 
@@ -2177,6 +2145,11 @@ const char kDnsOverHttpsMode[] = "dns_over_https.mode";
 // mode, we will attempt discovery of DoH servers associated with the configured
 // insecure resolvers.
 const char kDnsOverHttpsTemplates[] = "dns_over_https.templates";
+
+// Boolean that specifies whether additional DNS query types (e.g. HTTPS) may be
+// queried alongside the traditional A and AAAA queries.
+const char kAdditionalDnsQueryTypesEnabled[] =
+    "async_dns.additional_dns_query_types_enabled";
 
 // A pref holding the value of the policy used to explicitly allow or deny
 // access to audio capture devices.  When enabled or not set, the user is
@@ -2514,6 +2487,9 @@ const char kRelaunchNotification[] = "browser.relaunch_notification";
 // are in milliseconds.
 const char kRelaunchNotificationPeriod[] =
     "browser.relaunch_notification_period";
+// Pref name for the policy controlling the time interval within which the
+// relaunch should take place.
+const char kRelaunchWindow[] = "browser.relaunch_window";
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2682,9 +2658,11 @@ const char kAppShortcutsVersion[] = "apps.shortcuts_version";
 // re-created.
 const char kAppShortcutsArch[] = "apps.shortcuts_arch";
 
-// A boolean pref that enables the (private) pepper GetDeviceID() call and
-// enables the use of remote attestation for content protection.
-const char kEnableDRM[] = "settings.privacy.drm_enabled";
+// This references a default content setting value which we expose through the
+// preferences extensions API and also used for migration of the old
+// |kEnableDRM| preference.
+const char kProtectedContentDefault[] =
+    "profile.default_content_setting_values.protected_media_identifier";
 
 // An integer per-profile pref that signals if the watchdog extension is
 // installed and active. We need to know if the watchdog extension active for
@@ -3168,8 +3146,8 @@ const char kShowCaretBrowsingDialog[] =
 // a policy, and the default value for managed users is false. Admins willing to
 // give rights to use Lacros can set the policy to true.
 const char kLacrosAllowed[] = "lacros_allowed";
-// Enum pref indicating how to launch the Lacros browser. It can have one of the
-// following values:
+// Enum pref indicating how to launch the Lacros browser. It is managed by
+// LacrosAvailability policy can have one of the following values:
 // 0: User choice (default value).
 // 1: Lacros is disallowed.
 // 2: Lacros is enabled but not the pimary browser.
@@ -3215,6 +3193,8 @@ const char kCartDiscountAcknowledged[] = "cart_discount_acknowledged";
 // Boolean pref indicating whether user has enabled rule-based discount in cart
 // module.
 const char kCartDiscountEnabled[] = "cart_discount_enabled";
+// Map pref recording the discounts used by users.
+const char kCartUsedDiscounts[] = "cart_used_discounts";
 #endif
 
 #if defined(OS_ANDROID)

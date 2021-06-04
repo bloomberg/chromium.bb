@@ -292,7 +292,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     IdentifiabilityMetricBuilder(doc.UkmSourceID())
         .Set(IdentifiableSurface::FromTypeAndToken(
                  IdentifiableSurface::Type::kCanvasRenderingContext,
-                 CanvasRenderingContext::ContextTypeFromId(type)),
+                 CanvasRenderingContext::ContextTypeFromId(
+                     type, GetExecutionContext())),
              !!result)
         .Record(doc.UkmRecorder());
   }
@@ -300,6 +301,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
       attributes.pixel_format != kUint8CanvasPixelFormatName) {
     UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
   }
+
+  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+    UseCounter::Count(doc, WebFeature::kNewCanvas2DAPI);
 
   if (ContentsCcLayer() != old_contents_cc_layer)
     OnContentsCcLayerChanged();
@@ -310,7 +314,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     const String& type,
     const CanvasContextCreationAttributesCore& attributes) {
   CanvasRenderingContext::ContextType context_type =
-      CanvasRenderingContext::ContextTypeFromId(type);
+      CanvasRenderingContext::ContextTypeFromId(type, GetExecutionContext());
 
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown) {
@@ -586,29 +590,13 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   NotifyListenersCanvasChanged();
   did_notify_listeners_for_current_frame_ = true;
 
-  // Propagate the |dirty_rect_| accumulated so far to the compositor
-  // before restarting with a blank dirty rect.
-  // Canvas content updates do not need to be propagated as
-  // paint invalidations if the canvas is composited separately, since
-  // the canvas contents are sent separately through a texture layer.
-  if (layout_box && (!context_ || !context_->IsComposited())) {
-    // If the content box is larger than |src_rect|, the canvas's image is
-    // being stretched, so we need to account for color bleeding caused by the
-    // interpolation filter.
-    FloatRect src_rect(0, 0, Size().Width(), Size().Height());
-    if (content_rect.Width() > src_rect.Width() ||
-        content_rect.Height() > src_rect.Height()) {
-      dirty_rect_.Inflate(0.5);
-    }
-
-    dirty_rect_.Intersect(src_rect);
-    PhysicalRect mapped_dirty_rect(
-        EnclosingIntRect(MapRect(dirty_rect_, src_rect, content_rect)));
-    layout_box->InvalidatePaintRectangle(mapped_dirty_rect);
+  if (layout_box && !ShouldBeDirectComposited()) {
+    // If the canvas is not composited, propagate the paint invalidation to
+    // |layout_box| as the painted result will change.
+    layout_box->SetShouldDoFullPaintInvalidation();
   }
-  dirty_rect_ = FloatRect();
 
-  DCHECK(dirty_rect_.IsEmpty());
+  dirty_rect_ = FloatRect();
 }
 
 void HTMLCanvasElement::Reset() {
@@ -884,7 +872,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
   if (size_.IsEmpty())
     return nullptr;
 
-  scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
+  scoped_refptr<StaticBitmapImage> image_bitmap;
   if (OffscreenCanvasFrame()) {  // Offscreen Canvas
     DCHECK(OffscreenCanvasFrame()->OriginClean());
     image_bitmap = OffscreenCanvasFrame()->Bitmap();
@@ -1408,7 +1396,7 @@ IntSize HTMLCanvasElement::BitmapSourceSize() const {
 
 ScriptPromise HTMLCanvasElement::CreateImageBitmap(
     ScriptState* script_state,
-    base::Optional<IntRect> crop_rect,
+    absl::optional<IntRect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
   return ImageBitmapSource::FulfillImageBitmap(

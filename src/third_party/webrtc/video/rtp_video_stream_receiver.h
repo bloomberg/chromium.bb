@@ -22,6 +22,7 @@
 #include "api/array_view.h"
 #include "api/crypto/frame_decryptor_interface.h"
 #include "api/sequence_checker.h"
+#include "api/units/timestamp.h"
 #include "api/video/color_space.h"
 #include "api/video_codecs/video_codec.h"
 #include "call/rtp_packet_sink_interface.h"
@@ -32,7 +33,8 @@
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "modules/rtp_rtcp/source/absolute_capture_time_receiver.h"
+#include "modules/rtp_rtcp/source/absolute_capture_time_interpolator.h"
+#include "modules/rtp_rtcp/source/capture_clock_offset_updater.h"
 #include "modules/rtp_rtcp/source/rtp_dependency_descriptor_extension.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
@@ -302,7 +304,11 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   ParseGenericDependenciesResult ParseGenericDependenciesExtension(
       const RtpPacketReceived& rtp_packet,
       RTPVideoHeader* video_header) RTC_RUN_ON(worker_task_checker_);
-  void OnAssembledFrame(std::unique_ptr<RtpFrameObject> frame);
+  void OnAssembledFrame(std::unique_ptr<RtpFrameObject> frame)
+      RTC_LOCKS_EXCLUDED(packet_buffer_lock_);
+  void UpdatePacketReceiveTimestamps(const RtpPacketReceived& packet,
+                                     bool is_keyframe)
+      RTC_RUN_ON(worker_task_checker_);
 
   Clock* const clock_;
   // Ownership of this object lies with VideoReceiveStream, which owns |this|.
@@ -333,7 +339,8 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   std::unique_ptr<DEPRECATED_NackModule> nack_module_;
   std::unique_ptr<LossNotificationController> loss_notification_controller_;
 
-  video_coding::PacketBuffer packet_buffer_;
+  mutable Mutex packet_buffer_lock_;
+  video_coding::PacketBuffer packet_buffer_ RTC_GUARDED_BY(packet_buffer_lock_);
   UniqueTimestampCounter frame_counter_ RTC_GUARDED_BY(worker_task_checker_);
   SeqNumUnwrapper<uint16_t> frame_id_unwrapper_
       RTC_GUARDED_BY(worker_task_checker_);
@@ -378,7 +385,11 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   mutable Mutex sync_info_lock_;
   absl::optional<uint32_t> last_received_rtp_timestamp_
       RTC_GUARDED_BY(sync_info_lock_);
-  absl::optional<int64_t> last_received_rtp_system_time_ms_
+  absl::optional<uint32_t> last_received_keyframe_rtp_timestamp_
+      RTC_GUARDED_BY(sync_info_lock_);
+  absl::optional<Timestamp> last_received_rtp_system_time_
+      RTC_GUARDED_BY(sync_info_lock_);
+  absl::optional<Timestamp> last_received_keyframe_rtp_system_time_
       RTC_GUARDED_BY(sync_info_lock_);
 
   // Used to validate the buffered frame decryptor is always run on the correct
@@ -391,13 +402,21 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   std::atomic<bool> frames_decryptable_;
   absl::optional<ColorSpace> last_color_space_;
 
-  AbsoluteCaptureTimeReceiver absolute_capture_time_receiver_
+  AbsoluteCaptureTimeInterpolator absolute_capture_time_interpolator_
+      RTC_GUARDED_BY(worker_task_checker_);
+
+  CaptureClockOffsetUpdater capture_clock_offset_updater_
       RTC_GUARDED_BY(worker_task_checker_);
 
   int64_t last_completed_picture_id_ = 0;
 
   rtc::scoped_refptr<RtpVideoStreamReceiverFrameTransformerDelegate>
       frame_transformer_delegate_;
+
+  SeqNumUnwrapper<uint16_t> rtp_seq_num_unwrapper_
+      RTC_GUARDED_BY(packet_buffer_lock_);
+  std::map<int64_t, RtpPacketInfo> packet_infos_
+      RTC_GUARDED_BY(packet_buffer_lock_);
 };
 
 }  // namespace webrtc

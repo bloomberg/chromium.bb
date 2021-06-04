@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
@@ -57,7 +58,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   WebGL2RenderingContext(
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      bool using_gpu_compositing,
+      const Platform::GraphicsInfo&,
       const CanvasContextCreationAttributesCore& requested_attributes);
 
   CanvasRenderingContext::ContextType GetContextType() const override {
@@ -66,8 +67,13 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
   String ContextName() const override { return "WebGL2RenderingContext"; }
   void RegisterContextExtensions() override;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8RenderingContext* AsV8RenderingContext() final;
+  V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor*) const override;
 
@@ -104,4 +110,4 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_H_

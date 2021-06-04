@@ -44,7 +44,6 @@ config("skia_config") {
 
   if (!is_ios) {
     if (enable_skia_wuffs_gif) {
-      defines += [ "SK_FAVOR_WUFFS_V_0_3_OVER_V_0_2" ]
       include_dirs += [ "//third_party/wuffs/src/release/c" ]
     } else {
       include_dirs += [ "//third_party/libgifcodec" ]
@@ -400,10 +399,7 @@ component("skia") {
   }
 
   # Remove unused util sources.
-  sources -= [
-    "//third_party/skia/src/utils/SkInterpolator.cpp",
-    "//third_party/skia/src/utils/SkParsePath.cpp",
-  ]
+  sources -= [ "//third_party/skia/src/utils/SkParsePath.cpp" ]
 
   if (is_win) {
     sources -= [

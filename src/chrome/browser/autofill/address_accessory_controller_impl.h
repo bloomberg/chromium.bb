@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ADDRESS_ACCESSORY_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_AUTOFILL_ADDRESS_ACCESSORY_CONTROLLER_IMPL_H_
 
-#include <vector>
-
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
@@ -19,7 +16,6 @@
 class ManualFillingController;
 
 namespace autofill {
-class AutofillProfile;
 class PersonalDataManager;
 
 // Use either AddressAccessoryController::GetOrCreate or
@@ -35,7 +31,7 @@ class AddressAccessoryControllerImpl
 
   // AccessoryController:
   void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
-  base::Optional<AccessorySheetData> GetSheetData() const override;
+  absl::optional<AccessorySheetData> GetSheetData() const override;
   void OnFillingTriggered(FieldGlobalId focused_field_id,
                           const UserInfo::Field& selection) override;
   void OnOptionSelected(AccessoryAction selected_action) override;
@@ -60,8 +56,6 @@ class AddressAccessoryControllerImpl
   // Required for construction via |CreateForWebContents|:
   explicit AddressAccessoryControllerImpl(content::WebContents* contents);
 
-  std::vector<AutofillProfile*> GetProfiles();
-
   // Constructor that allows to inject a mock filling controller.
   AddressAccessoryControllerImpl(
       content::WebContents* web_contents,
@@ -73,6 +67,9 @@ class AddressAccessoryControllerImpl
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
+
+  // The observer to notify if available suggestions change.
+  FillingSourceObserver source_observer_;
 
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;

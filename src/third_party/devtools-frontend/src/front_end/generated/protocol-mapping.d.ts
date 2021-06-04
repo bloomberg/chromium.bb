@@ -38,6 +38,14 @@ export namespace ProtocolMapping {
     'BackgroundService.backgroundServiceEventReceived':
         [Protocol.BackgroundService.BackgroundServiceEventReceivedEvent];
     /**
+     * Fired when page is about to start a download.
+     */
+    'Browser.downloadWillBegin': [Protocol.Browser.DownloadWillBeginEvent];
+    /**
+     * Fired when download makes progress. Last call has |done| == true.
+     */
+    'Browser.downloadProgress': [Protocol.Browser.DownloadProgressEvent];
+    /**
      * Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
      * web font
      */
@@ -94,7 +102,7 @@ export namespace ProtocolMapping {
      */
     'DOM.childNodeRemoved': [Protocol.DOM.ChildNodeRemovedEvent];
     /**
-     * Called when distrubution is changed.
+     * Called when distribution is changed.
      */
     'DOM.distributedNodesUpdated': [Protocol.DOM.DistributedNodesUpdatedEvent];
     /**
@@ -141,6 +149,11 @@ export namespace ProtocolMapping {
      * beginFrame to detect whether the frames were suppressed.
      */
     'HeadlessExperimental.needsBeginFramesChanged': [Protocol.HeadlessExperimental.NeedsBeginFramesChangedEvent];
+    /**
+     * Emitted only when `Input.setInterceptDrags` is enabled. Use this data with `Input.dispatchDragEvent` to
+     * restore normal drag and drop behavior.
+     */
+    'Input.dragIntercepted': [Protocol.Input.DragInterceptedEvent];
     /**
      * Fired when remote debugging connection is about to be terminated. Contains detach reason.
      */
@@ -323,10 +336,12 @@ export namespace ProtocolMapping {
     'Page.frameStoppedLoading': [Protocol.Page.FrameStoppedLoadingEvent];
     /**
      * Fired when page is about to start a download.
+     * Deprecated. Use Browser.downloadWillBegin instead.
      */
     'Page.downloadWillBegin': [Protocol.Page.DownloadWillBeginEvent];
     /**
      * Fired when download makes progress. Last call has |done| == true.
+     * Deprecated. Use Browser.downloadProgress instead.
      */
     'Page.downloadProgress': [Protocol.Page.DownloadProgressEvent];
     /**
@@ -351,6 +366,13 @@ export namespace ProtocolMapping {
      * Fired for top level page lifecycle events such as navigation, load, paint, etc.
      */
     'Page.lifecycleEvent': [Protocol.Page.LifecycleEventEvent];
+    /**
+     * Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do
+     * not assume any ordering with the Page.frameNavigated event. This event is fired only for
+     * main-frame history navigation where the document changes (non-same-document navigations),
+     * when bfcache navigation fails.
+     */
+    'Page.backForwardCacheNotUsed': [Protocol.Page.BackForwardCacheNotUsedEvent];
     'Page.loadEventFired': [Protocol.Page.LoadEventFiredEvent];
     /**
      * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
@@ -547,8 +569,8 @@ export namespace ProtocolMapping {
      */
     'Media.playerErrorsRaised': [Protocol.Media.PlayerErrorsRaisedEvent];
     /**
-     * Called whenever a player is created, or when a new agent joins and recieves
-     * a list of active players. If an agent is restored, it will recieve the full
+     * Called whenever a player is created, or when a new agent joins and receives
+     * a list of active players. If an agent is restored, it will receive the full
      * list of player ids and all events again.
      */
     'Media.playersCreated': [Protocol.Media.PlayersCreatedEvent];
@@ -1390,11 +1412,11 @@ export namespace ProtocolMapping {
      */
     'Emulation.canEmulate': {paramsType: []; returnType: Protocol.Emulation.CanEmulateResponse;};
     /**
-     * Clears the overriden device metrics.
+     * Clears the overridden device metrics.
      */
     'Emulation.clearDeviceMetricsOverride': {paramsType: []; returnType: void;};
     /**
-     * Clears the overriden Geolocation Position and Error.
+     * Clears the overridden Geolocation Position and Error.
      */
     'Emulation.clearGeolocationOverride': {paramsType: []; returnType: void;};
     /**
@@ -1573,6 +1595,10 @@ export namespace ProtocolMapping {
       returnType: Protocol.IndexedDB.RequestDatabaseNamesResponse;
     };
     /**
+     * Dispatches a drag event into the page.
+     */
+    'Input.dispatchDragEvent': {paramsType: [Protocol.Input.DispatchDragEventRequest]; returnType: void;};
+    /**
      * Dispatches a key event to the page.
      */
     'Input.dispatchKeyEvent': {paramsType: [Protocol.Input.DispatchKeyEventRequest]; returnType: void;};
@@ -1598,6 +1624,11 @@ export namespace ProtocolMapping {
      * Ignores input events (useful while auditing page).
      */
     'Input.setIgnoreInputEvents': {paramsType: [Protocol.Input.SetIgnoreInputEventsRequest]; returnType: void;};
+    /**
+     * Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events.
+     * Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
+     */
+    'Input.setInterceptDrags': {paramsType: [Protocol.Input.SetInterceptDragsRequest]; returnType: void;};
     /**
      * Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
      */
@@ -2036,7 +2067,7 @@ export namespace ProtocolMapping {
     'Page.captureSnapshot':
         {paramsType: [Protocol.Page.CaptureSnapshotRequest?]; returnType: Protocol.Page.CaptureSnapshotResponse;};
     /**
-     * Clears the overriden device metrics.
+     * Clears the overridden device metrics.
      */
     'Page.clearDeviceMetricsOverride': {paramsType: []; returnType: void;};
     /**
@@ -2044,7 +2075,7 @@ export namespace ProtocolMapping {
      */
     'Page.clearDeviceOrientationOverride': {paramsType: []; returnType: void;};
     /**
-     * Clears the overriden Geolocation Position and Error.
+     * Clears the overridden Geolocation Position and Error.
      */
     'Page.clearGeolocationOverride': {paramsType: []; returnType: void;};
     /**

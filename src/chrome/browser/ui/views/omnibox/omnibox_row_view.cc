@@ -20,6 +20,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -31,8 +33,6 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/metadata/type_conversion.h"
 #include "ui/views/style/typography.h"
 
@@ -158,7 +158,7 @@ class OmniboxRowView::HeaderView : public views::View {
 
     SkColor icon_color = GetOmniboxColor(GetThemeProvider(),
                                          OmniboxPart::RESULTS_ICON, part_state);
-    header_toggle_button_->SetInkDropBaseColor(icon_color);
+    header_toggle_button_->ink_drop()->SetBaseColor(icon_color);
 
     int dip_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
     const gfx::ImageSkia arrow_down =
@@ -270,19 +270,19 @@ DEFINE_ENUM_CONVERTERS(OmniboxPopupModel::LineState,
                         u"FOCUSED_BUTTON_REMOVE_SUGGESTION"})
 
 template <>
-struct views::metadata::TypeConverter<OmniboxPopupModel::Selection>
-    : public views::metadata::BaseTypeConverter<true> {
+struct ui::metadata::TypeConverter<OmniboxPopupModel::Selection>
+    : public ui::metadata::BaseTypeConverter<true> {
   static std::u16string ToString(
-      views::metadata::ArgType<OmniboxPopupModel::Selection> source_value);
-  static base::Optional<OmniboxPopupModel::Selection> FromString(
+      ui::metadata::ArgType<OmniboxPopupModel::Selection> source_value);
+  static absl::optional<OmniboxPopupModel::Selection> FromString(
       const std::u16string& source_value);
-  static views::metadata::ValidStrings GetValidStrings() { return {}; }
+  static ui::metadata::ValidStrings GetValidStrings() { return {}; }
 };
 
 // static
 std::u16string
-views::metadata::TypeConverter<OmniboxPopupModel::Selection>::ToString(
-    views::metadata::ArgType<OmniboxPopupModel::Selection> source_value) {
+ui::metadata::TypeConverter<OmniboxPopupModel::Selection>::ToString(
+    ui::metadata::ArgType<OmniboxPopupModel::Selection> source_value) {
   return u"{" + base::NumberToString16(source_value.line) + u"," +
          TypeConverter<OmniboxPopupModel::LineState>::ToString(
              source_value.state) +
@@ -290,23 +290,23 @@ views::metadata::TypeConverter<OmniboxPopupModel::Selection>::ToString(
 }
 
 // static
-base::Optional<OmniboxPopupModel::Selection>
-views::metadata::TypeConverter<OmniboxPopupModel::Selection>::FromString(
+absl::optional<OmniboxPopupModel::Selection>
+ui::metadata::TypeConverter<OmniboxPopupModel::Selection>::FromString(
     const std::u16string& source_value) {
   const auto values = base::SplitString(
       source_value, u"{,}", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (values.size() != 2)
-    return base::nullopt;
+    return absl::nullopt;
   // TODO(pkasting): This should be size_t, but for some reason that won't link
   // on Mac.
-  const base::Optional<uint32_t> line =
+  const absl::optional<uint32_t> line =
       TypeConverter<uint32_t>::FromString(values[0]);
-  const base::Optional<OmniboxPopupModel::LineState> state =
+  const absl::optional<OmniboxPopupModel::LineState> state =
       TypeConverter<OmniboxPopupModel::LineState>::FromString(values[1]);
   return (line.has_value() && state.has_value())
-             ? base::make_optional<OmniboxPopupModel::Selection>(line.value(),
+             ? absl::make_optional<OmniboxPopupModel::Selection>(line.value(),
                                                                  state.value())
-             : base::nullopt;
+             : absl::nullopt;
 }
 
 BEGIN_METADATA(OmniboxRowView, HeaderView, views::View)

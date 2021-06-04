@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -22,7 +24,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
@@ -50,7 +51,7 @@ class UserAddingScreenTest : public LoginManagerTest,
   void WaitUntilUserAddingFinishedOrCancelled() {
     if (finished_)
       return;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 

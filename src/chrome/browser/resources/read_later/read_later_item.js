@@ -10,6 +10,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './icons.js';
 import './read_later_shared_style.js';
 
+import {MouseHoverableMixin, MouseHoverableMixinInterface} from 'chrome://resources/cr_elements/mouse_hoverable_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -19,7 +20,16 @@ import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from './read_later_api_proxy.j
 /** @type {!Set<string>} */
 const navigationKeys = new Set([' ', 'Enter', 'ArrowRight', 'ArrowLeft']);
 
-export class ReadLaterItemElement extends PolymerElement {
+/**
+ * @constructor
+ * @extends PolymerElement
+ * @implements {MouseHoverableMixinInterface}
+ * @appliesMixin MouseHoverableMixin
+ */
+const ReadLaterItemElementBase = MouseHoverableMixin(PolymerElement);
+
+/** @polymer */
+export class ReadLaterItemElement extends ReadLaterItemElementBase {
   static get is() {
     return 'read-later-item';
   }
@@ -53,7 +63,7 @@ export class ReadLaterItemElement extends PolymerElement {
 
   /** @private */
   onClick_() {
-    this.apiProxy_.openSavedEntry(this.data.url);
+    this.apiProxy_.openURL(this.data.url, true);
   }
 
   /**

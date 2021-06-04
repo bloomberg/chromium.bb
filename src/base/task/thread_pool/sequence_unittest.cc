@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace internal {
@@ -26,7 +27,7 @@ class MockTask {
 
 Task CreateTask(MockTask* mock_task) {
   return Task(FROM_HERE, BindOnce(&MockTask::Run, Unretained(mock_task)),
-              TimeDelta());
+              TimeTicks::Now(), TimeDelta());
 }
 
 void ExpectMockTask(MockTask* mock_task, Task* task) {
@@ -67,7 +68,8 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(sequence);
   registered_task_source.WillRunTask();
-  Optional<Task> task = registered_task_source.TakeTask(&sequence_transaction);
+  absl::optional<Task> task =
+      registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_a, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
@@ -118,7 +120,7 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
 // Verifies the sort key of a BEST_EFFORT sequence that contains one task.
 TEST(ThreadPoolSequenceTest, GetSortKeyBestEffort) {
   // Create a BEST_EFFORT sequence with a task.
-  Task best_effort_task(FROM_HERE, DoNothing(), TimeDelta());
+  Task best_effort_task(FROM_HERE, DoNothing(), TimeTicks::Now(), TimeDelta());
   scoped_refptr<Sequence> best_effort_sequence =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::BEST_EFFORT), nullptr,
                                TaskSourceExecutionMode::kParallel);
@@ -152,7 +154,7 @@ TEST(ThreadPoolSequenceTest, GetSortKeyBestEffort) {
 // USER_VISIBLE sequence.
 TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
   // Create a USER_VISIBLE sequence with a task.
-  Task foreground_task(FROM_HERE, DoNothing(), TimeDelta());
+  Task foreground_task(FROM_HERE, DoNothing(), TimeTicks::Now(), TimeDelta());
   scoped_refptr<Sequence> foreground_sequence =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_VISIBLE), nullptr,
                                TaskSourceExecutionMode::kParallel);
@@ -187,7 +189,8 @@ TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutWillRunTask) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
       TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-  sequence_transaction.PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
+  sequence_transaction.PushTask(
+      Task(FROM_HERE, DoNothing(), TimeTicks::Now(), TimeDelta()));
 
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(sequence);
@@ -202,7 +205,8 @@ TEST(ThreadPoolSequenceTest, TakeEmptyFrontSlot) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
       TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-  sequence_transaction.PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
+  sequence_transaction.PushTask(
+      Task(FROM_HERE, DoNothing(), TimeTicks::Now(), TimeDelta()));
 
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(sequence);

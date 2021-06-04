@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
+<translation id="1096883626080133124">সৰল, সুৰক্ষিত আৰু পূৰ্বতকৈ ক্ষিপ্ৰ Google Chromeৰ জৰিয়তে অধিক কাম কৰক</translation>
 <translation id="1282031177488366470">Chromeৰ সুবিধা আৰু কাৰ্যক্ষমতাসমূহ উন্নত কৰাত সহায় কৰক</translation>
 <translation id="1314663809820920746">আপুনি এই ডিভাইচটোত থকা আপোনাৰ আটাইবোৰ বুকমাৰ্ক, ইতিহাস, পাছৱৰ্ড আৰু অন্য ছেটিং তথাপিও চাব পাৰে। যদি আপুনি কোনো সালসলনি কৰে, সেয়া আপোনাৰ Google একাউণ্টত ছিংক কৰা নহ’ব।</translation>
 <translation id="1479202195792305274">আপুনি নিজৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰিলে Chromeএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব পাৰে।</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chromeএ আপডে’টৰ বাবে পৰীক্ষা কৰিব নোৱাৰিলে। আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি চাওক।</translation>
 <translation id="1682483655351012182">আপোনাৰ Chrome ডেটা ছিংক কৰক</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Googleলৈ ব্যৱহাৰৰ পৰিসংখ্যা আৰু ক্ৰেশ্ব ৰিপ'ৰ্ট পঠিয়াই Chromeক উন্নত কৰাত সহায় কৰক</translation>
 <translation id="1917964099031477364">এই ডিভাইচত থকা Chrome আৰু অন্য Google এপ্‌সমূহৰ পৰা এই একাউণ্টটো আৰু যিকোনো ছেভ নকৰা ডেটা আঁতৰোৱা হ’ব।</translation>
 <translation id="2009224836393115614">Chromeএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব নোৱাৰিলে। আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি চাওক।</translation>
 <translation id="2147651015520127414">Chromiumএ সত্যাপন কৰিছে যে <ph name="ISSUER" />এ এই ৱেবছাইটৰ প্ৰমাণপত্ৰ প্ৰদান কৰিছে।</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chromeএ আপডে’টৰ বাবে পৰীক্ষা কৰিব নোৱাৰিলে। পাছত পুনৰ চেষ্টা কৰক।</translation>
 <translation id="2732745070297234559">Chromeএ সকলো পাছৱৰ্ড পৰীক্ষা কৰিব নোৱাৰিলে। কাইলৈ পুনৰ চেষ্টা কৰক।</translation>
 <translation id="2740105938841089077">লিংক খুলিবলৈ Chrome ব্যৱহাৰ কৰক</translation>
+<translation id="2869959624320573933">Chromeত ছাইন-ইন কৰক</translation>
 <translation id="2919738076569633423">আপুনি Chrome ব্যৱহাৰ কৰি <ph name="BEGIN_LINK_TOS" />সেৱাৰ চৰ্তাৱলী<ph name="END_LINK_TOS" />ত সন্মত হৈছে।</translation>
 <translation id="3030414234702425231">আপুনি যিহেতু <ph name="SIGNOUT_MANAGED_DOMAIN" />এ পৰিচালনা কৰা এটা একাউণ্টৰ পৰা ছাইন আউট কৰি আছে আপোনাৰ Chrome ডেটা এই ডিভাইচটোৰ পৰা মচা হ’ব। আপোনাৰ ডেটা নিজৰ Google একাউণ্টত থাকিব।</translation>
 <translation id="3167189358072330585">আপোনাৰ একাউণ্টে Google Chromeত কাম নকৰে। ছাইন ইন কৰিবলৈ অনুগ্ৰহ কৰি আপোনাৰ ড'মেইনৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক বা সচাৰচৰ ব্যৱহাৰ কৰা এটা Google Account ব্যৱহাৰ কৰক।</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">আপোনাৰ একাউণ্টসমূহ ৱেবলৈ আনি Chromeএ আপোনাৰ সময় ৰাহি কৰে। আপুনি ছেটিংসমূহ-ত একাউন্ট যোগ দিব বা আঁতৰাব পাৰে।</translation>
 <translation id="3282568296779691940">Chromeত ছাইন-ইন কৰক</translation>
 <translation id="3345341804167540816">সকলোতে Chrome ব্যৱহাৰ কৰক</translation>
+<translation id="3455456143708465450">Chrome পাৰ্যমানে ব্যৱহাৰ কৰিবলৈ আপোনাৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰক</translation>
 <translation id="3522659714780527202">আপুনি Chrome ব্যৱহাৰ কৰা সকলো ডিভাইচৰ পৰা নিজৰ টেবসমূহ চাবলৈ ছিংক অন কৰক</translation>
 <translation id="3533694711092285624">ছেভ কৰা কোনো পাছৱৰ্ড নাই। আপুনি আপোনাৰ পাছৱর্ডসমূহ ছেভ কৰিলে Chromeএ সেইবোৰ পৰীক্ষা কৰিব পাৰে।</translation>
 <translation id="3706101708757577809">এতিয়া আপুনি বাৰ্তা, নথি আৰু অন্য এপ্‌সমূহত থকা কোনো লিংকত টিপিলে যিকোনো সময়তে Chrome ব্যৱহাৰ কৰিব পাৰে।</translation>
@@ -56,6 +60,7 @@
 <translation id="5876773482963502140">আপুনি যদি Chromeক আপোনাৰ অৱস্থানৰ বিষয়ে জানিবলৈ দিয়ে, Chromeএ সেয়া আপুনি অনুমতি দিয়া সকলো ছাইটলৈ পঠিয়ায়। ছাইটসমূহৰ আপোনাক ওচৰ-পাজৰৰ দোকান অথবা বাতৰিৰ দৰে স্থানীয় তথ্য দেখুৱাবলগীয়া থাকিলে সেইসমূহে আপোনাক অৱস্থানৰ বিষয়ে সুধিব পাৰে।</translation>
 <translation id="6036420186814142909">আপোনাক Google Chromeত থকা সুবিধাসমূহে নিজৰ ইণ্টাৰনেট ডেটা পৰিচালনা কৰাত আৰু কিমান ক্ষিপ্ৰতাৰে আপুনি ৱেবপৃষ্ঠাসমূহ ল'ড কৰিব পাৰে সেই ক্ষেত্ৰত সহায় কৰিব।
 <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Chromeত ছাইন ইন কৰিবলৈ দিয়ক</translation>
 <translation id="6181930887571472871">Chromeলৈ সলনি কৰক</translation>
 <translation id="6238746320622508509">Chromeক আপোনাৰ ইনক’গনিট’ টেবসমূহ লক কৰিবলৈ দিয়ক।</translation>
 <translation id="6573431926118603307">আপুনি নিজৰ অন্য ডিভাইচসমূহৰ Chromeত খোলা টেবসমূহ ইয়াত প্ৰদর্শিত হ'ব।</translation>
@@ -65,6 +70,7 @@
 <translation id="6676840375528380067">এই ডিভাইচটোৰ পৰা Chrome ডেটা মচিবনে?</translation>
 <translation id="6822673484890854830">Chromeএ সকলো পাছৱৰ্ড পৰীক্ষা কৰিব নোৱাৰিলে। পাছত পুনৰ চেষ্টা কৰক।</translation>
 <translation id="6964931465519938134">এতিয়া আপুনি বাৰ্তা, নথি আৰু অন্য এপ্‌সমূহত থকা লিংকত টিপিলে যিকোনো সময়তে Chrome ব্যৱহাৰ কৰিব পাৰে।</translation>
+<translation id="7059914902409643750">আপুনি Chromeত ছাইন ইন কৰক</translation>
 <translation id="7124339256045485976">Chrome আপ টু ডে’ট কৰি ৰাখক</translation>
 <translation id="7161390184744336561">Google Chrome পুৰণি হৈছে</translation>
 <translation id="7165736900384873061">Google Chrome QR স্কেনাৰ ব্যৱহাৰ কৰিবলৈ আৰম্ভ কৰক</translation>
@@ -84,6 +90,7 @@
 <translation id="7855730255114109580">Google Chrome একেবাৰে শেহতীয়া অৱস্থাত আছে</translation>
 <translation id="8022947259858476807">লিংক খুলিবলৈ, ৱিজেটৰ পৰা সন্ধান কৰিবলৈ আৰু অন্য এপত পাছৱৰ্ড স্বয়ংক্ৰিয়ভাৱে পূৰ কৰিবলৈ ডিফ’ল্ট হিচাপে Chrome ব্যৱহাৰ কৰক</translation>
 <translation id="8160472928944011082">Chrome আপডে’ট হ’ব নোৱাৰে</translation>
+<translation id="8263079278049777200">এইটো ছাইট, আপোনাৰ Google একাউণ্ট আৰু Chromeত ছাইন ইন কৰক। পাছত আপুনি ছিংক অন কৰিব পাৰে।</translation>
 <translation id="8357607116237445042">এই ডিভাইচটোৰ পৰা আপোনাৰ Chromeৰ ডেটা মচিবনে ৰাখিব সেয়া বাছনি কৰক</translation>
 <translation id="8370517070665726704">স্বত্বাধিকাৰ <ph name="YEAR" /> Google LLC। সর্বস্বত্ব সংৰক্ষিত।</translation>
 <translation id="840168496893712993">কিছুমান এড-অনৰ কাৰণে Chrome ক্ৰেশ্ব হয়। অনুগ্ৰহ কৰি সেইবোৰ আনইনষ্টল কৰি চাওক।</translation>
@@ -94,5 +101,6 @@
   ৩) Chrome বাছনি কৰক।</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Google Chromeৰ জৰিয়তে সুৰক্ষিত হৈ থাকক</translation>
+<translation id="8772179140489533211">Chromeত ছাইন ইন কৰিবলৈ প্ৰম্প্‌ট প্ৰদৰ্শন কৰে।</translation>
 <translation id="9112744793181547300">Chromeক ডিফ’ল্ট হিচাপে ছেট কৰিবনে?</translation>
 </translationbundle>

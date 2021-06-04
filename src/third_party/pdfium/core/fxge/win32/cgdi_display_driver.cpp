@@ -13,6 +13,7 @@
 #include "core/fxge/render_defines.h"
 #include "core/fxge/win32/cwin32_platform.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 
 CGdiDisplayDriver::CGdiDisplayDriver(HDC hDC)
     : CGdiDeviceDriver(hDC, DeviceType::kDisplay) {
@@ -63,7 +64,7 @@ bool CGdiDisplayDriver::GetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap,
       ret = false;
     }
   }
-  if (ret && pBitmap->HasAlpha())
+  if (ret && pBitmap->IsAlphaFormat())
     pBitmap->SetUniformOpaqueAlpha();
 
   DeleteObject(hbmp);
@@ -77,8 +78,8 @@ bool CGdiDisplayDriver::SetDIBits(const RetainPtr<CFX_DIBBase>& pSource,
                                   int left,
                                   int top,
                                   BlendMode blend_type) {
-  DCHECK(blend_type == BlendMode::kNormal);
-  if (pSource->IsMask()) {
+  DCHECK_EQ(blend_type, BlendMode::kNormal);
+  if (pSource->IsMaskFormat()) {
     int width = pSource->GetWidth(), height = pSource->GetHeight();
     int alpha = FXARGB_A(color);
     if (pSource->GetBPP() != 1 || alpha != 255) {
@@ -101,7 +102,7 @@ bool CGdiDisplayDriver::SetDIBits(const RetainPtr<CFX_DIBBase>& pSource,
   }
   int width = src_rect.Width();
   int height = src_rect.Height();
-  if (pSource->HasAlpha()) {
+  if (pSource->IsAlphaFormat()) {
     auto bitmap = pdfium::MakeRetain<CFX_DIBitmap>();
     if (!bitmap->Create(width, height, FXDIB_Format::kRgb) ||
         !GetDIBits(bitmap, left, top) ||
@@ -164,7 +165,7 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     return UseFoxitStretchEngine(pSource, color, dest_left, dest_top,
                                  dest_width, dest_height, pClipRect, options);
   }
-  if (pSource->IsMask()) {
+  if (pSource->IsMaskFormat()) {
     FX_RECT image_rect;
     image_rect.left = dest_width > 0 ? dest_left : dest_left + dest_width;
     image_rect.right = dest_width > 0 ? dest_left + dest_width : dest_left;
@@ -193,7 +194,7 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     return SetDIBits(background, 0, src_rect, image_rect.left + clip_rect.left,
                      image_rect.top + clip_rect.top, BlendMode::kNormal);
   }
-  if (pSource->HasAlpha()) {
+  if (pSource->IsAlphaFormat()) {
     auto* pPlatform =
         static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
     if (pPlatform->m_GdiplusExt.IsAvailable()) {

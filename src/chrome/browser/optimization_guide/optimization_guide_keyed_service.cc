@@ -4,13 +4,11 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -37,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -142,8 +141,8 @@ void OptimizationGuideKeyedService::Initialize() {
   // Regardless of whether the profile is off the record or not, we initialize
   // the Optimization Guide with the database associated with the original
   // profile.
-  auto* proto_db_provider = content::BrowserContext::GetDefaultStoragePartition(
-                                profile->GetOriginalProfile())
+  auto* proto_db_provider = profile->GetOriginalProfile()
+                                ->GetDefaultStoragePartition()
                                 ->GetProtoDatabaseProvider();
   base::FilePath profile_path = profile->GetOriginalProfile()->GetPath();
 
@@ -163,9 +162,8 @@ void OptimizationGuideKeyedService::Initialize() {
     prediction_model_and_features_store =
         original_ogks->GetPredictionManager()->model_and_features_store();
   } else {
-    url_loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(profile)
-            ->GetURLLoaderFactoryForBrowserProcess();
+    url_loader_factory = profile->GetDefaultStoragePartition()
+                             ->GetURLLoaderFactoryForBrowserProcess();
 
     top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
     bool optimization_guide_fetching_enabled = top_host_provider_ != nullptr;
@@ -211,8 +209,8 @@ void OptimizationGuideKeyedService::Initialize() {
       profile, profile->GetPrefs(), hint_store, top_host_provider_.get(),
       tab_url_provider_.get(), url_loader_factory);
   prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
-      prediction_model_and_features_store, top_host_provider_.get(),
-      url_loader_factory, profile->GetPrefs(), profile);
+      prediction_model_and_features_store, url_loader_factory,
+      profile->GetPrefs(), profile);
 
   // The previous store paths were written in incorrect locations. Delete the
   // old paths. Remove this code in 04/2022 since it should be assumed that all
@@ -259,12 +257,12 @@ void OptimizationGuideKeyedService::RegisterOptimizationTargets(
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets) {
   std::vector<std::pair<optimization_guide::proto::OptimizationTarget,
-                        base::Optional<optimization_guide::proto::Any>>>
+                        absl::optional<optimization_guide::proto::Any>>>
       optimization_targets_and_metadata;
   for (optimization_guide::proto::OptimizationTarget optimization_target :
        optimization_targets) {
     optimization_targets_and_metadata.emplace_back(
-        std::make_pair(optimization_target, base::nullopt));
+        std::make_pair(optimization_target, absl::nullopt));
   }
   prediction_manager_->RegisterOptimizationTargets(
       optimization_targets_and_metadata);
@@ -286,7 +284,7 @@ void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
 
 void OptimizationGuideKeyedService::AddObserverForOptimizationTargetModel(
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const base::Optional<optimization_guide::proto::Any>& model_metadata,
+    const absl::optional<optimization_guide::proto::Any>& model_metadata,
     optimization_guide::OptimizationTargetModelObserver* observer) {
   prediction_manager_->AddObserverForOptimizationTargetModel(
       optimization_target, model_metadata, observer);
@@ -313,7 +311,7 @@ OptimizationGuideKeyedService::CanApplyOptimization(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
-      hints_manager_->CanApplyOptimization(url, /*navigation_id=*/base::nullopt,
+      hints_manager_->CanApplyOptimization(url, /*navigation_id=*/absl::nullopt,
                                            optimization_type,
                                            optimization_metadata);
   base::UmaHistogramEnumeration(
@@ -341,7 +339,7 @@ void OptimizationGuideKeyedService::CanApplyOptimizationAsync(
 void OptimizationGuideKeyedService::AddHintForTesting(
     const GURL& url,
     optimization_guide::proto::OptimizationType optimization_type,
-    const base::Optional<optimization_guide::OptimizationMetadata>& metadata) {
+    const absl::optional<optimization_guide::OptimizationMetadata>& metadata) {
   hints_manager_->AddHintForTesting(url, optimization_type, metadata);
 }
 
@@ -356,7 +354,7 @@ void OptimizationGuideKeyedService::Shutdown() {
 
 void OptimizationGuideKeyedService::OverrideTargetModelFileForTesting(
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const base::Optional<optimization_guide::proto::Any>& model_metadata,
+    const absl::optional<optimization_guide::proto::Any>& model_metadata,
     const base::FilePath& file_path) {
   prediction_manager_->OverrideTargetModelFileForTesting(
       optimization_target, model_metadata, file_path);

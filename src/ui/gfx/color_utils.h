@@ -8,11 +8,9 @@
 #include <string>
 #include <tuple>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
-
-class SkBitmap;
 
 namespace color_utils {
 
@@ -98,15 +96,6 @@ GFX_EXPORT bool IsHSLShiftMeaningful(const HSL& hsl);
 //    1 = full lightness (make all pixels white).
 GFX_EXPORT SkColor HSLShift(SkColor color, const HSL& shift);
 
-// Builds a histogram based on the Y' of the Y'UV representation of this image.
-GFX_EXPORT void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]);
-
-// Calculates how "boring" an image is. The boring score is the
-// 0,1 ranged percentage of pixels that are the most common
-// luma. Higher boring scores indicate that a higher percentage of a
-// bitmap are all the same brightness.
-GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
-
 // Returns a blend of the supplied colors, ranging from |background| (for
 // |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
 // the supplied colors are also taken into account, so the returned color may
@@ -156,7 +145,7 @@ GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,
 GFX_EXPORT BlendResult BlendForMinContrast(
     SkColor default_foreground,
     SkColor background,
-    base::Optional<SkColor> high_contrast_foreground = base::nullopt,
+    absl::optional<SkColor> high_contrast_foreground = absl::nullopt,
     float contrast_ratio = kMinimumReadableContrastRatio);
 
 // Invert a color.

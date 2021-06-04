@@ -503,7 +503,7 @@ hwy::AlignedUniquePtr<RecursiveGaussian> CreateRecursiveGaussian(double sigma) {
   auto rg = hwy::MakeUniqueAligned<RecursiveGaussian>();
   constexpr double kPi = 3.141592653589793238;
 
-  const double radius = std::round(3.2795 * sigma + 0.2546);  // (57), "N"
+  const double radius = roundf(3.2795 * sigma + 0.2546);  // (57), "N"
 
   // Table I, first row
   const double pi_div_2r = kPi / (2.0 * radius);
@@ -540,7 +540,7 @@ hwy::AlignedUniquePtr<RecursiveGaussian> CreateRecursiveGaussian(double sigma) {
   double A[9] = {p_1,     p_3,     p_5,  //
                  r_1,     r_3,     r_5,  //  (56)
                  zeta_15, zeta_35, 1};
-  Inv3x3Matrix(A);
+  JXL_CHECK(Inv3x3Matrix(A));
   const double gamma[3] = {1, radius * radius - sigma * sigma,  // (55)
                            zeta_15 * rho[0] + zeta_35 * rho[1] + rho[2]};
   double beta[3];

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/unload_controller.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -101,7 +102,7 @@ bool UnloadController::BeforeUnloadFired(content::WebContents* contents,
                                          bool proceed) {
   if (!proceed) {
     DevToolsWindow::OnPageCloseCanceled(contents);
-    base::Optional<tab_groups::TabGroupId> group =
+    absl::optional<tab_groups::TabGroupId> group =
         browser_->tab_strip_model()->GetTabGroupForTab(
             browser_->tab_strip_model()->GetIndexOfWebContents(contents));
     if (group.has_value())

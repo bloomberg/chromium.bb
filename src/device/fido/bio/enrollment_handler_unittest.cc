@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "device/fido/fido_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,8 +83,8 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   size_t sample_failures_;
   bool sampling_;
   base::test::TaskEnvironment task_environment_;
-  test::TestCallbackReceiver<> ready_callback_;
-  test::ValueCallbackReceiver<BioEnrollmentStatus> error_callback_;
+  test::ValueCallbackReceiver<BioEnrollmentHandler::SensorInfo> ready_callback_;
+  test::ValueCallbackReceiver<BioEnrollmentHandler::Error> error_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 };
 
@@ -98,7 +99,7 @@ TEST_F(BioEnrollmentHandlerTest, NoPINSupport) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
 
-  EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kNoPINSet);
+  EXPECT_EQ(error_callback_.value(), BioEnrollmentHandler::Error::kNoPINSet);
 }
 
 // Tests bio enrollment handler against device with the forcePINChange flag on.
@@ -116,7 +117,8 @@ TEST_F(BioEnrollmentHandlerTest, ForcePINChange) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
 
-  EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kForcePINChange);
+  EXPECT_EQ(error_callback_.value(),
+            BioEnrollmentHandler::Error::kForcePINChange);
 }
 
 // Tests enrollment handler PIN soft block.
@@ -131,7 +133,8 @@ TEST_F(BioEnrollmentHandlerTest, SoftPINBlock) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
 
-  EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kSoftPINBlock);
+  EXPECT_EQ(error_callback_.value(),
+            BioEnrollmentHandler::Error::kSoftPINBlock);
 }
 
 // Tests bio enrollment commands against an authenticator lacking support.
@@ -144,7 +147,7 @@ TEST_F(BioEnrollmentHandlerTest, NoBioEnrollmentSupport) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
   EXPECT_EQ(error_callback_.value(),
-            BioEnrollmentStatus::kAuthenticatorMissingBioEnrollment);
+            BioEnrollmentHandler::Error::kAuthenticatorMissingBioEnrollment);
 }
 
 // Tests fingerprint enrollment lifecycle.
@@ -188,7 +191,7 @@ TEST_F(BioEnrollmentHandlerTest, EnrollMultiple) {
   // Enumerate to check enrollments.
   test::StatusAndValueCallbackReceiver<
       CtapDeviceResponseCode,
-      base::Optional<std::map<std::vector<uint8_t>, std::string>>>
+      absl::optional<std::map<std::vector<uint8_t>, std::string>>>
       cb;
   handler->EnumerateTemplates(cb.callback());
   cb.WaitForCallback();
@@ -220,7 +223,7 @@ TEST_F(BioEnrollmentHandlerTest, EnrollMax) {
       break;
   }
 
-  EXPECT_EQ(status, CtapDeviceResponseCode::kCtap2ErrKeyStoreFull);
+  EXPECT_EQ(status, CtapDeviceResponseCode::kCtap2ErrFpDatabaseFull);
   EXPECT_TRUE(template_id.empty());
 }
 
@@ -237,12 +240,12 @@ TEST_F(BioEnrollmentHandlerTest, EnumerateNone) {
 
   test::StatusAndValueCallbackReceiver<
       CtapDeviceResponseCode,
-      base::Optional<std::map<std::vector<uint8_t>, std::string>>>
+      absl::optional<std::map<std::vector<uint8_t>, std::string>>>
       cb;
   handler->EnumerateTemplates(cb.callback());
   cb.WaitForCallback();
   EXPECT_EQ(cb.status(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
-  EXPECT_EQ(cb.value(), base::nullopt);
+  EXPECT_EQ(cb.value(), absl::nullopt);
 }
 
 // Tests enumerating with one enrollment.
@@ -266,7 +269,7 @@ TEST_F(BioEnrollmentHandlerTest, EnumerateOne) {
   // Enumerate
   test::StatusAndValueCallbackReceiver<
       CtapDeviceResponseCode,
-      base::Optional<std::map<std::vector<uint8_t>, std::string>>>
+      absl::optional<std::map<std::vector<uint8_t>, std::string>>>
       cb1;
   handler->EnumerateTemplates(cb1.callback());
   cb1.WaitForCallback();
@@ -308,7 +311,7 @@ TEST_F(BioEnrollmentHandlerTest, Rename) {
   // Enumerate to validate renaming.
   test::StatusAndValueCallbackReceiver<
       CtapDeviceResponseCode,
-      base::Optional<std::map<std::vector<uint8_t>, std::string>>>
+      absl::optional<std::map<std::vector<uint8_t>, std::string>>>
       cb3;
   handler->EnumerateTemplates(cb3.callback());
   cb3.WaitForCallback();

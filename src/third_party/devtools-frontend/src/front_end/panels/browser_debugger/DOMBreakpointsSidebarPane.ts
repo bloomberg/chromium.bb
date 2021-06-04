@@ -33,8 +33,9 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Sources from '../../sources/sources.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Sources from '../sources/sources.js';
 
 const UIStrings = {
   /**
@@ -100,6 +101,14 @@ const UIStrings = {
   * modified).
   */
   breakOn: 'Break on',
+  /**
+  *@description Screen reader description for removing a DOM breakpoint.
+  */
+  breakpointRemoved: 'Breakpoint removed',
+  /**
+  *@description Screen reader description for setting a DOM breakpoint.
+  */
+  breakpointSet: 'Breakpoint set',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/browser_debugger/DOMBreakpointsSidebarPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -384,15 +393,24 @@ export class ContextMenuProvider implements UI.ContextMenu.Provider {
       if (!domDebuggerModel) {
         return;
       }
+      const label = Sources.DebuggerPausedMessage.BreakpointTypeNouns.get(type);
+      const labelString = label ? label() : '';
       if (domDebuggerModel.hasDOMBreakpoint(node, type)) {
         domDebuggerModel.removeDOMBreakpoint(node, type);
+        UI.ARIAUtils.alert(`${i18nString(UIStrings.breakpointRemoved)}: ${labelString}`);
       } else {
         domDebuggerModel.setDOMBreakpoint(node, type);
+        UI.ARIAUtils.alert(`${i18nString(UIStrings.breakpointSet)}: ${labelString}`);
       }
     }
 
     const breakpointsMenu = contextMenu.debugSection().appendSubMenuItem(i18nString(UIStrings.breakOn));
-    for (const type of Object.values(Protocol.DOMDebugger.DOMBreakpointType)) {
+    const allBreakpointTypes: Protocol.EnumerableEnum<typeof Protocol.DOMDebugger.DOMBreakpointType> = {
+      SubtreeModified: Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified,
+      AttributeModified: Protocol.DOMDebugger.DOMBreakpointType.AttributeModified,
+      NodeRemoved: Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved,
+    };
+    for (const type of Object.values(allBreakpointTypes)) {
       const label = Sources.DebuggerPausedMessage.BreakpointTypeNouns.get(type);
       if (label) {
         breakpointsMenu.defaultSection().appendCheckboxItem(

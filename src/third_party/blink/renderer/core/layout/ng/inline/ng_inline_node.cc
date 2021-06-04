@@ -33,11 +33,14 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_text_layout_attributes_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
@@ -148,6 +151,8 @@ unsigned EstimateOffsetMappingItemsCount(const LayoutBlockFlow& block) {
 // Wrapper over ShapeText that re-uses existing shape results for items that
 // haven't changed.
 class ReusingTextShaper final {
+  STACK_ALLOCATED();
+
  public:
   ReusingTextShaper(NGInlineItemsData* data,
                     const Vector<NGInlineItem>* reusable_items)
@@ -677,19 +682,14 @@ class NGInlineNodeDataEditor final {
                              unsigned start_offset) const {
     DCHECK_LE(item.start_offset_, start_offset);
     DCHECK_LT(start_offset, item.end_offset_);
+    const unsigned safe_start_offset = GetFirstSafeToReuse(item, start_offset);
     const unsigned end_offset = item.end_offset_;
-    if (!item.shape_result_ || item.shape_result_->IsAppliedSpacing())
-      return NGInlineItem(item, start_offset, end_offset, nullptr);
-    if (item.start_offset_ == start_offset)
-      return item;
-    // TODO(yosin): We should handle |shape_result| doesn't have safe-to-break
-    // at start and end, because of |ShapeText()| splits |ShapeResult| ignoring
-    // safe-to-break offset.
-    item.shape_result_->EnsurePositionData();
-    const unsigned safe_start_offset =
-        item.shape_result_->CachedNextSafeToBreakOffset(start_offset);
     if (end_offset == safe_start_offset)
       return NGInlineItem(item, start_offset, end_offset, nullptr);
+    // To handle kerning, e.g. inserting "A" before "V", and joining in Arabic,
+    // we should not reuse first glyph.
+    // See http://crbug.com/1199331
+    DCHECK_LT(safe_start_offset, item.end_offset_);
     return NGInlineItem(
         item, safe_start_offset, end_offset,
         item.shape_result_->SubRange(safe_start_offset, end_offset));
@@ -712,18 +712,44 @@ class NGInlineNodeDataEditor final {
         item.shape_result_->SubRange(start_offset, safe_end_offset));
   }
 
+  // See also |GetLastSafeToReuse()|.
+  unsigned GetFirstSafeToReuse(const NGInlineItem& item,
+                               unsigned start_offset) const {
+    DCHECK_LE(item.start_offset_, start_offset);
+    DCHECK_LE(start_offset, item.end_offset_);
+    const unsigned end_offset = item.end_offset_;
+    // TODO(yosin): It is better to utilize OpenType |usMaxContext|.
+    // For font having "fi", |usMaxContext = 2".
+    const unsigned max_context = 2;
+    const unsigned skip = max_context - 1;
+    if (!item.shape_result_ || item.shape_result_->IsAppliedSpacing() ||
+        start_offset + skip >= end_offset)
+      return end_offset;
+    item.shape_result_->EnsurePositionData();
+    // Note: Because |CachedNextSafeToBreakOffset()| assumes |start_offset|
+    // is always safe to break offset, we try to search after |start_offset|.
+    return item.shape_result_->CachedNextSafeToBreakOffset(start_offset + skip);
+  }
+
+  // See also |GetFirstSafeToReuse()|.
   unsigned GetLastSafeToReuse(const NGInlineItem& item,
                               unsigned end_offset) const {
     DCHECK_LT(item.start_offset_, end_offset);
     DCHECK_LE(end_offset, item.end_offset_);
     const unsigned start_offset = item.start_offset_;
+    // TODO(yosin): It is better to utilize OpenType |usMaxContext|.
+    // For font having "fi", |usMaxContext = 2".
+    const unsigned max_context = 2;
+    const unsigned skip = max_context - 1;
     if (!item.shape_result_ || item.shape_result_->IsAppliedSpacing() ||
-        end_offset - start_offset <= 1)
+        end_offset - skip <= start_offset)
       return start_offset;
     item.shape_result_->EnsurePositionData();
+    // TODO(yosin): It is better to utilize OpenType |usMaxContext|.
     // Note: Because |CachedPreviousSafeToBreakOffset()| assumes |end_offset|
     // is always safe to break offset, we try to search before |end_offset|.
-    return item.shape_result_->CachedPreviousSafeToBreakOffset(end_offset - 1);
+    return item.shape_result_->CachedPreviousSafeToBreakOffset(end_offset -
+                                                               skip);
   }
 
   template <typename Span1, typename Span2>
@@ -963,6 +989,31 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
 
+  if (block->IsNGSVGText()) {
+    // SVG <text> doesn't support reusing the previous result now.
+    previous_data = nullptr;
+
+    // Build NGInlineItems and NGOffsetMapping first.  They are used only by
+    // NGSVGTextLayoutAttributesBuilder, and are discarded because they might
+    // be different from final ones.
+    Vector<NGInlineItem> items;
+    items.ReserveCapacity(EstimateInlineItemsCount(*block));
+    NGInlineItemsBuilderForOffsetMapping items_builder(block, &items);
+    items_builder.GetOffsetMappingBuilder().ReserveCapacity(
+        EstimateOffsetMappingItemsCount(*block));
+    CollectInlinesInternal(&items_builder, nullptr);
+
+    NGSVGTextLayoutAttributesBuilder svg_attr_builder(*this);
+    svg_attr_builder.Build(items_builder.ToString(), items);
+
+    auto svg_data = std::make_unique<SVGInlineNodeData>();
+    svg_data->character_data_list = svg_attr_builder.CharacterDataList();
+    svg_data->text_path_range_list = svg_attr_builder.TextPathRangeList();
+    data->svg_node_data_ = std::move(svg_data);
+
+    // TODO(tkent): Pass "text chunk" information to NGInlineItemsBuilder.
+  }
+
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(block, &data->items);
   CollectInlinesInternal(&builder, previous_data);
@@ -1180,7 +1231,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     // glyphs with the desired size to make it less special for line breaker.
     if (UNLIKELY(start_item.IsSymbolMarker())) {
       LayoutUnit symbol_width = ListMarker::WidthOfSymbol(start_style);
-      DCHECK_GT(symbol_width, 0);
+      DCHECK_GE(symbol_width, 0);
       start_item.shape_result_ = ShapeResult::CreateForSpaces(
           &font, direction, start_item.StartOffset(), start_item.Length(),
           symbol_width);
@@ -1472,7 +1523,7 @@ static LayoutUnit ComputeContentSize(
     const MinMaxSizesFloatInput& float_input,
     NGLineBreakerMode mode,
     NGLineBreaker::MaxSizeCache* max_size_cache,
-    base::Optional<LayoutUnit>* max_size_out,
+    absl::optional<LayoutUnit>* max_size_out,
     bool* depends_on_block_constraints_out) {
   const ComputedStyle& style = node.Style();
   LayoutUnit available_inline_size =
@@ -1730,6 +1781,13 @@ static LayoutUnit ComputeContentSize(
 
   if (mode == NGLineBreakerMode::kMinContent &&
       can_compute_max_size_from_min_size) {
+    if (node.IsSVGText()) {
+      *max_size_out = result;
+      return result;
+      // The following DCHECK_EQ() doesn't work well for SVG <text> because
+      // it has glyph-split NGInlineItemResults. The sum of NGInlineItem
+      // widths and the sum of NGInlineItemResult widths can be different.
+    }
     *max_size_out = max_size_from_min_size.Finish(items_data.items.end());
     // Check the max size matches to the value computed from 2 pass.
 #if DCHECK_IS_ON()
@@ -1759,7 +1817,7 @@ MinMaxSizesResult NGInlineNode::ComputeMinMaxSizes(
   // break opportunity.
   NGLineBreaker::MaxSizeCache max_size_cache;
   MinMaxSizes sizes;
-  base::Optional<LayoutUnit> max_size;
+  absl::optional<LayoutUnit> max_size;
   bool depends_on_block_constraints = false;
   sizes.min_size =
       ComputeContentSize(*this, container_writing_mode, space, float_input,
@@ -1800,6 +1858,17 @@ bool NGInlineNode::ShouldReportLetterSpacingUseCounterForTesting(
     const LayoutBlockFlow* block_flow) {
   return ShouldReportLetterSpacingUseCounter(layout_object, first_line,
                                              block_flow);
+}
+
+const Vector<std::pair<unsigned, NGSVGCharacterData>>&
+NGInlineNode::SVGCharacterDataList() const {
+  DCHECK(IsSVGText());
+  return Data().svg_node_data_->character_data_list;
+}
+
+const Vector<SVGTextPathRange>& NGInlineNode::SVGTextPathRangeList() const {
+  DCHECK(IsSVGText());
+  return Data().svg_node_data_->text_path_range_list;
 }
 
 bool NGInlineNode::NeedsShapingForTesting(const NGInlineItem& item) {

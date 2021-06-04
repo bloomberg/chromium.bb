@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -39,6 +38,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
 #include "components/embedder_support/switches.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -96,7 +96,7 @@ class MessageSender : public content::NotificationObserver {
       GURL event_url) {
     auto event =
         std::make_unique<Event>(events::TEST_ON_MESSAGE, "test.onMessage",
-                                std::move(event_args), profile);
+                                event_args->TakeList(), profile);
     event->event_url = event_url;
     return event;
   }
@@ -179,8 +179,9 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingExternal) {
 // Tests that a content script can exchange messages with a tab even if there is
 // no background page.
 IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingNoBackground) {
-  ASSERT_TRUE(RunExtensionSubtest("messaging/connect_nobackground",
-                                  "page_in_main_frame.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest({.name = "messaging/connect_nobackground",
+                                .page_url = "page_in_main_frame.html"}))
+      << message_;
 }
 
 // Tests that messages with event_urls are only passed to extensions with
@@ -727,7 +728,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame = incognito_browser->
       tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
@@ -761,7 +763,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_FALSE(util::IsIncognitoEnabled(extension->id(), profile()));
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -789,10 +792,12 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // Allowing the extension in incognito mode loads the extension in the
   // incognito renderer, allowing it to receive connections.
   TestExtensionRegistryObserver observer(
-      ExtensionRegistry::Get(profile()->GetPrimaryOTRProfile()),
+      ExtensionRegistry::Get(
+          profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)),
       extension->id());
-  util::SetIsIncognitoEnabled(extension->id(),
-                              profile()->GetPrimaryOTRProfile(), true);
+  util::SetIsIncognitoEnabled(
+      extension->id(),
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), true);
   scoped_refptr<const Extension> loaded_extension =
       observer.WaitForExtensionLoaded();
   EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(
@@ -811,7 +816,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -841,7 +847,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame = incognito_browser->
       tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
@@ -878,22 +885,26 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
   // Open an incognito browser with two tabs displaying "chromium.org".
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame1 =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
           ->GetMainFrame();
-  InfoBarService* infobar_service1 = InfoBarService::FromWebContents(
-      incognito_browser->tab_strip_model()->GetActiveWebContents());
+  infobars::ContentInfoBarManager* infobar_manager1 =
+      infobars::ContentInfoBarManager::FromWebContents(
+          incognito_browser->tab_strip_model()->GetActiveWebContents());
 
-  CHECK(OpenURLOffTheRecord(profile()->GetPrimaryOTRProfile(),
-                            chromium_org_url()) == incognito_browser);
+  CHECK(OpenURLOffTheRecord(
+            profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+            chromium_org_url()) == incognito_browser);
   content::RenderFrameHost* incognito_frame2 =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
           ->GetMainFrame();
-  InfoBarService* infobar_service2 = InfoBarService::FromWebContents(
-      incognito_browser->tab_strip_model()->GetActiveWebContents());
+  infobars::ContentInfoBarManager* infobar_manager2 =
+      infobars::ContentInfoBarManager::FromWebContents(
+          incognito_browser->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
   EXPECT_NE(incognito_frame1, incognito_frame2);
 
@@ -902,13 +913,13 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
       base::StringPrintf("assertions.trySendMessage('%s')", app->id().c_str());
   CHECK(content::ExecuteScript(incognito_frame1, script));
   CHECK(content::ExecuteScript(incognito_frame2, script));
-  EXPECT_EQ(1U, infobar_service1->infobar_count());
-  EXPECT_EQ(1U, infobar_service2->infobar_count());
+  EXPECT_EQ(1U, infobar_manager1->infobar_count());
+  EXPECT_EQ(1U, infobar_manager2->infobar_count());
 
   // Navigating away will dismiss the infobar on the active tab only.
   ui_test_utils::NavigateToURL(incognito_browser, google_com_url());
-  EXPECT_EQ(1U, infobar_service1->infobar_count());
-  EXPECT_EQ(0U, infobar_service2->infobar_count());
+  EXPECT_EQ(1U, infobar_manager1->infobar_count());
+  EXPECT_EQ(0U, infobar_manager2->infobar_count());
 
   // Navigate back and accept the infobar this time. Both should be dismissed.
   {
@@ -921,11 +932,11 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
                            ->GetMainFrame();
     EXPECT_NE(incognito_frame1, incognito_frame2);
 
-    EXPECT_EQ(1U, infobar_service1->infobar_count());
+    EXPECT_EQ(1U, infobar_manager1->infobar_count());
     EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame2, app.get(),
                                                    NULL));
     EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
-    EXPECT_EQ(0U, infobar_service1->infobar_count());
+    EXPECT_EQ(0U, infobar_manager1->infobar_count());
   }
 }
 
@@ -947,7 +958,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_FALSE(util::IsIncognitoEnabled(extension->id(), profile()));
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetPrimaryOTRProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -968,10 +980,12 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // incognito renderer, causing the chrome.runtime bindings to be generated in
   // the renderer and allowing the extension to receive connections.
   TestExtensionRegistryObserver observer(
-      ExtensionRegistry::Get(profile()->GetPrimaryOTRProfile()),
+      ExtensionRegistry::Get(
+          profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)),
       extension->id());
-  util::SetIsIncognitoEnabled(extension->id(),
-                              profile()->GetPrimaryOTRProfile(), true);
+  util::SetIsIncognitoEnabled(
+      extension->id(),
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), true);
   scoped_refptr<const Extension> loaded_extension =
       observer.WaitForExtensionLoaded();
   EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(

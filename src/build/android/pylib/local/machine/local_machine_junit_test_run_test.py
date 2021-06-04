@@ -5,6 +5,7 @@
 
 # pylint: disable=protected-access
 
+from __future__ import absolute_import
 import os
 import unittest
 
@@ -49,13 +50,6 @@ class LocalMachineJunitTestRunTests(unittest.TestCase):
     shards = local_machine_junit_test_run.ChooseNumOfShards(
         test_classes, test_shards)
     self.assertEquals(4, shards)
-
-    # Tests auto setting shards, max shards
-    test_classes = [1] * 100
-    test_shards = -1
-    shards = local_machine_junit_test_run.ChooseNumOfShards(
-        test_classes, test_shards)
-    self.assertEquals(local_machine_junit_test_run._MAX_SHARDS, shards)
 
     # Tests using min_class per shards.
     test_classes = [1] * 20

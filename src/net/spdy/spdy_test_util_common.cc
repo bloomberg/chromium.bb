@@ -12,7 +12,6 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -24,6 +23,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
@@ -46,6 +46,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -495,8 +496,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const NetLogWithSource& net_log,
-    bool enable_ip_based_pooling,
-    bool is_trusted_proxy) {
+    bool enable_ip_based_pooling) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
       key, enable_ip_based_pooling,
       /* is_websocket = */ false, NetLogWithSource()));
@@ -509,11 +509,10 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
           std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */);
   int rv = connection->Init(
-      ClientSocketPool::GroupId(key.host_port_pair(),
-                                ClientSocketPool::SocketType::kSsl,
-                                key.privacy_mode(), NetworkIsolationKey(),
-                                false /* disable_secure_dns */),
-      socket_params, base::nullopt /* proxy_annotation_tag */, MEDIUM,
+      ClientSocketPool::GroupId(
+          key.host_port_pair(), ClientSocketPool::SocketType::kSsl,
+          key.privacy_mode(), NetworkIsolationKey(), SecureDnsPolicy::kAllow),
+      socket_params, absl::nullopt /* proxy_annotation_tag */, MEDIUM,
       key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
       http_session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
@@ -525,7 +524,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   base::WeakPtr<SpdySession> spdy_session;
   rv =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocketHandle(
-          key, is_trusted_proxy, std::move(connection), net_log, &spdy_session);
+          key, std::move(connection), net_log, &spdy_session);
   // Failure is reported asynchronously.
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(spdy_session);
@@ -539,17 +538,7 @@ base::WeakPtr<SpdySession> CreateSpdySession(HttpNetworkSession* http_session,
                                              const SpdySessionKey& key,
                                              const NetLogWithSource& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,
-                                 /* enable_ip_based_pooling = */ true,
-                                 /* is_trusted_proxy = */ false);
-}
-
-base::WeakPtr<SpdySession> CreateTrustedSpdySession(
-    HttpNetworkSession* http_session,
-    const SpdySessionKey& key,
-    const NetLogWithSource& net_log) {
-  return CreateSpdySessionHelper(http_session, key, net_log,
-                                 /* enable_ip_based_pooling = */ true,
-                                 /* is_trusted_proxy = */ true);
+                                 /* enable_ip_based_pooling = */ true);
 }
 
 base::WeakPtr<SpdySession> CreateSpdySessionWithIpBasedPoolingDisabled(
@@ -557,8 +546,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionWithIpBasedPoolingDisabled(
     const SpdySessionKey& key,
     const NetLogWithSource& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,
-                                 /* enable_ip_based_pooling = */ false,
-                                 /* is_trusted_proxy = */ false);
+                                 /* enable_ip_based_pooling = */ false);
 }
 
 namespace {
@@ -626,8 +614,7 @@ base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
   handle->SetSocket(std::make_unique<FakeSpdySessionClientSocket>());
   base::WeakPtr<SpdySession> spdy_session;
   int rv = pool->CreateAvailableSessionFromSocketHandle(
-      key, /*is_trusted_proxy=*/false, std::move(handle), NetLogWithSource(),
-      &spdy_session);
+      key, std::move(handle), NetLogWithSource(), &spdy_session);
   // Failure is reported asynchronously.
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(spdy_session);

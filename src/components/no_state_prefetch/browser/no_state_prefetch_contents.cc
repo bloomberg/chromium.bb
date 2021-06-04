@@ -17,8 +17,8 @@
 #include "build/build_config.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_utils.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
-#include "components/no_state_prefetch/common/prerender_util.h"
 #include "components/no_state_prefetch/common/render_frame_prerender_messages.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -55,7 +55,7 @@ class NoStatePrefetchContentsFactoryImpl
       content::BrowserContext* browser_context,
       const GURL& url,
       const content::Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       Origin origin) override {
     return new NoStatePrefetchContents(
         std::move(delegate), no_state_prefetch_manager, browser_context, url,
@@ -127,7 +127,7 @@ NoStatePrefetchContents::NoStatePrefetchContents(
     content::BrowserContext* browser_context,
     const GURL& url,
     const content::Referrer& referrer,
-    const base::Optional<url::Origin>& initiator_origin,
+    const absl::optional<url::Origin>& initiator_origin,
     Origin origin)
     : prerendering_has_started_(false),
       no_state_prefetch_manager_(no_state_prefetch_manager),
@@ -155,6 +155,7 @@ NoStatePrefetchContents::NoStatePrefetchContents(
     case ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN:
     case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
     case ORIGIN_LINK_REL_NEXT:
+    case ORIGIN_SAME_ORIGIN_SPECULATION:
       DCHECK(initiator_origin_.has_value());
       break;
     case ORIGIN_NONE:
@@ -245,12 +246,12 @@ NoStatePrefetchContents::~NoStatePrefetchContents() {
   no_state_prefetch_manager_->RecordNetworkBytesConsumed(origin(),
                                                          network_bytes_);
 
-  if (!no_state_prefetch_contents_)
-    return;
-
-  // If we still have a WebContents, clean up anything we need to and then
-  // destroy it.
-  std::unique_ptr<WebContents> contents = ReleaseNoStatePrefetchContents();
+  if (no_state_prefetch_contents_) {
+    no_state_prefetch_contents_->SetDelegate(nullptr);
+    content::WebContentsObserver::Observe(nullptr);
+    delegate_->ReleaseNoStatePrefetchContents(
+        no_state_prefetch_contents_.get());
+  }
 }
 
 void NoStatePrefetchContents::AddObserver(Observer* observer) {
@@ -452,13 +453,11 @@ void NoStatePrefetchContents::DestroyWhenUsingTooManyResources() {
   if (process_pid_ == base::kNullProcessId)
     return;
 
-  // Using AdaptCallbackForRepeating allows for an easier transition to
-  // OnceCallbacks for https://crbug.com/714018.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestPrivateMemoryFootprint(
-          process_pid_, base::AdaptCallbackForRepeating(base::BindOnce(
-                            &NoStatePrefetchContents::DidGetMemoryUsage,
-                            weak_factory_.GetWeakPtr())));
+          process_pid_,
+          base::BindOnce(&NoStatePrefetchContents::DidGetMemoryUsage,
+                         weak_factory_.GetWeakPtr()));
 }
 
 void NoStatePrefetchContents::DidGetMemoryUsage(
@@ -481,16 +480,6 @@ void NoStatePrefetchContents::DidGetMemoryUsage(
     }
     return;
   }
-}
-
-std::unique_ptr<WebContents>
-NoStatePrefetchContents::ReleaseNoStatePrefetchContents() {
-  no_state_prefetch_contents_->SetDelegate(nullptr);
-  content::WebContentsObserver::Observe(nullptr);
-
-  delegate_->ReleaseNoStatePrefetchContents(no_state_prefetch_contents_.get());
-
-  return std::move(no_state_prefetch_contents_);
 }
 
 RenderFrameHost* NoStatePrefetchContents::GetMainFrame() {

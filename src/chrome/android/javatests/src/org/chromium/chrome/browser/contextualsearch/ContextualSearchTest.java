@@ -88,7 +88,7 @@ public class ContextualSearchTest {
     private static class ContextualSearchPanelWrapper extends ContextualSearchPanel {
         public ContextualSearchPanelWrapper(Context context, LayoutManagerImpl layoutManager,
                 OverlayPanelManager panelManager) {
-            super(context, layoutManager, panelManager);
+            super(context, layoutManager, panelManager, null, null, null, 0, null, 0, null);
         }
 
         @Override
@@ -133,7 +133,7 @@ public class ContextualSearchTest {
                 String selection, boolean isExactResolve, ContextualSearchContext searchContext) {
             // Skip native calls and immediately "resolve" the search term.
             onSearchTermResolutionResponse(true, 200, selection, selection, "", "", false, 0, 10,
-                    "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0, new String[0]);
+                    "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0, "");
         }
 
         /**

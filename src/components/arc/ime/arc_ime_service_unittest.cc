@@ -166,7 +166,7 @@ class FakeArcWindowDelegate : public ArcImeService::ArcWindowDelegate {
   bool IsInArcAppWindow(const aura::Window* window) const override {
     if (!window)
       return false;
-    return arc_window_id_.count(window->id());
+    return arc_window_id_.count(window->GetId());
   }
 
   void RegisterFocusObserver() override {}
@@ -240,7 +240,7 @@ class ArcImeServiceTest : public testing::Test {
   }
 
   void TearDown() override {
-    ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(base::nullopt);
+    ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(absl::nullopt);
     arc_win_.reset();
     fake_window_delegate_ = nullptr;
     fake_arc_ime_bridge_ = nullptr;
@@ -553,6 +553,19 @@ TEST_F(ArcImeServiceTest, SetComposingRegion) {
   EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
 }
 
+TEST_F(ArcImeServiceTest, ExtendSelectionAndDeleteThenSetComposingRegion) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+  instance_->OnCursorRectChangedWithSurroundingText(
+      gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
+      gfx::Range(100, 100), false);
+
+  instance_->ExtendSelectionAndDelete(1, 0);
+  const gfx::Range composing_range(0, 99);
+  instance_->SetCompositionFromExistingText(composing_range, {});
+
+  EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
+}
+
 TEST_F(ArcImeServiceTest, OnDispatchingKeyEventPostIME) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -625,7 +638,7 @@ TEST_F(ArcImeServiceTest, SendKeyEvent) {
                      ui::DomKey::FromCharacter('A'),
                      ui::EventTimeForNow()};
   {
-    base::Optional<bool> handled;
+    absl::optional<bool> handled;
     auto copy = std::make_unique<ui::KeyEvent>(event);
     instance_->SendKeyEvent(
         std::move(copy),
@@ -645,7 +658,7 @@ TEST_F(ArcImeServiceTest, SendKeyEvent) {
       ui::ET_KEY_PRESSED,       ui::VKEY_RETURN,      ui::DomCode::ENTER, 0,
       ui::DomKey::UNIDENTIFIED, ui::EventTimeForNow()};
   {
-    base::Optional<bool> handled;
+    absl::optional<bool> handled;
     auto copy = std::make_unique<ui::KeyEvent>(non_character_event);
     instance_->SendKeyEvent(
         std::move(copy),
@@ -668,7 +681,7 @@ TEST_F(ArcImeServiceTest, SendKeyEvent) {
                                 ui::DomKey::FromCharacter('A'),
                                 ui::EventTimeForNow()};
   {
-    base::Optional<bool> handled;
+    absl::optional<bool> handled;
     auto copy = std::make_unique<ui::KeyEvent>(fabricated_event);
     instance_->SendKeyEvent(
         std::move(copy),

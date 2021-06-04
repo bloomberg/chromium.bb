@@ -27,16 +27,14 @@ class DrawIndexedIndirectTest : public DawnTest {
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            [[location(0)]] var<in> pos : vec4<f32>;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[stage(vertex)]] fn main() -> void {
-                Position = pos;
+            [[stage(vertex)]]
+            fn main([[location(0)]] pos : vec4<f32>) -> [[builtin(position)]] vec4<f32> {
+                return pos;
             })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
         utils::ComboRenderPipelineDescriptor2 descriptor;
@@ -101,6 +99,9 @@ class DrawIndexedIndirectTest : public DawnTest {
 
 // The most basic DrawIndexed triangle draw.
 TEST_P(DrawIndexedIndirectTest, Uint32) {
+    // TODO(crbug.com/dawn/789): Test is failing after a roll on SwANGLE on Windows only.
+    DAWN_SKIP_TEST_IF(IsANGLE() && IsWindows());
+
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 
@@ -146,6 +147,9 @@ TEST_P(DrawIndexedIndirectTest, BaseVertex) {
 }
 
 TEST_P(DrawIndexedIndirectTest, IndirectOffset) {
+    // TODO(crbug.com/dawn/789): Test is failing after a roll on SwANGLE on Windows only.
+    DAWN_SKIP_TEST_IF(IsANGLE() && IsWindows());
+
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 

@@ -16,13 +16,17 @@
 
 class Profile;
 
+namespace webapps {
+enum class WebappUninstallSource;
+}
+
 namespace extensions {
 
 class CrxInstaller;
 class Extension;
 
 // Class used to actually install the Bookmark App in the system.
-// TODO(loyso): Erase this subclass once crbug.com/877898 fixed.
+// TODO(crbug.com/1065748): Erase this subclass.
 class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
  public:
   // Constructs a BookmarkAppInstallFinalizer that will install the Bookmark App
@@ -44,12 +48,13 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                       InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(
       const web_app::AppId& app_id,
-      web_app::ExternalInstallSource external_install_source,
+      webapps::WebappUninstallSource webapp_uninstall_source,
       UninstallWebAppCallback callback) override;
-  bool CanUserUninstallExternalApp(const web_app::AppId& app_id) const override;
-  void UninstallExternalAppByUser(const web_app::AppId& app_id,
-                                  UninstallWebAppCallback callback) override;
-  bool WasExternalAppUninstalledByUser(
+  bool CanUserUninstallWebApp(const web_app::AppId& app_id) const override;
+  void UninstallWebApp(const web_app::AppId& app_id,
+                       webapps::WebappUninstallSource uninstall_source,
+                       UninstallWebAppCallback callback) override;
+  bool WasPreinstalledWebAppUninstalled(
       const web_app::AppId& app_id) const override;
 
   using CrxInstallerFactory =
@@ -70,14 +75,14 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                             bool is_locally_installed,
                             InstallFinalizedCallback callback,
                             scoped_refptr<CrxInstaller> crx_installer,
-                            const base::Optional<CrxInstallError>& error);
+                            const absl::optional<CrxInstallError>& error);
 
   void OnExtensionUpdated(const web_app::AppId& expected_app_id,
                           const std::string& old_name,
                           const WebApplicationInfo& web_app_info,
                           InstallFinalizedCallback callback,
                           scoped_refptr<CrxInstaller> crx_installer,
-                          const base::Optional<CrxInstallError>& error);
+                          const absl::optional<CrxInstallError>& error);
 
   CrxInstallerFactory crx_installer_factory_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;

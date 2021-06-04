@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ASH_LOGIN_UI_SIMPLE_WEB_VIEW_DIALOG_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -17,8 +16,8 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "url/gurl.h"
 
 class CommandUpdaterImpl;

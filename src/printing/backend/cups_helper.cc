@@ -7,11 +7,13 @@
 #include <cups/ppd.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,16 +22,10 @@
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/print_job_constants.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 #include "url/gurl.h"
-
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include <unistd.h>
-
-#include "base/files/scoped_file.h"
-#include "base/macros.h"
-#endif
 
 using base::EqualsCaseInsensitiveASCII;
 
@@ -577,8 +573,6 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
                           base::StringPiece locale,
                           base::StringPiece printer_capabilities,
                           PrinterSemanticCapsAndDefaults* printer_info) {
-  base::FilePath ppd_file_path;
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // A file created while in a sandbox will be automatically deleted once all
   // handles to it have been closed.  This precludes the use of multiple
   // operations against a file path.
@@ -594,46 +588,31 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
   if (!base::GetTempDir(&temp_dir))
     return false;
 
+  base::FilePath ppd_file_path;
   base::ScopedFD ppd_fd =
       base::CreateAndOpenFdForTemporaryFileInDir(temp_dir, &ppd_file_path);
-  if (!ppd_fd.is_valid())
-    return false;
-
-  if (!base::WriteFileDescriptor(ppd_fd.get(), printer_capabilities.data(),
-                                 printer_capabilities.size())) {
+  if (!ppd_fd.is_valid() ||
+      !base::WriteFileDescriptor(ppd_fd.get(), printer_capabilities) ||
+      lseek(ppd_fd.get(), 0, SEEK_SET) == -1) {
     return false;
   }
 
-  if (lseek(ppd_fd.get(), 0, SEEK_SET) == -1)
-    return false;
-
-  ppd_file_t* ppd = ppdOpenFd(ppd_fd.get());
-#else
-  if (!base::CreateTemporaryFile(&ppd_file_path))
-    return false;
-
-  if (!base::WriteFile(ppd_file_path, printer_capabilities)) {
-    base::DeleteFile(ppd_file_path);
-    return false;
-  }
-
-  ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
-#endif
-
+  // We release ownership of `ppd_fd` here because ppdOpenFd() assumes ownership
+  // of it in all but one case (see below).
+  int unowned_ppd_fd = ppd_fd.release();
+  ppd_file_t* ppd = ppdOpenFd(unowned_ppd_fd);
   if (!ppd) {
     int line = 0;
     ppd_status_t ppd_status = ppdLastError(&line);
     LOG(ERROR) << "Failed to open PDD file: error " << ppd_status << " at line "
                << line << ", " << ppdErrorString(ppd_status);
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    if (ppd_status != PPD_FILE_OPEN_ERROR) {
-      // When the error is not from opening the file then the CUPS library
-      // internals will have already closed the file descriptor.  It is
-      // important to not close the file a second time (when ScopedFD destructor
-      // fires), so we release the descriptor prior to that.
-      ignore_result(ppd_fd.release());
+    if (ppd_status == PPD_FILE_OPEN_ERROR) {
+      // Normally ppdOpenFd assumes ownership of the file descriptor we give it,
+      // regardless of success or failure. The one exception is when it fails
+      // with PPD_FILE_OPEN_ERROR. In that case ownership is retained by the
+      // caller, so we must explicitly close it.
+      close(unowned_ppd_fd);
     }
-#endif
     return false;
   }
 
@@ -716,14 +695,6 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
   }
 
   ppdClose(ppd);
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  // The CUPS library internals close the file descriptor upon successfully
-  // reading it.  Explicitly release the `ScopedFD` to prevent a crash caused
-  // by a bad file descriptor.
-  ignore_result(ppd_fd.release());
-#else
-  base::DeleteFile(ppd_file_path);
-#endif
 
   *printer_info = caps;
   return true;

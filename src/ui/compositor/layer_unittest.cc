@@ -64,6 +64,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/test/gfx_util.h"
 
 using cc::MatchesPNGFile;
 using cc::WritePNGFile;
@@ -108,10 +109,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
 class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
  public:
   LayerWithRealCompositorTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
-    gfx::FontList::SetDefaultFontDescription("Segoe UI, 15px");
-  }
-  ~LayerWithRealCompositorTest() override {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+        default_font_desc_setter_("Segoe UI, 15px") {}
+  ~LayerWithRealCompositorTest() override = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -250,6 +250,8 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
 
   // The root directory for test files.
   base::FilePath test_data_dir_;
+
+  gfx::ScopedDefaultFontDescription default_font_desc_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
@@ -567,11 +569,9 @@ TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
   auto resource = viz::TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, false /* is_overlay_candidate */);
-  layer->SetTransferableResource(
-      resource,
-      viz::SingleReleaseCallback::Create(
-          base::BindOnce(ReturnMailbox, &callback_run)),
-      gfx::Size(10, 10));
+  layer->SetTransferableResource(resource,
+                                 base::BindOnce(ReturnMailbox, &callback_run),
+                                 gfx::Size(10, 10));
   EXPECT_FALSE(callback_run);
   layer.reset();
   EXPECT_TRUE(callback_run);
@@ -588,12 +588,14 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Simple) {
   DrawTree(l1.get());
 
   gfx::PointF point1_in_l2_coords(5, 5);
-  Layer::ConvertPointToLayer(l2.get(), l1.get(), &point1_in_l2_coords);
+  Layer::ConvertPointToLayer(l2.get(), l1.get(), /*use_target_transform=*/true,
+                             &point1_in_l2_coords);
   gfx::PointF point1_in_l1_coords(15, 15);
   EXPECT_EQ(point1_in_l1_coords, point1_in_l2_coords);
 
   gfx::PointF point2_in_l1_coords(5, 5);
-  Layer::ConvertPointToLayer(l1.get(), l2.get(), &point2_in_l1_coords);
+  Layer::ConvertPointToLayer(l1.get(), l2.get(), /*use_target_transform=*/true,
+                             &point2_in_l1_coords);
   gfx::PointF point2_in_l2_coords(-5, -5);
   EXPECT_EQ(point2_in_l2_coords, point2_in_l1_coords);
 }
@@ -613,12 +615,14 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   DrawTree(l1.get());
 
   gfx::PointF point1_in_l3_coords(5, 5);
-  Layer::ConvertPointToLayer(l3.get(), l1.get(), &point1_in_l3_coords);
+  Layer::ConvertPointToLayer(l3.get(), l1.get(), /*use_target_transform=*/true,
+                             &point1_in_l3_coords);
   gfx::PointF point1_in_l1_coords(25, 25);
   EXPECT_EQ(point1_in_l1_coords, point1_in_l3_coords);
 
   gfx::PointF point2_in_l1_coords(5, 5);
-  Layer::ConvertPointToLayer(l1.get(), l3.get(), &point2_in_l1_coords);
+  Layer::ConvertPointToLayer(l1.get(), l3.get(), /*use_target_transform=*/true,
+                             &point2_in_l1_coords);
   gfx::PointF point2_in_l3_coords(-15, -15);
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
@@ -1050,8 +1054,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
-                              viz::SingleReleaseCallback::Create(base::BindOnce(
-                                  ReturnMailbox, &callback1_run)),
+                              base::BindOnce(ReturnMailbox, &callback1_run),
                               gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
@@ -1074,8 +1077,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
-                              viz::SingleReleaseCallback::Create(base::BindOnce(
-                                  ReturnMailbox, &callback2_run)),
+                              base::BindOnce(ReturnMailbox, &callback2_run),
                               gfx::Size(10, 10));
   EXPECT_TRUE(callback1_run);
   EXPECT_FALSE(callback2_run);
@@ -1100,8 +1102,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
-                              viz::SingleReleaseCallback::Create(base::BindOnce(
-                                  ReturnMailbox, &callback3_run)),
+                              base::BindOnce(ReturnMailbox, &callback3_run),
                               gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
@@ -1423,9 +1424,8 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   auto resource = viz::TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, false /* is_overlay_candidate */);
-  root->SetTransferableResource(
-      resource, viz::SingleReleaseCallback::Create(std::move(callback)),
-      gfx::Size(10, 10));
+  root->SetTransferableResource(resource, std::move(callback),
+                                gfx::Size(10, 10));
   compositor()->SetRootLayer(root.get());
 
   root->SetBounds(gfx::Rect(0, 0, 10, 10));
@@ -2275,7 +2275,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   const auto* surface = static_cast<cc::SurfaceLayer*>(after.get());
   EXPECT_TRUE(after.get());
   EXPECT_NE(before.get(), after.get());
-  EXPECT_EQ(base::nullopt, surface->deadline_in_frames());
+  EXPECT_EQ(absl::nullopt, surface->deadline_in_frames());
 
   allocator.GenerateId();
   child->SetShowSurface(
@@ -2326,9 +2326,7 @@ TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   bool release_callback_run = false;
 
   layer->SetTransferableResource(
-      resource,
-      viz::SingleReleaseCallback::Create(
-          base::BindOnce(ReturnMailbox, &release_callback_run)),
+      resource, base::BindOnce(ReturnMailbox, &release_callback_run),
       gfx::Size(10, 10));
   EXPECT_FALSE(release_callback_run);
   EXPECT_TRUE(layer->has_external_content());
@@ -2359,9 +2357,7 @@ TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   // Setting a transferable resource on the source layer should set it on the
   // mirror layers as well.
   layer->SetTransferableResource(
-      resource,
-      viz::SingleReleaseCallback::Create(
-          base::BindOnce(ReturnMailbox, &release_callback_run)),
+      resource, base::BindOnce(ReturnMailbox, &release_callback_run),
       gfx::Size(10, 10));
   EXPECT_FALSE(release_callback_run);
   EXPECT_TRUE(layer->has_external_content());

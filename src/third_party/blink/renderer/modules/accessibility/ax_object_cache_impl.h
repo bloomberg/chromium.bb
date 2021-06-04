@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
@@ -51,6 +52,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/accessibility/ax_enums.mojom-blink-forward.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 
@@ -64,14 +66,17 @@ class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
       public mojom::blink::PermissionObserver {
  public:
-  static AXObjectCache* Create(Document&);
+  static AXObjectCache* Create(Document&, const ui::AXMode&);
 
-  explicit AXObjectCacheImpl(Document&);
+  AXObjectCacheImpl(Document&, const ui::AXMode&);
   ~AXObjectCacheImpl() override;
   void Trace(Visitor*) const override;
 
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();
+
+  const ui::AXMode& GetAXMode() override;
+  void SetAXMode(const ui::AXMode&) override;
 
   void Dispose() override;
 
@@ -106,7 +111,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ImageLoaded(const LayoutObject*) override;
 
   void Remove(AccessibleNode*) override;
-  void Remove(LayoutObject*) override;
+  // Returns false if no associated AXObject exists in the cache.
+  bool Remove(LayoutObject*) override;
   void Remove(Node*) override;
   void Remove(AbstractInlineTextBox*) override;
   void Remove(AXObject*);  // Calls more specific Remove methods as necessary.
@@ -205,8 +211,17 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* Get(AccessibleNode*);
   AXObject* Get(AbstractInlineTextBox*);
 
-  AXObject* Get(const Node*) override;
+  // Get an AXObject* backed by the passed-in DOM node or the node's layout
+  // object, whichever is available.
+  // If it no longer the correct type of AXObject (AXNodeObject/AXLayoutObject),
+  // will Invalidate() the AXObject so that it is refreshed with a new object
+  // when safe to do so.
+  AXObject* Get(const Node*);
   AXObject* Get(const LayoutObject*);
+
+  // Return true if the object is still part of the tree, meaning that ancestors
+  // exist or can be repaired all the way to the root.
+  bool IsStillInTree(AXObject*);
 
   AXObject* FirstAccessibleObjectFromNode(const Node*);
 
@@ -218,6 +233,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MaybeNewRelationTarget(Node& node, AXObject* obj);
 
   void HandleActiveDescendantChangedWithCleanLayout(Node*);
+  void SectionOrRegionRoleMaybeChanged(Element* element);
   void HandleRoleChangeWithCleanLayout(Node*);
   void HandleAriaHiddenChangedWithCleanLayout(Node*);
   void HandleAriaExpandedChangeWithCleanLayout(Node*);
@@ -311,8 +327,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* GetActiveAriaModalDialog() const;
 
   static bool UseAXMenuList() { return use_ax_menu_list_; }
+  static bool ShouldCreateAXMenuListFor(LayoutObject* layout_object);
   static bool ShouldCreateAXMenuListOptionFor(const Node*);
-  static bool IsPseudoElementDescendant(const LayoutObject& layout_object);
+  static bool IsRelevantPseudoElement(const Node& node);
+  static bool IsRelevantPseudoElementDescendant(
+      const LayoutObject& layout_object);
 
 #if DCHECK_IS_ON()
   bool HasBeenDisposed() { return has_been_disposed_; }
@@ -425,6 +444,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkElementDirtyWithCleanLayout(const Node*, bool subtree);
 
   Member<Document> document_;
+  ui::AXMode ax_mode_;
   HeapHashMap<AXID, Member<AXObject>> objects_;
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
   // do not use HeapHashMap for those mappings.
@@ -500,7 +520,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ContainingTableRowsOrColsMaybeChanged(Node*);
 
   // Must be called an entire subtree of accessible objects are no longer valid.
-  void RemoveAXObjectsInLayoutSubtree(AXObject* subtree);
+  void RemoveAXObjectsInLayoutSubtree(AXObject* subtree, int depth);
 
   // Object for HTML validation alerts. Created at most once per object cache.
   AXObject* GetOrCreateValidationMessageObject();

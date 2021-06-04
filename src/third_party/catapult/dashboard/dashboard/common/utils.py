@@ -32,6 +32,7 @@ IP_ALLOWLIST_KEY = 'ip_whitelist'
 SERVICE_ACCOUNT_KEY = 'service_account'
 PINPOINT_REPO_EXCLUSION_KEY = 'pinpoint_repo_exclusions'
 EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
+CLOUD_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 _PROJECT_ID_KEY = 'project_id'
 _DEFAULT_CUSTOM_METRIC_VAL = 1
 OAUTH_SCOPES = ('https://www.googleapis.com/auth/userinfo.email',)
@@ -490,11 +491,12 @@ def IsInternalUser():
   return is_internal_user
 
 
-def IsAdministrator():
+def IsAdministrator(email=None):
   """Checks whether the user is an administrator of the Dashboard."""
   if IsDevAppserver():
     return True
-  email = GetEmail()
+  if not email:
+    email = GetEmail()
   if not email:
     return False
   cached = GetCachedIsAdministrator(email)
@@ -640,6 +642,12 @@ def IsTryjobUser():
   email = GetEmail()
   return bool(email) and IsGroupMember(
       identity=email, group='project-pinpoint-tryjob-access')
+
+
+def IsAllowedToDelegate(email):
+  return bool(email) and IsGroupMember(
+      identity=email,
+      group='project-pinpoint-service-account-delegation-access')
 
 
 @ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)

@@ -6,6 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
@@ -14,7 +15,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace qrcode_generator {
 
@@ -56,10 +57,19 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   if (!omnibox_view)
     return;
 
+  // If desktop sharing hub is enabled, only show if the bubble is visible.
+  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopOmnibox)) {
+    QRCodeGeneratorBubbleController* controller =
+        QRCodeGeneratorBubbleController::Get(web_contents);
+    bool visible =
+        controller && controller->qrcode_generator_bubble_view() != nullptr;
+    SetVisible(visible);
+    return;
+  }
+
   bool feature_available =
       QRCodeGeneratorBubbleController::IsGeneratorAvailable(
-          web_contents->GetLastCommittedURL(),
-          web_contents->GetBrowserContext()->IsOffTheRecord());
+          web_contents->GetLastCommittedURL());
 
   bool visible = GetBubble() != nullptr ||
                  (feature_available && omnibox_view->model()->has_focus() &&

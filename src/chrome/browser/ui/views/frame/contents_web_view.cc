@@ -8,10 +8,11 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/background.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -136,7 +137,8 @@ void ContentsWebView::CloneWebContentsLayer() {
   // is now the new parent of the cloned layer). Convert coordinates so that the
   // cloned layer appears at the right location.
   gfx::PointF origin;
-  ui::Layer::ConvertPointToLayer(cloned_layer_tree_->root(), layer(), &origin);
+  ui::Layer::ConvertPointToLayer(cloned_layer_tree_->root(), layer(),
+                                 /*use_target_transform=*/true, &origin);
   cloned_layer_tree_->root()->SetBounds(
       gfx::Rect(gfx::ToFlooredPoint(origin),
                 cloned_layer_tree_->root()->bounds().size()));

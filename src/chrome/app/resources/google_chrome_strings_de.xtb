@@ -6,11 +6,11 @@
 <translation id="1051826050538111504">Schädliche Software wurde auf Ihrem Computer gefunden. Chrome kann diese Software entfernen, Ihre Einstellungen wiederherstellen und Erweiterungen deaktivieren, sodass Ihr Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> hat zuvor Chrome verwendet</translation>
-<translation id="1097330777386562916">Cookies und Websitedaten beim Beenden von Chrome löschen</translation>
 <translation id="110877069173485804">Dies ist Ihr persönlicher Chrome-Browser</translation>
 <translation id="1125124144982679672">Wer verwendet gerade Chrome?</translation>
 <translation id="1142745911746664600">Chrome kann nicht aktualisiert werden</translation>
 <translation id="1154147086299354128">In Chr&amp;ome öffnen</translation>
+<translation id="1278833599417554002">Neu starten, um &amp;Chrome zu aktualisieren</translation>
 <translation id="1293325835983155583">Für <ph name="MANAGER" /> ist es erforderlich, dass Sie vor der Verwendung dieses Geräts die folgenden Nutzungsbedingungen akzeptieren. Durch diese Nutzungsbedingungen werden die Google Chrome OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
 <translation id="1302523850133262269">Bitte warten Sie, bis die aktuellen Systemupdates von Chrome installiert wurden.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
@@ -46,6 +46,7 @@
 <translation id="2063848847527508675">Chrome OS muss neu gestartet werden, um das Update zu übernehmen.</translation>
 <translation id="2094919256425865063">Chrome trotzdem beenden?</translation>
 <translation id="2120620239521071941">Dadurch werden <ph name="ITEMS_COUNT" /> Elemente von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chrome an.</translation>
+<translation id="2121284319307530122">Neu starten, um &amp;Chrome zu aktualisieren</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Aktuelle Einstellungen<ph name="END_LINK" /> übermitteln und so helfen, Chrome zu verbessern</translation>
 <translation id="2151406531797534936">Starten Sie Chrome jetzt neu</translation>
 <translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
@@ -56,7 +57,6 @@
 <translation id="234869673307233423">Chrome kann Ihre Passwörter nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="235650106824528204">Alle Chrome-Daten, die während der Nutzung dieses Profils erstellt werden, wie Lesezeichen, Verlauf, Passwörter und andere Einstellungen, können vom Administrator des Arbeitsprofils entfernt werden. <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
-<translation id="245659736593643560">Chrome OS und die <ph name="BEGIN_LINK_LINUX_OSS" />Linux-Entwicklungsumgebung (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
 <translation id="2467438592969358367">Google Chrome möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2534507159460261402">Google Pay (in Chrome kopiert)</translation>
@@ -69,6 +69,7 @@
 <translation id="2652691236519827073">Link in neuem Chrome-Tab öffnen</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
+<translation id="2742320827292110288">Achtung: Google Chrome kann nicht verhindern, dass Ihr Browser-Verlauf von Erweiterungen aufgezeichnet wird. Schalten Sie diese Option aus, um die Erweiterung im Inkognitomodus zu deaktivieren.</translation>
 <translation id="2765403129283291972">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2775140325783767197">Chrome kann Ihre Passwörter nicht prüfen. Überprüfen Sie Ihre Internetverbindung.</translation>
@@ -162,11 +163,11 @@
 <translation id="5193136243808726294">Google Chrome OS kann diese Seite nicht öffnen.</translation>
 <translation id="521447420733633466">Auf gemeinsam genutzten Geräten können die verschiedenen Nutzer separat surfen und Chrome jeweils nach ihren Wünschen einrichten</translation>
 <translation id="5251420635869119124">Gastnutzer können Chrome verwenden, ohne Daten zu hinterlassen.</translation>
-<translation id="532046782124376502">Achtung: Google Chrome kann nicht verhindern, dass Ihr Browser-Verlauf von Erweiterungen aufgezeichnet wird. Schalten Sie diese Option aus, um die Erweiterung im Inkognitomodus zu deaktivieren.</translation>
 <translation id="5386244825306882791">Die Erweiterung legt auch fest, welche Seite beim Start von Chrome oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="5394833366792865639">Chrome-Tab freigeben</translation>
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5434383153637353914">Auf dieser Seite können Sie Ihre angemeldeten Google-Konten verwalten. Diese Konten sind im Chrome-Browser, in Play Store-Apps und in Diensten wie Gmail, Google Drive und YouTube verfügbar. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">Chrome OS installieren</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Einstellungen von Chrome OS<ph name="LINK_END" /> nach</translation>
@@ -217,6 +218,7 @@
 <translation id="7106741999175697885">Task-Manager - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Ein neues Update für Chrome ist verfügbar und wird installiert, sobald Sie den Browser neu starten.}=1{Ein neues Update für Chrome ist verfügbar und wird installiert, sobald Sie den Browser neu starten. Ihr Inkognitofenster wird nicht wieder geöffnet.}other{Ein neues Update für Chrome ist verfügbar und wird installiert, sobald Sie den Browser neu starten. Ihre # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="7155997830309522122">Falls ja, ändern Sie Ihr gespeichertes Passwort in Chrome, damit es mit dem neuen Passwort übereinstimmt.</translation>
+<translation id="7161904924553537242">Willkommen bei Chrome</translation>
 <translation id="7242029209006116544">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chrome-Daten getrennt halten möchten, können Sie stattdessen ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Diese Sprache wird für die Google Chrome-UI verwendet</translation>
 <translation id="7296210096911315575">Wichtige Informationen zu Verwendung und Sicherheit</translation>
@@ -234,6 +236,7 @@
 <translation id="7629695634924605473">Chrome wird Sie informieren, sollten Ihre Passwörter nicht mehr sicher sein</translation>
 <translation id="7641148173327520642">Ihr Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="ALTERNATIVE_BROWSER_NAME" /> für den Zugriff auf <ph name="TARGET_URL_HOSTNAME" /> geöffnet wird.</translation>
 <translation id="7651907282515937834">Logo von Chrome Enterprise</translation>
+<translation id="7665553140559834626">Neu starten, um &amp;Chrome OS zu aktualisieren</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
 <translation id="7761834446675418963">Klicken Sie auf Ihren Namen, um Chrome zu öffnen und im Web zu surfen.</translation>
 <translation id="7777080907402804672">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
@@ -245,9 +248,10 @@
 <translation id="7855730255114109580">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="7896673875602241923">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chrome angemeldet. Erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.</translation>
-<translation id="7905891027772979035">Chrome kann Ihre Erweiterungen nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="7930071585467473040">Google Chrome versucht, Passwörter zu kopieren.</translation>
+<translation id="7951988079884443914">Chrome empfiehlt Ihnen, diese Datei nicht herunterzuladen oder zu öffnen.</translation>
 <translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
+<translation id="79947657522496226">Chrome OS und die <ph name="BEGIN_LINK_LINUX_OSS" />Linux-Entwicklungsumgebung<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8013993649590906847">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>

@@ -23,7 +23,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
@@ -66,7 +66,7 @@ void OpenNetworkSettings() {
 }
 
 void OpenEnterpriseInfoPage() {
-  SystemTrayClient::Get()->ShowEnterpriseInfo();
+  SystemTrayClientImpl::Get()->ShowEnterpriseInfo();
 }
 
 std::string GetEnterpriseManager() {
@@ -457,10 +457,10 @@ void MinimumVersionPolicyHandler::StartObservingUpdate() {
     build_state->AddObserver(this);
 }
 
-base::Optional<int> MinimumVersionPolicyHandler::GetTimeRemainingInDays() {
+absl::optional<int> MinimumVersionPolicyHandler::GetTimeRemainingInDays() {
   const base::Time now = clock_->Now();
   if (!state_ || update_required_deadline_ <= now)
-    return base::nullopt;
+    return absl::nullopt;
   base::TimeDelta time_remaining = update_required_deadline_ - now;
   return GetDaysRounded(time_remaining);
 }
@@ -469,7 +469,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
   // |days| could be null if |update_required_deadline_timer_| expired while
   // login was in progress, else we would have shown the update required screen
   // at startup.
-  base::Optional<int> days = GetTimeRemainingInDays();
+  absl::optional<int> days = GetTimeRemainingInDays();
   if (days && days.value() <= 1)
     MaybeShowNotification(base::TimeDelta::FromDays(days.value()));
 }

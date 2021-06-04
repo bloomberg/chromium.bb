@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -1251,7 +1252,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   managed_list->clear();
   // Updates managed_list and request updates for new entries.
   std::set<std::string> list_entries;
-  for (auto& iter : entries) {
+  for (const auto& iter : entries.GetList()) {
     std::string path;
     iter.GetAsString(&path);
     if (path.empty() || path == shill::kFlimflamServicePath) {
@@ -1287,6 +1288,23 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
 
   if (type != ManagedState::ManagedType::MANAGED_TYPE_NETWORK)
     return;
+
+  // Non-Shill services are added in Chrome and is not present in |entries|.
+  // Add these services back to managed_list.
+  for (auto iter = managed_map.begin(); iter != managed_map.end();) {
+    NetworkState* network = iter->second->AsNetworkState();
+    if (!network->IsNonShillCellularNetwork()) {
+      iter++;
+      continue;
+    }
+    managed_list->push_back(std::move(iter->second));
+    iter = managed_map.erase(iter);
+  }
+
+  // Network list is explicitly sorted in ManagedListChanged() which is notified
+  // after this method. But this ensures that any intervening calls to
+  // GetNetworkList* methods will use the sorted list.
+  network_list_sorted_ = false;
 
   // Remove associations Tether NetworkStates had with now removed Wi-Fi
   // NetworkStates.

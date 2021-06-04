@@ -17,13 +17,14 @@
 
 #include "components/history/core/browser/history_service.h"
 
+#include <functional>
+
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
@@ -49,7 +50,6 @@
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/web_history_service.h"
-#include "components/history/core/common/thumbnail_score.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -263,6 +263,30 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   ScheduleTask(PRIORITY_NORMAL,
                base::BindOnce(&HistoryBackend::URLsNoLongerBookmarked,
                               history_backend_, urls));
+}
+
+void HistoryService::AddContextAnnotationsForVisit(
+    VisitID visit_id,
+    const VisitContextAnnotations& visit_context_annotations) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(
+      PRIORITY_NORMAL,
+      base::BindOnce(&HistoryBackend::AddContextAnnotationsForVisit,
+                     history_backend_, visit_id, visit_context_annotations));
+}
+
+base::CancelableTaskTracker::TaskId HistoryService::GetAnnotatedVisits(
+    int max_results,
+    GetAnnotatedVisitsCallback callback,
+    base::CancelableTaskTracker* tracker) const {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetAnnotatedVisits, history_backend_,
+                     max_results),
+      std::move(callback));
 }
 
 void HistoryService::AddObserver(HistoryServiceObserver* observer) {
@@ -985,7 +1009,7 @@ void HistoryService::Cleanup() {
                                                  std::move(history_backend_)));
   }
 
-  // Clear |backend_task_runner_| to make sure it's not used after Cleanup().
+  // Clear `backend_task_runner_` to make sure it's not used after Cleanup().
   backend_task_runner_ = nullptr;
 }
 
@@ -995,7 +1019,7 @@ bool HistoryService::Init(
   TRACE_EVENT0("browser,startup", "HistoryService::Init");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Unit tests can inject |backend_task_runner_| before this is called.
+  // Unit tests can inject `backend_task_runner_` before this is called.
   if (!backend_task_runner_) {
     backend_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::WithBaseSyncPrimitives(),
@@ -1166,7 +1190,7 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
     // Attempt online deletion from the history server, but ignore the result.
     // Deletion directives ensure that the results will eventually be deleted.
     //
-    // TODO(davidben): |callback| should not run until this operation completes
+    // TODO(davidben): `callback` should not run until this operation completes
     // too.
     net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
         net::DefinePartialNetworkTrafficAnnotation(

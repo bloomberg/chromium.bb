@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "content/browser/conversions/conversion_test_utils.h"
+#include "content/browser/conversions/sent_report_info.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -26,18 +28,15 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
 
-// Gets a report url which matches reports created by GetReport().
-std::string GetReportUrl(std::string impression_data) {
-  return base::StrCat(
-      {"https://report.test/.well-known/register-conversion?impression-data=",
-       impression_data, "&conversion-data=", impression_data, "&credit=0"});
-}
+const char kReportUrl[] =
+    "https://report.test/.well-known/attribution-reporting/report-attribution";
 
 // Create a simple report where impression data/conversion data/conversion id
 // are all the same.
@@ -72,7 +71,9 @@ class ConversionNetworkSenderTest : public testing::Test {
   }
 
  protected:
-  size_t num_reports_sent_ = 0u;
+  size_t num_reports_sent() const { return sent_reports_.size(); }
+
+  base::circular_deque<SentReportInfo> sent_reports_;
 
   // |task_enviorment_| must be initialized first.
   content::BrowserTaskEnvironment task_environment_;
@@ -82,7 +83,7 @@ class ConversionNetworkSenderTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  void OnReportSent() { num_reports_sent_++; }
+  void OnReportSent(SentReportInfo info) { sent_reports_.push_back(info); }
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 };
@@ -93,7 +94,7 @@ TEST_F(ConversionNetworkSenderTest,
   network_sender_->SendReport(&report, std::move(base::DoNothing()));
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetReportUrl("1"), ""));
+      kReportUrl, ""));
 }
 
 TEST_F(ConversionNetworkSenderTest, ReportSent_CallbackFired) {
@@ -101,8 +102,14 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_CallbackFired) {
   network_sender_->SendReport(&report, GetSentCallback());
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetReportUrl("1"), ""));
-  EXPECT_EQ(1u, num_reports_sent_);
+      kReportUrl, ""));
+  EXPECT_TRUE(SentReportInfosEqual(
+      {{
+          .report_url = GURL(kReportUrl),
+          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .http_response_code = 200,
+      }},
+      sent_reports_));
 }
 
 TEST_F(ConversionNetworkSenderTest, SenderDeletedDuringRequest_NoCrash) {
@@ -111,8 +118,8 @@ TEST_F(ConversionNetworkSenderTest, SenderDeletedDuringRequest_NoCrash) {
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
   network_sender_.reset();
   EXPECT_FALSE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetReportUrl("1"), ""));
-  EXPECT_EQ(0u, num_reports_sent_);
+      kReportUrl, ""));
+  EXPECT_TRUE(SentReportInfosEqual({}, sent_reports_));
 }
 
 TEST_F(ConversionNetworkSenderTest, ReportRequestHangs_TimesOut) {
@@ -126,11 +133,19 @@ TEST_F(ConversionNetworkSenderTest, ReportRequestHangs_TimesOut) {
   EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Also verify that the sent callback runs if the request times out.
-  EXPECT_EQ(1u, num_reports_sent_);
+  // TODO(apaseltiner): Should we propagate the timeout via the SentReportInfo
+  // instead of just setting |http_response_code = 0|?
+  EXPECT_TRUE(SentReportInfosEqual(
+      {{
+          .report_url = GURL(kReportUrl),
+          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .http_response_code = 0,
+      }},
+      sent_reports_));
 }
 
 TEST_F(ConversionNetworkSenderTest,
-       ReportRequesFailsDueToNetworkChange_Retries) {
+       ReportRequestFailsDueToNetworkChange_Retries) {
   // Retry fails
   {
     base::HistogramTester histograms;
@@ -141,7 +156,7 @@ TEST_F(ConversionNetworkSenderTest,
 
     // Simulate the request failing due to network change.
     test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(GetReportUrl("1")),
+        GURL(kReportUrl),
         network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED),
         network::mojom::URLResponseHead::New(), std::string());
 
@@ -150,14 +165,14 @@ TEST_F(ConversionNetworkSenderTest,
 
     // Simulate a second request failure due to network change.
     test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(GetReportUrl("1")),
+        GURL(kReportUrl),
         network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED),
         network::mojom::URLResponseHead::New(), std::string());
 
     // We should not retry again. Verify the report sent callback only gets
     // fired once.
     EXPECT_EQ(0, test_url_loader_factory_.NumPending());
-    EXPECT_EQ(1u, num_reports_sent_);
+    EXPECT_EQ(1u, num_reports_sent());
 
     histograms.ExpectUniqueSample("Conversions.ReportRetrySucceed", false, 1);
   }
@@ -172,7 +187,7 @@ TEST_F(ConversionNetworkSenderTest,
 
     // Simulate the request failing due to network change.
     test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(GetReportUrl("2")),
+        GURL(kReportUrl),
         network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED),
         network::mojom::URLResponseHead::New(), std::string());
 
@@ -180,8 +195,7 @@ TEST_F(ConversionNetworkSenderTest,
     EXPECT_EQ(1, test_url_loader_factory_.NumPending());
 
     // Simulate a second request failure due to network change.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetReportUrl("2"), "");
+    test_url_loader_factory_.SimulateResponseForPendingRequest(kReportUrl, "");
 
     histograms.ExpectUniqueSample("Conversions.ReportRetrySucceed", true, 1);
   }
@@ -190,23 +204,22 @@ TEST_F(ConversionNetworkSenderTest,
 TEST_F(ConversionNetworkSenderTest, ReportSent_QueryParamsSetCorrectly) {
   auto impression =
       ImpressionBuilder(base::Time())
-          .SetData("impression")
+          .SetData("100")
           .SetReportingOrigin(url::Origin::Create(GURL("https://a.com")))
           .Build();
   ConversionReport report(impression,
-                          /*conversion_data=*/"conversion",
+                          /*conversion_data=*/"5",
                           /*conversion_time=*/base::Time(),
                           /*report_time=*/base::Time(),
                           /*conversion_id=*/1);
-  report.attribution_credit = 50;
   network_sender_->SendReport(&report, base::DoNothing());
 
-  std::string expected_report_url(
-      "https://a.com/.well-known/"
-      "register-conversion?impression-data=impression&conversion-data="
-      "conversion&credit=50");
-  EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      expected_report_url, ""));
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(
+      "https://a.com/.well-known/attribution-reporting/report-attribution",
+      &pending_request));
+  EXPECT_EQ(R"({"source_event_id":"100","trigger_data":5})",
+            network::GetUploadData(*pending_request));
 }
 
 TEST_F(ConversionNetworkSenderTest, ReportSent_RequestAttributesSet) {
@@ -225,8 +238,7 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_RequestAttributesSet) {
 
   const network::ResourceRequest* pending_request;
   std::string expected_report_url(
-      "https://a.com/.well-known/"
-      "register-conversion?impression-data=1&conversion-data=1&credit=0");
+      "https://a.com/.well-known/attribution-reporting/report-attribution");
   EXPECT_TRUE(test_url_loader_factory_.IsPending(expected_report_url,
                                                  &pending_request));
 
@@ -242,12 +254,18 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_RequestAttributesSet) {
 TEST_F(ConversionNetworkSenderTest, ReportResultsInHttpError_SentCallbackRuns) {
   auto report = GetReport(/*conversion_id=*/1);
   network_sender_->SendReport(&report, GetSentCallback());
-  EXPECT_EQ(0u, num_reports_sent_);
+  EXPECT_TRUE(SentReportInfosEqual({}, sent_reports_));
 
   // We should run the sent callback even if there is an http error.
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetReportUrl("1"), "", net::HttpStatusCode::HTTP_BAD_REQUEST));
-  EXPECT_EQ(1u, num_reports_sent_);
+      kReportUrl, "", net::HttpStatusCode::HTTP_BAD_REQUEST));
+  EXPECT_TRUE(SentReportInfosEqual(
+      {{
+          .report_url = GURL(kReportUrl),
+          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .http_response_code = net::HttpStatusCode::HTTP_BAD_REQUEST,
+      }},
+      sent_reports_));
 }
 
 TEST_F(ConversionNetworkSenderTest, ManyReports_AllSentSuccessfully) {
@@ -263,9 +281,9 @@ TEST_F(ConversionNetworkSenderTest, ManyReports_AllSentSuccessfully) {
     std::string report_id = base::NumberToString(i);
 
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetReportUrl(report_id), ""));
+        kReportUrl, ""));
   }
-  EXPECT_EQ(10u, num_reports_sent_);
+  EXPECT_EQ(10u, num_reports_sent());
   EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 }
 
@@ -285,9 +303,11 @@ TEST_F(ConversionNetworkSenderTest, ErrorHistogram) {
     auto report = GetReport(/*conversion_id=*/1);
     network_sender_->SendReport(&report, GetSentCallback());
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetReportUrl("1"), ""));
+        kReportUrl, ""));
     // kOk = 0.
     histograms.ExpectUniqueSample("Conversions.ReportStatus", 0, 1);
+    histograms.ExpectUniqueSample(
+        "Conversions.Report.HttpResponseOrNetErrorCode", net::HTTP_OK, 1);
   }
   // Internal error.
   {
@@ -296,19 +316,24 @@ TEST_F(ConversionNetworkSenderTest, ErrorHistogram) {
     network_sender_->SendReport(&report, GetSentCallback());
     network::URLLoaderCompletionStatus completion_status(net::ERR_FAILED);
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(GetReportUrl("2")), completion_status,
+        GURL(kReportUrl), completion_status,
         network::mojom::URLResponseHead::New(), std::string()));
     // kInternalError = 1.
     histograms.ExpectUniqueSample("Conversions.ReportStatus", 1, 1);
+    histograms.ExpectUniqueSample(
+        "Conversions.Report.HttpResponseOrNetErrorCode", net::ERR_FAILED, 1);
   }
   {
     base::HistogramTester histograms;
     auto report = GetReport(/*conversion_id=*/3);
     network_sender_->SendReport(&report, GetSentCallback());
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetReportUrl("3"), std::string(), net::HTTP_UNAUTHORIZED));
+        kReportUrl, std::string(), net::HTTP_UNAUTHORIZED));
     // kExternalError = 2.
     histograms.ExpectUniqueSample("Conversions.ReportStatus", 2, 1);
+    histograms.ExpectUniqueSample(
+        "Conversions.Report.HttpResponseOrNetErrorCode", net::HTTP_UNAUTHORIZED,
+        1);
   }
 }
 
@@ -318,7 +343,7 @@ TEST_F(ConversionNetworkSenderTest, TimeFromConversionToReportSendHistogram) {
   report.report_time = base::Time() + base::TimeDelta::FromHours(5);
   network_sender_->SendReport(&report, GetSentCallback());
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetReportUrl("1"), ""));
+      kReportUrl, ""));
   histograms.ExpectUniqueSample("Conversions.TimeFromConversionToReportSend", 5,
                                 1);
 }

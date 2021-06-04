@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -24,6 +25,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -159,7 +161,7 @@ void FakeShillServiceClient::RemovePropertyChangedObserver(
 void FakeShillServiceClient::GetProperties(
     const dbus::ObjectPath& service_path,
     DBusMethodCallback<base::Value> callback) {
-  base::Optional<base::Value> result_properties;
+  absl::optional<base::Value> result_properties;
   const base::Value* nested_dict = GetServiceProperties(service_path.value());
   if (nested_dict) {
     result_properties = nested_dict->Clone();
@@ -253,6 +255,15 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
   if (!service_properties) {
     LOG(ERROR) << "Service not found: " << service_path.value();
     std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
+    return;
+  }
+
+  if (connect_error_name_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback), *connect_error_name_,
+                       /*error_message=*/std::string()));
+    connect_error_name_ = absl::nullopt;
     return;
   }
 
@@ -635,6 +646,11 @@ void FakeShillServiceClient::SetConnectBehavior(
     const std::string& service_path,
     const base::RepeatingClosure& behavior) {
   connect_behavior_[service_path] = behavior;
+}
+
+void FakeShillServiceClient::SetErrorForNextConnectionAttempt(
+    const std::string& error_name) {
+  connect_error_name_ = error_name;
 }
 
 void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {

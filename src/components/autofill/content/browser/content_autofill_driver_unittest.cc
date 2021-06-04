@@ -17,11 +17,12 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/ssl_status.h"
@@ -40,8 +41,8 @@ namespace autofill {
 namespace {
 
 const char kAppLocale[] = "en-US";
-const AutofillManager::AutofillDownloadManagerState kDownloadState =
-    AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER;
+const BrowserAutofillManager::AutofillDownloadManagerState kDownloadState =
+    BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER;
 
 class FakeAutofillAgent : public mojom::AutofillAgent {
  public:
@@ -228,11 +229,15 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetQueryPasswordSuggestion(bool query) override {}
 
-  void GetElementFormAndFieldData(
-      const std::vector<std::string>& selectors,
-      GetElementFormAndFieldDataCallback callback) override {}
+  void GetElementFormAndFieldDataAtIndex(
+      const std::string& selector,
+      int index,
+      GetElementFormAndFieldDataAtIndexCallback callback) override {}
 
   void SetAssistantActionState(bool running) override {}
+
+  void SetFieldsEligibleForManualFilling(
+      const std::vector<FieldRendererId>& fields) override {}
 
   mojo::AssociatedReceiverSet<mojom::AutofillAgent> receivers_;
 
@@ -240,36 +245,61 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // Records data received from FillForm() call.
   int32_t fill_form_id_;
-  base::Optional<FormData> fill_form_form_;
+  absl::optional<FormData> fill_form_form_;
   // Records data received from PreviewForm() call.
   int32_t preview_form_id_;
-  base::Optional<FormData> preview_form_form_;
+  absl::optional<FormData> preview_form_form_;
   // Records data received from FieldTypePredictionsAvailable() call.
-  base::Optional<std::vector<FormDataPredictions>> predictions_;
+  absl::optional<std::vector<FormDataPredictions>> predictions_;
   // Records whether ClearSection() got called.
   bool called_clear_section_;
   // Records whether ClearPreviewedForm() got called.
   bool called_clear_previewed_form_;
   // Records the ID received from FillFieldWithValue(), PreviewFieldWithValue(),
   // SetSuggestionAvailability(), or AcceptDataListSuggestion().
-  base::Optional<FieldRendererId> value_renderer_id_;
+  absl::optional<FieldRendererId> value_renderer_id_;
   // Records string received from FillFieldWithValue() call.
-  base::Optional<std::u16string> value_fill_field_;
+  absl::optional<std::u16string> value_fill_field_;
   // Records string received from PreviewFieldWithValue() call.
-  base::Optional<std::u16string> value_preview_field_;
+  absl::optional<std::u16string> value_preview_field_;
   // Records string received from AcceptDataListSuggestion() call.
-  base::Optional<std::u16string> value_accept_data_;
+  absl::optional<std::u16string> value_accept_data_;
   // Records bool received from SetSuggestionAvailability() call.
   bool suggestions_available_;
 };
 
 }  // namespace
 
-class MockAutofillManager : public AutofillManager {
+class ContentAutofillDriverTestApi {
  public:
-  MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
-      : AutofillManager(driver, client, kAppLocale, kDownloadState) {}
-  ~MockAutofillManager() override {}
+  explicit ContentAutofillDriverTestApi(ContentAutofillDriver* driver)
+      : driver_(driver) {}
+
+  void SetFrameAndFormMetaData(FormFieldData& field) const {
+    driver_->SetFrameAndFormMetaData(field);
+  }
+
+  void SetFrameAndFormMetaData(FormData& form) const {
+    driver_->SetFrameAndFormMetaData(form);
+  }
+
+  FormFieldData GetFieldWithFrameAndFormMetaData(FormFieldData field) const {
+    return driver_->GetFieldWithFrameAndFormMetaData(field);
+  }
+
+  FormData GetFormWithFrameAndFormMetaData(FormData form) const {
+    return driver_->GetFormWithFrameAndFormMetaData(form);
+  }
+
+ private:
+  ContentAutofillDriver* driver_;
+};
+
+class MockBrowserAutofillManager : public BrowserAutofillManager {
+ public:
+  MockBrowserAutofillManager(AutofillDriver* driver, AutofillClient* client)
+      : BrowserAutofillManager(driver, client, kAppLocale, kDownloadState) {}
+  ~MockBrowserAutofillManager() override {}
 
   MOCK_METHOD0(Reset, void());
 };
@@ -283,19 +313,20 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
-      : ContentAutofillDriver(rfh,
-                              client,
-                              kAppLocale,
-                              kDownloadState,
-                              nullptr) {
-    std::unique_ptr<AutofillManager> autofill_manager(
-        new MockAutofillManager(this, client));
-    SetAutofillManager(std::move(autofill_manager));
+      : ContentAutofillDriver(
+            rfh,
+            client,
+            kAppLocale,
+            kDownloadState,
+            AutofillManager::AutofillManagerFactoryCallback()) {
+    std::unique_ptr<BrowserAutofillManager> autofill_manager(
+        new MockBrowserAutofillManager(this, client));
+    SetBrowserAutofillManager(std::move(autofill_manager));
   }
   ~TestContentAutofillDriver() override {}
 
-  virtual MockAutofillManager* mock_autofill_manager() {
-    return static_cast<MockAutofillManager*>(autofill_manager());
+  virtual MockBrowserAutofillManager* mock_browser_autofill_manager() {
+    return static_cast<MockBrowserAutofillManager*>(browser_autofill_manager());
   }
 
   using ContentAutofillDriver::DidNavigateFrame;
@@ -344,18 +375,63 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
 };
 
 TEST_F(ContentAutofillDriverTest, NavigatedMainFrameDifferentDocument) {
-  EXPECT_CALL(*driver_->mock_autofill_manager(), Reset());
+  EXPECT_CALL(*driver_->mock_browser_autofill_manager(), Reset());
   Navigate(/*same_document=*/false);
 }
 
 TEST_F(ContentAutofillDriverTest, NavigatedMainFrameSameDocument) {
-  EXPECT_CALL(*driver_->mock_autofill_manager(), Reset()).Times(0);
+  EXPECT_CALL(*driver_->mock_browser_autofill_manager(), Reset()).Times(0);
   Navigate(/*same_document=*/true);
 }
 
 TEST_F(ContentAutofillDriverTest, NavigatedMainFrameFromBackForwardCache) {
-  EXPECT_CALL(*driver_->mock_autofill_manager(), Reset()).Times(0);
+  EXPECT_CALL(*driver_->mock_browser_autofill_manager(), Reset()).Times(0);
   Navigate(/*same_document=*/false, /*from_bfcache=*/true);
+}
+
+TEST_F(ContentAutofillDriverTest, SetFrameAndFormMetaDataOfForm) {
+  NavigateAndCommit(GURL("https://username:password@hostname/path?query#hash"));
+  FormData form;
+  form.fields.push_back(FormFieldData());
+  FormData form2 = ContentAutofillDriverTestApi(driver_.get())
+                       .GetFormWithFrameAndFormMetaData(form);
+  ContentAutofillDriverTestApi(driver_.get()).SetFrameAndFormMetaData(form);
+
+  EXPECT_EQ(
+      form.host_frame,
+      LocalFrameToken(web_contents()->GetMainFrame()->GetFrameToken().value()));
+  EXPECT_EQ(form.url, GURL("https://hostname/path"));
+  EXPECT_EQ(form.full_url,
+            GURL("https://username:password@hostname/path?query#hash"));
+  EXPECT_EQ(form.main_frame_origin,
+            web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_EQ(form.main_frame_origin,
+            url::Origin::CreateFromNormalizedTuple("https", "hostname", 443));
+  ASSERT_EQ(form.fields.size(), 1u);
+  EXPECT_EQ(
+      form.fields.front().host_frame,
+      LocalFrameToken(web_contents()->GetMainFrame()->GetFrameToken().value()));
+
+  EXPECT_EQ(form2.host_frame, form.host_frame);
+  EXPECT_EQ(form2.url, form.url);
+  EXPECT_EQ(form2.full_url, form.full_url);
+  EXPECT_EQ(form2.main_frame_origin, form.main_frame_origin);
+  ASSERT_EQ(form2.fields.size(), 1u);
+  EXPECT_EQ(form2.fields.front().host_frame, form2.fields.front().host_frame);
+}
+
+TEST_F(ContentAutofillDriverTest, SetFrameAndFormMetaDataOfField) {
+  NavigateAndCommit(GURL("https://username:password@hostname/path?query#hash"));
+  FormFieldData field;
+  FormFieldData field2 = ContentAutofillDriverTestApi(driver_.get())
+                             .GetFieldWithFrameAndFormMetaData(field);
+  ContentAutofillDriverTestApi(driver_.get()).SetFrameAndFormMetaData(field);
+
+  EXPECT_EQ(
+      field.host_frame,
+      LocalFrameToken(web_contents()->GetMainFrame()->GetFrameToken().value()));
+
+  EXPECT_EQ(field2.host_frame, field.host_frame);
 }
 
 TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {

@@ -10,6 +10,7 @@
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 
 namespace feed {
+class StreamType;
 
 // The Feed configuration. Default values appear below. Always use
 // |GetFeedConfig()| to get the current configuration.
@@ -61,13 +62,17 @@ struct Config {
 
   // Configuration for Web Feeds.
 
+  // How long before Web Feed content is considered stale.
+  base::TimeDelta web_feed_stale_content_threshold =
+      base::TimeDelta::FromHours(1);
   // TimeDelta after startup to fetch recommended and subscribed Web Feeds if
   // they are stale. If zero, no fetching is done.
   base::TimeDelta fetch_web_feed_info_delay = base::TimeDelta::FromSeconds(40);
   // How long before cached recommended feed data on the device is considered
   // stale and refetched.
+  // TODO(crbug/1152592): Revert to 7 days.
   base::TimeDelta recommended_feeds_staleness_threshold =
-      base::TimeDelta::FromDays(7);
+      base::TimeDelta::FromDays(1);
   // How long before cached subscribed feed data on the device is considered
   // stale and refetched.
   base::TimeDelta subscribed_feeds_staleness_threshold =
@@ -75,6 +80,9 @@ struct Config {
   // Number of days of history to query when determining whether to show the
   // follow accelerator.
   int webfeed_accelerator_recent_visit_history_days = 14;
+  // After loading the for-you feed, should the web-feed be refreshed as well?
+  // This is true except for testing.
+  bool refresh_web_feed_after_for_you_feed_loads = true;
 
   // Configuration for `PersistentKeyValueStore`.
 
@@ -82,6 +90,10 @@ struct Config {
   int64_t persistent_kv_store_maximum_size_before_eviction = 1000000;
   // Eviction task is performed after this many bytes are written.
   int persistent_kv_store_cleanup_interval_in_written_bytes = 1000000;
+
+  // Until we get the new list contents API working, keep using FeedQuery.
+  // TODO(crbug/1152592): turn this off when possible.
+  bool use_feed_query_requests_for_web_feeds = true;
 
   // Set of optional capabilities included in requests. See
   // CreateFeedQueryRequest() for required capabilities.
@@ -99,6 +111,8 @@ struct Config {
   Config();
   Config(const Config& other);
   ~Config();
+
+  base::TimeDelta GetStalenessThreshold(const StreamType& stream_type) const;
 };
 
 // Gets the current configuration.

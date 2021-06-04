@@ -520,7 +520,7 @@ void ThreadedInputHandler::ScrollEnd(bool should_snap) {
     return;
   }
 
-  if (should_snap && SnapAtScrollEnd()) {
+  if (should_snap && SnapAtScrollEnd(SnapReason::kGestureScrollEnd)) {
     deferred_scroll_end_ = true;
     return;
   }
@@ -1096,7 +1096,8 @@ void ThreadedInputHandler::ScrollOffsetAnimationFinished() {
   //  2- snap scroll animation is over (IsAnimatingForSnap == true).
   //
   //  Only for case (1) we should check and run snap scroll animation if needed.
-  if (!IsAnimatingForSnap() && SnapAtScrollEnd())
+  if (!IsAnimatingForSnap() &&
+      SnapAtScrollEnd(SnapReason::kScrollOffsetAnimationFinished))
     return;
 
   // The end of a scroll offset animation means that the scrolling node is at
@@ -1423,26 +1424,15 @@ ThreadedInputHandler::HitTestScrollNode(
       ActiveTree().FindAllLayersUpToAndIncludingFirstScrollable(
           device_viewport_point);
 
-  // It's theoretically possible to hit no layers or only non-scrolling layers.
-  // e.g. an API hit test outside the viewport. In that case, just fallback to
-  // scrolling the viewport.
-  if (layers.empty() || !layers.back()->IsScrollerOrScrollbar()) {
-    result.hit_test_successful = true;
-    if (InnerViewportScrollNode())
-      result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
+  const LayerImpl* scroller_layer =
+      (!layers.empty() && layers.back()->IsScrollerOrScrollbar())
+          ? layers.back()
+          : nullptr;
 
-    return result;
-  }
-
-  const LayerImpl* scroller_layer = layers.back();
-  layers.pop_back();
-
-  // Go through each layer in front of the scroller. Any of them may block
+  // Go through each layer up to (and including) the scroller. Any may block
   // scrolling if they come from outside the scroller's scroll-subtree or if we
   // hit a non-fast-scrolling-region.
   for (const auto* layer_impl : layers) {
-    DCHECK(!layer_impl->IsScrollbarLayer());
-
     // There are some cases where the hit layer may not be correct (e.g. layer
     // squashing, pointer-events:none layer) because the compositor doesn't
     // know what parts of the layer (if any) are actually visible to hit
@@ -1458,11 +1448,23 @@ ThreadedInputHandler::HitTestScrollNode(
     // If we hit a non-fast scrollable region, that means there's some reason we
     // can't scroll in this region. Primarily, because there's another scroller
     // there that isn't composited and we don't know about so we'll return
-    // nullptr in that case.
+    // failure.
     if (ActiveTree().PointHitsNonFastScrollableRegion(device_viewport_point,
                                                       *layer_impl)) {
       return result;
     }
+  }
+
+  // It's theoretically possible to hit no layers or only non-scrolling layers.
+  // e.g. an API hit test outside the viewport, or sending a scroll to an OOPIF
+  // that does not have overflow. If we made it to here, we also don't have any
+  // non-fast scroll regions. Fallback to scrolling the viewport.
+  if (!scroller_layer) {
+    result.hit_test_successful = true;
+    if (InnerViewportScrollNode())
+      result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
+
+    return result;
   }
 
   // If we hit a scrollbar layer, get the ScrollNode from its associated
@@ -1472,12 +1474,6 @@ ThreadedInputHandler::HitTestScrollNode(
     scroller_layer = ActiveTree().LayerByElementId(
         ToScrollbarLayer(scroller_layer)->scroll_element_id());
     DCHECK(scroller_layer);
-  } else {
-    // We need to also make sure the scroller itself doesn't have a non-fast
-    // scrolling region in the hit tested area.
-    if (ActiveTree().PointHitsNonFastScrollableRegion(device_viewport_point,
-                                                      *scroller_layer))
-      return result;
   }
 
   ScrollNode* scroll_node =
@@ -2009,7 +2005,7 @@ bool ThreadedInputHandler::ShouldAnimateScroll(
   return !has_precise_scroll_deltas;
 }
 
-bool ThreadedInputHandler::SnapAtScrollEnd() {
+bool ThreadedInputHandler::SnapAtScrollEnd(SnapReason reason) {
   ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
@@ -2033,9 +2029,14 @@ bool ThreadedInputHandler::SnapAtScrollEnd() {
   gfx::ScrollOffset last_scroll_delta = last_scroll_state.DeltaOrHint();
 
   std::unique_ptr<SnapSelectionStrategy> strategy;
-
-  if (imprecise_wheel_scrolling && !last_scroll_delta.IsZero()) {
+  if (imprecise_wheel_scrolling && !last_scroll_delta.IsZero() &&
+      reason == SnapReason::kScrollOffsetAnimationFinished) {
     // This was an imprecise wheel scroll so use direction snapping.
+    // Note: gesture scroll end is delayed in anticipation of future wheel
+    // scrolls so it is fired well after the scroll ends as opposed to precise
+    // touch devices where we fire it as soon as the user lifts their finger.
+    // TODO(crbug.com/1201678): The directional scroll should probably be
+    // triggered at gesture scroll begin to improve responsiveness.
     strategy = SnapSelectionStrategy::CreateForDirection(
         current_position, last_scroll_delta, true);
   } else {

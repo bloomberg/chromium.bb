@@ -39,15 +39,11 @@ namespace dawn_native {
         CommandIterator* GetIterator();
 
         // Functions to handle encoder errors
-        void HandleError(InternalErrorType type, const char* message);
-
-        inline void ConsumeError(std::unique_ptr<ErrorData> error) {
-            HandleError(error->GetType(), error->GetMessage().c_str());
-        }
+        void HandleError(std::unique_ptr<ErrorData> error);
 
         inline bool ConsumedError(MaybeError maybeError) {
             if (DAWN_UNLIKELY(maybeError.IsError())) {
-                ConsumeError(maybeError.AcquireError());
+                HandleError(maybeError.AcquireError());
                 return true;
             }
             return false;
@@ -57,11 +53,10 @@ namespace dawn_native {
             if (DAWN_UNLIKELY(encoder != mCurrentEncoder)) {
                 if (mCurrentEncoder != mTopLevelEncoder) {
                     // The top level encoder was used when a pass encoder was current.
-                    HandleError(InternalErrorType::Validation,
-                                "Command cannot be recorded inside a pass");
+                    HandleError(DAWN_VALIDATION_ERROR("Command cannot be recorded inside a pass"));
                 } else {
-                    HandleError(InternalErrorType::Validation,
-                                "Recording in an error or already ended pass encoder");
+                    HandleError(DAWN_VALIDATION_ERROR(
+                        "Recording in an error or already ended pass encoder"));
                 }
                 return false;
             }
@@ -79,11 +74,14 @@ namespace dawn_native {
 
         // Functions to set current encoder state
         void EnterPass(const ObjectBase* passEncoder);
-        void ExitPass(const ObjectBase* passEncoder, PassResourceUsage passUsages);
+        void ExitPass(const ObjectBase* passEncoder, RenderPassResourceUsage usages);
+        void ExitPass(const ObjectBase* passEncoder, ComputePassResourceUsage usages);
         MaybeError Finish();
 
-        const PerPassUsages& GetPassUsages() const;
-        PerPassUsages AcquirePassUsages();
+        const RenderPassUsages& GetRenderPassUsages() const;
+        const ComputePassUsages& GetComputePassUsages() const;
+        RenderPassUsages AcquireRenderPassUsages();
+        ComputePassUsages AcquireComputePassUsages();
 
       private:
         bool IsFinished() const;
@@ -101,16 +99,17 @@ namespace dawn_native {
         // CommandEncoder::Begin/EndPass.
         const ObjectBase* mCurrentEncoder;
 
-        PerPassUsages mPassUsages;
-        bool mWerePassUsagesAcquired = false;
+        RenderPassUsages mRenderPassUsages;
+        bool mWereRenderPassUsagesAcquired = false;
+        ComputePassUsages mComputePassUsages;
+        bool mWereComputePassUsagesAcquired = false;
 
         CommandAllocator mAllocator;
         CommandIterator mIterator;
         bool mWasMovedToIterator = false;
         bool mWereCommandsAcquired = false;
 
-        bool mGotError = false;
-        std::string mErrorMessage;
+        std::unique_ptr<ErrorData> mError;
     };
 
 }  // namespace dawn_native

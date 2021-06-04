@@ -396,10 +396,6 @@ template("write_build_config") {
         rebase_path(invoker.res_size_info_path, root_build_dir),
       ]
     }
-    if (defined(invoker.resource_dirs)) {
-      resource_dirs = rebase_path(invoker.resource_dirs, root_build_dir)
-      args += [ "--resource-dirs=$resource_dirs" ]
-    }
     if (defined(invoker.res_sources_path)) {
       _res_sources_path = rebase_path(invoker.res_sources_path, root_build_dir)
       args += [ "--res-sources-path=$_res_sources_path" ]
@@ -1367,6 +1363,7 @@ if (enable_java_templates) {
   #   build_config: Path to .build_config for the jar (contains classpath).
   #   script_name: Name of the script to generate.
   #   wrapper_script_args: List of extra arguments to pass to the executable.
+  #   tiered_stop_at_level_one: Whether to pass --tiered-stop-at-level-one
   #
   template("java_binary_script") {
     action_with_pydeps(target_name) {
@@ -1400,6 +1397,10 @@ if (enable_java_templates) {
       }
       if (use_jacoco_coverage || !treat_warnings_as_errors) {
         args += [ "--noverify" ]
+      }
+      if (defined(invoker.tiered_stop_at_level_one) &&
+          invoker.tiered_stop_at_level_one) {
+        args += [ "--tiered-stop-at-level-one" ]
       }
       if (defined(invoker.wrapper_script_args)) {
         args += [ "--" ] + invoker.wrapper_script_args
@@ -2094,11 +2095,6 @@ if (enable_java_templates) {
   #
   #   build_config: Path to the .build_config file corresponding to the target.
   #
-  #   resource_dirs (Deprecated):
-  #     ** This is deprecated, please specify files using |sources| parameter **
-  #     List of directories containing Android resources, layout should be
-  #     similar to what aapt -S <dir> expects.
-  #
   #   sources:
   #     List of input resource files.
   #
@@ -2585,8 +2581,6 @@ if (enable_java_templates) {
       _expectations_target =
           "${invoker.top_target_name}_validate_android_manifest"
       action_with_pydeps(_expectations_target) {
-        # TODO(crbug.com/1187279): Get this to work under Python3.
-        run_under_python2 = true
         _actual_file = "${invoker.android_manifest}.normalized"
         _failure_file =
             "$expectations_failure_dir/" +
@@ -2639,8 +2633,6 @@ if (enable_java_templates) {
     }
 
     action_with_pydeps(target_name) {
-      # TODO(crbug.com/1187279): Get this to work under Python3.
-      run_under_python2 = true
       script = _script
       depfile = "$target_gen_dir/${target_name}.d"
       inputs = _inputs
@@ -2650,6 +2642,38 @@ if (enable_java_templates) {
                "--depfile",
                rebase_path(depfile, root_build_dir),
              ]
+    }
+  }
+
+  template("unused_resources") {
+    _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+    _shrinker_dep = "//build/android/gyp/resources_shrinker:resources_shrinker"
+    _shrinker_script = "$root_build_dir/bin/helper/resources_shrinker"
+    action_with_pydeps(target_name) {
+      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY + [ "deps" ])
+      script = "//build/android/gyp/resources_shrinker/shrinker.py"
+      inputs = [
+        invoker.build_config,
+        invoker.proguard_mapping_path,
+        _shrinker_script,
+      ]
+      outputs = [ invoker.output_config ]
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ _shrinker_dep ]
+      args = [
+        "--script",
+        rebase_path(_shrinker_script, root_build_dir),
+        "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
+        "--proguard-mapping",
+        rebase_path(invoker.proguard_mapping_path, root_build_dir),
+        "--r-text=@FileArg($_rebased_build_config:deps_info:r_text_path)",
+        "--dex=@FileArg($_rebased_build_config:final_dex:path)",
+        "--android-manifest=@FileArg($_rebased_build_config:deps_info:android_manifest)",
+        "--output-config",
+        rebase_path(invoker.output_config, root_build_dir),
+      ]
     }
   }
 
@@ -3995,6 +4019,7 @@ if (enable_java_templates) {
       java_binary_script("${target_name}__java_binary_script") {
         forward_variables_from(invoker,
                                [
+                                 "tiered_stop_at_level_one",
                                  "main_class",
                                  "wrapper_script_args",
                                ])

@@ -29,13 +29,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kArcResizeLock;
 // certain devices.
 ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 
-// Enables the Bento feature which encapsulate multiple sub-features which
-// improve virtual desks.
-ASH_PUBLIC_EXPORT extern const base::Feature kBento;
-
 // Enables the Capture Mode feature which is an enhanced screenshot and screen
 // capture user experience.
 ASH_PUBLIC_EXPORT extern const base::Feature kCaptureMode;
+
+// Enables compositing-based throttling to throttle appropriate frame sinks that
+// do not need to be refreshed at high fps.
+ASH_PUBLIC_EXPORT extern const base::Feature kCompositingBasedThrottling;
 
 // Enables contextual nudges for gesture education.
 ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
@@ -53,11 +53,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDisplayIdentification;
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
 ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
-
-// Enables chaining of keyboard and touchpad swipe induced desk animations.
-// Enables continuous touchpad swiping to switch desks.
-// TODO(crbug.com/1111445): Remove this when the feature is fully launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnhancedDeskAnimations;
 
 // Enables the full restore feature. If this is enabled, we will restore apps
 // and app windows after a crash or reboot.
@@ -89,22 +84,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 
-// Enables more ways to interact with the window cycle list, i.e. mouse, touch,
-// gestures, and alternate keys.
-// TODO(chinsenj): Remove this when the feature is fully launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kInteractiveWindowCycleList;
-
 // Enables using arrow keys for display arrangement in display settings page.
 ASH_PUBLIC_EXPORT extern const base::Feature
     kKeyboardBasedDisplayArrangementInSettings;
 
 // Enables the redesigned managed device info UI in the system tray.
 ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
-
-// Enables the media session notification. If this is enabled, we will show
-// a notification that shows the currently playing media with controls.
-// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
-ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 
 // Enables resizing/moving the selection region for partial screenshot.
 ASH_PUBLIC_EXPORT extern const base::Feature kMovablePartialScreenshot;
@@ -142,12 +127,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
-// Enables side volume button control based on screen orientation feature.
-// TODO(https://crbug.com/937907): Remove this after the feature is fully
-// launched.
-ASH_PUBLIC_EXPORT extern const base::Feature
-    kSwapSideVolumeButtonsForOrientation;
-
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
 // may have choppier app list animations while in this mode. crbug.com/765292.
@@ -173,6 +152,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kFullscreenAlertBubble;
 // Enables battery indicator for styluses in the palette tray
 ASH_PUBLIC_EXPORT extern const base::Feature kStylusBatteryStatus;
 
+// Enables vertical split screen for clamshell mode. This allows users to snap
+// top and bottom when the screen is in portrait orientation, while snap left
+// and right when the screen is in landscape orientation.
+ASH_PUBLIC_EXPORT extern const base::Feature kVerticalSplitScreen;
+
 // Enables special handling of Chrome tab drags from a WebUI tab strip.
 // These will be treated similarly to a window drag, showing split view
 // indicators in tablet mode, etc. The functionality is behind a flag
@@ -186,14 +170,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kWindowsFollowCursor;
 // Enables notifications to be shown within context menus.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 
-// Enables the experimental productivity feature that aims to reduce context
-// switching by enabling users to collect content and transfer or access it
-// later.
-ASH_PUBLIC_EXPORT extern const base::Feature kTemporaryHoldingSpace;
-
-// Enables previews in the shelf for the `kTemporaryHoldingSpace` feature. Note
-// that this has no effect if the `kTemporaryHoldingSpace` feature is disabled.
-ASH_PUBLIC_EXPORT extern const base::Feature kTemporaryHoldingSpacePreviews;
+// Enables ARC integration with the productivity feature that aims to reduce
+// context switching by enabling users to collect content and transfer or access
+// it later.
+ASH_PUBLIC_EXPORT extern const base::Feature kHoldingSpaceArcIntegration;
 
 // Enables dragging an unpinned open app to pinned app side to pin.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragUnpinnedAppToPin;
@@ -216,13 +196,11 @@ ASH_PUBLIC_EXPORT bool IsArcResizeLockEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 
-ASH_PUBLIC_EXPORT bool IsBentoEnabled();
-
 ASH_PUBLIC_EXPORT bool IsCaptureModeEnabled();
 
-ASH_PUBLIC_EXPORT bool IsDarkLightModeEnabled();
+ASH_PUBLIC_EXPORT bool IsCompositingBasedThrottlingEnabled();
 
-ASH_PUBLIC_EXPORT bool IsEnhancedDeskAnimations();
+ASH_PUBLIC_EXPORT bool IsDarkLightModeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsFullRestoreEnabled();
 
@@ -233,8 +211,6 @@ ASH_PUBLIC_EXPORT bool IsKeyboardBasedDisplayArrangementInSettingsEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
-
-ASH_PUBLIC_EXPORT bool IsInteractiveWindowCycleListEnabled();
 
 ASH_PUBLIC_EXPORT bool IsManagedDeviceUIRedesignEnabled();
 
@@ -254,8 +230,6 @@ ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
-ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
-
 ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 
 ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
@@ -272,15 +246,15 @@ ASH_PUBLIC_EXPORT bool IsStylusBatteryStatusEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
 
+ASH_PUBLIC_EXPORT bool IsVerticalSplitScreenEnabled();
+
 ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
 
-ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpaceEnabled();
-
-ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpacePreviewsEnabled();
+ASH_PUBLIC_EXPORT bool IsHoldingSpaceArcIntegrationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDragUnpinnedAppToPinEnabled();
 

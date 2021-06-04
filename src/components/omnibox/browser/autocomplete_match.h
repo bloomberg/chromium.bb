@@ -226,6 +226,12 @@ struct AutocompleteMatch {
 
   // Update the Java object with clipboard content.
   void UpdateClipboardContent(JNIEnv* env);
+  // Update the Java object with new destination URL.
+  void UpdateJavaDestinationUrl();
+  // Update the Java object with new Answer-in-Suggest.
+  void UpdateJavaAnswer();
+  // Update the Java object description.
+  void UpdateJavaDescription();
 #endif
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
@@ -239,10 +245,6 @@ struct AutocompleteMatch {
   // this info is trivially done by calling BookmarkModel::IsBookmarked().
   const gfx::VectorIcon& GetVectorIcon(bool is_bookmark) const;
 #endif
-
-  // Returns text explaining why this suggestion was displayed. Can return an
-  // empty string if there is no explanation.
-  std::u16string GetWhyThisSuggestionText() const;
 
   // Comparison function for determining whether the first match is better than
   // the second.
@@ -482,6 +484,9 @@ struct AutocompleteMatch {
   // mucking with the matches stored in the model, lest other omnibox systems
   // get confused about which is which.  See the code that sets
   // |swap_contents_and_description| for conditions they are swapped.
+  //
+  // TODO(crbug.com/1202964): Clean up the handling of contents and description
+  // so that this copy is no longer required.
   AutocompleteMatch GetMatchWithContentsAndDescriptionPossiblySwapped() const;
 
   // Determines whether this match is allowed to be the default match by
@@ -512,14 +517,12 @@ struct AutocompleteMatch {
   void UpgradeMatchWithPropertiesFrom(AutocompleteMatch& duplicate_match);
 
   // Tries, in order, to:
-  // - Prefix autocomplete |primary_text|,
-  // - Prefix autocomplete |secondary_text|,
-  // - Non-prefix autocomplete |primary_text|, and
-  // - Non-prefix autocomplete |secondary_text|.
-  // Midword and title autocompletion are only attempted if
-  // |OmniboxFieldTrial::RichAutocompletionAutocompleteTitles()| and
-  // |OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix*()| are true
-  // respectively.
+  // - Prefix autocomplete |primary_text|
+  // - Prefix autocomplete |secondary_text|
+  // - Non-prefix autocomplete |primary_text|
+  // - Non-prefix autocomplete |secondary_text|
+  // - Split autocomplete |primary_text|
+  // - Split autocomplete |secondary_text|
   // Returns false if none of the autocompletions were appropriate (or the
   // features were disabled).
   bool TryRichAutocompletion(const std::u16string& primary_text,
@@ -637,7 +640,7 @@ struct AutocompleteMatch {
   //
   // If this value exists, it should always be positive and nonzero. In Java and
   // JavaScript, -1 is used as a sentinel value, but should never occur in C++.
-  base::Optional<int> suggestion_group_id;
+  absl::optional<int> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields
   // before displaying.
@@ -646,7 +649,7 @@ struct AutocompleteMatch {
   bool swap_contents_and_description = false;
 
   // A rich-format version of the display for the dropdown.
-  base::Optional<SuggestionAnswer> answer;
+  absl::optional<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
@@ -736,7 +739,7 @@ struct AutocompleteMatch {
   std::vector<NavsuggestTile> navsuggest_tiles;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
-  static const char kEllipsis[];
+  static const char16_t kEllipsis[];
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.

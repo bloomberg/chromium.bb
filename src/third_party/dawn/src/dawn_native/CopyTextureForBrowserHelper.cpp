@@ -38,16 +38,23 @@ namespace dawn_native {
                 u_scale : vec2<f32>;
                 u_offset : vec2<f32>;
             };
+            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+
             const texcoord : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                 vec2<f32>(-0.5, 0.0),
                 vec2<f32>( 1.5, 0.0),
                 vec2<f32>( 0.5, 2.0));
-            [[location(0)]] var<out> v_texcoord: vec2<f32>;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
-            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
-            [[stage(vertex)]] fn main() -> void {
-                Position = vec4<f32>((texcoord[VertexIndex] * 2.0 - vec2<f32>(1.0, 1.0)), 0.0, 1.0);
+
+            struct VertexOutputs {
+                [[location(0)]] texcoords : vec2<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
+
+            [[stage(vertex)]] fn main(
+                [[builtin(vertex_index)]] VertexIndex : u32
+            ) -> VertexOutputs {
+                var output : VertexOutputs;
+                output.position = vec4<f32>((texcoord[VertexIndex] * 2.0 - vec2<f32>(1.0, 1.0)), 0.0, 1.0);
 
                 // Y component of scale is calculated by the copySizeHeight / textureHeight. Only
                 // flipY case can get negative number.
@@ -59,33 +66,38 @@ namespace dawn_native {
                     // We need to get the mirror positions(mirrored based on y = 0.5) on flip cases.
                     // Adopt transform to src texture and then mapping it to triangle coord which
                     // do a +1 shift on Y dimension will help us got that mirror position perfectly.
-                    v_texcoord = (texcoord[VertexIndex] * uniforms.u_scale + uniforms.u_offset) *
-                                  vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0);
+                    output.texcoords = (texcoord[VertexIndex] * uniforms.u_scale + uniforms.u_offset) *
+                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0);
                 } else {
                     // For the normal case, we need to get the exact position.
                     // So mapping texture to triangle firstly then adopt the transform.
-                    v_texcoord = (texcoord[VertexIndex] *
-                                  vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0)) *
-                                  uniforms.u_scale + uniforms.u_offset;
+                    output.texcoords = (texcoord[VertexIndex] *
+                        vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0)) *
+                        uniforms.u_scale + uniforms.u_offset;
                 }
+
+                return output;
             }
         )";
 
         static const char sCopyTextureForBrowserFragment[] = R"(
             [[binding(1), group(0)]] var mySampler: sampler;
             [[binding(2), group(0)]] var myTexture: texture_2d<f32>;
-            [[location(0)]] var<in> v_texcoord : vec2<f32>;
-            [[location(0)]] var<out> outputColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
+
+            [[stage(fragment)]] fn main(
+                [[location(0)]] texcoord : vec2<f32>
+            ) -> [[location(0)]] vec4<f32> {
                 // Clamp the texcoord and discard the out-of-bound pixels.
                 var clampedTexcoord : vec2<f32> =
-                    clamp(v_texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
-                if (all(clampedTexcoord == v_texcoord)) {
-                    var srcColor : vec4<f32> = textureSample(myTexture, mySampler, v_texcoord);
-                    // Swizzling of texture formats when sampling / rendering is handled by the
-                    // hardware so we don't need special logic in this shader. This is covered by tests.
-                    outputColor = srcColor;
+                    clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
+                if (!all(clampedTexcoord == texcoord)) {
+                    discard;
                 }
+
+                var srcColor : vec4<f32> = textureSample(myTexture, mySampler, texcoord);
+                // Swizzling of texture formats when sampling / rendering is handled by the
+                // hardware so we don't need special logic in this shader. This is covered by tests.
+                return srcColor;
             }
         )";
 
@@ -130,6 +142,30 @@ namespace dawn_native {
             return {};
         }
 
+        MaybeError ValidateSourceOriginAndCopyExtent(const ImageCopyTexture source,
+                                                     const Extent3D copySize) {
+            if (source.origin.z > 0) {
+                return DAWN_VALIDATION_ERROR("Source origin cannot have non-zero z value");
+            }
+
+            if (copySize.depthOrArrayLayers > 1) {
+                return DAWN_VALIDATION_ERROR("Cannot copy to multiple slices");
+            }
+
+            return {};
+        }
+
+        MaybeError ValidateSourceAndDestinationTextureSampleCount(
+            const ImageCopyTexture source,
+            const ImageCopyTexture destination) {
+            if (source.texture->GetSampleCount() > 1 || destination.texture->GetSampleCount() > 1) {
+                return DAWN_VALIDATION_ERROR(
+                    "Source and destiantion textures cannot be multisampled");
+            }
+
+            return {};
+        }
+
         RenderPipelineBase* GetCachedPipeline(InternalPipelineStore* store,
                                               wgpu::TextureFormat dstFormat) {
             auto pipeline = store->copyTextureForBrowserPipelines.find(dstFormat);
@@ -139,7 +175,7 @@ namespace dawn_native {
             return nullptr;
         }
 
-        RenderPipelineBase* GetOrCreateCopyTextureForBrowserPipeline(
+        ResultOrError<RenderPipelineBase*> GetOrCreateCopyTextureForBrowserPipeline(
             DeviceBase* device,
             wgpu::TextureFormat dstFormat) {
             InternalPipelineStore* store = device->GetInternalPipelineStore();
@@ -152,9 +188,8 @@ namespace dawn_native {
                     wgslDesc.source = sCopyTextureForBrowserVertex;
                     descriptor.nextInChain = reinterpret_cast<ChainedStruct*>(&wgslDesc);
 
-                    // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-                    store->copyTextureForBrowserVS =
-                        AcquireRef(device->APICreateShaderModule(&descriptor));
+                    DAWN_TRY_ASSIGN(store->copyTextureForBrowserVS,
+                                    device->CreateShaderModule(&descriptor));
                 }
 
                 ShaderModuleBase* vertexModule = store->copyTextureForBrowserVS.Get();
@@ -165,9 +200,8 @@ namespace dawn_native {
                     ShaderModuleWGSLDescriptor wgslDesc;
                     wgslDesc.source = sCopyTextureForBrowserFragment;
                     descriptor.nextInChain = reinterpret_cast<ChainedStruct*>(&wgslDesc);
-                    // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-                    store->copyTextureForBrowserFS =
-                        AcquireRef(device->APICreateShaderModule(&descriptor));
+                    DAWN_TRY_ASSIGN(store->copyTextureForBrowserFS,
+                                    device->CreateShaderModule(&descriptor));
                 }
 
                 ShaderModuleBase* fragmentModule = store->copyTextureForBrowserFS.Get();
@@ -200,9 +234,9 @@ namespace dawn_native {
                 fragment.targetCount = 1;
                 fragment.targets = &target;
 
-                // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-                store->copyTextureForBrowserPipelines.insert(
-                    {dstFormat, AcquireRef(device->APICreateRenderPipeline2(&renderPipelineDesc))});
+                Ref<RenderPipelineBase> pipeline;
+                DAWN_TRY_ASSIGN(pipeline, device->CreateRenderPipeline(&renderPipelineDesc));
+                store->copyTextureForBrowserPipelines.insert({dstFormat, std::move(pipeline)});
             }
 
             return GetCachedPipeline(store, dstFormat);
@@ -221,13 +255,18 @@ namespace dawn_native {
         DAWN_TRY(ValidateImageCopyTexture(device, *source, *copySize));
         DAWN_TRY(ValidateImageCopyTexture(device, *destination, *copySize));
 
+        DAWN_TRY(ValidateSourceOriginAndCopyExtent(*source, *copySize));
         DAWN_TRY(ValidateCopyTextureForBrowserRestrictions(*source, *destination, *copySize));
+        DAWN_TRY(ValidateSourceAndDestinationTextureSampleCount(*source, *destination));
 
         DAWN_TRY(ValidateTextureCopyRange(device, *source, *copySize));
         DAWN_TRY(ValidateTextureCopyRange(device, *destination, *copySize));
 
         DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc));
+        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::Sampled));
+
         DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst));
+        DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::RenderAttachment));
 
         DAWN_TRY(ValidateCopyTextureFormatConversion(source->texture->GetFormat().format,
                                                      destination->texture->GetFormat().format));
@@ -245,12 +284,18 @@ namespace dawn_native {
         // TODO(shaobo.yan@intel.com): In D3D12 and Vulkan, compatible texture format can directly
         // copy to each other. This can be a potential fast path.
 
-        RenderPipelineBase* pipeline = GetOrCreateCopyTextureForBrowserPipeline(
-            device, destination->texture->GetFormat().format);
+        // Noop copy
+        if (copySize->width == 0 || copySize->height == 0 || copySize->depthOrArrayLayers == 0) {
+            return {};
+        }
+
+        RenderPipelineBase* pipeline;
+        DAWN_TRY_ASSIGN(pipeline, GetOrCreateCopyTextureForBrowserPipeline(
+                                      device, destination->texture->GetFormat().format));
 
         // Prepare bind group layout.
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<BindGroupLayoutBase> layout = AcquireRef(pipeline->APIGetBindGroupLayout(0));
+        Ref<BindGroupLayoutBase> layout;
+        DAWN_TRY_ASSIGN(layout, pipeline->GetBindGroupLayout(0));
 
         // Prepare bind group descriptor
         BindGroupEntry bindGroupEntries[3] = {};
@@ -280,8 +325,8 @@ namespace dawn_native {
         BufferDescriptor uniformDesc = {};
         uniformDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
         uniformDesc.size = sizeof(uniformData);
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<BufferBase> uniformBuffer = AcquireRef(device->APICreateBuffer(&uniformDesc));
+        Ref<BufferBase> uniformBuffer;
+        DAWN_TRY_ASSIGN(uniformBuffer, device->CreateBuffer(&uniformDesc));
 
         DAWN_TRY(device->GetQueue()->WriteBuffer(uniformBuffer.Get(), 0, uniformData,
                                                  sizeof(uniformData)));
@@ -289,16 +334,17 @@ namespace dawn_native {
         // Prepare binding 1 resource: sampler
         // Use default configuration, filterMode set to Nearest for min and mag.
         SamplerDescriptor samplerDesc = {};
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<SamplerBase> sampler = AcquireRef(device->APICreateSampler(&samplerDesc));
+        Ref<SamplerBase> sampler;
+        DAWN_TRY_ASSIGN(sampler, device->CreateSampler(&samplerDesc));
 
         // Prepare binding 2 resource: sampled texture
         TextureViewDescriptor srcTextureViewDesc = {};
         srcTextureViewDesc.baseMipLevel = source->mipLevel;
         srcTextureViewDesc.mipLevelCount = 1;
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<TextureViewBase> srcTextureView =
-            AcquireRef(source->texture->APICreateView(&srcTextureViewDesc));
+        srcTextureViewDesc.arrayLayerCount = 1;
+        Ref<TextureViewBase> srcTextureView;
+        DAWN_TRY_ASSIGN(srcTextureView,
+                        device->CreateTextureView(source->texture, &srcTextureViewDesc));
 
         // Set bind group entries.
         bindGroupEntries[0].binding = 0;
@@ -310,8 +356,8 @@ namespace dawn_native {
         bindGroupEntries[2].textureView = srcTextureView.Get();
 
         // Create bind group after all binding entries are set.
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<BindGroupBase> bindGroup = AcquireRef(device->APICreateBindGroup(&bgDesc));
+        Ref<BindGroupBase> bindGroup;
+        DAWN_TRY_ASSIGN(bindGroup, device->CreateBindGroup(&bgDesc));
 
         // Create command encoder.
         CommandEncoderDescriptor encoderDesc = {};
@@ -322,14 +368,16 @@ namespace dawn_native {
         TextureViewDescriptor dstTextureViewDesc;
         dstTextureViewDesc.baseMipLevel = destination->mipLevel;
         dstTextureViewDesc.mipLevelCount = 1;
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        Ref<TextureViewBase> dstView =
-            AcquireRef(destination->texture->APICreateView(&dstTextureViewDesc));
+        dstTextureViewDesc.baseArrayLayer = destination->origin.z;
+        dstTextureViewDesc.arrayLayerCount = 1;
+        Ref<TextureViewBase> dstView;
+        DAWN_TRY_ASSIGN(dstView,
+                        device->CreateTextureView(destination->texture, &dstTextureViewDesc));
 
         // Prepare render pass color attachment descriptor.
         RenderPassColorAttachmentDescriptor colorAttachmentDesc;
 
-        colorAttachmentDesc.attachment = dstView.Get();
+        colorAttachmentDesc.view = dstView.Get();
         colorAttachmentDesc.loadOp = wgpu::LoadOp::Load;
         colorAttachmentDesc.storeOp = wgpu::StoreOp::Store;
         colorAttachmentDesc.clearColor = {0.0, 0.0, 0.0, 1.0};

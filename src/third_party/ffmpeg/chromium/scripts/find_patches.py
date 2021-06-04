@@ -18,32 +18,21 @@ For example, to generate the patches file for origin/merge-m68:
 find_patches.py origin/merge-m68 > patches.68
 """
 
-from __future__ import print_function
 import collections
 import os
 import re
 import sys
 import subprocess
 
+from robo_lib import shell
+
 # What directory will we look for patches in?
 # TODO(liberato): Should we find the root of the ffmpeg tree?
 PATH = "."
 
 
-def log(str):
-  print("[%s]" % str, file=sys.stderr)
-
-
-def run(command):
-  """ Runs a command and returns stdout.
-
-  Args:
-    command: Array of argv[] entries. E.g., ["path_to_executable", "arg1", ...].
-
-  Returns:
-    stdout as a a string.
-  """
-  return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
+def log(msg):
+  print(f"[{msg}]", file=sys.stderr)
 
 
 class PatchInfo:
@@ -117,8 +106,8 @@ def write_patches_file(origin_branch, output_file):
   """Write the patches file for |origin_branch| to |output_file|."""
   # Get the latest upstream commit that's reachable from the origin branch.
   # We'll use that to compare against.
-  upstream = run(["git", "merge-base", "upstream/master",
-                  origin_branch]).strip()
+  upstream = shell.output_or_error(
+    ["git", "merge-base", "upstream/master", origin_branch])
   if not upstream:
     raise Exception("Could not find upstream commit")
 
@@ -133,10 +122,9 @@ def write_patches_file(origin_branch, output_file):
   # Find diffs between the versions, excluding all files that are only on
   # origin.  We explicitly exclude .gitignore, since it exists in both places.
   # Ask for no context, since we ignore it anyway.
-  diff = run([
-      "git", "diff", "--diff-filter=a", "-U0", revision_range, PATH,
-      ":!.gitignore"
-  ])
+  diff = shell.output_or_error(
+    ["git", "diff", "--diff-filter=a", "-U0", revision_range, PATH,
+     ":!.gitignore"])
 
   # Set of chromium patch sha1s we've seen.
   sha1s = set()
@@ -183,7 +171,7 @@ def write_patches_file(origin_branch, output_file):
         # One-line change
         blame_range = "%s,+1" % added_linespec
 
-      blame = run([
+      blame = shell.output_or_error([
           "git", "blame", "-l",
           "-L %s" % blame_range, revision_range, "--", filename
       ])
@@ -213,12 +201,16 @@ def write_patches_file(origin_branch, output_file):
       if len(deleted_line) < 4:
         continue
 
+      # git log freaks out if you search for a line starting with #, remove it.
+      while deleted_line.startswith('#'):
+        deleted_line = deleted_line[1:]
+
       log("Checking for deleted lines in %s" % filename)
       # Specify "--first-parent" so that we find commits on (presumably) origin.
-      sha1 = run([
+      sha1 = shell.output_or_error([
           "git", "log", "-1", revision_range, "--format=%H", "-S", deleted_line,
           origin_branch, "--", filename
-      ]).strip()
+      ])
 
       # Add the sha1 to the sets
       sha1s.add(sha1)
@@ -229,7 +221,7 @@ def write_patches_file(origin_branch, output_file):
   log("Looking up sha1 dates to sort them")
   sha1_to_date = {}
   for sha1 in sha1s:
-    date = run(["git", "log", "-1", "--format=%at", "%s" % sha1]).strip()
+    date = shell.output_or_error(["git", "log", "-1", "--format=%at", "%s" % sha1])
     sha1_to_date[sha1] = date
 
   # Print the patches file.
@@ -246,11 +238,12 @@ def write_patches_file(origin_branch, output_file):
       file=output_file)
   print("\n", file=output_file)
   wd = os.getcwd()
-  for sha1, date in sorted(sha1_to_date.iteritems(), key=lambda (k, v): v):
+  for sha1, date in sorted(sha1_to_date.items(), key=lambda kv: kv[1]):
     print(
         "------------------------------------------------------------------",
         file=output_file)
-    for line in run(["git", "log", "-1", "%s" % sha1]).splitlines():
+    loglines = shell.output_or_error(["git", "log", "-1", "%s" % sha1])
+    for line in loglines.splitlines():
       print(line.rstrip(), file=output_file)
     print("\nAffects:", file=output_file)
     # TODO(liberato): maybe add the lines that were affected.

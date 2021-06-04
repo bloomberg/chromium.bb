@@ -56,8 +56,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
   if (!service)
     return;
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetNetworkContext();
+      profile->GetDefaultStoragePartition()->GetNetworkContext();
   network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
@@ -136,7 +135,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  std::unique_ptr<GCMProfileService> service = nullptr;
+  std::unique_ptr<GCMProfileService> service;
 #if defined(OS_ANDROID)
   service = std::make_unique<GCMProfileService>(profile->GetPath(),
                                                 blocking_task_runner);
@@ -144,7 +143,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   service = std::make_unique<GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),

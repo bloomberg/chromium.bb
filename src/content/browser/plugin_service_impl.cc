@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -120,7 +121,7 @@ void PluginServiceImpl::Init() {
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock) {
+    const absl::optional<url::Origin>& origin_lock) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->plugin_path() == plugin_path &&
         iter->profile_data_directory() == profile_data_directory &&
@@ -149,7 +150,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock) {
+    const absl::optional<url::Origin>& origin_lock) {
   DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
                           ? BrowserThread::UI
                           : BrowserThread::IO);
@@ -243,7 +244,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock,
+    const absl::optional<url::Origin>& origin_lock,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       render_process_id, embedder_origin, plugin_path, profile_data_directory,
@@ -321,10 +322,9 @@ std::u16string PluginServiceImpl::GetPluginDisplayNameByPath(
 #if defined(OS_MAC)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
-    static const char kPluginExtension[] = ".plugin";
-    if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
-                       base::CompareCase::SENSITIVE))
-      plugin_name.erase(plugin_name.length() - strlen(kPluginExtension));
+    static constexpr base::StringPiece16 kPluginExtension = u".plugin";
+    if (base::EndsWith(plugin_name, kPluginExtension))
+      plugin_name.erase(plugin_name.size() - kPluginExtension.size());
 #endif  // defined(OS_MAC)
   }
   return plugin_name;

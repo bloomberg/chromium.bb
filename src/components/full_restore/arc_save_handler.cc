@@ -19,7 +19,7 @@ namespace {
 // Repeat timer interval between each checking that whether a task is created
 // for each app launching.
 constexpr base::TimeDelta kCheckCycleInterval =
-    base::TimeDelta::FromSeconds(30);
+    base::TimeDelta::FromSeconds(600);
 
 }  // namespace
 
@@ -117,6 +117,17 @@ void ArcSaveHandler::OnTaskDestroyed(int32_t task_id) {
       profile_path_, it->second, task_id);
 
   task_id_to_app_id_.erase(task_id);
+}
+
+void ArcSaveHandler::OnTaskThemeColorUpdated(int32_t task_id,
+                                             uint32_t primary_color,
+                                             uint32_t status_bar_color) {
+  auto it = task_id_to_app_id_.find(task_id);
+  if (it == task_id_to_app_id_.end())
+    return;
+
+  FullRestoreSaveHandler::GetInstance()->ModifyThemeColor(
+      profile_path_, it->second, task_id, primary_color, status_bar_color);
 }
 
 int32_t ArcSaveHandler::GetArcSessionId() {

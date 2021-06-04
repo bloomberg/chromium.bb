@@ -17,11 +17,6 @@ namespace gfx {
 class SlideAnimation;
 }  // namespace gfx
 
-namespace views {
-class InkDrop;
-class InkDropRipple;
-}  // namespace views
-
 namespace ash {
 
 class AppListView;
@@ -43,10 +38,6 @@ class ASH_EXPORT ExpandArrowView : public views::Button,
   void OnFocus() override;
   void OnBlur() override;
   const char* GetClassName() const override;
-
-  // views::InkDropHostView:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // Calculates vertical offset between expand arrow circle's positions with app
   // list view drag progress |progress| and the current app list progress

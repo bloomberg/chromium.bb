@@ -4,8 +4,13 @@
 
 import {ScanningBrowserProxy, SelectedPath} from 'chrome://scanning/scanning_browser_proxy.js';
 
-import {assertArrayEquals, assertEquals} from '../../chai_assert.js';
+import {assertEquals} from '../../chai_assert.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+
+const EMPTY_SELECTED_PATH = {
+  baseName: '',
+  filePath: ''
+};
 
 /**
  * Test version of ScanningBrowserProxy.
@@ -23,10 +28,14 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
       'openFilesInMediaApp',
       'recordScanCompleteAction',
       'recordNumScanSettingChanges',
+      'saveScanSettings',
+      'getScanSettings',
+      'ensureValidFilePath',
+      'recordNumCompletedScans',
     ]);
 
-    /** @private {?SelectedPath} */
-    this.selectedPath_ = null;
+    /** @private {!SelectedPath} */
+    this.selectedPath_ = EMPTY_SELECTED_PATH;
 
     /** @private {?string} */
     this.pathToFile_ = null;
@@ -34,30 +43,27 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
     /** @private {string} */
     this.myFilesPath_ = '';
 
-    /** @private {!Array<string>} */
-    this.filePaths_ = [];
+    /** @private {string} */
+    this.savedSettings_ = '';
 
-    /** @private {number} */
-    this.expectedNumScanSettingChanges_ = 0;
+    /** @private {!SelectedPath} */
+    this.savedSettingsSelectedPath_ = EMPTY_SELECTED_PATH;
   }
 
   /** @override */
-  initialize() {
-    this.methodCalled('initialize');
-  }
+  initialize() {}
 
   /**
    * @return {!Promise}
    * @override
    */
   requestScanToLocation() {
-    this.methodCalled('requestScanToLocation');
     return Promise.resolve(this.selectedPath_);
   }
 
   /** @param {string} pathToFile */
   showFileInLocation(pathToFile) {
-    this.methodCalled('showFileInLocation');
+    this.methodCalled('showFileInLocation', pathToFile);
     return Promise.resolve(this.pathToFile_ === pathToFile);
   }
 
@@ -66,8 +72,6 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
    * @param {number} count
    */
   getPluralString(name, count) {
-    this.methodCalled('getPluralString');
-
     let pluralString = '';
     if (name === 'fileSavedText') {
       pluralString = count === 1 ?
@@ -87,7 +91,6 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   getMyFilesPath() {
-    this.methodCalled('getMyFilesPath');
     return Promise.resolve(this.myFilesPath_);
   }
 
@@ -96,8 +99,7 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
    * @override
    */
   openFilesInMediaApp(filePaths) {
-    this.methodCalled('openFilesInMediaApp');
-    assertArrayEquals(this.filePaths_, filePaths);
+    this.methodCalled('openFilesInMediaApp', filePaths);
   }
 
   /** @override */
@@ -105,8 +107,29 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   recordNumScanSettingChanges(numChanges) {
-    assertEquals(this.expectedNumScanSettingChanges_, numChanges);
+    this.methodCalled('recordNumScanSettingChanges', numChanges);
   }
+
+  /** @override */
+  saveScanSettings(scanSettings) {
+    this.methodCalled('saveScanSettings', scanSettings);
+  }
+
+  /** @override */
+  getScanSettings() {
+    return Promise.resolve(this.savedSettings_);
+  }
+
+  /** @override */
+  ensureValidFilePath(filePath) {
+    return Promise.resolve(
+        filePath === this.savedSettingsSelectedPath_.filePath ?
+            this.savedSettingsSelectedPath_ :
+            EMPTY_SELECTED_PATH);
+  }
+
+  /** @override */
+  recordNumCompletedScans() {}
 
   /** @param {!SelectedPath} selectedPath */
   setSelectedPath(selectedPath) {
@@ -123,13 +146,13 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
     this.myFilesPath_ = myFilesPath;
   }
 
-  /** @param {!Array<string>} filePaths */
-  setFilePaths(filePaths) {
-    this.filePaths_ = filePaths;
+  /** @param {string} savedSettings */
+  setSavedSettings(savedSettings) {
+    this.savedSettings_ = savedSettings;
   }
 
-  /** @param {number} numChanges */
-  setExpectedNumScanSettingChanges(numChanges) {
-    this.expectedNumScanSettingChanges_ = numChanges;
+  /** @param {!SelectedPath} selectedPath */
+  setSavedSettingsSelectedPath(selectedPath) {
+    this.savedSettingsSelectedPath_ = selectedPath;
   }
 }

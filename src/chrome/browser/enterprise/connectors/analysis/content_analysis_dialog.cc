@@ -19,6 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
@@ -39,8 +41,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace enterprise_connectors {
 
@@ -204,7 +204,7 @@ base::TimeDelta ContentAnalysisDialog::GetSuccessDialogTimeout() {
 }
 
 ContentAnalysisDialog::ContentAnalysisDialog(
-    std::unique_ptr<ContentAnalysisDelegate> delegate,
+    std::unique_ptr<ContentAnalysisDelegateBase> delegate,
     content::WebContents* web_contents,
     safe_browsing::DeepScanAccessPoint access_point,
     int files_count)
@@ -218,7 +218,14 @@ ContentAnalysisDialog::ContentAnalysisDialog(
   if (observer_for_testing)
     observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
 
-  Show();
+  SetupButtons();
+
+  first_shown_timestamp_ = base::TimeTicks::Now();
+
+  constrained_window::ShowWebModalDialogViews(this, web_contents_);
+
+  if (observer_for_testing)
+    observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
 }
 
 std::u16string ContentAnalysisDialog::GetWindowTitle() const {
@@ -359,7 +366,7 @@ void ContentAnalysisDialog::WebContentsDestroyed() {
 }
 
 void ContentAnalysisDialog::ShowResult(
-    ContentAnalysisDelegate::FinalResult result,
+    ContentAnalysisDelegateBase::FinalResult result,
     const std::u16string& custom_message,
     const GURL& learn_more_url) {
   DCHECK(is_pending());
@@ -368,26 +375,17 @@ void ContentAnalysisDialog::ShowResult(
   final_learn_more_url_ = learn_more_url;
 
   switch (final_result_) {
-    case ContentAnalysisDelegate::FinalResult::ENCRYPTED_FILES:
-    case ContentAnalysisDelegate::FinalResult::LARGE_FILES:
-    case ContentAnalysisDelegate::FinalResult::FAILURE:
+    case ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES:
+    case ContentAnalysisDelegateBase::FinalResult::LARGE_FILES:
+    case ContentAnalysisDelegateBase::FinalResult::FAILURE:
       dialog_status_ = DeepScanningDialogStatus::FAILURE;
       break;
-    case ContentAnalysisDelegate::FinalResult::SUCCESS:
+    case ContentAnalysisDelegateBase::FinalResult::SUCCESS:
       dialog_status_ = DeepScanningDialogStatus::SUCCESS;
       break;
-    case ContentAnalysisDelegate::FinalResult::WARNING:
+    case ContentAnalysisDelegateBase::FinalResult::WARNING:
       dialog_status_ = DeepScanningDialogStatus::WARNING;
       break;
-  }
-
-  // Do nothing if the pending dialog wasn't shown, the delayed |Show| callback
-  // will show the negative result later if that's the verdict.
-  if (!shown_) {
-    // Cleanup if the pending dialog wasn't shown and the verdict is safe.
-    if (is_success())
-      delete this;
-    return;
   }
 
   // Update the pending dialog only after it has been shown for a minimum amount
@@ -410,7 +408,6 @@ ContentAnalysisDialog::~ContentAnalysisDialog() {
 }
 
 void ContentAnalysisDialog::UpdateDialog() {
-  DCHECK(shown_);
   views::Widget* widget = GetWidget();
   DCHECK(widget);
   DCHECK(is_result());
@@ -584,29 +581,6 @@ std::u16string ContentAnalysisDialog::GetBypassWarningButtonText() const {
   return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_DIALOG_PROCEED_BUTTON);
 }
 
-void ContentAnalysisDialog::Show() {
-  DCHECK(!shown_);
-
-  // The only state that cannot be shown immediately is SUCCESS, the dialog
-  // doesn't appear in that case.
-  DCHECK(!is_success());
-
-  shown_ = true;
-  first_shown_timestamp_ = base::TimeTicks::Now();
-
-  SetupButtons();
-
-  constrained_window::ShowWebModalDialogViews(this, web_contents_);
-
-  if (observer_for_testing)
-    observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
-
-  // Cancel the dialog as it is shown in tests if the failure dialog is shown
-  // immediately.
-  if (observer_for_testing && is_failure())
-    CancelDialog();
-}
-
 std::unique_ptr<views::View> ContentAnalysisDialog::CreateSideIcon() {
   // The side icon is created either:
   // - When the pending dialog is shown
@@ -674,12 +648,13 @@ std::u16string ContentAnalysisDialog::GetFailureMessage() const {
   if (has_custom_message())
     return GetCustomMessage();
 
-  if (final_result_ == ContentAnalysisDelegate::FinalResult::LARGE_FILES) {
+  if (final_result_ == ContentAnalysisDelegateBase::FinalResult::LARGE_FILES) {
     return l10n_util::GetPluralStringFUTF16(
         IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE, files_count_);
   }
 
-  if (final_result_ == ContentAnalysisDelegate::FinalResult::ENCRYPTED_FILES) {
+  if (final_result_ ==
+      ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES) {
     return l10n_util::GetPluralStringFUTF16(
         IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE, files_count_);
   }

@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/shortcut_manager.h"
@@ -99,8 +100,8 @@ class MultipleProfileDeletionObserver
                                 OnBrowsingDataRemoverWouldComplete,
                             base::Unretained(this));
     for (Profile* profile : profile_manager->GetLoadedProfiles()) {
-      content::BrowserContext::GetBrowsingDataRemover(profile)
-          ->SetWouldCompleteCallbackForTesting(would_complete_callback);
+      profile->GetBrowsingDataRemover()->SetWouldCompleteCallbackForTesting(
+          would_complete_callback);
     }
   }
 
@@ -309,8 +310,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteSingletonProfile) {
 
   // Make sure the last used profile was set correctly before the notification
   // was sent.
-  std::string last_used_profile_name =
-      last_used->GetPath().BaseName().MaybeAsASCII();
+  std::string last_used_profile_name = last_used->GetBaseName().MaybeAsASCII();
   EXPECT_EQ(last_used_profile_name, observer.last_used_profile_name());
 }
 
@@ -375,7 +375,12 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteCurrentProfile) {
   EXPECT_EQ(new_path, last_used->GetPath());
 }
 
-IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteAllProfiles) {
+#if defined(OS_LINUX)
+#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
+#else
+#define MAYBE_DeleteAllProfiles DeleteAllProfiles
+#endif
+IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -443,14 +448,17 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, ProfileFromProfileKey) {
                           profile2->GetProfileKey()));
 
   // Create off-the-record profiles.
-  Profile* otr_1a = profile1->GetPrimaryOTRProfile();
-  Profile* otr_1b =
-      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
-  Profile* otr_1c =
-      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr2"));
-  Profile* otr_2a = profile2->GetPrimaryOTRProfile();
-  Profile* otr_2b =
-      profile2->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
+  auto otr_profile_id1 = Profile::OTRProfileID::CreateUniqueForTesting();
+  auto otr_profile_id2 = Profile::OTRProfileID::CreateUniqueForTesting();
+
+  Profile* otr_1a = profile1->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  Profile* otr_1b = profile1->GetOffTheRecordProfile(otr_profile_id1,
+                                                     /*create_if_needed=*/true);
+  Profile* otr_1c = profile1->GetOffTheRecordProfile(otr_profile_id2,
+                                                     /*create_if_needed=*/true);
+  Profile* otr_2a = profile2->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  Profile* otr_2b = profile2->GetOffTheRecordProfile(otr_profile_id1,
+                                                     /*create_if_needed=*/true);
 
   EXPECT_EQ(otr_1a,
             profile_manager->GetProfileFromProfileKey(otr_1a->GetProfileKey()));
@@ -504,7 +512,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest,
   base::RunLoop run_loop;
   ProfileManager::CreateMultiProfileAsync(
       u"New Profile",
-      /*icon_index=*/0,
+      /*icon_index=*/0, /*is_hidden=*/false,
       base::BindRepeating(&ProfileCreationComplete,
                           run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
@@ -678,8 +686,16 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(initial_profile_count, storage.GetNumberOfProfiles());
 
-  // TODO(crbug.com/1191455): Once RemoveProfile()/NukeProfileFromDisk() aren't
-  // flaky anymore, EXPECT_FALSE(PathExists(path_profile2)).
+  if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
+    // Check that NukeProfileFromDisk() works correctly.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::Time start = base::Time::Now();
+    while (base::PathExists(path_profile2) &&
+           base::Time::Now() - start < TestTimeouts::action_timeout()) {
+      base::RunLoop().RunUntilIdle();
+    }
+    EXPECT_FALSE(base::PathExists(path_profile2));
+  }
 }
 
 // The test makes sense on those platforms where the keychain exists.
@@ -745,7 +761,8 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, IncognitoProfile) {
   size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
 
   // Create an incognito profile.
-  Profile* incognito_profile = profile->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   EXPECT_TRUE(profile->HasPrimaryOTRProfile());
   ASSERT_TRUE(profile_manager->IsValidProfile(incognito_profile));
@@ -754,12 +771,12 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, IncognitoProfile) {
   // Check that a default save path is not empty, since it's taken from the
   // main profile preferences, set it to empty and verify that it becomes
   // empty.
-  EXPECT_FALSE(profile->GetOffTheRecordPrefs()
+  EXPECT_FALSE(incognito_profile->GetPrefs()
                    ->GetFilePath(prefs::kSaveFileDefaultDirectory)
                    .empty());
-  profile->GetOffTheRecordPrefs()->SetFilePath(prefs::kSaveFileDefaultDirectory,
-                                               base::FilePath());
-  EXPECT_TRUE(profile->GetOffTheRecordPrefs()
+  incognito_profile->GetPrefs()->SetFilePath(prefs::kSaveFileDefaultDirectory,
+                                             base::FilePath());
+  EXPECT_TRUE(incognito_profile->GetPrefs()
                   ->GetFilePath(prefs::kSaveFileDefaultDirectory)
                   .empty());
 
@@ -772,7 +789,9 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, IncognitoProfile) {
   EXPECT_EQ(initial_profile_count, profile_manager->GetNumberOfProfiles());
   // After destroying the incognito profile incognito preferences should be
   // cleared so the default save path should be taken from the main profile.
-  EXPECT_FALSE(profile->GetOffTheRecordPrefs()
+  // When Incognito profile does not exist, GetReadOnlyOffTheRecordPrefs gives
+  // the OTR prefs.
+  EXPECT_FALSE(profile->GetReadOnlyOffTheRecordPrefs()
                    ->GetFilePath(prefs::kSaveFileDefaultDirectory)
                    .empty());
 }

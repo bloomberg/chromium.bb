@@ -14,8 +14,8 @@
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_context.h"
 #include "net/quic/quic_event_logger.h"
-#include "net/quic/quic_transport_error.h"
 #include "net/quic/web_transport_client.h"
+#include "net/quic/web_transport_error.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
@@ -58,7 +58,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   ~DedicatedWebTransportHttp3Client() override;
 
   WebTransportState state() const { return state_; }
-  const QuicTransportError& error() const override;
+  const WebTransportError& error() const override;
 
   // Connect() is an asynchronous operation.  Once the operation is finished,
   // OnConnected() or OnConnectionFailed() is called on the Visitor.
@@ -69,7 +69,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   void OnSettingsReceived();
   void OnHeadersComplete();
   void OnConnectStreamClosed();
-  void OnDatagramProcessed(base::Optional<quic::MessageStatus> status);
+  void OnDatagramProcessed(absl::optional<quic::MessageStatus> status);
 
   // QuicTransportClientSession::ClientVisitor methods.
   void OnSessionReady() override;
@@ -152,7 +152,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
 
   WebTransportState state_ = NEW;
   ConnectState next_connect_state_ = CONNECT_STATE_NONE;
-  QuicTransportError error_;
+  WebTransportError error_;
   bool retried_with_new_version_ = false;
   bool session_ready_ = false;
 

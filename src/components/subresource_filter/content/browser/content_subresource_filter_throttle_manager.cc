@@ -19,7 +19,6 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/profile_interaction_manager.h"
-#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -35,6 +34,7 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
@@ -89,8 +89,8 @@ const char ContentSubresourceFilterThrottleManager::
 // static
 void ContentSubresourceFilterThrottleManager::CreateForWebContents(
     content::WebContents* web_contents,
-    std::unique_ptr<SubresourceFilterClient> client,
     SubresourceFilterProfileContext* profile_context,
+    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
     VerifiedRulesetDealer::Handle* dealer_handle) {
   if (!base::FeatureList::IsEnabled(kSafeBrowsingSubresourceFilter))
     return;
@@ -101,7 +101,7 @@ void ContentSubresourceFilterThrottleManager::CreateForWebContents(
   web_contents->SetUserData(
       kContentSubresourceFilterThrottleManagerWebContentsUserDataKey,
       std::make_unique<ContentSubresourceFilterThrottleManager>(
-          std::move(client), profile_context, dealer_handle, web_contents));
+          profile_context, database_manager, dealer_handle, web_contents));
 }
 
 // static
@@ -115,14 +115,15 @@ ContentSubresourceFilterThrottleManager::FromWebContents(
 
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
-        std::unique_ptr<SubresourceFilterClient> client,
         SubresourceFilterProfileContext* profile_context,
+        scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+            database_manager,
         VerifiedRulesetDealer::Handle* dealer_handle,
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       receiver_(web_contents, this),
       dealer_handle_(dealer_handle),
-      client_(std::move(client)),
+      database_manager_(std::move(database_manager)),
       profile_interaction_manager_(
           std::make_unique<subresource_filter::ProfileInteractionManager>(
               web_contents,
@@ -164,61 +165,66 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
 
+  absl::optional<blink::FrameAdEvidence> ad_evidence_for_navigation;
+
   // Update the ad status of a frame given the new navigation. This may tag or
   // untag a frame as an ad.
   if (!navigation_handle->IsInMainFrame()) {
     blink::FrameAdEvidence& ad_evidence = EnsureFrameAdEvidence(frame_host);
+    DCHECK_EQ(ad_evidence.parent_is_ad(),
+              base::Contains(ad_frames_,
+                             frame_host->GetParent()->GetFrameTreeNodeId()));
     ad_evidence.set_is_complete();
+    ad_evidence_for_navigation = ad_evidence;
 
     SetIsAdSubframe(frame_host, ad_evidence.IndicatesAdSubframe());
   }
 
+  mojom::ActivationState activation_state =
+      ActivationStateForNextCommittedLoad(navigation_handle);
+
+  TRACE_EVENT2(
+      TRACE_DISABLED_BY_DEFAULT("loading"),
+      "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
+      "activation_state", static_cast<int>(activation_state.activation_level),
+      "render_frame_host", navigation_handle->GetRenderFrameHost());
+
+  mojo::AssociatedRemote<mojom::SubresourceFilterAgent> agent;
+  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
+
+  // We send `ad_evidence_for_navigation` even if the frame is not tagged as an
+  // ad. This ensures the renderer's copy is up-to-date, including propagating
+  // it on cross-process navigations.
+  agent->ActivateForNextCommittedLoad(activation_state.Clone(),
+                                      ad_evidence_for_navigation);
+}
+
+mojom::ActivationState
+ContentSubresourceFilterThrottleManager::ActivationStateForNextCommittedLoad(
+    content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetNetErrorCode() != net::OK)
-    return;
+    return mojom::ActivationState();
 
   auto it =
       ongoing_activation_throttles_.find(navigation_handle->GetNavigationId());
   if (it == ongoing_activation_throttles_.end())
-    return;
+    return mojom::ActivationState();
 
   // Main frame throttles with disabled page-level activation will not have
   // associated filters.
   ActivationStateComputingNavigationThrottle* throttle = it->second;
   AsyncDocumentSubresourceFilter* filter = throttle->filter();
   if (!filter)
-    return;
+    return mojom::ActivationState();
 
   // A filter with DISABLED activation indicates a corrupted ruleset.
-  mojom::ActivationLevel level = filter->activation_state().activation_level;
-  if (level == mojom::ActivationLevel::kDisabled)
-    return;
-
-  TRACE_EVENT2(
-      TRACE_DISABLED_BY_DEFAULT("loading"),
-      "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
-      "activation_state", static_cast<int>(level), "render_frame_host",
-      frame_host);
-
-  throttle->WillSendActivationToRenderer();
-
-  bool is_ad_subframe =
-      base::Contains(ad_frames_, navigation_handle->GetFrameTreeNodeId());
-  DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
-
-  bool parent_is_ad =
-      frame_host->GetParent() &&
-      base::Contains(ad_frames_, frame_host->GetParent()->GetFrameTreeNodeId());
-
-  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
-  if (is_ad_subframe) {
-    ad_frame_type = parent_is_ad ? blink::mojom::AdFrameType::kChildAd
-                                 : blink::mojom::AdFrameType::kRootAd;
+  if (filter->activation_state().activation_level ==
+      mojom::ActivationLevel::kDisabled) {
+    return mojom::ActivationState();
   }
 
-  mojo::AssociatedRemote<mojom::SubresourceFilterAgent> agent;
-  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
-  agent->ActivateForNextCommittedLoad(filter->activation_state().Clone(),
-                                      ad_frame_type);
+  throttle->WillSendActivationToRenderer();
+  return filter->activation_state();
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
@@ -323,7 +329,7 @@ ContentSubresourceFilterThrottleManager::FilterForFinishedNavigation(
   DCHECK(frame_host);
 
   std::unique_ptr<AsyncDocumentSubresourceFilter> filter;
-  base::Optional<mojom::ActivationState> activation_to_inherit;
+  absl::optional<mojom::ActivationState> activation_to_inherit;
   did_inherit_opener_activation = false;
 
   if (navigation_handle->HasCommitted() && throttle) {
@@ -472,13 +478,11 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
   DCHECK(!navigation_handle->IsSameDocument());
   DCHECK(!ShouldInheritActivation(navigation_handle->GetURL()));
 
-  if (navigation_handle->IsInMainFrame() &&
-      client_->GetSafeBrowsingDatabaseManager()) {
+  if (navigation_handle->IsInMainFrame() && database_manager_) {
     throttles->push_back(
         std::make_unique<SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, profile_interaction_manager_.get(),
-            content::GetIOThreadTaskRunner({}),
-            client_->GetSafeBrowsingDatabaseManager()));
+            content::GetIOThreadTaskRunner({}), database_manager_));
   }
 
   if (!dealer_handle_)
@@ -504,14 +508,14 @@ bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAd(
          base::Contains(ad_frames_, frame_host->GetFrameTreeNodeId());
 }
 
-base::Optional<LoadPolicy>
+absl::optional<LoadPolicy>
 ContentSubresourceFilterThrottleManager::LoadPolicyForLastCommittedNavigation(
     content::RenderFrameHost* frame_host) const {
   if (!frame_host)
-    return base::nullopt;
+    return absl::nullopt;
   auto it = navigation_load_policies_.find(frame_host->GetFrameTreeNodeId());
   if (it == navigation_load_policies_.end())
-    return base::nullopt;
+    return absl::nullopt;
   return it->second;
 }
 
@@ -582,12 +586,12 @@ ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
   return GetFrameFilter(parent);
 }
 
-const base::Optional<subresource_filter::mojom::ActivationState>
+const absl::optional<subresource_filter::mojom::ActivationState>
 ContentSubresourceFilterThrottleManager::GetFrameActivationState(
     content::RenderFrameHost* frame_host) {
   if (AsyncDocumentSubresourceFilter* filter = GetFrameFilter(frame_host))
     return filter->activation_state();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 AsyncDocumentSubresourceFilter*
@@ -616,7 +620,7 @@ void ContentSubresourceFilterThrottleManager::MaybeShowNotification() {
     return;
   }
 
-  profile_interaction_manager_->MaybeShowNotification(client_.get());
+  profile_interaction_manager_->MaybeShowNotification();
 
   current_committed_load_has_notified_disallowed_load_ = true;
 }
@@ -705,13 +709,13 @@ void ContentSubresourceFilterThrottleManager::SetIsAdSubframeForTesting(
   }
 }
 
-base::Optional<blink::FrameAdEvidence>
+absl::optional<blink::FrameAdEvidence>
 ContentSubresourceFilterThrottleManager::GetAdEvidenceForFrame(
     content::RenderFrameHost* render_frame_host) {
   auto tracked_ad_evidence_it =
       tracked_ad_evidence_.find(render_frame_host->GetFrameTreeNodeId());
   if (tracked_ad_evidence_it == tracked_ad_evidence_.end())
-    return base::nullopt;
+    return absl::nullopt;
   return tracked_ad_evidence_it->second;
 }
 

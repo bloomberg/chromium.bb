@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
@@ -60,6 +59,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
@@ -207,40 +207,40 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
   return jsection_list;
 }
 
-base::Optional<int> GetPreviousFormCounterResult(
+absl::optional<int> GetPreviousFormCounterResult(
     const FormProto::Result* result,
     int input_index,
     int counter_index) {
   if (result == nullptr) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (input_index >= result->input_results().size()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   auto input_result = result->input_results(input_index);
 
   if (counter_index >= input_result.counter().values().size()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return input_result.counter().values(counter_index);
 }
 
-base::Optional<bool> GetPreviousFormSelectionResult(
+absl::optional<bool> GetPreviousFormSelectionResult(
     const FormProto::Result* result,
     int input_index,
     int selection_index) {
   if (result == nullptr) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (input_index >= result->input_results().size()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   auto input_result = result->input_results(input_index);
 
   if (selection_index >= input_result.selection().selected().size()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return input_result.selection().selected(selection_index);
 }
@@ -267,7 +267,7 @@ bool ShouldAllowSoftKeyboardForState(AutofillAssistantState state) {
 // static
 std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
     content::WebContents* web_contents,
-    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
+    const base::android::JavaRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
   auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
       env, web_contents->GetJavaWebContents());
@@ -281,7 +281,7 @@ std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jactivity,
-    const base::android::JavaParamRef<jobject>& joverlay_coordinator)
+    const base::android::JavaRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
       header_delegate_(this),
       collect_user_data_delegate_(this),
@@ -659,6 +659,8 @@ void UiControllerAndroid::RestoreUi() {
   OnUserActionsChanged(ui_delegate_->GetUserActions());
   OnCollectUserDataOptionsChanged(ui_delegate_->GetCollectUserDataOptions());
   OnUserDataChanged(ui_delegate_->GetUserData(), UserData::FieldChange::ALL);
+  OnPersistentGenericUserInterfaceChanged(
+      ui_delegate_->GetPersistentGenericUiProto());
   OnGenericUserInterfaceChanged(ui_delegate_->GetGenericUiProto());
 
   std::vector<RectF> area;
@@ -964,12 +966,12 @@ void UiControllerAndroid::CloseOrCancel(
                               std::move(trigger_context), dropout_reason));
 }
 
-base::Optional<std::pair<int, int>> UiControllerAndroid::GetWindowSize() const {
+absl::optional<std::pair<int, int>> UiControllerAndroid::GetWindowSize() const {
   JNIEnv* env = AttachCurrentThread();
   auto java_size_array =
       Java_AutofillAssistantUiController_getWindowSize(env, java_object_);
   if (!java_size_array) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   std::vector<int> size_array;
@@ -1136,7 +1138,7 @@ void UiControllerAndroid::OnFormActionLinkClicked(int link) {
 void UiControllerAndroid::OnDateTimeRangeStartDateChanged(int year,
                                                           int month,
                                                           int day) {
-  auto date = base::make_optional<DateProto>();
+  auto date = absl::make_optional<DateProto>();
   date->set_year(year);
   date->set_month(month);
   date->set_day(day);
@@ -1144,21 +1146,21 @@ void UiControllerAndroid::OnDateTimeRangeStartDateChanged(int year,
 }
 
 void UiControllerAndroid::OnDateTimeRangeStartDateCleared() {
-  ui_delegate_->SetDateTimeRangeStartDate(base::nullopt);
+  ui_delegate_->SetDateTimeRangeStartDate(absl::nullopt);
 }
 
 void UiControllerAndroid::OnDateTimeRangeStartTimeSlotChanged(int index) {
-  ui_delegate_->SetDateTimeRangeStartTimeSlot(base::make_optional<int>(index));
+  ui_delegate_->SetDateTimeRangeStartTimeSlot(absl::make_optional<int>(index));
 }
 
 void UiControllerAndroid::OnDateTimeRangeStartTimeSlotCleared() {
-  ui_delegate_->SetDateTimeRangeStartTimeSlot(base::nullopt);
+  ui_delegate_->SetDateTimeRangeStartTimeSlot(absl::nullopt);
 }
 
 void UiControllerAndroid::OnDateTimeRangeEndDateChanged(int year,
                                                         int month,
                                                         int day) {
-  auto date = base::make_optional<DateProto>();
+  auto date = absl::make_optional<DateProto>();
   date->set_year(year);
   date->set_month(month);
   date->set_day(day);
@@ -1166,15 +1168,15 @@ void UiControllerAndroid::OnDateTimeRangeEndDateChanged(int year,
 }
 
 void UiControllerAndroid::OnDateTimeRangeEndDateCleared() {
-  ui_delegate_->SetDateTimeRangeEndDate(base::nullopt);
+  ui_delegate_->SetDateTimeRangeEndDate(absl::nullopt);
 }
 
 void UiControllerAndroid::OnDateTimeRangeEndTimeSlotChanged(int index) {
-  ui_delegate_->SetDateTimeRangeEndTimeSlot(base::make_optional<int>(index));
+  ui_delegate_->SetDateTimeRangeEndTimeSlot(absl::make_optional<int>(index));
 }
 
 void UiControllerAndroid::OnDateTimeRangeEndTimeSlotCleared() {
-  ui_delegate_->SetDateTimeRangeEndTimeSlot(base::nullopt);
+  ui_delegate_->SetDateTimeRangeEndTimeSlot(absl::nullopt);
 }
 
 void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
@@ -1182,9 +1184,14 @@ void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
   ui_delegate_->SetAdditionalValue(key, value);
 }
 
-void UiControllerAndroid::OnTextFocusLost() {
+void UiControllerAndroid::OnInputTextFocusChanged(bool is_text_focused) {
+  ui_delegate_->OnInputTextFocusChanged(is_text_focused);
+
+  if (is_text_focused)
+    return;
+
   // We set a delay to avoid having the keyboard flickering when the focus goes
-  // from one text field to another
+  // from one text field to another.
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UiControllerAndroid::HideKeyboardIfFocusNotOnText,
@@ -1538,7 +1545,7 @@ void UiControllerAndroid::OnUserDataChanged(
 
     // Ignore changes to FieldChange::CARD, this is already coming from the
     // view.
-    autofill::CreditCard* card = state->selected_card_.get();
+    const autofill::CreditCard* card = state->selected_card();
     const autofill::AutofillProfile* billing_address = state->selected_address(
         collect_user_data_options->billing_address_name);
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
@@ -1765,6 +1772,29 @@ void UiControllerAndroid::OnGenericUserInterfaceChanged(
                                         : nullptr);
 }
 
+void UiControllerAndroid::OnPersistentGenericUserInterfaceChanged(
+    const GenericUserInterfaceProto* generic_ui) {
+  // Try to inflate user interface from proto.
+  if (generic_ui != nullptr) {
+    persistent_generic_ui_controller_ =
+        CreateGenericUiControllerForProto(*generic_ui);
+    ClientStatus status(persistent_generic_ui_controller_ ? ACTION_APPLIED
+                                                          : INVALID_ACTION);
+
+    ui_delegate_->GetBasicInteractions()->NotifyPersistentViewInflationFinished(
+        status);
+  } else {
+    persistent_generic_ui_controller_.reset();
+  }
+
+  // Set or clear generic UI.
+  Java_AssistantGenericUiModel_setView(
+      AttachCurrentThread(), GetPersistentGenericUiModel(),
+      persistent_generic_ui_controller_ != nullptr
+          ? persistent_generic_ui_controller_->GetRootView()
+          : nullptr);
+}
+
 void UiControllerAndroid::OnCounterChanged(int input_index,
                                            int counter_index,
                                            int value) {
@@ -1909,6 +1939,12 @@ base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetGenericUiModel() {
   return Java_AssistantModel_getGenericUiModel(AttachCurrentThread(),
                                                GetModel());
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetPersistentGenericUiModel() {
+  return Java_AssistantModel_getPersistentGenericUiModel(AttachCurrentThread(),
+                                                         GetModel());
 }
 
 }  // namespace autofill_assistant

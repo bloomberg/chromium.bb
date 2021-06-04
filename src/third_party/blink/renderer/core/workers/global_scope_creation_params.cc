@@ -18,7 +18,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     mojom::blink::ScriptType script_type,
     const String& global_scope_name,
     const String& user_agent,
-    const base::Optional<UserAgentMetadata>& ua_metadata,
+    const absl::optional<UserAgentMetadata>& ua_metadata,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     Vector<network::mojom::blink::ContentSecurityPolicyPtr>
         outside_content_security_policies,
@@ -28,7 +28,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     HttpsState starter_https_state,
     WorkerClients* worker_clients,
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
-    base::Optional<network::mojom::IPAddressSpace> response_address_space,
+    absl::optional<network::mojom::IPAddressSpace> response_address_space,
     const Vector<String>* origin_trial_tokens,
     const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,
@@ -40,8 +40,9 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const PermissionsPolicy* parent_permissions_policy,
     base::UnguessableToken agent_cluster_id,
     ukm::SourceId ukm_source_id,
-    const base::Optional<ExecutionContextToken>& parent_context_token,
-    bool parent_cross_origin_isolated_capability)
+    const absl::optional<ExecutionContextToken>& parent_context_token,
+    bool parent_cross_origin_isolated_capability,
+    bool parent_direct_socket_capability)
     : script_url(script_url.Copy()),
       script_type(script_type),
       global_scope_name(global_scope_name.IsolatedCopy()),
@@ -73,7 +74,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       ukm_source_id(ukm_source_id),
       parent_context_token(parent_context_token),
       parent_cross_origin_isolated_capability(
-          parent_cross_origin_isolated_capability) {
+          parent_cross_origin_isolated_capability),
+      parent_direct_socket_capability(parent_direct_socket_capability) {
   this->origin_trial_tokens = std::make_unique<Vector<String>>();
   if (origin_trial_tokens) {
     for (const String& token : *origin_trial_tokens)

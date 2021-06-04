@@ -85,7 +85,7 @@ def _QueryString(params, first_param=None):
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
   q = [urllib.parse.quote(first_param)] if first_param else []
-  q.extend(['%s:%s' % (key, val) for key, val in params])
+  q.extend(['%s:%s' % (key, val.replace(" ", "+")) for key, val in params])
   return '+'.join(q)
 
 

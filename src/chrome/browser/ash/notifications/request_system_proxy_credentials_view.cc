@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
@@ -27,7 +28,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -74,8 +74,8 @@ std::u16string RequestSystemProxyCredentialsView::GetPassword() const {
 
 void RequestSystemProxyCredentialsView::Init() {
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
-  SetBorder(views::CreateEmptyBorder(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT)));
+  SetBorder(views::CreateEmptyBorder(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText)));
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SYSTEM_PROXY_AUTH_DIALOG_OK_BUTTON));

@@ -6,22 +6,37 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_CHROMEOS_H_
 
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
 
+#include "base/callback.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
-#include "chrome/browser/apps/app_service/publishers/borealis_apps.h"
-#include "chrome/browser/apps/app_service/publishers/built_in_chromeos_apps.h"
-#include "chrome/browser/apps/app_service/publishers/crostini_apps.h"
-#include "chrome/browser/apps/app_service/publishers/extension_apps_chromeos.h"
-#include "chrome/browser/apps/app_service/publishers/lacros_web_apps.h"
-#include "chrome/browser/apps/app_service/publishers/plugin_vm_apps.h"
-#include "chrome/browser/apps/app_service/publishers/web_apps_chromeos.h"
+#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "ui/gfx/native_widget_types.h"
+
+class Profile;
+
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
 
 namespace apps {
 
-class LacrosApps;
+class AppPlatformMetricsService;
+class BorealisApps;
+class BuiltInChromeOsApps;
+class CrostiniApps;
+class ExtensionAppsChromeOs;
+class PluginVmApps;
+class StandaloneBrowserApps;
 class UninstallDialog;
+class WebAppsChromeOs;
 
 struct PauseData {
   int hours = 0;
@@ -46,6 +61,7 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
 
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window) override;
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
@@ -96,6 +112,7 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
                                 OnPauseDialogClosedCallback pause_callback);
 
   void UninstallImpl(const std::string& app_id,
+                     apps::mojom::UninstallSource uninstall_source,
                      gfx::NativeWindow parent_window,
                      base::OnceClosure callback);
 
@@ -108,6 +125,7 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
   // |uninstall_dialogs_|.
   void OnUninstallDialogClosed(apps::mojom::AppType app_type,
                                const std::string& app_id,
+                               apps::mojom::UninstallSource uninstall_source,
                                bool uninstall,
                                bool clear_site_data,
                                bool report_abuse,
@@ -139,14 +157,21 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
 
+  void RecordAppPlatformMetrics(
+      Profile* profile,
+      const apps::AppUpdate& update,
+      apps::mojom::LaunchSource launch_source,
+      apps::mojom::LaunchContainer container) override;
+
+  void InitAppPlatformMetrics();
+
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionAppsChromeOs> extension_apps_;
   std::unique_ptr<PluginVmApps> plugin_vm_apps_;
-  std::unique_ptr<LacrosApps> lacros_apps_;
+  std::unique_ptr<StandaloneBrowserApps> standalone_browser_apps_;
   std::unique_ptr<WebAppsChromeOs> web_apps_;
   std::unique_ptr<BorealisApps> borealis_apps_;
-  std::unique_ptr<LacrosWebApps> lacros_web_apps_;
 
   bool arc_is_registered_ = false;
 
@@ -160,6 +185,8 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
   PausedApps pending_pause_requests_;
 
   UninstallDialogs uninstall_dialogs_;
+
+  std::unique_ptr<AppPlatformMetricsService> app_platform_metrics_service_;
 
   base::WeakPtrFactory<AppServiceProxyChromeOs> weak_ptr_factory_{this};
 };

@@ -24,10 +24,11 @@ const base::Feature kArcResizeLock{"ArcResizeLock",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kBento{"Bento", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCaptureMode{"CaptureMode",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCompositingBasedThrottling{
+    "CompositingBasedThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -43,9 +44,6 @@ const base::Feature kDisplayIdentification{"DisplayIdentification",
 
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnhancedDeskAnimations{"EnhancedDeskAnimations",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFullRestore{"FullRestore",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
@@ -69,14 +67,8 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kInteractiveWindowCycleList{
-    "InteractiveWindowCycleList", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kMediaSessionNotification{"MediaSessionNotification",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -107,9 +99,6 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSwapSideVolumeButtonsForOrientation{
-    "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -125,6 +114,9 @@ const base::Feature kFullscreenAlertBubble{"EnableFullscreenBubble",
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kWebUITabStripTabDragIntegration{
     "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -134,11 +126,8 @@ const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
 const base::Feature kNotificationsInContextMenu{
     "NotificationsInContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kTemporaryHoldingSpace{"TemporaryHoldingSpace",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTemporaryHoldingSpacePreviews{
-    "TemporaryHoldingSpacePreviews", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kHoldingSpaceArcIntegration{
+    "HoldingSpaceArcIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragUnpinnedAppToPin{"DragUnpinnedAppToPin",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -178,20 +167,16 @@ bool IsAutoNightLightEnabled() {
   return base::FeatureList::IsEnabled(kAutoNightLight);
 }
 
-bool IsBentoEnabled() {
-  return base::FeatureList::IsEnabled(kBento);
-}
-
 bool IsCaptureModeEnabled() {
   return base::FeatureList::IsEnabled(kCaptureMode);
 }
 
-bool IsDarkLightModeEnabled() {
-  return base::FeatureList::IsEnabled(kDarkLightMode);
+bool IsCompositingBasedThrottlingEnabled() {
+  return base::FeatureList::IsEnabled(kCompositingBasedThrottling);
 }
 
-bool IsEnhancedDeskAnimations() {
-  return base::FeatureList::IsEnabled(kEnhancedDeskAnimations);
+bool IsDarkLightModeEnabled() {
+  return base::FeatureList::IsEnabled(kDarkLightMode);
 }
 
 bool IsFullRestoreEnabled() {
@@ -218,10 +203,6 @@ bool IsLockScreenInlineReplyEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
-}
-
-bool IsInteractiveWindowCycleListEnabled() {
-  return base::FeatureList::IsEnabled(kInteractiveWindowCycleList);
 }
 
 bool IsManagedDeviceUIRedesignEnabled() {
@@ -252,10 +233,6 @@ bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);
   return use_trilinear_filtering;
-}
-
-bool IsSwapSideVolumeButtonsForOrientationEnabled() {
-  return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
 }
 
 bool IsBackgroundBlurEnabled() {
@@ -302,6 +279,10 @@ bool IsDisplayIdentificationEnabled() {
   return base::FeatureList::IsEnabled(kDisplayIdentification);
 }
 
+bool IsVerticalSplitScreenEnabled() {
+  return base::FeatureList::IsEnabled(kVerticalSplitScreen);
+}
+
 bool IsWebUITabStripTabDragIntegrationEnabled() {
   return base::FeatureList::IsEnabled(kWebUITabStripTabDragIntegration);
 }
@@ -314,13 +295,8 @@ bool IsNotificationsInContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
 }
 
-bool IsTemporaryHoldingSpaceEnabled() {
-  return base::FeatureList::IsEnabled(kTemporaryHoldingSpace);
-}
-
-bool IsTemporaryHoldingSpacePreviewsEnabled() {
-  return base::FeatureList::IsEnabled(kTemporaryHoldingSpace) &&
-         base::FeatureList::IsEnabled(kTemporaryHoldingSpacePreviews);
+bool IsHoldingSpaceArcIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpaceArcIntegration);
 }
 
 bool IsDragUnpinnedAppToPinEnabled() {

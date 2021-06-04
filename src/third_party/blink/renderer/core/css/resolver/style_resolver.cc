@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
@@ -83,12 +84,15 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_operator_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_padded_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -839,6 +843,7 @@ void StyleResolver::InitStyleAndApplyInheritance(
     }
   }
   state.Style()->SetStyleType(style_request.pseudo_id);
+  state.Style()->SetPseudoArgument(style_request.pseudo_argument);
 
   if (!style_request.IsPseudoStyleRequest() && element.IsLink()) {
     state.Style()->SetIsLink();
@@ -1082,7 +1087,7 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
   initial_style->SetUserModify(GetDocument().InDesignMode()
                                    ? EUserModify::kReadWrite
                                    : EUserModify::kReadOnly);
-  GetDocument().SetupFontBuilder(*initial_style);
+  FontBuilder(&GetDocument()).CreateInitialFont(*initial_style);
 
   scoped_refptr<StyleInitialData> initial_data =
       GetDocument().GetStyleEngine().MaybeCreateAndGetInitialData();
@@ -1211,7 +1216,11 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   // element which is not represented by a PseudoElement like scrollbar pseudo
   // elements.
   Element* animating_element = state.GetAnimatingElement();
-  DCHECK(animating_element == &element || !animating_element ||
+
+  if (!animating_element)
+    return false;
+
+  DCHECK(animating_element == &element ||
          animating_element->ParentOrShadowHostElement() == element);
 
   if (!HasAnimationsOrTransitions(state)) {
@@ -1223,17 +1232,17 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   }
 
   CSSAnimations::CalculateAnimationUpdate(
-      state.AnimationUpdate(), animating_element, state.GetElement(),
+      state.AnimationUpdate(), *animating_element, state.GetElement(),
       *state.Style(), state.ParentStyle(), this);
   CSSAnimations::CalculateCompositorAnimationUpdate(
-      state.AnimationUpdate(), animating_element, element, *state.Style(),
+      state.AnimationUpdate(), *animating_element, element, *state.Style(),
       state.ParentStyle(), WasViewportResized());
   CSSAnimations::CalculateTransitionUpdate(
       state.AnimationUpdate(), CSSAnimations::PropertyPass::kStandard,
-      animating_element, *state.Style());
+      *animating_element, *state.Style());
   CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
                                            CSSAnimations::PropertyPass::kCustom,
-                                           animating_element, *state.Style());
+                                           *animating_element, *state.Style());
 
   CSSAnimations::SnapshotCompositorKeyframes(
       element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
@@ -1305,7 +1314,6 @@ void StyleResolver::InvalidateMatchedPropertiesCache() {
 }
 
 void StyleResolver::SetResizedForViewportUnits() {
-  DCHECK(!was_viewport_resized_);
   was_viewport_resized_ = true;
   GetDocument().GetStyleEngine().UpdateActiveStyle();
   matched_properties_cache_.ClearViewportDependent();
@@ -1667,5 +1675,244 @@ StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
     return nullptr;
   return CreateAnonymousStyleWithDisplay(parent_style, EDisplay::kInline);
 }
+
+#define PROPAGATE_FROM(source, getter, setter, initial) \
+  PROPAGATE_VALUE(source ? source->getter() : initial, getter, setter);
+
+#define PROPAGATE_VALUE(value, getter, setter)     \
+  if ((new_viewport_style->getter()) != (value)) { \
+    new_viewport_style->setter(value);             \
+    changed = true;                                \
+  }
+
+namespace {
+
+bool PropagateScrollSnapStyleToViewport(
+    Document& document,
+    const ComputedStyle* document_element_style,
+    ComputedStyle* new_viewport_style) {
+  bool changed = false;
+  // We only propagate the properties related to snap container since viewport
+  // defining element cannot be a snap area.
+  PROPAGATE_FROM(document_element_style, GetScrollSnapType, SetScrollSnapType,
+                 cc::ScrollSnapType());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingTop, SetScrollPaddingTop,
+                 Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingRight,
+                 SetScrollPaddingRight, Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingBottom,
+                 SetScrollPaddingBottom, Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingLeft,
+                 SetScrollPaddingLeft, Length());
+
+  if (changed) {
+    document.GetSnapCoordinator().SnapContainerDidChange(
+        *document.GetLayoutView());
+  }
+
+  return changed;
+}
+
+}  // namespace
+
+void StyleResolver::PropagateStyleToViewport() {
+  DCHECK(GetDocument().InStyleRecalc());
+  HTMLBodyElement* body = GetDocument().FirstBodyElement();
+  Element* document_element = GetDocument().documentElement();
+
+  const ComputedStyle* document_element_style =
+      document_element && document_element->GetLayoutObject()
+          ? document_element->GetComputedStyle()
+          : nullptr;
+  const ComputedStyle* body_style =
+      body && body->GetLayoutObject() ? body->GetComputedStyle() : nullptr;
+
+  const ComputedStyle& viewport_style =
+      GetDocument().GetLayoutView()->StyleRef();
+  scoped_refptr<ComputedStyle> new_viewport_style =
+      ComputedStyle::Clone(viewport_style);
+  bool changed = false;
+  bool update_scrollbar_style = false;
+
+  // Writing mode and direction
+  {
+    const ComputedStyle* direction_style =
+        body_style ? body_style : document_element_style;
+    PROPAGATE_FROM(direction_style, GetWritingMode, SetWritingMode,
+                   WritingMode::kHorizontalTb);
+    PROPAGATE_FROM(direction_style, Direction, SetDirection,
+                   TextDirection::kLtr);
+  }
+
+  // Background
+  {
+    const ComputedStyle* background_style = document_element_style;
+    // http://www.w3.org/TR/css3-background/#body-background
+    // <html> root element with no background steals background from its first
+    // <body> child.
+    // Also see LayoutBoxModelObject::BackgroundTransfersToView()
+    if (body_style && IsA<HTMLHtmlElement>(document_element) &&
+        !background_style->HasBackground()) {
+      background_style = body_style;
+    }
+
+    Color background_color = Color::kTransparent;
+    FillLayer background_layers(EFillLayerType::kBackground, true);
+    EImageRendering image_rendering = EImageRendering::kAuto;
+
+    if (background_style) {
+      background_color = background_style->VisitedDependentColor(
+          GetCSSPropertyBackgroundColor());
+      background_layers = background_style->BackgroundLayers();
+      for (auto* current_layer = &background_layers; current_layer;
+           current_layer = current_layer->Next()) {
+        // http://www.w3.org/TR/css3-background/#root-background
+        // The root element background always have painting area of the whole
+        // canvas.
+        current_layer->SetClip(EFillBox::kBorder);
+
+        // The root element doesn't scroll. It always propagates its layout
+        // overflow to the viewport. Positioning background against either box
+        // is equivalent to positioning against the scrolled box of the
+        // viewport.
+        if (current_layer->Attachment() == EFillAttachment::kScroll)
+          current_layer->SetAttachment(EFillAttachment::kLocal);
+      }
+      image_rendering = background_style->ImageRendering();
+    }
+
+    if (viewport_style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
+            background_color ||
+        viewport_style.BackgroundLayers() != background_layers ||
+        viewport_style.ImageRendering() != image_rendering) {
+      changed = true;
+      new_viewport_style->SetBackgroundColor(StyleColor(background_color));
+      new_viewport_style->AccessBackgroundLayers() = background_layers;
+      new_viewport_style->SetImageRendering(image_rendering);
+    }
+  }
+
+  // Overflow
+  {
+    const ComputedStyle* overflow_style = nullptr;
+    if (Element* viewport_element = GetDocument().ViewportDefiningElement()) {
+      if (viewport_element == body) {
+        overflow_style = body_style;
+      } else {
+        DCHECK_EQ(viewport_element, document_element);
+        overflow_style = document_element_style;
+
+        // The body element has its own scrolling box, independent from the
+        // viewport.  This is a bit of a weird edge case in the CSS spec that we
+        // might want to try to eliminate some day (eg. for ScrollTopLeftInterop
+        // - see http://crbug.com/157855).
+        if (body_style && body_style->IsScrollContainer()) {
+          UseCounter::Count(GetDocument(),
+                            WebFeature::kBodyScrollsInAdditionToViewport);
+        }
+      }
+    }
+
+    // TODO(954423): overscroll-behavior (and most likely overflow-anchor)
+    // should be propagated from the document element and not the viewport
+    // defining element.
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX,
+                   EOverscrollBehavior::kAuto);
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY,
+                   EOverscrollBehavior::kAuto);
+
+    // Counts any time overscroll behavior break if we change its viewport
+    // propagation logic. Overscroll behavior only breaks if the body style
+    // (i.e. non-document style) was propagated to the viewport and the
+    // body style has a different overscroll behavior from the document one.
+    // TODO(954423): Remove once propagation logic change is complete.
+    if (document_element_style && overflow_style &&
+        overflow_style != document_element_style) {
+      EOverscrollBehavior document_x =
+          document_element_style->OverscrollBehaviorX();
+      EOverscrollBehavior document_y =
+          document_element_style->OverscrollBehaviorY();
+      EOverscrollBehavior body_x = overflow_style->OverscrollBehaviorX();
+      EOverscrollBehavior body_y = overflow_style->OverscrollBehaviorY();
+      // Document style is auto but body is not: fixing crbug.com/954423 might
+      // break the page.
+      if ((document_x == EOverscrollBehavior::kAuto && document_x != body_x) ||
+          (document_y == EOverscrollBehavior::kAuto && document_y != body_y)) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kOversrollBehaviorOnViewportBreaks);
+      }
+      // Body style is auto but document is not: currently we are showing the
+      // wrong behavior, and fixing crbug.com/954423 gives the correct behavior.
+      if ((body_x == EOverscrollBehavior::kAuto && document_x != body_x) ||
+          (body_y == EOverscrollBehavior::kAuto && document_y != body_y)) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kOverscrollBehaviorWillBeFixed);
+      }
+    }
+
+    EOverflow overflow_x = EOverflow::kAuto;
+    EOverflow overflow_y = EOverflow::kAuto;
+    EOverflowAnchor overflow_anchor = EOverflowAnchor::kAuto;
+
+    if (overflow_style) {
+      overflow_x = overflow_style->OverflowX();
+      overflow_y = overflow_style->OverflowY();
+      overflow_anchor = overflow_style->OverflowAnchor();
+      // Visible overflow on the viewport is meaningless, and the spec says to
+      // treat it as 'auto'. The spec also says to treat 'clip' as 'hidden'.
+      if (overflow_x == EOverflow::kVisible)
+        overflow_x = EOverflow::kAuto;
+      else if (overflow_x == EOverflow::kClip)
+        overflow_x = EOverflow::kHidden;
+      if (overflow_y == EOverflow::kVisible)
+        overflow_y = EOverflow::kAuto;
+      else if (overflow_y == EOverflow::kClip)
+        overflow_y = EOverflow::kHidden;
+      if (overflow_anchor == EOverflowAnchor::kVisible)
+        overflow_anchor = EOverflowAnchor::kAuto;
+
+      if (GetDocument().IsInMainFrame()) {
+        using OverscrollBehaviorType = cc::OverscrollBehavior::Type;
+        GetDocument().GetPage()->GetChromeClient().SetOverscrollBehavior(
+            *GetDocument().GetFrame(),
+            cc::OverscrollBehavior(static_cast<OverscrollBehaviorType>(
+                                       overflow_style->OverscrollBehaviorX()),
+                                   static_cast<OverscrollBehaviorType>(
+                                       overflow_style->OverscrollBehaviorY())));
+      }
+
+      if (overflow_style->HasCustomScrollbarStyle())
+        update_scrollbar_style = true;
+    }
+
+    PROPAGATE_VALUE(overflow_x, OverflowX, SetOverflowX)
+    PROPAGATE_VALUE(overflow_y, OverflowY, SetOverflowY)
+    PROPAGATE_VALUE(overflow_anchor, OverflowAnchor, SetOverflowAnchor);
+  }
+
+  // Misc
+  {
+    PROPAGATE_FROM(document_element_style, GetEffectiveTouchAction,
+                   SetEffectiveTouchAction, TouchAction::kAuto);
+    PROPAGATE_FROM(document_element_style, GetScrollBehavior, SetScrollBehavior,
+                   mojom::blink::ScrollBehavior::kAuto);
+    PROPAGATE_FROM(document_element_style, DarkColorScheme, SetDarkColorScheme,
+                   false);
+    PROPAGATE_FROM(document_element_style, ScrollbarGutter, SetScrollbarGutter,
+                   kScrollbarGutterAuto);
+  }
+
+  changed |= PropagateScrollSnapStyleToViewport(
+      GetDocument(), document_element_style, new_viewport_style.get());
+
+  if (changed) {
+    new_viewport_style->UpdateFontOrientation();
+    FontBuilder(&GetDocument()).CreateInitialFont(*new_viewport_style);
+  }
+  if (changed || update_scrollbar_style)
+    GetDocument().GetLayoutView()->SetStyle(new_viewport_style);
+}
+#undef PROPAGATE_VALUE
+#undef PROPAGATE_FROM
 
 }  // namespace blink

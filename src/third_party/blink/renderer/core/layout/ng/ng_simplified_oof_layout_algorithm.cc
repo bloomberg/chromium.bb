@@ -66,7 +66,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedOOFLayoutAlgorithm::Layout() {
 void NGSimplifiedOOFLayoutAlgorithm::AppendOutOfFlowResult(
     scoped_refptr<const NGLayoutResult> result) {
   container_builder_.AddResult(*result, result->OutOfFlowPositionedOffset(),
-                               /* offset_includes_relative_position */ false,
+                               /* relative_offset */ absl::nullopt,
                                /* propagate_oof_descendants */ false);
 
   // If there is an incoming child break token, make sure that it matches
@@ -85,19 +85,21 @@ void NGSimplifiedOOFLayoutAlgorithm::AppendOutOfFlowResult(
 }
 
 void NGSimplifiedOOFLayoutAlgorithm::AddChildFragment(const NGLink& child) {
-  const auto* fragment = To<NGPhysicalContainerFragment>(child.get());
+  const auto* fragment = child.get();
   // Determine the previous position in the logical coordinate system.
   LogicalOffset child_offset =
       WritingModeConverter(writing_direction_,
                            previous_physical_container_size_)
           .ToLogical(child.Offset(), fragment->Size());
+  // Any relative offset will have already been applied, avoid re-adding one.
+  absl::optional<LogicalOffset> relative_offset = LogicalOffset();
 
   // Add the fragment to the builder.
   container_builder_.AddChild(
       *fragment, child_offset, /* inline_container */ nullptr,
       /* margin_strut */ nullptr, /* is_self_collapsing */ false,
-      /* offset_includes_relative_position */ true,
-      /* propagate_oof_descendants */ false);
+      relative_offset,
+      /* adjustment_for_oof_propagation */ absl::nullopt);
 }
 
 void NGSimplifiedOOFLayoutAlgorithm::AdvanceChildIterator() {

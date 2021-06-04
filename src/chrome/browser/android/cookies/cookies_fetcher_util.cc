@@ -25,8 +25,9 @@ namespace {
 network::mojom::CookieManager* GetCookieServiceClient() {
   // Since restoring Incognito CCT session from cookies is not supported, it is
   // safe to use the primary OTR profile here.
-  return content::BrowserContext::GetDefaultStoragePartition(
-             ProfileManager::GetPrimaryUserProfile()->GetPrimaryOTRProfile())
+  return ProfileManager::GetPrimaryUserProfile()
+      ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+      ->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess();
 }
 

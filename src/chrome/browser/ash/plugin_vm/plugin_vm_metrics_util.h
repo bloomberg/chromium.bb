@@ -24,7 +24,8 @@ enum class PluginVmLaunchResult {
   kExpiredLicense = 4,
   kNetworkError = 5,
   kInsufficientDiskSpace = 6,
-  kMaxValue = kInsufficientDiskSpace,
+  kStoppedWaitingForVmTools = 7,
+  kMaxValue = kStoppedWaitingForVmTools,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -61,7 +62,8 @@ enum class PluginVmDlcUseResult {
   kBusyDlcError = 3,
   kNeedRebootDlcError = 4,
   kNeedSpaceDlcError = 5,
-  kMaxValue = kNeedSpaceDlcError,
+  kNoImageFoundDlcError = 6,
+  kMaxValue = kNoImageFoundDlcError,
 };
 
 void RecordPluginVmImageDownloadedSizeHistogram(uint64_t bytes_downloaded);

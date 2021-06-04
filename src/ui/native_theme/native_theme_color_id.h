@@ -107,6 +107,12 @@
   OP(kColorId_SliderTroughMinimal),                                            \
   /* Separator */                                                              \
   OP(kColorId_SeparatorColor),                                                 \
+  /* Shadow */                                                                 \
+  OP(kColorId_ShadowBase),                                                     \
+  OP(kColorId_ShadowValueAmbientShadowElevationThree),                         \
+  OP(kColorId_ShadowValueKeyShadowElevationThree),                             \
+  OP(kColorId_ShadowValueAmbientShadowElevationSixteen),                       \
+  OP(kColorId_ShadowValueKeyShadowElevationSixteen),                           \
   /* Sync info container */                                                    \
   OP(kColorId_SyncInfoContainerPaused),                                        \
   OP(kColorId_SyncInfoContainerError),                                         \
@@ -156,6 +162,9 @@
   OP(kColorId_ThrobberWaitingColor),                                           \
   /* Colors for Bubble Border */                                               \
   OP(kColorId_BubbleBorder),                                                   \
+  OP(kColorId_BubbleBorderShadowLarge),                                        \
+  OP(kColorId_BubbleBorderShadowSmall),                                        \
+  OP(kColorId_BubbleBorderWhenShadowPresent),                                  \
   /* Colors for Footnote Container. */                                         \
   OP(kColorId_FootnoteContainerBorder),                                        \
   /* Colors for icons that alert, e.g. upgrade reminders. */                   \
@@ -164,7 +173,10 @@
   OP(kColorId_AlertSeverityHigh),                                              \
   /* Colors for icons in non-menu contexts. */                                 \
   OP(kColorId_DefaultIconColor),                                               \
-  OP(kColorId_DisabledIconColor)
+  OP(kColorId_DisabledIconColor),                                              \
+  OP(kColorId_SecondaryIconColor),                                             \
+  /* Color fills inside the focus ring. */                                     \
+  OP(kColorId_FocusAuraColor)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #define NATIVE_THEME_CHROMEOS_COLOR_IDS                                        \

@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/trusted_vault_client.h"
-#include "components/sync/engine/configure_reason.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
 
@@ -29,13 +28,21 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
                           public DataTypeEncryptionHandler,
                           public TrustedVaultClient::Observer {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void CryptoStateChanged() = 0;
+    virtual void CryptoRequiredUserActionChanged() = 0;
+    virtual void ReconfigureDataTypesDueToCrypto() = 0;
+    virtual void EncryptionBootstrapTokenChanged(
+        const std::string& bootstrap_token) = 0;
+  };
+
+  // |delegate| must not be null and must outlive this object.
   // |trusted_vault_client| may be null, but if non-null, the pointee must
   // outlive this object.
-  SyncServiceCrypto(
-      const base::RepeatingClosure& notify_observers,
-      const base::RepeatingClosure& notify_required_user_action_changed,
-      const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
-      TrustedVaultClient* trusted_vault_client);
+  SyncServiceCrypto(Delegate* delegate,
+                    TrustedVaultClient* trusted_vault_client);
   ~SyncServiceCrypto() override;
 
   void Reset();
@@ -43,7 +50,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // See the SyncService header.
   base::Time GetExplicitPassphraseTime() const;
   bool IsPassphraseRequired() const;
-  bool IsUsingSecondaryPassphrase() const;
+  bool IsUsingExplicitPassphrase() const;
   bool IsTrustedVaultKeyRequired() const;
   bool IsTrustedVaultRecoverabilityDegraded() const;
   bool IsEncryptEverythingEnabled() const;
@@ -136,12 +143,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // TrustedVaultClient::GetIsRecoverabilityDegraded().
   void GetIsRecoverabilityDegradedCompleted(bool is_recoverability_degraded);
 
-  // Calls SyncServiceBase::NotifyObservers(). Never null.
-  const base::RepeatingClosure notify_observers_;
-
-  const base::RepeatingClosure notify_required_user_action_changed_;
-
-  const base::RepeatingCallback<void(ConfigureReason)> reconfigure_;
+  Delegate* const delegate_;
 
   // Never null and guaranteed to outlive us.
   TrustedVaultClient* const trusted_vault_client_;

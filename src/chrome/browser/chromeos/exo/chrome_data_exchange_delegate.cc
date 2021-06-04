@@ -19,10 +19,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -65,8 +65,7 @@ storage::FileSystemContext* GetFileSystemContext() {
   if (!primary_profile)
     return nullptr;
 
-  return file_manager::util::GetFileSystemContextForExtensionId(
-      primary_profile, file_manager::kFileManagerAppId);
+  return file_manager::util::GetFileManagerFileSystemContext(primary_profile);
 }
 
 void GetFileSystemUrlsFromPickle(
@@ -396,24 +395,20 @@ base::Pickle ChromeDataExchangeDelegate::CreateClipboardFilenamesPickle(
   return pickle;
 }
 
-std::vector<ui::FileInfo>
-ChromeDataExchangeDelegate::ParseClipboardFilenamesPickle(
-    ui::EndpointType target,
-    const ui::Clipboard& data) const {
+std::vector<ui::FileInfo> ChromeDataExchangeDelegate::ParseFileSystemSources(
+    const ui::DataTransferEndpoint* source,
+    const base::Pickle& pickle) const {
   std::vector<ui::FileInfo> file_info;
   // We only promote 'fs/sources' custom data pickle to be filenames which can
   // be shared and read by clients if it came from the trusted FilesApp.
-  const ui::DataTransferEndpoint* data_src =
-      data.GetSource(ui::ClipboardBuffer::kCopyPaste);
-  if (!data_src || !data_src->IsSameOriginWith(ui::DataTransferEndpoint(
-                       file_manager::util::GetFilesAppOrigin()))) {
+  if (!source || !source->IsSameOriginWith(ui::DataTransferEndpoint(
+                     file_manager::util::GetFilesAppOrigin()))) {
     return file_info;
   }
 
-  const ui::DataTransferEndpoint data_dst(target);
   std::u16string file_system_url_list;
-  data.ReadCustomData(ui::ClipboardBuffer::kCopyPaste, kFilesAppMimeSources,
-                      &data_dst, &file_system_url_list);
+  ui::ReadCustomDataForType(pickle.data(), pickle.size(), kFilesAppMimeSources,
+                            &file_system_url_list);
   if (file_system_url_list.empty())
     return file_info;
 

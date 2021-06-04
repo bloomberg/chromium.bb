@@ -10,7 +10,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/share_target_utils.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -49,7 +52,6 @@
 #include "content/public/common/referrer.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/scoped_display_for_new_windows.h"
@@ -78,24 +80,36 @@ void SetTabHelperAppId(content::WebContents* web_contents,
 
 content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
                                                 NavigateParams& nav_params) {
+  Browser* browser = nav_params.browser;
+  const absl::optional<web_app::SystemAppType> capturing_system_app_type =
+      web_app::GetCapturingSystemAppForURL(browser->profile(), nav_params.url);
+  // TODO(crbug.com/1201820): This block creates conditions where Navigate()
+  // returns early and causes a crash. Fail gracefully instead. Further
+  // debugging state will be implemented via Chrometto UMA traces.
+  if (capturing_system_app_type &&
+      (!browser || !web_app::IsBrowserForSystemWebApp(
+                       browser, capturing_system_app_type.value()))) {
+    return nullptr;
+  }
+
   Navigate(&nav_params);
 
   content::WebContents* const web_contents =
       nav_params.navigated_or_inserted_contents;
 
-  SetTabHelperAppId(web_contents, app_id);
-  web_app::SetAppPrefsForWebContents(web_contents);
+  if (web_contents) {
+    SetTabHelperAppId(web_contents, app_id);
+    web_app::SetAppPrefsForWebContents(web_contents);
+  }
 
   return web_contents;
 }
 
-base::Optional<GURL> GetUrlHandlingLaunchUrl(
+absl::optional<GURL> GetUrlHandlingLaunchUrl(
     WebAppProvider& provider,
     const apps::AppLaunchParams& params) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kWebAppEnableUrlHandlers) ||
-      !params.url_handler_launch_url.has_value()) {
-    return base::nullopt;
+  if (!params.url_handler_launch_url.has_value()) {
+    return absl::nullopt;
   }
 
   GURL url = params.url_handler_launch_url.value();
@@ -115,17 +129,17 @@ base::Optional<GURL> GetUrlHandlingLaunchUrl(
 // TODO(crbug.com/1019239): Passing a WebAppProvider seems to be a bit of an
 // anti-pattern. We should refactor this and other existing functions in this
 // file to receive an OsIntegrationManager instead.
-base::Optional<GURL> GetProtocolHandlingTranslatedUrl(
+absl::optional<GURL> GetProtocolHandlingTranslatedUrl(
     WebAppProvider& provider,
     const apps::AppLaunchParams& params) {
   if (!params.protocol_handler_launch_url.has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   GURL protocol_url(params.protocol_handler_launch_url.value());
   if (!protocol_url.is_valid())
-    return base::nullopt;
+    return absl::nullopt;
 
-  base::Optional<GURL> translated_url =
+  absl::optional<GURL> translated_url =
       provider.os_integration_manager().TranslateProtocolUrl(params.app_id,
                                                              protocol_url);
 
@@ -139,20 +153,20 @@ GURL GetLaunchUrl(WebAppProvider& provider,
     return params.override_url;
 
   // Handle url_handlers launch
-  base::Optional<GURL> url_handler_launch_url =
+  absl::optional<GURL> url_handler_launch_url =
       GetUrlHandlingLaunchUrl(provider, params);
   if (url_handler_launch_url.has_value())
     return url_handler_launch_url.value();
 
   // Handle file_handlers launch
-  base::Optional<GURL> file_handler_url =
+  absl::optional<GURL> file_handler_url =
       provider.os_integration_manager().GetMatchingFileHandlerURL(
           params.app_id, params.launch_files);
   if (file_handler_url.has_value())
     return file_handler_url.value();
 
   // Handle protocol_handlers launch
-  base::Optional<GURL> protocol_handler_translated_url =
+  absl::optional<GURL> protocol_handler_translated_url =
       GetProtocolHandlingTranslatedUrl(provider, params);
   if (protocol_handler_translated_url.has_value())
     return protocol_handler_translated_url.value();
@@ -256,7 +270,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   display::ScopedDisplayForNewWindows scoped_display(params.display_id);
 
   // System Web Apps go through their own launch path.
-  base::Optional<SystemAppType> system_app_type =
+  absl::optional<SystemAppType> system_app_type =
       GetSystemWebAppTypeForAppId(profile_, params.app_id);
   if (system_app_type) {
     Browser* browser =
@@ -295,7 +309,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     }
   }
 
-  content::WebContents* web_contents;
+  content::WebContents* web_contents = nullptr;
   if (share_target) {
     NavigateParams nav_params =
         NavigateParamsForShareTarget(browser, *share_target, *params.intent);
@@ -323,6 +337,10 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     web_contents = NavigateWebApplicationWindow(
         browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   }
+
+  // This can happen if Navigate() fails.
+  if (!web_contents)
+    return nullptr;
 
   web_app::OsIntegrationManager& os_integration_manager =
       provider_->os_integration_manager();
@@ -361,8 +379,8 @@ void WebAppLaunchManager::LaunchApplication(
     const std::string& app_id,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory,
-    const base::Optional<GURL>& url_handler_launch_url,
-    const base::Optional<GURL>& protocol_handler_launch_url,
+    const absl::optional<GURL>& url_handler_launch_url,
+    const absl::optional<GURL>& protocol_handler_launch_url,
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
   if (!provider_)
@@ -412,7 +430,7 @@ void WebAppLaunchManager::LaunchWebApplication(
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
   apps::mojom::LaunchContainer container;
-  Browser* browser;
+  Browser* browser = nullptr;
   if (provider_->registrar().IsInstalled(params.app_id)) {
     if (provider_->registrar().GetAppEffectiveDisplayMode(params.app_id) ==
         blink::mojom::DisplayMode::kBrowser) {
@@ -423,8 +441,8 @@ void WebAppLaunchManager::LaunchWebApplication(
     container = params.container;
     const content::WebContents* web_contents =
         OpenApplication(std::move(params));
-    browser = chrome::FindBrowserWithWebContents(web_contents);
-    DCHECK(browser);
+    if (web_contents)
+      browser = chrome::FindBrowserWithWebContents(web_contents);
   } else {
     // Open an empty browser window as the app_id is invalid.
     container = apps::mojom::LaunchContainer::kLaunchContainerNone;

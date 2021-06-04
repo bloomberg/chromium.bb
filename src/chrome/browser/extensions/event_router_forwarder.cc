@@ -96,7 +96,8 @@ void EventRouterForwarder::HandleEvent(
   if (dispatch_to_off_the_record_profiles) {
     for (Profile* profile : profiles_to_dispatch_to) {
       if (profile->HasPrimaryOTRProfile())
-        profiles_to_dispatch_to.insert(profile->GetPrimaryOTRProfile());
+        profiles_to_dispatch_to.insert(
+            profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
     }
   }
 
@@ -142,7 +143,7 @@ void EventRouterForwarder::CallEventRouter(
 #endif
 
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(event_args), restrict_to_profile);
+      histogram_value, event_name, event_args->TakeList(), restrict_to_profile);
   event->event_url = event_url;
   if (extension_id.empty()) {
     extensions::EventRouter::Get(profile)->BroadcastEvent(std::move(event));

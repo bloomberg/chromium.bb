@@ -20,9 +20,12 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -33,7 +36,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/selection_controller.h"
 
@@ -132,7 +134,8 @@ void Label::SetTextContext(int text_context) {
   full_text_->SetFontList(style::GetFont(text_context_, text_style_));
   full_text_->SetMinLineHeight(GetLineHeight());
   ClearDisplayText();
-  UpdateColorsFromTheme();
+  if (GetWidget())
+    UpdateColorsFromTheme();
   OnPropertyChanged(&text_context_, kPropertyEffectsPreferredSizeChanged);
 }
 
@@ -148,7 +151,8 @@ void Label::SetTextStyle(int style) {
   full_text_->SetFontList(style::GetFont(text_context_, text_style_));
   full_text_->SetMinLineHeight(GetLineHeight());
   ClearDisplayText();
-  UpdateColorsFromTheme();
+  if (GetWidget())
+    UpdateColorsFromTheme();
   OnPropertyChanged(&text_style_, kPropertyEffectsPreferredSizeChanged);
 }
 
@@ -625,16 +629,15 @@ int Label::GetHeightForWidth(int w) const {
     height = std::max(GetMaxLines(), 1) * base_line_height;
   } else {
     // SetDisplayRect() has a side effect for later calls of GetStringSize().
-    // Be careful to invoke |full_text_->SetDisplayRect(gfx::Rect())| to
+    // Be careful to invoke full_text_->SetDisplayRect(gfx::Rect()) to
     // cancel this effect before the next time GetStringSize() is called.
-    // It would be beneficial not to cancel here, considering that some layout
-    // managers invoke GetHeightForWidth() for the same width multiple times
-    // and |full_text_| can cache the height.
+    // It's beneficial not to cancel here, considering that some layout managers
+    // invoke GetHeightForWidth() for the same width multiple times and
+    // |full_text_| can cache the height.
     full_text_->SetDisplayRect(gfx::Rect(0, 0, w, 0));
     int string_height = full_text_->GetStringSize().height();
-    // Cap the number of lines to |GetMaxLines()| if multi-line and non-zero
-    // |GetMaxLines()|.
-    height = GetMultiLine() && GetMaxLines() > 0
+    // Cap the number of lines to GetMaxLines() if that's set.
+    height = GetMaxLines() > 0
                  ? std::min(GetMaxLines() * base_line_height, string_height)
                  : string_height;
   }
@@ -815,12 +818,11 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
     GetFocusManager()->SetFocusedView(this);
   }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (event.IsOnlyMiddleMouseButton() && GetFocusManager() && !had_focus)
-    GetFocusManager()->SetFocusedView(this);
-#endif
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    if (event.IsOnlyMiddleMouseButton() && GetFocusManager() && !had_focus)
+      GetFocusManager()->SetFocusedView(this);
+  }
 
   return selection_controller_->OnMousePressed(
       event, false,
@@ -1004,14 +1006,13 @@ bool Label::PasteSelectionClipboard() {
 }
 
 void Label::UpdateSelectionClipboard() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!GetObscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
-        .WriteText(GetSelectedText());
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    if (!GetObscured()) {
+      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
+          .WriteText(GetSelectedText());
+    }
   }
-#endif
 }
 
 bool Label::IsCommandIdChecked(int command_id) const {
@@ -1246,13 +1247,15 @@ ADD_PROPERTY_METADATA(std::u16string, Text)
 ADD_PROPERTY_METADATA(int, TextContext)
 ADD_PROPERTY_METADATA(int, TextStyle)
 ADD_PROPERTY_METADATA(bool, AutoColorReadabilityEnabled)
-ADD_PROPERTY_METADATA(SkColor, EnabledColor, metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, EnabledColor, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(gfx::ElideBehavior, ElideBehavior)
-ADD_PROPERTY_METADATA(SkColor, BackgroundColor, metadata::SkColorConverter)
-ADD_PROPERTY_METADATA(SkColor, SelectionTextColor, metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor, ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor,
+                      SelectionTextColor,
+                      ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(SkColor,
                       SelectionBackgroundColor,
-                      metadata::SkColorConverter)
+                      ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, SubpixelRenderingEnabled)
 ADD_PROPERTY_METADATA(bool, SkipSubpixelRenderingOpacityCheck)
 ADD_PROPERTY_METADATA(gfx::ShadowValues, Shadows)

@@ -78,7 +78,7 @@ class TestBufferCollection {
   fuchsia::sysmem::AllocatorPtr sysmem_allocator_;
   fuchsia::sysmem::BufferCollectionSyncPtr buffers_collection_;
 
-  base::Optional<fuchsia::sysmem::BufferCollectionInfo_2>
+  absl::optional<fuchsia::sysmem::BufferCollectionInfo_2>
       buffer_collection_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBufferCollection);
@@ -115,6 +115,7 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::Mailbox CreateSharedImage(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gfx::BufferPlane plane,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,

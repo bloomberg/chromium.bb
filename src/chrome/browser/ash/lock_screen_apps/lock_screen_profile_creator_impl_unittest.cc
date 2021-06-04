@@ -27,9 +27,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/fake_profile_manager.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
@@ -168,24 +170,18 @@ class PendingProfileCreation : public Profile::Delegate {
 };
 
 // Test profile manager implementation used to track async profile creation.
-class UnittestProfileManager : public ::ProfileManagerWithoutInit {
+class UnittestProfileManager : public FakeProfileManager {
  public:
   explicit UnittestProfileManager(const base::FilePath& user_data_dir)
-      : ::ProfileManagerWithoutInit(user_data_dir) {}
+      : FakeProfileManager(user_data_dir) {}
 
-  ~UnittestProfileManager() override {}
+  ~UnittestProfileManager() override = default;
 
   PendingProfileCreation* pending_profile_creation() {
     return &pending_profile_creation_;
   }
 
- protected:
-  std::unique_ptr<Profile> CreateProfileHelper(
-      const base::FilePath& path) override {
-    return std::make_unique<TestingProfile>(path);
-  }
-
-  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+  std::unique_ptr<TestingProfile> BuildTestingProfile(
       const base::FilePath& path,
       Delegate* delegate) override {
     pending_profile_creation_.Set(path, delegate);
@@ -204,8 +200,6 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 
  private:
   PendingProfileCreation pending_profile_creation_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnittestProfileManager);
 };
 
 class LockScreenProfileCreatorImplTest : public testing::Test {
@@ -218,16 +212,18 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         extensions::switches::kAllowlistedExtensionID,
         crx_file::id_util::GenerateId("test_app"));
     ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
 
-    auto profile_manager =
+    auto profile_manager_unique =
         std::make_unique<UnittestProfileManager>(user_data_dir_.GetPath());
-    profile_manager_ = profile_manager.get();
+    profile_manager_ = profile_manager_unique.get();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        profile_manager.release());
+        std::move(profile_manager_unique));
 
     // Needed by note taking helper.
     arc_session_manager_ = arc::CreateTestArcSessionManager(
@@ -247,6 +243,8 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     arc_session_manager_.reset();
     chromeos::NoteTakingHelper::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
+
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

@@ -5,11 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_STORAGE_STORAGE_API_H_
 #define EXTENSIONS_BROWSER_API_STORAGE_STORAGE_API_H_
 
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/storage/settings_observer.h"
+#include "extensions/browser/api/storage/storage_area_namespace.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/value_store/settings_namespace.h"
 #include "extensions/browser/value_store/value_store.h"
@@ -30,6 +29,10 @@ class SettingsFunction : public ExtensionFunction {
   // The StorageFrontend makes sure this is posted to the appropriate thread.
   virtual ResponseValue RunWithStorage(ValueStore* storage) = 0;
 
+  // Extension settings function implementations in `session` namespace should
+  // do their work here.
+  virtual ResponseValue RunInSession() = 0;
+
   // Convert the |result| of a read function to the appropriate response value.
   // - If the |result| succeeded this will return a response object argument.
   // - If the |result| failed will return an error object.
@@ -46,9 +49,14 @@ class SettingsFunction : public ExtensionFunction {
   // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 
-  // The settings namespace the call was for.  For example, SYNC if the API
-  // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.
-  settings_namespace::Namespace settings_namespace_;
+  // The Storage Area the call was for. For example: kLocal if the API call was
+  // chrome.storage.local, kSync if the API call was chrome.storage.sync, etc.
+  StorageAreaNamespace storage_area_ = StorageAreaNamespace::kInvalid;
+
+  // The settings namespace the call was for. Only includes
+  // StorageAreaNamespace's that use ValueStore.
+  settings_namespace::Namespace settings_namespace_ =
+      settings_namespace::INVALID;
 
   // Observers, cached so that it's only grabbed from the UI thread.
   scoped_refptr<SettingsObserverList> observers_;
@@ -63,6 +71,7 @@ class StorageStorageAreaGetFunction : public SettingsFunction {
 
   // SettingsFunction:
   ResponseValue RunWithStorage(ValueStore* storage) override;
+  ResponseValue RunInSession() override;
 };
 
 class StorageStorageAreaSetFunction : public SettingsFunction {
@@ -74,6 +83,7 @@ class StorageStorageAreaSetFunction : public SettingsFunction {
 
   // SettingsFunction:
   ResponseValue RunWithStorage(ValueStore* storage) override;
+  ResponseValue RunInSession() override;
 
   // ExtensionFunction:
   void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
@@ -88,6 +98,7 @@ class StorageStorageAreaRemoveFunction : public SettingsFunction {
 
   // SettingsFunction:
   ResponseValue RunWithStorage(ValueStore* storage) override;
+  ResponseValue RunInSession() override;
 
   // ExtensionFunction:
   void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
@@ -102,6 +113,7 @@ class StorageStorageAreaClearFunction : public SettingsFunction {
 
   // SettingsFunction:
   ResponseValue RunWithStorage(ValueStore* storage) override;
+  ResponseValue RunInSession() override;
 
   // ExtensionFunction:
   void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
@@ -116,6 +128,7 @@ class StorageStorageAreaGetBytesInUseFunction : public SettingsFunction {
 
   // SettingsFunction:
   ResponseValue RunWithStorage(ValueStore* storage) override;
+  ResponseValue RunInSession() override;
 };
 
 }  // namespace extensions

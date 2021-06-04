@@ -23,7 +23,7 @@ HEADER = headers.header(
         ),
         headers.oncall(
             name = "iOS",
-            url = "https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-ios-build-sheriff",
+            url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-ios",
         ),
         headers.oncall(
             name = "ChromeOS",
@@ -31,7 +31,7 @@ HEADER = headers.header(
         ),
         headers.oncall(
             name = "GPU",
-            url = "https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-gpu-pixel-wrangling",
+            url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-gpu-pixel-wrangler",
         ),
         headers.oncall(
             name = "ANGLE",

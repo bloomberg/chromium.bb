@@ -264,10 +264,6 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Sends a WINDOW_UPDATE frame.
   virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
-  // Create and transmit a STOP_SENDING frame
-  virtual void SendStopSending(QuicRstStreamErrorCode code,
-                               QuicStreamId stream_id);
-
   // Called by stream |stream_id| when it gets closed.
   virtual void OnStreamClosed(QuicStreamId stream_id);
 
@@ -306,6 +302,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                            bool is_resumption,
                                            std::string* error_details) override;
   void OnHandshakeCallbackDone() override;
+  bool PacketFlusherAttached() const override;
 
   // Implement StreamDelegateInterface.
   void OnStreamError(QuicErrorCode error_code,
@@ -458,7 +455,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
   bool HasPendingPathValidation() const;
 
   // Switch to the path described in |context| without validating the path.
-  void MigratePath(const QuicSocketAddress& self_address,
+  bool MigratePath(const QuicSocketAddress& self_address,
                    const QuicSocketAddress& peer_address,
                    QuicPacketWriter* writer,
                    bool owns_writer);

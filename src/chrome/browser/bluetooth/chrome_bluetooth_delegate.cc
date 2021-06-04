@@ -9,9 +9,9 @@
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -39,7 +39,8 @@ using device::BluetoothUUID;
 
 namespace {
 
-BluetoothChooserContext* GetBluetoothChooserContext(RenderFrameHost* frame) {
+permissions::BluetoothChooserContext* GetBluetoothChooserContext(
+    RenderFrameHost* frame) {
   auto* profile = Profile::FromBrowserContext(frame->GetBrowserContext());
   return BluetoothChooserContextFactory::GetForProfile(profile);
 }
@@ -173,7 +174,7 @@ void ChromeBluetoothDelegate::RemoveFramePermissionObserver(
 std::vector<blink::mojom::WebBluetoothDevicePtr>
 ChromeBluetoothDelegate::GetPermittedDevices(content::RenderFrameHost* frame) {
   auto* context = GetBluetoothChooserContext(frame);
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+  std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
       objects = context->GetGrantedObjects(
           frame->GetMainFrame()->GetLastCommittedOrigin());
   std::vector<blink::mojom::WebBluetoothDevicePtr> permitted_devices;
@@ -181,7 +182,7 @@ ChromeBluetoothDelegate::GetPermittedDevices(content::RenderFrameHost* frame) {
   for (const auto& object : objects) {
     auto permitted_device = blink::mojom::WebBluetoothDevice::New();
     permitted_device->id =
-        BluetoothChooserContext::GetObjectDeviceId(object->value);
+        permissions::BluetoothChooserContext::GetObjectDeviceId(object->value);
     permitted_device->name =
         base::UTF16ToUTF8(context->GetObjectDisplayName(object->value));
     permitted_devices.push_back(std::move(permitted_device));
@@ -191,8 +192,9 @@ ChromeBluetoothDelegate::GetPermittedDevices(content::RenderFrameHost* frame) {
 }
 
 ChromeBluetoothDelegate::ChooserContextPermissionObserver::
-    ChooserContextPermissionObserver(ChromeBluetoothDelegate* owning_delegate,
-                                     permissions::ChooserContextBase* context)
+    ChooserContextPermissionObserver(
+        ChromeBluetoothDelegate* owning_delegate,
+        permissions::ObjectPermissionContextBase* context)
     : owning_delegate_(owning_delegate) {
   observer_.Observe(context);
 }

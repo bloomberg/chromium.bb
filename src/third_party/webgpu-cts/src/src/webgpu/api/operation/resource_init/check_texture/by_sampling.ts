@@ -44,7 +44,7 @@ export const checkContentsBySampling: CheckContents = (
     const _xd = '_' + params.dimension;
     const _multisampled = params.sampleCount > 1 ? '_multisampled' : '';
     const computePipeline = t.device.createComputePipeline({
-      computeStage: {
+      compute: {
         entryPoint: 'main',
         module: t.device.createShaderModule({
           code: `
@@ -58,12 +58,10 @@ export const checkContentsBySampling: CheckContents = (
             [[block]] struct Result {
               [[offset(0)]] values : [[stride(4)]] array<${shaderType}>;
             };
-            [[group(0), binding(3)]] var<storage_buffer> result : Result;
-
-            [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
+            [[group(0), binding(3)]] var<storage> result : [[access(read_write)]] Result;
 
             [[stage(compute)]]
-            fn main() -> void {
+            fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
               var flatIndex : u32 = ${width}u * GlobalInvocationID.y + GlobalInvocationID.x;
               flatIndex = flatIndex * ${componentCount}u;
               var texel : vec4<${shaderType}> = textureLoad(

@@ -29,8 +29,6 @@ class WebViewWebClient : public web::WebClient {
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   std::vector<web::JavaScriptFeature*> GetJavaScriptFeatures(
       web::BrowserState* browser_state) const override;
-  NSString* GetDocumentStartScriptForAllFrames(
-      web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   std::u16string GetPluginNotSupportedText() const override;
@@ -41,7 +39,7 @@ class WebViewWebClient : public web::WebClient {
                         NSError* error,
                         bool is_post,
                         bool is_off_the_record,
-                        const base::Optional<net::SSLInfo>& info,
+                        const absl::optional<net::SSLInfo>& info,
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   bool EnableLongPressAndForceTouchHandling() const override;

@@ -7,14 +7,15 @@
 
 #include <string>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 
-namespace chromeos {
+namespace ash {
 
-class UserCreationView;
 // Controller for the user creation screen.
 class UserCreationScreen
     : public BaseScreen,
@@ -61,15 +62,14 @@ class UserCreationScreen
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
+  bool HandleAccelerator(LoginAcceleratorAction action) override;
 
   UserCreationView* view_ = nullptr;
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  std::unique_ptr<
-      ScopedObserver<NetworkStateInformer, NetworkStateInformerObserver>>
-      scoped_observer_;
+  base::ScopedObservation<NetworkStateInformer, NetworkStateInformerObserver>
+      scoped_observation_{this};
 
   ErrorScreen* error_screen_ = nullptr;
 
@@ -79,6 +79,12 @@ class UserCreationScreen
   ScreenExitCallback exit_callback_;
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::UserCreationScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_USER_CREATION_SCREEN_H_

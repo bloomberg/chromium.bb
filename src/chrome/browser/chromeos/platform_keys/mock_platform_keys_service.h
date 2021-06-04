@@ -51,7 +51,7 @@ class MockPlatformKeysService : public PlatformKeysService {
 
   MOCK_METHOD(void,
               SignRSAPKCS1Digest,
-              (base::Optional<TokenId> token_id,
+              (absl::optional<TokenId> token_id,
                const std::string& data,
                const std::string& public_key_spki_der,
                HashAlgorithm hash_algorithm,
@@ -60,7 +60,7 @@ class MockPlatformKeysService : public PlatformKeysService {
 
   MOCK_METHOD(void,
               SignRSAPKCS1Raw,
-              (base::Optional<TokenId> token_id,
+              (absl::optional<TokenId> token_id,
                const std::string& data,
                const std::string& public_key_spki_der,
                SignCallback callback),
@@ -68,7 +68,7 @@ class MockPlatformKeysService : public PlatformKeysService {
 
   MOCK_METHOD(void,
               SignECDSADigest,
-              (base::Optional<TokenId> token_id,
+              (absl::optional<TokenId> token_id,
                const std::string& data,
                const std::string& public_key_spki_der,
                HashAlgorithm hash_algorithm,
@@ -77,7 +77,7 @@ class MockPlatformKeysService : public PlatformKeysService {
 
   MOCK_METHOD(void,
               SelectClientCertificates,
-              (const std::vector<std::string>& certificate_authorities,
+              (std::vector<std::string> certificate_authorities,
                SelectCertificatesCallback callback),
               (override));
 

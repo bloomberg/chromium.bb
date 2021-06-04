@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -248,7 +249,8 @@ void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool is_kiosk = user_manager::UserManager::Get()->IsLoggedInAsKioskApp();
+  bool is_kiosk = user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+                  user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp();
   bool is_public_session =
       user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
 
@@ -488,6 +490,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
         }
 
         if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+            user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() ||
             user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
           policy::BrowserPolicyConnectorChromeOS* connector =
@@ -727,7 +730,7 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
   DCHECK(!consent_result.empty());
   remote_consent_approved_ = true;
 
-  base::Optional<AccountInfo> account =
+  absl::optional<AccountInfo> account =
       IdentityManagerFactory::GetForProfile(GetProfile())
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id);
   if (!account) {
@@ -767,7 +770,7 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
 }
 
 void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
-    const base::Optional<std::string>& access_token,
+    const absl::optional<std::string>& access_token,
     base::Time expiration_time,
     const GoogleServiceAuthError& error) {
   // By the time we get here we should no longer have an outstanding access
@@ -808,7 +811,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
     const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   device_access_token_request_.reset();
-  OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
+  OnGetAccessTokenComplete(absl::nullopt, base::Time(), error);
 }
 #endif
 
@@ -821,7 +824,7 @@ void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
                              access_token_info.expiration_time,
                              GoogleServiceAuthError::AuthErrorNone());
   } else {
-    OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
+    OnGetAccessTokenComplete(absl::nullopt, base::Time(), error);
   }
 }
 
@@ -874,9 +877,8 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
     std::string app_client_secret;
-    if (chromeos::UserSessionManager::GetInstance()
-            ->GetAppModeChromeClientOAuthInfo(&app_client_id,
-                                              &app_client_secret)) {
+    if (ash::UserSessionManager::GetInstance()->GetAppModeChromeClientOAuthInfo(
+            &app_client_id, &app_client_secret)) {
       token_key_account_access_token_fetcher_ =
           identity_manager->CreateAccessTokenFetcherForClient(
               token_key_.account_info.account_id, app_client_id,
@@ -910,7 +912,7 @@ void IdentityGetAuthTokenFunction::StartGaiaRequest(
 }
 
 void IdentityGetAuthTokenFunction::ShowExtensionLoginPrompt() {
-  base::Optional<AccountInfo> account =
+  absl::optional<AccountInfo> account =
       IdentityManagerFactory::GetForProfile(GetProfile())
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
               token_key_.account_info.account_id);

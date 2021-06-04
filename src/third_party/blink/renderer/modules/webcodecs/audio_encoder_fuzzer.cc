@@ -80,18 +80,24 @@ DEFINE_TEXT_PROTO_FUZZER(
     if (audio_encoder) {
       for (auto& invocation : proto.invocations()) {
         switch (invocation.Api_case()) {
-          case wc_fuzzer::AudioEncoderApiInvocation::kConfigure:
-            audio_encoder->configure(
-                MakeAudioEncoderConfig(invocation.configure()),
-                IGNORE_EXCEPTION_FOR_TESTING);
+          case wc_fuzzer::AudioEncoderApiInvocation::kConfigure: {
+            AudioEncoderConfig* config =
+                MakeAudioEncoderConfig(invocation.configure());
+
+            // Use the same config to fuzz isConfigSupported().
+            AudioEncoder::isConfigSupported(script_state, config,
+                                            IGNORE_EXCEPTION_FOR_TESTING);
+
+            audio_encoder->configure(config, IGNORE_EXCEPTION_FOR_TESTING);
             break;
+          }
           case wc_fuzzer::AudioEncoderApiInvocation::kEncode: {
-            AudioFrame* frame =
-                MakeAudioFrame(script_state, invocation.encode().frame());
-            if (!frame)
+            AudioData* data =
+                MakeAudioData(script_state, invocation.encode().data());
+            if (!data)
               return;
 
-            audio_encoder->encode(frame, IGNORE_EXCEPTION_FOR_TESTING);
+            audio_encoder->encode(data, IGNORE_EXCEPTION_FOR_TESTING);
             break;
           }
           case wc_fuzzer::AudioEncoderApiInvocation::kFlush: {

@@ -10,7 +10,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
@@ -24,9 +23,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -38,7 +39,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 // This file contains VLOG logging to aid debugging tast tests.
@@ -398,6 +398,10 @@ std::u16string PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::DOWNLOAD_FAILED_401:
+        case Reason::DOWNLOAD_FAILED_403:
+        case Reason::DOWNLOAD_FAILED_404:
+          // TODO(b/160897236): Add a new string for this case.
         case Reason::DOWNLOAD_FAILED_UNKNOWN:
         case Reason::DOWNLOAD_FAILED_NETWORK:
         case Reason::DOWNLOAD_FAILED_ABORTED:
@@ -499,7 +503,9 @@ void PluginVmInstallerView::AddedToWidget() {
 }
 
 void PluginVmInstallerView::OnStateUpdated() {
-  LOG_FUNCTION_CALL() << " with state_ = " << static_cast<int>(state_);
+  LOG_FUNCTION_CALL() << " with state_ = " << static_cast<int>(state_)
+                      << ", installing_state_ = "
+                      << static_cast<int>(installing_state_);
   SetTitleLabel();
   SetMessageLabel();
   SetBigImage();
@@ -598,7 +604,7 @@ void PluginVmInstallerView::StartInstallation() {
   OnStateUpdated();
 
   plugin_vm_installer_->SetObserver(this);
-  base::Optional<plugin_vm::PluginVmInstaller::FailureReason> failure_reason =
+  absl::optional<plugin_vm::PluginVmInstaller::FailureReason> failure_reason =
       plugin_vm_installer_->Start();
   if (failure_reason)
     OnError(failure_reason.value());

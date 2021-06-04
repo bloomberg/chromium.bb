@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -10,10 +11,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/android_autofill/browser/android_autofill_manager.h"
+#include "components/android_autofill/browser/test_autofill_provider.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
@@ -39,24 +41,27 @@ namespace {
 
 class MockAutofillProvider : public TestAutofillProvider {
  public:
-  MockAutofillProvider() {}
-  ~MockAutofillProvider() override {}
+  // WebContents takes ownership of the MockAutofillProvider.
+  explicit MockAutofillProvider(content::WebContents* web_contents)
+      : TestAutofillProvider(web_contents) {}
+
+  ~MockAutofillProvider() override = default;
 
   MOCK_METHOD4(OnFormSubmitted,
-               void(AutofillHandlerProxy* handler,
+               void(AndroidAutofillManager* manager,
                     const FormData& form,
                     bool,
                     SubmissionSource));
 
   MOCK_METHOD6(OnQueryFormFieldAutofill,
-               void(AutofillHandlerProxy* handler,
+               void(AndroidAutofillManager* manager,
                     int32_t id,
                     const FormData& form,
                     const FormFieldData& field,
                     const gfx::RectF& bounding_box,
                     bool autoselect_first_suggestion));
 
-  void OnQueryFormFieldAutofillImpl(AutofillHandlerProxy* handler,
+  void OnQueryFormFieldAutofillImpl(AndroidAutofillManager* manager,
                                     int32_t id,
                                     const FormData& form,
                                     const FormFieldData& field,
@@ -65,7 +70,7 @@ class MockAutofillProvider : public TestAutofillProvider {
     queried_form_ = form;
   }
 
-  void OnFormSubmittedImpl(AutofillHandlerProxy*,
+  void OnFormSubmittedImpl(AndroidAutofillManager*,
                            const FormData& form,
                            bool success,
                            SubmissionSource source) {
@@ -94,7 +99,8 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     autofill_client_ = std::make_unique<TestAutofillClient>();
-    autofill_provider_ = std::make_unique<MockAutofillProvider>();
+    // WebContents takes ownership of the MockAutofillProvider.
+    autofill_provider_ = new MockAutofillProvider(WebContents());
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -118,23 +124,12 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
     // Replace the ContentAutofillDriverFactory for sub frame.
     ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
         web_contents, autofill_client_.get(), "en-US",
-        AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-        autofill_provider_.get());
-  }
-
-  void ReplaceAutofillDriver() {
-    content::WebContents* web_contents = WebContents();
-    // Set AutofillProvider for current WebContents.
-    ContentAutofillDriverFactory* factory =
-        ContentAutofillDriverFactory::FromWebContents(web_contents);
-    ContentAutofillDriver* driver =
-        factory->DriverForFrame(web_contents->GetMainFrame());
-    driver->SetAutofillProviderForTesting(autofill_provider_.get(),
-                                          autofill_client_.get());
+        BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+        base::BindRepeating(&AndroidAutofillManager::Create));
   }
 
   void TearDownOnMainThread() override {
-    testing::Mock::VerifyAndClearExpectations(autofill_provider_.get());
+    testing::Mock::VerifyAndClearExpectations(autofill_provider_);
   }
 
   content::RenderFrameHost* GetMainFrame() {
@@ -166,19 +161,18 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
   }
 
   void SetLabelChangeExpectationAndTriggerQuery() {
-    ReplaceAutofillDriver();
     // One query for the single click, and a second query when the typing is
     // simulated.
     base::RunLoop run_loop;
     EXPECT_CALL(*autofill_provider_, OnQueryFormFieldAutofill(_, _, _, _, _, _))
         .Times(testing::Exactly(2))
-        .WillOnce(Invoke(autofill_provider_.get(),
+        .WillOnce(Invoke(autofill_provider_,
                          &MockAutofillProvider::OnQueryFormFieldAutofillImpl))
         .WillOnce(
             testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
     EXPECT_CALL(*autofill_provider_, OnFormSubmitted)
-        .WillOnce(Invoke(autofill_provider_.get(),
+        .WillOnce(Invoke(autofill_provider_,
                          &MockAutofillProvider::OnFormSubmittedImpl));
 
     ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
@@ -218,7 +212,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  std::unique_ptr<MockAutofillProvider> autofill_provider_;
+  MockAutofillProvider* autofill_provider_;
 
  private:
   std::unique_ptr<TestAutofillClient> autofill_client_;

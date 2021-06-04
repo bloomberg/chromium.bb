@@ -13,8 +13,8 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/bind.h"
 #include "base/numerics/ranges.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -46,20 +46,15 @@ class SearchResultImageButton : public views::ImageButton {
                           const SearchResult::Action& action);
   ~SearchResultImageButton() override {}
 
-  // ui::EventHandler:
+  // views::ImageButton:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // views::InkDropHostView:
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
 
   // Updates the button visibility upon state change of the button or the
   // search result view associated with it.
   void UpdateOnStateChanged();
 
  private:
-  // views::View overrides:
+  // views::ImageButton:
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
   void SetButtonImage(const gfx::ImageSkia& source, int icon_dimension);
@@ -82,7 +77,37 @@ SearchResultImageButton::SearchResultImageButton(
   // Avoid drawing default dashed focus and draw customized focus in
   // OnPaintBackground();
   SetFocusPainter(nullptr);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+      [](SearchResultImageButton* host) {
+        const AppListColorProvider* const color_provider =
+            AppListColorProvider::Get();
+        const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
+        auto highlight = std::make_unique<views::InkDropHighlight>(
+            gfx::SizeF(host->size()),
+            color_provider->GetRippleAttributesBaseColor(bg_color));
+        highlight->set_visible_opacity(
+            color_provider->GetRippleAttributesHighlightOpacity(bg_color));
+        return highlight;
+      },
+      this));
+  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+      [](SearchResultImageButton* host)
+          -> std::unique_ptr<views::InkDropRipple> {
+        const gfx::Point center = host->GetLocalBounds().CenterPoint();
+        const int ripple_radius = host->GetButtonRadius();
+        gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
+                         2 * ripple_radius, 2 * ripple_radius);
+        const AppListColorProvider* const color_provider =
+            AppListColorProvider::Get();
+        const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
+        return std::make_unique<views::FloodFillInkDropRipple>(
+            host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            color_provider->GetRippleAttributesBaseColor(bg_color),
+            color_provider->GetRippleAttributesInkDropOpacity(bg_color));
+      },
+      this));
 
   SetPreferredSize({kImageButtonSizeDip, kImageButtonSizeDip});
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
@@ -118,33 +143,6 @@ void SearchResultImageButton::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (!event->handled())
     Button::OnGestureEvent(event);
-}
-
-std::unique_ptr<views::InkDropRipple>
-SearchResultImageButton::CreateInkDropRipple() const {
-  const gfx::Point center = GetLocalBounds().CenterPoint();
-  const int ripple_radius = GetButtonRadius();
-  gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
-                   2 * ripple_radius, 2 * ripple_radius);
-  const AppListColorProvider* color_provider = AppListColorProvider::Get();
-  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(),
-      color_provider->GetRippleAttributesBaseColor(bg_color),
-      color_provider->GetRippleAttributesInkDropOpacity(bg_color));
-}
-
-std::unique_ptr<views::InkDropHighlight>
-SearchResultImageButton::CreateInkDropHighlight() const {
-  const AppListColorProvider* color_provider = AppListColorProvider::Get();
-  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
-  auto highlight = std::make_unique<views::InkDropHighlight>(
-      gfx::SizeF(size()),
-      color_provider->GetRippleAttributesBaseColor(bg_color));
-  highlight->set_visible_opacity(
-      color_provider->GetRippleAttributesHighlightOpacity(bg_color));
-  return highlight;
 }
 
 void SearchResultImageButton::UpdateOnStateChanged() {

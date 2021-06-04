@@ -468,6 +468,13 @@ bool ValidateDrawRangeElementsBaseVertexOES(const Context *context,
     return true;
 }
 
+// GL_KHR_blend_equation_advanced
+bool ValidateBlendBarrierKHR(const Context *context)
+{
+    context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+    return false;
+}
+
 bool ValidateBlendEquationSeparateiEXT(const Context *context,
                                        GLuint buf,
                                        GLenum modeRGB,
@@ -1115,6 +1122,110 @@ bool ValidateImportSemaphoreFdEXT(const Context *context,
     return true;
 }
 
+bool ValidateGetSamplerParameterIivEXT(const Context *context,
+                                       SamplerID samplerPacked,
+                                       GLenum pname,
+                                       const GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateGetSamplerParameterBase(context, samplerPacked, pname, nullptr);
+}
+
+bool ValidateGetSamplerParameterIuivEXT(const Context *context,
+                                        SamplerID samplerPacked,
+                                        GLenum pname,
+                                        const GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateGetSamplerParameterBase(context, samplerPacked, pname, nullptr);
+}
+
+bool ValidateGetTexParameterIivEXT(const Context *context,
+                                   TextureType targetPacked,
+                                   GLenum pname,
+                                   const GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateGetTexParameterBase(context, targetPacked, pname, nullptr);
+}
+
+bool ValidateGetTexParameterIuivEXT(const Context *context,
+                                    TextureType targetPacked,
+                                    GLenum pname,
+                                    const GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateGetTexParameterBase(context, targetPacked, pname, nullptr);
+}
+
+bool ValidateSamplerParameterIivEXT(const Context *context,
+                                    SamplerID samplerPacked,
+                                    GLenum pname,
+                                    const GLint *param)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateSamplerParameterBase(context, samplerPacked, pname, -1, true, param);
+}
+
+bool ValidateSamplerParameterIuivEXT(const Context *context,
+                                     SamplerID samplerPacked,
+                                     GLenum pname,
+                                     const GLuint *param)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateSamplerParameterBase(context, samplerPacked, pname, -1, true, param);
+}
+
+bool ValidateTexParameterIivEXT(const Context *context,
+                                TextureType targetPacked,
+                                GLenum pname,
+                                const GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateTexParameterBase(context, targetPacked, pname, -1, true, params);
+}
+
+bool ValidateTexParameterIuivEXT(const Context *context,
+                                 TextureType targetPacked,
+                                 GLenum pname,
+                                 const GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+    return ValidateTexParameterBase(context, targetPacked, pname, -1, true, params);
+}
+
 bool ValidateImportSemaphoreZirconHandleANGLE(const Context *context,
                                               SemaphoreID semaphore,
                                               HandleType handleType,
@@ -1389,6 +1500,21 @@ bool ValidateNamedBufferStorageExternalEXT(const Context *context,
                                            GLbitfield flags)
 {
     UNIMPLEMENTED();
+    return false;
+}
+
+// GL_EXT_primitive_bounding_box
+bool ValidatePrimitiveBoundingBoxEXT(const Context *context,
+                                     GLfloat minX,
+                                     GLfloat minY,
+                                     GLfloat minZ,
+                                     GLfloat minW,
+                                     GLfloat maxX,
+                                     GLfloat maxY,
+                                     GLfloat maxZ,
+                                     GLfloat maxW)
+{
+    context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
     return false;
 }
 

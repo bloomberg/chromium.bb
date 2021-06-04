@@ -19,7 +19,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
-#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
@@ -33,6 +32,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/page_info/features.h"
 #include "components/page_info/page_info_ui.h"
@@ -66,6 +66,7 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #else
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
@@ -138,7 +139,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ASSERT_TRUE(cert_);
 
-    MockInfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
     content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
@@ -211,8 +212,8 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const PermissionInfoList& last_permission_info_list() {
     return last_permission_info_list_;
   }
-  InfoBarService* infobar_service() {
-    return InfoBarService::FromWebContents(web_contents());
+  infobars::ContentInfoBarManager* infobar_manager() {
+    return infobars::ContentInfoBarManager::FromWebContents(web_contents());
   }
 
   PageInfo* page_info() {
@@ -237,7 +238,8 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
       incognito_web_contents_ =
           content::WebContentsTester::CreateTestWebContents(
-              profile()->GetPrimaryOTRProfile(), nullptr);
+              profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+              nullptr);
 
       content_settings::PageSpecificContentSettings::CreateForWebContents(
           incognito_web_contents_.get(),
@@ -269,6 +271,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::WebContents> incognito_web_contents_;
   std::unique_ptr<PageInfo> incognito_page_info_;
   std::unique_ptr<MockPageInfoUI> incognito_mock_ui_;
+
+#if !defined(OS_ANDROID)
+  ChromeLayoutProvider layout_provider_;
+#endif
 
   scoped_refptr<net::X509Certificate> cert_;
   GURL url_;
@@ -625,16 +631,11 @@ TEST_F(PageInfoTest, HTTPSConnection) {
 
 // Define some dummy constants for Android-only resources.
 #if !defined(OS_ANDROID)
-#define IDR_PAGEINFO_WARNING_MINOR 0
 #define IDR_PAGEINFO_BAD 0
 #define IDR_PAGEINFO_GOOD 0
 #endif
 
 TEST_F(PageInfoTest, InsecureContent) {
-#if defined(OS_ANDROID)
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(page_info::kPageInfoV2);
-#endif
   struct TestCase {
     security_state::SecurityLevel security_level;
     net::CertStatus cert_status;
@@ -655,7 +656,7 @@ TEST_F(PageInfoTest, InsecureContent) {
        false /* ran_content_with_cert_errors */,
        false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content with a nonsecure form. The nonsecure form is the
       // more severe problem.
       {security_state::NONE, 0, false /* ran_mixed_content */,
@@ -663,21 +664,21 @@ TEST_F(PageInfoTest, InsecureContent) {
        false /* ran_content_with_cert_errors */,
        false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Only nonsecure form.
       {security_state::NONE, 0, false /* ran_mixed_content */,
        false /* displayed_mixed_content */, true,
        false /* ran_content_with_cert_errors */,
        false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content with a cert error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        false /* ran_mixed_content */, true /* displayed_mixed_content */, false,
        false /* ran_content_with_cert_errors */,
        false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
       // Active and passive mixed content.
       {security_state::DANGEROUS, 0, true /* ran_mixed_content */,
        true /* displayed_mixed_content */, false,
@@ -721,7 +722,7 @@ TEST_F(PageInfoTest, InsecureContent) {
        false /* ran_content_with_cert_errors */,
        true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive subresources with cert errors, with a cert error on the
       // main resource also. In this case, the subresources with
       // certificate errors are ignored: if the main resource had a cert
@@ -768,13 +769,7 @@ TEST_F(PageInfoTest, InsecureContent) {
        true /* displayed_content_with_cert_errors */, false,
        false /* ran_mixed_content */, true /* displayed_mixed_content */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
-      // Passive mixed content and subresources with cert errors.
-      {security_state::NONE, 0, false /* ran_content_with_cert_errors */,
-       true /* displayed_content_with_cert_errors */, false,
-       false /* ran_mixed_content */, true /* displayed_mixed_content */,
-       PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content, a nonsecure form, and subresources with cert
       // errors.
       {security_state::NONE, 0, false /* ran_mixed_content */,
@@ -782,7 +777,7 @@ TEST_F(PageInfoTest, InsecureContent) {
        false /* ran_content_with_cert_errors */,
        true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
-       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content and active subresources with cert errors.
       {security_state::DANGEROUS, 0, false /* ran_mixed_content */,
        true /* displayed_mixed_content */, false,
@@ -804,7 +799,7 @@ TEST_F(PageInfoTest, InsecureContent) {
        true /* ran_content_with_cert_errors */,
        false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
-       PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
+       PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
   };
 
   for (const auto& test : kTestCases) {
@@ -928,7 +923,7 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
             page_info()->site_identity_status());
 #if defined(OS_ANDROID)
-  EXPECT_EQ(IDR_PAGEINFO_BAD_V2,
+  EXPECT_EQ(IDR_PAGEINFO_BAD,
             PageInfoUI::GetIdentityIconID(page_info()->site_identity_status()));
 #endif
 }
@@ -959,10 +954,10 @@ TEST_F(PageInfoTest, LegacyTLS) {
 #if !defined(OS_ANDROID)
 TEST_F(PageInfoTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
 }
 
 TEST_F(PageInfoTest, ShowInfoBar) {
@@ -971,28 +966,28 @@ TEST_F(PageInfoTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
   page_info()->OnSitePermissionChanged(ContentSettingsType::GEOLOCATION,
                                        CONTENT_SETTING_ALLOW,
                                        /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  ASSERT_EQ(1u, infobar_service()->infobar_count());
+  ASSERT_EQ(1u, infobar_manager()->infobar_count());
 
-  infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
 }
 
 TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
   page_info()->OnSitePermissionChanged(
       ContentSettingsType::SOUND, CONTENT_SETTING_BLOCK, /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
 }
 
 TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
-  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
   page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_BLOCK,
                                        /*is_one_time=*/false);
@@ -1000,9 +995,9 @@ TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
       ContentSettingsType::SOUND, CONTENT_SETTING_BLOCK, /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(1u, infobar_service()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobar_count());
 
-  infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
 }
 #endif
 

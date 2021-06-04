@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -42,9 +43,9 @@ std::unique_ptr<CommandItem> ItemForTitle(const std::u16string& title,
 // In practice, this is the tab group that *all* selected tabs belong to, if
 // any. In the common special case of single selection, this will return that
 // tab's group if it has one.
-base::Optional<tab_groups::TabGroupId> IneligibleGroupForSelected(
+absl::optional<tab_groups::TabGroupId> IneligibleGroupForSelected(
     TabStripModel* tab_strip_model) {
-  base::Optional<tab_groups::TabGroupId> excluded_group = base::nullopt;
+  absl::optional<tab_groups::TabGroupId> excluded_group = absl::nullopt;
   for (int index : tab_strip_model->selection_model().selected_indices()) {
     auto group = tab_strip_model->GetTabGroupForTab(index);
     if (group.has_value()) {
@@ -52,7 +53,7 @@ base::Optional<tab_groups::TabGroupId> IneligibleGroupForSelected(
         excluded_group = group;
       } else if (group != excluded_group) {
         // More than one group in the selection, so don't exclude anything.
-        return base::nullopt;
+        return absl::nullopt;
       }
     }
   }
@@ -283,7 +284,7 @@ CommandSource::CommandResults MoveTabsToWindowCommandsForWindowsMatching(
   // Add "New Window", if appropriate. It should score highest with no input.
   std::u16string new_window_title = l10n_util::GetStringUTF16(IDS_NEW_WINDOW);
   base::Erase(new_window_title, '&');
-  std::unique_ptr<CommandItem> item = nullptr;
+  std::unique_ptr<CommandItem> item;
   if (input.empty()) {
     item = std::make_unique<CommandItem>(new_window_title, .99,
                                          std::vector<gfx::Range>());
@@ -321,7 +322,7 @@ CommandSource::CommandResults AddTabsToGroupCommandsForGroupsMatching(
   // Add "New Group", if appropriate. It should score highest with no input.
   std::u16string new_group_title =
       l10n_util::GetStringUTF16(IDS_TAB_CXMENU_SUBMENU_NEW_GROUP);
-  std::unique_ptr<CommandItem> item = nullptr;
+  std::unique_ptr<CommandItem> item;
   if (input.empty()) {
     item = std::make_unique<CommandItem>(new_group_title, .99,
                                          std::vector<gfx::Range>());
@@ -514,6 +515,15 @@ CommandSource::CommandResults TabCommandSource::GetCommands(
   if (auto item = ItemForTitle(u"Scroll to bottom", finder, &ranges)) {
     item->command = base::BindOnce(&ScrollToBottom, base::Unretained(browser));
     results.push_back(std::move(item));
+  }
+
+  if (send_tab_to_self::ShouldOfferFeature(
+          tab_strip_model->GetActiveWebContents())) {
+    if (auto item = ItemForTitle(u"Send tab to self...", finder, &ranges)) {
+      item->command = base::BindOnce(&chrome::SendTabToSelfFromPageAction,
+                                     base::Unretained(browser));
+      results.push_back(std::move(item));
+    }
   }
 
   return results;

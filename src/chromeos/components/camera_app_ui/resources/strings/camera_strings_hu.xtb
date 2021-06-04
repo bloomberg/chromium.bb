@@ -76,6 +76,7 @@ Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mel
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" /> × <ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapixel</translation>
 <translation id="6681668084120808868">Fényképkészítés</translation>
 <translation id="6778482348691154169">Nem sikerült elkészíteni a fotót</translation>
+<translation id="695140971690006676">Az összes visszaállítása</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="698156982839284926">3 másodperc</translation>
 <translation id="712848772518857951">Biztosan eltávolít <ph name="COUNT" /> elemet?</translation>
@@ -89,7 +90,6 @@ Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mel
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7670511624014457267">60 FPS</translation>
-<translation id="7974782136796202581">Pásztázás-billentés-nagyítás beállításainak megjelenítése</translation>
 <translation id="7983668134180549431">Szöveg észlelve.</translation>
 <translation id="8067883171444229417">Videó lejátszása</translation>
 <translation id="8120146556401698679">Pásztázás, döntés, nagyítás/kicsinyítés</translation>

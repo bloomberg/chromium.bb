@@ -79,7 +79,7 @@ class DevToolsFrontendImpl final
   void SetupDevToolsExtensionAPI(const String& extension_api) override;
 
   // InspectorFrontendClient implementation.
-  void SendMessageToEmbedder(const String&) override;
+  void SendMessageToEmbedder(base::Value) override;
 
   Member<DevToolsHost> devtools_host_;
   String api_script_;
@@ -97,4 +97,4 @@ class DevToolsFrontendImpl final
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_

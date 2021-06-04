@@ -19,6 +19,7 @@
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -85,6 +86,7 @@ class ArCompositorFrameSink : public viz::mojom::CompositorFrameSinkClient {
 
   bool IsInitialized() { return is_initialized_; }
   bool CanIssueBeginFrame() { return can_issue_new_begin_frame_; }
+  viz::FrameSinkId FrameSinkId();
 
   void Initialize(gpu::SurfaceHandle surface_handle,
                   ui::WindowAndroid* root_window,
@@ -120,12 +122,11 @@ class ArCompositorFrameSink : public viz::mojom::CompositorFrameSinkClient {
 
   // viz::mojom::CompositorFrameSinkClient:
   void OnBeginFramePausedChanged(bool paused) override {}
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override;
   void OnCompositorFrameTransitionDirectiveProcessed(
       uint32_t sequence_id) override {}
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
+      std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
                     const viz::FrameTimingDetailsMap& timing_details) override;
 

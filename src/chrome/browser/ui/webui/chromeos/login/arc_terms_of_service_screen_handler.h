@@ -20,9 +20,12 @@ namespace arc {
 class ArcOptInPreferenceHandler;
 }
 
+namespace ash {
+class ArcTermsOfServiceScreen;
+}
+
 namespace chromeos {
 
-class ArcTermsOfServiceScreen;
 class ArcTermsOfServiceScreenView;
 
 class ArcTermsOfServiceScreenViewObserver {
@@ -60,7 +63,7 @@ class ArcTermsOfServiceScreenView {
   virtual void Hide() = 0;
 
   // Sets view and screen.
-  virtual void Bind(ArcTermsOfServiceScreen* screen) = 0;
+  virtual void Bind(ash::ArcTermsOfServiceScreen* screen) = 0;
 
  protected:
   ArcTermsOfServiceScreenView() = default;
@@ -95,7 +98,7 @@ class ArcTermsOfServiceScreenHandler
   void RemoveObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
   void Show() override;
   void Hide() override;
-  void Bind(ArcTermsOfServiceScreen* screen) override;
+  void Bind(ash::ArcTermsOfServiceScreen* screen) override;
 
   // OobeUI::Observer:
   void OnCurrentScreenChanged(OobeScreenId current_screen,
@@ -175,5 +178,12 @@ class ArcTermsOfServiceScreenHandler
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::ArcTermsOfServiceScreenView;
+using ::chromeos::ArcTermsOfServiceScreenViewObserver;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ARC_TERMS_OF_SERVICE_SCREEN_HANDLER_H_

@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Faites glisser deux doigts vers le haut</translation>
 <translation id="1126928665165112660">Pas en italique</translation>
 <translation id="113582498867142724">Collection de <ph name="TAG" /> comprenant <ph name="NUM" /> éléments</translation>
+<translation id="1146441463334103638">Allumer ou éteindre l'écran</translation>
 <translation id="1156488781945104845">Heure actuelle</translation>
 <translation id="1161762950103988776">Sauter</translation>
 <translation id="1164857107703583584">Vous pouvez utiliser les commandes d'accès direct pour naviguer efficacement au sein d'une page Web.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">URL du lien : <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Déplacer d'un caractère vers l'arrière</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
+<translation id="2243633977138166243">Pour passer d'un menu à l'autre, appuyez sur la flèche vers la gauche ou vers la droite, puis sur Entrée pour activer l'élément en surbrillance</translation>
 <translation id="224426591676115802">Aucune voix n'est proposée pour cette langue : <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Arrêt du mode Apprentissage</translation>
 <translation id="225732394367814946">Augmenter le débit de la parole</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">Chartreuse</translation>
 <translation id="2684412629217766642">Fermer le tutoriel de ChromeVox</translation>
 <translation id="2697408785920771974">saisie semi-automatique alignement</translation>
+<translation id="2697786971245905543">Candidat pour la conversion de texte</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{parenthèse ouvrante}one{# parenthèse ouvrante}other{# parenthèses ouvrantes}}</translation>
+<translation id="270523456882008230">Astuce : Touchez deux fois l'écran avec un doigt pour activer l'élément actuel.</translation>
 <translation id="2705875883745373140">Non appuyé</translation>
 <translation id="2708078563826046398">Rose pêche</translation>
 <translation id="2713444072780614174">Blanc</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+ #}one{+ #}other{+ #}}</translation>
 <translation id="2792200646155001340">Vous pouvez aussi passer à l'élément précédent en balayant l'écran de droite à gauche avec un doigt. Essayez maintenant.</translation>
 <translation id="280499067616661124">Rechercher sur la page ChromeVox</translation>
-<translation id="2808001342598757276">Éclaircir l'écran</translation>
 <translation id="2811019999044652585">Pour accéder aux autres parties de l'écran, comme les barres d'outils ou la barre d'état système, appuyez sur Ctrl + Suivant. Sur un Chromebook, la touche Suivant se situe immédiatement au-dessus de la touche du numéro 2.</translation>
 <translation id="2811204574343810641">Rangée</translation>
 <translation id="2816868829355607410">Zone d'exercice : commandes d'accès direct</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Infobulle</translation>
 <translation id="2976476721782829799">Vous pouvez aussi vous déplacer en faisant glisser un doigt sur l'écran. C'est ce qu'on appelle explorer au toucher. Essayez de lire le reste de cette leçon en explorant l'écran au toucher.</translation>
 <translation id="297825089465017871">Faites glisser deux doigts vers la gauche</translation>
+<translation id="2988364959384217951">Astuce : Balayez l'écran de droite à gauche avec deux doigts si vous souhaitez quitter ce tutoriel.</translation>
 <translation id="2998131015536248178">Caractère précédent</translation>
 <translation id="2999559350546931576">Diminuer la hauteur de la voix</translation>
 <translation id="3009352964623081324">Rechercher+O, puis S. Ce raccourci permet d'installer, de gérer et de personnaliser les voix.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Faire défiler vers l'arrière</translation>
 <translation id="3084806535845658316">aucun écho d'entrée de caractères</translation>
 <translation id="3086746722712840547">Note</translation>
+<translation id="308736057934395497">Désactiver l'écran permet d'améliorer la confidentialité étant donné que personne ne peut le voir. Vous pouvez le réactiver à tout moment en appuyant sur Rechercher+Augmenter la luminosité.</translation>
 <translation id="3090227230165225418">Annoncer les notifications de téléchargement</translation>
 <translation id="3090532668523289635">groupe</translation>
 <translation id="3093176084511590672">Repère suivant</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Réduit</translation>
 <translation id="311015743332597320">Balayez quatre doigts vers la droite</translation>
 <translation id="3112457281078985179">Pour activer ou désactiver ChromeVox, utilisez Ctrl + Alt + Z.</translation>
+<translation id="3115800313647508384">Éteindre l'écran?</translation>
 <translation id="3131002934070407451">Lire les nombres comme :</translation>
 <translation id="3134461040845705080">lecture seule</translation>
 <translation id="3137663468179739624">Olive</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Gris pâle</translation>
 <translation id="6036135911048686884">Touchez Explorer</translation>
 <translation id="6037602951055904232">Panoramique vers l'avant</translation>
-<translation id="6044160928851315051">Assombrir l'écran</translation>
 <translation id="6082768461603900813">Navigation de base</translation>
 <translation id="609281021724813947">Aucun curseur précédent</translation>
 <translation id="6100239002225743044">Déplacer d'une ligne vers le haut</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Préface</translation>
 <translation id="6697092096875747123">Zone de liste déroulante précédente</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{point d'exclamation}one{# point d'exclamation}other{# points d'exclamation}}</translation>
+<translation id="670717715607710284">Éteindre l'écran</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6714813999819678458">En-tête de niveau 2 précédent</translation>
 <translation id="6730312624811567147">Utilisez les touches Recherche et flèche gauche ou droite pour aller au début ou à la fin; les touches Recherche, Ctrl et flèche gauche ou droite pour aller au début ou à la fin du document; les touches Recherche et flèche vers le haut ou vers le bas pour passer à la page suivante ou précédente</translation>
@@ -939,6 +945,7 @@
 <translation id="7776293189010177726">Ouvrir les menus de ChromeVox</translation>
 <translation id="7799302833060027366">Appuyez sur les touches vers le haut, le bas, la gauche ou la droite pour explorer les fonctions mathématiques</translation>
 <translation id="7800558923657349506">Épilogue</translation>
+<translation id="7801768143868631306">Astuce : Balayez l'écran vers la gauche ou la droite avec un doigt pour naviguer.</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7810781339813764006">Groupe suivant</translation>
 <translation id="7813616274030162878">Menu de Switch Access</translation>
@@ -992,6 +999,7 @@
 <translation id="816818801578874684">Ceci est le premier titre. Appuyez sur Recherche+H pour accéder au titre suivant.</translation>
 <translation id="8173092779156526980">Balayez quatre doigts vers la gauche</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{trait de soulignement}one{# trait de soulignement}other{# traits de soulignement}}</translation>
+<translation id="817529114347680055">Écran activé</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8184828902145951186">ligne</translation>
 <translation id="8186185314313222077">basculer en plein écran</translation>
@@ -1006,6 +1014,7 @@
 <translation id="827266600368092403">Commencer ou terminer la sélection</translation>
 <translation id="827422111966801947">Indigo</translation>
 <translation id="8276439074553447000">Aller à l'élément activable précédent</translation>
+<translation id="8279039817939141096">Appuyez sur une touche du clavier ou sur une touche braille actualisable, ou encore faites un geste tactile pour apprendre son fonctionnement. Appuyez sur les touches Contrôle et W en même temps, sur la barre d'espacement et la touche Z, balayez vers la gauche avec deux doigts ou appuyez sur la touche Échap. pour quitter.</translation>
 <translation id="8283603667300770666">Champ de formulaire suivant</translation>
 <translation id="8310185481635255431">Aucun lien suivant</translation>
 <translation id="831207808878314375">Définition</translation>
@@ -1013,7 +1022,6 @@
 <translation id="8316881042119029234">Vieille dentelle</translation>
 <translation id="8324974933005349667">Personnaliser les paramètres de synthèse vocale</translation>
 <translation id="8326783648485765113">Vert gazon</translation>
-<translation id="8328063869313048659">Basculer l'écran sombre</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{carré}one{# carré}other{# carrés}}</translation>
 <translation id="8378855320830505539">Région</translation>
 <translation id="8382679411218029383">Remplissage automatique de ligne et de liste</translation>

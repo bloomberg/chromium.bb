@@ -153,8 +153,10 @@ TEST(IntrabcTest, DvValidation) {
   xd.plane[2].subsampling_x = 1;
   xd.plane[2].subsampling_y = 1;
 
+  SequenceHeader seq_params = {};
   AV1_COMMON cm;
   memset(&cm, 0, sizeof(cm));
+  cm.seq_params = &seq_params;
 
   for (const DvTestCase &dv_case : kDvCases) {
     const int mi_row = xd.tile.mi_row_start + dv_case.mi_row_offset;

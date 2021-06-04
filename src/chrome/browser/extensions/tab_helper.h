@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -89,6 +88,8 @@ class TabHelper : public content::WebContentsObserver,
     return active_tab_permission_granter_.get();
   }
 
+  void OnWatchedPageChanged(const std::vector<std::string>& css_selectors);
+
  private:
   // Utility function to invoke member functions on all relevant
   // ContentRulesRegistries.
@@ -115,15 +116,13 @@ class TabHelper : public content::WebContentsObserver,
   content::WebContents* GetAssociatedWebContents() const override;
 
   // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
   // Message handlers.
-  void OnGetAppInstallState(content::RenderFrameHost* host,
-                            const GURL& requestor_url,
-                            int return_route_id,
-                            int callback_id);
   void OnContentScriptsExecuting(content::RenderFrameHost* host,
                                  const ExecutingScriptsMap& extension_ids,
                                  const GURL& on_url);

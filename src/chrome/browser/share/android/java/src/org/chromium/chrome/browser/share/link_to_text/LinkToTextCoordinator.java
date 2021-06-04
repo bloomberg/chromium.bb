@@ -28,11 +28,12 @@ import org.chromium.url.GURL;
  * Handles the Link To Text action in the Sharing Hub.
  */
 public class LinkToTextCoordinator extends EmptyTabObserver {
-    @IntDef({LinkGeneration.TEXT, LinkGeneration.LINK, LinkGeneration.FAILURE})
+    @IntDef({LinkGeneration.TEXT, LinkGeneration.LINK, LinkGeneration.FAILURE, LinkGeneration.MAX})
     public @interface LinkGeneration {
         int TEXT = 0;
         int LINK = 1;
         int FAILURE = 2;
+        int MAX = 3;
     }
 
     private static final String SHARE_TEXT_TEMPLATE = "\"%s\"\n";
@@ -42,16 +43,16 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     private final Context mContext;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private final String mVisibleUrl;
-    private final String mSelectedText;
     private final Tab mTab;
     private final ChromeShareExtras mChromeShareExtras;
     private final long mShareStartTime;
-    private final ShareParams mShareTextParams;
     private final long mRequestSelectorStartTime;
 
     private ShareParams mShareLinkParams;
     private TextFragmentReceiver mProducer;
     private boolean mCancelRequest;
+    private String mSelectedText;
+    private ShareParams mShareTextParams;
 
     public LinkToTextCoordinator(Context context, Tab tab,
             ChromeOptionShareCallback chromeOptionShareCallback, String visibleUrl,
@@ -150,6 +151,11 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     }
 
     public void requestSelector() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
+                && mChromeShareExtras.isReshareHighlightedText()) {
+            reshareHighlightedText();
+            return;
+        }
         if (!LinkToTextBridge.shouldOfferLinkToText(new GURL(mVisibleUrl))) {
             LinkToTextBridge.logGenerateErrorBlockList();
             onSelectorReady(INVALID_SELECTOR);
@@ -170,6 +176,23 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
                 onSelectorReady(selector);
             }
         });
+    }
+
+    public void reshareHighlightedText() {
+        mProducer = mTab.getWebContents().getMainFrame().getInterfaceToRendererFrame(
+                TextFragmentReceiver.MANAGER);
+        mProducer.extractTextFragmentsMatches(
+                new TextFragmentReceiver.ExtractTextFragmentsMatchesResponse() {
+                    @Override
+                    public void call(String[] matches) {
+                        mSelectedText = String.join(",", matches);
+                        mShareTextParams =
+                                new ShareParams.Builder(mTab.getWindowAndroid(), /*title=*/"", "")
+                                        .setText(mSelectedText)
+                                        .build();
+                        onSelectorReady(mVisibleUrl);
+                    }
+                });
     }
 
     public String getUrlToShare(String selector) {

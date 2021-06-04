@@ -163,11 +163,13 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
   base::DictionaryValue plugins_data_pref;
   auto dict = std::make_unique<base::DictionaryValue>();
   constexpr char kFlagKey[] = "flashPreviouslyChanged";
-  plugins_data_pref.SetWithoutPathExpansion(kFlagKey, std::move(dict));
+  plugins_data_pref.SetKey(kFlagKey,
+                           base::Value::FromUniquePtrValue(std::move(dict)));
 
   auto data_for_pattern = std::make_unique<base::DictionaryValue>();
   data_for_pattern->SetInteger("setting", CONTENT_SETTING_ALLOW);
-  pref_data.SetWithoutPathExpansion(kPattern, std::move(data_for_pattern));
+  pref_data.SetKey(
+      kPattern, base::Value::FromUniquePtrValue(std::move(data_for_pattern)));
   prefs->Set(kFullscreenPrefPath, pref_data);
 #if !defined(OS_ANDROID)
   prefs->Set(kMouselockPrefPath, pref_data);
@@ -289,9 +291,8 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
   std::unique_ptr<base::Value> value_ptr(
       TestUtils::GetContentSettingValue(&provider, primary_url, primary_url,
                                         ContentSettingsType::COOKIES, false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   provider.SetWebsiteSetting(primary_pattern, primary_pattern,
                              ContentSettingsType::COOKIES, nullptr, {});
@@ -382,8 +383,7 @@ TEST_F(PrefProviderTest, Deadlock) {
   {
     DictionaryPrefUpdate update(&prefs, info->pref_name());
     base::DictionaryValue* mutable_settings = update.Get();
-    mutable_settings->SetWithoutPathExpansion(
-        "www.example.com,*", std::make_unique<base::DictionaryValue>());
+    mutable_settings->SetKey("www.example.com,*", base::DictionaryValue());
   }
   EXPECT_TRUE(observer.notification_received());
 
@@ -534,7 +534,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   for (const char* pref : cleared_prefs) {
     DictionaryPrefUpdate update(&prefs, pref);
     const base::DictionaryValue* dictionary = update.Get();
-    ASSERT_FALSE(dictionary->empty());
+    ASSERT_FALSE(dictionary->DictEmpty());
   }
 
   provider.ClearAllContentSettingsRules(ContentSettingsType::JAVASCRIPT);
@@ -544,7 +544,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   for (const char* pref : cleared_prefs) {
     DictionaryPrefUpdate update(&prefs, pref);
     const base::DictionaryValue* dictionary = update.Get();
-    EXPECT_TRUE(dictionary->empty());
+    EXPECT_TRUE(dictionary->DictEmpty());
   }
 
   // Test that the preferences for cookies and notifications are not empty.
@@ -556,7 +556,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   for (const char* pref : nonempty_prefs) {
     DictionaryPrefUpdate update(&prefs, pref);
     const base::DictionaryValue* dictionary = update.Get();
-    EXPECT_EQ(1u, dictionary->size());
+    EXPECT_EQ(1u, dictionary->DictSize());
   }
 
   provider.ShutdownOnUIThread();
@@ -668,9 +668,8 @@ TEST_F(PrefProviderTest, SessionScopeSettingsDontPersist) {
   std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
       false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   // Now if we create a new provider, it should not be able to read our setting
   // back.
@@ -715,9 +714,8 @@ TEST_F(PrefProviderTest, SessionScopeSettingsRestoreSession) {
   std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
       false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   // Now if we create a new provider, it should be able to read our setting
   // back.
@@ -758,9 +756,8 @@ TEST_F(PrefProviderTest, GetContentSettingsExpiry) {
   std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
       false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   // Now if we skip ahead our time our setting should be expired and no longer
   // valid.
@@ -800,9 +797,8 @@ TEST_F(PrefProviderTest, GetContentSettingsExpiryPersists) {
   std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
       false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   // Shutdown our provider and we should still have a setting present.
   provider.ShutdownOnUIThread();
@@ -853,9 +849,8 @@ TEST_F(PrefProviderTest, GetContentSettingsExpiryAfterRestore) {
   std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
       false));
-  int int_value = -1;
-  value_ptr->GetAsInteger(&int_value);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value_ptr->GetIfInt().value_or(-1)));
 
   provider.ShutdownOnUIThread();
   PrefProvider provider2(testing_profile.GetPrefs(), /*incognito=*/false,

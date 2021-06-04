@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -163,7 +164,7 @@ class ProfileDestructionWatcher : public ProfileObserver {
   ProfileDestructionWatcher() = default;
   ~ProfileDestructionWatcher() override = default;
 
-  void Watch(Profile* profile) { observed_profiles_.Add(profile); }
+  void Watch(Profile* profile) { observed_profiles_.AddObservation(profile); }
 
   bool destroyed() const { return destroyed_; }
 
@@ -175,12 +176,13 @@ class ProfileDestructionWatcher : public ProfileObserver {
     DCHECK(!destroyed_) << "Double profile destruction";
     destroyed_ = true;
     run_loop_.Quit();
-    observed_profiles_.Remove(profile);
+    observed_profiles_.RemoveObservation(profile);
   }
 
   bool destroyed_ = false;
   base::RunLoop run_loop_;
-  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
+  base::ScopedMultiSourceObservation<Profile, ProfileObserver>
+      observed_profiles_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDestructionWatcher);
 };
@@ -629,7 +631,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        SimpleURLLoaderUsingMainContextDuringShutdown) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartActiveLoaderDuringProfileShutdownTest(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess()
           .get());
 }
@@ -643,8 +647,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
       OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
   RunURLLoaderActiveDuringIncognitoTeardownTest(
       embedded_test_server(), incognito_browser,
-      content::BrowserContext::GetDefaultStoragePartition(
-          incognito_browser->profile())
+      incognito_browser->profile()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess()
           .get());
 }
@@ -736,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
 // Verifies creating an OTR with non-primary id results in a different profile
 // from incognito profile.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNonPrimaryOTR) {
-  Profile::OTRProfileID otr_profile_id("profile::otr");
+  auto otr_profile_id = Profile::OTRProfileID::CreateUniqueForTesting();
 
   Profile* regular_profile = browser()->profile();
   EXPECT_FALSE(regular_profile->HasAnyOffTheRecordProfile());
@@ -762,8 +766,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNonPrimaryOTR) {
 
 // Verifies creating two OTRs with different ids results in different profiles.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateTwoNonPrimaryOTRs) {
-  Profile::OTRProfileID otr_profile_id1("profile::otr1");
-  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+  auto otr_profile_id1 = Profile::OTRProfileID::CreateUniqueForTesting();
+  auto otr_profile_id2 = Profile::OTRProfileID::CreateUniqueForTesting();
 
   Profile* regular_profile = browser()->profile();
 
@@ -800,8 +804,8 @@ class ProfileBrowserTestWithoutDestroyProfile : public ProfileBrowserTest {
 // profiles.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithoutDestroyProfile,
                        DestroyRegularProfileBeforeOTRs) {
-  Profile::OTRProfileID otr_profile_id1("profile::otr1");
-  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+  auto otr_profile_id1 = Profile::OTRProfileID::CreateUniqueForTesting();
+  auto otr_profile_id2 = Profile::OTRProfileID::CreateUniqueForTesting();
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
@@ -853,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
   EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
       regular_profile, ProfileKeepAliveOrigin::kOffTheRecordProfile));
 
-  Profile::OTRProfileID otr_profile_id("profile::otr");
+  auto otr_profile_id = Profile::OTRProfileID::CreateUniqueForTesting();
   Profile* otr_profile = regular_profile->GetOffTheRecordProfile(
       otr_profile_id, /*create_if_needed=*/true);
 
@@ -887,8 +891,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
 
 // Tests Profile::GetAllOffTheRecordProfiles
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
-  Profile::OTRProfileID otr_profile_id1("profile::otr1");
-  Profile::OTRProfileID otr_profile_id2("profile::otr2");
+  auto otr_profile_id1 = Profile::OTRProfileID::CreateUniqueForTesting();
+  auto otr_profile_id2 = Profile::OTRProfileID::CreateUniqueForTesting();
 
   Profile* regular_profile = browser()->profile();
 
@@ -910,12 +914,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
 
 // Tests Profile::IsSameOrParent
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
-  Profile::OTRProfileID otr_profile_id("profile::otr");
+  auto otr_profile_id = Profile::OTRProfileID::CreateUniqueForTesting();
 
   Profile* regular_profile = browser()->profile();
   Profile* otr_profile = regular_profile->GetOffTheRecordProfile(
       otr_profile_id, /*create_if_needed=*/true);
-  Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      regular_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   EXPECT_TRUE(regular_profile->IsSameOrParent(otr_profile));
   EXPECT_TRUE(otr_profile->IsSameOrParent(regular_profile));
@@ -930,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
 // Tests if browser creation using non primary OTRs is blocked.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        TestCreatingBrowserUsingNonPrimaryOffTheRecordProfile) {
-  Profile::OTRProfileID otr_profile_id("profile::otr");
+  auto otr_profile_id = Profile::OTRProfileID::CreateUniqueForTesting();
   Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile(
       otr_profile_id, /*create_if_needed=*/true);
 
@@ -938,27 +943,23 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
             Browser::GetCreationStatusForProfile(otr_profile));
 }
 
-// Tests if profile type returned by |ProfileMetrics::GetBrowserProfileType| and
-// |profile_metrics::GetBrowserContextType| are correct.
+// Tests if profile type returned by |profile_metrics::GetBrowserProfileType| is
+// correct.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestProfileTypes) {
   Profile* regular_profile = browser()->profile();
   EXPECT_EQ(profile_metrics::BrowserProfileType::kRegular,
-            profile_metrics::GetBrowserContextType(regular_profile));
-  EXPECT_EQ(profile_metrics::BrowserProfileType::kRegular,
-            ProfileMetrics::GetBrowserProfileType(regular_profile));
+            profile_metrics::GetBrowserProfileType(regular_profile));
 
-  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   EXPECT_EQ(profile_metrics::BrowserProfileType::kIncognito,
-            profile_metrics::GetBrowserContextType(incognito_profile));
-  EXPECT_EQ(profile_metrics::BrowserProfileType::kIncognito,
-            ProfileMetrics::GetBrowserProfileType(incognito_profile));
+            profile_metrics::GetBrowserProfileType(incognito_profile));
 
   Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile(
-      Profile::OTRProfileID("profile::otr"));
+      Profile::OTRProfileID::CreateUniqueForTesting(),
+      /*create_if_needed=*/true);
   EXPECT_EQ(profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile,
-            profile_metrics::GetBrowserContextType(otr_profile));
-  EXPECT_EQ(profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile,
-            ProfileMetrics::GetBrowserProfileType(otr_profile));
+            profile_metrics::GetBrowserProfileType(otr_profile));
 }
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -989,9 +990,7 @@ IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, TestProfileTypes) {
                      : profile_metrics::BrowserProfileType::kGuest;
 
   EXPECT_EQ(expected_type,
-            profile_metrics::GetBrowserContextType(browser->profile()));
-  EXPECT_EQ(expected_type,
-            ProfileMetrics::GetBrowserProfileType(browser->profile()));
+            profile_metrics::GetBrowserProfileType(browser->profile()));
 }
 
 IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, UnderOneMinute) {
@@ -1047,7 +1046,7 @@ class EphemeralGuestProfileBrowserTest : public ProfileBrowserTest {
 IN_PROC_BROWSER_TEST_F(EphemeralGuestProfileBrowserTest, TestProfileType) {
   Profile* guest_profile = CreateGuestBrowser()->profile();
 
-  EXPECT_TRUE(guest_profile->IsRegularProfile());
+  EXPECT_FALSE(guest_profile->IsRegularProfile());
   EXPECT_FALSE(guest_profile->IsOffTheRecord());
   EXPECT_FALSE(guest_profile->IsGuestSession());
   EXPECT_TRUE(guest_profile->IsEphemeralGuestProfile());
@@ -1240,6 +1239,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   // Test.
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
-  EXPECT_FALSE(profile->GetPrimaryOTRProfile()->IsMainProfile());
+  EXPECT_FALSE(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+                   ->IsMainProfile());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

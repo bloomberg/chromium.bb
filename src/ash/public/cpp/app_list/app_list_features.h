@@ -21,9 +21,6 @@ namespace app_list_features {
 // Enables in-app data search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
 
-// Enables the feature to autocomplete text typed in the AppList search box.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
-
 // Enable app ranking models.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppRanker;
 
@@ -79,8 +76,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableOmniboxRichEntities;
 // Enables normalization of search results in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableLauncherSearchNormalization;
 
+// Enables categorical search in the launcher.
+ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
+
+// Enables search query highlighting in the launcher.
+ASH_PUBLIC_EXPORT extern const base::Feature kLauncherQueryHighlighting;
+
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAppRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
@@ -97,10 +99,13 @@ bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsNewDragSpecInLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsOmniboxRichEntitiesEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSearchNormalizationEnabled();
+bool ASH_PUBLIC_EXPORT IsCategoricalSearchEnabled();
+bool ASH_PUBLIC_EXPORT IsLauncherQueryHighlightingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
 std::string ASH_PUBLIC_EXPORT AppSearchResultRankerPredictorName();
+std::string ASH_PUBLIC_EXPORT CategoricalSearchType();
 
 }  // namespace app_list_features
 

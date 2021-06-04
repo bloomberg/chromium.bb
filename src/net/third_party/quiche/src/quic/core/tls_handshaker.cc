@@ -96,6 +96,13 @@ void TlsHandshaker::AdvanceHandshake() {
     return;
   }
 
+  QUICHE_BUG_IF(quic_tls_server_async_done_no_flusher,
+                SSL_is_server(ssl()) && add_packet_flusher_on_async_op_done_ &&
+                    !handshaker_delegate_->PacketFlusherAttached())
+      << "is_server:" << SSL_is_server(ssl())
+      << ", add_packet_flusher_on_async_op_done_:"
+      << add_packet_flusher_on_async_op_done_;
+
   QUIC_VLOG(1) << ENDPOINT << "Continuing handshake";
   int rv = SSL_do_handshake(ssl());
 
@@ -105,6 +112,7 @@ void TlsHandshaker::AdvanceHandshake() {
   // that case. If there are no unprocessed ServerHello, the retry will return a
   // non-positive number.
   if (retry_handshake_on_early_data_ && rv == 1 && SSL_in_early_data(ssl())) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_retry_handshake_on_early_data, 1, 2);
     OnEnterEarlyData();
     rv = SSL_do_handshake(ssl());
     QUIC_VLOG(1) << ENDPOINT
@@ -335,15 +343,10 @@ void TlsHandshaker::SendAlert(EncryptionLevel level, uint8_t desc) {
       "TLS handshake failure (", EncryptionLevelToString(level), ") ",
       static_cast<int>(desc), ": ", SSL_alert_desc_string_long(desc));
   QUIC_DLOG(ERROR) << error_details;
-  if (GetQuicReloadableFlag(quic_send_tls_crypto_error_code)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_send_tls_crypto_error_code);
-    CloseConnection(
-        TlsAlertToQuicErrorCode(desc),
-        static_cast<QuicIetfTransportErrorCodes>(CRYPTO_ERROR_FIRST + desc),
-        error_details);
-  } else {
-    CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
-  }
+  CloseConnection(
+      TlsAlertToQuicErrorCode(desc),
+      static_cast<QuicIetfTransportErrorCodes>(CRYPTO_ERROR_FIRST + desc),
+      error_details);
 }
 
 }  // namespace quic

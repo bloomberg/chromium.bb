@@ -74,14 +74,13 @@ public final class ProductionSupportedFlagList {
                             + "(cookies without a SameSite attribute are treated as SameSite=Lax); "
                             + "2) Schemeful Same-Site (site boundaries include the URL scheme)."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
-                    "Use Vulkan for composite. Requires VizForWebView and Android device and "
-                            + "OS support. May crash if enabled on unsupported device."),
+                    "Use Vulkan for composite. Requires Android device and OS support. May crash "
+                            + "if enabled on unsupported device."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_SURFACE_CONTROL,
-                    "Use SurfaceControl. Requires VizForWebView, WebViewZeroCopyVideo and Android "
-                            + "device and OS support."),
+                    "Use SurfaceControl. Requires WebViewZeroCopyVideo and Android device and OS "
+                            + "support."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_ZERO_COPY_VIDEO,
                     "Avoid extra copy for video frames when possible"),
-            Flag.baseFeature(VizFeatures.VIZ_FOR_WEBVIEW, "Enables Viz for WebView."),
             Flag.baseFeature(
                     VizFeatures.WEBVIEW_VULKAN_INTERMEDIATE_BUFFER, "For debugging vulkan"),
             Flag.baseFeature(
@@ -126,8 +125,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(UiFeatures.FORM_CONTROLS_REFRESH,
                     "Enables the Form Controls visual improvements and dark mode."),
             Flag.baseFeature(
-                    NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
-            Flag.baseFeature(
                     BlinkFeatures.LAYOUT_NG_TABLE, "Enables Blink's next generation table layout."),
+            Flag.baseFeature(
+                    NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
     };
 }

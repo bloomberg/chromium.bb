@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_LONG_SCREENSHOTS_LONG_SCREENSHOTS_TAB_SERVICE_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -42,6 +41,11 @@ class LongScreenshotsTabService
 
   // Define a list of statuses to describe the calling of paint preview and
   // generation of the bitmap.
+  //
+  // When updating this, also update LongScreenshotsMetrics in
+  // /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/LongScreenshotsMetrics.java
+  // and SharingLongScreenshotsEvent in enums.xml
+  // and logCaptureResultStatus() in ./bitmap_generation/BitmapGenerator.java
   //
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: (
@@ -102,7 +106,7 @@ class LongScreenshotsTabService
                           int clipY,
                           int clipWidth,
                           int clipHeight,
-                          const base::Optional<base::FilePath>& file_path);
+                          const absl::optional<base::FilePath>& file_path);
 
   void OnCaptured(paint_preview::PaintPreviewBaseService::CaptureStatus status,
                   std::unique_ptr<paint_preview::CaptureResult> result);

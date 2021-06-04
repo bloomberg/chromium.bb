@@ -11,6 +11,9 @@
 #ifndef NET_DCSCTP_PUBLIC_TYPES_H_
 #define NET_DCSCTP_PUBLIC_TYPES_H_
 
+#include <cstdint>
+#include <limits>
+
 #include "net/dcsctp/public/strong_alias.h"
 
 namespace dcsctp {
@@ -19,7 +22,7 @@ namespace dcsctp {
 using StreamID = StrongAlias<class StreamIDTag, uint16_t>;
 
 // Payload Protocol Identifier (PPID)
-using PPID = StrongAlias<class PPIDTag, uint16_t>;
+using PPID = StrongAlias<class PPIDTag, uint32_t>;
 
 // Timeout Identifier
 using TimeoutID = StrongAlias<class TimeoutTag, uint64_t>;
@@ -27,6 +30,80 @@ using TimeoutID = StrongAlias<class TimeoutTag, uint64_t>;
 // Indicates if a message is allowed to be received out-of-order compared to
 // other messages on the same stream.
 using IsUnordered = StrongAlias<class IsUnorderedTag, bool>;
+
+// Duration, as milliseconds. Overflows after 24 days.
+class DurationMs : public StrongAlias<class DurationMsTag, int32_t> {
+ public:
+  constexpr explicit DurationMs(const UnderlyingType& v)
+      : StrongAlias<class DurationMsTag, int32_t>(v) {}
+
+  // Convenience methods for working with time.
+  constexpr DurationMs& operator+=(DurationMs d) {
+    value_ += d.value_;
+    return *this;
+  }
+  constexpr DurationMs& operator-=(DurationMs d) {
+    value_ -= d.value_;
+    return *this;
+  }
+  template <typename T>
+  constexpr DurationMs& operator*=(T factor) {
+    value_ *= factor;
+    return *this;
+  }
+};
+
+constexpr inline DurationMs operator+(DurationMs lhs, DurationMs rhs) {
+  return lhs += rhs;
+}
+constexpr inline DurationMs operator-(DurationMs lhs, DurationMs rhs) {
+  return lhs -= rhs;
+}
+template <typename T>
+constexpr inline DurationMs operator*(DurationMs lhs, T rhs) {
+  return lhs *= rhs;
+}
+template <typename T>
+constexpr inline DurationMs operator*(T lhs, DurationMs rhs) {
+  return rhs *= lhs;
+}
+constexpr inline int32_t operator/(DurationMs lhs, DurationMs rhs) {
+  return lhs.value() / rhs.value();
+}
+
+// Represents time, in milliseconds since a client-defined epoch.
+class TimeMs : public StrongAlias<class TimeMsTag, int64_t> {
+ public:
+  constexpr explicit TimeMs(const UnderlyingType& v)
+      : StrongAlias<class TimeMsTag, int64_t>(v) {}
+
+  // Convenience methods for working with time.
+  constexpr TimeMs& operator+=(DurationMs d) {
+    value_ += *d;
+    return *this;
+  }
+  constexpr TimeMs& operator-=(DurationMs d) {
+    value_ -= *d;
+    return *this;
+  }
+
+  static constexpr TimeMs InfiniteFuture() {
+    return TimeMs(std::numeric_limits<int64_t>::max());
+  }
+};
+
+constexpr inline TimeMs operator+(TimeMs lhs, DurationMs rhs) {
+  return lhs += rhs;
+}
+constexpr inline TimeMs operator+(DurationMs lhs, TimeMs rhs) {
+  return rhs += lhs;
+}
+constexpr inline TimeMs operator-(TimeMs lhs, DurationMs rhs) {
+  return lhs -= rhs;
+}
+constexpr inline DurationMs operator-(TimeMs lhs, TimeMs rhs) {
+  return DurationMs(*lhs - *rhs);
+}
 
 }  // namespace dcsctp
 

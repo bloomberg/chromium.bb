@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEBSOCKET_EVENTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEBSOCKET_EVENTS_H_
 
-#include <memory>
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -39,4 +38,4 @@ class InspectorWebSocketEvent {
 
 }  // namespace blink
 
-#endif  // !defined(InspectorWebSocketEvents_h)
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEBSOCKET_EVENTS_H_

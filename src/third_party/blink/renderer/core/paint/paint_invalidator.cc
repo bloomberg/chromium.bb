@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -30,13 +30,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
-
-const PaintInvalidatorContext*
-PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
-  return tree_walk_ ? &tree_walk_->ContextAt(parent_context_index_)
-                           .paint_invalidator_context
-                    : nullptr;
-}
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
                                            PaintInvalidatorContext& context,
@@ -241,7 +234,7 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
   DCHECK(object.IsBox());
   const auto& box = To<LayoutBox>(object);
 
-  PhysicalRect new_rect = box.PhysicalVisualOverflowRect();
+  PhysicalRect new_rect = box.PhysicalVisualOverflowRectAllowingUnset();
   new_rect.Move(new_paint_offset);
   PhysicalRect old_rect = box.PreviousPhysicalVisualOverflowRect();
   old_rect.Move(adjusted_old_paint_offset);
@@ -253,10 +246,9 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
       box.IsLayoutBlockFlow() && box.ChildrenInline() && box.SlowFirstChild();
   if (should_create_containing_block_scope) {
     // For layout shift tracking of contained LayoutTexts.
-    context.containing_block_scope_ =
-        std::make_unique<LayoutShiftTracker::ContainingBlockScope>(
-            PhysicalSizeToBeNoop(box.PreviousSize()),
-            PhysicalSizeToBeNoop(box.Size()), old_rect, new_rect);
+    context.containing_block_scope_.emplace(
+        PhysicalSizeToBeNoop(box.PreviousSize()),
+        PhysicalSizeToBeNoop(box.Size()), old_rect, new_rect);
   }
 
   bool should_report_layout_shift = [&]() -> bool {

@@ -27,9 +27,9 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as DataGrid from '../../data_grid/data_grid.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as SourceFrame from '../../source_frame/source_frame.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {BinaryResourceView} from './BinaryResourceView.js';
@@ -157,9 +157,12 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
   _selectedNode: ResourceWebSocketFrameNode|null;
   _currentSelectedNode?: ResourceWebSocketFrameNode|null;
 
+  private messageFilterSetting: Common.Settings.Setting<string> =
+      Common.Settings.Settings.instance().createSetting('networkWebSocketMessageFilter', '');
+
   constructor(request: SDK.NetworkRequest.NetworkRequest) {
     super();
-    this.registerRequiredCSS('panels/network/webSocketFrameView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/network/webSocketFrameView.css', {enableLegacyPatching: false});
     this.element.classList.add('websocket-frame-view');
     this._request = request;
 
@@ -220,6 +223,9 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     const placeholder = i18nString(UIStrings.enterRegex);
     this._filterTextInput = new UI.Toolbar.ToolbarInput(placeholder, '', 0.4);
     this._filterTextInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this._updateFilterSetting, this);
+    if (this.messageFilterSetting.get()) {
+      this._filterTextInput.setValue(this.messageFilterSetting.get());
+    }
     this._mainToolbar.appendToolbarItem(this._filterTextInput);
     this._filterRegex = null;
 
@@ -291,6 +297,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
 
   _updateFilterSetting(): void {
     const text = this._filterTextInput.value();
+    this.messageFilterSetting.set(text);
     const type = (this._filterTypeCombobox.selectedOption() as HTMLOptionElement).value;
     this._filterRegex = text ? new RegExp(text, 'i') : null;
     this._filterType = type === 'all' ? null : type;
@@ -398,7 +405,7 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
       description = dataText;
 
     } else if (frame.opCode === OpCodes.BinaryFrame) {
-      length = Platform.NumberUtilities.bytesToString(base64ToSize(frame.text));
+      length = Platform.NumberUtilities.bytesToString(Platform.StringUtilities.base64ToSize(frame.text));
       description = opCodeDescriptions[frame.opCode]();
 
     } else {

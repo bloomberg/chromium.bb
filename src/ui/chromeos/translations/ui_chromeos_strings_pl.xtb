@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Suwak wyszukiwania</translation>
 <translation id="1404323374378969387">Norweski</translation>
 <translation id="1430915738399379752">Drukuj</translation>
+<translation id="1433628812591023318">Aby można było przeciągnąć plik do Parallels Desktop, należy go przenieść do folderu Pliki systemu Windows.</translation>
 <translation id="1435838927755162558">Udostępnij folder aplikacji Parallels Desktop</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1471718551822868769">Słowacki</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Pliki systemu Windows</translation>
 <translation id="3078461028045006476">Udostępnij w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebity</translation>
+<translation id="3113153474486991170">Nie udało się otworzyć pliku „<ph name="PATH" />” z tej lokalizacji. Aby to zrobić, skopiuj go do folderu „Moje pliki”.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">GOTOWE</translation>
 <translation id="3188257591659621405">Moje pliki</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Bułgarski z klawiaturą fonetyczną</translation>
 <translation id="5605830556594064952">amerykańska klawiatura Dvoraka</translation>
 <translation id="5625294776298156701">Tamilski z klawiaturą Tamil99</translation>
+<translation id="5633226425545095130">Przeniesienie tego elementu spowoduje jego udostępnienie wszystkim osobom, które mogą widzieć udostępniony folder „<ph name="DESTINATION_NAME" />”.</translation>
 <translation id="5649768706273821470">Posłuchaj</translation>
 <translation id="5678784840044122290">Aplikacja na Linuksa będzie dostępna na terminalu. Może mieć też ikonę w Menu z aplikacjami.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nie można odłączyć archiwum lub dysku wirtualnego<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">klawiatura etiopska</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
 <translation id="7460898608667578234">Ukraiński</translation>
+<translation id="7486315294984620427">Aby można było przeciągnąć plik do Parallels Desktop, należy go skopiować do folderu Pliki systemu Windows.</translation>
 <translation id="7489215562877293245">Znaleziono <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Wszystko gotowe do utworzenia kopii zapasowej na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Wymiary</translation>
 <translation id="8437209419043462667">amerykański</translation>
 <translation id="8456681095658380701">Nieprawidłowa nazwa</translation>
+<translation id="8459404855768962328">Skopiowanie tego elementu spowoduje jego udostępnienie wszystkim osobom, które mogą widzieć udostępniony folder „<ph name="DESTINATION_NAME" />”.</translation>
 <translation id="8461467696380332069">Kliknij plik prawym przyciskiem i wybierz „Przypnij do półki”, by mieć szybki dostęp do swoich plików na półce.</translation>
 <translation id="8463494891489624050">Wietnamski VIQR</translation>
 <translation id="8466234950814670489">Archiwum Tar</translation>

@@ -11,6 +11,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -92,6 +93,7 @@ void StatusAreaOverflowButtonTray::IconView::UpdateRotation() {
 StatusAreaOverflowButtonTray::StatusAreaOverflowButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new IconView()) {
   tray_container()->AddChildView(icon_);
+  set_use_bounce_in_animation(false);
 }
 
 StatusAreaOverflowButtonTray::~StatusAreaOverflowButtonTray() {}

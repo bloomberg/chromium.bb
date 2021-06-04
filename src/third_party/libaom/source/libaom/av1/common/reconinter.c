@@ -734,10 +734,10 @@ void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,
   if (bck_buf != NULL) bck_frame_index = bck_buf->order_hint;
   if (fwd_buf != NULL) fwd_frame_index = fwd_buf->order_hint;
 
-  int d0 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+  int d0 = clamp(abs(get_relative_dist(&cm->seq_params->order_hint_info,
                                        fwd_frame_index, cur_frame_index)),
                  0, MAX_FRAME_DISTANCE);
-  int d1 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+  int d1 = clamp(abs(get_relative_dist(&cm->seq_params->order_hint_info,
                                        cur_frame_index, bck_frame_index)),
                  0, MAX_FRAME_DISTANCE);
 
@@ -1189,7 +1189,6 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 void av1_setup_obmc_dst_bufs(MACROBLOCKD *xd, uint8_t **dst_buf1,
                              uint8_t **dst_buf2) {
-#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
@@ -1203,16 +1202,13 @@ void av1_setup_obmc_dst_bufs(MACROBLOCKD *xd, uint8_t **dst_buf1,
     dst_buf2[2] =
         CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2 * len);
   } else {
-#endif  // CONFIG_AV1_HIGHBITDEPTH
     dst_buf1[0] = xd->tmp_obmc_bufs[0];
     dst_buf1[1] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE;
     dst_buf1[2] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2;
     dst_buf2[0] = xd->tmp_obmc_bufs[1];
     dst_buf2[1] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
     dst_buf2[2] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
-#if CONFIG_AV1_HIGHBITDEPTH
   }
-#endif  // CONFIG_AV1_HIGHBITDEPTH
 }
 
 void av1_setup_build_prediction_by_above_pred(
@@ -1363,10 +1359,12 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
   assert(xd->mi[0]->angle_delta[PLANE_TYPE_UV] == 0);
   assert(xd->mi[0]->filter_intra_mode_info.use_filter_intra == 0);
   assert(xd->mi[0]->use_intrabc == 0);
+  const SequenceHeader *seq_params = cm->seq_params;
 
-  av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                          max_txsize_rect_lookup[plane_bsize], mode, 0, 0,
-                          FILTER_INTRA_MODES, ctx->plane[plane],
+  av1_predict_intra_block(xd, seq_params->sb_size,
+                          seq_params->enable_intra_edge_filter, pd->width,
+                          pd->height, max_txsize_rect_lookup[plane_bsize], mode,
+                          0, 0, FILTER_INTRA_MODES, ctx->plane[plane],
                           ctx->stride[plane], dst, dst_stride, 0, 0, plane);
 }
 

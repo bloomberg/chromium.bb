@@ -531,7 +531,7 @@ void DistributeColspanCellToColumnsFixed(
                                        static_cast<float>(effective_span));
   LayoutUnit new_max_size = LayoutUnit(colspan_cell_max_inline_size /
                                        static_cast<float>(effective_span));
-  base::Optional<float> new_percent;
+  absl::optional<float> new_percent;
   if (colspan_cell.cell_inline_constraint.percent) {
     new_percent = *colspan_cell.cell_inline_constraint.percent / effective_span;
   }
@@ -602,7 +602,7 @@ void DistributeColspanCellToColumnsAuto(
       (colspan_cell.cell_inline_constraint.max_inline_size -
        total_inner_border_spacing)
           .ClampNegativeToZero();
-  base::Optional<float> colspan_cell_percent =
+  absl::optional<float> colspan_cell_percent =
       colspan_cell.cell_inline_constraint.percent;
 
   if (colspan_cell_percent.has_value()) {
@@ -978,7 +978,9 @@ MinMaxSizes NGTableAlgorithmHelpers::ComputeGridInlineMinMax(
     if (column.percent)
       percent_sum += *column.percent;
   }
-  DCHECK_LE(percent_sum, 100.0f);
+  // Floating point math can cause total sum to be slightly above 100%.
+  DCHECK_LE(percent_sum, 100.5f);
+  percent_sum = std::min(percent_sum, 100.0f);
 
   // Table max inline size constraint can be computed from the total column
   // percentage combined with max_inline_size of non-percent columns.

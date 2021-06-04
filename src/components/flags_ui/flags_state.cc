@@ -190,10 +190,8 @@ std::set<std::string> TokenizeOriginList(const std::string& value) {
   base::StringTokenizer tokenizer(input, delimiters);
   std::set<std::string> origin_strings;
   while (tokenizer.GetNext()) {
-    const std::string token = tokenizer.token();
-    if (token.empty()) {
-      continue;
-    }
+    base::StringPiece token = tokenizer.token_piece();
+    DCHECK(!token.empty());
     const GURL url(token);
     if (!url.is_valid() ||
         (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsWSOrWSS())) {
@@ -458,7 +456,7 @@ void FlagsState::RemoveFlagsSwitches(
     // For any featrue name in |features| that is not in |switch_added_values| -
     // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
     for (const auto& feature : features) {
-      if (!base::Contains(switch_added_values, feature.as_string()))
+      if (!base::Contains(switch_added_values, std::string(feature)))
         remaining_features.push_back(feature);
     }
 

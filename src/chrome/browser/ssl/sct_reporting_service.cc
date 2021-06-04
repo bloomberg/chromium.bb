@@ -68,14 +68,14 @@ void SCTReportingService::ReconfigureAfterNetworkRestart() {
   bool is_sct_auditing_enabled =
       base::FeatureList::IsEnabled(features::kSCTAuditing);
   double sct_sampling_rate = features::kSCTAuditingSamplingRate.Get();
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_client;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
   SystemNetworkContextManager::GetInstance()->GetURLLoaderFactory()->Clone(
-      factory_client.InitWithNewPipeAndPassReceiver());
+      factory_remote.InitWithNewPipeAndPassReceiver());
   content::GetNetworkService()->ConfigureSCTAuditing(
       is_sct_auditing_enabled, sct_sampling_rate,
       SCTReportingService::GetReportURLInstance(),
       net::MutableNetworkTrafficAnnotationTag(kSCTAuditReportTrafficAnnotation),
-      std::move(factory_client));
+      std::move(factory_remote));
 }
 
 SCTReportingService::SCTReportingService(
@@ -111,8 +111,7 @@ void SetSCTAuditingEnabledForStoragePartition(
 void SCTReportingService::SetReportingEnabled(bool enabled) {
   // Iterate over StoragePartitions for this Profile, and for each get the
   // NetworkContext and enable or disable SCT auditing.
-  content::BrowserContext::ForEachStoragePartition(
-      profile_,
+  profile_->ForEachStoragePartition(
       base::BindRepeating(&SetSCTAuditingEnabledForStoragePartition, enabled));
 
   if (!enabled)

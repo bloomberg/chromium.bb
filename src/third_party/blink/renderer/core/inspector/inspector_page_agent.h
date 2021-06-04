@@ -88,7 +88,6 @@ class CORE_EXPORT InspectorPageAgent final
     kOtherResource
   };
 
-  static HeapVector<Member<Document>> ImportsForFrame(LocalFrame*);
   static bool CachedResourceContent(const Resource*,
                                     String* result,
                                     bool* base64_encoded);
@@ -117,6 +116,7 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response addScriptToEvaluateOnNewDocument(
       const String& source,
       Maybe<String> world_name,
+      Maybe<bool> include_command_line_api,
       String* identifier) override;
   protocol::Response removeScriptToEvaluateOnNewDocument(
       const String& identifier) override;
@@ -282,6 +282,8 @@ class CORE_EXPORT InspectorPageAgent final
   InspectorAgentState::Boolean bypass_csp_enabled_;
   InspectorAgentState::StringMap scripts_to_evaluate_on_load_;
   InspectorAgentState::StringMap worlds_to_evaluate_on_load_;
+  InspectorAgentState::BooleanMap
+      include_command_line_api_for_scripts_to_evaluate_on_load_;
   InspectorAgentState::String standard_font_family_;
   InspectorAgentState::String fixed_font_family_;
   InspectorAgentState::String serif_font_family_;

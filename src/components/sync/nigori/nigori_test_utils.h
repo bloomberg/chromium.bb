@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
+#include "components/sync/nigori/nigori.h"
 
 namespace sync_pb {
 
@@ -60,7 +61,7 @@ sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
 // presented, |encryption_keybag| will also contain keys derived from it.
 sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
     const KeyParamsForTesting& passphrase_key_params,
-    const base::Optional<KeyParamsForTesting>& old_key_params = base::nullopt);
+    const absl::optional<KeyParamsForTesting>& old_key_params = absl::nullopt);
 
 // Given a |nigori| with CUSTOM_PASSPHRASE passphrase type, initializes the
 // given |cryptographer| with the key described in it. Since the key inside the

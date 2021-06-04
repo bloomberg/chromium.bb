@@ -153,11 +153,20 @@ WebLocalFrame* WebRemoteFrameImpl::ToWebLocalFrame() {
   return nullptr;
 }
 
+const WebLocalFrame* WebRemoteFrameImpl::ToWebLocalFrame() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 bool WebRemoteFrameImpl::IsWebRemoteFrame() const {
   return true;
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::ToWebRemoteFrame() {
+  return this;
+}
+
+const WebRemoteFrame* WebRemoteFrameImpl::ToWebRemoteFrame() const {
   return this;
 }
 
@@ -183,15 +192,14 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     InterfaceRegistry* interface_registry,
     WebFrame* previous_sibling,
     const WebFrameOwnerProperties& frame_owner_properties,
-    mojom::blink::FrameOwnerElementType frame_owner_element_type,
     const LocalFrameToken& frame_token,
     WebFrame* opener,
     std::unique_ptr<WebPolicyContainer> policy_container) {
   auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
       base::PassKey<WebRemoteFrameImpl>(), scope, client, interface_registry,
       frame_token);
-  auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
-      frame_policy, frame_owner_properties, frame_owner_element_type);
+  auto* owner = MakeGarbageCollected<RemoteFrameOwner>(frame_policy,
+                                                       frame_owner_properties);
 
   WindowAgentFactory* window_agent_factory = nullptr;
   if (opener) {
@@ -258,7 +266,6 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     mojom::blink::TreeScopeType scope,
     const WebString& name,
     const FramePolicy& frame_policy,
-    mojom::blink::FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,
@@ -269,7 +276,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
       scope, client, interface_registry, associated_interface_provider,
       frame_token);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
-      frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
+      frame_policy, WebFrameOwnerProperties());
   WindowAgentFactory* window_agent_factory = nullptr;
   if (opener) {
     window_agent_factory = &ToCoreFrame(*opener)->window_agent_factory();

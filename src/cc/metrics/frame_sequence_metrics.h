@@ -5,12 +5,13 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 #define CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 
+#include <bitset>
 #include <memory>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cc {
 class ThroughputUkmReporter;
@@ -33,6 +34,33 @@ enum class FrameSequenceTrackerType {
   kJSAnimation = 11,
   kMaxType
 };
+
+using ActiveTrackers =
+    std::bitset<static_cast<size_t>(FrameSequenceTrackerType::kMaxType)>;
+
+inline bool IsScrollActive(const ActiveTrackers& trackers) {
+  return trackers.test(
+             static_cast<size_t>(FrameSequenceTrackerType::kWheelScroll)) ||
+         trackers.test(
+             static_cast<size_t>(FrameSequenceTrackerType::kTouchScroll)) ||
+         trackers.test(
+             static_cast<size_t>(FrameSequenceTrackerType::kScrollbarScroll));
+}
+
+inline bool HasMainThreadAnimation(const ActiveTrackers& trackers) {
+  return trackers.test(static_cast<size_t>(
+             FrameSequenceTrackerType::kMainThreadAnimation)) ||
+         trackers.test(
+             static_cast<size_t>(FrameSequenceTrackerType::kCanvasAnimation)) ||
+         trackers.test(
+             static_cast<size_t>(FrameSequenceTrackerType::kJSAnimation)) ||
+         trackers.test(static_cast<size_t>(FrameSequenceTrackerType::kRAF));
+}
+
+inline bool HasCompositorThreadAnimation(const ActiveTrackers& trackers) {
+  return trackers.test(
+      static_cast<size_t>(FrameSequenceTrackerType::kCompositorAnimation));
+}
 
 class CC_EXPORT FrameSequenceMetrics {
  public:

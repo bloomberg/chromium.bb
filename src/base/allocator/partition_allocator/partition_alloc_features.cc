@@ -28,7 +28,7 @@ const Feature kPartitionAllocBackupRefPtrControl{
 
 // If enabled, the thread cache will be periodically purged.
 const Feature kPartitionAllocThreadCachePeriodicPurge{
-    "PartitionAllocThreadCachePeriodicPurge", FEATURE_DISABLED_BY_DEFAULT};
+    "PartitionAllocThreadCachePeriodicPurge", FEATURE_ENABLED_BY_DEFAULT};
 
 // Use a larger maximum thread cache cacheable bucket size.
 const Feature kPartitionAllocLargeThreadCacheSize{
@@ -38,6 +38,24 @@ const Feature kPartitionAllocLargeThreadCacheSize{
 
 const Feature kPartitionAllocLazyCommit{"PartitionAllocLazyCommit",
                                         FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, switches PCScan scheduling to a mutator-aware scheduler. Does not
+// affect whether PCScan is enabled itself.
+const Feature kPartitionAllocPCScanMUAwareScheduler{
+    "PartitionAllocPCScanMUAwareScheduler", FEATURE_ENABLED_BY_DEFAULT};
+
+// In addition to heap, scan also the stack of the current mutator.
+const Feature kPartitionAllocPCScanStackScanning {
+  "PartitionAllocPCScanStackScanning",
+#if defined(PA_PCSCAN_STACK_SUPPORTED)
+      FEATURE_ENABLED_BY_DEFAULT
+#else
+      FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(PA_PCSCAN_STACK_SUPPORTED)
+};
+
+const Feature kPartitionAllocDCScan{"PartitionAllocDCScan",
+                                    FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace base

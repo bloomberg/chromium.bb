@@ -10,7 +10,6 @@ import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -49,7 +48,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
@@ -64,6 +62,7 @@ import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -515,6 +514,11 @@ public class CustomTabsConnection {
         return true;
     }
 
+    @VisibleForTesting
+    public Tab getHiddenTab() {
+        return mHiddenTabHolder != null ? mHiddenTabHolder.getHiddenTab() : null;
+    }
+
     private boolean preconnectUrls(List<Bundle> likelyBundles) {
         boolean atLeastOneUrl = false;
         if (likelyBundles == null) return false;
@@ -558,10 +562,6 @@ public class CustomTabsConnection {
 
         final int uid = Binder.getCallingUid();
 
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            reportNextLikelyNavigationsOnUiThread(uid, urlString, otherLikelyBundles);
-        });
-
         // Things below need the browser process to be initialized.
 
         // Forbids warmup() from creating a spare renderer, as prerendering wouldn't reuse
@@ -581,57 +581,16 @@ public class CustomTabsConnection {
         return true;
     }
 
-    /**
-     * Reports the set of URLs of next likely navigations in the UI thread.
-     *
-     * @param uid: UID of the external Android app that reported the set of URLs.
-     * @param url: URL of the next likely navigation as reported by the external Android app.
-     * @param otherLikelyBundles: Bundle reported by the external Android app.
-     */
-    private static void reportNextLikelyNavigationsOnUiThread(
-            final int uid, final String url, final List<Bundle> otherLikelyBundles) {
+    private void enableExperimentIdsIfNecessary(Bundle extras) {
         ThreadUtils.assertOnUiThread();
-
-        ChromeBrowserInitializer.getInstance().runNowOrAfterFullBrowserStarted(() -> {
-            PostTask.postTask(TaskTraits.BEST_EFFORT,
-                    () -> { reportNextLikelyNavigationsToNative(uid, url, otherLikelyBundles); });
-        }
-
-        );
-    }
-
-    /**
-     * Reports the set of URLs of next likely navigations to native.
-     *
-     * @param uid: UID of the external Android app that reported the set of URLs.
-     * @param url: URL of the next likely navigation as reported by the external Android app.
-     * @param otherLikelyBundles: Bundle reported by the external Android app.
-     */
-    private static void reportNextLikelyNavigationsToNative(
-            final int uid, final String url, final List<Bundle> otherLikelyBundles) {
-        ThreadUtils.assertOnBackgroundThread();
-
-        Context context = ContextUtils.getApplicationContext();
-        PackageManager pm = context.getApplicationContext().getPackageManager();
-        String[] packages = pm.getPackagesForUid(uid);
-
-        if (packages == null || packages.length == 0) return;
-
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            List<String> urlsList = new ArrayList<String>();
-            if (url != null) urlsList.add(url);
-
-            if (otherLikelyBundles != null) {
-                for (Bundle bundle : otherLikelyBundles) {
-                    Uri uri = IntentUtils.safeGetParcelable(bundle, CustomTabsService.KEY_URL);
-                    if (isValid(uri)) urlsList.add(uri.toString());
-                }
-            }
-
-            String[] urlsArray = urlsList.toArray(new String[0]);
-            WarmupManager.reportNextLikelyNavigationsOnUiThread(
-                    Profile.getLastUsedRegularProfile(), packages, urlsArray);
-        });
+        if (extras == null) return;
+        int[] experimentIds =
+                IntentUtils.safeGetIntArray(extras, CustomTabIntentDataProvider.EXPERIMENT_IDS);
+        if (experimentIds == null) return;
+        // When ids are set through cct, they should not override existing ids.
+        boolean override = false;
+        UmaSessionStats.registerExternalExperiment(
+                BaseCustomTabActivity.GSA_FALLBACK_STUDY_NAME, experimentIds, override);
     }
 
     private void doMayLaunchUrlOnUiThread(final boolean lowConfidence,
@@ -653,6 +612,8 @@ public class CustomTabsConnection {
                 }
                 return;
             }
+
+            enableExperimentIdsIfNecessary(extras);
 
             if (lowConfidence) {
                 lowConfidenceMayLaunchUrl(otherLikelyBundles);
@@ -1538,7 +1499,10 @@ public class CustomTabsConnection {
     private void launchUrlInHiddenTab(
             CustomTabsSessionToken session, String url, @Nullable Bundle extras) {
         ThreadUtils.assertOnUiThread();
-        mHiddenTabHolder.launchUrlInHiddenTab(session, mClientManager, url, extras);
+        mHiddenTabHolder.launchUrlInHiddenTab(
+                (Tab tab)
+                        -> setClientDataHeaderForNewTab(session, tab.getWebContents()),
+                session, mClientManager, url, extras);
     }
 
     @VisibleForTesting

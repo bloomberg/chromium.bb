@@ -8,10 +8,11 @@
 #include "ash/shell.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -45,7 +46,8 @@ namespace policy {
 namespace {
 
 constexpr char kClipboardText1[] = "Hello World";
-constexpr char kClipboardText2[] = "abcdef";
+constexpr char16_t kClipboardText116[] = u"Hello World";
+constexpr char16_t kClipboardText2[] = u"abcdef";
 
 constexpr char kMailUrl[] = "https://mail.google.com";
 constexpr char kDocsUrl[] = "https://docs.google.com";
@@ -125,7 +127,7 @@ class FakeDlpController : public DataTransferDlpController,
   MOCK_METHOD1(OnWidgetClosing, void(views::Widget* widget));
   views::Widget* widget_ = nullptr;
   FakeClipboardNotifier* helper_ = nullptr;
-  base::Optional<ui::DataTransferEndpoint> blink_data_dst_;
+  absl::optional<ui::DataTransferEndpoint> blink_data_dst_;
   base::RepeatingClosure blink_quit_cb_ = base::DoNothing();
 };
 
@@ -220,24 +222,22 @@ class DataTransferDlpBrowserTest : public LoginPolicyTestBase {
 
 // Flaky on MSan bots: http://crbug.com/1178328
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_EmptyPolicy \
-  DISABLED_EmptyPolicy
+#define MAYBE_EmptyPolicy DISABLED_EmptyPolicy
 #else
-#define MAYBE_EmptyPolicy \
-  EmptyPolicy
+#define MAYBE_EmptyPolicy EmptyPolicy
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_EmptyPolicy) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1), nullptr);
+  SetClipboardText(kClipboardText116, nullptr);
 
   ui::DataTransferEndpoint data_dst(
       url::Origin::Create(GURL("https://google.com")));
   std::u16string result;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst, &result);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result);
+  EXPECT_EQ(kClipboardText116, result);
 }
 
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
 
   SetDlpRulesPolicy(std::move(rules));
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1),
+  SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kMailUrl))));
 
@@ -285,13 +285,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   std::u16string result1;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst1, &result1);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result1);
+  EXPECT_EQ(kClipboardText116, result1);
 
   ui::DataTransferEndpoint data_dst2(url::Origin::Create(GURL(kDocsUrl)));
   std::u16string result2;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst2, &result2);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result2);
+  EXPECT_EQ(kClipboardText116, result2);
 
   ui::DataTransferEndpoint data_dst3(url::Origin::Create(GURL(kExampleUrl)));
   std::u16string result3;
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
 
   EXPECT_CALL(dlp_controller, OnWidgetClosing);
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1),
+  SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kExampleUrl))));
   testing::Mock::VerifyAndClearExpectations(&helper);
@@ -311,18 +311,16 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   std::u16string result4;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst1, &result4);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result4);
+  EXPECT_EQ(kClipboardText116, result4);
 
   FlushMessageLoop();
 }
 
 // Flaky on MSan bots: http://crbug.com/1178328
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_BlockComponent \
-  DISABLED_BlockComponent
+#define MAYBE_BlockComponent DISABLED_BlockComponent
 #else
-#define MAYBE_BlockComponent \
-  BlockComponent
+#define MAYBE_BlockComponent BlockComponent
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
   SkipToLoginScreen();
@@ -351,13 +349,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste,
                                      std::make_unique<ui::DataTransferEndpoint>(
                                          url::Origin::Create(GURL(kMailUrl))));
-    writer.WriteText(base::UTF8ToUTF16(kClipboardText1));
+    writer.WriteText(kClipboardText116);
   }
   ui::DataTransferEndpoint data_dst1(ui::EndpointType::kDefault);
   std::u16string result1;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst1, &result1);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result1);
+  EXPECT_EQ(kClipboardText116, result1);
 
   ui::DataTransferEndpoint data_dst2(ui::EndpointType::kArc);
   std::u16string result2;
@@ -374,11 +372,9 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_BlockComponent) {
 
 // Flaky on MSan bots: http://crbug.com/1178328
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_WarnDestination \
-  DISABLED_WarnDestination
+#define MAYBE_WarnDestination DISABLED_WarnDestination
 #else
-#define MAYBE_WarnDestination \
-  WarnDestination
+#define MAYBE_WarnDestination WarnDestination
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   SkipToLoginScreen();
@@ -415,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
     update->Append(std::move(rule));
   }
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1),
+  SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kMailUrl))));
 
@@ -433,11 +429,10 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   helper.ProceedPressed(default_endpoint);
   testing::Mock::VerifyAndClearExpectations(&dlp_controller);
 
-  EXPECT_EQ(kClipboardText1, base::UTF16ToUTF8(textfield_->GetText()));
+  EXPECT_EQ(kClipboardText116, textfield_->GetText());
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText2),
-                   std::make_unique<ui::DataTransferEndpoint>(
-                       url::Origin::Create(GURL(kMailUrl))));
+  SetClipboardText(kClipboardText2, std::make_unique<ui::DataTransferEndpoint>(
+                                        url::Origin::Create(GURL(kMailUrl))));
 
   // Initiate a paste on textfield_.
   textfield_->SetText(std::u16string());
@@ -460,9 +455,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   ASSERT_TRUE(dlp_controller.ObserveWidget());
 
   EXPECT_CALL(dlp_controller, OnWidgetClosing);
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText2),
-                   std::make_unique<ui::DataTransferEndpoint>(
-                       url::Origin::Create(GURL(kDocsUrl))));
+  SetClipboardText(kClipboardText2, std::make_unique<ui::DataTransferEndpoint>(
+                                        url::Origin::Create(GURL(kDocsUrl))));
   testing::Mock::VerifyAndClearExpectations(&dlp_controller);
 
   FlushMessageLoop();
@@ -470,11 +464,9 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
 
 // Flaky on MSan bots: http://crbug.com/1178328
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_WarnComponent \
-  DISABLED_WarnComponent
+#define MAYBE_WarnComponent DISABLED_WarnComponent
 #else
-#define MAYBE_WarnComponent \
-  WarnComponent
+#define MAYBE_WarnComponent WarnComponent
 #endif
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnComponent) {
   SkipToLoginScreen();
@@ -515,20 +507,20 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnComponent) {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste,
                                      std::make_unique<ui::DataTransferEndpoint>(
                                          url::Origin::Create(GURL(kMailUrl))));
-    writer.WriteText(base::UTF8ToUTF16(kClipboardText1));
+    writer.WriteText(kClipboardText116);
   }
 
   ui::DataTransferEndpoint arc_endpoint(ui::EndpointType::kArc);
   std::u16string result;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &arc_endpoint, &result);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result);
+  EXPECT_EQ(kClipboardText116, result);
 
   ui::DataTransferEndpoint crostini_endpoint(ui::EndpointType::kCrostini);
   result.clear();
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &crostini_endpoint, &result);
-  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText1), result);
+  EXPECT_EQ(kClipboardText116, result);
 }
 
 class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
@@ -560,7 +552,9 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
+// Flaky: crbug.com/1195297
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
+                       DISABLED_ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -596,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
     update->Append(std::move(rule));
   }
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1),
+  SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kMailUrl))));
 
@@ -637,7 +631,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
   EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
 }
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, CancelWarn) {
+// Flaky: crbug.com/1195297
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -673,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, CancelWarn) {
     update->Append(std::move(rule));
   }
 
-  SetClipboardText(base::UTF8ToUTF16(kClipboardText1),
+  SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kMailUrl))));
 
@@ -713,6 +708,77 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, CancelWarn) {
   helper.CancelWarningPressed(dlp_controller.blink_data_dst_.value());
 
   EXPECT_EQ("", EvalJs(GetActiveWebContents(), "p"));
+}
+
+// crbug.com/1213143
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, Reporting) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+  MockDlpRulesManager rules_manager(g_browser_process->local_state());
+
+  FakeClipboardNotifier helper;
+  FakeDlpController dlp_controller(rules_manager, &helper);
+
+  {
+    ListPrefUpdate update(g_browser_process->local_state(),
+                          policy_prefs::kDlpRulesList);
+    base::Value rule(base::Value::Type::DICTIONARY);
+    base::Value src_urls(base::Value::Type::DICTIONARY);
+    base::Value src_urls_list(base::Value::Type::LIST);
+    src_urls_list.Append(base::Value(kMailUrl));
+    src_urls.SetKey("urls", std::move(src_urls_list));
+    rule.SetKey("sources", std::move(src_urls));
+
+    base::Value dst_urls(base::Value::Type::DICTIONARY);
+    base::Value dst_urls_list(base::Value::Type::LIST);
+    dst_urls_list.Append(base::Value("*"));
+    dst_urls.SetKey("urls", std::move(dst_urls_list));
+    rule.SetKey("destinations", std::move(dst_urls));
+
+    base::Value restrictions(base::Value::Type::DICTIONARY);
+    base::Value restrictions_list(base::Value::Type::LIST);
+    base::Value class_level_dict(base::Value::Type::DICTIONARY);
+    class_level_dict.SetKey("class", base::Value("CLIPBOARD"));
+    class_level_dict.SetKey("level", base::Value("REPORT"));
+    restrictions_list.Append(std::move(class_level_dict));
+    rule.SetKey("restrictions", std::move(restrictions_list));
+
+    update->Append(std::move(rule));
+  }
+
+  SetClipboardText(kClipboardText116,
+                   std::make_unique<ui::DataTransferEndpoint>(
+                       url::Origin::Create(GURL(kMailUrl))));
+
+  EXPECT_TRUE(
+      ExecJs(GetActiveWebContents(),
+             "var p = new Promise((resolve, reject) => {"
+             "  window.document.onpaste = async (event) => {"
+             "    if (event.clipboardData.items.length !== 1) {"
+             "      reject('There were ' + event.clipboardData.items.length +"
+             "             ' clipboard items. Expected 1.');"
+             "    }"
+             "    if (event.clipboardData.items[0].kind != 'string') {"
+             "      reject('The clipboard item was of kind: ' +"
+             "             event.clipboardData.items[0].kind + '. Expected ' +"
+             "             'string.');"
+             "    }"
+             "    const clipboardDataItem = event.clipboardData.items[0];"
+             "    clipboardDataItem.getAsString((clipboardDataText)=> {"
+             "      resolve(clipboardDataText);});"
+             "  };"
+             "});"));
+
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
+  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  user_activation_interceptor.UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType::kNotifyActivation,
+      blink::mojom::UserActivationNotificationType::kTest);
+
+  GetActiveWebContents()->Paste();
+  EXPECT_FALSE(dlp_controller.ObserveWidget());
+  EXPECT_EQ(kClipboardText1, EvalJs(GetActiveWebContents(), "p"));
 }
 
 }  // namespace policy

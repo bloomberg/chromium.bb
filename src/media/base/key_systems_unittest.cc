@@ -76,7 +76,8 @@ class TestKeySystemPropertiesBase : public KeySystemProperties {
 
   EmeConfigRule GetRobustnessConfigRule(
       EmeMediaType media_type,
-      const std::string& requested_robustness) const override {
+      const std::string& requested_robustness,
+      const bool* /*hw_secure_requirement*/) const override {
     return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
                                         : EmeConfigRule::NOT_SUPPORTED;
   }
@@ -140,7 +141,8 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
 
   EmeConfigRule GetRobustnessConfigRule(
       EmeMediaType media_type,
-      const std::string& requested_robustness) const override {
+      const std::string& requested_robustness,
+      const bool* /*hw_secure_requirement*/) const override {
     if (requested_robustness == kRobustnessSupported)
       return EmeConfigRule::SUPPORTED;
     else if (requested_robustness == kRobustnessSecureCodecsRequired)
@@ -206,7 +208,7 @@ bool IsSupportedKeySystem(const std::string& key_system) {
 
 EmeConfigRule GetRobustnessConfigRule(const std::string& requested_robustness) {
   return KeySystems::GetInstance()->GetRobustnessConfigRule(
-      kExternal, EmeMediaType::VIDEO, requested_robustness);
+      kExternal, EmeMediaType::VIDEO, requested_robustness, nullptr);
 }
 
 // Adds test container and codec masks.
@@ -268,7 +270,7 @@ class TestMediaClient : public MediaClient {
   // test the key system update case.
   void DisableExternalKeySystemSupport();
 
-  base::Optional<::media::AudioRendererAlgorithmParameters>
+  absl::optional<::media::AudioRendererAlgorithmParameters>
   GetAudioRendererAlgorithmParameters(AudioParameters audio_parameters) final;
 
  private:
@@ -317,10 +319,10 @@ void TestMediaClient::DisableExternalKeySystemSupport() {
   supports_external_key_system_ = false;
 }
 
-base::Optional<::media::AudioRendererAlgorithmParameters>
+absl::optional<::media::AudioRendererAlgorithmParameters>
 TestMediaClient::GetAudioRendererAlgorithmParameters(
     AudioParameters audio_parameters) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace

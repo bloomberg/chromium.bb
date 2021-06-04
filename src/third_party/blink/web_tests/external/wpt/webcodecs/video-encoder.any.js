@@ -99,8 +99,13 @@ promise_test(async t => {
 
   // Decoder config should be given with the first chunk
   assert_not_equals(decoderConfig, null);
+  assert_not_equals(decoderConfig.visibleRegion, null);
   assert_equals(decoderConfig.codedHeight, encoderConfig.height);
   assert_equals(decoderConfig.codedWidth, encoderConfig.width);
+  assert_equals(decoderConfig.visibleRegion.top, 0);
+  assert_equals(decoderConfig.visibleRegion.left, 0);
+  assert_equals(decoderConfig.visibleRegion.height, encoderConfig.height);
+  assert_equals(decoderConfig.visibleRegion.width, encoderConfig.width);
   assert_equals(decoderConfig.codec, encoderConfig.codec);
   assert_equals(decoderConfig.displayHeight, encoderConfig.displayHeight);
   assert_equals(decoderConfig.displayWidth, encoderConfig.displayWidth);
@@ -269,3 +274,22 @@ promise_test(async t => {
     encoder.encode(frame);
   });
 }, 'Verify encoding closed frames throws.');
+
+promise_test(async t => {
+  let output_chunks = [];
+  let codecInit = getDefaultCodecInit(t);
+  codecInit.output = chunk => output_chunks.push(chunk);
+
+  let encoder = new VideoEncoder(codecInit);
+  let config = defaultConfig;
+  encoder.configure(config);
+
+  let frame = await createVideoFrame(640, 480, -10000);
+  encoder.encode(frame);
+  frame.close();
+  await encoder.flush();
+  encoder.close();
+  assert_equals(output_chunks.length, 1);
+  assert_equals(output_chunks[0].timestamp, -10000, "first chunk timestamp");
+  assert_greater_than(output_chunks[0].data.byteLength, 0);
+}, 'Encode video with negative timestamp');

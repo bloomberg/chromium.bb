@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -77,7 +76,7 @@ class IsolatedWorldCSPDelegate final
   std::unique_ptr<SourceLocation> GetSourceLocation() override {
     return nullptr;
   }
-  base::Optional<uint16_t> GetStatusCode() override { return base::nullopt; }
+  absl::optional<uint16_t> GetStatusCode() override { return absl::nullopt; }
   String GetDocumentReferrer() override { return g_empty_string; }
   void DispatchViolationEvent(const SecurityPolicyViolationEventInit&,
                               Element*) override {
@@ -185,9 +184,10 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
           window, self_origin, world_id,
           policy.IsEmpty() ? CSPType::kEmpty : CSPType::kNonEmpty);
   csp->BindToDelegate(*delegate);
-  csp->DidReceiveHeader(policy, *self_origin,
-                        network::mojom::ContentSecurityPolicyType::kEnforce,
-                        network::mojom::ContentSecurityPolicySource::kHTTP);
+  csp->AddPolicies(ParseContentSecurityPolicies(
+      policy, network::mojom::blink::ContentSecurityPolicyType::kEnforce,
+      network::mojom::blink::ContentSecurityPolicySource::kHTTP,
+      *(self_origin)));
 
   return csp;
 }

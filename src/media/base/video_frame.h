@@ -16,11 +16,9 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/hash/md5.h"
-#include "base/macros.h"
-#include "base/memory/aligned_memory.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
@@ -30,6 +28,7 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -104,15 +103,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // the GPU Command Buffer and wait for it.
   class SyncTokenClient {
    public:
-    SyncTokenClient() {}
+    SyncTokenClient() = default;
+    SyncTokenClient(const SyncTokenClient&) = delete;
+    SyncTokenClient& operator=(const SyncTokenClient&) = delete;
+
     virtual void GenerateSyncToken(gpu::SyncToken* sync_token) = 0;
     virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
    protected:
-    virtual ~SyncTokenClient() {}
-
-    DISALLOW_COPY_AND_ASSIGN(SyncTokenClient);
+    virtual ~SyncTokenClient() = default;
   };
+
+  VideoFrame() = delete;
+  VideoFrame(const VideoFrame&) = delete;
+  VideoFrame& operator=(const VideoFrame&) = delete;
 
   // Returns true if frame configuration is valid.
   static bool IsValidConfig(VideoPixelFormat format,
@@ -448,11 +452,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     color_space_ = color_space;
   }
 
-  const base::Optional<gfx::HDRMetadata>& hdr_metadata() const {
+  const absl::optional<gfx::HDRMetadata>& hdr_metadata() const {
     return hdr_metadata_;
   }
 
-  void set_hdr_metadata(const base::Optional<gfx::HDRMetadata>& hdr_metadata) {
+  void set_hdr_metadata(const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
     hdr_metadata_ = hdr_metadata;
   }
 
@@ -499,7 +503,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     return data_[plane];
   }
 
-  const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
+  const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
     return wrapped_frame_ ? wrapped_frame_->ycbcr_info() : ycbcr_info_;
   }
 
@@ -597,12 +601,18 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   size_t BitDepth() const;
 
   // Provide the sampler conversion information for the frame.
-  void set_ycbcr_info(const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
+  void set_ycbcr_info(const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
     ycbcr_info_ = ycbcr_info;
   }
 
  protected:
   friend class base::RefCountedThreadSafe<VideoFrame>;
+
+  enum class FrameControlType {
+    kNone,
+    kEos,
+    kVideoHole,
+  };
 
   // Clients must use the static factory/wrapping methods to create a new frame.
   // Derived classes should create their own factory/wrapping methods, and use
@@ -611,8 +621,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              StorageType storage_type,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
-             base::TimeDelta timestamp);
-
+             base::TimeDelta timestamp,
+             FrameControlType frame_control_type = FrameControlType::kNone);
   virtual ~VideoFrame();
 
   // Creates a summary of the configuration settings provided as parameters.
@@ -629,6 +639,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   }
 
  private:
+  // The constructor of VideoFrame should use IsValidConfigInternal()
+  // instead of the public IsValidConfig() to check the config, because we can
+  // create special video frames that won't pass the check by IsValidConfig().
+  static bool IsValidConfigInternal(VideoPixelFormat format,
+                                    FrameControlType frame_control_type,
+                                    const gfx::Size& coded_size,
+                                    const gfx::Rect& visible_rect,
+                                    const gfx::Size& natural_size);
+
   static scoped_refptr<VideoFrame> CreateFrameInternal(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
@@ -641,7 +660,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // alignment for each individual plane.
   static gfx::Size CommonAlignment(VideoPixelFormat format);
 
-  void AllocateMemory(bool zero_initialize_memory);
+  // Tries to allocate the requisite amount of memory for this frame. Returns
+  // false if this would cause an out of memory error.
+  WARN_UNUSED_RESULT bool AllocateMemory(bool zero_initialize_memory);
 
   // Calculates plane size.
   // It first considers buffer size layout_ object provides. If layout's
@@ -729,12 +750,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const int unique_id_;
 
   gfx::ColorSpace color_space_;
-  base::Optional<gfx::HDRMetadata> hdr_metadata_;
+  absl::optional<gfx::HDRMetadata> hdr_metadata_;
 
   // Sampler conversion information which is used in vulkan context for android.
-  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
+  absl::optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
+  // Allocation which makes up |data_| planes for self-allocated frames.
+  std::unique_ptr<uint8_t, base::FreeDeleter> private_data_;
 };
 
 }  // namespace media

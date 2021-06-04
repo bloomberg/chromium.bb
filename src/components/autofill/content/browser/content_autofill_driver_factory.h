@@ -11,6 +11,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
@@ -21,7 +22,6 @@ class RenderFrameHost;
 namespace autofill {
 
 class ContentAutofillDriver;
-class AutofillProvider;
 
 // Manages lifetime of ContentAutofillDriver. One Factory per WebContents
 // creates one Driver per RenderFrame.
@@ -35,8 +35,10 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
       content::WebContents* web_contents,
       AutofillClient* client,
       const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager,
-      AutofillProvider* provider);
+      BrowserAutofillManager::AutofillDownloadManagerState
+          enable_download_manager,
+      AutofillManager::AutofillManagerFactoryCallback
+          autofill_manager_factory_callback);
 
   ~ContentAutofillDriverFactory() override;
 
@@ -44,14 +46,17 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
       content::WebContents* contents,
       AutofillClient* client,
       const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager);
+      BrowserAutofillManager::AutofillDownloadManagerState
+          enable_download_manager);
 
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
       AutofillClient* client,
       const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager,
-      AutofillProvider* provider);
+      BrowserAutofillManager::AutofillDownloadManagerState
+          enable_download_manager,
+      AutofillManager::AutofillManagerFactoryCallback
+          autofill_manager_factory_callback);
 
   static ContentAutofillDriverFactory* FromWebContents(
       content::WebContents* contents);
@@ -76,8 +81,9 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
 
  private:
   std::string app_locale_;
-  AutofillManager::AutofillDownloadManagerState enable_download_manager_;
-  AutofillProvider* provider_;
+  BrowserAutofillManager::AutofillDownloadManagerState enable_download_manager_;
+  AutofillManager::AutofillManagerFactoryCallback
+      autofill_manager_factory_callback_;
 };
 
 }  // namespace autofill

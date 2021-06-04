@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 
+#include "base/containers/contains.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
@@ -37,11 +38,11 @@ bool IsValidCustomHandlerScheme(const base::StringPiece scheme,
   }
 
   static constexpr const char* const kProtocolSafelist[] = {
-      "bitcoin",  "cabal",       "dat",    "did",    "doi",   "dweb",
-      "ethereum", "geo",         "hyper",  "im",     "ipfs",  "ipns",
-      "irc",      "ircs",        "magnet", "mailto", "mms",   "news",
-      "nntp",     "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",
-      "ssh",      "tel",         "urn",    "webcal", "wtai",  "xmpp"};
+      "bitcoin", "cabal",  "dat",    "did",  "doi",  "dweb", "ethereum",
+      "geo",     "hyper",  "im",     "ipfs", "ipns", "irc",  "ircs",
+      "magnet",  "mailto", "matrix", "mms",  "news", "nntp", "openpgp4fpr",
+      "sip",     "sms",    "smsto",  "ssb",  "ssh",  "tel",  "urn",
+      "webcal",  "wtai",   "xmpp"};
   return base::Contains(kProtocolSafelist, base::ToLowerASCII(scheme));
 }
 

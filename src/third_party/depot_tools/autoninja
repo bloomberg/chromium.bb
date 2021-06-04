@@ -4,6 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# In git bash on Windows, invoke the batch file.
+if [ "$(expr "$(uname -s)" : "^MINGW64_NT")" == "10" ]; then
+    autoninja.bat "$@"
+    exit
+fi
+
 # Set unique build ID.
 AUTONINJA_BUILD_ID="$(python3 -c "import uuid; print(uuid.uuid4())")"
 export AUTONINJA_BUILD_ID
@@ -14,8 +20,7 @@ fi
 
 # Execute whatever is printed by autoninja.py.
 # Also print it to reassure that the right settings are being used.
-# Don't use python3 because it doesn't work in git bash on Windows.
-command=$(python "$(dirname -- "$0")/autoninja.py" "$@")
+command=$(python3 "$(dirname -- "$0")/autoninja.py" "$@")
 if [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then
   echo "$command"
 fi

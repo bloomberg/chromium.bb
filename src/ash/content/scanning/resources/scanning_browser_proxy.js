@@ -86,6 +86,33 @@ export class ScanningBrowserProxy {
    * @param {number} numChanges
    */
   recordNumScanSettingChanges(numChanges) {}
+
+  /**
+   * Saves scan settings to the Prefs service.
+   * @param {string} scanSettings
+   */
+  saveScanSettings(scanSettings) {}
+
+  /**
+   * Returns the saved scan settings from the Prefs service.
+   * @return {!Promise<string>}
+   */
+  getScanSettings() {}
+
+  /**
+   * Validates that |filePath| exists on the local filesystem and returns its
+   * display name. If |filePath| doesn't exist, return an empty SelectedPath.
+   * @param {string} filePath
+   * @return {!Promise<!SelectedPath>}
+   */
+  ensureValidFilePath(filePath) {}
+
+  /**
+   * Records the number of completed scans during a session of the Scan app
+   * being open.
+   * @param {number} numCompletedScans
+   */
+  recordNumCompletedScans(numCompletedScans) {}
 }
 
 /** @implements {ScanningBrowserProxy} */
@@ -133,6 +160,26 @@ export class ScanningBrowserProxyImpl {
   /** @override */
   recordNumScanSettingChanges(numChanges) {
     chrome.send('recordNumScanSettingChanges', [numChanges]);
+  }
+
+  /** @override */
+  saveScanSettings(scanSettings) {
+    chrome.send('saveScanSettings', [scanSettings]);
+  }
+
+  /** @override */
+  getScanSettings() {
+    return sendWithPromise('getScanSettings');
+  }
+
+  /** @override */
+  ensureValidFilePath(filePath) {
+    return sendWithPromise('ensureValidFilePath', filePath);
+  }
+
+  /** @override */
+  recordNumCompletedScans(numCompletedScans) {
+    chrome.send('recordNumCompletedScans', [numCompletedScans]);
   }
 }
 

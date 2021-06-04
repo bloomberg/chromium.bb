@@ -106,8 +106,14 @@ ZeroStateDriveProvider::ZeroStateDriveProvider(
       drive_service_->AddObserver(this);
     }
   }
+
+  // Normalize scores if the launcher search normalization experiment is
+  // enabled, but don't if the categorical search experiment is also enabled.
+  // This is because categorical search normalizes scores from all providers
+  // during ranking, and we don't want to do it twice.
   if (base::FeatureList::IsEnabled(
-          app_list_features::kEnableLauncherSearchNormalization)) {
+          app_list_features::kEnableLauncherSearchNormalization) &&
+      !app_list_features::IsCategoricalSearchEnabled()) {
     normalizer_.emplace("zero_state_drive_provider", profile, 25);
   }
 }
@@ -176,7 +182,7 @@ void ZeroStateDriveProvider::Start(const std::u16string& query) {
 }
 
 void ZeroStateDriveProvider::OnFilePathsLocated(
-    base::Optional<std::vector<drivefs::mojom::FilePathOrErrorPtr>> paths) {
+    absl::optional<std::vector<drivefs::mojom::FilePathOrErrorPtr>> paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!paths) {
     LogStatus(Status::kPathLocationFailed);

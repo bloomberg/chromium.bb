@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
@@ -222,20 +223,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           .AppendASCII("hosted_app")));
 
   ASSERT_TRUE(
-      RunExtensionSubtest("extension_resource_request_policy/extension2/",
-                          "can_load_icons_from_hosted_apps.html"))
+      RunExtensionTest({.name = "extension_resource_request_policy/extension2/",
+                        .page_url = "can_load_icons_from_hosted_apps.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Audio) {
-  EXPECT_TRUE(RunExtensionSubtest(
-      "extension_resource_request_policy/extension2", "audio.html"))
+  EXPECT_TRUE(
+      RunExtensionTest({.name = "extension_resource_request_policy/extension2",
+                        .page_url = "audio.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Video) {
-  EXPECT_TRUE(RunExtensionSubtest(
-      "extension_resource_request_policy/extension2", "video.html"))
+  EXPECT_TRUE(
+      RunExtensionTest({.name = "extension_resource_request_policy/extension2",
+                        .page_url = "video.html"}))
       << message_;
 }
 
@@ -402,9 +405,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("inaccessible")));
-  EXPECT_TRUE(RunExtensionSubtest(
-      "extension_resource_request_policy/web_accessible",
-      "iframe.html")) << message_;
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "extension_resource_request_policy/web_accessible",
+       .page_url = "iframe.html"}))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
@@ -676,8 +680,7 @@ IN_PROC_BROWSER_TEST_F(
 
     GURL scope_url = embedded_test_server()->GetURL("/service_worker/");
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        browser()->profile()->GetDefaultStoragePartition();
     content::ServiceWorkerContext* context =
         storage_partition->GetServiceWorkerContext();
 

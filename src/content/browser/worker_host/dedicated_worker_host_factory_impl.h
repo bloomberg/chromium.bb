@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_FACTORY_IMPL_H_
 #define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_FACTORY_IMPL_H_
 
-#include "base/optional.h"
+#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -13,6 +13,7 @@
 #include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "url/origin.h"
 
@@ -25,14 +26,14 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
  public:
   DedicatedWorkerHostFactoryImpl(
       int worker_process_id,
-      base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
-      base::Optional<blink::DedicatedWorkerToken> creator_worker_token,
+      absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+      absl::optional<blink::DedicatedWorkerToken> creator_worker_token,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& creator_origin,
       const net::IsolationInfo& isolation_info,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
-      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
+      base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter,
+      base::WeakPtr<CrossOriginEmbedderPolicyReporter> ancestor_coep_reporter);
   ~DedicatedWorkerHostFactoryImpl() override;
 
   // blink::mojom::DedicatedWorkerHostFactory:
@@ -61,15 +62,16 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
   const int worker_process_id_;
 
   // See comments on the corresponding members of DedicatedWorkerHost.
-  const base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
-  const base::Optional<blink::DedicatedWorkerToken> creator_worker_token_;
+  const absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
+  const absl::optional<blink::DedicatedWorkerToken> creator_worker_token_;
   const GlobalFrameRoutingId ancestor_render_frame_host_id_;
 
   const url::Origin creator_origin_;
   const net::IsolationInfo isolation_info_;
   const network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
-  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter_;
+
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter_;
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> ancestor_coep_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerHostFactoryImpl);
 };

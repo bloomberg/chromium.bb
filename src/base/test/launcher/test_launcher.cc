@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <random>
+#include <unordered_set>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -48,6 +49,7 @@
 #include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher_tracer.h"
 #include "base/test/launcher/test_results_tracker.h"
+#include "base/test/scoped_logging_settings.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -1209,6 +1211,12 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   fprintf(stdout, "%s\n", status_line.c_str());
   fflush(stdout);
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherPrintTimestamps)) {
+    ::logging::ScopedLoggingSettings scoped_logging_setting;
+    ::logging::SetLogItems(true, true, true, true);
+    LOG(INFO) << "Test_finished_timestamp";
+  }
   // We just printed a status line, reset the watchdog timer.
   watchdog_timer_.Reset();
 
@@ -1719,6 +1727,31 @@ void TestLauncher::CombinePositiveTestFilters(
 
 std::vector<std::string> TestLauncher::CollectTests() {
   std::vector<std::string> test_names;
+  // To support RTS(regression test selection), which may have 100,000 or
+  // more exact gtest filter, we first split filter into exact filter
+  // and wildcards filter, then exact filter can match faster.
+  std::vector<StringPiece> positive_wildcards_filter;
+  std::unordered_set<StringPiece, StringPieceHash> positive_exact_filter;
+  positive_exact_filter.reserve(positive_test_filter_.size());
+  for (const std::string& filter : positive_test_filter_) {
+    if (filter.find('*') != std::string::npos) {
+      positive_wildcards_filter.push_back(filter);
+    } else {
+      positive_exact_filter.insert(filter);
+    }
+  }
+
+  std::vector<StringPiece> negative_wildcards_filter;
+  std::unordered_set<StringPiece, StringPieceHash> negative_exact_filter;
+  negative_exact_filter.reserve(negative_test_filter_.size());
+  for (const std::string& filter : negative_test_filter_) {
+    if (filter.find('*') != std::string::npos) {
+      negative_wildcards_filter.push_back(filter);
+    } else {
+      negative_exact_filter.insert(filter);
+    }
+  }
+
   for (const TestInfo& test_info : tests_) {
     std::string test_name = test_info.GetFullName();
 
@@ -1726,12 +1759,17 @@ std::vector<std::string> TestLauncher::CollectTests() {
 
     // Skip the test that doesn't match the filter (if given).
     if (has_at_least_one_positive_filter_) {
-      bool found = false;
-      for (auto filter : positive_test_filter_) {
-        if (MatchPattern(test_name, filter) ||
-            MatchPattern(prefix_stripped_name, filter)) {
-          found = true;
-          break;
+      bool found = positive_exact_filter.find(test_name) !=
+                       positive_exact_filter.end() ||
+                   positive_exact_filter.find(prefix_stripped_name) !=
+                       positive_exact_filter.end();
+      if (!found) {
+        for (const StringPiece& filter : positive_wildcards_filter) {
+          if (MatchPattern(test_name, filter) ||
+              MatchPattern(prefix_stripped_name, filter)) {
+            found = true;
+            break;
+          }
         }
       }
 
@@ -1739,19 +1777,22 @@ std::vector<std::string> TestLauncher::CollectTests() {
         continue;
     }
 
-    if (!negative_test_filter_.empty()) {
-      bool excluded = false;
-      for (auto filter : negative_test_filter_) {
-        if (MatchPattern(test_name, filter) ||
-            MatchPattern(prefix_stripped_name, filter)) {
-          excluded = true;
-          break;
-        }
-      }
-
-      if (excluded)
-        continue;
+    if (negative_exact_filter.find(test_name) != negative_exact_filter.end() ||
+        negative_exact_filter.find(prefix_stripped_name) !=
+            negative_exact_filter.end()) {
+      continue;
     }
+
+    bool excluded = false;
+    for (const StringPiece& filter : negative_wildcards_filter) {
+      if (MatchPattern(test_name, filter) ||
+          MatchPattern(prefix_stripped_name, filter)) {
+        excluded = true;
+        break;
+      }
+    }
+    if (excluded)
+      continue;
 
     // Tests with the name XYZ will cause tests with the name PRE_XYZ to run. We
     // should bucket all of these tests together.
@@ -1928,6 +1969,12 @@ void TestLauncher::OnOutputTimeout() {
 
   fflush(stdout);
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherPrintTimestamps)) {
+    ::logging::ScopedLoggingSettings scoped_logging_setting;
+    ::logging::SetLogItems(true, true, true, true);
+    LOG(INFO) << "Waiting_timestamp";
+  }
   // Arm the timer again - otherwise it would fire only once.
   watchdog_timer_.Reset();
 }

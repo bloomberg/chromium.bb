@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -39,10 +40,10 @@
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -192,21 +193,20 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       storage_partition_(nullptr),
       omnibox_triggered_feature_service_(
           std::make_unique<OmniboxTriggeredFeatureService>()) {
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
+#if !defined(OS_ANDROID)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, true);
+  pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, true);
 #else
-    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, false);
+  pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, false);
 #endif
-  }
+#endif
 }
 
-ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
-}
+ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() = default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeAutocompleteProviderClient::GetURLLoaderFactory() {
-  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+  return profile_->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
@@ -231,6 +231,11 @@ ChromeAutocompleteProviderClient::GetAutocompleteClassifier() {
 history::HistoryService* ChromeAutocompleteProviderClient::GetHistoryService() {
   return HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+history_clusters::HistoryClustersService*
+ChromeAutocompleteProviderClient::GetHistoryClustersService() {
+  return HistoryClustersServiceFactory::GetForBrowserContext(profile_);
 }
 
 scoped_refptr<history::TopSites>
@@ -279,9 +284,7 @@ ChromeAutocompleteProviderClient::GetDocumentSuggestionsService(
 
 OmniboxPedalProvider* ChromeAutocompleteProviderClient::GetPedalProvider()
     const {
-  // If Pedals are disabled, we should never get here to use the provider.
-  DCHECK(OmniboxFieldTrial::IsPedalSuggestionsEnabled());
-  DCHECK(pedal_provider_);
+  // This may be null for systems that don't have Pedals (Android, e.g.).
   return pedal_provider_.get();
 }
 
@@ -391,7 +394,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
   const auto* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   return identity_manager &&
-         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin);
 }
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
@@ -443,7 +446,7 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
 
   content::StoragePartition* partition = storage_partition_;
   if (!partition)
-    partition = content::BrowserContext::GetDefaultStoragePartition(profile_);
+    partition = profile_->GetDefaultStoragePartition();
   if (!partition)
     return;
 

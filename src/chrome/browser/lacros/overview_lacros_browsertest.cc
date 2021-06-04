@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 
@@ -26,10 +26,10 @@ IN_PROC_BROWSER_TEST_F(OverviewBrowserTest, NoCrashWithSingleWindow) {
   browser_test_util::WaitForWindowCreation(id);
 
   // Enter overview mode.
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
-  CHECK(lacros_chrome_service->IsTestControllerAvailable());
+  auto* lacros_service = chromeos::LacrosService::Get();
+  CHECK(lacros_service->IsAvailable<crosapi::mojom::TestController>());
   crosapi::mojom::TestControllerAsyncWaiter waiter(
-      lacros_chrome_service->test_controller_remote().get());
+      lacros_service->GetRemote<crosapi::mojom::TestController>().get());
   waiter.EnterOverviewMode();
 
   // Close the window by closing all tabs and wait for it to stop existing in
@@ -51,7 +51,8 @@ IN_PROC_BROWSER_TEST_F(OverviewBrowserTest, NoCrashTwoWindows) {
 
   // Create an incognito window and make it visible.
   Browser* incognito_browser = Browser::Create(Browser::CreateParams(
-      browser()->profile()->GetPrimaryOTRProfile(), true));
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+      true));
   AddBlankTabAndShow(incognito_browser);
   aura::Window* incognito_window =
       incognito_browser->window()->GetNativeWindow();
@@ -60,10 +61,10 @@ IN_PROC_BROWSER_TEST_F(OverviewBrowserTest, NoCrashTwoWindows) {
   browser_test_util::WaitForWindowCreation(incognito_id);
 
   // Enter overview mode.
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
-  CHECK(lacros_chrome_service->IsTestControllerAvailable());
+  auto* lacros_service = chromeos::LacrosService::Get();
+  CHECK(lacros_service->IsAvailable<crosapi::mojom::TestController>());
   crosapi::mojom::TestControllerAsyncWaiter waiter(
-      lacros_chrome_service->test_controller_remote().get());
+      lacros_service->GetRemote<crosapi::mojom::TestController>().get());
   waiter.EnterOverviewMode();
 
   // Close the incognito window by closing all tabs and wait for it to stop

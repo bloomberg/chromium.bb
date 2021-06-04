@@ -21,11 +21,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
@@ -53,11 +53,11 @@ namespace base {
 class TimeDelta;
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 namespace ui {
 class ScopedPasswordInputEnabler;
 }
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
 namespace views {
 
@@ -85,7 +85,7 @@ class VIEWS_EXPORT Textfield : public View,
     kLastCommandId = kSelectAll,
   };
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   static constexpr gfx::SelectionBehavior kLineSelectionBehavior =
       gfx::SELECTION_EXTEND;
   static constexpr gfx::SelectionBehavior kWordSelectionBehavior =
@@ -416,6 +416,7 @@ class VIEWS_EXPORT Textfield : public View,
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
@@ -454,8 +455,8 @@ class VIEWS_EXPORT Textfield : public View,
 
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,
@@ -564,7 +565,7 @@ class VIEWS_EXPORT Textfield : public View,
   void UpdateAfterChange(
       TextChangeType text_change_type,
       bool cursor_changed,
-      base::Optional<bool> notify_caret_bounds_changed = base::nullopt);
+      absl::optional<bool> notify_caret_bounds_changed = absl::nullopt);
 
   // Updates cursor visibility and blinks the cursor if needed.
   void ShowCursor();
@@ -669,10 +670,10 @@ class VIEWS_EXPORT Textfield : public View,
   int minimum_width_in_chars_ = -1;
 
   // Colors which override default system colors.
-  base::Optional<SkColor> text_color_;
-  base::Optional<SkColor> background_color_;
-  base::Optional<SkColor> selection_text_color_;
-  base::Optional<SkColor> selection_background_color_;
+  absl::optional<SkColor> text_color_;
+  absl::optional<SkColor> background_color_;
+  absl::optional<SkColor> selection_text_color_;
+  absl::optional<SkColor> selection_background_color_;
 
   // Text to display when empty.
   std::u16string placeholder_text_;
@@ -681,14 +682,14 @@ class VIEWS_EXPORT Textfield : public View,
   // TODO(newcomer): Use NativeTheme to define different default placeholder
   // text colors for chrome/CrOS when harmony is enabled by default
   // (https://crbug.com/803279).
-  base::Optional<SkColor> placeholder_text_color_;
+  absl::optional<SkColor> placeholder_text_color_;
 
   // The draw flags specified for |placeholder_text_|.
   int placeholder_text_draw_flags_;
 
   // The font used for the placeholder text. If this value is null, the
   // placeholder text uses the same font list as the underlying RenderText.
-  base::Optional<gfx::FontList> placeholder_font_list_;
+  absl::optional<gfx::FontList> placeholder_font_list_;
 
   // True when the contents are deemed unacceptable and should be indicated as
   // such.
@@ -745,7 +746,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool show_rejection_ui_if_any_ = false;
 
   // Whether the text should be used to improve typing suggestions.
-  base::Optional<bool> should_do_learning_;
+  absl::optional<bool> should_do_learning_;
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
@@ -755,10 +756,10 @@ class VIEWS_EXPORT Textfield : public View,
   // View containing the text cursor.
   View* cursor_view_ = nullptr;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
   // How this textfield was focused.
   ui::TextInputClient::FocusReason focus_reason_ =

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -74,15 +75,15 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
 
 namespace web_app {
 
-base::Optional<AppId> GetWebAppForActiveTab(Browser* browser) {
+absl::optional<AppId> GetWebAppForActiveTab(Browser* browser) {
   WebAppProvider* provider = WebAppProvider::Get(browser->profile());
   if (!provider)
-    return base::nullopt;
+    return absl::nullopt;
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
-    return base::nullopt;
+    return absl::nullopt;
 
   return provider->registrar().FindInstalledAppWithUrlInScope(
       web_contents->GetMainFrame()->GetLastCommittedURL());
@@ -114,7 +115,7 @@ void PrunePreScopeNavigationHistory(const GURL& scope,
 }
 
 Browser* ReparentWebAppForActiveTab(Browser* browser) {
-  base::Optional<AppId> app_id = GetWebAppForActiveTab(browser);
+  absl::optional<AppId> app_id = GetWebAppForActiveTab(browser);
   if (!app_id)
     return nullptr;
   return ReparentWebContentsIntoAppBrowser(
@@ -135,7 +136,7 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   AppRegistrar& registrar =
       WebAppProviderBase::GetProviderBase(profile)->registrar();
   if (registrar.IsInstalled(app_id)) {
-    base::Optional<GURL> app_scope = registrar.GetAppScope(app_id);
+    absl::optional<GURL> app_scope = registrar.GetAppScope(app_id);
     if (!app_scope)
       app_scope = registrar.GetAppStartUrl(app_id).GetWithoutFilename();
 

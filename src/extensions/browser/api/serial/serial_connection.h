@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -214,7 +213,7 @@ class SerialConnection : public ApiResource,
 
   // Callback to handle the completion of a pending Receive() request.
   ReceiveEventCallback receive_event_cb_;
-  base::Optional<device::mojom::SerialReceiveError> read_error_;
+  absl::optional<device::mojom::SerialReceiveError> read_error_;
 
   // Callback to handle the completion of a pending Send() request.
   SendCompleteCallback send_complete_;

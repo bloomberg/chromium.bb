@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -50,6 +49,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkFont.h"
@@ -103,16 +103,18 @@ struct MetricsDrawSizes {
   const int kTopPadding = 35;
   const int kPadding = 15;
   const int kFontHeight = 32;
-  const int kWidth = 500;
+  const int kWidth = 525;
   const int kSidePadding = 20;
+  const int kBadgeWidth = 25;
 } constexpr metrics_sizes;
 #else
 struct MetricsDrawSizes {
   const int kTopPadding = 35;
   const int kPadding = 15;
   const int kFontHeight = 22;
-  const int kWidth = 400;
+  const int kWidth = 425;
   const int kSidePadding = 20;
+  const int kBadgeWidth = 25;
 } constexpr metrics_sizes;
 #endif
 
@@ -191,7 +193,8 @@ bool HeadsUpDisplayLayerImpl::WillDraw(
   }
 
   int max_texture_size = layer_tree_impl()->max_texture_size();
-  internal_contents_scale_ = GetIdealContentsScale();
+  // TODO(crbug.com/1196414): Support 2D scales in heads up layers.
+  internal_contents_scale_ = GetIdealContentsScaleKey();
   internal_content_bounds_ =
       gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_);
   internal_content_bounds_.SetToMin(
@@ -238,7 +241,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   // https://crbug.com/c/1286950
   auto* raster_context_provider =
       gpu_raster ? layer_tree_frame_sink->worker_context_provider() : nullptr;
-  base::Optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
+  absl::optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
   bool use_oopr = false;
   if (raster_context_provider) {
     lock.emplace(raster_context_provider);
@@ -379,12 +382,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                               can_use_lcd_text, gfx::ColorSpace::CreateSRGB(),
                               backing->mailbox.name);
       gfx::Vector2dF post_translate(0.f, 0.f);
+      gfx::Vector2dF post_scale(1.f, 1.f);
       DummyImageProvider image_provider;
       size_t max_op_size_limit =
           gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
       ri->RasterCHROMIUM(display_item_list.get(), &image_provider, size,
                          gfx::Rect(size), gfx::Rect(size), post_translate,
-                         1.f /* post_scale */, false /* requires_clear */,
+                         post_scale, false /* requires_clear */,
                          &max_op_size_limit);
       ri->EndRasterCHROMIUM();
       backing->mailbox_sync_token =
@@ -531,9 +535,10 @@ void HeadsUpDisplayLayerImpl::ReleaseResources() {
   pool_.reset();
 }
 
-gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingRectInTargetSpace() const {
+gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingVisibleRectInTargetSpace()
+    const {
   DCHECK_GT(internal_contents_scale_, 0.f);
-  return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
+  return GetScaledEnclosingVisibleRectInTargetSpace(internal_contents_scale_);
 }
 
 void HeadsUpDisplayLayerImpl::SetHUDTypeface(sk_sp<SkTypeface> typeface) {
@@ -637,6 +642,13 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
                              std::max<SkScalar>(area.width(), 150));
   }
 
+  // For the web vital and smoothness HUD on the top right corner, if the width
+  // of the screen is smaller than the default width of the HUD, scale it down.
+  if (bounds().width() < metrics_sizes.kWidth) {
+    double scale_to_bounds = static_cast<double>(bounds().width()) /
+                             static_cast<double>(metrics_sizes.kWidth);
+    canvas->scale(scale_to_bounds, scale_to_bounds);
+  }
   SkRect metrics_area = SkRect::MakeXYWH(
       std::max<SkScalar>(0, bounds().width() - metrics_sizes.kWidth), 0,
       metrics_sizes.kWidth, 0);
@@ -1108,20 +1120,56 @@ int HeadsUpDisplayLayerImpl::DrawSingleMetric(
     double value) const {
   std::string value_str = "-";
   SkColor metrics_color = DebugColors::HUDTitleColor();
+  SkColor badge_color = SK_ColorGREEN;
   if (has_value) {
     value_str = ToStringTwoDecimalPrecision(value) + info.UnitToString();
-    if (value < info.green_threshold)
+    if (value < info.green_threshold) {
       metrics_color = SK_ColorGREEN;
-    else if (value < info.yellow_threshold)
+    } else if (value < info.yellow_threshold) {
       metrics_color = SK_ColorYELLOW;
-    else
+      badge_color = SK_ColorYELLOW;
+    } else {
       metrics_color = SK_ColorRED;
+      badge_color = SK_ColorRED;
+    }
   }
 
+  // Draw the badge for this metric.
+  PaintFlags badge_flags;
+  badge_flags.setColor(badge_color);
+  badge_flags.setStyle(PaintFlags::kFill_Style);
+  badge_flags.setAntiAlias(true);
+  if (badge_color == SK_ColorGREEN) {
+    constexpr int kRadius = 6;
+    int x = left + metrics_sizes.kSidePadding + kRadius;
+    int y = top - kRadius - 2;
+    SkPath circle = SkPath::Circle(x, y, kRadius);
+    canvas->drawPath(circle, badge_flags);
+  } else if (badge_color == SK_ColorYELLOW) {
+    constexpr int kSquareSize = 12;
+    int x = left + metrics_sizes.kSidePadding;
+    int y = top - kSquareSize - 2;
+    SkPath square =
+        SkPath::Rect(SkRect::MakeXYWH(x, y, kSquareSize, kSquareSize));
+    canvas->drawPath(square, badge_flags);
+  } else {
+    constexpr int kTriangleSize = 16;
+    int top_x = left + metrics_sizes.kSidePadding + kTriangleSize / 2;
+    int top_y = top - kTriangleSize;
+    int bottom_y = top_y + kTriangleSize;
+    SkPath triangle =
+        SkPath::Polygon({SkPoint::Make(top_x, top_y),
+                         SkPoint::Make(top_x - kTriangleSize / 2, bottom_y),
+                         SkPoint::Make(top_x + kTriangleSize / 2, bottom_y)},
+                        true);
+    canvas->drawPath(triangle, badge_flags);
+  }
+
+  // Draw the label and values of the metric.
   PaintFlags flags;
   flags.setColor(DebugColors::HUDTitleColor());
   DrawText(canvas, flags, name, TextAlign::kLeft, metrics_sizes.kFontHeight,
-           left + metrics_sizes.kSidePadding, top);
+           left + metrics_sizes.kSidePadding + metrics_sizes.kBadgeWidth, top);
   flags.setColor(metrics_color);
   DrawText(canvas, flags, value_str, TextAlign::kRight,
            metrics_sizes.kFontHeight, right - metrics_sizes.kSidePadding, top);
@@ -1178,7 +1226,7 @@ int HeadsUpDisplayLayerImpl::DrawSinglePercentageMetric(PaintCanvas* canvas,
   PaintFlags flags;
   flags.setColor(DebugColors::HUDTitleColor());
   DrawText(canvas, flags, name, TextAlign::kLeft, metrics_sizes.kFontHeight,
-           left + metrics_sizes.kSidePadding, top);
+           left + metrics_sizes.kSidePadding + metrics_sizes.kBadgeWidth, top);
   flags.setColor(metrics_color);
   DrawText(canvas, flags, value_str, TextAlign::kRight,
            metrics_sizes.kFontHeight, right - metrics_sizes.kSidePadding, top);

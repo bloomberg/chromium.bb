@@ -34,6 +34,8 @@ typedef NS_ENUM(NSInteger, AutofillUIType) {
   AutofillUITypeProfileHomeAddressCountry,
   AutofillUITypeProfileHomePhoneWholeNumber,
   AutofillUITypeProfileEmailAddress,
+  AutofillUITypeNameFullWithHonorificPrefix,
+  AutofillUITypeAddressHomeAddress
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_UI_TYPE_H_

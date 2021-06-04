@@ -357,41 +357,6 @@ test.util.sync.execCommand = (contentWindow, command) => {
 };
 
 /**
- * Override the installWebstoreItem method in private api for test.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} expectedItemId Item ID to be called this method with.
- * @param {?string} intendedError Error message to be returned when the item id
- *     matches. 'null' represents no error.
- * @return {boolean} Always return true.
- */
-test.util.sync.overrideInstallWebstoreItemApi =
-    (contentWindow, expectedItemId, intendedError) => {
-      const setLastError = message => {
-        contentWindow.chrome.runtime.lastError =
-            message ? {message: message} : undefined;
-      };
-
-      const installWebstoreItem = (itemId, silentInstallation, callback) => {
-        setTimeout(() => {
-          if (itemId !== expectedItemId) {
-            setLastError('Invalid Chrome Web Store item ID');
-            callback();
-            return;
-          }
-
-          setLastError(intendedError);
-          callback();
-        }, 0);
-      };
-
-      test.util.executedTasks_ = [];
-      contentWindow.chrome.webstoreWidgetPrivate.installWebstoreItem =
-          installWebstoreItem;
-      return true;
-    };
-
-/**
  * Override the task-related methods in private api for test.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -479,17 +444,11 @@ test.util.sync.getBreadcrumbPath = contentWindow => {
 
   let path = '';
 
-  if (util.isFilesNg()) {
-    const crumbs = breadcrumb.querySelector('bread-crumb');
-    if (crumbs) {
-      path = '/' + crumbs.path;
-    }
-  } else {
-    const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
-    for (let i = 0; i < paths.length; i++) {
-      path += '/' + paths[i].textContent;
-    }
+  const crumbs = breadcrumb.querySelector('bread-crumb');
+  if (crumbs) {
+    path = '/' + crumbs.path;
   }
+
   return path;
 };
 

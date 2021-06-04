@@ -56,6 +56,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
+  gfx::Rect GetSelectionBoundingBox() const override;
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
@@ -92,8 +93,8 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
 
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) override;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,

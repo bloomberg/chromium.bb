@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -312,7 +313,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   };
 
   base::Lock check_on_requests_lock_;
-  base::Optional<RequestCheck> check_on_requests_
+  absl::optional<RequestCheck> check_on_requests_
       GUARDED_BY(check_on_requests_lock_);
 };
 
@@ -747,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 //
 // These tests assume a default policy of no-referrer-when-downgrade.
 struct ReferrerOverrideParams {
-  base::Optional<base::Feature> feature_to_enable;
+  absl::optional<base::Feature> feature_to_enable;
   network::mojom::ReferrerPolicy baseline_policy;
   network::mojom::ReferrerPolicy expected_policy;
 
@@ -1015,7 +1016,9 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
                        RespectsNoReferrerPref) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kEnableReferrers, false);
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
   RunReferrerTest(network::mojom::ReferrerPolicy::kAlways, START_ON_HTTPS,
                   REGULAR_LINK, NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,

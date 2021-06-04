@@ -1,3 +1,432 @@
+2021-05-19  Nikolaus Waxweiler  <madigens@gmail.com>
+
+	[CMake] Update dependency finders.
+
+	1. Fixes CMake using any found HarfBuzz version lower than the minimum
+	required. This is based on HALX99's merge request at
+	https://gitlab.freedesktop.org/freetype/freetype/-/merge_requests/31
+	2. Update FindHarfBuzz.cmake from
+	https://github.com/WebKit/WebKit/blob/1ce32454/Source/cmake/FindHarfBuzz.cmake
+	and guard post-CMake-3.1 features to keep the minimum version unchanged
+	3. Update FindBrotliDec.cmake to stop the warnings, based on what
+	https://github.com/google/woff2/blob/a0d0ed7d/cmake/FindBrotliDec.cmake
+	is doing
+
+	* CMakeLists.txt, builds/cmake/FindHarfBuzz.cmake: Implement 1 and 2.
+	* builds/cmake/FindBrotliDec.cmake: Implement 3.
+
+2021-05-19  Ben Wagner  <bungeman@chromium.org>
+
+	[gzip] Use exact type for `ft_gzip_alloc` and `ft_gzip_free`.
+
+	While a function pointer may be cast to another function pointer
+	type, it is required to cast the function pointer back to the
+	original function pointer type before calling it.  If a parameter is
+	a pointer the exact pointer type is required.  Using a pointer to a
+	different underlying type is technically undefined behavior.  The
+	wrapper functions `ft_gzip_alloc` and `ft_gzip_free` took
+	`FT_Memory` (a `FT_MemoryRec_*`) instead of `voidpf` (`void*`), so
+	when gzip calls these callbacks through `alloc_func` or `free_func`
+	it invokes undefined behavior.  On most platforms this works out as
+	expected, but newer undefined behavior detectors and targets like
+	wasm can detect this and will produce an error.
+
+	* src/gzip/ftgzip.c (ft_gzip_alloc, ft_gzip_free): Update signatures
+	to exactly match `alloc_func` and `free_func`, respectively.
+	Internally, cast the `void*` opaque pointer to `FT_Memory`.
+
+2021-05-18  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	Prioritize the anti-aliasing renderer module.
+
+	* modules.cfg: Reorder the renderers.
+	* include/freetype/config/ftmodule.h: Ditto.
+
+2021-05-16  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[sfnt] Additional guards on the POST table.
+
+	Fixes timeout (#1055) analyzed by Ben Wagner, reported as
+
+	  https://crbug.com/1194092
+
+	* src/sfnt/ttload.c (tt_face_load_post): Check POST format.
+	* src/sfnt/sfobjs.c (sfnt_load_face): Synthesize the missing unicode
+	charmap only if the glyph names exist.
+	* src/psnames/psmodule.c (ps_unicode_value): Short cut ".notdef" and
+	".null".
+
+2021-05-13  Daniel McArdle  <dmcardle@chromium.org>
+
+	[psaux] Use doubling allocation strategy for CF2_ArrStack.
+
+	Fixes timeout reported as
+
+	  https://crbug.com/1206181
+
+	* src/psaux/psarrst.c (cf2_arrstack_{push,init}): Implement it.
+	* src/psaux/psarrst.h (CF2_ArrStackiRec): Drop `chunk'.
+
+2021-05-12  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (FT_MAX_GRAY_SPANS): Increase from 10 to 16.
+
+	Ten was barely enough for two slanted stems. Sixteen can actually fit
+	a bit more complicated scanlines.
+
+2021-05-11  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (FT_GRAY_SET): Adjust for better code.
+
+2021-05-11  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[smooth] Faster bitmap sweeping.
+
+	Selecting the fill rule or checking the direct mode each time we call
+	`gray_hline' is sub-optimal.  This effectively splits the direct mode
+	into a separate code path while inlining `gray_hline' and saving 5-7%
+	of rendering time.
+
+	* src/smooth/ftgrays.c (gray_hline): Eliminated in favor of...
+	(FT_FILL_RULE, FT_GRAY_SET): ... these new macros...
+	(gray_sweep): ... inlined here.
+	(gray_sweep_direct): New function that handles the direct span buffer.
+	(gray_TWorker): Remove the span buffer.
+	(gray_raster_render, gray_convert_glyph): Updated.
+
+2021-05-10  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (gray_hline): Simplify even-odd computations.
+
+	It is too bad the even-odd rule is not used much.
+
+2021-05-07  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[type1] Avoid MM memory zeroing.
+
+	* src/type1/t1load.c (t1_allocate_blend, parse_blend_design_map):
+	Tweak allocation macros.
+	* src/type1/t1objs.c (T1_Face_Done): Minor.
+
+2021-05-07  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/bdf/bdflib.c (_bdf_list_ensure): Tweak allocation macro.
+
+2021-05-06  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/psaux/psobjs.c (ps_parser_load_field): Tweak allocation macro.
+
+2021-05-06  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Tweak allocation macro.
+
+2021-05-06  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/cid/cidload.c (cid_read_subrs): Tweak allocation macro.
+
+2021-05-06  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftrfork.c (FT_Raccess_Get_DataOffsets): Tweak allocation.
+
+2021-05-05  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cff,psaux] Avoid memory zeroing (contd.).
+
+	* src/cff/cffload.c (cff_blend_doBlend, cff_blend_build_vector): Tweak
+	allocation macros.
+	* src/psaux/psarrst.c (cf2_arrstack_setNumElements): Ditto.
+	* src/psaux/psstack.c (cf2_stack_init): Ditto.
+
+2021-05-04  Ben Wagner  <bungeman@chromium.org>
+
+	* src/cid/cidload.c (cid_hex_to_binary): Improve return value.
+
+	Add argument to return the actual number of bytes that were decoded.
+	The actual number of bytes decoded can be quite variable depending
+	on the number of ignored 'whitespace' bytes or early termination
+	with `>`.
+	(cid_face_open): Updated to use this calculated value.  This avoids
+	trusting `parser->binary_length` is always be correct and reading
+	uninitialized bits if fewer are actually decoded.
+
+	First reported as
+
+	  https://crbug.com/1203240
+
+2021-05-03  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[sfnt] Streamline POST format 2.0 handing.
+
+	To reduce memory allocations, we read an entire Pascal-string buffer
+	and convert it to a C-string buffer.  We also reject tables with
+	Postscript glyph names exceeding 63 bytes.
+
+	* src/sfnt/ttpost.c (load_format20): Implement it.
+	(load_post_names): Check the minimal POST table size.
+	(load_format25, tt_face_free_ps_names): Updated accordingly.
+
+2021-05-02  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[bdf,pcf] Avoid memory zeroing (contd.).
+
+	* src/bdf/bdflib.c (bdf_create_property, _bdf_add_comment,
+	_bdf_add_property, bdf_load_font): Tweak allocation macros.
+	* src/pcf/pcfread.c (pcf_get_properties, pcf_get_metrics): Ditto.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/cid/cidload.c (cid_read_subrs): Tweak allocaton macro.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[sfnt] Avoid some memory zeroing.
+
+	* src/sfnt/sfobjs.c (sfnt_open_font, sfnt_init_face,
+	tt_name_ascii_from_{utf16,other}): Tweak allocaton macros.
+	* src/sfnt/ttload.c (tt_face_load_name): Ditto.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/ttpost.c (load_format_{20,25}): Tweak allocaton macros.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/pngshim.c (Load_SBit_Png): Tweak allocaton macro.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[truetype] Avoid some memory zeroing.
+
+	* src/truetype/ttinterp.c (Init_Context): Tweak allocation macro.
+	* src/truetype/ttpload.c (tt_face_load_cvt): Ditto.
+
+2021-05-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[woff2] Avoid some memory zeroing.
+
+	* src/sfnt/sfwoff2.c (store_loca, woff2_open_font): Tweak macros.
+
+2021-04-30  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/gzip/ftgzip.c (ft_gzip_alloc): Zero out memory again.
+
+2021-04-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[lzw] Preserve decompression stack when relocating to heap.
+
+	* src/lzw/ftzopen.c (ft_lzwstate_stack_grow): Copy stack when
+	relocating to heap.
+
+2021-04-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/cid/cidgload.c (cid_load_glyph): Restore the glyph_length check.
+
+2021-04-27  Werner Lemberg  <wl@gnu.org>
+
+	* src/psmodule.c (ps_unicodes_init): Ignore empty glyph names.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=33637
+
+2021-04-26  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/sfobjs.c (sfnt_init_face): Revert macro change.
+
+2021-04-26  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cff] Avoid some memory zeroing.
+
+	* src/cff/cffparse.c (cff_parser_init): Tweak memory macro.
+	* src/cff/cffload.c (cff_index_load_offsets, cff_index_get_pointers,
+	cff_charset_load, cff_vstore_load): Ditto.
+
+2021-04-26  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[pfr] Avoid some memory zeroing.
+
+	* src/pfr/pfrobjs.c (pfr_face_init) : Tweak memory macro.
+	* src/pfr/pfrload.c (pfr_extra_item_load_stem_snaps,
+	pfr_phy_font_load): Ditto.
+
+2021-04-26  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/winfonts/winfnt.c (FNT_Face_Init): Tweak memory macro.
+
+2021-04-26  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[psaux,psnames] Avoid some memory zeroing.
+
+	* src/psaux/psstack.c (cf2_stack_init): Tweak memory macro.
+	* src/psnames/psmodule.c (ps_unicodes_init): Ditto.
+
+2021-04-25  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[base] Avoid some memory zeroing.
+
+	* src/base/ftrfork.c (FT_Raccess_Get_DataOffsets): Use FT_QNEW_ARRAY.
+	* src/base/ftsnames.c (FT_Get_Sfnt_{Name,LangTag}): Ditto.
+
+2021-04-25  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[bdf,pcf] Avoid some memory zeroing.
+
+	* src/pcf/pcfread.c (pcf_read_TOC, pcf_get_properties, pcf_load_font):
+	Tweak memory macros.
+	* src/bdf/bdfdrivr.c (BDF_Face_Init): Ditto.
+	* src/bdf/bdflib.c (_bdf_readstreami, bdf_create_property,
+	_bdf_parse_glyphs, _bdf_parse_start): Ditto.
+	(_bdf_add_property): Do not handle zero size.
+
+2021-04-25  Issam E. Maghni  <issam.e.maghni@mailbox.org>
+
+	* builds/meson/process_ftoption_h.py: Add LF at EOF.
+
+	This fixes
+
+	  .../ftoption.h:1030:10: error:
+	    no newline at end of file [-Werror,-Wnewline-eof]
+
+	for the generated `ftoption.h` file.
+
+2021-04-24  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/cff/cffload.c (cff_index_get_pointers): s/FT_QALLOC/FT_ALLOC/.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftobjs.c (Mac_Read_POST_Resource): s/FT_ALLOC/FT_QALLOC/.
+	* builds/mac/ftmac.c (FT_New_Face_From_SFNT, read_lwfn): Ditto.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sdf/ftsdf.c (sdf_{edge,contour,shape}_new): Use FT_QALLOC.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[sfnt] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/sfnt/sfdriver.c (get_win_string, get_apple_string,
+	sfnt_get_var_ps_name): Do not zero out the buffer.
+	* src/sfnt/sfobjs.c (sfnt_init_face): Ditto.
+	* src/sfnt/sfwoff.c (woff_open_font): Ditto.
+	* src/sfnt/sfwoff2.c (woff2_open_font): Ditto.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cff,type1,type42] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/cff/cffload.c (cff_index_get_pointers, cff_index_get_name):
+	Do not zero out the buffer.
+	* src/cff/cffdrivr.c (cff_ps_get_font_info): Ditto.
+	* src/type1/t1load.c (parse_subrs, parse_charstrings,
+	parse_blend_axis_types): Ditto.
+	* src/type1/t1parse.c (T1_New_Parser, T1_Get_Private_Dict): Ditto.
+	* src/type42/t42parse.c (t42_parser_init): Ditto.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cid] s/FT_ALLOC/FT_QALLOC/ and clean up.
+
+	* src/cid/cidgload.c (cid_load_glyph): Do not zero out the buffer.
+	* src/cid/cidload.c (cid_face_open, cid_read_subrs): Ditto.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[pfr] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/pfr/pfrload.c (pfr_extra_item_load_font_id, pfr_aux_name_load):
+	Do not zero out the buffer.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[bzip2,gzip] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/bzip2/ftbzip2.c (ft_bzip2_alloc): Do not zero out the buffer.
+	* src/gzip/ftgzip.c (ft_gzip_alloc, FT_Stream_OpenGzip): Ditto.
+
+2021-04-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[pcf,bdf,winfonts] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/pcf/pcfread.c (pcf_interpret_style): Do not zero out the buffer.
+	* src/bdf/bdfdrivr.c (bdf_interpret_style): Ditto.
+	* src/winfonts/winfnt.c (FNT_Face_Init, FNT_Load_Glyph): Ditto.
+
+2021-04-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cache] Optimize SBit copying.
+
+	* src/cache/ftcsbits.c (ftc_snode_load): Do not initialize the buffer.
+	(ftc_sbit_copy_bitmap): Accept zero size, s/FT_ALLOC/FT_QALLOC/.
+
+2021-04-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[gxvalid,otvalid] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/gxvalid/gxvmod.c (gxv_load_table): Do not zero out the buffer.
+	* src/otvalid/otvmod.c (otv_load_table): Ditto.
+
+2021-04-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[psaux] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/psaux/psobjs.c (ps_table_done, ps_parser_load_field): Do not
+	zero out the buffer.
+
+2021-04-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[base] s/FT_ALLOC/FT_QALLOC/ for initialized buffers.
+
+	* src/base/ftobjs.c (open_face_PS_from_sfnt_stream,
+	Mac_Read_sfnt_Resource): Do not zero out the buffer.
+	* src/base/ftmac.c (FT_New_Face_From_SFNT, read_lwfn): Ditto.
+	* src/base/ftrfork.c (raccess_make_file_name,
+	raccess_guess_darwin_hfsplus, raccess_guess_darwin_newvfs): Ditto.
+
+2021-04-20  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cache] Restore SBit copying for unowned (BDF) bitmaps.
+
+	* src/cache/ftcsbits.c (ftc_sbit_copy_bitmap): Restore.
+	(ftc_snode_load): Check ownership and copy unowned bitmaps.
+
+2021-04-19  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Return in 'COLR' v1 when layer pointer outside table
+
+	* src/sfnt/ttcolr.c (tt_face_get_paint_layers): Add missing return
+	when paint pointer outside table.
+	(read_paint): Add missing return when paint pointer outside table.
+
+2021-04-18  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cache] Switch to lazy SBit setting.
+
+	* src/cache/ftcsbits.c (ftc_sbit_copy_bitmap): Removed.
+	(ftc_snode_load): Take the bitmap ownership instead of copying.
+
+2021-04-16  Daniel Welty  <@danielwelty>
+
+	* src/cache/ftcsbits.c (ftc_snode_load): Properly handle short pitch.
+
+2021-04-16  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/freetype2.m4: Fix help string formatting.
+
+	The indented `dnl` macros inserted unwanted horizontal space.
+
+	Problem reported by Ozkan Sezer <sezeroz@gmail.com>.
+
+2021-04-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Safeguard 'COLR' v1 layer extraction
+
+	* src/sfnt/ttcolr.c (tt_face_get_paint_layers): Do not output
+	layer pointer to iterator if it is outside the 'COLR' table.
+	(read_paint): Do not attempt to read layers that are outside the
+	table.
+
 2021-04-02  Ben Wagner  <bungeman@chromium.org>
 
 	[base] Complete `ft_glyphslot_clear`.

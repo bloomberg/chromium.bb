@@ -37,6 +37,7 @@
 
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -49,7 +50,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
@@ -1333,7 +1333,7 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
     current_allocation_point_ += allocation_size;
     remaining_allocation_size_ -= allocation_size;
     DCHECK_GT(gc_info_index, 0u);
-    new (NotNull, header_address)
+    new (NotNullTag::kNotNull, header_address)
         HeapObjectHeader(allocation_size, gc_info_index);
     DCHECK(!PageFromObject(header_address)->IsLargeObjectPage());
     static_cast<NormalPage*>(PageFromObject(header_address))

@@ -21,8 +21,8 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/memory/page_size.h"
 #include "base/path_service.h"
-#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -197,8 +197,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   base::File read_file(pipe_handles[0]);
   std::string formatted_message = FormatMessage(kTestMessage);
   ASSERT_GT(base::GetPageSize(), formatted_message.size());
-  ASSERT_TRUE(base::WriteFileDescriptor(
-      pipe_handles[1], formatted_message.data(), formatted_message.size()));
+  ASSERT_TRUE(base::WriteFileDescriptor(pipe_handles[1], formatted_message));
   base::File write_file(pipe_handles[1]);
   std::unique_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::CreateWithPipeInput(std::move(read_file), temp_output_file);
@@ -377,7 +376,7 @@ TEST_F(NativeMessagingTest, MAYBE_ReconnectArgs) {
       cmd_line.GetSwitchValueASCII(switches::kNativeMessagingConnectExtension));
   EXPECT_EQ(features::kOnConnectNative.name,
             cmd_line.GetSwitchValueASCII(switches::kEnableFeatures));
-  EXPECT_EQ(profile_.GetPath().BaseName(),
+  EXPECT_EQ(profile_.GetBaseName(),
             cmd_line.GetSwitchValuePath(switches::kProfileDirectory));
   EXPECT_EQ(profile_.GetPath().DirName(),
             cmd_line.GetSwitchValuePath(switches::kUserDataDir));

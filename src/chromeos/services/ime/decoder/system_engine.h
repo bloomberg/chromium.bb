@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_SERVICES_IME_DECODER_SYSTEM_ENGINE_H_
 #define CHROMEOS_SERVICES_IME_DECODER_SYSTEM_ENGINE_H_
 
-#include "base/optional.h"
 #include "base/scoped_native_library.h"
 #include "chromeos/services/ime/ime_decoder.h"
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace ime {
@@ -47,6 +47,10 @@ class SystemEngine : public InputEngine {
       mojom::SelectionRangePtr selection_range) override;
   void OnCompositionCanceled() override;
 
+  // Handle the suggestion response returned from a call to
+  // remote->RequestSuggestions().
+  void OnSuggestionsReturned(mojom::SuggestionsResponsePtr response);
+
  private:
   // Try to load the decoding functions from some decoder shared library.
   // Returns whether loading decoder is successful.
@@ -62,9 +66,12 @@ class SystemEngine : public InputEngine {
 
   ImeCrosPlatform* platform_ = nullptr;
 
-  base::Optional<ImeDecoder::EntryPoints> decoder_entry_points_;
+  absl::optional<ImeDecoder::EntryPoints> decoder_entry_points_;
 
-  mojo::ReceiverSet<mojom::InputChannel> decoder_channel_receivers_;
+  mojo::Receiver<mojom::InputChannel> decoder_channel_receiver_;
+
+  // Whether `decoder_channel_receiver_` is connected.
+  bool is_decoder_receiver_connected_ = false;
 
   // Sequence ID for protobuf messages sent from the engine.
   uint64_t current_seq_id_ = 0;

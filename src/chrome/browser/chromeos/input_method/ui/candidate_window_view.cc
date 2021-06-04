@@ -11,8 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/candidate_view.h"
 #include "chrome/browser/chromeos/input_method/ui/candidate_window_constants.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -27,8 +28,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ui {
@@ -158,6 +157,8 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   DCHECK(parent);
   set_parent_window(parent);
   set_margins(gfx::Insets());
+  // Ignore this role for accessibility purposes.
+  SetAccessibleRole(ax::mojom::Role::kNone);
 
   // When BubbleDialogDelegateView creates its frame view it will create a
   // bubble border with a non-zero corner radius by default.

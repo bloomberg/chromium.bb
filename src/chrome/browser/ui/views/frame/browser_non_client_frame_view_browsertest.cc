@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -50,7 +51,7 @@ class BrowserNonClientFrameViewBrowserTest
   // TODO: Add tests for non-bookmark hosted apps, as bookmark apps will no
   // longer be hosted apps when BMO ships.
   void InstallAndLaunchBookmarkApp(
-      base::Optional<GURL> app_url = base::nullopt) {
+      absl::optional<GURL> app_url = absl::nullopt) {
     blink::Manifest manifest;
     manifest.start_url = app_url.value_or(GetAppURL());
     manifest.scope = manifest.start_url.GetWithoutFilename();
@@ -62,7 +63,7 @@ class BrowserNonClientFrameViewBrowserTest
                                           web_app_info.get());
 
     web_app::AppId app_id =
-        web_app::InstallWebApp(profile(), std::move(web_app_info));
+        web_app::test::InstallWebApp(profile(), std::move(web_app_info));
     app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id);
     web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
     // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
@@ -73,7 +74,7 @@ class BrowserNonClientFrameViewBrowserTest
   }
 
  protected:
-  base::Optional<SkColor> app_theme_color_ = SK_ColorBLUE;
+  absl::optional<SkColor> app_theme_color_ = SK_ColorBLUE;
   Browser* app_browser_ = nullptr;
   BrowserView* app_browser_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
@@ -236,7 +237,7 @@ class SaveCardOfferObserver
   explicit SaveCardOfferObserver(content::WebContents* web_contents) {
     manager_ = autofill::ContentAutofillDriver::GetForRenderFrameHost(
                    web_contents->GetMainFrame())
-                   ->autofill_manager()
+                   ->browser_autofill_manager()
                    ->client()
                    ->GetFormDataImporter()
                    ->credit_card_save_manager_.get();

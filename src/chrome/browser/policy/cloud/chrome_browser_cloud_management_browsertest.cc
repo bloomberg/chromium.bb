@@ -145,7 +145,7 @@ class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
   explicit ChromeBrowserExtraSetUp(
       ChromeBrowserCloudManagementControllerObserver* observer)
       : observer_(observer) {}
-  void PreMainMessageLoopStart() override {
+  void PreCreateMainMessageLoop() override {
     g_browser_process->browser_policy_connector()
         ->chrome_browser_cloud_management_controller()
         ->AddObserver(observer_);
@@ -251,7 +251,7 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
             !enrollment_token.empty()
                 ? DMAuth::FromEnrollmentToken(enrollment_token)
                 : DMAuth::NoAuth(),
-            /*oauth_token=*/base::nullopt,
+            /*oauth_token=*/absl::nullopt,
             g_browser_process->system_network_context_manager()
                 ->GetSharedURLLoaderFactory(),
             base::BindOnce(
@@ -811,8 +811,7 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, MAYBE_Test) {
     base::RunLoop run_loop;
     // Listen to store event which is fired after policy validation if token is
     // valid.
-    std::unique_ptr<PolicyFetchStoreObserver> store_observer;
-    store_observer = std::make_unique<PolicyFetchStoreObserver>(
+    auto store_observer = std::make_unique<PolicyFetchStoreObserver>(
         manager->store(), run_loop.QuitClosure());
 
     g_browser_process->browser_policy_connector()

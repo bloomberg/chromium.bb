@@ -34,10 +34,8 @@ describe('Core canvas behavior', () => {
 
         canvas.drawPicture(pic);
 
-        // test that file saving functionality throws no errors
-        // Unfortunately jasmine spy objects can't fake their type so we can't verify it downloads
-        // a nonzero sized file.
-        pic.saveAsFile('foo.skp');
+        const bytes = pic.serialize();
+        expect(bytes).toBeTruthy();
 
         pic.delete();
     });
@@ -374,6 +372,28 @@ describe('Core canvas behavior', () => {
          }
         paint.delete();
     }, '/assets/mandrill_16.png');
+
+    gm('draw_glyphs', (canvas, fetchedByteBuffers) => {
+        canvas.clear(CanvasKit.WHITE);
+
+        const paint = new CanvasKit.Paint();
+        const font = new CanvasKit.Font(null, 24);
+        paint.setAntiAlias(true);
+
+        const DIM = 16; // row/col count for the grid
+        const GAP = 32; // spacing between each glyph
+        const glyphs = new Uint16Array(256);
+        const positions = new Float32Array(256*2);
+        for (let i = 0; i < 256; ++i) {
+            glyphs[i] = i;
+            positions[2*i+0] = (i%DIM) * GAP;
+            positions[2*i+1] = Math.round(i/DIM) * GAP;
+        }
+        canvas.drawGlyphs(glyphs, positions, 16, 20, font, paint);
+
+        font.delete();
+        paint.delete();
+    });
 
     gm('image_decoding_methods', async (canvas) => {
         canvas.clear(CanvasKit.WHITE);
@@ -765,7 +785,7 @@ describe('Core canvas behavior', () => {
         const combined = CanvasKit.ImageFilter.MakeCompose(redIF, blurIF);
         paint.setImageFilter(combined);
 
-        const frame = img.getCurrentFrame();
+        const frame = img.makeImageAtCurrentFrame();
         canvas.drawImage(frame, 100, 50, paint);
 
         paint.delete();

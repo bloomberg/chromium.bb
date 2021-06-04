@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -35,6 +36,9 @@ class CompositingInputsUpdater {
   };
 
   struct AncestorInfo {
+    STACK_ALLOCATED();
+
+   public:
     // The ancestor composited PaintLayer which is also a stacking context.
     PaintLayer* enclosing_stacking_composited_layer = nullptr;
     // A "squashing composited layer" is a PaintLayer that owns a squashing

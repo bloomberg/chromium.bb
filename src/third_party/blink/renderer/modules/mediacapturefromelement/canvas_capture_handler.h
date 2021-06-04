@@ -20,6 +20,7 @@
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 class SkImage;
 
@@ -97,7 +98,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   void OnARGBPixelsReadAsync(scoped_refptr<StaticBitmapImage> image,
                              scoped_refptr<media::VideoFrame> temp_argb_frame,
                              base::TimeTicks this_frame_ticks,
-                             bool flip,
+                             GrSurfaceOrigin result_origin,
                              bool success);
   void OnYUVPixelsReadAsync(scoped_refptr<media::VideoFrame> yuv_frame,
                             base::TimeTicks this_frame_ticks,
@@ -132,7 +133,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   bool can_discard_alpha_ = true;
   bool ask_for_new_frame_;
   media::VideoFramePool frame_pool_;
-  base::Optional<base::TimeTicks> first_frame_ticks_;
+  absl::optional<base::TimeTicks> first_frame_ticks_;
   scoped_refptr<media::VideoFrame> last_frame_;
 
   // The following attributes ensure that CanvasCaptureHandler emits

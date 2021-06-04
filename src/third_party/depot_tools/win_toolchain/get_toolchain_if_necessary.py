@@ -223,7 +223,7 @@ def SaveTimestampsAndHash(root, sha1):
     'sha1': sha1,
   }
   with open(MakeTimestampsFileName(root, sha1), 'wb') as f:
-    json.dump(timestamps_data, f)
+    f.write(json.dumps(timestamps_data).encode('utf-8'))
 
 
 def HaveSrcInternalAccess():
@@ -560,7 +560,7 @@ def main():
   version_file = os.path.join(toolchain_target_dir, 'VS_VERSION')
   vc_dir = os.path.join(toolchain_target_dir, 'VC')
   with open(version_file, 'rb') as f:
-    vs_version = f.read().strip()
+    vs_version = f.read().decode('utf-8').strip()
     # Touch the VC directory so we can use its timestamp to know when this
     # version of the toolchain has been used for the last time.
   os.utime(vc_dir, None)
@@ -576,7 +576,7 @@ def main():
         os.path.join(abs_toolchain_target_dir, 'sysarm64'),
       ],
   }
-  data_json = json.dumps(data)
+  data_json = json.dumps(data, indent=2)
   data_path = os.path.join(target_dir, '..', 'data.json')
   if not os.path.exists(data_path) or open(data_path).read() != data_json:
     with open(data_path, 'w') as f:

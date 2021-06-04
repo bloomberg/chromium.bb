@@ -37,6 +37,9 @@ public class AccountInfoServiceTest {
     private IdentityManager mIdentityManagerMock;
 
     @Mock
+    private AccountTrackerService mAccountTrackerServiceMock;
+
+    @Mock
     private AccountInfoService.Observer mObserverMock;
 
     private final AccountInfo mAccountInfoWithAvatar =
@@ -47,7 +50,7 @@ public class AccountInfoServiceTest {
 
     @Before
     public void setUp() {
-        AccountInfoService.init(mIdentityManagerMock);
+        AccountInfoService.init(mIdentityManagerMock, mAccountTrackerServiceMock);
         mService = AccountInfoService.get();
     }
 

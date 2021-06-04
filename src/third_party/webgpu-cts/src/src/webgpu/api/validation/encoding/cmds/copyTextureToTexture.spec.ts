@@ -38,7 +38,6 @@ Test Plan: (TODO(jiawei.shao@intel.com): add tests on 1D/3D textures)
 
 import { poptions, params } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-import { assert } from '../../../../../common/framework/util/util.js';
 import {
   kAllTextureFormatInfo,
   kAllTextureFormats,
@@ -51,8 +50,8 @@ import { ValidationTest } from '../../validation_test.js';
 
 class F extends ValidationTest {
   TestCopyTextureToTexture(
-    source: GPUTextureCopyView,
-    destination: GPUTextureCopyView,
+    source: GPUImageCopyTexture,
+    destination: GPUImageCopyTexture,
     copySize: GPUExtent3D,
     isSuccess: boolean
   ): void {
@@ -113,16 +112,19 @@ g.test('copy_with_invalid_texture').fn(async t => {
 });
 
 g.test('mipmap_level')
-  .params([
-    { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 0, dstCopyLevel: 0 },
-    { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 1, dstCopyLevel: 0 },
-    { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 0, dstCopyLevel: 1 },
-    { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 0 },
-    { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 2, dstCopyLevel: 0 },
-    { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 3, dstCopyLevel: 0 },
-    { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 2 },
-    { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 3 },
-  ] as const)
+  .subcases(
+    () =>
+      [
+        { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 0, dstCopyLevel: 0 },
+        { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 1, dstCopyLevel: 0 },
+        { srcLevelCount: 1, dstLevelCount: 1, srcCopyLevel: 0, dstCopyLevel: 1 },
+        { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 0 },
+        { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 2, dstCopyLevel: 0 },
+        { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 3, dstCopyLevel: 0 },
+        { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 2 },
+        { srcLevelCount: 3, dstLevelCount: 3, srcCopyLevel: 0, dstCopyLevel: 3 },
+      ] as const
+  )
   .fn(async t => {
     const { srcLevelCount, dstLevelCount, srcCopyLevel, dstCopyLevel } = t.params;
 
@@ -211,7 +213,7 @@ g.test('sample_count')
   });
 
 g.test('multisampled_copy_restrictions')
-  .params(
+  .subcases(() =>
     params()
       .combine(
         poptions('srcCopyOrigin', [
@@ -263,27 +265,16 @@ g.test('multisampled_copy_restrictions')
   });
 
 g.test('texture_format_equality')
-  .params(
+  .subcases(() =>
     params()
       .combine(poptions('srcFormat', kAllTextureFormats))
       .combine(poptions('dstFormat', kAllTextureFormats))
   )
   .fn(async t => {
     const { srcFormat, dstFormat } = t.params;
-    const extensions: Array<GPUExtensionName> = [];
-
-    const srcFormatExtension = kAllTextureFormatInfo[srcFormat].extension;
-    if (srcFormatExtension !== undefined) {
-      extensions.push(srcFormatExtension);
-    }
-    const dstFormatExtension = kAllTextureFormatInfo[dstFormat].extension;
-    if (dstFormatExtension !== undefined) {
-      extensions.push(dstFormatExtension);
-    }
-
-    if (extensions.length) {
-      await t.selectDeviceOrSkipTestCase({ extensions });
-    }
+    const srcFormatInfo = kAllTextureFormatInfo[srcFormat];
+    const dstFormatInfo = kAllTextureFormatInfo[dstFormat];
+    await t.selectDeviceOrSkipTestCase([srcFormatInfo.feature, dstFormatInfo.feature]);
 
     const kTextureSize = { width: 16, height: 16, depthOrArrayLayers: 1 };
 
@@ -309,9 +300,9 @@ g.test('texture_format_equality')
   });
 
 g.test('depth_stencil_copy_restrictions')
-  .params(
+  .cases(poptions('format', kDepthStencilFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kDepthStencilFormats))
       .combine(
         poptions('copyBoxOffsets', [
           { x: 0, y: 0, width: 0, height: 0 },
@@ -347,8 +338,7 @@ g.test('depth_stencil_copy_restrictions')
       srcCopyLevel,
       dstCopyLevel,
     } = t.params;
-
-    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].extension);
+    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].feature);
 
     const kMipLevelCount = 3;
 
@@ -398,7 +388,7 @@ g.test('depth_stencil_copy_restrictions')
   });
 
 g.test('copy_ranges')
-  .params(
+  .subcases(() =>
     params()
       .combine(
         poptions('copyBoxOffsets', [
@@ -490,7 +480,7 @@ g.test('copy_ranges')
   });
 
 g.test('copy_within_same_texture')
-  .params(
+  .subcases(() =>
     params()
       .combine(poptions('srcCopyOriginZ', [0, 2, 4]))
       .combine(poptions('dstCopyOriginZ', [0, 2, 4]))
@@ -521,24 +511,23 @@ g.test('copy_within_same_texture')
 g.test('copy_aspects')
   .desc(
     `
-Test the validations on the member 'aspect' of GPUTextureCopyView in CopyTextureToTexture().
+Test the validations on the member 'aspect' of GPUImageCopyTexture in CopyTextureToTexture().
 - for all the color and depth-stencil formats: the texture copy aspects must be both 'all'.
 - for all the depth-only formats: the texture copy aspects must be either 'all' or 'depth-only'.
 - for all the stencil-only formats: the texture copy aspects must be either 'all' or 'stencil-only'.
 `
   )
-  .params(
+  .cases(poptions('format', ['rgba8unorm', ...kDepthStencilFormats] as const))
+  .subcases(() =>
     params()
-      .combine(poptions('format', ['rgba8unorm', ...kDepthStencilFormats] as const))
       .combine(poptions('sourceAspect', ['all', 'depth-only', 'stencil-only'] as const))
       .combine(poptions('destinationAspect', ['all', 'depth-only', 'stencil-only'] as const))
   )
   .fn(async t => {
     const { format, sourceAspect, destinationAspect } = t.params;
+    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].feature);
 
     const kTextureSize = { width: 16, height: 8, depthOrArrayLayers: 1 };
-
-    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].extension);
 
     const srcTexture = t.device.createTexture({
       size: kTextureSize,
@@ -579,9 +568,9 @@ Test the validations on the member 'aspect' of GPUTextureCopyView in CopyTexture
   });
 
 g.test('copy_ranges_with_compressed_texture_formats')
-  .params(
+  .cases(poptions('format', kCompressedTextureFormats))
+  .subcases(() =>
     params()
-      .combine(poptions('format', kCompressedTextureFormats))
       .combine(
         poptions('copyBoxOffsets', [
           { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
@@ -602,10 +591,7 @@ g.test('copy_ranges_with_compressed_texture_formats')
   )
   .fn(async t => {
     const { format, copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
-
-    const extension: GPUExtensionName | undefined = kAllTextureFormatInfo[format].extension;
-    assert(extension !== undefined);
-    await t.selectDeviceOrSkipTestCase({ extensions: [extension] });
+    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].feature);
 
     const kTextureSize = { width: 60, height: 48, depthOrArrayLayers: 3 };
     const kMipLevelCount = 4;

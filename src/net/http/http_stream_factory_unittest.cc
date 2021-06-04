@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -36,7 +36,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -84,6 +84,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 // This file can be included from net/http even though
@@ -172,9 +173,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   }
   base::StringPiece GetAcceptChViaAlps() const override { return {}; }
 
-  std::unique_ptr<WebSocketStream> Upgrade() override {
-    return std::unique_ptr<WebSocketStream>();
-  }
+  std::unique_ptr<WebSocketStream> Upgrade() override { return nullptr; }
 
   base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -373,7 +372,7 @@ TestCase kTests[] = {
 void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
                             NetworkIsolationKey network_isolation_key,
-                            bool disable_secure_dns,
+                            SecureDnsPolicy secure_dns_policy,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryForPreconnect* mock_factory =
@@ -385,7 +384,7 @@ void PreconnectHelperForURL(int num_streams,
   request.url = url;
   request.load_flags = 0;
   request.network_isolation_key = network_isolation_key;
-  request.disable_secure_dns = disable_secure_dns;
+  request.secure_dns_policy = secure_dns_policy;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -397,7 +396,7 @@ void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   GURL url =
       test.ssl ? GURL("https://www.google.com") : GURL("http://www.google.com");
   PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(),
-                         false /* disable_secure_dns */, session);
+                         SecureDnsPolicy::kAllow, session);
 }
 
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
@@ -405,12 +404,12 @@ ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
     return ClientSocketPool::GroupId(
         HostPortPair("www.google.com", 443), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-        false /* disable_secure_dns */);
+        SecureDnsPolicy::kAllow);
   }
   return ClientSocketPool::GroupId(
       HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
       PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-      false /* disable_secure_dns */);
+      SecureDnsPolicy::kAllow);
 }
 
 class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
@@ -437,13 +436,13 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_group_id_ = ClientSocketPool::GroupId(
         HostPortPair(), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
-        false /* disable_secure_dns */);
+        SecureDnsPolicy::kAllow);
   }
 
   int RequestSocket(
       const ClientSocketPool::GroupId& group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       RequestPriority priority,
       const SocketTag& socket_tag,
       ClientSocketPool::RespectLimits respect_limits,
@@ -458,7 +457,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   void RequestSockets(
       const ClientSocketPool::GroupId& group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       int num_sockets,
       const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
@@ -586,7 +585,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
     SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED,
                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                       NetworkIsolationKey(), false /* disable_secure_dns */);
+                       NetworkIsolationKey(), SecureDnsPolicy::kAllow);
     ignore_result(CreateFakeSpdySession(session->spdy_session_pool(), key));
 
     CommonConnectJobParams common_connect_job_params =
@@ -635,7 +634,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"),
-                         NetworkIsolationKey(), false /* disable_secure_dns */,
+                         NetworkIsolationKey(), SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
 }
@@ -669,20 +668,20 @@ TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   SchemefulSite kSiteBar(GURL("http://bar.test"));
   const NetworkIsolationKey kKey1(kSiteFoo, kSiteFoo);
   const NetworkIsolationKey kKey2(kSiteBar, kSiteBar);
-  PreconnectHelperForURL(1, kURL, kKey1, false /* disable_secure_dns */,
+  PreconnectHelperForURL(1, kURL, kKey1, SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey1,
             transport_conn_pool->last_group_id().network_isolation_key());
 
-  PreconnectHelperForURL(2, kURL, kKey2, false /* disable_secure_dns */,
+  PreconnectHelperForURL(2, kURL, kKey2, SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(2, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey2,
             transport_conn_pool->last_group_id().network_isolation_key());
 }
 
-// Verify that preconnects use the specified disable_secure_dns field.
+// Verify that preconnects use the specified Secure DNS Tag.
 TEST_F(HttpStreamFactoryTest, PreconnectDisableSecureDns) {
   SpdySessionDependencies session_deps(
       ConfiguredProxyResolutionService::CreateDirect());
@@ -706,14 +705,16 @@ TEST_F(HttpStreamFactoryTest, PreconnectDisableSecureDns) {
   SchemefulSite kSiteFoo(GURL("http://foo.test"));
   SchemefulSite kSiteBar(GURL("http://bar.test"));
   PreconnectHelperForURL(1, kURL, NetworkIsolationKey(),
-                         false /* disable_secure_dns */, session.get());
+                         SecureDnsPolicy::kAllow, session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
-  EXPECT_FALSE(transport_conn_pool->last_group_id().disable_secure_dns());
+  EXPECT_EQ(SecureDnsPolicy::kAllow,
+            transport_conn_pool->last_group_id().secure_dns_policy());
 
   PreconnectHelperForURL(2, kURL, NetworkIsolationKey(),
-                         true /* disable_secure_dns */, session.get());
+                         SecureDnsPolicy::kDisable, session.get());
   EXPECT_EQ(2, transport_conn_pool->last_num_streams());
-  EXPECT_TRUE(transport_conn_pool->last_group_id().disable_secure_dns());
+  EXPECT_EQ(SecureDnsPolicy::kDisable,
+            transport_conn_pool->last_group_id().secure_dns_policy());
 }
 
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
@@ -1020,7 +1021,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelperForURL(num_streams, url, NetworkIsolationKey(),
-                           false /* disable_secure_dns */, session.get());
+                           SecureDnsPolicy::kAllow, session.get());
     EXPECT_EQ(num_streams, http_proxy_pool->last_num_streams());
   }
 }
@@ -1167,7 +1168,7 @@ TEST_F(HttpStreamFactoryTest, DisableSecureDnsUsesDifferentSocketPoolGroup) {
   request_info.privacy_mode = PRIVACY_MODE_DISABLED;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  request_info.disable_secure_dns = false;
+  request_info.secure_dns_policy = SecureDnsPolicy::kAllow;
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
@@ -1179,8 +1180,8 @@ TEST_F(HttpStreamFactoryTest, DisableSecureDnsUsesDifferentSocketPoolGroup) {
           /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
 
-  EXPECT_FALSE(
-      session_deps.host_resolver->last_secure_dns_mode_override().has_value());
+  EXPECT_EQ(SecureDnsPolicy::kAllow,
+            session_deps.host_resolver->last_secure_dns_policy());
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
 
   std::unique_ptr<HttpStreamRequest> request2(
@@ -1190,11 +1191,11 @@ TEST_F(HttpStreamFactoryTest, DisableSecureDnsUsesDifferentSocketPoolGroup) {
           /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
 
-  EXPECT_FALSE(
-      session_deps.host_resolver->last_secure_dns_mode_override().has_value());
+  EXPECT_EQ(SecureDnsPolicy::kAllow,
+            session_deps.host_resolver->last_secure_dns_policy());
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
 
-  request_info.disable_secure_dns = true;
+  request_info.secure_dns_policy = SecureDnsPolicy::kDisable;
   std::unique_ptr<HttpStreamRequest> request3(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
@@ -1202,9 +1203,8 @@ TEST_F(HttpStreamFactoryTest, DisableSecureDnsUsesDifferentSocketPoolGroup) {
           /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
 
-  EXPECT_EQ(
-      net::SecureDnsMode::kOff,
-      session_deps.host_resolver->last_secure_dns_mode_override().value());
+  EXPECT_EQ(SecureDnsPolicy::kDisable,
+            session_deps.host_resolver->last_secure_dns_policy());
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
 }
 
@@ -1778,9 +1778,9 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
     ClientSocketPool::GroupId group_id(
         host_port_pair, ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-        false /* disable_secure_dns */);
+        SecureDnsPolicy::kAllow);
     int rv = connection->Init(
-        group_id, socket_params, base::nullopt /* proxy_annotation_tag */,
+        group_id, socket_params, absl::nullopt /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,

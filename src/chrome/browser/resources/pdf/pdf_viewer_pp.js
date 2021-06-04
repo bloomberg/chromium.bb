@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './elements/viewer-error-screen.js';
+import './elements/viewer-error-dialog.js';
 import './elements/viewer-page-indicator.js';
-import './elements/viewer-zoom-toolbar.js';
 import './elements/shared-vars.js';
 import './pdf_viewer_shared_style.js';
 
@@ -16,10 +15,10 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {BrowserApi} from './browser_api.js';
 import {FittingType} from './constants.js';
 import {MessageData, PluginController, PrintPreviewParams} from './controller.js';
-import {ViewerErrorScreenElement} from './elements/viewer-error-screen.js';
+import {ViewerZoomToolbarElement} from './elements/viewer-zoom-toolbar.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
-import {DestinationMessageData, DocumentDimensionsMessageData, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
+import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 
 class PDFViewerPPElement extends PDFViewerBaseElement {
@@ -55,11 +54,6 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
   /** @override */
   getSizer() {
     return /** @type {!HTMLDivElement} */ (this.$$('#sizer'));
-  }
-
-  /** @override */
-  getErrorScreen() {
-    return /** @type {!ViewerErrorScreenElement} */ (this.$$('#error-screen'));
   }
 
   /** @override */
@@ -114,7 +108,7 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
       case 'Escape':
         break;  // Ensure escape falls through to the print-preview handler.
       case 'a':
-        if (e.ctrlKey || e.metaKey) {
+        if (hasCtrlModifier(e)) {
           this.pluginController_.selectAll();
           // Since we do selection ourselves.
           e.preventDefault();

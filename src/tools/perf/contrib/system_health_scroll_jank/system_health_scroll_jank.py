@@ -16,13 +16,16 @@ _BENCHMARK_UMA = [
     'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
+    'Event.Latency.ScrollJank',
     'Graphics.Smoothness.Checkerboarding.TouchScroll',
     'Graphics.Smoothness.Checkerboarding.WheelScroll',
+    'Graphics.Smoothness.Jank.Compositor.TouchScroll',
+    'Graphics.Smoothness.Jank.Main.TouchScroll',
     'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
     'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
-    'Memory.GPU.PeakMemoryUsage.Scroll',
-    'Memory.GPU.PeakMemoryUsage.PageLoad',
+    'Memory.GPU.PeakMemoryUsage2.Scroll',
+    'Memory.GPU.PeakMemoryUsage2.PageLoad',
 ]
 
 

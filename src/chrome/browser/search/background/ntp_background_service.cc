@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_background.pb.h"
@@ -255,7 +254,7 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
 
 void NtpBackgroundService::FetchNextCollectionImage(
     const std::string& collection_id,
-    const base::Optional<std::string>& resume_token) {
+    const absl::optional<std::string>& resume_token) {
   next_image_error_info_.ClearError();
   if (next_image_loader_ != nullptr)
     return;

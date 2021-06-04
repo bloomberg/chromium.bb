@@ -6,11 +6,11 @@
 
 #include <memory>
 
-#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/soda_installer.h"
 #include "media/base/media_switches.h"
 
 class PrefChangeRegistrar;
@@ -36,10 +36,13 @@ SpeechRecognitionClientBrowserInterface::
       base::BindRepeating(&SpeechRecognitionClientBrowserInterface::
                               OnSpeechRecognitionLanguageChanged,
                           base::Unretained(this)));
+  speech::SodaInstaller::GetInstance()->AddObserver(this);
 }
 
 SpeechRecognitionClientBrowserInterface::
-    ~SpeechRecognitionClientBrowserInterface() = default;
+    ~SpeechRecognitionClientBrowserInterface() {
+  speech::SodaInstaller::GetInstance()->RemoveObserver(this);
+}
 
 void SpeechRecognitionClientBrowserInterface::BindReceiver(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionClientBrowserInterface>
@@ -56,7 +59,6 @@ void SpeechRecognitionClientBrowserInterface::
 }
 
 void SpeechRecognitionClientBrowserInterface::OnSodaInstalled() {
-  speech::SodaInstaller::GetInstance()->RemoveObserver(this);
   NotifyObservers(profile_prefs_->GetBoolean(prefs::kLiveCaptionEnabled));
 }
 
@@ -71,11 +73,8 @@ void SpeechRecognitionClientBrowserInterface::
     if (!base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) ||
         speech::SodaInstaller::GetInstance()->IsSodaInstalled()) {
       NotifyObservers(enabled);
-    } else {
-      speech::SodaInstaller::GetInstance()->AddObserver(this);
     }
   } else {
-    speech::SodaInstaller::GetInstance()->RemoveObserver(this);
     NotifyObservers(enabled);
   }
 }

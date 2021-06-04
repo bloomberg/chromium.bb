@@ -33,10 +33,10 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/ui/ash/launcher/app_window_base.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/shelf/app_window_base.h"
+#include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -130,14 +130,10 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kKnownNetworksSubpagePath},
      {ChromePage::OSLANGUAGES,
       chromeos::settings::mojom::kLanguagesAndInputSectionPath},
-     {ChromePage::OSLANGUAGESDETAILS,
-      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath},
      {ChromePage::OSLANGUAGESEDITDICTIONARY,
       chromeos::settings::mojom::kEditDictionarySubpagePath},
      {ChromePage::OSLANGUAGESINPUT,
       chromeos::settings::mojom::kInputSubpagePath},
-     {ChromePage::OSLANGUAGESINPUTMETHODS,
-      chromeos::settings::mojom::kManageInputMethodsSubpagePath},
      {ChromePage::OSLANGUAGESLANGUAGES,
       chromeos::settings::mojom::kLanguagesSubpagePath},
      {ChromePage::OSLANGUAGESSMARTINPUTS,
@@ -167,6 +163,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::POINTEROVERLAY,
       chromeos::settings::mojom::kPointersSubpagePath},
      {ChromePage::POWER, chromeos::settings::mojom::kPowerSubpagePath},
+     {ChromePage::SEARCHSUBPAGE, chromeos::settings::mojom::kSearchSubpagePath},
      {ChromePage::SMARTLOCKSETTINGS,
       chromeos::settings::mojom::kSmartLockSubpagePath},
      {ChromePage::STORAGE, chromeos::settings::mojom::kStorageSubpagePath},
@@ -206,7 +203,10 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
 constexpr arc::mojom::ChromePage kDeprecatedPages[] = {
     ChromePage::DEPRECATED_DOWNLOADEDCONTENT,
     ChromePage::DEPRECATED_PLUGINVMDETAILS,
-    ChromePage::DEPRECATED_CROSTINIDISKRESIZE};
+    ChromePage::DEPRECATED_CROSTINIDISKRESIZE,
+    ChromePage::DEPRECATED_OSLANGUAGESDETAILS,
+    ChromePage::DEPRECATED_OSLANGUAGESINPUTMETHODS,
+};
 
 // mojom::ChromePage::LAST returns the amount of valid entries - 1.
 static_assert(base::size(kOSSettingsMapping) +
@@ -351,8 +351,32 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
   Profile* profile = (browser && browser->profile())
                          ? browser->profile()->GetOriginalProfile()
                          : ProfileManager::GetActiveUserProfile();
-  chrome::NewEmptyWindow(is_incognito ? profile->GetPrimaryOTRProfile()
-                                      : profile);
+  chrome::NewEmptyWindow(
+      is_incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+                   : profile);
+}
+
+void ChromeNewWindowClient::OpenCalculator() {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
+    return;
+
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_misc::kCalculatorAppId);
+  if (!extension)
+    return;
+
+  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
+                      extension_misc::kCalculatorAppId)
+                      .spec());
+  apps::LaunchPlatformAppWithUrl(profile, extension,
+                                 /*handler_id=*/std::string(), url,
+                                 /*referrer_url=*/GURL());
+
+  apps::RecordAppLaunch(extension_misc::kCalculatorAppId,
+                        apps::mojom::LaunchSource::kFromKeyboard);
 }
 
 void ChromeNewWindowClient::OpenFileManager() {
@@ -518,7 +542,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   if (!profile)
     return;
 
-  base::Optional<web_app::AppId> app_id =
+  absl::optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, url,
                                               /*window_only=*/true);
 
@@ -555,7 +579,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   if (!prefs)
     return;
 
-  base::Optional<std::string> package_name =
+  absl::optional<std::string> package_name =
       apk_web_app_service->GetPackageNameForWebApp(app_id.value());
   if (!package_name.has_value())
     return;
@@ -693,10 +717,10 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries,
 
 void ChromeNewWindowClient::CloseCameraApp() {
   const ash::ShelfID shelf_id(extension_misc::kCameraAppId);
-  AppWindowLauncherItemController* const app_controller =
-      ChromeLauncherController::instance()
+  AppWindowShelfItemController* const app_controller =
+      ChromeShelfController::instance()
           ->shelf_model()
-          ->GetAppWindowLauncherItemController(shelf_id);
+          ->GetAppWindowShelfItemController(shelf_id);
   if (!app_controller)
     return;
 

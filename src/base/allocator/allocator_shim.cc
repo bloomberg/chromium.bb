@@ -13,7 +13,7 @@
 #include "base/bits.h"
 #include "base/check_op.h"
 #include "base/macros.h"
-#include "base/process/process_metrics.h"
+#include "base/memory/page_size.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -378,9 +378,7 @@ namespace base {
 namespace allocator {
 
 void InitializeAllocatorShim() {
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  AddMacMallocZoneAsDefaultZone();
-#else   // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   // Prepares the default dispatch. After the intercepted malloc calls have
   // traversed the shim this will route them to the default malloc zone.
   InitializeDefaultDispatchToMacAllocator();
@@ -390,7 +388,7 @@ void InitializeAllocatorShim() {
   // This replaces the default malloc zone, causing calls to malloc & friends
   // from the codebase to be routed to ShimMalloc() above.
   base::allocator::ReplaceFunctionsForStoredZones(&functions);
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }
 
 }  // namespace allocator

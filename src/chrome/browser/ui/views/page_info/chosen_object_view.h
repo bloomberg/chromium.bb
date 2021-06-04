@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/page_info/page_info_ui.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -31,9 +31,6 @@ class ChosenObjectView : public views::View {
   ~ChosenObjectView() override;
 
   void AddObserver(ChosenObjectViewObserver* observer);
-
-  // views:View:
-  void OnThemeChanged() override;
 
  private:
   void UpdateIconImage(bool is_deleted) const;

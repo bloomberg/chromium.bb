@@ -21,6 +21,7 @@
 #include "cast/streaming/frame_collector.h"
 #include "cast/streaming/frame_id.h"
 #include "cast/streaming/packet_receive_stats_tracker.h"
+#include "cast/streaming/receiver_base.h"
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtcp_session.h"
 #include "cast/streaming/rtp_packet_parser.h"
@@ -103,20 +104,9 @@ class ReceiverPacketRouter;
 //   3. Last Frame Consumed: The FrameId of last frame consumed (see
 //      ConsumeNextFrame()). Once a frame is consumed, all internal resources
 //      related to the frame can be freed and/or re-used for later frames.
-class Receiver {
+class Receiver : public ReceiverBase {
  public:
-  class Consumer {
-   public:
-    virtual ~Consumer();
-
-    // Called whenever one or more frames have become ready for consumption. The
-    // |next_frame_buffer_size| argument is identical to the result of calling
-    // AdvanceToNextFrame(), and so the Consumer only needs to prepare a buffer
-    // and call ConsumeNextFrame(). It may then call AdvanceToNextFrame() to
-    // check whether there are any more frames ready, but this is not mandatory.
-    // See usage example in class-level comments.
-    virtual void OnFramesReady(int next_frame_buffer_size) = 0;
-  };
+  using ReceiverBase::Consumer;
 
   // Constructs a Receiver that attaches to the given |environment| and
   // |packet_router|. The config contains the settings that were
@@ -126,52 +116,17 @@ class Receiver {
   Receiver(Environment* environment,
            ReceiverPacketRouter* packet_router,
            SessionConfig config);
-  ~Receiver();
+  ~Receiver() override;
 
-  const SessionConfig& config() const { return config_; }
-  int rtp_timebase() const { return rtp_timebase_; }
-  Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }
-
-  // Set the Consumer receiving notifications when new frames are ready for
-  // consumption. Frames received before this method is called will remain in
-  // the queue indefinitely.
-  void SetConsumer(Consumer* consumer);
-
-  // Sets how much time the consumer will need to decode/buffer/render/etc., and
-  // otherwise fully process a frame for on-time playback. This information is
-  // used by the Receiver to decide whether to skip past frames that have
-  // arrived too late. This method can be called repeatedly to make adjustments
-  // based on changing environmental conditions.
-  //
-  // Default setting: kDefaultPlayerProcessingTime
-  void SetPlayerProcessingTime(Clock::duration needed_time);
-
-  // Propagates a "picture loss indicator" notification to the Sender,
-  // requesting a key frame so that decode/playout can recover. It is safe to
-  // call this redundantly. The Receiver will clear the picture loss condition
-  // automatically, once a key frame is received (i.e., before
-  // ConsumeNextFrame() is called to access it).
-  void RequestKeyFrame();
-
-  // Advances to the next frame ready for consumption. This may skip-over
-  // incomplete frames that will not play out on-time; but only if there are
-  // completed frames further down the queue that have no dependency
-  // relationship with them (e.g., key frames).
-  //
-  // This method returns kNoFramesReady if there is not currently a frame ready
-  // for consumption. The caller should wait for a Consumer::OnFramesReady()
-  // notification before trying again. Otherwise, the number of bytes of encoded
-  // data is returned, and the caller should use this to ensure the buffer it
-  // passes to ConsumeNextFrame() is large enough.
-  int AdvanceToNextFrame();
-
-  // Returns the next frame, both metadata and payload data. The Consumer calls
-  // this method after being notified via OnFramesReady(), and it can also call
-  // this whenever AdvanceToNextFrame() indicates another frame is ready.
-  // |buffer| must point to a sufficiently-sized buffer that will be populated
-  // with the frame's payload data. Upon return |frame->data| will be set to the
-  // portion of the buffer that was populated.
-  EncodedFrame ConsumeNextFrame(absl::Span<uint8_t> buffer);
+  // ReceiverBase overrides.
+  const SessionConfig& config() const override;
+  int rtp_timebase() const override;
+  Ssrc ssrc() const override;
+  void SetConsumer(Consumer* consumer) override;
+  void SetPlayerProcessingTime(Clock::duration needed_time) override;
+  void RequestKeyFrame() override;
+  int AdvanceToNextFrame() override;
+  EncodedFrame ConsumeNextFrame(absl::Span<uint8_t> buffer) override;
 
   // Allows setting picture loss indication for testing. In production, this
   // should be done using the config.
@@ -180,11 +135,12 @@ class Receiver {
   }
 
   // The default "player processing time" amount. See SetPlayerProcessingTime().
-  static constexpr std::chrono::milliseconds kDefaultPlayerProcessingTime{5};
+  static constexpr std::chrono::milliseconds kDefaultPlayerProcessingTime =
+      ReceiverBase::kDefaultPlayerProcessingTime;
 
   // Returned by AdvanceToNextFrame() when there are no frames currently ready
   // for consumption.
-  static constexpr int kNoFramesReady = -1;
+  static constexpr int kNoFramesReady = ReceiverBase::kNoFramesReady;
 
  protected:
   friend class ReceiverPacketRouter;
@@ -346,8 +302,8 @@ class Receiver {
   // The interval between sending ACK/NACK feedback RTCP messages while
   // incomplete frames exist in the queue.
   //
-  // TODO(miu): This should be a function of the current target playout delay,
-  // similar to the Sender's kickstart interval logic.
+  // TODO(jophba): This should be a function of the current target playout
+  // delay, similar to the Sender's kickstart interval logic.
   static constexpr std::chrono::milliseconds kNackFeedbackInterval{30};
 };
 

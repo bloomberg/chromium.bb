@@ -238,17 +238,6 @@ void RemoteFrameView::Dispose() {
   SetNeedsOcclusionTracking(false);
 }
 
-void RemoteFrameView::InvalidateRect(const IntRect& rect) {
-  auto* object = remote_frame_->OwnerLayoutObject();
-  if (!object)
-    return;
-
-  PhysicalRect repaint_rect(rect);
-  repaint_rect.Move(PhysicalOffset(object->BorderLeft() + object->PaddingLeft(),
-                                   object->BorderTop() + object->PaddingTop()));
-  object->InvalidatePaintRectangle(repaint_rect);
-}
-
 void RemoteFrameView::SetFrameRect(const IntRect& rect) {
   EmbeddedContentView::SetFrameRect(rect);
   if (needs_frame_rect_propagation_)
@@ -289,7 +278,8 @@ void RemoteFrameView::Paint(GraphicsContext& context,
       // Inform the remote frame to print.
       content_id = Print(FrameRect(), context.Canvas());
     } else {
-      DCHECK(owner_layout_object.GetDocument().IsPaintingPreview());
+      DCHECK_NE(Document::kNotPaintingPreview,
+                owner_layout_object.GetDocument().GetPaintPreviewState());
       // Inform the remote frame to capture a paint preview.
       content_id = CapturePaintPreview(FrameRect(), context.Canvas());
     }
@@ -402,7 +392,7 @@ uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,
   // to this HTMLFrameOwnerElement yet (over IPC). If the token is null the
   // failure can be handled gracefully by simply ignoring the subframe in the
   // result.
-  base::Optional<base::UnguessableToken> maybe_embedding_token =
+  absl::optional<base::UnguessableToken> maybe_embedding_token =
       remote_frame_->GetEmbeddingToken();
   if (!maybe_embedding_token.has_value())
     return 0;

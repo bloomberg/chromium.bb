@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gl/gpu_preference.h"
 
 namespace blink {
@@ -445,7 +444,7 @@ class DrawingBufferForTests : public DrawingBuffer {
  public:
   static scoped_refptr<DrawingBufferForTests> Create(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-      bool using_gpu_compositing,
+      const Platform::GraphicsInfo& graphics_info,
       DrawingBuffer::Client* client,
       const IntSize& size,
       PreserveDrawingBuffer preserve,
@@ -454,7 +453,7 @@ class DrawingBufferForTests : public DrawingBuffer {
         Extensions3DUtil::Create(context_provider->ContextGL());
     scoped_refptr<DrawingBufferForTests> drawing_buffer =
         base::AdoptRef(new DrawingBufferForTests(
-            std::move(context_provider), using_gpu_compositing,
+            std::move(context_provider), graphics_info,
             std::move(extensions_util), client, preserve));
     if (!drawing_buffer->Initialize(
             size, use_multisampling != kDisableMultisampling)) {
@@ -466,13 +465,13 @@ class DrawingBufferForTests : public DrawingBuffer {
 
   DrawingBufferForTests(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-      bool using_gpu_compositing,
+      const Platform::GraphicsInfo& graphics_info,
       std::unique_ptr<Extensions3DUtil> extensions_util,
       DrawingBuffer::Client* client,
       PreserveDrawingBuffer preserve)
       : DrawingBuffer(
             std::move(context_provider),
-            using_gpu_compositing,
+            graphics_info,
             false /* usingSwapChain */,
             std::move(extensions_util),
             client,

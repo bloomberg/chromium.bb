@@ -31,8 +31,6 @@
 
 namespace {
 
-using base::ASCIIToUTF16;
-
 constexpr int32_t kRequestID = 10;
 
 bool GetTestFilePath(const std::string& file_name, base::FilePath* path) {
@@ -155,7 +153,7 @@ void TemplateURLFetcherTest::StartDownload(const std::u16string& keyword,
   TestingProfile* profile = test_util_.profile();
   template_url_fetcher_->ScheduleDownload(
       keyword, osdd_url, favicon_url, url::Origin::Create(GURL()),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
       0 /* render_frame_id */, kRequestID);
@@ -299,8 +297,7 @@ TEST_F(TemplateURLFetcherTest, UnicodeTest) {
   WaitForDownloadToFinish();
   const TemplateURL* t_url =
       test_util()->model()->GetTemplateURLForKeyword(keyword);
-  EXPECT_EQ(base::UTF8ToUTF16("\xd1\x82\xd0\xb5\xd1\x81\xd1\x82"),
-            t_url->short_name());
+  EXPECT_EQ(u"тест", t_url->short_name());
 }
 
 }  // namespace

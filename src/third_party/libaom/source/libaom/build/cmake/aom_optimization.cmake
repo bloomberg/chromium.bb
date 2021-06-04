@@ -238,5 +238,5 @@ function(add_rtcd_build_step config output source symbol)
     WORKING_DIRECTORY ${AOM_CONFIG_DIR}
     VERBATIM)
   set_property(SOURCE ${source} PROPERTY OBJECT_DEPENDS ${output})
-  set_property(SOURCE ${output} PROPERTY GENERATED)
+  set_property(SOURCE ${output} PROPERTY GENERATED TRUE)
 endfunction()

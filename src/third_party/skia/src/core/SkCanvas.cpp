@@ -18,7 +18,6 @@
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkVertices.h"
 #include "include/effects/SkRuntimeEffect.h"
-#include "include/private/SkNx.h"
 #include "include/private/SkTo.h"
 #include "include/utils/SkNoDrawCanvas.h"
 #include "src/core/SkArenaAlloc.h"
@@ -271,18 +270,6 @@ public:
     }
 };
 
-static inline SkRect qr_clip_bounds(const SkRect& bounds) {
-    if (bounds.isEmpty()) {
-        return SkRect::MakeEmpty();
-    }
-
-    // Expand bounds out by 1 in case we are anti-aliasing.  We store the
-    // bounds as floats to enable a faster quick reject implementation.
-    SkRect dst;
-    (Sk4f::Load(&bounds.fLeft) + Sk4f(-1.f, -1.f, 1.f, 1.f)).store(&dst.fLeft);
-    return dst;
-}
-
 class SkCanvas::AutoUpdateQRBounds {
 public:
     explicit AutoUpdateQRBounds(SkCanvas* canvas) : fCanvas(canvas) {
@@ -291,7 +278,7 @@ public:
         fCanvas->validateClip();
     }
     ~AutoUpdateQRBounds() {
-        fCanvas->fQuickRejectBounds = qr_clip_bounds(fCanvas->computeDeviceClipBounds());
+        fCanvas->fQuickRejectBounds = fCanvas->computeDeviceClipBounds();
         // post-condition, we should remain valid after re-computing the bounds
         fCanvas->validateClip();
     }
@@ -422,8 +409,7 @@ void SkCanvas::resetForNextPicture(const SkIRect& bounds) {
     SkASSERT(fBaseDevice->isNoPixelsDevice());
     static_cast<SkNoPixelsDevice*>(fBaseDevice.get())->resetForNextPicture(bounds);
     fMCRec->reset(fBaseDevice.get());
-    fQuickRejectBounds = qr_clip_bounds(this->computeDeviceClipBounds());
-    fIsScaleTranslate = true;
+    fQuickRejectBounds = this->computeDeviceClipBounds();
 }
 
 void SkCanvas::init(sk_sp<SkBaseDevice> device) {
@@ -449,10 +435,9 @@ void SkCanvas::init(sk_sp<SkBaseDevice> device) {
     device->setMarkerStack(fMarkerStack.get());
 
     fSurfaceBase = nullptr;
-    fIsScaleTranslate = true;
     fBaseDevice = std::move(device);
     fScratchGlyphRunBuilder = std::make_unique<SkGlyphRunBuilder>();
-    fQuickRejectBounds = qr_clip_bounds(this->computeDeviceClipBounds());
+    fQuickRejectBounds = this->computeDeviceClipBounds();
 }
 
 SkCanvas::SkCanvas()
@@ -886,7 +871,8 @@ void SkCanvas::DrawDeviceWithFilter(SkBaseDevice* src, const SkImageFilter* filt
 
         // The snapped backdrop content needs to be transformed by fromRoot into the layer space,
         // and stored in a temporary surface, which is then used as the input to the actual filter.
-        auto tmpSurface = special->makeSurface(colorType, colorSpace, layerInputBounds.size());
+        auto tmpSurface = special->makeSurface(colorType, colorSpace, layerInputBounds.size(),
+                                               kPremul_SkAlphaType, dst->surfaceProps());
         if (!tmpSurface) {
             return;
         }
@@ -1071,7 +1057,7 @@ void SkCanvas::internalSaveLayer(const SaveLayerRec& rec, SaveLayerStrategy stra
 
     fMCRec->newLayer(std::move(newDevice), paint, stashedMatrix);
 
-    fQuickRejectBounds = qr_clip_bounds(this->computeDeviceClipBounds());
+    fQuickRejectBounds = this->computeDeviceClipBounds();
 }
 
 int SkCanvas::saveLayerAlpha(const SkRect* bounds, U8CPU alpha) {
@@ -1167,10 +1153,9 @@ void SkCanvas::internalRestore() {
         this->internalSetMatrix(SkM44(layer->fStashedMatrix));
     }
 
-    fIsScaleTranslate = SkMatrixPriv::IsScaleTranslateAsM33(fMCRec->fMatrix);
     // Update the quick-reject bounds in case the restore changed the top device or the
     // removed save record had included modifications to the clip stack.
-    fQuickRejectBounds = qr_clip_bounds(this->computeDeviceClipBounds());
+    fQuickRejectBounds = this->computeDeviceClipBounds();
     this->validateClip();
 }
 
@@ -1306,11 +1291,6 @@ void SkCanvas::translate(SkScalar dx, SkScalar dy) {
         this->checkForDeferredSave();
         fMCRec->fMatrix.preTranslate(dx, dy);
 
-        // Translate shouldn't affect the is-scale-translateness of the matrix.
-        // However, if either is non-finite, we might still complicate the matrix type,
-        // so we still have to compute this.
-        fIsScaleTranslate = SkMatrixPriv::IsScaleTranslateAsM33(fMCRec->fMatrix);
-
         this->topDevice()->setGlobalCTM(fMCRec->fMatrix);
 
         this->didTranslate(dx,dy);
@@ -1321,10 +1301,6 @@ void SkCanvas::scale(SkScalar sx, SkScalar sy) {
     if (sx != 1 || sy != 1) {
         this->checkForDeferredSave();
         fMCRec->fMatrix.preScale(sx, sy);
-
-        // shouldn't need to do this (theoretically), as the state shouldn't have changed,
-        // but pre-scaling by a non-finite does change it, so we have to recompute.
-        fIsScaleTranslate = SkMatrixPriv::IsScaleTranslateAsM33(fMCRec->fMatrix);
 
         this->topDevice()->setGlobalCTM(fMCRec->fMatrix);
 
@@ -1362,8 +1338,6 @@ void SkCanvas::internalConcat44(const SkM44& m) {
 
     fMCRec->fMatrix.preConcat(m);
 
-    fIsScaleTranslate = SkMatrixPriv::IsScaleTranslateAsM33(fMCRec->fMatrix);
-
     this->topDevice()->setGlobalCTM(fMCRec->fMatrix);
 }
 
@@ -1375,7 +1349,6 @@ void SkCanvas::concat(const SkM44& m) {
 
 void SkCanvas::internalSetMatrix(const SkM44& m) {
     fMCRec->fMatrix = m;
-    fIsScaleTranslate = SkMatrixPriv::IsScaleTranslateAsM33(m);
 
     this->topDevice()->setGlobalCTM(fMCRec->fMatrix);
 }
@@ -1528,7 +1501,7 @@ void SkCanvas::onClipRegion(const SkRegion& rgn, SkClipOp op) {
 
 void SkCanvas::validateClip() const {
 #ifdef SK_DEBUG
-    SkRect tmp = qr_clip_bounds(this->computeDeviceClipBounds());
+    SkRect tmp = this->computeDeviceClipBounds();
     if (this->isClipEmpty()) {
         SkASSERT(fQuickRejectBounds.isEmpty());
     } else {
@@ -1563,68 +1536,14 @@ bool SkCanvas::isClipRect() const {
     return this->topDevice()->onGetClipType() == SkBaseDevice::ClipType::kRect;
 }
 
-static inline bool is_nan_or_clipped(const Sk4f& devRect, const Sk4f& devClip) {
-#if !defined(SKNX_NO_SIMD) && SK_CPU_SSE_LEVEL >= SK_CPU_SSE_LEVEL_SSE2
-    __m128 lLtT = _mm_unpacklo_ps(devRect.fVec, devClip.fVec);
-    __m128 RrBb = _mm_unpackhi_ps(devClip.fVec, devRect.fVec);
-    __m128 mask = _mm_cmplt_ps(lLtT, RrBb);
-    return 0xF != _mm_movemask_ps(mask);
-#elif !defined(SKNX_NO_SIMD) && defined(SK_ARM_HAS_NEON)
-    float32x4_t lLtT = vzipq_f32(devRect.fVec, devClip.fVec).val[0];
-    float32x4_t RrBb = vzipq_f32(devClip.fVec, devRect.fVec).val[1];
-    uint32x4_t mask = vcltq_f32(lLtT, RrBb);
-    return 0xFFFFFFFFFFFFFFFF != (uint64_t) vmovn_u32(mask);
-#else
-    SkRect devRectAsRect;
-    SkRect devClipAsRect;
-    devRect.store(&devRectAsRect.fLeft);
-    devClip.store(&devClipAsRect.fLeft);
-    return !devRectAsRect.isFinite() || !devRectAsRect.intersect(devClipAsRect);
-#endif
-}
-
-// It's important for this function to not be inlined.  Otherwise the compiler will share code
-// between the fast path and the slow path, resulting in two slow paths.
-static SK_NEVER_INLINE bool quick_reject_slow_path(const SkRect& src, const SkRect& deviceClip,
-                                                   const SkMatrix& matrix) {
-    SkRect deviceRect;
-    matrix.mapRect(&deviceRect, src);
-    return !deviceRect.isFinite() || !deviceRect.intersect(deviceClip);
-}
-
 bool SkCanvas::quickReject(const SkRect& src) const {
 #ifdef SK_DEBUG
     // Verify that fQuickRejectBounds are set properly.
     this->validateClip();
-    // Verify that fIsScaleTranslate is set properly.
-    SkASSERT(fIsScaleTranslate == SkMatrixPriv::IsScaleTranslateAsM33(fMCRec->fMatrix));
 #endif
 
-    if (!fIsScaleTranslate) {
-        return quick_reject_slow_path(src, fQuickRejectBounds, fMCRec->fMatrix.asM33());
-    }
-
-    // We inline the implementation of mapScaleTranslate() for the fast path.
-    float sx = fMCRec->fMatrix.rc(0, 0);
-    float sy = fMCRec->fMatrix.rc(1, 1);
-    float tx = fMCRec->fMatrix.rc(0, 3);
-    float ty = fMCRec->fMatrix.rc(1, 3);
-    Sk4f scale(sx, sy, sx, sy);
-    Sk4f trans(tx, ty, tx, ty);
-
-    // Apply matrix.
-    Sk4f ltrb = Sk4f::Load(&src.fLeft) * scale + trans;
-
-    // Make sure left < right, top < bottom.
-    Sk4f rblt(ltrb[2], ltrb[3], ltrb[0], ltrb[1]);
-    Sk4f min = Sk4f::Min(ltrb, rblt);
-    Sk4f max = Sk4f::Max(ltrb, rblt);
-    // We can extract either pair [0,1] or [2,3] from min and max and be correct, but on
-    // ARM this sequence generates the fastest (a single instruction).
-    Sk4f devRect = Sk4f(min[2], min[3], max[0], max[1]);
-
-    // Check if the device rect is NaN or outside the clip.
-    return is_nan_or_clipped(devRect, Sk4f::Load(&fQuickRejectBounds.fLeft));
+    SkRect devRect = SkMatrixPriv::MapRect(fMCRec->fMatrix, src);
+    return !devRect.isFinite() || !devRect.intersects(fQuickRejectBounds);
 }
 
 bool SkCanvas::quickReject(const SkPath& path) const {
@@ -1668,16 +1587,22 @@ SkRect SkCanvas::getLocalClipBounds() const {
 }
 
 SkIRect SkCanvas::getDeviceClipBounds() const {
-    return this->computeDeviceClipBounds().roundOut();
+    return this->computeDeviceClipBounds(/*outsetForAA=*/false).roundOut();
 }
 
-SkRect SkCanvas::computeDeviceClipBounds() const {
+SkRect SkCanvas::computeDeviceClipBounds(bool outsetForAA) const {
     const SkBaseDevice* dev = this->topDevice();
     if (dev->onGetClipType() == SkBaseDevice::ClipType::kEmpty) {
         return SkRect::MakeEmpty();
     } else {
-        SkIRect devClipBounds = dev->devClipBounds();
-        return dev->deviceToGlobal().mapRect(SkRect::Make(devClipBounds));
+        SkRect devClipBounds =
+                SkMatrixPriv::MapRect(dev->deviceToGlobal(), SkRect::Make(dev->devClipBounds()));
+        if (outsetForAA) {
+            // Expand bounds out by 1 in case we are anti-aliasing.  We store the
+            // bounds as floats to enable a faster quick reject implementation.
+            devClipBounds.outset(1.f, 1.f);
+        }
+        return devClipBounds;
     }
 }
 
@@ -1799,31 +1724,9 @@ void SkCanvas::drawVertices(const SkVertices* vertices, SkBlendMode mode, const 
     // We expect fans to be converted to triangles when building or deserializing SkVertices.
     SkASSERT(vertices->priv().mode() != SkVertices::kTriangleFan_VertexMode);
 
-    // If the vertices contain custom attributes, ensure they line up with the paint's shader.
-    const SkRuntimeEffect* effect =
-            paint.getShader() ? as_SB(paint.getShader())->asRuntimeEffect() : nullptr;
-    if ((size_t)vertices->priv().attributeCount() != (effect ? effect->varyings().count() : 0)) {
-        return;
-    }
-    if (effect) {
-        int attrIndex = 0;
-        for (const auto& v : effect->varyings()) {
-            const SkVertices::Attribute& attr(vertices->priv().attributes()[attrIndex++]);
-            // Mismatch between the SkSL varying and the vertex shader output for this attribute
-            if (attr.channelCount() != v.width) {
-                return;
-            }
-            // If we can't provide any of the asked-for matrices, we can't draw this
-            if (attr.fMarkerID && !fMarkerStack->findMarker(attr.fMarkerID, nullptr)) {
-                return;
-            }
-        }
-    }
-
 #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
     // Preserve legacy behavior for Android: ignore the SkShader if there are no texCoords present
-    if (paint.getShader() &&
-        !(vertices->priv().hasTexCoords() || vertices->priv().hasCustomData())) {
+    if (paint.getShader() && !vertices->priv().hasTexCoords()) {
         SkPaint noShaderPaint(paint);
         noShaderPaint.setShader(nullptr);
         this->onDrawVerticesObject(vertices, mode, noShaderPaint);
@@ -2278,14 +2181,17 @@ void SkCanvas::drawImageRect(const SkImage* image, const SkRect& dst,
 
 void SkCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                               const SkPaint& paint) {
-    const SkRect bounds = blob->bounds().makeOffset(x, y);
+    auto glyphRunList = fScratchGlyphRunBuilder->blobToGlyphRunList(*blob, {x, y});
+    this->onDrawGlyphRunList(glyphRunList, paint);
+}
+
+void SkCanvas::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+    SkRect bounds = glyphRunList.sourceBounds();
     if (this->internalQuickReject(bounds, paint)) {
         return;
     }
-
     AutoLayerForImageFilter layer(this, paint, &bounds);
-    // We can't hoist building the glyph run list because some of the text blob runs may be RSXform.
-    fScratchGlyphRunBuilder->drawTextBlob(layer.paint(), *blob, {x, y}, this->topDevice());
+    this->topDevice()->drawGlyphRunList(glyphRunList, layer.paint());
 }
 
 // These call the (virtual) onDraw... method
@@ -2294,8 +2200,77 @@ void SkCanvas::drawSimpleText(const void* text, size_t byteLength, SkTextEncodin
     TRACE_EVENT0("skia", TRACE_FUNC);
     if (byteLength) {
         sk_msan_assert_initialized(text, SkTAddOffset<const void>(text, byteLength));
-        this->drawTextBlob(SkTextBlob::MakeFromText(text, byteLength, font, encoding), x, y, paint);
+        const SkGlyphRunList& glyphRunList =
+            fScratchGlyphRunBuilder->textToGlyphRunList(
+                    font, paint, text, byteLength, {x, y}, encoding);
+        if (!glyphRunList.empty()) {
+            this->onDrawGlyphRunList(glyphRunList, paint);
+        }
     }
+}
+
+void SkCanvas::drawGlyphs(int count, const SkGlyphID* glyphs, const SkPoint* positions,
+                          const uint32_t* clusters, int textByteCount, const char* utf8text,
+                          SkPoint origin, const SkFont& font, const SkPaint& paint) {
+    if (count <= 0) { return; }
+
+    SkGlyphRun glyphRun {
+            font,
+            SkMakeSpan(positions, count),
+            SkMakeSpan(glyphs, count),
+            SkMakeSpan(utf8text, textByteCount),
+            SkMakeSpan(clusters, count),
+            SkSpan<SkVector>()
+    };
+    SkGlyphRunList glyphRunList {
+            glyphRun,
+            glyphRun.sourceBounds(paint).makeOffset(origin),
+            origin
+    };
+    this->onDrawGlyphRunList(glyphRunList, paint);
+}
+
+void SkCanvas::drawGlyphs(int count, const SkGlyphID glyphs[], const SkPoint positions[],
+                          SkPoint origin, const SkFont& font, const SkPaint& paint) {
+    if (count <= 0) { return; }
+
+    SkGlyphRun glyphRun {
+        font,
+        SkMakeSpan(positions, count),
+        SkMakeSpan(glyphs, count),
+        SkSpan<const char>(),
+        SkSpan<const uint32_t>(),
+        SkSpan<SkVector>()
+    };
+    SkGlyphRunList glyphRunList {
+        glyphRun,
+        glyphRun.sourceBounds(paint).makeOffset(origin),
+        origin
+    };
+    this->onDrawGlyphRunList(glyphRunList, paint);
+}
+
+void SkCanvas::drawGlyphs(int count, const SkGlyphID glyphs[], const SkRSXform xforms[],
+                          SkPoint origin, const SkFont& font, const SkPaint& paint) {
+    if (count <= 0) { return; }
+
+    auto [positions, rotateScales] =
+            fScratchGlyphRunBuilder->convertRSXForm(SkMakeSpan(xforms, count));
+
+    SkGlyphRun glyphRun {
+            font,
+            positions,
+            SkMakeSpan(glyphs, count),
+            SkSpan<const char>(),
+            SkSpan<const uint32_t>(),
+            rotateScales
+    };
+    SkGlyphRunList glyphRunList {
+            glyphRun,
+            glyphRun.sourceBounds(paint).makeOffset(origin),
+            origin
+    };
+    this->onDrawGlyphRunList(glyphRunList, paint);
 }
 
 void SkCanvas::drawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,

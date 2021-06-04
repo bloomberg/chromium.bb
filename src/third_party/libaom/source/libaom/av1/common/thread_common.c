@@ -152,6 +152,61 @@ static void loop_filter_data_reset(LFWorkerData *lf_data,
   }
 }
 
+void av1_alloc_cdef_sync(AV1_COMMON *const cm, AV1CdefSync *cdef_sync,
+                         int num_workers) {
+  if (num_workers < 1) return;
+#if CONFIG_MULTITHREAD
+  if (cdef_sync->mutex_ == NULL) {
+    CHECK_MEM_ERROR(cm, cdef_sync->mutex_,
+                    aom_malloc(sizeof(*(cdef_sync->mutex_))));
+    if (cdef_sync->mutex_) pthread_mutex_init(cdef_sync->mutex_, NULL);
+  }
+#else
+  (void)cm;
+  (void)cdef_sync;
+#endif  // CONFIG_MULTITHREAD
+}
+
+void av1_free_cdef_sync(AV1CdefSync *cdef_sync) {
+  if (cdef_sync == NULL) return;
+#if CONFIG_MULTITHREAD
+  if (cdef_sync->mutex_ != NULL) {
+    pthread_mutex_destroy(cdef_sync->mutex_);
+    aom_free(cdef_sync->mutex_);
+  }
+#endif  // CONFIG_MULTITHREAD
+}
+
+static INLINE void cdef_row_mt_sync_read(AV1CdefSync *const cdef_sync,
+                                         int row) {
+  if (!row) return;
+#if CONFIG_MULTITHREAD
+  AV1CdefRowSync *const cdef_row_mt = cdef_sync->cdef_row_mt;
+  pthread_mutex_lock(cdef_row_mt[row - 1].row_mutex_);
+  while (cdef_row_mt[row - 1].is_row_done != 1)
+    pthread_cond_wait(cdef_row_mt[row - 1].row_cond_,
+                      cdef_row_mt[row - 1].row_mutex_);
+  cdef_row_mt[row - 1].is_row_done = 0;
+  pthread_mutex_unlock(cdef_row_mt[row - 1].row_mutex_);
+#else
+  (void)cdef_sync;
+#endif  // CONFIG_MULTITHREAD
+}
+
+static INLINE void cdef_row_mt_sync_write(AV1CdefSync *const cdef_sync,
+                                          int row) {
+#if CONFIG_MULTITHREAD
+  AV1CdefRowSync *const cdef_row_mt = cdef_sync->cdef_row_mt;
+  pthread_mutex_lock(cdef_row_mt[row].row_mutex_);
+  pthread_cond_signal(cdef_row_mt[row].row_cond_);
+  cdef_row_mt[row].is_row_done = 1;
+  pthread_mutex_unlock(cdef_row_mt[row].row_mutex_);
+#else
+  (void)cdef_sync;
+  (void)row;
+#endif  // CONFIG_MULTITHREAD
+}
+
 static INLINE void sync_read(AV1LfSync *const lf_sync, int r, int c,
                              int plane) {
 #if CONFIG_MULTITHREAD
@@ -289,7 +344,7 @@ static INLINE void thread_loop_filter_rows(
              mi_col += MAX_MIB_SIZE) {
           c = mi_col >> MAX_MIB_SIZE_LOG2;
 
-          av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer,
+          av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
                                mi_row, mi_col, plane, plane + 1);
 
           av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
@@ -309,7 +364,7 @@ static INLINE void thread_loop_filter_rows(
           // completed
           sync_read(lf_sync, r + 1, c, plane);
 
-          av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer,
+          av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
                                mi_row, mi_col, plane, plane + 1);
           av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
                                       mi_col);
@@ -512,7 +567,7 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
       // TODO(chengchen): can we remove this?
       struct macroblockd_plane *pd = xd->plane;
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame, 0, 0, plane,
+      av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame, 0, 0, plane,
                            plane + 1);
 
       av1_build_bitmask_vert_info(cm, &pd[plane], plane);
@@ -720,7 +775,7 @@ static void enqueue_lr_jobs(AV1LrSync *lr_sync, AV1LrStruct *lr_ctxt,
   for (int plane = 0; plane < num_planes; plane++) {
     if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;
     const int is_uv = plane > 0;
-    const int ss_y = is_uv && cm->seq_params.subsampling_y;
+    const int ss_y = is_uv && cm->seq_params->subsampling_y;
 
     AV1PixelRect tile_rect = ctxt[plane].tile_rect;
     const int unit_size = ctxt[plane].rsi->restoration_unit_size;
@@ -932,3 +987,198 @@ void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
                                  cm);
 }
 #endif
+
+// Initializes cdef_sync parameters.
+static AOM_INLINE void reset_cdef_job_info(AV1CdefSync *const cdef_sync) {
+  cdef_sync->end_of_frame = 0;
+  cdef_sync->fbr = 0;
+  cdef_sync->fbc = 0;
+}
+
+static AOM_INLINE void launch_cdef_workers(AVxWorker *const workers,
+                                           int num_workers) {
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+  for (int i = num_workers - 1; i >= 0; i--) {
+    AVxWorker *const worker = &workers[i];
+    if (i == 0)
+      winterface->execute(worker);
+    else
+      winterface->launch(worker);
+  }
+}
+
+static AOM_INLINE void sync_cdef_workers(AVxWorker *const workers,
+                                         AV1_COMMON *const cm,
+                                         int num_workers) {
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+  int had_error = 0;
+
+  // Wait for completion of Cdef frame.
+  for (int i = num_workers - 1; i >= 0; i--) {
+    AVxWorker *const worker = &workers[i];
+    had_error |= !winterface->sync(worker);
+  }
+  if (had_error)
+    aom_internal_error(cm->error, AOM_CODEC_ERROR,
+                       "Failed to process cdef frame");
+}
+
+// Updates the row index of the next job to be processed.
+// Also updates end_of_frame flag when the processing of all rows is complete.
+static void update_cdef_row_next_job_info(AV1CdefSync *const cdef_sync,
+                                          const int nvfb) {
+  cdef_sync->fbr++;
+  if (cdef_sync->fbr == nvfb) {
+    cdef_sync->end_of_frame = 1;
+  }
+}
+
+// Checks if a job is available. If job is available,
+// populates next job information and returns 1, else returns 0.
+static AOM_INLINE int get_cdef_row_next_job(AV1CdefSync *const cdef_sync,
+                                            int *cur_fbr, const int nvfb) {
+#if CONFIG_MULTITHREAD
+  pthread_mutex_lock(cdef_sync->mutex_);
+#endif  // CONFIG_MULTITHREAD
+  int do_next_row = 0;
+  // Populates information needed for current job and update the row
+  // index of the next row to be processed.
+  if (cdef_sync->end_of_frame == 0) {
+    do_next_row = 1;
+    *cur_fbr = cdef_sync->fbr;
+    update_cdef_row_next_job_info(cdef_sync, nvfb);
+  }
+#if CONFIG_MULTITHREAD
+  pthread_mutex_unlock(cdef_sync->mutex_);
+#endif  // CONFIG_MULTITHREAD
+  return do_next_row;
+}
+
+// Hook function for each thread in CDEF multi-threading.
+static int cdef_sb_row_worker_hook(void *arg1, void *arg2) {
+  AV1CdefSync *const cdef_sync = (AV1CdefSync *)arg1;
+  AV1CdefWorkerData *const cdef_worker = (AV1CdefWorkerData *)arg2;
+  const int nvfb =
+      (cdef_worker->cm->mi_params.mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  int cur_fbr;
+  while (get_cdef_row_next_job(cdef_sync, &cur_fbr, nvfb)) {
+    av1_cdef_fb_row(cdef_worker->cm, cdef_worker->xd, cdef_worker->linebuf,
+                    cdef_worker->colbuf, cdef_worker->srcbuf, cur_fbr,
+                    cdef_worker->cdef_init_fb_row_fn, cdef_sync);
+  }
+  return 1;
+}
+
+// Assigns CDEF hook function and thread data to each worker.
+static void prepare_cdef_frame_workers(
+    AV1_COMMON *const cm, MACROBLOCKD *xd, AV1CdefWorkerData *const cdef_worker,
+    AVxWorkerHook hook, AVxWorker *const workers, AV1CdefSync *const cdef_sync,
+    int num_workers, cdef_init_fb_row_t cdef_init_fb_row_fn) {
+  const int num_planes = av1_num_planes(cm);
+
+  cdef_worker[0].srcbuf = cm->cdef_info.srcbuf;
+  for (int plane = 0; plane < num_planes; plane++)
+    cdef_worker[0].colbuf[plane] = cm->cdef_info.colbuf[plane];
+  for (int i = num_workers - 1; i >= 0; i--) {
+    AVxWorker *const worker = &workers[i];
+    cdef_worker[i].cm = cm;
+    cdef_worker[i].xd = xd;
+    cdef_worker[i].cdef_init_fb_row_fn = cdef_init_fb_row_fn;
+    for (int plane = 0; plane < num_planes; plane++)
+      cdef_worker[i].linebuf[plane] = cm->cdef_info.linebuf[plane];
+
+    worker->hook = hook;
+    worker->data1 = cdef_sync;
+    worker->data2 = &cdef_worker[i];
+  }
+}
+
+// Initializes row-level parameters for CDEF frame.
+void av1_cdef_init_fb_row_mt(const AV1_COMMON *const cm,
+                             const MACROBLOCKD *const xd,
+                             CdefBlockInfo *const fb_info,
+                             uint16_t **const linebuf, uint16_t *const src,
+                             struct AV1CdefSyncData *const cdef_sync, int fbr) {
+  const int num_planes = av1_num_planes(cm);
+  const int nvfb = (cm->mi_params.mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int luma_stride =
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols << MI_SIZE_LOG2, 4);
+
+  // for the current filter block, it's top left corner mi structure (mi_tl)
+  // is first accessed to check whether the top and left boundaries are
+  // frame boundaries. Then bottom-left and top-right mi structures are
+  // accessed to check whether the bottom and right boundaries
+  // (respectively) are frame boundaries.
+  //
+  // Note that we can't just check the bottom-right mi structure - eg. if
+  // we're at the right-hand edge of the frame but not the bottom, then
+  // the bottom-right mi is NULL but the bottom-left is not.
+  fb_info->frame_boundary[TOP] = (MI_SIZE_64X64 * fbr == 0) ? 1 : 0;
+  if (fbr != nvfb - 1)
+    fb_info->frame_boundary[BOTTOM] =
+        (MI_SIZE_64X64 * (fbr + 1) == cm->mi_params.mi_rows) ? 1 : 0;
+  else
+    fb_info->frame_boundary[BOTTOM] = 1;
+
+  fb_info->src = src;
+  fb_info->damping = cm->cdef_info.cdef_damping;
+  fb_info->coeff_shift = AOMMAX(cm->seq_params->bit_depth - 8, 0);
+  av1_zero(fb_info->dir);
+  av1_zero(fb_info->var);
+
+  for (int plane = 0; plane < num_planes; plane++) {
+    const int stride = luma_stride >> xd->plane[plane].subsampling_x;
+    uint16_t *top_linebuf = &linebuf[plane][0];
+    uint16_t *bot_linebuf = &linebuf[plane][nvfb * CDEF_VBORDER * stride];
+    {
+      const int mi_high_l2 = MI_SIZE_LOG2 - xd->plane[plane].subsampling_y;
+      const int top_offset = MI_SIZE_64X64 * (fbr + 1) << mi_high_l2;
+      const int bot_offset = MI_SIZE_64X64 * (fbr + 1) << mi_high_l2;
+
+      if (fbr != nvfb - 1)  // if (fbr != 0)  // top line buffer copy
+        av1_cdef_copy_sb8_16(
+            cm, &top_linebuf[(fbr + 1) * CDEF_VBORDER * stride], stride,
+            xd->plane[plane].dst.buf, top_offset - CDEF_VBORDER, 0,
+            xd->plane[plane].dst.stride, CDEF_VBORDER, stride);
+      if (fbr != nvfb - 1)  // bottom line buffer copy
+        av1_cdef_copy_sb8_16(cm, &bot_linebuf[fbr * CDEF_VBORDER * stride],
+                             stride, xd->plane[plane].dst.buf, bot_offset, 0,
+                             xd->plane[plane].dst.stride, CDEF_VBORDER, stride);
+    }
+
+    fb_info->top_linebuf[plane] = &linebuf[plane][fbr * CDEF_VBORDER * stride];
+    fb_info->bot_linebuf[plane] =
+        &linebuf[plane]
+                [nvfb * CDEF_VBORDER * stride + (fbr * CDEF_VBORDER * stride)];
+  }
+
+  cdef_row_mt_sync_write(cdef_sync, fbr);
+  cdef_row_mt_sync_read(cdef_sync, fbr);
+}
+
+// Implements multi-threading for CDEF.
+// Perform CDEF on input frame.
+// Inputs:
+//   frame: Pointer to input frame buffer.
+//   cm: Pointer to common structure.
+//   xd: Pointer to common current coding block structure.
+// Returns:
+//   Nothing will be returned.
+void av1_cdef_frame_mt(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                       AV1CdefWorkerData *const cdef_worker,
+                       AVxWorker *const workers, AV1CdefSync *const cdef_sync,
+                       int num_workers,
+                       cdef_init_fb_row_t cdef_init_fb_row_fn) {
+  YV12_BUFFER_CONFIG *frame = &cm->cur_frame->buf;
+  const int num_planes = av1_num_planes(cm);
+
+  av1_setup_dst_planes(xd->plane, cm->seq_params->sb_size, frame, 0, 0, 0,
+                       num_planes);
+
+  reset_cdef_job_info(cdef_sync);
+  prepare_cdef_frame_workers(cm, xd, cdef_worker, cdef_sb_row_worker_hook,
+                             workers, cdef_sync, num_workers,
+                             cdef_init_fb_row_fn);
+  launch_cdef_workers(workers, num_workers);
+  sync_cdef_workers(workers, cm, num_workers);
+}

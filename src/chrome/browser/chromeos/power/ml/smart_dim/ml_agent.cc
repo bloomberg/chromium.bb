@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
@@ -45,7 +44,7 @@ int ScoreToProbability(float score) {
 void ExecuteCallback(const double threshold,
                      DimDecisionCallback decision_callback,
                      ExecuteResult result,
-                     base::Optional<std::vector<TensorPtr>> outputs) {
+                     absl::optional<std::vector<TensorPtr>> outputs) {
   UserActivityEvent::ModelPrediction prediction;
 
   if (result != ExecuteResult::OK) {

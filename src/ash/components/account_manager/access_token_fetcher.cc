@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "components/account_manager_core/account_manager_util.h"
@@ -29,7 +28,7 @@ AccessTokenFetcher::AccessTokenFetcher(
   receiver_.set_disconnect_handler(base::BindOnce(
       &AccessTokenFetcher::OnMojoPipeError, base::Unretained(this)));
 
-  base::Optional<account_manager::AccountKey> maybe_account_key =
+  absl::optional<account_manager::AccountKey> maybe_account_key =
       account_manager::FromMojoAccountKey(mojo_account_key);
   if (maybe_account_key.has_value() && maybe_account_key.value().IsValid()) {
     access_token_fetcher_ = account_manager->CreateAccessTokenFetcher(

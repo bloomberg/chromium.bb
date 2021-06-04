@@ -16,7 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/supervised_user/supervised_user_denylist.h"
@@ -152,8 +152,6 @@ class SupervisedUserService : public KeyedService,
   // custodian.
   std::u16string GetExtensionsLockedMessage() const;
 
-  bool IsSupervisedUserIframeFilterEnabled() const;
-
   static std::string GetEduCoexistenceLoginUrl();
 
   // Returns true if the user is a type of Family Link Child account,
@@ -176,7 +174,7 @@ class SupervisedUserService : public KeyedService,
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  bool IsEncryptEverythingAllowed() const override;
+  bool IsCustomPassphraseAllowed() const override;
 
 #if !defined(OS_ANDROID)
   // BrowserListObserver implementation:
@@ -400,9 +398,9 @@ class SupervisedUserService : public KeyedService,
   std::vector<std::unique_ptr<PermissionRequestCreator>> permissions_creators_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      registry_observer_{this};
+  base::ScopedObservation<extensions::ExtensionRegistry,
+                          extensions::ExtensionRegistryObserver>
+      registry_observation_{this};
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;

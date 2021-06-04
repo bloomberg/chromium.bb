@@ -40,7 +40,7 @@ std::vector<ExtractedSharedKey> ExtractAndSortSharedKeys(
     const SecureBoxPrivateKey& member_private_key) {
   std::map<int, ExtractedSharedKey> epoch_to_extracted_key;
   for (const sync_pb::SharedMemberKey& shared_key : membership.keys()) {
-    base::Optional<std::vector<uint8_t>> decrypted_key =
+    absl::optional<std::vector<uint8_t>> decrypted_key =
         DecryptTrustedVaultWrappedKey(
             member_private_key, ProtoStringToBytes(shared_key.wrapped_key()));
     if (!decrypted_key.has_value()) {
@@ -69,19 +69,39 @@ std::vector<ExtractedSharedKey> ExtractAndSortSharedKeys(
   return result;
 }
 
+// |sorted_keys| must be non-empty and sorted by version. Returns new keys:
+// 1. If |last_known_trusted_vault_key_and_version| isn't nullopt, then a key is
+// new if it has higher version.
+// 2. If |last_known_trusted_vault_key_and_version| is nullopt (constant key was
+// used), only the first key is filtered out if it's a constant one.
+std::vector<ExtractedSharedKey> GetNewKeys(
+    const std::vector<ExtractedSharedKey>& sorted_keys,
+    const absl::optional<TrustedVaultKeyAndVersion>&
+        last_known_trusted_vault_key_and_version) {
+  DCHECK(!sorted_keys.empty());
+  auto new_keys_start_it = sorted_keys.begin();
+  if (last_known_trusted_vault_key_and_version.has_value()) {
+    new_keys_start_it =
+        std::find_if(sorted_keys.begin(), sorted_keys.end(),
+                     [&last_known_trusted_vault_key_and_version](
+                         const ExtractedSharedKey& key) {
+                       return key.version >
+                              last_known_trusted_vault_key_and_version->version;
+                     });
+  } else if (sorted_keys.front().trusted_vault_key ==
+             GetConstantTrustedVaultKey()) {
+    // Constant key is expected to be first, filter it out.
+    new_keys_start_it = sorted_keys.begin() + 1;
+  }
+  return std::vector<ExtractedSharedKey>(new_keys_start_it, sorted_keys.end());
+}
+
 // Validates |rotation_proof| starting from the key next to
-// last known trusted vault key, returns false if validation fails or |keys|
-// doesn't have a key next to last known trusted vault key.
+// last known trusted vault key.
 bool IsValidKeyChain(
     const std::vector<ExtractedSharedKey>& key_chain,
     const TrustedVaultKeyAndVersion& last_known_trusted_vault_key_and_version) {
   DCHECK(!key_chain.empty());
-  if (key_chain.back().version <=
-      last_known_trusted_vault_key_and_version.version) {
-    // |keys| doesn't contain any new key. Note: this may mean that key rotation
-    // happened, but state corresponding to the current member wasn't updated.
-    return false;
-  }
   int last_valid_key_version = last_known_trusted_vault_key_and_version.version;
   std::vector<uint8_t> last_valid_key =
       last_known_trusted_vault_key_and_version.key;
@@ -94,8 +114,9 @@ bool IsValidKeyChain(
       return false;
     }
 
-    if (!VerifyTrustedVaultHMAC(last_valid_key, next_key.trusted_vault_key,
-                                next_key.rotation_proof)) {
+    if (!VerifyRotationProof(/*trusted_vault_key=*/next_key.trusted_vault_key,
+                             /*prev_trusted_vault_key=*/last_valid_key,
+                             next_key.rotation_proof)) {
       // |rotation_proof| isn't valid.
       return false;
     }
@@ -110,11 +131,11 @@ bool IsValidKeyChain(
 }  // namespace
 
 DownloadKeysResponseHandler::ProcessedResponse::ProcessedResponse(
-    TrustedVaultRequestStatus status)
+    TrustedVaultDownloadKeysStatus status)
     : status(status), last_key_version(0) {}
 
 DownloadKeysResponseHandler::ProcessedResponse::ProcessedResponse(
-    TrustedVaultRequestStatus status,
+    TrustedVaultDownloadKeysStatus status,
     std::vector<std::vector<uint8_t>> new_keys,
     int last_key_version)
     : status(status), new_keys(new_keys), last_key_version(last_key_version) {}
@@ -129,7 +150,7 @@ DownloadKeysResponseHandler::ProcessedResponse::operator=(
 DownloadKeysResponseHandler::ProcessedResponse::~ProcessedResponse() = default;
 
 DownloadKeysResponseHandler::DownloadKeysResponseHandler(
-    const base::Optional<TrustedVaultKeyAndVersion>&
+    const absl::optional<TrustedVaultKeyAndVersion>&
         last_trusted_vault_key_and_version,
     std::unique_ptr<SecureBoxKeyPair> device_key_pair)
     : last_trusted_vault_key_and_version_(last_trusted_vault_key_and_version),
@@ -147,18 +168,19 @@ DownloadKeysResponseHandler::ProcessResponse(
     case TrustedVaultRequest::HttpStatus::kSuccess:
       break;
     case TrustedVaultRequest::HttpStatus::kNotFound:
-    case TrustedVaultRequest::HttpStatus::kFailedPrecondition:
-      // TODO(crbug.com/1113598): expose more detailed status.
       return ProcessedResponse(
-          /*status=*/TrustedVaultRequestStatus::kLocalDataObsolete);
+          /*status=*/TrustedVaultDownloadKeysStatus::
+              kMemberNotFoundOrCorrupted);
+    case TrustedVaultRequest::HttpStatus::kFailedPrecondition:
     case TrustedVaultRequest::HttpStatus::kOtherError:
       return ProcessedResponse(
-          /*status=*/TrustedVaultRequestStatus::kOtherError);
+          /*status=*/TrustedVaultDownloadKeysStatus::kOtherError);
   }
 
   sync_pb::SecurityDomainMember member;
   if (!member.ParseFromString(response_body)) {
-    return ProcessedResponse(/*status=*/TrustedVaultRequestStatus::kOtherError);
+    return ProcessedResponse(
+        /*status=*/TrustedVaultDownloadKeysStatus::kOtherError);
   }
 
   // TODO(crbug.com/1113598): consider validation of member public key.
@@ -167,7 +189,7 @@ DownloadKeysResponseHandler::ProcessResponse(
   if (!membership) {
     // Member is not in sync security domain.
     return ProcessedResponse(
-        /*status=*/TrustedVaultRequestStatus::kLocalDataObsolete);
+        /*status=*/TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted);
   }
 
   std::vector<ExtractedSharedKey> extracted_keys =
@@ -176,7 +198,7 @@ DownloadKeysResponseHandler::ProcessResponse(
     // |current_member| doesn't have any keys, should be treated as not
     // registered member.
     return ProcessedResponse(
-        /*status=*/TrustedVaultRequestStatus::kLocalDataObsolete);
+        /*status=*/TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted);
   }
 
   if (last_trusted_vault_key_and_version_.has_value() &&
@@ -184,22 +206,23 @@ DownloadKeysResponseHandler::ProcessResponse(
     // Data corresponding to |current_member| is corrupted or
     // |last_trusted_vault_key_and_version_| is too old.
     return ProcessedResponse(
-        /*status=*/TrustedVaultRequestStatus::kLocalDataObsolete);
+        /*status=*/TrustedVaultDownloadKeysStatus::
+            kKeyProofsVerificationFailed);
   }
 
-  std::vector<std::vector<uint8_t>> new_keys;
-  for (const ExtractedSharedKey& key : extracted_keys) {
-    if (!last_trusted_vault_key_and_version_.has_value() ||
-        key.version > last_trusted_vault_key_and_version_->version) {
-      // Don't include previous keys into the result, because they weren't
-      // validated using |last_trusted_vault_key_and_version| and client should
-      // be already aware of them.
-      new_keys.push_back(key.trusted_vault_key);
-    }
+  std::vector<ExtractedSharedKey> new_keys =
+      GetNewKeys(extracted_keys, last_trusted_vault_key_and_version_);
+  if (new_keys.empty()) {
+    return ProcessedResponse(
+        /*status=*/TrustedVaultDownloadKeysStatus::kNoNewKeys);
   }
-  return ProcessedResponse(/*status=*/TrustedVaultRequestStatus::kSuccess,
-                           new_keys,
-                           /*last_key_version=*/extracted_keys.back().version);
+  std::vector<std::vector<uint8_t>> new_trusted_vault_keys;
+  for (auto& key : new_keys) {
+    new_trusted_vault_keys.push_back(key.trusted_vault_key);
+  }
+  return ProcessedResponse(/*status=*/TrustedVaultDownloadKeysStatus::kSuccess,
+                           new_trusted_vault_keys,
+                           /*last_key_version=*/new_keys.back().version);
 }
 
 }  // namespace syncer

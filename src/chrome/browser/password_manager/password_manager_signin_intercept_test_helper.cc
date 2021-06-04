@@ -6,10 +6,10 @@
 
 #include "base/check.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
@@ -29,12 +29,15 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace {
 
 constexpr char kGaiaUsername[] = "username";
+constexpr char16_t kGaiaUsername16[] = u"username";
 constexpr char kGaiaEmail[] = "username@gmail.com";
+constexpr char16_t kGaiaEmail16[] = u"username@gmail.com";
 constexpr char kGaiaId[] = "test_gaia_id";
 
 }  // namespace
@@ -68,7 +71,7 @@ void PasswordManagerSigninInterceptTestHelper::StoreGaiaCredentials(
     scoped_refptr<password_manager::TestPasswordStore> password_store) {
   password_manager::PasswordForm signin_form;
   signin_form.signon_realm = GaiaUrls::GetInstance()->gaia_url().spec();
-  signin_form.username_value = base::ASCIIToUTF16(kGaiaUsername);
+  signin_form.username_value = kGaiaUsername16;
   signin_form.password_value = u"pw";
   password_store->AddLogin(signin_form);
 }
@@ -96,13 +99,15 @@ void PasswordManagerSigninInterceptTestHelper::SetupProfilesForInterception(
       &profile_manager->GetProfileAttributesStorage();
   const base::FilePath profile_path =
       profile_manager->GenerateNextProfileDirectoryPath();
-  profile_storage->AddProfile(
-      profile_path, u"TestProfileName", kGaiaId, base::UTF8ToUTF16(kGaiaEmail),
-      /*is_consented_primary_account=*/false, /*icon_index=*/0,
-      /*supervised_user_id=*/std::string(), EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"TestProfileName";
+  params.gaia_id = kGaiaId;
+  params.user_name = kGaiaEmail16;
+  profile_storage->AddProfile(std::move(params));
 
   // Check that the signin qualifies for interception.
-  base::Optional<SigninInterceptionHeuristicOutcome> outcome =
+  absl::optional<SigninInterceptionHeuristicOutcome> outcome =
       GetSigninInterceptor(current_profile)
           ->GetHeuristicOutcome(
               /*is_new_account=*/true, /*is_sync_signin=*/false, kGaiaUsername);

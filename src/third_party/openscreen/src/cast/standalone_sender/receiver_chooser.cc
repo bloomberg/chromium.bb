@@ -27,24 +27,10 @@ ReceiverChooser::ReceiverChooser(const InterfaceInfo& interface,
                                  ResultCallback result_callback)
     : result_callback_(std::move(result_callback)),
       menu_alarm_(&Clock::now, task_runner) {
-  using discovery::Config;
-  Config config;
-  // TODO(miu): Remove AddressFamilies from the Config in a follow-up patch. No
-  // client uses this to do anything other than "enabled for all address
-  // families," and so it doesn't need to be configurable.
-  Config::NetworkInfo::AddressFamilies families =
-      Config::NetworkInfo::kNoAddressFamily;
-  if (interface.GetIpAddressV4()) {
-    families |= Config::NetworkInfo::kUseIpV4;
-  }
-  if (interface.GetIpAddressV6()) {
-    families |= Config::NetworkInfo::kUseIpV6;
-  }
-  config.network_info.push_back({interface, families});
-  config.enable_publication = false;
-  config.enable_querying = true;
-  service_ =
-      discovery::CreateDnsSdService(task_runner, this, std::move(config));
+  discovery::Config config{.network_info = {interface},
+                           .enable_publication = false,
+                           .enable_querying = true};
+  discovery::CreateDnsSdService(task_runner, this, std::move(config));
 
   watcher_ = std::make_unique<discovery::DnsSdServiceWatcher<ServiceInfo>>(
       service_.get(), kCastV2ServiceId, DnsSdInstanceEndpointToServiceInfo,

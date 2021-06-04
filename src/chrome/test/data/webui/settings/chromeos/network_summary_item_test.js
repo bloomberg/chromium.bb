@@ -6,6 +6,7 @@
 // #import 'chrome://os-settings/chromeos/os_settings.js';
 
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 suite('NetworkSummaryItem', function() {
@@ -210,6 +211,9 @@ suite('NetworkSummaryItem', function() {
     Polymer.dom.flush();
     assertTrue(netSummaryItem.$$('#deviceEnabledButton').checked);
     assertTrue(netSummaryItem.$$('#deviceEnabledButton').disabled);
+    assertEquals(
+        netSummaryItem.getNetworkStateText_(),
+        netSummaryItem.i18n('internetDeviceBusy'));
   });
 
   test('Not inhibited device on cellular network, flag on', function() {
@@ -276,10 +280,45 @@ suite('NetworkSummaryItem', function() {
   test('eSIM enabled locked device, show SIM locked UI, flag on', function() {
     initWithESimLocked(/*flag_enabled = */ true);
     assertFalse(doesElementExist('network-siminfo'));
-    assertTrue(netSummaryItem.$$('#networkState')
-                   .classList.contains('locked-warning-message'));
-    assertFalse(
+    assertFalse(netSummaryItem.$$('#networkState')
+                    .classList.contains('locked-warning-message'));
+    assertTrue(
         netSummaryItem.$$('#networkState').classList.contains('network-state'));
   });
 
+  test(
+      'Show networks list when only 1 pSIM network is available',
+      async function() {
+        const mojom = chromeos.networkConfig.mojom;
+
+        const showNetworksFiredPromise =
+            test_util.eventToPromise('show-networks', netSummaryItem);
+
+        // Simulate a device which has a single pSIM slot and no eSIM slots.
+        const simInfos = [{slotId: 1, iccid: '000', isPrimary: true, eid: ''}];
+
+        netSummaryItem.setProperties({
+          isUpdatedCellularUiEnabled_: true,
+          deviceState: {
+            deviceState: mojom.DeviceStateType.kEnabled,
+            type: mojom.NetworkType.kCellular,
+            simAbsent: false,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simLockStatus: {lockEnabled: false},
+            simInfos: simInfos,
+          },
+          activeNetworkState: {
+            connectionState: mojom.ConnectionStateType.kNotConnected,
+            guid: '',
+            type: mojom.NetworkType.kCellular,
+            typeState: {cellular: {networkTechnology: ''}}
+          },
+        });
+        Polymer.dom.flush();
+        const networkState = netSummaryItem.$$('#networkState');
+        assertTrue(!!networkState);
+        networkState.click();
+        Polymer.dom.flush();
+        await showNetworksFiredPromise;
+      });
 });

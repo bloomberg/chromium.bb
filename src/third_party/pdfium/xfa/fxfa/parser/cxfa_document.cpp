@@ -16,6 +16,7 @@
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
@@ -53,8 +54,8 @@ namespace {
 const wchar_t kTemplateNS[] = L"http://www.xfa.org/schema/xfa-template/";
 
 struct RecurseRecord {
-  CXFA_Node* pTemplateChild;
-  CXFA_Node* pDataChild;
+  cppgc::Persistent<CXFA_Node> pTemplateChild;
+  cppgc::Persistent<CXFA_Node> pDataChild;
 };
 
 class CXFA_TraverseStrategy_DDGroup {
@@ -94,7 +95,7 @@ void FormValueNode_SetChildContent(CXFA_Node* pValueNode,
   if (!pValueNode)
     return;
 
-  DCHECK(pValueNode->GetPacketType() == XFA_PacketType::Form);
+  DCHECK_EQ(pValueNode->GetPacketType(), XFA_PacketType::Form);
   CXFA_Node* pChildNode = FormValueNode_CreateChild(pValueNode, iType);
   if (!pChildNode)
     return;
@@ -1821,7 +1822,7 @@ void CXFA_Document::DoDataMerge() {
   }
 }
 
-void CXFA_Document::DoDataRemerge(bool bDoDataMerge) {
+void CXFA_Document::DoDataRemerge() {
   CXFA_Node* pFormRoot = ToNode(GetXFAObject(XFA_HASHCODE_Form));
   if (pFormRoot) {
     while (CXFA_Node* pNode = pFormRoot->GetFirstChild())
@@ -1830,11 +1831,8 @@ void CXFA_Document::DoDataRemerge(bool bDoDataMerge) {
     pFormRoot->SetBindingNode(nullptr);
   }
   m_rgGlobalBinding.clear();
-
-  if (bDoDataMerge)
-    DoDataMerge();
-
-  GetLayoutProcessor()->SetForceRelayout(true);
+  DoDataMerge();
+  GetLayoutProcessor()->SetForceRelayout();
 }
 
 CXFA_Node* CXFA_Document::GetGlobalBinding(uint32_t dwNameHash) {

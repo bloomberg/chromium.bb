@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """Script to ensure that the same tags are in all expectation files."""
 
+from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -33,7 +35,7 @@ TAG_HEADER = """\
 #         release release-x64 ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
-#         apple apple-apple-m1 apple-metal-renderer:-apple-m1
+#         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b

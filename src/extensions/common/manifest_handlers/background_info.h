@@ -9,13 +9,17 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace extensions {
+
+enum class BackgroundServiceWorkerType {
+  kClassic,
+  kModule,
+};
 
 class BackgroundInfo : public Extension::ManifestData {
  public:
@@ -26,6 +30,8 @@ class BackgroundInfo : public Extension::ManifestData {
   static const std::vector<std::string>& GetBackgroundScripts(
       const Extension* extension);
   static const std::string& GetBackgroundServiceWorkerScript(
+      const Extension* extension);
+  static BackgroundServiceWorkerType GetBackgroundServiceWorkerType(
       const Extension* extension);
   static bool HasBackgroundPage(const Extension* extension);
   static bool HasPersistentBackgroundPage(const Extension* extension);
@@ -74,7 +80,10 @@ class BackgroundInfo : public Extension::ManifestData {
   std::vector<std::string> background_scripts_;
 
   // Optional service worker based background script.
-  base::Optional<std::string> background_service_worker_script_;
+  absl::optional<std::string> background_service_worker_script_;
+
+  // Optional service worker based background type.
+  absl::optional<BackgroundServiceWorkerType> background_service_worker_type_;
 
   // True if the background page should stay loaded forever; false if it should
   // load on-demand (when it needs to handle an event). Defaults to true.

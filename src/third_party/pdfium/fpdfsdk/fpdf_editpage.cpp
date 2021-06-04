@@ -25,6 +25,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/render/cpdf_docrenderdata.h"
@@ -60,11 +61,12 @@ bool IsPageObject(CPDF_Page* pPage) {
     return false;
 
   const CPDF_Dictionary* pFormDict = pPage->GetDict();
-  if (!pFormDict->KeyExist("Type"))
+  if (!pFormDict->KeyExist(pdfium::page_object::kType))
     return false;
 
-  const CPDF_Object* pObject = pFormDict->GetObjectFor("Type")->GetDirect();
-  return pObject && !pObject->GetString().Compare("Page");
+  const CPDF_Name* pName =
+      ToName(pFormDict->GetObjectFor(pdfium::page_object::kType)->GetDirect());
+  return pName && pName->GetString() == "Page";
 }
 
 void CalcBoundingBox(CPDF_PageObject* pPageObj) {
@@ -132,7 +134,7 @@ bool PageObjectContainsMark(CPDF_PageObject* pPageObj,
                             FPDF_PAGEOBJECTMARK mark) {
   const CPDF_ContentMarkItem* pMarkItem =
       CPDFContentMarkItemFromFPDFPageObjectMark(mark);
-  return pMarkItem && pPageObj->m_ContentMarks.ContainsItem(pMarkItem);
+  return pMarkItem && pPageObj->GetContentMarks()->ContainsItem(pMarkItem);
 }
 
 CPDF_FormObject* CPDFFormObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
@@ -292,7 +294,7 @@ FPDFPageObj_CountMarks(FPDF_PAGEOBJECT page_object) {
   if (!pPageObj)
     return -1;
 
-  return pPageObj->m_ContentMarks.CountItems();
+  return pPageObj->GetContentMarks()->CountItems();
 }
 
 FPDF_EXPORT FPDF_PAGEOBJECTMARK FPDF_CALLCONV
@@ -301,11 +303,11 @@ FPDFPageObj_GetMark(FPDF_PAGEOBJECT page_object, unsigned long index) {
   if (!pPageObj)
     return nullptr;
 
-  auto& mark = pPageObj->m_ContentMarks;
-  if (index >= mark.CountItems())
+  CPDF_ContentMarks* pMarks = pPageObj->GetContentMarks();
+  if (index >= pMarks->CountItems())
     return nullptr;
 
-  return FPDFPageObjectMarkFromCPDFContentMarkItem(mark.GetItem(index));
+  return FPDFPageObjectMarkFromCPDFContentMarkItem(pMarks->GetItem(index));
 }
 
 FPDF_EXPORT FPDF_PAGEOBJECTMARK FPDF_CALLCONV
@@ -314,11 +316,12 @@ FPDFPageObj_AddMark(FPDF_PAGEOBJECT page_object, FPDF_BYTESTRING name) {
   if (!pPageObj)
     return nullptr;
 
-  auto& mark = pPageObj->m_ContentMarks;
-  mark.AddMark(name);
-  unsigned long index = mark.CountItems() - 1;
+  CPDF_ContentMarks* pMarks = pPageObj->GetContentMarks();
+  pMarks->AddMark(name);
   pPageObj->SetDirty(true);
-  return FPDFPageObjectMarkFromCPDFContentMarkItem(mark.GetItem(index));
+
+  const unsigned long index = pMarks->CountItems() - 1;
+  return FPDFPageObjectMarkFromCPDFContentMarkItem(pMarks->GetItem(index));
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -329,11 +332,11 @@ FPDFPageObj_RemoveMark(FPDF_PAGEOBJECT page_object, FPDF_PAGEOBJECTMARK mark) {
   if (!pPageObj || !pMarkItem)
     return false;
 
-  bool result = pPageObj->m_ContentMarks.RemoveMark(pMarkItem);
-  if (result)
-    pPageObj->SetDirty(true);
+  if (!pPageObj->GetContentMarks()->RemoveMark(pMarkItem))
+    return false;
 
-  return result;
+  pPageObj->SetDirty(true);
+  return true;
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -681,7 +684,7 @@ FPDF_BOOL FPDFPageObj_SetFillColor(FPDF_PAGEOBJECT page_object,
   std::vector<float> rgb = {R / 255.f, G / 255.f, B / 255.f};
   pPageObj->m_GeneralState.SetFillAlpha(A / 255.f);
   pPageObj->m_ColorState.SetFillColor(
-      CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB), rgb);
+      CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceRGB), rgb);
   pPageObj->SetDirty(true);
   return true;
 }
@@ -738,7 +741,7 @@ FPDFPageObj_SetStrokeColor(FPDF_PAGEOBJECT page_object,
   std::vector<float> rgb = {R / 255.f, G / 255.f, B / 255.f};
   pPageObj->m_GeneralState.SetStrokeAlpha(A / 255.f);
   pPageObj->m_ColorState.SetStrokeColor(
-      CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB), rgb);
+      CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceRGB), rgb);
   pPageObj->SetDirty(true);
   return true;
 }

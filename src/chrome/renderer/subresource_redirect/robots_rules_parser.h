@@ -12,14 +12,18 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace subresource_redirect {
 
 // Holds the robots rules for a singe origin, and enables checking whether an
-// url path is allowed or disallowed. Also supports a timeout to receive the
-// robots rules after which it will be treated as a full disallow. The check
-// result is delivered via callback asynchronously.
+// url path is allowed or disallowed.  This check result is returned immediately
+// if available, or delivered via callback asynchronously (when rules are not
+// yet available). Also supports a timeout to receive the robots rules after
+// which it will be treated as a full disallow. This class also tracks the
+// routing_id of the rules check requests, and that is used to invalidate the
+// previous check requests when a new navigation starts in the render frame.
 class RobotsRulesParser {
  public:
   // The final result of robots rule retrieval.
@@ -38,8 +42,10 @@ class RobotsRulesParser {
     kTimedout,                // Timeout in retrieving the robots rules
     kDisallowedAfterTimeout,  // Timeout got triggered already, and the resource
                               // was disallowed
-    kInvalidated,  // The result check was invalidated, before robots rules are
-                   // received or timeout triggered.
+    kInvalidated,   // The result check was invalidated, before robots rules are
+                    // received or timeout triggered.
+    kEntryMissing,  // The robots rules parser entry for the origin was missing
+                    // in the cache.
   };
 
   enum class RulesReceiveState {
@@ -71,17 +77,17 @@ class RobotsRulesParser {
 
   // Update the robots rules. This causes any pending check requests to be
   // processed immediately and called with the result.
-  void UpdateRobotsRules(const base::Optional<std::string>& rules);
+  void UpdateRobotsRules(const absl::optional<std::string>& rules);
 
   // Check whether the URL is allowed or disallowed by robots rules. When the
   // determination can be made immediately, the decision should be returned.
-  // Otherwise base::nullopt should be returned and the |callback| will be
+  // Otherwise absl::nullopt should be returned and the |callback| will be
   // added to |pending_check_requests_| and called when a decision can be made
   // like when rules are retrieved, or rule fetch timeout, etc.
   // The robots rules check will make use of the |url| path and query
   // parameters.The |url| origin, ref fragment, etc are immaterial. |routing_id|
   // is the render frame ID for which this URL is requested for.
-  base::Optional<CheckResult> CheckRobotsRules(int routing_id,
+  absl::optional<CheckResult> CheckRobotsRules(int routing_id,
                                                const GURL& url,
                                                CheckResultCallback callback);
 
@@ -94,13 +100,13 @@ class RobotsRulesParser {
 
   // Contains one robots.txt rule.
   struct RobotsRule {
-    RobotsRule(bool is_allow_rule, const std::string& pattern)
-        : is_allow_rule_(is_allow_rule), pattern_(pattern) {}
+    RobotsRule(bool is_allow_rule, std::string glob)
+        : is_allow_rule_(is_allow_rule), glob_(std::move(glob)) {}
 
     bool Match(const std::string& path) const;
 
     const bool is_allow_rule_;
-    const std::string pattern_;
+    const std::string glob_;
   };
 
   // Returns the immediate result of whether the URL path is allowed or

@@ -44,6 +44,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -259,14 +260,15 @@ class FingerprintLabel : public views::Label {
     SetAccessibleName(l10n_util::GetStringUTF16(get_accessible_id()));
   }
 
-  // views::View:
+  // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kStaticText;
     node_data->SetName(accessible_name_);
   }
 
+  // views::Label:
   void OnThemeChanged() override {
-    views::View::OnThemeChanged();
+    views::Label::OnThemeChanged();
     SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorSecondary));
   }
@@ -1558,7 +1560,7 @@ void LoginAuthUserView::RequestFocus() {
 }
 
 void LoginAuthUserView::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  NonAccessibleView::OnThemeChanged();
   const LoginPalette palette = CreateDefaultLoginPalette();
   password_view_->UpdatePalette(palette);
   pin_input_view_->UpdatePalette(palette);
@@ -1584,7 +1586,7 @@ void LoginAuthUserView::OnAuthSubmit(const std::u16string& password) {
                      weak_factory_.GetWeakPtr()));
 }
 
-void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
+void LoginAuthUserView::OnAuthComplete(absl::optional<bool> auth_success) {
   // Clear the password only if auth fails. Make sure to keep the password view
   // disabled even if auth succeededs, as if the user submits a password while
   // animating the next lock screen will not work as expected. See
@@ -1600,7 +1602,7 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
 }
 
 void LoginAuthUserView::OnChallengeResponseAuthComplete(
-    base::Optional<bool> auth_success) {
+    absl::optional<bool> auth_success) {
   if (!auth_success.has_value() || !auth_success.value()) {
     password_view_->Reset();
     password_view_->SetReadOnly(false);

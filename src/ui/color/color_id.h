@@ -38,6 +38,12 @@
   E(kColorAvatarIconIncognito, NativeTheme::kColorId_AvatarIconIncognito) \
   E(kColorBubbleBackground, NativeTheme::kColorId_BubbleBackground) \
   E(kColorBubbleBorder, NativeTheme::kColorId_BubbleBorder) \
+  E(kColorBubbleBorderShadowLarge, \
+    NativeTheme::kColorId_BubbleBorderShadowLarge) \
+  E(kColorBubbleBorderShadowSmall, \
+    NativeTheme::kColorId_BubbleBorderShadowSmall) \
+  E(kColorBubbleBorderWhenShadowPresent, \
+    NativeTheme::kColorId_BubbleBorderWhenShadowPresent) \
   E(kColorBubbleFooterBackground, \
     NativeTheme::kColorId_BubbleFooterBackground) \
   E(kColorBubbleFooterBorder, NativeTheme::kColorId_BubbleFooterBorder) \
@@ -71,12 +77,14 @@
   E(kColorFocusableBorderFocused, NativeTheme::kColorId_FocusedBorderColor) \
   E(kColorFocusableBorderUnfocused, \
     NativeTheme::kColorId_UnfocusedBorderColor) \
+  E(kColorFocusAura, NativeTheme::kColorId_FocusAuraColor) \
   E(kColorFrameActive, NativeTheme::kColorId_CustomFrameActiveColor) \
   E(kColorFrameInactive, NativeTheme::kColorId_CustomFrameInactiveColor) \
   E(kColorHelpIconActive, NativeTheme::kColorId_TooltipIconHovered) \
   E(kColorHelpIconInactive, NativeTheme::kColorId_TooltipIcon) \
   E(kColorIcon, NativeTheme::kColorId_DefaultIconColor) \
   E(kColorIconDisabled, NativeTheme::kColorId_DisabledIconColor) \
+  E(kColorIconSecondary, NativeTheme::kColorId_SecondaryIconColor) \
   E(kColorLabelForeground, NativeTheme::kColorId_LabelEnabledColor) \
   E(kColorLabelForegroundDisabled, NativeTheme::kColorId_LabelDisabledColor) \
   E(kColorLabelForegroundSecondary, NativeTheme::kColorId_LabelSecondaryColor) \
@@ -151,6 +159,15 @@
   E(kColorPwaToolbarForeground, \
     NativeTheme::kColorId_CustomTabBarForegroundColor) \
   E(kColorSeparator, NativeTheme::kColorId_SeparatorColor) \
+  E(kColorShadowBase, NativeTheme::kColorId_ShadowBase) \
+  E(kColorShadowValueAmbientShadowElevationThree, \
+    NativeTheme::kColorId_ShadowValueAmbientShadowElevationThree) \
+  E(kColorShadowValueKeyShadowElevationThree, \
+    NativeTheme::kColorId_ShadowValueKeyShadowElevationThree) \
+  E(kColorShadowValueAmbientShadowElevationSixteen, \
+    NativeTheme::kColorId_ShadowValueAmbientShadowElevationSixteen) \
+  E(kColorShadowValueKeyShadowElevationSixteen, \
+    NativeTheme::kColorId_ShadowValueKeyShadowElevationSixteen) \
   E(kColorSliderThumb, NativeTheme::kColorId_SliderThumbDefault) \
   E(kColorSliderThumbMinimal, NativeTheme::kColorId_SliderThumbMinimal) \
   E(kColorSliderTrack, NativeTheme::kColorId_SliderTroughDefault) \

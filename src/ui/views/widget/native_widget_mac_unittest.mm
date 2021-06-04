@@ -28,6 +28,7 @@
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/base/test/scoped_fake_full_keyboard_access.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -44,6 +45,11 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace {
+// "{}" in base64encode, to create some dummy restoration data.
+const std::string kDummyWindowRestorationData = "e30=";
+}  // namespace
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
 // original implementation, then quits a nested run loop.
@@ -107,6 +113,10 @@ class BridgedNativeWidgetTestApi {
   NSAnimation* show_animation() {
     return base::mac::ObjCCastStrict<NSAnimation>(
         bridge_->show_animation_.get());
+  }
+
+  bool HasWindowRestorationData() {
+    return bridge_->HasWindowRestorationData();
   }
 
  private:
@@ -573,16 +583,19 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
 
   Widget* widget = CreateTopLevelPlatformWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
-  widget->GetContentsView()->AddChildView(new CursorView(0, hand));
-  widget->GetContentsView()->AddChildView(new CursorView(100, ibeam));
+  auto* view_hand = widget->non_client_view()->frame_view()->AddChildView(
+      std::make_unique<CursorView>(0, hand));
+  auto* view_ibeam = widget->non_client_view()->frame_view()->AddChildView(
+      std::make_unique<CursorView>(100, ibeam));
   widget->Show();
   NSWindow* widget_window = widget->GetNativeWindow().GetNativeNSWindow();
 
   // Events used to simulate tracking rectangle updates. These are not passed to
   // toolkit-views, so it only matters whether they are inside or outside the
   // content area.
+  const gfx::Rect bounds = widget->GetWindowBoundsInScreen();
   NSEvent* event_in_content = cocoa_test_event_utils::MouseEventAtPoint(
-      NSMakePoint(100, 100), NSMouseMoved, 0);
+      NSMakePoint(bounds.x(), bounds.y()), NSMouseMoved, 0);
   NSEvent* event_out_of_content = cocoa_test_event_utils::MouseEventAtPoint(
       NSMakePoint(-50, -50), NSMouseMoved, 0);
 
@@ -599,7 +612,7 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
 
   // Move the mouse over the first view, then simulate a tracking rectangle
   // update. Verify that the cursor changed from arrow to hand type.
-  event_generator.MoveMouseTo(gfx::Point(50, 50));
+  event_generator.MoveMouseTo(view_hand->GetBoundsInScreen().CenterPoint());
   [widget_window cursorUpdate:event_in_content];
   EXPECT_EQ(hand, [NSCursor currentCursor]);
 
@@ -609,13 +622,16 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   EXPECT_EQ(arrow, [NSCursor currentCursor]);
 
   // Now move to the second view.
-  event_generator.MoveMouseTo(gfx::Point(150, 50));
+  event_generator.MoveMouseTo(view_ibeam->GetBoundsInScreen().CenterPoint());
   [widget_window cursorUpdate:event_in_content];
   EXPECT_EQ(ibeam, [NSCursor currentCursor]);
 
   // Moving to the third view (but remaining in the content area) should also
   // forward to the native NSWindow implementation.
-  event_generator.MoveMouseTo(gfx::Point(250, 50));
+  event_generator.MoveMouseTo(widget->non_client_view()
+                                  ->frame_view()
+                                  ->GetBoundsInScreen()
+                                  .bottom_right());
   [widget_window cursorUpdate:event_in_content];
   EXPECT_EQ(arrow, [NSCursor currentCursor]);
 
@@ -879,8 +895,8 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   const std::u16string long_tooltip(2000, 'W');
 
   // Create a nested layout to test corner cases.
-  LabelButton* back =
-      widget->GetContentsView()->AddChildView(std::make_unique<LabelButton>());
+  LabelButton* back = widget->non_client_view()->frame_view()->AddChildView(
+      std::make_unique<LabelButton>());
   back->SetBounds(10, 10, 80, 80);
   widget->Show();
 
@@ -888,7 +904,8 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
                                            widget->GetNativeWindow());
 
   // Initially, there should be no tooltip.
-  event_generator.MoveMouseTo(gfx::Point(50, 50));
+  const gfx::Rect widget_bounds = widget->GetClientAreaBoundsInScreen();
+  event_generator.MoveMouseTo(widget_bounds.CenterPoint());
   EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 
   // Create a new button for the "front", and set the tooltip, but don't add it
@@ -914,11 +931,11 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   EXPECT_EQ(long_tooltip, TooltipTextForWidget(widget));
 
   // Move the mouse to a different view - tooltip should change.
-  event_generator.MoveMouseTo(gfx::Point(15, 15));
+  event_generator.MoveMouseTo(back->GetBoundsInScreen().origin());
   EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
 
   // Move the mouse off of any view, tooltip should clear.
-  event_generator.MoveMouseTo(gfx::Point(5, 5));
+  event_generator.MoveMouseTo(widget_bounds.origin());
   EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 
   widget->CloseNow();
@@ -938,13 +955,14 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
   widget_above->SetBounds(gfx::Rect(100, 0, 100, 200));
 
   const std::u16string tooltip_above = u"Front";
-  CustomTooltipView* view_above = new CustomTooltipView(tooltip_above, nullptr);
+  CustomTooltipView* view_above = widget_above->GetContentsView()->AddChildView(
+      std::make_unique<CustomTooltipView>(tooltip_above, nullptr));
   view_above->SetBoundsRect(widget_above->GetContentsView()->bounds());
-  widget_above->GetContentsView()->AddChildView(view_above);
 
-  CustomTooltipView* view_below = new CustomTooltipView(u"Back", view_above);
+  CustomTooltipView* view_below =
+      widget_below->non_client_view()->frame_view()->AddChildView(
+          std::make_unique<CustomTooltipView>(u"Back", view_above));
   view_below->SetBoundsRect(widget_below->GetContentsView()->bounds());
-  widget_below->GetContentsView()->AddChildView(view_below);
 
   widget_below->Show();
   widget_above->Show();
@@ -953,7 +971,8 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
   // for second. Despite that event was handled in the first one.
   ui::test::EventGenerator event_generator(GetContext(),
                                            widget_below->GetNativeWindow());
-  event_generator.MoveMouseTo(gfx::Point(120, 60));
+  event_generator.MoveMouseTo(
+      widget_above->GetWindowBoundsInScreen().CenterPoint());
   EXPECT_EQ(tooltip_above, TooltipTextForWidget(widget_below));
 
   widget_above->CloseNow();
@@ -1164,6 +1183,55 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
     hide_waiter.WaitForMethod();
     EXPECT_TRUE(hide_waiter.method_called());
   }
+}
+
+// Tests that the first call into SetVisibilityState() restores the window state
+// for windows that start off miniaturized in the dock.
+TEST_F(NativeWidgetMacTest, ConfirmMinimizedWindowRestoration) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget =
+      CreatePlatformNativeWidgetImpl(widget, kStubCapture, nullptr);
+  // Start the window off in the dock.
+  params.show_state = ui::SHOW_STATE_MINIMIZED;
+  params.workspace = kDummyWindowRestorationData;
+  widget->Init(std::move(params));
+
+  BridgedNativeWidgetTestApi test_api(
+      widget->GetNativeWindow().GetNativeNSWindow());
+
+  EXPECT_TRUE(test_api.HasWindowRestorationData());
+
+  // Show() ultimately invokes SetVisibilityState().
+  widget->Show();
+
+  EXPECT_FALSE(test_api.HasWindowRestorationData());
+
+  widget->CloseNow();
+}
+
+// Tests that the first call into SetVisibilityState() restores the window state
+// for windows that start off visible.
+TEST_F(NativeWidgetMacTest, ConfirmVisibleWindowRestoration) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget =
+      CreatePlatformNativeWidgetImpl(widget, kStubCapture, nullptr);
+  params.show_state = ui::SHOW_STATE_NORMAL;
+  params.workspace = kDummyWindowRestorationData;
+  widget->Init(std::move(params));
+
+  BridgedNativeWidgetTestApi test_api(
+      widget->GetNativeWindow().GetNativeNSWindow());
+
+  EXPECT_TRUE(test_api.HasWindowRestorationData());
+
+  // Show() ultimately invokes SetVisibilityState().
+  widget->Show();
+
+  EXPECT_FALSE(test_api.HasWindowRestorationData());
+
+  widget->CloseNow();
 }
 
 // Tests that calls to Hide() a Widget cancel any in-progress show animation,
@@ -2337,4 +2405,3 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
   return YES;
 }
 @end
-

@@ -35,6 +35,9 @@
 namespace blink {
 
 struct BidiIsolatedRun {
+  DISALLOW_NEW();
+
+ public:
   BidiIsolatedRun(LineLayoutItem object,
                   unsigned position,
                   LineLayoutItem& root,
@@ -903,5 +906,7 @@ inline void InlineBidiResolver::AppendRun(BidiRunList<BidiRun>& runs) {
 }
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::BidiIsolatedRun)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_ITERATOR_H_

@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_context.h"
@@ -189,7 +188,7 @@ void MockRenderProcessHost::OnForegroundServiceWorkerRemoved() {
 }
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() {
-  return BrowserContext::GetDefaultStoragePartition(browser_context_);
+  return browser_context_->GetDefaultStoragePartition();
 }
 
 void MockRenderProcessHost::AddWord(const std::u16string& word) {}
@@ -466,8 +465,7 @@ MockRenderProcessHost::GetInfoForBrowserContextDestructionCrashReporting() {
   return std::string();
 }
 
-void MockRenderProcessHost::WriteIntoTracedValue(
-    perfetto::TracedValue context) {
+void MockRenderProcessHost::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", GetID());
 }

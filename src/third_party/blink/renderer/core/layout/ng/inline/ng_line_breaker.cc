@@ -776,13 +776,6 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
       return;
     }
 
-    // If we're seeking for the first break opportunity, update the state.
-    if (UNLIKELY(state_ == LineBreakState::kOverflow)) {
-      if (item_result->can_break_after)
-        state_ = LineBreakState::kTrailing;
-      return;
-    }
-
     // Hanging trailing spaces may resolve the overflow.
     if (item_result->has_only_trailing_spaces) {
       state_ = LineBreakState::kTrailing;
@@ -791,6 +784,13 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
         unsigned end_index = item_result - line_info->Results().begin();
         Rewind(end_index, line_info);
       }
+      return;
+    }
+
+    // If we're seeking for the first break opportunity, update the state.
+    if (UNLIKELY(state_ == LineBreakState::kOverflow)) {
+      if (item_result->can_break_after)
+        state_ = LineBreakState::kTrailing;
       return;
     }
 
@@ -1089,7 +1089,7 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   if (hyphenation_)
     return false;
 
-  base::Optional<LineBreakType> saved_line_break_type;
+  absl::optional<LineBreakType> saved_line_break_type;
   if (break_anywhere_if_overflow_ && !override_break_anywhere_) {
     saved_line_break_type = break_iterator_.BreakType();
     break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
@@ -1105,8 +1105,6 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   while (start_offset < item.EndOffset()) {
     unsigned end_offset = break_iterator_.NextBreakOpportunity(
         start_offset + 1, item.EndOffset());
-    if (end_offset >= item.EndOffset())
-      break;
 
     unsigned non_hangable_run_end = end_offset;
     if (item.Style()->WhiteSpace() != EWhiteSpace::kBreakSpaces) {
@@ -1114,7 +1112,11 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
              IsBreakableSpace(text[non_hangable_run_end - 1])) {
         --non_hangable_run_end;
       }
+      end_offset = non_hangable_run_end;
     }
+
+    if (end_offset >= item.EndOffset())
+      break;
 
     // Inserting a hyphenation character is not supported yet.
     // TODO (jfernandez): Maybe we need to use 'end_offset' here ?
@@ -1314,11 +1316,14 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
     item_result->shape_result = ShapeResultView::Create(shape_result);
     if (item_result->StartOffset() == item.StartOffset() &&
         item_result->EndOffset() == item.EndOffset()) {
-      item_result->inline_size = item_result->shape_result
-                                     ? item_result->shape_result->SnappedWidth()
-                                     : LayoutUnit();
+      item_result->inline_size =
+          item_result->shape_result && mode_ != NGLineBreakerMode::kMinContent
+              ? item_result->shape_result->SnappedWidth()
+              : LayoutUnit();
     } else {
       UpdateShapeResult(*line_info, item_result);
+      if (mode_ == NGLineBreakerMode::kMinContent)
+        item_result->inline_size = LayoutUnit();
     }
     position_ += item_result->inline_size;
     item_result->can_break_after =
@@ -1608,7 +1613,6 @@ void NGLineBreaker::HandleAtomicInline(
   if (state_ == LineBreakState::kContinue && remaining_width < 0) {
     const unsigned item_index = item_index_;
     DCHECK_EQ(item_index, static_cast<unsigned>(&item - Items().begin()));
-    DCHECK(!line_info->HasOverflow());
     HandleOverflow(line_info);
     if (!line_info->HasOverflow() || item_index != item_index_)
       return;
@@ -2008,7 +2012,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
 
   // Save the hyphenation states before we may make changes.
   NGInlineItemResults* item_results = line_info->MutableResults();
-  base::Optional<wtf_size_t> hyphen_index_before = hyphen_index_;
+  absl::optional<wtf_size_t> hyphen_index_before = hyphen_index_;
   if (UNLIKELY(HasHyphen()))
     position_ -= RemoveHyphen(item_results);
 

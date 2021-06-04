@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/proxy/push_buffer_pending_handler.h"
 #include "chromecast/media/cma/backend/proxy/push_buffer_queue.h"
@@ -285,7 +284,7 @@ CmaBackend::BufferStatus ProxyCallTranslator::PushBuffer(
       ToGrpcTypes(std::move(buffer), buffer_id));
 }
 
-base::Optional<ProxyCallTranslator::PushBufferRequest>
+absl::optional<ProxyCallTranslator::PushBufferRequest>
 ProxyCallTranslator::GetBufferedData() {
   return push_buffer_handler_.GetBufferedData();
 }
@@ -336,7 +335,7 @@ void ProxyCallTranslator::HandlePushBufferResponse(
 }
 
 void ProxyCallTranslator::HandleGetMediaTimeResponse(
-    base::Optional<MediaTime> time,
+    absl::optional<MediaTime> time,
     CastRuntimeAudioChannelBroker::StatusCode status) {
   NOTREACHED();
 }

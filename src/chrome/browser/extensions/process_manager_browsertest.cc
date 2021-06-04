@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(DefaultProfileExtensionBrowserTest, NoExtensionHosts) {
   // Explicitly get the original and off-the-record-profiles, since on CrOS,
   // the signin profile (profile()) is the off-the-record version.
   Profile* original = profile()->GetOriginalProfile();
-  Profile* otr = original->GetPrimaryOTRProfile();
+  Profile* otr = original->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(profile(), otr);
   EXPECT_TRUE(chromeos::ProfileHelper::IsSigninProfile(original));
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
   // Open popup in the first extension.
-  test_util->Press(0);
+  test_util->Press(popup->id());
   frame_observer.Wait();
   ASSERT_TRUE(test_util->HasPopup());
 
@@ -975,7 +975,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
 
   content::DownloadTestObserverTerminal observer(
-      content::BrowserContext::GetDownloadManager(profile()), 1,
+      profile()->GetDownloadManager(), 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   std::string script = base::StringPrintf(
       R"(var anchor = document.createElement('a');
@@ -1426,7 +1426,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Navigate to the "extension 1" page with two iframes.
   auto url = extension1->url().Resolve("two_iframes.html");
   NavigateToURL(url);
-  auto initiator_origin = base::Optional<url::Origin>(url::Origin::Create(url));
+  auto initiator_origin = absl::optional<url::Origin>(url::Origin::Create(url));
 
   ProcessManager* pm = ProcessManager::Get(profile());
   content::WebContents* tab =
@@ -1648,7 +1648,11 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   {
     content::RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
     EXPECT_EQ(subframe->GetProcess(), main_frame->GetProcess());
-    EXPECT_EQ(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+    if (content::AreStrictSiteInstancesEnabled()) {
+      EXPECT_NE(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+    } else {
+      EXPECT_EQ(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+    }
   }
 }
 

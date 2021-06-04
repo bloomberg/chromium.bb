@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -33,7 +34,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "url/gurl.h"
 
@@ -85,7 +85,7 @@ void CastDialogNoSinksView::SetHelpIconView() {
   icon->SetBorder(views::CreateEmptyBorder(media_router::kPrimaryIconBorder));
   icon->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON));
-  icon->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+  icon->ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
   icon_ = icon;
 
   label_->SetText(

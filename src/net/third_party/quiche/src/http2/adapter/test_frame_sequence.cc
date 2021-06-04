@@ -1,11 +1,21 @@
 #include "http2/adapter/test_frame_sequence.h"
 
 #include "http2/adapter/http2_util.h"
+#include "http2/adapter/oghttp2_util.h"
 #include "spdy/core/spdy_framer.h"
 
 namespace http2 {
 namespace adapter {
 namespace test {
+
+std::vector<const Header> ToHeaders(
+    absl::Span<const std::pair<absl::string_view, absl::string_view>> headers) {
+  std::vector<const Header> out;
+  for (auto [name, value] : headers) {
+    out.push_back(std::make_pair(HeaderRep(name), HeaderRep(value)));
+  }
+  return out;
+}
 
 TestFrameSequence& TestFrameSequence::ClientPreface() {
   preface_ = spdy::kHttp2ConnectionHeaderPrefix;
@@ -75,6 +85,13 @@ TestFrameSequence& TestFrameSequence::GoAway(Http2StreamId last_good_stream_id,
   return *this;
 }
 
+TestFrameSequence& TestFrameSequence::Headers(
+    Http2StreamId stream_id,
+    absl::Span<const std::pair<absl::string_view, absl::string_view>> headers,
+    bool fin) {
+  return Headers(stream_id, ToHeaders(headers), fin);
+}
+
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               spdy::Http2HeaderBlock block,
                                               bool fin) {
@@ -88,11 +105,7 @@ TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               absl::Span<const Header> headers,
                                               bool fin) {
-  spdy::SpdyHeaderBlock block;
-  for (const Header& header : headers) {
-    block[header.first] = header.second;
-  }
-  return Headers(stream_id, std::move(block), fin);
+  return Headers(stream_id, ToHeaderBlock(headers), fin);
 }
 
 TestFrameSequence& TestFrameSequence::WindowUpdate(Http2StreamId stream_id,

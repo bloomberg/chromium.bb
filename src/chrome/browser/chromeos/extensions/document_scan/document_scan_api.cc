@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/ash/scanning/lorgnette_scanner_manager.h"
 #include "chrome/browser/ash/scanning/lorgnette_scanner_manager_factory.h"
 #include "content/public/browser/browser_context.h"
@@ -115,13 +116,13 @@ void DocumentScanScanFunction::OnPageReceived(std::string scanned_image,
 }
 
 void DocumentScanScanFunction::OnScanCompleted(
-    bool success,
-    lorgnette::ScanFailureMode /*failure_mode*/) {
+    lorgnette::ScanFailureMode failure_mode) {
   // TODO(pstew): Enlist a delegate to display received scan in the UI and
   // confirm that this scan should be sent to the caller. If this is a
   // multi-page scan, provide a means for adding additional scanned images up to
   // the requested limit.
-  if (!scan_data_.has_value() || !success) {
+  if (!scan_data_.has_value() ||
+      failure_mode != lorgnette::SCAN_FAILURE_MODE_NO_FAILURE) {
     Respond(Error(kScanImageError));
     return;
   }

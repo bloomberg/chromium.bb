@@ -17,7 +17,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_utils_mac.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -175,11 +175,8 @@ void NotificationPlatformBridgeMac::Display(
   [builder setNotificationId:base::SysUTF8ToNSString(notification.id())];
   [builder setProfileId:base::SysUTF8ToNSString(GetProfileId(profile))];
   [builder setIncognito:profile->IsOffTheRecord()];
-  [builder setCreatorPid:[NSNumber numberWithInteger:static_cast<NSInteger>(
-                                                         getpid())]];
-  [builder
-      setNotificationType:[NSNumber numberWithInteger:static_cast<NSInteger>(
-                                                          notification_type)]];
+  [builder setCreatorPid:@(static_cast<NSInteger>(getpid()))];
+  [builder setNotificationType:@(static_cast<NSInteger>(notification_type))];
 
   // Send alert notifications to the alert dispatcher. Chrome itself can only
   // display banners.
@@ -201,11 +198,12 @@ void NotificationPlatformBridgeMac::Close(Profile* profile,
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toastId =
-        [toast.userInfo objectForKey:notification_constants::kNotificationId];
-    NSString* toastProfileId = [toast.userInfo
-        objectForKey:notification_constants::kNotificationProfileId];
-    BOOL toastIncognito = [[toast.userInfo
-        objectForKey:notification_constants::kNotificationIncognito] boolValue];
+        (toast.userInfo)[notification_constants::kNotificationId];
+    NSString* toastProfileId =
+        (toast.userInfo)[notification_constants::kNotificationProfileId];
+    BOOL toastIncognito =
+        [(toast.userInfo)[notification_constants::kNotificationIncognito]
+            boolValue];
 
     if ([notificationId isEqualToString:toastId] &&
         [profileId isEqualToString:toastProfileId] &&
@@ -231,15 +229,16 @@ void NotificationPlatformBridgeMac::GetDisplayed(
 
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
-    NSString* toastProfileId = [toast.userInfo
-        objectForKey:notification_constants::kNotificationProfileId];
-    BOOL toastIncognito = [[toast.userInfo
-        objectForKey:notification_constants::kNotificationIncognito] boolValue];
+    NSString* toastProfileId =
+        (toast.userInfo)[notification_constants::kNotificationProfileId];
+    BOOL toastIncognito =
+        [(toast.userInfo)[notification_constants::kNotificationIncognito]
+            boolValue];
 
     if ([profileId isEqualToString:toastProfileId] &&
         incognito == toastIncognito) {
-      banners.insert(base::SysNSStringToUTF8([toast.userInfo
-          objectForKey:notification_constants::kNotificationId]));
+      banners.insert(base::SysNSStringToUTF8(
+          (toast.userInfo)[notification_constants::kNotificationId]));
     }
   }
 
@@ -285,10 +284,11 @@ void NotificationPlatformBridgeMac::CloseAllNotificationsForProfile(
   // Close banner notifications for the profile.
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
-    NSString* toast_profile_id = [toast.userInfo
-        objectForKey:notification_constants::kNotificationProfileId];
-    BOOL toast_incognito = [[toast.userInfo
-        objectForKey:notification_constants::kNotificationIncognito] boolValue];
+    NSString* toast_profile_id =
+        (toast.userInfo)[notification_constants::kNotificationProfileId];
+    BOOL toast_incognito =
+        [(toast.userInfo)[notification_constants::kNotificationIncognito]
+            boolValue];
 
     if ([profile_id isEqualToString:toast_profile_id] &&
         incognito == toast_incognito) {

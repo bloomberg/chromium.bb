@@ -26,10 +26,9 @@ void RegisterProtocolHandlersWithOs(
     std::vector<apps::ProtocolHandlerInfo> protocol_handlers,
     base::OnceCallback<void(bool)> callback);
 
-void UnregisterProtocolHandlersWithOs(
-    const AppId& app_id,
-    Profile* profile,
-    std::vector<apps::ProtocolHandlerInfo> protocol_handlers);
+void UnregisterProtocolHandlersWithOs(const AppId& app_id,
+                                      Profile* profile,
+                                      base::OnceCallback<void(bool)> callback);
 
 }  // namespace web_app
 

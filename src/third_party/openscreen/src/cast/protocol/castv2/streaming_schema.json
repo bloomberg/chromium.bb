@@ -115,7 +115,7 @@
     "video_constraints": {
       "properties": {
         "maxPixelsPerSecond": {"type": "number", "minimum": 0},
-        "minDimensions": {"$ref": "#/definitions/dimensions"},
+        "minResolution": {"$ref": "#/definitions/resolution"},
         "maxDimensions": {"$ref": "#/definitions/dimensions"},
         "minBitRate": {"type": "integer", "minimum": 300000},
         "maxBitRate": {"type": "integer", "minimum": 300000},
@@ -168,23 +168,9 @@
           "type": "array",
           "items": {"type": "integer", "minimum": 0}
         },
-        "receiverGetStatus": {"type": "boolean"},
         "rtpExtensions": {"$ref": "#/definitions/rtp_extensions"}
       },
       "required": ["udpPort", "sendIndexes", "ssrcs"]
-    },
-    "status_response": {
-      "properties": {
-        "wifiSpeed": {
-          "type": "array",
-          "items": {"type": "integer", "minimum": 0}
-        },
-        "wifiFcsError": {
-          "type": "array",
-          "items": {"type": "integer", "minimum": 0}
-        },
-        "wifiSnr": {"type": "number", "examples": ["3.23", "50.1"]}
-      }
     },
     "capabilities": {
       "$id": "#capabilities",
@@ -221,14 +207,6 @@
     "result": {"type": "string", "enum": ["ok", "error"]},
     "seqNum": {"type": "integer", "minimum": 0},
     "sessionId": {"type": "integer"},
-    "get_status": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["wifiFcsError", "wifiSnr", "wifiSpeed"]
-      }
-    },
-    "status": {"$ref": "#/definitions/status_response"},
     "type": {
       "type": "string",
       "enum": [
@@ -268,14 +246,6 @@
         }
       },
       "then": {"required": ["capabilities"]}
-    },
-    {
-      "if": {"properties": {"type": {"const": "GET_STATUS"}}},
-      "then": {"required": ["get_status"]}
-    },
-    {
-      "if": {"properties": {"type": {"const": "STATUS_RESPONSE"}}},
-      "then": {"required": ["status"]}
     },
     {
       "if": {

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -51,8 +52,8 @@ void UpdateTabSpecificPermissions(const std::string& extension_id,
           process->GetBrowserContext())
           ->GetRenderer(process);
   if (renderer) {
-    renderer->UpdateTabSpecificPermissions(extension_id, new_hosts, tab_id,
-                                           update_origin_whitelist);
+    renderer->UpdateTabSpecificPermissions(extension_id, new_hosts.Clone(),
+                                           tab_id, update_origin_whitelist);
   }
 }
 
@@ -116,12 +117,18 @@ bool ShouldGrantActiveTabOrPrompt(const Extension* extension,
 void SetCorsOriginAccessList(content::BrowserContext* browser_context,
                              const Extension& extension,
                              base::OnceClosure closure) {
+  // To limit how far the new permissions reach, we only apply them to the
+  // ActiveTab's profile for split-mode extensions.  OTOH, spanning-mode
+  // extensions need to get the new permissions in all profiles (e.g. if the
+  // ActiveTab is in an incognito window, than the [single/only/spanning]
+  // background page in the regular profile also needs to get the new
+  // permissions).
   std::vector<content::BrowserContext*> target_contexts;
   if (IncognitoInfo::IsSplitMode(&extension)) {
     target_contexts = {browser_context};
   } else {
     target_contexts = util::GetAllRelatedProfiles(
-        Profile::FromBrowserContext(browser_context));
+        Profile::FromBrowserContext(browser_context), extension);
   }
 
   util::SetCorsOriginAccessListForExtension(target_contexts, extension,

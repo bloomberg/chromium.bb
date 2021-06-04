@@ -15,6 +15,7 @@
 -BookmarkBarViewTest21.ContextMenusForEmptyFolder
 -BookmarkBarViewTest22.CloseSourceBrowserDuringDrag
 -BookmarkBarViewTest23.ContextMenusKeyboard
+-BookmarkBarViewTest3.Submenus
 -BookmarkBarViewTest4.ContextMenus
 -BookmarkBarViewTest5.DND
 -BookmarkBarViewTest6.OpenMenuOnClickAndHold
@@ -56,15 +57,19 @@
 -TabDragging/DetachToBrowserTabDragControllerTest*
 -TabMetricsLoggerTest.CreateWindowFeaturesTestMultipleWindows
 -TabMetricsLoggerTest.CreateWindowFeaturesTestWindowActivation
--ToolbarActionViewInteractiveUITest.ActivateOverflowedToolbarActionWithKeyboard
--ToolbarActionViewInteractiveUITest.DoubleClickToolbarActionToClose
--ToolbarActionViewInteractiveUITest.TestClickingOnOverflowedAction
 -WebAuthFocusTest.Focus
 -WidgetInputMethodInteractiveTest.Activation
 -WidgetInputMethodInteractiveTest.OneWindow
 -WidgetInputMethodInteractiveTest.TwoWindows
 
 # Extremely flaky.
+-MenuControllerUITest.TestMouseOverShownMenu
 -MenuItemViewTestInsert20.InsertItem20
 -MenuItemViewTestInsert00.InsertItem00
 -BookmarkBarViewTest18.BookmarkBarViewTest18_SiblingMenu
+
+# TODO(crbug.com/1195324): flaky fullscreen notification test
+-NotificationsTest.TestShouldDisplayMultiFullscreen
+
+# TODO(crbug.com/1192997): Flaky on the bot. Locally runs fine.
+-BrowserActionInteractiveTest.TestOpenPopup

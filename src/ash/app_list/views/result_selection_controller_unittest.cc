@@ -17,7 +17,9 @@
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_container_view.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -98,7 +100,7 @@ struct TestContainerParams {
 
   // If set, the container will contain TestResultViewWithActions that
   // have |actions_per_result| actions each.
-  base::Optional<int> actions_per_result;
+  absl::optional<int> actions_per_result;
 };
 
 class TestContainer : public TestContainerDelegateHarness,

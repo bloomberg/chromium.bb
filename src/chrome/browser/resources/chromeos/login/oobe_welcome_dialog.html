@@ -107,13 +107,13 @@
         justify-self: start;
       }
 
-      :host-context([orientation=vertical]) #getStarted {
+      :host-context([orientation=vertical]) #bottomButtons {
         align-self: end;
         grid-column: 1 / span 1;
         grid-row: 3 / span 1;
         justify-self: center;
       }
-      :host-context([orientation=horizontal]) #getStarted {
+      :host-context([orientation=horizontal]) #bottomButtons {
         align-self: end;
         grid-column: 1 / span 1;
         grid-row: 2 / span 1;
@@ -137,7 +137,8 @@
       }
 
       #newAccessibilitySettingsButton,
-      #newTimezoneSettingsButton {
+      #newTimezoneSettingsButton,
+      #enableDebuggingButton {
         margin-top: 16px;
       }
 
@@ -183,8 +184,28 @@
       :host-context([orientation=horizontal]) .new-welcome-header-text {
         text-align: start;
       }
+
+      #title {
+        align-self: center;
+        color: var(--oobe-header-text-color);
+        margin: 0;
+        user-select: none;
+        @apply --oobe-header-font;
+      }
+
+      .welcome-illustration {
+        user-select: none;
+      }
+
+      video {
+        height: 200px;
+        width: 449px;
+      }
+
+      #enableDebuggingDiv {
+        margin-top: 2px;
+      }
     </style>
-    <link rel="stylesheet" href="oobe_welcome_dialog.css">
     <div id="newDialog" class="layout vertical" hidden="[[!isNewLayout_]]">
       <h1 id="newTitle" class="new-welcome-header-text">
         [[i18nDynamic(locale, 'newWelcomeScreenGreeting')]]
@@ -215,12 +236,26 @@
               on-click="onTimezoneClicked_"
               hidden="[[!timezoneButtonVisible]]">
           </oobe-welcome-secondary-button>
+          <oobe-welcome-secondary-button id="enableDebuggingButton"
+            text-key="debuggingFeaturesLink"
+            icon1x="oobe-32:chromebook"
+            icon2x="oobe-32:chromebook"
+            on-click="onDebuggingLinkClicked_"
+            hidden="[[!debuggingLinkVisible]]">
+          </oobe-welcome-secondary-button>
         </div>
-        <oobe-text-button id="getStarted"
-            inverse on-click="onNextClicked_"
-            disabled="[[!isNewLayout_]]"
-            text-key="welcomeScreenGetStarted">
-        </oobe-text-button>
+        <div id="bottomButtons">
+          <oobe-text-button id="osInstall"
+              on-click="onOsInstallClicked_"
+              hidden="[[!osInstallEnabled_]]"
+              text-key="welcomeScreenOsInstall">
+          </oobe-text-button>
+          <oobe-text-button id="getStarted"
+              inverse on-click="onNextClicked_"
+              disabled="[[!isNewLayout_]]"
+              text-key="welcomeScreenGetStarted">
+          </oobe-text-button>
+        </div>
         <div id="newWelcomeAnimationSlot">
           <cr-lottie id="newWelcomeAnimation" hidden="[[isMeet_]]"
               animation-url="welcome_screen_animation.json">

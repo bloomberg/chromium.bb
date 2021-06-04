@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,6 +66,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/test_extension_dir.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -82,9 +82,9 @@ class SkBitmap;
 namespace {
 
 const char kAppUrl[] = "http://www.google.com";
-const char kAppTitle[] = "Test title";
-const char kAppDescription[] = "Test description";
-const char kShortcutItemName[] = "shortcut";
+const char16_t kAppTitle[] = u"Test title";
+const char16_t kAppDescription[] = u"Test description";
+const char16_t kShortcutItemName[] = u"shortcut";
 const char kShortcutUrl[] = "http://www.google.com/shortcut";
 const char kShortcutIconUrl[] = "http://www.google.com/shortcut/icon.png";
 
@@ -140,14 +140,14 @@ SkBitmap CreateSquareBitmap(int size) {
   return bitmap;
 }
 
-WebApplicationInfo CreateWebAppInfo(const char* title,
-                                    const char* description,
+WebApplicationInfo CreateWebAppInfo(const char16_t* title,
+                                    const char16_t* description,
                                     const char* start_url,
                                     int size,
                                     bool create_with_shortcuts) {
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::UTF8ToUTF16(title);
-  web_app_info.description = base::UTF8ToUTF16(description);
+  web_app_info.title = title;
+  web_app_info.description = description;
   web_app_info.start_url = GURL(start_url);
   web_app_info.scope = GURL(start_url);
   web_app_info.icon_bitmaps.any[size] = CreateSquareBitmap(size);
@@ -155,7 +155,7 @@ WebApplicationInfo CreateWebAppInfo(const char* title,
     WebApplicationShortcutsMenuItemInfo shortcut_item;
     WebApplicationShortcutsMenuItemInfo::Icon icon;
     IconBitmaps shortcut_icon_bitmaps;
-    shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
+    shortcut_item.name = kShortcutItemName;
     shortcut_item.url = GURL(kShortcutUrl);
     icon.url = GURL(kShortcutIconUrl);
     icon.square_size_px = size;
@@ -320,7 +320,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
   static void InstallerCallback(base::OnceClosure quit_closure,
                                 CrxInstaller::InstallerResultCallback callback,
-                                const base::Optional<CrxInstallError>& error) {
+                                const absl::optional<CrxInstallError>& error) {
     if (!callback.is_null())
       std::move(callback).Run(error);
     std::move(quit_closure).Run();
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
       mock_prompt->CreatePrompt());
 
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser()->profile());
+      browser()->profile()->GetDownloadManager();
 
   std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
@@ -573,8 +573,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
                        GrantScopes_WithCallback) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes",
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        EXPECT_EQ(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        EXPECT_EQ(absl::nullopt, error);
       }),
       true));
 }
@@ -589,8 +589,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
                        DoNotGrantScopes_WithCallback) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes",
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        EXPECT_EQ(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        EXPECT_EQ(absl::nullopt, error);
       }),
       false));
 }
@@ -767,8 +767,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   RunCrxInstaller(
       approval.get(), mock_prompt->CreatePrompt(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        EXPECT_EQ(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        EXPECT_EQ(absl::nullopt, error);
       }),
       test_data_dir_.AppendASCII("crx_installer/v1.crx"));
 
@@ -790,8 +790,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
                   error->type());
         EXPECT_EQ(SandboxedUnpackerFailureReason::DIRECTORY_MOVE_FAILED,
@@ -815,8 +815,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
                   error->type());
         EXPECT_EQ(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED,
@@ -846,8 +846,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
                   error->type());
         EXPECT_EQ(SandboxedUnpackerFailureReason::INVALID_MANIFEST,
@@ -880,8 +880,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallUnpackedCrx_Success) {
       "y0ury28n8jbN0PnInKKWcxpIXXmNQyC19HBuO3QIeUq9Dqc+7YFQIDAQAB";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        EXPECT_EQ(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        EXPECT_EQ(absl::nullopt, error);
       }),
       std::string(), public_key, temp_dir.GetPath());
 
@@ -907,8 +907,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   RunUpdateExtension(
       mock_prompt->CreatePrompt(), extension_id, public_key,
       temp_dir->GetPath(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         EXPECT_EQ(CrxInstallErrorType::OTHER, error->type());
         EXPECT_EQ(CrxInstallErrorDetail::UPDATE_NON_EXISTING_EXTENSION,
                   error->detail());
@@ -940,8 +940,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   RunUpdateExtension(
       mock_prompt->CreatePrompt(), extension_id, public_key,
       temp_dir->GetPath(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        EXPECT_EQ(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        EXPECT_EQ(absl::nullopt, error);
       }));
 
   EXPECT_TRUE(mock_prompt->did_succeed());
@@ -970,8 +970,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   RunUpdateExtension(
       mock_prompt->CreatePrompt(), extension_id, public_key,
       temp_dir->GetPath(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
                   error->type());
         EXPECT_EQ(SandboxedUnpackerFailureReason::INVALID_MANIFEST,
@@ -992,7 +992,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_EQ(InstallStageTracker::FailureReason::
                 CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE,
             installation_failure.failure_reason);
-  EXPECT_EQ(base::nullopt, installation_failure.install_error_detail);
+  EXPECT_EQ(absl::nullopt, installation_failure.install_error_detail);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
@@ -1015,8 +1015,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   RunUpdateExtension(
       mock_prompt->CreatePrompt(), extension_id, public_key,
       temp_dir->GetPath(),
-      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
-        ASSERT_NE(base::nullopt, error);
+      base::BindOnce([](const absl::optional<CrxInstallError>& error) {
+        ASSERT_NE(absl::nullopt, error);
         EXPECT_EQ(CrxInstallErrorType::OTHER, error->type());
         EXPECT_EQ(CrxInstallErrorDetail::UNEXPECTED_ID, error->detail());
       }));

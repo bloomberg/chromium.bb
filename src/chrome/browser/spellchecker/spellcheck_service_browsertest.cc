@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -76,7 +77,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
 #endif  // defined(OS_WIN)
 
   void SetUpOnMainThread() override {
-    renderer_.reset(new content::MockRenderProcessHost(GetContext()));
+    renderer_ = std::make_unique<content::MockRenderProcessHost>(GetContext());
     renderer_->Init();
     prefs_ = user_prefs::UserPrefs::Get(GetContext());
   }
@@ -115,9 +116,12 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     prefs_->SetString(spellcheck::prefs::kSpellCheckDictionary,
                       single_dictionary);
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(
+    const std::vector<std::string> str_list =
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY));
+                          base::SPLIT_WANT_NONEMPTY);
+    for (const std::string& str : str_list) {
+      dictionaries_value.Append(str);
+    }
     prefs_->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries_value);
 
     SpellcheckService* spellcheck =
@@ -152,9 +156,12 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
 
   void SetMultiLingualDictionaries(const std::string& multiple_dictionaries) {
     base::ListValue dictionaries_value;
-    dictionaries_value.AppendStrings(
+    const std::vector<std::string> str_list =
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY));
+                          base::SPLIT_WANT_NONEMPTY);
+    for (const std::string& str : str_list) {
+      dictionaries_value.Append(str);
+    }
     prefs_->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries_value);
   }
 
@@ -162,7 +169,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     const base::ListValue* list_value =
         prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
     std::vector<base::StringPiece> dictionaries;
-    for (const auto& item_value : *list_value) {
+    for (const auto& item_value : list_value->GetList()) {
       base::StringPiece dictionary;
       EXPECT_TRUE(item_value.GetAsString(&dictionary));
       dictionaries.push_back(dictionary);

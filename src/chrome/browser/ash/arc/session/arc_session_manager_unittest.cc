@@ -19,9 +19,9 @@
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -74,6 +75,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace arc {
 
@@ -111,7 +113,7 @@ class FileExpansionObserver : public ArcSessionManagerObserver {
   FileExpansionObserver(const FileExpansionObserver&) = delete;
   FileExpansionObserver& operator=(const FileExpansionObserver&) = delete;
 
-  const base::Optional<bool>& property_files_expansion_result() const {
+  const absl::optional<bool>& property_files_expansion_result() const {
     return property_files_expansion_result_;
   }
 
@@ -121,7 +123,7 @@ class FileExpansionObserver : public ArcSessionManagerObserver {
   }
 
  private:
-  base::Optional<bool> property_files_expansion_result_;
+  absl::optional<bool> property_files_expansion_result_;
 };
 
 class ShowErrorObserver : public ArcSessionManagerObserver {
@@ -136,7 +138,7 @@ class ShowErrorObserver : public ArcSessionManagerObserver {
 
   ~ShowErrorObserver() override { session_manager_->RemoveObserver(this); }
 
-  const base::Optional<ArcSupportHost::ErrorInfo> error_info() const {
+  const absl::optional<ArcSupportHost::ErrorInfo> error_info() const {
     return error_info_;
   }
 
@@ -145,7 +147,7 @@ class ShowErrorObserver : public ArcSessionManagerObserver {
   }
 
  private:
-  base::Optional<ArcSupportHost::ErrorInfo> error_info_;
+  absl::optional<ArcSupportHost::ErrorInfo> error_info_;
   ArcSessionManager* const session_manager_;
 };
 
@@ -156,6 +158,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::SessionManagerClient::InitializeFakeInMemory();
 
     ArcSessionManager::SetUiEnabledForTesting(false);
@@ -172,6 +175,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
     arc_session_manager_.reset();
     arc_service_manager_.reset();
     chromeos::SessionManagerClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -245,6 +249,7 @@ class ArcSessionManagerTestBase : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     chromeos::UpstartClient::InitializeFake();
@@ -278,6 +283,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     chromeos::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -1085,10 +1091,10 @@ TEST_F(ArcSessionManagerTest, RequestDisableDoesNotRemoveData) {
   arc_session_manager()->Shutdown();
 }
 
-// Tests that |vm_info| is initialized with base::nullopt.
+// Tests that |vm_info| is initialized with absl::nullopt.
 TEST_F(ArcSessionManagerTest, GetVmInfo_InitialValue) {
   const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
+  EXPECT_EQ(absl::nullopt, vm_info);
 }
 
 // Tests that |vm_info| is updated with that from VmStartedSignal.
@@ -1099,21 +1105,21 @@ TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted) {
   arc_session_manager()->OnVmStarted(vm_signal);
 
   const auto& vm_info = arc_session_manager()->GetVmInfo();
-  ASSERT_NE(base::nullopt, vm_info);
+  ASSERT_NE(absl::nullopt, vm_info);
   EXPECT_EQ(1000UL, vm_info->seneschal_server_handle());
 }
 
-// Tests that |vm_info| remains as base::nullopt after VM stops.
+// Tests that |vm_info| remains as absl::nullopt after VM stops.
 TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStopped) {
   vm_tools::concierge::VmStoppedSignal vm_signal;
   vm_signal.set_name(kArcVmName);
   arc_session_manager()->OnVmStopped(vm_signal);
 
   const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
+  EXPECT_EQ(absl::nullopt, vm_info);
 }
 
-// Tests that |vm_info| is reset to base::nullopt after VM starts and stops.
+// Tests that |vm_info| is reset to absl::nullopt after VM starts and stops.
 TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted_ThenStopped) {
   vm_tools::concierge::VmStartedSignal start_signal;
   start_signal.set_name(kArcVmName);
@@ -1125,7 +1131,7 @@ TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted_ThenStopped) {
   arc_session_manager()->OnVmStopped(stop_signal);
 
   const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
+  EXPECT_EQ(absl::nullopt, vm_info);
 }
 
 // Tests that |vm_info| is not updated with non-ARCVM VmStartedSignal.
@@ -1136,7 +1142,7 @@ TEST_F(ArcSessionManagerTest, GetVmInfo_WithNonVmStarted) {
   arc_session_manager()->OnVmStarted(non_vm_signal);
 
   const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(base::nullopt, vm_info);
+  EXPECT_EQ(absl::nullopt, vm_info);
 }
 
 class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
@@ -1203,7 +1209,7 @@ struct ProvisioningErrorDisplayTestParam {
   ArcSupportHost::Error message;
 
   // the error code sent to arc support host
-  base::Optional<int> arg;
+  absl::optional<int> arg;
 };
 
 constexpr ProvisioningErrorDisplayTestParam
@@ -1638,7 +1644,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
   void Hide() override {}
 
-  void Bind(chromeos::ArcTermsOfServiceScreen* screen) override {}
+  void Bind(ash::ArcTermsOfServiceScreen* screen) override {}
 
   base::ObserverList<chromeos::ArcTermsOfServiceScreenViewObserver>::Unchecked
       observer_list_;
@@ -2136,6 +2142,17 @@ TEST_F(ArcSessionManagerTest, ReadSaltOnDisk) {
   EXPECT_TRUE(salt.empty());
 }
 
+// Tests that TrimVmMemory doesn't crash.
+TEST_F(ArcSessionManagerTest, TrimVmMemory) {
+  bool callback_called = false;
+  arc_session_manager()->TrimVmMemory(
+      base::BindLambdaForTesting([&callback_called](bool, const std::string&) {
+        callback_called = true;
+      }));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_called);
+}
+
 class ArcSessionManagerPowerwashTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerPowerwashTest() = default;
@@ -2194,6 +2211,70 @@ TEST_F(ArcSessionManagerPowerwashTest, PowerwashRequestBlocksArcStart) {
 
   arc_session_manager()->Shutdown();
 }
+
+class ArcTransitionToManagedTest
+    : public ArcSessionManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  ArcTransitionToManagedTest() = default;
+  ~ArcTransitionToManagedTest() override = default;
+  ArcTransitionToManagedTest(const ArcTransitionToManagedTest&) = delete;
+  ArcTransitionToManagedTest& operator=(const ArcTransitionToManagedTest&) =
+      delete;
+
+  bool transition_feature_enabled() const { return std::get<0>(GetParam()); }
+
+  bool user_become_managed() const { return std::get<1>(GetParam()); }
+
+  bool ShouldArcTransitionToManaged() const {
+    return transition_feature_enabled() && user_become_managed();
+  }
+};
+
+TEST_P(ArcTransitionToManagedTest, TransitionFlow) {
+  // Here we only test OnBackgroundAndroidManagementChecked impl, not the actual
+  // Android management check.
+  ArcSessionManager::EnableCheckAndroidManagementForTesting(false);
+
+  // Initialize feature state.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(kEnableUnmanagedToManagedTransitionFeature,
+                                    transition_feature_enabled());
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  // Initialize ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+
+  // Emulate user management state change.
+  profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
+      user_become_managed());
+
+  // Android management check response.
+  arc_session_manager()->OnBackgroundAndroidManagementCheckedForTesting(
+      policy::AndroidManagementClient::Result::MANAGED);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify ARC state and ARC transition value.
+  EXPECT_EQ(profile()->GetPrefs()->GetBoolean(prefs::kArcEnabled),
+            ShouldArcTransitionToManaged());
+  EXPECT_EQ(arc::GetSupervisionTransition(profile()),
+            ShouldArcTransitionToManaged()
+                ? arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED
+                : arc::ArcSupervisionTransition::NO_TRANSITION);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ArcTransitionToManagedTest,
+    testing::Combine(testing::Bool() /* transition_feature_enabled */,
+                     testing::Bool() /* user_become_managed */));
 
 }  // namespace
 }  // namespace arc

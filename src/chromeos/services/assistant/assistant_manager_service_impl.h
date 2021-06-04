@@ -14,14 +14,13 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "chromeos/services/assistant/assistant_host.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_impl.h"
-#include "chromeos/services/assistant/proxy/assistant_proxy.h"
-#include "chromeos/services/assistant/proxy/libassistant_service_host.h"
+#include "chromeos/services/assistant/libassistant_service_host.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
@@ -35,6 +34,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
@@ -46,8 +46,8 @@ class AssistantStateBase;
 namespace chromeos {
 namespace assistant {
 
+class AssistantHost;
 class AssistantMediaSession;
-class AssistantProxy;
 class AudioInputHost;
 class AudioOutputDelegateImpl;
 class DeviceSettingsHost;
@@ -101,8 +101,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       ServiceContext* context,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_url_loader_factory,
-      base::Optional<std::string> s3_server_uri_override,
-      base::Optional<std::string> device_id_override,
+      absl::optional<std::string> s3_server_uri_override,
+      absl::optional<std::string> device_id_override,
       // Allows to inect a custom |LibassistantServiceHost| during unittests.
       std::unique_ptr<LibassistantServiceHost> libassistant_service_host =
           nullptr);
@@ -110,11 +110,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides:
-  void Start(const base::Optional<UserInfo>& user,
+  void Start(const absl::optional<UserInfo>& user,
              bool enable_hotword) override;
   void Stop() override;
   State GetState() const override;
-  void SetUser(const base::Optional<UserInfo>& user) override;
+  void SetUser(const absl::optional<UserInfo>& user) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
   void SetArcPlayStoreEnabled(bool enable) override;
@@ -180,10 +180,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnStateChanged(
       chromeos::libassistant::mojom::ServiceState new_state) override;
 
-  void InitAssistant(const base::Optional<UserInfo>& user);
+  void InitAssistant(const absl::optional<UserInfo>& user);
   void OnServiceStarted();
   void OnServiceRunning();
-  void OnServiceStopped();
   bool IsServiceStarted() const;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> BindURLLoaderFactory();
@@ -228,10 +227,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void SetStateAndInformObservers(State new_state);
 
-  State state_ = State::kStopped;
+  State state_ = State::STOPPED;
   std::unique_ptr<AssistantSettingsImpl> assistant_settings_;
 
-  std::unique_ptr<AssistantProxy> assistant_proxy_;
+  std::unique_ptr<AssistantHost> assistant_host_;
   std::unique_ptr<PlatformDelegateImpl> platform_delegate_;
   std::unique_ptr<AudioInputHost> audio_input_host_;
 

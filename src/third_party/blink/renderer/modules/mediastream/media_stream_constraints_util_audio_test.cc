@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
@@ -78,7 +79,7 @@ static bool Contains(const std::vector<T>& vector, T value) {
 
 }  // namespace
 
-class MediaStreamConstraintsUtilAudioTestBase {
+class MediaStreamConstraintsUtilAudioTestBase : public SimTest {
  protected:
   void MakeSystemEchoCancellerDeviceExperimental() {
     media::AudioParameters experimental_system_echo_canceller_parameters(
@@ -127,7 +128,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
     device.input.set_effects(effects);
 
     return std::make_unique<ProcessedLocalAudioSource>(
-        nullptr /*web_frame*/, device, disable_local_echo, properties,
+        *MainFrame().GetFrame(), device, disable_local_echo, properties,
         num_requested_channels, base::NullCallback(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
@@ -171,8 +172,8 @@ class MediaStreamConstraintsUtilAudioTestBase {
 
   AudioCaptureSettings SelectSettings(
       bool is_reconfigurable = false,
-      base::Optional<AudioDeviceCaptureCapabilities> capabilities =
-          base::nullopt) {
+      absl::optional<AudioDeviceCaptureCapabilities> capabilities =
+          absl::nullopt) {
     MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     if (capabilities) {
       return SelectSettingsAudioCapture(*capabilities, constraints, false,
@@ -478,8 +479,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
   const AudioDeviceCaptureCapability* system_echo_canceller_device_ = nullptr;
   const AudioDeviceCaptureCapability* four_channels_device_ = nullptr;
   const AudioDeviceCaptureCapability* variable_latency_device_ = nullptr;
-  std::unique_ptr<ProcessedLocalAudioSource> system_echo_canceller_source_ =
-      nullptr;
+  std::unique_ptr<ProcessedLocalAudioSource> system_echo_canceller_source_;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 
   // TODO(grunell): Store these as separate constants and compare against those
@@ -495,9 +495,10 @@ class MediaStreamConstraintsUtilAudioTestBase {
 
 class MediaStreamConstraintsUtilAudioTest
     : public MediaStreamConstraintsUtilAudioTestBase,
-      public testing::TestWithParam<std::string> {
+      public testing::WithParamInterface<std::string> {
  public:
   void SetUp() override {
+    MediaStreamConstraintsUtilAudioTestBase::SetUp();
     ResetFactory();
     if (IsDeviceCapture()) {
       capabilities_.emplace_back(

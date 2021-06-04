@@ -10,9 +10,12 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
-
 namespace {
+
+size_t strlen16(const char16_t* str) {
+  return std::char_traits<char16_t>::length(str);
+}
+
 std::vector<base::StringPiece16> StringsToStringPieces(
     const std::vector<std::u16string>& strings) {
   std::vector<base::StringPiece16> string_pieces;
@@ -55,7 +58,7 @@ TEST(NameProcessingUtil, FindLongestCommonAffixLength) {
   strings.push_back(u"1234567XXX901234567890");
   String16ToStringPiece16(strings, stringPieces);
   size_t affixLength = FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("123456").size(), affixLength);
+  EXPECT_EQ(strlen16(u"123456"), affixLength);
 
   // Normal suffix case.
   strings.clear();
@@ -65,7 +68,7 @@ TEST(NameProcessingUtil, FindLongestCommonAffixLength) {
   strings.push_back(u"1234567890123456_city_address");
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("dress").size(), affixLength);
+  EXPECT_EQ(strlen16(u"dress"), affixLength);
 
   // Handles no common prefix.
   strings.clear();
@@ -74,7 +77,7 @@ TEST(NameProcessingUtil, FindLongestCommonAffixLength) {
   strings.push_back(u"7890123456789012");
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+  EXPECT_EQ(strlen16(u""), affixLength);
 
   // Handles no common suffix.
   strings.clear();
@@ -83,33 +86,33 @@ TEST(NameProcessingUtil, FindLongestCommonAffixLength) {
   strings.push_back(u"7890123456789012");
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+  EXPECT_EQ(strlen16(u""), affixLength);
 
   // Only one string, prefix case.
   strings.clear();
   strings.push_back(u"1234567890");
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
+  EXPECT_EQ(strlen16(u"1234567890"), affixLength);
 
   // Only one string, suffix case.
   strings.clear();
   strings.push_back(u"1234567890");
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
+  EXPECT_EQ(strlen16(u"1234567890"), affixLength);
 
   // Empty vector, prefix case.
   strings.clear();
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+  EXPECT_EQ(strlen16(u""), affixLength);
 
   // Empty vector, suffix case.
   strings.clear();
   String16ToStringPiece16(strings, stringPieces);
   affixLength = FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+  EXPECT_EQ(strlen16(u""), affixLength);
 }
 
 // Tests the determination of the length of the longest common prefix for
@@ -129,7 +132,7 @@ TEST(NameProcessingUtil,
             0U);
 }
 
-// Tests that a |base::nullopt| is returned if no common affix was removed.
+// Tests that a |absl::nullopt| is returned if no common affix was removed.
 TEST(NameProcessingUtil, RemoveCommonAffixesIfPossible_NotPossible) {
   std::vector<std::u16string> strings;
   strings.push_back(u"abc");
@@ -138,7 +141,7 @@ TEST(NameProcessingUtil, RemoveCommonAffixesIfPossible_NotPossible) {
   strings.push_back(u"abcdef");
 
   EXPECT_EQ(RemoveCommonAffixesIfPossible(StringsToStringPieces(strings)),
-            base::nullopt);
+            absl::nullopt);
 }
 
 // Tests that both the prefix and the suffix are removed.
@@ -157,7 +160,7 @@ TEST(NameProcessingUtil, RemoveCommonAffixesIfPossible) {
             StringsToStringPieces(expectation));
 }
 
-// Tests that a |base::nullopt| is returned if no common prefix was removed.
+// Tests that a |absl::nullopt| is returned if no common prefix was removed.
 TEST(NameProcessingUtil, RemoveCommonPrefixIfPossible_NotPossible) {
   std::vector<std::u16string> strings;
   strings.push_back(u"abc");
@@ -166,7 +169,7 @@ TEST(NameProcessingUtil, RemoveCommonPrefixIfPossible_NotPossible) {
   strings.push_back(u"abcdef");
 
   EXPECT_EQ(RemoveCommonPrefixIfPossible(StringsToStringPieces(strings)),
-            base::nullopt);
+            absl::nullopt);
 }
 
 // Tests that prefix is removed correctly.
@@ -214,7 +217,7 @@ TEST(NameProcessingUtil, RemoveCommonPrefixIfPossible_TooShort) {
   strings.push_back(u"abccczzz");
 
   EXPECT_EQ(RemoveCommonPrefixIfPossible(StringsToStringPieces(strings)),
-            base::nullopt);
+            absl::nullopt);
 }
 
 // Tests that the strings are correctly stripped.
@@ -234,7 +237,7 @@ TEST(NameProcessingUtil, GetStrippedParseableNamesIfValid) {
       StringsToStringPieces(expectation));
 }
 
-// Tests that a |base::nullopt| is returned if one of stripped names is not
+// Tests that a |absl::nullopt| is returned if one of stripped names is not
 // valid.
 TEST(NameProcessingUtil, GetStrippedParseableNamesIfValid_NotValid) {
   std::vector<std::u16string> strings;
@@ -250,7 +253,7 @@ TEST(NameProcessingUtil, GetStrippedParseableNamesIfValid_NotValid) {
 
   EXPECT_EQ(
       GetStrippedParseableNamesIfValid(StringsToStringPieces(strings), 3, 2, 1),
-      base::nullopt);
+      absl::nullopt);
 }
 
 // Tests that the parseable names are returned correctly.

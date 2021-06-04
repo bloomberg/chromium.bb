@@ -11,14 +11,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -36,12 +35,12 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
-#include "content/test/fake_compositor_dependencies.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -134,13 +133,12 @@ class FakeWebURLLoader : public blink::WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<blink::WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       blink::WebURLLoaderClient* client,
       blink::WebURLResponse&,
-      base::Optional<blink::WebURLError>&,
+      absl::optional<blink::WebURLError>&,
       blink::WebData&,
       int64_t&,
       int64_t&,
@@ -153,7 +151,6 @@ class FakeWebURLLoader : public blink::WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<blink::WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>,
       blink::WebURLLoaderClient* client) override {
@@ -255,6 +252,13 @@ class RendererBlinkPlatformImplTestOverrideImpl
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
   blink::WebSandboxSupport* GetSandboxSupport() override { return nullptr; }
+
+  cc::TaskGraphRunner* GetTaskGraphRunner() override {
+    return &task_graph_runner_;
+  }
+
+ private:
+  cc::TestTaskGraphRunner task_graph_runner_;
 };
 
 class RenderFrameWasShownWaiter : public RenderFrameObserver {
@@ -484,11 +488,10 @@ void RenderViewTest::SetUp() {
         "en-US", nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
-  compositor_deps_ = CreateCompositorDependencies();
   process_ = std::make_unique<RenderProcess>();
 
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
-  view_params->opener_frame_token = base::nullopt;
+  view_params->opener_frame_token = absl::nullopt;
   view_params->window_was_created_with_opener = false;
   view_params->renderer_preferences = blink::RendererPreferences();
   view_params->web_preferences = blink::web_pref::WebPreferences();
@@ -513,6 +516,8 @@ void RenderViewTest::SetUp() {
       render_widget_host_->BindNewFrameWidgetInterfaces();
   widget_params->visual_properties = InitialVisualProperties();
   main_frame_params->widget_params = std::move(widget_params);
+  main_frame_params->subresource_loader_factories =
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>();
 
   view_params->main_frame =
       mojom::CreateMainFrameUnion::NewLocalParams(std::move(main_frame_params));
@@ -523,7 +528,7 @@ void RenderViewTest::SetUp() {
   view_params->never_composited = false;
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      *agent_scheduling_group_, compositor_deps_.get(), std::move(view_params),
+      *agent_scheduling_group_, std::move(view_params),
       /*was_created_by_renderer=*/false, base::ThreadTaskRunnerHandle::Get());
 
   RenderFrameWasShownWaiter waiter(view->GetMainRenderFrame());
@@ -750,7 +755,7 @@ void RenderViewTest::ChangeFocusToNull(const blink::WebDocument& document) {
 
 void RenderViewTest::Reload(const GURL& url) {
   auto common_params = mojom::CommonNavigationParams::New(
-      url, base::nullopt, blink::mojom::Referrer::New(),
+      url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, mojom::NavigationType::RELOAD,
       blink::NavigationDownloadPolicy(), false, GURL(), GURL(),
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
@@ -839,8 +844,8 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
   view->GetMainRenderFrame()->DidFinishSameDocumentNavigation(
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,
-      false /* content_initiated */, false /* is_history_api_navigation */,
-      false /* is_client_redirect */);
+      false /* is_synchronously_committed */,
+      false /* is_history_api_navigation */, false /* is_client_redirect */);
 }
 
 void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
@@ -877,13 +882,6 @@ blink::VisualProperties RenderViewTest::InitialVisualProperties() {
   return initial_visual_properties;
 }
 
-std::unique_ptr<CompositorDependencies>
-RenderViewTest::CreateCompositorDependencies() {
-  auto deps = std::make_unique<FakeCompositorDependencies>();
-  deps->set_use_zoom_for_dsf_enabled(render_thread_->IsUseZoomForDSF());
-  return deps;
-}
-
 void RenderViewTest::GoToOffset(int offset,
                                 const GURL& url,
                                 const blink::PageState& state) {
@@ -894,7 +892,7 @@ void RenderViewTest::GoToOffset(int offset,
   int pending_offset = offset + webview->HistoryBackListCount();
 
   auto common_params = mojom::CommonNavigationParams::New(
-      url, base::nullopt, blink::mojom::Referrer::New(),
+      url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_FORWARD_BACK,
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
       blink::NavigationDownloadPolicy(), false, GURL(), GURL(),

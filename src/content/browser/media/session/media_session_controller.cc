@@ -145,7 +145,7 @@ RenderFrameHost* MediaSessionController::render_frame_host() const {
   return RenderFrameHost::FromID(id_.frame_routing_id);
 }
 
-base::Optional<media_session::MediaPosition>
+absl::optional<media_session::MediaPosition>
 MediaSessionController::GetPosition(int player_id) const {
   DCHECK_EQ(player_id_, player_id);
   return position_;
@@ -203,13 +203,15 @@ void MediaSessionController::OnAudioOutputSinkChangingDisabled() {
 }
 
 bool MediaSessionController::IsMediaSessionNeeded() const {
+  if (web_contents_->HasPictureInPictureVideo())
+    return true;
+
   if (!is_playback_in_progress_)
     return false;
 
   // We want to make sure we do not request audio focus on a muted tab as it
   // would break user expectations by pausing/ducking other playbacks.
-  const bool has_audio = has_audio_ && !web_contents_->IsAudioMuted();
-  return has_audio || web_contents_->HasPictureInPictureVideo();
+  return has_audio_ && !web_contents_->IsAudioMuted();
 }
 
 bool MediaSessionController::AddOrRemovePlayer() {

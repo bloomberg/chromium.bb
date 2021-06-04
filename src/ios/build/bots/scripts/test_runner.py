@@ -23,6 +23,7 @@ import gtest_utils
 import iossim_util
 import standard_json_util as sju
 import test_apps
+import test_runner_errors
 import xcode_log_parser
 import xcode_util
 import xctest_utils
@@ -32,12 +33,9 @@ DERIVED_DATA = os.path.expanduser('~/Library/Developer/Xcode/DerivedData')
 READLINE_TIMEOUT = 180
 
 
-class Error(Exception):
-  """Base class for errors."""
-  pass
-
-
-class OtoolError(Error):
+# TODO(crbug.com/1077277): Move commonly used error classes to
+# test_runner_errors module.
+class OtoolError(test_runner_errors.Error):
   """OTool non-zero error code"""
 
   def __init__(self, code):
@@ -45,7 +43,7 @@ class OtoolError(Error):
           self).__init__('otool returned a non-zero return code: %s' % code)
 
 
-class TestRunnerError(Error):
+class TestRunnerError(test_runner_errors.Error):
   """Base class for TestRunner-related errors."""
   pass
 
@@ -669,7 +667,7 @@ class TestRunner(object):
             # Save the result of the latest run for each test.
             retry_results[test] = retry_result
 
-      output.mark_all_skipped(disabled)
+      output.mark_all_disabled(disabled)
       output.finalize()
 
       # Build test_results.json.

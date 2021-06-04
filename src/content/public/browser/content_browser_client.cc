@@ -38,6 +38,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/sms_fetcher.h"
+#include "content/public/browser/speculation_host_delegate.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
@@ -49,7 +50,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -272,11 +273,6 @@ bool ContentBrowserClient::OverridesAudioManager() {
   return false;
 }
 
-void ContentBrowserClient::GetHardwareSecureDecryptionCaps(
-    const std::string& key_system,
-    base::flat_set<media::VideoCodec>* video_codecs,
-    base::flat_set<media::EncryptionScheme>* encryption_schemes) {}
-
 bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return true;
 }
@@ -344,7 +340,7 @@ base::FilePath ContentBrowserClient::GetLoggingFileName(
 bool ContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     BrowserContext* context) {
   return true;
 }
@@ -352,7 +348,7 @@ bool ContentBrowserClient::AllowAppCache(
 AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     BrowserContext* context) {
   return AllowServiceWorkerResult::Yes();
@@ -361,9 +357,9 @@ AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
 bool ContentBrowserClient::AllowSharedWorker(
     const GURL& worker_url,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const url::Origin& constructor_origin,
+    const storage::StorageKey& storage_key,
     BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
@@ -516,8 +512,7 @@ std::string ContentBrowserClient::GetGeolocationApiKey() {
   return std::string();
 }
 
-device::GeolocationSystemPermissionManager*
-ContentBrowserClient::GetLocationPermissionManager() {
+device::GeolocationManager* ContentBrowserClient::GetGeolocationManager() {
   return nullptr;
 }
 
@@ -638,7 +633,7 @@ std::unique_ptr<VpnServiceProxy> ContentBrowserClient::GetVpnServiceProxy(
 
 std::unique_ptr<ui::SelectFilePolicy>
 ContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
-  return std::unique_ptr<ui::SelectFilePolicy>();
+  return nullptr;
 }
 
 std::unique_ptr<content::DevToolsManagerDelegate>
@@ -789,7 +784,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
-    base::Optional<int64_t> navigation_id,
+    absl::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -814,11 +809,18 @@ void ContentBrowserClient::CreateWebSocket(
     WebSocketFactory factory,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
   // NOTREACHED because WillInterceptWebSocket returns false.
   NOTREACHED();
+}
+
+void ContentBrowserClient::WillCreateWebTransport(
+    RenderFrameHost* frame,
+    const GURL& url,
+    WillCreateWebTransportCallback callback) {
+  std::move(callback).Run(absl::nullopt);
 }
 
 bool ContentBrowserClient::WillCreateRestrictedCookieManager(
@@ -982,7 +984,7 @@ bool ContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   return true;
 }
@@ -999,10 +1001,10 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcher(
   // |browser_context| may be null (e.g. during shutdown of a service worker).
 }
 
-base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
+absl::optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
     network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
@@ -1050,8 +1052,8 @@ blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() {
   return blink::UserAgentMetadata();
 }
 
-base::Optional<gfx::ImageSkia> ContentBrowserClient::GetProductLogo() {
-  return base::nullopt;
+absl::optional<gfx::ImageSkia> ContentBrowserClient::GetProductLogo() {
+  return absl::nullopt;
 }
 
 bool ContentBrowserClient::IsBuiltinComponent(BrowserContext* browser_context,
@@ -1097,7 +1099,7 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
 blink::mojom::InterestCohortPtr ContentBrowserClient::GetInterestCohortForJsApi(
     WebContents* web_contents,
     const GURL& url,
-    const base::Optional<url::Origin>& top_frame_origin) {
+    const absl::optional<url::Origin>& top_frame_origin) {
   return blink::mojom::InterestCohort::New();
 }
 
@@ -1121,16 +1123,16 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
     content::BrowserContext* browser_context,
     const GURL& scope,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) {
+    const absl::optional<url::Origin>& top_frame_origin) {
   return false;
 }
 
 base::OnceClosure ContentBrowserClient::FetchRemoteSms(
     content::WebContents* web_contents,
     const url::Origin& origin,
-    base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
-                            base::Optional<std::string>,
-                            base::Optional<content::SmsFetchFailureType>)>
+    base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
+                            absl::optional<std::string>,
+                            absl::optional<content::SmsFetchFailureType>)>
         callback) {
   return base::NullCallback();
 }
@@ -1222,6 +1224,12 @@ bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
     BrowserContext* browser_context) {
   return base::FeatureList::IsEnabled(
       features::kSuppressDifferentOriginSubframeJSDialogs);
+}
+
+std::unique_ptr<SpeculationHostDelegate>
+ContentBrowserClient::CreateSpeculationHostDelegate(
+    RenderFrameHost& render_frame_host) {
+  return nullptr;
 }
 
 }  // namespace content

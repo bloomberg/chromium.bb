@@ -9,6 +9,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -21,8 +23,6 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
@@ -31,18 +31,18 @@ namespace {
 DialogContentType FieldTypeToContentType(ui::DialogModelField::Type type) {
   switch (type) {
     case ui::DialogModelField::kButton:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kBodyText:
-      return DialogContentType::TEXT;
+      return DialogContentType::kText;
     case ui::DialogModelField::kCheckbox:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kTextfield:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kCombobox:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
   }
   NOTREACHED();
-  return DialogContentType::CONTROL;
+  return DialogContentType::kControl;
 }
 
 // A subclass of Checkbox that allows using an external Label/StyledLabel view
@@ -284,7 +284,7 @@ View* BubbleDialogModelHost::GetInitiallyFocusedView() {
   if (!model_)
     return BubbleDialogDelegateView::GetInitiallyFocusedView();
 
-  base::Optional<int> unique_id = model_->initially_focused_field(GetPassKey());
+  absl::optional<int> unique_id = model_->initially_focused_field(GetPassKey());
 
   if (!unique_id)
     return BubbleDialogDelegateView::GetInitiallyFocusedView();
@@ -363,7 +363,7 @@ void BubbleDialogModelHost::AddInitialFields() {
 void BubbleDialogModelHost::UpdateSpacingAndMargins() {
   const DialogContentType first_field_content_type =
       children().empty()
-          ? DialogContentType::CONTROL
+          ? DialogContentType::kControl
           : FieldTypeToContentType(FindDialogModelHostField(children().front())
                                        .dialog_model_field->type(GetPassKey()));
   DialogContentType last_field_content_type = first_field_content_type;
@@ -378,8 +378,8 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
     } else {
       int padding_margin = LayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_UNRELATED_CONTROL_VERTICAL);
-      if (last_field_content_type == DialogContentType::CONTROL &&
-          field_content_type == DialogContentType::CONTROL) {
+      if (last_field_content_type == DialogContentType::kControl &&
+          field_content_type == DialogContentType::kControl) {
         // TODO(pbos): Move DISTANCE_CONTROL_LIST_VERTICAL to
         // views::LayoutProvider and replace "12" here.
         padding_margin = 12;
@@ -493,7 +493,7 @@ void BubbleDialogModelHost::AddOrUpdateTextfield(
 
   // If this textfield is initially focused the text should be initially
   // selected as well.
-  base::Optional<int> initially_focused_field_id =
+  absl::optional<int> initially_focused_field_id =
       model_->initially_focused_field(GetPassKey());
   if (initially_focused_field_id &&
       model_field->unique_id(GetPassKey()) == initially_focused_field_id) {

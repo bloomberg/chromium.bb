@@ -71,7 +71,7 @@ Skia's [Lottie animation](https://skia.org/docs/user/modules/skottie) support.
   <figure>
     <canvas id=camera3d width=400 height=400></canvas>
     <figcaption>
-      <a href="https://jsfiddle.skia.org/canvaskit/786b7dd80aac6eda6ecbc7f035de62249ef0f61fd7aa6ab9a6829f70ba00fce2"
+      <a href="https://jsfiddle.skia.org/canvaskit/a5f9e976f1af65ef13bd978a5e265bdcb92110f5e64699fba5e8871c54be22b6"
           target=_blank rel=noopener>
         3D Cube JSFiddle</a>
     </figcaption>
@@ -583,8 +583,8 @@ half4 main(float2 p) {
       uniform shader normal_map;
 
       uniform float3   lightPos;
-      layout (marker=local_to_world)          uniform float4x4 localToWorld;
-      layout (marker=normals(local_to_world)) uniform float4x4 localToWorldAdjInv;
+      uniform float4x4 localToWorld;
+      uniform float4x4 localToWorldAdjInv;
 
       float3 convert_normal_sample(half4 c) {
         float3 n = 2 * c.rgb - 1;
@@ -672,16 +672,26 @@ half4 main(float2 p) {
       clickToWorld = CanvasKit.M44.mustInvert(worldToClick);
     }
 
+    function normalMatrix(m) {
+      m[3]  = 0;
+      m[7]  = 0;
+      m[11] = 0;
+      m[12] = 0;
+      m[13] = 0;
+      m[14] = 0;
+      m[15] = 1;
+      return CanvasKit.M44.transpose(CanvasKit.M44.mustInvert(m));
+    }
+
     function drawCubeFace(canvas, m, color) {
       const trans = new CanvasKit.M44.translated([vSphereRadius/2, vSphereRadius/2, 0]);
-      canvas.concat(CanvasKit.M44.multiply(trans, m, CanvasKit.M44.mustInvert(trans)));
+      const localToWorld = new CanvasKit.M44.multiply(m, CanvasKit.M44.mustInvert(trans));
+      canvas.concat(CanvasKit.M44.multiply(trans, localToWorld));
       const znormal = front(canvas.getLocalToDevice());
       if (znormal < 0) {
         return; // skip faces facing backwards
       }
-      // Pad with space for two 4x4 matrices. Even though the shader uses a layout()
-      // statement to populate them, we still have to reserve space for them.
-      const uniforms = [...lightWorldPos, ...Array(32).fill(0)];
+      const uniforms = [...lightWorldPos, ...localToWorld, ...normalMatrix(localToWorld)];
       const paint = new CanvasKit.Paint();
       paint.setAntiAlias(true);
       const shader = fact.makeShaderWithChildren(uniforms, true /*=opaque*/, children);
@@ -696,8 +706,6 @@ half4 main(float2 p) {
       // pass surface dimensions as viewport size.
       canvas.concat(CanvasKit.M44.setupCamera(
         CanvasKit.LTRBRect(0, 0, vSphereRadius, vSphereRadius), vSphereRadius/2, cam));
-      // Mark the matrix to make it available to the shader by this name.
-      canvas.markCTM('local_to_world');
       setClickToWorld(canvas, clickM);
       for (let f of faces) {
         const saveCount = canvas.getSaveCount();

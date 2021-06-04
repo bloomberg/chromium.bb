@@ -6,9 +6,11 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/test/stub_image.h"
@@ -1704,31 +1706,6 @@ TEST_P(LayoutBoxTest, MenuListIntrinsicBlockSize) {
   // The test passes if no crash.
 }
 
-TEST_P(LayoutBoxTest, PartialInvalidationRect) {
-  SetBodyInnerHTML(R"HTML(
-    <style>body { margin : 0 }</style>
-    <div id="target" style="margin: 10.5px; width: 100px; height: 100px"></div>
-  )HTML");
-
-  auto* target = GetLayoutBoxByElementId("target");
-  auto* display_item_client = static_cast<const DisplayItemClient*>(target);
-  EXPECT_EQ(IntRect(), display_item_client->PartialInvalidationVisualRect());
-  EXPECT_FALSE(target->HasPartialInvalidationRect());
-
-  target->InvalidatePaintRectangle(PhysicalRect(10, 20, 30, 40));
-  EXPECT_TRUE(target->HasPartialInvalidationRect());
-  EXPECT_EQ(IntRect(20, 30, 31, 41),
-            display_item_client->PartialInvalidationVisualRect());
-  target->InvalidatePaintRectangle(PhysicalRect(20, 30, 40, 50));
-  EXPECT_TRUE(target->HasPartialInvalidationRect());
-  EXPECT_EQ(IntRect(20, 30, 51, 61),
-            display_item_client->PartialInvalidationVisualRect());
-
-  display_item_client->ClearPartialInvalidationVisualRect();
-  EXPECT_FALSE(target->HasPartialInvalidationRect());
-  EXPECT_EQ(IntRect(), display_item_client->PartialInvalidationVisualRect());
-}
-
 TEST_P(LayoutBoxTest, HasReflection) {
   SetBodyInnerHTML(R"HTML(
     <style>* { -webkit-box-reflect: above; }</style>
@@ -1772,6 +1749,52 @@ TEST_P(LayoutBoxTest, PhysicalVisualOverflowRectIncludingFilters) {
   EXPECT_EQ(PhysicalRect(-12, -12, 224, 424),
             GetLayoutBoxByElementId("target")
                 ->PhysicalVisualOverflowRectIncludingFilters());
+}
+
+TEST_P(LayoutBoxTest, SetNeedsOverflowRecalcLayoutBox) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .transform { transform: translateX(10px); }
+    </style>
+    <img id="img">
+  )HTML");
+  Element* element = GetElementById("img");
+  LayoutObject* target = element->GetLayoutObject();
+  EXPECT_FALSE(target->SelfNeedsLayoutOverflowRecalc());
+
+  element->classList().Add("transform");
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  EXPECT_TRUE(target->PaintingLayer()->NeedsVisualOverflowRecalc());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->SelfNeedsLayoutOverflowRecalc());
+
+  element->classList().Remove("transform");
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  EXPECT_TRUE(target->PaintingLayer()->NeedsVisualOverflowRecalc());
+}
+
+TEST_P(LayoutBoxTest, SetNeedsOverflowRecalcFlexBox) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .transform { transform: translateX(10px); }
+    </style>
+    <div id="flex" style="display: flex"></div>
+  )HTML");
+  Element* element = GetElementById("flex");
+  LayoutObject* target = element->GetLayoutObject();
+  EXPECT_FALSE(target->SelfNeedsLayoutOverflowRecalc());
+
+  element->classList().Add("transform");
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  EXPECT_TRUE(target->PaintingLayer()->NeedsVisualOverflowRecalc());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->SelfNeedsLayoutOverflowRecalc());
+
+  element->classList().Remove("transform");
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  EXPECT_TRUE(target->PaintingLayer()->NeedsVisualOverflowRecalc());
 }
 
 }  // namespace blink

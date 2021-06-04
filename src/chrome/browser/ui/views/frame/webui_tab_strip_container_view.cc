@@ -25,6 +25,7 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -63,6 +64,8 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
@@ -73,8 +76,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
@@ -167,13 +168,13 @@ WebUITabStripDragDirection DragDirectionFromDelta(float delta) {
 
 // Converts a swipe gesture to a drag direction, or none if the swipe is neither
 // up nor down.
-base::Optional<WebUITabStripDragDirection> DragDirectionFromSwipe(
+absl::optional<WebUITabStripDragDirection> DragDirectionFromSwipe(
     const ui::GestureEvent* event) {
   if (event->details().swipe_down())
     return WebUITabStripDragDirection::kDown;
   if (event->details().swipe_up())
     return WebUITabStripDragDirection::kUp;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool EventTypeCanCloseTabStrip(const ui::EventType& type) {
@@ -258,13 +259,6 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
 #if defined(OS_WIN)
     view_observations_.AddObservation(top_container_);
 #endif  // defined(OS_WIN)
-
-    // Our observed Widget's NativeView may be destroyed before us. We
-    // have no reasonable way of un-registering our pre-target handler
-    // from the NativeView while the Widget is destroying. This disables
-    // EventHandler's check that it has been removed from all
-    // EventTargets.
-    DisableCheckTargets();
 
     content_area_->GetWidget()->GetNativeView()->AddPreTargetHandler(this);
     pretarget_handler_added_ = true;
@@ -520,6 +514,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
 WebUITabStripContainerView::~WebUITabStripContainerView() {
   // The TabCounter button uses |this| as a listener. We need to make
   // sure we outlive it.
+  delete new_tab_button_;
   delete tab_counter_;
 }
 
@@ -590,6 +585,29 @@ views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
   return web_view_->holder();
 }
 
+std::unique_ptr<views::View> WebUITabStripContainerView::CreateNewTabButton() {
+  DCHECK_EQ(nullptr, new_tab_button_);
+  auto new_tab_button = std::make_unique<ToolbarButton>(
+      base::BindRepeating(&WebUITabStripContainerView::NewTabButtonPressed,
+                          base::Unretained(this)));
+  new_tab_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
+  const SkColor normal_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  new_tab_button->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kNewTabToolbarButtonIcon, normal_color));
+
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  new_tab_button->SetPreferredSize(gfx::Size(button_height, button_height));
+  new_tab_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
+  new_tab_button_ = new_tab_button.get();
+  view_observations_.AddObservation(new_tab_button_);
+
+  return new_tab_button;
+}
+
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   DCHECK_EQ(nullptr, tab_counter_);
 
@@ -657,12 +675,12 @@ void WebUITabStripContainerView::UpdateHeightForDragToOpen(float height_delta) {
 }
 
 void WebUITabStripContainerView::EndDragToOpen(
-    base::Optional<WebUITabStripDragDirection> fling_direction) {
+    absl::optional<WebUITabStripDragDirection> fling_direction) {
   if (!current_drag_height_)
     return;
 
   const int final_drag_height = *current_drag_height_;
-  current_drag_height_ = base::nullopt;
+  current_drag_height_ = absl::nullopt;
 
   // If this wasn't a fling, determine whether to open or close based on
   // final height.
@@ -691,6 +709,13 @@ void WebUITabStripContainerView::EndDragToOpen(
       opening, fling_direction.has_value()
                    ? WebUITabStripOpenCloseReason::kFling
                    : WebUITabStripOpenCloseReason::kDragRelease);
+}
+
+void WebUITabStripContainerView::NewTabButtonPressed(const ui::Event& event) {
+  chrome::ExecuteCommand(browser_view_->browser(), IDC_NEW_TAB);
+  UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
+                            TabStripModel::NEW_TAB_BUTTON_IN_TOOLBAR_FOR_TOUCH,
+                            TabStripModel::NEW_TAB_ENUM_COUNT);
 }
 
 void WebUITabStripContainerView::TabCounterPressed(const ui::Event& event) {
@@ -753,7 +778,7 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     if (time_at_open_) {
       RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
                                             time_at_open_.value());
-      time_at_open_ = base::nullopt;
+      time_at_open_ = absl::nullopt;
     }
 
     const double current_value = animation_.GetCurrentValue();
@@ -918,7 +943,9 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
 void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
   view_observations_.RemoveObservation(observed_view);
 
-  if (observed_view == tab_counter_)
+  if (observed_view == new_tab_button_)
+    new_tab_button_ = nullptr;
+  else if (observed_view == tab_counter_)
     tab_counter_ = nullptr;
   else if (observed_view == tab_contents_container_)
     tab_contents_container_ = nullptr;

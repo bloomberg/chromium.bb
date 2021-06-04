@@ -22,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -62,9 +63,9 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
+#include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -82,6 +83,7 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/stub_icon_loader.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -455,14 +457,14 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     web_app::TestWebAppProvider::Get(profile_.get())->Start();
     CreateBuilder();
 
-    CreateLauncherController();
+    CreateShelfController();
 
     // Validating decoded content does not fit well for unit tests.
     ArcAppIcon::DisableSafeDecodingForTesting();
   }
 
   void TearDown() override {
-    launcher_controller_.reset();
+    shelf_controller_.reset();
     arc_test_.TearDown();
     ResetBuilder();
     extensions::ExtensionServiceTestBase::TearDown();
@@ -470,14 +472,14 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   ArcState GetArcState() const { return GetParam(); }
 
-  ChromeLauncherController* CreateLauncherController() {
-    launcher_controller_ = std::make_unique<ChromeLauncherController>(
-        profile_.get(), model_.get());
-    launcher_controller_->SetProfileForTest(profile_.get());
-    launcher_controller_->SetLauncherControllerHelperForTest(
-        std::make_unique<LauncherControllerHelper>(profile_.get()));
-    launcher_controller_->Init();
-    return launcher_controller_.get();
+  ChromeShelfController* CreateShelfController() {
+    shelf_controller_ =
+        std::make_unique<ChromeShelfController>(profile_.get(), model_.get());
+    shelf_controller_->SetProfileForTest(profile_.get());
+    shelf_controller_->SetShelfControllerHelperForTest(
+        std::make_unique<ShelfControllerHelper>(profile_.get()));
+    shelf_controller_->Init();
+    return shelf_controller_.get();
   }
 
   void DisableFlushForAppService() { should_flush_for_app_service_ = false; }
@@ -715,7 +717,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     return arc::mojom::ArcPackageInfo::New(
         package_name, package_version, 1 /* last_backup_android_id */,
         1 /* last_backup_time */, true /* sync */, false /* system */,
-        false /* vpn_provider */, nullptr /* web_app_info */, base::nullopt,
+        false /* vpn_provider */, nullptr /* web_app_info */, absl::nullopt,
         std::move(permissions) /* permission states */);
   }
 
@@ -826,7 +828,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<AppServiceAppModelBuilder> builder_;
-  std::unique_ptr<ChromeLauncherController> launcher_controller_;
+  std::unique_ptr<ChromeShelfController> shelf_controller_;
   std::unique_ptr<ash::ShelfModel> model_;
   bool should_flush_for_app_service_ = true;
 };
@@ -1545,7 +1547,8 @@ TEST_P(ArcAppModelBuilderTest, IsUnknownSyncTest) {
   auto data_list = syncer::SyncDataList();
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_arc_package()->set_package_name(sync_package_name);
-  data_list.push_back(syncer::SyncData::CreateRemoteData(specifics));
+  data_list.push_back(syncer::SyncData::CreateRemoteData(
+      specifics, syncer::ClientTagHash::FromHashed("unused")));
   auto* sync_service = arc::ArcPackageSyncableServiceFactory::GetInstance()
                            ->GetForBrowserContext(profile_.get());
   ASSERT_NE(nullptr, sync_service);
@@ -3018,14 +3021,14 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
   const std::string id3 = ArcAppTest::GetAppId(app3);
 
   {
-    ArcAppLauncher launcher1(profile(), id1, base::Optional<std::string>(),
-                             false, display::kInvalidDisplayId,
+    ArcAppLauncher launcher1(profile(), id1, nullptr, false,
+                             display::kInvalidDisplayId,
                              apps::mojom::LaunchSource::kFromChromeInternal);
     EXPECT_FALSE(launcher1.app_launched());
     EXPECT_TRUE(prefs->HasObserver(&launcher1));
 
-    ArcAppLauncher launcher3(profile(), id3, base::Optional<std::string>(),
-                             false, display::kInvalidDisplayId,
+    ArcAppLauncher launcher3(profile(), id3, nullptr, false,
+                             display::kInvalidDisplayId,
                              apps::mojom::LaunchSource::kFromChromeInternal);
     EXPECT_FALSE(launcher1.app_launched());
     EXPECT_TRUE(prefs->HasObserver(&launcher1));
@@ -3047,18 +3050,23 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
   ASSERT_EQ(1u, app_instance()->launch_requests().size());
   EXPECT_TRUE(app_instance()->launch_requests()[0]->IsForApp(app1));
 
-  const std::string launch_intent2 = arc::GetLaunchIntent(
-      app2.package_name, app2.activity, std::vector<std::string>());
-  ArcAppLauncher launcher2(profile(), id2, launch_intent2, false,
-                           display::kInvalidDisplayId,
-                           apps::mojom::LaunchSource::kFromChromeInternal);
-  EXPECT_TRUE(launcher2.app_launched());
-  EXPECT_FALSE(prefs->HasObserver(&launcher2));
+  const std::string launch_intent2_str = arc::GetLaunchIntent(
+      app2.package_name, app2.activity,
+      std::vector<std::string>{"S.org.chromium.arc.start_type=initialStart"});
+  {
+    auto launch_intent2 = apps_util::CreateIntentForActivity(
+        app2.activity, arc::kInitialStartParam, arc::kCategoryLauncher);
+    ArcAppLauncher launcher2(profile(), id2, std::move(launch_intent2), false,
+                             display::kInvalidDisplayId,
+                             apps::mojom::LaunchSource::kFromChromeInternal);
+    EXPECT_TRUE(launcher2.app_launched());
+    EXPECT_FALSE(prefs->HasObserver(&launcher2));
+  }
 
   FlushMojoCallsForAppService();
   EXPECT_EQ(1u, app_instance()->launch_requests().size());
   ASSERT_EQ(1u, app_instance()->launch_intents().size());
-  EXPECT_EQ(app_instance()->launch_intents()[0], launch_intent2);
+  EXPECT_EQ(app_instance()->launch_intents()[0], launch_intent2_str);
 }
 
 // Suspended app cannot be triggered from app launcher.
@@ -3070,8 +3078,8 @@ TEST_P(ArcAppModelBuilderTest, AppLauncherForSuspendedApp) {
   app.suspended = true;
   const std::string app_id = ArcAppTest::GetAppId(app);
 
-  ArcAppLauncher launcher(profile(), app_id, base::Optional<std::string>(),
-                          false, display::kInvalidDisplayId,
+  ArcAppLauncher launcher(profile(), app_id, nullptr, false,
+                          display::kInvalidDisplayId,
                           apps::mojom::LaunchSource::kFromChromeInternal);
   EXPECT_FALSE(launcher.app_launched());
 
@@ -3471,12 +3479,12 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppLauncherForDefaultApps) {
   const std::string id2 = ArcAppTest::GetAppId(app2);
 
   // Launch when app is registered and ready.
-  ArcAppLauncher launcher1(profile(), id1, base::Optional<std::string>(), false,
+  ArcAppLauncher launcher1(profile(), id1, nullptr, false,
                            display::kInvalidDisplayId,
                            apps::mojom::LaunchSource::kFromChromeInternal);
 
   // Launch when app is registered.
-  ArcAppLauncher launcher2(profile(), id2, base::Optional<std::string>(), true,
+  ArcAppLauncher launcher2(profile(), id2, nullptr, true,
                            display::kInvalidDisplayId,
                            apps::mojom::LaunchSource::kFromChromeInternal);
 

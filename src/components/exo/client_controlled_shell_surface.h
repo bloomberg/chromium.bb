@@ -184,6 +184,12 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // |accessibility_id| is negative value, it will unset the ID.
   void SetClientAccessibilityId(int32_t accessibility_id);
 
+  // Rebind a surface as the root surface of the shell surface.
+  void RebindRootSurface(Surface* root_surface,
+                         bool can_minimize,
+                         int container,
+                         bool default_scale_cancellation);
+
   // Overridden from SurfaceTreeHost:
   void DidReceiveCompositorFrameAck() override;
 
@@ -246,6 +252,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   float GetScale() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ClientControlledShellSurfaceTest,
+                           OverlayShadowBounds);
   class ScopedSetBoundsLocally;
   class ScopedLockedToRoot;
 
@@ -253,7 +261,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::WindowState* window_state) override;
-  base::Optional<gfx::Rect> GetWidgetBounds() const override;
+  absl::optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
@@ -368,7 +376,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;
 
   // Accessibility ID provided by client.
-  base::Optional<int32_t> client_accessibility_id_;
+  absl::optional<int32_t> client_accessibility_id_;
 
   bool pending_resize_lock_ = false;
 

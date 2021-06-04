@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -45,7 +46,7 @@ class OddRecordHistogramChecker : public base::RecordHistogramChecker {
   ~OddRecordHistogramChecker() override = default;
 
   // base::RecordHistogramChecker:
-  bool ShouldRecord(uint64_t histogram_hash) const override {
+  bool ShouldRecord(uint32_t histogram_hash) const override {
     return histogram_hash % 2;
   }
 };
@@ -361,7 +362,7 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   std::string json(StatisticsRecorder::ToJSON(JSON_VERBOSITY_LEVEL_FULL));
 
   // Check for valid JSON.
-  Optional<Value> root = JSONReader::Read(json);
+  absl::optional<Value> root = JSONReader::Read(json);
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_dict());
 

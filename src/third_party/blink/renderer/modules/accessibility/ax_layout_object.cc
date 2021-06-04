@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_col_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
@@ -94,6 +95,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 namespace blink {
 
@@ -110,6 +112,10 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
 
 AXLayoutObject::~AXLayoutObject() {
   DCHECK(IsDetached());
+}
+
+LayoutObject* AXLayoutObject::GetLayoutObject() const {
+  return layout_object_;
 }
 
 bool IsProgrammaticallyScrollable(LayoutBox* box) {
@@ -161,15 +167,46 @@ static bool IsImageOrAltText(LayoutObject* layout_object, Node* node) {
   return false;
 }
 
+static bool ShouldIgnoreListItem(Node* node) {
+  DCHECK(node);
+
+  // http://www.w3.org/TR/wai-aria/complete#presentation
+  // A list item is presentational if its parent is a native list but
+  // it has an explicit ARIA role set on it that's anything other than "list".
+  Element* parent = FlatTreeTraversal::ParentElement(*node);
+  if (!parent)
+    return false;
+
+  if (IsA<HTMLMenuElement>(*parent) || IsA<HTMLUListElement>(*parent) ||
+      IsA<HTMLOListElement>(*parent)) {
+    AtomicString role = AccessibleNode::GetPropertyOrARIAAttribute(
+        parent, AOMStringProperty::kRole);
+    if (!role.IsEmpty() && role != "list")
+      return true;
+  }
+  return false;
+}
+
 ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   DCHECK(layout_object_);
 
   Node* node = GetNode();  // Can be null in the case of pseudo content.
 
-  if (layout_object_->IsListItemIncludingNG() || IsA<HTMLLIElement>(node))
+  if (IsA<HTMLLIElement>(node)) {
+    if (ShouldIgnoreListItem(node))
+      return ax::mojom::blink::Role::kNone;
     return ax::mojom::blink::Role::kListItem;
-  if (layout_object_->IsListMarkerIncludingAll())
+  }
+
+  if (layout_object_->IsListMarkerIncludingAll()) {
+    Node* list_item = layout_object_->GeneratingNode();
+    if (list_item && ShouldIgnoreListItem(list_item))
+      return ax::mojom::blink::Role::kNone;
     return ax::mojom::blink::Role::kListMarker;
+  }
+
+  if (layout_object_->IsListItemIncludingNG())
+    return ax::mojom::blink::Role::kListItem;
   if (layout_object_->IsBR())
     return ax::mojom::blink::Role::kLineBreak;
   if (layout_object_->IsText())
@@ -272,89 +309,6 @@ static bool IsLinkable(const AXObject& object) {
          object.GetLayoutObject()->IsText();
 }
 
-// Requires layoutObject to be present because it relies on style
-// user-modify. Don't move this logic to AXNodeObject.
-bool AXLayoutObject::IsEditable() const {
-  if (IsDetached())
-    return false;
-
-  const Node* node = GetNodeOrContainingBlockNode();
-  if (!node)
-    return false;
-
-  const auto* elem = DynamicTo<Element>(node);
-  if (!elem)
-    elem = FlatTreeTraversal::ParentElement(*node);
-  if (GetLayoutObject()->IsTextControlIncludingNG())
-    return true;
-
-  // Contrary to Firefox, we mark editable all auto-generated content, such as
-  // list bullets and soft line breaks, that are contained within an editable
-  // container.
-  if (HasEditableStyle(*node))
-    return true;
-
-  if (IsWebArea()) {
-    Document& document = GetLayoutObject()->GetDocument();
-    HTMLElement* body = document.body();
-    if (body && HasEditableStyle(*body)) {
-      // A web area is editable if the body is contenteditable, unless the body
-      // or an ancestor of the body is aria-hidden. The following avoids
-      // GetOrCreate() on the body so that IsEditable() can be called when
-      // layout is not clean. Check current object for AriaHiddenRoot(), and
-      // manually check the <html> and <body> elements directly.
-      bool is_null = true;
-      if (AriaHiddenRoot() ||
-          AccessibleNode::GetPropertyOrARIAAttribute(
-              body, AOMBooleanProperty::kHidden, is_null) ||
-          AccessibleNode::GetPropertyOrARIAAttribute(
-              body->parentElement(), AOMBooleanProperty::kHidden, is_null)) {
-        return false;
-      }
-      return true;
-    }
-
-    return HasEditableStyle(document);
-  }
-
-  return AXNodeObject::IsEditable();
-}
-
-// Requires layoutObject to be present because it relies on style
-// user-modify. Don't move this logic to AXNodeObject.
-// Returns true for a contenteditable or any descendant of it.
-bool AXLayoutObject::IsRichlyEditable() const {
-  if (IsDetached())
-    return false;
-
-  const Node* node = GetNodeOrContainingBlockNode();
-  if (!node)
-    return false;
-
-  const Element* elem = DynamicTo<Element>(node);
-  if (!elem)
-    elem = FlatTreeTraversal::ParentElement(*node);
-
-  // Contrary to Firefox, we mark richly editable all auto-generated content,
-  // such as list bullets and soft line breaks, that are contained within a
-  // richly editable container.
-  if (HasRichlyEditableStyle(*node))
-    return true;
-
-  if (IsWebArea()) {
-    Document& document = layout_object_->GetDocument();
-    HTMLElement* body = document.body();
-    if (body && HasRichlyEditableStyle(*body)) {
-      AXObject* ax_body = AXObjectCache().GetOrCreate(body);
-      return ax_body && ax_body != ax_body->AriaHiddenRoot();
-    }
-
-    return HasRichlyEditableStyle(document);
-  }
-
-  return AXNodeObject::IsRichlyEditable();
-}
-
 bool AXLayoutObject::IsLineBreakingObject() const {
   if (IsDetached())
     return false;
@@ -362,6 +316,11 @@ bool AXLayoutObject::IsLineBreakingObject() const {
   // Presentational objects should not contribute any of their remove semantic
   // meaning to the accessibility tree, including to its text representation.
   if (IsPresentational())
+    return false;
+
+  // Without this condition, LayoutNG reports list markers as line breaking
+  // objects (legacy layout does not).
+  if (RoleValue() == ax::mojom::blink::Role::kListMarker)
     return false;
 
   const LayoutObject* layout_object = GetLayoutObject();
@@ -515,6 +474,14 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (layout_object_->IsLayoutEmbeddedContent())
     return false;
 
+  if (node && node->IsInUserAgentShadowRoot()) {
+    if (auto* containing_media_element =
+            DynamicTo<HTMLMediaElement>(node->OwnerShadowHost())) {
+      if (!containing_media_element->ShouldShowControls())
+        return true;
+    }
+  }
+
   // Make sure renderers with layers stay in the tree.
   if (GetLayoutObject() && GetLayoutObject()->HasLayer() && node &&
       node->hasChildren()) {
@@ -559,11 +526,24 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
         ignored_reasons->push_back(IgnoredReason(kAXPresentational));
       return true;
     }
+    // Ignore text inside of an ignored <label>.
+    // To save processing, only walk up the ignored objects.
+    // This means that other interesting objects inside the <label> will
+    // cause the text to be unignored.
+    AXObject* ancestor = ParentObject();
+    while (ancestor && ancestor->AccessibilityIsIgnored()) {
+      if (ancestor->RoleValue() == ax::mojom::blink::Role::kLabelText) {
+        if (ignored_reasons)
+          ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+        return true;
+      }
+      ancestor = ancestor->ParentObject();
+    }
     return false;
   }
 
   // FIXME(aboxhall): may need to move?
-  base::Optional<String> alt_text = GetCSSAltText(node);
+  absl::optional<String> alt_text = GetCSSAltText(node);
   if (alt_text)
     return alt_text->IsEmpty();
 
@@ -761,7 +741,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
     if (cursor)
       break;
 
-    // No cursor found: will try get cursor from first layout child.
+    // No cursor found: will try getting the cursor from the last layout child.
     // This can happen on an inline element.
     LayoutObject* layout_child = layout_object->SlowLastChild();
     if (!layout_child)
@@ -794,7 +774,23 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   }
 
   // Fallback: Use AX parent's next on line.
-  return ax_object.ParentObject()->NextOnLine();
+  AXObject* ax_parent = ax_object.ParentObject();
+  AXObject* ax_result = ax_parent->NextOnLine();
+  if (!ax_result)
+    return nullptr;
+
+#if DCHECK_IS_ON()
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
+    DCHECK_NE(ax_result->ParentObject(), &ax_object)
+        << "NextOnLine() must not point to a child of the current object. "
+           "Because inline objects without try to return a result from their "
+           "parents, using a descendant can cause a previous position to be "
+           "reused, which appears as a loop in the nextOnLine data, and "
+           "can cause an infinite loop in consumers of the nextOnLine data";
+  }
+#endif
+
+  return ax_result;
 }
 
 AXObject* AXLayoutObject::NextOnLine() const {
@@ -927,8 +923,24 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
     return nullptr;
   }
 
-  // Fallback: Use AX parent's next on line.
-  return ax_object.ParentObject()->PreviousOnLine();
+  // Fallback: Use AX parent's previous on line.
+  AXObject* ax_parent = ax_object.ParentObject();
+  AXObject* ax_result = ax_parent->PreviousOnLine();
+  if (!ax_result)
+    return nullptr;
+
+#if DCHECK_IS_ON()
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
+    DCHECK_NE(ax_result->ParentObject(), &ax_object)
+        << "PreviousOnLine() must not point to a child of the current object. "
+           "Because inline objects without try to return a result from their "
+           "parents, using a descendant can cause a previous position to be "
+           "reused, which appears as a loop in the previousOnLine data, and "
+           "can cause an infinite loop in consumers of the previousOnLine data";
+  }
+#endif
+
+  return ax_result;
 }
 
 AXObject* AXLayoutObject::PreviousOnLine() const {
@@ -1015,7 +1027,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
                                        AXRelatedObjectVector* related_objects,
                                        NameSources* name_sources) const {
   if (layout_object_) {
-    base::Optional<String> text_alternative = GetCSSAltText(GetNode());
+    absl::optional<String> text_alternative = GetCSSAltText(GetNode());
     bool found_text_alternative = false;
     if (text_alternative) {
       if (name_sources) {
@@ -1133,17 +1145,18 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   // Allow the element to perform any hit-testing it might need to do to reach
   // non-layout children.
   result = result->ElementAccessibilityHitTest(point);
-  if (result && result->AccessibilityIsIgnored()) {
+
+  while (result && result->AccessibilityIsIgnored()) {
     // If this element is the label of a control, a hit test should return the
-    // control.
-    if (auto* ax_object = DynamicTo<AXLayoutObject>(result)) {
-      AXObject* control_object =
-          ax_object->CorrespondingControlAXObjectForLabelElement();
-      if (control_object && control_object->NameFromLabelElement())
-        return control_object;
+    // control. The label is ignored because it's already reflected in the name.
+    if (auto* label = DynamicTo<HTMLLabelElement>(result->GetNode())) {
+      if (HTMLElement* control = label->control()) {
+        if (AXObject* ax_control = AXObjectCache().GetOrCreate(control))
+          return ax_control;
+      }
     }
 
-    result = result->ParentObjectUnignored();
+    result = result->ParentObject();
   }
 
   return result;

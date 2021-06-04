@@ -9,6 +9,7 @@
 #include <dwmapi.h>
 #include <uxtheme.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -93,7 +94,7 @@ class VirtualDesktopHelper
   // last we checked. This is used to tell if the window has moved to a
   // different desktop, and notify listeners. It will only be set if
   // we created |virtual_desktop_helper_|.
-  base::Optional<std::string> workspace_;
+  absl::optional<std::string> workspace_;
 
   bool initial_workspace_remembered_ = false;
 
@@ -233,9 +234,8 @@ BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {}
 views::NativeMenuWin* BrowserDesktopWindowTreeHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
     SystemMenuInsertionDelegateWin insertion_delegate;
-    system_menu_.reset(
-        new views::NativeMenuWin(browser_frame_->GetSystemMenuModel(),
-                                 GetHWND()));
+    system_menu_ = std::make_unique<views::NativeMenuWin>(
+        browser_frame_->GetSystemMenuModel(), GetHWND());
     system_menu_->Rebuild(&insertion_delegate);
   }
   return system_menu_.get();

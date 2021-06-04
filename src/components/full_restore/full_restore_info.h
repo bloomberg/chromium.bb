@@ -26,11 +26,9 @@ namespace full_restore {
 // FullRestoreInfo is responsible for providing the information for
 // FullRestoreInfo::Observer, including:
 // 1. Whether we should restore apps and browser windows for |account_id|.
-// 2. Notifies when |window| is ready to be restored, after we have the app
+// 2. Notifies when the restore pref is changed for |account_id|.
+// 3. Notifies when |window| is ready to be restored, after we have the app
 // launch information, e.g. a task id for an ARC app
-//
-// TODO(crbug.com/1146900): Get the app launch information, and notify
-// observers.
 class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
  public:
   class Observer : public base::CheckedObserver {
@@ -38,6 +36,12 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
     // Notifies when |restore_flags_| is changed.
     virtual void OnRestoreFlagChanged(const AccountId& account_id,
                                       bool should_restore) {}
+
+    // Notifies when the restore pref is changed. If the restore pref is 'Do not
+    // restore', `could_restore` is false. Otherwise, `could_restore` is true,
+    // for the pref 'Always' and 'Ask every time'.
+    virtual void OnRestorePrefChanged(const AccountId& account_id,
+                                      bool could_restore) {}
 
     // Notifies when |window| is ready to save the window info.
     //
@@ -59,6 +63,11 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
     // initialized. This is called sometime after OnWindowInitialized, and the
     // ARC task also may not be created yet at this point.
     virtual void OnWidgetInitialized(views::Widget* widget) {}
+
+    // Called once a window which was created without an associated task is now
+    // associated with a ARC task. Will not be called for non-ARC windows, or
+    // ARC windows created with an associated task.
+    virtual void OnARCTaskReadyForUnparentedWindow(aura::Window* window) {}
 
    protected:
     ~Observer() override = default;
@@ -83,6 +92,16 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
   // and the user's choice from the notification for |account_id|.
   void SetRestoreFlag(const AccountId& account_id, bool should_restore);
 
+  // Returns true if the restore pref is 'Always' or 'Ask every time', as we
+  // could restore apps and pages based on the user's choice from the
+  // notification for `account_id`. Otherwise, returns false, when the restore
+  // pref is 'Do not restore'.
+  bool CanPerformRestore(const AccountId& account_id);
+
+  // Sets whether we could restore apps and pages, based on the restore pref
+  // setting for `account_id`.
+  void SetRestorePref(const AccountId& account_id, bool could_restore);
+
   // Notifies observers to observe |window| and restore or save the window info
   // for |window|.
   void OnAppLaunched(aura::Window* window);
@@ -93,6 +112,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
   // Notifies observers that |widget| has been initialized.
   void OnWidgetInitialized(views::Widget* widget);
 
+  // Notifies observers that `window`, which previously had no associated task,
+  // now has one.
+  void OnARCTaskReadyForUnparentedWindow(aura::Window* window);
+
  private:
   base::ObserverList<Observer> observers_;
 
@@ -100,6 +123,12 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreInfo {
   // added, that means we should restore apps and pages for the account id.
   // Otherwise, we should not restore for the account id.
   std::set<AccountId> restore_flags_;
+
+  // Records the restore pref. If the account id is not added, that means the
+  // restore pref is 'Do not restore' for the account id. Otherwise, the restore
+  // pref is 'Always' or 'Ask every time', and we could restore for the account
+  // id.
+  std::set<AccountId> restore_prefs_;
 };
 
 }  // namespace full_restore

@@ -6,13 +6,17 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/types/pass_key.h"
+#include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/biometric_authenticator.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -28,6 +32,7 @@ namespace {
 
 using ShowVirtualKeyboard =
     password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
+using password_manager::BiometricsAvailability;
 using password_manager::PasswordManagerDriver;
 using password_manager::UiCredential;
 
@@ -49,15 +54,25 @@ std::vector<UiCredential> SortCredentials(
 }  // namespace
 
 TouchToFillController::TouchToFillController(
-    base::PassKey<TouchToFillControllerTest>) {}
+    base::PassKey<TouchToFillControllerTest>,
+    scoped_refptr<password_manager::BiometricAuthenticator> authenticator)
+    : authenticator_(std::move(authenticator)) {}
 
 TouchToFillController::TouchToFillController(
-    ChromePasswordManagerClient* password_client)
+    ChromePasswordManagerClient* password_client,
+    scoped_refptr<password_manager::BiometricAuthenticator> authenticator)
     : password_client_(password_client),
+      authenticator_(std::move(authenticator)),
       source_id_(ukm::GetSourceIdForWebContentsDocument(
           password_client_->web_contents())) {}
 
-TouchToFillController::~TouchToFillController() = default;
+TouchToFillController::~TouchToFillController() {
+  if (authenticator_) {
+    // This is a noop if no auth triggered by Touch To Fill is in progress.
+    authenticator_->Cancel(
+        password_manager::BiometricAuthRequester::kTouchToFill);
+  }
+}
 
 void TouchToFillController::Show(base::span<const UiCredential> credentials,
                                  base::WeakPtr<PasswordManagerDriver> driver) {
@@ -92,15 +107,23 @@ void TouchToFillController::OnCredentialSelected(
   if (!driver_)
     return;
 
-  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
-      credential.is_affiliation_based_match().value());
-  driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
-  std::exchange(driver_, nullptr)
-      ->FillSuggestion(credential.username(), credential.password());
-
   ukm::builders::TouchToFill_Shown(source_id_)
       .SetUserAction(static_cast<int64_t>(UserAction::kSelectedCredential))
       .Record(ukm::UkmRecorder::Get());
+
+  if (!authenticator_ ||
+      authenticator_->CanAuthenticate() !=
+          password_manager::BiometricsAvailability::kAvailable) {
+    FillCredential(credential);
+    return;
+  }
+  // `this` notifies the authenticator when it is destructed, resulting in
+  // the callback being reset by the authenticator. Therefore, it is safe
+  // to use base::Unretained.
+  authenticator_->Authenticate(
+      password_manager::BiometricAuthRequester::kTouchToFill,
+      base::BindOnce(&TouchToFillController::OnReauthCompleted,
+                     base::Unretained(this), credential));
 }
 
 void TouchToFillController::OnManagePasswordsSelected() {
@@ -132,4 +155,29 @@ void TouchToFillController::OnDismiss() {
 
 gfx::NativeView TouchToFillController::GetNativeView() {
   return password_client_->web_contents()->GetNativeView();
+}
+
+void TouchToFillController::OnReauthCompleted(UiCredential credential,
+                                              bool auth_successful) {
+  if (!driver_)
+    return;
+
+  if (!auth_successful) {
+    std::exchange(driver_, nullptr)
+        ->TouchToFillClosed(ShowVirtualKeyboard(true));
+    return;
+  }
+
+  FillCredential(credential);
+}
+
+void TouchToFillController::FillCredential(const UiCredential& credential) {
+  DCHECK(driver_);
+
+  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
+      credential.is_affiliation_based_match().value());
+  driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
+
+  std::exchange(driver_, nullptr)
+      ->FillSuggestion(credential.username(), credential.password());
 }

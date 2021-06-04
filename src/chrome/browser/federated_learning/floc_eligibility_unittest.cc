@@ -203,6 +203,27 @@ TEST_F(FlocEligibilityUnitTest, StopObservingFlocPermissionsPolicyDisabled) {
   EXPECT_FALSE(IsUrlVisitEligibleToComputeFloc(url));
 }
 
+class FlocEligibilityUnitTestkBypassIPIsPubliclyRoutableCheck
+    : public FlocEligibilityUnitTest {
+ public:
+  FlocEligibilityUnitTestkBypassIPIsPubliclyRoutableCheck() {
+    feature_list_.InitAndEnableFeature(kFlocBypassIPIsPubliclyRoutableCheck);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(FlocEligibilityUnitTestkBypassIPIsPubliclyRoutableCheck,
+       ContinueObservingPrivateIP) {
+  GURL url("https://foo.com");
+  NavigateToPage(url, /*publicly_routable=*/false,
+                 /*floc_permissions_policy_enabled=*/true);
+
+  GetFlocEligibilityObserver()->OnInterestCohortApiUsed();
+  EXPECT_TRUE(IsUrlVisitEligibleToComputeFloc(url));
+}
+
 class FlocEligibilityUnitTestPagesWithAdResourcesDefaultIncluded
     : public FlocEligibilityUnitTest {
  public:
@@ -247,8 +268,9 @@ class FlocEligibilityIncognitoUnitTest : public FlocEligibilityUnitTest {
   void InitWebContents() override {
     TestingProfile::Builder().BuildIncognito(profile());
     incognito_web_contents_ = content::WebContentsTester::CreateTestWebContents(
-        profile()->GetPrimaryOTRProfile(),
-        content::SiteInstance::Create(profile()->GetPrimaryOTRProfile()));
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        content::SiteInstance::Create(
+            profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)));
   }
 
   content::WebContents* GetWebContents() override {

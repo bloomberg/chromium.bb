@@ -60,7 +60,6 @@
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
@@ -83,6 +82,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/in_progress_download_manager.h"
@@ -90,6 +90,7 @@
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
@@ -403,7 +404,7 @@ class DownloadsHistoryDataCollector {
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
-  return BrowserContext::GetDownloadManager(browser->profile());
+  return browser->profile()->GetDownloadManager();
 }
 
 bool WasAutoOpened(DownloadItem* item) {
@@ -2702,7 +2703,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
   // the download request.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  absl::optional<network::ResourceRequest::TrustedParams> trusted_params;
   net::SiteForCookies site_for_cookies;
 
   base::RunLoop request_waiter;
@@ -2790,7 +2791,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
   // the download request.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  absl::optional<network::ResourceRequest::TrustedParams> trusted_params;
   net::SiteForCookies site_for_cookies;
 
   base::RunLoop request_waiter;
@@ -2862,7 +2863,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
   // the download request.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  absl::optional<network::ResourceRequest::TrustedParams> trusted_params;
   net::SiteForCookies site_for_cookies;
 
   base::RunLoop request_waiter;
@@ -2952,7 +2953,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
   // the download request.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  absl::optional<network::ResourceRequest::TrustedParams> trusted_params;
   net::SiteForCookies site_for_cookies;
 
   base::RunLoop request_waiter;
@@ -4635,6 +4636,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadLargeDataURL) {
 class InProgressDownloadTest : public DownloadTest {
  public:
   InProgressDownloadTest() {
+    feature_list_.InitWithFeatures(
+        {download::features::kUseInProgressDownloadManagerForDownloadService},
+        {});
+
     // The in progress download manager will be released from
     // `DownloadManagerUtils` during creation of the `DownloadManagerImpl`. As
     // the `DownloadManagerImpl` may be created before test bodies can run,
@@ -4677,6 +4682,7 @@ class InProgressDownloadTest : public DownloadTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   download::InProgressDownloadManager* in_progress_manager_ = nullptr;
 };
 
@@ -4729,7 +4735,7 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
           false /* allow_metered */, false /* opened */, current_time,
           false /* transient */,
           std::vector<download::DownloadItem::ReceivedSlice>(),
-          base::nullopt /*download_schedule*/, nullptr /* download_entry */));
+          absl::nullopt /*download_schedule*/, nullptr /* download_entry */));
 
   download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
   content::DownloadManager* manager = DownloadManagerForBrowser(browser());

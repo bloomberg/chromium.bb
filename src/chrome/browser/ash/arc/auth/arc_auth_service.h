@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/ash/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -79,8 +79,8 @@ class ArcAuthService : public KeyedService,
                              mojom::ArcSignInAccountPtr account) override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
-  void ReportSupervisionChangeStatus(
-      mojom::SupervisionChangeStatus status) override;
+  void ReportManagementChangeStatus(
+      mojom::ManagementChangeStatus status) override;
   void RequestPrimaryAccountInfo(
       RequestPrimaryAccountInfoCallback callback) override;
   void RequestAccountInfo(const std::string& account_name,

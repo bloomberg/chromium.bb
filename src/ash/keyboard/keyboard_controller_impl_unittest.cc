@@ -22,11 +22,11 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -121,7 +121,7 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
   gfx::Rect occluded_bounds_;
   gfx::Rect draggable_area_;
   gfx::Rect area_to_remain_on_screen_;
-  base::Optional<gfx::Rect> adjusted_bounds_in_screen_;
+  absl::optional<gfx::Rect> adjusted_bounds_in_screen_;
 };
 
 class KeyboardControllerImplTest : public AshTestBase {
@@ -746,6 +746,28 @@ TEST_F(KeyboardControllerImplTest, FlingUpToShowOverviewMode) {
   ASSERT_TRUE(keyboard::WaitUntilHidden());
   EXPECT_EQ(HotseatState::kShownHomeLauncher,
             GetShelfLayoutManager()->hotseat_state());
+}
+
+TEST_F(KeyboardControllerImplTest, SwipeUpDoesntHideKeyboardInClamshellMode) {
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  keyboard_ui_controller()->ShowKeyboard(/* lock */ false);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start(display_bounds.bottom_center());
+  const gfx::Point end(start + gfx::Vector2d(0, -80));
+  const base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(100);
+  const int num_scroll_steps = 4;
+  GetEventGenerator()->GestureScrollSequence(start, end, time_delta,
+                                             num_scroll_steps);
+
+  EXPECT_FALSE(keyboard::IsKeyboardHiding());
 }
 
 }  // namespace ash

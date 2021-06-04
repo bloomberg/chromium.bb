@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/system/phonehub/onboarding_view.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_hub_ui_controller.h"
@@ -27,13 +28,15 @@ namespace ash {
 
 class PhoneHubContentView;
 class TrayBubbleWrapper;
+class SessionControllerImpl;
 
 // This class represents the Phone Hub tray button in the status area and
 // controls the bubble that is shown when the tray button is clicked.
 class ASH_EXPORT PhoneHubTray : public TrayBackgroundView,
                                 public OnboardingView::Delegate,
                                 public PhoneStatusView::Delegate,
-                                public PhoneHubUiController::Observer {
+                                public PhoneHubUiController::Observer,
+                                public SessionObserver {
  public:
   explicit PhoneHubTray(Shelf* shelf);
   PhoneHubTray(const PhoneHubTray&) = delete;
@@ -79,9 +82,20 @@ class ASH_EXPORT PhoneHubTray : public TrayBackgroundView,
   // PhoneHubUiController::Observer:
   void OnPhoneHubUiStateChanged() override;
 
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
   // Updates the visibility of the tray in the shelf based on the feature is
   // enabled.
   void UpdateVisibility();
+
+  // Disables the animation and enables it back after a 5s delay. This tray's
+  // visibility can be updated when the connection is complete. After a session
+  // has started (login/unlock/user-switch), a duration is added here to delay
+  // the animation being enabled, since it would take a few seconds to get
+  // connected.
+  void TemporarilyDisableAnimation();
 
   // Icon of the tray. Unowned.
   views::ImageView* icon_;
@@ -102,6 +116,8 @@ class ASH_EXPORT PhoneHubTray : public TrayBackgroundView,
 
   base::ScopedObservation<PhoneHubUiController, PhoneHubUiController::Observer>
       observed_phone_hub_ui_controller_{this};
+  base::ScopedObservation<SessionControllerImpl, SessionObserver>
+      observed_session_{this};
 };
 
 }  // namespace ash

@@ -32,6 +32,7 @@ class WaylandPopup : public WaylandWindow {
   void HandleSurfaceConfigure(uint32_t serial) override;
   void OnCloseRequest() override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
+  WaylandPopup* AsWaylandPopup() override;
 
   // Creates a popup window, which is visible as a menu window.
   bool CreateShellPopup();
@@ -50,6 +51,8 @@ class WaylandPopup : public WaylandWindow {
   wl::Object<zaura_surface> aura_surface_;
 
   PlatformWindowShadowType shadow_type_ = PlatformWindowShadowType::kNone;
+
+  gfx::Rect pending_initial_bounds_px_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandPopup);
 };

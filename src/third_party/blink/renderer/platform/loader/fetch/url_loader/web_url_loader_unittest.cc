@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_request_peer.h"
 #include "third_party/blink/public/platform/web_resource_request_sender.h"
@@ -282,7 +283,7 @@ class TestWebURLLoaderClient : public WebURLLoaderClient {
   bool did_receive_response() const { return did_receive_response_; }
   bool did_receive_response_body() const { return !!response_body_; }
   bool did_finish() const { return did_finish_; }
-  const base::Optional<WebURLError>& error() const { return error_; }
+  const absl::optional<WebURLError>& error() const { return error_; }
   const WebURLResponse& response() const { return response_; }
 
  private:
@@ -299,7 +300,7 @@ class TestWebURLLoaderClient : public WebURLLoaderClient {
   bool did_receive_response_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
   bool did_finish_;
-  base::Optional<WebURLError> error_;
+  absl::optional<WebURLError> error_;
   WebURLResponse response_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebURLLoaderClient);
@@ -322,7 +323,6 @@ class WebURLLoaderTest : public testing::Test {
     request->priority = net::IDLE;
     client()->loader()->LoadAsynchronously(
         std::move(request), /*url_request_extra_data=*/nullptr,
-        /*requestor_id=*/0,
         /*no_mime_sniffing=*/false,
         std::make_unique<ResourceLoadInfoNotifierWrapper>(
             /*resource_load_info_notifier=*/nullptr),
@@ -520,7 +520,7 @@ TEST_F(WebURLLoaderTest, ResponseAddressSpace) {
       {"file:///a/path", "", AddressSpace::kLocal},
       {"file:///a/path", "8.8.8.8", AddressSpace::kLocal},
       {"http://router.local", "10.1.0.1", AddressSpace::kPrivate},
-      {"http://router.local", "::ffff:192.0.2.128", AddressSpace::kPrivate},
+      {"http://router.local", "::ffff:192.168.2.128", AddressSpace::kPrivate},
       {"https://bleep.test", "8.8.8.8", AddressSpace::kPublic},
       {"http://a.test", "2001:db8:85a3::8a2e:370:7334", AddressSpace::kPublic},
       {"http://invalid", "", AddressSpace::kUnknown},
@@ -597,7 +597,7 @@ TEST_F(WebURLLoaderTest, ResponseCert) {
   WebURLResponse web_url_response;
   WebURLLoader::PopulateURLResponse(url, head, &web_url_response, true, -1);
 
-  base::Optional<WebURLResponse::WebSecurityDetails> security_details =
+  absl::optional<WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
   ASSERT_TRUE(security_details.has_value());
   EXPECT_EQ("TLS 1.2", security_details->protocol);
@@ -635,7 +635,7 @@ TEST_F(WebURLLoaderTest, ResponseCertWithNoSANs) {
   WebURLResponse web_url_response;
   WebURLLoader::PopulateURLResponse(url, head, &web_url_response, true, -1);
 
-  base::Optional<WebURLResponse::WebSecurityDetails> security_details =
+  absl::optional<WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
   ASSERT_TRUE(security_details.has_value());
   EXPECT_EQ("TLS 1.2", security_details->protocol);
@@ -673,7 +673,7 @@ TEST_F(WebURLLoaderTest, SyncLengths) {
   sender()->set_sync_load_response(std::move(sync_load_response));
 
   WebURLResponse response;
-  base::Optional<WebURLError> error;
+  absl::optional<WebURLError> error;
   WebData data;
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
@@ -681,7 +681,6 @@ TEST_F(WebURLLoaderTest, SyncLengths) {
 
   client()->loader()->LoadSynchronously(
       std::move(request), /*url_request_extra_data=*/nullptr,
-      /*requestor_id=*/0,
       /*pass_response_pipe_to_client=*/false, /*no_mime_sniffing=*/false,
       base::TimeDelta(), nullptr, response, error, data, encoded_data_length,
       encoded_body_length, downloaded_blob,

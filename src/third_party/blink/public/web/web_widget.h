@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 
 #include "base/callback.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
@@ -59,17 +58,11 @@
 namespace cc {
 class LayerTreeHost;
 class LayerTreeSettings;
-class TaskGraphRunner;
-class UkmRecorderFactory;
 }
 
 namespace ui {
 class Cursor;
 class LatencyInfo;
-}
-
-namespace gfx {
-class RenderingPipeline;
 }
 
 namespace blink {
@@ -91,12 +84,8 @@ class WebWidget {
   // override the defaults.
   virtual void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-      cc::TaskGraphRunner* task_graph_runner,
       const ScreenInfos& screen_info,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-      const cc::LayerTreeSettings* settings,
-      gfx::RenderingPipeline* main_thread_pipeline,
-      gfx::RenderingPipeline* compositor_thread_pipeline) = 0;
+      const cc::LayerTreeSettings* settings) = 0;
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink and begin producing frames from the
@@ -170,7 +159,7 @@ class WebWidget {
       mojom::InputEventResultState ack_state,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams>,
-      base::Optional<cc::TouchAction>)>;
+      absl::optional<cc::TouchAction>)>;
 
   // Process the input event, invoking the callback when complete. This
   // method will call the callback synchronously.
@@ -245,4 +234,4 @@ class WebWidget {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_

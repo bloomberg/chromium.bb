@@ -47,8 +47,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
 
-  // Public, overridden from AXObject.
-  LayoutObject* GetLayoutObject() const final { return layout_object_; }
+  // AXObject overrides:
+  LayoutObject* GetLayoutObject() const final;
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
 
   // If this is an anonymous node, returns the node of its containing layout
@@ -70,8 +70,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsAXLayoutObject() const final;
 
   // Check object role or purpose.
-  bool IsEditable() const override;
-  bool IsRichlyEditable() const override;
   bool IsLineBreakingObject() const override;
   bool IsLinked() const override;
   bool IsOffScreen() const override;

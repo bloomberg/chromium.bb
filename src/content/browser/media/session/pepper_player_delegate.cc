@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/browser/media/session/pepper_playback_observer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/common/frame_messages.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/media_position.h"
 
@@ -81,11 +80,11 @@ void PepperPlayerDelegate::OnSetAudioSinkId(int player_id,
   NOTREACHED();
 }
 
-base::Optional<media_session::MediaPosition> PepperPlayerDelegate::GetPosition(
+absl::optional<media_session::MediaPosition> PepperPlayerDelegate::GetPosition(
     int player_id) const {
   // Pepper does not support position data.
   DCHECK_EQ(player_id, kPlayerId);
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool PepperPlayerDelegate::IsPictureInPictureAvailable(int player_id) const {

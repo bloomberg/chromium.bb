@@ -19,17 +19,29 @@ const base::Feature kMobileIdentityConsistencyVar{
 // Feature flag for FRE related changes as part of MICE.
 const base::Feature kMobileIdentityConsistencyFRE{
     "MobileIdentityConsistencyFRE", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMobileIdentityConsistencyPromos{
+    "MobileIdentityConsistencyPromos", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_IOS)
 const base::Feature kMobileIdentityConsistency{
     "MobileIdentityConsistency", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+
+const base::Feature kMICEWebSignIn{"MICEWebSignInEnabled",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_IOS)
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 bool IsMobileIdentityConsistencyEnabled() {
   return base::FeatureList::IsEnabled(kMobileIdentityConsistency);
 }
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+#if defined(OS_IOS)
+bool IsMICEWebSignInEnabled() {
+  return IsMobileIdentityConsistencyEnabled() &&
+         base::FeatureList::IsEnabled(kMICEWebSignIn);
+}
+#endif  // defined(OS_IOS)
 
 }  // namespace signin

@@ -48,9 +48,10 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/owner_flags_storage.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_manager/user_manager.h"
@@ -128,8 +129,9 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
   // Show a warning info bar when kSafeMode switch is present.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kSafeMode)) {
-    SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(flags_ui->web_ui()->GetWebContents()),
+    CreateSimpleAlertInfoBar(
+        infobars::ContentInfoBarManager::FromWebContents(
+            flags_ui->web_ui()->GetWebContents()),
         infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
         &vector_icons::kWarningIcon,
         l10n_util::GetStringUTF16(IDS_FLAGS_IGNORED_DUE_TO_CRASHY_CHROME),
@@ -138,8 +140,9 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
 
   // Show a warning info bar for secondary users.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(flags_ui->web_ui()->GetWebContents()),
+    CreateSimpleAlertInfoBar(
+        infobars::ContentInfoBarManager::FromWebContents(
+            flags_ui->web_ui()->GetWebContents()),
         infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
         &vector_icons::kWarningIcon,
         l10n_util::GetStringUTF16(IDS_FLAGS_IGNORED_SECONDARY_USERS),

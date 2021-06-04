@@ -14,7 +14,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_split.h"
-#include "cast/streaming/capture_recommendations.h"
 #include "cast/streaming/constants.h"
 #include "platform/base/error.h"
 #include "util/big_endian.h"
@@ -60,10 +59,10 @@ ErrorOr<int> ParseRtpTimebase(const Json::Value& parent,
   // The spec demands a leading 1, so this isn't really a fraction.
   const auto fraction = SimpleFraction::FromString(error_or_raw.value());
   if (fraction.is_error() || !fraction.value().is_positive() ||
-      fraction.value().numerator != 1) {
+      fraction.value().numerator() != 1) {
     return json::CreateParseError("RTP timebase");
   }
-  return fraction.value().denominator;
+  return fraction.value().denominator();
 }
 
 // For a hex byte, the conversion is 4 bits to 1 character, e.g.
@@ -130,8 +129,7 @@ ErrorOr<Stream> ParseStream(const Json::Value& value, Stream::Type type) {
     return rtp_timebase.error();
   }
   if (rtp_timebase.value() <
-          std::min(capture_recommendations::kDefaultAudioMinSampleRate,
-                   kRtpVideoTimebase) ||
+          std::min(kDefaultAudioMinSampleRate, kRtpVideoTimebase) ||
       rtp_timebase.value() > kRtpVideoTimebase) {
     return json::CreateParameterError("rtp_timebase (sample rate)");
   }
@@ -172,7 +170,7 @@ ErrorOr<AudioStream> ParseAudioStream(const Json::Value& value) {
     return bit_rate.error();
   }
 
-  auto codec_name = json::ParseString(value, "codecName");
+  auto codec_name = json::ParseString(value, kCodecName);
   if (!codec_name) {
     return codec_name.error();
   }
@@ -189,21 +187,6 @@ ErrorOr<AudioStream> ParseAudioStream(const Json::Value& value) {
   return AudioStream{stream.value(), codec.value(), bit_rate.value()};
 }
 
-ErrorOr<Resolution> ParseResolution(const Json::Value& value) {
-  auto width = json::ParseInt(value, "width");
-  if (!width) {
-    return width.error();
-  }
-  auto height = json::ParseInt(value, "height");
-  if (!height) {
-    return height.error();
-  }
-  if (width.value() <= 0 || height.value() <= 0) {
-    return json::CreateParameterError("resolution");
-  }
-  return Resolution{width.value(), height.value()};
-}
-
 ErrorOr<std::vector<Resolution>> ParseResolutions(const Json::Value& parent,
                                                   const std::string& field) {
   std::vector<Resolution> resolutions;
@@ -214,11 +197,11 @@ ErrorOr<std::vector<Resolution>> ParseResolutions(const Json::Value& parent,
   }
 
   for (Json::ArrayIndex i = 0; i < value.size(); ++i) {
-    auto r = ParseResolution(value[i]);
-    if (!r) {
-      return r.error();
+    Resolution resolution;
+    if (!Resolution::ParseAndValidate(value[i], &resolution)) {
+      return Error(Error::Code::kJsonParseError);
     }
-    resolutions.push_back(r.value());
+    resolutions.push_back(std::move(resolution));
   }
 
   return resolutions;
@@ -229,7 +212,7 @@ ErrorOr<VideoStream> ParseVideoStream(const Json::Value& value) {
   if (!stream) {
     return stream.error();
   }
-  auto codec_name = json::ParseString(value, "codecName");
+  auto codec_name = json::ParseString(value, kCodecName);
   if (!codec_name) {
     return codec_name.error();
   }
@@ -285,12 +268,8 @@ EnumNameTable<CastMode, 2> kCastModeNames{
 
 }  // namespace
 
-ErrorOr<Json::Value> Stream::ToJson() const {
-  if (channels < 1 || index < 0 || target_delay.count() <= 0 ||
-      target_delay.count() > std::numeric_limits<int>::max() ||
-      rtp_timebase < 1) {
-    return json::CreateParameterError("Stream");
-  }
+Json::Value Stream::ToJson() const {
+  OSP_DCHECK(IsValid());
 
   Json::Value root;
   root["index"] = index;
@@ -312,62 +291,47 @@ ErrorOr<Json::Value> Stream::ToJson() const {
   return root;
 }
 
-ErrorOr<Json::Value> AudioStream::ToJson() const {
-  // A bit rate of 0 is valid for some codec types, so we don't enforce here.
-  if (bit_rate < 0) {
-    return json::CreateParameterError("AudioStream");
-  }
-
-  auto error_or_stream = stream.ToJson();
-  if (error_or_stream.is_error()) {
-    return error_or_stream;
-  }
-
-  error_or_stream.value()["codecName"] = CodecToString(codec);
-  error_or_stream.value()["bitRate"] = bit_rate;
-  return error_or_stream;
+bool Stream::IsValid() const {
+  return channels >= 1 && index >= 0 && target_delay.count() > 0 &&
+         target_delay.count() <= std::numeric_limits<int>::max() &&
+         rtp_timebase >= 1;
 }
 
-ErrorOr<Json::Value> Resolution::ToJson() const {
-  if (width <= 0 || height <= 0) {
-    return json::CreateParameterError("Resolution");
-  }
+Json::Value AudioStream::ToJson() const {
+  OSP_DCHECK(IsValid());
 
-  Json::Value root;
-  root["width"] = width;
-  root["height"] = height;
-  return root;
+  Json::Value out = stream.ToJson();
+  out[kCodecName] = CodecToString(codec);
+  out["bitRate"] = bit_rate;
+  return out;
 }
 
-ErrorOr<Json::Value> VideoStream::ToJson() const {
-  if (max_bit_rate <= 0 || !max_frame_rate.is_positive()) {
-    return json::CreateParameterError("VideoStream");
-  }
+bool AudioStream::IsValid() const {
+  return bit_rate >= 0 && stream.IsValid();
+}
 
-  auto error_or_stream = stream.ToJson();
-  if (error_or_stream.is_error()) {
-    return error_or_stream;
-  }
+Json::Value VideoStream::ToJson() const {
+  OSP_DCHECK(IsValid());
 
-  auto& stream = error_or_stream.value();
-  stream["codecName"] = CodecToString(codec);
-  stream["maxFrameRate"] = max_frame_rate.ToString();
-  stream["maxBitRate"] = max_bit_rate;
-  stream["protection"] = protection;
-  stream["profile"] = profile;
-  stream["level"] = level;
-  stream["errorRecoveryMode"] = error_recovery_mode;
+  Json::Value out = stream.ToJson();
+  out["codecName"] = CodecToString(codec);
+  out["maxFrameRate"] = max_frame_rate.ToString();
+  out["maxBitRate"] = max_bit_rate;
+  out["protection"] = protection;
+  out["profile"] = profile;
+  out["level"] = level;
+  out["errorRecoveryMode"] = error_recovery_mode;
 
   Json::Value rs;
   for (auto resolution : resolutions) {
-    auto eoj = resolution.ToJson();
-    if (eoj.is_error()) {
-      return eoj;
-    }
-    rs.append(eoj.value());
+    rs.append(resolution.ToJson());
   }
-  stream["resolutions"] = std::move(rs);
-  return error_or_stream;
+  out["resolutions"] = std::move(rs);
+  return out;
+}
+
+bool VideoStream::IsValid() const {
+  return max_bit_rate > 0 && max_frame_rate.is_positive();
 }
 
 // static
@@ -375,10 +339,8 @@ ErrorOr<Offer> Offer::Parse(const Json::Value& root) {
   if (!root.isObject()) {
     return json::CreateParseError("null offer");
   }
-  ErrorOr<CastMode> cast_mode =
+  const ErrorOr<CastMode> cast_mode =
       GetEnum(kCastModeNames, root["castMode"].asString());
-  const ErrorOr<bool> get_status = json::ParseBool(root, "receiverGetStatus");
-
   Json::Value supported_streams = root[kSupportedStreams];
   if (!supported_streams.isArray()) {
     return json::CreateParseError("supported streams in offer");
@@ -420,36 +382,32 @@ ErrorOr<Offer> Offer::Parse(const Json::Value& root) {
     }
   }
 
-  return Offer{cast_mode.value(CastMode::kMirroring), get_status.value({}),
-               std::move(audio_streams), std::move(video_streams)};
+  return Offer{cast_mode.value(CastMode::kMirroring), std::move(audio_streams),
+               std::move(video_streams)};
 }
 
-ErrorOr<Json::Value> Offer::ToJson() const {
+Json::Value Offer::ToJson() const {
+  OSP_DCHECK(IsValid());
   Json::Value root;
-
   root["castMode"] = GetEnumName(kCastModeNames, cast_mode).value();
-  root["receiverGetStatus"] = supports_wifi_status_reporting;
-
   Json::Value streams;
-  for (auto& as : audio_streams) {
-    auto eoj = as.ToJson();
-    if (eoj.is_error()) {
-      return eoj;
-    }
-    streams.append(eoj.value());
+  for (auto& stream : audio_streams) {
+    streams.append(stream.ToJson());
   }
 
-  for (auto& vs : video_streams) {
-    auto eoj = vs.ToJson();
-    if (eoj.is_error()) {
-      return eoj;
-    }
-    streams.append(eoj.value());
+  for (auto& stream : video_streams) {
+    streams.append(stream.ToJson());
   }
 
   root[kSupportedStreams] = std::move(streams);
   return root;
 }
 
+bool Offer::IsValid() const {
+  return std::all_of(audio_streams.begin(), audio_streams.end(),
+                     [](const AudioStream& a) { return a.IsValid(); }) &&
+         std::all_of(video_streams.begin(), video_streams.end(),
+                     [](const VideoStream& v) { return v.IsValid(); });
+}
 }  // namespace cast
 }  // namespace openscreen

@@ -87,7 +87,6 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
   if (GetWebUIType(info.install_url) == WebUIType::kChrome) {
     auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
         GetDataSourceNameFromSystemAppInstallUrl(info.install_url));
-    content::WebUIControllerFactory::RegisterFactory(factory.get());
     web_ui_controller_factories_.push_back(std::move(factory));
   }
 
@@ -113,10 +112,7 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation() {
       base::Unretained(this)));
 }
 
-TestSystemWebAppInstallation::~TestSystemWebAppInstallation() {
-  for (auto& factory : web_ui_controller_factories_)
-    content::WebUIControllerFactory::UnregisterFactoryForTesting(factory.get());
-}
+TestSystemWebAppInstallation::~TestSystemWebAppInstallation() = default;
 
 std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
   auto info = std::make_unique<WebApplicationInfo>();
@@ -154,6 +150,7 @@ TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp() {
       "Terminal", GURL("chrome://test-system-app/pwa.html"),
       base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
   terminal_system_app_info.single_window = false;
+  terminal_system_app_info.has_tab_strip = true;
 
   return base::WrapUnique(new TestSystemWebAppInstallation(
       SystemAppType::TERMINAL, terminal_system_app_info));
@@ -278,7 +275,6 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
                                                )));
   auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
       kInitiatingAppUrl.host());
-  content::WebUIControllerFactory::RegisterFactory(factory.get());
   installation->web_ui_controller_factories_.push_back(std::move(factory));
 
   return base::WrapUnique(installation);
@@ -333,6 +329,32 @@ TestSystemWebAppInstallation::SetupAppWithAllowScriptsToCloseWindows(
     app_info.allow_scripts_to_close_windows = true;
   return base::WrapUnique(new TestSystemWebAppInstallation(
       SystemAppType::SAMPLE, std::move(app_info)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppWithTabStrip(bool has_tab_strip) {
+  SystemAppInfo app_info(
+      "Test", GURL("chrome://test-system-app/pwa.html"),
+      base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+  app_info.has_tab_strip = has_tab_strip;
+
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS, std::move(app_info)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppWithDefaultBounds(
+    const gfx::Rect& default_bounds) {
+  SystemAppInfo app_info(
+      "Test", GURL("chrome://test-system-app/pwa.html"),
+      base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+  app_info.get_default_bounds =
+      base::BindLambdaForTesting([&](Browser*) { return default_bounds; });
+
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS, std::move(app_info)));
 }
 
 std::unique_ptr<KeyedService>

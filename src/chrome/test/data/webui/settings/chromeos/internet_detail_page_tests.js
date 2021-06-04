@@ -8,6 +8,8 @@
 // #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
 // #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
 // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// #import {TestInternetPageBrowserProxy} from './test_internet_page_browser_proxy.m.js';
+// #import {InternetPageBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {waitAfterNextRender, eventToPromise} from 'chrome://test/test_util.m.js';
@@ -20,6 +22,9 @@ suite('InternetDetailPage', function() {
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
+
+  /** @type {?TestInternetPageBrowserProxy} */
+  let browserProxy = null;
 
   /** @type {Object} */
   const prefs_ = {
@@ -81,6 +86,44 @@ suite('InternetDetailPage', function() {
     return result;
   }
 
+  /**
+   * @param {boolean} isSimLocked
+   */
+  function deepLinkToSimLockElement(isSimLocked) {
+    init();
+    const mojom = chromeos.networkConfig.mojom;
+
+    const test_iccid = '11111111111111111';
+    mojoApi_.setDeviceStateForTest({
+      type: mojom.NetworkType.kCellular,
+      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+      simLockStatus: {
+        lockEnabled: true,
+        lockType: isSimLocked ? 'sim-pin' : undefined,
+      },
+      simInfos: [{
+        iccid: test_iccid,
+        isPrimary: true,
+      }],
+    });
+
+    const cellularNetwork =
+        getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+    cellularNetwork.connectable = false;
+    cellularNetwork.typeProperties.cellular.iccid = test_iccid;
+    mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+    const params = new URLSearchParams;
+    params.append('guid', 'cellular_guid');
+    params.append('type', 'Cellular');
+    params.append('name', 'cellular');
+    params.append('settingId', '14');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NETWORK_DETAIL, params);
+
+    return flushAsync();
+  }
+
   setup(function() {
     loadTimeData.overrideValues({
       internetAddConnection: 'internetAddConnection',
@@ -98,6 +141,9 @@ suite('InternetDetailPage', function() {
 
     PolymerTest.clearBody();
     mojoApi_.resetForTest();
+
+    browserProxy = new TestInternetPageBrowserProxy();
+    settings.InternetPageBrowserProxyImpl.instance_ = browserProxy;
   });
 
   teardown(function() {
@@ -372,6 +418,13 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPageCellular', function() {
+    async function expandConfigurableSection() {
+      const configurableSetions = internetDetailPage.$$('#configurableSetions');
+      assertTrue(!!configurableSetions);
+      configurableSetions.click();
+      await flushAsync();
+      assertTrue(internetDetailPage.showConfigurableSections_);
+    }
     // Regression test for https://crbug.com/1182884.
     test('Connect button enabled when not connectable', function() {
       init();
@@ -408,6 +461,31 @@ suite('InternetDetailPage', function() {
       });
     });
 
+    test(
+        'Cellular view account button opens carrier account details',
+        function() {
+          init();
+          const mojom = chromeos.networkConfig.mojom;
+          mojoApi_.setNetworkTypeEnabledState(
+              mojom.NetworkType.kCellular, true);
+          const cellularNetwork =
+              getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+          mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+          return flushAsync()
+              .then(() => {
+                const viewAccountButton =
+                    internetDetailPage.$$('#viewAccountButton');
+                assertTrue(!!viewAccountButton);
+                viewAccountButton.click();
+                return flushAsync();
+              })
+              .then(() => {
+                return browserProxy.whenCalled('showCarrierAccountDetail');
+              });
+        });
+
     test('Cellular Scanning', function() {
       init();
       const mojom = chromeos.networkConfig.mojom;
@@ -427,6 +505,37 @@ suite('InternetDetailPage', function() {
         const spinner = internetDetailPage.$$('paper-spinner-lite');
         assertTrue(!!spinner);
         assertFalse(spinner.hasAttribute('hidden'));
+      });
+    });
+
+    // Regression test for https://crbug.com/1201449.
+    test('Page closed while device is updating', function() {
+      init();
+
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        scanning: true,
+      });
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+
+      return flushAsync().then(() => {
+        // Close the page as soon as getDeviceStateList() is invoked, before the
+        // callback returns.
+        mojoApi_.beforeGetDeviceStateList = () => {
+          internetDetailPage.close();
+        };
+
+        mojoApi_.onDeviceStateListChanged();
+
+        return flushAsync();
       });
     });
 
@@ -493,41 +602,52 @@ suite('InternetDetailPage', function() {
       await popStatePromise;
     });
 
-    test('Deep link to sim lock toggle', async () => {
-      init();
-      const mojom = chromeos.networkConfig.mojom;
-      mojoApi_.setDeviceStateForTest({
-        type: mojom.NetworkType.kCellular,
-        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
-        simLockStatus: {
-          lockEnabled: false,
-        },
-      });
-      const cellularNetwork =
-          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
-      cellularNetwork.connectable = false;
-      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+    test('Deep link to sim lock toggle with cellular flag off', async () => {
+      await deepLinkToSimLockElement(/*isSimLocked=*/ false);
 
-      const params = new URLSearchParams;
-      params.append('guid', 'cellular_guid');
-      params.append('type', 'Cellular');
-      params.append('name', 'cellular');
-      params.append('settingId', '14');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
-
-      Polymer.dom.flush();
-
-      const deepLinkElement =
-          internetDetailPage.$$('#cellularSimInfo').$$('#simLockButton');
+      const simInfo = internetDetailPage.$$('#cellularSimInfo');
 
       // In this rare case, wait after next render twice due to focus behavior
       // of the siminfo component.
-      await test_util.waitAfterNextRender(deepLinkElement);
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
       assertEquals(
-          deepLinkElement, getDeepActiveElement(),
+          simInfo.$$('#simLockButton'), getDeepActiveElement(),
           'Sim lock toggle should be focused for settingId=14.');
+    });
+
+    test('Deep link to sim lock toggle with cellular flag on', async () => {
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      await deepLinkToSimLockElement(/*isSimLocked=*/ false);
+
+      const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
+      assertEquals(
+          simInfo.$$('#simLockButton'), getDeepActiveElement(),
+          'Sim lock toggle should be focused for settingId=14.');
+    });
+
+    test('Deep link to sim unlock button with cellular flag on', async () => {
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      await deepLinkToSimLockElement(/*isSimLocked=*/ true);
+
+      const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
+      assertEquals(
+          simInfo.$$('#unlockPinButton'), getDeepActiveElement(),
+          'Sim unlock button should be focused for settingId=14.');
     });
 
     test('Cellular page hides hidden toggle', function() {
@@ -671,6 +791,64 @@ suite('InternetDetailPage', function() {
       assertFalse(internetDetailPage.showConfigurableSections_);
     });
 
+    test('Do not show MAC address', async () => {
+      const TEST_ICCID = '11111111111111111';
+      const TEST_MAC_ADDRESS = '01:23:45:67:89:AB';
+      const MISSING_MAC_ADDRESS = '00:00:00:00:00:00';
+
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = true;
+      cellularNetwork.typeProperties.cellular.simLocked = false;
+      cellularNetwork.typeProperties.cellular.iccid = TEST_ICCID;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+
+      let deviceState = {
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: TEST_ICCID,
+          isPrimary: true,
+        }],
+        macAddress: TEST_MAC_ADDRESS
+      };
+
+      mojoApi_.setDeviceStateForTest(deviceState);
+      await flushAsync();
+      expandConfigurableSection();
+      let macAddress = internetDetailPage.$$('#mac-address-container');
+      assertTrue(!!macAddress);
+      assertFalse(macAddress.hidden);
+
+      // Set MAC address to '00:00:00:00:00:00' missing address, this address
+      // is provided when device MAC address cannot be retrieved. If this is the
+      // case, the MAC address should not be displayed in UI.
+      deviceState = {
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: TEST_ICCID,
+          isPrimary: true,
+        }],
+        macAddress: MISSING_MAC_ADDRESS
+      };
+      mojoApi_.setDeviceStateForTest(deviceState);
+      await flushAsync();
+      expandConfigurableSection();
+      macAddress = internetDetailPage.$$('#mac-address-container');
+      assertTrue(!!macAddress);
+      assertTrue(macAddress.hidden);
+    });
+
     test('Page disabled when inhibited', async () => {
       loadTimeData.overrideValues({
         updatedCellularActivationUi: true,
@@ -735,7 +913,6 @@ suite('InternetDetailPage', function() {
       assertFalse(networkIpConfig.disabled);
       assertFalse(networkNameservers.disabled);
       assertFalse(networkProxySection.disabled);
-      assertFalse(!!internetDetailPage.$$('cellular-banner'));
 
       // Mock device being inhibited.
       mojoApi_.setDeviceStateForTest({
@@ -760,7 +937,6 @@ suite('InternetDetailPage', function() {
       assertTrue(networkIpConfig.disabled);
       assertTrue(networkNameservers.disabled);
       assertTrue(networkProxySection.disabled);
-      assertTrue(!!internetDetailPage.$$('cellular-banner'));
 
       // Uninhibit.
       mojoApi_.setDeviceStateForTest({
@@ -785,7 +961,6 @@ suite('InternetDetailPage', function() {
       assertFalse(networkIpConfig.disabled);
       assertFalse(networkNameservers.disabled);
       assertFalse(networkProxySection.disabled);
-      assertFalse(!!internetDetailPage.$$('cellular-banner'));
     });
   });
 

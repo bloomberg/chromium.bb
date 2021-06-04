@@ -6,11 +6,16 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
@@ -21,8 +26,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
@@ -93,7 +96,12 @@ HoverButton::HoverButton(PressedCallback callback, const std::u16string& text)
                            2;
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::UseInkDropForFloodFillRipple(ink_drop(),
+                                               /*highlight_on_hover=*/false,
+                                               /*highlight_on_focus=*/true);
+  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+      [](views::View* host) { return GetInkDropColor(host); }, this));
 
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                            ui::EF_RIGHT_MOUSE_BUTTON);
@@ -102,10 +110,10 @@ HoverButton::HoverButton(PressedCallback callback, const std::u16string& text)
 }
 
 HoverButton::HoverButton(PressedCallback callback,
-                         const gfx::ImageSkia& icon,
+                         const ui::ImageModel& icon,
                          const std::u16string& text)
     : HoverButton(std::move(callback), text) {
-  SetImage(STATE_NORMAL, icon);
+  SetImageModel(STATE_NORMAL, icon);
 }
 
 HoverButton::HoverButton(PressedCallback callback,
@@ -267,19 +275,6 @@ void HoverButton::StateChanged(ButtonState old_state) {
   } else if (GetState() == STATE_NORMAL && HasFocus()) {
     GetFocusManager()->SetFocusedView(nullptr);
   }
-}
-
-SkColor HoverButton::GetInkDropBaseColor() const {
-  return GetInkDropColor(this);
-}
-
-std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop = LabelButton::CreateInkDrop();
-  // Turn on highlighting when the button is focused only - hovering the button
-  // will request focus.
-  ink_drop->SetShowHighlightOnFocus(true);
-  ink_drop->SetShowHighlightOnHover(false);
-  return ink_drop;
 }
 
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {

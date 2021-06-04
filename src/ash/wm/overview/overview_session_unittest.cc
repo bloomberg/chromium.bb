@@ -67,6 +67,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -79,6 +80,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
@@ -153,27 +155,28 @@ class TweenTester : public ui::LayerAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TweenTester);
 };
 
-// Class which tracks if a given widget has been closed.
-class TestClosedWidgetObserver : public views::WidgetObserver {
+// Class which tracks if a given widget has been destroyed.
+class TestDestroyedWidgetObserver : public views::WidgetObserver {
  public:
-  explicit TestClosedWidgetObserver(views::Widget* widget) {
+  explicit TestDestroyedWidgetObserver(views::Widget* widget) {
     DCHECK(widget);
     observation_.Observe(widget);
   }
-  TestClosedWidgetObserver(const TestClosedWidgetObserver&) = delete;
-  TestClosedWidgetObserver& operator=(const TestClosedWidgetObserver&) = delete;
-  ~TestClosedWidgetObserver() override = default;
+  TestDestroyedWidgetObserver(const TestDestroyedWidgetObserver&) = delete;
+  TestDestroyedWidgetObserver& operator=(const TestDestroyedWidgetObserver&) =
+      delete;
+  ~TestDestroyedWidgetObserver() override = default;
 
   // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override {
-    DCHECK(!widget_closed_);
-    widget_closed_ = true;
+  void OnWidgetDestroyed(views::Widget* widget) override {
+    DCHECK(!widget_destroyed_);
+    widget_destroyed_ = true;
   }
 
-  bool widget_closed() const { return widget_closed_; }
+  bool widget_destroyed() const { return widget_destroyed_; }
 
  private:
-  bool widget_closed_ = false;
+  bool widget_destroyed_ = false;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver> observation_{
       this};
@@ -546,9 +549,9 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
   ToggleOverview();
   const std::vector<std::unique_ptr<OverviewItem>>& overview1 =
       GetOverviewItemsForRoot(0);
-  EXPECT_EQ(1, overview1[0]->GetWindow()->id());
-  EXPECT_EQ(3, overview1[1]->GetWindow()->id());
-  EXPECT_EQ(2, overview1[2]->GetWindow()->id());
+  EXPECT_EQ(1, overview1[0]->GetWindow()->GetId());
+  EXPECT_EQ(3, overview1[1]->GetWindow()->GetId());
+  EXPECT_EQ(2, overview1[2]->GetWindow()->GetId());
   ToggleOverview();
 
   // Activate the second window.
@@ -558,9 +561,9 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
       GetOverviewItemsForRoot(0);
 
   // The order should be MRU.
-  EXPECT_EQ(2, overview2[0]->GetWindow()->id());
-  EXPECT_EQ(1, overview2[1]->GetWindow()->id());
-  EXPECT_EQ(3, overview2[2]->GetWindow()->id());
+  EXPECT_EQ(2, overview2[0]->GetWindow()->GetId());
+  EXPECT_EQ(1, overview2[1]->GetWindow()->GetId());
+  EXPECT_EQ(3, overview2[2]->GetWindow()->GetId());
   ToggleOverview();
 }
 
@@ -1486,7 +1489,7 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
   // enabled. Disable mirror mode to test multiple displays.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   base::RunLoop().RunUntilIdle();
 
   const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -3228,21 +3231,21 @@ TEST_F(OverviewSessionTest, AccessibilityFocusAnnotator) {
     EXPECT_EQ(expected_next, view_accessibility.GetNextFocus());
   };
 
-  // Order should be [focus_widget, desk_widget, item_widget1, item_widget2,
-  // item_widget3].
-  check_a11y_overrides("focus", focus_widget, item_widget3, desk_widget);
-  check_a11y_overrides("desk", desk_widget, focus_widget, item_widget1);
-  check_a11y_overrides("item1", item_widget1, desk_widget, item_widget2);
+  // Order should be [focus_widget, item_widget1, item_widget2, item_widget3,
+  // desk_widget].
+  check_a11y_overrides("focus", focus_widget, desk_widget, item_widget1);
+  check_a11y_overrides("item1", item_widget1, focus_widget, item_widget2);
   check_a11y_overrides("item2", item_widget2, item_widget1, item_widget3);
-  check_a11y_overrides("item3", item_widget3, item_widget2, focus_widget);
+  check_a11y_overrides("item3", item_widget3, item_widget2, desk_widget);
+  check_a11y_overrides("desk", desk_widget, item_widget3, focus_widget);
 
-  // Remove |window2|. The new order should be [focus_widget, desk_widget,
-  // item_widget1, item_widget3].
+  // Remove |window2|. The new order should be [focus_widget, item_widget1,
+  // item_widget3, desk_widget].
   window2.reset();
-  check_a11y_overrides("focus", focus_widget, item_widget3, desk_widget);
-  check_a11y_overrides("desk", desk_widget, focus_widget, item_widget1);
-  check_a11y_overrides("item1", item_widget1, desk_widget, item_widget3);
-  check_a11y_overrides("item3", item_widget3, item_widget1, focus_widget);
+  check_a11y_overrides("focus", focus_widget, desk_widget, item_widget1);
+  check_a11y_overrides("item1", item_widget1, focus_widget, item_widget3);
+  check_a11y_overrides("item3", item_widget3, item_widget1, desk_widget);
+  check_a11y_overrides("desk", desk_widget, item_widget3, focus_widget);
 }
 
 // Tests that removing a transient child during overview does not result in a
@@ -3257,22 +3260,27 @@ TEST_F(OverviewSessionTest, RemoveTransientNoCrash) {
   ToggleOverview();
 }
 
-// Tests that closing the overview item closes the entire transient tree.
+// Tests that closing the overview item destroys the entire transient tree. Note
+// that closing does not destroy transient children which are ShellSurfaceBase,
+// but this test covers the regular case.
 TEST_F(OverviewSessionTest, ClosingTransientTree) {
   auto widget = CreateTestWidget();
   aura::Window* window = widget->GetNativeWindow();
   auto child_widget = CreateTestWidget();
   ::wm::AddTransientChild(window, child_widget->GetNativeWindow());
 
-  TestClosedWidgetObserver widget_observer(widget.get());
-  TestClosedWidgetObserver child_widget_observer(child_widget.get());
+  TestDestroyedWidgetObserver widget_observer(widget.get());
+  TestDestroyedWidgetObserver child_widget_observer(child_widget.get());
 
   ToggleOverview();
   OverviewItem* item = GetOverviewItemForWindow(window);
   item->CloseWindow();
 
-  EXPECT_TRUE(widget_observer.widget_closed());
-  EXPECT_TRUE(child_widget_observer.widget_closed());
+  // `NativeWidgetAura::Close()` fires a post task.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(widget_observer.widget_destroyed());
+  EXPECT_TRUE(child_widget_observer.widget_destroyed());
 }
 
 class TabletModeOverviewSessionTest : public OverviewSessionTest {
@@ -6085,8 +6093,8 @@ TEST_F(SplitViewOverviewSessionTest,
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   ToggleOverview();
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
 }
 
 // Test the split view and overview functionalities in clamshell mode. Split

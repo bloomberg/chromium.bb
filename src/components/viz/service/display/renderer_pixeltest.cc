@@ -114,8 +114,8 @@ ResourceId CreateGpuResource(scoped_refptr<ContextProvider> context_provider,
       false /* is_overlay_candidate */);
   gl_resource.format = format;
   gl_resource.color_space = std::move(color_space);
-  auto release_callback = SingleReleaseCallback::Create(
-      base::BindOnce(&DeleteSharedImage, std::move(context_provider), mailbox));
+  auto release_callback =
+      base::BindOnce(&DeleteSharedImage, std::move(context_provider), mailbox);
   return resource_provider->ImportResource(gl_resource,
                                            std::move(release_callback));
 }
@@ -149,8 +149,6 @@ SharedQuadState* CreateTestSharedQuadState(
     const gfx::RRectF& rrect) {
   const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = rect;
-  const gfx::Rect clip_rect = rect;
-  const bool is_clipped = false;
   const bool are_contents_opaque = false;
   const float opacity = 1.0f;
   const gfx::MaskFilterInfo mask_filter_info(rrect);
@@ -158,7 +156,7 @@ SharedQuadState* CreateTestSharedQuadState(
   int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
-                       mask_filter_info, clip_rect, is_clipped,
+                       mask_filter_info, /**clip_rect=*/absl::nullopt,
                        are_contents_opaque, opacity, blend_mode,
                        sorting_context_id);
   return shared_state;
@@ -171,7 +169,6 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
     AggregatedRenderPass* render_pass) {
   const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = clip_rect;
-  const bool is_clipped = true;
   const bool are_contents_opaque = false;
   const float opacity = 1.0f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
@@ -179,8 +176,9 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
                        /*mask_filter_info=*/gfx::MaskFilterInfo(), clip_rect,
-                       is_clipped, are_contents_opaque, opacity, blend_mode,
+                       are_contents_opaque, opacity, blend_mode,
                        sorting_context_id);
+
   return shared_state;
 }
 
@@ -266,7 +264,7 @@ void CreateTestTwoColoredTextureDrawQuad(
     resource = child_resource_provider->ImportResource(
         TransferableResource::MakeSoftware(shared_bitmap_id, rect.size(),
                                            RGBA_8888),
-        SingleReleaseCallback::Create(base::DoNothing()));
+        base::DoNothing());
 
     auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
     std::copy(pixels.begin(), pixels.end(), span.begin());
@@ -327,7 +325,7 @@ void CreateTestTextureDrawQuad(
     resource = child_resource_provider->ImportResource(
         TransferableResource::MakeSoftware(shared_bitmap_id, rect.size(),
                                            RGBA_8888),
-        SingleReleaseCallback::Create(base::DoNothing()));
+        base::DoNothing());
 
     auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
     std::copy(pixels.begin(), pixels.end(), span.begin());
@@ -409,22 +407,18 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
   ResourceId resource_y = child_resource_provider->ImportResource(
       resources.resources[media::VideoFrame::kYPlane],
-      SingleReleaseCallback::Create(
-          std::move(resources.release_callbacks[media::VideoFrame::kYPlane])));
+      std::move(resources.release_callbacks[media::VideoFrame::kYPlane]));
   ResourceId resource_u = child_resource_provider->ImportResource(
       resources.resources[media::VideoFrame::kUPlane],
-      SingleReleaseCallback::Create(
-          std::move(resources.release_callbacks[media::VideoFrame::kUPlane])));
+      std::move(resources.release_callbacks[media::VideoFrame::kUPlane]));
   ResourceId resource_v = child_resource_provider->ImportResource(
       resources.resources[media::VideoFrame::kVPlane],
-      SingleReleaseCallback::Create(
-          std::move(resources.release_callbacks[media::VideoFrame::kVPlane])));
+      std::move(resources.release_callbacks[media::VideoFrame::kVPlane]));
   ResourceId resource_a = kInvalidResourceId;
   if (with_alpha) {
     resource_a = child_resource_provider->ImportResource(
         resources.resources[media::VideoFrame::kAPlane],
-        SingleReleaseCallback::Create(std::move(
-            resources.release_callbacks[media::VideoFrame::kAPlane])));
+        std::move(resources.release_callbacks[media::VideoFrame::kAPlane]));
   }
 
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -519,8 +513,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
   ResourceId resource_y = child_resource_provider->ImportResource(
-      resources.resources[0],
-      SingleReleaseCallback::Create(std::move(resources.release_callbacks[0])));
+      resources.resources[0], std::move(resources.release_callbacks[0]));
 
   // Transfer resources to the parent, and get the resource map.
   std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
@@ -1316,7 +1309,6 @@ class IntersectingQuadPixelTest : public VizPixelTestWithParam {
     trans.RotateAboutYAxis(45.0);
     front_quad_state_ = CreateTestSharedQuadState(
         trans, viewport_rect_, render_pass_.get(), gfx::RRectF());
-    front_quad_state_->clip_rect = quad_rect_;
     // Make sure they end up in a 3d sorting context.
     front_quad_state_->sorting_context_id = 1;
 
@@ -1328,7 +1320,6 @@ class IntersectingQuadPixelTest : public VizPixelTestWithParam {
     back_quad_state_ = CreateTestSharedQuadState(
         trans, viewport_rect_, render_pass_.get(), gfx::RRectF());
     back_quad_state_->sorting_context_id = 1;
-    back_quad_state_->clip_rect = quad_rect_;
   }
   void AppendBackgroundAndRunTest(const cc::PixelComparator& comparator,
                                   const base::FilePath::CharType* ref_file) {
@@ -3016,7 +3007,7 @@ class RendererPixelTestWithBackdropFilter : public VizPixelTestWithParam {
 
   AggregatedRenderPassList pass_list_;
   cc::FilterOperations backdrop_filters_;
-  base::Optional<gfx::RRectF> backdrop_filter_bounds_;
+  absl::optional<gfx::RRectF> backdrop_filter_bounds_;
   bool include_backdrop_mask_ = false;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
@@ -3144,7 +3135,7 @@ class GLRendererPixelTestWithBackdropFilter : public VizPixelTest {
 
   AggregatedRenderPassList pass_list_;
   cc::FilterOperations backdrop_filters_;
-  base::Optional<gfx::RRectF> backdrop_filter_bounds_;
+  absl::optional<gfx::RRectF> backdrop_filter_bounds_;
   float backdrop_filter_quality_ = 1.0f;
   bool intersects_damage_under_ = true;
   gfx::Transform filter_pass_to_target_transform_;

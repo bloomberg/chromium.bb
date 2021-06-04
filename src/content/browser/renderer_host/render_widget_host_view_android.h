@@ -138,7 +138,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                           const gfx::Rect& node_bounds_in_screen) override;
   void RenderProcessGone() override;
   void Destroy() override;
-  void SetTooltipText(const std::u16string& tooltip_text) override;
+  void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(
@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRendererWidgetCreated() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged(bool rotation) override;
-  base::Optional<SkColor> GetBackgroundColor() override;
+  absl::optional<SkColor> GetBackgroundColor() override;
   void DidNavigate() override;
   WebContentsAccessibility* GetWebContentsAccessibility() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
@@ -197,7 +197,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool OnMouseWheelEvent(const ui::MotionEventAndroid& event) override;
   bool OnGestureEvent(const ui::GestureEventAndroid& event) override;
   void OnPhysicalBackingSizeChanged(
-      base::Optional<base::TimeDelta> deadline_override) override;
+      absl::optional<base::TimeDelta> deadline_override) override;
   void NotifyVirtualKeyboardOverlayRect(
       const gfx::Rect& keyboard_rect) override;
 
@@ -248,7 +248,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Returns the temporary background color of the underlaying document, for
   // example, returns black during screen rotation.
-  base::Optional<SkColor> GetCachedBackgroundColor();
+  absl::optional<SkColor> GetCachedBackgroundColor();
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
@@ -281,7 +281,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool SynchronizeVisualProperties(
       const cc::DeadlinePolicy& deadline_policy,
-      const base::Optional<viz::LocalSurfaceId>& child_local_surface_id);
+      const absl::optional<viz::LocalSurfaceId>& child_local_surface_id);
 
   bool HasValidFrame() const;
 
@@ -389,7 +389,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
   bool HasFallbackSurface() const override;
-  base::Optional<DisplayFeature> GetDisplayFeature() override;
+  absl::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
 
@@ -529,7 +529,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Rect default_bounds_;
 
   const bool using_browser_compositor_;
-  const bool using_viz_for_webview_;
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
   uint32_t sync_compositor_last_frame_token_ = 0u;
 
@@ -591,7 +590,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool swipe_to_move_cursor_activated_ = false;
 
   // A cached copy of the most up to date RenderFrameMetadata.
-  base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
+  absl::optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
 

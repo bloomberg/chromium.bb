@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -31,7 +33,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

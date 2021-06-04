@@ -108,11 +108,11 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               UnregisterFileHandlers,
               (const AppId& app_id,
                std::unique_ptr<ShortcutInfo> info,
-               base::OnceCallback<void()> callback),
+               base::OnceCallback<void(bool)> callback),
               (override));
   MOCK_METHOD(void,
               UnregisterProtocolHandlers,
-              (const AppId& app_id),
+              (const AppId& app_id, base::OnceCallback<void(bool)> callback),
               (override));
   MOCK_METHOD(void, UnregisterUrlHandlers, (const AppId& app_id), (override));
   MOCK_METHOD(void,
@@ -122,8 +122,10 @@ class MockOsIntegrationManager : public OsIntegrationManager {
 
   // Update:
   MOCK_METHOD(void,
-              UpdateFileHandlers,
-              (const AppId& app_id, std::unique_ptr<ShortcutInfo> info),
+              UpdateFileHandlersWithShortcutInfo,
+              (const AppId& app_id,
+               FileHandlerUpdateAction file_handlers_need_os_update,
+               std::unique_ptr<ShortcutInfo> info),
               (override));
   MOCK_METHOD(void,
               UpdateShortcuts,
@@ -138,6 +140,7 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               (const AppId& app_id,
                base::OnceCallback<void(bool success)> callback),
               (override));
+  MOCK_METHOD(void, UpdateProtocolHandlers, (const AppId& app_id), (override));
 
   // Utility methods:
   MOCK_METHOD(std::unique_ptr<ShortcutInfo>,
@@ -278,7 +281,7 @@ TEST_F(OsIntegrationManagerTest, UninstallOsHooksEverything) {
       .WillOnce(base::test::RunOnceCallback<3>(true));
   EXPECT_CALL(manager, UnregisterFileHandlers(app_id, testing::_, testing::_))
       .Times(1);
-  EXPECT_CALL(manager, UnregisterProtocolHandlers(app_id)).Times(1);
+  EXPECT_CALL(manager, UnregisterProtocolHandlers(app_id, testing::_)).Times(1);
   EXPECT_CALL(manager, UnregisterUrlHandlers(app_id)).Times(1);
   EXPECT_CALL(manager, UnregisterWebAppOsUninstallation(app_id)).Times(1);
   EXPECT_CALL(manager, UnregisterShortcutsMenu(app_id))
@@ -306,12 +309,17 @@ TEST_F(OsIntegrationManagerTest, UpdateOsHooksEverything) {
   WebApplicationInfo web_app_info;
   base::StringPiece old_name = "test-name";
 
-  EXPECT_CALL(manager, UpdateFileHandlers(app_id, testing::_)).Times(1);
+  EXPECT_CALL(manager,
+              UpdateFileHandlersWithShortcutInfo(
+                  app_id, FileHandlerUpdateAction::kUpdate, testing::_))
+      .Times(1);
   EXPECT_CALL(manager, UpdateShortcuts(app_id, old_name)).Times(1);
   EXPECT_CALL(manager, UpdateShortcutsMenu(app_id, testing::_)).Times(1);
   EXPECT_CALL(manager, UpdateUrlHandlers(app_id, testing::_)).Times(1);
+  EXPECT_CALL(manager, UpdateProtocolHandlers(app_id)).Times(1);
 
-  manager.UpdateOsHooks(app_id, old_name, nullptr, true, web_app_info);
+  manager.UpdateOsHooks(app_id, old_name, nullptr,
+                        FileHandlerUpdateAction::kUpdate, web_app_info);
 }
 
 }  // namespace

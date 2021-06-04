@@ -24,7 +24,7 @@ namespace syncer {
 namespace {
 
 sync_pb::SharedMemberKey CreateSharedMemberKey(
-    const base::Optional<TrustedVaultKeyAndVersion>&
+    const absl::optional<TrustedVaultKeyAndVersion>&
         trusted_vault_key_and_version,
     const SecureBoxPublicKey& public_key) {
   std::vector<uint8_t> trusted_vault_key;
@@ -41,10 +41,8 @@ sync_pb::SharedMemberKey CreateSharedMemberKey(
   AssignBytesToProtoString(
       ComputeTrustedVaultWrappedKey(public_key, trusted_vault_key),
       shared_member_key.mutable_wrapped_key());
-  AssignBytesToProtoString(
-      ComputeTrustedVaultHMAC(
-          /*key=*/trusted_vault_key, /*data=*/public_key.ExportToBytes()),
-      shared_member_key.mutable_member_proof());
+  AssignBytesToProtoString(ComputeMemberProof(public_key, trusted_vault_key),
+                           shared_member_key.mutable_member_proof());
   return shared_member_key;
 }
 
@@ -73,7 +71,7 @@ sync_pb::SecurityDomainMember CreateSecurityDomainMember(
 }
 
 sync_pb::JoinSecurityDomainsRequest CreateJoinSecurityDomainsRequest(
-    const base::Optional<TrustedVaultKeyAndVersion>&
+    const absl::optional<TrustedVaultKeyAndVersion>&
         last_trusted_vault_key_and_version,
     const SecureBoxPublicKey& public_key,
     AuthenticationFactorType authentication_factor_type) {
@@ -92,15 +90,16 @@ void ProcessRegisterAuthenticationFactorRequest(
     const std::string& response_body) {
   switch (http_status) {
     case TrustedVaultRequest::HttpStatus::kSuccess:
-      std::move(callback).Run(TrustedVaultRequestStatus::kSuccess);
+      std::move(callback).Run(TrustedVaultRegistrationStatus::kSuccess);
       return;
     case TrustedVaultRequest::HttpStatus::kOtherError:
-      std::move(callback).Run(TrustedVaultRequestStatus::kOtherError);
+      std::move(callback).Run(TrustedVaultRegistrationStatus::kOtherError);
       return;
     case TrustedVaultRequest::HttpStatus::kNotFound:
     case TrustedVaultRequest::HttpStatus::kFailedPrecondition:
       // Local trusted vault keys are outdated.
-      std::move(callback).Run(TrustedVaultRequestStatus::kLocalDataObsolete);
+      std::move(callback).Run(
+          TrustedVaultRegistrationStatus::kLocalDataObsolete);
       return;
   }
   NOTREACHED();
@@ -116,6 +115,37 @@ void ProcessDownloadKeysResponse(
   std::move(callback).Run(processed_response.status,
                           processed_response.new_keys,
                           processed_response.last_key_version);
+}
+
+void ProcessRetrieveIsRecoverabilityDegradedResponse(
+    TrustedVaultConnection::IsRecoverabilityDegradedCallback callback,
+    TrustedVaultRequest::HttpStatus http_status,
+    const std::string& response_body) {
+  // TODO(crbug.com/1201659): consider special handling when security domain
+  // doesn't exist.
+  switch (http_status) {
+    case TrustedVaultRequest::HttpStatus::kSuccess:
+      break;
+    case TrustedVaultRequest::HttpStatus::kOtherError:
+    case TrustedVaultRequest::HttpStatus::kNotFound:
+    case TrustedVaultRequest::HttpStatus::kFailedPrecondition:
+      std::move(callback).Run(TrustedVaultRecoverabilityStatus::kError);
+      return;
+  }
+  sync_pb::SecurityDomain security_domain;
+  if (!security_domain.ParseFromString(response_body) ||
+      !security_domain.security_domain_details().has_sync_details()) {
+    std::move(callback).Run(TrustedVaultRecoverabilityStatus::kError);
+    return;
+  }
+  TrustedVaultRecoverabilityStatus status =
+      TrustedVaultRecoverabilityStatus::kNotDegraded;
+  if (security_domain.security_domain_details()
+          .sync_details()
+          .degraded_recoverability()) {
+    status = TrustedVaultRecoverabilityStatus::kDegraded;
+  }
+  std::move(callback).Run(status);
 }
 
 }  // namespace
@@ -136,7 +166,7 @@ TrustedVaultConnectionImpl::~TrustedVaultConnectionImpl() = default;
 std::unique_ptr<TrustedVaultConnection::Request>
 TrustedVaultConnectionImpl::RegisterAuthenticationFactor(
     const CoreAccountInfo& account_info,
-    const base::Optional<TrustedVaultKeyAndVersion>&
+    const absl::optional<TrustedVaultKeyAndVersion>&
         last_trusted_vault_key_and_version,
     const SecureBoxPublicKey& public_key,
     AuthenticationFactorType authentication_factor_type,
@@ -160,7 +190,7 @@ TrustedVaultConnectionImpl::RegisterAuthenticationFactor(
 std::unique_ptr<TrustedVaultConnection::Request>
 TrustedVaultConnectionImpl::DownloadNewKeys(
     const CoreAccountInfo& account_info,
-    const base::Optional<TrustedVaultKeyAndVersion>&
+    const absl::optional<TrustedVaultKeyAndVersion>&
         last_trusted_vault_key_and_version,
     std::unique_ptr<SecureBoxKeyPair> device_key_pair,
     DownloadNewKeysCallback callback) {
@@ -169,7 +199,7 @@ TrustedVaultConnectionImpl::DownloadNewKeys(
       GURL(trusted_vault_service_url_.spec() +
            GetGetSecurityDomainMemberURLPathAndQuery(
                device_key_pair->public_key().ExportToBytes())),
-      /*serialized_request_proto=*/base::nullopt);
+      /*serialized_request_proto=*/absl::nullopt);
 
   request->FetchAccessTokenAndSendRequest(
       account_info.account_id, GetOrCreateURLLoaderFactory(),
@@ -180,6 +210,25 @@ TrustedVaultConnectionImpl::DownloadNewKeys(
           std::make_unique<DownloadKeysResponseHandler>(
               last_trusted_vault_key_and_version, std::move(device_key_pair)),
           std::move(callback)));
+
+  return request;
+}
+
+std::unique_ptr<TrustedVaultConnection::Request>
+TrustedVaultConnectionImpl::RetrieveIsRecoverabilityDegraded(
+    const CoreAccountInfo& account_info,
+    IsRecoverabilityDegradedCallback callback) {
+  auto request = std::make_unique<TrustedVaultRequest>(
+      TrustedVaultRequest::HttpMethod::kGet,
+      GURL(trusted_vault_service_url_.spec() +
+           kGetSecurityDomainURLPathAndQuery),
+      /*serialized_request_proto=*/absl::nullopt);
+
+  request->FetchAccessTokenAndSendRequest(
+      account_info.account_id, GetOrCreateURLLoaderFactory(),
+      access_token_fetcher_.get(),
+      base::BindOnce(&ProcessRetrieveIsRecoverabilityDegradedResponse,
+                     std::move(callback)));
 
   return request;
 }

@@ -12,8 +12,8 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event_constants.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class ImageView;
@@ -93,7 +93,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
   // Stores the timestamp of the last tap event time that happened while not
   // in overview mode. Used to check for double taps, which invoke quick switch.
-  base::Optional<base::TimeTicks> last_press_event_time_;
+  absl::optional<base::TimeTicks> last_press_event_time_;
 };
 
 }  // namespace ash

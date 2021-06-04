@@ -8,11 +8,11 @@
 
 Certaines fonctionnalités ne seront peut-être pas disponibles et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> utilisait précédemment Chrome</translation>
-<translation id="1097330777386562916">Effacer les témoins et les données des sites lorsque vous quittez Chrome</translation>
 <translation id="110877069173485804">Voici votre navigateur Chrome</translation>
 <translation id="1125124144982679672">Qui utilise Chrome?</translation>
 <translation id="1142745911746664600">Impossible de mettre à jour Google Chrome</translation>
 <translation id="1154147086299354128">&amp;Ouvrir dans Chrome</translation>
+<translation id="1278833599417554002">Relancer &amp;Chrome pour le mettre à jour</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> exige que vous lisiez et acceptiez les conditions d'utilisation suivantes pour utiliser cet appareil. Ces dernières n'étendent pas, ne modifient pas ni ne restreignent les conditions d'utilisation de Google Chrome OS.</translation>
 <translation id="1302523850133262269">Veuillez patienter pendant que Chrome installe les dernières mises à jour système.</translation>
 <translation id="137466361146087520">Google Chrome bêta</translation>
@@ -49,6 +49,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2094919256425865063">Quitter Chrome quand même?</translation>
 <translation id="2120620239521071941">Cette action entraînera la suppression de <ph name="ITEMS_COUNT" /> éléments sur cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
+<translation id="2121284319307530122">Relancer &amp;Chrome pour le mettre à jour</translation>
 <translation id="2123055963409958220">Aidez-nous à améliorer Google Chrome en nous signalant les <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Veuillez redémarrer Chrome maintenant</translation>
 <translation id="2246246234298806438">Google Chrome ne peut pas afficher l'aperçu avant impression lorsque le visualiseur de documents PDF intégré n'est pas installé.</translation>
@@ -59,7 +60,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="234869673307233423">Chrome ne peut pas vérifier vos mots de passe. Réessayez plus tard.</translation>
 <translation id="235650106824528204">L'administrateur du profil professionnel peut retirer toutes les données Chrome générées durant l'utilisation de ce profil (comme la création de favoris, l'historique, les mots de passe et d'autres paramètres). <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">Google Chrome ne peut pas synchroniser vos données, car la synchronisation n'est pas offerte pour votre domaine.</translation>
-<translation id="245659736593643560">Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />, tout comme l'<ph name="BEGIN_LINK_LINUX_OSS" />environnement de conception Linux (version bêta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
@@ -72,6 +72,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2652691236519827073">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche au démarrage de Chrome.</translation>
+<translation id="2742320827292110288">Avertissement : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode de navigation privée, désélectionnez cette option.</translation>
 <translation id="2765403129283291972">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2775140325783767197">Chrome ne peut pas vérifier vos mots de passe. Essayez de vérifier votre connexion Internet.</translation>
@@ -167,13 +168,13 @@ Certaines fonctionnalités peuvent être inaccessibles. Veuillez spécifier un r
 <translation id="5193136243808726294">Google Chrome OS ne peut pas ouvrir cette page.</translation>
 <translation id="521447420733633466">Si vous partagez un appareil avec vos proches, ceux-ci peuvent configurer Google Chrome comme bon leur semble et naviguer sur le Web de façon autonome.</translation>
 <translation id="5251420635869119124">Les invités peuvent utiliser Google Chrome sans rien laisser derrière eux.</translation>
-<translation id="532046782124376502">Avertissement : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode de navigation privée, désélectionnez cette option.</translation>
 <translation id="5386244825306882791">Elle règle également la page qui s'affiche lorsque vous démarrez Chrome ou faites une recherche dans l'omnibox.</translation>
 <translation id="5394833366792865639">Partager un onglet de Chrome</translation>
 <translation id="5430073640787465221">Votre fichier des préférences est endommagé ou n'est pas valide. 
 
 Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5434383153637353914">Cette page vous permet de gérer les comptes Google auxquels vous êtes connecté. Ces comptes seront accessibles dans le navigateur Chrome et dans les applications de la boutique Play Store ainsi que dans les services comme Gmail, Disque et YouTube. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">Installer Chrome OS</translation>
 <translation id="556024056938947818">Google Chrome essaie d'afficher les mots de passe.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Si un paramètre ne s'affiche pas sur cette page, consultez les <ph name="LINK_BEGIN" />paramètres de Chrome OS<ph name="LINK_END" /></translation>
@@ -224,6 +225,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches — Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Une nouvelle mise à jour de Chrome est proposée et sera appliquée dès que vous le relancerez.}=1{Une nouvelle mise à jour de Chrome est proposée et sera appliquée dès que vous le relancerez. Votre fenêtre de navigation privée ne sera pas rouverte.}one{Une nouvelle mise à jour de Chrome est proposée et sera appliquée dès que vous le relancerez. Votre fenêtre de navigation privée ne sera pas rouverte.}other{Une nouvelle mise à jour de Chrome est proposée et sera appliquée dès que vous le relancerez. Vos # fenêtres de navigation privée ne seront pas rouvertes.}}</translation>
 <translation id="7155997830309522122">Dans ce cas, veuillez modifier votre mot de passe enregistré dans Chrome pour qu'il corresponde à votre nouveau mot de passe.</translation>
+<translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et rendez son administrateur maître de votre profil Google Chrome. Vos données de Google Chrome, comme vos applications, vos favoris, votre historique, vos mots de passe et vos autres paramètres, vont être associées de manière permanente à <ph name="USER_NAME" />. Vous pourrez supprimer ces données à l'aide du tableau de bord des comptes Google, mais vous ne pourrez pas les associer à un autre compte. Vous avez la possibilité de créer un nouveau profil pour maintenir vos données Chrome actuelles séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Cette langue est utilisée pour afficher l'IU de Google Chrome</translation>
 <translation id="7296210096911315575">Renseignements importants sur l'utilisation et la sécurité</translation>
@@ -241,6 +243,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7629695634924605473">Chrome vous informera si jamais vos mots de passe sont compromis</translation>
 <translation id="7641148173327520642">Votre administrateur système a configuré Google Chrome de manière à ouvrir <ph name="ALTERNATIVE_BROWSER_NAME" /> pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo de Chrome Enterprise</translation>
+<translation id="7665553140559834626">Relancer &amp;Chrome OS pour le mettre à jour</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7761834446675418963">Cliquez sur votre nom pour ouvrir Chrome et commencer à naviguer.</translation>
 <translation id="7777080907402804672">Si une image n'est pas accompagnée d'une description utile, Chrome essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver cette option dans les paramètres à tout moment.</translation>
@@ -252,9 +255,10 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7855730255114109580">Google Chrome est à jour</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Google Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7896673875602241923">Un utilisateur s'est récemment connecté à Google Chrome sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Google Chrome pour séparer vos données.</translation>
-<translation id="7905891027772979035">Chrome ne peut pas vérifier vos extensions. Réessayez plus tard.</translation>
 <translation id="7930071585467473040">Google Chrome essaie de copier des mots de passe.</translation>
+<translation id="7951988079884443914">Chrome vous recommande de ne pas télécharger ni ouvrir ce fichier.</translation>
 <translation id="7962410387636238736">Cet ordinateur ne recevra plus de mises à jour de Google Chrome, car Windows XP et Windows Vista ne sont plus pris en charge</translation>
+<translation id="79947657522496226">Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />, tout comme l'<ph name="BEGIN_LINK_LINUX_OSS" />environnement de conception Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
 <translation id="8013993649590906847">Si une image n'est pas accompagnée d'une description utile, Chrome essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google.</translation>
 <translation id="8129812357326543296">À propos de &amp;Google Chrome</translation>

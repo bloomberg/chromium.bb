@@ -187,7 +187,7 @@ namespace policy {
 
 namespace {
 
-const char kDomain[] = "example.com";
+const char16_t kDomain[] = u"example.com";
 const char kAccountId1[] = "dla1@example.com";
 const char kAccountId2[] = "dla2@example.com";
 const char kDisplayName1[] = "display name 1";
@@ -212,6 +212,7 @@ const char kHostedAppID[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 const char kHostedAppCRXPath[] = "extensions/hosted_app.crx";
 const char kHostedAppVersion[] = "1.0.0.0";
 const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char16_t kGoodExtensionID16[] = u"ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
 const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
@@ -378,13 +379,12 @@ TestingUpdateManifestProvider::HandleRequest(
 TestingUpdateManifestProvider::~TestingUpdateManifestProvider() {
 }
 
-
-bool DoesInstallFailureReferToId(const std::string& id,
+bool DoesInstallFailureReferToId(const std::u16string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   return content::Details<const extensions::CrxInstallError>(details)
              ->message()
-             .find(base::UTF8ToUTF16(id)) != std::u16string::npos;
+             .find(id) != std::u16string::npos;
 }
 
 bool IsSessionStarted() {
@@ -469,8 +469,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     chromeos::OobeScreenWaiter(chromeos::OobeBaseTest::GetFirstSigninScreen())
         .Wait();
 
-    chromeos::test::UserSessionManagerTestApi session_manager_test_api(
-        chromeos::UserSessionManager::GetInstance());
+    ash::test::UserSessionManagerTestApi session_manager_test_api(
+        ash::UserSessionManager::GetInstance());
     session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
   }
 
@@ -1090,7 +1090,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID));
+      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID16));
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
 
   // Wait for the hosted app installation to succeed and the extension
@@ -1175,7 +1175,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID));
+      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID16));
 
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
 
@@ -1264,8 +1264,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
              0, base::Time::Now());
   extensions::ExtensionCacheImpl cache_impl(
       std::make_unique<extensions::ChromeOSExtensionCacheDelegate>(impl_path));
-  std::unique_ptr<base::RunLoop> run_loop;
-  run_loop.reset(new base::RunLoop);
+  auto run_loop = std::make_unique<base::RunLoop>();
   cache_impl.Start(base::BindOnce(&OnExtensionCacheImplInitialized, &run_loop));
   run_loop->Run();
 
@@ -1287,7 +1286,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
     EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath), temp_file));
   }
   cache_impl.AllowCaching(kGoodExtensionID);
-  run_loop.reset(new base::RunLoop);
+  run_loop = std::make_unique<base::RunLoop>();
   cache_impl.PutExtension(kGoodExtensionID, hash, temp_file,
                           kGoodExtensionVersion,
                           base::BindOnce(&OnPutExtension, &run_loop));
@@ -1322,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID));
+      base::BindRepeating(DoesInstallFailureReferToId, kGoodExtensionID16));
 
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
 
@@ -1407,7 +1406,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
 
   // Retrieve the external data. Although the data is no longer being served,
   // the retrieval should succeed because the data has been cached.
-  run_loop.reset(new base::RunLoop);
+  run_loop = std::make_unique<base::RunLoop>();
   std::unique_ptr<std::string> fetched_external_data;
   base::FilePath file_path;
   policy_entry->external_data_fetcher->Fetch(
@@ -1435,7 +1434,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
 
   // Retrieve the external data via the ProfilePolicyConnector. The retrieval
   // should succeed because the data has been cached.
-  run_loop.reset(new base::RunLoop);
+  run_loop = std::make_unique<base::RunLoop>();
   fetched_external_data.reset();
   policy_entry->external_data_fetcher->Fetch(
       base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
@@ -1569,7 +1568,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
           app_install_observer.details()).ptr();
 
   // Start the platform app, causing it to open a window.
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
   proxy->Launch(
@@ -1591,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_TRUE(browser);
   BrowserWindow* browser_window = browser->window();
   ASSERT_TRUE(browser_window);
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
   browser_window = NULL;
   run_loop_->Run();
@@ -1607,7 +1606,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   EXPECT_EQ(1U, browser_list->size());
 
   // Close the app window.
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   ASSERT_EQ(1U, app_window_registry->app_windows().size());
   app_window_registry->app_windows().front()->GetBaseWindow()->Close();
   run_loop_->Run();
@@ -1624,7 +1623,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   // Close the first browser window.
   browser_window = first_browser->window();
   ASSERT_TRUE(browser_window);
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
   browser_window = NULL;
   run_loop_->Run();
@@ -1638,7 +1637,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   // Close the second browser window.
   browser_window = second_browser->window();
   ASSERT_TRUE(browser_window);
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
   browser_window = NULL;
   run_loop_->Run();
@@ -1661,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   // Close the browser window.
   browser_window = browser->window();
   ASSERT_TRUE(browser_window);
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   browser_window->Close();
   browser_window = NULL;
   run_loop_->Run();
@@ -1753,37 +1752,36 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ManagedSessionTimezoneChange) {
   ASSERT_TRUE(user);
   ASSERT_EQ(user->GetType(), user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  std::string timezone_id1("America/Los_Angeles");
+  std::u16string timezone_id1(u"America/Los_Angeles");
   std::string timezone_id2("Europe/Berlin");
-  std::u16string timezone_id1_utf16(base::UTF8ToUTF16(timezone_id1));
-  std::u16string timezone_id2_utf16(base::UTF8ToUTF16(timezone_id2));
+  std::u16string timezone_id2_utf16(u"Europe/Berlin");
 
   chromeos::system::TimezoneSettings* timezone_settings =
       chromeos::system::TimezoneSettings::GetInstance();
 
-  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::DISABLED);
   chromeos::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
-  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::USERS_DECIDE);
   chromeos::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
-  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::IP_ONLY);
   chromeos::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
-  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS);
   chromeos::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
-  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::SEND_ALL_LOCATION_INFO);
   chromeos::system::SetSystemTimezone(user, timezone_id2);
@@ -2689,10 +2687,10 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
       {"terms-of-service", "termsOfServiceFrame"});
 
   // Get the expected values for heading and subheading.
-  const std::string expected_heading = l10n_util::GetStringFUTF8(
-      IDS_TERMS_OF_SERVICE_SCREEN_HEADING, base::UTF8ToUTF16(kDomain));
+  const std::string expected_heading =
+      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_HEADING, kDomain);
   const std::string expected_subheading = l10n_util::GetStringFUTF8(
-      IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING, base::UTF8ToUTF16(kDomain));
+      IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING, kDomain);
 
   // Compare heading and subheading
   chromeos::test::OobeJS().ExpectEQ(
@@ -2812,7 +2810,8 @@ class AmbientAuthenticationManagedGuestSessionTest
                            .ambientauthenticationinprivatemodesenabled()
                            .value();
     Profile* regular_profile = GetCurrentBrowser()->profile();
-    Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
+    Profile* incognito_profile =
+        regular_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
     EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
         regular_profile));

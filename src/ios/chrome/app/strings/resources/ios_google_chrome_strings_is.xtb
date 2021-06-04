@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
+<translation id="1096883626080133124">Komdu meiru í verk með einfaldari, öruggari og hraðari Google Chrome</translation>
 <translation id="1282031177488366470">Hjálpaðu okkur að bæta eiginleika og afköst Chrome</translation>
 <translation id="1314663809820920746">Þú getur áfram séð öll bókamerki, feril, aðgangsorð og aðrar stillingar í þessu tæki. Breytingar verða ekki samstilltar við Google reikninginn þinn.</translation>
 <translation id="1479202195792305274">Chrome getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome gat ekki leitað að uppfærslum. Athugaðu nettenginguna þína.</translation>
 <translation id="1682483655351012182">Samstilla gögnin þín í Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Hjálpaðu til við að bæta Google Chrome með því að senda sjálfkrafa notkunarupplýsingar og hrunskýrslur til Google</translation>
 <translation id="1917964099031477364">Þessi reikningur og öll óvistuð gögn verða fjarlægð úr Chrome og öðrum Google forritum á þessu tæki.</translation>
 <translation id="2009224836393115614">Chrome gat ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="2147651015520127414">Chrome staðfesti að <ph name="ISSUER" /> gaf út vottorð þessa vefsvæðis.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome gat ekki leitað að uppfærslum. Reyndu aftur síðar.</translation>
 <translation id="2732745070297234559">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun.</translation>
 <translation id="2740105938841089077">Nota Chrome til að opna tengla</translation>
+<translation id="2869959624320573933">Skráðu þig inn á Chrome</translation>
 <translation id="2919738076569633423">Með því að nota Chrome samþykkir þú <ph name="BEGIN_LINK_TOS" />þjónustuskilmálana<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Vegna þess að þú ert að skrá þig út af reikningi sem stýrt er af <ph name="SIGNOUT_MANAGED_DOMAIN" /> verður Chrome gögnum þínum eytt úr þessu tæki. Gögnin verða áfram geymd á Google reikningnum þínum.</translation>
 <translation id="3167189358072330585">Reikningurinn þinn virkar ekki í Google Chrome. Hafðu samband við stjórnanda lénsins eða notaðu venjulegan Google reikning til að skrá þig inn.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome sparar þér tíma með því að færa reikningana þína yfir á vefinn. Þú getur bætt við reikningum eða fjarlægt þá í stillingum.</translation>
 <translation id="3282568296779691940">Skráðu þig inn á Chrome</translation>
 <translation id="3345341804167540816">Notaðu Chrome alls staðar</translation>
+<translation id="3455456143708465450">Skráðu þig inn á Google reikninginn svo að Chrome nýtist þér sem best</translation>
 <translation id="3522659714780527202">Kveiktu á samstillingu til að sjá flipana þína hvar sem þú notar Chrome</translation>
 <translation id="3533694711092285624">Engin vistuð aðgangsorð. Chrome getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="3706101708757577809">Núna geturðu notað Chrome hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Ef þú leyfir Chrome að vita staðsetningu þína sendir Chrome hana til þeirra vefsvæða sem þú leyfir. Vefsvæði kunna að biðja um staðsetningu þína þegar þau búa yfir staðbundum upplýsingum til að birta þér, t.d. um nálægar verslanir eða fréttir.</translation>
 <translation id="6036420186814142909">Google Chrome inniheldur eiginleika sem hjálpa þér að stjórna netgögnunum þínum og hleðsluhraða vefsíðna.
 <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Leyfa innskráningu í Chrome</translation>
 <translation id="6181930887571472871">Skipta yfir í Chrome</translation>
 <translation id="6238746320622508509">Leyfa Chrome að læsa huliðsflipunum þínum.</translation>
 <translation id="6573431926118603307">Flipar sem þú hefur opnað í Chrome í öðrum tækjum birtast hér.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Viltu hreinsa Chrome gögnin úr þessu tæki?</translation>
 <translation id="6822673484890854830">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
 <translation id="6964931465519938134">Núna geturðu notað Chrome hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
+<translation id="7059914902409643750">Lagaðu Chrome að þínum þörfum</translation>
 <translation id="7124339256045485976">Haltu Chrome uppfærðu</translation>
 <translation id="7161390184744336561">Google Chrome er úrelt</translation>
 <translation id="7165736900384873061">Byrjaðu að nota QR-skanna Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome er uppfært</translation>
 <translation id="8022947259858476807">Notaðu Chrome sem sjálfgefinn valkost til að opna tengla, leita í græjum og til sjálfvirkrar útfyllingar aðgangsorða í öðrum forritum</translation>
 <translation id="8160472928944011082">Ekki er hægt að uppfæra Chrome</translation>
+<translation id="8263079278049777200">Skráðu þig inn á þetta vefsvæði, Google reikninginn þinn og Chrome. Þú getur kveikt á samstillingu síðar.</translation>
 <translation id="8357607116237445042">Veldu hvort þú vilt hreinsa gögn Chrome úr þessu tæki eða geyma þau</translation>
 <translation id="8370517070665726704">Höfundarréttur <ph name="YEAR" /> Google LLC. Öll réttindi áskilin.</translation>
 <translation id="840168496893712993">Einhverjar viðbætur valda því að Chrome hrynur. Prófaðu að fjarlægja þær.</translation>
@@ -95,5 +102,6 @@
   3. Veldu Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Öryggi með Google Chrome</translation>
+<translation id="8772179140489533211">Sýna innskráningartilkynningar í Chrome.</translation>
 <translation id="9112744793181547300">Stilla Chrome sem sjálfgefið?</translation>
 </translationbundle>

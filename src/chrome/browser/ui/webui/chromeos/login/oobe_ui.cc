@@ -20,7 +20,6 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -67,6 +66,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/offline_login_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
+#include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
@@ -82,7 +83,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/ssh_configured_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/testapi/oobe_test_api_handler.h"
@@ -151,11 +151,11 @@ constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJSPath[] = "test_api.js";
 constexpr char kWebviewSamlInjectedJSPath[] = "webview_saml_injected.js";
 
-// Public
 constexpr char kLoginScreenBehaviorHTML[] = "components/login_screen_behavior.html";
 constexpr char kLoginScreenBehaviorJS[] = "components/login_screen_behavior.js";
 constexpr char kMultiStepBehaviorHTML[] = "components/multi_step_behavior.html";
 constexpr char kMultiStepBehaviorJS[] = "components/multi_step_behavior.js";
+constexpr char kOobeIconsHTML[] = "components/oobe_icons.html";
 
 // Components
 constexpr char kOobeSharedVarsCssHTML[] =
@@ -325,7 +325,7 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
 // chrome://oobe/login
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->SetDefaultResource(IDR_MD_LOGIN_HTML);
-  source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
+  source->AddResourcePath(kLoginJSPath, IDR_OOBE_JS);
   source->AddResourcePath(kCustomElementsHTMLPath,
                           IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOGIN_JS);
@@ -421,19 +421,19 @@ void OobeUI::ConfigureOobeDisplay() {
 
     AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>(
         js_calls_container_.get()));
+
+    AddScreenHandler(
+        std::make_unique<EulaScreenHandler>(js_calls_container_.get()));
   }
 
-  AddScreenHandler(std::make_unique<NetworkScreenHandler>(
-      js_calls_container_.get(), core_handler_));
+  AddScreenHandler(
+      std::make_unique<NetworkScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EnableAdbSideloadingScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EnableDebuggingScreenHandler>(
       js_calls_container_.get()));
-
-  AddScreenHandler(std::make_unique<EulaScreenHandler>(
-      js_calls_container_.get(), core_handler_));
 
   AddScreenHandler(
       std::make_unique<ResetScreenHandler>(js_calls_container_.get()));
@@ -499,7 +499,7 @@ void OobeUI::ConfigureOobeDisplay() {
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<ActiveDirectoryLoginScreenHandler>(
-      js_calls_container_.get(), core_handler_));
+      js_calls_container_.get()));
 
   auto password_change_handler =
       std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>(
@@ -534,7 +534,7 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>(
       js_calls_container_.get()));
 
-  AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>(
+  AddScreenHandler(std::make_unique<ManagementTransitionScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(
@@ -557,6 +557,9 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<ParentalHandoffScreenHandler>(
       js_calls_container_.get()));
+
+  AddScreenHandler(
+      std::make_unique<OsInstallScreenHandler>(js_calls_container_.get()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
@@ -677,6 +680,8 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
                           IDR_OOBE_COMPONENTS_MULTI_STEP_BEHAVIOR_HTML);
   source->AddResourcePath(kMultiStepBehaviorJS,
                           IDR_OOBE_COMPONENTS_MULTI_STEP_BEHAVIOR_JS);
+  source->AddResourcePath(kOobeIconsHTML,
+                          IDR_OOBE_COMPONENTS_OOBE_ICONS_HTML);
 
   source->AddResourcePath(kI18nBehaviorHTML,
                           IDR_OOBE_COMPONENTS_I18N_BEHAVIOR_HTML);

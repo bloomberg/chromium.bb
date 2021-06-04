@@ -461,8 +461,8 @@ void LoadDisplayMixedMirrorModeParams(PrefService* local_state) {
   }
 
   GetDisplayManager()->set_mixed_mirror_mode_params(
-      base::Optional<display::MixedMirrorModeParams>(
-          base::in_place, mirroring_source_id, mirroring_destination_ids));
+      absl::optional<display::MixedMirrorModeParams>(
+          absl::in_place, mirroring_source_id, mirroring_destination_ids));
 }
 
 void StoreDisplayLayoutPref(PrefService* pref_service,
@@ -476,8 +476,9 @@ void StoreDisplayLayoutPref(PrefService* pref_service,
   std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
   if (pref_data->HasKey(name)) {
     base::Value* value = nullptr;
-    if (pref_data->Get(name, &value) && value != nullptr)
-      layout_value.reset(value->DeepCopy());
+    if (pref_data->Get(name, &value) && value != nullptr) {
+      layout_value = base::Value::ToUniquePtrValue(value->Clone());
+    }
   }
   if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
     pref_data->Set(name, std::move(layout_value));
@@ -675,7 +676,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
           base::NumberToString(association_info.first),
           association_info_value->Clone());
     }
-    if (association_info_map_value.empty())
+    if (association_info_map_value.DictEmpty())
       continue;
 
     // Move the already serialized entry of AssociationInfoMap from
@@ -727,7 +728,7 @@ void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
 // |mixed_mirror_mode_params| is null.
 void StoreDisplayMixedMirrorModeParams(
     PrefService* pref_service,
-    const base::Optional<display::MixedMirrorModeParams>& mixed_params) {
+    const absl::optional<display::MixedMirrorModeParams>& mixed_params) {
   DictionaryPrefUpdate update(pref_service,
                               prefs::kDisplayMixedMirrorModeParams);
   base::DictionaryValue* pref_data = update.Get();
@@ -897,7 +898,7 @@ bool DisplayPrefs::ParseTouchCalibrationStringForTest(
 }
 
 void DisplayPrefs::StoreDisplayMixedMirrorModeParamsForTest(
-    const base::Optional<display::MixedMirrorModeParams>& mixed_params) {
+    const absl::optional<display::MixedMirrorModeParams>& mixed_params) {
   StoreDisplayMixedMirrorModeParams(local_state_, mixed_params);
 }
 

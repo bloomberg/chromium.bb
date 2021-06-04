@@ -342,7 +342,6 @@ void GrMtlCaps::initGrCaps(id<MTLDevice> device) {
         }
     }
 
-    fMixedSamplesSupport = false;
     fGpuTracingSupport = false;
 
     fFenceSyncSupport = true;
@@ -473,6 +472,7 @@ void GrMtlCaps::initShaderCaps() {
     shaderCaps->fDstReadInShaderSupport = shaderCaps->fFBFetchSupport;
 
     shaderCaps->fIntegerSupport = true;
+    shaderCaps->fNonsquareMatrixSupport = true;
     shaderCaps->fVertexIDSupport = false;
 
     // Metal uses IEEE float and half floats so assuming those values here.
@@ -1105,7 +1105,7 @@ GrProgramDesc GrMtlCaps::makeDesc(GrRenderTarget* rt,
     // If ordering here is changed, update getStencilPixelFormat() below
     b.add32(programInfo.backendFormat().asMtlFormat());
 
-    b.add32(programInfo.numRasterSamples());
+    b.add32(programInfo.numSamples());
 
 #ifdef SK_DEBUG
     if (rt && programInfo.isStencilEnabled()) {

@@ -7,11 +7,16 @@
 #include <algorithm>
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -23,7 +28,9 @@
 #include "content/public/browser/visibility.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-shared.h"
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
 #endif
@@ -35,11 +42,6 @@ class RenderProcessHostInternalObserver;
 namespace {
 
 using blink::scheduler::WebSchedulerTrackedFeature;
-
-// Removes the time limit for cached content. This is used on bots to identify
-// accidentally passing tests.
-const base::Feature kBackForwardCacheNoTimeEviction{
-    "BackForwardCacheNoTimeEviction", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The default number of entries the BackForwardCache can hold per tab.
 static constexpr size_t kDefaultBackForwardCacheSize = 1;
@@ -88,15 +90,17 @@ bool IsGeolocationSupported() {
     return false;
   static constexpr base::FeatureParam<bool> geolocation_supported(
       &features::kBackForwardCache, "geolocation_supported",
-#if defined(OS_ANDROID)
       true
-#else
-      // TODO(crbug.com/989847): Omnibox icon should be updated when the page
-      //                         enters or is restored from BackForwardCache.
-      false
-#endif
   );
   return geolocation_supported.Get();
+}
+
+bool IsContentInjectionSupported() {
+  if (!IsBackForwardCacheEnabled())
+    return false;
+  static constexpr base::FeatureParam<bool> content_injection_supported(
+      &features::kBackForwardCache, "content_injection_supported", false);
+  return content_injection_supported.Get();
 }
 
 bool IsFileSystemSupported() {
@@ -105,6 +109,62 @@ bool IsFileSystemSupported() {
   static constexpr base::FeatureParam<bool> file_system_api_supported(
       &features::kBackForwardCache, "file_system_api_supported", false);
   return file_system_api_supported.Get();
+}
+
+bool IsOptInHeaderRequired() {
+  if (!IsBackForwardCacheEnabled())
+    return false;
+
+  // TODO(crbug.com/1201653): Remove this feature param and make it one of the
+  //                          `unload_support`.
+  static constexpr base::FeatureParam<bool> opt_in_header_required(
+      &features::kBackForwardCache, "opt_in_header_required", false);
+  return opt_in_header_required.Get();
+}
+
+enum class HeaderPresence {
+  kNotPresent,
+  kPresent,
+  kUnsure,
+};
+
+HeaderPresence OptInUnloadHeaderPresence(RenderFrameHostImpl* rfh) {
+  const network::mojom::URLResponseHeadPtr& response_head =
+      rfh->last_response_head();
+  if (!response_head)
+    return HeaderPresence::kUnsure;
+
+  const network::mojom::ParsedHeadersPtr& headers =
+      response_head->parsed_headers;
+  if (!headers)
+    return HeaderPresence::kUnsure;
+
+  return headers->bfcache_opt_in_unload ? HeaderPresence::kPresent
+                                        : HeaderPresence::kNotPresent;
+}
+
+constexpr base::FeatureParam<BackForwardCacheImpl::UnloadSupportStrategy>::
+    Option kUnloadSupportStrategyOptions[] = {
+        {BackForwardCacheImpl::UnloadSupportStrategy::kAlways, "always"},
+        {BackForwardCacheImpl::UnloadSupportStrategy::kOptInHeaderRequired,
+         "opt_in_header_required"},
+        {BackForwardCacheImpl::UnloadSupportStrategy::kNo, "no"},
+};
+
+BackForwardCacheImpl::UnloadSupportStrategy GetUnloadSupportStrategy() {
+  // TODO(crbug.com/1201653): Make the default "kNo" for desktops once
+  //                          the experiment config is updated.
+  constexpr auto kDefaultStrategy =
+      BackForwardCacheImpl::UnloadSupportStrategy::kAlways;
+
+  if (!IsBackForwardCacheEnabled())
+    return kDefaultStrategy;
+
+  static constexpr base::FeatureParam<
+      BackForwardCacheImpl::UnloadSupportStrategy>
+      unload_support(&features::kBackForwardCache, "unload_support",
+                     kDefaultStrategy, &kUnloadSupportStrategyOptions);
+  return unload_support.Get();
 }
 
 uint64_t SupportedFeaturesBitmaskImpl() {
@@ -206,6 +266,11 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh,
         WebSchedulerTrackedFeature::kRequestedGeolocationPermission);
   }
 
+  if (!IsContentInjectionSupported()) {
+    result |= FeatureToBit(WebSchedulerTrackedFeature::kIsolatedWorldScript) |
+              FeatureToBit(WebSchedulerTrackedFeature::kInjectedStyleSheet);
+  }
+
   if (!IgnoresOutstandingNetworkRequestForTesting()) {
     result |=
         FeatureToBit(
@@ -247,18 +312,26 @@ std::string GetAllowedURLList() {
                                                 "allowed_websites");
 }
 
-// To enter the BackForwardCache the URL of a document must have a host and a
-// path matching with at least one URL in this map. We represent/format the
-// string associated with parameter as comma separated urls.
-std::map<std::string, std::vector<std::string>> GetAllowedURLs() {
-  std::map<std::string, std::vector<std::string>> allowed_urls;
+// This function returns the blocked URL list.
+std::string GetBlockedURLList() {
+  return IsBackForwardCacheEnabled()
+             ? base::GetFieldTrialParamValueByFeature(
+                   features::kBackForwardCache, "blocked_websites")
+             : "";
+}
+
+// Parses the “allowed_websites” and "blocked_websites" field trial parameters
+// and creates a map to represent hosts and corresponding path prefixes.
+std::map<std::string, std::vector<std::string>> ParseCommaSeparatedURLs(
+    base::StringPiece comma_separated_urls) {
+  std::map<std::string, std::vector<std::string>> urls;
   for (auto& it :
-       base::SplitString(GetAllowedURLList(), ",", base::TRIM_WHITESPACE,
+       base::SplitString(comma_separated_urls, ",", base::TRIM_WHITESPACE,
                          base::SPLIT_WANT_ALL)) {
     GURL url = GURL(it);
-    allowed_urls[url.host()].emplace_back(url.path());
+    urls[url.host()].push_back(url.path());
   }
-  return allowed_urls;
+  return urls;
 }
 
 BackForwardCacheTestDelegate* g_bfcache_disabled_test_observer = nullptr;
@@ -310,6 +383,18 @@ bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
   return false;
 }
 
+// Returns true if all of the RenderViewHosts in this Entry have received the
+// acknowledgement from renderer.
+bool AllRenderViewHostsReceivedAckFromRenderer(
+    BackForwardCacheImpl::Entry& entry) {
+  for (auto* rvh : entry.render_view_hosts) {
+    if (!rvh->DidReceiveBackForwardCacheAck()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -348,6 +433,12 @@ BackForwardCacheImpl::Entry::Entry(
 
 BackForwardCacheImpl::Entry::~Entry() = default;
 
+void BackForwardCacheImpl::Entry::WriteIntoTrace(
+    perfetto::TracedValue context) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("render_frame_host", render_frame_host);
+}
+
 void BackForwardCacheImpl::RenderProcessBackgroundedChanged(
     RenderProcessHostImpl* host) {
   EnforceCacheSizeLimit();
@@ -364,7 +455,10 @@ BackForwardCacheTestDelegate::~BackForwardCacheTestDelegate() {
 }
 
 BackForwardCacheImpl::BackForwardCacheImpl()
-    : allowed_urls_(GetAllowedURLs()), weak_factory_(this) {}
+    : allowed_urls_(ParseCommaSeparatedURLs(GetAllowedURLList())),
+      blocked_urls_(ParseCommaSeparatedURLs(GetBlockedURLList())),
+      unload_strategy_(GetUnloadSupportStrategy()),
+      weak_factory_(this) {}
 
 BackForwardCacheImpl::~BackForwardCacheImpl() {
   Shutdown();
@@ -427,6 +521,12 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   if (rfh->GetParent())
     result.No(BackForwardCacheMetrics::NotRestoredReason::kNotMainFrame);
 
+  // If the the delegate doesn't support back forward cache, disable it.
+  if (!rfh->delegate()->IsBackForwardCacheSupported()) {
+    result.No(BackForwardCacheMetrics::NotRestoredReason::
+                  kBackForwardCacheDisabledForDelegate);
+  }
+
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_ ||
       // TODO(https://crbug.com/1176151): Replace with LifecycleState check once
       // it tracks prerender too.
@@ -479,8 +579,8 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
             expected_related_active_contents_count);
   if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() >
       expected_related_active_contents_count) {
-    result.NoDueToRelatedActiveContents(
-        rfh->browsing_instance_not_swapped_reason());
+    result.No(BackForwardCacheMetrics::NotRestoredReason::
+                  kRelatedActiveContentsExist);
   }
 
   // Only store documents that have successful http status code.
@@ -517,6 +617,24 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   if (!IsAllowed(rfh->GetLastCommittedURL()))
     result.No(BackForwardCacheMetrics::NotRestoredReason::kDomainNotAllowed);
 
+  if (IsOptInHeaderRequired()) {
+    HeaderPresence presence = OptInUnloadHeaderPresence(rfh);
+    switch (presence) {
+      case HeaderPresence::kNotPresent:
+        result.No(BackForwardCacheMetrics::NotRestoredReason::
+                      kOptInUnloadHeaderNotPresent);
+        break;
+      case HeaderPresence::kPresent:
+        // The opt-in header is present, so the page is eligible for BFCache.
+        break;
+      case HeaderPresence::kUnsure:
+        // For the cases which we didn't parse the opt-in header, we should have
+        // already bailed out of BFCache for other reasons.
+        DCHECK(!result.CanStore());
+        break;
+    }
+  }
+
   CanStoreRenderFrameHostLater(&result, rfh);
 
   DVLOG(1) << "CanPotentiallyStorePageLater: " << rfh->GetLastCommittedURL()
@@ -545,6 +663,46 @@ void BackForwardCacheImpl::CanStoreRenderFrameHostLater(
   // Do not store documents if they have inner WebContents.
   if (rfh->IsOuterDelegateFrame())
     result->No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
+
+  const bool has_unload_handler = rfh->GetSuddenTerminationDisablerState(
+      blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
+  switch (unload_strategy_) {
+    case BackForwardCacheImpl::UnloadSupportStrategy::kAlways:
+      break;
+    case BackForwardCacheImpl::UnloadSupportStrategy::kOptInHeaderRequired:
+      if (has_unload_handler) {
+        HeaderPresence presence =
+            OptInUnloadHeaderPresence(rfh->GetMainFrame());
+        switch (presence) {
+          case HeaderPresence::kNotPresent:
+            result->No(rfh->GetParent()
+                           ? BackForwardCacheMetrics::NotRestoredReason::
+                                 kUnloadHandlerExistsInSubFrame
+                           : BackForwardCacheMetrics::NotRestoredReason::
+                                 kOptInUnloadHeaderNotPresent);
+            break;
+          case HeaderPresence::kPresent:
+            // The opt-in header is present for the main frame with an unload
+            // handler, so the page is eligible for BFCache.
+            break;
+          case HeaderPresence::kUnsure:
+            // For the cases which we didn't parse the opt-in header, we should
+            // have already bailed out of BFCache for other reasons.
+            DCHECK(!result->CanStore());
+            break;
+        }
+      }
+      break;
+    case BackForwardCacheImpl::UnloadSupportStrategy::kNo:
+      if (has_unload_handler) {
+        result->No(rfh->GetParent()
+                       ? BackForwardCacheMetrics::NotRestoredReason::
+                             kUnloadHandlerExistsInSubFrame
+                       : BackForwardCacheMetrics::NotRestoredReason::
+                             kUnloadHandlerExistsInMainFrame);
+      }
+      break;
+  }
 
   // When it's not the final decision for putting a page in the back-forward
   // cache, we should only consider "sticky" features here - features that
@@ -601,7 +759,7 @@ void BackForwardCacheImpl::CheckDynamicBlocklistedFeaturesOnSubtree(
 
 void BackForwardCacheImpl::StoreEntry(
     std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
-  TRACE_EVENT0("navigation", "BackForwardCache::StoreEntry");
+  TRACE_EVENT("navigation", "BackForwardCache::StoreEntry", "entry", entry);
   DCHECK(CanStorePageNow(entry->render_frame_host.get()));
 
 #if defined(OS_ANDROID)
@@ -646,11 +804,16 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
     size_t limit,
     bool foregrounded_only) {
   size_t count = 0;
+  size_t not_received_ack_count = 0;
   for (auto& stored_entry : entries_) {
     if (stored_entry->render_frame_host->is_evicted_from_back_forward_cache())
       continue;
     if (foregrounded_only && !HasForegroundedProcess(*stored_entry))
       continue;
+    if (!AllRenderViewHostsReceivedAckFromRenderer(*stored_entry)) {
+      not_received_ack_count++;
+      continue;
+    }
     if (++count > limit) {
       stored_entry->render_frame_host->EvictFromBackForwardCacheWithReason(
           foregrounded_only
@@ -659,6 +822,10 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
               : BackForwardCacheMetrics::NotRestoredReason::kCacheLimit);
     }
   }
+  UMA_HISTOGRAM_COUNTS_100(
+      "BackForwardCache.AllSites.HistoryNavigationOutcome."
+      "CountEntriesWithoutRendererAck",
+      not_received_ack_count);
   return count;
 }
 
@@ -683,6 +850,10 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
     return nullptr;
 
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
+  TRACE_EVENT_INSTANT("navigation",
+                      "BackForwardCache::RestoreEntry_matched_entry", "entry",
+                      entry);
+
   entries_.erase(matching_entry);
   RemoveProcessesForEntry(*entry);
   entry->page_restore_params = std::move(page_restore_params);
@@ -827,6 +998,16 @@ void BackForwardCacheImpl::DestroyEvictedFrames() {
 }
 
 bool BackForwardCacheImpl::IsAllowed(const GURL& current_url) {
+  // If the current_url matches the blocked host and path, current_url is
+  // not allowed to be cached.
+  const auto& it = blocked_urls_.find(current_url.host());
+  if (it != blocked_urls_.end()) {
+    for (const std::string& blocked_path : it->second) {
+      if (base::StartsWith(current_url.path_piece(), blocked_path))
+        return false;
+    }
+  }
+
   // By convention, when |allowed_urls_| is empty, it means there are no
   // restrictions about what RenderFrameHost can enter the BackForwardCache.
   if (allowed_urls_.empty())
@@ -838,7 +1019,7 @@ bool BackForwardCacheImpl::IsAllowed(const GURL& current_url) {
   // scheme here.
   const auto& entry = allowed_urls_.find(current_url.host());
   if (entry != allowed_urls_.end()) {
-    for (auto allowed_path : entry->second) {
+    for (const std::string& allowed_path : entry->second) {
       if (base::StartsWith(current_url.path_piece(), allowed_path))
         return true;
     }
@@ -859,6 +1040,27 @@ bool BackForwardCacheImpl::IsMediaSessionImplOnServiceCreatedAllowed() {
           FeatureToBit(
               WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated)) !=
          0;
+}
+
+void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
+    Entry& bfcache_entry,
+    base::OnceClosure done_callback) {
+  // Disable JS eviction in renderers and defer the navigation commit until
+  // we've received confirmation that eviction is disabled from renderers.
+  auto cb = base::BarrierClosure(
+      bfcache_entry.render_view_hosts.size(),
+      base::BindOnce(
+          [](base::TimeTicks ipc_start_time, base::OnceClosure cb) {
+            std::move(cb).Run();
+            base::UmaHistogramTimes(
+                "BackForwardCache.Restore.DisableEvictionDelay",
+                base::TimeTicks::Now() - ipc_start_time);
+          },
+          base::TimeTicks::Now(), std::move(done_callback)));
+
+  for (auto* rvh : bfcache_entry.render_view_hosts) {
+    rvh->PrepareToLeaveBackForwardCache(cb);
+  }
 }
 
 bool BackForwardCache::DisabledReason::operator<(

@@ -60,16 +60,6 @@ public class TriggerContext {
             return this;
         }
 
-        public Builder withIsCustomTab(boolean isCustomTab) {
-            mTriggerContext.mIsCustomTab = isCustomTab;
-            return this;
-        }
-
-        public Builder withIsDirectAction(boolean isDirectAction) {
-            mTriggerContext.mIsDirectAction = isDirectAction;
-            return this;
-        }
-
         public Builder addParameter(String key, Object value) {
             mTriggerContext.mScriptParameters.put(key, value);
             return this;
@@ -98,7 +88,7 @@ public class TriggerContext {
     private static final String INTENT_SPECIAL_PREFIX = INTENT_EXTRA_PREFIX + "special.";
 
     /** Special parameter that enables the feature. */
-    private static final String PARAMETER_ENABLED = "ENABLED";
+    public static final String PARAMETER_ENABLED = "ENABLED";
 
     /**
      * Special bool parameter that MUST be present in all intents. It allows the caller to either
@@ -144,7 +134,10 @@ public class TriggerContext {
      * initial URL when available to avoid issues where the initial URL points to a redirect
      * rather than the actual deeplink.
      */
-    private static final String PARAMETER_ORIGINAL_DEEPLINK = "ORIGINAL_DEEPLINK";
+    public static final String PARAMETER_ORIGINAL_DEEPLINK = "ORIGINAL_DEEPLINK";
+
+    /** Identifies the caller, i.e., the trigger surface. */
+    public static final String PARAMETER_CALLER = "CALLER";
 
     /**
      * Defines whether or not it is allowed to open an app instead of continuing with Autofill
@@ -155,8 +148,6 @@ public class TriggerContext {
     private final Map<String, Object> mScriptParameters;
     private final StringBuilder mExperimentIds;
     private String mInitialUrl;
-    private boolean mIsCustomTab;
-    private boolean mIsDirectAction;
     private boolean mOnboardingShown;
 
     private TriggerContext() {
@@ -225,18 +216,6 @@ public class TriggerContext {
         return map;
     }
 
-    /** Returns whether all mandatory script parameters are set. */
-    public boolean areMandatoryParametersSet() {
-        if (!getBooleanParameter(PARAMETER_ENABLED)
-                || mScriptParameters.get(PARAMETER_START_IMMEDIATELY) == null) {
-            return false;
-        }
-        if (!getBooleanParameter(PARAMETER_START_IMMEDIATELY)) {
-            return containsTriggerScript();
-        }
-        return true;
-    }
-
     /**
      * Searches the merged experiment ids in normal and special parameters.
      * @return comma separated list of experiment ids, or empty string.
@@ -287,11 +266,6 @@ public class TriggerContext {
     /** Whether the caller requested a trigger script to start in any of the supported ways. */
     public boolean containsTriggerScript() {
         return requestsTriggerScript() || containsBase64TriggerScripts();
-    }
-
-    /** Whether this trigger context was created in a custom tab. */
-    public boolean isCustomTab() {
-        return mIsCustomTab;
     }
 
     public void setOnboardingShown(boolean onboardingShown) {

@@ -10,7 +10,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/metrics_util.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/throughput_tracker.h"
 #endif
 
@@ -33,10 +33,6 @@ class TabHoverCardMetrics {
 
     // Returns true if preview images are enabled.
     virtual bool ArePreviewsEnabled() const = 0;
-
-    // Returns true if the current hover card is visible and displaying a valid
-    // preview image.
-    virtual bool HasPreviewImage() const = 0;
 
     // Returns the hover card widget, or nullptr if none. Can be stubbed to
     // return nullptr for tests (low-level performance metrics may not be
@@ -70,9 +66,10 @@ class TabHoverCardMetrics {
   void CardFadeComplete();
   void CardFadeCanceled();
 
-  // Notes that a card becomes fully visible or lands on|tab|. Set
-  // |has_thumbnail| to true if the thumbnail for the tab is already loaded.
-  void CardFullyVisibleOnTab(TabHandle tab, bool is_active);
+  // Notes that a card becomes fully visible or lands on `tab`. Set
+  // `has_preview` to true if there is already a preview image loaded for the
+  // tab.
+  void CardFullyVisibleOnTab(TabHandle tab, bool has_preview);
 
   // Note that an image was shown for |tab|.
   void ImageLoadedForTab(TabHandle tab);
@@ -117,7 +114,7 @@ class TabHoverCardMetrics {
   TabHandle times_for_last_tab_ = TabHandle();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  base::Optional<ui::ThroughputTracker> throughput_tracker_;
+  absl::optional<ui::ThroughputTracker> throughput_tracker_;
 #endif
 
   // TOOD(dfried): in future, change this to a delegate object in order to be

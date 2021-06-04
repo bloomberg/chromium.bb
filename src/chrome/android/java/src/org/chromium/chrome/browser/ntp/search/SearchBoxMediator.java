@@ -16,13 +16,13 @@ import android.view.ViewGroup;
 import androidx.annotation.ColorInt;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.gsa.GSAState;
+import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.lens.LensIntentParams;
 import org.chromium.chrome.browser.lens.LensQueryParams;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class SearchBoxMediator
-        implements Destroyable, NativeInitObserver, AssistantVoiceSearchService.Observer {
+        implements DestroyObserver, NativeInitObserver, AssistantVoiceSearchService.Observer {
     private final Context mContext;
     private final PropertyModel mModel;
     private final ViewGroup mView;
@@ -75,7 +75,7 @@ class SearchBoxMediator
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (mAssistantVoiceSearchService != null) {
             mAssistantVoiceSearchService.destroy();
             mAssistantVoiceSearchService = null;
@@ -186,7 +186,7 @@ class SearchBoxMediator
      */
     void startLens(
             @LensEntryPoint int lensEntryPoint, WindowAndroid windowAndroid, boolean isIncognito) {
-        AppHooks.get().getLensController().startLens(
+        LensController.getInstance().startLens(
                 windowAndroid, new LensIntentParams.Builder(lensEntryPoint, isIncognito).build());
     }
 
@@ -199,7 +199,7 @@ class SearchBoxMediator
      */
     boolean isLensEnabled(
             @LensEntryPoint int lensEntryPoint, boolean isIncognito, boolean isTablet) {
-        return AppHooks.get().getLensController().isLensEnabled(
+        return LensController.getInstance().isLensEnabled(
                 new LensQueryParams.Builder(lensEntryPoint, isIncognito, isTablet).build());
     }
 

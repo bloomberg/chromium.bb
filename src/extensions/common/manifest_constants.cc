@@ -28,6 +28,7 @@ const char kBackgroundPage[] = "background.page";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
 const char kBackgroundServiceWorkerScript[] = "background.service_worker";
+const char kBackgroundServiceWorkerType[] = "background.type";
 const char kBluetooth[] = "bluetooth";
 const char kBookmarkUI[] = "bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
@@ -122,7 +123,6 @@ const char kPublicKey[] = "key";
 const char kRemoveButton[] = "remove_button";
 const char kReplacementAndroidApp[] = "replacement_android_app";
 const char kReplacementWebApp[] = "replacement_web_app";
-const char kRequirements[] = "requirements";
 const char kSandboxedPages[] = "sandbox.pages";
 const char kSandboxedPagesCSP[] = "sandbox.content_security_policy";
 const char kSettingsOverride[] = "chrome_settings_overrides";
@@ -315,6 +315,8 @@ const char kInvalidBackgroundScripts[] =
     "Invalid value for 'background.scripts'.";
 const char kInvalidBackgroundServiceWorkerScript[] =
     "Invalid value for 'background.service_worker'.";
+const char kInvalidBackgroundServiceWorkerType[] =
+    "Invalid value for 'background.type'.";
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
@@ -486,12 +488,12 @@ const char kInvalidLinkedAppIcons[] =
     "Invalid 'app.linked_icons'. Must be an array";
 const char kInvalidManifest[] = "Manifest file is invalid";
 const char kInvalidManifestKey[] = "Invalid value for '*'.";
-const char kInvalidManifestVersion[] =
-    "Invalid value for 'manifest_version'. Must be an integer greater than "
-    "zero.";
-const char kInvalidManifestVersionOld[] =
-    "The 'manifest_version' key must be present and set to * (without quotes). "
-    "See developer.chrome.com/*/manifestVersion.html for details.";
+const char kInvalidManifestVersionMissingKey[] =
+    "Missing 'manifest_version' key. Its value must be an integer *. "
+    "See developer.chrome.com/*/manifestVersion for details.";
+const char kInvalidManifestVersionUnsupported[] =
+    "Invalid value for 'manifest_version'. Must be an integer *. "
+    "See developer.chrome.com/*/manifestVersion for details.";
 const char kInvalidMatch[] =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char kInvalidMatchCount[] =
@@ -550,10 +552,6 @@ const char kInvalidReplacementAndroidApp[] =
     "Invalid value for 'replacement_android_app'";
 const char kInvalidReplacementWebApp[] =
     "Invalid value for 'replacement_web_app'.";
-const char kInvalidRequirement[] =
-    "Invalid value for requirement \"*\"";
-const char kInvalidRequirements[] =
-    "Invalid value for 'requirements'";
 const char kInvalidRulesetID[] =
     "'*.*': Invalid 'id' specified for Ruleset at index *. The ID must be "
     "non-empty, unique and must not start with '_'.";

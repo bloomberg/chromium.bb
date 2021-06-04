@@ -50,6 +50,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
@@ -75,6 +76,9 @@ using l10n_util::GetStringUTF16;
 using signin::ConsentLevel;
 
 namespace {
+
+const char kOfferTrustedVaultOptInChangedEvent[] =
+    "offer-trusted-vault-opt-in-changed";
 
 // A structure which contains all the configuration information for sync.
 struct SyncConfigInfo {
@@ -185,12 +189,6 @@ std::u16string GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
   DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
   switch (passphrase_type) {
     case syncer::PassphraseType::kFrozenImplicitPassphrase:
-      if (passphrase_time.is_null()) {
-        return GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY);
-      }
-      return GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
-                             base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
-                             base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::kCustomPassphrase:
       if (passphrase_time.is_null()) {
         return GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY);
@@ -215,8 +213,6 @@ std::u16string GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
   }
   switch (passphrase_type) {
     case syncer::PassphraseType::kFrozenImplicitPassphrase:
-      return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
-                             base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::kCustomPassphrase:
       return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
                              base::TimeFormatShortDate(passphrase_time));
@@ -287,6 +283,10 @@ void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncPrefsDispatch",
       base::BindRepeating(&PeopleHandler::HandleSyncPrefsDispatch,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncOfferTrustedVaultOptInDispatch",
+      base::BindRepeating(&PeopleHandler::HandleOfferTrustedVaultOptInDispatch,
                           base::Unretained(this)));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   web_ui()->RegisterMessageCallback(
@@ -489,7 +489,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   // Chrome OS), then show only the primary account, whether or not that account
   // has consented to sync.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   if (primary_account_info.has_value())
@@ -508,7 +508,7 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
 
-  base::Optional<AccountInfo> maybe_account =
+  absl::optional<AccountInfo> maybe_account =
       IdentityManagerFactory::GetForProfile(profile_)
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               email->GetString());
@@ -544,9 +544,9 @@ void PeopleHandler::HandleSetEncryptionPassphrase(const base::ListValue* args) {
   bool successfully_set = false;
   if (passphrase.empty()) {
     successfully_set = false;
-  } else if (!sync_user_settings->IsEncryptEverythingAllowed()) {
+  } else if (!sync_user_settings->IsCustomPassphraseAllowed()) {
     successfully_set = false;
-  } else if (sync_user_settings->IsUsingSecondaryPassphrase()) {
+  } else if (sync_user_settings->IsUsingExplicitPassphrase()) {
     // In case a passphrase is already being used, changing to a new one isn't
     // currently supported (one must reset all the Sync data).
     successfully_set = false;
@@ -741,6 +741,13 @@ void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {
   PushSyncPrefs();
 }
 
+void PeopleHandler::HandleOfferTrustedVaultOptInDispatch(
+    const base::ListValue* args) {
+  AllowJavascript();
+  FireWebUIListener(kOfferTrustedVaultOptInChangedEvent,
+                    base::Value(ShouldOfferTrustedVaultOptIn()));
+}
+
 void PeopleHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   engine_start_timer_.reset();
@@ -816,6 +823,39 @@ void PeopleHandler::InitializeSyncBlocker() {
   }
 }
 
+bool PeopleHandler::ShouldOfferTrustedVaultOptIn() const {
+  syncer::SyncService* sync_service = GetSyncService();
+  if (!sync_service) {
+    return false;
+  }
+
+  if (sync_service->GetTransportState() !=
+      syncer::SyncService::TransportState::ACTIVE) {
+    // Transport state must be active so SyncUserSettings::GetPassphraseType()
+    // changes once the opt-in completes, and the UI is notified.
+    return false;
+  }
+
+  switch (sync_service->GetUserSettings()->GetPassphraseType()) {
+    case syncer::PassphraseType::kImplicitPassphrase:
+    case syncer::PassphraseType::kFrozenImplicitPassphrase:
+    case syncer::PassphraseType::kCustomPassphrase:
+    case syncer::PassphraseType::kTrustedVaultPassphrase:
+      // Either trusted vault is already set or a transition from this
+      // passphrase type to trusted vault is disallowed.
+      return false;
+    case syncer::PassphraseType::kKeystorePassphrase:
+      if (sync_service->GetUserSettings()->IsPassphraseRequired()) {
+        // This should be extremely rare.
+        return false;
+      }
+      return base::FeatureList::IsEnabled(
+                 switches::kSyncSupportTrustedVaultPassphraseRecovery) &&
+             base::FeatureList::IsEnabled(
+                 switches::kSyncOfferTrustedVaultOptIn);
+  }
+}
+
 void PeopleHandler::FocusUI() {
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
@@ -850,6 +890,8 @@ void PeopleHandler::OnStateChanged(syncer::SyncService* sync) {
   // MaybeMarkSyncConfiguring() then.
   MaybeMarkSyncConfiguring();
   PushSyncPrefs();
+  FireWebUIListener(kOfferTrustedVaultOptInChangedEvent,
+                    base::Value(ShouldOfferTrustedVaultOptIn()));
 }
 
 void PeopleHandler::BeforeUnloadDialogCancelled() {
@@ -979,8 +1021,8 @@ void PeopleHandler::PushSyncPrefs() {
       autofill::prefs::IsPaymentsIntegrationEnabled(profile_->GetPrefs()));
   args.SetBoolean("encryptAllData",
                   sync_user_settings->IsEncryptEverythingEnabled());
-  args.SetBoolean("encryptAllDataAllowed",
-                  sync_user_settings->IsEncryptEverythingAllowed());
+  args.SetBoolean("customPassphraseAllowed",
+                  sync_user_settings->IsCustomPassphraseAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForPreferredDataTypes(), because we want to show the

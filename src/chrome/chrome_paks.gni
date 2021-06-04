@@ -5,9 +5,9 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
 import("//chrome/browser/buildflags.gni")
-import("//chrome/browser/resources/pdf/ink/ink.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//pdf/features.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 
@@ -139,8 +139,8 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/feedback_resources.pak",
         "$root_gen_dir/chrome/gaia_auth_host_resources.pak",
         "$root_gen_dir/chrome/history_resources.pak",
-        "$root_gen_dir/chrome/local_ntp_resources.pak",
         "$root_gen_dir/chrome/memories_resources.pak",
+        "$root_gen_dir/chrome/new_tab_page_instant_resources.pak",
         "$root_gen_dir/chrome/new_tab_page_resources.pak",
         "$root_gen_dir/chrome/new_tab_page_third_party_resources.pak",
         "$root_gen_dir/chrome/read_later_resources.pak",
@@ -154,7 +154,6 @@ template("chrome_extra_paks") {
       deps += [
         "//chrome/browser/resources:component_extension_resources",
         "//chrome/browser/resources:dev_ui_paks",
-        "//chrome/browser/resources:local_ntp_resources",
         "//chrome/browser/resources:webid_resources",
         "//chrome/browser/resources/bookmarks:resources",
         "//chrome/browser/resources/commander:resources",
@@ -165,6 +164,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/history:resources",
         "//chrome/browser/resources/memories:resources",
         "//chrome/browser/resources/new_tab_page:resources",
+        "//chrome/browser/resources/new_tab_page_instant:resources",
         "//chrome/browser/resources/new_tab_page_third_party:resources",
         "//chrome/browser/resources/read_later:resources",
         "//chrome/browser/resources/settings:resources",
@@ -174,14 +174,22 @@ template("chrome_extra_paks") {
         "//headless:resources",
       ]
       if (is_chrome_branded) {
-        sources +=
-            [ "$root_gen_dir/chrome/preinstalled_web_apps_resources.pak" ]
-        deps += [ "//chrome/browser/resources:preinstalled_web_apps_resources" ]
+        sources += [
+          "$root_gen_dir/chrome/media_router_feedback_resources.pak",
+          "$root_gen_dir/chrome/preinstalled_web_apps_resources.pak",
+        ]
+        deps += [
+          "//chrome/browser/resources:preinstalled_web_apps_resources",
+          "//chrome/browser/resources/media_router:cast_feedback_ui_resources",
+        ]
       }
     }
     if (is_chromeos_ash) {
       sources += [
+        "$root_gen_dir/ash/ash_os_feedback_resources.pak",
         "$root_gen_dir/ash/ash_scanning_app_resources.pak",
+        "$root_gen_dir/ash/ash_shimless_rma_resources.pak",
+        "$root_gen_dir/ash/ash_shortcut_customization_app_resources.pak",
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
         "$root_gen_dir/chrome/bluetooth_pairing_dialog_resources.pak",
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
@@ -200,6 +208,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chromeos/chromeos_eche_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_eche_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_help_app_bundle_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_help_app_kids_magazine_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_help_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_media_app_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_media_app_resources.pak",
@@ -207,11 +216,15 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chromeos/chromeos_print_management_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/chromeos/connectivity_diagnostics_resources.pak",
+        "$root_gen_dir/chromeos/projector/projector_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_gen_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
       ]
       deps += [
+        "//ash/components/resources:os_feedback_resources",
         "//ash/components/resources:scanning_app_resources",
+        "//ash/components/resources:shimless_rma_resources",
+        "//ash/components/resources:shortcut_customization_app_resources",
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
         "//chrome/browser/resources:bluetooth_pairing_dialog_resources",
         "//chrome/browser/resources:internet_config_dialog_resources",
@@ -221,6 +234,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos/login:resources",
         "//chrome/browser/resources/chromeos/multidevice_internals:resources",
         "//chrome/browser/resources/chromeos/network_ui:resources",
+        "//chrome/browser/resources/chromeos/projector:resources",
         "//chrome/browser/resources/nearby_internals:resources",
         "//chrome/browser/resources/nearby_share:resources",
         "//chrome/browser/resources/settings/chromeos:resources",
@@ -232,6 +246,7 @@ template("chrome_extra_paks") {
         "//chromeos/resources:eche_app_resources",
         "//chromeos/resources:eche_bundle_resources",
         "//chromeos/resources:help_app_bundle_resources",
+        "//chromeos/resources:help_app_kids_magazine_bundle_resources",
         "//chromeos/resources:help_app_resources",
         "//chromeos/resources:media_app_bundle_resources",
         "//chromeos/resources:media_app_resources",
@@ -241,20 +256,15 @@ template("chrome_extra_paks") {
         "//ui/file_manager:resources",
       ]
 
-      if (!enable_use_media_app_ink) {
-        # TODO(crbug/1150244): Remove when enable_use_media_app_ink is default
-        # true.
-        sources += [ "$root_gen_dir/third_party/ink/ink_resources.pak" ]
-        deps += [ "//third_party/ink:ink_resources" ]
-      }
-
       if (!is_official_build) {
         sources += [
+          "$root_gen_dir/chromeos/chromeos_demo_mode_app_resources.pak",
           "$root_gen_dir/chromeos/chromeos_file_manager_resources.pak",
           "$root_gen_dir/chromeos/chromeos_sample_system_web_app_resources.pak",
           "$root_gen_dir/chromeos/chromeos_telemetry_extension_resources.pak",
         ]
         deps += [
+          "//chromeos/resources:demo_mode_app_resources",
           "//chromeos/resources:file_manager_resources",
           "//chromeos/resources:sample_system_web_app_resources",
           "//chromeos/resources:telemetry_extension_resources",
@@ -290,7 +300,7 @@ template("chrome_extra_paks") {
         "//extensions:extensions_resources",
       ]
     }
-    if (enable_plugins) {
+    if (enable_pdf) {
       sources += [ "$root_gen_dir/chrome/pdf_resources.pak" ]
       deps += [ "//chrome/browser/resources/pdf:resources" ]
     }
@@ -316,6 +326,8 @@ template("chrome_extra_paks") {
 #       will always be place in $output_dir/locales
 #   additional_extra_paks: List of extra .pak sources for resources.pak.
 #   locale_allowlist: if set, override repack_allowlist for locale .pak files.
+#   files_to_hash: if set, a list of pak file names to generate SHA256 hashes
+#     for.
 #   copy_data_to_bundle:
 #   deps:
 #   output_dir:
@@ -403,6 +415,32 @@ template("chrome_paks") {
     }
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
+    }
+  }
+
+  if (defined(invoker.files_to_hash)) {
+    _prefix = "$target_gen_dir/app/${target_name}_integrity"
+    _integrity_outputs = [
+      "$_prefix.cc",
+      "$_prefix.h",
+    ]
+
+    action("${target_name}_integrity_hash") {
+      script = "tools/build/sha256_file.py"
+      outputs = _integrity_outputs
+      inputs = []
+      foreach(file, invoker.files_to_hash) {
+        inputs += [ "${invoker.output_dir}/$file" ]
+      }
+
+      args = rebase_path([ _prefix ] + inputs, root_build_dir)
+
+      deps = [ ":${invoker.target_name}" ]
+    }
+
+    source_set("${target_name}_integrity") {
+      sources = _integrity_outputs
+      deps = [ ":${target_name}_hash" ]
     }
   }
 }

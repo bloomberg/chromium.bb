@@ -53,7 +53,7 @@ bool ContainsAppIdByHash(const base::ListValue& list,
     return false;
   }
 
-  for (const auto& i : list) {
+  for (const auto& i : list.GetList()) {
     const std::string& s = i.GetString();
     if (s.find('/') == std::string::npos) {
       // No slashes mean that this is a webauthn RP ID, not a U2F AppID.
@@ -193,17 +193,15 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   const base::ListValue* const permit_attestation =
       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
 
-  if (std::find_if(permit_attestation->begin(), permit_attestation->end(),
-                   [&app_id](const base::Value& v) -> bool {
-                     return v.GetString() == app_id;
-                   }) != permit_attestation->end()) {
-    return RespondNow(OneArgument(base::Value(true)));
+  for (const auto& entry : permit_attestation->GetList()) {
+    if (entry.GetString() == app_id)
+      return RespondNow(OneArgument(base::Value(true)));
   }
 
   // If the origin is blocked, reject attestation.
   if (device::fido_filter::Evaluate(
           device::fido_filter::Operation::MAKE_CREDENTIAL, origin.Serialize(),
-          /*device=*/base::nullopt, /*id=*/base::nullopt) ==
+          /*device=*/absl::nullopt, /*id=*/absl::nullopt) ==
       device::fido_filter::Action::NO_ATTESTATION) {
     return RespondNow(OneArgument(base::Value(false)));
   }
@@ -279,8 +277,7 @@ CryptotokenPrivateRecordRegisterRequestFunction::Run() {
   }
 
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      frame, page_load_metrics::mojom::PageLoadFeatures(
-                 {blink::mojom::WebFeature::kU2FCryptotokenRegister}, {}, {}));
+      frame, blink::mojom::WebFeature::kU2FCryptotokenRegister);
   return RespondNow(NoArguments());
 }
 
@@ -296,8 +293,7 @@ CryptotokenPrivateRecordSignRequestFunction::Run() {
   }
 
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      frame, page_load_metrics::mojom::PageLoadFeatures(
-                 {blink::mojom::WebFeature::kU2FCryptotokenSign}, {}, {}));
+      frame, blink::mojom::WebFeature::kU2FCryptotokenSign);
   return RespondNow(NoArguments());
 }
 

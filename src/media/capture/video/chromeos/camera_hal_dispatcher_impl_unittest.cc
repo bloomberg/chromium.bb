@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_camera_client.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -108,7 +109,7 @@ class CameraHalDispatcherImplTest : public ::testing::Test {
   }
 
   void DoLoop() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 

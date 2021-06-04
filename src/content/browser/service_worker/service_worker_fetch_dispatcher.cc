@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -213,7 +214,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   const GURL url_;
   const bool devtools_enabled_;
 
-  base::Optional<std::pair<int, int>> worker_id_;
+  absl::optional<std::pair<int, int>> worker_id_;
   std::string devtools_request_id_;
   base::queue<base::OnceCallback<void(const WorkerId&, const std::string&)>>
       devtools_callbacks;
@@ -407,7 +408,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   static void HandleResponse(
       base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
       ServiceWorkerVersion* version,
-      base::Optional<int> fetch_event_id,
+      absl::optional<int> fetch_event_id,
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       FetchEventResult fetch_result,
@@ -430,7 +431,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   // Must be set to a non-nullopt value before the corresponding mojo
   // handle is passed to the other end (i.e. before any of OnResponse*
   // is called).
-  base::Optional<int> fetch_event_id_;
+  absl::optional<int> fetch_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallback);
 };

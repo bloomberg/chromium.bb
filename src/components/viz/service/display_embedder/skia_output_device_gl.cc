@@ -354,14 +354,14 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffersAsync(
     const gfx::Size& size,
     OutputSurfaceFrame frame,
     gfx::SwapCompletionResult result) {
-  DCHECK(!result.gpu_fence);
+  DCHECK(result.release_fence.is_null());
   FinishSwapBuffers(std::move(result), size, std::move(frame));
 }
 
 void SkiaOutputDeviceGL::DoFinishSwapBuffers(const gfx::Size& size,
                                              OutputSurfaceFrame frame,
                                              gfx::SwapCompletionResult result) {
-  DCHECK(!result.gpu_fence);
+  DCHECK(result.release_fence.is_null());
 
   // Remove entries from |overlays_| for textures that weren't scheduled as an
   // overlay this frame.
@@ -422,7 +422,6 @@ void SkiaOutputDeviceGL::ScheduleOverlays(
     params.quad_rect = dc_layer.quad_rect;
     DCHECK(dc_layer.transform.IsFlat());
     params.transform = dc_layer.transform;
-    params.is_clipped = dc_layer.is_clipped;
     params.clip_rect = dc_layer.clip_rect;
     params.protected_video_type = dc_layer.protected_video_type;
     params.hdr_metadata = dc_layer.hdr_metadata;

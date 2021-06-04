@@ -182,21 +182,31 @@ suite('CellularNetworksList', function() {
             cellularSetup.CellularSetupPageName.ESIM_FLOW_UI);
       });
 
-  test('Show EID and QR code popup', async () => {
+  test('Show EID and QR code dialog', async () => {
     eSimManagerRemote.addEuiccForTest(1);
     init();
     addESimSlot();
     await flushAsync();
-    let eidPopup = cellularNetworkList.$$('.eid-popup');
-    assertFalse(!!eidPopup);
-    const eidPopupBtn = cellularNetworkList.$$('#eidPopupButton');
-    assertTrue(!!eidPopupBtn);
+    let eidDialog = cellularNetworkList.$$('.eid-dialog');
+    assertFalse(!!eidDialog);
 
-    eidPopupBtn.click();
+    const tripleDot = cellularNetworkList.$$('#moreESim');
+    assertTrue(!!tripleDot);
+    tripleDot.click();
     await flushAsync();
 
-    eidPopup = cellularNetworkList.$$('.eid-popup');
-    assertTrue(!!eidPopup);
+    const actionMenu =
+        cellularNetworkList.shadowRoot.querySelector('cr-action-menu');
+    assertTrue(!!actionMenu);
+    assertTrue(actionMenu.open);
+
+    const showEidBtn = actionMenu.querySelector('button');
+    assertTrue(!!showEidBtn);
+    showEidBtn.click();
+    await flushAsync();
+
+    eidDialog = cellularNetworkList.$$('.eid-dialog');
+    assertTrue(!!eidDialog);
   });
 
   test('Install pending eSIM profile', async () => {
@@ -382,4 +392,65 @@ suite('CellularNetworksList', function() {
     await Promise.all([showCellularSetupPromise, test_util.flushTasks()]);
   });
 
+  test('Disable no esim link when cellular device is inhibited', async () => {
+    eSimManagerRemote.addEuiccForTest(0);
+    init();
+    cellularNetworkList.deviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kNotInhibited
+    };
+    addESimSlot();
+
+    await flushAsync();
+
+    const esimLocalizedLink = cellularNetworkList.$$('#eSimNoNetworkFound')
+                                  .querySelector('settings-localized-link');
+    assertFalse(esimLocalizedLink.linkDisabled);
+
+    cellularNetworkList.cellularDeviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kInstallingProfile
+    };
+    addESimSlot();
+    await flushAsync();
+    assertTrue(esimLocalizedLink.linkDisabled);
+  });
+
+  test('Show inhibited subtext and spinner when inhibited', async () => {
+    eSimManagerRemote.addEuiccForTest(0);
+    init();
+    cellularNetworkList.deviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kNotInhibited
+    };
+    addESimSlot();
+    cellularNetworkList.canShowSpinner = true;
+    await flushAsync();
+
+    const inhibitedSubtext = cellularNetworkList.$$('#inhibitedSubtext');
+    const getInhibitedSpinner = () => {
+      return cellularNetworkList.$$('#inhibitedSpinner');
+    };
+    assertTrue(inhibitedSubtext.hidden);
+    assertTrue(!!getInhibitedSpinner());
+    assertFalse(getInhibitedSpinner().active);
+
+    cellularNetworkList.cellularDeviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kInstallingProfile
+    };
+    addESimSlot();
+    await flushAsync();
+    assertFalse(inhibitedSubtext.hidden);
+    assertTrue(getInhibitedSpinner().active);
+
+    // Do not show inihibited spinner if cellular setup dialog is open.
+    cellularNetworkList.canShowSpinner = false;
+    await flushAsync();
+    assertFalse(!!getInhibitedSpinner());
+  });
 });

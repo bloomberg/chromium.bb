@@ -42,7 +42,6 @@ aggregate_vector_icons("views_vector_icons") {
     "pin.icon",
     "radio_button_active.icon",
     "radio_button_normal.icon",
-    "submenu_arrow.icon",
     "uninstall.icon",
     "unpin.icon",
   ]
@@ -160,10 +159,10 @@ component("views") {
     "controls/resize_area.h",
     "controls/resize_area_delegate.h",
     "controls/scroll_view.h",
-    "controls/scrollbar/base_scroll_bar_button.h",
     "controls/scrollbar/base_scroll_bar_thumb.h",
     "controls/scrollbar/overlay_scroll_bar.h",
     "controls/scrollbar/scroll_bar.h",
+    "controls/scrollbar/scroll_bar_button.h",
     "controls/scrollbar/scroll_bar_views.h",
     "controls/separator.h",
     "controls/slider.h",
@@ -198,6 +197,8 @@ component("views") {
     "focus/widget_focus_manager.h",
     "image_model_utils.h",
     "input_event_activation_protector.h",
+    "interaction/element_tracker_views.h",
+    "interaction/interaction_sequence_views.h",
     "layout/animating_layout_manager.h",
     "layout/box_layout.h",
     "layout/box_layout_view.h",
@@ -213,12 +214,6 @@ component("views") {
     "layout/normalized_geometry.h",
     "layout/proposed_layout.h",
     "masked_targeter_delegate.h",
-    "metadata/metadata_cache.h",
-    "metadata/metadata_header_macros.h",
-    "metadata/metadata_impl_macros.h",
-    "metadata/metadata_macros_internal.h",
-    "metadata/metadata_types.h",
-    "metadata/property_metadata.h",
     "metadata/type_conversion.h",
     "metadata/view_factory.h",
     "metadata/view_factory_internal.h",
@@ -376,10 +371,10 @@ component("views") {
     "controls/progress_bar.cc",
     "controls/resize_area.cc",
     "controls/scroll_view.cc",
-    "controls/scrollbar/base_scroll_bar_button.cc",
     "controls/scrollbar/base_scroll_bar_thumb.cc",
     "controls/scrollbar/overlay_scroll_bar.cc",
     "controls/scrollbar/scroll_bar.cc",
+    "controls/scrollbar/scroll_bar_button.cc",
     "controls/scrollbar/scroll_bar_views.cc",
     "controls/separator.cc",
     "controls/slider.cc",
@@ -407,6 +402,8 @@ component("views") {
     "focus/widget_focus_manager.cc",
     "image_model_utils.cc",
     "input_event_activation_protector.cc",
+    "interaction/element_tracker_views.cc",
+    "interaction/interaction_sequence_views.cc",
     "layout/animating_layout_manager.cc",
     "layout/box_layout.cc",
     "layout/box_layout_view.cc",
@@ -422,8 +419,6 @@ component("views") {
     "layout/normalized_geometry.cc",
     "layout/proposed_layout.cc",
     "masked_targeter_delegate.cc",
-    "metadata/metadata_cache.cc",
-    "metadata/metadata_types.cc",
     "metadata/type_conversion.cc",
     "metadata/view_factory_internal.cc",
     "metrics.cc",
@@ -794,7 +789,6 @@ component("views") {
         "widget/desktop_aura/desktop_focus_rules.cc",
         "widget/desktop_aura/desktop_native_cursor_manager.cc",
         "widget/desktop_aura/desktop_native_widget_aura.cc",
-        "widget/desktop_aura/desktop_screen.cc",
         "widget/desktop_aura/desktop_screen_position_client.cc",
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
@@ -819,7 +813,10 @@ component("views") {
           "widget/desktop_aura/desktop_screen_win.h",
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
         ]
-        deps += [ "//ui/events:dom_keyboard_layout" ]
+        deps += [
+          "//ui/events:dom_keyboard_layout",
+          "//ui/events:keyboard_hook",
+        ]
       }
       if (use_ozone) {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
@@ -846,9 +843,8 @@ component("views") {
           "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
           "widget/desktop_aura/desktop_window_tree_host_platform.cc",
           "widget/desktop_aura/window_move_client_platform.cc",
-          "widget/desktop_aura/window_shape_updater.cc",
-          "widget/desktop_aura/window_shape_updater.h",
         ]
+        public_deps += [ "//ui/base/dragdrop/mojom:mojom_shared" ]
       }
       if (use_atk) {
         sources += [
@@ -922,6 +918,8 @@ source_set("test_support") {
     "animation/test/test_ink_drop_host.h",
     "animation/test/test_ink_drop_ripple_observer.cc",
     "animation/test/test_ink_drop_ripple_observer.h",
+    "controls/table/test_table_model.cc",
+    "controls/table/test_table_model.h",
     "controls/textfield/textfield_test_api.cc",
     "controls/textfield/textfield_test_api.h",
     "layout/animating_layout_manager_test_util.cc",
@@ -968,6 +966,8 @@ source_set("test_support") {
     "test/views_test_base.h",
     "test/views_test_helper.cc",
     "test/views_test_helper.h",
+    "test/widget_animation_waiter.cc",
+    "test/widget_animation_waiter.h",
     "test/widget_test.cc",
     "test/widget_test.h",
     "test/widget_test_api.cc",
@@ -1141,7 +1141,7 @@ test("views_unittests") {
     "controls/progress_bar_unittest.cc",
     "controls/resize_area_unittest.cc",
     "controls/scroll_view_unittest.cc",
-    "controls/scrollbar/base_scroll_bar_button_unittest.cc",
+    "controls/scrollbar/scroll_bar_button_unittest.cc",
     "controls/scrollbar/scrollbar_unittest.cc",
     "controls/separator_unittest.cc",
     "controls/slider_unittest.cc",
@@ -1149,8 +1149,6 @@ test("views_unittests") {
     "controls/tabbed_pane/tabbed_pane_unittest.cc",
     "controls/table/table_utils_unittest.cc",
     "controls/table/table_view_unittest.cc",
-    "controls/table/test_table_model.cc",
-    "controls/table/test_table_model.h",
     "controls/textarea/textarea_unittest.cc",
     "controls/textfield/textfield_model_unittest.cc",
     "controls/textfield/textfield_unittest.cc",
@@ -1160,6 +1158,8 @@ test("views_unittests") {
     "focus/focus_manager_unittest.cc",
     "focus/focus_traversal_unittest.cc",
     "image_model_utils_unittest.cc",
+    "interaction/element_tracker_views_unittest.cc",
+    "interaction/interaction_sequence_views_unittest.cc",
     "layout/animating_layout_manager_unittest.cc",
     "layout/box_layout_unittest.cc",
     "layout/box_layout_view_unittest.cc",
@@ -1171,7 +1171,6 @@ test("views_unittests") {
     "layout/layout_manager_base_unittest.cc",
     "layout/normalized_geometry_unittest.cc",
     "layout/proposed_layout_unittest.cc",
-    "metadata/metadata_unittest.cc",
     "metadata/type_conversion_unittest.cc",
     "metadata/view_factory_unittest.cc",
     "paint_info_unittest.cc",
@@ -1196,7 +1195,6 @@ test("views_unittests") {
     "window/dialog_delegate_unittest.cc",
     "window/frame_caption_button_unittest.cc",
     "window/hit_test_utils_unittest.cc",
-    "window/non_client_view_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -1359,7 +1357,10 @@ test("views_unittests") {
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
           "widget/desktop_aura/x11_drag_drop_client_unittest.cc",
         ]
-        deps += [ "//ui/base/x:test_support" ]
+        deps += [
+          "//ui/base/x",
+          "//ui/base/x:test_support",
+        ]
       }
       if (is_linux || is_chromeos || is_fuchsia) {
         sources += [
@@ -1391,7 +1392,10 @@ test("views_unittests") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/ozone",
+      "//ui/events/ozone/layout:test_support",
+    ]
   }
 
   if (is_linux || is_chromeos) {

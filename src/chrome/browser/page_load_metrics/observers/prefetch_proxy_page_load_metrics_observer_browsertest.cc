@@ -26,16 +26,11 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class IsolatedPrerenderPageLoadMetricsObserverBrowserTest
+class PrefetchProxyPageLoadMetricsObserverBrowserTest
     : public InProcessBrowserTest {
  public:
-  IsolatedPrerenderPageLoadMetricsObserverBrowserTest() = default;
-  ~IsolatedPrerenderPageLoadMetricsObserverBrowserTest() override = default;
-
-  void EnableDataSaver() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        data_reduction_proxy::switches::kEnableDataReductionProxy);
-  }
+  PrefetchProxyPageLoadMetricsObserverBrowserTest() = default;
+  ~PrefetchProxyPageLoadMetricsObserverBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -72,7 +67,7 @@ class IsolatedPrerenderPageLoadMetricsObserverBrowserTest
   }
 
   void VerifyUKMEntry(const std::string& metric_name,
-                      base::Optional<int64_t> expected_value) {
+                      absl::optional<int64_t> expected_value) {
     auto entries = ukm_recorder_->GetEntriesByName(
         ukm::builders::PrefetchProxy::kEntryName);
     ASSERT_EQ(1U, entries.size());
@@ -100,7 +95,7 @@ class IsolatedPrerenderPageLoadMetricsObserverBrowserTest
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
 
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(PrefetchProxyPageLoadMetricsObserverBrowserTest,
                        BeforeFCPPlumbing) {
   base::HistogramTester histogram_tester;
   NavigateToOriginPath("/index.html");
@@ -117,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
 #else
 #define MAYBE_HistoryPlumbing HistoryPlumbing
 #endif
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(PrefetchProxyPageLoadMetricsObserverBrowserTest,
                        MAYBE_HistoryPlumbing) {
   base::HistogramTester histogram_tester;
   NavigateToOriginPath("/index.html");
@@ -139,117 +134,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_NoUKM) {
-  base::HistogramTester histogram_tester;
-  NavigateToOriginPath("/index.html");
-  NavigateAway();
-
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
-
-  VerifyNoUKM();
-}
-
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_None) {
-  EnableDataSaver();
-  base::HistogramTester histogram_tester;
-
-  NavigateToOriginPath("/index.html");
-  NavigateAway();
-
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
-
-  using UkmEntry = ukm::builders::PrefetchProxy;
-  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_CookiesOnNextPageLoad) {
-  NavigateToOriginPath("/set_cookies.html");
-  base::HistogramTester histogram_tester;
-
-  EnableDataSaver();
-  NavigateToOriginPath("/index.html");
-  NavigateAway();
-
-  using UkmEntry = ukm::builders::PrefetchProxy;
-  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
-  // From the first page load.
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_CookiesOnRedirect) {
-  NavigateToOriginPath("/set_cookies.html");
-  base::HistogramTester histogram_tester;
-
-  EnableDataSaver();
-  NavigateToOriginPath("/redirect_to_index.html");
-  NavigateAway();
-
-  using UkmEntry = ukm::builders::PrefetchProxy;
-  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
-  // From the first page load.
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
-}
-
-namespace {
-std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
-    const GURL& redirect_to,
-    const net::test_server::HttpRequest& request) {
-  if (request.GetURL().spec().find("redirect_me") != std::string::npos) {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-    response->AddCustomHeader("Location", redirect_to.spec());
-    return std::move(response);
-  }
-  return nullptr;
-}
-}  // namespace
-
-// Regression test for crbug.com/1029959.
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_CrossOriginCookiesOnRedirect) {
-  net::EmbeddedTestServer redirect_server(net::EmbeddedTestServer::TYPE_HTTP);
-  redirect_server.RegisterRequestHandler(
-      base::BindRepeating(&HandleRedirectRequest, GetOriginURL("/index.html")));
-  ASSERT_TRUE(redirect_server.Start());
-
-  NavigateToOriginPath("/set_cookies.html");
-  base::HistogramTester histogram_tester;
-
-  EnableDataSaver();
-
-  NavigateTo(redirect_server.GetURL("redirect.com", "/redirect_me"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), GetOriginURL("/index.html"));
-
-  NavigateAway();
-
-  using UkmEntry = ukm::builders::PrefetchProxy;
-  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
-  // From the first page load.
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(PrefetchProxyPageLoadMetricsObserverBrowserTest,
                        RecordNothingOnUntrackedPage) {
-  EnableDataSaver();
   base::HistogramTester histogram_tester;
 
   NavigateAway();
@@ -264,6 +150,4 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0);
-  histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", 0);
 }

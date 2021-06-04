@@ -209,8 +209,13 @@ void SystemDisplayGetInfoFunction::Response(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ShouldRestrictEdidInformation(*this)) {
     for (auto& display_info : all_displays_info)
-      display_info.edid.release();
+      display_info.edid.reset();
   }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Kiosk mode work for Lacros has not been scoped out. For now, just strip
+  // all EDID information by default.
+  for (auto& display_info : all_displays_info)
+    display_info.edid.reset();
 #endif
   Respond(ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }
@@ -243,7 +248,7 @@ SystemDisplaySetDisplayPropertiesFunction::Run() {
 }
 
 void SystemDisplaySetDisplayPropertiesFunction::Response(
-    base::Optional<std::string> error) {
+    absl::optional<std::string> error) {
   Respond(error ? Error(*error) : NoArguments());
 }
 
@@ -257,7 +262,7 @@ ExtensionFunction::ResponseAction SystemDisplaySetDisplayLayoutFunction::Run() {
 }
 
 void SystemDisplaySetDisplayLayoutFunction::Response(
-    base::Optional<std::string> error) {
+    absl::optional<std::string> error) {
   Respond(error ? Error(*error) : NoArguments());
 }
 
@@ -328,7 +333,7 @@ SystemDisplayShowNativeTouchCalibrationFunction::Run() {
 }
 
 void SystemDisplayShowNativeTouchCalibrationFunction::OnCalibrationComplete(
-    base::Optional<std::string> error) {
+    absl::optional<std::string> error) {
   Respond(error ? Error(*error) : OneArgument(base::Value(true)));
 }
 
@@ -374,7 +379,7 @@ ExtensionFunction::ResponseAction SystemDisplaySetMirrorModeFunction::Run() {
 }
 
 void SystemDisplaySetMirrorModeFunction::Response(
-    base::Optional<std::string> error) {
+    absl::optional<std::string> error) {
   Respond(error ? Error(*error) : NoArguments());
 }
 

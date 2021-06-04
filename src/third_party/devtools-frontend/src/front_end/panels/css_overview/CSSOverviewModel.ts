@@ -4,13 +4,16 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as ColorPicker from '../../color_picker/color_picker.js';
 import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import * as Protocol from '../../generated/protocol.js';
 
-import {ContrastIssue} from './CSSOverviewCompletedView.js';
-import {CSSOverviewUnusedDeclarations, UnusedDeclaration} from './CSSOverviewUnusedDeclarations.js';
+import type {ContrastIssue} from './CSSOverviewCompletedView.js';
+import type {UnusedDeclaration} from './CSSOverviewUnusedDeclarations.js';
+import {CSSOverviewUnusedDeclarations} from './CSSOverviewUnusedDeclarations.js';
 
 interface NodeStyleStats {
   elementCount: number;
@@ -105,6 +108,8 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
         'height',
         'vertical-align',
       ],
+      includeTextColorOpacities: true,
+      includeBlendedBackgroundColors: true,
     };
 
     const formatColor = (color: Common.Color.Color): string|null => {
@@ -190,7 +195,7 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
         const [backgroundColorIdx, textColorIdx, fillIdx, borderTopWidthIdx, borderTopColorIdx, borderBottomWidthIdx, borderBottomColorIdx, borderLeftWidthIdx, borderLeftColorIdx, borderRightWidthIdx, borderRightColorIdx, fontFamilyIdx, fontSizeIdx, fontWeightIdx, lineHeightIdx, positionIdx, topIdx, rightIdx, bottomIdx, leftIdx, displayIdx, widthIdx, heightIdx, verticalAlignIdx] =
             styles;
 
-        const backgroundColor = storeColor(backgroundColorIdx, nodeId, backgroundColors);
+        storeColor(backgroundColorIdx, nodeId, backgroundColors);
         const textColor = storeColor(textColorIdx, nodeId, textColors);
 
         if (isSVGNode(strings[nodeName])) {
@@ -262,15 +267,21 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
           fontInfo.set(fontFamily, fontFamilyInfo);
         }
 
-        if (backgroundColor && textColor && strings[nodeName] === '#text') {
+        const blendedBackgroundColor =
+            textColor && layout.blendedBackgroundColors && layout.blendedBackgroundColors[idx] !== -1 ?
+            Common.Color.Color.parse(strings[layout.blendedBackgroundColors[idx]]) :
+            null;
+        if (textColor && blendedBackgroundColor) {
           const contrastInfo = new ColorPicker.ContrastInfo.ContrastInfo({
-            backgroundColors: [backgroundColor.asString(Common.Color.Format.HEXA) as string],
+            backgroundColors: [blendedBackgroundColor.asString(Common.Color.Format.HEXA) as string],
             computedFontSize: fontSizeIdx !== -1 ? strings[fontSizeIdx] : '',
             computedFontWeight: fontWeightIdx !== -1 ? strings[fontWeightIdx] : '',
           });
-          contrastInfo.setColor(textColor);
-          const formattedTextColor = formatColor(textColor);
-          const formattedBackgroundColor = formatColor(backgroundColor);
+          const blendedTextColor =
+              textColor.blendWithAlpha(layout.textColorOpacities ? layout.textColorOpacities[idx] : 1);
+          contrastInfo.setColor(blendedTextColor);
+          const formattedTextColor = formatColor(blendedTextColor);
+          const formattedBackgroundColor = formatColor(blendedBackgroundColor);
           const key = `${formattedTextColor}_${formattedBackgroundColor}`;
           if (Root.Runtime.experiments.isEnabled('APCA')) {
             const contrastRatio = contrastInfo.contrastRatioAPCA();
@@ -280,8 +291,8 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
               const issue = {
                 nodeId,
                 contrastRatio,
-                textColor,
-                backgroundColor,
+                textColor: blendedTextColor,
+                backgroundColor: blendedBackgroundColor,
                 thresholdsViolated: {
                   aa: false,
                   aaa: false,
@@ -302,8 +313,8 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
               const issue = {
                 nodeId,
                 contrastRatio,
-                textColor,
-                backgroundColor,
+                textColor: blendedTextColor,
+                backgroundColor: blendedBackgroundColor,
                 thresholdsViolated: {
                   aa: aaThreshold > contrastRatio,
                   aaa: aaaThreshold > contrastRatio,
@@ -472,4 +483,4 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(CSSOverviewModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(CSSOverviewModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});

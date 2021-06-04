@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/ng/ng_highlight_painter.h"
+
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/styleable_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_marker_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
@@ -41,7 +43,7 @@ unsigned GetTextContentOffset(const Text& text, unsigned offset) {
   const NGOffsetMapping* const offset_mapping =
       NGOffsetMapping::GetFor(position);
   DCHECK(offset_mapping);
-  const base::Optional<unsigned>& ng_offset =
+  const absl::optional<unsigned>& ng_offset =
       offset_mapping->GetTextContentOffset(position);
   DCHECK(ng_offset.has_value());
   return ng_offset.value();
@@ -162,7 +164,7 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectionBackground(
     Node* node,
     const Document& document,
     const ComputedStyle& style,
-    const base::Optional<AffineTransform>& rotation) {
+    const absl::optional<AffineTransform>& rotation) {
   const Color color = SelectionBackgroundColor(document, style, node,
                                                selection_style_.fill_color);
 
@@ -236,7 +238,7 @@ NGHighlightPainter::NGHighlightPainter(
     const NGFragmentItem& fragment_item,
     const PhysicalOffset& box_origin,
     const ComputedStyle& style,
-    base::Optional<SelectionPaintState> selection,
+    absl::optional<SelectionPaintState> selection,
     bool is_printing)
     : text_painter_(text_painter),
       paint_info_(paint_info),

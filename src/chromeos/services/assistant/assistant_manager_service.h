@@ -12,7 +12,6 @@
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/assistant_settings.h"
 #include "chromeos/services/libassistant/public/mojom/authentication_state_observer.mojom.h"
-#include "chromeos/services/libassistant/public/mojom/service_controller.mojom-shared.h"
 #include "services/media_session/public/mojom/media_session.mojom-shared.h"
 
 namespace chromeos {
@@ -34,7 +33,21 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
     std::string access_token;
   };
 
-  using State = chromeos::libassistant::mojom::ServiceState;
+  enum State {
+    // Initial state, the service is created but not started yet.
+    STOPPED = 0,
+    // Start has been called but libassistant creation is still in progress.
+    // Calling |assistant_manager()| will still return a nullptr.
+    // TODO(b/171748795): I think we no longer need this state once
+    // Libassistant has migrated to a mojom service (in fact, we should be able
+    // to remove this enum and use chromeos::libassistant::mojom::ServiceState).
+    STARTING = 1,
+    // The service is started, libassistant has been created, but libassistant
+    // is not ready yet to take requests.
+    STARTED = 2,
+    // The service is fully running and ready to take requests.
+    RUNNING = 3
+  };
 
   ~AssistantManagerService() override = default;
 
@@ -42,7 +55,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // If the user is nullopt, the service will be started in signed-out mode.
   // If you want to know when the service is started, use
   // |AddAndFireStateObserver| to add an observer.
-  virtual void Start(const base::Optional<UserInfo>& user,
+  virtual void Start(const absl::optional<UserInfo>& user,
                      bool enable_hotword) = 0;
 
   // Stop the Assistant.
@@ -54,7 +67,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Set user information for Assistant. Passing a nullopt will reconfigure
   // Libassistant to run in signed-out mode, and passing a valid non-empty value
   // will switch the mode back to normal.
-  virtual void SetUser(const base::Optional<UserInfo>& user) = 0;
+  virtual void SetUser(const absl::optional<UserInfo>& user) = 0;
 
   // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;

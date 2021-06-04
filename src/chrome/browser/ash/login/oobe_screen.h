@@ -65,6 +65,9 @@ struct OobeScreen {
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
 using ::chromeos::OobeScreen;
+using ::chromeos::OobeScreenId;
+using ::chromeos::OobeScreenPriority;
+using ::chromeos::StaticOobeScreenId;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_OOBE_SCREEN_H_

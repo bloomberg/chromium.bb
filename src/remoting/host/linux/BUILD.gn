@@ -51,13 +51,26 @@ if (enable_me2me_host) {
     }
   }
 
+  copy("remoting_me2me_host_copy_url_forwarder_desktop_entry") {
+    sources = [ "crd_url_forwarder.desktop" ]
+    outputs = [ "$root_build_dir/remoting/crd-url-forwarder.desktop" ]
+  }
+
+  copy("remoting_me2me_host_copy_setup_url_forwarder_script") {
+    sources = [ "setup_url_forwarder.py" ]
+    outputs = [ "$root_build_dir/remoting/setup-url-forwarder" ]
+  }
+
   group("remoting_dev_me2me_host") {
     deps = [
       ":remoting_me2me_host_copy_host_wrapper",
       ":remoting_me2me_host_copy_script",
+      ":remoting_me2me_host_copy_setup_url_forwarder_script",
+      ":remoting_me2me_host_copy_url_forwarder_desktop_entry",
       ":remoting_me2me_host_copy_user_session",
       ":remoting_me2me_host_copy_user_session_wrapper",
       ":remoting_native_messaging_host",
+      "//remoting/host:remote_open_url",
       "//remoting/host:remoting_me2me_host",
     ]
   }
@@ -86,39 +99,51 @@ if (use_x11) {
   }
 }
 
-executable("remoting_native_messaging_host") {
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
+source_set("file_path_util") {
   sources = [
-    "//remoting/host/setup/me2me_native_messaging_host_entry_point.cc",
-    "//remoting/host/setup/me2me_native_messaging_host_main.cc",
-    "//remoting/host/setup/me2me_native_messaging_host_main.h",
+    "file_path_util.cc",
+    "file_path_util.h",
   ]
-
   deps = [
     "//base",
-    "//build:chromeos_buildflags",
-    "//mojo/core/embedder",
     "//net",
-    "//remoting/base",
-    "//remoting/base:authorization",
-    "//remoting/base:breakpad",
-    "//remoting/host",
-    "//remoting/host:base",
-    "//remoting/host:remoting_infoplist_strings",
-    "//remoting/host/native_messaging",
-    "//remoting/host/setup",
-    "//services/network:network_service",
-    "//services/network/public/cpp",
-    "//services/network/public/mojom",
   ]
+}
 
-  # The |major|, |build| and |patch| versions are inherited from Chrome.
-  # Since Chrome's |minor| version is always '0', we replace it with a
-  # Chromoting-specific patch version.
-  defines =
-      [ "VERSION=" + "$chrome_version_major" + "." + "$remoting_version_patch" +
-        "." + "$chrome_version_build" + "." + "$chrome_version_patch" ]
+if (!is_chromeos_ash && !is_chromeos_lacros) {
+  executable("remoting_native_messaging_host") {
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+    sources = [
+      "//remoting/host/setup/me2me_native_messaging_host_entry_point.cc",
+      "//remoting/host/setup/me2me_native_messaging_host_main.cc",
+      "//remoting/host/setup/me2me_native_messaging_host_main.h",
+    ]
+
+    deps = [
+      "//base",
+      "//build:chromeos_buildflags",
+      "//mojo/core/embedder",
+      "//net",
+      "//remoting/base",
+      "//remoting/base:authorization",
+      "//remoting/base:breakpad",
+      "//remoting/host",
+      "//remoting/host:base",
+      "//remoting/host/native_messaging",
+      "//remoting/host/setup",
+      "//services/network:network_service",
+      "//services/network/public/cpp",
+      "//services/network/public/mojom",
+    ]
+
+    # The |major|, |build| and |patch| versions are inherited from Chrome.
+    # Since Chrome's |minor| version is always '0', we replace it with a
+    # Chromoting-specific patch version.
+    defines = [ "VERSION=" + "$chrome_version_major" + "." +
+                "$remoting_version_patch" + "." + "$chrome_version_build" +
+                "." + "$chrome_version_patch" ]
+  }
 }
 
 source_set("unit_tests") {

@@ -21,9 +21,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -83,18 +83,31 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   ui::mojom::DragOperation OnPerformDrop(
       const ui::DropTargetEvent& event) override;
+  views::View::DropCallback GetDropCallback(
+      const ui::DropTargetEvent& event) override;
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
+  void OnShouldShowAnimationChanged(bool should_animate) override;
 
+  // Invoke to cause the holding space tray to recalculate and update its
+  // visibility. Note that this may or may not result in a visibility change
+  // depending on state.
+  void UpdateVisibility();
+
+  // Previews are updated with delay to de-dupe against multiple updates
+  // scheduled in quick succession. Invoke this method to cause scheduled
+  // updates to be run immediately for testing.
+  void FirePreviewsUpdateTimerIfRunningForTesting();
+
+  // Previews are updated with delay to de-dupe against multiple updates
+  // scheduled in quick success. This method allows updates to be scheduled with
+  // zero delay, causing them to instead run immediately, for testing.
   void set_use_zero_previews_update_delay_for_testing(bool zero_delay) {
     use_zero_previews_update_delay_ = zero_delay;
   }
 
-  void FirePreviewsUpdateTimerIfRunningForTesting();
-
  private:
-  void UpdateVisibility();
-
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
@@ -109,7 +122,7 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
       const std::vector<const HoldingSpaceItem*>& items) override;
   void OnHoldingSpaceItemsRemoved(
       const std::vector<const HoldingSpaceItem*>& items) override;
-  void OnHoldingSpaceItemFinalized(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemInitialized(const HoldingSpaceItem* item) override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
@@ -156,12 +169,17 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
 
   // Updates this view (and its children) to reflect state as a potential drop
   // target. If `event` is `nullptr`, this view is *not* a drop target.
-  // Otherwise this view is a drop target iff the `event` is located within
+  // Otherwise this view is a drop target if the `event` is located within
   // sufficient range of its bounds and contains pinnable files.
   void UpdateDropTargetState(const ui::DropTargetEvent* event);
 
   // Sets whether tray visibility and previews updates should be animated.
   void SetShouldAnimate(bool should_animate);
+
+  // Pins the dropped files `unpinned_file_paths` to the tray.
+  void PerformDrop(std::vector<base::FilePath> unpinned_file_paths,
+                   const ui::DropTargetEvent& event,
+                   ui::mojom::DragOperation& output_drag_op);
 
   std::unique_ptr<HoldingSpaceTrayBubble> bubble_;
   std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
@@ -180,6 +198,10 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
   // The view drawn on top of all other child views to indicate that this
   // view is a drop target capable of handling the current drag payload.
   views::View* drop_target_overlay_ = nullptr;
+
+  // The icon parented by the `drop_target_overlay_` to indicate that this view
+  // is a drop target capable of handling the current drag payload.
+  views::ImageView* drop_target_icon_ = nullptr;
 
   // When the holding space previews feature is enabled, the user can enable/
   // disable previews at runtime. This registrar is associated with the active
@@ -208,6 +230,9 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
       this};
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observer_{this};
+
+  // Animation will be disabled for the lifetime of this variable.
+  std::unique_ptr<base::ScopedClosureRunner> animation_disabler_;
 
   base::WeakPtrFactory<HoldingSpaceTray> weak_factory_{this};
 };

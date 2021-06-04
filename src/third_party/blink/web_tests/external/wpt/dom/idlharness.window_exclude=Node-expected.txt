@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1252 tests; 1248 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1286 tests; 1281 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Window: original interface defined
@@ -8,21 +8,21 @@ PASS Partial interface Document: member names are unique
 PASS Partial interface Document[2]: member names are unique
 PASS Partial interface Window[2]: member names are unique
 PASS Document includes NonElementParentNode: member names are unique
-PASS Document includes ParentNode: member names are unique
-PASS Document includes XPathEvaluatorBase: member names are unique
-PASS Document includes GlobalEventHandlers: member names are unique
-PASS Document includes DocumentAndElementEventHandlers: member names are unique
 PASS DocumentFragment includes NonElementParentNode: member names are unique
+PASS Document includes ParentNode: member names are unique
 PASS DocumentFragment includes ParentNode: member names are unique
 PASS Element includes ParentNode: member names are unique
 PASS Element includes NonDocumentTypeChildNode: member names are unique
-PASS Element includes ChildNode: member names are unique
-PASS Element includes Slottable: member names are unique
 PASS CharacterData includes NonDocumentTypeChildNode: member names are unique
-PASS CharacterData includes ChildNode: member names are unique
 PASS DocumentType includes ChildNode: member names are unique
+PASS Element includes ChildNode: member names are unique
+PASS CharacterData includes ChildNode: member names are unique
+PASS Element includes Slottable: member names are unique
 PASS Text includes Slottable: member names are unique
+PASS Document includes XPathEvaluatorBase: member names are unique
 PASS XPathEvaluator includes XPathEvaluatorBase: member names are unique
+PASS Document includes GlobalEventHandlers: member names are unique
+PASS Document includes DocumentAndElementEventHandlers: member names are unique
 PASS HTMLElement includes GlobalEventHandlers: member names are unique
 PASS HTMLElement includes DocumentAndElementEventHandlers: member names are unique
 PASS HTMLElement includes ElementContentEditable: member names are unique
@@ -190,10 +190,12 @@ PASS AbortSignal interface object name
 PASS AbortSignal interface: existence and properties of interface prototype object
 PASS AbortSignal interface: existence and properties of interface prototype object's "constructor" property
 PASS AbortSignal interface: existence and properties of interface prototype object's @@unscopables property
+FAIL AbortSignal interface: operation abort() assert_own_property: interface object missing static operation expected property "abort" missing
 PASS AbortSignal interface: attribute aborted
 PASS AbortSignal interface: attribute onabort
 PASS AbortSignal must be primary interface of new AbortController().signal
 PASS Stringification of new AbortController().signal
+PASS AbortSignal interface: new AbortController().signal must inherit property "abort()" with the proper type
 PASS AbortSignal interface: new AbortController().signal must inherit property "aborted" with the proper type
 PASS AbortSignal interface: new AbortController().signal must inherit property "onabort" with the proper type
 PASS EventTarget interface: new AbortController().signal must inherit property "addEventListener(DOMString, EventListener?, optional (AddEventListenerOptions or boolean))" with the proper type
@@ -554,6 +556,8 @@ PASS ShadowRoot interface: existence and properties of interface prototype objec
 PASS ShadowRoot interface: existence and properties of interface prototype object's "constructor" property
 PASS ShadowRoot interface: existence and properties of interface prototype object's @@unscopables property
 PASS ShadowRoot interface: attribute mode
+PASS ShadowRoot interface: attribute delegatesFocus
+PASS ShadowRoot interface: attribute slotAssignment
 PASS ShadowRoot interface: attribute host
 FAIL ShadowRoot interface: attribute onslotchange assert_true: The prototype object must have a property "onslotchange" expected true got false
 PASS Element interface: existence and properties of interface object
@@ -1253,6 +1257,36 @@ PASS XPathEvaluator interface: new XPathEvaluator() must inherit property "creat
 PASS XPathEvaluator interface: calling createNSResolver(Node) on new XPathEvaluator() with too few arguments must throw TypeError
 PASS XPathEvaluator interface: new XPathEvaluator() must inherit property "evaluate(DOMString, Node, optional XPathNSResolver?, optional unsigned short, optional XPathResult?)" with the proper type
 PASS XPathEvaluator interface: calling evaluate(DOMString, Node, optional XPathNSResolver?, optional unsigned short, optional XPathResult?) on new XPathEvaluator() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: existence and properties of interface object
+PASS XSLTProcessor interface object length
+PASS XSLTProcessor interface object name
+PASS XSLTProcessor interface: existence and properties of interface prototype object
+PASS XSLTProcessor interface: existence and properties of interface prototype object's "constructor" property
+PASS XSLTProcessor interface: existence and properties of interface prototype object's @@unscopables property
+PASS XSLTProcessor interface: operation importStylesheet(Node)
+PASS XSLTProcessor interface: operation transformToFragment(Node, Document)
+PASS XSLTProcessor interface: operation transformToDocument(Node)
+PASS XSLTProcessor interface: operation setParameter(DOMString, DOMString, any)
+PASS XSLTProcessor interface: operation getParameter(DOMString, DOMString)
+PASS XSLTProcessor interface: operation removeParameter(DOMString, DOMString)
+PASS XSLTProcessor interface: operation clearParameters()
+PASS XSLTProcessor interface: operation reset()
+PASS XSLTProcessor must be primary interface of new XSLTProcessor()
+PASS Stringification of new XSLTProcessor()
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "importStylesheet(Node)" with the proper type
+PASS XSLTProcessor interface: calling importStylesheet(Node) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "transformToFragment(Node, Document)" with the proper type
+PASS XSLTProcessor interface: calling transformToFragment(Node, Document) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "transformToDocument(Node)" with the proper type
+PASS XSLTProcessor interface: calling transformToDocument(Node) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "setParameter(DOMString, DOMString, any)" with the proper type
+PASS XSLTProcessor interface: calling setParameter(DOMString, DOMString, any) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "getParameter(DOMString, DOMString)" with the proper type
+PASS XSLTProcessor interface: calling getParameter(DOMString, DOMString) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "removeParameter(DOMString, DOMString)" with the proper type
+PASS XSLTProcessor interface: calling removeParameter(DOMString, DOMString) on new XSLTProcessor() with too few arguments must throw TypeError
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "clearParameters()" with the proper type
+PASS XSLTProcessor interface: new XSLTProcessor() must inherit property "reset()" with the proper type
 FAIL Window interface: attribute event assert_true: property should be enumerable expected true got false
 Harness: the test ran to completion.
 

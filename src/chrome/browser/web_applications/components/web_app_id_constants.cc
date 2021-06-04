@@ -33,6 +33,10 @@ const char kGmailAppId[] = "fmgjjmmmlfnkbppncabfkddbjimcfncm";
 const char kGoogleCalendarAppId[] = "kjbdgfilnfhdoflbpgamdcdgpehopbep";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "https://mail.google.com/chat/"))
+const char kGoogleChatAppId[] = "mdpkiolbdkhdjpekfbkbmhigcaggjagi";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://docs.google.com/document/?usp=installed_webapp"))
 const char kGoogleDocsAppId[] = "mpnpojknpmmopombnjdcgaaiekajbnjb";
 
@@ -47,6 +51,10 @@ const char kGoogleKeepAppId[] = "eilembjdkfgodjkcjnpgpaenohkicgjd";
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://www.google.com/maps?force=tt&source=ttpwa"))
 const char kGoogleMapsAppId[] = "mnhkaebcjjhencmpkapnbdaogjamfbcj";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "https://meet.google.com/landing?lfhs=2"))
+const char kGoogleMeetAppId[] = "kjgfgldnnfoeklkmfkjfagphfepbbdan";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://news.google.com/?lfhs=2"))
@@ -77,6 +85,10 @@ const char kMessagesAppId[] = "hpfldicfbfomlpcikngkocigghgafkph";
 const char kMockSystemAppId[] = "maphiehpiinjgiaepbljmopkodkadcbh";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "chrome://os-feedback/"))
+const char kOsFeedbackAppId[] = "iffgohomcomlpmkfikfffagkkoojjffm";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "chrome://os-settings/"))
 const char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
 
@@ -94,6 +106,14 @@ const char kScanningAppId[] = "cdkahakpgkdaoffdmfgnhgomkelkocfo";
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "chrome://settings/"))
 const char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "chrome://shortcut-customization"))
+const char kShortcutCustomizationAppId[] = "ihgeegogifolehadhdgelgcnbnmemikp";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "chrome://shimless-rma/"))
+const char kShimlessRMAAppId[] = "ijolhdommgkkhpenofmpkkhlepahelcm";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://www.showtime.com/"))

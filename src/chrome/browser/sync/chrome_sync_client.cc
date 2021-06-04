@@ -127,13 +127,13 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/sync/app_settings_model_type_controller.h"
+#include "chrome/browser/ash/sync/apps_model_type_controller.h"
+#include "chrome/browser/ash/sync/os_sync_model_type_controller.h"
+#include "chrome/browser/ash/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/chromeos/sync/app_settings_model_type_controller.h"
-#include "chrome/browser/chromeos/sync/apps_model_type_controller.h"
-#include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
-#include "chrome/browser/chromeos/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -236,7 +236,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
       std::make_unique<syncer::StandaloneTrustedVaultClient>(
           profile_->GetPath().Append(kTrustedVaultFilename),
           IdentityManagerFactory::GetForProfile(profile_),
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
+          profile_->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess());
 #endif  // defined(OS_ANDROID)
 }
@@ -274,7 +274,7 @@ base::FilePath ChromeSyncClient::GetLocalSyncBackendFolder() {
   // should be considered roamed. For now the code assumes all profiles are
   // created in the same order on all machines.
   local_sync_backend_folder =
-      local_sync_backend_folder.Append(profile_->GetPath().BaseName());
+      local_sync_backend_folder.Append(profile_->GetBaseName());
   local_sync_backend_folder =
       local_sync_backend_folder.Append(kLoopbackServerBackendFilename);
 #endif  // defined(OS_WIN)
@@ -414,10 +414,15 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     controllers.push_back(CreateAppSettingsModelTypeController(sync_service));
   }
 
-  // Web Apps sync is disabled by default.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
-      web_app::WebAppProvider::Get(profile_)) {
-    if (!disabled_types.Has(syncer::WEB_APPS)) {
+  if (web_app::WebAppProvider::Get(profile_)) {
+    bool enable_web_apps_sync = !disabled_types.Has(syncer::WEB_APPS);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
+      enable_web_apps_sync = false;
+    }
+#endif
+
+    if (enable_web_apps_sync) {
       controllers.push_back(CreateWebAppsModelTypeController(sync_service));
     }
   }
@@ -654,8 +659,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetControllerDelegate();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::WEB_APPS: {
-      DCHECK(base::FeatureList::IsEnabled(
-          features::kDesktopPWAsWithoutExtensions));
       auto* provider = web_app::WebAppProvider::Get(profile_);
       DCHECK(provider);
 

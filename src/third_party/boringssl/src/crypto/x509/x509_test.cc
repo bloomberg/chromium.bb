@@ -19,12 +19,14 @@
 
 #include <gtest/gtest.h>
 
+#include <openssl/asn1.h>
 #include <openssl/bio.h>
 #include <openssl/bytestring.h>
 #include <openssl/crypto.h>
 #include <openssl/curve25519.h>
 #include <openssl/digest.h>
 #include <openssl/err.h>
+#include <openssl/nid.h>
 #include <openssl/pem.h>
 #include <openssl/pool.h>
 #include <openssl/x509.h>
@@ -1645,7 +1647,7 @@ TEST(X509Test, RSASignManual) {
     if (new_cert) {
       cert.reset(X509_new());
       // Fill in some fields for the certificate arbitrarily.
-      EXPECT_TRUE(X509_set_version(cert.get(), X509V3_VERSION));
+      EXPECT_TRUE(X509_set_version(cert.get(), X509_VERSION_3));
       EXPECT_TRUE(ASN1_INTEGER_set(X509_get_serialNumber(cert.get()), 1));
       EXPECT_TRUE(X509_gmtime_adj(X509_getm_notBefore(cert.get()), 0));
       EXPECT_TRUE(
@@ -1796,7 +1798,8 @@ TEST(X509Test, TestFromBufferModified) {
 
   ASSERT_EQ(static_cast<long>(data_len), i2d_X509(root.get(), nullptr));
 
-  X509_CINF_set_modified(root->cert_info);
+  // Re-encode the TBSCertificate.
+  i2d_re_X509_tbs(root.get(), nullptr);
 
   ASSERT_NE(static_cast<long>(data_len), i2d_X509(root.get(), nullptr));
 }
@@ -3119,4 +3122,86 @@ TEST(X509Test, X509AlgorExtract) {
       EXPECT_EQ(Bytes(param_der, param_len), Bytes(t.param_der));
     }
   }
+}
+
+// Test the various |X509_ATTRIBUTE| creation functions.
+TEST(X509Test, Attribute) {
+  // The friendlyName attribute has a BMPString value. See RFC2985,
+  // section 5.5.1.
+  static const uint8_t kTest1[] = {0x26, 0x03};  // U+2603 SNOWMAN
+  static const uint8_t kTest1UTF8[] = {0xe2, 0x98, 0x83};
+  static const uint8_t kTest2[] = {0, 't', 0, 'e', 0, 's', 0, 't'};
+
+  auto check_attribute = [&](X509_ATTRIBUTE *attr, bool has_test2) {
+    EXPECT_EQ(NID_friendlyName, OBJ_obj2nid(X509_ATTRIBUTE_get0_object(attr)));
+
+    EXPECT_EQ(has_test2 ? 2 : 1, X509_ATTRIBUTE_count(attr));
+
+    // The first attribute should contain |kTest1|.
+    const ASN1_TYPE *value = X509_ATTRIBUTE_get0_type(attr, 0);
+    ASSERT_TRUE(value);
+    EXPECT_EQ(V_ASN1_BMPSTRING, value->type);
+    EXPECT_EQ(Bytes(kTest1),
+              Bytes(ASN1_STRING_get0_data(value->value.bmpstring),
+                    ASN1_STRING_length(value->value.bmpstring)));
+
+    // |X509_ATTRIBUTE_get0_data| requires the type match.
+    EXPECT_FALSE(
+        X509_ATTRIBUTE_get0_data(attr, 0, V_ASN1_OCTET_STRING, nullptr));
+    const ASN1_BMPSTRING *bmpstring = static_cast<const ASN1_BMPSTRING *>(
+        X509_ATTRIBUTE_get0_data(attr, 0, V_ASN1_BMPSTRING, nullptr));
+    ASSERT_TRUE(bmpstring);
+    EXPECT_EQ(Bytes(kTest1), Bytes(ASN1_STRING_get0_data(bmpstring),
+                                   ASN1_STRING_length(bmpstring)));
+
+    if (has_test2) {
+      value = X509_ATTRIBUTE_get0_type(attr, 1);
+      ASSERT_TRUE(value);
+      EXPECT_EQ(V_ASN1_BMPSTRING, value->type);
+      EXPECT_EQ(Bytes(kTest2),
+                Bytes(ASN1_STRING_get0_data(value->value.bmpstring),
+                      ASN1_STRING_length(value->value.bmpstring)));
+    } else {
+      EXPECT_FALSE(X509_ATTRIBUTE_get0_type(attr, 1));
+    }
+
+    EXPECT_FALSE(X509_ATTRIBUTE_get0_type(attr, 2));
+  };
+
+  bssl::UniquePtr<ASN1_STRING> str(ASN1_STRING_type_new(V_ASN1_BMPSTRING));
+  ASSERT_TRUE(str);
+  ASSERT_TRUE(ASN1_STRING_set(str.get(), kTest1, sizeof(kTest1)));
+
+  // Test |X509_ATTRIBUTE_create|.
+  bssl::UniquePtr<X509_ATTRIBUTE> attr(
+      X509_ATTRIBUTE_create(NID_friendlyName, V_ASN1_BMPSTRING, str.get()));
+  ASSERT_TRUE(attr);
+  str.release();  // |X509_ATTRIBUTE_create| takes ownership on success.
+  check_attribute(attr.get(), /*has_test2=*/false);
+
+  // Test the |MBSTRING_*| form of |X509_ATTRIBUTE_set1_data|.
+  attr.reset(X509_ATTRIBUTE_new());
+  ASSERT_TRUE(attr);
+  ASSERT_TRUE(
+      X509_ATTRIBUTE_set1_object(attr.get(), OBJ_nid2obj(NID_friendlyName)));
+  ASSERT_TRUE(X509_ATTRIBUTE_set1_data(attr.get(), MBSTRING_UTF8, kTest1UTF8,
+                                       sizeof(kTest1UTF8)));
+  check_attribute(attr.get(), /*has_test2=*/false);
+
+  // Test the |ASN1_STRING| form of |X509_ATTRIBUTE_set1_data|.
+  ASSERT_TRUE(X509_ATTRIBUTE_set1_data(attr.get(), V_ASN1_BMPSTRING, kTest2,
+                                       sizeof(kTest2)));
+  check_attribute(attr.get(), /*has_test2=*/true);
+
+  // Test the |ASN1_TYPE| form of |X509_ATTRIBUTE_set1_data|.
+  attr.reset(X509_ATTRIBUTE_new());
+  ASSERT_TRUE(attr);
+  ASSERT_TRUE(
+      X509_ATTRIBUTE_set1_object(attr.get(), OBJ_nid2obj(NID_friendlyName)));
+  str.reset(ASN1_STRING_type_new(V_ASN1_BMPSTRING));
+  ASSERT_TRUE(str);
+  ASSERT_TRUE(ASN1_STRING_set(str.get(), kTest1, sizeof(kTest1)));
+  ASSERT_TRUE(
+      X509_ATTRIBUTE_set1_data(attr.get(), V_ASN1_BMPSTRING, str.get(), -1));
+  check_attribute(attr.get(), /*has_test2=*/false);
 }

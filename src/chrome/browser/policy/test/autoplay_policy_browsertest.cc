@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -169,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Missing) {
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 }
 
-// Flaky on Linux. See: crbug.com/1172978.
-#if defined(OS_LINUX)
+// Flaky on Linux and ChromeOS. See: crbug.com/1172978.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_AutoplayDeniedByPolicy DISABLED_AutoplayDeniedByPolicy
 #else
 #define MAYBE_AutoplayDeniedByPolicy AutoplayDeniedByPolicy
@@ -206,7 +207,13 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, MAYBE_AutoplayDeniedByPolicy) {
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 }
 
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
+// Flaky on Linux. See: crbug.com/1172978.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_AutoplayDeniedAllowedWithURL DISABLED_AutoplayDeniedAllowedWithURL
+#else
+#define MAYBE_AutoplayDeniedAllowedWithURL AutoplayDeniedAllowedWithURL
+#endif
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, MAYBE_AutoplayDeniedAllowedWithURL) {
   NavigateToTestPage();
 
   // Check that autoplay was not allowed.

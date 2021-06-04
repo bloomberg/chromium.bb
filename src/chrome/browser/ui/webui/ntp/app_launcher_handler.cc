@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -89,6 +88,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "net/base/url_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
@@ -161,10 +161,6 @@ void GetWebAppBasicInfo(const web_app::AppId& app_id,
   info->SetBoolean(kPackagedAppKey, false);
 }
 
-bool DesktopPWAsWithoutExtensions() {
-  return base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions);
-}
-
 bool HasMatchingOrGreaterThanIcon(const SortedSizesPx& downloaded_icon_sizes,
                                   int pixels) {
   if (downloaded_icon_sizes.empty())
@@ -212,8 +208,9 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
 
   GetWebAppBasicInfo(app_id, registrar, value);
 
-  value->SetBoolean("mayDisable", web_app_provider_->install_finalizer()
-                                      .CanUserUninstallExternalApp(app_id));
+  value->SetBoolean(
+      "mayDisable",
+      web_app_provider_->install_finalizer().CanUserUninstallWebApp(app_id));
   bool is_locally_installed = registrar.IsLocallyInstalled(app_id);
   value->SetBoolean("mayChangeLaunchType", is_locally_installed);
 
@@ -221,8 +218,8 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
   value->SetBoolean("mayCreateShortcuts", is_locally_installed);
   value->SetBoolean("isLocallyInstalled", is_locally_installed);
 
-  base::Optional<std::string> icon_big;
-  base::Optional<std::string> icon_small;
+  absl::optional<std::string> icon_big;
+  absl::optional<std::string> icon_small;
 
   if (HasMatchingOrGreaterThanIcon(
           registrar.GetAppDownloadedIconSizesAny(app_id),
@@ -427,9 +424,6 @@ void AppLauncherHandler::RegisterProfilePrefs(
 }
 
 void AppLauncherHandler::RegisterMessages() {
-  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<WebContents>(web_ui()->GetWebContents()));
-
   web_ui()->RegisterMessageCallback(
       "getApps", base::BindRepeating(&AppLauncherHandler::HandleGetApps,
                                      base::Unretained(this)));
@@ -483,13 +477,6 @@ void AppLauncherHandler::RegisterMessages() {
 void AppLauncherHandler::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_APP_INSTALLED_TO_NTP) {
-    highlight_app_id_ = *content::Details<const std::string>(details).ptr();
-    if (has_loaded_apps_)
-      SetAppToBeHighlighted();
-    return;
-  }
-
   if (ignore_changes_ || !has_loaded_apps_)
     return;
 
@@ -574,7 +561,7 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
 
   visible_apps_.insert(app_id);
   base::Value highlight(attempting_web_app_install_page_ordinal_.has_value());
-  attempting_web_app_install_page_ordinal_ = base::nullopt;
+  attempting_web_app_install_page_ordinal_ = absl::nullopt;
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
 
@@ -725,7 +712,6 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
       web_app_provider_->registrar().GetExternallyInstalledApps(
           web_app::ExternalInstallSource::kExternalPolicy);
 
-  SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.getAppsCallback", dictionary);
 
@@ -915,7 +901,7 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
       !IsYoutubeExtension(extension_id)) {
     if (!extension_id_prompting_.empty())
       return;  // Only one prompt at a time.
-    if (!web_app_provider_->install_finalizer().CanUserUninstallExternalApp(
+    if (!web_app_provider_->install_finalizer().CanUserUninstallWebApp(
             extension_id)) {
       LOG(ERROR) << "Attempt to uninstall a webapp that is non-usermanagable "
                  << "was made. App id : " << extension_id;
@@ -934,17 +920,18 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
     bool dont_confirm = false;
     if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
       base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-      web_app_provider_->install_finalizer().UninstallExternalAppByUser(
-          extension_id_prompting_, std::move(uninstall_success_callback));
+      web_app_provider_->install_finalizer().UninstallWebApp(
+          extension_id_prompting_, webapps::WebappUninstallSource::kAppsPage,
+          std::move(uninstall_success_callback));
     } else {
       Browser* browser =
           chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
       web_app::WebAppUiManagerImpl::Get(Profile::FromWebUI(web_ui()))
           ->dialog_manager()
-          .UninstallWebApp(
-              extension_id_prompting_,
-              web_app::WebAppDialogManager::UninstallSource::kAppsPage,
-              browser->window(), std::move(uninstall_success_callback));
+          .UninstallWebApp(extension_id_prompting_,
+                           webapps::WebappUninstallSource::kAppsPage,
+                           browser->window(),
+                           std::move(uninstall_success_callback));
     }
     return;
   }
@@ -1249,7 +1236,7 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
             if (install_result !=
                 web_app::InstallResultCode::kSuccessNewInstall) {
               app_launcher_handler->attempting_web_app_install_page_ordinal_ =
-                  base::nullopt;
+                  absl::nullopt;
             }
           },
           weak_ptr_factory_.GetWeakPtr());
@@ -1257,15 +1244,6 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
   web_app_provider_->install_manager().InstallWebAppFromInfo(
       std::move(web_app), web_app::ForInstallableSite::kUnknown,
       webapps::WebappInstallSource::SYNC, std::move(install_complete_callback));
-}
-
-void AppLauncherHandler::SetAppToBeHighlighted() {
-  if (highlight_app_id_.empty())
-    return;
-
-  base::Value app_id(highlight_app_id_);
-  web_ui()->CallJavascriptFunctionUnsafe("ntp.setAppToBeHighlighted", app_id);
-  highlight_app_id_.clear();
 }
 
 void AppLauncherHandler::OnExtensionPreferenceChanged() {
@@ -1283,8 +1261,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   if (!extension_id_prompting_.empty())
     return;  // Only one prompt at a time.
 
-  if (DesktopPWAsWithoutExtensions() &&
-      web_app_provider_->registrar().IsInstalled(extension_id_prompting_)) {
+  if (web_app_provider_->registrar().IsInstalled(extension_id_prompting_)) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1330,8 +1307,7 @@ void AppLauncherHandler::ExtensionEnableFlowFinished() {
 void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
   DCHECK_EQ(extension_id_prompting_, extension_enable_flow_->extension_id());
 
-  if (DesktopPWAsWithoutExtensions() &&
-      web_app_provider_->registrar().IsInstalled(extension_id_prompting_)) {
+  if (web_app_provider_->registrar().IsInstalled(extension_id_prompting_)) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1378,7 +1354,7 @@ void AppLauncherHandler::ExtensionRemoved(const Extension* extension,
       base::Value(!extension_id_prompting_.empty()));
 }
 
-bool AppLauncherHandler::ShouldShow(const Extension* extension) const {
+bool AppLauncherHandler::ShouldShow(const Extension* extension) {
   if (ignore_changes_ || !has_loaded_apps_ || !extension->is_app())
     return false;
 
@@ -1393,6 +1369,7 @@ void AppLauncherHandler::InstallOsHooks(const web_app::AppId& app_id) {
   options.os_hooks[web_app::OsHookType::kShortcuts] = true;
   options.os_hooks[web_app::OsHookType::kShortcutsMenu] = true;
   options.os_hooks[web_app::OsHookType::kFileHandlers] = true;
+  options.os_hooks[web_app::OsHookType::kProtocolHandlers] = true;
   options.os_hooks[web_app::OsHookType::kRunOnOsLogin] = false;
   options.os_hooks[web_app::OsHookType::kUninstallationViaOsSettings] = true;
 #if defined(OS_WIN) || defined(OS_MAC) || \

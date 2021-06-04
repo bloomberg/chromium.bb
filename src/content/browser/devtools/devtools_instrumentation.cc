@@ -1,9 +1,12 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "content/browser/devtools/devtools_instrumentation.h"
 
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/traced_value.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
@@ -36,7 +39,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/quic/quic_transport_error.h"
+#include "net/quic/web_transport_error.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -168,7 +171,7 @@ void OnNavigationResponseReceived(
     const network::mojom::URLResponseHead& response) {
   // This response is artificial (see CachedNavigationURLLoader), so we don't
   // want to report it.
-  if (nav_request.IsServedFromBackForwardCache())
+  if (nav_request.IsPageActivation())
     return;
 
   FrameTreeNode* ftn = nav_request.frame_tree_node();
@@ -178,6 +181,13 @@ void OnNavigationResponseReceived(
   DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
                    url, protocol::Network::ResourceTypeEnum::Document, response,
                    frame_id);
+}
+
+void BackForwardCacheNotUsed(const NavigationRequest* nav_request) {
+  DCHECK(nav_request);
+  FrameTreeNode* ftn = nav_request->frame_tree_node();
+  DispatchToAgents(ftn, &protocol::PageHandler::BackForwardCacheNotUsed,
+                   nav_request);
 }
 
 namespace {
@@ -253,11 +263,26 @@ void OnNavigationRequestFailed(
 
   // If a BFCache navigation fails, it will be restarted as a regular
   // navigation, so we don't want to report this failure.
+  // TODO(https://crbug.com/1195751): Stop reporting this for Prerender as well
+  // after it supports fallback to regular navigation on activation failures.
   if (nav_request.IsServedFromBackForwardCache())
     return;
 
   DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
                    protocol::Network::ResourceTypeEnum::Document, status);
+}
+
+bool ShouldBypassCSP(const NavigationRequest& nav_request) {
+  DevToolsAgentHostImpl* agent_host =
+      RenderFrameDevToolsAgentHost::GetFor(nav_request.frame_tree_node());
+  if (!agent_host)
+    return false;
+
+  for (auto* page : protocol::PageHandler::ForAgentHost(agent_host)) {
+    if (page->ShouldBypassCSP())
+      return true;
+  }
+  return false;
 }
 
 void WillBeginDownload(download::DownloadCreateInfo* info,
@@ -271,6 +296,8 @@ void WillBeginDownload(download::DownloadCreateInfo* info,
           : nullptr;
   if (!ftn)
     return;
+  DispatchToAgents(ftn, &protocol::BrowserHandler::DownloadWillBegin, ftn,
+                   item);
   DispatchToAgents(ftn, &protocol::PageHandler::DownloadWillBegin, ftn, item);
 
   for (auto* agent_host : BrowserDevToolsAgentHost::Instances()) {
@@ -283,12 +310,12 @@ void WillBeginDownload(download::DownloadCreateInfo* info,
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
-    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    absl::optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
     const network::mojom::URLResponseHead& outer_response,
-    const base::Optional<SignedExchangeEnvelope>& envelope,
+    const absl::optional<SignedExchangeEnvelope>& envelope,
     const scoped_refptr<net::X509Certificate>& certificate,
-    const base::Optional<net::SSLInfo>& ssl_info,
+    const absl::optional<net::SSLInfo>& ssl_info,
     const std::vector<SignedExchangeError>& errors) {
   DispatchToAgents(frame_tree_node,
                    &protocol::NetworkHandler::OnSignedExchangeReceived,
@@ -407,7 +434,7 @@ void ApplyNetworkRequestOverrides(
     FrameTreeNode* frame_tree_node,
     mojom::BeginNavigationParams* begin_params,
     bool* report_raw_headers,
-    base::Optional<std::vector<net::SourceStream::SourceType>>*
+    absl::optional<std::vector<net::SourceStream::SourceType>>*
         devtools_accepted_stream_types) {
   bool disable_cache = false;
   DevToolsAgentHostImpl* agent_host =
@@ -439,7 +466,7 @@ void ApplyNetworkRequestOverrides(
 
 bool ApplyUserAgentMetadataOverrides(
     FrameTreeNode* frame_tree_node,
-    base::Optional<blink::UserAgentMetadata>* override_out) {
+    absl::optional<blink::UserAgentMetadata>* override_out) {
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
   if (!agent_host)
@@ -647,9 +674,10 @@ void OnNavigationRequestWillBeSent(
     agent_host->OnNavigationRequestWillBeSent(navigation_request);
   }
 
-  // We use CachedNavigationURLLoader for BFCache navigations and don't actually
-  // send a network request, so we don't report this request to DevTools.
-  if (navigation_request.IsServedFromBackForwardCache())
+  // We use CachedNavigationURLLoader for page activation (BFCache navigations
+  // and Prerender activations) and don't actually send a network request, so we
+  // don't report this request to DevTools.
+  if (navigation_request.IsPageActivation())
     return;
 
   // Make sure both back-ends yield the same timestamp.
@@ -837,7 +865,7 @@ void ReportSameSiteCookieIssue(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::SameSiteCookieOperation operation,
-    const base::Optional<std::string>& devtools_request_id) {
+    const absl::optional<std::string>& devtools_request_id) {
   std::unique_ptr<protocol::Audits::AffectedRequest> affected_request;
   if (devtools_request_id) {
     // We can report the url here, because if devtools_request_id is set, the
@@ -934,10 +962,10 @@ void BuildAndReportBrowserInitiatedIssue(
   ReportBrowserInitiatedIssue(frame, issue.get());
 }
 
-void OnQuicTransportHandshakeFailed(
+void OnWebTransportHandshakeFailed(
     RenderFrameHostImpl* frame,
     const GURL& url,
-    const base::Optional<net::QuicTransportError>& error) {
+    const absl::optional<net::WebTransportError>& error) {
   FrameTreeNode* ftn = frame->frame_tree_node();
   if (!ftn)
     return;
@@ -945,11 +973,26 @@ void OnQuicTransportHandshakeFailed(
       "Failed to establish a connection to %s", url.spec().c_str());
   if (error) {
     text += ": ";
-    text += net::QuicTransportErrorToString(*error);
+    text += net::WebTransportErrorToString(*error);
   }
   text += ".";
   auto entry = protocol::Log::LogEntry::Create()
                    .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
+                   .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
+                   .SetText(text)
+                   .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
+                   .Build();
+  DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, entry.get());
+}
+
+void LogWorkletError(RenderFrameHostImpl* frame_host,
+                     const std::string& error) {
+  FrameTreeNode* ftn = frame_host->frame_tree_node();
+  if (!ftn)
+    return;
+  std::string text = base::StrCat({"Worklet error: ", error});
+  auto entry = protocol::Log::LogEntry::Create()
+                   .SetSource(protocol::Log::LogEntry::SourceEnum::Other)
                    .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
                    .SetText(text)
                    .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)

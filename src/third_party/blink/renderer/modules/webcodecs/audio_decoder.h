@@ -32,21 +32,21 @@ class MediaLog;
 
 namespace blink {
 
+class AudioData;
 class AudioDecoderConfig;
-class AudioFrame;
 class EncodedAudioChunk;
 class ExceptionState;
 class AudioDecoderInit;
 class ScriptPromise;
-class V8AudioFrameOutputCallback;
+class V8AudioDataOutputCallback;
 
 class MODULES_EXPORT AudioDecoderTraits {
  public:
   using InitType = AudioDecoderInit;
-  using OutputType = AudioFrame;
+  using OutputType = AudioData;
   using MediaOutputType = media::AudioBuffer;
   using MediaDecoderType = media::AudioDecoder;
-  using OutputCallbackType = V8AudioFrameOutputCallback;
+  using OutputCallbackType = V8AudioDataOutputCallback;
   using ConfigType = AudioDecoderConfig;
   using MediaConfigType = media::AudioDecoderConfig;
   using InputType = EncodedAudioChunk;
@@ -58,6 +58,7 @@ class MODULES_EXPORT AudioDecoderTraits {
       media::GpuVideoAcceleratorFactories* gpu_factories,
       media::MediaLog* media_log);
   static void InitializeDecoder(MediaDecoderType& decoder,
+                                bool low_delay,
                                 const MediaConfigType& media_config,
                                 MediaDecoderType::InitCB init_cb,
                                 MediaDecoderType::OutputCB output_cb);
@@ -67,6 +68,7 @@ class MODULES_EXPORT AudioDecoderTraits {
                                media::MediaLog* media_log);
   static media::StatusOr<OutputType*> MakeOutput(scoped_refptr<MediaOutputType>,
                                                  ExecutionContext*);
+  static const char* GetName();
 };
 
 class MODULES_EXPORT AudioDecoder : public DecoderTemplate<AudioDecoderTraits> {

@@ -23,7 +23,7 @@ ImageContextImpl::ImageContextImpl(
     const gfx::Size& size,
     ResourceFormat resource_format,
     bool maybe_concurrent_reads,
-    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
     sk_sp<SkColorSpace> color_space)
     : ImageContext(mailbox_holder,
                    size,
@@ -40,7 +40,7 @@ ImageContextImpl::ImageContextImpl(AggregatedRenderPassId render_pass_id,
     : ImageContext(gpu::MailboxHolder(),
                    size,
                    resource_format,
-                   /*ycbcr_info=*/base::nullopt,
+                   /*ycbcr_info=*/absl::nullopt,
                    std::move(color_space)),
       render_pass_id_(render_pass_id),
       mipmap_(mipmap ? GrMipMapped::kYes : GrMipMapped::kNo) {}
@@ -139,7 +139,8 @@ void ImageContextImpl::BeginAccessIfNecessary(
   if (BindOrCopyTextureIfNecessary(texture_base, &texture_size) &&
       texture_size != size()) {
     DLOG(ERROR) << "Failed to fulfill the promise texture - texture "
-                   "size does not match TransferableResource size.";
+                   "size does not match TransferableResource size: "
+                << texture_size.ToString() << " vs " << size().ToString();
     CreateFallbackImage(context_state);
     return;
   }
@@ -202,7 +203,9 @@ bool ImageContextImpl::BeginAccessIfNecessaryForSharedImage(
 
     if (representation->size() != size()) {
       DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                     "size does not match TransferableResource size.";
+                     "size does not match TransferableResource size: "
+                  << representation->size().ToString() << " vs "
+                  << size().ToString();
       return false;
     }
 

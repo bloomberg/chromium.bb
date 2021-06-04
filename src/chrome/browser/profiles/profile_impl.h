@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -26,6 +25,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -98,6 +98,10 @@ class ProfileImpl : public Profile {
   content::FileSystemAccessPermissionContext*
   GetFileSystemAccessPermissionContext() override;
   content::ContentIndexProvider* GetContentIndexProvider() override;
+  content::FederatedIdentityRequestPermissionContextDelegate*
+  GetFederatedIdentityRequestPermissionContext() override;
+  content::FederatedIdentitySharingPermissionContextDelegate*
+  GetFederatedIdentitySharingPermissionContext() override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
@@ -130,9 +134,6 @@ class ProfileImpl : public Profile {
 #if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 #endif
-  // TODO(https://crbug.com/1065444): Only supports primary OTR profile. Either
-  // update to support all OTR profiles or remove this function.
-  PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -275,8 +276,6 @@ class ProfileImpl : public Profile {
   // first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
-  // See comment in GetOffTheRecordPrefs. Field exists so something owns the
-  // dummy.
   std::unique_ptr<sync_preferences::PrefServiceSyncable> dummy_otr_prefs_;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>

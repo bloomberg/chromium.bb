@@ -359,8 +359,9 @@ namespace dawn_native { namespace metal {
             AcquireNSPRef([device->GetMTLDevice() newTextureWithDescriptor:mtlDesc.Get()]);
 
         if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting)) {
-            device->ConsumedError(
-                ClearTexture(GetAllSubresources(), TextureBase::ClearValue::NonZero));
+            device->ConsumedError(ClearTexture(device->GetPendingCommandContext(),
+                                               GetAllSubresources(),
+                                               TextureBase::ClearValue::NonZero));
         }
     }
 
@@ -401,11 +402,10 @@ namespace dawn_native { namespace metal {
         return mMtlTexture.Get();
     }
 
-    MaybeError Texture::ClearTexture(const SubresourceRange& range,
+    MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
+                                     const SubresourceRange& range,
                                      TextureBase::ClearValue clearValue) {
         Device* device = ToBackend(GetDevice());
-
-        CommandRecordingContext* commandContext = device->GetPendingCommandContext();
 
         const uint8_t clearColor = (clearValue == TextureBase::ClearValue::Zero) ? 0 : 1;
         const double dClearColor = (clearValue == TextureBase::ClearValue::Zero) ? 0.0 : 1.0;
@@ -445,6 +445,7 @@ namespace dawn_native { namespace metal {
                                 continue;
                             }
 
+                            ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
                             switch (aspect) {
                                 case Aspect::Depth:
                                     descriptor.depthAttachment.texture = GetMTLTexture();
@@ -482,6 +483,8 @@ namespace dawn_native { namespace metal {
                     NSRef<MTLRenderPassDescriptor> descriptor;
                     uint32_t attachment = 0;
 
+                    uint32_t numZSlices = GetMipLevelVirtualSize(level).depthOrArrayLayers;
+
                     for (uint32_t arrayLayer = range.baseArrayLayer;
                          arrayLayer < range.baseArrayLayer + range.layerCount; arrayLayer++) {
                         if (clearValue == TextureBase::ClearValue::Zero &&
@@ -491,28 +494,33 @@ namespace dawn_native { namespace metal {
                             continue;
                         }
 
-                        if (descriptor == nullptr) {
-                            // Note that this creates a descriptor that's autoreleased so we don't
-                            // use AcquireNSRef
-                            descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-                        }
+                        for (uint32_t z = 0; z < numZSlices; ++z) {
+                            if (descriptor == nullptr) {
+                                // Note that this creates a descriptor that's autoreleased so we
+                                // don't use AcquireNSRef
+                                descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+                            }
 
-                        [*descriptor colorAttachments][attachment].texture = GetMTLTexture();
-                        [*descriptor colorAttachments][attachment].loadAction = MTLLoadActionClear;
-                        [*descriptor colorAttachments][attachment].storeAction =
-                            MTLStoreActionStore;
-                        [*descriptor colorAttachments][attachment].clearColor =
-                            MTLClearColorMake(dClearColor, dClearColor, dClearColor, dClearColor);
-                        [*descriptor colorAttachments][attachment].level = level;
-                        [*descriptor colorAttachments][attachment].slice = arrayLayer;
+                            [*descriptor colorAttachments][attachment].texture = GetMTLTexture();
+                            [*descriptor colorAttachments][attachment].loadAction =
+                                MTLLoadActionClear;
+                            [*descriptor colorAttachments][attachment].storeAction =
+                                MTLStoreActionStore;
+                            [*descriptor colorAttachments][attachment].clearColor =
+                                MTLClearColorMake(dClearColor, dClearColor, dClearColor,
+                                                  dClearColor);
+                            [*descriptor colorAttachments][attachment].level = level;
+                            [*descriptor colorAttachments][attachment].slice = arrayLayer;
+                            [*descriptor colorAttachments][attachment].depthPlane = z;
 
-                        attachment++;
+                            attachment++;
 
-                        if (attachment == kMaxColorAttachments) {
-                            attachment = 0;
-                            commandContext->BeginRender(descriptor.Get());
-                            commandContext->EndRender();
-                            descriptor = nullptr;
+                            if (attachment == kMaxColorAttachments) {
+                                attachment = 0;
+                                commandContext->BeginRender(descriptor.Get());
+                                commandContext->EndRender();
+                                descriptor = nullptr;
+                            }
                         }
                     }
 
@@ -538,9 +546,7 @@ namespace dawn_native { namespace metal {
                              (largestMipSize.height / blockInfo.height),
                          512llu);
 
-            // TODO(enga): Multiply by largestMipSize.depthOrArrayLayers and do a larger 3D copy to
-            // clear a whole range of subresources when tracking that is improved.
-            uint64_t bufferSize = largestMipBytesPerImage * 1;
+            uint64_t bufferSize = largestMipBytesPerImage * largestMipSize.depthOrArrayLayers;
 
             if (bufferSize > std::numeric_limits<NSUInteger>::max()) {
                 return DAWN_OUT_OF_MEMORY_ERROR("Unable to allocate buffer.");
@@ -577,7 +583,7 @@ namespace dawn_native { namespace metal {
                               sourceBytesPerRow:largestMipBytesPerRow
                             sourceBytesPerImage:largestMipBytesPerImage
                                      sourceSize:MTLSizeMake(virtualSize.width, virtualSize.height,
-                                                            1)
+                                                            virtualSize.depthOrArrayLayers)
                                       toTexture:GetMTLTexture()
                                destinationSlice:arrayLayer
                                destinationLevel:level
@@ -595,14 +601,16 @@ namespace dawn_native { namespace metal {
         return {};
     }
 
-    void Texture::EnsureSubresourceContentInitialized(const SubresourceRange& range) {
+    void Texture::EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,
+                                                      const SubresourceRange& range) {
         if (!GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
             return;
         }
         if (!IsSubresourceContentInitialized(range)) {
             // If subresource has not been initialized, clear it to black as it could
             // contain dirty bits from recycled memory
-            GetDevice()->ConsumedError(ClearTexture(range, TextureBase::ClearValue::Zero));
+            GetDevice()->ConsumedError(
+                ClearTexture(commandContext, range, TextureBase::ClearValue::Zero));
         }
     }
 

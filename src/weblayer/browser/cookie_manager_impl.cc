@@ -73,7 +73,7 @@ void CookieManagerImpl::SetCookie(const GURL& url,
 }
 
 void CookieManagerImpl::GetCookie(const GURL& url, GetCookieCallback callback) {
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->GetCookieList(url, net::CookieOptions::MakeAllInclusive(),
                       base::BindOnce(&GetCookieComplete, std::move(callback)));
@@ -152,12 +152,12 @@ bool CookieManagerImpl::SetCookieInternal(const GURL& url,
                                           const std::string& value,
                                           SetCookieCallback callback) {
   auto cc = net::CanonicalCookie::Create(url, value, base::Time::Now(),
-                                         base::nullopt);
+                                         absl::nullopt);
   if (!cc) {
     return false;
   }
 
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->SetCanonicalCookie(
           *cc, url, net::CookieOptions::MakeAllInclusive(),
@@ -173,10 +173,10 @@ int CookieManagerImpl::AddCookieChangedCallbackInternal(
     CookieChangedCallback callback) {
   mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
   auto receiver = listener_remote.InitWithNewPipeAndPassReceiver();
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->AddCookieChangeListener(
-          url, name ? base::make_optional(*name) : base::nullopt,
+          url, name ? absl::make_optional(*name) : absl::nullopt,
           std::move(listener_remote));
 
   auto listener =
@@ -201,7 +201,7 @@ void CookieManagerImpl::OnCookieSet(SetCookieCallback callback, bool success) {
 }
 
 void CookieManagerImpl::OnFlushTimerFired() {
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+  browser_context_->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->FlushCookieStore(flush_run_loop_for_testing_
                              ? flush_run_loop_for_testing_->QuitClosure()

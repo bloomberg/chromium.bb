@@ -30,8 +30,14 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # aborted. Otherwise, it would wait for global timeout to be reached.
     env = {
         'GIT_HTTP_LOW_SPEED_LIMIT': '102400',  # in bytes
-        'GIT_HTTP_LOW_SPEED_TIME': 300,  # in seconds
+        'GIT_HTTP_LOW_SPEED_TIME': 1800,  # in seconds
     }
+    if self.m.buildbucket.build.id != 0:
+      env['DEPOT_TOOLS_REPORT_BUILD'] = '%s/%s/%s/%s' % (
+          self.m.buildbucket.build.builder.project,
+          self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder,
+          self.m.buildbucket.build.id)
     with self.m.context(env=env):
       with self.m.depot_tools.on_path():
         return self.m.python(name, bot_update_path, cmd, **kwargs)
@@ -288,6 +294,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_rebase_patch_ref')
     if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
+    if self.m.properties.get('bot_update_experiments'):
+      cmd.append('--experiments=%s' %
+          ','.join(self.m.properties['bot_update_experiments']))
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
@@ -304,12 +313,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Ah hah! Now that everything is in place, lets run bot_update!
     step_result = None
     try:
-      # 87 and 88 are the 'patch failure' codes for patch download and patch
-      # apply, respectively. We don't actually use the error codes, and instead
-      # rely on emitted json to determine cause of failure.
-      step_result = self(
-           name, cmd, step_test_data=step_test_data,
-           ok_ret=(0, 87, 88), **kwargs)
+      step_result = self(name, cmd, step_test_data=step_test_data, **kwargs)
     except self.m.step.StepFailure as f:
       step_result = f.result
       raise
@@ -328,6 +332,24 @@ class BotUpdateApi(recipe_api.RecipeApi):
         if 'step_text' in result:
           step_text = result['step_text']
           step_result.presentation.step_text = step_text
+
+        if result.get('patch_failure'):
+          patch_body = result.get('failed_patch_body')
+          if patch_body:
+            step_result.presentation.logs['patch error'] = (
+                patch_body.splitlines())
+
+          if result.get('patch_apply_return_code') == 3:
+            # This is download failure, hence an infra failure.
+            raise self.m.step.InfraFailure(
+                'Patch failure: Git reported a download failure')
+          else:
+            # This is actual patch failure.
+            self.m.tryserver.set_patch_failure_tryjob_result()
+            self.m.cq.set_do_not_retry_build()
+            raise self.m.step.StepFailure(
+                'Patch failure: See patch error log attached to bot_update. '
+                'Try rebasing?')
 
         if add_blamelists and 'manifest' in result:
           blamelist_pins = []
@@ -390,29 +412,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for
         # the checkout.
-        # If there is a patch failure, emit another step that said things
-        # failed.
-        if result.get('patch_failure'):
-          return_code = result.get('patch_apply_return_code')
-          patch_body = result.get('failed_patch_body')
-          try:
-            if return_code == 3:
-              # This is download failure, hence an infra failure.
-              with self.m.context(infra_steps=True):
-                self.m.python.failing_step(
-                    'Patch failure', 'Git reported a download failure')
-            else:
-              # This is actual patch failure.
-              self.m.tryserver.set_patch_failure_tryjob_result()
-              self.m.cq.set_do_not_retry_build()
-              self.m.python.failing_step(
-                  'Patch failure', 'See attached log. Try rebasing?')
-          except self.m.step.StepFailure as e:
-            if patch_body:
-              e.result.presentation.logs['patch error'] = (
-                  patch_body.splitlines())
-            raise e
-
         # bot_update actually just sets root to be the folder name of the
         # first solution.
         if (result.get('did_run')

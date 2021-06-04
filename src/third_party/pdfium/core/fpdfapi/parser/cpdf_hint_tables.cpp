@@ -45,7 +45,7 @@ CPDF_HintTables::PageInfo::~PageInfo() = default;
 //  static
 std::unique_ptr<CPDF_HintTables> CPDF_HintTables::Parse(
     CPDF_SyntaxParser* parser,
-    CPDF_LinearizedHeader* pLinearized) {
+    const CPDF_LinearizedHeader* pLinearized) {
   DCHECK(parser);
   if (!pLinearized || pLinearized->GetPageCount() <= 1 ||
       !pLinearized->HasHintTable()) {
@@ -76,11 +76,8 @@ std::unique_ptr<CPDF_HintTables> CPDF_HintTables::Parse(
 }
 
 CPDF_HintTables::CPDF_HintTables(CPDF_ReadValidator* pValidator,
-                                 CPDF_LinearizedHeader* pLinearized)
-    : m_pValidator(pValidator),
-      m_pLinearized(pLinearized),
-      m_nFirstPageSharedObjs(0),
-      m_szFirstPageObjOffset(0) {
+                                 const CPDF_LinearizedHeader* pLinearized)
+    : m_pValidator(pValidator), m_pLinearized(pLinearized) {
   DCHECK(m_pLinearized);
 }
 
@@ -407,18 +404,18 @@ bool CPDF_HintTables::GetPagePos(uint32_t index,
 
 CPDF_DataAvail::DocAvailStatus CPDF_HintTables::CheckPage(uint32_t index) {
   if (index == m_pLinearized->GetFirstPageNo())
-    return CPDF_DataAvail::DataAvailable;
+    return CPDF_DataAvail::kDataAvailable;
 
   if (index >= m_pLinearized->GetPageCount())
-    return CPDF_DataAvail::DataError;
+    return CPDF_DataAvail::kDataError;
 
   const uint32_t dwLength = m_PageInfos[index].page_length();
   if (!dwLength)
-    return CPDF_DataAvail::DataError;
+    return CPDF_DataAvail::kDataError;
 
   if (!m_pValidator->CheckDataRangeAndRequestIfUnavailable(
           m_PageInfos[index].page_offset(), dwLength)) {
-    return CPDF_DataAvail::DataNotAvailable;
+    return CPDF_DataAvail::kDataNotAvailable;
   }
 
   // Download data of shared objects in the page.
@@ -429,14 +426,14 @@ CPDF_DataAvail::DocAvailStatus CPDF_HintTables::CheckPage(uint32_t index) {
         m_SharedObjGroupInfos[dwIndex];
 
     if (!shared_group_info.m_szOffset || !shared_group_info.m_dwLength)
-      return CPDF_DataAvail::DataError;
+      return CPDF_DataAvail::kDataError;
 
     if (!m_pValidator->CheckDataRangeAndRequestIfUnavailable(
             shared_group_info.m_szOffset, shared_group_info.m_dwLength)) {
-      return CPDF_DataAvail::DataNotAvailable;
+      return CPDF_DataAvail::kDataNotAvailable;
     }
   }
-  return CPDF_DataAvail::DataAvailable;
+  return CPDF_DataAvail::kDataAvailable;
 }
 
 bool CPDF_HintTables::LoadHintStream(CPDF_Stream* pHintStream) {

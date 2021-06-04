@@ -24,6 +24,8 @@ import("//extensions/buildflags/buildflags.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
+import("//pdf/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
@@ -114,6 +116,15 @@ group("gn_all") {
     deps += [ ":webui_closure_compile" ]
   }
 
+  if (!is_ios && !is_android && !is_chromecast) {
+    deps += [
+      "//ui/accessibility:accessibility_perftests",
+      "//ui/accessibility:accessibility_unittests",
+      "//ui/accessibility/extensions:extension_tests",
+      "//ui/accessibility/extensions:extensions",
+    ]
+  }
+
   if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     deps += [
       "//chrome",
@@ -154,17 +165,11 @@ group("gn_all") {
       "//ppapi/examples/video_capture",
       "//ppapi/examples/video_decode",
       "//ppapi/examples/video_encode",
-      "//printing:printing_unittests",
-      "//third_party/pdfium/samples:pdfium_test",
       "//third_party/vulkan-deps/spirv-tools/src:SPIRV-Tools",
       "//third_party/vulkan-deps/spirv-tools/src/test/fuzzers",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",
       "//tools/privacy_budget:privacy_budget_tools",
-      "//ui/accessibility:accessibility_perftests",
-      "//ui/accessibility:accessibility_unittests",
-      "//ui/accessibility/extensions:extension_tests",
-      "//ui/accessibility/extensions:extensions",
     ]
   }
 
@@ -191,6 +196,7 @@ group("gn_all") {
       "//gpu:gpu_unittests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
+      "//media/blink:media_blink_unittests",
       "//media/midi:midi_unittests",
       "//media/mojo:media_mojo_unittests",
       "//mojo",
@@ -266,6 +272,10 @@ group("gn_all") {
 
   deps += root_extra_deps
 
+  if (enable_basic_printing) {
+    deps += [ "//printing:printing_unittests" ]
+  }
+
   if (enable_extensions) {
     deps += [
       "//extensions:extensions_browsertests",
@@ -273,6 +283,10 @@ group("gn_all") {
       "//extensions/browser/api/declarative_net_request/filter_list_converter",
       "//extensions/shell:app_shell_unittests",
     ]
+  }
+
+  if (enable_pdf) {
+    deps += [ "//third_party/pdfium/samples:pdfium_test" ]
   }
 
   if (enable_remoting) {
@@ -726,7 +740,6 @@ group("gn_all") {
       "//components/metrics:serialization",
       "//components/services/filesystem:filesystem_service_unittests",
       "//components/sessions:unit_tests",
-      "//media/blink:media_blink_unittests",
       "//media/cast:udp_proxy",
       "//storage/browser:dump_file_system",
       "//third_party/angle:libANGLE",
@@ -769,7 +782,6 @@ group("gn_all") {
   if (((is_linux || is_chromeos) && !is_chromecast) ||
       (is_win && use_libfuzzer) || (use_libfuzzer && is_mac)) {
     deps += [
-      "//chrome/services/ipp_parser/public/cpp:fuzzers",
       "//testing/libfuzzer/fuzzers",
       "//third_party/freetype-testing:fuzzers",
       "//third_party/grpc:fuzzers",
@@ -779,8 +791,12 @@ group("gn_all") {
       "//third_party/zlib/contrib/tests/fuzzers",
     ]
 
+    if (is_chromeos_ash) {
+      deps += [ "//chrome/services/ipp_parser/public/cpp:fuzzers" ]
+    }
+
     # TODO(crbug.com/906751): Get the libFuzzer tests working on Windows.
-    # Disable them for now becaue they cause the Windows clang ToT builder to
+    # Disable them for now because they cause the Windows clang ToT builder to
     # fail.
     if (!is_win) {
       deps += [ "//testing/libfuzzer/tests:libfuzzer_tests" ]
@@ -826,8 +842,8 @@ group("gn_all") {
       "//third_party/dawn/src/fuzzers:dawn_fuzzers",
       "//third_party/dawn/src/tests:dawn_end2end_tests",
       "//third_party/dawn/src/tests:dawn_unittests",
-      "//third_party/tint/src/fuzzers",
-      "//third_party/tint/src/test:tint_unittests",
+      "//third_party/dawn/third_party/tint/fuzzers",
+      "//third_party/dawn/third_party/tint/test:tint_unittests",
     ]
   }
 

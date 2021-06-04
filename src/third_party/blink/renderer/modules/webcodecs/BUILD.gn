@@ -9,18 +9,16 @@ import("//third_party/protobuf/proto_library.gni")
 
 blink_modules_sources("webcodecs") {
   sources = [
+    "audio_data.cc",
+    "audio_data.h",
+    "audio_data_attachment.cc",
+    "audio_data_attachment.h",
     "audio_decoder.cc",
     "audio_decoder.h",
     "audio_decoder_broker.cc",
     "audio_decoder_broker.h",
     "audio_encoder.cc",
     "audio_encoder.h",
-    "audio_frame.cc",
-    "audio_frame.h",
-    "audio_frame_attachment.cc",
-    "audio_frame_attachment.h",
-    "audio_frame_serialization_data.cc",
-    "audio_frame_serialization_data.h",
     "codec_config_eval.h",
     "codec_logger.cc",
     "codec_logger.h",
@@ -48,6 +46,8 @@ blink_modules_sources("webcodecs") {
     "image_track.h",
     "image_track_list.cc",
     "image_track_list.h",
+    "parsed_read_into_options.cc",
+    "parsed_read_into_options.h",
     "plane.cc",
     "plane.h",
     "video_decoder.cc",
@@ -62,8 +62,10 @@ blink_modules_sources("webcodecs") {
     "video_frame_attachment.h",
     "video_frame_handle.cc",
     "video_frame_handle.h",
-    "video_frame_logger.cc",
-    "video_frame_logger.h",
+    "video_frame_transfer_list.cc",
+    "video_frame_transfer_list.h",
+    "webcodecs_logger.cc",
+    "webcodecs_logger.h",
   ]
   deps = [
     "//media",
@@ -76,24 +78,20 @@ blink_modules_sources("webcodecs") {
   if (media_use_openh264) {
     deps += [ "//third_party/openh264:encoder" ]
   }
-  public_deps = [
-    "//third_party/blink/renderer/modules/mediastream:mediastream",
-    "//third_party/blink/renderer/modules/webaudio:webaudio",
-  ]
-  allow_circular_includes_from =
-      [ "//third_party/blink/renderer/modules/mediastream:mediastream" ]
+  public_deps = [ "//third_party/blink/renderer/modules/webaudio:webaudio" ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "audio_data_test.cc",
     "audio_decoder_broker_test.cc",
-    "audio_frame_test.cc",
     "decoder_selector_test.cc",
     "decoder_template_test.cc",
     "encoded_video_chunk_test.cc",
     "image_decoder_external_test.cc",
     "video_decoder_broker_test.cc",
+    "video_encoder_test.cc",
     "video_frame_test.cc",
   ]
 

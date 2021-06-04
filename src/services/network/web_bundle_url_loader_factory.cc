@@ -5,8 +5,8 @@
 #include "services/network/web_bundle_url_loader_factory.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/web_package/web_bundle_parser.h"
 #include "components/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -16,8 +16,10 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cross_origin_read_blocking.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/web_bundle_chunked_buffer.h"
 #include "services/network/web_bundle_memory_quota_consumer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -135,6 +137,9 @@ class WebBundleURLLoaderClient : public network::mojom::URLLoaderClient {
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
+    if (status.error_code != net::OK) {
+      factory_->OnWebBundleFetchFailed();
+    }
     if (completed_)
       return;
     wrapped_->OnComplete(status);
@@ -152,7 +157,7 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
   URLLoader(mojo::PendingReceiver<mojom::URLLoader> loader,
             const ResourceRequest& request,
             mojo::PendingRemote<mojom::URLLoaderClient> client,
-            const base::Optional<url::Origin>& request_initiator_origin_lock,
+            const absl::optional<url::Origin>& request_initiator_origin_lock,
             mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client)
       : url_(request.url),
         request_mode_(request.mode),
@@ -174,11 +179,11 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
   const GURL& url() const { return url_; }
   const mojom::RequestMode& request_mode() const { return request_mode_; }
 
-  const base::Optional<url::Origin>& request_initiator() const {
+  const absl::optional<url::Origin>& request_initiator() const {
     return request_initiator_;
   }
 
-  const base::Optional<url::Origin>& request_initiator_origin_lock() const {
+  const absl::optional<url::Origin>& request_initiator_origin_lock() const {
     return request_initiator_origin_lock_;
   }
 
@@ -249,7 +254,7 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override {
+      const absl::optional<GURL>& new_url) override {
     NOTREACHED();
   }
 
@@ -265,14 +270,14 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
 
   const GURL url_;
   mojom::RequestMode request_mode_;
-  base::Optional<url::Origin> request_initiator_;
+  absl::optional<url::Origin> request_initiator_;
   // It is safe to hold |request_initiator_origin_lock_| in this factory because
   // 1). |request_initiator_origin_lock| is a property of |URLLoaderFactory|
   // (or, more accurately a property of |URLLoaderFactoryParams|), and
   // 2) |WebURLLoader| is always associated with the same URLLoaderFactory
   // (via URLLoaderFactory -> WebBundleManager -> WebBundleURLLoaderFactory
   // -> WebBundleURLLoader).
-  const base::Optional<url::Origin> request_initiator_origin_lock_;
+  const absl::optional<url::Origin> request_initiator_origin_lock_;
   mojo::Receiver<mojom::URLLoader> receiver_;
   mojo::Remote<mojom::URLLoaderClient> client_;
   mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client_;
@@ -448,14 +453,18 @@ class WebBundleURLLoaderFactory::BundleDataSource
 WebBundleURLLoaderFactory::WebBundleURLLoaderFactory(
     const GURL& bundle_url,
     mojo::Remote<mojom::WebBundleHandle> web_bundle_handle,
-    const base::Optional<url::Origin>& request_initiator_origin_lock,
+    const absl::optional<url::Origin>& request_initiator_origin_lock,
     std::unique_ptr<WebBundleMemoryQuotaConsumer>
-        web_bundle_memory_quota_consumer)
+        web_bundle_memory_quota_consumer,
+    mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
+    absl::optional<std::string> devtools_request_id)
     : bundle_url_(bundle_url),
       web_bundle_handle_(std::move(web_bundle_handle)),
       request_initiator_origin_lock_(request_initiator_origin_lock),
       web_bundle_memory_quota_consumer_(
-          std::move(web_bundle_memory_quota_consumer)) {}
+          std::move(web_bundle_memory_quota_consumer)),
+      devtools_observer_(std::move(devtools_observer)),
+      devtools_request_id_(std::move(devtools_request_id)) {}
 
 WebBundleURLLoaderFactory::~WebBundleURLLoaderFactory() {
   for (auto loader : pending_loaders_) {
@@ -538,7 +547,7 @@ void WebBundleURLLoaderFactory::StartSubresourceRequest(
 void WebBundleURLLoaderFactory::OnBeforeSendHeadersComplete(
     base::WeakPtr<URLLoader> loader,
     int result,
-    const base::Optional<net::HttpRequestHeaders>& headers) {
+    const absl::optional<net::HttpRequestHeaders>& headers) {
   if (!loader)
     return;
   QueueOrStartLoader(loader);
@@ -655,8 +664,8 @@ void WebBundleURLLoaderFactory::OnHeadersReceivedComplete(
     uint64_t payload_offset,
     uint64_t payload_length,
     int result,
-    const base::Optional<std::string>& headers,
-    const base::Optional<GURL>& preserve_fragment_on_redirect_url) {
+    const absl::optional<std::string>& headers,
+    const absl::optional<GURL>& preserve_fragment_on_redirect_url) {
   if (!loader)
     return;
   SendResponseToLoader(loader, headers ? *headers : original_header,
@@ -735,6 +744,13 @@ void WebBundleURLLoaderFactory::MaybeReportLoadResult(
   base::UmaHistogramEnumeration("SubresourceWebBundles.LoadResult", result);
   web_bundle_handle_->OnWebBundleLoadFinished(
       result == SubresourceWebBundleLoadResult::kSuccess);
+}
+
+void WebBundleURLLoaderFactory::OnWebBundleFetchFailed() {
+  ReportErrorAndCancelPendingLoaders(
+      SubresourceWebBundleLoadResult::kWebBundleFetchFailed,
+      mojom::WebBundleErrorType::kWebBundleFetchFailed,
+      "Failed to fetch the Web Bundle.");
 }
 
 }  // namespace network

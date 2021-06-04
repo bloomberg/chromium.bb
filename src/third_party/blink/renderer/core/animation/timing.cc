@@ -72,24 +72,25 @@ AnimationTimeDelta Timing::IterationDuration() const {
   return result;
 }
 
-double Timing::ActiveDuration() const {
-  const double result =
+AnimationTimeDelta Timing::ActiveDuration() const {
+  const AnimationTimeDelta result =
       MultiplyZeroAlwaysGivesZero(IterationDuration(), iteration_count);
-  DCHECK_GE(result, 0);
+  DCHECK_GE(result, AnimationTimeDelta());
   return result;
 }
 
-double Timing::EndTimeInternal() const {
+AnimationTimeDelta Timing::EndTimeInternal() const {
   // Per the spec, the end time has a lower bound of 0.0:
   // https://drafts.csswg.org/web-animations-1/#end-time
-  return std::max(start_delay + ActiveDuration() + end_delay, 0.0);
+  return std::max(start_delay + ActiveDuration() + end_delay,
+                  AnimationTimeDelta());
 }
 
 EffectTiming* Timing::ConvertToEffectTiming() const {
   EffectTiming* effect_timing = EffectTiming::Create();
 
-  effect_timing->setDelay(start_delay * 1000);
-  effect_timing->setEndDelay(end_delay * 1000);
+  effect_timing->setDelay(start_delay.InMillisecondsF());
+  effect_timing->setEndDelay(end_delay.InMillisecondsF());
   effect_timing->setFill(FillModeString(fill_mode));
   effect_timing->setIterationStart(iteration_start);
   effect_timing->setIterations(iteration_count);
@@ -113,13 +114,13 @@ ComputedEffectTiming* Timing::getComputedTiming(
 
   // ComputedEffectTiming members.
   computed_timing->setEndTime(
-      CSSNumberish::FromDouble(EndTimeInternal() * 1000));
+      CSSNumberish::FromDouble(EndTimeInternal().InMillisecondsF()));
   computed_timing->setActiveDuration(
-      CSSNumberish::FromDouble(ActiveDuration() * 1000));
+      CSSNumberish::FromDouble(ActiveDuration().InMillisecondsF()));
 
   if (calculated_timing.local_time) {
-    computed_timing->setLocalTime(
-        CSSNumberish::FromDouble(calculated_timing.local_time.value() * 1000));
+    computed_timing->setLocalTime(CSSNumberish::FromDouble(
+        calculated_timing.local_time->InMillisecondsF()));
   } else {
     computed_timing->setLocalTime(CSSNumberish());
   }
@@ -139,8 +140,8 @@ ComputedEffectTiming* Timing::getComputedTiming(
   // except that the fill and duration must be resolved.
   //
   // https://drafts.csswg.org/web-animations-1/#dom-animationeffect-getcomputedtiming
-  computed_timing->setDelay(start_delay * 1000);
-  computed_timing->setEndDelay(end_delay * 1000);
+  computed_timing->setDelay(start_delay.InMillisecondsF());
+  computed_timing->setEndDelay(end_delay.InMillisecondsF());
   computed_timing->setFill(
       Timing::FillModeString(ResolvedFillMode(is_keyframe_effect)));
   computed_timing->setIterationStart(iteration_start);
@@ -157,36 +158,35 @@ ComputedEffectTiming* Timing::getComputedTiming(
 }
 
 Timing::CalculatedTiming Timing::CalculateTimings(
-    base::Optional<double> local_time,
-    base::Optional<Phase> timeline_phase,
+    absl::optional<AnimationTimeDelta> local_time,
+    absl::optional<Phase> timeline_phase,
     AnimationDirection animation_direction,
     bool is_keyframe_effect,
-    base::Optional<double> playback_rate) const {
-  const double active_duration = ActiveDuration();
+    absl::optional<double> playback_rate) const {
+  const AnimationTimeDelta active_duration = ActiveDuration();
 
   Timing::Phase current_phase = CalculatePhase(
       active_duration, local_time, timeline_phase, animation_direction, *this);
 
-  const base::Optional<AnimationTimeDelta> active_time =
+  const absl::optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
-  base::Optional<double> progress;
-  const double local_iteration_duration = IterationDuration().InSecondsF();
+  absl::optional<double> progress;
 
-  const base::Optional<double> overall_progress = CalculateOverallProgress(
-      current_phase, active_time, local_iteration_duration, iteration_count,
-      iteration_start);
-  const base::Optional<double> simple_iteration_progress =
+  const absl::optional<double> overall_progress =
+      CalculateOverallProgress(current_phase, active_time, IterationDuration(),
+                               iteration_count, iteration_start);
+  const absl::optional<double> simple_iteration_progress =
       CalculateSimpleIterationProgress(current_phase, overall_progress,
                                        iteration_start, active_time,
                                        active_duration, iteration_count);
-  const base::Optional<double> current_iteration =
+  const absl::optional<double> current_iteration =
       CalculateCurrentIteration(current_phase, active_time, iteration_count,
                                 overall_progress, simple_iteration_progress);
   const bool current_direction_is_forwards =
       IsCurrentDirectionForwards(current_iteration, direction);
-  const base::Optional<double> directed_progress = CalculateDirectedProgress(
+  const absl::optional<double> directed_progress = CalculateDirectedProgress(
       simple_iteration_progress, current_iteration, direction);
 
   progress = CalculateTransformedProgress(current_phase, directed_progress,
@@ -196,25 +196,21 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   AnimationTimeDelta time_to_next_iteration = AnimationTimeDelta::Max();
   // Conditionally compute the time to next iteration, which is only
   // applicable if the iteration duration is non-zero.
-  if (local_iteration_duration) {
-    const double start_offset =
-        MultiplyZeroAlwaysGivesZero(iteration_start, local_iteration_duration);
-    DCHECK_GE(start_offset, 0);
-    const base::Optional<AnimationTimeDelta> offset_active_time =
+  if (!IterationDuration().is_zero()) {
+    const AnimationTimeDelta start_offset =
+        MultiplyZeroAlwaysGivesZero(IterationDuration(), iteration_start);
+    DCHECK_GE(start_offset, AnimationTimeDelta());
+    const absl::optional<AnimationTimeDelta> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
-    const base::Optional<AnimationTimeDelta> iteration_time =
-        CalculateIterationTime(local_iteration_duration, active_duration,
+    const absl::optional<AnimationTimeDelta> iteration_time =
+        CalculateIterationTime(IterationDuration(), active_duration,
                                offset_active_time, start_offset, current_phase,
                                *this);
     if (iteration_time) {
       // active_time cannot be null if iteration_time is not null.
       DCHECK(active_time);
-      time_to_next_iteration =
-          AnimationTimeDelta::FromSecondsD(local_iteration_duration) -
-          iteration_time.value();
-      if (AnimationTimeDelta::FromSecondsD(active_duration) -
-              active_time.value() <
-          time_to_next_iteration)
+      time_to_next_iteration = IterationDuration() - iteration_time.value();
+      if (active_duration - active_time.value() < time_to_next_iteration)
         time_to_next_iteration = AnimationTimeDelta::Max();
     }
   }

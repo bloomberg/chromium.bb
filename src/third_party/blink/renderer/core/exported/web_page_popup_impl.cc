@@ -246,10 +246,10 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->SetRootLayer(layer.get());
   }
 
-  void SetToolTip(LocalFrame&,
-                  const String& tooltip_text,
-                  TextDirection dir) override {
-    popup_->widget_base_->SetToolTipText(tooltip_text, dir);
+  void UpdateTooltipUnderCursor(LocalFrame&,
+                                const String& tooltip_text,
+                                TextDirection dir) override {
+    popup_->widget_base_->UpdateTooltipUnderCursor(tooltip_text, dir);
   }
 
   void InjectGestureScrollEvent(LocalFrame& local_frame,
@@ -304,10 +304,6 @@ WebPagePopupImpl::~WebPagePopupImpl() {
   DCHECK(!page_);
 }
 
-void WebPagePopupImpl::InitializeForTesting(WebView* opener_web_view) {
-  SetWebView(static_cast<WebViewImpl*>(opener_web_view));
-}
-
 void WebPagePopupImpl::SetWebView(WebViewImpl* opener_web_view) {
   DCHECK(opener_web_view);
   DCHECK(!opener_web_view_);
@@ -328,15 +324,12 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
   popup_client_ = popup_client;
   SetWebView(opener_web_view);
 
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<PagePopupChromeClient>(this);
-  page_clients.chrome_client = chrome_client_.Get();
-
   Settings& main_settings = opener_web_view_->GetPage()->GetSettings();
-  page_ = Page::CreateNonOrdinary(page_clients, opener_web_view_->GetPage()
-                                                    ->GetPageScheduler()
-                                                    ->GetAgentGroupScheduler());
+  page_ =
+      Page::CreateNonOrdinary(*chrome_client_, opener_web_view_->GetPage()
+                                                   ->GetPageScheduler()
+                                                   ->GetAgentGroupScheduler());
   page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);
@@ -451,20 +444,14 @@ void WebPagePopupImpl::DidSetBounds() {
 
 void WebPagePopupImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    cc::TaskGraphRunner* task_graph_runner,
     const ScreenInfos& screen_infos,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings,
-    gfx::RenderingPipeline* main_thread_pipeline,
-    gfx::RenderingPipeline* compositor_thread_pipeline) {
+    const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
-  widget_base_->InitializeCompositing(
-      agent_group_scheduler, task_graph_runner,
-      /*for_child_local_root_frame=*/false, screen_infos,
-      std::move(ukm_recorder_factory), settings,
-      /*frame_widget_input_handler=*/nullptr, main_thread_pipeline,
-      compositor_thread_pipeline);
+  widget_base_->InitializeCompositing(agent_group_scheduler,
+                                      /*for_child_local_root_frame=*/false,
+                                      screen_infos, settings,
+                                      /*frame_widget_input_handler=*/nullptr);
   cc::LayerTreeDebugState debug_state =
       widget_base_->LayerTreeHost()->GetDebugState();
   debug_state.TurnOffHudInfoDisplay();
@@ -610,7 +597,7 @@ AXObject* WebPagePopupImpl::RootAXObject() {
 }
 
 void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
-  if (!closing_) {
+  if (ShouldCheckPopupPositionForTelemetry()) {
     IntRect owner_window_rect_in_screen = OwnerWindowRectInScreen();
     Document& document = popup_client_->OwnerElement().GetDocument();
     if (owner_window_rect_in_screen.Contains(rect_in_screen)) {
@@ -849,10 +836,16 @@ bool WebPagePopupImpl::IsViewportPointInWindow(int x, int y) {
   return gfx::Rect(window_rect.size()).Contains(point_in_dips);
 }
 
+bool WebPagePopupImpl::ShouldCheckPopupPositionForTelemetry() const {
+  // Avoid doing any telemetry work when the popup is closing or the
+  // owner element is not shown anymore.
+  return !closing_ && popup_client_->OwnerElement().GetDocument().View();
+}
+
 void WebPagePopupImpl::CheckScreenPointInOwnerWindowAndCount(
     const gfx::PointF& point_in_screen,
     WebFeature feature) const {
-  if (closing_)
+  if (!ShouldCheckPopupPositionForTelemetry())
     return;
 
   IntRect owner_window_rect = OwnerWindowRectInScreen();
@@ -862,6 +855,7 @@ void WebPagePopupImpl::CheckScreenPointInOwnerWindowAndCount(
 
 IntRect WebPagePopupImpl::OwnerWindowRectInScreen() const {
   LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
+  DCHECK(view);
   IntRect frame_rect = view->FrameRect();
   return view->FrameToScreen(frame_rect);
 }

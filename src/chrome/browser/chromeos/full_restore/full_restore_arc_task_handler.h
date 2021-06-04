@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FULL_RESTORE_FULL_RESTORE_ARC_TASK_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_FULL_RESTORE_FULL_RESTORE_ARC_TASK_HANDLER_H_
 
+#include <utility>
+
 #include "base/scoped_observation.h"
+#include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/common/buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -32,6 +36,10 @@ class FullRestoreArcTaskHandler : public KeyedService,
 
   ~FullRestoreArcTaskHandler() override;
 
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  ArcWindowHandler* window_handler() { return window_handler_.get(); }
+#endif
+
   // ArcAppListPrefs::Observer.
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
@@ -39,10 +47,20 @@ class FullRestoreArcTaskHandler : public KeyedService,
                      const std::string& intent,
                      int32_t session_id) override;
   void OnTaskDestroyed(int task_id) override;
+  void OnTaskDescriptionChanged(int32_t task_id,
+                                const std::string& label,
+                                const arc::mojom::RawIconPngData& icon,
+                                uint32_t primary_color,
+                                uint32_t status_bar_color) override;
+  void OnAppConnectionReady() override;
 
  private:
   base::ScopedObservation<ArcAppListPrefs, ArcAppListPrefs::Observer>
       arc_prefs_observer_{this};
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  std::unique_ptr<ArcWindowHandler> window_handler_;
+#endif
 };
 
 }  // namespace full_restore

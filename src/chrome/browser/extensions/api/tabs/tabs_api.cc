@@ -20,13 +20,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_constants.h"
@@ -101,6 +101,7 @@
 #include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/list_selection_model.h"
@@ -568,18 +569,20 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     return RespondNow(Error(std::move(error)));
 
   Profile* calling_profile = Profile::FromBrowserContext(browser_context());
-  Profile* window_profile = open_incognito_window
-                                ? calling_profile->GetPrimaryOTRProfile()
-                                : calling_profile;
+  Profile* window_profile =
+      open_incognito_window
+          ? calling_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          : calling_profile;
 
   // Look for optional tab id.
   if (create_data && create_data->tab_id) {
     // Find the tab. |source_tab_strip| and |tab_index| will later be used to
     // move the tab into the created window.
     Browser* source_browser = nullptr;
+    content::WebContents* web_contents = nullptr;
     if (!GetTabById(*create_data->tab_id, calling_profile,
                     include_incognito_information(), &source_browser,
-                    &source_tab_strip, nullptr, &tab_index, &error)) {
+                    &source_tab_strip, &web_contents, &tab_index, &error)) {
       return RespondNow(Error(std::move(error)));
     }
 
@@ -589,6 +592,9 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     if (source_browser->profile() != window_profile)
       return RespondNow(
           Error(tabs_constants::kCanOnlyMoveTabsWithinSameProfileError));
+
+    if (DevToolsWindow::IsDevToolsWindow(web_contents))
+      return RespondNow(Error(tabs_constants::kNotAllowedForDevToolsError));
   }
 
   if (!IsValidStateForWindowsCreateFunction(create_data))
@@ -994,7 +1000,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   if (params->query_info.window_id.get())
     window_id = *params->query_info.window_id;
 
-  base::Optional<int> group_id = base::nullopt;
+  absl::optional<int> group_id = absl::nullopt;
   if (params->query_info.group_id.get())
     group_id = *params->query_info.group_id;
 
@@ -1082,7 +1088,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
       }
 
       if (group_id.has_value()) {
-        base::Optional<tab_groups::TabGroupId> group =
+        absl::optional<tab_groups::TabGroupId> group =
             tab_strip->GetTabGroupForTab(index);
         if (group_id.value() == -1) {
           if (group.has_value())
@@ -1257,12 +1263,12 @@ ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
   // Return the caller, if it's a tab. If not the result isn't an error but an
   // empty tab (hence returning true).
   WebContents* caller_contents = GetSenderWebContents();
-  std::unique_ptr<base::ListValue> results;
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0) {
-    results = tabs::Get::Results::Create(*CreateTabObjectHelper(
-        caller_contents, extension(), source_context_type(), nullptr, -1));
+    return RespondNow(ArgumentList(tabs::Get::Results::Create(
+        *CreateTabObjectHelper(caller_contents, extension(),
+                               source_context_type(), nullptr, -1))));
   }
-  return RespondNow(results ? ArgumentList(std::move(results)) : NoArguments());
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
@@ -1373,6 +1379,9 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
                   &browser, &tab_strip, &contents, &tab_index, &error)) {
     return RespondNow(Error(std::move(error)));
   }
+
+  if (DevToolsWindow::IsDevToolsWindow(contents))
+    return RespondNow(Error(tabs_constants::kNotAllowedForDevToolsError));
 
   if (!ExtensionTabUtil::BrowserSupportsTabs(browser))
     return RespondNow(Error(tabs_constants::kNoCurrentWindowError));
@@ -1607,6 +1616,11 @@ bool TabsMoveFunction::MoveTab(int tab_id,
   if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                   &source_browser, &source_tab_strip, &contents, &tab_index,
                   error)) {
+    return false;
+  }
+
+  if (DevToolsWindow::IsDevToolsWindow(contents)) {
+    *error = tabs_constants::kNotAllowedForDevToolsError;
     return false;
   }
 
@@ -1862,11 +1876,15 @@ ExtensionFunction::ResponseAction TabsGroupFunction::Run() {
   tab_browsers.reserve(tab_ids.size());
   for (int tab_id : tab_ids) {
     Browser* tab_browser = nullptr;
+    content::WebContents* web_contents = nullptr;
     if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
-                    &tab_browser, nullptr, nullptr, nullptr, &error)) {
+                    &tab_browser, nullptr, &web_contents, nullptr, &error)) {
       return RespondNow(Error(std::move(error)));
     }
     tab_browsers.push_back(tab_browser);
+
+    if (DevToolsWindow::IsDevToolsWindow(web_contents))
+      return RespondNow(Error(tabs_constants::kNotAllowedForDevToolsError));
   }
 
   // Move all tabs to the target browser, appending to the end each time. Only
@@ -1956,6 +1974,9 @@ bool TabsUngroupFunction::UngroupTab(int tab_id, std::string* error) {
   return true;
 }
 
+// static
+bool TabsCaptureVisibleTabFunction::disable_throttling_for_test_ = false;
+
 TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction()
     : chrome_details_(this) {
 }
@@ -2038,9 +2059,43 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   return RespondNow(Error(CaptureResultToErrorMessage(capture_result)));
 }
 
+void TabsCaptureVisibleTabFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  constexpr base::TimeDelta kSecond = base::TimeDelta::FromSeconds(1);
+  QuotaLimitHeuristic::Config limit = {
+      tabs::MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND, kSecond};
+
+  heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
+      limit, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>(),
+      "MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND"));
+}
+
+bool TabsCaptureVisibleTabFunction::ShouldSkipQuotaLimiting() const {
+  return disable_throttling_for_test_;
+}
+
 void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&TabsCaptureVisibleTabFunction::EncodeBitmapOnWorkerThread,
+                     this, base::ThreadTaskRunnerHandle::Get(), bitmap));
+}
+
+void TabsCaptureVisibleTabFunction::EncodeBitmapOnWorkerThread(
+    scoped_refptr<base::TaskRunner> reply_task_runner,
+    const SkBitmap& bitmap) {
   std::string base64_result;
-  if (!EncodeBitmap(bitmap, &base64_result)) {
+  bool success = EncodeBitmap(bitmap, &base64_result);
+  reply_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TabsCaptureVisibleTabFunction::OnBitmapEncodedOnUIThread,
+                     this, success, std::move(base64_result)));
+}
+
+void TabsCaptureVisibleTabFunction::OnBitmapEncodedOnUIThread(
+    bool success,
+    std::string base64_result) {
+  if (!success) {
     OnCaptureFailure(FAILURE_REASON_ENCODING_FAILED);
     return;
   }
@@ -2129,16 +2184,14 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
 
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(contents);
-  if (!chrome_translate_client->GetLanguageState()
-           .original_language()
-           .empty()) {
+  if (!chrome_translate_client->GetLanguageState().source_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &TabsDetectLanguageFunction::RespondWithLanguage, this,
-            chrome_translate_client->GetLanguageState().original_language()));
+            chrome_translate_client->GetLanguageState().source_language()));
     return RespondLater();
   }
 
@@ -2472,6 +2525,9 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
                     nullptr, nullptr, &contents, nullptr, &error)) {
       return RespondNow(Error(std::move(error)));
     }
+
+    if (DevToolsWindow::IsDevToolsWindow(contents))
+      return RespondNow(Error(tabs_constants::kNotAllowedForDevToolsError));
   }
   // Discard the tab.
   contents =

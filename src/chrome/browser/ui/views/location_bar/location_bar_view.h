@@ -25,11 +25,12 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
+#include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -38,7 +39,6 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
@@ -76,8 +76,7 @@ class LocationBarView : public LocationBar,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
                         public PageActionIconView::Delegate,
-                        public device::GeolocationSystemPermissionManager::
-                            GeolocationPermissionObserver {
+                        public device::GeolocationManager::PermissionObserver {
  public:
   METADATA_HEADER(LocationBarView);
 
@@ -176,7 +175,14 @@ class LocationBarView : public LocationBar,
   // accessibility.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
-  PermissionChip* permission_chip() { return permission_chip_; }
+  PermissionChip* chip() { return chip_; }
+
+  // Creates and displays an instance of PermissionRequestChip.
+  PermissionChip* DisplayChip(
+      permissions::PermissionPrompt::Delegate* delegate);
+
+  // Removes previously displayed PermissionChip.
+  void FinalizeChip();
 
   // LocationBar:
   void FocusLocation(bool is_user_initiated) override;
@@ -207,8 +213,8 @@ class LocationBarView : public LocationBar,
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
-  // GeolocationSystemPermissionManager::GeolocationPermissionObserver
-  void OnSystemPermissionUpdate(
+  // GeolocationManager::PermissionObserver:
+  void OnSystemPermissionUpdated(
       device::LocationSystemPermissionStatus new_status) override;
 
   static bool IsVirtualKeyboardVisible(views::Widget* widget);
@@ -238,6 +244,9 @@ class LocationBarView : public LocationBar,
       security_state::SecurityLevel security_level) const override;
   ui::ImageModel GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
+  std::vector<ContentSettingImageView*>& GetContentSettingViewsForTest() {
+    return content_setting_views_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -248,11 +257,10 @@ class LocationBarView : public LocationBar,
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
 #if defined(OS_MAC)
-  // Manage a subscription to GeolocationSystemPermissionManager, which may
+  // Manage a subscription to GeolocationManager, which may
   // outlive this object.
-  base::ScopedObservation<
-      device::GeolocationSystemPermissionManager,
-      device::GeolocationSystemPermissionManager::GeolocationPermissionObserver>
+  base::ScopedObservation<device::GeolocationManager,
+                          device::GeolocationManager::PermissionObserver>
       geolocation_permission_observation_{this};
 #endif
 
@@ -349,6 +357,7 @@ class LocationBarView : public LocationBar,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+  void OnChildViewRemoved(View* observed_view, View* child) override;
 
   // ChromeOmniboxEditController:
   void OnChanged() override;
@@ -372,7 +381,7 @@ class LocationBarView : public LocationBar,
 
   // Updates the visibility of the permission chip when omnibox is in the edit
   // mode.
-  void UpdatePermissionChipVisibility();
+  void UpdateChipVisibility();
 
   // Adjusts |event|'s location to be relative to |omnibox_view_|'s origin; used
   // for directing LocationBarView events to the |omnibox_view_|.
@@ -397,7 +406,7 @@ class LocationBarView : public LocationBar,
   Delegate* delegate_;
 
   // A view that contains a chip button that shows a permission request.
-  PermissionChip* permission_chip_ = nullptr;
+  PermissionChip* chip_ = nullptr;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.

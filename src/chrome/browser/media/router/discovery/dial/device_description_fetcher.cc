@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 constexpr char kApplicationUrlHeaderName[] = "Application-URL";
 
@@ -86,7 +87,7 @@ void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
 }
 
 void DeviceDescriptionFetcher::ReportError(const std::string& message,
-                                           base::Optional<int> response_code) {
+                                           absl::optional<int> response_code) {
   std::move(error_cb_).Run(message);
 }
 

@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -99,10 +100,10 @@ void FlexCodeInput::Backspace() {
   // This triggers ContentsChanged(), which calls |on_input_change_|.
 }
 
-base::Optional<std::string> FlexCodeInput::GetCode() const {
+absl::optional<std::string> FlexCodeInput::GetCode() const {
   std::u16string code = code_field_->GetText();
   if (!code.length()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return base::UTF16ToUTF8(code);
 }
@@ -270,13 +271,13 @@ void FixedLengthCodeInput::Backspace() {
 }
 
 // Returns access code as string if all fields contain input.
-base::Optional<std::string> FixedLengthCodeInput::GetCode() const {
+absl::optional<std::string> FixedLengthCodeInput::GetCode() const {
   std::string result;
   size_t length;
   for (auto* field : input_fields_) {
     length = field->GetText().length();
     if (!length)
-      return base::nullopt;
+      return absl::nullopt;
 
     DCHECK_EQ(1u, length);
     base::StrAppend(&result, {base::UTF16ToUTF8(field->GetText())});
@@ -309,9 +310,7 @@ void FixedLengthCodeInput::ResetTextValueForA11y() {
     if (input_fields_[i]->GetText().empty()) {
       result.push_back(' ');
     } else {
-      result.push_back(is_obscure_pin_ ?
-                       base::UTF8ToUTF16("\u2022" /*bullet*/)[0]
-                     : input_fields_[i]->GetText()[0]);
+      result.push_back(is_obscure_pin_ ? u'•' : input_fields_[i]->GetText()[0]);
     }
   }
 

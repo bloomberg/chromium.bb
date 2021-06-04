@@ -184,7 +184,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void TrackRemoved(const WebString& track_id) override;
   void ActiveStateChanged(bool is_active) override;
   int GetDelegateId() override;
-  base::Optional<viz::SurfaceId> GetSurfaceId() override;
+  absl::optional<viz::SurfaceId> GetSurfaceId() override;
 
   base::WeakPtr<WebMediaPlayer> AsWeakPtr() override;
 
@@ -243,7 +243,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   base::TimeDelta GetCurrentTimeInterval();
   media::PipelineStatistics GetPipelineStatistics();
 
-  base::Optional<media::mojom::MediaStreamType> GetMediaStreamType();
+  absl::optional<media::mojom::MediaStreamType> GetMediaStreamType();
 
   std::unique_ptr<MediaStreamInternalFrameWrapper> internal_frame_;
 
@@ -260,11 +260,12 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   // via the WebMediaPlayerDelegate::Observer interface after
   // registration.
   //
-  // NOTE: HTMLMediaElement is a PausableObject, and will receive a
-  // call to contextDestroyed() when Document::shutdown() is called.
-  // Document::shutdown() is called before the frame detaches (and before the
-  // frame is destroyed). RenderFrameImpl owns of |delegate_|, and is guaranteed
-  // to outlive |this|. It is therefore safe use a raw pointer directly.
+  // NOTE: HTMLMediaElement is a blink::ExecutionContextLifecycleObserver, and
+  // will receive a call to contextDestroyed() when Document::shutdown() is
+  // called. Document::shutdown() is called before the frame detaches (and
+  // before the frame is destroyed). RenderFrameImpl owns of |delegate_|, and is
+  // guaranteed to outlive |this|. It is therefore safe use a raw pointer
+  // directly.
   WebMediaPlayerDelegate* delegate_;
   int delegate_id_;
 

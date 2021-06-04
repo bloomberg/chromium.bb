@@ -8,8 +8,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as ObjectUI from '../../object_ui/object_ui.js';
-import * as TextEditor from '../../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
+import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../../ui/legacy/legacy.js';
 
 const UIStrings = {
@@ -59,8 +59,8 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
   constructor(liveExpressionButton: UI.Toolbar.ToolbarButton) {
     super(true, 250);
     this._liveExpressionButton = liveExpressionButton;
-    this.registerRequiredCSS('panels/console/consolePinPane.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/console/consolePinPane.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
     this.contentElement.classList.add('console-pins', 'monospace');
     this.contentElement.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), false);
 
@@ -161,6 +161,8 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
   }
 }
 
+let consolePinNumber = 0;
+
 export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
   _pinElement: Element;
   _pinPreview: HTMLElement;
@@ -171,9 +173,11 @@ export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
   _hovered: boolean;
   _lastNode: SDK.RemoteObject.RemoteObject|null;
   _editorPromise: Promise<UI.TextEditor.TextEditor>;
+  private consolePinNumber: number;
 
   constructor(expression: string, pinPane: ConsolePinPane) {
     super();
+    this.consolePinNumber = ++consolePinNumber;
     const deletePinIcon = (document.createElement('div', {is: 'dt-close-button'}) as UI.UIUtils.DevToolsCloseButton);
     deletePinIcon.gray = true;
     deletePinIcon.classList.add('close-button');
@@ -315,7 +319,8 @@ export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
     const timeout = throwOnSideEffect ? 250 : undefined;
     const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     const {preview, result} = await ObjectUI.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(
-        text, throwOnSideEffect, timeout, !isEditing /* allowErrors */, 'console');
+        `${text}\n//# sourceURL=watch-expression-${this.consolePinNumber}.devtools`, throwOnSideEffect, timeout,
+        !isEditing /* allowErrors */, 'console');
     if (this._lastResult && this._lastExecutionContext) {
       this._lastExecutionContext.runtimeModel.releaseEvaluationResult(this._lastResult);
     }

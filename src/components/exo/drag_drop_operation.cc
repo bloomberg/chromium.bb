@@ -21,7 +21,9 @@
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -37,8 +39,9 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace exo {
-
 namespace {
+
+using ::ui::mojom::DragOperation;
 
 uint32_t DndActionsToDragOperations(const base::flat_set<DndAction>& actions) {
   uint32_t dnd_operations = 0;
@@ -72,13 +75,13 @@ DndAction DragOperationsToPreferredDndAction(int op) {
 }
 #endif
 
-DndAction DragOperationToDndAction(int op) {
+DndAction DragOperationToDndAction(DragOperation op) {
   switch (op) {
-    case ui::DragDropTypes::DragOperation::DRAG_NONE:
+    case DragOperation::kNone:
       return DndAction::kNone;
-    case ui::DragDropTypes::DragOperation::DRAG_MOVE:
+    case DragOperation::kMove:
       return DndAction::kMove;
-    case ui::DragDropTypes::DragOperation::DRAG_COPY:
+    case DragOperation::kCopy:
       return DndAction::kCopy;
     default:
       NOTREACHED();
@@ -205,9 +208,9 @@ DragDropOperation::DragDropOperation(
       base::BindOnce(&DragDropOperation::ScheduleStartDragDropOperation,
                      weak_ptr_factory_.GetWeakPtr());
 
-  // When the icon is present, make the count kMaxClipboardDataTypes + 1 so we
-  // can wait for the icon to be captured as well.
-  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + (icon ? 1 : 0),
+  // When the icon is present, make the count kMaxDataTypes + 1 so we can wait
+  // for the icon to be captured as well.
+  counter_ = base::BarrierClosure(DataSource::kMaxDataTypes + (icon ? 1 : 0),
                                   std::move(start_op_callback));
 
   source->GetDataForPreferredMimeTypes(
@@ -220,6 +223,8 @@ DragDropOperation::DragDropOperation(
       base::BindOnce(&DragDropOperation::OnFilenamesRead,
                      weak_ptr_factory_.GetWeakPtr(), data_exchange_delegate,
                      origin->window()),
+      base::BindOnce(&DragDropOperation::OnFileContentsRead,
+                     weak_ptr_factory_.GetWeakPtr()),
       counter_);
 }
 
@@ -274,6 +279,16 @@ void DragDropOperation::OnFilenamesRead(
   counter_.Run();
 }
 
+void DragDropOperation::OnFileContentsRead(const std::string& mime_type,
+                                           const base::FilePath& filename,
+                                           const std::vector<uint8_t>& data) {
+  DCHECK(os_exchange_data_);
+  os_exchange_data_->SetFileContents(filename,
+                                     std::string(data.begin(), data.end()));
+  mime_type_ = mime_type;
+  counter_.Run();
+}
+
 void DragDropOperation::OnDragIconCaptured(const SkBitmap& icon_bitmap) {
   DCHECK(icon_);
 
@@ -318,7 +333,7 @@ void DragDropOperation::StartDragDropOperation() {
 
   // This triggers a nested run loop that terminates when the drag and drop
   // operation is completed.
-  int op = drag_drop_controller_->StartDragAndDrop(
+  DragOperation op = drag_drop_controller_->StartDragAndDrop(
       std::move(os_exchange_data_), origin_->get()->window()->GetRootWindow(),
       origin_->get()->window(), drag_start_point, dnd_operations,
       event_source_);
@@ -327,7 +342,7 @@ void DragDropOperation::StartDragDropOperation() {
   if (!weak_ptr)
     return;
 
-  if (op) {
+  if (op != DragOperation::kNone) {
     // Success
 
     // TODO(crbug.com/994065) This is currently not the actual mime type used by
@@ -368,7 +383,7 @@ void DragDropOperation::OnDragActionsChanged(int actions) {
   if (dnd_action != DndAction::kNone)
     source_->get()->Target(mime_type_);
   else
-    source_->get()->Target(base::nullopt);
+    source_->get()->Target(absl::nullopt);
 
   source_->get()->Action(dnd_action);
 }

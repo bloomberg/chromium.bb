@@ -17,11 +17,11 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -44,9 +44,10 @@ class Insets;
 namespace ui {
 class AXFragmentRootWin;
 class AXSystemCaretWin;
+class SessionChangeObserver;
 class TextInputClient;
 class ViewProp;
-class SessionChangeObserver;
+class WinCursor;
 }  // namespace ui
 
 namespace views {
@@ -160,7 +161,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Returns true if the title changed.
   bool SetTitle(const std::u16string& title);
 
-  void SetCursor(HCURSOR cursor);
+  void SetCursor(scoped_refptr<ui::WinCursor> cursor);
 
   void FrameTypeChanged();
 
@@ -625,7 +626,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   bool restored_enabled_;
 
   // The current cursor.
-  HCURSOR current_cursor_;
+  scoped_refptr<ui::WinCursor> current_cursor_;
 
   // The icon created from the bitmap image of the window icon.
   base::win::ScopedHICON window_icon_;
@@ -635,7 +636,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // The aspect ratio for the window. This is only used for sizing operations
   // for the non-client area.
-  base::Optional<float> aspect_ratio_;
+  absl::optional<float> aspect_ratio_;
 
   // The current DPI.
   int dpi_;
@@ -816,7 +817,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   gfx::Size exposed_pixels_;
 
   // Populated if the cursor position is being mocked for testing purposes.
-  base::Optional<gfx::Point> mock_cursor_position_;
+  absl::optional<gfx::Point> mock_cursor_position_;
 
   base::ScopedObservation<ui::InputMethod, ui::InputMethodObserver>
       observation_{this};

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1096883626080133124">ทำสิ่งต่างๆ ได้มากขึ้นด้วย Google Chrome ที่ใช้งานง่าย ปลอดภัย และรวดเร็วกว่าที่เคย</translation>
 <translation id="1282031177488366470">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
 <translation id="1314663809820920746">คุณจะยังคงเห็นบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ทั้งหมดในอุปกรณ์นี้ หากทำการเปลี่ยนแปลง ระบบจะไม่ซิงค์การเปลี่ยนแปลงนั้นกับบัญชี Google</translation>
 <translation id="1479202195792305274">Chrome จะตรวจสอบรหัสผ่านได้เมื่อคุณลงชื่อเข้าใช้ด้วยบัญชี Google</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ตรวจหาอัปเดตไม่ได้ โปรดลองตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="1682483655351012182">ซิงค์ข้อมูล Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">ช่วยปรับปรุง Chrome โดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google</translation>
 <translation id="1917964099031477364">บัญชีนี้และข้อมูลที่ไม่ได้บันทึกจะถูกนำออกจาก Chrome และแอปอื่นๆ ของ Google ในอุปกรณ์นี้</translation>
 <translation id="2009224836393115614">Chrome ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดลองตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ตรวจหาอัปเดตไม่ได้ โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="2732745070297234559">Chrome ตรวจสอบรหัสผ่านได้ไม่ครบทั้งหมด โปรดลองอีกครั้งในวันพรุ่งนี้</translation>
 <translation id="2740105938841089077">ใช้ Chrome เพื่อเปิดลิงก์</translation>
+<translation id="2869959624320573933">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2919738076569633423">การใช้ Chrome หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" /></translation>
 <translation id="3030414234702425231">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chrome ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="3167189358072330585">บัญชีของคุณใช้งานไม่ได้บน Google Chrome โปรดติดต่อผู้ดูแลระบบโดเมนหรือใช้บัญชี Google ปกติเพื่อลงชื่อเข้าใช้</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome ช่วยคุณประหยัดเวลาโดยนำบัญชีของคุณไปไว้บนเว็บ คุณสามารถเพิ่มหรือนำบัญชีออกได้ในการตั้งค่า</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3345341804167540816">ใช้ Chrome ในทุกที่</translation>
+<translation id="3455456143708465450">ลงชื่อเข้าใช้ด้วยบัญชี Google เพื่อรับประโยชน์สูงสุดจาก Chrome</translation>
 <translation id="3522659714780527202">เปิดการซิงค์เพื่อดูแท็บที่เปิดไว้จากอุปกรณ์ที่คุณใช้ Chrome</translation>
 <translation id="3533694711092285624">ไม่มีรหัสผ่านที่บันทึกไว้ Chrome จะตรวจสอบรหัสผ่านได้เมื่อคุณบันทึกรหัสผ่านไว้</translation>
 <translation id="3706101708757577809">ตอนนี้คุณจะใช้ Chrome ทุกครั้งที่แตะลิงก์ในข้อความ เอกสาร และแอปอื่นๆ</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">หากอนุญาตให้ Chrome ทราบตำแหน่งของคุณ Chrome จะส่งตำแหน่งไปยังเว็บไซต์ที่คุณให้สิทธิ์ เว็บไซต์อาจขอตำแหน่งเมื่อมีข้อมูลในพื้นที่ที่จะแสดง เช่น ร้านค้าใกล้เคียงหรือข่าวสาร</translation>
 <translation id="6036420186814142909">Google Chrome มีฟีเจอร์ที่ช่วยให้คุณสามารถจัดการข้อมูลอินเทอร์เน็ตและระดับความเร็วที่คุณสามารถใช้ในการโหลดหน้าเว็บ
 <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">อนุญาตให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="6181930887571472871">เปลี่ยนไปใช้ Chrome</translation>
 <translation id="6238746320622508509">ให้ Chrome ล็อกแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">ล้างข้อมูล Chrome ของคุณออกจากอุปกรณ์นี้ไหม</translation>
 <translation id="6822673484890854830">Chrome ตรวจสอบรหัสผ่านได้ไม่ครบทั้งหมด โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="6964931465519938134">ตอนนี้คุณจะใช้ Chrome ทุกครั้งที่แตะลิงก์ในข้อความ เอกสาร และแอปอื่นๆ</translation>
+<translation id="7059914902409643750">ปรับเปลี่ยน Chrome ในแบบของคุณ</translation>
 <translation id="7124339256045485976">อัปเดต Chrome อยู่เสมอ</translation>
 <translation id="7161390184744336561">Google Chrome เป็นเวอร์ชันเก่า</translation>
 <translation id="7165736900384873061">เริ่มใช้โปรแกรมสแกนโค้ด QR ของ Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome อัปเดตแล้ว</translation>
 <translation id="8022947259858476807">ใช้ Chrome โดยค่าเริ่มต้นเพื่อเปิดลิงก์ ค้นหาจากวิดเจ็ต และป้อนรหัสผ่านอัตโนมัติในแอปอื่นๆ</translation>
 <translation id="8160472928944011082">อัปเดต Chrome ไม่ได้</translation>
+<translation id="8263079278049777200">ลงชื่อเข้าใช้เว็บไซต์นี้ บัญชี Google และ Chrome คุณเปิดการซิงค์ภายหลังได้</translation>
 <translation id="8357607116237445042">เลือกว่าจะล้างข้อมูล Chrome จากอุปกรณ์นี้หรือเก็บไว้</translation>
 <translation id="8370517070665726704">ลิขสิทธิ์ <ph name="YEAR" /> Google LLC สงวนลิขสิทธิ์</translation>
 <translation id="840168496893712993">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดลองถอนการติดตั้งส่วนเสริมนั้น</translation>
@@ -95,5 +102,6 @@
   3. เลือก Chrome</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">ปลอดภัยเสมอด้วย Google Chrome</translation>
+<translation id="8772179140489533211">แสดงข้อความแจ้งให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="9112744793181547300">ตั้งค่า Chrome เป็นค่าเริ่มต้นไหม</translation>
 </translationbundle>

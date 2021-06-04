@@ -180,6 +180,8 @@ void SenderSessionMessager::OnMessage(const std::string& source_id,
       return;
     }
 
+    OSP_DVLOG << "Received a valid reply from " << source_id
+              << ". Reply body: " << message;
     it->second(std::move(receiver_message.value({})));
 
     // Calling the function callback may result in the checksum of the pointed
@@ -266,6 +268,8 @@ void ReceiverSessionMessager::OnMessage(const std::string& source_id,
   if (it == callbacks_.end()) {
     OSP_DLOG_INFO << "Received message without a callback, dropping";
   } else {
+    OSP_DVLOG << "Received valid message from " << source_id
+              << ", executing callback. Message body: " << message;
     it->second(sender_message.value());
   }
 }

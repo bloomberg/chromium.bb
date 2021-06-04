@@ -55,6 +55,7 @@ class PlatformNotificationServiceImpl
   void DisplayNotification(
       const std::string& notification_id,
       const GURL& origin,
+      const GURL& document_url,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) override;
   void DisplayPersistentNotification(
@@ -103,7 +104,7 @@ class PlatformNotificationServiceImpl
   static void DidGetBackgroundSourceId(
       base::OnceClosure recorded_closure,
       const content::NotificationDatabaseData& data,
-      base::Optional<ukm::SourceId> source_id);
+      absl::optional<ukm::SourceId> source_id);
 
   // Creates a new Web Notification-based Notification object. Should only be
   // called when the notification is first shown.

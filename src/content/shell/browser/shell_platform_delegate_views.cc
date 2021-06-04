@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -22,6 +23,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/native_theme/native_theme_color_id.h"
@@ -32,8 +35,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -42,6 +43,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/wm/test/wm_test_helper.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif
@@ -64,6 +66,7 @@ struct ShellPlatformDelegate::PlatformData {
   std::unique_ptr<wm::WMTestHelper> wm_test_helper;
 #else
   std::unique_ptr<wm::WMState> wm_state;
+  std::unique_ptr<display::Screen> screen;
 #endif
 
   // TODO(danakj): This looks unused?
@@ -331,7 +334,8 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
       std::make_unique<wm::WMTestHelper>(default_window_size);
 #else
   platform_->wm_state = std::make_unique<wm::WMState>();
-  views::InstallDesktopScreenIfNecessary();
+  CHECK(!display::Screen::GetScreen());
+  platform_->screen = views::CreateDesktopScreen();
 #endif
 
   platform_->views_delegate =

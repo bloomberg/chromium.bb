@@ -90,7 +90,7 @@ void ReportPossibleDesksSwitchStats(int active_desk_container_id_before_cycle) {
                active_desk_container_id_before_cycle);
   base::UmaHistogramExactLinear(kAltTabDesksSwitchDistanceHistogramName,
                                 desks_switch_distance,
-                                desks_util::GetMaxNumberOfDesks());
+                                desks_util::kMaxNumberOfDesks);
 }
 
 }  // namespace
@@ -99,13 +99,11 @@ void ReportPossibleDesksSwitchStats(int active_desk_container_id_before_cycle) {
 // WindowCycleController, public:
 
 WindowCycleController::WindowCycleController() {
-  if (features::IsBentoEnabled())
-    Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 WindowCycleController::~WindowCycleController() {
-  if (features::IsBentoEnabled())
-    Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 // static
@@ -119,10 +117,7 @@ bool WindowCycleController::CanCycle() {
 
 // static
 void WindowCycleController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  if (features::IsBentoEnabled()) {
-    registry->RegisterBooleanPref(prefs::kAltTabPerDesk,
-                                  DesksMruType::kAllDesks);
-  }
+  registry->RegisterBooleanPref(prefs::kAltTabPerDesk, DesksMruType::kAllDesks);
 }
 
 void WindowCycleController::HandleCycleWindow(
@@ -130,10 +125,11 @@ void WindowCycleController::HandleCycleWindow(
   if (!CanCycle())
     return;
 
-  if (!IsCycling())
+  const bool should_start_alt_tab = !IsCycling();
+  if (should_start_alt_tab)
     StartCycling();
 
-  Step(direction);
+  Step(direction, /*starting_alt_tab_or_switching_mode=*/should_start_alt_tab);
 }
 
 bool WindowCycleController::IsValidKeyboardNavigation(
@@ -218,17 +214,6 @@ void WindowCycleController::HandleKeyboardNavigation(
   }
 }
 
-void WindowCycleController::Scroll(WindowCyclingDirection direction) {
-  if (!CanCycle())
-    return;
-
-  if (!IsCycling())
-    StartCycling();
-
-  DCHECK(window_cycle_list_);
-  window_cycle_list_->ScrollInDirection(direction);
-}
-
 void WindowCycleController::Drag(float delta_x) {
   DCHECK(window_cycle_list_);
   window_cycle_list_->Drag(delta_x);
@@ -306,8 +291,7 @@ bool WindowCycleController::IsWindowListVisible() {
 }
 
 bool WindowCycleController::IsInteractiveAltTabModeAllowed() {
-  return features::IsBentoEnabled() &&
-         Shell::Get()->desks_controller()->GetNumberOfDesks() > 1;
+  return Shell::Get()->desks_controller()->GetNumberOfDesks() > 1;
 }
 
 bool WindowCycleController::IsAltTabPerActiveDesk() {
@@ -327,8 +311,6 @@ bool WindowCycleController::IsTabSliderFocused() {
 
 void WindowCycleController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
-  if (!features::IsBentoEnabled())
-    return;
   active_user_pref_service_ = pref_service;
   InitFromUserPrefs();
 }
@@ -414,9 +396,10 @@ void WindowCycleController::SaveCurrentActiveDeskAndWindow(
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 }
 
-void WindowCycleController::Step(WindowCyclingDirection direction) {
+void WindowCycleController::Step(WindowCyclingDirection direction,
+                                 bool starting_alt_tab_or_switching_mode) {
   DCHECK(window_cycle_list_);
-  window_cycle_list_->Step(direction);
+  window_cycle_list_->Step(direction, starting_alt_tab_or_switching_mode);
 }
 
 void WindowCycleController::StopCycling() {
@@ -447,7 +430,6 @@ void WindowCycleController::StopCycling() {
 
 void WindowCycleController::InitFromUserPrefs() {
   DCHECK(active_user_pref_service_);
-  DCHECK(features::IsBentoEnabled());
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(active_user_pref_service_);
@@ -473,7 +455,8 @@ void WindowCycleController::OnAltTabModePrefChanged() {
   // After the cycle is reset, imitate the same forward cycling behavior as
   // starting alt-tab with `Step()`, which makes sure the correct window is
   // selected and highlighted.
-  Step(WindowCyclingDirection::kForward);
+  Step(WindowCyclingDirection::kForward,
+       /*starting_alt_tab_or_switching_mode=*/true);
 
   // Update tab slider button UI.
   window_cycle_list_->OnModePrefsChanged();

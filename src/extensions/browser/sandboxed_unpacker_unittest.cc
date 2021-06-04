@@ -142,7 +142,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
     std::move(quit_closure_).Run();
   }
 
-  base::Optional<CrxInstallError> error_;
+  absl::optional<CrxInstallError> error_;
   base::OnceClosure quit_closure_;
   base::FilePath temp_dir_;
   bool* deleted_tracker_ = nullptr;
@@ -268,7 +268,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     sandboxed_unpacker_->extension_root_ = path;
   }
 
-  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
+  absl::optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
     return sandboxed_unpacker_->RewriteManifestFile(manifest);
   }
 
@@ -362,10 +362,9 @@ TEST_F(SandboxedUnpackerTest, NoLocaleData) {
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecodingError) {
-  const char kExpected[] = "Could not decode image: ";
+  const char16_t kExpected[] = u"Could not decode image: ";
   SetupUnpacker("bad_image.crx", "");
-  EXPECT_TRUE(base::StartsWith(GetInstallErrorMessage(),
-                               base::ASCIIToUTF16(kExpected),
+  EXPECT_TRUE(base::StartsWith(GetInstallErrorMessage(), kExpected,
                                base::CompareCase::INSENSITIVE_ASCII))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << GetInstallErrorMessage() << "\"";
@@ -446,7 +445,7 @@ TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
                       FILE_PATH_LITERAL("manifest.fingerprint")),
                   fingerprint.c_str(),
                   base::checked_cast<int>(fingerprint.size()));
-  base::Optional<base::Value> manifest(RewriteManifestFile(
+  absl::optional<base::Value> manifest(RewriteManifestFile(
       *DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
   auto* key = manifest->FindStringKey("key");
   auto* version = manifest->FindStringKey(kVersionStr);
@@ -467,8 +466,7 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16(
-          "*_locales?en_US?messages.json': Line: 4, column: 1,*")))
+      u"*_locales?en_US?messages.json': Line: 4, column: 1,*"))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());

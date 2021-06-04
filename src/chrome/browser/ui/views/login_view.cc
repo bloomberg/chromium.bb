@@ -11,11 +11,11 @@
 #include "chrome/browser/ui/views/textfield_layout.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -48,8 +48,8 @@ LoginView::LoginView(const std::u16string& authority,
   // to textfield_layout.h to decide.
   constexpr int kMessageWidth = 320;
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetBorder(views::CreateEmptyBorder(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
+  SetBorder(views::CreateEmptyBorder(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kControl)));
 
   // Initialize the Grid Layout Manager used for this dialog box.
   views::GridLayout* layout =

@@ -166,14 +166,14 @@ static int8_t estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
   // TODO(nithya): Sign estimation assumes 45 degrees (1st and 4th quadrants)
   // for all codebooks; experiment with other quadrant combinations for
   // 0, 90 and 135 degrees also.
-  cpi->fn_ptr[f_index].vf(src, src_stride, pred0, stride0, &esq[0][0]);
-  cpi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
-                          pred0 + bh_by2 * stride0 + bw_by2, stride0,
-                          &esq[0][1]);
-  cpi->fn_ptr[f_index].vf(src, src_stride, pred1, stride1, &esq[1][0]);
-  cpi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
-                          pred1 + bh_by2 * stride1 + bw_by2, stride0,
-                          &esq[1][1]);
+  cpi->ppi->fn_ptr[f_index].vf(src, src_stride, pred0, stride0, &esq[0][0]);
+  cpi->ppi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
+                               pred0 + bh_by2 * stride0 + bw_by2, stride0,
+                               &esq[0][1]);
+  cpi->ppi->fn_ptr[f_index].vf(src, src_stride, pred1, stride1, &esq[1][0]);
+  cpi->ppi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
+                               pred1 + bh_by2 * stride1 + bw_by2, stride0,
+                               &esq[1][1]);
 
   tl = ((int64_t)esq[0][0]) - ((int64_t)esq[1][0]);
   br = ((int64_t)esq[1][1]) - ((int64_t)esq[0][1]);
@@ -314,7 +314,7 @@ static int64_t pick_interinter_wedge(
   int8_t wedge_sign = 0;
 
   assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
-  assert(cpi->common.seq_params.enable_masked_compound);
+  assert(cpi->common.seq_params->enable_masked_compound);
 
   if (cpi->sf.inter_sf.fast_wedge_sign_estimate) {
     wedge_sign = estimate_wedge_sign(cpi, x, bsize, p0, bw, p1, bw);
@@ -392,7 +392,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   const MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(av1_is_wedge_used(bsize));
-  assert(cpi->common.seq_params.enable_interintra_compound);
+  assert(cpi->common.seq_params->enable_interintra_compound);
 
   const struct buf_2d *const src = &x->plane[0].src;
   const int bw = block_size_wide[bsize];
@@ -836,7 +836,7 @@ static INLINE int compute_valid_comp_types(MACROBLOCK *x,
   const int try_average_comp = (mode_search_mask & (1 << COMPOUND_AVERAGE));
   const int try_distwtd_comp =
       ((mode_search_mask & (1 << COMPOUND_DISTWTD)) &&
-       cm->seq_params.order_hint_info.enable_dist_wtd_comp == 1 &&
+       cm->seq_params->order_hint_info.enable_dist_wtd_comp == 1 &&
        cpi->sf.inter_sf.use_dist_wtd_comp_flag != DIST_WTD_COMP_DISABLED);
 
   // Check if COMPOUND_AVERAGE and COMPOUND_DISTWTD are valid cases
@@ -1058,10 +1058,12 @@ static int64_t masked_compound_type_rd(
   if (compound_type == COMPOUND_WEDGE) {
     unsigned int sse;
     if (is_cur_buf_hbd(xd))
-      (void)cpi->fn_ptr[bsize].vf(CONVERT_TO_BYTEPTR(*preds0), *strides,
-                                  CONVERT_TO_BYTEPTR(*preds1), *strides, &sse);
+      (void)cpi->ppi->fn_ptr[bsize].vf(CONVERT_TO_BYTEPTR(*preds0), *strides,
+                                       CONVERT_TO_BYTEPTR(*preds1), *strides,
+                                       &sse);
     else
-      (void)cpi->fn_ptr[bsize].vf(*preds0, *strides, *preds1, *strides, &sse);
+      (void)cpi->ppi->fn_ptr[bsize].vf(*preds0, *strides, *preds1, *strides,
+                                       &sse);
     const unsigned int mse =
         ROUND_POWER_OF_TWO(sse, num_pels_log2_lookup[bsize]);
     // If two predictors are very similar, skip wedge compound mode search

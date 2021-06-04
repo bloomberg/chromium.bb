@@ -43,6 +43,13 @@ cast_source_set("activity_url_filter") {
   ]
 }
 
+cast_source_set("feature_constants") {
+  sources = [
+    "feature_constants.cc",
+    "feature_constants.h",
+  ]
+}
+
 test("cast_common_unittests") {
   testonly = true
 
@@ -69,13 +76,15 @@ cast_source_set("common") {
     "identification_settings_manager.h",
   ]
 
+  public_deps = [ "//base" ]
+
   deps = [
-    "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base:cast_version",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
+    "//components/cast/common:constants",
     "//components/cdm/common:common",
     "//content/public/common",
     "//media:media_buildflags",

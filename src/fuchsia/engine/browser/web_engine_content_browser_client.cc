@@ -4,7 +4,6 @@
 
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
 
-#include <fuchsia/web/cpp/fidl.h>
 #include <string>
 #include <utility>
 
@@ -78,10 +77,8 @@ std::vector<std::string> GetCorsExemptHeaders() {
 
 }  // namespace
 
-WebEngineContentBrowserClient::WebEngineContentBrowserClient(
-    fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)),
-      cors_exempt_headers_(GetCorsExemptHeaders()),
+WebEngineContentBrowserClient::WebEngineContentBrowserClient()
+    : cors_exempt_headers_(GetCorsExemptHeaders()),
       allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowRunningInsecureContent)) {}
 
@@ -90,12 +87,9 @@ WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 std::unique_ptr<content::BrowserMainParts>
 WebEngineContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  DCHECK(request_);
-  auto browser_main_parts = std::make_unique<WebEngineBrowserMainParts>(
-      this, parameters, std::move(request_));
-
+  auto browser_main_parts =
+      std::make_unique<WebEngineBrowserMainParts>(this, parameters);
   main_parts_ = browser_main_parts.get();
-
   return browser_main_parts;
 }
 
@@ -145,7 +139,7 @@ void WebEngineContentBrowserClient::
         ukm::SourceIdObj ukm_source_id,
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kContentDirectories)) {
+          switches::kEnableContentDirectories)) {
     factories->emplace(cr_fuchsia::kFuchsiaDirScheme,
                        ContentDirectoryLoaderFactory::Create());
   }
@@ -157,7 +151,7 @@ void WebEngineContentBrowserClient::
         int render_frame_id,
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kContentDirectories)) {
+          switches::kEnableContentDirectories)) {
     factories->emplace(cr_fuchsia::kFuchsiaDirScheme,
                        ContentDirectoryLoaderFactory::Create());
   }
@@ -176,10 +170,9 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   // TODO(https://crbug.com/1083520): Pass based on process type.
   constexpr char const* kSwitchesToCopy[] = {
-      switches::kContentDirectories,
       switches::kCorsExemptHeaders,
-      switches::kDisableSoftwareVideoDecoders,
       switches::kEnableCastStreamingReceiver,
+      switches::kEnableContentDirectories,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
       switches::kForceProtectedVideoOutputBuffers,
@@ -231,7 +224,7 @@ WebEngineContentBrowserClient::CreateThrottlesForNavigation(
         navigation_handle, frame_impl->navigation_policy_handler()));
   }
 
-  const base::Optional<std::string>& explicit_sites_filter_error_page =
+  const absl::optional<std::string>& explicit_sites_filter_error_page =
       frame_impl->explicit_sites_filter_error_page();
 
   if (explicit_sites_filter_error_page) {

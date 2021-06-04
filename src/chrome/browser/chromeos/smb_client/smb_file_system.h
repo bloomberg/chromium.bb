@@ -13,14 +13,13 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "chrome/browser/ash/file_system_provider/abort_callback.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/ash/file_system_provider/watcher.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
@@ -66,6 +65,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       UnmountCallback unmount_callback,
       RequestCredentialsCallback request_creds_callback,
       RequestUpdatedSharePathCallback request_path_callback);
+  SmbFileSystem(const SmbFileSystem&) = delete;
+  SmbFileSystem& operator=(const SmbFileSystem&) = delete;
   ~SmbFileSystem() override;
 
   // ProvidedFileSystemInterface overrides.
@@ -373,8 +374,6 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   RequestUpdatedSharePathCallback request_path_callback_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
   mutable SmbTaskQueue task_queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(SmbFileSystem);
 };
 
 }  // namespace smb_client

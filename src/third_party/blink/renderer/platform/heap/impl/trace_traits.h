@@ -5,13 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_IMPL_TRACE_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_IMPL_TRACE_TRAITS_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/impl/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/impl/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"

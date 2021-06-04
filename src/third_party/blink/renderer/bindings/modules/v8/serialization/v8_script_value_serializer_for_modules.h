@@ -10,9 +10,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
+namespace media {
+class AudioBuffer;
+}
+
 namespace blink {
 
-class AudioFrameSerializationData;
 class FileSystemHandle;
 class RTCEncodedAudioFrame;
 class RTCEncodedVideoFrame;
@@ -23,6 +26,13 @@ class WebCryptoKey;
 class MODULES_EXPORT V8ScriptValueSerializerForModules final
     : public V8ScriptValueSerializer {
  public:
+  // |object_index| is for use in exception messages.
+  static bool ExtractTransferable(v8::Isolate*,
+                                  v8::Local<v8::Value>,
+                                  wtf_size_t object_index,
+                                  Transferables&,
+                                  ExceptionState&);
+
   explicit V8ScriptValueSerializerForModules(
       ScriptState* script_state,
       const SerializedScriptValue::SerializeOptions& options)
@@ -39,8 +49,7 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
   bool WriteRTCEncodedAudioFrame(RTCEncodedAudioFrame*);
   bool WriteRTCEncodedVideoFrame(RTCEncodedVideoFrame*);
   bool WriteVideoFrameHandle(scoped_refptr<VideoFrameHandle>);
-  bool WriteAudioFrameSerializationData(
-      std::unique_ptr<AudioFrameSerializationData>);
+  bool WriteMediaAudioBuffer(scoped_refptr<media::AudioBuffer>);
 };
 
 }  // namespace blink

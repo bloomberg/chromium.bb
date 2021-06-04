@@ -63,6 +63,7 @@
 #if defined __ANDROID__
 #include <android/log.h>
 #define LOGCONSOLE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "VALIDATION", __VA_ARGS__))
+static const char DECORATE_UNUSED *kForceDefaultCallbackKey = "debug.vvl.forcelayerlog";
 #else
 #define LOGCONSOLE(...)      \
     {                        \
@@ -202,6 +203,7 @@ typedef struct _debug_report_data {
     int32_t duplicate_message_limit = 0;
     mutable layer_data::unordered_map<uint32_t, int32_t> duplicate_message_count_map{};
     const void *instance_pnext_chain{};
+    bool forceDefaultLogCallback{false};
 
     void DebugReportSetUtilsObjectName(const VkDebugUtilsObjectNameInfoEXT *pNameInfo) {
         std::unique_lock<std::mutex> lock(debug_output_mutex);
@@ -364,8 +366,7 @@ static inline bool debug_log_msg(const debug_report_data *debug_data, VkFlags ms
     std::vector<VkDebugUtilsObjectNameInfoEXT> object_name_info;
     object_name_info.resize(objects.object_list.size());
     for (uint32_t i = 0; i < objects.object_list.size(); i++) {
-        object_name_info[i].sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-        object_name_info[i].pNext = NULL;
+        object_name_info[i] = LvlInitStruct<VkDebugUtilsObjectNameInfoEXT>();
         object_name_info[i].objectType = ConvertVulkanObjectToCoreObject(objects.object_list[i].type);
         object_name_info[i].objectHandle = objects.object_list[i].handle;
         object_name_info[i].pObjectName = NULL;
@@ -404,15 +405,9 @@ static inline bool debug_log_msg(const debug_report_data *debug_data, VkFlags ms
     if (text_vuid != nullptr) {
         // Hash for vuid text
         location = XXH32(text_vuid, strlen(text_vuid), 8);
-        if ((debug_data->duplicate_message_limit > 0) && UpdateLogMsgCounts(debug_data, location)) {
-            // Count for this particular message is over the limit, ignore it
-            return false;
-        }
     }
 
-    VkDebugUtilsMessengerCallbackDataEXT callback_data;
-    callback_data.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT;
-    callback_data.pNext = NULL;
+    auto callback_data = LvlInitStruct<VkDebugUtilsMessengerCallbackDataEXT>();
     callback_data.flags = 0;
     callback_data.pMessageIdName = text_vuid;
     callback_data.messageIdNumber = static_cast<int32_t>(location);
@@ -462,6 +457,12 @@ static inline bool debug_log_msg(const debug_report_data *debug_data, VkFlags ms
     for (const auto &current_callback : *callback_list) {
         use_default_callbacks &= current_callback.IsDefault();
     }
+
+#if defined __ANDROID__
+    if (debug_data->forceDefaultLogCallback) {
+        use_default_callbacks = true;
+    }
+#endif
 
     for (const auto &current_callback : *callback_list) {
         // Skip callback if it's a default callback and there are non-default callbacks present
@@ -570,6 +571,15 @@ static inline void layer_create_callback(DebugCallbackStatusFlags callback_statu
         callback_state.debug_report_msg_flags = report_create_info->flags;
     }
 
+#if defined __ANDROID__
+    // On Android, if the default callback system property is set, force the default callback to be printed
+    std::string forceLayerLog = GetEnvironment(kForceDefaultCallbackKey);
+    int forceDefaultCallback = atoi(forceLayerLog.c_str());
+    if (forceDefaultCallback == 1) {
+        debug_data->forceDefaultLogCallback = true;
+    }
+#endif
+
     SetDebugUtilsSeverityFlags(debug_data->debug_callback_list, debug_data);
 }
 
@@ -645,15 +655,29 @@ static inline int vasprintf(char **strp, char const *fmt, va_list ap) {
 }
 #endif
 
+// helper for VUID based filtering. This needs to be separate so it can be called before incurring
+// the cost of sprintf()-ing the err_msg needed by LogMsgLocked().
+static inline bool LogMsgEnabled(const debug_report_data *debug_data, const std::string &vuid_text,
+                                 VkDebugUtilsMessageSeverityFlagsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type) {
+    if (!(debug_data->active_severities & severity) || !(debug_data->active_types & type)) {
+        return false;
+    }
+    // If message is in filter list, bail out very early
+    uint32_t message_id = XXH32(vuid_text.c_str(), strlen(vuid_text.c_str()), 8);
+    if (std::find(debug_data->filter_message_ids.begin(), debug_data->filter_message_ids.end(), message_id)
+        != debug_data->filter_message_ids.end()) {
+        return false;
+    }
+    if ((debug_data->duplicate_message_limit > 0) && UpdateLogMsgCounts(debug_data, static_cast<int32_t>(message_id))) {
+        // Count for this particular message is over the limit, ignore it
+        return false;
+    }
+    return true;
+}
+
 static inline bool LogMsgLocked(const debug_report_data *debug_data, VkFlags msg_flags, const LogObjectList &objects,
                                 const std::string &vuid_text, char *err_msg) {
     std::string str_plus_spec_text(err_msg ? err_msg : "Allocation failure");
-
-    // If message is in filter list, bail out very early
-    size_t message_id = XXH32(vuid_text.c_str(), strlen(vuid_text.c_str()), 8);
-    if (std::find(debug_data->filter_message_ids.begin(), debug_data->filter_message_ids.end(),
-                  static_cast<uint32_t>(message_id)) != debug_data->filter_message_ids.end())
-        return false;
 
     // Append the spec error text to the error message, unless it's an UNASSIGNED or UNDEFINED vuid
     if ((vuid_text.find("UNASSIGNED-") == std::string::npos) && (vuid_text.find(kVUIDUndefined) == std::string::npos) &&

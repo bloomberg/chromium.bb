@@ -227,8 +227,8 @@ void AppendInvalidString(base::StringPiece16 str, url::CanonOutput* output) {
 
 // Backend for PermissiveGetHostRegistryLength that handles both UTF-8 and
 // UTF-16 input.
-template <typename CharT>
-size_t DoPermissiveGetHostRegistryLength(base::BasicStringPiece<CharT> host,
+template <typename T, typename CharT = typename T::value_type>
+size_t DoPermissiveGetHostRegistryLength(T host,
                                          UnknownRegistryFilter unknown_filter,
                                          PrivateRegistryFilter private_filter) {
   std::string canonical_host;  // Do not modify outside of canon_output.
@@ -380,7 +380,7 @@ bool SameDomainOrHost(const url::Origin& origin1,
 }
 
 bool SameDomainOrHost(const url::Origin& origin1,
-                      const base::Optional<url::Origin>& origin2,
+                      const absl::optional<url::Origin>& origin2,
                       PrivateRegistryFilter filter) {
   return origin2.has_value() &&
          SameDomainOrHost(origin1, origin2.value(), filter);

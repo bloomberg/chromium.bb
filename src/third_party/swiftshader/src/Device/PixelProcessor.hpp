@@ -77,6 +77,7 @@ public:
 		StencilOpState backStencil;
 
 		bool depthTestActive;
+		bool depthBoundsTestActive;
 		bool occlusionEnabled;
 		bool perspective;
 
@@ -91,10 +92,15 @@ public:
 		bool centroid;
 		bool sampleShadingEnabled;
 		float minSampleShading;
+		float minDepthBounds;
+		float maxDepthBounds;
 		VkFrontFace frontFace;
 		vk::Format depthFormat;
 		bool depthBias;
 		bool depthClamp;
+
+		float minDepthClamp;
+		float maxDepthClamp;
 	};
 
 	struct State : States

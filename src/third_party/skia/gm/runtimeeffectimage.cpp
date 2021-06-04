@@ -35,14 +35,14 @@ protected:
                 half b = fract((p.x + 5)/10);
                 half a = min(distance(p, vec2(50, 50))/50 + 0.3, 1);
                 half4 result = half4(r, g, b, a);
-                result *= sample(child);
+                result *= sample(child, p);
                 if (gAlphaType == 0) {
                    result.rgb *= a;
                 }
                 return result;
             }
         )");
-        auto [effect, error] = SkRuntimeEffect::Make(sksl);
+        auto [effect, error] = SkRuntimeEffect::MakeForShader(sksl);
         if (!effect) {
             SkDebugf("RuntimeShader error: %s\n", error.c_str());
         }

@@ -14,8 +14,10 @@
 
 #include "aom_scale/yv12config.h"
 
+// Returns a boolean that indicates success/failure.
 int aom_calc_butteraugli(const YV12_BUFFER_CONFIG *source,
                          const YV12_BUFFER_CONFIG *distorted, int bit_depth,
-                         float *dist_map);
+                         aom_matrix_coefficients_t matrix_coefficients,
+                         aom_color_range_t color_range, float *dist_map);
 
 #endif  // AOM_AOM_DSP_BUTTERAUGLI_H_

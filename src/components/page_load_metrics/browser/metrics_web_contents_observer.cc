@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
@@ -82,13 +83,33 @@ bool ShouldProcessNavigation(content::NavigationHandle* navigation_handle) {
 // static
 void MetricsWebContentsObserver::RecordFeatureUsage(
     content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadFeatures& new_features) {
+    const std::vector<blink::mojom::WebFeature>& web_features) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   MetricsWebContentsObserver* observer =
       MetricsWebContentsObserver::FromWebContents(web_contents);
-  if (observer)
-    observer->OnBrowserFeatureUsage(render_frame_host, new_features);
+
+  if (observer) {
+    std::vector<blink::UseCounterFeature> features;
+    for (auto web_feature : web_features) {
+      DCHECK_NE(web_feature, blink::mojom::WebFeature::kPageVisits)
+          << "WebFeature::kPageVisits is a reserved feature.";
+      if (web_feature == blink::mojom::WebFeature::kPageVisits)
+        continue;
+
+      features.emplace_back(blink::mojom::UseCounterFeatureType::kWebFeature,
+                            static_cast<uint32_t>(web_feature));
+    }
+    observer->OnBrowserFeatureUsage(render_frame_host, features);
+  }
+}
+
+// static
+void MetricsWebContentsObserver::RecordFeatureUsage(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::WebFeature feature) {
+  MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, std::vector<blink::mojom::WebFeature>{feature});
 }
 
 // static
@@ -208,9 +229,9 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
       page_load_metrics_receiver_(web_contents, this) {
-  // Prerenders erroneously report that they are initially visible, so we
-  // manually override visibility state for prerender.
-  if (embedder_interface_->IsPrerender(web_contents))
+  // NoStatePrefetch loads erroneously report that they are initially visible,
+  // so we manually override visibility state for prerender.
+  if (embedder_interface_->IsNoStatePrefetch(web_contents))
     in_foreground_ = false;
 
   RegisterInputEventObserver(web_contents->GetMainFrame()->GetRenderViewHost());
@@ -853,7 +874,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr timing,
     mojom::FrameMetadataPtr metadata,
-    mojom::PageLoadFeaturesPtr new_features,
+    const std::vector<blink::UseCounterFeature>& new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
@@ -910,7 +931,7 @@ bool MetricsWebContentsObserver::DoesTimingUpdateHaveError() {
 void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadTimingPtr timing,
     mojom::FrameMetadataPtr metadata,
-    mojom::PageLoadFeaturesPtr new_features,
+    const std::vector<blink::UseCounterFeature>& new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
@@ -920,7 +941,7 @@ void MetricsWebContentsObserver::UpdateTiming(
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receiver_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
-                  std::move(new_features), resources, std::move(render_data),
+                  new_features, resources, std::move(render_data),
                   std::move(cpu_timing), std::move(new_deferred_resource_data),
                   std::move(input_timing_delta),
                   std::move(mobile_friendliness));
@@ -981,10 +1002,16 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
 
 void MetricsWebContentsObserver::OnBrowserFeatureUsage(
     content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadFeatures& new_features) {
+    const std::vector<blink::UseCounterFeature>& new_features) {
   // Since this call is coming directly from the browser, it should not pass us
-  // data from frames that have already been navigated away from.
-  DCHECK(render_frame_host->GetMainFrame()->IsCurrent());
+  // data from frames that have already been navigated away from. However, this
+  // could be false if this is called for the page that is prerendering with
+  // MPArch. Therefore, ignore navigations not happening in the primary
+  // FrameTree. Using IsCurrent as a proxy for "is in primary FrameTree".
+  // TODO(https://crbug.com/1190112): Add proper support for prerendering when
+  // there are better content APIs.
+  if (!render_frame_host->GetMainFrame()->IsCurrent())
+    return;
 
   if (!committed_load_) {
     RecordInternalError(ERR_BROWSER_USAGE_WITH_NO_RELEVANT_LOAD);

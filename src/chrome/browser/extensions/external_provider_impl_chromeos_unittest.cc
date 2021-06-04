@@ -14,9 +14,9 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -73,12 +73,14 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     service_->Init();
 
     if (standalone) {
-      external_externsions_overrides_.reset(new base::ScopedPathOverride(
-          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-          data_dir().Append("external_standalone")));
+      external_externsions_overrides_ =
+          std::make_unique<base::ScopedPathOverride>(
+              chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+              data_dir().Append("external_standalone"));
     } else {
-      external_externsions_overrides_.reset(new base::ScopedPathOverride(
-          chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
+      external_externsions_overrides_ =
+          std::make_unique<base::ScopedPathOverride>(
+              chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external"));
     }
 
     ProviderCollection providers;
@@ -221,7 +223,7 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PolicyDisabled) {
 
   // Log user in, start sync.
   TestingBrowserProcess::GetGlobal()->SetProfileManager(
-      new ProfileManagerWithoutInit(temp_dir().GetPath()));
+      std::make_unique<ProfileManagerWithoutInit>(temp_dir().GetPath()));
 
   auto identity_test_env_profile_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
@@ -240,7 +242,7 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PolicyDisabled) {
 
   EXPECT_TRUE(registry()->GetInstalledExtension(kStandaloneAppId));
 
-  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 }
 
 // User signed in, sync service started, install app when priority sync is

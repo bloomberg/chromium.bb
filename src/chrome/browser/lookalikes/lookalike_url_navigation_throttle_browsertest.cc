@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -27,6 +29,7 @@
 #include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/reputation/core/safety_tip_test_utils.h"
 #include "components/reputation/core/safety_tips_config.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -439,8 +442,14 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool() /* digital_asset_links_enabled */));
 
 // Navigating to a non-IDN shouldn't show an interstitial or record metrics.
+// TODO(https://crbug.com1207573): re-enable when flakiness is fixed.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_NonIdn_NoMatch DISABLED_NonIdn_NoMatch
+#else
+#define MAYBE_NonIdn_NoMatch NonIdn_NoMatch
+#endif
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
-                       NonIdn_NoMatch) {
+                       MAYBE_NonIdn_NoMatch) {
   TestInterstitialNotShown(browser(), GetURL("google.com"));
   CheckNoUkm();
 }
@@ -570,7 +579,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        TargetEmbedding_EmbedderAllowlist) {
   const GURL kNavigatedUrl = GetURL("google.com.allowlisted.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  reputation::SetSafetyTipAllowlistPatterns({"allowlisted.com/"}, {});
+  reputation::SetSafetyTipAllowlistPatterns({"allowlisted.com/"}, {}, {});
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckNoUkm();
 }
@@ -580,7 +589,17 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        TargetEmbedding_TargetAllowlist) {
   const GURL kNavigatedUrl = GetURL("foo.scholar.google.com.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  reputation::SetSafetyTipAllowlistPatterns({}, {"scholar\\.google\\.com"});
+  reputation::SetSafetyTipAllowlistPatterns({}, {"scholar\\.google\\.com"}, {});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
+}
+
+// Target embedding shouldn't trigger on component-delivered common words.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       TargetEmbedding_ComponentCommonWords) {
+  const GURL kNavigatedUrl = GetURL("google.com.example.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  reputation::SetSafetyTipAllowlistPatterns({}, {}, {"google"});
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckNoUkm();
 }
@@ -591,7 +610,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        TargetEmbedding_TargetAllowlistWithNoSeparators) {
   const GURL kNavigatedUrl = GetURL("googlecom.example.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
+  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"}, {});
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckNoUkm();
 }
@@ -773,7 +792,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        EditDistance_TopDomain_Target_Allowlist) {
   base::HistogramTester histograms;
-  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
+  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"}, {});
 
   // The skeleton of this domain, gooogle.corn, is one 1 edit away from
   // google.corn, the skeleton of google.com.
@@ -794,7 +813,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        EditDistance_EngagedDomain_Target_Allowlist) {
   base::HistogramTester histograms;
   SetEngagementScore(browser(), GURL("https://test-site.com"), kHighEngagement);
-  reputation::SetSafetyTipAllowlistPatterns({}, {"test-site\\.com"});
+  reputation::SetSafetyTipAllowlistPatterns({}, {"test-site\\.com"}, {});
 
   // The skeleton of this domain is one 1 edit away from the skeleton of
   // test-site.com.
@@ -879,7 +898,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 }
 
 // TODO(https://crbug.com/1122078): Enable test when MacOS flake is fixed.
-#if defined(OS_MAC)
+// TODO(https://crbug.com/1106402): Enable test when Win/Linux flake is fixed.
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Idn_SiteEngagement_Match DISABLED_Idn_SiteEngagement_Match
 #else
 #define MAYBE_Idn_SiteEngagement_Match Idn_SiteEngagement_Match
@@ -980,7 +1000,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   reputation::SetSafetyTipAllowlistPatterns(
       {"xn--googl-fsa.com/",  // googlé.com in punycode
        "site.test/", "another-site.test/"},
-      {});
+      {}, {});
   TestInterstitialNotShown(browser(), GetURL("googlé.com"));
   CheckNoUkm();
 

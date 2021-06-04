@@ -9,6 +9,14 @@
 #include "build/chromeos_buildflags.h"
 #include "components/system_media_controls/linux/buildflags/buildflags.h"
 
+#if defined(OS_LINUX)
+#include "base/cpu.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 namespace switches {
 
 // Allow users to specify a custom buffer size for debugging purpose.
@@ -91,8 +99,8 @@ const char kUseCras[] = "use-cras";
 #endif  // defined(USE_CRAS)
 
 // For automated testing of protected content, this switch allows specific
-// domains (e.g. example.com) to skip asking the user for permission to share
-// the protected media identifier. In this context, domain does not include the
+// domains (e.g. example.com) to always allow the permission to share the
+// protected media identifier. In this context, domain does not include the
 // port number. User's content settings will not be affected by enabling this
 // switch.
 // Reference: http://crbug.com/718608
@@ -178,7 +186,8 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 
 // Overrides hardware secure codecs support for testing. If specified, real
 // platform hardware secure codecs check will be skipped. Codecs are separated
-// by comma. Valid codecs are "vp8", "vp9" and "avc1". For example:
+// by comma. Valid video codecs are "vp8", "vp9" and "avc1", and the only valid
+// audio codec is "vorbis". For example:
 //  --override-hardware-secure-codecs-for-testing=vp8,vp9
 //  --override-hardware-secure-codecs-for-testing=avc1
 // CENC encryption scheme is assumed to be supported for the specified codecs.
@@ -331,7 +340,7 @@ const base::Feature kD3D11PrintCodecOnCrash{"D3D11PrintCodecOnCrash",
 
 // Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Tell D3D11VideoDecoder to ignore workarounds for zero copy.  Requires that
 // kD3D11VideoDecoder is enabled.
@@ -452,7 +461,7 @@ const base::Feature kSuspendMutedAudio{"SuspendMutedAudio",
 
 // Enables using the media history store to store media engagement metrics.
 const base::Feature kUseMediaHistoryStore{"UseMediaHistoryStore",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
 const base::Feature kUseR16Texture{"use-r16-texture",
@@ -630,11 +639,6 @@ const base::Feature kMediaDrmPreprovisioning{"MediaDrmPreprovisioning",
 // Note: Has no effect if kMediaDrmPreprovisioning feature is disabled.
 const base::Feature kMediaDrmPreprovisioningAtStartup{
     "MediaDrmPreprovisioningAtStartup", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Prevents using SurfaceLayer for videos. This is meant to be used by embedders
-// that cannot support SurfaceLayer at the moment.
-const base::Feature kDisableSurfaceLayerForVideo{
-    "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable picture in picture web api for android.
 const base::Feature kPictureInPictureAPI{"PictureInPictureAPI",
@@ -859,6 +863,10 @@ const base::Feature kUseFakeDeviceForMediaStream{
 const base::Feature kBresenhamCadence{"BresenhamCadence",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Display the playback speed button on the media controls.
+const base::Feature kPlaybackSpeedButton{"PlaybackSpeedButton",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {
@@ -872,6 +880,37 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   return true;
 #endif
   return false;
+}
+
+bool IsLiveCaptionFeatureEnabled() {
+  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
+    return false;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Some Chrome OS devices do not support on-device speech.
+  if (!base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition))
+    return false;
+#endif
+
+#if defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
+    // Check if the CPU has the required instruction set to run the Speech
+    // On-Device API (SODA) library.
+    static bool has_sse41 = base::CPU().has_sse41();
+    if (!has_sse41)
+      return false;
+  }
+#endif
+
+#if defined(OS_WIN) && defined(ARCH_CPU_ARM64)
+  if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
+    // The Speech On-Device API (SODA) component does not support Windows on
+    // arm64.
+    return false;
+  }
+#endif
+
+  return true;
 }
 
 }  // namespace media

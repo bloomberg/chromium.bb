@@ -17,12 +17,13 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -41,7 +42,6 @@
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
 
@@ -86,7 +86,7 @@ ui::NativeTheme::ColorId selected_text_color_id(bool has_focus) {
 
 // Whether the platform "command" key is down.
 bool IsCmdOrCtrl(const ui::Event& event) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   return event.IsCommandDown();
 #else
   return event.IsControlDown();
@@ -160,7 +160,7 @@ class TableView::HighlightPathGenerator : public views::HighlightPathGenerator {
   DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
 };
 
-TableView::TableView() {
+TableView::TableView() : weak_factory_(this) {
   constexpr int kTextContext = style::CONTEXT_TABLE_ROW;
   constexpr int kTextStyle = style::STYLE_PRIMARY;
   font_list_ = style::GetFont(kTextContext, kTextStyle);
@@ -503,7 +503,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
 
     case ui::VKEY_UP:
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       if (event.IsAltDown()) {
         if (GetRowCount())
           SelectByViewIndex(0);
@@ -516,7 +516,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
 
     case ui::VKEY_DOWN:
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       if (event.IsAltDown()) {
         if (GetRowCount())
           SelectByViewIndex(GetRowCount() - 1);
@@ -789,7 +789,6 @@ void TableView::OnItemsRemoved(int start, int length) {
     selection_model_.set_active(GetFirstSelectedRow());
   if (!selection_model_.empty() && selection_model_.anchor() == -1)
     selection_model_.set_anchor(GetFirstSelectedRow());
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 
   // Remove the virtual views that are no longer needed.
   auto& virtual_children = GetViewAccessibility().virtual_children();
@@ -824,19 +823,17 @@ gfx::Point TableView::GetKeyboardContextMenuLocation() {
 void TableView::OnFocus() {
   SchedulePaintForSelection();
   focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
+  ScheduleUpdateAccessibilityFocusIfNeeded();
 }
 
 void TableView::OnBlur() {
   SchedulePaintForSelection();
   focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
+  ScheduleUpdateAccessibilityFocusIfNeeded();
 }
 
 void TableView::OnPaint(gfx::Canvas* canvas) {
   OnPaintImpl(canvas);
-  if (needs_update_accessibility_focus_)
-    UpdateAccessibilityFocus();
 }
 
 void TableView::OnPaintImpl(gfx::Canvas* canvas) {
@@ -1177,7 +1174,7 @@ void TableView::SetActiveVisibleColumnIndex(int index) {
   }
 
   focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
+  ScheduleUpdateAccessibilityFocusIfNeeded();
   OnPropertyChanged(&active_visible_column_index_, kPropertyEffectsNone);
 }
 
@@ -1218,8 +1215,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
   }
 
   focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  ScheduleUpdateAccessibilityFocusIfNeeded();
   if (observer_)
     observer_->OnSelectionChanged();
 }
@@ -1390,10 +1386,10 @@ std::unique_ptr<AXVirtualView> TableView::CreateCellAccessibilityView(
     cell_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
 
   auto sort_direction = ax::mojom::SortDirection::kUnsorted;
-  const base::Optional<int> primary_sorted_column_id =
+  const absl::optional<int> primary_sorted_column_id =
       sort_descriptors().empty()
-          ? base::nullopt
-          : base::make_optional(sort_descriptors()[0].column_id);
+          ? absl::nullopt
+          : absl::make_optional(sort_descriptors()[0].column_id);
 
   if (column.sortable && primary_sorted_column_id.has_value() &&
       column.id == primary_sorted_column_id.value()) {
@@ -1466,18 +1462,21 @@ void TableView::PopulateAccessibilityCellData(AXVirtualView* ax_cell,
   std::u16string new_name =
       model()->GetText(model_index, GetVisibleColumn(column_index).column.id);
   data->SetName(new_name);
-  if (current_name != new_name)
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  if (current_name != new_name) {
+    ui::AXNodeData& cell_data = ax_cell->GetCustomData();
+    cell_data.SetName(new_name);
+    ax_cell->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged);
+  }
 }
 
 std::unique_ptr<AXVirtualView> TableView::CreateHeaderAccessibilityView() {
   DCHECK(header_) << "header_ needs to be instantiated before setting its"
                      "accessibility view.";
 
-  const base::Optional<int> primary_sorted_column_id =
+  const absl::optional<int> primary_sorted_column_id =
       sort_descriptors().empty()
-          ? base::nullopt
-          : base::make_optional(sort_descriptors()[0].column_id);
+          ? absl::nullopt
+          : absl::make_optional(sort_descriptors()[0].column_id);
 
   auto ax_header = std::make_unique<AXVirtualView>();
   ui::AXNodeData& header_data = ax_header->GetCustomData();
@@ -1628,8 +1627,22 @@ gfx::Rect TableView::CalculateTableCellAccessibilityBounds(
   return cell_bounds;
 }
 
-void TableView::UpdateAccessibilityFocus() {
-  needs_update_accessibility_focus_ = false;
+void TableView::ScheduleUpdateAccessibilityFocusIfNeeded() {
+  if (update_accessibility_focus_pending_)
+    return;
+
+  update_accessibility_focus_pending_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TableView::UpdateAccessibilityFocus,
+                                weak_factory_.GetWeakPtr(),
+                                UpdateAccessibilityFocusPassKey()));
+}
+
+void TableView::UpdateAccessibilityFocus(
+    UpdateAccessibilityFocusPassKey pass_key) {
+  DCHECK(update_accessibility_focus_pending_);
+  update_accessibility_focus_pending_ = false;
+
   if (!HasFocus())
     return;
 
@@ -1642,13 +1655,17 @@ void TableView::UpdateAccessibilityFocus() {
   int active_row = ModelToView(selection_model_.active());
   if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell) {
     AXVirtualView* ax_row = GetVirtualAccessibilityRow(active_row);
-    if (ax_row)
+    if (ax_row) {
+      ax_row->NotifyAccessibilityEvent(ax::mojom::Event::kSelection);
       GetViewAccessibility().OverrideFocus(ax_row);
+    }
   } else {
     AXVirtualView* ax_cell =
         GetVirtualAccessibilityCell(active_row, active_visible_column_index_);
-    if (ax_cell)
+    if (ax_cell) {
+      ax_cell->NotifyAccessibilityEvent(ax::mojom::Event::kSelection);
       GetViewAccessibility().OverrideFocus(ax_cell);
+    }
   }
 }
 
@@ -1690,10 +1707,6 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
   return i->get();
 }
 
-DEFINE_ENUM_CONVERTERS(TableTypes,
-                       {TableTypes::TEXT_ONLY, u"TEXT_ONLY"},
-                       {TableTypes::ICON_AND_TEXT, u"ICON_AND_TEXT"})
-
 BEGIN_METADATA(TableView, View)
 ADD_READONLY_PROPERTY_METADATA(int, RowCount)
 ADD_READONLY_PROPERTY_METADATA(int, FirstSelectedRow)
@@ -1707,3 +1720,7 @@ ADD_PROPERTY_METADATA(bool, SortOnPaint)
 END_METADATA
 
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(views::TableTypes,
+                       {views::TableTypes::TEXT_ONLY, u"TEXT_ONLY"},
+                       {views::TableTypes::ICON_AND_TEXT, u"ICON_AND_TEXT"})

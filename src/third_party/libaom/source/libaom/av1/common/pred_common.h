@@ -107,9 +107,9 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
   if (bck_buf != NULL) bck_frame_index = bck_buf->order_hint;
   if (fwd_buf != NULL) fwd_frame_index = fwd_buf->order_hint;
 
-  int fwd = abs(get_relative_dist(&cm->seq_params.order_hint_info,
+  int fwd = abs(get_relative_dist(&cm->seq_params->order_hint_info,
                                   fwd_frame_index, cur_frame_index));
-  int bck = abs(get_relative_dist(&cm->seq_params.order_hint_info,
+  int bck = abs(get_relative_dist(&cm->seq_params->order_hint_info,
                                   cur_frame_index, bck_frame_index));
 
   const MB_MODE_INFO *const above_mi = xd->above_mbmi;

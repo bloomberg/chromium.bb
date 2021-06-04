@@ -57,12 +57,14 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[builtin(vertex_index)]] var<in> VertexIndex : i32;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[location(0)]] var<out> fragUV : vec2<f32>;
+            struct Outputs {
+              [[builtin(position)]] Position : vec4<f32>;
+              [[location(0)]] fragUV : vec2<f32>;
+            };
 
-            [[stage(vertex)]] fn main() -> void {
-              const position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+            [[stage(vertex)]] fn main(
+              [[builtin(vertex_index)]] VertexIndex : i32) -> Outputs {
+              let position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, -0.5),
                 vec3<f32>(-0.5, 0.5, 0.5),
@@ -70,7 +72,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
                 vec3<f32>(0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, 0.5));
               // uv is pre-scaled to mimic repeating tiled texture
-              const uv : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+              let uv : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
                 vec2<f32>(0.0, 0.0),
                 vec2<f32>(1.0, 0.0),
                 vec2<f32>(0.0, 50.0),
@@ -78,14 +80,16 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
                 vec2<f32>(1.0, 0.0),
                 vec2<f32>(1.0, 50.0));
               // draw a slanted plane in a specific way
-              const matrix : mat4x4<f32> = mat4x4<f32>(
+              let matrix : mat4x4<f32> = mat4x4<f32>(
                 vec4<f32>(-1.7320507764816284, 1.8322050568049563e-16, -6.176817699518044e-17, -6.170640314703498e-17),
                 vec4<f32>(-2.1211504944260596e-16, -1.496108889579773, 0.5043753981590271, 0.5038710236549377),
                 vec4<f32>(0.0, -43.63650894165039, -43.232173919677734, -43.18894577026367),
                 vec4<f32>(0.0, 21.693578720092773, 21.789791107177734, 21.86800193786621));
 
-              fragUV = uv[VertexIndex];
-              Position = matrix * vec4<f32>(position[VertexIndex], 1.0);
+              var output : Outputs;
+              output.fragUV = uv[VertexIndex];
+              output.Position = matrix * vec4<f32>(position[VertexIndex], 1.0);
+              return output;
             }
             `,
         }),
@@ -97,14 +101,11 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
             [[set(0), binding(0)]] var sampler0 : sampler;
             [[set(0), binding(1)]] var texture0 : texture_2d<f32>;
 
-            [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
-
-            [[location(0)]] var<in> fragUV: vec2<f32>;
-
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-
-            [[stage(fragment)]] fn main() -> void {
-                fragColor = textureSample(texture0, sampler0, fragUV);
+            [[stage(fragment)]] fn main(
+              [[builtin(position)]] FragCoord : vec4<f32>,
+              [[location(0)]] fragUV: vec2<f32>)
+              -> [[location(0)]] vec4<f32> {
+                return textureSample(texture0, sampler0, fragUV);
             }
             `,
         }),
@@ -139,7 +140,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           storeOp: 'store',
           loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
         },

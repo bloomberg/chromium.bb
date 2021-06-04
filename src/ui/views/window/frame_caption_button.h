@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/views_export.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/caption_button_types.h"
@@ -22,15 +22,12 @@ struct VectorIcon;
 
 namespace views {
 
-class InkDrop;
-class InkDropRipple;
-
 // Base class for the window caption buttons (minimize, maximize, restore,
 // close).
 class VIEWS_EXPORT FrameCaptionButton : public views::Button {
  public:
   METADATA_HEADER(FrameCaptionButton);
-  enum Animate { ANIMATE_YES, ANIMATE_NO };
+  enum class Animate { kYes, kNo };
 
   FrameCaptionButton(PressedCallback callback,
                      CaptionButtonIcon icon,
@@ -45,9 +42,9 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   // Gets the alpha ratio for the colors of inactive frame caption buttons.
   static float GetInactiveButtonColorAlphaRatio();
 
-  // Sets the image to use to paint the button. If |animate| is ANIMATE_YES,
+  // Sets the image to use to paint the button. If |animate| is Animate::kYes,
   // the button crossfades to the new visuals. If the image matches the one
-  // currently used by the button and |animate| is ANIMATE_NO, the crossfade
+  // currently used by the button and |animate| is Animate::kNo, the crossfade
   // animation is progressed to the end.
   void SetImage(CaptionButtonIcon icon,
                 Animate animate,
@@ -63,8 +60,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
-  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
 
   void SetBackgroundColor(SkColor background_color);
   SkColor GetBackgroundColor() const;

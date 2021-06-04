@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -31,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 
 namespace content {
@@ -410,7 +410,7 @@ void NavigationSimulatorImpl::Start() {
   state_ = STARTED;
 
   CHECK(request_);
-  if (IsRendererDebugURL(navigation_url_))
+  if (blink::IsRendererDebugURL(navigation_url_))
     return;
 
   if (!NeedsThrottleChecks()) {
@@ -518,8 +518,13 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     response_headers_ =
         base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
   }
+
   response_headers_->SetHeader("Content-Type", contents_mime_type_);
   PrepareCompleteCallbackOnRequest();
+  request_->set_ready_to_commit_callback_for_testing(
+      base::BindOnce(&NavigationSimulatorImpl::ReadyToCommitComplete,
+                     weak_factory_.GetWeakPtr()));
+
   if (frame_tree_node_->navigation_request()) {
     NavigationRequest* request = frame_tree_node_->navigation_request();
     if (early_hints_preload_link_header_received_) {
@@ -547,17 +552,19 @@ void NavigationSimulatorImpl::ReadyToCommit() {
                      weak_factory_.GetWeakPtr());
   if (NeedsThrottleChecks()) {
     MaybeWaitForThrottleChecksComplete(std::move(complete_closure));
+    MaybeWaitForReadyToCommitCheckComplete();
     if (state_ == READY_TO_COMMIT) {
       // `NavigationRequest::OnWillProcessResponseProcessed()` invokes the
-      // completion callback before synchronously dispatching
-      // `ReadyToCommitNavigation()` to observers. Once the throttle checks are
-      // complete, ensure that `ReadyToCommitNavigation()` has been called as
-      // expected.
+      // completion callback but the commit may be deferred before dispatching
+      // `ReadyToCommitNavigation()` to observers so we have to wait on that
+      // too. Once these checks are complete, ensure that
+      // `ReadyToCommitNavigation()` has been called as expected.
       CHECK_EQ(1, num_ready_to_commit_called_);
     }
     return;
   }
   std::move(complete_closure).Run();
+  ReadyToCommitComplete();
 }
 
 void NavigationSimulatorImpl::WillProcessResponseComplete() {
@@ -575,6 +582,13 @@ void NavigationSimulatorImpl::WillProcessResponseComplete() {
   // commit the navigation.
   render_frame_host_ =
       static_cast<TestRenderFrameHost*>(request_->GetRenderFrameHost());
+}
+
+void NavigationSimulatorImpl::ReadyToCommitComplete() {
+  // If the commit was deferred, this completes from a RunLoop wait so exit it
+  // now.
+  if (wait_closure_)
+    std::move(wait_closure_).Run();
   state_ = READY_TO_COMMIT;
 }
 
@@ -631,7 +645,7 @@ void NavigationSimulatorImpl::Commit() {
   if (!keep_loading_)
     StopLoading();
 
-  if (!IsRendererDebugURL(navigation_url_))
+  if (!blink::IsRendererDebugURL(navigation_url_))
     CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
@@ -682,7 +696,7 @@ void NavigationSimulatorImpl::Fail(int error_code) {
   CHECK_EQ(0, num_did_finish_navigation_called_)
       << "NavigationSimulatorImpl::Fail cannot be called after the "
          "navigation has finished";
-  CHECK(!IsRendererDebugURL(navigation_url_));
+  CHECK(!blink::IsRendererDebugURL(navigation_url_));
 
   if (state_ == INITIALIZATION)
     Start();
@@ -1002,6 +1016,8 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
       NavigationController::LoadURLParams load_url_params(navigation_url_);
       load_url_params.referrer = Referrer(*referrer_);
       load_url_params.transition_type = transition_;
+      load_url_params.should_replace_current_entry =
+          should_replace_current_entry_;
       if (initial_method_ == "POST")
         load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
 
@@ -1135,7 +1151,7 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
   request =
       web_contents_->GetMainFrame()->frame_tree_node()->navigation_request();
   if (!request) {
-    if (IsRendererDebugURL(navigation_url_)) {
+    if (blink::IsRendererDebugURL(navigation_url_)) {
       // We don't create NavigationRequests nor NavigationHandles for a
       // navigation to a renderer-debug URL. Instead, the URL is passed to the
       // current RenderFrameHost so that the renderer process can handle it.
@@ -1167,8 +1183,8 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           initiator_frame_host_
-              ? base::make_optional(initiator_frame_host_->GetFrameToken())
-              : base::nullopt,
+              ? absl::make_optional(initiator_frame_host_->GetFrameToken())
+              : absl::nullopt,
           std::string() /* headers */, net::LOAD_NORMAL,
           false /* skip_service_worker */,
           blink::mojom::RequestContextType::HYPERLINK,
@@ -1178,11 +1194,11 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
-          base::nullopt /* detools_initiator_info */,
+          absl::nullopt /* detools_initiator_info */,
           nullptr /* trust_token_params */, impression_,
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
-          base::nullopt /* web_bundle_token */);
+          absl::nullopt /* web_bundle_token */);
   auto common_params = CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = navigation_url_;
@@ -1196,6 +1212,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           : mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture_;
   common_params->should_check_main_world_csp = should_check_main_world_csp_;
+  common_params->should_replace_current_entry = should_replace_current_entry_;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
@@ -1228,6 +1245,16 @@ void NavigationSimulatorImpl::MaybeWaitForThrottleChecksComplete(
   throttle_checks_complete_closure_ = std::move(complete_closure);
   if (auto_advance_)
     Wait();
+}
+
+void NavigationSimulatorImpl::MaybeWaitForReadyToCommitCheckComplete() {
+  if (state_ >= READY_TO_COMMIT || !auto_advance_)
+    return;
+
+  CHECK(!wait_closure_);
+  base::RunLoop run_loop;
+  wait_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void NavigationSimulatorImpl::Wait() {
@@ -1330,7 +1357,23 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   }
   params->history_list_was_cleared = history_list_was_cleared_;
   params->did_create_new_entry = DidCreateNewEntry();
+
+  const bool is_history_navigation = (session_history_offset_ != 0);
+  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
+
+  // See CalculateShouldReplaceCurrentEntry() in RenderFrameHostImpl on why we
+  // calculate "should_replace_current_entry" in this way.
   params->should_replace_current_entry = should_replace_current_entry_;
+  if (same_document) {
+    params->should_replace_current_entry |=
+        (is_history_navigation ||
+         current_rfh->GetLastCommittedURL() == navigation_url_);
+  } else {
+    params->should_replace_current_entry |=
+        (!frame_tree_node_->IsMainFrame() &&
+         !frame_tree_node_->has_committed_real_load());
+  }
+
   params->navigation_token = request_
                                  ? request_->commit_params().navigation_token
                                  : base::UnguessableToken::Create();
@@ -1339,8 +1382,6 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->intended_as_new_entry =
       request_ ? request_->commit_params().intended_as_new_entry : false;
   params->method = request_ ? request_->common_params().method : "GET";
-
-  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.

@@ -99,7 +99,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // a fresh set of CSP).
   // TODO(arthursonzogni): Remove this function. The frame/document must not be
   // left temporarily with lax state.
-  void ResetForNavigation(bool was_served_from_back_forward_cache);
+  void ResetForNavigation();
 
   FrameTree* frame_tree() const { return frame_tree_; }
   Navigator& navigator() { return frame_tree()->navigator(); }
@@ -127,7 +127,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   FrameTreeNode* original_opener() const { return original_opener_; }
 
-  const base::Optional<base::UnguessableToken>& opener_devtools_frame_token() {
+  const absl::optional<base::UnguessableToken>& opener_devtools_frame_token() {
     return opener_devtools_frame_token_;
   }
 
@@ -419,7 +419,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
 
   blink::mojom::FrameOwnerElementType frame_owner_element_type() const {
-    return replication_state_->frame_owner_element_type;
+    return frame_owner_element_type_;
   }
 
   void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
@@ -450,7 +450,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetFrameTree(FrameTree& frame_tree);
 
   // Write a representation of this object into a trace.
-  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
   // Returns true the node is navigating, i.e. it has an associated
   // NavigationRequest.
@@ -516,7 +516,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The devtools frame token of the frame which opened this frame. This is
   // not cleared even if the opener is destroyed or disowns the frame.
-  base::Optional<base::UnguessableToken> opener_devtools_frame_token_;
+  absl::optional<base::UnguessableToken> opener_devtools_frame_token_;
 
   // An observer that clears this node's |original_opener_| if the opener is
   // destroyed.
@@ -536,6 +536,10 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Whether the frame's owner element in the parent document is collapsed.
   bool is_collapsed_ = false;
+
+  // The type of frame owner for this frame, if any.
+  const blink::mojom::FrameOwnerElementType frame_owner_element_type_ =
+      blink::mojom::FrameOwnerElementType::kNone;
 
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.

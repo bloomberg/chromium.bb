@@ -44,32 +44,6 @@ class V4L2H264Picture : public H264Picture {
   DISALLOW_COPY_AND_ASSIGN(V4L2H264Picture);
 };
 
-// static
-bool V4L2H264Accelerator::SupportsUpstreamABI(V4L2Device* device) {
-  struct v4l2_querymenu qmenu;
-
-  // This accelerator currently supports frame-based decoding only. Print an
-  // error at runtime if we try to use it with a slice-based decoder.
-  memset(&qmenu, 0, sizeof(qmenu));
-  qmenu.id = V4L2_CID_STATELESS_H264_DECODE_MODE;
-  qmenu.index = V4L2_STATELESS_H264_DECODE_MODE_FRAME_BASED;
-
-  if (device->Ioctl(VIDIOC_QUERYMENU, &qmenu) < 0) {
-    switch (errno) {
-      case EINVAL:
-        VLOGF(1)
-            << "This decoder does not support the frame-based stateless API";
-        return false;
-      default:
-        VPLOGF(1) << "Error while checking for H264_DECODE_MODE control";
-        return false;
-    }
-  }
-
-  VLOGF(1) << "This decoder supports the frame-based stateless API";
-  return true;
-}
-
 V4L2H264Accelerator::V4L2H264Accelerator(
     V4L2DecodeSurfaceHandler* surface_handler,
     V4L2Device* device)
@@ -322,14 +296,6 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
   SHDR_TO_V4L2DPARM(pic_order_cnt_bit_size);
 #undef SHDR_TO_V4L2DPARM
 
-#define SET_V4L2_DPARM_FLAG_IF(cond, flag) \
-  priv_->v4l2_decode_param.flags |= ((slice_hdr->cond) ? (flag) : 0)
-  SET_V4L2_DPARM_FLAG_IF(idr_pic_flag, V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC);
-  SET_V4L2_DPARM_FLAG_IF(field_pic_flag, V4L2_H264_DECODE_PARAM_FLAG_FIELD_PIC);
-  SET_V4L2_DPARM_FLAG_IF(bottom_field_flag,
-                         V4L2_H264_DECODE_PARAM_FLAG_BOTTOM_FIELD);
-#undef SET_V4L2_DPARM_FLAG_IF
-
   scoped_refptr<V4L2DecodeSurface> dec_surface =
       H264PictureToV4L2DecodeSurface(pic.get());
 
@@ -353,9 +319,24 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
   scoped_refptr<V4L2DecodeSurface> dec_surface =
       H264PictureToV4L2DecodeSurface(pic.get());
 
-  if (pic->idr) {
-    priv_->v4l2_decode_param.flags |= 1;
+
+  switch (pic->field) {
+    case H264Picture::FIELD_NONE:
+      priv_->v4l2_decode_param.flags = 0;
+      break;
+    case H264Picture::FIELD_TOP:
+      priv_->v4l2_decode_param.flags = V4L2_H264_DECODE_PARAM_FLAG_FIELD_PIC;
+      break;
+    case H264Picture::FIELD_BOTTOM:
+      priv_->v4l2_decode_param.flags =
+          (V4L2_H264_DECODE_PARAM_FLAG_FIELD_PIC |
+           V4L2_H264_DECODE_PARAM_FLAG_BOTTOM_FIELD);
+      break;
   }
+
+  if (pic->idr)
+    priv_->v4l2_decode_param.flags |= V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC;
+
   priv_->v4l2_decode_param.top_field_order_cnt = pic->top_field_order_cnt;
   priv_->v4l2_decode_param.bottom_field_order_cnt = pic->bottom_field_order_cnt;
 

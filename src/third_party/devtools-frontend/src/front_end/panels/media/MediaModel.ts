@@ -5,6 +5,9 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
+
 export interface PlayerEvent extends Protocol.Media.PlayerEvent {
   value: string;
   displayTimestamp: string;
@@ -65,4 +68,4 @@ export class MediaModel extends SDK.SDKModel.SDKModel implements ProtocolProxyAp
   }
 }
 
-SDK.SDKModel.SDKModel.register(MediaModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(MediaModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});

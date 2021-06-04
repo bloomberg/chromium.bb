@@ -191,6 +191,7 @@ interface Crypto
     getter subtle
     method constructor
     method getRandomValues
+    method randomUUID
 interface CryptoKey
     attribute @@toStringTag
     getter algorithm
@@ -402,6 +403,11 @@ interface DOMStringList
     method constructor
     method contains
     method item
+interface DatagramDuplexStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method constructor
 interface DecompressionStream
     attribute @@toStringTag
     getter readable
@@ -772,8 +778,10 @@ interface ImageBitmapRenderingContext
     method transferFromImageBitmap
 interface ImageData
     attribute @@toStringTag
+    getter colorSpace
     getter data
     getter height
+    getter storageFormat
     getter width
     method constructor
     method getSettings
@@ -1253,18 +1261,6 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
-interface QuicTransport
-    attribute @@toStringTag
-    getter closed
-    getter ready
-    method close
-    method constructor
-    method createBidirectionalStream
-    method createSendStream
-    method receiveBidirectionalStreams
-    method receiveDatagrams
-    method receiveStreams
-    method sendDatagrams
 interface ReadableByteStreamController
     attribute @@toStringTag
     getter byobRequest
@@ -1381,7 +1377,7 @@ interface SecurityPolicyViolationEvent : Event
     getter statusCode
     getter violatedDirective
     method constructor
-interface SendStream
+interface SendStream : WritableStream
     attribute @@toStringTag
     getter writable
     getter writingAborted

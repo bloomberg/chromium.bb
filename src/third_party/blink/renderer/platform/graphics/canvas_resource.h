@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -40,7 +42,6 @@ class RasterInterface;
 
 namespace viz {
 
-class SingleReleaseCallback;
 struct TransferableResource;
 
 }  // namespace viz
@@ -114,7 +115,7 @@ class PLATFORM_EXPORT CanvasResource
   // Provides a TransferableResource representation of this resource to share it
   // with the compositor.
   bool PrepareTransferableResource(viz::TransferableResource*,
-                                   std::unique_ptr<viz::SingleReleaseCallback>*,
+                                   viz::ReleaseCallback*,
                                    MailboxSyncMode);
 
   // Issues a wait for this sync token on the context used by this resource for
@@ -558,7 +559,7 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
  public:
   static scoped_refptr<ExternalCanvasResource> Create(
       const gpu::Mailbox& mailbox,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
+      viz::ReleaseCallback release_callback,
       gpu::SyncToken sync_token,
       const IntSize&,
       GLenum texture_target,
@@ -594,25 +595,24 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
 
-  ExternalCanvasResource(
-      const gpu::Mailbox& mailbox,
-      std::unique_ptr<viz::SingleReleaseCallback> out_callback,
-      gpu::SyncToken sync_token,
-      const IntSize&,
-      GLenum texture_target,
-      const CanvasResourceParams&,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality,
-      bool is_origin_top_left,
-      bool is_overlay_candidate);
+  ExternalCanvasResource(const gpu::Mailbox& mailbox,
+                         viz::ReleaseCallback out_callback,
+                         gpu::SyncToken sync_token,
+                         const IntSize&,
+                         GLenum texture_target,
+                         const CanvasResourceParams&,
+                         base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                         base::WeakPtr<CanvasResourceProvider>,
+                         SkFilterQuality,
+                         bool is_origin_top_left,
+                         bool is_overlay_candidate);
 
   const base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       context_provider_wrapper_;
   const IntSize size_;
   const gpu::Mailbox mailbox_;
   const GLenum texture_target_;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
+  viz::ReleaseCallback release_callback_;
   gpu::SyncToken sync_token_;
 
   const bool is_origin_top_left_;
@@ -650,6 +650,7 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   GLenum TextureTarget() const final { return GL_TEXTURE_2D; }
 
   GLuint GetBackBufferTextureId() const { return back_buffer_texture_id_; }
+  const gpu::Mailbox& GetBackBufferMailbox() { return back_buffer_mailbox_; }
 
   void PresentSwapChain();
   const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
@@ -675,6 +676,7 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   gpu::Mailbox back_buffer_mailbox_;
   GLuint back_buffer_texture_id_ = 0u;
   gpu::SyncToken sync_token_;
+  const bool use_oop_rasterization_;
 
   bool is_origin_clean_ = true;
 };

@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Axtarış sürüşdürücü</translation>
 <translation id="1404323374378969387">Norveç</translation>
 <translation id="1430915738399379752">Çap edin</translation>
+<translation id="1433628812591023318">Paralellər Masaüstünə faylları əlavə etmək üçün fayl Windows fayllarına köçürülməlidir.</translation>
 <translation id="1435838927755162558">Qovluğu Parallels Desktop ilə paylaşın</translation>
 <translation id="1467432559032391204">Sol</translation>
 <translation id="1471718551822868769">Slovak</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows faylları</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ilə paylaşın</translation>
 <translation id="3083975830683400843">Chromebit cihazları</translation>
+<translation id="3113153474486991170">Bu məkandan "<ph name="PATH" />" açılmadı. Açmaq üçün "Fayllarıma" kopyalayın.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">TAMAMDIR</translation>
 <translation id="3188257591659621405">Fayllarım</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Fonetik klaviatura ilə Bolqar dili</translation>
 <translation id="5605830556594064952">ABŞ Dvorak</translation>
 <translation id="5625294776298156701">Tamil99 klaviaturası ilə Tamil dili</translation>
+<translation id="5633226425545095130">Bu elementi köçürsəniz, '<ph name="DESTINATION_NAME" />' paylaşılan qovluğunu görə bilən hər kəslə paylaşacaqdır.</translation>
 <translation id="5649768706273821470">Dinləyin</translation>
 <translation id="5678784840044122290">Linux tətbiqi Terminalda əlçatan olacaq və Başladıcınızda da işarə görünə bilər.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Arxiv və ya virtual diskdən əlaqəni silmək mümkün deyil<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Efiop klaviaturası</translation>
 <translation id="7417705661718309329">Google xəritə</translation>
 <translation id="7460898608667578234">Ukrayna</translation>
+<translation id="7486315294984620427">Paralellər Masaüstünə faylları əlavə etmək üçün fayl Windows fayllarına kopyalanmalıdır.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> nəticə
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Diskə<ph name="END_LINK" /> yedəkləmək üçün hazırdır</translation>
@@ -719,6 +723,7 @@
 <translation id="8395901698320285466">Ölçülər</translation>
 <translation id="8437209419043462667">ABŞ</translation>
 <translation id="8456681095658380701">Yanlış ad</translation>
+<translation id="8459404855768962328">Bu elementi kopyalasanız, '<ph name="DESTINATION_NAME" />' paylaşılan qovluğunu görə bilən hər kəslə paylaşacaqdır.</translation>
 <translation id="8461467696380332069">Fayla sağ düymə ilə toxunun və rəfdəki fayllarınıza sürətli giriş üçün "Rəfə bərkidin" seçimini edin.</translation>
 <translation id="8463494891489624050">Vyetnam dili (VIQR)</translation>
 <translation id="8466234950814670489">Tar arxivi</translation>

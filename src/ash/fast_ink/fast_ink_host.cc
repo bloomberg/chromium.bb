@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -153,11 +155,10 @@ class FastInkHost::LayerTreeFrameSinkHolder
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
-  base::Optional<viz::HitTestRegionList> BuildHitTestData() override {
+  absl::optional<viz::HitTestRegionList> BuildHitTestData() override {
     return {};
   }
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override {
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override {
     if (delete_pending_)
       return;
     for (auto& entry : resources) {
@@ -255,7 +256,7 @@ FastInkHost::FastInkHost(aura::Window* host_window,
                                   SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
                                                : gfx::BufferFormat::BGRA_8888,
                                   gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                  gpu::kNullSurfaceHandle);
+                                  gpu::kNullSurfaceHandle, nullptr);
   LOG_IF(ERROR, !gpu_memory_buffer_) << "Failed to create GPU memory buffer";
 
   if (ash::switches::ShouldClearFastInkBuffer()) {
@@ -404,14 +405,14 @@ void FastInkHost::SubmitCompositorFrame() {
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(
-      buffer_to_target_transform,
-      /*quad_layer_rect=*/output_rect,
-      /*visible_quad_layer_rect=*/output_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(),
-      /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  quad_state->SetAll(buffer_to_target_transform,
+                     /*quad_layer_rect=*/output_rect,
+                     /*visible_layer_rect=*/output_rect,
+                     /*mask_filter_info=*/gfx::MaskFilterInfo(),
+                     /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+                     /*opacity=*/1.f,
+                     /*blend_mode=*/SkBlendMode::kSrcOver,
+                     /*sorting_context_id=*/0);
 
   viz::CompositorFrame frame;
   // TODO(eseckler): FastInkHost should use BeginFrames and set the ack

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
@@ -14,12 +15,13 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/cellular_esim_profile_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_name_util.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
@@ -36,17 +38,14 @@ const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 const char kNotifierNetwork[] = "ash.network";
 const char kNotifierNetworkError[] = "ash.network.error";
 
-// TODO(b:184776317): Use string from service_constants.h
-const char kErrorSimLocked[] = "sim-locked";
-
-// Ignore in-progress error.
+// Ignore in-progress errors and disconnect errors (which may occur when a new
+// connect request occurs while a previous connect is in-progress).
 bool ShillErrorIsIgnored(const std::string& shill_error) {
-  if (shill_error == shill::kErrorResultInProgress)
-    return true;
-  return false;
+  return shill_error == shill::kErrorResultInProgress ||
+         shill_error == shill::kErrorDisconnect;
 }
 
-std::string GetStringFromDictionary(const base::Optional<base::Value>& dict,
+std::string GetStringFromDictionary(const absl::optional<base::Value>& dict,
                                     const std::string& key) {
   const base::Value* v = dict ? dict->FindKey(key) : nullptr;
   return v ? v->GetString() : std::string();
@@ -144,7 +143,7 @@ bool IsSimLockConnectionFailure(const std::string& connection_error_name,
   if (connection_error_name == NetworkConnectionHandler::kErrorSimLocked)
     return true;
 
-  return network_state && network_state->GetError() == kErrorSimLocked;
+  return network_state && network_state->GetError() == shill::kErrorSimLocked;
 }
 
 }  // namespace
@@ -375,7 +374,7 @@ void NetworkStateNotifier::ShowNetworkConnectErrorForGuid(
   if (!network) {
     ShowConnectErrorNotification(error_name,
                                  /*service_path=*/std::string(),
-                                 /*shill_properties=*/base::nullopt);
+                                 /*shill_properties=*/absl::nullopt);
     return;
   }
   // Get the up-to-date properties for the network and display the error.
@@ -421,7 +420,7 @@ void NetworkStateNotifier::RemoveConnectNotification() {
 void NetworkStateNotifier::OnConnectErrorGetProperties(
     const std::string& error_name,
     const std::string& service_path,
-    base::Optional<base::Value> shill_properties) {
+    absl::optional<base::Value> shill_properties) {
   if (!shill_properties) {
     ShowConnectErrorNotification(error_name, service_path,
                                  std::move(shill_properties));
@@ -444,7 +443,7 @@ void NetworkStateNotifier::OnConnectErrorGetProperties(
 void NetworkStateNotifier::ShowConnectErrorNotification(
     const std::string& error_name,
     const std::string& service_path,
-    base::Optional<base::Value> shill_properties) {
+    absl::optional<base::Value> shill_properties) {
   std::u16string error = GetConnectErrorString(error_name);
   NET_LOG(DEBUG) << "Notify: " << NetworkPathId(service_path)
                  << ": Connect error: " << error_name << ": "
@@ -504,11 +503,21 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   NET_LOG(ERROR) << "Notify: " << log_id
                  << ": Connect error: " + base::UTF16ToUTF8(error);
 
+  CellularESimProfileHandler* cellular_esim_profile_handler =
+      NetworkHandler::Get()->cellular_esim_profile_handler();
   std::string network_name;
-  if (shill_properties) {
+  if (network) {
+    absl::optional<std::string> esim_name =
+        network_name_util::GetESimProfileName(cellular_esim_profile_handler,
+                                              network);
+    if (esim_name)
+      network_name = *esim_name;
+  }
+  if (network_name.empty() && shill_properties) {
     network_name = shill_property_util::GetNameFromProperties(
         service_path, shill_properties.value());
   }
+
   std::string network_error_details =
       GetStringFromDictionary(shill_properties, shill::kErrorDetailsProperty);
 

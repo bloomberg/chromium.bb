@@ -36,6 +36,7 @@
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
@@ -56,7 +57,10 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -122,10 +126,10 @@ const message_center::Notification* GetPreviewNotification() {
   return nullptr;
 }
 
-void ClickNotification(base::Optional<int> button_index) {
+void ClickNotification(absl::optional<int> button_index) {
   const message_center::Notification* notification = GetPreviewNotification();
   DCHECK(notification);
-  notification->delegate()->Click(button_index, base::nullopt);
+  notification->delegate()->Click(button_index, absl::nullopt);
 }
 
 // Moves the mouse and updates the cursor's display manually to imitate what a
@@ -350,7 +354,7 @@ class CaptureModeTest : public AshTestBase {
     return widget ? widget->GetNativeWindow() : nullptr;
   }
 
-  base::Optional<gfx::Point> GetMagnifierGlassCenterPoint() const {
+  absl::optional<gfx::Point> GetMagnifierGlassCenterPoint() const {
     auto* controller = CaptureModeController::Get();
     DCHECK(controller->IsActive());
     auto& magnifier =
@@ -361,7 +365,7 @@ class CaptureModeTest : public AshTestBase {
           ->GetWindowBoundsInScreen()
           .CenterPoint();
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   CaptureModeController* StartCaptureSession(CaptureModeSource source,
@@ -843,7 +847,7 @@ TEST_F(CaptureModeTest, CaptureRegionMagnifierWhenFineTuning) {
   // visible yet.
   gfx::Rect capture_region{200, 200, 400, 400};
   SelectRegion(capture_region);
-  EXPECT_EQ(base::nullopt, GetMagnifierGlassCenterPoint());
+  EXPECT_EQ(absl::nullopt, GetMagnifierGlassCenterPoint());
 
   auto check_magnifier_shows_properly = [this](const gfx::Point& origin,
                                                const gfx::Point& destination,
@@ -853,11 +857,11 @@ TEST_F(CaptureModeTest, CaptureRegionMagnifierWhenFineTuning) {
     // If not |should_show_magnifier|, check that the magnifying glass never
     // shows. Should always be not visible when mouse button is released.
     auto* event_generator = GetEventGenerator();
-    base::Optional<gfx::Point> expected_origin =
-        should_show_magnifier ? base::make_optional(origin) : base::nullopt;
-    base::Optional<gfx::Point> expected_destination =
-        should_show_magnifier ? base::make_optional(destination)
-                              : base::nullopt;
+    absl::optional<gfx::Point> expected_origin =
+        should_show_magnifier ? absl::make_optional(origin) : absl::nullopt;
+    absl::optional<gfx::Point> expected_destination =
+        should_show_magnifier ? absl::make_optional(destination)
+                              : absl::nullopt;
 
     auto* cursor_manager = Shell::Get()->cursor_manager();
     EXPECT_TRUE(cursor_manager->IsCursorVisible());
@@ -880,7 +884,7 @@ TEST_F(CaptureModeTest, CaptureRegionMagnifierWhenFineTuning) {
 
     // Release left button.
     event_generator->ReleaseLeftButton();
-    EXPECT_EQ(base::nullopt, GetMagnifierGlassCenterPoint());
+    EXPECT_EQ(absl::nullopt, GetMagnifierGlassCenterPoint());
     EXPECT_TRUE(cursor_manager->IsCursorVisible());
   };
 
@@ -1481,6 +1485,84 @@ TEST_F(CaptureModeTest, WindowCursorStates) {
   EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
 }
 
+// Tests that nothing crashes when windows are destroyed while being observed.
+TEST_F(CaptureModeTest, WindowDestruction) {
+  using ui::mojom::CursorType;
+
+  // Create 2 windows that overlap with each other.
+  const gfx::Rect bounds1(0, 0, 200, 200);
+  const gfx::Rect bounds2(150, 150, 200, 200);
+  const gfx::Rect bounds3(50, 50, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds1));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds2));
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  CursorType original_cursor_type = cursor_manager->GetCursor().type();
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_EQ(CursorType::kPointer, original_cursor_type);
+
+  // Start capture session with Image type, so we have a custom cursor.
+  auto* event_generator = GetEventGenerator();
+  CaptureModeController* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  EXPECT_EQ(controller->type(), CaptureModeType::kImage);
+
+  // If the mouse is above the window, use the image capture icon.
+  event_generator->MoveMouseToCenterOf(window2.get());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  auto* capture_mode_session = controller->capture_mode_session();
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+
+  // Destroy the window while hovering. There is no window underneath, so it
+  // should revert back to the original cursor.
+  window2.reset();
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+
+  // Destroy the window while mouse is in a pressed state. Cursor should revert
+  // back to the original cursor.
+  std::unique_ptr<aura::Window> window3(CreateTestWindow(bounds2));
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  event_generator->PressLeftButton();
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  window3.reset();
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(original_cursor_type, cursor_manager->GetCursor().type());
+
+  // When hovering over a window, if it is destroyed and there is another window
+  // under the cursor location in screen, then the selected window is
+  // automatically updated.
+  std::unique_ptr<aura::Window> window4(CreateTestWindow(bounds3));
+  event_generator->MoveMouseToCenterOf(window4.get());
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  EXPECT_EQ(capture_mode_session->GetSelectedWindow(), window4.get());
+  window4.reset();
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  // Check to see it's observing window1.
+  EXPECT_EQ(capture_mode_session->GetSelectedWindow(), window1.get());
+
+  // Cursor is over a window in the mouse pressed state. If the window is
+  // destroyed and there is another window under the cursor, the selected window
+  // is updated and the new selected window is captured.
+  std::unique_ptr<aura::Window> window5(CreateTestWindow(bounds3));
+  EXPECT_EQ(capture_mode_session->GetSelectedWindow(), window5.get());
+  event_generator->PressLeftButton();
+  window5.reset();
+  EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
+  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  EXPECT_EQ(capture_mode_session->GetSelectedWindow(), window1.get());
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(controller->IsActive());
+}
+
 TEST_F(CaptureModeTest, CursorUpdatedOnDisplayRotation) {
   using ui::mojom::CursorType;
 
@@ -1591,6 +1673,53 @@ TEST_F(CaptureModeTest, DoNotHandleEventDuringCountDown) {
   EXPECT_NE(capture_mode_session->GetSelectedWindow(), window2.get());
 
   WaitForCountDownToFinish();
+}
+
+// Test that during countdown, window changes or crashes are handled.
+TEST_F(CaptureModeTest, WindowChangesDuringCountdown) {
+  // We need a non-zero duration to avoid infinite loop on countdown.
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> window;
+
+  auto* controller = CaptureModeController::Get();
+  controller->SetSource(CaptureModeSource::kWindow);
+  controller->SetType(CaptureModeType::kVideo);
+
+  auto start_countdown = [this, &window, controller]() {
+    window = CreateTestWindow(gfx::Rect(200, 200));
+    controller->Start(CaptureModeEntryType::kQuickSettings);
+
+    auto* event_generator = GetEventGenerator();
+    event_generator->MoveMouseToCenterOf(window.get());
+    event_generator->ClickLeftButton();
+
+    EXPECT_TRUE(controller->IsActive());
+    EXPECT_FALSE(controller->is_recording_in_progress());
+  };
+
+  // Destroying or minimizing the observed window terminates the countdown and
+  // exits capture mode.
+  start_countdown();
+  window.reset();
+  EXPECT_FALSE(controller->IsActive());
+
+  start_countdown();
+  WindowState::Get(window.get())->Minimize();
+  EXPECT_FALSE(controller->IsActive());
+
+  // Activation changes (such as opening overview) should not terminate the
+  // countdown.
+  start_countdown();
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_FALSE(controller->is_recording_in_progress());
+
+  // Wait for countdown to finish and check that recording starts.
+  WaitForCountDownToFinish();
+  EXPECT_FALSE(controller->IsActive());
+  EXPECT_TRUE(controller->is_recording_in_progress());
 }
 
 // Tests that metrics are recorded properly for capture mode entry points.
@@ -2970,6 +3099,24 @@ TEST_F(CaptureModeTest, AccessibilityFocusAnnotator) {
   check_a11y_overrides("settings", settings_widget, label_widget, bar_widget);
 }
 
+// Tests that a captured image is written to the clipboard.
+TEST_F(CaptureModeTest, ClipboardWrite) {
+  auto* clipboard = ui::Clipboard::GetForCurrentThread();
+  ASSERT_NE(clipboard, nullptr);
+
+  const uint64_t before_sequence_number =
+      clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
+
+  CaptureNotificationWaiter waiter;
+  CaptureModeController::Get()->CaptureScreenshotsOfAllDisplays();
+  waiter.Wait();
+
+  const uint64_t after_sequence_number =
+      clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
+
+  EXPECT_NE(before_sequence_number, after_sequence_number);
+}
+
 // A test class that uses a mock time task environment.
 class CaptureModeMockTimeTest : public CaptureModeTest {
  public:
@@ -3134,7 +3281,7 @@ TEST_F(CaptureModeTest, QuickActionHistograms) {
     waiter.Wait();
   }
   // Click on the notification body. This should take us to the files app.
-  ClickNotification(base::nullopt);
+  ClickNotification(absl::nullopt);
   EXPECT_FALSE(GetPreviewNotification());
   histogram_tester.ExpectBucketCount(kQuickActionHistogramName,
                                      CaptureQuickAction::kFiles, 1);

@@ -22,6 +22,7 @@
 <translation id="1911763535808217981">Ja izslēgsiet šo iestatījumu, varēsiet pierakstīties Google vietnēs, piemēram, pakalpojumā Gmail, nepierakstoties pārlūkā Chromium.</translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="1966382378801805537">Chromium nevar noteikt vai iestatīt noklusējuma pārlūku.</translation>
+<translation id="1981611865800294956">Atkārtoti palaist, lai atjauninātu &amp;Chromium OS</translation>
 <translation id="2008474315282236005">Veicot šo darbību, no šīs ierīces tiks dzēsts 1 vienums. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chromium kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">Lai pārbaudītu, vai jūsu pārējās paroles ir aizsargātas pret datu pārkāpumiem un citām drošības problēmām, <ph name="BEGIN_LINK" />pierakstieties pārlūkā Chromium<ph name="END_LINK" />.</translation>
 <translation id="2174178932569897599">Pielāgot pārlūkprogrammu Chromium</translation>
@@ -37,6 +38,7 @@
 <translation id="2560420686485554789">Pārlūkam Chromium ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="2572494885440352020">Chromium palīgs</translation>
 <translation id="2577788541081224677">Lai piekļūtu savam Chromium saturam visās jūsu ierīcēs, pierakstieties un ieslēdziet sinhronizāciju.</translation>
+<translation id="2580426763510374355">Instalēt Chromium OS</translation>
 <translation id="2583187216237139145">Darba profila administrators var noņemt šī profila lietošanas laikā ģenerētos Chromium datus (piemēram, grāmatzīmes, vēsturi, paroles un citus iestatījumus). <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Lai lietotu atjauninājumu, operētājsistēma Chromium ir jārestartē.</translation>
 <translation id="2648074677641340862">Instalācijas laikā radās operētājsistēmas kļūda. Lejupielādējiet Chromium vēlreiz.</translation>
@@ -50,7 +52,6 @@
 <translation id="2847479871509788944">Noņemšana no pārlūka Chromium...</translation>
 <translation id="2885378588091291677">Uzdevumu pārvaldnieks</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
-<translation id="2942419255987443909">Chromium OS un <ph name="BEGIN_LINK_LINUX_OSS" />Linux izstrādes vides (beta)<ph name="END_LINK_LINUX_OSS" /> darbību nodrošina <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="2977470724722393594">Chromium ir atjaunināts</translation>
 <translation id="2983934633046890458">Chromium mēģina rediģēt paroles.</translation>
 <translation id="3032706164202344641">Pārlūkprogrammā Chromium nevar pārbaudīt jūsu paroles. Vēlāk mēģiniet vēlreiz.</translation>
@@ -110,6 +111,7 @@
 <translation id="454579500955453258">Vai turpināt jaunā Chromium profilā?</translation>
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="459535195905078186">Chromium lietotnes</translation>
+<translation id="4665829708273112819">Brīdinājums! Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet šīs opcijas atlasi.</translation>
 <translation id="4677944499843243528">Šķiet, ka profils tiek izmantots citā Chromium procesā (<ph name="PROCESS_ID" />) citā datorā (<ph name="HOST_NAME" />). Lai profils netiktu bojāts, pārlūkā Chromium tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chromium.</translation>
 <translation id="469338717132742108">Saņemt palīdzību par Chromium OS</translation>
 <translation id="4708774505295300557">Kāds iepriekš pierakstījās pārlūkā Chromium šajā datorā, izmantojot e-pasta adresi <ph name="ACCOUNT_EMAIL_LAST" />. Lūdzu, izveidojiet jaunu Chromium lietotāju, lai nošķirtu savu informāciju.</translation>
@@ -119,6 +121,7 @@
 <translation id="4788777615168560705">Pārlūkprogrammā Chromium nevar pārbaudīt jūsu paroles. Mēģiniet vēlreiz pēc 24 stundām vai <ph name="BEGIN_LINK" />pārbaudiet paroles savā Google kontā<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Šeit tiek izmantota tāds pats pareizrakstības pārbaudītājs, kāds tiek izmantots Google meklēšanā. Pārlūkprogrammā ievadītais teksts tiek nosūtīts Google serveriem. Jebkurā brīdī varat mainīt šo darbību iestatījumos.</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>
+<translation id="4893347770495441059">Atkārtoti palaist, lai atjauninātu &amp;Chromium</translation>
 <translation id="4943838377383847465">Chromium darbojas fona režīmā.</translation>
 <translation id="4987820182225656817">Viesi var izmantot Chromium, neatstājot nekādas pēdas.</translation>
 <translation id="4994636714258228724">Pievienot savu kontu pārlūkā Chromium</translation>
@@ -134,6 +137,7 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> — Chromium beta versija</translation>
 <translation id="5479196819031988440">Chromium OS nevar atvērt šo lapu.</translation>
 <translation id="5480860683791598150">Pārlūkam Chromium ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
+<translation id="5481338274774984070">Chromium norāda, ka nav ieteicams lejupielādēt vai atvērt šo failu.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
 <translation id="5496810170689441661">Chromium mēģina rediģēt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="5527463683072221100">Atvērt PDF failus pārlūkā Chromium</translation>
@@ -142,6 +146,7 @@
 <translation id="5653831366781983928">Lūdzu, nekavējoties restartējiet pārlūku Chromium</translation>
 <translation id="5698481217667032250">Rādīt Chromium šajā valodā</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
+<translation id="5854740544000584380">Chromium OS, kā arī <ph name="BEGIN_LINK_LINUX_OSS" />Linux izstrādes vides<ph name="END_LINK_LINUX_OSS" /> darbību nodrošina <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> — pierakstīšanās tīklā</translation>
@@ -196,7 +201,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="6964305034639999644">Atvērt saiti inko&amp;gnito režīma logā</translation>
 <translation id="6978145336957848883">Nedrošas paroles ir viegli uzminēt. Pārlūkā Chromium <ph name="BEGIN_LINK" />var automātiski veidot un iegaumēt drošas paroles jūsu kontiem<ph name="END_LINK" />.</translation>
 <translation id="6990124437352146030">Pārlūkam Chromium ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
-<translation id="701244094609242530">Pārlūkprogrammā Chromium nevar pārbaudīt jūsu paplašinājumus. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
 <translation id="7067091210845072982">Ja attēlam nav vērtīga apraksta, pārlūks Chromium mēģinās jums tādu nodrošināt. Lai izveidotu aprakstus, attēli tiek nosūtīti uzņēmumam Google.</translation>
 <translation id="7196312274710523067">Neizdevās palaist Chromium. Mēģiniet vēlreiz.</translation>
@@ -225,9 +229,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7729447699958282447">Chromium nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="7745317241717453663">Veicot šo darbību, no šīs ierīces tiks dzēsti pārlūkošanas dati. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chromium kā <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
-<translation id="7773960292263897147">Brīdinājums! Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi no šīs opcijas.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> — Chromium Canary</translation>
-<translation id="7827169012280634081">Aizverot Chromium, notīriet sīkfailus un vietnes datus</translation>
 <translation id="7828947555739565424">Šajā ierīcē jau pastāv Chromium profils ar šādu kontu.</translation>
 <translation id="7857220146454061152">Lai varētu saņemt nākamos Chromium atjauninājumus, nepieciešama OS X 10.11 vai jaunāka versija. Šajā datorā tiek izmantota OS X 10.10 versija.</translation>
 <translation id="7867198900892795913">Nevarēja atjaunināt uz jaunāko Chromium versiju, tādēļ jūs nevarēsiet piekļūt jaunākajām funkcijām un drošības labojumiem.</translation>
@@ -271,6 +273,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="91086099826398415">Atvērt saiti jaunā Chromium &amp;cilnē</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="9158494823179993217">Sistēmas administrators ir konfigurējis Chromium, lai vietne <ph name="TARGET_URL_HOSTNAME" /> tiktu atvērta papildu pārlūkā.</translation>
+<translation id="9185526690718004400">Atkārtoti palaist, lai atjauninātu &amp;Chromium</translation>
 <translation id="9190841055450128916">Chromium (mDNS ienākošie savienojumi)</translation>
 <translation id="9214764063801632699">Chromium OS sistēma</translation>
 <translation id="93478295209880648">Iespējams, Chromium nedarbosies pareizi, jo tas vairs netiek atbalstīts operētājsistēmās Windows XP un Windows Vista.</translation>

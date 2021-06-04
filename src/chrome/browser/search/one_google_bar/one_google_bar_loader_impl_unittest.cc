@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -25,9 +24,13 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "components/signin/public/base/signin_switches.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_delegate.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_test_helper.h"
 #endif
 
 using testing::_;
@@ -68,6 +71,13 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (!chromeos::LacrosChromeServiceImpl::Get()) {
+      scoped_lacros_test_helper_ =
+          std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
+    }
+#endif
 
     one_google_bar_loader_ = std::make_unique<OneGoogleBarLoaderImpl>(
         test_shared_loader_factory_, kApplicationLocale,
@@ -113,7 +123,10 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   GURL last_request_url_;
   net::HttpRequestHeaders last_request_headers_;
-
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<chromeos::ScopedLacrosServiceTestHelper>
+      scoped_lacros_test_helper_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<OneGoogleBarLoaderImpl> one_google_bar_loader_;
 };
 
@@ -155,7 +168,7 @@ TEST_F(OneGoogleBarLoaderImplTest, RequestReturns) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -172,7 +185,7 @@ TEST_F(OneGoogleBarLoaderImplTest, HandlesResponsePreamble) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -213,7 +226,7 @@ TEST_F(OneGoogleBarLoaderImplTest, ParsesFullResponse) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -238,8 +251,8 @@ TEST_F(OneGoogleBarLoaderImplTest, CoalescesMultipleRequests) {
   one_google_bar_loader()->Load(second_callback.Get());
 
   // Make sure that a single response causes both callbacks to be called.
-  base::Optional<OneGoogleBarData> first_data;
-  base::Optional<OneGoogleBarData> second_data;
+  absl::optional<OneGoogleBarData> first_data;
+  absl::optional<OneGoogleBarData> second_data;
 
   base::RunLoop loop;
   EXPECT_CALL(first_callback, Run(OneGoogleBarLoader::Status::OK, _))
@@ -261,7 +274,7 @@ TEST_F(OneGoogleBarLoaderImplTest, NetworkErrorIsTransient) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::TRANSIENT_ERROR,
-                            Eq(base::nullopt)))
+                            Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -274,7 +287,7 @@ TEST_F(OneGoogleBarLoaderImplTest, InvalidJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -290,7 +303,7 @@ TEST_F(OneGoogleBarLoaderImplTest, IncompleteJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -311,9 +324,10 @@ TEST_F(OneGoogleBarLoaderImplTest, MirrorAccountConsistencyNotRequired) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   check_x_chrome_connected_header = true;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade)) {
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (init_params->use_new_account_manager)
     check_x_chrome_connected_header = true;
-  }
 #endif
 
   if (check_x_chrome_connected_header) {
@@ -358,9 +372,10 @@ TEST_F(OneGoogleBarLoaderImplWithMirrorAccountConsistencyTest,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   check_x_chrome_connected_header = true;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade)) {
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (init_params->use_new_account_manager)
     check_x_chrome_connected_header = true;
-  }
 #endif
 
   // Make sure mirror account consistency is requested.
@@ -393,7 +408,7 @@ TEST_F(OneGoogleBarLoaderImplTest, ParsesLanguageCode) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));

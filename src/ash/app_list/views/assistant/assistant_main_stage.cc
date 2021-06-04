@@ -23,6 +23,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
@@ -402,8 +403,8 @@ void AppListAssistantMainStage::OnResponseChanged(
 void AppListAssistantMainStage::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the zero state view and footer.

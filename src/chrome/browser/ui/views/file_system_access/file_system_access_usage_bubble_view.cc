@@ -31,6 +31,8 @@
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/listformatter.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -40,8 +42,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -208,11 +208,11 @@ class CollapsibleListView : public views::View {
     const SkColor disabled_icon_color =
         theme->GetSystemColor(ui::NativeTheme::kColorId_DisabledIconColor);
     views::SetImageFromVectorIconWithColor(
-        expand_collapse_button_, kCaretDownIcon, ui::TableModel::kIconSize,
-        icon_color);
+        expand_collapse_button_, vector_icons::kCaretDownIcon,
+        ui::TableModel::kIconSize, icon_color);
     views::SetToggledImageFromVectorIconWithColor(
-        expand_collapse_button_, kCaretUpIcon, ui::TableModel::kIconSize,
-        icon_color, disabled_icon_color);
+        expand_collapse_button_, vector_icons::kCaretUpIcon,
+        ui::TableModel::kIconSize, icon_color, disabled_icon_color);
   }
 
  private:
@@ -456,7 +456,9 @@ void FileSystemAccessUsageBubbleView::OnDialogCancelled() {
   if (!context)
     return;
 
-  context->RevokeGrants(origin_);
+  context->RevokeGrants(
+      origin_, ChromeFileSystemAccessPermissionContext::
+                   PersistedPermissionOptions::kUpdatePersistedPermission);
 }
 
 void FileSystemAccessUsageBubbleView::WindowClosing() {

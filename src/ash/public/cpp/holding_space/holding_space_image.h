@@ -5,15 +5,13 @@
 #ifndef ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_IMAGE_H_
 #define ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_IMAGE_H_
 
-#include <memory>
-
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/files/file.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -33,9 +31,13 @@ class ASH_PUBLIC_EXPORT HoldingSpaceImage {
                                    const gfx::Size& size,
                                    BitmapCallback callback)>;
 
-  HoldingSpaceImage(const gfx::Size& max_size,
-                    const base::FilePath& backing_file_path,
-                    AsyncBitmapResolver async_bitmap_resolver);
+  // TODO(crbug.com/1189945): Rename to FilesThumbnailImage and create a
+  // PlaceholderImage factory that is passed in which generates/sets images.
+  HoldingSpaceImage(
+      const gfx::Size& max_size,
+      const base::FilePath& backing_file_path,
+      AsyncBitmapResolver async_bitmap_resolver,
+      absl::optional<gfx::ImageSkia> file_type_icon = absl::nullopt);
   HoldingSpaceImage(const HoldingSpaceImage&) = delete;
   HoldingSpaceImage& operator=(const HoldingSpaceImage&) = delete;
   ~HoldingSpaceImage();
@@ -44,6 +46,9 @@ class ASH_PUBLIC_EXPORT HoldingSpaceImage {
   static gfx::Size GetMaxSizeForType(HoldingSpaceItem::Type type);
 
   static void SetUseZeroInvalidationDelayForTesting(bool value);
+
+  static gfx::ImageSkia SuperimposeOverEmptyImage(const gfx::ImageSkia& icon,
+                                                  const gfx::Size& size);
 
   bool operator==(const HoldingSpaceImage& rhs) const;
 
@@ -54,11 +59,13 @@ class ASH_PUBLIC_EXPORT HoldingSpaceImage {
   // Returns the underlying `gfx::ImageSkia`. If `size` is omitted, the
   // `max_size_` passed in the constructor is used. If `size` is present, it
   // must be less than or equal to the `max_size_` passed in the constructor in
-  // order to prevent pixelation that would otherwise occur due to upscaling.
-  // Note that the image source may be dynamically updated, so UI classes should
-  // observe and react to updates.
+  // order to prevent pixelation that would otherwise occur due to upscaling. If
+  // `dark_background` is `true`, file type icons will use lighter foreground
+  // colors to ensure sufficient contrast. Note that the image source may be
+  // dynamically updated, so UI classes should observe and react to updates.
   gfx::ImageSkia GetImageSkia(
-      const base::Optional<gfx::Size>& size = base::nullopt) const;
+      const absl::optional<gfx::Size>& size = absl::nullopt,
+      bool dark_background = false) const;
 
   // Creates new image skia for the item, and thus invalidates currently loaded
   // representation. When the image is requested next time, the image
@@ -98,10 +105,11 @@ class ASH_PUBLIC_EXPORT HoldingSpaceImage {
   const gfx::Size max_size_;
   base::FilePath backing_file_path_;
   AsyncBitmapResolver async_bitmap_resolver_;
-  base::Optional<base::File::Error> async_bitmap_resolver_error_;
+  absl::optional<base::File::Error> async_bitmap_resolver_error_;
 
   gfx::ImageSkia image_skia_;
   gfx::ImageSkia placeholder_;
+  absl::optional<gfx::ImageSkia> file_type_icon_;
 
   // Timer used to throttle image invalidate requests.
   base::OneShotTimer invalidate_timer_;

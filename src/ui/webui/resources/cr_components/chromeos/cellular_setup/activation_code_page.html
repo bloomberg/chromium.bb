@@ -13,12 +13,26 @@
 <dom-module id="activation-code-page">
   <template>
     <style include="iron-positioning">
-      [slot='page-body'] {
-        height: 300px;
-        margin-top: -20px;
+      :host([expanded_]) #pageBody {
+        height: 340px;
+        transition-duration: 200ms;
       }
-      :host {
-        --activation-page-qr-code-detection-height: 155px;
+      :host(:not([expanded_])) #pageBody {
+        height: 282px;
+        transition-duration: 150ms;
+      }
+
+      :host([expanded_]) #esimQrCodeDetection {
+        height: 190px;
+        transition-duration: 200ms;
+      }
+      :host(:not([expanded_])) #esimQrCodeDetection {
+        height: 140px;
+        transition-duration: 150ms;
+      }
+
+      :host(:not([expanded_])) #esimQrCodeDetection:focus-within {
+        background-color: var(--google-grey-refresh-300);
       }
 
       :host cr-button {
@@ -28,13 +42,19 @@
       #esimQrCodeDetection {
         background-color: var(--google-grey-refresh-100);
         border-radius: 4px;
-        height: var(--activation-page-qr-code-detection-height);
         margin: 20px 0 20px 0;
         overflow: hidden;
         position: relative;
       }
 
-      cr-button {
+      paper-spinner-lite {
+        height: 20px;
+        margin-inline-end: 6px;
+        margin-top: 6px;
+        width: 20px;
+      }
+
+      cr-button:not(:focus) {
         border: none;
         box-shadow: none;
       }
@@ -45,6 +65,15 @@
 
       cr-button[disabled] {
         background-color: transparent;
+      }
+
+      cr-button[disabled] > iron-icon {
+        --iron-icon-fill-color: var(--google-grey-600);
+      }
+
+      .animate {
+        transition-property: height;
+        transition-timing-function: cubic-bezier(0.00, 0.00, 0.20, 1.00);
       }
 
       .center {
@@ -91,6 +120,20 @@
         --iron-icon-fill-color: #1A73E8;
       }
 
+      .hidden {
+        visibility: hidden;
+      }
+
+      .visually-hidden {
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
+      }
+
       #scanSucessHeader {
         --iron-icon-fill-color: #1E8E3E;
         margin-bottom: 8px;
@@ -99,6 +142,11 @@
       #scanSuccessMessage {
         color: green;
         font-size: medium;
+      }
+
+      #scanSuccessMessage::selection {
+        background-color: rgb(172, 206, 247);
+        color: green;
       }
 
       #scanFailureHeader {
@@ -132,17 +180,9 @@
         --iron-icon-fill-color: #5F6368;
       }
 
-      paper-spinner-lite {
-        height: 20px;
-        position: absolute;
-        right: 16px;
-        top: 24px;
-        width: 20px;
-      }
-
       #loadingMessage {
         bottom: 0;
-        color: var(--google-grey-refresh-500);
+        color: var(--google-grey-600);
         font-size: var(--cr-form-field-label-font-size);
         letter-spacing: .4px;
         line-height: var(--cr-form-field-label-line-height);
@@ -150,18 +190,29 @@
       }
 
       #video {
-        height: var(--activation-page-qr-code-detection-height);
+        height: inherit;
         transform: rotateY(180deg);
+      }
+
+      #pageBody {
+        margin-top: -20px;
+      }
+
+      #startScanningButton {
+        max-width: 470px;
+        min-width: 345px;
+        text-align: center;
+        width: auto;
       }
     </style>
     <base-page>
-      <div slot="page-body">
-        <span id="scanQrCodeDescription">
-          [[getDescription_(showNoProfilesMessage, cameraCount_ )]]
+      <div slot="page-body" id="pageBody" class="animate">
+        <span aria-live="polite">
+          [[getDescription_(cameraCount_, qrCodeDetector_)]]
         </span>
         <template is="dom-if"
             if="[[isScanningAvailable_(cameraCount_, qrCodeDetector_.*)]]" restamp>
-          <div id="esimQrCodeDetection">
+          <div id="esimQrCodeDetection" class="animate">
             <cr-button id="switchCameraButton"
                 on-click="onSwitchCameraButtonPressed_"
                 hidden$="[[isUiElementHidden_(UiElement.SWITCH_CAMERA, state_, cameraCount_)]]"
@@ -172,12 +223,16 @@
             <video id="video" autoplay muted
                 hidden$="[[isUiElementHidden_(UiElement.VIDEO, state_)]]">
             </video>
-            <div class="center" id="startScanningContainer" class="blue-icon"
+            <template is="dom-if" if="[[qrCodeCameraA11yString_]]" restamp>
+              <div class="visually-hidden" aria-live="polite">
+                [[qrCodeCameraA11yString_]]
+              </div>
+            </template>
+            <div class="center blue-icon" id="startScanningContainer"
                 hidden$="[[isUiElementHidden_(UiElement.START_SCANNING, state_)]]">
               <cr-button class="label"
                   id="startScanningButton"
                   on-click="startScanning_"
-                  aria-describedby="scanQrCodeDescription"
                   disabled="[[isUiElementDisabled_(UiElement.START_SCANNING, state_, showBusy)]]">
                 <iron-icon class="button-image" icon="cellular-setup:camera"></iron-icon>
                 [[i18n('useCamera')]]
@@ -202,12 +257,15 @@
                       [[i18n('scanQrCodeInvalid')]]
                     </span>
                   </div>
-                  <cr-button id="useCameraAgainButton" class="blue-icon"
-                      on-click="startScanning_"
-                      disabled="[[isUiElementDisabled_(UiElement.SCAN_SUCCESS, state_, showBusy)]]">
-                    <iron-icon class="button-image" icon="cellular-setup:camera"></iron-icon>
-                    [[i18n('qrCodeUseCameraAgain')]]
-                  </cr-button>
+                  <template is="dom-if" restamp
+                      if="[[!isUiElementHidden_(UiElement.SCAN_INSTALL_FAILURE, state_)]]">
+                    <cr-button id="useCameraAgainButton" class="blue-icon"
+                        on-click="startScanning_">
+                      <iron-icon class="button-image" icon="cellular-setup:camera">
+                      </iron-icon>
+                      [[i18n('qrCodeUseCameraAgain')]]
+                    </cr-button>
+                  </template>
                 </div>
                 <div id="scanFailureContainer"
                     hidden$="[[isUiElementHidden_(UiElement.SCAN_FAILURE, state_)]]">
@@ -231,16 +289,19 @@
         <div id="activationCodeContainer" class$="[[computeActivationCodeClass_(
               cameraCount_, qrCodeDetector_.*)]]">
           <cr-input id="activationCode"
-            label="[[i18n('activationCode')]]"
-            value="{{activationCode}}"
-            disabled="[[showBusy]]"
-            on-keydown="onKeyDown_"
-            invalid="[[shouldActivationCodeInputBeInvalid_(state_)]]"
-            error-message="[[i18n('scanQrCodeInvalid')]]">
+              label="[[i18n('activationCode')]]"
+              value="{{activationCode}}"
+              disabled="[[showBusy]]"
+              on-keydown="onKeyDown_"
+              invalid="[[shouldActivationCodeInputBeInvalid_(state_)]]"
+              error-message="[[i18n('scanQrCodeInvalid')]]">
+            <template is="dom-if" if="[[showBusy]]">
+              <div slot="suffix">
+                <paper-spinner-lite active>
+                </paper-spinner-lite>
+              </div>
+            </template>
           </cr-input>
-          <paper-spinner-lite active
-              hidden$="[[!showBusy]]">
-          </paper-spinner-lite>
           <div id="loadingMessage" hidden$="[[!showBusy]]">
               [[i18n('scanQrCodeLoading')]]
           </div>

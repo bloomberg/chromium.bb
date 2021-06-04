@@ -125,11 +125,16 @@ void InspectorTraceEvents::WillSendRequest(
     const ResourceResponse& redirect_response,
     const ResourceLoaderOptions&,
     ResourceType,
-    RenderBlockingBehavior render_blocking_behavior) {
+    RenderBlockingBehavior render_blocking_behavior,
+    base::TimeTicks timestamp) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
-  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
-      "ResourceSendRequest", inspector_send_request_event::Data, loader,
-      request.InspectorId(), frame, request, render_blocking_behavior);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
+      timestamp, "data", [&](perfetto::TracedValue ctx) {
+        inspector_send_request_event::Data(std::move(ctx), loader,
+                                           request.InspectorId(), frame,
+                                           request, render_blocking_behavior);
+      });
 }
 
 void InspectorTraceEvents::WillSendNavigationRequest(
@@ -356,7 +361,9 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoFullScreen)
     DEFINE_STRING_MAPPING(PseudoFullScreenAncestor)
     DEFINE_STRING_MAPPING(PseudoFullscreen)
+    DEFINE_STRING_MAPPING(PseudoPaused)
     DEFINE_STRING_MAPPING(PseudoPictureInPicture)
+    DEFINE_STRING_MAPPING(PseudoPlaying)
     DEFINE_STRING_MAPPING(PseudoInRange)
     DEFINE_STRING_MAPPING(PseudoOutOfRange)
     DEFINE_STRING_MAPPING(PseudoWebKitCustomElement)
@@ -381,6 +388,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoXrOverlay)
     DEFINE_STRING_MAPPING(PseudoTargetText)
     DEFINE_STRING_MAPPING(PseudoModal)
+    DEFINE_STRING_MAPPING(PseudoHighlight)
     DEFINE_STRING_MAPPING(PseudoSpellingError)
     DEFINE_STRING_MAPPING(PseudoGrammarError)
 #undef DEFINE_STRING_MAPPING
@@ -447,6 +455,8 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "no data pipe received";
     case ScriptStreamer::NotStreamingReason::kDisabledByFeatureList:
       return "streaming disabled from the feature list";
+    case ScriptStreamer::NotStreamingReason::kErrorScriptTypeMismatch:
+      return "wrong script type";
     case ScriptStreamer::NotStreamingReason::kNonJavascriptModule:
       return "not a javascript module";
     case ScriptStreamer::NotStreamingReason::kLoadingCancelled:
@@ -1204,8 +1214,8 @@ inspector_compile_script_event::V8CacheResult::ConsumeResult::ConsumeResult(
 }
 
 inspector_compile_script_event::V8CacheResult::V8CacheResult(
-    base::Optional<ProduceResult> produce_result,
-    base::Optional<ConsumeResult> consume_result)
+    absl::optional<ProduceResult> produce_result,
+    absl::optional<ConsumeResult> consume_result)
     : produce_result(std::move(produce_result)),
       consume_result(std::move(consume_result)) {}
 

@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_FRAME_NAVIGATION_STATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_FRAME_NAVIGATION_STATE_H_
 
-#include <map>
-#include <set>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/render_document_host_user_data.h"
@@ -38,6 +35,7 @@ class FrameNavigationState
   // Starts to track a document load to |url|.
   void StartTrackingDocumentLoad(const GURL& url,
                                  bool is_same_document,
+                                 bool is_from_back_forward_cache,
                                  bool is_error_page);
 
   // Returns the URL corresponding to a tracked |frame_host|.

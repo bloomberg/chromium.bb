@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
@@ -37,12 +38,6 @@ const CGFloat kOffsetToPinOmnibox = 100;
 
 @interface NewTabPageViewController () <NewTabPageOmniboxPositioning,
                                         UIGestureRecognizerDelegate>
-
-// View controller representing the NTP content suggestions. These suggestions
-// include the most visited site tiles, the shortcut tiles, the fake omnibox and
-// the Google doodle.
-@property(nonatomic, strong)
-    UICollectionViewController* contentSuggestionsViewController;
 
 // The overscroll actions controller managing accelerators over the toolbar.
 @property(nonatomic, strong)
@@ -85,18 +80,8 @@ const CGFloat kOffsetToPinOmnibox = 100;
 @synthesize headerSynchronizer = _headerSynchronizer;
 @synthesize scrolledToTop = _scrolledToTop;
 
-- (instancetype)initWithContentSuggestionsViewController:
-    (UICollectionViewController*)contentSuggestionsViewController {
-  self = [super initWithNibName:nil bundle:nil];
-  if (self) {
-    _contentSuggestionsViewController = contentSuggestionsViewController;
-    // TODO(crbug.com/1114792): Instantiate this depending on the initial scroll
-    // position.
-    // TODO(crbug.com/1114792): Stick the fake omnibox based on default scroll
-    // position.
-  }
-
-  return self;
+- (instancetype)init {
+  return [super initWithNibName:nil bundle:nil];
 }
 
 - (void)dealloc {
@@ -107,11 +92,15 @@ const CGFloat kOffsetToPinOmnibox = 100;
   [super viewDidLoad];
 
   DCHECK(self.discoverFeedWrapperViewController);
+  DCHECK(self.contentSuggestionsViewController);
 
   // Prevent the NTP from spilling behind the toolbar and tab strip.
   self.view.clipsToBounds = YES;
 
   UIView* discoverFeedView = self.discoverFeedWrapperViewController.view;
+
+  self.discoverFeedWrapperViewController.feedCollectionView
+      .accessibilityIdentifier = kNTPCollectionViewIdentifier;
 
   [self.discoverFeedWrapperViewController willMoveToParentViewController:self];
   [self addChildViewController:self.discoverFeedWrapperViewController];
@@ -150,18 +139,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
       NO;
   self.contentSuggestionsViewController.collectionView.scrollEnabled = NO;
 
-  // Overscroll action does not work well with content offset, so set this
-  // to never and internally offset the UI to account for safe area insets.
-  self.discoverFeedWrapperViewController.feedCollectionView
-      .contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-
-  self.overscrollActionsController = [[OverscrollActionsController alloc]
-      initWithScrollView:self.discoverFeedWrapperViewController
-                             .feedCollectionView];
-  [self.overscrollActionsController
-      setStyle:OverscrollStyle::NTP_NON_INCOGNITO];
-  self.overscrollActionsController.delegate = self.overscrollDelegate;
-  [self updateOverscrollActionsState];
+  [self configureOverscrollActionsController];
 
   self.view.backgroundColor = ntp_home::kNTPBackgroundColor();
 
@@ -483,6 +461,27 @@ const CGFloat kOffsetToPinOmnibox = 100;
 }
 
 #pragma mark - Private
+
+// Configures overscroll actions controller.
+- (void)configureOverscrollActionsController {
+  // Ensure the feed's scroll view exists to prevent crashing the overscroll
+  // controller.
+  if (!self.discoverFeedWrapperViewController.feedCollectionView) {
+    return;
+  }
+  // Overscroll action does not work well with content offset, so set this
+  // to never and internally offset the UI to account for safe area insets.
+  self.discoverFeedWrapperViewController.feedCollectionView
+      .contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+
+  self.overscrollActionsController = [[OverscrollActionsController alloc]
+      initWithScrollView:self.discoverFeedWrapperViewController
+                             .feedCollectionView];
+  [self.overscrollActionsController
+      setStyle:OverscrollStyle::NTP_NON_INCOGNITO];
+  self.overscrollActionsController.delegate = self.overscrollDelegate;
+  [self updateOverscrollActionsState];
+}
 
 // Enables or disables overscroll actions.
 - (void)updateOverscrollActionsState {

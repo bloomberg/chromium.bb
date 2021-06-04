@@ -30,6 +30,7 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -158,9 +159,8 @@ class PLATFORM_EXPORT GraphicsContext {
   }
 
   SkSamplingOptions ImageSamplingOptions() const {
-    return SkSamplingOptions(
-        static_cast<SkFilterQuality>(ImageInterpolationQuality()),
-        SkSamplingOptions::kMedium_asMipmapLinear);
+    return PaintFlags::FilterQualityToSkSamplingOptions(
+        static_cast<SkFilterQuality>(ImageInterpolationQuality()));
   }
 
   // Specify the device scale factor which may change the way document markers
@@ -391,8 +391,8 @@ class PLATFORM_EXPORT GraphicsContext {
   SkSamplingOptions ComputeSamplingOptions(Image* image,
                                            const FloatRect& dest,
                                            const FloatRect& src) const {
-    return SkSamplingOptions(ComputeFilterQuality(image, dest, src),
-                             SkSamplingOptions::kMedium_asMipmapLinear);
+    return PaintFlags::FilterQualityToSkSamplingOptions(
+        ComputeFilterQuality(image, dest, src));
   }
 
   // Sets target URL of a clickable area.
@@ -499,6 +499,10 @@ class PLATFORM_EXPORT GraphicsContext {
   }
 
   class DarkModeFlags;
+
+  bool ShouldDrawDarkModeTextContrastOutline(
+      const PaintFlags& original_flags,
+      const DarkModeFlags& dark_flags) const;
 
   // This is owned by paint_recorder_. Never delete this object.
   // Drawing operations are allowed only after the first BeginRecording() which

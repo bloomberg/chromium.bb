@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/float32_array_or_float64_array_or_dom_matrix.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_spatial_sensor_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/sensor/sensor.h"
 
@@ -16,8 +17,13 @@ class OrientationSensor : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  base::Optional<Vector<double>> quaternion();
+  absl::optional<Vector<double>> quaternion();
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void populateMatrix(const V8RotationMatrixType* target_buffer,
+                      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void populateMatrix(Float32ArrayOrFloat64ArrayOrDOMMatrix&, ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool isReadingDirty() const;
 

@@ -71,7 +71,7 @@ void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
   // text which is left empty when the banner should not be shown.
   std::u16string eol_return_banner_text;
   if (device_managed && handler->ShouldShowUpdateRequiredEolBanner()) {
-    base::Optional<int> days = handler->GetTimeRemainingInDays();
+    absl::optional<int> days = handler->GetTimeRemainingInDays();
     // We only need to show the banner if less than equal to one week remains to
     // reach the update required deadline.
     if (days && days.value() <= 7) {
@@ -126,6 +126,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
       {"deviceOn", IDS_SETTINGS_DEVICE_ON},
       {"disable", IDS_DISABLE},
+      {"dismiss", IDS_SETTINGS_DISMISS},
       {"done", IDS_DONE},
       {"edit", IDS_SETTINGS_EDIT},
       {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},

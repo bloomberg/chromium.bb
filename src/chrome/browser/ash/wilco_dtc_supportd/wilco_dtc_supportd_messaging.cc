@@ -35,7 +35,7 @@
 
 class Profile;
 
-namespace chromeos {
+namespace ash {
 
 // List of extension URLs that will communicate with wilco_dtc
 // through the extensions native messaging system.
@@ -115,7 +115,7 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
       return;
     }
 
-    wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceProxy* const
+    chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceProxy* const
         wilco_dtc_supportd_mojo_proxy =
             wilco_dtc_supportd_bridge->wilco_dtc_supportd_service_mojo_proxy();
     if (!wilco_dtc_supportd_mojo_proxy) {
@@ -189,7 +189,7 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
       return;
     }
 
-    client_->PostMessageFromNativeHost(response_json_string.as_string());
+    client_->PostMessageFromNativeHost(std::string(response_json_string));
     DisposeSelf(std::string() /* error_message */);
   }
 
@@ -407,4 +407,4 @@ void DeliverWilcoDtcSupportdUiMessageToExtensions(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

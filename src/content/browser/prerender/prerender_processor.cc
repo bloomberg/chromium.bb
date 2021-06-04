@@ -6,11 +6,9 @@
 
 #include "base/feature_list.h"
 #include "content/browser/prerender/prerender_host.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/storage_partition_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -18,8 +16,11 @@ namespace content {
 PrerenderProcessor::PrerenderProcessor(
     RenderFrameHostImpl& initiator_render_frame_host)
     : initiator_render_frame_host_(initiator_render_frame_host),
-      initiator_origin_(initiator_render_frame_host.GetLastCommittedOrigin()) {
+      initiator_origin_(initiator_render_frame_host.GetLastCommittedOrigin()),
+      registry_(
+          initiator_render_frame_host.delegate()->GetPrerenderHostRegistry()) {
   DCHECK(blink::features::IsPrerender2Enabled());
+  observation_.Observe(registry_);
 }
 
 PrerenderProcessor::~PrerenderProcessor() {
@@ -51,10 +52,10 @@ void PrerenderProcessor::Start(
   // Prerendering is only supported for <link rel=prerender>.
   // We may want to support it for <link rel=next> if NoStatePrefetch re-enables
   // it again. See https://crbug.com/1161545.
-  switch (attributes->rel_type) {
-    case blink::mojom::PrerenderRelType::kPrerender:
+  switch (attributes->trigger_type) {
+    case blink::mojom::PrerenderTriggerType::kLinkRelPrerender:
       break;
-    case blink::mojom::PrerenderRelType::kNext:
+    case blink::mojom::PrerenderTriggerType::kLinkRelNext:
       return;
   }
 
@@ -65,12 +66,6 @@ void PrerenderProcessor::Start(
   // TODO(https://crbug.com/1138711, https://crbug.com/1138723): Abort if the
   // initiator frame is not the main frame (i.e., iframe or pop-up window).
 
-  auto* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(&initiator_render_frame_host_));
-
-  if (!web_contents)
-    return;
-
   // The origin may have changed if a same-site navigation occurred in the frame
   // after the PrerenderProcessor was created.
   if (initiator_render_frame_host_.GetLastCommittedOrigin() !=
@@ -78,7 +73,17 @@ void PrerenderProcessor::Start(
     return;
   }
 
-  prerender_frame_tree_node_id_ = GetPrerenderHostRegistry().CreateAndStartHost(
+  // Report bad message if asked to prerender webUI.
+  std::string scheme = attributes->url.scheme();
+  const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (base::Contains(webui_schemes, scheme)) {
+    mojo::ReportBadMessage("PP_WEBUI");
+    return;
+  }
+
+  if (!registry_)
+    return;
+  prerender_frame_tree_node_id_ = registry_->CreateAndStartHost(
       std::move(attributes), initiator_render_frame_host_);
 }
 
@@ -91,17 +96,20 @@ void PrerenderProcessor::Cancel() {
   CancelPrerendering();
 }
 
+void PrerenderProcessor::OnRegistryDestroyed() {
+  DCHECK(registry_);
+  registry_ = nullptr;
+  observation_.Reset();
+}
+
 void PrerenderProcessor::CancelPrerendering() {
   TRACE_EVENT0("navigation", "PrerenderProcessor::CancelPrerendering");
   DCHECK_EQ(state_, State::kStarted);
   state_ = State::kCancelled;
-  GetPrerenderHostRegistry().AbandonHost(prerender_frame_tree_node_id_);
-}
 
-PrerenderHostRegistry& PrerenderProcessor::GetPrerenderHostRegistry() {
-  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-      initiator_render_frame_host_.GetStoragePartition());
-  return *storage_partition_impl->GetPrerenderHostRegistry();
+  if (!registry_)
+    return;
+  registry_->AbandonHost(prerender_frame_tree_node_id_);
 }
 
 }  // namespace content

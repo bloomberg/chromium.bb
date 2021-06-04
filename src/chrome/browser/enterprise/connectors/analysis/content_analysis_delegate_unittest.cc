@@ -16,6 +16,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -513,12 +514,14 @@ TEST_F(ContentAnalysisDelegateIsEnabledTest, NoScanInIncognito) {
 
   // The same URL should not trigger a scan in incognito.
   EXPECT_FALSE(ContentAnalysisDelegate::IsEnabled(
-      profile()->GetPrimaryOTRProfile(), url, &data, FILE_ATTACHED));
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), url, &data,
+      FILE_ATTACHED));
 
   // The same URL should not trigger a scan in non-primary OTR profiles
   EXPECT_FALSE(ContentAnalysisDelegate::IsEnabled(
       profile()->GetOffTheRecordProfile(
-          Profile::OTRProfileID("Test::DeepScanning")),
+          Profile::OTRProfileID::CreateUniqueForTesting(),
+          /*create_if_needed=*/true),
       url, &data, FILE_ATTACHED));
 }
 
@@ -671,7 +674,7 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
   std::set<base::FilePath> encrypted_;
 
   // DLP response to ovewrite in the callback if present.
-  base::Optional<ContentAnalysisResponse> dlp_response_ = base::nullopt;
+  absl::optional<ContentAnalysisResponse> dlp_response_ = absl::nullopt;
 };
 
 TEST_F(ContentAnalysisDelegateAuditOnlyTest, Empty) {
@@ -1623,7 +1626,7 @@ class ContentAnalysisDelegateSettingsTest
   const char* bool_setting() const { return GetParam() ? "true" : "false"; }
 
   AnalysisSettings settings() {
-    base::Optional<AnalysisSettings> settings =
+    absl::optional<AnalysisSettings> settings =
         ConnectorsServiceFactory::GetForBrowserContext(profile())
             ->GetAnalysisSettings(GURL(kTestUrl), FILE_ATTACHED);
     EXPECT_TRUE(settings.has_value());

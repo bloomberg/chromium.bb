@@ -134,7 +134,7 @@ CullRect::ApplyTransformResult CullRect::ApplyScrollTranslation(
 
 void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
                                const TransformPaintPropertyNode& destination,
-                               const base::Optional<CullRect>& old_cull_rect) {
+                               const absl::optional<CullRect>& old_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   Vector<const TransformPaintPropertyNode*> scroll_translations;
@@ -177,24 +177,30 @@ void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
   }
 }
 
-void CullRect::ApplyPaintPropertiesWithoutExpansion(
+bool CullRect::ApplyPaintPropertiesWithoutExpansion(
     const PropertyTreeState& source,
     const PropertyTreeState& destination) {
   FloatClipRect clip_rect =
       GeometryMapper::LocalToAncestorClipRect(destination, source);
-  if (!clip_rect.IsInfinite())
+  if (!clip_rect.IsInfinite()) {
     rect_.Intersect(EnclosingIntRect(clip_rect.Rect()));
+    if (rect_.IsEmpty())
+      return false;
+  }
   if (!IsInfinite()) {
     GeometryMapper::SourceToDestinationRect(source.Transform(),
                                             destination.Transform(), rect_);
   }
+  // Return true even if the transformed rect is empty (e.g. by rotateX(90deg))
+  // because later transforms may make the content visible again.
+  return true;
 }
 
-void CullRect::ApplyPaintProperties(
+bool CullRect::ApplyPaintProperties(
     const PropertyTreeState& root,
     const PropertyTreeState& source,
     const PropertyTreeState& destination,
-    const base::Optional<CullRect>& old_cull_rect) {
+    const absl::optional<CullRect>& old_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
          RuntimeEnabledFeatures::CullRectUpdateEnabled());
 
@@ -229,8 +235,7 @@ void CullRect::ApplyPaintProperties(
     // Either the transform or the clip of |source| is not an ancestor of
     // |destination|. Map infinite rect from the root.
     *this = Infinite();
-    ApplyPaintProperties(root, root, destination, old_cull_rect);
-    return;
+    return ApplyPaintProperties(root, root, destination, old_cull_rect);
   }
 
   // These are either the source transform/clip or the last scroll
@@ -248,14 +253,17 @@ void CullRect::ApplyPaintProperties(
     if (scroll_translation_it == scroll_translations.rend())
       break;
 
-    const auto* scroll_translation = *scroll_translation_it++;
+    const auto* scroll_translation = *scroll_translation_it;
     if (&clip->LocalTransformSpace() != scroll_translation->Parent())
       continue;
+    ++scroll_translation_it;
 
-    ApplyPaintPropertiesWithoutExpansion(
-        PropertyTreeState(*last_transform, *last_clip, effect_root),
-        PropertyTreeState(*scroll_translation->UnaliasedParent(), *clip,
-                          effect_root));
+    if (!ApplyPaintPropertiesWithoutExpansion(
+            PropertyTreeState(*last_transform, *last_clip, effect_root),
+            PropertyTreeState(*scroll_translation->UnaliasedParent(), *clip,
+                              effect_root)))
+      return false;
+
     last_scroll_translation_result =
         ApplyScrollTranslation(root.Transform(), *scroll_translation);
 
@@ -263,8 +271,10 @@ void CullRect::ApplyPaintProperties(
     last_clip = clip;
   }
 
-  ApplyPaintPropertiesWithoutExpansion(
-      PropertyTreeState(*last_transform, *last_clip, effect_root), destination);
+  if (!ApplyPaintPropertiesWithoutExpansion(
+          PropertyTreeState(*last_transform, *last_clip, effect_root),
+          destination))
+    return false;
 
   // Since the cull rect mapping above can produce extremely large numbers in
   // cases of perspective, try our best to "normalize" the result by ensuring
@@ -312,6 +322,8 @@ void CullRect::ApplyPaintProperties(
   if (expanded && old_cull_rect &&
       !ChangedEnough(*old_cull_rect, expansion_bounds))
     rect_ = old_cull_rect->Rect();
+
+  return expanded;
 }
 
 bool CullRect::ChangedEnough(const CullRect& old_cull_rect,

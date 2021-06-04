@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
@@ -129,7 +130,7 @@ void DataReductionProxySettingsTestBase::CheckDataReductionProxySyntheticTrial(
 bool DataReductionProxySettingsTestBase::OnSyntheticFieldTrialRegistration(
     base::StringPiece trial_name,
     base::StringPiece group_name) {
-  synthetic_field_trials_[trial_name.as_string()] = group_name.as_string();
+  synthetic_field_trials_[std::string(trial_name)] = std::string(group_name);
   return true;
 }
 

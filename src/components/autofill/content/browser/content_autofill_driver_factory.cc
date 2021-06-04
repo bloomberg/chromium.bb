@@ -12,7 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
@@ -28,10 +28,13 @@ std::unique_ptr<AutofillDriver> CreateDriver(
     content::RenderFrameHost* render_frame_host,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
-    AutofillProvider* provider) {
+    BrowserAutofillManager::AutofillDownloadManagerState
+        enable_download_manager,
+    AutofillManager::AutofillManagerFactoryCallback
+        autofill_manager_factory_callback) {
   return std::make_unique<ContentAutofillDriver>(
-      render_frame_host, client, app_locale, enable_download_manager, provider);
+      render_frame_host, client, app_locale, enable_download_manager,
+      std::move(autofill_manager_factory_callback));
 }
 
 }  // namespace
@@ -47,24 +50,29 @@ void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
-  CreateForWebContentsAndDelegate(contents, client, app_locale,
-                                  enable_download_manager, nullptr);
+    BrowserAutofillManager::AutofillDownloadManagerState
+        enable_download_manager) {
+  CreateForWebContentsAndDelegate(
+      contents, client, app_locale, enable_download_manager,
+      AutofillManager::AutofillManagerFactoryCallback());
 }
 
 void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
-    AutofillProvider* provider) {
+    BrowserAutofillManager::AutofillDownloadManagerState
+        enable_download_manager,
+    AutofillManager::AutofillManagerFactoryCallback
+        autofill_manager_factory_callback) {
   if (FromWebContents(contents))
     return;
 
   contents->SetUserData(
       kContentAutofillDriverFactoryWebContentsUserDataKey,
       std::make_unique<ContentAutofillDriverFactory>(
-          contents, client, app_locale, enable_download_manager, provider));
+          contents, client, app_locale, enable_download_manager,
+          std::move(autofill_manager_factory_callback)));
 }
 
 // static
@@ -102,13 +110,16 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
     content::WebContents* web_contents,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
-    AutofillProvider* provider)
+    BrowserAutofillManager::AutofillDownloadManagerState
+        enable_download_manager,
+    AutofillManager::AutofillManagerFactoryCallback
+        autofill_manager_factory_callback)
     : AutofillDriverFactory(client),
       content::WebContentsObserver(web_contents),
       app_locale_(app_locale),
       enable_download_manager_(enable_download_manager),
-      provider_(provider) {}
+      autofill_manager_factory_callback_(
+          std::move(autofill_manager_factory_callback)) {}
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
@@ -116,10 +127,10 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
 
   // ContentAutofillDriver are created on demand here.
   if (!driver) {
-    AddForKey(
-        render_frame_host,
-        base::BindRepeating(CreateDriver, render_frame_host, client(),
-                            app_locale_, enable_download_manager_, provider_));
+    AddForKey(render_frame_host,
+              base::BindRepeating(CreateDriver, render_frame_host, client(),
+                                  app_locale_, enable_download_manager_,
+                                  autofill_manager_factory_callback_));
     driver = DriverForKey(render_frame_host);
   }
 

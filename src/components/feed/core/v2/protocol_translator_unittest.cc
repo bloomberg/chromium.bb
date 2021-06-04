@@ -95,7 +95,7 @@ RefreshResponseData TranslateWireResponse(feedwire::Response response,
 RefreshResponseData TranslateWireResponse(feedwire::Response response) {
   return TranslateWireResponse(response, true);
 }
-base::Optional<feedstore::DataOperation> TranslateDataOperation(
+absl::optional<feedstore::DataOperation> TranslateDataOperation(
     feedwire::DataOperation operation) {
   return ::feed::TranslateDataOperation(base::Time(), std::move(operation));
 }
@@ -202,7 +202,7 @@ TEST(ProtocolTranslatorTest, MissingResponseVersion) {
 TEST(ProtocolTranslatorTest, TranslateContent) {
   feedwire::DataOperation wire_operation =
       MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
-  base::Optional<feedstore::DataOperation> translated =
+  absl::optional<feedstore::DataOperation> translated =
       TranslateDataOperation(wire_operation);
   EXPECT_TRUE(translated);
   EXPECT_EQ("content", translated->content().frame());
@@ -308,6 +308,16 @@ stream_data: {
   shared_state_ids {
     content_domain: "render_data"
   }
+  content_ids: 3328940074512586021
+  content_ids: 8191455549164721606
+  content_ids: -8109602013173974591
+  content_ids: -8979410608587540000
+  content_ids: -8421826555441408245
+  content_ids: -3490122365494686813
+  content_ids: 2741853109953412745
+  content_ids: 586433679892097787
+  content_ids: 790985792726953756
+  content_ids: 7324025093440047528
 }
 content: {
   content_id {

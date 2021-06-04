@@ -21,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -64,11 +63,6 @@ const char kLastLoggedInGaiaUser[] = "LastLoggedInRegularUser";
 // session restore.
 const char kLastActiveUser[] = "LastActiveUser";
 
-// Histogram for tracking the number of deprecated legacy supervised user
-// cryptohomes remaining in the wild.
-const char kHideLegacySupervisedUserHistogramName[] =
-    "ChromeOS.LegacySupervisedUsers.HiddenFromLoginScreen";
-
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -95,6 +89,13 @@ UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
 }  // namespace
 
 // static
+const char UserManagerBase::kLegacySupervisedUsersHistogramName[] =
+    "ChromeOS.LegacySupervisedUsers.HiddenFromLoginScreen";
+// static
+const base::Feature UserManagerBase::kRemoveLegacySupervisedUsersOnStartup{
+    "RemoveLegacySupervisedUsersOnStartup", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kRegularUsersPref);
   registry->RegisterStringPref(kLastLoggedInGaiaUser, std::string());
@@ -106,7 +107,7 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserType);
   registry->RegisterStringPref(kLastActiveUser, std::string());
 
-  known_user::RegisterPrefs(registry);
+  KnownUser::RegisterPrefs(registry);
 }
 
 UserManagerBase::UserManagerBase(
@@ -329,7 +330,7 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
 void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   RemoveNonCryptohomeData(account_id);
-  known_user::RemovePrefs(account_id);
+  KnownUser(GetLocalState()).RemovePrefs(account_id);
   if (user_loading_stage_ == STAGE_LOADED) {
     // After the User object is deleted from memory in DeleteUser() here,
     // the account_id reference will be invalid if the reference points
@@ -805,10 +806,13 @@ void UserManagerBase::EnsureUsersLoaded() {
   for (std::vector<AccountId>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
     if (IsDeprecatedSupervisedAccountId(*it)) {
-      base::UmaHistogramBoolean(kHideLegacySupervisedUserHistogramName, true);
+      RemoveLegacySupervisedUser(*it);
+      // Hide legacy supervised users from the login screen if not removed.
       continue;
     }
-    base::UmaHistogramBoolean(kHideLegacySupervisedUserHistogramName, false);
+    base::UmaHistogramEnumeration(
+        kLegacySupervisedUsersHistogramName,
+        LegacySupervisedUserStatus::kGaiaUserDisplayed);
     User* user =
         User::CreateRegularUser(*it, GetStoredUserType(prefs_user_types, *it));
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
@@ -912,7 +916,8 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   }
 
   AddUserRecord(active_user_);
-  known_user::SetIsEphemeralUser(active_user_->GetAccountId(), false);
+  KnownUser(GetLocalState())
+      .SetIsEphemeralUser(active_user_->GetAccountId(), false);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
@@ -925,7 +930,8 @@ void UserManagerBase::RegularUserLoggedInAsEphemeral(
   SetIsCurrentUserNew(true);
   is_current_user_ephemeral_regular_user_ = true;
   active_user_ = User::CreateRegularUser(account_id, user_type);
-  known_user::SetIsEphemeralUser(active_user_->GetAccountId(), true);
+  KnownUser(GetLocalState())
+      .SetIsEphemeralUser(active_user_->GetAccountId(), true);
 }
 
 void UserManagerBase::NotifyActiveUserChanged(User* active_user) {
@@ -989,7 +995,7 @@ void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
   DictionaryPrefUpdate prefs_force_online_update(prefs, kUserForceOnlineSignin);
   prefs_force_online_update->RemoveKey(account_id.GetUserEmail());
 
-  known_user::RemovePrefs(account_id);
+  KnownUser(prefs).RemovePrefs(account_id);
 
   const AccountId last_active_user =
       AccountId::FromUserEmail(GetLocalState()->GetString(kLastActiveUser));
@@ -1037,8 +1043,15 @@ void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
 
 void UserManagerBase::Initialize() {
   UserManager::Initialize();
-  if (!HasBrowserRestarted())
-    known_user::CleanEphemeralUsers();
+  if (!HasBrowserRestarted()) {
+    PrefService* local_state = GetLocalState();
+    // local_state may be null in unit tests.
+    if (local_state) {
+      KnownUser known_user(local_state);
+      known_user.CleanEphemeralUsers();
+      known_user.CleanObsoletePrefs();
+    }
+  }
   CallUpdateLoginState();
 }
 
@@ -1091,7 +1104,7 @@ void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
                        std::move(resolved_locale)),
         raw_resolved_locale);
   } else {
-    resolved_locale.reset(new std::string(locale));
+    resolved_locale = std::make_unique<std::string>(locale);
     DoUpdateAccountLocale(account_id, std::move(resolved_locale));
   }
 }
@@ -1109,6 +1122,25 @@ void UserManagerBase::DeleteUser(User* user) {
   delete user;
   if (is_active_user)
     active_user_ = nullptr;
+}
+
+// TODO(crbug/1189715): Remove dormant legacy supervised user cryptohomes. After
+// we have enough confidence that there are no more supervised users on devices
+// in the wild, remove this.
+void UserManagerBase::RemoveLegacySupervisedUser(const AccountId& account_id) {
+  DCHECK(IsDeprecatedSupervisedAccountId(account_id));
+  if (base::FeatureList::IsEnabled(kRemoveLegacySupervisedUsersOnStartup)) {
+    // Since we skip adding legacy supervised users to the users list,
+    // FindUser(account_id) returns nullptr and CanUserBeRemoved() returns
+    // false. This is why we call RemoveUserInternal() directly instead of
+    // RemoveUser().
+    RemoveUserInternal(account_id, /*delegate=*/nullptr);
+    base::UmaHistogramEnumeration(kLegacySupervisedUsersHistogramName,
+                                  LegacySupervisedUserStatus::kLSUDeleted);
+  } else {
+    base::UmaHistogramEnumeration(kLegacySupervisedUsersHistogramName,
+                                  LegacySupervisedUserStatus::kLSUHidden);
+  }
 }
 
 }  // namespace user_manager

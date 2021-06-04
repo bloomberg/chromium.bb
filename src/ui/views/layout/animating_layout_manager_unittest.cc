@@ -10,6 +10,7 @@
 
 #include "base/scoped_observation.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_test_api.h"
@@ -57,7 +58,7 @@ class TestView : public View {
   }
 
  private:
-  base::Optional<gfx::Size> minimum_size_;
+  absl::optional<gfx::Size> minimum_size_;
   bool fix_area_ = false;
 };
 
@@ -339,11 +340,11 @@ TEST_F(AnimatingLayoutManagerTest, HostInvalidate_NoAnimateBounds_NoAnimation) {
   auto* const test_layout =
       layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
   test_layout->SetLayout(layout1());
-  layout()->ResetLayout();
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
 
   // First layout. Should not be animating.
-  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(layout1().host_size, view()->size());
   EnsureLayout(layout1());
@@ -355,30 +356,6 @@ TEST_F(AnimatingLayoutManagerTest, HostInvalidate_NoAnimateBounds_NoAnimation) {
   EnsureLayout(layout1());
 }
 
-TEST_F(AnimatingLayoutManagerTest, HostResize_NoAnimateBounds_NoAnimation) {
-  layout()->SetBoundsAnimationMode(
-      AnimatingLayoutManager::BoundsAnimationMode::kUseHostBounds);
-  auto* const test_layout =
-      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
-  test_layout->SetLayout(layout1());
-  layout()->ResetLayout();
-  SizeAndLayout();
-
-  // First layout. Should not be animating.
-  view()->Layout();
-  EXPECT_FALSE(layout()->is_animating());
-  EXPECT_EQ(layout1().host_size, view()->size());
-  EnsureLayout(layout1());
-
-  // Because the size of the host view changed, there is no animation.
-  test_layout->SetLayout(layout2());
-  SizeAndLayout();
-  view()->Layout();
-  EXPECT_FALSE(layout()->is_animating());
-  EXPECT_EQ(layout2().host_size, view()->size());
-  EnsureLayout(layout2());
-}
-
 TEST_F(AnimatingLayoutManagerTest,
        HostInvalidate_NoAnimateBounds_NewLayoutTriggersAnimation) {
   layout()->SetBoundsAnimationMode(
@@ -386,11 +363,11 @@ TEST_F(AnimatingLayoutManagerTest,
   auto* const test_layout =
       layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
   test_layout->SetLayout(layout1());
-  layout()->ResetLayout();
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
 
   // First layout. Should not be animating.
-  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(layout1().host_size, view()->size());
   EnsureLayout(layout1());
@@ -412,11 +389,11 @@ TEST_F(AnimatingLayoutManagerTest,
   auto* const test_layout =
       layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
   test_layout->SetLayout(layout1());
-  layout()->ResetLayout();
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
 
   // First layout. Should not be animating.
-  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(layout1().host_size, view()->size());
   EnsureLayout(layout1());
@@ -865,6 +842,7 @@ TEST_F(AnimatingLayoutManagerTest,
       .SetDefault(kFlexBehaviorKey, kDropOut);
   view()->SetSize({20, 35});
   layout()->ResetLayout();
+  view()->Layout();
 
   // Sanity check...
   const ProposedLayout initial_layout{{20, 50},
@@ -908,6 +886,7 @@ TEST_F(AnimatingLayoutManagerTest,
       .SetDefault(kFlexBehaviorKey, kDropOut);
   view()->SetSize({20, 35});
   layout()->ResetLayout();
+  view()->Layout();
 
   // Sanity check...
   const ProposedLayout initial_layout{{20, 50},
@@ -944,6 +923,7 @@ TEST_F(AnimatingLayoutManagerTest,
       .SetDefault(kFlexBehaviorKey, kDropOut);
   view()->SetSize({20, 35});
   layout()->ResetLayout();
+  view()->Layout();
 
   // Sanity check...
   const ProposedLayout initial_layout{{20, 50},
@@ -1242,6 +1222,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOutOnVisibilitySet) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1300,6 +1282,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnVisibilitySet) {
 
   // Set up the initial state of the host view and children.
   view()->SetSize(expected_end.host_size);
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1328,7 +1312,7 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnVisibilitySet) {
 
 // Regression test for issues: crbug.com/1021332, crbug.com/1003500
 TEST_F(AnimatingLayoutManagerTest,
-       FlexLayout_AnimateOutOnDescendentVisbilitySet) {
+       FlexLayout_AnimateOutOnDescendentVisibilitySet) {
   constexpr gfx::Insets kChildMargins(5);
   layout()->SetBoundsAnimationMode(
       AnimatingLayoutManager::BoundsAnimationMode::kUseHostBounds);
@@ -1363,6 +1347,8 @@ TEST_F(AnimatingLayoutManagerTest,
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1391,7 +1377,7 @@ TEST_F(AnimatingLayoutManagerTest,
 
 // Regression test for issues: crbug.com/1021332, crbug.com/1003500
 TEST_F(AnimatingLayoutManagerTest,
-       FlexLayout_AnimateInOnDescendentVisbilitySet) {
+       FlexLayout_AnimateInOnDescendentVisibilitySet) {
   constexpr gfx::Insets kChildMargins(5);
   layout()->SetBoundsAnimationMode(
       AnimatingLayoutManager::BoundsAnimationMode::kUseHostBounds);
@@ -1427,6 +1413,8 @@ TEST_F(AnimatingLayoutManagerTest,
 
   // Set up the initial state of the host view and children.
   view()->SetSize(expected_end.host_size);
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1475,6 +1463,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_RemoveFadingViewDoesNotCrash) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1514,6 +1504,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_RemoveShowingViewDoesNotCrash) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
 
   layout()->FadeIn(child(1));
@@ -1877,6 +1869,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnAdded) {
 
   // Set up the initial state of the host view and children.
   view()->SetSize(expected_end.host_size);
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1934,6 +1928,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeIn) {
 
   // Set up the initial state of the host view and children.
   view()->SetSize(expected_end.host_size);
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -1991,6 +1987,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2052,6 +2050,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut_NoCrashOnRemove) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2107,6 +2107,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeOut_IgnoreChildView) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2159,6 +2161,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_SlideAfterViewHidden) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2211,6 +2215,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_SlideAfterViewRemoved) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2269,6 +2275,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_RedirectAnimation) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -2329,6 +2337,8 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_ResetAnimation) {
 
   // Set up the initial state of the host view and children.
   SizeAndLayout();
+  layout()->ResetLayout();
+  view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start);
 
@@ -3925,7 +3935,7 @@ class AnimatingLayoutManagerFlexRuleTest : public AnimatingLayoutManagerTest {
  public:
   void InitLayout(LayoutOrientation orientation,
                   const FlexSpecification& default_flex,
-                  const base::Optional<gfx::Size>& minimum_size,
+                  const absl::optional<gfx::Size>& minimum_size,
                   bool fix_child_size) {
     for (size_t i = 0; i < num_children(); ++i) {
       if (minimum_size)
@@ -4789,7 +4799,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
 // TODO(dfried): figure out why these tests absolutely do not animate properly
 // on Mac. Whatever magic makes the compositor animation runner go doesn't seem
 // to want to work on Mac in non-browsertests :(
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 
 // Test fixture for testing sequences of the following four actions:
 // * animating layout manager configured on host view
@@ -4984,6 +4994,6 @@ TEST_F(AnimatingLayoutManagerSequenceTest,
   ExpectResetToLayout();
 }
 
-#endif  // !defined(OS_APPLE)
+#endif  // !defined(OS_MAC)
 
 }  // namespace views

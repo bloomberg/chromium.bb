@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_swap_buffer_provider.h"
 
+#include "base/test/task_environment.h"
 #include "gpu/command_buffer/client/webgpu_interface_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,18 +95,23 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
     auto webgpu = std::make_unique<MockWebGPUInterface>();
     webgpu_ = webgpu.get();
 
+    Platform::SetMainThreadTaskRunnerForTesting();
+
     auto provider = std::make_unique<WebGraphicsContext3DProviderForTests>(
         std::move(webgpu));
     sii_ = provider->SharedImageInterface();
 
-    dawn_control_client_ =
-        base::MakeRefCounted<DawnControlClientHolder>(std::move(provider));
+    dawn_control_client_ = base::MakeRefCounted<DawnControlClientHolder>(
+        std::move(provider), base::ThreadTaskRunnerHandle::Get());
 
     provider_ = base::MakeRefCounted<WebGPUSwapBufferProviderForTests>(
         &provider_alive_, &client_, fake_device_, dawn_control_client_,
-        WGPUTextureUsage_OutputAttachment, WGPUTextureFormat_RGBA8Unorm);
+        WGPUTextureUsage_RenderAttachment, WGPUTextureFormat_RGBA8Unorm);
   }
 
+  void TearDown() override { Platform::UnsetMainThreadTaskRunnerForTesting(); }
+
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   MockWebGPUInterface* webgpu_;
   viz::TestSharedImageInterface* sii_;
@@ -122,17 +128,17 @@ TEST_F(WebGPUSwapBufferProviderTest,
   viz::TransferableResource resource1;
   gpu::webgpu::ReservedTexture reservation1 = {
       reinterpret_cast<WGPUTexture>(&resource1), 1, 1};
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
+  viz::ReleaseCallback release_callback1;
 
   viz::TransferableResource resource2;
   gpu::webgpu::ReservedTexture reservation2 = {
       reinterpret_cast<WGPUTexture>(&resource2), 2, 2};
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
+  viz::ReleaseCallback release_callback2;
 
   viz::TransferableResource resource3;
   gpu::webgpu::ReservedTexture reservation3 = {
       reinterpret_cast<WGPUTexture>(&resource3), 3, 3};
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
+  viz::ReleaseCallback release_callback3;
 
   // Produce resources.
   EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_))
@@ -156,13 +162,13 @@ TEST_F(WebGPUSwapBufferProviderTest,
   // Release resources one by one, the provider should only be freed when the
   // last one is called.
   provider_ = nullptr;
-  release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback1).Run(gpu::SyncToken(), false /* lostResource */);
   ASSERT_EQ(provider_alive_, true);
 
-  release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback2).Run(gpu::SyncToken(), false /* lostResource */);
   ASSERT_EQ(provider_alive_, true);
 
-  release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback3).Run(gpu::SyncToken(), false /* lostResource */);
   ASSERT_EQ(provider_alive_, false);
 }
 
@@ -173,7 +179,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
   viz::TransferableResource resource;
   gpu::webgpu::ReservedTexture reservation = {
       reinterpret_cast<WGPUTexture>(&resource), 1, 1};
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  viz::ReleaseCallback release_callback;
 
   // Produce one resource of size kSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_))
@@ -182,7 +188,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
-  release_callback->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
 
   // Produce one resource of size kOtherSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_))
@@ -191,7 +197,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kOtherSize), sii_->MostRecentSize());
-  release_callback->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
 
   // Produce one resource of size kSize again.
   EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_))
@@ -200,7 +206,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
-  release_callback->Run(gpu::SyncToken(), false /* lostResource */);
+  std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
 }
 
 TEST_F(WebGPUSwapBufferProviderTest, VerifyInsertAndWaitSyncTokenCorrectly) {
@@ -209,7 +215,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyInsertAndWaitSyncTokenCorrectly) {
   viz::TransferableResource resource;
   gpu::webgpu::ReservedTexture reservation = {
       reinterpret_cast<WGPUTexture>(&resource), 1, 1};
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  viz::ReleaseCallback release_callback;
 
   // Produce the first resource, check that WebGPU will wait for the creation of
   // the shared image
@@ -230,8 +236,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyInsertAndWaitSyncTokenCorrectly) {
   // destruction
   gpu::SyncToken release_token;
   webgpu_->GenSyncTokenCHROMIUM(release_token.GetData());
-  release_callback->Run(release_token, false /* lostResource */);
-  release_callback = nullptr;
+  std::move(release_callback).Run(release_token, false /* lostResource */);
   EXPECT_EQ(sii_->MostRecentDestroyToken(), release_token);
 }
 

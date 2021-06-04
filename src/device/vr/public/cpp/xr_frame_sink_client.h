@@ -8,10 +8,11 @@
 #include <memory>
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/optional.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
+class FrameSinkId;
 class SurfaceId;
 }  // namespace viz
 namespace device {
@@ -48,7 +49,9 @@ class COMPONENT_EXPORT(VR_PUBLIC_CPP) XrFrameSinkClient {
 
   // Used to get the SurfaceId of the DOM content to be rendered.
   // May be called from any thread.
-  virtual base::Optional<viz::SurfaceId> GetDOMSurface() = 0;
+  virtual absl::optional<viz::SurfaceId> GetDOMSurface() = 0;
+
+  virtual viz::FrameSinkId FrameSinkId() = 0;
 };
 
 // This factory must be run on the UI thread, so that the XrFrameSinkClient can

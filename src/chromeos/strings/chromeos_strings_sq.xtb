@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Vendose dokumentin tënd në skaner dhe zgjidh "Skano" për të filluar</translation>
 <translation id="2872961005593481000">Ndërprit punën</translation>
 <translation id="2878387241690264070">U shkarkua <ph name="RATE" /> në <ph name="NUM_SECONDS" /> sekonda.</translation>
+<translation id="2983662233540284543">Mëso nga një krijues lojërash, merr aplikacione për dizajnim lojërash dhe shumë të tjera</translation>
 <translation id="3008341117444806826">RIFRESKO</translation>
 <translation id="3009958530611748826">Zgjidh një dosje për ruajtje</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Vërtetimi</translation>
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="5168185087976003268">Integriteti i baterisë</translation>
+<translation id="5170568018924773124">Shfaq në dosje</translation>
+<translation id="519607504553633437">Dizajno dhe ndërto lojërat e tua</translation>
 <translation id="5212543919916444558">Nuk mund të gjej diçka në ekranin tënd me të cilën mund të të ndihmoj. Provo të trokasësh te mikrofoni për të më kërkuar diçka.</translation>
 <translation id="5222676887888702881">Dil</translation>
 <translation id="5252456968953390977">Në roaming</translation>
@@ -200,6 +203,7 @@
 <translation id="5275828089655680674">Riekzekuto rutinat</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">versioni <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Zhvendose dritaren te tavolina e punës</translation>
 <translation id="5315873049536339193">Identiteti</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5318334351163689047">Dështimet e kërkesave TCP</translation>
@@ -221,6 +225,7 @@
 <translation id="5669267381087807207">Po aktivizohet</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familja</translation>
+<translation id="5752751666635965375">Krijo lojën tënde</translation>
 <translation id="5760715441271661976">Gjendja e portalit</translation>
 <translation id="5797428682393400134">ME SUKSES</translation>
 <translation id="5832805196449965646">Shto person</translation>
@@ -293,6 +298,7 @@
 <translation id="7216409898977639127">Operatori celular</translation>
 <translation id="7271040990581020067">Skaneri është aktualisht në përdorim. Provo përsëri më vonë.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Pajisjet e rrjetit</translation>
 <translation id="7359657277149375382">Lloji i skedarit</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -341,6 +347,7 @@
 <translation id="8372477600026034341">Pritësit e tjerë</translation>
 <translation id="8395584934117017006">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga ndërmarrja</translation>
 <translation id="8398927464629426868">Shpejtësia me të cilën pajisja aktualisht po karikohet ose po shkarkohet</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Emri i ofruesit të rrjetit bazë</translation>
 <translation id="8475690821716466388">Rrjeti Wi-Fi është i siguruar me protokollin e dobët WEP PSK</translation>
 <translation id="8477551185774834963">Vonesa e DNS-së është pak më lart se pragu i lejueshëm</translation>
@@ -350,6 +357,7 @@
 <translation id="8575298406870537639">Operatori celular mund të kërkojë këtë opsion për t'u lidhur me rrjetin e tij. Kontakto me operatorin celular për detaje.</translation>
 <translation id="8576249514688522074">E pafilluar</translation>
 <translation id="8620617069779373398">Statusi në roaming</translation>
+<translation id="8660881923941176839">paundë</translation>
 <translation id="8675354002693747642">Çelës i ndarë paraprakisht</translation>
 <translation id="871560550817059752">Dështoi - Nuk ka bojë</translation>
 <translation id="8723108084122415655">Rrjeti jo i parazgjedhur është mbi pragun e vonesës</translation>
@@ -365,6 +373,7 @@
 <translation id="8881098542468797602">Testi u krye me sukses</translation>
 <translation id="8898840733695078011">Fuqia e sinjalit</translation>
 <translation id="8910721771319628100">Rrjeti i parazgjedhur është mbi pragun e vonesës</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> që ka <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Dështoi - Tabakaja mungon</translation>
 <translation id="8928727111548978589">Dështoi - Nuk ka letër</translation>
 <translation id="8930622219860340959">Me valë</translation>
@@ -382,6 +391,7 @@
 <translation id="9149391708638971077">Ekzekuto testin e memories</translation>
 <translation id="9173638680043580060">Ka mbetur më pak se një minutë</translation>
 <translation id="9190063653747922532">L2TP/IPsec + çelësi i ndarë paraprakisht</translation>
+<translation id="9211490828691860325">Të gjitha tavolinat e punës</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Nuk është aktivizuar</translation>
 <translation id="960719561871045870">Kodi i operatorit</translation>

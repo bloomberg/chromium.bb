@@ -87,6 +87,11 @@ gfx::Rect PrefixSelector::GetCaretBounds() const {
   return rect;
 }
 
+gfx::Rect PrefixSelector::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
+}
+
 bool PrefixSelector::GetCompositionCharacterBounds(uint32_t index,
                                                    gfx::Rect* rect) const {
   // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
@@ -201,8 +206,8 @@ void PrefixSelector::SetActiveCompositionForAccessibility(
     bool is_composition_committed) {}
 
 void PrefixSelector::GetActiveTextInputControlLayoutBounds(
-    base::Optional<gfx::Rect>* control_bounds,
-    base::Optional<gfx::Rect>* selection_bounds) {}
+    absl::optional<gfx::Rect>* control_bounds,
+    absl::optional<gfx::Rect>* selection_bounds) {}
 #endif
 
 void PrefixSelector::OnTextInput(const std::u16string& text) {

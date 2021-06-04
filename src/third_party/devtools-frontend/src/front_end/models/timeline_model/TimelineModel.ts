@@ -37,6 +37,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
 
@@ -904,15 +905,21 @@ export class TimelineModelImpl {
     const eventData = event.args['data'] || event.args['beginData'] || {};
     const timelineData = TimelineData.forEvent(event);
     if (eventData['stackTrace']) {
-      timelineData.stackTrace = eventData['stackTrace'];
-    }
-    if (timelineData.stackTrace && event.name !== RecordType.JSSample) {
-      // TraceEvents come with 1-based line & column numbers. The frontend code
-      // requires 0-based ones. Adjust the values.
-      for (let i = 0; i < timelineData.stackTrace.length; ++i) {
-        --timelineData.stackTrace[i].lineNumber;
-        --timelineData.stackTrace[i].columnNumber;
-      }
+      timelineData.stackTrace = eventData['stackTrace'].map((callFrameOrProfileNode: Protocol.Runtime.CallFrame) => {
+        // `callFrameOrProfileNode` can also be a `SDK.ProfileTreeModel.ProfileNode` for JSSample; that class
+        // has accessors to mimic a `CallFrame`, but apparently we don't adjust stack traces in that case. Whether
+        // we should is unclear.
+        if (event.name !== RecordType.JSSample) {
+          // We need to copy the data so we can safely modify it below.
+          const frame = {...callFrameOrProfileNode};
+          // TraceEvents come with 1-based line & column numbers. The frontend code
+          // requires 0-based ones. Adjust the values.
+          --frame.lineNumber;
+          --frame.columnNumber;
+          return frame;
+        }
+        return callFrameOrProfileNode;
+      });
     }
     let pageFrameId = TimelineModelImpl.eventFrameId(event);
     const last = eventStack[eventStack.length - 1];
@@ -956,7 +963,7 @@ export class TimelineModelImpl {
       case RecordType.StyleRecalcInvalidationTracking:
       case RecordType.StyleInvalidatorInvalidationTracking:
       case RecordType.LayoutInvalidationTracking: {
-        this._invalidationTracker.addInvalidation(new InvalidationTrackingEvent(event));
+        this._invalidationTracker.addInvalidation(new InvalidationTrackingEvent(event, timelineData));
         break;
       }
 
@@ -1454,6 +1461,7 @@ export enum RecordType {
   RasterTask = 'RasterTask',
   ScrollLayer = 'ScrollLayer',
   CompositeLayers = 'CompositeLayers',
+  ComputeIntersections = 'IntersectionObserverController::computeIntersections',
   InteractiveTime = 'InteractiveTime',
 
   ScheduleStyleInvalidationTracking = 'ScheduleStyleInvalidationTracking',
@@ -1946,7 +1954,7 @@ export class InvalidationTrackingEvent {
   cause: InvalidationCause;
   linkedRecalcStyleEvent: boolean;
   linkedLayoutEvent: boolean;
-  constructor(event: SDK.TracingModel.Event) {
+  constructor(event: SDK.TracingModel.Event, timelineData: TimelineData) {
     this.type = event.name;
     this.startTime = event.startTime;
     this._tracingEvent = event;
@@ -1965,7 +1973,7 @@ export class InvalidationTrackingEvent {
     this.selectorPart = eventData['selectorPart'];
     this.extraData = eventData['extraData'];
     this.invalidationList = eventData['invalidationList'];
-    this.cause = {reason: eventData['reason'], stackTrace: eventData['stackTrace']};
+    this.cause = {reason: eventData['reason'], stackTrace: timelineData.stackTrace};
     this.linkedRecalcStyleEvent = false;
     this.linkedLayoutEvent = false;
 
@@ -2117,7 +2125,8 @@ export class InvalidationTracker {
 
   _addSyntheticStyleRecalcInvalidation(
       baseEvent: SDK.TracingModel.Event, styleInvalidatorInvalidation: InvalidationTrackingEvent): void {
-    const invalidation = new InvalidationTrackingEvent(baseEvent);
+    const timelineData = TimelineData.forEvent(baseEvent);
+    const invalidation = new InvalidationTrackingEvent(baseEvent, timelineData);
     invalidation.type = RecordType.StyleRecalcInvalidationTracking;
     if (styleInvalidatorInvalidation.cause.reason) {
       invalidation.cause.reason = styleInvalidatorInvalidation.cause.reason;

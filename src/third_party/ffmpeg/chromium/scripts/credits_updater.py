@@ -30,7 +30,6 @@ __author__ = 'chcunningham@chromium.org (Chris Cunningham)'
 
 import collections
 import difflib
-from enum import enum
 import hashlib
 import os
 import re
@@ -75,7 +74,8 @@ FFMPEG_LGPL_REF = """
  */"""
 
 # Known licenses
-License = enum('LGPL', 'MIPS', 'JPEG', 'OGG_MA_MR_2005')
+_Licenses = ('LGPL', 'MIPS', 'JPEG', 'OGG_MA_MR_2005')
+License = collections.namedtuple('License', _Licenses)(*_Licenses)
 
 # Tuple describing license and similarity to the FFmpeg LGPL reference for a
 # given file. See KNOWN_FILE_BUCKETS.
@@ -279,7 +279,7 @@ class CreditsUpdater(object):
     # together to avoid repeating the same license text in the credits.
     if rel_file_path in self.known_file_map:
       hasher = hashlib.md5()
-      hasher.update(ConcatLines(comment_lines))
+      hasher.update(ConcatLines(comment_lines).encode('utf-8'))
 
       # Detect changes to file's licensing header.
       file_license_info = self.known_file_map[rel_file_path]
@@ -302,18 +302,18 @@ class CreditsUpdater(object):
     num_known_credits = 0
     for license_bucket in self.known_credits:
       num_known_credits += len(self.known_credits[license_bucket])
-    print 'CreditsUpdater stats:'
-    print '\t%s files w/ known_credits' % num_known_credits
-    print '\t%s generated_credits' % len(self.generated_credits.keys())
-    print '\t%s difficult_files files' % len(self.difficult_files)
+    print('CreditsUpdater stats:')
+    print(f'\t{num_known_credits} files w/ known_credits')
+    print(f'\t{len(self.generated_credits.keys())} generated_credits')
+    print(f'\t{len(self.difficult_files)} difficult_files files')
 
   def WriteCredits(self):
     if self.difficult_files:
       # After taking a closer look, enhance this tool to work for these or
       # add them to the white-list if they truly have no licensing header.
-      print 'Failed to find license header for these files:'
+      print('Failed to find license header for these files:')
       for filename in self.difficult_files:
-        print filename
+        print(filename)
       exit('Update script to work for these to continue generating credits')
 
     output_path = os.path.join(self.source_dir, self.output_file)
@@ -324,7 +324,7 @@ class CreditsUpdater(object):
         open_output.writelines(open_license_md.readlines())
 
       # Next write verbatim headers from the generated credits map.
-      for filename, file_license in sorted(self.generated_credits.iteritems(),
+      for filename, file_license in sorted(self.generated_credits.items(),
                                            key=lambda x: x[0]):
         open_output.writelines(LICENSE_SEPARATOR)
         open_output.writelines('%s\n\n%s' % (filename, file_license))
@@ -400,7 +400,7 @@ def ExtractFirstCommentBlock(file_path):
       comment_start_re = C_COMMENT_BLOCK_START
       comment_end_re = C_COMMENT_BLOCK_END
 
-    for _ in xrange(0, 100):
+    for _ in range(0, 100):
       line = open_file.readline()
       found_comment_start = (
           found_comment_start or comment_start_re.search(line))
@@ -421,7 +421,7 @@ def ExtractFirstCommentBlock(file_path):
 
 def StripCommentChars(comment_lines, is_asm=False):
   if is_asm:
-    for i in xrange(len(comment_lines)):
+    for i in range(len(comment_lines)):
       comment_lines[i] = re.sub(ASM_COMMENT_PRE, '', comment_lines[i])
   else:
     # Strip off the start slash-star
@@ -429,5 +429,5 @@ def StripCommentChars(comment_lines, is_asm=False):
     # Strip off the comment end star-slash
     comment_lines[-1] = re.sub(C_COMMENT_BLOCK_END, '', comment_lines[-1])
     # Strip off the comment star for middle lines
-    for i in xrange(1, len(comment_lines)):
+    for i in range(1, len(comment_lines)):
       comment_lines[i] = re.sub(C_COMMENT_BLOCK_MID, '', comment_lines[i])

@@ -25,11 +25,41 @@ WebAuthenticationDelegate::WebAuthenticationDelegate() = default;
 
 WebAuthenticationDelegate::~WebAuthenticationDelegate() = default;
 
+absl::optional<std::string>
+WebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
+    const std::string& claimed_relying_party_id,
+    const url::Origin& caller_origin) {
+  return absl::nullopt;
+}
+
+bool WebAuthenticationDelegate::ShouldPermitIndividualAttestation(
+    BrowserContext* browser_context,
+    const std::string& relying_party_id) {
+  return false;
+}
+
+bool WebAuthenticationDelegate::SupportsResidentKeys(
+    RenderFrameHost* render_frame_host) {
+  // The testing API supports resident keys, but for real requests //content
+  // doesn't by default.
+  FrameTreeNode* frame_tree_node =
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node();
+  if (AuthenticatorEnvironmentImpl::GetInstance()
+          ->IsVirtualAuthenticatorEnabledFor(frame_tree_node)) {
+    return true;
+  }
+  return false;
+}
+
+bool WebAuthenticationDelegate::IsFocused(WebContents* web_contents) {
+  return true;
+}
+
 #if defined(OS_MAC)
-base::Optional<WebAuthenticationDelegate::TouchIdAuthenticatorConfig>
+absl::optional<WebAuthenticationDelegate::TouchIdAuthenticatorConfig>
 WebAuthenticationDelegate::GetTouchIdAuthenticatorConfig(
     BrowserContext* browser_context) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 #endif  // defined(OS_MAC)
 
@@ -41,7 +71,7 @@ WebAuthenticationDelegate::GetGenerateRequestIdCallback(
 }
 #endif
 
-base::Optional<bool> WebAuthenticationDelegate::
+absl::optional<bool> WebAuthenticationDelegate::
     IsUserVerifyingPlatformAuthenticatorAvailableOverride(
         RenderFrameHost* render_frame_host) {
   FrameTreeNode* frame_tree_node =
@@ -51,7 +81,7 @@ base::Optional<bool> WebAuthenticationDelegate::
     return AuthenticatorEnvironmentImpl::GetInstance()
         ->HasVirtualUserVerifyingPlatformAuthenticator(frame_tree_node);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
@@ -59,13 +89,6 @@ AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
 
 AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
-
-base::Optional<std::string>
-AuthenticatorRequestClientDelegate::MaybeGetRelyingPartyIdOverride(
-    const std::string& claimed_relying_party_id,
-    const url::Origin& caller_origin) {
-  return base::nullopt;
-}
 
 void AuthenticatorRequestClientDelegate::SetRelyingPartyId(const std::string&) {
 }
@@ -81,11 +104,6 @@ void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback) {}
 
-bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
-    const std::string& relying_party_id) {
-  return false;
-}
-
 void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
     const device::FidoAuthenticator* authenticator,
@@ -94,12 +112,9 @@ void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
   std::move(callback).Run(!is_enterprise_attestation);
 }
 
-bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
-  return false;
-}
-
 void AuthenticatorRequestClientDelegate::ConfigureCable(
     const url::Origin& origin,
+    device::FidoRequestType request_type,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
     device::FidoDiscoveryFactory* fido_discovery_factory) {}
 
@@ -109,10 +124,6 @@ void AuthenticatorRequestClientDelegate::SelectAccount(
         callback) {
   // SupportsResidentKeys returned false so this should never be called.
   NOTREACHED();
-}
-
-bool AuthenticatorRequestClientDelegate::IsFocused() {
-  return true;
 }
 
 void AuthenticatorRequestClientDelegate::DisableUI() {}

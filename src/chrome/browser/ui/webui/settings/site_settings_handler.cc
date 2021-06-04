@@ -20,12 +20,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
@@ -50,7 +49,9 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/crx_file/id_util.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/permissions/contexts/bluetooth_chooser_context.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
@@ -506,7 +507,8 @@ void SiteSettingsHandler::RegisterMessages() {
 void SiteSettingsHandler::OnJavascriptAllowed() {
   ObserveSourcesForProfile(profile_);
   if (profile_->HasPrimaryOTRProfile())
-    ObserveSourcesForProfile(profile_->GetPrimaryOTRProfile());
+    ObserveSourcesForProfile(
+        profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true));
 
   // Here we only subscribe to the HostZoomMap for the default storage partition
   // since we don't allow the user to manage the zoom levels for apps.
@@ -532,13 +534,6 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
       prefs::kCookieControlsMode,
       base::BindRepeating(&SiteSettingsHandler::SendCookieSettingDescription,
                           base::Unretained(this)));
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  pref_change_registrar_->Add(
-      prefs::kEnableDRM,
-      base::BindRepeating(&SiteSettingsHandler::OnPrefEnableDrmChanged,
-                          base::Unretained(this)));
-#endif
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
@@ -547,9 +542,6 @@ void SiteSettingsHandler::OnJavascriptDisallowed() {
   host_zoom_map_subscription_ = {};
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
   pref_change_registrar_->Remove(prefs::kCookieControlsMode);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  pref_change_registrar_->Remove(prefs::kEnableDRM);
-#endif
   observed_profiles_.RemoveAllObservations();
 }
 
@@ -576,12 +568,6 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   FireWebUIListener("usage-total-changed", base::Value(usage_host_),
                     base::Value(usage_string), base::Value(cookie_string));
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void SiteSettingsHandler::OnPrefEnableDrmChanged() {
-  FireWebUIListener("prefEnableDrmChanged");
-}
-#endif
 
 void SiteSettingsHandler::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
@@ -632,17 +618,18 @@ void SiteSettingsHandler::OnProfileWillBeDestroyed(Profile* profile) {
   StopObservingSourcesForProfile(profile);
 }
 
-void SiteSettingsHandler::OnChooserObjectPermissionChanged(
-    ContentSettingsType guard_content_settings_type,
+void SiteSettingsHandler::OnObjectPermissionChanged(
+    absl::optional<ContentSettingsType> guard_content_settings_type,
     ContentSettingsType data_content_settings_type) {
-  if (!site_settings::HasRegisteredGroupName(guard_content_settings_type) ||
+  if (!guard_content_settings_type ||
+      !site_settings::HasRegisteredGroupName(*guard_content_settings_type) ||
       !site_settings::HasRegisteredGroupName(data_content_settings_type)) {
     return;
   }
 
   FireWebUIListener("contentSettingChooserPermissionChanged",
                     base::Value(site_settings::ContentSettingsTypeToGroupName(
-                        guard_content_settings_type)),
+                        *guard_content_settings_type)),
                     base::Value(site_settings::ContentSettingsTypeToGroupName(
                         data_content_settings_type)));
 }
@@ -756,8 +743,8 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   // settings. Thus if it exists, just get exceptions for the incognito profile.
   Profile* profile = profile_;
   if (profile_->HasPrimaryOTRProfile() &&
-      profile_->GetPrimaryOTRProfile() != profile_) {
-    profile = profile_->GetPrimaryOTRProfile();
+      profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true) != profile_) {
+    profile = profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   }
   DCHECK(profile);
   HostContentSettingsMap* map =
@@ -944,9 +931,10 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
       content_type, profile_, extension_registry, web_ui(), /*incognito=*/false,
       exceptions.get());
 
-  Profile* incognito = profile_->HasPrimaryOTRProfile()
-                           ? profile_->GetPrimaryOTRProfile()
-                           : nullptr;
+  Profile* incognito =
+      profile_->HasPrimaryOTRProfile()
+          ? profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          : nullptr;
   // On Chrome OS in Guest mode the incognito profile is the primary profile,
   // so do not fetch an extra copy of the same exceptions.
   if (incognito && incognito != profile_) {
@@ -1017,7 +1005,11 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     raw_site_exception->SetString(site_settings::kDisplayName, display_name);
     raw_site_exception->SetString(site_settings::kSetting,
                                   content_setting_string);
+    raw_site_exception->SetString(site_settings::kSettingDetail,
+                                  content_settings::GetPermissionDetailString(
+                                      profile_, content_type, origin_url));
     raw_site_exception->SetString(site_settings::kSource, source_string);
+
     exceptions->Append(std::move(raw_site_exception));
   }
 
@@ -1085,9 +1077,9 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(i);
       GURL tab_url = web_contents->GetLastCommittedURL();
       if (url::IsSameOriginWith(origin, tab_url)) {
-        InfoBarService* infobar_service =
-            InfoBarService::FromWebContents(web_contents);
-        PageInfoInfoBarDelegate::Create(infobar_service);
+        infobars::ContentInfoBarManager* infobar_manager =
+            infobars::ContentInfoBarManager::FromWebContents(web_contents);
+        PageInfoInfoBarDelegate::Create(infobar_manager);
       }
     }
   }
@@ -1112,7 +1104,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
   if (incognito) {
     if (!profile_->HasPrimaryOTRProfile())
       return;
-    profile = profile_->GetPrimaryOTRProfile();
+    profile = profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   } else {
     profile = profile_;
   }
@@ -1147,8 +1139,11 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
   }
 
   // End embargo if currently active.
-  PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
-      ->RemoveEmbargoAndResetCounts(GURL(primary_pattern_string), content_type);
+  auto url = GURL(primary_pattern_string);
+  if (url.is_valid()) {
+    PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+        ->RemoveEmbargoAndResetCounts(url, content_type);
+  }
 
   content_settings::LogWebSiteSettingsPermissionChange(
       content_type, ContentSetting::CONTENT_SETTING_DEFAULT);
@@ -1177,7 +1172,7 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
   if (incognito) {
     if (!profile_->HasPrimaryOTRProfile())
       return;
-    profile = profile_->GetPrimaryOTRProfile();
+    profile = profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   } else {
     profile = profile_;
   }
@@ -1191,6 +1186,15 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
       secondary_pattern_string.empty()
           ? ContentSettingsPattern::Wildcard()
           : ContentSettingsPattern::FromString(secondary_pattern_string);
+
+  // Clear any existing embargo status if the new setting isn't block.
+  if (setting != CONTENT_SETTING_BLOCK) {
+    GURL url(primary_pattern.ToString());
+    if (url.is_valid()) {
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
+          ->RemoveEmbargoAndResetCounts(url, content_type);
+    }
+  }
 
   permissions::PermissionUmaUtil::ScopedRevocationReporter
       scoped_revocation_reporter(
@@ -1237,7 +1241,7 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   GURL embedding_origin(embedding_origin_str);
   CHECK(embedding_origin.is_valid());
 
-  permissions::ChooserContextBase* chooser_context =
+  permissions::ObjectPermissionContextBase* chooser_context =
       chooser_type->get_context(profile_);
   chooser_context->RevokeObjectPermission(
       url::Origin::Create(embedding_origin), args->GetList()[3]);

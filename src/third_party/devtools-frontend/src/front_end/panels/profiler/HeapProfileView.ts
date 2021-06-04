@@ -4,14 +4,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Components from '../../components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as PerfUI from '../../perf_ui/perf_ui.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import {ProfileFlameChartDataProvider} from './CPUProfileFlameChart.js';
 
@@ -596,7 +597,7 @@ export class NodeFormatter implements Formatter {
   }
 
   formatValue(value: number): string {
-    return Number.withThousandsSeparator(value);
+    return Platform.NumberUtilities.withThousandsSeparator(value);
   }
 
   formatValueAccessibleText(value: number): string {
@@ -623,7 +624,6 @@ export class NodeFormatter implements Formatter {
 export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
   _profile: SDK.ProfileTreeModel.ProfileTreeModel;
   _heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel|null;
-  _entryNodes: SDK.ProfileTreeModel.ProfileNode[];
   _timelineData?: PerfUI.FlameChart.TimelineData;
 
   constructor(
@@ -631,7 +631,6 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     super();
     this._profile = profile;
     this._heapProfilerModel = heapProfilerModel;
-    this._entryNodes = [];
   }
 
   minimumBoundary(): number {
@@ -647,7 +646,7 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
   }
 
   formatValue(value: number, _precision?: number): string {
-    return i18nString(UIStrings.skb, {PH1: Number.withThousandsSeparator(value / 1e3)});
+    return i18nString(UIStrings.skb, {PH1: Platform.NumberUtilities.withThousandsSeparator(value / 1e3)});
   }
 
   _calculateTimelineData(): PerfUI.FlameChart.TimelineData {
@@ -680,14 +679,14 @@ export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     addNode(this._profile.root);
 
     this._maxStackDepth = maxDepth + 1;
-    this._entryNodes = entryNodes;
+    this.entryNodes = entryNodes;
     this._timelineData = new PerfUI.FlameChart.TimelineData(entryLevels, entryTotalTimes, entryStartTimes, null);
 
     return this._timelineData;
   }
 
   prepareHighlightedEntryInfo(entryIndex: number): Element|null {
-    const node = this._entryNodes[entryIndex];
+    const node = this.entryNodes[entryIndex];
     if (!node) {
       return null;
     }

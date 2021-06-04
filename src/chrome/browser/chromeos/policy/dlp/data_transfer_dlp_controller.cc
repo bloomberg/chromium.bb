@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 
+#include <string>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,6 +37,23 @@ bool IsClipboardHistory(const ui::DataTransferEndpoint* const data_dst) {
   return data_dst && data_dst->type() == ui::EndpointType::kClipboardHistory;
 }
 
+template <typename T>
+void ReportEvent(const DlpRulesManager& dlp_rules_manager,
+                 const std::string& src_pattern,
+                 const T& dst,
+                 DlpRulesManager::Level level) {
+  if (level != DlpRulesManager::Level::kReport &&
+      level != DlpRulesManager::Level::kBlock)
+    return;
+
+  auto* reporting_manager = dlp_rules_manager.GetReportingManager();
+  if (!reporting_manager)
+    return;
+
+  reporting_manager->ReportEvent(
+      src_pattern, dst, DlpRulesManager::Restriction::kClipboard, level);
+}
+
 DlpRulesManager::Level IsDataTransferAllowed(
     const DlpRulesManager& dlp_rules_manager,
     const ui::DataTransferEndpoint* const data_src,
@@ -52,38 +72,56 @@ DlpRulesManager::Level IsDataTransferAllowed(
     case ui::EndpointType::kDefault:
     case ui::EndpointType::kUnknownVm:
     case ui::EndpointType::kBorealis: {
+      std::string src_pattern;
+      std::string dst_pattern;
       // Passing empty URL will return restricted if there's a rule restricting
       // the src against any dst (*), otherwise it will return ALLOW.
       level = dlp_rules_manager.IsRestrictedDestination(
-          src_url, GURL(), DlpRulesManager::Restriction::kClipboard);
+          src_url, GURL(), DlpRulesManager::Restriction::kClipboard,
+          &src_pattern, &dst_pattern);
+      ReportEvent(dlp_rules_manager, src_pattern, dst_pattern, level);
       break;
     }
 
     case ui::EndpointType::kUrl: {
       GURL dst_url = data_dst->origin()->GetURL();
+      std::string src_pattern;
+      std::string dst_pattern;
       level = dlp_rules_manager.IsRestrictedDestination(
-          src_url, dst_url, DlpRulesManager::Restriction::kClipboard);
+          src_url, dst_url, DlpRulesManager::Restriction::kClipboard,
+          &src_pattern, &dst_pattern);
+      if (!IsFilesApp(data_dst))
+        ReportEvent(dlp_rules_manager, src_pattern, dst_pattern, level);
       break;
     }
 
     case ui::EndpointType::kCrostini: {
+      std::string src_pattern;
       level = dlp_rules_manager.IsRestrictedComponent(
           src_url, DlpRulesManager::Component::kCrostini,
-          DlpRulesManager::Restriction::kClipboard);
+          DlpRulesManager::Restriction::kClipboard, &src_pattern);
+      ReportEvent(dlp_rules_manager, src_pattern,
+                  DlpRulesManager::Component::kCrostini, level);
       break;
     }
 
     case ui::EndpointType::kPluginVm: {
+      std::string src_pattern;
       level = dlp_rules_manager.IsRestrictedComponent(
           src_url, DlpRulesManager::Component::kPluginVm,
-          DlpRulesManager::Restriction::kClipboard);
+          DlpRulesManager::Restriction::kClipboard, &src_pattern);
+      ReportEvent(dlp_rules_manager, src_pattern,
+                  DlpRulesManager::Component::kPluginVm, level);
       break;
     }
 
     case ui::EndpointType::kArc: {
+      std::string src_pattern;
       level = dlp_rules_manager.IsRestrictedComponent(
           src_url, DlpRulesManager::Component::kArc,
-          DlpRulesManager::Restriction::kClipboard);
+          DlpRulesManager::Restriction::kClipboard, &src_pattern);
+      ReportEvent(dlp_rules_manager, src_pattern,
+                  DlpRulesManager::Component::kArc, level);
       break;
     }
 
@@ -190,7 +228,8 @@ void DataTransferDlpController::PasteIfAllowed(
   // called.
   DCHECK_NE(level, DlpRulesManager::Level::kBlock);
 
-  if (level == DlpRulesManager::Level::kAllow) {
+  if (level == DlpRulesManager::Level::kAllow ||
+      level == DlpRulesManager::Level::kReport) {
     std::move(callback).Run(true);
     return;
   }

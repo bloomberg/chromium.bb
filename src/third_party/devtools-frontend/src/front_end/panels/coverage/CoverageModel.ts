@@ -9,6 +9,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export const enum CoverageType {
   CSS = (1 << 0),
@@ -553,7 +554,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(CoverageModel, SDK.SDKModel.Capability.None, false);
+SDK.SDKModel.SDKModel.register(CoverageModel, {capabilities: SDK.SDKModel.Capability.None, autostart: false});
 
 export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
   _url: string;

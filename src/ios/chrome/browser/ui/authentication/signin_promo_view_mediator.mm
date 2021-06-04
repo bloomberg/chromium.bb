@@ -6,13 +6,11 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
@@ -56,7 +54,6 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -108,7 +105,6 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -162,7 +158,6 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -216,7 +211,6 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -262,7 +256,6 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -306,7 +299,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
@@ -415,9 +407,10 @@ const char* AlreadySeenSigninViewPreferenceKey(
     _accessPoint = accessPoint;
     _browserState = browserState;
     _presenter = presenter;
-    NSArray* identities = ios::GetChromeBrowserProvider()
-                              ->GetChromeIdentityService()
-                              ->GetAllIdentitiesSortedForDisplay();
+    NSArray* identities =
+        ios::GetChromeBrowserProvider()
+            ->GetChromeIdentityService()
+            ->GetAllIdentitiesSortedForDisplay(browserState->GetPrefs());
     if (identities.count != 0) {
       [self selectIdentity:identities[0]];
     }
@@ -437,12 +430,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   BOOL hasCloseButton =
       AlreadySeenSigninViewPreferenceKey(self.accessPoint) != nullptr;
   if (_defaultIdentity) {
-    SigninPromoViewMode viewMode =
-        base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)
-            ? SigninPromoViewModeSyncWithPrimaryAccount
-            : SigninPromoViewModeSigninWithAccount;
     return [[SigninPromoViewConfigurator alloc]
-        initWithSigninPromoViewMode:viewMode
+        initWithSigninPromoViewMode:SigninPromoViewModeSigninWithAccount
                           userEmail:_defaultIdentity.userEmail
                       userGivenName:_defaultIdentity.userGivenName
                           userImage:self.identityAvatar
@@ -619,9 +608,10 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)identityListChanged {
   ChromeIdentity* newIdentity = nil;
-  NSArray* identities = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->GetAllIdentitiesSortedForDisplay();
+  NSArray* identities =
+      ios::GetChromeBrowserProvider()
+          ->GetChromeIdentityService()
+          ->GetAllIdentitiesSortedForDisplay(self.browserState->GetPrefs());
   if (identities.count != 0) {
     newIdentity = identities[0];
   }

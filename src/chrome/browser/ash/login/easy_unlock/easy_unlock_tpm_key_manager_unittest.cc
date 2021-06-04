@@ -4,6 +4,8 @@
 
 #include <cryptohi.h>
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -31,7 +33,7 @@
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // User that is associated with test user profile.
@@ -242,7 +244,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   }
 
   void InitTestNssUserOnIOThread(bool* success) {
-    test_nss_user_.reset(new crypto::ScopedTestNSSChromeOSUser(username_hash_));
+    test_nss_user_ =
+        std::make_unique<crypto::ScopedTestNSSChromeOSUser>(username_hash_);
     *success = test_nss_user_->constructed_successfully();
   }
 
@@ -282,7 +285,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
   // Creates and sets test system NSS key slot.
   bool SetUpTestSystemSlot() {
-    test_system_slot_.reset(new crypto::ScopedTestSystemNSSKeySlot());
+    test_system_slot_ = std::make_unique<crypto::ScopedTestSystemNSSKeySlot>();
     return test_system_slot_->ConstructedSuccessfully();
   }
 
@@ -596,4 +599,4 @@ TEST_F(EasyUnlockTpmKeyManagerTest, SignDataNoPrivateKeyPresent) {
 }
 
 }  // namespace
-}  // namespace chromeos
+}  // namespace ash

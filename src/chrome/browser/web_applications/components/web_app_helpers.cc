@@ -63,14 +63,16 @@ AppId GenerateAppIdFromURL(const GURL& url) {
   return crx_file::id_util::GenerateId(GenerateAppHashFromURL(url));
 }
 
-AppId GenerateAppId(const base::Optional<std::string>& manifest_id,
+AppId GenerateAppId(const absl::optional<std::string>& manifest_id,
                     const GURL& start_url) {
   // When manifest_id is specified, the app id is generated from
   // <start_url_origin>/<manifest_id>.
   // Note: start_url.GetOrigin().spec() returns the origin ending with slash.
   if (manifest_id.has_value()) {
-    return crx_file::id_util::GenerateId(crypto::SHA256HashString(
-        start_url.GetOrigin().spec() + manifest_id.value()));
+    GURL app_id(start_url.GetOrigin().spec() + manifest_id.value());
+    DCHECK(app_id.is_valid());
+    return crx_file::id_util::GenerateId(
+        crypto::SHA256HashString(app_id.spec()));
   }
   return GenerateAppIdFromURL(start_url);
 }
@@ -107,13 +109,13 @@ bool IsValidExtensionUrl(const GURL& app_url) {
          app_url.SchemeIs(extensions::kExtensionScheme);
 }
 
-base::Optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,
+absl::optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,
                                                      const GURL& url,
                                                      bool window_only) {
   auto* provider = WebAppProviderBase::GetProviderBase(profile);
   return provider ? provider->registrar().FindInstalledAppWithUrlInScope(
                         url, window_only)
-                  : base::nullopt;
+                  : absl::nullopt;
 }
 
 }  // namespace web_app

@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Kelaamisen liukusäädin</translation>
 <translation id="1404323374378969387">norja</translation>
 <translation id="1430915738399379752">Tulosta</translation>
+<translation id="1433628812591023318">Jotta voit pudottaa tiedostoja Parallels Desktopiin, tiedosto on siirrettävä Windows-tiedostoihin.</translation>
 <translation id="1435838927755162558">Jaa kansio Parallels Desktopille</translation>
 <translation id="1467432559032391204">Vasemmalla</translation>
 <translation id="1471718551822868769">slovakki</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-tiedostot</translation>
 <translation id="3078461028045006476">Jaa laajennuksen <ph name="EXTENSION_NAME" /> kanssa</translation>
 <translation id="3083975830683400843">Chromebits</translation>
+<translation id="3113153474486991170">"<ph name="PATH" />" ei avaudu tästä sijainnista. Kopioi se omiin tiedostoihin, jotta voit avata sen.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">VALMIS</translation>
 <translation id="3188257591659621405">Omat tiedostot</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">bulgaria, foneettinen näppäimistö</translation>
 <translation id="5605830556594064952">USA, Dvorak</translation>
 <translation id="5625294776298156701">tamil, tamil99-näppäimistö</translation>
+<translation id="5633226425545095130">Kun tämä siirretään, se jaetaan kaikille, jotka voivat nähdä jaetun kansion "<ph name="DESTINATION_NAME" />"</translation>
 <translation id="5649768706273821470">Kuuntele</translation>
 <translation id="5678784840044122290">Linux-sovellus on saatavilla terminaalissa. Käynnistysohjelmassa saattaa myös näkyä kuvake.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Arkiston tai virtuaalilevyn yhteyden katkaisu epäonnistui<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Etiopialainen näppäimistö</translation>
 <translation id="7417705661718309329">Google-kartta</translation>
 <translation id="7460898608667578234">ukraina</translation>
+<translation id="7486315294984620427">Jotta voit pudottaa tiedostoja Parallels Desktopiin, tiedosto on kopioitava Windows-tiedostoihin.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> löytyi
     <ph name="LINE_BREAK1" />
     Valmis varmuuskopioimaan <ph name="BEGIN_LINK" />Google Driveen<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Mittasuhteet</translation>
 <translation id="8437209419043462667">USA</translation>
 <translation id="8456681095658380701">Nimi ei kelpaa</translation>
+<translation id="8459404855768962328">Kun tämä kopioidaan, se jaetaan kaikille, jotka voivat nähdä jaetun kansion "<ph name="DESTINATION_NAME" />"</translation>
 <translation id="8461467696380332069">Klikkaa tiedostoa kakkospainikkeella ja valitse Kiinnitä hyllyyn, niin löydät tiedostot nopeasti hyllystä.</translation>
 <translation id="8463494891489624050">vietnam (VIQR)</translation>
 <translation id="8466234950814670489">Tar-arkisto</translation>

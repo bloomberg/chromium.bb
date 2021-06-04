@@ -47,13 +47,13 @@ export function sourceSelectTest() {
     sourceSelect = null;
   });
 
+  // Verify that adding sources results in the dropdown displaying the correct
+  // options.
   test('initializeSourceSelect', () => {
-    // Before options are added, the dropdown should be enabled and display the
-    // default option.
+    // Before options are added, the dropdown should be enabled and empty.
     const select = sourceSelect.$$('select');
     assertTrue(!!select);
     assertFalse(select.disabled);
-    assertEquals(1, select.length);
 
     const firstSource =
         createScannerSource(SourceType.ADF_SIMPLEX, 'adf simplex', pageSizes);
@@ -63,20 +63,18 @@ export function sourceSelectTest() {
     sourceSelect.options = sourceArr;
     flush();
 
-    // Verify that adding sources results in the dropdown displaying the correct
-    // options. The expected options are simplex, flatbed, and the hidden
-    // default option.
-    assertEquals(3, select.length);
+    // The expected options are simplex and flatbed.
+    assertEquals(2, select.length);
     assertEquals(
         getSourceTypeString(firstSource.type),
         select.options[0].textContent.trim());
     assertEquals(
         getSourceTypeString(secondSource.type),
         select.options[1].textContent.trim());
-    assertTrue(select.options[2].hidden);
     assertEquals(secondSource.name, select.value);
   });
 
+  // Verify the sources are sorted alphabetically.
   test('sourcesSortedAlphabetically', () => {
     const sources = [
       createScannerSource(SourceType.FLATBED, 'C', pageSizes),
@@ -90,6 +88,7 @@ export function sourceSelectTest() {
         sourceSelect.options, (source) => getSourceTypeString(source.type));
   });
 
+  // Verify the default option is selected when available.
   test('flatbedSelectedByDefaultIfProvided', () => {
     const sources = [
       createScannerSource(SourceType.FLATBED, 'C', pageSizes),
@@ -103,6 +102,8 @@ export function sourceSelectTest() {
     assertEquals(sourceSelect.selectedOption, flatbedSource.name);
   });
 
+  // Verify the first option is selected when the default option is not
+  // available.
   test('firstSourceUsedWhenFlatbedNotProvided', () => {
     const sources = [
       createScannerSource(SourceType.ADF_SIMPLEX, 'C', pageSizes),

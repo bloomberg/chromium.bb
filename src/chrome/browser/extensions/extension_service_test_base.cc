@@ -248,7 +248,7 @@ size_t ExtensionServiceTestBase::GetPrefKeyCount() {
     ADD_FAILURE();
     return 0;
   }
-  return dict->size();
+  return dict->DictSize();
 }
 
 void ExtensionServiceTestBase::ValidatePrefKeyCount(size_t count) {
@@ -343,8 +343,7 @@ void ExtensionServiceTestBase::SetUp() {
 
 void ExtensionServiceTestBase::TearDown() {
   if (profile_) {
-    auto* partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_.get());
+    auto* partition = profile_->GetDefaultStoragePartition();
     if (partition)
       partition->WaitForDeletionTasksForTesting();
   }

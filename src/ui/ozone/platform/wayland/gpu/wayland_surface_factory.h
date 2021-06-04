@@ -32,8 +32,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
       bool use_swiftshader,
-      bool allow_protected_memory,
-      bool enforce_protected_memory) override;
+      bool allow_protected_memory) override;
 #endif
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
@@ -43,7 +42,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      base::Optional<gfx::Size> framebuffer_size = base::nullopt) override;
+      absl::optional<gfx::Size> framebuffer_size = absl::nullopt) override;
   void CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
                                VkDevice vk_device,
                                gfx::Size size,

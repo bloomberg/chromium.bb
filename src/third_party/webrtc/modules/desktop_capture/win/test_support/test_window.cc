@@ -41,7 +41,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 WindowInfo CreateTestWindow(const WCHAR* window_title,
                             const int height,
-                            const int width) {
+                            const int width,
+                            const LONG extended_styles) {
   WindowInfo info;
   ::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
                            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -61,11 +62,12 @@ WindowInfo CreateTestWindow(const WCHAR* window_title,
   // height and width parameters, or if they supplied invalid values.
   int window_height = height <= 0 ? kWindowHeight : height;
   int window_width = width <= 0 ? kWindowWidth : width;
-  info.hwnd = ::CreateWindowW(kWindowClass, window_title, WS_OVERLAPPEDWINDOW,
-                              CW_USEDEFAULT, CW_USEDEFAULT, window_width,
-                              window_height, /*parent_window=*/nullptr,
-                              /*menu_bar=*/nullptr, info.window_instance,
-                              /*additional_params=*/nullptr);
+  info.hwnd =
+      ::CreateWindowExW(extended_styles, kWindowClass, window_title,
+                        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                        window_width, window_height, /*parent_window=*/nullptr,
+                        /*menu_bar=*/nullptr, info.window_instance,
+                        /*additional_params=*/nullptr);
 
   ::ShowWindow(info.hwnd, SW_SHOWNORMAL);
   ::UpdateWindow(info.hwnd);
@@ -73,8 +75,16 @@ WindowInfo CreateTestWindow(const WCHAR* window_title,
 }
 
 void ResizeTestWindow(const HWND hwnd, const int width, const int height) {
+  // SWP_NOMOVE results in the x and y params being ignored.
   ::SetWindowPos(hwnd, HWND_TOP, /*x-coord=*/0, /*y-coord=*/0, width, height,
-                 SWP_SHOWWINDOW);
+                 SWP_SHOWWINDOW | SWP_NOMOVE);
+  ::UpdateWindow(hwnd);
+}
+
+void MoveTestWindow(const HWND hwnd, const int x, const int y) {
+  // SWP_NOSIZE results in the width and height params being ignored.
+  ::SetWindowPos(hwnd, HWND_TOP, x, y, /*width=*/0, /*height=*/0,
+                 SWP_SHOWWINDOW | SWP_NOSIZE);
   ::UpdateWindow(hwnd);
 }
 

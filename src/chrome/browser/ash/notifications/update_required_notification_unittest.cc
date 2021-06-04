@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -22,7 +24,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
@@ -93,6 +95,10 @@ class UpdateRequiredNotificationTest
     return fake_update_engine_client_;
   }
 
+  chromeos::NetworkHandlerTestHelper* network_handler_test_helper() {
+    return network_handler_test_helper_.get();
+  }
+
   void SetUserManaged(bool managed) { user_managed_ = managed; }
 
   content::BrowserTaskEnvironment task_environment_{
@@ -108,6 +114,8 @@ class UpdateRequiredNotificationTest
   std::unique_ptr<base::Version> current_version_;
   std::unique_ptr<policy::MinimumVersionPolicyHandler>
       minimum_version_policy_handler_;
+  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
+      network_handler_test_helper_;
 };
 
 UpdateRequiredNotificationTest::UpdateRequiredNotificationTest()
@@ -120,14 +128,14 @@ void UpdateRequiredNotificationTest::SetUp() {
   auto fake_update_engine_client =
       std::make_unique<chromeos::FakeUpdateEngineClient>();
   fake_update_engine_client_ = fake_update_engine_client.get();
+  chromeos::DBusThreadManager::Initialize();
   chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
       std::move(fake_update_engine_client));
-  chromeos::NetworkHandler::Initialize();
+  network_handler_test_helper_ =
+      std::make_unique<chromeos::NetworkHandlerTestHelper>();
 
   chromeos::ShillServiceClient::TestInterface* service_test =
-      chromeos::DBusThreadManager::Get()
-          ->GetShillServiceClient()
-          ->GetTestInterface();
+      network_handler_test_helper_->service_test();
   service_test->ClearServices();
   service_test->AddService("/service/eth", "eth" /* guid */, "eth",
                            shill::kTypeEthernet, shill::kStateOnline,
@@ -147,12 +155,14 @@ void UpdateRequiredNotificationTest::SetUp() {
 
 void UpdateRequiredNotificationTest::TearDown() {
   minimum_version_policy_handler_.reset();
-  chromeos::NetworkHandler::Shutdown();
+  network_handler_test_helper_.reset();
+  chromeos::DBusThreadManager::Shutdown();
 }
 
 void UpdateRequiredNotificationTest::CreateMinimumVersionHandler() {
-  minimum_version_policy_handler_.reset(
-      new policy::MinimumVersionPolicyHandler(this, CrosSettings::Get()));
+  minimum_version_policy_handler_ =
+      std::make_unique<policy::MinimumVersionPolicyHandler>(
+          this, CrosSettings::Get());
 }
 
 const MinimumVersionRequirement* UpdateRequiredNotificationTest::GetState()
@@ -162,7 +172,7 @@ const MinimumVersionRequirement* UpdateRequiredNotificationTest::GetState()
 
 void UpdateRequiredNotificationTest::SetCurrentVersionString(
     const std::string& version) {
-  current_version_.reset(new base::Version(version));
+  current_version_ = std::make_unique<base::Version>(version);
   ASSERT_TRUE(current_version_->IsValid());
 }
 
@@ -194,9 +204,7 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
 
   // Disconnect all networks
   chromeos::ShillServiceClient::TestInterface* service_test =
-      chromeos::DBusThreadManager::Get()
-          ->GetShillServiceClient()
-          ->GetTestInterface();
+      network_handler_test_helper()->service_test();
   service_test->ClearServices();
 
   // This is needed to wait till EOL status is fetched from the update_engine.
@@ -215,9 +223,10 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
 
   // Check notification is shown for offline devices with the warning time.
   std::u16string expected_title = u"Update Chrome device within 10 days";
-  std::u16string expected_message = base::ASCIIToUTF16(
-      "managed.com requires you to download an update before the deadline. The "
-      "update will download automatically when you connect to the internet.");
+  std::u16string expected_message =
+      u"managed.com requires you to download an update before the deadline. "
+      u"The update will download automatically when you connect to the "
+      u"internet.";
   VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
@@ -225,9 +234,9 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
       base::TimeDelta::FromDays(kLongWarningInDays - 1);
   task_environment_.FastForwardBy(warning);
   std::u16string expected_title_last_day = u"Last day to update Chrome device";
-  std::u16string expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to download an update today. The "
-      "update will download automatically when you connect to the internet.");
+  std::u16string expected_message_last_day =
+      u"managed.com requires you to download an update today. The "
+      u"update will download automatically when you connect to the internet.";
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
 }
@@ -235,9 +244,7 @@ TEST_F(UpdateRequiredNotificationTest, NoNetworkNotifications) {
 TEST_F(UpdateRequiredNotificationTest, MeteredNetworkNotifications) {
   // Connect to metered network
   chromeos::ShillServiceClient::TestInterface* service_test =
-      chromeos::DBusThreadManager::Get()
-          ->GetShillServiceClient()
-          ->GetTestInterface();
+      network_handler_test_helper()->service_test();
   service_test->ClearServices();
   service_test->AddService(kCellularServicePath,
                            kCellularServicePath /* guid */,
@@ -260,10 +267,10 @@ TEST_F(UpdateRequiredNotificationTest, MeteredNetworkNotifications) {
 
   // Check notification is shown for metered network with the warning time.
   std::u16string expected_title = u"Update Chrome device within 10 days";
-  std::u16string expected_message = base::ASCIIToUTF16(
-      "managed.com requires you to connect to Wi-Fi and download an update "
-      "before the deadline. Or, download from a metered connection (charges "
-      "may apply).");
+  std::u16string expected_message =
+      u"managed.com requires you to connect to Wi-Fi and download an update "
+      u"before the deadline. Or, download from a metered connection (charges "
+      u"may apply).";
   VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
@@ -271,9 +278,9 @@ TEST_F(UpdateRequiredNotificationTest, MeteredNetworkNotifications) {
       base::TimeDelta::FromDays(kLongWarningInDays - 1);
   task_environment_.FastForwardBy(warning);
   std::u16string expected_title_last_day = u"Last day to update Chrome device";
-  std::u16string expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to connect to Wi-Fi today to download an "
-      "update. Or, download from a metered connection (charges may apply).");
+  std::u16string expected_message_last_day =
+      u"managed.com requires you to connect to Wi-Fi today to download an "
+      u"update. Or, download from a metered connection (charges may apply).";
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
 }
@@ -298,9 +305,9 @@ TEST_F(UpdateRequiredNotificationTest, EolNotifications) {
 
   // Check notification is shown for end of life with the warning time.
   std::u16string expected_title = u"Return Chrome device within 10 days";
-  std::u16string expected_message = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this Chrome "
-      "device before the deadline.");
+  std::u16string expected_message =
+      u"managed.com requires you to back up your data and return this Chrome "
+      u"device before the deadline.";
   VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire notification timer to show new notification a week before deadline.
@@ -315,9 +322,9 @@ TEST_F(UpdateRequiredNotificationTest, EolNotifications) {
   const base::TimeDelta warning_last_day = base::TimeDelta::FromDays(6);
   task_environment_.FastForwardBy(warning_last_day);
   std::u16string expected_title_last_day = u"Immediate return required";
-  std::u16string expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this Chrome "
-      "device today.");
+  std::u16string expected_message_last_day =
+      u"managed.com requires you to back up your data and return this Chrome "
+      u"device today.";
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
 }
@@ -351,9 +358,9 @@ TEST_F(UpdateRequiredNotificationTest, LastHourEolNotifications) {
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
 
   std::u16string expected_title_last_day = u"Immediate return required";
-  std::u16string expected_message_last_day = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this Chrome "
-      "device today.");
+  std::u16string expected_message_last_day =
+      u"managed.com requires you to back up your data and return this Chrome "
+      u"device today.";
   VerifyUpdateRequiredNotification(expected_title_last_day,
                                    expected_message_last_day);
 }
@@ -381,9 +388,9 @@ TEST_F(UpdateRequiredNotificationTest, ChromeboxNotifications) {
   // Check Chromebox notification is shown for end of life with the warning
   // time.
   std::u16string expected_title = u"Return Chromebox within 10 days";
-  std::u16string expected_message = base::ASCIIToUTF16(
-      "managed.com requires you to back up your data and return this Chromebox "
-      "before the deadline.");
+  std::u16string expected_message =
+      u"managed.com requires you to back up your data and return this "
+      u"Chromebox before the deadline.";
   VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire notification timer to show new notification a week before deadline.

@@ -13,10 +13,8 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/extension_uninstaller.h"
@@ -30,6 +28,7 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -48,6 +47,8 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
+#include "net/base/url_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_constants.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -55,7 +56,7 @@
 // and be able to show download progress in the UI, a la
 // ExtensionAppModelBuilder. This might involve using an
 // extensions::InstallTracker. It might also need the equivalent of a
-// LauncherExtensionAppUpdater.
+// ShelfExtensionAppUpdater.
 
 // TODO(crbug.com/826982): consider that, per khmel@, "in some places Chrome
 // apps is not used and raw extension app without any effect is displayed...
@@ -81,7 +82,9 @@ extensions::UninstallReason GetUninstallReason(
     case apps::mojom::UninstallSource::kUnknown:
       NOTREACHED();
       FALLTHROUGH;
-    case apps::mojom::UninstallSource::kUser:
+    case apps::mojom::UninstallSource::kAppList:
+    case apps::mojom::UninstallSource::kAppManagement:
+    case apps::mojom::UninstallSource::kShelf:
       return extensions::UNINSTALL_REASON_USER_INITIATED;
     case apps::mojom::UninstallSource::kMigration:
       return extensions::UNINSTALL_REASON_MIGRATED;
@@ -117,6 +120,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -216,12 +220,6 @@ void ExtensionAppsBase::OnExtensionUninstalled(
 
   SetShowInFields(app, extension);
   Publish(std::move(app), subscribers_);
-
-  if (!app_service_) {
-    return;
-  }
-  app_service_->RemovePreferredApp(apps::mojom::AppType::kExtension,
-                                   extension->id());
 }
 
 void ExtensionAppsBase::SetShowInFields(
@@ -335,8 +333,8 @@ void ExtensionAppsBase::Initialize(
   DCHECK(profile_);
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kExtension);
 
-  prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
-  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  prefs_observation_.Observe(extensions::ExtensionPrefs::Get(profile_));
+  registry_observation_.Observe(extensions::ExtensionRegistry::Get(profile_));
   app_service_ = app_service.get();
 }
 
@@ -429,6 +427,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       break;
   }
 
@@ -567,7 +566,8 @@ void ExtensionAppsBase::OnExtensionLastLaunchTimeChanged(
 
 void ExtensionAppsBase::OnExtensionPrefsWillBeDestroyed(
     extensions::ExtensionPrefs* prefs) {
-  prefs_observer_.Remove(prefs);
+  DCHECK(prefs_observation_.IsObservingSource(prefs));
+  prefs_observation_.Reset();
 }
 
 void ExtensionAppsBase::OnExtensionLoaded(
@@ -667,9 +667,9 @@ bool ExtensionAppsBase::ShouldShow(const extensions::Extension* extension,
 }
 
 void ExtensionAppsBase::PopulateIntentFilters(
-    const base::Optional<GURL>& app_scope,
+    const absl::optional<GURL>& app_scope,
     std::vector<mojom::IntentFilterPtr>* target) {
-  if (app_scope != base::nullopt) {
+  if (app_scope != absl::nullopt) {
     target->push_back(apps_util::CreateIntentFilterForUrlScope(
         app_scope.value(),
         base::FeatureList::IsEnabled(features::kIntentHandlingSharing)));

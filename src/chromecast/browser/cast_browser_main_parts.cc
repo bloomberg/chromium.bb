@@ -117,7 +117,7 @@
 #include "ui/display/screen.h"
 #include "ui/views/views_delegate.h"  // nogncheck
 #else
-#include "chromecast/graphics/cast_window_manager_default.h"
+#include "chromecast/graphics/cast_window_manager_default.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -165,7 +165,7 @@ void RunClosureOnSignal(int signum) {
   }
 
   char message[48] = "Received close signal: ";
-  strncat(message, sys_siglist[signum], sizeof(message) - strlen(message) - 1);
+  strncat(message, strsignal(signum), sizeof(message) - strlen(message) - 1);
   RAW_LOG(INFO, message);
 
   DCHECK(g_signal_closure);
@@ -454,7 +454,7 @@ content::BrowserContext* CastBrowserMainParts::browser_context() {
   return cast_browser_process_->browser_context();
 }
 
-void CastBrowserMainParts::PreMainMessageLoopStart() {
+void CastBrowserMainParts::PreCreateMainMessageLoop() {
   // GroupedHistograms needs to be initialized before any threads are created
   // to prevent race conditions between calls to Preregister and those threads
   // attempting to collect metrics.
@@ -474,7 +474,7 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 #endif  // !(defined(OS_ANDROID) || defined(OS_FUCHSIA))
 }
 
-void CastBrowserMainParts::PostMainMessageLoopStart() {
+void CastBrowserMainParts::PostCreateMainMessageLoop() {
   // Ensure CastMetricsHelper initialized on UI thread.
   metrics::CastMetricsHelper::GetInstance();
 }
@@ -559,8 +559,8 @@ int CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       content::GetIOThreadTaskRunner({}),
-      content::BrowserContext::GetDefaultStoragePartition(
-          cast_browser_process_->browser_context())
+      cast_browser_process_->browser_context()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),
       content::GetNetworkConnectionTracker()));
 
@@ -568,8 +568,8 @@ int CastBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->browser_client(),
           cast_browser_process_->pref_service(),
-          content::BrowserContext::GetDefaultStoragePartition(
-              cast_browser_process_->browser_context())
+          cast_browser_process_->browser_context()
+              ->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess()));
   cast_browser_process_->SetRemoteDebuggingServer(
       std::make_unique<RemoteDebuggingServer>(
@@ -615,6 +615,9 @@ int CastBrowserMainParts::PreMainMessageLoopRun() {
     rounded_window_corners_manager_ =
         std::make_unique<RoundedWindowCornersManager>(window_manager_.get());
   }
+
+  display_change_observer_ = std::make_unique<DisplayConfiguratorObserver>(
+      cast_browser_process_->display_configurator(), window_manager_.get());
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   cast_browser_process_->SetAccessibilityManager(
@@ -765,13 +768,18 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   // Android does not use native main MessageLoop.
   NOTREACHED();
 #else
-  cast_browser_process_->cast_service()->Finalize();
-  cast_browser_process_->cast_browser_metrics()->Finalize();
-  cast_browser_process_.reset();
 
 #if defined(USE_AURA)
   rounded_window_corners_manager_.reset();
+  // Reset display change observer here to ensure it is deleted before
+  // display_configurator since display_configurator is deleted when
+  // `cast_browser_process_` is reset below.
+  display_change_observer_.reset();
 #endif
+
+  cast_browser_process_->cast_service()->Finalize();
+  cast_browser_process_->cast_browser_metrics()->Finalize();
+  cast_browser_process_.reset();
 
   window_manager_.reset();
 #if defined(USE_AURA)

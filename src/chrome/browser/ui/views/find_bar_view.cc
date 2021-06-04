@@ -28,9 +28,11 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
@@ -46,7 +48,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
@@ -112,7 +113,7 @@ class FindBarMatchCountLabel : public views::Label {
   }
 
  private:
-  base::Optional<find_in_page::FindNotificationDetails> last_result_;
+  absl::optional<find_in_page::FindNotificationDetails> last_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarMatchCountLabel);
 };
@@ -462,9 +463,9 @@ void FindBarView::OnThemeChanged() {
   separator_->SetColor(
       SkColorSetA(base_foreground_color, gfx::kGoogleGreyAlpha300));
 
-  views::SetImageFromVectorIcon(find_previous_button_, kCaretUpIcon,
-                                base_foreground_color);
-  views::SetImageFromVectorIcon(find_next_button_, kCaretDownIcon,
+  views::SetImageFromVectorIcon(
+      find_previous_button_, vector_icons::kCaretUpIcon, base_foreground_color);
+  views::SetImageFromVectorIcon(find_next_button_, vector_icons::kCaretDownIcon,
                                 base_foreground_color);
   views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
                                 base_foreground_color);

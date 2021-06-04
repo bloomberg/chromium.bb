@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -369,8 +368,8 @@ void WorkerClassicScriptLoader::ProcessContentSecurityPolicy(
       !response.CurrentRequestUrl().ProtocolIs("file") &&
       !response.CurrentRequestUrl().ProtocolIs("filesystem")) {
     content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
-    content_security_policy_->DidReceiveHeaders(
-        ContentSecurityPolicyResponseHeaders(response));
+    content_security_policy_->AddPolicies(ParseContentSecurityPolicyHeaders(
+        ContentSecurityPolicyResponseHeaders(response)));
   }
 }
 

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AutocompleteResult;
 class ChromeBrowserState;
@@ -58,7 +59,7 @@ class OmniboxViewIOS : public OmniboxView,
       const std::u16string& pasted_text,
       size_t selected_line,
       base::TimeTicks match_selection_timestamp,
-      base::Optional<GURL> optional_gurl);
+      absl::optional<GURL> optional_gurl);
 
   void OnReceiveClipboardTextForOpenMatch(
       const AutocompleteMatch& match,
@@ -67,7 +68,7 @@ class OmniboxViewIOS : public OmniboxView,
       const std::u16string& pasted_text,
       size_t selected_line,
       base::TimeTicks match_selection_timestamp,
-      base::Optional<std::u16string> optional_text);
+      absl::optional<std::u16string> optional_text);
 
   void OnReceiveClipboardImageForOpenMatch(
       const AutocompleteMatch& match,
@@ -76,7 +77,7 @@ class OmniboxViewIOS : public OmniboxView,
       const std::u16string& pasted_text,
       size_t selected_line,
       base::TimeTicks match_selection_timestamp,
-      base::Optional<gfx::Image> optional_image);
+      absl::optional<gfx::Image> optional_image);
 
   void OnReceiveImageMatchForOpenMatch(
       WindowOpenDisposition disposition,
@@ -84,7 +85,7 @@ class OmniboxViewIOS : public OmniboxView,
       const std::u16string& pasted_text,
       size_t selected_line,
       base::TimeTicks match_selection_timestamp,
-      base::Optional<AutocompleteMatch> optional_match);
+      absl::optional<AutocompleteMatch> optional_match);
 
   // OmniboxView implementation.
   void OpenMatch(const AutocompleteMatch& match,
@@ -148,7 +149,7 @@ class OmniboxViewIOS : public OmniboxView,
   void OnSelectedMatchImageChanged(
       bool has_match,
       AutocompleteMatchType::Type match_type,
-      base::Optional<SuggestionAnswer::AnswerType> answer_type,
+      absl::optional<SuggestionAnswer::AnswerType> answer_type,
       GURL favicon_url) override;
   void OnResultsChanged(const AutocompleteResult& result) override;
   void OnPopupDidScroll() override;

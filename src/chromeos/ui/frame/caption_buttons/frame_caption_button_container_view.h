@@ -12,9 +12,9 @@
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/caption_buttons/frame_size_button_delegate.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/layout/box_layout_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/window/frame_caption_button.h"
 
@@ -130,8 +130,8 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
  private:
   friend class FrameCaptionButtonContainerViewTest;
 
-  // Sets |button|'s icon to |icon|. If |animate| is ANIMATE_YES, the button
-  // will crossfade to the new icon. If |animate| is ANIMATE_NO and
+  // Sets |button|'s icon to |icon|. If |animate| is Animate::kYes, the button
+  // will crossfade to the new icon. If |animate| is Animate::kNo and
   // |icon| == |button|->icon(), the crossfade animation is progressed to the
   // end.
   void SetButtonIcon(views::FrameCaptionButton* button,

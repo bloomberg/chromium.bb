@@ -101,7 +101,7 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
       path_(path),
       simple_factory_key_(path, path.empty()),
       resource_context_(new ResourceContextImpl()),
-      download_delegate_(BrowserContext::GetDownloadManager(this)) {
+      download_delegate_(GetDownloadManager()) {
   CreateUserPrefService();
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
@@ -124,7 +124,7 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
 }
 
 BrowserContextImpl::~BrowserContextImpl() {
-  NotifyWillBeDestroyed(this);
+  NotifyWillBeDestroyed();
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
@@ -225,9 +225,8 @@ BrowserContextImpl::RetriveInProgressDownloadManager() {
   // Override this to provide a connection to the wake lock service.
   auto* download_manager = new download::InProgressDownloadManager(
       nullptr, path_,
-      path_.empty()
-          ? nullptr
-          : GetDefaultStoragePartition(this)->GetProtoDatabaseProvider(),
+      path_.empty() ? nullptr
+                    : GetDefaultStoragePartition()->GetProtoDatabaseProvider(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
       base::BindRepeating(&BindWakeLockProvider));
@@ -277,6 +276,8 @@ void BrowserContextImpl::RegisterPrefs(
       embedder_support::kAlternateErrorPagesEnabled, true);
   pref_registry->RegisterListPref(
       site_isolation::prefs::kUserTriggeredIsolatedOrigins);
+  pref_registry->RegisterDictionaryPref(
+      site_isolation::prefs::kWebTriggeredIsolatedOrigins);
 
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);

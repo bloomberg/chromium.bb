@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -43,14 +44,14 @@ void ManifestUpdateManager::SetSubsystems(
 }
 
 void ManifestUpdateManager::Start() {
-  registrar_observer_.Add(registrar_);
+  registrar_observation_.Observe(registrar_);
 
   DCHECK(!started_);
   started_ = true;
 }
 
 void ManifestUpdateManager::Shutdown() {
-  registrar_observer_.RemoveAll();
+  registrar_observation_.Reset();
 
   tasks_.clear();
   started_ = false;
@@ -96,7 +97,7 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
 }
 
 bool ManifestUpdateManager::IsUpdateConsumed(const AppId& app_id) {
-  base::Optional<base::Time> last_check_time = GetLastUpdateCheckTime(app_id);
+  absl::optional<base::Time> last_check_time = GetLastUpdateCheckTime(app_id);
   base::Time now = time_override_for_testing_.value_or(base::Time::Now());
   if (last_check_time.has_value() &&
       now < *last_check_time + kDelayBetweenChecks &&
@@ -133,11 +134,11 @@ bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
   return true;
 }
 
-base::Optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
+absl::optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
     const AppId& app_id) const {
   auto it = last_update_check_.find(app_id);
-  return it != last_update_check_.end() ? base::Optional<base::Time>(it->second)
-                                        : base::nullopt;
+  return it != last_update_check_.end() ? absl::optional<base::Time>(it->second)
+                                        : absl::nullopt;
 }
 
 void ManifestUpdateManager::SetLastUpdateCheckTime(const GURL& origin,

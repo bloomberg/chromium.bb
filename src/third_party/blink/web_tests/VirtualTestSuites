@@ -182,7 +182,6 @@
               "external/wpt/encoding",
               "external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism",
               "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
-              "external/wpt/native-io",
               "external/wpt/orientation-sensor",
               "external/wpt/wasm/jsapi/memory",
               "external/wpt/webaudio/the-audio-api/the-audiobuffer-interface",
@@ -243,6 +242,11 @@
     "args": ["--enable-features=FontAccess,FontAccessPersistent"]
   },
   {
+    "prefix": "compute-pressure",
+    "bases": ["external/wpt/compute-pressure"],
+    "args": ["--enable-features=ComputePressure"]
+  },
+  {
     "prefix": "highdpi-threaded",
     "bases": ["external/wpt/css/css-paint-api/hidpi"],
     "args": ["--force-device-scale-factor=2",
@@ -270,6 +274,12 @@
               "inspector-protocol/page/get-layout-metrics-css.js"],
     "args": ["--force-device-scale-factor=2",
              "--enable-use-zoom-for-dsf=false"]
+  },
+  {
+    "prefix": "jxl-enabled",
+    "bases": ["http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js",
+              "images/jxl"],
+    "args": ["--enable-features=JXL"]
   },
   {
     "prefix": "scalefactor150",
@@ -355,6 +365,12 @@
              "--dark-mode-settings=ImagePolicy=0,ImageGrayScalePercent=1.0"]
   },
   {
+    "prefix": "dark-mode-increase-text-contrast",
+    "bases": ["dark-mode/colors"],
+    "args": ["--blink-settings=forceDarkModeEnabled=true",
+             "--dark-mode-settings=IncreaseTextContrast=1"]
+  },
+  {
     "prefix": "presentation",
     "bases": [],
     "args": ["--force-presentation-receiver-for-testing"]
@@ -393,20 +409,15 @@
   },
   {
     "prefix": "main-threaded-percent-based-scrolling",
-    "bases": ["fast/events/continuous-platform-wheelevent-in-scrolling-div.html",
-              "fast/events/mouse-wheel-main-frame-scroll.html",
-              "fast/events/scroll-in-scaled-page-with-overflow-hidden.html",
-              "fast/events/wheel/mouse-wheel-scroll-latching.html",
-              "fast/events/wheel/wheelevent-basic.html",
-              "fast/events/wheel/wheelevent-in-scrolling-div.html",
-              "fast/scrolling/percentage-mousewheel-scroll.html",
-              "fast/scrolling/percentage-mousewheel-scroll-on-iframe.html"],
+    "bases": ["fast/events/wheel",
+              "fast/scrolling",
+              "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling"]
   },
   {
     "prefix": "compositor-threaded-percent-based-scrolling",
-    "bases": ["fast/scrolling/scrollbars",
-              "virtual/main-threaded-percent-based-scrolling",
+    "bases": ["fast/events/wheel",
+              "fast/scrolling",
               "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
@@ -498,6 +509,17 @@
     "args": ["--enable-features=PlzDedicatedWorker",
              "--enable-blink-features=CorsRFC1918"]
   },
+  {
+    "prefix": "plz-service-worker",
+    "bases": ["http/tests/serviceworker",
+              "http/tests/devtools/service-workers",
+              "http/tests/devtools/console",
+              "http/tests/inspector-protocol/fetch",
+              "external/wpt/service-workers",
+              "external/wpt/html/cross-origin-embedder-policy"],
+    "args": ["--enable-features=PlzServiceWorker"]
+  },
+
   {
     "prefix": "direct-sockets",
     "bases": ["external/wpt/raw-sockets"],
@@ -785,6 +807,15 @@
     "args": [ "--js-flags=--harmony-weak-refs" ]
   },
   {
+    "prefix": "offsetparent-old-behavior",
+    "bases": [
+      "external/wpt/css/css-contain/content-visibility",
+      "external/wpt/shadow-dom",
+      "fast/dom/shadow"
+    ],
+    "args": ["--disable-features=OffsetParentNewSpecBehavior"]
+  },
+  {
     "prefix": "document-domain-disabled-by-default",
     "bases": [
       "external/wpt/document-policy/experimental-features/document-domain"
@@ -989,7 +1020,8 @@
   },
   {
     "prefix": "force-renderer-accessibility",
-    "bases": ["accessibility/slot-poison.html"],
+    "bases": ["accessibility/slot-poison.html",
+              "accessibility/details-summary-crash.html"],
     "args": ["--force-renderer-accessibility"]
   },
   {
@@ -998,8 +1030,25 @@
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
   },
   {
+    "prefix": "webid",
+    "bases": ["wpt_internal/webid"],
+    "args": ["--enable-features=WebID"]
+  },
+  {
+    "prefix": "document-transition",
+    "bases": ["wpt_internal/document-transition"],
+    "args": ["--enable-blink-features=DocumentTransition",
+             "--enable-threaded-compositing",
+             "--enable-gpu-rasterization"]
+  },
+  {
     "prefix": "popup-disabled",
     "bases": [],
     "args": ["--stable-release-mode"]
+  },
+  {
+  "prefix": "playback_speed_button",
+  "bases": ["media/controls"],
+  "args": [ "--enable-features=PlaybackSpeedButton" ]
   }
 ]

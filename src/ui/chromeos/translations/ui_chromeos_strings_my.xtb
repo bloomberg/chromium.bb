@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">ဆလိုက်ဒါးကို ရှာပါ</translation>
 <translation id="1404323374378969387">နော်ဝေ</translation>
 <translation id="1430915738399379752">ပရင့်</translation>
+<translation id="1433628812591023318">Parallels Desktop တွင် ဖိုင်များဆွဲချရန် ဖိုင်ကို Windows ဖိုင်များသို့ ရွှေ့ရပါမည်။</translation>
 <translation id="1435838927755162558">ဖိုင်တွဲကို Parallels Desktop အား မျှဝေခြင်း</translation>
 <translation id="1467432559032391204">ဘယ်</translation>
 <translation id="1471718551822868769">ဆလိုဗက်</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows ဖိုင်များ</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> နှင့်မျှဝေပါ</translation>
 <translation id="3083975830683400843">Chromebit များ</translation>
+<translation id="3113153474486991170">ဤနေရာမှ “<ph name="PATH" />” ကို ဖွင့်၍မရပါ။ ဖွင့်ရန် “ကျွန်ုပ်၏ဖိုင်များ” သို့ မိတ္တူကူးပါ။</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">လုပ်ပြီး</translation>
 <translation id="3188257591659621405">ကျွန်ုပ်၏ဖိုင်များ</translation>
@@ -380,7 +382,7 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">လုပ်ကိုင်မှု  တစ်ခုသည် မျှော်လင့်ခဲ့တာထက် ပိုကြာနေသည်။ သင်သည် အဲဒါကို ဖျက်သိမ်းချင်ပါသလား?</translation>
 <translation id="5036159836254554629">Parallels Desktop မျှဝေခြင်းကို စီမံရန်</translation>
-<translation id="5038625366300922036">နောက်ထပ် ကြည့်ရန်...</translation>
+<translation id="5038625366300922036">ပိုကြည့်ရန်...</translation>
 <translation id="5044852990838351217">အာမေးနီးယား</translation>
 <translation id="5059127710849015030">နီပေါ အက္ခရာဖလှယ်ခြင်း</translation>
 <translation id="5061708541166515394">ဆန့်ကျင်ကွဲလွဲမှု</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">အသံထွက်ကီးဘုတ်ဖြင့် ဘူလ်ဂေးရီးယား</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5625294776298156701">Tamil99 ကီးဘုတ်ဖြင့် တမီးလ်</translation>
+<translation id="5633226425545095130">ဤဖိုင်ကိုရွှေ့သောအခါ မျှဝေထားသောဖိုင်တွဲ ‘<ph name="DESTINATION_NAME" />’ ကို ကြည့်ခွင့်ရသူတိုင်းနှင့် မျှဝေပါမည်။</translation>
 <translation id="5649768706273821470">နားထောင်</translation>
 <translation id="5678784840044122290">Linux အပလီကေးရှင်းကို သင်၏ Terminal အတွင်းတွင်ရနိုင်ပြီး သင်၏ Launcher တွင်လည်း သင်္ကေတပြနိုင်ပါသည်။</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />မှတ်တမ်းဟောင်း သို့မဟုတ် ဒစ်ခ်အတုကို ချိတ်ဆက်မှုဖြုတ်၍မရပါ<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">အီသီယိုးပီးယား ကီးဘုတ်</translation>
 <translation id="7417705661718309329">Google မြေပုံ</translation>
 <translation id="7460898608667578234">ယူကရိန်းနီးယန်း</translation>
+<translation id="7486315294984620427">Parallels Desktop တွင် ဖိုင်များဆွဲချရန် ဖိုင်ကို Windows ဖိုင်များသို့ မိတ္တူကူးရပါမည်။</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> တွေ့ပါသည်
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> သို့ မိတ္ထူကူးရန် အဆင်သင့်ဖြစ်ပါပြီ</translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">အတိုင်းအတာများ</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8456681095658380701">အမည် မမှန်</translation>
+<translation id="8459404855768962328">ဤဖိုင်ကို မိတ္တူကူးသောအခါ မျှဝေထားသောဖိုင်တွဲ ‘<ph name="DESTINATION_NAME" />’ ကို ကြည့်ခွင့်ရသူတိုင်းနှင့် မျှဝေပါမည်။</translation>
 <translation id="8461467696380332069">ဖိုင်ကို ညာဘက်ခလုတ်နှိပ်ပြီး စင်ပေါ်ရှိ သင့်ဖိုင်များကို အမြန်သုံးခွင့်အတွက် "စင်တွင်ပင်ထိုးရန်" ကို ရွေးပါ။</translation>
 <translation id="8463494891489624050">ဗီယက်နမ် VIQR</translation>
 <translation id="8466234950814670489">Tar စနစ်ဖြင့် ချုံ့ထားသော ဖိုင်မှတ်တမ်း</translation>

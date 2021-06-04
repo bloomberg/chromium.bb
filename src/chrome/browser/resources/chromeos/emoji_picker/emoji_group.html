@@ -1,17 +1,25 @@
 <style>
   :host {
     margin-top: 10px;
+    --emoji-group-clear-recents-icon-size: 16px;
   }
 
   #heading {
     color: var(--cr-secondary-text-color);
     display: flex;
     font-size: 10pt;
-    padding-bottom: 4px;
-    padding-top: 8px;
+    padding-bottom: 0;
+    padding-top: 12px;
+  }
+  #heading:focus,
+  #heading:active {
+    outline-color: var(--cr-toggle-color);
+    outline-width: 2px;
   }
 
   #heading-left {
+    height: 32px;
+    line-height: 32px;
     width: 100%;
   }
 
@@ -22,14 +30,17 @@
     justify-items: center;
   }
 
-  #show_clear {
+  #show-clear {
     margin: 0;
-    --cr-icon-button-size: 16px;
+    margin-inline-end: calc(
+      (var(--emoji-group-button-size) -
+       var(--emoji-group-clear-recents-icon-size))* .5);
+    --cr-icon-button-size: var(--emoji-group-clear-recents-icon-size);
   }
 
-  #clearRecents {
-    background-color: inherit;
-    border: none;
+  #clear-recents {
+    background-color: var(--cr-menu-background-color);
+    border: 2px solid transparent;
     border-radius: 4px;
     box-shadow: var(--cr-elevation-3);
     color: var(--cr-secondary-text-color);
@@ -38,34 +49,55 @@
     font-family: 'Roboto', sans-serif;
     font-size: 12px;
     margin: auto 0 auto auto;
-    padding: 4px 8px 4px 8px;
+    outline: none;
+    padding: 0;
     position: absolute;
     right: var(--emoji-picker-side-padding);
     width: fit-content;
-  }
-  #clearRecents:hover {
-        background-color: var(--cr-hover-background-color);
+    z-index: 200;
   }
 
+  #clear-recents:focus,
+  #clear-recents:active {
+    border: 2px solid var(--cr-toggle-color);
+  }
+
+  #fake-focus-target {
+    position: absolute;
+  }
+
+  #clear-recents-hover {
+    border: 2px solid transparent;
+    margin: -2px;
+    padding: 6px 10px 6px 10px;
+  }
+  #clear-recents-hover:hover {
+    background-color: rgba(var(--google-blue-refresh-500-rgb), .04);
+    border: 2px solid rgba(var(--google-blue-refresh-500-rgb), .04);
+  }
 </style>
 
-<div id="heading" role="heading" aria-level="2" tabindex="0">
+<div id="heading" role="heading" aria-level="2" tabindex="-1">
 <div id="heading-left">[[data.group]]</div>
 <template is="dom-if" if="[[clearable]]">
-  <cr-icon-button id="show_clear" iron-icon="emoji_picker:more_horizontal"
+  <cr-icon-button id="show-clear" iron-icon="emoji_picker:more_horizontal"
     on-click="onClearClick">
   </cr-icon-button>
 </template>
 </div>
   <template is = "dom-if" if="[[showClearRecents]]">
-  <button id="clearRecents" on-click="onClearRecentsClick">
+  <button id="clear-recents" on-click="onClearRecentsClick">
+    <div id="clear-recents-hover">
     Clear recently used emojis
+    </div>
   </button>
   </template>
 <div id="emoji">
+  <div id="fake-focus-target" tabindex="-1"></div>
   <template is="dom-repeat" items="[[data.emoji]]">
     <emoji-button emoji="[[getDisplayEmojiForEmoji(item.base.string)]]"
-      variants="[[item.alternates]]">
+      variants="[[item.alternates]]" tooltip="[[getTooltipForEmoji(item.base)]]"
+    >
     </emoji-button>
   </template>
 </div>

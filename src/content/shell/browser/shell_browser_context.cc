@@ -59,7 +59,7 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
-  NotifyWillBeDestroyed(this);
+  NotifyWillBeDestroyed();
 
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
@@ -139,7 +139,7 @@ void ShellBrowserContext::FinishInitWhileIOAllowed() {
 #if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath&) {
-  return std::unique_ptr<ZoomLevelDelegate>();
+  return nullptr;
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -155,8 +155,7 @@ DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   if (!download_manager_delegate_.get()) {
     download_manager_delegate_ =
         std::make_unique<ShellDownloadManagerDelegate>();
-    download_manager_delegate_->SetDownloadManager(
-        BrowserContext::GetDownloadManager(this));
+    download_manager_delegate_->SetDownloadManager(GetDownloadManager());
   }
 
   return download_manager_delegate_.get();

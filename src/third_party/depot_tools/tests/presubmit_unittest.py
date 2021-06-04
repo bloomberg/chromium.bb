@@ -687,7 +687,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(sys.stdout.getvalue().count('!!'), 0)
     self.assertEqual(sys.stdout.getvalue().count('??'), 0)
     self.assertEqual(sys.stdout.getvalue().count(
-        'Running presubmit upload checks ...\n'), 1)
+        'Running Python 2 presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksJsonOutput(self):
     fake_error = 'Missing LGTM'
@@ -808,7 +808,7 @@ def CheckChangeOnCommit(input_api, output_api):
               gerrit_obj=None, json_output=None))
       self.assertEqual(sys.stdout.getvalue().count('??'), 2)
       self.assertEqual(sys.stdout.getvalue().count(
-          'Running presubmit upload checks ...\n'), 1)
+          'Running Python 2 presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksWithWarningsAndNoPrompt(self):
     presubmit_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -834,7 +834,7 @@ def CheckChangeOnCommit(input_api, output_api):
     self.assertEqual(sys.stdout.getvalue().count('??'), 2)
     self.assertEqual(sys.stdout.getvalue().count('(y/N)'), 0)
     self.assertEqual(sys.stdout.getvalue().count(
-        'Running presubmit upload checks ...\n'), 1)
+        'Running Python 2 presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
     presubmit_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -858,7 +858,7 @@ def CheckChangeOnCommit(input_api, output_api):
     self.assertEqual(sys.stdout.getvalue().count('!!'), 2)
     self.assertEqual(sys.stdout.getvalue().count('(y/N)'), 0)
     self.assertEqual(sys.stdout.getvalue().count(
-        'Running presubmit upload checks ...\n'), 1)
+        'Running Python 2 presubmit upload checks ...\n'), 1)
 
   def testDoDefaultPresubmitChecksAndFeedback(self):
     always_fail_presubmit_script = """
@@ -883,7 +883,7 @@ def CheckChangeOnCommit(input_api, output_api):
               default_presubmit=always_fail_presubmit_script,
               may_prompt=False, gerrit_obj=None, json_output=None))
       text = (
-          'Running presubmit upload checks ...\n'
+          'Running Python 2 presubmit upload checks ...\n'
           'Warning, no PRESUBMIT.py found.\n'
           'Running default presubmit script.\n'
           '\n'

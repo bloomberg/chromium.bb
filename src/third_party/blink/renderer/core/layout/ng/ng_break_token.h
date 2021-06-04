@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BREAK_TOKEN_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BREAK_TOKEN_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
@@ -113,6 +114,9 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // that all children have been fully laid out, or have break tokens. No more
   // children left to discover.
   unsigned has_seen_all_children_ : 1;
+
+  // See |NGBlockBreakToken::HasUnpositionedListMarker|.
+  unsigned has_unpositioned_list_marker_ : 1;
 };
 
 typedef Vector<scoped_refptr<const NGBreakToken>> NGBreakTokenVector;

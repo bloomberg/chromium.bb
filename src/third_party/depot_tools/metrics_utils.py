@@ -6,6 +6,7 @@
 from __future__ import print_function
 
 import re
+import os
 import scm
 import subprocess2
 import sys
@@ -19,9 +20,13 @@ except ImportError:  # For Py3 compatibility
 # Current version of metrics recording.
 # When we add new metrics, the version number will be increased, we display the
 # user what has changed, and ask the user to agree again.
-CURRENT_VERSION = 1
+CURRENT_VERSION = 2
 
 APP_URL = 'https://cit-cli-metrics.appspot.com'
+
+REPORT_BUILD = os.getenv('DEPOT_TOOLS_REPORT_BUILD')
+COLLECT_METRICS = os.getenv('DEPOT_TOOLS_COLLECT_METRICS') != '0'
+
 
 def get_notice_countdown_header(countdown):
   if countdown == 0:
@@ -43,15 +48,28 @@ def get_notice_footer():
 
 def get_change_notice(version):
   if version == 0:
-    pass # No changes for version 0
+    return [] # No changes for version 0
   elif version == 1:
-    yield 'We want to collect the Git version.'
-    yield 'We want to collect information about the HTTP'
-    yield 'requests that depot_tools makes, and the git and'
-    yield 'cipd commands it executes.'
-    yield ''
-    yield 'We only collect known strings to make sure we'
-    yield 'don\'t record PII.'
+    return [
+      'We want to collect the Git version.',
+      'We want to collect information about the HTTP',
+      'requests that depot_tools makes, and the git and',
+      'cipd commands it executes.',
+      '',
+      'We only collect known strings to make sure we',
+      'don\'t record PII.',
+    ]
+  elif version == 2:
+    return [
+      'We will start collecting metrics from bots.',
+      'There are no changes for developers.',
+      'If the DEPOT_TOOLS_REPORT_BUILD environment variable is set,',
+      'we will report information about the current build',
+      '(e.g. buildbucket project, bucket, builder and build id),',
+      'and authenticate to the metrics collection server.',
+      'This information will only be recorded for requests',
+      'authenticated as bot service accounts.',
+    ]
 
 
 KNOWN_PROJECT_URLS = {
@@ -174,6 +192,22 @@ def get_git_version():
   return '%s.%s.%s' % match.groups()
 
 
+def get_bot_metrics():
+  try:
+    project, bucket, builder, build = REPORT_BUILD.split('/')
+    return {
+      'build_id': int(build),
+      'builder': {
+        'project': project,
+        'bucket': bucket,
+        'builder': builder,
+      },
+    }
+  except (AttributeError, ValueError):
+    return None
+
+
+
 def return_code_from_exception(exception):
   """Returns the exit code that would result of raising the exception."""
   if exception is None:
@@ -289,5 +323,5 @@ def print_version_change(config_version):
   lines = list(get_notice_version_change_header())
   for version in range(config_version + 1, CURRENT_VERSION + 1):
     lines.append('')
-    lines += list(get_change_notice(version))
+    lines += get_change_notice(version)
   print_boxed_text(sys.stderr.write, 49, lines)

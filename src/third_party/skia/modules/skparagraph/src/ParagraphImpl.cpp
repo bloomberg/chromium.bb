@@ -4,6 +4,7 @@
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPictureRecorder.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkTypeface.h"
 #include "include/private/SkTFitsIn.h"
 #include "include/private/SkTo.h"
@@ -16,7 +17,6 @@
 #include "modules/skparagraph/src/Run.h"
 #include "modules/skparagraph/src/TextLine.h"
 #include "modules/skparagraph/src/TextWrapper.h"
-#include "src/core/SkSpan.h"
 #include "src/utils/SkUTF.h"
 #include <math.h>
 #include <algorithm>
@@ -903,22 +903,34 @@ void ParagraphImpl::computeEmptyMetrics() {
     SkFont font(typeface, textStyle.getFontSize());
     fEmptyMetrics = InternalLineMetrics(font, paragraphStyle().getStrutStyle().getForceStrutHeight());
 
+    if (!paragraphStyle().getStrutStyle().getForceStrutHeight() &&
+        textStyle.getHeightOverride()) {
+        const auto intrinsicHeight = fEmptyMetrics.height();
+        const auto strutHeight = textStyle.getHeight() * textStyle.getFontSize();
+        if (paragraphStyle().getStrutStyle().getHalfLeading()) {
+            fEmptyMetrics.update(
+                fEmptyMetrics.ascent(),
+                fEmptyMetrics.descent(),
+                fEmptyMetrics.leading() + strutHeight - intrinsicHeight);
+        } else {
+            const auto multiplier = strutHeight / intrinsicHeight;
+            fEmptyMetrics.update(
+                fEmptyMetrics.ascent() * multiplier,
+                fEmptyMetrics.descent() * multiplier,
+                fEmptyMetrics.leading() * multiplier);
+        }
+    }
+
     if (emptyParagraph) {
         // For an empty text we apply both TextHeightBehaviour flags
         // In case of non-empty paragraph TextHeightBehaviour flags will be applied at the appropriate place
+        // We have to do it here because we skip wrapping for an empty text
         auto disableFirstAscent = (paragraphStyle().getTextHeightBehavior() & TextHeightBehavior::kDisableFirstAscent) == TextHeightBehavior::kDisableFirstAscent;
         auto disableLastDescent = (paragraphStyle().getTextHeightBehavior() & TextHeightBehavior::kDisableLastDescent) == TextHeightBehavior::kDisableLastDescent;
         fEmptyMetrics.update(
             disableFirstAscent ? fEmptyMetrics.rawAscent() : fEmptyMetrics.ascent(),
             disableLastDescent ? fEmptyMetrics.rawDescent() : fEmptyMetrics.descent(),
             fEmptyMetrics.leading());
-    } else if (!paragraphStyle().getStrutStyle().getForceStrutHeight() &&
-        textStyle.getHeightOverride()) {
-        auto multiplier = textStyle.getHeight() * textStyle.getFontSize() / fEmptyMetrics.height();
-        fEmptyMetrics.update(
-            fEmptyMetrics.ascent() * multiplier,
-            fEmptyMetrics.descent() * multiplier,
-            fEmptyMetrics.leading() * multiplier);
     }
 
     if (fParagraphStyle.getStrutStyle().getStrutEnabled()) {
@@ -1036,6 +1048,48 @@ void ParagraphImpl::ensureUTF16Mapping() {
     }
     fUTF16IndexForUTF8Index.emplace_back(fUTF8IndexForUTF16Index.size());
     fUTF8IndexForUTF16Index.emplace_back(fText.size());
+}
+
+void ParagraphImpl::visit(const Visitor& visitor) {
+    int lineNumber = 0;
+    for (auto& line : fLines) {
+        line.ensureTextBlobCachePopulated();
+        for (auto& rec : line.fTextBlobCache) {
+            SkTextBlob::Iter iter(*rec.fBlob);
+            SkTextBlob::Iter::ExperimentalRun run;
+
+            SkSTArray<128, uint32_t> clusterStorage;
+            const Run* R = rec.fVisitor_Run;
+            const uint32_t* clusterPtr = &R->fClusterIndexes[0];
+
+            if (R->fClusterStart > 0) {
+                int count = R->fClusterIndexes.count();
+                clusterStorage.reset(count);
+                for (int i = 0; i < count; ++i) {
+                    clusterStorage[i] = R->fClusterStart + R->fClusterIndexes[i];
+                }
+                clusterPtr = &clusterStorage[0];
+            }
+            clusterPtr += rec.fVisitor_Pos;
+
+            while (iter.experimentalNext(&run)) {
+                const Paragraph::VisitorInfo info = {
+                    run.font,
+                    rec.fOffset,
+                    rec.fClipRect.fRight,
+                    run.count,
+                    run.glyphs,
+                    run.positions,
+                    clusterPtr,
+                    0,  // flags
+                };
+                visitor(lineNumber, &info);
+                clusterPtr += run.count;
+            }
+        }
+        visitor(lineNumber, nullptr);   // signal end of line
+        lineNumber += 1;
+    }
 }
 
 }  // namespace textlayout

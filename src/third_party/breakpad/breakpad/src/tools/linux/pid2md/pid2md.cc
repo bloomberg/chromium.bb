@@ -34,10 +34,12 @@
 #include <unistd.h>
 
 #include "client/linux/minidump_writer/minidump_writer.h"
+#include "common/path_helper.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 3) {
-    fprintf(stderr, "Usage: %s <process id> <minidump file>\n\n", argv[0]);
+    fprintf(stderr, "Usage: %s <process id> <minidump file>\n\n",
+            google_breakpad::BaseName(argv[0]).c_str());
     fprintf(stderr,
             "A tool to generate a minidump from a running process. The process "
             "resumes its\nactivity once the operation is completed. Permission "

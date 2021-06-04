@@ -7,19 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_ui_model.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Browser;
 class Profile;
 
 namespace base {
-template <typename T>
-class Optional;
 class TimeDelta;
-}  // namespace base
-
-namespace base {
-template <typename T>
-class Optional;
 }  // namespace base
 
 namespace offline_items_collection {
@@ -99,7 +93,7 @@ class DownloadShelf {
   // Callback used by ShowDownloadById() to trigger ShowDownload() once |item|
   // has been fetched.
   void OnGetDownloadDoneForOfflineItem(
-      const base::Optional<offline_items_collection::OfflineItem>& item);
+      const absl::optional<offline_items_collection::OfflineItem>& item);
 
   Browser* const browser_;
   Profile* const profile_;

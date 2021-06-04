@@ -23,6 +23,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ipc/ipc_message_macros.h"
@@ -388,8 +389,8 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
 
   SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   network::mojom::NetworkContext* network_context =
-      BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
-                                          site_instance)
+      site_instance->GetBrowserContext()
+          ->GetStoragePartition(site_instance)
           ->GetNetworkContext();
   if (g_create_udp_socket_callback_for_testing) {
     g_create_udp_socket_callback_for_testing->Run(
@@ -553,7 +554,7 @@ void PepperUDPSocketMessageFilter::DoBindCallback(
     mojo::PendingReceiver<network::mojom::UDPSocketListener> listener_receiver,
     const ppapi::host::ReplyMessageContext& context,
     int result,
-    const base::Optional<net::IPEndPoint>& local_addr_out) {
+    const absl::optional<net::IPEndPoint>& local_addr_out) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (result != net::OK) {
@@ -636,8 +637,8 @@ void PepperUDPSocketMessageFilter::Close() {
 
 void PepperUDPSocketMessageFilter::OnReceived(
     int result,
-    const base::Optional<net::IPEndPoint>& src_addr,
-    base::Optional<base::span<const uint8_t>> data) {
+    const absl::optional<net::IPEndPoint>& src_addr,
+    absl::optional<base::span<const uint8_t>> data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!closed_);
 
@@ -712,7 +713,10 @@ void PepperUDPSocketMessageFilter::SendRecvFromResult(
     const PP_NetAddress_Private& addr) {
   // Unlike SendReply, which is safe to call on any thread, SendUnsolicitedReply
   // calls are only safe to make on the IO thread.
-  GetIOThreadTaskRunner({})->PostTask(
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
           &PepperUDPSocketMessageFilter::SendRecvFromResultOnIOThread, this,

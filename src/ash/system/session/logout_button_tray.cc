@@ -41,6 +41,7 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : TrayBackgroundView(shelf) {
                               base::Unretained(this)),
           std::u16string(), CONTEXT_LAUNCHER_BUTTON));
   button_->SetProminent(true);
+  set_use_bounce_in_animation(false);
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
@@ -88,8 +89,11 @@ const char* LogoutButtonTray::GetClassName() const {
 
 void LogoutButtonTray::OnThemeChanged() {
   TrayBackgroundView::OnThemeChanged();
-  button_->SetBgColorOverride(AshColorProvider::Get()->GetControlsLayerColor(
+  auto* color_provider = AshColorProvider::Get();
+  button_->SetBgColorOverride(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kControlBackgroundColorAlert));
+  button_->SetEnabledTextColors(color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kButtonLabelColorPrimary));
 }
 
 void LogoutButtonTray::UpdateShowLogoutButtonInTray() {

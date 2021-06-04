@@ -34,7 +34,7 @@ class FakeAudioFocusDelegate : public content::AudioFocusDelegate {
     return audio_focus_result_;
   }
   void AbandonAudioFocus() override { audio_focus_type_.reset(); }
-  base::Optional<media_session::mojom::AudioFocusType> GetCurrentFocusType()
+  absl::optional<media_session::mojom::AudioFocusType> GetCurrentFocusType()
       const override {
     return audio_focus_type_;
   }
@@ -45,7 +45,7 @@ class FakeAudioFocusDelegate : public content::AudioFocusDelegate {
   }
 
  private:
-  base::Optional<media_session::mojom::AudioFocusType> audio_focus_type_;
+  absl::optional<media_session::mojom::AudioFocusType> audio_focus_type_;
   AudioFocusResult audio_focus_result_ = AudioFocusResult::kSuccess;
 };
 
@@ -577,6 +577,34 @@ TEST_F(MediaSessionControllerTest,
   controller_->PictureInPictureStateChanged(false);
 
   EXPECT_FALSE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, EndOfPlaybackWithInPictureInPicture) {
+  contents()->SetHasPictureInPictureVideo(true);
+  controller_->PictureInPictureStateChanged(true);
+
+  controller_->SetMetadata(
+      /*has_audio=*/true, /*has_video=*/false,
+      media::MediaContentType::Persistent);
+  ASSERT_TRUE(controller_->OnPlaybackStarted());
+  EXPECT_TRUE(media_session()->IsActive());
+  EXPECT_TRUE(media_session()->IsControllable());
+
+  // Keeping the PiP window open should keep the session controllable.
+  controller_->OnPlaybackPaused(/*reached_end_of_stream=*/true);
+  EXPECT_FALSE(media_session()->IsActive());
+  EXPECT_TRUE(media_session()->IsControllable());
+
+  contents()->SetHasPictureInPictureVideo(false);
+  controller_->PictureInPictureStateChanged(false);
+  EXPECT_FALSE(media_session()->IsActive());
+  EXPECT_FALSE(media_session()->IsControllable());
+
+  // Re-opening the PiP window makes the session controllable again.
+  contents()->SetHasPictureInPictureVideo(true);
+  controller_->PictureInPictureStateChanged(true);
+  EXPECT_FALSE(media_session()->IsActive());
+  EXPECT_TRUE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, HasVideo_True) {

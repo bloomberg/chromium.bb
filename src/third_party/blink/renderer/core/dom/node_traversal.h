@@ -95,7 +95,11 @@ class NodeTraversal {
   CORE_EXPORT static Node* NextIncludingPseudo(
       const Node&,
       const Node* stay_within = nullptr);
-  static Node* NextIncludingPseudoSkippingChildren(
+  // See comment for |FlatTreeTraversal::PreviousAbsoluteSibling| for details.
+  CORE_EXPORT static Node* PreviousAbsoluteSiblingIncludingPseudo(
+      const Node&,
+      const Node* stay_within = nullptr);
+  CORE_EXPORT static Node* NextIncludingPseudoSkippingChildren(
       const Node&,
       const Node* stay_within = nullptr);
 
@@ -243,4 +247,4 @@ inline Node* NodeTraversal::ChildAtTemplate(NodeType& parent, unsigned index) {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_TRAVERSAL_H_

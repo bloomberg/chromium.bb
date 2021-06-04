@@ -21,6 +21,8 @@ const char* const kIntentNotSet = "NotSet";
 namespace {
 const char kDropOutEnumName[] = "Android.AutofillAssistant.DropOutReason";
 const char kOnboardingEnumName[] = "Android.AutofillAssistant.OnBoarding";
+const char kFeatureModuleInstallationEnumName[] =
+    "Android.AutofillAssistant.FeatureModuleInstallation";
 const char kPaymentRequestPrefilledName[] =
     "Android.AutofillAssistant.PaymentRequest.Prefilled";
 const char kPaymentRequestAutofillInfoChangedName[] =
@@ -147,81 +149,95 @@ void Metrics::RecordPaymentRequestMandatoryPostalCode(bool required,
 }
 
 // static
-void Metrics::RecordLiteScriptStarted(ukm::UkmRecorder* ukm_recorder,
-                                      content::WebContents* web_contents,
-                                      StartupUtil::StartupMode startup_mode,
-                                      bool feature_module_installed,
-                                      bool is_first_time_user) {
-  LiteScriptStarted event;
-  switch (startup_mode) {
-    case StartupUtil::StartupMode::FEATURE_DISABLED:
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillAssistantProactiveHelp) &&
-          !feature_module_installed) {
-        event = LiteScriptStarted::LITE_SCRIPT_DFM_UNAVAILABLE;
-      } else {
-        event = LiteScriptStarted::LITE_SCRIPT_FEATURE_DISABLED;
-      }
-      break;
-    case StartupUtil::StartupMode::SETTING_DISABLED:
-      event = LiteScriptStarted::LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED;
-      break;
-    case StartupUtil::StartupMode::NO_INITIAL_URL:
-      event = LiteScriptStarted::LITE_SCRIPT_NO_INITIAL_URL;
-      break;
-    case StartupUtil::StartupMode::MANDATORY_PARAMETERS_MISSING:
-      event = LiteScriptStarted::LITE_SCRIPT_MANDATORY_PARAMETER_MISSING;
-      break;
-    case StartupUtil::StartupMode::START_BASE64_TRIGGER_SCRIPT:
-    case StartupUtil::StartupMode::START_RPC_TRIGGER_SCRIPT:
-      event = is_first_time_user
-                  ? LiteScriptStarted::LITE_SCRIPT_FIRST_TIME_USER
-                  : LiteScriptStarted::LITE_SCRIPT_RETURNING_USER;
-      break;
-    case StartupUtil::StartupMode::START_REGULAR:
-      // Regular starts do not record impressions for |LiteScriptStarted|.
-      return;
-  }
-
-  ukm::builders::AutofillAssistant_LiteScriptStarted(
-      ukm::GetSourceIdForWebContentsDocument(web_contents))
+void Metrics::RecordTriggerScriptStarted(ukm::UkmRecorder* ukm_recorder,
+                                         ukm::SourceId source_id,
+                                         TriggerScriptStarted event) {
+  ukm::builders::AutofillAssistant_LiteScriptStarted(source_id)
       .SetLiteScriptStarted(static_cast<int64_t>(event))
       .Record(ukm_recorder);
 }
 
 // static
-void Metrics::RecordLiteScriptFinished(ukm::UkmRecorder* ukm_recorder,
-                                       content::WebContents* web_contents,
-                                       TriggerUIType trigger_ui_type,
-                                       LiteScriptFinishedState event) {
-  ukm::builders::AutofillAssistant_LiteScriptFinished(
-      ukm::GetSourceIdForWebContentsDocument(web_contents))
+void Metrics::RecordTriggerScriptStarted(ukm::UkmRecorder* ukm_recorder,
+                                         ukm::SourceId source_id,
+                                         StartupUtil::StartupMode startup_mode,
+                                         bool feature_module_installed,
+                                         bool is_first_time_user) {
+  TriggerScriptStarted event;
+  switch (startup_mode) {
+    case StartupUtil::StartupMode::FEATURE_DISABLED:
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillAssistantProactiveHelp) &&
+          !feature_module_installed) {
+        event = TriggerScriptStarted::DFM_UNAVAILABLE;
+      } else {
+        event = TriggerScriptStarted::FEATURE_DISABLED;
+      }
+      break;
+    case StartupUtil::StartupMode::SETTING_DISABLED:
+      event = TriggerScriptStarted::PROACTIVE_TRIGGERING_DISABLED;
+      break;
+    case StartupUtil::StartupMode::NO_INITIAL_URL:
+      event = TriggerScriptStarted::NO_INITIAL_URL;
+      break;
+    case StartupUtil::StartupMode::MANDATORY_PARAMETERS_MISSING:
+      event = TriggerScriptStarted::MANDATORY_PARAMETER_MISSING;
+      break;
+    case StartupUtil::StartupMode::START_BASE64_TRIGGER_SCRIPT:
+    case StartupUtil::StartupMode::START_RPC_TRIGGER_SCRIPT:
+      event = is_first_time_user ? TriggerScriptStarted::FIRST_TIME_USER
+                                 : TriggerScriptStarted::RETURNING_USER;
+      break;
+    case StartupUtil::StartupMode::START_REGULAR:
+      // Regular starts do not record impressions for |TriggerScriptStarted|.
+      return;
+  }
+
+  RecordTriggerScriptStarted(ukm_recorder, source_id, event);
+}
+
+// static
+void Metrics::RecordTriggerScriptFinished(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    TriggerScriptProto::TriggerUIType trigger_ui_type,
+    TriggerScriptFinishedState event) {
+  ukm::builders::AutofillAssistant_LiteScriptFinished(source_id)
       .SetTriggerUIType(static_cast<int64_t>(trigger_ui_type))
       .SetLiteScriptFinished(static_cast<int64_t>(event))
       .Record(ukm_recorder);
 }
 
 // static
-void Metrics::RecordLiteScriptShownToUser(ukm::UkmRecorder* ukm_recorder,
-                                          content::WebContents* web_contents,
-                                          TriggerUIType trigger_ui_type,
-                                          LiteScriptShownToUser event) {
-  ukm::builders::AutofillAssistant_LiteScriptShownToUser(
-      ukm::GetSourceIdForWebContentsDocument(web_contents))
+void Metrics::RecordTriggerScriptShownToUser(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    TriggerScriptProto::TriggerUIType trigger_ui_type,
+    TriggerScriptShownToUser event) {
+  ukm::builders::AutofillAssistant_LiteScriptShownToUser(source_id)
       .SetTriggerUIType(static_cast<int64_t>(trigger_ui_type))
       .SetLiteScriptShownToUser(static_cast<int64_t>(event))
       .Record(ukm_recorder);
 }
 
 // static
-void Metrics::RecordLiteScriptOnboarding(ukm::UkmRecorder* ukm_recorder,
-                                         content::WebContents* web_contents,
-                                         TriggerUIType trigger_ui_type,
-                                         LiteScriptOnboarding event) {
-  ukm::builders::AutofillAssistant_LiteScriptOnboarding(
-      ukm::GetSourceIdForWebContentsDocument(web_contents))
+void Metrics::RecordTriggerScriptOnboarding(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    TriggerScriptProto::TriggerUIType trigger_ui_type,
+    TriggerScriptOnboarding event) {
+  ukm::builders::AutofillAssistant_LiteScriptOnboarding(source_id)
       .SetTriggerUIType(static_cast<int64_t>(trigger_ui_type))
       .SetLiteScriptOnboarding(static_cast<int64_t>(event))
+      .Record(ukm_recorder);
+}
+
+// static
+void Metrics::RecordInChromeTriggerAction(ukm::UkmRecorder* ukm_recorder,
+                                          ukm::SourceId source_id,
+                                          InChromeTriggerAction event) {
+  ukm::builders::AutofillAssistant_InChromeTriggering(source_id)
+      .SetInChromeTriggerAction(static_cast<int64_t>(event))
       .Record(ukm_recorder);
 }
 
@@ -229,6 +245,12 @@ void Metrics::RecordLiteScriptOnboarding(ukm::UkmRecorder* ukm_recorder,
 void Metrics::RecordOnboardingResult(OnBoarding event) {
   DCHECK_LE(event, OnBoarding::kMaxValue);
   base::UmaHistogramEnumeration(kOnboardingEnumName, event);
+}
+
+// static
+void Metrics::RecordFeatureModuleInstallation(FeatureModuleInstallation event) {
+  DCHECK_LE(event, FeatureModuleInstallation::kMaxValue);
+  base::UmaHistogramEnumeration(kFeatureModuleInstallationEnumName, event);
 }
 
 }  // namespace autofill_assistant

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -102,7 +103,7 @@ bool AllowCrossRendererResourceLoad(
   // Allow web accessible extension resources to be loaded as
   // subresources/sub-frames.
   if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
-          extension, resource_path.as_string(), request.request_initiator)) {
+          extension, std::string(resource_path), request.request_initiator)) {
     *allowed = true;
     return true;
   }
@@ -137,7 +138,7 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
     }
 
     *allowed = WebviewInfo::IsResourceWebviewAccessible(
-        extension, partition_id, resource_path.as_string());
+        extension, partition_id, std::string(resource_path));
     return true;
   }
 
@@ -146,7 +147,7 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
 
 bool AllowSpecialCaseExtensionURLInGuest(
     const Extension* extension,
-    base::Optional<base::StringPiece> resource_path) {
+    absl::optional<base::StringPiece> resource_path) {
   // Allow mobile setup web UI (chrome://mobilesetup) to embed resources from
   // the component mobile activation extension in a webview. This is needed
   // because the activation web UI relies on the activation extension to

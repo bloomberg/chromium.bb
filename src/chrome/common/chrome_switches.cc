@@ -204,7 +204,7 @@ const char kDisableComponentUpdate[]        = "disable-component-update";
 
 // Disables installation of default apps on first run. This is used during
 // automated testing.
-const char kDisableDefaultApps[]            = "disable-default-apps";
+const char kDisablePreinstalledApps[] = "disable-default-apps";
 
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
@@ -326,6 +326,11 @@ const char kForceFirstRun[]                 = "force-first-run";
 // Forces Chrome to use a stacked tab strip layout.
 const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
 
+// Does not show the crash restore bubble when the browser is started during the
+// system startup phase in ChromeOS, if the ChromeOS full restore feature is
+// enabled, because the ChromeOS full restore notification is shown for the user
+// to select restore or not.
+const char kHideCrashRestoreBubble[] = "hide-crash-restore-bubble";
 
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for
@@ -637,9 +642,6 @@ const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
 
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
-
-// Custom WebAPK server URL for the sake of testing.
-const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -809,6 +811,11 @@ const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 
 // Causes the browser to launch directly in guest mode.
 const char kGuest[] = "guest";
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+// Custom WebAPK server URL for the sake of testing.
+const char kWebApkServerUrl[] = "webapk-server-url";
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)

@@ -32,7 +32,12 @@ extern const base::Feature kCommander;
 
 extern const base::Feature kEvDetailsInPageInfo;
 
-extern const base::Feature kExtensionsToolbarMenu;
+extern const base::Feature kExtensionsSidePanel;
+
+// The extension id of the extension hosted in the left aligned side panel.
+extern const base::FeatureParam<std::string> kExtensionsSidePanelId;
+
+extern const base::Feature kForceSignInReauth;
 
 extern const base::Feature kNewProfilePicker;
 
@@ -47,9 +52,11 @@ extern const char kMinimumTabWidthFeatureParameterName[];
 
 extern const base::Feature kScrollableTabStripButtons;
 
-extern const base::Feature kSidePanel;
+#if !defined(ANDROID)
+extern const base::Feature kSettingsLandingPageRedesign;
+#endif
 
-extern const base::Feature kSidePanelPrototype;
+extern const base::Feature kSidePanel;
 
 extern const base::Feature kSyncConfirmationUpdatedText;
 
@@ -119,7 +126,9 @@ extern const base::FeatureParam<int> kTabSearchRecentlyClosedMaxEntries;
 // Works on Android 10+.
 extern const base::Feature kToolbarUseHardwareBitmapDraw;
 
-extern const base::Feature kWebFooterExperiment;
+// Whether to label the update menu item as "Relaunch to update Chrome", rather
+// than "Update Google Chrome".
+extern const base::Feature kUseRelaunchToUpdateString;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
 
@@ -127,11 +136,19 @@ extern const base::Feature kWebUIDownloadShelf;
 
 extern const base::Feature kWebUITabStrip;
 
+extern const base::Feature kWebUITabStripNewTabButtonInTabStrip;
+
 extern const base::Feature kWebUIFeedback;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kHiddenNetworkWarning;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Cocoa to views migration.
+#if defined(OS_MAC)
+extern const base::Feature kViewsFirstRunDialog;
+extern const base::Feature kViewsTaskManager;
+#endif
 
 }  // namespace features
 

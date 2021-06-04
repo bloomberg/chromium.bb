@@ -29,6 +29,7 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
+#include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/prerender_url_loader_throttle.h"
@@ -72,9 +73,9 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -94,7 +95,7 @@
 #include "weblayer/browser/navigation_error_navigation_throttle.h"
 #include "weblayer/browser/navigation_ui_data_impl.h"
 #include "weblayer/browser/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
+#include "weblayer/browser/no_state_prefetch/no_state_prefetch_utils.h"
 #include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
@@ -265,6 +266,14 @@ void RegisterPrefs(PrefRegistrySimple* pref_registry) {
   pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
 #if defined(OS_ANDROID)
   metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry);
+#else
+  // Call MetricsService::RegisterPrefs() as VariationsService::RegisterPrefs()
+  // CHECKs that kVariationsCrashStreak has already been registered.
+  //
+  // Note that the above call to AndroidMetricsServiceClient::RegisterPrefs()
+  // implicitly calls MetricsService::RegisterPrefs(), so the below call is
+  // necessary only on non-Android platforms.
+  metrics::MetricsService::RegisterPrefs(pref_registry);
 #endif
   variations::VariationsService::RegisterPrefs(pref_registry);
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(pref_registry);
@@ -311,7 +320,7 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
 bool ContentBrowserClientImpl::AllowAppCache(
     const GURL& manifest_url,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     content::BrowserContext* context) {
   return embedder_support::AllowAppCache(
       manifest_url, site_for_cookies, top_frame_origin,
@@ -321,7 +330,7 @@ bool ContentBrowserClientImpl::AllowAppCache(
 content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
     const GURL& scope,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::BrowserContext* context) {
   return embedder_support::AllowServiceWorker(
@@ -333,14 +342,15 @@ content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
 bool ContentBrowserClientImpl::AllowSharedWorker(
     const GURL& worker_url,
     const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const url::Origin& constructor_origin,
+    const storage::StorageKey& storage_key,
     content::BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
   return embedder_support::AllowSharedWorker(
-      worker_url, site_for_cookies, top_frame_origin,
+      worker_url, site_for_cookies, top_frame_origin, name, storage_key,
+      render_process_id, render_frame_id,
       CookieSettingsFactory::GetForBrowserContext(context).get());
 }
 
@@ -350,7 +360,8 @@ void ContentBrowserClientImpl::AllowWorkerFileSystem(
     const std::vector<content::GlobalFrameRoutingId>& render_frames,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(embedder_support::AllowWorkerFileSystem(
-      url, CookieSettingsFactory::GetForBrowserContext(browser_context).get()));
+      url, render_frames,
+      CookieSettingsFactory::GetForBrowserContext(browser_context).get()));
 }
 
 bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
@@ -358,7 +369,8 @@ bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
     content::BrowserContext* browser_context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   return embedder_support::AllowWorkerIndexedDB(
-      url, CookieSettingsFactory::GetForBrowserContext(browser_context).get());
+      url, render_frames,
+      CookieSettingsFactory::GetForBrowserContext(browser_context).get());
 }
 
 bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
@@ -366,7 +378,8 @@ bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
     content::BrowserContext* browser_context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   return embedder_support::AllowWorkerCacheStorage(
-      url, CookieSettingsFactory::GetForBrowserContext(browser_context).get());
+      url, render_frames,
+      CookieSettingsFactory::GetForBrowserContext(browser_context).get());
 }
 
 bool ContentBrowserClientImpl::AllowWorkerWebLocks(
@@ -401,9 +414,8 @@ ContentBrowserClientImpl::CreateDevToolsManagerDelegate() {
 void ContentBrowserClientImpl::LogWebFeatureForCurrentPage(
     content::RenderFrameHost* render_frame_host,
     blink::mojom::WebFeature feature) {
-  page_load_metrics::mojom::PageLoadFeatures new_features({feature}, {}, {});
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      render_frame_host, new_features);
+      render_frame_host, feature);
 }
 
 std::string ContentBrowserClientImpl::GetProduct() {
@@ -574,7 +586,7 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   if (scheme == url::kFtpScheme &&
-      base::FeatureList::IsEnabled(blink::features::kFtpProtocol)) {
+      base::FeatureList::IsEnabled(network::features::kFtpProtocol)) {
     return true;
   }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -635,14 +647,10 @@ ContentBrowserClientImpl::GetAdditionalSiteIsolationModes() {
 
 void ContentBrowserClientImpl::PersistIsolatedOrigin(
     content::BrowserContext* context,
-    const url::Origin& origin) {
-  DCHECK(!context->IsOffTheRecord());
-  ListPrefUpdate update(user_prefs::UserPrefs::Get(context),
-                        site_isolation::prefs::kUserTriggeredIsolatedOrigins);
-  base::ListValue* list = update.Get();
-  base::Value value(origin.Serialize());
-  if (!base::Contains(list->GetList(), value))
-    list->Append(std::move(value));
+    const url::Origin& origin,
+    content::ChildProcessSecurityPolicy::IsolatedOriginSource source) {
+  site_isolation::SiteIsolationPolicy::PersistIsolatedOrigin(context, origin,
+                                                             source);
 }
 
 base::OnceClosure ContentBrowserClientImpl::SelectClientCertificate(
@@ -1048,7 +1056,7 @@ bool ContentBrowserClientImpl::WillCreateURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
-    base::Optional<int64_t> navigation_id,
+    absl::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -1153,7 +1161,7 @@ bool ContentBrowserClientImpl::IsClipboardPasteAllowed(
   DCHECK(browser_context);
 
   content::PermissionController* permission_controller =
-      content::BrowserContext::GetPermissionController(browser_context);
+      browser_context->GetPermissionController();
   blink::mojom::PermissionStatus status =
       permission_controller->GetPermissionStatusForFrame(
           content::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host,

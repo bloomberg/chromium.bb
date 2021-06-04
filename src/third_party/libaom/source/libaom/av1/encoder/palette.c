@@ -222,8 +222,9 @@ static AOM_INLINE void palette_rd_y(
     int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
     int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip,
     uint8_t *tx_type_map, int *beat_best_palette_rd) {
+  (void)best_model_rd;
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids,
-                          cpi->common.seq_params.bit_depth);
+                          cpi->common.seq_params->bit_depth);
   const int num_unique_colors = av1_remove_duplicates(centroids, n);
   if (num_unique_colors < PALETTE_MIN_SIZE) {
     // Too few unique colors to create a palette. And DC_PRED will work
@@ -231,10 +232,10 @@ static AOM_INLINE void palette_rd_y(
     return;
   }
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  if (cpi->common.seq_params.use_highbitdepth) {
+  if (cpi->common.seq_params->use_highbitdepth) {
     for (int i = 0; i < num_unique_colors; ++i) {
       pmi->palette_colors[i] = clip_pixel_highbd(
-          (int)centroids[i], cpi->common.seq_params.bit_depth);
+          (int)centroids[i], cpi->common.seq_params->bit_depth);
     }
   } else {
     for (int i = 0; i < num_unique_colors; ++i) {
@@ -250,10 +251,6 @@ static AOM_INLINE void palette_rd_y(
   av1_calc_indices(data, centroids, color_map, rows * cols, num_unique_colors,
                    1);
   extend_palette_color_map(color_map, cols, rows, block_width, block_height);
-
-  if (model_intra_yrd_and_prune(cpi, x, bsize, best_model_rd)) {
-    return;
-  }
 
   RD_STATS tokenonly_rd_stats;
   av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
@@ -450,7 +447,7 @@ void av1_rd_pick_palette_intra_sby(
   int block_width, block_height, rows, cols;
   av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
                            &cols);
-  const SequenceHeader *const seq_params = &cpi->common.seq_params;
+  const SequenceHeader *const seq_params = cpi->common.seq_params;
   const int is_hbd = seq_params->use_highbitdepth;
   const int bit_depth = seq_params->bit_depth;
   int unused;
@@ -645,7 +642,7 @@ void av1_rd_pick_palette_intra_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
                            mbmi->bsize));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->bsize;
-  const SequenceHeader *const seq_params = &cpi->common.seq_params;
+  const SequenceHeader *const seq_params = cpi->common.seq_params;
   int this_rate;
   int64_t this_rd;
   int colors_u, colors_v, colors;
@@ -737,7 +734,7 @@ void av1_rd_pick_palette_intra_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
       }
       av1_k_means(data, centroids, color_map, rows * cols, n, 2, max_itr);
       optimize_palette_colors(color_cache, n_cache, n, 2, centroids,
-                              cpi->common.seq_params.bit_depth);
+                              cpi->common.seq_params->bit_depth);
       // Sort the U channel colors in ascending order.
       for (i = 0; i < 2 * (n - 1); i += 2) {
         int min_idx = i;
@@ -811,7 +808,7 @@ void av1_restore_uv_color_map(const AV1_COMP *cpi, MACROBLOCK *x) {
 
   for (r = 0; r < rows; ++r) {
     for (c = 0; c < cols; ++c) {
-      if (cpi->common.seq_params.use_highbitdepth) {
+      if (cpi->common.seq_params->use_highbitdepth) {
         data[(r * cols + c) * 2] = src_u16[r * src_stride + c];
         data[(r * cols + c) * 2 + 1] = src_v16[r * src_stride + c];
       } else {

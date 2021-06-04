@@ -13,7 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "components/exo/shell_surface_util.h"
 
 namespace {
@@ -27,7 +27,7 @@ const char kBorealisAnonymousPrefix[] = "borealis_anon:";
 
 // Returns an ID for this window (which is the app_id or startup_id, depending
 // on which are set. The ID string is owned by the window.
-const std::string* GetWindowId(aura::Window* window) {
+const std::string* GetWindowId(const aura::Window* window) {
   const std::string* id = exo::GetShellApplicationId(window);
   if (id)
     return id;
@@ -52,12 +52,6 @@ std::string WindowToAppId(Profile* profile, aura::Window* window) {
   return kBorealisAnonymousPrefix + *GetWindowId(window);
 }
 
-// Returns a name for the app with the given |anon_id|.
-std::string AnonymousIdentifierToName(const std::string& anon_id) {
-  return anon_id.substr(anon_id.find(kBorealisWindowPrefix) +
-                        sizeof(kBorealisWindowPrefix) - 1);
-}
-
 bool IsAnonymousAppId(const std::string& app_id) {
   return base::StartsWith(app_id, kBorealisAnonymousPrefix,
                           base::CompareCase::SENSITIVE);
@@ -68,7 +62,7 @@ bool IsAnonymousAppId(const std::string& app_id) {
 namespace borealis {
 
 // static
-bool BorealisWindowManager::IsBorealisWindow(aura::Window* window) {
+bool BorealisWindowManager::IsBorealisWindow(const aura::Window* window) {
   const std::string* id = GetWindowId(window);
   if (!id)
     return false;
@@ -184,9 +178,9 @@ void BorealisWindowManager::HandleWindowCreation(aura::Window* window,
     for (auto& observer : lifetime_observers_)
       observer.OnAppStarted(app_id);
     if (IsAnonymousAppId(app_id)) {
-      std::string anon_name = AnonymousIdentifierToName(app_id);
       for (auto& observer : anon_observers_)
-        observer.OnAnonymousAppAdded(app_id, anon_name);
+        observer.OnAnonymousAppAdded(app_id,
+                                     base::UTF16ToUTF8(window->GetTitle()));
     }
   }
   // If this window was not already in the set, notify our observers about it.

@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -18,7 +18,6 @@ from itertools import tee
 import os
 import sys
 import subprocess
-import rjsmin
 
 try:
     original_sys_path = sys.path
@@ -43,15 +42,16 @@ def rollup(input_path, output_path, filename, max_size, rollup_plugin):
         [devtools_paths.node_path(),
          devtools_paths.rollup_path()] +
         ['--format', 'iife', '-n', 'InspectorOverlay'] + ['--input', target] +
-        ['--plugin', rollup_plugin],
+        ['--plugin', rollup_plugin, '--plugin', 'terser'],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        encoding='utf-8')
     out, error = rollup_process.communicate()
     if not out:
         raise Exception("rollup failed: " + error)
-    min = rjsmin.jsmin(out)
-    check_size(filename, min, max_size)
-    write_file(join(output_path, filename), min)
+    check_size(filename, out, max_size)
+    write_file(join(output_path, filename), out)
 
 
 def to_pairs(list):

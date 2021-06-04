@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -31,17 +30,19 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-using chromeos::test::DemoModeSetupResult;
-using chromeos::test::SetupDummyOfflinePolicyDir;
-using chromeos::test::SetupMockDemoModeNoEnrollmentHelper;
-using chromeos::test::SetupMockDemoModeOfflineEnrollmentHelper;
-using chromeos::test::SetupMockDemoModeOnlineEnrollmentHelper;
-using testing::_;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using test::DemoModeSetupResult;
+using test::SetupDummyOfflinePolicyDir;
+using test::SetupMockDemoModeNoEnrollmentHelper;
+using test::SetupMockDemoModeOfflineEnrollmentHelper;
+using test::SetupMockDemoModeOnlineEnrollmentHelper;
+// TODO(https://crbug.com/1164001): remove after moving to ash::
+using ::chromeos::ScopedStubInstallAttributes;
+using ::testing::_;
 
 class DemoSetupControllerTestHelper {
  public:
@@ -96,15 +97,13 @@ class DemoSetupControllerTestHelper {
   }
 
  private:
-  base::Optional<bool> succeeded_;
-  base::Optional<DemoSetupController::DemoSetupStep> setup_step_;
-  base::Optional<DemoSetupController::DemoSetupError> error_;
+  absl::optional<bool> succeeded_;
+  absl::optional<DemoSetupController::DemoSetupStep> setup_step_;
+  absl::optional<DemoSetupController::DemoSetupError> error_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTestHelper);
 };
-
-}  // namespace
 
 class DemoSetupControllerTest : public testing::Test {
  protected:
@@ -421,4 +420,5 @@ TEST_F(DemoSetupControllerTest, GetSubOrganizationEmail) {
   EXPECT_EQ(email, "");
 }
 
-}  //  namespace chromeos
+}  // namespace
+}  //  namespace ash

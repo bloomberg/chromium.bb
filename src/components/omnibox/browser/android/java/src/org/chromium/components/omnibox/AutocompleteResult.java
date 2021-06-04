@@ -8,13 +8,14 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,20 +52,51 @@ public class AutocompleteResult {
         }
     };
 
+    /** An empty, initialized AutocompleteResult object. */
+    public static final AutocompleteResult EMPTY_RESULT =
+            new AutocompleteResult(0, Collections.emptyList(), null);
+
     private final @NonNull SparseArray<GroupDetails> mGroupsDetails;
-    private @NonNull List<AutocompleteMatch> mSuggestions;
+    private final @NonNull List<AutocompleteMatch> mSuggestions;
+    private final boolean mIsFromCachedResult;
     private long mNativeAutocompleteResult;
 
-    public AutocompleteResult(
-            List<AutocompleteMatch> suggestions, SparseArray<GroupDetails> groupsDetails) {
+    /**
+     * Create AutocompleteResult object that is associated with an (optional) Native
+     * AutocompleteResult object.
+     *
+     * @param nativeResult Opaque pointer to Native AutocompleteResult object (or 0 if this object
+     *         is built from local cache)
+     * @param suggestions List of AutocompleteMatch objects.
+     * @param groupsDetails Additional information about the AutocompleteMatch groups.
+     */
+    private AutocompleteResult(long nativeResult, @Nullable List<AutocompleteMatch> suggestions,
+            @Nullable SparseArray<GroupDetails> groupsDetails) {
+        // Consider all locally constructed AutocompleteResult objects as coming from Cache.
+        // These results do not have a native counterpart, meaning there's no corresponding C++
+        // structure describing the same AutocompleteResult.
+        // Note that the mNativeResult might change at any point during the lifecycle of this object
+        // to reflect relocation or destruction of the native object, so we cache this information
+        // separately.
+        mIsFromCachedResult = nativeResult == 0;
+        mNativeAutocompleteResult = nativeResult;
         mSuggestions = suggestions != null ? suggestions : new ArrayList<>();
         mGroupsDetails = groupsDetails != null ? groupsDetails : new SparseArray<>();
     }
 
-    public AutocompleteResult(long nativeResult, List<AutocompleteMatch> suggestions,
-            SparseArray<GroupDetails> groupsDetails) {
-        this(suggestions, groupsDetails);
-        mNativeAutocompleteResult = nativeResult;
+    /**
+     * Create AutocompleteResult object from cached information.
+     *
+     * Newly created AutocompleteResult object is not associated with any Native AutocompleteResult
+     * counterpart.
+     *
+     * @param suggestions List of AutocompleteMatch objects.
+     * @param groupsDetails Additional information about the AutocompleteMatch groups.
+     * @return AutocompleteResult object encompassing supplied information.
+     */
+    public static AutocompleteResult fromCache(@Nullable List<AutocompleteMatch> suggestions,
+            @Nullable SparseArray<GroupDetails> groupsDetails) {
+        return new AutocompleteResult(0, suggestions, groupsDetails);
     }
 
     @CalledByNative
@@ -80,14 +112,21 @@ public class AutocompleteResult {
                     new GroupDetails(groupNames[index], groupCollapsedStates[index]));
         }
 
-        AutocompleteResult result = new AutocompleteResult(
-                nativeAutocompleteResult, Arrays.asList(suggestions), groupsDetails);
+        AutocompleteResult result =
+                new AutocompleteResult(nativeAutocompleteResult, null, groupsDetails);
+        result.updateMatches(suggestions);
         return result;
     }
 
     @CalledByNative
     private void updateMatches(@NonNull AutocompleteMatch[] suggestions) {
-        mSuggestions = Arrays.asList(suggestions);
+        mSuggestions.clear();
+        Collections.addAll(mSuggestions, suggestions);
+    }
+
+    @CalledByNative
+    private void destroy() {
+        mNativeAutocompleteResult = 0;
     }
 
     /**
@@ -104,6 +143,32 @@ public class AutocompleteResult {
     @NonNull
     public SparseArray<GroupDetails> getGroupsDetails() {
         return mGroupsDetails;
+    }
+
+    public boolean isFromCachedResult() {
+        return mIsFromCachedResult;
+    }
+
+    /**
+     * Verifies coherency of this AutocompleteResult object with its C++ counterpart.
+     * Records histogram data reflecting the outcome.
+     * @return Whether Java and C++ AutocompleteResult objects are in sync.
+     */
+    public boolean verifyCoherency() {
+        // May happen with either test data, or AutocompleteResult built from the ZeroSuggestCache.
+        // This is a valid case, despite not meeting coherency criteria. Do not record.
+        if (mNativeAutocompleteResult == 0) return false;
+        long nativeMatches[] = new long[mSuggestions.size()];
+        for (int index = 0; index < mSuggestions.size(); index++) {
+            nativeMatches[index] = mSuggestions.get(index).getNativeObjectRef();
+        }
+        return AutocompleteResultJni.get().verifyCoherency(
+                mNativeAutocompleteResult, nativeMatches);
+    }
+
+    /** Returns a reference to Native AutocompleteResult object. */
+    public long getNativeObjectRef() {
+        return mNativeAutocompleteResult;
     }
 
     @Override
@@ -146,8 +211,12 @@ public class AutocompleteResult {
      */
     public void groupSuggestionsBySearchVsURL(int firstIndex, int lastIndex) {
         if (mNativeAutocompleteResult != 0) {
+            assert verifyCoherency() : "Pre-group verification failed";
             AutocompleteResultJni.get().groupSuggestionsBySearchVsURL(
                     mNativeAutocompleteResult, firstIndex, lastIndex);
+            // Verify that the Native AutocompleteResult update has been properly
+            // reflected on the Java part.
+            assert verifyCoherency() : "Post-group verification failed";
         }
     }
 
@@ -155,5 +224,6 @@ public class AutocompleteResult {
     interface Natives {
         void groupSuggestionsBySearchVsURL(
                 long nativeAutocompleteResult, int firstIndex, int lastIndex);
+        boolean verifyCoherency(long nativeAutocompleteResult, long[] matches);
     }
 }

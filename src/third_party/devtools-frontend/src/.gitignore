@@ -1,6 +1,5 @@
 .DS_Store
 .git_cl_description_backup
-.vscode
 *.ctc.json
 *.Makefile
 *.mk
@@ -19,6 +18,7 @@
 /scripts/visualize_deps/out
 config.gypi
 /karma-coverage
+/interactions-coverage
 /perf-data
 npm-debug.log
 /scripts/protocol_typescript/*.js
@@ -38,4 +38,4 @@ npm-debug.log
 test/screenshots/.generated
 test/perf/.generated
 
-
+/.vscode/settings.json

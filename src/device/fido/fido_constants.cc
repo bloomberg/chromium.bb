@@ -38,6 +38,7 @@ const char kDefaultCredProtectKey[] = "defaultCredProtect";
 const char kEnterpriseAttestationKey[] = "ep";
 const char kLargeBlobsKey[] = "largeBlobs";
 const char kAlwaysUvKey[] = "alwaysUv";
+const char kMakeCredUvNotRqdKey[] = "makeCredUvNotRqd";
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(20);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
@@ -73,6 +74,7 @@ const char kCtap2_1Version[] = "FIDO_2_1";
 const char kExtensionHmacSecret[] = "hmac-secret";
 const char kExtensionCredProtect[] = "credProtect";
 const char kExtensionLargeBlobKey[] = "largeBlobKey";
+const char kExtensionCredBlob[] = "credBlob";
 
 const base::TimeDelta kBleDevicePairingModeWaitingInterval =
     base::TimeDelta::FromSeconds(2);

@@ -13,7 +13,9 @@
 #include "ui/base/default_style.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -33,7 +35,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view_class_properties.h"
@@ -316,7 +317,7 @@ void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
   AddChildViewAt(title_view.release(), GetIndexOf(title_icon_) + 1);
 }
 
-void BubbleFrameView::SetProgress(base::Optional<double> progress) {
+void BubbleFrameView::SetProgress(absl::optional<double> progress) {
   bool visible = progress.has_value();
   progress_indicator_->SetVisible(visible);
   progress_indicator_->GetViewAccessibility().OverrideIsIgnored(!visible);
@@ -324,10 +325,10 @@ void BubbleFrameView::SetProgress(base::Optional<double> progress) {
     progress_indicator_->SetValue(progress.value());
 }
 
-base::Optional<double> BubbleFrameView::GetProgress() const {
+absl::optional<double> BubbleFrameView::GetProgress() const {
   if (progress_indicator_->GetVisible())
     return progress_indicator_->GetValue();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 gfx::Size BubbleFrameView::CalculatePreferredSize() const {
@@ -352,7 +353,7 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
   // the OS doesn't give the user controls to resize a bubble.
   return gfx::Size();
 #else
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Allow BubbleFrameView dialogs to be resizable on Mac.
   if (GetWidget()->widget_delegate()->CanResize()) {
     gfx::Size client_size = GetWidget()->client_view()->GetMaximumSize();
@@ -360,7 +361,7 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
       return client_size;
     return GetWindowBoundsForClientBounds(gfx::Rect(client_size)).size();
   }
-#endif  // OS_APPLE
+#endif  // OS_MAC
   // Non-dialog bubbles should be non-resizable, so its max size is its
   // preferred size.
   return GetPreferredSize();
@@ -391,8 +392,20 @@ void BubbleFrameView::Layout() {
     header_bottom = header_view_->bounds().bottom();
   }
 
-  if (bounds.IsEmpty())
+  // Only account for footnote_container_'s height if it's visible, because
+  // content_margins_ adds extra padding even if all child views are invisible.
+  if (footnote_container_ && footnote_container_->GetVisible()) {
+    const int width = contents_bounds.width();
+    const int height = footnote_container_->GetHeightForWidth(width);
+    footnote_container_->SetBounds(
+        contents_bounds.x(), contents_bounds.bottom() - height, width, height);
+  }
+
+  NonClientFrameView::Layout();
+
+  if (bounds.IsEmpty()) {
     return;
+  }
 
   // The buttons are positioned somewhat closer to the edge of the bubble.
   const int close_margin =
@@ -442,15 +455,6 @@ void BubbleFrameView::Layout() {
 
   title_icon_->SetBounds(bounds.x(), bounds.y(), title_icon_pref_size.width(),
                          title_height);
-
-  // Only account for footnote_container_'s height if it's visible, because
-  // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->GetVisible()) {
-    const int width = contents_bounds.width();
-    const int height = footnote_container_->GetHeightForWidth(width);
-    footnote_container_->SetBounds(
-        contents_bounds.x(), contents_bounds.bottom() - height, width, height);
-  }
 }
 
 void BubbleFrameView::OnThemeChanged() {
@@ -469,10 +473,8 @@ void BubbleFrameView::OnThemeChanged() {
 
 void BubbleFrameView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    OnThemeChanged();
+  if (details.is_add && details.child == this)
     UpdateClientLayerCornerRadius();
-  }
 
   // We need to update the client view's corner radius whenever the header or
   // footer are added/removed from the bubble frame so that the client view
@@ -927,16 +929,14 @@ void BubbleFrameView::UpdateClientLayerCornerRadius() {
 }
 
 BEGIN_METADATA(BubbleFrameView, NonClientFrameView)
-ADD_PROPERTY_METADATA(base::Optional<double>, Progress)
+ADD_PROPERTY_METADATA(absl::optional<double>, Progress)
 ADD_PROPERTY_METADATA(gfx::Insets, ContentMargins)
 ADD_PROPERTY_METADATA(gfx::Insets, FootnoteMargins)
 ADD_PROPERTY_METADATA(BubbleFrameView::PreferredArrowAdjustment,
                       PreferredArrowAdjustment)
 ADD_PROPERTY_METADATA(int, CornerRadius)
 ADD_PROPERTY_METADATA(BubbleBorder::Arrow, Arrow)
-ADD_PROPERTY_METADATA(SkColor,
-                      BackgroundColor,
-                      views::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor, ui::metadata::SkColorConverter)
 END_METADATA
 
 }  // namespace views

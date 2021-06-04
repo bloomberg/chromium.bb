@@ -733,6 +733,67 @@ TEST(JxlTest, RoundtripAlpha) {
             6.3);
 }
 
+TEST(JxlTest, RoundtripAlphaResampling) {
+  ThreadPool* pool = nullptr;
+  const PaddedBytes orig =
+      ReadTestData("wesaturate/500px/tmshre_riaphotographs_alpha.png");
+  CodecInOut io;
+  ASSERT_TRUE(SetFromBytes(Span<const uint8_t>(orig), &io, pool));
+
+  ASSERT_NE(io.xsize(), 0);
+  ASSERT_TRUE(io.metadata.m.HasAlpha());
+  ASSERT_TRUE(io.Main().HasAlpha());
+
+  CompressParams cparams;
+  cparams.resampling = 2;
+  cparams.ec_resampling = 2;
+  cparams.butteraugli_distance = 1.0;
+  DecompressParams dparams;
+
+  PassesEncoderState enc_state;
+  AuxOut* aux_out = nullptr;
+  PaddedBytes compressed;
+  EXPECT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, aux_out, pool));
+  CodecInOut io2;
+  EXPECT_TRUE(DecodeFile(dparams, compressed, &io2, pool));
+
+  EXPECT_LE(compressed.size(), 15000);
+
+  EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
+                                /*distmap=*/nullptr, pool),
+            6.0);
+}
+
+TEST(JxlTest, RoundtripAlphaResamplingOnlyAlpha) {
+  ThreadPool* pool = nullptr;
+  const PaddedBytes orig =
+      ReadTestData("wesaturate/500px/tmshre_riaphotographs_alpha.png");
+  CodecInOut io;
+  ASSERT_TRUE(SetFromBytes(Span<const uint8_t>(orig), &io, pool));
+
+  ASSERT_NE(io.xsize(), 0);
+  ASSERT_TRUE(io.metadata.m.HasAlpha());
+  ASSERT_TRUE(io.Main().HasAlpha());
+
+  CompressParams cparams;
+  cparams.ec_resampling = 2;
+  cparams.butteraugli_distance = 1.0;
+  DecompressParams dparams;
+
+  PassesEncoderState enc_state;
+  AuxOut* aux_out = nullptr;
+  PaddedBytes compressed;
+  EXPECT_TRUE(EncodeFile(cparams, &io, &enc_state, &compressed, aux_out, pool));
+  CodecInOut io2;
+  EXPECT_TRUE(DecodeFile(dparams, compressed, &io2, pool));
+
+  EXPECT_LE(compressed.size(), 26000);
+
+  EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
+                                /*distmap=*/nullptr, pool),
+            3.0);
+}
+
 TEST(JxlTest, RoundtripAlphaNonMultipleOf8) {
   ThreadPool* pool = nullptr;
   const PaddedBytes orig =
@@ -1127,7 +1188,11 @@ TEST(JxlTest, RoundtripAnimation) {
   test::CoalesceGIFAnimationWithAlpha(&io);
   EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
                                 /*distmap=*/nullptr, pool),
+#if JXL_HIGH_PRECISION
             1.55);
+#else
+            1.75);
+#endif
 }
 
 TEST(JxlTest, RoundtripLosslessAnimation) {
@@ -1391,6 +1456,27 @@ TEST(JxlTest, RoundtripProgressive) {
   EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
                                 /*distmap=*/nullptr, &pool),
             4.0f);
+}
+
+TEST(JxlTest, RoundtripAnimationPatches) {
+  ThreadPool* pool = nullptr;
+  const PaddedBytes orig = ReadTestData("jxl/animation_patches.gif");
+  CodecInOut io;
+  ASSERT_TRUE(SetFromBytes(Span<const uint8_t>(orig), &io, pool));
+  ASSERT_EQ(2, io.frames.size());
+
+  CompressParams cparams;
+  cparams.patches = Override::kOn;
+  DecompressParams dparams;
+  CodecInOut io2;
+  // 40k with no patches, 27k with patch frames encoded multiple times.
+  EXPECT_LE(Roundtrip(&io, cparams, dparams, pool, &io2), 24000);
+
+  EXPECT_EQ(io2.frames.size(), io.frames.size());
+  // >10 with broken patches
+  EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
+                                /*distmap=*/nullptr, pool),
+            2.0);
 }
 
 }  // namespace

@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 
+#include "base/containers/contains.h"
+#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -71,7 +74,7 @@ class ProfileColorsUtilTest : public testing::Test {
  protected:
   void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
-  ProfileAttributesEntry* AddProfile(base::Optional<SkColor> color) {
+  ProfileAttributesEntry* AddProfile(absl::optional<SkColor> color) {
     size_t number_of_profiles = storage()->GetNumberOfProfiles();
 
     base::FilePath profile_path =
@@ -80,8 +83,13 @@ class ProfileColorsUtilTest : public testing::Test {
                                number_of_profiles));
     std::u16string name = base::ASCIIToUTF16(
         base::StringPrintf("testing_profile_name%" PRIuS, number_of_profiles));
-    storage()->AddProfile(profile_path, name, std::string(), name, true,
-                          number_of_profiles, std::string(), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_path;
+    params.profile_name = name;
+    params.user_name = name;
+    params.is_consented_primary_account = true;
+    params.icon_index = number_of_profiles;
+    storage()->AddProfile(std::move(params));
 
     EXPECT_EQ(number_of_profiles + 1, storage()->GetNumberOfProfiles());
 
@@ -213,8 +221,8 @@ TEST_P(ProfileColorsUtilTestDarkModeParam,
   ExpectAllSaturatedColorsMatchingColorSchemeAvailable(should_use_dark_colors);
 
   // Add some profiles with the default theme.
-  AddProfile(base::nullopt);
-  AddProfile(base::nullopt);
+  AddProfile(absl::nullopt);
+  AddProfile(absl::nullopt);
   // Add a profile with a custom color.
   AddProfile(SK_ColorRED);
 

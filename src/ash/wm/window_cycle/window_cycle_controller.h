@@ -12,7 +12,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -76,10 +75,6 @@ class ASH_EXPORT WindowCycleController : public SessionObserver {
   // focus is currently on. For example, moving the focus on the top most
   // component, the tab slider button, further up is invalid.
   bool IsValidKeyboardNavigation(KeyboardNavDirection direction);
-
-  // Scrolls the windows in the given |direction|. This does not move the focus
-  // ring.
-  void Scroll(WindowCyclingDirection direction);
 
   // Drags the cycle view's mirror container |delta_x|.
   void Drag(float delta_x);
@@ -159,8 +154,15 @@ class ASH_EXPORT WindowCycleController : public SessionObserver {
   // initialized.
   void SaveCurrentActiveDeskAndWindow(const WindowList& window_list);
 
-  // Cycles to the next or previous window based on |direction|.
-  void Step(WindowCyclingDirection direction);
+  // Cycles to the next or previous window based on |direction| or to the
+  // default position if |starting_alt_tab_or_switching_mode| is true.
+  // This updates the highlight to the window to the right if |direction|
+  // is forward or left if backward. If |starting_alt_tab_or_switching_mode| is
+  // true and |direction| is forward, the highlight moves to the first
+  // non-active window in MRU list: the second window by default or the first
+  // window if it is not active.
+  void Step(WindowCyclingDirection direction,
+            bool starting_alt_tab_or_switching_mode);
 
   void StopCycling();
 

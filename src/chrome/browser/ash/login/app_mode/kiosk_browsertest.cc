@@ -24,8 +24,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/test/local_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -140,12 +142,6 @@ const test::UIPath kAutolaunchConfirmButton = {"autolaunch", "confirmButton"};
 const test::UIPath kAutolaunchCancelButton = {"autolaunch", "cancelButton"};
 const test::UIPath kErrorMessageContinueButton = {"error-message",
                                                   "continueButton"};
-
-// This is a simple test app that creates an app window and immediately closes
-// it again. Webstore data json is in
-//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
-const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 
 // This app creates a window and declares usage of the identity API in its
 // manifest, so we can test device robot token minting via the identity API.
@@ -457,7 +453,7 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
   ExtensionReadyObserver(extensions::ExtensionRegistry* registry,
                          const std::string& extension_id)
       : extension_id_(extension_id) {
-    extension_registry_observer_.Add(registry);
+    extension_registry_observation_.Observe(registry);
   }
 
   int fired_times() const { return count_; }
@@ -472,8 +468,9 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
 
   int count_ = 0;
 
-  ScopedObserver<extensions::ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<extensions::ExtensionRegistry,
+                          ExtensionRegistryObserver>
+      extension_registry_observation_{this};
   const std::string extension_id_;
 };
 
@@ -501,11 +498,11 @@ class KioskTest : public OobeBaseTest {
     KioskAppData::SetIgnoreKioskAppDataLoadFailuresForTesting(true);
   }
 
-  ~KioskTest() override {}
+  ~KioskTest() override = default;
 
  protected:
   void SetUp() override {
-    test_app_id_ = kTestKioskApp;
+    test_app_id_ = KioskAppsMixin::kKioskAppId;
     set_test_app_version("1.0.0");
     set_test_crx_file(test_app_id() + ".crx");
     needs_background_networking_ = true;
@@ -600,13 +597,6 @@ class KioskTest : public OobeBaseTest {
     PrepareAppLaunch();
 
     network_portal_detector_.SimulateDefaultNetworkState(network_status);
-
-    // TODO(crbug.com/1101318): LaunchAppUserCancel and
-    // LaunchAppWithNetworkConfigAccelerator are failing without skipping
-    // user creation screen. Need to investigate and fix this.
-    chromeos::WizardController::default_controller()
-        ->get_wizard_context_for_testing()
-        ->skip_to_login_for_tests = true;
     EXPECT_TRUE(LaunchApp(test_app_id()));
   }
 
@@ -763,7 +753,7 @@ class KioskTest : public OobeBaseTest {
                          int current_width) {
     std::string message;
     while (message_queue->WaitForMessage(&message)) {
-      base::Optional<base::Value> message_value =
+      absl::optional<base::Value> message_value =
           base::JSONReader::Read(message);
 
       if (!message_value.has_value() || !message_value.value().is_dict())
@@ -1153,7 +1143,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
+// TODO(crbug.com/1201207): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_AutolaunchWarningConfirm) {
   EnableConsumerKioskMode();
 
   chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -1268,10 +1259,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   test::OobeJS().TapOnPath({"kiosk-enable", "close"});
 
   // Navigate to gaia sign in screen.
-  if (features::IsChildSpecificSigninEnabled()) {
-    OobeScreenWaiter(UserCreationView::kScreenId).Wait();
-    test::OobeJS().TapOnPath({"user-creation", "nextButton"});
-  }
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  test::OobeJS().TapOnPath({"user-creation", "nextButton"});
 
   // Wait for signin screen to appear again.
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
@@ -1307,8 +1296,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_DoNotLaunchWhenUntrusted) {
       "if (cr.ui.Oobe.getInstance().errorMessageWasShownForTesting_) {"
       "  window.domAutomationController.send(true);"
       "} else {"
-      "  cr.ui.Oobe.showSignInError = function("
-      "      loginAttempts, message, link, helpId) {"
+      "  cr.ui.Oobe.showSignInError = function(message, link, helpId) {"
       "    window.domAutomationController.send(true);"
       "  };"
       "}",
@@ -2646,7 +2634,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
   KioskVirtualKeyboardTestSoundsManagerTestImpl() {}
 
   bool Initialize(SoundKey key, const base::StringPiece& data) override {
-    sound_data_[key] = data.as_string();
+    sound_data_[key] = std::string(data);
     return true;
   }
 

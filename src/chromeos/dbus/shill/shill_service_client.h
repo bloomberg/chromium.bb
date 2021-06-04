@@ -101,6 +101,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual void SetConnectBehavior(const std::string& service_path,
                                     const base::RepeatingClosure& behavior) = 0;
 
+    // Sets a Connect error. If set, the next connect call will fail with given
+    // |error_name|
+    virtual void SetErrorForNextConnectionAttempt(
+        const std::string& error_name) = 0;
+
     // If |hold_back| is set to true, stops sending service property updates to
     // observers and records them instead. Then if this is called again with
     // |hold_back| == false, sends all recorded property updates.
@@ -223,5 +228,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::ShillServiceClient;
+}
 
 #endif  // CHROMEOS_DBUS_SHILL_SHILL_SERVICE_CLIENT_H_

@@ -819,6 +819,9 @@ ExternalReference ExternalReference::search_string_raw() {
 FUNCTION_REFERENCE(jsarray_array_join_concat_to_sequential_string,
                    JSArray::ArrayJoinConcatToSequentialString)
 
+FUNCTION_REFERENCE(length_tracking_gsab_backed_typed_array_length,
+                   JSTypedArray::LengthTrackingGsabBackedTypedArrayLength)
+
 ExternalReference ExternalReference::search_string_raw_one_one() {
   return search_string_raw<const uint8_t, const uint8_t>();
 }
@@ -965,6 +968,11 @@ ExternalReference ExternalReference::cpu_features() {
   return ExternalReference(&CpuFeatures::supported_);
 }
 
+ExternalReference ExternalReference::promise_hook_flags_address(
+    Isolate* isolate) {
+  return ExternalReference(isolate->promise_hook_flags_address());
+}
+
 ExternalReference ExternalReference::promise_hook_address(Isolate* isolate) {
   return ExternalReference(isolate->promise_hook_address());
 }
@@ -972,21 +980,6 @@ ExternalReference ExternalReference::promise_hook_address(Isolate* isolate) {
 ExternalReference ExternalReference::async_event_delegate_address(
     Isolate* isolate) {
   return ExternalReference(isolate->async_event_delegate_address());
-}
-
-ExternalReference
-ExternalReference::promise_hook_or_async_event_delegate_address(
-    Isolate* isolate) {
-  return ExternalReference(
-      isolate->promise_hook_or_async_event_delegate_address());
-}
-
-ExternalReference ExternalReference::
-    promise_hook_or_debug_is_active_or_async_event_delegate_address(
-        Isolate* isolate) {
-  return ExternalReference(
-      isolate
-          ->promise_hook_or_debug_is_active_or_async_event_delegate_address());
 }
 
 ExternalReference ExternalReference::debug_execution_mode_address(
@@ -1025,11 +1018,6 @@ FUNCTION_REFERENCE_WITH_TYPE(mod_two_doubles_operation, modulo_double_double,
 ExternalReference ExternalReference::debug_suspended_generator_address(
     Isolate* isolate) {
   return ExternalReference(isolate->debug()->suspended_generator_address());
-}
-
-ExternalReference ExternalReference::debug_restart_fp_address(
-    Isolate* isolate) {
-  return ExternalReference(isolate->debug()->restart_fp_address());
 }
 
 ExternalReference ExternalReference::fast_c_call_caller_fp_address(

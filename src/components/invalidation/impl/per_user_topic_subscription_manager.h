@@ -10,7 +10,6 @@
 
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/per_user_topic_subscription_request.h"
@@ -93,7 +92,7 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
 
   base::DictionaryValue CollectDebugData() const;
 
-  virtual base::Optional<Topic> LookupSubscribedPublicTopicByPrivateTopic(
+  virtual absl::optional<Topic> LookupSubscribedPublicTopicByPrivateTopic(
       const std::string& private_topic) const;
 
   TopicSet GetSubscribedTopicsForTest() const;

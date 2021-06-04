@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 import '../module_header.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {I18nBehavior, loadTimeData} from '../../i18n_setup.js';
+import {InfoDialogElement} from '../info_dialog.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
 import {DriveProxy} from './drive_module_proxy.js';
@@ -35,10 +36,25 @@ class DriveModuleElement extends mixinBehaviors
     };
   }
 
-  constructor() {
-    super();
-    /** @private {IntersectionObserver} */
-    this.intersectionObserver_ = null;
+  /** @private */
+  onInfoButtonClick_() {
+    /** @type {InfoDialogElement} */ (this.$.infoDialogRender.get())
+        .showModal();
+  }
+
+  /** @private */
+  onDismissButtonClick_() {
+    DriveProxy.getInstance().handler.dismissModule();
+    this.dispatchEvent(new CustomEvent('dismiss-module', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        message: loadTimeData.getStringF(
+            'dismissModuleToastMessage',
+            loadTimeData.getString('modulesDriveFilesSentence')),
+        restoreCallback: () => DriveProxy.getInstance().handler.restoreModule(),
+      },
+    }));
   }
 
   /** @private */
@@ -49,7 +65,7 @@ class DriveModuleElement extends mixinBehaviors
       detail: {
         message: loadTimeData.getStringF(
             'disableModuleToastMessage',
-            loadTimeData.getString('modulesDriveSentence')),
+            loadTimeData.getString('modulesDriveSentence2')),
       },
     }));
   }
@@ -60,7 +76,7 @@ class DriveModuleElement extends mixinBehaviors
    * @private
    */
   getImageSrc_(file) {
-    return 'https://drive-thirdparty.googleusercontent.com/16/type/' +
+    return 'https://drive-thirdparty.googleusercontent.com/32/type/' +
         file.mimeType;
   }
 

@@ -6,9 +6,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/mock_callback.h"
@@ -23,6 +21,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -37,8 +36,8 @@ const char kTextAttachmentBody[] = "Test text payload";
 std::vector<std::unique_ptr<Attachment>> CreateTextAttachments() {
   std::vector<std::unique_ptr<Attachment>> attachments;
   attachments.push_back(std::make_unique<TextAttachment>(
-      TextAttachment::Type::kText, kTextAttachmentBody, /*title=*/base::nullopt,
-      /*mime_type=*/base::nullopt));
+      TextAttachment::Type::kText, kTextAttachmentBody, /*title=*/absl::nullopt,
+      /*mime_type=*/absl::nullopt));
   return attachments;
 }
 
@@ -100,7 +99,7 @@ class MockTransferUpdateListener
   MOCK_METHOD(void,
               OnTransferUpdate,
               (nearby_share::mojom::TransferStatus status,
-               const base::Optional<std::string>&),
+               const absl::optional<std::string>&),
               (override));
 
  private:
@@ -449,7 +448,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
   EXPECT_CALL(transfer_listener, OnTransferUpdate(_, _))
       .WillOnce(testing::Invoke(
           [&run_loop](nearby_share::mojom::TransferStatus status,
-                      const base::Optional<std::string>& token) {
+                      const absl::optional<std::string>& token) {
             EXPECT_EQ(
                 nearby_share::mojom::TransferStatus::kAwaitingRemoteAcceptance,
                 status);
@@ -505,7 +504,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitLocal) {
   EXPECT_CALL(transfer_listener, OnTransferUpdate(_, _))
       .WillOnce(testing::Invoke([&run_loop, &expected_token](
                                     nearby_share::mojom::TransferStatus status,
-                                    const base::Optional<std::string>& token) {
+                                    const absl::optional<std::string>& token) {
         EXPECT_EQ(
             nearby_share::mojom::TransferStatus::kAwaitingLocalConfirmation,
             status);

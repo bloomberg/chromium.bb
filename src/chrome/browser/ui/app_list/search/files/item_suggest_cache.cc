@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/files/item_suggest_cache.h"
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,31 +73,7 @@ bool IsDisabledByPolicy(const Profile* profile) {
 // Metrics utilities
 //------------------
 
-// TODO(crbug.com/1034842): Add unit tests for histograms
-
-// Possible outcomes of a call to the ItemSuggest API. These values persist to
-// logs. Entries should not be renumbered and numeric values should never be
-// reused.
-enum class Status {
-  kOk = 0,
-  kDisabledByExperiment = 1,
-  kDisabledByPolicy = 2,
-  kInvalidServerUrl = 3,
-  kNoIdentityManager = 4,
-  kGoogleAuthError = 5,
-  kNetError = 6,
-  kResponseTooLarge = 7,
-  k3xxStatus = 8,
-  k4xxStatus = 9,
-  k5xxStatus = 10,
-  kEmptyResponse = 11,
-  kNoResultsInResponse = 12,
-  kJsonParseFailure = 13,
-  kJsonConversionFailure = 14,
-  kMaxValue = kJsonConversionFailure,
-};
-
-void LogStatus(Status status) {
+void LogStatus(ItemSuggestCache::Status status) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ItemSuggestCache.Status", status);
 }
 
@@ -109,23 +86,23 @@ void LogResponseSize(const int size) {
 // JSON utilities
 //---------------
 
-base::Optional<base::Value::ConstListView> GetList(const base::Value* value,
+absl::optional<base::Value::ConstListView> GetList(const base::Value* value,
                                                    const std::string& key) {
   if (!value->is_dict())
-    return base::nullopt;
+    return absl::nullopt;
   const base::Value* field = value->FindListKey(key);
   if (!field)
-    return base::nullopt;
+    return absl::nullopt;
   return field->GetList();
 }
 
-base::Optional<std::string> GetString(const base::Value* value,
+absl::optional<std::string> GetString(const base::Value* value,
                                       const std::string& key) {
   if (!value->is_dict())
-    return base::nullopt;
+    return absl::nullopt;
   const std::string* field = value->FindStringKey(key);
   if (!field)
-    return base::nullopt;
+    return absl::nullopt;
   return *field;
 }
 
@@ -133,36 +110,36 @@ base::Optional<std::string> GetString(const base::Value* value,
 // JSON response parsing
 //----------------------
 
-base::Optional<ItemSuggestCache::Result> ConvertResult(
+absl::optional<ItemSuggestCache::Result> ConvertResult(
     const base::Value* value) {
   const auto& item_id = GetString(value, "itemId");
   const auto& display_text = GetString(value, "displayText");
 
   if (!item_id || !display_text)
-    return base::nullopt;
+    return absl::nullopt;
 
   return ItemSuggestCache::Result(item_id.value(), display_text.value());
 }
 
-base::Optional<ItemSuggestCache::Results> ConvertResults(
+absl::optional<ItemSuggestCache::Results> ConvertResults(
     const base::Value* value) {
   const auto& suggestion_id = GetString(value, "suggestionSessionId");
   if (!suggestion_id)
-    return base::nullopt;
+    return absl::nullopt;
 
   ItemSuggestCache::Results results(suggestion_id.value());
 
   const auto items = GetList(value, "item");
   if (!items)
-    return base::nullopt;
+    return absl::nullopt;
 
   for (const auto& result_value : items.value()) {
     auto result = ConvertResult(&result_value);
-    // If any result fails conversion, fail completely and return base::nullopt,
+    // If any result fails conversion, fail completely and return absl::nullopt,
     // rather than just skipping this result. This makes clear the distinction
     // between a response format issue and the response containing no results.
     if (!result)
-      return base::nullopt;
+      return absl::nullopt;
     results.results.push_back(std::move(result.value()));
   }
 
@@ -210,7 +187,7 @@ ItemSuggestCache::ItemSuggestCache(
 
 ItemSuggestCache::~ItemSuggestCache() = default;
 
-base::Optional<ItemSuggestCache::Results> ItemSuggestCache::GetResults() {
+absl::optional<ItemSuggestCache::Results> ItemSuggestCache::GetResults() {
   // Return a copy because a pointer to |results_| will become invalid whenever
   // the cache is updated.
   return results_;
@@ -391,7 +368,7 @@ std::unique_ptr<network::SimpleURLLoader> ItemSuggestCache::MakeRequestLoader(
 }
 
 // static
-base::Optional<ItemSuggestCache::Results> ItemSuggestCache::ConvertJsonForTest(
+absl::optional<ItemSuggestCache::Results> ItemSuggestCache::ConvertJsonForTest(
     const base::Value* value) {
   return ConvertResults(value);
 }

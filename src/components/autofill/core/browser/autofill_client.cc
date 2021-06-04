@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/autofill_client.h"
 
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "components/autofill/core/browser/autofill_ablation_study.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/version_info/channel.h"
 
@@ -59,11 +61,15 @@ AutofillClient::CreateCreditCardInternalAuthenticator(
 #endif
 
 void AutofillClient::ShowOfferNotificationIfApplicable(
-    const std::vector<GURL>& domains_to_display_bubble,
-    const GURL& offer_details_url,
-    const CreditCard* card) {
+    const AutofillOfferData* offer) {
   // This is overridden by platform subclasses. Currently only
-  // ChromeAutofillClient (Chrome Desktop and Clank) implement this.
+  // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
+}
+
+void AutofillClient::OnVirtualCardFetched(const CreditCard* credit_card,
+                                          const std::u16string& cvc) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }
 
 bool AutofillClient::IsAutofillAssistantShowing() {
@@ -72,6 +78,12 @@ bool AutofillClient::IsAutofillAssistantShowing() {
 
 LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
+}
+
+const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
+  // As finch configs are profile independent we can use a static instance here.
+  static base::NoDestructor<AutofillAblationStudy> ablation_study;
+  return *ablation_study;
 }
 
 }  // namespace autofill

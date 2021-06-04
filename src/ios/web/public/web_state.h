@@ -53,7 +53,6 @@ class NavigationManager;
 class SessionCertificatePolicyCache;
 class WebFrame;
 class WebFramesManager;
-class WebInterstitial;
 class WebStateDelegate;
 class WebStateObserver;
 class WebStatePolicyDecider;
@@ -311,12 +310,6 @@ class WebState : public base::SupportsUserData {
   // TODO(crbug.com/457679): Figure out a clean API for this.
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
 
-  // Returns true if a WebInterstitial is currently displayed.
-  virtual bool IsShowingWebInterstitial() const = 0;
-
-  // Returns the currently visible WebInterstitial if one is shown.
-  virtual WebInterstitial* GetWebInterstitial() const = 0;
-
   // Callback used to handle script commands. |message| is the JS message sent
   // from the |sender_frame| in the page, |page_url| is the URL of page's main
   // frame, |user_is_interacting| indicates if the user is interacting with the
@@ -387,6 +380,11 @@ class WebState : public base::SupportsUserData {
   // Instructs the delegate to close this web state. Called when the page calls
   // wants to close self by calling window.close() JavaScript API.
   virtual void CloseWebState() = 0;
+
+  // Injects an opaque NSData block into a WKWebView to restore or serialize.
+  // Returns true if this operation succeeds, and false otherwise.
+  virtual bool SetSessionStateData(NSData* data) = 0;
+  virtual NSData* SessionStateData() = 0;
 
  protected:
   friend class WebStatePolicyDecider;

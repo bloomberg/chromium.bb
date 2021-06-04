@@ -10,7 +10,12 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/export.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/assistant/buildflags.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace sandbox {
 namespace policy {
@@ -38,12 +43,6 @@ enum class SandboxType {
 
   // The MediaFoundation CDM service process.
   kMediaFoundationCdm,
-#endif
-
-#if defined(OS_FUCHSIA)
-  // Sandbox type for the web::Context process on Fuchsia. Functionally it's an
-  // equivalent of the browser process on other platforms.
-  kWebContext,
 #endif
 
   // Renderer or worker process. Most common case.
@@ -77,11 +76,16 @@ enum class SandboxType {
 #if defined(OS_MAC)
   // The NaCl loader process.
   kNaClLoader,
+
+  // The mirroring service needs IOSurface access on macOS.
+  kMirroring,
 #endif  // defined(OS_MAC)
 
+#if BUILDFLAG(ENABLE_PRINTING)
   // The print backend service process which interfaces with operating system
   // print drivers.
   kPrintBackend,
+#endif
 
   // The print compositor service process.
   kPrintCompositor,
@@ -93,6 +97,11 @@ enum class SandboxType {
   kIme,
   // Text-to-speech.
   kTts,
+
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+  kLibassistant,
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

@@ -16,12 +16,12 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
@@ -73,6 +73,8 @@ class DownloadManager;
 class ClientHintsControllerDelegate;
 class ContentIndexProvider;
 class DownloadManagerDelegate;
+class FederatedIdentityRequestPermissionContextDelegate;
+class FederatedIdentitySharingPermissionContextDelegate;
 class FileSystemAccessPermissionContext;
 class PermissionController;
 class PermissionControllerDelegate;
@@ -95,13 +97,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // layer (e.g. there is no need to override these methods in layers above
   // //content).
   //
-  // The current practice is to make the methods in this section static and have
-  // them take `BrowserContext* self` as the first parameter.  (It is known that
-  // not all the methods below follow this pattern.)
-  //
-  // TODO(https://crbug.com/1179776): Consider converting methods in this
-  // section into non-virtual instance methods (dropping the `BrowserContext*`
-  // parameter along the way).
+  // The currently recommended practice is to make the methods in this section
+  // non-virtual instance methods.
   //
   // TODO(https://crbug.com/1179776): Consider moving these methods to
   // BrowserContext::Impl or (in the future) BrowserContextImpl class.
@@ -109,33 +106,31 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   BrowserContext();
   ~BrowserContext() override;
 
-  static DownloadManager* GetDownloadManager(BrowserContext* self);
+  DownloadManager* GetDownloadManager();
 
   // Returns BrowserContext specific external mount points. It may return
   // nullptr if the context doesn't have any BrowserContext specific external
   // mount points. Currently, non-nullptr value is returned only on ChromeOS.
-  static storage::ExternalMountPoints* GetMountPoints(BrowserContext* self);
+  storage::ExternalMountPoints* GetMountPoints();
 
   // Returns a BrowsingDataRemover that can schedule data deletion tasks
   // for this |context|.
-  static BrowsingDataRemover* GetBrowsingDataRemover(BrowserContext* self);
+  BrowsingDataRemover* GetBrowsingDataRemover();
 
   // Returns the PermissionController associated with this context. There's
   // always a PermissionController instance for each BrowserContext.
-  static PermissionController* GetPermissionController(BrowserContext* self);
+  PermissionController* GetPermissionController();
 
   // Returns a StoragePartition for the given SiteInstance. By default this will
   // create a new StoragePartition if it doesn't exist, unless |can_create| is
   // false.
-  static StoragePartition* GetStoragePartition(BrowserContext* self,
-                                               SiteInstance* site_instance,
-                                               bool can_create = true);
+  StoragePartition* GetStoragePartition(SiteInstance* site_instance,
+                                        bool can_create = true);
 
   // Returns a StoragePartition for the given StoragePartitionConfig. By
   // default this will create a new StoragePartition if it doesn't exist,
   // unless |can_create| is false.
-  static StoragePartition* GetStoragePartition(
-      BrowserContext* self,
+  StoragePartition* GetStoragePartition(
       const StoragePartitionConfig& storage_partition_config,
       bool can_create = true);
 
@@ -144,30 +139,25 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns a StoragePartition for the given URL. By default this will
   // create a new StoragePartition if it doesn't exist, unless |can_create| is
   // false.
-  static StoragePartition* GetStoragePartitionForUrl(BrowserContext* self,
-                                                     const GURL& url,
-                                                     bool can_create = true);
+  StoragePartition* GetStoragePartitionForUrl(const GURL& url,
+                                              bool can_create = true);
 
   using StoragePartitionCallback =
       base::RepeatingCallback<void(StoragePartition*)>;
-  static void ForEachStoragePartition(BrowserContext* self,
-                                      StoragePartitionCallback callback);
-  // Returns the number of StoragePartitions that exist for the given
-  // |browser_context|.
-  static size_t GetStoragePartitionCount(BrowserContext* self);
-  static void AsyncObliterateStoragePartition(
-      BrowserContext* self,
-      const std::string& partition_domain,
-      base::OnceClosure on_gc_required);
+  void ForEachStoragePartition(StoragePartitionCallback callback);
+  // Returns the number of StoragePartitions that exist for `this`
+  // BrowserContext.
+  size_t GetStoragePartitionCount();
+  void AsyncObliterateStoragePartition(const std::string& partition_domain,
+                                       base::OnceClosure on_gc_required);
 
   // This function clears the contents of |active_paths| but does not take
   // ownership of the pointer.
-  static void GarbageCollectStoragePartitions(
-      BrowserContext* self,
+  void GarbageCollectStoragePartitions(
       std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
       base::OnceClosure done);
 
-  static StoragePartition* GetDefaultStoragePartition(BrowserContext* self);
+  StoragePartition* GetDefaultStoragePartition();
 
   using BlobCallback = base::OnceCallback<void(std::unique_ptr<BlobHandle>)>;
   using BlobContextGetter =
@@ -176,13 +166,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // This method should be called on UI thread and calls back on UI thread
   // as well. Note that retrieving a blob ptr out of BlobHandle can only be
   // done on IO. |callback| returns a nullptr on failure.
-  static void CreateMemoryBackedBlob(BrowserContext* self,
-                                     base::span<const uint8_t> data,
-                                     const std::string& content_type,
-                                     BlobCallback callback);
+  void CreateMemoryBackedBlob(base::span<const uint8_t> data,
+                              const std::string& content_type,
+                              BlobCallback callback);
 
   // Get a BlobStorageContext getter that needs to run on IO thread.
-  static BlobContextGetter GetBlobStorageContext(BrowserContext* self);
+  BlobContextGetter GetBlobStorageContext();
 
   // Returns a mojom::mojo::PendingRemote<blink::mojom::Blob> for a specific
   // blob. If no blob exists with the given UUID, the
@@ -191,50 +180,45 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // TODO(mek): Blob UUIDs should be entirely internal to the blob system, so
   // eliminate this method in favor of just passing around the
   // mojo::PendingRemote<blink::mojom::Blob> directly.
-  static mojo::PendingRemote<blink::mojom::Blob> GetBlobRemote(
-      BrowserContext* self,
+  mojo::PendingRemote<blink::mojom::Blob> GetBlobRemote(
       const std::string& uuid);
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|.
-  static void DeliverPushMessage(
-      BrowserContext* self,
+  void DeliverPushMessage(
       const GURL& origin,
       int64_t service_worker_registration_id,
       const std::string& message_id,
-      base::Optional<std::string> payload,
+      absl::optional<std::string> payload,
       base::OnceCallback<void(blink::mojom::PushEventStatus)> callback);
 
   // Fires a push subscription change event to the Service Worker identified by
   // |origin| and |service_worker_registration_id| with |new_subscription| and
   // |old_subscription| as event information.
-  static void FirePushSubscriptionChangeEvent(
-      BrowserContext* self,
+  void FirePushSubscriptionChangeEvent(
       const GURL& origin,
       int64_t service_worker_registration_id,
       blink::mojom::PushSubscriptionPtr new_subscription,
       blink::mojom::PushSubscriptionPtr old_subscription,
       base::OnceCallback<void(blink::mojom::PushEventStatus)> callback);
 
-  static void NotifyWillBeDestroyed(BrowserContext* self);
+  void NotifyWillBeDestroyed();
 
   // Ensures that the corresponding ResourceContext is initialized. Normally the
   // BrowserContext initializs the corresponding getters when its objects are
   // created, but if the embedder wants to pass the ResourceContext to another
   // thread before they use BrowserContext, they should call this to make sure
   // that the ResourceContext is ready.
-  static void EnsureResourceContextInitialized(BrowserContext* self);
+  void EnsureResourceContextInitialized();
 
   // Tells the HTML5 objects on this context to persist their session state
   // across the next restart.
-  static void SaveSessionState(BrowserContext* self);
+  void SaveSessionState();
 
-  static void SetDownloadManagerForTesting(
-      BrowserContext* self,
+  void SetDownloadManagerForTesting(
       std::unique_ptr<DownloadManager> download_manager);
 
-  static void SetPermissionControllerForTesting(
-      BrowserContext* self,
+  void SetPermissionControllerForTesting(
       std::unique_ptr<PermissionController> permission_controller);
 
   // The list of CORS exemptions.  This list needs to be 1) replicated when
@@ -242,8 +226,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // network::mojom::NetworkContextParams::cors_origin_access_list) and 2)
   // consulted by CORS-aware factories (e.g. passed when constructing
   // FileURLLoaderFactory).
-  static SharedCorsOriginAccessList* GetSharedCorsOriginAccessList(
-      BrowserContext* self);
+  SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
 
   // Shuts down the storage partitions associated to this browser context.
   // This must be called before the browser context is actually destroyed
@@ -285,7 +268,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static std::string CreateRandomMediaDeviceIDSalt();
 
   // Write a representation of this object into a trace.
-  void WriteIntoTracedValue(perfetto::TracedValue context);
+  void WriteIntoTrace(perfetto::TracedValue context);
 
   //////////////////////////////////////////////////////////////////////////////
   // The //content embedder can override the methods below to change or extend
@@ -400,6 +383,15 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // directly, so privacy is not compromised.
   virtual std::unique_ptr<media::VideoDecodePerfHistory>
   CreateVideoDecodePerfHistory();
+
+  // Gets the permission context for issuing WebID requests if one exists, or
+  // nullptr otherwise.
+  virtual FederatedIdentityRequestPermissionContextDelegate*
+  GetFederatedIdentityRequestPermissionContext();
+  // Gets the permission context for WebID identity token sharing if one
+  // exists, or nullptr otherwise.
+  virtual FederatedIdentitySharingPermissionContextDelegate*
+  GetFederatedIdentitySharingPermissionContext();
 
  private:
   // Please don't add more fields to BrowserContext.

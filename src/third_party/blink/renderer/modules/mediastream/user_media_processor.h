@@ -89,6 +89,7 @@ class MODULES_EXPORT UserMediaProcessor
   void OnDeviceRequestStateChange(
       const MediaStreamDevice& device,
       const mojom::blink::MediaStreamStateChange new_state);
+  void OnDeviceCaptureHandleChange(const MediaStreamDevice& device);
 
   void set_media_stream_dispatcher_host_for_testing(
       mojo::PendingRemote<blink::mojom::blink::MediaStreamDispatcherHost>
@@ -268,11 +269,11 @@ class MODULES_EXPORT UserMediaProcessor
       const blink::VideoCaptureSettings& settings);
   void SelectVideoContentSettings();
 
-  base::Optional<base::UnguessableToken> DetermineExistingAudioSessionId();
+  absl::optional<base::UnguessableToken> DetermineExistingAudioSessionId();
 
   void GenerateStreamForCurrentRequestInfo(
-      base::Optional<base::UnguessableToken>
-          requested_audio_capture_session_id = base::nullopt,
+      absl::optional<base::UnguessableToken>
+          requested_audio_capture_session_id = absl::nullopt,
       blink::mojom::StreamSelectionStrategy strategy =
           blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID);
 

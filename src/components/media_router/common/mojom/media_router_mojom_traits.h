@@ -215,12 +215,6 @@ struct EnumTraits<media_router::mojom::SinkIconType,
         return media_router::mojom::SinkIconType::CAST_AUDIO_GROUP;
       case media_router::SinkIconType::CAST_AUDIO:
         return media_router::mojom::SinkIconType::CAST_AUDIO;
-      case media_router::SinkIconType::MEETING:
-        return media_router::mojom::SinkIconType::MEETING;
-      case media_router::SinkIconType::HANGOUT:
-        return media_router::mojom::SinkIconType::HANGOUT;
-      case media_router::SinkIconType::EDUCATION:
-        return media_router::mojom::SinkIconType::EDUCATION;
       case media_router::SinkIconType::WIRED_DISPLAY:
         return media_router::mojom::SinkIconType::WIRED_DISPLAY;
       case media_router::SinkIconType::GENERIC:
@@ -243,15 +237,6 @@ struct EnumTraits<media_router::mojom::SinkIconType,
         return true;
       case media_router::mojom::SinkIconType::CAST_AUDIO:
         *output = media_router::SinkIconType::CAST_AUDIO;
-        return true;
-      case media_router::mojom::SinkIconType::MEETING:
-        *output = media_router::SinkIconType::MEETING;
-        return true;
-      case media_router::mojom::SinkIconType::HANGOUT:
-        *output = media_router::SinkIconType::HANGOUT;
-        return true;
-      case media_router::mojom::SinkIconType::EDUCATION:
-        *output = media_router::SinkIconType::EDUCATION;
         return true;
       case media_router::mojom::SinkIconType::WIRED_DISPLAY:
         *output = media_router::SinkIconType::WIRED_DISPLAY;
@@ -280,12 +265,12 @@ struct StructTraits<media_router::mojom::MediaSinkDataView,
     return sink_internal.sink().name();
   }
 
-  static const base::Optional<std::string>& description(
+  static const absl::optional<std::string>& description(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().description();
   }
 
-  static const base::Optional<std::string>& domain(
+  static const absl::optional<std::string>& domain(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().domain();
   }
@@ -359,15 +344,15 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.presentation_id();
   }
 
-  static base::Optional<std::string> media_source(
+  static absl::optional<std::string> media_source(
       const media_router::MediaRoute& route) {
     // TODO(imcheng): If we ever convert from C++ to Mojo outside of unit tests,
     // it would be better to make the |media_source_| field on MediaRoute a
-    // base::Optional<MediaSource::Id> instead so it can be returned directly
+    // absl::optional<MediaSource::Id> instead so it can be returned directly
     // here.
     return route.media_source().id().empty()
-               ? base::Optional<std::string>()
-               : base::make_optional(route.media_source().id());
+               ? absl::optional<std::string>()
+               : absl::make_optional(route.media_source().id());
   }
 
   static const std::string& media_sink_id(
@@ -403,6 +388,10 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
 
   static bool is_local_presentation(const media_router::MediaRoute& route) {
     return route.is_local_presentation();
+  }
+
+  static bool is_connecting(const media_router::MediaRoute& route) {
+    return route.is_connecting();
   }
 };
 

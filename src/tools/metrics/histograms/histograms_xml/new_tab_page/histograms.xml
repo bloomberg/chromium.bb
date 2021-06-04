@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="NewTabPage.ActionAndroid2" enum="NewTabPageActionAndroid2"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>twellington@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
   <summary>
@@ -34,7 +34,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ActioniOS" enum="NewTabPageActioniOS"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -81,7 +81,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <obsolete>
     Never recorded. Marked obsolete 01/2021.
   </obsolete>
-  <owner>ramyan@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
     The time it took until a request from the New Tab Page for the next Backdrop
@@ -112,8 +111,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Click" enum="NTPElement" expires_after="2022-01-01">
+  <owner>tiborg@chromium.org</owner>
+  <owner>yyushkina@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logged when the NTP was clicked. Only logged on the 1P NTP. Be aware that
+    this may undercount clicks on nested OGB iframes. Note that even if the user
+    has Google as their default search engine, Incognito and Guest mode NTPs are
+    not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.ArticlesListVisible"
-    enum="BooleanVisible" expires_after="2021-09-05">
+    enum="BooleanVisible" expires_after="2021-11-07">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -130,7 +141,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.BackgroundFetchTrigger"
-    enum="BackgroundFetchTrigger" expires_after="2021-08-22">
+    enum="BackgroundFetchTrigger" expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -209,7 +220,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.MenuOpened" units="index"
-    expires_after="2021-09-05">
+    expires_after="2021-11-14">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -244,7 +255,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.MoreButtonClicked" units="index"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -363,7 +374,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.OpenedAge" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -401,7 +412,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.Preferences.RemoteSuggestions"
-    enum="BooleanEnabled" expires_after="2021-08-22">
+    enum="BooleanEnabled" expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -461,7 +472,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.ShownAge" units="ms"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -486,7 +497,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched"
-    units="ms" expires_after="2021-08-22">
+    units="ms" expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -499,7 +510,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -568,7 +579,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.UsageTimeLocal" units="units"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -629,7 +640,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Customized" enum="NTPCustomizedFeatures"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -730,6 +741,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.LensSupportStatus" enum="LensSupportStatus"
     expires_after="2021-11-18">
+  <obsolete>
+    Removed 2021-05. Switch to use Lens.Omnibox.LensSupportStatus.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -804,7 +818,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -924,7 +938,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Impression" units="ms"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -968,7 +982,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Loaded" units="ms"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1015,7 +1029,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.VisibleOnNTPLoad" enum="BooleanVisible"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1035,6 +1049,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Histogram for user clicks of the most visited tile. The value is equal to
     the index of the tile.
+
+    For special types of results:
+
+    * Clicks on the &quot;Add Shortcut&quot; tile are not counted.
+
+    * Clicks on the Explore Sites tile on Android are counted.
 
     The user action NewTabPage.MostVisited.Clicked is also logged at the same
     time as this histogram.
@@ -1065,7 +1085,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfTiles" units="units"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1093,7 +1113,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.ShownTime" units="ms"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1104,7 +1124,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Promo.EnhancedProtectionPromo"
-    enum="AndroidEnhancedProtectionPromoAction" expires_after="2021-09-05">
+    enum="AndroidEnhancedProtectionPromoAction" expires_after="2021-11-07">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1115,7 +1135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NewTabPage.Promo.EnhancedProtectionPromo.ImpressionUntilAction"
-    units="units" expires_after="2021-09-12">
+    units="units" expires_after="2021-11-14">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1216,7 +1236,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Promos.ShownTime" units="ms"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1291,7 +1311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.RepeatableQueries.ExtractedCount" units="count"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
@@ -1303,7 +1323,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.RepeatableQueries.ExtractionDuration" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
@@ -1355,7 +1375,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.SearchAvailableLoadTime2.ColdStart" units="ms"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>fgorski@chromium.org</owner>
   <owner>ender@google.com</owner>
   <owner>yyushkina@chromium.org</owner>
@@ -1367,7 +1387,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.SearchAvailableLoadTime2.WarmStart" units="ms"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>fgorski@chromium.org</owner>
   <owner>ender@google.com</owner>
   <owner>yyushkina@chromium.org</owner>
@@ -1459,7 +1479,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ShoppingTasks.RelatedSearchDownloadCount"
-    units="count" expires_after="2021-08-15">
+    units="count" expires_after="2021-10-17">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1680,6 +1700,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.TasksSurface.LensSupportStatus"
     enum="LensSupportStatus" expires_after="2021-11-18">
+  <obsolete>
+    Removed 2021-05. Switch to use Lens.Omnibox.LensSupportStatus.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -1763,7 +1786,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileType" enum="NTPTileVisualType"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>dbeam@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -1774,7 +1797,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileTypeClicked" enum="NTPTileVisualType"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>dbeam@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -1783,7 +1806,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2021-09-05">
+<histogram name="NewTabPage.TimeSinceLastNTP" units="ms"
+    expires_after="2022-01-01">
+  <owner>tiborg@chromium.org</owner>
+  <owner>yyushkina@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logged when a 1P NTP starts loading. Logs the time since the last time a 1P
+    NTP in the same profile started loading. Note the following: (a) The first
+    NTP load ever is not counted. (b) This value is computed using a client-side
+    clock and stored in prefs. As such, (i) it works across sessions and (ii) it
+    can show strange values if a user changes their clock. (c) Even if the user
+    has Google as their default search engine, Incognito and Guest mode NTPs are
+    not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2021-11-07">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -1856,7 +1895,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.UserClassifier.AverageHoursToUseSuggestions"
-    units="hours" expires_after="2021-09-05">
+    units="hours" expires_after="2021-11-07">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1868,7 +1907,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

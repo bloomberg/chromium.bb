@@ -5,6 +5,8 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import * as Protocol from '../../generated/protocol.js';
 
 export class AnimationModel extends SDK.SDKModel.SDKModel {
   _runtimeModel: SDK.RuntimeModel.RuntimeModel;
@@ -618,7 +620,7 @@ export class ScreenshotCapture {
   }
 }
 
-SDK.SDKModel.SDKModel.register(AnimationModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(AnimationModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
 export interface Request {
   endTime: number;
   screenshots: string[];

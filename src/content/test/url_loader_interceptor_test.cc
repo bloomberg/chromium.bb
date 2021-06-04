@@ -44,13 +44,9 @@ class URLLoaderInterceptorTest : public ContentBrowserTest {
   }
 
   bool DidImageLoad() {
-    int height = 0;
-    EXPECT_TRUE(ExecuteScriptAndExtractInt(
-        shell(),
-        "window.domAutomationController.send("
-        "document.getElementsByTagName('img')[0].naturalHeight)",
-        &height));
-    return !!height;
+    return EvalJs(shell(),
+                  "document.getElementsByTagName('img')[0].naturalHeight")
+               .ExtractInt() != 0;
   }
 
   GURL GetImageURL() { return embedded_test_server()->GetURL("/blank.jpg"); }
@@ -166,7 +162,7 @@ class TestBrowserClientWithHeaderClient
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
-      base::Optional<int64_t> navigation_id,
+      absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -269,8 +265,10 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
         params->client->OnComplete(status);
         return true;
       }));
-  auto* factory = BrowserContext::GetDefaultStoragePartition(
-                      shell()->web_contents()->GetBrowserContext())
+  auto* factory = shell()
+                      ->web_contents()
+                      ->GetBrowserContext()
+                      ->GetDefaultStoragePartition()
                       ->GetURLLoaderFactoryForBrowserProcess()
                       .get();
   factory->CreateLoaderAndStart(

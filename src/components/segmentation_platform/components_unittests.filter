@@ -1,0 +1,4 @@
+SegmentationModelExecutorTest.*
+SegmentationPlatformServiceImplTest.*
+SignalFilterProcessorTest.*
+UserActionSignalHandlerTest.*

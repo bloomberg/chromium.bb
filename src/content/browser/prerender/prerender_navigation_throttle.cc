@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -59,11 +59,10 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
   DCHECK(frame_tree_node->IsMainFrame());
   DCHECK(frame_tree_node->frame_tree()->is_prerendering());
 
-  // Get the prerender host registry.
-  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-      frame_tree_node->current_frame_host()->GetStoragePartition());
   PrerenderHostRegistry* prerender_host_registry =
-      storage_partition_impl->GetPrerenderHostRegistry();
+      frame_tree_node->current_frame_host()
+          ->delegate()
+          ->GetPrerenderHostRegistry();
 
   // Disallow navigation from a prerendering page and cancel prerendering.
   RenderFrameHostImpl* initiator_render_frame_host_impl =
@@ -94,10 +93,22 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
     return CANCEL;
   }
 
-  // Take the prerender host of the prerendering page.
-  const PrerenderHost* prerender_host = prerender_host_registry->FindHostById(
-      frame_tree_node->frame_tree_node_id());
-  DCHECK(prerender_host);
+  // Get the prerender host of the prerendering page.
+  const PrerenderHost* prerender_host =
+      prerender_host_registry->FindNonReservedHostById(
+          frame_tree_node->frame_tree_node_id());
+  if (!prerender_host) {
+    // If there is no host, we are already reserved for activation. Just let
+    // the navigation proceed, since cancelling it now might break the
+    // activation navigation. We also cannot defer because the activation
+    // machinery waits for the navigation to commit before activating.
+    // TODO(https://crbug.com/1198395): Somehow handle this, probably by
+    // deferring after support is added to activate while the main frame is
+    // still being navigated; or else cancelling prerendering.
+    DCHECK(prerender_host_registry->FindReservedHostById(
+        frame_tree_node->frame_tree_node_id()));
+    return PROCEED;
+  }
 
   // Cancel prerendering if this is cross-origin prerendering, cross-origin
   // redirection during prerendering, or cross-origin navigation from a

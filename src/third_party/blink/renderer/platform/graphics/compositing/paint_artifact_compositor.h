@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -253,6 +254,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   size_t ApproximateUnsharedMemoryUsage() const;
 
+  void SetScrollbarNeedsDisplay(CompositorElementId element_id);
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
@@ -428,6 +431,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const PendingLayer* previous_layer) const;
 
   void UpdateDebugInfo() const;
+
+  cc::ScrollbarLayerBase* ScrollbarLayer(CompositorElementId);
 
   // For notifying blink of composited scrolling.
   base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;

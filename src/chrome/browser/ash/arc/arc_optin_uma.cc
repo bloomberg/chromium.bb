@@ -53,7 +53,7 @@ void UpdateEnabledStateByUserTypeUMA() {
   if (!IsRealUserProfile(profile) || profile->IsGuestSession())
     return;
 
-  base::Optional<bool> enabled_state;
+  absl::optional<bool> enabled_state;
   if (auto* stability_metrics_manager = StabilityMetricsManager::Get())
     enabled_state = stability_metrics_manager->GetArcEnabledState();
 
@@ -203,8 +203,9 @@ void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
   base::UmaHistogramEnumeration("Arc.OptInSilentAuthCode", state);
 }
 
+// TODO(tantoshchuk): rename UMA histogram to "Arc.Management.Transition.Result"
 void UpdateSupervisionTransitionResultUMA(
-    mojom::SupervisionChangeStatus result) {
+    mojom::ManagementChangeStatus result) {
   base::UmaHistogramEnumeration("Arc.Supervision.Transition.Result", result);
 }
 

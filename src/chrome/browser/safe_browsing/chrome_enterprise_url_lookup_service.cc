@@ -84,20 +84,16 @@ void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
   NOTREACHED() << "URL lookup with token is disabled for enterprise users.";
 }
 
-base::Optional<std::string>
+absl::optional<std::string>
 ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
   DCHECK(connectors_service_);
   return connectors_service_->GetDMTokenForRealTimeUrlCheck();
 }
 
 GURL ChromeEnterpriseRealTimeUrlLookupService::GetRealTimeLookupUrl() const {
-  bool is_ga_endpoint_enabled =
-      base::FeatureList::IsEnabled(kRealTimeUrlLookupEnterpriseGaEndpoint);
-  std::string endpoint = is_ga_endpoint_enabled
-                             ? "https://enterprise-safebrowsing.googleapis.com/"
-                               "safebrowsing/clientreport/realtime"
-                             : "https://safebrowsing.google.com/safebrowsing/"
-                               "clientreport/realtime";
+  std::string endpoint =
+      "https://enterprise-safebrowsing.googleapis.com/"
+      "safebrowsing/clientreport/realtime";
   return GURL(endpoint);
 }
 

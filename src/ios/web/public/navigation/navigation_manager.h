@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/deprecated/navigation_item_list.h"
@@ -58,6 +60,13 @@ class NavigationManager {
     // generally set a Content-Type header as well.
     NSData* post_data;
 
+    // True if the navigation was initiated by typing in the omnibox but the
+    // typed text didn't have a scheme such as http or https (e.g. google.com),
+    // and https was used as the default scheme for the navigation. This is used
+    // by TypedNavigationUpgradeThrottle to determine if the navigation should
+    // be observed and fall back to using http scheme if necessary.
+    bool is_using_https_as_default_scheme;
+
     // Create a new WebLoadParams with the given URL and defaults for all other
     // parameters.
     explicit WebLoadParams(const GURL& url);
@@ -90,14 +99,7 @@ class NavigationManager {
   // in progress, or null if there is none.
   virtual NavigationItem* GetPendingItem() const = 0;
 
-  // Returns the transient item if any. This is an item which is removed and
-  // discarded if any navigation occurs. Note that the returned item is owned
-  // by the navigation manager and may be deleted at any time.
-  // TODO(crbug.com/1028755): Remove the transient item once SafeBrowsing is
-  // launched.
-  virtual NavigationItem* GetTransientItem() const = 0;
-
-  // Removes the transient and pending NavigationItems.
+  // Removes the pending NavigationItem.
   virtual void DiscardNonCommittedItems() = 0;
 
   // Loads the URL with specified |params|.
@@ -119,7 +121,7 @@ class NavigationManager {
       BrowserURLRewriter::URLRewriter rewriter) = 0;
 
   // Returns the number of items in the NavigationManager, excluding
-  // pending and transient entries.
+  // pending entries.
   // TODO(crbug.com/533848): Update to return size_t.
   virtual int GetItemCount() const = 0;
 
@@ -154,8 +156,7 @@ class NavigationManager {
   // Reloads the visible item under the specified ReloadType. If
   // |check_for_repost| is true and the current item has POST data the user is
   // prompted to see if they really want to reload the page. Pass in true if the
-  // reload is explicitly initiated by the user. If a transient item is showing,
-  // initiates a new navigation to its URL.
+  // reload is explicitly initiated by the user.
   // TODO(crbug.com/700958): implement the logic for |check_for_repost|.
   virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
 

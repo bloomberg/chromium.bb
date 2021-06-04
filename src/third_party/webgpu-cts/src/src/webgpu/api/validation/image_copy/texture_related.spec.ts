@@ -157,7 +157,7 @@ g.test('origin_alignment')
   .fn(async t => {
     const { valueToCoordinate, coordinateToTest, format, method } = t.params;
     const info = kSizedTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(info.extension);
+    await t.selectDeviceOrSkipTestCase(info.feature);
 
     const origin = { x: 0, y: 0, z: 0 };
     const size = { width: 0, height: 0, depthOrArrayLayers: 0 };
@@ -238,7 +238,7 @@ g.test('size_alignment')
   .fn(async t => {
     const { valueToCoordinate, coordinateToTest, format, method } = t.params;
     const info = kSizedTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(info.extension);
+    await t.selectDeviceOrSkipTestCase(info.feature);
 
     const origin = { x: 0, y: 0, z: 0 };
     const size = { width: 0, height: 0, depthOrArrayLayers: 0 };
@@ -292,8 +292,8 @@ g.test('copy_rectangle')
     const format = 'rgba8unorm';
     const info = kSizedTextureFormatInfo[format];
 
-    const origin: GPUOrigin3D = [0, 0, 0];
-    const copySize: GPUExtent3D = [0, 0, 0];
+    const origin = [0, 0, 0];
+    const copySize = [0, 0, 0];
     const textureSize = { width: 16 << mipLevel, height: 16 << mipLevel, depthOrArrayLayers: 16 };
     const success = originValue + copySizeValue <= textureSizeValue;
 

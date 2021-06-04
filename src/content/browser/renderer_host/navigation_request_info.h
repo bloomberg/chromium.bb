@@ -34,7 +34,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
       bool are_ancestors_secure,
       int frame_tree_node_id,
       bool report_raw_headers,
-      bool is_prerendering,
       bool upgrade_if_insecure,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           blob_url_loader_factory,
@@ -43,7 +42,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
       bool obey_origin_policy,
       net::HttpRequestHeaders cors_exempt_headers,
       network::mojom::ClientSecurityStatePtr client_security_state,
-      const base::Optional<std::vector<net::SourceStream::SourceType>>&
+      const absl::optional<std::vector<net::SourceStream::SourceType>>&
           devtools_accepted_stream_types);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
@@ -68,8 +67,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const int frame_tree_node_id;
 
   const bool report_raw_headers;
-
-  const bool is_prerendering;
 
   // If set to true, any HTTP redirects of this request will be upgraded to
   // HTTPS. This only applies for subframe navigations.
@@ -100,7 +97,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // If not null, the network service will not advertise any stream types
   // (via Accept-Encoding) that are not listed. Also, it will not attempt
   // decoding any non-listed stream types.
-  base::Optional<std::vector<net::SourceStream::SourceType>>
+  absl::optional<std::vector<net::SourceStream::SourceType>>
       devtools_accepted_stream_types;
 };
 

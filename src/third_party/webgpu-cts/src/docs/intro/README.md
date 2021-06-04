@@ -47,7 +47,9 @@ The contents of a test file (`src/webgpu/**/*.spec.ts`) are twofold:
 
 ## [Additional Documentation](../)
 
-### Example: operation testing of vertex input id generation
+## Examples
+
+### Operation testing of vertex input id generation
 
 This section provides an example of the planning process for a test.
 It has not been refined into a set of final test plan descriptions.

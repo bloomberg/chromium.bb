@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -55,8 +55,11 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
           weak_ptr_factory_.GetWeakPtr()));
 
   const bool is_play_store_enabled = IsArcPlayStoreEnabledForProfile(profile_);
+  const bool is_play_store_managed =
+      IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_);
   VLOG(1) << "Start observing Google Play Store enabled preference. "
-          << "Initial value: " << is_play_store_enabled;
+          << "Initial values are: Enabled=" << is_play_store_enabled << " "
+          << "Managed=" << is_play_store_managed;
 
   // Force data clean if needed.
   if (IsArcDataCleanupOnStartRequested()) {
@@ -64,19 +67,19 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
     arc_session_manager_->RequestArcDataRemoval();
   }
 
-  // If the OOBE is shown, don't kill the mini-container. We'll do it if and
-  // when the user declines the TOS. We need to check |is_play_store_enabled| to
-  // handle the case where |kArcEnabled| is managed but some of the preferences
-  // still need to be set by the user.
-  // TODO(cmtm): This feature isn't covered by unittests. Add a unittest for it.
-  if (!IsArcOobeOptInActive() || is_play_store_enabled)
+  // For unmanaged users, if the OOBE is shown we don't kill the
+  // mini-container since we want to upgrade it later. If Play Store
+  // setting is managed update the state immediately even if the user is
+  // in OOBE since we won't get further updates to the setting via OOBE.
+  if (!IsArcOobeOptInActive() || is_play_store_managed || is_play_store_enabled)
     UpdateArcSessionManager();
+
   if (is_play_store_enabled)
     return;
 
   // Google Play Store is initially disabled, here.
 
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_)) {
+  if (is_play_store_managed) {
     // All users that can disable Google Play Store by themselves will have
     // the |kARcDataRemoveRequested| pref set, so we don't need to eagerly
     // remove the data for that case.
@@ -116,12 +119,12 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
     }
 
     if (!is_play_store_enabled) {
-      // Remove the pinned Play Store icon launcher in Shelf.
+      // Remove the pinned Play Store icon from the Shelf.
       // This is only for non-Managed cases. In managed cases, it is expected
       // to be "disabled" rather than "removed", so keep it here.
-      auto* chrome_launcher_controller = ChromeLauncherController::instance();
-      if (chrome_launcher_controller)
-        chrome_launcher_controller->UnpinAppWithID(kPlayStoreAppId);
+      auto* chrome_shelf_controller = ChromeShelfController::instance();
+      if (chrome_shelf_controller)
+        chrome_shelf_controller->UnpinAppWithID(kPlayStoreAppId);
 
       // Tell Consent Auditor that the Play Store consent was revoked.
       signin::IdentityManager* identity_manager =

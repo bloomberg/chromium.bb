@@ -16,14 +16,14 @@ namespace printing {
 class MetafileSkia;
 class PrintSettings;
 
-class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
+class COMPONENT_EXPORT(PRINTING) PrintingContextWin : public PrintingContext {
  public:
   explicit PrintingContextWin(Delegate* delegate);
   PrintingContextWin(const PrintingContextWin&) = delete;
   PrintingContextWin& operator=(const PrintingContextWin&) = delete;
   ~PrintingContextWin() override;
 
-  // Prints the document contained in |metafile|.
+  // Prints the document contained in `metafile`.
   void PrintDocument(const std::wstring& device_name,
                      const MetafileSkia& metafile);
 

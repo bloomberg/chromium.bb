@@ -68,7 +68,7 @@ public:
     // and returns. The caller can optionally pass in a pointer to a CompatibleRPHandle. If this is
     // non null it will be set to a handle that can be used in the furutre to quickly return a
     // compatible GrVkRenderPasses without the need inspecting a GrVkRenderTarget.
-    const GrVkRenderPass* findCompatibleRenderPass(const GrVkRenderTarget& target,
+    const GrVkRenderPass* findCompatibleRenderPass(GrVkRenderTarget* target,
                                                    CompatibleRPHandle* compatibleHandle,
                                                    bool withResolve,
                                                    bool withStencil,
@@ -150,7 +150,7 @@ public:
 
     sk_sp<const GrVkPipeline> findOrCreateMSAALoadPipeline(
             const GrVkRenderPass& renderPass,
-            const GrVkRenderTarget* dst,
+            int numSamples,
             VkPipelineShaderStageCreateInfo*,
             VkPipelineLayout);
 
@@ -238,19 +238,18 @@ private:
                                                      const GrProgramInfo& programInfo,
                                                      VkRenderPass compatibleRenderPass,
                                                      Stats::ProgramCacheResult* stat) {
-            return this->findOrCreatePipelineState(nullptr, desc, programInfo,
-                                                   compatibleRenderPass, false, stat);
+            return this->findOrCreatePipelineStateImpl(desc, programInfo, compatibleRenderPass,
+                                                       false, stat);
         }
 
     private:
         struct Entry;
 
-        GrVkPipelineState* findOrCreatePipelineState(GrRenderTarget*,
-                                                     const GrProgramDesc&,
-                                                     const GrProgramInfo&,
-                                                     VkRenderPass compatibleRenderPass,
-                                                     bool overrideSubpassForResolveLoad,
-                                                     Stats::ProgramCacheResult*);
+        GrVkPipelineState* findOrCreatePipelineStateImpl(const GrProgramDesc&,
+                                                         const GrProgramInfo&,
+                                                         VkRenderPass compatibleRenderPass,
+                                                         bool overrideSubpassForResolveLoad,
+                                                         Stats::ProgramCacheResult*);
 
         struct DescHash {
             uint32_t operator()(const GrProgramDesc& desc) const {

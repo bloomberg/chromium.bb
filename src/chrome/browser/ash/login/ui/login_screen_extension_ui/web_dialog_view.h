@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
 
 #include <memory>
-#include <string>
 
 #include "ash/public/cpp/system_tray_observer.h"
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 namespace content {

@@ -5,6 +5,7 @@
 #include "components/embedder_support/user_agent_utils.h"
 
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "build/branding_buildflags.h"
 #include "components/embedder_support/switches.h"
@@ -54,9 +55,9 @@ std::string GetUserAgent() {
 //      version checking.
 blink::UserAgentBrandList GenerateBrandVersionList(
     int seed,
-    base::Optional<std::string> brand,
+    absl::optional<std::string> brand,
     std::string major_version,
-    base::Optional<std::string> maybe_greasey_brand) {
+    absl::optional<std::string> maybe_greasey_brand) {
   DCHECK_GE(seed, 0);
   const int npermutations = 6;  // 3!
   int permutation = seed % npermutations;
@@ -105,15 +106,15 @@ const blink::UserAgentBrandList& GetBrandVersionList() {
         int major_version_number;
         std::string major_version = version_info::GetMajorVersionNumber();
         base::StringToInt(major_version, &major_version_number);
-        base::Optional<std::string> brand;
+        absl::optional<std::string> brand;
 #if !BUILDFLAG(CHROMIUM_BRANDING)
         brand = version_info::GetProductName();
 #endif
-        base::Optional<std::string> maybe_param_override =
+        absl::optional<std::string> maybe_param_override =
             base::GetFieldTrialParamValueByFeature(features::kGreaseUACH,
                                                    "brand_override");
         if (maybe_param_override->empty())
-          maybe_param_override = base::nullopt;
+          maybe_param_override = absl::nullopt;
 
         return GenerateBrandVersionList(major_version_number, brand,
                                         major_version, maybe_param_override);

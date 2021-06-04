@@ -219,8 +219,10 @@ arguments:
 # but will often get in the way when running actual fuzzing, so we will disable
 # this later.
 dcheck_always_on = true
+
 # Without this flag, our fuzzer target won't exist.
 enable_mojom_fuzzer = true
+
 # ASAN is super useful for fuzzing, but in this case we just want it to help us
 # debug the inevitable lifetime issues while we get everything set-up correctly!
 is_asan = true
@@ -561,10 +563,10 @@ With the CodeCacheHost, looking at the coverage after a few hours we could see
 that there's definitely some room for improvement:
 
 ```c++
-/* 55       */ base::Optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
+/* 55       */ absl::optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
 /* 56 53.6k */ int render_process_id) {
 /* 57 53.6k */    if (!resource_url.is_valid() || !resource_url.SchemeIsHTTPOrHTTPS())
-/* 58 53.6k */      return base::nullopt;
+/* 58 53.6k */      return absl::nullopt;
 /* 59 0     */
 /* 60 0     */    GURL origin_lock =
 /* 61 0     */        ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
@@ -663,7 +665,7 @@ We can see that we're now getting some more coverage:
 /* 131 2 */     if (!code_cache)
 /* 132 0 */       return;
 /* 133 2 */
-/* 134 2 */     base::Optional<GURL> origin_lock =
+/* 134 2 */     absl::optional<GURL> origin_lock =
 /* 135 2 */         GetSecondaryKeyForCodeCache(url, render_process_id_);
 /* 136 2 */     if (!origin_lock)
 /* 137 0 */       return;
@@ -717,9 +719,9 @@ Thread T5 (fuzzer_thread) created by T0 here:
 ```
 
 [markbrand@google.com]:mailto:markbrand@google.com?subject=[MojoLPM%20Help]:%20&cc=fuzzing@chromium.org
-[libfuzzer]: https://source.chromium.org/chromium/chromium/src/+/master:testing/libfuzzer/getting_started.md
+[libfuzzer]: https://source.chromium.org/chromium/chromium/src/+/main:testing/libfuzzer/getting_started.md
 [Protocol Buffers]: https://developers.google.com/protocol-buffers/docs/cpptutorial
-[libprotobuf-mutator]: https://source.chromium.org/chromium/chromium/src/+/master:testing/libfuzzer/libprotobuf-mutator.md
-[testing in Chromium]: https://source.chromium.org/chromium/chromium/src/+/master:docs/testing/testing_in_chromium.md
+[libprotobuf-mutator]: https://source.chromium.org/chromium/chromium/src/+/main:testing/libfuzzer/libprotobuf-mutator.md
+[testing in Chromium]: https://source.chromium.org/chromium/chromium/src/+/main:docs/testing/testing_in_chromium.md
 [interfaces]: https://source.chromium.org/search?q=interface%5Cs%2B%5Cw%2B%5Cs%2B%7B%20f:%5C.mojom$%20-f:test
 

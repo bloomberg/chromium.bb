@@ -11,12 +11,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -35,6 +35,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -111,13 +112,13 @@ class PushMessagingServiceTest : public ::testing::Test {
   // Callback to use when the subscription may have been subscribed.
   void DidRegister(std::string* subscription_id_out,
                    GURL* endpoint_out,
-                   base::Optional<base::Time>* expiration_time_out,
+                   absl::optional<base::Time>* expiration_time_out,
                    std::vector<uint8_t>* p256dh_out,
                    std::vector<uint8_t>* auth_out,
                    base::OnceClosure done_callback,
                    const std::string& registration_id,
                    const GURL& endpoint,
-                   const base::Optional<base::Time>& expiration_time,
+                   const absl::optional<base::Time>& expiration_time,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    blink::mojom::PushRegistrationStatus status) {
@@ -137,11 +138,11 @@ class PushMessagingServiceTest : public ::testing::Test {
   void DidDispatchMessage(std::string* app_id_out,
                           GURL* origin_out,
                           int64_t* service_worker_registration_id_out,
-                          base::Optional<std::string>* payload_out,
+                          absl::optional<std::string>* payload_out,
                           const std::string& app_id,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          base::Optional<std::string> payload) {
+                          absl::optional<std::string> payload) {
     *app_id_out = app_id;
     *origin_out = origin;
     *service_worker_registration_id_out = service_worker_registration_id;
@@ -152,12 +153,12 @@ class PushMessagingServiceTest : public ::testing::Test {
    public:
     std::string subscription_id_;
     GURL endpoint_;
-    base::Optional<base::Time> expiration_time_;
+    absl::optional<base::Time> expiration_time_;
     std::vector<uint8_t> p256dh_;
     std::vector<uint8_t> auth_;
     TestPushSubscription(const std::string& subscription_id,
                          const GURL& endpoint,
-                         const base::Optional<base::Time>& expiration_time,
+                         const absl::optional<base::Time>& expiration_time,
                          const std::vector<uint8_t>& p256dh,
                          const std::vector<uint8_t>& auth)
         : subscription_id_(subscription_id),
@@ -173,7 +174,7 @@ class PushMessagingServiceTest : public ::testing::Test {
                  TestPushSubscription* subscription = nullptr) {
     std::string subscription_id;
     GURL endpoint;
-    base::Optional<base::Time> expiration_time;
+    absl::optional<base::Time> expiration_time;
     std::vector<uint8_t> p256dh, auth;
 
     base::RunLoop run_loop;
@@ -222,7 +223,13 @@ class PushMessagingServiceTest : public ::testing::Test {
 #endif  // OS_ANDROID
 };
 
-TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
+// Fails too often on Linux TSAN builder: http://crbug.com/1211350.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_PayloadEncryptionTest DISABLED_PayloadEncryptionTest
+#else
+#define MAYBE_PayloadEncryptionTest PayloadEncryptionTest
+#endif
+TEST_F(PushMessagingServiceTest, MAYBE_PayloadEncryptionTest) {
   PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
   ASSERT_TRUE(push_service);
 
@@ -265,7 +272,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   std::string app_id;
   GURL dispatched_origin;
   int64_t service_worker_registration_id;
-  base::Optional<std::string> payload;
+  absl::optional<std::string> payload;
 
   // (5) Observe message dispatchings from the Push Messaging service, and
   // then dispatch the |message| on the GCM driver as if it had actually
@@ -313,7 +320,13 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
   EXPECT_EQ(p256dh, push_messaging::NormalizeSenderInfo(p256dh));
 }
 
-TEST_F(PushMessagingServiceTest, RemoveExpiredSubscriptions) {
+// Fails too often on Linux TSAN builder: http://crbug.com/1211350.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_RemoveExpiredSubscriptions DISABLED_RemoveExpiredSubscriptions
+#else
+#define MAYBE_RemoveExpiredSubscriptions RemoveExpiredSubscriptions
+#endif
+TEST_F(PushMessagingServiceTest, MAYBE_RemoveExpiredSubscriptions) {
   // (1) Enable push subscriptions with expiration time and
   // `pushsubscriptionchange` events
   base::test::ScopedFeatureList scoped_feature_list_;

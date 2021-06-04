@@ -141,12 +141,14 @@ It may represent multiple _test cases_, each of which runs the same Test Functio
 Parameters.
 
 A test is named using `TestGroup.test()`, which returns a `TestBuilder`.
-`TestBuilder.params()` can optionally be used to parameterize the test.
-Then, `TestBuilder.fn()` provides the Test Function.
+`TestBuilder.cases()` and `TestBuilder.subcases()` can optionally be used to parametrically
+generate instances of the test.
+Finally, `TestBuilder.fn()` provides the Test Function
+(or, a test can be marked unimplemented with `TestBuilder.unimplemented()`).
 
 ### Test Function
 
-When a test case is run, the Test Function receives an instance of the
+When a test subcase is run, the Test Function receives an instance of the
 Test Fixture provided to the Test Group, producing test results.
 
 **Type:** `TestFn`
@@ -155,18 +157,33 @@ Test Fixture provided to the Test Group, producing test results.
 
 A single case of a test. It is identified by a `TestCaseID`: a test name, and its parameters.
 
+Each case appears as an individual item (tree leaf) in `/standalone/`,
+and as an individual "step" in WPT.
+
+If `TestBuilder.cases()` is not used, there is exactly one case.
+
 **Type:** During test run time, a case is encapsulated as a `RunCase`.
+
+## Test Subcase / Subcase
+
+A single "subcase" of a test. It can also be identified by a `TestCaseID`, though
+not all contexts allow subdividing cases into subcases.
+
+All of the subcases of a case will run _inside_ the case, essentially as a for-loop wrapping the
+test function. They do _not_ appear individually in `/standalone/` or WPT.
+
+If `TestBuilder.subcases()` is not used, there is exactly one subcase.
 
 ## Parameters / Params
 
-Each Test Case has a (possibly empty) set of Parameters.
+Each Test Subcase has a (possibly empty) set of Parameters.
 The parameters are available to the Test Function `f(t)` via `t.params`.
 
-A set of Public Parameters identifies a Test Case within a Test.
+A set of Public Parameters identifies a Test Case or Test Subcase within a Test.
 
-There are also Private Paremeters: any parameter name beginning with an underscore (`_`).
+There are also Private Parameters: any parameter name beginning with an underscore (`_`).
 These parameters are not part of the Test Case identification, but are still passed into
-the Test Function. They can be used to manually specify expected results.
+the Test Function. They can be used, e.g., to manually specify expected results.
 
 **Type:** `CaseParams`
 

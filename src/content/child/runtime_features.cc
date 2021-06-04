@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -66,6 +67,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
     WebRuntimeFeatures::EnableWebBluetooth(true);
     WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
         true);
+    WebRuntimeFeatures::EnableWebBluetoothManufacturerDataFilter(true);
   }
 #endif
 
@@ -240,9 +242,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableCooperativeScheduling, features::kCooperativeScheduling},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
-    {wf::EnableDocumentTransition, features::kDocumentTransition},
     {wf::EnableExpensiveBackgroundTimerThrottling,
      features::kExpensiveBackgroundTimerThrottling},
+    {wf::EnableFencedFrames, blink::features::kFencedFrames,
+     kSetOnlyIfOverridden},
     {wf::EnableForcedColors, features::kForcedColors},
     {wf::EnableFractionalScrollOffsets, features::kFractionalScrollOffsets},
     {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses},
@@ -290,8 +293,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kSecurePaymentConfirmationDebug},
     {wf::EnableSendBeaconThrowForBlobWithNonSimpleType,
      features::kSendBeaconThrowForBlobWithNonSimpleType},
+    {wf::EnableSharedArrayBuffer, features::kSharedArrayBuffer},
     {wf::EnableSharedArrayBufferOnDesktop,
      features::kSharedArrayBufferOnDesktop},
+    {wf::EnableSharedAutofill, autofill::features::kAutofillAcrossIframes},
     {wf::EnableSignedExchangePrefetchCacheForNavigations,
      features::kSignedExchangePrefetchCacheForNavigations},
     {wf::EnableSignedExchangeSubresourcePrefetch,
@@ -340,24 +345,24 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
       runtimeFeatureNameToChromiumFeatureMapping[] = {
-          {"AddressSpace", features::kBlockInsecurePrivateNetworkRequests},
           {"AllowContentInitiatedDataUrlNavigations",
            features::kAllowContentInitiatedDataUrlNavigations},
           {"AndroidDownloadableFontsMatching",
            features::kAndroidDownloadableFontsMatching},
-          {"AudioWorkletRealtimeThread",
-           blink::features::kAudioWorkletRealtimeThread},
           {"BlockCredentialedSubresources",
            features::kBlockCredentialedSubresources},
           {"COLRV1Fonts", blink::features::kCOLRV1Fonts},
           {"CSSContainerQueries", blink::features::kCSSContainerQueries},
           {"CompositeAfterPaint", blink::features::kCompositeAfterPaint},
-          {"ComputePressure", blink::features::kComputePressure},
+          {"ComputePressure", blink::features::kComputePressure,
+           kSetOnlyIfOverridden},
           {"CSSColorSchemeUARendering", features::kCSSColorSchemeUARendering},
           {"DeclarativeShadowDOM", blink::features::kDeclarativeShadowDOM},
+          {"DocumentTransition", blink::features::kDocumentTransition},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints},
           {"EditingNG", blink::features::kEditingNG},
+          {"FileHandling", blink::features::kFileHandlingAPI},
           {"FontAccess", blink::features::kFontAccess},
           {"FontAccessPersistent", blink::features::kFontAccessPersistent},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching},
@@ -374,8 +379,14 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
           {"ManagedConfiguration", blink::features::kManagedConfiguration},
+          // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after
+          // the feature is in stable with no issues.
+          {"OffsetParentNewSpecBehavior",
+           blink::features::kOffsetParentNewSpecBehavior},
           {"OriginPolicy", features::kOriginPolicy},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
+          {"PrefersColorSchemeClientHintHeader",
+           features::kPrefersColorSchemeClientHintHeader},
           {"RawClipboard", blink::features::kRawClipboard},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
@@ -383,6 +394,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kTargetBlankImpliesNoOpener},
           {"TextFragmentColorChange",
            blink::features::kTextFragmentColorChange},
+          {"ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+           blink::features::
+               kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", features::kUserAgentClientHint},
           {"WebAppWindowControlsOverlay",
@@ -415,7 +429,7 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
   // SwitchToFeatureMap entry to the initializer list below.
   // Note: command line switches are now discouraged, please consider
   // using base::Feature instead.
-  // https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/configuration.md#switches
+  // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/configuration.md#switches
   using wrf = WebRuntimeFeatures;
   const SwitchToFeatureMap switchToFeatureMapping[] = {
       // Stable Features
@@ -533,17 +547,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(true);
   }
 
-  WebRuntimeFeatures::EnableSharedArrayBuffer(
-      base::FeatureList::IsEnabled(features::kSharedArrayBuffer) ||
-      base::FeatureList::IsEnabled(features::kWebAssemblyThreads));
-
   // These checks are custom wrappers around base::FeatureList::IsEnabled
   // They're moved here to distinguish them from actual base checks
   WebRuntimeFeatures::EnableOverlayScrollbars(ui::IsOverlayScrollbarEnabled());
-
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    WebRuntimeFeatures::EnableFeatureFromString("FileHandling", true);
-  }
 
   // TODO(rodneyding): This is a rare case for a stable feature
   // Need to investigate more to determine whether to refactor it.
@@ -613,6 +619,16 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "=" << blink::features::kPortals.name
         << " instead.";
     WebRuntimeFeatures::EnablePortals(false);
+  }
+
+  // Fenced frames, like Portals, cannot be enabled without the support of the
+  // browser process.
+  if (!base::FeatureList::IsEnabled(blink::features::kFencedFrames)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsFencedFramesEnabled())
+        << "Fenced frames cannot be enabled in this configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kFencedFrames.name << " instead.";
+    WebRuntimeFeatures::EnableFencedFrames(false);
   }
 }
 

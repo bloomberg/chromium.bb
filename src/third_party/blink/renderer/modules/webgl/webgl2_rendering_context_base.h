@@ -1043,7 +1043,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGL2RenderingContextBase(
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      bool using_gpu_compositing,
+      const Platform::GraphicsInfo&,
       const CanvasContextCreationAttributesCore& requested_attributes,
       Platform::ContextType context_type);
 
@@ -1208,4 +1208,4 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_BASE_H_

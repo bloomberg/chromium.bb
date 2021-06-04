@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -110,6 +111,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -277,7 +279,7 @@ class SelectControlWaiter : public aura::WindowObserver,
   }
 
   void OnWindowInitialized(aura::Window* window) override {
-    if (window->type() != aura::client::WINDOW_TYPE_MENU)
+    if (window->GetType() != aura::client::WINDOW_TYPE_MENU)
       return;
     window->AddObserver(this);
     observed_windows_.insert(window);
@@ -530,6 +532,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       geolocation_overrider_ =
           std::make_unique<device::ScopedGeolocationOverrider>(10, 20);
     }
+
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1074,9 +1078,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AudioStateJavascriptAPI) {
       switches::autoplay::kNoUserGestureRequiredPolicy);
 
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/audio_state_api",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/audio_state_api",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -1087,8 +1090,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoplayPolicy) {
       switches::autoplay::kDocumentUserActivationRequiredPolicy);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/autoplay",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/autoplay",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -1192,14 +1195,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadEmbedder) {
 // happen when a <webview> is removed from DOM and added back.
 IN_PROC_BROWSER_TEST_F(WebViewTest, AddRemoveWebView_AddRemoveWebView) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/addremove",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/addremove",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewSizeTest, AutoSize) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/autosize",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/autosize",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -1224,16 +1227,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
 // Checks that {allFrames: true} injects script correctly to subframes
 // inside <webview>.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteScript) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "execute_script",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "execute_script", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteCode) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "execute_code",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "execute_code", .launch_as_platform_app = true}))
       << message_;
 }
 
@@ -1786,6 +1789,45 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
   GetGuestViewManager()->WaitForAllGuestsDeleted();
 }
 
+// Creates a guest in a unattached state, then confirms that calling
+// |RenderFrameHost::ForEachRenderFrameHost| on the embedder will include the
+// guest's frame.
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_UnattachedVisitedByForEachRenderFrameHost) {
+  TestHelper("testNewWindowDeferredAttachmentIndefinitely",
+             "web_view/newwindow", NEEDS_TEST_SERVER);
+  // The test creates two guests, one of which is created but left in an
+  // unattached state.
+  GetGuestViewManager()->WaitForNumGuestsCreated(2);
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+  auto* unattached_guest = extensions::WebViewGuest::FromWebContents(
+      GetGuestViewManager()->GetLastGuestCreated());
+  ASSERT_TRUE(unattached_guest);
+  ASSERT_EQ(embedder, unattached_guest->owner_web_contents());
+  ASSERT_FALSE(unattached_guest->attached());
+  ASSERT_FALSE(unattached_guest->embedder_web_contents());
+
+  std::vector<content::WebContents*> guest_contents_list;
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_contents_list);
+  ASSERT_EQ(2u, guest_contents_list.size());
+  content::WebContents* other_guest =
+      (guest_contents_list[0] == unattached_guest->web_contents())
+          ? guest_contents_list[1]
+          : guest_contents_list[0];
+
+  content::RenderFrameHost* embedder_main_frame = embedder->GetMainFrame();
+  content::RenderFrameHost* unattached_guest_main_frame =
+      unattached_guest->web_contents()->GetMainFrame();
+  content::RenderFrameHost* other_guest_main_frame =
+      other_guest->GetMainFrame();
+
+  EXPECT_THAT(
+      content::CollectAllRenderFrameHosts(embedder_main_frame),
+      testing::UnorderedElementsAre(embedder_main_frame, other_guest_main_frame,
+                                    unattached_guest_main_frame));
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
@@ -2130,8 +2172,8 @@ IN_PROC_BROWSER_TEST_F(WebViewSafeBrowsingTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/src_attribute",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/src_attribute",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2213,9 +2255,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), set_cookie_url);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/cookie_isolation",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/cookie_isolation",
+                               {.launch_as_platform_app = true}))
       << message_;
   // Finally, verify that the browser cookie has not changed.
   int cookie_size;
@@ -2234,10 +2275,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/storage_persistence",
-                        .custom_arg = "PRE_StoragePersistence",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/storage_persistence",
+      {.custom_arg = "PRE_StoragePersistence", .launch_as_platform_app = true}))
       << message_;
   content::EnsureCookiesFlushed(profile());
 }
@@ -2250,10 +2290,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/storage_persistence",
-                        .custom_arg = "StoragePersistence",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/storage_persistence",
+      {.custom_arg = "StoragePersistence", .launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2271,9 +2310,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), navigate_to_url);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/dom_storage_isolation",
-                        .launch_as_platform_app = true}));
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/dom_storage_isolation",
+                               {.launch_as_platform_app = true}));
   // Verify that the browser tab's local/session storage does not have the same
   // values which were stored by the webviews.
   std::string output;
@@ -2309,9 +2347,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, FindabilityIsolation) {
   navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
 
   ui_test_utils::NavigateToURL(browser(), navigate_to_url);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/findability_isolation",
-                        .launch_as_platform_app = true}));
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/findability_isolation",
+                               {.launch_as_platform_app = true}));
 }
 
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
@@ -2319,9 +2356,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, FindabilityIsolation) {
 // which the test checks to ensure proper storage isolation is enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/isolation_indexeddb",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/isolation_indexeddb",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2645,9 +2681,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestCheck) {
 // Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
 // guests.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "screen_coordinates",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "screen_coordinates", .launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2735,17 +2771,17 @@ IN_PROC_BROWSER_TEST_F(
 // is handled correctly (and does not crash).
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "platform_apps/web_view/geolocation/cancel_request",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("platform_apps/web_view/geolocation/cancel_request",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationRequestGone) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunExtensionTest(
-      {.name = "platform_apps/web_view/geolocation/geolocation_request_gone",
-       .launch_as_platform_app = true}))
+      "platform_apps/web_view/geolocation/geolocation_request_gone",
+      {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2850,34 +2886,34 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "cleardata",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "cleardata", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearSessionCookies) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "cleardata_session",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "cleardata_session", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearPersistentCookies) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "cleardata_persistent",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "cleardata_persistent", .launch_as_platform_app = true}))
       << message_;
 }
 
 // Regression test for https://crbug.com/615429.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearDataTwice) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "cleardata_twice",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "cleardata_twice", .launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2893,9 +2929,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ClearDataCache) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "console_messages",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "console_messages", .launch_as_platform_app = true}))
       << message_;
 }
 
@@ -2908,9 +2944,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
 
   std::unique_ptr<content::DownloadTestObserver> completion_observer(
       new content::DownloadTestObserverTerminal(
-          content::BrowserContext::GetDownloadManager(
-              guest_web_contents->GetBrowserContext()),
-          1, content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          guest_web_contents->GetBrowserContext()->GetDownloadManager(), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.
@@ -3029,8 +3064,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DownloadCookieIsolation) {
   ASSERT_TRUE(web_contents);
 
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(
-          web_contents->GetBrowserContext());
+      web_contents->GetBrowserContext()->GetDownloadManager();
 
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(download_manager));
@@ -3116,8 +3150,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   ASSERT_TRUE(web_contents);
 
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(
-          web_contents->GetBrowserContext());
+      web_contents->GetBrowserContext()->GetDownloadManager();
   std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
       new content::DownloadTestObserverInterrupted(
           download_manager, 2,
@@ -3156,7 +3189,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 }
 
 // TODO(crbug.com/994789): Flaky on MSan, Linux, and ChromeOS.
-#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+// TODO(crbug.com/1204299): Flaky on Windows. Consistently failing on Mac.
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN) || defined(OS_MAC)
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DISABLED_DownloadCookieIsolation_CrossSession
 #else
@@ -3176,7 +3211,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
   content::BrowserContext* browser_context = profile();
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser_context);
+      browser_context->GetDownloadManager();
 
   task_runner->FastForwardUntilNoTasksRemain();
   DownloadManagerWaiter waiter(download_manager);
@@ -3318,63 +3353,60 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/document_ready",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/document_ready",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/document_interactive",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/document_interactive",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_HasPermissionAllow) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/speech_recognition_api",
-                        .custom_arg = "allowTest",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/speech_recognition_api",
+      {.custom_arg = "allowTest", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_HasPermissionDeny) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/speech_recognition_api",
-                        .custom_arg = "denyTest",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/speech_recognition_api",
+      {.custom_arg = "denyTest", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_NoPermission) {
   ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/common",
-                        .custom_arg = "speech_recognition_api_no_permission",
+      RunExtensionTest("platform_apps/web_view/common",
+                       {.custom_arg = "speech_recognition_api_no_permission",
                         .launch_as_platform_app = true}))
       << message_;
 }
 
 // Tests overriding user agent.
 IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "useragent",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "useragent", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, UserAgent_NewWindow) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/common",
-                                .custom_arg = "useragent_newwindow",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest(
+      "platform_apps/web_view/common",
+      {.custom_arg = "useragent_newwindow", .launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {
-  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/web_view/nopermission",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/nopermission",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -3675,9 +3707,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, BasicPostMessage) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "platform_apps/web_view/post_message/basic",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/post_message/basic",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -4646,6 +4677,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TouchpadPinchSyntheticWheelEvents) {
   LoadAppWithGuest("web_view/touchpad_pinch");
   content::WebContents* guest_contents = GetGuestWebContents();
 
+  content::WaitForHitTestData(guest_contents);
+  // Ensure the compositor thread is aware of the wheel listener.
+  content::MainThreadFrameObserver synchronize_threads(
+      guest_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+  synchronize_threads.Wait();
+
   ExtensionTestMessageListener synthetic_wheel_listener("Seen wheel event",
                                                         false);
 
@@ -4666,6 +4703,34 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenAndCloseDevTools) {
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       embedder, false /* is_docked */);
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+// Tests that random extensions cannot inject content scripts into a platform
+// app's own webview, but the owner platform app can. Regression test for
+// crbug.com/1205675.
+IN_PROC_BROWSER_TEST_F(WebViewTest, NoExtensionScriptsInjectedInWebview) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+
+  // Load an extension which injects a content script at document_end. The
+  // script injects a new element into the DOM.
+  LoadExtension(
+      test_data_dir_.AppendASCII("api_test/content_scripts/inject_div"));
+
+  // Load a platform app which creates a webview and injects a content script
+  // into it at document_idle, after document_end. The script expects that the
+  // webview's DOM has not been modified (in this case, by the extension's
+  // content script).
+  ExtensionTestMessageListener app_content_script_listener(
+      "WebViewTest.NO_ELEMENT_INJECTED", false);
+  app_content_script_listener.set_failure_message(
+      "WebViewTest.UNKNOWN_ELEMENT_INJECTED");
+  LoadAppWithGuest("web_view/a_com_webview");
+
+  // The app's content script should have been injected, but the extension's
+  // content script should not have.
+  EXPECT_TRUE(app_content_script_listener.WaitUntilSatisfied())
+      << "'" << app_content_script_listener.message()
+      << "' message was not receieved";
 }
 
 // Regression test for https://crbug.com/1014385
@@ -4689,26 +4754,16 @@ IN_PROC_BROWSER_TEST_F(GuestViewExtensionNameCollisionTest,
   EXPECT_EQ("PASSED", test_passed);
 }
 
-class PrivateNetworkAccessWebViewTest : public WebViewTest {
- public:
-  PrivateNetworkAccessWebViewTest() {
-    features_.InitAndEnableFeature(
-        features::kBlockInsecurePrivateNetworkRequests);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
 // Verify that Private Network Access has the correct understanding of the
 // chrome-guest:// scheme, that should only ever be used as a SiteURL, and not
 // interfere with the local/private/public classification.
 // See https://crbug.com/1167698 for details.
+//
 // Note: This test is put in this file for convenience of reusing the entire
 // app testing infrastructure. Other similar tests that do not require that
 // infrastructure live in PrivateNetworkAccessBrowserTest.*
-IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebViewTest,
-                       SpecialSchemeChromeGuest) {
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PrivateNetworkAccessSpecialSchemeChromeGuest) {
   LoadAppWithGuest("web_view/simple");
   content::WebContents* guest = GetGuestWebContents();
   ASSERT_TRUE(guest);
@@ -4726,13 +4781,11 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebViewTest,
 
   // The webview "simple" page is a first navigation to a raw data url. It is
   // currently considered public (internally
-  // network::mojom::IPAddressSpace::kUnknown). It should not be able to fetch a
-  // local page. This test might have to be modified if the classification of
-  // data URL changes in the future.
-  EXPECT_EQ(
-      false,
-      content::EvalJs(
-          guest, content::JsReplace(
-                     "fetch($1).then(response => true).catch(error => false)",
-                     fetch_url)));
+  // `network::mojom::IPAddressSpace::kUnknown`).
+  // For now, unknown -> local is not blocked, so this fetch succeeds. See also
+  // https://crbug.com/1178814.
+  EXPECT_EQ(true, content::EvalJs(guest,
+                                  content::JsReplace(
+                                      "fetch($1).then(response => response.ok)",
+                                      fetch_url)));
 }

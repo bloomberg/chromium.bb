@@ -47,6 +47,7 @@ CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
 DEFAULT_WPT = os.path.join(
     SRC_DIR, 'third_party', 'wpt_tools', 'wpt', 'wpt')
 PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
+TOMBSTONE_PARSER = os.path.join(SRC_DIR, 'build', 'android', 'tombstones.py')
 
 if PYUTILS not in sys.path:
   sys.path.append(PYUTILS)
@@ -123,26 +124,36 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
     # By default, WPT will treat unexpected passes as errors, so we disable
     # that to be consistent with Chromium CI.
-    rest_args.extend(["--no-fail-on-unexpected-pass"])
+    rest_args.extend(['--no-fail-on-unexpected-pass'])
+    if self.options.default_exclude:
+      rest_args.extend(['--default-exclude'])
 
     # vpython has packages needed by wpt, so force it to skip the setup
-    rest_args.extend(["--venv=" + SRC_DIR, "--skip-venv-setup"])
+    rest_args.extend(['--venv=' + SRC_DIR, '--skip-venv-setup'])
 
-    rest_args.extend(["run",
-      "--tests=" + wpt_common.EXTERNAL_WPT_TESTS_DIR,
-      "--test-type=" + self.options.test_type,
-      "--device-serial", self._device.serial,
-      "--webdriver-binary",
+    rest_args.extend(['run',
+      '--tests=' + wpt_common.EXTERNAL_WPT_TESTS_DIR,
+      '--test-type=' + self.options.test_type,
+      '--device-serial', self._device.serial,
+      '--webdriver-binary',
       self.options.webdriver_binary,
-      "--headless",
-      "--no-pause-after-test",
-      "--no-capture-stdio",
-      "--no-manifest-download",
-      "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
-      "--binary-arg=--enable-blink-test-features",
-      "--binary-arg=--disable-field-trial-config",
-      "--enable-mojojs",
-      "--mojojs-path=" + self.mojo_js_directory,
+      '--symbols-path',
+      self.output_directory,
+      '--stackwalk-binary',
+      TOMBSTONE_PARSER,
+      '--headless',
+      '--no-pause-after-test',
+      '--no-capture-stdio',
+      '--no-manifest-download',
+      '--binary-arg=--enable-blink-features=MojoJS,MojoJSTest',
+      '--binary-arg=--enable-blink-test-features',
+      '--binary-arg=--disable-field-trial-config',
+      '--enable-mojojs',
+      '--mojojs-path=' + self.mojo_js_directory,
+      '--binary-arg=--enable-features=DownloadService<DownloadServiceStudy',
+      '--binary-arg=--force-fieldtrials=DownloadServiceStudy/Enabled',
+      '--binary-arg=--force-fieldtrial-params=DownloadServiceStudy.Enabled:'
+      'start_up_delay_ms/0',
     ])
     # if metadata was created then add the metadata directory
     # to the list of wpt arguments
@@ -150,8 +161,8 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       rest_args.extend(['--metadata', self._metadata_dir])
 
     if self.options.verbose >= 3:
-      rest_args.extend(["--log-mach=-", "--log-mach-level=debug",
-                        "--log-mach-verbose"])
+      rest_args.extend(['--log-mach=-', '--log-mach-level=debug',
+                        '--log-mach-verbose'])
 
     if self.options.verbose >= 4:
       rest_args.extend(['--webdriver-arg=--verbose',
@@ -176,18 +187,18 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
   def _maybe_build_metadata(self):
     metadata_builder_cmd = [
-         sys.executable,
-         os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
-         '--android-product',
-         self.options.product,
-         '--metadata-output-dir',
-         self._metadata_dir,
-         '--additional-expectations',
-         ANDROID_DISABLED_TESTS,
-         '--use-subtest-results',
+      sys.executable,
+      os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+      '--android-product',
+      self.options.product,
+      '--metadata-output-dir',
+      self._metadata_dir,
+      '--additional-expectations',
+      ANDROID_DISABLED_TESTS,
+      '--use-subtest-results',
     ]
     if self.options.ignore_default_expectations:
-        metadata_builder_cmd += [ '--ignore-default-expectations' ]
+      metadata_builder_cmd += [ '--ignore-default-expectations' ]
     metadata_builder_cmd.extend(self._extra_metadata_builder_args())
     return common.run_command(metadata_builder_cmd)
 
@@ -196,7 +207,7 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       self._metadata_dir = os.path.join(tmp_dir, 'metadata_dir')
       metadata_command_ret = self._maybe_build_metadata()
       if metadata_command_ret != 0:
-          return metadata_command_ret
+        return metadata_command_ret
 
       # If there is no metadata then we need to create an
       # empty directory to pass to wptrunner
@@ -256,6 +267,10 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--include-file',
                         action=WPTPassThroughArgs,
                         help='A file listing test(s) to run')
+    parser.add_argument('--default-exclude', action='store_true', default=False,
+                        help="Only run the tests explicitly given in arguments."
+                             "No tests will run if the list is empty, and the "
+                             "program will exit with status code 0.")
     parser.add_argument('--list-tests', action=WPTPassThroughArgs, nargs=0,
                         help="Don't run any tests, just print out a list of"
                         ' tests that would be run.')
@@ -455,7 +470,7 @@ def no_op():
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.
 def main_compile_targets(args):
-    json.dump([], args.output)
+  json.dump([], args.output)
 
 @contextlib.contextmanager
 def get_device(args):
@@ -519,19 +534,19 @@ def main():
     # WPT setup for chrome and webview requires that PATH contains adb.
     platform_tools_path = os.path.dirname(devil_env.config.FetchPath('adb'))
     os.environ['PATH'] = ':'.join([platform_tools_path] +
-                                os.environ['PATH'].split(':'))
+                                  os.environ['PATH'].split(':'))
 
     return adapter.run_test()
 
 
 if __name__ == '__main__':
-    # Conform minimally to the protocol defined by ScriptTest.
-    if 'compile_targets' in sys.argv:
-        funcs = {
-            'run': None,
-            'compile_targets': main_compile_targets,
-        }
-        sys.exit(common.run_script(sys.argv[1:], funcs))
-    logging.basicConfig(level=logging.WARNING)
-    logger = logging.getLogger()
-    sys.exit(main())
+  # Conform minimally to the protocol defined by ScriptTest.
+  if 'compile_targets' in sys.argv:
+    funcs = {
+      'run': None,
+      'compile_targets': main_compile_targets,
+    }
+    sys.exit(common.run_script(sys.argv[1:], funcs))
+  logging.basicConfig(level=logging.WARNING)
+  logger = logging.getLogger()
+  sys.exit(main())

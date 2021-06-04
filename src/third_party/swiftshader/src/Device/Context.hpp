@@ -155,7 +155,11 @@ struct GraphicsState
 	inline float getConstantDepthBias() const { return constantDepthBias; }
 	inline float getSlopeDepthBias() const { return slopeDepthBias; }
 	inline float getDepthBiasClamp() const { return depthBiasClamp; }
+	inline float getMinDepthBounds() const { return minDepthBounds; }
+	inline float getMaxDepthBounds() const { return maxDepthBounds; }
 	inline bool hasDepthRangeUnrestricted() const { return depthRangeUnrestricted; }
+	inline bool getDepthClampEnable() const { return depthClampEnable; }
+	inline bool getDepthClipEnable() const { return depthClipEnable; }
 
 	// Pixel processor states
 	inline bool hasRasterizerDiscard() const { return rasterizerDiscard; }
@@ -184,6 +188,7 @@ struct GraphicsState
 	bool depthWriteActive(const Attachments &attachments) const;
 	bool depthBufferActive(const Attachments &attachments) const;
 	bool stencilActive(const Attachments &attachments) const;
+	bool depthBoundsTestActive() const;
 
 private:
 	inline bool hasDynamicState(VkDynamicState dynamicState) const { return (dynamicStateFlags & (1 << dynamicState)) != 0; }
@@ -219,6 +224,8 @@ private:
 	float constantDepthBias;
 	float slopeDepthBias;
 	float depthBiasClamp;
+	float minDepthBounds;
+	float maxDepthBounds;
 	bool depthRangeUnrestricted;
 
 	// Pixel processor states
@@ -227,6 +234,8 @@ private:
 	bool depthBufferEnable;
 	VkCompareOp depthCompareMode;
 	bool depthWriteEnable;
+	bool depthClampEnable;
+	bool depthClipEnable;
 
 	float lineWidth;
 

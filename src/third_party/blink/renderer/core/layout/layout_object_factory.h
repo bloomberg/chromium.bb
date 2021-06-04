@@ -12,6 +12,7 @@
 namespace blink {
 
 class ComputedStyle;
+class HTMLElement;
 class LayoutBlock;
 class LayoutBlockFlow;
 class LayoutObject;
@@ -87,6 +88,9 @@ class LayoutObjectFactory {
                                                    LegacyLayout legacy);
 
   static LayoutText* CreateText(Node*, scoped_refptr<StringImpl>, LegacyLayout);
+  static LayoutText* CreateTextCombine(Node*,
+                                       scoped_refptr<StringImpl>,
+                                       LegacyLayout);
   static LayoutTextFragment* CreateTextFragment(Node*,
                                                 StringImpl*,
                                                 int start_offset,
@@ -106,7 +110,10 @@ class LayoutObjectFactory {
                                      const ComputedStyle& style,
                                      LegacyLayout legacy);
 
-  // Anonoymous creation methods
+  static LayoutObject* CreateBR(Node*, LegacyLayout);
+  static LayoutObject* CreateWordBreak(HTMLElement*, LegacyLayout);
+
+  // Anonymous creation methods
 
   // |child_forces_legacy| true if creating parents boxes for legacy child.
   // Table must match child's type.

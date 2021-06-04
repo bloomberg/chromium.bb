@@ -6,10 +6,10 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -25,27 +25,13 @@ SidePanel::SidePanel() {
   SetPanelWidth(kDefaultWidth);
 }
 
-void SidePanel::SetPanelWidth(int width) {
-  // Only the width is used by BrowserViewLayout.
-  SetPreferredSize(gfx::Size(width, 1));
-}
-
 SidePanel::~SidePanel() {
   RemoveObserver(this);
 }
 
-void SidePanel::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  const ui::ThemeProvider* const theme_provider = GetThemeProvider();
-  SetBorder(views::CreateSolidSidedBorder(
-      0, 1, 0, 0,
-      color_utils::GetResultingPaintColor(
-          theme_provider->GetColor(
-              ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-          theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))));
-  // TODO(pbos): Figure out transition from theme to background.
-  SetBackground(views::CreateSolidBackground(
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+void SidePanel::SetPanelWidth(int width) {
+  // Only the width is used by BrowserViewLayout.
+  SetPreferredSize(gfx::Size(width, 1));
 }
 
 void SidePanel::ChildVisibilityChanged(View* child) {

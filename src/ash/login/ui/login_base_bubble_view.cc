@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
@@ -309,10 +310,10 @@ gfx::Rect LoginBaseBubbleView::GetWorkArea() const {
 
 void LoginBaseBubbleView::ScheduleAnimation(bool visible) {
   if (GetBubbleOpener()) {
-    GetBubbleOpener()->AnimateInkDrop(visible
-                                          ? views::InkDropState::ACTIVATED
-                                          : views::InkDropState::DEACTIVATED,
-                                      nullptr /*event*/);
+    GetBubbleOpener()->ink_drop()->AnimateToState(
+        visible ? views::InkDropState::ACTIVATED
+                : views::InkDropState::DEACTIVATED,
+        nullptr /*event*/);
   }
 
   if (layer())

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_SHUTDOWN_NOTIFIER_H_
 #define COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_SHUTDOWN_NOTIFIER_H_
 
-#include <memory>
-
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,14 +24,13 @@ class KEYED_SERVICE_EXPORT KeyedServiceShutdownNotifier : public KeyedService {
   // Subscribe for a notification when the keyed services this object depends on
   // (as defined by its factory) are shut down. The subscription can be
   // destroyed to unsubscribe.
-  base::CallbackListSubscription Subscribe(
-      const base::RepeatingClosure& callback);
+  base::CallbackListSubscription Subscribe(base::OnceClosure callback);
 
  private:
   // KeyedService implementation:
   void Shutdown() override;
 
-  base::RepeatingClosureList closure_list_;
+  base::OnceClosureList closure_list_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceShutdownNotifier);
 };

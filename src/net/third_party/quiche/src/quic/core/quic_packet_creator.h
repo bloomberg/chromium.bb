@@ -22,13 +22,15 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "quic/core/frames/quic_stream_frame.h"
-#include "quic/core/quic_circular_deque.h"
 #include "quic/core/quic_coalesced_packet.h"
+#include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_framer.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_types.h"
 #include "quic/platform/api/quic_export.h"
+#include "common/quiche_circular_deque.h"
 
 namespace quic {
 namespace test {
@@ -83,18 +85,28 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     virtual void OnStreamFrameCoalesced(const QuicStreamFrame& /*frame*/) {}
   };
 
-  // Set the peer address which the serialized packet will be sent to during the
-  // scope of this object. Upon exiting the scope, the original peer address is
-  // restored.
+  // Set the peer address and connection IDs with which the serialized packet
+  // will be sent to during the scope of this object. Upon exiting the scope,
+  // the original peer address and connection IDs are restored.
   class QUIC_EXPORT_PRIVATE ScopedPeerAddressContext {
    public:
     ScopedPeerAddressContext(QuicPacketCreator* creator,
-                             QuicSocketAddress address);
+                             QuicSocketAddress address,
+                             bool update_connection_id);
+
+    ScopedPeerAddressContext(QuicPacketCreator* creator,
+                             QuicSocketAddress address,
+                             const QuicConnectionId& client_connection_id,
+                             const QuicConnectionId& server_connection_id,
+                             bool update_connection_id);
     ~ScopedPeerAddressContext();
 
    private:
     QuicPacketCreator* creator_;
     QuicSocketAddress old_peer_address_;
+    QuicConnectionId old_client_connection_id_;
+    QuicConnectionId old_server_connection_id_;
+    bool update_connection_id_;
   };
 
   QuicPacketCreator(QuicConnectionId server_connection_id,
@@ -247,7 +259,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // |payloads| is cleared.
   std::unique_ptr<SerializedPacket>
   SerializePathResponseConnectivityProbingPacket(
-      const QuicCircularDeque<QuicPathFrameBuffer>& payloads,
+      const quiche::QuicheCircularDeque<QuicPathFrameBuffer>& payloads,
       const bool is_padded);
 
   // Add PATH_RESPONSE to current packet, flush before or afterwards if needed.
@@ -260,6 +272,16 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();
+
+  // Returns the server connection ID to send over the wire.
+  const QuicConnectionId& GetServerConnectionId() const {
+    return server_connection_id_;
+  }
+
+  // Returns the client connection ID to send over the wire.
+  const QuicConnectionId& GetClientConnectionId() const {
+    return client_connection_id_;
+  }
 
   // Returns the destination connection ID to send over the wire.
   QuicConnectionId GetDestinationConnectionId() const;
@@ -286,6 +308,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
   EncryptionLevel encryption_level() { return packet_.encryption_level; }
+
+  // Sets whether initial packets are protected with chaos.
+  void set_chaos_protection_enabled(bool chaos_protection_enabled) {
+    chaos_protection_enabled_ = chaos_protection_enabled;
+  }
 
   // packet number of the last created packet, or 0 if no packets have been
   // created.
@@ -444,7 +471,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
       const QuicPacketHeader& header,
       char* buffer,
       size_t packet_length,
-      const QuicCircularDeque<QuicPathFrameBuffer>& payloads,
+      const quiche::QuicheCircularDeque<QuicPathFrameBuffer>& payloads,
       const bool is_padded,
       EncryptionLevel level);
 
@@ -486,6 +513,13 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
    private:
     QuicPacketCreator* creator_;  // Unowned.
   };
+
+  // Attempts to build a data packet with chaos protection. If this packet isn't
+  // supposed to be protected or if serialization fails then absl::nullopt is
+  // returned. Otherwise returns the serialized length.
+  absl::optional<size_t> MaybeBuildDataPacketWithChaosProtection(
+      const QuicPacketHeader& header,
+      char* buffer);
 
   // Creates a stream frame which fits into the current open packet. If
   // |data_size| is 0 and fin is true, the expected behavior is to consume
@@ -671,6 +705,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // accept. There is no limit for QUIC_CRYPTO connections, but QUIC+TLS
   // negotiates this during the handshake.
   QuicByteCount max_datagram_frame_size_;
+
+  // Whether to attempt protecting initial packets with chaos.
+  bool chaos_protection_enabled_;
 };
 
 }  // namespace quic

@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
@@ -625,55 +625,6 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
   app_instance->SetNotificationsEnabled(app_info->package_name, enabled);
 }
 
-arc::mojom::ArcResizeLockState ArcAppListPrefs::GetResizeLockState(
-    const std::string& app_id) const {
-  if (!ash::features::IsArcResizeLockEnabled())
-    return arc::mojom::ArcResizeLockState::UNDEFINED;
-
-  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
-  if (!app_info) {
-    VLOG(2) << "Failed to get app info: " << app_id << ".";
-    return arc::mojom::ArcResizeLockState::UNDEFINED;
-  }
-
-  return app_info->resize_lock_state;
-}
-
-void ArcAppListPrefs::SetResizeLockState(const std::string& app_id,
-                                         arc::mojom::ArcResizeLockState state) {
-  if (!ash::features::IsArcResizeLockEnabled())
-    return;
-
-  if (!IsRegistered(app_id)) {
-    VLOG(2) << "Request to set ret resize lock for non-registered app:"
-            << app_id << ".";
-    return;
-  }
-
-  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
-  if (!app_info) {
-    VLOG(2) << "Failed to get app info: " << app_id << ".";
-    return;
-  }
-
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return;
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_service_manager->arc_bridge_service()->compatibility_mode(),
-      SetResizeLockState);
-  if (!instance)
-    return;
-
-  instance->SetResizeLockState(app_info->package_name, state);
-
-  arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  base::DictionaryValue* app_dict = update.Get();
-  app_dict->SetInteger(kResizeLockState, static_cast<int32_t>(state));
-
-  NotifyAppStatesChanged(app_id);
-}
-
 void ArcAppListPrefs::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -944,12 +895,10 @@ void ArcAppListPrefs::SetLastLaunchTimeInternal(const std::string& app_id) {
     if (arc::ArcSessionManager::Get()->is_directly_started() &&
         !user_manager->IsLoggedInAsKioskApp() &&
         !user_manager->IsLoggedInAsArcKioskApp() &&
-        !chromeos::UserSessionManager::GetInstance()
-             ->ui_shown_time()
-             .is_null()) {
+        !ash::UserSessionManager::GetInstance()->ui_shown_time().is_null()) {
       UMA_HISTOGRAM_CUSTOM_TIMES(
           "Arc.FirstAppLaunchRequest.TimeDelta",
-          time - chromeos::UserSessionManager::GetInstance()->ui_shown_time(),
+          time - ash::UserSessionManager::GetInstance()->ui_shown_time(),
           base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(2), 20);
     }
   }
@@ -1073,6 +1022,58 @@ void ArcAppListPrefs::OnPolicySent(const std::string& policy) {
       arc::policy_util::GetRequestedPackagesFromArcPolicy(policy);
 }
 
+arc::mojom::ArcResizeLockState ArcAppListPrefs::GetResizeLockState(
+    const std::string& app_id) const {
+  if (!ash::features::IsArcResizeLockEnabled())
+    return arc::mojom::ArcResizeLockState::UNDEFINED;
+
+  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
+  if (!app_info) {
+    VLOG(2) << "Failed to get app info: " << app_id << ".";
+    return arc::mojom::ArcResizeLockState::UNDEFINED;
+  }
+
+  return app_info->resize_lock_state;
+}
+
+void ArcAppListPrefs::SetResizeLockState(const std::string& app_id,
+                                         arc::mojom::ArcResizeLockState state) {
+  if (!ash::features::IsArcResizeLockEnabled())
+    return;
+
+  if (!IsRegistered(app_id)) {
+    VLOG(2) << "Request to set ret resize lock for non-registered app:"
+            << app_id << ".";
+    return;
+  }
+
+  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
+  if (!app_info) {
+    VLOG(2) << "Failed to get app info: " << app_id << ".";
+    return;
+  }
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return;
+  auto* compatibility_mode =
+      arc_service_manager->arc_bridge_service()->compatibility_mode();
+  if (!compatibility_mode->IsConnected())
+    return;
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(compatibility_mode, SetResizeLockState);
+  if (!instance)
+    return;
+
+  instance->SetResizeLockState(app_info->package_name, state);
+
+  arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
+  base::DictionaryValue* app_dict = update.Get();
+  app_dict->SetInteger(kResizeLockState, static_cast<int32_t>(state));
+
+  NotifyAppStatesChanged(app_id);
+}
+
 bool ArcAppListPrefs::GetResizeLockNeedsConfirmation(
     const std::string& app_id) {
   std::unique_ptr<AppInfo> app_info = GetApp(app_id);
@@ -1176,6 +1177,8 @@ void ArcAppListPrefs::OnConnectionReady() {
 
   if (!app_list_refreshed_callback_.is_null())
     std::move(app_list_refreshed_callback_).Run();
+  for (auto& observer : observer_list_)
+    observer.OnAppConnectionReady();
 }
 
 void ArcAppListPrefs::OnConnectionClosed() {
@@ -1196,7 +1199,7 @@ void ArcAppListPrefs::OnConnectionClosed() {
   app_list_refreshed_callback_.Reset();
 }
 
-void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
+void ArcAppListPrefs::HandleTaskCreated(const absl::optional<std::string>& name,
                                         const std::string& package_name,
                                         const std::string& activity) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
@@ -1238,9 +1241,9 @@ void ArcAppListPrefs::AddAppAndShortcut(
     // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when
     //                    fixed in Play Store.
     if (arc::IsRobotOrOfflineDemoAccountMode() &&
-        !(chromeos::DemoSession::IsDeviceInDemoMode() &&
+        !(ash::DemoSession::IsDeviceInDemoMode() &&
           chromeos::features::ShouldShowPlayStoreInDemoMode() &&
-          !chromeos::DemoSession::IsDemoModeOfflineEnrolled())) {
+          !ash::DemoSession::IsDemoModeOfflineEnrolled())) {
       return;
     }
   }
@@ -1654,10 +1657,10 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
                                      arc::prefs::kArcPackages);
   base::DictionaryValue* package_dict = update.Get();
   if (!apps_to_remove.empty()) {
-    auto* launcher_controller = ChromeLauncherController::instance();
-    if (launcher_controller) {
+    auto* shelf_controller = ChromeShelfController::instance();
+    if (shelf_controller) {
       int pin_index =
-          launcher_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
+          shelf_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
       package_dict->SetInteger(kPinIndex, pin_index);
     }
   }
@@ -1822,8 +1825,8 @@ void ArcAppListPrefs::OnIconLoaded(const std::string& app_id,
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const std::string& package_name,
                                     const std::string& activity,
-                                    const base::Optional<std::string>& name,
-                                    const base::Optional<std::string>& intent,
+                                    const absl::optional<std::string>& name,
+                                    const absl::optional<std::string>& intent,
                                     int32_t session_id) {
   HandleTaskCreated(name, package_name, activity);
   for (auto& observer : observer_list_) {
@@ -1841,15 +1844,19 @@ void ArcAppListPrefs::OnTaskDescriptionUpdated(
   icon->icon_png_data =
       std::vector<uint8_t>(icon_png_data.begin(), icon_png_data.end());
   for (auto& observer : observer_list_)
-    observer.OnTaskDescriptionChanged(task_id, label, *icon);
+    observer.OnTaskDescriptionChanged(task_id, label, *icon, 0, 0);
 }
 
 void ArcAppListPrefs::OnTaskDescriptionChanged(
     int32_t task_id,
     const std::string& label,
-    arc::mojom::RawIconPngDataPtr icon) {
-  for (auto& observer : observer_list_)
-    observer.OnTaskDescriptionChanged(task_id, label, *icon);
+    arc::mojom::RawIconPngDataPtr icon,
+    uint32_t primary_color,
+    uint32_t status_bar_color) {
+  for (auto& observer : observer_list_) {
+    observer.OnTaskDescriptionChanged(task_id, label, *icon, primary_color,
+                                      status_bar_color);
+  }
 }
 
 void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
@@ -2031,7 +2038,7 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
 }
 
 void ArcAppListPrefs::OnInstallationStarted(
-    const base::Optional<std::string>& package_name) {
+    const absl::optional<std::string>& package_name) {
   ++installing_packages_count_;
 
   if (!package_name.has_value())

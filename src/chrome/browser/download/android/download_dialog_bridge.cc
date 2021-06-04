@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -104,7 +105,7 @@ void DownloadDialogBridge::OnComplete(
 
   if (on_wifi) {
     dialog_result.download_schedule =
-        download::DownloadSchedule(true /*only_on_wifi*/, base::nullopt);
+        download::DownloadSchedule(true /*only_on_wifi*/, absl::nullopt);
   }
   if (start_time > 0) {
     dialog_result.download_schedule = download::DownloadSchedule(
@@ -174,6 +175,13 @@ jlong JNI_DownloadDialogBridge_GetDownloadLaterMinFileSize(JNIEnv* env) {
 // static
 jboolean JNI_DownloadDialogBridge_ShouldShowDateTimePicker(JNIEnv* env) {
   return DownloadDialogBridge::ShouldShowDateTimePicker();
+}
+
+jboolean JNI_DownloadDialogBridge_IsLocationDialogManaged(JNIEnv* env) {
+  PrefService* pref_service =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
+
+  return pref_service->IsManagedPreference(prefs::kPromptForDownload);
 }
 
 // static

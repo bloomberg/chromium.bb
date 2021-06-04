@@ -7,7 +7,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Workspace from '../../workspace/workspace.js';
+import * as Protocol from '../../generated/protocol.js';
+import * as Workspace from '../workspace/workspace.js';
 
 import type {FileSystem} from './FileSystemWorkspaceBinding.js';
 import {FileSystemWorkspaceBinding} from './FileSystemWorkspaceBinding.js';
@@ -474,7 +475,15 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
           if (response.error || response.content === null) {
             return null;
           }
-          return response.encoded ? atob(response.content) : response.content;
+          if (response.encoded) {
+            const text = atob(response.content);
+            const data = new Uint8Array(text.length);
+            for (let i = 0; i < text.length; ++i) {
+              data[i] = text.charCodeAt(i);
+            }
+            return new TextDecoder('utf-8').decode(data);
+          }
+          return response.content;
         }));
 
     const blob = await project.requestFileBlob(fileSystemUISourceCode);

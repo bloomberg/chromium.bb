@@ -10,13 +10,20 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Profile;
+
+namespace webapps {
+enum class WebappUninstallSource;
+}
 
 namespace web_app {
 
@@ -24,12 +31,10 @@ class WebApp;
 class WebAppIconManager;
 class WebAppRegistrar;
 
-class WebAppInstallFinalizer final : public InstallFinalizer {
+class WebAppInstallFinalizer final : public InstallFinalizer,
+                                     public content_settings::Observer {
  public:
-  // |legacy_finalizer| can be nullptr (optional argument).
-  WebAppInstallFinalizer(Profile* profile,
-                         WebAppIconManager* icon_manager,
-                         std::unique_ptr<InstallFinalizer> legacy_finalizer);
+  WebAppInstallFinalizer(Profile* profile, WebAppIconManager* icon_manager);
   WebAppInstallFinalizer(const WebAppInstallFinalizer&) = delete;
   WebAppInstallFinalizer& operator=(const WebAppInstallFinalizer&) = delete;
   ~WebAppInstallFinalizer() override;
@@ -43,24 +48,29 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       content::WebContents* web_contents,
                       InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(const AppId& app_id,
-                               ExternalInstallSource external_install_source,
-                               UninstallWebAppCallback callback) override;
-  bool CanUserUninstallExternalApp(const AppId& app_id) const override;
-  void UninstallExternalAppByUser(const AppId& app_id,
-                                  UninstallWebAppCallback callback) override;
-  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  void RemoveLegacyInstallFinalizerForTesting() override;
+
+  void UninstallExternalWebApp(
+      const AppId& app_id,
+      webapps::WebappUninstallSource external_install_source,
+      UninstallWebAppCallback callback) override;
+
+  void UninstallWebApp(const AppId& app_id,
+                       webapps::WebappUninstallSource external_install_source,
+                       UninstallWebAppCallback callback) override;
+  bool CanUserUninstallWebApp(const AppId& app_id) const override;
+  bool WasPreinstalledWebAppUninstalled(const AppId& app_id) const override;
   void Start() override;
   void Shutdown() override;
 
  private:
   using CommitCallback = base::OnceCallback<void(bool success)>;
 
-  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
-  void UninstallWebAppOrRemoveSource(const AppId& app_id,
-                                     Source::Type source,
-                                     UninstallWebAppCallback callback);
+  void UninstallWebAppInternal(const AppId& app_id,
+                               webapps::WebappUninstallSource uninstall_source,
+                               UninstallWebAppCallback callback);
+  void UninstallExternalWebAppOrRemoveSource(const AppId& app_id,
+                                             Source::Type source,
+                                             UninstallWebAppCallback callback);
 
   void SetWebAppManifestFieldsAndWriteData(
       const WebApplicationInfo& web_app_info,
@@ -77,48 +87,78 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                        std::unique_ptr<WebApp> web_app,
                                        bool success);
 
-  void OnIconsDataDeletedAndWebAppUninstalled(const AppId& app_id,
-                                              UninstallWebAppCallback callback,
-                                              bool success);
+  void OnIconsDataDeletedAndWebAppUninstalled(
+      const AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source,
+      UninstallWebAppCallback callback,
+      bool success);
   void OnDatabaseCommitCompletedForInstall(InstallFinalizedCallback callback,
                                            AppId app_id,
                                            bool success);
+  // TODO(crbug.com/1206036): Replace |should_update_os_hooks| and
+  // |file_handlers_need_os_update| with an OsHooksResults bitset to match the
+  // granularity we have during install.
   void FinalizeUpdateWithShortcutInfo(
-      bool file_handlers_need_os_update,
+      bool should_update_os_hooks,
+      FileHandlerUpdateAction file_handlers_need_os_update,
       InstallFinalizedCallback callback,
       const AppId app_id,
       const WebApplicationInfo& web_app_info,
       std::unique_ptr<ShortcutInfo> old_shortcut);
+  bool ShouldUpdateOsHooks(const AppId& app_id);
   // Checks whether OS registered file handlers need to update, taking into
-  // account permission settings, as file handlers should not update when the
-  // permission has been denied. Also, downgrades granted file handling
+  // account permission settings, as file handlers should be unregistered
+  // when the permission has been denied. Also, downgrades granted file handling
   // permissions if file handlers have changed.
-  bool DoFileHandlersNeedOsUpdate(const AppId app_id,
-                                  const WebApplicationInfo& web_app_info,
-                                  content::WebContents* web_contents);
+  FileHandlerUpdateAction DoFileHandlersNeedOsUpdate(
+      const AppId app_id,
+      const WebApplicationInfo& web_app_info,
+      content::WebContents* web_contents);
   void OnDatabaseCommitCompletedForUpdate(
       InstallFinalizedCallback callback,
       AppId app_id,
       std::string old_name,
       std::unique_ptr<ShortcutInfo> old_shortcut,
-      bool file_handlers_need_os_update,
+      bool should_update_os_hooks,
+      FileHandlerUpdateAction file_handlers_need_os_update,
       const WebApplicationInfo& web_app_info,
       bool success);
   void OnUninstallOsHooks(const AppId& app_id,
+                          webapps::WebappUninstallSource uninstall_source,
                           UninstallWebAppCallback callback,
                           OsHooksResults os_hooks_info);
 
   WebAppRegistrar& GetWebAppRegistrar() const;
 
-  // Used for legacy Bookmark Apps.
-  std::unique_ptr<InstallFinalizer> legacy_finalizer_;
+  // content_settings::Observer overrides.
+  // This catches permission changes occurring when browser is active, from
+  // permission prompts, site settings, and site settings padlock. When
+  // permission setting is changed to be blocked/allowed, update app's
+  // `file_handler_permission_blocked` state and update file handlers on OS.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type) override;
+
+  // Checks if file handling permission is blocked in settings.
+  bool IsFileHandlerPermissionBlocked(const GURL& scope);
+  // Update file handler permission state in db and OS.
+  void UpdateFileHandlerPermission(const AppId& app_id,
+                                   bool permission_blocked);
+
+  // This catches permission changes occurring when browser is not active, like
+  // enterprise policy changes. It detects any file handling permission mismatch
+  // between the app db state and permission settings, and correct the state in
+  // db as well as in OS for all apps during `WebAppInstallFinalizer::Start()`.
+  void DetectAndCorrectFileHandlingPermissionBlocks();
 
   Profile* const profile_;
   WebAppIconManager* const icon_manager_;
   bool started_ = false;
 
-  base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
+  base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observer_{this};
 
+  base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 };
 
 }  // namespace web_app

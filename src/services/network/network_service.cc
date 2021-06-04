@@ -64,6 +64,7 @@
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
@@ -109,7 +110,7 @@ void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
   if (success) {
     std::move(callback).Run(*networks);
   } else {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 }
 
@@ -475,14 +476,15 @@ void NetworkService::CreateNetworkContext(
 void NetworkService::ConfigureStubHostResolver(
     bool insecure_dns_client_enabled,
     net::SecureDnsMode secure_dns_mode,
-    base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
-        dns_over_https_servers) {
+    absl::optional<std::vector<mojom::DnsOverHttpsServerPtr>>
+        dns_over_https_servers,
+    bool additional_dns_types_enabled) {
   DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
 
   // Enable or disable the insecure part of DnsClient. "DnsClient" is the class
   // that implements the stub resolver.
   host_resolver_manager_->SetInsecureDnsClientEnabled(
-      insecure_dns_client_enabled);
+      insecure_dns_client_enabled, additional_dns_types_enabled);
 
   // Configure DNS over HTTPS.
   net::DnsConfigOverrides overrides;
@@ -621,6 +623,7 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
   auto config = std::make_unique<os_crypt::Config>();
   config->store = crypt_config->store;
   config->product_name = crypt_config->product_name;
+  config->application_name = crypt_config->application_name;
   config->main_thread_runner = base::ThreadTaskRunnerHandle::Get();
   config->should_use_preference = crypt_config->should_use_preference;
   config->user_data_path = crypt_config->user_data_path;
@@ -734,7 +737,7 @@ void NetworkService::BindTestInterface(
   }
 }
 
-void NetworkService::SetPreloadedFirstPartySets(const std::string& raw_sets) {
+void NetworkService::SetFirstPartySets(const std::string& raw_sets) {
   first_party_sets_->ParseAndSet(raw_sets);
 }
 

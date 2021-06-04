@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/tween.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
@@ -33,7 +35,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -78,7 +79,7 @@ void Tab::SetSelected(bool selected) {
   contents_->SetVisible(selected);
   contents_->parent()->InvalidateLayout();
   SetState(selected ? State::kActive : State::kInactive);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   SetFocusBehavior(selected ? FocusBehavior::ACCESSIBLE_ONLY
                             : FocusBehavior::NEVER);
 #else
@@ -310,7 +311,7 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
   }
   SetLayoutManager(std::move(layout));
 
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kIgnored);
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kNone);
 
   // These durations are taken from the Paper Tabs source:
   // https://github.com/PolymerElements/paper-tabs/blob/master/paper-tabs.html
@@ -488,14 +489,6 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
                              ui::NativeTheme::kColorId_TabSelectedBorderColor));
 }
 
-DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,
-                       {TabbedPane::Orientation::kHorizontal, u"HORIZONTAL"},
-                       {TabbedPane::Orientation::kVertical, u"VERTICAL"})
-
-DEFINE_ENUM_CONVERTERS(TabbedPane::TabStripStyle,
-                       {TabbedPane::TabStripStyle::kBorder, u"BORDER"},
-                       {TabbedPane::TabStripStyle::kHighlight, u"HIGHLIGHT"})
-
 BEGIN_METADATA(TabStrip, View)
 ADD_READONLY_PROPERTY_METADATA(int, SelectedTabIndex)
 ADD_READONLY_PROPERTY_METADATA(TabbedPane::Orientation, Orientation)
@@ -628,3 +621,13 @@ BEGIN_METADATA(TabbedPane, View)
 END_METADATA
 
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(views::TabbedPane::Orientation,
+                       {views::TabbedPane::Orientation::kHorizontal,
+                        u"HORIZONTAL"},
+                       {views::TabbedPane::Orientation::kVertical, u"VERTICAL"})
+
+DEFINE_ENUM_CONVERTERS(views::TabbedPane::TabStripStyle,
+                       {views::TabbedPane::TabStripStyle::kBorder, u"BORDER"},
+                       {views::TabbedPane::TabStripStyle::kHighlight,
+                        u"HIGHLIGHT"})

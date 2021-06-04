@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/containers/span.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_usb_control_transfer_parameters.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -22,7 +24,6 @@
 #include "third_party/blink/renderer/modules/webusb/usb_out_transfer_result.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using device::mojom::blink::UsbClaimInterfaceResult;
@@ -95,41 +96,25 @@ String ConvertTransferStatus(const UsbTransferStatus& status) {
   }
 }
 
-bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
+bool ConvertBufferSource(const DOMArrayPiece& buffer_source,
                          Vector<uint8_t>* vector,
                          ScriptPromiseResolver* resolver) {
   DCHECK(!buffer_source.IsNull());
-  if (buffer_source.IsArrayBuffer()) {
-    DOMArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer();
-    if (array_buffer->IsDetached()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
-      return false;
-    }
-    if (array_buffer->ByteLength() > std::numeric_limits<wtf_size_t>::max()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kDataError, kBufferTooBig));
-      return false;
-    }
 
-    vector->Append(static_cast<uint8_t*>(array_buffer->Data()),
-                   static_cast<wtf_size_t>(array_buffer->ByteLength()));
-  } else {
-    DOMArrayBufferView* view = buffer_source.GetAsArrayBufferView().Get();
-    if (!view->buffer() || view->buffer()->IsDetached()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
-      return false;
-    }
-    if (view->byteLength() > std::numeric_limits<wtf_size_t>::max()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kDataError, kBufferTooBig));
-      return false;
-    }
-
-    vector->Append(static_cast<uint8_t*>(view->BaseAddress()),
-                   static_cast<wtf_size_t>(view->byteLength()));
+  if (buffer_source.IsDetached()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
+    return false;
   }
+
+  if (buffer_source.ByteLength() > std::numeric_limits<wtf_size_t>::max()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kDataError, kBufferTooBig));
+    return false;
+  }
+
+  vector->Append(buffer_source.Bytes(),
+                 static_cast<wtf_size_t>(buffer_source.ByteLength()));
   return true;
 }
 
@@ -402,7 +387,7 @@ ScriptPromise USBDevice::controlTransferOut(
 ScriptPromise USBDevice::controlTransferOut(
     ScriptState* script_state,
     const USBControlTransferParameters* setup,
-    const ArrayBufferOrArrayBufferView& data) {
+    const DOMArrayPiece& data) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (!EnsureNoDeviceOrInterfaceChangeInProgress(resolver))
@@ -467,20 +452,30 @@ ScriptPromise USBDevice::transferIn(ScriptState* script_state,
 
 ScriptPromise USBDevice::transferOut(ScriptState* script_state,
                                      uint8_t endpoint_number,
-                                     const ArrayBufferOrArrayBufferView& data) {
+                                     const DOMArrayPiece& data) {
+  DCHECK(!data.IsNull());
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (!EnsureEndpointAvailable(false /* out */, endpoint_number, resolver))
     return promise;
 
-  Vector<uint8_t> buffer;
-  if (!ConvertBufferSource(data, &buffer, resolver))
+  if (data.IsDetached()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
     return promise;
+  }
 
-  unsigned transfer_length = buffer.size();
+  if (data.ByteLength() > std::numeric_limits<uint32_t>::max()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kDataError, kBufferTooBig));
+    return promise;
+  }
+
+  unsigned transfer_length = static_cast<uint32_t>(data.ByteLength());
   device_requests_.insert(resolver);
   device_->GenericTransferOut(
-      endpoint_number, buffer, 0,
+      endpoint_number, base::make_span(data.Bytes(), data.ByteLength()), 0,
       WTF::Bind(&USBDevice::AsyncTransferOut, WrapPersistent(this),
                 transfer_length, WrapPersistent(resolver)));
   return promise;
@@ -505,7 +500,7 @@ ScriptPromise USBDevice::isochronousTransferIn(
 ScriptPromise USBDevice::isochronousTransferOut(
     ScriptState* script_state,
     uint8_t endpoint_number,
-    const ArrayBufferOrArrayBufferView& data,
+    const DOMArrayPiece& data,
     Vector<unsigned> packet_lengths) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -975,7 +970,7 @@ void USBDevice::AsyncTransferIn(ScriptPromiseResolver* resolver,
   }
 }
 
-void USBDevice::AsyncTransferOut(unsigned transfer_length,
+void USBDevice::AsyncTransferOut(uint32_t transfer_length,
                                  ScriptPromiseResolver* resolver,
                                  UsbTransferStatus status) {
   if (!MarkRequestComplete(resolver))

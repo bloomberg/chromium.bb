@@ -90,7 +90,7 @@ class X11_WINDOW_EXPORT X11Window
   void Deactivate() override;
   void SetUseNativeFrame(bool use_native_frame) override;
   bool ShouldUseNativeFrame() const override;
-  void SetCursor(PlatformCursor cursor) override;
+  void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
@@ -144,8 +144,8 @@ class X11_WINDOW_EXPORT X11Window
   void OnXWindowLostPointerGrab();
   void OnXWindowSelectionEvent(const x11::SelectionNotifyEvent& xev);
   void OnXWindowDragDropEvent(const x11::ClientMessageEvent& xev);
-  base::Optional<gfx::Size> GetMinimumSizeForXWindow();
-  base::Optional<gfx::Size> GetMaximumSizeForXWindow();
+  absl::optional<gfx::Size> GetMinimumSizeForXWindow();
+  absl::optional<gfx::Size> GetMaximumSizeForXWindow();
   SkPath GetWindowMaskForXWindow();
 
  private:
@@ -180,11 +180,11 @@ class X11_WINDOW_EXPORT X11Window
   // XDragDropClient::Delegate
   std::unique_ptr<XTopmostWindowFinder> CreateWindowFinder() override;
   int UpdateDrag(const gfx::Point& screen_point) override;
-  void UpdateCursor(DragDropTypes::DragOperation negotiated_operation) override;
+  void UpdateCursor(mojom::DragOperation negotiated_operation) override;
   void OnBeginForeignDrag(x11::Window window) override;
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
-  int PerformDrop() override;
+  mojom::DragOperation PerformDrop() override;
   void EndDragLoop() override;
 
   // X11MoveLoopDelegate
@@ -220,8 +220,7 @@ class X11_WINDOW_EXPORT X11Window
   // Depending on presence of the compositing manager and window type, may
   // change the opacity, in which case returns the final opacity type through
   // |opacity|.
-  void CreateXWindow(const PlatformWindowInitProperties& properties,
-                     PlatformWindowOpacity& opacity);
+  void CreateXWindow(const PlatformWindowInitProperties& properties);
   void CloseXWindow();
   void Map(bool inactive = false);
   void SetFullscreen(bool fullscreen);
@@ -327,8 +326,8 @@ class X11_WINDOW_EXPORT X11Window
 
   // Whether the drop handler has notified that the drag has entered.
   bool notified_enter_ = false;
-  // Keeps the last negotiated operation returned by the drop handler.
-  int drag_operation_ = 0;
+  // Keeps the last negotiated operations returned by the drop handler.
+  int allowed_drag_operations_ = 0;
 
   // Handles XDND events going through this window.
   std::unique_ptr<XDragDropClient> drag_drop_client_;
@@ -376,9 +375,9 @@ class X11_WINDOW_EXPORT X11Window
   // Whether we used an ARGB visual for our window.
   bool visual_has_alpha_ = false;
 
-  // The workspace containing |xwindow_|.  This will be base::nullopt when
+  // The workspace containing |xwindow_|.  This will be absl::nullopt when
   // _NET_WM_DESKTOP is unset.
-  base::Optional<int> workspace_;
+  absl::optional<int> workspace_;
 
   // True if the window should stay on top of most other windows.
   bool is_always_on_top_ = false;

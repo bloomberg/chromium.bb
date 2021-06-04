@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -192,6 +193,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -404,7 +406,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForJsonRequest(
   // Basic sanity checks on the request.
   EXPECT_EQ("/pkp", request.relative_url);
   EXPECT_EQ("POST", request.method_string);
-  base::Optional<base::Value> value = base::JSONReader::Read(request.content);
+  absl::optional<base::Value> value = base::JSONReader::Read(request.content);
   EXPECT_TRUE(value);
 
   content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
@@ -858,7 +860,7 @@ class SSLUITestBase : public InProcessBrowserTest,
     Profile* profile = browser()->profile();
 
     web_app::AppId app_id =
-        web_app::InstallWebApp(profile, std::move(web_app_info));
+        web_app::test::InstallWebApp(profile, std::move(web_app_info));
 
     Browser* app_browser = web_app::LaunchWebAppBrowserAndWait(profile, app_id);
     return app_browser;
@@ -1692,7 +1694,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
   }
   ~CertificateTransparencySSLUITest() override {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        base::nullopt);
+        absl::nullopt);
   }
 
   void SetUpOnMainThread() override {
@@ -2328,7 +2330,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
     // test successfully shut down and cleanup. Exiting the browser with a
     // download still in-progress can lead to test failues.
     content::DownloadTestObserverTerminal dangerous_download_observer(
-        content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+        browser()->profile()->GetDownloadManager(), 1,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
     SendInterstitialCommand(tab, security_interstitials::CMD_PROCEED);
     dangerous_download_observer.WaitForFinished();
@@ -5401,7 +5403,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
       tab->GetController().GetLastCommittedEntry();
   std::unique_ptr<content::NavigationEntry> restored_entry =
       content::NavigationController::CreateNavigationEntry(
-          url, content::Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+          url, content::Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
           false, std::string(), tab->GetBrowserContext(),
           nullptr /* blob_url_loader_factory */);
   restored_entry->SetPageState(entry->GetPageState());
@@ -7276,6 +7278,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 namespace {
 
 char kTestMITMSoftwareName[] = "Misconfigured Firewall";
+char16_t kTestMITMSoftwareName16[] = u"Misconfigured Firewall";
 
 class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
  public:
@@ -7669,12 +7672,12 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, EnterpriseManaged) {
   SetUpMITMSoftwareCertList(kLargeVersionId);
   TestMITMSoftwareInterstitial();
 
-  const std::string expected_primary_paragraph = l10n_util::GetStringFUTF8(
-      IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE,
-      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+  const std::string expected_primary_paragraph =
+      l10n_util::GetStringFUTF8(IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE,
+                                net::EscapeForHTML(kTestMITMSoftwareName16));
   const std::string expected_explanation = l10n_util::GetStringFUTF8(
       IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE,
-      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)),
+      net::EscapeForHTML(kTestMITMSoftwareName16),
       l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -7697,7 +7700,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
   // has escaped HTML characters which throw an error.
   const std::string expected_explanation = l10n_util::GetStringFUTF8(
       IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE,
-      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)),
+      net::EscapeForHTML(kTestMITMSoftwareName16),
       l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -8102,7 +8105,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
 // SSL error related page in chrome://network-errors. Regression test for
 // crbug.com/953812
 IN_PROC_BROWSER_TEST_F(SSLUITest, NoInterstitialOnNetworkErrorPage) {
-  GURL invalid_cert_url(content::kChromeUINetworkErrorURL);
+  GURL invalid_cert_url(blink::kChromeUINetworkErrorURL);
   GURL::Replacements replacements;
   replacements.SetPathStr("-207");
   invalid_cert_url = invalid_cert_url.ReplaceComponents(replacements);
@@ -8564,8 +8567,7 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   void EnableStaticPins(int reporting_port) {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        browser()->profile()->GetDefaultStoragePartition();
     partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
     partition->FlushNetworkInterfaceForTesting();
 
@@ -8787,12 +8789,34 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ActiveMixedContentTrackedByOrigin) {
       tab, content::JsReplace("w.location.href = $1",
                               embedded_test_server()->GetURL("/title1.html"))));
   first_navigation.Wait();
-  ssl_test_util::CheckUnauthenticatedState(opened_tab, AuthState::NONE);
+
+  if (content::IsIsolatedOriginRequiredToGuaranteeDedicatedProcess()) {
+    // Verify that in process models where sites need to be explicitly isolated,
+    // the new tab ends up in the same process as the original one.
+    // As a result of being in the same process, expect the SSL state to
+    // reflect that the process has run insecure content.
+    EXPECT_EQ(tab->GetSiteInstance()->GetProcess(),
+              opened_tab->GetSiteInstance()->GetProcess());
+    ssl_test_util::CheckAuthenticationBrokenState(
+        opened_tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
+  } else {
+    // Verify that tabs are in different processes and that the new tab does
+    // not have insecure status yet.
+    EXPECT_NE(tab->GetSiteInstance()->GetProcess(),
+              opened_tab->GetSiteInstance()->GetProcess());
+    ssl_test_util::CheckUnauthenticatedState(opened_tab, AuthState::NONE);
+  }
+
   content::TestNavigationObserver about_blank_navigation(opened_tab);
   ASSERT_TRUE(content::ExecJs(tab, "w.location.href = 'about:blank'"));
   about_blank_navigation.Wait();
   ssl_test_util::CheckAuthenticationBrokenState(
       opened_tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
+
+  // Verify the two tabs are now in the same process independent of
+  // process model.
+  EXPECT_EQ(tab->GetSiteInstance()->GetProcess(),
+            opened_tab->GetSiteInstance()->GetProcess());
 }
 
 // Tests that MixedContentShown histogram doesn't get logged when a site with
@@ -8967,9 +8991,9 @@ IN_PROC_BROWSER_TEST_F(SSLUIAutoReloadTest, AutoReloadDisabled) {
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
   auto* reloader = error_page::NetErrorAutoReloader::FromWebContents(tab);
-  const base::Optional<base::OneShotTimer>& timer =
+  const absl::optional<base::OneShotTimer>& timer =
       reloader->next_reload_timer_for_testing();
-  EXPECT_EQ(base::nullopt, timer);
+  EXPECT_EQ(absl::nullopt, timer);
 }
 
 class SSLUITestWithEnhancedProtectionMessage : public SSLUITest {

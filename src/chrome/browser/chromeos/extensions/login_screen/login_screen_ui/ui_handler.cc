@@ -15,7 +15,6 @@
 #include "chrome/browser/ash/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -98,8 +97,8 @@ void UiHandler::Shutdown() {
 UiHandler::UiHandler(std::unique_ptr<WindowFactory> window_factory)
     : window_factory_(std::move(window_factory)) {
   UpdateSessionState();
-  session_manager_observer_.Add(session_manager::SessionManager::Get());
-  extension_registry_observer_.Add(
+  session_manager_observation_.Observe(session_manager::SessionManager::Get());
+  extension_registry_observation_.Observe(
       extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile()));
 }
 
@@ -155,7 +154,7 @@ void UiHandler::RemoveWindowForExtension(const std::string& extension_id) {
 
 void UiHandler::OnWindowClosed(const std::string& extension_id) {
   if (!close_callback_.is_null()) {
-    std::move(close_callback_).Run(/*success=*/true, base::nullopt);
+    std::move(close_callback_).Run(/*success=*/true, absl::nullopt);
     close_callback_.Reset();
   }
 

@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) CryptohomeMiscClient {
                            CheckHealthCallback callback) = 0;
 
   // Blocking version of GetSanitizedUsername().
-  virtual base::Optional<::user_data_auth::GetSanitizedUsernameReply>
+  virtual absl::optional<::user_data_auth::GetSanitizedUsernameReply>
   BlockingGetSanitizedUsername(
       const ::user_data_auth::GetSanitizedUsernameRequest& request) = 0;
 
@@ -100,5 +100,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) CryptohomeMiscClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source code migration is finished.
+namespace ash {
+using ::chromeos::CryptohomeMiscClient;
+}
 
 #endif  // CHROMEOS_DBUS_USERDATAAUTH_CRYPTOHOME_MISC_CLIENT_H_

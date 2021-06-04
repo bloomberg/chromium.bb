@@ -242,7 +242,6 @@
     heading,
     iframe,
     iframePresentational,
-    ignored,
     image,
     imeCandidate,
     inlineTextBox,
@@ -284,7 +283,6 @@
     popUpButton,
     portal,
     pre,
-    presentational,
     progressIndicator,
     radioButton,
     radioGroup,
@@ -447,10 +445,12 @@
   };
 
   enum DescriptionFromType {
-    uninitialized,
-    attribute,
-    contents,
+    ariaDescription,
+    buttonLabel,
     relatedElement,
+    rubyAnnotation,
+    summary,
+    tableCaption,
     title
   };
 
@@ -1049,9 +1049,6 @@ enum SortDirectionType {
     // text element; -1 if no selection.
     long? textSelEnd;
 
-    // The input type, like email or number.
-    DOMString? textInputType;
-
     // An array of Marker objects for this node.
     Marker[]? markers;
 
@@ -1285,11 +1282,15 @@ enum SortDirectionType {
     // Indicates the font family.
     DOMString fontFamily;
 
-    // Indicates whether this is a root of an editable subtree.
-    boolean editableRoot;
+    // Indicates whether the object is at the root of a content editable region,
+    // or at a <body> element that has "design-mode" set to "on".
+    boolean contentEditableRoot;
 
     // Indicates aria-current state.
     AriaCurrentState? ariaCurrentState;
+
+    // The application id for a tree rooted at this node.
+    DOMString? appId;
 
     //
     // Walking the tree.

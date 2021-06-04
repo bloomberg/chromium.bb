@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -723,8 +724,8 @@ void NightLightControllerImpl::Close(bool by_user) {
 }
 
 void NightLightControllerImpl::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<std::u16string>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   auto* shell = Shell::Get();
 
   DCHECK(!button_index.has_value());

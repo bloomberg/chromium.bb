@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "net/base/mime_util.h"
@@ -173,25 +173,31 @@ const base::Feature kPhotoLibrarySaveImage{"PhotoLibrarySaveImage",
 
 // Called when Chrome has been denied access to the photos or videos and the
 // user cannot change it.
+- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
+  __weak ImageSaver* weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [weakSelf asyncDisplayPrivacyErrorAlertOnMainQueue:errorContent];
+  });
+}
+
+// Async helper implementation of displayPrivacyErrorAlertOnMainQueue.
 // Shows a privacy alert on the main queue, with errorContent as the message.
 // Dismisses previous alert if it has not been dismissed yet.
-- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSString* title =
-        l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-    // Dismiss current alert.
-    [self.alertCoordinator stop];
+- (void)asyncDisplayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
+  // Dismiss current alert.
+  [self.alertCoordinator stop];
 
-    self.alertCoordinator = [[AlertCoordinator alloc]
-        initWithBaseViewController:self.baseViewController
-                           browser:_browser
-                             title:title
-                           message:errorContent];
-    [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
-                                     action:nil
-                                      style:UIAlertActionStyleDefault];
-    [self.alertCoordinator start];
-  });
+  self.alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:_browser
+                           title:title
+                         message:errorContent];
+  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
+                                   action:nil
+                                    style:UIAlertActionStyleDefault];
+  [self.alertCoordinator start];
 }
 
 // Called after the system attempts to write the image to the saved photos

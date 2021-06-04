@@ -109,8 +109,8 @@ class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
 
   std::string CreateFetchScript(
       const GURL& resource,
-      base::Optional<base::Value> request_init = base::nullopt) {
-    CHECK(request_init == base::nullopt || request_init->is_dict());
+      absl::optional<base::Value> request_init = absl::nullopt) {
+    CHECK(request_init == absl::nullopt || request_init->is_dict());
 
     const char kFetchScriptTemplate[] = R"(
       fetch($1, $2)
@@ -127,7 +127,7 @@ class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
   std::string PopString(content::DOMMessageQueue* message_queue) {
     std::string json;
     EXPECT_TRUE(message_queue->WaitForMessage(&json));
-    base::Optional<base::Value> value =
+    absl::optional<base::Value> value =
         base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
@@ -144,7 +144,7 @@ class ServiceWorkerConsoleObserver
   explicit ServiceWorkerConsoleObserver(
       content::BrowserContext* browser_context) {
     content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context);
+        browser_context->GetDefaultStoragePartition();
     scoped_observation_.Observe(partition->GetServiceWorkerContext());
   }
   ~ServiceWorkerConsoleObserver() override = default;
@@ -877,8 +877,8 @@ IN_PROC_BROWSER_TEST_F(
     FromProgrammaticContentScript_PermissionToAllUrls_FileUrls) {
   // Install the extension and verify that the extension has access to file URLs
   // (<all_urls> permission is not sufficient - the extension has to be
-  // additionally granted file access by passing kFlagEnableFileAccess in
-  // ExtensionBrowserTest::LoadExtension).
+  // additionally granted file access by setting LoadOptions.allow_file_access
+  // to true in ExtensionBrowserTest::LoadExtension).
   const Extension* extension =
       InstallExtensionWithPermissionToAllUrls(/*enable_file_access=*/true);
   ASSERT_TRUE(extension);
@@ -2346,8 +2346,13 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
       } )";
   extension_dir.WriteManifest(kManifest);
   extension_dir.WriteFile(FILE_PATH_LITERAL("bg_script.js"), "");
-  const Extension* extension = LoadExtension(extension_dir.UnpackedPath());
+  const Extension* extension = LoadExtension(extension_dir.UnpackedPath(),
+                                             {.allow_in_incognito = false});
   ASSERT_TRUE(extension);
+
+  // This test covers the default incognito mode (spanning mode) where there is
+  // only a single background page (i.e. no separate incognito background page).
+  EXPECT_FALSE(IncognitoInfo::IsSplitMode(extension));
 
   // Set up a test scenario:
   // - top-level frame: kActiveTabHost
@@ -2357,6 +2362,13 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
   GURL cross_site_resource(
       embedded_test_server()->GetURL(kActiveTabHost, "/nosniff.xml"));
   ui_test_utils::NavigateToURL(browser(), original_document_url);
+
+  // Open an incognito window.  Since the extension is not enabled for
+  // incognito, OriginAccessList should not be sent to the incognito-related
+  // NetworkContext (this is verified by a DCHECK in
+  // SetCorsOriginAccessListForExtensionHelper in
+  // //extensions/browser/extension_util.cc.
+  CreateIncognitoBrowser();
 
   // CORS exception shouldn't be initially granted based on ActiveTab.
   {

@@ -20,7 +20,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -145,6 +144,10 @@ void TestWebContents::OnWebPreferencesChanged() {
     ++*web_preferences_changed_counter_;
 }
 
+void TestWebContents::SetBackForwardCacheSupported(bool supported) {
+  back_forward_cache_supported_ = supported;
+}
+
 bool TestWebContents::IsPageFrozen() {
   return is_page_frozen_;
 }
@@ -227,7 +230,7 @@ bool TestWebContents::CrossProcessNavigationPending() {
 
 bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
-    const base::Optional<blink::FrameToken>& opener_frame_token,
+    const absl::optional<blink::FrameToken>& opener_frame_token,
     RenderFrameProxyHost* proxy_host) {
   const auto proxy_routing_id =
       proxy_host ? proxy_host->GetRoutingID() : MSG_ROUTING_NONE;
@@ -401,6 +404,10 @@ WebContents* TestWebContents::GetPortalContents(
 
 void TestWebContents::SetPageFrozen(bool frozen) {
   is_page_frozen_ = frozen;
+}
+
+bool TestWebContents::IsBackForwardCacheSupported() {
+  return back_forward_cache_supported_;
 }
 
 }  // namespace content

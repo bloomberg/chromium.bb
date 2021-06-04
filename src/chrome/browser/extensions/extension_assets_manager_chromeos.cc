@@ -216,7 +216,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(
 
   DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
   std::vector<std::string> extensions;
-  extensions.reserve(shared_extensions->size());
+  extensions.reserve(shared_extensions->DictSize());
   for (base::DictionaryValue::Iterator it(*shared_extensions);
        !it.IsAtEnd(); it.Advance()) {
     extensions.push_back(it.key());
@@ -232,7 +232,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(
     if (!CleanUpExtension(*it, extension_info, live_extension_paths)) {
       return false;
     }
-    if (extension_info->empty())
+    if (extension_info->DictEmpty())
       shared_extensions->RemoveKey(*it);
   }
 
@@ -410,8 +410,8 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
           base::BindOnce(std::move(info.callback), shared_version_dir));
   }
   version_info->Set(kSharedExtensionUsers, std::move(users));
-  extension_info_weak->SetWithoutPathExpansion(version,
-                                               std::move(version_info));
+  extension_info_weak->SetKey(
+      version, base::Value::FromUniquePtrValue(std::move(version_info)));
 }
 
 // static
@@ -440,7 +440,7 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
   }
 
   std::vector<std::string> versions;
-  versions.reserve(extension_info->size());
+  versions.reserve(extension_info->DictSize());
   for (base::DictionaryValue::Iterator it(*extension_info);
        !it.IsAtEnd();
        it.Advance()) {
@@ -474,7 +474,7 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
       extension_info->RemoveKey(*it);
     }
   }
-  if (extension_info->empty()) {
+  if (extension_info->DictEmpty()) {
     shared_extensions->RemoveKey(id);
     // Don't remove extension dir in shared location. It will be removed by GC
     // when it is safe to do so, and this avoids a race condition between
@@ -501,7 +501,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
   }
 
   std::vector<std::string> versions;
-  versions.reserve(extension_info->size());
+  versions.reserve(extension_info->DictSize());
   for (base::DictionaryValue::Iterator it(*extension_info);
        !it.IsAtEnd(); it.Advance()) {
     versions.push_back(it.key());

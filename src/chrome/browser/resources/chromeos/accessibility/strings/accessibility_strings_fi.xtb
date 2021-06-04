@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Pyyhkäise ylös kahdella sormella</translation>
 <translation id="1126928665165112660">Ei kursiivia</translation>
 <translation id="113582498867142724"><ph name="TAG" />-kokoelma, jossa <ph name="NUM" /> kohdetta</translation>
+<translation id="1146441463334103638">Laita näyttö päälle tai pois päältä</translation>
 <translation id="1156488781945104845">Nykyinen aika</translation>
 <translation id="1161762950103988776">Siirtyminen</translation>
 <translation id="1164857107703583584">Siirtymiskomentojen avulla pystyt liikkumaan verkkosivulla tehokkaasti.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">Linkin URL-osoite: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Siirry taaksepäin yhden merkin verran</translation>
 <translation id="2220529011494928058">Ilmoita ongelmasta</translation>
+<translation id="2243633977138166243">Liiku painamalla vasenta tai oikeaa nuolta; aktivoi painamalla Enter</translation>
 <translation id="224426591676115802">Ääntä ei ole saatavilla tällä kielellä: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Opetustila suljetaan</translation>
 <translation id="225732394367814946">Lisää puhenopeutta</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">Chartreuse</translation>
 <translation id="2684412629217766642">Sulje ChromeVox-opetusohjelma</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">Tekstimuunnoksen vaihtoehto</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{vasen kaarisulje}other{# vasenta kaarisuljetta}}</translation>
+<translation id="270523456882008230">Vinkki: Kaksoisnapauta yhdellä sormella aktivoidaksesi nykyisen kohteen.</translation>
 <translation id="2705875883745373140">Ei painettu</translation>
 <translation id="2708078563826046398">Persikka</translation>
 <translation id="2713444072780614174">Valkoinen</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Voit myös siirtää edellistä kohdetta pyyhkäisemällä oikealta vasemmalle yhdellä sormella. Kokeile nyt.</translation>
 <translation id="280499067616661124">ChromeVox-sivulta haku</translation>
-<translation id="2808001342598757276">Poista näytön tummennus</translation>
 <translation id="2811019999044652585">Siirry näytön kohteisiin, esim. työkalupalkkeihin tai ilmaisinalueelle, painamalla Control + eteenpäin. Eteenpäin-näppäin on Chromebookin näppäimistöllä heti numeron kaksi yläpuolella.</translation>
 <translation id="2811204574343810641">Rivi</translation>
 <translation id="2816868829355607410">Harjoittelualue: siirtymiskomennot</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Työkaluvinkki</translation>
 <translation id="2976476721782829799">Voit myös siirtyä näytöllä vetämällä yhtä sormea. Tätä kutsutaan kosketuksella tutkimiseksi. Kokeile vetää sormeasi näytöllä lukeaksesi loput tästä harjoituksesta.</translation>
 <translation id="297825089465017871">Pyyhkäise vasemmalle kahdella sormella</translation>
+<translation id="2988364959384217951">Vinkki: Pyyhkäise oikealta vasemmalle kahdella sormella, jos haluat poistua tästä ohjeesta.</translation>
 <translation id="2998131015536248178">Edellinen merkki</translation>
 <translation id="2999559350546931576">Vähennä äänenkorkeutta</translation>
 <translation id="3009352964623081324">Haku + O ja sitten S. Käytä äänten asentamiseen, ylläpitämiseen ja muokkaamiseen.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Vieritä taaksepäin</translation>
 <translation id="3084806535845658316">ei kirjoituksen puhumista</translation>
 <translation id="3086746722712840547">huom.</translation>
+<translation id="308736057934395497">Tämä parantaa yksityisyyttä sammuttamalla näyttösi, jotta se ei näy muille. Voit laittaa näytön takaisin päälle painamalla Haku + kirkkauden lisäyspainike.</translation>
 <translation id="3090227230165225418">Ilmoita latausilmoituksista</translation>
 <translation id="3090532668523289635">ryhmä</translation>
 <translation id="3093176084511590672">Seuraava maamerkki</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Tiivistetty</translation>
 <translation id="311015743332597320">Pyyhkäise oikealle neljällä sormella</translation>
 <translation id="3112457281078985179">Käynnistä tai sulje ChromeVox painamalla Control + Alt + Z.</translation>
+<translation id="3115800313647508384">Sammutetaanko näyttö?</translation>
 <translation id="3131002934070407451">Numeroiden lukemismuoto:</translation>
 <translation id="3134461040845705080">vain luku</translation>
 <translation id="3137663468179739624">Oliivinvihreä</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Vaaleanharmaa</translation>
 <translation id="6036135911048686884">Valitse Tutki</translation>
 <translation id="6037602951055904232">Panoroi eteenpäin</translation>
-<translation id="6044160928851315051">Tummenna näyttö</translation>
 <translation id="6082768461603900813">Siirtymisen perustoiminnot</translation>
 <translation id="609281021724813947">Ei edellisiä liukusäätimiä</translation>
 <translation id="6100239002225743044">Siirry yksi rivi ylöspäin</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Johdanto</translation>
 <translation id="6697092096875747123">Edellinen yhdistelmäruutu</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{huutomerkki}other{# huutomerkkiä}}</translation>
+<translation id="670717715607710284">Näyttö pois päältä</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6714813999819678458">Edellinen tason 2 otsikko</translation>
 <translation id="6730312624811567147">Paina Haku ja vasen tai oikea nuolinäppäin Home- tai End-näppäimen sijaan, Haku, Control ja vasen tai oikea nuolinäppäin Control ja Home- tai End-näppäimen sijaan sekä Haku ja ylä- tai alanuoli Page Up- tai Page Down ‑näppäimen sijaan</translation>
@@ -939,6 +945,7 @@
 <translation id="7776293189010177726">Avaa ChromeVox-valikot.</translation>
 <translation id="7799302833060027366">Tutki laskutoimituksia painamalla ylä-, ala-, vasenta tai oikeaa näppäintä</translation>
 <translation id="7800558923657349506">Epilogi</translation>
+<translation id="7801768143868631306">Vinkki: Pyyhkäise vasemmalta oikealle yhdellä sormella, jos haluat siirtyä paikasta toiseen.</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="7810781339813764006">Seuraava ryhmä</translation>
 <translation id="7813616274030162878">Kytkimen käytön valikko</translation>
@@ -992,6 +999,7 @@
 <translation id="816818801578874684">Tämä on ensimmäinen otsikko. Siirry seuraavaan otsikkoon painamalla Haku + H.</translation>
 <translation id="8173092779156526980">Pyyhkäise vasemmalle neljällä sormella</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alaviiva}other{# alaviivaa}}</translation>
+<translation id="817529114347680055">Näyttö päälle</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">rivi</translation>
 <translation id="8186185314313222077">Laita koko näytön tila päälle tai pois päältä.</translation>
@@ -1014,7 +1022,6 @@
 <translation id="8316881042119029234">Pitsi</translation>
 <translation id="8324974933005349667">Personoi Tekstistä puheeksi ‑asetukset</translation>
 <translation id="8326783648485765113">Ruohonvihreä</translation>
-<translation id="8328063869313048659">Tumma näyttö päälle/pois</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{ristikko}other{# ristikkomerkkiä}}</translation>
 <translation id="8378855320830505539">Alue</translation>
 <translation id="8382679411218029383">Ennakoiva tekstin syöttö upotettuna ja luettelona</translation>

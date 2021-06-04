@@ -11,8 +11,11 @@
 
 #include "chrome/browser/ui/caption_bubble_controller.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace views {
-class View;
 class Widget;
 }
 
@@ -28,9 +31,7 @@ class CaptionBubbleModel;
 //
 class CaptionBubbleControllerViews : public CaptionBubbleController {
  public:
-  static views::View* GetCaptionBubbleAccessiblePane(Browser* browser);
-
-  explicit CaptionBubbleControllerViews(Browser* browser);
+  CaptionBubbleControllerViews();
   ~CaptionBubbleControllerViews() override;
   CaptionBubbleControllerViews(const CaptionBubbleControllerViews&) = delete;
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
@@ -39,23 +40,21 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   // Called when a transcription is received from the service. Returns whether
   // the transcription result was set on the caption bubble successfully.
   // Transcriptions will halt if this returns false.
-  bool OnTranscription(CaptionHostImpl* caption_host_impl,
-                       const chrome::mojom::TranscriptionResultPtr&
-                           transcription_result) override;
+  bool OnTranscription(
+      LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host,
+      const media::mojom::SpeechRecognitionResultPtr& result) override;
 
   // Called when the speech service has an error.
-  void OnError(CaptionHostImpl* caption_host_impl) override;
+  void OnError(LiveCaptionSpeechRecognitionHost*
+                   live_caption_speech_recognition_host) override;
 
   // Called when the audio stream has ended.
-  void OnAudioStreamEnd(CaptionHostImpl* caption_host_impl) override;
+  void OnAudioStreamEnd(LiveCaptionSpeechRecognitionHost*
+                            live_caption_speech_recognition_host) override;
 
   // Called when the caption style changes.
   void UpdateCaptionStyle(
-      base::Optional<ui::CaptionStyle> caption_style) override;
-
-  // Returns the view of the caption bubble which should receive focus, if one
-  // exists.
-  views::View* GetFocusableCaptionBubble();
+      absl::optional<ui::CaptionStyle> caption_style) override;
 
  private:
   friend class CaptionBubbleControllerViewsTest;
@@ -67,7 +66,12 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   // Sets the active CaptionBubbleModel to the one corresponding to the given
   // media player id, and creates a new CaptionBubbleModel if one does not
   // already exist.
-  void SetActiveModel(CaptionHostImpl* caption_host_impl);
+  void SetActiveModel(
+      LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host);
+
+  // A callback passed to the CaptionBubbleModel which is called when the
+  // BackToTab button is clicked in the CaptionBubble.
+  void ActivateContext(content::WebContents* web_contents);
 
   bool IsWidgetVisibleForTesting() override;
   std::string GetBubbleLabelTextForTesting() override;
@@ -81,7 +85,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   // A map of media player ids and their corresponding CaptionBubbleModel. New
   // entries are added to this map when a previously unseen media player id is
   // received.
-  std::unordered_map<CaptionHostImpl*, std::unique_ptr<CaptionBubbleModel>>
+  std::unordered_map<LiveCaptionSpeechRecognitionHost*,
+                     std::unique_ptr<CaptionBubbleModel>>
       caption_bubble_models_;
 };
 }  // namespace captions

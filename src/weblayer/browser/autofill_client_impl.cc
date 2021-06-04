@@ -5,6 +5,7 @@
 #include "weblayer/browser/autofill_client_impl.h"
 
 #include "base/stl_util.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_entry.h"
@@ -93,7 +94,7 @@ const translate::LanguageState* AutofillClientImpl::GetLanguageState() {
 }
 
 translate::TranslateDriver* AutofillClientImpl::GetTranslateDriver() {
-  // The TranslateDriver is used by AutofillHandler to observe the page language
+  // The TranslateDriver is used by AutofillManager to observe the page language
   // and run the type-prediction heuristics with language-dependent regexps.
   auto* translate_client = TranslateClientImpl::FromWebContents(web_contents());
   if (translate_client)
@@ -222,6 +223,8 @@ void AutofillClientImpl::ConfirmCreditCardFillAssist(
 
 void AutofillClientImpl::ConfirmSaveAddressProfile(
     const autofill::AutofillProfile& profile,
+    const autofill::AutofillProfile* original_profile,
+    SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
   NOTREACHED();
 }

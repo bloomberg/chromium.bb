@@ -108,6 +108,9 @@ void av1_twopass_zero_stats(FIRSTPASS_STATS *section) {
   section->new_mv_count = 0.0;
   section->count = 0.0;
   section->duration = 1.0;
+  section->is_flash = 0;
+  section->noise_var = 0;
+  section->cor_coeff = 1.0;
 }
 
 void av1_accumulate_stats(FIRSTPASS_STATS *section,
@@ -177,8 +180,8 @@ static int get_num_mbs(const BLOCK_SIZE fp_block_size,
 }
 
 void av1_end_first_pass(AV1_COMP *cpi) {
-  if (cpi->twopass.stats_buf_ctx->total_stats && !cpi->lap_enabled)
-    output_stats(cpi->twopass.stats_buf_ctx->total_stats,
+  if (cpi->ppi->twopass.stats_buf_ctx->total_stats && !cpi->ppi->lap_enabled)
+    output_stats(cpi->ppi->twopass.stats_buf_ctx->total_stats,
                  cpi->ppi->output_pkt_list);
 }
 
@@ -279,7 +282,7 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                   &this_best_mv, NULL);
 
   if (tmp_err < INT_MAX) {
-    aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
+    aom_variance_fn_ptr_t v_fn_ptr = cpi->ppi->fn_ptr[bsize];
     const MSBuffers *ms_buffers = &ms_params.ms_buffers;
     tmp_err = av1_get_mvpred_sse(&ms_params.mv_cost_params, this_best_mv,
                                  &v_fn_ptr, ms_buffers->src, ms_buffers->ref) +
@@ -386,11 +389,10 @@ static int firstpass_intra_prediction(
     const int qindex, FRAME_STATS *const stats) {
   const AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const int unit_scale = mi_size_wide[fp_block_size];
-  const int use_dc_pred = (unit_col || unit_row) && (!unit_col || !unit_row);
   const int num_planes = av1_num_planes(cm);
   const BLOCK_SIZE bsize =
       get_bsize(mi_params, fp_block_size, unit_row, unit_col);
@@ -410,7 +412,7 @@ static int firstpass_intra_prediction(
   xd->mi[0]->segment_id = 0;
   xd->lossless[xd->mi[0]->segment_id] = (qindex == 0);
   xd->mi[0]->mode = DC_PRED;
-  xd->mi[0]->tx_size = use_dc_pred ? max_txsize_lookup[bsize] : TX_4X4;
+  xd->mi[0]->tx_size = TX_4X4;
 
   av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
   int this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
@@ -780,7 +782,7 @@ static void update_firstpass_stats(AV1_COMP *cpi,
                                    const int frame_number,
                                    const int64_t ts_duration,
                                    const BLOCK_SIZE fp_block_size) {
-  TWO_PASS *twopass = &cpi->twopass;
+  TWO_PASS *twopass = &cpi->ppi->twopass;
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   FIRSTPASS_STATS *this_frame_stats = twopass->stats_buf_ctx->stats_in_end;
@@ -814,6 +816,9 @@ static void update_firstpass_stats(AV1_COMP *cpi,
   fps.inactive_zone_rows = (double)stats->image_data_start_row;
   fps.inactive_zone_cols = (double)0;  // TODO(paulwilkins): fix
   fps.raw_error_stdev = raw_err_stdev;
+  fps.is_flash = 0;
+  fps.noise_var = (double)0;
+  fps.cor_coeff = (double)1.0;
 
   if (stats->mv_count > 0) {
     fps.MVr = (double)stats->sum_mvr / stats->mv_count;
@@ -849,10 +854,10 @@ static void update_firstpass_stats(AV1_COMP *cpi,
   // We will store the stats inside the persistent twopass struct (and NOT the
   // local variable 'fps'), and then cpi->output_pkt_list will point to it.
   *this_frame_stats = fps;
-  if (!cpi->lap_enabled)
+  if (!cpi->ppi->lap_enabled)
     output_stats(this_frame_stats, cpi->ppi->output_pkt_list);
-  if (cpi->twopass.stats_buf_ctx->total_stats != NULL) {
-    av1_accumulate_stats(cpi->twopass.stats_buf_ctx->total_stats, &fps);
+  if (cpi->ppi->twopass.stats_buf_ctx->total_stats != NULL) {
+    av1_accumulate_stats(cpi->ppi->twopass.stats_buf_ctx->total_stats, &fps);
   }
   /*In the case of two pass, first pass uses it as a circular buffer,
    * when LAP is enabled it is used as a linear buffer*/
@@ -983,7 +988,8 @@ static void first_pass_tiles(AV1_COMP *cpi, const BLOCK_SIZE fp_block_size) {
   const int num_planes = av1_num_planes(&cpi->common);
   for (int plane = 0; plane < num_planes; plane++) {
     const int subsampling_xy =
-        plane ? cm->seq_params.subsampling_x + cm->seq_params.subsampling_y : 0;
+        plane ? cm->seq_params->subsampling_x + cm->seq_params->subsampling_y
+              : 0;
     const int sb_size = MAX_SB_SQUARE >> subsampling_xy;
     CHECK_MEM_ERROR(
         cm, cpi->td.mb.plane[plane].src_diff,
@@ -1011,7 +1017,7 @@ void av1_first_pass_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   CurrentFrame *const current_frame = &cm->current_frame;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   TileInfo *tile = &tile_data->tile_info;
@@ -1152,7 +1158,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   CurrentFrame *const current_frame = &cm->current_frame;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
@@ -1268,7 +1274,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                       (stats.image_data_start_row * unit_cols * 2));
   }
 
-  TWO_PASS *twopass = &cpi->twopass;
+  TWO_PASS *twopass = &cpi->ppi->twopass;
   const int num_mbs_16X16 = (cpi->oxcf.resize_cfg.resize_mode != RESIZE_NONE)
                                 ? cpi->initial_mbs
                                 : mi_params->MBs;

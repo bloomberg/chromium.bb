@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
@@ -70,7 +69,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       current_draw_mode_(DRAW_MODE_NONE),
       needs_push_properties_(false),
-      scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
       has_transform_node_(false) {
@@ -141,10 +139,13 @@ void LayerImpl::SetScrollTreeIndex(int index) {
 void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                                         bool contents_opaque) const {
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
+  absl::optional<gfx::Rect> clip_rect;
+  if (draw_properties_.is_clipped) {
+    clip_rect = draw_properties_.clip_rect;
+  }
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
                 draw_properties_.visible_layer_rect,
-                draw_properties_.mask_filter_info, draw_properties_.clip_rect,
-                draw_properties_.is_clipped, contents_opaque,
+                draw_properties_.mask_filter_info, clip_rect, contents_opaque,
                 draw_properties_.opacity,
                 effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
@@ -173,14 +174,15 @@ void LayerImpl::PopulateScaledSharedQuadStateWithContentRects(
     const gfx::Rect& visible_content_rect,
     bool contents_opaque) const {
   gfx::Transform scaled_draw_transform =
-      draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_Scalar1 / layer_to_content_scale,
-                              SK_Scalar1 / layer_to_content_scale);
+      GetScaledDrawTransform(layer_to_content_scale);
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
+  absl::optional<gfx::Rect> clip_rect;
+  if (draw_properties().is_clipped) {
+    clip_rect = draw_properties().clip_rect;
+  }
   state->SetAll(scaled_draw_transform, content_rect, visible_content_rect,
-                draw_properties().mask_filter_info, draw_properties().clip_rect,
-                draw_properties().is_clipped, contents_opaque,
+                draw_properties().mask_filter_info, clip_rect, contents_opaque,
                 draw_properties().opacity,
                 effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
@@ -388,7 +390,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->effect_tree_index_ = effect_tree_index_;
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
-  layer->scrollbars_hidden_ = scrollbars_hidden_;
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
 
@@ -462,6 +463,15 @@ void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
   for (viz::ResourceId resource_id : quad->resources)
     resource_provider->ValidateResource(resource_id);
 #endif
+}
+
+gfx::Transform LayerImpl::GetScaledDrawTransform(
+    float layer_to_content_scale) const {
+  gfx::Transform scaled_draw_transform =
+      draw_properties_.target_space_transform;
+  scaled_draw_transform.Scale(SK_Scalar1 / layer_to_content_scale,
+                              SK_Scalar1 / layer_to_content_scale);
+  return scaled_draw_transform;
 }
 
 const char* LayerImpl::LayerTypeAsString() const {
@@ -770,17 +780,29 @@ Region LayerImpl::GetInvalidationRegionForDebugging() {
   return Region(update_rect_);
 }
 
-gfx::Rect LayerImpl::GetEnclosingRectInTargetSpace() const {
-  return MathUtil::MapEnclosingClippedRect(DrawTransform(),
-                                           gfx::Rect(bounds()));
+gfx::Rect LayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
+  return GetScaledEnclosingVisibleRectInTargetSpace(1.0f);
 }
 
-gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
-  gfx::Transform scaled_draw_transform = DrawTransform();
-  scaled_draw_transform.Scale(SK_Scalar1 / scale, SK_Scalar1 / scale);
-  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
+gfx::Rect LayerImpl::GetScaledEnclosingVisibleRectInTargetSpace(
+    float scale) const {
+  // TODO(oshima): Define an utility function to scale layer and conslidate with
+  // the logic in ComputeDrawPropertiesOfVisibleLayers() in
+  // draw_property_util.cc.
+  DCHECK_GT(scale, 0.0);
+
+  bool only_draws_visible_content = GetPropertyTrees()
+                                        ->effect_tree.Node(effect_tree_index())
+                                        ->only_draws_visible_content;
+  gfx::Rect drawable_bounds = visible_layer_rect();
+  if (!only_draws_visible_content) {
+    drawable_bounds = gfx::Rect(bounds());
+  }
+  gfx::Transform scaled_draw_transform = GetScaledDrawTransform(scale);
+  gfx::Rect scaled_bounds = ScaleToEnclosingRect(drawable_bounds, scale);
+
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
-                                           gfx::Rect(scaled_bounds));
+                                           scaled_bounds);
 }
 
 RenderSurfaceImpl* LayerImpl::render_target() {
@@ -791,7 +813,7 @@ const RenderSurfaceImpl* LayerImpl::render_target() const {
   return GetEffectTree().GetRenderSurface(render_target_effect_tree_index());
 }
 
-float LayerImpl::GetIdealContentsScale() const {
+gfx::Vector2dF LayerImpl::GetIdealContentsScale() const {
   float page_scale = IsAffectedByPageScale()
                          ? layer_tree_impl()->current_page_scale_factor()
                          : 1.f;
@@ -801,6 +823,7 @@ float LayerImpl::GetIdealContentsScale() const {
 
   const auto& transform = ScreenSpaceTransform();
   if (transform.HasPerspective()) {
+    // TODO(crbug.com/1196414): This function should return a 2D scale.
     float scale = gfx::ComputeApproximateMaxScale(transform);
 
     const int kMaxTilesToCoverLayerDimension = 5;
@@ -827,13 +850,21 @@ float LayerImpl::GetIdealContentsScale() const {
     scale = std::round(scale);
 
     // Don't let the scale fall below the default scale.
-    return std::max(scale, default_scale);
+    scale = std::max(scale, default_scale);
+    return gfx::Vector2dF(scale, scale);
   }
 
   gfx::Vector2dF transform_scales =
       gfx::ComputeTransform2dScaleComponents(transform, default_scale);
 
-  return GetPreferredRasterScale(transform_scales);
+  // TODO(crbug.com/1196414): Remove this scale cap.
+  float scale_cap = GetPreferredRasterScale(transform_scales);
+  transform_scales.SetToMin(gfx::Vector2dF(scale_cap, scale_cap));
+  return transform_scales;
+}
+
+float LayerImpl::GetIdealContentsScaleKey() const {
+  return GetPreferredRasterScale(GetIdealContentsScale());
 }
 
 float LayerImpl::GetPreferredRasterScale(

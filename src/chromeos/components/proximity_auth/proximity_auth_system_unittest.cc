@@ -4,6 +4,8 @@
 
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -104,7 +106,7 @@ class TestableProximityAuthSystem : public ProximityAuthSystem {
  private:
   std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
       chromeos::multidevice::RemoteDeviceRef remote_device,
-      base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device)
+      absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device)
       override {
     std::unique_ptr<FakeRemoteDeviceLifeCycle> life_cycle(
         new FakeRemoteDeviceLifeCycle(remote_device, local_device));
@@ -157,9 +159,9 @@ class ProximityAuthSystemTest : public testing::Test {
     fake_secure_channel_client_ =
         std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
 
-    proximity_auth_system_.reset(new TestableProximityAuthSystem(
+    proximity_auth_system_ = std::make_unique<TestableProximityAuthSystem>(
         fake_secure_channel_client_.get(), std::move(unlock_manager),
-        pref_manager_.get()));
+        pref_manager_.get());
 
     proximity_auth_system_->SetRemoteDevicesForUser(
         AccountId::FromUserEmail(kUser1), user1_remote_devices_,

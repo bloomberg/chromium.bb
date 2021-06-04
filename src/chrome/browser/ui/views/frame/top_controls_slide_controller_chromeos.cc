@@ -28,6 +28,7 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -297,7 +298,7 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
   }
 #endif
 
-  OnEnabledStateChanged(CanEnable(base::nullopt));
+  OnEnabledStateChanged(CanEnable(absl::nullopt));
 }
 
 TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
@@ -373,7 +374,7 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
     defer_disabling_ = false;
 
     // Don't just set |is_enabled_| to false. Make sure it's a correct value.
-    OnEnabledStateChanged(CanEnable(base::nullopt));
+    OnEnabledStateChanged(CanEnable(absl::nullopt));
   }
 }
 
@@ -401,7 +402,7 @@ void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
   if (update_state_after_gesture_scrolling_ends_) {
     DCHECK(!is_gesture_scrolling_in_progress_);
     DCHECK(pause_updates_);
-    OnEnabledStateChanged(CanEnable(base::nullopt));
+    OnEnabledStateChanged(CanEnable(absl::nullopt));
     update_state_after_gesture_scrolling_ends_ = false;
     pause_updates_ = false;
   }
@@ -454,7 +455,7 @@ void TopControlsSlideControllerChromeOS::OnDisplayTabletStateChanged(
   switch (state) {
     case display::TabletState::kInTabletMode:
     case display::TabletState::kInClamshellMode:
-      OnEnabledStateChanged(CanEnable(base::nullopt));
+      OnEnabledStateChanged(CanEnable(absl::nullopt));
       return;
     case display::TabletState::kEnteringTabletMode:
     case display::TabletState::kExitingTabletMode:
@@ -596,7 +597,7 @@ void TopControlsSlideControllerChromeOS::UpdateBrowserControlsStateShown(
 }
 
 bool TopControlsSlideControllerChromeOS::CanEnable(
-    base::Optional<bool> fullscreen_state) const {
+    absl::optional<bool> fullscreen_state) const {
   return IsTabletModeEnabled() &&
          !(fullscreen_state.value_or(browser_view_->IsFullscreen()));
 }

@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class BoxLayout;
@@ -98,7 +98,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
   State state_ = State::kConfirmInstall;
   InstallingState installing_state_ = InstallingState::kInactive;
-  base::Optional<plugin_vm::PluginVmInstaller::FailureReason> reason_;
+  absl::optional<plugin_vm::PluginVmInstaller::FailureReason> reason_;
 
   base::OnceCallback<void(bool success)> finished_callback_for_testing_;
 

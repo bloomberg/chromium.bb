@@ -19,13 +19,13 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -107,7 +107,8 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      provider->GetDialogInsetsForContentType(views::DialogContentType::kText,
+                                              views::DialogContentType::kText),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   SetModalType(ui::MODAL_TYPE_WINDOW);

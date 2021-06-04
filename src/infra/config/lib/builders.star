@@ -167,6 +167,8 @@ xcode = struct(
     x12a7209 = xcode_enum("12a7209"),
     # (current default for iOS) xc12.4 gm seed
     x12d4e = xcode_enum("12d4e"),
+    # Xcode 12.5. Requires Mac11+ OS.
+    x12e262 = xcode_enum("12e262"),
 )
 
 ################################################################################
@@ -188,31 +190,20 @@ def _chromium_tests_property(*, project_trigger_overrides):
 
     return chromium_tests or None
 
-def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
+def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs):
     goma_properties = {}
 
     goma_backend = defaults.get_value("goma_backend", goma_backend)
-    if goma_backend != None:
-        goma_properties.update(goma_backend)
+    if goma_backend == None:
+        return None
+    goma_properties.update(goma_backend)
 
     goma_debug = defaults.get_value("goma_debug", goma_debug)
     if goma_debug:
         goma_properties["debug"] = True
 
-    goma_enable_ats = defaults.get_value("goma_enable_ats", goma_enable_ats)
-
-    # TODO(crbug.com/1040754): Remove this flag.
-    if goma_enable_ats == args.COMPUTE:
-        goma_enable_ats = (
-            os and os.category in (os_category.LINUX, os_category.WINDOWS) and
-            goma_backend in (
-                goma.backend.RBE_TOT,
-                goma.backend.RBE_STAGING,
-                goma.backend.RBE_PROD,
-            )
-        )
-    if goma_enable_ats:
-        goma_properties["enable_ats"] = True
+    if goma_enable_ats != None:
+        goma_properties["enable_ats"] = goma_enable_ats
 
     goma_jobs = defaults.get_value("goma_jobs", goma_jobs)
     if goma_jobs != None:
@@ -377,6 +368,7 @@ def builder(
         reclient_service = args.DEFAULT,
         reclient_jobs = args.DEFAULT,
         reclient_rewrapper_env = args.DEFAULT,
+        experiments = None,
         **kwargs):
     """Define a builder.
 
@@ -463,8 +455,14 @@ def builder(
         True, the 'debug' field will be set in the '$build/goma' property. By
         default, considered False.
       * goma_enable_ats - a boolean indicating whether ats should be enabled for
-        goma. If True, the 'enable_ats' field will be set in the '$build/goma'
-        property. By default, considered False.
+        goma or args.COMPUTE if ats should be enabled where it is needed.
+        If True or False are explicitly set, the 'enable_ats' field will be set
+        in the '$build/goma' property.  By default, args.COMPUTE is set and
+        'enable_ats' fields is set only if ats need to be enabled by default.
+        The 'enable_ats' on Windows will control cross compiling in server
+        side. cross compile if `enable_ats` is False.
+        Note: if goma_enable_ats is not set, goma recipe modules sets
+        GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=true on windows by default.
       * goma_jobs - a member of the `goma.jobs` enum indicating the number of jobs
         to be used by the builder. Sets the 'jobs' field of the '$build/goma'
         property will be set according to the enum member. By default, the 'jobs'
@@ -503,6 +501,8 @@ def builder(
         compilations to run when using re-client as the compiler.
       * reclient_rewrapper_env - a map that sets the rewrapper flags via the
         environment variables. All such vars must start with the "RBE_" prefix.
+      * experiments - a dict of experiment name to the percentage chance (0-100)
+        that it will apply to builds generated from this builder.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -587,6 +587,14 @@ def builder(
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
 
+    # TODO(crbug.com/1143122): remove this.
+    experiments = experiments or {}
+    if os and os.category == os_category.MAC:
+        experiments["chromium.chromium_tests.use_rbe_cas"] = 50
+    elif os and os.category == os_category.WINDOWS:
+        experiments["chromium.chromium_tests.use_rbe_cas"] = 20
+    kwargs["experiments"] = experiments
+
     configure_kitchen = defaults.get_value("configure_kitchen", configure_kitchen)
     if configure_kitchen:
         properties["$kitchen"] = {
@@ -602,15 +610,22 @@ def builder(
     if chromium_tests != None:
         properties["$build/chromium_tests"] = chromium_tests
 
-    goma = _goma_property(
+    goma_enable_ats = defaults.get_value("goma_enable_ats", goma_enable_ats)
+
+    # Enable ATS on linux by default.
+    if goma_enable_ats == args.COMPUTE:
+        if os and os.category == os_category.LINUX:
+            goma_enable_ats = True
+        else:
+            goma_enable_ats = None
+    gp = _goma_property(
         goma_backend = goma_backend,
         goma_debug = goma_debug,
         goma_enable_ats = goma_enable_ats,
         goma_jobs = goma_jobs,
-        os = os,
     )
-    if goma != None:
-        properties["$build/goma"] = goma
+    if gp != None:
+        properties["$build/goma"] = gp
 
     code_coverage = _code_coverage_property(
         use_clang_coverage = use_clang_coverage,

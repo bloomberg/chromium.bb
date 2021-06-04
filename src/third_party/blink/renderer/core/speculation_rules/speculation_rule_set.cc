@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -124,12 +124,15 @@ SpeculationRuleSet* SpeculationRuleSet::ParseInline(const String& source_text,
   parse_for_action("prefetch_with_subresources",
                    result->prefetch_with_subresources_rules_);
 
+  // If parsed["prerender"] exists and is a list, then for each...
+  parse_for_action("prerender", result->prerender_rules_);
   return result;
 }
 
 void SpeculationRuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(prefetch_rules_);
   visitor->Trace(prefetch_with_subresources_rules_);
+  visitor->Trace(prerender_rules_);
 }
 
 }  // namespace blink

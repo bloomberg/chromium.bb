@@ -34,6 +34,10 @@ StylusBatteryDelegate::StylusBatteryDelegate() {
 StylusBatteryDelegate::~StylusBatteryDelegate() = default;
 
 SkColor StylusBatteryDelegate::GetColorForBatteryLevel() const {
+  if (!battery_level_.has_value()) {
+    return AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconColorWarning);
+  }
   if (battery_level_ <= kStylusLowBatteryThreshold && !IsBatteryCharging()) {
     return AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kIconColorAlert);
@@ -46,8 +50,10 @@ gfx::ImageSkia StylusBatteryDelegate::GetBatteryImage() const {
   PowerStatus::BatteryImageInfo info;
   info.charge_percent = battery_level_.value_or(0);
 
-  if (IsBatteryCharging())
+  if (IsBatteryCharging()) {
     info.icon_badge = &kUnifiedMenuBatteryBoltIcon;
+    info.badge_outline = &kUnifiedMenuBatteryBoltOutlineIcon;
+  }
 
   const SkColor icon_fg_color = GetColorForBatteryLevel();
   const SkColor icon_bg_color = AshColorProvider::Get()->GetBackgroundColor();
@@ -76,6 +82,9 @@ bool StylusBatteryDelegate::IsBatteryCharging() const {
 }
 
 bool StylusBatteryDelegate::IsBatteryLevelLow() const {
+  if (!battery_level_.has_value())
+    return false;
+
   return battery_level_ <= kStylusLowBatteryThreshold;
 }
 

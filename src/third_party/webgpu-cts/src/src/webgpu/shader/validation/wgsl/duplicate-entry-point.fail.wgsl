@@ -2,7 +2,7 @@
 
 [[stage(vertex)]]
 [[stage(fragment)]]
-fn main() -> void {
+fn main() {
   return;
 }
 

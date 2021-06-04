@@ -5,6 +5,8 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import * as Protocol from '../../generated/protocol.js';
 
 export class InputModel extends SDK.SDKModel.SDKModel {
   _inputAgent: ProtocolProxyApi.InputApi;
@@ -189,7 +191,7 @@ const BUTTONID_TO_ACTION_NAME = new Map<number, Protocol.Input.MouseButton>([
   [4, Protocol.Input.MouseButton.Forward],
 ]);
 
-SDK.SDKModel.SDKModel.register(InputModel, SDK.SDKModel.Capability.Input, false);
+SDK.SDKModel.SDKModel.register(InputModel, {capabilities: SDK.SDKModel.Capability.Input, autostart: false});
 export interface MouseEventData {
   type: string;
   modifiers: number;

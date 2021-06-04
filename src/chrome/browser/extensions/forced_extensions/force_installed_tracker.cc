@@ -25,7 +25,9 @@
 namespace extensions {
 
 namespace {
+constexpr int kHttpErrorCodeBadRequest = 400;
 constexpr int kHttpErrorCodeForbidden = 403;
+constexpr int kHttpErrorCodeNotFound = 404;
 }  // namespace
 
 ForceInstalledTracker::ForceInstalledTracker(ExtensionRegistry* registry,
@@ -108,11 +110,11 @@ void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
       pref_service_->GetDictionary(pref_names::kInstallForceList);
   if (value) {
     // Add each extension to |extensions_|.
-    for (const auto& entry : *value) {
+    for (const auto& entry : value->DictItems()) {
       const ExtensionId& extension_id = entry.first;
-      std::string* update_url = nullptr;
-      if (entry.second->is_dict()) {
-        update_url = entry.second->FindStringKey(
+      const std::string* update_url = nullptr;
+      if (entry.second.is_dict()) {
+        update_url = entry.second.FindStringKey(
             ExternalProviderImpl::kExternalUpdateUrl);
       }
       bool is_from_store =
@@ -264,9 +266,12 @@ bool ForceInstalledTracker::IsMisconfiguration(
   if (installation_data.failure_reason ==
       InstallStageTracker::FailureReason::MANIFEST_FETCH_FAILED) {
     auto extension = extensions_.find(id);
-    if (installation_data.response_code == kHttpErrorCodeForbidden &&
-        extension != extensions_.end() && !extension->second.is_from_store) {
-      return true;
+    if (extension != extensions_.end() && !extension->second.is_from_store) {
+      if (installation_data.response_code == kHttpErrorCodeBadRequest ||
+          installation_data.response_code == kHttpErrorCodeForbidden ||
+          installation_data.response_code == kHttpErrorCodeNotFound) {
+        return true;
+      }
     }
   }
 
@@ -275,7 +280,7 @@ bool ForceInstalledTracker::IsMisconfiguration(
 
 // static
 bool ForceInstalledTracker::IsExtensionFetchedFromCache(
-    const base::Optional<ExtensionDownloaderDelegate::CacheStatus>& status) {
+    const absl::optional<ExtensionDownloaderDelegate::CacheStatus>& status) {
   if (!status)
     return false;
   return status.value() == ExtensionDownloaderDelegate::CacheStatus::

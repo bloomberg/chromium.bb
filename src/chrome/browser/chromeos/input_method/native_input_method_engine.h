@@ -8,8 +8,11 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 #include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
+#include "chrome/browser/chromeos/input_method/grammar_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/suggestions_collector.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom-forward.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -47,6 +50,9 @@ class NativeInputMethodEngine
   // ChromeKeyboardControllerClient:
   void OnKeyboardEnabledChanged(bool enabled) override;
 
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
   // Flush all relevant Mojo pipes.
   void FlushForTesting();
 
@@ -83,15 +89,18 @@ class NativeInputMethodEngine
         PrefService* prefs,
         std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer,
         std::unique_ptr<AssistiveSuggester> assistive_suggester,
-        std::unique_ptr<AutocorrectManager> autocorrect_manager);
+        std::unique_ptr<AutocorrectManager> autocorrect_manager,
+        std::unique_ptr<SuggestionsCollector> suggestions_collector,
+        std::unique_ptr<GrammarManager> grammar_manager);
     ~ImeObserver() override;
 
     // InputMethodEngineBase::Observer:
     void OnActivate(const std::string& engine_id) override;
     void OnFocus(
+        const std::string& engine_id,
         int context_id,
         const IMEEngineHandlerInterface::InputContext& context) override;
-    void OnBlur(int context_id) override;
+    void OnBlur(const std::string& engine_id, int context_id) override;
     void OnKeyEvent(
         const std::string& engine_id,
         const ui::KeyEvent& event,
@@ -147,12 +156,24 @@ class NativeInputMethodEngine
     void DeleteSurroundingText(uint32_t before, uint32_t after) override;
     void HandleAutocorrect(
         ime::mojom::AutocorrectSpanPtr autocorrect_span) override;
+    void RequestSuggestions(ime::mojom::SuggestionsRequestPtr request,
+                            RequestSuggestionsCallback callback) override;
+    void DisplaySuggestions(
+        const std::vector<ime::TextSuggestion>& suggestions) override;
+    void RecordUkm(ime::mojom::UkmEntryPtr entry) override;
+
+    // Called when suggestions are collected from the system via
+    // suggestions_collector_.
+    void OnSuggestionsGathered(RequestSuggestionsCallback request_callback,
+                               ime::mojom::SuggestionsResponsePtr response);
 
     // Flush all relevant Mojo pipes.
     void FlushForTesting();
 
     // Returns whether this is connected to the input engine.
     bool IsConnectedForTesting() const { return remote_to_engine_.is_bound(); }
+
+    void OnProfileWillBeDestroyed();
 
    private:
     // Called when this is connected to the input engine. |bound| indicates
@@ -174,25 +195,24 @@ class NativeInputMethodEngine
     mojo::Remote<ime::mojom::InputEngineManager> remote_manager_;
     mojo::Receiver<ime::mojom::InputChannel> receiver_from_engine_;
     mojo::Remote<ime::mojom::InputChannel> remote_to_engine_;
-    base::Optional<std::string> active_engine_id_;
 
     std::unique_ptr<AssistiveSuggester> assistive_suggester_;
     std::unique_ptr<AutocorrectManager> autocorrect_manager_;
+    std::unique_ptr<SuggestionsCollector> suggestions_collector_;
+    std::unique_ptr<GrammarManager> grammar_manager_;
 
     ui::CharacterComposer character_composer_;
   };
 
   ImeObserver* GetNativeObserver() const;
 
-  void OnInputMethodPrefsChanged();
+  void OnInputMethodOptionsChanged() override;
 
   AssistiveSuggester* assistive_suggester_ = nullptr;
   AutocorrectManager* autocorrect_manager_ = nullptr;
   base::ScopedObservation<ChromeKeyboardControllerClient,
                           ChromeKeyboardControllerClient::Observer>
       chrome_keyboard_controller_client_observer_{this};
-
-  PrefChangeRegistrar pref_change_registrar_;
 };
 
 }  // namespace chromeos

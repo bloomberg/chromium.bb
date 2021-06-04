@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -222,10 +221,9 @@ void KioskAppManager::InitSession(Profile* profile,
     // set here is to be able to properly restore session if the session is
     // restarted - e.g. due to crash. For example, this will ensure restarted
     // app session restores auto-launched state.
-    chromeos::UserSessionManager::GetInstance()->SetSwitchesForUser(
+    UserSessionManager::GetInstance()->SetSwitchesForUser(
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
-        chromeos::UserSessionManager::CommandLineSwitchesType::
-            kPolicyAndKioskControl,
+        UserSessionManager::CommandLineSwitchesType::kPolicyAndKioskControl,
         flags);
   }
 

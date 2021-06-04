@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -27,16 +26,17 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/views/controls/button/button.h"
+
+namespace ash {
 
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using views::Button;
-
-namespace chromeos {
+using ::views::Button;
 
 class NetworkScreenTest : public InProcessBrowserTest {
  public:
@@ -103,7 +103,7 @@ class NetworkScreenTest : public InProcessBrowserTest {
 
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
-  base::Optional<NetworkScreen::Result> last_screen_result_;
+  absl::optional<NetworkScreen::Result> last_screen_result_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
 };
@@ -144,4 +144,4 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   // view_->ClearErrors();
 }
 
-}  // namespace chromeos
+}  // namespace ash

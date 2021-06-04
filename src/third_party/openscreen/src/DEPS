@@ -36,6 +36,8 @@ deps = {
   # of the commits to the buildtools directory in the Chromium repository. This
   # should be regularly updated with the tip of the MIRRORED master branch,
   # found here:
+  # TODO(issuetracker.google.com/172242670): update to "main" when buildtools
+  # has a main branch stood up.
   # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/master.
   'buildtools': {
     'url': Var('chromium_git')+ '/chromium/src/buildtools' +

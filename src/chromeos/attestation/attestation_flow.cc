@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
@@ -19,13 +18,14 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
 #include "components/account_id/account_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace attestation {
 
 namespace {
 
-base::Optional<::attestation::CertificateProfile> ProfileToAttestationProtoEnum(
+absl::optional<::attestation::CertificateProfile> ProfileToAttestationProtoEnum(
     AttestationCertificateProfile p) {
   switch (p) {
     case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
@@ -37,6 +37,8 @@ base::Optional<::attestation::CertificateProfile> ProfileToAttestationProtoEnum(
     case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return ::attestation::CertificateProfile::
           ENTERPRISE_ENROLLMENT_CERTIFICATE;
+    case PROFILE_SOFT_BIND_CERTIFICATE:
+      return ::attestation::CertificateProfile::SOFT_BIND_CERTIFICATE;
   }
   return {};
 }
@@ -70,6 +72,7 @@ AttestationKeyType AttestationFlow::GetKeyTypeForProfile(
       return KEY_DEVICE;
     case PROFILE_ENTERPRISE_USER_CERTIFICATE:
     case PROFILE_CONTENT_PROTECTION_CERTIFICATE:
+    case PROFILE_SOFT_BIND_CERTIFICATE:
       return KEY_USER;
   }
   NOTREACHED();
@@ -242,7 +245,7 @@ void AttestationFlow::StartCertificateRequest(
   AttestationKeyType key_type = GetKeyTypeForProfile(certificate_profile);
   if (generate_new_key) {
     // Get the attestation service to create a Privacy CA certificate request.
-    const base::Optional<::attestation::CertificateProfile>
+    const absl::optional<::attestation::CertificateProfile>
         attestation_profile =
             ProfileToAttestationProtoEnum(certificate_profile);
     if (!attestation_profile) {

@@ -10,9 +10,11 @@
 
 #include "ash/hud_display/grid.h"
 #include "ash/hud_display/hud_constants.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 namespace hud_display {
@@ -88,21 +90,17 @@ MemoryGraphPageView::MemoryGraphPageView(const base::TimeDelta refresh_interval)
 
   const std::vector<Legend::Entry> legend({
       {graph_gpu_kernel_, u"GPU Driver",
-       base::ASCIIToUTF16("Kernel GPU buffers as reported\nby "
-                          "base::SystemMemoryInfo::gem_size."),
+       u"Kernel GPU buffers as reported\nby base::SystemMemoryInfo::gem_size.",
        formatter},
       {graph_gpu_rss_private_, u"Chrome GPU",
-       base::ASCIIToUTF16(
-           "RSS private memory of\n --type=gpu-process Chrome process."),
+       u"RSS private memory of\n --type=gpu-process Chrome process.",
        formatter},
       // ARC memory is not usually visible (skipped)
       {graph_renderers_rss_private_, u"Renderers",
-       base::ASCIIToUTF16(
-           "Sum of RSS private memory of\n--type=renderer Chrome process."),
+       u"Sum of RSS private memory of\n--type=renderer Chrome process.",
        formatter},
       {graph_mem_used_unknown_, u"Other",
-       base::ASCIIToUTF16(
-           "Amount of other used memory.\nEquals to total used minus known."),
+       u"Amount of other used memory.\nEquals to total used minus known.",
        formatter},
       {graph_mem_free_, u"Free", u"Free memory as reported by kernel.",
        formatter},

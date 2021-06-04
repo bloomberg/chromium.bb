@@ -97,6 +97,13 @@ void BrowserAccessibilityManagerAuraLinux::FireExpandedEvent(
       is_expanded);
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireShowingEvent(
+    BrowserAccessibility* node,
+    bool is_showing) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnShowingStateChanged(
+      is_showing);
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireInvalidStatusChangedEvent(
     BrowserAccessibility* node) {
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnInvalidStatusChanged();
@@ -140,6 +147,11 @@ void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
 void BrowserAccessibilityManagerAuraLinux::FireParentChangedEvent(
     BrowserAccessibility* node) {
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnParentChanged();
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireReadonlyChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnReadonlyChanged();
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireSortDirectionChangedEvent(
@@ -216,11 +228,20 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
       FireSelectedEvent(node);
       break;
+    case ui::AXEventGenerator::Event::MENU_POPUP_END:
+      FireShowingEvent(node, false);
+      break;
+    case ui::AXEventGenerator::Event::MENU_POPUP_START:
+      FireShowingEvent(node, true);
+      break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireNameChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::PARENT_CHANGED:
       FireParentChangedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::READONLY_CHANGED:
+      FireReadonlyChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::RANGE_VALUE_CHANGED:
       DCHECK(node->GetData().IsRangeValueSupported());
@@ -289,7 +310,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::RANGE_VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::RANGE_VALUE_MIN_CHANGED:
     case ui::AXEventGenerator::Event::RANGE_VALUE_STEP_CHANGED:
-    case ui::AXEventGenerator::Event::READONLY_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
     case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
     case ui::AXEventGenerator::Event::ROLE_CHANGED:

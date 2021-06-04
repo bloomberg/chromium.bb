@@ -827,11 +827,6 @@ void LayoutView::UpdateHitTestResult(HitTestResult& result,
   }
 }
 
-bool LayoutView::UsesCompositing() const {
-  NOT_DESTROYED();
-  return compositor_ && compositor_->StaleInCompositingMode();
-}
-
 PaintLayerCompositor* LayoutView::Compositor() {
   NOT_DESTROYED();
   return compositor_.get();
@@ -922,17 +917,35 @@ CompositingReasons LayoutView::AdditionalCompositingReasons() const {
   return CompositingReason::kNone;
 }
 
-void LayoutView::UpdateMarkersAndCountersAfterStyleChange() {
+void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
+    LayoutObject* container) {
   NOT_DESTROYED();
   if (!needs_marker_counter_update_)
     return;
+
+  DCHECK(!container ||
+         (container->View() == this && container->IsDescendantOf(this) &&
+          GetDocument().GetStyleEngine().InContainerQueryStyleRecalc()))
+      << "The container parameter is currently only for scoping updates for "
+         "container query style recalcs";
 
   needs_marker_counter_update_ = false;
   if (!HasLayoutCounters() && !HasLayoutListItems())
     return;
 
-  for (LayoutObject* layout_object = this; layout_object;
-       layout_object = layout_object->NextInPreOrder()) {
+  // For container queries style recalc, we know the counter styles didn't
+  // change outside the container. Hence, we can start the update traversal from
+  // the container.
+  LayoutObject* start = container ? container : this;
+  // Additionally, if the container contains style, we know counters inside the
+  // container cannot affect counters outside the container, which means we can
+  // limit the traversal to the container subtree.
+  LayoutObject* stay_within =
+      container && container->ShouldApplyStyleContainment() ? container
+                                                            : nullptr;
+
+  for (LayoutObject* layout_object = start; layout_object;
+       layout_object = layout_object->NextInPreOrder(stay_within)) {
     if (auto* list_item = DynamicTo<LayoutListItem>(layout_object)) {
       list_item->UpdateCounterStyle();
     } else if (auto* ng_list_item =

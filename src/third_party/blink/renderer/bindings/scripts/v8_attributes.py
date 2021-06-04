@@ -180,7 +180,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
 
     cpp_type = idl_type.cpp_type
     if idl_type.is_explicit_nullable:
-        cpp_type = v8_types.cpp_template_type('base::Optional', cpp_type)
+        cpp_type = v8_types.cpp_template_type('absl::optional', cpp_type)
 
     context = {
         # [ActivityLogging]
@@ -279,6 +279,12 @@ def attribute_context(interface, attribute, interfaces, component_info):
         # [RuntimeEnabled] if not in origin trial
         'runtime_enabled_feature_name':
         v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),
+        # [CrossOriginIsolated]
+        'cross_origin_isolated_test':
+        v8_utilities.cross_origin_isolated(attribute, interface),
+        # [DirectSocketEnabled]
+        'direct_socket_enabled_test':
+        v8_utilities.direct_socket_enabled(attribute, interface),
         # [SecureContext]
         'secure_context_test': v8_utilities.secure_context(attribute, interface),
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
@@ -338,23 +344,34 @@ def is_origin_trial_enabled(attribute):
     return bool(attribute['origin_trial_feature_name'])
 
 
+def is_cross_origin_isolated(attribute):
+    return bool(attribute['cross_origin_isolated_test'])
+
+
+def is_direct_socket_enabled(attribute):
+    return bool(attribute['direct_socket_enabled_test'])
+
+
 def is_secure_context(attribute):
     return bool(attribute['secure_context_test'])
 
 
 def filter_accessors(attributes):
     return [
-        attribute for attribute in attributes
-        if not (attribute['exposed_test'] or is_secure_context(attribute)
-                or attribute['context_enabled_feature_name']
-                or is_origin_trial_enabled(attribute)
-                or attribute['runtime_enabled_feature_name'])
+        attribute for attribute in attributes if not (
+            attribute['exposed_test'] or is_secure_context(attribute)
+            or is_cross_origin_isolated(attribute) or is_direct_socket_enabled(
+                attribute) or attribute['context_enabled_feature_name']
+            or is_origin_trial_enabled(attribute)
+            or attribute['runtime_enabled_feature_name'])
         and not attribute['is_data_type_property']
     ]
 
 
 def is_data_attribute(attribute):
     return (not (attribute['exposed_test'] or is_secure_context(attribute)
+                 or is_cross_origin_isolated(attribute)
+                 or is_direct_socket_enabled(attribute)
                  or attribute['context_enabled_feature_name']
                  or is_origin_trial_enabled(attribute)
                  or attribute['runtime_enabled_feature_name'])
@@ -370,16 +387,19 @@ def filter_data_attributes(attributes):
 def filter_runtime_enabled(attributes):
     return [
         attribute for attribute in attributes
-        if not (attribute['exposed_test'] or is_secure_context(attribute))
+        if not (attribute['exposed_test'] or is_secure_context(attribute)
+                or is_cross_origin_isolated(attribute)
+                or is_direct_socket_enabled(attribute))
         and attribute['runtime_enabled_feature_name']
     ]
 
 
 def filter_conditionally_enabled(attributes):
     return [
-        attribute for attribute in attributes
-        if attribute['exposed_test'] or (is_secure_context(
-            attribute) and not is_origin_trial_enabled(attribute))
+        attribute for attribute in attributes if attribute['exposed_test'] or (
+            (is_secure_context(attribute) or is_cross_origin_isolated(
+                attribute) or is_direct_socket_enabled(attribute))
+            and not is_origin_trial_enabled(attribute))
     ]
 
 

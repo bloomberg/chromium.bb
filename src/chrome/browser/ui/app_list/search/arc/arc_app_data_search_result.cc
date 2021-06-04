@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -43,7 +44,7 @@ bool LaunchIntent(const std::string& intent_uri, int64_t display_id) {
 
   if (auto* app_instance =
           ARC_GET_INSTANCE_FOR_METHOD(app, LaunchIntentDeprecated)) {
-    app_instance->LaunchIntentDeprecated(intent_uri, base::nullopt);
+    app_instance->LaunchIntentDeprecated(intent_uri, absl::nullopt);
     return true;
   }
 
@@ -80,15 +81,20 @@ class AvatarImageSource : public gfx::CanvasImageSource {
 
 ArcAppDataSearchResult::ArcAppDataSearchResult(
     arc::mojom::AppDataResultPtr data,
-    AppListControllerDelegate* list_controller)
+    AppListControllerDelegate* list_controller,
+    const std::u16string& query)
     : data_(std::move(data)), list_controller_(list_controller) {
-  SetTitle(base::UTF8ToUTF16(data_->label));
+  const std::u16string title = base::UTF8ToUTF16(data_->label);
+  SetTitle(title);
+  SetTitleTags(CalculateTags(query, title));
   set_id(kAppDataSearchPrefix + launch_intent_uri());
   if (data_->type == arc::mojom::AppDataResultType::PERSON) {
     SetDisplayType(ash::SearchResultDisplayType::kTile);
     SetMetricsType(ash::APP_DATA_RESULT_PERSON);
   } else if (data_->type == arc::mojom::AppDataResultType::NOTE_DOCUMENT) {
-    SetDetails(base::UTF8ToUTF16(data_->text));
+    const std::u16string details = base::UTF8ToUTF16(data_->text);
+    SetDetails(details);
+    SetDetailsTags(CalculateTags(query, details));
     SetDisplayType(ash::SearchResultDisplayType::kList);
     SetMetricsType(ash::APP_DATA_RESULT_NOTE_DOCUMENT);
   } else {

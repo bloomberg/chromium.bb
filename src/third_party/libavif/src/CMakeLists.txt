@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.5)
 # and find_package()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
-project(libavif LANGUAGES C VERSION 0.9.0)
+project(libavif LANGUAGES C VERSION 0.9.1)
 
 # Set C99 as the default
 set(CMAKE_C_STANDARD 99)
@@ -19,7 +19,7 @@ set(CMAKE_C_STANDARD 99)
 #     Increment MINOR. Set PATCH to 0
 #   If the source code was changed, but there were no interface changes:
 #     Increment PATCH.
-set(LIBRARY_VERSION_MAJOR 10)
+set(LIBRARY_VERSION_MAJOR 11)
 set(LIBRARY_VERSION_MINOR 0)
 set(LIBRARY_VERSION_PATCH 0)
 set(LIBRARY_VERSION "${LIBRARY_VERSION_MAJOR}.${LIBRARY_VERSION_MINOR}.${LIBRARY_VERSION_PATCH}")
@@ -198,6 +198,7 @@ set(AVIF_SRCS
     src/alpha.c
     src/avif.c
     src/colr.c
+    src/diag.c
     src/io.c
     src/mem.c
     src/obu.c
@@ -223,12 +224,19 @@ endif()
 
 find_package(libyuv QUIET) # not required
 if(libyuv_FOUND)
-    message(STATUS "libavif: libyuv found, libyuv-based fast paths enabled.")
-    set(AVIF_PLATFORM_DEFINITIONS ${AVIF_PLATFORM_DEFINITIONS} -DAVIF_LIBYUV_ENABLED=1)
-    set(AVIF_PLATFORM_INCLUDES ${AVIF_PLATFORM_INCLUDES} ${LIBYUV_INCLUDE_DIR})
-    set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ${LIBYUV_LIBRARY})
+    # libyuv 1755 exposed all of the I*Matrix() functions, which libavif relies on.
+    if(NOT LIBYUV_VERSION)
+        message(STATUS "libavif: libyuv found, but version unknown; libyuv-based fast paths disabled.")
+    elseif(LIBYUV_VERSION LESS 1755)
+        message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found, but is too old; libyuv-based fast paths disabled.")
+    else()
+        message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found; libyuv-based fast paths enabled.")
+        set(AVIF_PLATFORM_DEFINITIONS ${AVIF_PLATFORM_DEFINITIONS} -DAVIF_LIBYUV_ENABLED=1)
+        set(AVIF_PLATFORM_INCLUDES ${AVIF_PLATFORM_INCLUDES} ${LIBYUV_INCLUDE_DIR})
+        set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ${LIBYUV_LIBRARY})
+    endif()
 else()
-    message(STATUS "libavif: libyuv not found, libyuv-based fast paths disabled.")
+    message(STATUS "libavif: libyuv not found; libyuv-based fast paths disabled.")
 endif()
 
 set(AVIF_CODEC_DEFINITIONS)
@@ -304,13 +312,13 @@ if(AVIF_CODEC_RAV1E)
     )
 
     if(AVIF_LOCAL_RAV1E)
-        set(LIB_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/target/release/${CMAKE_STATIC_LIBRARY_PREFIX}rav1e${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        set(LIB_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/build.libavif/usr/lib/${CMAKE_STATIC_LIBRARY_PREFIX}rav1e${CMAKE_STATIC_LIBRARY_SUFFIX}")
         if(NOT EXISTS "${LIB_FILENAME}")
-            message(FATAL_ERROR "libavif: compiled rav1e library is missing (in ext/rav1e/target/release), bailing out")
+            message(FATAL_ERROR "libavif: compiled rav1e library is missing (in ext/rav1e/build.libavif/usr/lib), bailing out")
         endif()
 
         set(AVIF_CODEC_INCLUDES ${AVIF_CODEC_INCLUDES}
-            "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/target/release"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/build.libavif/usr/include/rav1e"
         )
         set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${LIB_FILENAME})
     else()
@@ -390,7 +398,7 @@ if(AVIF_CODEC_AOM)
             find_package(aom REQUIRED)
             set(AVIF_CODEC_INCLUDES ${AVIF_CODEC_INCLUDES} ${AOM_INCLUDE_DIR})
         endif()
-        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${AOM_LIBRARY})
+        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${AOM_LIBRARIES})
     endif()
 endif()
 
@@ -448,6 +456,10 @@ if(NOT SKIP_INSTALL_ALL)
     include(GNUInstallDirs)
 endif()
 
+if(AVIF_CODEC_LIBRARIES MATCHES vmaf)
+    enable_language(CXX)
+endif()
+
 option(AVIF_BUILD_APPS "Build avif apps." OFF)
 if(AVIF_BUILD_APPS)
     find_package(ZLIB REQUIRED)
@@ -463,7 +475,7 @@ if(AVIF_BUILD_APPS)
         apps/shared/avifutil.c
         apps/shared/y4m.c
     )
-    if(AVIF_LOCAL_LIBGAV1)
+    if(AVIF_LOCAL_LIBGAV1 OR AVIF_CODEC_LIBRARIES MATCHES vmaf)
         set_target_properties(avifenc PROPERTIES LINKER_LANGUAGE "CXX")
     endif()
     target_link_libraries(avifenc avif ${AVIF_PLATFORM_LIBRARIES} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
@@ -482,7 +494,7 @@ if(AVIF_BUILD_APPS)
         apps/shared/avifutil.c
         apps/shared/y4m.c
     )
-    if(AVIF_LOCAL_LIBGAV1)
+    if(AVIF_LOCAL_LIBGAV1 OR AVIF_CODEC_LIBRARIES MATCHES vmaf)
         set_target_properties(avifdec PROPERTIES LINKER_LANGUAGE "CXX")
     endif()
     target_link_libraries(avifdec avif ${AVIF_PLATFORM_LIBRARIES} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${JPEG_LIBRARY})

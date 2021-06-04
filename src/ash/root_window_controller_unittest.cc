@@ -23,6 +23,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -175,8 +176,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   unparented_control->Init(std::move(params));
   EXPECT_EQ(root_windows[1],
             unparented_control->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
-            unparented_control->GetNativeView()->parent()->id());
+  EXPECT_EQ(kShellWindowId_UnparentedContainer,
+            unparented_control->GetNativeView()->parent()->GetId());
 
   // Make sure a window that will delete itself when losing focus
   // will not crash.
@@ -241,8 +242,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // Test if the unparented widget has moved.
   EXPECT_EQ(root_windows[0],
             unparented_control->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
-            unparented_control->GetNativeView()->parent()->id());
+  EXPECT_EQ(kShellWindowId_UnparentedContainer,
+            unparented_control->GetNativeView()->parent()->GetId());
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
@@ -288,7 +289,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   views::Widget* lock_screen =
       CreateModalWidgetWithParent(gfx::Rect(10, 10, 100, 100), lock_container);
-  lock_screen->GetNativeWindow()->set_id(kLockScreenWindowId);
+  lock_screen->GetNativeWindow()->SetId(kLockScreenWindowId);
   lock_screen->SetFullscreen(true);
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
@@ -306,7 +307,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to mirror.
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   controller = Shell::GetPrimaryRootWindowController();
@@ -315,7 +316,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to unified.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 
   controller = Shell::GetPrimaryRootWindowController();

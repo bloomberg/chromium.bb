@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/controls/label.h"
 
@@ -49,7 +50,7 @@ TEST_F(MediaStringViewTest, ShowMediaTitleAndArtist) {
 
   SimulateMediaMetadataChanged(metadata);
 
-  const std::u16string expected_text = base::UTF8ToUTF16("title \u2022 artist");
+  const std::u16string expected_text = u"title \u2022 artist";
   EXPECT_EQ(GetMediaStringViewTextLabel()->GetText(), expected_text);
 }
 

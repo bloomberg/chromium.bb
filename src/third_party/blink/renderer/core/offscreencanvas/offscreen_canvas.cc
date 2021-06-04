@@ -263,7 +263,7 @@ IntSize OffscreenCanvas::BitmapSourceSize() const {
 
 ScriptPromise OffscreenCanvas::CreateImageBitmap(
     ScriptState* script_state,
-    base::Optional<IntRect> crop_rect,
+    absl::optional<IntRect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
   if (context_)
@@ -286,7 +286,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     const CanvasContextCreationAttributesCore& attributes) {
   DCHECK_EQ(execution_context, GetTopExecutionContext());
   CanvasRenderingContext::ContextType context_type =
-      CanvasRenderingContext::ContextTypeFromId(id);
+      CanvasRenderingContext::ContextTypeFromId(id, execution_context);
 
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
@@ -295,10 +295,14 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     return nullptr;
   }
 
-  if (attributes.color_space != kSRGBCanvasColorSpaceName ||
-      attributes.pixel_format != kUint8CanvasPixelFormatName) {
-    if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext()))
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    if (attributes.color_space != kSRGBCanvasColorSpaceName ||
+        attributes.pixel_format != kUint8CanvasPixelFormatName) {
       UseCounter::Count(window->document(), WebFeature::kCanvasUseColorSpace);
+    }
+
+    if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+      UseCounter::Count(window->document(), WebFeature::kNewCanvas2DAPI);
   }
 
   // Log the aliased context type used.

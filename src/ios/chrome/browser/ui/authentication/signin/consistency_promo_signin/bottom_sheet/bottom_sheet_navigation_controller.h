@@ -7,18 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class BottomSheetNavigationController;
-
-// Delegate protocol for presentation events of BottomSheetNavigationController.
-@protocol BottomSheetNavigationControllerPresentationDelegate <NSObject>
-
-// Called when BottomSheetNavigationController disappears. Related to:
-// -[UIViewController viewDidDisappear:].
-- (void)bottomSheetNavigationControllerDidDisappear:
-    (BottomSheetNavigationController*)viewController;
-
-@end
-
 // Navigation controller presented from the bottom. The pushed view controllers
 // view have to be UIScrollView. This is required to support high font size
 // (related to accessibility) with small devices (like iPhone SE).
@@ -29,14 +17,18 @@
 // ChildBottomSheetViewController protocol.
 @interface BottomSheetNavigationController : UINavigationController
 
-// Presentation delegate.
-@property(nonatomic, weak)
-    id<BottomSheetNavigationControllerPresentationDelegate>
-        presentationDelegate;
+// View used to dim the background around the bottom sheet view. This is a
+// subview of the bottom sheet view superview. BottomSheetNavigationController
+// needs it to adjust when the bottom sheet view is moved.
+@property(nonatomic, strong) UIView* backgroundDimmerView;
 
 // Returns the desired size related to the current view controller shown by
 // |BottomSheetNavigationController|.
 - (CGSize)layoutFittingSize;
+
+// Updates backgroundDimmerView frame and other internal views according to the
+// bottom sheet view position.
+- (void)didUpdateControllerViewFrame;
 
 @end
 

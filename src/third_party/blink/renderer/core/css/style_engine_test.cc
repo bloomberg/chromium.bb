@@ -3025,8 +3025,6 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
 }
 
 TEST_F(StyleEngineTest, AtPropertyUseCount) {
-  ScopedCSSVariables2AtPropertyForTest scoped_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body { --x: No @property rule here; }
@@ -3072,8 +3070,6 @@ TEST_F(StyleEngineTest, MediaQueryAffectedByViewportSanityCheck) {
 }
 
 TEST_F(StyleEngineTest, RemoveDeclaredPropertiesEmptyRegistry) {
-  ScopedCSSVariables2AtPropertyForTest scoped_feature(true);
-
   EXPECT_FALSE(GetDocument().GetPropertyRegistry());
   PropertyRegistration::RemoveDeclaredProperties(GetDocument());
   EXPECT_FALSE(GetDocument().GetPropertyRegistry());
@@ -3314,6 +3310,36 @@ TEST_F(StyleEngineSimTest, OwnerColorSchemeBaseBackground) {
   EXPECT_EQ(Color::kWhite, light_document->View()->BaseBackgroundColor());
 }
 
+TEST_F(StyleEngineSimTest, ColorSchemeBaseBackgroundWhileRenderBlocking) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimSubresourceRequest css_resource("https://example.com/slow.css",
+                                     "text/css");
+
+  LoadURL("https://example.com");
+
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="slow.css">
+    Some content
+  )HTML");
+
+  css_resource.Start();
+  test::RunPendingTasks();
+
+  // No rendering updates should have happened yet.
+  ASSERT_TRUE(GetDocument().documentElement());
+  ASSERT_FALSE(GetDocument().documentElement()->GetComputedStyle());
+  EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
+
+  // The dark color-scheme meta should affect the canvas color.
+  EXPECT_EQ(Color(0x12, 0x12, 0x12),
+            GetDocument().View()->BaseBackgroundColor());
+
+  main_resource.Finish();
+  css_resource.Finish();
+}
+
 namespace {
 
 void SetDependsOnContainerQueries(Element& element) {
@@ -3335,7 +3361,7 @@ TEST_F(StyleEngineTest, UpdateStyleAndLayoutTreeForContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       .container {
-        contain: layout size;
+        contain: layout size style;
       }
     </style>
     <div id="container1" class="container">
@@ -3394,7 +3420,7 @@ TEST_F(StyleEngineTest, ContainerQueriesContainmentNotApplying) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       .container {
-        contain: layout size;
+        contain: layout size style;
       }
     </style>
     <div id="container" class="container">
@@ -3443,7 +3469,7 @@ TEST_F(StyleEngineTest, ContainerQueriesContainmentNotApplying) {
 TEST_F(StyleEngineTest, PseudoElementContainerQueryRecalc) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
-      #container { contain: layout size }
+      #container { contain: layout size style }
       #container::before { content: " " }
       span::before { content: " " }
     </style>
@@ -3476,7 +3502,7 @@ TEST_F(StyleEngineTest, PseudoElementContainerQueryRecalc) {
 
 TEST_F(StyleEngineTest, MarkStyleDirtyFromContainerRecalc) {
   GetDocument().body()->setInnerHTML(R"HTML(
-    <div id="container" style="contain: layout size">
+    <div id="container" style="contain: layout size style">
       <input id="input" type="text" class="affected">
     </div>
   )HTML");

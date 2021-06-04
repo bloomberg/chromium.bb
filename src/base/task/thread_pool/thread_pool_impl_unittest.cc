@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/cfi_buildflags.h"
+#include "base/containers/span.h"
 #include "base/debug/stack_trace.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -300,10 +301,6 @@ class ThreadPoolImplTestBase : public testing::Test {
   ThreadPoolImplTestBase(const ThreadPoolImplTestBase&) = delete;
   ThreadPoolImplTestBase& operator=(const ThreadPoolImplTestBase&) = delete;
 
-  void EnableAllTasksUserBlocking() {
-    should_enable_all_tasks_user_blocking_ = true;
-  }
-
   void set_worker_thread_observer(
       WorkerThreadObserver* worker_thread_observer) {
     worker_thread_observer_ = worker_thread_observer;
@@ -339,9 +336,6 @@ class ThreadPoolImplTestBase : public testing::Test {
   void SetupFeatures() {
     std::vector<base::Feature> features;
 
-    if (should_enable_all_tasks_user_blocking_)
-      features.push_back(kAllTasksUserBlocking);
-
 #if HAS_NATIVE_THREAD_POOL()
     if (GetGroupTypes().foreground_type == test::GroupType::NATIVE)
       features.push_back(kUseNativeThreadPool);
@@ -356,7 +350,6 @@ class ThreadPoolImplTestBase : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   WorkerThreadObserver* worker_thread_observer_ = nullptr;
   bool did_tear_down_ = false;
-  bool should_enable_all_tasks_user_blocking_ = false;
 };
 
 class ThreadPoolImplTest : public ThreadPoolImplTestBase,
@@ -524,46 +517,6 @@ TEST_P(ThreadPoolImplTest_CoverAllSchedulingOptions, PostTaskAfterDestroy) {
 
   EXPECT_FALSE(
       task_runner->PostTask(FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE)));
-}
-
-// Verify that all tasks posted to a TaskRunner after Start() run in a
-// USER_BLOCKING environment when the AllTasksUserBlocking variation param of
-// the BrowserScheduler experiment is true.
-TEST_P(ThreadPoolImplTest_CoverAllSchedulingOptions,
-       AllTasksAreUserBlockingTaskRunner) {
-  TaskTraits user_blocking_traits = GetTraits();
-  user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
-
-  EnableAllTasksUserBlocking();
-  StartThreadPool();
-
-  TestWaitableEvent task_running;
-  CreateTaskRunnerAndExecutionMode(thread_pool_.get(), GetTraits(),
-                                   GetExecutionMode())
-      ->PostTask(FROM_HERE, BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
-                                     user_blocking_traits, GetGroupTypes(),
-                                     Unretained(&task_running)));
-  task_running.Wait();
-}
-
-// Verify that all tasks posted via PostDelayedTask() after Start() run in a
-// USER_BLOCKING environment when the AllTasksUserBlocking variation param of
-// the BrowserScheduler experiment is true.
-TEST_P(ThreadPoolImplTest_CoverAllSchedulingOptions, AllTasksAreUserBlocking) {
-  TaskTraits user_blocking_traits = GetTraits();
-  user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
-
-  EnableAllTasksUserBlocking();
-  StartThreadPool();
-
-  TestWaitableEvent task_running;
-  // Ignore |params.execution_mode| in this test.
-  thread_pool_->PostDelayedTask(
-      FROM_HERE, GetTraits(),
-      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, user_blocking_traits,
-               GetGroupTypes(), Unretained(&task_running)),
-      TimeDelta());
-  task_running.Wait();
 }
 
 // Verifies that FlushAsyncForTesting() calls back correctly for all trait and
@@ -961,7 +914,7 @@ TEST_P(ThreadPoolImplTest, FileDescriptorWatcherNoOpsAfterShutdown) {
   thread_pool_->Shutdown();
 
   constexpr char kByte = '!';
-  ASSERT_TRUE(WriteFileDescriptor(pipes[1], &kByte, sizeof(kByte)));
+  ASSERT_TRUE(WriteFileDescriptor(pipes[1], as_bytes(make_span(&kByte, 1))));
 
   // Give a chance for the file watcher to fire before closing the handles.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());

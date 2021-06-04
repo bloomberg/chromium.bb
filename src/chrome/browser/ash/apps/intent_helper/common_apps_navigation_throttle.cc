@@ -22,19 +22,18 @@
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/browser_resources.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/display/types/display_constants.h"
-
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
-#include "chrome/grit/browser_resources.h"
-#include "components/strings/grit/components_strings.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace apps {
 
@@ -132,7 +131,7 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
   if (!navigate_from_link())
     return false;
 
-  base::Optional<std::string> preferred_app_id =
+  absl::optional<std::string> preferred_app_id =
       proxy->PreferredApps().FindPreferredAppForUrl(url);
   if (!preferred_app_id.has_value() ||
       !base::Contains(app_ids, preferred_app_id.value())) {
@@ -164,10 +163,12 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
                     /*prefer_container=*/true),
       url, launch_source, apps::MakeWindowInfo(display::kDefaultDisplayId));
 
-  if (web_contents->GetVisibleURL().IsAboutBlank())
+  const GURL& last_committed_url = web_contents->GetLastCommittedURL();
+  if (!last_committed_url.is_valid() || last_committed_url.IsAboutBlank())
     web_contents->ClosePage();
 
   IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
+      profile,
       /*selected_app_package=*/preferred_app_id.value(),
       GetPickerEntryType(app_type),
       apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,

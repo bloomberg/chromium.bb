@@ -16,10 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -59,6 +57,7 @@
 #include "net/base/ip_endpoint.h"
 #include "printing/backend/print_backend.h"
 #include "printing/printer_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -647,7 +646,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
     return;
   }
 
-  base::Optional<Printer> existing_printer_object =
+  absl::optional<Printer> existing_printer_object =
       printers_manager_->GetPrinter(printer->id());
   if (existing_printer_object) {
     if (!IsValidUriChange(*existing_printer_object, *printer)) {
@@ -857,8 +856,7 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
   CHECK(args->GetString(0, &webui_callback_id_));
 
   base::FilePath downloads_path =
-      DownloadPrefs::FromDownloadManager(
-          content::BrowserContext::GetDownloadManager(profile_))
+      DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
           ->DownloadPath();
 
   content::WebContents* web_contents = web_ui()->GetWebContents();
@@ -885,7 +883,9 @@ void CupsPrintersHandler::ResolveManufacturersDone(
     const std::vector<std::string>& manufacturers) {
   auto manufacturers_value = std::make_unique<base::ListValue>();
   if (result_code == PpdProvider::SUCCESS) {
-    manufacturers_value->AppendStrings(manufacturers);
+    for (const std::string& manufacturer : manufacturers) {
+      manufacturers_value->Append(manufacturer);
+    }
   }
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
@@ -1034,7 +1034,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   CHECK(args->GetString(1, &printer_id));
 
   PRINTER_LOG(USER) << "Adding discovered printer";
-  base::Optional<Printer> printer = printers_manager_->GetPrinter(printer_id);
+  absl::optional<Printer> printer = printers_manager_->GetPrinter(printer_id);
   if (!printer) {
     PRINTER_LOG(ERROR) << "Discovered printer disappeared";
     // Printer disappeared, so we don't have information about it anymore and
@@ -1211,7 +1211,7 @@ void CupsPrintersHandler::HandleQueryPrintServer(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &server_url));
 
-  base::Optional<GURL> converted_server_url =
+  absl::optional<GURL> converted_server_url =
       GenerateServerPrinterUrlWithValidScheme(server_url);
   if (!converted_server_url) {
     RejectJavascriptCallback(
@@ -1259,7 +1259,7 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
       printers_manager_->GetPrinters(PrinterClass::kSaved);
   std::set<GURL> known_printers;
   for (const Printer& printer : saved_printers) {
-    base::Optional<GURL> gurl =
+    absl::optional<GURL> gurl =
         GenerateServerPrinterUrlWithValidScheme(printer.uri().GetNormalized());
     if (gurl)
       known_printers.insert(gurl.value());
@@ -1272,7 +1272,7 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
   printers.reserve(returned_printers.size());
   for (PrinterDetector::DetectedPrinter& printer : returned_printers) {
     printers.push_back(std::move(printer.printer));
-    base::Optional<GURL> printer_gurl = GenerateServerPrinterUrlWithValidScheme(
+    absl::optional<GURL> printer_gurl = GenerateServerPrinterUrlWithValidScheme(
         printers.back().uri().GetNormalized());
     if (printer_gurl && known_printers.count(printer_gurl.value()))
       printers.pop_back();
@@ -1288,12 +1288,12 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
 
 void CupsPrintersHandler::HandleOpenPrintManagementApp(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   chrome::ShowPrintManagementApp(profile_);
 }
 
 void CupsPrintersHandler::HandleOpenScanningApp(const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   chrome::ShowScanningApp(profile_);
 }
 

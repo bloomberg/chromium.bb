@@ -23,7 +23,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -35,6 +34,7 @@
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "net/log/net_log_with_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -174,7 +174,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
       DeleteCallback callback) override;
   void DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
                                   DeleteCallback callback) override;
-  void DeleteSessionCookiesAsync(DeleteCallback) override;
+  void DeleteSessionCookiesAsync(DeleteCallback callback) override;
+  void DeleteMatchingCookiesAsync(DeletePredicate predicate,
+                                  DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
@@ -359,13 +361,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const CookieDeletionInfo::TimeRange& creation_range,
       DeleteCallback callback);
 
-  void DeleteAllMatchingInfo(net::CookieDeletionInfo delete_info,
-                             DeleteCallback callback);
+  // Returns whether |cookie| matches |delete_info|.
+  bool MatchCookieDeletionInfo(const CookieDeletionInfo& delete_info,
+                               const net::CanonicalCookie& cookie);
 
   void DeleteCanonicalCookie(const CanonicalCookie& cookie,
                              DeleteCallback callback);
 
-  void DeleteSessionCookies(DeleteCallback callback);
+  void DeleteMatchingCookies(DeletePredicate predicate,
+                             DeletionCause cause,
+                             DeleteCallback callback);
 
   // The first access to the cookie store initializes it. This method should be
   // called before any access to the cookie store.
@@ -696,8 +701,8 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   virtual void Flush(base::OnceClosure callback) = 0;
 
  protected:
-  PersistentCookieStore() {}
-  virtual ~PersistentCookieStore() {}
+  PersistentCookieStore() = default;
+  virtual ~PersistentCookieStore() = default;
 
  private:
   friend class base::RefCountedThreadSafe<PersistentCookieStore>;

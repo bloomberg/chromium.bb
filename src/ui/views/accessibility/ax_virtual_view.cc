@@ -20,6 +20,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 #include "ui/views/view.h"
@@ -65,6 +66,11 @@ AXVirtualView::~AXVirtualView() {
     ax_platform_node_->Destroy();
     ax_platform_node_ = nullptr;
   }
+
+#if defined(USE_AURA)
+  if (ax_aura_obj_cache_)
+    ax_aura_obj_cache_->Remove(this);
+#endif
 }
 
 void AXVirtualView::AddChildView(std::unique_ptr<AXVirtualView> view) {
@@ -202,7 +208,12 @@ void AXVirtualView::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     if (events_callback)
       events_callback.Run(this, event_type);
   }
+
+  // This is used on platforms that have a native accessibility API.
   ax_platform_node_->NotifyAccessibilityEvent(event_type);
+
+  // This is used on platforms that don't have a native accessibility API.
+  AXEventManager::Get()->NotifyVirtualViewEvent(this, event_type);
 }
 
 ui::AXNodeData& AXVirtualView::GetCustomData() {
@@ -287,7 +298,7 @@ gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
   return nullptr;
 }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 gfx::NativeViewAccessible AXVirtualView::GetNSWindow() {
   NOTREACHED();
   return nullptr;
@@ -432,7 +443,7 @@ gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
-base::Optional<bool> AXVirtualView::GetTableHasColumnOrRowHeaderNode() const {
+absl::optional<bool> AXVirtualView::GetTableHasColumnOrRowHeaderNode() const {
   return GetDelegate()->GetTableHasColumnOrRowHeaderNode();
 }
 
@@ -444,7 +455,7 @@ std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds(int col_index) const {
   return GetDelegate()->GetColHeaderNodeIds(col_index);
 }
 
-base::Optional<int32_t> AXVirtualView::GetCellId(int row_index,
+absl::optional<int32_t> AXVirtualView::GetCellId(int row_index,
                                                  int col_index) const {
   return GetDelegate()->GetCellId(row_index, col_index);
 }
@@ -508,11 +519,10 @@ ViewAXPlatformNodeDelegate* AXVirtualView::GetDelegate() const {
 AXVirtualViewWrapper* AXVirtualView::GetOrCreateWrapper(
     views::AXAuraObjCache* cache) {
 #if defined(USE_AURA)
-  // cache might be recreated, and if cache is new, recreate the wrapper.
-  if (!wrapper_ || wrapper_->cache() != cache)
-    wrapper_ = std::make_unique<AXVirtualViewWrapper>(this, cache);
+  return static_cast<AXVirtualViewWrapper*>(cache->GetOrCreate(this));
+#else
+  return nullptr;
 #endif
-  return wrapper_.get();
 }
 
 }  // namespace views

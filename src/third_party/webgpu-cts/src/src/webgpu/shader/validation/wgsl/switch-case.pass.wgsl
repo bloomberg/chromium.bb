@@ -1,7 +1,7 @@
 // correct use of switch statement
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var a: i32 = 2;
   switch (a) {
     case 2: {}

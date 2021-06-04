@@ -26,8 +26,8 @@
 #include "components/sync/engine/net/sync_server_connection_manager.h"
 #include "components/sync/engine/net/url_translator.h"
 #include "components/sync/engine/nigori/cryptographer.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/keystore_keys_handler.h"
-#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_scheduler.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -86,26 +86,11 @@ SyncManagerImpl::SyncManagerImpl(
       network_connection_tracker_(network_connection_tracker),
       initialized_(false),
       observing_network_connectivity_changes_(false),
-      sync_encryption_handler_(nullptr) {
-  // Pre-fill |notification_info_map_|.
-  for (ModelType type : ModelTypeSet::All()) {
-    notification_info_map_.insert(std::make_pair(type, NotificationInfo()));
-  }
-}
+      sync_encryption_handler_(nullptr) {}
 
 SyncManagerImpl::~SyncManagerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!initialized_);
-}
-
-SyncManagerImpl::NotificationInfo::NotificationInfo() : total_count(0) {}
-SyncManagerImpl::NotificationInfo::~NotificationInfo() {}
-
-base::DictionaryValue* SyncManagerImpl::NotificationInfo::ToValue() const {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  value->SetInteger("totalCount", total_count);
-  value->SetString("payload", payload);
-  return value;
 }
 
 ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
@@ -129,11 +114,10 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
   DVLOG(1) << "Configuring -"
            << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
-  ConfigurationParams params(GetOriginFromReason(reason), to_download,
-                             std::move(ready_task));
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
-  scheduler_->ScheduleConfiguration(std::move(params));
+  scheduler_->ScheduleConfiguration(GetOriginFromReason(reason), to_download,
+                                    std::move(ready_task));
   if (sync_feature_state != SyncFeatureState::INITIALIZING) {
     cycle_context_->set_is_sync_feature_enabled(sync_feature_state ==
                                                 SyncFeatureState::ON);
@@ -223,23 +207,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
     scheduler_->OnCredentialsUpdated();
   }
 
-  NotifyInitializationSuccess();
-}
-
-void SyncManagerImpl::NotifyInitializationSuccess() {
-  for (auto& observer : observers_) {
-    observer.OnInitializationComplete(
-        MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), true);
-  }
-}
-
-void SyncManagerImpl::NotifyInitializationFailure() {
-  for (auto& observer : observers_) {
-    observer.OnInitializationComplete(
-        MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), false);
-  }
+  debug_info_event_listener_.InitializationComplete();
+  js_sync_manager_observer_.InitializationComplete();
 }
 
 void SyncManagerImpl::OnPassphraseRequired(
@@ -278,6 +247,8 @@ void SyncManagerImpl::OnCryptographerStateChanged(Cryptographer* cryptographer,
   allstatus_.SetCryptoHasPendingKeys(has_pending_keys);
   allstatus_.SetKeystoreMigrationTime(
       sync_encryption_handler_->GetKeystoreMigrationTime());
+  allstatus_.SetTrustedVaultDebugInfo(
+      sync_encryption_handler_->GetTrustedVaultDebugInfo());
 }
 
 void SyncManagerImpl::OnPassphraseTypeChanged(
@@ -397,14 +368,6 @@ void SyncManagerImpl::OnServerConnectionEvent(
   }
 }
 
-void SyncManagerImpl::RequestNudgeForDataTypes(
-    const base::Location& nudge_location,
-    ModelTypeSet types) {
-  debug_info_event_listener_.OnNudgeFromDatatype(*(types.begin()));
-
-  scheduler_->ScheduleLocalNudge(types, nudge_location);
-}
-
 void SyncManagerImpl::NudgeForInitialDownload(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scheduler_->ScheduleInitialSyncNudge(type);
@@ -412,7 +375,8 @@ void SyncManagerImpl::NudgeForInitialDownload(ModelType type) {
 
 void SyncManagerImpl::NudgeForCommit(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestNudgeForDataTypes(FROM_HERE, ModelTypeSet(type));
+  debug_info_event_listener_.OnNudgeFromDatatype(type);
+  scheduler_->ScheduleLocalNudge(type);
 }
 
 void SyncManagerImpl::OnSyncCycleEvent(const SyncCycleEvent& event) {
@@ -483,8 +447,7 @@ void SyncManagerImpl::OnIncomingInvalidation(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   allstatus_.IncrementNotificationsReceived();
-  scheduler_->ScheduleInvalidationNudge(type, std::move(invalidation),
-                                        FROM_HERE);
+  scheduler_->ScheduleInvalidationNudge(type, std::move(invalidation));
 }
 
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
@@ -492,7 +455,7 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   if (types.Empty()) {
     LOG(WARNING) << "Sync received refresh request with no types specified.";
   } else {
-    scheduler_->ScheduleLocalRefreshRequest(types, FROM_HERE);
+    scheduler_->ScheduleLocalRefreshRequest(types);
   }
 }
 
@@ -507,6 +470,14 @@ SyncManagerImpl::GetModelTypeConnectorProxy() {
   return std::make_unique<ModelTypeConnectorProxy>(
       base::SequencedTaskRunnerHandle::Get(),
       model_type_registry_->AsWeakPtr());
+}
+
+WeakHandle<JsBackend> SyncManagerImpl::GetJsBackend() {
+  return MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
+}
+
+WeakHandle<DataTypeDebugInfoListener> SyncManagerImpl::GetDebugInfoListener() {
+  return MakeWeakHandle(debug_info_event_listener_.GetWeakPtr());
 }
 
 std::string SyncManagerImpl::cache_guid() {

@@ -69,10 +69,10 @@ class MockDecodeCache : public StubDecodeCache {
 
 TEST(PlaybackImageProviderTest, SkipsAllImages) {
   MockDecodeCache cache;
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), base::nullopt);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), absl::nullopt);
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
-  SkMatrix matrix = SkMatrix::I();
+  SkM44 matrix = SkM44();
 
   EXPECT_FALSE(provider.GetRasterContent(DrawImage(
       PaintImageBuilder::WithDefault()
@@ -92,7 +92,7 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
   MockDecodeCache cache;
   PaintImage skip_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
 
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   settings->images_to_skip = {skip_image.stable_id()};
 
@@ -100,7 +100,7 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
                                  std::move(settings));
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
-  SkMatrix matrix = SkMatrix::I();
+  SkM44 matrix = SkM44();
   EXPECT_FALSE(provider.GetRasterContent(
       DrawImage(skip_image, false, rect, kMedium_SkFilterQuality, matrix)));
   EXPECT_EQ(cache.images_decoded(), 0);
@@ -109,14 +109,14 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
 TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
   MockDecodeCache cache;
 
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
                                  std::move(settings));
 
   {
     SkRect rect = SkRect::MakeWH(10, 10);
-    SkMatrix matrix = SkMatrix::I();
+    SkM44 matrix = SkM44();
     auto decode = provider.GetRasterContent(CreateDiscardableDrawImage(
         gfx::Size(10, 10), nullptr, rect, kMedium_SkFilterQuality, matrix));
     EXPECT_TRUE(decode);
@@ -136,7 +136,7 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
 
   base::flat_map<PaintImage::Id, size_t> image_to_frame;
   image_to_frame[image.stable_id()] = 1u;
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   settings->image_to_current_frame_index = image_to_frame;
 
@@ -144,7 +144,7 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
                                  std::move(settings));
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
-  SkMatrix matrix = SkMatrix::I();
+  SkM44 matrix = SkM44();
   DrawImage draw_image(image, false, rect, kMedium_SkFilterQuality, matrix);
   provider.GetRasterContent(draw_image);
   ASSERT_TRUE(cache.last_image().paint_image());
@@ -155,14 +155,14 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
 TEST(PlaybackImageProviderTest, BitmapImages) {
   MockDecodeCache cache;
 
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
                                  std::move(settings));
 
   {
     SkIRect rect = SkIRect::MakeWH(10, 10);
-    SkMatrix matrix = SkMatrix::I();
+    SkM44 matrix = SkM44();
     auto draw_image = DrawImage(CreateBitmapImage(gfx::Size(10, 10)), false,
                                 rect, kMedium_SkFilterQuality, matrix);
     auto decode = provider.GetRasterContent(draw_image);
@@ -177,13 +177,13 @@ TEST(PlaybackImageProviderTest, BitmapImages) {
 TEST(PlaybackImageProviderTest, IgnoresImagesNotSupportedByCache) {
   MockDecodeCache cache;
   cache.set_use_cache_for_draw_image(false);
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
                                  std::move(settings));
   {
     SkIRect rect = SkIRect::MakeWH(10, 10);
-    SkMatrix matrix = SkMatrix::I();
+    SkM44 matrix = SkM44();
     auto draw_image = DrawImage(CreateBitmapImage(gfx::Size(10, 10)), false,
                                 rect, kMedium_SkFilterQuality, matrix);
     auto decode = provider.GetRasterContent(draw_image);

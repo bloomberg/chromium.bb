@@ -73,6 +73,7 @@ TEST_F(AV1FrameSizeTests, OneByOneVideo) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
+#if !CONFIG_REALTIME_ONLY
 typedef struct {
   unsigned int width;
   unsigned int height;
@@ -129,5 +130,6 @@ TEST_P(AV1LosslessFrameSizeTests, LosslessEncode) {
 AV1_INSTANTIATE_TEST_SUITE(AV1LosslessFrameSizeTests,
                            ::testing::ValuesIn(FrameSizeTestParams),
                            testing::Values(::libaom_test::kAllIntra));
+#endif  // !CONFIG_REALTIME_ONLY
 
 }  // namespace

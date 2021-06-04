@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_H_
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_H_
 
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
@@ -46,7 +43,6 @@ class ManualFillingController {
     PASSWORD_FALLBACKS,
     CREDIT_CARD_FALLBACKS,
     ADDRESS_FALLBACKS,
-    TOUCH_TO_FILL,
   };
 
   ManualFillingController() = default;
@@ -122,6 +118,12 @@ class ManualFillingController {
   // such as "Save passwords for this site".
   virtual void OnToggleChanged(autofill::AccessoryAction toggled_action,
                                bool enabled) const = 0;
+
+  // Called by the UI to explicitly request a new sheet of the given type.
+  virtual void RequestAccessorySheet(
+      autofill::AccessoryTabType tab_type,
+      base::OnceCallback<void(const autofill::AccessorySheetData&)>
+          callback) = 0;
 
   // -----------------
   // Member accessors:

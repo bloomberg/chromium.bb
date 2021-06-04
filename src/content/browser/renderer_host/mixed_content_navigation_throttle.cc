@@ -6,16 +6,15 @@
 
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"

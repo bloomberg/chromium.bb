@@ -29,6 +29,13 @@ class WebTest : public PlatformTest {
           WebTaskEnvironment::Options = WebTaskEnvironment::Options::DEFAULT);
   ~WebTest() override;
 
+  void SetUp() override;
+
+  // Creates and returns a BrowserState for use in tests. The default
+  // implementation returns a FakeBrowserState, but subclasses can override this
+  // to supply a custom BrowserState.
+  virtual std::unique_ptr<BrowserState> CreateBrowserState();
+
   // Manually overrides the built in JavaScriptFeatures and those from
   // |GetWebClient()::GetJavaScriptFeatures()|. This is intended to be used to
   // replace an instance of a built in feature with one created by the test.
@@ -49,17 +56,13 @@ class WebTest : public PlatformTest {
   // fixture will fail if a render process crashes.
   void SetIgnoreRenderProcessCrashesDuringTesting(bool allow);
 
-  // Sets a SharedURLLoaderFactory for |browser_state_|.
-  void SetSharedURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
-
  private:
   // The WebClient used in tests.
   ScopedTestingWebClient web_client_;
   // The threads used for testing.
   web::WebTaskEnvironment task_environment_;
   // The browser state used in tests.
-  FakeBrowserState browser_state_;
+  std::unique_ptr<BrowserState> browser_state_;
 
   // Triggers test failures if a render process dies during the test.
   std::unique_ptr<WebTestRenderProcessCrashObserver> crash_observer_;

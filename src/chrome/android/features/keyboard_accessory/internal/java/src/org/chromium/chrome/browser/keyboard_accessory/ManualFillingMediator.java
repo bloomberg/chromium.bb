@@ -26,6 +26,7 @@ import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -45,7 +46,6 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.TouchToFillSheetCoordinator;
 import org.chromium.chrome.browser.password_manager.ConfirmationDialogHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -137,7 +137,6 @@ class ManualFillingMediator extends EmptyTabObserver
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         assert mActivity != null;
         mWindowAndroid = windowAndroid;
-        mWindowAndroid.getApplicationBottomInsetProvider().addSupplier(mViewportInsetSupplier);
         mKeyboardAccessory = keyboardAccessory;
         mBottomSheetController = sheetController;
         mSoftKeyboardDelegate = keyboardDelegate;
@@ -180,6 +179,10 @@ class ManualFillingMediator extends EmptyTabObserver
         return isInitialized() && !isSoftKeyboardShowing(view) && mKeyboardAccessory.hasActiveTab();
     }
 
+    ObservableSupplier<Integer> getBottomInsetSupplier() {
+        return mViewportInsetSupplier;
+    }
+
     @Override
     public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
@@ -213,13 +216,19 @@ class ManualFillingMediator extends EmptyTabObserver
                 || mWindowAndroid.getDisplay().getRotation() == Surface.ROTATION_180;
     }
 
-    void registerSheetDataProvider(@AccessoryTabType int tabType,
+    public void registerSheetUpdateDelegate(
+            WebContents webContents, ManualFillingComponent.UpdateAccessorySheetDelegate delegate) {
+        // TODO(crbug.com/1169167): Associate the delegate with the ManualFillingState to allow
+        // requesting sheets if tabs change.
+    }
+
+    void registerSheetDataProvider(WebContents webContents, @AccessoryTabType int tabType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
         if (!isInitialized()) return;
-        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
+        ManualFillingState state = mStateCache.getStateFor(webContents);
 
         state.wrapSheetDataProvider(tabType, dataProvider);
-        AccessorySheetTabCoordinator accessorySheet = getOrCreateSheet(tabType);
+        AccessorySheetTabCoordinator accessorySheet = getOrCreateSheet(webContents, tabType);
         if (accessorySheet == null) return; // Not available or initialized yet.
         accessorySheet.registerDataProvider(state.getSheetDataProvider(tabType));
     }
@@ -231,9 +240,10 @@ class ManualFillingMediator extends EmptyTabObserver
         mKeyboardAccessory.registerAutofillProvider(autofillProvider, delegate);
     }
 
-    void registerActionProvider(PropertyProvider<Action[]> actionProvider) {
+    void registerActionProvider(
+            WebContents webContents, PropertyProvider<Action[]> actionProvider) {
         if (!isInitialized()) return;
-        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
+        ManualFillingState state = mStateCache.getStateFor(webContents);
 
         state.wrapActionsProvider(actionProvider, new Action[0]);
         mKeyboardAccessory.registerActionProvider(state.getActionsProvider());
@@ -242,7 +252,6 @@ class ManualFillingMediator extends EmptyTabObserver
     void destroy() {
         if (!isInitialized()) return;
         pause();
-        mWindowAndroid.getApplicationBottomInsetProvider().removeSupplier(mViewportInsetSupplier);
         mActivity.findViewById(android.R.id.content).removeOnLayoutChangeListener(this);
         mTabModelObserver.destroy();
         mStateCache.destroy();
@@ -604,15 +613,11 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     @VisibleForTesting
-    AccessorySheetTabCoordinator getOrCreateSheet(@AccessoryTabType int tabType) {
+    AccessorySheetTabCoordinator getOrCreateSheet(
+            WebContents webContents, @AccessoryTabType int tabType) {
         if (!canCreateSheet(tabType)) return null;
-        WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return null; // There is no active tab or it's being destroyed.
         ManualFillingState state = mStateCache.getStateFor(webContents);
-        if (state.getAccessorySheet(tabType) != null) return state.getAccessorySheet(tabType);
-
         AccessorySheetTabCoordinator sheet = createNewSheet(tabType);
-        assert sheet != null : "Cannot create sheet for type " + tabType;
 
         state.setAccessorySheet(tabType, sheet);
         if (state.getSheetDataProvider(tabType) != null) {
@@ -625,18 +630,19 @@ class ManualFillingMediator extends EmptyTabObserver
     private boolean canCreateSheet(@AccessoryTabType int tabType) {
         if (!isInitialized()) return false;
         switch (tabType) {
-            case AccessoryTabType.ALL: // Intentional fallthrough.
-            case AccessoryTabType.COUNT:
-                return false;
             case AccessoryTabType.CREDIT_CARDS: // Intentional fallthrough.
             case AccessoryTabType.ADDRESSES:
                 return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case AccessoryTabType.PASSWORDS:
                 return true;
-            case AccessoryTabType.TOUCH_TO_FILL:
-                return true;
+            case AccessoryTabType.OBSOLETE_TOUCH_TO_FILL:
+                assert false : "Obsolete sheet type: " + tabType;
+                return false;
+            case AccessoryTabType.ALL: // Intentional fallthrough.
+            case AccessoryTabType.COUNT: // Intentional fallthrough.
         }
-        return true;
+        assert false : "Unhandled sheet type: " + tabType;
+        return false;
     }
 
     private AccessorySheetTabCoordinator createNewSheet(@AccessoryTabType int tabType) {
@@ -650,12 +656,11 @@ class ManualFillingMediator extends EmptyTabObserver
             case AccessoryTabType.PASSWORDS:
                 return new PasswordAccessorySheetCoordinator(
                         mActivity, mAccessorySheet.getScrollListener());
-            case AccessoryTabType.TOUCH_TO_FILL:
-                return new TouchToFillSheetCoordinator(
-                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.OBSOLETE_TOUCH_TO_FILL:
             case AccessoryTabType.ALL: // Intentional fallthrough.
             case AccessoryTabType.COUNT: // Intentional fallthrough.
         }
+        assert false : "Cannot create sheet for type " + tabType;
         return null;
     }
 

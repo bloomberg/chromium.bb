@@ -10,9 +10,9 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/accessibility/soda_installer.h"
+#include "base/scoped_observation.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/soda/soda_installer.h"
 
 class PrefService;
 
@@ -39,27 +39,28 @@ class SodaInstallerImpl : public SodaInstaller,
   base::FilePath GetLanguagePath() const override;
 
   // SodaInstaller:
-  void InstallSoda(PrefService* prefs) override;
-  void InstallLanguage(PrefService* prefs) override;
+  void InstallLanguage(const std::string& language,
+                       PrefService* global_prefs) override;
   bool IsSodaInstalled() const override;
   bool IsLanguageInstalled(
       const std::string& locale_or_language) const override;
 
  private:
   // SodaInstaller:
+  void InstallSoda(PrefService* global_prefs) override;
   void UninstallSoda(PrefService* global_prefs) override;
 
   // component_updater::ServiceObserver:
   void OnEvent(Events event, const std::string& id) override;
 
   void OnSodaBinaryInstalled();
-  void OnSodaLanguagePackInstalled();
+  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code);
 
   std::map<std::string, update_client::CrxUpdateItem> downloading_components_;
 
-  ScopedObserver<component_updater::ComponentUpdateService,
-                 component_updater::ComponentUpdateService::Observer>
-      component_updater_observer_{this};
+  base::ScopedObservation<component_updater::ComponentUpdateService,
+                          component_updater::ComponentUpdateService::Observer>
+      component_updater_observation_{this};
 
   base::WeakPtrFactory<SodaInstallerImpl> weak_factory_{this};
 };

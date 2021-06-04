@@ -144,11 +144,11 @@ HeapVector<Member<ScrollTimelineOffset>> ComputeScrollOffsets(
   return offsets;
 }
 
-base::Optional<double> ComputeTimeRange(const CSSValue* value) {
+absl::optional<double> ComputeTimeRange(const CSSValue* value) {
   if (auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
     return primitive->ComputeSeconds() * 1000.0;
   // TODO(crbug.com/1097041): Support 'auto' value.
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 class ElementReferenceObserver : public IdTargetObserver {
@@ -204,13 +204,11 @@ HeapVector<Member<IdTargetObserver>> CreateElementReferenceObservers(
 
 }  // anonymous namespace
 
-CSSScrollTimeline::Options::Options(Element* element,
+CSSScrollTimeline::Options::Options(Document& document,
                                     StyleRuleScrollTimeline& rule)
-    : source_(ComputeScrollSource(element->GetDocument(), rule.GetSource())),
+    : source_(ComputeScrollSource(document, rule.GetSource())),
       direction_(ComputeScrollDirection(rule.GetOrientation())),
-      offsets_(ComputeScrollOffsets(element->GetDocument(),
-                                    rule.GetStart(),
-                                    rule.GetEnd())),
+      offsets_(ComputeScrollOffsets(document, rule.GetStart(), rule.GetEnd())),
       time_range_(ComputeTimeRange(rule.GetTimeRange())),
       rule_(&rule) {}
 
@@ -223,7 +221,6 @@ CSSScrollTimeline::CSSScrollTimeline(Document* document, Options&& options)
       rule_(options.rule_) {
   DCHECK(options.IsValid());
   DCHECK(rule_);
-  document->GetDocumentAnimations().CacheCSSScrollTimeline(*this);
 }
 
 const AtomicString& CSSScrollTimeline::Name() const {
@@ -238,14 +235,14 @@ bool CSSScrollTimeline::Matches(const Options& options) const {
 }
 
 void CSSScrollTimeline::AnimationAttached(Animation* animation) {
-  ScrollTimeline::AnimationAttached(animation);
-  if (AttachedAnimationsCount() == 1)
+  if (!HasAnimations())
     SetObservers(CreateElementReferenceObservers(GetDocument(), rule_, this));
+  ScrollTimeline::AnimationAttached(animation);
 }
 
 void CSSScrollTimeline::AnimationDetached(Animation* animation) {
   ScrollTimeline::AnimationDetached(animation);
-  if (AttachedAnimationsCount() == 0)
+  if (!HasAnimations())
     SetObservers(HeapVector<Member<IdTargetObserver>>());
 }
 

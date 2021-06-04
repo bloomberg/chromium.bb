@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/layers/layer.h"
@@ -350,7 +351,7 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
 
   auto& paint_controller = GetPaintController();
 
-  base::Optional<PaintChunkSubset> previous_chunks;
+  absl::optional<PaintChunkSubset> previous_chunks;
   if (ShouldCreateLayersAfterPaint())
     previous_chunks.emplace(paint_controller.GetPaintArtifactShared());
 
@@ -409,7 +410,7 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
     EnsureRasterInvalidator().Generate(raster_invalidation_function_, chunks,
                                        layer_bounds, property_tree_state, this);
 
-    base::Optional<RasterUnderInvalidationCheckingParams>
+    absl::optional<RasterUnderInvalidationCheckingParams>
         raster_under_invalidation_params;
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
         PaintsContentOrHitTest()) {

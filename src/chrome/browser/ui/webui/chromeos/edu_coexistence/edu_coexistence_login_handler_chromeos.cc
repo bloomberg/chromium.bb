@@ -19,10 +19,10 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/child_accounts/edu_coexistence_tos_store_utils.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/child_accounts/edu_coexistence_tos_store_utils.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -210,8 +210,8 @@ void EduCoexistenceLoginHandler::OnRefreshTokenUpdatedForAccount(
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  edu_coexistence::UpdateAcceptedToSVersionPref(
-      profile, edu_coexistence::UserConsentInfo(
+  ash::edu_coexistence::UpdateAcceptedToSVersionPref(
+      profile, ash::edu_coexistence::UserConsentInfo(
                    account_info.gaia, terms_of_service_version_number_));
 
   EduCoexistenceStateTracker::Get()->OnWebUiStateChanged(
@@ -314,7 +314,7 @@ void EduCoexistenceLoginHandler::SendInitializeEduArgs() {
 
   ResolveJavascriptCallback(base::Value(initialize_edu_args_callback_.value()),
                             std::move(params));
-  initialize_edu_args_callback_ = base::nullopt;
+  initialize_edu_args_callback_ = absl::nullopt;
 }
 
 void EduCoexistenceLoginHandler::ConsentValid(const base::ListValue* args) {

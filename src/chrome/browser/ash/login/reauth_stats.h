@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_REAUTH_STATS_H_
 #define CHROME_BROWSER_ASH_LOGIN_REAUTH_STATS_H_
 
-#include <string>
-
 class AccountId;
 
 namespace chromeos {
@@ -59,6 +57,14 @@ enum ReauthReason {
   // login time limit has been reached.
   GAIA_REAUTH_POLICY = 11,
 
+  // Gaia lock screen re-auth policy is set, which requires re-auth on lock
+  // screen if the offline lock screen time limit has been reached.
+  GAIA_LOCK_SCREEN_REAUTH_POLICY = 12,
+
+  // Saml lock screen re-auth policy is set, which requires re-auth on lock
+  // screen if the offline lock screen time limit has been reached.
+  SAML_LOCK_SCREEN_REAUTH_POLICY = 13,
+
   // Must be the last value in this list.
   NUM_REAUTH_FLOW_REASONS,
 };
@@ -67,5 +73,11 @@ void RecordReauthReason(const AccountId& account_id, ReauthReason reason);
 void SendReauthReason(const AccountId& account_id, bool password_changed);
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::ReauthReason;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_REAUTH_STATS_H_

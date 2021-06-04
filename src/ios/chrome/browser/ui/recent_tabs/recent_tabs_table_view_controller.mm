@@ -67,6 +67,8 @@
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/modals/modals_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
 #import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -679,7 +681,7 @@ API_AVAILABLE(ios(13.0))
 
 #pragma mark - Public
 
-- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+- (synced_sessions::DistantSession const*)sessionForTableSectionWithIdentifier:
     (NSInteger)sectionIdentifer {
   NSInteger section =
       [self.tableViewModel sectionForSectionIdentifier:sectionIdentifer];
@@ -687,33 +689,41 @@ API_AVAILABLE(ios(13.0))
   return _syncedSessions->GetSession(section - kNumberOfSectionsBeforeSessions);
 }
 
-- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+- (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {
   DCHECK([self isSessionSectionIdentifier:sectionIdentifier]);
+
+  // Save the sessionTag before removing it from the table. It will be needed to
+  // delete the session later.
   synced_sessions::DistantSession const* session =
-      [self sessionForSectionIdentifier:sectionIdentifier];
-  std::string sessionTagCopy = session->tag;
+      [self sessionForTableSectionWithIdentifier:sectionIdentifier];
+  std::string sessionTag = session->tag;
 
-  NSInteger section =
-      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
-
+  // Remove the section and, on completion, the delete the session.
   __weak __typeof(self) weakSelf = self;
-  void (^tableUpdates)(void) = ^{
-    [weakSelf.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-    _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
-    [weakSelf.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
-                      withRowAnimation:UITableViewRowAnimationLeft];
-  };
+  [self.tableView
+      performBatchUpdates:^{
+        [weakSelf removeSection:sectionIdentifier];
+      }
+      completion:^(BOOL) {
+        [weakSelf deleteSession:sessionTag];
+      }];
+}
 
-  [self.tableView performBatchUpdates:tableUpdates
-                           completion:^(BOOL) {
-                             if (!weakSelf)
-                               return;
-                             sync_sessions::OpenTabsUIDelegate* openTabs =
-                                 SessionSyncServiceFactory::GetForBrowserState(
-                                     weakSelf.browserState)
-                                     ->GetOpenTabsUIDelegate();
-                             openTabs->DeleteForeignSession(sessionTagCopy);
-                           }];
+// Helper for removeSessionAtTableSectionWithIdentifier
+- (void)removeSection:(NSInteger)sectionIdentifier {
+  NSInteger sectionIndex =
+      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
+  [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
+  _syncedSessions->EraseSession(sectionIndex - kNumberOfSectionsBeforeSessions);
+  [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+                withRowAnimation:UITableViewRowAnimationLeft];
+}
+
+// Helper for removeSessionAtTableSectionWithIdentifier
+- (void)deleteSession:(std::string)sessionTag {
+  SessionSyncServiceFactory::GetForBrowserState(self.browserState)
+      ->GetOpenTabsUIDelegate()
+      ->DeleteForeignSession(sessionTag);
 }
 
 #pragma mark - Private
@@ -790,6 +800,10 @@ API_AVAILABLE(ios(13.0))
 
 - (void)dismissModals {
   [self.contextMenuCoordinator stop];
+
+  ios::GetChromeBrowserProvider()
+      ->GetModalsProvider()
+      ->DismissModalsForTableView(self.tableView);
 }
 
 #pragma mark - UITableViewDelegate
@@ -1348,7 +1362,7 @@ API_AVAILABLE(ios(13.0))
   [self.contextMenuCoordinator
       addItemWithTitle:hideButtonLabel
                 action:^{
-                  [weakSelf removeSessionAtSessionSectionIdentifier:
+                  [weakSelf removeSessionAtTableSectionWithIdentifier:
                                 sectionIdentifier];
                 }
                  style:UIAlertActionStyleDefault];
@@ -1358,7 +1372,7 @@ API_AVAILABLE(ios(13.0))
 
 - (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
   synced_sessions::DistantSession const* session =
-      [self sessionForSectionIdentifier:sectionIdentifier];
+      [self sessionForTableSectionWithIdentifier:sectionIdentifier];
   [self.presentationDelegate openAllTabsFromSession:session];
 }
 
@@ -1447,11 +1461,11 @@ API_AVAILABLE(ios(13.0))
 - (void)updateSyncState {
   SyncSetupService::SyncServiceState syncState =
       GetSyncStateForBrowserState(_browserState);
-  if (ShouldShowSyncSignin(syncState)) {
+  if (syncState == SyncSetupService::kSyncServiceSignInNeedsUpdate) {
     [self showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(syncState)) {
     [self showGoogleServicesSettings];
-  } else if (ShouldShowSyncPassphraseSettings(syncState)) {
+  } else if (syncState == SyncSetupService::kSyncServiceNeedsPassphrase) {
     [self showSyncPassphraseSettings];
   }
 }

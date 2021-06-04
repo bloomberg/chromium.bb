@@ -46,8 +46,7 @@ constexpr base::TimeDelta kFastSwipeThresholdDuration =
     base::TimeDelta::FromMilliseconds(500);
 
 bool IsForContinuousGestures(DesksSwitchSource source) {
-  return source == DesksSwitchSource::kDeskSwitchTouchpad &&
-         features::IsEnhancedDeskAnimations();
+  return source == DesksSwitchSource::kDeskSwitchTouchpad;
 }
 
 }  // namespace
@@ -139,8 +138,7 @@ bool DeskActivationAnimation::Replace(bool moving_left,
   }
 
   // Activate the target desk and take a screenshot.
-  // TODO(crbug.com/1134390): Convert back to DCHECK when the issue is fixed.
-  CHECK_EQ(pending_animators.size(), desk_switch_animators_.size());
+  DCHECK_EQ(pending_animators.size(), desk_switch_animators_.size());
   PrepareDeskForScreenshot(new_ending_desk_index);
   for (auto* animator : pending_animators)
     animator->TakeEndingDeskScreenshot();
@@ -155,7 +153,7 @@ bool DeskActivationAnimation::UpdateSwipeAnimation(float scroll_delta_x) {
 
   // If any of the displays need a new screenshot while scrolling, take the
   // ending desk screenshot for all of them to keep them in sync.
-  base::Optional<int> ending_desk_index;
+  absl::optional<int> ending_desk_index;
   for (const auto& animator : desk_switch_animators_) {
     if (!ending_desk_index)
       ending_desk_index = animator->UpdateSwipeAnimation(scroll_delta_x);

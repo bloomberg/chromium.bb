@@ -19,7 +19,6 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
@@ -29,13 +28,13 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "media/base/video_codecs.h"
 #include "media/mojo/mojom/media_service.mojom-forward.h"
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -50,8 +49,10 @@
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "services/network/public/mojom/web_transport.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/federated_learning/floc.mojom-forward.h"
@@ -78,7 +79,7 @@ class IsolationInfo;
 
 class GURL;
 using LoginAuthRequiredCallback =
-    base::OnceCallback<void(const base::Optional<net::AuthCredentials>&)>;
+    base::OnceCallback<void(const absl::optional<net::AuthCredentials>&)>;
 
 namespace base {
 class CommandLine;
@@ -90,7 +91,6 @@ class SequencedTaskRunner;
 namespace blink {
 namespace mojom {
 class DeviceAPIService;
-class BadgeService;
 class ManagedConfigurationService;
 class RendererPreferenceWatcher;
 class WebUsbService;
@@ -107,7 +107,7 @@ class URLLoaderThrottle;
 }  // namespace blink
 
 namespace device {
-class GeolocationSystemPermissionManager;
+class GeolocationManager;
 class LocationProvider;
 }  // namespace device
 
@@ -118,7 +118,6 @@ class ImageSkia;
 namespace media {
 class AudioLogFactory;
 class AudioManager;
-enum class EncryptionScheme;
 }  // namespace media
 
 namespace mojo {
@@ -185,6 +184,7 @@ class Origin;
 
 namespace storage {
 class FileSystemBackend;
+class StorageKey;
 }  // namespace storage
 
 namespace content {
@@ -217,6 +217,7 @@ class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
 class SerialDelegate;
+class SpeculationHostDelegate;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
@@ -234,6 +235,7 @@ struct MainFunctionParams;
 struct OpenURLParams;
 struct PepperPluginInfo;
 struct Referrer;
+struct ServiceWorkerVersionBaseInfo;
 struct SocketPermissionRequest;
 
 #if defined(OS_ANDROID)
@@ -508,7 +510,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       ui::PageTransition* transition,
       bool* is_renderer_initiated,
       content::Referrer* referrer,
-      base::Optional<url::Origin>* initiator_origin) {}
+      absl::optional<url::Origin>* initiator_origin) {}
 
   // Temporary hack to determine whether to skip OOPIFs on the new tab page.
   // TODO(creis): Remove when https://crbug.com/566091 is fixed.
@@ -590,8 +592,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called when a new dynamic isolated origin was added in |context|, and the
   // origin desires to be persisted across restarts, to give the embedder an
   // opportunity to save this isolated origin to disk.
-  virtual void PersistIsolatedOrigin(BrowserContext* context,
-                                     const url::Origin& origin) {}
+  virtual void PersistIsolatedOrigin(
+      BrowserContext* context,
+      const url::Origin& origin,
+      ChildProcessSecurityPolicy::IsolatedOriginSource source) {}
 
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
@@ -647,7 +651,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowAppCache(
       const GURL& manifest_url,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin,
+      const absl::optional<url::Origin>& top_frame_origin,
       BrowserContext* context);
 
   // Allows the embedder to control if a service worker is allowed at the given
@@ -669,7 +673,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual AllowServiceWorkerResult AllowServiceWorker(
       const GURL& scope,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin,
+      const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       BrowserContext* context);
 
@@ -679,9 +683,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowSharedWorker(
       const GURL& worker_url,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin,
+      const absl::optional<url::Origin>& top_frame_origin,
       const std::string& name,
-      const url::Origin& constructor_origin,
+      const storage::StorageKey& storage_key,
       BrowserContext* context,
       int render_process_id,
       int render_frame_id);
@@ -829,8 +833,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // * Default implementation returns empty string, meaning send no API key.
   virtual std::string GetGeolocationApiKey();
 
-  virtual device::GeolocationSystemPermissionManager*
-  GetLocationPermissionManager();
+  // Returns the global BrowserProcessPlatformParts' GeolocationManager on
+  // macOS and returns nullptr otherwise. For tests this should return a
+  // FakeGeolocationManager with the LocationSystemPermissionStatus set to
+  // allow.
+  virtual device::GeolocationManager* GetGeolocationManager();
 
 #if defined(OS_ANDROID)
   // Allows an embedder to decide whether to use the GmsCoreLocationProvider.
@@ -1115,6 +1122,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       MojoBinderPolicyMap& policy_map) {}
 
+  // Allows to register browser interfaces which are exposed to a service worker
+  // execution context.
+  virtual void RegisterBrowserInterfaceBindersForServiceWorker(
+      mojo::BinderMapWithContext<const ServiceWorkerVersionBaseInfo&>* map) {}
+
   // Content was unable to bind a receiver for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and
   // bound; false otherwise.
@@ -1122,17 +1134,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
-
-  // TODO(https://crbug.com/1045214): Generalize ContentBrowserClient support
-  // for service worker-scoped binders.
-  //
-  // Binds a remote ServiceWorkerGlobalScope to a badge service.  After
-  // receiving a badge update from a ServiceWorkerGlobalScope, the badge
-  // service must update the badge for each app under |service_worker_scope|.
-  virtual void BindBadgeServiceReceiverFromServiceWorker(
-      RenderProcessHost* service_worker_process_host,
-      const GURL& service_worker_scope,
-      mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {}
 
   // Handles an unhandled incoming interface binding request from the GPU
   // process. Called on the IO thread.
@@ -1196,14 +1197,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if (and only if) CreateAudioManager() is implemented and
   // returns a non-null value.
   virtual bool OverridesAudioManager();
-
-  // Gets supported hardware secure |video_codecs| and |encryption_schemes| for
-  // the purpose of decrypting encrypted media using a Content Decryption Module
-  // (CDM) associated with |key_system|.
-  virtual void GetHardwareSecureDecryptionCaps(
-      const std::string& key_system,
-      base::flat_set<media::VideoCodec>* video_codecs,
-      base::flat_set<media::EncryptionScheme>* encryption_schemes);
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
@@ -1316,8 +1309,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to register per-scheme URLLoaderFactory
   // implementations to handle service worker main/imported script requests
   // initiated by the browser process for schemes not handled by the Network
-  // Service. Only called for service worker update check when
-  // ServiceWorkerImportedScriptUpdateCheck is enabled.
+  // Service. Only called for service worker update check.
   // The resulting |factories| must be used only by the browser process. The
   // caller must not send any of |factories| to any other process.
   virtual void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
@@ -1446,7 +1438,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
-      base::Optional<int64_t> navigation_id,
+      absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -1482,9 +1474,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       WebSocketFactory factory,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const base::Optional<std::string>& user_agent,
+      const absl::optional<std::string>& user_agent,
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
           handshake_client);
+
+  // Allows the embedder to control if establishing a WebTransport connection is
+  // allowed. When the connection is blocked, `callback` is called with `error`.
+  using WillCreateWebTransportCallback = base::OnceCallback<void(
+      absl::optional<network::mojom::WebTransportErrorPtr> error)>;
+  virtual void WillCreateWebTransport(RenderFrameHost* frame,
+                                      const GURL& url,
+                                      WillCreateWebTransportCallback callback);
 
   // Allows the embedder to intercept or replace the mojo objects used for
   // preference-following access to cookies. This is primarily used for objects
@@ -1708,7 +1708,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |first_auth_attempt| is needed by AwHttpAuthHandler constructor.
   // |auth_required_callback| is used to transfer auth credentials to
   // URLRequest::SetAuth(). The credentials parameter of the callback
-  // is base::nullopt if the request should be cancelled; otherwise
+  // is absl::nullopt if the request should be cancelled; otherwise
   // the credentials will be used to respond to the auth challenge.
   // This method is called on the UI thread. The callback must be
   // called on the UI thread as well. If the LoginDelegate is destroyed
@@ -1760,7 +1760,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
@@ -1778,7 +1778,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the HTML content of the error page for Origin Policy related
   // errors.
-  virtual base::Optional<std::string> GetOriginPolicyErrorPage(
+  virtual absl::optional<std::string> GetOriginPolicyErrorPage(
       network::OriginPolicyState error_reason,
       content::NavigationHandle* navigation_handle);
 
@@ -1844,7 +1844,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns a 256x256 transparent background image of the product logo, i.e.
   // the browser icon, if available.
-  virtual base::Optional<gfx::ImageSkia> GetProductLogo();
+  virtual absl::optional<gfx::ImageSkia> GetProductLogo();
 
   // Returns whether |origin| should be considered a integral component similar
   // to native code, and as such whether its log messages should be recorded.
@@ -1894,7 +1894,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
       WebContents* web_contents,
       const GURL& url,
-      const base::Optional<url::Origin>& top_frame_origin);
+      const absl::optional<url::Origin>& top_frame_origin);
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
@@ -1917,7 +1917,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& scope,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin);
+      const absl::optional<url::Origin>& top_frame_origin);
 
   // Requests an SMS from |origin| from a remote device with telephony
   // capabilities, for example the user's mobile phone. Callbacks |callback|
@@ -1929,9 +1929,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual base::OnceClosure FetchRemoteSms(
       content::WebContents* web_contents,
       const url::Origin& origin,
-      base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
-                              base::Optional<std::string>,
-                              base::Optional<content::SmsFetchFailureType>)>
+      base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
+                              absl::optional<std::string>,
+                              absl::optional<content::SmsFetchFailureType>)>
           callback);
 
   // Check whether paste is allowed. To paste, an implementation may require a
@@ -2052,6 +2052,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // main frame should be disallowed.
   virtual bool SuppressDifferentOriginSubframeJSDialogs(
       BrowserContext* browser_context);
+
+  // Allows the embedder to provide a SpeculationHostDelegate that will be used
+  // to process speculation rules provided by the document hosted by
+  // `render_frame_host`.
+  virtual std::unique_ptr<SpeculationHostDelegate>
+  CreateSpeculationHostDelegate(RenderFrameHost& render_frame_host);
 };
 
 }  // namespace content

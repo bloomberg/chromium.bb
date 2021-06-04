@@ -33,7 +33,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 
-namespace chromeos {
+namespace ash {
 
 ChromeUserSelectionScreen::ChromeUserSelectionScreen(
     DisplayedScreen display_type)
@@ -124,10 +124,9 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   base::ListValue const* list = NULL;
   if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
       entry->value() && entry->value()->GetAsList(&list)) {
-    for (base::ListValue::const_iterator it = list->begin(); it != list->end();
-         ++it) {
+    for (const auto& entry : list->GetList()) {
       std::string locale;
-      if (!it->GetAsString(&locale)) {
+      if (!entry.GetAsString(&locale)) {
         NOTREACHED();
         new_recommended_locales.clear();
         break;
@@ -200,4 +199,4 @@ void ChromeUserSelectionScreen::SetPublicSessionShowFullManagementDisclosure(
       show_full_management_disclosure);
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -6,13 +6,8 @@ TODO: Test with pipeline statistics queries on {compute, render} as well.
 
 import { poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
+import { createRenderEncoderWithQuerySet } from '../../encoding/queries/common.js';
 import { ValidationTest } from '../../validation_test.js';
-
-export const enum EncoderType {
-  CommandEncoder = 'CommandEncoder',
-  ComputeEncoder = 'ComputeEncoder',
-  RenderEncoder = 'RenderEncoder',
-}
 
 export const g = makeTestGroup(ValidationTest);
 
@@ -24,7 +19,17 @@ Tests that use a destroyed query set in occlusion query on render pass encoder.
   `
   )
   .subcases(() => poptions('querySetState', ['valid', 'destroyed'] as const))
-  .unimplemented();
+  .fn(t => {
+    const querySet = t.createQuerySetWithState(t.params.querySetState);
+
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    encoder.encoder.beginOcclusionQuery(0);
+    encoder.encoder.endOcclusionQuery();
+
+    t.expectValidationError(() => {
+      t.queue.submit([encoder.finish()]);
+    }, t.params.querySetState === 'destroyed');
+  });
 
 g.test('writeTimestamp')
   .desc(

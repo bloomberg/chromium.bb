@@ -19,7 +19,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersTabHelper;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
@@ -56,32 +56,25 @@ import java.util.List;
 public class ShareDelegateImpl implements ShareDelegate {
     static final String CANONICAL_URL_RESULT_HISTOGRAM = "Mobile.CanonicalURLResult";
 
-    // These values are persisted to logs. Entries should not be renumbered and numeric values
-    // should never be reused.
-    @IntDef({ShareOrigin.OVERFLOW_MENU, ShareOrigin.TOP_TOOLBAR, ShareOrigin.CONTEXT_MENU,
-            ShareOrigin.WEBSHARE_API, ShareOrigin.MOBILE_ACTION_MODE, ShareOrigin.EDIT_URL,
-            ShareOrigin.TAB_GROUP, ShareOrigin.WEBAPP_NOTIFICATION, ShareOrigin.FEED})
-    public @interface ShareOrigin {
-        int OVERFLOW_MENU = 0;
-        int TOP_TOOLBAR = 1;
-        int CONTEXT_MENU = 2;
-        int WEBSHARE_API = 3;
-        int MOBILE_ACTION_MODE = 4;
-        int EDIT_URL = 5;
-        int TAB_GROUP = 6;
-        int WEBAPP_NOTIFICATION = 7;
-        int FEED = 8;
-
-        // Must be the last one.
-        int COUNT = 9;
-    }
-
     private final BottomSheetController mBottomSheetController;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetDelegate mDelegate;
     private final boolean mIsCustomTab;
     private long mShareStartTime;
+
+    private static final String ANY_SHARE_HISTOGRAM_NAME = "Sharing.AnyShareStarted";
+
+    // These values are recorded as histogram values. Entries should not be
+    // renumbered and numeric values should never be reused.
+    @IntDef({ShareSourceAndroid.ANDROID_SHARE_SHEET, ShareSourceAndroid.CHROME_SHARE_SHEET,
+            ShareSourceAndroid.DIRECT_SHARE})
+    private @interface ShareSourceAndroid {
+        int ANDROID_SHARE_SHEET = 0;
+        int CHROME_SHARE_SHEET = 1;
+        int DIRECT_SHARE = 2;
+        int COUNT = 3;
+    };
 
     private static boolean sScreenshotCaptureSkippedForTesting;
 
@@ -116,7 +109,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                 ProfileSyncService.get() != null && ProfileSyncService.get().isSyncRequested();
         mDelegate.share(params, chromeShareExtras, mBottomSheetController, mLifecycleDispatcher,
                 mTabProvider, this::printTab, shareOrigin, isSyncEnabled, mShareStartTime,
-                isSharingHubV1Enabled());
+                isSharingHubEnabled());
         mShareStartTime = 0;
     }
 
@@ -210,6 +203,7 @@ public class ShareDelegateImpl implements ShareDelegate {
         ShareParams.Builder builder =
                 new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
                         .setScreenshotUri(blockingUri);
+
         share(builder.build(),
                 new ChromeShareExtras.Builder()
                         .setSaveLastUsed(!shareDirectly)
@@ -218,6 +212,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                         .build(),
                 shareOrigin);
 
+        HistoryClustersTabHelper.onCurrentTabUrlShared(webContents);
         if (blockingUri == null) return;
 
         // Start screenshot capture and notify the provider when it is ready.
@@ -304,14 +299,8 @@ public class ShareDelegateImpl implements ShareDelegate {
     }
 
     @Override
-    public boolean isSharingHubV1Enabled() {
-        return !mIsCustomTab && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB);
-    }
-
-    @Override
-    public boolean isSharingHubV15Enabled() {
-        return isSharingHubV1Enabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15);
+    public boolean isSharingHubEnabled() {
+        return !mIsCustomTab;
     }
 
     /**
@@ -327,11 +316,15 @@ public class ShareDelegateImpl implements ShareDelegate {
                 @ShareOrigin int shareOrigin, boolean isSyncEnabled, long shareStartTime,
                 boolean sharingHubEnabled) {
             if (chromeShareExtras.shareDirectly()) {
+                RecordHistogram.recordEnumeratedHistogram(ANY_SHARE_HISTOGRAM_NAME,
+                        ShareSourceAndroid.DIRECT_SHARE, ShareSourceAndroid.COUNT);
                 ShareHelper.shareWithLastUsedComponent(params);
             } else if (sharingHubEnabled && !chromeShareExtras.sharingTabGroup()
                     && tabProvider.get() != null) {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Sharing.SharingHubAndroid.Opened", shareOrigin, ShareOrigin.COUNT);
+                RecordHistogram.recordEnumeratedHistogram(ANY_SHARE_HISTOGRAM_NAME,
+                        ShareSourceAndroid.CHROME_SHARE_SHEET, ShareSourceAndroid.COUNT);
                 // TODO(crbug.com/1085078): Sharing hub is suppressed for tab group sharing.
                 // Re-enable it when tab group sharing is supported by sharing hub.
                 ShareSheetCoordinator coordinator = new ShareSheetCoordinator(controller,
@@ -347,6 +340,8 @@ public class ShareDelegateImpl implements ShareDelegate {
             } else {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Sharing.DefaultSharesheetAndroid.Opened", shareOrigin, ShareOrigin.COUNT);
+                RecordHistogram.recordEnumeratedHistogram(ANY_SHARE_HISTOGRAM_NAME,
+                        ShareSourceAndroid.ANDROID_SHARE_SHEET, ShareSourceAndroid.COUNT);
                 ShareHelper.showDefaultShareUi(params, chromeShareExtras.saveLastUsed());
             }
         }

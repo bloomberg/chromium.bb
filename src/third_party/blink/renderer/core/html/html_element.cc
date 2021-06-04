@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_trusted_script.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -144,13 +145,13 @@ bool IsEditable(const Node& node) {
 
 const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
 
-HTMLElement* GetParentForDirectionality(HTMLElement* element,
+HTMLElement* GetParentForDirectionality(const HTMLElement& element,
                                         bool& needs_slot_assignment_recalc) {
-  if (element->IsPseudoElement())
-    return DynamicTo<HTMLElement>(element->ParentOrShadowHostNode());
+  if (element.IsPseudoElement())
+    return DynamicTo<HTMLElement>(element.ParentOrShadowHostNode());
 
-  if (element->IsChildOfShadowHost()) {
-    ShadowRoot* root = element->ShadowRootOfParent();
+  if (element.IsChildOfShadowHost()) {
+    ShadowRoot* root = element.ShadowRootOfParent();
     if (!root || !root->HasSlotAssignment())
       return nullptr;
 
@@ -160,7 +161,7 @@ HTMLElement* GetParentForDirectionality(HTMLElement* element,
     }
   }
   if (auto* parent_slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(
-          element->parentElement())) {
+          element.parentElement())) {
     ShadowRoot* root = parent_slot->ContainingShadowRoot();
     if (root->NeedsSlotAssignmentRecalc()) {
       needs_slot_assignment_recalc = true;
@@ -170,8 +171,8 @@ HTMLElement* GetParentForDirectionality(HTMLElement* element,
 
   // We should take care of all cases that would trigger a slot assignment
   // recalc, and delay the check for later for a performance reason.
-  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(element->GetDocument());
-  return DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(*element));
+  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(element.GetDocument());
+  return DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(element));
 }
 
 }  // anonymous namespace
@@ -598,6 +599,7 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
       {html_names::kOnwheelAttr, kNoWebFeature, event_type_names::kWheel,
        nullptr},
 
+      // Begin ARIA attributes.
       {html_names::kAriaActivedescendantAttr,
        WebFeature::kARIAActiveDescendantAttribute, kNoEvent, nullptr},
       {html_names::kAriaAtomicAttr, WebFeature::kARIAAtomicAttribute, kNoEvent,
@@ -690,6 +692,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaSortAttr, WebFeature::kARIASortAttribute, kNoEvent,
        nullptr},
+      {html_names::kAriaTouchpassthroughAttr,
+       WebFeature::kARIATouchpassthroughAttribute, kNoEvent, nullptr},
       {html_names::kAriaValuemaxAttr, WebFeature::kARIAValueMaxAttribute,
        kNoEvent, nullptr},
       {html_names::kAriaValueminAttr, WebFeature::kARIAValueMinAttribute,
@@ -698,6 +702,10 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaValuetextAttr, WebFeature::kARIAValueTextAttribute,
        kNoEvent, nullptr},
+      {html_names::kAriaVirtualcontentAttr,
+       WebFeature::kARIAVirtualcontentAttribute, kNoEvent, nullptr},
+      // End ARIA attributes.
+
       {html_names::kAutocapitalizeAttr, WebFeature::kAutocapitalizeAttribute,
        kNoEvent, nullptr},
   };
@@ -831,8 +839,38 @@ DocumentFragment* HTMLElement::TextToFragment(const String& text,
   return fragment;
 }
 
-void HTMLElement::setInnerText(
-    const StringOrTrustedScript& string_or_trusted_script,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+HTMLElement::innerTextForBinding() {
+  return MakeGarbageCollected<
+      V8UnionStringTreatNullAsEmptyStringOrTrustedScript>(innerText());
+}
+
+void HTMLElement::setInnerTextForBinding(
+    const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+        string_or_trusted_script,
+    ExceptionState& exception_state) {
+  String value;
+  switch (string_or_trusted_script->GetContentType()) {
+    case V8UnionStringTreatNullAsEmptyStringOrTrustedScript::ContentType::
+        kStringTreatNullAsEmptyString:
+      value = string_or_trusted_script->GetAsStringTreatNullAsEmptyString();
+      break;
+    case V8UnionStringTreatNullAsEmptyStringOrTrustedScript::ContentType::
+        kTrustedScript:
+      value = string_or_trusted_script->GetAsTrustedScript()->toString();
+      break;
+  }
+  setInnerText(value, exception_state);
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void HTMLElement::innerTextForBinding(
+    StringTreatNullAsEmptyStringOrTrustedScript& result) {
+  result.SetString(innerText());
+}
+
+void HTMLElement::setInnerTextForBinding(
+    const StringTreatNullAsEmptyStringOrTrustedScript& string_or_trusted_script,
     ExceptionState& exception_state) {
   String value;
   if (string_or_trusted_script.IsString())
@@ -841,26 +879,7 @@ void HTMLElement::setInnerText(
     value = string_or_trusted_script.GetAsTrustedScript()->toString();
   setInnerText(value, exception_state);
 }
-
-void HTMLElement::setInnerText(
-    const StringTreatNullAsEmptyStringOrTrustedScript& string_or_trusted_script,
-    ExceptionState& exception_state) {
-  StringOrTrustedScript tmp;
-  if (string_or_trusted_script.IsString())
-    tmp.SetString(string_or_trusted_script.GetAsString());
-  else if (string_or_trusted_script.IsTrustedScript())
-    tmp.SetTrustedScript(string_or_trusted_script.GetAsTrustedScript());
-  setInnerText(tmp, exception_state);
-}
-
-void HTMLElement::innerText(
-    StringTreatNullAsEmptyStringOrTrustedScript& result) {
-  result.SetString(innerText());
-}
-
-void HTMLElement::innerText(StringOrTrustedScript& result) {
-  result.SetString(innerText());
-}
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 String HTMLElement::innerText() {
   return Element::innerText();
@@ -906,9 +925,12 @@ void HTMLElement::setOuterText(const String& text,
     new_child = Text::Create(GetDocument(), text);
 
   // textToFragment might cause mutation events.
-  if (!parentNode())
+  if (!parentNode()) {
+    // TODO(crbug.com/1206014) We can likely remove this entire if() block.
+    NOTREACHED();
     exception_state.ThrowDOMException(DOMExceptionCode::kHierarchyRequestError,
                                       "The element has no parent.");
+  }
 
   if (exception_state.HadException())
     return;
@@ -1382,10 +1404,11 @@ void HTMLElement::AdjustCandidateDirectionalityForSlot(
       }
     }
 
+    bool needs_slot_assignment_recalc = false;
     for (auto* element_to_adjust = DynamicTo<HTMLElement>(node_to_adjust);
          element_to_adjust;
-         element_to_adjust = DynamicTo<HTMLElement>(
-             FlatTreeTraversal::ParentElement(*element_to_adjust))) {
+         element_to_adjust = GetParentForDirectionality(
+             *element_to_adjust, needs_slot_assignment_recalc)) {
       if (ElementAffectsDirectionality(element_to_adjust)) {
         directionality_set.insert(element_to_adjust);
         continue;
@@ -1802,7 +1825,8 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   bool is_old_auto = SelfOrAncestorHasDirAutoAttribute();
   bool is_new_auto = HasDirectionAuto();
   bool needs_slot_assignment_recalc = false;
-  auto* parent = GetParentForDirectionality(this, needs_slot_assignment_recalc);
+  auto* parent =
+      GetParentForDirectionality(*this, needs_slot_assignment_recalc);
   if (!is_old_auto || !is_new_auto) {
     if (parent && parent->SelfOrAncestorHasDirAutoAttribute()) {
       parent->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
@@ -1820,7 +1844,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   if (is_new_auto) {
     CalculateAndAdjustAutoDirectionality(this);
   } else {
-    base::Optional<TextDirection> text_direction;
+    absl::optional<TextDirection> text_direction;
     if (EqualIgnoringASCIICase(params.new_value, "ltr")) {
       text_direction = TextDirection::kLtr;
     } else if (EqualIgnoringASCIICase(params.new_value, "rtl")) {
@@ -2003,7 +2027,7 @@ void HTMLElement::BeginParsingChildren() {
     } else if (!ElementAffectsDirectionality(this)) {
       bool needs_slot_assignment_recalc = false;
       auto* parent =
-          GetParentForDirectionality(this, needs_slot_assignment_recalc);
+          GetParentForDirectionality(*this, needs_slot_assignment_recalc);
       if (needs_slot_assignment_recalc)
         SetNeedsInheritDirectionalityFromParent();
       else if (parent)

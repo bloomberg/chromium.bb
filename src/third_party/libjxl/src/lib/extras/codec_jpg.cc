@@ -16,10 +16,13 @@
 
 #include <stddef.h>
 #include <stdio.h>
+
+#if JPEGXL_ENABLE_JPEG
 // After stddef/stdio
 #include <jpeglib.h>
 #include <setjmp.h>
 #include <stdint.h>
+#endif  // JPEGXL_ENABLE_JPEG
 
 #include <algorithm>
 #include <iterator>
@@ -50,6 +53,7 @@
 
 namespace jxl {
 
+#if JPEGXL_ENABLE_JPEG
 namespace {
 
 constexpr float kJPEGSampleMultiplier = MAXJSAMPLE;
@@ -245,6 +249,7 @@ void MyOutputMessage(j_common_ptr cinfo) {
 }
 
 }  // namespace
+#endif  // JPEGXL_ENABLE_JPEG
 
 Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
                       CodecInOut* io, double* const elapsed_deinterleave) {
@@ -258,6 +263,7 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     return jxl::jpeg::DecodeImageJPG(bytes, io);
   }
 
+#if JPEGXL_ENABLE_JPEG
   // TODO(veluca): use JPEGData also for pixels?
 
   // We need to declare all the non-trivial destructor local variables before
@@ -364,11 +370,15 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
   };
 
   return try_catch_block();
+#else  // JPEGXL_ENABLE_JPEG
+  return JXL_FAILURE("JPEG decoding not enabled at build time.");
+#endif  // JPEGXL_ENABLE_JPEG
 }
 
+#if JPEGXL_ENABLE_JPEG
 Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
                          size_t quality,
-                         YCbCrChromaSubsampling chroma_subsampling,
+                         const YCbCrChromaSubsampling& chroma_subsampling,
                          PaddedBytes* bytes) {
   jpeg_compress_struct cinfo;
 #ifdef MEMORY_SANITIZER
@@ -437,7 +447,7 @@ Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
 }
 
 Status EncodeWithSJpeg(const ImageBundle* ib, size_t quality,
-                       YCbCrChromaSubsampling chroma_subsampling,
+                       const YCbCrChromaSubsampling& chroma_subsampling,
                        PaddedBytes* bytes) {
 #if !JPEGXL_ENABLE_SJPEG
   return JXL_FAILURE("JPEG XL was built without sjpeg support");
@@ -465,7 +475,7 @@ Status EncodeWithSJpeg(const ImageBundle* ib, size_t quality,
     for (size_t x = 0; x < ib->xsize(); ++x) {
       for (const float* const row : rows) {
         rgb.push_back(static_cast<uint8_t>(
-            std::max(0.f, std::min(255.f, std::round(255.f * row[x])))));
+            std::max(0.f, std::min(255.f, roundf(255.f * row[x])))));
       }
     }
   }
@@ -478,6 +488,7 @@ Status EncodeWithSJpeg(const ImageBundle* ib, size_t quality,
   return true;
 #endif
 }
+#endif  // JPEGXL_ENABLE_JPEG
 
 Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
                       YCbCrChromaSubsampling chroma_subsampling,
@@ -498,6 +509,7 @@ Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
     return jpeg::WriteJpeg(*io->Main().jpeg_data, write);
   }
 
+#if JPEGXL_ENABLE_JPEG
   const ImageBundle* ib;
   ImageMetadata metadata = io->metadata.m;
   ImageBundle ib_store(&metadata);
@@ -518,6 +530,9 @@ Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
   }
 
   return true;
+#else  // JPEGXL_ENABLE_JPEG
+  return JXL_FAILURE("JPEG pixel encoding not enabled at build time");
+#endif  // JPEGXL_ENABLE_JPEG
 }
 
 }  // namespace jxl

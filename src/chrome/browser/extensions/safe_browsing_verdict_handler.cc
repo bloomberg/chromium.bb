@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/safe_browsing_verdict_handler.h"
 
+#include "base/trace_event/trace_event.h"
+#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/extension_registry.h"
@@ -29,8 +31,16 @@ void SafeBrowsingVerdictHandler::Init() {
         extension_prefs_->GetExtensionBlocklistState(extension->id());
     if (state == BLOCKLISTED_SECURITY_VULNERABILITY ||
         state == BLOCKLISTED_POTENTIALLY_UNWANTED ||
-        state == BLOCKLISTED_CWS_POLICY_VIOLATION)
+        state == BLOCKLISTED_CWS_POLICY_VIOLATION) {
+      // If the extension was disabled in an older Chrome version, it is
+      // possible that the acknowledged state is not set. Backfill the
+      // acknowledged state if that's the case.
+      blocklist_prefs::AddAcknowledgedBlocklistState(
+          extension->id(),
+          blocklist_prefs::BlocklistStateToBitMapBlocklistState(state),
+          extension_prefs_);
       greylist_.Insert(extension);
+    }
   }
 }
 
@@ -90,11 +100,14 @@ void SafeBrowsingVerdictHandler::UpdateGreylistedExtensions(
     greylist_.Remove(id);
     extension_prefs_->SetExtensionBlocklistState(extension->id(),
                                                  NOT_BLOCKLISTED);
-    extension_service_->RemoveDisableReasonAndMaybeEnable(
-        extension->id(), disable_reason::DISABLE_GREYLIST);
+    extension_service_->ClearGreylistedAcknowledgedStateAndMaybeReenable(
+        extension->id());
   }
 
-  for (const auto& id : not_yet_greylisted) {
+  // Iterate over `greylist` instead of `not_yet_greylisted`, because the
+  // extension needs to be disabled again if it is switched to another greylist
+  // state.
+  for (const auto& id : greylist) {
     scoped_refptr<const Extension> extension =
         registry_->GetInstalledExtension(id);
     if (!extension.get()) {
@@ -104,9 +117,11 @@ void SafeBrowsingVerdictHandler::UpdateGreylistedExtensions(
     }
 
     greylist_.Insert(extension);
-    extension_prefs_->SetExtensionBlocklistState(extension->id(),
-                                                 state_map.find(id)->second);
-    extension_service_->DisableExtension(id, disable_reason::DISABLE_GREYLIST);
+    BlocklistState greylist_state = state_map.find(id)->second;
+    extension_prefs_->SetExtensionBlocklistState(id, greylist_state);
+    extension_service_->MaybeDisableGreylistedExtension(
+        id,
+        blocklist_prefs::BlocklistStateToBitMapBlocklistState(greylist_state));
   }
 }
 

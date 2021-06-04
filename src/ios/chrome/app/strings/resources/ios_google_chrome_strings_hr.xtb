@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1096883626080133124">Veća učinkovitost uz Google Chrome, jednostavniji, sigurniji i brži nego ikad</translation>
 <translation id="1282031177488366470">Pomozite poboljšati Chromeove značajke i izvedbu</translation>
 <translation id="1314663809820920746">Sve vaše oznake, povijest, zaporke i druge postavke i dalje su vam vidljive na ovom uređaju. Ako nešto promijenite, te se promjene neće sinkronizirati s vašim Google računom.</translation>
 <translation id="1479202195792305274">Chrome može provjeriti vaše zaporke kad se prijavite Google računom.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome nije uspio provjeriti ima li ažuriranja. Provjerite internetsku vezu.</translation>
 <translation id="1682483655351012182">Sinkroniziraj podatke iz Chromea</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Pomozite poboljšati Chrome slanjem statistike upotrebe i izvješća o padu programa Googleu</translation>
 <translation id="1917964099031477364">Taj račun i svi nespremljeni podaci uklonit će se iz Chromea i drugih Googleovih aplikacija na ovom uređaju.</translation>
 <translation id="2009224836393115614">Chrome nije uspio provjeriti vaše zaporke. Provjerite internetsku vezu.</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome nije uspio provjeriti ima li ažuriranja. Pokušajte ponovo kasnije.</translation>
 <translation id="2732745070297234559">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovo sutra.</translation>
 <translation id="2740105938841089077">Otvaranje veza pomoću Chromea</translation>
+<translation id="2869959624320573933">Prijava u Chrome</translation>
 <translation id="2919738076569633423">Upotrebom Chromea pristajete na <ph name="BEGIN_LINK_TOS" />Uvjete pružanja usluge<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromea izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="3167189358072330585">Vaš račun ne funkcionira na Google Chromeu. Obratite se administratoru domene ili se prijavite običnim Google računom.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3345341804167540816">Upotrebljavajte Chrome svugdje</translation>
+<translation id="3455456143708465450">Da biste iskoristili sve prednosti koje vam pruža Chrome, prijavite se Google računom</translation>
 <translation id="3522659714780527202">Da biste vidjeli svoje kartice bez obzira na to gdje koristite Chrome, uključite sinkronizaciju</translation>
 <translation id="3533694711092285624">Nema nijedne spremljene zaporke. Chrome može provjeriti vaše zaporke kad ih spremite.</translation>
 <translation id="3706101708757577809">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Ako dopustite Chromeu da sazna vašu lokaciju, Chrome će je poslati svim web-lokacijama koje dopustite. Web-lokacije mogu tražiti dopuštenje za vašu lokaciju kad vam žele prikazati lokalne informacije, primjerice trgovine u blizini ili vijesti.</translation>
 <translation id="6036420186814142909">Google Chrome ima značajke koje vam mogu pomoći u upravljanju internetskim podacima i brzinom kojom se učitavaju web-stranice.
 <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Dopusti prijavu u Chrome</translation>
 <translation id="6181930887571472871">Prelazak na Chrome</translation>
 <translation id="6238746320622508509">Dopustite Chromeu da zaključa vaše anonimne kartice.</translation>
 <translation id="6573431926118603307">Ovdje će se prikazati kartice koje ste otvorili u Chromeu na svojim ostalim uređajima.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Želite li izbrisati svoje podatke iz Chromea s ovog uređaja?</translation>
 <translation id="6822673484890854830">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
 <translation id="6964931465519938134">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
+<translation id="7059914902409643750">Prilagodite Chrome sebi</translation>
 <translation id="7124339256045485976">Ažuriranje Chromea</translation>
 <translation id="7161390184744336561">Google Chrome je zastario</translation>
 <translation id="7165736900384873061">Upotrijebite QR skener Google Chromea</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome ažuriran je</translation>
 <translation id="8022947259858476807">Koristite Chrome prema zadanim postavkama da biste otvarali veze, pretraživali putem widgeta i automatski popunjavali zaporke u drugim aplikacijama</translation>
 <translation id="8160472928944011082">Ažuriranje Chromea nije moguće</translation>
+<translation id="8263079278049777200">Prijavite se na ovu web-lokaciju, Google račun i Chrome. Sinkronizaciju možete uključiti kasnije.</translation>
 <translation id="8357607116237445042">Odaberite želite li podatke iz Chromea izbrisati s ovog uređaja ili ih zadržati</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava pridržana.</translation>
 <translation id="840168496893712993">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Pokušajte ih deinstalirati.</translation>
@@ -95,5 +102,6 @@
   3. Odaberite Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Ostanite sigurni uz Google Chrome</translation>
+<translation id="8772179140489533211">Prikazuje obavijesti za prijavu u Chrome.</translation>
 <translation id="9112744793181547300">Želite li postaviti Chrome kao zadani preglednik?</translation>
 </translationbundle>

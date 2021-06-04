@@ -707,7 +707,7 @@ enum MediaListSource {
 
 std::unique_ptr<protocol::CSS::SourceRange>
 InspectorStyleSheetBase::BuildSourceRangeObject(const SourceRange& range) {
-  const LineEndings* line_endings = this->GetLineEndings();
+  const LineEndings* line_endings = GetLineEndings();
   if (!line_endings)
     return nullptr;
   TextPosition start =
@@ -791,9 +791,11 @@ void InspectorStyle::PopulateAllProperties(
     if (!source_property_names.insert(name.DeprecatedLower()).is_new_entry)
       continue;
 
-    String value = style_->getPropertyValue(name);
-    if (value.IsEmpty())
+    if (!IsValidCSSPropertyID(
+            CssPropertyID(style_->GetExecutionContext(), name)))
       continue;
+
+    String value = style_->getPropertyValue(name);
     bool important = !style_->getPropertyPriority(name).IsEmpty();
     if (important)
       value = value + " !important";
@@ -1520,7 +1522,7 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
 
   Document* document = style_sheet->OwnerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
-  const LineEndings* line_endings = this->GetLineEndings();
+  const LineEndings* line_endings = GetLineEndings();
   TextPosition start = style_sheet->StartPositionInSource();
   TextPosition end = start;
   unsigned text_length = 0;

@@ -20,7 +20,7 @@ std::unique_ptr<MdnsService> MdnsService::Create(
     TaskRunner* task_runner,
     ReportingClient* reporting_client,
     const Config& config,
-    const Config::NetworkInfo& network_info) {
+    const InterfaceInfo& network_info) {
   return std::make_unique<MdnsServiceImpl>(
       task_runner, Clock::now, reporting_client, config, network_info);
 }
@@ -29,22 +29,21 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
                                  ClockNowFunctionPtr now_function,
                                  ReportingClient* reporting_client,
                                  const Config& config,
-                                 const Config::NetworkInfo& network_info)
+                                 const InterfaceInfo& network_info)
     : task_runner_(task_runner),
       now_function_(now_function),
       reporting_client_(reporting_client),
       receiver_(config),
-      interface_(network_info.interface.index) {
+      interface_(network_info.index) {
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(reporting_client_);
-  OSP_DCHECK(network_info.supported_address_families);
 
   // Create all UDP sockets needed for this object. They should not yet be bound
   // so that they do not send or receive data until the objects on which their
   // callback depends is initialized.
   // NOTE: we bind to the Any addresses here because traffic is filtered by
   // the multicast join calls.
-  if (network_info.supported_address_families & Config::NetworkInfo::kUseIpV4) {
+  if (network_info.GetIpAddressV4()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
         task_runner, this,
         IPEndpoint{IPAddress::kAnyV4(), kDefaultMulticastPort});
@@ -55,7 +54,7 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
     socket_v4_ = std::move(socket.value());
   }
 
-  if (network_info.supported_address_families & Config::NetworkInfo::kUseIpV6) {
+  if (network_info.GetIpAddressV6()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
         task_runner, this,
         IPEndpoint{IPAddress::kAnyV6(), kDefaultMulticastPort});

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/speech/cros_speech_recognition_service.h"
 
-#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/services/speech/audio_source_fetcher_impl.h"
 #include "chrome/services/speech/cros_speech_recognition_recognizer_impl.h"
 #include "components/soda/constants.h"
+#include "components/soda/soda_installer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/media_switches.h"
@@ -16,9 +16,7 @@ namespace speech {
 
 CrosSpeechRecognitionService::CrosSpeechRecognitionService(
     content::BrowserContext* context)
-    : ChromeSpeechRecognitionService(context),
-      enable_soda_(
-          base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {}
+    : ChromeSpeechRecognitionService(context) {}
 
 CrosSpeechRecognitionService::~CrosSpeechRecognitionService() {}
 
@@ -35,14 +33,15 @@ void CrosSpeechRecognitionService::Create(
 void CrosSpeechRecognitionService::BindRecognizer(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
   base::FilePath binary_path, languagepack_path;
   PopulateFilePaths(binary_path, languagepack_path);
 
   CrosSpeechRecognitionRecognizerImpl::Create(
       std::move(receiver), std::move(client),
-      nullptr /* =SpeechRecognitionService WeakPtr*/, binary_path,
-      languagepack_path);
+      nullptr /* =SpeechRecognitionService WeakPtr*/, std::move(options),
+      binary_path, languagepack_path);
   std::move(callback).Run(
       CrosSpeechRecognitionRecognizerImpl::IsMultichannelSupported());
 }
@@ -50,6 +49,7 @@ void CrosSpeechRecognitionService::BindRecognizer(
 void CrosSpeechRecognitionService::BindAudioSourceFetcher(
     mojo::PendingReceiver<media::mojom::AudioSourceFetcher> fetcher_receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
   base::FilePath binary_path, languagepack_path;
   PopulateFilePaths(binary_path, languagepack_path);
@@ -65,7 +65,7 @@ void CrosSpeechRecognitionService::BindAudioSourceFetcher(
           &AudioSourceFetcherImpl::Create, std::move(fetcher_receiver),
           std::make_unique<CrosSpeechRecognitionRecognizerImpl>(
               std::move(client), nullptr /* =SpeechRecognitionService WeakPtr*/,
-              binary_path, languagepack_path)));
+              std::move(options), binary_path, languagepack_path)));
   std::move(callback).Run(
       CrosSpeechRecognitionRecognizerImpl::IsMultichannelSupported());
 }

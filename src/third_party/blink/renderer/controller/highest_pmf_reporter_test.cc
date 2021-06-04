@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -117,9 +119,8 @@ class MockMemoryUsageMonitor : public MemoryUsageMonitor {
   MockMemoryUsageMonitor() = delete;
 
   Page* CreateDummyPage() {
-    Page::PageClients page_clients;
-    FillWithEmptyClients(page_clients);
-    return Page::CreateNonOrdinary(page_clients, *agent_group_scheduler_);
+    return Page::CreateNonOrdinary(GetStaticEmptyChromeClientInstance(),
+                                   *agent_group_scheduler_);
   }
 
   MemoryUsage mock_memory_usage_;
@@ -133,11 +134,11 @@ class HighestPmfReporterTest : public PageTestBase {
 
   void SetUp() override {
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-    memory_usage_monitor_.reset(new MockMemoryUsageMonitor(
-        test_task_runner_, test_task_runner_->GetMockTickClock()));
+    memory_usage_monitor_ = std::make_unique<MockMemoryUsageMonitor>(
+        test_task_runner_, test_task_runner_->GetMockTickClock());
     MemoryUsageMonitor::SetInstanceForTesting(memory_usage_monitor_.get());
-    reporter_.reset(new MockHighestPmfReporter(
-        test_task_runner_, test_task_runner_->GetMockTickClock()));
+    reporter_ = std::make_unique<MockHighestPmfReporter>(
+        test_task_runner_, test_task_runner_->GetMockTickClock());
     PageTestBase::SetUp();
   }
 

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/android/webapk/webapk_installer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,10 +16,10 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/webapk/webapk.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -289,7 +289,7 @@ class WebApkInstallerTest : public ::testing::Test {
         &WebApkInstallerTest::HandleWebApkRequest, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
 
     SetDefaults();
   }
@@ -329,7 +329,7 @@ class WebApkInstallerTest : public ::testing::Test {
   }
 
   std::unique_ptr<BuildProtoRunner> CreateBuildProtoRunner() {
-    return std::unique_ptr<BuildProtoRunner>(new BuildProtoRunner());
+    return std::make_unique<BuildProtoRunner>();
   }
 
   Profile* profile() { return profile_.get(); }

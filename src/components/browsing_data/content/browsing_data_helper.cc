@@ -81,6 +81,7 @@ void RemovePrerenderCacheData(
 
 void RemoveSiteIsolationData(PrefService* prefs) {
   prefs->ClearPref(site_isolation::prefs::kUserTriggeredIsolatedOrigins);
+  prefs->ClearPref(site_isolation::prefs::kWebTriggeredIsolatedOrigins);
   // Note that this does not clear these sites from the in-memory map in
   // ChildProcessSecurityPolicy, since that is not supported at runtime. That
   // list of isolated sites is not directly exposed to users, though, and
@@ -145,6 +146,14 @@ void RemoveSiteSettingsData(const base::Time& delete_begin,
       ContentSettingsType::BLUETOOTH_CHOOSER_DATA, delete_begin, delete_end,
       HostContentSettingsMap::PatternSourcePredicate());
 
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::FEDERATED_IDENTITY_REQUEST, delete_begin, delete_end,
+      HostContentSettingsMap::PatternSourcePredicate());
+
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::FEDERATED_IDENTITY_SHARING, delete_begin, delete_end,
+      HostContentSettingsMap::PatternSourcePredicate());
+
 #if !defined(OS_ANDROID)
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::SERIAL_CHOOSER_DATA, delete_begin, delete_end,
@@ -153,6 +162,10 @@ void RemoveSiteSettingsData(const base::Time& delete_begin,
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::HID_CHOOSER_DATA, delete_begin, delete_end,
       HostContentSettingsMap::PatternSourcePredicate());
+
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA, delete_begin,
+      delete_end, HostContentSettingsMap::PatternSourcePredicate());
 #endif
 }
 

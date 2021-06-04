@@ -9,14 +9,12 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.MainThread;
-import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.AddAccountRowProperties;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.ExistingAccountRowProperties;
-import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.IncognitoAccountRowProperties;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.ItemType;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -36,8 +34,6 @@ class AccountPickerMediator {
     private final MVCListAdapter.ModelList mListModel;
     private final AccountPickerCoordinator.Listener mAccountPickerListener;
     private final ProfileDataCache mProfileDataCache;
-    private final boolean mShowIncognitoRow;
-    private @Nullable String mSelectedAccountName;
 
     private final AccountManagerFacade mAccountManagerFacade;
     private final AccountsChangeObserver mAccountsChangeObserver = this::updateAccounts;
@@ -45,13 +41,10 @@ class AccountPickerMediator {
 
     @MainThread
     AccountPickerMediator(Context context, MVCListAdapter.ModelList listModel,
-            AccountPickerCoordinator.Listener listener, @Nullable String selectedAccountName,
-            boolean showIncognitoRow) {
+            AccountPickerCoordinator.Listener listener) {
         mListModel = listModel;
         mAccountPickerListener = listener;
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(context);
-        mShowIncognitoRow = showIncognitoRow;
-        mSelectedAccountName = selectedAccountName;
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
 
         mAccountManagerFacade.addObserver(mAccountsChangeObserver);
@@ -66,13 +59,6 @@ class AccountPickerMediator {
     void destroy() {
         mProfileDataCache.removeObserver(mProfileDataObserver);
         mAccountManagerFacade.removeObserver(mAccountsChangeObserver);
-    }
-
-    void setSelectedAccountName(String selectedAccountName) {
-        if (!TextUtils.equals(mSelectedAccountName, selectedAccountName)) {
-            mSelectedAccountName = selectedAccountName;
-            updateSelectedAccount();
-        }
     }
 
     /**
@@ -97,14 +83,6 @@ class AccountPickerMediator {
         PropertyModel model =
                 AddAccountRowProperties.createModel(mAccountPickerListener::addAccount);
         mListModel.add(new MVCListAdapter.ListItem(ItemType.ADD_ACCOUNT_ROW, model));
-
-        // Add a "Go incognito mode" row
-        if (mShowIncognitoRow) {
-            PropertyModel incognitoModel = IncognitoAccountRowProperties.createModel(
-                    mAccountPickerListener::goIncognitoMode);
-            mListModel.add(
-                    new MVCListAdapter.ListItem(ItemType.INCOGNITO_ACCOUNT_ROW, incognitoModel));
-        }
     }
 
     private MVCListAdapter.ListItem createExistingAccountRowItem(
@@ -112,20 +90,9 @@ class AccountPickerMediator {
         Callback<DisplayableProfileData> profileDataCallback = profileData1
                 -> mAccountPickerListener.onAccountSelected(
                         profileData1.getAccountEmail(), isDefaultAccount);
-        PropertyModel model = ExistingAccountRowProperties.createModel(profileData,
-                profileDataCallback, profileData.getAccountEmail().equals(mSelectedAccountName));
+        PropertyModel model =
+                ExistingAccountRowProperties.createModel(profileData, profileDataCallback);
         return new MVCListAdapter.ListItem(ItemType.EXISTING_ACCOUNT_ROW, model);
-    }
-
-    private void updateSelectedAccount() {
-        for (MVCListAdapter.ListItem item : mListModel) {
-            if (item.type == AccountPickerProperties.ItemType.EXISTING_ACCOUNT_ROW) {
-                PropertyModel model = item.model;
-                boolean isSelectedAccount = TextUtils.equals(mSelectedAccountName,
-                        model.get(ExistingAccountRowProperties.PROFILE_DATA).getAccountEmail());
-                model.set(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT, isSelectedAccount);
-            }
-        }
     }
 
     /**

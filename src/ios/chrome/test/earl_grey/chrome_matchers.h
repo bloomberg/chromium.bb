@@ -87,6 +87,9 @@ id<GREYMatcher> NavigationBarCancelButton();
 // Returns matcher for a close button.
 id<GREYMatcher> CloseButton();
 
+// Returns matcher for close tab menu button.
+id<GREYMatcher> CloseTabMenuButton();
+
 // Matcher for the navigate forward button.
 id<GREYMatcher> ForwardButton();
 
@@ -132,6 +135,12 @@ id<GREYMatcher> TabShareButton();
 
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
+
+// Matcher for Add to reading list button.
+id<GREYMatcher> AddToReadingListButton();
+
+// Matcher for Add to bookmarks button.
+id<GREYMatcher> AddToBookmarksButton();
 
 // Matcher for SettingsSwitchCell.
 id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
@@ -321,7 +330,10 @@ id<GREYMatcher> ClearSavedPasswordsButton();
 id<GREYMatcher> ClearAutofillButton();
 
 // Returns matcher for the collection view of content suggestion.
-id<GREYMatcher> ContentSuggestionCollectionView();
+id<GREYMatcher> ContentSuggestionsCollectionView();
+
+// Returns matcher for the collection view of the NTP.
+id<GREYMatcher> NTPCollectionView();
 
 // Returns matcher for the warning message while filling in payment requests.
 id<GREYMatcher> WarningMessageView();
@@ -386,6 +398,12 @@ id<GREYMatcher> NewTabPageOmnibox();
 
 // Returns matcher for a fake omnibox on a new tab page.
 id<GREYMatcher> FakeOmnibox();
+
+// Returns matcher for a header label of the Discover feed.
+id<GREYMatcher> DiscoverHeaderLabel();
+
+// Returns matcher for a logo on a new tab page.
+id<GREYMatcher> NTPLogo();
 
 // Returns a matcher for the current WebView.
 id<GREYMatcher> WebViewMatcher();
@@ -553,7 +571,7 @@ id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();
 
 // Returns the matcher for the iOS 13+ Activity View header.
-id<GREYMatcher> ActivityViewHeader(NSString* page_title);
+id<GREYMatcher> ActivityViewHeader(NSString* url_host, NSString* page_title);
 
 // Returns a matcher for the button to trigger password generation on manual
 // fallback.

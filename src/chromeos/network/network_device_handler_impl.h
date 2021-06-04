@@ -76,30 +76,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void SetUsbEthernetMacAddressSource(const std::string& source) override;
 
-  void AddWifiWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback) override;
-
-  void AddWifiWakeOnPacketOfTypes(
-      const std::vector<std::string>& types,
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback) override;
-
-  void RemoveWifiWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback) override;
-
-  void RemoveWifiWakeOnPacketOfTypes(
-      const std::vector<std::string>& types,
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback) override;
-
-  void RemoveAllWifiWakeOnPacketConnections(
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback) override;
-
   // NetworkStateHandlerObserver overrides
   void DeviceListChanged() override;
   void DevicePropertiesUpdated(const DeviceState* device) override;
@@ -165,7 +141,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
       std::string support_property_name,
       WifiFeatureSupport* feature_support_to_set,
       const std::string& device_path,
-      base::Optional<base::Value> properties);
+      absl::optional<base::Value> properties);
 
   // Callback to be called on MAC address source change request failure.
   // The request was called on device with |device_path| path and

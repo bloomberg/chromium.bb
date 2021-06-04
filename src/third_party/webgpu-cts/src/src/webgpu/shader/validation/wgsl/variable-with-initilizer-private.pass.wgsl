@@ -3,5 +3,5 @@
 var<private> a : i32  = 1;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

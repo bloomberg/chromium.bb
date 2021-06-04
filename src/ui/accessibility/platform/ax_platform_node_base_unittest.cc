@@ -66,7 +66,7 @@ TEST(AXPlatformNodeBaseTest, GetHypertext) {
 
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
       TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
@@ -125,7 +125,7 @@ TEST(AXPlatformNodeBaseTest, GetHypertextIgnoredContainerSiblings) {
   AXTree tree(update);
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
       TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
@@ -170,7 +170,7 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
 
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   EXPECT_EQ(root->GetInnerText(), u"abde");
 
@@ -183,7 +183,7 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
     SetIsInvisible(&tree, 2, false);
     EXPECT_EQ(root->GetInnerText(), u"abde");
 
-    SetRole(&tree, 2, ax::mojom::Role::kIgnored);
+    SetRole(&tree, 2, ax::mojom::Role::kNone);
     EXPECT_EQ(root->GetInnerText(), u"bde");
 
     SetRole(&tree, 2, ax::mojom::Role::kStaticText);
@@ -196,13 +196,13 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
     SetIsInvisible(&tree, 4, true);
     EXPECT_EQ(root->GetInnerText(), u"abde");
 
-    SetRole(&tree, 4, ax::mojom::Role::kIgnored);
+    SetRole(&tree, 4, ax::mojom::Role::kNone);
     EXPECT_EQ(root->GetInnerText(), u"abde");
   }
 }
 
 TEST(AXPlatformNodeBaseTest, TestMenuSelectedItems) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -237,7 +237,7 @@ TEST(AXPlatformNodeBaseTest, TestMenuSelectedItems) {
 }
 
 TEST(AXPlatformNodeBaseTest, TestSelectedChildren) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -272,7 +272,7 @@ TEST(AXPlatformNodeBaseTest, TestSelectedChildren) {
 }
 
 TEST(AXPlatformNodeBaseTest, TestSelectedChildrenWithGroup) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -338,7 +338,7 @@ TEST(AXPlatformNodeBaseTest, TestSelectedChildrenWithGroup) {
 }
 
 TEST(AXPlatformNodeBaseTest, TestSelectedChildrenMixed) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   // Build the below tree which is mixed with listBoxOption and group.
   // id=1 listBox FOCUSABLE MULTISELECTABLE (0, 0)-(0, 0) child_ids=2,3,4,9
@@ -446,7 +446,7 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
   // n4  n5  n6       n10
   //         /
   //        n7
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
   AXNodeData node1;
   node1.id = 1;
   node1.role = ax::mojom::Role::kRootWebArea;
@@ -524,7 +524,7 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
   // Test for two nodes that do not share the same root. They should not be
   // comparable.
   AXPlatformNodeBase detached_node;
-  EXPECT_EQ(base::nullopt, n1->CompareTo(detached_node));
+  EXPECT_EQ(absl::nullopt, n1->CompareTo(detached_node));
 
   // Create a test vector of all the tree nodes arranged in a pre-order
   // traversal way. The node that has a smaller index in the vector should also
@@ -541,14 +541,14 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
       else if (lhs->GetData().id > rhs->GetData().id)
         expected_result = 1;
 
-      EXPECT_NE(base::nullopt, lhs->CompareTo(*rhs));
+      EXPECT_NE(absl::nullopt, lhs->CompareTo(*rhs));
       int actual_result = 0;
       if (lhs->CompareTo(*rhs) < 0)
         actual_result = -1;
       else if (lhs->CompareTo(*rhs) > 0)
         actual_result = 1;
 
-      SCOPED_TRACE(testing::Message()
+      SCOPED_TRACE(::testing::Message()
                    << "lhs.id=" << base::NumberToString(lhs->GetData().id)
                    << ", rhs.id=" << base::NumberToString(rhs->GetData().id)
                    << ", lhs->CompareTo(*rhs)={actual:"

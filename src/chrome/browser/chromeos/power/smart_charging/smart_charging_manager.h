@@ -9,8 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/ml/boot_clock.h"
@@ -22,6 +21,7 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -99,11 +99,11 @@ class SmartChargingManager : public ui::UserActivityObserver,
 
   // Updates screen brightness percent from received value.
   void OnReceiveScreenBrightnessPercent(
-      base::Optional<double> screen_brightness_percent);
+      absl::optional<double> screen_brightness_percent);
 
   // Updates lid state and tablet mode from received switch states.
   void OnReceiveSwitchStates(
-      base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
+      absl::optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
 
   // Gets amount of time of video playing recently (e.g. in the last 30
   // minutes).
@@ -127,15 +127,15 @@ class SmartChargingManager : public ui::UserActivityObserver,
   // Gets the "plug in" and "unplug" events of the last charge.
   std::tuple<PastEvent, PastEvent> GetLastChargeEvents();
 
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
-      user_activity_observer_{this};
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observation_{this};
 
-  ScopedObserver<chromeos::PowerManagerClient,
-                 chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_{this};
-  ScopedObserver<session_manager::SessionManager,
-                 session_manager::SessionManagerObserver>
-      session_manager_observer_{this};
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_client_observation_{this};
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_manager_observation_{this};
 
   // Timer to trigger periodically for logging data.
   const std::unique_ptr<base::RepeatingTimer> periodic_timer_;
@@ -172,13 +172,13 @@ class SmartChargingManager : public ui::UserActivityObserver,
   UserChargingEvent user_charging_event_for_test_;
   std::vector<PastEvent> past_events_;
 
-  base::Optional<double> battery_percent_;
-  base::Optional<double> screen_brightness_percent_;
-  base::Optional<power_manager::PowerSupplyProperties::ExternalPower>
+  absl::optional<double> battery_percent_;
+  absl::optional<double> screen_brightness_percent_;
+  absl::optional<power_manager::PowerSupplyProperties::ExternalPower>
       external_power_;
-  base::Optional<bool> is_charging_;
+  absl::optional<bool> is_charging_;
 
-  base::Optional<base::FilePath> profile_path_;
+  absl::optional<base::FilePath> profile_path_;
   const std::unique_ptr<SmartChargingUkmLogger> ukm_logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);

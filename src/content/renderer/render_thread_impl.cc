@@ -33,6 +33,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -64,7 +65,6 @@
 #include "content/child/runtime_features.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/frame_messages.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/public/common/content_constants.h"
@@ -348,25 +348,6 @@ void CreateSingleSampleMetricsProvider(
         receiver) {
   process_host->BindHostReceiver(std::move(receiver));
 }
-
-// This factory is used to defer binding of the InterfacePtr to the compositor
-// thread.
-class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
- public:
-  explicit UkmRecorderFactoryImpl(
-      mojo::SharedRemote<mojom::ChildProcessHost> process_host)
-      : process_host_(std::move(process_host)) {}
-  ~UkmRecorderFactoryImpl() override = default;
-
-  std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
-    process_host_->BindHostReceiver(recorder.InitWithNewPipeAndPassReceiver());
-    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
-  }
-
- private:
-  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
-};
 
 static bool IsSingleProcess() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -981,6 +962,7 @@ void RenderThreadImpl::RegisterSchemes() {
   // devtools:
   WebString devtools_scheme(WebString::FromASCII(kChromeDevToolsScheme));
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(devtools_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(devtools_scheme);
 
   // view-source:
   WebString view_source_scheme(WebString::FromASCII(kViewSourceScheme));
@@ -1106,9 +1088,11 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
 media::DecoderFactory* RenderThreadImpl::GetMediaDecoderFactory() {
   DCHECK(IsMainThread());
-  // Note that we don't reset this, ever.  We hand it out to WebRTC once, and it
-  // never asks for another one, even if the gpu process restarts.
-  DCHECK(!media_decoder_factory_);
+
+  // Note that we don't reset this, ever. We instantiate it once and never reset
+  // it, even if the gpu process restarts.
+  if (media_decoder_factory_)
+    return media_decoder_factory_.get();
 
   // MediaInterfaceFactory guarantees that the media::InterfaceFactory is
   // accessed from the current (main) thread.
@@ -1182,7 +1166,14 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   bool support_locking = false;
   bool support_raster_interface = true;
+
+  // Only support OOPR on this context if the general feature is enabled in
+  // addition to OOPR for canvas. Otherwise this context will raster canvas
+  // through Skia's GrContext.
   bool support_oop_rasterization =
+      gpu_channel_host->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+          gpu::kGpuFeatureStatusEnabled &&
       base::FeatureList::IsEnabled(features::kCanvasOopRasterization);
   bool support_gles2_interface = false;
   bool support_grcontext = !support_oop_rasterization;
@@ -1246,7 +1237,7 @@ const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {
 }
 
 bool RenderThreadImpl::IsUseZoomForDSF() {
-  return IsUseZoomForDSFEnabled();
+  return is_zoom_for_dsf_enabled_;
 }
 
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
@@ -1267,10 +1258,6 @@ bool RenderThreadImpl::IsLcdTextEnabled() {
 
 bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
-}
-
-bool RenderThreadImpl::IsUseZoomForDSFEnabled() {
-  return is_zoom_for_dsf_enabled_;
 }
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
@@ -1298,11 +1285,6 @@ void RenderThreadImpl::SetScrollAnimatorEnabled(
     bool enable_scroll_animator,
     base::PassKey<AgentSchedulingGroup>) {
   is_scroll_animator_enabled_ = enable_scroll_animator;
-}
-
-std::unique_ptr<cc::UkmRecorderFactory>
-RenderThreadImpl::CreateUkmRecorderFactory() {
-  return std::make_unique<UkmRecorderFactoryImpl>(child_process_host());
 }
 
 gfx::RenderingPipeline* RenderThreadImpl::GetMainThreadPipeline() {
@@ -1399,6 +1381,10 @@ void RenderThreadImpl::WriteClangProfilingProfile(
 
 void RenderThreadImpl::SetIsCrossOriginIsolated(bool value) {
   blink::SetIsCrossOriginIsolated(value);
+}
+
+void RenderThreadImpl::SetIsDirectSocketEnabled(bool value) {
+  blink::SetIsDirectSocketEnabled(value);
 }
 
 bool RenderThreadImpl::GetRendererMemoryMetrics(
@@ -1673,11 +1659,11 @@ void RenderThreadImpl::UpdateScrollbarTheme(
 #if defined(OS_MAC)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->has_initial_button_delay
-          ? base::make_optional(params->initial_button_delay)
-          : base::nullopt,
+          ? absl::make_optional(params->initial_button_delay)
+          : absl::nullopt,
       params->has_autoscroll_button_delay
-          ? base::make_optional(params->autoscroll_button_delay)
-          : base::nullopt,
+          ? absl::make_optional(params->autoscroll_button_delay)
+          : absl::nullopt,
       params->preferred_scroller_style, params->redraw,
       params->jump_on_track_click);
 
@@ -1761,7 +1747,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
 #else
     base::Thread::Options options;
 #endif
-    media_thread_->StartWithOptions(options);
+    media_thread_->StartWithOptions(std::move(options));
   }
   return media_thread_->task_runner();
 }

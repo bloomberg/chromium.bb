@@ -28,6 +28,10 @@ _CONFIG = [
             'gfx::ICCProfile',
             'gfx::RadToDeg',
 
+            # absl optional constructs.
+            'absl::optional',
+            'absl::in_place',
+
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
             'base::ApplyMetadataToPastSamples',
@@ -47,7 +51,6 @@ _CONFIG = [
             "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
-            'base::Optional',
             'base::OptionalFromPtr',
             'base::OptionalOrNullptr',
             'base::PlatformThread',
@@ -80,9 +83,9 @@ _CONFIG = [
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
             'base::in_place',
-            'base::make_optional',
+            'absl::make_optional',
             'base::make_span',
-            'base::nullopt',
+            'absl::nullopt',
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::size',
@@ -106,6 +109,7 @@ _CONFIG = [
 
             # //base/callback_helpers.h.
             'base::DoNothing',
+            'base::SplitOnceCallback',
 
             # //base/callback.h is allowed, but you need to use WTF::Bind or
             # WTF::BindRepeating to create callbacks in Blink.
@@ -383,6 +387,9 @@ _CONFIG = [
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',
+
+            # Power scheduling instrumentation, which only depends on //base
+            "power_scheduler::.+",
 
             # Nested namespaces under the blink namespace
             'bindings::.+',
@@ -845,6 +852,28 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/core/inspector',
+            'third_party/blink/renderer/controller/dev_tools_frontend_impl.h',
+            'third_party/blink/renderer/controller/dev_tools_frontend_impl.cc',
+            'third_party/blink/renderer/modules/filesystem/dev_tools_host_file_system.cc'
+        ],
+        'allowed': [
+            # Commands from the DevTools window are parsed from a JSON string in
+            # the devtools renderer and sent on as base::Value.
+            'base::Value',
+        ],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/core/inspector/dev_tools_host.cc'],
+        'allowed': [
+            # Commands from the DevTools window are parsed from a JSON string in
+            # the devtools renderer and sent on as base::Value.
+            'base::JSONReader',
+        ],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'
         ],
         'allowed': [
@@ -908,7 +937,9 @@ _CONFIG = [
             'media::PIXEL_FORMAT_Y16',
             'media::VideoFrame',
             'viz::RasterContextProvider',
+            'viz::ReleaseCallback',
             'viz::TransferableResource',
+            'viz::ResourceFormatToClosestSkColorType',
         ],
     },
     {
@@ -930,6 +961,16 @@ _CONFIG = [
             'base::MD5Digest',
             'base::MD5Sum',
             'base::StringPiece',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/breakout_box/',
+        ],
+        'allowed': [
+            'media::.+',
+            # Some media APIs require std::vector.
+            "std::vector",
         ]
     },
     {
@@ -1101,8 +1142,8 @@ _CONFIG = [
             'gpu::SharedImageInterface',
             'gpu::SyncToken',
             'viz::RasterContextProvider',
+            'viz::ReleaseCallback',
             'viz::ResourceFormat',
-            'viz::SingleReleaseCallback',
             'media::.+',
             'libyuv::.+',
         ]
@@ -1270,12 +1311,12 @@ _CONFIG = [
             'base::LazyInstance',
             'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
-            # base::Passed, base::Closure, base::CurrentThread and
-            # base::RetainedRef.
+            # base::Passed, base::OnceClosure, base::RepeatingClosure,
+            # base::CurrentThread and base::RetainedRef.
             'base::Bind.*',
-            'base::Closure',
             'base::MD5.*',
             'base::CurrentThread',
+            'base::.*Closure',
             'base::Passed',
             'base::PowerObserver',
             'base::RetainedRef',
@@ -1358,6 +1399,13 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webaudio/semi_realtime_audio_worklet_thread.cc',
         ],
         'allowed': ['base::ThreadPriority'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/frame/local_frame.cc',
+            'third_party/blink/renderer/core/frame/local_frame.h'
+        ],
+        'allowed': ['base::Value'],
     },
     {
         'paths': ['third_party/blink/renderer/core/frame/local_dom_window.cc'],

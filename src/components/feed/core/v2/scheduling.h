@@ -9,9 +9,13 @@
 
 #include "base/time/time.h"
 #include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/public/stream_type.h"
 
 namespace base {
 class Value;
+}
+namespace feedstore {
+class Metadata;
 }
 namespace feed {
 constexpr base::TimeDelta kSuppressRefreshDuration =
@@ -39,7 +43,10 @@ RequestSchedule RequestScheduleFromValue(const base::Value&);
 base::Time NextScheduledRequestTime(base::Time now, RequestSchedule* schedule);
 
 // Returns whether we should wait for new content before showing stream content.
-bool ShouldWaitForNewContent(bool has_content, base::TimeDelta content_age);
+bool ShouldWaitForNewContent(const feedstore::Metadata& metadata,
+                             const StreamType& stream_type,
+                             bool has_content,
+                             base::TimeDelta content_age);
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_CORE_V2_SCHEDULING_H_

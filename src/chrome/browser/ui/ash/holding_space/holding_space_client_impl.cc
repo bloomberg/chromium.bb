@@ -36,16 +36,15 @@ HoldingSpaceKeyedService* GetHoldingSpaceKeyedService(Profile* profile) {
   return HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
 }
 
-// Returns file info for the specified `file_path` or `base::nullopt` in the
+// Returns file info for the specified `file_path` or `absl::nullopt` in the
 // event that file info cannot be obtained.
 using GetFileInfoCallback =
-    base::OnceCallback<void(const base::Optional<base::File::Info>&)>;
+    base::OnceCallback<void(const absl::optional<base::File::Info>&)>;
 void GetFileInfo(Profile* profile,
                  const base::FilePath& file_path,
                  GetFileInfoCallback callback) {
   scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForExtensionId(
-          profile, file_manager::kFileManagerAppId);
+      file_manager::util::GetFileManagerFileSystemContext(profile);
   file_manager::util::GetMetadataForPath(
       file_system_context, file_path,
       storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
@@ -53,8 +52,8 @@ void GetFileInfo(Profile* profile,
           [](GetFileInfoCallback callback, base::File::Error error,
              const base::File::Info& info) {
             std::move(callback).Run(error == base::File::FILE_OK
-                                        ? base::make_optional<>(info)
-                                        : base::nullopt);
+                                        ? absl::make_optional<>(info)
+                                        : absl::nullopt);
           },
           std::move(callback)));
 }
@@ -109,8 +108,7 @@ void HoldingSpaceClientImpl::CopyImageToClipboard(const HoldingSpaceItem& item,
 
 base::FilePath HoldingSpaceClientImpl::CrackFileSystemUrl(
     const GURL& file_system_url) const {
-  return file_manager::util::GetFileSystemContextForExtensionId(
-             profile_, file_manager::kFileManagerAppId)
+  return file_manager::util::GetFileManagerFileSystemContext(profile_)
       ->CrackURL(file_system_url)
       .path();
 }
@@ -156,7 +154,8 @@ void HoldingSpaceClientImpl::OpenItems(
 
   for (const HoldingSpaceItem* item : items) {
     if (item->file_path().empty()) {
-      holding_space_metrics::RecordItemFailureToLaunch(item->type());
+      holding_space_metrics::RecordItemFailureToLaunch(item->type(),
+                                                       item->file_path());
       *complete_success_ptr = false;
       barrier_closure.Run();
       return;
@@ -167,9 +166,10 @@ void HoldingSpaceClientImpl::OpenItems(
             [](const base::WeakPtr<HoldingSpaceClientImpl>& weak_ptr,
                base::RepeatingClosure barrier_closure, bool* complete_success,
                const base::FilePath& file_path, HoldingSpaceItem::Type type,
-               const base::Optional<base::File::Info>& info) {
+               const absl::optional<base::File::Info>& info) {
               if (!weak_ptr || !info.has_value()) {
-                holding_space_metrics::RecordItemFailureToLaunch(type);
+                holding_space_metrics::RecordItemFailureToLaunch(type,
+                                                                 file_path);
                 *complete_success = false;
                 barrier_closure.Run();
                 return;
@@ -181,17 +181,18 @@ void HoldingSpaceClientImpl::OpenItems(
                   base::BindOnce(
                       [](base::RepeatingClosure barrier_closure,
                          bool* complete_success, HoldingSpaceItem::Type type,
+                         const base::FilePath& file_path,
                          platform_util::OpenOperationResult result) {
                         const bool success =
                             result == platform_util::OPEN_SUCCEEDED;
                         if (!success) {
                           holding_space_metrics::RecordItemFailureToLaunch(
-                              type);
+                              type, file_path);
                           *complete_success = false;
                         }
                         barrier_closure.Run();
                       },
-                      barrier_closure, complete_success, type));
+                      barrier_closure, complete_success, type, file_path));
             },
             weak_factory_.GetWeakPtr(), barrier_closure, complete_success_ptr,
             item->file_path(), item->type()));
@@ -243,10 +244,8 @@ void HoldingSpaceClientImpl::PinFiles(
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const base::FilePath& file_path : file_paths) {
     const storage::FileSystemURL& file_system_url =
-        file_manager::util::GetFileSystemContextForExtensionId(
-            profile_, file_manager::kFileManagerAppId)
-            ->CrackURL(
-                holding_space_util::ResolveFileSystemUrl(profile_, file_path));
+        file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
+            holding_space_util::ResolveFileSystemUrl(profile_, file_path));
     if (!service->ContainsPinnedFile(file_system_url))
       file_system_urls.push_back(file_system_url);
   }
@@ -262,9 +261,8 @@ void HoldingSpaceClientImpl::PinItems(
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
     const storage::FileSystemURL& file_system_url =
-        file_manager::util::GetFileSystemContextForExtensionId(
-            profile_, file_manager::kFileManagerAppId)
-            ->CrackURL(item->file_system_url());
+        file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
+            item->file_system_url());
     if (!service->ContainsPinnedFile(file_system_url))
       file_system_urls.push_back(file_system_url);
   }
@@ -280,9 +278,8 @@ void HoldingSpaceClientImpl::UnpinItems(
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
     const storage::FileSystemURL& file_system_url =
-        file_manager::util::GetFileSystemContextForExtensionId(
-            profile_, file_manager::kFileManagerAppId)
-            ->CrackURL(item->file_system_url());
+        file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
+            item->file_system_url());
     if (service->ContainsPinnedFile(file_system_url))
       file_system_urls.push_back(file_system_url);
   }

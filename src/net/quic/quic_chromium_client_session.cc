@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -16,7 +17,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -1120,10 +1120,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   // The MTU used by QUIC is limited to a fairly small set of predefined values
   // (initial values and MTU discovery values), but does not fare well when
   // bucketed.  Because of that, a sparse histogram is used here.
-  base::UmaHistogramSparse("Net.QuicSession.ClientSideMtu",
-                           connection()->max_packet_length());
-  base::UmaHistogramSparse("Net.QuicSession.ServerSideMtu",
-                           stats.max_received_packet_size);
+  base::UmaHistogramSparse("Net.QuicSession.ClientSideMtu", stats.egress_mtu);
+  base::UmaHistogramSparse("Net.QuicSession.ServerSideMtu", stats.ingress_mtu);
 
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.MtuProbesSent",
                           connection()->mtu_probe_count());
@@ -2945,8 +2943,11 @@ void QuicChromiumClientSession::NotifyRequestsOfConfirmation(int net_error) {
 void QuicChromiumClientSession::MaybeMigrateToDifferentPortOnPathDegrading() {
   DCHECK(allow_port_migration_ && !migrate_session_early_v2_);
 
-  // Migration before handshake is not allowed.
-  if (!OneRttKeysAvailable()) {
+  // Migration before handshake confirmed is not allowed.
+  const bool is_handshake_confirmed = version().UsesHttp3()
+                                          ? connection()->IsHandshakeConfirmed()
+                                          : OneRttKeysAvailable();
+  if (!is_handshake_confirmed) {
     HistogramAndLogMigrationFailure(
         MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
         connection_id(), "Path degrading before handshake confirmed");
@@ -2997,7 +2998,10 @@ void QuicChromiumClientSession::
 
   LogHandshakeStatusOnMigrationSignal();
 
-  if (!OneRttKeysAvailable()) {
+  const bool is_handshake_confirmed = version().UsesHttp3()
+                                          ? connection()->IsHandshakeConfirmed()
+                                          : OneRttKeysAvailable();
+  if (!is_handshake_confirmed) {
     HistogramAndLogMigrationFailure(
         MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
         connection_id(), "Path degrading before handshake confirmed");
@@ -3359,37 +3363,38 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   base::DictionaryValue dict;
   dict.SetString("version", ParsedQuicVersionToString(connection()->version()));
   dict.SetInteger("open_streams", GetNumActiveStreams());
-  std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
-  auto* stream_list_ptr = stream_list.get();
+
+  std::vector<base::Value> stream_list;
+  auto* stream_list_ptr = &stream_list;
 
   PerformActionOnActiveStreams([stream_list_ptr](quic::QuicStream* stream) {
-    stream_list_ptr->AppendString(base::NumberToString(stream->id()));
+    stream_list_ptr->emplace_back(base::NumberToString(stream->id()));
     return true;
   });
 
-  dict.Set("active_streams", std::move(stream_list));
+  dict.SetKey("active_streams", base::Value(std::move(stream_list)));
 
-  dict.SetInteger("total_streams", num_total_streams_);
-  dict.SetString("peer_address", peer_address().ToString());
-  dict.SetString("network_isolation_key",
-                 session_key_.network_isolation_key().ToDebugString());
-  dict.SetString("connection_id", connection_id().ToString());
+  dict.SetIntKey("total_streams", num_total_streams_);
+  dict.SetStringKey("peer_address", peer_address().ToString());
+  dict.SetStringKey("network_isolation_key",
+                    session_key_.network_isolation_key().ToDebugString());
+  dict.SetStringKey("connection_id", connection_id().ToString());
   if (!connection()->client_connection_id().IsEmpty()) {
-    dict.SetString("client_connection_id",
-                   connection()->client_connection_id().ToString());
+    dict.SetStringKey("client_connection_id",
+                      connection()->client_connection_id().ToString());
   }
-  dict.SetBoolean("connected", connection()->connected());
+  dict.SetBoolKey("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();
-  dict.SetInteger("packets_sent", stats.packets_sent);
-  dict.SetInteger("packets_received", stats.packets_received);
-  dict.SetInteger("packets_lost", stats.packets_lost);
+  dict.SetIntKey("packets_sent", stats.packets_sent);
+  dict.SetIntKey("packets_received", stats.packets_received);
+  dict.SetIntKey("packets_lost", stats.packets_lost);
   SSLInfo ssl_info;
 
-  std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
+  std::vector<base::Value> alias_list;
   for (const auto& alias : aliases) {
-    alias_list->AppendString(alias.ToString());
+    alias_list.emplace_back(alias.ToString());
   }
-  dict.Set("aliases", std::move(alias_list));
+  dict.SetKey("aliases", base::Value(std::move(alias_list)));
 
   return std::move(dict);
 }

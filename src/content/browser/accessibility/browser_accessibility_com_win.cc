@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -1450,9 +1451,9 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   old_win_attributes_.swap(win_attributes_);
 
   old_hypertext_ = hypertext_;
-  hypertext_ = ui::AXHypertext();
+  hypertext_ = ui::AXLegacyHypertext();
 
-  win_attributes_.reset(new WinAttributes());
+  win_attributes_ = std::make_unique<WinAttributes>();
 
   win_attributes_->ia_role = MSAARole();
   win_attributes_->ia_state = MSAAState();
@@ -1523,7 +1524,7 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents() {
   }
 
   old_win_attributes_.reset(nullptr);
-  old_hypertext_ = ui::AXHypertext();
+  old_hypertext_ = ui::AXLegacyHypertext();
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityComWin::Manager() const {

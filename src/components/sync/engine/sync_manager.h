@@ -62,19 +62,6 @@ class SyncManager {
     // changed.
     virtual void OnConnectionStatusChange(ConnectionStatus status) = 0;
 
-    // Called when initialization is complete to the point that SyncManager can
-    // process changes. This does not necessarily mean authentication succeeded
-    // or that the SyncManager is online.
-    // IMPORTANT: Creating any type of transaction before receiving this
-    // notification is illegal!
-    // WARNING: Calling methods on the SyncManager before receiving this
-    // message, unless otherwise specified, produces undefined behavior.
-
-    virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend,
-        const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-        bool success) = 0;
-
     virtual void OnActionableError(
         const SyncProtocolError& sync_protocol_error) = 0;
 
@@ -205,6 +192,9 @@ class SyncManager {
   // Returns an instance of the main interface for registering sync types with
   // sync engine.
   virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;
+
+  virtual WeakHandle<JsBackend> GetJsBackend() = 0;
+  virtual WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.

@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -25,6 +25,7 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "url/gurl.h"
 
 namespace {
@@ -56,6 +57,7 @@ const char kIsWebOnlyTwaKey[] = "is_web_only_twa";
 const char kSha256FingerprintKey[] = "sha256_fingerprint";
 constexpr char kLastAppId[] = "last_app_id";
 constexpr char kPinIndex[] = "pin_index";
+constexpr char kGeneratedWebApkPackagePrefix[] = "org.chromium.webapk.";
 
 // Default icon size in pixels to request from ARC for an icon.
 const int kDefaultIconSize = 192;
@@ -110,7 +112,7 @@ bool ApkWebAppService::IsWebAppInstalledFromArc(
       profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
 }
 
-base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     const web_app::AppId& app_id) {
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
@@ -120,26 +122,26 @@ base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
       {app_id, kPackageNameKey}, base::Value::Type::STRING);
 
   if (!v)
-    return base::nullopt;
+    return absl::nullopt;
 
-  return base::Optional<std::string>(v->GetString());
+  return absl::optional<std::string>(v->GetString());
 }
 
-base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     const GURL& url) {
   web_app::AppRegistrar& registrar =
       web_app::WebAppProvider::Get(profile_)->registrar();
-  base::Optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
+  absl::optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
   if (!app_id)
-    return base::nullopt;
+    return absl::nullopt;
 
   return GetPackageNameForWebApp(app_id.value());
 }
 
-base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
+absl::optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
     const web_app::AppId& app_id) {
   if (!IsWebAppInstalledFromArc(app_id))
-    return base::nullopt;
+    return absl::nullopt;
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
@@ -149,9 +151,9 @@ base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
       {app_id, kSha256FingerprintKey}, base::Value::Type::STRING);
 
   if (!v)
-    return base::nullopt;
+    return absl::nullopt;
 
-  return base::Optional<std::string>(v->GetString());
+  return absl::optional<std::string>(v->GetString());
 }
 
 void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
@@ -181,7 +183,7 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
 
   DCHECK(provider_);
   provider_->install_finalizer().UninstallExternalWebApp(
-      web_app_id, web_app::ExternalInstallSource::kArc, base::DoNothing());
+      web_app_id, webapps::WebappUninstallSource::kArc, base::DoNothing());
 }
 
 void ApkWebAppService::UpdateShelfPin(
@@ -217,23 +219,23 @@ void ApkWebAppService::UpdateShelfPin(
     arc_app_list_prefs_->SetPackagePrefs(package_info->package_name, kLastAppId,
                                          base::Value(new_app_id));
     if (!last_app_id.empty()) {
-      auto* launcher_controller = ChromeLauncherController::instance();
-      if (!launcher_controller)
+      auto* shelf_controller = ChromeShelfController::instance();
+      if (!shelf_controller)
         return;
-      int index = launcher_controller->PinnedItemIndexByAppID(last_app_id);
+      int index = shelf_controller->PinnedItemIndexByAppID(last_app_id);
       // The previously installed app has been uninstalled or hidden, in this
       // instance get the saved pin index and pin at that place.
-      if (index == ChromeLauncherController::kInvalidIndex) {
+      if (index == ChromeShelfController::kInvalidIndex) {
         const base::Value* saved_index = arc_app_list_prefs_->GetPackagePrefs(
             package_info->package_name, kPinIndex);
         if (!(saved_index && saved_index->is_int()))
           return;
-        launcher_controller->PinAppAtIndex(new_app_id, saved_index->GetInt());
+        shelf_controller->PinAppAtIndex(new_app_id, saved_index->GetInt());
         arc_app_list_prefs_->SetPackagePrefs(
             package_info->package_name, kPinIndex,
-            base::Value(ChromeLauncherController::kInvalidIndex));
+            base::Value(ChromeShelfController::kInvalidIndex));
       } else {
-        launcher_controller->ReplacePinnedItem(last_app_id, new_app_id);
+        shelf_controller->ReplacePinnedItem(last_app_id, new_app_id);
       }
     }
   }
@@ -249,6 +251,13 @@ void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
   if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
     return;
+
+  // Automatically generated WebAPKs have their lifecycle managed by
+  // WebApkManager and do not need to be considered here.
+  if (base::StartsWith(package_info.package_name,
+                       kGeneratedWebApkPackagePrefix)) {
+    return;
+  }
 
   // This method is called when a) new packages are installed, and b) existing
   // packages are updated. In (b), there are two cases to handle: the package
@@ -452,7 +461,7 @@ void ApkWebAppService::OnDidFinishInstall(
     const std::string& package_name,
     const web_app::AppId& web_app_id,
     bool is_web_only_twa,
-    const base::Optional<std::string> sha256_fingerprint,
+    const absl::optional<std::string> sha256_fingerprint,
     web_app::InstallResultCode code) {
   // Do nothing: any error cancels installation.
   if (code != web_app::InstallResultCode::kSuccessNewInstall)

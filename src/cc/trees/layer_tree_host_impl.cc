@@ -19,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -29,7 +30,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/traced_value.h"
@@ -124,6 +124,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/events/types/scroll_input_type.h"
@@ -598,7 +599,7 @@ void LayerTreeHostImpl::CommitComplete() {
     input_delegate_->DidCommit();
 
   if (CommitToActiveTree()) {
-    active_tree_->HandleScrollbarShowRequestsFromMain();
+    active_tree_->HandleScrollbarShowRequests();
 
     // Property tree nodes have been updated by the commit. Update elements
     // available on active tree to start/stop ticking animations.
@@ -638,7 +639,8 @@ void LayerTreeHostImpl::CommitComplete() {
   if (mutator_host_->HasJSAnimation())
     frame_trackers_.StartSequence(FrameSequenceTrackerType::kJSAnimation);
 
-  if (mutator_host_->MainThreadAnimationsCount() > 0) {
+  if (mutator_host_->MainThreadAnimationsCount() > 0 ||
+      mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
@@ -1072,8 +1074,8 @@ static void AppendQuadsToFillScreen(
       target_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), root_target_rect,
                             root_target_rect, gfx::MaskFilterInfo(),
-                            root_target_rect, false, are_contents_opaque,
-                            opacity, SkBlendMode::kSrcOver, sorting_context_id);
+                            absl::nullopt, are_contents_opaque, opacity,
+                            SkBlendMode::kSrcOver, sorting_context_id);
 
   for (gfx::Rect screen_space_rect : fill_region) {
     gfx::Rect visible_screen_space_rect = screen_space_rect;
@@ -2039,8 +2041,6 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
-  devtools_instrumentation::DidPresentFrame(
-      id_, frame_token, details.presentation_feedback.timestamp);
   PresentationTimeCallbackBuffer::PendingCallbacks activated_callbacks =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
@@ -2077,8 +2077,8 @@ void LayerTreeHostImpl::DidNotNeedBeginFrame() {
 }
 
 void LayerTreeHostImpl::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
-  resource_provider_.ReceiveReturnsFromParent(resources);
+    std::vector<viz::ReturnedResource> resources) {
+  resource_provider_.ReceiveReturnsFromParent(std::move(resources));
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
@@ -2190,8 +2190,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   if (active_tree_->has_presentation_callbacks()) {
     presentation_time_callbacks_.RegisterMainThreadPresentationCallbacks(
         metadata.frame_token, active_tree_->TakePresentationCallbacks());
-    presentation_time_callbacks_.RegisterFrameTime(
-        metadata.frame_token, CurrentBeginFrameArgs().frame_time);
   }
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
@@ -2402,7 +2400,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (!mutator_host_->HasJSAnimation())
     frame_trackers_.StopSequence(FrameSequenceTrackerType::kJSAnimation);
 
-  if (mutator_host_->MainThreadAnimationsCount() == 0) {
+  if (mutator_host_->MainThreadAnimationsCount() == 0 &&
+      !mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
@@ -2427,7 +2426,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   active_tree_->ResetAllChangeTracking();
 
   active_tree_->set_has_ever_been_drawn(true);
-  devtools_instrumentation::DidDrawFrame(id_, frame_token);
+  devtools_instrumentation::DidDrawFrame(id_);
   benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
       rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
 
@@ -2528,6 +2527,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   if (enable_frame_rate_throttling_) {
     metadata.preferred_frame_interval = viz::BeginFrameArgs::MaxInterval();
   } else if (mutator_host_->MainThreadAnimationsCount() == 0 &&
+             !mutator_host_->HasSmilAnimation() &&
              mutator_host_->NeedsTickAnimations() &&
              !frame_rate_estimator_.input_priority_mode() &&
              mutator_host_->MinimumTickInterval() > kMinDelta) {
@@ -2834,6 +2834,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   current_begin_frame_tracker_.Start(args);
   frame_trackers_.NotifyBeginImplFrame(args);
   total_frame_counter_.OnBeginFrame(args);
+  devtools_instrumentation::DidBeginFrame(id_, args.frame_time);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.AcceleratedSurfaceRefreshRate",
                               1 / args.interval.InSecondsF(), 0, 121, 122);
@@ -2885,7 +2886,7 @@ void LayerTreeHostImpl::DidFinishImplFrame(const viz::BeginFrameArgs& args) {
 void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                            FrameSkippedReason reason) {
   if (layer_tree_frame_sink_)
-    layer_tree_frame_sink_->DidNotProduceFrame(ack);
+    layer_tree_frame_sink_->DidNotProduceFrame(ack, reason);
 
   // If a frame was not submitted because there was no damage, or the scheduler
   // hit the frame-deadline while waiting for the main-thread, notify the
@@ -2953,10 +2954,10 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
   ALLOW_UNUSED_LOCAL(ok);
 }
 
-base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
+absl::optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildHitTestData");
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
+  absl::optional<viz::HitTestRegionList> hit_test_region_list(absl::in_place);
   hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine |
                                 viz::HitTestRegionFlags::kHitTestMouse |
                                 viz::HitTestRegionFlags::kHitTestTouch;
@@ -3858,14 +3859,14 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(const ScrollNode& scroll_node,
                                               const gfx::Vector2dF& delta,
                                               base::TimeDelta delayed_by) {
   return ScrollAnimationCreateInternal(scroll_node, delta, delayed_by,
-                                       base::nullopt);
+                                       absl::nullopt);
 }
 
 bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
     const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta,
     base::TimeDelta delayed_by,
-    base::Optional<float> autoscroll_velocity) {
+    absl::optional<float> autoscroll_velocity) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
 
   const float kEpsilon = 0.1f;
@@ -3903,7 +3904,6 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
 
   return true;
 }
-
 
 void LayerTreeHostImpl::UpdateImageDecodingHints(
     base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
@@ -4546,8 +4546,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       // resource backing will be deleted when the LayerTreeFrameSink is
       // removed before shutdown, so nothing leaks if the WeakPtr is
       // invalidated.
-      viz::SingleReleaseCallback::Create(base::BindOnce(
-          &LayerTreeHostImpl::OnUIResourceReleased, AsWeakPtr(), uid)));
+      base::BindOnce(&LayerTreeHostImpl::OnUIResourceReleased, AsWeakPtr(),
+                     uid));
 
   UIResourceData data;
   data.opaque = bitmap.GetOpaque();
@@ -4944,14 +4944,11 @@ void LayerTreeHostImpl::SetUkmSmoothnessDestination(
 
 void LayerTreeHostImpl::NotifyDidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
-    PresentationTimeCallbackBuffer::PendingCallbacks callbacks,
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
     const viz::FrameTimingDetails& details) {
   frame_trackers_.NotifyFramePresented(frame_token,
                                        details.presentation_feedback);
-  // The callbacks in |compositor_thread_callbacks| expect to be run on the
-  // compositor thread so we'll run them now.
-  for (LayerTreeHost::PresentationTimeCallback& callback :
-       callbacks.compositor_thread_callbacks) {
+  for (LayerTreeHost::PresentationTimeCallback& callback : callbacks) {
     std::move(callback).Run(details.presentation_feedback);
   }
 }

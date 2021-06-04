@@ -8,7 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/optional.h"
+#include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ui {
 class PropertyHandler;
@@ -29,32 +30,42 @@ class KeyEvent;
 
 namespace exo {
 
+class ClientControlledShellSurface;
 class Surface;
 class ShellSurfaceBase;
 
 // Sets the application ID to the property_handler. The application ID
 // identifies the general class of applications to which the window belongs.
 void SetShellApplicationId(ui::PropertyHandler* property_handler,
-                           const base::Optional<std::string>& id);
+                           const absl::optional<std::string>& id);
 const std::string* GetShellApplicationId(const aura::Window* window);
 
 // Sets the startup ID to the property handler. The startup ID identifies the
 // application using startup notification protocol.
 void SetShellStartupId(ui::PropertyHandler* property_handler,
-                       const base::Optional<std::string>& id);
-const std::string* GetShellStartupId(aura::Window* window);
+                       const absl::optional<std::string>& id);
+const std::string* GetShellStartupId(const aura::Window* window);
 
-// Hides/shows the shelf when fullscreen. If true, shelf is inaccessible
-// (plain fullscreen). If false, shelf auto-hides and can be shown with a
-// mouse gesture (immersive fullscreen).
+// Shows/hides the shelf when fullscreen. If true, titlebar/shelf will show when
+// the mouse moves to the top/bottom of the screen. If false (plain fullscreen),
+// the titlebar and shelf are always hidden.
 void SetShellUseImmersiveForFullscreen(aura::Window* window, bool value);
 
 // Sets the client accessibility ID for the window. The accessibility ID
 // identifies the accessibility tree provided by client.
 void SetShellClientAccessibilityId(aura::Window* window,
-                                   const base::Optional<int32_t>& id);
-const base::Optional<int32_t> GetShellClientAccessibilityId(
+                                   const absl::optional<int32_t>& id);
+const absl::optional<int32_t> GetShellClientAccessibilityId(
     aura::Window* window);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Sets the ClientControlledShellSurface to the property handler.
+void SetShellClientControlledShellSurface(
+    ui::PropertyHandler* property_handler,
+    const absl::optional<ClientControlledShellSurface*>& shell_surface);
+ClientControlledShellSurface* GetShellClientControlledShellSurface(
+    ui::PropertyHandler* property_handler);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Sets the root surface to the property handler.
 void SetShellRootSurface(ui::PropertyHandler* property_handler,
@@ -73,6 +84,12 @@ ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window);
 // window, then traverse to its transient parent if the parent also
 // requested grab.
 Surface* GetTargetSurfaceForLocatedEvent(const ui::LocatedEvent* event);
+
+// Returns the focused surface for given 'focused_window'.  If a surface is
+// attached to the window, this will return that surface.  If the window is
+// either the shell surface's window, or host window, it will return the root
+// surface, otherwise returns nullptr.
+Surface* GetTargetSurfaceForKeyboardFocus(aura::Window* focused_window);
 
 // Allows the |window| to activate itself for the duration of |timeout|. Revokes
 // any existing permission.

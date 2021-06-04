@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -64,10 +65,12 @@ std::string AutofillOfferSpecificsAsDebugString(
     const AutofillOfferSpecifics& specifics) {
   std::ostringstream output;
 
-  std::string offer_reward_amount_string =
-      specifics.has_percentage_reward()
-          ? specifics.percentage_reward().percentage()
-          : specifics.fixed_amount_reward().amount();
+  std::string offer_reward_amount_string;
+  if (specifics.has_percentage_reward()) {
+    offer_reward_amount_string = specifics.percentage_reward().percentage();
+  } else if (specifics.has_fixed_amount_reward()) {
+    offer_reward_amount_string = specifics.fixed_amount_reward().amount();
+  }
 
   std::string domain_string;
   for (std::string merchant_domain : specifics.merchant_domain()) {
@@ -82,11 +85,25 @@ std::string AutofillOfferSpecificsAsDebugString(
   }
 
   output << "[id: " << specifics.id()
-         << ", offer_reward_amount: " << offer_reward_amount_string
          << ", offer_expiry_date: " << specifics.offer_expiry_date()
          << ", offer_details_url: " << specifics.offer_details_url()
-         << ", merchant_domain: " << domain_string
-         << ", eligible_instrument_id: " << instrument_id_string << "]";
+         << ", merchant_domain: " << domain_string << ", value_prop_text: "
+         << specifics.display_strings().value_prop_text()
+#if defined(OS_ANDROID) || defined(OS_IOS)
+         << ", see_details_text: "
+         << specifics.display_strings().see_details_text_mobile()
+         << ", usage_instructions_text: "
+         << specifics.display_strings().usage_instructions_text_mobile()
+#else
+         << ", see_details_text: "
+         << specifics.display_strings().see_details_text_desktop()
+         << ", usage_instructions_text: "
+         << specifics.display_strings().usage_instructions_text_desktop()
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+         << ", offer_reward_amount: " << offer_reward_amount_string
+         << ", eligible_instrument_id: " << instrument_id_string
+         << ", promo_code: " << specifics.promo_code_offer_data().promo_code()
+         << "]";
   return output.str();
 }
 
@@ -127,8 +144,7 @@ class AutofillWalletOfferSyncBridgeTest : public testing::Test {
   void ResetProcessor() {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::AUTOFILL_WALLET_OFFER, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
+            syncer::AUTOFILL_WALLET_OFFER, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
   }
 
@@ -237,11 +253,11 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, VerifyGetStorageKey) {
 TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NewData) {
   // Create one offer data in the client table.
   AutofillOfferData old_data = test::GetCardLinkedOfferData1();
-  table()->SetCreditCardOffers({old_data});
+  table()->SetAutofillOffers({old_data});
 
   // Create a different one on the server.
   AutofillOfferSpecifics offer_specifics;
-  SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData2(),
+  SetAutofillOfferSpecificsFromOfferData(test::GetPromoCodeOfferData(),
                                          &offer_specifics);
 
   EXPECT_CALL(*backend(), CommitChanges());
@@ -258,7 +274,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NewData) {
 TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NoData) {
   // Create one offer data in the client table.
   AutofillOfferData client_data = test::GetCardLinkedOfferData1();
-  table()->SetCreditCardOffers({client_data});
+  table()->SetAutofillOffers({client_data});
 
   EXPECT_CALL(*backend(), CommitChanges());
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
@@ -293,7 +309,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_LogDataValidity) {
 TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   // Create one offer data in the client table.
   AutofillOfferData client_data = test::GetCardLinkedOfferData1();
-  table()->SetCreditCardOffers({client_data});
+  table()->SetAutofillOffers({client_data});
 
   EXPECT_CALL(*backend(), CommitChanges());
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
@@ -312,7 +328,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
 TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_KeepAllData) {
   // Create one offer data in the client table.
   AutofillOfferData client_data = test::GetCardLinkedOfferData1();
-  table()->SetCreditCardOffers({client_data});
+  table()->SetAutofillOffers({client_data});
 
   // We do not write to DB at all, so we should not commit any changes.
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);

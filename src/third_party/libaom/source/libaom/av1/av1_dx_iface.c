@@ -115,14 +115,18 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   if (ctx->frame_worker != NULL) {
     AVxWorker *const worker = ctx->frame_worker;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
+    AV1Decoder *const pbi = frame_worker_data->pbi;
     aom_get_worker_interface()->end(worker);
-    aom_free(frame_worker_data->pbi->common.tpl_mvs);
-    frame_worker_data->pbi->common.tpl_mvs = NULL;
+    aom_free(pbi->common.tpl_mvs);
+    pbi->common.tpl_mvs = NULL;
     av1_remove_common(&frame_worker_data->pbi->common);
+    av1_free_cdef_buffers(&pbi->common, &pbi->cdef_worker, &pbi->cdef_sync,
+                          pbi->num_workers);
+    av1_free_cdef_sync(&pbi->cdef_sync);
 #if !CONFIG_REALTIME_ONLY
-    av1_free_restoration_buffers(&frame_worker_data->pbi->common);
+    av1_free_restoration_buffers(&pbi->common);
 #endif
-    av1_decoder_remove(frame_worker_data->pbi);
+    av1_decoder_remove(pbi);
     aom_free(frame_worker_data);
 #if CONFIG_MULTITHREAD
     pthread_mutex_destroy(&ctx->buffer_pool->pool_mutex);
@@ -392,7 +396,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
     pool->release_fb_cb = av1_release_frame_buffer;
 
     if (av1_alloc_internal_frame_buffers(&pool->int_frame_buffers))
-      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+      aom_internal_error(&pbi->error, AOM_CODEC_MEM_ERROR,
                          "Failed to initialize internal frame buffers");
 
     pool->cb_priv = &pool->int_frame_buffers;
@@ -527,7 +531,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   *data = frame_worker_data->data_end;
 
   if (worker->had_error)
-    return update_error_state(ctx, &frame_worker_data->pbi->common.error);
+    return update_error_state(ctx, &frame_worker_data->pbi->error);
 
   check_resync(ctx, frame_worker_data->pbi);
 
@@ -558,7 +562,7 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
   check_resync(ctx, frame_worker_data->pbi);
 
   if (ctx->frame_worker->had_error)
-    return update_error_state(ctx, &frame_worker_data->pbi->common.error);
+    return update_error_state(ctx, &frame_worker_data->pbi->error);
 
   // Allow extra zero bytes after the frame end
   while (data < data_end) {
@@ -823,7 +827,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
         aom_image_t *res =
             add_grain_if_needed(ctx, img, &ctx->image_with_grain, grain_params);
         if (!res) {
-          aom_internal_error(&pbi->common.error, AOM_CODEC_CORRUPT_FRAME,
+          aom_internal_error(&pbi->error, AOM_CODEC_CORRUPT_FRAME,
                              "Grain systhesis failed\n");
         }
         *index += 1;  // Advance the iterator to point to the next image
@@ -1091,10 +1095,9 @@ static aom_codec_err_t ctrl_get_still_picture(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1Decoder *pbi = frame_worker_data->pbi;
-      still_picture_info->is_still_picture =
-          (int)pbi->common.seq_params.still_picture;
+      still_picture_info->is_still_picture = (int)pbi->seq_params.still_picture;
       still_picture_info->is_reduced_still_picture_hdr =
-          (int)(pbi->common.seq_params.reduced_still_picture_hdr);
+          (int)(pbi->seq_params.reduced_still_picture_hdr);
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
@@ -1112,7 +1115,7 @@ static aom_codec_err_t ctrl_get_sb_size(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1Decoder *pbi = frame_worker_data->pbi;
-      if (pbi->common.seq_params.sb_size == BLOCK_128X128) {
+      if (pbi->seq_params.sb_size == BLOCK_128X128) {
         *sb_size = AOM_SUPERBLOCK_SIZE_128X128;
       } else {
         *sb_size = AOM_SUPERBLOCK_SIZE_64X64;
@@ -1291,7 +1294,7 @@ static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
-      *bit_depth = cm->seq_params.bit_depth;
+      *bit_depth = cm->seq_params->bit_depth;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
@@ -1327,9 +1330,9 @@ static aom_codec_err_t ctrl_get_img_format(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
 
-      *img_fmt = get_img_format(cm->seq_params.subsampling_x,
-                                cm->seq_params.subsampling_y,
-                                cm->seq_params.use_highbitdepth);
+      *img_fmt = get_img_format(cm->seq_params->subsampling_x,
+                                cm->seq_params->subsampling_y,
+                                cm->seq_params->use_highbitdepth);
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;

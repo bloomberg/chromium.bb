@@ -198,6 +198,7 @@ apps::mojom::AppLaunchSource GetAppLaunchSource(
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       return apps::mojom::AppLaunchSource::kSourceChromeInternal;
     case apps::mojom::LaunchSource::kFromInstalledNotification:
       return apps::mojom::AppLaunchSource::kSourceInstalledNotification;
@@ -205,6 +206,49 @@ apps::mojom::AppLaunchSource GetAppLaunchSource(
       return apps::mojom::AppLaunchSource::kSourceTest;
     case apps::mojom::LaunchSource::kFromArc:
       return apps::mojom::AppLaunchSource::kSourceArc;
+  }
+}
+
+apps::mojom::LaunchSource GetLaunchSource(
+    apps::mojom::AppLaunchSource app_launch_source) {
+  switch (app_launch_source) {
+    case apps::mojom::AppLaunchSource::kSourceNone:
+    case apps::mojom::AppLaunchSource::kSourceUntracked:
+      return apps::mojom::LaunchSource::kUnknown;
+    case apps::mojom::AppLaunchSource::kSourceAppLauncher:
+      return apps::mojom::LaunchSource::kFromAppListGrid;
+    case apps::mojom::AppLaunchSource::kSourceNewTabPage:
+    case apps::mojom::AppLaunchSource::kSourceReload:
+    case apps::mojom::AppLaunchSource::kSourceRestart:
+    case apps::mojom::AppLaunchSource::kSourceLoadAndLaunch:
+    case apps::mojom::AppLaunchSource::kSourceCommandLine:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
+    case apps::mojom::AppLaunchSource::kSourceFileHandler:
+      return apps::mojom::LaunchSource::kFromFileManager;
+    case apps::mojom::AppLaunchSource::kSourceUrlHandler:
+    case apps::mojom::AppLaunchSource::kSourceSystemTray:
+    case apps::mojom::AppLaunchSource::kSourceAboutPage:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
+    case apps::mojom::AppLaunchSource::kSourceKeyboard:
+      return apps::mojom::LaunchSource::kFromKeyboard;
+    case apps::mojom::AppLaunchSource::kSourceExtensionsPage:
+    case apps::mojom::AppLaunchSource::kSourceManagementApi:
+    case apps::mojom::AppLaunchSource::kSourceEphemeralAppDeprecated:
+    case apps::mojom::AppLaunchSource::kSourceBackground:
+    case apps::mojom::AppLaunchSource::kSourceKiosk:
+    case apps::mojom::AppLaunchSource::kSourceChromeInternal:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
+    case apps::mojom::AppLaunchSource::kSourceTest:
+      return apps::mojom::LaunchSource::kFromTest;
+    case apps::mojom::AppLaunchSource::kSourceInstalledNotification:
+      return apps::mojom::LaunchSource::kFromInstalledNotification;
+    case apps::mojom::AppLaunchSource::kSourceContextMenu:
+      return apps::mojom::LaunchSource::kFromMenu;
+    case apps::mojom::AppLaunchSource::kSourceArc:
+      return apps::mojom::LaunchSource::kFromArc;
+    case apps::mojom::AppLaunchSource::kSourceIntentUrl:
+    case apps::mojom::AppLaunchSource::kSourceRunOnOsLogin:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
   }
 }
 

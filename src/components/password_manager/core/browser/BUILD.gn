@@ -239,8 +239,6 @@ static_library("browser") {
     "ui/post_save_compromised_helper.h",
     "ui/saved_passwords_presenter.cc",
     "ui/saved_passwords_presenter.h",
-    "ui/weak_check_utility.cc",
-    "ui/weak_check_utility.h",
     "votes_uploader.cc",
     "votes_uploader.h",
     "well_known_change_password_state.cc",
@@ -290,6 +288,7 @@ static_library("browser") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/url_formatter",
+    "//components/variations/net",
     "//components/webdata/common",
     "//google_apis",
     "//net",
@@ -300,7 +299,6 @@ static_library("browser") {
     "//third_party/abseil-cpp:absl",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
-    "//third_party/zxcvbn-cpp",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/range",
@@ -320,6 +318,14 @@ static_library("browser") {
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
     ]
+  }
+
+  if (!is_android && !is_ios) {
+    sources += [
+      "ui/weak_check_utility.cc",
+      "ui/weak_check_utility.h",
+    ]
+    deps += [ "//third_party/zxcvbn-cpp" ]
   }
 
   if ((is_posix && !is_apple) || is_fuchsia) {
@@ -486,6 +492,8 @@ static_library("test_support") {
     "android_affiliation/mock_affiliation_fetcher_delegate.h",
     "fake_form_fetcher.cc",
     "fake_form_fetcher.h",
+    "mock_biometric_authenticator.cc",
+    "mock_biometric_authenticator.h",
     "mock_bulk_leak_check_service.cc",
     "mock_bulk_leak_check_service.h",
     "mock_password_feature_manager.cc",
@@ -669,7 +677,6 @@ source_set("unit_tests") {
     "ui/insecure_credentials_reader_unittest.cc",
     "ui/post_save_compromised_helper_unittest.cc",
     "ui/saved_passwords_presenter_unittest.cc",
-    "ui/weak_check_utility_unittest.cc",
     "vote_uploads_test_matchers.h",
     "votes_uploader_unittest.cc",
     "well_known_change_password_state_unittest.cc",
@@ -689,6 +696,10 @@ source_set("unit_tests") {
 
   if (is_win || is_mac || is_linux || is_chromeos) {
     sources += [ "hash_password_manager_unittest.cc" ]
+  }
+
+  if (!is_android && !is_ios) {
+    sources += [ "ui/weak_check_utility_unittest.cc" ]
   }
 
   if (!is_chromeos_ash && !is_android) {

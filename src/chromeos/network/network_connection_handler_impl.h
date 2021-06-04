@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // ConnectToNetwork(), see comment for info.
   void VerifyConfiguredAndConnect(bool check_error_state,
                                   const std::string& service_path,
-                                  base::Optional<base::Value> properties);
+                                  absl::optional<base::Value> properties);
 
   // Queues a connect request until certificates have loaded.
   void QueueConnectRequest(const std::string& service_path);
@@ -117,6 +117,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   void HandleShillConnectFailure(const std::string& service_path,
                                  const std::string& error_name,
                                  const std::string& error_message);
+
+  // Sets connection request to started and calls callback if necessary.
+  void HandleNetworkConnectStarted(ConnectRequest* request);
 
   // Note: |service_path| is passed by value here, because in some cases
   // the value may be located in the map and then it can be deleted, producing

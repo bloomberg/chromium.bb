@@ -19,7 +19,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -51,6 +50,7 @@
 #include "extensions/test/test_background_page_ready_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/google/zip.h"
 #include "url/gurl.h"
 
@@ -338,10 +338,11 @@ void UpdatePolicyViaMockPolicyProvider(
     policy::MockConfigurationPolicyProvider* mock_policy_provider) {
   const std::string policy_item_value =
       MakeForceInstallPolicyItemValue(extension_id, update_manifest_url);
-  policy::PolicyMap policy_map;
-  policy_map.CopyFrom(
-      mock_policy_provider->policies().Get(policy::PolicyNamespace(
-          policy::POLICY_DOMAIN_CHROME, /*component_id=*/std::string())));
+  policy::PolicyMap policy_map =
+      mock_policy_provider->policies()
+          .Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                       /*component_id=*/std::string()))
+          .Clone();
   policy::PolicyMap::Entry* const existing_entry =
       policy_map.GetMutable(policy::key::kExtensionInstallForcelist);
   if (existing_entry) {
@@ -457,7 +458,7 @@ bool ExtensionForceInstallMixin::ForceInstallFromCrx(
 
 bool ExtensionForceInstallMixin::ForceInstallFromSourceDir(
     const base::FilePath& extension_dir_path,
-    const base::Optional<base::FilePath>& pem_path,
+    const absl::optional<base::FilePath>& pem_path,
     WaitMode wait_mode,
     extensions::ExtensionId* extension_id,
     base::Version* extension_version) {
@@ -563,7 +564,7 @@ bool ExtensionForceInstallMixin::ServeExistingCrx(
 
 bool ExtensionForceInstallMixin::CreateAndServeCrx(
     const base::FilePath& extension_dir_path,
-    const base::Optional<base::FilePath>& pem_path,
+    const absl::optional<base::FilePath>& pem_path,
     const base::Version& extension_version,
     extensions::ExtensionId* extension_id) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;

@@ -29,7 +29,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -1531,6 +1530,9 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
 void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   ImplementationBase::WaitSyncToken(sync_token);
 }
+void GLES2Implementation::ShallowFlushCHROMIUM() {
+  IssueShallowFlush();
+}
 
 // ImplementationBase implementation.
 void GLES2Implementation::IssueShallowFlush() {
@@ -1540,9 +1542,6 @@ void GLES2Implementation::IssueShallowFlush() {
   FlushHelper();
 }
 
-void GLES2Implementation::ShallowFlushCHROMIUM() {
-  IssueShallowFlush();
-}
 
 void GLES2Implementation::FlushHelper() {
   // Flush our command buffer

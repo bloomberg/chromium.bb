@@ -5,8 +5,6 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_DXGI_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_DXGI_H_
 
-#include <utility>
-
 #include <d3d11_1.h>
 #include <dxgi.h>
 #include <wrl/client.h>
@@ -58,6 +56,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryDXGI
       gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       int client_id,
       SurfaceHandle surface_handle) override;
   unsigned RequiredTextureType() override;

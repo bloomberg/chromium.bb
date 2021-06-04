@@ -230,7 +230,7 @@ static AOM_INLINE int get_pc_tree_nodes(const int is_sb_size_128,
 void av1_setup_sms_tree(AV1_COMP *const cpi, ThreadData *td) {
   AV1_COMMON *const cm = &cpi->common;
   const int stat_generation_stage = is_stat_generation_stage(cpi);
-  const int is_sb_size_128 = cm->seq_params.sb_size == BLOCK_128X128;
+  const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
   const int tree_nodes =
       get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
   int sms_tree_index = 0;

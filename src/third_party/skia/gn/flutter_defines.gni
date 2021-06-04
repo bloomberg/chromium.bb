@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 flutter_defines = [
-  "SK_DISABLE_REDUCE_OPLIST_SPLITTING",
-
   # Flutter always wants this https://github.com/flutter/flutter/issues/11402
   "SK_ENABLE_DUMP_GPU",
 
@@ -13,9 +11,6 @@ flutter_defines = [
 
   # Things we do for Flutter but don't want in general text layout
   "SK_PARAGRAPH_LIBTXT_SPACES_RESOLUTION",
-
-  # Staging changes for Google3 (want to test it first)
-  "SK_PARAGRAPH_ROUND_POSITION",
 
   # Staging
 

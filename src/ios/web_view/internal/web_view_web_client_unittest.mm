@@ -47,24 +47,6 @@ class WebViewWebClientTest : public web::WebTest {
   DISALLOW_COPY_AND_ASSIGN(WebViewWebClientTest);
 };
 
-// Tests that WebViewWebClient provides autofill controller script for
-// WKWebView.
-TEST_F(WebViewWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
-  // WebView scripts rely on __gCrWeb object presence.
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
-  // Add |web_view| to the windowed container to keep the WKWebView processes
-  // from being suspended.
-  [GetWebClient()->GetWindowedContainer() addSubview:web_view];
-  web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
-
-  web::ScopedTestingWebClient web_client(std::make_unique<WebViewWebClient>());
-  NSString* script =
-      web_client.Get()->GetDocumentStartScriptForAllFrames(GetBrowserState());
-  web::test::ExecuteJavaScript(web_view, script);
-  EXPECT_NSEQ(@"object",
-              web::test::ExecuteJavaScript(web_view, @"typeof __gCrWeb.fill"));
-}
-
 // Tests that WebViewWebClientTest's GetUserAgent is configured by CWVWebView.
 TEST_F(WebViewWebClientTest, GetUserAgent) {
   web::WebClient* web_client = GetWebClient();

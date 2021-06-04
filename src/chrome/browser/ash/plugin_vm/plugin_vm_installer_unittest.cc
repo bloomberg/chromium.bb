@@ -13,7 +13,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -27,9 +26,10 @@
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_concierge_client.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/drive/service/dummy_drive_service.h"
@@ -40,6 +40,7 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace plugin_vm {
 
@@ -159,6 +160,7 @@ class PluginVmInstallerTestBase : public testing::Test {
  protected:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
     CreateProfile();
@@ -176,8 +178,7 @@ class PluginVmInstallerTestBase : public testing::Test {
 
     SetDefaultExpectations();
 
-    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
 
     chromeos::DlcserviceClient::InitializeFake();
     fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
@@ -190,6 +191,7 @@ class PluginVmInstallerTestBase : public testing::Test {
     profile_.reset();
     observer_.reset();
 
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::DlcserviceClient::Shutdown();
   }
@@ -264,8 +266,10 @@ class PluginVmInstallerTestBase : public testing::Test {
   PluginVmInstaller* installer_;
   std::unique_ptr<MockObserver> observer_;
 
-  // Owned by chromeos::DBusThreadManager
+  // A pointer to a singleton object which is valid until
+  // ConciergeClient::Shutdown() is called.
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  // Owned by chromeos::DBusThreadManager
   chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
 
  private:
@@ -476,7 +480,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
   StartAndRunUntil(InstallingState::kDownloadingImage);
 
   std::string guid = installer_->GetCurrentDownloadGuid();
-  base::Optional<download::DownloadParams> params =
+  const absl::optional<download::DownloadParams>& params =
       download_service_->GetDownload(guid);
   ASSERT_TRUE(params.has_value());
   EXPECT_EQ(guid, params->guid);
@@ -785,6 +789,19 @@ TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {
   histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
                                         PluginVmDlcUseResult::kInvalidDlcError,
                                         1);
+}
+
+TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenNoImageFound) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->set_install_error(dlcservice::kErrorNoImageFound);
+
+  ExpectObserverEventsUntil(InstallingState::kDownloadingDlc);
+  EXPECT_CALL(*observer_, OnError(FailureReason::DLC_INTERNAL));
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kNoImageFoundDlcError, 1);
 }
 
 }  // namespace plugin_vm

@@ -12,11 +12,12 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/strings/char_traits.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_hypertext.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
 
@@ -26,7 +27,7 @@ class AXTableInfo;
 struct AXLanguageInfo;
 struct AXTreeData;
 
-// One node in an AXTree.
+// This class is used to represent a node in an accessibility tree (`AXTree`).
 class AX_EXPORT AXNode final {
  public:
   // Replacement character used to represent an embedded (or, additionally for
@@ -69,8 +70,8 @@ class AX_EXPORT AXNode final {
     // See AXTree::data.
     virtual const AXTreeData& data() const = 0;
 
-    virtual base::Optional<int> GetPosInSet(const AXNode& node) = 0;
-    virtual base::Optional<int> GetSetSize(const AXNode& node) = 0;
+    virtual absl::optional<int> GetPosInSet(const AXNode& node) = 0;
+    virtual absl::optional<int> GetSetSize(const AXNode& node) = 0;
 
     virtual Selection GetUnignoredSelection() const = 0;
     virtual bool GetTreeUpdateInProgressState() const = 0;
@@ -313,13 +314,13 @@ class AX_EXPORT AXNode final {
   }
 
   // Return the hierarchical level if supported.
-  base::Optional<int> GetHierarchicalLevel() const;
+  absl::optional<int> GetHierarchicalLevel() const;
 
   // PosInSet and SetSize public methods.
   bool IsOrderedSetItem() const;
   bool IsOrderedSet() const;
-  base::Optional<int> GetPosInSet();
-  base::Optional<int> GetSetSize();
+  absl::optional<int> GetPosInSet();
+  absl::optional<int> GetSetSize();
 
   // Helpers for GetPosInSet and GetSetSize.
   // Returns true if the role of ordered set matches the role of item.
@@ -346,6 +347,14 @@ class AX_EXPORT AXNode final {
   //
   // TODO(nektar): Consider changing the return value to std::string.
   std::u16string GetHypertext() const;
+
+  // Temporary method that marks `hypertext_` dirty. This will eventually be
+  // handled by the AX tree in a followup patch.
+  void SetNeedsToUpdateHypertext();
+  // Temporary accessor methods until hypertext is fully migrated to this class.
+  // Hypertext won't eventually need to be accessed outside this class.
+  const std::map<int, int>& GetHypertextOffsetToHyperlinkChildIndex() const;
+  const AXHypertext& GetOldHypertext() const;
 
   // Returns the text that is found inside this node and all its descendants;
   // including text found in embedded objects.
@@ -376,14 +385,14 @@ class AX_EXPORT AXNode final {
   // Returns empty string if no appropriate language was found.
   std::string GetLanguage() const;
 
-  // Returns the value of a control such as a plain text field, a content
-  // editable, a submit button, a slider, a progress bar, a scroll bar, a meter,
-  // a spinner, a <select> element, a date picker or an ARIA combo box. In order
-  // to minimize cross-process communication between the renderer and the
-  // browser, this method may compute the value from the control's inner text in
-  // the case of a content editable. For range controls, such as sliders and
-  // scroll bars, the value of aria-valuetext takes priority over the value of
-  // aria-valuenow.
+  // Returns the value of a control such as an atomic text field (<input> or
+  // <textarea>), a content editable, a submit button, a slider, a progress bar,
+  // a scroll bar, a meter, a spinner, a <select> element, a date picker or an
+  // ARIA combo box. In order to minimize cross-process communication between
+  // the renderer and the browser, this method may compute the value from the
+  // control's inner text in the case of a content editable. For range controls,
+  // such as sliders and scroll bars, the value of aria-valuetext takes priority
+  // over the value of aria-valuenow.
   std::string GetValueForControl() const;
 
   //
@@ -403,15 +412,15 @@ class AX_EXPORT AXNode final {
   // of the table is row 0, column 0, cell index 0 - but that same cell
   // has a minimum ARIA row index of 1 and column index of 1.
   //
-  // The below methods return base::nullopt if the AXNode they are called on is
+  // The below methods return absl::nullopt if the AXNode they are called on is
   // not inside a table.
   bool IsTable() const;
-  base::Optional<int> GetTableColCount() const;
-  base::Optional<int> GetTableRowCount() const;
-  base::Optional<int> GetTableAriaColCount() const;
-  base::Optional<int> GetTableAriaRowCount() const;
-  base::Optional<int> GetTableCellCount() const;
-  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const;
+  absl::optional<int> GetTableColCount() const;
+  absl::optional<int> GetTableRowCount() const;
+  absl::optional<int> GetTableAriaColCount() const;
+  absl::optional<int> GetTableAriaRowCount() const;
+  absl::optional<int> GetTableCellCount() const;
+  absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const;
   AXNode* GetTableCaption() const;
   AXNode* GetTableCellFromIndex(int index) const;
   AXNode* GetTableCellFromCoords(int row_index, int col_index) const;
@@ -429,25 +438,25 @@ class AX_EXPORT AXNode final {
 
   // Table row-like nodes.
   bool IsTableRow() const;
-  base::Optional<int> GetTableRowRowIndex() const;
+  absl::optional<int> GetTableRowRowIndex() const;
   // Get the node ids that represent rows in a table.
   std::vector<AXNodeID> GetTableRowNodeIds() const;
 
 #if defined(OS_APPLE)
   // Table column-like nodes. These nodes are only present on macOS.
   bool IsTableColumn() const;
-  base::Optional<int> GetTableColColIndex() const;
+  absl::optional<int> GetTableColColIndex() const;
 #endif  // defined(OS_APPLE)
 
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const;
-  base::Optional<int> GetTableCellIndex() const;
-  base::Optional<int> GetTableCellColIndex() const;
-  base::Optional<int> GetTableCellRowIndex() const;
-  base::Optional<int> GetTableCellColSpan() const;
-  base::Optional<int> GetTableCellRowSpan() const;
-  base::Optional<int> GetTableCellAriaColIndex() const;
-  base::Optional<int> GetTableCellAriaRowIndex() const;
+  absl::optional<int> GetTableCellIndex() const;
+  absl::optional<int> GetTableCellColIndex() const;
+  absl::optional<int> GetTableCellRowIndex() const;
+  absl::optional<int> GetTableCellColSpan() const;
+  absl::optional<int> GetTableCellRowSpan() const;
+  absl::optional<int> GetTableCellAriaColIndex() const;
+  absl::optional<int> GetTableCellAriaRowIndex() const;
   std::vector<AXNodeID> GetTableCellColHeaderNodeIds() const;
   std::vector<AXNodeID> GetTableCellRowHeaderNodeIds() const;
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
@@ -514,10 +523,10 @@ class AX_EXPORT AXNode final {
   // layer.
   //
   // The definition of a leaf includes nodes with children that are exclusively
-  // an internal renderer implementation, such as the children of an HTML native
-  // text field, as well as nodes with presentational children according to the
-  // ARIA and HTML5 Specs. Also returns true if all of the node's descendants
-  // are ignored.
+  // an internal renderer implementation, such as the children of an HTML-based
+  // text field (<input> and <textarea>), as well as nodes with presentational
+  // children according to the ARIA and HTML5 Specs. Also returns true if all of
+  // the node's descendants are ignored.
   //
   // A leaf node should never have children that are focusable or
   // that might send notifications.
@@ -544,12 +553,17 @@ class AX_EXPORT AXNode final {
 
   // If this node is within an editable region, returns the node that is at the
   // root of that editable region, otherwise returns nullptr. In accessibility,
-  // an editable region is synonymous to a text field.
+  // an editable region is synonymous to a node with the kTextField role, or a
+  // contenteditable without the role, (see `AXNodeData::IsTextField()`).
   AXNode* GetTextFieldAncestor() const;
 
-  // Returns true if this node is either a plain text field , or one of its
-  // ancestors is.
-  bool IsDescendantOfPlainTextField() const;
+  // Returns true if this node is either an atomic text field , or one of its
+  // ancestors is. An atomic text field does not expose its internal
+  // implementation to assistive software, appearing as a single leaf node in
+  // the accessibility tree. Examples include: An <input> or a <textarea> on the
+  // Web, a text field in a PDF form, a Views-based text field, or a native
+  // Android one.
+  bool IsDescendantOfAtomicTextField() const;
 
   // Finds and returns a pointer to ordered set containing node.
   AXNode* GetOrderedSet() const;
@@ -563,7 +577,7 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(const std::vector<AXNodeID>& ids,
                             std::vector<AXNode*>* nodes) const;
 
-  int UpdateUnignoredCachedValuesRecursive(int startIndex);
+  int UpdateUnignoredCachedValuesRecursive(int start_index);
   AXNode* ComputeLastUnignoredChildRecursive() const;
   AXNode* ComputeFirstUnignoredChildRecursive() const;
 
@@ -592,6 +606,11 @@ class AX_EXPORT AXNode final {
   AXNode* const parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;
+
+  // See the class comment in "ax_hypertext.h" for an explanation of this
+  // member.
+  mutable AXHypertext hypertext_;
+  mutable AXHypertext old_hypertext_;
 
   // Stores the detected language computed from the node's text.
   std::unique_ptr<AXLanguageInfo> language_info_;

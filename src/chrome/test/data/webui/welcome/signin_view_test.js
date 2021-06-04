@@ -19,11 +19,11 @@ suite('SigninViewTest', function() {
 
   setup(function() {
     testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
-    WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
+    WelcomeBrowserProxyImpl.setInstance(testWelcomeBrowserProxy);
 
     // Not used in test, but setting to test proxy anyway, in order to prevent
     // calls to backend.
-    SigninViewProxyImpl.instance_ = new TestSigninViewProxy();
+    SigninViewProxyImpl.setInstance(new TestSigninViewProxy());
 
     document.body.innerHTML = '';
     testElement = document.createElement('signin-view');
@@ -35,7 +35,7 @@ suite('SigninViewTest', function() {
   });
 
   test('sign-in button', function() {
-    const signinButton = testElement.$$('cr-button');
+    const signinButton = testElement.shadowRoot.querySelector('cr-button');
     assertTrue(!!signinButton);
 
     signinButton.click();
@@ -44,7 +44,7 @@ suite('SigninViewTest', function() {
   });
 
   test('no-thanks button', function() {
-    const noThanksButton = testElement.$$('button');
+    const noThanksButton = testElement.shadowRoot.querySelector('button');
     assertTrue(!!noThanksButton);
     noThanksButton.click();
     return testWelcomeBrowserProxy.whenCalled('handleUserDecline');

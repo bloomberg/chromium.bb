@@ -863,7 +863,14 @@ GLuint Context::createShaderProgramv(ShaderType type, GLsizei count, const GLcha
                     return 0u;
                 }
 
-                programObject->detachShader(this, shaderObject);
+                // If frame capture is enabled, don't detach the shader since we need the following
+                // to recreate the Shader and Program during MEC setup:
+                // 1.) Shader ID
+                // 2.) Shader source
+                if (!getFrameCapture()->enabled())
+                {
+                    programObject->detachShader(this, shaderObject);
+                }
             }
 
             InfoLog &programInfoLog = programObject->getExecutable().getInfoLog();
@@ -3923,7 +3930,9 @@ void Context::updateCaps()
         mValidBufferBindings.set(BufferBinding::Texture);
     }
 
-    mThreadPool = angle::WorkerThreadPool::Create(mState.mExtensions.parallelShaderCompile);
+    mThreadPool = angle::WorkerThreadPool::Create(
+        mState.mExtensions.parallelShaderCompile ||
+        getFrontendFeatures().enableCompressingPipelineCacheInThreadPool.enabled);
 
     // Reinitialize some dirty bits that depend on extensions.
     if (mState.isRobustResourceInitEnabled())
@@ -6438,7 +6447,7 @@ GLenum Context::checkFramebufferStatus(GLenum target)
 {
     Framebuffer *framebuffer = mState.getTargetFramebuffer(target);
     ASSERT(framebuffer);
-    return framebuffer->checkStatus(this);
+    return framebuffer->checkStatus(this).status;
 }
 
 void Context::compileShader(ShaderProgramID shader)

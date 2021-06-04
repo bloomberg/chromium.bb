@@ -21,6 +21,7 @@
 #include "core/fxcrt/pauseindicator_iface.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 
 CPDF_ContentParser::CPDF_ContentParser(CPDF_Page* pPage)
     : m_CurrentStage(Stage::kGetContent), m_pObjectHolder(pPage) {
@@ -81,9 +82,8 @@ CPDF_ContentParser::CPDF_ContentParser(CPDF_Form* pForm,
 
   CPDF_Dictionary* pResources = pForm->GetDict()->GetDictFor("Resources");
   m_pParser = std::make_unique<CPDF_StreamContentParser>(
-      pForm->GetDocument(), pForm->m_pPageResources.Get(),
-      pForm->m_pResources.Get(), pParentMatrix, pForm, pResources, form_bbox,
-      pGraphicStates, pParsedSet);
+      pForm->GetDocument(), pForm->GetPageResources(), pForm->GetResources(),
+      pParentMatrix, pForm, pResources, form_bbox, pGraphicStates, pParsedSet);
   m_pParser->GetCurStates()->m_CTM = form_matrix;
   m_pParser->GetCurStates()->m_ParentMatrix = form_matrix;
   if (ClipPath.HasRef()) {
@@ -127,12 +127,12 @@ bool CPDF_ContentParser::Continue(PauseIndicatorIface* pPause) {
   if (m_CurrentStage == Stage::kCheckClip)
     m_CurrentStage = CheckClip();
 
-  DCHECK(m_CurrentStage == Stage::kComplete);
+  DCHECK_EQ(m_CurrentStage, Stage::kComplete);
   return false;
 }
 
 CPDF_ContentParser::Stage CPDF_ContentParser::GetContent() {
-  DCHECK(m_CurrentStage == Stage::kGetContent);
+  DCHECK_EQ(m_CurrentStage, Stage::kGetContent);
   DCHECK(m_pObjectHolder->IsPage());
   CPDF_Array* pContent =
       m_pObjectHolder->GetDict()->GetArrayFor(pdfium::page_object::kContents);
@@ -187,10 +187,10 @@ CPDF_ContentParser::Stage CPDF_ContentParser::Parse() {
   if (!m_pParser) {
     m_ParsedSet.clear();
     m_pParser = std::make_unique<CPDF_StreamContentParser>(
-        m_pObjectHolder->GetDocument(), m_pObjectHolder->m_pPageResources.Get(),
+        m_pObjectHolder->GetDocument(), m_pObjectHolder->GetPageResources(),
         nullptr, nullptr, m_pObjectHolder.Get(),
-        m_pObjectHolder->m_pResources.Get(), m_pObjectHolder->GetBBox(),
-        nullptr, &m_ParsedSet);
+        m_pObjectHolder->GetResources(), m_pObjectHolder->GetBBox(), nullptr,
+        &m_ParsedSet);
     m_pParser->GetCurStates()->m_ColorState.SetDefault();
   }
   if (m_CurrentOffset >= m_Size)

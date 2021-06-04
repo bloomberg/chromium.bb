@@ -297,6 +297,13 @@ describe('The Debugger Language Plugins', async () => {
     await openFileInSourcesPanel('wasm/global_variable.html');
     await target.evaluate('go();');
     await openFileInEditor('global_variable.ll');
+
+    const toolbar = await waitFor('.sources-toolbar');
+    const itemElements = await waitForMany('.toolbar-item', 2, toolbar);
+    const items = await Promise.all(itemElements.map(e => e.evaluate(e => e.textContent)));
+    assert.isAtLeast(
+        items.indexOf('(provided via debug info by global_variable.wasm)'), 0, 'Toolbar debug info hint not found');
+
     // Line 4 is non-breakable.
     assert.include(await getNonBreakableLines(frontend), 4);
 
@@ -529,7 +536,7 @@ describe('The Debugger Language Plugins', async () => {
 
     // Call stack shows inline function names and source locations.
     const funcNames = await getCallFrameNames();
-    assert.deepEqual(funcNames, ['Main', 'go', 'await in go (async)', '(anonymous)']);
+    assert.deepEqual(funcNames, ['$Main', 'go', 'await in go (async)', '(anonymous)']);
     const sourceLocations = await getCallFrameLocations();
     assert.deepEqual(sourceLocations, ['unreachable.ll:6', 'unreachable.html:27', 'unreachable.html:30']);
   });
@@ -648,6 +655,7 @@ describe('The Debugger Language Plugins', async () => {
                 }
 
                 const value = {value: 26, recurse: new $tag()};
+                Object.setPrototypeOf(value, null);
                 return {tag: {className: '$tag', symbol: sym}, value};
               }
 
@@ -686,7 +694,6 @@ describe('The Debugger Language Plugins', async () => {
       'member2: TestTypeMember2',
       'recurse: 27',
       'value: 26',
-      '__proto__: Object',
     ]);
   });
 

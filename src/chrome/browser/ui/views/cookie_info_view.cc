@@ -18,14 +18,14 @@
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
@@ -119,7 +119,6 @@ CookieInfoView::CookieInfoView() {
     property_textfields_[cookie_property_and_label.first] = AddTextfieldRow(
         three_column_layout_id, layout, cookie_property_and_label.second);
   }
-  SetTextfieldColors();
 }
 
 CookieInfoView::~CookieInfoView() = default;

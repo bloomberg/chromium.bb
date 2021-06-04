@@ -37,6 +37,12 @@ class MessageWrapper {
   void SetTitle(const std::u16string& title);
   std::u16string GetDescription();
   void SetDescription(const std::u16string& description);
+
+  // SetDescriptionMaxLines allows limiting description view to the specified
+  // number of lines. The description will be ellipsized with TruncateAt.END
+  // option.
+  int GetDescriptionMaxLines();
+  void SetDescriptionMaxLines(int max_lines);
   std::u16string GetPrimaryButtonText();
   void SetPrimaryButtonText(const std::u16string& primary_button_text);
   std::u16string GetSecondaryButtonMenuText();
@@ -47,10 +53,15 @@ class MessageWrapper {
   // translate from chromium resource_id to Android drawable resource_id.
   int GetIconResourceId();
   void SetIconResourceId(int resource_id);
+  // The icon is tinted to default_icon_color_blue by default.
+  // Call this method to display icons of original colors.
+  void DisableIconTint();
   int GetSecondaryIconResourceId();
   void SetSecondaryIconResourceId(int resource_id);
 
   void SetSecondaryActionCallback(base::OnceClosure callback);
+
+  void SetDuration(long customDuration);
 
   // Following methods forward calls from java to provided callbacks.
   void HandleActionClick(JNIEnv* env);

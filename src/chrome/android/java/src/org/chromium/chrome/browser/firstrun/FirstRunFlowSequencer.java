@@ -20,13 +20,14 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -129,10 +130,10 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean shouldShowSearchEnginePage() {
-        @LocaleManager.SearchEnginePromoType
-        int searchPromoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
-        return searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_NEW
-                || searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
+        @SearchEnginePromoType
+        int searchPromoType = AppHooks.get().getLocaleManager().getSearchEnginePromoShowType();
+        return searchPromoType == SearchEnginePromoType.SHOW_NEW
+                || searchPromoType == SearchEnginePromoType.SHOW_EXISTING;
     }
 
     @VisibleForTesting

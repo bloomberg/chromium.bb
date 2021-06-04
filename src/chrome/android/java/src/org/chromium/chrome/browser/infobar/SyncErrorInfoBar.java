@@ -18,11 +18,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
-import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -98,13 +96,8 @@ public class SyncErrorInfoBar
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            settingsLauncher.launchSettingsActivity(getApplicationContext(),
-                    ManageSyncSettings.class, ManageSyncSettings.createArguments(false));
-        } else {
-            settingsLauncher.launchSettingsActivity(getApplicationContext(),
-                    SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(false));
-        }
+        settingsLauncher.launchSettingsActivity(getApplicationContext(), ManageSyncSettings.class,
+                ManageSyncSettings.createArguments(false));
     }
 
     @CalledByNative
@@ -143,6 +136,20 @@ public class SyncErrorInfoBar
                         R.dimen.sync_error_infobar_icon_size);
         if (!TextUtils.isEmpty(mDetailsMessage)) {
             layout.getMessageLayout().addDescription(mDetailsMessage);
+        }
+    }
+
+    @Override
+    protected void onStartedHiding() {
+        super.onStartedHiding();
+        if (!isFrontInfoBar()) {
+            // SyncErrorInfoBar was not visible to the user, so we need to reset this pref that is
+            // used to block SyncErrorInfoBars from appearing within
+            // |MINIMAL_DURATION_BETWEEN_INFOBARS_MS|
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .remove(SyncErrorInfoBar.PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME)
+                    .apply();
         }
     }
 

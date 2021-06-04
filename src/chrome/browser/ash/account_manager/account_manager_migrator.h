@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/ash/account_manager/account_migration_runner.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -40,7 +40,7 @@ class AccountManagerMigrator : public KeyedService {
 
   // Gets the result of the last migration run. If migrations have not been run
   // before, the optional will be empty.
-  base::Optional<AccountMigrationRunner::MigrationResult>
+  absl::optional<AccountMigrationRunner::MigrationResult>
   GetLastMigrationRunResult() const;
 
  private:
@@ -61,7 +61,7 @@ class AccountManagerMigrator : public KeyedService {
   Profile* const profile_;
 
   // Used for running migration steps.
-  std::unique_ptr<AccountMigrationRunner> migration_runner_ = nullptr;
+  std::unique_ptr<AccountMigrationRunner> migration_runner_;
 
   // Stores if any migration steps were actually run. It is possible for the
   // migration flow to be a no-op, in which case this will be |false|.
@@ -69,7 +69,7 @@ class AccountManagerMigrator : public KeyedService {
 
   // Result of the last migration run. Empty if migrations have not been run
   // before.
-  base::Optional<AccountMigrationRunner::MigrationResult>
+  absl::optional<AccountMigrationRunner::MigrationResult>
       last_migration_run_result_;
 
   base::WeakPtrFactory<AccountManagerMigrator> weak_factory_{this};

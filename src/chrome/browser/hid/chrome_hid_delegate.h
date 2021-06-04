@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "content/public/browser/hid_delegate.h"
 
 class ChromeHidDelegate
     : public content::HidDelegate,
-      public permissions::ChooserContextBase::PermissionObserver,
+      public permissions::ObjectPermissionContextBase::PermissionObserver,
       public HidChooserContext::DeviceObserver {
  public:
   ChromeHidDelegate();
@@ -41,7 +41,7 @@ class ChromeHidDelegate
       content::WebContents* web_contents,
       const std::string& guid) override;
 
-  // permissions::ChooserContextBase::PermissionObserver:
+  // permissions::ObjectPermissionContextBase::PermissionObserver:
   void OnPermissionRevoked(const url::Origin& origin) override;
 
   // HidChooserContext::DeviceObserver:
@@ -52,14 +52,15 @@ class ChromeHidDelegate
   void OnHidChooserContextShutdown() override;
 
  private:
-  ScopedObserver<HidChooserContext,
-                 HidChooserContext::DeviceObserver,
-                 &HidChooserContext::AddDeviceObserver,
-                 &HidChooserContext::RemoveDeviceObserver>
-      device_observer_{this};
-  ScopedObserver<permissions::ChooserContextBase,
-                 permissions::ChooserContextBase::PermissionObserver>
-      permission_observer_{this};
+  base::ScopedObservation<HidChooserContext,
+                          HidChooserContext::DeviceObserver,
+                          &HidChooserContext::AddDeviceObserver,
+                          &HidChooserContext::RemoveDeviceObserver>
+      device_observation_{this};
+  base::ScopedObservation<
+      permissions::ObjectPermissionContextBase,
+      permissions::ObjectPermissionContextBase::PermissionObserver>
+      permission_observation_{this};
   base::ObserverList<content::HidDelegate::Observer> observer_list_;
 };
 

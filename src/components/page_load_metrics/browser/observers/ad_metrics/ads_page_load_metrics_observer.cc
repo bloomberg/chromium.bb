@@ -100,13 +100,6 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
                    handle->GetFrameTreeNodeId());
 }
 
-void RecordFeatureUsage(content::RenderFrameHost* rfh,
-                        blink::mojom::WebFeature web_feature) {
-  mojom::PageLoadFeatures page_load_features(
-      {web_feature}, {} /* css_properties */, {} /* animated_css_properties */);
-  MetricsWebContentsObserver::RecordFeatureUsage(rfh, page_load_features);
-}
-
 std::string GetHeavyAdReportMessage(const FrameTreeData& frame_data,
                                     bool will_unload_adframe) {
   const char kChromeStatusMessage[] =
@@ -480,7 +473,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   // logic should be moved into /subresource_filter/ and applied to all of ad
   // tagging, rather than being implemented in AdsPLMO.
   bool should_ignore_detected_ad = false;
-  base::Optional<subresource_filter::LoadPolicy> load_policy =
+  absl::optional<subresource_filter::LoadPolicy> load_policy =
       throttle_manager->LoadPolicyForLastCommittedNavigation(frame_host);
 
   // Only un-tag frames as ads if the navigation has committed. This prevents
@@ -1275,8 +1268,8 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
 
   // Record this UMA regardless of if we actually unload or not, as sending
   // reports is subject to the same noise and throttling as the intervention.
-  RecordFeatureUsage(render_frame_host,
-                     blink::mojom::WebFeature::kHeavyAdIntervention);
+  MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, blink::mojom::WebFeature::kHeavyAdIntervention);
 
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 FrameVisibility::kAnyVisibility,

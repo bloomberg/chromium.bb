@@ -11,7 +11,6 @@
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
@@ -282,7 +281,7 @@ void PlatformSensorChromeOS::SetRequiredChannels() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(required_channel_ids_.empty());  // Should only be called once.
 
-  base::Optional<std::string> axes_prefix = base::nullopt;
+  absl::optional<std::string> axes_prefix = absl::nullopt;
   switch (GetType()) {
     case mojom::SensorType::AMBIENT_LIGHT:
       required_channel_ids_.push_back(chromeos::sensors::mojom::kLightChannel);

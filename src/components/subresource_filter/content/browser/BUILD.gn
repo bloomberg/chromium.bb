@@ -31,7 +31,6 @@ static_library("browser") {
     "ruleset_version.h",
     "subframe_navigation_filtering_throttle.cc",
     "subframe_navigation_filtering_throttle.h",
-    "subresource_filter_client.h",
     "subresource_filter_content_settings_manager.cc",
     "subresource_filter_content_settings_manager.h",
     "subresource_filter_observer.h",
@@ -75,6 +74,22 @@ static_library("browser") {
     "//third_party/flatbuffers:flatbuffers",
     "//ui/base",
   ]
+  if (is_android) {
+    sources += [
+      "ads_blocked_infobar.cc",
+      "ads_blocked_infobar.h",
+      "ads_blocked_infobar_delegate.cc",
+      "ads_blocked_infobar_delegate.h",
+    ]
+    deps += [
+      "//components/infobars/android",
+      "//components/infobars/content",
+      "//components/infobars/core",
+      "//components/resources:android_resources",
+      "//components/strings:components_strings_grit",
+      "//components/subresource_filter/android:subresource_filter_jni_headers",
+    ]
+  }
 }
 
 static_library("test_support") {
@@ -94,8 +109,8 @@ static_library("test_support") {
     "subresource_filter_test_harness.h",
     "test_ruleset_publisher.cc",
     "test_ruleset_publisher.h",
-    "test_subresource_filter_client.cc",
-    "test_subresource_filter_client.h",
+    "throttle_manager_test_support.cc",
+    "throttle_manager_test_support.h",
   ]
   deps = [
     ":browser",
@@ -103,6 +118,8 @@ static_library("test_support") {
     "//components/content_settings/browser",
     "//components/content_settings/browser:test_support",
     "//components/content_settings/core/browser",
+    "//components/infobars/content",
+    "//components/infobars/core",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/db:database_manager",
     "//components/subresource_filter/content/common",
@@ -147,8 +164,11 @@ source_set("unit_tests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/infobars/content",
+    "//components/infobars/core",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:util",

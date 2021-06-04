@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
@@ -65,10 +65,14 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       surface_resource_holder_(this),
       is_root_(is_root),
       allow_copy_output_requests_(is_root),
-      animation_power_mode_voter_(
-          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Animation")),
-      document_transitions_enabled_(features::IsDocumentTransitionEnabled()) {
+      surface_animation_manager_(frame_sink_manager_->shared_bitmap_manager()),
+      // Don't track the root surface for PowerMode voting. All child surfaces
+      // are tracked individually instead, and tracking the root surface could
+      // override votes from the children.
+      power_mode_voter_(
+          is_root ? nullptr
+                  : power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
+                        "PowerModeVoter.Animation")) {
   surface_animation_manager_.SetDirectiveFinishedCallback(
       base::BindRepeating(&CompositorFrameSinkSupport::
                               OnCompositorFrameTransitionDirectiveProcessed,
@@ -158,7 +162,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   // Let the animation manager process any new directives on the surface.
   const auto& transition_directives =
       surface->GetActiveFrameMetadata().transition_directives;
-  if (document_transitions_enabled_ && !transition_directives.empty()) {
+  if (!transition_directives.empty()) {
     bool started_animation =
         surface_animation_manager_.ProcessTransitionDirectives(
             transition_directives, surface->GetSurfaceSavedFrameStorage());
@@ -255,11 +259,7 @@ void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
 }
 
 bool CompositorFrameSinkSupport::IsVideoCaptureStarted() {
-  for (auto* client : capture_clients_) {
-    if (client->IsVideoCaptureStarted())
-      return true;
-  }
-  return false;
+  return number_clients_capturing_ > 0;
 }
 
 void CompositorFrameSinkSupport::OnSurfaceDestroyed(Surface* surface) {
@@ -288,21 +288,24 @@ void CompositorFrameSinkSupport::RefResources(
 }
 
 void CompositorFrameSinkSupport::UnrefResources(
-    const std::vector<ReturnedResource>& resources) {
+    std::vector<ReturnedResource> resources) {
+  // |surface_animation_manager_| allocates ResourceIds in a different range
+  // than the client so it can process returned resources before
+  // |surface_resource_holder_|.
   surface_animation_manager_.UnrefResources(resources);
-  surface_resource_holder_.UnrefResources(resources);
+  surface_resource_holder_.UnrefResources(std::move(resources));
 }
 
 void CompositorFrameSinkSupport::ReturnResources(
-    const std::vector<ReturnedResource>& resources) {
+    std::vector<ReturnedResource> resources) {
   if (resources.empty())
     return;
   if (!ack_pending_count_ && client_) {
-    client_->ReclaimResources(resources);
+    client_->ReclaimResources(std::move(resources));
     return;
   }
 
-  std::copy(resources.begin(), resources.end(),
+  std::move(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
 }
 
@@ -423,7 +426,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
+    absl::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
   const auto result = MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
@@ -453,7 +456,7 @@ void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
 SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
+    absl::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   TRACE_EVENT_WITH_FLOW2(
@@ -658,7 +661,7 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
     return;
   }
 
-  client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
+  client_->DidReceiveCompositorFrameAck(std::move(surface_returned_resources_));
   surface_returned_resources_.clear();
 }
 
@@ -707,7 +710,7 @@ void CompositorFrameSinkSupport::DidRejectCompositorFrame(
 
   std::vector<ReturnedResource> resources =
       TransferableResource::ReturnResources(frame_resource_list);
-  ReturnResources(resources);
+  ReturnResources(std::move(resources));
   DidReceiveCompositorFrameAck();
   DidPresentCompositorFrame(frame_token, base::TimeTicks(), gfx::SwapTimings(),
                             gfx::PresentationFeedback::Failure());
@@ -765,9 +768,11 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     UpdateNeedsBeginFramesInternal();
   }
 
-  // Notify surface animation manager if it needs a begin frame.
+  // Notify surface animation manager of the latest time and advance a frame if
+  // it needs a begin frame.
+  surface_animation_manager_.UpdateFrameTime(args.frame_time);
   if (surface_animation_manager_.NeedsBeginFrame()) {
-    surface_animation_manager_.NotifyFrameAdvanced(args.frame_time);
+    surface_animation_manager_.NotifyFrameAdvanced();
 
     // Interpolate the frame here, since it is a reliable spot during the
     // animation.
@@ -839,12 +844,22 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
   added_frame_observer_ = needs_begin_frame;
   if (needs_begin_frame) {
     begin_frame_source_->AddObserver(this);
-    animation_power_mode_voter_->VoteFor(
-        power_scheduler::PowerMode::kAnimation);
+    if (power_mode_voter_) {
+      power_mode_voter_->VoteFor(
+          frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
+                  frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
+              ? power_scheduler::PowerMode::kVideoPlayback
+              : power_scheduler::PowerMode::kAnimation);
+    }
   } else {
     begin_frame_source_->RemoveObserver(this);
-    animation_power_mode_voter_->ResetVoteAfterTimeout(
-        power_scheduler::PowerModeVoter::kAnimationTimeout);
+    if (power_mode_voter_) {
+      power_mode_voter_->ResetVoteAfterTimeout(
+          frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
+                  frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
+              ? power_scheduler::PowerModeVoter::kVideoTimeout
+              : power_scheduler::PowerModeVoter::kAnimationTimeout);
+    }
   }
 }
 
@@ -852,6 +867,8 @@ void CompositorFrameSinkSupport::AttachCaptureClient(
     CapturableFrameSink::Client* client) {
   DCHECK(!base::Contains(capture_clients_, client));
   capture_clients_.push_back(client);
+  if (client->IsVideoCaptureStarted())
+    OnClientCaptureStarted();
 }
 
 void CompositorFrameSinkSupport::DetachCaptureClient(
@@ -860,6 +877,23 @@ void CompositorFrameSinkSupport::DetachCaptureClient(
       std::find(capture_clients_.begin(), capture_clients_.end(), client);
   if (it != capture_clients_.end())
     capture_clients_.erase(it);
+  if (client->IsVideoCaptureStarted())
+    OnClientCaptureStopped();
+}
+
+void CompositorFrameSinkSupport::OnClientCaptureStarted() {
+  if (number_clients_capturing_++ == 0) {
+    // First client started capturing.
+    frame_sink_manager_->OnCaptureStarted(frame_sink_id_);
+  }
+}
+
+void CompositorFrameSinkSupport::OnClientCaptureStopped() {
+  DCHECK_GT(number_clients_capturing_, 0u);
+  if (--number_clients_capturing_ == 0) {
+    // The last client has stopped capturing.
+    frame_sink_manager_->OnCaptureStopped(frame_sink_id_);
+  }
 }
 
 gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {

@@ -236,9 +236,8 @@ void UtilPreCallRecordPipelineCreations(uint32_t count, const CreateInfo *pCreat
                 const SHADER_MODULE_STATE *shader =
                     object_ptr->GetShaderModuleState(Accessor::GetShaderModule(pCreateInfos[pipeline], stage));
 
-                VkShaderModuleCreateInfo create_info = {};
                 VkShaderModule shader_module;
-                create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                auto create_info = LvlInitStruct<VkShaderModuleCreateInfo>();
                 create_info.pCode = shader->words.data();
                 create_info.codeSize = shader->words.size() * sizeof(uint32_t);
                 VkResult result = DispatchCreateShaderModule(object_ptr->device, &create_info, pAllocator, &shader_module);
@@ -308,7 +307,7 @@ void UtilPostCallRecordPipelineCreations(const uint32_t count, const CreateInfo 
             // the pipeline is used, so we have to keep another copy.
             if (shader_state && shader_state->has_valid_spirv) code = shader_state->words;
 
-            object_ptr->shader_map[shader_state->gpu_validation_shader_id].pipeline = pipeline_state->pipeline;
+            object_ptr->shader_map[shader_state->gpu_validation_shader_id].pipeline = pipeline_state->pipeline();
             // Be careful to use the originally bound (instrumented) shader here, even if PreCallRecord had to back it
             // out with a non-instrumented shader.  The non-instrumented shader (found in pCreateInfo) was destroyed above.
             VkShaderModule shader_module = VK_NULL_HANDLE;
@@ -345,7 +344,7 @@ template <typename ObjectType>
 // For the given command buffer, map its debug data buffers and read their contents for analysis.
 void UtilProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE *cb_node, ObjectType *object_ptr) {
     if (cb_node && (cb_node->hasDrawCmd || cb_node->hasTraceRaysCmd || cb_node->hasDispatchCmd)) {
-        auto gpu_buffer_list = object_ptr->GetBufferInfo(cb_node->commandBuffer);
+        auto gpu_buffer_list = object_ptr->GetBufferInfo(cb_node->commandBuffer());
         uint32_t draw_index = 0;
         uint32_t compute_index = 0;
         uint32_t ray_trace_index = 0;
@@ -366,7 +365,7 @@ void UtilProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE *cb_node, 
 
             VkResult result = vmaMapMemory(object_ptr->vmaAllocator, buffer_info.output_mem_block.allocation, (void **)&pData);
             if (result == VK_SUCCESS) {
-                object_ptr->AnalyzeAndGenerateMessages(cb_node->commandBuffer, queue, buffer_info,
+                object_ptr->AnalyzeAndGenerateMessages(cb_node->commandBuffer(), queue, buffer_info,
                                                        operation_index, (uint32_t *)pData);
                 vmaUnmapMemory(object_ptr->vmaAllocator, buffer_info.output_mem_block.allocation);
             }
@@ -400,8 +399,7 @@ void UtilSubmitBarrier(VkQueue queue, ObjectType *object_ptr) {
 
         VkResult result = VK_SUCCESS;
 
-        VkCommandPoolCreateInfo pool_create_info = {};
-        pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        auto pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
         pool_create_info.queueFamilyIndex = queue_family_index;
         result = DispatchCreateCommandPool(object_ptr->device, &pool_create_info, nullptr,
                                            &queue_barrier_command_info.barrier_command_pool);
@@ -411,8 +409,7 @@ void UtilSubmitBarrier(VkQueue queue, ObjectType *object_ptr) {
             return;
         }
 
-        VkCommandBufferAllocateInfo buffer_alloc_info = {};
-        buffer_alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        auto buffer_alloc_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
         buffer_alloc_info.commandPool = queue_barrier_command_info.barrier_command_pool;
         buffer_alloc_info.commandBufferCount = 1;
         buffer_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -430,12 +427,10 @@ void UtilSubmitBarrier(VkQueue queue, ObjectType *object_ptr) {
         object_ptr->vkSetDeviceLoaderData(object_ptr->device, queue_barrier_command_info.barrier_command_buffer);
 
         // Record a global memory barrier to force availability of device memory operations to the host domain.
-        VkCommandBufferBeginInfo command_buffer_begin_info = {};
-        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        auto command_buffer_begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
         result = DispatchBeginCommandBuffer(queue_barrier_command_info.barrier_command_buffer, &command_buffer_begin_info);
         if (result == VK_SUCCESS) {
-            VkMemoryBarrier memory_barrier = {};
-            memory_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            auto memory_barrier = LvlInitStruct<VkMemoryBarrier>();
             memory_barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
             memory_barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
 
@@ -447,8 +442,7 @@ void UtilSubmitBarrier(VkQueue queue, ObjectType *object_ptr) {
 
     UtilQueueBarrierCommandInfo &queue_barrier_command_info = queue_barrier_command_info_it.first->second;
     if (queue_barrier_command_info.barrier_command_buffer != VK_NULL_HANDLE) {
-        VkSubmitInfo submit_info = {};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        auto submit_info = LvlInitStruct<VkSubmitInfo>();
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &queue_barrier_command_info.barrier_command_buffer;
         DispatchQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);

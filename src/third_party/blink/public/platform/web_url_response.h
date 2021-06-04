@@ -33,11 +33,11 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -227,7 +227,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(SecurityStyle);
 
   BLINK_PLATFORM_EXPORT void SetSecurityDetails(const WebSecurityDetails&);
-  BLINK_PLATFORM_EXPORT base::Optional<WebSecurityDetails>
+  BLINK_PLATFORM_EXPORT absl::optional<WebSecurityDetails>
   SecurityDetailsForTesting();
 
   BLINK_PLATFORM_EXPORT void SetAsyncRevalidationRequested(bool);
@@ -245,20 +245,17 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool WasFetchedViaSPDY() const;
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaSPDY(bool);
 
-  // Flag whether this request was loaded via a ServiceWorker. See
-  // network::ResourceResponseInfo::was_fetched_via_service_worker for details.
+  // Flag whether this request was loaded via a ServiceWorker.
+  // See network.mojom.URLResponseHead.was_fetched_via_service_worker.
   BLINK_PLATFORM_EXPORT bool WasFetchedViaServiceWorker() const;
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaServiceWorker(bool);
 
-  // Set when this request was loaded via a ServiceWorker. See
-  // network::ResourceResponseInfo::service_worker_response_source for details.
+  // Set when this request was loaded via a ServiceWorker.
+  // See network.mojom.URLResponseHead.service_worker_response_source.
   BLINK_PLATFORM_EXPORT network::mojom::FetchResponseSource
   GetServiceWorkerResponseSource() const;
   BLINK_PLATFORM_EXPORT void SetServiceWorkerResponseSource(
       network::mojom::FetchResponseSource);
-
-  // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
-  BLINK_PLATFORM_EXPORT void SetWasFallbackRequiredByServiceWorker(bool);
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   BLINK_PLATFORM_EXPORT void SetType(network::mojom::FetchResponseType);
@@ -271,8 +268,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT int64_t GetPadding() const;
 
   // The URL list of the Response object the ServiceWorker passed to
-  // respondWith(). See
-  // network::ResourceResponseInfo::url_list_via_service_worker for details.
+  // respondWith().
+  // See network.mojom.URLResponseHead.url_list_via_service_worker.
   BLINK_PLATFORM_EXPORT void SetUrlListViaServiceWorker(
       const WebVector<WebURL>&);
   // Returns true if the URL list is not empty.
@@ -290,7 +287,7 @@ class WebURLResponse {
       const WebVector<WebString>&);
 
   // Whether service worker navigation preload occurred.
-  // See network::ResourceResponseInfo::did_navigation_preload for details.
+  // See network.mojom.URLResponseHead.did_navigation_preload.
   BLINK_PLATFORM_EXPORT void SetDidServiceWorkerNavigationPreload(bool);
 
   // Remote IP endpoint of the socket which fetched this resource.
@@ -322,6 +319,9 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetConnectionInfo(
       net::HttpResponseInfo::ConnectionInfo);
 
+  // Whether the response was cached and validated over the network.
+  BLINK_PLATFORM_EXPORT void SetIsValidated(bool);
+
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(int64_t);
 
@@ -333,7 +333,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetWasInPrefetchCache(bool);
   BLINK_PLATFORM_EXPORT void SetWasCookieInRequest(bool);
   BLINK_PLATFORM_EXPORT void SetRecursivePrefetchToken(
-      const base::Optional<base::UnguessableToken>&);
+      const absl::optional<base::UnguessableToken>&);
 
   // Whether this resource is from a MHTML archive.
   BLINK_PLATFORM_EXPORT bool FromArchive() const;
@@ -347,8 +347,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetWebBundleURL(const WebURL&);
 
   BLINK_PLATFORM_EXPORT void SetAuthChallengeInfo(
-      const base::Optional<net::AuthChallengeInfo>&);
-  BLINK_PLATFORM_EXPORT const base::Optional<net::AuthChallengeInfo>&
+      const absl::optional<net::AuthChallengeInfo>&);
+  BLINK_PLATFORM_EXPORT const absl::optional<net::AuthChallengeInfo>&
   AuthChallengeInfo() const;
 
 #if INSIDE_BLINK
@@ -370,4 +370,4 @@ class WebURLResponse {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_RESPONSE_H_

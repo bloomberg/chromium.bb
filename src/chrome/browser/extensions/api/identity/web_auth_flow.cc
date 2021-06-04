@@ -117,7 +117,7 @@ void WebAuthFlow::Start() {
   auto event =
       std::make_unique<Event>(events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
                               identity_private::OnWebFlowRequest::kEventName,
-                              std::move(args), profile_);
+                              args->TakeList(), profile_);
   ExtensionSystem* system = ExtensionSystem::Get(profile_);
 
   extensions::ComponentLoader* component_loader =
@@ -138,8 +138,8 @@ void WebAuthFlow::DetachDelegateAndDelete() {
 }
 
 content::StoragePartition* WebAuthFlow::GetGuestPartition() {
-  return content::BrowserContext::GetStoragePartition(
-      profile_, GetWebViewPartitionConfig(partition_, profile_));
+  return profile_->GetStoragePartition(
+      GetWebViewPartitionConfig(partition_, profile_));
 }
 
 const std::string& WebAuthFlow::GetAppWindowKey() const {

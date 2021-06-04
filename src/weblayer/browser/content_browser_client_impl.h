@@ -13,10 +13,15 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 class PrefService;
+
+namespace storage {
+class StorageKey;
+}  // namespace storage
 
 namespace weblayer {
 
@@ -36,19 +41,19 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& site_for_cookies,
-                     const base::Optional<url::Origin>& top_frame_origin,
+                     const absl::optional<url::Origin>& top_frame_origin,
                      content::BrowserContext* context) override;
   content::AllowServiceWorkerResult AllowServiceWorker(
       const GURL& scope,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin,
+      const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context) override;
   bool AllowSharedWorker(const GURL& worker_url,
                          const GURL& site_for_cookies,
-                         const base::Optional<url::Origin>& top_frame_origin,
+                         const absl::optional<url::Origin>& top_frame_origin,
                          const std::string& name,
-                         const url::Origin& constructor_origin,
+                         const storage::StorageKey& storage_key,
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
@@ -105,8 +110,11 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       content::PageVisibilityState* visibility_state) override;
   bool ShouldDisableSiteIsolation() override;
   std::vector<std::string> GetAdditionalSiteIsolationModes() override;
-  void PersistIsolatedOrigin(content::BrowserContext* context,
-                             const url::Origin& origin) override;
+  void PersistIsolatedOrigin(
+      content::BrowserContext* context,
+      const url::Origin& origin,
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource source)
+      override;
   base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
@@ -173,7 +181,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
-      base::Optional<int64_t> navigation_id,
+      absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*

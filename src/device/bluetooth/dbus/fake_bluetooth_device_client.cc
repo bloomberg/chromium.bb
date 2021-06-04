@@ -17,13 +17,13 @@
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -1906,7 +1906,7 @@ void FakeBluetoothDeviceClient::RemoveAllDevices() {
 
 void FakeBluetoothDeviceClient::CreateTestDevice(
     const dbus::ObjectPath& adapter_path,
-    const base::Optional<std::string> name,
+    const absl::optional<std::string> name,
     const std::string alias,
     const std::string device_address,
     const std::vector<std::string>& service_uuids,

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "build/chromeos_buildflags.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -17,7 +18,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace message_center {
 
@@ -26,16 +26,11 @@ PaddedButton::PaddedButton(PressedCallback callback)
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kControlButtonBorderSize)));
   SetAnimateOnStateChange(false);
 
-  SetInkDropMode(InkDropMode::ON);
-  SetInkDropVisibleOpacity(0.12f);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetVisibleOpacity(0.12f);
   SetHasInkDropActionOnClick(true);
-}
-
-std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
-  auto ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetShowHighlightOnFocus(false);
-  return std::move(ink_drop);
+  views::InkDrop::UseInkDropForSquareRipple(ink_drop(),
+                                            /*highlight_on_hover=*/false);
 }
 
 void PaddedButton::OnThemeChanged() {
@@ -49,7 +44,8 @@ void PaddedButton::OnThemeChanged() {
   SkColor background_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
 #endif
-  SetInkDropBaseColor(color_utils::GetColorWithMaxContrast(background_color));
+  ink_drop()->SetBaseColor(
+      color_utils::GetColorWithMaxContrast(background_color));
 }
 
 BEGIN_METADATA(PaddedButton, views::ImageButton)

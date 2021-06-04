@@ -24,6 +24,19 @@
 #include <functional>
 #include <sstream>
 
+// When --minimize-gpu-work is specified, we want to reduce GPU work to minimum and lift up the CPU
+// overhead to surface so that we can see how much CPU overhead each driver has for each app trace.
+// On some driver(s) the bufferSubData/texSubImage calls end up dominating the frame time when the
+// actual GPU work is minimized. Even reducing the texSubImage calls to only update 1x1 area is not
+// enough. The driver may be implementing copy on write by cloning the entire texture to another
+// memory storage for texSubImage call. While this information is also important for performance,
+// they should be evaluated separately in real app usage scenario, or write stand alone tests for
+// these. For the purpose of CPU overhead and avoid data copy to dominate the trace, I am using this
+// flag to noop the texSubImage and bufferSubData call when --minimize-gpu-work is specified. Feel
+// free to disable this when you have other needs. Or it can be turned to another run time option
+// when desired.
+#define NOOP_SUBDATA_SUBIMAGE_FOR_MINIMIZE_GPU_WORK
+
 using namespace angle;
 using namespace egl_platform;
 
@@ -118,17 +131,19 @@ class TracePerfTest : public ANGLERenderTest, public ::testing::WithParamInterfa
     std::vector<TimeSample> mTimeline;
 
     std::string mStartingDirectory;
-    bool mUseTimestampQueries      = false;
-    GLuint mOffscreenFramebuffer   = 0;
-    GLuint mOffscreenTexture       = 0;
-    GLuint mOffscreenDepthStencil  = 0;
-    int mWindowWidth               = 0;
-    int mWindowHeight              = 0;
-    GLuint mDrawFramebufferBinding = 0;
-    GLuint mReadFramebufferBinding = 0;
-    uint32_t mCurrentFrame         = 0;
-    uint32_t mOffscreenFrameCount  = 0;
-    bool mScreenshotSaved          = false;
+    bool mUseTimestampQueries                                           = false;
+    static constexpr int mMaxOffscreenBufferCount                       = 2;
+    std::array<GLuint, mMaxOffscreenBufferCount> mOffscreenFramebuffers = {0, 0};
+    std::array<GLuint, mMaxOffscreenBufferCount> mOffscreenTextures     = {0, 0};
+    GLuint mOffscreenDepthStencil                                       = 0;
+    int mWindowWidth                                                    = 0;
+    int mWindowHeight                                                   = 0;
+    GLuint mDrawFramebufferBinding                                      = 0;
+    GLuint mReadFramebufferBinding                                      = 0;
+    uint32_t mCurrentFrame                                              = 0;
+    uint32_t mOffscreenFrameCount                                       = 0;
+    uint32_t mTotalFrameCount                                           = 0;
+    bool mScreenshotSaved                                               = false;
     std::unique_ptr<TraceLibrary> mTraceLibrary;
 };
 
@@ -177,6 +192,246 @@ void KHRONOS_APIENTRY DiscardFramebufferEXTProc(GLenum target,
     gCurrentTracePerfTest->onReplayDiscardFramebufferEXT(target, numAttachments, attachments);
 }
 
+void KHRONOS_APIENTRY ViewportMinimizedProc(GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    glViewport(x, y, 1, 1);
+}
+
+void KHRONOS_APIENTRY ScissorMinimizedProc(GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    glScissor(x, y, 1, 1);
+}
+
+// Interpose the calls that generate actual GPU work
+void KHRONOS_APIENTRY DrawElementsMinimizedProc(GLenum mode,
+                                                GLsizei count,
+                                                GLenum type,
+                                                const void *indices)
+{
+    glDrawElements(GL_POINTS, 1, type, indices);
+}
+
+void KHRONOS_APIENTRY DrawElementsIndirectMinimizedProc(GLenum mode,
+                                                        GLenum type,
+                                                        const void *indirect)
+{
+    glDrawElementsInstancedBaseVertex(GL_POINTS, 1, type, 0, 1, 0);
+}
+
+void KHRONOS_APIENTRY DrawElementsInstancedMinimizedProc(GLenum mode,
+                                                         GLsizei count,
+                                                         GLenum type,
+                                                         const void *indices,
+                                                         GLsizei instancecount)
+{
+    glDrawElementsInstanced(GL_POINTS, 1, type, indices, 1);
+}
+
+void KHRONOS_APIENTRY DrawElementsBaseVertexMinimizedProc(GLenum mode,
+                                                          GLsizei count,
+                                                          GLenum type,
+                                                          const void *indices,
+                                                          GLint basevertex)
+{
+    glDrawElementsBaseVertex(GL_POINTS, 1, type, indices, basevertex);
+}
+
+void KHRONOS_APIENTRY DrawElementsInstancedBaseVertexMinimizedProc(GLenum mode,
+                                                                   GLsizei count,
+                                                                   GLenum type,
+                                                                   const void *indices,
+                                                                   GLsizei instancecount,
+                                                                   GLint basevertex)
+{
+    glDrawElementsInstancedBaseVertex(GL_POINTS, 1, type, indices, 1, basevertex);
+}
+
+void KHRONOS_APIENTRY DrawRangeElementsMinimizedProc(GLenum mode,
+                                                     GLuint start,
+                                                     GLuint end,
+                                                     GLsizei count,
+                                                     GLenum type,
+                                                     const void *indices)
+{
+    glDrawRangeElements(GL_POINTS, start, end, 1, type, indices);
+}
+
+void KHRONOS_APIENTRY DrawArraysMinimizedProc(GLenum mode, GLint first, GLsizei count)
+{
+    glDrawArrays(GL_POINTS, first, 1);
+}
+
+void KHRONOS_APIENTRY DrawArraysInstancedMinimizedProc(GLenum mode,
+                                                       GLint first,
+                                                       GLsizei count,
+                                                       GLsizei instancecount)
+{
+    glDrawArraysInstanced(GL_POINTS, first, 1, 1);
+}
+
+void KHRONOS_APIENTRY DrawArraysIndirectMinimizedProc(GLenum mode, const void *indirect)
+{
+    glDrawArraysInstanced(GL_POINTS, 0, 1, 1);
+}
+
+void KHRONOS_APIENTRY DispatchComputeMinimizedProc(GLuint num_groups_x,
+                                                   GLuint num_groups_y,
+                                                   GLuint num_groups_z)
+{
+    glDispatchCompute(1, 1, 1);
+}
+
+void KHRONOS_APIENTRY DispatchComputeIndirectMinimizedProc(GLintptr indirect)
+{
+    glDispatchCompute(1, 1, 1);
+}
+
+// Interpose the calls that generate data copying work
+void KHRONOS_APIENTRY BufferDataMinimizedProc(GLenum target,
+                                              GLsizeiptr size,
+                                              const void *data,
+                                              GLenum usage)
+{
+    glBufferData(target, size, nullptr, usage);
+}
+
+void KHRONOS_APIENTRY BufferSubDataMinimizedProc(GLenum target,
+                                                 GLintptr offset,
+                                                 GLsizeiptr size,
+                                                 const void *data)
+{
+#if !defined(NOOP_SUBDATA_SUBIMAGE_FOR_MINIMIZE_GPU_WORK)
+    glBufferSubData(target, offset, 1, data);
+#endif
+}
+
+void *KHRONOS_APIENTRY MapBufferRangeMinimizedProc(GLenum target,
+                                                   GLintptr offset,
+                                                   GLsizeiptr length,
+                                                   GLbitfield access)
+{
+    access |= GL_MAP_UNSYNCHRONIZED_BIT;
+    return glMapBufferRange(target, offset, length, access);
+}
+
+void KHRONOS_APIENTRY TexImage2DMinimizedProc(GLenum target,
+                                              GLint level,
+                                              GLint internalformat,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLint border,
+                                              GLenum format,
+                                              GLenum type,
+                                              const void *pixels)
+{
+    GLint unpackBuffer = 0;
+    glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &unpackBuffer);
+    if (unpackBuffer)
+    {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+    glTexImage2D(target, level, internalformat, width, height, border, format, type, nullptr);
+    if (unpackBuffer)
+    {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, unpackBuffer);
+    }
+}
+
+void KHRONOS_APIENTRY TexSubImage2DMinimizedProc(GLenum target,
+                                                 GLint level,
+                                                 GLint xoffset,
+                                                 GLint yoffset,
+                                                 GLsizei width,
+                                                 GLsizei height,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 const void *pixels)
+{
+#if !defined(NOOP_SUBDATA_SUBIMAGE_FOR_MINIMIZE_GPU_WORK)
+    glTexSubImage2D(target, level, xoffset, yoffset, 1, 1, format, type, pixels);
+#endif
+}
+
+void KHRONOS_APIENTRY TexImage3DMinimizedProc(GLenum target,
+                                              GLint level,
+                                              GLint internalformat,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLsizei depth,
+                                              GLint border,
+                                              GLenum format,
+                                              GLenum type,
+                                              const void *pixels)
+{
+    GLint unpackBuffer = 0;
+    glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &unpackBuffer);
+    if (unpackBuffer)
+    {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+    glTexImage3D(target, level, internalformat, width, height, depth, border, format, type,
+                 nullptr);
+    if (unpackBuffer)
+    {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, unpackBuffer);
+    }
+}
+
+void KHRONOS_APIENTRY TexSubImage3DMinimizedProc(GLenum target,
+                                                 GLint level,
+                                                 GLint xoffset,
+                                                 GLint yoffset,
+                                                 GLint zoffset,
+                                                 GLsizei width,
+                                                 GLsizei height,
+                                                 GLsizei depth,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 const void *pixels)
+{
+#if !defined(NOOP_SUBDATA_SUBIMAGE_FOR_MINIMIZE_GPU_WORK)
+    glTexSubImage3D(target, level, xoffset, yoffset, zoffset, 1, 1, 1, format, type, pixels);
+#endif
+}
+
+void KHRONOS_APIENTRY GenerateMipmapMinimizedProc(GLenum target)
+{
+    // Noop it for now. There is a risk that this will leave an incomplete mipmap chain and cause
+    // other issues. If this turns out to be a real issue with app traces, we can turn this into a
+    // glTexImage2D call for each generated level.
+}
+
+void KHRONOS_APIENTRY BlitFramebufferMinimizedProc(GLint srcX0,
+                                                   GLint srcY0,
+                                                   GLint srcX1,
+                                                   GLint srcY1,
+                                                   GLint dstX0,
+                                                   GLint dstY0,
+                                                   GLint dstX1,
+                                                   GLint dstY1,
+                                                   GLbitfield mask,
+                                                   GLenum filter)
+{
+    glBlitFramebuffer(srcX0, srcY0, srcX0 + 1, srcY0 + 1, dstX0, dstY0, dstX0 + 1, dstY0 + 1, mask,
+                      filter);
+}
+
+void KHRONOS_APIENTRY ReadPixelsMinimizedProc(GLint x,
+                                              GLint y,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLenum format,
+                                              GLenum type,
+                                              void *pixels)
+{
+    glReadPixels(x, y, 1, 1, format, type, pixels);
+}
+
+void KHRONOS_APIENTRY BeginTransformFeedbackMinimizedProc(GLenum primitiveMode)
+{
+    glBeginTransformFeedback(GL_POINTS);
+}
+
 angle::GenericProc KHRONOS_APIENTRY TraceLoadProc(const char *procName)
 {
     if (strcmp(procName, "glBindFramebuffer") == 0)
@@ -203,6 +458,121 @@ angle::GenericProc KHRONOS_APIENTRY TraceLoadProc(const char *procName)
     {
         return reinterpret_cast<angle::GenericProc>(DiscardFramebufferEXTProc);
     }
+
+    if (gMinimizeGPUWork)
+    {
+        if (strcmp(procName, "glViewport") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(ViewportMinimizedProc);
+        }
+
+        if (strcmp(procName, "glScissor") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(ScissorMinimizedProc);
+        }
+
+        // Interpose the calls that generate actual GPU work
+        if (strcmp(procName, "glDrawElements") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawElementsMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawElementsIndirect") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawElementsIndirectMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawElementsInstanced") == 0 ||
+            strcmp(procName, "glDrawElementsInstancedEXT") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawElementsInstancedMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawElementsBaseVertex") == 0 ||
+            strcmp(procName, "glDrawElementsBaseVertexEXT") == 0 ||
+            strcmp(procName, "glDrawElementsBaseVertexOES") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawElementsBaseVertexMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawElementsInstancedBaseVertex") == 0 ||
+            strcmp(procName, "glDrawElementsInstancedBaseVertexEXT") == 0 ||
+            strcmp(procName, "glDrawElementsInstancedBaseVertexOES") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(
+                DrawElementsInstancedBaseVertexMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawRangeElements") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawRangeElementsMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawArrays") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawArraysMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawArraysInstanced") == 0 ||
+            strcmp(procName, "glDrawArraysInstancedEXT") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawArraysInstancedMinimizedProc);
+        }
+        if (strcmp(procName, "glDrawArraysIndirect") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DrawArraysIndirectMinimizedProc);
+        }
+        if (strcmp(procName, "glDispatchCompute") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DispatchComputeMinimizedProc);
+        }
+        if (strcmp(procName, "glDispatchComputeIndirect") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(DispatchComputeIndirectMinimizedProc);
+        }
+
+        // Interpose the calls that generate data copying work
+        if (strcmp(procName, "glBufferData") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(BufferDataMinimizedProc);
+        }
+        if (strcmp(procName, "glBufferSubData") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(BufferSubDataMinimizedProc);
+        }
+        if (strcmp(procName, "glMapBufferRange") == 0 ||
+            strcmp(procName, "glMapBufferRangeEXT") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(MapBufferRangeMinimizedProc);
+        }
+        if (strcmp(procName, "glTexImage2D") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(TexImage2DMinimizedProc);
+        }
+        if (strcmp(procName, "glTexImage3D") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(TexImage3DMinimizedProc);
+        }
+        if (strcmp(procName, "glTexSubImage2D") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(TexSubImage2DMinimizedProc);
+        }
+        if (strcmp(procName, "glTexSubImage3D") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(TexSubImage3DMinimizedProc);
+        }
+        if (strcmp(procName, "glGenerateMipmap") == 0 ||
+            strcmp(procName, "glGenerateMipmapOES") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(GenerateMipmapMinimizedProc);
+        }
+        if (strcmp(procName, "glBlitFramebuffer") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(BlitFramebufferMinimizedProc);
+        }
+        if (strcmp(procName, "glReadPixels") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(ReadPixelsMinimizedProc);
+        }
+        if (strcmp(procName, "glBeginTransformFeedback") == 0)
+        {
+            return reinterpret_cast<angle::GenericProc>(BeginTransformFeedbackMinimizedProc);
+        }
+    }
+
     return gCurrentTracePerfTest->getGLWindow()->getProcAddress(procName);
 }
 
@@ -313,8 +683,8 @@ TracePerfTest::TracePerfTest()
         // Intel doesn't support external images.
         addExtensionPrerequisite("GL_OES_EGL_image_external");
 
-        // Failing on Linux Intel due to invalid enum. http://anglebug.com/5822
-        if (IsLinux() && IsIntel() && param.driver != GLESDriverType::AngleEGL)
+        // Failing on Linux Intel and AMD due to invalid enum. http://anglebug.com/5822
+        if (IsLinux() && (IsIntel() || IsAMD()) && param.driver != GLESDriverType::AngleEGL)
         {
             mSkipTest = true;
         }
@@ -345,6 +715,15 @@ TracePerfTest::TracePerfTest()
     {
         // TODO: http://anglebug.com/5591 Trace crashes on Pixel 2 in vulkan driver
         if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::idle_heroes)
+    {
+        // TODO: http://anglebug.com/5591 Trace crashes on Pixel 2
+        if (IsPixel2())
         {
             mSkipTest = true;
         }
@@ -404,6 +783,15 @@ TracePerfTest::TracePerfTest()
             mSkipTest = true;
         }
         // TODO: https://anglebug.com/5724 Device lost on Win Intel
+        if (IsWindows() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::fifa_mobile)
+    {
+        // TODO: http://anglebug.com/5875 Intel Windows Vulkan flakily renders entirely black
         if (IsWindows() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
         {
             mSkipTest = true;
@@ -518,6 +906,52 @@ TracePerfTest::TracePerfTest()
         addExtensionPrerequisite("GL_OES_EGL_image_external");
     }
 
+    if (param.testID == RestrictedTraceID::professional_baseball_spirits)
+    {
+        // TODO(https://anglebug.com/5827) Linux+Mesa/RADV Vulkan generates
+        // GL_INVALID_FRAMEBUFFER_OPERATION.
+        // Mesa versions below 20.3.5 produce the same issue on Linux+Mesa/Intel Vulkan
+        if (IsLinux() && (IsAMD() || IsIntel()) &&
+            param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
+            param.eglParameters.deviceType != EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::call_break_offline_card_game)
+    {
+        // TODO: http://anglebug.com/5837 Intel Linux Vulkan errors with "Framebuffer is incomplete"
+        if ((IsLinux() && IsIntel()) && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::slingshot_test1 ||
+        param.testID == RestrictedTraceID::slingshot_test2)
+    {
+        // TODO: http://anglebug.com/5877 Trace crashes on Pixel 2 in vulkan driver
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::ludo_king)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    // TODO: http://anglebug.com/5943 GL_INVALID_ENUM on Windows/Intel.
+    if (param.testID == RestrictedTraceID::summoners_war)
+    {
+        if (IsWindows() && IsIntel() && param.driver != GLESDriverType::AngleEGL)
+        {
+            mSkipTest = true;
+        }
+    }
+
     // We already swap in TracePerfTest::drawBenchmark, no need to swap again in the harness.
     disableTestHarnessSwap();
 
@@ -569,8 +1003,17 @@ void TracePerfTest::initializeBenchmark()
 
     mTraceLibrary->setBinaryDataDir(testDataDir);
 
-    mWindowWidth  = mTestParams.windowWidth;
-    mWindowHeight = mTestParams.windowHeight;
+    if (gMinimizeGPUWork)
+    {
+        // Shrink the offscreen window to 1x1.
+        mWindowWidth  = 1;
+        mWindowHeight = 1;
+    }
+    else
+    {
+        mWindowWidth  = mTestParams.windowWidth;
+        mWindowHeight = mTestParams.windowHeight;
+    }
     mCurrentFrame = mStartFrame;
 
     if (IsAndroid())
@@ -588,27 +1031,30 @@ void TracePerfTest::initializeBenchmark()
             mWindowHeight *= 4;
         }
 
-        glGenFramebuffers(1, &mOffscreenFramebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mOffscreenFramebuffer);
-
-        // Hard-code RGBA8/D24S8. This should be specified in the trace info.
-        glGenTextures(1, &mOffscreenTexture);
-        glBindTexture(GL_TEXTURE_2D, mOffscreenTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWindowWidth, mWindowHeight, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, nullptr);
-
         glGenRenderbuffers(1, &mOffscreenDepthStencil);
         glBindRenderbuffer(GL_RENDERBUFFER, mOffscreenDepthStencil);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mWindowWidth, mWindowHeight);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                               mOffscreenTexture, 0);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                                  mOffscreenDepthStencil);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-                                  mOffscreenDepthStencil);
-        glBindTexture(GL_TEXTURE_2D, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+        glGenFramebuffers(mMaxOffscreenBufferCount, mOffscreenFramebuffers.data());
+        glGenTextures(mMaxOffscreenBufferCount, mOffscreenTextures.data());
+        for (int i = 0; i < mMaxOffscreenBufferCount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, mOffscreenFramebuffers[i]);
+
+            // Hard-code RGBA8/D24S8. This should be specified in the trace info.
+            glBindTexture(GL_TEXTURE_2D, mOffscreenTextures[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWindowWidth, mWindowHeight, 0, GL_RGBA,
+                         GL_UNSIGNED_BYTE, nullptr);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                   mOffscreenTextures[i], 0);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                      mOffscreenDepthStencil);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                      mOffscreenDepthStencil);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
     }
 
     // Potentially slow. Can load a lot of resources.
@@ -634,22 +1080,17 @@ void TracePerfTest::initializeBenchmark()
 
 void TracePerfTest::destroyBenchmark()
 {
-    if (mOffscreenTexture != 0)
+    const auto &params = GetParam();
+    if (params.surfaceType == SurfaceType::Offscreen)
     {
-        glDeleteTextures(1, &mOffscreenTexture);
-        mOffscreenTexture = 0;
-    }
+        glDeleteTextures(mMaxOffscreenBufferCount, mOffscreenTextures.data());
+        mOffscreenTextures.fill(0);
 
-    if (mOffscreenDepthStencil != 0)
-    {
         glDeleteRenderbuffers(1, &mOffscreenDepthStencil);
         mOffscreenDepthStencil = 0;
-    }
 
-    if (mOffscreenFramebuffer != 0)
-    {
-        glDeleteFramebuffers(1, &mOffscreenFramebuffer);
-        mOffscreenFramebuffer = 0;
+        glDeleteFramebuffers(mMaxOffscreenBufferCount, mOffscreenFramebuffers.data());
+        mOffscreenFramebuffers.fill(0);
     }
 
     mTraceLibrary->finishReplay();
@@ -704,6 +1145,18 @@ void TracePerfTest::drawBenchmark()
         sampleTime();
     }
 
+    if (params.surfaceType == SurfaceType::Offscreen)
+    {
+        // Some driver (ARM and ANGLE) try to nop or defer the glFlush if it is called within the
+        // renderpass to avoid breaking renderpass (performance reason). For app traces that does
+        // not use any FBO, when we run in the offscreen mode, there is no frame boundary and
+        // glFlush call we issued at end of frame will get skipped. To overcome this (and also
+        // matches what onscreen double buffering behavior as well), we use two offscreen FBOs and
+        // ping pong between them for each frame.
+        glBindFramebuffer(GL_FRAMEBUFFER,
+                          mOffscreenFramebuffers[mTotalFrameCount % mMaxOffscreenBufferCount]);
+    }
+
     char frameName[32];
     sprintf(frameName, "Frame %u", mCurrentFrame);
     beginInternalTraceEvent(frameName);
@@ -714,54 +1167,68 @@ void TracePerfTest::drawBenchmark()
 
     if (params.surfaceType == SurfaceType::Offscreen)
     {
-        GLint currentDrawFBO, currentReadFBO;
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawFBO);
-        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadFBO);
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, mOffscreenFramebuffer);
-
-        uint32_t frameX  = (mOffscreenFrameCount % kFramesPerXY) % kFramesPerX;
-        uint32_t frameY  = (mOffscreenFrameCount % kFramesPerXY) / kFramesPerX;
-        uint32_t windowX = kOffscreenOffsetX + frameX * kOffscreenFrameWidth;
-        uint32_t windowY = kOffscreenOffsetY + frameY * kOffscreenFrameHeight;
-
-        if (gVerboseLogging)
+        if (gMinimizeGPUWork)
         {
-            printf("Frame %d: x %d y %d (screen x %d, screen y %d)\n", mOffscreenFrameCount, frameX,
-                   frameY, windowX, windowY);
-        }
-
-        GLboolean scissorTest = GL_FALSE;
-        glGetBooleanv(GL_SCISSOR_TEST, &scissorTest);
-
-        if (scissorTest)
-        {
-            glDisable(GL_SCISSOR_TEST);
-        }
-
-        glBlitFramebuffer(0, 0, mWindowWidth, mWindowHeight, windowX, windowY,
-                          windowX + kOffscreenFrameWidth, windowY + kOffscreenFrameHeight,
-                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-        if (frameX == kFramesPerX - 1 && frameY == kFramesPerY - 1)
-        {
-            swap();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-            mOffscreenFrameCount = 0;
+            // To keep GPU work minimum, we skip the blit.
+            glFlush();
+            mOffscreenFrameCount++;
         }
         else
         {
-            mOffscreenFrameCount++;
+            GLint currentDrawFBO, currentReadFBO;
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawFBO);
+            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadFBO);
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            glBindFramebuffer(
+                GL_READ_FRAMEBUFFER,
+                mOffscreenFramebuffers[mOffscreenFrameCount % mMaxOffscreenBufferCount]);
+
+            uint32_t frameX  = (mOffscreenFrameCount % kFramesPerXY) % kFramesPerX;
+            uint32_t frameY  = (mOffscreenFrameCount % kFramesPerXY) / kFramesPerX;
+            uint32_t windowX = kOffscreenOffsetX + frameX * kOffscreenFrameWidth;
+            uint32_t windowY = kOffscreenOffsetY + frameY * kOffscreenFrameHeight;
+
+            if (gVerboseLogging)
+            {
+                printf("Frame %d: x %d y %d (screen x %d, screen y %d)\n", mOffscreenFrameCount,
+                       frameX, frameY, windowX, windowY);
+            }
+
+            GLboolean scissorTest = GL_FALSE;
+            glGetBooleanv(GL_SCISSOR_TEST, &scissorTest);
+
+            if (scissorTest)
+            {
+                glDisable(GL_SCISSOR_TEST);
+            }
+
+            glBlitFramebuffer(0, 0, mWindowWidth, mWindowHeight, windowX, windowY,
+                              windowX + kOffscreenFrameWidth, windowY + kOffscreenFrameHeight,
+                              GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+            if (frameX == kFramesPerX - 1 && frameY == kFramesPerY - 1)
+            {
+                swap();
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glClear(GL_COLOR_BUFFER_BIT);
+                mOffscreenFrameCount = 0;
+            }
+            else
+            {
+                glFlush();
+                mOffscreenFrameCount++;
+            }
+
+            if (scissorTest)
+            {
+                glEnable(GL_SCISSOR_TEST);
+            }
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, currentDrawFBO);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, currentReadFBO);
         }
 
-        if (scissorTest)
-        {
-            glEnable(GL_SCISSOR_TEST);
-        }
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, currentDrawFBO);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, currentReadFBO);
+        mTotalFrameCount++;
     }
     else
     {
@@ -861,7 +1328,8 @@ void TracePerfTest::onReplayFramebufferChange(GLenum target, GLuint framebuffer)
 {
     if (framebuffer == 0 && GetParam().surfaceType == SurfaceType::Offscreen)
     {
-        glBindFramebuffer(target, mOffscreenFramebuffer);
+        glBindFramebuffer(target,
+                          mOffscreenFramebuffers[mTotalFrameCount % mMaxOffscreenBufferCount]);
     }
     else
     {
@@ -1062,7 +1530,13 @@ void TracePerfTest::saveScreenshot(const std::string &screenshotName)
     uint32_t pixelCount = mTestParams.windowWidth * mTestParams.windowHeight;
     std::vector<uint8_t> pixelData(pixelCount * 4);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Only unbind the framebuffer on context versions where it's available.
+    const TraceInfo &traceInfo = GetTraceInfo(GetParam().testID);
+    if (traceInfo.contextClientMajorVersion > 1)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     glReadPixels(0, 0, mTestParams.windowWidth, mTestParams.windowHeight, GL_RGBA, GL_UNSIGNED_BYTE,
                  pixelData.data());
 

@@ -116,8 +116,8 @@ void DeleteStoragePartitionDataForTimeRange(
     content::StoragePartition* storage_partition,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Optional<std::set<GURL>>& urls) {
-  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder = nullptr;
+    const absl::optional<std::set<GURL>>& urls) {
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder;
   if (urls) {
     filter_builder = content::BrowsingDataFilterBuilder::Create(
         content::BrowsingDataFilterBuilder::Mode::kDelete);
@@ -155,7 +155,7 @@ BrowsingDataHistoryObserverService::BrowsingDataHistoryObserverService(
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service)
-    history_observer_.Add(history_service);
+    history_observation_.Observe(history_service);
 }
 
 BrowsingDataHistoryObserverService::~BrowsingDataHistoryObserverService() {}
@@ -171,9 +171,8 @@ void BrowsingDataHistoryObserverService::OnURLsDeleted(
       TemplateURLServiceFactory::GetForProfile(profile_);
 
   content::StoragePartition* storage_partition =
-      storage_partition_for_testing_
-          ? storage_partition_for_testing_
-          : content::BrowserContext::GetDefaultStoragePartition(profile_);
+      storage_partition_for_testing_ ? storage_partition_for_testing_
+                                     : profile_->GetDefaultStoragePartition();
 
   if (deletion_info.time_range().IsValid()) {
     if (keywords_model) {

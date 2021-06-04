@@ -15,12 +15,12 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
@@ -48,7 +48,6 @@ class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebServiceWorkerContextProxy;
-class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
 struct WebPluginParams;
@@ -161,10 +160,6 @@ class CONTENT_EXPORT ContentRendererClient {
       const GURL& url,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Allows the embedder to override the WebThemeEngine used. If it returns NULL
-  // the content layer will provide an engine.
-  virtual blink::WebThemeEngine* OverrideThemeEngine();
-
   // Allows the embedder to provide a WebSocketHandshakeThrottleProvider. If it
   // returns NULL then none will be used.
   virtual std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
@@ -198,7 +193,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if the navigation was handled by the embedder and should be
   // ignored by WebKit. This method is used by CEF and android_webview.
   virtual bool HandleNavigation(RenderFrame* render_frame,
-                                bool is_content_initiated,
                                 bool render_view_was_created_by_renderer,
                                 blink::WebFrame* frame,
                                 const blink::WebURLRequest& request,
@@ -363,7 +357,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // more functional tuning on platforms with known implementation and hardware
   // limitations.
   // This is currently not supported when running the Chrome audio service.
-  virtual base::Optional<std::string>
+  virtual absl::optional<std::string>
   WebRTCPlatformSpecificAudioProcessingConfiguration();
 
   // Notifies that a worker context has been created. This function is called
@@ -401,7 +395,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void DidSetUserAgent(const std::string& user_agent);
 
   // Optionally returns audio renderer algorithm parameters.
-  virtual base::Optional<::media::AudioRendererAlgorithmParameters>
+  virtual absl::optional<::media::AudioRendererAlgorithmParameters>
   GetAudioRendererAlgorithmParameters(
       ::media::AudioParameters audio_parameters);
 };

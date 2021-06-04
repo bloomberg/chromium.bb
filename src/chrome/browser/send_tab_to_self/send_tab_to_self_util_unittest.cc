@@ -61,7 +61,8 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    incognito_profile_ = profile()->GetPrimaryOTRProfile();
+    incognito_profile_ =
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
     url_ = GURL("https://www.google.com");
     title_ = base::UTF8ToUTF16(base::StringPiece("Google"));
   }
@@ -109,7 +110,7 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {
-  url_ = GURL("tel:07387252578");
+  url_ = GURL("tel:07399999999");
 
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(

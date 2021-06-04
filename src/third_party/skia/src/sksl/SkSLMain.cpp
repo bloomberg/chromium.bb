@@ -14,10 +14,10 @@
 #include "src/sksl/SkSLDehydrator.h"
 #include "src/sksl/SkSLFileOutputStream.h"
 #include "src/sksl/SkSLIRGenerator.h"
-#include "src/sksl/SkSLPipelineStageCodeGenerator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/SkSLUtil.h"
-#include "src/sksl/SkSLVMGenerator.h"
+#include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
+#include "src/sksl/codegen/SkSLVMCodeGenerator.h"
 #include "src/sksl/ir/SkSLEnum.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 
@@ -282,10 +282,13 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
         kind = SkSL::ProgramKind::kGeometry;
     } else if (inputPath.endsWith(".fp")) {
         kind = SkSL::ProgramKind::kFragmentProcessor;
-    } else if (inputPath.endsWith(".rte")) {
-        kind = SkSL::ProgramKind::kRuntimeEffect;
+    } else if (inputPath.endsWith(".rtcf")) {
+        kind = SkSL::ProgramKind::kRuntimeColorFilter;
+    } else if (inputPath.endsWith(".rts")) {
+        kind = SkSL::ProgramKind::kRuntimeShader;
     } else {
-        printf("input filename must end in '.vert', '.frag', '.geom', '.fp', '.rte', or '.sksl'\n");
+        printf("input filename must end in '.vert', '.frag', '.geom', '.fp', '.rtcf', "
+               "'.rts', or '.sksl'\n");
         return ResultCode::kInputError;
     }
 
@@ -379,6 +382,14 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                 [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
                     return compiler.toH(program, base_name(inputPath.c_str(), "Gr", ".fp"), out);
                 });
+    } else if (outputPath.endsWith(".dsl.cpp")) {
+        settings.fReplaceSettings = false;
+        settings.fPermitInvalidStaticTests = true;
+        return compileProgram(
+                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toDSLCPP(program, base_name(inputPath.c_str(), "Gr", ".fp"),
+                                             out);
+                });
     } else if (outputPath.endsWith(".cpp")) {
         settings.fReplaceSettings = false;
         settings.fPermitInvalidStaticTests = true;
@@ -428,23 +439,22 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                             fOutput += declaration;
                         }
 
-                        String sampleChild(int index, String coords) override {
-                            return String::printf("sample(child_%d%s%s)",
-                                                  index,
-                                                  coords.empty() ? "" : ", ",
-                                                  coords.c_str());
-                        }
-                        String sampleChildWithMatrix(int index, String matrix) override {
-                            return String::printf("sample(child_%d%s%s)",
-                                                  index,
-                                                  matrix.empty() ? "" : ", ",
-                                                  matrix.c_str());
+                        String sampleChild(int index, String coords, String color) override {
+                            String result = "sample(child_" + SkSL::to_string(index);
+                            if (!coords.empty()) {
+                                result += ", " + coords;
+                            }
+                            if (!color.empty()) {
+                                result += ", " + color;
+                            }
+                            result += ")";
+                            return result;
                         }
 
-                        String              fOutput;
+                        String fOutput;
                     };
                     Callbacks callbacks;
-                    SkSL::PipelineStage::ConvertProgram(program, "_coords", &callbacks);
+                    SkSL::PipelineStage::ConvertProgram(program, "_coords", "_inColor", &callbacks);
                     out.writeString(GrShaderUtils::PrettyPrint(callbacks.fOutput));
                     return true;
                 });

@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Rrëshqitësi i kërkimit</translation>
 <translation id="1404323374378969387">Norvegjisht</translation>
 <translation id="1430915738399379752">Printo</translation>
+<translation id="1433628812591023318">Për t'i lëshuar skedarët në Parallels Desktop, skedari duhet të zhvendoset te dosja e skedarëve të Windows.</translation>
 <translation id="1435838927755162558">Ndaje dosjen me Parallels Desktop</translation>
 <translation id="1467432559032391204">Majtas</translation>
 <translation id="1471718551822868769">Sllovakisht</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Skedarët e Windows</translation>
 <translation id="3078461028045006476">Ndaje me <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Pajisjet Chromebit</translation>
+<translation id="3113153474486991170">"<ph name="PATH" />" nuk mund të hapej nga kjo vendndodhje. Kopjoje te "Skedarët e mi" për ta hapur.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">U KRYE</translation>
 <translation id="3188257591659621405">Skedarët e mi</translation>
@@ -448,6 +450,7 @@
 <translation id="5602622065581044566">Bullgarisht me tastierë fonetike</translation>
 <translation id="5605830556594064952">Amerikane Dvorak</translation>
 <translation id="5625294776298156701">Tamilisht me tastierë Tamil99</translation>
+<translation id="5633226425545095130">Zhvendosja e këtij artikulli do ta ndajë atë me të gjithë ata që mund ta shikojnë dosjen e ndarë "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Dëgjo</translation>
 <translation id="5678784840044122290">Aplikacioni për Linux do të ofrohet në "Terminalin" tënd dhe mund dhe të shfaqë një ikonë te "Nisësi" yt.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nuk mund të shkëputet nga një arkiv ose disk virtual<ph name="END_BOLD" />
@@ -609,6 +612,7 @@
 <translation id="7417453074306512035">Tastiera në etiopisht</translation>
 <translation id="7417705661718309329">Hartë e Google</translation>
 <translation id="7460898608667578234">Ukrainisht</translation>
+<translation id="7486315294984620427">Për t'i lëshuar skedarët në Parallels Desktop, skedari duhet të kopjohet te dosja e skedarëve të Windows.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> të gjetura
     <ph name="LINE_BREAK1" />
     Gati për të rezervuar te <ph name="BEGIN_LINK" />Disku i Google<ph name="END_LINK" /></translation>
@@ -721,6 +725,7 @@
 <translation id="8395901698320285466">Përmasat</translation>
 <translation id="8437209419043462667">Amerikane</translation>
 <translation id="8456681095658380701">Emër i pavlefshëm</translation>
+<translation id="8459404855768962328">Kopjimi i këtij artikulli do ta ndajë atë me të gjithë ata që mund ta shikojnë dosjen e ndarë "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Kliko me të djathtin te një skedar dhe zgjidh "Gozhdo te rafti" për qasje të shpejtë te skedarët e tu në raft.</translation>
 <translation id="8463494891489624050">Vietnamisht VIQR</translation>
 <translation id="8466234950814670489">Arkivi i mbledhjes</translation>

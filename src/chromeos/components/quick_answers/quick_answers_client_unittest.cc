@@ -93,7 +93,6 @@ class QuickAnswersClientTest : public testing::Test {
     mock_delegate_ = std::make_unique<MockQuickAnswersDelegate>();
 
     client_ = std::make_unique<QuickAnswersClient>(&test_url_loader_factory_,
-                                                   assistant_state_.get(),
                                                    mock_delegate_.get());
 
     result_loader_factory_callback_ = base::BindRepeating(
@@ -332,25 +331,6 @@ TEST_F(QuickAnswersClientTest, FetchQuickAnswers) {
       &result_loader_factory_callback_);
 
   client_->FetchQuickAnswers(*quick_answers_request);
-}
-
-TEST_F(QuickAnswersClientTest, NotSendRequestForUnknownIntent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::features::kQuickAnswersTextAnnotator);
-
-  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
-      std::make_unique<QuickAnswersRequest>();
-  quick_answers_request->selected_text = "sel";
-
-  mock_result_loader_ =
-      std::make_unique<MockResultLoader>(&test_url_loader_factory_, nullptr);
-  EXPECT_CALL(*mock_result_loader_, Fetch(::testing::_)).Times(0);
-  QuickAnswersClient::SetResultLoaderFactoryForTesting(
-      &result_loader_factory_callback_);
-
-  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
-                                   IntentInfo("sel", IntentType::kUnknown));
 }
 
 TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {

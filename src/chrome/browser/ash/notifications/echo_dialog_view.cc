@@ -12,13 +12,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -116,8 +116,8 @@ void EchoDialogView::SetBorderAndLabel(std::unique_ptr<views::View> label,
       label_font_list.GetBaseline() - label_font_list.GetCapHeight();
 
   gfx::Insets insets =
-      views::LayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
-                                                                  views::TEXT);
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::DialogContentType::kText, views::DialogContentType::kText);
   insets += gfx::Insets(top_inset_padding, 0, 0, 0);
   SetBorder(views::CreateEmptyBorder(insets));
 

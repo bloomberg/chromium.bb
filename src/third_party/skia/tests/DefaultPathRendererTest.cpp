@@ -29,7 +29,6 @@
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
 
@@ -84,16 +83,16 @@ static void run_test(GrDirectContext* dContext, skiatest::Reporter* reporter) {
     GrStyle style(SkStrokeRec::kFill_InitStyle);
 
     {
-        auto rtc = GrSurfaceDrawContext::Make(
-            dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
-            {kBigSize/2 + 1, kBigSize/2 + 1});
+        auto rtc = GrSurfaceDrawContext::Make(dContext, GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kApprox,
+                                              {kBigSize/2 + 1, kBigSize/2 + 1}, SkSurfaceProps());
 
         rtc->clear(SK_PMColor4fBLACK);
 
         GrPaint paint;
 
         const SkPMColor4f color = { 1.0f, 0.0f, 0.0f, 1.0f };
-        auto fp = GrConstColorProcessor::Make(color);
+        auto fp = GrFragmentProcessor::MakeColor(color);
         paint.setColorFragmentProcessor(std::move(fp));
 
         rtc->drawPath(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(), invPath, style);
@@ -102,15 +101,16 @@ static void run_test(GrDirectContext* dContext, skiatest::Reporter* reporter) {
     }
 
     {
-        auto rtc = GrSurfaceDrawContext::Make(
-            dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {kBigSize, kBigSize});
+        auto rtc = GrSurfaceDrawContext::Make(dContext, GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kExact, {kBigSize, kBigSize},
+                                              SkSurfaceProps());
 
         rtc->clear(SK_PMColor4fBLACK);
 
         GrPaint paint;
 
         const SkPMColor4f color = { 0.0f, 1.0f, 0.0f, 1.0f };
-        auto fp = GrConstColorProcessor::Make(color);
+        auto fp = GrFragmentProcessor::MakeColor(color);
         paint.setColorFragmentProcessor(std::move(fp));
 
         rtc->drawPath(nullptr, std::move(paint), GrAA::kNo,

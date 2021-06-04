@@ -62,12 +62,12 @@ ScrollbarPainter ScrollbarPainterForScrollbar(blink::Scrollbar& scrollbar) {
 @interface BlinkScrollbarPainterControllerDelegate : NSObject {
   blink::ScrollableArea* _scrollableArea;
 }
-- (id)initWithScrollableArea:(blink::ScrollableArea*)scrollableArea;
+- (instancetype)initWithScrollableArea:(blink::ScrollableArea*)scrollableArea;
 @end
 
 @implementation BlinkScrollbarPainterControllerDelegate
 
-- (id)initWithScrollableArea:(blink::ScrollableArea*)scrollableArea {
+- (instancetype)initWithScrollableArea:(blink::ScrollableArea*)scrollableArea {
   self = [super init];
   if (!self)
     return nil;
@@ -236,23 +236,24 @@ class BlinkScrollbarPartAnimationTimer {
   CGFloat _startValue;
   CGFloat _endValue;
 }
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-       featureToAnimate:(FeatureToAnimate)featureToAnimate
-            animateFrom:(CGFloat)startValue
-              animateTo:(CGFloat)endValue
-               duration:(NSTimeInterval)duration
-             taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)taskRunner;
+- (instancetype)initWithScrollbar:(blink::Scrollbar*)scrollbar
+                 featureToAnimate:(FeatureToAnimate)featureToAnimate
+                      animateFrom:(CGFloat)startValue
+                        animateTo:(CGFloat)endValue
+                         duration:(NSTimeInterval)duration
+                       taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)
+                                      taskRunner;
 @end
 
 @implementation BlinkScrollbarPartAnimation
 
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-       featureToAnimate:(FeatureToAnimate)featureToAnimate
-            animateFrom:(CGFloat)startValue
-              animateTo:(CGFloat)endValue
-               duration:(NSTimeInterval)duration
-             taskRunner:
-                 (scoped_refptr<base::SingleThreadTaskRunner>)taskRunner {
+- (instancetype)initWithScrollbar:(blink::Scrollbar*)scrollbar
+                 featureToAnimate:(FeatureToAnimate)featureToAnimate
+                      animateFrom:(CGFloat)startValue
+                        animateTo:(CGFloat)endValue
+                         duration:(NSTimeInterval)duration
+                       taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)
+                                      taskRunner {
   self = [super init];
   if (!self)
     return nil;
@@ -353,17 +354,18 @@ class BlinkScrollbarPartAnimationTimer {
       _expansionTransitionAnimation;
   BOOL _hasExpandedSinceInvisible;
 }
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-             taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)taskRunner;
+- (instancetype)initWithScrollbar:(blink::Scrollbar*)scrollbar
+                       taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)
+                                      taskRunner;
 - (void)updateVisibilityImmediately:(bool)show;
 - (void)cancelAnimations;
 @end
 
 @implementation BlinkScrollbarPainterDelegate
 
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-             taskRunner:
-                 (scoped_refptr<base::SingleThreadTaskRunner>)taskRunner {
+- (instancetype)initWithScrollbar:(blink::Scrollbar*)scrollbar
+                       taskRunner:(scoped_refptr<base::SingleThreadTaskRunner>)
+                                      taskRunner {
   self = [super init];
   if (!self)
     return nil;
@@ -779,7 +781,8 @@ void MacScrollbarAnimatorImpl::UpdateScrollerStyle() {
     // re-set the frameRect to the new thickness, and the re-layout below will
     // ensure the offset and length are properly updated.
     int thickness =
-        mac_theme->ScrollbarThickness(vertical_scrollbar->ScaleFromDIP());
+        mac_theme->ScrollbarThickness(vertical_scrollbar->ScaleFromDIP(),
+                                      vertical_scrollbar->CSSScrollbarWidth());
     vertical_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 
@@ -807,20 +810,19 @@ void MacScrollbarAnimatorImpl::UpdateScrollerStyle() {
     // frameRect to the new thickness, and the re-layout below will ensure the
     // offset
     // and length are properly updated.
-    int thickness =
-        mac_theme->ScrollbarThickness(horizontal_scrollbar->ScaleFromDIP());
+    int thickness = mac_theme->ScrollbarThickness(
+        horizontal_scrollbar->ScaleFromDIP(),
+        horizontal_scrollbar->CSSScrollbarWidth());
     horizontal_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 }
 
 void MacScrollbarAnimatorImpl::StartScrollbarPaintTimer() {
-  // Post a task with 1 ms delay to give a chance to run other immediate tasks
-  // that may cancel this.
   initial_scrollbar_paint_task_handle_ = PostDelayedCancellableTask(
       *task_runner_, FROM_HERE,
       WTF::Bind(&MacScrollbarAnimatorImpl::InitialScrollbarPaintTask,
                 WrapWeakPersistent(this)),
-      base::TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(100));
 }
 
 bool MacScrollbarAnimatorImpl::ScrollbarPaintTimerIsActive() const {

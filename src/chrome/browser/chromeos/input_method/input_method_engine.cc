@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/input_method_menu_item.h"
 #include "chrome/browser/chromeos/input_method/ui/input_method_menu_manager.h"
@@ -84,7 +85,7 @@ void InputMethodEngine::FocusIn(
   context_id_ = next_context_id_;
   ++next_context_id_;
 
-  observer_->OnFocus(context_id_, input_context);
+  observer_->OnFocus(active_component_id_, context_id_, input_context);
 }
 
 void InputMethodEngine::FocusOut() {
@@ -95,7 +96,7 @@ void InputMethodEngine::FocusOut() {
 
   int context_id = context_id_;
   context_id_ = -1;
-  observer_->OnBlur(context_id);
+  observer_->OnBlur(active_component_id_, context_id);
 }
 
 void InputMethodEngine::Enable(const std::string& component_id) {

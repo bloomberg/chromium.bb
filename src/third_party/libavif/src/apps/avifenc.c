@@ -8,6 +8,7 @@
 #include "avifutil.h"
 #include "y4m.h"
 
+#include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,7 +55,8 @@ static void syntax(void)
     printf("    -o,--output FILENAME              : Instead of using the last filename given as output, use this filename\n");
     printf("    -l,--lossless                     : Set all defaults to encode losslessly, and emit warnings when settings/input don't allow for it\n");
     printf("    -d,--depth D                      : Output depth [8,10,12]. (JPEG/PNG only; For y4m or stdin, depth is retained)\n");
-    printf("    -y,--yuv FORMAT                   : Output format [default=444, 422, 420, 400]. (JPEG/PNG only; For y4m or stdin, format is retained)\n");
+    printf("    -y,--yuv FORMAT                   : Output format [default=auto, 444, 422, 420, 400]. Ignored for y4m or stdin (y4m format is retained)\n");
+    printf("                                        For JPEG, auto honors the JPEG's internal format, if possible. For all other cases, auto defaults to 444\n");
     printf("    -p,--premultiply                  : Premultiply color by the alpha channel and signal this in the AVIF\n");
     printf("    --stdin                           : Read y4m frames from stdin instead of files; no input filenames allowed, must set before offering output filename\n");
     printf("    --cicp,--nclx P/T/M               : Set CICP values (nclx colr box) (3 raw numbers, use -r to set range flag)\n");
@@ -98,24 +100,28 @@ static void syntax(void)
     printf("    -k,--keyframe INTERVAL            : Set the forced keyframe interval (maximum frames between keyframes). Set to 0 to disable (default).\n");
     printf("    --ignore-icc                      : If the input file contains an embedded ICC profile, ignore it (no-op if absent)\n");
     printf("    --pasp H,V                        : Add pasp property (aspect ratio). H=horizontal spacing, V=vertical spacing\n");
+    printf("    --crop CROPX,CROPY,CROPW,CROPH    : Add clap property (clean aperture), but calculated from a crop rectangle\n");
     printf("    --clap WN,WD,HN,HD,HON,HOD,VON,VOD: Add clap property (clean aperture). Width, Height, HOffset, VOffset (in num/denom pairs)\n");
     printf("    --irot ANGLE                      : Add irot property (rotation). [0-3], makes (90 * ANGLE) degree rotation anti-clockwise\n");
     printf("    --imir AXIS                       : Add imir property (mirroring). 0=vertical axis (\"left-to-right\"), 1=horizontal axis (\"top-to-bottom\")\n");
     printf("\n");
     if (avifCodecName(AVIF_CODEC_CHOICE_AOM, 0)) {
         printf("aom-specific advanced options:\n");
-        printf("    1. <key>=<value> applies to both the color sub-image and the alpha sub-image (if present).\n");
-        printf("    2. color:<key>=<value> or c:<key>=<value> applies only to the color sub-image.\n");
-        printf("    3. alpha:<key>=<value> or a:<key>=<value> applies only to the alpha sub-image (if present).\n");
-        printf("       Since the alpha sub-image is a monochrome image, the options that refer to the chrome planes, such as\n");
-        printf("       enable-chroma-deltaq=B, should not be used with the alpha sub-image. In addition, the film grain options\n");
-        printf("       are unlikely to make sense for the alpha sub-image.\n");
+        printf("    1. <key>=<value> applies to both the color (YUV) planes and the alpha plane (if present).\n");
+        printf("    2. color:<key>=<value> or c:<key>=<value> applies only to the color (YUV) planes.\n");
+        printf("    3. alpha:<key>=<value> or a:<key>=<value> applies only to the alpha plane (if present).\n");
+        printf("       Since the alpha plane is encoded as a monochrome image, the options that refer to the chroma planes,\n");
+        printf("       such as enable-chroma-deltaq=B, should not be used with the alpha plane. In addition, the film grain\n");
+        printf("       options are unlikely to make sense for the alpha plane.\n");
+        printf("\n");
+        printf("    When used with libaom 3.0.0 or later, any key-value pairs supported by the aom_codec_set_option() function\n");
+        printf("    can be used. When used with libaom 2.0.x or older, the following key-value pairs can be used:\n");
         printf("\n");
         printf("    aq-mode=M                         : Adaptive quantization mode (0: off (default), 1: variance, 2: complexity, 3: cyclic refresh)\n");
         printf("    cq-level=Q                        : Constant/Constrained Quality level (0-63, end-usage must be set to cq or q)\n");
         printf("    enable-chroma-deltaq=B            : Enable delta quantization in chroma planes (0: disable (default), 1: enable)\n");
         printf("    end-usage=MODE                    : Rate control mode (vbr, cbr, cq, or q)\n");
-        printf("    sharpness=S                       : Loop filter sharpness (0-7, default: 0)\n");
+        printf("    sharpness=S                       : Bias towards block sharpness in rate-distortion optimization of transform coefficients (0-7, default: 0)\n");
         printf("    tune=METRIC                       : Tune the encoder for distortion metric (psnr or ssim, default: psnr)\n");
         printf("    film-grain-test=TEST              : Film grain test vectors (0: none (default), 1: test-1  2: test-2, ... 16: test-16)\n");
         printf("    film-grain-table=FILENAME         : Path to file containing film grain parameters\n");
@@ -187,6 +193,43 @@ static int parseU32List(uint32_t output[8], const char * arg)
     return index;
 }
 
+static avifBool convertCropToClap(uint32_t srcW, uint32_t srcH, avifPixelFormat yuvFormat, uint32_t clapValues[8])
+{
+    avifCleanApertureBox clap;
+    avifCropRect cropRect;
+    cropRect.x = clapValues[0];
+    cropRect.y = clapValues[1];
+    cropRect.width = clapValues[2];
+    cropRect.height = clapValues[3];
+
+    avifDiagnostics diag;
+    avifDiagnosticsClearError(&diag);
+    avifBool convertResult = avifCleanApertureBoxConvertCropRect(&clap, &cropRect, srcW, srcH, yuvFormat, &diag);
+    if (!convertResult) {
+        fprintf(stderr,
+                "ERROR: Impossible crop rect: imageSize:[%ux%u], pixelFormat:%s, cropRect:[%u,%u, %ux%u] - %s\n",
+                srcW,
+                srcH,
+                avifPixelFormatToString(yuvFormat),
+                cropRect.x,
+                cropRect.y,
+                cropRect.width,
+                cropRect.height,
+                diag.error);
+        return convertResult;
+    }
+
+    clapValues[0] = clap.widthN;
+    clapValues[1] = clap.widthD;
+    clapValues[2] = clap.heightN;
+    clapValues[3] = clap.heightD;
+    clapValues[4] = clap.horizOffN;
+    clapValues[5] = clap.horizOffD;
+    clapValues[6] = clap.vertOffN;
+    clapValues[7] = clap.vertOffD;
+    return AVIF_TRUE;
+}
+
 static avifInputFile * avifInputGetNextFile(avifInput * input)
 {
     if (input->useStdin) {
@@ -227,6 +270,7 @@ static avifAppFileFormat avifInputReadImage(avifInput * input, avifImage * image
         if (!y4mRead(NULL, image, sourceTiming, &input->frameIter)) {
             return AVIF_APP_FILE_FORMAT_UNKNOWN;
         }
+        assert(image->yuvFormat != AVIF_PIXEL_FORMAT_NONE);
         return AVIF_APP_FILE_FORMAT_Y4M;
     }
 
@@ -261,6 +305,8 @@ static avifAppFileFormat avifInputReadImage(avifInput * input, avifImage * image
     if (!input->frameIter) {
         ++input->fileIndex;
     }
+
+    assert(image->yuvFormat != AVIF_PIXEL_FORMAT_NONE);
     return nextInputFormat;
 }
 
@@ -373,7 +419,7 @@ int main(int argc, char * argv[])
     avifInput input;
     memset(&input, 0, sizeof(input));
     input.files = malloc(sizeof(avifInputFile) * argc);
-    input.requestedFormat = AVIF_PIXEL_FORMAT_YUV444;
+    input.requestedFormat = AVIF_PIXEL_FORMAT_NONE; // AVIF_PIXEL_FORMAT_NONE is used as a sentinel for "auto"
 
     // See here for the discussion on the semi-arbitrary defaults for speed/min/max:
     //     https://github.com/AOMediaCodec/libavif/issues/440
@@ -391,6 +437,7 @@ int main(int argc, char * argv[])
     uint32_t paspValues[8]; // only the first two are used
     int clapCount = 0;
     uint32_t clapValues[8];
+    avifBool cropConversionRequired = AVIF_FALSE;
     uint8_t irotAngle = 0xff; // sentinel value indicating "unused"
     uint8_t imirAxis = 0xff;  // sentinel value indicating "unused"
     avifCodecChoice codecChoice = AVIF_CODEC_CHOICE_AUTO;
@@ -655,6 +702,15 @@ int main(int argc, char * argv[])
                 returnCode = 1;
                 goto cleanup;
             }
+        } else if (!strcmp(arg, "--crop")) {
+            NEXTARG();
+            clapCount = parseU32List(clapValues, arg);
+            if (clapCount != 4) {
+                fprintf(stderr, "ERROR: Invalid crop values: %s\n", arg);
+                returnCode = 1;
+                goto cleanup;
+            }
+            cropConversionRequired = AVIF_TRUE;
         } else if (!strcmp(arg, "--clap")) {
             NEXTARG();
             clapCount = parseU32List(clapValues, arg);
@@ -735,7 +791,11 @@ int main(int argc, char * argv[])
     image->yuvRange = requestedRange;
     image->alphaPremultiplied = premultiplyAlpha;
 
-    if ((image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_IDENTITY) && (input.requestedFormat != AVIF_PIXEL_FORMAT_YUV444)) {
+    if ((image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_IDENTITY) && (input.requestedFormat != AVIF_PIXEL_FORMAT_NONE) &&
+        (input.requestedFormat != AVIF_PIXEL_FORMAT_YUV444)) {
+        // This protects against this code misbehaving if AVIF_APP_DEFAULT_PIXEL_FORMAT is ever changed from AVIF_PIXEL_FORMAT_YUV444
+        assert((input.requestedFormat != AVIF_PIXEL_FORMAT_NONE) || (AVIF_APP_DEFAULT_PIXEL_FORMAT == AVIF_PIXEL_FORMAT_YUV444));
+
         // matrixCoefficients was likely set to AVIF_MATRIX_COEFFICIENTS_IDENTITY as a side effect
         // of --lossless, and Identity is only valid with YUV444. Set this back to the default.
         image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601;
@@ -809,6 +869,13 @@ int main(int argc, char * argv[])
         image->pasp.hSpacing = paspValues[0];
         image->pasp.vSpacing = paspValues[1];
     }
+    if (cropConversionRequired) {
+        if (!convertCropToClap(image->width, image->height, image->yuvFormat, clapValues)) {
+            returnCode = 1;
+            goto cleanup;
+        }
+        clapCount = 8;
+    }
     if (clapCount == 8) {
         image->transformFlags |= AVIF_TRANSFORM_CLAP;
         image->clap.widthN = clapValues[0];
@@ -819,6 +886,26 @@ int main(int argc, char * argv[])
         image->clap.horizOffD = clapValues[5];
         image->clap.vertOffN = clapValues[6];
         image->clap.vertOffD = clapValues[7];
+
+        // Validate clap
+        avifCropRect cropRect;
+        avifDiagnostics diag;
+        avifDiagnosticsClearError(&diag);
+        if (!avifCropRectConvertCleanApertureBox(&cropRect, &image->clap, image->width, image->height, image->yuvFormat, &diag)) {
+            fprintf(stderr,
+                    "ERROR: Invalid clap: width:[%d / %d], height:[%d / %d], horizOff:[%d / %d], vertOff:[%d / %d] - %s\n",
+                    (int32_t)image->clap.widthN,
+                    (int32_t)image->clap.widthD,
+                    (int32_t)image->clap.heightN,
+                    (int32_t)image->clap.heightD,
+                    (int32_t)image->clap.horizOffN,
+                    (int32_t)image->clap.horizOffD,
+                    (int32_t)image->clap.vertOffN,
+                    (int32_t)image->clap.vertOffD,
+                    diag.error);
+            returnCode = 1;
+            goto cleanup;
+        }
     }
     if (irotAngle != 0xff) {
         image->transformFlags |= AVIF_TRANSFORM_IROT;
@@ -1026,7 +1113,7 @@ int main(int argc, char * argv[])
             goto cleanup;
         }
     } else {
-        uint32_t addImageFlags = AVIF_ADD_IMAGE_FLAG_NONE;
+        avifAddImageFlags addImageFlags = AVIF_ADD_IMAGE_FLAG_NONE;
         if (!avifInputHasRemainingData(&input)) {
             addImageFlags |= AVIF_ADD_IMAGE_FLAG_SINGLE;
         }
@@ -1157,6 +1244,9 @@ int main(int argc, char * argv[])
 
 cleanup:
     if (encoder) {
+        if (returnCode != 0) {
+            avifDumpDiagnostics(&encoder->diag);
+        }
         avifEncoderDestroy(encoder);
     }
     if (gridCells) {

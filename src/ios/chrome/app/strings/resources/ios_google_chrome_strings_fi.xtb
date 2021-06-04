@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1096883626080133124">Helppokäyttöisellä, turvallisella ja entistäkin nopeammalla Google Chromella saat enemmän aikaan</translation>
 <translation id="1282031177488366470">Auta parantamaan Chromen ominaisuuksia ja suorituskykyä</translation>
 <translation id="1314663809820920746">Voit edelleen nähdä kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi tällä laitteella. Jos teet muutoksia, niitä ei synkronoida Google-tilillesi.</translation>
 <translation id="1479202195792305274">Chrome voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ei voinut tarkistaa, onko päivityksiä saatavilla. Tarkista internetyhteytesi.</translation>
 <translation id="1682483655351012182">Chrome-datan synkronointi</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Auta kehittämään Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle</translation>
 <translation id="1917964099031477364">Tämä tili ja kaikki tallentamaton data poistetaan Chromesta ja muista Google-sovelluksista tällä laitteella.</translation>
 <translation id="2009224836393115614">Chrome ei voinut tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="2147651015520127414">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ei voinut tarkistaa, onko päivityksiä saatavilla. Yritä myöhemmin uudelleen.</translation>
 <translation id="2732745070297234559">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä uudelleen huomenna.</translation>
 <translation id="2740105938841089077">Käytä Chromea linkkien avaamiseen</translation>
+<translation id="2869959624320573933">Kirjaudu Chromeen</translation>
 <translation id="2919738076569633423">Käyttämällä Chromea hyväksyt <ph name="BEGIN_LINK_TOS" />käyttöehdot<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Koska kirjaudut ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> ylläpitämältä tililtä, Chrome-datasi poistetaan tältä laitteelta. Se säilyy edelleen Google-tililläsi.</translation>
 <translation id="3167189358072330585">Tilisi ei toimi Google Chromen kanssa. Ota yhteyttä verkkotunnuksesi järjestelmänvalvojaan tai kirjaudu sisään tavallisella Google-tilillä.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome säästää aikaasi tuomalla tilisi verkkoon. Voit lisätä tai poistaa tilejä asetuksissa.</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
 <translation id="3345341804167540816">Käytä Chromea missä tahansa</translation>
+<translation id="3455456143708465450">Kirjaudu sisään Google-tililläsi, jotta saat parhaan hyödyn Chromesta</translation>
 <translation id="3522659714780527202">Laita synkronointi päälle, niin voit nähdä Chrome-välilehtesi missä tahansa</translation>
 <translation id="3533694711092285624">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat niitä.</translation>
 <translation id="3706101708757577809">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Jos Chrome saa nähdä sijaintisi, sijainti lähetetään sivustoille, jotka sallit. Sivustot voivat kysyä sijaintiasi, jos niillä on sinulle paikallisia tietoja, esim. uutisia tai lähistöllä olevia kauppoja.</translation>
 <translation id="6036420186814142909">Google Chrome sisältää ominaisuuksia, joiden avulla voit hallita tiedonsiirtoasi ja verkkosivujen latausnopeutta.
 <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Salli Chrome-kirjautuminen</translation>
 <translation id="6181930887571472871">Vaihda Chromeen</translation>
 <translation id="6238746320622508509">Anna Chromen lukita incognito-välilehtesi.</translation>
 <translation id="6573431926118603307">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Poistetaanko Chrome-data tältä laitteelta?</translation>
 <translation id="6822673484890854830">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="6964931465519938134">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
+<translation id="7059914902409643750">Tee Chromesta näköisesi</translation>
 <translation id="7124339256045485976">Pidä Chrome ajan tasalla</translation>
 <translation id="7161390184744336561">Google Chrome on vanhentunut</translation>
 <translation id="7165736900384873061">Aloita Google Chromen QR-lukijan käyttö</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome on ajan tasalla</translation>
 <translation id="8022947259858476807">Käytä Chromea oletuksena ja avaa linkkejä, hae widgeteistä ja täytä salasanoja automaattisesti muissa sovelluksissa</translation>
 <translation id="8160472928944011082">Chromea ei voi päivittää</translation>
+<translation id="8263079278049777200">Kirjaudu sisään tälle sivustolle, Google-tilillesi ja Chromeen. Voit laittaa synkronoinnin päälle myöhemmin.</translation>
 <translation id="8357607116237445042">Valitse, haluatko poistaa Chrome-datasi tältä laitteelta vai säilyttää sen</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Kaikki oikeudet pidätetään.</translation>
 <translation id="840168496893712993">Jokin laajennus kaataa Chromen. Kokeile poistaa laajennuksia.</translation>
@@ -95,5 +102,6 @@
   3. Valitse Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Pysy turvassa Google Chromen avulla</translation>
+<translation id="8772179140489533211">Näytä kehotteet kirjautua Chromeen.</translation>
 <translation id="9112744793181547300">Valitaanko Chrome oletukseksi?</translation>
 </translationbundle>

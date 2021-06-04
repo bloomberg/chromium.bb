@@ -54,7 +54,6 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -141,16 +140,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
-// NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+// NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
         "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION + ","
-                + ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO + ","
                 + ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-@Batch(Batch.PER_CLASS)
+// TODO(donnd): Reenable batch per-class execution. See https://crbug.com/1183540,
+// and https://crbug.com/1180304.
 public class ContextualSearchManagerTest {
     @ClassRule
     public static final ChromeTabbedActivityTestRule sActivityTestRule =
@@ -165,7 +164,6 @@ public class ContextualSearchManagerTest {
         @Override
         public Iterable<ParameterSet> getParameters() {
             return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
-                    new ParameterSet().value(EnabledFeature.LONGPRESS).name("enableLongpress"),
                     new ParameterSet()
                             .value(EnabledFeature.TRANSLATIONS)
                             .name("enableTranslations"));
@@ -197,12 +195,10 @@ public class ContextualSearchManagerTest {
             ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, false,
                     ChromeFeatureList.CONTEXTUAL_SEARCH_LITERAL_SEARCH_TAP, false,
                     ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS, false);
-    /** This represents the Longpress with LiteralTap configurations, a good launch candidate. */
-    private static final ImmutableMap<String, Boolean> ENABLE_LONGPRESS =
-            ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, true,
-                    ChromeFeatureList.CONTEXTUAL_SEARCH_LITERAL_SEARCH_TAP, true,
-                    ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS, false);
-    /** This represents the Translations addition to the Longpress with LiteralTap configuration. */
+    /**
+     * This represents the Translations addition to the Longpress with LiteralTap configuration.
+     * This is likely the best launch candidate.
+     */
     private static final ImmutableMap<String, Boolean> ENABLE_TRANSLATIONS =
             ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, false,
                     ChromeFeatureList.CONTEXTUAL_SEARCH_LITERAL_SEARCH_TAP, true,
@@ -213,6 +209,8 @@ public class ContextualSearchManagerTest {
             ChromeFeatureList.RELATED_SEARCHES, true, ChromeFeatureList.RELATED_SEARCHES_UI, false);
     private static final ImmutableMap<String, Boolean> ENABLE_RELATED_SEARCHES_UI = ImmutableMap.of(
             ChromeFeatureList.RELATED_SEARCHES, true, ChromeFeatureList.RELATED_SEARCHES_UI, true);
+    private static final ImmutableMap<String, Boolean> DISABLE_FORCE_CAPTION =
+            ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_FORCE_CAPTION, false);
     private static final ImmutableMap<String, Boolean> ENABLE_FORCE_CAPTION =
             ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_FORCE_CAPTION, true);
 
@@ -230,12 +228,11 @@ public class ContextualSearchManagerTest {
     // State for an individual test.
     private FakeSlowResolveSearch mLatestSlowResolveSearch;
 
-    @IntDef({EnabledFeature.NONE, EnabledFeature.LONGPRESS, EnabledFeature.TRANSLATIONS})
+    @IntDef({EnabledFeature.NONE, EnabledFeature.TRANSLATIONS})
     @Retention(RetentionPolicy.SOURCE)
     private @interface EnabledFeature {
         int NONE = 0;
-        int LONGPRESS = 1;
-        int TRANSLATIONS = 2;
+        int TRANSLATIONS = 1;
     }
 
     // Tracks whether a long-press triggering experiment is active.
@@ -296,9 +293,6 @@ public class ContextualSearchManagerTest {
         switch (mEnabledFeature) {
             case EnabledFeature.NONE:
                 whichFeature = ENABLE_NONE;
-                break;
-            case EnabledFeature.LONGPRESS:
-                whichFeature = ENABLE_LONGPRESS;
                 break;
             case EnabledFeature.TRANSLATIONS:
                 whichFeature = ENABLE_TRANSLATIONS;
@@ -690,7 +684,7 @@ public class ContextualSearchManagerTest {
     /**
      * Registers all fake searches to be used in tests.
      */
-    private void registerFakeSearches() {
+    private void registerFakeSearches() throws Exception {
         mFakeServer.registerFakeSearches();
     }
 
@@ -1628,6 +1622,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Test fails with out-of-process network service. crbug.com/1071721
@@ -1665,6 +1660,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testResolveDisablePreload(@EnabledFeature int enabledFeature) throws Exception {
         simulateSlowResolveSearch("intelligence");
 
@@ -1702,6 +1698,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285, https://crbug.com/1192561")
     public void testResolveGestureSelects(@EnabledFeature int enabledFeature) throws Exception {
         simulateResolveSearch("intelligence");
         Assert.assertEquals("Intelligence", getSelectedText());
@@ -1721,6 +1718,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1180304")
     public void testTapGestureOnSpecialCharacterDoesntSelect() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -1757,6 +1755,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testTapGestureFollowedByInvalidTextTapCloses() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -1915,6 +1914,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285, https://crbug.com/1192561")
     public void testContextualSearchNotDismissedOnBackgroundTabCrash(
             @EnabledFeature int enabledFeature) throws Exception {
         ChromeTabUtils.newTabFromMenu(
@@ -2011,6 +2011,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testTapOnARIAIgnored() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -2370,6 +2371,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1180304")
     public void testNotifyObserversAfterLongPressWithoutSurroundings(
             @EnabledFeature int enabledFeature) throws Exception {
         // Mark the user undecided so we won't allow sending surroundings.
@@ -2462,6 +2464,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testPreventHandlingCurrentSelectionModification() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -2624,6 +2627,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1180304")
     public void testSelectionExpansionOnSearchTermResolution(@EnabledFeature int enabledFeature)
             throws Exception {
         mFakeServer.reset();
@@ -2868,6 +2872,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testChainedSearchContentVisibility() throws Exception {
         // Chained searches are tap-triggered very close to existing tap-triggered searches.
         FeatureList.setTestFeatures(ENABLE_NONE);
@@ -3018,6 +3023,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testTapWithoutLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving an English word should NOT trigger translation.
         simulateResolveSearch("search");
@@ -3091,6 +3097,7 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @SmallTest
+    @FlakyTest(message = "Disabled 4/2021. See https://crbug.com/1197102")
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
@@ -3271,6 +3278,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testQuickActionIntent(@EnabledFeature int enabledFeature) throws Exception {
         // Add a new filter to the activity monitor that matches the intent that should be fired.
         IntentFilter quickActionFilter = new IntentFilter(Intent.ACTION_VIEW);
@@ -3313,11 +3321,6 @@ public class ContextualSearchManagerTest {
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1075895")
     @DisabledTest(message = "Flaky https://crbug.com/1127796")
     public void testQuickActionUrl_Longpress(@EnabledFeature int enabledFeature) throws Exception {
-        // TODO(donnd): figure out why this fails to select on Longpress, but works fine on the
-        // other experiment configurations including Translations (which should be identical for
-        // this test). Probably something needs to be initialized between test runs.
-        if (enabledFeature == EnabledFeature.LONGPRESS) return;
-
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
 
         // Simulate a resolving search to show the Bar, then set the quick action data.
@@ -3435,6 +3438,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1058297")
     public void testAllInternalStatesVisitedResolvingTap() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -3501,6 +3505,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1192285")
     public void testAllInternalStatesVisitedNonResolveLongpress() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -3531,6 +3536,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1180304")
     public void testTriggeringContextualSearchHidesFindInPageOverlay(
             @EnabledFeature int enabledFeature) throws Exception {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
@@ -3691,7 +3697,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapIsIgnoredWithLongpressResolveEnabled() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+        // Enabling Translations implicitly enables Longpress too.
+        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
 
         clickNode("states");
         Assert.assertNull(getSelectedText());
@@ -3703,7 +3710,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testLongpressResolveEnabled() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+        // Enabling Translations implicitly enables Longpress too.
+        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
 
         longPressNode("states");
         assertLoadedNoUrl();
@@ -3722,7 +3730,8 @@ public class ContextualSearchManagerTest {
             message = "Flaky < P, https://crbug.com/1048827; Flaky on P, crbug.com/1181088")
     public void
     testLongpressExtendingSelectionExactResolve() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+        // Enabling Translations implicitly enables Longpress too.
+        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
 
         // Set up UserAction monitoring.
         Set<String> userActions = new HashSet();
@@ -3776,7 +3785,7 @@ public class ContextualSearchManagerTest {
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
         ResolvedSearchTerm resolvedSearchTerm = fakeSearch.getResolvedSearchTerm();
         Assert.assertTrue("Related Searches results should have been returned but were not!",
-                resolvedSearchTerm.relatedSearches().length > 0);
+                !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // TODO(donnd): Add a check that the searches appeared in the Panel once the Panel can.
     }
 
@@ -3790,6 +3799,7 @@ public class ContextualSearchManagerTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testNonResolveCaption() throws Exception {
         // Simulate a non-resolve search and make sure no Caption is shown.
+        FeatureList.setTestFeatures(DISABLE_FORCE_CAPTION);
         simulateNonResolveSearch("search");
         Assert.assertFalse(mPanel.getSearchBarControl().getCaptionVisible());
         closePanel();

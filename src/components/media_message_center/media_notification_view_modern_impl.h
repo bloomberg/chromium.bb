@@ -9,25 +9,25 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class Button;
-class ToggleImageButton;
 }  // namespace views
 
 namespace media_message_center {
 
 namespace {
-class MediaArtworkView;
+class MediaButton;
 }  // anonymous namespace
 
+class MediaArtworkView;
 class MediaControlsProgressView;
 class MediaNotificationBackground;
 class MediaNotificationContainer;
@@ -97,9 +97,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
     return subtitle_label_;
   }
 
-  const views::Button* picture_in_picture_button_for_testing() const {
-    return picture_in_picture_button_;
-  }
+  views::Button* picture_in_picture_button_for_testing() const;
 
   const views::View* media_controls_container_for_testing() const {
     return media_controls_container_;
@@ -113,8 +111,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   // |accessible_name| is the text used for screen readers and the
   // button's tooltip.
   void CreateMediaButton(views::View* parent_view,
-                         media_session::mojom::MediaSessionAction action,
-                         const std::u16string& accessible_name);
+                         media_session::mojom::MediaSessionAction action);
 
   void UpdateActionButtonsVisibility();
 
@@ -151,10 +148,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   MediaArtworkView* artwork_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* subtitle_label_ = nullptr;
-  views::ToggleImageButton* picture_in_picture_button_ = nullptr;
+  MediaButton* picture_in_picture_button_ = nullptr;
   views::View* notification_controls_spacer_ = nullptr;
   views::View* media_controls_container_ = nullptr;
-  views::ToggleImageButton* play_pause_button_ = nullptr;
+  MediaButton* play_pause_button_ = nullptr;
   MediaControlsProgressView* progress_ = nullptr;
 };
 

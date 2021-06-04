@@ -59,17 +59,19 @@ void InstanceRegistry::OnInstances(const Instances& deltas) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
   for (auto& delta : deltas) {
-    // If the window state is not kDestroyed, adds to |app_id_to_app_window_|,
-    // otherwise removes the window from |app_id_to_app_window_|.
+    // If the instance state is not kDestroyed, adds to
+    // |app_id_to_app_instance_key_|, otherwise removes the instance key from
+    // |app_id_to_app_instance_key_|.
     if (static_cast<InstanceState>(delta.get()->State() &
                                    InstanceState::kDestroyed) ==
         InstanceState::kUnknown) {
-      app_id_to_app_windows_[delta.get()->AppId()].insert(
-          delta.get()->Window());
+      app_id_to_app_instance_key_[delta.get()->AppId()].insert(
+          delta.get()->GetInstanceKey());
     } else {
-      app_id_to_app_windows_[delta.get()->AppId()].erase(delta.get()->Window());
-      if (app_id_to_app_windows_[delta.get()->AppId()].size() == 0) {
-        app_id_to_app_windows_.erase(delta.get()->AppId());
+      app_id_to_app_instance_key_[delta.get()->AppId()].erase(
+          delta.get()->GetInstanceKey());
+      if (app_id_to_app_instance_key_[delta.get()->AppId()].size() == 0) {
+        app_id_to_app_instance_key_.erase(delta.get()->AppId());
       }
     }
   }
@@ -90,29 +92,34 @@ void InstanceRegistry::OnInstances(const Instances& deltas) {
 
 std::set<aura::Window*> InstanceRegistry::GetWindows(
     const std::string& app_id) {
-  auto it = app_id_to_app_windows_.find(app_id);
-  if (it != app_id_to_app_windows_.end()) {
-    return it->second;
+  auto it = app_id_to_app_instance_key_.find(app_id);
+  auto windows = std::set<aura::Window*>{};
+  if (it != app_id_to_app_instance_key_.end()) {
+    for (auto instance_key : it->second) {
+      windows.insert(instance_key.Window());
+    }
   }
-  return std::set<aura::Window*>{};
+  return windows;
 }
 
-InstanceState InstanceRegistry::GetState(aura::Window* window) const {
-  auto s_iter = states_.find(window);
+InstanceState InstanceRegistry::GetState(
+    const Instance::InstanceKey& instance_key) const {
+  auto s_iter = states_.find(instance_key);
   return (s_iter != states_.end()) ? s_iter->second.get()->State()
                                    : InstanceState::kUnknown;
 }
 
-ash::ShelfID InstanceRegistry::GetShelfId(aura::Window* window) const {
-  auto s_iter = states_.find(window);
+ash::ShelfID InstanceRegistry::GetShelfId(
+    const Instance::InstanceKey& instance_key) const {
+  auto s_iter = states_.find(instance_key);
   return (s_iter != states_.end())
              ? ash::ShelfID(s_iter->second.get()->AppId(),
                             s_iter->second.get()->LaunchId())
              : ash::ShelfID();
 }
 
-bool InstanceRegistry::Exists(aura::Window* window) const {
-  return states_.find(window) != states_.end();
+bool InstanceRegistry::Exists(const Instance::InstanceKey& instance_key) const {
+  return states_.find(instance_key) != states_.end();
 }
 
 void InstanceRegistry::DoOnInstances(const Instances& deltas) {
@@ -122,20 +129,20 @@ void InstanceRegistry::DoOnInstances(const Instances& deltas) {
   // OninstanceUpdate is called for each updates, and notify the observers for
   // every de-duplicated delta. Also update the states for every delta.
   for (const auto& d_iter : deltas) {
-    auto s_iter = states_.find(d_iter->Window());
+    auto s_iter = states_.find(d_iter->GetInstanceKey());
     Instance* state =
         (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
     if (InstanceUpdate::Equals(state, d_iter.get())) {
       continue;
     }
 
-    std::unique_ptr<Instance> old_state = nullptr;
+    std::unique_ptr<Instance> old_state;
     if (state) {
       old_state = state->Clone();
       InstanceUpdate::Merge(state, d_iter.get());
     } else {
-      states_.insert(
-          std::make_pair(d_iter.get()->Window(), (d_iter.get()->Clone())));
+      states_.insert(std::make_pair(d_iter.get()->GetInstanceKey(),
+                                    (d_iter.get()->Clone())));
     }
 
     for (auto& obs : observers_) {
@@ -145,7 +152,7 @@ void InstanceRegistry::DoOnInstances(const Instances& deltas) {
     if (static_cast<InstanceState>(d_iter.get()->State() &
                                    InstanceState::kDestroyed) !=
         InstanceState::kUnknown) {
-      states_.erase(d_iter.get()->Window());
+      states_.erase(d_iter.get()->GetInstanceKey());
     }
   }
   in_progress_ = false;

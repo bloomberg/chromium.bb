@@ -6,7 +6,6 @@
 
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
-#include <lib/sys/inspect/cpp/component.h>
 
 #include <algorithm>
 #include <memory>
@@ -67,7 +66,7 @@ class PresenterImageFuchsia : public OutputPresenter::Image {
   ~PresenterImageFuchsia() override;
 
   void BeginPresent() final;
-  void EndPresent() final;
+  void EndPresent(gfx::GpuFenceHandle release_fence) final;
   int GetPresentCount() const final;
   void OnContextLost() final;
 
@@ -108,8 +107,9 @@ void PresenterImageFuchsia::BeginPresent() {
   }
 }
 
-void PresenterImageFuchsia::EndPresent() {
+void PresenterImageFuchsia::EndPresent(gfx::GpuFenceHandle release_fence) {
   DCHECK(present_count_);
+  DCHECK(release_fence.is_null());
   --present_count_;
   if (!present_count_)
     read_access_.reset();
@@ -161,16 +161,10 @@ std::unique_ptr<OutputPresenterFuchsia> OutputPresenterFuchsia::Create(
     SkiaOutputSurfaceDependency* deps,
     gpu::SharedImageFactory* shared_image_factory,
     gpu::SharedImageRepresentationFactory* representation_factory) {
-  auto* inspector = base::ComponentInspectorForProcess();
-
   if (!base::FeatureList::IsEnabled(
           features::kUseSkiaOutputDeviceBufferQueue)) {
-    inspector->root().CreateString("output_presenter", "swapchain", inspector);
     return {};
   }
-
-  inspector->root().CreateString("output_presenter",
-                                 "SkiaOutputDeviceBufferQueue", inspector);
 
   // SetTextureToNewImagePipe() will call ScenicSession::Present() to send
   // CreateImagePipe2Cmd creation command, but it will be processed only after
@@ -310,8 +304,6 @@ OutputPresenterFuchsia::AllocateImages(gfx::ColorSpace color_space,
   // Create PresenterImageFuchsia for each buffer in the collection.
   uint32_t image_usage =
       gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_SCANOUT;
-  if (vulkan->enforce_protected_memory())
-    image_usage |= gpu::SHARED_IMAGE_USAGE_PROTECTED;
 
   std::vector<std::unique_ptr<OutputPresenter::Image>> images;
   images.reserve(num_images);
@@ -334,8 +326,9 @@ OutputPresenterFuchsia::AllocateImages(gfx::ColorSpace color_space,
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
     if (!shared_image_factory_->CreateSharedImage(
             mailbox, gpu::kDisplayCompositorClientId, std::move(gmb_handle),
-            buffer_format_, gpu::kNullSurfaceHandle, frame_size_, color_space,
-            kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, image_usage)) {
+            buffer_format_, gfx::BufferPlane::DEFAULT, gpu::kNullSurfaceHandle,
+            frame_size_, color_space, kTopLeft_GrSurfaceOrigin,
+            kPremul_SkAlphaType, image_usage)) {
       return {};
     }
 

@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">ஸ்கேன் செய்ய, ஸ்கேனரில் ஆவணத்தை வைத்துவிட்டு ஸ்கேன் செய் என்பதைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> வினாடிகளில் <ph name="RATE" /> சார்ஜ் இறங்கியது.</translation>
+<translation id="2983662233540284543">கேம் கிரியேட்டரிடம் இருந்து கற்றுக்கொள்ளலாம், கேமை வடிவமைப்பதற்கான ஆப்ஸைப் பதிவிறக்கலாம், மேலும் பல பலன்களைப் பெறலாம்</translation>
 <translation id="3008341117444806826">புதுப்பி</translation>
 <translation id="3009958530611748826">சேமிப்பதற்கான கோப்புறையைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">அங்கீகாரம்</translation>
 <translation id="5154917547274118687">நினைவகம்</translation>
 <translation id="5168185087976003268">பேட்டரி நிலை</translation>
+<translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
+<translation id="519607504553633437">கேம்களை வடிவமைத்து உருவாக்குங்கள்</translation>
 <translation id="5212543919916444558">உங்களுக்கு நான் உதவும் வகையில், உங்கள் திரையில் எதுவுமில்லை.
 என்னிடம் ஏதேனும் கேட்க, மைக்கைத் தட்டவும்.</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
@@ -201,6 +204,7 @@
 <translation id="5275828089655680674">வழக்கங்களை மீண்டும் இயக்கு</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">பதிப்பு <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">சாளரத்தை டெஸ்கிற்கு நகர்த்து</translation>
 <translation id="5315873049536339193">அடையாளம்</translation>
 <translation id="5317780077021120954">சேமி</translation>
 <translation id="5318334351163689047">TCP கோரிக்கையை அனுப்ப முடியவில்லை</translation>
@@ -222,6 +226,7 @@
 <translation id="5669267381087807207">செயலாக்குகிறது</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">குடும்பம்</translation>
+<translation id="5752751666635965375">சொந்த கேமை உருவாக்குக</translation>
 <translation id="5760715441271661976">போர்டல் நிலை</translation>
 <translation id="5797428682393400134">நிறைவடைந்தது</translation>
 <translation id="5832805196449965646">நபரைச் சேர்</translation>
@@ -294,6 +299,7 @@
 <translation id="7216409898977639127">செல்லுலார் வழங்குநர்</translation>
 <translation id="7271040990581020067">ஸ்கேனர் தற்போது உபயோகத்தில் உள்ளது. பிறகு முயலவும்.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">நெட்வொர்க் சாதனங்கள்</translation>
 <translation id="7359657277149375382">கோப்பு வகை</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@
 <translation id="8372477600026034341">கூடுதல் ஹோஸ்ட்கள்</translation>
 <translation id="8395584934117017006">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை நிறுவனம் நிர்வகிக்கிறது</translation>
 <translation id="8398927464629426868">தற்போது சாதனத்தில் சார்ஜ் ஏறும் அல்லது குறையும் வீதம்</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">உள்நாட்டு மொபைல் சேவை வழங்குநர் பெயர்</translation>
 <translation id="8475690821716466388">WEP PSK என்னும் வலுவற்ற நெறிமுறை மூலம் வைஃபை நெட்வொர்க் பாதுகாக்கப்படுகிறது</translation>
 <translation id="8477551185774834963">DNSஸில் ஏற்படும் தாமதம் அனுமதிக்கப்படும் வரம்பைவிடச் சற்றே அதிகமாக உள்ளது</translation>
@@ -351,6 +358,7 @@
 <translation id="8575298406870537639">சேவை வழங்கும் நிறுவனத்தின் நெட்வொர்க்குடன் இணைக்க இந்த விருப்பத்தை இயக்க வேண்டியிருக்கலாம். விவரங்களுக்கு சேவை வழங்கும் நிறுவனத்தைத் தொடர்புகொள்ளவும்.</translation>
 <translation id="8576249514688522074">ஆரம்பிக்கப்படவில்லை</translation>
 <translation id="8620617069779373398">ரோமிங் நிலை</translation>
+<translation id="8660881923941176839">பவுண்டுகள்</translation>
 <translation id="8675354002693747642">முன்பே பகிரப்பட்ட விசை</translation>
 <translation id="871560550817059752">பிரிண்டரில் மை தீர்ந்துவிட்டதால் அச்சிட முடியவில்லை</translation>
 <translation id="8723108084122415655">இயல்பு நிலையல்லாத நெட்வொர்க்கில் ஏற்படும் தாமதம் வரம்பை மீறி உள்ளது</translation>
@@ -366,6 +374,7 @@
 <translation id="8881098542468797602">சோதனை நிறைவடைந்தது</translation>
 <translation id="8898840733695078011">சிக்னலின் வலிமை</translation>
 <translation id="8910721771319628100">இயல்புநிலை நெட்வொர்க்கில் ஏற்படும் தாமதம் வரம்பை மீறி உள்ளது</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" /> இன் <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">பிரிண்டரில் டிரே இல்லாததால் அச்சிட முடியவில்லை</translation>
 <translation id="8928727111548978589">காகிதம் இல்லாததால் அச்சிட முடியவில்லை</translation>
 <translation id="8930622219860340959">கம்பியில்லா</translation>
@@ -383,6 +392,7 @@
 <translation id="9149391708638971077">நினைவகச் சோதனையை இயக்கு</translation>
 <translation id="9173638680043580060">ஒரு நிமிடத்திற்கும் குறைவான நேரமே மீதமுள்ளது</translation>
 <translation id="9190063653747922532">L2TP/IPsec + முன்பே-பகிர்ந்து கொள்ளப்பட்ட விசை</translation>
+<translation id="9211490828691860325">அனைத்து டெஸ்குகளும்</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">செயலாக்கப்படவில்லை</translation>
 <translation id="960719561871045870">ஆபரேட்டர் குறியீடு</translation>

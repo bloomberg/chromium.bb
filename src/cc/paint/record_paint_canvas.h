@@ -5,14 +5,12 @@
 #ifndef CC_PAINT_RECORD_PAINT_CANVAS_H_
 #define CC_PAINT_RECORD_PAINT_CANVAS_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 namespace cc {
@@ -108,6 +106,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
 
   bool isClipEmpty() const override;
   SkMatrix getTotalMatrix() const override;
+  SkM44 getLocalToDevice() const override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,
@@ -139,7 +138,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   //
   // This is mutable so that const functions (e.g. quickReject) that may
   // lazy initialize the canvas can still be const.
-  mutable base::Optional<SkNoDrawCanvas> canvas_;
+  mutable absl::optional<SkNoDrawCanvas> canvas_;
   SkRect recording_bounds_;
 };
 

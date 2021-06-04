@@ -29,6 +29,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -85,14 +86,15 @@ void SingleThreadProxy::Start() {
         new CompositorTimingHistory(
             scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
-            layer_tree_host_->rendering_stats_instrumentation(),
-            host_impl_->compositor_frame_reporting_controller()));
+            layer_tree_host_->rendering_stats_instrumentation()));
     scheduler_on_impl_thread_ = std::make_unique<Scheduler>(
         this, scheduler_settings, layer_tree_host_->GetId(),
         task_runner_provider_->MainThreadTaskRunner(),
         std::move(compositor_timing_history),
         layer_tree_host_->TakeMainPipeline(),
-        layer_tree_host_->TakeCompositorPipeline());
+        layer_tree_host_->TakeCompositorPipeline(),
+        host_impl_->compositor_frame_reporting_controller(),
+        power_scheduler::PowerModeArbiter::GetInstance());
   }
 }
 
@@ -248,7 +250,6 @@ void SingleThreadProxy::CommitComplete() {
 
 void SingleThreadProxy::SetNeedsCommit() {
   DCHECK(task_runner_provider_->IsMainThread());
-  single_thread_client_->RequestScheduleComposite();
   if (commit_requested_)
     return;
   commit_requested_ = true;
@@ -396,7 +397,6 @@ void SingleThreadProxy::NotifyReadyToDraw() {
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
-  single_thread_client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsRedraw();
 }
@@ -404,7 +404,7 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
 void SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
   TRACE_EVENT0("cc",
                "SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread");
-  single_thread_client_->RequestScheduleComposite();
+  single_thread_client_->ScheduleAnimationForWebTests();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsOneBeginImplFrame();
   needs_impl_frame_ = true;
@@ -417,7 +417,7 @@ void SingleThreadProxy::SetNeedsPrepareTilesOnImplThread() {
 }
 
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
-  single_thread_client_->RequestScheduleComposite();
+  single_thread_client_->ScheduleAnimationForWebTests();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
   commit_requested_ = true;
@@ -537,7 +537,7 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
       std::move(callbacks.main_thread_callbacks);
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(callbacks), details);
+      frame_token, std::move(callbacks.compositor_thread_callbacks), details);
   {
     DebugScopedSetMainThread main(task_runner_provider_);
     layer_tree_host_->DidPresentCompositorFrame(
@@ -563,16 +563,12 @@ void SingleThreadProxy::NotifyPaintWorkletStateChange(
 
 void SingleThreadProxy::NotifyThroughputTrackerResults(
     CustomTrackerResults results) {
-  DCHECK(task_runner_provider_->IsImplThread());
-  // This method is called from ImplThread side so post a task to
-  // MainThread. This is necessary because the throughput tracker callbacks are
-  // supposed to be executed on MainThread side, which may invok compositor's
-  // method that expected to be executed on MainThread.
-  task_runner_provider_->MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SingleThreadProxy::NotifyThroughputTrackerResultsOnMainThread,
-          weak_factory_.GetWeakPtr(), std::move(results)));
+  // This method is called from ImplThread side to report after being requested,
+  // or from the MainThread when releasing FrameSequenceTrackers during
+  // destruction. Regardless, `layer_tree_host_` should be accessed from
+  // MainThread side.
+  DebugScopedSetMainThread main(task_runner_provider_);
+  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
 bool SingleThreadProxy::IsInSynchronousComposite() const {
@@ -1013,11 +1009,6 @@ void SingleThreadProxy::WillNotReceiveBeginFrame() {
 
 void SingleThreadProxy::DidReceiveCompositorFrameAck() {
   layer_tree_host_->DidReceiveCompositorFrameAck();
-}
-
-void SingleThreadProxy::NotifyThroughputTrackerResultsOnMainThread(
-    CustomTrackerResults results) {
-  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
 }  // namespace cc

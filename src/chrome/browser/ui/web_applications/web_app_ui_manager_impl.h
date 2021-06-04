@@ -11,10 +11,10 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 class Browser;
@@ -82,6 +82,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   // Returns AppId of the Browser's installed App, |IsBrowserForInstalledApp|
   // must be true.
   const AppId GetAppIdForBrowser(Browser* browser);
+
+  void OnExtensionSystemReady();
 
   void OnShortcutInfoReceivedSearchShortcutLocations(
       const AppId& from_app,

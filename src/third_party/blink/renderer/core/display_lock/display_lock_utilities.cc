@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -312,6 +313,28 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
   return nullptr;
 }
 
+Element* DisplayLockUtilities::NearestLockedInclusiveAncestorWithinTreeScope(
+    const Node& node) {
+  if (!node.isConnected() || node.GetDocument()
+                                     .GetDisplayLockDocumentState()
+                                     .LockedDisplayLockCount() == 0) {
+    return nullptr;
+  }
+
+  for (Node& ancestor : NodeTraversal::InclusiveAncestorsOf(node)) {
+    DCHECK(ancestor.GetTreeScope() == node.GetTreeScope());
+    Element* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    if (DisplayLockContext* context =
+            ancestor_element->GetDisplayLockContext()) {
+      if (context->IsLocked())
+        return ancestor_element;
+    }
+  }
+  return nullptr;
+}
+
 Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
     const Node& node) {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
@@ -402,7 +425,8 @@ bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
 }
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
-    const Node& source_node) {
+    const Node& source_node,
+    IncludeSelfOrNot self) {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return false;
   if (LocalFrameView* frame_view = source_node.GetDocument().View()) {
@@ -411,9 +435,10 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
   }
   const Node* node = &source_node;
 
-  // Since we handled the self-check above, we need to do inclusive checks
-  // starting from the parent.
-  node = FlatTreeTraversal::Parent(*node);
+  // If we don't need to check self, skip to the parent immediately.
+  if (self == kExcludeSelf)
+    node = FlatTreeTraversal::Parent(*node);
+
   // If we don't have a flat-tree parent, get the |source_node|'s owner node
   // instead.
   if (!node)

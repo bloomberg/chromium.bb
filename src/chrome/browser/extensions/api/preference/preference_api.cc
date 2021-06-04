@@ -28,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -100,8 +101,8 @@ const PrefMappingEntry kPrefMapping[] = {
     {"passwordSavingEnabled",
      password_manager::prefs::kCredentialsEnableService,
      APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},
-    {"protectedContentEnabled", prefs::kEnableDRM, APIPermissionID::kPrivacy,
-     APIPermissionID::kPrivacy},
+    {"protectedContentEnabled", prefs::kProtectedContentDefault,
+     APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},
     {"proxy", proxy_config::prefs::kProxy, APIPermissionID::kProxy,
      APIPermissionID::kProxy},
     {"referrersEnabled", prefs::kEnableReferrers, APIPermissionID::kPrivacy,
@@ -188,13 +189,13 @@ class IdentityPrefTransformer : public PrefTransformerInterface {
       const base::Value* extension_pref,
       std::string* error,
       bool* bad_message) override {
-    return extension_pref->CreateDeepCopy();
+    return base::Value::ToUniquePtrValue(extension_pref->Clone());
   }
 
   std::unique_ptr<base::Value> BrowserToExtensionPref(
       const base::Value* browser_pref,
       bool is_incognito_profile) override {
-    return browser_pref->CreateDeepCopy();
+    return base::Value::ToUniquePtrValue(browser_pref->Clone());
   }
 };
 
@@ -235,10 +236,9 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
       const base::Value* extension_pref,
       std::string* error,
       bool* bad_message) override {
-    bool bool_value = false;
-    const bool pref_found = extension_pref->GetAsBoolean(&bool_value);
-    DCHECK(pref_found) << "Preference not found.";
-    if (bool_value) {
+    if (!extension_pref->is_bool()) {
+      DCHECK(false) << "Preference not found.";
+    } else if (extension_pref->GetBool()) {
       return std::make_unique<base::Value>(
           chrome_browser_net::NETWORK_PREDICTION_DEFAULT);
     }
@@ -250,10 +250,33 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
       const base::Value* browser_pref,
       bool is_incognito_profile) override {
     int int_value = chrome_browser_net::NETWORK_PREDICTION_DEFAULT;
-    const bool pref_found = browser_pref->GetAsInteger(&int_value);
-    DCHECK(pref_found) << "Preference not found.";
+    if (browser_pref->is_int()) {
+      int_value = browser_pref->GetInt();
+    }
     return std::make_unique<base::Value>(
         int_value != chrome_browser_net::NETWORK_PREDICTION_NEVER);
+  }
+};
+
+class ProtectedContentEnabledTransformer : public PrefTransformerInterface {
+ public:
+  std::unique_ptr<base::Value> ExtensionToBrowserPref(
+      const base::Value* extension_pref,
+      std::string* error,
+      bool* bad_message) override {
+    bool protected_identifier_allowed = extension_pref->GetBool();
+    return std::make_unique<base::Value>(
+        static_cast<int>(protected_identifier_allowed ? CONTENT_SETTING_ALLOW
+                                                      : CONTENT_SETTING_BLOCK));
+  }
+
+  std::unique_ptr<base::Value> BrowserToExtensionPref(
+      const base::Value* browser_pref,
+      bool is_incognito_profile) override {
+    auto protected_identifier_mode =
+        static_cast<ContentSetting>(browser_pref->GetInt());
+    return std::make_unique<base::Value>(protected_identifier_mode ==
+                                         CONTENT_SETTING_ALLOW);
   }
 };
 
@@ -318,6 +341,9 @@ class PrefMapping {
                             std::make_unique<CookieControlsModeTransformer>());
     RegisterPrefTransformer(prefs::kNetworkPredictionOptions,
                             std::make_unique<NetworkPredictionTransformer>());
+    RegisterPrefTransformer(
+        prefs::kProtectedContentDefault,
+        std::make_unique<ProtectedContentEnabledTransformer>());
   }
 
   ~PrefMapping() = default;
@@ -384,7 +410,8 @@ PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
   DCHECK(!profile_->IsOffTheRecord());
   observed_profiles_.AddObservation(profile_);
   if (profile->HasPrimaryOTRProfile())
-    OnOffTheRecordProfileCreated(profile->GetPrimaryOTRProfile());
+    OnOffTheRecordProfileCreated(
+        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   else
     ObserveOffTheRecordPrefs(profile->GetReadOnlyOffTheRecordPrefs());
 }
@@ -491,7 +518,8 @@ void PreferenceAPIBase::SetExtensionControlledPref(
                                                   extension_id,
                                                   scope_string);
     auto preference = update.Create();
-    preference->SetWithoutPathExpansion(pref_key, value.CreateDeepCopy());
+    preference->SetWithoutPathExpansion(
+        pref_key, base::Value::ToUniquePtrValue(value.Clone()));
   }
   extension_pref_value_map()->SetExtensionPref(extension_id, pref_key, scope,
                                                std::move(value));
@@ -672,8 +700,9 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
               pref_key));
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  const PrefService* prefs =
-      incognito ? profile->GetOffTheRecordPrefs() : profile->GetPrefs();
+  PrefService* prefs =
+      extensions::preference_helpers::GetProfilePrefService(profile, incognito);
+
   const PrefService::Preference* pref = prefs->FindPreference(browser_pref);
   CHECK(pref);
 

@@ -14,7 +14,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/network/cellular_utils.h"
 #include "chromeos/network/device_state.h"
@@ -304,6 +303,12 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
     dictionary->SetKey(shill::kOutOfCreditsProperty,
                        base::Value(cellular_out_of_credits()));
   }
+
+  // Cellular properties
+  if (NetworkTypePattern::Cellular().MatchesType(type())) {
+    dictionary->SetKey(shill::kIccidProperty, base::Value(iccid()));
+    dictionary->SetKey(shill::kEidProperty, base::Value(eid()));
+  }
 }
 
 bool NetworkState::IsActive() const {
@@ -347,8 +352,8 @@ std::string NetworkState::GetVpnProviderType() const {
 
 bool NetworkState::RequiresActivation() const {
   return type() == shill::kTypeCellular &&
-         activation_state() != shill::kActivationStateActivated &&
-         activation_state() != shill::kActivationStateUnknown;
+         (activation_state() == shill::kActivationStateNotActivated ||
+          activation_state() == shill::kActivationStatePartiallyActivated);
 }
 
 bool NetworkState::SecurityRequiresPassphraseOnly() const {
@@ -534,8 +539,6 @@ void NetworkState::SetGuid(const std::string& guid) {
 network_config::mojom::ActivationStateType
 NetworkState::GetMojoActivationState() const {
   using network_config::mojom::ActivationStateType;
-  if (IsNonShillCellularNetwork())
-    return ActivationStateType::kNoService;
   if (activation_state_.empty())
     return ActivationStateType::kUnknown;
   if (activation_state_ == shill::kActivationStateActivated)
@@ -627,6 +630,7 @@ std::unique_ptr<NetworkState> NetworkState::CreateNonShillCellularNetwork(
   new_state->iccid_ = iccid;
   new_state->eid_ = eid;
   new_state->guid_ = guid;
+  new_state->activation_state_ = shill::kActivationStateActivated;
   return new_state;
 }
 

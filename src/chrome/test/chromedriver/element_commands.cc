@@ -408,7 +408,7 @@ Status ExecuteClearElement(Session* session,
                                     args, &get_content_editable);
     if (status.IsError())
       return status;
-    get_content_editable->GetAsBoolean(&is_content_editable);
+    is_content_editable = get_content_editable->GetIfBool().value_or(false);
   }
 
   std::unique_ptr<base::Value> get_readonly;
@@ -418,9 +418,9 @@ Status ExecuteClearElement(Session* session,
     params_readOnly.SetString("name", "readOnly");
     status = ExecuteGetElementProperty(session, web_view, element_id,
                                        params_readOnly, &get_readonly);
-    get_readonly->GetAsBoolean(&is_readonly);
     if (status.IsError())
       return status;
+    is_readonly = get_readonly->GetIfBool().value_or(false);
   }
   bool is_editable =
       (is_input_control || is_text || is_content_editable) && !is_readonly;
@@ -586,9 +586,7 @@ Status ExecuteSendKeysToElement(Session* session,
       return status;
     bool is_text = is_textControlType || is_textarea;
 
-    bool is_content_editable;
-    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
-        is_content_editable) {
+    if (get_content_editable->is_bool() && get_content_editable->GetBool()) {
       // If element is contentEditable
       // check if element is focused
       bool is_focused = false;
@@ -800,14 +798,14 @@ Status ExecuteGetComputedLabel(Session* session,
     return status;
 
   // Computed label stores as `name` in the AXTree.
-  base::Optional<base::Value> nameNode = axNode->ExtractKey("name");
+  absl::optional<base::Value> nameNode = axNode->ExtractKey("name");
   if (!nameNode) {
     // No computed label found. Return empty string.
     *value = std::make_unique<base::Value>("");
     return Status(kOk);
   }
 
-  base::Optional<base::Value> nameVal = nameNode->ExtractKey("value");
+  absl::optional<base::Value> nameVal = nameNode->ExtractKey("value");
   if (!nameVal)
     return Status(kUnknownError,
                   "No name value found in the node in CDP response");
@@ -827,14 +825,14 @@ Status ExecuteGetComputedRole(Session* session,
   if (status.IsError())
     return status;
 
-  base::Optional<base::Value> roleNode = axNode->ExtractKey("role");
+  absl::optional<base::Value> roleNode = axNode->ExtractKey("role");
   if (!roleNode) {
     // No computed role found. Return empty string.
     *value = std::make_unique<base::Value>("");
     return Status(kOk);
   }
 
-  base::Optional<base::Value> roleVal = roleNode->ExtractKey("value");
+  absl::optional<base::Value> roleVal = roleNode->ExtractKey("value");
   if (!roleVal)
     return Status(kUnknownError,
                   "No role value found in the node in CDP response");
@@ -1092,12 +1090,12 @@ Status ExecuteElementScreenshot(Session* session,
   clip_dict->SetDouble("y", location.y + scroll_top);
   clip_dict->SetDouble("scale", 1 / device_pixel_ratio);
   // Crop screenshot by viewport if element is larger than viewport
-  clip_dict->SetDouble(
-      "height",
-      std::min(viewport_height, clip_dict->FindKey("height")->GetDouble()));
-  clip_dict->SetDouble(
-      "width",
-      std::min(viewport_width, clip_dict->FindKey("width")->GetDouble()));
+  clip_dict->SetDouble("height",
+                       std::min(viewport_height - location.y,
+                                clip_dict->FindKey("height")->GetDouble()));
+  clip_dict->SetDouble("width",
+                       std::min(viewport_width - location.x,
+                                clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 

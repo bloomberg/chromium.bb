@@ -159,15 +159,14 @@ bool IsCompleteAddress(const autofill::AutofillProfile* profile,
   return true;
 }
 
-template <typename T>
 ClientStatus ExtractProfileAndFormatAutofillValue(
-    const T& profile,
-    const std::string& value_expression,
+    const AutofillProfile& profile,
+    const ValueExpression& value_expression,
     const UserData* user_data,
     bool quote_meta,
     std::string* out_value) {
-  if (profile.identifier().empty() || value_expression.empty()) {
-    VLOG(1) << "|autofill_value| with empty "
+  if (profile.identifier().empty() || value_expression.chunk().empty()) {
+    VLOG(1) << "|value_expression| with empty "
                "|profile.identifier| or |value_expression|";
     return ClientStatus(INVALID_ACTION);
   }
@@ -182,18 +181,12 @@ ClientStatus ExtractProfileAndFormatAutofillValue(
   auto mappings =
       field_formatter::CreateAutofillMappings(*address,
                                               /* locale= */ "en-US");
-  if (quote_meta) {
-    for (const auto& it : mappings) {
-      mappings[it.first] = re2::RE2::QuoteMeta(it.second);
-    }
-  }
-  auto value = field_formatter::FormatString(value_expression, mappings,
-                                             /* strict= */ true);
-  if (!value.has_value()) {
-    return ClientStatus(AUTOFILL_INFO_NOT_AVAILABLE);
+  ClientStatus format_status = field_formatter::FormatExpression(
+      value_expression, mappings, quote_meta, out_value);
+  if (!format_status.ok()) {
+    return format_status;
   }
 
-  out_value->assign(*value);
   return OkClientStatus();
 }
 
@@ -421,18 +414,20 @@ bool IsCompleteCreditCard(
 ClientStatus GetFormattedAutofillValue(const AutofillValue& autofill_value,
                                        const UserData* user_data,
                                        std::string* out_value) {
-  return ExtractProfileAndFormatAutofillValue<AutofillValue::Profile>(
+  return ExtractProfileAndFormatAutofillValue(
       autofill_value.profile(), autofill_value.value_expression(), user_data,
       /* quote_meta= */ false, out_value);
 }
 
 ClientStatus GetFormattedAutofillValue(
-    const AutofillValueRegexp& autofill_value,
+    const AutofillValueRegexp& autofill_value_regexp,
     const UserData* user_data,
     std::string* out_value) {
-  return ExtractProfileAndFormatAutofillValue<AutofillValueRegexp::Profile>(
-      autofill_value.profile(), autofill_value.value_expression().re2(),
-      user_data, /* quote_meta= */ true, out_value);
+  return ExtractProfileAndFormatAutofillValue(
+      autofill_value_regexp.profile(),
+      autofill_value_regexp.value_expression_re2().value_expression(),
+      user_data,
+      /* quote_meta= */ true, out_value);
 }
 
 void GetPasswordManagerValue(
@@ -489,6 +484,42 @@ ClientStatus GetClientMemoryStringValue(const std::string& client_memory_key,
   out_value->assign(
       user_data->additional_value(client_memory_key)->strings().values(0));
   return OkClientStatus();
+}
+
+void ResolveTextValue(const TextValue& text_value,
+                      const ElementFinder::Result& target_element,
+                      const ActionDelegate* action_delegate,
+                      base::OnceCallback<void(const ClientStatus&,
+                                              const std::string&)> callback) {
+  std::string value;
+  ClientStatus status = OkClientStatus();
+  switch (text_value.value_case()) {
+    case TextValue::kText:
+      value = text_value.text();
+      break;
+    case TextValue::kAutofillValue: {
+      status = GetFormattedAutofillValue(
+          text_value.autofill_value(), action_delegate->GetUserData(), &value);
+      break;
+    }
+    case TextValue::kPasswordManagerValue: {
+      GetPasswordManagerValue(text_value.password_manager_value(),
+                              target_element, action_delegate->GetUserData(),
+                              action_delegate->GetWebsiteLoginManager(),
+                              std::move(callback));
+      return;
+    }
+    case TextValue::kClientMemoryKey: {
+      status =
+          GetClientMemoryStringValue(text_value.client_memory_key(),
+                                     action_delegate->GetUserData(), &value);
+      break;
+    }
+    case TextValue::VALUE_NOT_SET:
+      status = ClientStatus(INVALID_ACTION);
+  }
+
+  std::move(callback).Run(status, value);
 }
 
 }  // namespace autofill_assistant

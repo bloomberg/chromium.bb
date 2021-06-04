@@ -6,12 +6,12 @@
 
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -86,7 +86,7 @@ views::Widget::InitParams GetWidgetInitParams() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.z_order = ui::ZOrderLevel::kNormal;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = kBubbleName;
   params.layer_type = ui::LAYER_NOT_DRAWN;
@@ -139,7 +139,9 @@ void DlpDataTransferNotifier::CloseWidget(views::Widget* widget,
 }
 
 void DlpDataTransferNotifier::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget, widget_.get());
+  if (widget != widget_.get())
+    return;
+
   widget_->RemoveObserver(this);
   widget_.reset();
   widget_closing_timer_.Stop();

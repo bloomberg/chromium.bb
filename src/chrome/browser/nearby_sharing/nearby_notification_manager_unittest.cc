@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
@@ -37,7 +36,6 @@
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
-#include "chrome/browser/ui/ash/holding_space/fake_holding_space_color_provider.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/scoped_test_mount_point.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
@@ -72,13 +70,13 @@ MATCHER_P(MatchesTarget, target, "") {
 }
 
 TextAttachment CreateTextAttachment(TextAttachment::Type type) {
-  return TextAttachment(type, kTextBody, /*title=*/base::nullopt,
-                        /*mime_type=*/base::nullopt);
+  return TextAttachment(type, kTextBody, /*title=*/absl::nullopt,
+                        /*mime_type=*/absl::nullopt);
 }
 
 TextAttachment CreateUrlAttachment() {
   return TextAttachment(TextAttachment::Type::kUrl, kTextUrl,
-                        /*title=*/base::nullopt, /*mime_type=*/base::nullopt);
+                        /*title=*/absl::nullopt, /*mime_type=*/absl::nullopt);
 }
 
 FileAttachment CreateFileAttachment(FileAttachment::Type type) {
@@ -527,8 +525,8 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowFailure) {
   for (FileAttachment::Type type : param.file_attachments)
     share_target.file_attachments.push_back(CreateFileAttachment(type));
 
-  for (base::Optional<std::pair<TransferMetadata::Status, int>> error :
-       std::vector<base::Optional<std::pair<TransferMetadata::Status, int>>>{
+  for (absl::optional<std::pair<TransferMetadata::Status, int>> error :
+       std::vector<absl::optional<std::pair<TransferMetadata::Status, int>>>{
            std::make_pair(TransferMetadata::Status::kNotEnoughSpace,
                           IDS_NEARBY_ERROR_NOT_ENOUGH_SPACE),
            std::make_pair(TransferMetadata::Status::kTimedOut,
@@ -536,7 +534,7 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowFailure) {
            std::make_pair(TransferMetadata::Status::kUnsupportedAttachmentType,
                           IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE),
            std::make_pair(TransferMetadata::Status::kFailed, 0),
-           base::nullopt,
+           absl::nullopt,
        }) {
     if (error) {
       manager()->ShowFailure(
@@ -619,7 +617,7 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
 
   if (with_token) {
     expected_message = base::StrCat(
-        {expected_message, base::UTF8ToUTF16("\n"),
+        {expected_message, u"\n",
          l10n_util::GetStringFUTF16(IDS_NEARBY_SECURE_CONNECTION_ID,
                                     base::UTF8ToUTF16(token))});
   }
@@ -637,7 +635,7 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
 
   std::vector<std::u16string> expected_button_titles;
   expected_button_titles.push_back(
-      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ACCEPT_ACTION));
   expected_button_titles.push_back(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
 
@@ -833,7 +831,7 @@ TEST_F(NearbyNotificationManagerTest, ProgressNotification_Cancel) {
               Cancel(MatchesTarget(share_target), testing::_));
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notifications[0].id(), /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   // Notification should be closed on button click.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
@@ -904,7 +902,7 @@ TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Accept) {
       GetDisplayedNotifications();
   ASSERT_EQ(1u, notifications.size());
   ASSERT_EQ(2u, notifications[0].buttons().size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ACCEPT_ACTION),
             notifications[0].buttons()[0].title);
 
   // Expect call to Accept on button click.
@@ -912,7 +910,7 @@ TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Accept) {
               Accept(MatchesTarget(share_target), testing::_));
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notifications[0].id(), /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   // Notification should still be present as it will soon be replaced.
   EXPECT_EQ(1u, GetDisplayedNotifications().size());
@@ -942,7 +940,7 @@ TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Reject_Local) {
               Reject(MatchesTarget(share_target), testing::_));
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notifications[0].id(), /*action_index=*/1,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   // Notification should be closed on button click.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
@@ -972,7 +970,7 @@ TEST_F(NearbyNotificationManagerTest, ProgressNotification_Reject_Remote) {
               Reject(MatchesTarget(share_target), testing::_));
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notifications[0].id(), /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   // Notification should be closed on button click.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
@@ -1011,8 +1009,8 @@ TEST_F(NearbyNotificationManagerTest, Onboarding_Click) {
 
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notifications[0].id(),
-                                      /*action_index=*/base::nullopt,
-                                      /*reply=*/base::nullopt);
+                                      /*action_index=*/absl::nullopt,
+                                      /*reply=*/absl::nullopt);
 
   // Notification should be closed.
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
@@ -1080,7 +1078,7 @@ TEST_F(NearbyNotificationManagerTest,
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1127,7 +1125,7 @@ TEST_F(NearbyNotificationManagerTest,
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/1,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1169,7 +1167,7 @@ TEST_F(NearbyNotificationManagerTest,
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1204,7 +1202,7 @@ TEST_F(NearbyNotificationManagerTest, SuccessNotificationClicked_TextReceived) {
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
   EXPECT_EQ(kTextBody, GetClipboardText());
@@ -1240,7 +1238,7 @@ TEST_F(NearbyNotificationManagerTest, SuccessNotificationClicked_UrlReceived) {
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1276,7 +1274,7 @@ TEST_F(NearbyNotificationManagerTest,
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1312,7 +1310,7 @@ TEST_F(NearbyNotificationManagerTest,
   notification_tester_->SimulateClick(NotificationHandler::Type::NEARBY_SHARE,
                                       notification.id(),
                                       /*action_index=*/0,
-                                      /*reply=*/base::nullopt);
+                                      /*reply=*/absl::nullopt);
 
   run_loop.Run();
 
@@ -1325,11 +1323,9 @@ class NearbyFilesHoldingSpaceTest : public testing::Test {
   NearbyFilesHoldingSpaceTest()
       : session_controller_(std::make_unique<TestSessionController>()),
         user_manager_(new ash::FakeChromeUserManager) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kNearbySharing, ash::features::kTemporaryHoldingSpace}, {});
+    scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
 
-    holding_space_controller_ = std::make_unique<ash::HoldingSpaceController>(
-        std::make_unique<ash::holding_space::FakeHoldingSpaceColorProvider>());
+    holding_space_controller_ = std::make_unique<ash::HoldingSpaceController>();
     profile_manager_ = CreateTestingProfileManager();
     const AccountId account_id(AccountId::FromUserEmail(""));
     user_manager_->AddUser(account_id);
@@ -1406,8 +1402,8 @@ TEST_F(NearbyFilesHoldingSpaceTest, ShowSuccess_Text) {
   share_target.is_incoming = true;
 
   TextAttachment attachment(TextAttachment::Type::kText, "Sample Text",
-                            /*title=*/base::nullopt,
-                            /*mime_type=*/base::nullopt);
+                            /*title=*/absl::nullopt,
+                            /*mime_type=*/absl::nullopt);
   share_target.text_attachments.push_back(std::move(attachment));
 
   manager()->ShowSuccess(share_target);

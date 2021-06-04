@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
@@ -25,14 +26,20 @@ class NativeDisplayDelegate;
 }
 
 namespace ui {
+enum class DomCode;
+enum class PlatformKeyboardHookTypes;
+
 class CursorFactory;
 class GpuPlatformSupportHost;
 class InputController;
+class KeyEvent;
 class OverlayManagerOzone;
 class PlatformClipboard;
 class PlatformGLEGLUtility;
 class PlatformGlobalShortcutListener;
 class PlatformGlobalShortcutListenerDelegate;
+class PlatformKeyboardHook;
+class PlatformUtils;
 class PlatformMenuUtils;
 class PlatformScreen;
 class PlatformUserInputMonitor;
@@ -165,7 +172,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // Corresponds to chrome_browser_main_extra_parts.h.
   //
   // The browser process' initialization involves several steps -
-  // PreEarlyInitialization, PostMainMessageLoopStart, PostMainMessageLoopRun,
+  // PreEarlyInitialization, PostCreateMainMessageLoop, PostMainMessageLoopRun,
   // etc. In order to be consistent with that and allow platform specific
   // initialization steps, the OzonePlatform has three methods - one static
   // PreEarlyInitialization that is expected to do some early non-ui
@@ -182,7 +189,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // Sets error handlers if supported for the browser process after the message
   // loop started. It's required to call this so that we can exit cleanly if the
   // server can exit before we do.
-  virtual void PostMainMessageLoopStart(base::OnceCallback<void()> shutdown_cb);
+  virtual void PostCreateMainMessageLoop(
+      base::OnceCallback<void()> shutdown_cb);
   // Resets the error handlers if set.
   virtual void PostMainMessageLoopRun();
 
@@ -226,6 +234,18 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual PlatformUtils* GetPlatformUtils();
   virtual PlatformGlobalShortcutListener* GetPlatformGlobalShortcutListener(
       PlatformGlobalShortcutListenerDelegate* delegate);
+  // Returns the keyboard hook that captures the specified keys.  See more in
+  // ui::KeyboardHook.  However, unlike that interface, Ozone tries to register
+  // the hook that it has created, and returns the one only if it was registered
+  // successfully.
+  // Handles creating both modifier and media keyboard hooks.  |dom_codes| and
+  // |accelerated_widget| are only used if |type| is
+  // PlatformKeyboardHookTypes::kModifier.
+  virtual std::unique_ptr<PlatformKeyboardHook> CreateKeyboardHook(
+      PlatformKeyboardHookTypes type,
+      base::RepeatingCallback<void(KeyEvent* event)> callback,
+      absl::optional<base::flat_set<DomCode>> dom_codes,
+      gfx::AcceleratedWidget accelerated_widget);
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

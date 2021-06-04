@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -121,6 +120,7 @@ FrameTreeNode::FrameTreeNode(
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
       depth_(parent ? parent->frame_tree_node()->depth_ + 1 : 0u),
+      frame_owner_element_type_(owner_type),
       replication_state_(blink::mojom::FrameReplicationState::New(
           url::Origin(),
           name,
@@ -129,16 +129,13 @@ FrameTreeNode::FrameTreeNode(
           network::mojom::WebSandboxFlags::kNone,
           blink::FramePolicy(),
           scope,
-          blink::mojom::InsecureRequestPolicy::
-              kLeaveInsecureRequestsAlone /* should enforce strict mixed content
-                                             checking */
-          ,
-          std::vector<uint32_t>()
-          /* hashes of hosts for insecure request upgrades */,
+          // should enforce strict mixed content checking
+          blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
+          // hashes of hosts for insecure request upgrades
+          std::vector<uint32_t>(),
           false /* is a potentially trustworthy unique origin */,
           false /* has an active user gesture */,
           false /* has received a user gesture before nav */,
-          owner_type,
           blink::mojom::AdFrameType::kNonAd)),
       is_created_by_script_(is_created_by_script),
       devtools_frame_token_(devtools_frame_token),
@@ -159,23 +156,20 @@ FrameTreeNode::~FrameTreeNode() {
   // during prerender activation. However, in such cases, the FrameTree and its
   // root FrameTreeNode objects are deleted immediately with activation. In all
   // other cases, there should always be a current frame host.
-  //
-  // TODO(https://crbug.com/1170277): Need to find a solution for being notified
-  // in various places. They do not support having no current_frame_host().
   if (current_frame_host()) {
     // Remove the children.
     current_frame_host()->ResetChildren();
 
     current_frame_host()->ResetLoadingState();
   } else {
-    DCHECK(blink::features::IsPrerenderMPArchEnabled());
+    DCHECK(blink::features::IsPrerender2Enabled());
     DCHECK(!parent());  // Only main documents can be activated.
     DCHECK(!opener());  // Prerendered frame trees can't have openers.
 
     // Activation is not allowed during ongoing navigations.
     DCHECK(!navigation_request_);
 
-    // TODO(https://crbug.com/1170277): Need to determine how to handle pending
+    // TODO(https://crbug.com/1199693): Need to determine how to handle pending
     // deletions, as observers will be notified.
     DCHECK(!render_manager()->speculative_frame_host());
   }
@@ -266,8 +260,7 @@ bool FrameTreeNode::IsMainFrame() const {
   return frame_tree_->root() == this;
 }
 
-void FrameTreeNode::ResetForNavigation(
-    bool was_served_from_back_forward_cache) {
+void FrameTreeNode::ResetForNavigation() {
   // This frame has had its user activation bits cleared in the renderer before
   // arriving here. We just need to clear them here and in the other renderer
   // processes that may have a reference to this frame.
@@ -364,7 +357,7 @@ void FrameTreeNode::SetCollapsed(bool collapsed) {
 }
 
 void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
-  DCHECK(blink::features::IsPrerenderMPArchEnabled());
+  DCHECK(blink::features::IsPrerender2Enabled());
   frame_tree_ = &frame_tree;
 }
 
@@ -809,7 +802,7 @@ void FrameTreeNode::SetPopupCreatorOrigin(
   popup_creator_origin_ = popup_creator_origin;
 }
 
-void FrameTreeNode::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void FrameTreeNode::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", frame_tree_node_id());
   dict.Add("is_main_frame", IsMainFrame());

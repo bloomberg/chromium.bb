@@ -4,16 +4,35 @@
 
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/filename_util.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 
 namespace web_app {
+
+namespace {
+
+// Testing hook for BrowserAppLauncher::LaunchAppWithParams
+web_app::BrowserAppLauncherForTesting& GetBrowserAppLauncherForTesting() {
+  static base::NoDestructor<web_app::BrowserAppLauncherForTesting> instance;
+  return *instance;
+}
+
+}  // namespace
+
+void SetBrowserAppLauncherForTesting(
+    BrowserAppLauncherForTesting browserAppLauncherForTesting) {
+  GetBrowserAppLauncherForTesting() = std::move(browserAppLauncherForTesting);
+}
 
 WebAppShimManagerDelegate::WebAppShimManagerDelegate(
     std::unique_ptr<apps::AppShimManager::Delegate> fallback_delegate)
@@ -88,10 +107,11 @@ void WebAppShimManagerDelegate::LaunchApp(
     Profile* profile,
     const AppId& app_id,
     const std::vector<base::FilePath>& files,
+    const std::vector<GURL>& urls,
     chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state) {
   DCHECK(AppIsInstalled(profile, app_id));
   if (UseFallback(profile, app_id)) {
-    fallback_delegate_->LaunchApp(profile, app_id, files,
+    fallback_delegate_->LaunchApp(profile, app_id, files, urls,
                                   login_item_restore_state);
     return;
   }
@@ -111,9 +131,71 @@ void WebAppShimManagerDelegate::LaunchApp(
                                launch_source);
   params.launch_files = files;
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
+  for (const GURL& url : urls) {
+    if (!url.is_valid() || !url.has_scheme()) {
+      DLOG(ERROR) << "URL is not valid or does not have a scheme.";
+      continue;
+    }
+
+    // Convert any file: URLs to a filename that can be passed to the OS.
+    // If the conversion succeeds, add to the launch_files vector otherwise,
+    // drop the url.
+    if (url.SchemeIsFile()) {
+      base::FilePath file_path;
+      if (net::FileURLToFilePath(url, &file_path)) {
+        params.launch_files.push_back(file_path);
+      } else {
+        DLOG(ERROR) << "Failed to convert file scheme url to file path.";
+      }
+      continue;
+    }
+
+    if (params.protocol_handler_launch_url.has_value()) {
+      DLOG(ERROR) << "Protocol launch URL already set.";
+      continue;
+    }
+
+    // Validate that the scheme is something that could be registered by the PWA
+    // via the manifest.
+    bool has_custom_scheme_prefix = false;
+    if (!blink::IsValidCustomHandlerScheme(url.scheme(),
+                                           /* allow_ext_plus_prefix */ false,
+                                           has_custom_scheme_prefix)) {
+      DLOG(ERROR) << "Protocol is not a valid custom handler scheme.";
+      continue;
+    }
+
+    params.protocol_handler_launch_url = url;
+  }
+
+  if (GetBrowserAppLauncherForTesting()) {
+    std::move(GetBrowserAppLauncherForTesting()).Run(params);
+    return;
+  }
+
+  if (params.protocol_handler_launch_url.has_value()) {
+    GURL protocol_url = params.protocol_handler_launch_url.value();
+
+    auto launch_callback = base::BindOnce(
+        [](apps::AppLaunchParams params, Profile* profile, bool accepted) {
+          if (accepted) {
+            apps::AppServiceProxyFactory::GetForProfile(profile)
+                ->BrowserAppLauncher()
+                ->LaunchAppWithParams(std::move(params));
+          }
+        },
+        std::move(params), profile);
+
+    // ShowWebAppProtocolHandlerIntentPicker keeps the `profile` alive through
+    // running of `launch_callback`.
+    chrome::ShowWebAppProtocolHandlerIntentPicker(
+        std::move(protocol_url), profile, app_id, std::move(launch_callback));
+
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        ->LaunchAppWithParams(std::move(params));
+  }
 }
 
 void WebAppShimManagerDelegate::LaunchShim(

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
@@ -103,9 +104,15 @@ bool NGLayoutInputNode::IsTextControlPlaceholder() const {
   return IsBlock() && blink::IsTextControlPlaceholder(GetDOMNode());
 }
 
+NGBlockNode NGLayoutInputNode::ListMarkerBlockNodeIfListItem() const {
+  if (auto* list_item = DynamicTo<LayoutNGListItem>(box_))
+    return NGBlockNode(DynamicTo<LayoutBox>(list_item->Marker()));
+  return NGBlockNode(nullptr);
+}
+
 void NGLayoutInputNode::IntrinsicSize(
-    base::Optional<LayoutUnit>* computed_inline_size,
-    base::Optional<LayoutUnit>* computed_block_size) const {
+    absl::optional<LayoutUnit>* computed_inline_size,
+    absl::optional<LayoutUnit>* computed_block_size) const {
   DCHECK(IsReplaced());
 
   GetOverrideIntrinsicSize(computed_inline_size, computed_block_size);
@@ -159,8 +166,8 @@ void NGLayoutInputNode::ShowNodeTree() const {
 #endif
 
 void NGLayoutInputNode::GetOverrideIntrinsicSize(
-    base::Optional<LayoutUnit>* computed_inline_size,
-    base::Optional<LayoutUnit>* computed_block_size) const {
+    absl::optional<LayoutUnit>* computed_inline_size,
+    absl::optional<LayoutUnit>* computed_block_size) const {
   DCHECK(IsReplaced());
 
   LayoutUnit override_inline_size = OverrideIntrinsicContentInlineSize();

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -57,8 +58,9 @@ NSString* ColumnIdentifier(int id) {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
-                  tableModel:(task_manager::TaskManagerTableModel*)tableModel {
+- (instancetype)
+    initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
+                tableModel:(task_manager::TaskManagerTableModel*)tableModel {
   base::scoped_nsobject<NSWindow> window = [self createAndLayOutWindow];
   if ((self = [super initWithWindow:window])) {
     _taskManagerMac = taskManagerMac;
@@ -605,7 +607,7 @@ NSString* ColumnIdentifier(int id) {
     NSSortDescriptor* initialDescriptor = [column sortDescriptorPrototype];
     if ([newDescriptor ascending] == [initialDescriptor ascending]) {
       _withinSortDescriptorsDidChange = YES;
-      [_tableView setSortDescriptors:[NSArray array]];
+      [_tableView setSortDescriptors:@[]];
       newDescriptor = nil;
       _withinSortDescriptorsDidChange = NO;
     }
@@ -752,11 +754,15 @@ namespace chrome {
 
 // Declared in browser_dialogs.h.
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
-  return task_manager::TaskManagerMac::Show();
+  return base::FeatureList::IsEnabled(features::kViewsTaskManager)
+             ? ShowTaskManagerViews(browser)
+             : task_manager::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
-  task_manager::TaskManagerMac::Hide();
+  base::FeatureList::IsEnabled(features::kViewsTaskManager)
+      ? HideTaskManagerViews()
+      : task_manager::TaskManagerMac::Hide();
 }
 
 }  // namespace chrome

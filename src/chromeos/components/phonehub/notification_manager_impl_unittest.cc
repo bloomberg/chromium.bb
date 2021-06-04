@@ -7,34 +7,33 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/phonehub/fake_message_sender.h"
 #include "chromeos/components/phonehub/fake_user_action_recorder.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace phonehub {
 namespace {
 
-const char kAppName[] = "Test App";
+const char16_t kAppName[] = u"Test App";
 const char kPackageName[] = "com.google.testapp";
 
-const char kTitle[] = "Test notification";
-const char kTextContent[] = "This is a test notification";
+const char16_t kTitle[] = u"Test notification";
+const char16_t kTextContent[] = u"This is a test notification";
 
 enum class NotificationState { kAdded, kUpdated, kRemoved };
 
 Notification CreateNotification(int64_t id) {
   return chromeos::phonehub::Notification(
       id,
-      chromeos::phonehub::Notification::AppMetadata(base::UTF8ToUTF16(kAppName),
-                                                    kPackageName,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
                                                     /*icon=*/gfx::Image()),
       base::Time::Now(), Notification::Importance::kDefault,
-      /*inline_reply_id=*/0, Notification::InteractionBehavior::kNone,
-      base::UTF8ToUTF16(kTitle), base::UTF8ToUTF16(kTextContent));
+      /*inline_reply_id=*/0, Notification::InteractionBehavior::kNone, kTitle,
+      kTextContent);
 }
 
 using multidevice_setup::mojom::Feature;
@@ -45,10 +44,10 @@ class FakeObserver : public NotificationManager::Observer {
   FakeObserver() = default;
   ~FakeObserver() override = default;
 
-  base::Optional<NotificationState> GetState(int64_t notification_id) const {
+  absl::optional<NotificationState> GetState(int64_t notification_id) const {
     const auto it = id_to_state_map_.find(notification_id);
     if (it == id_to_state_map_.end())
-      return base::nullopt;
+      return absl::nullopt;
     return it->second;
   }
 
@@ -109,7 +108,7 @@ class NotificationManagerImplTest : public testing::Test {
     return manager_->id_to_notification_map_.size();
   }
 
-  base::Optional<NotificationState> GetNotificationState(
+  absl::optional<NotificationState> GetNotificationState(
       int64_t notification_id) {
     return fake_observer_.GetState(notification_id);
   }

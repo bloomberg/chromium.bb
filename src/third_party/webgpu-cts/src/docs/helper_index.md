@@ -21,9 +21,29 @@ Generally, see:
 ## Index
 
 - TODO: Index existing helpers.
+- [Parameterization helpers](../src/common/framework/params_builder.ts) for `.cases()`/`.subcases()`.
+    - `poptions('key', [1, 2, 3])` creates an iterator over `{ key: 1 }, { key: 2 }, { key: 3 }`.
+    - `pbool('key')` creates an iterator over `{ key: true }, { key: false }`.
+    - `ParamsBuilder` is an object that iterates over params, e.g:
+        `const example = params().combine(poptions('x', [1, 2])).combine(poptions('y', [1, 2])`
+        produces `{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }, { x: 2, y: 2 }`.
+        - `params()`: creates a new `ParamsBuilder` with one item with no parameters: `{}`.
+        - `xs.combine(ys)`: cartesian product of the `ParamsBuilder` `xs` with the iterable `ys`.
+        - `xs.expand(x => ys)`: like `.combine`, but each `ys` can depend on the value of `x`.
+        - `xs.filter(x => boolean)`: filters the current items according to a predicate.
+        - `xs.unless(x => boolean)`: same as `.filter`, but inverted.
+        - `xs.exclude([ p1, p2 ])`: removes cases equalling `p1` or `p2`, e.g.:
+            `example.exclude([{ x: 2, y: 1 }])`
+            produces `{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }`.
 - [`GPUTest`](../src/webgpu/gpu_test.ts)
     - `selectDeviceForTextureFormatOrSkipTestCase`: Create device with texture format(s) required
-        extension(s). If the device creation fails, then skip the test for that format(s).
+        feature(s). If the device creation fails, then skip the test for that format(s).
+    - `selectDeviceForQueryTypeOrSkipTestCase`: Create device with query type(s) required
+        feature(s). If the device creation fails, then skip the test for that type(s).
+    - `expectSingleValueContents`: Expect a buffer's contents to be a single constant value,
+        specified as a TypedArrayBufferView.
+    - `checkSingleValueBuffer`: checks that an actual TypedArrayBufferView's contents are all a
+        single constant value, specified as a TypedArrayBufferView containing one element.
 - [`ValidationTest`](../src/webgpu/api/validation/validation_test.ts)
     - `createEncoder`: Generically creates non-pass, compute pass, render pass, or render bundle
         encoders. This allows callers to write code using methods common to multiple encoder types.

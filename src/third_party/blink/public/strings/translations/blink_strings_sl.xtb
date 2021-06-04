@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">pasica</translation>
 <translation id="145015347812617860">Št. elementov: <ph name="COUNT" /></translation>
 <translation id="1480676835519562650">Izbrati je mogoče več otrok, izbranih je toliko: <ph name="SELECTED" /> od <ph name="COUNT" />.</translation>
+<translation id="1588438908519853928">Običajen</translation>
 <translation id="1589122976691792535">območje</translation>
 <translation id="1591562245178063882">Ta mesec</translation>
 <translation id="1637811476055996098">Izberi datoteke</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">merilnik časa</translation>
 <translation id="3199563858620722075">kombinirano polje</translation>
 <translation id="3220661731597678625">trenutni korak</translation>
+<translation id="3321030238473337787">Hitrost predvajanja</translation>
 <translation id="3329013043687509092">Nasičenost</translation>
 <translation id="3450233048674729344">Vrednost mora biti manjša od <ph name="MAXIMUM" /> ali enaka.</translation>
 <translation id="3486220673238053218">opredelitev</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">menijska vrstica</translation>
 <translation id="4293574643247337246">glava strani</translation>
 <translation id="4360991593054037559">Vnesite veljavno vrednost. Najbližji veljavni vrednosti sta <ph name="VALID_VALUE_LOW" /> in <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">skrivanje menija za hitrost predvajanja</translation>
 <translation id="4384249794467006333">Ta slika ni označena. Odprite meni z več možnostmi v zgornjem desnem kotu, če želite dobiti opise slik.</translation>
 <translation id="4384583879834880242">Vprašanja</translation>
 <translation id="4444765639179266822">Videti je, da piše: <ph name="OCR_TEXT" /></translation>
@@ -147,6 +150,7 @@
 <translation id="512758898067543763">glava vrstice</translation>
 <translation id="5143125788380636750">epilog</translation>
 <translation id="5164977714490026579">Vrednost mora biti večja od <ph name="MINIMUM" /> ali enaka.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Vnesite nekaj in nato <ph name="ATSIGN" />. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>
 <translation id="5334352251556557839">Predstavnosti ni mogoče predvajati.</translation>
@@ -157,6 +161,7 @@
 <translation id="5453733299334684579">element drevesa</translation>
 <translation id="5466621249238537318">Izberite eno ali več datotek.</translation>
 <translation id="5468998798572797635">izhod iz celozaslonskega načina</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">izbirnik datuma</translation>
 <translation id="5537725057119320332">Predvajanje</translation>
 <translation id="5546461542133609677">vklop zvoka</translation>
@@ -168,6 +173,7 @@
 <translation id="5677946354068040947">več možnosti</translation>
 <translation id="576709008726043716">uvod</translation>
 <translation id="57838592816432529">Izklopi zvok</translation>
+<translation id="5786442179789148008">prikaz menija za hitrost predvajanja</translation>
 <translation id="5787939484346677755">razširjen, na voljo so možnosti samodokončanja.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="588258955323874662">Celozaslonsko</translation>
@@ -176,6 +182,7 @@
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5966707198760109579">Teden</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">pomikalnik</translation>
 <translation id="6011459053400940133">drsnik za glasnost</translation>
 <translation id="6015796118275082299">Leto</translation>
@@ -214,6 +221,7 @@
 <translation id="6843725295806269523">nemo</translation>
 <translation id="6885760532393684712">imenik</translation>
 <translation id="689129560213475294">kolofon</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">daljši citat</translation>
 <translation id="693476918119313863">glava</translation>
 <translation id="6941933287844615239">prenos predstavnosti</translation>
@@ -250,6 +258,7 @@
 <translation id="7745230546936012372">Če želite prejeti manjkajoče opise slike, odprite kontekstni meni.</translation>
 <translation id="7750228210027921155">Slika v sliki</translation>
 <translation id="775297008183122718">Neveljaven vnos</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">premor</translation>
 <translation id="7802800022689234070">trikotnik z dodatno vsebino</translation>
 <translation id="7852167693871241274">Drsnik za odtenek</translation>
@@ -263,6 +272,7 @@
 <translation id="8105797009065549151">sklicevanje na opombo</translation>
 <translation id="811583516810654505">Pridobivanje opisa …</translation>
 <translation id="8117451130807776954">Ta teden</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">llll</translation>
 <translation id="8208673686607688524">izbirnik lokalnega datuma in ure</translation>
 <translation id="8261464734335370856">Neveljavno črkovanje</translation>
@@ -287,6 +297,7 @@
 <translation id="8613126697340063924">upravljanje oddaljenega predvajanja</translation>
 <translation id="862370744433916922">podnaslov</translation>
 <translation id="8634971699417195529">Prikaz izbirnika meseca</translation>
+<translation id="8637593834423658414">1,75</translation>
 <translation id="8668988909814782445">Ovijanje vrstic</translation>
 <translation id="8711688047404765493">izhod</translation>
 <translation id="8750798805984357768">Izberite eno od teh možnosti.</translation>

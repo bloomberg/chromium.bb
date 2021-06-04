@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -44,6 +43,7 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -114,24 +114,6 @@ ImageDecodeAcceleratorStub::ImageDecodeAcceleratorStub(
   channel_->scheduler()->DisableSequence(sequence_);
 }
 
-bool ImageDecodeAcceleratorStub::OnMessageReceived(const IPC::Message& msg) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (!base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration) &&
-      !base::FeatureList::IsEnabled(
-          features::kVaapiWebPImageDecodeAcceleration)) {
-    return false;
-  }
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ImageDecodeAcceleratorStub, msg)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_ScheduleImageDecode,
-                        OnScheduleImageDecode)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void ImageDecodeAcceleratorStub::Shutdown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
@@ -149,15 +131,25 @@ ImageDecodeAcceleratorStub::~ImageDecodeAcceleratorStub() {
   DCHECK(!channel_);
 }
 
-void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
-    const GpuChannelMsg_ScheduleImageDecode_Params& decode_params,
+void ImageDecodeAcceleratorStub::ScheduleImageDecode(
+    mojom::ScheduleImageDecodeParamsPtr params,
     uint64_t release_count) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (!base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration) &&
+      !base::FeatureList::IsEnabled(
+          features::kVaapiWebPImageDecodeAcceleration)) {
+    return;
+  }
+
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
   if (!channel_) {
     // The channel is no longer available, so don't do anything.
     return;
   }
+
+  mojom::ScheduleImageDecodeParams& decode_params = *params;
 
   // Start the actual decode.
   worker_->Decode(
@@ -175,13 +167,13 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
   channel_->scheduler()->ScheduleTask(Scheduler::Task(
       sequence_,
       base::BindOnce(&ImageDecodeAcceleratorStub::ProcessCompletedDecode,
-                     base::WrapRefCounted(this), std::move(decode_params),
+                     base::WrapRefCounted(this), std::move(params),
                      release_count),
       {discardable_handle_sync_token} /* sync_token_fences */));
 }
 
 void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
-    GpuChannelMsg_ScheduleImageDecode_Params params,
+    mojom::ScheduleImageDecodeParamsPtr params_ptr,
     uint64_t decode_release_count) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
@@ -189,6 +181,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     // The channel is no longer available, so don't do anything.
     return;
   }
+
+  mojom::ScheduleImageDecodeParams& params = *params_ptr;
 
   DCHECK(!pending_completed_decodes_.empty());
   std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> completed_decode =
@@ -246,7 +240,7 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
 
   std::vector<sk_sp<SkImage>> plane_sk_images;
-  base::Optional<base::ScopedClosureRunner> notify_gl_state_changed;
+  absl::optional<base::ScopedClosureRunner> notify_gl_state_changed;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Right now, we only support YUV 4:2:0 for the output of the decoder (either
   // as YV12 or NV12).
@@ -333,7 +327,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
       plane_image =
           external_image_factory_for_testing_->CreateImageForGpuMemoryBuffer(
               std::move(plane_handle), plane_size, plane_format,
-              -1 /* client_id */, kNullSurfaceHandle);
+              gfx::BufferPlane::DEFAULT, -1 /* client_id */,
+              kNullSurfaceHandle);
     } else {
       auto plane_pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
           plane_size, plane_format,
@@ -401,7 +396,7 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
 
   {
     auto* gr_shader_cache = channel_->gpu_channel_manager()->gr_shader_cache();
-    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+    absl::optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (gr_shader_cache)
       cache_use.emplace(gr_shader_cache,
                         base::strict_cast<int32_t>(channel_->client_id()));

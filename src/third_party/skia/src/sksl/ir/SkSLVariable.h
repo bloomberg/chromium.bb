@@ -22,6 +22,7 @@ class VarDeclaration;
 
 namespace dsl {
 class DSLCore;
+class DSLFunction;
 } // namespace dsl
 
 enum class VariableStorage : int8_t {
@@ -53,6 +54,10 @@ public:
 
     const Modifiers& modifiers() const {
         return *fModifiers;
+    }
+
+    void setModifiers(const Modifiers* modifiers) {
+        fModifiers = modifiers;
     }
 
     bool isBuiltin() const {
@@ -89,6 +94,7 @@ private:
     using INHERITED = Symbol;
 
     friend class dsl::DSLCore;
+    friend class dsl::DSLFunction;
     friend class VariableReference;
 };
 

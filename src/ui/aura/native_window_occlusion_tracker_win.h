@@ -18,7 +18,6 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
@@ -184,7 +183,7 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
     // Returns true if |hwnd| is definitely on the current virtual desktop,
     // false if it's definitely not on the current virtual desktop, and nullopt
     // if we we can't tell for sure.
-    base::Optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
+    absl::optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
 
     static WindowOcclusionCalculator* instance_;
 

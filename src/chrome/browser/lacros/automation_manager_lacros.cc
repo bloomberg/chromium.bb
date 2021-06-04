@@ -19,7 +19,7 @@ AutomationManagerLacros::AutomationManagerLacros() {
     return;
 
   impl->GetRemote<crosapi::mojom::AutomationFactory>()->BindAutomation(
-      automation_client_receiver_.BindNewPipeAndPassRemote(),
+      automation_client_receiver_.BindNewPipeAndPassRemoteWithVersion(),
       automation_remote_.BindNewPipeAndPassReceiver());
 
   extensions::AutomationEventRouter::GetInstance()->RegisterRemoteRouter(this);
@@ -78,11 +78,14 @@ void AutomationManagerLacros::DispatchActionResult(
     const ui::AXActionData& data,
     bool result,
     content::BrowserContext* browser_context) {
-  // TODO(https://crbug.com/1185764): Implement me.
+  if (!automation_remote_)
+    return;
+
+  automation_remote_->DispatchActionResult(data, result);
 }
 void AutomationManagerLacros::DispatchGetTextLocationDataResult(
     const ui::AXActionData& data,
-    const base::Optional<gfx::Rect>& rect) {
+    const absl::optional<gfx::Rect>& rect) {
   // TODO(https://crbug.com/1185764): Implement me.
 }
 

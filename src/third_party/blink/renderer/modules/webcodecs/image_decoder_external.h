@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/image_decoder_core.h"
@@ -50,11 +51,11 @@ class MODULES_EXPORT ImageDecoderExternal final
 
   // image_decoder.idl implementation.
   ScriptPromise decode(const ImageDecodeOptions* options = nullptr);
-  ScriptPromise decodeMetadata();
   void reset(DOMException* exception = nullptr);
   void close();
   String type() const;
   bool complete() const;
+  ScriptPromise completed(ScriptState* script_state);
   ImageTrackList& tracks() const;
 
   // BytesConsumer::Client implementation.
@@ -75,7 +76,6 @@ class MODULES_EXPORT ImageDecoderExternal final
 
  private:
   void MaybeSatisfyPendingDecodes();
-  void MaybeSatisfyPendingMetadataDecodes();
 
   void OnDecodeReady(
       std::unique_ptr<ImageDecoderCore::ImageDecodeResult> result);
@@ -95,7 +95,7 @@ class MODULES_EXPORT ImageDecoderExternal final
   String mime_type_;
 
   // Copy of |preferAnimation| from |init_data_|.
-  base::Optional<bool> prefer_animation_;
+  absl::optional<bool> prefer_animation_;
 
   // Currently configured AnimationOption for |decoder_|.
   ImageDecoder::AnimationOption animation_option_ =
@@ -131,23 +131,32 @@ class MODULES_EXPORT ImageDecoderExternal final
   // List of tracks in this image. Filled in during OnMetadata().
   Member<ImageTrackList> tracks_;
 
+  // Set to true if we make it out of the constructor without an exception.
+  bool construction_succeeded_ = false;
+
   // Pending decode() requests.
-  struct DecodeRequest : public GarbageCollected<DecodeRequest> {
+  struct DecodeRequest final : public GarbageCollected<DecodeRequest> {
     DecodeRequest(ScriptPromiseResolver* resolver,
                   uint32_t frame_index,
                   bool complete_frames_only);
     void Trace(Visitor*) const;
+    bool IsFinal() const;
 
     Member<ScriptPromiseResolver> resolver;
     uint32_t frame_index;
     bool complete_frames_only;
     bool pending = false;
-    base::Optional<size_t> bytes_read_index;
+    absl::optional<size_t> bytes_read_index;
     Member<ImageDecodeResult> result;
+
+    absl::optional<String> range_error_message;
     Member<DOMException> exception;
   };
   HeapVector<Member<DecodeRequest>> pending_decodes_;
-  HeapVector<Member<ScriptPromiseResolver>> pending_metadata_decodes_;
+
+  using CompletedProperty =
+      ScriptPromiseProperty<ToV8UndefinedGenerator, Member<DOMException>>;
+  Member<CompletedProperty> completed_property_;
 
   // WeakPtrFactory used only for decode() requests. Invalidated upon decoding
   // errors or a call to reset().

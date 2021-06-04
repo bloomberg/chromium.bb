@@ -5,7 +5,7 @@
 import {assert} from 'chai';
 import {$$, assertNotNull, click, getBrowserAndPages, goToResource, step, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
+import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeAllocationProfile, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
 
 describe('The Memory Panel', async function() {
   // These tests render large chunks of data into DevTools and filter/search
@@ -54,7 +54,7 @@ describe('The Memory Panel', async function() {
   });
 
   // Flaky test
-  it.skip('[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
+  it.skipOnPlatforms(['mac'], '[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
     await goToResource('memory/event-listeners.html');
     await step('taking a heap snapshot', async () => {
       await navigateToMemoryTab();
@@ -225,5 +225,14 @@ describe('The Memory Panel', async function() {
     propertyNameElement.hover();
     const el = await waitFor('div.vbox.flex-auto.no-pointer-events');
     await waitFor('.source-code', el);
+  });
+
+  it('shows the flamechart for an allocation sample', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResource('memory/allocations.html');
+    await navigateToMemoryTab();
+    takeAllocationProfile(frontend);
+    changeAllocationSampleViewViaDropdown('Chart');
+    await waitFor('canvas.flame-chart-canvas');
   });
 });

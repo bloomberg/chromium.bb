@@ -1,8 +1,8 @@
 {
   "src/libANGLE/renderer/angle_format.py":
-    "32ba71942c0fd00e6807104f1bb80a3c",
+    "74d6c9842128293118ccf128aeae896a",
   "src/libANGLE/renderer/gen_load_functions_table.py":
-    "bbc2f2cbce34313d7c06a3511eff5a1f",
+    "c131c494e7e0b35b65a8a097b4b8e5ce",
   "src/libANGLE/renderer/load_functions_data.json":
     "912670e6835fbe5074533bbeba44ef02",
   "src/libANGLE/renderer/load_functions_table_autogen.cpp":

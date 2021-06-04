@@ -15,6 +15,9 @@ class GURL;
 class Profile;
 
 namespace web_app {
+
+class WebAppProvider;
+
 namespace test {
 
 // Start the WebAppProvider and subsystems, and wait for startup to complete.
@@ -22,12 +25,15 @@ namespace test {
 // unit tests, not browser tests.
 void AwaitStartWebAppProviderAndSubsystems(Profile* profile);
 
+// Wait until the provided WebAppProvider is ready.
+void WaitUntilReady(WebAppProvider* provider);
+
 AppId InstallDummyWebApp(Profile* profile,
                          const std::string& app_name,
                          const GURL& app_url);
 
-// Synchronous version of InstallManager::InstallWebAppFromInfo.
-// TODO (glenrob): Remove the duplicate of this in web_app_browsertest_util.h.
+// Synchronous version of InstallManager::InstallWebAppFromInfo. May be used in
+// unit tests and browser tests.
 AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
 
 }  // namespace test

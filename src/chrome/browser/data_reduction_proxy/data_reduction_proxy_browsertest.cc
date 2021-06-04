@@ -133,12 +133,9 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   std::string GetBody() { return GetBody(browser()); }
 
   std::string GetBody(Browser* browser) {
-    std::string body;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        browser->tab_strip_model()->GetActiveWebContents(),
-        "window.domAutomationController.send(document.body.textContent);",
-        &body));
-    return body;
+    return content::EvalJs(browser->tab_strip_model()->GetActiveWebContents(),
+                           "document.body.textContent;")
+        .ExtractString();
   }
 
   GURL GetURLWithMockHost(const net::EmbeddedTestServer& server,
@@ -185,13 +182,12 @@ std::string ReadSubresourceFromRenderer(Browser* browser,
     xhr.send();
     domAutomationController.send(xhr.responseText);
   }))";
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      base::StrCat({asynchronous_xhr ? asynchronous_script : synchronous_script,
-                    "('", url.spec(), "')"}),
-      &result));
-  return result;
+  return content::EvalJs(browser->tab_strip_model()->GetActiveWebContents(),
+                         base::StrCat({asynchronous_xhr ? asynchronous_script
+                                                        : synchronous_script,
+                                       "('", url.spec(), "')"}),
+                         content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      .ExtractString();
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
@@ -341,8 +337,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  auto* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  auto* storage_partition = browser()->profile()->GetDefaultStoragePartition();
   auto url_loader_factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
@@ -357,7 +352,5 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
           }));
   loop.Run();
 }
-
-
 
 }  // namespace data_reduction_proxy

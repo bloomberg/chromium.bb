@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/payments/migratable_card_view.h"
 
+#include "base/bind.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_dialog_view.h"
@@ -14,6 +15,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -24,7 +26,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace autofill {
 
@@ -119,7 +120,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
         // TODO(crbug/867194): Currently the ink drop animation circle is
         // cropped by the border of scroll bar view. Find a way to adjust the
         // format.
-        checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+        checkbox_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
         checkbox_->SetAssociatedLabel(card_description.get());
       }
       break;

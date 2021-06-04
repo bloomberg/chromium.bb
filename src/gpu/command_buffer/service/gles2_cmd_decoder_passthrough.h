@@ -497,7 +497,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   // Fail-fast version of BindPendingImages that operates on a single texture
   // that's specified by |client_id|.
   inline void BindPendingImageForClientIDIfNeeded(int client_id) {
-    scoped_refptr<TexturePassthrough> texture = nullptr;
+    scoped_refptr<TexturePassthrough> texture;
 
     // We could keep track of the number of |is_bind_pending| textures in
     // |resources_|, and elide all of this if it's zero.
@@ -682,7 +682,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
     base::TimeTicks commands_issued_timestamp;
 
     std::vector<base::OnceClosure> callbacks;
-    std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
+    std::unique_ptr<gl::GLFence> buffer_shadow_update_fence;
     BufferShadowUpdateMap buffer_shadow_updates;
     GLuint program_service_id = 0u;
   };
@@ -716,7 +716,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
     PendingReadPixels(PendingReadPixels&&);
     PendingReadPixels& operator=(PendingReadPixels&&);
 
-    std::unique_ptr<gl::GLFence> fence = nullptr;
+    std::unique_ptr<gl::GLFence> fence;
     GLuint buffer_service_id = 0;
     uint32_t pixels_size = 0;
     uint32_t pixels_shm_id = 0;

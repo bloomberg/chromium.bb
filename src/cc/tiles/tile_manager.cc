@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -30,6 +29,7 @@
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/tiles/tile.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -438,9 +438,17 @@ void TileManager::FinishTasksAndCleanUp() {
 
   global_state_ = GlobalStateThatImpactsTilePriority();
 
+  // This must be signalled before the Shutdown call below so that if there are
+  // any pending tasks on the worker thread that might be waiting on tasks
+  // posted to this thread they are cancelled.
+  shutdown_event_.Signal();
+
   // This cancels tasks if possible, finishes pending tasks, and release any
   // uninitialized resources.
   tile_task_manager_->Shutdown();
+
+  // Reset the signal since SetResources() might be called later.
+  shutdown_event_.Reset();
 
   raster_buffer_provider_->Shutdown();
 
@@ -480,6 +488,8 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   image_controller_.SetImageDecodeCache(image_decode_cache);
   tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
   raster_buffer_provider_ = raster_buffer_provider;
+
+  raster_buffer_provider_->SetShutdownEvent(&shutdown_event_);
 }
 
 void TileManager::Release(Tile* tile) {
@@ -952,7 +962,7 @@ void TileManager::PartitionImagesForCheckering(
     if (image_to_frame_index)
       (*image_to_frame_index)[image.stable_id()] = frame_index;
 
-    DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
+    DrawImage draw_image(*original_draw_image, tile->contents_scale_key(),
                          frame_index, raster_color_space, sdr_white_level);
     if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree))
       checkered_images->push_back(draw_image.paint_image());
@@ -975,7 +985,7 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
   for (const auto* original_draw_image : images_in_tile) {
     size_t frame_index = client_->GetFrameIndexForImage(
         original_draw_image->paint_image(), tree);
-    DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
+    DrawImage draw_image(*original_draw_image, tile->contents_scale_key(),
                          frame_index, raster_color_space, sdr_white_level);
     if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree)) {
       image_decode_queue->emplace_back(draw_image.paint_image(), decode_type);
@@ -1293,7 +1303,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
           has_at_raster_images, has_hardware_accelerated_jpeg_candidates,
           has_hardware_accelerated_webp_candidates);
 
-  base::Optional<PlaybackImageProvider::Settings> settings;
+  absl::optional<PlaybackImageProvider::Settings> settings;
   if (!skip_images) {
     settings.emplace();
     settings->images_to_skip = std::move(images_to_skip);

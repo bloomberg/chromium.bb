@@ -578,21 +578,24 @@ src_tools_linux_core2md_core2md_SOURCES = \
 	src/tools/linux/core2md/core2md.cc
 
 src_tools_linux_core2md_core2md_LDADD = \
-	src/client/linux/libbreakpad_client.a
+	src/client/linux/libbreakpad_client.a \
+	src/common/path_helper.o
 
 if HAVE_MEMFD_CREATE
 src_tools_linux_core_handler_core_handler_SOURCES = \
 	src/tools/linux/core_handler/core_handler.cc
 
 src_tools_linux_core_handler_core_handler_LDADD = \
-	src/client/linux/libbreakpad_client.a
+	src/client/linux/libbreakpad_client.a \
+	src/common/path_helper.o
 endif
 
 src_tools_linux_pid2md_pid2md_SOURCES = \
 	src/tools/linux/pid2md/pid2md.cc
 
 src_tools_linux_pid2md_pid2md_LDADD = \
-	src/client/linux/libbreakpad_client.a
+	src/client/linux/libbreakpad_client.a \
+	src/common/path_helper.o
 
 src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/dwarf_cfi_to_module.cc \
@@ -632,6 +635,7 @@ src_tools_linux_md2core_minidump_2_core_SOURCES = \
 
 src_tools_linux_symupload_minidump_upload_SOURCES = \
 	src/common/linux/http_upload.cc \
+	src/common/path_helper.cc \
 	src/tools/linux/symupload/minidump_upload.cc
 src_tools_linux_symupload_minidump_upload_LDADD = -ldl
 
@@ -644,6 +648,7 @@ src_tools_linux_symupload_sym_upload_SOURCES = \
 	src/common/linux/symbol_collector_client.h \
 	src/common/linux/symbol_upload.cc \
 	src/common/linux/symbol_upload.h \
+	src/common/path_helper.cc \
 	src/tools/linux/symupload/sym_upload.cc
 src_tools_linux_symupload_sym_upload_LDADD = -ldl
 
@@ -1260,6 +1265,7 @@ noinst_SCRIPTS = $(check_SCRIPTS)
 src_processor_minidump_dump_SOURCES = \
 	src/processor/minidump_dump.cc
 src_processor_minidump_dump_LDADD = \
+	src/common/path_helper.o \
 	src/processor/basic_code_modules.o \
 	src/processor/convert_old_arm64_context.o \
 	src/processor/dump_context.o \

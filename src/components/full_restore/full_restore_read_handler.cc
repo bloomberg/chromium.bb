@@ -156,17 +156,6 @@ bool FullRestoreReadHandler::HasWindowInfo(int32_t restore_window_id) {
 }
 
 std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(
-    const base::FilePath& profile_path,
-    const std::string& app_id,
-    int32_t restore_window_id) {
-  auto it = profile_path_to_restore_data_.find(profile_path);
-  if (it == profile_path_to_restore_data_.end())
-    return nullptr;
-
-  return it->second->GetWindowInfo(app_id, restore_window_id);
-}
-
-std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(
     aura::Window* window) {
   if (!window)
     return nullptr;
@@ -200,7 +189,7 @@ int32_t FullRestoreReadHandler::GetArcRestoreWindowId(int32_t task_id) {
   return arc_read_handler_->GetArcRestoreWindowId(task_id);
 }
 
-bool FullRestoreReadHandler::ModifyWidgetParams(
+void FullRestoreReadHandler::ModifyWidgetParams(
     int32_t restore_window_id,
     views::Widget::InitParams* out_params) {
   DCHECK(out_params);
@@ -217,7 +206,7 @@ bool FullRestoreReadHandler::ModifyWidgetParams(
     window_info = GetWindowInfo(restore_window_id);
   }
   if (!window_info)
-    return false;
+    return;
 
   if (window_info->activation_index) {
     const int32_t index = *window_info->activation_index;
@@ -229,7 +218,8 @@ bool FullRestoreReadHandler::ModifyWidgetParams(
     // are shown are activated by default. Force the widget to not be
     // activatable; the activation will be restored in ash once the window is
     // launched.
-    out_params->activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+    out_params->init_properties_container.SetProperty(
+        kLaunchedFromFullRestoreKey, true);
   }
   if (window_info->desk_id)
     out_params->workspace = base::NumberToString(*window_info->desk_id);
@@ -254,8 +244,6 @@ bool FullRestoreReadHandler::ModifyWidgetParams(
         base::BindOnce(&FullRestoreReadHandler::OnWidgetInitialized,
                        weak_factory_.GetWeakPtr(), delegate));
   }
-
-  return true;
 }
 
 int32_t FullRestoreReadHandler::GetArcSessionId() {
@@ -267,6 +255,17 @@ void FullRestoreReadHandler::SetArcSessionIdForWindowId(int32_t arc_session_id,
                                                         int32_t window_id) {
   DCHECK(arc_read_handler_);
   arc_read_handler_->SetArcSessionIdForWindowId(arc_session_id, window_id);
+}
+
+std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    int32_t restore_window_id) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return nullptr;
+
+  return it->second->GetWindowInfo(app_id, restore_window_id);
 }
 
 std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(

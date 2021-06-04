@@ -185,42 +185,42 @@ ScopedVariant SELF(CHILDID_SELF);
                                      expected_property_values);             \
   }
 
-#define EXPECT_UIA_PROPERTY_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(                   \
-    node, array_property_id, element_test_property_id,                         \
-    expected_property_values)                                                  \
-  {                                                                            \
-    ScopedVariant array;                                                       \
-    ASSERT_HRESULT_SUCCEEDED(                                                  \
-        node->GetPropertyValue(array_property_id, array.Receive()));           \
-    ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                            \
-    ASSERT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                       \
-    LONG array_lower_bound;                                                    \
-    ASSERT_HRESULT_SUCCEEDED(                                                  \
-        SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));       \
-    LONG array_upper_bound;                                                    \
-    ASSERT_HRESULT_SUCCEEDED(                                                  \
-        SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));       \
-    IUnknown** array_data;                                                     \
-    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                            \
-        array.ptr()->parray, reinterpret_cast<void**>(&array_data)));          \
-    size_t count = array_upper_bound - array_lower_bound + 1;                  \
-    ASSERT_EQ(expected_property_values.size(), count);                         \
-    std::vector<std::wstring> property_values;                                 \
-    for (size_t i = 0; i < count; ++i) {                                       \
-      ComPtr<IRawElementProviderSimple> element;                               \
-      ASSERT_HRESULT_SUCCEEDED(                                                \
-          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));              \
-      ScopedVariant actual;                                                    \
-      ASSERT_HRESULT_SUCCEEDED(element->GetPropertyValue(                      \
-          element_test_property_id, actual.Receive()));                        \
-      ASSERT_EQ(VT_BSTR, actual.type());                                       \
-      ASSERT_NE(nullptr, actual.ptr()->bstrVal);                               \
-      property_values.push_back(std::wstring(                                  \
-          V_BSTR(actual.ptr()), SysStringLen(V_BSTR(actual.ptr()))));          \
-    }                                                                          \
-    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray));    \
-    EXPECT_THAT(property_values,                                               \
-                testing::UnorderedElementsAreArray(expected_property_values)); \
+#define EXPECT_UIA_PROPERTY_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(                \
+    node, array_property_id, element_test_property_id,                      \
+    expected_property_values)                                               \
+  {                                                                         \
+    ScopedVariant array;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        node->GetPropertyValue(array_property_id, array.Receive()));        \
+    ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                         \
+    ASSERT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                    \
+    LONG array_lower_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));    \
+    LONG array_upper_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));    \
+    IUnknown** array_data;                                                  \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
+        array.ptr()->parray, reinterpret_cast<void**>(&array_data)));       \
+    size_t count = array_upper_bound - array_lower_bound + 1;               \
+    ASSERT_EQ(expected_property_values.size(), count);                      \
+    std::vector<std::wstring> property_values;                              \
+    for (size_t i = 0; i < count; ++i) {                                    \
+      ComPtr<IRawElementProviderSimple> element;                            \
+      ASSERT_HRESULT_SUCCEEDED(                                             \
+          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));           \
+      ScopedVariant actual;                                                 \
+      ASSERT_HRESULT_SUCCEEDED(element->GetPropertyValue(                   \
+          element_test_property_id, actual.Receive()));                     \
+      ASSERT_EQ(VT_BSTR, actual.type());                                    \
+      ASSERT_NE(nullptr, actual.ptr()->bstrVal);                            \
+      property_values.push_back(std::wstring(                               \
+          V_BSTR(actual.ptr()), SysStringLen(V_BSTR(actual.ptr()))));       \
+    }                                                                       \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray)); \
+    EXPECT_THAT(property_values, ::testing::UnorderedElementsAreArray(      \
+                                     expected_property_values));            \
   }
 
 MockIRawElementProviderSimple::MockIRawElementProviderSimple() = default;
@@ -264,7 +264,8 @@ IFACEMETHODIMP MockIRawElementProviderSimple::get_HostRawElementProvider(
   return E_NOTIMPL;
 }
 
-AXPlatformNodeWinTest::AXPlatformNodeWinTest() {
+AXPlatformNodeWinTest::AXPlatformNodeWinTest()
+    : ax_embedded_object_behavior_(AXEmbeddedObjectBehavior::kExposeCharacter) {
   scoped_feature_list_.InitAndEnableFeature(features::kIChromeAccessible);
 }
 
@@ -279,6 +280,7 @@ void AXPlatformNodeWinTest::TearDown() {
   ax_fragment_root_.reset(nullptr);
   DestroyTree();
   TestAXNodeWrapper::SetGlobalIsWebContent(false);
+  TestAXNodeWrapper::ResetGlobalState();
   ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
 }
 
@@ -627,6 +629,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleAccValue) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kTextField;
+  root.AddState(ax::mojom::State::kEditable);
   root.AddStringAttribute(ax::mojom::StringAttribute::kValue, "Value");
   Init(root);
 
@@ -1968,6 +1971,7 @@ TEST_F(AXPlatformNodeWinTest,
   AXNodeData child1;
   child1.id = 2;
   child1.role = ax::mojom::Role::kTextField;
+  child1.AddState(ax::mojom::State::kEditable);
   child1.AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds, {3});
   root.child_ids.push_back(2);
 
@@ -4149,6 +4153,38 @@ TEST_F(AXPlatformNodeWinTest,
                      UIA_IsControlElementPropertyId, false);
 }
 
+TEST_F(AXPlatformNodeWinTest, UIAGetAnnotationObjectsPropertyId) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds, {2, 3});
+
+  AXNodeData highlighted;
+  highlighted.id = 2;
+  highlighted.role = ax::mojom::Role::kMark;
+  highlighted.SetName("highlighted");
+  root.child_ids.push_back(highlighted.id);
+
+  AXNodeData comment;
+  comment.id = 3;
+  comment.role = ax::mojom::Role::kComment;
+  comment.SetName("comment");
+  root.child_ids.push_back(comment.id);
+
+  Init(root, highlighted, comment);
+  ComPtr<IRawElementProviderSimple> root_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootAsAXNode());
+
+  ScopedVariant array;
+  ASSERT_HRESULT_SUCCEEDED(root_node->GetPropertyValue(
+      UIA_AnnotationObjectsPropertyId, array.Receive()));
+  ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());
+  std::vector<std::wstring> expected_names = {L"highlighted", L"comment"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(array.ptr()->parray, UIA_NamePropertyId,
+                                   expected_names);
+}
+
 TEST_F(AXPlatformNodeWinTest, UIAGetControllerForPropertyId) {
   AXNodeData root;
   root.id = 1;
@@ -4562,6 +4598,7 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_HelpText) {
   AXNodeData input1;
   input1.id = 2;
   input1.role = ax::mojom::Role::kTextField;
+  input1.AddState(ax::mojom::State::kEditable);
   input1.SetName("name-from-title");
   input1.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
                          static_cast<int>(ax::mojom::NameFrom::kTitle));
@@ -4573,6 +4610,7 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_HelpText) {
   AXNodeData input2;
   input2.id = 3;
   input2.role = ax::mojom::Role::kTextField;
+  input2.AddState(ax::mojom::State::kEditable);
   input2.SetName("name-from-title");
   input2.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
                          static_cast<int>(ax::mojom::NameFrom::kTitle));
@@ -4582,6 +4620,7 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_HelpText) {
   AXNodeData input3;
   input3.id = 4;
   input3.role = ax::mojom::Role::kTextField;
+  input3.AddState(ax::mojom::State::kEditable);
   input3.SetName("name-from-placeholder");
   input3.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
                          static_cast<int>(ax::mojom::NameFrom::kPlaceholder));
@@ -4591,6 +4630,7 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_HelpText) {
   AXNodeData input4;
   input4.id = 5;
   input4.role = ax::mojom::Role::kTextField;
+  input4.AddState(ax::mojom::State::kEditable);
   input4.SetName("name-from-attribute");
   input4.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
                          static_cast<int>(ax::mojom::NameFrom::kAttribute));
@@ -4602,6 +4642,7 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_HelpText) {
   AXNodeData input5;
   input5.id = 6;
   input5.role = ax::mojom::Role::kTextField;
+  input5.AddState(ax::mojom::State::kEditable);
   input5.SetName("name-from-attribute");
   input5.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
                          static_cast<int>(ax::mojom::NameFrom::kAttribute));
@@ -4703,8 +4744,10 @@ TEST_F(AXPlatformNodeWinTest, GetPropertyValue_IsControlElement) {
                                     true);
   update.nodes[12].id = 13;
   update.nodes[12].role = ax::mojom::Role::kGenericContainer;
-  update.nodes[12].AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot,
-                                    true);
+  update.nodes[12].AddState(ax::mojom::State::kEditable);
+  update.nodes[12].AddState(ax::mojom::State::kRichlyEditable);
+  update.nodes[12].AddBoolAttribute(
+      ax::mojom::BoolAttribute::kContentEditableRoot, true);
   update.nodes[13].id = 14;
   update.nodes[13].role = ax::mojom::Role::kGenericContainer;
   update.nodes[13].SetName("name");
@@ -5074,6 +5117,273 @@ TEST_F(AXPlatformNodeWinTest, UIANavigate) {
                nullptr);
 }
 
+TEST_F(AXPlatformNodeWinTest, IAnnotationProvider) {
+  // rootWebArea
+  // ++mark detailsIds=comment, footnote, definition
+  // ++++staticText name='highlighted 1'
+  // ++comment
+  // ++++staticText name='comment 1'
+  // ++docFootnote
+  // ++++staticText name="footnote"
+  // ++definition
+  // ++button
+
+  AXNodeData root;
+  AXNodeData highlighted1;
+  AXNodeData highlighted1_text;
+  AXNodeData comment1;
+  AXNodeData comment1_text;
+  AXNodeData footnote;
+  AXNodeData footnote_text;
+  AXNodeData definition;
+  AXNodeData button;
+
+  root.id = 1;
+  highlighted1.id = 2;
+  highlighted1_text.id = 3;
+  comment1.id = 4;
+  comment1_text.id = 5;
+  footnote.id = 6;
+  footnote_text.id = 7;
+  definition.id = 8;
+  button.id = 9;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.child_ids = {highlighted1.id, comment1.id, footnote.id, definition.id,
+                    button.id};
+
+  highlighted1.role = ax::mojom::Role::kMark;
+  highlighted1.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds,
+                                   {comment1.id, footnote.id, definition.id});
+  highlighted1.child_ids = {highlighted1_text.id};
+
+  highlighted1_text.role = ax::mojom::Role::kStaticText;
+  highlighted1_text.SetName("highlighted 1");
+
+  comment1.role = ax::mojom::Role::kComment;
+  comment1.child_ids = {comment1_text.id};
+
+  comment1_text.role = ax::mojom::Role::kStaticText;
+  comment1_text.SetName("comment 1");
+
+  footnote.role = ax::mojom::Role::kDocFootnote;
+  footnote.child_ids = {footnote_text.id};
+
+  footnote_text.role = ax::mojom::Role::kStaticText;
+  footnote_text.SetName("highligthed 2");
+
+  definition.role = ax::mojom::Role::kDefinition;
+  button.role = ax::mojom::Role::kButton;
+
+  Init(root, highlighted1, highlighted1_text, comment1, comment1_text, footnote,
+       footnote_text, definition, button);
+
+  ComPtr<IRawElementProviderSimple> highlighted1_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[0]);
+  ComPtr<IRawElementProviderSimple> comment1_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[1]);
+  ComPtr<IRawElementProviderSimple> footnote_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[2]);
+  ComPtr<IRawElementProviderSimple> definition_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[3]);
+  ComPtr<IRawElementProviderSimple> button_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[4]);
+  ComPtr<IAnnotationProvider> annotation_provider;
+  ComPtr<IRawElementProviderSimple> target;
+  int annotation_type;
+  ScopedBstr name;
+
+  {
+    // |highlighted1_node| with Role::kMark should not support
+    // IAnnotationProvider, since it does not have a relation back to the
+    // target.
+    EXPECT_HRESULT_SUCCEEDED(highlighted1_node->GetPatternProvider(
+        UIA_AnnotationPatternId, &annotation_provider));
+    ASSERT_EQ(nullptr, annotation_provider.Get());
+    annotation_provider.Reset();
+  }
+
+  {
+    // |comment1_node| with Role::kComment should support IAnnotationProvider.
+    EXPECT_HRESULT_SUCCEEDED(comment1_node->GetPatternProvider(
+        UIA_AnnotationPatternId, &annotation_provider));
+    ASSERT_NE(nullptr, annotation_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeId(&annotation_type));
+    EXPECT_EQ(AnnotationType_Comment, annotation_type);
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeName(name.Receive()));
+    // For common annotation type such as Comment, we return empty string for
+    // the type name, since UIA will provide a default name.
+    EXPECT_EQ(nullptr, name.Get());
+
+    // Retrieve the target from |comment1_node| and verify that it is
+    // |highlighted1_node|.
+    EXPECT_HRESULT_SUCCEEDED(annotation_provider->get_Target(&target));
+    EXPECT_EQ(highlighted1_node.Get(), target.Get());
+    annotation_provider.Reset();
+    target.Reset();
+    name.Release();
+  }
+
+  {
+    // |footnote_node| with Role::kDocFootnote should support
+    // IAnnotationProvider.
+    EXPECT_HRESULT_SUCCEEDED(footnote_node->GetPatternProvider(
+        UIA_AnnotationPatternId, &annotation_provider));
+    ASSERT_NE(nullptr, annotation_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeId(&annotation_type));
+    EXPECT_EQ(AnnotationType_Footnote, annotation_type);
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeName(name.Receive()));
+    // For common annotation type such as Footnote, we return empty string for
+    // the type name, since UIA will provide a default name.
+    EXPECT_EQ(nullptr, name.Get());
+
+    // Retrieve the target from |footnote_node| and verify that it is
+    // |highlighted1_node|.
+    EXPECT_HRESULT_SUCCEEDED(annotation_provider->get_Target(&target));
+    EXPECT_EQ(highlighted1_node.Get(), target.Get());
+    annotation_provider.Reset();
+    target.Reset();
+    name.Release();
+  }
+
+  {
+    // |definition_node| with Role::kDefinition should support
+    // IAnnotationProvider.
+    EXPECT_HRESULT_SUCCEEDED(definition_node->GetPatternProvider(
+        UIA_AnnotationPatternId, &annotation_provider));
+    ASSERT_NE(nullptr, annotation_provider.Get());
+    // AnnotationType for Role::kDefinition is currently not implemented, so map
+    // it to AnnotationType_Unknown.
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeId(&annotation_type));
+    EXPECT_EQ(AnnotationType_Unknown, annotation_type);
+    EXPECT_HRESULT_SUCCEEDED(
+        annotation_provider->get_AnnotationTypeName(name.Receive()));
+    // Role::kDefinition has AnnotationType_Unknown, we explicitly return the
+    // type name and should be "definition".
+    EXPECT_STREQ(L"definition", name.Get());
+
+    // Retrieve the target from |definition_node| and verify that it is
+    // |highlighted_node|.
+    EXPECT_HRESULT_SUCCEEDED(annotation_provider->get_Target(&target));
+    EXPECT_EQ(highlighted1_node.Get(), target.Get());
+    annotation_provider.Reset();
+    target.Reset();
+    name.Release();
+  }
+
+  {
+    // |button_node| with Role::kButton should not support IAnnotationProvider.
+    EXPECT_HRESULT_SUCCEEDED(button_node->GetPatternProvider(
+        UIA_AnnotationPatternId, &annotation_provider));
+    ASSERT_EQ(nullptr, annotation_provider.Get());
+  }
+}
+
+TEST_F(AXPlatformNodeWinTest, IAnnotationProviderMultipleTargets) {
+  // rootWebArea
+  // ++mark detailsIds=comment
+  // ++++staticText name='highlighted 1'
+  // ++mark detailsIds=comment
+  // ++++staticText name="highlighted 2"
+  // ++docEndnote detailsIds=comment
+  // ++++staticText name="endnote"
+  // ++comment
+  // ++++staticText name='comment 1'
+
+  AXNodeData root;
+  AXNodeData highlighted1;
+  AXNodeData highlighted1_text;
+  AXNodeData highlighted2;
+  AXNodeData highlighted2_text;
+  AXNodeData endnote;
+  AXNodeData endnote_text;
+  AXNodeData comment1;
+  AXNodeData comment1_text;
+
+  root.id = 1;
+  highlighted1.id = 2;
+  highlighted1_text.id = 3;
+  highlighted2.id = 4;
+  highlighted2_text.id = 5;
+  endnote.id = 6;
+  endnote_text.id = 7;
+  comment1.id = 8;
+  comment1_text.id = 9;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.child_ids = {highlighted1.id, highlighted2.id, endnote.id, comment1.id};
+
+  highlighted1.role = ax::mojom::Role::kMark;
+  highlighted1.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds,
+                                   {comment1.id});
+  highlighted1.child_ids = {highlighted1_text.id};
+
+  highlighted1_text.role = ax::mojom::Role::kStaticText;
+  highlighted1_text.SetName("highlighted 1");
+
+  highlighted2.role = ax::mojom::Role::kMark;
+  highlighted2.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds,
+                                   {comment1.id});
+  highlighted2.child_ids = {highlighted2_text.id};
+
+  highlighted2_text.role = ax::mojom::Role::kStaticText;
+  highlighted2_text.SetName("highlighted 2");
+
+  endnote.role = ax::mojom::Role::kDocEndnote;
+  endnote.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds,
+                              {comment1.id});
+  endnote.child_ids = {endnote_text.id};
+
+  endnote_text.role = ax::mojom::Role::kStaticText;
+  endnote_text.SetName("endnote");
+
+  comment1.role = ax::mojom::Role::kComment;
+  comment1.child_ids = {comment1_text.id};
+
+  comment1_text.role = ax::mojom::Role::kStaticText;
+  comment1_text.SetName("comment 1");
+
+  Init(root, highlighted1, highlighted1_text, highlighted2, highlighted2_text,
+       endnote, endnote_text, comment1, comment1_text);
+
+  ComPtr<IRawElementProviderSimple> highlighted1_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[0]);
+  ComPtr<IRawElementProviderSimple> comment1_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootAsAXNode()->children()[3]);
+
+  ComPtr<IAnnotationProvider> annotation_provider;
+  ComPtr<IRawElementProviderSimple> target;
+  int annotation_type;
+
+  // |comment1_node| with Role::kComment should support IAnnotationProvider.
+  EXPECT_HRESULT_SUCCEEDED(comment1_node->GetPatternProvider(
+      UIA_AnnotationPatternId, &annotation_provider));
+  ASSERT_NE(nullptr, annotation_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      annotation_provider->get_AnnotationTypeId(&annotation_type));
+  EXPECT_EQ(AnnotationType_Comment, annotation_type);
+
+  // |comment1_node| is set up as the annotation for both |highlighted1_node|
+  // and |highlighted2_node|, which means it has two targets. Since get_Target
+  // only returns one target, verify that it is |highlighted1_node|.
+  EXPECT_HRESULT_SUCCEEDED(annotation_provider->get_Target(&target));
+  EXPECT_EQ(highlighted1_node.Get(), target.Get());
+}
+
 TEST_F(AXPlatformNodeWinTest, ISelectionProviderCanSelectMultipleDefault) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
@@ -5262,6 +5572,7 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
   AXNodeID child3_id = 4;
   child3.id = child3_id;
   child3.role = ax::mojom::Role::kTextField;
+  child3.AddState(ax::mojom::State::kEditable);
   root.child_ids.push_back(child3_id);
 
   AXNodeData child4;
@@ -5297,7 +5608,7 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
 
 TEST_F(AXPlatformNodeWinTest, UIALandmarkType) {
   auto TestLandmarkType = [this](ax::mojom::Role node_role,
-                                 base::Optional<LONG> expected_landmark_type,
+                                 absl::optional<LONG> expected_landmark_type,
                                  const std::string& node_name = {}) {
     AXNodeData root_data;
     root_data.id = 1;
@@ -5330,7 +5641,7 @@ TEST_F(AXPlatformNodeWinTest, UIALandmarkType) {
   TestLandmarkType(ax::mojom::Role::kForm, UIA_FormLandmarkTypeId, "name");
 
   // Only named regions should be exposed as landmarks.
-  TestLandmarkType(ax::mojom::Role::kRegion, {});
+  // Blink handles this, and will not pass a nameless region as a Role::kRegion.
   TestLandmarkType(ax::mojom::Role::kRegion, UIA_CustomLandmarkTypeId, "name");
 
   TestLandmarkType(ax::mojom::Role::kGroup, {});
@@ -5676,8 +5987,6 @@ TEST_F(AXPlatformNodeWinTest, GetPatternProviderSupportedPatterns) {
   update.nodes[1].id = text_field_with_combo_box_id;
   update.nodes[1].role = ax::mojom::Role::kTextFieldWithComboBox;
   update.nodes[1].AddState(ax::mojom::State::kEditable);
-  update.nodes[1].AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot,
-                                   true);
   update.nodes[2].id = meter_id;
   update.nodes[2].role = ax::mojom::Role::kMeter;
   update.nodes[3].id = group_with_scroll_id;
@@ -6255,10 +6564,10 @@ TEST_F(AXPlatformNodeWinTest,
     EXPECT_NE(expandcollapse_provider.Get(), nullptr);
     EXPECT_HRESULT_SUCCEEDED(
         expandcollapse_provider->get_ExpandCollapseState(&state));
-    SCOPED_TRACE(testing::Message()
-                 << "node index: " << i << ", Actual Expanded/Collapsed State: "
-                 << state << ", Expected Expanded/Collapsed State: "
-                 << node_expected_state[i]);
+    SCOPED_TRACE(
+        ::testing::Message()
+        << "node index: " << i << ", Actual Expanded/Collapsed State: " << state
+        << ", Expected Expanded/Collapsed State: " << node_expected_state[i]);
     EXPECT_EQ(node_expected_state[i], state);
   }
 }
@@ -6800,6 +7109,7 @@ TEST_F(AXPlatformNodeWinTest, IValueProvider_GetValue) {
   AXNodeData child3;
   child3.id = 4;
   child3.role = ax::mojom::Role::kTextField;
+  child3.AddState(ax::mojom::State::kEditable);
   child3.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
   child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
                          static_cast<int>(ax::mojom::Restriction::kReadOnly));
@@ -6865,12 +7175,14 @@ TEST_F(AXPlatformNodeWinTest, IValueProvider_SetValue) {
   AXNodeData child2;
   child2.id = 3;
   child2.role = ax::mojom::Role::kTextField;
+  child2.AddState(ax::mojom::State::kEditable);
   child2.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
   root.child_ids.push_back(child2.id);
 
   AXNodeData child3;
   child3.id = 4;
   child3.role = ax::mojom::Role::kTextField;
+  child3.AddState(ax::mojom::State::kEditable);
   child3.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
   child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
                          static_cast<int>(ax::mojom::Restriction::kReadOnly));
@@ -6922,6 +7234,7 @@ TEST_F(AXPlatformNodeWinTest, IValueProvider_IsReadOnly) {
   AXNodeData child2;
   child2.id = 3;
   child2.role = ax::mojom::Role::kTextField;
+  child2.AddState(ax::mojom::State::kEditable);
   child2.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
                          static_cast<int>(ax::mojom::Restriction::kReadOnly));
   root.child_ids.push_back(child2.id);
@@ -6929,6 +7242,7 @@ TEST_F(AXPlatformNodeWinTest, IValueProvider_IsReadOnly) {
   AXNodeData child3;
   child3.id = 4;
   child3.role = ax::mojom::Role::kTextField;
+  child3.AddState(ax::mojom::State::kEditable);
   child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
                          static_cast<int>(ax::mojom::Restriction::kDisabled));
   root.child_ids.push_back(child3.id);
@@ -7121,7 +7435,7 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_BulkFetch) {
 
   // Note: base::JSONReader is fine for unit tests, but production code
   // that parses untrusted JSON should always use DataDecoder instead.
-  base::Optional<base::Value> result =
+  absl::optional<base::Value> result =
       base::JSONReader::Read(response, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->FindKey("role"));

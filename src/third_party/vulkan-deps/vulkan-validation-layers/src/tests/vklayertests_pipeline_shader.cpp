@@ -3069,7 +3069,7 @@ TEST_F(VkLayerTest, VUID_VkVertexInputAttributeDescription_offset_00622) {
 TEST_F(VkLayerTest, NumSamplesMismatch) {
     // Create CommandBuffer where MSAA samples doesn't match RenderPass
     // sampleCount
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "Num samples mismatch! ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-rasterizationSamples-04740");
 
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -3663,9 +3663,176 @@ TEST_F(VkLayerTest, CreatePipelineCheckShaderPushConstantNotDeclared) {
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {}, {push_constant_range});
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-PushConstantOutOfRange");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-layout-00756");
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidPushConstantRange) {
+    TEST_DESCRIPTION("Invalid use of VkPushConstantRange structs.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkPhysicalDeviceProperties device_props = {};
+    vk::GetPhysicalDeviceProperties(gpu(), &device_props);
+    // will be at least 256 as required from the spec
+    const uint32_t maxPushConstantsSize = device_props.limits.maxPushConstantsSize;
+
+    VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+    VkPushConstantRange push_constant_range = {0, 0, 4};
+    VkPipelineLayoutCreateInfo pipeline_layout_info{
+        VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0, 0, nullptr, 1, &push_constant_range};
+
+    // stageFlags of 0
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-stageFlags-requiredbitmask");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // offset over limit
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, maxPushConstantsSize, 8};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-offset-00294");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-size-00298");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // offset not multiple of 4
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 1, 8};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-offset-00295");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // size of 0
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, 0};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-size-00296");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // size not multiple of 4
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, 7};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-size-00297");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // size over limit
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, maxPushConstantsSize + 4};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-size-00298");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // size over limit of non-zero offset
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 4, maxPushConstantsSize};
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-size-00298");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+
+    // Sanity check its a valid range before making duplicate
+    push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, maxPushConstantsSize};
+    m_errorMonitor->ExpectSuccess();
+    ASSERT_VK_SUCCESS(vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, NULL, &pipeline_layout));
+    vk::DestroyPipelineLayout(m_device->device(), pipeline_layout, nullptr);
+    m_errorMonitor->VerifyNotFound();
+
+    // Duplicate ranges
+    VkPushConstantRange push_constant_range_duplicate[2] = {push_constant_range, push_constant_range};
+    pipeline_layout_info.pushConstantRangeCount = 2;
+    pipeline_layout_info.pPushConstantRanges = push_constant_range_duplicate;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineLayoutCreateInfo-pPushConstantRanges-00292");
+    vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_info, nullptr, &pipeline_layout);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidCmdPushConstantRange) {
+    TEST_DESCRIPTION("Invalid use of VkPushConstantRange values in vkCmdPushConstants.");
+
+    if (!EnableDeviceProfileLayer()) {
+        printf("%s Failed to enable device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    PFN_vkSetPhysicalDeviceLimitsEXT fpvkSetPhysicalDeviceLimitsEXT = nullptr;
+    PFN_vkGetOriginalPhysicalDeviceLimitsEXT fpvkGetOriginalPhysicalDeviceLimitsEXT = nullptr;
+
+    // Load required functions
+    if (!LoadDeviceProfileLayer(fpvkSetPhysicalDeviceLimitsEXT, fpvkGetOriginalPhysicalDeviceLimitsEXT)) {
+        printf("%s Failed to device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    // Set limit to be same max as the shader usages
+    const uint32_t maxPushConstantsSize = 16;
+    VkPhysicalDeviceProperties props;
+    fpvkGetOriginalPhysicalDeviceLimitsEXT(gpu(), &props.limits);
+    props.limits.maxPushConstantsSize = maxPushConstantsSize;
+    fpvkSetPhysicalDeviceLimitsEXT(gpu(), &props.limits);
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitViewport());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    m_errorMonitor->ExpectSuccess();
+    char const *const vsSource =
+        "#version 450\n"
+        "layout(push_constant, std430) uniform foo { float x[4]; } constants;\n"
+        "void main(){\n"
+        "   gl_Position = vec4(constants.x[0]);\n"
+        "}\n";
+
+    VkShaderObj const vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkShaderObj const fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+
+    // Set up a push constant range
+    VkPushConstantRange push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, maxPushConstantsSize};
+    const VkPipelineLayoutObj pipeline_layout(m_device, {}, {push_constant_range});
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
+    pipe.InitState();
+    pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {}, {push_constant_range});
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyNotFound();
+
+    const float data[16] = {};  // dummy data to match shader size
+
+    m_commandBuffer->begin();
+
+    // size of 0
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-size-arraylength");
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT, 0, 0, data);
+    m_errorMonitor->VerifyFound();
+
+    // offset not multiple of 4
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-offset-00368");
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT, 1, 4, data);
+    m_errorMonitor->VerifyFound();
+
+    // size not multiple of 4
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-size-00369");
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT, 0, 5, data);
+    m_errorMonitor->VerifyFound();
+
+    // offset at limit
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-offset-00370");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-size-00371");
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT,
+                         maxPushConstantsSize, 4, data);
+    m_errorMonitor->VerifyFound();
+
+    // size at limit
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-size-00371");
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT, 0,
+                         maxPushConstantsSize + 4, data);
+    m_errorMonitor->VerifyFound();
+
+    // Size at limit, should be valid
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdPushConstants(m_commandBuffer->handle(), pipe.pipeline_layout_.handle(), VK_SHADER_STAGE_VERTEX_BIT, 0,
+                         maxPushConstantsSize, data);
+    m_errorMonitor->VerifyNotFound();
+
+    m_commandBuffer->end();
 }
 
 TEST_F(VkLayerTest, CreatePipelineCheckShaderNotEnabled) {
@@ -5120,7 +5287,7 @@ TEST_F(VkLayerTest, CreatePipelinePushConstantsNotInLayout) {
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
     /* should have generated an error -- no push constant ranges provided! */
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-PushConstantOutOfRange");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-layout-00756");
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 }
@@ -5455,15 +5622,15 @@ TEST_F(VkLayerTest, FramebufferMixedSamplesNV) {
 
         ASSERT_VK_SUCCESS(err);
 
-        VkPipelineDepthStencilStateCreateInfo ds = {VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
-        VkPipelineCoverageModulationStateCreateInfoNV cmi = {VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV};
+        auto ds = lvl_init_struct<VkPipelineDepthStencilStateCreateInfo>();
+        auto cmi = lvl_init_struct<VkPipelineCoverageModulationStateCreateInfoNV>();
 
         // Create a dummy modulation table that can be used for the positive
         // coverageModulationTableCount test.
         std::vector<float> cm_table{};
 
         const auto break_samples = [&cmi, &rp, &ds, &cm_table, &test_case](CreatePipelineHelper &helper) {
-            cm_table.resize(test_case.raster_samples / test_case.color_samples);
+            cm_table.resize(test_case.table_count);
 
             cmi.flags = 0;
             cmi.coverageModulationTableEnable = (test_case.table_count > 1);
@@ -8921,6 +9088,86 @@ TEST_F(VkLayerTest, ValidateGetRayTracingCaptureReplayShaderGroupHandlesKHR) {
     m_errorMonitor->VerifyFound();
 }
 
+TEST_F(VkLayerTest, ValidatePipelineExecutablePropertiesFeature) {
+    TEST_DESCRIPTION("Try making calls without pipelineExecutableInfo.");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
+        return;
+    }
+
+    VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR pipeline_exe_features = {};
+    pipeline_exe_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR;
+    pipeline_exe_features.pNext = nullptr;
+    pipeline_exe_features.pipelineExecutableInfo = VK_FALSE;  // Starting with it off
+
+    VkPhysicalDeviceFeatures2 features2 = {};
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &pipeline_exe_features;
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    // MockICD will return 0 for the executable count
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%s Test not supported by MockICD, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPipelineExecutableInternalRepresentationsKHR vkGetPipelineExecutableInternalRepresentationsKHR =
+        (PFN_vkGetPipelineExecutableInternalRepresentationsKHR)vk::GetDeviceProcAddr(
+            m_device->device(), "vkGetPipelineExecutableInternalRepresentationsKHR");
+    PFN_vkGetPipelineExecutableStatisticsKHR vkGetPipelineExecutableStatisticsKHR =
+        (PFN_vkGetPipelineExecutableStatisticsKHR)vk::GetDeviceProcAddr(m_device->device(), "vkGetPipelineExecutableStatisticsKHR");
+    PFN_vkGetPipelineExecutablePropertiesKHR vkGetPipelineExecutablePropertiesKHR =
+        (PFN_vkGetPipelineExecutablePropertiesKHR)vk::GetDeviceProcAddr(m_device->device(), "vkGetPipelineExecutablePropertiesKHR");
+    ASSERT_TRUE(vkGetPipelineExecutableInternalRepresentationsKHR != nullptr);
+    ASSERT_TRUE(vkGetPipelineExecutableStatisticsKHR != nullptr);
+    ASSERT_TRUE(vkGetPipelineExecutablePropertiesKHR != nullptr);
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    uint32_t count;
+    VkPipelineExecutableInfoKHR pipeline_exe_info = {};
+    pipeline_exe_info.sType = VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR;
+    pipeline_exe_info.pNext = nullptr;
+    pipeline_exe_info.pipeline = pipe.pipeline_;
+    pipeline_exe_info.executableIndex = 0;
+
+    VkPipelineInfoKHR pipeline_info = {};
+    pipeline_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INFO_KHR;
+    pipeline_info.pNext = nullptr;
+    pipeline_info.pipeline = pipe.pipeline_;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                         "VUID-vkGetPipelineExecutableInternalRepresentationsKHR-pipelineExecutableInfo-03276");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPipelineExecutableInternalRepresentationsKHR-pipeline-03278");
+    vkGetPipelineExecutableInternalRepresentationsKHR(m_device->device(), &pipeline_exe_info, &count, nullptr);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPipelineExecutableStatisticsKHR-pipelineExecutableInfo-03272");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPipelineExecutableStatisticsKHR-pipeline-03274");
+    vkGetPipelineExecutableStatisticsKHR(m_device->device(), &pipeline_exe_info, &count, nullptr);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPipelineExecutablePropertiesKHR-pipelineExecutableInfo-03270");
+    vkGetPipelineExecutablePropertiesKHR(m_device->device(), &pipeline_info, &count, nullptr);
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, LimitsMaxSampleMaskWords) {
     TEST_DESCRIPTION("Test limit of maxSampleMaskWords.");
 
@@ -10193,4 +10440,128 @@ TEST_F(VkLayerTest, GraphicsPipelineInvalidFlags) {
     CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-flags-03377");
     flags = VK_PIPELINE_CREATE_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR;
     CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-flags-03577");
+}
+
+TEST_F(VkLayerTest, ComputePipelineInvalidFlags) {
+    TEST_DESCRIPTION("Create a compute pipeline with invalid VkPipelineCreateFlags.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkPipelineCreateFlags flags;
+    const auto set_info = [&](CreateComputePipelineHelper &helper) { helper.cp_ci_.flags = flags; };
+
+    flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03364");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03365");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03366");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_MISS_SHADERS_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03367");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03368");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03369");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03370");
+    flags = VK_PIPELINE_CREATE_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-03576");
+    flags = VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV;
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-02874");
+}
+
+TEST_F(VkLayerTest, UsingProvokingVertexModeLastVertexExtWithoutEnabled) {
+    TEST_DESCRIPTION("Test using VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT but it doesn't enable provokingVertexLast.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    auto provoking_vertex_state_ci = LvlInitStruct<VkPipelineRasterizationProvokingVertexStateCreateInfoEXT>();
+    provoking_vertex_state_ci.provokingVertexMode = VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT;
+    pipe.rs_state_ci_.pNext = &provoking_vertex_state_ci;
+    pipe.InitState();
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                                         "VUID-VkPipelineRasterizationProvokingVertexStateCreateInfoEXT-provokingVertexMode-04883");
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, NotSupportProvokingVertexModePerPipeline) {
+    TEST_DESCRIPTION(
+        "Test using different VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT but it doesn't support provokingVertexModePerPipeline.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    bool inst_ext = InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    if (inst_ext) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s %s not supported, skipping tests\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported, skipping tests\n", kSkipPrefix, VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME);
+        return;
+    }
+
+    auto provoking_vertex_properties = LvlInitStruct<VkPhysicalDeviceProvokingVertexPropertiesEXT>();
+    auto properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&provoking_vertex_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &properties2);
+    if (provoking_vertex_properties.provokingVertexModePerPipeline == VK_TRUE) {
+        printf("%s provokingVertexModePerPipeline is VK_TRUE, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    auto provoking_vertex_features = LvlInitStruct<VkPhysicalDeviceProvokingVertexFeaturesEXT>();
+    provoking_vertex_features.provokingVertexLast = VK_TRUE;
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&provoking_vertex_features);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    CreatePipelineHelper pipe1(*this);
+    pipe1.InitInfo();
+    auto provoking_vertex_state_ci = LvlInitStruct<VkPipelineRasterizationProvokingVertexStateCreateInfoEXT>();
+    provoking_vertex_state_ci.provokingVertexMode = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT;
+    pipe1.rs_state_ci_.pNext = &provoking_vertex_state_ci;
+    pipe1.InitState();
+    pipe1.CreateGraphicsPipeline();
+
+    CreatePipelineHelper pipe2(*this);
+    pipe2.InitInfo();
+    provoking_vertex_state_ci.provokingVertexMode = VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT;
+    pipe2.rs_state_ci_.pNext = &provoking_vertex_state_ci;
+    pipe2.InitState();
+    pipe2.CreateGraphicsPipeline();
+
+    CreatePipelineHelper pipe3(*this);
+    pipe3.InitInfo();
+    pipe3.InitState();
+    pipe3.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe1.pipeline_);
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdBindPipeline-pipelineBindPoint-04881");
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe2.pipeline_);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe1.pipeline_);
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdBindPipeline-pipelineBindPoint-04881");
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe3.pipeline_);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
 }

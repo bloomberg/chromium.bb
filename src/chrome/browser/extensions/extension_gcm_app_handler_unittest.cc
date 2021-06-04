@@ -62,13 +62,14 @@
 #include "extensions/common/verifier_formats.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #endif
 
 namespace extensions {
@@ -85,8 +86,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
   if (!service)
     return;
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetNetworkContext();
+      profile->GetDefaultStoragePartition()->GetNetworkContext();
   network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
@@ -234,7 +234,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     return std::make_unique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(),
         base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
-        content::BrowserContext::GetDefaultStoragePartition(profile)
+        profile->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess(),
         network::TestNetworkConnectionTracker::GetInstance(),
         chrome::GetChannel(),
@@ -263,10 +263,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     // This is needed to create extension service under CrOS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
-    // Creating a DBus thread manager setter has the side effect of
-    // creating a DBusThreadManager, which is needed for testing.
-    // We don't actually need the setter so we ignore the return value.
-    chromeos::DBusThreadManager::GetSetterForTesting();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 #endif
 
     // Create a new profile.
@@ -299,10 +296,15 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
     waiter_.PumpUILoop();
     gcm_app_handler_->Shutdown();
-    auto* partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile());
+    auto* partition = profile()->GetDefaultStoragePartition();
     if (partition)
       partition->WaitForDeletionTasksForTesting();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    gcm_app_handler_.reset();
+    profile_.reset();
+    chromeos::ConciergeClient::Shutdown();
+#endif
   }
 
   // Returns a barebones test extension.

@@ -19,6 +19,7 @@
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/version.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "components/cast/common/constants.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/user_agent.h"
 #include "media/base/media_switches.h"
@@ -50,6 +51,7 @@
 #if BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
 #include "base/no_destructor.h"
 #include "components/cdm/common/cdm_manifest.h"
+#include "media/cdm/cdm_capability.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 // component updated CDM on all desktop platforms and remove this.
 // This file is In SHARED_INTERMEDIATE_DIR.
@@ -97,11 +99,12 @@ std::string BuildAndroidOsInfo() {
 std::unique_ptr<content::CdmInfo> CreateWidevineCdmInfo(
     const base::Version& version,
     const base::FilePath& cdm_library_path,
-    content::CdmCapability capability) {
+    media::CdmCapability capability) {
   return std::make_unique<content::CdmInfo>(
+      kWidevineKeySystem, content::CdmInfo::Robustness::kSoftwareSecure,
+      std::move(capability), /*supports_sub_key_systems=*/false,
       kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_library_path,
-      kWidevineCdmFileSystemId, std::move(capability), kWidevineKeySystem,
-      false);
+      kWidevineCdmFileSystemId);
 }
 
 // On desktop Linux, given |cdm_base_path| that points to a folder containing
@@ -124,7 +127,7 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoFromWidevineDirectory(
   // Manifest should be at the top level.
   auto manifest_path = cdm_base_path.Append(FILE_PATH_LITERAL("manifest.json"));
   base::Version version;
-  content::CdmCapability capability;
+  media::CdmCapability capability;
   if (!ParseCdmManifestFromPath(manifest_path, &version, &capability))
     return nullptr;
 
@@ -171,8 +174,8 @@ std::string GetUserAgent() {
           .c_str()
 #endif
       );
-  return content::BuildUserAgentFromOSAndProduct(os_info, product) +
-      " CrKey/" CAST_BUILD_REVISION;
+  return content::BuildUserAgentFromOSAndProduct(os_info, product) + " CrKey/" +
+         kFrozenCrKeyValue;
 }
 
 CastContentClient::~CastContentClient() {

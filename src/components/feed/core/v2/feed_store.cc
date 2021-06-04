@@ -18,8 +18,10 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
+#include "components/feed/core/v2/public/stream_type.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feed {
@@ -95,7 +97,7 @@ bool IsAnyStreamRecordKey(const std::string& key) {
 class StreamKeyMatcher {
  public:
   explicit StreamKeyMatcher(const StreamType& stream_type) {
-    stream_id_ = feedstore::StreamId(stream_type).as_string();
+    stream_id_ = std::string(feedstore::StreamId(stream_type));
     stream_id_plus_slash_ = stream_id_ + '/';
   }
 
@@ -235,19 +237,19 @@ MakeUpdatesForStreamModelUpdateRequest(
   base::StringPiece stream_id = feedstore::StreamId(stream_type);
   auto updates = std::make_unique<
       std::vector<std::pair<std::string, feedstore::Record>>>();
-  update_request->stream_data.set_stream_id(stream_id.as_string());
+  update_request->stream_data.set_stream_id(std::string(stream_id));
   updates->push_back(MakeKeyAndRecord(std::move(update_request->stream_data)));
   for (feedstore::Content& content : update_request->content) {
-    content.set_stream_id(stream_id.as_string());
+    content.set_stream_id(std::string(stream_id));
     updates->push_back(MakeKeyAndRecord(std::move(content)));
   }
   for (feedstore::StreamSharedState& shared_state :
        update_request->shared_states) {
-    shared_state.set_stream_id(stream_id.as_string());
+    shared_state.set_stream_id(std::string(stream_id));
     updates->push_back(MakeKeyAndRecord(std::move(shared_state)));
   }
   feedstore::StreamStructureSet stream_structure_set;
-  stream_structure_set.set_stream_id(stream_id.as_string());
+  stream_structure_set.set_stream_id(std::string(stream_id));
   stream_structure_set.set_sequence_number(structure_set_sequence_number);
   for (feedstore::StreamStructure& structure :
        update_request->stream_structures) {
@@ -277,6 +279,12 @@ FeedStore::LoadStreamResult::~LoadStreamResult() = default;
 FeedStore::LoadStreamResult::LoadStreamResult(LoadStreamResult&&) = default;
 FeedStore::LoadStreamResult& FeedStore::LoadStreamResult::operator=(
     LoadStreamResult&&) = default;
+
+FeedStore::StartupData::StartupData() = default;
+FeedStore::StartupData::StartupData(StartupData&&) = default;
+FeedStore::StartupData::~StartupData() = default;
+FeedStore::StartupData& FeedStore::StartupData::operator=(StartupData&&) =
+    default;
 
 FeedStore::FeedStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database)
@@ -490,12 +498,12 @@ void FeedStore::WriteOperations(
     *structure_set.add_structures() = std::move(*operation.mutable_structure());
     if (operation.has_content()) {
       feedstore::Record record;
-      operation.mutable_content()->set_stream_id(stream_id.as_string());
+      operation.mutable_content()->set_stream_id(std::string(stream_id));
       record.set_allocated_content(operation.release_content());
       records.push_back(std::move(record));
     }
   }
-  structure_set.set_stream_id(feedstore::StreamId(stream_type).as_string());
+  structure_set.set_stream_id(std::string(feedstore::StreamId(stream_type)));
   structure_set.set_sequence_number(sequence_number);
 
   records.push_back(std::move(structures_record));
@@ -668,6 +676,35 @@ void FeedStore::OnReadWebFeedStartupDataFinished(
             std::move(*r.mutable_subscribed_web_feeds());
       } else {
         DLOG(ERROR) << "OnReadWebFeedStartupDataFinished: Got record with no "
+                       "useful data. data_case="
+                    << static_cast<int>(r.data_case());
+      }
+    }
+  }
+  std::move(callback).Run(std::move(result));
+}
+
+void FeedStore::ReadStartupData(
+    base::OnceCallback<void(StartupData)> callback) {
+  ReadMany({StreamDataKey(kWebFeedStream), StreamDataKey(kForYouStream),
+            kMetadataKey},
+           base::BindOnce(&FeedStore::OnReadStartupDataFinished, GetWeakPtr(),
+                          std::move(callback)));
+}
+
+void FeedStore::OnReadStartupDataFinished(
+    base::OnceCallback<void(StartupData)> callback,
+    bool read_ok,
+    std::unique_ptr<std::vector<feedstore::Record>> records) {
+  StartupData result;
+  if (records) {
+    for (feedstore::Record& r : *records) {
+      if (r.has_stream_data()) {
+        result.stream_data.push_back(std::move(r.stream_data()));
+      } else if (r.has_metadata()) {
+        result.metadata = base::WrapUnique(r.release_metadata());
+      } else {
+        DLOG(ERROR) << "OnReadStartupDataFinished: Got record with no "
                        "useful data. data_case="
                     << static_cast<int>(r.data_case());
       }

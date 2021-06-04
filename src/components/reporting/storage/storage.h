@@ -7,12 +7,10 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
@@ -53,7 +51,7 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // only accepted if no higher ids were confirmed before; otherwise it is
   // accepted unconditionally.
   void Confirm(Priority priority,
-               base::Optional<int64_t> sequencing_id,
+               absl::optional<int64_t> sequencing_id,
                bool force,
                base::OnceCallback<void(Status)> completion_cb);
 

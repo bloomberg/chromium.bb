@@ -10,20 +10,23 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/suggestions_source.h"
 
 namespace chromeos {
 
 // A generic agent to suggest when the user types, and adopt or dismiss the
 // suggestion according to the user action.
-class Suggester {
+class Suggester : public SuggestionsSource {
  public:
-  virtual ~Suggester() = default;
-
   // Called when a text field gains focus, and suggester starts working.
   virtual void OnFocus(int context_id) = 0;
 
   // Called when a text field loses focus, and suggester stops working.
   virtual void OnBlur() = 0;
+
+  // Called when suggestions are generated outside of the assisitve framework.
+  virtual void OnExternalSuggestionsUpdated(
+      const std::vector<ime::TextSuggestion>& suggestions) = 0;
 
   // Called when suggestion is being shown.
   // Returns SuggestionStatus as suggester handles the event.
@@ -44,9 +47,6 @@ class Suggester {
 
   // Is the suggester currently suggesting a candidate to the user?
   virtual bool HasSuggestions() = 0;
-
-  // Returns any candidates currently suggested by the suggester.
-  virtual std::vector<std::u16string> GetSuggestions() = 0;
 };
 
 }  // namespace chromeos

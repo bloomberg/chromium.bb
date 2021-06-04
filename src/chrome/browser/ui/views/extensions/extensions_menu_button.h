@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class Button;
@@ -33,8 +33,10 @@ class ExtensionsMenuButton : public HoverButton,
   ExtensionsMenuButton& operator=(const ExtensionsMenuButton&) = delete;
   ~ExtensionsMenuButton() override;
 
-  SkColor GetInkDropBaseColor() const override;
+  // HoverButton:
   bool CanShowIconInToolbar() const override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
   const std::u16string& label_text_for_testing() const {
     return label()->GetText();
@@ -47,6 +49,7 @@ class ExtensionsMenuButton : public HoverButton,
   views::Button* GetReferenceButtonForPopup() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
+  void ShowContextMenuAsFallback() override;
 
   void ButtonPressed();
 

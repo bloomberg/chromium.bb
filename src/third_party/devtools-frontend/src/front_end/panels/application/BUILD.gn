@@ -4,6 +4,7 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
 
 devtools_module("application") {
   sources = [
@@ -13,6 +14,7 @@ devtools_module("application") {
     "ApplicationPanelCacheSection.ts",
     "ApplicationPanelSidebar.ts",
     "ApplicationPanelTreeElement.ts",
+    "BackForwardCacheView.ts",
     "BackgroundServiceModel.ts",
     "BackgroundServiceView.ts",
     "CookieItemsView.ts",
@@ -21,7 +23,6 @@ devtools_module("application") {
     "DatabaseModel.ts",
     "DatabaseQueryView.ts",
     "DatabaseTableView.ts",
-    "FrameDetailsView.ts",
     "IndexedDBModel.ts",
     "IndexedDBViews.ts",
     "OpenedWindowDetailsView.ts",
@@ -29,16 +30,12 @@ devtools_module("application") {
     "ServiceWorkerCacheViews.ts",
     "ServiceWorkerUpdateCycleView.ts",
     "ServiceWorkersView.ts",
-    "StackTrace.ts",
     "StorageItemsView.ts",
     "StorageView.ts",
-    "TrustTokensView.ts",
+    "TrustTokensTreeElement.ts",
   ]
 
   deps = [
-    "../../browser_sdk:bundle",
-    "../../components:bundle",
-    "../../cookie_table:bundle",
     "../../core/common:bundle",
     "../../core/host:bundle",
     "../../core/i18n:bundle",
@@ -46,16 +43,25 @@ devtools_module("application") {
     "../../core/protocol_client:bundle",
     "../../core/root:bundle",
     "../../core/sdk:bundle",
-    "../../data_grid:bundle",
-    "../../inline_editor:bundle",
+    "../../generated:protocol",
     "../../models/bindings:bundle",
+    "../../models/issues_manager:bundle",
+    "../../models/logs:bundle",
     "../../models/text_utils:bundle",
-    "../../object_ui:bundle",
+    "../../models/workspace:bundle",
     "../../panels/mobile_throttling:bundle",
     "../../panels/network:bundle",
-    "../../source_frame:bundle",
+    "../../ui/components/data_grid:bundle",
+    "../../ui/components/expandable_list:bundle",
+    "../../ui/components/report_view:bundle",
     "../../ui/legacy:bundle",
-    "../../workspace:bundle",
+    "../../ui/legacy/components/cookie_table:bundle",
+    "../../ui/legacy/components/data_grid:bundle",
+    "../../ui/legacy/components/inline_editor:bundle",
+    "../../ui/legacy/components/object_ui:bundle",
+    "../../ui/legacy/components/source_frame:bundle",
+    "../../ui/legacy/components/utils:bundle",
+    "./components:bundle",
   ]
 }
 
@@ -63,6 +69,15 @@ devtools_entrypoint("bundle") {
   entrypoint = "application.ts"
 
   deps = [ ":application" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../../test/unittests/front_end/panels/application/*",
+    "../../entrypoints/*",
+  ]
+
+  visibility += devtools_panels_visibility
 }
 
 copy_to_gen("legacy_css") {
@@ -73,10 +88,17 @@ devtools_entrypoint("legacy") {
   entrypoint = "application-legacy.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [
+    "../..:legacy_entrypoints",
+    "../../legacy_test_runner/*",
+  ]
 }
 
 devtools_entrypoint("meta") {
   entrypoint = "application-meta.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [ "../../entrypoints/*" ]
 }

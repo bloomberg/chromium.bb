@@ -44,6 +44,11 @@ CanvasKit.onRuntimeInitialized = function() {
   CanvasKit.ColorSpace.DISPLAY_P3 = CanvasKit.ColorSpace._MakeDisplayP3();
   CanvasKit.ColorSpace.ADOBE_RGB = CanvasKit.ColorSpace._MakeAdobeRGB();
 
+  // Use quotes to tell closure compiler not to minify the names
+  CanvasKit['GlyphRunFlags'] = {
+    'IsWhiteSpace': CanvasKit['_GlyphRunFlags_isWhiteSpace'],
+  };
+
   CanvasKit.Path.MakeFromCmds = function(cmds) {
     var ptrLen = loadCmdsTypedArray(cmds);
     var path = CanvasKit.Path._MakeFromCmds(ptrLen[0], ptrLen[1]);
@@ -582,6 +587,20 @@ CanvasKit.onRuntimeInitialized = function() {
     this._drawDRRect(oPtr, iPtr, paint);
   };
 
+  CanvasKit.Canvas.prototype.drawGlyphs = function(glyphs, positions, x, y, font, paint) {
+    if (!(glyphs.length*2 <= positions.length)) {
+        throw 'Not enough positions for the array of gyphs';
+    }
+
+    const glyphs_ptr    = copy1dArray(glyphs, 'HEAPU16');
+    const positions_ptr = copy1dArray(positions, 'HEAPF32');
+
+    this._drawGlyphs(glyphs.length, glyphs_ptr, positions_ptr, x, y, font, paint);
+
+    freeArraysThatAreNotMallocedByUsers(positions_ptr, positions);
+    freeArraysThatAreNotMallocedByUsers(glyphs_ptr,    glyphs);
+  };
+
   CanvasKit.Canvas.prototype.drawImageNine = function(img, center, dest, filter, paint) {
     var cPtr = copyIRectToWasm(center);
     var dPtr = copyRectToWasm(dest);
@@ -615,13 +634,13 @@ CanvasKit.onRuntimeInitialized = function() {
 
   CanvasKit.Canvas.prototype.drawPatch = function(cubics, colors, texs, mode, paint) {
     if (cubics.length < 24) {
-        throw "Need 12 cubic points";
+        throw 'Need 12 cubic points';
     }
     if (colors && colors.length < 4) {
-        throw "Need 4 colors";
+        throw 'Need 4 colors';
     }
     if (texs && texs.length < 8) {
-        throw "Need 4 shader coordinates";
+        throw 'Need 4 shader coordinates';
     }
 
     const cubics_ptr =          copy1dArray(cubics, 'HEAPF32');

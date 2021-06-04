@@ -3,7 +3,7 @@
 NULL =
 EXTRA_DIST =
 CLEANFILES =
-SUBDIRS =
+SUBDIRS = repack_tests
 
 EXTRA_DIST += \
 	$(TESTS) \
@@ -23,16 +23,21 @@ EXTRA_DIST += \
 	expected/layout.gpos8.amiri \
 	expected/layout.gpos9 \
 	expected/layout.gsub3 \
+	expected/layout.gsub5 \
 	expected/layout.gsub6 \
+	expected/layout.gsub8 \
+	expected/layout.khmer \
 	expected/layout.gdef \
 	expected/layout.context \
 	expected/layout.gdef-varstore \
 	expected/layout.gdef-attachlist \
+	expected/layout.notonastaliqurdu \
 	expected/cmap \
 	expected/cmap14 \
 	expected/sbix \
 	expected/colr \
 	expected/cbdt \
+	expected/variable \
 	fonts \
 	profiles \
 	$(NULL)

@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/media_message_center/media_artwork_view.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_background_impl.h"
 #include "components/media_message_center/media_notification_constants.h"
@@ -19,17 +20,18 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
@@ -67,46 +69,10 @@ constexpr int kUtilButtonsSpacing = 8;
 constexpr int kTitleArtistLineHeight = 20;
 constexpr gfx::Size kMediaButtonSize = {24, 24};
 constexpr gfx::Size kPlayPauseButtonSize = {32, 32};
-constexpr int kMediaButtonIconSize = 18;
-
-// An image view with a rounded rectangle vignette
-class MediaArtworkView : public views::ImageView {
- public:
-  METADATA_HEADER(MediaArtworkView);
-  explicit MediaArtworkView(float corner_radius)
-      : corner_radius_(corner_radius) {}
-
-  void SetVignetteColor(const SkColor& vignette_color) {
-    if (vignette_color_ == vignette_color)
-      return;
-    vignette_color_ = vignette_color;
-    OnPropertyChanged(&vignette_color_, views::kPropertyEffectsPaint);
-  }
-  SkColor GetVignetteColor() const { return vignette_color_; }
-
-  // ImageView
-  void OnPaint(gfx::Canvas* canvas) override;
-
- private:
-  SkColor vignette_color_ = gfx::kPlaceholderColor;
-  float corner_radius_;
-};
-
-BEGIN_METADATA(MediaArtworkView, views::ImageView)
-ADD_PROPERTY_METADATA(SkColor, VignetteColor)
-END_METADATA
-
-void MediaArtworkView::OnPaint(gfx::Canvas* canvas) {
-  views::ImageView::OnPaint(canvas);
-  auto path = SkPath().addRoundRect(RectToSkRect(GetLocalBounds()),
-                                    corner_radius_, corner_radius_);
-  path.toggleInverseFillType();
-  cc::PaintFlags paint_flags;
-  paint_flags.setStyle(cc::PaintFlags::kFill_Style);
-  paint_flags.setAntiAlias(true);
-  paint_flags.setColor(vignette_color_);
-  canvas->DrawPath(path, paint_flags);
-}
+constexpr int kMediaButtonIconSize = 14;
+constexpr int kPlayPauseIconSize = 20;
+constexpr int kMediaButtonBorderThickness = 1;
+constexpr gfx::Size kFaviconSize = {20, 20};
 
 void RecordMetadataHistogram(
     MediaNotificationViewModernImpl::Metadata metadata) {
@@ -140,12 +106,112 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kToggleMicrophone:
     case MediaSessionAction::kToggleCamera:
     case MediaSessionAction::kHangUp:
+    case MediaSessionAction::kRaise:
       NOTREACHED();
       break;
   }
 
   return nullptr;
 }
+
+const std::u16string GetAccessibleNameForMediaAction(
+    MediaSessionAction action) {
+  switch (action) {
+    case MediaSessionAction::kPreviousTrack:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK);
+    case MediaSessionAction::kSeekBackward:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD);
+    case MediaSessionAction::kPlay:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY);
+    case MediaSessionAction::kPause:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PAUSE);
+    case MediaSessionAction::kSeekForward:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD);
+    case MediaSessionAction::kNextTrack:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK);
+    case MediaSessionAction::kEnterPictureInPicture:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_ENTER_PIP);
+    case MediaSessionAction::kExitPictureInPicture:
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_EXIT_PIP);
+    case MediaSessionAction::kStop:
+    case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kSwitchAudioDevice:
+    case MediaSessionAction::kToggleMicrophone:
+    case MediaSessionAction::kToggleCamera:
+    case MediaSessionAction::kHangUp:
+    case MediaSessionAction::kRaise:
+      NOTREACHED();
+      break;
+  }
+
+  return std::u16string();
+}
+
+class MediaButton : public views::ImageButton {
+ public:
+  MediaButton(PressedCallback callback, int icon_size, gfx::Size button_size)
+      : ImageButton(callback), icon_size_(icon_size) {
+    SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    SetFlipCanvasOnPaintForRTLUI(false);
+    SetPreferredSize(button_size);
+    SetBorder(views::CreateRoundedRectBorder(
+        kMediaButtonBorderThickness,
+        std::min(button_size.width(), button_size.height()) / 2,
+        SK_ColorWHITE));
+  }
+
+  void SetButtonColor(SkColor foreground_color, SkColor disabled_color) {
+    foreground_color_ = foreground_color;
+    disabled_color_ = disabled_color;
+
+    GetBorder()->set_color(IsMouseHovered() ? foreground_color
+                                            : disabled_color_);
+    views::SetImageFromVectorIconWithColor(
+        this, *GetVectorIconForMediaAction(GetActionFromButtonTag(*this)),
+        icon_size_, foreground_color_);
+
+    SchedulePaint();
+  }
+
+  void set_tag(int tag) {
+    views::ImageButton::set_tag(tag);
+
+    SetTooltipText(
+        GetAccessibleNameForMediaAction(GetActionFromButtonTag(*this)));
+    SetAccessibleName(
+        GetAccessibleNameForMediaAction(GetActionFromButtonTag(*this)));
+    views::SetImageFromVectorIconWithColor(
+        this, *GetVectorIconForMediaAction(GetActionFromButtonTag(*this)),
+        icon_size_, foreground_color_);
+  }
+
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    GetBorder()->set_color(foreground_color_);
+    SchedulePaint();
+  }
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    GetBorder()->set_color(disabled_color_);
+    SchedulePaint();
+  }
+
+ private:
+  SkColor foreground_color_ = gfx::kPlaceholderColor;
+  SkColor disabled_color_ = gfx::kPlaceholderColor;
+  int icon_size_;
+};
 
 }  // anonymous namespace
 
@@ -212,41 +278,27 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
     // regardless of the local UI direction.
     media_controls_container->SetMirrored(false);
 
-    CreateMediaButton(
-        media_controls_container.get(), MediaSessionAction::kPreviousTrack,
-        l10n_util::GetStringUTF16(
-            IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK));
-    CreateMediaButton(
-        media_controls_container.get(), MediaSessionAction::kSeekBackward,
-        l10n_util::GetStringUTF16(
-            IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
+    CreateMediaButton(media_controls_container.get(),
+                      MediaSessionAction::kPreviousTrack);
+    CreateMediaButton(media_controls_container.get(),
+                      MediaSessionAction::kSeekBackward);
 
     {
-      auto play_pause_button = views::CreateVectorToggleImageButton(
-          views::Button::PressedCallback());
+      auto play_pause_button = std::make_unique<MediaButton>(
+          views::Button::PressedCallback(), kPlayPauseIconSize,
+          kPlayPauseButtonSize);
       play_pause_button->SetCallback(
           base::BindRepeating(&MediaNotificationViewModernImpl::ButtonPressed,
                               base::Unretained(this), play_pause_button.get()));
       play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPlay));
-      play_pause_button->SetPreferredSize(kPlayPauseButtonSize);
-      play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-      play_pause_button->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY));
-      play_pause_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
-          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PAUSE));
-      play_pause_button->SetFlipCanvasOnPaintForRTLUI(false);
       play_pause_button_ =
           media_controls_container->AddChildView(std::move(play_pause_button));
     }
 
-    CreateMediaButton(
-        media_controls_container.get(), MediaSessionAction::kSeekForward,
-        l10n_util::GetStringUTF16(
-            IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD));
-    CreateMediaButton(
-        media_controls_container.get(), MediaSessionAction::kNextTrack,
-        l10n_util::GetStringUTF16(
-            IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
+    CreateMediaButton(media_controls_container.get(),
+                      MediaSessionAction::kSeekForward);
+    CreateMediaButton(media_controls_container.get(),
+                      MediaSessionAction::kNextTrack);
 
     media_controls_container_ =
         buttons_container->AddChildView(std::move(media_controls_container));
@@ -285,10 +337,6 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
       auto artwork_container = std::make_unique<views::View>();
       artwork_container->SetPreferredSize(kArtworkSize);
 
-      // The artwork container will become visible once artwork has been set in
-      // UpdateWithMediaArtwork
-      artwork_container->SetVisible(false);
-
       auto* artwork_container_layout = artwork_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
@@ -298,8 +346,8 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
           views::BoxLayout::CrossAxisAlignment::kCenter);
 
       {
-        auto artwork =
-            std::make_unique<MediaArtworkView>(kArtworkVignetteCornerRadius);
+        auto artwork = std::make_unique<MediaArtworkView>(
+            kArtworkVignetteCornerRadius, kArtworkSize, kFaviconSize);
         artwork_ = artwork_container->AddChildView(std::move(artwork));
       }
 
@@ -364,27 +412,13 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
     {
       // The picture-in-picture button appears directly under the media
       // labels.
-      auto picture_in_picture_button = views::CreateVectorToggleImageButton(
-          views::Button::PressedCallback());
+      auto picture_in_picture_button = std::make_unique<MediaButton>(
+          views::Button::PressedCallback(), kPipButtonIconSize, kPipButtonSize);
       picture_in_picture_button->SetCallback(base::BindRepeating(
           &MediaNotificationViewModernImpl::ButtonPressed,
           base::Unretained(this), picture_in_picture_button.get()));
       picture_in_picture_button->set_tag(
           static_cast<int>(MediaSessionAction::kEnterPictureInPicture));
-      picture_in_picture_button->SetPreferredSize(kPipButtonSize);
-      picture_in_picture_button->SetFocusBehavior(
-          views::View::FocusBehavior::ALWAYS);
-      picture_in_picture_button->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_ENTER_PIP));
-      picture_in_picture_button->SetToggledTooltipText(
-          l10n_util::GetStringUTF16(
-              IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_EXIT_PIP));
-      picture_in_picture_button->SetFlipCanvasOnPaintForRTLUI(false);
-      views::SetImageFromVectorIconWithColor(
-          picture_in_picture_button.get(),
-          *GetVectorIconForMediaAction(
-              MediaSessionAction::kEnterPictureInPicture),
-          kPipButtonIconSize, SK_ColorBLACK);
       picture_in_picture_button_ = util_buttons_container->AddChildView(
           std::move(picture_in_picture_button));
     }
@@ -426,7 +460,6 @@ void MediaNotificationViewModernImpl::UpdateWithMediaSessionInfo(
   bool playing =
       session_info && session_info->playback_state ==
                           media_session::mojom::MediaPlaybackState::kPlaying;
-  play_pause_button_->SetToggled(playing);
 
   MediaSessionAction action =
       playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
@@ -436,7 +469,6 @@ void MediaNotificationViewModernImpl::UpdateWithMediaSessionInfo(
       session_info &&
       session_info->picture_in_picture_state ==
           media_session::mojom::MediaPictureInPictureState::kInPictureInPicture;
-  picture_in_picture_button_->SetToggled(in_picture_in_picture);
 
   action = in_picture_in_picture ? MediaSessionAction::kExitPictureInPicture
                                  : MediaSessionAction::kEnterPictureInPicture;
@@ -507,14 +539,8 @@ void MediaNotificationViewModernImpl::UpdateWithMediaArtwork(
   GetMediaNotificationBackground()->UpdateArtwork(image);
 
   UMA_HISTOGRAM_BOOLEAN(kArtworkHistogramName, !image.isNull());
-
-  if (!image.isNull())
-    artwork_container_->SetVisible(true);
-
   artwork_->SetImage(image);
   artwork_->SetPreferredSize(kArtworkSize);
-  artwork_->SetVignetteColor(
-      GetMediaNotificationBackground()->GetBackgroundColor(*this));
 
   UpdateForegroundColor();
 
@@ -529,6 +555,8 @@ void MediaNotificationViewModernImpl::UpdateWithFavicon(
     const gfx::ImageSkia& icon) {
   GetMediaNotificationBackground()->UpdateFavicon(icon);
 
+  artwork_->SetFavicon(icon);
+  artwork_->SetPreferredSize(kArtworkSize);
   UpdateForegroundColor();
   SchedulePaint();
 }
@@ -562,19 +590,13 @@ void MediaNotificationViewModernImpl::UpdateActionButtonsVisibility() {
 
 void MediaNotificationViewModernImpl::CreateMediaButton(
     views::View* parent_view,
-    MediaSessionAction action,
-    const std::u16string& accessible_name) {
-  auto button =
-      views::CreateVectorImageButton(views::Button::PressedCallback());
+    MediaSessionAction action) {
+  auto button = std::make_unique<MediaButton>(
+      views::Button::PressedCallback(), kMediaButtonIconSize, kMediaButtonSize);
   button->SetCallback(
       base::BindRepeating(&MediaNotificationViewModernImpl::ButtonPressed,
                           base::Unretained(this), button.get()));
   button->set_tag(static_cast<int>(action));
-  button->SetPreferredSize(kMediaButtonSize);
-  button->SetAccessibleName(accessible_name);
-  button->SetTooltipText(accessible_name);
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button->SetFlipCanvasOnPaintForRTLUI(false);
   parent_view->AddChildView(std::move(button));
 }
 
@@ -591,6 +613,9 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
   const SkColor disabled_icon_color =
       SkColorSetA(foreground, gfx::kDisabledControlAlpha);
 
+  artwork_->SetBackgroundColor(disabled_icon_color);
+  artwork_->SetVignetteColor(background);
+
   progress_->SetForegroundColor(foreground);
   progress_->SetBackgroundColor(disabled_icon_color);
   progress_->SetTextColor(foreground);
@@ -604,23 +629,8 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
 
   // Update the colors for the toggle buttons (play/pause and
   // picture-in-picture)
-  views::SetImageFromVectorIconWithColor(
-      play_pause_button_,
-      *GetVectorIconForMediaAction(MediaSessionAction::kPlay),
-      kMediaButtonIconSize, foreground);
-  views::SetToggledImageFromVectorIconWithColor(
-      play_pause_button_,
-      *GetVectorIconForMediaAction(MediaSessionAction::kPause),
-      kMediaButtonIconSize, foreground, disabled_icon_color);
-
-  views::SetImageFromVectorIconWithColor(
-      picture_in_picture_button_,
-      *GetVectorIconForMediaAction(MediaSessionAction::kEnterPictureInPicture),
-      kPipButtonIconSize, foreground);
-  views::SetToggledImageFromVectorIconWithColor(
-      picture_in_picture_button_,
-      *GetVectorIconForMediaAction(MediaSessionAction::kExitPictureInPicture),
-      kPipButtonIconSize, foreground, disabled_icon_color);
+  play_pause_button_->SetButtonColor(foreground, disabled_icon_color);
+  picture_in_picture_button_->SetButtonColor(foreground, disabled_icon_color);
 
   // Update the colors for the media control buttons.
   for (views::View* child : media_controls_container_->children()) {
@@ -628,13 +638,9 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
     if (child == play_pause_button_)
       continue;
 
-    views::ImageButton* button = static_cast<views::ImageButton*>(child);
+    MediaButton* button = static_cast<MediaButton*>(child);
 
-    views::SetImageFromVectorIconWithColor(
-        button, *GetVectorIconForMediaAction(GetActionFromButtonTag(*button)),
-        kMediaButtonIconSize, foreground);
-
-    button->SchedulePaint();
+    button->SetButtonColor(foreground, disabled_icon_color);
   }
 
   SchedulePaint();
@@ -648,6 +654,11 @@ void MediaNotificationViewModernImpl::ButtonPressed(views::Button* button) {
 
 void MediaNotificationViewModernImpl::SeekTo(double seek_progress) {
   item_->SeekTo(seek_progress * position_.duration());
+}
+
+views::Button*
+MediaNotificationViewModernImpl::picture_in_picture_button_for_testing() const {
+  return picture_in_picture_button_;
 }
 
 BEGIN_METADATA(MediaNotificationViewModernImpl, views::View)

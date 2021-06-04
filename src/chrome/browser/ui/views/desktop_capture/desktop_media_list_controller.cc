@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 BEGIN_METADATA(DesktopMediaListController, ListView, views::View)
 END_METADATA
@@ -69,9 +69,9 @@ void DesktopMediaListController::FocusView() {
     view_->RequestFocus();
 }
 
-base::Optional<content::DesktopMediaID>
+absl::optional<content::DesktopMediaID>
 DesktopMediaListController::GetSelection() const {
-  return view_ ? view_->GetSelection() : base::nullopt;
+  return view_ ? view_->GetSelection() : absl::nullopt;
 }
 
 void DesktopMediaListController::OnSourceListLayoutChanged() {

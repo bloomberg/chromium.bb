@@ -6,7 +6,7 @@ TODO: review existing tests, write descriptions, and make sure tests are complet
 
 import { poptions, params } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { kBindingTypeInfo } from '../../capability_info.js';
+import { bufferBindingTypeInfo, kBufferBindingTypes } from '../../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -25,17 +25,19 @@ TODO(#230): Update to enforce per-stage and per-pipeline-layout limits on BGLs a
   .params(
     params()
       .combine(poptions('visibility', [0, 2, 4, 6]))
-      .combine(
-        poptions('type', ['uniform-buffer', 'storage-buffer', 'readonly-storage-buffer'] as const)
-      )
+      .combine(poptions('type', kBufferBindingTypes))
   )
   .fn(async t => {
     const { type, visibility } = t.params;
-    const { maxDynamic } = kBindingTypeInfo[type].perPipelineLimitClass;
+    const { maxDynamic } = bufferBindingTypeInfo({ type }).perPipelineLimitClass;
 
     const maxDynamicBufferBindings: GPUBindGroupLayoutEntry[] = [];
     for (let binding = 0; binding < maxDynamic; binding++) {
-      maxDynamicBufferBindings.push({ binding, visibility, type, hasDynamicOffset: true });
+      maxDynamicBufferBindings.push({
+        binding,
+        visibility,
+        buffer: { type, hasDynamicOffset: true },
+      });
     }
 
     const maxDynamicBufferBindGroupLayout = t.device.createBindGroupLayout({
@@ -43,7 +45,7 @@ TODO(#230): Update to enforce per-stage and per-pipeline-layout limits on BGLs a
     });
 
     const goodDescriptor = {
-      entries: [{ binding: 0, visibility, type, hasDynamicOffset: false }],
+      entries: [{ binding: 0, visibility, buffer: { type, hasDynamicOffset: false } }],
     };
 
     const goodPipelineLayoutDescriptor = {
@@ -58,7 +60,7 @@ TODO(#230): Update to enforce per-stage and per-pipeline-layout limits on BGLs a
 
     // Check dynamic buffers exceed maximum in pipeline layout.
     const badDescriptor = clone(goodDescriptor);
-    badDescriptor.entries[0].hasDynamicOffset = true;
+    badDescriptor.entries[0].buffer.hasDynamicOffset = true;
 
     const badPipelineLayoutDescriptor = {
       bindGroupLayouts: [

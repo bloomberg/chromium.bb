@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/no_destructor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gtk/gtk_stubs.h"
 
 namespace gtk {
@@ -19,9 +20,29 @@ namespace gtk {
 
 namespace {
 
-void* DlOpen(const char* library_name) {
+struct Gdk3Rgba {
+  gdouble r;
+  gdouble g;
+  gdouble b;
+  gdouble a;
+};
+
+struct Gdk4Rgba {
+  float r;
+  float g;
+  float b;
+  float a;
+};
+
+template <typename T>
+SkColor GdkRgbaToSkColor(const T& color) {
+  return SkColorSetARGB(color.a * 255, color.r * 255, color.g * 255,
+                        color.b * 255);
+}
+
+void* DlOpen(const char* library_name, bool check = true) {
   void* library = dlopen(library_name, RTLD_LAZY | RTLD_GLOBAL);
-  CHECK(library);
+  CHECK(!check || library);
   return library;
 }
 
@@ -51,8 +72,8 @@ void* GetLibGdk3() {
   return libgdk3;
 }
 
-void* GetLibGtk3() {
-  static void* libgtk3 = DlOpen("libgtk-3.so.0");
+void* GetLibGtk3(bool check = true) {
+  static void* libgtk3 = DlOpen("libgtk-3.so.0", check);
   return libgtk3;
 }
 
@@ -67,14 +88,9 @@ void* GetLibGtk() {
   return GetLibGtk3();
 }
 
-gfx::Insets InsetsFromGtkBorder(const GtkBorder& border) {
-  return gfx::Insets(border.top, border.left, border.bottom, border.right);
-}
-
-}  // namespace
-
-bool LoadGtk(int gtk_version) {
-  if (gtk_version < 4) {
+bool LoadGtkImpl(int gtk_version) {
+  // Prefer GTK3 for now as the GTK4 ecosystem is still immature.
+  if (GetLibGtk3(false)) {
     ui_gtk::InitializeGdk_pixbuf(GetLibGdkPixbuf());
     ui_gtk::InitializeGdk(GetLibGdk3());
     ui_gtk::InitializeGtk(GetLibGtk3());
@@ -90,6 +106,17 @@ bool LoadGtk(int gtk_version) {
     ui_gtk::InitializeGtk(GetLibGtk4());
   }
   return true;
+}
+
+gfx::Insets InsetsFromGtkBorder(const GtkBorder& border) {
+  return gfx::Insets(border.top, border.left, border.bottom, border.right);
+}
+
+}  // namespace
+
+bool LoadGtk() {
+  static bool loaded = LoadGtkImpl(GTK_MAJOR_VERSION);
+  return loaded;
 }
 
 const base::Version& GtkVersion() {
@@ -172,6 +199,45 @@ gfx::Insets GtkStyleContextGetMargin(GtkStyleContext* context) {
 }
 
 DISABLE_CFI_ICALL
+SkColor GtkStyleContextGetColor(GtkStyleContext* context) {
+  static void* get_color = DlSym(GetLibGtk(), "gtk_style_context_get_color");
+  if (GtkCheckVersion(4)) {
+    Gdk4Rgba color;
+    DlCast<void(GtkStyleContext*, Gdk4Rgba*)>(get_color)(context, &color);
+    return GdkRgbaToSkColor(color);
+  }
+  Gdk3Rgba color;
+  DlCast<void(GtkStyleContext*, GtkStateFlags, Gdk3Rgba*)>(get_color)(
+      context, gtk_style_context_get_state(context), &color);
+  return GdkRgbaToSkColor(color);
+}
+
+DISABLE_CFI_ICALL
+SkColor GtkStyleContextGetBackgroundColor(GtkStyleContext* context) {
+  DCHECK(!GtkCheckVersion(4));
+  static void* get_bg_color =
+      DlSym(GetLibGtk(), "gtk_style_context_get_background_color");
+  Gdk3Rgba color;
+  DlCast<void(GtkStyleContext*, GtkStateFlags, Gdk3Rgba*)>(get_bg_color)(
+      context, gtk_style_context_get_state(context), &color);
+  return GdkRgbaToSkColor(color);
+}
+
+DISABLE_CFI_ICALL
+SkColor GtkStyleContextLookupColor(GtkStyleContext* context,
+                                   const gchar* color_name) {
+  DCHECK(!GtkCheckVersion(4));
+  static void* lookup_color =
+      DlSym(GetLibGtk(), "gtk_style_context_lookup_color");
+  Gdk3Rgba color;
+  if (DlCast<gboolean(GtkStyleContext*, const gchar*, Gdk3Rgba*)>(lookup_color)(
+          context, color_name, &color)) {
+    return GdkRgbaToSkColor(color);
+  }
+  return gfx::kPlaceholderColor;
+}
+
+DISABLE_CFI_ICALL
 bool GtkImContextFilterKeypress(GtkIMContext* context, GdkEventKey* event) {
   static void* filter = DlSym(GetLibGtk(), "gtk_im_context_filter_keypress");
   if (GtkCheckVersion(4)) {
@@ -210,6 +276,28 @@ void GtkRenderIcon(GtkStyleContext* context,
     DCHECK(pixbuf);
     DlCast<void(GtkStyleContext*, cairo_t*, GdkPixbuf*, double, double)>(
         render)(context, cr, pixbuf, x, y);
+  }
+}
+
+DISABLE_CFI_ICALL
+GtkWidget* GtkToplevelWindowNew() {
+  static void* window_new = DlSym(GetLibGtk(), "gtk_window_new");
+  if (GtkCheckVersion(4))
+    return DlCast<GtkWidget*()>(window_new)();
+  return DlCast<GtkWidget*(GtkWindowType)>(window_new)(GTK_WINDOW_TOPLEVEL);
+}
+
+DISABLE_CFI_ICALL
+void GtkCssProviderLoadFromData(GtkCssProvider* css_provider,
+                                const char* data,
+                                gssize length) {
+  static void* load = DlSym(GetLibGtk(), "gtk_css_provider_load_from_data");
+  if (GtkCheckVersion(4)) {
+    DlCast<void(GtkCssProvider*, const char*, gssize)>(load)(css_provider, data,
+                                                             length);
+  } else {
+    DlCast<gboolean(GtkCssProvider*, const char*, gssize, GError**)>(load)(
+        css_provider, data, length, nullptr);
   }
 }
 
@@ -277,6 +365,47 @@ ScopedGObject<GtkIconPaintable> Gtk4IconThemeLookupByGicon(
       DlCast<GtkIconPaintable*(GtkIconTheme*, GIcon*, int, int,
                                GtkTextDirection, GtkIconLookupFlags)>(lookup)(
           theme, icon, size, scale, direction, flags));
+}
+
+DISABLE_CFI_ICALL
+GtkWidget* GtkFileChooserDialogNew(const gchar* title,
+                                   GtkWindow* parent,
+                                   GtkFileChooserAction action,
+                                   const gchar* first_button_text,
+                                   GtkResponseType first_response,
+                                   const gchar* second_button_text,
+                                   GtkResponseType second_response) {
+  static void* create = DlSym(GetLibGtk(), "gtk_file_chooser_dialog_new");
+  return DlCast<GtkWidget*(const gchar*, GtkWindow*, GtkFileChooserAction,
+                           const gchar*, ...)>(create)(
+      title, parent, action, first_button_text, first_response,
+      second_button_text, second_response, nullptr);
+}
+
+DISABLE_CFI_ICALL
+GtkTreeStore* GtkTreeStoreNew(GType type) {
+  static void* create = DlSym(GetLibGtk(), "gtk_tree_store_new");
+  return DlCast<GtkTreeStore*(gint, ...)>(create)(1, type);
+}
+
+DISABLE_CFI_ICALL
+GdkEventType GdkEventGetEventType(GdkEvent* event) {
+  static void* get = DlSym(GetLibGtk(), "gdk_event_get_event_type");
+  return DlCast<GdkEventType(GdkEvent*)>(get)(event);
+}
+
+DISABLE_CFI_ICALL
+guint32 GdkEventGetTime(GdkEvent* event) {
+  static void* get = DlSym(GetLibGtk(), "gdk_event_get_time");
+  return DlCast<guint32(GdkEvent*)>(get)(event);
+}
+
+GdkEventType GdkKeyPress() {
+  return static_cast<GdkEventType>(GtkCheckVersion(4) ? 4 : 8);
+}
+
+GdkEventType GdkKeyRelease() {
+  return static_cast<GdkEventType>(GtkCheckVersion(4) ? 5 : 9);
 }
 
 }  // namespace gtk

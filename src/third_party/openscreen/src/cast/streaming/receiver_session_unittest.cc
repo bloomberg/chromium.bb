@@ -15,6 +15,7 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "util/chrono_helpers.h"
+#include "util/json/json_serialization.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -33,7 +34,6 @@ constexpr char kValidOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
       {
         "index": 31337,
@@ -99,7 +99,6 @@ constexpr char kNoAudioOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
       {
         "index": 31338,
@@ -131,7 +130,6 @@ constexpr char kInvalidCodecOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
       {
         "index": 31338,
@@ -163,7 +161,6 @@ constexpr char kNoVideoOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
       {
         "index": 1337,
@@ -187,7 +184,6 @@ constexpr char kNoAudioOrVideoOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": []
   }
 })";
@@ -197,7 +193,6 @@ constexpr char kInvalidJsonOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": [
   }
 })";
@@ -211,7 +206,6 @@ constexpr char kMissingSeqNumOfferMessage[] = R"({
   "type": "OFFER",
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": []
   }
 })";
@@ -221,7 +215,6 @@ constexpr char kValidJsonInvalidFormatOfferMessage[] = R"({
   "seqNum": 1337,
   "offer": {
     "castMode": "mirroring",
-    "receiverGetStatus": true,
     "supportedStreams": "anything"
   }
 })";
@@ -244,6 +237,11 @@ constexpr char kUnknownTypeMessage[] = R"({
 constexpr char kInvalidTypeMessage[] = R"({
   "type": 39,
   "seqNum": 1337
+})";
+
+constexpr char kGetCapabilitiesMessage[] = R"({
+  "seqNum": 820263770,
+  "type": "GET_CAPABILITIES"
 })";
 
 class FakeClient : public ReceiverSession::Client {
@@ -288,12 +286,17 @@ class ReceiverSessionTest : public ::testing::Test {
     return environment_;
   }
 
-  void SetUp() {
+  void SetUp() { SetUpWithPreferences(ReceiverSession::Preferences{}); }
+
+  // Since preferences are constant throughout the life of a session,
+  // changing them requires configuring a new session.
+  void SetUpWithPreferences(ReceiverSession::Preferences preferences) {
+    session_.reset();
     message_port_ = std::make_unique<SimpleMessagePort>("sender-12345");
     environment_ = MakeEnvironment();
-    session_ = std::make_unique<ReceiverSession>(
-        &client_, environment_.get(), message_port_.get(),
-        ReceiverSession::Preferences{});
+    session_ = std::make_unique<ReceiverSession>(&client_, environment_.get(),
+                                                 message_port_.get(),
+                                                 std::move(preferences));
   }
 
  protected:
@@ -364,9 +367,6 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
   EXPECT_LT(0, answer_body["udpPort"].asInt());
   EXPECT_GT(65535, answer_body["udpPort"].asInt());
 
-  // Get status should always be false, as we have no plans to implement it.
-  EXPECT_EQ(false, answer_body["receiverGetStatus"].asBool());
-
   // Constraints and display should not be present with no preferences.
   EXPECT_TRUE(answer_body["constraints"].isNull());
   EXPECT_TRUE(answer_body["display"].isNull());
@@ -400,24 +400,27 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
   message_port_->ReceiveMessage(kValidOfferMessage);
 }
 
-TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
-  auto constraints = std::make_unique<Constraints>(Constraints{
-      AudioConstraints{48001, 2, 32001, 32002, milliseconds(3001)},
-      VideoConstraints{3.14159,
-                       absl::optional<Dimensions>(
-                           Dimensions{320, 240, SimpleFraction{24, 1}}),
-                       Dimensions{1920, 1080, SimpleFraction{144, 1}}, 300000,
-                       90000000, milliseconds(1000)}});
+TEST_F(ReceiverSessionTest, CanNegotiateWithLimits) {
+  std::vector<ReceiverSession::AudioLimits> audio_limits = {
+      {false, AudioCodec::kOpus, 48001, 2, 32001, 32002, milliseconds(3001)}};
+  std::vector<ReceiverSession::VideoLimits> video_limits = {
+      {true,
+       VideoCodec::kVp9,
+       62208000,
+       {1920, 1080, {144, 1}},
+       300000,
+       90000000,
+       milliseconds(1000)}};
 
-  auto display = std::make_unique<DisplayDescription>(DisplayDescription{
-      absl::optional<Dimensions>(Dimensions{640, 480, SimpleFraction{60, 1}}),
-      absl::optional<AspectRatio>(AspectRatio{16, 9}),
-      absl::optional<AspectRatioConstraint>(AspectRatioConstraint::kFixed)});
+  auto display =
+      std::make_unique<ReceiverSession::Display>(ReceiverSession::Display{
+          {640, 480, {60, 1}}, false /* can scale content */});
 
   ReceiverSession session(&client_, environment_.get(), message_port_.get(),
                           ReceiverSession::Preferences{{VideoCodec::kVp9},
                                                        {AudioCodec::kOpus},
-                                                       std::move(constraints),
+                                                       std::move(audio_limits),
+                                                       std::move(video_limits),
                                                        std::move(display)});
 
   InSequence s;
@@ -434,14 +437,13 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
   const Json::Value answer = std::move(message_body.value());
 
   const Json::Value& answer_body = answer["answer"];
-  ASSERT_TRUE(answer_body.isObject());
+  ASSERT_TRUE(answer_body.isObject()) << messages[0];
 
   // Constraints and display should be valid with valid preferences.
   ASSERT_FALSE(answer_body["constraints"].isNull());
   ASSERT_FALSE(answer_body["display"].isNull());
 
   const Json::Value& display_json = answer_body["display"];
-  EXPECT_EQ("16:9", display_json["aspectRatio"].asString());
   EXPECT_EQ("60", display_json["dimensions"]["frameRate"].asString());
   EXPECT_EQ(640, display_json["dimensions"]["width"].asInt());
   EXPECT_EQ(480, display_json["dimensions"]["height"].asInt());
@@ -465,11 +467,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
   EXPECT_EQ("144", video["maxDimensions"]["frameRate"].asString());
   EXPECT_EQ(1920, video["maxDimensions"]["width"].asInt());
   EXPECT_EQ(1080, video["maxDimensions"]["height"].asInt());
-  EXPECT_DOUBLE_EQ(3.14159, video["maxPixelsPerSecond"].asDouble());
   EXPECT_EQ(300000, video["minBitRate"].asInt());
-  EXPECT_EQ("24", video["minDimensions"]["frameRate"].asString());
-  EXPECT_EQ(320, video["minDimensions"]["width"].asInt());
-  EXPECT_EQ(240, video["minDimensions"]["height"].asInt());
 }
 
 TEST_F(ReceiverSessionTest, HandlesNoValidAudioStream) {
@@ -688,6 +686,70 @@ TEST_F(ReceiverSessionTest, ReturnsErrorAnswerIfEnvironmentIsInvalidated) {
   EXPECT_TRUE(message_body.is_value());
   EXPECT_EQ("ANSWER", message_body.value()["type"].asString());
   EXPECT_EQ("error", message_body.value()["result"].asString());
+}
+
+TEST_F(ReceiverSessionTest, ReturnsErrorCapabilitiesIfRemotingDisabled) {
+  message_port_->ReceiveMessage(kGetCapabilitiesMessage);
+  const auto& messages = message_port_->posted_messages();
+  ASSERT_EQ(1u, messages.size());
+
+  // We should have an error response.
+  auto message_body = json::Parse(messages[0]);
+  EXPECT_TRUE(message_body.is_value());
+  EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
+  EXPECT_EQ("error", message_body.value()["result"].asString());
+}
+
+TEST_F(ReceiverSessionTest, ReturnsCapabilitiesWithRemotingDefaults) {
+  ReceiverSession::Preferences preferences;
+  preferences.remoting =
+      std::make_unique<ReceiverSession::RemotingPreferences>();
+
+  SetUpWithPreferences(std::move(preferences));
+  message_port_->ReceiveMessage(kGetCapabilitiesMessage);
+  const auto& messages = message_port_->posted_messages();
+  ASSERT_EQ(1u, messages.size());
+
+  // We should have an error response.
+  auto message_body = json::Parse(messages[0]);
+  EXPECT_TRUE(message_body.is_value());
+  EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
+  EXPECT_EQ("ok", message_body.value()["result"].asString());
+  const ReceiverCapability response =
+      ReceiverCapability::Parse(message_body.value()["capabilities"]).value();
+
+  EXPECT_THAT(
+      response.media_capabilities,
+      testing::ElementsAre(MediaCapability::kOpus, MediaCapability::kAac,
+                           MediaCapability::kVp8, MediaCapability::kH264));
+}
+
+TEST_F(ReceiverSessionTest, ReturnsCapabilitiesWithRemotingPreferences) {
+  ReceiverSession::Preferences preferences;
+  preferences.video_codecs = {VideoCodec::kH264};
+  preferences.remoting =
+      std::make_unique<ReceiverSession::RemotingPreferences>();
+  preferences.remoting->supports_chrome_audio_codecs = true;
+  preferences.remoting->supports_4k = true;
+
+  SetUpWithPreferences(std::move(preferences));
+  message_port_->ReceiveMessage(kGetCapabilitiesMessage);
+  const auto& messages = message_port_->posted_messages();
+  ASSERT_EQ(1u, messages.size());
+
+  // We should have an error response.
+  auto message_body = json::Parse(messages[0]);
+  EXPECT_TRUE(message_body.is_value());
+  EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
+  EXPECT_EQ("ok", message_body.value()["result"].asString());
+  const ReceiverCapability response =
+      ReceiverCapability::Parse(message_body.value()["capabilities"]).value();
+
+  EXPECT_THAT(
+      response.media_capabilities,
+      testing::ElementsAre(MediaCapability::kOpus, MediaCapability::kAac,
+                           MediaCapability::kH264, MediaCapability::kAudio,
+                           MediaCapability::k4k));
 }
 
 }  // namespace cast

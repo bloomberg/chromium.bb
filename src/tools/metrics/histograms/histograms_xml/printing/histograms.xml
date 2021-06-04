@@ -202,7 +202,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.MigratedMakeAndModel" enum="BooleanMigrated"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>luum@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -272,11 +272,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The success or error code for the setup of a CUPS printer. Recorded when
     setup is attempted through the settings dialogs. Only recorded on Chrome OS.
+    Printer setup results go into either this histogram or the
+    Printing.CUPS.ZeroconfPrinterSetupResult histogram - not both.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.PrinterSetupResult.PrintPreview"
+    enum="PrinterSetupResult" expires_after="2022-04-21">
+  <owner>batrapranav@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
+  <summary>
+    The success or error code for the setup of a CUPS printer. Recorded when
+    setup is attempted from the print preview dialog. Only recorded on Chrome
+    OS. Printer setup results go into either this histogram or the
+    Printing.CUPS.ZeroconfPrinterSetupResult.PrintPreview histogram - not both.
   </summary>
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusQueryResult"
-    enum="PrinterStatusQueryResult" expires_after="2021-08-10">
+    enum="PrinterStatusQueryResult" expires_after="2021-10-10">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -285,7 +299,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusReasons"
-    enum="PrinterStatusReasons" expires_after="2021-08-10">
+    enum="PrinterStatusReasons" expires_after="2021-10-10">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -358,7 +372,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Printing.CUPS.UsbSetupSource" enum="UsbPrinterSetupSource"
     expires_after="2021-09-19">
-  <owner>baileyberro@chromium.org</owner>
+  <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     Records the source from which a USB printer was configured in Chrome OS.
@@ -396,6 +410,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.ZeroconfPrinterSetupResult.PrintPreview"
+    enum="PrinterSetupResult" expires_after="2022-04-21">
+  <owner>batrapranav@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
+  <summary>
+    The success or error code for the setup of a Zeroconf printer. Recorded when
+    setup is attempted from the print preview dialog. Only recorded on Chrome
+    OS. Printer setup results go into either this histogram or the
+    Printing.CUPS.PrinterSetupResult.PrintPreview histogram - not both.
+  </summary>
+</histogram>
+
+<histogram
+    name="Printing.PrintBackend.DriversRequiringElevatedPrivilegeEncountered"
+    enum="BooleanFound" expires_after="2021-09-30">
+  <owner>awscreen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    Records if any printer driver operations were found to fail because of
+    access-denied errors when used in a sandboxed utility process. This can
+    occur from queries for setting up print preview as well as when printing a
+    document to a destination.
+  </summary>
+</histogram>
+
 <histogram name="Printing.PrinterCapabilities" units="ms" expires_after="M80">
   <obsolete>
     New data no longer needed 2020-12
@@ -409,7 +448,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.PrintServers.ServersToQuery" units="servers"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>pawliczek@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>

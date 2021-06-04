@@ -16,6 +16,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
@@ -151,6 +152,11 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   auto* render_pass = render_passes->back().get();
   bool success = false;
 
+  DBG_DRAW_RECT("overlay.incoming.damage", (*damage_rect));
+  for (auto&& each : surface_damage_rect_list) {
+    DBG_DRAW_RECT("overlay.surface.damage", each);
+  }
+
   // If we have any copy requests, we can't remove any quads for overlays or
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.
@@ -176,6 +182,11 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   NotifyOverlayPromotion(resource_provider, *candidates,
                          render_pass->quad_list);
 
+  if (!candidates->empty()) {
+    DBG_DRAW_RECT("overlay.selected.rect", (*candidates)[0].display_rect);
+  }
+  DBG_DRAW_RECT("overlay.outgoing.dmage", (*damage_rect));
+
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
 }
@@ -191,14 +202,15 @@ gfx::Rect ComputeDamageExcludingIndex(
     SurfaceDamageRectList* surface_damage_rect_list,
     const gfx::Rect& existing_damage,
     const gfx::Rect& display_rect,
-    bool is_opaque_pure_overlay) {
+    bool is_opaque,
+    bool is_underlay) {
   gfx::Rect root_damage_rect;
 
   if (overlay_damage_index == OverlayCandidate::kInvalidDamageIndex) {
     // An opaque overlay that is on top will hide any damage underneath.
     // TODO(petermcneeley): This is a special case optimization which could be
     // removed if we had more reliable damage.
-    if (is_opaque_pure_overlay) {
+    if (is_opaque && !is_underlay) {
       return gfx::SubtractRects(existing_damage, display_rect);
     }
     return existing_damage;
@@ -207,15 +219,26 @@ gfx::Rect ComputeDamageExcludingIndex(
   gfx::Rect occluding_rect;
   for (size_t i = 0; i < surface_damage_rect_list->size(); i++) {
     if (overlay_damage_index != i) {
+      gfx::Rect curr_surface_damage = (*surface_damage_rect_list)[i];
+
+      // The |surface_damage_rect_list| can include damage rects coming from
+      // outside and partially outside the original |existing_damage| area. This
+      // is due to the conditional inclusion of these damage rects based on
+      // target damage in surface aggregator. So by restricting this damage to
+      // the |existing_damage| we avoid unnecessary final damage output.
+      // https://crbug.com/1197609
+      curr_surface_damage.Intersect(existing_damage);
       // Only add damage back in if it is not occluded by the overlay.
-      if (!occluding_rect.Contains((*surface_damage_rect_list)[i])) {
-        root_damage_rect.Union((*surface_damage_rect_list)[i]);
+      if (!occluding_rect.Contains(curr_surface_damage)) {
+        root_damage_rect.Union(curr_surface_damage);
       }
     } else {
       // |surface_damage_rect_list| is ordered such that from here on the
       // |display_rect| for the overlay will act as an occluder for damage
       // after.
-      occluding_rect = display_rect;
+      if (is_opaque) {
+        occluding_rect = display_rect;
+      }
     }
   }
   return root_damage_rect;
@@ -252,12 +275,11 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
       // If an overlay candidate comes from output surface, its z-order should
       // be 0.
       overlay_damage_rect_.Union(this_frame_overlay_rect);
-      if (overlay.is_opaque) {
-        is_opaque_overlay = true;
-        exclude_overlay_index = overlay.overlay_damage_index;
-      }
+      is_opaque_overlay = overlay.is_opaque;
+      exclude_overlay_index = overlay.overlay_damage_index;
     } else {
       // Underlay candidate is assumed to be opaque.
+      is_opaque_overlay = true;
       is_underlay = true;
       exclude_overlay_index = overlay.overlay_damage_index;
     }
@@ -272,7 +294,7 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
   // Removes all damage from this overlay and occluded surface damages.
   *damage_rect = ComputeDamageExcludingIndex(
       exclude_overlay_index, surface_damage_rect_list, *damage_rect,
-      this_frame_overlay_rect, is_opaque_overlay && !is_underlay);
+      this_frame_overlay_rect, is_opaque_overlay, is_underlay);
 
   // Drawing on the overlay_rect usually occurs on a different plane, but we
   // still need to damage the overlay_rect when certain changes occur from one
@@ -287,7 +309,7 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
     // black transparent hole is made for the underlay to show through
     // but its possible that the damage for this quad is less than the
     // complete size of the underlay.  https://crbug.com/1130733
-    if (!is_opaque_overlay) {
+    if (is_underlay) {
       damage_rect->Union(this_frame_overlay_rect);
     }
   }
@@ -298,7 +320,7 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
 }
 
 void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
-    base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane) {
+    absl::optional<OutputSurfaceOverlayPlane>* output_surface_plane) {
   if (!output_surface_plane || !output_surface_plane->has_value())
     return;
 

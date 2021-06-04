@@ -9,7 +9,7 @@ struct foo {
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   return;
 }
 

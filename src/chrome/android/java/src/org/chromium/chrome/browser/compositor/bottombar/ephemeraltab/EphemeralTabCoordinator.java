@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -108,15 +107,14 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      * @return {@code true} if the feature is enabled.
      */
     public static boolean isSupported() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)
-                && !SysUtils.isLowEndDevice();
+        return !SysUtils.isLowEndDevice();
     }
 
     /**
      * Checks if the preview tab is in open (peek) state.
      */
     public boolean isOpened() {
-        return mPeeked;
+        return mPeeked || mFullyOpened;
     }
 
     /**
@@ -140,12 +138,9 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             assert mSheetContent == null;
             createWebContents(profile);
             mSheetObserver = new EmptyBottomSheetObserver() {
-                private int mCloseReason;
-
                 @Override
                 public void onSheetContentChanged(BottomSheetContent newContent) {
                     if (newContent != mSheetContent) {
-                        mMetrics.recordMetricsForClosed(mCloseReason);
                         mPeeked = false;
                         destroyWebContents();
                     }
@@ -176,13 +171,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                             }
                             break;
                     }
-                }
-
-                @Override
-                public void onSheetClosed(int reason) {
-                    // "Closed" actually means "Peek" for bottom sheet. Save the reason to
-                    // log when the sheet goes to hidden state. See http://crbug.com/986310.
-                    mCloseReason = reason;
                 }
 
                 @Override
@@ -232,6 +220,9 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
     private void destroyWebContents() {
         mSheetContent = null; // Will be destroyed by BottomSheet controller.
+
+        mPeeked = false;
+        mFullyOpened = false;
 
         if (mWebContents != null) {
             mWebContents.destroy();
@@ -333,8 +324,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 callback.onResult(drawable);
             };
 
-            mFaviconHelper.getLocalFaviconImageForURL(
-                    profile, url.getSpec(), mFaviconSize, imageCallback);
+            mFaviconHelper.getLocalFaviconImageForURL(profile, url, mFaviconSize, imageCallback);
         }
     }
 }

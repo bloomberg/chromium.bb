@@ -1401,11 +1401,12 @@ class cached_lower_bound_impl {
 
     inline iterator lower_bound(const index_type &index) { return map_->lower_bound(key_type(index, index + 1)); }
     inline bool at_end(const iterator &it) const { return it == end_; }
-    inline bool at_end() const { return at_end(lower_bound_); }
 
     bool is_lower_than(const index_type &index, const iterator &it) { return at_end(it) || (index < it->first.end); }
 
   public:
+    // The cached lower bound knows the parent map, and thus can tell us this...
+    inline bool at_end() const { return at_end(lower_bound_); }
     // includes(index) is a convenience function to test if the index would be in the currently cached lower bound
     bool includes(const index_type &index) const { return !at_end() && lower_bound_->first.includes(index); }
 
@@ -1691,15 +1692,16 @@ class parallel_iterator {
     const value_type *operator->() const { return &pos_; }
 };
 
-template <typename RangeMap, typename SourceIterator = typename RangeMap::const_iterator>
-bool splice(RangeMap *to, const RangeMap &from, value_precedence arbiter, SourceIterator begin, SourceIterator end) {
+template <typename DstRangeMap, typename SrcRangeMap, typename Updater,
+          typename SourceIterator = typename SrcRangeMap::const_iterator>
+bool splice(DstRangeMap &to, const SrcRangeMap &from, SourceIterator begin, SourceIterator end, const Updater &updater) {
     if (from.empty() || (begin == end) || (begin == from.cend())) return false;  // nothing to merge.
 
-    using ParallelIterator = parallel_iterator<RangeMap, const RangeMap>;
-    using Key = typename RangeMap::key_type;
-    using CachedLowerBound = cached_lower_bound_impl<RangeMap>;
-    using ConstCachedLowerBound = cached_lower_bound_impl<const RangeMap>;
-    ParallelIterator par_it(*to, from, begin->first.begin);
+    using ParallelIterator = parallel_iterator<DstRangeMap, const SrcRangeMap>;
+    using Key = typename SrcRangeMap::key_type;
+    using CachedLowerBound = cached_lower_bound_impl<DstRangeMap>;
+    using ConstCachedLowerBound = cached_lower_bound_impl<const SrcRangeMap>;
+    ParallelIterator par_it(to, from, begin->first.begin);
     bool updated = false;
     while (par_it->range.non_empty() && par_it->pos_B->lower_bound != end) {
         const Key &range = par_it->range;
@@ -1711,24 +1713,24 @@ bool splice(RangeMap *to, const RangeMap &from, value_precedence arbiter, Source
             // Because of how the parallel iterator walk, "to" is valid over the whole range or it isn't (ranges don't span
             // transitions between map entries or between valid and invalid ranges)
             if (to_lb->valid) {
-                // Only rewrite this range if source is preferred (and the value differs)
-                // TODO determine if equality checks are always wanted. (for example heavyweight values)
-                if (arbiter == value_precedence::prefer_source && (write_it->second != read_it->second)) {
-                    // Both ranges occupied and source is preferred and from differs from to
-                    if (write_it->first == range) {
-                        // we're writing the whole destination range, so just set the value
-                        write_it->second = read_it->second;
-                    } else {
-                        to->overwrite_range(write_it, std::make_pair(range, read_it->second));
-                        par_it.invalidate_A();  // we've changed map 'to' behind to_lb's back... let it know.
-                    }
-                    updated = true;
+                if (write_it->first == range) {
+                    // if the source and destination ranges match we can overwrite everything
+                    updated |= updater.update(write_it->second, read_it->second);
+                } else {
+                    // otherwise we need to split the destination range.
+                    auto value_to_update = write_it->second; // intentional copy
+                    updated |= updater.update(value_to_update, read_it->second);
+                    to.overwrite_range(to_lb->lower_bound, std::make_pair(range, value_to_update));
+                    par_it.invalidate_A();  // we've changed map 'to' behind to_lb's back... let it know.
                 }
             } else {
                 // Insert into the gap.
-                to->insert(write_it, std::make_pair(range, read_it->second));
-                par_it.invalidate_A();  // we've changed map 'to' behind to_lb's back... let it know.
-                updated = true;
+                auto opt = updater.insert(read_it->second);
+                if (opt) {
+                    to.insert(write_it, std::make_pair(range, std::move(*opt)));
+                    updated = true;
+                    par_it.invalidate_A();  // we've changed map 'to' behind to_lb's back... let it know.
+                }
             }
         }
         ++par_it;  // next range over which both 'to' and 'from' stay constant
@@ -1736,8 +1738,43 @@ bool splice(RangeMap *to, const RangeMap &from, value_precedence arbiter, Source
     return updated;
 }
 // And short hand for "from begin to end"
+template <typename DstRangeMap, typename SrcRangeMap, typename Updater>
+bool splice(DstRangeMap &to, const SrcRangeMap &from, const Updater &updater) {
+    return splice(to, from, from.cbegin(), from.cend(), updater);
+}
+
+template <typename T>
+struct update_prefer_source {
+    bool update(T &dst, const T &src) const {
+        if (dst != src) {
+            dst = src;
+            return true;
+        }
+        return false;
+    }
+
+    layer_data::optional<T> insert(const T &src) const { return layer_data::optional<T>(layer_data::in_place, src); }
+};
+
+template <typename T>
+struct update_prefer_dest {
+    bool update(T &dst, const T &src) const { return false; }
+
+    layer_data::optional<T> insert(const T &src) const { return layer_data::optional<T>(layer_data::in_place, src); }
+};
+
+template <typename RangeMap, typename SourceIterator = typename RangeMap::const_iterator>
+bool splice(RangeMap &to, const RangeMap &from, value_precedence arbiter, SourceIterator begin, SourceIterator end) {
+    if (arbiter == value_precedence::prefer_source) {
+        return splice(to, from, from.cbegin(), from.cend(), update_prefer_source<typename RangeMap::mapped_type>());
+    } else {
+        return splice(to, from, from.cbegin(), from.cend(), update_prefer_dest<typename RangeMap::mapped_type>());
+    }
+}
+
+// And short hand for "from begin to end"
 template <typename RangeMap>
-bool splice(RangeMap *to, const RangeMap &from, value_precedence arbiter) {
+bool splice(RangeMap &to, const RangeMap &from, value_precedence arbiter) {
     return splice(to, from, arbiter, from.cbegin(), from.cend());
 }
 

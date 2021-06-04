@@ -232,7 +232,7 @@ void MultideviceHandler::NotifyAndroidSmsInfoChange() {
 
 void MultideviceHandler::HandleShowMultiDeviceSetupDialog(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   multidevice_setup::MultiDeviceSetupDialog::Show();
 }
 
@@ -271,7 +271,7 @@ void MultideviceHandler::HandleSetFeatureEnabledState(
   result = args->GetBoolean(2, &enabled);
   DCHECK(result);
 
-  base::Optional<std::string> auth_token;
+  absl::optional<std::string> auth_token;
   std::string possible_token_value;
   if (args->GetString(3, &possible_token_value))
     auth_token = possible_token_value;
@@ -288,19 +288,19 @@ void MultideviceHandler::HandleSetFeatureEnabledState(
 }
 
 void MultideviceHandler::HandleRemoveHostDevice(const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   multidevice_setup_client_->RemoveHostDevice();
 }
 
 void MultideviceHandler::HandleRetryPendingHostSetup(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   multidevice_setup_client_->RetrySetHostNow(
       base::BindOnce(&OnRetrySetHostNowResult));
 }
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   android_sms_app_manager_->SetUpAndLaunchAndroidSmsApp();
 }
 
@@ -348,7 +348,7 @@ void MultideviceHandler::HandleGetSmartLockSignInAllowed(
 
 std::unique_ptr<base::DictionaryValue>
 MultideviceHandler::GenerateAndroidSmsInfo() {
-  base::Optional<GURL> app_url;
+  absl::optional<GURL> app_url;
   if (android_sms_app_manager_)
     app_url = android_sms_app_manager_->GetCurrentAppUrl();
   if (!app_url)

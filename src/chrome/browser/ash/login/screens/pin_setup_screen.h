@@ -7,20 +7,23 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/wizard_context.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-
-class PinSetupScreenView;
-class WizardContext;
+namespace ash {
 
 class PinSetupScreen : public BaseScreen {
  public:
+  using TView = PinSetupScreenView;
   enum class Result { DONE, USER_SKIP, NOT_APPLICABLE, TIMED_OUT };
 
   // This enum is tied directly to a UMA enum defined in
@@ -40,6 +43,9 @@ class PinSetupScreen : public BaseScreen {
   // There is an additional checkpoint that might skip the setup based on user
   // profile and pin availability information in `MaybeSkip`.
   static bool ShouldSkipBecauseOfPolicy();
+
+  static std::unique_ptr<base::AutoReset<bool>>
+  SetForceNoSkipBecauseOfPolicyForTests(bool value);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   PinSetupScreen(PinSetupScreenView* view,
@@ -65,13 +71,14 @@ class PinSetupScreen : public BaseScreen {
   // Inticates whether the device supports usage of PIN for login.
   // This information is retrived in an async way and will not be available
   // immediately.
-  base::Optional<bool> has_login_support_;
+  absl::optional<bool> has_login_support_;
 
   PinSetupScreenView* const view_;
   ScreenExitCallback exit_callback_;
 
   base::OneShotTimer token_lifetime_timeout_;
 
+  bool SkipScreen(WizardContext* context);
   void ClearAuthData(WizardContext* context);
   void OnHasLoginSupport(bool login_available);
   void OnTokenTimedOut();
@@ -81,6 +88,12 @@ class PinSetupScreen : public BaseScreen {
   DISALLOW_COPY_AND_ASSIGN(PinSetupScreen);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::PinSetupScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_PIN_SETUP_SCREEN_H_

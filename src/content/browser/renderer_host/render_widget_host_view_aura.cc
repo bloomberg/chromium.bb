@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -68,6 +69,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
@@ -118,10 +120,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/wm/core/ime_util_chromeos.h"
-#endif
-
-#if defined(OS_FUCHSIA)
-#include "ui/base/ime/virtual_keyboard_controller.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -320,13 +318,13 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
 
-  cursor_manager_.reset(new CursorManager(this));
+  cursor_manager_ = std::make_unique<CursorManager>(this);
 
   SetOverscrollControllerEnabled(
       base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation));
 
-  selection_controller_client_.reset(
-      new TouchSelectionControllerClientAura(this));
+  selection_controller_client_ =
+      std::make_unique<TouchSelectionControllerClientAura>(this);
   CreateSelectionController();
 
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
@@ -506,7 +504,7 @@ void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
 }
 
 void RenderWidgetHostViewAura::ParentHierarchyChanged() {
-  ancestor_window_observer_.reset(new WindowAncestorObserver(this));
+  ancestor_window_observer_ = std::make_unique<WindowAncestorObserver>(this);
   // Snap when we receive a hierarchy changed. http://crbug.com/388908.
   HandleParentBoundsChanged();
 }
@@ -532,7 +530,7 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() {
 void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
-                              base::nullopt);
+                              absl::nullopt);
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -602,7 +600,7 @@ void RenderWidgetHostViewAura::HideImpl() {
     aura::WindowTreeHost* host = window_->GetHost();
       aura::Window* parent = window_->parent();
       aura::Window::OcclusionState parent_occl_state =
-          parent ? parent->occlusion_state()
+          parent ? parent->GetOcclusionState()
                  : aura::Window::OcclusionState::UNKNOWN;
       aura::Window::OcclusionState native_win_occlusion_state =
           host ? host->GetNativeWindowOcclusionState()
@@ -654,7 +652,7 @@ void RenderWidgetHostViewAura::UpdateBackgroundColor() {
   window_->layer()->SetColor(color);
 }
 
-base::Optional<DisplayFeature> RenderWidgetHostViewAura::GetDisplayFeature() {
+absl::optional<DisplayFeature> RenderWidgetHostViewAura::GetDisplayFeature() {
   return display_feature_;
 }
 
@@ -663,7 +661,7 @@ void RenderWidgetHostViewAura::SetDisplayFeatureForTesting(
   if (display_feature)
     display_feature_ = *display_feature;
   else
-    display_feature_ = base::nullopt;
+    display_feature_ = absl::nullopt;
 }
 
 void RenderWidgetHostViewAura::WindowTitleChanged() {
@@ -757,20 +755,21 @@ void RenderWidgetHostViewAura::Destroy() {
     delete this;
 }
 
-void RenderWidgetHostViewAura::SetTooltipText(
+void RenderWidgetHostViewAura::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text) {
-  GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+  if (GetCursorManager()->IsViewUnderCursor(this))
+    UpdateTooltip(tooltip_text);
 }
 
-void RenderWidgetHostViewAura::DisplayTooltipText(
+void RenderWidgetHostViewAura::UpdateTooltip(
     const std::u16string& tooltip_text) {
-  tooltip_ = tooltip_text;
-  aura::Window* root_window = window_->GetRootWindow();
-  wm::TooltipClient* tooltip_client = wm::GetTooltipClient(root_window);
+  SetTooltipText(tooltip_text);
+
+  auto* tooltip_client = wm::GetTooltipClient(window_->GetRootWindow());
   if (tooltip_client) {
-    tooltip_client->UpdateTooltip(window_);
     // Content tooltips should be visible indefinitely.
     tooltip_client->SetHideTooltipTimeout(window_, {});
+    tooltip_client->UpdateTooltip(window_);
   }
 }
 
@@ -838,7 +837,7 @@ void RenderWidgetHostViewAura::ResetFallbackToFirstNavigationSurface() {
 
 bool RenderWidgetHostViewAura::RequestRepaintForTesting() {
   return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                     base::nullopt);
+                                     absl::nullopt);
 }
 
 void RenderWidgetHostViewAura::DidStopFlinging() {
@@ -1099,7 +1098,7 @@ bool RenderWidgetHostViewAura::GetIsMouseLockedUnadjustedMovementForTesting() {
 }
 
 bool RenderWidgetHostViewAura::LockKeyboard(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
+    absl::optional<base::flat_set<ui::DomCode>> codes) {
   return event_handler_->LockKeyboard(std::move(codes));
 }
 
@@ -1259,6 +1258,19 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
   TRACE_EVENT1("ime", "RenderWidgetHostViewAura::GetCaretBounds", "caret_rect",
                caret_rect.ToString());
   return caret_rect;
+}
+
+gfx::Rect RenderWidgetHostViewAura::GetSelectionBoundingBox() const {
+  auto* focused_view = GetFocusedViewForTextSelection();
+  if (!focused_view)
+    return gfx::Rect();
+
+  const gfx::Rect bounding_box =
+      text_input_manager_->GetSelectionRegion(focused_view)->bounding_box;
+  if (bounding_box.IsEmpty())
+    return gfx::Rect();
+
+  return ConvertRectToScreen(bounding_box);
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
@@ -1533,18 +1545,68 @@ bool RenderWidgetHostViewAura::SetAutocorrectRange(
   ui_ime_text_span.start_offset = 0;
   ui_ime_text_span.end_offset = range.length();
   ui_ime_text_span.underline_style = ui::ImeTextSpan::UnderlineStyle::kDot;
-  ui_ime_text_span.underline_color = gfx::kGoogleGrey700;
+  ui_ime_text_span.underline_color =
+      SkColorSetA(gfx::kGoogleGrey700, SK_AlphaOPAQUE * 0.7);
+  ui_ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
 
   input_handler->AddImeTextSpansToExistingText(range.start(), range.end(),
                                                {ui_ime_text_span});
   return true;
 }
+
+absl::optional<ui::GrammarFragment>
+RenderWidgetHostViewAura::GetGrammarFragment(const gfx::Range& range) {
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
+    return absl::nullopt;
+  return text_input_manager_->GetGrammarFragment(range);
+}
+
+bool RenderWidgetHostViewAura::ClearGrammarFragments(const gfx::Range& range) {
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
+  if (!input_handler)
+    return false;
+
+  input_handler->ClearImeTextSpansByType(
+      range.start(), range.end(), ui::ImeTextSpan::Type::kGrammarSuggestion);
+  return true;
+}
+
+bool RenderWidgetHostViewAura::AddGrammarFragments(
+    const std::vector<ui::GrammarFragment>& fragments) {
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
+  if (!input_handler || fragments.empty())
+    return false;
+
+  unsigned max_fragment_end = 0;
+  std::vector<::ui::ImeTextSpan> ime_text_spans;
+  ime_text_spans.reserve(fragments.size());
+  for (auto& fragment : fragments) {
+    ui::ImeTextSpan ui_ime_text_span;
+    ui_ime_text_span.type = ui::ImeTextSpan::Type::kGrammarSuggestion;
+    ui_ime_text_span.start_offset = fragment.range.start();
+    ui_ime_text_span.end_offset = fragment.range.end();
+    ui_ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
+    ui_ime_text_span.underline_style = ui::ImeTextSpan::UnderlineStyle::kDot;
+    ui_ime_text_span.underline_color = gfx::kGoogleBlue400;
+    ui_ime_text_span.suggestions = {fragment.suggestion};
+
+    ime_text_spans.push_back(ui_ime_text_span);
+    if (fragment.range.end() > max_fragment_end) {
+      max_fragment_end = fragment.range.end();
+    }
+  }
+  input_handler->AddImeTextSpansToExistingText(0, max_fragment_end,
+                                               ime_text_spans);
+
+  return true;
+}
+
 #endif
 
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
-    base::Optional<gfx::Rect>* control_bounds,
-    base::Optional<gfx::Rect>* selection_bounds) {
+    absl::optional<gfx::Rect>* control_bounds,
+    absl::optional<gfx::Rect>* selection_bounds) {
   if (text_input_manager_) {
     const ui::mojom::TextInputState* state =
         text_input_manager_->GetTextInputState();
@@ -1807,12 +1869,6 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
   if (window_ && virtual_keyboard_controller_win_) {
     virtual_keyboard_controller_win_->FocusedNodeChanged(editable);
   }
-#elif defined(OS_FUCHSIA)
-  if (!editable && window_) {
-    if (input_method) {
-      input_method->GetVirtualKeyboardController()->DismissVirtualKeyboard();
-    }
-  }
 #endif
 }
 
@@ -2004,7 +2060,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");
   event_handler_->set_window(window_);
-  window_observer_.reset(new WindowObserver(this));
+  window_observer_ = std::make_unique<WindowObserver>(this);
 
   wm::SetTooltipText(window_, &tooltip_);
   wm::SetActivationDelegate(window_, this);
@@ -2100,7 +2156,7 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
 bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
-    const base::Optional<viz::LocalSurfaceId>& child_local_surface_id) {
+    const absl::optional<viz::LocalSurfaceId>& child_local_surface_id) {
   DCHECK(window_);
   DCHECK(delegated_frame_host_) << "Cannot be invoked during destruction.";
 
@@ -2147,7 +2203,7 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
 }
 
 RenderWidgetHostViewBase*
-RenderWidgetHostViewAura::GetFocusedViewForTextSelection() {
+RenderWidgetHostViewAura::GetFocusedViewForTextSelection() const {
   // We obtain the TextSelection from focused RWH which is obtained from the
   // frame tree.
   return GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
@@ -2210,8 +2266,8 @@ void RenderWidgetHostViewAura::SetTooltipsEnabled(bool enable) {
   if (enable) {
     tooltip_disabler_.reset();
   } else {
-    tooltip_disabler_.reset(
-        new wm::ScopedTooltipDisabler(window_->GetRootWindow()));
+    tooltip_disabler_ =
+        std::make_unique<wm::ScopedTooltipDisabler>(window_->GetRootWindow());
   }
 }
 
@@ -2230,7 +2286,7 @@ void RenderWidgetHostViewAura::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled)
     overscroll_controller_.reset();
   else if (!overscroll_controller_)
-    overscroll_controller_.reset(new OverscrollController());
+    overscroll_controller_ = std::make_unique<OverscrollController>();
 }
 
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
@@ -2399,8 +2455,8 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();
   tsc_config.enable_longpress_drag_selection = false;
-  selection_controller_.reset(new ui::TouchSelectionController(
-      selection_controller_client_.get(), tsc_config));
+  selection_controller_ = std::make_unique<ui::TouchSelectionController>(
+      selection_controller_client_.get(), tsc_config);
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
@@ -2448,8 +2504,9 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
 #elif defined(OS_WIN)
     if (GetInputMethod()) {
       if (!virtual_keyboard_controller_win_) {
-        virtual_keyboard_controller_win_.reset(
-            new VirtualKeyboardControllerWin(this, GetInputMethod()));
+        virtual_keyboard_controller_win_ =
+            std::make_unique<VirtualKeyboardControllerWin>(this,
+                                                           GetInputMethod());
       }
       virtual_keyboard_controller_win_->UpdateTextInputState(state);
     }
@@ -2515,16 +2572,17 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
 
-#if defined(USE_X11) || (defined(USE_OZONE) && !BUILDFLAG(IS_CHROMEOS_ASH))
-  const TextInputManager::TextSelection* selection =
-      GetTextInputManager()->GetTextSelection(focused_view);
-  if (selection->selected_text().length()) {
-    // Set the ClipboardBuffer::kSelection to the ui::Clipboard.
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kSelection);
-    clipboard_writer.WriteText(selection->selected_text());
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    const TextInputManager::TextSelection* selection =
+        GetTextInputManager()->GetTextSelection(focused_view);
+    if (selection->selected_text().length()) {
+      // Set the ClipboardBuffer::kSelection to the ui::Clipboard.
+      ui::ScopedClipboardWriter clipboard_writer(
+          ui::ClipboardBuffer::kSelection);
+      clipboard_writer.WriteText(selection->selected_text());
+    }
   }
-#endif  // defined(USE_X11) || (defined(USE_OZONE) &&
-        // !BUILDFLAG(IS_CHROMEOS_ASH))
 }
 
 void RenderWidgetHostViewAura::SetPopupChild(
@@ -2546,7 +2604,7 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged(
     bool rotation) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt);
+                              absl::nullopt);
 }
 
 viz::ScopedSurfaceIdAllocator
@@ -2574,7 +2632,7 @@ void RenderWidgetHostViewAura::DidNavigate() {
                                   window_->GetLocalSurfaceId());
     } else {
       SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                  base::nullopt);
+                                  absl::nullopt);
     }
   }
     delegated_frame_host_->DidNavigate();
@@ -2648,6 +2706,13 @@ RenderWidgetHostViewAura::GetFrameWidgetInputHandlerForFocusedWidget() {
   if (!focused_widget)
     return nullptr;
   return focused_widget->GetFrameWidgetInputHandler();
+}
+
+void RenderWidgetHostViewAura::SetTooltipText(
+    const std::u16string& tooltip_text) {
+  tooltip_ = tooltip_text;
+  if (tooltip_observer_for_testing_)
+    tooltip_observer_for_testing_->OnTooltipTextUpdated(tooltip_text);
 }
 
 }  // namespace content

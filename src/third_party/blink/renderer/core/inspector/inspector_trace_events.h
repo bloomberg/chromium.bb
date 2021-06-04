@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -93,7 +93,8 @@ class CORE_EXPORT InspectorTraceEvents
                        const ResourceResponse& redirect_response,
                        const ResourceLoaderOptions&,
                        ResourceType,
-                       RenderBlockingBehavior);
+                       RenderBlockingBehavior,
+                       base::TimeTicks timestamp);
   void WillSendNavigationRequest(uint64_t identifier,
                                  DocumentLoader*,
                                  const KURL&,
@@ -484,10 +485,10 @@ struct V8CacheResult {
     bool rejected;
   };
   V8CacheResult() = default;
-  V8CacheResult(base::Optional<ProduceResult>, base::Optional<ConsumeResult>);
+  V8CacheResult(absl::optional<ProduceResult>, absl::optional<ConsumeResult>);
 
-  base::Optional<ProduceResult> produce_result;
-  base::Optional<ConsumeResult> consume_result;
+  absl::optional<ProduceResult> produce_result;
+  absl::optional<ConsumeResult> consume_result;
 };
 
 void Data(perfetto::TracedValue context,

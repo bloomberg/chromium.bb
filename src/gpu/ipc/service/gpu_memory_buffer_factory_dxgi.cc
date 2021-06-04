@@ -8,6 +8,7 @@
 
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/dxgi_helpers.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -121,9 +122,12 @@ GpuMemoryBufferFactoryDXGI::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
+    gfx::BufferPlane plane,
     int client_id,
     SurfaceHandle surface_handle) {
   if (handle.type != gfx::DXGI_SHARED_HANDLE)
+    return nullptr;
+  if (plane != gfx::BufferPlane::DEFAULT)
     return nullptr;
   // Transfer ownership of handle to GLImageDXGI.
   auto image = base::MakeRefCounted<gl::GLImageDXGI>(size, nullptr);

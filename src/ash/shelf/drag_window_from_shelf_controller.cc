@@ -37,6 +37,7 @@
 #include "base/numerics/ranges.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -232,11 +233,11 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   previous_location_in_screen_ = location_in_screen;
 }
 
-base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
+absl::optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
     const gfx::PointF& location_in_screen,
-    base::Optional<float> velocity_y) {
+    absl::optional<float> velocity_y) {
   if (!drag_started_)
-    return base::nullopt;
+    return absl::nullopt;
 
   UpdateDraggedWindow(location_in_screen);
 
@@ -252,7 +253,7 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
       ShouldDropWindowInOverview(location_in_screen, velocity_y);
   end_snap_position_ = GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
 
-  window_drag_result_ = base::nullopt;
+  window_drag_result_ = absl::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
     if (in_overview)
@@ -510,7 +511,7 @@ DragWindowFromShelfController::GetSnapPosition(
   // if |location_in_screen| is close to the bottom of the screen and is
   // inside of GetReturnToMaximizedThreshold() threshold, we should not try to
   // snap the window.
-  if (ShouldRestoreToOriginalBounds(location_in_screen, base::nullopt))
+  if (ShouldRestoreToOriginalBounds(location_in_screen, absl::nullopt))
     return SplitViewController::NONE;
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -537,7 +538,7 @@ DragWindowFromShelfController::GetSnapPosition(
 
 bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(
     const gfx::PointF& location_in_screen,
-    base::Optional<float> velocity_y) const {
+    absl::optional<float> velocity_y) const {
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(gfx::ToRoundedPoint(location_in_screen))
@@ -564,7 +565,7 @@ bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(
 
 bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     const gfx::PointF& location_in_screen,
-    base::Optional<float> velocity_y) const {
+    absl::optional<float> velocity_y) const {
   // If the drag ends below the shelf, do not go to home screen (theoretically
   // it may happen in kExtended hotseat case when drag can start and end below
   // the shelf).
@@ -595,7 +596,7 @@ bool DragWindowFromShelfController::ShouldGoToHomeScreen(
 SplitViewController::SnapPosition
 DragWindowFromShelfController::GetSnapPositionOnDragEnd(
     const gfx::PointF& location_in_screen,
-    base::Optional<float> velocity_y) const {
+    absl::optional<float> velocity_y) const {
   if (!Shell::Get()->overview_controller()->InOverviewSession() ||
       ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     return SplitViewController::NONE;
@@ -611,7 +612,7 @@ DragWindowFromShelfController::GetSnapPositionOnDragEnd(
 
 bool DragWindowFromShelfController::ShouldDropWindowInOverview(
     const gfx::PointF& location_in_screen,
-    base::Optional<float> velocity_y) const {
+    absl::optional<float> velocity_y) const {
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return false;
 

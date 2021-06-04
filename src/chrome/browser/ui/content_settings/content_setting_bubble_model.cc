@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
+#include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
@@ -48,6 +48,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
@@ -71,7 +72,6 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
 #include "services/device/public/cpp/geolocation/location_system_permission_status.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -86,6 +86,7 @@
 #if defined(OS_MAC)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -686,7 +687,7 @@ void ContentSettingCookiesBubbleModel::CommitChanges() {
   // cookies settings bubble is open. This resets the web contents to NULL.
   if (settings_changed()) {
     CollectedCookiesInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()));
+        infobars::ContentInfoBarManager::FromWebContents(web_contents()));
   }
   ContentSettingSingleRadioGroup::CommitChanges();
 }
@@ -717,9 +718,9 @@ class ContentSettingPopupBubbleModel
     return bubble_content().list_items[index].item_id;
   }
 
-  ScopedObserver<blocked_content::UrlListManager,
-                 blocked_content::UrlListManager::Observer>
-      url_list_observer_;
+  base::ScopedObservation<blocked_content::UrlListManager,
+                          blocked_content::UrlListManager::Observer>
+      url_list_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupBubbleModel);
 };
@@ -729,8 +730,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
     WebContents* web_contents)
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
-                                     ContentSettingsType::POPUPS),
-      url_list_observer_(this) {
+                                     ContentSettingsType::POPUPS) {
   set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TITLE));
 
   // Build blocked popup list.
@@ -740,7 +740,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
   for (const auto& blocked_popup : blocked_popups)
     AddListItem(CreateUrlListItem(blocked_popup.first, blocked_popup.second));
 
-  url_list_observer_.Add(helper->manager());
+  url_list_observation_.Observe(helper->manager());
   content_settings::RecordPopupsAction(
       content_settings::POPUPS_ACTION_DISPLAYED_BUBBLE);
 }
@@ -1237,10 +1237,10 @@ ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
     bool is_allowed =
         content_settings->IsContentAllowed(ContentSettingsType::GEOLOCATION);
 
-    device::GeolocationSystemPermissionManager* permission_delegate =
-        g_browser_process->platform_part()->location_permission_manager();
+    device::GeolocationManager* geolocation_manager =
+        g_browser_process->platform_part()->geolocation_manager();
     LocationSystemPermissionStatus permission =
-        permission_delegate->GetSystemPermission();
+        geolocation_manager->GetSystemPermission();
     if (permission != LocationSystemPermissionStatus::kAllowed && is_allowed) {
       // If the permission is turned off in MacOS system preferences, overwrite
       // the bubble to enable the user to trigger the system dialog.
@@ -1465,8 +1465,7 @@ ContentSettingFramebustBlockBubbleModel::
                                             WebContents* web_contents)
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
-                                     ContentSettingsType::POPUPS),
-      url_list_observer_(this) {
+                                     ContentSettingsType::POPUPS) {
   set_title(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_MESSAGE));
   auto* helper = FramebustBlockTabHelper::FromWebContents(web_contents);
 
@@ -1474,7 +1473,7 @@ ContentSettingFramebustBlockBubbleModel::
   for (const auto& blocked_url : helper->blocked_urls())
     AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 
-  url_list_observer_.Add(helper->manager());
+  url_list_observation_.Observe(helper->manager());
 }
 
 ContentSettingFramebustBlockBubbleModel::

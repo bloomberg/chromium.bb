@@ -5,6 +5,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -12,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +65,7 @@ const char kContextualSearchCategory[] = "category";
 const char kContextualSearchCardTag[] = "card_tag";
 const char kContextualSearchSearchUrlFull[] = "search_url_full";
 const char kContextualSearchSearchUrlPreload[] = "search_url_preload";
-const char kRelatedSearchesQueryList[] = "searches";
+const char kRelatedSearchesSuggestions[] = "suggestions";
 
 const char kActionCategoryAddress[] = "ADDRESS";
 const char kActionCategoryEmail[] = "EMAIL";
@@ -93,10 +95,9 @@ ContextualSearchDelegate::ContextualSearchDelegate(
     ContextualSearchDelegate::SurroundingTextCallback surrounding_text_callback)
     : url_loader_factory_(std::move(url_loader_factory)),
       template_url_service_(template_url_service),
+      field_trial_(std::make_unique<ContextualSearchFieldTrial>()),
       search_term_callback_(std::move(search_term_callback)),
-      surrounding_text_callback_(std::move(surrounding_text_callback)) {
-  field_trial_.reset(new ContextualSearchFieldTrial());
-}
+      surrounding_text_callback_(std::move(surrounding_text_callback)) {}
 
 ContextualSearchDelegate::~ContextualSearchDelegate() {
 }
@@ -124,11 +125,6 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
   } else {
     std::move(callback).Run(std::u16string(), 0, 0);
   }
-}
-
-void ContextualSearchDelegate::SetActiveContext(
-    base::WeakPtr<ContextualSearchContext> contextual_search_context) {
-  context_ = contextual_search_context;
 }
 
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
@@ -255,14 +251,14 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string search_url_full;
   std::string search_url_preload;
   int coca_card_tag = 0;
-  std::vector<std::string> related_searches;
+  std::string related_searches_json;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
       &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
       &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag,
-      &related_searches);
+      &related_searches_json);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -280,12 +276,12 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
     }
   }
   bool is_invalid = response_code == kResponseCodeUninitialized;
-  return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
+  return std::make_unique<ResolvedSearchTerm>(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language, thumbnail_url, caption, quick_action_uri,
       quick_action_category, logged_event_id, search_url_full,
-      search_url_preload, coca_card_tag, related_searches));
+      search_url_preload, coca_card_tag, related_searches_json);
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
@@ -443,7 +439,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     std::string* search_url_full,
     std::string* search_url_preload,
     int* coca_card_tag,
-    std::vector<std::string>* related_searches) {
+    std::string* related_searches_json) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -545,16 +541,14 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     *logged_event_id = std::stoll(logged_event_id_string, nullptr);
   }
 
-  // For Related Searches extract the array.
-  base::ListValue* searches_list = nullptr;
-  dict->GetList(kRelatedSearchesQueryList, &searches_list);
-  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches) &&
-      searches_list && searches_list->GetSize() >= 1) {
-    for (size_t i = 0; i < searches_list->GetSize(); ++i) {
-      std::string search;
-      searches_list->GetString(i, &search);
-      related_searches->push_back(search);
-    }
+  // Extract an arbitrary Related Searches payload as JSON and return to Java
+  // for decoding.
+  // TODO(donnd): remove soon (once the server is updated);
+  if (dict->HasKey(kRelatedSearchesSuggestions)) {
+    base::Value* rsearches_json_value = nullptr;
+    dict->Get(kRelatedSearchesSuggestions, &rsearches_json_value);
+    DCHECK(rsearches_json_value);
+    base::JSONWriter::Write(*rsearches_json_value, related_searches_json);
   }
 }
 

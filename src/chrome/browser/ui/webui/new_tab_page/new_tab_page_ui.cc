@@ -7,6 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +18,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/task_module/task_module_handler.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/search/omnibox_mojo_utils.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -32,19 +35,25 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/google/core/common/google_util.h"
+#include "components/grit/components_scaled_resources.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "url/url_util.h"
@@ -57,6 +66,26 @@ using content::BrowserContext;
 using content::WebContents;
 
 namespace {
+
+constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
+
+bool IsDriveModuleEnabled(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(ntp_features::kNtpDriveModule)) {
+    return false;
+  }
+  if (base::GetFieldTrialParamValueByFeature(
+          ntp_features::kNtpDriveModule,
+          ntp_features::kNtpDriveModuleManagedUsersOnlyParam) != "true") {
+    return true;
+  }
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  auto account = identity_manager->FindExtendedAccountInfoByAccountId(
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync));
+  if (!account) {
+    return false;
+  }
+  return account->IsManaged();
+}
 
 content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
     Profile* profile,
@@ -75,29 +104,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
                         .spec());
   source->AddDouble("navigationStartTime", navigation_start_time.ToJsTime());
 
-  // Realbox.
-  source->AddBoolean(
-      "realboxMatchOmniboxTheme",
-      base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
-  source->AddString(
-      "realboxDefaultIcon",
-      base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon)
-          ? omnibox::kGoogleGIconResourceName
-          : omnibox::kSearchIconResourceName);
-  source->AddString("realboxHint", l10n_util::GetStringUTF8(
-                                       IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD));
-
   source->AddBoolean(
       "handleMostVisitedNavigationExplicitly",
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
-
-  source->AddBoolean(
-      "iframeOneGoogleBarEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
-  source->AddBoolean(
-      "oneGoogleBarModalOverlaysEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays));
 
   source->AddBoolean("shortcutsEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kNtpShortcuts));
@@ -183,17 +193,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
       {"waiting", IDS_NEW_TAB_VOICE_WAITING},
 
-      // Realbox.
-      {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
-      {"realboxSeparator", IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR},
-      {"removeSuggestion", IDS_OMNIBOX_REMOVE_SUGGESTION},
-      {"removeSuggestionA11ySuffix", IDS_ACC_REMOVE_SUGGESTION_SUFFIX},
-      {"removeSuggestionA11yPrefix", IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX},
-      {"hideSuggestions", IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON},
-      {"showSuggestions", IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON},
-      {"hideSection", IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON},
-      {"showSection", IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON},
-
       // Logo/doodle.
       {"copyLink", IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL},
       {"doodleLink", IDS_NTP_DOODLE_SHARE_DIALOG_LINK_LABEL},
@@ -221,13 +220,18 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       {"modulesRecipeTasksLower", IDS_NTP_MODULES_RECIPE_TASKS_LOWER},
       {"modulesRecipeTasksLowerThese",
        IDS_NTP_MODULES_RECIPE_TASKS_LOWER_THESE},
+      {"modulesTasksInfo", IDS_NTP_MODULES_TASKS_INFO},
       {"modulesCartSentence", IDS_NTP_MODULES_CART_SENTENCE},
       {"modulesCartLower", IDS_NTP_MODULES_CART_LOWER},
       {"modulesCartLowerThese", IDS_NTP_MODULES_CART_LOWER_THESE},
       {"modulesCartLowerYour", IDS_NTP_MODULES_CART_LOWER_YOUR},
       {"modulesDriveSentence", IDS_NTP_MODULES_DRIVE_SENTENCE},
+      {"modulesDriveSentence2", IDS_NTP_MODULES_DRIVE_SENTENCE2},
+      {"modulesDriveFilesSentence", IDS_NTP_MODULES_DRIVE_FILES_SENTENCE},
+      {"modulesDriveFilesLower", IDS_NTP_MODULES_DRIVE_FILES_LOWER},
       {"modulesDummyLower", IDS_NTP_MODULES_DUMMY_LOWER},
       {"modulesDriveTitle", IDS_NTP_MODULES_DRIVE_TITLE},
+      {"modulesDriveInfo", IDS_NTP_MODULES_DRIVE_INFO},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesDummy2Title", IDS_NTP_MODULES_DUMMY2_TITLE},
       {"modulesKaleidoscopeTitle", IDS_NTP_MODULES_KALEIDOSCOPE_TITLE},
@@ -264,38 +268,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
   };
   source->AddLocalizedStrings(kStrings);
 
-  source->AddString(
-      "modulesTasksInfo1",
-      l10n_util::GetStringFUTF16(IDS_NTP_MODULES_SHOPPING_TASKS_INFO_1,
-                                 u"https://myactivity.google.com/"));
-  source->AddString(
-      "modulesTasksInfo2",
-      l10n_util::GetStringFUTF16(IDS_NTP_MODULES_SHOPPING_TASKS_INFO_2,
-                                 u"https://policies.google.com/"));
-
-  // Register images that are purposefully not inlined in the HTML and instead
-  // are set in Javascript.
-  static constexpr webui::ResourcePath kImages[] = {
-      {omnibox::kGoogleGIconResourceName,
-       IDR_WEBUI_IMAGES_200_LOGO_GOOGLEG_PNG},
-      {omnibox::kCalculatorIconResourceName, IDR_LOCAL_NTP_ICONS_CALCULATOR},
-      {omnibox::kClockIconResourceName, IDR_LOCAL_NTP_ICONS_CLOCK},
-      {omnibox::kDriveDocsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_DOCS},
-      {omnibox::kDriveFolderIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FOLDER},
-      {omnibox::kDriveFormIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FORM},
-      {omnibox::kDriveImageIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_IMAGE},
-      {omnibox::kDriveLogoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_LOGO},
-      {omnibox::kDrivePdfIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_PDF},
-      {omnibox::kDriveSheetsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SHEETS},
-      {omnibox::kDriveSlidesIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SLIDES},
-      {omnibox::kDriveVideoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_VIDEO},
-      {omnibox::kExtensionAppIconResourceName,
-       IDR_LOCAL_NTP_ICONS_EXTENSION_APP},
-      {omnibox::kPageIconResourceName, IDR_LOCAL_NTP_ICONS_PAGE},
-      {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH_SVG},
-      {omnibox::kTrendingUpIconResourceName, IDR_LOCAL_NTP_ICONS_TRENDING_UP}};
-  source->AddResourcePaths(kImages);
-
   source->AddBoolean(
       "recipeTasksModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule));
@@ -305,14 +277,15 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
   source->AddBoolean(
       "chromeCartModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule));
-  source->AddBoolean("driveModuleEnabled", base::FeatureList::IsEnabled(
-                                               ntp_features::kNtpDriveModule));
+  source->AddBoolean("driveModuleEnabled", IsDriveModuleEnabled(profile));
   source->AddBoolean(
       "ruleBasedDiscountEnabled",
       base::GetFieldTrialParamValueByFeature(
           ntp_features::kNtpChromeCartModule,
           ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam) ==
           "true");
+
+  RealboxHandler::SetupWebUIDataSource(source);
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),
@@ -386,6 +359,11 @@ NewTabPageUI::~NewTabPageUI() {
 // static
 bool NewTabPageUI::IsNewTabPageOrigin(const GURL& url) {
   return url.GetOrigin() == GURL(chrome::kChromeUINewTabPageURL).GetOrigin();
+}
+
+// static
+void NewTabPageUI::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(kPrevNavigationTimePrefName, base::Time());
 }
 
 void NewTabPageUI::BindInterface(
@@ -479,12 +457,23 @@ void NewTabPageUI::MostVisitedInfoChanged(const InstantMostVisitedInfo& info) {}
 
 void NewTabPageUI::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame()) {
+  if (navigation_handle->IsInMainFrame() &&
+      navigation_handle->GetURL() == GURL(chrome::kChromeUINewTabPageURL)) {
     navigation_start_time_ = base::Time::Now();
     std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
     update->SetDouble("navigationStartTime", navigation_start_time_.ToJsTime());
     content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                      std::move(update));
+    auto prev_navigation_time =
+        profile_->GetPrefs()->GetTime(kPrevNavigationTimePrefName);
+    if (!prev_navigation_time.is_null()) {
+      base::UmaHistogramCustomTimes(
+          "NewTabPage.TimeSinceLastNTP",
+          navigation_start_time_ - prev_navigation_time,
+          base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 100);
+    }
+    profile_->GetPrefs()->SetTime(kPrevNavigationTimePrefName,
+                                  navigation_start_time_);
   }
 }
 
@@ -504,4 +493,12 @@ void NewTabPageUI::UpdateBackgroundColor(const NtpTheme& theme) {
                     std::string(encoded_url.data(), encoded_url.length()));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
+}
+
+// static
+base::RefCountedMemory* NewTabPageUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
+  return static_cast<base::RefCountedMemory*>(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          IDR_NTP_FAVICON, scale_factor));
 }

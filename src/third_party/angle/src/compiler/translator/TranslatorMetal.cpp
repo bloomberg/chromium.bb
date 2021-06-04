@@ -116,7 +116,7 @@ ANGLE_NO_DISCARD bool InitializeUnusedOutputs(TIntermBlock *root,
 }  // anonymous namespace
 
 // class DriverUniformMetal
-TFieldList *DriverUniformMetal::createUniformFields(TSymbolTable *symbolTable) const
+TFieldList *DriverUniformMetal::createUniformFields(TSymbolTable *symbolTable)
 {
     TFieldList *driverFieldList = DriverUniform::createUniformFields(symbolTable);
 
@@ -181,14 +181,10 @@ bool TranslatorMetal::translate(TIntermBlock *root,
 {
     TInfoSinkBase sink;
 
-    TOutputVulkanGLSL outputGLSL(sink, getArrayIndexClampingStrategy(), getHashFunction(),
-                                 getNameMap(), &getSymbolTable(), getShaderType(),
-                                 getShaderVersion(), getOutputType(), false, true, compileOptions);
-
     SpecConstMetal specConst(&getSymbolTable(), compileOptions, getShaderType());
     DriverUniformMetal driverUniforms;
     if (!TranslatorVulkan::translateImpl(sink, root, compileOptions, perfDiagnostics, &specConst,
-                                         &driverUniforms, &outputGLSL))
+                                         &driverUniforms))
     {
         return false;
     }
@@ -244,6 +240,9 @@ bool TranslatorMetal::translate(TIntermBlock *root,
     }
 
     // Write translated shader.
+    TOutputVulkanGLSL outputGLSL(sink, getArrayIndexClampingStrategy(), getHashFunction(),
+                                 getNameMap(), &getSymbolTable(), getShaderType(),
+                                 getShaderVersion(), getOutputType(), false, true, compileOptions);
     root->traverse(&outputGLSL);
 
     return compileToSpirv(sink);
@@ -284,6 +283,10 @@ ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(
     TIntermBlock *root,
     const DriverUniformMetal *driverUniforms)
 {
+    // This transformation leaves the tree in an inconsistent state by using a variable that's
+    // defined in text, outside of the knowledge of the AST.
+    mValidateASTOptions.validateVariableReferences = false;
+
     TSymbolTable *symbolTable = &getSymbolTable();
 
     // Insert coverageMaskEnabled specialization constant and sample_mask writing function.
@@ -337,6 +340,10 @@ ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(
 ANGLE_NO_DISCARD bool TranslatorMetal::insertRasterizerDiscardLogic(TInfoSinkBase &sink,
                                                                     TIntermBlock *root)
 {
+    // This transformation leaves the tree in an inconsistent state by using a variable that's
+    // defined in text, outside of the knowledge of the AST.
+    mValidateASTOptions.validateVariableReferences = false;
+
     TSymbolTable *symbolTable = &getSymbolTable();
 
     // Insert rasterizationDisabled specialization constant.

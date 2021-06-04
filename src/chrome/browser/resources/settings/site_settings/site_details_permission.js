@@ -14,6 +14,7 @@ import '../settings_vars_css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -191,20 +192,21 @@ Polymer({
    * @param {!SiteSettingSource} source The source of the permission.
    * @param {!ContentSettingsTypes} category The permission type.
    * @param {!ContentSetting} setting The permission setting.
+   * @param {?string} settingDetail A sublabel for the permission.
    * @return {boolean} Whether the permission will have a source string to
    *     display.
    * @private
    */
-  hasPermissionInfoString_(source, category, setting) {
+  hasPermissionInfoString_(source, category, setting, settingDetail) {
     // This method assumes that an empty string will be returned for categories
     // that have no permission info string.
     return this.permissionInfoString_(
-               source, category, setting,
+               source, category, setting, settingDetail,
                // Set all permission info string arguments as null. This is OK
                // because there is no need to know what the information string
                // will be, just whether there is one or not.
                null, null, null, null, null, null, null, null, null, null, null,
-               null, null) !== '';
+               null) !== '';
   },
 
   /**
@@ -213,12 +215,14 @@ Polymer({
    * @param {!SiteSettingSource} source The source of the permission.
    * @param {!ContentSettingsTypes} category The permission type.
    * @param {!ContentSetting} setting The permission setting.
+   * @param {?string} settingDetail A sublabel for the permission.
    * @return {string} CSS class applied when there is an additional description
    *     string.
    * @private
    */
-  permissionInfoStringClass_(source, category, setting) {
-    return this.hasPermissionInfoString_(source, category, setting) ?
+  permissionInfoStringClass_(source, category, setting, settingDetail) {
+    return this.hasPermissionInfoString_(
+               source, category, setting, settingDetail) ?
         'two-line' :
         '';
   },
@@ -232,7 +236,6 @@ Polymer({
   isPermissionUserControlled_(source) {
     return !(
         source === SiteSettingSource.ALLOWLIST ||
-        source === SiteSettingSource.DRM_DISABLED ||
         source === SiteSettingSource.POLICY ||
         source === SiteSettingSource.EXTENSION ||
         source === SiteSettingSource.KILL_SWITCH ||
@@ -310,6 +313,10 @@ Polymer({
    * @param {!SiteSettingSource} source The source of the permission.
    * @param {!ContentSettingsTypes} category The permission type.
    * @param {!ContentSetting} setting The permission setting.
+   * @param {?string} settingDetail If non-empty, the string to display as the
+   *     permission info. This overrides other calculations made by this
+   *     function, and is used for situations where extra data about the
+   *     permission is required to compose the substring.
    * @param {?string} allowlistString The string to show if the permission is
    *     allowlisted.
    * @param {?string} adsBlacklistString The string to show if the site is
@@ -325,19 +332,26 @@ Polymer({
    * @param {?string} policyAllowString
    * @param {?string} policyBlockString
    * @param {?string} policyAskString
-   * @param {?string} drmDisabledString
    * @return {?string} The permission information string to display in the HTML.
    * @private
    */
   permissionInfoString_(
-      source, category, setting, allowlistString, adsBlacklistString,
-      adsBlockString, embargoString, insecureOriginString, killSwitchString,
-      extensionAllowString, extensionBlockString, extensionAskString,
-      policyAllowString, policyBlockString, policyAskString,
-      drmDisabledString) {
+      source, category, setting, settingDetail, allowlistString,
+      adsBlacklistString, adsBlockString, embargoString, insecureOriginString,
+      killSwitchString, extensionAllowString, extensionBlockString,
+      extensionAskString, policyAllowString, policyBlockString,
+      policyAskString) {
     if (source === undefined || category === undefined ||
         setting === undefined) {
       return null;
+    }
+
+    if (settingDetail) {
+      // For now, settingDetail is only used for file extensions.
+      // TODO(estade): assert in the other direction as well: the FILE_HANDLING
+      // category should always have detail text.
+      assert(category === ContentSettingsTypes.FILE_HANDLING);
+      return settingDetail;
     }
 
     /** @type {Object<!ContentSetting, ?string>} */
@@ -363,19 +377,6 @@ Polymer({
         category === ContentSettingsTypes.ADS &&
         setting === ContentSetting.BLOCK) {
       return adsBlockString;
-    } else if (source === SiteSettingSource.DRM_DISABLED) {
-      assert(
-          ContentSetting.BLOCK === setting,
-          'If DRM is disabled, Protected Content must be blocked.');
-      assert(
-          ContentSettingsTypes.PROTECTED_CONTENT === category,
-          'The DRM disabled source only applies to Protected Content.');
-      if (!drmDisabledString) {
-        return null;
-      }
-      return loadTimeData.sanitizeInnerHtml(loadTimeData.substituteString(
-          drmDisabledString,
-          routes.SITE_SETTINGS_PROTECTED_CONTENT.getAbsolutePath()));
     } else if (source === SiteSettingSource.EMBARGO) {
       assert(
           ContentSetting.BLOCK === setting,

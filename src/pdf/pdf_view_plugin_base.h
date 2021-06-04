@@ -18,6 +18,7 @@
 #include "pdf/pdfium/pdfium_form_filler.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,6 +26,10 @@
 namespace base {
 class Value;
 }  // namespace base
+
+namespace blink {
+class WebInputEvent;
+}  // namespace blink
 
 namespace chrome_pdf {
 
@@ -126,6 +131,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // their destructor to ensure the engine is destroyed first.
   void DestroyEngine();
 
+  const PDFiumEngine* engine() const { return engine_.get(); }
   PDFiumEngine* engine() { return engine_.get(); }
 
   PaintManager& paint_manager() { return paint_manager_; }
@@ -147,6 +153,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Handles `LoadUrl()` result for print preview.
   virtual void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                               int32_t result) = 0;
+
+  bool HandleInputEvent(const blink::WebInputEvent& event);
 
   // Handles `postMessage()` calls from the embedder.
   void HandleMessage(const base::Value& message);
@@ -257,6 +265,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   void set_url(const std::string& url) { url_ = url; }
 
+  ui::mojom::CursorType cursor_type() const { return cursor_type_; }
+  void set_cursor_type(ui::mojom::CursorType cursor_type) {
+    cursor_type_ = cursor_type;
+  }
+
   bool full_frame() const { return full_frame_; }
   void set_full_frame(bool full_frame) { full_frame_ = full_frame; }
 
@@ -364,6 +377,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // The URL of the PDF document.
   std::string url_;
 
+  // The current cursor type.
+  ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
+
   // True if the plugin occupies the entire frame (not embedded).
   bool full_frame_ = false;
 
@@ -372,7 +388,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   std::vector<BackgroundPart> background_parts_;
 
-  // Deferred invalidates while |in_paint_| is true.
+  // Deferred invalidates while `in_paint_` is true.
   std::vector<gfx::Rect> deferred_invalidates_;
 
   // Remaining area, in pixels, to render the pdf in after accounting for

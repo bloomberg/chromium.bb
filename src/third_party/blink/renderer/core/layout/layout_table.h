@@ -316,15 +316,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
   LayoutTableCol* FirstColumn() const;
 
   struct ColAndColGroup {
-    ColAndColGroup()
-        : col(nullptr),
-          colgroup(nullptr),
-          adjoins_start_border_of_col_group(false),
-          adjoins_end_border_of_col_group(false) {}
-    LayoutTableCol* col;
-    LayoutTableCol* colgroup;
-    bool adjoins_start_border_of_col_group;
-    bool adjoins_end_border_of_col_group;
+    STACK_ALLOCATED();
+
+   public:
+    LayoutTableCol* col = nullptr;
+    LayoutTableCol* colgroup = nullptr;
+    bool adjoins_start_border_of_col_group = false;
+    bool adjoins_end_border_of_col_group = false;
     LayoutTableCol* InnermostColOrColGroup() { return col ? col : colgroup; }
   };
   ColAndColGroup ColElementAtAbsoluteColumn(

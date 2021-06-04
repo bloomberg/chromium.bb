@@ -4,6 +4,7 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
 
 devtools_module("extensions") {
   sources = [
@@ -16,8 +17,6 @@ devtools_module("extensions") {
   ]
 
   deps = [
-    "../../browser_sdk:bundle",
-    "../../components:bundle",
     "../../core/common:bundle",
     "../../core/host:bundle",
     "../../core/platform:bundle",
@@ -25,10 +24,13 @@ devtools_module("extensions") {
     "../../core/root:bundle",
     "../../core/sdk:bundle",
     "../../models/bindings:bundle",
+    "../../models/har:bundle",
+    "../../models/logs:bundle",
     "../../models/text_utils:bundle",
-    "../../theme_support:bundle",
+    "../../models/workspace:bundle",
     "../../ui/legacy:bundle",
-    "../../workspace:bundle",
+    "../../ui/legacy/components/utils:bundle",
+    "../../ui/legacy/theme_support:bundle",
   ]
 }
 
@@ -36,10 +38,26 @@ devtools_entrypoint("bundle") {
   entrypoint = "extensions.ts"
 
   deps = [ ":extensions" ]
+
+  visibility = [
+    ":*",
+    "../../entrypoints/main/*",
+    "../../panels/elements/*",
+    "../../panels/sources/*",
+    "../../panels/timeline/*",
+  ]
+
+  visibility += devtools_models_visibility
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "extensions-legacy.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [
+    "../..:legacy_entrypoints",
+    "../../entrypoints/shell/*",
+    "../../legacy_test_runner/*",
+  ]
 }

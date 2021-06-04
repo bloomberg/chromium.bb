@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -187,7 +188,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
   // not be initialized before then because the invalidation service cannot be
   // started because it depends on components initialized at the end of profile
   // creation. https://crbug.com/171406
-  observed_profile_manager_.Add(g_browser_process->profile_manager());
+  observed_profile_manager_.Observe(g_browser_process->profile_manager());
 }
 
 void UserCloudPolicyManagerChromeOS::ForceTimeoutForTest() {
@@ -283,7 +284,7 @@ void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
   access_token_ = access_token;
 
   if (!wildcard_username_.empty()) {
-    wildcard_login_checker_.reset(new WildcardLoginChecker());
+    wildcard_login_checker_ = std::make_unique<WildcardLoginChecker>();
     // Safe to set a callback with an unretained pointer because the
     // WildcardLoginChecker is owned by this object and won't invoke the
     // callback after we destroy it.
@@ -345,7 +346,7 @@ UserCloudPolicyManagerChromeOS::GetExtensionInstallEventLogUploader() {
 }
 
 void UserCloudPolicyManagerChromeOS::Shutdown() {
-  observed_profile_manager_.RemoveAll();
+  observed_profile_manager_.Reset();
   app_install_event_log_uploader_.reset();
   extension_install_event_log_uploader_.reset();
   report_scheduler_.reset();
@@ -547,9 +548,8 @@ void UserCloudPolicyManagerChromeOS::SetPolicyRequired(bool policy_required) {
   auto* user_manager = ash::ChromeUserManager::Get();
   user_manager::known_user::SetProfileRequiresPolicy(
       account_id_,
-      policy_required
-          ? user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired
-          : user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
+      policy_required ? user_manager::ProfileRequiresPolicy::kPolicyRequired
+                      : user_manager::ProfileRequiresPolicy::kNoPolicyRequired);
   if (user_manager->IsCurrentUserNonCryptohomeDataEphemeral()) {
     // For ephemeral users, we need to set a flag via session manager - this
     // handles the case where the session restarts due to a crash (the restarted
@@ -563,9 +563,9 @@ void UserCloudPolicyManagerChromeOS::SetPolicyRequired(bool policy_required) {
     base::CommandLine::StringVector flags;
     flags.assign(command_line.argv().begin() + 1, command_line.argv().end());
     DCHECK_EQ(1u, flags.size());
-    chromeos::UserSessionManager::GetInstance()->SetSwitchesForUser(
+    ash::UserSessionManager::GetInstance()->SetSwitchesForUser(
         account_id_,
-        chromeos::UserSessionManager::CommandLineSwitchesType::kSessionControl,
+        ash::UserSessionManager::CommandLineSwitchesType::kSessionControl,
         flags);
   }
 }
@@ -609,9 +609,7 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
   }
 
   std::string refresh_token = user_context_refresh_token_for_tests_.value_or(
-      chromeos::UserSessionManager::GetInstance()
-          ->user_context()
-          .GetRefreshToken());
+      ash::UserSessionManager::GetInstance()->user_context().GetRefreshToken());
 
   if (!refresh_token.empty()) {
     token_fetcher_ = PolicyOAuth2TokenFetcher::CreateInstance();
@@ -796,6 +794,8 @@ void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady(
       client(),
       std::make_unique<enterprise_reporting::ReportGenerator>(
           &delegate_factory),
+      std::make_unique<enterprise_reporting::RealTimeReportGenerator>(
+          &delegate_factory),
       std::make_unique<enterprise_reporting::ReportSchedulerDesktop>(profile_));
 
   report_scheduler_->OnDMTokenUpdated();
@@ -805,7 +805,7 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
   if (profile != profile_)
     return;
 
-  observed_profile_manager_.RemoveAll();
+  observed_profile_manager_.Reset();
 
   invalidation::ProfileInvalidationProvider* const invalidation_provider =
       invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
@@ -827,9 +827,9 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
   shutdown_subscription_ =
       UserCloudPolicyManagerChromeOSNotifierFactory::GetInstance()
           ->Get(profile_)
-          ->Subscribe(base::AdaptCallbackForRepeating(
-              base::BindOnce(&UserCloudPolicyManagerChromeOS::ProfileShutdown,
-                             base::Unretained(this))));
+          ->Subscribe(base::BindRepeating(
+              &UserCloudPolicyManagerChromeOS::ProfileShutdown,
+              base::Unretained(this)));
 }
 
 void UserCloudPolicyManagerChromeOS::ProfileShutdown() {
@@ -843,7 +843,7 @@ void UserCloudPolicyManagerChromeOS::SetUserContextRefreshTokenForTests(
     const std::string& refresh_token) {
   DCHECK(!refresh_token.empty());
   DCHECK(!user_context_refresh_token_for_tests_);
-  user_context_refresh_token_for_tests_ = base::make_optional(refresh_token);
+  user_context_refresh_token_for_tests_ = absl::make_optional(refresh_token);
 }
 
 enterprise_reporting::ReportScheduler*

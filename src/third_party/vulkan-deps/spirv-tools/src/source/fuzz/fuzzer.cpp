@@ -67,6 +67,7 @@
 #include "source/fuzz/fuzzer_pass_outline_functions.h"
 #include "source/fuzz/fuzzer_pass_permute_blocks.h"
 #include "source/fuzz/fuzzer_pass_permute_function_parameters.h"
+#include "source/fuzz/fuzzer_pass_permute_function_variables.h"
 #include "source/fuzz/fuzzer_pass_permute_instructions.h"
 #include "source/fuzz/fuzzer_pass_permute_phi_operands.h"
 #include "source/fuzz/fuzzer_pass_propagate_instructions_down.h"
@@ -86,6 +87,7 @@
 #include "source/fuzz/fuzzer_pass_split_blocks.h"
 #include "source/fuzz/fuzzer_pass_swap_commutable_operands.h"
 #include "source/fuzz/fuzzer_pass_swap_conditional_branch_operands.h"
+#include "source/fuzz/fuzzer_pass_swap_functions.h"
 #include "source/fuzz/fuzzer_pass_toggle_access_chain_instruction.h"
 #include "source/fuzz/fuzzer_pass_wrap_regions_in_selections.h"
 #include "source/fuzz/pass_management/repeated_pass_manager.h"
@@ -229,13 +231,17 @@ Fuzzer::Fuzzer(std::unique_ptr<opt::IRContext> ir_context,
   MaybeAddFinalPass<FuzzerPassAdjustSelectionControls>(&final_passes_);
   MaybeAddFinalPass<FuzzerPassAddNoContractionDecorations>(&final_passes_);
   if (!fuzzer_context_->IsWgslCompatible()) {
-    // Signedness is not as interchangeable in WGSL as in SPIR-V.
+    // TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/4214):
+    //  this is disabled temporarily due to some issues in the Tint compiler.
+    //  Enable it back when the issues are resolved.
     MaybeAddFinalPass<FuzzerPassInterchangeSignednessOfIntegerOperands>(
         &final_passes_);
   }
   MaybeAddFinalPass<FuzzerPassInterchangeZeroLikeConstants>(&final_passes_);
+  MaybeAddFinalPass<FuzzerPassPermuteFunctionVariables>(&final_passes_);
   MaybeAddFinalPass<FuzzerPassPermutePhiOperands>(&final_passes_);
   MaybeAddFinalPass<FuzzerPassSwapCommutableOperands>(&final_passes_);
+  MaybeAddFinalPass<FuzzerPassSwapFunctions>(&final_passes_);
   MaybeAddFinalPass<FuzzerPassToggleAccessChainInstruction>(&final_passes_);
 }
 

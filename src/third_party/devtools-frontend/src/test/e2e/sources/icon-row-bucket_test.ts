@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
-import {$$, click, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$$, click, goToResource, waitFor, waitForFunction, waitForWithTries} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
+import {navigateToIssuesTab} from '../helpers/issues-helpers.js';
 import {openSourcesPanel} from '../helpers/sources-helpers.js';
 
 async function getIconComponents(className: string, root?: puppeteer.ElementHandle<Element>) {
@@ -42,7 +43,6 @@ async function openFileInSourceTab(fileName: string) {
 
 async function getExpandedIssuesTitle(): Promise<Set<string>> {
   const expandedIssues = new Set<string>();
-  await waitFor('.issue');
   const issues = await $$('.issue');
   for (const issue of issues) {
     const expanded = await issue.evaluate(x => x.classList.contains('expanded'));
@@ -53,6 +53,17 @@ async function getExpandedIssuesTitle(): Promise<Set<string>> {
     }
   }
   return expandedIssues;
+}
+
+async function waitForExpandedIssueTitle(issueIconComponent: puppeteer.ElementHandle<Element>): Promise<Set<string>> {
+  return await waitForFunction(async () => {
+    await click(issueIconComponent);
+    const expandedIssues = await getExpandedIssuesTitle();
+    if (expandedIssues.size) {
+      return expandedIssues;
+    }
+    return undefined;
+  });
 }
 
 describe('The row\'s icon bucket', async function() {
@@ -105,7 +116,7 @@ describe('The row\'s icon bucket', async function() {
       const rowMessages = await getRowsText(vbox);
       issueMessages.push(...rowMessages);
     }
-    assert.deepEqual(issueMessages, expectedIssueMessages);
+    assert.deepEqual(issueMessages.sort(), expectedIssueMessages.sort());
   });
 
   it('should also mark issues in inline event handlers in HTML documents', async () => {
@@ -114,32 +125,57 @@ describe('The row\'s icon bucket', async function() {
     assert.strictEqual(icons.length, 1);
   });
 
-  // Flaky test.
-  it.skipOnPlatforms(['mac'], '[crbug.com/1184162]: should reveal Issues tab when the icon is clicked', async () => {
-    await openFileInSourceTab('trusted-type-violations-report-only.rawresponse');
+  it('should reveal Issues tab when the icon is clicked', async () => {
+    await openFileInSourceTab('trusted-type-policy-violation-report-only.rawresponse');
+
+    const HIDE_DEBUGGER_SELECTOR = '[aria-label="Hide debugger"]';
+    const HIDE_NAVIGATOR_SELECTOR = '[aria-label="Hide navigator"]';
+    await click(HIDE_DEBUGGER_SELECTOR);
+    await click(HIDE_NAVIGATOR_SELECTOR);
+
     const bucketIssueIconComponents = await getIconComponents('text-editor-line-decoration-icon-issue');
     assert.strictEqual(bucketIssueIconComponents.length, 1);
     const issueIconComponent = bucketIssueIconComponents[0];
     await click(issueIconComponent);
 
-    const expandedIssues = await getExpandedIssuesTitle();
+    const expandedIssues = await waitForExpandedIssueTitle(issueIconComponent);
     assert.isTrue(expandedIssues.has('Trusted Type policy creation blocked by Content Security Policy'));
   });
 
   it('should reveal the Issues tab if the icon in the popover is clicked', async () => {
+    if (this.timeout()) {
+      this.timeout(20000);
+    }
+    await navigateToIssuesTab();
     await openFileInSourceTab('trusted-type-violations-report-only.rawresponse');
-    const bucketIssueIconComponents = await getIconComponents('text-editor-line-decoration-icon-issue');
-    assert.strictEqual(bucketIssueIconComponents.length, 1);
-    const issueIconComponent = bucketIssueIconComponents[0];
-    await issueIconComponent.hover();
 
-    const vbox = await waitFor('div.vbox.flex-auto.no-pointer-events');
-    const rowMessage = await waitFor('.text-editor-row-message', vbox);
-    const issueTitle = await rowMessage.evaluate(x => (x instanceof HTMLElement) ? x.innerText : '');
-    const issueIcon = await waitFor('.text-editor-row-message-icon', rowMessage);
-    await issueIcon.click();
+    const HIDE_DEBUGGER_SELECTOR = '[aria-label="Hide debugger"]';
+    const HIDE_NAVIGATOR_SELECTOR = '[aria-label="Hide navigator"]';
+    await click(HIDE_DEBUGGER_SELECTOR);
+    await click(HIDE_NAVIGATOR_SELECTOR);
 
-    const expandedIssues = await getExpandedIssuesTitle();
+    const {issueIcon, issueTitle} = await waitForFunction(async () => {
+      const bucketIssueIconComponents = await getIconComponents('text-editor-line-decoration-icon-issue');
+      assert.strictEqual(bucketIssueIconComponents.length, 1);
+      const issueIconComponent = bucketIssueIconComponents[0];
+      await issueIconComponent.hover();
+      const vbox = await waitForWithTries('div.vbox.flex-auto.no-pointer-events', undefined, {tries: 3});
+      if (!vbox) {
+        return undefined;
+      }
+      const rowMessage = await waitForWithTries('.text-editor-row-message', vbox, {tries: 3});
+      if (!rowMessage) {
+        return undefined;
+      }
+      const issueTitle = await rowMessage.evaluate(x => (x instanceof HTMLElement) ? x.innerText : '');
+      const issueIcon = await waitForWithTries('.text-editor-row-message-icon', rowMessage, {tries: 3});
+      if (!issueIcon) {
+        return undefined;
+      }
+      return {issueIcon, issueTitle};
+    });
+
+    const expandedIssues = await waitForExpandedIssueTitle(issueIcon);
     assert.isTrue(expandedIssues.has(issueTitle));
   });
 });

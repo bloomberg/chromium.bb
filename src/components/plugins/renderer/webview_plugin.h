@@ -160,17 +160,17 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
                         public blink::WebLocalFrameClient,
                         public blink::mojom::WidgetHost {
    public:
-    WebViewHelper(WebViewPlugin* plugin,
-                  const blink::web_pref::WebPreferences& preferences);
+    WebViewHelper(
+        WebViewPlugin* plugin,
+        const blink::web_pref::WebPreferences& parent_web_preferences,
+        const blink::RendererPreferences& parent_renderer_preferences);
     ~WebViewHelper() override;
 
     blink::WebView* web_view() { return web_view_; }
     blink::WebNavigationControl* main_frame() { return frame_; }
 
     // WebViewClient methods:
-    bool AcceptsLoadDrops() override;
-    bool CanUpdateLayout() override;
-    void DidInvalidateRect(const gfx::Rect&) override;
+    void InvalidateContainer() override;
 
     // WebNonCompositedWidgetClient overrides.
     void ScheduleNonCompositedAnimation() override;
@@ -184,8 +184,8 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
 
     // blink::mojom::WidgetHost implementation.
     void SetCursor(const ui::Cursor& cursor) override;
-    void SetToolTipText(const std::u16string& tooltip_text,
-                        base::i18n::TextDirection hint) override;
+    void UpdateTooltipUnderCursor(const std::u16string& tooltip_text,
+                                  base::i18n::TextDirection hint) override;
     void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override {}
     void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                 base::i18n::TextDirection anchor_dir,

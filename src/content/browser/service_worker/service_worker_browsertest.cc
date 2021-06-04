@@ -31,6 +31,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
@@ -353,8 +354,10 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    StoragePartition* partition = shell()
+                                      ->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
         partition->GetServiceWorkerContext());
   }
@@ -832,13 +835,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
     auto observer = base::MakeRefCounted<WorkerStateObserver>(
         wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
-    wrapper()->UpdateRegistration(https_server.GetURL(kPageUrl));
+    GURL url = https_server.GetURL(kPageUrl);
+    wrapper()->UpdateRegistration(
+        url, storage::StorageKey(url::Origin::Create(url)));
     observer->Wait();
 
     // Wait until the page is appropriately served by the service worker.
     const std::u16string title = u"Title";
     TitleWatcher title_watcher(shell()->web_contents(), title);
-    EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 
     // The page should be marked as secure.
@@ -953,8 +958,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, StartWorkerWhileInstalling) {
   observer->Wait();
 
   base::RunLoop run_loop;
+  GURL full_url = embedded_test_server()->GetURL(kWorkerUrl);
   wrapper()->StartActiveServiceWorker(
-      embedded_test_server()->GetURL(kWorkerUrl),
+      full_url, storage::StorageKey(url::Origin::Create(full_url)),
       base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
         EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorNotFound);
         run_loop.Quit();
@@ -1309,7 +1315,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       const net::test_server::HttpRequest& request) const {
     const size_t query_position = request.relative_url.find('?');
     if (request.relative_url.substr(0, query_position) != relative_url)
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         std::make_unique<net::test_server::BasicHttpResponse>());
     http_response->set_code(net::HTTP_OK);
@@ -1324,7 +1330,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       const net::test_server::HttpRequest& request) const {
     const size_t query_position = request.relative_url.find('?');
     if (request.relative_url.substr(0, query_position) != relative_url)
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     return std::make_unique<CustomResponse>(response);
   }
 
@@ -1334,7 +1340,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       const net::test_server::HttpRequest& request) const {
     const size_t query_position = request.relative_url.find('?');
     if (request.relative_url.substr(0, query_position) != relative_url)
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
     response->set_code(net::HTTP_PERMANENT_REDIRECT);
@@ -1977,7 +1983,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
                                     blink::ServiceWorkerStatusCode* status,
                                     base::OnceClosure continuation) {
     wrapper()->FindReadyRegistrationForClientUrl(
-        document_url,
+        document_url, storage::StorageKey(url::Origin::Create(document_url)),
         base::BindOnce(
             &ServiceWorkerBlackBoxBrowserTest::DidFindRegistrationOnCoreThread,
             base::Unretained(this), status, std::move(continuation)));
@@ -2181,7 +2187,7 @@ class CacheStorageSideDataSizeChecker
     blob_handle->get()->ReadSideData(base::BindOnce(
         [](scoped_refptr<storage::BlobHandle> blob_handle, int* result,
            base::OnceClosure continuation,
-           const base::Optional<mojo_base::BigBuffer> data) {
+           const absl::optional<mojo_base::BigBuffer> data) {
           *result = data ? data->size() : 0;
           std::move(continuation).Run();
         },
@@ -2189,7 +2195,7 @@ class CacheStorageSideDataSizeChecker
   }
 
   mojo::Remote<blink::mojom::CacheStorage> cache_storage_;
-  base::Optional<mojo::AssociatedRemote<blink::mojom::CacheStorageCache>>
+  absl::optional<mojo::AssociatedRemote<blink::mojom::CacheStorageCache>>
       cache_storage_cache_;
   const std::string cache_name_;
   const GURL url_;
@@ -2253,8 +2259,10 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   static const char kScriptUrl[];
 
   int GetSideDataSize() {
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    StoragePartition* partition = shell()
+                                      ->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     return CacheStorageSideDataSizeChecker::GetSize(
         partition->GetCacheStorageControl(), embedded_test_server()->base_url(),
         std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
@@ -3173,12 +3181,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
       ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           running_info.render_process_id);
   if (base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
-    EXPECT_EQ(
-        IsServiceWorkerCrossOriginIsolated(),
-        process_lock.coop_coep_cross_origin_isolated_info().is_isolated());
+    EXPECT_EQ(IsServiceWorkerCrossOriginIsolated(),
+              process_lock.web_exposed_isolation_info().is_isolated());
   } else {
-    EXPECT_FALSE(
-        process_lock.coop_coep_cross_origin_isolated_info().is_isolated());
+    EXPECT_FALSE(process_lock.web_exposed_isolation_info().is_isolated());
   }
 }
 
@@ -3234,7 +3240,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
       ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           running_info.render_process_id);
   EXPECT_EQ(IsServiceWorkerCrossOriginIsolated(),
-            process_lock.coop_coep_cross_origin_isolated_info().is_isolated());
+            process_lock.web_exposed_isolation_info().is_isolated());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

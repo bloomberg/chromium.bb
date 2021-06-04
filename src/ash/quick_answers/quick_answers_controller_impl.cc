@@ -86,7 +86,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   quick_answer_.reset();
 
   QuickAnswersRequest request = BuildRequest();
-  if (chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
+  if (chromeos::features::ShouldUseQuickAnswersTextAnnotator()) {
     // Send the request for preprocessing. Only shows quick answers view if the
     // predicted intent is not |kUnknown| at |OnRequestPreprocessFinish|.
     quick_answers_client_->SendRequestForPreprocessing(request);
@@ -117,9 +117,12 @@ void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
   visibility_ = QuickAnswersVisibility::kClosed;
   MaybeDismissQuickAnswersNotice();
   bool closed = quick_answers_ui_controller_->CloseQuickAnswersView();
-  quick_answers_client_->OnQuickAnswersDismissed(
-      quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult,
-      is_active && closed);
+  // |quick_answer_| could be null before we receive the result from the server.
+  // Do not send the signal since the quick answer is dismissed before ready.
+  if (quick_answer_) {
+    quick_answers_client_->OnQuickAnswersDismissed(quick_answer_->result_type,
+                                                   is_active && closed);
+  }
 }
 
 chromeos::quick_answers::QuickAnswersDelegate*
@@ -175,7 +178,7 @@ void QuickAnswersControllerImpl::OnNetworkError() {
 
 void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
     const QuickAnswersRequest& processed_request) {
-  if (!chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
+  if (!chromeos::features::ShouldUseQuickAnswersTextAnnotator()) {
     // Ignore preprocessing result if text annotator is not enabled.
     return;
   }
@@ -198,7 +201,7 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
 
 void QuickAnswersControllerImpl::OnRetryQuickAnswersRequest() {
   QuickAnswersRequest request = BuildRequest();
-  if (chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
+  if (chromeos::features::ShouldUseQuickAnswersTextAnnotator()) {
     quick_answers_client_->SendRequestForPreprocessing(request);
   } else {
     quick_answers_client_->SendRequest(request);

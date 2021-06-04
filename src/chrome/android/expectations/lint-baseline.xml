@@ -95,8 +95,8 @@
         errorLine1="            if (mBypassIsReadyToPayServiceInTest) app.bypassIsReadyToPayServiceInTest();"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinder.java"
-            line="594"
+            file="../../components/payments/content/android/java/src/org/chromium/components/payments/AndroidPaymentAppFinder.java"
+            line="577"
             column="55"/>
     </issue>
 
@@ -1979,6 +1979,17 @@
             file="../../components/browser_ui/photo_picker/android/java/res/layout/video_player.xml"
             line="124"
             column="17"/>
+    </issue>
+
+    <issue
+        id="VectorRaster"
+        message="Limit vector icons sizes to 200×200 to keep icon drawing fast; see https://developer.android.com/studio/write/vector-asset-studio#when for more"
+        errorLine1="    android:width=&quot;360dp&quot;"
+        errorLine2="                   ~~~~~">
+        <location
+            file="../../chrome/android/java/res/drawable/adaptive_toolbar_preference_header.xml"
+            line="7"
+            column="5"/>
     </issue>
 
 </issues>

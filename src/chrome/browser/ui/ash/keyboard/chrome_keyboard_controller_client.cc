@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -160,7 +161,9 @@ void ChromeKeyboardControllerClient::SetKeyboardConfig(
 }
 
 bool ChromeKeyboardControllerClient::GetKeyboardEnabled() {
-  return keyboard_controller_->IsKeyboardEnabled();
+  // |keyboard_controller_| may be null during shutdown.
+  return keyboard_controller_ ? keyboard_controller_->IsKeyboardEnabled()
+                              : false;
 }
 
 void ChromeKeyboardControllerClient::SetEnableFlag(
@@ -292,7 +295,7 @@ void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
   auto event = std::make_unique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED,
       virtual_keyboard_private::OnKeyboardClosed::kEventName,
-      std::make_unique<base::ListValue>(), profile);
+      std::vector<base::Value>(), profile);
   router->BroadcastEvent(std::move(event));
 }
 
@@ -345,7 +348,7 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
   auto event = std::make_unique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
       virtual_keyboard_private::OnBoundsChanged::kEventName,
-      std::move(event_args), profile);
+      event_args->TakeList(), profile);
   router->BroadcastEvent(std::move(event));
 }
 

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include <memory>
 
 #import "ios/chrome/app/application_delegate/app_state_agent.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
@@ -106,9 +105,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (BOOL)requiresHandlingAfterLaunchWithOptions:(NSDictionary*)launchOptions
                                stateBackground:(BOOL)stateBackground;
 
-// Whether the application is in Safe Mode.
-- (BOOL)isInSafeMode;
-
 // Logs duration of the session in the main tab model and records that chrome is
 // no longer in cold start.
 - (void)willResignActiveTabModel;
@@ -154,6 +150,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Returns a list of all connected scenes.
 - (NSArray<SceneState*>*)connectedScenes;
+
+// Returns a list of all scenes in the foreground that are not necessarly
+// active.
+- (NSArray<SceneState*>*)foregroundScenes;
 
 // Adds an observer to this app state. The observers will be notified about
 // app state changes per AppStateObserver protocol.

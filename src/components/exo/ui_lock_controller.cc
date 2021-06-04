@@ -8,8 +8,8 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -17,83 +17,187 @@
 #include "components/exo/seat.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
-#include "components/exo/ui_lock_bubble.h"
 #include "components/exo/wm_helper.h"
+#include "components/fullscreen_control/fullscreen_control_popup.h"
+#include "components/fullscreen_control/subtle_notification_view.h"
+#include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
-constexpr auto kEscHoldMessageDuration = base::TimeDelta::FromSeconds(4);
+// The Esc hold notification shows a message to press and hold Esc to exit
+// fullscreen. It will hide after a 4s timeout but shows again each time the
+// window goes to fullscreen.
+//
+// The exit popup is a circle with an 'X' close icon which exits fullscreen when
+// the user clicks it.
+// * It is not shown on windows such as borealis with property
+//   kEscHoldExitFullscreenToMinimized.
+// * It is displayed when the mouse moves to the top 3px of the screen.
+// * It will hide after a 3s timeout, or the user moves below 150px.
+// * After hiding, there is a cooldown where it will not display again until the
+//   mouse moves below 150px.
 
-// Shows 'Press and hold ESC to exit fullscreen' message.
-class EscHoldNotifier : public ash::WindowStateObserver {
+// Duration to show the 'Press and hold Esc' notification.
+constexpr auto kEscNotificationDuration = base::TimeDelta::FromSeconds(4);
+// Position of Esc notification from top of screen.
+const int kEscNotificationTopPx = 45;
+// Duration to show the exit 'X' popup.
+constexpr auto kExitPopupDuration = base::TimeDelta::FromSeconds(3);
+// Display the exit popup if mouse is above this height.
+constexpr float kExitPopupDisplayHeight = 3.f;
+// Hide the exit popup if mouse is below this height.
+constexpr float kExitPopupHideHeight = 150.f;
+
+// Create and position Esc notification.
+views::Widget* CreateEscNotification(aura::Window* parent) {
+  auto content_view = std::make_unique<SubtleNotificationView>();
+  std::u16string accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+  content_view->UpdateContent(l10n_util::GetStringFUTF16(
+      IDS_FULLSCREEN_HOLD_ESC_TO_EXIT_FULLSCREEN, accelerator));
+  gfx::Size size = content_view->GetPreferredSize();
+  views::Widget* popup = SubtleNotificationView::CreatePopupWidget(
+      parent, std::move(content_view));
+  popup->SetZOrderLevel(ui::ZOrderLevel::kSecuritySurface);
+  gfx::Rect bounds = parent->GetBoundsInScreen();
+  int y = bounds.y() + kEscNotificationTopPx;
+  bounds.ClampToCenteredSize(size);
+  bounds.set_y(y);
+  popup->SetBounds(bounds);
+  return popup;
+}
+
+// Exits fullscreen to either default or minimized.
+void ExitFullscreen(aura::Window* window) {
+  ash::WindowState* window_state = ash::WindowState::Get(window);
+  if (window->GetProperty(chromeos::kEscHoldExitFullscreenToMinimized))
+    window_state->Minimize();
+  else
+    window_state->Restore();
+}
+
+// Shows 'Press and hold ESC to exit fullscreen' message, and exit popup.
+class EscHoldNotifier : public ui::EventHandler,
+                        public ash::WindowStateObserver {
  public:
-  explicit EscHoldNotifier(aura::Window* window) {
+  explicit EscHoldNotifier(aura::Window* window) : window_(window) {
     ash::WindowState* window_state = ash::WindowState::Get(window);
     window_state_observation_.Observe(window_state);
     if (window_state->IsFullscreen())
-      ShowBubble(window);
+      OnFullscreen();
   }
 
   EscHoldNotifier(const EscHoldNotifier&) = delete;
   EscHoldNotifier& operator=(const EscHoldNotifier&) = delete;
 
-  ~EscHoldNotifier() override { CloseBubble(); }
+  ~EscHoldNotifier() override { CloseAll(); }
 
-  views::Widget* bubble() { return bubble_; }
+  views::Widget* esc_notification() { return esc_notification_; }
+
+  FullscreenControlPopup* exit_popup() { return exit_popup_.get(); }
 
  private:
-  // Overridden from ash::WindowStateObserver:
-  void OnPreWindowStateTypeChange(ash::WindowState* window_state,
-                                  chromeos::WindowStateType old_type) override {
+  // Overridden from ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    gfx::PointF point = event->location_f();
+    aura::Window::ConvertPointToTarget(
+        static_cast<aura::Window*>(event->target()), window_, &point);
+    if (!esc_notification_ && !exit_popup_cooldown_ &&
+        window_ == exo::WMHelper::GetInstance()->GetActiveWindow() &&
+        point.y() <= kExitPopupDisplayHeight) {
+      // Show exit popup if mouse is above 3px, unless esc notification is
+      // visible, or during cooldown (popup shown and mouse still at top).
+      if (!exit_popup_) {
+        exit_popup_ = std::make_unique<FullscreenControlPopup>(
+            window_, base::BindRepeating(&ExitFullscreen, window_),
+            base::DoNothing());
+      }
+      views::Widget* widget =
+          views::Widget::GetTopLevelWidgetForNativeView(window_);
+      exit_popup_->Show(widget->GetClientAreaBoundsInScreen());
+      exit_popup_timer_.Start(FROM_HERE, kExitPopupDuration,
+                              base::BindOnce(&EscHoldNotifier::HideExitPopup,
+                                             base::Unretained(this),
+                                             /*animate=*/true));
+      exit_popup_cooldown_ = true;
+    } else if (point.y() > kExitPopupHideHeight) {
+      // Hide exit popup if mouse is below 150px, reset cooloff.
+      HideExitPopup(/*animate=*/true);
+      exit_popup_cooldown_ = false;
+    }
   }
+
+  // Overridden from ash::WindowStateObserver:
   void OnPostWindowStateTypeChange(
       ash::WindowState* window_state,
       chromeos::WindowStateType old_type) override {
+    DCHECK_EQ(window_, window_state->window());
     if (window_state->IsFullscreen()) {
-      ShowBubble(window_state->window());
+      OnFullscreen();
     } else {
-      CloseBubble();
+      CloseAll();
     }
   }
 
-  void ShowBubble(aura::Window* window) {
-    // Only show message once per window.
-    if (has_been_shown_)
-      return;
-
-    views::Widget* widget =
-        views::Widget::GetTopLevelWidgetForNativeView(window);
-    if (!widget)
-      return;
-    bubble_ = exo::UILockBubbleView::DisplayBubble(widget->GetContentsView());
-
-    // Close bubble after 4s.
-    close_timer_.Start(
-        FROM_HERE, kEscHoldMessageDuration,
-        base::BindOnce(&EscHoldNotifier::CloseBubble, base::Unretained(this),
-                       /*closed_by_timer=*/true));
-  }
-
-  void CloseBubble(bool closed_by_timer = false) {
-    if (bubble_) {
-      bubble_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-      bubble_ = nullptr;
-      // Message is only shown once as long as it shows for the full 4s.
-      if (closed_by_timer) {
-        has_been_shown_ = true;
-        window_state_observation_.Reset();
-      }
+  void OnFullscreen() {
+    // Register ui::EventHandler to watch if mouse goes to top of screen.
+    if (!is_handling_events_ &&
+        !window_->GetProperty(chromeos::kEscHoldExitFullscreenToMinimized)) {
+      window_->AddPreTargetHandler(this);
+      is_handling_events_ = true;
     }
+
+    // Only show Esc notification when window is active.
+    if (window_ != exo::WMHelper::GetInstance()->GetActiveWindow())
+      return;
+
+    if (!esc_notification_)
+      esc_notification_ = CreateEscNotification(window_);
+    esc_notification_->Show();
+
+    // Close Esc notification after 4s.
+    esc_notification_timer_.Start(
+        FROM_HERE, kEscNotificationDuration,
+        base::BindOnce(&EscHoldNotifier::CloseEscNotification,
+                       base::Unretained(this)));
   }
 
-  views::Widget* bubble_ = nullptr;
-  bool has_been_shown_ = false;
-  base::OneShotTimer close_timer_;
+  void CloseAll() {
+    if (is_handling_events_) {
+      window_->RemovePreTargetHandler(this);
+      is_handling_events_ = false;
+    }
+    CloseEscNotification();
+    HideExitPopup();
+  }
+
+  void CloseEscNotification() {
+    if (!esc_notification_)
+      return;
+    esc_notification_->CloseWithReason(
+        views::Widget::ClosedReason::kUnspecified);
+    esc_notification_ = nullptr;
+  }
+
+  void HideExitPopup(bool animate = false) {
+    if (exit_popup_)
+      exit_popup_->Hide(animate);
+  }
+
+  aura::Window* window_;
+  views::Widget* esc_notification_ = nullptr;
+  std::unique_ptr<FullscreenControlPopup> exit_popup_;
+  bool is_handling_events_ = false;
+  bool exit_popup_cooldown_ = false;
+  base::OneShotTimer esc_notification_timer_;
+  base::OneShotTimer exit_popup_timer_;
   base::ScopedObservation<ash::WindowState, ash::WindowStateObserver>
       window_state_observation_{this};
 };
@@ -125,12 +229,13 @@ UILockController::~UILockController() {
 }
 
 void UILockController::OnKeyEvent(ui::KeyEvent* event) {
-  // If the event target is not an exo::Surface, let another handler process the
-  // event.
-  if (!GetShellRootSurface(static_cast<aura::Window*>(event->target())) &&
-      !Surface::AsSurface(static_cast<aura::Window*>(event->target()))) {
+  // TODO(oshima): Rather than handling key event here, add a hook in
+  // keyboard.cc to intercept key event and handle this.
+
+  // If no surface is focused, let another handler process the event.
+  aura::Window* window = static_cast<aura::Window*>(event->target());
+  if (!GetTargetSurfaceForKeyboardFocus(window))
     return;
-  }
 
   if (event->code() == ui::DomCode::ESCAPE &&
       (event->flags() & kExcludedFlags) == 0) {
@@ -163,8 +268,14 @@ void UILockController::OnSurfaceFocused(Surface* gained_focus) {
   window->SetProperty(kEscHoldNotifierKey, new EscHoldNotifier(window));
 }
 
-bool UILockController::IsBubbleVisibleForTesting(aura::Window* window) {
-  return window->GetProperty(kEscHoldNotifierKey)->bubble();
+views::Widget* UILockController::GetEscNotificationForTesting(
+    aura::Window* window) {
+  return window->GetProperty(kEscHoldNotifierKey)->esc_notification();
+}
+
+FullscreenControlPopup* UILockController::GetExitPopupForTesting(
+    aura::Window* window) {
+  return window->GetProperty(kEscHoldNotifierKey)->exit_popup();
 }
 
 namespace {
@@ -212,18 +323,7 @@ void UILockController::OnEscapeHeld() {
 
   focused_surface_to_unlock_ = nullptr;
 
-  auto* widget =
-      views::Widget::GetTopLevelWidgetForNativeView(surface->window());
-  auto* window_state =
-      ash::WindowState::Get(widget ? widget->GetNativeWindow() : nullptr);
-  if (window_state) {
-    if (window_state->window()->GetProperty(
-            chromeos::kEscHoldExitFullscreenToMinimized)) {
-      window_state->Minimize();
-    } else {
-      window_state->Restore();
-    }
-  }
+  ExitFullscreen(surface->window()->GetToplevelWindow());
 }
 
 void UILockController::StopTimer() {

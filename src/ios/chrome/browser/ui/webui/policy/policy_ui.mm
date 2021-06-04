@@ -39,8 +39,6 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"labelAssetId", IDS_POLICY_LABEL_ASSET_ID},
       {"labelClientId", IDS_POLICY_LABEL_CLIENT_ID},
       {"labelDirectoryApiId", IDS_POLICY_LABEL_DIRECTORY_API_ID},
-      {"labelEnterpriseEnrollmentDomain",
-       IDS_POLICY_LABEL_ENTERPRISE_ENROLLMENT_DOMAIN},
       {"labelGaiaId", IDS_POLICY_LABEL_GAIA_ID},
       {"labelIsAffiliated", IDS_POLICY_LABEL_IS_AFFILIATED},
       {"labelLocation", IDS_POLICY_LABEL_LOCATION},
@@ -76,6 +74,9 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"statusDevice", IDS_POLICY_STATUS_DEVICE},
       {"statusMachine", IDS_POLICY_STATUS_MACHINE},
       {"statusUser", IDS_POLICY_STATUS_USER},
+      {"labelLastCloudReportSentTimestamp",
+       IDS_POLICY_LABEL_LAST_CLOUD_REPORT_SENT_TIMESTAMP},
+
   };
   source->AddLocalizedStrings(kStrings);
   source->UseStringsJs();

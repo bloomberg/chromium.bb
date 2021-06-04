@@ -17,9 +17,9 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
-#include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -67,6 +67,12 @@ bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPING ||
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_RESETTING ||
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING;
+}
+
+bool VmIsStopped(vm_tools::plugin_dispatcher::VmState state) {
+  return state == vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED ||
+         state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSED ||
+         state == vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED;
 }
 
 void ShowStartVmFailedDialog(PluginVmLaunchResult result) {
@@ -143,7 +149,7 @@ void PluginVmManagerImpl::OnPrimaryUserSessionStarted() {
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ListVms(
       std::move(request),
       base::BindOnce(
-          [](base::Optional<vm_tools::plugin_dispatcher::ListVmResponse>
+          [](absl::optional<vm_tools::plugin_dispatcher::ListVmResponse>
                  reply) {
             // If the dispatcher is already running here, Chrome probably
             // crashed. Restart it so it can bind to the new wayland socket.
@@ -186,7 +192,7 @@ void PluginVmManagerImpl::LaunchPluginVm(LaunchPluginVmCallback callback) {
   // wait before starting the VM.
   if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN ||
       VmIsStopping(vm_state_)) {
-    ChromeLauncherController::instance()
+    ChromeShelfController::instance()
         ->GetShelfSpinnerController()
         ->AddSpinnerToShelf(
             kPluginVmShelfAppId,
@@ -257,7 +263,7 @@ void PluginVmManagerImpl::RelaunchPluginVm() {
 }
 
 void PluginVmManagerImpl::OnSuspendVmForRelaunch(
-    base::Optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply) {
+    absl::optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply) {
   LOG_FUNCTION_CALL();
   if (reply &&
       reply->error() == vm_tools::plugin_dispatcher::VmErrorCode::VM_SUCCESS) {
@@ -326,6 +332,7 @@ void PluginVmManagerImpl::OnVmToolsStateChanged(
   if (vm_tools_state_ ==
           vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED &&
       pending_vm_tools_installed_) {
+    pending_vm_tools_installed_ = false;
     LaunchSuccessful();
   }
 }
@@ -341,8 +348,22 @@ void PluginVmManagerImpl::OnVmStateChanged(
 
   vm_state_ = signal.vm_state();
 
-  if (pending_start_vm_ && !VmIsStopping(vm_state_))
+  if (pending_start_vm_ && VmIsStopped(vm_state_)) {
+    // We attempted to the launch when the VM was in the middle of stopping.
+    VLOG(1) << "VM finished transition to a stopped state.";
+    pending_start_vm_ = false;
     StartVm();
+  }
+
+  if (pending_vm_tools_installed_ &&
+      (VmIsStopping(vm_state_) || VmIsStopped(vm_state_))) {
+    // StartVm succeeded but the VM was stopped while waiting for the signal
+    // indicating VM tools are installed.
+    VLOG(1) << "VM stopped without tools installed.";
+    pending_vm_tools_installed_ = false;
+    LaunchFailed(PluginVmLaunchResult::kStoppedWaitingForVmTools);
+  }
+
   if (pending_destroy_disk_image_ && !VmIsStopping(vm_state_))
     DestroyDiskImage();
 
@@ -351,22 +372,24 @@ void PluginVmManagerImpl::OnVmStateChanged(
   // 2) Ensure default shared path exists.
   // 3) Share paths with PluginVm
   if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
+    // If the VM was just created via VMC (instead of the installer), this flag
+    // will not yet be set. Setting it here allows us to avoid showing the
+    // installer when the user launches from the UI
+    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
+                                     true);
+
     vm_tools::concierge::GetVmInfoRequest concierge_request;
     concierge_request.set_owner_id(owner_id_);
     concierge_request.set_name(kPluginVmName);
-    chromeos::DBusThreadManager::Get()->GetConciergeClient()->GetVmInfo(
+    chromeos::ConciergeClient::Get()->GetVmInfo(
         std::move(concierge_request),
         base::BindOnce(&PluginVmManagerImpl::OnGetVmInfoForSharing,
                        weak_ptr_factory_.GetWeakPtr()));
-  } else if (vm_state_ ==
-                 vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED ||
-             vm_state_ ==
-                 vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED) {
+  } else if (VmIsStopped(vm_state_)) {
     // The previous seneschal handle is no longer valid.
     seneschal_server_handle_ = 0;
 
-    ChromeLauncherController::instance()->Close(
-        ash::ShelfID(kPluginVmShelfAppId));
+    ChromeShelfController::instance()->Close(ash::ShelfID(kPluginVmShelfAppId));
   }
 
   auto* engagement_metrics_service =
@@ -452,7 +475,7 @@ void PluginVmManagerImpl::OnStartDispatcher(
 void PluginVmManagerImpl::OnListVms(
     base::OnceCallback<void(bool)> success_callback,
     base::OnceClosure error_callback,
-    base::Optional<vm_tools::plugin_dispatcher::ListVmResponse> reply) {
+    absl::optional<vm_tools::plugin_dispatcher::ListVmResponse> reply) {
   LOG_FUNCTION_CALL();
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to list VMs.";
@@ -516,7 +539,6 @@ void PluginVmManagerImpl::StartVm() {
   // and the containing directory get deleted.
   RemoveDriveDownloadDirectoryIfExists();
 
-  pending_start_vm_ = false;
   vm_is_starting_ = true;
 
   vm_tools::plugin_dispatcher::StartVmRequest request;
@@ -529,7 +551,7 @@ void PluginVmManagerImpl::StartVm() {
 }
 
 void PluginVmManagerImpl::OnStartVm(
-    base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
+    absl::optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
   PluginVmLaunchResult result;
   if (reply) {
     switch (reply->error()) {
@@ -571,7 +593,7 @@ void PluginVmManagerImpl::ShowVm() {
 }
 
 void PluginVmManagerImpl::OnShowVm(
-    base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply) {
+    absl::optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply) {
   LOG_FUNCTION_CALL();
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to show VM.";
@@ -590,7 +612,7 @@ void PluginVmManagerImpl::OnShowVm(
 }
 
 void PluginVmManagerImpl::OnGetVmInfoForSharing(
-    base::Optional<vm_tools::concierge::GetVmInfoResponse> reply) {
+    absl::optional<vm_tools::concierge::GetVmInfoResponse> reply) {
   LOG_FUNCTION_CALL();
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to get concierge VM info.";
@@ -628,8 +650,8 @@ void PluginVmManagerImpl::OnDefaultSharedDirExists(const base::FilePath& dir,
 
 void PluginVmManagerImpl::LaunchSuccessful() {
   LOG_FUNCTION_CALL();
-  pending_start_vm_ = false;
-  pending_vm_tools_installed_ = false;
+  DCHECK(!pending_start_vm_);
+  DCHECK(!pending_vm_tools_installed_);
 
   std::vector<LaunchPluginVmCallback> observers;
   observers.swap(launch_vm_callbacks_);  // Ensure reentrancy.
@@ -640,6 +662,9 @@ void PluginVmManagerImpl::LaunchSuccessful() {
 
 void PluginVmManagerImpl::LaunchFailed(PluginVmLaunchResult result) {
   LOG_FUNCTION_CALL();
+  DCHECK(!pending_start_vm_);
+  DCHECK(!pending_vm_tools_installed_);
+
   if (result == PluginVmLaunchResult::kVmMissing) {
     profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
                                      false);
@@ -648,12 +673,8 @@ void PluginVmManagerImpl::LaunchFailed(PluginVmLaunchResult result) {
 
   RecordPluginVmLaunchResultHistogram(result);
 
-  ChromeLauncherController::instance()
-      ->GetShelfSpinnerController()
-      ->CloseSpinner(kPluginVmShelfAppId);
-
-  pending_start_vm_ = false;
-  pending_vm_tools_installed_ = false;
+  ChromeShelfController::instance()->GetShelfSpinnerController()->CloseSpinner(
+      kPluginVmShelfAppId);
 
   std::vector<LaunchPluginVmCallback> observers;
   observers.swap(launch_vm_callbacks_);  // Ensure reentrancy.
@@ -713,7 +734,7 @@ void PluginVmManagerImpl::StopVmForUninstall() {
 }
 
 void PluginVmManagerImpl::OnStopVmForUninstall(
-    base::Optional<vm_tools::plugin_dispatcher::StopVmResponse> reply) {
+    absl::optional<vm_tools::plugin_dispatcher::StopVmResponse> reply) {
   LOG_FUNCTION_CALL();
   if (!reply || reply->error() != vm_tools::plugin_dispatcher::VM_SUCCESS) {
     LOG(ERROR) << "Failed to stop VM.";
@@ -733,14 +754,14 @@ void PluginVmManagerImpl::DestroyDiskImage() {
   request.set_cryptohome_id(owner_id_);
   request.set_disk_path(kPluginVmName);
 
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->DestroyDiskImage(
+  chromeos::ConciergeClient::Get()->DestroyDiskImage(
       std::move(request),
       base::BindOnce(&PluginVmManagerImpl::OnDestroyDiskImage,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManagerImpl::OnDestroyDiskImage(
-    base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response) {
+    absl::optional<vm_tools::concierge::DestroyDiskImageResponse> response) {
   LOG_FUNCTION_CALL();
   if (!response) {
     LOG(ERROR) << "Failed to uninstall Plugin Vm. Received empty "

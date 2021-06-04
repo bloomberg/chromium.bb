@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1096883626080133124">Egin gauza gehiago Chrome-rekin: sinplea, segurua eta inoiz baino bizkorragoa da</translation>
 <translation id="1282031177488366470">Lagundu Chrome-ren eginbideak eta funtzionamendua hobetzen</translation>
 <translation id="1314663809820920746">Gailuan dituzu oraindik laster-marka, historia, pasahitz eta bestelako ezarpen guztiak. Aldaketarik eginez gero, ez dira sinkronizatuko Google-ko kontuarekin.</translation>
 <translation id="1479202195792305274">Saioa Google-ko kontu batekin hasten baduzu, Chrome-k pasahitzak egiazta ditzake.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome-k ezin izan ditu bilatu eguneratzeak. Egiaztatu Internetera konektatuta zaudela.</translation>
 <translation id="1682483655351012182">Sinkronizatu Chrome-ko datuak</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Lagundu Chrome hobetzen erabilera-estatistikak eta hutsegite-txostenak bidalita Google-ri</translation>
 <translation id="1917964099031477364">Kontu hau eta gorde gabeko datuak kendu egingo dira Chromium-etik eta gailuko Google-ren beste aplikazio batzuetatik.</translation>
 <translation id="2009224836393115614">Chrome-k ezin izan ditu egiaztatu pasahitzak. Egiaztatu Internetera konektatuta zaudela.</translation>
 <translation id="2147651015520127414">Webgunearen ziurtagiria <ph name="ISSUER" /> hornitzaileak jaulki duela egiaztatu du Chrome-k.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome-k ezin izan ditu bilatu eguneratzeak. Saiatu berriro geroago.</translation>
 <translation id="2732745070297234559">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="2740105938841089077">Estekak irekitzeko, erabili Chrome</translation>
+<translation id="2869959624320573933">Hasi saioa Chrome-n</translation>
 <translation id="2919738076569633423">Chrome erabiltzen baduzu, onartu egingo dituzu <ph name="BEGIN_LINK_TOS" />Zerbitzu-baldintzak<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> domeinuak kudeatutako kontu baten saioa amaituko duzunez, Chrome-n dituzun datuak ezabatu egingo dira gailu honetatik. Hala ere, datu horiek Google-ko kontuan egoten jarraituko dute.</translation>
 <translation id="3167189358072330585">Kontua ez dabil Google Chrome-n. Jarri harremanetan domeinuaren administratzailearekin edo erabili ohiko Google-ko kontu bat saioa hasteko.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome-rekin denbora aurrezten duzu kontuak sarera eramanda. Kontuak gehi edo ken ditzakezu Ezarpenak atalean.</translation>
 <translation id="3282568296779691940">Hasi saioa Chrome-n</translation>
 <translation id="3345341804167540816">Erabili Chrome edonon</translation>
+<translation id="3455456143708465450">Chrome-ri etekinik handiena ateratzeko, hasi saioa Google-ko kontuarekin</translation>
 <translation id="3522659714780527202">Chrome erabiltzen duzun gailu guztietan zure fitxak eskura izateko, aktibatu sinkronizazioa</translation>
 <translation id="3533694711092285624">Ez dago pasahitzik gordeta. Chrome-k pasahitzak egiazta ditzake gorde ondoren.</translation>
 <translation id="3706101708757577809">Orain, Chrome erabili ahalko duzu mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Zure kokapena jakiteko baimena ematen badiozu Chrome-ri, baimena duten webguneei bidaliko die kokapena. Baliteke webguneek kokapena eskatzea tokiko informazioa (adibidez, inguruko dendak edo albisteak) erakusteko.</translation>
 <translation id="6036420186814142909">Google Chrome-ren eginbide batzuekin errazagoa da Interneteko datuak eta web-orriak kargatzeko behar den denbora kudeatzea.
 <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Eman Chrome-n saioa hasteko baimena</translation>
 <translation id="6181930887571472871">Aldatu Chrome-ra</translation>
 <translation id="6238746320622508509">Utzi Chrome-ri ezkutuko moduko fitxak blokeatzen.</translation>
 <translation id="6573431926118603307">Beste gailuetan Chrome-n ireki dituzun fitxak hemen agertuko dira.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Gailu honetan dituzun Chrome-ko datuak garbitu nahi dituzu?</translation>
 <translation id="6822673484890854830">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro geroago.</translation>
 <translation id="6964931465519938134">Orain, mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean, Chrome erabili ahalko duzu.</translation>
+<translation id="7059914902409643750">Pertsonalizatu Chrome</translation>
 <translation id="7124339256045485976">Mantendu Chrome eguneratuta</translation>
 <translation id="7161390184744336561">Google Chrome zaharkituta dago</translation>
 <translation id="7165736900384873061">Hasi Google Chrome QR eskanerra erabiltzen</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Eguneratuta dago Google Chrome</translation>
 <translation id="8022947259858476807">Erabili Chrome modu lehenetsian estekak irekitzeko, widgetetatik bilaketak egiteko eta beste aplikazio batzuetako pasahitzak automatikoki betetzeko</translation>
 <translation id="8160472928944011082">Ezin da eguneratu Chrome</translation>
+<translation id="8263079278049777200">Hasi saioa webgune honetan, Google-ko kontuan eta Chrome-n. Geroago aktiba dezakezu sinkronizazioa.</translation>
 <translation id="8357607116237445042">Erabaki Chrome-ko datuak garbitu nahi dituzun ala ez gailu honetatik</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Eskubide guztiak erreserbatuta.</translation>
 <translation id="840168496893712993">Gehigarri batzuek Chrome huts egitea eragiten dute. Saiatu horiek desinstalatzen.</translation>
@@ -95,5 +102,6 @@
   3. Hautatu Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Egon babestuta Google Chrome-rekin</translation>
+<translation id="8772179140489533211">Chrome-n saioa hasteko onarpen-mezuak erakusten ditu.</translation>
 <translation id="9112744793181547300">Arakatzaile lehenetsi gisa ezarri nahi duzu Chrome?</translation>
 </translationbundle>

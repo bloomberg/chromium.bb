@@ -9,7 +9,6 @@
 
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/work_id_provider.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/task_annotator.h"
@@ -25,6 +24,7 @@
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace sequence_manager {
@@ -89,8 +89,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       const SequenceManager::Settings& settings);
 
   // MessagePump::Delegate implementation.
-  void OnBeginNativeWork() override;
-  void OnEndNativeWork() override;
+  void OnBeginWorkItem() override;
+  void OnEndWorkItem() override;
   void BeforeWait() override;
   MessagePump::Delegate::NextWorkInfo DoWork() override;
   bool DoIdleWork() override;
@@ -159,9 +159,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     return main_thread_only_;
   }
 
-  // Instantiate a HangWatchScopeEnabled to cover the current work if hang
-  // watching is activated via finch and the current loop is not nested.
-  void MaybeStartHangWatchScopeEnabled();
+  // Instantiate a WatchHangsInScope to cover the current work if hang
+  // watching is activated via finch.
+  void MaybeStartWatchHangsInScope();
 
   // TODO(altimin): Merge with the one in SequenceManager.
   scoped_refptr<AssociatedThreadId> associated_thread_;
@@ -197,7 +197,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // Reset at the start of each unit of work to cover the work itself and then
   // transition to the next one.
-  base::Optional<HangWatchScopeEnabled> hang_watch_scope_;
+  absl::optional<WatchHangsInScope> hang_watch_scope_;
 };
 
 }  // namespace internal

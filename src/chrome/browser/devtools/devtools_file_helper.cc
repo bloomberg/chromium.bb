@@ -42,7 +42,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-using base::Bind;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
@@ -137,7 +136,7 @@ void WriteToFile(const base::FilePath& path, const std::string& content) {
 void AppendToFile(const base::FilePath& path, const std::string& content) {
   DCHECK(!path.empty());
 
-  base::AppendToFile(path, content.c_str(), content.size());
+  base::AppendToFile(path, content);
 }
 
 storage::IsolatedContext* isolated_context() {
@@ -250,7 +249,7 @@ void DevToolsFileHelper::Save(const std::string& url,
 
   const base::Value* path_value;
   if (file_map->Get(base::MD5String(url), &path_value)) {
-    base::Optional<base::FilePath> path = util::ValueToFilePath(*path_value);
+    absl::optional<base::FilePath> path = util::ValueToFilePath(*path_value);
     if (path)
       initial_path = std::move(*path);
   }
@@ -267,8 +266,9 @@ void DevToolsFileHelper::Save(const std::string& url,
       initial_path = g_last_save_path.Pointer()->DirName().AppendASCII(
           suggested_file_name);
     } else {
-      base::FilePath download_path = DownloadPrefs::FromDownloadManager(
-          BrowserContext::GetDownloadManager(profile_))->DownloadPath();
+      base::FilePath download_path =
+          DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
+              ->DownloadPath();
       initial_path = download_path.AppendASCII(suggested_file_name);
     }
   }
@@ -369,8 +369,7 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(const std::string& type,
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsFileSystemPaths);
   base::DictionaryValue* file_systems_paths_value = update.Get();
-  file_systems_paths_value->SetWithoutPathExpansion(
-      file_system_path, std::make_unique<base::Value>(type));
+  file_systems_paths_value->SetKey(file_system_path, base::Value(type));
 }
 
 void DevToolsFileHelper::FailedToAddFileSystem(const std::string& error) {

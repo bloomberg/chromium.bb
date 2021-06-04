@@ -99,18 +99,15 @@ class ImageDocumentTest : public testing::Test {
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   float page_zoom_factor_ = 0.0f;
   float viewport_scaling_factor_ = 0.0f;
-  base::Optional<bool> force_zero_layout_height_;
+  absl::optional<bool> force_zero_layout_height_;
 };
 
 void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
                                                           int view_height) {
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<WindowToViewportScalingChromeClient>();
-  page_clients.chrome_client = chrome_client_;
   dummy_page_holder_ = nullptr;
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(view_width, view_height), &page_clients);
+      IntSize(view_width, view_height), chrome_client_);
 
   if (page_zoom_factor_)
     dummy_page_holder_->GetFrame().SetPageZoomFactor(page_zoom_factor_);

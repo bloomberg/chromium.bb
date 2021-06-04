@@ -16,7 +16,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -28,6 +27,7 @@
 #include "components/autofill/core/common/language_code.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -211,6 +211,11 @@ class FormStructure {
   // * NAME_LAST_SECOND heuristic predictions are unconditionally used.
   void OverrideServerPredictionsWithHeuristics();
 
+  // Returns the FieldRendererId for fields that are eligible for Manual Filling
+  // on form interaction.
+  static std::vector<FieldRendererId> FindFieldsEligibleForManualFilling(
+      const std::vector<FormStructure*>& forms);
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
@@ -295,7 +300,7 @@ class FormStructure {
     password_attributes_vote_ = vote;
   }
 
-  base::Optional<std::pair<PasswordAttribute, bool>>
+  absl::optional<std::pair<PasswordAttribute, bool>>
   get_password_attributes_vote() const {
     return password_attributes_vote_;
   }
@@ -332,6 +337,13 @@ class FormStructure {
     if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
       fields_[field_index]->set_heuristic_type(type);
   }
+  // Set the server field type for |fields_[field_index]| to |type| for testing
+  // purposes.
+  void set_server_field_type_for_testing(size_t field_index,
+                                         ServerFieldType type) {
+    if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
+      fields_[field_index]->set_server_type(type);
+  }
 #endif
 
   void set_password_symbol_vote(int noisified_symbol) {
@@ -366,8 +378,6 @@ class FormStructure {
   }
 
   void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
-
-  void set_is_rich_query_enabled(bool v) { is_rich_query_enabled_ = v; }
 
   const LanguageCode& current_page_language() const {
     return current_page_language_;
@@ -618,7 +628,7 @@ class FormStructure {
 
   // The vote about password attributes (e.g. whether the password has a numeric
   // character).
-  base::Optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
+  absl::optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
 
   // If |password_attribute_vote_| contains (kHasSpecialSymbol, true), this
   // field contains nosified information about a special symbol in a

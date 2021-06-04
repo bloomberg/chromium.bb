@@ -97,7 +97,8 @@ void VerifyPendingList(
     Profile* profile) {
   const base::DictionaryValue* actual_pending_requests =
       profile->GetPrefs()->GetDictionary(prefs::kCloudExtensionRequestIds);
-  ASSERT_EQ(expected_pending_requests.size(), actual_pending_requests->size());
+  ASSERT_EQ(expected_pending_requests.size(),
+            actual_pending_requests->DictSize());
   for (const auto& expected_request : expected_pending_requests) {
     EXPECT_EQ(::util::TimeToValue(expected_request.second),
               *actual_pending_requests->FindKey(expected_request.first)
@@ -107,7 +108,7 @@ void VerifyPendingList(
 
 void SetExtensionSettings(const std::string& settings_string,
                           TestingProfile* profile) {
-  base::Optional<base::Value> settings =
+  absl::optional<base::Value> settings =
       base::JSONReader::Read(settings_string);
   ASSERT_TRUE(settings.has_value());
   profile->GetTestingPrefService()->SetManagedPref(
@@ -338,7 +339,7 @@ class WebstorePrivateBeginInstallWithManifest3Test
   }
 
   void SetExtensionSettings(const std::string& settings_string) {
-    base::Optional<base::Value> settings =
+    absl::optional<base::Value> settings =
         base::JSONReader::Read(settings_string);
     ASSERT_TRUE(settings);
     profile()->GetTestingPrefService()->SetManagedPref(
@@ -491,9 +492,7 @@ TEST_F(WebstorePrivateBeginInstallWithManifest3Test, BlockedByPolicy) {
                               GenerateArgs(kExtensionId, kExtensionManifest),
                               profile());
   VerifyBlockedByPolicyFunctionResult(
-      function.get(),
-      base::ASCIIToUTF16(
-          "From your administrator: This extension is blocked."));
+      function.get(), u"From your administrator: This extension is blocked.");
 }
 
 TEST_F(WebstorePrivateBeginInstallWithManifest3Test,

@@ -16,7 +16,10 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
+#include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class BrowserContext;
@@ -75,9 +78,9 @@ class ExtensionPlatformKeysService : public KeyedService {
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key. If it
   // failed, |public_key_spki_der| will be empty.
-  using GenerateKeyCallback =
-      base::OnceCallback<void(const std::string& public_key_spki_der,
-                              platform_keys::Status status)>;
+  using GenerateKeyCallback = base::OnceCallback<void(
+      const std::string& public_key_spki_der,
+      absl::optional<crosapi::mojom::KeystoreError> error)>;
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id|
@@ -108,8 +111,9 @@ class ExtensionPlatformKeysService : public KeyedService {
 
   // If signing was successful, |signature| will contain the signature. If it
   // failed, |signature| will be empty.
-  using SignCallback = base::OnceCallback<void(const std::string& signature,
-                                               platform_keys::Status status)>;
+  using SignCallback = base::OnceCallback<void(
+      const std::string& signature,
+      absl::optional<crosapi::mojom::KeystoreError> error)>;
 
   // Digests |data|, applies PKCS1 padding if specified by |hash_algorithm| and
   // chooses the signature algorithm according to |key_type| and signs the data
@@ -123,7 +127,7 @@ class ExtensionPlatformKeysService : public KeyedService {
   // future signing attempts. If signing was successful, |callback| will be
   // invoked with the signature. If it failed, the resulting signature will be
   // empty. Will only call back during the lifetime of this object.
-  void SignDigest(base::Optional<platform_keys::TokenId> token_id,
+  void SignDigest(absl::optional<platform_keys::TokenId> token_id,
                   const std::string& data,
                   const std::string& public_key_spki_der,
                   platform_keys::KeyType key_type,
@@ -143,7 +147,7 @@ class ExtensionPlatformKeysService : public KeyedService {
   // future signing attempts. If signing was successful, |callback| will be
   // invoked with the signature. If it failed, the resulting signature will be
   // empty. Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Raw(base::Optional<platform_keys::TokenId> token_id,
+  void SignRSAPKCS1Raw(absl::optional<platform_keys::TokenId> token_id,
                        const std::string& data,
                        const std::string& public_key_spki_der,
                        const std::string& extension_id,
@@ -210,6 +214,7 @@ class ExtensionPlatformKeysService : public KeyedService {
   platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;
   platform_keys::KeyPermissionsService* const key_permissions_service_ =
       nullptr;
+  mojo::Remote<crosapi::mojom::KeystoreService> keystore_service_;
   std::unique_ptr<SelectDelegate> select_delegate_;
   base::queue<std::unique_ptr<Task>> tasks_;
   base::WeakPtrFactory<ExtensionPlatformKeysService> weak_factory_{this};

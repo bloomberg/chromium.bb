@@ -5,8 +5,8 @@ import { ValidationTest } from '../validation_test.js';
 
 export class ImageCopyTest extends ValidationTest {
   testRun(
-    textureCopyView: GPUTextureCopyView,
-    textureDataLayout: GPUTextureDataLayout,
+    textureCopyView: GPUImageCopyTexture,
+    textureDataLayout: GPUImageDataLayout,
     size: GPUExtent3D,
     {
       method,

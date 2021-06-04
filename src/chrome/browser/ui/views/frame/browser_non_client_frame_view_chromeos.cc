@@ -43,6 +43,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
@@ -51,7 +52,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -232,7 +232,7 @@ SkColor BrowserNonClientFrameViewChromeOS::GetCaptionColor(
 
   // Web apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
-  base::Optional<SkColor> theme_color =
+  absl::optional<SkColor> theme_color =
       browser->app_controller()->GetThemeColor();
   if (theme_color)
     active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
@@ -401,6 +401,27 @@ void BrowserNonClientFrameViewChromeOS::ChildPreferredSizeChanged(
   }
 }
 
+bool BrowserNonClientFrameViewChromeOS::DoesIntersectRect(
+    const views::View* target,
+    const gfx::Rect& rect) const {
+  DCHECK_EQ(target, this);
+  if (!views::ViewTargeterDelegate::DoesIntersectRect(this, rect)) {
+    // |rect| is outside the frame's bounds.
+    return false;
+  }
+
+  bool should_leave_to_top_container = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // In immersive mode, the caption buttons container is reparented to the
+  // TopContainerView and hence |rect| should not be claimed here.  See
+  // BrowserNonClientFrameViewChromeOS::OnImmersiveRevealStarted().
+  should_leave_to_top_container =
+      browser_view()->immersive_mode_controller()->IsRevealed();
+#endif
+
+  return !should_leave_to_top_container;
+}
+
 SkColor BrowserNonClientFrameViewChromeOS::GetTitleColor() {
   return browser_view()->GetRegularOrGuestSession()
              ? kNormalWindowTitleTextColor
@@ -561,7 +582,13 @@ void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealStarted() {
 }
 
 void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealEnded() {
-  AddChildViewAt(caption_button_container_, 0);
+  // Ensure the caption button container receives events before the browser view
+  // by placing it higher in the z-order.
+  // [0] - FrameAnimatorView
+  // [1] - BrowserView
+  // [2] - FrameCaptionButtonContainerView
+  const int kCaptionButtonContainerIndex = 2;
+  AddChildViewAt(caption_button_container_, kCaptionButtonContainerIndex);
   if (web_app_frame_toolbar())
     AddChildViewAt(web_app_frame_toolbar(), 0);
   Layout();
@@ -751,7 +778,7 @@ bool BrowserNonClientFrameViewChromeOS::GetOverviewMode() const {
 
 void BrowserNonClientFrameViewChromeOS::OnUpdateFrameColor() {
   aura::Window* window = frame()->GetNativeWindow();
-  base::Optional<SkColor> active_color, inactive_color;
+  absl::optional<SkColor> active_color, inactive_color;
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
     active_color = GetFrameColor(BrowserFrameActiveState::kActive);
     inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);

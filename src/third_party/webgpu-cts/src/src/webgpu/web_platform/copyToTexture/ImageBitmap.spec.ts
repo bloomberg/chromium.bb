@@ -13,10 +13,7 @@ TODO: Test zero-sized copies from all sources (just make sure params cover it) (
 import { poptions, params } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { unreachable } from '../../../common/framework/util/util.js';
-import {
-  kUncompressedTextureFormatInfo,
-  UncompressedTextureFormat,
-} from '../../capability_info.js';
+import { RegularTextureFormat, kRegularTextureFormatInfo } from '../../capability_info.js';
 import { GPUTest } from '../../gpu_test.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
@@ -34,8 +31,16 @@ enum Color {
   OpaqueBlack,
   TransparentBlack,
 }
+
+// These two types correspond to |premultiplyAlpha| and |imageOrientation| in |ImageBitmapOptions|.
+type TransparentOp = 'premultiply' | 'none' | 'non-transparent';
+type OrientationOp = 'flipY' | 'none';
+
 // Cache for generated pixels.
-const generatedPixelCache: Map<GPUTextureFormat, Map<Color, Uint8Array>> = new Map();
+const generatedPixelCache: Map<
+  RegularTextureFormat,
+  Map<Color, Map<TransparentOp, Uint8Array>>
+> = new Map();
 
 class F extends GPUTest {
   checkCopyImageBitmapResult(
@@ -106,9 +111,9 @@ got [${failedByteActualValues.join(', ')}]`;
   }
 
   doTestAndCheckResult(
-    imageBitmapCopyView: GPUImageBitmapCopyView,
-    dstTextureCopyView: GPUTextureCopyView,
-    copySize: GPUExtent3D,
+    imageBitmapCopyView: GPUImageCopyImageBitmap,
+    dstTextureCopyView: GPUImageCopyTexture,
+    copySize: GPUExtent3DDict,
     bytesPerPixel: number,
     expectedData: Uint8ClampedArray
   ): void {
@@ -141,53 +146,113 @@ got [${failedByteActualValues.join(', ')}]`;
     );
   }
 
-  generatePixel(color: Color, format: UncompressedTextureFormat): Uint8Array {
-    let entry = generatedPixelCache.get(format);
-    if (entry === undefined) {
-      entry = new Map();
-      generatedPixelCache.set(format, entry);
+  generatePixel(
+    color: Color,
+    format: RegularTextureFormat,
+    transparentOp: TransparentOp
+  ): Uint8Array {
+    let formatEntry = generatedPixelCache.get(format);
+    if (formatEntry === undefined) {
+      formatEntry = new Map();
+      generatedPixelCache.set(format, formatEntry);
+    }
+
+    let colorEntry = formatEntry.get(color);
+    if (colorEntry === undefined) {
+      colorEntry = new Map();
+      formatEntry.set(color, colorEntry);
     }
 
     // None of the dst texture format is 'uint' or 'sint', so we can always use float value.
-    if (!entry.has(color)) {
+    if (!colorEntry.has(transparentOp)) {
       const rep = kTexelRepresentationInfo[format];
-      let pixels;
+      let rgba: { R: number; G: number; B: number; A: number };
       switch (color) {
         case Color.Red:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 1.0, G: 0, B: 0, A: 1.0 })));
+          rgba = { R: 1.0, G: 0.0, B: 0.0, A: 1.0 };
           break;
         case Color.Green:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 0, G: 1.0, B: 0, A: 1.0 })));
+          rgba = { R: 0.0, G: 1.0, B: 0.0, A: 1.0 };
           break;
         case Color.Blue:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 0, G: 0, B: 1.0, A: 1.0 })));
+          rgba = { R: 0.0, G: 0.0, B: 1.0, A: 1.0 };
           break;
         case Color.White:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 0, G: 0, B: 0, A: 1.0 })));
+          rgba = { R: 0.0, G: 0.0, B: 0.0, A: 1.0 };
           break;
         case Color.OpaqueBlack:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 1.0, G: 1.0, B: 1.0, A: 1.0 })));
+          rgba = { R: 1.0, G: 1.0, B: 1.0, A: 1.0 };
           break;
         case Color.TransparentBlack:
-          pixels = new Uint8Array(rep.pack(rep.encode({ R: 1.0, G: 1.0, B: 1.0, A: 0 })));
+          rgba = { R: 1.0, G: 1.0, B: 1.0, A: 0.0 };
           break;
         default:
           unreachable();
       }
-      entry.set(color, pixels);
+
+      if (transparentOp === 'premultiply') {
+        rgba.R *= rgba.A;
+        rgba.G *= rgba.A;
+        rgba.B *= rgba.A;
+      }
+
+      const pixels = new Uint8Array(rep.pack(rep.encode(rgba)));
+      colorEntry.set(transparentOp, pixels);
     }
 
-    return entry.get(color)!;
+    return colorEntry.get(transparentOp)!;
+  }
+
+  // Helper functions to generate imagePixels based input configs.
+  getImagePixels({
+    format,
+    width,
+    height,
+    transparentOp,
+    orientationOp,
+  }: {
+    format: RegularTextureFormat;
+    width: number;
+    height: number;
+    transparentOp: TransparentOp;
+    orientationOp: OrientationOp;
+  }): Uint8ClampedArray {
+    const bytesPerPixel = kRegularTextureFormatInfo[format].bytesPerBlock;
+
+    // Generate input contents by iterating 'Color' enum
+    const imagePixels = new Uint8ClampedArray(bytesPerPixel * width * height);
+    const testColors = [Color.Red, Color.Green, Color.Blue, Color.White, Color.OpaqueBlack];
+    if (transparentOp !== 'non-transparent') testColors.push(Color.TransparentBlack);
+
+    for (let i = 0; i < height; ++i) {
+      for (let j = 0; j < width; ++j) {
+        const pixelPos = i * width + j;
+        const currentColorIndex =
+          orientationOp === 'flipY' ? (height - i - 1) * width + j : pixelPos;
+        const currentPixel = testColors[currentColorIndex % testColors.length];
+        const pixelData = this.generatePixel(currentPixel, format, transparentOp);
+        imagePixels.set(pixelData, pixelPos * bytesPerPixel);
+      }
+    }
+
+    return imagePixels;
   }
 }
 
 export const g = makeTestGroup(F);
 
 g.test('from_ImageData')
+  .desc(
+    `
+  Test ImageBitmap generated from ImageData can be copied to WebGPU
+  texture correctly. These imageBitmaps are highly possible living
+  in CPU back resource.
+  `
+  )
   .cases(
     params()
-      .combine(poptions('alpha', ['none', 'premultiply']))
-      .combine(poptions('orientation', ['none', 'flipY']))
+      .combine(poptions('alpha', ['none', 'premultiply'] as const))
+      .combine(poptions('orientation', ['none', 'flipY'] as const))
       .combine(
         poptions('dstColorFormat', [
           'rgba8unorm',
@@ -210,28 +275,19 @@ g.test('from_ImageData')
   .fn(async t => {
     const { width, height, alpha, orientation, dstColorFormat } = t.params;
 
-    const format = 'rgba8unorm';
-    const srcBytesPerPixel = kUncompressedTextureFormatInfo[format].bytesPerBlock;
-
     // Generate input contents by iterating 'Color' enum
-    const imagePixels = new Uint8ClampedArray(srcBytesPerPixel * width * height);
-    const startPixel = Color.Red;
-    for (let i = 0, currentPixel = startPixel; i < width * height; ++i) {
-      const pixels = t.generatePixel(currentPixel, format);
-      if (currentPixel === Color.TransparentBlack) {
-        currentPixel = Color.Red;
-      } else {
-        ++currentPixel;
-      }
-      for (let j = 0; j < srcBytesPerPixel; ++j) {
-        imagePixels[i * srcBytesPerPixel + j] = pixels[j];
-      }
-    }
+    const imagePixels = t.getImagePixels({
+      format: 'rgba8unorm',
+      width,
+      height,
+      transparentOp: 'none',
+      orientationOp: 'none',
+    });
 
     // Generate correct expected values
     const imageData = new ImageData(imagePixels, width, height);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const imageBitmap = await (createImageBitmap as any)(imageData, {
+    const imageBitmap = await createImageBitmap(imageData, {
       premultiplyAlpha: alpha,
       imageOrientation: orientation,
     });
@@ -243,42 +299,19 @@ g.test('from_ImageData')
         depthOrArrayLayers: 1,
       },
       format: dstColorFormat,
-      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
+      usage:
+        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     // Construct expected value for different dst color format
-    const dstBytesPerPixel = kUncompressedTextureFormatInfo[dstColorFormat].bytesPerBlock!;
-    const dstPixels = new Uint8ClampedArray(dstBytesPerPixel * width * height);
-    let expectedPixels = new Uint8ClampedArray(dstBytesPerPixel * width * height);
-    for (let i = 0, currentPixel = startPixel; i < width * height; ++i) {
-      const pixels = t.generatePixel(currentPixel, dstColorFormat);
-      for (let j = 0; j < dstBytesPerPixel; ++j) {
-        // All pixels are 0 due to premultiply alpha
-        if (alpha === 'premultiply' && currentPixel === Color.TransparentBlack) {
-          dstPixels[i * dstBytesPerPixel + j] = 0;
-        } else {
-          dstPixels[i * dstBytesPerPixel + j] = pixels[j];
-        }
-      }
-
-      if (currentPixel === Color.TransparentBlack) {
-        currentPixel = Color.Red;
-      } else {
-        ++currentPixel;
-      }
-    }
-
-    if (orientation === 'flipY') {
-      for (let i = 0; i < height; ++i) {
-        for (let j = 0; j < width * dstBytesPerPixel; ++j) {
-          const posImagePixel = (height - i - 1) * width * dstBytesPerPixel + j;
-          const posExpectedValue = i * width * dstBytesPerPixel + j;
-          expectedPixels[posExpectedValue] = dstPixels[posImagePixel];
-        }
-      }
-    } else {
-      expectedPixels = dstPixels;
-    }
+    const dstBytesPerPixel = kRegularTextureFormatInfo[dstColorFormat].bytesPerBlock!;
+    const expectedPixels = t.getImagePixels({
+      format: dstColorFormat,
+      width,
+      height,
+      transparentOp: alpha,
+      orientationOp: orientation,
+    });
 
     t.doTestAndCheckResult(
       { imageBitmap, origin: { x: 0, y: 0 } },
@@ -290,13 +323,36 @@ g.test('from_ImageData')
   });
 
 g.test('from_canvas')
+  .desc(
+    `
+  Test ImageBitmap generated from canvas/offscreenCanvas can be copied to WebGPU
+  texture correctly. These imageBitmaps are highly possible living in GPU back resource.
+  `
+  )
+  .cases(
+    params()
+      .combine(poptions('orientation', ['none', 'flipY'] as const))
+      .combine(
+        poptions('dstColorFormat', [
+          'rgba8unorm',
+          'bgra8unorm',
+          'rgba8unorm-srgb',
+          'bgra8unorm-srgb',
+          'rgb10a2unorm',
+          'rgba16float',
+          'rgba32float',
+          'rg8unorm',
+          'rg16float',
+        ] as const)
+      )
+  )
   .subcases(() =>
     params()
       .combine(poptions('width', [1, 2, 4, 15, 255, 256]))
       .combine(poptions('height', [1, 2, 4, 15, 255, 256]))
   )
   .fn(async t => {
-    const { width, height } = t.params;
+    const { width, height, orientation, dstColorFormat } = t.params;
 
     // CTS sometimes runs on worker threads, where document is not available.
     // In this case, OffscreenCanvas can be used instead of <canvas>.
@@ -320,19 +376,27 @@ g.test('from_canvas')
       return;
     }
 
-    // The texture format is rgba8unorm, so the bytes per pixel is 4.
-    const bytesPerPixel = 4;
-
-    // Generate original data.
-    const imagePixels = new Uint8ClampedArray(bytesPerPixel * width * height);
-    for (let i = 0; i < width * height * bytesPerPixel; ++i) {
-      imagePixels[i] = i % 4 === 3 ? 255 : i % 256;
-    }
+    // Generate non-transparent pixel data to avoid canvas
+    // different opt behaviour on putImageData()
+    // from browsers.
+    const imagePixels = t.getImagePixels({
+      format: 'rgba8unorm',
+      width,
+      height,
+      transparentOp: 'non-transparent',
+      orientationOp: 'none',
+    });
 
     const imageData = new ImageData(imagePixels, width, height);
+
+    // Use putImageData to prevent color space conversion.
     imageCanvasContext.putImageData(imageData, 0, 0);
 
-    const imageBitmap = await createImageBitmap(imageCanvas);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageBitmap = await createImageBitmap(imageCanvas, {
+      premultiplyAlpha: 'premultiply',
+      imageOrientation: orientation,
+    });
 
     const dst = t.device.createTexture({
       size: {
@@ -340,23 +404,25 @@ g.test('from_canvas')
         height: imageBitmap.height,
         depthOrArrayLayers: 1,
       },
-      format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
+      format: dstColorFormat,
+      usage:
+        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    // This will get origin data and even it has premultiplied-alpha
-    const expectedData = imageCanvasContext.getImageData(
-      0,
-      0,
-      imageBitmap.width,
-      imageBitmap.height
-    ).data;
+    const dstBytesPerPixel = kRegularTextureFormatInfo[dstColorFormat].bytesPerBlock!;
+    const expectedData = t.getImagePixels({
+      format: dstColorFormat,
+      width,
+      height,
+      transparentOp: 'non-transparent',
+      orientationOp: orientation,
+    });
 
     t.doTestAndCheckResult(
       { imageBitmap, origin: { x: 0, y: 0 } },
       { texture: dst },
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
-      bytesPerPixel,
+      dstBytesPerPixel,
       expectedData
     );
   });

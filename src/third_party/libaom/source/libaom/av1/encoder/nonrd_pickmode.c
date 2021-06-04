@@ -729,9 +729,9 @@ static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
               (puv->dequant_QTX[1] * puv->dequant_QTX[1]) >> 3;
           av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, i,
                                         i);
-          var_uv[j] = cpi->fn_ptr[uv_bsize].vf(puv->src.buf, puv->src.stride,
-                                               puvd->dst.buf, puvd->dst.stride,
-                                               &sse_uv[j]);
+          var_uv[j] = cpi->ppi->fn_ptr[uv_bsize].vf(
+              puv->src.buf, puv->src.stride, puvd->dst.buf, puvd->dst.stride,
+              &sse_uv[j]);
           if ((var_uv[j] < uv_ac_thr || var_uv[j] == 0) &&
               (sse_uv[j] - var_uv[j] < uv_dc_thr || sse_uv[j] == var_uv[j]))
             skip_uv[j] = 1;
@@ -776,8 +776,8 @@ static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int rate;
   int64_t dist;
 
-  unsigned int var = cpi->fn_ptr[bsize].vf(p->src.buf, p->src.stride,
-                                           pd->dst.buf, pd->dst.stride, &sse);
+  unsigned int var = cpi->ppi->fn_ptr[bsize].vf(
+      p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, &sse);
   xd->mi[0]->tx_size = calculate_tx_size(cpi, bsize, x, var, sse);
 
   if (calculate_rd) {
@@ -1171,8 +1171,8 @@ static void model_rd_for_sb_uv(AV1_COMP *cpi, BLOCK_SIZE plane_bsize,
     unsigned int var;
     if (!x->color_sensitivity[i - 1]) continue;
 
-    var = cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf,
-                             pd->dst.stride, &sse);
+    var = cpi->ppi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf,
+                                  pd->dst.stride, &sse);
     assert(sse >= var);
     tot_sse += sse;
 
@@ -1562,7 +1562,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     else
       model_rd_for_sb_y(cpi, bsize, x, xd, &pf_rd_stats[i], 1);
     pf_rd_stats[i].rate += av1_get_switchable_rate(
-        x, xd, cm->features.interp_filter, cm->seq_params.enable_dual_filter);
+        x, xd, cm->features.interp_filter, cm->seq_params->enable_dual_filter);
     cost = RDCOST(x->rdmult, pf_rd_stats[i].rate, pf_rd_stats[i].dist);
     pf_tx_size[i] = mi->tx_size;
     if (cost < best_cost) {
@@ -1618,6 +1618,7 @@ typedef struct _mode_search_stat {
 static void compute_intra_yprediction(const AV1_COMMON *cm,
                                       PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       MACROBLOCK *x, MACROBLOCKD *xd) {
+  const SequenceHeader *seq_params = cm->seq_params;
   struct macroblockd_plane *const pd = &xd->plane[0];
   struct macroblock_plane *const p = &x->plane[0];
   uint8_t *const src_buf_base = p->src.buf;
@@ -1644,10 +1645,11 @@ static void compute_intra_yprediction(const AV1_COMMON *cm,
     for (col = 0; col < max_blocks_wide; col += (1 << tx_size)) {
       p->src.buf = &src_buf_base[4 * (row * (int64_t)src_stride + col)];
       pd->dst.buf = &dst_buf_base[4 * (row * (int64_t)dst_stride + col)];
-      av1_predict_intra_block(cm, xd, block_size_wide[bsize],
-                              block_size_high[bsize], tx_size, mode, 0, 0,
-                              FILTER_INTRA_MODES, pd->dst.buf, dst_stride,
-                              pd->dst.buf, dst_stride, 0, 0, plane);
+      av1_predict_intra_block(
+          xd, seq_params->sb_size, seq_params->enable_intra_edge_filter,
+          block_size_wide[bsize], block_size_high[bsize], tx_size, mode, 0, 0,
+          FILTER_INTRA_MODES, pd->dst.buf, dst_stride, pd->dst.buf, dst_stride,
+          0, 0, plane);
     }
   }
   p->src.buf = src_buf_base;
@@ -1671,7 +1673,9 @@ void av1_nonrd_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
   const MB_MODE_INFO *left_mi = xd->left_mbmi;
   const PREDICTION_MODE A = av1_above_block_mode(above_mi);
   const PREDICTION_MODE L = av1_left_block_mode(left_mi);
-  bmode_costs = x->mode_costs.y_mode_costs[A][L];
+  const int above_ctx = intra_mode_context[A];
+  const int left_ctx = intra_mode_context[L];
+  bmode_costs = x->mode_costs.y_mode_costs[above_ctx][left_ctx];
 
   av1_invalid_rd_stats(&best_rdc);
   av1_invalid_rd_stats(&this_rdc);
@@ -1734,10 +1738,11 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
                                               int *force_skip_low_temp_var) {
   AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
-  const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
+  const int is_small_sb = (cm->seq_params->sb_size == BLOCK_64X64);
 
   // For SVC the usage of alt_ref is determined by the ref_frame_flags.
-  int use_alt_ref_frame = cpi->use_svc || cpi->sf.rt_sf.use_nonrd_altref_frame;
+  int use_alt_ref_frame =
+      cpi->ppi->use_svc || cpi->sf.rt_sf.use_nonrd_altref_frame;
   int use_golden_ref_frame = 1;
 
   use_ref_frame[LAST_FRAME] = 1;  // we never skip LAST
@@ -1832,7 +1837,7 @@ static void estimate_intra_mode(
 
   int intra_cost_penalty = av1_get_intra_cost_penalty(
       quant_params->base_qindex, quant_params->y_dc_delta_q,
-      cm->seq_params.bit_depth);
+      cm->seq_params->bit_depth);
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
   int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
   // For spatial enhancemanent layer: turn off intra prediction if the
@@ -1851,8 +1856,8 @@ static void estimate_intra_mode(
   // Adjust thresholds to make intra mode likely tested if the other
   // references (golden, alt) are skipped/not checked. For now always
   // adjust for svc mode.
-  if (cpi->use_svc || (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
-                       cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0)) {
+  if (cpi->ppi->use_svc || (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
+                            cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0)) {
     spatial_var_thresh = 150;
     motion_thresh = 0;
   }
@@ -2104,7 +2109,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   DECLARE_ALIGNED(16, uint8_t, pred_buf[3 * 128 * 128]);
   PRED_BUFFER *this_mode_pred = NULL;
   const int reuse_inter_pred = cpi->sf.rt_sf.reuse_inter_pred_nonrd &&
-                               cm->seq_params.bit_depth == AOM_BITS_8;
+                               cm->seq_params->bit_depth == AOM_BITS_8;
 
   const int bh = block_size_high[bsize];
   const int bw = block_size_wide[bsize];
@@ -2170,7 +2175,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_AV1_TEMPORAL_DENOISING
   if (cpi->oxcf.noise_sensitivity > 0) {
-    // if (cpi->use_svc) denoise_svc_pickmode = av1_denoise_svc_non_key(cpi);
+    // if (cpi->ppi->use_svc) denoise_svc_pickmode =
+    // av1_denoise_svc_non_key(cpi);
     if (cpi->denoiser.denoising_level > kDenLowLow && denoise_svc_pickmode)
       av1_denoiser_reset_frame_stats(ctx);
   }
@@ -2183,7 +2189,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // to source, so use subpel motion vector to compensate. The nonzero motion
   // is half pixel shifted to left and top, so (-4, -4). This has more effect
   // on higher resolutins, so condition it on that for now.
-  if (cpi->use_svc && svc->spatial_layer_id > 0 &&
+  if (cpi->ppi->use_svc && svc->spatial_layer_id > 0 &&
       svc->downsample_filter_phase[svc->spatial_layer_id - 1] == 8 &&
       cm->width * cm->height > 640 * 480) {
     svc_mv_col = -4;
@@ -2210,7 +2216,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int use_model_yrd_large =
       cpi->oxcf.rc_cfg.mode == AOM_CBR && large_block &&
       !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
-      quant_params->base_qindex && cm->seq_params.bit_depth == 8;
+      quant_params->base_qindex && cm->seq_params->bit_depth == 8;
 
   const int enable_filter_search =
       is_filter_search_enabled(cpi, mi_row, mi_col, bsize);
@@ -2264,7 +2270,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (!use_ref_frame_mask[ref_frame]) continue;
 
     force_mv_inter_layer = 0;
-    if (cpi->use_svc && svc->spatial_layer_id > 0 &&
+    if (cpi->ppi->use_svc && svc->spatial_layer_id > 0 &&
         ((ref_frame == LAST_FRAME && svc->skip_mvsearch_last) ||
          (ref_frame == GOLDEN_FRAME && svc->skip_mvsearch_gf))) {
       // Only test mode if NEARESTMV/NEARMV is (svc_mv_col, svc_mv_row),

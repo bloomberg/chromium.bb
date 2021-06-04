@@ -40,7 +40,9 @@ CPDF_FormControl::CPDF_FormControl(CPDF_FormField* pField,
                                    CPDF_Dictionary* pWidgetDict)
     : m_pField(pField),
       m_pWidgetDict(pWidgetDict),
-      m_pForm(m_pField->GetForm()) {}
+      m_pForm(m_pField->GetForm()) {
+  DCHECK(m_pWidgetDict);
+}
 
 CPDF_FormControl::~CPDF_FormControl() = default;
 
@@ -125,9 +127,6 @@ void CPDF_FormControl::CheckControl(bool bChecked) {
 
 CPDF_FormControl::HighlightingMode CPDF_FormControl::GetHighlightingMode()
     const {
-  if (!m_pWidgetDict)
-    return Invert;
-
   ByteString csH = m_pWidgetDict->GetStringFor("H", "I");
   for (size_t i = 0; i < pdfium::size(kHighlightModes); ++i) {
     if (csH == kHighlightModes[i])
@@ -137,8 +136,7 @@ CPDF_FormControl::HighlightingMode CPDF_FormControl::GetHighlightingMode()
 }
 
 CPDF_ApSettings CPDF_FormControl::GetMK() const {
-  return CPDF_ApSettings(m_pWidgetDict ? m_pWidgetDict->GetDictFor("MK")
-                                       : nullptr);
+  return CPDF_ApSettings(m_pWidgetDict->GetDictFor("MK"));
 }
 
 bool CPDF_FormControl::HasMKEntry(const ByteString& csEntry) const {
@@ -149,18 +147,18 @@ int CPDF_FormControl::GetRotation() const {
   return GetMK().GetRotation();
 }
 
-FX_ARGB CPDF_FormControl::GetColor(int& iColorType, const ByteString& csEntry) {
-  return GetMK().GetColor(iColorType, csEntry);
+std::pair<CFX_Color::Type, FX_ARGB> CPDF_FormControl::GetColorARGB(
+    const ByteString& csEntry) {
+  return GetMK().GetColorARGB(csEntry);
 }
 
-float CPDF_FormControl::GetOriginalColor(int index, const ByteString& csEntry) {
-  return GetMK().GetOriginalColor(index, csEntry);
+float CPDF_FormControl::GetOriginalColorComponent(int index,
+                                                  const ByteString& csEntry) {
+  return GetMK().GetOriginalColorComponent(index, csEntry);
 }
 
-void CPDF_FormControl::GetOriginalColor(int& iColorType,
-                                        float fc[4],
-                                        const ByteString& csEntry) {
-  GetMK().GetOriginalColor(iColorType, fc, csEntry);
+CFX_Color CPDF_FormControl::GetOriginalColor(const ByteString& csEntry) {
+  return GetMK().GetOriginalColor(csEntry);
 }
 
 WideString CPDF_FormControl::GetCaption(const ByteString& csEntry) const {
@@ -180,9 +178,6 @@ int CPDF_FormControl::GetTextPosition() const {
 }
 
 CPDF_DefaultAppearance CPDF_FormControl::GetDefaultAppearance() const {
-  if (!m_pWidgetDict)
-    return CPDF_DefaultAppearance();
-
   if (m_pWidgetDict->KeyExist("DA"))
     return CPDF_DefaultAppearance(m_pWidgetDict->GetStringFor("DA"));
 
@@ -243,8 +238,6 @@ RetainPtr<CPDF_Font> CPDF_FormControl::GetDefaultControlFont() const {
 }
 
 int CPDF_FormControl::GetControlAlignment() const {
-  if (!m_pWidgetDict)
-    return 0;
   if (m_pWidgetDict->KeyExist("Q"))
     return m_pWidgetDict->GetIntegerFor("Q", 0);
 

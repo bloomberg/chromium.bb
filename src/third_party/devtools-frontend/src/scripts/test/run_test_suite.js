@@ -53,7 +53,7 @@ const yargsObject =
         .option('component-server-base-path', {
           type: 'string',
           desc:
-              'The component serve assumes examples live in out/TARGET/gen/front_end/component_docs, but you can set this option to add a prefix. Passing `foo` will redirect the server to look in out/TARGET/gen/foo/front_end/component_docs.',
+              'The component serve assumes examples live in out/TARGET/gen/front_end/ui/components/docs, but you can set this option to add a prefix. Passing `foo` will redirect the server to look in out/TARGET/gen/foo/front_end/ui/components/docs.',
           default: '',
         })
         .option('component-server-shared-resources-path', {
@@ -88,6 +88,11 @@ const yargsObject =
           type: 'string',
           desc: 'Path to the directory containing the out/TARGET folder.',
           default: devtoolsRootPath()
+        })
+        .option('coverage', {
+          type: 'boolean',
+          desc: 'Whether to collect code coverage for this test suite',
+          default: false,
         })
         .parserConfiguration({
           // So that if we pass --foo-bar, Yargs only populates
@@ -139,8 +144,17 @@ function setNodeModulesPath(nodeModulesPath) {
   }
 }
 
-function executeTestSuite(
-    {absoluteTestSuitePath, jobs, target, nodeModulesPath, chromeBinaryPath, chromeFeatures, testFilePattern, cwd}) {
+function executeTestSuite({
+  absoluteTestSuitePath,
+  jobs,
+  target,
+  nodeModulesPath,
+  chromeBinaryPath,
+  chromeFeatures,
+  testFilePattern,
+  coverage,
+  cwd
+}) {
   /**
   * Internally within various scripts (Mocha configs, Conductor, etc), we rely on
   * process.env.FOO. We are moving to exposing the entire configuration to
@@ -153,6 +167,7 @@ function executeTestSuite(
   setEnvValueIfValuePresent('JOBS', jobs);
   setEnvValueIfValuePresent('TARGET', target);
   setEnvValueIfValuePresent('TEST_PATTERNS', testFilePattern);
+  setEnvValueIfValuePresent('COVERAGE', coverage);
 
   /**
    * This one has to be set as an ENV variable as Node looks for the NODE_PATH environment variable.
@@ -237,6 +252,7 @@ function main() {
       nodeModulesPath: yargsObject['node-modules-path'],
       jobs: yargsObject['jobs'],
       testFilePattern: yargsObject['test-file-pattern'],
+      coverage: yargsObject['coverage'] && '1',
       target,
       cwd: yargsObject['cwd']
     });

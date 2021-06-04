@@ -6,11 +6,12 @@
 #define COMPONENTS_FEED_CORE_V2_FEEDSTORE_UTIL_H_
 
 #include <string>
-#include "base/optional.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/v2/public/feed_api.h"
+#include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace feedstore {
 class Metadata;
@@ -19,6 +20,7 @@ constexpr base::StringPiece kForYouStreamId{"i"};
 constexpr base::StringPiece kFollowStreamId{"w"};
 
 base::StringPiece StreamId(const feed::StreamType& stream_type);
+feed::StreamType StreamTypeFromId(base::StringPiece id);
 
 ///////////////////////////////////////////////////
 // Functions that operate on feedstore proto types.
@@ -31,6 +33,8 @@ base::Time GetLastAddedTime(const feedstore::StreamData& data);
 base::Time GetSessionIdExpiryTime(const feedstore::Metadata& metadata);
 base::Time GetStreamViewTime(const Metadata& metadata,
                              const feed::StreamType& stream_type);
+bool IsKnownStale(const Metadata& metadata,
+                  const feed::StreamType& stream_type);
 feedstore::Metadata MakeMetadata(const std::string& gaia);
 
 // Mutations of Metadata. Metadata will need stored again after being changed,
@@ -38,15 +42,23 @@ feedstore::Metadata MakeMetadata(const std::string& gaia);
 void SetSessionId(feedstore::Metadata& metadata,
                   std::string token,
                   base::Time expiry_time);
-base::Optional<Metadata> MaybeUpdateSessionId(
+absl::optional<Metadata> MaybeUpdateSessionId(
     const feedstore::Metadata& metadata,
-    base::Optional<std::string> token);
+    absl::optional<std::string> token);
 feed::LocalActionId GetNextActionId(feedstore::Metadata& metadata);
-const feedstore::Metadata::StreamMetadata* FindMetadataForStream(
+const Metadata::StreamMetadata* FindMetadataForStream(
+    const Metadata& metadata,
     const feed::StreamType& stream_type);
-base::Optional<Metadata> SetStreamViewTime(const Metadata& metadata,
-                                           const feed::StreamType& stream_type,
-                                           base::Time stream_last_added_time);
+Metadata::StreamMetadata& MetadataForStream(
+    Metadata& metadata,
+    const feed::StreamType& stream_type);
+absl::optional<Metadata> SetStreamViewContentIds(
+    const Metadata& metadata,
+    const feed::StreamType& stream_type,
+    const feed::ContentIdSet& content_ids);
+feed::ContentIdSet GetContentIds(const StreamData& stream_data);
+feed::ContentIdSet GetViewContentIds(const Metadata& metadata,
+                                     const feed::StreamType& stream_type);
 
 }  // namespace feedstore
 

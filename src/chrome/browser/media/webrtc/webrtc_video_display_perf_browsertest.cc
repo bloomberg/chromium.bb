@@ -133,15 +133,15 @@ std::vector<double> ParseGoogMaxDecodeFromWebrtcInternalsTab(
   ignore_result(parsed_json.release());
 
   // |dictionary| should have exactly two entries, one per ssrc.
-  if (!dictionary || dictionary->size() != 2u)
+  if (!dictionary || dictionary->DictSize() != 2u)
     return goog_decode_ms;
 
   // Only a given |dictionary| entry will have a "stats" entry that has a key
   // that ends with "recv-googMaxDecodeMs" inside (it will start with the ssrc
   // id, but we don't care about that). Then collect the string of "values" out
   // of that key and convert those into the |goog_decode_ms| vector of doubles.
-  for (const auto& dictionary_entry : *dictionary) {
-    for (const auto& ssrc_entry : dictionary_entry.second->DictItems()) {
+  for (const auto& dictionary_entry : dictionary->DictItems()) {
+    for (const auto& ssrc_entry : dictionary_entry.second.DictItems()) {
       if (ssrc_entry.first != "stats")
         continue;
 

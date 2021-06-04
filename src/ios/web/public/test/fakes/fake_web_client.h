@@ -28,9 +28,6 @@ class FakeWebClient : public web::WebClient {
   // Returns true for kTestWebUIScheme URL.
   bool IsAppSpecificURL(const GURL& url) const override;
 
-  void AddSerializableData(web::SerializableUserDataManager* user_data_manager,
-                           web::WebState* web_state) override;
-
   std::string GetUserAgent(UserAgentType type) const override;
 
   // Returns |plugin_not_supported_text_| as the text to be displayed for an
@@ -51,7 +48,7 @@ class FakeWebClient : public web::WebClient {
                         NSError* error,
                         bool is_post,
                         bool is_off_the_record,
-                        const base::Optional<net::SSLInfo>& info,
+                        const absl::optional<net::SSLInfo>& info,
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
@@ -78,4 +75,4 @@ class FakeWebClient : public web::WebClient {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_TEST_FAKES_TEST_WEB_CLIENT_H_
+#endif  // IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_CLIENT_H_

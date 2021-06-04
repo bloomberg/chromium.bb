@@ -8,10 +8,10 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "net/base/schemeful_site.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace content {
@@ -26,7 +26,11 @@ class CONTENT_EXPORT StorableImpression {
   enum class SourceType {
     // An impression which was associated with a top-level navigation.
     kNavigation = 0,
-    kMaxValue = kNavigation,
+    // An impression which was not associated with a navigation, such as an
+    // impression for an anchor element with the registerattributionsource
+    // attribute set.
+    kEvent = 1,
+    kMaxValue = kEvent,
   };
 
   // If |impression_id| is not available, 0 should be provided.
@@ -36,7 +40,9 @@ class CONTENT_EXPORT StorableImpression {
                      const url::Origin& reporting_origin,
                      base::Time impression_time,
                      base::Time expiry_time,
-                     const base::Optional<int64_t>& impression_id);
+                     SourceType source_type,
+                     int64_t priority,
+                     const absl::optional<int64_t>& impression_id);
   StorableImpression(const StorableImpression& other);
   StorableImpression& operator=(const StorableImpression& other) = delete;
   ~StorableImpression();
@@ -53,9 +59,11 @@ class CONTENT_EXPORT StorableImpression {
 
   base::Time expiry_time() const { return expiry_time_; }
 
-  base::Optional<int64_t> impression_id() const { return impression_id_; }
+  absl::optional<int64_t> impression_id() const { return impression_id_; }
 
   SourceType source_type() const { return source_type_; }
+
+  int64_t priority() const { return priority_; }
 
   // Returns the schemeful site of |conversion_origin|.
   //
@@ -71,10 +79,11 @@ class CONTENT_EXPORT StorableImpression {
   url::Origin reporting_origin_;
   base::Time impression_time_;
   base::Time expiry_time_;
-  SourceType source_type_ = SourceType::kNavigation;
+  SourceType source_type_;
+  int64_t priority_;
 
   // If null, an ID has not been assigned yet.
-  base::Optional<int64_t> impression_id_;
+  absl::optional<int64_t> impression_id_;
 
   // When adding new members, the ImpressionsEqual() testing utility in
   // conversion_test_utils.h should also be updated.

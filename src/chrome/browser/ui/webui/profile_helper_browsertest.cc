@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/browser_features.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/profile_deletion_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browser_test.h"
@@ -95,32 +98,6 @@ class BrowserAddedObserver : public BrowserListObserver {
 
  private:
   Browser* browser_;
-  base::RunLoop run_loop_;
-};
-
-class ProfileDeletionObserver : public ProfileAttributesStorage::Observer {
- public:
-  ProfileDeletionObserver() {
-    g_browser_process->profile_manager()
-        ->GetProfileAttributesStorage()
-        .AddObserver(this);
-  }
-
-  ~ProfileDeletionObserver() override {
-    g_browser_process->profile_manager()
-        ->GetProfileAttributesStorage()
-        .RemoveObserver(this);
-  }
-
-  void Wait() { run_loop_.Run(); }
-
-  // ProfileAttributesStorage::Observer:
-  void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const std::u16string& profile_name) override {
-    run_loop_.Quit();
-  }
-
- private:
   base::RunLoop run_loop_;
 };
 
@@ -228,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   ui_test_utils::WaitForBrowserToClose(original_browser);
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(additional_profile, browser_list->get(0)->profile());
@@ -280,7 +257,7 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTestWithDestroyProfile,
     observer.Wait();
   } else {
     content::BrowsingDataRemoverCompletionInhibitor inhibitor(
-        content::BrowserContext::GetBrowsingDataRemover(additional_profile));
+        additional_profile->GetBrowsingDataRemover());
     webui::DeleteProfileAtPath(additional_profile_dir,
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);
     inhibitor.BlockUntilNearCompletion();
@@ -291,8 +268,16 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTestWithDestroyProfile,
   EXPECT_TRUE(base::Contains(*browser_list, original_browser));
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 
-  // TODO(crbug.com/1191455): Once RemoveProfile()/NukeProfileFromDisk() aren't
-  // flaky anymore, EXPECT_FALSE(PathExists(additional_profile_dir)).
+  if (destroy_profile) {
+    // Check that NukeProfileFromDisk() works correctly.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::Time start = base::Time::Now();
+    while (base::PathExists(additional_profile_dir) &&
+           base::Time::Now() - start < TestTimeouts::action_timeout()) {
+      base::RunLoop().RunUntilIdle();
+    }
+    EXPECT_FALSE(base::PathExists(additional_profile_dir));
+  }
 }
 
 #if defined(OS_CHROMEOS)

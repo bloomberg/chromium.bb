@@ -157,6 +157,40 @@ HWY_NOINLINE void TestFastPQEFD() {
   printf("max abs err %e\n", static_cast<double>(max_abs_err));
 }
 
+HWY_NOINLINE void TestFastHLGEFD() {
+  constexpr size_t kNumTrials = 1 << 23;
+  std::mt19937 rng(1);
+  std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+  float max_abs_err = 0;
+  HWY_FULL(float) d;
+  for (size_t i = 0; i < kNumTrials; i++) {
+    const float f = dist(rng);
+    const float actual = GetLane(TF_HLG().EncodedFromDisplay(d, Set(d, f)));
+    const float expected = TF_HLG().EncodedFromDisplay(f);
+    const float abs_err = std::abs(expected - actual);
+    EXPECT_LT(abs_err, 5e-7) << "f = " << f;
+    max_abs_err = std::max(max_abs_err, abs_err);
+  }
+  printf("max abs err %e\n", static_cast<double>(max_abs_err));
+}
+
+HWY_NOINLINE void TestFast709EFD() {
+  constexpr size_t kNumTrials = 1 << 23;
+  std::mt19937 rng(1);
+  std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+  float max_abs_err = 0;
+  HWY_FULL(float) d;
+  for (size_t i = 0; i < kNumTrials; i++) {
+    const float f = dist(rng);
+    const float actual = GetLane(TF_709().EncodedFromDisplay(d, Set(d, f)));
+    const float expected = TF_709().EncodedFromDisplay(f);
+    const float abs_err = std::abs(expected - actual);
+    EXPECT_LT(abs_err, 2e-6) << "f = " << f;
+    max_abs_err = std::max(max_abs_err, abs_err);
+  }
+  printf("max abs err %e\n", static_cast<double>(max_abs_err));
+}
+
 HWY_NOINLINE void TestFastPQDFE() {
   constexpr size_t kNumTrials = 1 << 23;
   std::mt19937 rng(1);
@@ -203,8 +237,9 @@ HWY_NOINLINE void TestFastXYB() {
         Image3F xyb(kChunk * kChunk, kChunk);
         std::vector<uint8_t> roundtrip(kChunk * kChunk * kChunk * 3);
         ToXYB(ib, nullptr, &xyb);
-        jxl::HWY_NAMESPACE::FastXYBTosRGB8(xyb, Rect(xyb), Rect(xyb),
-                                           roundtrip.data(), xyb.xsize());
+        jxl::HWY_NAMESPACE::FastXYBTosRGB8(
+            xyb, Rect(xyb), Rect(xyb), nullptr, Rect(), /*is_rgba=*/false,
+            roundtrip.data(), xyb.xsize(), xyb.xsize() * 3);
         for (int ir = 0; ir < kChunk; ir++) {
           for (int ig = 0; ig < kChunk; ig++) {
             for (int ib = 0; ib < kChunk; ib++) {
@@ -246,6 +281,8 @@ HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastErf);
 HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastSRGB);
 HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastPQDFE);
 HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastPQEFD);
+HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastHLGEFD);
+HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFast709EFD);
 HWY_EXPORT_AND_TEST_P(FastMathTargetTest, TestFastXYB);
 
 }  // namespace jxl

@@ -14,7 +14,6 @@
 #include "base/cpu.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
@@ -22,6 +21,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -259,25 +259,6 @@ void AddStreamObject(int stream_index,
   stream_list->emplace_back(std::move(stream));
 }
 
-// Checks whether receiver's build version is less than "1.|base_version|.xxxx".
-// Returns true if given version doesn't have the format of "1.xx.xxxx", so that
-// we don't assume that the receiver has the required new capabilities.
-bool NeedsWorkaroundForOlder1DotXVersions(
-    const std::string& receiver_build_version,
-    int base_version) {
-  if (!base::StartsWith(receiver_build_version, "1.",
-                        base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-  const size_t end_pos = receiver_build_version.find_first_of('.', 2);
-  if (end_pos == std::string::npos)
-    return false;
-  int version = 0;
-  return (base::StringToInt(receiver_build_version.substr(2, end_pos - 2),
-                            &version) &&
-          version < base_version);
-}
-
 // Convert the sink capabilities to media::mojom::RemotingSinkMetadata.
 media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
     const std::vector<std::string>& capabilities,
@@ -310,19 +291,15 @@ media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
       sink_metadata.video_capabilities.push_back(
           RemotingSinkVideoCapability::CODEC_VP8);
     } else if (capability == "vp9") {
-      // Before 1.27 Earth receivers report "vp9" even though they don't support
-      // remoting the VP9 encoded video.
-      if (!NeedsWorkaroundForOlder1DotXVersions(receiver_build_version, 27) ||
-          base::StartsWith(params.receiver_model_name, "Chromecast Ultra",
+      // TODO(crbug.com/1198616): receiver_model_name hacks should be removed.
+      if (base::StartsWith(params.receiver_model_name, "Chromecast Ultra",
                            base::CompareCase::SENSITIVE)) {
         sink_metadata.video_capabilities.push_back(
             RemotingSinkVideoCapability::CODEC_VP9);
       }
     } else if (capability == "hevc") {
-      // Before 1.27 Earth receivers report "hevc" even though they don't
-      // support remoting the HEVC encoded video.
-      if (!NeedsWorkaroundForOlder1DotXVersions(receiver_build_version, 27) ||
-          base::StartsWith(params.receiver_model_name, "Chromecast Ultra",
+      // TODO(crbug.com/1198616): receiver_model_name hacks should be removed.
+      if (base::StartsWith(params.receiver_model_name, "Chromecast Ultra",
                            base::CompareCase::SENSITIVE)) {
         sink_metadata.video_capabilities.push_back(
             RemotingSinkVideoCapability::CODEC_HEVC);
@@ -334,7 +311,7 @@ media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
 
   // Enable remoting 1080p 30fps or higher resolution/fps content for Chromecast
   // Ultra receivers only.
-  // TODO(crbug.com/1015467): Receiver should report this capability.
+  // TODO(crbug.com/1198616): receiver_model_name hacks should be removed.
   if (params.receiver_model_name == "Chromecast Ultra") {
     sink_metadata.video_capabilities.push_back(
         RemotingSinkVideoCapability::SUPPORT_4K);
@@ -571,25 +548,12 @@ void Session::CreateVideoEncodeAccelerator(
     vea_provider_->CreateVideoEncodeAccelerator(
         vea.InitWithNewPipeAndPassReceiver());
     // std::make_unique doesn't work to create a unique pointer of the subclass.
-    mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
-                                                         supported_profiles_));
+    mojo_vea = base::WrapUnique<media::VideoEncodeAccelerator>(
+        new media::MojoVideoEncodeAccelerator(std::move(vea),
+                                              supported_profiles_));
   }
   std::move(callback).Run(base::ThreadTaskRunnerHandle::Get(),
                           std::move(mojo_vea));
-}
-
-void Session::CreateVideoEncodeMemory(
-    size_t size,
-    media::cast::ReceiveVideoEncodeMemoryCallback callback) {
-  DVLOG(1) << __func__;
-
-  base::UnsafeSharedMemoryRegion buf =
-      base::UnsafeSharedMemoryRegion::Create(size);
-
-  if (!buf.IsValid())
-    LOG(WARNING) << "Browser failed to allocate shared memory.";
-
-  std::move(callback).Run(std::move(buf));
 }
 
 void Session::OnTransportStatusChanged(CastTransportStatus status) {
@@ -798,8 +762,6 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
                               weak_factory_.GetWeakPtr()),
           base::BindRepeating(&Session::CreateVideoEncodeAccelerator,
                               weak_factory_.GetWeakPtr()),
-          base::BindRepeating(&Session::CreateVideoEncodeMemory,
-                              weak_factory_.GetWeakPtr()),
           cast_transport_.get(),
           base::BindRepeating(&Session::SetTargetPlayoutDelay,
                               weak_factory_.GetWeakPtr()),
@@ -827,24 +789,15 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       media_remoter_->OnMirroringResumed();
   }
 
-  std::unique_ptr<WifiStatusMonitor> wifi_status_monitor;
-  if (answer.supports_wifi_status_reporting) {
-    wifi_status_monitor =
-        std::make_unique<WifiStatusMonitor>(message_dispatcher_.get());
-    // Nest Hub devices do not support remoting despite having a relatively new
-    // build version, so we cannot filter with
-    // NeedsWorkaroundForOlder1DotXVersions() here.
-    if (initially_starting_session &&
-        (base::StartsWith(session_params_.receiver_model_name, "Chromecast",
-                          base::CompareCase::SENSITIVE) ||
-         base::StartsWith(session_params_.receiver_model_name, "Eureka Dongle",
-                          base::CompareCase::SENSITIVE))) {
-      QueryCapabilitiesForRemoting();
-    }
-  } else {
-    LogInfoMessage(
-        base::StrCat({"Remoting is not supported on this receiver model: ",
-                      session_params_.receiver_model_name}));
+  // This is a workaround for Nest Hub devices, which do not support remoting.
+  // TODO(crbug.com/1198616): filtering hack should be removed. See
+  // issuetracker.google.com/135725157 for more information.
+  if (initially_starting_session &&
+      (base::StartsWith(session_params_.receiver_model_name, "Chromecast",
+                        base::CompareCase::SENSITIVE) ||
+       base::StartsWith(session_params_.receiver_model_name, "Eureka Dongle",
+                        base::CompareCase::SENSITIVE))) {
+    QueryCapabilitiesForRemoting();
   }
 
   if (initially_starting_session && observer_)

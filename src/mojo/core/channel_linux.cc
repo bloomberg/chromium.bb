@@ -10,8 +10,8 @@
 #include <sys/eventfd.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
-#include <unistd.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <atomic>
@@ -25,19 +25,23 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/page_size.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_security_policy.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
 #include "mojo/core/embedder/features.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 #ifndef EFD_ZERO_ON_WAKE
 #define EFD_ZERO_ON_WAKE O_NOFOLLOW
@@ -774,6 +778,7 @@ void ChannelLinux::SharedMemReadReady() {
   CHECK(read_buffer_);
   if (read_buffer_->TryLockForReading()) {
     read_notifier_->Clear();
+    bool read_fail = false;
     do {
       uint32_t bytes_read = 0;
       SharedBuffer::Error read_res = read_buffer_->TryReadLocked(
@@ -781,7 +786,6 @@ void ChannelLinux::SharedMemReadReady() {
       if (read_res == SharedBuffer::Error::kControlCorruption) {
         // This is an error we cannot recover from.
         OnError(Error::kReceivedMalformedData);
-        read_buffer_->UnlockForReading();
         break;
       }
 
@@ -805,6 +809,7 @@ void ChannelLinux::SharedMemReadReady() {
         // full message if we get one something has gone horribly wrong.
         if (result != DispatchResult::kOK) {
           LOG(ERROR) << "Recevied a bad message via shared memory";
+          read_fail = true;
           OnError(Error::kReceivedMalformedData);
           break;
         }
@@ -815,7 +820,7 @@ void ChannelLinux::SharedMemReadReady() {
         // starts.
         data_offset += read_size_hint;
       }
-    } while (true);
+    } while (!read_fail);
     read_buffer_->UnlockForReading();
   }
 }
@@ -893,9 +898,9 @@ void ChannelLinux::OfferSharedMemUpgradeInternal() {
   UpgradeOfferMessage offer_msg;
   offer_msg.num_pages = num_pages_;
   offer_msg.version = notifier_version;
-  MessagePtr msg(new Channel::Message(sizeof(UpgradeOfferMessage),
-                                      /*num handles=*/fds.size(),
-                                      Message::MessageType::UPGRADE_OFFER));
+  MessagePtr msg = Message::CreateMessage(sizeof(UpgradeOfferMessage),
+                                          /*num handles=*/fds.size(),
+                                          Message::MessageType::UPGRADE_OFFER);
   msg->SetHandles(std::move(fds));
   memcpy(msg->mutable_payload(), &offer_msg, sizeof(offer_msg));
 
@@ -923,9 +928,19 @@ bool ChannelLinux::KernelSupportsUpgradeRequirements() {
       return false;
     }
 
-    // Do we have memfd_create support, we check by seeing if we get an -ENOSYS
-    // or an -EINVAL. We also support -EPERM because of seccomp rules this is
-    // another possible outcome.
+#if defined(OS_ANDROID)
+    // Finally, if running on Android it must have API version of at
+    // least 29 (Q). The reason for this was SELinux seccomp policies prior to
+    // that API version wouldn't allow moving a memfd.
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <
+        base::android::SdkVersion::SDK_VERSION_Q) {
+      return false;
+    }
+#endif
+
+    // Do we have memfd_create support, we check by seeing if we get an
+    // -ENOSYS or an -EINVAL. We also support -EPERM because of seccomp
+    // rules this is another possible outcome.
     int ret = syscall(__NR_memfd_create, "", ~0);
     PCHECK(ret < 0 && (errno == EINVAL || errno == ENOSYS || errno == EPERM));
     bool memfd_supported = (ret < 0 && errno == EINVAL);

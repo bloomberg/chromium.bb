@@ -35,21 +35,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/naming-convention,rulesdir/no_underscored_properties */
 
 
-import * as Components from '../../components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as _ProtocolClient from '../../core/protocol_client/protocol_client.js';  // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as Root from '../../core/root/root.js';                                   // eslint-disable-line no-unused-vars
 import * as SDK from '../../core/sdk/sdk.js';
-import * as ThemeSupport from '../../theme_support/theme_support.js';
+import * as Logs from '../../models/logs/logs.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Workspace from '../../workspace/workspace.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Bindings from '../bindings/bindings.js';
-import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+import * as HAR from '../har/har.js';
+import type * as TextUtils from '../text_utils/text_utils.js'; // eslint-disable-line no-unused-vars
+import * as Workspace from '../workspace/workspace.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import {ExtensionButton, ExtensionPanel, ExtensionSidebarPane} from './ExtensionPanel.js';
-import {ExtensionTraceProvider, TracingSession} from './ExtensionTraceProvider.js';  // eslint-disable-line no-unused-vars
+import type {TracingSession} from './ExtensionTraceProvider.js';
+import {ExtensionTraceProvider} from './ExtensionTraceProvider.js';  // eslint-disable-line no-unused-vars
 import {LanguageExtensionEndpoint} from './LanguageExtensionEndpoint.js';
 
 const extensionOriginSymbol = Symbol('extensionOrigin');
@@ -427,7 +431,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       return this._status.OK();
     }
 
-    const request = SDK.NetworkLog.NetworkLog.instance().requestForURL(message.url);
+    const request = Logs.NetworkLog.NetworkLog.instance().requestForURL(message.url);
     if (request) {
       Common.Revealer.reveal(request);
       return this._status.OK();
@@ -482,9 +486,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         message.expression, true, true, message.evaluateOptions, port[extensionOriginSymbol], callback.bind(this));
   }
 
-  async _onGetHAR(): Promise<SDK.HARLog.HARLogDTO> {
-    const requests = SDK.NetworkLog.NetworkLog.instance().requests();
-    const harLog = await SDK.HARLog.HARLog.build(requests);
+  async _onGetHAR(): Promise<HAR.Log.LogDTO> {
+    const requests = Logs.NetworkLog.NetworkLog.instance().requests();
+    const harLog = await HAR.Log.Log.build(requests);
     for (let i = 0; i < harLog.entries.length; ++i) {
       harLog.entries[i]._requestId = this._requestId(requests[i]);
     }
@@ -671,7 +675,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 
   async _notifyRequestFinished(event: any): Promise<void> {
     const request = (event.data as SDK.NetworkRequest.NetworkRequest);
-    const entry = await SDK.HARLog.Entry.build(request);
+    const entry = await HAR.Log.Entry.build(request);
     this._postNotification(Extensions.extensionAPI.Events.NetworkRequestFinished, this._requestId(request), entry);
   }
 

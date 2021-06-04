@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -94,6 +95,7 @@ class MODULES_EXPORT MediaStreamTrack
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(ended, kEnded)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(capturehandlechange, kCapturehandlechange)
 
   // Returns the enum value of the ready state.
   MediaStreamSource::ReadyState GetReadyState() { return ready_state_; }
@@ -107,6 +109,8 @@ class MODULES_EXPORT MediaStreamTrack
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
+  void AddedEventListener(const AtomicString&,
+                          RegisteredEventListener&) override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final;
@@ -123,14 +127,15 @@ class MODULES_EXPORT MediaStreamTrack
  private:
   friend class CanvasCaptureMediaStreamTrack;
 
-  // MediaStreamSourceObserver
+  // MediaStreamSource::Observer
   void SourceChangedState() override;
+  void SourceChangedCaptureHandle(media::mojom::CaptureHandlePtr) override;
 
   void PropagateTrackEnded();
   void applyConstraintsImageCapture(ScriptPromiseResolver*,
                                     const MediaTrackConstraints*);
 
-  std::string GetTrackLogString() const;
+  void SendLogMessage(const WTF::String& message);
 
   // Ensures that |feature_handle_for_scheduler_| is initialized.
   void EnsureFeatureHandleForScheduler();

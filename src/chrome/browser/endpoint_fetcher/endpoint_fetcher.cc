@@ -5,6 +5,7 @@
 #include "chrome/browser/endpoint_fetcher/endpoint_fetcher.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -32,6 +33,7 @@ namespace {
 const char kContentTypeKey[] = "Content-Type";
 const char kDeveloperKey[] = "X-Developer-Key";
 const int kNumRetries = 3;
+const int64_t kDefaultTimeOutMs = 30000;
 }  // namespace
 
 EndpointFetcher::EndpointFetcher(
@@ -44,18 +46,17 @@ EndpointFetcher::EndpointFetcher(
     int64_t timeout_ms,
     const std::string& post_data,
     const net::NetworkTrafficAnnotationTag& annotation_tag)
-    : EndpointFetcher(
-          oauth_consumer_name,
-          url,
-          http_method,
-          content_type,
-          scopes,
-          timeout_ms,
-          post_data,
-          annotation_tag,
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          IdentityManagerFactory::GetForProfile(profile)) {}
+    : EndpointFetcher(oauth_consumer_name,
+                      url,
+                      http_method,
+                      content_type,
+                      scopes,
+                      timeout_ms,
+                      post_data,
+                      annotation_tag,
+                      profile->GetDefaultStoragePartition()
+                          ->GetURLLoaderFactoryForBrowserProcess(),
+                      IdentityManagerFactory::GetForProfile(profile)) {}
 
 EndpointFetcher::EndpointFetcher(
     Profile* const profile,
@@ -74,9 +75,8 @@ EndpointFetcher::EndpointFetcher(
       post_data_(post_data),
       headers_(headers),
       annotation_tag_(annotation_tag),
-      url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess()),
+      url_loader_factory_(profile->GetDefaultStoragePartition()
+                              ->GetURLLoaderFactoryForBrowserProcess()),
       identity_manager_(nullptr),
       sanitize_response_(true) {}
 
@@ -91,9 +91,8 @@ EndpointFetcher::EndpointFetcher(
       timeout_ms_(0),
       post_data_(std::string()),
       annotation_tag_(annotation_tag),
-      url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess()),
+      url_loader_factory_(profile->GetDefaultStoragePartition()
+                              ->GetURLLoaderFactoryForBrowserProcess()),
       identity_manager_(nullptr),
       sanitize_response_(false) {}
 
@@ -123,6 +122,32 @@ EndpointFetcher::EndpointFetcher(
     oauth_scopes_.insert(scope);
   }
 }
+
+EndpointFetcher::EndpointFetcher(
+    const GURL& url,
+    const std::string& http_method,
+    const std::string& content_type,
+    int64_t timeout_ms,
+    const std::string& post_data,
+    const net::NetworkTrafficAnnotationTag& annotation_tag,
+    const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory)
+    : auth_type_(CHROME_API_KEY),
+      url_(url),
+      http_method_(http_method),
+      content_type_(content_type),
+      timeout_ms_(timeout_ms),
+      post_data_(post_data),
+      annotation_tag_(annotation_tag),
+      url_loader_factory_(url_loader_factory),
+      identity_manager_(nullptr),
+      sanitize_response_(true) {}
+
+EndpointFetcher::EndpointFetcher(
+    const net::NetworkTrafficAnnotationTag& annotation_tag)
+    : timeout_ms_(kDefaultTimeOutMs),
+      annotation_tag_(annotation_tag),
+      identity_manager_(nullptr),
+      sanitize_response_(true) {}
 
 EndpointFetcher::~EndpointFetcher() = default;
 
@@ -203,6 +228,7 @@ void EndpointFetcher::PerformRequest(
                                       network::SimpleURLLoader::RETRY_ON_5XX);
   simple_url_loader_->SetTimeoutDuration(
       base::TimeDelta::FromMilliseconds(timeout_ms_));
+  simple_url_loader_->SetAllowHttpErrorResults(true);
   network::SimpleURLLoader::BodyAsStringCallback body_as_string_callback =
       base::BindOnce(&EndpointFetcher::OnResponseFetched,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -215,7 +241,6 @@ void EndpointFetcher::PerformRequest(
 void EndpointFetcher::OnResponseFetched(
     EndpointFetcherCallback endpoint_fetcher_callback,
     std::unique_ptr<std::string> response_body) {
-  simple_url_loader_.reset();
   if (response_body) {
     if (sanitize_response_) {
       data_decoder::JsonSanitizer::Sanitize(
@@ -231,9 +256,12 @@ void EndpointFetcher::OnResponseFetched(
   } else {
     auto response = std::make_unique<EndpointResponse>();
     // TODO(crbug.com/993393) Add more detailed error messaging
+    std::string net_error = net::ErrorToString(simple_url_loader_->NetError());
+    VLOG(1) << __func__ << " with response error: " << net_error;
     response->response = "There was a response error";
     std::move(endpoint_fetcher_callback).Run(std::move(response));
   }
+  simple_url_loader_.reset();
 }
 
 void EndpointFetcher::OnSanitizationResult(

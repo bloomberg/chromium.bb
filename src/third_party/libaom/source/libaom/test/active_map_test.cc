@@ -87,14 +87,6 @@ class ActiveMapTest
 
 TEST_P(ActiveMapTest, Test) { DoTest(); }
 
-class ActiveMapTestLarge : public ActiveMapTest {};
-
-TEST_P(ActiveMapTestLarge, Test) { DoTest(); }
-
-AV1_INSTANTIATE_TEST_SUITE(ActiveMapTestLarge,
-                           ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Range(0, 5));
-
 AV1_INSTANTIATE_TEST_SUITE(ActiveMapTest,
                            ::testing::Values(::libaom_test::kRealTime),
                            ::testing::Range(5, 9));

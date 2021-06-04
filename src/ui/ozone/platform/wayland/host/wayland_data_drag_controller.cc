@@ -4,15 +4,19 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 
+#include <bitset>
 #include <cstdint>
 
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #include "ui/ozone/platform/wayland/common/data_util.h"
@@ -26,8 +30,25 @@
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
-
 namespace {
+
+using mojom::DragOperation;
+
+DragOperation DndActionToDragOperation(uint32_t action) {
+  // Prevent the usage of this function for an operation mask.
+  DCHECK_LE(std::bitset<32>(action).count(), 1u);
+  switch (action) {
+    case WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY:
+      return DragOperation::kCopy;
+    case WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE:
+      return DragOperation::kMove;
+    case WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK:
+      // Unsupported in the browser.
+      FALLTHROUGH;
+    default:
+      return DragOperation::kNone;
+  }
+}
 
 int DndActionsToDragOperations(uint32_t actions) {
   int operations = DragDropTypes::DRAG_NONE;
@@ -142,9 +163,6 @@ void WaylandDataDragController::OnDragEnter(WaylandWindow* window,
   DCHECK(data_offer_);
   window_ = window;
 
-  // TODO(crbug.com/1004715): Set mime type the client can accept.  Now it sets
-  // all mime types offered because current implementation doesn't decide
-  // action based on mime type.
   unprocessed_mime_types_.clear();
   for (auto mime : data_offer_->mime_types()) {
     unprocessed_mime_types_.push_back(mime);
@@ -220,7 +238,8 @@ void WaylandDataDragController::OnDataSourceFinish(bool completed) {
   DCHECK(data_source_);
 
   if (origin_window_) {
-    origin_window_->OnDragSessionClose(data_source_->dnd_action());
+    origin_window_->OnDragSessionClose(
+        DndActionToDragOperation(data_source_->dnd_action()));
     // DnD handlers expect DragLeave to be sent for drag sessions that end up
     // with no data transfer (wl_data_source::cancelled event).
     if (!completed)
@@ -276,6 +295,18 @@ void WaylandDataDragController::Offer(const OSExchangeData& data,
   if (data.HasString()) {
     mime_types.push_back(kMimeTypeTextUtf8);
     mime_types.push_back(kMimeTypeText);
+  }
+  if (data.HasFileContents()) {
+    base::FilePath file_contents_filename;
+    std::string file_contents;
+    data.GetFileContents(&file_contents_filename, &file_contents);
+
+    std::string filename = file_contents_filename.value();
+    base::ReplaceChars(filename, "\\", "\\\\", &filename);
+    base::ReplaceChars(filename, "\"", "\\\"", &filename);
+    const std::string mime_type =
+        base::StrCat({kMimeTypeOctetStream, ";name=\"", filename, "\""});
+    mime_types.push_back(mime_type);
   }
 
   DCHECK(!mime_types.empty());

@@ -11,7 +11,6 @@
 
 #include "base/check.h"
 #include "base/containers/adapters.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -26,15 +25,19 @@
 #include "components/download/public/common/download_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -42,7 +45,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -271,8 +273,8 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
 
   // If COLOR_DOWNLOAD_SHELF is not customized, just use the default button bg
   // and text colors.
-  base::Optional<SkColor> bg_color;
-  base::Optional<SkColor> text_color;
+  absl::optional<SkColor> bg_color;
+  absl::optional<SkColor> text_color;
   if (tp->HasCustomColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)) {
     // For custom themes, we have to make up a background color for the
     // button. Use a slight tint of the shelf background.
@@ -288,6 +290,7 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
 
 void DownloadShelfView::DoShowDownload(
     DownloadUIModel::DownloadUIModelPtr download) {
+  const base::TimeTicks show_download_start_time_ticks = base::TimeTicks::Now();
   mouse_watcher_.Stop();
 
   const bool was_empty = download_views_.empty();
@@ -295,9 +298,28 @@ void DownloadShelfView::DoShowDownload(
   // Insert the new view as the first child, so the logical child order matches
   // the visual order.  This ensures that tabbing through downloads happens in
   // the order users would expect.
+  download::DownloadItem* download_item = download->download();
   auto view = std::make_unique<DownloadItemView>(std::move(download), this,
                                                  accessible_alert_);
-  download_views_.push_back(AddChildViewAt(std::move(view), 0));
+  DownloadItemView* download_item_view = AddChildViewAt(std::move(view), 0);
+  download_views_.push_back(download_item_view);
+
+  // Check download_item is not null, as it can be in some cases. See
+  // DownloadUIModel::download() description.
+  if (download_item) {
+    download_item_view->GetWidget()
+        ->GetCompositor()
+        ->RequestPresentationTimeForNextFrame(base::BindOnce(
+            [](base::TimeTicks start_time_ticks, int download_count,
+               const gfx::PresentationFeedback& feedback) {
+              base::UmaHistogramTimes(
+                  download_count > 1
+                      ? "Download.Shelf.Views.NotFirstDownloadPaintTime"
+                      : "Download.Shelf.Views.FirstDownloadPaintTime",
+                  base::TimeTicks::Now() - start_time_ticks);
+            },
+            show_download_start_time_ticks, download_views_.size()));
+  }
 
   // Max number of download views we'll contain. Any time a view is added and
   // we already have this many download views, one is removed.

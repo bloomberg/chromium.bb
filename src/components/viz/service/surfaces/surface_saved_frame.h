@@ -10,12 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_transition_directive.h"
-#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/service/viz_service_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 
@@ -25,6 +24,23 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
  public:
   using TransitionDirectiveCompleteCallback =
       base::OnceCallback<void(uint32_t)>;
+
+  struct RenderPassDrawData {
+    RenderPassDrawData() = default;
+    RenderPassDrawData(const gfx::Rect& rect,
+                       const gfx::Transform& target_transform,
+                       float opacity)
+        : rect(rect), target_transform(target_transform), opacity(opacity) {}
+
+    // This represents the region for the pixel output.
+    gfx::Rect rect;
+    // This is a transform that takes `rect` into a root render pass space. Note
+    // that this makes this result dependent on the structure of the compositor
+    // frame render pass list used to request the copy output.
+    gfx::Transform target_transform;
+    // Opacity accumulated from the original frame.
+    float opacity = 1.f;
+  };
 
   struct OutputCopyResult {
     OutputCopyResult();
@@ -37,18 +53,18 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
     gpu::Mailbox mailbox;
     gpu::SyncToken sync_token;
 
-    // This represents the region for the pixel output.
-    gfx::Rect rect;
-    // This is a transform that takes `rect` into a root render pass space. Note
-    // that this makes this result dependent on the structure of the compositor
-    // frame render pass list used to request the copy output.
-    gfx::Transform target_transform;
+    // Software bitmap representation.
+    SkBitmap bitmap;
+
+    // This is information needed to draw the texture as if it was a part of the
+    // original frame.
+    RenderPassDrawData draw_data;
 
     // Is this a software or a GPU copy result?
     bool is_software = false;
 
     // Release callback used to return a GPU texture.
-    std::unique_ptr<SingleReleaseCallback> release_callback;
+    ReleaseCallback release_callback;
   };
 
   struct FrameResult {
@@ -59,7 +75,7 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
     FrameResult& operator=(FrameResult&& other);
 
     OutputCopyResult root_result;
-    std::vector<base::Optional<OutputCopyResult>> shared_results;
+    std::vector<absl::optional<OutputCopyResult>> shared_results;
   };
 
   SurfaceSavedFrame(CompositorFrameTransitionDirective directive,
@@ -75,19 +91,17 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
   // frame.
   void RequestCopyOfOutput(Surface* surface);
 
-  base::Optional<FrameResult> TakeResult() WARN_UNUSED_RESULT;
+  absl::optional<FrameResult> TakeResult() WARN_UNUSED_RESULT;
 
   // For testing functionality that ensures that we have a valid frame.
-  void CompleteSavedFrameForTesting(
-      base::OnceCallback<void(const gpu::SyncToken&, bool)> release_callback);
+  void CompleteSavedFrameForTesting();
 
  private:
   enum class ResultType { kRoot, kShared };
 
   void NotifyCopyOfOutputComplete(ResultType type,
                                   size_t shared_index,
-                                  const gfx::Rect& rect,
-                                  const gfx::Transform& target_transform,
+                                  const RenderPassDrawData& info,
                                   std::unique_ptr<CopyOutputResult> result);
 
   size_t ExpectedResultCount() const;
@@ -95,7 +109,7 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
   CompositorFrameTransitionDirective directive_;
   TransitionDirectiveCompleteCallback directive_finished_callback_;
 
-  base::Optional<FrameResult> frame_result_;
+  absl::optional<FrameResult> frame_result_;
 
   // This is the number of copy requests we requested. We decrement this value
   // anytime we get a result back. When it reaches 0, we notify that this frame

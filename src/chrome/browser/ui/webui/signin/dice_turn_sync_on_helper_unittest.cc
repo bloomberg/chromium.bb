@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
+#include "chrome/test/base/fake_profile_manager.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -48,6 +48,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::AtLeast;
 using ::testing::Return;
@@ -104,39 +105,25 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
   DiceTurnSyncOnHelperTest* test_fixture_;
 };
 
-// Simple ProfileManager creating testing profiles.
-class UnittestProfileManager : public ProfileManagerWithoutInit {
+// Simple ProfileManager creating testing profiles and allowing to register a
+// callback for the next profile creation.
+class UnittestProfileManager : public FakeProfileManager {
  public:
   explicit UnittestProfileManager(const base::FilePath& user_data_dir)
-      : ProfileManagerWithoutInit(user_data_dir) {}
+      : FakeProfileManager(user_data_dir) {}
 
- public:
   void NextProfileCreatedCallback(
       base::OnceCallback<void(Profile*)> next_profile_created_callback) {
     next_profile_created_callback_ = std::move(next_profile_created_callback);
   }
 
- protected:
-  std::unique_ptr<Profile> CreateProfileHelper(
-      const base::FilePath& path) override {
-    if (!base::PathExists(path) && !base::CreateDirectory(path))
-      return nullptr;
-    auto profile = BuildTestingProfile(path, /*delegate=*/nullptr);
-    if (next_profile_created_callback_)
-      std::move(next_profile_created_callback_).Run(profile.get());
-    return std::move(profile);
-  }
-
-  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+  std::unique_ptr<TestingProfile> BuildTestingProfile(
       const base::FilePath& path,
       Delegate* delegate) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
-    auto profile = BuildTestingProfile(path, this);
+    auto profile = ::BuildTestingProfile(path, delegate);
     if (next_profile_created_callback_)
       std::move(next_profile_created_callback_).Run(profile.get());
-    return std::move(profile);
+    return profile;
   }
 
  private:
@@ -256,7 +243,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   void SetUp() override {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.GetPath()));
+        std::make_unique<UnittestProfileManager>(temp_dir_.GetPath()));
 
     profile_ = BuildTestingProfile(base::FilePath(), /*delegate=*/nullptr);
     identity_test_env_profile_adaptor_ =
@@ -330,7 +317,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     user_policy_signin_service_->set_account(account_id_, kEnterpriseEmail);
 
     // Update the account info to have a consistent hosted domain field.
-    base::Optional<AccountInfo> account_info =
+    absl::optional<AccountInfo> account_info =
         identity_manager()->FindExtendedAccountInfoForAccountWithRefreshToken(
             core_account_info);
     EXPECT_TRUE(account_info);
@@ -505,7 +492,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   bool run_delegate_callbacks_ = true;
 
   // Expected delegate calls.
-  base::Optional<SigninUIError> expected_login_error_;
+  absl::optional<SigninUIError> expected_login_error_;
   std::string expected_enterprise_confirmation_email_;
   std::string expected_merge_data_previous_email_;
   std::string expected_merge_data_new_email_;
@@ -533,7 +520,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
 
   // State of the delegate calls.
   int delegate_destroyed_ = 0;
-  base::Optional<SigninUIError> login_error_;
+  absl::optional<SigninUIError> login_error_;
   std::string enterprise_confirmation_email_;
   std::string merge_data_previous_email_;
   std::string merge_data_new_email_;
@@ -868,8 +855,8 @@ TEST_F(DiceTurnSyncOnHelperTest, SignedInAccountUndoSyncKeepAccount) {
   user_policy_signin_service()->set_client_id("bar");
   enterprise_choice_ = DiceTurnSyncOnHelper::SIGNIN_CHOICE_NEW_PROFILE;
   UseEnterpriseAccount();
-  identity_manager()->GetPrimaryAccountMutator()->SetUnconsentedPrimaryAccount(
-      account_id());
+  identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      account_id(), signin::ConsentLevel::kSignin);
 
   // Signin flow.
   CreateDiceTurnOnSyncHelper(

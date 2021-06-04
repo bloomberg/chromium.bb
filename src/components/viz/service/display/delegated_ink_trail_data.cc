@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/prediction/kalman_predictor.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/delegated_ink_point.h"
@@ -26,7 +26,7 @@ DelegatedInkTrailData::DelegatedInkTrailData() {
   for (int i = 0; i < kNumberOfPredictionConfigs; ++i) {
     prediction_handlers_[i].metrics_handler =
         std::make_unique<ui::PredictionMetricsHandler>(
-            (full_name + base::NumberToString(i)).c_str());
+            base::StrCat({full_name, base::NumberToString(i)}));
     prediction_handlers_[i].predictor =
         std::make_unique<ui::KalmanPredictor>(predictor_options);
   }
@@ -66,7 +66,7 @@ void DelegatedInkTrailData::PredictPoints(
 
   // Used to know if the user enabled prediction, and if so, which prediction
   // config they opted into.
-  base::Optional<int> should_draw_predicted_ink_points =
+  absl::optional<int> should_draw_predicted_ink_points =
       features::ShouldDrawPredictedInkPoints();
 
   for (int experiment = 0; experiment < kNumberOfPredictionConfigs;
@@ -106,12 +106,7 @@ void DelegatedInkTrailData::PredictPoints(
           // produce a prediction if the predicted point would go in to the
           // opposite direction of most recently stored points. If this happens,
           // don't continue trying to generate more predicted points.
-          handler.metrics_handler->EvaluatePrediction();
-          base::UmaHistogramTimes(
-              base::StrCat(
-                  {histogram_base_name, base::NumberToString(experiment)}),
-              latency_improvement_with_prediction);
-          continue;
+          break;
         }
       }
     }

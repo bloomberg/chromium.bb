@@ -29,6 +29,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -54,8 +56,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/native_widget.h"
@@ -142,7 +142,7 @@ class InteractionTracker : public ui::EventHandler,
       native_window_->RemovePreTargetHandler(this);
   }
 
-  const base::Optional<gfx::Point>& last_interaction_location() const {
+  const absl::optional<gfx::Point>& last_interaction_location() const {
     return last_interaction_location_;
   }
 
@@ -174,7 +174,7 @@ class InteractionTracker : public ui::EventHandler,
     }
   }
 
-  base::Optional<gfx::Point> last_interaction_location_;
+  absl::optional<gfx::Point> last_interaction_location_;
   gfx::NativeWindow native_window_;
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       scoped_widget_observation_{this};
@@ -220,8 +220,8 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
   int GetDisappearingLabelTargetPosition() const;
   int GetBorderStartingY() const;
 
-  base::Optional<int> last_num_tabs_;
-  base::Optional<int> pending_num_tabs_ = 0;
+  absl::optional<int> last_num_tabs_;
+  absl::optional<int> pending_num_tabs_ = 0;
   bool pending_throbber_ = false;
   TabCounterAnimationType current_animation_ = TabCounterAnimationType::kNone;
 
@@ -279,22 +279,19 @@ void TabCounterAnimator::MaybeStartPendingAnimation() {
     return;
 
   if (pending_throbber_) {
-    // If the throbber is already showing, just reset the timer so that the
-    // animation continues smoothly for tabs created in quick succession.
-    if (throbber_timer_.IsRunning()) {
-      throbber_timer_.Reset();
-    } else {
+    // Start the throbber if it is not already showing.
+    if (!throbber_timer_.IsRunning())
       throbber_->Start();
 
-      // Automatically stop the throbber after 1 second. Currently we do not
-      // check the real loading state of the new tab(s), as that adds
-      // unnecessary complexity. The purpose of the throbber is just to
-      // indicate to the user that some activity has happened in the
-      // background, which may not otherwise have been obvious because the tab
-      // strip is hidden in this mode.
-      throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
-                            throbber_, &views::Throbber::Stop);
-    }
+    // Automatically stop the throbber after 1 second. This will reset the timer
+    // if it is already running. Currently we do not check the real loading
+    // state of the new tab(s), as that adds unnecessary complexity. The purpose
+    // of the throbber is just to indicate to the user that some activity has
+    // happened in the background, which may not otherwise have been obvious
+    // because the tab strip is hidden in this mode.
+    throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                          throbber_, &views::Throbber::Stop);
+
     pending_throbber_ = false;
   }
 
@@ -498,6 +495,7 @@ WebUITabCounterButton::WebUITabCounterButton(PressedCallback pressed_callback,
     : Button(std::move(pressed_callback)),
       tab_strip_model_(browser_view->browser()->tab_strip_model()),
       browser_view_(browser_view) {
+  ConfigureInkDropForToolbar(this);
   // Not focusable by default, only for accessibility.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
@@ -598,6 +596,7 @@ void WebUITabCounterButton::AddedToWidget() {
 
 void WebUITabCounterButton::AfterPropertyChange(const void* key,
                                                 int64_t old_value) {
+  View::AfterPropertyChange(key, old_value);
   if (key != kHasInProductHelpPromoKey)
     return;
   UpdateColors();
@@ -614,7 +613,6 @@ void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
 void WebUITabCounterButton::OnThemeChanged() {
   views::Button::OnThemeChanged();
   UpdateColors();
-  ConfigureInkDropForToolbar(this);
 }
 
 void WebUITabCounterButton::Layout() {

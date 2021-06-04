@@ -18,11 +18,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "base/time/default_clock.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/typing_session_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
@@ -39,7 +41,9 @@ ui::IMEEngineHandlerInterface* GetEngine() {
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
-    : InputMethodBase(delegate) {
+    : InputMethodBase(delegate),
+      typing_session_manager_(
+          TypingSessionManager(base::DefaultClock::GetInstance())) {
   ResetContext();
 }
 
@@ -52,6 +56,7 @@ InputMethodChromeOS::~InputMethodChromeOS() {
       ui::IMEBridge::Get()->GetInputContextHandler() == this) {
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
   }
+  typing_session_manager_.EndAndRecordSession();
 }
 
 InputMethodChromeOS::PendingSetCompositionRange::PendingSetCompositionRange(
@@ -346,7 +351,7 @@ bool InputMethodChromeOS::SetCompositionRange(
 
   if (IsTextInputTypeNone())
     return false;
-
+  typing_session_manager_.Heartbeat();
   // The given range and spans are relative to the current selection.
   gfx::Range range;
   if (!client->GetEditableSelectionRange(&range))
@@ -393,6 +398,7 @@ bool InputMethodChromeOS::SetComposingRange(
         PendingSetCompositionRange{composition_range, non_empty_text_spans};
     return true;
   } else {
+    composing_text_ = true;
     return client->SetCompositionFromExistingText(composition_range,
                                                   non_empty_text_spans);
   }
@@ -424,9 +430,23 @@ bool InputMethodChromeOS::SetAutocorrectRange(const gfx::Range& range) {
   }
 }
 
+bool InputMethodChromeOS::ClearGrammarFragments(const gfx::Range& range) {
+  if (IsTextInputTypeNone())
+    return false;
+  return GetTextInputClient()->ClearGrammarFragments(range);
+}
+
+bool InputMethodChromeOS::AddGrammarFragments(
+    const std::vector<GrammarFragment>& fragments) {
+  if (IsTextInputTypeNone())
+    return false;
+  return GetTextInputClient()->AddGrammarFragments(fragments);
+}
+
 bool InputMethodChromeOS::SetSelectionRange(uint32_t start, uint32_t end) {
   if (IsTextInputTypeNone())
     return false;
+  typing_session_manager_.Heartbeat();
   return GetTextInputClient()->SetEditableSelectionRange(
       gfx::Range(start, end));
 }
@@ -434,9 +454,11 @@ bool InputMethodChromeOS::SetSelectionRange(uint32_t start, uint32_t end) {
 void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine,
                                                  bool keep_selection) {
   TextInputClient* client = GetTextInputClient();
-  if (client && client->HasCompositionText())
-    client->ConfirmCompositionText(keep_selection);
-
+  if (client && client->HasCompositionText()) {
+    const uint32_t characters_committed =
+        client->ConfirmCompositionText(keep_selection);
+    typing_session_manager_.CommitCharacters(characters_committed);
+  }
   // See https://crbug.com/984472.
   ResetContext(reset_engine);
 }
@@ -445,13 +467,15 @@ void InputMethodChromeOS::ResetContext(bool reset_engine) {
   if (IsPasswordOrNoneInputFieldFocused() || !GetTextInputClient())
     return;
 
-  pending_composition_ = base::nullopt;
+  const bool was_composing = composing_text_;
+
+  pending_composition_ = absl::nullopt;
   result_text_.clear();
   result_text_cursor_ = 0;
   composing_text_ = false;
   composition_changed_ = false;
 
-  if (reset_engine && GetEngine())
+  if (reset_engine && was_composing && GetEngine())
     GetEngine()->Reset();
 
   character_composer_.Reset();
@@ -563,8 +587,10 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
-  if (event->GetCharacter())
+  if (event->GetCharacter()) {
     client->InsertChar(*event);
+    typing_session_manager_.CommitCharacters(1);
+  }
   return details;
 }
 
@@ -601,6 +627,7 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
       }
       composing_text_ = false;
     }
+    typing_session_manager_.CommitCharacters(result_text_.length());
   }
 
   // TODO(https://crbug.com/952757): Refactor this code to be clearer and less
@@ -618,7 +645,7 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
       client->ClearCompositionText();
     }
 
-    pending_composition_ = base::nullopt;
+    pending_composition_ = absl::nullopt;
     pending_composition_range_.reset();
   }
 
@@ -670,8 +697,10 @@ void InputMethodChromeOS::CommitText(
   // If we are not handling key event, do not bother sending text result if the
   // focused text input client does not support text input.
   if (!handling_key_event_ && !IsTextInputTypeNone()) {
-    if (!SendFakeProcessKeyEvent(true))
+    if (!SendFakeProcessKeyEvent(true)) {
       GetTextInputClient()->InsertText(text, cursor_behavior);
+      typing_session_manager_.CommitCharacters(text.length());
+    }
     SendFakeProcessKeyEvent(false);
     result_text_.clear();
     result_text_cursor_ = 0;
@@ -718,7 +747,7 @@ void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
     }
     SendFakeProcessKeyEvent(false);
     composition_changed_ = false;
-    pending_composition_ = base::nullopt;
+    pending_composition_ = absl::nullopt;
   }
 }
 
@@ -728,7 +757,7 @@ void InputMethodChromeOS::HidePreeditText() {
 
   // Intentionally leaves |composing_text_| unchanged.
   composition_changed_ = true;
-  pending_composition_ = base::nullopt;
+  pending_composition_ = absl::nullopt;
 
   if (!handling_key_event_) {
     TextInputClient* client = GetTextInputClient();
@@ -881,6 +910,11 @@ TextInputClient::FocusReason InputMethodChromeOS::GetClientFocusReason() const {
 bool InputMethodChromeOS::HasCompositionText() {
   TextInputClient* client = GetTextInputClient();
   return client && client->HasCompositionText();
+}
+
+ukm::SourceId InputMethodChromeOS::GetClientSourceForMetrics() {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetClientSourceForMetrics() : ukm::kInvalidSourceId;
 }
 
 InputMethod* InputMethodChromeOS::GetInputMethod() {

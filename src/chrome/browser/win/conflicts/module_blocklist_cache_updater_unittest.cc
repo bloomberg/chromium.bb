@@ -17,9 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
-#include "base/optional.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
@@ -33,6 +31,7 @@
 #include "chrome/install_static/install_util.h"
 #include "content/public/common/process_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -51,7 +50,7 @@ ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
   module_data.process_types |= ProcessTypeToBit(content::PROCESS_TYPE_BROWSER);
-  module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
+  module_data.inspection_result = absl::make_optional<ModuleInspectionResult>();
   return module_data;
 }
 

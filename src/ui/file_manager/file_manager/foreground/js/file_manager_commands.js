@@ -1918,12 +1918,6 @@ CommandHandler.COMMANDS_['toggle-holding-space'] =
   canExecute(event, fileManager) {
     const command = event.command;
 
-    if (!HoldingSpaceUtil.isFeatureEnabled()) {
-      event.canExecute = false;
-      command.setHidden(true);
-      return;
-    }
-
     const allowedVolumeTypes = HoldingSpaceUtil.getAllowedVolumeTypes();
     const currentRootType = fileManager.directoryModel.getCurrentRootType();
     if (!util.isRecentRootType(currentRootType)) {
@@ -2170,12 +2164,10 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
     }
 
     if (util.isZipPackEnabled()) {
-      // TODO(crbug.com/912236) Implement and remove error notification.
-      const item = new ProgressCenterItem();
-      item.id = 'no_zip';
-      item.message = 'Cannot zip selection: Not implemented yet';
-      item.state = ProgressItemState.ERROR;
-      fileManager.progressCenter.updateItem(item);
+      const selectionEntries = fileManager.getSelection().entries;
+      fileManager.fileOperationManager.zipSelection(
+          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
+
     } else {
       fileManager.taskController.getFileTasks()
           .then(tasks => {
@@ -2905,7 +2897,7 @@ CommandHandler.COMMANDS_['refresh'] = new class extends FilesCommand {
 };
 
 /**
- * Refreshes the currently selected directory.
+ * Sets the system wallpaper to the selected file.
  */
 CommandHandler.COMMANDS_['set-wallpaper'] = new class extends FilesCommand {
   execute(event, fileManager) {

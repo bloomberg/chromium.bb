@@ -15,7 +15,7 @@
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -37,6 +37,7 @@
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
@@ -46,11 +47,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
-#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
-#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_MAC)
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#endif
 
 using content::WebContentsTester;
 using content_settings::PageSpecificContentSettings;
@@ -64,7 +68,12 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
-    InfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{HistoryServiceFactory::GetInstance(),
+             HistoryServiceFactory::GetDefaultFactory()}};
   }
 
   std::string GetDefaultAudioDevice() {
@@ -249,8 +258,6 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 // Tests whether a changed setting in the setting bubble is displayed again when
 // the bubble is re-opened.
 TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
-  ASSERT_TRUE(profile()->CreateHistoryService());
-
   // Required to break dependency on BrowserMainLoop.
   MediaCaptureDevicesDispatcher::GetInstance()->
       DisableDeviceEnumerationForTesting();
@@ -732,17 +739,14 @@ class GeolocationContentSettingBubbleModelTest
 };
 
 TEST_F(GeolocationContentSettingBubbleModelTest, Geolocation) {
-  ASSERT_TRUE(profile()->CreateHistoryService());
-
 #if defined(OS_MAC)
-  auto fake_geolocation_permission_manager =
-      std::make_unique<FakeSystemGeolocationPermissionsManager>();
-  FakeSystemGeolocationPermissionsManager* geolocation_permission_manager =
-      fake_geolocation_permission_manager.get();
+  auto fake_geolocation_manager =
+      std::make_unique<device::FakeGeolocationManager>();
+  device::FakeGeolocationManager* geolocation_manager =
+      fake_geolocation_manager.get();
   TestingBrowserProcess::GetGlobal()
       ->GetTestPlatformPart()
-      ->SetLocationPermissionManager(
-          std::move(fake_geolocation_permission_manager));
+      ->SetGeolocationManager(std::move(fake_geolocation_manager));
 #endif  // defined(OS_MAC)
 
   WebContentsTester::For(web_contents())
@@ -786,7 +790,7 @@ TEST_F(GeolocationContentSettingBubbleModelTest, Geolocation) {
         FakeOwner::Create(*content_setting_bubble_model, 0);
     const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
-    geolocation_permission_manager->set_status(
+    geolocation_manager->SetSystemPermission(
         device::LocationSystemPermissionStatus::kAllowed);
 
     EXPECT_EQ(bubble_content.title,
@@ -1028,11 +1032,11 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents())
       ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
-          "mailto", GURL("http://www.toplevel.example/")));
+          "mailto", GURL("https://www.toplevel.example/")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
       NULL, web_contents(), NULL);
@@ -1053,13 +1057,13 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   auto* content_settings =
       chrome::PageSpecificContentSettingsDelegate::FromWebContents(
           web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
-      "mailto", GURL("http://www.toplevel.example/"));
+      "mailto", GURL("https://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -1120,13 +1124,13 @@ TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   auto* content_settings =
       chrome::PageSpecificContentSettingsDelegate::FromWebContents(
           web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
-      "mailto", GURL("http://www.toplevel.example/"));
+      "mailto", GURL("https://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -1167,14 +1171,24 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   EXPECT_EQ(0U, bubble_content.media_menus.size());
 }
 
+class GenericSensorContentSettingBubbleModelTest
+    : public ContentSettingBubbleModelTest {
+ public:
+  GenericSensorContentSettingBubbleModelTest() {
+    // Enable all sensors just to avoid hardcoding the expected messages to the
+    // motion sensor-specific ones.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kGenericSensorExtraClasses);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingImageModelTest.SensorAccessPermissionsChanged
-TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
-  // Enable all sensors just to avoid hardcoding the expected messages to the
-  // motion sensor-specific ones.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
-
+TEST_F(GenericSensorContentSettingBubbleModelTest,
+       SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   PageSpecificContentSettings* content_settings =

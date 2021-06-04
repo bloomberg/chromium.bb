@@ -1005,6 +1005,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_vertex_type_10_10_10_2"] = enableableExtension(&Extensions::vertexAttribType1010102OES);
         map["GL_KHR_debug"] = esOnlyExtension(&Extensions::debug);
         map["GL_OES_texture_border_clamp"] = enableableExtension(&Extensions::textureBorderClampOES);
+        map["GL_EXT_texture_border_clamp"] = enableableExtension(&Extensions::textureBorderClampEXT);
         map["GL_KHR_no_error"] = esOnlyExtension(&Extensions::noError);
         map["GL_ANGLE_lossy_etc_decode"] = enableableExtension(&Extensions::lossyETCDecode);
         map["GL_CHROMIUM_bind_uniform_location"] = esOnlyExtension(&Extensions::bindUniformLocation);
@@ -1036,6 +1037,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_separate_shader_objects"] = enableableExtension(&Extensions::separateShaderObjects);
         map["GL_OES_texture_storage_multisample_2d_array"] = enableableExtension(&Extensions::textureStorageMultisample2DArrayOES);
         map["GL_ANGLE_multiview_multisample"] = enableableExtension(&Extensions::multiviewMultisample);
+        map["GL_KHR_blend_equation_advanced"] = esOnlyExtension(&Extensions::blendEquationAdvancedKHR);
         map["GL_EXT_blend_func_extended"] = enableableExtension(&Extensions::blendFuncExtended);
         map["GL_EXT_float_blend"] = enableableExtension(&Extensions::floatBlend);
         map["GL_ANGLE_texture_multisample"] = enableableExtension(&Extensions::textureMultisample);
@@ -1069,7 +1071,8 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_shader_io_blocks"] = enableableExtension(&Extensions::shaderIoBlocksOES);
         map["GL_EXT_shader_io_blocks"] = enableableExtension(&Extensions::shaderIoBlocksEXT);
         map["GL_EXT_clip_cull_distance"] = enableableExtension(&Extensions::clipCullDistanceEXT);
-        map["GL_ANGLE_get_serialized_context_string"] = enableableExtension(&Extensions::getSerializedContextStringANGLE);
+        map["GL_ANGLE_get_serialized_context_string"] = esOnlyExtension(&Extensions::getSerializedContextStringANGLE);
+        map["GL_EXT_primitive_bounding_box"] = esOnlyExtension(&Extensions::primitiveBoundingBoxEXT);
         // GLES1 extensions
         map["GL_OES_point_size_array"] = enableableExtension(&Extensions::pointSizeArrayOES);
         map["GL_OES_texture_cube_map"] = enableableExtension(&Extensions::textureCubeMapOES);
@@ -1466,6 +1469,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_program_cache_control",                     programCacheControl,                &extensionStrings);
     InsertExtensionString("EGL_ANGLE_robust_resource_initialization",            robustResourceInitialization,       &extensionStrings);
     InsertExtensionString("EGL_ANGLE_iosurface_client_buffer",                   iosurfaceClientBuffer,              &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_metal_texture_client_buffer",               mtlTextureClientBuffer,             &extensionStrings);
     InsertExtensionString("EGL_ANGLE_create_context_extensions_enabled",         createContextExtensionsEnabled,     &extensionStrings);
     InsertExtensionString("EGL_ANDROID_presentation_time",                       presentationTime,                   &extensionStrings);
     InsertExtensionString("EGL_ANDROID_blob_cache",                              blobCache,                          &extensionStrings);

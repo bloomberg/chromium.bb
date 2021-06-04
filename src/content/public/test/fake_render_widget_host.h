@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
@@ -54,8 +55,9 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
 
   // blink::mojom::WidgetHost overrides.
   void SetCursor(const ui::Cursor& cursor) override;
-  void SetToolTipText(const std::u16string& tooltip_text,
-                      base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipUnderCursor(
+      const std::u16string& tooltip_text,
+      base::i18n::TextDirection text_direction_hint) override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,

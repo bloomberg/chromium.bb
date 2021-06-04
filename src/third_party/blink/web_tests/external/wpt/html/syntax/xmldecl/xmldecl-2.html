@@ -3,44 +3,28 @@
 <title>Bogo-XML declaration</title>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
+<script src=support/test_support.js></script>
+
 <script>
 setup({explicit_done:true});
 window.onload = function() {
-    let divs = document.getElementsByTagName("div");
-    for (let i = 0; i < divs.length; ++i) {
-        let div = divs[i];
-        let expectation = div.className;
-        let iframes = div.getElementsByTagName("iframe");
-        for (let j = 0; j < iframes.length; ++j) {
-            let iframe = iframes[j];
-            let src = iframe.src;
-            let doc = iframe.contentWindow.document;
-            test(function() {
-                assert_equals(doc.characterSet, expectation, 'Check');
-                if (expectation == "windows-1251" || expectation == "windows-1252" && !(src.endsWith("/XML.htm") || src.endsWith("/XML-trail.htm"))) {
-                    let fc = doc.firstChild;
-                    assert_equals(fc.nodeType, Node.COMMENT_NODE, 'Should have comment node');
-                    assert_true(fc.nodeValue.startsWith("?xml"), 'Should start with ?xml');
-                } else if (expectation == "UTF-16BE" || expectation == "UTF-16BE") {
-                    let fc = doc.firstChild;
-                    assert_equals(fc.nodeType, Node.COMMENT_NODE, 'Should have comment node');
-                    assert_true(fc.nodeValue.startsWith("?x"), 'Should start with ?x');
-                }
-            }, "Check encoding " + expectation + ", " + src.substring(src.lastIndexOf("/") + 1));
-        }
-    }
-    done();
+  runAllTests();
+  done();
 };
 </script>
 
 <section style="display: none;">
+<div class="windows-1251">
+<iframe src="support/kilobyte-plus-one-after.htm"></iframe>
+<iframe src="support/kilobyte-plus-one-before.htm"></iframe>
+<iframe src="support/kilobyte-plus-one-after-trail.htm"></iframe>
+<iframe src="support/kilobyte-plus-one-before-trail.htm"></iframe>
+</div>
 <div class="windows-1252">
 <iframe src="support/encodingencoding.htm"></iframe>
 <iframe src="support/encoding-equals-encoding.htm"></iframe>
 <iframe src="support/ENCODING.htm"></iframe>
 <iframe src="support/gt-between-xml-and-encoding.htm"></iframe>
-<iframe src="support/kilobyte-plus-one-after.htm"></iframe>
-<iframe src="support/kilobyte-plus-one-before.htm"></iframe>
 <iframe src="support/no-quotes.htm"></iframe>
 <iframe src="support/no-quotes-space.htm"></iframe>
 <iframe src="support/one-around-label.htm"></iframe>
@@ -53,8 +37,6 @@ window.onload = function() {
 <iframe src="support/encoding-equals-encoding-trail.htm"></iframe>
 <iframe src="support/ENCODING-trail.htm"></iframe>
 <iframe src="support/gt-between-xml-and-encoding-trail.htm"></iframe>
-<iframe src="support/kilobyte-plus-one-after-trail.htm"></iframe>
-<iframe src="support/kilobyte-plus-one-before-trail.htm"></iframe>
 <iframe src="support/no-quotes-trail.htm"></iframe>
 <iframe src="support/no-quotes-space-trail.htm"></iframe>
 <iframe src="support/one-around-label-trail.htm"></iframe>

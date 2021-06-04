@@ -25,13 +25,16 @@
 #include "ui/gfx/geometry/size.h"
 
 class DevToolsAndroidBridge;
-class InfoBarService;
 class Profile;
 class PortForwardingStatusSerializer;
 
 namespace content {
 class NavigationHandle;
 class WebContents;
+}
+
+namespace infobars {
+class ContentInfoBarManager;
 }
 
 // Base implementation of DevTools bindings around front-end.
@@ -59,7 +62,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void ReadyForTest() = 0;
     virtual void ConnectionReady() = 0;
     virtual void SetOpenNewWindowForPopups(bool value) = 0;
-    virtual InfoBarService* GetInfoBarService() = 0;
+    virtual infobars::ContentInfoBarManager* GetInfoBarManager() = 0;
     virtual void RenderProcessGone(bool crashed) = 0;
     virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
   };
@@ -92,7 +95,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
 
  private:
-  void HandleMessageFromDevToolsFrontend(const std::string& message);
+  void HandleMessageFromDevToolsFrontend(base::Value);
 
   // content::DevToolsAgentHostClient implementation.
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,

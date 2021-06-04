@@ -12,19 +12,9 @@ import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { kQueryTypes } from '../../../../capability_info.js';
 import { ValidationTest } from '../../validation_test.js';
 
-class F extends ValidationTest {
-  async selectDeviceForQuerySetOrSkipTestCase(type: GPUQueryType): Promise<void> {
-    return this.selectDeviceOrSkipTestCase(
-      type === 'pipeline-statistics'
-        ? 'pipeline-statistics-query'
-        : type === 'timestamp'
-        ? 'timestamp-query'
-        : undefined
-    );
-  }
-}
+import { createQuerySetWithType, createRenderEncoderWithQuerySet } from './common.js';
 
-export const g = makeTestGroup(F);
+export const g = makeTestGroup(ValidationTest);
 
 g.test('occlusion_query,query_type')
   .desc(
@@ -34,8 +24,24 @@ Tests that set occlusion query set with all types in render pass descriptor:
 - {undefined} for occlusion query set in render pass descriptor
   `
   )
-  .subcases(() => poptions('type', ['undefined'].concat(kQueryTypes)))
-  .unimplemented();
+  .subcases(() => poptions('type', [undefined, ...kQueryTypes]))
+  .fn(async t => {
+    const type = t.params.type;
+
+    if (type) {
+      await t.selectDeviceForQueryTypeOrSkipTestCase(type);
+    }
+
+    const querySet = type === undefined ? undefined : createQuerySetWithType(t, type, 1);
+
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    encoder.encoder.beginOcclusionQuery(0);
+    encoder.encoder.endOcclusionQuery();
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, type !== 'occlusion');
+  });
 
 g.test('occlusion_query,invalid_query_set')
   .desc(
@@ -44,7 +50,17 @@ Tests that begin occlusion query with a invalid query set that failed during cre
   `
   )
   .subcases(() => poptions('querySetState', ['valid', 'invalid'] as const))
-  .unimplemented();
+  .fn(t => {
+    const querySet = t.createQuerySetWithState(t.params.querySetState);
+
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    encoder.encoder.beginOcclusionQuery(0);
+    encoder.encoder.endOcclusionQuery();
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, t.params.querySetState === 'invalid');
+  });
 
 g.test('occlusion_query,query_index')
   .desc(
@@ -54,9 +70,19 @@ Tests that begin occlusion query with query index:
   `
   )
   .subcases(() => poptions('queryIndex', [0, 2]))
-  .unimplemented();
+  .fn(t => {
+    const querySet = createQuerySetWithType(t, 'occlusion', 2);
 
-g.test('writeTimestamp,query_type_and_index')
+    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    encoder.encoder.beginOcclusionQuery(t.params.queryIndex);
+    encoder.encoder.endOcclusionQuery();
+
+    t.expectValidationError(() => {
+      encoder.finish();
+    }, t.params.queryIndex > 0);
+  });
+
+g.test('timestamp_query,query_type_and_index')
   .desc(
     `
 Tests that write timestamp to all types of query set on all possible encoders:
@@ -74,12 +100,10 @@ Tests that write timestamp to all types of query set on all possible encoders:
   .fn(async t => {
     const { encoderType, type, queryIndex } = t.params;
 
-    await t.selectDeviceForQuerySetOrSkipTestCase(type);
+    await t.selectDeviceForQueryTypeOrSkipTestCase(type);
 
     const count = 2;
-    const pipelineStatistics =
-      type === 'pipeline-statistics' ? (['clipper-invocations'] as const) : ([] as const);
-    const querySet = t.device.createQuerySet({ type, count, pipelineStatistics });
+    const querySet = createQuerySetWithType(t, type, count);
 
     const encoder = t.createEncoder(encoderType);
     encoder.encoder.writeTimestamp(querySet, queryIndex);
@@ -89,7 +113,7 @@ Tests that write timestamp to all types of query set on all possible encoders:
     }, type !== 'timestamp' || queryIndex >= count);
   });
 
-g.test('writeTimestamp,invalid_query_set')
+g.test('timestamp_query,invalid_query_set')
   .desc(
     `
 Tests that write timestamp to a invalid query set that failed during creation:

@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "lib/jxl/base/os_macros.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/common.h"
 #include "lib/jxl/dec_ans.h"
@@ -34,11 +35,18 @@
 #include "lib/jxl/fields.h"
 #include "lib/jxl/image_ops.h"
 #include "lib/jxl/modular/encoding/context_predict.h"
+#include "lib/jxl/modular/encoding/enc_ma.h"
 #include "lib/jxl/modular/encoding/encoding.h"
-#include "lib/jxl/modular/encoding/ma.h"
+#include "lib/jxl/modular/encoding/ma_common.h"
 #include "lib/jxl/modular/options.h"
 #include "lib/jxl/modular/transform/transform.h"
 #include "lib/jxl/toc.h"
+
+#if JXL_OS_IOS
+#define JXL_ENABLE_DOT 0
+#else
+#define JXL_ENABLE_DOT 1  // iOS lacks C89 system()
+#endif
 
 namespace jxl {
 
@@ -160,8 +168,10 @@ void PrintTree(const Tree &tree, const std::string &path) {
   }
   fprintf(f, "}\n");
   fclose(f);
+#if JXL_ENABLE_DOT
   JXL_ASSERT(
       system(("dot " + path + ".dot -T svg -o " + path + ".svg").c_str()) == 0);
+#endif
 }
 
 Status EncodeModularChannelMAANS(const Image &image, pixel_type chan,
@@ -329,8 +339,7 @@ Status EncodeModularChannelMAANS(const Image &image, pixel_type chan,
   }
   if (kWantDebug && WantDebugOutput(aux_out)) {
     aux_out->DumpImage(
-        ("pred_" + std::to_string(group_id) + "_" + std::to_string(chan))
-            .c_str(),
+        ("pred_" + ToString(group_id) + "_" + ToString(chan)).c_str(),
         predictor_img);
   }
   return true;
@@ -395,7 +404,7 @@ Status ModularEncode(const Image &image, const ModularOptions &options,
           range, dummy_multiplier_info, group_pixel_count, channel_pixel_count,
           pixel_samples, diff_samples, options.max_property_values);
     }
-    for (size_t i = options.skipchannels; i < nb_channels; i++) {
+    for (size_t i = 0; i < nb_channels; i++) {
       if (!image.channel[i].w || !image.channel[i].h) {
         continue;  // skip empty channels
       }
@@ -432,8 +441,7 @@ Status ModularEncode(const Image &image, const ModularOptions &options,
     tree_storage = std::move(decoded_tree);
 
     if (kWantDebug && WantDebugOutput(aux_out)) {
-      PrintTree(*tree,
-                aux_out->debug_prefix + "/tree_" + std::to_string(group_id));
+      PrintTree(*tree, aux_out->debug_prefix + "/tree_" + ToString(group_id));
     }
     // Write tree
     BuildAndEncodeHistograms(HistogramParams(), kNumTreeContexts, tree_tokens,
@@ -444,7 +452,7 @@ Status ModularEncode(const Image &image, const ModularOptions &options,
   }
 
   size_t image_width = 0;
-  for (size_t i = options.skipchannels; i < nb_channels; i++) {
+  for (size_t i = 0; i < nb_channels; i++) {
     if (!image.channel[i].w || !image.channel[i].h) {
       continue;  // skip empty channels
     }
@@ -454,9 +462,14 @@ Status ModularEncode(const Image &image, const ModularOptions &options,
       break;
     }
     if (image.channel[i].w > image_width) image_width = image.channel[i].w;
-    JXL_RETURN_IF_ERROR(EncodeModularChannelMAANS(
-        image, i, header->wp_header, *tree, tokens, aux_out, group_id,
-        options.skip_encoder_fast_path));
+    if (options.zero_tokens) {
+      tokens->resize(tokens->size() + image.channel[i].w * image.channel[i].h,
+                     {0, 0});
+    } else {
+      JXL_RETURN_IF_ERROR(EncodeModularChannelMAANS(
+          image, i, header->wp_header, *tree, tokens, aux_out, group_id,
+          options.skip_encoder_fast_path));
+    }
   }
 
   // Write data if not using a global tree/ANS stream.

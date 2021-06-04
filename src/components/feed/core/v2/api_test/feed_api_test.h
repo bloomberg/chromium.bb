@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
@@ -26,16 +25,16 @@
 #include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/prefs.h"
+#include "components/feed/core/v2/public/feed_stream_surface.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/feed/core/v2/test/test_util.h"
 #include "components/feed/core/v2/wire_response_translator.h"
-#include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
-#include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace feed {
 namespace test {
@@ -97,9 +96,9 @@ class TestSurfaceBase : public FeedStreamSurface {
 
   // The initial state of the stream, if it was received. This is nullopt if
   // only the loading spinner was seen.
-  base::Optional<feedui::StreamUpdate> initial_state;
+  absl::optional<feedui::StreamUpdate> initial_state;
   // The last stream update received.
-  base::Optional<feedui::StreamUpdate> update;
+  absl::optional<feedui::StreamUpdate> update;
 
  private:
   std::string CurrentState();
@@ -134,7 +133,7 @@ class TestImageFetcher : public ImageFetcher {
   ImageFetchId::Generator id_generator_;
 };
 
-class TestUnreadContentObserver : public FeedApi::UnreadContentObserver {
+class TestUnreadContentObserver : public UnreadContentObserver {
  public:
   TestUnreadContentObserver();
   ~TestUnreadContentObserver() override;
@@ -151,11 +150,11 @@ class TestFeedNetwork : public FeedNetwork {
   void SendQueryRequest(
       NetworkRequestType request_type,
       const feedwire::Request& request,
-      bool force_signed_out_request,
       const std::string& gaia,
       base::OnceCallback<void(QueryRequestResult)> callback) override;
 
   void SendDiscoverApiRequest(
+      NetworkRequestType request_type,
       base::StringPiece api_path,
       base::StringPiece method,
       std::string request_bytes,
@@ -165,12 +164,13 @@ class TestFeedNetwork : public FeedNetwork {
   void CancelRequests() override;
 
   void InjectRealFeedQueryResponse();
+  void InjectRealFeedQueryResponseWithNoContent();
 
   template <typename API>
   void InjectApiRawResponse(RawResponse result) {
-    injected_api_responses_[API::RequestPath().as_string()].push_back(result);
+    NetworkRequestType request_type = API::kRequestType;
+    injected_api_responses_[request_type].push_back(result);
   }
-
   template <typename API>
   void InjectApiResponse(const typename API::Response& response_message) {
     RawResponse response;
@@ -204,15 +204,16 @@ class TestFeedNetwork : public FeedNetwork {
   void InjectEmptyActionRequestResult();
 
   template <typename API>
-  base::Optional<typename API::Request> GetApiRequestSent() {
-    base::Optional<typename API::Request> result;
-    auto iter = api_requests_sent_.find(API::RequestPath().as_string());
+  absl::optional<typename API::Request> GetApiRequestSent() {
+    absl::optional<typename API::Request> result;
+    NetworkRequestType request_type = API::kRequestType;
+    auto iter = api_requests_sent_.find(request_type);
     if (iter != api_requests_sent_.end()) {
       typename API::Request message;
       if (!iter->second.empty()) {
         if (!message.ParseFromString(iter->second)) {
           LOG(ERROR) << "Failed to parse API request.";
-          return base::nullopt;
+          return absl::nullopt;
         }
       }
       result = message;
@@ -220,11 +221,12 @@ class TestFeedNetwork : public FeedNetwork {
     return result;
   }
 
-  base::Optional<feedwire::UploadActionsRequest> GetActionRequestSent();
+  absl::optional<feedwire::UploadActionsRequest> GetActionRequestSent();
 
   template <typename API>
   int GetApiRequestCount() const {
-    auto iter = api_request_count_.find(API::RequestPath().as_string());
+    NetworkRequestType request_type = API::kRequestType;
+    auto iter = api_request_count_.find(request_type);
     return iter == api_request_count_.end() ? 0 : iter->second;
   }
   int GetActionRequestCount() const;
@@ -249,8 +251,10 @@ class TestFeedNetwork : public FeedNetwork {
   void SendResponsesOnCommand(bool on);
   void SendResponse();
 
-  base::Optional<feedwire::Request> query_request_sent;
+  absl::optional<feedwire::Request> query_request_sent;
+  // Number of FeedQuery requests sent (including Web Feed ListContents).
   int send_query_call_count = 0;
+  std::string last_gaia;
   std::string consistency_token;
   bool forced_signed_out_request = false;
 
@@ -260,10 +264,11 @@ class TestFeedNetwork : public FeedNetwork {
   bool send_responses_on_command_ = false;
   std::vector<base::OnceClosure> reply_closures_;
   base::RepeatingClosure on_reply_added_;
-  std::map<std::string, std::vector<RawResponse>> injected_api_responses_;
-  std::map<std::string, std::string> api_requests_sent_;
-  std::map<std::string, int> api_request_count_;
-  base::Optional<feedwire::Response> injected_response_;
+  std::map<NetworkRequestType, std::vector<RawResponse>>
+      injected_api_responses_;
+  std::map<NetworkRequestType, std::string> api_requests_sent_;
+  std::map<NetworkRequestType, int> api_request_count_;
+  absl::optional<feedwire::Response> injected_response_;
 };
 
 // Forwards to |FeedStream::WireResponseTranslator| unless a response is
@@ -278,7 +283,7 @@ class TestWireResponseTranslator : public WireResponseTranslator {
       bool was_signed_in_request,
       base::Time current_time) const override;
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response,
-                      base::Optional<std::string> session_id = base::nullopt);
+                      absl::optional<std::string> session_id = absl::nullopt);
   void InjectResponse(RefreshResponseData response_data);
   bool InjectedResponseConsumed() const;
 
@@ -326,56 +331,14 @@ class TestMetricsReporter : public MetricsReporter {
 
   // Test access.
 
-  base::Optional<int> slice_viewed_index;
-  base::Optional<LoadStreamStatus> load_stream_status;
-  base::Optional<LoadStreamStatus> load_stream_from_store_status;
-  base::Optional<SurfaceId> load_more_surface_id;
-  base::Optional<LoadStreamStatus> load_more_status;
-  base::Optional<LoadStreamStatus> background_refresh_status;
-  base::Optional<base::TimeDelta> time_since_last_clear;
-  base::Optional<UploadActionsStatus> upload_action_status;
-};
-
-class TestPrefetchService : public offline_pages::StubPrefetchService {
- public:
-  TestPrefetchService();
-  ~TestPrefetchService() override;
-  // offline_pages::StubPrefetchService.
-  void SetSuggestionProvider(
-      offline_pages::SuggestionsProvider* suggestions_provider) override;
-  void NewSuggestionsAvailable() override;
-
-  // Test functionality.
-  offline_pages::SuggestionsProvider* suggestions_provider();
-  int NewSuggestionsAvailableCallCount() const;
-
- private:
-  offline_pages::SuggestionsProvider* suggestions_provider_ = nullptr;
-  int new_suggestions_available_call_count_ = 0;
-};
-
-class TestOfflinePageModel : public offline_pages::StubOfflinePageModel {
- public:
-  TestOfflinePageModel();
-  ~TestOfflinePageModel() override;
-  // offline_pages::OfflinePageModel
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
-  void GetPagesWithCriteria(
-      const offline_pages::PageCriteria& criteria,
-      offline_pages::MultipleOfflinePageItemCallback callback) override;
-
-  // Test functions.
-
-  void AddTestPage(const GURL& url);
-  std::vector<offline_pages::OfflinePageItem>& items() { return items_; }
-  void CallObserverOfflinePageAdded(const offline_pages::OfflinePageItem& item);
-  void CallObserverOfflinePageDeleted(
-      const offline_pages::OfflinePageItem& item);
-
- private:
-  std::vector<offline_pages::OfflinePageItem> items_;
-  std::set<Observer*> observers_;
+  absl::optional<int> slice_viewed_index;
+  absl::optional<LoadStreamStatus> load_stream_status;
+  absl::optional<LoadStreamStatus> load_stream_from_store_status;
+  absl::optional<SurfaceId> load_more_surface_id;
+  absl::optional<LoadStreamStatus> load_more_status;
+  absl::optional<LoadStreamStatus> background_refresh_status;
+  absl::optional<base::TimeDelta> time_since_last_clear;
+  absl::optional<UploadActionsStatus> upload_action_status;
 };
 
 class FeedApiTest : public testing::Test, public FeedStream::Delegate {
@@ -393,7 +356,8 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   bool IsOffline() override;
   DisplayMetrics GetDisplayMetrics() override;
   std::string GetLanguageTag() override;
-  void ClearAll() override {}
+  bool IsAutoplayEnabled() override;
+  void ClearAll() override;
   std::string GetSyncSignedInGaia() override;
   void PrefetchImage(const GURL& url) override;
   void RegisterExperiments(const Experiments& experiments) override {}
@@ -401,7 +365,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   // For tests.
 
   // Replace stream_.
-  void CreateStream();
+  void CreateStream(bool wait_for_initialization = true);
   bool IsTaskQueueIdle() const;
   void WaitForIdleTaskQueue();
   void UnloadModel(const StreamType& stream_type);
@@ -436,8 +400,6 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
               task_environment_.GetMainThreadTaskRunner()));
 
   FakeRefreshTaskScheduler refresh_scheduler_;
-  TestPrefetchService prefetch_service_;
-  TestOfflinePageModel offline_page_model_;
   std::unique_ptr<FeedStream> stream_;
   bool is_eula_accepted_ = true;
   bool is_offline_ = false;
@@ -445,6 +407,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   base::test::ScopedFeatureList scoped_feature_list_;
   int prefetch_image_call_count_ = 0;
   std::vector<GURL> prefetched_images_;
+  base::RepeatingClosure on_clear_all_;
 };
 
 class FeedStreamTestForAllStreamTypes

@@ -43,25 +43,24 @@ constexpr int kMaxSurroundingTextLength = 300;
 QuickAnswersMenuObserver::QuickAnswersMenuObserver(
     RenderViewContextMenuProxy* proxy)
     : proxy_(proxy) {
-  auto* assistant_state = ash::AssistantState::Get();
-  if (assistant_state && proxy_ && proxy_->GetBrowserContext()) {
+  if (proxy_ && proxy_->GetBrowserContext()) {
     auto* browser_context = proxy_->GetBrowserContext();
     if (browser_context->IsOffTheRecord())
       return;
 
     quick_answers_client_ = std::make_unique<QuickAnswersClient>(
-        content::BrowserContext::GetDefaultStoragePartition(browser_context)
+        browser_context->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess()
             .get(),
-        assistant_state, /*delegate=*/this);
+        /*delegate=*/this);
     quick_answers_controller_ = ash::QuickAnswersController::Get();
     if (!quick_answers_controller_)
       return;
     quick_answers_controller_->SetClient(std::make_unique<QuickAnswersClient>(
-        content::BrowserContext::GetDefaultStoragePartition(browser_context)
+        browser_context->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess()
             .get(),
-        assistant_state, quick_answers_controller_->GetQuickAnswersDelegate()));
+        quick_answers_controller_->GetQuickAnswersDelegate()));
   }
 }
 

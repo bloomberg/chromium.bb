@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -19,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/device_local_account_util.h"
 #include "extensions/common/api/incognito.h"
+#include "extensions/common/api/requirements.h"
 #include "extensions/common/api/shared_module.h"
 #include "extensions/common/api/web_accessible_resources.h"
 #include "extensions/common/extension.h"
@@ -214,7 +214,7 @@ const char* const kSafeManifestEntries[] = {
     "plugins",
 
     // Stated 3D/WebGL requirements of an app.
-    emk::kRequirements,
+    ext_api::requirements::ManifestKeys::kRequirements,
 
     // Execute some pages in a separate sandbox.  (Note: Using string literal
     // since extensions::manifest_keys only has constants for sub-keys.)
@@ -681,14 +681,14 @@ bool IsSafeForPublicSession(const extensions::Extension* extension) {
         safe = false;
         continue;
       }
-      for (auto it2 = list_value->begin(); it2 != list_value->end(); ++it2) {
+      for (const auto& entry : list_value->GetList()) {
         // Try to read as dictionary.
         const base::DictionaryValue *dict_value;
-        if (it2->GetAsDictionary(&dict_value)) {
-          if (dict_value->size() != 1) {
+        if (entry.GetAsDictionary(&dict_value)) {
+          if (dict_value->DictSize() != 1) {
             LOG(ERROR) << extension->id()
                        << " has dict in permission list with size "
-                       << dict_value->size() << ".";
+                       << dict_value->DictSize() << ".";
             safe = false;
             continue;
           }
@@ -708,7 +708,7 @@ bool IsSafeForPublicSession(const extensions::Extension* extension) {
         }
         // Try to read as string.
         std::string permission_string;
-        if (!it2->GetAsString(&permission_string)) {
+        if (!entry.GetAsString(&permission_string)) {
           LOG(ERROR) << extension->id() << ": " << it.key()
                      << " contains a token that's neither a string nor a dict.";
           safe = false;
@@ -770,14 +770,13 @@ bool IsSafeForPublicSession(const extensions::Extension* extension) {
       }
     // Require v2 because that's the only version we understand.
     } else if (it.key() == emk::kManifestVersion) {
-      int version;
-      if (!it.value().GetAsInteger(&version)) {
+      if (!it.value().is_int()) {
         LOG(ERROR) << extension->id() << ": " << emk::kManifestVersion
                    << " is not an integer.";
         safe = false;
         continue;
       }
-      if (version != 2) {
+      if (it.value().GetInt() != 2) {
         LOG(ERROR) << extension->id()
                    << " has non-whitelisted manifest version.";
         safe = false;

@@ -69,7 +69,7 @@ class ProcessNode : public Node {
 
   // Returns the exit status of this process. This will be empty if the process
   // has not yet exited.
-  virtual base::Optional<int32_t> GetExitStatus() const = 0;
+  virtual absl::optional<int32_t> GetExitStatus() const = 0;
 
   // Visits the frame nodes that are hosted in this process. The iteration is
   // halted if the visitor returns false. Returns true if every call to the
@@ -91,6 +91,10 @@ class ProcessNode : public Node {
   // Returns the most recently measured private memory footprint of the process.
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
+  //
+  // Note: This is only valid if at least one component has expressed interest
+  // for process memory metrics by calling
+  // ProcessMetricsDecorator::RegisterInterestForProcessMetrics.
   virtual uint64_t GetPrivateFootprintKb() const = 0;
 
   // Returns the most recently measured resident set of the process, in

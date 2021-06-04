@@ -23,6 +23,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -150,7 +151,6 @@ mojom::ResourceType RequestContextToResourceType(
       return mojom::ResourceType::kPrefetch;
 
     // Script
-    case mojom::blink::RequestContextType::IMPORT:
     case mojom::blink::RequestContextType::SCRIPT:
       return mojom::ResourceType::kScript;
 
@@ -342,7 +342,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->fetch_integrity = src.GetFetchIntegrity().Utf8();
   if (src.GetWebBundleTokenParams().has_value()) {
     dest->web_bundle_token_params =
-        base::make_optional(network::ResourceRequest::WebBundleTokenParams(
+        absl::make_optional(network::ResourceRequest::WebBundleTokenParams(
             src.GetWebBundleTokenParams()->bundle_url,
             src.GetWebBundleTokenParams()->token,
             src.GetWebBundleTokenParams()->CloneHandle()));
@@ -373,7 +373,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->trust_token_params = ConvertTrustTokenParams(src.TrustTokenParams());
 
   if (base::UnguessableToken window_id = src.GetFetchWindowId())
-    dest->fetch_window_id = base::make_optional(window_id);
+    dest->fetch_window_id = absl::make_optional(window_id);
 
   if (src.GetDevToolsId().has_value()) {
     dest->devtools_request_id = src.GetDevToolsId().value().Ascii();

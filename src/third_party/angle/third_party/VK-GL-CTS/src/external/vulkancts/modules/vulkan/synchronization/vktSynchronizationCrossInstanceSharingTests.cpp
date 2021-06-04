@@ -87,6 +87,15 @@ struct TestConfig
 	const bool											dedicated;
 };
 
+// A helper function to choose tiling type for cross instance sharing tests.
+// On Linux, DMABUF requires VK_EXT_image_drm_format_modifier support when
+// VK_IMAGE_TILING_OPTIMAL is used, therefore we choose to use linear with these tests.
+vk::VkImageTiling chooseTiling(VkExternalMemoryHandleTypeFlagBits memoryHandleType)
+{
+	// Choose tiling depending on memory handle type
+	return memoryHandleType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT ? vk::VK_IMAGE_TILING_LINEAR : vk::VK_IMAGE_TILING_OPTIMAL;
+}
+
 // A helper class to test for extensions upfront and throw not supported to speed up test runtimes compared to failing only
 // after creating unnecessary vkInstances.  A common example of this is win32 platforms taking a long time to run _fd tests.
 class NotSupportedChecker
@@ -158,7 +167,7 @@ public:
 				&externalInfo,
 				config.resource.imageFormat,
 				config.resource.imageType,
-				vk::VK_IMAGE_TILING_OPTIMAL,
+				chooseTiling(config.memoryHandleType),
 				readOp.getInResourceUsageFlags() | writeOp.getOutResourceUsageFlags(),
 				0u
 			};
@@ -202,6 +211,11 @@ public:
 			{
 				TCU_THROW(NotSupportedError, "Handle requires dedicated allocation, but test uses suballocated memory");
 			}
+
+			if (!(formatProperties.imageFormatProperties.sampleCounts & config.resource.imageSamples)) {
+				TCU_THROW(NotSupportedError, "Specified sample count for format not supported");
+			}
+
 		}
 		else
 		{
@@ -665,7 +679,7 @@ Move<VkImage> createImage(const vk::DeviceInterface&				vkd,
 		1u,
 		1u,
 		resourceDesc.imageSamples,
-		vk::VK_IMAGE_TILING_OPTIMAL,
+		chooseTiling(externalType),
 		readOp.getInResourceUsageFlags() | writeOp.getOutResourceUsageFlags(),
 		vk::VK_SHARING_MODE_EXCLUSIVE,
 
@@ -792,7 +806,7 @@ de::MovePtr<Resource> importResource (const vk::DeviceInterface&				vkd,
 			1u,
 			1u,
 			resourceDesc.imageSamples,
-			vk::VK_IMAGE_TILING_OPTIMAL,
+			chooseTiling(externalType),
 			readOp.getInResourceUsageFlags() | writeOp.getOutResourceUsageFlags(),
 			vk::VK_SHARING_MODE_EXCLUSIVE,
 

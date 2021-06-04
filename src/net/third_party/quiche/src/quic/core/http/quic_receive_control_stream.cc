@@ -15,7 +15,7 @@
 #include "quic/core/quic_types.h"
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
-#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 
@@ -70,7 +70,6 @@ bool QuicReceiveControlStream::OnCancelPushFrame(const CancelPushFrame& frame) {
     spdy_session()->debug_visitor()->OnCancelPushFrameReceived(frame);
   }
 
-  // TODO(b/151841240): Handle CANCEL_PUSH frames instead of ignoring them.
   return ValidateFrameType(HttpFrameType::CANCEL_PUSH);
 }
 

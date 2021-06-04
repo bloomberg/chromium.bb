@@ -13,11 +13,13 @@ class WebContents;
 }
 
 namespace views {
+class ImageButton;
+class ImageView;
 class View;
-}
+}  // namespace views
 
 namespace autofill {
-class SaveAddressProfileBubbleController;
+class SaveUpdateAddressProfileBubbleController;
 
 // This is the bubble views that is part of the flow for when the user submits a
 // form with an address profile that Autofill has not previously saved.
@@ -26,14 +28,14 @@ class SaveAddressProfileView : public AutofillBubbleBase,
  public:
   SaveAddressProfileView(views::View* anchor_view,
                          content::WebContents* web_contents,
-                         SaveAddressProfileBubbleController* controller);
+                         SaveUpdateAddressProfileBubbleController* controller);
 
   SaveAddressProfileView(const SaveAddressProfileView&) = delete;
   SaveAddressProfileView& operator=(const SaveAddressProfileView&) = delete;
+  ~SaveAddressProfileView() override;
 
   // views::WidgetDelegate:
   bool ShouldShowCloseButton() const override;
-  std::u16string GetWindowTitle() const override;
   void WindowClosing() override;
 
   void Show(DisplayReason reason);
@@ -43,9 +45,19 @@ class SaveAddressProfileView : public AutofillBubbleBase,
 
   // View:
   void AddedToWidget() override;
+  void OnThemeChanged() override;
 
  private:
-  SaveAddressProfileBubbleController* controller_;
+  // Sets the proper margins for icons (and other views) in the UI to make sure
+  // all icons are vertically centered with corresponding text.
+  void AlignIcons();
+
+  SaveUpdateAddressProfileBubbleController* controller_;
+
+  // The following are used for UI elements alignment upon changes in theme.
+  views::View* address_components_view_;
+  std::vector<views::ImageView*> address_section_icons_;
+  views::ImageButton* edit_button_;
 };
 
 }  // namespace autofill

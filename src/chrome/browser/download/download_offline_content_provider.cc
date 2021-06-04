@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_offline_content_provider.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -142,7 +143,7 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
       profile_(nullptr) {
   aggregator_->RegisterProvider(name_space_, this);
 #if defined(OS_ANDROID)
-  all_download_observer_.reset(new AllDownloadObserver(this));
+  all_download_observer_ = std::make_unique<AllDownloadObserver>(this);
 #endif
 }
 
@@ -282,9 +283,9 @@ void DownloadOfflineContentProvider::GetItemById(
   DownloadItem* item = GetDownload(id.id);
   auto offline_item =
       item && ShouldShowDownloadItem(item)
-          ? base::make_optional(
+          ? absl::make_optional(
                 OfflineItemUtils::CreateOfflineItem(name_space_, item))
-          : base::nullopt;
+          : absl::nullopt;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), offline_item));
@@ -402,7 +403,7 @@ void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
 
 void DownloadOfflineContentProvider::ChangeSchedule(
     const ContentId& id,
-    base::Optional<OfflineItemSchedule> schedule) {
+    absl::optional<OfflineItemSchedule> schedule) {
   EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(base::BindOnce(
@@ -549,7 +550,7 @@ void DownloadOfflineContentProvider::GetAllDownloads(
 
 void DownloadOfflineContentProvider::UpdateObservers(
     const OfflineItem& item,
-    const base::Optional<UpdateDelta>& update_delta) {
+    const absl::optional<UpdateDelta>& update_delta) {
   NotifyItemUpdated(item, update_delta);
 }
 
@@ -566,5 +567,5 @@ void DownloadOfflineContentProvider::CheckForExternallyRemovedDownloads() {
 
 void DownloadOfflineContentProvider::EnsureDownloadCoreServiceStarted() {
   DCHECK(profile_);
-  CHECK(content::BrowserContext::GetDownloadManager(profile_));
+  CHECK(profile_->GetDownloadManager());
 }

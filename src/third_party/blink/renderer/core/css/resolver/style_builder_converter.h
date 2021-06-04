@@ -159,7 +159,7 @@ class StyleBuilderConverter {
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertBorderWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertLayoutUnit(StyleResolverState&, const CSSValue&);
-  static base::Optional<Length> ConvertGapLength(const StyleResolverState&,
+  static absl::optional<Length> ConvertGapLength(const StyleResolverState&,
                                                  const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
@@ -395,4 +395,4 @@ AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_

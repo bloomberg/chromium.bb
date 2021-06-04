@@ -28,6 +28,7 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TAB_SWITCHER_BUTTON_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TRANSLATION_Y;
 
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -229,6 +230,14 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertEquals(false, mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(IN_START_SURFACE_MODE));
         assertTrue(mPropertyModel.get(IS_VISIBLE));
+
+        int toolbarHeight = 10;
+        assertEquals(0.0, mPropertyModel.get(TRANSLATION_Y), 0.0);
+        assertFalse(mMediator.shouldShowRealSearchBox(toolbarHeight));
+        assertTrue(mMediator.isOnHomepage());
+        mPropertyModel.set(TRANSLATION_Y, -toolbarHeight);
+        assertTrue(mMediator.shouldShowRealSearchBox(toolbarHeight));
+        assertTrue(mMediator.isOnHomepage());
     }
 
     @Test
@@ -517,50 +526,6 @@ public class StartSurfaceToolbarMediatorUnitTest {
         mMediator.onStartSurfaceStateChanged(StartSurfaceState.SHOWN_HOMEPAGE, true);
         assertTrue(mPropertyModel.get(LOGO_IS_VISIBLE));
         assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-    }
-
-    @Test
-    public void showTabswitcherTasksOnly() {
-        createMediator(false);
-        mMediator.setTabModelSelector(mTabModelSelector);
-        mMediator.onNativeLibraryReady();
-        verify(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
-
-        mMediator.setStartSurfaceMode(true);
-        mLayoutStateObserverCaptor.getValue().onStartedShowing(LayoutType.TAB_SWITCHER, false);
-        mLayoutStateObserverCaptor.getValue().onFinishedShowing(LayoutType.TAB_SWITCHER);
-        mMediator.onStartSurfaceStateChanged(StartSurfaceState.SHOWN_TABSWITCHER_TASKS_ONLY, true);
-        assertTrue(mPropertyModel.get(LOGO_IS_VISIBLE));
-        assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-        assertEquals(true, mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
-        assertTrue(mPropertyModel.get(IN_START_SURFACE_MODE));
-        assertTrue(mPropertyModel.get(IS_VISIBLE));
-        assertTrue(mPropertyModel.get(IN_START_SURFACE_MODE));
-
-        mMediator.setStartSurfaceMode(false);
-        assertFalse(mPropertyModel.get(IN_START_SURFACE_MODE));
-    }
-
-    @Test
-    public void showTabswitcherOmniboxOnlyNoIncognitoTabs() {
-        createMediator(true);
-        mMediator.setTabModelSelector(mTabModelSelector);
-        doReturn(0).when(mIncognitoTabModel).getCount();
-        mMediator.onNativeLibraryReady();
-        verify(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
-
-        mMediator.setStartSurfaceMode(true);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER_OMNIBOX_ONLY, true);
-        mLayoutStateObserverCaptor.getValue().onStartedShowing(LayoutType.TAB_SWITCHER, false);
-        assertTrue(mPropertyModel.get(LOGO_IS_VISIBLE));
-        assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-        assertEquals(false, mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
-        assertTrue(mPropertyModel.get(IS_VISIBLE));
-        assertTrue(mPropertyModel.get(IN_START_SURFACE_MODE));
-
-        mMediator.setStartSurfaceMode(false);
-        assertFalse(mPropertyModel.get(IN_START_SURFACE_MODE));
     }
 
     @Test

@@ -7,40 +7,38 @@
 #include "chrome/browser/themes/theme_service_aura_linux.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #include "ui/display/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_factory.h"
 #endif
 
 #if defined(USE_OZONE)
 #include "ui/base/ime/input_method.h"
+#include "ui/base/linux/linux_ui_delegate.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/gfx/x/connection.h"  // nogncheck
-#if BUILDFLAG(USE_GTK)
-#include "ui/base/ui_base_features.h"
-#include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
-#endif  // BUILDFLAG(USE_GTK)
-#endif  // defined(USE_X11)
-
 namespace {
 
-views::LinuxUI* BuildLinuxUI() {
-  views::LinuxUI* linux_ui = nullptr;
+std::unique_ptr<views::LinuxUI> BuildLinuxUI() {
+  // If the ozone backend hasn't provided a LinuxUiDelegate, don't try to create
+  // a LinuxUi instance as this may result in a crash in toolkit initialization.
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform() && !ui::LinuxUiDelegate::GetInstance())
+    return nullptr;
+#endif
+
   // GtkUi is the only LinuxUI implementation for now.
 #if BUILDFLAG(USE_GTK)
-  if (ui::GtkUiDelegate::instance())
-    linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+  return BuildGtkUi();
 #endif
-  return linux_ui;
+  return nullptr;
 }
 
 }  // namespace
@@ -57,22 +55,24 @@ ChromeBrowserMainExtraPartsViewsLinux::
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
-#if defined(USE_X11) && BUILDFLAG(USE_GTK)
-  if (!features::IsUsingOzonePlatform()) {
-    // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
-    // and inject the GtkUiDelegate before
-    // ChromeBrowserMainExtraPartsViewsLinux, so it can properly initialize
-    // GtkUi on its |ToolkitInitialized| override.
-    gtk_ui_delegate_ =
-        std::make_unique<ui::GtkUiDelegateX11>(x11::Connection::Get());
-    ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
-  }
-#endif
-
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
 
-  views::LinuxUI* linux_ui = BuildLinuxUI();
-  if (!linux_ui) {
+  if (auto linux_ui = BuildLinuxUI()) {
+    linux_ui->SetUseSystemThemeCallback(
+        base::BindRepeating([](aura::Window* window) {
+          if (!window)
+            return true;
+          return ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
+              GetThemeProfileForWindow(window));
+        }));
+
+    linux_ui->Initialize();
+    views::LinuxUI::SetInstance(std::move(linux_ui));
+
+    // Cursor theme changes are tracked by LinuxUI (via a CursorThemeManager
+    // implementation). Start observing them once it's initialized.
+    ui::CursorFactory::GetInstance()->ObserveThemeChanges();
+  } else {
     // In case if GTK is not used, input method factory won't be set for X11 and
     // Ozone/X11. Set a fake one instead to avoid crashing browser later.
     DCHECK(!ui::LinuxInputMethodContextFactory::instance());
@@ -84,35 +84,12 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
           nullptr, gfx::kNullAcceleratedWidget);
     }
 #endif
-    // If factory is not set, set a fake instance.
-    if (!ui::LinuxInputMethodContextFactory::instance()) {
-      ui::LinuxInputMethodContextFactory::SetInstance(
-          new ui::FakeInputMethodContextFactory());
-    }
-    return;
   }
-
-  linux_ui->SetUseSystemThemeCallback(
-      base::BindRepeating([](aura::Window* window) {
-        if (!window)
-          return true;
-        return ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
-            GetThemeProfileForWindow(window));
-      }));
-
-  // Update the device scale factor before initializing views
-  // because its display::Screen instance depends on it.
-  linux_ui->UpdateDeviceScaleFactor();
-
-  views::LinuxUI::SetInstance(linux_ui);
-  linux_ui->Initialize();
-
-  // Cursor theme changes are tracked by LinuxUI (via a CursorThemeManager
-  // implementation). Start observing them once it's initialized.
-  ui::CursorFactory::GetInstance()->ObserveThemeChanges();
-
-  DCHECK(ui::LinuxInputMethodContextFactory::instance())
-      << "LinuxUI must set LinuxInputMethodContextFactory instance.";
+  // If factory is not set, set a fake instance.
+  if (!ui::LinuxInputMethodContextFactory::instance()) {
+    ui::LinuxInputMethodContextFactory::SetInstance(
+        new ui::FakeInputMethodContextFactory());
+  }
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {

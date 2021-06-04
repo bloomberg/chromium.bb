@@ -26,6 +26,7 @@ deqp_include_dirs = [
   "$deqp_path/modules/gles31/functional",
   "$deqp_path/modules/gles31/stress",
   "$deqp_path/modules/glusecases",
+  "$deqp_path/modules/egl",
   "${angle_glslang_dir}",
   "${angle_spirv_tools_dir}",
 ]
@@ -101,6 +102,8 @@ deqp_gles2_sources = [
   "$deqp_path/modules/gles2/functional/es2fLightAmountTest.hpp",
   "$deqp_path/modules/gles2/functional/es2fMultisampleTests.cpp",
   "$deqp_path/modules/gles2/functional/es2fMultisampleTests.hpp",
+  "$deqp_path/modules/gles2/functional/es2fMultisampledRenderToTextureTests.cpp",
+  "$deqp_path/modules/gles2/functional/es2fMultisampledRenderToTextureTests.hpp",
   "$deqp_path/modules/gles2/functional/es2fNegativeBufferApiTests.cpp",
   "$deqp_path/modules/gles2/functional/es2fNegativeBufferApiTests.hpp",
   "$deqp_path/modules/gles2/functional/es2fNegativeFragmentApiTests.cpp",
@@ -956,6 +959,8 @@ deqp_khr_common_sources = [
   "$deqp_path/external/openglcts/modules/common/glcTestPackage.hpp",
   "$deqp_path/external/openglcts/modules/common/glcTestSubcase.cpp",
   "$deqp_path/external/openglcts/modules/common/glcTestSubcase.hpp",
+  "$deqp_path/external/openglcts/modules/common/glcTextureCompatibilityTests.cpp",
+  "$deqp_path/external/openglcts/modules/common/glcTextureCompatibilityTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcTextureFilterAnisotropicTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcTextureFilterAnisotropicTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcTextureRepeatModeTests.cpp",
@@ -2014,9 +2019,4 @@ deqp_libtester_sources = [
   # TODO(jmadill): integrate with dEQP
   "deqp_support/tcuRandomOrderExecutor.cpp",
   "deqp_support/tcuRandomOrderExecutor.h",
-]
-
-deqp_libtester_sources_android = [
-  "$deqp_path/framework/platform/android/tcuAndroidInternals.cpp",
-  "$deqp_path/framework/platform/android/tcuAndroidInternals.hpp",
 ]

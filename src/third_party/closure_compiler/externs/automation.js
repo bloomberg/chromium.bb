@@ -241,7 +241,6 @@ chrome.automation.RoleType = {
   HEADING: 'heading',
   IFRAME: 'iframe',
   IFRAME_PRESENTATIONAL: 'iframePresentational',
-  IGNORED: 'ignored',
   IMAGE: 'image',
   IME_CANDIDATE: 'imeCandidate',
   INLINE_TEXT_BOX: 'inlineTextBox',
@@ -283,7 +282,6 @@ chrome.automation.RoleType = {
   POP_UP_BUTTON: 'popUpButton',
   PORTAL: 'portal',
   PRE: 'pre',
-  PRESENTATIONAL: 'presentational',
   PROGRESS_INDICATOR: 'progressIndicator',
   RADIO_BUTTON: 'radioButton',
   RADIO_GROUP: 'radioGroup',
@@ -432,10 +430,12 @@ chrome.automation.NameFromType = {
  * @see https://developer.chrome.com/extensions/automation#type-DescriptionFromType
  */
 chrome.automation.DescriptionFromType = {
-  UNINITIALIZED: 'uninitialized',
-  ATTRIBUTE: 'attribute',
-  CONTENTS: 'contents',
+  ARIA_DESCRIPTION: 'ariaDescription',
+  BUTTON_LABEL: 'buttonLabel',
   RELATED_ELEMENT: 'relatedElement',
+  RUBY_ANNOTATION: 'rubyAnnotation',
+  SUMMARY: 'summary',
+  TABLE_CAPTION: 'tableCaption',
   TITLE: 'title',
 };
 
@@ -1531,13 +1531,6 @@ chrome.automation.AutomationNode.prototype.textSelStart;
 chrome.automation.AutomationNode.prototype.textSelEnd;
 
 /**
- * The input type, like email or number.
- * @type {(string|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-textInputType
- */
-chrome.automation.AutomationNode.prototype.textInputType;
-
-/**
  * An array of Marker objects for this node.
  * @type {(!Array<!chrome.automation.Marker>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-markers
@@ -2021,11 +2014,11 @@ chrome.automation.AutomationNode.prototype.fontSize;
 chrome.automation.AutomationNode.prototype.fontFamily;
 
 /**
- * Indicates whether this is a root of an editable subtree.
+ * Indicates whether the object is at the root of a content editable region, or at a <body> element that has "design-mode" set to "on".
  * @type {boolean}
- * @see https://developer.chrome.com/extensions/automation#type-editableRoot
+ * @see https://developer.chrome.com/extensions/automation#type-contentEditableRoot
  */
-chrome.automation.AutomationNode.prototype.editableRoot;
+chrome.automation.AutomationNode.prototype.contentEditableRoot;
 
 /**
  * Indicates aria-current state.
@@ -2033,6 +2026,13 @@ chrome.automation.AutomationNode.prototype.editableRoot;
  * @see https://developer.chrome.com/extensions/automation#type-ariaCurrentState
  */
 chrome.automation.AutomationNode.prototype.ariaCurrentState;
+
+/**
+ * The application id for a tree rooted at this node.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-appId
+ */
+chrome.automation.AutomationNode.prototype.appId;
 
 /**
  * Walking the tree.

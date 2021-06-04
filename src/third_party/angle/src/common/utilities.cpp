@@ -1151,6 +1151,28 @@ ShaderType GetShaderTypeFromBitfield(size_t singleShaderType)
     }
 }
 
+GLbitfield GetBitfieldFromShaderType(ShaderType shaderType)
+{
+    switch (shaderType)
+    {
+        case ShaderType::Vertex:
+            return GL_VERTEX_SHADER_BIT;
+        case ShaderType::Fragment:
+            return GL_FRAGMENT_SHADER_BIT;
+        case ShaderType::Compute:
+            return GL_COMPUTE_SHADER_BIT;
+        case ShaderType::Geometry:
+            return GL_GEOMETRY_SHADER_BIT;
+        case ShaderType::TessControl:
+            return GL_TESS_CONTROL_SHADER_BIT;
+        case ShaderType::TessEvaluation:
+            return GL_TESS_EVALUATION_SHADER_BIT;
+        default:
+            UNREACHABLE();
+            return GL_ZERO;
+    }
+}
+
 bool ShaderTypeSupportsTransformFeedback(ShaderType shaderType)
 {
     switch (shaderType)
@@ -1233,6 +1255,7 @@ bool IsExternalImageTarget(EGLenum target)
         case EGL_NATIVE_BUFFER_ANDROID:
         case EGL_D3D11_TEXTURE_ANGLE:
         case EGL_LINUX_DMA_BUF_EXT:
+        case EGL_METAL_TEXTURE_ANGLE:
             return true;
 
         default:

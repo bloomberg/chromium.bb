@@ -9,6 +9,7 @@
 <translation id="1431818719585918472">Leyfa Chromium að læsa huliðsflipunum þínum.</translation>
 <translation id="1472013873724362412">Reikningurinn þinn virkar ekki í Chromium. Hafðu samband við stjórnanda lénsins eða notaðu venjulegan Google reikning til að skrá þig inn.</translation>
 <translation id="1507010443238049608">Hjálpa til við að bæta eiginleika og afköst Chromium</translation>
+<translation id="1531155317299575425">Sýna innskráningartilkynningar í Chromium.</translation>
 <translation id="1617663976202781617">Gögn úr Chromium samstillingu</translation>
 <translation id="1736662517232558588">Hreinsaði gögn Chromium</translation>
 <translation id="1838412507805038478">Chromium staðfesti að <ph name="ISSUER" /> gaf út vottorð þessa vefsvæðis.</translation>
@@ -20,6 +21,7 @@
 <translation id="2168108852149185974">Einhverjar viðbætur valda því að Chromium hrynur. Fjarlægðu:</translation>
 <translation id="2178608107313874732">Chromium getur ekki notað myndavélina sem stendur</translation>
 <translation id="2195025571279539885">Viltu að Chromium bjóðist næst til að þýða síður á <ph name="LANGUAGE_NAME" /> á þessu vefsvæði?</translation>
+<translation id="2567507405773541360">Komdu meiru í verk með einfaldari, öruggari og hraðari Chromium</translation>
 <translation id="2590893390871230428">Samstilla gögnin þín í Chromium</translation>
 <translation id="2650312721222849884">Kveiktu á samstillingu til að sjá flipana þína hvar sem þú notar Chromium</translation>
 <translation id="2684230048001240293">Notaðu Chromium sem sjálfgefinn kost til að samstilla flipa, aðgangsorð og greiðsluupplýsingar í öllum tækjunum þínum</translation>
@@ -41,9 +43,12 @@
 <translation id="4681781466797808448">Kveiktu á Chromium skanna</translation>
 <translation id="4736424910885271643">Reikningurinn þinn er í umsjón <ph name="HOSTED_DOMAIN" /> og því verður Chromium gögnunum þínum eytt úr þessu tæki</translation>
 <translation id="4787850887676698916">Flipar sem þú hefur opnað í Chromium í öðrum tækjum birtast hér.</translation>
+<translation id="4806326830773390517">Hjálpaðu til við að bæta Google Chromium með því að senda sjálfkrafa notkunarupplýsingar og hrunskýrslur til Google</translation>
 <translation id="4828317641996116749">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
+<translation id="4852878756222711218">Skráðu þig inn á Google reikninginn svo að Chromium nýtist þér sem best</translation>
 <translation id="4985291216379576555">Ótengt, Chromium getur ekki leitað að uppfærslum.</translation>
 <translation id="4999538639245140991">Vegna þess að þú ert að skrá þig út af reikningi sem stýrt er af <ph name="SIGNOUT_MANAGED_DOMAIN" /> verður Chromium gögnum þínum eytt úr þessu tæki. Gögnin verða áfram geymd á Google reikningnum þínum.</translation>
+<translation id="5171868502429358653">Skráðu þig inn á Chromium</translation>
 <translation id="5224391634244552924">Engin vistuð aðgangsorð. Chromium getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="5308226104666789935">Chromium getur ekki leitað að uppfærslum</translation>
 <translation id="5396916991083608703">Stilla Chromium sem sjálfgefið?</translation>
@@ -59,12 +64,15 @@
 1. Opnaðu Stillingar
 2. Ýttu á „Sjálfgefið vafraforrit“
 3. Veldu Chromium.</translation>
+<translation id="6155422572367400359">Skráðu þig inn á þetta vefsvæði, Google reikninginn þinn og Chromium. Þú getur kveikt á samstillingu síðar.</translation>
 <translation id="6268381023930128611">Skrá út af Chromium?</translation>
+<translation id="632825460376924298">Leyfa innskráningu í Chromium</translation>
 <translation id="6337530241089703714">Veldu hvort þú vilt hreinsa gögn Chromium úr þessu tæki eða geyma þau</translation>
 <translation id="6424492062988593837">Chromium er nú enn betra! Ný útgáfa er í boði.</translation>
 <translation id="6820823224820483452">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun.</translation>
 <translation id="6827294685447036764">Ef þú leyfir Chromium að vita staðsetningu þína sendir Chromium hana til þeirra vefsvæða sem þú leyfir. Vefsvæði kunna að biðja um staðsetningu þína þegar þau búa yfir staðbundum upplýsingum til að birta þér, t.d. um nálægar verslanir eða fréttir.</translation>
 <translation id="7018284295775193585">Ekki er hægt að uppfæra Chromium</translation>
+<translation id="7045244423563602563">Lagaðu Chromium að þínum þörfum</translation>
 <translation id="7099326575020694068">Chromium getur ekki notað myndavélina á tvískiptum skjá</translation>
 <translation id="7118091470949186573">Núna getur þú notað Chromium hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
 <translation id="7208566199746267865">Chromium sparar þér tíma með því að færa reikningana þína yfir á vefinn. Þú getur bætt við reikningum eða fjarlægt þá í stillingum.</translation>

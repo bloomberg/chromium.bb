@@ -51,8 +51,8 @@ TEST_F(ContentSettingsRegistryTest, GetPlatformDependent) {
   EXPECT_FALSE(registry()->Get(ContentSettingsType::IMAGES));
 #endif
 
-// Protected media identifier only get registered on android and chromeos.
-#if defined(ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+// Protected media identifier only registered on Android, Chrome OS and Windows.
+#if defined(ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
   EXPECT_TRUE(registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER));
 #else
   EXPECT_FALSE(
@@ -85,10 +85,9 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
             website_settings_info->pref_name());
   EXPECT_EQ("profile.default_content_setting_values.cookies",
             website_settings_info->default_value_pref_name());
-  int setting;
-  ASSERT_TRUE(
-      website_settings_info->initial_default_value()->GetAsInteger(&setting));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+  ASSERT_TRUE(website_settings_info->initial_default_value()->is_int());
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            website_settings_info->initial_default_value()->GetInt());
 #if defined(OS_ANDROID) || defined(OS_IOS)
   EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
             website_settings_info->GetPrefRegistrationFlags());
@@ -169,7 +168,7 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   info = registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
-  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+  EXPECT_TRUE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)

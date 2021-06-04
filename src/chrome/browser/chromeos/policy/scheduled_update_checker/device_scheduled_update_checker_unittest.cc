@@ -315,6 +315,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
     fake_update_engine_client_ = fake_update_engine_client.get();
+    chromeos::DBusThreadManager::Initialize();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::move(fake_update_engine_client));
 
@@ -336,9 +337,9 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
   ~DeviceScheduledUpdateCheckerTest() override {
     device_scheduled_update_checker_.reset();
+    network_state_test_helper_.reset();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        nullptr);
+    chromeos::DBusThreadManager::Shutdown();
     ScopedWakeLock::OverrideWakeLockProviderBinderForTesting(
         base::NullCallback());
   }
@@ -1165,10 +1166,10 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
       std::move(policy_and_next_update_check_time.first));
   task_environment_.FastForwardBy(delay_from_now);
 
-  base::Optional<int> active_wake_locks_before_update_check;
+  absl::optional<int> active_wake_locks_before_update_check;
   wake_lock_provider_.GetActiveWakeLocksForTests(
       device::mojom::WakeLockType::kPreventAppSuspension,
-      base::BindOnce([](base::Optional<int>* result,
+      base::BindOnce([](absl::optional<int>* result,
                         int32_t wake_lock_count) { *result = wake_lock_count; },
                      &active_wake_locks_before_update_check));
   EXPECT_TRUE(active_wake_locks_before_update_check);
@@ -1179,10 +1180,10 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
 
-  base::Optional<int> active_wake_locks_after_update_check;
+  absl::optional<int> active_wake_locks_after_update_check;
   wake_lock_provider_.GetActiveWakeLocksForTests(
       device::mojom::WakeLockType::kPreventAppSuspension,
-      base::BindOnce([](base::Optional<int>* result,
+      base::BindOnce([](absl::optional<int>* result,
                         int32_t wake_lock_count) { *result = wake_lock_count; },
                      &active_wake_locks_after_update_check));
   // After all steps are completed the wake lock should be released.

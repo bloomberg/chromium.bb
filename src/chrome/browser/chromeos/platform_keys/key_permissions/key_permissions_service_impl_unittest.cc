@@ -12,11 +12,13 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/mock_key_permissions_manager.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 
@@ -74,12 +76,14 @@ class ExecutionWaiter {
 };
 
 // Supports waiting for the result of KeyPermissionsService::IsCorporateKey.
-class IsCorporateKeyExecutionWaiter : public ExecutionWaiter<bool> {
+class IsCorporateKeyExecutionWaiter
+    : public ExecutionWaiter<absl::optional<bool>, Status> {
  public:
   IsCorporateKeyExecutionWaiter() = default;
   ~IsCorporateKeyExecutionWaiter() = default;
 
-  bool corporate() const { return std::get<0>(result_callback_args()); }
+  bool corporate() const { return std::get<0>(result_callback_args()).value(); }
+  Status status() const { return std::get<1>(result_callback_args()); }
 };
 
 // Supports waiting for the result of KeyPermissionsService::SetCorporateKey.
@@ -152,6 +156,7 @@ class KeyPermissionsServiceImplTest : public ::testing::Test {
     key_permissions_service_->IsCorporateKey(
         public_key, is_corporate_key_waiter.GetCallback());
     is_corporate_key_waiter.Wait();
+    DCHECK_EQ(is_corporate_key_waiter.status(), Status::kSuccess);
     return is_corporate_key_waiter.corporate();
   }
 

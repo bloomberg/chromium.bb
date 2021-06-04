@@ -14,7 +14,6 @@
 
 #include "tests/perf_tests/DawnPerfTest.h"
 
-#include "tests/ParamGenerator.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
@@ -71,17 +70,15 @@ class SubresourceTrackingPerf : public DawnPerfTestWithParams<SubresourceTrackin
 
         utils::ComboRenderPipelineDescriptor2 pipelineDesc;
         pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[stage(vertex)]] fn main() -> void {
-                Position = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
         )");
         pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
-            [[location(0)]] var<out> FragColor : vec4<f32>;
             [[group(0), binding(0)]] var materials : texture_2d<f32>;
-            [[stage(fragment)]] fn main() -> void {
-                const foo : vec2<i32> = textureDimensions(materials);
-                FragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                let foo : vec2<i32> = textureDimensions(materials);
+                return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
         )");
         mPipeline = device.CreateRenderPipeline2(&pipelineDesc);
@@ -148,8 +145,7 @@ TEST_P(SubresourceTrackingPerf, Run) {
     RunTest();
 }
 
-DAWN_INSTANTIATE_PERF_TEST_SUITE_P(SubresourceTrackingPerf,
-                                   {D3D12Backend(), MetalBackend(), OpenGLBackend(),
-                                    VulkanBackend()},
-                                   {1, 4, 16, 256},
-                                   {2, 3, 8});
+DAWN_INSTANTIATE_TEST_P(SubresourceTrackingPerf,
+                        {D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend()},
+                        {1, 4, 16, 256},
+                        {2, 3, 8});

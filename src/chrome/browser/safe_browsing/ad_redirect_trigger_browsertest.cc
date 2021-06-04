@@ -4,8 +4,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
@@ -155,9 +157,9 @@ IN_PROC_BROWSER_TEST_F(AdRedirectTriggerBrowserTest,
 
   // Create an ad subframe.
   GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("f = document.createElement('google_ads_iframe');"
-                         "f.srcdoc = '<script>var x = 1</script>';"
-                         "document.body.appendChild(f);"),
+      u"f = document.createElement('google_ads_iframe');"
+      u"f.srcdoc = '<script>var x = 1</script>';"
+      u"document.body.appendChild(f);",
       base::NullCallback());
 
   // Cause blocked redirect

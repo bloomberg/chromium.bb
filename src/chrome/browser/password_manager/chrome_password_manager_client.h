@@ -12,7 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-forward.h"
@@ -35,10 +35,12 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -53,13 +55,12 @@ class TouchToFillController;
 #include "chrome/browser/ui/passwords/account_storage_auth_helper.h"
 #endif
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/password_manager/core/browser/sync_credentials_filter.h"
-#else
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/password_manager/multi_profile_credentials_filter.h"
+#else
+#include "components/password_manager/core/browser/sync_credentials_filter.h"
 #endif
 
-class ChromeBiometricAuthenticator;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
 class Profile;
@@ -125,8 +126,8 @@ class ChromePasswordManagerClient
   // Returns a pointer to the BiometricAuthenticator which is created on demand.
   // This is currently only implemented for Android, on all other platforms this
   // will always be null.
-  password_manager::BiometricAuthenticator* GetBiometricAuthenticator()
-      override;
+  scoped_refptr<password_manager::BiometricAuthenticator>
+  GetBiometricAuthenticator() override;
   void GeneratePassword(
       autofill::password_generation::PasswordGenerationType type) override;
   void NotifyUserAutoSignin(
@@ -325,7 +326,7 @@ class ChromePasswordManagerClient
   void GenerationResultAvailable(
       autofill::password_generation::PasswordGenerationType type,
       base::WeakPtr<password_manager::ContentPasswordManagerDriver> driver,
-      const base::Optional<
+      const absl::optional<
           autofill::password_generation::PasswordGenerationUIData>& ui_data);
 
   void ShowPasswordGenerationPopup(
@@ -367,7 +368,8 @@ class ChromePasswordManagerClient
       generated_password_saved_message_delegate_;
 #endif  // defined(OS_ANDROID)
 
-  std::unique_ptr<ChromeBiometricAuthenticator> biometric_authenticator_;
+  scoped_refptr<password_manager::BiometricAuthenticator>
+      biometric_authenticator_;
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 
@@ -391,11 +393,11 @@ class ChromePasswordManagerClient
   // point.
   BooleanPrefMember saving_passwords_enabled_;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
-  // ChromeOS and Android don't support multiple profiles
-  const password_manager::SyncCredentialsFilter credentials_filter_;
-#else
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // MultiProfileCredentialsFilter requires DICE support.
   const MultiProfileCredentialsFilter credentials_filter_;
+#else
+  const password_manager::SyncCredentialsFilter credentials_filter_;
 #endif
 
   std::unique_ptr<autofill::LogManager> log_manager_;
@@ -403,7 +405,7 @@ class ChromePasswordManagerClient
   // Recorder of metrics that is associated with the last committed navigation
   // of the WebContents owning this ChromePasswordManagerClient. May be unset at
   // times. Sends statistics on destruction.
-  base::Optional<password_manager::PasswordManagerMetricsRecorder>
+  absl::optional<password_manager::PasswordManagerMetricsRecorder>
       metrics_recorder_;
 
   // Whether navigator.credentials.store() was ever called from this

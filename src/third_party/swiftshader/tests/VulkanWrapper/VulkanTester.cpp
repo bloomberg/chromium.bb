@@ -274,19 +274,19 @@ void VulkanTester::initialize()
 	extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
+	std::vector<const char *> layerNames;
+#if ENABLE_VALIDATION_LAYERS
 	auto addLayerIfAvailable = [](std::vector<const char *> &layers, const char *layer) {
 		static auto layerProperties = vk::enumerateInstanceLayerProperties();
 		if(std::find_if(layerProperties.begin(), layerProperties.end(), [layer](auto &lp) {
 			   return strcmp(layer, lp.layerName) == 0;
 		   }) != layerProperties.end())
 		{
-			//std::cout << "Enabled layer: " << layer << std::endl;
+			// std::cout << "Enabled layer: " << layer << std::endl;
 			layers.push_back(layer);
 		}
 	};
 
-	std::vector<const char *> layerNames;
-#if ENABLE_VALIDATION_LAYERS
 	addLayerIfAvailable(layerNames, "VK_LAYER_KHRONOS_validation");
 	addLayerIfAvailable(layerNames, "VK_LAYER_LUNARG_standard_validation");
 #endif
@@ -318,7 +318,7 @@ void VulkanTester::initialize()
 		        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
 		        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		        void *pUserData) -> VkBool32 {
-			//assert(false);
+			// assert(false);
 			std::cerr << "[DebugInfoCallback] " << pCallbackData->pMessage << std::endl;
 			return VK_FALSE;
 		};

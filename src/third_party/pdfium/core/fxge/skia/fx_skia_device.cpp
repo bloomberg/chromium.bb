@@ -34,6 +34,7 @@
 #include "core/fxge/dib/cfx_imagestretcher.h"
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
@@ -150,7 +151,7 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
         }
       }
     } else if (src_format == FXDIB_Format::kRgb32) {
-      DCHECK(dest_format == FXDIB_Format::kArgb);
+      DCHECK_EQ(dest_format, FXDIB_Format::kArgb);
       for (int row = 0; row < height; row++) {
         uint8_t* dest_scan = dest_buf + row * pitch;
         const uint8_t* src_scan =
@@ -315,7 +316,7 @@ SkFont::Edging GetFontEdgingType(const CFX_TextRenderOptions& text_options) {
   if (text_options.aliasing_type == CFX_TextRenderOptions::kAntiAliasing)
     return SkFont::Edging::kAntiAlias;
 
-  DCHECK(text_options.aliasing_type == CFX_TextRenderOptions::kLcd);
+  DCHECK_EQ(text_options.aliasing_type, CFX_TextRenderOptions::kLcd);
   return SkFont::Edging::kSubpixelAntiAlias;
 }
 
@@ -408,13 +409,13 @@ bool AddColors(const CPDF_ExpIntFunc* pFunc,
                bool is_encode_reversed) {
   if (pFunc->CountInputs() != 1)
     return false;
-  if (pFunc->m_Exponent != 1)
+  if (pFunc->GetExponent() != 1)
     return false;
-  if (pFunc->m_nOrigOutputs != 3)
+  if (pFunc->GetOrigOutputs() != 3)
     return false;
 
-  auto begin_values = pFunc->m_BeginValues.begin();
-  auto end_values = pFunc->m_EndValues.begin();
+  auto begin_values = pFunc->GetBeginValues().begin();
+  auto end_values = pFunc->GetEndValues().begin();
   if (is_encode_reversed)
     std::swap(begin_values, end_values);
 
@@ -644,11 +645,11 @@ bool Upsample(const RetainPtr<CFX_DIBBase>& pSource,
   void* buffer = pSource->GetBuffer();
   if (!buffer)
     return false;
-  SkColorType colorType = forceAlpha || pSource->IsMask()
+  SkColorType colorType = forceAlpha || pSource->IsMaskFormat()
                               ? SkColorType::kAlpha_8_SkColorType
                               : SkColorType::kGray_8_SkColorType;
   SkAlphaType alphaType =
-      pSource->IsMask() ? kPremul_SkAlphaType : kOpaque_SkAlphaType;
+      pSource->IsMaskFormat() ? kPremul_SkAlphaType : kOpaque_SkAlphaType;
   int width = pSource->GetWidth();
   int height = pSource->GetHeight();
   int rowBytes = pSource->GetPitch();
@@ -672,8 +673,9 @@ bool Upsample(const RetainPtr<CFX_DIBBase>& pSource,
       if (pSource->HasPalette()) {
         dst32Storage.reset(FX_Alloc2D(uint32_t, width, height));
         SkPMColor* dst32Pixels = dst32Storage.get();
+        const unsigned src_palette_size = pSource->GetRequiredPaletteSize();
         pdfium::span<const uint32_t> src_palette = pSource->GetPaletteSpan();
-        const unsigned src_palette_size = pSource->GetPaletteSize();
+        CHECK(src_palette_size <= src_palette.size());
         for (int y = 0; y < height; ++y) {
           const uint8_t* srcRow =
               static_cast<const uint8_t*>(buffer) + y * rowBytes;
@@ -1252,7 +1254,7 @@ class SkiaState {
       if (Clip::kSave == m_commands[m_clipIndex]) {
         m_pDriver->SkiaCanvas()->save();
       } else {
-        DCHECK(Clip::kPath == m_commands[m_clipIndex]);
+        DCHECK_EQ(Clip::kPath, m_commands[m_clipIndex]);
         m_pDriver->SkiaCanvas()->clipPath(m_clips[m_clipIndex],
                                           SkClipOp::kIntersect, true);
       }
@@ -1345,7 +1347,7 @@ class SkiaState {
     DCHECK(m_clipIndex <= m_commands.count());
     for (int index = 0; index < m_clipIndex; ++index)
       cacheSaveCount += Clip::kSave == m_commands[index];
-    DCHECK(skCanvasSaveCount == cacheSaveCount);
+    DCHECK_EQ(skCanvasSaveCount, cacheSaveCount);
 #endif  // SHOW_SKIA_PATH
   }
 
@@ -1506,7 +1508,7 @@ class SkiaState {
       m_fontCharWidths[index] = width;
     }
     int Count() const {
-      DCHECK(m_positions.count() == m_glyphs.count());
+      DCHECK_EQ(m_positions.count(), m_glyphs.count());
       return m_glyphs.count();
     }
     void SetCount(int count) {
@@ -1649,7 +1651,7 @@ CFX_SkiaDeviceDriver::CFX_SkiaDeviceDriver(
                      ? kAlpha_8_SkColorType
                      : kGray_8_SkColorType;
   } else {
-    DCHECK(bpp == 32);
+    DCHECK_EQ(bpp, 32);
     color_type = Get32BitSkColorType(bRgbByteOrder);
   }
 
@@ -1883,9 +1885,9 @@ int CFX_SkiaDeviceDriver::GetDeviceCaps(int caps_id) const {
     case FXDC_RENDER_CAPS: {
       int flags = FXRC_GET_BITS | FXRC_ALPHA_PATH | FXRC_ALPHA_IMAGE |
                   FXRC_BLEND_MODE | FXRC_SOFT_CLIP | FXRC_SHADING;
-      if (m_pBitmap->HasAlpha()) {
+      if (m_pBitmap->IsAlphaFormat()) {
         flags |= FXRC_ALPHA_OUTPUT;
-      } else if (m_pBitmap->IsMask()) {
+      } else if (m_pBitmap->IsMaskFormat()) {
         if (m_pBitmap->GetBPP() == 1) {
           flags |= FXRC_BITMASK_OUTPUT;
         } else {
@@ -2168,9 +2170,11 @@ bool CFX_SkiaDeviceDriver::DrawShading(const CPDF_ShadingPattern* pPattern,
     // TODO(caryclark) more types
     return false;
   }
-  int csFamily = pPattern->GetCS()->GetFamily();
-  if (PDFCS_DEVICERGB != csFamily && PDFCS_DEVICEGRAY != csFamily)
+  CPDF_ColorSpace::Family csFamily = pPattern->GetCS()->GetFamily();
+  if (CPDF_ColorSpace::Family::kDeviceRGB != csFamily &&
+      CPDF_ColorSpace::Family::kDeviceGray != csFamily) {
     return false;
+  }
   const std::vector<std::unique_ptr<CPDF_Function>>& pFuncs =
       pPattern->GetFuncs();
   int nFuncs = pFuncs.size();
@@ -2285,7 +2289,7 @@ bool CFX_SkiaDeviceDriver::DrawShading(const CPDF_ShadingPattern* pPattern,
     skPath.addRect(skRect);
     skPath.transform(inverse);
   } else {
-    DCHECK(kCoonsPatchMeshShading == shadingType);
+    DCHECK_EQ(kCoonsPatchMeshShading, shadingType);
     const CPDF_Stream* pStream = ToStream(pPattern->GetShadingObject());
     if (!pStream)
       return false;
@@ -2452,7 +2456,7 @@ bool CFX_SkiaDeviceDriver::SetDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
 
 #if defined(_SKIA_SUPPORT_PATHS_)
   Flush();
-  if (pBitmap->IsMask()) {
+  if (pBitmap->IsMaskFormat()) {
     return m_pBitmap->CompositeMask(left, top, src_rect.Width(),
                                     src_rect.Height(), pBitmap, argb,
                                     src_rect.left, src_rect.top, blend_type,
@@ -2527,7 +2531,8 @@ bool CFX_SkiaDeviceDriver::StartDIBits(
   std::unique_ptr<uint8_t, FxFreeDeleter> dst8Storage;
   std::unique_ptr<uint32_t, FxFreeDeleter> dst32Storage;
   SkBitmap skBitmap;
-  int width, height;
+  int width;
+  int height;
   if (!Upsample(pSource, dst8Storage, dst32Storage, &skBitmap, &width, &height,
                 false, m_bRgbByteOrder)) {
     return false;
@@ -2538,7 +2543,7 @@ bool CFX_SkiaDeviceDriver::StartDIBits(
     SetBitmapMatrix(matrix, width, height, &skMatrix);
     m_pCanvas->concat(skMatrix);
     SkPaint paint;
-    SetBitmapPaint(pSource->IsMask(), !m_FillOptions.aliased_path, argb,
+    SetBitmapPaint(pSource->IsMaskFormat(), !m_FillOptions.aliased_path, argb,
                    bitmap_alpha, blend_type, &paint);
     // TODO(caryclark) Once Skia supports 8 bit src to 8 bit dst remove this
     if (m_pBitmap && m_pBitmap->GetBPP() == 8 && pSource->GetBPP() == 8) {
@@ -2658,8 +2663,12 @@ bool CFX_SkiaDeviceDriver::DrawBitsWithMask(
   DebugValidate(m_pBitmap, m_pBackdropBitmap);
   std::unique_ptr<uint8_t, FxFreeDeleter> src8Storage, mask8Storage;
   std::unique_ptr<uint32_t, FxFreeDeleter> src32Storage, mask32Storage;
-  SkBitmap skBitmap, skMask;
-  int srcWidth, srcHeight, maskWidth, maskHeight;
+  SkBitmap skBitmap;
+  SkBitmap skMask;
+  int srcWidth;
+  int srcHeight;
+  int maskWidth;
+  int maskHeight;
   if (!Upsample(pSource, src8Storage, src32Storage, &skBitmap, &srcWidth,
                 &srcHeight, false, m_bRgbByteOrder)) {
     return false;
@@ -2674,8 +2683,8 @@ bool CFX_SkiaDeviceDriver::DrawBitsWithMask(
     SetBitmapMatrix(matrix, srcWidth, srcHeight, &skMatrix);
     m_pCanvas->concat(skMatrix);
     SkPaint paint;
-    SetBitmapPaint(pSource->IsMask(), !m_FillOptions.aliased_path, 0xFFFFFFFF,
-                   bitmap_alpha, blend_type, &paint);
+    SetBitmapPaint(pSource->IsMaskFormat(), !m_FillOptions.aliased_path,
+                   0xFFFFFFFF, bitmap_alpha, blend_type, &paint);
     sk_sp<SkImage> skSrc = SkImage::MakeFromBitmap(skBitmap);
     sk_sp<SkShader> skSrcShader = skSrc->makeShader(
         SkTileMode::kClamp, SkTileMode::kClamp, SkSamplingOptions());
@@ -2811,7 +2820,7 @@ bool CFX_DefaultRenderDevice::SetBitsWithMask(
 
 void CFX_DIBBase::DebugVerifyBitmapIsPreMultiplied(void* opt) const {
 #ifdef SK_DEBUG
-  DCHECK(GetBPP() == 32);
+  DCHECK_EQ(GetBPP(), 32);
   const uint32_t* buffer = (const uint32_t*)(opt ? opt : GetBuffer());
   int width = GetWidth();
   int height = GetHeight();

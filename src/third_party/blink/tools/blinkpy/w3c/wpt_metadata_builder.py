@@ -258,7 +258,7 @@ class WPTMetadataBuilder(object):
             if self.process_baselines:
                 test_baseline = self.port.expected_text(test_name)
                 if test_baseline:
-                    self._handle_test_with_baseline(test_name, test_baseline,
+                    self._handle_test_with_baseline(test_name,
                                                     tests_needing_metadata)
 
             # Next check for expectations, which could overwrite baselines
@@ -286,11 +286,26 @@ class WPTMetadataBuilder(object):
             status_dict[test_name] |= SKIP_TEST
             return
 
+        # use expectation from WPT baselines if no other expectations
+        if expectation_line.is_default_pass:
+            return
+
         # Guard against the only test_status being Pass (without any
         # annotations), we don't want to create metadata for such a test.
         if (len(test_statuses) == 1 and ResultType.Pass in test_statuses
                 and not annotations):
+            # remove the entry possibly added when handle baseline
+            status_dict.pop(test_name, 0)
             return
+
+        # If an expectation exists for this test, clear the expectation
+        # derived from baseline. Several reasons here:
+        # 1. We need have a way to override derived expectations.
+        # 2. When the test is not expected to pass, derived expectations
+        #    could be incorrect.
+        # 3. Conceptually it is easier to understand that we only use
+        #    derived expectations when no test expectations exist.
+        status_dict[test_name] &= ~SUBTEST_FAIL
 
         status_bitmap = 0
         if ResultType.Pass in test_statuses:
@@ -314,13 +329,12 @@ class WPTMetadataBuilder(object):
         return test_name in status_dict and (
             status_dict[test_name] & SKIP_TEST)
 
-    def _handle_test_with_baseline(self, test_name, test_baseline,
-                                   status_dict):
+    def _handle_test_with_baseline(self, test_name, status_dict):
         """Handles a single test baseline and updates |status_dict|."""
         status_bitmap = 0
-        if re.search(r"^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
+        if self.port.expected_subtest_failure(test_name):
             status_bitmap |= SUBTEST_FAIL
-        if re.search(r"^Harness Error\.", test_baseline, re.MULTILINE):
+        if self.port.expected_harness_error(test_name):
             status_bitmap |= HARNESS_ERROR
         if status_bitmap > 0:
             status_dict[test_name] |= status_bitmap

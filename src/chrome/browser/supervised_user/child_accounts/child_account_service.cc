@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -102,7 +103,7 @@ void ChildAccountService::Init() {
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
   // "Unconsented" because this class doesn't care about browser sync consent.
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo(
               signin::ConsentLevel::kSignin));
@@ -334,10 +335,10 @@ void ChildAccountService::OnAccountsInCookieUpdated(
 }
 
 void ChildAccountService::StartFetchingFamilyInfo() {
-  family_fetcher_.reset(new FamilyInfoFetcher(
+  family_fetcher_ = std::make_unique<FamilyInfoFetcher>(
       this, identity_manager_,
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetURLLoaderFactoryForBrowserProcess()));
+      profile_->GetDefaultStoragePartition()
+          ->GetURLLoaderFactoryForBrowserProcess());
   family_fetcher_->StartGetFamilyMembers();
 }
 

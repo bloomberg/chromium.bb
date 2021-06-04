@@ -91,6 +91,10 @@ struct URLResponseHead {
   // Remote address of the socket which fetched this resource.
   IPEndPoint remote_endpoint;
 
+  // True if the response was fetched from the cache and validated over the
+  // network.
+  bool is_validated = false;
+
   // True if the response came from cache.
   bool was_fetched_via_cache = false;
 
@@ -99,10 +103,7 @@ struct URLResponseHead {
 
   // True if a service worker responded to the request. If the service worker
   // received a fetch event and did not call respondWith(), or was bypassed due
-  // to absence of a fetch event handler, this function typically returns false
-  // but returns true if "fallback to renderer" was required (however in this
-  // case the response is not an actual resource and the request will be
-  // reissued by the renderer).
+  // to absence of a fetch event handler, this is false.
   bool was_fetched_via_service_worker = false;
 
   // Source of a serviceworker response - CacheStorage, HttpCache, Network or
@@ -114,12 +115,6 @@ struct URLResponseHead {
   // `respondWith(new Response(...))`.
   FetchResponseSource service_worker_response_source =
       FetchResponseSource.kUnspecified;
-
-  // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
-  // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
-  // renderer has to resend the request with skip service worker flag
-  // considering the CORS preflight logic.
-  bool was_fallback_required_by_service_worker = false;
 
   // The URL list of the Response object the service worker passed to
   // respondWith() to create this response. For example, if the service worker

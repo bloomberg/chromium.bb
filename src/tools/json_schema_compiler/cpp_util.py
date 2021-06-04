@@ -19,14 +19,17 @@ CHROMIUM_LICENSE = (
 )
 GENERATED_FILE_MESSAGE = """// GENERATED FROM THE API DEFINITION IN
 //   %s
+// by tools/json_schema_compiler.
 // DO NOT EDIT.
 """
 GENERATED_BUNDLE_FILE_MESSAGE = """// GENERATED FROM THE API DEFINITIONS IN
 //   %s
+// by tools/json_schema_compiler.
 // DO NOT EDIT.
 """
 GENERATED_FEATURE_MESSAGE = """// GENERATED FROM THE FEATURE DEFINITIONS IN
 //   %s
+// by tools/json_schema_compiler.
 // DO NOT EDIT.
 """
 
@@ -40,10 +43,18 @@ def Classname(s):
   """
   if s == '':
     return 'EMPTY_STRING'
-  if IsUnixName(s):
-    return CamelCase(s)
-  return '_'.join([x[0].upper() + x[1:] for x in re.split(r'\W', s)])
 
+  if IsUnixName(s):
+    result = CamelCase(s)
+  else:
+    result = '_'.join([x[0].upper() + x[1:] for x in re.split(r'\W', s)])
+
+  # Ensure the class name follows c++ identifier rules by prepending an
+  # underscore if needed.
+  assert result
+  if result[0].isdigit():
+    result = '_' + result
+  return result
 
 def GetAsFundamentalValue(type_, src, dst):
   """Returns the C++ code for retrieving a fundamental type from a

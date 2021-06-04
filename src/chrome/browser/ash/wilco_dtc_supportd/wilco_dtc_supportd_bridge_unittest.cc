@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/fake_wilco_dtc_supportd_client.h"
@@ -25,15 +24,16 @@
 #include "mojo/public/cpp/system/handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::StrictMock;
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
 class MockMojoWilcoDtcSupportdService
-    : public wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
+    : public chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
  public:
   MOCK_METHOD2(SendUiMessageToWilcoDtc,
                void(mojo::ScopedHandle, SendUiMessageToWilcoDtcCallback));
@@ -43,15 +43,16 @@ class MockMojoWilcoDtcSupportdService
 // Fake implementation of the WilcoDtcSupportdServiceFactory Mojo interface that
 // holds up method calls and allows to complete them afterwards.
 class FakeMojoWilcoDtcSupportdServiceFactory final
-    : public wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory {
+    : public chromeos::wilco_dtc_supportd::mojom::
+          WilcoDtcSupportdServiceFactory {
  public:
   // WilcoDtcSupportdServiceFactory overrides:
 
   void GetService(
-      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
-          service,
-      mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
-          client,
+      mojo::PendingReceiver<
+          chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService> service,
+      mojo::PendingRemote<
+          chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdClient> client,
       GetServiceCallback callback) override {
     EXPECT_FALSE(pending_get_service_call_);
     pending_get_service_call_ = PendingGetServiceCall{
@@ -60,9 +61,9 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
 
   // Completes the Mojo receiver of this instance to the given Mojo pending
   // receiver.
-  void Bind(
-      mojo::PendingReceiver<
-          wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory> receiver) {
+  void Bind(mojo::PendingReceiver<
+            chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+                receiver) {
     // Close the Mojo receiver in case it was previously completed, to allow
     // calling this method multiple times.
     self_receiver_.reset();
@@ -90,9 +91,11 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
   }
 
   // Respond to the current pending GetService call.
-  mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+  mojo::PendingRemote<
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
   RespondToGetServiceCall(
-      mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>*
+      mojo::Receiver<
+          chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService>*
           mojo_wilco_dtc_supportd_service_receiver) {
     DCHECK(pending_get_service_call_);
     PendingGetServiceCall pending_call = std::move(*pending_get_service_call_);
@@ -105,9 +108,11 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
 
  private:
   struct PendingGetServiceCall {
-    mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+    mojo::PendingReceiver<
+        chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
         service;
-    mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+    mojo::PendingRemote<
+        chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
         client;
     GetServiceCallback callback;
   };
@@ -119,10 +124,11 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
     pending_get_service_call_.reset();
   }
 
-  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+  mojo::Receiver<
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
       self_receiver_{this};
 
-  base::Optional<PendingGetServiceCall> pending_get_service_call_;
+  absl::optional<PendingGetServiceCall> pending_get_service_call_;
 };
 
 // Fake implementation of the WilcoDtcSupportdBridge delegate that simulates
@@ -137,7 +143,8 @@ class FakeWilcoDtcSupportdBridgeDelegate final
             mojo_wilco_dtc_supportd_service_factory) {}
 
   void CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-      mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
+      mojo::Remote<
+          chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
           wilco_dtc_supportd_service_factory_mojo_remote,
       base::ScopedFD* remote_endpoint_fd) override {
     // Bind the Mojo pointer passed to the bridge with the
@@ -208,7 +215,7 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
     return wilco_dtc_supportd_bridge_.get();
   }
 
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdClient*
+  chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdClient*
   wilco_dtc_supportd_client() {
     return wilco_dtc_supportd_bridge_.get();
   }
@@ -251,7 +258,7 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
       mojo_wilco_dtc_supportd_service_factory_;
 
   MockMojoWilcoDtcSupportdService mojo_wilco_dtc_supportd_service_;
-  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+  mojo::Receiver<chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
       mojo_wilco_dtc_supportd_service_receiver_{
           &mojo_wilco_dtc_supportd_service_};
 
@@ -260,7 +267,7 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
 
   std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge_;
 
-  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+  mojo::Remote<chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
       mojo_wilco_dtc_supportd_client_;
 };
 
@@ -285,7 +292,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, SuccessfulBootstrap) {
   // GetService Mojo call on the WilcoDtcSupportdServiceFactory interface.
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(
-      base::nullopt);
+      absl::nullopt);
   task_environment_.RunUntilIdle();
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
 
@@ -330,7 +337,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, DBusBootstrapMojoConnectionError) {
                      ->bootstrap_mojo_connection_in_flight_call_count());
     wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(false);
     wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(
-        base::nullopt);
+        absl::nullopt);
     task_environment_.RunUntilIdle();
 
     // Verify that no new BootstrapMojoConnection call is made immediately after
@@ -463,19 +470,21 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
 TEST_F(WilcoDtcSupportdBridgeTest, HandleEvent) {
   EXPECT_CALL(*notification_controller(), ShowBatteryAuthNotification());
   wilco_dtc_supportd_client()->HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kBatteryAuth);
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kBatteryAuth);
 
   EXPECT_CALL(*notification_controller(), ShowIncompatibleDockNotification());
   wilco_dtc_supportd_client()->HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kIncompatibleDock);
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::
+          kIncompatibleDock);
 
   EXPECT_CALL(*notification_controller(), ShowNonWilcoChargerNotification());
   wilco_dtc_supportd_client()->HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kNonWilcoCharger);
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::
+          kNonWilcoCharger);
 
   EXPECT_CALL(*notification_controller(), ShowDockErrorNotification());
   wilco_dtc_supportd_client()->HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kDockError);
+      chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kDockError);
 }
 
-}  // namespace chromeos
+}  // namespace ash

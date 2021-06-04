@@ -26,6 +26,7 @@
     <!-- RadioButtonWithDescription -->
     <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
+    <dimen name="radio_button_with_description_icon_size">24dp</dimen>
 
     <!-- RadioButtonWithDescriptionAndAuxButton -->
     <dimen name="radio_button_with_description_and_aux_button_spacing">10dp</dimen>
@@ -123,6 +124,7 @@
     <dimen name="tile_view_offline_badge_margin_top_modern_condensed">6dp</dimen>
     <dimen name="tile_view_offline_badge_margin_end_modern_condensed">7dp</dimen>
     <dimen name="tile_view_padding">4dp</dimen>
+    <dimen name="tile_view_padding_edge_portrait">12dp</dimen>
     <dimen name="tile_view_padding_portrait">8dp</dimen>
     <dimen name="tile_view_padding_landscape">16dp</dimen>
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>

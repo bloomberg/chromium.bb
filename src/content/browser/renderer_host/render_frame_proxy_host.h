@@ -16,6 +16,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -73,6 +74,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
  public:
   using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
   using DeletedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+  using BindRemoteFrameCallback =
+      base::RepeatingCallback<void(RenderFrameProxyHost*)>;
 
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
   static RenderFrameProxyHost* FromFrameToken(
@@ -86,6 +89,11 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // Sets a callback to be called whenever any RenderFrameProxyHost is deleted.
   static void SetDeletedCallbackForTesting(
       const DeletedCallback& deleted_callback);
+
+  // Sets a callback to be called whenever mojo connections to any
+  // RenderFrameProxyHost is bound and transferred.
+  static void SetBindRemoteFrameCallbackForTesting(
+      const BindRemoteFrameCallback& bind_callback);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
                        scoped_refptr<RenderViewHostImpl> render_view_host,
@@ -110,8 +118,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // FrameTree/FrameTreeNode.
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
-  // TODO(https://crbug.com/1170277): This is currently only used in MPArch
-  // prerendering. Add testing for cross-origin iframes.
   void set_frame_tree_node(FrameTreeNode& frame_tree_node) {
     frame_tree_node_ = &frame_tree_node;
   }
@@ -182,12 +188,12 @@ class CONTENT_EXPORT RenderFrameProxyHost
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
   void SetIsInert(bool inert) override;
-  void DidChangeOpener(const base::Optional<blink::LocalFrameToken>&
+  void DidChangeOpener(const absl::optional<blink::LocalFrameToken>&
                            opener_frame_token) override;
   void AdvanceFocus(blink::mojom::FocusType focus_type,
                     const blink::LocalFrameToken& source_frame_token) override;
   void RouteMessageEvent(
-      const base::Optional<blink::LocalFrameToken>& source_frame_token,
+      const absl::optional<blink::LocalFrameToken>& source_frame_token,
       const std::u16string& source_origin,
       const std::u16string& target_origin,
       blink::TransferableMessage message) override;
@@ -196,7 +202,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void Detach() override;
   void UpdateViewportIntersection(
       blink::mojom::ViewportIntersectionStatePtr intersection_state,
-      const base::Optional<blink::FrameVisualProperties>& visual_properties)
+      const absl::optional<blink::FrameVisualProperties>& visual_properties)
       override;
   void SynchronizeVisualProperties(
       const blink::FrameVisualProperties& frame_visual_properties) override;
@@ -223,7 +229,15 @@ class CONTENT_EXPORT RenderFrameProxyHost
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
   bool IsInertForTesting();
 
+  mojo::PendingAssociatedReceiver<blink::mojom::RemoteMainFrame>
+  BindRemoteMainFrameReceiverForTesting();
+
   const blink::RemoteFrameToken& GetFrameToken() const { return frame_token_; }
+
+  // Bind mojo endpoints of the RemoteMainFrame in blink and pass unbound
+  // corresponding endpoints. The corresponding endpoints should be transferred
+  // and bound in blink.
+  mojom::RemoteMainFrameInterfacesPtr BindAndPassRemoteMainFrameInterfaces();
 
  private:
   // These interceptor need access to frame_host_receiver_for_testing().
@@ -241,6 +255,10 @@ class CONTENT_EXPORT RenderFrameProxyHost
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
+
+  // Invalidate the mojo connections between this RenderFrameProxyHost and its
+  // associated instances in renderer.
+  void InvalidateMojoConnection();
 
   // Needed for tests to be able to swap the implementation and intercept calls.
   mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>&

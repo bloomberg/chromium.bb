@@ -10,12 +10,12 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -28,7 +28,7 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer,
  public:
   ArcAppLauncher(content::BrowserContext* context,
                  const std::string& app_id,
-                 const base::Optional<std::string>& launch_intent,
+                 apps::mojom::IntentPtr launch_intent,
                  bool deferred_launch_allowed,
                  int64_t display_id,
                  apps::mojom::LaunchSource launch_source);
@@ -58,7 +58,7 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer,
   const std::string app_id_;
   // Optional intent to launch the app. If not set then app is started default
   // way.
-  const base::Optional<std::string> launch_intent_;
+  apps::mojom::IntentPtr launch_intent_;
   // If it is set to true that means app is allowed to launch in deferred mode
   // once it is registered, regardless it is ready or not. Otherwise app is
   // launched when it becomes ready.

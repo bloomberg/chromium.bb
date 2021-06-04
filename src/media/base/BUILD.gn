@@ -374,6 +374,7 @@ source_set("base") {
     "//ui/display:display",
     "//ui/events:events",
     "//ui/events:events_base",
+    "//ui/events:keyboard_hook",
     "//url:url",
   ]
 
@@ -392,6 +393,10 @@ source_set("base") {
       "//third_party/ffmpeg",
       "//third_party/ffmpeg:ffmpeg_features",
     ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [ "//ash/constants" ]
   }
 
   if (media_use_libvpx) {

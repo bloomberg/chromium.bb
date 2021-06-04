@@ -39,6 +39,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_palette.h"
@@ -178,6 +179,13 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
   void UpdateWindowIcon() override {}
   void UpdateWindowTitle() override {}
   void SizeConstraintsChanged() override {}
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override {
+    DCHECK_EQ(target, this);
+    return false;
+  }
 
  private:
   views::Widget* widget_;
@@ -367,9 +375,8 @@ void OverlayWindowViews::SetUpViews() {
           },
           base::Unretained(this)));
 
-  std::unique_ptr<views::BackToTabImageButton> back_to_tab_image_button =
-      nullptr;
-  std::unique_ptr<BackToTabLabelButton> back_to_tab_label_button = nullptr;
+  std::unique_ptr<views::BackToTabImageButton> back_to_tab_image_button;
+  std::unique_ptr<BackToTabLabelButton> back_to_tab_label_button;
   auto back_to_tab_callback = base::BindRepeating(
       [](OverlayWindowViews* overlay) {
         overlay->controller_->CloseAndFocusInitiator();
@@ -983,7 +990,7 @@ void OverlayWindowViews::OnNativeBlur() {
 }
 
 void OverlayWindowViews::OnNativeWidgetDestroyed() {
-  controller_->OnWindowDestroyed();
+  controller_->OnWindowDestroyed(/*should_pause_video=*/true);
 }
 
 gfx::Size OverlayWindowViews::GetMinimumSize() const {

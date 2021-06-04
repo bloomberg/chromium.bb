@@ -1,6 +1,7 @@
 <style>
   :host {
     /* Values overriden in Javascript from constants.js. */
+    --emoji-group-button-size: 0;
     --emoji-picker-height: 0;
     --emoji-picker-side-padding: 0;
     --emoji-picker-top-padding: 0;
@@ -9,7 +10,6 @@
     --emoji-per-row: 0;
     /* Values set in css only. */
     --emoji-group-tabs-left: 0;
-    --emoji-group-button-size: var(--emoji-size);
     --emoji-divider-color: var(--google-grey-200);
     /* Actual properties of the emoji picker */
 
@@ -25,6 +25,7 @@
   }
 
   .side-padding {
+    flex-grow: 1;
     flex-shrink: 0;
     max-height: 100%;
     overflow-y: scroll;
@@ -38,8 +39,8 @@
     }
   }
 
-  #searchContainer,
-  #listContainer {
+  #search-container,
+  #list-container {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -58,9 +59,13 @@
     width: 100%;
   }
 
-  /* Mark the first and 9th group as scroll targets to get the correct scroll
+  /* Mark the first and 10th group as scroll targets to get the correct scroll
    * snapping behavior. */
-  #tabs emoji-group-button:nth-child(9n-7) {
+  #tabs :nth-child(2) {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  #tabs :nth-child(14) {
     scroll-snap-align: center;
     scroll-snap-stop: always;
   }
@@ -75,11 +80,13 @@
 
   #groups {
     flex-grow: 1;
+    flex-shrink: 1;
     overflow-y: scroll;
   }
 
   .chevron {
     background-color: var(--cr-card-background-color);
+    border-radius: 0;
     height: var(--emoji-group-button-size);
     margin: 0;
     padding: 0;
@@ -88,13 +95,17 @@
     z-index: 2;
   }
 
-  #rightChevron {
+  #right-chevron {
     left: calc((var(--emoji-picker-width) -
       2 * var(--emoji-picker-side-padding)) / 9 * 8
       + var(--emoji-picker-side-padding));
+    /* Icons may become visible to the right of this during scrolling without
+     * the additional padding.
+     */
+    padding-inline-end: 5px;
   }
 
-  #leftChevron {
+  #left-chevron {
     display: none;
     left: var(--emoji-picker-side-padding);
   }
@@ -114,6 +125,10 @@
     background-color: var(--cr-checked-color);
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
+    /* This gets made visible after we determine the correct location by loading
+     * history.
+     */
+    display: none;
     flex-shrink: 0;
     height: 2px;
     /* Left needed so that transition end fires when it changes for the first
@@ -121,8 +136,16 @@
      */
     left: 0;
     position: relative;
-    transition: all 200ms;
     width:  calc(312px / var(--emoji-per-row));
+  }
+
+  .fake {
+    flex-shrink: 0;
+    width: var(--emoji-group-button-size);
+  }
+
+  .sr-only {
+    user-select: none;
   }
 </style>
 
@@ -133,17 +156,19 @@
 </div>
 
 <div id="message" class="sr-only" aria-live="polite"></div>
-<div class="side-padding">
-  <emoji-search id$="searchContainer" emoji-data="[[emojiData]]"
-    search="{{search}}">
+  <emoji-search
+    class="side-padding"
+    id="search-container"
+    emoji-data="[[emojiData]]"
+    search="{{search}}"
+    on-scroll="onSearchScroll">
   </emoji-search>
-</div>
 
-<div id="listContainer">
+<div id="list-container">
   <div class="sr-only" role="heading" aria-level="1">Emoji Group Buttons</div>
   <div class="side-padding">
     <div id="tabs" on-scroll="onGroupsScroll">
-      <cr-icon-button id="leftChevron" class="chevron"
+      <cr-icon-button id="left-chevron" class="chevron"
         on-click="onLeftChevronClick"
         iron-icon="emoji_picker:keyboard_arrow_left">
       </cr-icon-button>
@@ -155,22 +180,28 @@
       </template>
       <!--Fake group button to increase maximum scrolling, need an icon to
         render as invisible-->
-      <emoji-group-button id="fake" icon="[[emojiGroupTabs[0].icon]]"
+      <div class="fake"
         tabindex="-1">
-      </emoji-group-button>
-      <emoji-group-button id="fake" icon="[[emojiGroupTabs[0].icon]]"
+      </div>
+      <div class="fake"
         tabindex="-1">
-      </emoji-group-button>
-      <emoji-group-button id="fake" icon="[[emojiGroupTabs[0].icon]]"
+      </div>
+      <div class="fake"
         tabindex="-1">
-      </emoji-group-button>
-      <emoji-group-button id="fake" icon="[[emojiGroupTabs[0].icon]]"
+      </div>
+      <div class="fake"
         tabindex="-1">
-      </emoji-group-button>
+      </div>
+      <div class="fake"
+        tabindex="-1">
+      </div>
+      <div class="fake"
+        tabindex="-1">
+      </div>
       <emoji-group-button id="RightChevronScrollTarget"
         icon="[[emojiGroupTabs[0].icon]]" tabindex="-1">
       </emoji-group-button>
-      <cr-icon-button id="rightChevron" class="chevron"
+      <cr-icon-button id="right-chevron" class="chevron"
         on-click="onRightChevronClick"
         iron-icon="emoji_picker:keyboard_arrow_right">
       </cr-icon-button>
@@ -178,7 +209,9 @@
   </div>
   <div class="sr-only" role="heading" aria-level="1">Emoji Groups</div>
   <div class="side-padding">
-    <div id="bar" on-transitionend="onBarTransitionEnd"></div>
+    <div id="bar"
+      on-transitionend="onBarTransitionEnd"
+      on-transitionstart="onBarTransitionStart"></div>
   </div>
   <div class="divider"></div>
 

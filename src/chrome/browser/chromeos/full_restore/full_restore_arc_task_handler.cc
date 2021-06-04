@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 
+#include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/full_restore/full_restore_utils.h"
@@ -23,6 +24,11 @@ FullRestoreArcTaskHandler::FullRestoreArcTaskHandler(Profile* profile) {
     return;
 
   arc_prefs_observer_.Observe(prefs);
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  if (IsArcGhostWindowEnabled())
+    window_handler_ = std::make_unique<ArcWindowHandler>();
+#endif
 }
 
 FullRestoreArcTaskHandler::~FullRestoreArcTaskHandler() = default;
@@ -38,6 +44,23 @@ void FullRestoreArcTaskHandler::OnTaskCreated(int32_t task_id,
 
 void FullRestoreArcTaskHandler::OnTaskDestroyed(int32_t task_id) {
   ::full_restore::OnTaskDestroyed(task_id);
+}
+
+void FullRestoreArcTaskHandler::OnTaskDescriptionChanged(
+    int32_t task_id,
+    const std::string& label,
+    const arc::mojom::RawIconPngData& icon,
+    uint32_t primary_color,
+    uint32_t status_bar_color) {
+  ::full_restore::OnTaskThemeColorUpdated(task_id, primary_color,
+                                          status_bar_color);
+}
+
+void FullRestoreArcTaskHandler::OnAppConnectionReady() {
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  if (window_handler_)
+    window_handler_->OnAppInstanceConnected();
+#endif
 }
 
 }  // namespace full_restore

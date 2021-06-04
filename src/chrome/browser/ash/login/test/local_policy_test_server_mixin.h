@@ -94,8 +94,8 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
       const std::string& device_serial_number,
       enterprise_management::DeviceInitialEnrollmentStateResponse::
           InitialEnrollmentMode initial_mode,
-      const base::Optional<std::string>& management_domain,
-      const base::Optional<bool> is_license_packaged_with_device);
+      const absl::optional<std::string>& management_domain,
+      const absl::optional<bool> is_license_packaged_with_device);
 
   // Utility function that configures server parameters for zero-touch
   // enrollment. Should be used in conjunction with enabling zero-touch
@@ -127,5 +127,16 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::LocalPolicyTestServerMixin;
+namespace test {
+using ::chromeos::test::kTestDomain;
+using ::chromeos::test::kTestRlzBrandCodeKey;
+using ::chromeos::test::kTestSerialNumber;
+}  // namespace test
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_LOCAL_POLICY_TEST_SERVER_MIXIN_H_

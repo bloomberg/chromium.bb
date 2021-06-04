@@ -1352,6 +1352,7 @@ AutomationNodeImpl.prototype = {
 
 var stringAttributes = [
   'accessKey',
+  'appId',
   'ariaInvalidValue',
   'autoComplete',
   'checkedStateDescription',
@@ -1369,15 +1370,14 @@ var stringAttributes = [
   'liveStatus',
   'placeholder',
   'roleDescription',
-  'textInputType',
   'tooltip',
   'url'
 ];
 
 var boolAttributes = [
   'busy', 'clickable', 'containerLiveAtomic', 'containerLiveBusy',
-  'editableRoot', 'liveAtomic', 'modal', 'notUserSelectableStyle', 'scrollable',
-  'selected', 'supportsTextLocation'
+  'contentEditableRoot', 'liveAtomic', 'modal', 'notUserSelectableStyle',
+  'scrollable', 'selected', 'supportsTextLocation'
 ];
 
 var intAttributes = [
@@ -1414,7 +1414,6 @@ var nodeRefAttributes = [
     ['tableRowHeaderId', 'tableRowHeader', null]];
 
 var intListAttributes = [
-    'lineBreaks',
     'wordEnds',
     'wordStarts'];
 

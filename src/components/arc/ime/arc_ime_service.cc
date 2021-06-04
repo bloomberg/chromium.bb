@@ -43,7 +43,7 @@ namespace arc {
 
 namespace {
 
-base::Optional<double> g_override_default_device_scale_factor;
+absl::optional<double> g_override_default_device_scale_factor;
 
 // Return true when a rich text editing is available on a text field with the
 // given type.
@@ -393,12 +393,15 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
   if (!ShouldSendUpdateToInputMethod())
     return;
 
+  if (!UpdateCursorRect(rect, is_screen_coordinates) &&
+      text_range_ == text_range && text_in_range_ == text_in_range &&
+      selection_range_ == selection_range) {
+    return;
+  }
+
   text_range_ = text_range;
   text_in_range_ = text_in_range;
   selection_range_ = selection_range;
-
-  if (!UpdateCursorRect(rect, is_screen_coordinates))
-    return;
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -512,6 +515,11 @@ gfx::Rect ArcImeService::GetCaretBounds() const {
   return cursor_rect_;
 }
 
+gfx::Rect ArcImeService::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
+}
+
 bool ArcImeService::GetTextRange(gfx::Range* range) const {
   if (!text_range_.IsValid())
     return false;
@@ -544,7 +552,7 @@ void ArcImeService::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
   aura::Window* top_level_window = focused_arc_window_->GetToplevelWindow();
   // If the window is not a notification, the window move is handled by
   // Android.
-  if (top_level_window->type() != aura::client::WINDOW_TYPE_POPUP)
+  if (top_level_window->GetType() != aura::client::WINDOW_TYPE_POPUP)
     return;
   wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
 }
@@ -623,7 +631,7 @@ bool ArcImeService::ShouldDoLearning() {
 bool ArcImeService::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  if (!range.IsBoundedBy(text_range_))
+  if (text_range_.IsValid() && !range.IsBoundedBy(text_range_))
     return false;
 
   InvalidateSurroundingTextAndSelectionRange();
@@ -637,7 +645,7 @@ bool ArcImeService::SetCompositionFromExistingText(
 }
 
 gfx::Range ArcImeService::GetAutocorrectRange() const {
-  // TODO(https:://crbug.com/1091088): Implement this method.
+  // TODO(https://crbug.com/1091088): Implement this method.
   return gfx::Range();
 }
 
@@ -664,7 +672,27 @@ bool ArcImeService::SetAutocorrectRange(const gfx::Range& range) {
           TextInputClient::SubClass::kArcImeService);
     }
   }
-  // TODO(https:://crbug.com/1091088): Implement this method.
+  // TODO(https://crbug.com/1091088): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+absl::optional<ui::GrammarFragment> ArcImeService::GetGrammarFragment(
+    const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return absl::nullopt;
+}
+
+bool ArcImeService::ClearGrammarFragments(const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+bool ArcImeService::AddGrammarFragments(
+    const std::vector<ui::GrammarFragment>& fragments) {
+  // TODO(https://crbug.com/1201454): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
@@ -701,7 +729,7 @@ void ArcImeService::OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {
 
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
-    base::Optional<double> scale_factor) {
+    absl::optional<double> scale_factor) {
   g_override_default_device_scale_factor = scale_factor;
 }
 

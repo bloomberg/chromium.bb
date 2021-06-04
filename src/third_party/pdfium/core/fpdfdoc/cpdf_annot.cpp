@@ -21,7 +21,7 @@
 #include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
-#include "core/fpdfdoc/cpvt_generateap.h"
+#include "core/fpdfdoc/cpdf_generateap.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
@@ -42,7 +42,7 @@ bool IsTextMarkupAnnotation(CPDF_Annot::Subtype type) {
 CPDF_Form* AnnotGetMatrix(const CPDF_Page* pPage,
                           CPDF_Annot* pAnnot,
                           CPDF_Annot::AppearanceMode mode,
-                          const CFX_Matrix* pUser2Device,
+                          const CFX_Matrix& mtUser2Device,
                           CFX_Matrix* matrix) {
   CPDF_Form* pForm = pAnnot->GetAPForm(pPage, mode);
   if (!pForm)
@@ -52,7 +52,7 @@ CPDF_Form* AnnotGetMatrix(const CPDF_Page* pPage,
   CFX_FloatRect form_bbox =
       form_matrix.TransformRect(pForm->GetDict()->GetRectFor("BBox"));
   matrix->MatchRect(pAnnot->GetRect(), form_bbox);
-  matrix->Concat(*pUser2Device);
+  matrix->Concat(mtUser2Device);
   return pForm;
 }
 
@@ -122,7 +122,7 @@ void CPDF_Annot::Init() {
 void CPDF_Annot::GenerateAPIfNeeded() {
   if (!ShouldGenerateAP())
     return;
-  if (!CPVT_GenerateAP::GenerateAnnotAP(m_pDocument.Get(), m_pAnnotDict.Get(),
+  if (!CPDF_GenerateAP::GenerateAnnotAP(m_pDocument.Get(), m_pAnnotDict.Get(),
                                         m_nSubtype)) {
     return;
   }
@@ -199,8 +199,8 @@ CPDF_Form* CPDF_Annot::GetAPForm(const CPDF_Page* pPage, AppearanceMode mode) {
   if (it != m_APMap.end())
     return it->second.get();
 
-  auto pNewForm = std::make_unique<CPDF_Form>(
-      m_pDocument.Get(), pPage->m_pResources.Get(), pStream);
+  auto pNewForm = std::make_unique<CPDF_Form>(m_pDocument.Get(),
+                                              pPage->GetResources(), pStream);
   pNewForm->ParseContent();
 
   CPDF_Form* pResult = pNewForm.get();
@@ -394,45 +394,45 @@ bool CPDF_Annot::DrawAppearance(CPDF_Page* pPage,
     return false;
 
   // It might happen that by the time this annotation instance was created,
-  // it was flagged as "hidden" (e.g. /F 2), and hence CPVT_GenerateAP decided
+  // it was flagged as "hidden" (e.g. /F 2), and hence CPDF_GenerateAP decided
   // to not "generate" its AP.
   // If for a reason the object is no longer hidden, but still does not have
   // its "AP" generated, generate it now.
   GenerateAPIfNeeded();
 
   CFX_Matrix matrix;
-  CPDF_Form* pForm = AnnotGetMatrix(pPage, this, mode, &mtUser2Device, &matrix);
+  CPDF_Form* pForm = AnnotGetMatrix(pPage, this, mode, mtUser2Device, &matrix);
   if (!pForm)
     return false;
 
   CPDF_RenderContext context(
-      pPage->GetDocument(), pPage->m_pPageResources.Get(),
+      pPage->GetDocument(), pPage->GetPageResources(),
       static_cast<CPDF_PageRenderCache*>(pPage->GetRenderCache()));
-  context.AppendLayer(pForm, &matrix);
+  context.AppendLayer(pForm, matrix);
   context.Render(pDevice, pOptions, nullptr);
   return true;
 }
 
 bool CPDF_Annot::DrawInContext(const CPDF_Page* pPage,
                                CPDF_RenderContext* pContext,
-                               const CFX_Matrix* pUser2Device,
+                               const CFX_Matrix& mtUser2Device,
                                AppearanceMode mode) {
   if (!ShouldDrawAnnotation())
     return false;
 
   // It might happen that by the time this annotation instance was created,
-  // it was flagged as "hidden" (e.g. /F 2), and hence CPVT_GenerateAP decided
+  // it was flagged as "hidden" (e.g. /F 2), and hence CPDF_GenerateAP decided
   // to not "generate" its AP.
   // If for a reason the object is no longer hidden, but still does not have
   // its "AP" generated, generate it now.
   GenerateAPIfNeeded();
 
   CFX_Matrix matrix;
-  CPDF_Form* pForm = AnnotGetMatrix(pPage, this, mode, pUser2Device, &matrix);
+  CPDF_Form* pForm = AnnotGetMatrix(pPage, this, mode, mtUser2Device, &matrix);
   if (!pForm)
     return false;
 
-  pContext->AppendLayer(pForm, &matrix);
+  pContext->AppendLayer(pForm, matrix);
   return true;
 }
 

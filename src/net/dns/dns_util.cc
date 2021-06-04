@@ -13,10 +13,9 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/containers/contains.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -26,16 +25,15 @@
 #include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/public/util.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_canon.h"
 
 #if defined(OS_POSIX)
 #include <netinet/in.h>
-#if !defined(OS_NACL)
 #include <net/if.h>
 #if !defined(OS_ANDROID)
 #include <ifaddrs.h>
 #endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_NACL)
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_ANDROID)
@@ -149,13 +147,13 @@ bool IsValidHostLabelCharacter(char c, bool is_first_char) {
          (c >= '0' && c <= '9') || (!is_first_char && c == '-') || c == '_';
 }
 
-base::Optional<std::string> DnsDomainToString(base::StringPiece dns_name,
+absl::optional<std::string> DnsDomainToString(base::StringPiece dns_name,
                                               bool require_complete) {
   base::BigEndianReader reader(dns_name.data(), dns_name.length());
   return DnsDomainToString(reader, require_complete);
 }
 
-base::Optional<std::string> DnsDomainToString(base::BigEndianReader& reader,
+absl::optional<std::string> DnsDomainToString(base::BigEndianReader& reader,
                                               bool require_complete) {
   std::string ret;
   size_t octets_read = 0;
@@ -164,17 +162,20 @@ base::Optional<std::string> DnsDomainToString(base::BigEndianReader& reader,
     // the context of a full DNS message.
     if ((*reader.ptr() & dns_protocol::kLabelMask) ==
         dns_protocol::kLabelPointer)
-      return base::nullopt;
+      return absl::nullopt;
 
     base::StringPiece label;
     if (!reader.ReadU8LengthPrefixed(&label))
-      return base::nullopt;
-    octets_read += label.size() + 1;
+      return absl::nullopt;
+
+    // Final zero-length label not included in size enforcement.
+    if (label.size() != 0)
+      octets_read += label.size() + 1;
 
     if (label.size() > dns_protocol::kMaxLabelLength)
-      return base::nullopt;
+      return absl::nullopt;
     if (octets_read > dns_protocol::kMaxNameLength)
-      return base::nullopt;
+      return absl::nullopt;
 
     if (label.size() == 0)
       return ret;
@@ -186,12 +187,11 @@ base::Optional<std::string> DnsDomainToString(base::BigEndianReader& reader,
   }
 
   if (require_complete)
-    return base::nullopt;
+    return absl::nullopt;
 
-  // If terminating zero-length label was not included in the input, it still
-  // counts against the max name length.
-  if (octets_read + 1 > dns_protocol::kMaxNameLength)
-    return base::nullopt;
+  // If terminating zero-length label was not included in the input, no need to
+  // recheck against max name length because terminating zero-length label does
+  // not count against the limit.
 
   return ret;
 }
@@ -203,7 +203,6 @@ std::string GetURLFromTemplateWithoutParameters(const string& server_template) {
   return url_string;
 }
 
-#if !defined(OS_NACL)
 namespace {
 
 bool GetTimeDeltaForConnectionTypeFromFieldTrial(
@@ -238,7 +237,6 @@ base::TimeDelta GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
     out = default_delta;
   return out;
 }
-#endif  // !defined(OS_NACL)
 
 AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
                                               const AddressList& b) {

@@ -87,8 +87,8 @@ class PendingAssociatedRemote {
   uint32_t version() const { return version_; }
   void set_version(uint32_t version) { version_ = version; }
 
-  PendingAssociatedReceiver<Interface> InitWithNewEndpointAndPassReceiver()
-      WARN_UNUSED_RESULT;
+  REINITIALIZES_AFTER_MOVE PendingAssociatedReceiver<Interface>
+  InitWithNewEndpointAndPassReceiver() WARN_UNUSED_RESULT;
 
   // Associates this endpoint with a dedicated message pipe. This allows the
   // entangled AssociatedReceiver/AssociatedRemote endpoints to be used
@@ -103,11 +103,11 @@ class PendingAssociatedRemote {
 
     MessagePipe pipe;
     scoped_refptr<internal::MultiplexRouter> router0 =
-        new internal::MultiplexRouter(
+        internal::MultiplexRouter::Create(
             std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
             false, base::SequencedTaskRunnerHandle::Get());
     scoped_refptr<internal::MultiplexRouter> router1 =
-        new internal::MultiplexRouter(
+        internal::MultiplexRouter::Create(
             std::move(pipe.handle1), internal::MultiplexRouter::MULTI_INTERFACE,
             true, base::SequencedTaskRunnerHandle::Get());
 

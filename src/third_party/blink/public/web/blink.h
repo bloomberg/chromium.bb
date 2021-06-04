@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
 
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "v8/include/v8.h"
 
@@ -40,6 +39,12 @@ class BinderMap;
 }
 
 namespace blink {
+
+namespace scheduler {
+class WebThreadScheduler;
+}  // namespace scheduler
+
+class Platform;
 
 // Initialize the entire Blink (wtf, platform, core, modules and web).
 // If you just need wtf and platform, use Platform::Initialize instead.
@@ -113,6 +118,15 @@ BLINK_EXPORT void ForceNextDrawingBufferCreationToFailForTest();
 // This is called at most once. This is called earlier than any frame commit.
 BLINK_EXPORT void SetIsCrossOriginIsolated(bool value);
 BLINK_EXPORT bool IsCrossOriginIsolated();
+
+// Direct sockets require isolation above and beyond what "cross-origin
+// isolation" provides. This flag corresponds to that set of restrictions.
+// Similarly to the `SetIsCrossOriginIsolated()` method above, this flag is
+// process global, and called at most once, prior to committing a frame.
+//
+// TODO(mkwst): We need a specification for this restriction.
+BLINK_EXPORT void SetIsDirectSocketEnabled(bool value);
+BLINK_EXPORT bool IsDirectSocketEnabled();
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_

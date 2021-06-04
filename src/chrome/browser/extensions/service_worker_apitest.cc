@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
@@ -43,6 +42,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
+#include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/browser/navigation_controller.h"
@@ -69,6 +69,7 @@
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
@@ -80,6 +81,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
 
@@ -231,8 +233,9 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
   size_t GetWorkerRefCount(const url::Origin& origin) {
     content::ServiceWorkerContext* sw_context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile())
+        browser()
+            ->profile()
+            ->GetDefaultStoragePartition()
             ->GetServiceWorkerContext();
     return sw_context->CountExternalRequestsForTest(origin);
   }
@@ -253,18 +256,18 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
   }
 
   // Returns the only running worker id for |extension_id|.
-  // Returns base::nullopt if there isn't any worker running or more than one
+  // Returns absl::nullopt if there isn't any worker running or more than one
   // worker is running for |extension_id|.
-  base::Optional<WorkerId> GetUniqueRunningWorkerId(
+  absl::optional<WorkerId> GetUniqueRunningWorkerId(
       const ExtensionId& extension_id) {
     ProcessManager* process_manager = ProcessManager::Get(profile());
     std::vector<WorkerId> all_workers =
         process_manager->GetAllWorkersIdsForTesting();
-    base::Optional<WorkerId> running_worker_id;
+    absl::optional<WorkerId> running_worker_id;
     for (const WorkerId& worker_id : all_workers) {
       if (worker_id.extension_id == extension_id) {
         if (running_worker_id)  // More than one worker present.
-          return base::nullopt;
+          return absl::nullopt;
         running_worker_id = worker_id;
       }
     }
@@ -286,6 +289,24 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTest);
+};
+
+// A specialization of ExtensionSettingsApiTest that pretends it's running
+// on version_info::Channel::UNKNOWN.
+class ServiceWorkerBasedBackgroundTrunkTest
+    : public ServiceWorkerBasedBackgroundTest {
+ public:
+  ServiceWorkerBasedBackgroundTrunkTest() = default;
+  ~ServiceWorkerBasedBackgroundTrunkTest() override = default;
+  ServiceWorkerBasedBackgroundTrunkTest(
+      const ServiceWorkerBasedBackgroundTrunkTest& other) = delete;
+  ServiceWorkerBasedBackgroundTrunkTest& operator=(
+      const ServiceWorkerBasedBackgroundTrunkTest& other) = delete;
+
+ private:
+  // TODO(crbug.com/1185226): Remove unknown channel when chrome.storage.session
+  // is released in stable.
+  ScopedCurrentChannel current_channel_{version_info::Channel::UNKNOWN};
 };
 
 class ServiceWorkerBasedBackgroundTestWithNotification
@@ -379,6 +400,36 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, NonRootDirectory) {
             std::u16string(u"Service worker registration failed"));
 }
 
+// Tests that a module service worker with static import can successfully be
+// registered.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       ModuleServiceWorkerWithStaticImport) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/"
+                       "module_service_worker_static_import"))
+      << message_;
+}
+
+// Tests that registering a module service worker with dynamic import fails.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       ModuleServiceWorkerWithDynamicImport) {
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  constexpr size_t kErrorsExpected = 1u;
+  ErrorObserver observer(kErrorsExpected, error_console);
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("service_worker/worker_based_background/"
+                                 "module_service_worker_dynamic_import"));
+
+  observer.WaitForErrors();
+  const ErrorList& error_list =
+      error_console->GetErrorsForExtension(extension->id());
+  ASSERT_EQ(kErrorsExpected, error_list.size());
+  ASSERT_EQ(error_list[0]->message(),
+            std::u16string(u"Service worker registration failed"));
+}
+
 // Tests chrome.runtime.onInstalled fires for extension service workers.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
   ASSERT_TRUE(RunExtensionTest(
@@ -394,14 +445,22 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, RuntimeMisc) {
 }
 
 // Tests chrome.storage APIs.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageSetAndGet) {
+// TODO(crbug.com/1185226): Change parent class to
+// `ServiceWorkerBasedBackgroundTest` when chrome.storage.session is released in
+// stable.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTrunkTest,
+                       StorageSetAndGet) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/storage"))
       << message_;
 }
 
-// Tests chrome.storage.local and chrome.storage.local APIs.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageNoPermissions) {
+// Tests chrome.storage APIs are only enabled with permission.
+// TODO(crbug.com/1185226): Change parent class to
+// `ServiceWorkerBasedBackgroundTest` when chrome.storage.session is released in
+// stable.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTrunkTest,
+                       StorageNoPermissions) {
   ASSERT_TRUE(RunExtensionTest(
       "service_worker/worker_based_background/storage_no_permissions"))
       << message_;
@@ -580,7 +639,7 @@ class ServiceWorkerRegistrationAtStartupTest
 
  private:
   bool extension_activated_ = false;
-  base::Optional<bool> will_register_service_worker_;
+  absl::optional<bool> will_register_service_worker_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationAtStartupTest);
@@ -622,18 +681,18 @@ class ServiceWorkerStartFailureObserver
     }
   }
 
-  base::Optional<blink::ServiceWorkerStatusCode> status_code() {
+  absl::optional<blink::ServiceWorkerStatusCode> status_code() {
     return status_code_;
   }
 
  private:
   // Holds number of pending tasks for worker at the time DidStartWorkerFail is
   // observed.
-  base::Optional<size_t> pending_tasks_count_at_worker_failure_;
+  absl::optional<size_t> pending_tasks_count_at_worker_failure_;
 
   ExtensionId extension_id_;
   base::RunLoop run_loop_;
-  base::Optional<blink::ServiceWorkerStatusCode> status_code_;
+  absl::optional<blink::ServiceWorkerStatusCode> status_code_;
 };
 
 // Test extension id at
@@ -729,8 +788,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EarlyEventDispatch) {
   // Build "test.onMessage" event for dispatch.
   auto event = std::make_unique<Event>(
       events::FOR_TEST, extensions::api::test::OnMessage::kEventName,
-      base::ListValue::From(base::JSONReader::ReadDeprecated(
-          R"([{"data": "hello", "lastMessage": true}])")),
+      base::JSONReader::Read(R"([{"data": "hello", "lastMessage": true}])")
+          .value()
+          .TakeList(),
       profile());
 
   EarlyWorkerMessageSender sender(profile(), kId, std::move(event));
@@ -1270,17 +1330,20 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
   // The service worker it registers tries to call getBackgroundClient() and
   // should fail.
   // Note that this also tests that service workers can be registered from tabs.
-  EXPECT_TRUE(RunExtensionSubtest("service_worker/no_background", "page.html"));
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "service_worker/no_background", .page_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
-  EXPECT_TRUE(RunExtensionSubtest("service_worker/notifications/has_permission",
-                                  "page.html"));
+  EXPECT_TRUE(
+      RunExtensionTest({.name = "service_worker/notifications/has_permission",
+                        .page_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
-  EXPECT_TRUE(RunExtensionSubtest(
-      "service_worker/web_accessible_resources/fetch/", "page.html"));
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "service_worker/web_accessible_resources/fetch/",
+       .page_url = "page.html"}));
 }
 
 // Tests that updating a packed extension with modified scripts works
@@ -1694,7 +1757,7 @@ class TestWorkerObserver : public content::ServiceWorkerContextObserver {
   base::RunLoop stopped_run_loop_;
   // Holds version id of an extension worker once OnVersionStartedRunning is
   // observed.
-  base::Optional<int64_t> running_version_id_;
+  absl::optional<int64_t> running_version_id_;
   content::ServiceWorkerContext* context_ = nullptr;
   GURL extension_url_;
 };
@@ -1717,10 +1780,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // Stop the service worker.
   {
     base::RunLoop run_loop;
-    content::ServiceWorkerContext* context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile())
-            ->GetServiceWorkerContext();
+    content::ServiceWorkerContext* context = browser()
+                                                 ->profile()
+                                                 ->GetDefaultStoragePartition()
+                                                 ->GetServiceWorkerContext();
     // The service worker is registered at the root scope.
     content::StopServiceWorkerForScope(context, extension->url(),
                                        run_loop.QuitClosure());
@@ -1985,7 +2048,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        WorkerStartFailureClearsPendingTasks) {
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+      browser()->profile()->GetDefaultStoragePartition();
   content::ServiceWorkerContext* context =
       storage_partition->GetServiceWorkerContext();
 
@@ -2064,7 +2127,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ASSERT_TRUE(extension);
   EXPECT_TRUE(activated_listener.WaitUntilSatisfied());
 
-  base::Optional<WorkerId> worker_id =
+  absl::optional<WorkerId> worker_id =
       GetUniqueRunningWorkerId(extension->id());
   ASSERT_TRUE(worker_id);
   {
@@ -2073,8 +2136,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
     // once //content API allows to override test timeouts for Service Workers.
     base::RunLoop run_loop;
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        browser()->profile()->GetDefaultStoragePartition();
     GURL scope = extension->url();
     content::StopServiceWorkerForScope(
         storage_partition->GetServiceWorkerContext(),
@@ -2097,7 +2159,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ASSERT_TRUE(extension);
   EXPECT_TRUE(activated_listener.WaitUntilSatisfied());
 
-  base::Optional<WorkerId> worker_id =
+  absl::optional<WorkerId> worker_id =
       GetUniqueRunningWorkerId(extension->id());
   ASSERT_TRUE(worker_id);
   {
@@ -2342,7 +2404,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTestWithNotification,
     ASSERT_EQ(1u, notifications.size());
     display_service_tester_->SimulateClick(
         NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
-        base::nullopt, base::nullopt);
+        absl::nullopt, absl::nullopt);
   }
 
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
@@ -2396,7 +2458,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
                            const std::string& expected_message)
         : expected_message_(base::UTF8ToUTF16(expected_message)) {
       content::StoragePartition* partition =
-          content::BrowserContext::GetDefaultStoragePartition(browser_context);
+          browser_context->GetDefaultStoragePartition();
       scoped_observation_.Observe(partition->GetServiceWorkerContext());
     }
     ~ConsoleMessageObserver() override = default;

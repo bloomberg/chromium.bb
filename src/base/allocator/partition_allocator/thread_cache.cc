@@ -7,11 +7,15 @@
 #include <sys/types.h>
 #include <algorithm>
 #include <atomic>
-#include <vector>
 
-#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_root.h"
+#include "base/base_export.h"
+#include "base/dcheck_is_on.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -50,6 +54,7 @@ static bool g_thread_cache_key_created = false;
 constexpr base::TimeDelta ThreadCacheRegistry::kMinPurgeInterval;
 constexpr base::TimeDelta ThreadCacheRegistry::kMaxPurgeInterval;
 constexpr base::TimeDelta ThreadCacheRegistry::kDefaultPurgeInterval;
+constexpr size_t ThreadCacheRegistry::kMinCachedMemoryForPurging;
 uint8_t ThreadCache::global_limits_[ThreadCache::kBucketCount];
 
 // Start with the normal size, not the maximum one.
@@ -214,6 +219,7 @@ void ThreadCacheRegistry::PostDelayedPurgeTask() {
 }
 
 void ThreadCacheRegistry::PeriodicPurge() {
+  TRACE_EVENT0("memory", "PeriodicPurge");
   // To stop periodic purge for testing.
   if (!periodic_purge_running_)
     return;
@@ -224,7 +230,7 @@ void ThreadCacheRegistry::PeriodicPurge() {
   //
   // Since there is no synchronization with other threads, the value is stale,
   // which is fine.
-  uint64_t all_allocations_approx = 0;
+  size_t cached_memory_approx = 0;
   {
     PartitionAutoLock scoped_locker(GetLock());
     ThreadCache* tcache = list_head_;
@@ -235,40 +241,36 @@ void ThreadCacheRegistry::PeriodicPurge() {
       return;
 
     while (tcache) {
-      all_allocations_approx += tcache->allocations_;
+      cached_memory_approx += tcache->cached_memory_;
       tcache = tcache->next_;
     }
   }
 
-  uint64_t allocations_since_last_purge =
-      all_allocations_approx - allocations_at_last_purge_;
-
-  // If there were not enough allocations since the last purge, back off. On the
-  // other hand, if there were many allocations, make purge more frequent, but
-  // always in a set frequency range.
+  // If cached memory is low, this means that either memory footprint is fine,
+  // or the process is mostly idle, and not allocating much since the last
+  // purge. In this case, back off. On the other hand, if there is a lot of
+  // cached memory, make purge more frequent, but always within a set frequency
+  // range.
   //
   // There is a potential drawback: a process that was idle for a long time and
   // suddenly becomes very active will take some time to go back to regularly
   // scheduled purge with a small enough interval. This is the case for instance
-  // of a renderer moving to foreground. To mitigate that, if the number of
-  // allocations since the last purge was very large, make a greater leap to
-  // faster purging.
-  if (allocations_since_last_purge > 10 * kMinAllocationsForPurging) {
+  // of a renderer moving to foreground. To mitigate that, if cached memory
+  // jumps is very large, make a greater leap to faster purging.
+  if (cached_memory_approx > 10 * kMinCachedMemoryForPurging) {
     purge_interval_ = std::min(kDefaultPurgeInterval, purge_interval_ / 2);
-  } else if (allocations_since_last_purge > 2 * kMinAllocationsForPurging) {
+  } else if (cached_memory_approx > 2 * kMinCachedMemoryForPurging) {
     purge_interval_ = std::max(kMinPurgeInterval, purge_interval_ / 2);
-  } else if (allocations_since_last_purge < kMinAllocationsForPurging) {
+  } else if (cached_memory_approx < kMinCachedMemoryForPurging) {
     purge_interval_ = std::min(kMaxPurgeInterval, purge_interval_ * 2);
   }
 
   PurgeAll();
 
-  allocations_at_last_purge_ = all_allocations_approx;
   PostDelayedPurgeTask();
 }
 
 void ThreadCacheRegistry::ResetForTesting() {
-  allocations_at_last_purge_ = 0;
   purge_interval_ = kDefaultPurgeInterval;
   periodic_purge_running_ = false;
 }
@@ -332,14 +334,16 @@ void ThreadCache::SetGlobalLimits(PartitionRoot<ThreadSafe>* root,
       value = initial_value;
     } else if (slot_size <= 256) {
       value = initial_value / 2;
-    } else {
+    } else if (slot_size <= 512) {
       value = initial_value / 4;
+    } else {
+      value = initial_value / 8;
     }
 
-    // Clamp the limit between two constraints:
-    // - Batch fill should fill at least 2 elements at a time.
-    // - |PutInBucket()| is called on a full bucket, which should not overflow.
-    constexpr uint8_t kMinLimit = 2 * kBatchFillRatio;
+    // Bare minimum so that malloc() / free() in a loop will not hit the central
+    // allocator each time.
+    constexpr uint8_t kMinLimit = 1;
+    // |PutInBucket()| is called on a full bucket, which should not overflow.
     constexpr uint8_t kMaxLimit = std::numeric_limits<uint8_t>::max() - 1;
     global_limits_[index] = std::max(kMinLimit, {std::min(value, {kMaxLimit})});
     PA_DCHECK(global_limits_[index] >= kMinLimit);
@@ -373,8 +377,9 @@ ThreadCache* ThreadCache::Create(PartitionRoot<internal::ThreadSafe>* root) {
   auto* bucket =
       root->buckets +
       PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(raw_size);
-  void* buffer = root->RawAlloc(bucket, PartitionAllocZeroFill, raw_size,
-                                &usable_size, &already_zeroed);
+  void* buffer =
+      root->RawAlloc(bucket, PartitionAllocZeroFill, raw_size,
+                     PartitionPageSize(), &usable_size, &already_zeroed);
   ThreadCache* tcache = new (buffer) ThreadCache(root);
 
   // This may allocate.
@@ -469,8 +474,14 @@ void ThreadCache::FillBucket(size_t bucket_index) {
   INCREMENT_COUNTER(stats_.batch_fill_count);
 
   Bucket& bucket = buckets_[bucket_index];
-  int count = bucket.limit.load(std::memory_order_relaxed) / kBatchFillRatio;
-  PA_DCHECK(count > 1);
+  // Some buckets may have a limit lower than |kBatchFillRatio|, but we still
+  // want to at least allocate a single slot, otherwise we wrongly return
+  // nullptr, which ends up deactivating the bucket.
+  //
+  // In these cases, we do not really batch bucket filling, but this is expected
+  // to be used for the largest buckets, where over-allocating is not advised.
+  int count = std::max(
+      1, bucket.limit.load(std::memory_order_relaxed) / kBatchFillRatio);
 
   size_t usable_size;
   bool is_already_zeroed;
@@ -478,6 +489,7 @@ void ThreadCache::FillBucket(size_t bucket_index) {
   PA_DCHECK(!root_->buckets[bucket_index].CanStoreRawSize());
   PA_DCHECK(!root_->buckets[bucket_index].is_direct_mapped());
 
+  size_t allocated_slots = 0;
   // Same as calling RawAlloc() |count| times, but acquires the lock only once.
   internal::ScopedGuard<internal::ThreadSafe> guard(root_->lock_);
   for (int i = 0; i < count; i++) {
@@ -493,8 +505,8 @@ void ThreadCache::FillBucket(size_t bucket_index) {
     void* ptr = root_->AllocFromBucket(
         &root_->buckets[bucket_index],
         PartitionAllocFastPathOrReturnNull | PartitionAllocReturnNull,
-        root_->buckets[bucket_index].slot_size /* raw_size */, &usable_size,
-        &is_already_zeroed);
+        root_->buckets[bucket_index].slot_size /* raw_size */,
+        PartitionPageSize(), &usable_size, &is_already_zeroed);
 
     // Either the previous allocation would require a slow path allocation, or
     // the central allocator is out of memory. If the bucket was filled with
@@ -504,8 +516,11 @@ void ThreadCache::FillBucket(size_t bucket_index) {
     if (!ptr)
       break;
 
+    allocated_slots++;
     PutInBucket(bucket, ptr);
   }
+
+  cached_memory_ += allocated_slots * bucket.slot_size;
 }
 
 void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
@@ -513,6 +528,7 @@ void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
   if (!bucket.count || bucket.count <= limit)
     return;
 
+  uint8_t count_before = bucket.count;
   if (limit == 0) {
     FreeAfter(bucket.freelist_head);
     bucket.freelist_head = nullptr;
@@ -529,6 +545,12 @@ void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
     head->SetNext(nullptr);
   }
   bucket.count = limit;
+  uint8_t count_after = bucket.count;
+  size_t freed_memory = (count_before - count_after) * bucket.slot_size;
+  PA_DCHECK(cached_memory_ >= freed_memory);
+  cached_memory_ -= freed_memory;
+
+  PA_DCHECK(cached_memory_ == CachedMemory());
 }
 
 void ThreadCache::FreeAfter(PartitionFreelistEntry* head) {
@@ -544,8 +566,6 @@ void ThreadCache::FreeAfter(PartitionFreelistEntry* head) {
 }
 
 void ThreadCache::ResetForTesting() {
-  allocations_ = 0;
-
   stats_.alloc_count = 0;
   stats_.alloc_hits = 0;
   stats_.alloc_misses = 0;
@@ -563,7 +583,16 @@ void ThreadCache::ResetForTesting() {
   stats_.metadata_overhead = 0;
 
   Purge();
+  PA_CHECK(cached_memory_ == 0u);
   should_purge_.store(false, std::memory_order_relaxed);
+}
+
+size_t ThreadCache::CachedMemory() const {
+  size_t total = 0;
+  for (const Bucket& bucket : buckets_)
+    total += bucket.count * static_cast<size_t>(bucket.slot_size);
+
+  return total;
 }
 
 void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
@@ -587,10 +616,11 @@ void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
   }
 #endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
 
-  for (const Bucket& bucket : buckets_) {
-    stats->bucket_total_memory +=
-        bucket.count * static_cast<size_t>(bucket.slot_size);
-  }
+  // cached_memory_ is not necessarily equal to |CachedMemory()| here, since
+  // this function can be called racily from another thread, to collect
+  // statistics. Hence no DCHECK_EQ(CachedMemory(), cached_memory_).
+  stats->bucket_total_memory += cached_memory_;
+
   stats->metadata_overhead += sizeof(*this);
 }
 
@@ -601,6 +631,13 @@ void ThreadCache::SetShouldPurge() {
 void ThreadCache::Purge() {
   PA_REENTRANCY_GUARD(is_in_thread_cache_);
   PurgeInternal();
+}
+
+// static
+void ThreadCache::PurgeCurrentThread() {
+  auto* tcache = Get();
+  if (IsValid(tcache))
+    tcache->Purge();
 }
 
 void ThreadCache::PurgeInternal() {

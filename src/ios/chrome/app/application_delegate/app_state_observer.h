@@ -16,8 +16,21 @@ typedef NS_ENUM(NSUInteger, InitStage) {
   // The first stage when starting the initialization. The label and value of
   // this enum item should not change.
   InitStageStart = 0,
-  // The app is in safe mode.
+  // The app is starting the minimal basic browser services to support safe
+  // mode.
+  InitStageBrowserBasic,
+  // The app is considering whether safe mode should be used. The app will stay
+  // at the InitStageSafeMode stage if safe mode is needed, or will move to the
+  // next stage otherwise.
   InitStageSafeMode,
+  // The app is initializing the browser objects for the background handlers.
+  InitStageBrowserObjectsForBackgroundHandlers,
+  // The app is initializing the browser objects for the browser UI (e.g., the
+  // browser state).
+  InitStageBrowserObjectsForUI,
+  // The app is considering presenting the FRE UI. Will remain in that state
+  // when presenting the FRE.
+  InitStageFirstRun,
   // The final stage before being done with initialization. The label and
   // relative position (always last) of this enum item should not change.
   // The value may change when inserting enum items between Start and Final.
@@ -36,20 +49,19 @@ typedef NS_ENUM(NSUInteger, InitStage) {
 - (void)appState:(AppState*)appState
     firstSceneHasInitializedUI:(SceneState*)sceneState;
 
-// Called after the app exits safe mode.
-- (void)appStateDidExitSafeMode:(AppState*)appState;
-
 // Called when |AppState.lastTappedWindow| changes.
 - (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window;
 
-// Called when the app is about to transition to |initStage|. The init stage of
-// the app at that moment is still |initStage| - 1.
+// Called when the app is about to transition to |nextInitStage|. The init stage
+// of the app at that moment is still |nextInitStage| - 1.
 - (void)appState:(AppState*)appState
-    willTransitionToInitStage:(InitStage)initStage;
+    willTransitionToInitStage:(InitStage)nextInitStage;
 
-// Called right after the app is transitioned to the |initStage|.
+// Called right after the app is transitioned out of to the
+// |previousInitStage|. he init stage of the app at that
+// moment is |previousInitStage| + 1.
 - (void)appState:(AppState*)appState
-    didTransitionToInitStage:(InitStage)initStage;
+    didTransitionFromInitStage:(InitStage)previousInitStage;
 
 @end
 

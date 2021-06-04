@@ -119,7 +119,7 @@ class ExpandArrowHighlightPathGenerator : public views::HighlightPathGenerator {
       const ExpandArrowHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
-  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     return gfx::RRectF(gfx::RectF(GetCircleBounds()), kInkDropRadius);
   }
 };
@@ -141,9 +141,22 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   // TODO(pbos): Replace ::OnPaint focus painting with FocusRing +
   // HighlightPathGenerator usage.
   SetInstallFocusRingOnFocus(false);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<ExpandArrowHighlightPathGenerator>());
+  views::InkDrop::UseInkDropWithoutAutoHighlight(ink_drop(),
+                                                 /*highlight_on_hover=*/false);
+  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+      [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
+        const AppListColorProvider* color_provider =
+            AppListColorProvider::Get();
+        return std::make_unique<views::FloodFillInkDropRipple>(
+            host->size(), host->GetLocalBounds().InsetsFrom(GetCircleBounds()),
+            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            color_provider->GetRippleAttributesBaseColor(),
+            color_provider->GetRippleAttributesInkDropOpacity());
+      },
+      this));
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 
@@ -271,24 +284,6 @@ const char* ExpandArrowView::GetClassName() const {
   return "ExpandArrowView";
 }
 
-std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()
-    const {
-  const AppListColorProvider* color_provider = AppListColorProvider::Get();
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(GetCircleBounds()),
-      GetInkDropCenterBasedOnLastEvent(),
-      color_provider->GetRippleAttributesBaseColor(),
-      color_provider->GetRippleAttributesInkDropOpacity());
-}
-
 void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
   // There are two cycles in one animation.
   constexpr auto kAnimationDuration = kCycleDuration * 2 + kCycleInterval;
@@ -372,11 +367,12 @@ void ExpandArrowView::OnButtonPressed() {
   button_pressed_ = true;
   ResetHintingAnimation();
   TransitToFullscreenAllAppsState();
-  GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+  ink_drop()->GetInkDrop()->AnimateToState(
+      views::InkDropState::ACTION_TRIGGERED);
 }
 
 void ExpandArrowView::TransitToFullscreenAllAppsState() {
-  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram, AppListState::kStateApps,
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListPageOpened", AppListState::kStateApps,
                             AppListState::kStateLast);
   UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, kExpandArrow,
                             kMaxPeekingToFullscreen);

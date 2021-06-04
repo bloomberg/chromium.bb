@@ -16,7 +16,7 @@ declare_args() {
       is_win || is_linux || is_chromeos || is_android || is_apple || is_fuchsia
 }
 
-if (is_android && build_with_chromium) {
+if (is_android) {
   android_library("native_test_java") {
     testonly = true
     sources = [
@@ -164,6 +164,10 @@ angle_test("angle_unittests") {
     defines += [ "ANGLE_ENABLE_HLSL" ]
   }
 
+  if (angle_enable_gl) {
+    sources += angle_unittests_gl_sources
+  }
+
   deps = [
     ":angle_test_expectations",
     "$angle_root:angle_json_serializer",
@@ -197,6 +201,14 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
       frameworks = [
         "CoreFoundation.framework",
         "IOSurface.framework",
+      ]
+      ldflags = [
+        "-weak_framework",
+        "Metal",
+      ]
+      cflags_objcc = [
+        "-Wno-nullability-completeness",
+        "-Wno-unguarded-availability",
       ]
     }
     if (is_win) {
@@ -402,9 +414,7 @@ if (build_angle_perftests) {
       "${angle_root}:libGLESv2",
     ]
 
-    if (build_with_chromium) {
-      data_deps += [ "//testing:run_perf_test" ]
-    }
+    data_deps += [ "//testing:run_perf_test" ]
 
     if (is_win || is_linux || is_chromeos) {
       data_deps += [ "${angle_root}/third_party/glmark2:glmark2_angle" ]
@@ -515,7 +525,6 @@ if (build_angle_gles1_conform_tests) {
     public_deps = [
       "$angle_root:angle_common",
       "$angle_root:libEGL_static",
-      "$angle_root:libGLESv1_CM_static",
       "$angle_root:libGLESv2_static",
       "$angle_root:preprocessor",
       "$angle_root:translator",
@@ -669,7 +678,6 @@ if (build_angle_gles1_conform_tests) {
       public_deps = [
         "$angle_root:angle_common",
         "$angle_root:libEGL_static",
-        "$angle_root:libGLESv1_CM_static",
         "$angle_root:libGLESv2_static",
         "$angle_root:preprocessor",
         "$angle_root:translator",
@@ -747,7 +755,6 @@ if (build_angle_gles1_conform_tests) {
     public_deps = [
       "$angle_root:angle_common",
       "$angle_root:libEGL_static",
-      "$angle_root:libGLESv1_CM_static",
       "$angle_root:libGLESv2_static",
       "$angle_root:preprocessor",
       "$angle_root:translator",
@@ -817,7 +824,6 @@ if (build_angle_gles1_conform_tests) {
     public_deps = [
       "$angle_root:angle_common",
       "$angle_root:libEGL_static",
-      "$angle_root:libGLESv1_CM_static",
       "$angle_root:libGLESv2_static",
       "$angle_root:preprocessor",
       "$angle_root:translator",
@@ -914,9 +920,7 @@ if (build_angle_deqp_tests && !is_fuchsia) {
         "/wd4996",  # deprecated
       ]
     }
-    if (is_android) {
-      include_dirs += [ "$deqp_path/framework/platform/android" ]
-    }
+
     defines = [
       "DEQP_SUPPORT_GLES31=1",
       "DEQP_SUPPORT_GLES3=1",
@@ -931,6 +935,17 @@ if (build_angle_deqp_tests && !is_fuchsia) {
       "_MBCS",
       "ANGLE_DEQP_DATA_DIR=\"gen/vk_gl_cts_data/data\"",
     ]
+
+    if (is_android) {
+      include_dirs += [ "$deqp_path/framework/platform/android" ]
+
+      _android_api = android64_ndk_api_level
+      if (!angle_64bit_current_cpu) {
+        _android_api = android32_ndk_api_level
+      }
+
+      defines += [ "DE_ANDROID_API=" + "${_android_api}" ]
+    }
 
     if (is_clang) {
       # TODO(jmadill): Remove this once we fix dEQP.
@@ -1189,7 +1204,6 @@ if (build_angle_deqp_tests && !is_fuchsia) {
     ]
     sources = deqp_libtester_sources
     if (is_android) {
-      sources += deqp_libtester_sources_android
       libs = [ "log" ]
     }
   }

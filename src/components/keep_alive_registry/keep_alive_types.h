@@ -61,9 +61,13 @@ enum class KeepAliveOrigin {
   PROFILE_LOADER,
   USER_MANAGER_VIEW,
   CREDENTIAL_PROVIDER_SIGNIN_DIALOG,
+  WEB_APP_INTENT_PICKER,
 
   // c/b/web_applications
   APP_START_URL_MIGRATION,
+
+  // c/b/sessions
+  SESSION_DATA_DELETER,
 };
 
 // Restart: Allow Chrome to restart when all the registered KeepAlives allow

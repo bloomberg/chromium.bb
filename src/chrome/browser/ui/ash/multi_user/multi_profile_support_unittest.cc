@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -65,6 +66,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -300,8 +302,8 @@ void MultiProfileSupportTest::SetUp() {
   ash_test_helper()
       ->test_session_controller_client()
       ->set_use_lower_case_user_id(false);
-  profile_manager_.reset(
-      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  profile_manager_ = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager_.get()->SetUp());
   EnsureTestUser(AccountId::FromUserEmail("a"));
   EnsureTestUser(AccountId::FromUserEmail("b"));

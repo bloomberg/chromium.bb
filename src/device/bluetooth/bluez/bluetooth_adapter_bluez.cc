@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -613,12 +614,12 @@ void BluetoothAdapterBlueZ::ResetAdvertising(
 
 void BluetoothAdapterBlueZ::ConnectDevice(
     const std::string& address,
-    const base::Optional<device::BluetoothDevice::AddressType>& address_type,
+    const absl::optional<device::BluetoothDevice::AddressType>& address_type,
     ConnectDeviceCallback callback,
     ErrorCallback error_callback) {
   DCHECK(bluez::BluezDBusManager::Get());
 
-  base::Optional<BluetoothAdapterClient::AddressType> client_address_type;
+  absl::optional<BluetoothAdapterClient::AddressType> client_address_type;
   if (address_type) {
     switch (*address_type) {
       case device::BluetoothDevice::AddressType::ADDR_TYPE_PUBLIC:
@@ -2007,7 +2008,7 @@ void BluetoothAdapterBlueZ::UpdateDeviceBatteryLevelFromBatteryClient(
   // |properties| is null or properties->percentage is not valid, that means
   // BlueZ has removed the battery info from the device and we should clear our
   // value as well.
-  device->SetBatteryPercentage(base::nullopt);
+  device->SetBatteryPercentage(absl::nullopt);
 }
 
 }  // namespace bluez

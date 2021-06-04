@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/system/sys_info.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/delegated_ink_prediction_configuration.h"
@@ -34,11 +35,16 @@ const base::Feature kEnableOverlayPrioritization {
 #endif
 };
 
+const base::Feature kSimpleFrameRateThrottling{
+    "SimpleFrameRateThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer {
   "UseSkiaRenderer",
 #if defined(OS_WIN) || defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
     defined(OS_LINUX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#elif defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -60,16 +66,6 @@ const base::Feature kDynamicColorGamut{"DynamicColorGamut",
 // Uses glClear to composite solid color quads whenever possible.
 const base::Feature kFastSolidColorDraw{"FastSolidColorDraw",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Viz for WebView architecture.
-const base::Feature kVizForWebView{"VizForWebView",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-// We use this feature for default value, because enabled VizForWebView forces
-// skia renderer on and we want to have different feature state between webview
-// and chrome. This one is set by webview, while the above can be set via finch.
-const base::Feature kVizForWebViewDefault{"VizForWebViewDefault",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Submit CompositorFrame from SynchronousLayerTreeFrameSink directly to viz in
 // WebView.
@@ -99,7 +95,7 @@ const base::Feature kUseRealBuffersForPageFlipTest{
 #if defined(OS_FUCHSIA)
 // Enables SkiaOutputDeviceBufferQueue instead of Vulkan swapchain on Fuchsia.
 const base::Feature kUseSkiaOutputDeviceBufferQueue{
-    "UseSkiaOutputDeviceBufferQueue", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseSkiaOutputDeviceBufferQueue", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Whether we should log extra debug information to webrtc native log.
@@ -122,7 +118,7 @@ const base::Feature kUseX11Present{"UseX11Present",
 // Enables platform supported delegated ink trails instead of Skia backed
 // delegated ink trails.
 const base::Feature kUsePlatformDelegatedInk{"UsePlatformDelegatedInk",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to debug Android WebView Vulkan composite. Composite to an intermediate
 // buffer and draw the intermediate buffer to the secondary command buffer.
@@ -154,6 +150,10 @@ bool IsSyncWindowDestructionEnabled() {
   return base::FeatureList::IsEnabled(kSyncWindowDestruction);
 }
 
+bool IsSimpleFrameRateThrottlingEnabled() {
+  return base::FeatureList::IsEnabled(kSimpleFrameRateThrottling);
+}
+
 bool IsUsingSkiaRenderer() {
 #if defined(OS_ANDROID)
   // We don't support KitKat. Check for it before looking at the feature flag
@@ -162,10 +162,6 @@ bool IsUsingSkiaRenderer() {
       base::android::SDK_VERSION_KITKAT)
     return false;
 #endif
-
-  // Viz for webview requires SkiaRenderer.
-  if (IsUsingVizForWebView())
-    return true;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(https://crbug.com/1145180): SkiaRenderer isn't supported on Chrome
@@ -195,28 +191,8 @@ bool IsUsingFastPathForSolidColorQuad() {
   return base::FeatureList::IsEnabled(kFastSolidColorDraw);
 }
 
-bool IsUsingVizForWebView() {
-  // Vulkan on WebView requires viz.
-  if (features::IsUsingVulkan())
-    return true;
-
-  // If the feature is overridden from command line or finch we will use this
-  // value. If not we check for different state that is altered in
-  // aw_main_delegate.cc.
-  base::FeatureList* feature_list = base::FeatureList::GetInstance();
-  if (feature_list && feature_list->IsFeatureOverridden(kVizForWebView.name))
-    return base::FeatureList::IsEnabled(kVizForWebView);
-
-  return base::FeatureList::IsEnabled(kVizForWebViewDefault);
-}
-
 bool IsUsingVizFrameSubmissionForWebView() {
-  if (base::FeatureList::IsEnabled(kVizFrameSubmissionForWebView)) {
-    DCHECK(IsUsingVizForWebView())
-        << "kVizFrameSubmissionForWebView requires kVizForWebView";
-    return true;
-  }
-  return false;
+  return base::FeatureList::IsEnabled(kVizFrameSubmissionForWebView);
 }
 
 bool IsUsingPreferredIntervalForVideo() {
@@ -242,10 +218,10 @@ bool ShouldUseSetPresentDuration() {
 }
 #endif  // OS_WIN
 
-base::Optional<int> ShouldDrawPredictedInkPoints() {
+absl::optional<int> ShouldDrawPredictedInkPoints() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDrawPredictedInkPoint))
-    return base::nullopt;
+    return absl::nullopt;
 
   std::string predicted_points =
       command_line->GetSwitchValueASCII(switches::kDrawPredictedInkPoint);
@@ -259,7 +235,7 @@ base::Optional<int> ShouldDrawPredictedInkPoints() {
     return viz::PredictionConfig::k2Points3Ms;
 
   NOTREACHED();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool ShouldUsePlatformDelegatedInk() {

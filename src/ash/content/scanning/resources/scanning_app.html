@@ -191,7 +191,9 @@
           <template is="dom-if" if="[[!showDoneSection_]]">
             <scanner-select id="scannerSelect" scanners="[[scanners_]]"
                 disabled="[[settingsDisabled_]]"
-                selected-scanner-id="{{selectedScannerId}}"></scanner-select>
+                selected-scanner-id="{{selectedScannerId}}"
+                last-used-scanner-id="[[lastUsedScannerId_]]"
+                scanner-info-map="[[scannerInfoMap_]]"></scanner-select>
             <source-select id="sourceSelect" options="[[capabilities_.sources]]"
                 disabled="[[settingsDisabled_]]"
                 selected-option="{{selectedSource}}"></source-select>
@@ -205,8 +207,7 @@
                 selected-file-type="{{selectedFileType}}"></file-type-select>
             <div id="more-settings-line-separator"></div>
             <cr-button id="moreSettingsButton" on-click="toggleClicked_"
-                aria-expanded="[[opened_]]"
-                disabled="[[settingsDisabled_]]">
+                aria-expanded="[[opened_]]">
               <span>[[i18n('moreSettings')]]</span>
               <iron-icon icon="[[getArrowIcon_(opened_)]]">
               </iron-icon>

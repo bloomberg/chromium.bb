@@ -124,10 +124,10 @@ class ImmersiveModeControllerChromeosWebAppBrowserTest
       BrowserNonClientFrameViewChromeOS* frame_view) {
     WebAppFrameToolbarView* container =
         frame_view->web_app_frame_toolbar_for_testing();
-    views::test::InkDropHostViewTestApi ink_drop_api(
-        container->GetAppMenuButton());
+    views::test::InkDropHostTestApi ink_drop_api(
+        container->GetAppMenuButton()->ink_drop());
     EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
-    EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
+    EXPECT_EQ(views::InkDropHost::InkDropMode::ON,
               ink_drop_api.ink_drop_mode());
   }
 
@@ -368,10 +368,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerChromeosWebAppBrowserTest,
   // If the permission request is displayed using the chip UI, simulate a click
   // on the chip to trigger showing the prompt.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  PermissionChip* permission_chip =
-      browser_view->toolbar()->location_bar()->permission_chip();
-  if (permission_chip->GetVisible()) {
-    views::test::ButtonTestApi(permission_chip->button())
+  PermissionChip* chip = browser_view->toolbar()->location_bar()->chip();
+  if (chip) {
+    views::test::ButtonTestApi(chip->button())
         .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
                                     gfx::Point(), ui::EventTimeForNow(),
                                     ui::EF_LEFT_MOUSE_BUTTON, 0));

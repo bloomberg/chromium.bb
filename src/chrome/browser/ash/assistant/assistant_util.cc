@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/constants/devicetype.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -142,7 +143,7 @@ AssistantAllowedState IsAssistantAllowedForProfile(const Profile* profile) {
   if (profile->IsOffTheRecord())
     return AssistantAllowedState::DISALLOWED_BY_INCOGNITO;
 
-  if (chromeos::DemoSession::IsDeviceInDemoMode())
+  if (ash::DemoSession::IsDeviceInDemoMode())
     return AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
   if (!IsAssistantAllowedForUserType(profile))

@@ -12,18 +12,14 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "components/background_fetch/job_details.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/common/download_features.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -57,7 +53,7 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
   if (!base::FeatureList::IsEnabled(
           download::features::
               kUseInProgressDownloadManagerForDownloadService)) {
-    content::BrowserContext::GetDownloadManager(profile_);
+    profile_->GetDownloadManager();
   }
 }
 
@@ -76,8 +72,8 @@ void BackgroundFetchDelegateImpl::MarkJobComplete(const std::string& job_id) {
 
 void BackgroundFetchDelegateImpl::UpdateUI(
     const std::string& job_id,
-    const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {
+    const absl::optional<std::string>& title,
+    const absl::optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(title || icon);             // One of the UI options must be updatable.
   DCHECK(!icon || !icon->isNull());  // The |icon|, if provided, is not null.
@@ -152,7 +148,7 @@ void BackgroundFetchDelegateImpl::GetItemById(
     const offline_items_collection::ContentId& id,
     SingleItemCallback callback) {
   auto iter = ui_state_map_.find(id.id);
-  base::Optional<offline_items_collection::OfflineItem> offline_item;
+  absl::optional<offline_items_collection::OfflineItem> offline_item;
   if (iter != ui_state_map_.end())
     offline_item = iter->second.offline_item;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -214,39 +210,8 @@ void BackgroundFetchDelegateImpl::RenameItem(
 
 void BackgroundFetchDelegateImpl::ChangeSchedule(
     const offline_items_collection::ContentId& id,
-    base::Optional<offline_items_collection::OfflineItemSchedule> schedule) {
+    absl::optional<offline_items_collection::OfflineItemSchedule> schedule) {
   NOTIMPLEMENTED();
-}
-
-void BackgroundFetchDelegateImpl::GetPermissionForOriginWithoutWebContents(
-    const url::Origin& origin,
-    GetPermissionForOriginCallback callback) {
-  auto* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  DCHECK(host_content_settings_map);
-
-  // This is running from a non-top level frame, use the Automatic Downloads
-  // content setting.
-  ContentSetting content_setting = host_content_settings_map->GetContentSetting(
-      origin.GetURL(), origin.GetURL(),
-      ContentSettingsType::AUTOMATIC_DOWNLOADS);
-
-  // The set of valid settings for automatic downloads is set to
-  // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
-  switch (content_setting) {
-    case CONTENT_SETTING_ALLOW:
-    case CONTENT_SETTING_ASK:
-      std::move(callback).Run(content::BackgroundFetchPermission::ASK);
-      return;
-    case CONTENT_SETTING_BLOCK:
-      std::move(callback).Run(content::BackgroundFetchPermission::BLOCKED);
-      return;
-    case CONTENT_SETTING_DEFAULT:
-    case CONTENT_SETTING_SESSION_ONLY:
-    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
-    case CONTENT_SETTING_NUM_SETTINGS:
-      NOTREACHED();
-  }
 }
 
 download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
@@ -372,7 +337,7 @@ void BackgroundFetchDelegateImpl::
 
 void BackgroundFetchDelegateImpl::DidGetBackgroundSourceId(
     bool user_initiated_abort,
-    base::Optional<ukm::SourceId> source_id) {
+    absl::optional<ukm::SourceId> source_id) {
   // This background event did not meet the requirements for the UKM service.
   if (!source_id)
     return;

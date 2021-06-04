@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/ui/simple_web_view_dialog.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -32,12 +34,12 @@
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -133,7 +135,7 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
 SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
     : profile_(profile),
       bubble_model_delegate_(new StubBubbleModelDelegate) {
-  command_updater_.reset(new CommandUpdaterImpl(this));
+  command_updater_ = std::make_unique<CommandUpdaterImpl>(this);
   command_updater_->UpdateCommandEnabled(IDC_BACK, true);
   command_updater_->UpdateCommandEnabled(IDC_FORWARD, true);
   command_updater_->UpdateCommandEnabled(IDC_STOP, true);
@@ -179,8 +181,8 @@ void SimpleWebViewDialog::Init() {
   // Create the security state model that the location bar model needs.
   if (web_view_->GetWebContents())
     SecurityStateTabHelper::CreateForWebContents(web_view_->GetWebContents());
-  location_bar_model_.reset(
-      new LocationBarModelImpl(this, content::kMaxURLDisplayChars));
+  location_bar_model_ = std::make_unique<LocationBarModelImpl>(
+      this, content::kMaxURLDisplayChars);
 
   SetBackground(views::CreateSolidBackground(kDialogColor));
 

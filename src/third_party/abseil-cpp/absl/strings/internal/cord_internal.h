@@ -329,18 +329,17 @@ static constexpr cordz_info_t BigEndianByte(unsigned char value) {
 
 class InlineData {
  public:
+  // DefaultInitType forces the use of the default initialization constructor.
+  enum DefaultInitType { kDefaultInit };
+
   // kNullCordzInfo holds the big endian representation of intptr_t(1)
   // This is the 'null' / initial value of 'cordz_info'. The null value
   // is specifically big endian 1 as with 64-bit pointers, the last
   // byte of cordz_info overlaps with the last byte holding the tag.
   static constexpr cordz_info_t kNullCordzInfo = BigEndianByte(1);
 
-  // kFakeCordzInfo holds a 'fake', non-null cordz-info value we use to
-  // emulate the previous 'kProfiled' tag logic in 'set_profiled' until
-  // cord code is changed to store cordz_info values in InlineData.
-  static constexpr cordz_info_t kFakeCordzInfo = BigEndianByte(9);
-
   constexpr InlineData() : as_chars_{0} {}
+  explicit InlineData(DefaultInitType) {}
   explicit constexpr InlineData(CordRep* rep) : as_tree_(rep) {}
   explicit constexpr InlineData(absl::string_view chars)
       : as_chars_{
@@ -365,6 +364,16 @@ class InlineData {
   bool is_profiled() const {
     assert(is_tree());
     return as_tree_.cordz_info != kNullCordzInfo;
+  }
+
+  // Returns true if either of the provided instances hold a cordz_info value.
+  // This method is more efficient than the equivalent `data1.is_profiled() ||
+  // data2.is_profiled()`. Requires both arguments to hold a tree.
+  static bool is_either_profiled(const InlineData& data1,
+                                 const InlineData& data2) {
+    assert(data1.is_tree() && data2.is_tree());
+    return (data1.as_tree_.cordz_info | data2.as_tree_.cordz_info) !=
+           kNullCordzInfo;
   }
 
   // Returns the cordz_info sampling instance for this instance, or nullptr
@@ -452,13 +461,6 @@ class InlineData {
   void set_inline_size(size_t size) {
     ABSL_ASSERT(size <= kMaxInline);
     tag() = static_cast<char>(size << 1);
-  }
-
-  // Sets or unsets the 'is_profiled' state of this instance.
-  // Requires the current instance to hold a tree value.
-  void set_profiled(bool profiled) {
-    assert(is_tree());
-    as_tree_.cordz_info = profiled ? kFakeCordzInfo : kNullCordzInfo;
   }
 
  private:

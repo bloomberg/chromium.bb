@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/system_tray_test_api.h"
@@ -45,7 +46,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 
-namespace chromeos {
+namespace ash {
+
+// TODO(https://crbug.com/1164001): remove when migrated to ash::
+namespace extension_ime_util = ::chromeos::extension_ime_util;
 
 namespace {
 
@@ -152,7 +156,7 @@ class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
   // WelcomeScreenBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
+    command_line->AppendSwitch(switches::kSystemDevMode);
   }
 };
 
@@ -176,10 +180,11 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
 }
 
 // This is a minimal possible test for OOBE. It is used as reference test
-// for measurements during OOBE speedup work.
-// TODO(crbug.com/1058022): Remove after speedup work.
+// for measurements during OOBE speedup work. Also verifies OOBE.WebUI.LoadTime
+// metric.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, OobeStartupTime) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  histogram_tester_.ExpectTotalCount("OOBE.WebUI.LoadTime.FirstRun", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
@@ -461,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenSystemDevModeBrowserTest,
                        DebuggerModeTest) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ClickOnPath(
-      {"connect", "welcomeScreen", "enableDebuggingLink"});
+      {"connect", "welcomeScreen", "enableDebuggingButton"});
 
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"debugging", "removeProtectionDialog"})
@@ -645,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, Tablet) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   TtsExtensionEngine::GetInstance()->DisableBuiltInTTSEngineForTesting();
   test::ExecuteOobeJS(kSetAvailableVoices);
-  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  ShellTestApi().SetTabletModeEnabledForTest(true);
   test::SpeechMonitor monitor;
   GiveChromeVoxHintForTesting();
   monitor.ExpectSpeech(
@@ -794,8 +799,27 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, SkipToLoginForTesting) {
 IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, StatusTray) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   ASSERT_FALSE(IdleDetectionCancelledForTesting());
-  ash::SystemTrayTestApi::Create()->ShowBubble();
+  SystemTrayTestApi::Create()->ShowBubble();
   ASSERT_TRUE(IdleDetectionCancelledForTesting());
+}
+
+// Verifies that TTS output stops after the user has closed the dialog.
+IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, StopSpeechAfterClose) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  TtsExtensionEngine::GetInstance()->DisableBuiltInTTSEngineForTesting();
+  test::ExecuteOobeJS(kSetAvailableVoices);
+  const std::string set_is_speaking = R"(
+    chrome.tts.isSpeaking = function(callback) {
+      callback(true);
+    };)";
+  test::ExecuteOobeJS(set_is_speaking);
+  test::SpeechMonitor monitor;
+  GiveChromeVoxHintForTesting();
+  WaitForChromeVoxHintDialogToOpen();
+  test::OobeJS().ExpectAttributeEQ("open", kChromeVoxHintDialog, true);
+  int expected_stop_count = monitor.stop_count() + 1;
+  test::OobeJS().ClickOnPath(kDismissChromeVoxButton);
+  ASSERT_EQ(expected_stop_count, monitor.stop_count());
 }
 
 class WelcomeScreenInternationalChromeVoxHintTest
@@ -857,4 +881,4 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenInternationalChromeVoxHintTest,
   WaitForSpokenSuccessMetric();
 }
 
-}  // namespace chromeos
+}  // namespace ash

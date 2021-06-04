@@ -116,7 +116,7 @@ void SessionMetricsRecorder::WillStopSession(StopTrigger trigger) {
 
   // Reset |start_trigger_| since metrics recording of the current remoting
   // session has now completed.
-  start_trigger_ = base::nullopt;
+  start_trigger_ = absl::nullopt;
 }
 
 void SessionMetricsRecorder::OnPipelineMetadataChanged(
@@ -182,6 +182,10 @@ void SessionMetricsRecorder::RecordVideoPixelRateSupport(
 
 void SessionMetricsRecorder::RecordCompatibility(
     RemotingCompatibility compatibility) {
+  if (did_record_compatibility_) {
+    return;
+  }
+  did_record_compatibility_ = true;
   base::UmaHistogramEnumeration("Media.Remoting.Compatibility", compatibility);
 }
 

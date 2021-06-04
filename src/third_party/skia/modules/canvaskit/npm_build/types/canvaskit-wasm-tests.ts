@@ -330,6 +330,8 @@ function fontTests(CK: CanvasKit, face?: Typeface, paint?: Paint) {
     const widths = font.getGlyphWidths(glyphMalloc, paint);
     font.getGlyphWidths(someGlyphs, null, widths);
 
+    const sects = font.getGlyphIntercepts(ids, [10, 20], -60, -40);
+
     font.getScaleX();
     font.getSize();
     font.getSkewX();
@@ -512,6 +514,7 @@ function paragraphTests(CK: CanvasKit, p?: Paragraph) {
     const l = p.getWordBoundary(10); // $ExpectType URange
     p.layout(300);
     const m = p.getLineMetrics(); // $ExpectType LineMetrics[]
+    const n = CK.GlyphRunFlags.IsWhiteSpace === 1;
 }
 
 function paragraphBuilderTests(CK: CanvasKit, fontMgr?: FontMgr, paint?: Paint) {
@@ -532,6 +535,10 @@ function paragraphBuilderTests(CK: CanvasKit, fontMgr?: FontMgr, paint?: Paint) 
             heightMultiplier: 1.5,
             forceStrutHeight: true,
         },
+        disableHinting: true,
+        heightMultiplier: 2.5,
+        textDirection: CK.TextDirection.LTR,
+        textHeightBehavior: CK.TextHeightBehavior.DisableFirstAscent
     });
     const blueText = new CK.TextStyle({ // $ExpectType TextStyle
         backgroundColor: CK.Color(234, 208, 232), // light pink

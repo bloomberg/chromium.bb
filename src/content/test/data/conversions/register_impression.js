@@ -32,22 +32,37 @@ function createImpressionTagWithReportingAndExpiry(
     id, url, data, destination, report_origin, expiry) {
   let anchor = createImpressionTagWithTarget(
       id, url, data, destination, "_top");
-  anchor.setAttribute("reportingorigin", report_origin);
-  anchor.setAttribute("impressionexpiry", expiry);
+  anchor.setAttribute('attributionreportto', report_origin);
+  anchor.setAttribute('attributionexpiry', expiry);
 }
 
 function createImpressionTagWithReporting(
     id, url, data, destination, report_origin) {
   let anchor = createImpressionTagWithTarget(
       id, url, data, destination, "_top");
-  anchor.setAttribute("reportingorigin", report_origin);
+  anchor.setAttribute('attributionreportto', report_origin);
+}
+
+function createImpressionTagWithRegisterAttributionSource(
+    id, url, data, destination) {
+  let anchor = createImpressionTagWithTarget(
+      id, url, data, destination, "_top");
+  anchor.setAttribute("registerattributionsource", "");
+}
+
+function createImpressionTagWithReportingAndPriority(
+  id, url, data, destination, report_origin, priority) {
+  let anchor = createImpressionTagWithTarget(
+      id, url, data, destination, "_top");
+  anchor.setAttribute('attributionreportto', report_origin);
+  anchor.setAttribute("attributionsourcepriority", priority);
 }
 
 function createImpressionTagWithTarget(id, url, data, destination, target) {
   let anchor = document.createElement("a");
   anchor.href = url;
-  anchor.setAttribute("impressiondata", data);
-  anchor.setAttribute("conversiondestination", destination);
+  anchor.setAttribute('attributionsourceeventid', data);
+  anchor.setAttribute('attributiondestination', destination);
   anchor.setAttribute("target", target);
   anchor.width = 100;
   anchor.height = 100;

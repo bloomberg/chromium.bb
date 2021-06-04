@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_IME_INPUT_ENGINE_H_
 #define CHROMEOS_SERVICES_IME_INPUT_ENGINE_H_
 
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -20,13 +21,12 @@ class Engine;
 class InputEngineContext {
  public:
   explicit InputEngineContext(const std::string& ime);
+  InputEngineContext(const InputEngineContext&) = delete;
+  InputEngineContext& operator=(const InputEngineContext&) = delete;
   ~InputEngineContext();
 
   std::string ime_spec;
   std::unique_ptr<rulebased::Engine> engine;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputEngineContext);
 };
 
 // A basic implementation of InputEngine without using any decoder.
@@ -34,6 +34,8 @@ class InputEngineContext {
 class InputEngine : public mojom::InputChannel {
  public:
   InputEngine();
+  InputEngine(const InputEngine&) = delete;
+  InputEngine& operator=(const InputEngine&) = delete;
   ~InputEngine() override;
 
   // Binds the mojom::InputChannel interface to this object and returns true if
@@ -71,6 +73,11 @@ class InputEngine : public mojom::InputChannel {
   void DeleteSurroundingText(uint32_t num_bytes_before_cursor,
                              uint32_t num_bytes_after_cursor) override;
   void HandleAutocorrect(mojom::AutocorrectSpanPtr autocorrect_span) override;
+  void RequestSuggestions(mojom::SuggestionsRequestPtr request,
+                          RequestSuggestionsCallback callback) override;
+  void DisplaySuggestions(
+      const std::vector<TextSuggestion>& suggestions) override;
+  void RecordUkm(mojom::UkmEntryPtr entry) override;
 
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 
@@ -84,8 +91,6 @@ class InputEngine : public mojom::InputChannel {
 
   // Whether the AltRight key is held down or not. Only used for rule-based.
   bool isAltRightDown_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEngine);
 };
 
 }  // namespace ime

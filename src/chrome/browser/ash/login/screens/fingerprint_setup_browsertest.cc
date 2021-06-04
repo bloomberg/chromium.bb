@@ -15,11 +15,10 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using ::testing::ElementsAre;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::testing::ElementsAre;
 
 const test::UIPath kFingerprintScreen = {"fingerprint-setup"};
 const test::UIPath kStartPage = {"fingerprint-setup", "setupFingerprint"};
@@ -130,7 +129,7 @@ class FingerprintSetupTest : public OobeBaseTest {
 
  private:
   bool screen_exit_ = false;
-  base::Optional<Result> screen_result_;
+  absl::optional<Result> screen_result_;
   base::HistogramTester histogram_tester_;
   FingerprintSetupScreen::ScreenExitCallback original_callback_;
   base::RepeatingClosure screen_exit_callback_;
@@ -224,4 +223,4 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupCancel) {
                   static_cast<int>(UserAction::kSkipButtonClickedOnStart), 1)));
 }
 
-}  // namespace chromeos
+}  // namespace ash

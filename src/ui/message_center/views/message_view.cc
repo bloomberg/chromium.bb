@@ -10,6 +10,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -177,6 +178,8 @@ void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
 
 void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
   SetCornerRadius(top_radius, bottom_radius);
+  if (!GetWidget())
+    return;
   UpdateBackgroundPainter();
   SchedulePaint();
 }
@@ -328,7 +331,7 @@ void MessageView::AddedToWidget() {
 }
 
 void MessageView::OnThemeChanged() {
-  InkDropHostView::OnThemeChanged();
+  View::OnThemeChanged();
   UpdateBackgroundPainter();
 }
 

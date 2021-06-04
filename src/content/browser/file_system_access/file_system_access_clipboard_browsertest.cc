@@ -19,6 +19,7 @@
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/ui_base_features.h"
 
 namespace content {
@@ -32,6 +33,7 @@ class FileSystemAccessClipboardBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(embedded_test_server()->Start());
     features_.InitWithFeatures({features::kClipboardFilenames}, {});
+    ui::TestClipboard::CreateForCurrentThread();
     ContentBrowserTest::SetUp();
   }
 

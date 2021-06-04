@@ -50,7 +50,6 @@ public final class NavigationImpl extends INavigation.Stub {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-        NavigationImplJni.get().setJavaNavigation(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     public IClientNavigation getClientNavigation() {
@@ -244,6 +243,13 @@ public final class NavigationImpl extends INavigation.Stub {
         return mPage.getClientPage();
     }
 
+    @Override
+    public int getNavigationEntryOffset() {
+        StrictModeWorkaround.apply();
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().getNavigationEntryOffset(mNativeNavigationImpl);
+    }
+
     public void setIntentLaunched() {
         mIntentLaunched = true;
     }
@@ -292,7 +298,6 @@ public final class NavigationImpl extends INavigation.Stub {
 
     @NativeMethods
     interface Natives {
-        void setJavaNavigation(long nativeNavigationImpl, NavigationImpl caller);
         int getState(long nativeNavigationImpl);
         String getUri(long nativeNavigationImpl);
         String[] getRedirectChain(long nativeNavigationImpl);
@@ -316,5 +321,6 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isFormSubmission(long nativeNavigationImpl);
         String getReferrer(long nativeNavigationImpl);
         long getPage(long nativeNavigationImpl);
+        int getNavigationEntryOffset(long nativeNavigationImpl);
     }
 }

@@ -4,7 +4,7 @@ export function maxMipLevelCount({
   size,
   dimension = '2d',
 }: {
-  readonly size: GPUExtent3D;
+  readonly size: Readonly<GPUExtent3DDict> | readonly number[];
   readonly dimension?: GPUTextureDimension;
 }): number {
   const sizeDict = standardizeExtent3D(size);

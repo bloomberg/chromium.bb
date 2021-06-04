@@ -26,12 +26,15 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 
 #include <memory>
+
 #include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -115,16 +118,16 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
     attribs.xr_compatible = false;
   }
 
-  bool using_gpu_compositing;
+  Platform::GraphicsInfo graphics_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
       CreateWebGraphicsContext3DProvider(
-          host, attribs, Platform::kWebGL1ContextType, &using_gpu_compositing));
+          host, attribs, Platform::kWebGL1ContextType, &graphics_info));
   if (!ShouldCreateContext(context_provider.get()))
     return nullptr;
 
   WebGLRenderingContext* rendering_context =
       MakeGarbageCollected<WebGLRenderingContext>(
-          host, std::move(context_provider), using_gpu_compositing, attribs);
+          host, std::move(context_provider), graphics_info, attribs);
   if (!rendering_context->GetDrawingBuffer()) {
     host->HostDispatchEvent(
         WebGLContextEvent::Create(event_type_names::kWebglcontextcreationerror,
@@ -147,13 +150,26 @@ void WebGLRenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
 WebGLRenderingContext::WebGLRenderingContext(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-    bool using_gpu_compositing,
+    const Platform::GraphicsInfo& graphics_info,
     const CanvasContextCreationAttributesCore& requested_attributes)
     : WebGLRenderingContextBase(host,
                                 std::move(context_provider),
-                                using_gpu_compositing,
+                                graphics_info,
                                 requested_attributes,
                                 Platform::kWebGL1ContextType) {}
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+V8RenderingContext* WebGLRenderingContext::AsV8RenderingContext() {
+  return MakeGarbageCollected<V8RenderingContext>(this);
+}
+
+V8OffscreenRenderingContext*
+WebGLRenderingContext::AsV8OffscreenRenderingContext() {
+  return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void WebGLRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
@@ -164,6 +180,8 @@ void WebGLRenderingContext::SetOffscreenCanvasGetContextResult(
     OffscreenRenderingContext& result) {
   result.SetWebGLRenderingContext(this);
 }
+
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ImageBitmap* WebGLRenderingContext::TransferToImageBitmap(
     ScriptState* script_state) {

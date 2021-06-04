@@ -16,7 +16,6 @@
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -3048,14 +3047,15 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
                 host_impl->active_tree()->LayerById(child_layer_->id()));
         // We remove tilings pretty aggressively if they are not ideal. Add this
         // back in so that we can compare
-        // child_layer_impl->GetEnclosingRectInTargetSpace to the damage.
+        // child_layer_impl->GetEnclosingVisibleRectInTargetSpace to the damage.
         child_layer_impl->AddTilingUntilNextDraw(1.3f);
 
         EXPECT_EQ(gfx::Rect(26, 26), root_damage_rect);
-        EXPECT_EQ(child_layer_impl->GetEnclosingRectInTargetSpace(),
+        EXPECT_EQ(child_layer_impl->GetEnclosingVisibleRectInTargetSpace(),
                   root_damage_rect);
-        EXPECT_TRUE(child_layer_impl->GetEnclosingRectInTargetSpace().Contains(
-            gfx::Rect(child_layer_->bounds())));
+        EXPECT_TRUE(
+            child_layer_impl->GetEnclosingVisibleRectInTargetSpace().Contains(
+                gfx::Rect(child_layer_->bounds())));
         break;
       }
       default:
@@ -3356,7 +3356,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
   // ScrollCallbacks
   void DidScroll(ElementId element_id,
                  const gfx::ScrollOffset& scroll_offset,
-                 const base::Optional<TargetSnapAreaElementIds>&
+                 const absl::optional<TargetSnapAreaElementIds>&
                      snap_target_ids) override {
     last_scrolled_element_id_ = element_id;
     last_scrolled_offset_ = scroll_offset;
@@ -7997,10 +7997,10 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
       return;
     first_ = false;
 
-    image_ = DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)), false,
-                       SkIRect::MakeWH(400, 400), kNone_SkFilterQuality,
-                       SkMatrix::I(), PaintImage::kDefaultFrameIndex,
-                       gfx::ColorSpace());
+    image_ =
+        DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)), false,
+                  SkIRect::MakeWH(400, 400), kNone_SkFilterQuality, SkM44(),
+                  PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
     auto callback = base::BindRepeating(
         &LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
         base::Unretained(this));
@@ -8927,7 +8927,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
     }
   }
 
-  void ExpectMetadata(base::Optional<DelegatedInkBrowserMetadata>
+  void ExpectMetadata(absl::optional<DelegatedInkBrowserMetadata>
                           browser_delegated_ink_metadata,
                       gfx::DelegatedInkMetadata* actual_metadata) {
     if (expected_metadata_.has_value()) {
@@ -8966,7 +8966,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
   }
 
  private:
-  base::Optional<gfx::DelegatedInkMetadata> expected_metadata_;
+  absl::optional<gfx::DelegatedInkMetadata> expected_metadata_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> layer_;
   bool set_needs_display_ = true;
@@ -9343,7 +9343,8 @@ class LayerTreeHostTestIgnoreEventsMetricsForNoUpdate
   State state_ = State::kWaitingForFirstFrameActivation;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestIgnoreEventsMetricsForNoUpdate);
+// TODO(crbug.com/1191878): Disabled because test is flaky on Linux and CrOS.
+// MULTI_THREAD_TEST_F(LayerTreeHostTestIgnoreEventsMetricsForNoUpdate);
 
 class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
  public:

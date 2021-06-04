@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -261,7 +262,7 @@ void TabsEventRouter::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 }
 
 void TabsEventRouter::TabGroupedStateChanged(
-    base::Optional<tab_groups::TabGroupId> group,
+    absl::optional<tab_groups::TabGroupId> group,
     content::WebContents* contents,
     int index) {
   std::set<std::string> changed_property_names;
@@ -290,7 +291,8 @@ void TabsEventRouter::OnZoomChanged(
       Profile::FromBrowserContext(data.web_contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_ZOOM_CHANGE,
                 api::tabs::OnZoomChange::kEventName,
-                api::tabs::OnZoomChange::Create(zoom_change_info),
+                std::make_unique<base::ListValue>(
+                    api::tabs::OnZoomChange::Create(zoom_change_info)),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -530,10 +532,9 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                    int index,
                                    bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  std::unique_ptr<base::ListValue> args(new base::ListValue);
   auto event = std::make_unique<Event>(events::TABS_ON_CREATED,
                                        api::tabs::OnCreated::kEventName,
-                                       std::move(args), profile);
+                                       std::vector<base::Value>(), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::BindRepeating(&WillDispatchTabCreatedEvent, contents, active);
@@ -582,7 +583,7 @@ void TabsEventRouter::DispatchEvent(
     return;
 
   auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(args), profile);
+                                       args->TakeList(), profile);
   event->user_gesture = user_gesture;
   event_router->BroadcastEvent(std::move(event));
 }
@@ -610,7 +611,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
 
   auto event = std::make_unique<Event>(events::TABS_ON_UPDATED,
                                        api::tabs::OnUpdated::kEventName,
-                                       std::move(args_base), profile);
+                                       args_base->TakeList(), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::BindRepeating(&WillDispatchTabUpdatedEvent, contents,

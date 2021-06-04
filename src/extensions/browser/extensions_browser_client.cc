@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extensions_browser_client.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "components/update_client/update_client.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
@@ -89,6 +90,9 @@ ExtensionsBrowserClient::GetSystemNetworkContext() {
 UserScriptListener* ExtensionsBrowserClient::GetUserScriptListener() {
   return nullptr;
 }
+
+void ExtensionsBrowserClient::SignalContentScriptsLoaded(
+    content::BrowserContext* context) {}
 
 std::string ExtensionsBrowserClient::GetUserAgent() const {
   return std::string();

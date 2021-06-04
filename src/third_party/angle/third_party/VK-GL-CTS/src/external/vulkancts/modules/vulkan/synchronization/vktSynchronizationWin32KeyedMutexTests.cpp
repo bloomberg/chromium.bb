@@ -45,9 +45,9 @@
 #	define NOMINMAX
 #	include <windows.h>
 #	include <aclapi.h>
-#	include "VersionHelpers.h"
-#	include "d3d11_2.h"
-#	include "d3dcompiler.h"
+#	include <versionhelpers.h>
+#	include <d3d11_2.h>
+#	include <d3dcompiler.h>
 
 typedef HRESULT				(WINAPI * LPD3DX11COMPILEFROMMEMORY)(LPCSTR,
 																 SIZE_T,
@@ -1123,7 +1123,8 @@ private:
 			PSID*	ppEveryoneSID	= (PSID*)((PBYTE)pSD + SECURITY_DESCRIPTOR_MIN_LENGTH);
 			PACL*	ppACL			= (PACL*)((PBYTE)ppEveryoneSID + sizeof(PSID*));
 
-			InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION);
+			bool res = InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION);
+			DE_ASSERT(res);
 
 			SID_IDENTIFIER_AUTHORITY	SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
 			AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, ppEveryoneSID);
@@ -1138,7 +1139,8 @@ private:
 
 			SetEntriesInAcl(1, &ea, NULL, ppACL);
 
-			SetSecurityDescriptorDacl(pSD, TRUE, *ppACL, FALSE);
+			res = SetSecurityDescriptorDacl(pSD, TRUE, *ppACL, FALSE);
+			DE_ASSERT(res);
 		}
 
 		return pSD;

@@ -45,6 +45,7 @@ class GPUSampler;
 class GPUSamplerDescriptor;
 class GPUShaderModule;
 class GPUShaderModuleDescriptor;
+class GPUSupportedFeatures;
 class GPUTexture;
 class GPUTextureDescriptor;
 class ScriptPromiseResolver;
@@ -66,12 +67,10 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   // gpu_device.idl
   GPUAdapter* adapter() const;
-  Vector<String> features() const;
-  Vector<String> extensions();
+  GPUSupportedFeatures* features() const;
   ScriptPromise lost(ScriptState* script_state);
 
   GPUQueue* queue();
-  GPUQueue* defaultQueue();
 
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
   GPUTexture* createTexture(const GPUTextureDescriptor* descriptor,
@@ -96,17 +95,12 @@ class GPUDevice final : public EventTargetWithInlineData,
       ScriptState* script_state,
       const GPURenderPipelineDescriptor* descriptor);
   GPUComputePipeline* createComputePipeline(
-      const GPUComputePipelineDescriptor* descriptor);
+      const GPUComputePipelineDescriptor* descriptor,
+      ExceptionState& exception_state);
   ScriptPromise createRenderPipelineAsync(
       ScriptState* script_state,
       const GPURenderPipelineDescriptor* descriptor);
   ScriptPromise createComputePipelineAsync(
-      ScriptState* script_state,
-      const GPUComputePipelineDescriptor* descriptor);
-  ScriptPromise createReadyRenderPipeline(
-      ScriptState* script_state,
-      const GPURenderPipelineDescriptor* descriptor);
-  ScriptPromise createReadyComputePipeline(
       ScriptState* script_state,
       const GPUComputePipelineDescriptor* descriptor);
 
@@ -151,7 +145,7 @@ class GPUDevice final : public EventTargetWithInlineData,
       const char* message);
 
   Member<GPUAdapter> adapter_;
-  Vector<String> feature_name_list_;
+  Member<GPUSupportedFeatures> features_;
   Member<GPUQueue> queue_;
   Member<LostProperty> lost_property_;
   std::unique_ptr<

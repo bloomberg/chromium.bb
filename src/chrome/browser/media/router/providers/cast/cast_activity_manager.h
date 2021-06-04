@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity.h"
@@ -25,6 +24,7 @@
 #include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 #include "url/origin.h"
 
@@ -123,7 +123,7 @@ class CastActivityManager : public CastActivityManagerBase,
   void OnSessionRemoved(const MediaSinkInternal& sink) override;
   void OnMediaStatusUpdated(const MediaSinkInternal& sink,
                             const base::Value& media_status,
-                            base::Optional<int> request_id) override;
+                            absl::optional<int> request_id) override;
 
   static void SetActitityFactoryForTest(CastActivityFactoryForTest* factory) {
     cast_activity_factory_for_test_ = factory;
@@ -175,7 +175,7 @@ class CastActivityManager : public CastActivityManagerBase,
         const MediaSinkInternal& sink,
         const url::Origin& origin,
         int tab_id,
-        const base::Optional<base::Value> app_params,
+        const absl::optional<base::Value> app_params,
         mojom::MediaRouteProvider::CreateRouteCallback callback);
     DoLaunchSessionParams(const DoLaunchSessionParams& other) = delete;
     DoLaunchSessionParams(DoLaunchSessionParams&& other);
@@ -199,7 +199,7 @@ class CastActivityManager : public CastActivityManagerBase,
     int tab_id;
 
     // The JSON object sent from the Cast SDK.
-    base::Optional<base::Value> app_params;
+    absl::optional<base::Value> app_params;
 
     // Callback to execute after the launch request has been sent.
     mojom::MediaRouteProvider::CreateRouteCallback callback;
@@ -230,14 +230,21 @@ class CastActivityManager : public CastActivityManagerBase,
                              const std::vector<MediaRoute>& routes);
 
   void HandleLaunchSessionResponse(
-      const MediaRoute::Id& route_id,
-      const MediaSinkInternal& sink,
-      const CastMediaSource& cast_source,
+      DoLaunchSessionParams params,
       cast_channel::LaunchSessionResponse response);
   void HandleStopSessionResponse(
       const MediaRoute::Id& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
+  void HandleLaunchSessionResponseFailures(
+      ActivityMap::iterator activity_it,
+      DoLaunchSessionParams params,
+      const std::string& message,
+      RouteRequestResult::ResultCode result_code);
+  void EnsureConnection(const std::string& client_id,
+                        int channel_id,
+                        const std::string& destination_id,
+                        const CastMediaSource& cast_source);
 
   AppActivity* FindActivityForAutoJoin(const CastMediaSource& cast_source,
                                        const url::Origin& origin,
@@ -268,8 +275,8 @@ class CastActivityManager : public CastActivityManagerBase,
                                      const CastSinkExtraData& cast_data);
 
   // Returns a sink used to convert a mirroring activity to a cast activity.
-  // If no conversion should occur, returns base::nullopt.
-  base::Optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
+  // If no conversion should occur, returns absl::nullopt.
+  absl::optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
 
   std::string ChooseAppId(const CastMediaSource& source,
                           const MediaSinkInternal& sink) const;
@@ -299,7 +306,7 @@ class CastActivityManager : public CastActivityManagerBase,
   // that the existing session on the receiver has been removed. We only store
   // one pending launch at a time so that we don't accumulate orphaned pending
   // launches over time.
-  base::Optional<DoLaunchSessionParams> pending_launch_;
+  absl::optional<DoLaunchSessionParams> pending_launch_;
 
   // The following raw pointer fields are assumed to outlive |this|.
   MediaSinkServiceBase* const media_sink_service_;

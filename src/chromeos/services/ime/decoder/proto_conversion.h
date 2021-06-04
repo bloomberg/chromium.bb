@@ -41,9 +41,25 @@ ime::PublicMessage OnSurroundingTextChangedToProto(
 // a proto.
 ime::PublicMessage OnCompositionCanceledToProto(uint64_t seq_id);
 
+// Converts a mojom::SuggestionsResponse to its equivalent proto.
+ime::PublicMessage SuggestionsResponseToProto(
+    uint64_t seq_id,
+    mojom::SuggestionsResponsePtr response);
+
 // Converts a proto to InputChannel::AutocorrectSpan.
 mojom::AutocorrectSpanPtr ProtoToAutocorrectSpan(
     const chromeos::ime::AutocorrectSpan& autocorrect_span);
+
+// Converts a proto to InputChannel::SuggestionsRequest
+mojom::SuggestionsRequestPtr ProtoToSuggestionsRequest(
+    const chromeos::ime::SuggestionsRequest& suggestions_request);
+
+// Converts a proto to a list of ime::TextSuggestion.
+std::vector<TextSuggestion> ProtoToTextSuggestions(
+    const chromeos::ime::DisplaySuggestions& display_suggestions);
+
+// Converts a proto to InputChannel::UkmEntry.
+mojom::UkmEntryPtr ProtoToUkmEntry(const RecordUkm& record_ukm);
 
 }  // namespace ime
 }  // namespace chromeos

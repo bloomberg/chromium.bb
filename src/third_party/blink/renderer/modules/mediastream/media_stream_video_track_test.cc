@@ -127,8 +127,8 @@ class MediaStreamVideoTrackTest
       const VideoTrackAdapterSettings& adapter_settings) {
     const bool enabled = true;
     WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, adapter_settings, base::Optional<bool>(), false, 0.0,
-        base::nullopt, base::nullopt, base::nullopt, false,
+        mock_source_, adapter_settings, absl::optional<bool>(), false, 0.0,
+        absl::nullopt, absl::nullopt, absl::nullopt, false,
         WebPlatformMediaStreamSource::ConstraintsOnceCallback(), enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
@@ -639,7 +639,8 @@ TEST_F(MediaStreamVideoTrackRefreshFrameTimerTest,
 
   Persistent<MediaStreamComponent> media_stream_component = *track;
   blink::MediaStreamVideoWebRtcSink webrtc_sink(
-      media_stream_component, new blink::MockPeerConnectionDependencyFactory(),
+      media_stream_component,
+      MakeGarbageCollected<MockPeerConnectionDependencyFactory>(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_EQ(webrtc_sink.GetRequiredMinFramesPerSec(), 1);
 
@@ -666,7 +667,8 @@ TEST_F(MediaStreamVideoTrackRefreshFrameTimerTest,
   // Second sink.
   Persistent<MediaStreamComponent> media_stream_component = *track;
   blink::MediaStreamVideoWebRtcSink webrtc_sink(
-      media_stream_component, new blink::MockPeerConnectionDependencyFactory(),
+      media_stream_component,
+      MakeGarbageCollected<MockPeerConnectionDependencyFactory>(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_EQ(webrtc_sink.GetRequiredMinFramesPerSec(), 1);
 
@@ -696,7 +698,7 @@ TEST_F(MediaStreamVideoTrackRefreshFrameTimerTest,
     Persistent<MediaStreamComponent> media_stream_component = *track;
     blink::MediaStreamVideoWebRtcSink webrtc_sink(
         media_stream_component,
-        new blink::MockPeerConnectionDependencyFactory(),
+        MakeGarbageCollected<MockPeerConnectionDependencyFactory>(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     EXPECT_EQ(webrtc_sink.GetRequiredMinFramesPerSec(), 1);
   }

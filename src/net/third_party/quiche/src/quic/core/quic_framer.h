@@ -634,6 +634,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   Perspective perspective() const { return perspective_; }
 
+  QuicStreamFrameDataProducer* data_producer() const { return data_producer_; }
+
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
   }
@@ -712,10 +714,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   void set_drop_incoming_retry_packets(bool drop_incoming_retry_packets) {
     drop_incoming_retry_packets_ = drop_incoming_retry_packets;
-  }
-
-  bool do_not_synthesize_source_cid_for_short_header() const {
-    return do_not_synthesize_source_cid_for_short_header_;
   }
 
  private:
@@ -1173,14 +1171,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Indicates whether received RETRY packets should be dropped.
   bool drop_incoming_retry_packets_ = false;
-
-  bool reject_unexpected_ietf_frame_types_ =
-      GetQuicReloadableFlag(quic_reject_unexpected_ietf_frame_types);
-
-  // Indicates whether source connection ID should be synthesized when read
-  // short header packet.
-  const bool do_not_synthesize_source_cid_for_short_header_ =
-      GetQuicReloadableFlag(quic_do_not_synthesize_source_cid_for_short_header);
 
   // The length in bytes of the last packet number written to an IETF-framed
   // packet.

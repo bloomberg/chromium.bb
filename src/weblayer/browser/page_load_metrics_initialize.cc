@@ -17,7 +17,7 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "weblayer/browser/heavy_ad_service_factory.h"
 #include "weblayer/browser/i18n_util.h"
-#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
+#include "weblayer/browser/no_state_prefetch/no_state_prefetch_utils.h"
 #include "weblayer/browser/page_load_metrics_observer_impl.h"
 #include "weblayer/browser/weblayer_page_load_metrics_memory_tracker_factory.h"
 
@@ -47,7 +47,7 @@ class PageLoadMetricsEmbedder
 
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   bool IsNewTabPageUrl(const GURL& url) override { return false; }
-  bool IsPrerender(content::WebContents* web_contents) override {
+  bool IsNoStatePrefetch(content::WebContents* web_contents) override {
     return NoStatePrefetchContentsFromWebContents(web_contents);
   }
   bool IsExtensionUrl(const GURL& url) override { return false; }
@@ -67,7 +67,7 @@ class PageLoadMetricsEmbedder
       page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<PageLoadMetricsObserverImpl>());
 
-    if (!IsPrerendering()) {
+    if (!IsNoStatePrefetch(web_contents())) {
       std::unique_ptr<page_load_metrics::AdsPageLoadMetricsObserver>
           ads_observer =
               page_load_metrics::AdsPageLoadMetricsObserver::CreateIfNeeded(
@@ -81,9 +81,6 @@ class PageLoadMetricsEmbedder
 
     if (g_callback_for_testing)
       (*g_callback_for_testing).Run(tracker);
-  }
-  bool IsPrerendering() const override {
-    return NoStatePrefetchContentsFromWebContents(web_contents());
   }
 };
 

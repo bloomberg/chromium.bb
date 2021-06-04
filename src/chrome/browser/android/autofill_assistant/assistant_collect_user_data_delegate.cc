@@ -71,14 +71,14 @@ void AssistantCollectUserDataDelegate::OnCreditCardChanged(
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& jcard,
     const base::android::JavaParamRef<jobject>& jbilling_profile) {
-  std::unique_ptr<autofill::CreditCard> card = nullptr;
+  std::unique_ptr<autofill::CreditCard> card;
   if (jcard) {
     card = std::make_unique<autofill::CreditCard>();
     autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
         jcard, env, card.get());
   }
 
-  std::unique_ptr<autofill::AutofillProfile> billing_profile = nullptr;
+  std::unique_ptr<autofill::AutofillProfile> billing_profile;
   if (jbilling_profile) {
     billing_profile = std::make_unique<autofill::AutofillProfile>();
     autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
@@ -180,10 +180,11 @@ void AssistantCollectUserDataDelegate::OnKeyValueChanged(
       ui_controller_android_utils::ToNativeValue(env, jvalue));
 }
 
-void AssistantCollectUserDataDelegate::OnTextFocusLost(
+void AssistantCollectUserDataDelegate::OnInputTextFocusChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_controller_->OnTextFocusLost();
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean jis_focused) {
+  ui_controller_->OnInputTextFocusChanged(jis_focused);
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

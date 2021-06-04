@@ -5,13 +5,11 @@
 #ifndef APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
 #define APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
 
-#include <string>
-
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace extensions {

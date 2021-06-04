@@ -98,14 +98,7 @@ class SubresourceRedirectLoggedInSitesBrowserTest
   base::HistogramTester histogram_tester_;
 };
 
-// Enable tests for linux since LiteMode is enabled only for Android.
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
-
-// TODO(crbug.com/1166280): Enable the test after fixing the flake.
+// TODO(crbug.com/1187754): Enable the test after fixing the flake.
 // Verify that when image load gets canceled due to subsequent page load, the
 // subresource redirect for the image is canceled as well.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectLoggedInSitesBrowserTest,
@@ -143,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectLoggedInSitesBrowserTest,
   image_compression_server_.VerifyRequestedImagePaths({});
 }
 
-// TODO(crbug.com/1166280): Enable the test after fixing the flake.
+// TODO(crbug.com/1187754): Enable the test after fixing the flake.
 // Verify that when image load gets canceled due to subsequent navigation to a
 // logged-in page, the subresource redirect for the image is disabled as well.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectLoggedInSitesBrowserTest,

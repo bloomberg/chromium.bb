@@ -64,8 +64,6 @@ struct PassesSharedState {
 
   ColorCorrelationMap cmap;
 
-  OpsinParams opsin_params;
-
   ImageFeatures image_features;
 
   // Memory area for storing coefficient orders.
@@ -92,7 +90,7 @@ struct PassesSharedState {
     // now, as they are stored in a vector and thus may be moved. Fix this.
     ImageBundle* JXL_RESTRICT frame = &storage;
     // ImageBundle doesn't yet have a simple way to state it is in XYB.
-    bool ib_is_in_xyb = true;
+    bool ib_is_in_xyb = false;
   } reference_frames[4] = {};
 
   // Number of pre-clustered set of histograms (with the same ctx map), per

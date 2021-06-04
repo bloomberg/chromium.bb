@@ -13,7 +13,6 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
@@ -35,6 +34,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
 #include "base/task/thread_pool/task_tracker_posix.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
 #if defined(OS_WIN)
@@ -115,7 +115,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // immediate, nullopt if none). This is thread-safe, i.e., it's safe if tasks
   // are being posted in parallel with this call but such a situation obviously
   // results in a race as to whether this call will see the new tasks in time.
-  Optional<TimeTicks> NextScheduledRunTimeForTesting() const;
+  absl::optional<TimeTicks> NextScheduledRunTimeForTesting() const;
 
   // Forces ripe delayed tasks to be posted (e.g. when time is mocked and
   // advances faster than the real-time delay on ServiceThread).
@@ -132,11 +132,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // Invoked after |num_fences_| or |num_best_effort_fences_| is updated. Sets
   // the CanRunPolicy in TaskTracker and wakes up workers as appropriate.
   void UpdateCanRunPolicy();
-
-  // Verifies that |traits| do not have properties that are banned in ThreadPool
-  // and returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
-  // |all_tasks_user_blocking_| is set.
-  TaskTraits VerifyAndAjustIncomingTraits(TaskTraits traits) const;
 
   const ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) const;
 
@@ -157,14 +152,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   ServiceThread service_thread_;
   DelayedTaskManager delayed_task_manager_;
   PooledSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
-
-  // Indicates that all tasks are handled as if they had been posted with
-  // TaskPriority::USER_BLOCKING. Since this is set in Start(), it doesn't apply
-  // to tasks posted before Start() or to tasks posted to TaskRunners created
-  // before Start().
-  //
-  // TODO(fdoray): Remove after experiment. https://crbug.com/757022
-  AtomicFlag all_tasks_user_blocking_;
 
   std::unique_ptr<ThreadGroup> foreground_thread_group_;
   std::unique_ptr<ThreadGroup> background_thread_group_;

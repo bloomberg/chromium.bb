@@ -138,7 +138,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.ExternalApplicationOpened" enum="ExternalLauncherOption"
-    expires_after="2021-08-01">
+    expires_after="2021-10-31">
   <owner>mrefaat@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -149,6 +149,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Tab.HorizontalSizeClassUsed" enum="iOSSizeClassForReporting"
     expires_after="M77">
+  <obsolete>
+    Obsolete in M92. Replaced by IOS.MultiWindow.Configuration.
+  </obsolete>
   <owner>pkl@chromium.org</owner>
   <summary>
     [iOS] Used on iOS 9+ iPad to report the usage of Compact or Regular
@@ -210,6 +213,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Tab.PageLoadInHorizontalSizeClass"
     enum="iOSSizeClassForReporting" expires_after="M77">
+  <obsolete>
+    Obsolete in M92. Wasn't being recorded correctly anyway.
+  </obsolete>
   <owner>pkl@chromium.org</owner>
   <summary>
     [iOS] Used on iOS 9+ iPad to report the usage of Compact or Regular
@@ -250,7 +256,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.MemoryUsage.CompressedData.PerThumbnailKiB"
-    units="KB" expires_after="2021-08-09">
+    units="KB" expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -260,7 +266,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.MemoryUsage.CompressedData.TotalKiB" units="KB"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -271,7 +277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToFirstUsableFrameAfterStartCapture"
-    units="ms" expires_after="2021-08-08">
+    units="ms" expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -281,7 +287,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToNotifyObserversAfterCaptureReceived"
-    units="microseconds" expires_after="2021-08-08">
+    units="microseconds" expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -295,7 +301,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToStoreAfterFrameReceived"
-    units="microseconds" expires_after="2021-08-08">
+    units="microseconds" expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -307,7 +313,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToStoreAfterTabSwitch" units="ms"
-    expires_after="2021-08-08">
+    expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -318,7 +324,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Preview.VideoCaptureDuration" units="ms"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -437,9 +443,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Screenshot.Action" enum="TabScreenshotAction"
-    expires_after="2021-08-24">
-  <owner>ramyan@chromium.org</owner>
-  <owner>cyflee@chromium.org</owner>
+    expires_after="2021-10-24">
+  <owner>skare@chromium.org</owner>
   <summary>
     Records actions taken after one or more screenshots of a page were taken.
     This will not be recorded if Chromium is killed before leaving the page. If
@@ -450,9 +455,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.Screenshot.ScreenshotsPerPage" units="screenshots"
-    expires_after="2021-08-24">
-  <owner>ramyan@chromium.org</owner>
-  <owner>cyflee@chromium.org</owner>
+    expires_after="2021-10-25">
+  <owner>skare@chromium.org</owner>
   <summary>
     Records the number of screenshots taken of a specific page. It is recorded
     when the user navigates away from this page or the tab is destroyed. This
@@ -461,7 +465,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tab.StateAtRendererTermination" enum="TabForegroundState"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>gambard@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -598,7 +602,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.CollapsedGroupCountPerLoad" units="groups"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -628,7 +632,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.SessionsPerGroup" units="sessions"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -686,7 +690,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.UserCustomizedGroupCountPerLoad" units="groups"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -697,7 +701,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.UserGroupCount" units="groups"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -707,7 +711,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.UserGroupCountPerLoad" units="groups"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -718,7 +722,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabGroups.UserNamedGroupCount" units="groups"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -1380,7 +1384,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabManager.TimeSinceTabClosedUntilRestored" units="ms"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>aebacanu@chromium.org</owner>
   <owner>carlscab@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -1440,7 +1444,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Tabs.CountAtStartup" units="tabs" expires_after="2021-08-09">
+<histogram name="Tabs.CountAtStartup" units="tabs" expires_after="2021-10-10">
   <owner>marq@chromium.org</owner>
   <summary>[Android and iOS] The number of tabs open at cold launch.</summary>
 </histogram>
@@ -1922,7 +1926,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Tabs.ScrubDistance" units="tabs" expires_after="2021-08-22">
+<histogram name="Tabs.ScrubDistance" units="tabs" expires_after="2021-10-25">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -2245,7 +2249,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.CloseAction" enum="TabSearchCloseActions"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2261,7 +2265,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.NumTabsClosedPerInstance" units="tabs"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2274,7 +2278,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.NumTabsOnOpen" units="tabs"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2285,7 +2289,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.NumWindowsOnOpen" units="windows"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2368,7 +2372,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WebUI.LoadCompletedTime" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2379,7 +2383,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WebUI.LoadDocumentTime" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2389,7 +2393,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WebUI.TabListDataReceived" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <owner>yuhengh@chromium.org</owner>
@@ -2439,7 +2443,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WindowDisplayedDuration3" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -2462,7 +2466,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WindowTimeToShowCachedWebView" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <owner>yuhengh@chromium.org</owner>
@@ -2481,7 +2485,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.TabSearch.WindowTimeToShowUncachedWebView" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>tluk@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <owner>yuhengh@chromium.org</owner>
@@ -2788,7 +2792,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="BatteryState" variants="BatteryState"/>
 </histogram>
 
-<histogram name="Tabs.WindowWidth" units="DIPs" expires_after="2021-08-22">
+<histogram name="Tabs.WindowWidth" units="DIPs" expires_after="2021-10-25">
   <owner>collinbaker@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -2835,7 +2839,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="TabStrip.TabCountOnPageLoad" units="tabs"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -2846,7 +2850,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="TabStrip.TimeToSwitch" units="ms" expires_after="2021-09-12">
+<histogram name="TabStrip.TimeToCreateNewTabFromPress" units="ms"
+    expires_after="2021-11-14">
+  <owner>robliao@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    The amount of time from receiving a new tab button pressed to creating the
+    elements necessary to represent a new tab.
+  </summary>
+</histogram>
+
+<histogram name="TabStrip.TimeToSwitch" units="ms" expires_after="2021-11-14">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>

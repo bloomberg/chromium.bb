@@ -11,39 +11,6 @@
 namespace blink {
 
 template <>
-WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "uniform-buffer") {
-    return WGPUBindingType_UniformBuffer;
-  }
-  if (webgpu_enum == "storage-buffer") {
-    return WGPUBindingType_StorageBuffer;
-  }
-  if (webgpu_enum == "readonly-storage-buffer") {
-    return WGPUBindingType_ReadonlyStorageBuffer;
-  }
-  if (webgpu_enum == "sampler") {
-    return WGPUBindingType_Sampler;
-  }
-  if (webgpu_enum == "comparison-sampler") {
-    return WGPUBindingType_ComparisonSampler;
-  }
-  if (webgpu_enum == "sampled-texture") {
-    return WGPUBindingType_SampledTexture;
-  }
-  if (webgpu_enum == "multisampled-texture") {
-    return WGPUBindingType_MultisampledTexture;
-  }
-  if (webgpu_enum == "readonly-storage-texture") {
-    return WGPUBindingType_ReadonlyStorageTexture;
-  }
-  if (webgpu_enum == "writeonly-storage-texture") {
-    return WGPUBindingType_WriteonlyStorageTexture;
-  }
-  NOTREACHED();
-  return WGPUBindingType_Force32;
-}
-
-template <>
 WGPUBufferBindingType AsDawnEnum<WGPUBufferBindingType>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum == "uniform") {
@@ -532,11 +499,11 @@ WGPUBlendFactor AsDawnEnum<WGPUBlendFactor>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "one") {
     return WGPUBlendFactor_One;
   }
-  if (webgpu_enum == "src-color") {
-    return WGPUBlendFactor_SrcColor;
+  if (webgpu_enum == "src") {
+    return WGPUBlendFactor_Src;
   }
-  if (webgpu_enum == "one-minus-src-color") {
-    return WGPUBlendFactor_OneMinusSrcColor;
+  if (webgpu_enum == "one-minus-src") {
+    return WGPUBlendFactor_OneMinusSrc;
   }
   if (webgpu_enum == "src-alpha") {
     return WGPUBlendFactor_SrcAlpha;
@@ -544,11 +511,11 @@ WGPUBlendFactor AsDawnEnum<WGPUBlendFactor>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "one-minus-src-alpha") {
     return WGPUBlendFactor_OneMinusSrcAlpha;
   }
-  if (webgpu_enum == "dst-color") {
-    return WGPUBlendFactor_DstColor;
+  if (webgpu_enum == "dst") {
+    return WGPUBlendFactor_Dst;
   }
-  if (webgpu_enum == "one-minus-dst-color") {
-    return WGPUBlendFactor_OneMinusDstColor;
+  if (webgpu_enum == "one-minus-dst") {
+    return WGPUBlendFactor_OneMinusDst;
   }
   if (webgpu_enum == "dst-alpha") {
     return WGPUBlendFactor_DstAlpha;
@@ -558,6 +525,26 @@ WGPUBlendFactor AsDawnEnum<WGPUBlendFactor>(const WTF::String& webgpu_enum) {
   }
   if (webgpu_enum == "src-alpha-saturated") {
     return WGPUBlendFactor_SrcAlphaSaturated;
+  }
+  if (webgpu_enum == "constant") {
+    return WGPUBlendFactor_Constant;
+  }
+  if (webgpu_enum == "one-minus-constant") {
+    return WGPUBlendFactor_OneMinusConstant;
+  }
+
+  // Deprecated Formats
+  if (webgpu_enum == "src-color") {
+    return WGPUBlendFactor_SrcColor;
+  }
+  if (webgpu_enum == "one-minus-src-color") {
+    return WGPUBlendFactor_OneMinusSrcColor;
+  }
+  if (webgpu_enum == "dst-color") {
+    return WGPUBlendFactor_DstColor;
+  }
+  if (webgpu_enum == "one-minus-dst-color") {
+    return WGPUBlendFactor_OneMinusDstColor;
   }
   if (webgpu_enum == "blend-color") {
     return WGPUBlendFactor_BlendColor;
@@ -695,98 +682,6 @@ WGPUVertexFormat AsDawnEnum<WGPUVertexFormat>(const WTF::String& webgpu_enum) {
   }
   if (webgpu_enum == "sint32x4") {
     return WGPUVertexFormat_Sint32x4;
-  }
-
-  // Deprecated formats
-  if (webgpu_enum == "uchar2") {
-    return WGPUVertexFormat_UChar2;
-  }
-  if (webgpu_enum == "uchar4") {
-    return WGPUVertexFormat_UChar4;
-  }
-  if (webgpu_enum == "char2") {
-    return WGPUVertexFormat_Char2;
-  }
-  if (webgpu_enum == "char4") {
-    return WGPUVertexFormat_Char4;
-  }
-  if (webgpu_enum == "uchar2norm") {
-    return WGPUVertexFormat_UChar2Norm;
-  }
-  if (webgpu_enum == "uchar4norm") {
-    return WGPUVertexFormat_UChar4Norm;
-  }
-  if (webgpu_enum == "char2norm") {
-    return WGPUVertexFormat_Char2Norm;
-  }
-  if (webgpu_enum == "char4norm") {
-    return WGPUVertexFormat_Char4Norm;
-  }
-  if (webgpu_enum == "ushort2") {
-    return WGPUVertexFormat_UShort2;
-  }
-  if (webgpu_enum == "ushort4") {
-    return WGPUVertexFormat_UShort4;
-  }
-  if (webgpu_enum == "short2") {
-    return WGPUVertexFormat_Short2;
-  }
-  if (webgpu_enum == "short4") {
-    return WGPUVertexFormat_Short4;
-  }
-  if (webgpu_enum == "ushort2norm") {
-    return WGPUVertexFormat_UShort2Norm;
-  }
-  if (webgpu_enum == "ushort4norm") {
-    return WGPUVertexFormat_UShort4Norm;
-  }
-  if (webgpu_enum == "short2norm") {
-    return WGPUVertexFormat_Short2Norm;
-  }
-  if (webgpu_enum == "short4norm") {
-    return WGPUVertexFormat_Short4Norm;
-  }
-  if (webgpu_enum == "half2") {
-    return WGPUVertexFormat_Half2;
-  }
-  if (webgpu_enum == "half4") {
-    return WGPUVertexFormat_Half4;
-  }
-  if (webgpu_enum == "float") {
-    return WGPUVertexFormat_Float;
-  }
-  if (webgpu_enum == "float2") {
-    return WGPUVertexFormat_Float2;
-  }
-  if (webgpu_enum == "float3") {
-    return WGPUVertexFormat_Float3;
-  }
-  if (webgpu_enum == "float4") {
-    return WGPUVertexFormat_Float4;
-  }
-  if (webgpu_enum == "uint") {
-    return WGPUVertexFormat_UInt;
-  }
-  if (webgpu_enum == "uint2") {
-    return WGPUVertexFormat_UInt2;
-  }
-  if (webgpu_enum == "uint3") {
-    return WGPUVertexFormat_UInt3;
-  }
-  if (webgpu_enum == "uint4") {
-    return WGPUVertexFormat_UInt4;
-  }
-  if (webgpu_enum == "int") {
-    return WGPUVertexFormat_Int;
-  }
-  if (webgpu_enum == "int2") {
-    return WGPUVertexFormat_Int2;
-  }
-  if (webgpu_enum == "int3") {
-    return WGPUVertexFormat_Int3;
-  }
-  if (webgpu_enum == "int4") {
-    return WGPUVertexFormat_Int4;
   }
   NOTREACHED();
   return WGPUVertexFormat_Force32;

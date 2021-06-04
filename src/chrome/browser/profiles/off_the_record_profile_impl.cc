@@ -20,8 +20,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
-#include "chrome/browser/android/metrics/android_incognito_session_durations_service.h"
-#include "chrome/browser/android/metrics/android_incognito_session_durations_service_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -128,7 +126,7 @@ profile_metrics::BrowserProfileType ComputeOffTheRecordProfileType(
   if (*otr_profile_id != Profile::OTRProfileID::PrimaryID())
     return profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
 
-  switch (profile_metrics::GetBrowserContextType(parent_profile)) {
+  switch (profile_metrics::GetBrowserProfileType(parent_profile)) {
     case profile_metrics::BrowserProfileType::kRegular:
       return profile_metrics::BrowserProfileType::kIncognito;
 
@@ -169,17 +167,12 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
 
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
-  profile_metrics::SetBrowserContextType(
+  profile_metrics::SetBrowserProfileType(
       this, ComputeOffTheRecordProfileType(&otr_profile_id_, profile_));
 }
 
 void OffTheRecordProfileImpl::Init() {
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
-
-  // Must be done before CreateBrowserContextServices(), since some of them
-  // change behavior based on whether the provided context is a guest session.
-  set_is_guest_profile(profile_->IsGuestSession());
-  set_is_system_profile(profile_->IsSystemProfile());
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
@@ -219,7 +212,7 @@ void OffTheRecordProfileImpl::Init() {
   HeavyAdServiceFactory::GetForBrowserContext(this)->InitializeOffTheRecord();
 
   key_->SetProtoDatabaseProvider(
-      GetDefaultStoragePartition(this)->GetProtoDatabaseProvider());
+      GetDefaultStoragePartition()->GetProtoDatabaseProvider());
 
   if (IsIncognitoProfile())
     base::RecordAction(base::UserMetricsAction("IncognitoMode_Started"));
@@ -269,6 +262,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     base::UmaHistogramCounts1000(
         "Profile.Incognito.MainFrameNavigationsPerSession",
         main_frame_navigations_);
+
+    base::RecordAction(base::UserMetricsAction("IncognitoMode_Ended"));
   }
 }
 
@@ -412,10 +407,6 @@ const PrefService* OffTheRecordProfileImpl::GetPrefs() const {
   return prefs_.get();
 }
 
-PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
-  return prefs_.get();
-}
-
 DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
   return DownloadCoreServiceFactory::GetForBrowserContext(this)
       ->GetDownloadManagerDelegate();
@@ -445,8 +436,7 @@ OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 OffTheRecordProfileImpl::GetURLLoaderFactory() {
-  return GetDefaultStoragePartition(this)
-      ->GetURLLoaderFactoryForBrowserProcess();
+  return GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess();
 }
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
@@ -616,13 +606,12 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
       : OffTheRecordProfileImpl(real_profile, OTRProfileID::PrimaryID()) {
-    set_is_guest_profile(true);
-    profile_metrics::SetBrowserContextType(
+    profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kGuest);
   }
 
   void InitChromeOSPreferences() override {
-    chromeos_preferences_.reset(new chromeos::Preferences());
+    chromeos_preferences_ = std::make_unique<chromeos::Preferences>();
     chromeos_preferences_->Init(
         this, user_manager::UserManager::Get()->GetActiveUser());
   }
@@ -640,7 +629,7 @@ std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
   std::unique_ptr<OffTheRecordProfileImpl> profile;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (parent->IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
-    profile.reset(new GuestSessionProfile(parent));
+    profile = std::make_unique<GuestSessionProfile>(parent);
 #endif
   if (!profile)
     profile = std::make_unique<OffTheRecordProfileImpl>(parent, otr_profile_id);

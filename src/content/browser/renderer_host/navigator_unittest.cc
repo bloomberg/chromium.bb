@@ -20,7 +20,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
@@ -1225,7 +1224,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
     SiteInstanceDescriptor descriptor(
         UrlInfo::CreateForTesting(kUrlSameSiteAs1),
         SiteInstanceRelation::RELATED,
-        CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+        WebExposedIsolationInfo::CreateNonIsolated());
     scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(current_instance, converted_instance);
@@ -1239,7 +1238,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
     SiteInstanceDescriptor descriptor(
         UrlInfo::CreateForTesting(kUrlSameSiteAs2),
         SiteInstanceRelation::RELATED,
-        CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+        WebExposedIsolationInfo::CreateNonIsolated());
     related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // If kUrlSameSiteAs2 requires a dedicated process on this platform, this
     // should return a new instance, related to the current and set to the new
@@ -1265,7 +1264,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
     SiteInstanceDescriptor descriptor(
         UrlInfo::CreateForTesting(kUrlSameSiteAs1),
         SiteInstanceRelation::UNRELATED,
-        CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+        WebExposedIsolationInfo::CreateNonIsolated());
     scoped_refptr<SiteInstanceImpl> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // Should return a new instance, unrelated to the current one, set to the
@@ -1305,7 +1304,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
     SiteInstanceDescriptor descriptor(
         UrlInfo::CreateForTesting(kUrlSameSiteAs2),
         SiteInstanceRelation::UNRELATED,
-        CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+        WebExposedIsolationInfo::CreateNonIsolated());
     scoped_refptr<SiteInstanceImpl> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, related_instance.get());
     // Should return a new instance, unrelated to the current, set to the

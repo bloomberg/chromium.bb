@@ -353,7 +353,7 @@ static double time_to_decode_frame(const AV1_COMMON *const cm,
     if (spatial_layer_dimensions_present_flag) {
       assert(0 && "Spatial layer dimensions not supported yet.");
     } else {
-      const SequenceHeader *const seq_params = &cm->seq_params;
+      const SequenceHeader *const seq_params = cm->seq_params;
       const int max_frame_width = seq_params->max_frame_width;
       const int max_frame_height = seq_params->max_frame_height;
       luma_samples = max_frame_width * max_frame_height;
@@ -473,7 +473,7 @@ void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
   decoder_model->level = level;
 
   const AV1_COMMON *const cm = &cpi->common;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   decoder_model->bit_rate = get_max_bitrate(
       av1_level_defs + level, seq_params->tier[op_index], seq_params->profile);
 
@@ -690,7 +690,7 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
 void av1_init_level_info(AV1_COMP *cpi) {
   for (int op_index = 0; op_index < MAX_NUM_OPERATING_POINTS; ++op_index) {
     AV1LevelInfo *const this_level_info =
-        cpi->level_params.level_info[op_index];
+        cpi->ppi->level_params.level_info[op_index];
     if (!this_level_info) continue;
     memset(this_level_info, 0, sizeof(*this_level_info));
     AV1LevelSpec *const level_spec = &this_level_info->level_spec;
@@ -1048,7 +1048,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
   AV1_COMMON *const cm = &cpi->common;
-  const AV1LevelParams *const level_params = &cpi->level_params;
+  const AV1LevelParams *const level_params = &cpi->ppi->level_params;
 
   const int upscaled_width = cm->superres_upscaled_width;
   const int width = cm->width;
@@ -1057,7 +1057,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const int tile_rows = cm->tiles.rows;
   const int tiles = tile_cols * tile_rows;
   const int luma_pic_size = upscaled_width * height;
-  const int frame_header_count = level_params->frame_header_count;
+  const int frame_header_count = cpi->frame_header_count;
   const int show_frame = cm->show_frame;
   const int show_existing_frame = cm->show_existing_frame;
 
@@ -1075,7 +1075,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const BITSTREAM_PROFILE profile = seq_params->profile;
   const int is_still_picture = seq_params->still_picture;
   // update level_stats
@@ -1148,7 +1148,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       if (fail_id != TARGET_LEVEL_OK) {
         const int target_level_major = 2 + (target_level >> 2);
         const int target_level_minor = target_level & 3;
-        aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+        aom_internal_error(cm->error, AOM_CODEC_ERROR,
                            "Failed to encode to the target level %d_%d. %s",
                            target_level_major, target_level_minor,
                            level_fail_messages[fail_id]);

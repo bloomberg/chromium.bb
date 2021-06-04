@@ -6,9 +6,9 @@
 
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
-#include "weblayer/browser/infobar_service.h"
 
 #if defined(OS_ANDROID)
 #include "components/blocked_content/android/popup_blocked_infobar_delegate.h"
@@ -40,7 +40,7 @@ const GURL& PopupNavigationDelegateImpl::GetURL() {
 blocked_content::PopupNavigationDelegate::NavigateResult
 PopupNavigationDelegateImpl::NavigateWithGesture(
     const blink::mojom::WindowFeatures& window_features,
-    base::Optional<WindowOpenDisposition> updated_disposition) {
+    absl::optional<WindowOpenDisposition> updated_disposition) {
   // It's safe to mutate |params_| here because NavigateWithGesture() will only
   // be called once, and the user gesture value has already been saved in
   // |original_user_gesture_|.
@@ -59,7 +59,7 @@ void PopupNavigationDelegateImpl::OnPopupBlocked(
     int total_popups_blocked_on_page) {
 #if defined(OS_ANDROID)
   blocked_content::PopupBlockedInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents),
+      infobars::ContentInfoBarManager::FromWebContents(web_contents),
       total_popups_blocked_on_page,
       HostContentSettingsMapFactory::GetForBrowserContext(
           web_contents->GetBrowserContext()),

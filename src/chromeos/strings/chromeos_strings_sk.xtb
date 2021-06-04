@@ -70,7 +70,7 @@
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2461822463642141190">Aktuálna</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
-<translation id="2517472476991765520">Vyhľadať</translation>
+<translation id="2517472476991765520">Skenovať</translation>
 <translation id="2570743873672969996">Prebieha test <ph name="TEST_NAME" />...</translation>
 <translation id="2585245331261708204">Chrome OS – čo je nové</translation>
 <translation id="2620436844016719705">Systém</translation>
@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Položte dokument na skener a začnite výberom možnosti Skenovať</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2878387241690264070">Za <ph name="NUM_SECONDS" /> s sa batéria vybila o <ph name="RATE" /></translation>
+<translation id="2983662233540284543">Naučte sa od autora herného obsahu, získajte aplikácie na navrhovanie hier a viac</translation>
 <translation id="3008341117444806826">OBNOVIŤ</translation>
 <translation id="3009958530611748826">Vyberte priečinok na uloženie</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Overenie totožnosti</translation>
 <translation id="5154917547274118687">Pamäť</translation>
 <translation id="5168185087976003268">Stav batérie</translation>
+<translation id="5170568018924773124">Zobraziť v priečinku</translation>
+<translation id="519607504553633437">Navrhujte a vytvárajte vlastné hry</translation>
 <translation id="5212543919916444558">Na obrazovke nie je nič, s čím by som mohol pomôcť.
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
@@ -201,6 +204,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5275828089655680674">Znova spustiť postupy</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">verzia <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Presunúť okno na plochu</translation>
 <translation id="5315873049536339193">Identita</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5318334351163689047">Neúspešné žiadosti TCP</translation>
@@ -222,6 +226,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5669267381087807207">Aktivuje sa</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Rodina</translation>
+<translation id="5752751666635965375">Vytvorte si vlastnú hru</translation>
 <translation id="5760715441271661976">Stav portálu</translation>
 <translation id="5797428682393400134">PODARILO SA</translation>
 <translation id="5832805196449965646">Pridať osobu</translation>
@@ -294,6 +299,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7216409898977639127">Poskytovateľ mobilného pripojenia</translation>
 <translation id="7271040990581020067">Skener sa momentálne používa. Skúste to neskôr.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Sieťové zariadenia</translation>
 <translation id="7359657277149375382">Typ súboru</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8372477600026034341">Ďalší hostitelia</translation>
 <translation id="8395584934117017006">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje podnik</translation>
 <translation id="8398927464629426868">Rýchlosť, akou sa zariadenie momentálne nabíja či vybíja</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Názov poskytovateľa domácej siete</translation>
 <translation id="8475690821716466388">Sieť Wi‑Fi je zabezpečená slabým protokolom WEP PSK</translation>
 <translation id="8477551185774834963">Latencia servera DNS mierne prekračuje povolenú úroveň</translation>
@@ -351,6 +358,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8575298406870537639">Váš operátor môže túto možnosť vyžadovať na pripojenie k jeho sieti. Podrobnosti vám poskytne operátor.</translation>
 <translation id="8576249514688522074">Nespustené</translation>
 <translation id="8620617069779373398">Stav roamingu</translation>
+<translation id="8660881923941176839">libry</translation>
 <translation id="8675354002693747642">Predzdieľaný kľúč</translation>
 <translation id="871560550817059752">Nepodarilo sa – minul sa atrament</translation>
 <translation id="8723108084122415655">Nepredvolená sieť prekračuje úroveň latencie</translation>
@@ -366,6 +374,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8881098542468797602">Test bol úspešný</translation>
 <translation id="8898840733695078011">Sila signálu</translation>
 <translation id="8910721771319628100">Predvolená sieť prekračuje prah latencie</translation>
+<translation id="8918637186205009138">Zariadenie <ph name="DEVICE_TYPE" /> používateľa <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Nepodarilo sa – chýba zásobník</translation>
 <translation id="8928727111548978589">Nepodarilo sa – minul sa papier</translation>
 <translation id="8930622219860340959">Bezdrôtové pripojenie</translation>
@@ -383,6 +392,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="9149391708638971077">Spustiť test pamäte</translation>
 <translation id="9173638680043580060">Zostáva menej ako minúta</translation>
 <translation id="9190063653747922532">L2TP/IPSec + predzdieľaný kľúč</translation>
+<translation id="9211490828691860325">Všetky plochy</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Neaktivované</translation>
 <translation id="960719561871045870">Kód operátora</translation>

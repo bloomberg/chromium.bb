@@ -161,6 +161,8 @@ class DynamicBuffer : angle::NonCopyable
         return (mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
     }
 
+    bool valid() const { return mSize != 0; }
+
   private:
     void reset();
     angle::Result allocateNewBuffer(ContextVk *contextVk);
@@ -332,7 +334,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
   private:
     angle::Result allocateNewPool(ContextVk *contextVk);
 
-    static constexpr uint32_t KMaxSetsPerPoolMax = 512;
+    static constexpr uint32_t kMaxSetsPerPoolMax = 512;
     static uint32_t mMaxSetsPerPool;
     static uint32_t mMaxSetsPerPoolMultiplier;
     size_t mCurrentPoolIndex;
@@ -608,6 +610,7 @@ class LineLoopHelper final : angle::NonCopyable
     angle::Result streamIndicesIndirect(ContextVk *contextVk,
                                         gl::DrawElementsType glIndexType,
                                         BufferHelper *indexBuffer,
+                                        VkDeviceSize indexBufferOffset,
                                         BufferHelper *indirectBuffer,
                                         VkDeviceSize indirectBufferOffset,
                                         BufferHelper **indexBufferOut,
@@ -1100,12 +1103,7 @@ class CommandBufferHelper : angle::NonCopyable
 
     void endRenderPass(ContextVk *contextVk);
 
-    void updateStartedRenderPassWithDepthMode(bool readOnlyDepthStencilMode)
-    {
-        ASSERT(mIsRenderPassCommandBuffer);
-        ASSERT(mRenderPassStarted);
-        mReadOnlyDepthStencilMode = readOnlyDepthStencilMode;
-    }
+    void updateStartedRenderPassWithDepthMode(bool readOnlyDepthStencilMode);
 
     void beginTransformFeedback(size_t validBufferCount,
                                 const VkBuffer *counterBuffers,
@@ -1190,8 +1188,6 @@ class CommandBufferHelper : angle::NonCopyable
                    VK_ATTACHMENT_LOAD_OP_CLEAR;
     }
 
-    bool isReadOnlyDepthMode() const { return mReadOnlyDepthStencilMode; }
-
     void addCommandDiagnostics(ContextVk *contextVk);
 
     const RenderPassDesc &getRenderPassDesc() const { return mRenderPassDesc; }
@@ -1228,6 +1224,8 @@ class CommandBufferHelper : angle::NonCopyable
                                   bool isResolveImage);
     void finalizeDepthStencilImageLayout(Context *context);
     void finalizeDepthStencilResolveImageLayout(Context *context);
+    void finalizeDepthStencilLoadStore(Context *context);
+    void finalizeDepthStencilImageLayoutAndLoadStore(Context *context);
 
     void updateImageLayoutAndBarrier(Context *context,
                                      ImageHelper *image,
@@ -1259,7 +1257,6 @@ class CommandBufferHelper : angle::NonCopyable
     bool mIsTransformFeedbackActiveUnpaused;
 
     bool mIsRenderPassCommandBuffer;
-    bool mReadOnlyDepthStencilMode;
 
     // Whether the command buffers contains any draw/dispatch calls that possibly output data
     // through storage buffers and images.  This is used to determine whether glMemoryBarrier*
@@ -1350,6 +1347,8 @@ enum class ImageLayout
     ColorAttachment,
     ColorAttachmentAndFragmentShaderRead,
     ColorAttachmentAndAllShadersRead,
+    DepthStencilAttachmentAndFragmentShaderRead,
+    DepthStencilAttachmentAndAllShadersRead,
     DepthStencilReadOnly,
     DepthStencilAttachment,
     DepthStencilResolveAttachment,
@@ -1381,13 +1380,19 @@ VkImageLayout ConvertImageLayoutToVkImageLayout(ImageLayout imageLayout);
 // How the ImageHelper object is being used by the renderpass
 enum class RenderPassUsage
 {
+    // Attached to the render taget of the current renderpass commands. It could be read/write or
+    // read only access.
     RenderTargetAttachment,
+    // This is special case of RenderTargetAttachment where the render target access is read only.
+    // Right now it is only tracked for depth stencil attachment
+    ReadOnlyAttachment,
+    // Attached to the texture sampler of the current renderpass commands
     TextureSampler,
 
     InvalidEnum,
     EnumCount = InvalidEnum,
 };
-using RenderPassUseFlags = angle::PackedEnumBitSet<RenderPassUsage, uint16_t>;
+using RenderPassUsageFlags = angle::PackedEnumBitSet<RenderPassUsage, uint16_t>;
 
 bool FormatHasNecessaryFeature(RendererVk *renderer,
                                angle::FormatID formatID,
@@ -1572,8 +1577,9 @@ class ImageHelper final : public Resource, public angle::Subject
     bool isDepthOrStencil() const;
 
     void setRenderPassUsageFlag(RenderPassUsage flag);
+    void clearRenderPassUsageFlag(RenderPassUsage flag);
     void resetRenderPassUsageFlags();
-    bool hasRenderPassUseFlag(RenderPassUsage flag) const;
+    bool hasRenderPassUsageFlag(RenderPassUsage flag) const;
     bool usedByCurrentRenderPassAsAttachmentAndSampler() const;
 
     // Clear either color or depth/stencil based on image format.
@@ -2050,7 +2056,7 @@ class ImageHelper final : public Resource, public angle::Subject
     ImageLayout mLastNonShaderReadOnlyLayout;
     VkPipelineStageFlags mCurrentShaderReadStageMask;
     // Track how it is being used by current open renderpass.
-    RenderPassUseFlags mRenderPassUseFlags;
+    RenderPassUsageFlags mRenderPassUsageFlags;
 
     // For imported images
     BindingPointer<SamplerYcbcrConversion> mYuvConversionSampler;
@@ -2358,6 +2364,7 @@ class BufferViewHelper final : public Resource
 
     angle::Result getView(ContextVk *contextVk,
                           const BufferHelper &buffer,
+                          VkDeviceSize bufferOffset,
                           const Format &format,
                           const BufferView **viewOut);
 

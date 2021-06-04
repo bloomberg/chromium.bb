@@ -10,6 +10,7 @@ import {assertSelectedElementsNodeTextIncludes, expandSelectedNodeRecursively, g
 
 const EXPECTED_TEXT_CONTENT = '<div class=\u200B"div2">\u200B last child \u200B</div>\u200B';
 
+
 describe('Element breadcrumbs', async () => {
   beforeEach(async function() {
     await goToResource('elements/element-breadcrumbs.html');
@@ -29,7 +30,6 @@ describe('Element breadcrumbs', async () => {
   });
 
   it('lists all the elements in the tree', async () => {
-    const actualCrumbsText = await getBreadcrumbsTextContent();
     const expectedCrumbsText = [
       'html',
       'body',
@@ -37,10 +37,13 @@ describe('Element breadcrumbs', async () => {
       'span#span1',
       'div.div2',
     ];
+    const actualCrumbsText = await getBreadcrumbsTextContent({expectedNodeCount: expectedCrumbsText.length});
     assert.deepEqual(actualCrumbsText, expectedCrumbsText);
   });
 
   it('correctly highlights the active node', async () => {
+    // Wait for the crumbs to render with all the elements we expect.
+    await getBreadcrumbsTextContent({expectedNodeCount: 5});
     const selectedCrumbText = await getSelectedBreadcrumbTextContent();
     assert.strictEqual(selectedCrumbText, 'div.div2');
   });

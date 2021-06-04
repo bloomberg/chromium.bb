@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
@@ -32,7 +33,7 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
                          int* target,
                          bool is_valid_container,
                          std::u16string* error) {
-  const base::Value* temp = NULL;
+  const base::Value* temp = nullptr;
   if (manifest->Get(key, &temp)) {
     if (!is_valid_container) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -40,13 +41,14 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
           key);
       return false;
     }
-    if (!temp->GetAsInteger(target) || *target < 0) {
+    if (!temp->is_int() || temp->GetInt() < 0) {
       *target = 0;
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidLaunchValue,
           key);
       return false;
     }
+    *target = temp->GetInt();
   }
   return true;
 }
@@ -95,8 +97,7 @@ const std::string& AppLaunchInfo::GetLaunchLocalPath(
 }
 
 // static
-const GURL& AppLaunchInfo::GetLaunchWebURL(
-    const Extension* extension) {
+const GURL& AppLaunchInfo::GetLaunchWebURL(const Extension* extension) {
   return GetAppLaunchInfo(extension).launch_web_url_;
 }
 

@@ -5,16 +5,18 @@
 #import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
 
 #include "base/check.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/autofill_save_address_profile_delegate_ios.h"
+#include "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace save_address_profile_infobar_overlays {
+namespace autofill_address_profile_infobar_overlays {
 
 OVERLAY_USER_DATA_SETUP_IMPL(SaveAddressProfileModalRequestConfig);
 
@@ -22,53 +24,57 @@ SaveAddressProfileModalRequestConfig::SaveAddressProfileModalRequestConfig(
     InfoBarIOS* infobar)
     : infobar_(infobar) {
   DCHECK(infobar_);
-  autofill::AutofillSaveAddressProfileDelegateIOS* delegate =
-      static_cast<autofill::AutofillSaveAddressProfileDelegateIOS*>(
+  autofill::AutofillSaveUpdateAddressProfileDelegateIOS* delegate =
+      static_cast<autofill::AutofillSaveUpdateAddressProfileDelegateIOS*>(
           infobar_->delegate());
-  profile_ = delegate->GetProfile();
+
+  address_ = delegate->GetEnvelopeStyleAddress();
+  emailAddress_ = delegate->GetEmailAddress();
+  phoneNumber_ = delegate->GetPhoneNumber();
+  current_address_profile_saved_ = infobar->accepted();
+  profile_diff_ = [[NSMutableDictionary alloc] init];
+
+  if (IsUpdateModal()) {
+    StoreProfileDiff(delegate->GetProfileDiff());
+    update_modal_description_ = delegate->GetSubtitle();
+  }
+
   current_address_profile_saved_ = infobar->accepted();
 }
 
 SaveAddressProfileModalRequestConfig::~SaveAddressProfileModalRequestConfig() =
     default;
 
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileName() const {
-  return profile_->GetRawInfo(autofill::NAME_FULL);
+bool SaveAddressProfileModalRequestConfig::IsUpdateModal() const {
+  return static_cast<autofill::AutofillSaveUpdateAddressProfileDelegateIOS*>(
+             infobar_->delegate())
+      ->GetOriginalProfile();
 }
 
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileAddressLine1()
-    const {
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_LINE1);
+void SaveAddressProfileModalRequestConfig::StoreProfileDiff(
+    const std::vector<autofill::ProfileValueDifference>& profile_diff) {
+  for (const auto& row : profile_diff) {
+    [profile_diff_
+        setObject:@[
+          base::SysUTF16ToNSString(row.first_value),
+          base::SysUTF16ToNSString(row.second_value)
+        ]
+           forKey:[NSNumber
+                      numberWithInt:AutofillUITypeFromAutofillType(row.type)]];
+  }
 }
 
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileAddressLine2()
-    const {
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_LINE2);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileCity() const {
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_CITY);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileState() const {
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_STATE);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileCountry() const {
-  // TODO(crbug.com/1167062): Display country name instead of country code.
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileZip() const {
-  return profile_->GetRawInfo(autofill::ADDRESS_HOME_ZIP);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfilePhone() const {
-  return profile_->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
-}
-
-std::u16string SaveAddressProfileModalRequestConfig::GetProfileEmail() const {
-  return profile_->GetRawInfo(autofill::EMAIL_ADDRESS);
+NSDictionary* SaveAddressProfileModalRequestConfig::GetProfileInfo() {
+  autofill::AutofillSaveUpdateAddressProfileDelegateIOS* delegate =
+      static_cast<autofill::AutofillSaveUpdateAddressProfileDelegateIOS*>(
+          infobar_->delegate());
+  NSMutableDictionary* items = [[NSMutableDictionary alloc] init];
+  for (const auto& type : GetAutofillTypeForProfileEdit()) {
+    [items setObject:base::SysUTF16ToNSString(delegate->GetProfileInfo(type))
+              forKey:[NSNumber
+                         numberWithInt:AutofillUITypeFromAutofillType(type)]];
+  }
+  return items;
 }
 
 void SaveAddressProfileModalRequestConfig::CreateAuxiliaryData(
@@ -77,4 +83,4 @@ void SaveAddressProfileModalRequestConfig::CreateAuxiliaryData(
       user_data, infobar_, InfobarOverlayType::kModal, false);
 }
 
-}  // namespace save_address_profile_infobar_overlays
+}  // namespace autofill_address_profile_infobar_overlays

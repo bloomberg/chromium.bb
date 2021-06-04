@@ -493,8 +493,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanSearchable) {
 // TODO(crbug.com/1077855): Test is flaky on Mac debug builds.
 #if defined(OS_MAC) && !defined(NDEBUG)
 #define MAYBE_LargePage DISABLED_LargePage
-#elif defined(OS_LINUX) && !defined(NDEBUG)
+#elif defined(OS_LINUX) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1181717): Test is flaky on Linux debug builds.
+// TODO(crbug.com/1198685): Test is flaky on Linux ASAN builds.
 #define MAYBE_LargePage DISABLED_LargePage
 #else
 #define MAYBE_LargePage LargePage
@@ -1390,7 +1391,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
       find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Open a new incognito window and navigate to the same page.
-  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   Browser* incognito_browser =
       Browser::Create(Browser::CreateParams(incognito_profile, true));
   content::WindowedNotificationObserver observer(

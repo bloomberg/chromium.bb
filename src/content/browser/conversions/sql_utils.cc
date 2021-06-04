@@ -21,8 +21,4 @@ url::Origin DeserializeOrigin(const std::string& origin) {
   return url::Origin::Create(GURL(origin));
 }
 
-int64_t SerializeTime(base::Time time) {
-  return time.ToDeltaSinceWindowsEpoch().InMicroseconds();
-}
-
 }  // namespace content

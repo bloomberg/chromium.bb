@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -35,6 +36,22 @@
 #include "ui/base/ui_base_features.h"
 
 namespace autofill {
+namespace {
+void LogCardUploadDisabled(LogManager* log_manager, std::string context) {
+  if (log_manager) {
+    log_manager->Log() << LoggingScope::kCreditCardUploadStatus
+                       << LogMessage::kCreditCardUploadDisabled << context
+                       << CTag{};
+  }
+}
+
+void LogCardUploadEnabled(LogManager* log_manager) {
+  if (log_manager) {
+    log_manager->Log() << LoggingScope::kCreditCardUploadStatus
+                       << LogMessage::kCreditCardUploadEnabled << CTag{};
+  }
+}
+}  // namespace
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
@@ -46,8 +63,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL,
         sync_state);
-    if (log_manager)
-      log_manager->Log() << LoggingScope::kContext << "SYNC_SERVICE_NULL";
+    LogCardUploadDisabled(log_manager, "SYNC_SERVICE_NULL");
     return false;
   }
 
@@ -56,10 +72,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_PERSISTENT_AUTH_ERROR,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "SYNC_SERVICE_PERSISTENT_ERROR";
-    }
+    LogCardUploadDisabled(log_manager, "SYNC_SERVICE_PERSISTENT_ERROR");
     return false;
   }
 
@@ -68,11 +81,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE,
         sync_state);
-    if (log_manager) {
-      log_manager->Log()
-          << LoggingScope::kContext
-          << "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE";
-    }
+    LogCardUploadDisabled(
+        log_manager, "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE");
     return false;
   }
 
@@ -84,11 +94,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           AutofillMetrics::CardUploadEnabledMetric::
               SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE,
           sync_state);
-      if (log_manager) {
-        log_manager->Log()
-            << LoggingScope::kContext
-            << "SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_DATA_TYPE";
-      }
+      LogCardUploadDisabled(
+          log_manager,
+          "SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_DATA_TYPE");
       return false;
     }
   } else {
@@ -98,19 +106,16 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         features::kAutofillEnableAccountWalletStorage));
   }
 
-  // Also don't offer upload for users that have a secondary sync passphrase.
+  // Also don't offer upload for users that have an explicit sync passphrase.
   // Users who have enabled a passphrase have chosen to not make their sync
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.
-  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+  if (sync_service->GetUserSettings()->IsUsingExplicitPassphrase()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::
-            USING_SECONDARY_SYNC_PASSPHRASE,
+            USING_EXPLICIT_SYNC_PASSPHRASE,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "USER_HAS_SECONDARY_SYNC_PASSPHRASE";
-    }
+    LogCardUploadDisabled(log_manager, "USER_HAS_EXPLICIT_SYNC_PASSPHRASE");
     return false;
   }
 
@@ -120,10 +125,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "USER_ONLY_SYNCING_LOCALLY";
-    }
+    LogCardUploadDisabled(log_manager, "USER_ONLY_SYNCING_LOCALLY");
     return false;
   }
 
@@ -132,10 +134,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::PAYMENTS_INTEGRATION_DISABLED,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "PAYMENTS_INTEGRATION_DISABLED";
-    }
+    LogCardUploadDisabled(log_manager, "PAYMENTS_INTEGRATION_DISABLED");
     return false;
   }
 
@@ -143,8 +142,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   if (user_email.empty()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY, sync_state);
-    if (log_manager)
-      log_manager->Log() << LoggingScope::kContext << "USER_EMAIL_EMPTY";
+    LogCardUploadDisabled(log_manager, "USER_EMAIL_EMPTY");
     return false;
   }
 
@@ -162,10 +160,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "USER_EMAIL_DOMAIN_NOT_SUPPORTED";
-    }
+    LogCardUploadDisabled(log_manager, "USER_EMAIL_DOMAIN_NOT_SUPPORTED");
     return false;
   }
 
@@ -173,16 +168,14 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED,
         sync_state);
-    if (log_manager) {
-      log_manager->Log() << LoggingScope::kContext
-                         << "AUTOFILL_UPSTREAM_NOT_ENABLED";
-    }
+    LogCardUploadDisabled(log_manager, "AUTOFILL_UPSTREAM_NOT_ENABLED");
     return false;
   }
 
   AutofillMetrics::LogCardUploadEnabledMetric(
       AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED,
       sync_state);
+  LogCardUploadEnabled(log_manager);
   return true;
 }
 

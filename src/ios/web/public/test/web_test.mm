@@ -4,9 +4,11 @@
 
 #include "ios/web/public/test/web_test.h"
 
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
+#include "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
@@ -37,6 +39,18 @@ WebTest::WebTest(std::unique_ptr<web::WebClient> web_client,
 
 WebTest::~WebTest() {}
 
+void WebTest::SetUp() {
+  PlatformTest::SetUp();
+
+  DCHECK(!browser_state_);
+  browser_state_ = CreateBrowserState();
+  DCHECK(browser_state_);
+}
+
+std::unique_ptr<BrowserState> WebTest::CreateBrowserState() {
+  return std::make_unique<FakeBrowserState>();
+}
+
 void WebTest::OverrideJavaScriptFeatures(
     std::vector<JavaScriptFeature*> features) {
   WKWebViewConfigurationProvider& configuration_provider =
@@ -57,7 +71,8 @@ web::WebClient* WebTest::GetWebClient() {
 }
 
 BrowserState* WebTest::GetBrowserState() {
-  return &browser_state_;
+  DCHECK(browser_state_);
+  return browser_state_.get();
 }
 
 void WebTest::SetIgnoreRenderProcessCrashesDuringTesting(bool allow) {
@@ -66,12 +81,6 @@ void WebTest::SetIgnoreRenderProcessCrashesDuringTesting(bool allow) {
   } else {
     crash_observer_ = std::make_unique<WebTestRenderProcessCrashObserver>();
   }
-}
-
-void WebTest::SetSharedURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
-  browser_state_.SetSharedURLLoaderFactory(
-      std::move(shared_url_loader_factory));
 }
 
 }  // namespace web

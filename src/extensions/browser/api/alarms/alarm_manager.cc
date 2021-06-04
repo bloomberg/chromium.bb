@@ -53,7 +53,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
     args->Append(alarm.js_alarm->ToValue());
     std::unique_ptr<Event> event(new Event(events::ALARMS_ON_ALARM,
                                            alarms::OnAlarm::kEventName,
-                                           std::move(args), browser_context_));
+                                           args->TakeList(), browser_context_));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }
@@ -77,7 +77,7 @@ AlarmManager::AlarmList AlarmsFromValue(const std::string extension_id,
     std::unique_ptr<Alarm> alarm(new Alarm());
     if (list->GetDictionary(i, &alarm_dict) &&
         alarms::Alarm::Populate(*alarm_dict, alarm->js_alarm.get())) {
-      base::Optional<base::TimeDelta> delta =
+      absl::optional<base::TimeDelta> delta =
           util::ValueToTimeDelta(alarm_dict->FindKey(kAlarmGranularity));
       if (delta) {
         alarm->granularity = *delta;

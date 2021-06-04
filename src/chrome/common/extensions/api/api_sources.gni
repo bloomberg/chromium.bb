@@ -75,10 +75,6 @@ if (!is_android) {
   schema_sources_ += [ "processes.idl" ]
 }
 
-if (is_chromeos_ash || is_mac || is_win) {
-  schema_sources_ += [ "networking_cast_private.idl" ]
-}
-
 if (is_chromeos_ash || is_chromeos_lacros) {
   schema_sources_ += [
     "enterprise_device_attributes.idl",
@@ -104,7 +100,6 @@ if (is_chromeos_ash) {
     "file_system_provider_internal.idl",
     "input_ime.json",
     "input_method_private.json",
-    "launcher_search_provider.idl",
     "login.idl",
     "login_screen_storage.idl",
     "login_screen_ui.idl",

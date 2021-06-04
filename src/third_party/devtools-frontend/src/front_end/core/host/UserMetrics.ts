@@ -329,6 +329,8 @@ export enum Action {
   NetworkPanelServiceWorkerRespondWith = 51,
   NetworkPanelCopyValue = 52,
   ConsoleSidebarOpened = 53,
+  PerfPanelTraceImported = 54,
+  PerfPanelTraceExported = 55,
 }
 
 
@@ -673,6 +675,23 @@ export const IssueCreated: {
   'TrustedWebActivityIssue::kDigitalAssetLinks': 40,
   LowTextContrastIssue: 41,
   'CorsIssue::InsecurePrivateNetwork': 42,
+  'CorsIssue::InsecurePrivateNetworkPreflight': 43,
+  'CorsIssue::InvalidHeaders': 44,
+  'CorsIssue::WildcardOriginWithCredentials': 45,
+  'CorsIssue::PreflightResponseInvalid': 46,
+  'CorsIssue::OriginMismatch': 47,
+  'CorsIssue::AllowCredentialsRequired': 48,
+  'CorsIssue::MethodDisallowedByPreflightResponse': 49,
+  'CorsIssue::HeaderDisallowedByPreflightResponse': 50,
+  'CorsIssue::RedirectContainsCredentials': 51,
+  'CorsIssue::DisallowedByMode': 52,
+  'CorsIssue::CorsDisabledScheme': 53,
+  'CorsIssue::PreflightMissingAllowExternal': 54,
+  'CorsIssue::PreflightInvalidAllowExternal': 55,
+  'CorsIssue::InvalidResponse': 56,
+  'CorsIssue::NoCorsRedirectModeNotFollow': 57,
+  'QuirksModeIssue::QuirksMode': 58,
+  'QuirksModeIssue::LimitedQuirksMode': 59,
 };
 
 // TODO(crbug.com/1167717): Make this a const enum again

@@ -81,6 +81,7 @@ std::string LoadLatencyStepName(LoadLatencyTimes::StepKind kind) {
 
 void ReportLoadLatencies(std::unique_ptr<LoadLatencyTimes> latencies) {
   for (const LoadLatencyTimes::Step& step : latencies->steps()) {
+    // TODO(crbug/1152592): Add a WebFeed-specific histogram for this.
     base::UmaHistogramCustomTimes(
         "ContentSuggestions.Feed.LoadStepLatency." +
             LoadLatencyStepName(step.kind),
@@ -118,7 +119,7 @@ void MetricsReporter::TrackTimeSpentInFeed(bool interacted_or_scrolled) {
     persistent_data_.accumulated_time_spent_in_feed +=
         std::min(kTimeSpentInFeedInteractionTimeout,
                  base::TimeTicks::Now() - *time_in_feed_start_);
-    time_in_feed_start_ = base::nullopt;
+    time_in_feed_start_ = absl::nullopt;
   }
 
   if (interacted_or_scrolled) {
@@ -334,7 +335,13 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
           "ContentSuggestions.Feed.CardAction.ManageReactions"));
       RecordInteraction(stream_type);
       break;
+    case FeedUserActionType::kShare:
+      base::RecordAction(
+          base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Share"));
+      RecordInteraction(stream_type);
+      break;
     case FeedUserActionType::kEphemeralChange:
+      FALLTHROUGH;
     case FeedUserActionType::kEphemeralChangeRejected:
     case FeedUserActionType::kTappedTurnOn:
     case FeedUserActionType::kTappedTurnOff:
@@ -489,6 +496,26 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
       base::UmaHistogramSparse(
           "ContentSuggestions.Feed.Network.ResponseStatus."
           "ListRecommendedWebFeeds",
+          http_status_code);
+      return;
+    case NetworkRequestType::kWebFeedListContents:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.WebFeedListContents",
+          http_status_code);
+      return;
+    case NetworkRequestType::kQueryInteractiveFeed:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.QueryInteractiveFeed",
+          http_status_code);
+      return;
+    case NetworkRequestType::kQueryBackgroundFeed:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.QueryBackgroundFeed",
+          http_status_code);
+      return;
+    case NetworkRequestType::kQueryNextPage:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.QueryNextPage",
           http_status_code);
       return;
   }

@@ -6,6 +6,7 @@ import * as animate from '../animation.js';
 import {
   assert,
   assertInstanceof,
+  assertString,
 } from '../chrome_util.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -28,12 +29,13 @@ import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
-import {ErrorLevel, ErrorType} from '../type.js';
 import {
   CanceledError,
+  ErrorLevel,
+  ErrorType,
   Facing,
   Mode,
-  Resolution,  // eslint-disable-line no-unused-vars
+  Resolution,
   ViewName,
 } from '../type.js';
 import * as util from '../util.js';
@@ -363,17 +365,14 @@ export class Camera extends View {
   }
 
   /**
-   * @suppress {uselessCode} For skip highlighting PTZ button code.
    * @private
    */
   initOpenPTZPanel_() {
     this.openPTZPanel_.addEventListener('click', () => {
       nav.open(ViewName.PTZ_PANEL, this.preview_.stream);
+      highlight(false);
     });
 
-    // Skip highlight effect on R91 release.
-    return;
-    /* eslint-disable no-unreachable */
     // Highlight effect for PTZ button.
     const highlight = (enabled) => {
       this.ptzToast_.classList.toggle('hidden', !enabled);
@@ -385,16 +384,16 @@ export class Camera extends View {
     };
 
     this.addConfigureCompleteListener_(async () => {
-      if (!this.preview_.isSupportPTZ()) {
+      if (!state.get(state.State.ENABLE_PTZ)) {
         highlight(false);
         return;
       }
 
       const ptzToastKey = 'isPTZToastShown';
-      if ((await localStorage.get({[ptzToastKey]: false}))[ptzToastKey]) {
+      if (localStorage.getBool(ptzToastKey)) {
         return;
       }
-      localStorage.set({[ptzToastKey]: true});
+      localStorage.set(ptzToastKey, true);
 
       const {bottom, right} =
           dom.get('#open-ptz-panel', HTMLButtonElement).getBoundingClientRect();
@@ -402,7 +401,6 @@ export class Camera extends View {
       this.ptzToast_.style.left = `${right + 20}px`;
       highlight(true);
     });
-    /* eslint-enabled no-unreachable */
   }
 
   /**
@@ -475,10 +473,10 @@ export class Camera extends View {
           .forEach((btn) => btn.offsetParent && btn.focus());
     };
     (async () => {
-      const values = await localStorage.get({isFolderChangeMsgShown: false});
+      const shown = localStorage.getBool('isFolderChangeMsgShown');
       await this.configuring_;
-      if (!values['isFolderChangeMsgShown']) {
-        localStorage.set({isFolderChangeMsgShown: true});
+      if (!shown) {
+        localStorage.set('isFolderChangeMsgShown', true);
         await animate.play(this.banner_);
       }
       focusOnShutterButton();
@@ -526,7 +524,9 @@ export class Camera extends View {
         if (e instanceof CanceledError) {
           return;
         }
-        console.error(e);
+        error.reportError(
+            ErrorType.START_CAPTURE_FAILURE, ErrorLevel.ERROR,
+            assertInstanceof(e, Error));
       } finally {
         this.take_ = null;
         state.set(
@@ -663,7 +663,7 @@ export class Camera extends View {
           await this.endTake_();
         }
       } finally {
-        await this.preview_.close();
+        await this.stopStreams_();
       }
       return this.start_();
     })();
@@ -672,24 +672,19 @@ export class Camera extends View {
 
   /**
    * Try start stream reconfiguration with specified mode and device id.
-   * @param {?string} deviceId
+   * @param {?string} deviceId Null if the default camera should be started.
    * @param {!Mode} mode
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
    */
   async startWithMode_(deviceId, mode) {
     const deviceOperator = await DeviceOperator.getInstance();
-    let resolCandidates = null;
-    if (deviceOperator !== null) {
-      if (deviceId !== null) {
-        resolCandidates = this.modes_.getResolutionCandidates(mode, deviceId);
-      } else {
-        console.error(
-            'Null device id present on HALv3 device. Fallback to v1.');
-      }
-    }
-    if (resolCandidates === null) {
-      resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+    let resolCandidates;
+    if (deviceOperator) {
+      resolCandidates =
+          this.modes_.getResolutionCandidates(mode, assertString(deviceId));
+    } else {
+      resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
     }
     for (const {resolution: captureR, previewCandidates} of resolCandidates) {
       for (const constraints of previewCandidates) {
@@ -698,10 +693,7 @@ export class Camera extends View {
         }
         const factory = this.modes_.getModeFactory(mode);
         try {
-          factory.setCaptureResolution(captureR);
-          if (deviceOperator !== null) {
-            factory.prepareDevice(deviceOperator, constraints);
-          }
+          await factory.prepareDevice(constraints, captureR);
 
           // Sets 2500 ms delay between screen resumed and open camera preview.
           // TODO(b/173679752): Removes this workaround after fix delay on
@@ -714,10 +706,34 @@ export class Camera extends View {
             }
           }
           const stream = await this.preview_.open(constraints);
+          this.facingMode_ = this.preview_.getFacing();
 
-          this.facingMode_ = await this.options_.updateValues(stream);
+          const enablePTZ = (() => {
+            if (!this.preview_.isSupportPTZ()) {
+              return false;
+            }
+            if (deviceOperator === null) {
+              // All fake VCD support PTZ controls.
+              return true;
+            }
+            if (this.facingMode_ !== Facing.EXTERNAL) {
+              // PTZ function is excluded from builtin camera until we set up
+              // its AVL calibration standard.
+              return false;
+            }
+            return this.modes_.isSupportPTZ(
+                mode,
+                captureR,
+                this.preview_.getResolution(),
+            );
+          })();
+          state.set(state.State.ENABLE_PTZ, enablePTZ);
+
+          this.options_.updateValues(stream, this.facingMode_);
           factory.setPreviewStream(stream);
           factory.setFacing(this.facingMode_);
+          await factory.setupExtraStreams(constraints, captureR);
+
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(
               mode, factory, stream, this.facingMode_, deviceId, captureR);
@@ -727,9 +743,19 @@ export class Camera extends View {
           nav.close(ViewName.WARNING, WarningType.NO_CAMERA);
           return true;
         } catch (e) {
-          factory.clear();
-          this.preview_.close();
-          console.error(e);
+          await factory.clear();
+          await this.stopStreams_();
+
+          let errorToReport = e;
+          // Since OverconstrainedError is not an Error instance.
+          if (e instanceof OverconstrainedError) {
+            errorToReport =
+                new Error(`${e.message} (constraint = ${e.constraint})`);
+            errorToReport.name = 'OverconstrainedError';
+          }
+          error.reportError(
+              ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR,
+              assertInstanceof(errorToReport, Error));
         }
       }
     }
@@ -788,10 +814,12 @@ export class Camera extends View {
       state.set(state.State.CAMERA_CONFIGURING, false);
 
       return true;
-    } catch (error) {
+    } catch (e) {
       this.activeDeviceId_ = null;
-      if (!(error instanceof CameraSuspendedError)) {
-        console.error(error);
+      if (!(e instanceof CameraSuspendedError)) {
+        error.reportError(
+            ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR,
+            assertInstanceof(e, Error));
         nav.open(ViewName.WARNING, WarningType.NO_CAMERA);
       }
       // Schedule to retry.
@@ -806,5 +834,16 @@ export class Camera extends View {
       this.perfLogger_.interrupt();
       return false;
     }
+  }
+
+  /**
+   * Stop extra stream and preview stream.
+   * @private
+   */
+  async stopStreams_() {
+    // Stopping preview will wait device close. Therefore, we clear
+    // mode before stopping preview to close extra stream first.
+    await this.modes_.clear();
+    await this.preview_.close();
   }
 }

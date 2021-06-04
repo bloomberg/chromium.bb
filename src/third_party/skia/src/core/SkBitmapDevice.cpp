@@ -543,7 +543,8 @@ void SkBitmapDevice::drawImageRect(const SkImage* image, const SkRect* src, cons
     this->drawRect(*dstPtr, paintWithShader);
 }
 
-void SkBitmapDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+void SkBitmapDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+    SkASSERT(!glyphRunList.hasRSXForm());
     LOOP_TILER( drawGlyphRunList(glyphRunList, paint, &fGlyphPainter), nullptr )
 }
 
@@ -608,19 +609,19 @@ void SkBitmapDevice::drawSpecial(SkSpecialImage* src,
     }
 }
 sk_sp<SkSpecialImage> SkBitmapDevice::makeSpecial(const SkBitmap& bitmap) {
-    return SkSpecialImage::MakeFromRaster(bitmap.bounds(), bitmap);
+    return SkSpecialImage::MakeFromRaster(bitmap.bounds(), bitmap, this->surfaceProps());
 }
 
 sk_sp<SkSpecialImage> SkBitmapDevice::makeSpecial(const SkImage* image) {
     return SkSpecialImage::MakeFromImage(nullptr, SkIRect::MakeWH(image->width(), image->height()),
-                                         image->makeNonTextureImage());
+                                         image->makeNonTextureImage(), this->surfaceProps());
 }
 
 sk_sp<SkSpecialImage> SkBitmapDevice::snapSpecial(const SkIRect& bounds, bool forceCopy) {
     if (forceCopy) {
-        return SkSpecialImage::CopyFromRaster(bounds, fBitmap, &this->surfaceProps());
+        return SkSpecialImage::CopyFromRaster(bounds, fBitmap, this->surfaceProps());
     } else {
-        return SkSpecialImage::MakeFromRaster(bounds, fBitmap);
+        return SkSpecialImage::MakeFromRaster(bounds, fBitmap, this->surfaceProps());
     }
 }
 
@@ -676,8 +677,8 @@ void SkBitmapDevice::onClipRegion(const SkRegion& rgn, SkClipOp op) {
 
 void SkBitmapDevice::onReplaceClip(const SkIRect& rect) {
     // Transform from "global/canvas" coordinates to relative to this device
-    SkIRect deviceRect = this->globalToDevice().mapRect(SkRect::Make(rect)).round();
-    fRCStack.replaceClip(deviceRect);
+    SkRect deviceRect = SkMatrixPriv::MapRect(this->globalToDevice(), SkRect::Make(rect));
+    fRCStack.replaceClip(deviceRect.round());
 }
 
 void SkBitmapDevice::onSetDeviceClipRestriction(SkIRect* mutableClipRestriction) {

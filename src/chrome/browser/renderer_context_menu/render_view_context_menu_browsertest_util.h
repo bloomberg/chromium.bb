@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_BROWSERTEST_UTIL_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -51,7 +49,7 @@ class ContextMenuWaiter {
   std::vector<int> captured_command_ids_;
 
   base::RunLoop run_loop_;
-  base::Optional<int> maybe_command_to_execute_;
+  absl::optional<int> maybe_command_to_execute_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuWaiter);
 };

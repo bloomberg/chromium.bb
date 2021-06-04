@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/public/browser/navigation_controller.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "weblayer/public/navigation.h"
 
 #if defined(OS_ANDROID)
@@ -69,9 +69,6 @@ class NavigationImpl : public Navigation {
   TakeParamsToLoadWhenSafe();
 
 #if defined(OS_ANDROID)
-  void SetJavaNavigation(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& java_navigation);
   int GetState(JNIEnv* env) { return static_cast<int>(GetState()); }
   base::android::ScopedJavaLocalRef<jstring> GetUri(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jobjectArray> GetRedirectChain(JNIEnv* env);
@@ -100,11 +97,14 @@ class NavigationImpl : public Navigation {
   jboolean IsFormSubmission(JNIEnv* env) { return IsFormSubmission(); }
   base::android::ScopedJavaLocalRef<jstring> GetReferrer(JNIEnv* env);
   jlong GetPage(JNIEnv* env);
+  int GetNavigationEntryOffset(JNIEnv* env);
 
   void SetResponse(
       std::unique_ptr<embedder_support::WebResourceResponse> response);
   std::unique_ptr<embedder_support::WebResourceResponse> TakeResponse();
 
+  void SetJavaNavigation(
+      const base::android::ScopedJavaGlobalRef<jobject>& java_navigation);
   base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
     return java_navigation_;
   }
@@ -132,6 +132,7 @@ class NavigationImpl : public Navigation {
   bool IsFormSubmission() override;
   GURL GetReferrer() override;
   Page* GetPage() override;
+  int GetNavigationEntryOffset() override;
 
  private:
   content::NavigationHandle* navigation_handle_;

@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/no_destructor.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -87,7 +88,7 @@ class MockCryptographer
                bool(mojom::TrustTokenProtocolVersion issuer_configured_version,
                     int issuer_configured_batch_size));
   MOCK_METHOD1(AddKey, bool(base::StringPiece key));
-  MOCK_METHOD1(BeginIssuance, base::Optional<std::string>(size_t num_tokens));
+  MOCK_METHOD1(BeginIssuance, absl::optional<std::string>(size_t num_tokens));
   MOCK_METHOD1(
       ConfirmIssuance,
       std::unique_ptr<UnblindedTokens>(base::StringPiece response_header));
@@ -126,7 +127,7 @@ mojom::TrustTokenKeyCommitmentResultPtr ReasonableKeyCommitmentResult() {
   key_commitment_result->batch_size =
       static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   key_commitment_result->protocol_version =
-      mojom::TrustTokenProtocolVersion::kTrustTokenV2Pmb;
+      mojom::TrustTokenProtocolVersion::kTrustTokenV3Pmb;
   key_commitment_result->id = 1;
   return key_commitment_result;
 }
@@ -283,7 +284,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   // Return nullopt, denoting an error, when the issuance helper requests
   // blinded, unsigned tokens.
-  EXPECT_CALL(*cryptographer, BeginIssuance(_)).WillOnce(Return(base::nullopt));
+  EXPECT_CALL(*cryptographer, BeginIssuance(_)).WillOnce(Return(absl::nullopt));
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
@@ -338,7 +339,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeaders) {
   std::string attached_version_header;
   EXPECT_TRUE(request->extra_request_headers().GetHeader(
       kTrustTokensSecTrustTokenVersionHeader, &attached_version_header));
-  EXPECT_EQ(attached_version_header, "TrustTokenV2PMB");
+  EXPECT_EQ(attached_version_header, "TrustTokenV3PMB");
 }
 
 // Check that the issuance helper sets the LOAD_BYPASS_CACHE flag on the

@@ -20,6 +20,7 @@
 #include "dawn_native/Commands.h"
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/PassResourceUsageTracker.h"
 #include "dawn_native/QuerySet.h"
 
 namespace dawn_native {
@@ -27,15 +28,14 @@ namespace dawn_native {
     ComputePassEncoder::ComputePassEncoder(DeviceBase* device,
                                            CommandEncoder* commandEncoder,
                                            EncodingContext* encodingContext)
-        : ProgrammablePassEncoder(device, encodingContext, PassType::Compute),
-          mCommandEncoder(commandEncoder) {
+        : ProgrammablePassEncoder(device, encodingContext), mCommandEncoder(commandEncoder) {
     }
 
     ComputePassEncoder::ComputePassEncoder(DeviceBase* device,
                                            CommandEncoder* commandEncoder,
                                            EncodingContext* encodingContext,
                                            ErrorTag errorTag)
-        : ProgrammablePassEncoder(device, encodingContext, errorTag, PassType::Compute),
+        : ProgrammablePassEncoder(device, encodingContext, errorTag),
           mCommandEncoder(commandEncoder) {
     }
 
@@ -65,14 +65,13 @@ namespace dawn_native {
                 DAWN_TRY(mCommandBufferState.ValidateCanDispatch());
             }
 
-            // Skip noop dispatch. It is a workaround for system crashes on 0 dispatches on some
-            // platforms.
-            if (x != 0 && y != 0 && z != 0) {
-                DispatchCmd* dispatch = allocator->Allocate<DispatchCmd>(Command::Dispatch);
-                dispatch->x = x;
-                dispatch->y = y;
-                dispatch->z = z;
-            }
+            // Record the synchronization scope for Dispatch, which is just the current bindgroups.
+            AddDispatchSyncScope();
+
+            DispatchCmd* dispatch = allocator->Allocate<DispatchCmd>(Command::Dispatch);
+            dispatch->x = x;
+            dispatch->y = y;
+            dispatch->z = z;
 
             return {};
         });
@@ -106,12 +105,17 @@ namespace dawn_native {
                 }
             }
 
+            // Record the synchronization scope for Dispatch, both the bindgroups and the indirect
+            // buffer.
+            SyncScopeUsageTracker scope;
+            scope.BufferUsedAs(indirectBuffer, wgpu::BufferUsage::Indirect);
+            mUsageTracker.AddReferencedBuffer(indirectBuffer);
+            AddDispatchSyncScope(std::move(scope));
+
             DispatchIndirectCmd* dispatch =
                 allocator->Allocate<DispatchIndirectCmd>(Command::DispatchIndirect);
             dispatch->indirectBuffer = indirectBuffer;
             dispatch->indirectOffset = indirectOffset;
-
-            mUsageTracker.BufferUsedAs(indirectBuffer, wgpu::BufferUsage::Indirect);
 
             return {};
         });
@@ -133,6 +137,27 @@ namespace dawn_native {
         });
     }
 
+    void ComputePassEncoder::APISetBindGroup(uint32_t groupIndexIn,
+                                             BindGroupBase* group,
+                                             uint32_t dynamicOffsetCount,
+                                             const uint32_t* dynamicOffsets) {
+        mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            BindGroupIndex groupIndex(groupIndexIn);
+
+            if (IsValidationEnabled()) {
+                DAWN_TRY(
+                    ValidateSetBindGroup(groupIndex, group, dynamicOffsetCount, dynamicOffsets));
+            }
+
+            mUsageTracker.AddResourcesReferencedByBindGroup(group);
+
+            RecordSetBindGroup(allocator, groupIndex, group, dynamicOffsetCount, dynamicOffsets);
+            mCommandBufferState.SetBindGroup(groupIndex, group);
+
+            return {};
+        });
+    }
+
     void ComputePassEncoder::APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (IsValidationEnabled()) {
@@ -149,6 +174,14 @@ namespace dawn_native {
 
             return {};
         });
+    }
+
+    void ComputePassEncoder::AddDispatchSyncScope(SyncScopeUsageTracker scope) {
+        PipelineLayoutBase* layout = mCommandBufferState.GetPipelineLayout();
+        for (BindGroupIndex i : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
+            scope.AddBindGroup(mCommandBufferState.GetBindGroup(i));
+        }
+        mUsageTracker.AddDispatch(scope.AcquireSyncScopeUsage());
     }
 
 }  // namespace dawn_native

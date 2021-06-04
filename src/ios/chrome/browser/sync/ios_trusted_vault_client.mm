@@ -76,13 +76,23 @@ void IOSTrustedVaultClient::MarkKeysAsStale(
 void IOSTrustedVaultClient::GetIsRecoverabilityDegraded(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/1100278): Needs implementation.
-  std::move(callback).Run(false);
+  ios::ChromeBrowserProvider* browser_provider =
+      ios::GetChromeBrowserProvider();
+  ios::ChromeIdentityService* identity_service =
+      browser_provider->GetChromeIdentityService();
+  ChromeIdentity* identity =
+      identity_service->GetIdentityWithGaiaID(account_info.gaia);
+  ios::ChromeTrustedVaultService* trusted_vault_service =
+      browser_provider->GetChromeTrustedVaultService();
+  DCHECK(trusted_vault_service);
+  trusted_vault_service->GetIsRecoverabilityDegraded(identity,
+                                                     std::move(callback));
 }
 
 void IOSTrustedVaultClient::AddTrustedRecoveryMethod(
     const std::string& gaia_id,
     const std::vector<uint8_t>& public_key,
+    int method_type_hint,
     base::OnceClosure callback) {
   // TODO(crbug.com/1100278): Needs implementation.
   std::move(callback).Run();

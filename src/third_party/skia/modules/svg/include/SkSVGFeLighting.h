@@ -11,7 +11,9 @@
 #include "modules/svg/include/SkSVGFe.h"
 #include "modules/svg/include/SkSVGTypes.h"
 
+class SkSVGFeDistantLight;
 class SkSVGFePointLight;
+class SkSVGFeSpotLight;
 
 class SkSVGFeLighting : public SkSVGFe {
 public:
@@ -33,9 +35,17 @@ protected:
     sk_sp<SkImageFilter> onMakeImageFilter(const SkSVGRenderContext&,
                                            const SkSVGFilterContext&) const final;
 
+    virtual sk_sp<SkImageFilter> makeDistantLight(const SkSVGRenderContext&,
+                                                  const SkSVGFilterContext&,
+                                                  const SkSVGFeDistantLight*) const = 0;
+
     virtual sk_sp<SkImageFilter> makePointLight(const SkSVGRenderContext&,
                                                 const SkSVGFilterContext&,
                                                 const SkSVGFePointLight*) const = 0;
+
+    virtual sk_sp<SkImageFilter> makeSpotLight(const SkSVGRenderContext&,
+                                               const SkSVGFilterContext&,
+                                               const SkSVGFeSpotLight*) const = 0;
 
     SkColor resolveLightingColor(const SkSVGRenderContext&) const;
 
@@ -61,12 +71,49 @@ public:
 protected:
     bool parseAndSetAttribute(const char*, const char*) override;
 
+    sk_sp<SkImageFilter> makeDistantLight(const SkSVGRenderContext&,
+                                          const SkSVGFilterContext&,
+                                          const SkSVGFeDistantLight*) const final;
+
     sk_sp<SkImageFilter> makePointLight(const SkSVGRenderContext&,
                                         const SkSVGFilterContext&,
                                         const SkSVGFePointLight*) const final;
 
+    sk_sp<SkImageFilter> makeSpotLight(const SkSVGRenderContext&,
+                                       const SkSVGFilterContext&,
+                                       const SkSVGFeSpotLight*) const final;
+
 private:
     SkSVGFeSpecularLighting() : INHERITED(SkSVGTag::kFeSpecularLighting) {}
+
+    using INHERITED = SkSVGFeLighting;
+};
+
+class SkSVGFeDiffuseLighting final : public SkSVGFeLighting {
+public:
+    static sk_sp<SkSVGFeDiffuseLighting> Make() {
+        return sk_sp<SkSVGFeDiffuseLighting>(new SkSVGFeDiffuseLighting());
+    }
+
+    SVG_ATTR(DiffuseConstant, SkSVGNumberType, 1)
+
+protected:
+    bool parseAndSetAttribute(const char*, const char*) override;
+
+    sk_sp<SkImageFilter> makeDistantLight(const SkSVGRenderContext&,
+                                          const SkSVGFilterContext&,
+                                          const SkSVGFeDistantLight*) const final;
+
+    sk_sp<SkImageFilter> makePointLight(const SkSVGRenderContext&,
+                                        const SkSVGFilterContext&,
+                                        const SkSVGFePointLight*) const final;
+
+    sk_sp<SkImageFilter> makeSpotLight(const SkSVGRenderContext&,
+                                       const SkSVGFilterContext&,
+                                       const SkSVGFeSpotLight*) const final;
+
+private:
+    SkSVGFeDiffuseLighting() : INHERITED(SkSVGTag::kFeDiffuseLighting) {}
 
     using INHERITED = SkSVGFeLighting;
 };

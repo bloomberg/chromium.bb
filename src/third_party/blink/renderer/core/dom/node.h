@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -81,6 +82,8 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 class StringOrTrustedScript;
 class StyleChangeReasonForTracing;
 class V8ScrollStateCallback;
+class V8UnionNodeOrStringOrTrustedScript;
+class V8UnionStringOrTrustedScript;
 class WebPluginContainerImpl;
 struct PhysicalRect;
 
@@ -125,6 +128,16 @@ enum class LegacyLayout {
 
   // Force legacy layout object creation.
   kForce
+};
+
+// LinkHighlight determines the largest enclosing node with hand cursor set.
+enum class LinkHighlightCandidate {
+  // This node is with hand cursor set.
+  kYes,
+  // This node is not with hand cursor set.
+  kNo,
+  // |kYes| if its ancestor is |kYes|.
+  kMayBe
 };
 
 // A Node is a base class for all objects in the DOM tree.
@@ -227,6 +240,26 @@ class CORE_EXPORT Node : public EventTarget {
   // https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
   bool IsClosedShadowHiddenFrom(const Node&) const;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void Prepend(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+  void Append(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+  void Before(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+  void After(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+  void ReplaceWith(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+  void ReplaceChildren(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void Prepend(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
   void Append(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
   void Before(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
@@ -235,6 +268,7 @@ class CORE_EXPORT Node : public EventTarget {
                    ExceptionState&);
   void ReplaceChildren(const HeapVector<NodeOrStringOrTrustedScript>&,
                        ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void remove(ExceptionState&);
   void remove();
 
@@ -270,8 +304,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   String textContent(bool convert_brs_to_newlines = false) const;
   virtual void setTextContent(const String&);
-  void textContent(StringOrTrustedScript& result);
-  virtual void setTextContent(const StringOrTrustedScript&, ExceptionState&);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionStringOrTrustedScript* textContentForBinding() const;
+  virtual void setTextContentForBinding(
+      const V8UnionStringOrTrustedScript* value,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void textContentForBinding(StringOrTrustedScript& result);
+  virtual void setTextContentForBinding(const StringOrTrustedScript&,
+                                        ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool SupportsAltText();
 
@@ -348,7 +390,6 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsTreeScope() const;
   bool IsShadowRoot() const { return IsDocumentFragment() && IsTreeScope(); }
 
-  bool CanParticipateInFlatTree() const;
   bool IsActiveSlot() const;
   bool IsSlotable() const { return IsTextNode() || IsElementNode(); }
   AtomicString SlotName() const;
@@ -569,6 +610,9 @@ class CORE_EXPORT Node : public EventTarget {
   // inert to prevent text selection.
   bool IsInert() const;
 
+  // Returns how |this| participates to the nodes with hand cursor set.
+  LinkHighlightCandidate IsLinkHighlightCandidate() const;
+
   virtual PhysicalRect BoundingBox() const;
   IntRect PixelSnappedBoundingBox() const;
 
@@ -629,6 +673,7 @@ class CORE_EXPORT Node : public EventTarget {
   unsigned CountChildren() const;
 
   bool IsDescendantOf(const Node*) const;
+  bool IsDescendantOrShadowDescendantOf(const Node*) const;
   bool contains(const Node*) const;
   // https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
   bool IsShadowIncludingInclusiveAncestorOf(const Node&) const;
@@ -713,8 +758,10 @@ class CORE_EXPORT Node : public EventTarget {
   bool ShouldSkipMarkingStyleDirty() const;
 
   const ComputedStyle* EnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) {
-    return VirtualEnsureComputedStyle(pseudo_element_specifier);
+      PseudoId pseudo_element_specifier = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom) {
+    return VirtualEnsureComputedStyle(pseudo_element_specifier,
+                                      pseudo_argument);
   }
 
   // ---------------------------------------------------------------------------
@@ -892,6 +939,10 @@ class CORE_EXPORT Node : public EventTarget {
   void RegisterScrollTimeline(ScrollTimeline*);
   void UnregisterScrollTimeline(ScrollTimeline*);
 
+  // For the imperative slot distribution API.
+  void SetManuallyAssignedSlot(HTMLSlotElement* slot);
+  HTMLSlotElement* ManuallyAssignedSlot();
+
   // For Element.
   void SetHasDisplayLockContext() { SetFlag(kHasDisplayLockContext); }
   bool HasDisplayLockContext() const { return GetFlag(kHasDisplayLockContext); }
@@ -929,7 +980,6 @@ class CORE_EXPORT Node : public EventTarget {
   void ClearNeedsInheritDirectionalityFromParent() {
     ClearFlag(kNeedsInheritDirectionalityFromParent);
   }
-
   void Trace(Visitor*) const override;
 
  private:
@@ -1106,7 +1156,8 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   virtual const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId = kPseudoIdNone);
+      PseudoId = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   void TrackForDebugging();
 

@@ -19,6 +19,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "components/account_id/account_id.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -331,9 +332,6 @@ class ASH_EXPORT DesksController : public DesksHelper,
   // desks pops from this queue and removed desks's associated container IDs are
   // re-pushed on this queue.
   std::queue<int> available_container_ids_;
-
-  // True when the enhanced desk animations feature is enabled.
-  const bool is_enhanced_desk_animations_;
 
   // Responsible for tracking and writing number of desk traversals one has
   // done within a span of X seconds.

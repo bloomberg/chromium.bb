@@ -99,9 +99,31 @@ class MetaBuildWrapper(object):
         'win') else 'isolate'
     self.use_luci_auth = False
     self.rts_out_dir = self.PathJoin('gen', 'rts')
+    self.banned_from_rts = set()
+
+  def PostArgsInit(self):
+    self.use_luci_auth = getattr(self.args, 'luci_auth', False)
+
+    if 'config_file' in self.args and self.args.config_file is None:
+      self.args.config_file = self.default_config
+
+    if 'expectations_dir' in self.args and self.args.expectations_dir is None:
+      self.args.expectations_dir = os.path.join(
+          os.path.dirname(self.args.config_file), 'mb_config_expectations')
+
+    banned_from_rts_map = json.loads(
+        self.ReadFile(
+            self.PathJoin(self.chromium_src_dir, 'tools', 'mb',
+                          'rts_banned_suites.json')))
+    self.banned_from_rts.update(banned_from_rts_map.get('*', set()))
+
+    if getattr(self.args, 'builder', None):
+      self.banned_from_rts.update(
+          banned_from_rts_map.get(self.args.builder, set()))
 
   def Main(self, args):
     self.ParseArgs(args)
+    self.PostArgsInit()
     try:
       ret = self.args.func()
       if ret != 0:
@@ -399,15 +421,6 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdHelp)
 
     self.args = parser.parse_args(argv)
-
-    self.use_luci_auth = getattr(self.args, 'luci_auth', False)
-
-    if 'config_file' in self.args and self.args.config_file is None:
-      self.args.config_file = self.default_config
-
-    if 'expectations_dir' in self.args and self.args.expectations_dir is None:
-      self.args.expectations_dir = os.path.join(
-          os.path.dirname(self.args.config_file), 'mb_config_expectations')
 
   def DumpInputFiles(self):
 
@@ -1085,33 +1098,6 @@ class MetaBuildWrapper(object):
       self.WriteFile(gn_runtime_deps_path, '\n'.join(labels) + '\n')
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
 
-    # Detect if we are running in a vpython interpreter, and if so force GN to
-    # use the real python interpreter. crbug.com/1049421
-    # This ensures that ninja will only use the real python interpreter and not
-    # vpython, so that any python scripts in the build will only use python
-    # modules vendored into //third_party.
-    # This can be deleted when python 3 becomes the only supported interpreter,
-    # because in python 3 vpython will no longer have its current 'viral'
-    # qualities and will require explicit usage to opt in to.
-    prefix = getattr(sys, "real_prefix", sys.prefix)
-    python_exe = 'python.exe' if self.platform.startswith('win') else 'python'
-    # The value of prefix varies. Sometimes it extends to include the bin/
-    # directory of the python install such that prefix/python is the
-    # interpreter, and other times prefix/bin/python is the interpreter.
-    # Therefore we need to check both. Also, it is safer to check prefix/bin
-    # first because there have been previous installs where prefix/bin/python
-    # was the real binary and prefix/python was actually vpython-native.
-    possible_python_locations = [
-        os.path.join(prefix, 'bin', python_exe),
-        os.path.join(prefix, python_exe),
-    ]
-    for p in possible_python_locations:
-      if os.path.isfile(p):
-        cmd.append('--script-executable=%s' % p)
-        break
-    else:
-      self.Print('python interpreter not under %s' % prefix)
-
     ret, output, _ = self.Run(cmd)
     if ret != 0:
       if self.args.json_output:
@@ -1243,11 +1229,14 @@ class MetaBuildWrapper(object):
       # For more info about RTS, please see
       # //docs/testing/regression-test-selection.md
       if self.args.use_rts:
-        filter_file = target + '.filter'
-        filter_file_path = self.PathJoin(self.rts_out_dir, filter_file)
-        if self.Exists(self.ToAbsPath(build_dir, filter_file_path)):
-          command.append('--test-launcher-filter-file=%s' % filter_file_path)
-          self.Print('added rts filter file to isolate: %s' % filter_file)
+        if target in self.banned_from_rts:
+          self.Print('%s is banned for RTS on this builder' % target)
+        else:
+          filter_file = target + '.filter'
+          filter_file_path = self.PathJoin(self.rts_out_dir, filter_file)
+          if self.Exists(self.ToAbsPath(build_dir, filter_file_path)):
+            command.append('--test-launcher-filter-file=%s' % filter_file_path)
+            self.Print('added RTS filter file to isolate: %s' % filter_file)
 
       canonical_target = target.replace(':','_').replace('/','_')
       ret = self.WriteIsolateFiles(build_dir, command, canonical_target,
@@ -1497,7 +1486,7 @@ class MetaBuildWrapper(object):
     return err, labels
 
   def GNCmd(self, subcommand, path, *args):
-    if self.platform == 'linux2':
+    if self.platform.startswith('linux'):
       subdir, exe = 'linux64', 'gn'
     elif self.platform == 'darwin':
       subdir, exe = 'mac', 'gn'
@@ -1611,7 +1600,6 @@ class MetaBuildWrapper(object):
     executable = isolate_map[target].get('executable', target)
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
-    cmdline += ['vpython']
     extra_files = ['../../.vpython']
     extra_files += [
       '../../testing/test_env.py',
@@ -1621,6 +1609,7 @@ class MetaBuildWrapper(object):
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
+          'vpython',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
           '--logdog-bin-cmd', '../../.task_template_packages/logdog_butler',
@@ -1641,6 +1630,7 @@ class MetaBuildWrapper(object):
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
       cmdline += [
+          'vpython',
           '../../testing/xvfb.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1659,6 +1649,7 @@ class MetaBuildWrapper(object):
         cmdline += ['--devtools-code-coverage=${ISOLATED_OUTDIR}']
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
       cmdline += [
+          'vpython',
           '../../testing/test_env.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1684,6 +1675,7 @@ class MetaBuildWrapper(object):
       if is_android:
         extra_files.append('../../build/android/test_wrapper/logdog_wrapper.py')
         cmdline += [
+            'vpython',
             '../../testing/test_env.py',
             '../../build/android/test_wrapper/logdog_wrapper.py',
             '--script',
@@ -1693,6 +1685,7 @@ class MetaBuildWrapper(object):
         ]
       else:
         cmdline += [
+            'vpython',
             '../../testing/test_env.py',
             '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
         ]

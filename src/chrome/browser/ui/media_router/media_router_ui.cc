@@ -400,7 +400,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   // necessary.
   content::WebContents* tab_contents = initiator_;
 
-  base::Optional<RouteParameters> params;
+  absl::optional<RouteParameters> params;
   if (cast_mode == MediaCastMode::LOCAL_FILE) {
     GURL url = media_router_file_dialog_->GetLastSelectedFileUrl();
     tab_contents = OpenTabWithUrl(url);
@@ -468,25 +468,6 @@ std::vector<MediaSinkWithCastModes> MediaRouterUI::GetEnabledSinks() const {
                 [&display_sink_id](const MediaSinkWithCastModes& sink) {
                   return sink.sink.id() == display_sink_id;
                 });
-
-  // Remove the pseudo-sink, since it's only used in the WebUI dialog.
-  // TODO(takumif): Remove this once we've removed pseudo-sink from Cloud MRP.
-  base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
-    return base::StartsWith(sink.sink.id(),
-                            "pseudo:", base::CompareCase::SENSITIVE);
-  });
-
-  // Filter out cloud sinks if the window is off-the-record. Casting to cloud
-  // sinks from off-the-record is not currently supported by the Cloud MRP. This
-  // is not the best place to do this, but the Media Router browser service and
-  // extension process are shared between normal and off-the-record, so
-  // off-the-record behaviors around sink availability have to be handled at the
-  // UI layer.
-  if (initiator_->GetBrowserContext()->IsOffTheRecord()) {
-    base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
-      return sink.sink.IsMaybeCloudSink();
-    });
-  }
 
   return enabled_sinks;
 }
@@ -718,7 +699,7 @@ void MediaRouterUI::UpdateSinks() {
     observer.OnModelUpdated(model_);
 }
 
-base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
+absl::optional<RouteParameters> MediaRouterUI::GetRouteParameters(
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode) {
   DCHECK(query_result_manager_);
@@ -739,7 +720,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
         base::StringPrintf("No corresponding MediaSource for cast mode %d.",
                            static_cast<int>(cast_mode)),
         sink_id, "", "");
-    return base::nullopt;
+    return absl::nullopt;
   }
   params.source_id = source->id();
 
@@ -749,10 +730,10 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
                       "Requested to create a route for presentation, but "
                       "presentation request is missing.",
                       sink_id, source->id(), "");
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  current_route_request_ = base::make_optional<RouteRequest>(sink_id);
+  current_route_request_ = absl::make_optional<RouteRequest>(sink_id);
   params.origin = for_presentation_source ? presentation_request_->frame_origin
                                           : url::Origin::Create(GURL());
 
@@ -797,7 +778,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
   params.timeout = GetRouteRequestTimeout(cast_mode);
   params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
-  return base::make_optional(std::move(params));
+  return absl::make_optional(std::move(params));
 }
 
 GURL MediaRouterUI::GetFrameURL() const {
@@ -890,7 +871,7 @@ void MediaRouterUI::OnIssue(const Issue& issue) {
 }
 
 void MediaRouterUI::OnIssueCleared() {
-  issue_ = base::nullopt;
+  issue_ = absl::nullopt;
   UpdateSinks();
 }
 
@@ -982,7 +963,7 @@ void MediaRouterUI::UpdateModelHeader() {
 
 UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
                                            const MediaRoute* route,
-                                           const base::Optional<Issue>& issue) {
+                                           const absl::optional<Issue>& issue) {
   UIMediaSink ui_sink;
   ui_sink.id = sink.sink.id();
   ui_sink.friendly_name = GetSinkFriendlyName(sink.sink);
@@ -993,19 +974,19 @@ UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
   if (route) {
     ui_sink.status_text = base::UTF8ToUTF16(route->description());
     ui_sink.route = *route;
-    ui_sink.state = terminating_route_id_ && route->media_route_id() ==
-                                                 terminating_route_id_.value()
-                        ? UIMediaSinkState::DISCONNECTING
-                        : UIMediaSinkState::CONNECTED;
+    if (terminating_route_id_ &&
+        route->media_route_id() == terminating_route_id_.value()) {
+      ui_sink.state = UIMediaSinkState::DISCONNECTING;
+    } else if (route->is_connecting()) {
+      ui_sink.state = UIMediaSinkState::CONNECTING;
+    } else {
+      ui_sink.state = UIMediaSinkState::CONNECTED;
+    }
   } else {
     ui_sink.state = current_route_request() &&
                             sink.sink.id() == current_route_request()->sink_id
                         ? UIMediaSinkState::CONNECTING
                         : UIMediaSinkState::AVAILABLE;
-  }
-  if (ui_sink.icon_type == SinkIconType::HANGOUT &&
-      ui_sink.state == UIMediaSinkState::AVAILABLE && sink.sink.domain()) {
-    ui_sink.status_text = base::UTF8ToUTF16(*sink.sink.domain());
   }
   if (issue && IssueMatches(*issue, ui_sink))
     ui_sink.issue = issue;
@@ -1026,7 +1007,7 @@ void MediaRouterUI::FileDialogSelectionCanceled() {
   std::move(file_selection_callback_).Run(nullptr);
 }
 
-base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
+absl::optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
     const MediaSink::Id& sink_id,
     const GURL& file_url,
     content::WebContents* tab_contents) {
@@ -1056,7 +1037,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
   CHECK(initiator_);
   params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
-  return base::make_optional(std::move(params));
+  return absl::make_optional(std::move(params));
 }
 
 // TODO(crbug.com/792547): Refactor FullScreenFirstVideoElement() and

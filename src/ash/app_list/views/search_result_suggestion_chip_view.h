@@ -14,8 +14,6 @@
 namespace views {
 class BoxLayout;
 class ImageView;
-class InkDrop;
-class InkDropRipple;
 class Label;
 }  // namespace views
 
@@ -49,10 +47,6 @@ class ASH_EXPORT SearchResultSuggestionChipView : public SearchResultBaseView {
   void OnBlur() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnThemeChanged() override;
-
-  // views::InkDropHost:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;

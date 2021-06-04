@@ -388,7 +388,6 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 network::mojom::URLResponseHeadPtr CreateResponseInfoFromServiceWorker() {
   auto head = network::mojom::URLResponseHead::New();
   head->was_fetched_via_service_worker = true;
-  head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
   head->response_type = network::mojom::FetchResponseType::kDefault;
   head->cache_storage_cache_name = std::string();
@@ -436,7 +435,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
 
     // Make the registration findable via storage functions.
     registration_->set_last_update_check(base::Time::Now());
-    base::Optional<blink::ServiceWorkerStatusCode> status;
+    absl::optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
     registry()->StoreRegistration(
         registration_.get(), version_.get(),
@@ -458,7 +457,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
     // create a response. The main script response is set when the first
     // TransferInstalledScript().
     {
-      base::Optional<blink::ServiceWorkerStatusCode> status;
+      absl::optional<blink::ServiceWorkerStatusCode> status;
       base::RunLoop loop;
       version_->StartWorker(
           ServiceWorkerMetrics::EventType::UNKNOWN,
@@ -532,8 +531,6 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
       const network::mojom::URLResponseHead& expected_info) {
     EXPECT_EQ(expected_info.was_fetched_via_service_worker,
               info.was_fetched_via_service_worker);
-    EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
-              info.was_fallback_required_by_service_worker);
     EXPECT_EQ(expected_info.url_list_via_service_worker,
               info.url_list_via_service_worker);
     EXPECT_EQ(expected_info.response_type, info.response_type);

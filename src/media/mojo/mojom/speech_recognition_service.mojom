@@ -30,7 +30,8 @@ interface SpeechRecognitionContext {
   // indicating whether multichannel audio is supported by the speech
   // recognition service.
   BindRecognizer(pending_receiver<SpeechRecognitionRecognizer> receiver,
-                 pending_remote<SpeechRecognitionRecognizerClient> client)
+                 pending_remote<SpeechRecognitionRecognizerClient> client,
+                 SpeechRecognitionOptions options)
                  => (bool is_multichannel_supported);
 
   // Prepares microphone audio to be captured from within the
@@ -38,7 +39,8 @@ interface SpeechRecognitionContext {
   // SpeechRecognitionRecognizerClient.
   BindAudioSourceFetcher(
                  pending_receiver<AudioSourceFetcher> fetcher_receiver,
-                 pending_remote<SpeechRecognitionRecognizerClient> client)
+                 pending_remote<SpeechRecognitionRecognizerClient> client,
+                 SpeechRecognitionOptions options)
                  => (bool is_multichannel_supported);
 };
 
@@ -94,26 +96,21 @@ interface SpeechRecognitionRecognizer {
   // to the originating media.
   SendAudioToSpeechRecognitionService(AudioDataS16 buffer);
 
-  // Notify the speech recognition recognizer that the caption bubble was
-  // closed. Used to determine whether the caption bubble was visible when
-  // recording watch time.
-  OnCaptionBubbleClosed();
-
-  // Notify the speech recognition recognizer that audio was received by the
-  // renderer after the caption bubble was closed.
-  AudioReceivedAfterBubbleClosed(mojo_base.mojom.TimeDelta duration);
-
   // Notify the speech recognition recognizer that the language changed. Takes
   // in the locale string (e.g. "en-US").
   OnLanguageChanged(string language);
 };
 
 // The interface used to return speech recognition events from the speech
-// recognition service back to the originating media. The remote lives in the
-// speech recognition process and the receiver lives in the renderer process.
+// recognition service to the client that will display the results to the user.
+// The remote lives in the speech recognition process and the receiver lives in
+// the browser process.
 interface SpeechRecognitionRecognizerClient {
   // Triggered by speech recognition process on a speech recognition event.
-  OnSpeechRecognitionRecognitionEvent(SpeechRecognitionResult result);
+  // Returns whether the result was received successfully. Speech recognition
+  // will halt if this returns false.
+  OnSpeechRecognitionRecognitionEvent(SpeechRecognitionResult result)
+      => (bool success);
 
   // Triggered by an error within the speech recognition service.
   OnSpeechRecognitionError();
@@ -123,7 +120,7 @@ interface SpeechRecognitionRecognizerClient {
 };
 
 // A speech recognition result created by the speech service and passed to the
-// renderer.
+// browser.
 struct SpeechRecognitionResult {
   string transcription;
 
@@ -163,4 +160,24 @@ interface SpeechRecognitionClientBrowserInterface {
   // Bind the speech recognition availability observer.
   BindSpeechRecognitionBrowserObserver(
     pending_remote<SpeechRecognitionBrowserObserver> observer);
+};
+
+// Corresponds to ExtendedSodaConfigMsg in
+// chrome/services/speech/soda/proto/soda_api.proto.
+enum SpeechRecognitionMode {
+  kUnknown,
+  // Intended for voice input for keyboard usage.
+  kIme,
+  // Intended to caption a stream of audio.
+  kCaption,
+};
+
+// Options for speech recognition.
+// TODO(crbug.com/1195916): Add language identifier.
+// TODO(crbug.com/1165437): Add option to include timing metrics in the result.
+struct SpeechRecognitionOptions {
+  // What kind of recognition to use.
+  // In the case of web fallback (not for launch, used for development only),
+  // this option will be ignored.
+  SpeechRecognitionMode recognition_mode;
 };

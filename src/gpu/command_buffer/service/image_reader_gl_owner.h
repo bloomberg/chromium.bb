@@ -37,7 +37,7 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
       const base::RepeatingClosure& frame_available_cb) override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
-  void EnsureTexImageBound() override;
+  void EnsureTexImageBound(GLuint service_id) override;
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
@@ -50,7 +50,7 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   int32_t max_images_for_testing() const { return max_images_; }
 
  protected:
-  void OnTextureDestroyed(gles2::AbstractTexture*) override;
+  void ReleaseResources() override;
 
  private:
   friend class TextureOwner;
@@ -66,7 +66,7 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
     ~ScopedCurrentImageRef();
     AImage* image() const { return image_; }
     base::ScopedFD GetReadyFence() const;
-    void EnsureBound();
+    void EnsureBound(GLuint service_id);
 
    private:
     ImageReaderGLOwner* texture_owner_;
@@ -80,7 +80,8 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   };
 
   ImageReaderGLOwner(std::unique_ptr<gles2::AbstractTexture> texture,
-                     Mode secure_mode);
+                     Mode secure_mode,
+                     scoped_refptr<SharedContextState> context_state);
   ~ImageReaderGLOwner() override;
 
   // Registers and releases a ref on the image. Once the ref-count for an image
@@ -98,7 +99,7 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
 
   // Most recently acquired image using image reader. This works like a cached
   // image until next new image is acquired which overwrites this.
-  base::Optional<ScopedCurrentImageRef> current_image_ref_;
+  absl::optional<ScopedCurrentImageRef> current_image_ref_;
   std::unique_ptr<AImageReader_ImageListener> listener_;
 
   // A map consisting of pending refs on an AImage. If an image has any refs, it

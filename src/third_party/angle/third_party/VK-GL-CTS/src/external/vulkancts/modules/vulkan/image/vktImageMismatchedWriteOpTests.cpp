@@ -19,7 +19,7 @@
  *
  *//*!
  * \file
- * \brief Testing writing and reading for mismatched vector sizes.
+ * \brief Image OpImageWrite tests.
  *//*--------------------------------------------------------------------*/
 
 #include "vktImageMismatchedWriteOpTests.hpp"
@@ -37,6 +37,8 @@
 #include "tcuTexture.hpp"
 #include "tcuTextureUtil.hpp"
 
+#include <set>
+
 #define EPSILON_COMPARE(a,b,e)	((de::max((a),(b))-de::min((a),(b)))<=(e))
 
 using namespace vk;
@@ -49,57 +51,129 @@ namespace
 {
 
 using tcu::TextureFormat;
+using tcu::StringTemplate;
+using tcu::TextureChannelClass;
+using strings = std::map<std::string, std::string>;
 
-class MismatchedVectorSizesTest : public TestCase
+class MismatchedWriteOpTest : public TestCase
 {
 public:
 	struct Params
 	{
 		VkFormat			vkFormat;
-		int					sourceWidth;
 		int					textureWidth;
 		int					textureHeight;
+		VkFormat			spirvFormat;
 	};
 	typedef de::SharedPtr<Params> ParamsSp;
 
-							MismatchedVectorSizesTest			(tcu::TestContext&			testCtx,
-																 const std::string&			name,
-																 const std::string&			description,
-																 const ParamsSp				params)
-		: TestCase	(testCtx, name, description)
-		, m_params	(params)
+										MismatchedWriteOpTest		(tcu::TestContext&			testCtx,
+																	 const std::string&			name,
+																	 const std::string&			description,
+																	 const ParamsSp				params)
+	: TestCase	(testCtx, name, description)
+	, m_params	(params)
 	{
-		DE_ASSERT(getNumUsedChannels(params->vkFormat) <= params->sourceWidth);
 	}
 
-	virtual void			checkSupport						(Context&					context) const override;
-	virtual void			initPrograms						(SourceCollections&			programCollection) const override;
-	virtual TestInstance*	createInstance						(Context&					context) const override;
+	virtual void						checkSupport				(Context&					context)		const override;
+	virtual TextureFormat				getBufferFormat				(void)										const;
+	void								getProgramCodeAndVariables	(StringTemplate&			code,
+																	 strings&					variables)		const;
 
-private:
+	template<class TestParams> void getParams(TestParams&);
+
+protected:
 	const ParamsSp	m_params;
 };
 
-class MismatchedVectorSizesTestInstance : public TestInstance
+class MismatchedVectorSizesTest : public MismatchedWriteOpTest
 {
 public:
-	using ParamsSp = MismatchedVectorSizesTest::ParamsSp;
+										MismatchedVectorSizesTest	(tcu::TestContext&			testCtx,
+																	 const std::string&			name,
+																	 const std::string&			description,
+																	 const ParamsSp				params,
+																	 const int					sourceWidth)
+		: MismatchedWriteOpTest	(testCtx, name, description, params)
+		, m_sourceWidth			(sourceWidth)
+	{
+		DE_ASSERT(getNumUsedChannels(params->vkFormat) <= sourceWidth);
+	}
 
-							MismatchedVectorSizesTestInstance   (Context&					context,
-																 const ParamsSp				params)
-		: TestInstance	(context)
-		, m_params		(params)
+	virtual void						initPrograms				(SourceCollections&			programCollection)	const override;
+	virtual TestInstance*				createInstance				(Context&					context)			const override;
+
+private:
+	const int	m_sourceWidth;
+};
+
+class MismatchedSignednessAndTypeTest : public MismatchedWriteOpTest
+{
+public:
+									MismatchedSignednessAndTypeTest	(tcu::TestContext&			testCtx,
+																	 const std::string&			name,
+																	 const std::string&			description,
+																	 const ParamsSp				params)
+		: MismatchedWriteOpTest	(testCtx, name, description, params)
 	{
 	}
 
-	virtual tcu::TestStatus	iterate								(void)  override;
-	void					clear								(tcu::PixelBufferAccess&	data) const;
-	void					populate							(tcu::PixelBufferAccess&	data) const;
-	bool					compare								(tcu::PixelBufferAccess&	result,
-																 tcu::PixelBufferAccess&	reference) const;
+	virtual void						initPrograms				(SourceCollections&			programCollection)	const override;
+	virtual TestInstance*				createInstance				(Context&					context)			const override;
+};
 
-private:
-	const ParamsSp	m_params;
+class MismatchedWriteOpTestInstance : public TestInstance
+{
+public:
+	using TestClass	= MismatchedWriteOpTest;
+	using ParamsSp	= MismatchedWriteOpTest::ParamsSp;
+
+							MismatchedWriteOpTestInstance			(Context&					context,
+																	 const ParamsSp				params,
+																	 const TestClass*			test)
+		: TestInstance	(context)
+		, m_params		(params)
+		, m_test		(test)
+	{
+	}
+
+	virtual tcu::TestStatus	iterate									(void)											override;
+	virtual void			clear									(tcu::PixelBufferAccess&	data)				const;
+	virtual void			populate								(tcu::PixelBufferAccess&	data)				const;
+	virtual bool			compare									(tcu::PixelBufferAccess&	result,
+																	 tcu::PixelBufferAccess&	reference)			const = 0;
+protected:
+	const ParamsSp		m_params;
+	const TestClass*	m_test;
+};
+
+class MismatchedVectorSizesTestInstance : public MismatchedWriteOpTestInstance
+{
+public:
+							MismatchedVectorSizesTestInstance		(Context&					context,
+																	 const ParamsSp				params,
+																	 const TestClass*			test)
+		: MismatchedWriteOpTestInstance	(context, params, test)
+	{
+	}
+
+	bool					compare									(tcu::PixelBufferAccess&	result,
+																	 tcu::PixelBufferAccess&	reference)			const override;
+};
+
+class MismatchedSignednessAndTypeTestInstance : public MismatchedWriteOpTestInstance
+{
+public:
+							MismatchedSignednessAndTypeTestInstance	(Context&					context,
+																	 const ParamsSp				params,
+																	 const TestClass*			test)
+		: MismatchedWriteOpTestInstance	(context, params, test)
+	{
+	}
+
+	bool					compare									(tcu::PixelBufferAccess&	result,
+																	tcu::PixelBufferAccess&		reference)			const override;
 };
 
 namespace ut
@@ -116,7 +190,10 @@ public:
 	VkBuffer						getBuffer			(void) const { return *m_buffer; }
 	VkDeviceSize					getSize				(void) const { return m_bufferSize; }
 
-	tcu::PixelBufferAccess&			getPixelAccess		(void);
+	tcu::PixelBufferAccess&			getPixelAccess		(void) { return m_access[0]; }
+
+	void							flush				(void) { flushAlloc(m_context.getDeviceInterface(), m_context.getDevice(), *m_bufferMemory); }
+	void							invalidate			(void) { invalidateAlloc(m_context.getDeviceInterface(), m_context.getDevice(), *m_bufferMemory); }
 
 protected:
 	friend class StorageImage2D;
@@ -145,6 +222,9 @@ public:
 	VkImageView						getView			(void) const	{ return *m_view; }
 
 	tcu::PixelBufferAccess&			getPixelAccess	(void)			{ return m_buffer.getPixelAccess(); }
+
+	void							flush			(void) { m_buffer.flush(); }
+	void							invalidate		(void) { m_buffer.invalidate(); }
 
 	void							upload			(const VkCommandBuffer	cmdBuffer);
 	void							download		(const VkCommandBuffer	cmdBuffer);
@@ -227,14 +307,13 @@ StorageImage2D::StorageImage2D (Context& context, VkFormat vkFormat, const int w
 
 void StorageImage2D::upload (const VkCommandBuffer cmdBuffer)
 {
-	const VkDevice					dev							= m_context.getDevice();
 	const DeviceInterface&			vki							= m_context.getDeviceInterface();
 	const VkImageSubresourceRange	fullImageSubresourceRange	= makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u);
 	const VkBufferImageCopy			copyRegion					= makeBufferImageCopy(makeExtent3D(tcu::IVec3(m_width, m_height, 1)), 1u);
 
 	{
 		const VkBufferMemoryBarrier bufferBarrier = makeBufferMemoryBarrier(
-			(VkAccessFlags)0, VK_ACCESS_TRANSFER_READ_BIT,
+			VK_ACCESS_HOST_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 			m_buffer.getBuffer(), 0ull, m_buffer.getSize());
 
 		const VkImageMemoryBarrier beforeCopyBarrier = makeImageMemoryBarrier(
@@ -242,8 +321,7 @@ void StorageImage2D::upload (const VkCommandBuffer cmdBuffer)
 			m_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			*m_image, fullImageSubresourceRange);
 
-		invalidateMappedMemoryRange(vki, dev, m_buffer.getMemory().getMemory(), m_buffer.getMemory().getOffset(), VK_WHOLE_SIZE);
-		vki.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0,
+		vki.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0,
 							   0, (const VkMemoryBarrier*)DE_NULL, 1, &bufferBarrier, 1, &beforeCopyBarrier);
 	}
 
@@ -256,7 +334,7 @@ void StorageImage2D::upload (const VkCommandBuffer cmdBuffer)
 
 		m_layout = VK_IMAGE_LAYOUT_GENERAL;
 		const VkImageMemoryBarrier afterCopyBarrier = makeImageMemoryBarrier(
-			VK_ACCESS_TRANSFER_WRITE_BIT, (VkAccessFlags)0,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_WRITE_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_layout,
 			*m_image, fullImageSubresourceRange);
 
@@ -267,7 +345,6 @@ void StorageImage2D::upload (const VkCommandBuffer cmdBuffer)
 
 void StorageImage2D::download (const VkCommandBuffer cmdBuffer)
 {
-	const VkDevice					dev							= m_context.getDevice();
 	const DeviceInterface&			vki							= m_context.getDeviceInterface();
 	const VkImageSubresourceRange	fullImageSubresourceRange	= makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u);
 	const VkBufferImageCopy			copyRegion					= makeBufferImageCopy(makeExtent3D(tcu::IVec3(m_width, m_height, 1)), 1u);
@@ -278,7 +355,7 @@ void StorageImage2D::download (const VkCommandBuffer cmdBuffer)
 			m_buffer.getBuffer(), 0ull, m_buffer.getSize());
 
 		const VkImageMemoryBarrier beforeCopyBarrier = makeImageMemoryBarrier(
-			(VkAccessFlagBits)0, VK_ACCESS_TRANSFER_READ_BIT,
+			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 			m_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			*m_image, fullImageSubresourceRange);
 
@@ -290,7 +367,7 @@ void StorageImage2D::download (const VkCommandBuffer cmdBuffer)
 
 	{
 		const VkBufferMemoryBarrier bufferBarrier = makeBufferMemoryBarrier(
-			VK_ACCESS_TRANSFER_WRITE_BIT, (VkAccessFlags)0,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT,
 			m_buffer.getBuffer(), 0ull, m_buffer.getSize());
 
 		const VkImageMemoryBarrier afterCopyBarrier = makeImageMemoryBarrier(
@@ -298,11 +375,10 @@ void StorageImage2D::download (const VkCommandBuffer cmdBuffer)
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_layout,
 			*m_image, fullImageSubresourceRange);
 
-		vki.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, (VkDependencyFlags)0,
-							   0, (const VkMemoryBarrier*)DE_NULL, 0, &bufferBarrier, 1, &afterCopyBarrier);
+		vki.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, (VkDependencyFlags)0,
+							   0, (const VkMemoryBarrier*)DE_NULL, 1, &bufferBarrier, 1, &afterCopyBarrier);
 	}
 
-	invalidateMappedMemoryRange(vki, dev, m_buffer.getMemory().getMemory(), m_buffer.getMemory().getOffset(), VK_WHOLE_SIZE);
 }
 
 StorageBuffer2D::StorageBuffer2D (Context& context, const tcu::TextureFormat& format, deUint32 width, deUint32 height)
@@ -328,7 +404,7 @@ StorageBuffer2D::StorageBuffer2D (Context& context, const tcu::TextureFormat& fo
 		bufferUsageFlags,							// VkBufferUsageFlags		usage;
 		VK_SHARING_MODE_EXCLUSIVE,					// VkSharingMode			sharingMode;
 		1u,											// deUint32					queueFamilyIndexCount;
-		&queueFamilyIndex							//	const deUint32*			pQueueFamilyIndices;
+		&queueFamilyIndex							// const deUint32*			pQueueFamilyIndices;
 	};
 
 	m_buffer		= createBuffer(vki, dev, &bufferCreateInfo);
@@ -337,14 +413,6 @@ StorageBuffer2D::StorageBuffer2D (Context& context, const tcu::TextureFormat& fo
 	VK_CHECK(vki.bindBufferMemory(dev, *m_buffer, m_bufferMemory->getMemory(), m_bufferMemory->getOffset()));
 
 	m_access.emplace_back(m_format, tcu::IVec3(m_width, m_height, 1), m_bufferMemory->getHostPtr());
-}
-
-tcu::PixelBufferAccess& StorageBuffer2D::getPixelAccess (void)
-{
-	const VkDevice			dev	= m_context.getDevice();
-	const DeviceInterface&	vki	= m_context.getDeviceInterface();
-	invalidateMappedMemoryRange(vki, dev, m_bufferMemory->getMemory(), m_bufferMemory->getOffset(), VK_WHOLE_SIZE);
-	return m_access[0];
 }
 
 tcu::Vec4 gluePixels (const tcu::Vec4& a, const tcu::Vec4& b, const int pivot)
@@ -356,7 +424,7 @@ tcu::Vec4 gluePixels (const tcu::Vec4& a, const tcu::Vec4& b, const int pivot)
 }
 
 template<class T, int N>
-bool comparePixels(const tcu::Vector<T,N>& res, const tcu::Vector<T,N>& ref, const int targetWidth, const T eps = {})
+bool comparePixels (const tcu::Vector<T,N>& res, const tcu::Vector<T,N>& ref, const int targetWidth, const T eps = {})
 {
 	bool		ok		= true;
 
@@ -370,9 +438,14 @@ bool comparePixels(const tcu::Vector<T,N>& res, const tcu::Vector<T,N>& ref, con
 
 } // ut
 
-TestInstance* MismatchedVectorSizesTest::createInstance	(Context& context) const
+TestInstance* MismatchedVectorSizesTest::createInstance (Context& context) const
 {
-	return new MismatchedVectorSizesTestInstance(context, m_params);
+	return (new MismatchedVectorSizesTestInstance(context, m_params, this));
+}
+
+TestInstance* MismatchedSignednessAndTypeTest::createInstance (Context& context) const
+{
+	return (new MismatchedSignednessAndTypeTestInstance(context, m_params, this));
 }
 
 enum class OpCapability
@@ -382,7 +455,7 @@ enum class OpCapability
 	Int64ImageEXT
 };
 
-const char* OpCapabilityToStr(const OpCapability& cap)
+const char* OpCapabilityToStr (const OpCapability& cap)
 {
 	switch (cap)
 	{
@@ -398,53 +471,78 @@ struct FormatInfo {
 	VkFormat		vkFormat;
 	const char*		spirvName;
 	OpCapability	capability;
+	bool operator==(const FormatInfo& other) const {
+		return ((vkFormat == other.vkFormat) && (spirvName == other.spirvName) && (capability == other.capability));
+	}
 }
-formatsInfos[] =
+const formatsInfos[] =
 {
+	// ----- FLOATS -----
+
 	{ VK_FORMAT_R32G32B32A32_SFLOAT,		"Rgba32f",		OpCapability::Shader						},
-	{ VK_FORMAT_R16G16B16A16_SFLOAT,		"Rgba16f",		OpCapability::Shader						},
-	{ VK_FORMAT_R32_SFLOAT,					"R32f",			OpCapability::Shader						},
-	{ VK_FORMAT_R8G8B8A8_UNORM,				"Rgba8",		OpCapability::Shader						},
-	{ VK_FORMAT_R8G8B8A8_SNORM,				"Rgba8Snorm",	OpCapability::Shader						},
 	{ VK_FORMAT_R32G32_SFLOAT,				"Rg32f",		OpCapability::StorageImageExtendedFormats	},
+	{ VK_FORMAT_R32_SFLOAT,					"R32f",			OpCapability::Shader						},
+
+	{ VK_FORMAT_R16G16B16A16_SFLOAT,		"Rgba16f",		OpCapability::Shader						},
 	{ VK_FORMAT_R16G16_SFLOAT,				"Rg16f",		OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_B10G11R11_UFLOAT_PACK32,	"R11fG11fB10f",	OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16_SFLOAT,					"R16f",			OpCapability::StorageImageExtendedFormats	},
+
 	{ VK_FORMAT_R16G16B16A16_UNORM,			"Rgba16",		OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_A2B10G10R10_UNORM_PACK32,	"Rgb10A2",		OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16G16_UNORM,				"Rg16",			OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_R8G8_UNORM,					"Rg8",			OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16_UNORM,					"R16",			OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_R8_UNORM,					"R8",			OpCapability::StorageImageExtendedFormats	},
+
 	{ VK_FORMAT_R16G16B16A16_SNORM,			"Rgba16Snorm",	OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16G16_SNORM,				"Rg16Snorm",	OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_R8G8_SNORM,					"Rg8Snorm",		OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16_SNORM,					"R16Snorm",		OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_A2B10G10R10_UNORM_PACK32,	"Rgb10A2",		OpCapability::StorageImageExtendedFormats	},
+	{ VK_FORMAT_B10G11R11_UFLOAT_PACK32,	"R11fG11fB10f",	OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_R8G8B8A8_UNORM,				"Rgba8",		OpCapability::Shader						},
+	{ VK_FORMAT_R8G8_UNORM,					"Rg8",			OpCapability::StorageImageExtendedFormats	},
+	{ VK_FORMAT_R8_UNORM,					"R8",			OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_R8G8B8A8_SNORM,				"Rgba8Snorm",	OpCapability::Shader						},
+	{ VK_FORMAT_R8G8_SNORM,					"Rg8Snorm",		OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R8_SNORM,					"R8Snorm",		OpCapability::StorageImageExtendedFormats	},
+
+	// ----- SIGNED INTEGERS -----
+
 	{ VK_FORMAT_R32G32B32A32_SINT,			"Rgba32i",		OpCapability::Shader						},
-	{ VK_FORMAT_R16G16B16A16_SINT,			"Rgba16i",		OpCapability::Shader						},
-	{ VK_FORMAT_R8G8B8A8_SINT,				"Rgba8i",		OpCapability::Shader						},
-	{ VK_FORMAT_R32_SINT,					"R32i",			OpCapability::Shader						},
 	{ VK_FORMAT_R32G32_SINT,				"Rg32i",		OpCapability::StorageImageExtendedFormats	},
+	{ VK_FORMAT_R32_SINT,					"R32i",			OpCapability::Shader						},
+
+	{ VK_FORMAT_R16G16B16A16_SINT,			"Rgba16i",		OpCapability::Shader						},
 	{ VK_FORMAT_R16G16_SINT,				"Rg16i",		OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_R8G8_SINT,					"Rg8i",			OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16_SINT,					"R16i",			OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_R8G8B8A8_SINT,				"Rgba8i",		OpCapability::Shader						},
+	{ VK_FORMAT_R8G8_SINT,					"Rg8i",			OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R8_SINT,					"R8i",			OpCapability::StorageImageExtendedFormats	},
+
+	// ----- UNSIGNED INTEGERS ------
+
 	{ VK_FORMAT_R32G32B32A32_UINT,			"Rgba32ui",		OpCapability::Shader						},
-	{ VK_FORMAT_R16G16B16A16_UINT,			"Rgba16ui",		OpCapability::Shader						},
-	{ VK_FORMAT_R8G8B8A8_UINT,				"Rgba8ui",		OpCapability::Shader						},
-	{ VK_FORMAT_R32_UINT,					"R32ui",		OpCapability::Shader						},
-	{ VK_FORMAT_A2B10G10R10_UINT_PACK32,	"Rgb10a2ui",	OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R32G32_UINT,				"Rg32ui",		OpCapability::StorageImageExtendedFormats	},
+	{ VK_FORMAT_R32_UINT,					"R32ui",		OpCapability::Shader						},
+
+	{ VK_FORMAT_R16G16B16A16_UINT,			"Rgba16ui",		OpCapability::Shader						},
 	{ VK_FORMAT_R16G16_UINT,				"Rg16ui",		OpCapability::StorageImageExtendedFormats	},
-	{ VK_FORMAT_R8G8_UINT,					"Rg8ui",		OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R16_UINT,					"R16ui",		OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_A2B10G10R10_UINT_PACK32,	"Rgb10a2ui",	OpCapability::StorageImageExtendedFormats	},
+
+	{ VK_FORMAT_R8G8B8A8_UINT,				"Rgba8ui",		OpCapability::Shader						},
+	{ VK_FORMAT_R8G8_UINT,					"Rg8ui",		OpCapability::StorageImageExtendedFormats	},
 	{ VK_FORMAT_R8_UINT,					"R8ui",			OpCapability::StorageImageExtendedFormats	},
+
+	// ----- EXTENDED INTEGERS -----
+
+	{ VK_FORMAT_R64_SINT,					"R64i",			OpCapability::Int64ImageEXT					},
 	{ VK_FORMAT_R64_UINT,					"R64ui",		OpCapability::Int64ImageEXT					},
-	{ VK_FORMAT_R64_SINT,					"R64i",			OpCapability::Int64ImageEXT					}
 };
 
-const FormatInfo* findFormatInfo(VkFormat vkFormat)
+const FormatInfo* findFormatInfo (VkFormat vkFormat)
 {
 	for (const auto& formatInfo : formatsInfos)
 	{
@@ -455,9 +553,21 @@ const FormatInfo* findFormatInfo(VkFormat vkFormat)
 	return nullptr;
 }
 
-const char* getChannelStr (const TextureFormat& format)
+std::vector<FormatInfo> findFormatsByChannelClass(TextureChannelClass channelClass)
 {
-	switch (format.type)
+	std::vector<FormatInfo> result;
+	for (const FormatInfo& fi : formatsInfos)
+	{
+		if (getTextureChannelClass(mapVkFormat(fi.vkFormat).type) == channelClass)
+			result.emplace_back(fi);
+	}
+	DE_ASSERT(!result.empty());
+	return result;
+}
+
+const char* getChannelStr (const TextureFormat::ChannelType& type)
+{
+	switch (type)
 	{
 		case TextureFormat::FLOAT:				return "float";
 		case TextureFormat::SIGNED_INT32:		return "sint";
@@ -471,7 +581,7 @@ const char* getChannelStr (const TextureFormat& format)
 	return nullptr;
 }
 
-TextureFormat makeBufferFormat (tcu::TextureChannelClass channelClass, bool doubled)
+TextureFormat::ChannelType makeChannelType (tcu::TextureChannelClass channelClass, bool doubled)
 {
 	auto	channelType	= TextureFormat::ChannelType::CHANNELTYPE_LAST;
 	switch (channelClass)
@@ -485,10 +595,15 @@ TextureFormat makeBufferFormat (tcu::TextureChannelClass channelClass, bool doub
 		default:
 			channelType	= doubled ? TextureFormat::ChannelType::FLOAT64 : TextureFormat::ChannelType::FLOAT;
 	}
-	return TextureFormat(TextureFormat::ChannelOrder::RGBA, channelType);
+	return channelType;
 }
 
-void MismatchedVectorSizesTest::checkSupport (Context& context) const
+TextureFormat makeBufferFormat (tcu::TextureChannelClass channelClass, bool doubled)
+{
+	return TextureFormat(TextureFormat::ChannelOrder::RGBA, makeChannelType(channelClass, doubled));
+}
+
+void MismatchedWriteOpTest::checkSupport (Context& context) const
 {
 	const FormatInfo* info = findFormatInfo(m_params->vkFormat);
 
@@ -515,10 +630,17 @@ void MismatchedVectorSizesTest::checkSupport (Context& context) const
 	}
 }
 
-
-void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollection) const
+TextureFormat MismatchedWriteOpTest::getBufferFormat (void) const
 {
-	tcu::StringTemplate shaderTemplate(R"(
+	const FormatInfo*	info		= findFormatInfo(m_params->vkFormat);
+	const TextureFormat texFormat	= mapVkFormat(m_params->vkFormat);
+	return makeBufferFormat(getTextureChannelClass(texFormat.type), info->capability == OpCapability::Int64ImageEXT);
+}
+
+
+void MismatchedWriteOpTest::getProgramCodeAndVariables (StringTemplate& code, strings& variables) const
+{
+	std::string shaderTemplate(R"(
 
 							  ${ENABLING_CAPABILITIES}
 							  ${CAPABILITY_INT64}
@@ -644,63 +766,87 @@ void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollecti
 				   %v2ulong = OpTypeVector %ulong 2
 	)");
 
-	const tcu::StringTemplate writeFromSingleComponent(R"(
+	const tcu::TextureFormat			buffFormat	= getBufferFormat();
+
+	const FormatInfo*					info		= findFormatInfo(m_params->spirvFormat);
+
+	variables["SPIRV_IMAGE_FORMAT"]					= info->spirvName;
+	variables["ENABLING_CAPABILITIES"]				= std::string("OpCapability ") + OpCapabilityToStr(info->capability);
+	variables["CAPABILITY_INT64"]					= "";
+	variables["EXTENSIONS"]							= "";
+	variables["TYPES_INT64"]						= "";
+
+	if (info->capability == OpCapability::Int64ImageEXT)
+	{
+		variables["EXTENSIONS"]						= "OpExtension	   \"SPV_EXT_shader_image_int64\"";
+		variables["CAPABILITY_INT64"]				= std::string("OpCapability Int64");
+		variables["TYPES_INT64"]					= typesInt64;
+	}
+
+	variables["SAMPLED_TYPE"]						= getChannelStr(buffFormat.type);
+	variables["IMAGE_WIDTH"]						= std::to_string(m_params->textureWidth);
+	variables["IMAGE_HEIGHT"]						= std::to_string(m_params->textureHeight);
+	variables["ARRAY_STRIDE"]						= std::to_string(tcu::getChannelSize(buffFormat.type) * tcu::getNumUsedChannels(buffFormat.order));
+
+	code.setString(shaderTemplate);
+}
+
+void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollection) const
+{
+	strings				variables		{};
+	StringTemplate		shaderTemplate	{};
+
+	const StringTemplate writeFromSingleComponent	(R"(
 					 OpImageWrite %img %id_xy %red
 	)");
-	const tcu::StringTemplate writeFromTwoComponents(R"(
+	const StringTemplate writeFromTwoComponents		(R"(
 			   %rg = OpCompositeConstruct %v2${SAMPLED_TYPE} %red %green
 					 OpImageWrite %img %id_xy %rg
 	)");
 
-	const tcu::StringTemplate writeFromThreeComponents(R"(
+	const StringTemplate writeFromThreeComponents	(R"(
 			  %rgb = OpCompositeConstruct %v3${SAMPLED_TYPE} %red %green %blue
 					 OpImageWrite %img %id_xy %rgb
 	)");
-	const tcu::StringTemplate writeFromFourComponents(R"(
+	const StringTemplate writeFromFourComponents	(R"(
 			 %rgba = OpCompositeConstruct %v4${SAMPLED_TYPE} %red %green %blue %alpha
 					 OpImageWrite %img %id_xy %rgba
 	)");
 
+	getProgramCodeAndVariables(shaderTemplate, variables);
 
-	std::map<std::string, std::string>	specs;
-
-	const FormatInfo*					info		= findFormatInfo(m_params->vkFormat);
-	const TextureFormat					texFormat	= mapVkFormat(m_params->vkFormat);
-	const tcu::TextureFormat			buffFormat	= makeBufferFormat(getTextureChannelClass(texFormat.type), info->capability == OpCapability::Int64ImageEXT);
-
-	specs["SPIRV_IMAGE_FORMAT"]						= info->spirvName;
-	specs["ENABLING_CAPABILITIES"]					= std::string("OpCapability ") + OpCapabilityToStr(info->capability);
-	specs["CAPABILITY_INT64"]						= "";
-	specs["EXTENSIONS"]								= "";
-	specs["TYPES_INT64"]							= "";
-
-	if (info->capability == OpCapability::Int64ImageEXT)
-	{
-		specs["EXTENSIONS"]							= "OpExtension	   \"SPV_EXT_shader_image_int64\"";
-		specs["CAPABILITY_INT64"]					= std::string("OpCapability Int64");
-		specs["TYPES_INT64"]						= typesInt64;
-	}
-
-
-	specs["SAMPLED_TYPE"]							= getChannelStr(buffFormat);
-	specs["IMAGE_WIDTH"]							= std::to_string(m_params->textureWidth);
-	specs["IMAGE_HEIGHT"]							= std::to_string(m_params->textureHeight);
-	specs["ARRAY_STRIDE"]							= std::to_string(tcu::getChannelSize(buffFormat.type) * tcu::getNumUsedChannels(buffFormat.order));
-
-	specs["WRITE_TO_IMAGE"]							= (m_params->sourceWidth == 1
+	variables["WRITE_TO_IMAGE"]						= (m_sourceWidth == 1
 													   ? writeFromSingleComponent
-													   : m_params->sourceWidth == 2
+													   : m_sourceWidth == 2
 														 ? writeFromTwoComponents
-														 : m_params->sourceWidth == 3
+														 : m_sourceWidth == 3
 														   ? writeFromThreeComponents
-														   : writeFromFourComponents).specialize(specs);
-
+														   : writeFromFourComponents).specialize(variables);
 	programCollection.spirvAsmSources.add("comp")
-			<< shaderTemplate.specialize(specs)
+			<< shaderTemplate.specialize(variables)
 			<< vk::SpirVAsmBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_4, true);
 }
 
-void MismatchedVectorSizesTestInstance::clear (tcu::PixelBufferAccess& pixels) const
+void MismatchedSignednessAndTypeTest::initPrograms (SourceCollections& programCollection) const
+{
+	strings				variables		{};
+	StringTemplate		shaderTemplate	{};
+
+	const StringTemplate writeToImage	(R"(
+			%color = OpCompositeConstruct %v4${SAMPLED_TYPE} %red %green %blue %alpha
+					 OpImageWrite %img %id_xy %color
+	)");
+
+	getProgramCodeAndVariables(shaderTemplate, variables);
+
+	variables["WRITE_TO_IMAGE"]			= writeToImage.specialize(variables);
+
+	programCollection.spirvAsmSources.add("comp")
+			<< shaderTemplate.specialize(variables)
+			<< vk::SpirVAsmBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_4, true);
+}
+
+void MismatchedWriteOpTestInstance::clear (tcu::PixelBufferAccess& pixels) const
 {
 	const auto channelClass = tcu::getTextureChannelClass(mapVkFormat(m_params->vkFormat).type);
 	switch (channelClass)
@@ -718,7 +864,7 @@ void MismatchedVectorSizesTestInstance::clear (tcu::PixelBufferAccess& pixels) c
 	}
 }
 
-void MismatchedVectorSizesTestInstance::populate (tcu::PixelBufferAccess& pixels) const
+void MismatchedWriteOpTestInstance::populate (tcu::PixelBufferAccess& pixels) const
 {
 	const auto				texFormat			= mapVkFormat(m_params->vkFormat);
 	const auto				bitDepth			= tcu::getTextureFormatBitDepth(texFormat);
@@ -757,11 +903,11 @@ void MismatchedVectorSizesTestInstance::populate (tcu::PixelBufferAccess& pixels
 		color[3] = (static_cast<deUint64>(color[3] + 7) < unsignedMaxValues[3]) ? (color[3] + 7) : unsignedMinValues[3];
 	};
 
-	double					floatsData			[4];
+	deUint64				floatsData			[4];
 	tcu::PixelBufferAccess	floatsAccess		(texFormat, 1, 1, 1, floatsData);
 	tcu::Vec4				tmpFloats			(0.0f);
 
-	const float				divider				= static_cast<float>(m_params->textureHeight);
+	const float				divider				(static_cast<float>(m_params->textureHeight));
 	const tcu::Vec4			ufloatStep			(1.0f/(divider*1.0f), 1.0f/(divider*2.0f), 1.0f/(divider*3.0f), 1.0f/(divider*5.0f));
 	const tcu::Vec4			sfloatStep			(2.0f/(divider*1.0f), 2.0f/(divider*2.0f), 2.0f/(divider*3.0f), 2.0f/(divider*5.0f));
 
@@ -807,6 +953,67 @@ void MismatchedVectorSizesTestInstance::populate (tcu::PixelBufferAccess& pixels
 	}
 }
 
+tcu::TestStatus MismatchedWriteOpTestInstance::iterate (void)
+{
+	const DeviceInterface&			vki					= m_context.getDeviceInterface();
+	const VkDevice					dev					= m_context.getDevice();
+	const VkQueue					queue				= m_context.getUniversalQueue();
+	const deUint32					queueFamilyIndex	= m_context.getUniversalQueueFamilyIndex();
+
+	Move<VkCommandPool>				cmdPool				= createCommandPool(vki, dev, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queueFamilyIndex);
+	Move<VkCommandBuffer>			cmdBuffer			= allocateCommandBuffer(vki, dev, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Move<VkShaderModule>			shaderModule		= createShaderModule(vki, dev, m_context.getBinaryCollection().get("comp"), 0);
+
+	Move<VkDescriptorSetLayout>		descriptorSetLayout	= DescriptorSetLayoutBuilder()
+															.addSingleBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
+															.addSingleBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+															.build(vki, dev);
+	Move<VkDescriptorPool>			descriptorPool		= DescriptorPoolBuilder()
+															.addType(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+															.addType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+															.build(vki, dev, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1u);
+	Move<VkDescriptorSet>			descriptorSet		= makeDescriptorSet(vki, dev, *descriptorPool, *descriptorSetLayout);
+	Move<VkPipelineLayout>			pipelineLayout		= makePipelineLayout(vki, dev, *descriptorSetLayout);
+	Move<VkPipeline>				pipeline			= makeComputePipeline(vki, dev, *pipelineLayout, *shaderModule);
+
+
+	ut::StorageImage2D				image				(m_context, m_params->vkFormat, m_params->textureWidth, m_params->textureHeight);
+
+	ut::StorageBuffer2D				buffer				(m_context, m_test->getBufferFormat(), m_params->textureWidth, m_params->textureHeight);
+
+	VkDescriptorImageInfo			inputImageInfo		= makeDescriptorImageInfo(DE_NULL, image.getView(), VK_IMAGE_LAYOUT_GENERAL);
+	VkDescriptorBufferInfo			outputBufferInfo	= makeDescriptorBufferInfo(buffer.getBuffer(), 0u, buffer.getSize());
+
+	DescriptorSetUpdateBuilder		builder;
+	builder
+		.writeSingle(*descriptorSet, DescriptorSetUpdateBuilder::Location::binding(0u), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, &inputImageInfo)
+		.writeSingle(*descriptorSet, DescriptorSetUpdateBuilder::Location::binding(1u), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, &outputBufferInfo)
+		.update(vki, dev);
+
+	populate	(buffer.getPixelAccess());
+	clear		(image.getPixelAccess());
+
+	beginCommandBuffer(vki, *cmdBuffer);
+		image.upload(*cmdBuffer);
+		vki.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipeline);
+		vki.cmdBindDescriptorSets(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipelineLayout, 0u, 1u, &descriptorSet.get(), 0u, DE_NULL);
+		vki.cmdDispatch(*cmdBuffer, m_params->textureWidth, m_params->textureHeight, 1);
+		image.download(*cmdBuffer);
+	endCommandBuffer(vki, *cmdBuffer);
+
+	image.flush();
+	buffer.flush();
+
+	submitCommandsAndWait(vki, dev, queue, *cmdBuffer);
+
+	image.invalidate();
+	buffer.invalidate();
+
+	return compare(image.getPixelAccess(), buffer.getPixelAccess())
+			? tcu::TestStatus::pass("")
+			: tcu::TestStatus::fail("Pixel comparison failed");
+}
+
 bool MismatchedVectorSizesTestInstance::compare (tcu::PixelBufferAccess& result, tcu::PixelBufferAccess& reference) const
 {
 	const tcu::TextureFormat			texFormat		= mapVkFormat(m_params->vkFormat);
@@ -837,96 +1044,65 @@ bool MismatchedVectorSizesTestInstance::compare (tcu::PixelBufferAccess& result,
 	return doContinue;
 }
 
-tcu::TestStatus MismatchedVectorSizesTestInstance::iterate (void)
+bool MismatchedSignednessAndTypeTestInstance::compare (tcu::PixelBufferAccess& result, tcu::PixelBufferAccess& reference) const
 {
-	const DeviceInterface&			vki					= m_context.getDeviceInterface();
-	const VkDevice					dev					= m_context.getDevice();
-	const VkQueue					queue				= m_context.getUniversalQueue();
-	const deUint32					queueFamilyIndex	= m_context.getUniversalQueueFamilyIndex();
-
-	Move<VkCommandPool>				cmdPool				= createCommandPool(vki, dev, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queueFamilyIndex);
-	Move<VkCommandBuffer>			cmdBuffer			= allocateCommandBuffer(vki, dev, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	Move<VkShaderModule>			shaderModule		= createShaderModule(vki, dev, m_context.getBinaryCollection().get("comp"), 0);
-
-	Move<VkDescriptorSetLayout>		descriptorSetLayout	= DescriptorSetLayoutBuilder()
-															.addSingleBinding(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
-															.addSingleBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-															.build(vki, dev);
-	Move<VkDescriptorPool>			descriptorPool		= DescriptorPoolBuilder()
-															.addType(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
-															.addType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
-															.build(vki, dev, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1u);
-	Move<VkDescriptorSet>			descriptorSet		= makeDescriptorSet(vki, dev, *descriptorPool, *descriptorSetLayout);
-	Move<VkPipelineLayout>			pipelineLayout		= makePipelineLayout(vki, dev, *descriptorSetLayout);
-	Move<VkPipeline>				pipeline			= makeComputePipeline(vki, dev, *pipelineLayout, *shaderModule);
-
-
-	ut::StorageImage2D				image				(m_context, m_params->vkFormat, m_params->textureWidth, m_params->textureHeight);
-
-	const TextureFormat				texFormat			= mapVkFormat(m_params->vkFormat);
-	const TextureFormat				bufferFormat		= makeBufferFormat(getTextureChannelClass(texFormat.type),
-																		   findFormatInfo(m_params->vkFormat)->capability == OpCapability::Int64ImageEXT);
-	ut::StorageBuffer2D				buffer				(m_context, bufferFormat, m_params->textureWidth, m_params->textureHeight);
-
-	VkDescriptorImageInfo			inputImageInfo		= makeDescriptorImageInfo(DE_NULL, image.getView(), VK_IMAGE_LAYOUT_GENERAL);
-	VkDescriptorBufferInfo			outputBufferInfo	= makeDescriptorBufferInfo(buffer.getBuffer(), 0u, buffer.getSize());
-
-	DescriptorSetUpdateBuilder		builder;
-	builder
-		.writeSingle(*descriptorSet, DescriptorSetUpdateBuilder::Location::binding(0u), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, &inputImageInfo)
-		.writeSingle(*descriptorSet, DescriptorSetUpdateBuilder::Location::binding(1u), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, &outputBufferInfo)
-		.update(vki, dev);
-
-	populate	(buffer.getPixelAccess());
-	clear		(image.getPixelAccess());
-
-	beginCommandBuffer(vki, *cmdBuffer);
-		image.upload(*cmdBuffer);
-		vki.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipeline);
-		vki.cmdBindDescriptorSets(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipelineLayout, 0u, 1u, &descriptorSet.get(), 0u, DE_NULL);
-		vki.cmdDispatch(*cmdBuffer, m_params->textureWidth, m_params->textureHeight, 1);
-		image.download(*cmdBuffer);
-	endCommandBuffer(vki, *cmdBuffer);
-
-	submitCommandsAndWait(vki, dev, queue, *cmdBuffer);
-
-	return compare(image.getPixelAccess(), buffer.getPixelAccess())
-			? tcu::TestStatus::pass("")
-			: tcu::TestStatus::fail("Pixel comparison failed");
+	DE_UNREF(result);
+	DE_UNREF(reference);
+	return true;
 }
 
 } // anonymous
 
-tcu::TestCaseGroup* createImageMismatchedVectorSizesTests (tcu::TestContext& testCtx)
+tcu::TestCaseGroup* createImageWriteOpTests (tcu::TestContext& testCtx)
 {
 	std::stringstream ss;
-	auto createTestName = [&](const FormatInfo& info, const MismatchedVectorSizesTest::Params* params) -> std::string
+
+	auto genVectorSizesTestName			= [&](const FormatInfo& info, const int sourceWidth) -> std::string
 	{
 		ss.str(std::string());
 		ss << de::toLower(info.spirvName) << "_from";
-		if (params->sourceWidth > 1)
-			ss << "_vec" << params->sourceWidth;
+		if (sourceWidth > 1)
+			ss << "_vec" << sourceWidth;
 		else ss << "_scalar";
 
 		return ss.str();
 	};
 
-	auto testGroup						= new tcu::TestCaseGroup(testCtx, "mismatched_write_op", "Test image OpImageWrite operation in various aspects.");
-	auto testGroupMismatchedVectorSizes	= new tcu::TestCaseGroup(testCtx, "mismatched_vector_sizes", "Case OpImageWrite operation on mismatched vector sizes.");
+	auto testGroup						= new tcu::TestCaseGroup(testCtx, "mismatched_write_op",			"Test image OpImageWrite operation in various aspects.");
+	auto testGroupMismatchedVectorSizes	= new tcu::TestCaseGroup(testCtx, "mismatched_vector_sizes",		"Case OpImageWrite operation on mismatched vector sizes.");
+	auto testGroupMismatchedSignedness	= new tcu::TestCaseGroup(testCtx, "mismatched_signedness_and_type",	"Case OpImageWrite operation on mismatched signedness and values.");
 
 	for (const auto& info : formatsInfos)
 	{
+		{
+			const auto switchClass = getTextureChannelClass(mapVkFormat(info.vkFormat).type);
+			auto compatibleFormats = findFormatsByChannelClass(switchClass);
+
+			auto end	= compatibleFormats.cend();
+			auto begin	= compatibleFormats.cbegin();
+			for (auto i = begin; i != end; ++i)
+			{
+				if (i->capability == OpCapability::Int64ImageEXT || info.capability == OpCapability::Int64ImageEXT) continue;
+
+				const std::string testName = de::toLower(i->spirvName) + "_from_" + de::toLower(info.spirvName);
+				auto params	= new MismatchedWriteOpTest::Params { info.vkFormat, 12, 8*static_cast<int>(std::distance(begin,i)+1), i->vkFormat };
+				testGroupMismatchedSignedness->addChild(new MismatchedSignednessAndTypeTest(testCtx, testName, {}, MismatchedVectorSizesTest::ParamsSp(params)));
+			}
+		}
+
 		for (int sourceWidth = 4; sourceWidth > 0; --sourceWidth)
 		{
 			if (sourceWidth >= getNumUsedChannels(info.vkFormat))
 			{
-				auto params = new MismatchedVectorSizesTest::Params { info.vkFormat, sourceWidth, 12*sourceWidth, 8*(4-sourceWidth+1) };
-				testGroupMismatchedVectorSizes->addChild(new MismatchedVectorSizesTest(testCtx, createTestName(info, params), {}, MismatchedVectorSizesTest::ParamsSp(params)));
+				auto params = new MismatchedWriteOpTest::Params { info.vkFormat, 12*sourceWidth, 8*(4-sourceWidth+1), info.vkFormat };
+				testGroupMismatchedVectorSizes->addChild(
+					new MismatchedVectorSizesTest(testCtx, genVectorSizesTestName(info, sourceWidth), {}, MismatchedVectorSizesTest::ParamsSp(params), sourceWidth));
 			}
 		}
 	}
 
 	testGroup->addChild(testGroupMismatchedVectorSizes);
+	testGroup->addChild(testGroupMismatchedSignedness);
 
 	return testGroup;
 }

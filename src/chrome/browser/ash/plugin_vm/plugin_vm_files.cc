@@ -23,12 +23,11 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/app_window_base.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/app_window_base.h"
+#include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
-#include "chromeos/dbus/cicerone_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -65,15 +64,15 @@ base::FilePath GetDefaultSharedDir(Profile* profile) {
 
 void FocusAllPluginVmWindows() {
   ash::ShelfModel* shelf_model =
-      ChromeLauncherController::instance()->shelf_model();
+      ChromeShelfController::instance()->shelf_model();
   DCHECK(shelf_model);
-  AppWindowLauncherItemController* launcher_item_controller =
-      shelf_model->GetAppWindowLauncherItemController(
+  AppWindowShelfItemController* item_controller =
+      shelf_model->GetAppWindowShelfItemController(
           ash::ShelfID(kPluginVmShelfAppId));
-  if (!launcher_item_controller) {
+  if (!item_controller) {
     return;
   }
-  for (auto* app_window : launcher_item_controller->windows()) {
+  for (auto* app_window : item_controller->windows()) {
     app_window->Activate();
   }
 }
@@ -109,29 +108,27 @@ void LaunchPluginVmAppImpl(Profile* profile,
       std::make_move_iterator(file_paths.end()),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetCiceroneClient()
-      ->LaunchContainerApplication(
-          std::move(request),
-          base::BindOnce(
-              [](const std::string& app_id, LaunchPluginVmAppCallback callback,
-                 base::Optional<
-                     vm_tools::cicerone::LaunchContainerApplicationResponse>
-                     response) {
-                if (!response || !response->success()) {
-                  LOG(ERROR) << "Failed to launch application. "
-                             << (response ? response->failure_reason()
-                                          : "Empty response.");
-                  std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
-                                          "Failed to launch " + app_id);
-                  return;
-                }
+  chromeos::CiceroneClient::Get()->LaunchContainerApplication(
+      std::move(request),
+      base::BindOnce(
+          [](const std::string& app_id, LaunchPluginVmAppCallback callback,
+             absl::optional<
+                 vm_tools::cicerone::LaunchContainerApplicationResponse>
+                 response) {
+            if (!response || !response->success()) {
+              LOG(ERROR) << "Failed to launch application. "
+                         << (response ? response->failure_reason()
+                                      : "Empty response.");
+              std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                      "Failed to launch " + app_id);
+              return;
+            }
 
-                FocusAllPluginVmWindows();
+            FocusAllPluginVmWindows();
 
-                std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
-              },
-              std::move(app_id), std::move(callback)));
+            std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
+          },
+          std::move(app_id), std::move(callback)));
 }
 
 }  // namespace

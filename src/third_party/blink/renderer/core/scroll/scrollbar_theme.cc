@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/input/scrollbar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 #if !defined(OS_MAC)
 #include "third_party/blink/public/platform/web_theme_engine.h"

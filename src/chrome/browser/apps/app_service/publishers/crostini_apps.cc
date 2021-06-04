@@ -9,12 +9,12 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_package_service.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -191,7 +191,7 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
   // to match the system display density, but others are density-unaware and
   // look better when scaled to match the display density.
   if (ShouldShowDisplayDensityMenuItem(app_id, menu_type, display_id)) {
-    base::Optional<guest_os::GuestOsRegistryService::Registration>
+    absl::optional<guest_os::GuestOsRegistryService::Registration>
         registration = registry_->GetRegistration(app_id);
     if (registration) {
       if (registration->IsScaled()) {

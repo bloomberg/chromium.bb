@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_widget.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/animation/animation_change_type.h"
@@ -641,7 +642,8 @@ int ShelfWidget::GetBackgroundAlphaValue(
 void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
   // Show a context menu for right clicks anywhere on the shelf widget.
   delegate_view_->set_context_menu_controller(hotseat_widget->GetShelfView());
-  hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
+  hotseat_transition_animator_ =
+      std::make_unique<HotseatTransitionAnimator>(this);
   hotseat_transition_animator_->AddObserver(delegate_view_);
   shelf_->hotseat_widget()->OnHotseatTransitionAnimatorCreated(
       hotseat_transition_animator());
@@ -945,7 +947,7 @@ bool ShelfWidget::HandleLoginShelfGestureEvent(
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
-    shelf_->ProcessMouseWheelEvent(mouse_wheel_event, /*from_touchpad=*/false);
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
     return;
   }
 

@@ -18,7 +18,9 @@
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/cryptohome_key_constants.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -33,13 +35,28 @@ std::vector<std::string> ConvertToVector(const base::ListValue* list) {
     return string_list;
   }
 
-  for (const base::Value& value : *list) {
+  for (const base::Value& value : list->GetList()) {
     if (value.is_string()) {
       string_list.push_back(value.GetString());
     }
   }
 
   return string_list;
+}
+
+bool ShouldDoSamlRedirect(const std::string& email) {
+  if (email.empty())
+    return false;
+
+  // If there's a populated email, we must check first that this user is using
+  // SAML in order to decide whether to show the interstitial page.
+  AccountId account_id =
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetAccountId(email, std::string() /* id */, AccountType::UNKNOWN);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+
+  return user && user->using_saml();
 }
 
 }  // namespace
@@ -157,6 +174,9 @@ void LockScreenReauthHandler::OnSetCookieForLoadGaiaWithPartition(
   params.SetString("gaiaId", context.gaia_id);
   params.SetBoolean("extractSamlPasswordAttributes",
                     login::ExtractSamlPasswordAttributesEnabled());
+  params.SetBoolean("doSamlRedirect", ShouldDoSamlRedirect(context.email));
+  params.SetString("clientVersion", version_info::GetVersionNumber());
+  params.SetBoolean("readOnlyEmail", true);
 
   AllowJavascript();
   CallJavascriptFunction("$(\'main-element\').loadAuthenticator", params);
@@ -198,7 +218,6 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
       base::BindOnce(&LockScreenReauthHandler::CheckCredentials,
                      weak_factory_.GetWeakPtr()));
 
-  std::string error_message;
   pending_user_context_ = std::make_unique<UserContext>();
   if (!login::BuildUserContextForGaiaSignIn(
           login::GetUsertypeFromServicesString(services),
@@ -206,9 +225,9 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
                                                  AccountType::GOOGLE),
           using_saml, false /* using_saml_api */, password,
           SamlPasswordAttributes::FromJs(*password_attributes),
-          /*sync_trusted_vault_keys=*/base::nullopt,
+          /*sync_trusted_vault_keys=*/absl::nullopt,
           *extension_provided_client_cert_usage_observer_,
-          pending_user_context_.get(), &error_message)) {
+          pending_user_context_.get(), nullptr)) {
     pending_user_context_.reset();
     NOTREACHED();
     return;

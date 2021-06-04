@@ -28,9 +28,10 @@ source_set("profile") {
     "profile_observer.h",
   ]
 
+  public_deps = [ "//base" ]
+
   # Cannot depend on //chrome/browser:browser.
   deps = [
-    "//base",
     "//build:chromeos_buildflags",
     "//chrome/browser/browsing_data:constants",
     "//chrome/common:buildflags",
@@ -38,8 +39,10 @@ source_set("profile") {
     "//components/data_reduction_proxy/core/browser",
     "//components/keyed_service/content",
     "//components/language/core/browser",
+    "//components/live_caption:constants",
     "//components/media_router/common",
     "//components/pref_registry",
+    "//components/profile_metrics",
     "//components/sync/driver",
     "//components/variations",
     "//content/public/browser",

@@ -22,7 +22,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -35,6 +35,7 @@ class LayoutObject;
 class LayoutText;
 class NGInlineCursor;
 class NGInlineCursorPosition;
+struct NGTextOffset;
 class FrameSelection;
 struct LayoutSelectionStatus;
 struct LayoutTextSelectionStatus;
@@ -77,6 +78,8 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void Trace(Visitor*) const;
 
  private:
+  LayoutSelectionStatus ComputeSelectionStatus(const NGInlineCursor&,
+                                               const NGTextOffset&) const;
   SelectionState ComputeSelectionStateFromOffsets(SelectionState state,
                                                   unsigned start_offset,
                                                   unsigned end_offset) const;
@@ -91,4 +94,4 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_

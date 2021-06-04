@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
@@ -59,12 +61,14 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/background_color_change_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -73,7 +77,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #endif
 
 #if defined(OS_MAC)
@@ -83,6 +87,7 @@
 namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
+constexpr const char16_t kExampleURL16[] = u"http://example.org/";
 constexpr const char kExampleManifestURL[] = "http://example.org/manifest";
 
 constexpr char kLaunchWebAppDisplayModeHistogram[] = "Launch.WebAppDisplayMode";
@@ -135,7 +140,7 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
   }
 
   bool HasMinimalUiButtons(DisplayMode display_mode,
-                           base::Optional<DisplayMode> display_override_mode,
+                           absl::optional<DisplayMode> display_override_mode,
                            bool open_as_window) {
     static int index = 0;
 
@@ -214,12 +219,12 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ThemeColor) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = GURL("http://example.org/2");
     web_app_info->scope = GURL("http://example.org/");
-    web_app_info->theme_color = base::Optional<SkColor>();
+    web_app_info->theme_color = absl::optional<SkColor>();
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
 
     EXPECT_EQ(GetAppIdFromApplicationName(app_browser->app_name()), app_id);
-    EXPECT_EQ(base::nullopt, app_browser->app_controller()->GetThemeColor());
+    EXPECT_EQ(absl::nullopt, app_browser->app_controller()->GetThemeColor());
   }
 }
 
@@ -354,26 +359,26 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, AppLastLaunchTime) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WithMinimalUiButtons) {
-  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kBrowser, base::nullopt,
+  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kBrowser, absl::nullopt,
                                   /*open_as_window=*/true));
-  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kMinimalUi, base::nullopt,
+  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kMinimalUi, absl::nullopt,
                                   /*open_as_window=*/true));
 
-  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kBrowser, base::nullopt,
+  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kBrowser, absl::nullopt,
                                   /*open_as_window=*/false));
-  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kMinimalUi, base::nullopt,
+  EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kMinimalUi, absl::nullopt,
                                   /*open_as_window=*/false));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WithoutMinimalUiButtons) {
-  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kStandalone, base::nullopt,
+  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kStandalone, absl::nullopt,
                                    /*open_as_window=*/true));
-  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kFullscreen, base::nullopt,
+  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kFullscreen, absl::nullopt,
                                    /*open_as_window=*/true));
 
-  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kStandalone, base::nullopt,
+  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kStandalone, absl::nullopt,
                                    /*open_as_window=*/false));
-  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kFullscreen, base::nullopt,
+  EXPECT_FALSE(HasMinimalUiButtons(DisplayMode::kFullscreen, absl::nullopt,
                                    /*open_as_window=*/false));
 }
 
@@ -670,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CopyURL) {
   std::u16string result;
   clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
                       &result);
-  EXPECT_EQ(result, base::UTF8ToUTF16(kExampleURL));
+  EXPECT_EQ(result, kExampleURL16);
 }
 
 // Tests that the command for popping a tab out to a PWA window is disabled in
@@ -735,8 +740,14 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, UninstallMenuOption) {
 // incognito windows.
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutMenuOptionsInIncognito) {
   Browser* const incognito_browser = CreateIncognitoBrowser(profile());
-  EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(incognito_browser,
-                                                   GetSecureAppURL()));
+  EXPECT_EQ(webapps::AppBannerManagerDesktop::FromWebContents(
+                incognito_browser->tab_strip_model()->GetActiveWebContents()),
+            nullptr);
+  NavigateToURLAndWait(incognito_browser, GetInstallableAppURL());
+
+  // Wait sufficient time for an installability check to occur.
+  EXPECT_TRUE(
+      NavigateAndAwaitInstallabilityCheck(browser(), GetInstallableAppURL()));
 
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, incognito_browser),
             kDisabled);
@@ -826,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallInstallableSite) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Apps on Chrome OS should not be pinned after install.
-  EXPECT_FALSE(ChromeLauncherController::instance()->IsAppPinned(app_id));
+  EXPECT_FALSE(ChromeShelfController::instance()->IsAppPinned(app_id));
 #endif
 }
 
@@ -865,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CannotInstallOverWindowPwa) {
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
   ExternalInstallOptions options = CreateInstallOptions(GetInstallableAppURL());
   options.install_source = ExternalInstallSource::kExternalPolicy;
-  PendingAppManagerInstall(profile(), options);
+  ExternallyManagedAppManagerInstall(profile(), options);
 
   // Avoid any interference if active browser was changed by PWA install.
   Browser* const new_browser =
@@ -882,21 +893,19 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   GURL install_url = GetInstallableAppURL();
   ExternalInstallOptions options = CreateInstallOptions(install_url);
   options.install_source = ExternalInstallSource::kExternalPolicy;
-  PendingAppManagerInstall(profile(), options);
+  ExternallyManagedAppManagerInstall(profile(), options);
 
   auto* provider = WebAppProvider::Get(browser()->profile());
   ExternallyInstalledWebAppPrefs prefs(browser()->profile()->GetPrefs());
   AppId app_id = prefs.LookupAppId(install_url).value();
 
-  EXPECT_FALSE(
-      provider->install_finalizer().CanUserUninstallExternalApp(app_id));
+  EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
 
   InstallWebAppFromPage(browser(), install_url);
 
   // Performing a user install on the page should not override the "policy"
   // install source.
-  EXPECT_FALSE(
-      provider->install_finalizer().CanUserUninstallExternalApp(app_id));
+  EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   const WebApp& web_app =
       *provider->registrar().AsWebAppRegistrar()->GetAppById(app_id);
   EXPECT_TRUE(web_app.IsSynced());
@@ -979,8 +988,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallToShelfContainsAppName) {
   EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
                                                            &model, &index));
   EXPECT_EQ(app_menu_model.get(), model);
-  EXPECT_EQ(model->GetLabelAt(index),
-            base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
+  EXPECT_EQ(model->GetLabelAt(index), u"Install Manifest test app…");
 }
 
 // Check that no assertions are hit when showing a permission request bubble.
@@ -996,24 +1004,66 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PermissionBubble) {
       "navigator.geolocation.getCurrentPosition(function(){});"));
 }
 
+class WebAppBrowserTest_PrefixInTitle
+    : public WebAppBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  WebAppBrowserTest_PrefixInTitle() {
+    // Focus mode uses AppBrowserController without an AppId, which we must
+    // handle in `GetTitle()`, so we have to test with this feature.
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kFocusMode, features::kPrefixWebAppWindowsWithAppName},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kFocusMode}, {features::kPrefixWebAppWindowsWithAppName});
+    }
+  }
+
+  bool ExpectPrefixInTitle() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Ensure that web app windows with blank titles don't display the URL as a
 // default window title.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, EmptyTitlesDoNotDisplayUrl) {
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
+                       WebAppWindowTitleForEmptyAndSimpleWebContentTitles) {
+  // Ensure web app windows show the expected title when the contents have an
+  // empty or simple title.
   const GURL app_url = https_server()->GetURL("app.site.com", "/empty.html");
-  const AppId app_id = InstallPWA(app_url);
+  const std::u16string app_title = u"A Web App";
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->start_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->title = app_title;
+  const AppId app_id = InstallWebApp(std::move(web_app_info));
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  EXPECT_EQ(std::u16string(), app_browser->GetWindowTitleForCurrentTab(false));
+  if (ExpectPrefixInTitle()) {
+    EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
+  } else {
+    EXPECT_EQ(std::u16string(),
+              app_browser->GetWindowTitleForCurrentTab(false));
+  }
   NavigateToURLAndWait(app_browser,
                        https_server()->GetURL("app.site.com", "/simple.html"));
-  EXPECT_EQ(u"OK", app_browser->GetWindowTitleForCurrentTab(false));
+  if (ExpectPrefixInTitle()) {
+    EXPECT_EQ(u"A Web App - OK",
+              app_browser->GetWindowTitleForCurrentTab(false));
+  } else {
+    EXPECT_EQ(u"OK", app_browser->GetWindowTitleForCurrentTab(false));
+  }
 }
 
 // Ensure that web app windows display the app title instead of the page
 // title when off scope.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, OffScopeUrlsDisplayAppTitle) {
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
+                       OffScopeUrlsDisplayAppTitle) {
   const GURL app_url = GetSecureAppURL();
   const std::u16string app_title = u"A Web App";
 
@@ -1029,14 +1079,46 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, OffScopeUrlsDisplayAppTitle) {
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // When we are within scope, show the page title.
-  EXPECT_EQ(u"Google", app_browser->GetWindowTitleForCurrentTab(false));
-
+  if (ExpectPrefixInTitle()) {
+    EXPECT_EQ(u"A Web App - Google",
+              app_browser->GetWindowTitleForCurrentTab(false));
+  } else {
+    EXPECT_EQ(u"Google", app_browser->GetWindowTitleForCurrentTab(false));
+  }
   NavigateToURLAndWait(app_browser,
                        https_server()->GetURL("app.site.com", "/simple.html"));
 
   // When we are off scope, show the app title.
   EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
 }
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
+                       GetTitleWorksWithNoAppId) {
+  // Focus mode uses web app window codepaths without installing a web app,
+  // which means there is no available app id.
+  const GURL url("http://aaa.com/empty.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  Browser* app_browser = web_app::ReparentWebContentsForFocusMode(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_TRUE(app_browser->is_type_app());
+  EXPECT_NE(app_browser, browser());
+
+  content::WebContents* main_browser_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(main_browser_web_contents);
+  EXPECT_NE(url, main_browser_web_contents->GetLastCommittedURL());
+
+  GURL app_browser_url = app_browser->tab_strip_model()
+                             ->GetActiveWebContents()
+                             ->GetLastCommittedURL();
+  EXPECT_EQ(url, app_browser_url);
+  EXPECT_TRUE(app_browser->is_focus_mode());
+}
+
+INSTANTIATE_TEST_SUITE_P(WebAppBrowserTestTitlePrefix,
+                         WebAppBrowserTest_PrefixInTitle,
+                         ::testing::Values(true, false));
 
 // Ensure that web app windows display the app title instead of the page
 // title when using http.
@@ -1058,55 +1140,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InScopeHttpUrlsDisplayAppTitle) {
 
   // The page title is "OK" but the page is being served over HTTP, so the app
   // title should be used instead.
-  EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-class WebAppBrowserTest_PrefixInTitle : public WebAppBrowserTest {
- public:
-  WebAppBrowserTest_PrefixInTitle() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kPrefixWebAppWindowsWithAppName);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Ensure that web app windows display the app title as a prefix.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
-  const GURL app_url = GetSecureAppURL();
-  const std::u16string app_title = u"A Web App";
-
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->start_url = app_url;
-  web_app_info->scope = app_url.GetWithoutFilename();
-  web_app_info->title = app_title;
-  const AppId app_id = InstallWebApp(std::move(web_app_info));
-
-  Browser* const app_browser = LaunchWebAppBrowser(app_id);
-  content::WebContents* const web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-
-  // The page title should be the combination of app name and title.
-  EXPECT_EQ(u"A Web App - Google",
-            app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-// Ensure that web app windows with blank titles only display the app name.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
-                       EmptyTitlesDisplayAppName) {
-  const GURL app_url = https_server()->GetURL("app.site.com", "/empty.html");
-  const std::u16string app_title = u"A Web App";
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->start_url = app_url;
-  web_app_info->scope = app_url.GetWithoutFilename();
-  web_app_info->title = app_title;
-  const AppId app_id = InstallWebApp(std::move(web_app_info));
-  Browser* const app_browser = LaunchWebAppBrowser(app_id);
-  content::WebContents* const web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
 }
 

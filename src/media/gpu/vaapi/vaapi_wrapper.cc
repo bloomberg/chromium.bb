@@ -23,6 +23,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/cpu.h"
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
@@ -51,7 +52,6 @@
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
-#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "third_party/libva_protected_content/va_protected_content.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/minigbm/src/external/i915_drm.h"
@@ -1433,23 +1433,13 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
 
 // static
 VideoDecodeAccelerator::SupportedProfiles
-VaapiWrapper::GetSupportedDecodeProfiles(
-    const gpu::GpuDriverBugWorkarounds& workarounds) {
+VaapiWrapper::GetSupportedDecodeProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles;
 
   for (const auto& media_to_va_profile_map_entry : GetProfileCodecMap()) {
     const VideoCodecProfile media_profile = media_to_va_profile_map_entry.first;
     const VAProfile va_profile = media_to_va_profile_map_entry.second;
     DCHECK(va_profile != VAProfileNone);
-
-    if (media_profile == VP8PROFILE_ANY &&
-        workarounds.disable_accelerated_vp8_decode) {
-      continue;
-    }
-    if (media_profile == VP9PROFILE_PROFILE2 &&
-        workarounds.disable_accelerated_vp9_profile2_decode) {
-      continue;
-    }
 
     const VASupportedProfiles::ProfileInfo* profile_info =
         VASupportedProfiles::Get().IsProfileSupported(kDecode, va_profile);
@@ -1601,11 +1591,11 @@ bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
                                                     VAProfileNone);
   if (!profile_info)
     return false;
-  return gfx::Rect(profile_info->min_resolution.width(),
-                   profile_info->min_resolution.height(),
-                   profile_info->max_resolution.width(),
-                   profile_info->max_resolution.height())
-      .Contains(size.width(), size.height());
+
+  return size.width() >= profile_info->min_resolution.width() &&
+         size.width() <= profile_info->max_resolution.width() &&
+         size.height() >= profile_info->min_resolution.height() &&
+         size.height() <= profile_info->max_resolution.height();
 }
 
 // static
@@ -1765,7 +1755,7 @@ bool VaapiWrapper::CreateContextAndSurfaces(
 std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateContextAndScopedVASurface(
     unsigned int va_format,
     const gfx::Size& size,
-    const base::Optional<gfx::Size>& visible_size) {
+    const absl::optional<gfx::Size>& visible_size) {
   if (va_context_id_ != VA_INVALID_ID) {
     LOG(ERROR) << "The current context should be destroyed before creating a "
                   "new one";
@@ -2549,7 +2539,10 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
   base::AutoLock auto_lock(*va_lock_);
   TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABufferLocked");
 
-  {
+  // vaSyncSurface() is not necessary on Intel platforms as long as there is a
+  // vaMapBuffer() like in ScopedVABufferMapping below, see b/184312032.
+  if (GetImplementationType() != VAImplementation::kIntelI965 &&
+      GetImplementationType() != VAImplementation::kIntelIHD) {
     TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABuffer_SyncSurface");
     const VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
@@ -2622,8 +2615,8 @@ bool VaapiWrapper::IsRotationSupported() {
 
 bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                                const VASurface& va_surface_dest,
-                               base::Optional<gfx::Rect> src_rect,
-                               base::Optional<gfx::Rect> dest_rect,
+                               absl::optional<gfx::Rect> src_rect,
+                               absl::optional<gfx::Rect> dest_rect,
                                VideoRotation rotation) {
   DCHECK_EQ(mode_, kVideoProcess);
   base::AutoLock auto_lock(*va_lock_);
@@ -2919,7 +2912,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
     unsigned int va_rt_format,
     const gfx::Size& size,
-    const base::Optional<gfx::Size>& visible_size,
+    const absl::optional<gfx::Size>& visible_size,
     uint32_t va_fourcc) {
   if (kInvalidVaRtFormat == va_rt_format) {
     LOG(ERROR) << "Invalid VA RT format to CreateScopedVASurface";

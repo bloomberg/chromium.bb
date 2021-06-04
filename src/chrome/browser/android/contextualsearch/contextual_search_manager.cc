@@ -43,7 +43,7 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env,
   Java_ContextualSearchManager_setNativeManager(
       env, obj, reinterpret_cast<intptr_t>(this));
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  delegate_.reset(new ContextualSearchDelegate(
+  delegate_ = std::make_unique<ContextualSearchDelegate>(
       profile->GetURLLoaderFactory(),
       TemplateURLServiceFactory::GetForProfile(profile),
       base::BindRepeating(
@@ -51,7 +51,7 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env,
           base::Unretained(this)),
       base::BindRepeating(
           &ContextualSearchManager::OnTextSurroundingSelectionAvailable,
-          base::Unretained(this))));
+          base::Unretained(this)));
 }
 
 ContextualSearchManager::~ContextualSearchManager() {
@@ -127,9 +127,9 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
   base::android::ScopedJavaLocalRef<jstring> j_search_url_preload =
       base::android::ConvertUTF8ToJavaString(
           env, resolved_search_term.search_url_preload);
-  base::android::ScopedJavaLocalRef<jobjectArray> j_searches =
-      base::android::ToJavaArrayOfStrings(
-          env, resolved_search_term.related_searches);
+  base::android::ScopedJavaLocalRef<jstring> j_related_searches_json =
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.related_searches_json);
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
       env, java_manager_, resolved_search_term.is_invalid,
       resolved_search_term.response_code, j_search_term, j_display_text,
@@ -139,7 +139,8 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       j_thumbnail_url, j_caption, j_quick_action_uri,
       resolved_search_term.quick_action_category,
       resolved_search_term.logged_event_id, j_search_url_full,
-      j_search_url_preload, resolved_search_term.coca_card_tag, j_searches);
+      j_search_url_preload, resolved_search_term.coca_card_tag,
+      j_related_searches_json);
 }
 
 void ContextualSearchManager::OnTextSurroundingSelectionAvailable(

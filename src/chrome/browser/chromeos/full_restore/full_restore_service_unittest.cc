@@ -8,7 +8,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
@@ -20,6 +19,7 @@
 #include "components/account_id/account_id.h"
 #include "components/full_restore/full_restore_info.h"
 #include "components/full_restore/full_restore_utils.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
@@ -34,6 +34,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 // TODO(crbug.com/909794): Verify apps restoration.
@@ -55,7 +56,8 @@ syncer::SyncData CreatePrefSyncData(const std::string& name,
           : specifics.mutable_preference();
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncData::CreateRemoteData(specifics);
+  return syncer::SyncData::CreateRemoteData(
+      specifics, syncer::ClientTagHash::FromHashed("unused"));
 }
 
 }  // namespace
@@ -85,8 +87,10 @@ class FullRestoreServiceTest : public testing::Test {
     GetFakeUserManager()->AddUser(account_id_);
     GetFakeUserManager()->LoginUser(account_id_);
 
-    // Reset the restore flag as the default value.
+    // Reset the restore flag and pref as the default value.
     ::full_restore::FullRestoreInfo::GetInstance()->SetRestoreFlag(account_id_,
+                                                                   false);
+    ::full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(account_id_,
                                                                    false);
 
     display_service_ =
@@ -111,7 +115,7 @@ class FullRestoreServiceTest : public testing::Test {
   }
 
   bool HasNotificationFor(const std::string& notification_id) {
-    base::Optional<message_center::Notification> message_center_notification =
+    absl::optional<message_center::Notification> message_center_notification =
         display_service()->GetNotification(notification_id);
     return message_center_notification.has_value();
   }
@@ -139,7 +143,7 @@ class FullRestoreServiceTest : public testing::Test {
                      RestoreNotificationButtonIndex action_index) {
     display_service()->SimulateClick(
         NotificationHandler::Type::TRANSIENT, notification_id,
-        static_cast<int>(action_index), base::nullopt);
+        static_cast<int>(action_index), absl::nullopt);
   }
 
   // Simulates the initial sync of preferences.
@@ -201,6 +205,7 @@ TEST_F(FullRestoreServiceTest, CrashAndRestore) {
                 RestoreNotificationButtonIndex::kRestore);
 
   EXPECT_TRUE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // If the system is crash, show the crash notification, and verify the restore
@@ -217,6 +222,7 @@ TEST_F(FullRestoreServiceTest, CrashAndCancel) {
                 RestoreNotificationButtonIndex::kCancel);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // For a brand new user, if sync off, set 'Ask Every Time' as the default value,
@@ -230,6 +236,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncOff) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // For a new Chrome OS user, if the Chrome restore setting is 'Continue where
@@ -244,6 +251,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeRestoreSetting) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Set the Chrome restore setting to simulate sync for the first time.
   syncer::SyncDataList sync_data_list;
@@ -258,6 +266,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeRestoreSetting) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Update the global values to simulate sync from other device.
   syncer::SyncChangeList change_list;
@@ -276,6 +285,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeRestoreSetting) {
 
   EXPECT_EQ(RestoreOption::kDoNotRestore, GetRestoreOption());
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_FALSE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // For a new Chrome OS user, if the Chrome restore setting is 'New tab', after
@@ -290,6 +300,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeNotRestoreSetting) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Set the Chrome restore setting to simulate sync for the first time.
   syncer::SyncDataList sync_data_list;
@@ -304,6 +315,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeNotRestoreSetting) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Update the global values to simulate sync from other device.
   syncer::SyncChangeList change_list;
@@ -322,6 +334,7 @@ TEST_F(FullRestoreServiceTest, NewUserSyncChromeNotRestoreSetting) {
 
   EXPECT_EQ(RestoreOption::kDoNotRestore, GetRestoreOption());
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_FALSE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // For a new Chrome OS user, keep the ChromeOS restore setting from sync, and
@@ -335,6 +348,7 @@ TEST_F(FullRestoreServiceTest, ReImage) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Set the restore pref setting to simulate sync for the first time.
   syncer::SyncDataList sync_data_list;
@@ -352,6 +366,7 @@ TEST_F(FullRestoreServiceTest, ReImage) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Update the global values to simulate sync from other device.
   syncer::SyncChangeList change_list;
@@ -370,6 +385,7 @@ TEST_F(FullRestoreServiceTest, ReImage) {
 
   EXPECT_EQ(RestoreOption::kAlways, GetRestoreOption());
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // For the current ChromeOS user, when first time upgrading to the full restore
@@ -386,6 +402,7 @@ TEST_F(FullRestoreServiceTest, Upgrading) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_FALSE(::full_restore::CanPerformRestore(account_id()));
 
   // Simulate the Chrome restore setting is changed.
   profile()->GetPrefs()->SetInteger(
@@ -395,6 +412,7 @@ TEST_F(FullRestoreServiceTest, Upgrading) {
   // The OS restore setting should not change.
   EXPECT_EQ(RestoreOption::kDoNotRestore, GetRestoreOption());
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_FALSE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // If the OS restore setting is 'Ask every time', after reboot, show the restore
@@ -416,6 +434,7 @@ TEST_F(FullRestoreServiceTest, AskEveryTimeAndRestore) {
 
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOption());
   EXPECT_TRUE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   VerifyNotification(false, false, false);
 }
@@ -439,6 +458,7 @@ TEST_F(FullRestoreServiceTest, AskEveryTimeAndCancel) {
 
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOption());
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   VerifyNotification(false, false, false);
 }
@@ -455,6 +475,7 @@ TEST_F(FullRestoreServiceTest, Always) {
   VerifyNotification(false, false, false);
 
   EXPECT_TRUE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // If the OS restore setting is 'Do not restore', after reboot, don't show any
@@ -470,6 +491,7 @@ TEST_F(FullRestoreServiceTest, NotRestore) {
   VerifyNotification(false, false, false);
 
   EXPECT_FALSE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_FALSE(::full_restore::CanPerformRestore(account_id()));
 }
 
 // If the restore option has been selected 3 times, show the set restore
@@ -497,6 +519,7 @@ TEST_F(FullRestoreServiceTest, SetRestorePrefNotification) {
 
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOption());
   EXPECT_TRUE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Verify the set restore notification is shown.
   VerifyNotification(false /* has_crash_notification */,
@@ -527,6 +550,7 @@ TEST_F(FullRestoreServiceTest, RestoreSelectedCount) {
 
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOption());
   EXPECT_TRUE(::full_restore::ShouldRestore(account_id()));
+  EXPECT_TRUE(::full_restore::CanPerformRestore(account_id()));
 
   // Verify the set restore notification is shown.
   VerifyNotification(false /* has_crash_notification */,

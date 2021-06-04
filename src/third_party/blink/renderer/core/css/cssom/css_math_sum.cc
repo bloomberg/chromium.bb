@@ -49,6 +49,25 @@ bool operator==(const CSSNumericSumValue::Term& a, const UnitMapComparator& b) {
 
 }  // namespace
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+CSSMathSum* CSSMathSum::Create(const HeapVector<Member<V8CSSNumberish>>& args,
+                               ExceptionState& exception_state) {
+  if (args.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Arguments can't be empty");
+    return nullptr;
+  }
+
+  CSSMathSum* result =
+      Create(CSSNumberishesToNumericValues(args), exception_state);
+  if (!result) {
+    exception_state.ThrowTypeError("Incompatible types");
+    return nullptr;
+  }
+
+  return result;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSMathSum* CSSMathSum::Create(const HeapVector<CSSNumberish>& args,
                                ExceptionState& exception_state) {
   if (args.IsEmpty()) {
@@ -59,6 +78,7 @@ CSSMathSum* CSSMathSum::Create(const HeapVector<CSSNumberish>& args,
 
   return Create(CSSNumberishesToNumericValues(args), exception_state);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSMathSum* CSSMathSum::Create(CSSNumericValueVector values,
                                ExceptionState& exception_state) {
@@ -76,12 +96,12 @@ CSSMathSum* CSSMathSum::Create(CSSNumericValueVector values,
   return result;
 }
 
-base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
+absl::optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
   CSSNumericSumValue sum;
   for (const auto& value : NumericValues()) {
     const auto child_sum = value->SumValue();
     if (!child_sum)
-      return base::nullopt;
+      return absl::nullopt;
 
     // Collect like-terms
     for (const auto& term : child_sum->terms) {
@@ -94,7 +114,7 @@ base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
   }
 
   if (!CanCreateNumericTypeFromSumValue(sum))
-    return base::nullopt;
+    return absl::nullopt;
 
   return sum;
 }

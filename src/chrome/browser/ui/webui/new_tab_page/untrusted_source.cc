@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +28,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -133,12 +133,6 @@ void UntrustedSource::StartDataRequest(
         IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS));
     return;
   }
-  if (path == "one_google_bar_api.js") {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    std::move(callback).Run(
-        bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_ONE_GOOGLE_BAR_API_JS));
-    return;
-  }
   if (path == "image" && url_param.is_valid() &&
       (url_param.SchemeIs(url::kHttpsScheme) ||
        url_param.SchemeIs(content::kChromeUIUntrustedScheme))) {
@@ -234,28 +228,24 @@ bool UntrustedSource::ShouldServiceRequest(
   return path == "one-google-bar" || path == "one_google_bar.js" ||
          path == "image" || path == "background_image" ||
          path == "custom_background_image" || path == "background_image.js" ||
-         path == "background.jpg" || path == "one_google_bar_api.js";
+         path == "background.jpg";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {
-  base::Optional<OneGoogleBarData> data =
+  absl::optional<OneGoogleBarData> data =
       one_google_bar_service_->one_google_bar_data();
 
   if (one_google_bar_load_start_time_.has_value()) {
     NTPUserDataLogger::LogOneGoogleBarFetchDuration(
         /*success=*/data.has_value(),
         /*duration=*/base::TimeTicks::Now() - *one_google_bar_load_start_time_);
-    one_google_bar_load_start_time_ = base::nullopt;
+    one_google_bar_load_start_time_ = absl::nullopt;
   }
 
   std::string html;
   if (data.has_value()) {
     ui::TemplateReplacements replacements;
     replacements["textdirection"] = base::i18n::IsRTL() ? "rtl" : "ltr";
-    replacements["modalOverlays"] =
-        base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays)
-            ? "modal-overlays"
-            : "";
     replacements["barHtml"] = data->bar_html;
     replacements["inHeadScript"] = data->in_head_script;
     replacements["inHeadStyle"] = data->in_head_style;

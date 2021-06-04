@@ -67,8 +67,16 @@ extern const char kClientInstanceId[];
 extern const char kDiscoverAPIEndpointOverride[];
 // The pref name for storing the server experiments the client is in.
 extern const char kExperiments[];
-// If set to false, the WebFeed UI is disabled.
-extern const char kEnableWebFeedUI[];
+// If set to true, the WebFeed follow intro bypasses some gates and only checks
+// for recommended and scroll status.
+extern const char kEnableWebFeedFollowIntroDebug[];
+// Random bytes used in generating reliability logging ID.
+extern const char kReliabilityLoggingIdSalt[];
+// Whether the user has subscribed to a web feed.
+extern const char kIsWebFeedSubscriber[];
+// Whether the Feed may have data stored, which should be deleted if the Feed
+// is ever turned off.
+extern const char kHasStoredData[];
 
 }  // namespace prefs
 

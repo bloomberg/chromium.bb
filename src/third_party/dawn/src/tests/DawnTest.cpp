@@ -239,6 +239,11 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
             continue;
         }
 
+        if (strcmp("--run-suppressed-tests", argv[i]) == 0) {
+            mRunSuppressedTests = true;
+            continue;
+        }
+
         constexpr const char kEnableBackendValidationSwitch[] = "--enable-backend-validation";
         argLen = sizeof(kEnableBackendValidationSwitch) - 1;
         if (strncmp(argv[i], kEnableBackendValidationSwitch, argLen) == 0) {
@@ -255,7 +260,7 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
                     UNREACHABLE();
                 }
             } else {
-                mBackendValidationLevel = dawn_native::BackendValidationLevel::Full;
+                mBackendValidationLevel = dawn_native::BackendValidationLevel::Partial;
             }
             continue;
         }
@@ -265,25 +270,11 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
             continue;
         }
 
-        constexpr const char kEnableTogglesSwitch[] = "--enable-toggles=";
-        argLen = sizeof(kEnableTogglesSwitch) - 1;
-        if (strncmp(argv[i], kEnableTogglesSwitch, argLen) == 0) {
-            std::string toggle;
-            std::stringstream toggles(argv[i] + argLen);
-            while (getline(toggles, toggle, ',')) {
-                mEnabledToggles.push_back(toggle);
-            }
+        if (mToggleParser.ParseEnabledToggles(argv[i])) {
             continue;
         }
 
-        constexpr const char kDisableTogglesSwitch[] = "--disable-toggles=";
-        argLen = sizeof(kDisableTogglesSwitch) - 1;
-        if (strncmp(argv[i], kDisableTogglesSwitch, argLen) == 0) {
-            std::string toggle;
-            std::stringstream toggles(argv[i] + argLen);
-            while (getline(toggles, toggle, ',')) {
-                mDisabledToggles.push_back(toggle);
-            }
+        if (mToggleParser.ParseDisabledToggles(argv[i])) {
             continue;
         }
 
@@ -367,9 +358,9 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
                    "  -w, --use-wire: Run the tests through the wire (defaults to no wire)\n"
                    "  -c, --begin-capture-on-startup: Begin debug capture on startup "
                    "(defaults to no capture)\n"
-                   "  --enable-backend-validation: Enables backend validation. Defaults to 'full'\n"
-                   "    to enable all available backend validation. Set to 'partial' to\n"
-                   "    enable a subset of backend validation with less performance overhead.\n"
+                   "  --enable-backend-validation: Enables backend validation. Defaults to \n"
+                   "    'partial' to enable only minimum backend validation. Set to 'full' to\n"
+                   "    enable all available backend validation with less performance overhead.\n"
                    "    Set to 'disabled' to run with no validation (same as no flag).\n"
                    "  --enable-toggles: Comma-delimited list of Dawn toggles to enable.\n"
                    "    ex.) skip_validation,use_tint_generator,disable_robustness,turn_off_vsync\n"
@@ -380,7 +371,9 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
                    "null, opengl, opengles, vulkan\n"
                    "  --exclusive-device-type-preference: Comma-delimited list of preferred device "
                    "types. For each backend, tests will run only on adapters that match the first "
-                   "available device type\n";
+                   "available device type\n"
+                   "  --run-suppressed-tests: Run all the tests that will be skipped by the macro "
+                   "DAWN_SUPPRESS_TEST_IF()\n";
             continue;
         }
 
@@ -400,7 +393,7 @@ std::unique_ptr<dawn_native::Instance> DawnTestEnvironment::CreateInstanceAndDis
     instance->SetBackendValidationLevel(mBackendValidationLevel);
     instance->DiscoverDefaultAdapters();
 
-#ifdef DAWN_ENABLE_BACKEND_OPENGL
+#ifdef DAWN_ENABLE_BACKEND_DESKTOP_GL
     if (!glfwInit()) {
         return instance;
     }
@@ -417,11 +410,16 @@ std::unique_ptr<dawn_native::Instance> DawnTestEnvironment::CreateInstanceAndDis
     dawn_native::opengl::AdapterDiscoveryOptions adapterOptions;
     adapterOptions.getProc = reinterpret_cast<void* (*)(const char*)>(glfwGetProcAddress);
     instance->DiscoverAdapters(&adapterOptions);
+#endif  // DAWN_ENABLE_BACKEND_DESKTOP_GL
+
+#ifdef DAWN_ENABLE_BACKEND_OPENGLES
 
     if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").empty()) {
         SetEnvironmentVar("ANGLE_DEFAULT_PLATFORM", "swiftshader");
     }
-
+    if (!glfwInit()) {
+        return instance;
+    }
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -433,10 +431,10 @@ std::unique_ptr<dawn_native::Instance> DawnTestEnvironment::CreateInstanceAndDis
 
     glfwMakeContextCurrent(mOpenGLESWindow);
     dawn_native::opengl::AdapterDiscoveryOptionsES adapterOptionsES;
-    adapterOptionsES.getProc = adapterOptions.getProc;
+    adapterOptionsES.getProc = reinterpret_cast<void* (*)(const char*)>(glfwGetProcAddress);
     instance->DiscoverAdapters(&adapterOptionsES);
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-#endif  // DAWN_ENABLE_BACKEND_OPENGL
+#endif  // DAWN_ENABLE_BACKEND_OPENGLES
 
     return instance;
 }
@@ -557,6 +555,9 @@ void DawnTestEnvironment::PrintTestConfigurationAndAdapterInfo(
            "UseWire: "
         << (mUseWire ? "true" : "false")
         << "\n"
+           "Run suppressed tests: "
+        << (mRunSuppressedTests ? "true" : "false")
+        << "\n"
            "BackendValidation: ";
 
     switch (mBackendValidationLevel) {
@@ -635,6 +636,10 @@ bool DawnTestEnvironment::UsesWire() const {
     return mUseWire;
 }
 
+bool DawnTestEnvironment::RunSuppressedTests() const {
+    return mRunSuppressedTests;
+}
+
 dawn_native::BackendValidationLevel DawnTestEnvironment::GetBackendValidationLevel() const {
     return mBackendValidationLevel;
 }
@@ -667,11 +672,11 @@ const char* DawnTestEnvironment::GetWireTraceDir() const {
 }
 
 const std::vector<std::string>& DawnTestEnvironment::GetEnabledToggles() const {
-    return mEnabledToggles;
+    return mToggleParser.GetEnabledToggles();
 }
 
 const std::vector<std::string>& DawnTestEnvironment::GetDisabledToggles() const {
-    return mDisabledToggles;
+    return mToggleParser.GetDisabledToggles();
 }
 
 // Implementation of DawnTest
@@ -786,6 +791,10 @@ bool DawnTestBase::UsesWire() const {
 
 bool DawnTestBase::IsBackendValidationEnabled() const {
     return gTestEnv->GetBackendValidationLevel() != dawn_native::BackendValidationLevel::Disabled;
+}
+
+bool DawnTestBase::RunSuppressedTests() const {
+    return gTestEnv->RunSuppressedTests();
 }
 
 bool DawnTestBase::IsAsan() const {
@@ -917,13 +926,16 @@ void DawnTestBase::SetUp() {
 
     device.SetUncapturedErrorCallback(OnDeviceError, this);
     device.SetDeviceLostCallback(OnDeviceLost, this);
-#if defined(DAWN_ENABLE_BACKEND_OPENGL)
+#if defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
     if (IsOpenGL()) {
         glfwMakeContextCurrent(gTestEnv->GetOpenGLWindow());
-    } else if (IsOpenGLES()) {
+    }
+#endif  // defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
+#if defined(DAWN_ENABLE_BACKEND_OPENGLES)
+    if (IsOpenGLES()) {
         glfwMakeContextCurrent(gTestEnv->GetOpenGLESWindow());
     }
-#endif
+#endif  // defined(DAWN_ENABLE_BACKEND_OPENGLES)
 }
 
 void DawnTestBase::TearDown() {

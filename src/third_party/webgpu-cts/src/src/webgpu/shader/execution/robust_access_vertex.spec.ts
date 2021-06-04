@@ -312,18 +312,19 @@ g.test('vertexAccess')
     );
 
     // Create attributes listing
-    let layoutStr = '';
+    let layoutStr = 'struct Attributes {';
     const attributeNames = [];
     {
       let currAttribute = 0;
       for (let i = 0; i < bufferContents.length; i++) {
         for (let j = 0; j < attributesPerBuffer; j++) {
-          layoutStr += `[[location(${currAttribute})]] var<in> a_${currAttribute} : ${typeInfo.wgslType};\n`;
+          layoutStr += `[[location(${currAttribute})]] a_${currAttribute} : ${typeInfo.wgslType};\n`;
           attributeNames.push(`a_${currAttribute}`);
           currAttribute++;
         }
       }
     }
+    layoutStr += '};';
 
     // Vertex buffer descriptors
     const buffers: GPUVertexBufferLayout[] = [];
@@ -354,8 +355,6 @@ g.test('vertexAccess')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             ${layoutStr}
 
             fn valid(f : f32) -> bool {
@@ -366,14 +365,18 @@ g.test('vertexAccess')
               ${typeInfo.validationFunc}
             }
 
-            [[stage(vertex)]] fn main() -> void {
+            [[stage(vertex)]] fn main(
+              [[builtin(vertex_index)]] VertexIndex : u32,
+              attributes : Attributes
+              ) -> [[builtin(position)]] vec4<f32> {
               var attributesInBounds : bool = ${attributeNames
-                .map(a => `validationFunc(${a})`)
+                .map(a => `validationFunc(attributes.${a})`)
                 .join(' && ')};
               var indexInBounds : bool = VertexIndex == 0u ||
                   (VertexIndex >= ${vertexIndexOffset}u &&
                    VertexIndex < ${vertexIndexOffset + numVertices}u);
 
+              var Position : vec4<f32>;
               if (attributesInBounds && (${!p.indexed} || indexInBounds)) {
                 // Success case, move the vertex out of the viewport
                 Position = vec4<f32>(-1.0, 0.0, 0.0, 1.0);
@@ -381,6 +384,7 @@ g.test('vertexAccess')
                 // Failure case, move the vertex inside the viewport
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
               }
+              return Position;
             }`,
         }),
         entryPoint: 'main',
@@ -389,9 +393,8 @@ g.test('vertexAccess')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-              fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+              return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -415,7 +418,7 @@ g.test('vertexAccess')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           storeOp: 'store',
           loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
         },

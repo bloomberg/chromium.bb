@@ -28,6 +28,9 @@ namespace syncer {
 
 namespace {
 
+constexpr base::TimeDelta kLocalChangeNudgeDelayForTest =
+    TimeDelta::FromMilliseconds(1);
+
 bool IsConfigRelatedUpdateOriginValue(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   switch (origin) {
@@ -81,40 +84,9 @@ bool IsActionableError(const SyncProtocolError& error) {
   return (error.action != UNKNOWN_ACTION);
 }
 
-#define ENUM_CASE(x) \
-  case x:            \
-    return #x;       \
-    break;
-
 }  // namespace
 
-ConfigurationParams::ConfigurationParams()
-    : origin(sync_pb::SyncEnums::UNKNOWN_ORIGIN) {}
-
-ConfigurationParams::ConfigurationParams(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin,
-    ModelTypeSet types_to_download,
-    base::OnceClosure ready)
-    : origin(origin),
-      types_to_download(types_to_download),
-      ready_task(std::move(ready)) {
-  DCHECK(!ready_task.is_null());
-}
-
-ConfigurationParams::ConfigurationParams(ConfigurationParams&&) = default;
-
-ConfigurationParams& ConfigurationParams::operator=(ConfigurationParams&&) =
-    default;
-
-ConfigurationParams::~ConfigurationParams() = default;
-
-// Helper macros to log with the syncer thread name; useful when there
-// are multiple syncer threads involved.
-
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
-
-#define SDVLOG_LOC(from_here, verbose_level) \
-  DVLOG_LOC(from_here, verbose_level) << name_ << ": "
 
 SyncSchedulerImpl::SyncSchedulerImpl(
     const std::string& name,
@@ -265,11 +237,14 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
     observer.OnSyncCycleEvent(event);
 }
 
-void SyncSchedulerImpl::ScheduleConfiguration(ConfigurationParams params) {
+void SyncSchedulerImpl::ScheduleConfiguration(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    ModelTypeSet types_to_download,
+    base::OnceClosure ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConfigRelatedUpdateOriginValue(params.origin));
+  DCHECK(IsConfigRelatedUpdateOriginValue(origin));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
-  DCHECK(!params.ready_task.is_null());
+  DCHECK(!ready_task.is_null());
   DCHECK(started_) << "Scheduler must be running to configure.";
   SDVLOG(2) << "Reconfiguring syncer.";
 
@@ -278,13 +253,14 @@ void SyncSchedulerImpl::ScheduleConfiguration(ConfigurationParams params) {
   DCHECK(!pending_configure_params_);
 
   // Only reconfigure if we have types to download.
-  if (!params.types_to_download.Empty()) {
-    pending_configure_params_ =
-        std::make_unique<ConfigurationParams>(std::move(params));
+  if (!types_to_download.Empty()) {
+    // Cache configuration parameters since TrySyncCycleJob() posts a task.
+    pending_configure_params_ = std::make_unique<ConfigurationParams>(
+        origin, types_to_download, std::move(ready_task));
     TrySyncCycleJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
-    std::move(params.ready_task).Run();
+    std::move(ready_task).Run();
   }
 }
 
@@ -333,44 +309,36 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
   return true;
 }
 
-void SyncSchedulerImpl::ScheduleLocalNudge(
-    ModelTypeSet types,
-    const base::Location& nudge_location) {
+void SyncSchedulerImpl::ScheduleLocalNudge(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!types.Empty());
 
-  SDVLOG_LOC(nudge_location, 2) << "Scheduling sync because of local change to "
-                                << ModelTypeSetToString(types);
-  TimeDelta nudge_delay = nudge_tracker_.RecordLocalChange(types);
-  ScheduleNudgeImpl(nudge_delay, nudge_location);
+  SDVLOG(2) << "Scheduling sync because of local change to "
+            << ModelTypeToString(type);
+  TimeDelta nudge_delay = nudge_tracker_.RecordLocalChange(type);
+  ScheduleNudgeImpl(nudge_delay);
 }
 
-void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
-    ModelTypeSet types,
-    const base::Location& nudge_location) {
+void SyncSchedulerImpl::ScheduleLocalRefreshRequest(ModelTypeSet types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!types.Empty());
 
-  SDVLOG_LOC(nudge_location, 2)
-      << "Scheduling sync because of local refresh request for "
-      << ModelTypeSetToString(types);
+  SDVLOG(2) << "Scheduling sync because of local refresh request for "
+            << ModelTypeSetToString(types);
   TimeDelta nudge_delay = nudge_tracker_.RecordLocalRefreshRequest(types);
-  ScheduleNudgeImpl(nudge_delay, nudge_location);
+  ScheduleNudgeImpl(nudge_delay);
 }
 
 void SyncSchedulerImpl::ScheduleInvalidationNudge(
     ModelType model_type,
-    std::unique_ptr<InvalidationInterface> invalidation,
-    const base::Location& nudge_location) {
+    std::unique_ptr<InvalidationInterface> invalidation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!syncer_->IsSyncing());
 
-  SDVLOG_LOC(nudge_location, 2)
-      << "Scheduling sync because we received invalidation for "
-      << ModelTypeToString(model_type);
+  SDVLOG(2) << "Scheduling sync because we received invalidation for "
+            << ModelTypeToString(model_type);
   TimeDelta nudge_delay = nudge_tracker_.RecordRemoteInvalidation(
       model_type, std::move(invalidation));
-  ScheduleNudgeImpl(nudge_delay, nudge_location);
+  ScheduleNudgeImpl(nudge_delay);
 }
 
 void SyncSchedulerImpl::ScheduleInitialSyncNudge(ModelType model_type) {
@@ -380,24 +348,21 @@ void SyncSchedulerImpl::ScheduleInitialSyncNudge(ModelType model_type) {
   SDVLOG(2) << "Scheduling non-blocking initial sync for "
             << ModelTypeToString(model_type);
   nudge_tracker_.RecordInitialSyncRequired(model_type);
-  ScheduleNudgeImpl(TimeDelta::FromSeconds(0), FROM_HERE);
+  ScheduleNudgeImpl(TimeDelta::FromSeconds(0));
 }
 
 // TODO(zea): Consider adding separate throttling/backoff for datatype
 // refresh requests.
-void SyncSchedulerImpl::ScheduleNudgeImpl(
-    const TimeDelta& delay,
-    const base::Location& nudge_location) {
+void SyncSchedulerImpl::ScheduleNudgeImpl(const TimeDelta& delay) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!started_) {
-    SDVLOG_LOC(nudge_location, 2)
-        << "Dropping nudge, scheduler is not running.";
+    SDVLOG(2) << "Dropping nudge, scheduler is not running.";
     return;
   }
 
-  SDVLOG_LOC(nudge_location, 2)
-      << "In ScheduleNudgeImpl with delay " << delay.InMilliseconds() << " ms";
+  SDVLOG(2) << "In ScheduleNudgeImpl with delay " << delay.InMilliseconds()
+            << " ms";
 
   if (!CanRunNudgeJobNow(NORMAL_PRIORITY))
     return;
@@ -410,39 +375,48 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
   // Either there is no existing nudge in flight or the incoming nudge should be
   // made to arrive first (preempt) the existing nudge.  We reschedule in either
   // case.
-  SDVLOG_LOC(nudge_location, 2)
-      << "Scheduling a nudge with " << delay.InMilliseconds() << " ms delay";
+  SDVLOG(2) << "Scheduling a nudge with " << delay.InMilliseconds()
+            << " ms delay";
   pending_wakeup_timer_.Start(
-      nudge_location, delay,
+      FROM_HERE, delay,
       base::BindOnce(&SyncSchedulerImpl::PerformDelayedNudge,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
   switch (mode) {
-    ENUM_CASE(CONFIGURATION_MODE);
-    ENUM_CASE(NORMAL_MODE);
+    case CONFIGURATION_MODE:
+      return "CONFIGURATION_MODE";
+    case NORMAL_MODE:
+      return "NORMAL_MODE";
   }
+  NOTREACHED();
   return "";
 }
 
 void SyncSchedulerImpl::ForceShortNudgeDelayForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Set the default nudge delay to 0 because the default is used as a floor
-  // for override values, and we don't want the below override to be ignored.
-  nudge_tracker_.SetDefaultNudgeDelay(TimeDelta::FromMilliseconds(0));
   // Only protocol types can have their delay customized.
-  const ModelTypeSet protocol_types = syncer::ProtocolTypes();
-  const base::TimeDelta short_nudge_delay = TimeDelta::FromMilliseconds(1);
-  std::map<ModelType, base::TimeDelta> nudge_delays;
-  for (ModelType type : protocol_types) {
-    nudge_delays[type] = short_nudge_delay;
+  for (ModelType type : syncer::ProtocolTypes()) {
+    nudge_tracker_.SetLocalChangeDelayIgnoringMinForTest(
+        type, kLocalChangeNudgeDelayForTest);
   }
-  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
   // We should prevent further changing of nudge delays so if we use real server
   // for integration test then server is not able to increase delays.
   force_short_nudge_delay_for_test_ = true;
 }
+
+SyncSchedulerImpl::ConfigurationParams::ConfigurationParams(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    ModelTypeSet types_to_download,
+    base::OnceClosure ready)
+    : origin(origin),
+      types_to_download(types_to_download),
+      ready_task(std::move(ready)) {
+  DCHECK(!ready_task.is_null());
+}
+
+SyncSchedulerImpl::ConfigurationParams::~ConfigurationParams() = default;
 
 void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -866,7 +840,10 @@ void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(
   if (force_short_nudge_delay_for_test_)
     return;
 
-  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
+  for (const auto& type_and_delay : nudge_delays) {
+    nudge_tracker_.UpdateLocalChangeDelay(type_and_delay.first,
+                                          type_and_delay.second);
+  }
 }
 
 void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
@@ -928,8 +905,6 @@ bool SyncSchedulerImpl::IsEarlierThanCurrentPendingJob(const TimeDelta& delay) {
   return true;
 }
 
-#undef SDVLOG_LOC
 #undef SDVLOG
-#undef ENUM_CASE
 
 }  // namespace syncer

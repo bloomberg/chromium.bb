@@ -6,51 +6,44 @@
 
 import("../../gni/angle.gni")
 
-angle_source_set("cl_includes") {
-  sources = [
-    "../../include/CL/cl.h",
-    "../../include/CL/cl_d3d10.h",
-    "../../include/CL/cl_d3d11.h",
-    "../../include/CL/cl_dx9_media_sharing.h",
-    "../../include/CL/cl_dx9_media_sharing_intel.h",
-    "../../include/CL/cl_egl.h",
-    "../../include/CL/cl_ext.h",
-    "../../include/CL/cl_ext_intel.h",
-    "../../include/CL/cl_gl.h",
-    "../../include/CL/cl_gl_ext.h",
-    "../../include/CL/cl_half.h",
-    "../../include/CL/cl_icd.h",
-    "../../include/CL/cl_layer.h",
-    "../../include/CL/cl_platform.h",
-    "../../include/CL/cl_va_api_media_sharing_intel.h",
-    "../../include/CL/cl_version.h",
-    "../../include/CL/opencl.h",
-    "../../include/export.h",
-  ]
+assert(angle_enable_cl)
+
+cl_library_name = "OpenCL_ANGLE"
+
+config("opencl_library_name") {
+  if (is_win) {
+    defines = [ "ANGLE_OPENCL_LIB_NAME=\"" + cl_library_name + "\"" ]
+  } else {
+    defines = [ "ANGLE_OPENCL_LIB_NAME=\"lib" + cl_library_name + ".so\"" ]
+  }
 }
 
-angle_shared_library("OpenCL") {
-  defines = [
-    "CL_TARGET_OPENCL_VERSION=300",
-    "CL_USE_DEPRECATED_OPENCL_2_2_APIS",
-    "CL_USE_DEPRECATED_OPENCL_2_1_APIS",
-    "CL_USE_DEPRECATED_OPENCL_2_0_APIS",
-    "CL_USE_DEPRECATED_OPENCL_1_2_APIS",
-    "CL_USE_DEPRECATED_OPENCL_1_1_APIS",
-    "CL_USE_DEPRECATED_OPENCL_1_0_APIS",
-    "LIBCL_IMPLEMENTATION",
-  ]
+angle_shared_library(cl_library_name) {
+  defines = [ "LIBCL_IMPLEMENTATION" ]
+
   sources = [
-    "cl_loader.h",
-    "cl_loader_autogen.cpp",
-    "entry_points_cl_autogen.cpp",
-    "entry_points_cl_autogen.h",
-    "entry_points_cl_utils.h",
+    "dispatch.cpp",
+    "dispatch.h",
     "libOpenCL_autogen.cpp",
   ]
-  deps = [ ":cl_includes" ]
+
+  configs += [
+    "$angle_root:debug_annotations_config",
+    "$angle_root:library_name_config",
+  ]
+
+  deps = [
+    "$angle_root:angle_common",
+    "$angle_root:cl_includes",
+  ]
+
+  if (is_linux) {
+    inputs = [ "libOpenCL_autogen.map" ]
+    ldflags = [ "-Wl,--version-script=" +
+                rebase_path("libOpenCL_autogen.map", root_build_dir) ]
+  }
 }
 
 group("angle_cl") {
-  data_deps = [ ":OpenCL" ]
+  data_deps = [ ":$cl_library_name" ]
 }

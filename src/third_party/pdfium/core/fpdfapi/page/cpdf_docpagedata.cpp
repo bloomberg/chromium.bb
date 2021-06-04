@@ -32,6 +32,7 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/scoped_set_insertion.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/cfx_substfont.h"
@@ -262,8 +263,7 @@ RetainPtr<CPDF_ColorSpace> CPDF_DocPageData::GetColorSpaceInternal(
   if (pdfium::Contains(*pVisitedInternal, pCSObj))
     return nullptr;
 
-  pdfium::ScopedSetInsertion<const CPDF_Object*> insertion(pVisitedInternal,
-                                                           pCSObj);
+  ScopedSetInsertion<const CPDF_Object*> insertion(pVisitedInternal, pCSObj);
 
   if (pCSObj->IsName()) {
     ByteString name = pCSObj->GetString();
@@ -284,14 +284,16 @@ RetainPtr<CPDF_ColorSpace> CPDF_DocPageData::GetColorSpaceInternal(
 
     const CPDF_Object* pDefaultCS = nullptr;
     switch (pCS->GetFamily()) {
-      case PDFCS_DEVICERGB:
+      case CPDF_ColorSpace::Family::kDeviceRGB:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultRGB");
         break;
-      case PDFCS_DEVICEGRAY:
+      case CPDF_ColorSpace::Family::kDeviceGray:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultGray");
         break;
-      case PDFCS_DEVICECMYK:
+      case CPDF_ColorSpace::Family::kDeviceCMYK:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultCMYK");
+        break;
+      default:
         break;
     }
     if (!pDefaultCS)

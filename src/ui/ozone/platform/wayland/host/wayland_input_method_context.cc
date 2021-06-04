@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/events/base_event_utils.h"
@@ -33,20 +33,20 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/check.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 namespace ui {
 namespace {
 
-base::Optional<size_t> OffsetFromUTF8Offset(const base::StringPiece& text,
+absl::optional<size_t> OffsetFromUTF8Offset(const base::StringPiece& text,
                                             uint32_t offset) {
   if (offset > text.length())
-    return base::nullopt;
+    return absl::nullopt;
 
   std::u16string converted;
   if (!base::UTF8ToUTF16(text.data(), offset, &converted))
-    return base::nullopt;
+    return absl::nullopt;
 
   return converted.size();
 }
@@ -69,13 +69,13 @@ bool IsImeEnabled() {
   // Lacros-chrome side, which helps us on releasing.
   // TODO(crbug.com/1159237): In the future, we may want to unify the behavior
   // of ozone/wayland across platforms.
-  const auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  const auto* lacros_service = chromeos::LacrosService::Get();
 
   // Note: |init_params| may be null, if ash-chrome is too old.
   // TODO(crbug.com/1156033): Clean up the condition, after ash-chrome in the
   // world becomes new enough.
   const crosapi::mojom::BrowserInitParams* init_params =
-      lacros_chrome_service->init_params();
+      lacros_service ? lacros_service->init_params() : nullptr;
   if (init_params && init_params->exo_ime_support !=
                          crosapi::mojom::ExoImeSupport::kUnsupported) {
     return true;

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -26,7 +28,6 @@
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
@@ -123,7 +124,7 @@ void ExtensionsMenuItemView::OnThemeChanged() {
           ui::NativeTheme::kColorId_MenuIconColor));
 
   if (pin_button_)
-    pin_button_->SetInkDropBaseColor(icon_color);
+    pin_button_->ink_drop()->SetBaseColor(icon_color);
 
   SetButtonIconWithColor(context_menu_button_, kBrowserToolsIcon, icon_color);
 
@@ -148,6 +149,8 @@ void ExtensionsMenuItemView::UpdatePinButton() {
   // user activity.
   pin_button_->SetEnabled(!is_force_pinned && !profile_->IsOffTheRecord());
 
+  if (!GetWidget())
+    return;
   SkColor unpinned_icon_color =
       GetAdjustedIconColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_MenuIconColor));

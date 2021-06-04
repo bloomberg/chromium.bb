@@ -7,61 +7,52 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "components/subresource_redirect/proto/robots_rules.pb.h"
 
 namespace subresource_redirect {
 
 namespace {
 
-// Returns true if URL path matches the specified pattern. Pattern is anchored
-// at the beginning of path. '$' is special only at the end of pattern.
-// Algorithm taken from
-// https://github.com/google/robotstxt/blob/f465f0ede81099dd8bc4aeb2966b3a892bd488b3/robots.cc#L74
-bool IsMatchingRobotsRule(const std::string& path, const std::string& pattern) {
-  // Fast path return when pattern is a simple string and not a regex.
-  if (pattern.find('*') == std::string::npos &&
-      pattern.find('$') == std::string::npos) {
-    return base::StartsWith(path, pattern);
-  }
-
-  size_t numpos = 1;
-  std::vector<size_t> pos(path.length() + 1, 0);
-
-  // The pos[] array holds a sorted list of indexes of 'path', with length
-  // 'numpos'.  At the start and end of each iteration of the main loop below,
-  // the pos[] array will hold a list of the prefixes of the 'path' which can
-  // match the current prefix of 'pattern'. If this list is ever empty,
-  // return false. If we reach the end of 'pattern' with at least one element
-  // in pos[], return true.
-
-  for (auto pat = pattern.begin(); pat != pattern.end(); ++pat) {
-    if (*pat == '$' && pat + 1 == pattern.end()) {
-      return (pos[numpos - 1] == path.length());
-    }
-    if (*pat == '*') {
-      numpos = path.length() - pos[0] + 1;
-      for (size_t i = 1; i < numpos; i++) {
-        pos[i] = pos[i - 1] + 1;
-      }
-    } else {
-      // Includes '$' when not at end of pattern.
-      size_t newnumpos = 0;
-      for (size_t i = 0; i < numpos; i++) {
-        if (pos[i] < path.length() && path[pos[i]] == *pat) {
-          pos[newnumpos++] = pos[i] + 1;
-        }
-      }
-      numpos = newnumpos;
-      if (numpos == 0)
-        return false;
-    }
-  }
-  return true;
+// Converts the given robots rule pattern to a pattern compatible with
+// |base::MatchPattern|.
+//
+// Robots rule patterns have slightly different semantics than the pattern
+// inputs for |base::MatchPattern|. They support '*', which matches zero or more
+// of any character, and '$', which matches the end of the input string. On the
+// other hand, |base::MatchPattern| supports '*' and '?', zero or one of any
+// character, but not '$'.
+//
+// Both patterns are anchored at the beginning of the input string, but
+// |base::MatchPattern| is also implicitly anchored to the end of the string.
+// That is, the pattern must match the whole string in order to match.
+//
+// We can convert the given |robots_rule| to one that is compatible with
+// |base::MatchPattern| by taking care of optionally-present '$' character and
+// backslash-escaping any '?' characters, since they should be interpreted
+// literally .
+std::string ConvertRobotsRuleToGlob(const std::string& robots_rule) {
+  if (robots_rule.empty())
+    return "*";
+  std::string glob(robots_rule);
+  // Any '\' characters that appear in |robots_rule| are meant as literals. To
+  // prevent |base::MatchPattern| from interpreting bare '\' as an escape
+  // character, we replace each bare backslash with two backslashes.
+  base::ReplaceSubstringsAfterOffset(&glob, 0, "\\", "\\\\");
+  // |base::MatchPattern| treats '?' as a special symbol, but robots rule
+  // patterns do not. Escape each occurrence with a backslash.
+  base::ReplaceSubstringsAfterOffset(&glob, 0, "?", "\\?");
+  // |base::MatchPattern| implicitly anchors to the end of the string, but
+  // |robots rule patterns require an explicit trailing '$'.
+  if (glob.back() == '$')
+    glob.pop_back();
+  else
+    glob.push_back('*');
+  return glob;
 }
 
 void RecordRobotsRulesReceiveResultHistogram(
@@ -78,7 +69,7 @@ void RecordRobotsRulesApplyDurationHistogram(base::TimeDelta duration) {
 }  // namespace
 
 bool RobotsRulesParser::RobotsRule::Match(const std::string& path) const {
-  return IsMatchingRobotsRule(path, pattern_);
+  return base::MatchPattern(path, glob_);
 }
 
 RobotsRulesParser::RobotsRulesParser(
@@ -100,7 +91,7 @@ RobotsRulesParser::~RobotsRulesParser() {
 }
 
 void RobotsRulesParser::UpdateRobotsRules(
-    const base::Optional<std::string>& rules) {
+    const absl::optional<std::string>& rules) {
   robots_rules_.clear();
   rules_receive_timeout_timer_.Stop();
 
@@ -113,12 +104,20 @@ void RobotsRulesParser::UpdateRobotsRules(
   rules_receive_state_ = is_parse_success ? RulesReceiveState::kSuccess
                                           : RulesReceiveState::kParseFailed;
   if (is_parse_success) {
-    robots_rules_.reserve(robots_rules.image_ordered_rules_size());
+    robots_rules_.reserve(robots_rules.image_ordered_rules().size());
+    std::set<std::string> allowed_pattern_set;
+    std::set<std::string> disallowed_pattern_set;
     for (const auto& rule : robots_rules.image_ordered_rules()) {
       if (rule.has_allowed_pattern()) {
-        robots_rules_.emplace_back(true, rule.allowed_pattern());
+        const std::string& pattern = rule.allowed_pattern();
+        if (allowed_pattern_set.insert(pattern).second) {
+          robots_rules_.emplace_back(true, ConvertRobotsRuleToGlob(pattern));
+        }
       } else if (rule.has_disallowed_pattern()) {
-        robots_rules_.emplace_back(false, rule.disallowed_pattern());
+        const std::string& pattern = rule.disallowed_pattern();
+        if (disallowed_pattern_set.insert(pattern).second) {
+          robots_rules_.emplace_back(false, ConvertRobotsRuleToGlob(pattern));
+        }
       }
     }
     UMA_HISTOGRAM_COUNTS_1000("SubresourceRedirect.RobotRulesDecider.Count",
@@ -134,7 +133,7 @@ void RobotsRulesParser::UpdateRobotsRules(
   pending_check_requests_.clear();
 }
 
-base::Optional<RobotsRulesParser::CheckResult>
+absl::optional<RobotsRulesParser::CheckResult>
 RobotsRulesParser::CheckRobotsRules(int routing_id,
                                     const GURL& url,
                                     CheckResultCallback callback) {
@@ -148,7 +147,7 @@ RobotsRulesParser::CheckRobotsRules(int routing_id,
         std::vector<std::pair<CheckResultCallback, std::string>>()));
     it.first->second.emplace_back(
         std::make_pair(std::move(callback), path_with_query));
-    return base::nullopt;
+    return absl::nullopt;
   }
   return CheckRobotsRulesImmediate(path_with_query);
 }

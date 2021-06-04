@@ -16,11 +16,9 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
-#include "base/callback.h"
-#endif
+#include <utility>
 
-#if BUILDFLAG(ENABLE_TAGGED_PDF)
-#include "ui/accessibility/ax_tree_update_forward.h"
+#include "base/callback.h"
 #endif
 
 namespace printing {
@@ -45,26 +43,9 @@ class PrintManager : public content::WebContentsObserver,
   void DidGetDocumentCookie(int32_t cookie) override;
   void DidPrintDocument(mojom::DidPrintDocumentParamsPtr params,
                         DidPrintDocumentCallback callback) override;
-#if BUILDFLAG(ENABLE_TAGGED_PDF)
-  void SetAccessibilityTree(
-      int32_t cookie,
-      const ui::AXTreeUpdate& accessibility_tree) override;
-#endif
-  void UpdatePrintSettings(int32_t cookie,
-                           base::Value job_settings,
-                           UpdatePrintSettingsCallback callback) override;
   void DidShowPrintDialog() override;
   void ShowInvalidPrinterSettingsError() override;
   void PrintingFailed(int32_t cookie) override;
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void SetupScriptedPrintPreview(
-      SetupScriptedPrintPreviewCallback callback) override;
-  void ShowScriptedPrintPreview(bool source_is_modifiable) override;
-  void RequestPrintPreview(mojom::RequestPrintPreviewParamsPtr params) override;
-  void CheckForCancel(int32_t preview_ui_id,
-                      int32_t request_id,
-                      CheckForCancelCallback callback) override;
-#endif
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -78,14 +59,34 @@ class PrintManager : public content::WebContentsObserver,
   const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
   GetPrintRenderFrame(content::RenderFrameHost* rfh);
 
+  // Returns the RenderFrameHost currently targeted by message dispatch.
+  content::RenderFrameHost* GetCurrentTargetFrame();
+
   // Terminates or cancels the print job if one was pending.
   void PrintingRenderFrameDeleted();
 
-  // content::WebContentsObserver
+  bool IsValidCookie(int cookie) const;
+
+  // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
+  uint32_t number_pages() const { return number_pages_; }
+  int cookie() const { return cookie_; }
+  void set_cookie(int cookie) { cookie_ = cookie; }
+
+#if defined(OS_ANDROID)
+  PdfWritingDoneCallback pdf_writing_done_callback() const {
+    return pdf_writing_done_callback_;
+  }
+  void set_pdf_writing_done_callback(PdfWritingDoneCallback callback) {
+    pdf_writing_done_callback_ = std::move(callback);
+  }
+#endif
+
+ private:
   uint32_t number_pages_ = 0;  // Number of pages to print in the print job.
   int cookie_ = 0;        // The current document cookie.
+
   // Holds WebContents associated mojo receivers.
   content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
       print_manager_host_receivers_;
@@ -95,7 +96,6 @@ class PrintManager : public content::WebContentsObserver,
   PdfWritingDoneCallback pdf_writing_done_callback_;
 #endif
 
- private:
   // Stores a PrintRenderFrame associated remote with the RenderFrameHost used
   // to bind it. The PrintRenderFrame is used to transmit mojo interface method
   // calls to the associated receiver.

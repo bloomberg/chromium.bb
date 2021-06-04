@@ -10,7 +10,6 @@
 #include <xf86drmMode.h>
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -26,7 +25,8 @@
 
 namespace gfx {
 class Point;
-}
+struct GpuFenceHandle;
+}  // namespace gfx
 
 namespace ui {
 
@@ -98,15 +98,15 @@ class HardwareDisplayController {
   // Gets the props required to modeset a CRTC with a |mode| onto
   // |commit_request|.
   void GetModesetProps(CommitRequest* commit_request,
-                       const DrmOverlayPlane& primary,
+                       const DrmOverlayPlaneList& modeset_planes,
                        const drmModeModeInfo& mode);
   // Gets the props required to enable/disable a CRTC onto |commit_request|.
   void GetEnableProps(CommitRequest* commit_request,
-                      const DrmOverlayPlane& primary);
+                      const DrmOverlayPlaneList& modeset_planes);
   void GetDisableProps(CommitRequest* commit_request);
 
   // Updates state of the controller after modeset/enable/disable is performed.
-  void UpdateState(bool enable_requested, const DrmOverlayPlane* primary_plane);
+  void UpdateState(const CrtcCommitRequest& crtc_request);
 
   // Schedules the |overlays|' framebuffers to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
@@ -176,13 +176,13 @@ class HardwareDisplayController {
   // Loops over |crtc_controllers_| and save their props into |commit_request|
   // to be enabled/modeset.
   void GetModesetPropsForCrtcs(CommitRequest* commit_request,
-                               const DrmOverlayPlane& primary,
+                               const DrmOverlayPlaneList& modeset_planes,
                                bool use_current_crtc_mode,
                                const drmModeModeInfo& mode);
-  void OnModesetComplete(const DrmOverlayPlane& primary);
+  void OnModesetComplete(const DrmOverlayPlaneList& modeset_planes);
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
                               scoped_refptr<PageFlipRequest> page_flip_request,
-                              std::unique_ptr<gfx::GpuFence>* out_fence);
+                              gfx::GpuFenceHandle* release_fence);
   void AllocateCursorBuffers();
   DrmDumbBuffer* NextCursorBuffer();
   void UpdateCursorImage();

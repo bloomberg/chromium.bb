@@ -34,6 +34,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -74,6 +75,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/stale_revalidation_resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/subresource_web_bundle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/subresource_web_bundle_list.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -88,7 +90,6 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -114,22 +115,21 @@ static constexpr base::TimeDelta kUnusedPreloadTimeout =
     break;                                                                     \
   }
 
-#define DEFINE_RESOURCE_HISTOGRAM(prefix)                    \
-  switch (factory.GetType()) {                               \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet)  \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)           \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)          \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, ImportResource) \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)   \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)          \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)          \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)           \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)            \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)         \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)    \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)      \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
+#define DEFINE_RESOURCE_HISTOGRAM(prefix)                   \
+  switch (factory.GetType()) {                              \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet) \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)          \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)         \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)  \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)      \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)         \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)         \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)          \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)           \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)        \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)   \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)     \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet) \
   }
 
 ResourceLoadPriority TypeToPriority(ResourceType type) {
@@ -142,7 +142,6 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
       FALLTHROUGH;
     case ResourceType::kRaw:
-    case ResourceType::kImportResource:
     case ResourceType::kScript:
       // Also visible resources/images (set explicitly in loadPriority)
       return ResourceLoadPriority::kHigh;
@@ -276,20 +275,13 @@ void SetReferrer(
 
 void PopulateAndAddResourceTimingInfo(Resource* resource,
                                       scoped_refptr<ResourceTimingInfo> info,
-                                      base::TimeTicks response_end,
-                                      int64_t encoded_data_length) {
+                                      base::TimeTicks response_end) {
   info->SetInitialURL(
       resource->GetResourceRequest().GetRedirectInfo().has_value()
           ? resource->GetResourceRequest().GetRedirectInfo()->original_url
           : resource->GetResourceRequest().Url());
   info->SetFinalResponse(resource->GetResponse());
   info->SetLoadResponseEnd(response_end);
-  // encodedDataLength == -1 means "not available".
-  // TODO(ricea): Find cases where it is not available but the
-  // PerformanceResourceTiming spec requires it to be available and fix
-  // them.
-  info->AddFinalTransferSize(encoded_data_length == -1 ? 0
-                                                       : encoded_data_length);
 }
 
 }  // namespace
@@ -337,8 +329,6 @@ mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
       return mojom::blink::RequestContextType::IMAGE;
     case ResourceType::kRaw:
       return mojom::blink::RequestContextType::SUBRESOURCE;
-    case ResourceType::kImportResource:
-      return mojom::blink::RequestContextType::IMPORT;
     case ResourceType::kLinkPrefetch:
       return mojom::blink::RequestContextType::PREFETCH;
     case ResourceType::kTextTrack:
@@ -383,7 +373,6 @@ network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
     case ResourceType::kManifest:
       return network::mojom::RequestDestination::kManifest;
     case ResourceType::kRaw:
-    case ResourceType::kImportResource:
     case ResourceType::kLinkPrefetch:
     case ResourceType::kMock:
       return network::mojom::RequestDestination::kEmpty;
@@ -542,8 +531,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
-      image_fetched_(false),
-      should_log_request_as_invalid_in_imported_document_(false) {
+      image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -785,7 +773,7 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
     preloads_.erase(it);
 }
 
-base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
+absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
     WebScopedVirtualTimePauser& virtual_time_pauser) {
@@ -796,6 +784,21 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   DCHECK(options.synchronous_policy == kRequestAsynchronously ||
          resource_type == ResourceType::kRaw ||
          resource_type == ResourceType::kXSLStyleSheet);
+
+  KURL bundle_url_for_urn_resources;
+  if (resource_request.GetWebBundleTokenParams()) {
+    DCHECK_EQ(resource_request.GetRequestDestination(),
+              network::mojom::RequestDestination::kWebBundle);
+  } else {
+    AttachWebBundleTokenIfNeeded(resource_request);
+    if (resource_request.Url().Protocol() == "urn" &&
+        resource_request.GetWebBundleTokenParams()) {
+      // We use the bundle URL for urn resources for security checks.
+      bundle_url_for_urn_resources =
+          MemoryCache::RemoveFragmentIdentifierIfNeeded(
+              resource_request.GetWebBundleTokenParams()->bundle_url);
+    }
+  }
 
   params.OverrideContentType(factory.ContentType());
 
@@ -830,7 +833,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // Before modifying the request for CSP, evaluate report-only headers. This
   // allows site owners to learn about requests that are being modified
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
-  const base::Optional<ResourceRequest::RedirectInfo>& redirect_info =
+  const absl::optional<ResourceRequest::RedirectInfo>& redirect_info =
       resource_request.GetRedirectInfo();
   const KURL& url_before_redirects =
       redirect_info ? redirect_info->original_url : params.Url();
@@ -840,8 +843,10 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   Context().CheckCSPForRequest(
       resource_request.GetRequestContext(),
       resource_request.GetRequestDestination(),
-      MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
-      reporting_disposition,
+      MemoryCache::RemoveFragmentIdentifierIfNeeded(
+          bundle_url_for_urn_resources.IsValid() ? bundle_url_for_urn_resources
+                                                 : params.Url()),
+      options, reporting_disposition,
       MemoryCache::RemoveFragmentIdentifierIfNeeded(url_before_redirects),
       redirect_status);
 
@@ -904,13 +909,17 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       "priority", resource_request.Priority());
 
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
-  base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      Context().CanRequest(resource_type, resource_request, url, options,
-                           reporting_disposition,
+  absl::optional<ResourceRequestBlockedReason> blocked_reason =
+      Context().CanRequest(resource_type, resource_request,
+                           MemoryCache::RemoveFragmentIdentifierIfNeeded(
+                               bundle_url_for_urn_resources.IsValid()
+                                   ? bundle_url_for_urn_resources
+                                   : params.Url()),
+                           options, reporting_disposition,
                            resource_request.GetRedirectInfo());
 
   if (Context().CalculateIfAdSubresource(resource_request,
-                                         base::nullopt /* alias_url */,
+                                         absl::nullopt /* alias_url */,
                                          resource_type, options.initiator_info))
     resource_request.SetIsAdResource();
 
@@ -931,46 +940,35 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     resource_request.SetAllowStoredCredentials(false);
   }
 
-  if (resource_request.GetWebBundleTokenParams()) {
-    DCHECK_EQ(resource_request.GetRequestDestination(),
-              network::mojom::RequestDestination::kWebBundle);
-  } else {
-    AttachWebBundleTokenIfNeeded(resource_request);
-  }
-
-  return base::nullopt;
-}
-
-bool ResourceFetcher::ShouldBeLoadedFromWebBundle(const KURL& url) const {
-  for (auto& bundle : subresource_web_bundles_) {
-    if (bundle->CanHandleRequest(url))
-      return true;
-  }
-  return false;
+  return absl::nullopt;
 }
 
 void ResourceFetcher::AttachWebBundleTokenIfNeeded(
     ResourceRequest& resource_request) const {
-  for (auto& bundle : subresource_web_bundles_) {
-    if (!bundle->CanHandleRequest(resource_request.Url()))
-      continue;
-    resource_request.SetWebBundleTokenParams(
-        ResourceRequestHead::WebBundleTokenParams(bundle->GetBundleUrl(),
-                                                  bundle->WebBundleToken(),
-                                                  mojo::NullRemote()));
+  if (!subresource_web_bundles_)
     return;
-  }
+  SubresourceWebBundle* bundle =
+      subresource_web_bundles_->GetMatchingBundle(resource_request.Url());
+  if (!bundle)
+    return;
+  resource_request.SetWebBundleTokenParams(
+      ResourceRequestHead::WebBundleTokenParams(bundle->GetBundleUrl(),
+                                                bundle->WebBundleToken(),
+                                                mojo::NullRemote()));
+}
+
+SubresourceWebBundleList*
+ResourceFetcher::GetOrCreateSubresourceWebBundleList() {
+  if (subresource_web_bundles_)
+    return subresource_web_bundles_;
+  subresource_web_bundles_ = MakeGarbageCollected<SubresourceWebBundleList>();
+  return subresource_web_bundles_;
 }
 
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
   base::AutoReset<bool> r(&is_in_request_resource_, true);
-
-  if (should_log_request_as_invalid_in_imported_document_) {
-    DCHECK(properties_->IsDetached());
-    base::debug::DumpWithoutCrashing();
-  }
 
   // If detached, we do very early return here to skip all processing below.
   if (properties_->IsDetached()) {
@@ -997,8 +995,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       resource_request.Url());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
-  TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
-               params.Url().GetString().Utf8());
+  TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::requestResource",
+               "url", params.Url().GetString().Utf8());
 
   // |resource_request|'s origin can be null here, corresponding to the "client"
   // value in the spec. In that case client's origin is used.
@@ -1011,7 +1009,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   WebScopedVirtualTimePauser pauser;
 
-  base::Optional<ResourceRequestBlockedReason> blocked_reason =
+  absl::optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, pauser);
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
@@ -1872,8 +1870,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().IsHTTP()) {
-      PopulateAndAddResourceTimingInfo(resource, info, response_end,
-                                       encoded_data_length);
+      PopulateAndAddResourceTimingInfo(resource, info, response_end);
       auto receiver = Context().TakePendingWorkerTimingReceiver(
           resource->GetResponse().RequestId());
       info->SetWorkerTimingReceiver(std::move(receiver));
@@ -1920,9 +1917,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
-    PopulateAndAddResourceTimingInfo(
-        resource, info, finish_time,
-        resource->GetResponse().EncodedDataLength());
+    PopulateAndAddResourceTimingInfo(resource, info, finish_time);
     if (resource->Options().request_initiator_context == kDocumentContext)
       Context().AddResourceTiming(*info);
   }
@@ -2129,8 +2124,11 @@ String ResourceFetcher::GetCacheIdentifier(const KURL& url) const {
   // but should use a bundle/mhtml-specific cache.
   if (archive_)
     return archive_->GetCacheIdentifier();
-  for (auto& bundle : subresource_web_bundles_) {
-    if (bundle->CanHandleRequest(url))
+
+  if (subresource_web_bundles_) {
+    SubresourceWebBundle* bundle =
+        subresource_web_bundles_->GetMatchingBundle(url);
+    if (bundle)
       return bundle->GetCacheIdentifier();
   }
 
@@ -2262,16 +2260,6 @@ mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
 
 FrameOrWorkerScheduler* ResourceFetcher::GetFrameOrWorkerScheduler() {
   return frame_or_worker_scheduler_.get();
-}
-
-void ResourceFetcher::AddSubresourceWebBundle(
-    SubresourceWebBundle& subresource_web_bundle) {
-  subresource_web_bundles_.insert(&subresource_web_bundle);
-}
-
-void ResourceFetcher::RemoveSubresourceWebBundle(
-    SubresourceWebBundle& subresource_web_bundle) {
-  subresource_web_bundles_.erase(&subresource_web_bundle);
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) const {

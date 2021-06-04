@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/extensions/extensions_side_panel_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_button_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
@@ -71,12 +73,15 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/send_tab_to_self/features.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer.h"
@@ -88,7 +93,6 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -217,6 +221,7 @@ void ToolbarView::Init() {
     chrome::ExecuteCommandWithDisposition(
         browser, command, ui::DispositionFromEventFlags(event.flags()));
   };
+
   std::unique_ptr<ToolbarButton> back = std::make_unique<BackForwardButton>(
       BackForwardButton::Direction::kBack,
       base::BindRepeating(callback, browser_, IDC_BACK), browser_);
@@ -248,6 +253,14 @@ void ToolbarView::Init() {
     media_button = std::make_unique<MediaToolbarButtonView>(browser_view_);
   }
 
+  std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarButtonView>
+      send_tab_to_self_button;
+  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2)) {
+    send_tab_to_self_button =
+        std::make_unique<send_tab_to_self::SendTabToSelfToolbarButtonView>(
+            browser_view_);
+  }
+
   std::unique_ptr<ToolbarAccountIconContainerView>
       toolbar_account_icon_container;
   bool show_avatar_toolbar_button = true;
@@ -268,12 +281,17 @@ void ToolbarView::Init() {
   }
 
   std::unique_ptr<ReadLaterToolbarButton> read_later_button;
-  if (browser_view_->side_panel() &&
+  if (browser_view_->right_aligned_side_panel() &&
       base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
     read_later_button = std::make_unique<ReadLaterToolbarButton>(browser_);
   }
 
   // Always add children in order from left to right, for accessibility.
+  if (browser_view_->extensions_side_panel_controller()) {
+    left_side_panel_button_ =
+        AddChildView(browser_view_->extensions_side_panel_controller()
+                         ->CreateToolbarButton());
+  }
   back_ = AddChildView(std::move(back));
   forward_ = AddChildView(std::move(forward));
   reload_ = AddChildView(std::move(reload));
@@ -288,21 +306,20 @@ void ToolbarView::Init() {
 
   if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
     chrome_labs_model_ = std::make_unique<ChromeLabsBubbleViewModel>();
-    if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get())) {
+    if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get(),
+                                           browser_->profile())) {
       chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
           browser_, chrome_labs_model_.get()));
-      profile_pref_service_ = browser_->profile()->GetPrefs();
-      profile_registrar_ = std::make_unique<PrefChangeRegistrar>();
-      profile_registrar_->Init(profile_pref_service_);
-      profile_registrar_->Add(
+
+      show_chrome_labs_button_.Init(
           chrome_labs_prefs::kBrowserLabsEnabled,
+          browser_->profile()->GetPrefs(),
           base::BindRepeating(&ToolbarView::OnChromeLabsPrefChanged,
                               base::Unretained(this)));
       // Set the visibility for the button based on initial enterprise policy
       // value. Only call OnChromeLabsPrefChanged if there is a change from the
       // initial value.
-      chrome_labs_button_->SetVisible(profile_pref_service_->GetBoolean(
-          chrome_labs_prefs::kBrowserLabsEnabled));
+      chrome_labs_button_->SetVisible(show_chrome_labs_button_.GetValue());
     }
   }
 
@@ -311,6 +328,9 @@ void ToolbarView::Init() {
 
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
+
+  if (send_tab_to_self_button)
+    send_tab_to_self_button_ = AddChildView(std::move(send_tab_to_self_button));
 
   if (toolbar_account_icon_container) {
     toolbar_account_icon_container_ =
@@ -324,10 +344,7 @@ void ToolbarView::Init() {
     avatar_->SetVisible(show_avatar_toolbar_button);
   }
 
-  auto app_menu_button = std::make_unique<BrowserAppMenuButton>(
-      base::BindRepeating(&ToolbarView::AppMenuButtonPressed,
-                          base::Unretained(this)),
-      this);
+  auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
   app_menu_button->SetFlipCanvasOnPaintForRTLUI(true);
   app_menu_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
@@ -357,7 +374,8 @@ void ToolbarView::Init() {
       prefs::kShowHomeButton, browser_->profile()->GetPrefs(),
       base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
                           base::Unretained(this)));
-  UpdateHomeButtonVisibility();
+
+  home_->SetVisible(show_home_button_.GetValue());
 
   InitLayout();
 
@@ -425,6 +443,10 @@ void ToolbarView::UpdateForWebUITabStrip() {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (browser_view_->webui_tab_strip() && app_menu_button_) {
     const int insertion_index = GetIndexOf(app_menu_button_);
+    if (!base::FeatureList::IsEnabled(
+            features::kWebUITabStripNewTabButtonInTabStrip))
+      AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
+                     insertion_index);
     AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
                    insertion_index);
     LoadImages();
@@ -451,7 +473,7 @@ void ToolbarView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     PageActionIconType icon_type,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   PageActionIconView* const intent_picker_view =
       GetPageActionIconView(icon_type);
@@ -475,8 +497,8 @@ void ToolbarView::ShowBookmarkBubble(
       GetPageActionIconView(PageActionIconType::kBookmarkStar);
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeOS does not show the signin promo.
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // BookmarkBubbleSignInDelegate requires DICE.
   delegate = std::make_unique<BookmarkBubbleSignInDelegate>(browser_);
 #endif
   BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, observer,
@@ -870,8 +892,7 @@ views::View* ToolbarView::GetViewForDrop() {
 }
 
 void ToolbarView::OnChromeLabsPrefChanged() {
-  chrome_labs_button_->SetVisible(profile_pref_service_->GetBoolean(
-      chrome_labs_prefs::kBrowserLabsEnabled));
+  chrome_labs_button_->SetVisible(show_chrome_labs_button_.GetValue());
   GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
       chrome_labs_button_->GetVisible()
           ? IDS_ACCESSIBLE_TEXT_CHROMELABS_BUTTON_ADDED_BY_ENTERPRISE_POLICY
@@ -903,13 +924,9 @@ void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
 }
 
 void ToolbarView::OnShowHomeButtonChanged() {
-  UpdateHomeButtonVisibility();
+  home_->SetVisible(show_home_button_.GetValue());
   Layout();
   SchedulePaint();
-}
-
-void ToolbarView::UpdateHomeButtonVisibility() {
-  home_->SetVisible(show_home_button_.GetValue());
 }
 
 void ToolbarView::OnTouchUiChanged() {
@@ -927,12 +944,6 @@ void ToolbarView::OnTouchUiChanged() {
     LoadImages();
     PreferredSizeChanged();
   }
-}
-
-void ToolbarView::AppMenuButtonPressed(const ui::Event& event) {
-  app_menu_button_->ShowMenu(event.IsKeyEvent()
-                                 ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
-                                 : views::MenuRunner::NO_FLAGS);
 }
 
 BEGIN_METADATA(ToolbarView, views::AccessiblePaneView)

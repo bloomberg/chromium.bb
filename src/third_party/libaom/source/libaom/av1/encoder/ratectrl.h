@@ -129,11 +129,6 @@ typedef struct {
   int this_frame_target;  // Actual frame target after rc adjustment.
 
   /*!
-   * Target bit budget for the current GF / ARF group of frame.
-   */
-  int64_t gf_group_bits;
-
-  /*!
    * Projected size for current frame
    */
   int projected_frame_size;
@@ -159,20 +154,6 @@ typedef struct {
   int last_boosted_qindex;
 
   /*!
-   * Q used for last boosted (non leaf) frame
-   */
-  int last_kf_qindex;
-
-  /*!
-   * Boost factor used to calculate the extra bits allocated to ARFs and GFs
-   */
-  int gfu_boost;
-  /*!
-   * Boost factor used to calculate the extra bits allocated to the key frame
-   */
-  int kf_boost;
-
-  /*!
    * Correction factors used to adjust the q estimate for a given target rate
    * in the encode loop.
    */
@@ -193,29 +174,10 @@ typedef struct {
    */
   int intervals_till_gf_calculate_due;
 
-  /*!
-   * Stores the determined gf group lengths for a set of gf groups
-   */
-  int gf_intervals[MAX_NUM_GF_INTERVALS];
-
-  /*!
-   * The current group's index into gf_intervals[]
-   */
-  int cur_gf_index;
-
   /*!\cond */
-  int num_regions;
-  REGIONS regions[MAX_FIRSTPASS_ANALYSIS_FRAMES];
-  double cor_coeff[MAX_FIRSTPASS_ANALYSIS_FRAMES];
-  double noise_var[MAX_FIRSTPASS_ANALYSIS_FRAMES];
-  int regions_offset;  // offset of regions from the last keyframe
-  int frames_till_regions_update;
-
   int min_gf_interval;
   int max_gf_interval;
   int static_scene_max_gf_interval;
-  int baseline_gf_interval;
-  int constrained_gf_group;
   /*!\endcond */
   /*!
    * Frames before the next key frame
@@ -223,8 +185,6 @@ typedef struct {
   int frames_to_key;
   /*!\cond */
   int frames_since_key;
-  int this_key_frame_forced;
-  int next_key_frame_forced;
   int is_src_frame_alt_ref;
   int sframe_due;
 
@@ -270,18 +230,6 @@ typedef struct {
    */
   int best_quality;
 
-  /*!
-   * Initial buffuer level in ms for CBR / low delay encoding
-   */
-  int64_t starting_buffer_level;
-  /*!
-   * Optimum / target buffuer level in ms for CBR / low delay encoding
-   */
-  int64_t optimal_buffer_level;
-  /*!
-   * Maximum target buffuer level in ms for CBR / low delay encoding
-   */
-  int64_t maximum_buffer_size;
   /*!\cond */
 
   // rate control history for last frame(1) and the frame before(2).
@@ -293,13 +241,7 @@ typedef struct {
   int q_1_frame;
   int q_2_frame;
 
-  float_t arf_boost_factor;
-
   /*!\endcond */
-  /*!
-   * Q index used for ALT frame
-   */
-  int arf_q;
   /*!
    * Proposed maximum alloed Q for current frame
    */
@@ -310,17 +252,6 @@ typedef struct {
   int active_best_quality[MAX_ARF_LAYERS + 1];
 
   /*!\cond */
-  int base_layer_qp;
-
-  // Total number of stats used only for kf_boost calculation.
-  int num_stats_used_for_kf_boost;
-  // Total number of stats used only for gfu_boost calculation.
-  int num_stats_used_for_gfu_boost;
-  // Total number of stats required by gfu_boost calculation.
-  int num_stats_required_for_gfu_boost;
-  int next_is_fwd_key;
-  int enable_scenecut_detection;
-  int use_arf_in_this_kf_group;
   // Track amount of low motion in scene
   int avg_frame_low_motion;
 
@@ -332,13 +263,108 @@ typedef struct {
   /*!\endcond */
 } RATE_CONTROL;
 
-/*!\cond */
+/*!
+ * \brief  Primary Rate Control parameters and status
+ */
+typedef struct {
+  // Sub-gop level Rate targetting variables
+
+  /*!
+   * Target bit budget for the current GF / ARF group of frame.
+   */
+  int64_t gf_group_bits;
+
+  /*!
+   * Boost factor used to calculate the extra bits allocated to the key frame
+   */
+  int kf_boost;
+
+  /*!
+   * Boost factor used to calculate the extra bits allocated to ARFs and GFs
+   */
+  int gfu_boost;
+
+  /*!
+   * Stores the determined gf group lengths for a set of gf groups
+   */
+  int gf_intervals[MAX_NUM_GF_INTERVALS];
+
+  /*!
+   * The current group's index into gf_intervals[]
+   */
+  int cur_gf_index;
+
+  /*!\cond */
+  int num_regions;
+
+  REGIONS regions[MAX_FIRSTPASS_ANALYSIS_FRAMES];
+  int regions_offset;  // offset of regions from the last keyframe
+  int frames_till_regions_update;
+
+  int baseline_gf_interval;
+
+  int constrained_gf_group;
+
+  int this_key_frame_forced;
+
+  int next_key_frame_forced;
+  /*!\endcond */
+
+  /*!
+   * Initial buffuer level in ms for CBR / low delay encoding
+   */
+  int64_t starting_buffer_level;
+
+  /*!
+   * Optimum / target buffuer level in ms for CBR / low delay encoding
+   */
+  int64_t optimal_buffer_level;
+
+  /*!
+   * Maximum target buffuer level in ms for CBR / low delay encoding
+   */
+  int64_t maximum_buffer_size;
+
+  /*!
+   * Q index used for ALT frame
+   */
+  int arf_q;
+
+  /*!\cond */
+  float_t arf_boost_factor;
+
+  int base_layer_qp;
+
+  // Total number of stats used only for kf_boost calculation.
+  int num_stats_used_for_kf_boost;
+
+  // Total number of stats used only for gfu_boost calculation.
+  int num_stats_used_for_gfu_boost;
+
+  // Total number of stats required by gfu_boost calculation.
+  int num_stats_required_for_gfu_boost;
+
+  int next_is_fwd_key;
+
+  int enable_scenecut_detection;
+
+  int use_arf_in_this_kf_group;
+  /*!\endcond */
+
+  /*!
+   * Q used for last boosted (non leaf) frame
+   */
+  int last_kf_qindex;
+} PRIMARY_RATE_CONTROL;
 
 struct AV1_COMP;
 struct AV1EncoderConfig;
 
+void av1_primary_rc_init(const struct AV1EncoderConfig *oxcf,
+                         PRIMARY_RATE_CONTROL *p_rc);
+
 void av1_rc_init(const struct AV1EncoderConfig *oxcf, int pass,
-                 RATE_CONTROL *rc);
+                 RATE_CONTROL *rc, const PRIMARY_RATE_CONTROL *const p_rc);
 
 int av1_estimate_bits_at_q(FRAME_TYPE frame_kind, int q, int mbs,
                            double correction_factor, aom_bit_depth_t bit_depth,
@@ -416,7 +442,6 @@ void av1_rc_compute_frame_size_bounds(const struct AV1_COMP *cpi,
  *
  * \ingroup rate_control
  * \param[in]       cpi          Top level encoder structure
- * \param[in,out]   rc           Top level rate control structure
  * \param[in]       width        Coded frame width
  * \param[in]       height       Coded frame height
  * \param[in]       gf_index     Index of this frame in the golden frame group
@@ -425,9 +450,8 @@ void av1_rc_compute_frame_size_bounds(const struct AV1_COMP *cpi,
  * \return Returns selected q index to be used for encoding this frame.
  * Also, updates \c rc->arf_q.
  */
-int av1_rc_pick_q_and_bounds(const struct AV1_COMP *cpi, RATE_CONTROL *rc,
-                             int width, int height, int gf_index,
-                             int *bottom_index, int *top_index);
+int av1_rc_pick_q_and_bounds(const struct AV1_COMP *cpi, int width, int height,
+                             int gf_index, int *bottom_index, int *top_index);
 
 /*!\brief Estimates q to achieve a target bits per frame
  *

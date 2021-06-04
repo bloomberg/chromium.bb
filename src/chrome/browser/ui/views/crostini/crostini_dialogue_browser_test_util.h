@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_DIALOGUE_BROWSER_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_DIALOGUE_BROWSER_TEST_UTIL_H_
 
-#include <memory>
-
-#include "chrome/browser/chromeos/crostini/crostini_browser_test_util.h"
+#include "chrome/browser/ash/crostini/crostini_browser_test_util.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 
 namespace content {

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Stability.Android.OomKillReverseRank" units="rank"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -90,7 +90,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.RendererCrash" enum="Boolean"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>wnwen@chromium.org</owner>
   <summary>
     Counts renderer crashes including OOMs. Android only. Mirrors old stability
@@ -147,7 +147,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.BadMessageTerminated.Content"
-    enum="BadMessageReasonContent" expires_after="2021-09-12">
+    enum="BadMessageReasonContent" expires_after="2021-11-14">
   <owner>jam@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -328,9 +328,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>fdoray@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
+  <owner>catan-team@chromium.org</owner>
   <summary>
     Counts &quot;pageloads&quot; by type. This is recorded when a page stops
     loading, i.e. from WebContentsObserver::DidStopLoading. The sum of all
@@ -464,9 +464,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.IOS.UTE.AppWillTerminateWasCalledInForeground"
-    enum="Boolean" expires_after="2021-06-06">
+    enum="Boolean" expires_after="2022-06-06">
   <owner>olivierrobin@chromium.org</owner>
-  <owner>eugenebut@google.com</owner>
+  <owner>ajuma@chromium.org</owner>
   <summary>
     Recorded on iOS when applicationWillTerminate callback is called when app is
     in the foreground. When this happens the app will not write clean exit
@@ -475,7 +475,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.AvailableStorage" units="KB"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -511,7 +511,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2021-08-09">
+    enum="BooleanHasPossibleExplanation" expires_after="2021-10-10">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -543,7 +543,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppWillTerminateWasReceived"
-    enum="AppWillTerminateReceived" expires_after="2021-09-12">
+    enum="AppWillTerminateReceived" expires_after="2021-11-14">
   <owner>eugenebut@google.com</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -556,7 +556,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionOOMShutdownHint"
-    enum="OOMShutdownHint" expires_after="2021-06-22">
+    enum="OOMShutdownHint" expires_after="2022-05-11">
   <owner>olivierrobin@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -568,7 +568,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSRestartedAfterPreviousSession"
-    enum="BooleanRebooted" expires_after="2021-08-09">
+    enum="BooleanRebooted" expires_after="2021-10-10">
   <owner>olivierrobin@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>
@@ -579,7 +579,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSVersion" enum="VersionComparison"
-    expires_after="2021-05-01">
+    expires_after="2021-08-01">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -602,7 +602,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType"
-    enum="MobileSessionShutdownType" expires_after="2021-08-22">
+    enum="MobileSessionShutdownType" expires_after="2021-10-25">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

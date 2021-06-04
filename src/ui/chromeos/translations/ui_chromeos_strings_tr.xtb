@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Arama kaydırma çubuğu</translation>
 <translation id="1404323374378969387">Norveççe</translation>
 <translation id="1430915738399379752">Yazdır</translation>
+<translation id="1433628812591023318">Dosyaları Parallels Desktop'a bırakabilmek için Windows dosyalarına taşımak gerekir.</translation>
 <translation id="1435838927755162558">Parallels Desktop ile klasör paylaşın</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="1471718551822868769">Slovakça</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows dosyaları</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ile paylaş</translation>
 <translation id="3083975830683400843">Chromebit'ler</translation>
+<translation id="3113153474486991170">"<ph name="PATH" />" bu konumda açılamadı. Açmak için lütfen "Dosyalarım"a kopyalayın.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">BİTTİ</translation>
 <translation id="3188257591659621405">Dosyalarım</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Fonetik klavye ile Bulgarca</translation>
 <translation id="5605830556594064952">ABD Dvorak</translation>
 <translation id="5625294776298156701">Tamil99 klavye ile Tamilce</translation>
+<translation id="5633226425545095130">Bu öğe, "<ph name="DESTINATION_NAME" />" adlı paylaşılan klasöre taşınırsa bu klasörü görebilen herkesle paylaşılır.</translation>
 <translation id="5649768706273821470">Dinle</translation>
 <translation id="5678784840044122290">Linux uygulaması sizin Terminalinizde mevcut. Ayrıca Başlatıcınızda bir simgesini görebilirsiniz.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Arşivle veya sanal diskle olan bağlantı kesilemiyor<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Etiyopya dili klavye</translation>
 <translation id="7417705661718309329">Google harita</translation>
 <translation id="7460898608667578234">Ukraynaca</translation>
+<translation id="7486315294984620427">Dosyaları Parallels Desktop'a bırakabilmek için Windows dosyalarına kopyalamak gerekir.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> bulundu
     <ph name="LINE_BREAK1" />
     Dosyalar <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklenmeye hazır</translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Boyutlar</translation>
 <translation id="8437209419043462667">ABD</translation>
 <translation id="8456681095658380701">Geçersiz ad</translation>
+<translation id="8459404855768962328">Bu öğe, "<ph name="DESTINATION_NAME" />" adlı paylaşılan klasöre kopyalanırsa bu klasörü görebilen herkesle paylaşılır.</translation>
 <translation id="8461467696380332069">Raftaki dosyalarınıza hızlı erişim için dosyayı sağ tıklayıp "Rafa sabitle"yi seçin.</translation>
 <translation id="8463494891489624050">Vietnamca VIQR</translation>
 <translation id="8466234950814670489">Tar arşivi</translation>

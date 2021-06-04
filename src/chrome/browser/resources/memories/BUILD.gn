@@ -19,13 +19,18 @@ js_library("app") {
   deps = [
     ":browser_proxy",
     ":memory_card",
-    ":mojom_conversion_mixin",
     ":page_thumbnail",
     ":router",
     "//chrome/browser/ui/webui/memories:mojo_bindings_webui_js",
+    "//third_party/polymer/v3_0/components-chromium/iron-list",
+    "//third_party/polymer/v3_0/components-chromium/iron-scroll-threshold",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
+    "//ui/webui/resources/js:assert.m",
     "//url/mojom:url_mojom_origin_webui_js",
   ]
 }
@@ -44,7 +49,6 @@ js_library("memories") {
 js_library("memory_card") {
   deps = [
     ":memory_tile",
-    ":mojom_conversion_mixin",
     ":page_favicon",
     ":page_thumbnail",
     ":search_query",
@@ -63,13 +67,6 @@ js_library("memory_tile") {
   ]
 }
 
-js_library("mojom_conversion_mixin") {
-  deps = [
-    "//mojo/public/mojom/base:base_webui_js",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
 js_library("page_favicon") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -80,7 +77,6 @@ js_library("page_favicon") {
 
 js_library("page_thumbnail") {
   deps = [
-    ":mojom_conversion_mixin",
     "//components/history_clusters/core:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//url/mojom:url_mojom_origin_webui_js",
@@ -95,7 +91,6 @@ js_library("router") {
 
 js_library("search_query") {
   deps = [
-    ":mojom_conversion_mixin",
     "//components/history_clusters/core:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -117,11 +112,13 @@ js_library("utils") {
 
 js_library("visit_row") {
   deps = [
-    ":mojom_conversion_mixin",
     ":page_favicon",
     ":utils",
     "//components/history_clusters/core:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:load_time_data.m",
     "//url/mojom:url_mojom_origin_webui_js",
   ]
 }
@@ -158,7 +155,6 @@ preprocess_if_expr("preprocess") {
   in_files = [
     "browser_proxy.js",
     "memories.js",
-    "mojom_conversion_mixin.js",
     "utils.js",
   ]
 }

@@ -8,6 +8,8 @@ import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -15,7 +17,6 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
-import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.ResourceManager;
@@ -26,6 +27,19 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  * takes care of positioning itself in the top controls area and hosts the CSN list.
  */
 public class ContinuousSearchContainerCoordinator implements View.OnLayoutChangeListener {
+    /**
+     * An observer that is notified of the container height changes.
+     */
+    @FunctionalInterface
+    public interface HeightObserver {
+        /**
+         * This function is called when the container height changes.
+         * @param newHeight the new container height.
+         * @param animate whether the height change should be animated.
+         */
+        void onHeightChange(int newHeight, boolean animate);
+    }
+
     private final ContinuousSearchContainerMediator mContainerMediator;
     private final ContinuousSearchListCoordinator mListCoordinator;
     private final ContinuousSearchSceneLayer mSceneLayer;
@@ -36,7 +50,7 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
     private boolean mResourceRegistered;
     private boolean mLayoutInitialized;
     private final ViewStub mViewStub;
-    private ViewResourceFrameLayout mRootView;
+    private ContinuousSearchViewResourceFrameLayout mRootView;
 
     public ContinuousSearchContainerCoordinator(ViewStub containerViewStub,
             LayoutManager layoutManager, ResourceManager resourceManager,
@@ -44,15 +58,16 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
             BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Boolean> canAnimateNativeBrowserControls,
             Supplier<Integer> defaultTopContainerHeightSupplier,
-            ThemeColorProvider themeColorProvider, Resources resources) {
+            ThemeColorProvider themeColorProvider, Resources resources,
+            Callback<Boolean> hideToolbarShadow) {
         mViewStub = containerViewStub;
         mLayoutManager = layoutManager;
         mResourceManager = resourceManager;
         mSceneLayer = new ContinuousSearchSceneLayer(mResourceManager);
         mLayoutManager.addSceneOverlay(mSceneLayer);
         mContainerMediator = new ContinuousSearchContainerMediator(browserControlsStateProvider,
-                canAnimateNativeBrowserControls, defaultTopContainerHeightSupplier,
-                this::initializeLayout);
+                layoutManager, canAnimateNativeBrowserControls, defaultTopContainerHeightSupplier,
+                this::initializeLayout, hideToolbarShadow);
         mListCoordinator = new ContinuousSearchListCoordinator(tabSupplier, isVisible -> {
             if (isVisible) {
                 mContainerMediator.show();
@@ -65,10 +80,10 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
     private void initializeLayout() {
         if (mLayoutInitialized) return;
 
-        mRootView = (ViewResourceFrameLayout) mViewStub.inflate();
+        mRootView = (ContinuousSearchViewResourceFrameLayout) mViewStub.inflate();
         mResourceId = mRootView.getId();
         mSceneLayer.setResourceId(mResourceId);
-        mListCoordinator.initializeLayout(mRootView);
+        mListCoordinator.initializeLayout(mRootView.findViewById(R.id.container_view));
         mResourceAdapter = mRootView.getResourceAdapter();
         registerResource();
         PropertyModel model = new PropertyModel(ContinuousSearchContainerProperties.ALL_KEYS);
@@ -84,7 +99,8 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
-        mContainerMediator.setJavaHeight(v.getHeight());
+        assert mRootView != null;
+        mContainerMediator.setJavaHeight(v.getHeight() - mRootView.getShadowHeight());
     }
 
     public static Class getSceneOverlayClass() {
@@ -94,11 +110,11 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
     /**
      *  Registers an observer that gets notified when the height of the CSN container changes.
      */
-    public void addHeightObserver(Callback<Integer> observer) {
+    public void addHeightObserver(HeightObserver observer) {
         mContainerMediator.addHeightObserver(observer);
     }
 
-    public void removeHeightObserver(Callback<Integer> observer) {
+    public void removeHeightObserver(HeightObserver observer) {
         mContainerMediator.removeHeightObserver(observer);
     }
 
@@ -126,5 +142,10 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
         unregisterResource();
         mContainerMediator.destroy();
         mListCoordinator.destroy();
+    }
+
+    @VisibleForTesting
+    ContinuousSearchViewResourceFrameLayout getRootViewForTesting() {
+        return mRootView;
     }
 }

@@ -28,13 +28,13 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/cast_transport_impl.h"
+#include "media/cast/test/receiver/cast_receiver.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -935,9 +935,7 @@ void End2EndTest::Create() {
       audio_sender_config_, base::BindOnce(&ExpectSuccessOperationalStatus));
   cast_sender_->InitializeVideo(
       video_sender_config_,
-      base::BindRepeating(&ExpectSuccessOperationalStatus),
-      CreateDefaultVideoEncodeAcceleratorCallback(),
-      CreateDefaultVideoEncodeMemoryCallback());
+      base::BindRepeating(&ExpectSuccessOperationalStatus), base::DoNothing());
   task_runner_->RunTasks();
 
   receiver_to_sender_->SetPacketReceiver(

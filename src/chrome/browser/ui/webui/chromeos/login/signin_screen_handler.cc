@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -343,9 +342,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
 }
 
 void SigninScreenHandler::RegisterMessages() {
-  // TODO (crbug.com/1168114): This is only used by authenticateForTesting now.
-  // Need to migrate to testing API and remove it.
-  AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("launchSAMLPublicSession",
               &SigninScreenHandler::HandleLaunchSAMLPublicSession);
@@ -624,15 +620,6 @@ void SigninScreenHandler::OnPreferencesChanged() {
   }
 }
 
-
-void SigninScreenHandler::ShowError(int login_attempts,
-                                    const std::string& error_text,
-                                    const std::string& help_link_text,
-                                    HelpAppLauncher::HelpTopic help_topic_id) {
-  core_oobe_view_->ShowSignInError(login_attempts, error_text, help_link_text,
-                                   help_topic_id);
-}
-
 void SigninScreenHandler::ShowAllowlistCheckFailedError() {
   gaia_screen_handler_->ShowAllowlistCheckFailedError();
 }
@@ -678,50 +665,6 @@ void SigninScreenHandler::Observe(int type,
 
 void SigninScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth() {
   network_state_ignored_until_proxy_auth_ = false;
-}
-
-void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
-                                                 const std::string& password,
-                                                 bool authenticated_by_pin) {
-  AuthenticateExistingUser(account_id, password, authenticated_by_pin);
-}
-
-void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
-                                                   const std::string& password,
-                                                   bool authenticated_by_pin) {
-  if (!delegate_)
-    return;
-  DCHECK_EQ(account_id.GetUserEmail(),
-            gaia::SanitizeEmail(account_id.GetUserEmail()));
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  DCHECK(user);
-  UserContext user_context;
-  if (!user) {
-    LOG(ERROR) << "AuthenticateExistingUser: User not found! account type="
-               << AccountId::AccountTypeToString(account_id.GetAccountType());
-    const user_manager::UserType user_type =
-        (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
-            ? user_manager::USER_TYPE_ACTIVE_DIRECTORY
-            : user_manager::UserType::USER_TYPE_REGULAR;
-    user_context = UserContext(user_type, account_id);
-  } else {
-    user_context = UserContext(*user);
-  }
-  user_context.SetKey(Key(password));
-  user_context.SetPasswordKey(Key(password));
-  user_context.SetIsUsingPin(authenticated_by_pin);
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
-    if (user_context.GetUserType() !=
-        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY) {
-      LOG(FATAL) << "Incorrect Active Directory user type "
-                 << user_context.GetUserType();
-    }
-    user_context.SetIsUsingOAuth(false);
-  }
-
-  delegate_->Login(user_context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
@@ -855,17 +798,17 @@ bool SigninScreenHandler::AllAllowlistedUsersPresent() {
   return true;
 }
 
-bool SigninScreenHandler::IsGaiaVisible() const {
+bool SigninScreenHandler::IsGaiaVisible() {
   return IsSigninScreen(GetCurrentScreen()) &&
       ui_state_ == UI_STATE_GAIA_SIGNIN;
 }
 
-bool SigninScreenHandler::IsGaiaHiddenByError() const {
+bool SigninScreenHandler::IsGaiaHiddenByError() {
   return IsSigninScreenHiddenByError() &&
       ui_state_ == UI_STATE_GAIA_SIGNIN;
 }
 
-bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
+bool SigninScreenHandler::IsSigninScreenHiddenByError() {
   return (GetCurrentScreen() == ErrorScreenView::kScreenId) &&
          (IsSigninScreen(error_screen_->GetParentScreen()));
 }

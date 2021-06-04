@@ -68,7 +68,7 @@ struct V8ReturnValue {
                          ScriptWrappable* wrappable,
                          v8::Local<v8::Context> creation_context) {
     v8::Local<v8::Value> wrapper;
-    if (!wrappable->WrapV2(ScriptState::From(creation_context))
+    if (!wrappable->Wrap(ScriptState::From(creation_context))
              .ToLocal(&wrapper)) {
       return;
     }
@@ -462,7 +462,7 @@ inline void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
 // Nullable types
 template <typename CallbackInfo, typename T, typename... ExtraArgs>
 void V8SetReturnValue(const CallbackInfo& info,
-                      base::Optional<T> value,
+                      absl::optional<T> value,
                       ExtraArgs... extra_args) {
   if (value.has_value()) {
     V8SetReturnValue(info, value.value(),

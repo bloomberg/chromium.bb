@@ -24,6 +24,7 @@
 #include "base/bind_post_task.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -321,6 +322,10 @@ bool ConfigChangeDetector::IsYUV420() const {
   return false;
 }
 
+bool ConfigChangeDetector::is_vp9_resilient_mode() const {
+  return false;
+}
+
 // Provides functionality to detect H.264 stream configuration changes.
 // TODO(ananta)
 // Move this to a common place so that all VDA's can use this.
@@ -364,7 +369,7 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   bool idr_seen = false;
 
   if (!parser_.get())
-    parser_.reset(new H264Parser);
+    parser_ = std::make_unique<H264Parser>();
 
   parser_->SetStream(stream, size);
   config_changed_ = false;
@@ -508,6 +513,9 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
       color_space_ = fhdr.GetColorSpace();
 
       gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
+      if (!gfx::Rect(new_size).Contains(visible_rect_)) {
+        visible_rect_ = gfx::Rect(new_size);
+      }
       if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
           size_ != new_size) {
         pending_config_changed_ = true;
@@ -515,6 +523,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
                  << new_size.ToString();
       }
       size_ = new_size;
+
+      is_resilient_mode_ |= fhdr.error_resilient_mode;
 
       // Resolution changes can happen on any frame technically, so wait for a
       // keyframe before signaling the config change.
@@ -539,11 +549,14 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
                                                : color_space_;
   }
 
+  bool is_vp9_resilient_mode() const override { return is_resilient_mode_; }
+
  private:
   gfx::Size size_;
   bool pending_config_changed_ = false;
   gfx::Rect visible_rect_;
   VideoColorSpace color_space_;
+  bool is_resilient_mode_ = false;
   Vp9Parser parser_;
 };
 
@@ -661,6 +674,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
           !workarounds.disable_accelerated_vp8_decode),
       enable_accelerated_vp9_decode_(
           !workarounds.disable_accelerated_vp9_decode),
+      disallow_vp9_resilient_dxva_decoding_(
+          workarounds.disallow_vp9_resilient_dxva_decoding),
       processing_config_changed_(false),
       use_empty_video_hdr_metadata_(workarounds.use_empty_video_hdr_metadata) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
@@ -807,11 +822,11 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed", false);
 
   if (codec_ == kCodecH264)
-    config_change_detector_.reset(new H264ConfigChangeDetector());
+    config_change_detector_ = std::make_unique<H264ConfigChangeDetector>();
   if (codec_ == kCodecVP8)
-    config_change_detector_.reset(new VP8ConfigChangeDetector());
+    config_change_detector_ = std::make_unique<VP8ConfigChangeDetector>();
   if (codec_ == kCodecVP9)
-    config_change_detector_.reset(new VP9ConfigChangeDetector());
+    config_change_detector_ = std::make_unique<VP9ConfigChangeDetector>();
 
   processing_config_changed_ = false;
   SetState(kNormal);
@@ -2328,6 +2343,12 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to check video stream config",
                                   PLATFORM_FAILURE, );
 
+  if (disallow_vp9_resilient_dxva_decoding_ &&
+      config_change_detector_->is_vp9_resilient_mode()) {
+    RETURN_AND_NOTIFY_ON_HR_FAILURE(
+        E_FAIL, "Incompatible GPU for VP9 resilient mode", PLATFORM_FAILURE, );
+  }
+
   // https://crbug.com/1160623 -- non 4:2:0 content hangs the decoder.
   RETURN_AND_NOTIFY_ON_FAILURE(
       codec_ != kCodecH264 || config_change_detector_->IsYUV420(),
@@ -2377,7 +2398,11 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
           PLATFORM_FAILURE, );
       hr = decoder_->ProcessInput(0, sample.Get(), 0);
     }
-    // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
+    // If we continue to get the MF_E_NOTACCEPTING error we do the following:
+    // 1. Check if MF appears to be stuck in a not-accepting loop. When this
+    //    occurs we want to break out of the loop early to allow recovery
+    //    without prolonged ux hangs or running into potential OOM issues.
+    // If not in a loop then:
     // 1. Add the input sample to the pending queue.
     // 2. If we don't have any output samples we post the
     //    DecodePendingInputBuffers task to process the pending input samples.
@@ -2387,6 +2412,17 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     // given time due to the limitation with the Microsoft media foundation
     // decoder where it recycles the output Decoder surfaces.
     if (hr == MF_E_NOTACCEPTING) {
+      // Check if we appear to be stuck in a loop
+      if (inputs_before_decode_ >= 1000) {
+        // The value of 1000 is an arbitrary upper bound here since processing
+        // is not gated on any media timings. In practice we typically see
+        // maximum values in the 5 to 10 range for normal execution, so 1000
+        // affords two orders of magnitude outside of the expected range.
+        RETURN_AND_NOTIFY_ON_HR_FAILURE(
+            hr, "Input processing appears stuck in MF_E_NOTACCEPTING loop.",
+            PLATFORM_FAILURE, );
+      }
+
       pending_input_buffers_.push_back(sample);
       decoder_thread_task_runner_->PostTask(
           FROM_HERE,
@@ -2732,16 +2768,12 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
       // this |picture_buffer| will be updated when the video frame is created.
       const auto& mailbox = gpu::Mailbox::GenerateForSharedImage();
 
-      auto shared_image = std::make_unique<gpu::SharedImageBackingD3D>(
+      auto shared_image = gpu::SharedImageBackingD3D::CreateFromGLTexture(
           mailbox, viz_formats[texture_idx],
           picture_buffer->texture_size(texture_idx),
           picture_buffer->color_space(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage,
-          /*swap_chain=*/nullptr, std::move(gl_texture),
-          picture_buffer->gl_image(),
-          /*buffer_index=*/0, gl_image_dxgi->texture(),
-          base::win::ScopedHandle(),
-          /*dxgi_keyed_mutex=*/nullptr);
+          kPremul_SkAlphaType, shared_image_usage, gl_image_dxgi->texture(),
+          std::move(gl_texture));
 
       // Caller is assumed to provide cleared d3d textures.
       shared_image->SetCleared();

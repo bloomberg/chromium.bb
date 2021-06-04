@@ -35,12 +35,12 @@
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
+#include "api/video_codecs/h264_profile_level_id.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
 #include "call/flexfec_receive_stream.h"
-#include "common_video/h264/profile_level_id.h"
 #include "media/base/fake_frame_source.h"
 #include "media/base/fake_network_interface.h"
 #include "media/base/fake_video_renderer.h"
@@ -581,20 +581,21 @@ TEST_F(WebRtcVideoEngineTest, UseFactoryForVp8WhenSupported) {
 // TODO(deadbeef): This test should be updated if/when we start
 // adding RTX codecs for unrecognized codec names.
 TEST_F(WebRtcVideoEngineTest, RtxCodecAddedForH264Codec) {
-  using webrtc::H264::kLevel1;
-  using webrtc::H264::ProfileLevelId;
-  using webrtc::H264::ProfileLevelIdToString;
+  using webrtc::H264Level;
+  using webrtc::H264Profile;
+  using webrtc::H264ProfileLevelId;
+  using webrtc::H264ProfileLevelIdToString;
   webrtc::SdpVideoFormat h264_constrained_baseline("H264");
   h264_constrained_baseline.parameters[kH264FmtpProfileLevelId] =
-      *ProfileLevelIdToString(
-          ProfileLevelId(webrtc::H264::kProfileConstrainedBaseline, kLevel1));
+      *H264ProfileLevelIdToString(H264ProfileLevelId(
+          H264Profile::kProfileConstrainedBaseline, H264Level::kLevel1));
   webrtc::SdpVideoFormat h264_constrained_high("H264");
   h264_constrained_high.parameters[kH264FmtpProfileLevelId] =
-      *ProfileLevelIdToString(
-          ProfileLevelId(webrtc::H264::kProfileConstrainedHigh, kLevel1));
+      *H264ProfileLevelIdToString(H264ProfileLevelId(
+          H264Profile::kProfileConstrainedHigh, H264Level::kLevel1));
   webrtc::SdpVideoFormat h264_high("H264");
-  h264_high.parameters[kH264FmtpProfileLevelId] = *ProfileLevelIdToString(
-      ProfileLevelId(webrtc::H264::kProfileHigh, kLevel1));
+  h264_high.parameters[kH264FmtpProfileLevelId] = *H264ProfileLevelIdToString(
+      H264ProfileLevelId(H264Profile::kProfileHigh, H264Level::kLevel1));
 
   encoder_factory_->AddSupportedVideoCodec(h264_constrained_baseline);
   encoder_factory_->AddSupportedVideoCodec(h264_constrained_high);
@@ -721,10 +722,10 @@ size_t WebRtcVideoEngineTest::GetEngineCodecIndex(
     // The tests only use H264 Constrained Baseline. Make sure we don't return
     // an internal H264 codec from the engine with a different H264 profile.
     if (absl::EqualsIgnoreCase(name.c_str(), kH264CodecName)) {
-      const absl::optional<webrtc::H264::ProfileLevelId> profile_level_id =
-          webrtc::H264::ParseSdpProfileLevelId(engine_codec.params);
+      const absl::optional<webrtc::H264ProfileLevelId> profile_level_id =
+          webrtc::ParseSdpForH264ProfileLevelId(engine_codec.params);
       if (profile_level_id->profile !=
-          webrtc::H264::kProfileConstrainedBaseline) {
+          webrtc::H264Profile::kProfileConstrainedBaseline) {
         continue;
       }
     }
@@ -1416,6 +1417,10 @@ class WebRtcVideoChannelEncodedFrameCallbackTest : public ::testing::Test {
     channel_->SetRecvParameters(parameters);
   }
 
+  ~WebRtcVideoChannelEncodedFrameCallbackTest() override {
+    channel_->SetInterface(nullptr);
+  }
+
   void DeliverKeyFrame(uint32_t ssrc) {
     webrtc::RtpPacket packet;
     packet.SetMarker(true);
@@ -1426,6 +1431,13 @@ class WebRtcVideoChannelEncodedFrameCallbackTest : public ::testing::Test {
     uint8_t* buf_ptr = packet.AllocatePayload(11);
     memset(buf_ptr, 0, 11);  // Pass MSAN (don't care about bytes 1-9)
     buf_ptr[0] = 0x10;       // Partition ID 0 + beginning of partition.
+    constexpr unsigned width = 1080;
+    constexpr unsigned height = 720;
+    buf_ptr[6] = width & 255;
+    buf_ptr[7] = width >> 8;
+    buf_ptr[8] = height & 255;
+    buf_ptr[9] = height >> 8;
+
     call_->Receiver()->DeliverPacket(webrtc::MediaType::VIDEO, packet.Buffer(),
                                      /*packet_time_us=*/0);
   }
@@ -1536,7 +1548,7 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
                 webrtc::CreateBuiltinVideoDecoderFactory(),
                 field_trials_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // One testcase calls SetUp in a loop, only create call_ once.
     if (!call_) {
       webrtc::Call::Config call_config(&event_log_);
@@ -1578,6 +1590,7 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
     // Make the second renderer available for use by a new stream.
     EXPECT_TRUE(channel_->SetSink(kSsrc + 2, &renderer2_));
   }
+
   // Setup an additional stream just to send video. Defer add recv stream.
   // This is required if you want to test unsignalled recv of video rtp packets.
   void SetUpSecondStreamWithNoRecv() {
@@ -1596,7 +1609,17 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
     EXPECT_TRUE(
         channel_->SetVideoSend(kSsrc + 2, nullptr, frame_forwarder_2_.get()));
   }
-  virtual void TearDown() { channel_.reset(); }
+
+  void TearDown() override {
+    channel_->SetInterface(nullptr);
+    channel_.reset();
+  }
+
+  void ResetTest() {
+    TearDown();
+    SetUp();
+  }
+
   bool SetDefaultCodec() { return SetOneCodec(DefaultCodec()); }
 
   bool SetOneCodec(const cricket::VideoCodec& codec) {
@@ -1780,7 +1803,7 @@ TEST_F(WebRtcVideoChannelBaseTest, OverridesRecvBufferSize) {
   const int kCustomRecvBufferSize = 123456;
   webrtc::test::ScopedFieldTrials field_trial(
       "WebRTC-IncreasedReceivebuffers/123456/");
-  SetUp();
+  ResetTest();
 
   EXPECT_TRUE(SetOneCodec(DefaultCodec()));
   EXPECT_TRUE(SetSend(true));
@@ -1796,7 +1819,7 @@ TEST_F(WebRtcVideoChannelBaseTest, OverridesRecvBufferSizeWithSuffix) {
   const int kCustomRecvBufferSize = 123456;
   webrtc::test::ScopedFieldTrials field_trial(
       "WebRTC-IncreasedReceivebuffers/123456_Dogfood/");
-  SetUp();
+  ResetTest();
 
   EXPECT_TRUE(SetOneCodec(DefaultCodec()));
   EXPECT_TRUE(SetSend(true));
@@ -1816,7 +1839,7 @@ TEST_F(WebRtcVideoChannelBaseTest, InvalidRecvBufferSize) {
     field_trial_string += group;
     field_trial_string += "/";
     webrtc::test::ScopedFieldTrials field_trial(field_trial_string);
-    SetUp();
+    ResetTest();
 
     EXPECT_TRUE(SetOneCodec(DefaultCodec()));
     EXPECT_TRUE(SetSend(true));
@@ -1827,8 +1850,6 @@ TEST_F(WebRtcVideoChannelBaseTest, InvalidRecvBufferSize) {
 
 // Test that stats work properly for a 1-1 call.
 TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
-  SetUp();
-
   const int kDurationSec = 3;
   const int kFps = 10;
   SendReceiveManyAndGetStats(DefaultCodec(), kDurationSec, kFps);
@@ -1885,8 +1906,6 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
 
 // Test that stats work properly for a conf call with multiple recv streams.
 TEST_F(WebRtcVideoChannelBaseTest, GetStatsMultipleRecvStreams) {
-  SetUp();
-
   cricket::FakeVideoRenderer renderer1, renderer2;
   EXPECT_TRUE(SetOneCodec(DefaultCodec()));
   cricket::VideoSendParameters parameters;
@@ -2503,6 +2522,16 @@ class WebRtcVideoChannelTest : public WebRtcVideoEngineTest {
     send_parameters_.codecs = engine_.send_codecs();
     recv_parameters_.codecs = engine_.recv_codecs();
     ASSERT_TRUE(channel_->SetSendParameters(send_parameters_));
+  }
+
+  void TearDown() override {
+    channel_->SetInterface(nullptr);
+    channel_ = nullptr;
+  }
+
+  void ResetTest() {
+    TearDown();
+    SetUp();
   }
 
   cricket::VideoCodec GetEngineCodec(const std::string& name) {
@@ -3157,7 +3186,7 @@ TEST_F(WebRtcVideoChannelTest, LossNotificationIsEnabledByFieldTrial) {
   RTC_DCHECK(!override_field_trials_);
   override_field_trials_ = std::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-RtcpLossNotification/Enabled/");
-  SetUp();
+  ResetTest();
   TestLossNotificationState(true);
 }
 
@@ -3165,7 +3194,7 @@ TEST_F(WebRtcVideoChannelTest, LossNotificationCanBeEnabledAndDisabled) {
   RTC_DCHECK(!override_field_trials_);
   override_field_trials_ = std::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-RtcpLossNotification/Enabled/");
-  SetUp();
+  ResetTest();
 
   AssignDefaultCodec();
   VerifyCodecHasDefaultFeedbackParams(default_codec_, true);
@@ -5240,6 +5269,7 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
   channel->SetInterface(network_interface.get());
   // Default value when DSCP is disabled should be DSCP_DEFAULT.
   EXPECT_EQ(rtc::DSCP_DEFAULT, network_interface->dscp());
+  channel->SetInterface(nullptr);
 
   // Default value when DSCP is enabled is also DSCP_DEFAULT, until it is set
   // through rtp parameters.
@@ -5269,6 +5299,7 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
   EXPECT_TRUE(static_cast<webrtc::Transport*>(channel.get())
                   ->SendRtcp(kData, sizeof(kData)));
   EXPECT_EQ(rtc::DSCP_CS1, network_interface->options().dscp);
+  channel->SetInterface(nullptr);
 
   // Verify that setting the option to false resets the
   // DiffServCodePoint.
@@ -5279,6 +5310,7 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
           video_bitrate_allocator_factory_.get())));
   channel->SetInterface(network_interface.get());
   EXPECT_EQ(rtc::DSCP_DEFAULT, network_interface->dscp());
+  channel->SetInterface(nullptr);
 }
 
 // This test verifies that the RTCP reduced size mode is properly applied to
@@ -5553,9 +5585,11 @@ TEST_F(WebRtcVideoChannelTest, GetAggregatedStatsReportForSubStreams) {
   substream.rtcp_packet_type_counts.fir_packets = 14;
   substream.rtcp_packet_type_counts.nack_packets = 15;
   substream.rtcp_packet_type_counts.pli_packets = 16;
-  substream.rtcp_stats.packets_lost = 17;
-  substream.rtcp_stats.fraction_lost = 18;
+  webrtc::RTCPReportBlock report_block;
+  report_block.packets_lost = 17;
+  report_block.fraction_lost = 18;
   webrtc::ReportBlockData report_block_data;
+  report_block_data.SetReportBlock(report_block, 0);
   report_block_data.AddRoundTripTimeSample(19);
   substream.report_block_data = report_block_data;
   substream.encode_frame_rate = 20.0;
@@ -5589,9 +5623,12 @@ TEST_F(WebRtcVideoChannelTest, GetAggregatedStatsReportForSubStreams) {
             static_cast<int>(2 * substream.rtp_stats.transmitted.packets));
   EXPECT_EQ(sender.retransmitted_packets_sent,
             2u * substream.rtp_stats.retransmitted.packets);
-  EXPECT_EQ(sender.packets_lost, 2 * substream.rtcp_stats.packets_lost);
+  EXPECT_EQ(sender.packets_lost,
+            2 * substream.report_block_data->report_block().packets_lost);
   EXPECT_EQ(sender.fraction_lost,
-            static_cast<float>(substream.rtcp_stats.fraction_lost) / (1 << 8));
+            static_cast<float>(
+                substream.report_block_data->report_block().fraction_lost) /
+                (1 << 8));
   EXPECT_EQ(sender.rtt_ms, 0);
   EXPECT_EQ(sender.codec_name, DefaultCodec().name);
   EXPECT_EQ(sender.codec_payload_type, DefaultCodec().id);
@@ -5671,9 +5708,11 @@ TEST_F(WebRtcVideoChannelTest, GetPerLayerStatsReportForSubStreams) {
   substream.rtcp_packet_type_counts.fir_packets = 14;
   substream.rtcp_packet_type_counts.nack_packets = 15;
   substream.rtcp_packet_type_counts.pli_packets = 16;
-  substream.rtcp_stats.packets_lost = 17;
-  substream.rtcp_stats.fraction_lost = 18;
+  webrtc::RTCPReportBlock report_block;
+  report_block.packets_lost = 17;
+  report_block.fraction_lost = 18;
   webrtc::ReportBlockData report_block_data;
+  report_block_data.SetReportBlock(report_block, 0);
   report_block_data.AddRoundTripTimeSample(19);
   substream.report_block_data = report_block_data;
   substream.encode_frame_rate = 20.0;
@@ -5707,9 +5746,12 @@ TEST_F(WebRtcVideoChannelTest, GetPerLayerStatsReportForSubStreams) {
             static_cast<int>(substream.rtp_stats.transmitted.packets));
   EXPECT_EQ(sender.retransmitted_packets_sent,
             substream.rtp_stats.retransmitted.packets);
-  EXPECT_EQ(sender.packets_lost, substream.rtcp_stats.packets_lost);
+  EXPECT_EQ(sender.packets_lost,
+            substream.report_block_data->report_block().packets_lost);
   EXPECT_EQ(sender.fraction_lost,
-            static_cast<float>(substream.rtcp_stats.fraction_lost) / (1 << 8));
+            static_cast<float>(
+                substream.report_block_data->report_block().fraction_lost) /
+                (1 << 8));
   EXPECT_EQ(sender.rtt_ms, 0);
   EXPECT_EQ(sender.codec_name, DefaultCodec().name);
   EXPECT_EQ(sender.codec_payload_type, DefaultCodec().id);

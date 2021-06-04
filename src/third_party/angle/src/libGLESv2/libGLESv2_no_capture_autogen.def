@@ -713,6 +713,9 @@ EXPORTS
 
     ; GL_EXT_occlusion_query_boolean
 
+    ; GL_EXT_primitive_bounding_box
+    glPrimitiveBoundingBoxEXT
+
     ; GL_EXT_read_format_bgra
 
     ; GL_EXT_robustness
@@ -789,6 +792,16 @@ EXPORTS
     ; GL_EXT_tessellation_shader
     glPatchParameteriEXT
 
+    ; GL_EXT_texture_border_clamp
+    glGetSamplerParameterIivEXT
+    glGetSamplerParameterIuivEXT
+    glGetTexParameterIivEXT
+    glGetTexParameterIuivEXT
+    glSamplerParameterIivEXT
+    glSamplerParameterIuivEXT
+    glTexParameterIivEXT
+    glTexParameterIuivEXT
+
     ; GL_EXT_texture_buffer
     glTexBufferEXT
     glTexBufferRangeEXT
@@ -811,10 +824,15 @@ EXPORTS
 
     ; GL_EXT_texture_sRGB_R8
 
+    ; GL_EXT_texture_sRGB_RG8
+
     ; GL_EXT_texture_storage
     glTexStorage1DEXT
     glTexStorage2DEXT
     glTexStorage3DEXT
+
+    ; GL_KHR_blend_equation_advanced
+    glBlendBarrierKHR
 
     ; GL_KHR_debug
     glDebugMessageCallbackKHR
@@ -1007,6 +1025,7 @@ EXPORTS
     glBindVertexArrayOESContextANGLE
     glBindVertexBufferContextANGLE
     glBlendBarrierContextANGLE
+    glBlendBarrierKHRContextANGLE
     glBlendColorContextANGLE
     glBlendEquationContextANGLE
     glBlendEquationSeparateContextANGLE
@@ -1313,9 +1332,11 @@ EXPORTS
     glGetRenderbufferParameterivOESContextANGLE
     glGetRenderbufferParameterivRobustANGLEContextANGLE
     glGetSamplerParameterIivContextANGLE
+    glGetSamplerParameterIivEXTContextANGLE
     glGetSamplerParameterIivOESContextANGLE
     glGetSamplerParameterIivRobustANGLEContextANGLE
     glGetSamplerParameterIuivContextANGLE
+    glGetSamplerParameterIuivEXTContextANGLE
     glGetSamplerParameterIuivOESContextANGLE
     glGetSamplerParameterIuivRobustANGLEContextANGLE
     glGetSamplerParameterfvContextANGLE
@@ -1345,9 +1366,11 @@ EXPORTS
     glGetTexLevelParameterivANGLEContextANGLE
     glGetTexLevelParameterivRobustANGLEContextANGLE
     glGetTexParameterIivContextANGLE
+    glGetTexParameterIivEXTContextANGLE
     glGetTexParameterIivOESContextANGLE
     glGetTexParameterIivRobustANGLEContextANGLE
     glGetTexParameterIuivContextANGLE
+    glGetTexParameterIuivEXTContextANGLE
     glGetTexParameterIuivOESContextANGLE
     glGetTexParameterIuivRobustANGLEContextANGLE
     glGetTexParameterfvContextANGLE
@@ -1491,6 +1514,7 @@ EXPORTS
     glPopGroupMarkerEXTContextANGLE
     glPopMatrixContextANGLE
     glPrimitiveBoundingBoxContextANGLE
+    glPrimitiveBoundingBoxEXTContextANGLE
     glProgramBinaryContextANGLE
     glProgramBinaryOESContextANGLE
     glProgramParameteriContextANGLE
@@ -1589,9 +1613,11 @@ EXPORTS
     glSampleMaskiContextANGLE
     glSampleMaskiANGLEContextANGLE
     glSamplerParameterIivContextANGLE
+    glSamplerParameterIivEXTContextANGLE
     glSamplerParameterIivOESContextANGLE
     glSamplerParameterIivRobustANGLEContextANGLE
     glSamplerParameterIuivContextANGLE
+    glSamplerParameterIuivEXTContextANGLE
     glSamplerParameterIuivOESContextANGLE
     glSamplerParameterIuivRobustANGLEContextANGLE
     glSamplerParameterfContextANGLE
@@ -1642,9 +1668,11 @@ EXPORTS
     glTexImage3DOESContextANGLE
     glTexImage3DRobustANGLEContextANGLE
     glTexParameterIivContextANGLE
+    glTexParameterIivEXTContextANGLE
     glTexParameterIivOESContextANGLE
     glTexParameterIivRobustANGLEContextANGLE
     glTexParameterIuivContextANGLE
+    glTexParameterIuivEXTContextANGLE
     glTexParameterIuivOESContextANGLE
     glTexParameterIuivRobustANGLEContextANGLE
     glTexParameterfContextANGLE

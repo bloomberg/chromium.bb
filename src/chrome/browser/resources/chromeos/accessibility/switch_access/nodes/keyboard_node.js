@@ -19,7 +19,7 @@ const AutomationNode = chrome.automation.AutomationNode;
  * This class handles the behavior of keyboard nodes directly associated with a
  * single AutomationNode.
  */
-class KeyboardNode extends BasicNode {
+export class KeyboardNode extends BasicNode {
   /**
    * @param {!AutomationNode} node
    * @param {!SARootNode} parent
@@ -165,9 +165,12 @@ export class KeyboardRootNode extends BasicRootNode {
       return;
     }
 
-    KeyboardRootNode.isVisible_ =
-        SwitchAccessPredicate.isVisible(keyboardObject);
+    KeyboardRootNode.isVisible_ = KeyboardRootNode.isKeyboardVisible_();
 
+    new EventHandler(
+        keyboardObject, chrome.automation.EventType.LOAD_COMPLETE,
+        KeyboardRootNode.checkVisibilityChanged_)
+        .start();
     new EventHandler(
         keyboardObject, chrome.automation.EventType.STATE_CHANGED,
         KeyboardRootNode.checkVisibilityChanged_, {exactMatch: true})
@@ -177,12 +180,23 @@ export class KeyboardRootNode extends BasicRootNode {
   // ================= Private static methods =================
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  static isKeyboardVisible_() {
+    const keyboardObject = KeyboardRootNode.getKeyboardObject();
+    return !!keyboardObject &&
+        SwitchAccessPredicate.isVisible(keyboardObject) &&
+        !!keyboardObject.find({role: chrome.automation.RoleType.ROOT_WEB_AREA});
+  }
+
+  /**
    * @param {chrome.automation.AutomationEvent} event
    * @private
    */
   static checkVisibilityChanged_(event) {
-    const currentlyVisible =
-        SwitchAccessPredicate.isVisible(KeyboardRootNode.getKeyboardObject());
+    const keyboardObject = KeyboardRootNode.getKeyboardObject();
+    const currentlyVisible = KeyboardRootNode.isKeyboardVisible_();
     if (currentlyVisible === KeyboardRootNode.isVisible_) {
       return;
     }
@@ -241,7 +255,6 @@ export class KeyboardRootNode extends BasicRootNode {
       return;
     }
 
-    KeyboardRootNode.explicitStateChange_ = true;
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
   }
 }

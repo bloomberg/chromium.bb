@@ -83,6 +83,14 @@ class TextExample::TextExampleView : public View {
     SchedulePaint();
   }
 
+ protected:
+  void OnThemeChanged() override {
+    View::OnThemeChanged();
+    SetBorder(CreateSolidBorder(
+        1, GetNativeTheme()->GetSystemColor(
+               ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  }
+
  private:
   // The font used for drawing the text.
   gfx::FontList font_list_;
@@ -201,9 +209,6 @@ void TextExample::CreateExampleView(View* container) {
 
   layout->StartRow(1, 1);
   text_view_ = layout->AddView(std::make_unique<TextExampleView>());
-  text_view_->SetBorder(CreateSolidBorder(
-      1, text_view_->GetNativeTheme()->GetSystemColor(
-             ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   layout->AddPaddingRow(0, 8);
 
   TextComboboxChanged();  // Sets initial text content.
@@ -247,20 +252,19 @@ void TextExample::TextComboboxChanged() {
       text_view_->SetText(u"The quick brown fox jumps over the lazy dog.");
       break;
     case 1:
-      text_view_->SetText(base::ASCIIToUTF16(
-          "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do "
-          "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim "
-          "ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut "
-          "aliquip ex ea commodo consequat.\n"
-          "Duis aute irure dolor in reprehenderit in voluptate velit esse "
-          "cillum dolore eu fugiat nulla pariatur.\n"
-          "\n"
-          "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui "
-          "officia deserunt mollit anim id est laborum."));
+      text_view_->SetText(
+          u"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do "
+          u"eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut "
+          u"enim ad minim veniam, quis nostrud exercitation ullamco laboris "
+          u"nisi ut aliquip ex ea commodo consequat.\n"
+          u"Duis aute irure dolor in reprehenderit in voluptate velit esse "
+          u"cillum dolore eu fugiat nulla pariatur.\n"
+          u"\n"
+          u"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui "
+          u"officia deserunt mollit anim id est laborum.");
       break;
     case 2:
-      text_view_->SetText(base::ASCIIToUTF16(
-          "The quick && &brown fo&x jumps over the lazy dog."));
+      text_view_->SetText(u"The quick && &brown fo&x jumps over the lazy dog.");
       break;
     case 3:
       text_view_->SetText(

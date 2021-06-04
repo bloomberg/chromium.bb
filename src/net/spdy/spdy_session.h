@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -51,6 +50,7 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
@@ -347,11 +347,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool enable_ping_based_connection_checking,
               bool is_http_enabled,
               bool is_quic_enabled,
-              bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               int session_max_queued_capped_frames,
               const spdy::SettingsMap& initial_settings,
-              const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
+              const absl::optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
               bool http2_end_stream_with_data_frame,
               bool enable_priority_update,
@@ -1146,7 +1145,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // If set, an HTTP/2 frame with a reserved frame type will be sent after
   // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
-  const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+  const absl::optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
 
   // If set, the HEADERS frame carrying a request without body will not have the
   // END_STREAM flag set.  The stream will be closed by a subsequent empty DATA
@@ -1261,10 +1260,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   const bool is_http2_enabled_;
   const bool is_quic_enabled_;
-
-  // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
-  // allowed to push cross-origin resources.
-  const bool is_trusted_proxy_;
 
   // If true, accept pushed streams from server.
   // If false, reset pushed streams immediately.

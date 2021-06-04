@@ -3,7 +3,7 @@
 const a : vec2<f32> = vec2<f32>(0.1, 1.0);
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var a : f32;
 
   return;

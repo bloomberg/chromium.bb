@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Geolocation.AuthorizationActionExistingUser"
-    enum="GeolocationAuthorizationAction" expires_after="2021-08-09">
+    enum="GeolocationAuthorizationAction" expires_after="2021-10-17">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Geolocation.AuthorizationActionNewUser"
-    enum="GeolocationAuthorizationAction" expires_after="2021-08-09">
+    enum="GeolocationAuthorizationAction" expires_after="2021-10-10">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
@@ -102,10 +102,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.Event"
-    enum="NetworkLocationRequestEvent" expires_after="M85">
+    enum="NetworkLocationRequestEvent" expires_after="2022-04-22">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
-  <summary>Events in NetworkLocationRequest.</summary>
+  <summary>
+    Events in NetworkLocationRequest.
+
+    Warning: this histogram was expired after M85 and brought back 2021-04-23;
+    data may be missing.
+  </summary>
+</histogram>
+
+<histogram name="Geolocation.NetworkLocationRequest.NetError"
+    enum="NetErrorCodes" expires_after="2022-04-22">
+  <owner>JamesHollyer@chromium.org</owner>
+  <owner>device-dev@chromium.org</owner>
+  <summary>Network errors in NetworkLocationRequest.</summary>
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.ResponseCode"
@@ -116,7 +128,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Geolocation.PositionCache.CacheHit" units="BooleanCacheHit"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>mattreynolds@chromium.org</owner>
   <owner>deviceapi-team@google.com</owner>
   <summary>
@@ -198,7 +210,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GeolocationDisclosure.DisclosureResult"
-    enum="GeolocationDisclosureResult" expires_after="2021-08-29">
+    enum="GeolocationDisclosureResult" expires_after="2021-10-31">
   <owner>benwells@chromium.org</owner>
   <summary>
     Records the action the user took after the geolocation disclosure has been

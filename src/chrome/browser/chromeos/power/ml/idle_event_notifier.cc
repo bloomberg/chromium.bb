@@ -32,12 +32,12 @@ struct IdleEventNotifier::ActivityDataInternal {
   base::Time last_user_activity_time;
 
   TimeSinceBoot last_activity_since_boot;
-  base::Optional<TimeSinceBoot> earliest_activity_since_boot;
-  base::Optional<TimeSinceBoot> last_key_since_boot;
-  base::Optional<TimeSinceBoot> last_mouse_since_boot;
-  base::Optional<TimeSinceBoot> last_touch_since_boot;
-  base::Optional<TimeSinceBoot> video_start_time;
-  base::Optional<TimeSinceBoot> video_end_time;
+  absl::optional<TimeSinceBoot> earliest_activity_since_boot;
+  absl::optional<TimeSinceBoot> last_key_since_boot;
+  absl::optional<TimeSinceBoot> last_mouse_since_boot;
+  absl::optional<TimeSinceBoot> last_touch_since_boot;
+  absl::optional<TimeSinceBoot> video_start_time;
+  absl::optional<TimeSinceBoot> video_end_time;
 };
 
 IdleEventNotifier::ActivityData::ActivityData() {}
@@ -61,9 +61,7 @@ IdleEventNotifier::IdleEventNotifier(
     PowerManagerClient* power_manager_client,
     ui::UserActivityDetector* detector,
     mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver)
-    : power_manager_client_observer_(this),
-      user_activity_observer_(this),
-      internal_data_(std::make_unique<ActivityDataInternal>()),
+    : internal_data_(std::make_unique<ActivityDataInternal>()),
       receiver_(this, std::move(receiver)),
       key_counter_(
           std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
@@ -75,9 +73,9 @@ IdleEventNotifier::IdleEventNotifier(
           std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
                                                 kNumUserInputEventsBuckets)) {
   DCHECK(power_manager_client);
-  power_manager_client_observer_.Add(power_manager_client);
+  power_manager_client_observation_.Observe(power_manager_client);
   DCHECK(detector);
-  user_activity_observer_.Add(detector);
+  user_activity_observation_.Observe(detector);
 }
 
 IdleEventNotifier::~IdleEventNotifier() = default;
@@ -279,9 +277,9 @@ void IdleEventNotifier::UpdateActivityData(ActivityType type) {
 // time active, which should be reset between idle events.
 void IdleEventNotifier::ResetTimestampsForRecentActivity() {
   internal_data_->last_activity_since_boot = base::TimeDelta();
-  internal_data_->earliest_activity_since_boot = base::nullopt;
-  internal_data_->video_start_time = base::nullopt;
-  internal_data_->video_end_time = base::nullopt;
+  internal_data_->earliest_activity_since_boot = absl::nullopt;
+  internal_data_->video_start_time = absl::nullopt;
+  internal_data_->video_end_time = absl::nullopt;
 }
 
 }  // namespace ml

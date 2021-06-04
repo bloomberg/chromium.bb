@@ -83,7 +83,8 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 
   ChromePasswordProtectionService* GetService(bool is_incognito) {
     return ChromePasswordProtectionService::GetPasswordProtectionService(
-        is_incognito ? browser()->profile()->GetPrimaryOTRProfile()
+        is_incognito ? browser()->profile()->GetPrimaryOTRProfile(
+                           /*create_if_needed=*/true)
                      : browser()->profile());
   }
 
@@ -492,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_TRUE(
       profile->GetPrefs()
           ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-          ->empty());
+          ->DictEmpty());
 
   base::HistogramTester histograms;
   // Shows modal dialog on current web_contents.
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_EQ(1u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
 
   // Opens a new browser window.
   Browser* browser2 = CreateBrowser(profile);
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_EQ(2u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
 
   // Simulates a Gaia password change.
   SimulateGaiaPasswordChanged(service, user_manager::kStubUserEmail,
@@ -537,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_EQ(0u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
   EXPECT_THAT(histograms.GetAllSamples(kGaiaPasswordChangeHistogramName),
               testing::ElementsAre(base::Bucket(2, 1)));
 }
@@ -575,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_EQ(1u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
 
   // Save the same password will not trigger OnGaiaPasswordChanged(), thus no
   // change to size of unhandled_password_reuses().
@@ -584,14 +585,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_EQ(1u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
   // Save a different password will clear unhandled_password_reuses().
   SimulateGaiaPasswordChange("password_2");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
                 ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
-                ->size());
+                ->DictSize());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,

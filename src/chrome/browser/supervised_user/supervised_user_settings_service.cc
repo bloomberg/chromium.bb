@@ -144,14 +144,14 @@ void SupervisedUserSettingsService::PushItemToSync(
   if (sync_processor_) {
     base::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Syncing"));
     dict = GetDictionaryAndSplitKey(&key_suffix);
-    DCHECK(GetQueuedItems()->empty());
+    DCHECK(GetQueuedItems()->DictEmpty());
     SyncChangeList change_list;
     SyncData data = CreateSyncDataForSetting(key, *value);
     SyncChange::SyncChangeType change_type =
         dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
                                  : SyncChange::ACTION_ADD;
     change_list.push_back(SyncChange(FROM_HERE, change_type, data));
-    base::Optional<ModelError> error =
+    absl::optional<ModelError> error =
         sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
     DCHECK(!error.has_value()) << error.value().ToString();
   } else {
@@ -160,14 +160,15 @@ void SupervisedUserSettingsService::PushItemToSync(
     base::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Queued"));
     dict = GetQueuedItems();
   }
-  dict->SetWithoutPathExpansion(key_suffix, std::move(value));
+  dict->SetKey(key_suffix, base::Value::FromUniquePtrValue(std::move(value)));
 }
 
 void SupervisedUserSettingsService::SetLocalSetting(
     const std::string& key,
     std::unique_ptr<base::Value> value) {
   if (value)
-    local_settings_->SetWithoutPathExpansion(key, std::move(value));
+    local_settings_->SetKey(key,
+                            base::Value::FromUniquePtrValue(std::move(value)));
   else
     local_settings_->RemoveKey(key);
 
@@ -202,7 +203,7 @@ void SupervisedUserSettingsService::WaitUntilReadyToSync(
   }
 }
 
-base::Optional<syncer::ModelError>
+absl::optional<syncer::ModelError>
 SupervisedUserSettingsService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
@@ -241,7 +242,7 @@ SupervisedUserSettingsService::MergeDataAndStartSyncing(
     std::unique_ptr<base::Value> value =
         JSONReader::ReadDeprecated(supervised_user_setting.value());
     // Wrongly formatted input will cause null values.
-    // SetWithoutPathExpansion below requires non-null values.
+    // SetKey below requires non-null values.
     if (!value) {
       DLOG(ERROR) << "Invalid managed user setting value: "
                   << supervised_user_setting.value()
@@ -251,7 +252,8 @@ SupervisedUserSettingsService::MergeDataAndStartSyncing(
     std::string name_suffix = supervised_user_setting.name();
     std::string name_key = name_suffix;
     base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
-    dict->SetWithoutPathExpansion(name_suffix, std::move(value));
+    dict->SetKey(name_suffix,
+                 base::Value::FromUniquePtrValue(std::move(value)));
     if (seen_keys.find(name_key) == seen_keys.end()) {
       added_sync_keys.insert(name_key);
     }
@@ -287,7 +289,7 @@ SupervisedUserSettingsService::MergeDataAndStartSyncing(
     return sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void SupervisedUserSettingsService::StopSyncing(ModelType type) {
@@ -314,11 +316,11 @@ SyncDataList SupervisedUserSettingsService::GetAllSyncDataForTesting(
           MakeSplitSettingKey(it.key(), jt.key()), jt.value()));
     }
   }
-  DCHECK_EQ(0u, GetQueuedItems()->size());
+  DCHECK_EQ(0u, GetQueuedItems()->DictSize());
   return data;
 }
 
-base::Optional<syncer::ModelError>
+absl::optional<syncer::ModelError>
 SupervisedUserSettingsService::ProcessSyncChanges(
     const base::Location& from_here,
     const SyncChangeList& change_list) {
@@ -342,7 +344,7 @@ SupervisedUserSettingsService::ProcessSyncChanges(
           DLOG_IF(WARNING, change_type == SyncChange::ACTION_UPDATE)
               << "Value for key " << key << " doesn't exist yet";
         }
-        dict->SetWithoutPathExpansion(key, std::move(value));
+        dict->SetKey(key, base::Value::FromUniquePtrValue(std::move(value)));
         break;
       }
       case SyncChange::ACTION_DELETE: {
@@ -359,7 +361,7 @@ SupervisedUserSettingsService::ProcessSyncChanges(
                              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   InformSubscribers();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void SupervisedUserSettingsService::OnPrefValueChanged(const std::string& key) {

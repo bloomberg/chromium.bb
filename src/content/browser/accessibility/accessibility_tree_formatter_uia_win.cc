@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -283,12 +284,6 @@ const long AccessibilityTreeFormatterUia::properties_[] = {
     UIA_HeadingLevelPropertyId,                         // 30173
 };
 
-// Without this pragma, GCC returns a "declaration requires an exit-time
-// destructor" warning since this is a global map. This warning is not a problem
-// in this case and needs to be muted to complete the build.
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
-std::map<long, std::string> custom_properties_map_;
-
 const long AccessibilityTreeFormatterUia::patterns_[] = {
     UIA_SelectionPatternId,       // 10001
     UIA_ValuePatternId,           // 10002
@@ -301,6 +296,7 @@ const long AccessibilityTreeFormatterUia::patterns_[] = {
     UIA_SelectionItemPatternId,   // 10010
     UIA_TablePatternId,           // 10012
     UIA_TogglePatternId,          // 10015
+    UIA_AnnotationPatternId,      // 10023
 };
 
 const long AccessibilityTreeFormatterUia::pattern_properties_[] = {
@@ -559,6 +555,7 @@ void AccessibilityTreeFormatterUia::AddProperties(
     }
   }
   // Add control pattern specific properties
+  AddAnnotationProperties(node.Get(), dict);
   AddExpandCollapseProperties(node.Get(), dict);
   AddGridProperties(node.Get(), dict);
   AddGridItemProperties(node.Get(), dict);
@@ -572,6 +569,44 @@ void AccessibilityTreeFormatterUia::AddProperties(
   AddValueProperties(node.Get(), dict);
   AddWindowProperties(node.Get(), dict);
   AddCustomProperties(node.Get(), dict);
+}
+
+void AccessibilityTreeFormatterUia::AddAnnotationProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) const {
+  Microsoft::WRL::ComPtr<IUIAutomationAnnotationPattern> annotation_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_AnnotationPatternId,
+                                         IID_PPV_ARGS(&annotation_pattern))) &&
+      annotation_pattern) {
+    int type_id;
+    if (SUCCEEDED(annotation_pattern->get_CachedAnnotationTypeId(&type_id))) {
+      const char* type_id_string;
+      switch (type_id) {
+        case AnnotationType_Comment:
+          type_id_string = "Comment";
+          break;
+        case AnnotationType_Endnote:
+          type_id_string = "Endnote";
+          break;
+        case AnnotationType_Footnote:
+          type_id_string = "Footnote";
+          break;
+        case AnnotationType_Highlighted:
+          type_id_string = "Highlighted";
+          break;
+        case AnnotationType_Unknown:
+          type_id_string = "Unknown";
+          break;
+      }
+      dict->SetString("Annotation.AnnotationTypeId", type_id_string);
+    }
+
+    base::win::ScopedBstr type_name;
+    if (SUCCEEDED(annotation_pattern->get_CachedAnnotationTypeName(
+            type_name.Receive())))
+      dict->SetString("Annotation.AnnotationTypeName",
+                      BstrToUTF8(type_name.Get()));
+  }
 }
 
 void AccessibilityTreeFormatterUia::AddExpandCollapseProperties(
@@ -854,11 +889,17 @@ void AccessibilityTreeFormatterUia::AddWindowProperties(
   }
 }
 
+std::map<long, std::string>&
+AccessibilityTreeFormatterUia::GetCustomPropertiesMap() const {
+  static base::NoDestructor<std::map<long, std::string>> custom_properties_map;
+  return *custom_properties_map;
+}
+
 void AccessibilityTreeFormatterUia::AddCustomProperties(
     IUIAutomationElement* node,
     base::DictionaryValue* dict) const {
   // Custom properties need to be added separately.
-  for (const auto& property : custom_properties_map_) {
+  for (const auto& property : GetCustomPropertiesMap()) {
     base::win::ScopedVariant variant;
     if (SUCCEEDED(
             node->GetCurrentPropertyValue(property.first, variant.Receive()))) {
@@ -871,8 +912,8 @@ std::string AccessibilityTreeFormatterUia::GetPropertyName(
     long property_id) const {
   // We cannot infer the property name from a custom property id, so we get it
   // from the map we created manually in `BuildCustomPropertiesMap()`.
-  auto property = custom_properties_map_.find(property_id);
-  if (property != custom_properties_map_.end())
+  auto property = GetCustomPropertiesMap().find(property_id);
+  if (property != GetCustomPropertiesMap().end())
     return property->second;
 
   return UiaIdentifierToCondensedString(property_id);
@@ -1087,7 +1128,7 @@ void AccessibilityTreeFormatterUia::BuildCacheRequests() {
 }
 
 void AccessibilityTreeFormatterUia::BuildCustomPropertiesMap() {
-  custom_properties_map_.insert(
+  GetCustomPropertiesMap().insert(
       {ui::UiaRegistrarWin::GetInstance().GetVirtualContentPropertyId(),
        "VirtualContent"});
 }
@@ -1108,11 +1149,13 @@ std::string AccessibilityTreeFormatterUia::ProcessTreeForOutput(
     ProcessPropertyForOutput(GetPropertyName(i), dict, line);
 
   // Custom properties.
-  for (const auto& i : custom_properties_map_)
+  for (const auto& i : GetCustomPropertiesMap())
     ProcessPropertyForOutput(GetPropertyName(i.first), dict, line);
 
   // Patterns.
   const std::string pattern_property_names[] = {
+      // UIA_AnnotationPatternId
+      "Annotation.AnnotationTypeId", "Annotation.AnnotationTypeName",
       // UIA_ExpandCollapsePatternId
       "ExpandCollapse.ExpandCollapseState",
       // UIA_GridPatternId
@@ -1173,19 +1216,17 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
       break;
     }
     case base::Value::Type::BOOLEAN: {
-      bool bool_value = 0;
-      value->GetAsBoolean(&bool_value);
-          WriteAttribute(false,
-                         base::StringPrintf("%s=%s", name.c_str(),
-                                            (bool_value ? "true" : "false")),
-                         &line);
+      WriteAttribute(false,
+                     base::StringPrintf("%s=%s", name.c_str(),
+                                        (value->GetBool() ? "true" : "false")),
+                     &line);
       break;
     }
     case base::Value::Type::INTEGER: {
-      int int_value = 0;
-      value->GetAsInteger(&int_value);
-      WriteAttribute(
-          false, base::StringPrintf("%s=%d", name.c_str(), int_value), &line);
+      WriteAttribute(false,
+                     base::StringPrintf("%s=%d", name.c_str(),
+                                        value->GetIfInt().value_or(0)),
+                     &line);
       break;
     }
     case base::Value::Type::DOUBLE: {

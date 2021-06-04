@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import re
 import sys
@@ -129,6 +131,13 @@ class GpuIntegrationTest(
       os_name = cls.browser.platform.GetOSName()
       if os_name == 'android' or os_name == 'chromeos':
         browser_args.remove(cba.DISABLE_GPU)
+
+    # Reduce number of video buffers when running tests on Fuchsia to
+    # workaround crbug.com/1203580
+    # TODO(https://crbug.com/1203580): Remove this once the bug is resolved.
+    if cls._finder_options.browser_type == 'web-engine-shell':
+      browser_args.append('--double-buffer-compositing')
+
     return browser_args
 
   @classmethod
@@ -195,12 +204,14 @@ class GpuIntegrationTest(
     # to push the fetch of the first tab into the lower retry loop
     # without breaking Telemetry's unit tests, and that hook is used
     # to implement the gpu_integration_test_unittests.
+    last_exception = Exception()
     for x in range(1, _START_BROWSER_RETRIES + 1):  # Index from 1 instead of 0.
       try:
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
         return
-      except Exception:  # pylint: disable=broad-except
+      except Exception as e:  # pylint: disable=broad-except
+        last_exception = e
         logging.exception('Browser start failed (attempt %d of %d). Backtrace:',
                           x, _START_BROWSER_RETRIES)
         # If we are on the last try and there is an exception take a screenshot
@@ -219,7 +230,7 @@ class GpuIntegrationTest(
           cls.StopBrowser()
     # Re-raise the last exception thrown. Only happens if all the retries
     # fail.
-    raise
+    raise last_exception
 
   @classmethod
   def _RestartBrowser(cls, reason):
@@ -530,7 +541,7 @@ class GpuIntegrationTest(
       gpu_tags.append(gpu_helper.GetSwiftShaderGLRenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
       if gpu_info and gpu_info.devices:
-        for ii in xrange(0, len(gpu_info.devices)):
+        for ii in range(0, len(gpu_info.devices)):
           gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info, ii)
           gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info, ii)
           # The gpu device id tag will contain both the vendor and device id
@@ -553,7 +564,7 @@ class GpuIntegrationTest(
       skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info.feature_status,
                                                  startup_args)
       tags.append(skia_renderer)
-    display_server = gpu_helper.GetDisplayServer()
+    display_server = gpu_helper.GetDisplayServer(browser.browser_type)
     if display_server:
       tags.append(display_server)
     return tags

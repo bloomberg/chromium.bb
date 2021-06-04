@@ -13,13 +13,14 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -59,7 +60,7 @@ class POLICY_EXPORT PolicyMap {
     Entry(PolicyLevel level,
           PolicyScope scope,
           PolicySource source,
-          base::Optional<base::Value> value,
+          absl::optional<base::Value> value,
           std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
     ~Entry();
 
@@ -72,7 +73,7 @@ class POLICY_EXPORT PolicyMap {
     base::Value* value() { return base::OptionalOrNullptr(value_); }
     const base::Value* value() const { return base::OptionalOrNullptr(value_); }
 
-    void set_value(base::Optional<base::Value> val);
+    void set_value(absl::optional<base::Value> val);
 
     // Returns true if |this| has higher priority than |other|. The priority of
     // the fields are |level| > |scope| > |source|.
@@ -136,13 +137,13 @@ class POLICY_EXPORT PolicyMap {
                                         L10nLookupFunction lookup) const;
 
    private:
-    base::Optional<base::Value> value_;
+    absl::optional<base::Value> value_;
     bool ignored_ = false;
     bool is_default_value_ = false;
 
     // Stores all message IDs separated by message types.
     std::map<MessageType,
-             std::map<int, base::Optional<std::vector<std::u16string>>>>
+             std::map<int, absl::optional<std::vector<std::u16string>>>>
         message_ids_;
   };
 
@@ -173,7 +174,11 @@ class POLICY_EXPORT PolicyMap {
   typedef PolicyMapType::iterator iterator;
 
   PolicyMap();
-  virtual ~PolicyMap();
+  PolicyMap(const PolicyMap&) = delete;
+  PolicyMap& operator=(const PolicyMap&) = delete;
+  PolicyMap(PolicyMap&& other) noexcept;
+  PolicyMap& operator=(PolicyMap&& other) noexcept;
+  ~PolicyMap();
 
   // Returns a weak reference to the entry currently stored for key |policy|,
   // or NULL if untrusted or not found. Ownership is retained by the PolicyMap.
@@ -192,7 +197,7 @@ class POLICY_EXPORT PolicyMap {
            PolicyLevel level,
            PolicyScope scope,
            PolicySource source,
-           base::Optional<base::Value> value,
+           absl::optional<base::Value> value,
            std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
 
   void Set(const std::string& policy, Entry entry);
@@ -239,11 +244,8 @@ class POLICY_EXPORT PolicyMap {
   // Swaps the internal representation of |this| with |other|.
   void Swap(PolicyMap* other);
 
-  // |this| becomes a copy of |other|. Any existing policies are dropped.
-  void CopyFrom(const PolicyMap& other);
-
   // Returns a copy of |this|.
-  std::unique_ptr<PolicyMap> DeepCopy() const;
+  PolicyMap Clone() const;
 
   // Merges policies from |other| into |this|. Existing policies are only
   // overridden by those in |other| if they have a higher priority, as defined
@@ -262,12 +264,21 @@ class POLICY_EXPORT PolicyMap {
                 PolicyScope scope,
                 PolicySource source);
 
-  // Compares this value map against |other| and stores all key names that have
-  // different values or reference different external data in |differing_keys|.
-  // This includes keys that are present only in one of the maps.
-  // |differing_keys| is not cleared before the keys are added.
-  void GetDifferingKeys(const PolicyMap& other,
-                        std::set<std::string>* differing_keys) const;
+  // Returns True if at least one shared ID is found in the user and device
+  // affiliation ID sets.
+  bool IsUserAffiliated() const;
+
+  // Populates the set containing user affiliation ID strings.
+  void SetUserAffiliationIds(const base::flat_set<std::string>& user_ids);
+
+  // Returns the set containing user affiliation ID strings.
+  const base::flat_set<std::string>& GetUserAffiliationIds() const;
+
+  // Populates the set containing device affiliation ID strings.
+  void SetDeviceAffiliationIds(const base::flat_set<std::string>& device_ids);
+
+  // Returns the set containing device affiliation ID strings.
+  const base::flat_set<std::string>& GetDeviceAffiliationIds() const;
 
   bool Equals(const PolicyMap& other) const;
   bool empty() const;
@@ -300,9 +311,11 @@ class POLICY_EXPORT PolicyMap {
 
   PolicyMapType map_;
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyMap);
+  // Affiliation
+  bool is_user_affiliated_ = false;
+  base::flat_set<std::string> user_affiliation_ids_;
+  base::flat_set<std::string> device_affiliation_ids_;
 };
-
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_MAP_H_

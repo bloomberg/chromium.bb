@@ -12,7 +12,6 @@
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/video_recording_watcher.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/capture_mode_delegate.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -45,9 +44,10 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/aura/env.h"
-#include "ui/base/clipboard/clipboard_data.h"
-#include "ui/base/clipboard/clipboard_non_backed.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -266,11 +266,8 @@ void ShowVideoRecordingStoppedNotification(bool for_hdcp) {
 
 // Copies the bitmap representation of the given |image| to the clipboard.
 void CopyImageToClipboard(const gfx::Image& image) {
-  auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
-  DCHECK(clipboard);
-  auto clipboard_data = std::make_unique<ui::ClipboardData>();
-  clipboard_data->SetBitmapData(image.AsBitmap());
-  clipboard->WriteClipboardData(std::move(clipboard_data));
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+      .WriteImage(image.AsBitmap());
 }
 
 }  // namespace
@@ -468,7 +465,7 @@ void CaptureModeController::CaptureScreenshotsOfAllDisplays() {
 
 void CaptureModeController::PerformCapture() {
   DCHECK(IsActive());
-  const base::Optional<CaptureParams> capture_params = GetCaptureParams();
+  const absl::optional<CaptureParams> capture_params = GetCaptureParams();
   if (!capture_params)
     return;
 
@@ -673,7 +670,7 @@ void CaptureModeController::EndSessionOrRecording(EndRecordingReason reason) {
   EndVideoRecording(reason);
 }
 
-base::Optional<CaptureModeController::CaptureParams>
+absl::optional<CaptureModeController::CaptureParams>
 CaptureModeController::GetCaptureParams() const {
   DCHECK(IsActive());
 
@@ -692,7 +689,7 @@ CaptureModeController::GetCaptureParams() const {
       if (!window) {
         // TODO(afakhry): Consider showing a toast or a notification that no
         // window was selected.
-        return base::nullopt;
+        return absl::nullopt;
       }
       // window->bounds() are in root coordinates, but we want to get the
       // capture area in |window|'s coordinates.
@@ -706,7 +703,7 @@ CaptureModeController::GetCaptureParams() const {
       if (user_capture_region_.IsEmpty()) {
         // TODO(afakhry): Consider showing a toast or a notification that no
         // region was selected.
-        return base::nullopt;
+        return absl::nullopt;
       }
       // TODO(afakhry): Consider any special handling of display scale changes
       // while video recording is in progress.
@@ -936,11 +933,9 @@ void CaptureModeController::OnImageFileSaved(
   CopyImageToClipboard(image);
   ShowPreviewNotification(path, image, CaptureModeType::kImage);
 
-  if (features::IsTemporaryHoldingSpaceEnabled()) {
-    HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
-    if (client)  // May be `nullptr` in tests.
-      client->AddScreenshot(path);
-  }
+  HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
+  if (client)  // May be `nullptr` in tests.
+    client->AddScreenshot(path);
 }
 
 void CaptureModeController::OnVideoFileStatus(bool success) {
@@ -967,11 +962,9 @@ void CaptureModeController::OnVideoFileSaved(
     RecordCaptureModeRecordTime(
         (base::TimeTicks::Now() - recording_start_time_).InSeconds());
 
-    if (features::IsTemporaryHoldingSpaceEnabled()) {
-      HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
-      if (client)  // May be `nullptr` in tests.
-        client->AddScreenRecording(current_video_file_path_);
-    }
+    HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
+    if (client)  // May be `nullptr` in tests.
+      client->AddScreenRecording(current_video_file_path_);
   }
 
   if (!on_file_saved_callback_.is_null())
@@ -1018,7 +1011,7 @@ void CaptureModeController::ShowPreviewNotification(
 void CaptureModeController::HandleNotificationClicked(
     const base::FilePath& screen_capture_path,
     const CaptureModeType type,
-    base::Optional<int> button_index) {
+    absl::optional<int> button_index) {
   if (!button_index.has_value()) {
     // Show the item in the folder.
     delegate_->ShowScreenCaptureItemInFolder(screen_capture_path);
@@ -1113,7 +1106,7 @@ void CaptureModeController::OnVideoRecordCountDownFinished() {
   // to start recording.
   capture_mode_session_->set_a11y_alert_on_session_exit(false);
 
-  const base::Optional<CaptureParams> capture_params = GetCaptureParams();
+  const absl::optional<CaptureParams> capture_params = GetCaptureParams();
 
   // Acquire the session's layer in order to potentially reuse it for painting
   // a highlight around the region being recorded.

@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 
-#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 
@@ -302,6 +303,10 @@ WebInputEventResult GestureManager::HandleGestureTap(
           *tapped_element, event_handling_util::ParentForClickEvent);
       auto* click_target_element = DynamicTo<Element>(click_target_node);
 
+      // TODO(crbug.com/1206108): Find a better approach to associate
+      // pointerdown pointerId with gesture tap
+      fake_mouse_up.id = last_pointerdown_event_pointer_id_;
+      fake_mouse_up.pointer_type = gesture_event.primary_pointer_type;
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
               click_target_element, String(), event_type_names::kClick,
@@ -321,6 +326,15 @@ WebInputEventResult GestureManager::HandleGestureTap(
       event_handling_util::MergeEventResult(mouse_down_event_result,
                                             mouse_up_event_result),
       click_event_result);
+
+  if (RuntimeEnabledFeatures::TextFragmentTapOpensContextMenuEnabled() &&
+      TextFragmentHandler::IsOverTextFragment(current_hit_test)) {
+    if (event_result == WebInputEventResult::kNotHandled) {
+      return SendContextMenuEventForGesture(targeted_event);
+    }
+  }
+
+  // Default case when tap that is not handled.
   if (event_result == WebInputEventResult::kNotHandled && tapped_node &&
       frame_->GetPage()) {
     bool dom_tree_changed = pre_dispatch_dom_tree_version !=
@@ -334,6 +348,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     ShowUnhandledTapUIIfNeeded(dom_tree_changed, style_changed, tapped_node,
                                tapped_element, tapped_position_in_viewport);
   }
+
   return event_result;
 }
 
@@ -523,6 +538,20 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     provider->ShowUnhandledTapUIIfNeeded(std::move(tapped_info));
   }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+}
+
+void GestureManager::NotifyCurrentPointerDownId(PointerId pointer_id) {
+  // TODO(crbug.com/1206108): Find a better approach to associate
+  // pointerdown pointerId with gesture tap
+  // Pointerdown, pointerup events and tapdown and tap gestures are not fully
+  // ordered. It is guaranteed that tapdown follows pointerdown and tap
+  // follows pointerup. However, because pointer events and gestures are
+  // asynchronous, we can have the situation in which 2
+  // pointerdown/pointerup pairs are executed before any of their
+  // corresponding tapdown/tap pairs are executed.
+  // In that case, we would use the pointerId of pointerdown/pointerup set 2
+  // for the tapdown/tap pair of set 1. Which is wrong.
+  last_pointerdown_event_pointer_id_ = pointer_id;
 }
 
 }  // namespace blink

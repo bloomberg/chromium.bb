@@ -26,8 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr const char kUserActionAcceptUpdateOverCellular[] =
@@ -94,7 +93,7 @@ std::string UpdateScreen::GetResultString(Result result) {
     case Result::UPDATE_ERROR:
       return "UpdateError";
     case Result::UPDATE_SKIPPED:
-      return chromeos::BaseScreen::kNotApplicable;
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -157,10 +156,8 @@ void UpdateScreen::ShowImpl() {
         base::BindRepeating(&UpdateScreen::OnAccessibilityStatusChanged,
                             weak_factory_.GetWeakPtr()));
   }
-  if (!power_manager_subscription_) {
-    power_manager_subscription_ = std::make_unique<
-        ScopedObserver<PowerManagerClient, PowerManagerClient::Observer>>(this);
-    power_manager_subscription_->Add(PowerManagerClient::Get());
+  if (!power_manager_subscription_.IsObserving()) {
+    power_manager_subscription_.Observe(PowerManagerClient::Get());
   }
   PowerManagerClient::Get()->RequestStatusUpdate();
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -181,7 +178,7 @@ void UpdateScreen::ShowImpl() {
 
 void UpdateScreen::HideImpl() {
   accessibility_subscription_ = {};
-  power_manager_subscription_.reset();
+  power_manager_subscription_.Reset();
   show_timer_.Stop();
   if (view_)
     view_->Hide();
@@ -451,7 +448,7 @@ void UpdateScreen::SetUpdateStatusMessage(int percent,
 void UpdateScreen::UpdateBatteryWarningVisibility() {
   if (!view_)
     return;
-  const base::Optional<power_manager::PowerSupplyProperties>& proto =
+  const absl::optional<power_manager::PowerSupplyProperties>& proto =
       PowerManagerClient::Get()->GetLastStatus();
   if (!proto.has_value())
     return;
@@ -516,4 +513,4 @@ void UpdateScreen::OnErrorScreenHidden() {
   Show(context());
 }
 
-}  // namespace chromeos
+}  // namespace ash

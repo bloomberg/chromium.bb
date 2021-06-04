@@ -27,30 +27,30 @@ namespace {
 
 using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
 
-base::Optional<double> GetGainControlCompressionGain(
+absl::optional<double> GetGainControlCompressionGain(
     const base::Value& config) {
   const base::Value* found = config.FindKey("gain_control_compression_gain_db");
   if (!found)
-    return base::nullopt;
+    return absl::nullopt;
   double gain = found->GetDouble();
   DCHECK_GE(gain, 0.f);
   return gain;
 }
 
-base::Optional<double> GetPreAmplifierGainFactor(const base::Value& config) {
+absl::optional<double> GetPreAmplifierGainFactor(const base::Value& config) {
   const base::Value* found = config.FindKey("pre_amplifier_fixed_gain_factor");
   if (!found)
-    return base::nullopt;
+    return absl::nullopt;
   double factor = found->GetDouble();
   DCHECK_GE(factor, 1.f);
   return factor;
 }
 
-base::Optional<NoiseSuppression::Level> GetNoiseSuppressionLevel(
+absl::optional<NoiseSuppression::Level> GetNoiseSuppressionLevel(
     const base::Value& config) {
   const base::Value* found = config.FindKey("noise_suppression_level");
   if (!found)
-    return base::nullopt;
+    return absl::nullopt;
   int level = found->GetInt();
   DCHECK_GE(level, static_cast<int>(NoiseSuppression::kLow));
   DCHECK_LE(level, static_cast<int>(NoiseSuppression::kVeryHigh));
@@ -59,9 +59,9 @@ base::Optional<NoiseSuppression::Level> GetNoiseSuppressionLevel(
 
 void GetExtraConfigFromJson(
     const std::string& audio_processing_platform_config_json,
-    base::Optional<double>* gain_control_compression_gain_db,
-    base::Optional<double>* pre_amplifier_fixed_gain_factor,
-    base::Optional<NoiseSuppression::Level>* noise_suppression_level) {
+    absl::optional<double>* gain_control_compression_gain_db,
+    absl::optional<double>* pre_amplifier_fixed_gain_factor,
+    absl::optional<NoiseSuppression::Level>* noise_suppression_level) {
   auto config = base::JSONReader::Read(audio_processing_platform_config_json);
   if (!config) {
     LOG(ERROR) << "Failed to parse platform config JSON.";
@@ -73,12 +73,6 @@ void GetExtraConfigFromJson(
 }
 
 }  // namespace
-
-AudioProcessingProperties::AudioProcessingProperties() = default;
-AudioProcessingProperties::AudioProcessingProperties(
-    const AudioProcessingProperties& other) = default;
-AudioProcessingProperties& AudioProcessingProperties::operator=(
-    const AudioProcessingProperties& other) = default;
 
 void AudioProcessingProperties::DisableDefaultProperties() {
   echo_cancellation_type = EchoCancellationType::kEchoCancellationDisabled;
@@ -184,22 +178,37 @@ void StopEchoCancellationDump(AudioProcessing* audio_processing) {
   audio_processing->DetachAecDump();
 }
 
+// TODO(bugs.webrtc.org/7494): Remove unused cases, simplify decision logic.
 void ConfigAutomaticGainControl(
-    bool agc_enabled,
-    bool experimental_agc_enabled,
-    base::Optional<AdaptiveGainController2Properties> agc2_properties,
-    base::Optional<double> compression_gain_db,
+    const AudioProcessingProperties& properties,
+    const absl::optional<WebRtcHybridAgcParams>& hybrid_agc_params,
+    absl::optional<double> compression_gain_db,
     AudioProcessing::Config& apm_config) {
-  const bool use_fixed_digital_agc2 = agc_enabled &&
-                                      !experimental_agc_enabled &&
-                                      compression_gain_db.has_value();
-  const bool use_hybrid_agc = agc2_properties.has_value();
-  const bool agc1_enabled =
-      agc_enabled && (use_hybrid_agc || !use_fixed_digital_agc2);
+  // If system level gain control is activated, turn off all gain control
+  // functionality in WebRTC.
+  if (properties.system_gain_control_activated) {
+    apm_config.gain_controller1.enabled = false;
+    apm_config.gain_controller2.enabled = false;
+    return;
+  }
+
+  // The AGC2 fixed digital controller is always enabled when automatic gain
+  // control is enabled, the experimental analog AGC is disabled and a
+  // compression gain is specified.
+  // TODO(bugs.webrtc.org/7494): Remove this option since it makes no sense to
+  // run a fixed digital gain after AGC1 adaptive digital.
+  const bool use_fixed_digital_agc2 =
+      properties.goog_auto_gain_control &&
+      !properties.goog_experimental_auto_gain_control &&
+      compression_gain_db.has_value();
+  const bool use_hybrid_agc = hybrid_agc_params.has_value();
+  const bool agc1_enabled = properties.goog_auto_gain_control &&
+                            (use_hybrid_agc || !use_fixed_digital_agc2);
 
   // Configure AGC1.
   if (agc1_enabled) {
     apm_config.gain_controller1.enabled = true;
+    // TODO(bugs.webrtc.org/7909): Maybe set mode to kFixedDigital also for IOS.
     apm_config.gain_controller1.mode =
 #if defined(OS_ANDROID)
         AudioProcessing::Config::GainController1::Mode::kFixedDigital;
@@ -209,67 +218,59 @@ void ConfigAutomaticGainControl(
   }
 
   // Configure AGC2.
-  if (experimental_agc_enabled) {
+  auto& agc2_config = apm_config.gain_controller2;
+  if (properties.goog_experimental_auto_gain_control) {
     // Experimental AGC is enabled. Hybrid AGC may or may not be enabled. Config
     // AGC2 with adaptive mode and the given options, while ignoring
-    // |use_fixed_digital_agc2|.
-    apm_config.gain_controller2.enabled = use_hybrid_agc;
-    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
-    apm_config.gain_controller2.adaptive_digital.enabled = true;
-
+    // `use_fixed_digital_agc2`.
+    agc2_config.enabled = use_hybrid_agc;
+    agc2_config.fixed_digital.gain_db = 0.0f;
+    agc2_config.adaptive_digital.enabled = use_hybrid_agc;
     if (use_hybrid_agc) {
-      auto& adaptive_digital = apm_config.gain_controller2.adaptive_digital;
-
-      adaptive_digital.vad_probability_attack =
-          agc2_properties->vad_probability_attack;
-
-      using LevelEstimator =
-          AudioProcessing::Config::GainController2::LevelEstimator;
-      adaptive_digital.level_estimator = agc2_properties->use_peaks_not_rms
-                                             ? LevelEstimator::kPeak
-                                             : LevelEstimator::kRms;
-
-      adaptive_digital.level_estimator_adjacent_speech_frames_threshold =
-          agc2_properties->level_estimator_speech_frames_threshold;
-
-      adaptive_digital.initial_saturation_margin_db =
-          agc2_properties->initial_saturation_margin_db;
-
-      adaptive_digital.extra_saturation_margin_db =
-          agc2_properties->extra_saturation_margin_db;
-
-      adaptive_digital.gain_applier_adjacent_speech_frames_threshold =
-          agc2_properties->gain_applier_speech_frames_threshold;
-
-      adaptive_digital.max_gain_change_db_per_second =
-          agc2_properties->max_gain_change_db_per_second;
-
-      adaptive_digital.max_output_noise_level_dbfs =
-          agc2_properties->max_output_noise_level_dbfs;
-
-      adaptive_digital.sse2_allowed = agc2_properties->sse2_allowed;
-      adaptive_digital.avx2_allowed = agc2_properties->avx2_allowed;
-      adaptive_digital.neon_allowed = agc2_properties->neon_allowed;
+      DCHECK(hybrid_agc_params.has_value());
+      // Set AGC2 adaptive digital configuration.
+      agc2_config.adaptive_digital.dry_run = hybrid_agc_params->dry_run;
+      agc2_config.adaptive_digital.vad_reset_period_ms =
+          hybrid_agc_params->vad_reset_period_ms;
+      agc2_config.adaptive_digital.adjacent_speech_frames_threshold =
+          hybrid_agc_params->adjacent_speech_frames_threshold;
+      agc2_config.adaptive_digital.max_gain_change_db_per_second =
+          hybrid_agc_params->max_gain_change_db_per_second;
+      agc2_config.adaptive_digital.max_output_noise_level_dbfs =
+          hybrid_agc_params->max_output_noise_level_dbfs;
+      agc2_config.adaptive_digital.sse2_allowed =
+          hybrid_agc_params->sse2_allowed;
+      agc2_config.adaptive_digital.avx2_allowed =
+          hybrid_agc_params->avx2_allowed;
+      agc2_config.adaptive_digital.neon_allowed =
+          hybrid_agc_params->neon_allowed;
+      // Enable AGC1 adaptive digital if AGC2 adaptive digital runs in dry-run
+      // mode.
+      apm_config.gain_controller1.analog_gain_controller
+          .enable_digital_adaptive = agc2_config.adaptive_digital.dry_run;
+    } else {
+      // Enable AGC1 adaptive digital since AGC2 adaptive digital is disabled.
+      apm_config.gain_controller1.analog_gain_controller
+          .enable_digital_adaptive = true;
     }
   } else if (use_fixed_digital_agc2) {
     // Experimental AGC is disabled, thus hybrid AGC is disabled. Config AGC2
     // with fixed gain mode.
-    apm_config.gain_controller2.enabled = true;
-    apm_config.gain_controller2.fixed_digital.gain_db =
-        compression_gain_db.value();
-    apm_config.gain_controller2.adaptive_digital.enabled = false;
+    agc2_config.enabled = true;
+    agc2_config.fixed_digital.gain_db = compression_gain_db.value();
+    agc2_config.adaptive_digital.enabled = false;
   }
 }
 
 void PopulateApmConfig(
     AudioProcessing::Config* apm_config,
     const AudioProcessingProperties& properties,
-    const base::Optional<std::string>& audio_processing_platform_config_json,
-    base::Optional<double>* gain_control_compression_gain_db) {
-  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
-  // webrtc::AudioProcessing::Config, crbug.com/895814.
-  base::Optional<double> pre_amplifier_fixed_gain_factor;
-  base::Optional<NoiseSuppression::Level> noise_suppression_level;
+    const absl::optional<std::string>& audio_processing_platform_config_json,
+    absl::optional<double>* gain_control_compression_gain_db) {
+  // TODO(crbug.com/895814): When Chrome uses AGC2, handle all JSON config via
+  // webrtc::AudioProcessing::Config.
+  absl::optional<double> pre_amplifier_fixed_gain_factor;
+  absl::optional<NoiseSuppression::Level> noise_suppression_level;
   if (audio_processing_platform_config_json.has_value()) {
     GetExtraConfigFromJson(audio_processing_platform_config_json.value(),
                            gain_control_compression_gain_db,
@@ -285,7 +286,10 @@ void PopulateApmConfig(
         pre_amplifier_fixed_gain_factor.value();
   }
 
-  if (properties.goog_noise_suppression) {
+  DCHECK(!(!properties.goog_noise_suppression &&
+           properties.system_noise_suppression_activated));
+  if (properties.goog_noise_suppression &&
+      !properties.system_noise_suppression_activated) {
     apm_config->noise_suppression.enabled = true;
     apm_config->noise_suppression.level =
         noise_suppression_level.value_or(NoiseSuppression::kHigh);

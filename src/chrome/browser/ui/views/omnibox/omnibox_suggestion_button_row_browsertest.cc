@@ -11,15 +11,14 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -34,10 +33,7 @@
 class OmniboxSuggestionButtonRowBrowserTest : public DialogBrowserTest {
  public:
   OmniboxSuggestionButtonRowBrowserTest() {
-    feature_list_.InitWithFeatures({omnibox::kOmniboxSuggestionButtonRow,
-                                    omnibox::kOmniboxPedalSuggestions,
-                                    omnibox::kOmniboxKeywordSearchButton},
-                                   {});
+    feature_list_.InitWithFeatures({omnibox::kOmniboxKeywordSearchButton}, {});
   }
 
   OmniboxSuggestionButtonRowBrowserTest(

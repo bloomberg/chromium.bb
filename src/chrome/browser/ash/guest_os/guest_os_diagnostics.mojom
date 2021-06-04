@@ -4,6 +4,13 @@
 
 module guest_os.mojom;
 
+import "url/mojom/url.mojom";
+
+struct DiagnosticMessage {
+  string message;
+  url.mojom.Url? learn_more_link;
+};
+
 struct DiagnosticEntry {
   enum Status {
     kPass,
@@ -13,15 +20,10 @@ struct DiagnosticEntry {
 
   string requirement;
   Status status;
-  string? explanation;
-};
-
-struct DiagnosticTopError {
-  string message;
-  string? learn_more_link;
+  DiagnosticMessage? explanation;
 };
 
 struct Diagnostics {
   array<DiagnosticEntry> entries;
-  DiagnosticTopError? top_error;
+  DiagnosticMessage? top_error;
 };

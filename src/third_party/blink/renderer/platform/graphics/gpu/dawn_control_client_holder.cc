@@ -11,11 +11,13 @@
 namespace blink {
 
 DawnControlClientHolder::DawnControlClientHolder(
-    std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
+    std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_provider_(std::make_unique<WebGraphicsContext3DProviderWrapper>(
           std::move(context_provider))),
       interface_(GetContextProvider()->WebGPUInterface()),
-      procs_(interface_->GetProcs()) {}
+      procs_(interface_->GetProcs()),
+      recyclable_resource_cache_(interface_, task_runner) {}
 
 void DawnControlClientHolder::SetLostContextCallback() {
   GetContextProvider()->SetLostContextCallback(WTF::BindRepeating(
@@ -48,6 +50,15 @@ void DawnControlClientHolder::SetContextLost() {
 
 bool DawnControlClientHolder::IsContextLost() const {
   return lost_;
+}
+
+std::unique_ptr<RecyclableCanvasResource>
+DawnControlClientHolder::GetOrCreateCanvasResource(
+    const IntSize& size,
+    const CanvasResourceParams& params,
+    bool is_origin_top_left) {
+  return recyclable_resource_cache_.GetOrCreateCanvasResource(
+      size, params, is_origin_top_left);
 }
 
 }  // namespace blink

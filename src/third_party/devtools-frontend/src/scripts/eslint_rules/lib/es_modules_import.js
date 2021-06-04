@@ -13,16 +13,7 @@ const path = require('path');
 const FRONT_END_DIRECTORY = path.join(__dirname, '..', '..', '..', 'front_end');
 const UNITTESTS_DIRECTORY = path.join(__dirname, '..', '..', '..', 'test', 'unittests');
 const INSPECTOR_OVERLAY_DIRECTORY = path.join(__dirname, '..', '..', '..', 'front_end', 'inspector_overlay');
-const COMPONENT_DOCS_DIRECTORY = path.join(FRONT_END_DIRECTORY, 'component_docs');
-
-const EXEMPTED_THIRD_PARTY_MODULES = new Set([
-  // wasmparser is exempt as it doesn't expose all its modules from the root file
-  path.join(FRONT_END_DIRECTORY, 'third_party', 'wasmparser'),
-  // acorn is exempt as it doesn't expose all its modules from the root file
-  path.join(FRONT_END_DIRECTORY, 'third_party', 'acorn'),
-  // acorn-loose is exempt as it doesn't expose all its modules from the root file
-  path.join(FRONT_END_DIRECTORY, 'third_party', 'acorn-loose'),
-]);
+const COMPONENT_DOCS_DIRECTORY = path.join(FRONT_END_DIRECTORY, 'ui', 'components', 'docs');
 
 const CROSS_NAMESPACE_MESSAGE =
     'Incorrect cross-namespace import: "{{importPath}}". Use "import * as Namespace from \'../namespace/namespace.js\';" instead.';
@@ -49,18 +40,6 @@ function isModuleEntrypoint(fileName) {
 function computeTopLevelFolder(fileName) {
   const namespaceName = path.relative(FRONT_END_DIRECTORY, fileName);
   return namespaceName.substring(0, namespaceName.indexOf(path.sep));
-}
-
-function pathsContainedInSameFolder(importingFileName, exportingFileName) {
-  const importingPrefix = importingFileName.split(path.sep);
-  const exportingPrefix = exportingFileName.split(path.sep);
-
-  while (importingPrefix.length > 0 && exportingPrefix.length > 0 && importingPrefix[0] === exportingPrefix[0]) {
-    importingPrefix.shift();
-    exportingPrefix.shift();
-  }
-
-  return importingPrefix.length === 1 || exportingPrefix.length === 1;
 }
 
 function checkImportExtension(importPath, context, node) {
@@ -105,7 +84,7 @@ function checkStarImport(context, node, importPath, importingFileName, exporting
     return;
   }
 
-  const isSameFolder = pathsContainedInSameFolder(importingFileName, exportingFileName);
+  const isSameFolder = path.dirname(importingFileName) === path.dirname(exportingFileName);
 
   const invalidSameFolderUsage = isSameFolder && isModuleEntrypoint(exportingFileName);
   const invalidCrossFolderUsage = !isSameFolder && !isModuleEntrypoint(exportingFileName);
@@ -159,9 +138,9 @@ module.exports = {
         checkImportExtension(importPath, context, node);
       },
       ImportDeclaration(node) {
-        const importPath = path.normalize(node.source.value);
+        checkImportExtension(node.source.value, context, node);
 
-        checkImportExtension(importPath, context, node);
+        const importPath = path.normalize(node.source.value);
 
         // Accidental relative URL:
         // import * as Root from 'front_end/root/root.js';
@@ -194,16 +173,6 @@ module.exports = {
 
         const exportingFileName = path.resolve(path.dirname(importingFileName), importPath);
 
-        const importMatchesExemptThirdParty =
-            Array.from(EXEMPTED_THIRD_PARTY_MODULES)
-                .some(exemptModulePath => exportingFileName.startsWith(exemptModulePath));
-
-        if (importMatchesExemptThirdParty) {
-          /* We don't impose any rules on third_party DEPS which do not expose
-           * all functionality in a single entrypoint
-           */
-          return;
-        }
         if (importPath.includes('/front_end/') && !importingFileIsUnitTestFile && !importingFileIsComponentDocsFile) {
           context.report({
             node,

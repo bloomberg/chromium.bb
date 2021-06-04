@@ -214,8 +214,7 @@ class SystemRoutineControllerTest : public testing::Test {
     base::ScopedFD fd =
         base::CreateAndOpenFdForTemporaryFileInDir(temp_dir_.GetPath(), &path);
     DCHECK(fd.is_valid());
-    const bool write_success =
-        base::WriteFileDescriptor(fd.get(), contents.data(), contents.size());
+    const bool write_success = base::WriteFileDescriptor(fd.get(), contents);
     DCHECK(write_success);
     return mojo::WrapPlatformFile(std::move(fd));
   }
@@ -611,7 +610,7 @@ TEST_F(SystemRoutineControllerTest, CancelRoutine) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that CrosHealthd is called with the correct parameters.
-  base::Optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
       update_params =
           cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
 
@@ -646,7 +645,7 @@ TEST_F(SystemRoutineControllerTest, CancelRoutineDtor) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that CrosHealthd is called with the correct parameters.
-  base::Optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
       update_params =
           cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
 

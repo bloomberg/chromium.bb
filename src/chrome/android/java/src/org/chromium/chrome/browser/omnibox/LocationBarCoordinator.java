@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -23,22 +24,24 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.lens.LensFeature;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.omnibox.LocationBarMediator.OmniboxUma;
+import org.chromium.chrome.browser.omnibox.LocationBarMediator.SaveOfflineButtonState;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator.PageInfoAction;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
+import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -63,7 +66,10 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
                                                      OmniboxSuggestionsDropdownEmbedder,
                                                      AutocompleteDelegate {
     /** Identifies coordinators with methods specific to a device type. */
-    public interface SubCoordinator extends Destroyable {}
+    public interface SubCoordinator {
+        /** Destroys SubCoordinator. */
+        void destroy();
+    }
 
     private LocationBarLayout mLocationBarLayout;
     @Nullable
@@ -97,6 +103,7 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
      * @param locationBarLayout Inflated {@link LocationBarLayout}.
      *         {@code LocationBarCoordinator} takes ownership and will destroy this object.
      * @param profileObservableSupplier The supplier of the active profile.
+     * @param privacyPreferencesManager Privacy preference settings manager.
      * @param locationBarDataProvider {@link LocationBarDataProvider} to be used for accessing
      *         Toolbar state.
      * @param actionModeCallback The default callback for text editing action bar to use.
@@ -113,9 +120,16 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
      * @param searchEngineLogoUtils Utils to query the state of the search engine logos feature.
      * @param launchAssistanceSettingsAction Runnable launching settings for voice assistance.
      * @param pageInfoAction Displays page info popup.
+     * @param spareRendererCallback Callback to warm up a spare renderer.
+     * @param bringTabToFrontCallback Callback to bring the browser foreground and switch to a tab.
+     * @param saveOfflineButtonState Whether the 'save offline' button should be enabled.
+     * @param omniboxUma Interface for logging UMA histogram.
+     * @param tabWindowManagerSupplier Supplier of glue-level TabWindowManager object.
+     * @param bookmarkState State of a URL bookmark state.
      */
     public LocationBarCoordinator(View locationBarLayout, View autocompleteAnchorView,
             ObservableSupplier<Profile> profileObservableSupplier,
+            PrivacyPreferencesManager privacyPreferencesManager,
             LocationBarDataProvider locationBarDataProvider, ActionMode.Callback actionModeCallback,
             WindowDelegate windowDelegate, WindowAndroid windowAndroid,
             @NonNull Supplier<Tab> activityTabSupplier,
@@ -126,7 +140,10 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
             OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             BackKeyBehaviorDelegate backKeyBehavior, SearchEngineLogoUtils searchEngineLogoUtils,
             @NonNull Runnable launchAssistanceSettingsAction,
-            @NonNull PageInfoAction pageInfoAction) {
+            @NonNull PageInfoAction pageInfoAction, @NonNull Callback<Tab> bringTabToFrontCallback,
+            @NonNull SaveOfflineButtonState saveOfflineButtonState, @NonNull OmniboxUma omniboxUma,
+            @NonNull Supplier<TabWindowManager> tabWindowManagerSupplier,
+            @NonNull BookmarkState bookmarkState) {
         mLocationBarLayout = (LocationBarLayout) locationBarLayout;
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
@@ -139,17 +156,20 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
         // of using the singleton.
         mLocationBarMediator = new LocationBarMediator(mLocationBarLayout.getContext(),
                 mLocationBarLayout, locationBarDataProvider, profileObservableSupplier,
-                PrivacyPreferencesManagerImpl.getInstance(), overrideUrlLoadingDelegate,
-                LocaleManager.getInstance(), mTemplateUrlServiceSupplier, backKeyBehavior,
+                privacyPreferencesManager, overrideUrlLoadingDelegate,
+                AppHooks.get().getLocaleManager(), mTemplateUrlServiceSupplier, backKeyBehavior,
                 windowAndroid, isTablet() && isTabletLayout(), searchEngineLogoUtils,
-                AppHooks.get().getLensController(), launchAssistanceSettingsAction);
+                LensController.getInstance(), launchAssistanceSettingsAction,
+                saveOfflineButtonState, omniboxUma);
         mUrlCoordinator =
                 new UrlBarCoordinator((UrlBar) mUrlBar, windowDelegate, actionModeCallback,
                         mCallbackController.makeCancelable(mLocationBarMediator::onUrlFocusChange),
                         mLocationBarMediator, windowAndroid.getKeyboardDelegate());
         mAutocompleteCoordinator = new AutocompleteCoordinator(mLocationBarLayout, this, this,
                 mUrlCoordinator, activityLifecycleDispatcher, modalDialogManagerSupplier,
-                activityTabSupplier, shareDelegateSupplier, locationBarDataProvider);
+                activityTabSupplier, shareDelegateSupplier, locationBarDataProvider,
+                profileObservableSupplier, bringTabToFrontCallback, tabWindowManagerSupplier,
+                bookmarkState);
         StatusView statusView = mLocationBarLayout.findViewById(R.id.location_bar_status);
         mStatusCoordinator = new StatusCoordinator(isTablet(), statusView, mUrlCoordinator,
                 incognitoStateProvider, modalDialogManagerSupplier, locationBarDataProvider,
@@ -199,9 +219,6 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
 
     @Override
     public void destroy() {
-        mActivityLifecycleDispatcher.unregister(this);
-        mActivityLifecycleDispatcher = null;
-
         if (mSubCoordinator != null) {
             mSubCoordinator.destroy();
             mSubCoordinator = null;
@@ -244,6 +261,9 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
 
     @Override
     public void onFinishNativeInitialization() {
+        mActivityLifecycleDispatcher.unregister(this);
+        mActivityLifecycleDispatcher = null;
+
         mTemplateUrlServiceSupplier.set(TemplateUrlServiceFactory.get());
         mLocationBarMediator.onFinishNativeInitialization();
         mAutocompleteCoordinator.onNativeInitialized();

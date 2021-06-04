@@ -4,23 +4,21 @@
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
-import {PageCallbackRouter, PageHandlerFactory, PageHandlerRemote} from './download_shelf.mojom-webui.js';
+import {DownloadItem, PageCallbackRouter, PageHandlerFactory, PageHandlerRemote} from './download_shelf.mojom-webui.js';
 
 /** @interface */
 export class DownloadShelfApiProxy {
   /** @return {!PageCallbackRouter} */
   getCallbackRouter() {}
 
-  /**
-   * @return {!Promise<!Array<!chrome.downloads.DownloadItem>>}
-   */
-  getDownloads() {}
+  doClose() {}
 
   /**
-   * @param {number} downloadId
-   * @return {!Promise}
+   * @return {!Promise<{
+        downloadItems: !Array<!DownloadItem>,
+   *  }>}
    */
-  getDownloadById(downloadId) {}
+  getDownloads() {}
 
   /**
    * @param {number} downloadId
@@ -29,26 +27,12 @@ export class DownloadShelfApiProxy {
   getFileIcon(downloadId) {}
 
   /**
-   * @param {function(!Object)} callback
-   */
-  onCreated(callback) {}
-
-  /**
-   * @param {function(!Object)} callback
-   */
-  onChanged(callback) {}
-
-  /**
-   * @param {function(number)} callback
-   */
-  onErased(callback) {}
-
-  /**
    * @param {number} downloadId
    * @param {number} clientX
    * @param {number} clientY
+   * @param {number} timestamp
    */
-  showContextMenu(downloadId, clientX, clientY) {}
+  showContextMenu(downloadId, clientX, clientY, timestamp) {}
 }
 
 /** @implements {DownloadShelfApiProxy} */
@@ -72,26 +56,13 @@ export class DownloadShelfApiProxyImpl {
   }
 
   /** @override */
-  getDownloads() {
-    return new Promise(resolve => {
-      chrome.downloads.search(
-          {
-            orderBy: ['-startTime'],
-            limit: 100,
-          },
-          resolve);
-    });
+  doClose() {
+    this.handler.doClose();
   }
 
   /** @override */
-  getDownloadById(downloadId) {
-    return new Promise(resolve => {
-      chrome.downloads.search(
-          {
-            id: downloadId,
-          },
-          resolve);
-    });
+  getDownloads() {
+    return this.handler.getDownloads();
   }
 
   /** @override */
@@ -102,23 +73,8 @@ export class DownloadShelfApiProxyImpl {
   }
 
   /** @override */
-  onCreated(callback) {
-    chrome.downloads.onCreated.addListener(callback);
-  }
-
-  /** @override */
-  onChanged(callback) {
-    chrome.downloads.onChanged.addListener(callback);
-  }
-
-  /** @override */
-  onErased(callback) {
-    chrome.downloads.onErased.addListener(callback);
-  }
-
-  /** @override */
-  showContextMenu(downloadId, clientX, clientY) {
-    this.handler.showContextMenu(downloadId, clientX, clientY);
+  showContextMenu(downloadId, clientX, clientY, timestamp) {
+    this.handler.showContextMenu(downloadId, clientX, clientY, timestamp);
   }
 }
 

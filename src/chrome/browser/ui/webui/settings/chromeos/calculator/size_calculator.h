@@ -8,15 +8,13 @@
 #include <array>
 #include <bitset>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
-#include "base/values.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/arc/mojom/storage_manager.mojom.h"
@@ -53,7 +51,7 @@ class SizeCalculator {
     virtual void OnSizeCalculated(
         const CalculationType& item_id,
         int64_t total_bytes,
-        const base::Optional<int64_t>& available_bytes) = 0;
+        const absl::optional<int64_t>& available_bytes) = 0;
   };
 
   // Total number of storage items.
@@ -79,7 +77,7 @@ class SizeCalculator {
   // Notify the StorageHandler about the calculated storage item size
   void NotifySizeCalculated(
       int64_t total_bytes,
-      const base::Optional<int64_t>& available_bytes = base::nullopt);
+      const absl::optional<int64_t>& available_bytes = absl::nullopt);
 
   // Item id.
   const CalculationType calculation_type_;
@@ -279,7 +277,7 @@ class OtherUsersSizeCalculator : public SizeCalculator {
 
   // Callback to update the sizes of the other users.
   void OnGetOtherUserSize(
-      base::Optional<::user_data_auth::GetAccountDiskUsageReply> reply);
+      absl::optional<::user_data_auth::GetAccountDiskUsageReply> reply);
 
   // The list of other users whose directory sizes will be accumulated as the
   // size of "Other users".

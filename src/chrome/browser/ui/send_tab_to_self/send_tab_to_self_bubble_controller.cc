@@ -7,6 +7,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/send_tab_to_self/metrics_util.h"
 #include "components/send_tab_to_self/pref_names.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
@@ -78,19 +80,21 @@ Profile* SendTabToSelfBubbleController::GetProfile() const {
 void SendTabToSelfBubbleController::OnDeviceSelected(
     const std::string& target_device_name,
     const std::string& target_device_guid) {
-  RecordSendTabToSelfClickResult(kOmniboxIcon,
-                                 SendTabToSelfClickResult::kClickItem);
+  send_tab_to_self::RecordDeviceClicked(ShareEntryPoint::kOmniboxIcon);
   CreateNewEntry(web_contents_, target_device_name, target_device_guid, GURL());
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {
   send_tab_to_self_bubble_view_ = nullptr;
+
+  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopOmnibox)) {
+    UpdateIcon();
+  }
 }
 
 void SendTabToSelfBubbleController::ShowConfirmationMessage() {
   show_message_ = true;
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
+  UpdateIcon();
 }
 
 bool SendTabToSelfBubbleController::InitialSendAnimationShown() const {
@@ -101,6 +105,11 @@ bool SendTabToSelfBubbleController::InitialSendAnimationShown() const {
 void SendTabToSelfBubbleController::SetInitialSendAnimationShown(bool shown) {
   GetProfile()->GetPrefs()->SetBoolean(prefs::kInitialSendAnimationShown,
                                        shown);
+}
+
+void SendTabToSelfBubbleController::UpdateIcon() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
 }
 
 // Static:

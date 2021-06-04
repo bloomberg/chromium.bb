@@ -10,6 +10,7 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/macros.h"
@@ -53,7 +54,7 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   CPPGC_USING_PRE_FINALIZER(CFWL_Widget, PreFinalize);
 
  public:
-  class AdapterIface {
+  class AdapterIface : public cppgc::GarbageCollectedMixin {
    public:
     virtual ~AdapterIface() = default;
     virtual CFX_Matrix GetRotateMatrix() = 0;
@@ -150,8 +151,7 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   float GetCXBorderSize() const;
   float GetCYBorderSize() const;
   CFX_RectF GetRelativeRect() const;
-  CFX_SizeF CalcTextSize(const WideString& wsText,
-                         bool bMultiLine);
+  CFX_SizeF CalcTextSize(const WideString& wsText, bool bMultiLine);
   void CalcTextRect(const WideString& wsText,
                     const FDE_TextStyle& dwTTOStyles,
                     FDE_TextAlignment iTTOAlign,
@@ -178,13 +178,13 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   CFX_SizeF GetOffsetFromParent(CFWL_Widget* pParent);
   void DrawBackground(CFGAS_GEGraphics* pGraphics,
                       CFWL_Part iPartBk,
-                      const CFX_Matrix* pMatrix);
+                      const CFX_Matrix& mtMatrix);
   void NotifyDriver();
   bool IsParent(CFWL_Widget* pParent);
 
   int32_t m_iLock = 0;
   uint64_t m_nEventKey = 0;
-  AdapterIface* m_pAdapterIface = nullptr;
+  cppgc::Member<AdapterIface> m_pAdapterIface;
   cppgc::Member<CFWL_App> const m_pFWLApp;
   cppgc::Member<CFWL_WidgetMgr> const m_pWidgetMgr;
   cppgc::Member<IFWL_WidgetDelegate> m_pDelegate;

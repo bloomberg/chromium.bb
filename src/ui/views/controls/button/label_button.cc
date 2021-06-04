@@ -14,6 +14,8 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -25,7 +27,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/image_model_utils.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
@@ -109,7 +110,7 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
-void LabelButton::SetEnabledTextColors(base::Optional<SkColor> color) {
+void LabelButton::SetEnabledTextColors(absl::optional<SkColor> color) {
   ButtonState states[] = {STATE_NORMAL, STATE_HOVERED, STATE_PRESSED};
   if (color.has_value()) {
     for (auto state : states)
@@ -416,7 +417,8 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 }
 
 void LabelButton::UpdateImage() {
-  image_->SetImage(GetImage(GetVisualState()));
+  if (GetWidget())
+    image_->SetImage(GetImage(GetVisualState()));
 }
 
 void LabelButton::AddLayerBeneathView(ui::Layer* new_layer) {
@@ -562,12 +564,20 @@ Button::ButtonState LabelButton::GetVisualState() const {
 }
 
 void LabelButton::VisualStateChanged() {
-  UpdateImage();
-  UpdateBackgroundColor();
+  if (GetWidget()) {
+    UpdateImage();
+    UpdateBackgroundColor();
+  }
   label_->SetEnabled(GetVisualState() != STATE_DISABLED);
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {
+  if (!GetWidget()) {
+    // If there is no widget, we can't actually get the real colors here.
+    // An OnThemeChanged() will fire once a widget is available.
+    return;
+  }
+
   const ui::NativeTheme* theme = GetNativeTheme();
   // Since this is a LabelButton, use the label colors.
   SkColor colors[STATE_COUNT] = {

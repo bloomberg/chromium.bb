@@ -30,8 +30,8 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
@@ -120,21 +121,24 @@ std::u16string GetUpgradeDialogMenuItemName() {
       UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_MENU_ITEM);
   } else {
-    return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
+    return l10n_util::GetStringUTF16(
+        base::FeatureList::IsEnabled(features::kUseRelaunchToUpdateString)
+            ? IDS_RELAUNCH_TO_UPDATE
+            : IDS_UPDATE_NOW);
   }
 }
 
 // Returns the appropriate menu label for the IDC_INSTALL_PWA command if
 // available.
-base::Optional<std::u16string> GetInstallPWAAppMenuItemName(Browser* browser) {
+absl::optional<std::u16string> GetInstallPWAAppMenuItemName(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
-    return base::nullopt;
+    return absl::nullopt;
   std::u16string app_name =
       webapps::AppBannerManager::GetInstallableWebAppName(web_contents);
   if (app_name.empty())
-    return base::nullopt;
+    return absl::nullopt;
   return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE,
                                     ui::EscapeMenuLabelAmpersands(app_name));
 }
@@ -224,7 +228,9 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Developer tools.
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
-  AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
+  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu))
+    AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
+
   AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
   if (base::FeatureList::IsEnabled(features::kWindowNaming))
     AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
@@ -345,7 +351,7 @@ ui::ImageModel AppMenuModel::GetIconForCommandId(int command_id) const {
     DCHECK(app_menu_icon_controller_);
     return ui::ImageModel::FromVectorIcon(
         kBrowserToolsUpdateIcon,
-        app_menu_icon_controller_->GetIconColor(base::nullopt));
+        app_menu_icon_controller_->GetIconColor(absl::nullopt));
   }
   return ui::ImageModel();
 }
@@ -599,7 +605,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_SHOW_DOWNLOADS);
       base::UmaHistogramEnumeration(
           "Download.OpenDownloadsFromMenu.PerProfileType",
-          ProfileMetrics::GetBrowserProfileType(browser_->profile()));
+          profile_metrics::GetBrowserProfileType(browser_->profile()));
       break;
     case IDC_SHOW_SIGNIN:
       if (!uma_action_recorded_) {
@@ -614,7 +620,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_OPTIONS);
       base::UmaHistogramEnumeration(
           "Settings.OpenSettingsFromMenu.PerProfileType",
-          ProfileMetrics::GetBrowserProfileType(browser_->profile()));
+          profile_metrics::GetBrowserProfileType(browser_->profile()));
       break;
     case IDC_ABOUT:
       if (!uma_action_recorded_)
@@ -814,17 +820,27 @@ void AppMenuModel::Build() {
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateZoomMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
+
+  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu)) {
+    sub_menus_.push_back(
+        std::make_unique<sharing_hub::SharingHubSubMenuModel>(browser_));
+    AddSubMenuWithStringId(IDC_SHARING_HUB_MENU, IDS_SHARING_HUB_TITLE,
+                           sub_menus_.back().get());
+  }
+
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
-  if (media_router::MediaRouterEnabled(browser()->profile()))
-    AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
+  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu)) {
+    if (media_router::MediaRouterEnabled(browser()->profile()))
+      AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
+  }
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (base::Optional<std::u16string> name =
+  if (absl::optional<std::u16string> name =
           GetInstallPWAAppMenuItemName(browser_)) {
     AddItem(IDC_INSTALL_PWA, *name);
-  } else if (base::Optional<web_app::AppId> app_id =
+  } else if (absl::optional<web_app::AppId> app_id =
                  web_app::GetWebAppForActiveTab(browser_)) {
     auto* provider = web_app::WebAppProvider::Get(browser_->profile());
     const std::u16string short_name =
@@ -848,7 +864,7 @@ void AppMenuModel::Build() {
     } else if (dom_distiller::ShowReaderModeOption(
                    browser_->profile()->GetPrefs())) {
       // Show the menu option if the page is distillable.
-      base::Optional<dom_distiller::DistillabilityResult> distillability =
+      absl::optional<dom_distiller::DistillabilityResult> distillability =
           dom_distiller::GetLatestResult(
               browser()->tab_strip_model()->GetActiveWebContents());
       if (distillability && distillability.value().is_distillable)
@@ -992,10 +1008,14 @@ void AppMenuModel::UpdateSettingsItemState() {
         local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
   }
 
-  bool is_enabled = !system_features_disable_list_pref ||
-                    system_features_disable_list_pref->Find(
-                        base::Value(policy::SystemFeature::kBrowserSettings)) ==
-                        system_features_disable_list_pref->end();
+  bool is_enabled =
+      !system_features_disable_list_pref ||
+      // TODO(crbug.com/1187106): Use base::Contains once
+      // |system_features_disable_list_pref| is not a ListValue.
+      std::find(system_features_disable_list_pref->GetList().begin(),
+                system_features_disable_list_pref->GetList().end(),
+                base::Value(policy::SystemFeature::kBrowserSettings)) ==
+          system_features_disable_list_pref->GetList().end();
 
   int index = GetIndexOfCommandId(IDC_OPTIONS);
   if (index != -1)

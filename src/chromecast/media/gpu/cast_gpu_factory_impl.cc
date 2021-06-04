@@ -53,7 +53,7 @@ CastGpuFactoryImpl::CastGpuFactoryImpl(
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
   options.priority = base::ThreadPriority::DISPLAY;
-  gpu_io_thread_.StartWithOptions(options);
+  gpu_io_thread_.StartWithOptions(std::move(options));
 
   mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
   browser_services_->Bind(remote_gpu.InitWithNewPipeAndPassReceiver());
@@ -176,7 +176,7 @@ std::unique_ptr<::media::VideoDecoder> CastGpuFactoryImpl::CreateVideoDecoder(
       implementation, request_overlay_info_cb, gfx::ColorSpace::CreateSRGB());
 }
 
-base::Optional<::media::VideoEncodeAccelerator::SupportedProfiles>
+absl::optional<::media::VideoEncodeAccelerator::SupportedProfiles>
 CastGpuFactoryImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
   return ::media::VideoEncodeAccelerator::SupportedProfiles();
 }

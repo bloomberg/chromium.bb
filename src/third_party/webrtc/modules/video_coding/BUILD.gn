@@ -274,6 +274,7 @@ rtc_library("video_coding_legacy") {
     "../../api:rtp_headers",
     "../../api:rtp_packet_info",
     "../../api:sequence_checker",
+    "../../api/units:timestamp",
     "../../api/video:encoded_image",
     "../../api/video:video_frame",
     "../../api/video:video_frame_type",
@@ -369,7 +370,10 @@ rtc_library("video_coding_utility") {
     "../../system_wrappers:field_trial",
     "../rtp_rtcp:rtp_rtcp_format",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/strings:strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 rtc_library("webrtc_h264") {
@@ -461,6 +465,15 @@ rtc_library("webrtc_libvpx_interface") {
   if (rtc_build_libvpx) {
     deps += [ rtc_libvpx_dir ]
   }
+}
+
+rtc_library("mock_libvpx_interface") {
+  testonly = true
+  sources = [ "codecs/interface/mock_libvpx_interface.h" ]
+  deps = [
+    ":webrtc_libvpx_interface",
+    "../../test:test_support",
+  ]
 }
 
 # This target includes the internal SW codec.
@@ -580,6 +593,7 @@ rtc_library("webrtc_vp9") {
     ":webrtc_libvpx_interface",
     ":webrtc_vp9_helpers",
     "../../api:fec_controller_api",
+    "../../api:refcountedbase",
     "../../api:scoped_refptr",
     "../../api/transport:field_trial_based_config",
     "../../api/transport:webrtc_key_value_config",
@@ -589,7 +603,6 @@ rtc_library("webrtc_vp9") {
     "../../api/video_codecs:video_codecs_api",
     "../../common_video",
     "../../media:rtc_media_base",
-    "../../media:rtc_vp9_profile",
     "../../rtc_base",
     "../../rtc_base:checks",
     "../../rtc_base/experiments:encoder_info_settings",
@@ -672,15 +685,6 @@ if (rtc_include_tests) {
       "../../api/video:video_frame_type",
       "../../api/video_codecs:video_codecs_api",
       "../../rtc_base:checks",
-    ]
-  }
-
-  rtc_library("mock_libvpx_interface") {
-    testonly = true
-    sources = [ "codecs/interface/mock_libvpx_interface.h" ]
-    deps = [
-      ":webrtc_libvpx_interface",
-      "../../test:test_support",
     ]
   }
 
@@ -811,7 +815,6 @@ if (rtc_include_tests) {
       "../../call:video_stream_api",
       "../../common_video",
       "../../media:rtc_audio_video",
-      "../../media:rtc_h264_profile_id",
       "../../media:rtc_internal_video_codecs",
       "../../media:rtc_media_base",
       "../../rtc_base:checks",
@@ -858,8 +861,11 @@ if (rtc_include_tests) {
       "codecs/test/video_encoder_decoder_instantiation_tests.cc",
       "codecs/test/videocodec_test_libvpx.cc",
       "codecs/vp8/test/vp8_impl_unittest.cc",
-      "codecs/vp9/test/vp9_impl_unittest.cc",
     ]
+
+    if (rtc_libvpx_build_vp9) {
+      sources += [ "codecs/vp9/test/vp9_impl_unittest.cc" ]
+    }
 
     # TODO(jianj): Fix crash on iOS and re-enable
     if (enable_libaom && !is_ios) {
@@ -898,11 +904,9 @@ if (rtc_include_tests) {
       "../../api/video_codecs:video_codecs_api",
       "../../common_video",
       "../../common_video/test:utilities",
-      "../../media:rtc_h264_profile_id",
       "../../media:rtc_internal_video_codecs",
       "../../media:rtc_media_base",
       "../../media:rtc_simulcast_encoder_adapter",
-      "../../media:rtc_vp9_profile",
       "../../rtc_base",
       "../../test:explicit_key_value_config",
       "../../test:field_trial",

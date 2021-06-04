@@ -113,13 +113,6 @@ class ExpectFloat16 : public detail::Expectation {
 
 class TextureFormatTest : public DawnTest {
   protected:
-    void SetUp() {
-        DawnTest::SetUp();
-
-        // TODO(crbug.com/tint/689): shaders compile, but produces unexpected output.
-        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-    }
-
     // Structure containing all the information that tests need to know about the format.
     struct FormatTestInfo {
         wgpu::TextureFormat format;
@@ -150,16 +143,14 @@ class TextureFormatTest : public DawnTest {
         utils::ComboRenderPipelineDescriptor2 desc;
 
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                     vec2<f32>(-3.0, -1.0),
                     vec2<f32>( 3.0, -1.0),
                     vec2<f32>( 0.0,  2.0));
 
-                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
         // Compute the WGSL type of the texture's data.
@@ -167,11 +158,15 @@ class TextureFormatTest : public DawnTest {
 
         std::ostringstream fsSource;
         fsSource << "[[group(0), binding(0)]] var myTexture : texture_2d<" << type << ">;\n";
-        fsSource << "[[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;\n";
-        fsSource << "[[location(0)]] var<out> fragColor : vec4<" << type << ">;\n";
-        fsSource << "[[stage(fragment)]] fn main() -> void {\n";
-        fsSource << "    fragColor = textureLoad(myTexture, vec2<i32>(FragCoord.xy), 0);\n";
-        fsSource << "}";
+        fsSource << "struct FragmentOut {\n";
+        fsSource << "   [[location(0)]] color : vec4<" << type << ">;\n";
+        fsSource << R"(};
+            [[stage(fragment)]]
+            fn main([[builtin(position)]] FragCoord : vec4<f32>) -> FragmentOut {
+                var output : FragmentOut;
+                output.color = textureLoad(myTexture, vec2<i32>(FragCoord.xy), 0);
+                return output;
+            })";
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fsSource.str().c_str());
 

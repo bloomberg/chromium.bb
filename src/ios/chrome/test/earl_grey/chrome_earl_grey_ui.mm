@@ -169,24 +169,24 @@ class ScopedDisableTimerTracking {
 }
 
 - (void)assertHistoryHasNoEntries {
-  if ([ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kTableViewIllustratedEmptyViewID)]
-        assertWithMatcher:grey_notNil()];
+  // Make sure the empty state illustration, title and subtitle are present.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTableViewIllustratedEmptyViewID)]
+      assertWithMatcher:grey_notNil()];
 
-    id<GREYMatcher> noHistoryMessageMatcher = grey_allOf(
-        grey_text(l10n_util::GetNSString(IDS_IOS_HISTORY_EMPTY_TITLE)),
-        grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
-        assertWithMatcher:grey_notNil()];
-  } else {
-    id<GREYMatcher> noHistoryMessageMatcher =
-        grey_allOf(grey_text(l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS)),
-                   grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
-        assertWithMatcher:grey_notNil()];
-  }
+  id<GREYMatcher> noHistoryTitleMatcher =
+      grey_allOf(grey_text(l10n_util::GetNSString(IDS_IOS_HISTORY_EMPTY_TITLE)),
+                 grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:noHistoryTitleMatcher]
+      assertWithMatcher:grey_notNil()];
 
+  id<GREYMatcher> noHistoryMessageMatcher = grey_allOf(
+      grey_text(l10n_util::GetNSString(IDS_IOS_HISTORY_EMPTY_MESSAGE)),
+      grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
+      assertWithMatcher:grey_notNil()];
+
+  // Make sure there are no history entry cells.
   id<GREYMatcher> historyEntryMatcher =
       grey_allOf(grey_kindOfClassName(@"TableViewURLCell"),
                  grey_sufficientlyVisible(), nil);
@@ -300,14 +300,20 @@ class ScopedDisableTimerTracking {
   // default.
   [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ClearAutofillButton()]
-      performAction:grey_tap()];
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(ClearAutofillButton(),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
+      onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
 
   // Set 'Time Range' to 'All Time'.
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE)]
-      performAction:grey_tap()];
+  [[[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(ButtonWithAccessibilityLabelId(
+                         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE),
+                     grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionDown)
+      onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:
           ButtonWithAccessibilityLabelId(
@@ -329,8 +335,11 @@ class ScopedDisableTimerTracking {
   // Recheck "Saved Passwords" and "Autofill Data".
   [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ClearAutofillButton()]
-      performAction:grey_tap()];
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(ClearAutofillButton(),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
+      onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
 }
 
 @end

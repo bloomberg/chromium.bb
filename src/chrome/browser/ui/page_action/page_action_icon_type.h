@@ -22,8 +22,10 @@ enum class PageActionIconType {
   kSaveCard,
   kSendTabToSelf,
   kSharedClipboard,
+  kSharingHub,
   kSmsRemoteFetcher,
   kTranslate,
+  kVirtualCardManualFallback,
   kWebAuthn,
   kZoom,
 };

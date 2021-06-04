@@ -46,6 +46,12 @@ enum class GrContextType : uint32_t {
   kLast = kDawn,
 };
 
+enum class DawnBackendValidationLevel : uint32_t {
+  kDisabled = 0,
+  kPartial = 1,
+  kFull = 2,
+};
+
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
 //   src/gpu/ipc/common/gpu_preferences.mojom
@@ -218,9 +224,6 @@ struct GPU_EXPORT GpuPreferences {
   // Enable using vulkan protected memory.
   bool enable_vulkan_protected_memory = false;
 
-  // Enforce using vulkan protected memory.
-  bool enforce_vulkan_protected_memory = false;
-
   // Use vulkan VK_KHR_surface for presenting.
   bool disable_vulkan_surface = false;
 
@@ -250,7 +253,8 @@ struct GPU_EXPORT GpuPreferences {
   bool enable_webgpu = false;
 
   // Enable validation layers in Dawn backends.
-  bool enable_dawn_backend_validation = false;
+  DawnBackendValidationLevel enable_dawn_backend_validation =
+      DawnBackendValidationLevel::kDisabled;
 
   // The Dawn features(toggles) enabled on the creation of Dawn devices.
   std::vector<std::string> enabled_dawn_features_list;

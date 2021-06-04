@@ -10,6 +10,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace exo {
@@ -40,7 +41,7 @@ const gfx::Size& NotificationSurface::GetContentSize() const {
 }
 
 void NotificationSurface::SetApplicationId(const char* application_id) {
-  SetShellApplicationId(host_window(), base::make_optional(application_id));
+  SetShellApplicationId(host_window(), absl::make_optional(application_id));
 }
 
 void NotificationSurface::OnSurfaceCommit() {

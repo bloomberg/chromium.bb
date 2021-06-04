@@ -3,13 +3,87 @@
 // found in the LICENSE file.
 
 import {AsyncJobQueue} from '../async_job_queue.js';
+import {assertInstanceof} from '../chrome_util.js';
 import * as dom from '../dom.js';
+import * as focusRing from '../focus_ring.js';
+import * as metrics from '../metrics.js';
+import {DeviceOperator} from '../mojo/device_operator.js';
 import * as nav from '../nav.js';
 import * as state from '../state.js';
+import * as tooltip from '../tooltip.js';
 import {ViewName} from '../type.js';
 
 // eslint-disable-next-line no-unused-vars
 import {View} from './view.js';
+
+/**
+ * Detects hold gesture on UI and triggers corresponding handler.
+ * @param {{
+ *   button: !HTMLButtonElement,
+ *   handlePress: function(): *,
+ *   handleHold: function(): *,
+ *   handleRelease: function(): *,
+ *   pressTimeout: number,
+ *   holdInterval: number,
+ * }} params For the first press, triggers |handlePress| handler once. When
+ * holding UI for more than |pressTimeout| ms, triggers |handleHold| handler
+ * every |holdInterval| ms. Triggers |handleRelease| once the user releases the
+ * button.
+ */
+function detectHoldGesture({
+  button,
+  handlePress,
+  handleHold,
+  handleRelease,
+  pressTimeout,
+  holdInterval,
+}) {
+  let timeoutId = null;
+  let intervalId = null;
+
+  const clear = () => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+
+  const press = () => {
+    clear();
+    handlePress();
+    timeoutId = setTimeout(() => {
+      handleHold();
+      intervalId = setInterval(() => {
+        handleHold();
+      }, holdInterval);
+    }, pressTimeout);
+  };
+
+  const release = () => {
+    clear();
+    handleRelease();
+  };
+
+  button.onpointerdown = press;
+  button.onpointerleave = release;
+  button.onpointerup = release;
+  button.onkeydown = ({key}) => {
+    if (key === 'Enter' || key === ' ') {
+      press();
+    }
+  };
+  button.onkeyup = ({key}) => {
+    if (key === 'Enter' || key === ' ') {
+      release();
+    }
+  };
+  // Prevent context menu popping out when touch hold buttons.
+  button.oncontextmenu = () => false;
+}
 
 /**
  * View controller for PTZ panel.
@@ -33,7 +107,13 @@ export class PTZPanel extends View {
      * @private {!HTMLDivElement}
      * @const
      */
-    this.panel_ = dom.get('#panel-container', HTMLDivElement);
+    this.panel_ = dom.get('#ptz-panel', HTMLDivElement);
+
+    /**
+     * @private {!HTMLButtonElement}
+     * @const
+     */
+    this.resetAll_ = dom.get('#ptz-reset-all', HTMLButtonElement);
 
     /**
      * @private {!HTMLButtonElement}
@@ -71,11 +151,107 @@ export class PTZPanel extends View {
      */
     this.zoomOut_ = dom.get('#zoom-out', HTMLButtonElement);
 
+    /**
+     * @type {?function(boolean): undefined}
+     * @private
+     */
+    this.mirrorObserver_ = null;
+
+    /**
+     * Queues asynchronous pan change jobs in sequence.
+     * @type {!AsyncJobQueue}
+     * @private
+     */
+    this.panQueues_ = new AsyncJobQueue();
+
+    /**
+     * Queues asynchronous tilt change jobs in sequence.
+     * @type {!AsyncJobQueue}
+     * @private
+     */
+    this.tiltQueues_ = new AsyncJobQueue();
+
+    /**
+     * Queues asynchronous zoom change jobs in sequence.
+     * @type {!AsyncJobQueue}
+     * @private
+     */
+    this.zoomQueues_ = new AsyncJobQueue();
+
+    /**
+     * @type {!MediaTrackConstraints}
+     * @private
+     */
+    this.defaultPTZ_ = {};
+
+    [this.panLeft_, this.panRight_, this.tiltUp_, this.tiltDown_, this.zoomIn_,
+     this.zoomOut_]
+        .forEach((el) => {
+          el.addEventListener(
+              focusRing.FOCUS_RING_UI_RECT_EVENT_NAME, (evt) => {
+                if (!(state.get(state.State.HAS_PAN_SUPPORT) &&
+                      state.get(state.State.HAS_TILT_SUPPORT) &&
+                      state.get(state.State.HAS_ZOOM_SUPPORT))) {
+                  return;
+                }
+                const style = getComputedStyle(el, '::before');
+                const getStyleValue = (attr) => {
+                  const px = style.getPropertyValue(attr);
+                  return Number(px.replace(/^([\d.]+)px$/, '$1'));
+                };
+                const pRect = el.getBoundingClientRect();
+                focusRing.setUIRect(new DOMRectReadOnly(
+                    /* x */ pRect.left + getStyleValue('left'),
+                    /* y */ pRect.top + getStyleValue('top'),
+                    getStyleValue('width'), getStyleValue('height')));
+                evt.preventDefault();
+              });
+        });
+
     state.addObserver(state.State.STREAMING, (streaming) => {
       if (!streaming && state.get(this.name)) {
         nav.close(this.name);
       }
     });
+    [this.panRight_, this.panLeft_, this.tiltUp_, this.tiltDown_].forEach(
+        (btn) => {
+          btn.addEventListener(tooltip.TOOLTIP_POSITION_EVENT_NAME, (e) => {
+            const target = assertInstanceof(e.target, HTMLElement);
+            const pRect = target.offsetParent.getBoundingClientRect();
+            const style = getComputedStyle(target, '::before');
+            const getStyleValue = (attr) => {
+              const px = style.getPropertyValue(attr);
+              return Number(px.replace(/^([\d.]+)px$/, '$1'));
+            };
+            const offsetX = getStyleValue('left');
+            const offsetY = getStyleValue('top');
+            const width = getStyleValue('width');
+            const height = getStyleValue('height');
+            tooltip.position(new DOMRectReadOnly(
+                /* x */ pRect.left + offsetX, /* y */ pRect.top + offsetY,
+                width, height));
+            e.preventDefault();
+          });
+        });
+  }
+
+  /**
+   * @private
+   */
+  removeMirrorObserver_() {
+    if (this.mirrorObserver_ !== null) {
+      state.removeObserver(state.State.MIRROR, this.mirrorObserver_);
+    }
+  }
+
+  /**
+   * @param {function(boolean): undefined} observer
+   * @private
+   */
+  setMirrorObserver_(observer) {
+    this.removeMirrorObserver_();
+    this.mirrorObserver_ = observer;
+    state.addObserver(state.State.MIRROR, observer);
   }
 
   /**
@@ -83,28 +259,50 @@ export class PTZPanel extends View {
    * @param {string} attr One of pan, tilt, zoom attribute name to be bound.
    * @param {!HTMLButtonElement} incBtn Button for increasing the value.
    * @param {!HTMLButtonElement} decBtn Button for decreasing the value.
-   * @param {!MediaSettingsRange} range Available value range.
+   * @return {!AsyncJobQueue}
    */
-  bind_(attr, incBtn, decBtn, range) {
-    const {min, max, step} = range;
+  bind_(attr, incBtn, decBtn) {
+    let needMirror = false;
+    const {min, max, step} = this.track_.getCapabilities()[attr];
     const getCurrent = () => this.track_.getSettings()[attr];
     const checkDisabled = () => {
       const current = getCurrent();
-      decBtn.disabled = current - step < min;
-      incBtn.disabled = current + step > max;
+      (needMirror ? incBtn : decBtn).disabled = current - step < min;
+      (needMirror ? decBtn : incBtn).disabled = current + step > max;
     };
+
+    if (attr === 'pan') {
+      needMirror = state.get(state.State.MIRROR);
+      this.setMirrorObserver_((mirrored) => {
+        needMirror = mirrored;
+        checkDisabled();
+      });
+    }
     checkDisabled();
 
     const queue = new AsyncJobQueue();
-    const onClick = (delta) => {
+
+    /**
+     * Returns a function triggering |attr| change of preview moving toward
+     * +1/-1 direction with |deltaInPercent|.
+     * @param {number} deltaInPercent Change rate in percent with respect to
+     *     min/max range.
+     * @param {number} direction Change in +1 or -1 direction.
+     * @return {function(): undefined}
+     */
+    const onTrigger = (deltaInPercent, direction) => {
+      const delta =
+          Math.max(Math.round((max - min) / step * deltaInPercent / 100), 1) *
+          step * direction;
       return () => {
         queue.push(async () => {
-          if (this.track_.readyState !== 'live') {
+          if (!this.track_.enabled) {
             return;
           }
-          // TODO(b/172881094): Normalize steps to at most 10.
-          const next = getCurrent() + delta;
-          if (next < min || next > max) {
+          const current = getCurrent();
+          const next = Math.max(
+              min, Math.min(max, current + delta * (needMirror ? -1 : 1)));
+          if (current === next) {
             return;
           }
           await this.track_.applyConstraints({advanced: [{[attr]: next}]});
@@ -113,9 +311,88 @@ export class PTZPanel extends View {
       };
     };
 
-    // TODO(b/183661327): Polish holding button behavior.
-    incBtn.onclick = onClick(step);
-    decBtn.onclick = onClick(-step);
+    const pressTimeout = 500;
+    const holdInterval = 200;
+    const pressStepPercent = attr === 'zoom' ? 10 : 1;
+    const holdStepPercent = holdInterval / 1000;  // Move 1% in 1000 ms.
+    detectHoldGesture({
+      button: incBtn,
+      handlePress: onTrigger(pressStepPercent, 1),
+      handleHold: onTrigger(holdStepPercent, 1),
+      handleRelease: () => queue.clear(),
+      pressTimeout,
+      holdInterval,
+    });
+    detectHoldGesture({
+      button: decBtn,
+      handlePress: onTrigger(pressStepPercent, -1),
+      handleHold: onTrigger(holdStepPercent, -1),
+      handleRelease: () => queue.clear(),
+      pressTimeout,
+      holdInterval,
+    });
+
+    return queue;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canPan_() {
+    return this.track_.getCapabilities().pan !== undefined;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canTilt_() {
+    return this.track_.getCapabilities().tilt !== undefined;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canZoom_() {
+    return this.track_.getCapabilities().zoom !== undefined;
+  }
+
+  /**
+   * @param {!MediaStreamTrack} track
+   * @return {!Promise}
+   * @private
+   */
+  async updateDefaultPTZ_(track) {
+    const newDefault = {};
+    const deviceOperator = await DeviceOperator.getInstance();
+    if (deviceOperator === null) {
+      // VCD of fake camera will always reset to default when first opened. Use
+      // current value at first open as default.
+      const {pan, tilt, zoom} = this.track_.getSettings();
+      if (this.canPan_()) {
+        newDefault.pan = pan;
+      }
+      if (this.canTilt_()) {
+        newDefault.tilt = tilt;
+      }
+      if (this.canZoom_()) {
+        newDefault.zoom = zoom;
+      }
+    } else {
+      const {deviceId} = this.track_.getSettings();
+      if (this.canPan_()) {
+        newDefault.pan = await deviceOperator.getPanDefault(deviceId);
+      }
+      if (this.canTilt_()) {
+        newDefault.tilt = await deviceOperator.getTiltDefault(deviceId);
+      }
+      if (this.canZoom_()) {
+        newDefault.zoom = await deviceOperator.getZoomDefault(deviceId);
+      }
+    }
+    this.defaultPTZ_ = newDefault;
   }
 
   /**
@@ -126,24 +403,61 @@ export class PTZPanel extends View {
         dom.get('#open-ptz-panel', HTMLButtonElement).getBoundingClientRect();
     this.panel_.style.bottom = `${window.innerHeight - bottom}px`;
     this.panel_.style.left = `${right + 6}px`;
-
+    const oldTrack = this.track_;
     this.track_ = stream.getVideoTracks()[0];
-    const {pan, tilt, zoom} = this.track_.getCapabilities();
 
-    state.set(state.State.HAS_PAN_SUPPORT, pan !== undefined);
-    state.set(state.State.HAS_TILT_SUPPORT, tilt !== undefined);
-    state.set(state.State.HAS_ZOOM_SUPPORT, zoom !== undefined);
-
-    if (pan !== undefined) {
-      this.bind_('pan', this.panRight_, this.panLeft_, pan);
+    let updatingDefault = Promise.resolve();
+    if (oldTrack === null ||
+        oldTrack.getSettings().deviceId !==
+            this.track_.getSettings().deviceId) {
+      updatingDefault = this.updateDefaultPTZ_(this.track_);
     }
 
-    if (tilt !== undefined) {
-      this.bind_('tilt', this.tiltUp_, this.tiltDown_, tilt);
+    const canPan = this.canPan_();
+    const canTilt = this.canTilt_();
+    const canZoom = this.canZoom_();
+
+    metrics.sendOpenPTZPanelEvent({
+      pan: canPan,
+      tilt: canTilt,
+      zoom: canZoom,
+    });
+
+    state.set(state.State.HAS_PAN_SUPPORT, canPan);
+    state.set(state.State.HAS_TILT_SUPPORT, canTilt);
+    state.set(state.State.HAS_ZOOM_SUPPORT, canZoom);
+
+    if (canPan) {
+      this.panQueues_ = this.bind_('pan', this.panRight_, this.panLeft_);
     }
 
-    if (zoom !== undefined) {
-      this.bind_('zoom', this.zoomIn_, this.zoomOut_, zoom);
+    if (canTilt) {
+      this.tiltQueues_ = this.bind_('tilt', this.tiltUp_, this.tiltDown_);
     }
+
+    if (canZoom) {
+      this.zoomQueues_ = this.bind_('zoom', this.zoomIn_, this.zoomOut_);
+    }
+
+    this.resetAll_.onclick = async () => {
+      await updatingDefault;
+      await Promise.all([
+        this.panQueues_.clear(),
+        this.tiltQueues_.clear(),
+        this.zoomQueues_.clear(),
+      ]);
+      if (!this.track_.enabled) {
+        return;
+      }
+      await this.track_.applyConstraints({advanced: [this.defaultPTZ_]});
+    };
+  }
+
+  /**
+   * @override
+   */
+  leaving() {
+    this.removeMirrorObserver_();
+    return true;
   }
 }

@@ -24,6 +24,7 @@
   * [Android system](#)
     * [Atrace instrumentation](data-sources/atrace.md)
     * [Android log (logcat)](data-sources/android-log.md)
+    * [Android Janks](data-sources/frametimeline.md)
 
 * [App Instrumentation](#)
   * [Tracing SDK](instrumentation/tracing-sdk.md)
@@ -38,6 +39,7 @@
 
 * [Trace visualization](#)
   * [Perfetto UI](visualization/perfetto-ui.md)
+  * [Visualising large traces](visualization/large-traces.md)
 
 * [Core concepts](#)
   * [Trace configuration](concepts/config.md)
@@ -65,6 +67,7 @@
     * [API and ABI surface](design-docs/api-and-abi.md)
     * [Heapprofd design](design-docs/heapprofd-design.md)
     * [Heapprofd wire protocol](design-docs/heapprofd-wire-protocol.md)
+    * [Heapprofd sampling](design-docs/heapprofd-sampling.md)
     * [Life of a tracing session](design-docs/life-of-a-tracing-session.md)
     * [Perfetto CI](design-docs/continuous-integration.md)
     * [ProtoZero](design-docs/protozero.md)

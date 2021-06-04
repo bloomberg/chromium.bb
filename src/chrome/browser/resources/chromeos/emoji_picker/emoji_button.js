@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './emoji_variants.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 
 import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -32,6 +33,10 @@ export class EmojiButton extends PolymerElement {
       disabled: {type: Boolean, value: false, readonly: true},
       /** @type {!string} */
       base: {type: String},
+      /** @type {?Array<Emoji>} */
+      allVariants: {type: Array, readonly: true},
+      /** @type {!string} */
+      toolTip: {type: String, readonly: true},
     };
   }
 
@@ -40,19 +45,22 @@ export class EmojiButton extends PolymerElement {
   }
 
   getButton() {
-    return this.$.button;
+    return this.$['emoji-button'];
   }
 
   focusButton(options) {
-    this.$.button.focus(options);
+    this.$['emoji-button'].focus(options);
   }
 
   onClick(ev) {
     if (this.disabled)
       return;
-    this.dispatchEvent(createCustomEvent(
-        EMOJI_BUTTON_CLICK,
-        {emoji: this.emoji, isVariant: this.variant, baseEmoji: this.base}));
+    this.dispatchEvent(createCustomEvent(EMOJI_BUTTON_CLICK, {
+      emoji: this.emoji,
+      isVariant: this.variant,
+      baseEmoji: this.base,
+      allVariants: this.allVariants ? this.allVariants : this.variants
+    }));
   }
 
   onContextMenu(ev) {

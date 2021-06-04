@@ -14,6 +14,7 @@
 #include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -35,10 +36,12 @@
 #include "pdf/ppapi_migration/url_loader.h"
 #include "ppapi/c/pp_errors.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -46,6 +49,7 @@
 #include "third_party/blink/public/web/web_associated_url_loader.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 #include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
@@ -54,8 +58,10 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
 
@@ -71,8 +77,8 @@ namespace {
 class PerProcessInitializer final {
  public:
   static PerProcessInitializer& GetInstance() {
-    static PerProcessInitializer instance;
-    return instance;
+    static base::NoDestructor<PerProcessInitializer> instance;
+    return *instance;
   }
 
   void Acquire() {
@@ -108,6 +114,52 @@ class PerProcessInitializer final {
   THREAD_CHECKER(thread_checker_);
 };
 
+class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
+ public:
+  explicit BlinkContainerWrapper(blink::WebPluginContainer* container)
+      : container_(container) {
+    DCHECK(container_);
+  }
+  BlinkContainerWrapper(const BlinkContainerWrapper&) = delete;
+  BlinkContainerWrapper& operator=(const BlinkContainerWrapper&) = delete;
+  ~BlinkContainerWrapper() override = default;
+
+  void Invalidate() override { container_->Invalidate(); }
+
+  float DeviceScaleFactor() const override {
+    return container_->DeviceScaleFactor();
+  }
+
+  void SetReferrerForRequest(blink::WebURLRequest& request,
+                             const blink::WebURL& referrer_url) override {
+    GetFrame()->SetReferrerForRequest(request, referrer_url);
+  }
+
+  void TextSelectionChanged(const blink::WebString& selection_text,
+                            uint32_t offset,
+                            const gfx::Range& range) override {
+    GetFrame()->TextSelectionChanged(selection_text, offset, range);
+  }
+
+  std::unique_ptr<blink::WebAssociatedURLLoader> CreateAssociatedURLLoader(
+      const blink::WebAssociatedURLLoaderOptions& options) override {
+    return GetFrame()->CreateAssociatedURLLoader(options);
+  }
+
+  void UpdateTextInputState() override {
+    return GetFrame()->FrameWidget()->UpdateTextInputState();
+  }
+
+  blink::WebLocalFrame* GetFrame() override {
+    return container_->GetDocument().GetFrame();
+  }
+
+  blink::WebPluginContainer* Container() override { return container_; }
+
+ private:
+  blink::WebPluginContainer* const container_;
+};
+
 }  // namespace
 
 PdfViewWebPlugin::PdfViewWebPlugin(const blink::WebPluginParams& params)
@@ -115,10 +167,20 @@ PdfViewWebPlugin::PdfViewWebPlugin(const blink::WebPluginParams& params)
 
 PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
-// Modeled on `OutOfProcessInstance::Init()`.
 bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   DCHECK_EQ(container->Plugin(), this);
-  container_ = container;
+  return InitializeCommon(std::make_unique<BlinkContainerWrapper>(container));
+}
+
+bool PdfViewWebPlugin::InitializeForTesting(
+    std::unique_ptr<ContainerWrapper> container_wrapper) {
+  return InitializeCommon(std::move(container_wrapper));
+}
+
+// Modeled on `OutOfProcessInstance::Init()`.
+bool PdfViewWebPlugin::InitializeCommon(
+    std::unique_ptr<ContainerWrapper> container_wrapper) {
+  container_wrapper_ = std::move(container_wrapper);
 
   std::string stream_url;
   for (size_t i = 0; i < initial_params_.attribute_names.size(); ++i) {
@@ -142,26 +204,25 @@ bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   PerProcessInitializer::GetInstance().Acquire();
   InitializeEngine(PDFiumFormFiller::ScriptOption::kNoJavaScript);
   LoadUrl(stream_url, /*is_print_preview=*/false);
-  post_message_sender_.set_container(container_);
+  post_message_sender_.set_container(Container());
   return true;
 }
 
 void PdfViewWebPlugin::Destroy() {
-  if (container_) {
+  if (container_wrapper_) {
     // Explicitly destroy the PDFEngine during destruction as it may call back
     // into this object.
     DestroyEngine();
     PerProcessInitializer::GetInstance().Release();
+    container_wrapper_.reset();
+    post_message_sender_.set_container(nullptr);
   }
-
-  container_ = nullptr;
-  post_message_sender_.set_container(nullptr);
 
   delete this;
 }
 
 blink::WebPluginContainer* PdfViewWebPlugin::Container() const {
-  return container_;
+  return container_wrapper_ ? container_wrapper_->Container() : nullptr;
 }
 
 v8::Local<v8::Object> PdfViewWebPlugin::V8ScriptableObject(
@@ -213,7 +274,7 @@ void PdfViewWebPlugin::UpdateGeometry(const gfx::Rect& window_rect,
                                       const gfx::Rect& clip_rect,
                                       const gfx::Rect& unobscured_rect,
                                       bool is_visible) {
-  OnViewportChanged(window_rect, container_->DeviceScaleFactor());
+  OnViewportChanged(window_rect, container_wrapper_->DeviceScaleFactor());
 }
 
 void PdfViewWebPlugin::UpdateFocus(bool focused,
@@ -224,7 +285,24 @@ void PdfViewWebPlugin::UpdateVisibility(bool visibility) {}
 blink::WebInputEventResult PdfViewWebPlugin::HandleInputEvent(
     const blink::WebCoalescedInputEvent& event,
     ui::Cursor* cursor) {
-  return blink::WebInputEventResult::kNotHandled;
+  // TODO(crbug.com/702993): The input events received by the Pepper plugin
+  // already have the device scale applied. The scaling done here should be
+  // moved into `PdfViewPluginBase::HandleInputEvent()` once the Pepper plugin
+  // is removed.
+  std::unique_ptr<blink::WebInputEvent> scaled_event =
+      ui::ScaleWebInputEvent(event.Event(), device_scale());
+
+  const blink::WebInputEvent& event_to_handle =
+      scaled_event ? *scaled_event : event.Event();
+
+  const blink::WebInputEventResult result =
+      PdfViewPluginBase::HandleInputEvent(event_to_handle)
+          ? blink::WebInputEventResult::kHandledApplication
+          : blink::WebInputEventResult::kNotHandled;
+
+  *cursor = cursor_type();
+
+  return result;
 }
 
 void PdfViewWebPlugin::DidReceiveResponse(
@@ -236,7 +314,61 @@ void PdfViewWebPlugin::DidFinishLoading() {}
 
 void PdfViewWebPlugin::DidFailLoading(const blink::WebURLError& error) {}
 
-void PdfViewWebPlugin::UpdateCursor(ui::mojom::CursorType cursor_type) {}
+bool PdfViewWebPlugin::HasSelection() const {
+  return !selected_text_.IsEmpty();
+}
+
+blink::WebString PdfViewWebPlugin::SelectionAsText() const {
+  return selected_text_;
+}
+
+blink::WebString PdfViewWebPlugin::SelectionAsMarkup() const {
+  return selected_text_;
+}
+
+bool PdfViewWebPlugin::CanEditText() const {
+  return engine()->CanEditText();
+}
+
+bool PdfViewWebPlugin::HasEditableText() const {
+  return engine()->HasEditableText();
+}
+
+bool PdfViewWebPlugin::CanUndo() const {
+  return engine()->CanUndo();
+}
+
+bool PdfViewWebPlugin::CanRedo() const {
+  return engine()->CanRedo();
+}
+
+bool PdfViewWebPlugin::ExecuteEditCommand(const blink::WebString& name,
+                                          const blink::WebString& value) {
+  if (name == "SelectAll")
+    return SelectAll();
+
+  if (name == "Cut")
+    return Cut();
+
+  if (name == "Paste" || name == "PasteAndMatchStyle")
+    return Paste(value);
+
+  if (name == "Undo")
+    return Undo();
+
+  if (name == "Redo")
+    return Redo();
+
+  return false;
+}
+
+blink::WebTextInputType PdfViewWebPlugin::GetPluginTextInputType() {
+  return text_input_type_;
+}
+
+void PdfViewWebPlugin::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
+  set_cursor_type(new_cursor_type);
+}
 
 void PdfViewWebPlugin::UpdateTickMarks(
     const std::vector<gfx::Rect>& tickmarks) {}
@@ -288,7 +420,9 @@ void PdfViewWebPlugin::SelectionChanged(const gfx::Rect& left,
 void PdfViewWebPlugin::EnteredEditMode() {}
 
 void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
-  NOTIMPLEMENTED();
+  selected_text_ = blink::WebString::FromUTF8(selected_text);
+  container_wrapper_->TextSelectionChanged(
+      selected_text_, /*offset=*/0, gfx::Range(0, selected_text_.length()));
 }
 
 void PdfViewWebPlugin::SetLinkUnderCursor(
@@ -324,34 +458,30 @@ void PdfViewWebPlugin::ScheduleTaskOnMainThread(const base::Location& from_here,
 }
 
 bool PdfViewWebPlugin::IsValid() const {
-  return container_ && container_->GetDocument().GetFrame();
+  return container_wrapper_ && container_wrapper_->GetFrame();
 }
 
 blink::WebURL PdfViewWebPlugin::CompleteURL(
     const blink::WebString& partial_url) const {
   DCHECK(IsValid());
-  return container_->GetDocument().CompleteURL(partial_url);
+  return Container()->GetDocument().CompleteURL(partial_url);
 }
 
 net::SiteForCookies PdfViewWebPlugin::SiteForCookies() const {
   DCHECK(IsValid());
-  return container_->GetDocument().SiteForCookies();
+  return Container()->GetDocument().SiteForCookies();
 }
 
 void PdfViewWebPlugin::SetReferrerForRequest(
     blink::WebURLRequest& request,
     const blink::WebURL& referrer_url) {
-  DCHECK(IsValid());
-  container_->GetDocument().GetFrame()->SetReferrerForRequest(request,
-                                                              referrer_url);
+  container_wrapper_->SetReferrerForRequest(request, referrer_url);
 }
 
 std::unique_ptr<blink::WebAssociatedURLLoader>
 PdfViewWebPlugin::CreateAssociatedURLLoader(
     const blink::WebAssociatedURLLoaderOptions& options) {
-  DCHECK(IsValid());
-  return container_->GetDocument().GetFrame()->CreateAssociatedURLLoader(
-      options);
+  return container_wrapper_->CreateAssociatedURLLoader(options);
 }
 
 void PdfViewWebPlugin::OnMessage(const base::Value& message) {
@@ -364,7 +494,8 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
           .set_image(std::move(snapshot), cc::PaintImage::GetNextContentId())
           .set_id(cc::PaintImage::GetNextId())
           .TakePaintImage();
-  InvalidateRectInPluginContainer(gfx::Rect(plugin_rect().size()));
+  if (!plugin_rect().IsEmpty())
+    InvalidatePluginContainer();
 }
 
 base::WeakPtr<PdfViewPluginBase> PdfViewWebPlugin::GetWeakPtr() {
@@ -402,7 +533,9 @@ void PdfViewWebPlugin::InitImageData(const gfx::Size& size) {
 }
 
 void PdfViewWebPlugin::SetFormFieldInFocus(bool in_focus) {
-  NOTIMPLEMENTED();
+  text_input_type_ = in_focus ? blink::WebTextInputType::kWebTextInputTypeText
+                              : blink::WebTextInputType::kWebTextInputTypeNone;
+  container_wrapper_->UpdateTextInputState();
 }
 
 // TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
@@ -458,18 +591,47 @@ void PdfViewWebPlugin::OnViewportChanged(const gfx::Rect& view_rect,
 }
 
 void PdfViewWebPlugin::InvalidatePluginContainer() {
-  DCHECK(container_);
-
-  container_->Invalidate();
+  container_wrapper_->Invalidate();
 }
 
-void PdfViewWebPlugin::InvalidateRectInPluginContainer(const gfx::Rect& rect) {
-  DCHECK(container_);
+bool PdfViewWebPlugin::SelectAll() {
+  if (!CanEditText())
+    return false;
 
-  if (plugin_rect().IsEmpty())
-    return;
+  engine()->SelectAll();
+  return true;
+}
 
-  container_->InvalidateRect(rect);
+bool PdfViewWebPlugin::Cut() {
+  if (!HasSelection() || !CanEditText())
+    return false;
+
+  engine()->ReplaceSelection("");
+  return true;
+}
+
+bool PdfViewWebPlugin::Paste(const blink::WebString& value) {
+  if (!CanEditText())
+    return false;
+
+  engine()->ReplaceSelection(value.Utf8());
+  return true;
+}
+
+bool PdfViewWebPlugin::Undo() {
+  if (!CanUndo())
+    return false;
+
+  engine()->Undo();
+  return true;
+}
+
+bool PdfViewWebPlugin::Redo() {
+  if (!CanRedo())
+    return false;
+
+  engine()->Redo();
+  return true;
 }
 
 }  // namespace chrome_pdf

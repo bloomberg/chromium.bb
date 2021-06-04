@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Ilagay ang iyong dokumento sa scanner at piliin ang I-scan para makapagsimula</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2878387241690264070">Nag-discharge nang <ph name="RATE" /> sa loob ng <ph name="NUM_SECONDS" /> (na) segundo.</translation>
+<translation id="2983662233540284543">Matuto mula sa isang game creator, makakuha ng mga game design app, at higit pa</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
 <translation id="3009958530611748826">Pumili ng folder kung saan magse-save</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Pag-authenticate</translation>
 <translation id="5154917547274118687">Memorya</translation>
 <translation id="5168185087976003268">Tagal ng baterya</translation>
+<translation id="5170568018924773124">Ipinakita sa folder</translation>
+<translation id="519607504553633437">Magdisenyo at bumuo ng mga sarili mong laro</translation>
 <translation id="5212543919916444558">Wala akong makitang kahit ano sa iyong screen kung saan ako makakatulong.
 Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
@@ -201,6 +204,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5275828089655680674">Patakbuhin Ulit ang Mga Routine</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">bersyon <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Ilipat sa desk ang window</translation>
 <translation id="5315873049536339193">Pagkatao</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5318334351163689047">Mga hindi naisagawang kahilingan sa TCP</translation>
@@ -222,6 +226,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5669267381087807207">Ina-activate</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Pamilya</translation>
+<translation id="5752751666635965375">Gumawa ng sariling laro</translation>
 <translation id="5760715441271661976">Status ng Portal</translation>
 <translation id="5797428682393400134">TAGUMPAY</translation>
 <translation id="5832805196449965646">Magdagdag ng Tao</translation>
@@ -294,6 +299,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7216409898977639127">Cellular provider</translation>
 <translation id="7271040990581020067">Kasalukuyang ginagamit ang scanner. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Mga Device sa Network</translation>
 <translation id="7359657277149375382">Uri ng file</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8372477600026034341">Mga karagdagang host</translation>
 <translation id="8395584934117017006">Pinapamahalaan ng enterprise ang <ph name="DEVICE_TYPE" /> na ito</translation>
 <translation id="8398927464629426868">Ang rate ng kasalukuyang pag-charge o pag-discharge ng device</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Pangalan ng home provider</translation>
 <translation id="8475690821716466388">Naka-secure ang WiFi network gamit ang mahinang protocol na WEP PSK</translation>
 <translation id="8477551185774834963">Medyo mas mataas sa pinapayagang limitasyon ang latency ng DNS</translation>
@@ -351,6 +358,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8575298406870537639">Posibleng kailanganin ng iyong carrier ang opsyong ito para makakonekta sa network nito. Makipag-ugnayan sa iyong carrier para sa mga detalye.</translation>
 <translation id="8576249514688522074">Hindi Nasimulan</translation>
 <translation id="8620617069779373398">Status ng roaming</translation>
+<translation id="8660881923941176839">pounds</translation>
 <translation id="8675354002693747642">Pre-shared key:</translation>
 <translation id="871560550817059752">Hindi na-print - Wala nang ink</translation>
 <translation id="8723108084122415655">Mas mataas sa limitasyon ng latency ang hindi default na network</translation>
@@ -366,6 +374,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8881098542468797602">Nagtagumpay ang pagsusuri</translation>
 <translation id="8898840733695078011">Lakas ng signal</translation>
 <translation id="8910721771319628100">Mas mataas sa limitasyon ng latency ang default na network</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> ni <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Hindi na-print - Walang tray</translation>
 <translation id="8928727111548978589">Hindi na-print - Wala nang papel</translation>
 <translation id="8930622219860340959">Wireless</translation>
@@ -383,6 +392,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="9149391708638971077">Patakbuhin ang pagsusuri sa Memory</translation>
 <translation id="9173638680043580060">Wala nang isang minuto ang natitira</translation>
 <translation id="9190063653747922532">L2TP/IPsec + paunang nakabahaging key</translation>
+<translation id="9211490828691860325">Lahat ng desk</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Hindi na-activate</translation>
 <translation id="960719561871045870">Operator code</translation>

@@ -141,7 +141,7 @@ class ContentAnalysisDialogBehaviorBrowserTest
   }
 
   void DialogUpdated(ContentAnalysisDialog* dialog,
-                     ContentAnalysisDelegate::FinalResult result) override {
+                     ContentAnalysisDelegateBase::FinalResult result) override {
     DCHECK_EQ(dialog, dialog_);
     dialog_updated_timestamp_ = base::TimeTicks::Now();
 
@@ -154,7 +154,8 @@ class ContentAnalysisDialogBehaviorBrowserTest
 
     // The dialog can only be updated to the success or failure case.
     EXPECT_TRUE(dialog_->is_result());
-    bool is_success = result == ContentAnalysisDelegate::FinalResult::SUCCESS;
+    bool is_success =
+        result == ContentAnalysisDelegateBase::FinalResult::SUCCESS;
     EXPECT_EQ(dialog_->is_success(), is_success);
     EXPECT_EQ(dialog_->is_success(), expected_scan_result_);
 
@@ -301,7 +302,7 @@ class ContentAnalysisDialogWarningBrowserTest
   }
 
   void DialogUpdated(ContentAnalysisDialog* dialog,
-                     ContentAnalysisDelegate::FinalResult result) override {
+                     ContentAnalysisDelegateBase::FinalResult result) override {
     ASSERT_TRUE(dialog->is_warning());
 
     // The dialog's buttons should be Ok and Cancel.
@@ -376,7 +377,7 @@ class ContentAnalysisDialogAppearanceBrowserTest
   }
 
   void DialogUpdated(ContentAnalysisDialog* dialog,
-                     ContentAnalysisDelegate::FinalResult result) override {
+                     ContentAnalysisDelegateBase::FinalResult result) override {
     // The dialog shows the failure or success message for the appropriate
     // access point and scan type.
     std::u16string final_message = dialog->GetMessageForTesting()->GetText();
@@ -532,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogCancelPendingScanBrowserTest,
                                       FILE_ATTACHED, kBlockingScansForDlp);
   SetStatusCallbackResponse(
       safe_browsing::SimpleContentAnalysisResponseForTesting(
-          /*dlp=*/true, /*malware=*/base::nullopt));
+          /*dlp=*/true, /*malware=*/absl::nullopt));
 
   // Set up delegate test values. An unresponsive delegate is set up to avoid
   // a race between the file responses and the "Cancel" button being clicked.
@@ -740,5 +741,37 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(safe_browsing::DeepScanAccessPoint::UPLOAD,
                         safe_browsing::DeepScanAccessPoint::DRAG_AND_DROP,
                         safe_browsing::DeepScanAccessPoint::PASTE)));
+
+class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
+ protected:
+  ContentAnalysisDialog* dialog() { return dialog_; }
+
+  ContentAnalysisDialog* CreateContentAnalysisDialog() {
+    // This ctor ends up calling into constrained_window to show itself, in a
+    // way that relinquishes its ownership. Because of this, new it here and
+    // let it be deleted by the constrained_window code.
+    dialog_ = new ContentAnalysisDialog(
+        nullptr, browser()->tab_strip_model()->GetActiveWebContents(),
+        safe_browsing::DeepScanAccessPoint::DOWNLOAD, 0);
+
+    return dialog_;
+  }
+
+ private:
+  ContentAnalysisDialog* dialog_;
+};
+
+IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests, TestCustomMessage) {
+  enterprise_connectors::ContentAnalysisDialog::
+      SetMinimumPendingDialogTimeForTesting(
+          base::TimeDelta::FromMilliseconds(0));
+
+  ContentAnalysisDialog* dialog = CreateContentAnalysisDialog();
+  dialog->ShowResult(ContentAnalysisDelegateBase::FinalResult::WARNING, u"Test",
+                     GURL("http://www.example.com"));
+
+  EXPECT_EQ(dialog->GetMessageForTesting()->GetText(),
+            u"Your administrator says \"Test\".");
+}
 
 }  // namespace enterprise_connectors

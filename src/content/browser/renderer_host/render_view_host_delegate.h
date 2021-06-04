@@ -7,13 +7,10 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/process/kill.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/render_message_filter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
 
@@ -139,6 +136,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The RenderView finished the first visually non-empty paint.
   virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}
+
+  // Returns true if the render view is rendering a guest.
+  virtual bool IsGuest();
 
   // Returns true if the render view is rendering a portal.
   virtual bool IsPortal();

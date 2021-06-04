@@ -80,7 +80,7 @@
 #if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
-#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
 #endif
 
 #if defined(OS_WIN)
@@ -178,15 +178,15 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
   ChromeBrowserMainExtraPartsBrowserProcessInjection() = default;
 
   // ChromeBrowserMainExtraParts implementation
-  void PreMainMessageLoopStart() override {
-    // The real SystemGeolocationPermissionsManager initializes a
-    // CLLocationManager. It has been observed that when thousands of instances
-    // of this object are created, as happens when running browser tests, the
-    // CoreLocationAgent process uses lots of CPU. This makes test execution
-    // slower and causes jobs to time out. We therefore insert a fake.
+  void PreCreateMainMessageLoop() override {
+    // The real GeolocationManager initializes a CLLocationManager. It has
+    // been observed that when thousands of instances of this object are
+    // created, as happens when running browser tests, the CoreLocationAgent
+    // process uses lots of CPU. This makes test execution slower and causes
+    // jobs to time out. We therefore insert a fake.
     auto fake_geolocation_manager =
-        std::make_unique<FakeSystemGeolocationPermissionsManager>();
-    fake_geolocation_manager->set_status(
+        std::make_unique<device::FakeGeolocationManager>();
+    fake_geolocation_manager->SetSystemPermission(
         device::LocationSystemPermissionStatus::kAllowed);
     g_browser_process->platform_part()->SetGeolocationManagerForTesting(
         std::move(fake_geolocation_manager));
@@ -516,8 +516,8 @@ void InProcessBrowserTest::OpenDevToolsWindow(
 Browser* InProcessBrowserTest::OpenURLOffTheRecord(Profile* profile,
                                                    const GURL& url) {
   chrome::OpenURLOffTheRecord(profile, url);
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile->GetPrimaryOTRProfile(), false);
+  Browser* browser = chrome::FindTabbedBrowser(
+      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true), false);
   content::TestNavigationObserver observer(
       browser->tab_strip_model()->GetActiveWebContents());
   observer.Wait();
@@ -537,8 +537,8 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser(Profile* profile) {
   if (!profile)
     profile = browser()->profile();
   // Create a new browser with using the incognito profile.
-  Browser* incognito = Browser::Create(
-      Browser::CreateParams(profile->GetPrimaryOTRProfile(), true));
+  Browser* incognito = Browser::Create(Browser::CreateParams(
+      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true), true));
   AddBlankTabAndShow(incognito);
   return incognito;
 }
@@ -572,7 +572,7 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
 
   Profile* profile = profile_manager->GetProfileByPath(guest_path);
   if (!profile->IsEphemeralGuestProfile())
-    profile = profile->GetPrimaryOTRProfile();
+    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   const bool is_ephemeral = Profile::IsEphemeralGuestProfileEnabled();
   EXPECT_EQ(is_ephemeral, profile->IsEphemeralGuestProfile());

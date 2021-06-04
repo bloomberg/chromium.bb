@@ -5,10 +5,8 @@
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -36,6 +34,7 @@
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/download_item_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace safe_browsing {
 
@@ -125,6 +124,7 @@ EventResult GetEventResult(DownloadCheckResult download_result,
     // |download_restriction|.
     case DownloadCheckResult::DANGEROUS:
     case DownloadCheckResult::DANGEROUS_HOST:
+    case DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE:
       switch (download_restriction) {
         case DownloadPrefs::DownloadRestriction::ALL_FILES:
         case DownloadPrefs::DownloadRestriction::POTENTIALLY_DANGEROUS_FILES:
@@ -167,7 +167,7 @@ std::string GetTriggerName(DeepScanningRequest::DeepScanTrigger trigger) {
 }  // namespace
 
 /* static */
-base::Optional<enterprise_connectors::AnalysisSettings>
+absl::optional<enterprise_connectors::AnalysisSettings>
 DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
   auto* service =
       enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
@@ -177,7 +177,7 @@ DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
   if (!service ||
       !service->IsConnectorEnabled(
           enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Check that item->GetURL() matches the appropriate URL patterns by getting
@@ -211,6 +211,8 @@ void DeepScanningRequest::Start() {
   // Indicate we're now scanning the file.
   callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
 
+  IncrementCrashKey(ScanningCrashKey::PENDING_FILE_DOWNLOADS);
+  IncrementCrashKey(ScanningCrashKey::TOTAL_FILE_DOWNLOADS);
   auto request = std::make_unique<FileAnalysisRequest>(
       analysis_settings_, item_->GetFullPath(),
       item_->GetTargetFilePath().BaseName(),
@@ -351,6 +353,7 @@ void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   item_->RemoveObserver(this);
   download_service_->RequestFinished(this);
+  DecrementCrashKey(ScanningCrashKey::PENDING_FILE_DOWNLOADS);
 }
 
 bool DeepScanningRequest::MaybeShowDeepScanFailureModalDialog(

@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -41,7 +41,7 @@ class TestOsIntegrationManager : public OsIntegrationManager {
   void UpdateOsHooks(const AppId& app_id,
                      base::StringPiece old_name,
                      std::unique_ptr<ShortcutInfo> old_shortcut,
-                     bool file_handlers_need_os_update,
+                     FileHandlerUpdateAction file_handlers_need_os_update,
                      const WebApplicationInfo& web_app_info) override;
 
   size_t num_create_shortcuts_calls() const {
@@ -50,6 +50,10 @@ class TestOsIntegrationManager : public OsIntegrationManager {
 
   size_t num_create_file_handlers_calls() const {
     return num_create_file_handlers_calls_;
+  }
+
+  size_t num_update_file_handlers_calls() const {
+    return num_update_file_handlers_calls_;
   }
 
   size_t num_register_run_on_os_login_calls() const {
@@ -68,11 +72,11 @@ class TestOsIntegrationManager : public OsIntegrationManager {
     can_create_shortcuts_ = can_create_shortcuts;
   }
 
-  base::Optional<bool> did_add_to_desktop() const {
+  absl::optional<bool> did_add_to_desktop() const {
     return did_add_to_desktop_;
   }
 
-  base::Optional<InstallOsHooksOptions> get_last_install_options() const {
+  absl::optional<InstallOsHooksOptions> get_last_install_options() const {
     return last_options_;
   }
 
@@ -92,11 +96,12 @@ class TestOsIntegrationManager : public OsIntegrationManager {
  private:
   size_t num_create_shortcuts_calls_ = 0;
   size_t num_create_file_handlers_calls_ = 0;
+  size_t num_update_file_handlers_calls_ = 0;
   size_t num_register_run_on_os_login_calls_ = 0;
   size_t num_add_app_to_quick_launch_bar_calls_ = 0;
   size_t num_register_url_handlers_calls_ = 0;
-  base::Optional<bool> did_add_to_desktop_;
-  base::Optional<InstallOsHooksOptions> last_options_;
+  absl::optional<bool> did_add_to_desktop_;
+  absl::optional<InstallOsHooksOptions> last_options_;
 
   bool can_create_shortcuts_ = true;
   std::map<AppId, bool> next_create_shortcut_results_;

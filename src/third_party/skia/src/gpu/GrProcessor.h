@@ -69,7 +69,6 @@ public:
         kGrColorSpaceXformEffect_ClassID,
         kGrConfigConversionEffect_ClassID,
         kGrConicEffect_ClassID,
-        kGrConstColorProcessor_ClassID,
         kGrConvexPolyEffect_ClassID,
         kGrDeviceSpaceEffect_ClassID,
         kGrDiffuseLightingEffect_ClassID,
@@ -78,6 +77,13 @@ public:
         kGrDistanceFieldLCDTextGeoProc_ClassID,
         kGrDistanceFieldPathGeoProc_ClassID,
         kGrDitherEffect_ClassID,
+        kGrDSLFPTest_DoStatement_ClassID,
+        kGrDSLFPTest_ForStatement_ClassID,
+        kGrDSLFPTest_IfStatement_ClassID,
+        kGrDSLFPTest_SwitchStatement_ClassID,
+        kGrDSLFPTest_Swizzle_ClassID,
+        kGrDSLFPTest_Ternary_ClassID,
+        kGrDSLFPTest_WhileStatement_ClassID,
         kGrDualIntervalGradientColorizer_ClassID,
         kGrEllipseEffect_ClassID,
         kGrFillRRectOp_Processor_ClassID,
@@ -124,13 +130,13 @@ public:
         kStencilResolveProcessor_ClassID,
         kFwidthSquircleTestProcessor_ClassID,
         kSwizzleFragmentProcessor_ClassID,
-        kTessellate_GrCubicTessellateShader_ClassID,
+        kTessellate_GrCurveMiddleOutShader_ClassID,
+        kTessellate_GrCurveTessellateShader_ClassID,
         kTessellate_GrFillBoundingBoxShader_ClassID,
         kTessellate_GrFillCubicHullShader_ClassID,
         kTessellate_GrFillTriangleShader_ClassID,
-        kTessellate_GrMiddleOutCubicShader_ClassID,
         kTessellate_GrStencilTriangleShader_ClassID,
-        kTessellate_GrStrokeTessellateShader_ClassID,
+        kTessellate_GrStrokeShader_ClassID,
         kTessellate_GrWedgeTessellateShader_ClassID,
         kTessellationTestTriShader_ClassID,
         kTessellationTestRectShader_ClassID,
@@ -153,7 +159,7 @@ public:
 #if GR_TEST_UTILS
     virtual SkString onDumpInfo() const { return SkString(); }
 
-    virtual SkString dumpInfo() const final {
+    SkString dumpInfo() const {
         SkString info(name());
         info.append(this->onDumpInfo());
         return info;

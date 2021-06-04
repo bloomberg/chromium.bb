@@ -8,32 +8,31 @@
 #
 
 # Failed tests
-BindGeneratesResourceTest.*
-ClearTest.Depth16Scissored/*
-ClearTest.InceptionScissorClears/*
-ClientArraysTest.*
-CopyTextureTestWebGL.NPOT/*
 D3DImageFormatConversionTest.*
-DifferentStencilMasksTest.*
 FramebufferTest.MultiContextNoRenderingFeedbackLoops/*
-InstancingTest.LineLoop/*
 PbufferTest.BindTexImage/*
 PbufferTest.Clearing/*
 PbufferTest.TextureSizeReset/*
 SimpleStateChangeTest.DrawAndClearTextureRepeatedly/*
 SimpleStateChangeTest.RebindTranslatedAttribute/*
-StateChangeTest.DrawAfterFlushWithNoStateChange/*
 WebGL2ReadOutsideFramebufferTest.CopyTexSubImage3D/*
 WebGLDrawElementsTest.DrawElementsTypeAlignment/*
 WebGLGLSLTest.*
 WebGLReadOutsideFramebufferTest.*
+
+# http://anglebug.com/5974 New tests, need triage
+IndexBufferOffsetTest.UInt16Index/*
+IndexBufferOffsetTest.UInt16IndexSmallUpdates/*
+IndexBufferOffsetTest.UInt32Index/*
+IndexBufferOffsetTest.UInt32IndexSmallUpdates/*
+IndexBufferOffsetTest.UInt8Index/*
+IndexBufferOffsetTest.UInt8IndexSmallUpdates/*
 
 # Has undefined framebuffer pixels. This fails comparison checks.
 SimpleOperationTest.ClearAndSwap/*
 SimpleOperationTest.DrawQuadAndSwap/*
 
 # Crashed tests
-BlendMinMaxTest.*
 BlitFramebufferANGLETest.*
 BufferDataTest.*
 ClipDistanceTest.*
@@ -92,3 +91,34 @@ MipmapTest.DISABLED_ThreeLevelsInitData/*
 
 # Compile failed tests
 RobustResourceInitTest.*
+
+# ES1 crashed tests
+FramebufferObjectTest.FramebufferObject/*
+FramebufferObjectTest.RenderbufferObject/*
+FramebufferObjectTest.TextureObjectDifferentFormats/*
+
+# ES1 comparison failed tests
+BootAnimationTest.DefaultBootAnimation/*
+
+# ES1 compile failed tests
+ClipPlaneTest.InitialState/*
+ClipPlaneTest.Negative/*
+ClipPlaneTest.Set/*
+CurrentColorTest.Set/*
+FogTest.NegativeParameter/*
+FogTest.NegativeValues/*
+FogTest.Set/*
+LightsTest.InitialState/*
+LightsTest.NegativeInvalidEnum/*
+LightsTest.NegativeInvalidValue/*
+LightsTest.Set/*
+MaterialsTest.InitialState/*
+MaterialsTest.InvalidParameter/*
+MaterialsTest.SetParameters/*
+MatrixModeTest.InitialState/*
+PointParameterTest.NegativeEnum/*
+PointParameterTest.NegativeValue/*
+PointParameterTest.Set/*
+TextureEnvTest.InitialState/*
+TextureEnvTest.Set/*
+TextureParameterTest.SetFixedPoint/*

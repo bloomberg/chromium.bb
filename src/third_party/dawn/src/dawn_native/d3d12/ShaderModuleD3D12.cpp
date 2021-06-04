@@ -82,11 +82,11 @@ namespace dawn_native { namespace d3d12 {
             if (enable16BitTypes) {
                 // enable-16bit-types are only allowed in -HV 2018 (default)
                 arguments.push_back(L"/enable-16bit-types");
-            } else {
-                // Enable FXC backward compatibility by setting the language version to 2016
-                arguments.push_back(L"-HV");
-                arguments.push_back(L"2016");
             }
+
+            arguments.push_back(L"-HV");
+            arguments.push_back(L"2018");
+
             return arguments;
         }
 
@@ -97,16 +97,14 @@ namespace dawn_native { namespace d3d12 {
                                                      const std::string& hlslSource,
                                                      const char* entryPoint,
                                                      uint32_t compileFlags) {
-        IDxcLibrary* dxcLibrary;
-        DAWN_TRY_ASSIGN(dxcLibrary, device->GetOrCreateDxcLibrary());
+        ComPtr<IDxcLibrary> dxcLibrary = device->GetDxcLibrary();
 
         ComPtr<IDxcBlobEncoding> sourceBlob;
         DAWN_TRY(CheckHRESULT(dxcLibrary->CreateBlobWithEncodingOnHeapCopy(
                                   hlslSource.c_str(), hlslSource.length(), CP_UTF8, &sourceBlob),
                               "DXC create blob"));
 
-        IDxcCompiler* dxcCompiler;
-        DAWN_TRY_ASSIGN(dxcCompiler, device->GetOrCreateDxcCompiler());
+        ComPtr<IDxcCompiler> dxcCompiler = device->GetDxcCompiler();
 
         std::wstring entryPointW;
         DAWN_TRY_ASSIGN(entryPointW, ConvertStringToWstring(entryPoint));
@@ -245,30 +243,33 @@ namespace dawn_native { namespace d3d12 {
         errorStream << "Tint HLSL failure:" << std::endl;
 
         tint::transform::Manager transformManager;
-        transformManager.append(std::make_unique<tint::transform::BoundArrayAccessors>());
-        if (stage == SingleShaderStage::Vertex) {
-            transformManager.append(std::make_unique<tint::transform::FirstIndexOffset>(
-                layout->GetFirstIndexOffsetShaderRegister(),
-                layout->GetFirstIndexOffsetRegisterSpace()));
-        }
-        transformManager.append(std::make_unique<tint::transform::BindingRemapper>());
-        transformManager.append(std::make_unique<tint::transform::Renamer>());
-        transformManager.append(std::make_unique<tint::transform::Hlsl>());
-
         tint::transform::DataMap transformInputs;
-        transformInputs.Add<BindingRemapper::Remappings>(std::move(bindingPoints),
-                                                         std::move(accessControls));
-        tint::transform::Transform::Output output =
-            transformManager.Run(GetTintProgram(), transformInputs);
 
-        tint::Program& program = output.program;
-        if (!program.IsValid()) {
-            errorStream << "Tint program transform error: " << program.Diagnostics().str()
-                        << std::endl;
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+        if (GetDevice()->IsRobustnessEnabled()) {
+            transformManager.Add<tint::transform::BoundArrayAccessors>();
         }
+        if (stage == SingleShaderStage::Vertex) {
+            transformManager.Add<tint::transform::FirstIndexOffset>();
+            transformInputs.Add<tint::transform::FirstIndexOffset::BindingPoint>(
+                layout->GetFirstIndexOffsetShaderRegister(),
+                layout->GetFirstIndexOffsetRegisterSpace());
+        }
+        transformManager.Add<tint::transform::BindingRemapper>();
+        transformManager.Add<tint::transform::Renamer>();
+        transformManager.Add<tint::transform::Hlsl>();
 
-        if (auto* data = output.data.Get<tint::transform::FirstIndexOffset::Data>()) {
+        // D3D12 registers like `t3` and `c3` have the same bindingOffset number in the
+        // remapping but should not be considered a collision because they have different types.
+        const bool mayCollide = true;
+        transformInputs.Add<BindingRemapper::Remappings>(std::move(bindingPoints),
+                                                         std::move(accessControls), mayCollide);
+
+        tint::Program program;
+        tint::transform::DataMap transformOutputs;
+        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, GetTintProgram(), transformInputs,
+                                               &transformOutputs, nullptr));
+
+        if (auto* data = transformOutputs.Get<tint::transform::FirstIndexOffset::Data>()) {
             firstOffsetInfo->usesVertexIndex = data->has_vertex_index;
             if (firstOffsetInfo->usesVertexIndex) {
                 firstOffsetInfo->vertexIndexOffset = data->first_vertex_offset;
@@ -279,7 +280,7 @@ namespace dawn_native { namespace d3d12 {
             }
         }
 
-        if (auto* data = output.data.Get<tint::transform::Renamer::Data>()) {
+        if (auto* data = transformOutputs.Get<tint::transform::Renamer::Data>()) {
             auto it = data->remappings.find(entryPointName);
             if (it == data->remappings.end()) {
                 return DAWN_VALIDATION_ERROR("Could not find remapped name for entry point.");
@@ -313,11 +314,14 @@ namespace dawn_native { namespace d3d12 {
         options_glsl.force_zero_initialized_variables = true;
 
         spirv_cross::CompilerHLSL::Options options_hlsl;
-        if (GetDevice()->IsExtensionEnabled(Extension::ShaderFloat16)) {
+        if (GetDevice()->IsToggleEnabled(Toggle::UseDXC)) {
             options_hlsl.shader_model = ToBackend(GetDevice())->GetDeviceInfo().shaderModel;
-            options_hlsl.enable_16bit_types = true;
         } else {
             options_hlsl.shader_model = 51;
+        }
+
+        if (GetDevice()->IsExtensionEnabled(Extension::ShaderFloat16)) {
+            options_hlsl.enable_16bit_types = true;
         }
         // PointCoord and PointSize are not supported in HLSL
         // TODO (hao.x.li@intel.com): The point_coord_compat and point_size_compat are
@@ -480,8 +484,7 @@ namespace dawn_native { namespace d3d12 {
     }
 
     ResultOrError<uint64_t> ShaderModule::GetDXCompilerVersion() const {
-        ComPtr<IDxcValidator> dxcValidator;
-        DAWN_TRY_ASSIGN(dxcValidator, ToBackend(GetDevice())->GetOrCreateDxcValidator());
+        ComPtr<IDxcValidator> dxcValidator = ToBackend(GetDevice())->GetDxcValidator();
 
         ComPtr<IDxcVersionInfo> versionInfo;
         DAWN_TRY(CheckHRESULT(dxcValidator.As(&versionInfo),

@@ -82,8 +82,8 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -124,6 +124,7 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/services/video_decode_perf_history.h"
@@ -217,16 +218,20 @@ base::OnceCallback<void(T)> IgnoreArgument(base::OnceClosure callback) {
 }
 
 #if BUILDFLAG(ENABLE_NACL)
-void ClearNaClCacheOnIOThread(base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void ClearNaClCacheOnProcessThread(base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   nacl::NaClBrowser::GetInstance()->ClearValidationCache(std::move(callback));
 }
 
-void ClearPnaclCacheOnIOThread(base::Time begin,
-                               base::Time end,
-                               base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void ClearPnaclCacheOnProcessThread(base::Time begin,
+                                    base::Time end,
+                                    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
       begin, end, std::move(callback));
@@ -284,8 +289,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
          network::mojom::NetworkContext::ClearDomainReliabilityCallback
              callback) {
         network::mojom::NetworkContext* network_context =
-            BrowserContext::GetDefaultStoragePartition(browser_context)
-                ->GetNetworkContext();
+            browser_context->GetDefaultStoragePartition()->GetNetworkContext();
         network_context->ClearDomainReliability(
             filter_builder->BuildNetworkServiceFilter(), mode,
             std::move(callback));
@@ -297,7 +301,7 @@ ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() =
     default;
 
 void ChromeBrowsingDataRemoverDelegate::Shutdown() {
-  auto* remover = BrowserContext::GetBrowsingDataRemover(profile_);
+  auto* remover = profile_->GetBrowsingDataRemover();
   DCHECK(remover);
   remover->SetEmbedderDelegate(nullptr);
   profile_keep_alive_.reset();
@@ -484,11 +488,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history. We have no mechanism to track when these items were
     // created, so we'll not honor the time range.
-    BrowserContext::GetDefaultStoragePartition(profile_)
-        ->GetNetworkContext()
-        ->ClearHostCache(
-            filter_builder->BuildNetworkServiceFilter(),
-            CreateTaskCompletionClosureForMojo(TracingDataType::kHostCache));
+    profile_->GetDefaultStoragePartition()->GetNetworkContext()->ClearHostCache(
+        filter_builder->BuildNetworkServiceFilter(),
+        CreateTaskCompletionClosureForMojo(TracingDataType::kHostCache));
 
     // The NoStatePrefetchManager keeps history of pages scanned for prefetch,
     // so clear that. It also may have a scanned page. If so, the page could be
@@ -645,8 +647,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // DATA_TYPE_DOWNLOADS
   if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS) &&
       may_delete_history) {
-    DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
-        BrowserContext::GetDownloadManager(profile_));
+    DownloadPrefs* download_prefs =
+        DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager());
     download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
   }
 
@@ -735,7 +737,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // DATA_TYPE_BOOKMARKS
   if (remove_mask & constants::DATA_TYPE_BOOKMARKS) {
     auto* bookmark_model = BookmarkModelFactory::GetForBrowserContext(profile_);
-    if (bookmark_model) {
+    if (bookmark_model && bookmark_model->loaded()) {
       if (delete_begin_.is_null() &&
           (delete_end_.is_null() || delete_end_.is_max())) {
         bookmark_model->RemoveAllUserBookmarks();
@@ -824,7 +826,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           CreateTaskCompletionClosure(TracingDataType::kPasswords));
     }
 
-    BrowserContext::GetDefaultStoragePartition(profile_)
+    profile_->GetDefaultStoragePartition()
         ->GetNetworkContext()
         ->ClearHttpAuthCache(
             delete_begin_.is_null() ? base::Time::Min() : delete_begin_,
@@ -875,8 +877,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     if (password_store) {
       password_store->DisableAutoSignInForOrigins(
-          filter, base::AdaptCallbackForRepeating(CreateTaskCompletionClosure(
-                      TracingDataType::kDisableAutoSignin)));
+          filter,
+          CreateTaskCompletionClosure(TracingDataType::kDisableAutoSignin));
     }
   }
 
@@ -889,8 +891,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (password_store) {
       password_store->RemoveStatisticsByOriginAndTime(
           nullable_filter, delete_begin_, delete_end_,
-          base::AdaptCallbackForRepeating(CreateTaskCompletionClosure(
-              TracingDataType::kPasswordsStatistics)));
+          CreateTaskCompletionClosure(TracingDataType::kPasswordsStatistics));
       password_store->RemoveFieldInfoByTime(
           delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kFieldInfo));
@@ -954,16 +955,20 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
 #if BUILDFLAG(ENABLE_NACL)
-    content::GetIOThreadTaskRunner({})->PostTask(
+    auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                           ? content::GetUIThreadTaskRunner({})
+                           : content::GetIOThreadTaskRunner({});
+    task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&ClearNaClCacheOnIOThread,
+        base::BindOnce(&ClearNaClCacheOnProcessThread,
                        UIThreadTrampoline(CreateTaskCompletionClosure(
                            TracingDataType::kNaclCache))));
-    content::GetIOThreadTaskRunner({})->PostTask(
+    task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
-                       UIThreadTrampoline(CreateTaskCompletionClosure(
-                           TracingDataType::kPnaclCache))));
+        base::BindOnce(
+            &ClearPnaclCacheOnProcessThread, delete_begin_, delete_end_,
+            UIThreadTrampoline(
+                CreateTaskCompletionClosure(TracingDataType::kPnaclCache))));
 #endif
 
     browsing_data::RemovePrerenderCacheData(
@@ -992,11 +997,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
               profile_);
       if (offline_page_model)
         offline_page_model->DeleteCachedPagesByURLPredicate(
-            filter, base::AdaptCallbackForRepeating(
-                        IgnoreArgument<
-                            offline_pages::OfflinePageModel::DeletePageResult>(
-                            CreateTaskCompletionClosure(
-                                TracingDataType::kOfflinePages))));
+            filter,
+            IgnoreArgument<offline_pages::OfflinePageModel::DeletePageResult>(
+                CreateTaskCompletionClosure(TracingDataType::kOfflinePages)));
     }
 #endif
 
@@ -1168,8 +1171,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_REPORTING)
   if (remove_mask & constants::DATA_TYPE_HISTORY) {
     network::mojom::NetworkContext* network_context =
-        BrowserContext::GetDefaultStoragePartition(profile_)
-            ->GetNetworkContext();
+        profile_->GetDefaultStoragePartition()->GetNetworkContext();
     network_context->ClearReportingCacheReports(
         filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(TracingDataType::kReportingCache));

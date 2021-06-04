@@ -29,6 +29,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -43,7 +44,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -196,7 +196,7 @@ void ProfileSigninConfirmationDialogViews::BuildDefaultView() {
   // Layout the components.
   const gfx::Insets content_insets =
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::TEXT);
+          views::DialogContentType::kControl, views::DialogContentType::kText);
   // The prompt bar needs to go to the edge of the dialog, so remove horizontal
   // insets.
   SetBorder(views::CreateEmptyBorder(content_insets.top(), 0,
@@ -294,7 +294,7 @@ void ProfileSigninConfirmationDialogViews::BuildWorkProfileView() {
   // Layout the components.
   const gfx::Insets content_insets =
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::TEXT);
+          views::DialogContentType::kControl, views::DialogContentType::kText);
   // The prompt bar needs to go to the edge of the dialog, so remove horizontal
   // insets.
   SetBorder(views::CreateEmptyBorder(content_insets.top(), 0,

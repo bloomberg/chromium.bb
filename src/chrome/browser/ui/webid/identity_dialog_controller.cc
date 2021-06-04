@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "chrome/browser/ui/webid/account_selection_view.h"
 #include "chrome/browser/ui/webid/webid_dialog.h"
 #include "components/infobars/core/infobar.h"
 #include "url/gurl.h"
@@ -92,8 +95,33 @@ WebIdDialog& IdentityDialogController::GetOrCreateView(
 void IdentityDialogController::ShowAccountsDialog(
     content::WebContents* rp_web_contents,
     content::WebContents* idp_web_contents,
-    const GURL& idp_signin_url,
+    const GURL& idp_url,
     AccountList accounts,
     AccountSelectionCallback on_selected) {
+  // IDP scheme is expected to always be `https://`.
+  CHECK(idp_url.SchemeIs(url::kHttpsScheme));
+#if !defined(OS_ANDROID)
   std::move(on_selected).Run(accounts[0].sub);
+#else
+  rp_web_contents_ = rp_web_contents;
+  on_account_selection_ = std::move(on_selected);
+  const GURL& rp_url = rp_web_contents_->GetLastCommittedURL();
+
+  if (!account_view_)
+    account_view_ = AccountSelectionView::Create(this);
+
+  account_view_->Show(rp_url, idp_url, accounts);
+#endif
+}
+
+void IdentityDialogController::OnAccountSelected(const Account& account) {
+  std::move(on_account_selection_).Run(account.sub);
+}
+
+void IdentityDialogController::OnDismiss() {
+  std::move(on_account_selection_).Run(std::string());
+}
+
+gfx::NativeView IdentityDialogController::GetNativeView() {
+  return rp_web_contents_->GetNativeView();
 }

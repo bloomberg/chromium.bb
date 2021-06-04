@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.ImageView;
 import android.widget.ViewFlipper;
 
 import androidx.annotation.IdRes;
@@ -29,7 +28,7 @@ import org.chromium.ui.widget.ButtonCompat;
  *
  * The bottom sheet shows a single account with a |Continue as ...| button by default, clicking
  * on the account will expand the bottom sheet to an account list together with other sign-in
- * options like "Add account" and "Go incognito mode".
+ * options like "Add account".
  */
 class AccountPickerBottomSheetView implements BottomSheetContent {
     /**
@@ -53,7 +52,6 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
             R.id.account_picker_header_title,
             R.id.account_picker_header_title,
             R.id.account_picker_signin_in_progress_title,
-            R.id.incognito_interstitial_title,
             R.id.account_picker_general_error_title,
             R.id.account_picker_auth_error_title,
     };
@@ -106,13 +104,6 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     }
 
     /**
-     * The incognito interstitial view when the user clicks on incognito mode option.
-     */
-    View getIncognitoInterstitialView() {
-        return mViewFlipper.getChildAt(ViewState.INCOGNITO_INTERSTITIAL);
-    }
-
-    /**
      * The selected account is visible when the account list is collapsed.
      */
     View getSelectedAccountView() {
@@ -158,9 +149,6 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     void updateSelectedAccount(DisplayableProfileData accountProfileData) {
         View view = mViewFlipper.getChildAt(ViewState.COLLAPSED_ACCOUNT_LIST);
         ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
-
-        ImageView rowEndImage = mSelectedAccountView.findViewById(R.id.account_selection_mark);
-        rowEndImage.setImageResource(R.drawable.ic_expand_more_in_circle_24dp);
 
         ButtonCompat continueButton = view.findViewById(R.id.account_picker_continue_as_button);
         String continueAsButtonText = mActivity.getString(R.string.signin_promo_continue_as,
@@ -246,8 +234,6 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
                 viewFlipper, ViewState.EXPANDED_ACCOUNT_LIST, R.id.account_picker_state_expanded);
         checkViewFlipperChildIdAndViewStateMatch(viewFlipper, ViewState.SIGNIN_IN_PROGRESS,
                 R.id.account_picker_state_signin_in_progress);
-        checkViewFlipperChildIdAndViewStateMatch(viewFlipper, ViewState.INCOGNITO_INTERSTITIAL,
-                R.id.account_picker_state_incognito_interstitial);
         checkViewFlipperChildIdAndViewStateMatch(viewFlipper, ViewState.SIGNIN_GENERAL_ERROR,
                 R.id.account_picker_state_general_error);
         checkViewFlipperChildIdAndViewStateMatch(

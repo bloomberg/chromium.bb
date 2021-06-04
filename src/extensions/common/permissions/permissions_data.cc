@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -214,7 +214,7 @@ void PermissionsData::SetPolicyHostRestrictions(
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   policy_blocked_hosts_unsafe_ = policy_blocked_hosts.Clone();
   policy_allowed_hosts_unsafe_ = policy_allowed_hosts.Clone();
-  context_id_ = base::nullopt;
+  context_id_ = absl::nullopt;
 }
 
 void PermissionsData::SetUsesDefaultHostRestrictions(int context_id) const {

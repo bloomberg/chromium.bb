@@ -5,26 +5,25 @@
 {
   const LONG_TOUCH_TIME_MS = 1000;
 
-  function TitleLongTouchDetector(element, callback) {
-    this.callback_ = callback;
+  class TitleLongTouchDetector {
+    constructor(element, callback) {
+      this.callback_ = callback;
+      /**
+       * This is timeout ID used to kill window timeout that fires "detected"
+       * callback if touch event was cancelled.
+       *
+       * @private {number|null}
+       */
+      this.timeoutId_ = null;
 
-    element.addEventListener('touchstart', this.onTouchStart_.bind(this));
-    element.addEventListener('touchend', this.killTimer_.bind(this));
-    element.addEventListener('touchcancel', this.killTimer_.bind(this));
+      element.addEventListener('touchstart', this.onTouchStart_.bind(this));
+      element.addEventListener('touchend', this.killTimer_.bind(this));
+      element.addEventListener('touchcancel', this.killTimer_.bind(this));
 
-    element.addEventListener('mousedown', this.onTouchStart_.bind(this));
-    element.addEventListener('mouseup', this.killTimer_.bind(this));
-    element.addEventListener('mouseleave', this.killTimer_.bind(this));
-  }
-
-  TitleLongTouchDetector.prototype = {
-    /**
-     * This is timeout ID used to kill window timeout that fires "detected"
-     * callback if touch event was cancelled.
-     *
-     * @private {number|null}
-     */
-    timeoutId_: null,
+      element.addEventListener('mousedown', this.onTouchStart_.bind(this));
+      element.addEventListener('mouseup', this.killTimer_.bind(this));
+      element.addEventListener('mouseleave', this.killTimer_.bind(this));
+    }
 
     /**
      *  window.setTimeout() callback.
@@ -34,16 +33,16 @@
     onTimeout_() {
       this.killTimer_();
       this.callback_();
-    },
+    }
 
     /**
      * @private
      */
     onTouchStart_() {
       this.killTimer_();
-      this.timeoutId_ = window.setTimeout(
-          this.onTimeout_.bind(this, this.attempt_), LONG_TOUCH_TIME_MS);
-    },
+      this.timeoutId_ =
+          window.setTimeout(this.onTimeout_.bind(this), LONG_TOUCH_TIME_MS);
+    }
 
     /**
      * @private
@@ -54,8 +53,8 @@
 
       window.clearTimeout(this.timeoutId_);
       this.timeoutId_ = null;
-    },
-  };
+    }
+  }
 
   const VIDEO_DEVICE = {
     CHROMEBOX: 'chromebox',
@@ -331,12 +330,21 @@
         },
         readOnly: true,
       },
+
+      osInstallEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('osInstallEnabled') &&
+              loadTimeData.getBoolean('osInstallEnabled');
+        },
+        readOnly: true,
+      },
     },
 
     onBeforeShow() {
       if (this.isNewLayout_) {
         document.documentElement.setAttribute('new-layout', '');
-        this.$.newWelcomeAnimation.setPlay(true);
+        this.setVideoPlay_(true);
       } else {
         this.$.oldDialog.onBeforeShow();
       }
@@ -405,6 +413,10 @@
       this.fire('next-button-clicked');
     },
 
+    onOsInstallClicked_() {
+      this.fire('os-install-clicked');
+    },
+
     onDebuggingLinkClicked_() {
       this.fire('enable-debugging-clicked');
     },
@@ -419,11 +431,13 @@
     },
 
     attached() {
-      this.welcomeVideoController_ = new WelcomeVideoController(
-          this.getVideoDeviceType_(), this.getVideoOrientationType_());
-      let videos = Polymer.dom(this.root).querySelectorAll('video');
-      for (let video of videos)
-        this.welcomeVideoController_.add(video);
+      if (!this.isNewLayout_) {
+        this.welcomeVideoController_ = new WelcomeVideoController(
+            this.getVideoDeviceType_(), this.getVideoOrientationType_());
+        let videos = Polymer.dom(this.root).querySelectorAll('video');
+        for (let video of videos)
+          this.welcomeVideoController_.add(video);
+      }
 
       this.titleLongTouchDetector_ = new TitleLongTouchDetector(
           this.isNewLayout_ ? this.$.newTitle : this.$.title,
@@ -460,15 +474,32 @@
       let visible = !newValue;
       if (visible) {
         this.focus();
-        this.welcomeVideoController_.play();
-      } else {
-        // Pause the welcome video to avoid using resources while
-        // this page is not visible
-        this.welcomeVideoController_.pause();
       }
 
-      if (this.isNewLayout_ && !this.isMeet_)
-        this.$.newWelcomeAnimation.setPlay(visible);
+      this.setVideoPlay_(visible);
+    },
+
+    /**
+     * Play or pause welcome video.
+     * @param Boolean play - whether play or pause welcome video.
+     * @private
+     */
+    setVideoPlay_(play) {
+      if (this.isNewLayout_) {
+        if (this.isMeet_)
+          return;
+        this.$.newWelcomeAnimation.setPlay(play);
+        return;
+      }
+
+      if (!this.welcomeVideoController_)
+        return;
+
+      if (play) {
+        this.welcomeVideoController_.play();
+      } else {
+        this.welcomeVideoController_.pause();
+      }
     },
 
     /**
@@ -495,14 +526,14 @@
      */
     showChromeVoxHint() {
       this.$.chromeVoxHint.showDialog();
-      this.welcomeVideoController_.pause();
+      this.setVideoPlay_(false);
     },
 
     /**
      * Called to close the ChromeVox hint dialog.
      */
     closeChromeVoxHint() {
-      this.welcomeVideoController_.play();
+      this.setVideoPlay_(true);
       this.$.chromeVoxHint.hideDialog();
     },
 

@@ -43,7 +43,6 @@
 #include "third_party/blink/public/common/widget/screen_infos.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -167,9 +166,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   bool TabsToLinks() override { return false; }
 
-  void InvalidateRect(const IntRect&) override {}
+  void InvalidateContainer() override {}
   void ScheduleAnimation(const LocalFrameView*,
-                         base::TimeDelta = base::TimeDelta()) override {}
+                         base::TimeDelta delay) override {}
   IntRect ViewportToScreen(const IntRect& r,
                            const LocalFrameView*) const override {
     return r;
@@ -185,7 +184,13 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
   void ShowMouseOverURL(const HitTestResult&) override {}
-  void SetToolTip(LocalFrame&, const String&, TextDirection) override {}
+  void UpdateTooltipUnderCursor(LocalFrame&,
+                                const String&,
+                                TextDirection) override {}
+  void UpdateTooltipFromKeyboard(LocalFrame&,
+                                 const String&,
+                                 TextDirection,
+                                 const gfx::Rect&) override {}
   void PrintDelegate(LocalFrame*) override {}
   ColorChooser* OpenColorChooser(LocalFrame*,
                                  ColorChooserClient*,
@@ -281,9 +286,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,
-      const base::Optional<WebImpression>&,
+      const absl::optional<WebImpression>&,
       network::mojom::IPAddressSpace,
       const LocalFrameToken* initiator_frame_token,
+      std::unique_ptr<SourceLocation>,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>)
       override;
 
@@ -303,7 +309,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override {}
 
   String UserAgent() override { return ""; }
-  base::Optional<blink::UserAgentMetadata> UserAgentMetadata() override {
+  absl::optional<blink::UserAgentMetadata> UserAgentMetadata() override {
     return blink::UserAgentMetadata();
   }
 
@@ -407,7 +413,7 @@ class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {
   DISALLOW_COPY_AND_ASSIGN(EmptySpellCheckPanelHostClient);
 };
 
-CORE_EXPORT void FillWithEmptyClients(Page::PageClients&);
+CORE_EXPORT ChromeClient& GetStaticEmptyChromeClientInstance();
 
 }  // namespace blink
 

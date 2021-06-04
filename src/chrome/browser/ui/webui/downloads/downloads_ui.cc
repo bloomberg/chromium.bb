@@ -17,7 +17,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
@@ -135,6 +134,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_BLOCK_REASON_MIXED_CONTENT);
   source->AddLocalizedString("asyncScanningDownloadDesc",
                              IDS_BLOCK_REASON_DEEP_SCANNING);
+  source->AddLocalizedString("accountCompromiseDownloadDesc",
+                             IDS_BLOCK_REASON_ACCOUNT_COMPROMISE);
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
 
@@ -183,8 +184,9 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
-  base::UmaHistogramEnumeration("Download.OpenDownloads.PerProfileType",
-                                ProfileMetrics::GetBrowserProfileType(profile));
+  base::UmaHistogramEnumeration(
+      "Download.OpenDownloads.PerProfileType",
+      profile_metrics::GetBrowserProfileType(profile));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(DownloadsUI)
@@ -210,7 +212,7 @@ void DownloadsUI::CreatePageHandler(
     mojo::PendingReceiver<downloads::mojom::PageHandler> receiver) {
   DCHECK(page);
   Profile* profile = Profile::FromWebUI(web_ui());
-  DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
+  DownloadManager* dlm = profile->GetDownloadManager();
 
   page_handler_ = std::make_unique<DownloadsDOMHandler>(
       std::move(receiver), std::move(page), dlm, web_ui());

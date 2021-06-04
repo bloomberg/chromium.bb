@@ -19,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -97,7 +96,6 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
@@ -116,6 +114,8 @@
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
+#include "services/network/web_transport.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
@@ -468,11 +468,11 @@ NetworkContext::NetworkContext(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
       receiver_(this, std::move(receiver)),
-      cookie_manager_(std::make_unique<CookieManager>(
-          url_request_context,
-          nullptr,
-          nullptr /* preloaded_first_party_sets */,
-          nullptr)),
+      cookie_manager_(
+          std::make_unique<CookieManager>(url_request_context,
+                                          nullptr,
+                                          nullptr /* first_party_sets */,
+                                          nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
                                           url_request_context)),
@@ -577,11 +577,11 @@ void NetworkContext::SetClient(
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-      params->process_id, ++current_resource_scheduler_client_id_,
-      resource_scheduler_.get(),
-      url_request_context_->network_quality_estimator());
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
+      base::MakeRefCounted<ResourceSchedulerClient>(
+          params->process_id, ++current_resource_scheduler_client_id_,
+          resource_scheduler_.get(),
+          url_request_context_->network_quality_estimator());
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -623,7 +623,7 @@ void NetworkContext::GetHasTrustTokensAnswerer(
   // non-null.
   DCHECK(trust_token_store_);
 
-  base::Optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
+  absl::optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
       SuitableTrustTokenOrigin::Create(top_frame_origin);
 
   // It's safe to dereference |suitable_top_frame_origin| here as, during the
@@ -667,7 +667,7 @@ void NetworkContext::DeleteStoredTrustTokens(
     return;
   }
 
-  base::Optional<SuitableTrustTokenOrigin> suitable_issuer_origin =
+  absl::optional<SuitableTrustTokenOrigin> suitable_issuer_origin =
       SuitableTrustTokenOrigin::Create(issuer);
   if (!suitable_issuer_origin) {
     std::move(callback).Run(
@@ -706,10 +706,10 @@ void NetworkContext::DestroyURLLoaderFactory(
   url_loader_factories_.erase(it);
 }
 
-void NetworkContext::Remove(QuicTransport* transport) {
-  auto it = quic_transports_.find(transport);
-  if (it != quic_transports_.end()) {
-    quic_transports_.erase(it);
+void NetworkContext::Remove(WebTransport* transport) {
+  auto it = web_transports_.find(transport);
+  if (it != web_transports_.end()) {
+    web_transports_.erase(it);
   }
 }
 
@@ -887,7 +887,7 @@ void NetworkContext::QueueReport(
     const std::string& group,
     const GURL& url,
     const net::NetworkIsolationKey& network_isolation_key,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     base::Value body) {
   if (require_network_isolation_key_)
     DCHECK(!network_isolation_key.IsEmpty());
@@ -974,7 +974,7 @@ void NetworkContext::QueueReport(
     const std::string& group,
     const GURL& url,
     const net::NetworkIsolationKey& network_isolation_key,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     base::Value body) {
   NOTREACHED();
 }
@@ -1249,7 +1249,7 @@ void NetworkContext::CreateTCPServerSocket(
 }
 
 void NetworkContext::CreateTCPConnectedSocket(
-    const base::Optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -1346,16 +1346,16 @@ void NetworkContext::CreateWebSocket(
 #endif  // !defined(OS_IOS)
 }
 
-void NetworkContext::CreateQuicTransport(
+void NetworkContext::CreateWebTransport(
     const GURL& url,
     const url::Origin& origin,
     const net::NetworkIsolationKey& key,
-    std::vector<mojom::QuicTransportCertificateFingerprintPtr> fingerprints,
-    mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
+    std::vector<mojom::WebTransportCertificateFingerprintPtr> fingerprints,
+    mojo::PendingRemote<mojom::WebTransportHandshakeClient>
         pending_handshake_client) {
-  quic_transports_.insert(
-      std::make_unique<QuicTransport>(url, origin, key, fingerprints, this,
-                                      std::move(pending_handshake_client)));
+  web_transports_.insert(
+      std::make_unique<WebTransport>(url, origin, key, fingerprints, this,
+                                     std::move(pending_handshake_client)));
 }
 
 void NetworkContext::CreateNetLogExporter(
@@ -1380,7 +1380,7 @@ void NetworkContext::ResolveHost(
 }
 
 void NetworkContext::CreateHostResolver(
-    const base::Optional<net::DnsConfigOverrides>& config_overrides,
+    const absl::optional<net::DnsConfigOverrides>& config_overrides,
     mojo::PendingReceiver<mojom::HostResolver> receiver) {
   net::HostResolver* internal_resolver = url_request_context_->host_resolver();
   std::unique_ptr<net::HostResolver> private_internal_resolver;
@@ -1397,6 +1397,8 @@ void NetworkContext::CreateHostResolver(
     // now, much easier to create entirely separate net::HostResolver instances.
     net::HostResolver::ManagerOptions options;
     options.insecure_dns_client_enabled = true;
+    // Assume additional types are unnecessary for these special cases.
+    options.additional_types_via_insecure_dns_enabled = false;
     options.dns_config_overrides = config_overrides.value();
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
@@ -1788,7 +1790,7 @@ void NetworkContext::LookupServerBasicAuthCredentials(
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1800,7 +1802,7 @@ void NetworkContext::LookupProxyAuthCredentials(
   net::HttpAuth::Scheme net_scheme =
       net::HttpAuth::StringToScheme(base::ToLowerASCII(auth_scheme));
   if (net_scheme == net::HttpAuth::Scheme::AUTH_SCHEME_MAX) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   net::HttpAuthCache* http_auth_cache =
@@ -1813,7 +1815,7 @@ void NetworkContext::LookupProxyAuthCredentials(
       proxy_server.is_secure_http_like() ? "https://" : "http://";
   GURL proxy_url(scheme + proxy_server.host_port_pair().ToString());
   if (!proxy_url.is_valid()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -1825,7 +1827,7 @@ void NetworkContext::LookupProxyAuthCredentials(
   if (entry)
     std::move(callback).Run(entry->credentials());
   else
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
 }
 #endif
 
@@ -1833,9 +1835,9 @@ const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
   return &http_auth_merged_preferences_;
 }
 
-size_t NetworkContext::NumOpenQuicTransports() const {
-  return std::count_if(quic_transports_.begin(), quic_transports_.end(),
-                       [](const std::unique_ptr<QuicTransport>& transport) {
+size_t NetworkContext::NumOpenWebTransports() const {
+  return std::count_if(web_transports_.begin(), web_transports_.end(),
+                       [](const std::unique_ptr<WebTransport>& transport) {
                          return !transport->torn_down();
                        });
 }

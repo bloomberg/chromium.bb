@@ -14,9 +14,7 @@
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/qpack/qpack_encoder_peer.h"
 #include "quic/test_tools/qpack/qpack_encoder_test_utils.h"
-#include "quic/test_tools/qpack/qpack_header_table_peer.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
-#include "common/platform/api/quiche_text_utils.h"
 
 using ::testing::_;
 using ::testing::Eq;
@@ -186,7 +184,8 @@ TEST_F(QpackEncoderTest, TooLargeInsertCountIncrement) {
 
 // Regression test for https://crbug.com/1014372.
 TEST_F(QpackEncoderTest, InsertCountIncrementOverflow) {
-  QpackHeaderTable* header_table = QpackEncoderPeer::header_table(&encoder_);
+  QpackEncoderHeaderTable* header_table =
+      QpackEncoderPeer::header_table(&encoder_);
 
   // Set dynamic table capacity large enough to hold one entry.
   header_table->SetMaximumDynamicTableCapacity(4096);
@@ -461,11 +460,11 @@ TEST_F(QpackEncoderTest, DynamicTableCapacityLessThanMaximum) {
   encoder_.SetMaximumDynamicTableCapacity(1024);
   encoder_.SetDynamicTableCapacity(30);
 
-  QpackHeaderTable* header_table = QpackEncoderPeer::header_table(&encoder_);
+  QpackEncoderHeaderTable* header_table =
+      QpackEncoderPeer::header_table(&encoder_);
 
-  EXPECT_EQ(1024u,
-            QpackHeaderTablePeer::maximum_dynamic_table_capacity(header_table));
-  EXPECT_EQ(30u, QpackHeaderTablePeer::dynamic_table_capacity(header_table));
+  EXPECT_EQ(1024u, header_table->maximum_dynamic_table_capacity());
+  EXPECT_EQ(30u, header_table->dynamic_table_capacity());
 }
 
 }  // namespace

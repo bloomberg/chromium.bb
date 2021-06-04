@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -22,6 +21,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 class SaveCardOfferObserver;
@@ -269,6 +269,9 @@ class CreditCardSaveManager {
   // |AutofillMetrics::CardUploadDecisionMetric|.
   void LogCardUploadDecisions(int upload_decision_metrics);
 
+  // Logs the card upload decisions bitmask to chrome://autofill-internals.
+  void LogCardUploadDecisionsToAutofillInternals(int upload_decision_metrics);
+
   // Logs the reason why expiration date was explicitly requested.
   void LogSaveCardRequestExpirationDateReasonMetric();
 
@@ -280,13 +283,13 @@ class CreditCardSaveManager {
   AutofillClient* const client_;
 
   // Handles Payments service requests.
-  // Owned by AutofillManager.
+  // Owned by BrowserAutofillManager.
   payments::PaymentsClient* payments_client_;
 
   std::string app_locale_;
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  This is overridden by the AutofillManagerTest.
+  // web database.  This is overridden by the BrowserAutofillManagerTest.
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
@@ -303,8 +306,8 @@ class CreditCardSaveManager {
   int upload_decision_metrics_ = 0;
 
   // |true| if the offer-to-save bubble/infobar should pop-up, |false| if not.
-  // Will be base::nullopt until data has been retrieved from the StrikeSystem.
-  base::Optional<bool> show_save_prompt_;
+  // Will be absl::nullopt until data has been retrieved from the StrikeSystem.
+  absl::optional<bool> show_save_prompt_;
 
   // |true| if the card being offered for upload is already a local card on the
   // device; |false| otherwise.

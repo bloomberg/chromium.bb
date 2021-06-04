@@ -33,10 +33,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
@@ -86,6 +86,7 @@ class ApplicationCacheHostForFrame;
 class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
+class Frame;
 class FrameLoader;
 class HistoryItem;
 class LocalDOMWindow;
@@ -153,7 +154,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const AtomicString& HttpMethod() const;
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
-  const base::Optional<blink::mojom::FetchCacheMode>& ForceFetchCacheMode()
+  const absl::optional<blink::mojom::FetchCacheMode>& ForceFetchCacheMode()
       const;
 
   void DidChangePerformanceTiming();
@@ -167,12 +168,16 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       WebFrameLoadType = WebFrameLoadType::kReplaceCurrentItem,
       mojom::blink::ScrollRestorationType =
           mojom::blink::ScrollRestorationType::kAuto);
+
+  // |is_synchronously_committed| is described in comment for
+  // CommitSameDocumentNavigation.
   void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
                                        scoped_refptr<SerializedScriptValue>,
                                        mojom::blink::ScrollRestorationType,
                                        WebFrameLoadType,
-                                       bool is_content_initiated);
+                                       const SecurityOrigin* initiator_origin,
+                                       bool is_synchronously_committed);
 
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
@@ -209,13 +214,20 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
   // cannot commit, true otherwise.
+  // |initiator_origin| is the origin of the document or script that initiated
+  // the navigation or nullptr if the navigation is browser-initiated (e.g.
+  // typed in omnibox).
+  // |is_synchronously_committed| is true if the navigation is synchronously
+  // committed from within Blink, rather than being driven by the browser's
+  // navigation stack.
   mojom::CommitResult CommitSameDocumentNavigation(
       const KURL&,
       WebFrameLoadType,
       HistoryItem*,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
-      LocalDOMWindow* origin_window,
+      const SecurityOrigin* initiator_origin,
+      bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
@@ -303,7 +315,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // navigation was started using the history API in the renderer.
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
 
-  bool IsSameOriginNavigation() const { return is_same_origin_navigation_; }
+  bool LastNavigationHadTrustedInitiator() const {
+    return last_navigation_had_trusted_initiator_;
+  }
 
   void UpdateUrlForDocumentOpen(const KURL& url) { url_ = url; }
 
@@ -370,6 +384,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   Member<MHTMLArchive> archive_;
 
  private:
+  Frame* CalculateOwnerFrame();
   scoped_refptr<SecurityOrigin> CalculateOrigin(Document* owner_document);
   void InitializeWindow(Document* owner_document);
   void DidInstallNewDocument(Document*);
@@ -386,7 +401,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       HistoryItem*,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
-      bool is_content_initiated,
+      const SecurityOrigin* initiator_origin,
+      bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
@@ -430,7 +446,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                            int64_t total_encoded_body_length,
                            int64_t total_decoded_body_length,
                            bool should_report_corb_blocking,
-                           const base::Optional<WebURLError>& error) override;
+                           const absl::optional<WebURLError>& error) override;
 
   void ApplyClientHintsConfig(
       const WebVector<network::mojom::WebClientHintsType>&
@@ -472,13 +488,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
   PreviewsState previews_state_;
-  base::Optional<WebOriginPolicy> origin_policy_;
+  absl::optional<WebOriginPolicy> origin_policy_;
   const scoped_refptr<const SecurityOrigin> requestor_origin_;
   const KURL unreachable_url_;
   const KURL pre_redirect_url_for_failed_navigations_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
   const bool grant_load_local_resources_ = false;
-  const base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
+  const absl::optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
   const FramePolicy frame_policy_;
 
   Member<LocalFrame> frame_;
@@ -547,6 +563,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // committed in this DocumentLoader had transient activation.
   bool last_navigation_had_transient_user_activation_ = false;
 
+  // Whether the last navigation (cross-document or same-document) that
+  // committed in this DocumentLoader was initiated from the same-origin as the
+  // current document or was browser-initiated.
+  bool last_navigation_had_trusted_initiator_ = false;
+
   // Whether this load request comes with a sitcky user activation.
   const bool had_sticky_activation_ = false;
 
@@ -555,9 +576,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Whether this loader is working for a prerendering document.
   bool is_prerendering_ = false;
-
-  // Whether this load request was initiated by the same origin.
-  bool is_same_origin_navigation_ = false;
 
   // If true, the navigation loading this document should allow a text fragment
   // to invoke. This token may be instead consumed to pass this permission
@@ -606,8 +624,12 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   bool origin_agent_cluster_ = false;
 
-  // Whether this load request is cross browsing context group.
-  bool is_cross_browsing_context_group_navigation_ = false;
+  // Whether this load request is from a cross-site navigation that swaps
+  // BrowsingContextGroup.
+  bool is_cross_site_cross_browsing_context_group_ = false;
+
+  WebVector<WebHistoryItem> app_history_back_entries_;
+  WebVector<WebHistoryItem> app_history_forward_entries_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

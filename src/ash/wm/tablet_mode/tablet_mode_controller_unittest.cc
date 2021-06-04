@@ -49,6 +49,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_utils.h"
@@ -1460,7 +1461,7 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->SetEnabledForTest(true);
   app_list_controller->ShowAppList();
 
-  EXPECT_FALSE(app_list_controller->IsVisible(base::nullopt));
+  EXPECT_FALSE(app_list_controller->IsVisible(absl::nullopt));
 }
 
 // Test that if both the active window and the previous window are snapped on

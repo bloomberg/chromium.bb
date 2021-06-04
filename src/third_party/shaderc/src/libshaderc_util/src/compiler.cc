@@ -264,6 +264,9 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
   shader.setPreamble(preamble.c_str());
   shader.setEntryPoint(entry_point_name);
   shader.setAutoMapBindings(auto_bind_uniforms_);
+  if (auto_combined_image_sampler_) {
+    shader.setTextureSamplerTransformMode(EShTexSampTransUpgradeTextureRemoveSampler);
+  }
   shader.setAutoMapLocations(auto_map_locations_);
   const auto& bases = auto_binding_base_[static_cast<int>(used_shader_stage)];
   shader.setShiftImageBinding(bases[static_cast<int>(UniformKind::Image)]);

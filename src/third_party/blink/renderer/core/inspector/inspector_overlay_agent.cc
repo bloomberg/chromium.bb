@@ -287,6 +287,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
   }
 
   void Invalidate() override {
+    overlay_->GetFrame()->View()->SetVisualViewportOrOverlayNeedsRepaint();
     if (layer_)
       layer_->SetNeedsDisplay();
   }
@@ -334,11 +335,12 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
     client_->SetCursorOverridden(true);
   }
 
-  void SetToolTip(LocalFrame& frame,
-                  const String& tooltip,
-                  TextDirection direction) override {
+  void UpdateTooltipUnderCursor(LocalFrame& frame,
+                                const String& tooltip,
+                                TextDirection direction) override {
     DCHECK_EQ(&frame, overlay_->OverlayMainFrame());
-    client_->SetToolTip(*overlay_->GetFrame(), tooltip, direction);
+    client_->UpdateTooltipUnderCursor(*overlay_->GetFrame(), tooltip,
+                                      direction);
   }
 
  private:
@@ -515,8 +517,6 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
   cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
   debug_state.show_paint_rects = show;
   widget->SetLayerTreeDebugState(debug_state);
-  if (!show && frame_impl_->GetFrameView())
-    frame_impl_->GetFrameView()->Invalidate();
   return Response::Success();
 }
 
@@ -531,9 +531,6 @@ Response InspectorOverlayAgent::setShowLayoutShiftRegions(bool show) {
   cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
   debug_state.show_layout_shift_regions = show;
   widget->SetLayerTreeDebugState(debug_state);
-
-  if (!show && frame_impl_->GetFrameView())
-    frame_impl_->GetFrameView()->Invalidate();
   return Response::Success();
 }
 
@@ -551,7 +548,6 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
   debug_state.show_non_fast_scrollable_rects = show;
   debug_state.show_main_thread_scrolling_reason_rects = show;
   widget->SetLayerTreeDebugState(debug_state);
-
   return Response::Success();
 }
 
@@ -1053,16 +1049,18 @@ void InspectorOverlayAgent::PaintOverlayPage() {
     return;
 
   LocalFrame* overlay_frame = OverlayMainFrame();
-  // To make overlay render the same size text with any emulation scale,
-  // compensate the emulation scale using page scale.
-  float emulation_scale =
-      frame->GetPage()->GetChromeClient().InputEventsScaleForEmulation();
   IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
-  viewport_size.Scale(emulation_scale);
-  overlay_page_->GetVisualViewport().SetSize(viewport_size);
-  overlay_page_->SetDefaultPageScaleLimits(1 / emulation_scale,
-                                           1 / emulation_scale);
-  overlay_page_->GetVisualViewport().SetScale(1 / emulation_scale);
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // To make overlay render the same size text with any emulation scale,
+    // compensate the emulation scale using page scale.
+    float emulation_scale =
+        frame->GetPage()->GetChromeClient().InputEventsScaleForEmulation();
+    viewport_size.Scale(emulation_scale);
+    overlay_page_->GetVisualViewport().SetSize(viewport_size);
+    overlay_page_->SetDefaultPageScaleLimits(1 / emulation_scale,
+                                             1 / emulation_scale);
+    overlay_page_->GetVisualViewport().SetScale(1 / emulation_scale);
+  }
   overlay_frame->SetPageZoomFactor(WindowToViewportScale());
   overlay_frame->View()->Resize(viewport_size);
 
@@ -1110,14 +1108,12 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
   DCHECK(!overlay_chrome_client_);
   overlay_chrome_client_ = MakeGarbageCollected<InspectorOverlayChromeClient>(
       GetFrame()->GetPage()->GetChromeClient(), *this);
-  page_clients.chrome_client = overlay_chrome_client_.Get();
   overlay_page_ = Page::CreateNonOrdinary(
-      page_clients, *GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
+      *overlay_chrome_client_,
+      *GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
   overlay_host_ = MakeGarbageCollected<InspectorOverlayHost>(this);
 
   Settings& settings = GetFrame()->GetPage()->GetSettings();
@@ -1167,6 +1163,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   ScriptState* script_state = ToScriptStateForMainWorld(frame);
   DCHECK(script_state);
   ScriptState::Scope scope(script_state);
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::Object> global = script_state->GetContext()->Global();
   v8::Local<v8::Value> overlay_host_obj =
       ToV8(overlay_host_.Get(), global, isolate);
@@ -1623,12 +1621,12 @@ InspectorOverlayAgent::ToFlexItemHighlightConfig(
 }
 
 // static
-base::Optional<LineStyle> InspectorOverlayAgent::ToLineStyle(
+absl::optional<LineStyle> InspectorOverlayAgent::ToLineStyle(
     protocol::Overlay::LineStyle* config) {
   if (!config) {
-    return base::nullopt;
+    return absl::nullopt;
   }
-  base::Optional<LineStyle> line_style = LineStyle();
+  absl::optional<LineStyle> line_style = LineStyle();
   line_style->color = InspectorDOMAgent::ParseColor(config->getColor(nullptr));
   line_style->pattern = config->getPattern("solid");
 
@@ -1636,12 +1634,12 @@ base::Optional<LineStyle> InspectorOverlayAgent::ToLineStyle(
 }
 
 // static
-base::Optional<BoxStyle> InspectorOverlayAgent::ToBoxStyle(
+absl::optional<BoxStyle> InspectorOverlayAgent::ToBoxStyle(
     protocol::Overlay::BoxStyle* config) {
   if (!config) {
-    return base::nullopt;
+    return absl::nullopt;
   }
-  base::Optional<BoxStyle> box_style = BoxStyle();
+  absl::optional<BoxStyle> box_style = BoxStyle();
   box_style->fill_color =
       InspectorDOMAgent::ParseColor(config->getFillColor(nullptr));
   box_style->hatch_color =

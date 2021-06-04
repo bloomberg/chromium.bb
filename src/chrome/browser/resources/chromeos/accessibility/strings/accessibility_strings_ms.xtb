@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Leret dua jari ke atas</translation>
 <translation id="1126928665165112660">Bukan huruf condong</translation>
 <translation id="113582498867142724">Koleksi <ph name="TAG" /> dengan <ph name="NUM" /> item</translation>
+<translation id="1146441463334103638">Hidupkan atau matikan skrin</translation>
 <translation id="1156488781945104845">Masa semasa</translation>
 <translation id="1161762950103988776">Langkau</translation>
 <translation id="1164857107703583584">Perintah lompat boleh digunakan untuk menavigasi halaman web dengan cekap.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">URL Pautan: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Undur satu aksara ke belakang</translation>
 <translation id="2220529011494928058">Laporkan isu</translation>
+<translation id="2243633977138166243">Tekan anak panah ke kiri atau kanan untuk menavigasi; enter untuk mengaktifkan</translation>
 <translation id="224426591676115802">Tiada suara yang tersedia untuk bahasa: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Menghentikan Mod Belajar</translation>
 <translation id="225732394367814946">Tingkatkan kadar pertuturan</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">Hijau Pucuk Pisang</translation>
 <translation id="2684412629217766642">Tutup Tutorial ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">Calon penukaran teks</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{tanda kurung buka}other{# tanda kurung buka}}</translation>
+<translation id="270523456882008230">Pembayang: Ketik dua kali dengan satu jari untuk mengaktifkan item semasa.</translation>
 <translation id="2705875883745373140">Tidak ditekan</translation>
 <translation id="2708078563826046398">Paf Pic</translation>
 <translation id="2713444072780614174">Putih</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Anda juga boleh leret satu jari dari kanan ke kiri untuk beralih ke item sebelumnya. Cubalah sekarang.</translation>
 <translation id="280499067616661124">Cari dalam halaman Chromevox</translation>
-<translation id="2808001342598757276">Terangkan skrin</translation>
 <translation id="2811019999044652585">Untuk melompat ke bahagian lain dalam skrin itu, misalnya bar alat atau dulang sistem, tekan Control + Forward. Pada Chromebook, kekunci Forward berada betul-betul di atas kekunci nombor 2.</translation>
 <translation id="2811204574343810641">Baris</translation>
 <translation id="2816868829355607410">Kawasan latihan: Perintah lompat</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Petua alat</translation>
 <translation id="2976476721782829799">Anda juga boleh bergerak ke sana sini dengan menyeret satu jari pada skrin. Ciri ini dipanggil penerokaan melalui sentuhan. Cuba seret jari anda pada skrin untuk membaca bahagian yang selebihnya bagi pelajaran ini.</translation>
 <translation id="297825089465017871">Leret dua jari ke kiri</translation>
+<translation id="2988364959384217951">Pembayang: Leret dari kanan ke kiri dengan dua jari jika anda ingin keluar daripada tutorial ini.</translation>
 <translation id="2998131015536248178">Aksara Sebelumnya</translation>
 <translation id="2999559350546931576">Kurangkan nada</translation>
 <translation id="3009352964623081324">Cari + O, kemudian S. Gunakan untuk memasang, mengurus dan menyesuaikan suara.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Tatal ke belakang</translation>
 <translation id="3084806535845658316">tiada gema penaipan</translation>
 <translation id="3086746722712840547">nota</translation>
+<translation id="308736057934395497">Tindakan ini meningkatkan privasi dengan mematikan skrin anda agar tidak kelihatan kepada orang lain. Anda boleh menghidupkan semula skrin pada bila-bila masa dengan menekan kekunci Carian + Tingkatkan kecerahan.</translation>
 <translation id="3090227230165225418">Umumkan pemberitahuan muat turun</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Mercu tanda seterusnya</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Diruntuhkan</translation>
 <translation id="311015743332597320">Leret empat jari ke kanan</translation>
 <translation id="3112457281078985179">Untuk menghidupkan atau mematikan ChromeVox, gunakan Control+Alt+Z.</translation>
+<translation id="3115800313647508384">Matikan skrin?</translation>
 <translation id="3131002934070407451">Baca nombor sebagai:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Hijau Buah Zaitun</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Kelabu Cerah</translation>
 <translation id="6036135911048686884">Sentuh Teroka</translation>
 <translation id="6037602951055904232">Sorot ke hadapan</translation>
-<translation id="6044160928851315051">Gelapkan skrin</translation>
 <translation id="6082768461603900813">Navigasi Asas</translation>
 <translation id="609281021724813947">Tiada peluncur sebelumnya</translation>
 <translation id="6100239002225743044">Beralih satu baris ke atas</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Kata penghantar</translation>
 <translation id="6697092096875747123">Kotak kombo sebelumnya</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{tanda seru}other{# tanda seru}}</translation>
+<translation id="670717715607710284">Matikan skrin</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6714813999819678458">Tajuk tahap 2 sebelumnya</translation>
 <translation id="6730312624811567147">Gunakan Cari Kiri atau Kanan untuk Home atau End, Cari Control Kiri atau Kanan untuk Control Home atau End, Cari Atas atau Bawah untuk Page Up atau Down</translation>
@@ -939,6 +945,7 @@
 <translation id="7776293189010177726">Buka menu ChromeVox</translation>
 <translation id="7799302833060027366">Tekan ke atas, ke bawah, ke kiri atau ke kanan untuk menerokai matematik</translation>
 <translation id="7800558923657349506">Epilog</translation>
+<translation id="7801768143868631306">Pembayang: Leret ke kiri atau kanan dengan satu jari untuk menavigasi.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Kumpulan Seterusnya</translation>
 <translation id="7813616274030162878">Menu Akses Suis</translation>
@@ -992,6 +999,7 @@
 <translation id="816818801578874684">Ini ialah tajuk yang pertama. Tekan Carian + H untuk pergi ke tajuk seterusnya.</translation>
 <translation id="8173092779156526980">Leret empat jari ke kiri</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
+<translation id="817529114347680055">Hidupkan skrin</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">baris</translation>
 <translation id="8186185314313222077">togol skrin penuh</translation>
@@ -1014,7 +1022,6 @@
 <translation id="8316881042119029234">Renda Lama</translation>
 <translation id="8324974933005349667">Peribadikan tetapan Teks ke Pertuturan</translation>
 <translation id="8326783648485765113">Hijau Laman</translation>
-<translation id="8328063869313048659">Togol skrin gelap</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{paun}other{# tanda paun}}</translation>
 <translation id="8378855320830505539">Wilayah</translation>
 <translation id="8382679411218029383">Autolengkap sebaris dan senarai</translation>

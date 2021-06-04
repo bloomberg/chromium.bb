@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_VIDEO_CAPTURE_CAPTURABLE_FRAME_SINK_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_VIDEO_CAPTURE_CAPTURABLE_FRAME_SINK_H_
 
-#include <memory>
-
 #include "base/time/time.h"
 #include "components/viz/service/surfaces/pending_copy_output_request.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,6 +52,10 @@ class CapturableFrameSink {
   // appropriate.
   virtual void AttachCaptureClient(Client* client) = 0;
   virtual void DetachCaptureClient(Client* client) = 0;
+
+  // Called when a video capture client starts or stops capturing.
+  virtual void OnClientCaptureStarted() = 0;
+  virtual void OnClientCaptureStopped() = 0;
 
   // Returns the currently-active frame size, or an empty size if there is no
   // active frame.

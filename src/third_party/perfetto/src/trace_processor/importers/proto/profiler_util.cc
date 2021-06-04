@@ -17,6 +17,7 @@
 #include "src/trace_processor/importers/proto/profiler_util.h"
 
 #include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
@@ -92,9 +93,9 @@ base::Optional<std::string> PackageFromLocation(TraceStorage* storage,
     return "com.google.android.apps.wellbeing";
   }
 
-  base::StringView matchmaker("MatchMaker");
-  if (location.size() >= matchmaker.size() &&
-      location.find(matchmaker) != base::StringView::npos) {
+  if (location.find("DevicePersonalizationPrebuilt") !=
+          base::StringView::npos ||
+      location.find("MatchMaker") != base::StringView::npos) {
     return "com.google.android.as";
   }
 
@@ -144,13 +145,13 @@ std::string FullyQualifiedDeobfuscatedName(
     protos::pbzero::ObfuscatedMember::Decoder& member) {
   std::string member_deobfuscated_name =
       member.deobfuscated_name().ToStdString();
-  if (member_deobfuscated_name.find('.') == std::string::npos) {
+  if (base::Contains(member_deobfuscated_name, '.')) {
+    // Fully qualified name.
+    return member_deobfuscated_name;
+  } else {
     // Name relative to class.
     return cls.deobfuscated_name().ToStdString() + "." +
            member_deobfuscated_name;
-  } else {
-    // Fully qualified name.
-    return member_deobfuscated_name;
   }
 }
 

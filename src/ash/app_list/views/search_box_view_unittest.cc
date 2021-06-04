@@ -25,7 +25,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -92,9 +91,9 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   }
 
   void TearDown() override {
-    view_.reset();
     app_list_view_->GetWidget()->Close();
     widget_->CloseNow();
+    view_.reset();
     views::test::WidgetTest::TearDown();
   }
 
@@ -320,7 +319,7 @@ TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreChanging) {
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      view()->contents_view()->search_results_page_view();
+      view()->contents_view()->search_result_page_view();
 
   const SearchResultBaseView* selection =
       result_page_view->result_selection_controller()->selected_result();
@@ -373,7 +372,7 @@ TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreBeingRemoved) {
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      view()->contents_view()->search_results_page_view();
+      view()->contents_view()->search_result_page_view();
 
   const SearchResultBaseView* selection =
       result_page_view->result_selection_controller()->selected_result();
@@ -422,7 +421,7 @@ TEST_F(SearchBoxViewTest, UserSelectionNotOverridenByNewResults) {
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      view()->contents_view()->search_results_page_view();
+      view()->contents_view()->search_result_page_view();
 
   const SearchResultBaseView* selection =
       result_page_view->result_selection_controller()->selected_result();
@@ -501,7 +500,7 @@ TEST_F(SearchBoxViewTest,
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      view()->contents_view()->search_results_page_view();
+      view()->contents_view()->search_result_page_view();
 
   const SearchResultBaseView* selection =
       result_page_view->result_selection_controller()->selected_result();
@@ -575,7 +574,7 @@ TEST_F(SearchBoxViewTest, ResetSelectionAfterResettingSearchBox) {
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      view()->contents_view()->search_results_page_view();
+      view()->contents_view()->search_result_page_view();
 
   // Selection should rest on the first result, which is default.
   const SearchResultBaseView* selection =
@@ -643,7 +642,7 @@ TEST_F(SearchBoxViewTest, NavigateSuggestedContentInfo) {
   view()->set_contents_view(contents_view);
 
   PrivacyContainerView* const privacy_container_view =
-      contents_view->search_results_page_view()
+      contents_view->search_result_page_view()
           ->GetPrivacyContainerViewForTest();
   ASSERT_TRUE(privacy_container_view);
 
@@ -654,7 +653,7 @@ TEST_F(SearchBoxViewTest, NavigateSuggestedContentInfo) {
   base::RunLoop().RunUntilIdle();
 
   SearchResultPageView* const result_page_view =
-      contents_view->search_results_page_view();
+      contents_view->search_result_page_view();
   ResultSelectionController* const selection_controller =
       result_page_view->result_selection_controller();
 
@@ -698,7 +697,7 @@ TEST_F(SearchBoxViewTest, KeyboardEventClosesSuggestedContentInfo) {
   view()->set_contents_view(contents_view);
 
   PrivacyContainerView* const privacy_container_view =
-      contents_view->search_results_page_view()
+      contents_view->search_result_page_view()
           ->GetPrivacyContainerViewForTest();
   ASSERT_TRUE(privacy_container_view);
 
@@ -708,7 +707,7 @@ TEST_F(SearchBoxViewTest, KeyboardEventClosesSuggestedContentInfo) {
                      std::u16string());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(contents_view->search_results_page_view()
+  EXPECT_EQ(contents_view->search_result_page_view()
                 ->result_selection_controller()
                 ->selected_result(),
             privacy_container_view->GetResultViewAt(0));
@@ -729,7 +728,7 @@ TEST_F(SearchBoxViewTest, SuggestedContentActionNotOverriddenByNewResults) {
   view()->set_contents_view(contents_view);
 
   PrivacyContainerView* const privacy_container_view =
-      contents_view->search_results_page_view()
+      contents_view->search_result_page_view()
           ->GetPrivacyContainerViewForTest();
   ASSERT_TRUE(privacy_container_view);
 
@@ -740,7 +739,7 @@ TEST_F(SearchBoxViewTest, SuggestedContentActionNotOverriddenByNewResults) {
   base::RunLoop().RunUntilIdle();
 
   ResultSelectionController* const selection_controller =
-      contents_view->search_results_page_view()->result_selection_controller();
+      contents_view->search_result_page_view()->result_selection_controller();
   const SearchResultBaseView* selection =
       selection_controller->selected_result();
   EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
@@ -772,7 +771,7 @@ TEST_F(SearchBoxViewTest, SuggestedContentSelectionDoesNotChangeSearchBoxText) {
   view()->set_contents_view(contents_view);
 
   PrivacyContainerView* const privacy_container_view =
-      contents_view->search_results_page_view()
+      contents_view->search_result_page_view()
           ->GetPrivacyContainerViewForTest();
   ASSERT_TRUE(privacy_container_view);
 
@@ -783,7 +782,7 @@ TEST_F(SearchBoxViewTest, SuggestedContentSelectionDoesNotChangeSearchBoxText) {
   base::RunLoop().RunUntilIdle();
 
   ResultSelectionController* const selection_controller =
-      contents_view->search_results_page_view()->result_selection_controller();
+      contents_view->search_result_page_view()->result_selection_controller();
   EXPECT_EQ(selection_controller->selected_result(),
             privacy_container_view->GetResultViewAt(0));
   EXPECT_TRUE(view()->search_box()->GetText().empty());
@@ -840,13 +839,6 @@ class SearchBoxViewAutocompleteTest : public SearchBoxViewTest {
  public:
   SearchBoxViewAutocompleteTest() = default;
   ~SearchBoxViewAutocompleteTest() override = default;
-
-  // Overridden from testing::Test
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableAppListSearchAutocomplete}, {});
-    SearchBoxViewTest::SetUp();
-  }
 
   // Expect the entire autocomplete suggestion if |should_autocomplete| is true,
   // expect only typed characters otherwise.
@@ -952,8 +944,6 @@ class SearchBoxViewAutocompleteTest : public SearchBoxViewTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
 };
 

@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/test/task_environment.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/image.h"
+#include "pdf/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -38,12 +38,6 @@ struct FakeSkiaGraphicsClient : public SkiaGraphics::Client {
 
   sk_sp<SkImage> snapshot;
 };
-
-Image CreateSourceImage(const SkISize& src_size) {
-  SkBitmap bitmap = CreateN32PremulSkBitmap(src_size);
-  bitmap.eraseColor(SK_ColorRED);
-  return Image(bitmap);
-}
 
 SkBitmap GenerateExpectedBitmap(const SkISize& graphics_size,
                                 const SkIRect& rect) {
@@ -71,7 +65,7 @@ SkBitmap CreateNonuniformBitmap(int width, int height) {
 class SkiaGraphicsTest : public testing::Test {
  protected:
   void TestPaintImageResult(const SkISize& graphics_size,
-                            const SkISize& src_size,
+                            const gfx::Size& src_size,
                             const gfx::Rect& paint_rect,
                             const SkIRect& overlapped_rect) {
     graphics_ =
@@ -79,7 +73,8 @@ class SkiaGraphicsTest : public testing::Test {
     ASSERT_TRUE(graphics_);
 
     // Create snapshots as SkImage and SkBitmap after painting.
-    graphics_->PaintImage(CreateSourceImage(src_size), paint_rect);
+    graphics_->PaintImage(CreateSkiaImageForTesting(src_size, SK_ColorRED),
+                          paint_rect);
     graphics_->Flush(base::DoNothing());
     SkBitmap snapshot_bitmap;
     ASSERT_TRUE(client_.snapshot->asLegacyBitmap(&snapshot_bitmap));
@@ -102,9 +97,6 @@ class SkiaGraphicsTest : public testing::Test {
   FakeSkiaGraphicsClient client_;
 
   std::unique_ptr<Graphics> graphics_;
-
- private:
-  base::test::TaskEnvironment task_environment_;
 };
 
 class SkiaGraphicsScrollTest : public SkiaGraphicsTest {
@@ -163,7 +155,7 @@ TEST_F(SkiaGraphicsTest, PaintImage) {
     SkISize graphics_size;
 
     // Size of the source image.
-    SkISize src_size;
+    gfx::Size src_size;
 
     // Painting area.
     gfx::Rect paint_rect;

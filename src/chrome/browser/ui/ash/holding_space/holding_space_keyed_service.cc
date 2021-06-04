@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_downloads_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_file_system_delegate.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_persistence_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "components/account_id/account_id.h"
@@ -37,7 +38,7 @@ namespace {
 // TODO(crbug.com/1131266): Track alternative type in `HoldingSpaceItem`.
 // Returns a holding space item other than the one provided which is backed by
 // the same file path in the specified `model`.
-base::Optional<const HoldingSpaceItem*> GetAlternativeHoldingSpaceItem(
+absl::optional<const HoldingSpaceItem*> GetAlternativeHoldingSpaceItem(
     const HoldingSpaceModel& model,
     const HoldingSpaceItem* item) {
   for (const auto& candidate_item : model.items()) {
@@ -46,7 +47,7 @@ base::Optional<const HoldingSpaceItem*> GetAlternativeHoldingSpaceItem(
     if (candidate_item->file_path() == item->file_path())
       return candidate_item.get();
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // Returns the singleton profile manager for the browser process.
@@ -123,6 +124,19 @@ void HoldingSpaceKeyedService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(crbug.com/1131266): Move to `ash::holding_space_prefs`.
   HoldingSpacePersistenceDelegate::RegisterProfilePrefs(registry);
+}
+
+void HoldingSpaceKeyedService::BindReceiver(
+    mojo::PendingReceiver<crosapi::mojom::HoldingSpaceService> receiver) {
+  receivers_.Add(this, std::move(receiver));
+}
+
+// TODO(crbug.com/1208910): Support incognito.
+void HoldingSpaceKeyedService::AddPrintedPdf(
+    const base::FilePath& printed_pdf_path,
+    bool from_incognito_profile) {
+  if (!from_incognito_profile)
+    AddItemOfType(HoldingSpaceItem::Type::kPrintedPdf, printed_pdf_path);
 }
 
 void HoldingSpaceKeyedService::AddPinnedFiles(
@@ -214,73 +228,33 @@ std::vector<GURL> HoldingSpaceKeyedService::GetPinnedFiles() const {
   return pinned_files;
 }
 
-void HoldingSpaceKeyedService::AddScreenshot(
-    const base::FilePath& screenshot_file) {
-  const bool already_exists = holding_space_model_.ContainsItem(
-      HoldingSpaceItem::Type::kScreenshot, screenshot_file);
-  if (already_exists)
-    return;
-
-  GURL file_system_url =
-      holding_space_util::ResolveFileSystemUrl(profile_, screenshot_file);
-  if (file_system_url.is_empty())
-    return;
-
-  AddItem(HoldingSpaceItem::CreateFileBackedItem(
-      HoldingSpaceItem::Type::kScreenshot, screenshot_file, file_system_url,
-      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+void HoldingSpaceKeyedService::AddDiagnosticsLog(
+    const base::FilePath& diagnostics_log_path) {
+  AddItemOfType(HoldingSpaceItem::Type::kDiagnosticsLog, diagnostics_log_path);
 }
 
 void HoldingSpaceKeyedService::AddDownload(
-    const base::FilePath& download_file) {
-  const bool already_exists = holding_space_model_.ContainsItem(
-      HoldingSpaceItem::Type::kDownload, download_file);
-  if (already_exists)
-    return;
-
-  GURL file_system_url =
-      holding_space_util::ResolveFileSystemUrl(profile_, download_file);
-  if (file_system_url.is_empty())
-    return;
-
-  AddItem(HoldingSpaceItem::CreateFileBackedItem(
-      HoldingSpaceItem::Type::kDownload, download_file, file_system_url,
-      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+    HoldingSpaceItem::Type type,
+    const base::FilePath& download_file,
+    const absl::optional<float>& progress) {
+  DCHECK(HoldingSpaceItem::IsDownload(type));
+  AddItemOfType(type, download_file, progress);
 }
 
 void HoldingSpaceKeyedService::AddNearbyShare(
     const base::FilePath& nearby_share_path) {
-  const bool already_exists = holding_space_model_.ContainsItem(
-      HoldingSpaceItem::Type::kNearbyShare, nearby_share_path);
-  if (already_exists)
-    return;
-
-  GURL file_system_url =
-      holding_space_util::ResolveFileSystemUrl(profile_, nearby_share_path);
-  if (file_system_url.is_empty())
-    return;
-
-  AddItem(HoldingSpaceItem::CreateFileBackedItem(
-      HoldingSpaceItem::Type::kNearbyShare, nearby_share_path, file_system_url,
-      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+  AddItemOfType(HoldingSpaceItem::Type::kNearbyShare, nearby_share_path);
 }
 
 void HoldingSpaceKeyedService::AddScreenRecording(
     const base::FilePath& screen_recording_file) {
-  const bool already_exists = holding_space_model_.ContainsItem(
-      HoldingSpaceItem::Type::kScreenRecording, screen_recording_file);
-  if (already_exists)
-    return;
+  AddItemOfType(HoldingSpaceItem::Type::kScreenRecording,
+                screen_recording_file);
+}
 
-  GURL file_system_url =
-      holding_space_util::ResolveFileSystemUrl(profile_, screen_recording_file);
-  if (file_system_url.is_empty())
-    return;
-
-  AddItem(HoldingSpaceItem::CreateFileBackedItem(
-      HoldingSpaceItem::Type::kScreenRecording, screen_recording_file,
-      file_system_url,
-      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+void HoldingSpaceKeyedService::AddScreenshot(
+    const base::FilePath& screenshot_file) {
+  AddItemOfType(HoldingSpaceItem::Type::kScreenshot, screenshot_file);
 }
 
 void HoldingSpaceKeyedService::AddItem(std::unique_ptr<HoldingSpaceItem> item) {
@@ -291,7 +265,13 @@ void HoldingSpaceKeyedService::AddItem(std::unique_ptr<HoldingSpaceItem> item) {
 
 void HoldingSpaceKeyedService::AddItems(
     std::vector<std::unique_ptr<HoldingSpaceItem>> items) {
-  DCHECK(!items.empty());
+  // Ignore any `items` that already exist in the `holding_space_model_`.
+  base::EraseIf(items, [&](const std::unique_ptr<HoldingSpaceItem>& item) {
+    return holding_space_model_.ContainsItem(item->type(), item->file_path());
+  });
+
+  if (items.empty())
+    return;
 
   // Mark the time when the user's first item was added to holding space. Note
   // that true is returned iff this is in fact the user's first add and, if so,
@@ -300,6 +280,20 @@ void HoldingSpaceKeyedService::AddItems(
     RecordTimeFromFirstAvailabilityToFirstAdd(profile_);
 
   holding_space_model_.AddItems(std::move(items));
+}
+
+void HoldingSpaceKeyedService::AddItemOfType(
+    HoldingSpaceItem::Type type,
+    const base::FilePath& file_path,
+    const absl::optional<float>& progress) {
+  const GURL file_system_url =
+      holding_space_util::ResolveFileSystemUrl(profile_, file_path);
+  if (file_system_url.is_empty())
+    return;
+
+  AddItem(HoldingSpaceItem::CreateFileBackedItem(
+      type, file_path, file_system_url, progress,
+      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
 }
 
 void HoldingSpaceKeyedService::Shutdown() {
@@ -354,21 +348,15 @@ void HoldingSpaceKeyedService::InitializeDelegates() {
 
   // The `HoldingSpaceDownloadsDelegate` monitors the status of downloads.
   delegates_.push_back(std::make_unique<HoldingSpaceDownloadsDelegate>(
-      profile_, &holding_space_model_,
-      /*item_downloaded_callback=*/
-      base::BindRepeating(&HoldingSpaceKeyedService::AddDownload,
-                          weak_factory_.GetWeakPtr())));
+      this, &holding_space_model_));
 
   // The `HoldingSpaceFileSystemDelegate` monitors the file system for changes.
   delegates_.push_back(std::make_unique<HoldingSpaceFileSystemDelegate>(
-      profile_, &holding_space_model_));
+      this, &holding_space_model_));
 
   // The `HoldingSpacePersistenceDelegate` manages holding space persistence.
   delegates_.push_back(std::make_unique<HoldingSpacePersistenceDelegate>(
-      profile_, &holding_space_model_, &thumbnail_loader_,
-      /*item_restored_callback=*/
-      base::BindRepeating(&HoldingSpaceKeyedService::AddItem,
-                          weak_factory_.GetWeakPtr()),
+      this, &holding_space_model_, &thumbnail_loader_,
       /*persistence_restored_callback=*/
       base::BindOnce(&HoldingSpaceKeyedService::OnPersistenceRestored,
                      weak_factory_.GetWeakPtr())));

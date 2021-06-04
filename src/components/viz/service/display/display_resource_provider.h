@@ -22,6 +22,7 @@
 #include "components/viz/common/resources/return_callback.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/viz_service_export.h"
@@ -74,18 +75,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // can't really be promoted to an overlay.
   bool IsBackedBySurfaceTexture(ResourceId id);
 
-  // Return the number of resources that request promotion hints.
-  size_t CountPromotionHintRequestsForTesting();
-
-  // This should be called after WaitSyncToken in GLRenderer.
-  void InitializePromotionHintRequest(ResourceId id);
-#endif
-
   // Indicates if this resource wants to receive promotion hints.
-  bool DoesResourceWantPromotionHint(ResourceId id) const;
-
-  // Return true if and only if any resource wants a promotion hint.
-  bool DoAnyResourcesWantPromotionHints() const;
+  bool DoesResourceWantPromotionHint(ResourceId id);
+#endif
 
   bool IsResourceSoftwareBacked(ResourceId id);
   // Return the format of the underlying buffer that can be used for scanout.
@@ -94,6 +86,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   const gfx::ColorSpace& GetColorSpace(ResourceId id);
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
+  SurfaceId GetSurfaceId(ResourceId id);
+  int GetChildId(ResourceId id);
 
   // Checks whether a resource is in use.
   bool InUse(ResourceId id);
@@ -127,6 +121,16 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
       return resource_->sync_token();
     }
 
+    // Sets the given |release_fence| onto this resource.
+    // This is propagated to ReturnedResource when the resource is freed.
+    void SetReleaseFence(gfx::GpuFenceHandle release_fence);
+
+    // Returns true iff this resource has a read lock fence set.
+    bool HasReadLockFence() const;
+
+   protected:
+    ChildResource* resource() { return resource_; }
+
    private:
     void Reset();
 
@@ -156,8 +160,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     current_read_lock_fence_ = fence;
   }
 
-  // Creates accounting for a child. Returns a child ID.
-  int CreateChild(ReturnCallback return_callback);
+  // Creates accounting for a child. Returns a child ID. surface_id is used to
+  // associate resources to the surface they belong to. This is used for
+  // overlays on webview where overlays are updated outside of normal draw (i.e
+  // DrawAndSwap isn't called).
+  int CreateChild(ReturnCallback return_callback, const SurfaceId& surface_id);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -237,9 +244,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     Child& operator=(Child&& other);
     ~Child();
 
+    int id;
     std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>
         child_to_parent_map;
     ReturnCallback return_callback;
+    SurfaceId surface_id;
     bool marked_for_deletion = false;
   };
 
@@ -328,6 +337,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // to avoid map lookups further down the pipeline.
     std::unique_ptr<ExternalUseClient::ImageContext> image_context;
 
+    // A release fence to propagate to ReturnedResource so clients may
+    // use it.
+    gfx::GpuFenceHandle release_fence;
+
    private:
     // Tracks if a sync token needs to be waited on before using the resource.
     SynchronizationState synchronization_state_;
@@ -355,9 +368,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
   bool ReadLockFenceHasPassed(const ChildResource* resource);
-#if defined(OS_ANDROID)
-  void DeletePromotionHint(ResourceMap::iterator it);
-#endif
 
   void DeleteAndReturnUnusedResourcesToChild(
       ChildMap::iterator child_it,
@@ -399,11 +409,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.
   int tracing_id_;
-
-#if defined(OS_ANDROID)
-  // Set of ResourceIds that would like to be notified about promotion hints.
-  ResourceIdSet wants_promotion_hints_set_;
-#endif
 
   // Indicates that gpu thread is available and calls like
   // ReleaseImageContexts() are expected to finish in finite time. It's always

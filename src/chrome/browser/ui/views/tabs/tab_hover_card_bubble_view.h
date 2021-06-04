@@ -5,20 +5,16 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 
-#include <memory>
-
 #include "base/callback_list.h"
 #include "base/scoped_observation.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/metrics_util.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
 namespace gfx {
@@ -63,7 +59,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   views::Label* title_label_ = nullptr;
   FadeLabel* title_fade_label_ = nullptr;
-  base::Optional<TabAlertState> alert_state_;
+  absl::optional<TabAlertState> alert_state_;
   views::Label* domain_label_ = nullptr;
   FadeLabel* domain_fade_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;

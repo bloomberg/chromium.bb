@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os as _os
+
 from warnings import warn
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -125,10 +126,14 @@ def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None):
 
   authors_path = input_api.os_path.join(
       input_api.PresubmitLocalPath(), 'AUTHORS')
-  valid_authors = (
-      input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
-      for line in open(authors_path))
-  valid_authors = [item.group(1).lower() for item in valid_authors if item]
+  author_re = input_api.re.compile(r'[^#]+\s+\<(.+?)\>\s*$')
+  valid_authors = []
+  with open(authors_path, 'rb') as fp:
+    for line in fp:
+      m = author_re.match(line.decode('utf8'))
+      if m:
+        valid_authors.append(m.group(1).lower())
+
   if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
              for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
@@ -545,10 +550,32 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     return []
 
 
-def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
-    accept_empty_files=True):
+def CheckLicense(input_api, output_api, license_re=None, project_name=None,
+    source_file_filter=None, accept_empty_files=True):
   """Verifies the license header.
   """
+
+  project_name = project_name or 'Chromium'
+
+  # Accept any year number from 2006 to the current year, or the special
+  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
+  # tolerated on old files.
+  current_year = int(input_api.time.strftime('%Y'))
+  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
+  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
+
+  # The (c) is deprecated, but tolerate it until it's removed from all files.
+  license_re = license_re or (
+      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
+        r'All rights reserved\.\n'
+      r'.*? Use of this source code is governed by a BSD-style license that '
+        r'can be\n'
+      r'.*? found in the LICENSE file\.(?: \*/)?\n'
+  ) % {
+      'year': years_re,
+      'project': project_name,
+  }
+
   license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
@@ -1230,26 +1257,6 @@ def PanProjectChecks(input_api, output_api,
       r'.+\.txt$',
       r'.+\.json$',
   ))
-  project_name = project_name or 'Chromium'
-
-  # Accept any year number from 2006 to the current year, or the special
-  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
-  # tolerated on old files.
-  current_year = int(input_api.time.strftime('%Y'))
-  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
-  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
-
-  # The (c) is deprecated, but tolerate it until it's removed from all files.
-  license_header = license_header or (
-      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
-        r'All rights reserved\.\n'
-      r'.*? Use of this source code is governed by a BSD-style license that '
-        r'can be\n'
-      r'.*? found in the LICENSE file\.(?: \*/)?\n'
-  ) % {
-      'year': years_re,
-      'project': project_name,
-  }
 
   results = []
   # This code loads the default skip list (e.g. third_party, experimental, etc)
@@ -1295,7 +1302,8 @@ def PanProjectChecks(input_api, output_api,
       input_api, output_api, source_file_filter=sources))
   snapshot("checking license")
   results.extend(input_api.canned_checks.CheckLicense(
-      input_api, output_api, license_header, source_file_filter=sources))
+      input_api, output_api, license_header, project_name,
+      source_file_filter=sources))
 
   if input_api.is_committing:
     snapshot("checking was uploaded")
@@ -1509,12 +1517,12 @@ def CheckForCommitObjects(input_api, output_api):
   full_tree = input_api.subprocess.check_output(
           ['git', 'ls-tree', '-r', '--full-tree', 'HEAD'],
           cwd=input_api.PresubmitLocalPath()
-        )
+        ).decode('utf8')
   tree_entries = full_tree.split('\n')
-  tree_entries = filter(lambda x: len(x) > 0, tree_entries)
+  tree_entries = [x for x in tree_entries if len(x) > 0]
   tree_entries = map(parse_tree_entry, tree_entries)
-  bad_tree_entries = filter(lambda x: x[1] == 'commit', tree_entries)
-  bad_tree_entries = map(lambda x: x[3], bad_tree_entries)
+  bad_tree_entries = [x for x in tree_entries if x[1] == 'commit']
+  bad_tree_entries = [x[3] for x in bad_tree_entries]
   if len(bad_tree_entries) > 0:
     return [output_api.PresubmitError(
       'Commit objects present within tree.\n'
@@ -1847,4 +1855,3 @@ def CheckInclusiveLanguage(input_api, output_api,
         output_api.PresubmitError('Banned non-inclusive language was used.\n' +
                                   '\n'.join(errors)))
   return result
-

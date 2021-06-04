@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/core/testing/gc_observation.h"
@@ -554,6 +555,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, SyncResolve) {
   v8::Local<v8::Object> other_v8_resolution;
   {
     ScriptState::Scope scope(MainScriptState());
+    v8::MicrotasksScope microtasks_scope(
+        GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     main_v8_resolution = ToV8(resolution, MainScriptState()).As<v8::Object>();
     v8::PropertyDescriptor descriptor(
         ScriptPromisePropertyResetter::CreateFunction(MainScriptState(),
@@ -567,6 +570,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, SyncResolve) {
   }
   {
     ScriptState::Scope scope(OtherScriptState());
+    v8::MicrotasksScope microtasks_scope(
+        GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     other_v8_resolution = ToV8(resolution, OtherScriptState()).As<v8::Object>();
     v8::PropertyDescriptor descriptor(
         ScriptPromisePropertyResetter::CreateFunction(OtherScriptState(),

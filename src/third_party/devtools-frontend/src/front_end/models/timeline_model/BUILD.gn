@@ -4,6 +4,7 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
 
 devtools_module("timeline_model") {
   sources = [
@@ -20,6 +21,7 @@ devtools_module("timeline_model") {
     "../../core/common:bundle",
     "../../core/i18n:bundle",
     "../../core/sdk:bundle",
+    "../../generated:protocol",
   ]
 }
 
@@ -27,10 +29,23 @@ devtools_entrypoint("bundle") {
   entrypoint = "timeline_model.ts"
 
   deps = [ ":timeline_model" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/models/timeline_model/*",
+    "../../panels/timeline/*",
+
+    # TODO(crbug.com/1202788): Remove invalid dependents
+    "../../ui/legacy/components/perf_ui/*",
+  ]
+
+  visibility += devtools_models_visibility
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "timeline_model-legacy.ts"
 
   deps = [ ":bundle" ]
+
+  visibility = [ "../..:legacy_entrypoints" ]
 }

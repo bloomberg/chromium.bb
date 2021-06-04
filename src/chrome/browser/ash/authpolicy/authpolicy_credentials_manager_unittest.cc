@@ -17,8 +17,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -33,7 +32,9 @@ using ::chromeos::AuthPolicyClient;
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 constexpr char kProfileEmail[] = "user@example.com";
 constexpr char kDisplayName[] = "DisplayName";
+constexpr char16_t kDisplayName16[] = u"DisplayName";
 constexpr char kGivenName[] = "Given Name";
+constexpr char16_t kGivenName16[] = u"Given Name";
 
 MATCHER_P(UserAccountDataEq, value, "Compares two UserAccountData") {
   const user_manager::UserManager::UserAccountData& expected_data = value;
@@ -52,8 +53,6 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   ~AuthPolicyCredentialsManagerTest() override = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-    chromeos::NetworkHandler::Initialize();
     AuthPolicyClient::InitializeFake();
     fake_authpolicy_client()->DisableOperationDelayForTesting();
 
@@ -86,8 +85,6 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     EXPECT_CALL(*mock_user_manager(), Shutdown());
     profile_.reset();
     AuthPolicyClient::Shutdown();
-    NetworkHandler::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -128,6 +125,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
   AccountId account_id_;
   std::unique_ptr<TestingProfile> profile_;
 
@@ -149,8 +147,7 @@ TEST_F(AuthPolicyCredentialsManagerTest, SaveNames) {
   fake_authpolicy_client()->set_display_name(kDisplayName);
   fake_authpolicy_client()->set_given_name(kGivenName);
   user_manager::UserManager::UserAccountData user_account_data(
-      base::UTF8ToUTF16(kDisplayName), base::UTF8ToUTF16(kGivenName),
-      std::string() /* locale */);
+      kDisplayName16, kGivenName16, std::string() /* locale */);
 
   EXPECT_CALL(*mock_user_manager(),
               UpdateUserAccountData(

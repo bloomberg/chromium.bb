@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">进度滑块</translation>
 <translation id="1404323374378969387">挪威语</translation>
 <translation id="1430915738399379752">打印</translation>
+<translation id="1433628812591023318">若要将某个文件拖放到 Parallels Desktop，必须先将此文件移至“Windows 文件”文件夹。</translation>
 <translation id="1435838927755162558">与 Parallels Desktop 共享文件夹</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1471718551822868769">斯洛伐克语</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows 文件</translation>
 <translation id="3078461028045006476">使用“<ph name="EXTENSION_NAME" />”分享</translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">无法从此处打开“<ph name="PATH" />”。您需要将它复制到“我的文件”，才能打开它。</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3188257591659621405">我的文件</translation>
@@ -444,6 +446,7 @@
 <translation id="5602622065581044566">保加利亚语注音键盘</translation>
 <translation id="5605830556594064952">美国英语(Dvorak)</translation>
 <translation id="5625294776298156701">泰米尔语 Tamil99 键盘</translation>
+<translation id="5633226425545095130">移动此内容会将其分享给所有能看到共享文件夹“<ph name="DESTINATION_NAME" />”的人。</translation>
 <translation id="5649768706273821470">收听</translation>
 <translation id="5678784840044122290">此 Linux 应用将可以在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />无法断开与档案或虚拟磁盘的连接<ph name="END_BOLD" />
@@ -605,6 +608,7 @@
 <translation id="7417453074306512035">埃塞俄比亚语键盘</translation>
 <translation id="7417705661718309329">Google 地图</translation>
 <translation id="7460898608667578234">乌克兰语</translation>
+<translation id="7486315294984620427">若要将某个文件拖放到 Parallels Desktop，必须先将此文件复制到“Windows 文件”文件夹。</translation>
 <translation id="7489215562877293245">找到了 <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     可以开始备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" />了</translation>
@@ -717,6 +721,7 @@
 <translation id="8395901698320285466">尺寸</translation>
 <translation id="8437209419043462667">美国英语</translation>
 <translation id="8456681095658380701">名称无效</translation>
+<translation id="8459404855768962328">复制此内容会将其分享给所有能看到共享文件夹“<ph name="DESTINATION_NAME" />”的人。</translation>
 <translation id="8461467696380332069">右键点击某个文件，然后选择“固定到任务栏”，以便在任务栏中快速访问您的文件。</translation>
 <translation id="8463494891489624050">越南语 VIQR</translation>
 <translation id="8466234950814670489">Tar 归档</translation>

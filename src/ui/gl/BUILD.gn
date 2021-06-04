@@ -168,9 +168,11 @@ component("gl") {
     ":buildflags",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
+    "//mojo/public/cpp/bindings",
 
     # ANGLE includes are used cross-platform.
     "//third_party/angle:includes",
+    "//ui/gfx/mojom",
   ]
   public_deps = [
     "//base",
@@ -288,8 +290,6 @@ component("gl") {
       "gl_image_glx_native_pixmap.h",
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
-      "gl_visual_picker_glx.cc",
-      "gl_visual_picker_glx.h",
       "glx_util.cc",
       "glx_util.h",
     ]
@@ -580,6 +580,7 @@ test("gl_unittests") {
 
   if (is_win) {
     sources += [
+      "delegated_ink_point_renderer_gpu_unittest.cc",
       "direct_composition_surface_win_unittest.cc",
       "gl_fence_win_unittest.cc",
       "gl_image_d3d_unittest.cc",

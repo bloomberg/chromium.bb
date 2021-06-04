@@ -114,11 +114,11 @@ cr.define('settings_about_page', function() {
       fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
       assertEquals(null, icon.src);
       assertEquals('cr20:domain', icon.icon);
-      assertEquals(0, statusMessageEl.textContent.trim().length);
+      assertNotEquals(previousMessageText, statusMessageEl.textContent);
 
       fireStatusChanged(UpdateStatus.FAILED);
       assertEquals(null, icon.src);
-      assertEquals('cr:error', icon.icon);
+      assertEquals('cr:error-outline', icon.icon);
       assertEquals(0, statusMessageEl.textContent.trim().length);
 
       fireStatusChanged(UpdateStatus.DISABLED);
@@ -220,7 +220,8 @@ cr.define('settings_about_page', function() {
       assertAllHidden();
 
       fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
-      assertAllHidden();
+      assertFalse(checkForUpdates.hidden);
+      assertTrue(relaunch.hidden);
     });
 
     /**

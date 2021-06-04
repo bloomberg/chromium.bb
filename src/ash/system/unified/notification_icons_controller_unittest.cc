@@ -4,7 +4,6 @@
 
 #include "ash/system/unified/notification_icons_controller.h"
 
-#include "ash/media/media_notification_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
@@ -19,8 +18,8 @@
 namespace ash {
 
 namespace {
-const char kBatteryNotificationId[] = "battery";
-const char kUsbNotificationId[] = "usb-charger";
+const char kBatteryNotificationNotifierId[] = "ash.battery";
+const char kUsbNotificationNotifierId[] = "ash.power";
 }  // namespace
 
 class NotificationIconsControllerTest
@@ -168,7 +167,7 @@ TEST_P(NotificationIconsControllerTest, NotShowNotificationIcons) {
   EXPECT_FALSE(notification_icons_controller_->tray_items()[0]->GetVisible());
 
   AddNotification(true /* is_pinned */, false /* is_critical_warning */,
-                  kBatteryNotificationId);
+                  kBatteryNotificationNotifierId);
   // Battery notification should not be shown.
   EXPECT_FALSE(notification_icons_controller_->tray_items()[0]->GetVisible());
   EXPECT_FALSE(separator()->GetVisible());
@@ -178,7 +177,7 @@ TEST_P(NotificationIconsControllerTest, NotShowNotificationIcons) {
                    ->count_for_display_for_testing());
 
   AddNotification(true /* is_pinned */, false /* is_critical_warning */,
-                  kUsbNotificationId);
+                  kUsbNotificationNotifierId);
   // Usb charging notification should not be shown.
   EXPECT_FALSE(notification_icons_controller_->tray_items()[0]->GetVisible());
   EXPECT_FALSE(separator()->GetVisible());

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -239,12 +240,12 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
   if (result.GetScrollbar())
     ClearToolTip(frame);
   else
-    SetToolTip(frame, location, result);
+    UpdateTooltipUnderCursor(frame, location, result);
 }
 
-void ChromeClient::SetToolTip(LocalFrame& frame,
-                              const HitTestLocation& location,
-                              const HitTestResult& result) {
+void ChromeClient::UpdateTooltipUnderCursor(LocalFrame& frame,
+                                            const HitTestLocation& location,
+                                            const HitTestResult& result) {
   // First priority is a tooltip for element with "title" attribute.
   TextDirection tool_tip_direction;
   String tool_tip = result.Title(tool_tip_direction);
@@ -258,7 +259,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
       // FIXME: We should obtain text direction of tooltip from
       // ChromeClient or platform. As of October 2011, all client
       // implementations don't use text direction information for
-      // ChromeClient::setToolTip. We'll work on tooltip text
+      // ChromeClient::UpdateTooltipUnderCursor. We'll work on tooltip text
       // direction during bidi cleanup in form inputs.
       tool_tip_direction = TextDirection::kLtr;
     }
@@ -272,7 +273,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
   // a different node with the same tooltip text, make sure the previous
   // tooltip is unset, so that it does not get stuck positioned relative
   // to the previous node).
-  // The ::setToolTip overload, which is be called down the road,
+  // The ::UpdateTooltipUnderCursor overload, which is be called down the road,
   // ensures a new tooltip to be displayed with the new context.
   if (result.InnerNodeOrImageMapImage() != last_mouse_over_node_ &&
       !last_tool_tip_text_.IsEmpty() && tool_tip == last_tool_tip_text_)
@@ -282,14 +283,28 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
   last_tool_tip_text_ = tool_tip;
   last_mouse_over_node_ = result.InnerNodeOrImageMapImage();
   current_tool_tip_text_for_test_ = last_tool_tip_text_;
-  SetToolTip(frame, tool_tip, tool_tip_direction);
+  UpdateTooltipUnderCursor(frame, tool_tip, tool_tip_direction);
+}
+
+void ChromeClient::ElementFocusedFromKeypress(LocalFrame& frame,
+                                              const Element* element) {
+  String tooltip_text = element->title();
+  if (tooltip_text.IsNull())
+    tooltip_text = element->DefaultToolTip();
+
+  LayoutObject* layout_object = element->GetLayoutObject();
+  if (!tooltip_text.IsNull() && layout_object) {
+    TextDirection tooltip_direction = layout_object->StyleRef().Direction();
+    UpdateTooltipFromKeyboard(frame, tooltip_text, tooltip_direction,
+                              element->BoundsInViewport());
+  }
 }
 
 void ChromeClient::ClearToolTip(LocalFrame& frame) {
   current_tool_tip_text_for_test_ = String();
   // Do not check last_tool_tip_* and do not update them intentionally.
   // We don't want to show tooltips with same content after clearToolTip().
-  SetToolTip(frame, String(), TextDirection::kLtr);
+  UpdateTooltipUnderCursor(frame, String(), TextDirection::kLtr);
 }
 
 bool ChromeClient::Print(LocalFrame* frame) {

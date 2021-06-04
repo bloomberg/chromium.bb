@@ -166,8 +166,6 @@ void ExtensionWebContentsObserver::RenderFrameDeleted(
   ProcessManager::Get(browser_context_)
       ->UnregisterRenderFrameHost(render_frame_host);
   ExtensionApiFrameIdMap::Get()->OnRenderFrameDeleted(render_frame_host);
-  ContentScriptTracker::RenderFrameDeleted(
-      base::PassKey<ExtensionWebContentsObserver>(), render_frame_host);
 }
 
 void ExtensionWebContentsObserver::ReadyToCommitNavigation(
@@ -245,19 +243,6 @@ void ExtensionWebContentsObserver::MediaPictureInPictureChanged(
   }
 }
 
-bool ExtensionWebContentsObserver::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  DCHECK(initialized_);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(
-      ExtensionWebContentsObserver, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void ExtensionWebContentsObserver::PepperInstanceCreated() {
   DCHECK(initialized_);
   if (GetViewType(web_contents()) ==
@@ -330,6 +315,12 @@ const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
 
 mojom::LocalFrame* ExtensionWebContentsObserver::GetLocalFrame(
     content::RenderFrameHost* render_frame_host) {
+  // Attempting to get a remote interface before IsRenderFrameLive() will fail,
+  // leaving a broken pipe that will block all further messages. Return nullptr
+  // instead. Callers should try again after RenderFrameCreated().
+  if (!render_frame_host->IsRenderFrameLive())
+    return nullptr;
+
   mojo::AssociatedRemote<mojom::LocalFrame>& remote =
       local_frame_map_[render_frame_host];
   if (!remote.is_bound()) {
@@ -337,14 +328,6 @@ mojom::LocalFrame* ExtensionWebContentsObserver::GetLocalFrame(
         remote.BindNewEndpointAndPassReceiver());
   }
   return remote.get();
-}
-
-void ExtensionWebContentsObserver::OnRequest(
-    content::RenderFrameHost* render_frame_host,
-    const mojom::RequestParams& params) {
-  DCHECK(initialized_);
-  dispatcher_.Dispatch(params, render_frame_host,
-                       render_frame_host->GetProcess()->GetID());
 }
 
 }  // namespace extensions

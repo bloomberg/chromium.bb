@@ -19,7 +19,7 @@ to set the default value. Can also be accessed through `try_.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
-load("./builders.star", "builders", "os")
+load("./builders.star", "builders", "os", "os_category")
 
 DEFAULT_EXCLUDE_REGEXPS = [
     # Contains documentation that doesn't affect the outputs
@@ -151,6 +151,15 @@ def try_builder(
     if subproject_list_view:
         list_view.append(subproject_list_view)
 
+    # in CQ/try, disable ATS on windows. http://b/183895446
+    goma_enable_ats = defaults.get_value_from_kwargs("goma_enable_ats", kwargs)
+    os = defaults.get_value_from_kwargs("os", kwargs)
+    if os and os.category == os_category.WINDOWS:
+        if goma_enable_ats == args.COMPUTE:
+            kwargs["goma_enable_ats"] = False
+        if kwargs["goma_enable_ats"] != False:
+            fail("Try Windows builder {} must disable ATS".format(name))
+
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
     builders.builder(
@@ -185,6 +194,7 @@ def try_builder(
         )
 
 def blink_builder(*, name, goma_backend = None, **kwargs):
+    kwargs.setdefault("os", builders.os.LINUX_BIONIC_REMOVE)
     return try_builder(
         name = name,
         builder_group = "tryserver.blink",
@@ -266,7 +276,7 @@ def chromium_angle_ios_builder(*, name, **kwargs):
     )
 
 def chromium_chromiumos_builder(*, name, **kwargs):
-    kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
+    kwargs.setdefault("os", builders.os.LINUX_BIONIC_REMOVE)
     return try_builder(
         name = name,
         builder_group = "tryserver.chromium.chromiumos",
@@ -286,6 +296,7 @@ def chromium_dawn_builder(*, name, **kwargs):
     )
 
 def chromium_linux_builder(*, name, goma_backend = builders.goma.backend.RBE_PROD, **kwargs):
+    kwargs.setdefault("os", builders.os.LINUX_BIONIC_REMOVE)
     return try_builder(
         name = name,
         builder_group = "tryserver.chromium.linux",

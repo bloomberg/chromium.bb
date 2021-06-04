@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
@@ -23,10 +22,10 @@
 #include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/half_float_maker.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/libavif/src/include/avif/avif.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/color_space.h"
@@ -244,6 +243,173 @@ void YUVAToRGBA(const avifImage* image,
   }
 }
 
+// Returns true if the fraction n/d is an integer or a half-value. The
+// denominator 'd' must be strictly positive.
+bool IsIntegerOrHalfValue(int n, int d) {
+  int rem = n % d;
+  if (rem == 0)
+    return true;
+  if (d % 2 != 0)
+    return false;
+  int half_d = d / 2;
+  return rem == half_d || rem == -half_d;
+}
+
+// Validates the 'clap' (clean aperture) property in |image| and stores the
+// width, height, leftmost pixel, and topmost line of the clean aperture in the
+// output parameters. Returns whether the 'clap' property is valid.
+bool ValidateClapProperty(const avifImage* image,
+                          int& clap_width,
+                          int& clap_height,
+                          int& clap_leftmost,
+                          int& clap_topmost) {
+  // Although the fields in the CleanApertureBox are encoded as
+  // 'unsigned int(32)', apparently they should be interpreted as 32-bit
+  // signed integers. See also the "Clean Aperture ('clap')" section in the
+  // QuickTime File Format Specification.
+  const int clap_width_n = static_cast<int>(image->clap.widthN);
+  const int clap_width_d = static_cast<int>(image->clap.widthD);
+  const int clap_height_n = static_cast<int>(image->clap.heightN);
+  const int clap_height_d = static_cast<int>(image->clap.heightD);
+  const int horiz_off_n = static_cast<int>(image->clap.horizOffN);
+  const int horiz_off_d = static_cast<int>(image->clap.horizOffD);
+  const int vert_off_n = static_cast<int>(image->clap.vertOffN);
+  const int vert_off_d = static_cast<int>(image->clap.vertOffD);
+  // ISO/IEC 14496-12:2020, Section 12.1.4.1:
+  //   For horizOff and vertOff, D shall be strictly positive and N may be
+  //   positive or negative. For cleanApertureWidth and cleanApertureHeight,
+  //   N shall be positive and D shall be strictly positive.
+  //
+  // For cleanApertureWidth and cleanApertureHeight, we additionally require
+  // that N be nonzero. Restricting to nonempty clean apertures preserves the
+  // property that AVIF image size is at least 1x1, whether the image has a
+  // 'clap' property or not.
+  if (clap_width_d <= 0 || clap_height_d <= 0 || horiz_off_d <= 0 ||
+      vert_off_d <= 0) {
+    DVLOG(1) << "Some clean aperture denominator is not strictly positive";
+    return false;
+  }
+  if (clap_width_n <= 0 || clap_height_n <= 0) {
+    DVLOG(1) << "Clean aperture width or height numerator is not strictly "
+                "positive";
+    return false;
+  }
+
+  // ISO/IEC 23000-22:2019/DAM 2:2021, Section 7.3.6.7:
+  //   The clean aperture property is restricted according to the chroma
+  //   sampling format of the input image (4:4:4, 4:2:2:, 4:2:0, or 4:0:0) as
+  //   follows:
+  //   - when the image is 4:0:0 (monochrome) or 4:4:4, the horizontal and
+  //     vertical cropped offsets and widths shall be integers;
+  //   - when the image is 4:2:2 the horizontal cropped offset and width
+  //     shall be even numbers and the vertical values shall be integers;
+  //   - when the image is 4:2:0 both the horizontal and vertical cropped
+  //     offsets and widths shall be even numbers.
+  //
+  // These requirements don't seem correct or complete. So we follow the
+  // spirit but not the letter of these requirements. Our requirements are as
+  // follows:
+  //   - cleanApertureWidth and cleanApertureHeight shall be integers;
+  //   - horizOff and vertOff shall be integers or half-values[1];
+  //   - The leftmost pixel and the topmost line of the clean aperture[2]
+  //     shall be integers;
+  //   - If chroma is subsampled horizontally (i.e., 4:2:2 and 4:2:0), the
+  //     leftmost pixel of the clean aperture shall be even numbers;
+  //   - If chroma is subsampled vertically (i.e., 4:2:0), the topmost line
+  //     of the clean aperture shall be even numbers.
+  //
+  //  [1] For example, to crop 16x16 to 15x15, horizOff and vertOff must be
+  //      half-values.
+  //  [2] Defined at the end of ISO/IEC 14496-12:2020, Section 12.1.4.1.
+  //
+  //  See also https://github.com/MPEGGroup/MIAF/issues/8.
+  if (clap_width_n % clap_width_d != 0 || clap_height_n % clap_height_d != 0) {
+    DVLOG(1) << "Clean aperture width or height is not an integer";
+    return false;
+  }
+  clap_width = clap_width_n / clap_width_d;
+  clap_height = clap_height_n / clap_height_d;
+  if (!IsIntegerOrHalfValue(horiz_off_n, horiz_off_d) ||
+      !IsIntegerOrHalfValue(vert_off_n, vert_off_d)) {
+    DVLOG(1) << "Clean aperture horizontal or vertical offset is not an "
+                "integer or half-value";
+    return false;
+  }
+  // horizOff * 2
+  const int64_t horiz_off_2 =
+      static_cast<int64_t>(horiz_off_n) * 2 / horiz_off_d;
+  // vertOff * 2
+  const int64_t vert_off_2 = static_cast<int64_t>(vert_off_n) * 2 / vert_off_d;
+  if (image->width > INT_MAX || image->height > INT_MAX) {
+    DVLOG(1) << "Image width or height is greater than INT_MAX";
+    return false;
+  }
+  const int width = static_cast<int>(image->width);
+  const int height = static_cast<int>(image->height);
+  // Picture center of the image is at pcX and pcY, defined as follows:
+  //   pcX = horizOff + (width - 1)/2
+  //   pcY = vertOff + (height - 1)/2
+  //
+  // pcX * 2
+  const int64_t center_x_2 = horiz_off_2 + (width - 1);
+  // pcY * 2
+  const int64_t center_y_2 = vert_off_2 + (height - 1);
+  // The leftmost and rightmost pixels of the clean aperture fall at:
+  //   pcX - (cleanApertureWidth - 1)/2
+  //   pcX + (cleanApertureWidth - 1)/2
+  //
+  // Leftmost pixel * 2
+  const int64_t leftmost_2 = center_x_2 - (clap_width - 1);
+  // Rightmost pixel * 2
+  const int64_t rightmost_2 = center_x_2 + (clap_width - 1);
+  if (leftmost_2 < 0 || rightmost_2 > 2 * (width - 1)) {
+    DVLOG(1) << "Leftmost or rightmost pixel of clean aperture is out of the "
+                "image's bounds";
+    return false;
+  }
+  // The topmost and bottommost lines of the clean aperture fall at:
+  //   pcY - (cleanApertureHeight - 1)/2
+  //   pcY + (cleanApertureHeight - 1)/2
+  //
+  // Topmost line * 2
+  const int64_t topmost_2 = center_y_2 - (clap_height - 1);
+  // Bottommost line * 2
+  const int64_t bottommost_2 = center_y_2 + (clap_height - 1);
+  if (topmost_2 < 0 || bottommost_2 > 2 * (height - 1)) {
+    DVLOG(1) << "Topmost or bottommost line of clean aperture is out of the "
+                "image's bounds";
+    return false;
+  }
+  if (leftmost_2 % 2 != 0) {
+    DVLOG(1) << "Leftmost pixel of clean aperture is not an integer: "
+             << leftmost_2 << " / 2";
+    return false;
+  }
+  clap_leftmost = static_cast<int>(leftmost_2 / 2);
+  if (topmost_2 % 2 != 0) {
+    DVLOG(1) << "Topmost line of clean aperture is not an integer: "
+             << topmost_2 << " / 2";
+    return false;
+  }
+  clap_topmost = static_cast<int>(topmost_2 / 2);
+  if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV422 ||
+      image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420) {
+    if (clap_leftmost % 2 != 0) {
+      DVLOG(1) << "Leftmost pixel of clean aperture is not an even number: "
+               << clap_leftmost;
+      return false;
+    }
+  }
+  if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420) {
+    if (clap_topmost % 2 != 0) {
+      DVLOG(1) << "Topmost line of clean aperture is not an even number: "
+               << clap_topmost;
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace blink {
@@ -358,27 +524,8 @@ void AVIFImageDecoder::DecodeToYUV() {
       SetFailed();
     return;
   }
+  const auto* image = decoded_image_;
 
-  const auto* image = decoder_->image;
-  // Frame size must be equal to container size.
-  if (Size() != IntSize(image->width, image->height)) {
-    DVLOG(1) << "Frame size " << IntSize(image->width, image->height)
-             << " differs from container size " << Size();
-    SetFailed();
-    return;
-  }
-  // Frame bit depth must be equal to container bit depth.
-  if (image->depth != bit_depth_) {
-    DVLOG(1) << "Frame bit depth must be equal to container bit depth";
-    SetFailed();
-    return;
-  }
-  // Frame YUV format must be equal to container YUV format.
-  if (image->yuvFormat != avif_yuv_format_) {
-    DVLOG(1) << "Frame YUV format must be equal to container YUV format";
-    SetFailed();
-    return;
-  }
   DCHECK(!image->alphaPlane);
   static_assert(cc::YUVIndex::kY == static_cast<cc::YUVIndex>(AVIF_CHAN_Y), "");
   static_assert(cc::YUVIndex::kU == static_cast<cc::YUVIndex>(AVIF_CHAN_U), "");
@@ -396,10 +543,6 @@ void AVIFImageDecoder::DecodeToYUV() {
   uint32_t width = image->width;
   uint32_t height = image->height;
 
-  // |height| comes from the AV1 sequence header or frame header, which encodes
-  // max_frame_height_minus_1 and frame_height_minus_1, respectively, as n-bit
-  // unsigned integers for some n.
-  DCHECK_GT(height, 0u);
   for (size_t plane_index = 0; plane_index < cc::kNumYUVPlanes; ++plane_index) {
     const cc::YUVIndex plane = static_cast<cc::YUVIndex>(plane_index);
     const size_t src_row_bytes =
@@ -520,6 +663,16 @@ gfx::ColorTransform* AVIFImageDecoder::GetColorTransformForTesting() {
   return color_transform_.get();
 }
 
+// static
+bool AVIFImageDecoder::ValidateClapPropertyForTesting(const avifImage* image,
+                                                      int& clap_width,
+                                                      int& clap_height,
+                                                      int& clap_leftmost,
+                                                      int& clap_topmost) {
+  return ValidateClapProperty(image, clap_width, clap_height, clap_leftmost,
+                              clap_topmost);
+}
+
 void AVIFImageDecoder::ParseMetadata() {
   if (!UpdateDemuxer())
     SetFailed();
@@ -562,27 +715,7 @@ void AVIFImageDecoder::Decode(size_t index) {
       SetFailed();
     return;
   }
-
-  const auto* image = decoder_->image;
-  // Frame size must be equal to container size.
-  if (Size() != IntSize(image->width, image->height)) {
-    DVLOG(1) << "Frame size " << IntSize(image->width, image->height)
-             << " differs from container size " << Size();
-    SetFailed();
-    return;
-  }
-  // Frame bit depth must be equal to container bit depth.
-  if (image->depth != bit_depth_) {
-    DVLOG(1) << "Frame bit depth must be equal to container bit depth";
-    SetFailed();
-    return;
-  }
-  // Frame YUV format must be equal to container YUV format.
-  if (image->yuvFormat != avif_yuv_format_) {
-    DVLOG(1) << "Frame YUV format must be equal to container YUV format";
-    SetFailed();
-    return;
-  }
+  const auto* image = decoded_image_;
 
   ImageFrame& buffer = frame_buffer_cache_[index];
   DCHECK_EQ(buffer.GetStatus(), ImageFrame::kFrameEmpty);
@@ -700,6 +833,15 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     decoder_->ignoreXMP = AVIF_TRUE;
     decoder_->ignoreExif = AVIF_TRUE;
 
+    // Turn off libavif's 'clap' (clean aperture) property validation. (We do
+    // our own validation.)
+    decoder_->strictFlags &= ~AVIF_STRICT_CLAP_VALID;
+    // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image
+    // items. libheif v1.11.0 or older does not add the 'pixi' item property to
+    // AV1 image items. (This issue has been corrected in libheif v1.12.0.) See
+    // crbug.com/1198455.
+    decoder_->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
+
     avif_io_.destroy = nullptr;
     avif_io_.read = ReadFromSegmentReader;
     avif_io_.write = nullptr;
@@ -740,6 +882,8 @@ bool AVIFImageDecoder::UpdateDemuxer() {
 
   DCHECK_GT(decoder_->imageCount, 0);
   decoded_frame_count_ = decoder_->imageCount;
+  container_width_ = container->width;
+  container_height_ = container->height;
   bit_depth_ = container->depth;
   decode_to_half_float_ =
       ImageIsHighBitDepth() &&
@@ -844,7 +988,22 @@ bool AVIFImageDecoder::UpdateDemuxer() {
                                                  &yuv_color_space_) &&
       // TODO(crbug.com/911246): Support color space transforms for YUV decodes.
       !ColorTransform();
-  return SetSize(container->width, container->height);
+
+  unsigned width = container->width;
+  unsigned height = container->height;
+  // If the image is cropped, pass the size of the cropped image (the clean
+  // aperture) to SetSize().
+  if (container->transformFlags & AVIF_TRANSFORM_CLAP) {
+    int clap_width;
+    int clap_height;
+    if (!ValidateClapProperty(container, clap_width, clap_height,
+                              clap_leftmost_, clap_topmost_)) {
+      return false;
+    }
+    width = clap_width;
+    height = clap_height;
+  }
+  return SetSize(width, height);
 }
 
 avifResult AVIFImageDecoder::DecodeImage(size_t index) {
@@ -852,7 +1011,32 @@ avifResult AVIFImageDecoder::DecodeImage(size_t index) {
   // |index| should be less than what DecodeFrameCount() returns, so we should
   // not get the AVIF_RESULT_NO_IMAGES_REMAINING error.
   DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-  return ret;
+  if (ret != AVIF_RESULT_OK)
+    return ret;
+
+  const auto* image = decoder_->image;
+  // Frame size must be equal to container size.
+  if (image->width != container_width_ || image->height != container_height_) {
+    DVLOG(1) << "Frame size " << image->width << "x" << image->height
+             << " differs from container size " << container_width_ << "x"
+             << container_height_;
+    return AVIF_RESULT_UNKNOWN_ERROR;
+  }
+  // Frame bit depth must be equal to container bit depth.
+  if (image->depth != bit_depth_) {
+    DVLOG(1) << "Frame bit depth must be equal to container bit depth";
+    return AVIF_RESULT_UNKNOWN_ERROR;
+  }
+  // Frame YUV format must be equal to container YUV format.
+  if (image->yuvFormat != avif_yuv_format_) {
+    DVLOG(1) << "Frame YUV format must be equal to container YUV format";
+    return AVIF_RESULT_UNKNOWN_ERROR;
+  }
+
+  decoded_image_ = image;
+  if (image->transformFlags & AVIF_TRANSFORM_CLAP)
+    CropDecodedImage();
+  return AVIF_RESULT_OK;
 }
 
 void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
@@ -865,6 +1049,36 @@ void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
   color_transform_ = gfx::ColorTransform::NewColorTransform(
       frame_cs, bit_depth, gfx::ColorSpace(), bit_depth,
       gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+}
+
+void AVIFImageDecoder::CropDecodedImage() {
+  DCHECK_NE(decoded_image_, &cropped_image_);
+  cropped_image_ = *decoded_image_;
+  cropped_image_.width = Size().Width();
+  cropped_image_.height = Size().Height();
+  const size_t bytes_per_pixel = (cropped_image_.depth + 7) / 8;
+  cropped_image_.yuvPlanes[AVIF_CHAN_Y] +=
+      static_cast<size_t>(clap_topmost_) *
+          cropped_image_.yuvRowBytes[AVIF_CHAN_Y] +
+      static_cast<size_t>(clap_leftmost_) * bytes_per_pixel;
+  if (cropped_image_.yuvFormat != AVIF_PIXEL_FORMAT_YUV400) {
+    const int leftmost_uv = UVSize(clap_leftmost_, chroma_shift_x_);
+    const int topmost_uv = UVSize(clap_topmost_, chroma_shift_y_);
+    cropped_image_.yuvPlanes[AVIF_CHAN_U] +=
+        static_cast<size_t>(topmost_uv) *
+            cropped_image_.yuvRowBytes[AVIF_CHAN_U] +
+        static_cast<size_t>(leftmost_uv) * bytes_per_pixel;
+    cropped_image_.yuvPlanes[AVIF_CHAN_V] +=
+        static_cast<size_t>(topmost_uv) *
+            cropped_image_.yuvRowBytes[AVIF_CHAN_V] +
+        static_cast<size_t>(leftmost_uv) * bytes_per_pixel;
+  }
+  if (cropped_image_.alphaPlane) {
+    cropped_image_.alphaPlane +=
+        static_cast<size_t>(clap_topmost_) * cropped_image_.alphaRowBytes +
+        static_cast<size_t>(clap_leftmost_) * bytes_per_pixel;
+  }
+  decoded_image_ = &cropped_image_;
 }
 
 bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {

@@ -11,10 +11,10 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
@@ -24,6 +24,7 @@
 class GURL;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -85,6 +86,10 @@ class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
 
+  // Retrieves the base path of the file directory where StorageBuckets data is
+  // stored.
+  virtual base::FilePath GetBucketBasePath() = 0;
+
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
   // caller should not hold onto this pointer beyond the same message loop task.
@@ -133,6 +138,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual FontAccessContext* GetFontAccessContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
+  virtual storage::mojom::LocalStorageControl* GetLocalStorageControl() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
   virtual FileSystemAccessEntryFactory* GetFileSystemAccessEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
@@ -236,7 +242,7 @@ class CONTENT_EXPORT StoragePartition {
   // Similar to ClearData().
   // Deletes all data out for the StoragePartition.
   // * |origin_matcher| is present if special storage policy is to be handled,
-  //   otherwise the callback should be null (base::Callback::is_null()==true).
+  //   otherwise the callback should be null (!origin_matcher == true).
   //   The origin matcher does not apply to cookies, instead use:
   // * |cookie_deletion_filter| identifies the cookies to delete and will be
   //   used if |remove_mask| has the REMOVE_DATA_MASK_COOKIES bit set. Note:

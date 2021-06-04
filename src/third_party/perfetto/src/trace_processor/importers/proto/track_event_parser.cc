@@ -23,19 +23,19 @@
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/string_writer.h"
 #include "perfetto/trace_processor/status.h"
-#include "src/trace_processor/importers/chrome_track_event.descriptor.h"
 #include "src/trace_processor/importers/common/args_tracker.h"
 #include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/flow_tracker.h"
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/common/track_tracker.h"
 #include "src/trace_processor/importers/json/json_utils.h"
-#include "src/trace_processor/importers/proto/args_table_utils.h"
 #include "src/trace_processor/importers/proto/packet_sequence_state.h"
 #include "src/trace_processor/importers/proto/track_event_tracker.h"
-#include "src/trace_processor/importers/track_event.descriptor.h"
+#include "src/trace_processor/util/debug_annotation_parser.h"
+#include "src/trace_processor/util/proto_to_args_parser.h"
 #include "src/trace_processor/util/status_macros.h"
 
+#include "protos/perfetto/trace/extension_descriptor.pbzero.h"
 #include "protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 #include "protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
@@ -66,52 +66,100 @@ using protozero::ConstBytes;
 constexpr int64_t kPendingThreadDuration = -1;
 constexpr int64_t kPendingThreadInstructionDelta = -1;
 
-void AddStringToArgsTable(const char* field,
-                          const protozero::ConstChars& str,
-                          const ProtoToArgsTable::ParsingOverrideState& state,
-                          BoundInserter* inserter) {
-  auto val = state.context->storage->InternString(base::StringView(str));
-  auto key = state.context->storage->InternString(base::StringView(field));
-  inserter->AddArg(key, Variadic::String(val));
-}
+class TrackEventArgsParser : public util::ProtoToArgsParser::Delegate {
+ public:
+  TrackEventArgsParser(BoundInserter& inserter,
+                       TraceStorage& storage,
+                       PacketSequenceStateGeneration& sequence_state)
+      : inserter_(inserter),
+        storage_(storage),
+        sequence_state_(sequence_state) {}
+  ~TrackEventArgsParser() override;
 
-bool MaybeParseSourceLocation(
+  using Key = util::ProtoToArgsParser::Key;
+
+  void AddInteger(const Key& key, int64_t value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::Integer(value));
+  }
+  void AddUnsignedInteger(const Key& key, uint64_t value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::UnsignedInteger(value));
+  }
+  void AddString(const Key& key, const protozero::ConstChars& value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::String(storage_.InternString(value)));
+  }
+  void AddDouble(const Key& key, double value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::Real(value));
+  }
+  void AddPointer(const Key& key, const void* value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::Pointer(reinterpret_cast<uintptr_t>(value)));
+  }
+  void AddBoolean(const Key& key, bool value) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::Boolean(value));
+  }
+  bool AddJson(const Key& key, const protozero::ConstChars& value) final {
+    auto json_value = json::ParseJsonString(value);
+    return json::AddJsonValueToArgs(*json_value, base::StringView(key.flat_key),
+                                    base::StringView(key.key), &storage_,
+                                    &inserter_);
+  }
+
+  size_t GetArrayEntryIndex(const std::string& array_key) final {
+    return inserter_.GetNextArrayEntryIndex(
+        storage_.InternString(base::StringView(array_key)));
+  }
+
+  size_t IncrementArrayEntryIndex(const std::string& array_key) final {
+    return inserter_.IncrementArrayEntryIndex(
+        storage_.InternString(base::StringView(array_key)));
+  }
+
+  InternedMessageView* GetInternedMessageView(uint32_t field_id,
+                                              uint64_t iid) final {
+    return sequence_state_.GetInternedMessageView(field_id, iid);
+  }
+
+ private:
+  BoundInserter& inserter_;
+  TraceStorage& storage_;
+  PacketSequenceStateGeneration& sequence_state_;
+};
+
+TrackEventArgsParser::~TrackEventArgsParser() = default;
+
+base::Optional<base::Status> MaybeParseSourceLocation(
     std::string prefix,
-    const ProtoToArgsTable::ParsingOverrideState& state,
     const protozero::Field& field,
-    BoundInserter* inserter) {
-  auto* decoder = state.sequence_state->LookupInternedMessage<
-      protos::pbzero::InternedData::kSourceLocationsFieldNumber,
-      protos::pbzero::SourceLocation>(field.as_uint64());
+    util::ProtoToArgsParser::Delegate& delegate) {
+  auto* decoder = delegate.GetInternedMessage(
+      protos::pbzero::InternedData::kSourceLocations, field.as_uint64());
   if (!decoder) {
     // Lookup failed fall back on default behaviour which will just put
     // the source_location_iid into the args table.
-    return false;
+    return base::nullopt;
   }
-  {
-    ProtoToArgsTable::ScopedStringAppender scoped("file_name", &prefix);
-    AddStringToArgsTable(prefix.c_str(), decoder->file_name(), state, inserter);
-  }
-  {
-    ProtoToArgsTable::ScopedStringAppender scoped("function_name", &prefix);
-    AddStringToArgsTable(prefix.c_str(), decoder->function_name(), state,
-                         inserter);
-  }
-  ProtoToArgsTable::ScopedStringAppender scoped("line_number", &prefix);
-  auto key = state.context->storage->InternString(base::StringView(prefix));
-  inserter->AddArg(key, Variadic::Integer(decoder->line_number()));
-  // By returning false we expect this field to be handled like regular.
-  return true;
+
+  delegate.AddString(util::ProtoToArgsParser::Key(prefix + ".file_name"),
+                     decoder->file_name());
+  delegate.AddString(util::ProtoToArgsParser::Key(prefix + ".function_name"),
+                     decoder->function_name());
+  delegate.AddInteger(util::ProtoToArgsParser::Key(prefix + ".line_number"),
+                      decoder->line_number());
+
+  return base::OkStatus();
 }
 
-std::string SafeDebugAnnotationName(const std::string& raw_name) {
-  std::string result = raw_name;
-  std::replace(result.begin(), result.end(), '.', '_');
-  std::replace(result.begin(), result.end(), '[', '_');
-  std::replace(result.begin(), result.end(), ']', '_');
-  result = "debug." + result;
-  return result;
-}
 }  // namespace
 
 class TrackEventParser::EventImporter {
@@ -177,7 +225,7 @@ class TrackEventParser::EventImporter {
       case 'i':
       case 'I':  // TRACE_EVENT_PHASE_INSTANT.
       case 'R':  // TRACE_EVENT_PHASE_MARK.
-        return ParseThreadInstantEvent();
+        return ParseThreadInstantEvent(phase);
       case 'b':  // TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN
       case 'S':
         return ParseAsyncBeginEvent(phase);
@@ -759,14 +807,21 @@ class TrackEventParser::EventImporter {
     MaybeParseTrackEventFlows();
   }
 
-  util::Status ParseThreadInstantEvent() {
+  util::Status ParseThreadInstantEvent(char phase) {
     // Handle instant events as slices with zero duration, so that they end
     // up nested underneath their parent slices.
     int64_t duration_ns = 0;
     int64_t tidelta = 0;
     base::Optional<tables::SliceTable::Id> opt_slice_id;
-    auto args_inserter = [this](BoundInserter* inserter) {
+    auto args_inserter = [this, phase](BoundInserter* inserter) {
       ParseTrackEventArgs(inserter);
+      // For legacy MARK event, add phase for JSON exporter.
+      if (phase == 'R') {
+        std::string phase_string(1, static_cast<char>(phase));
+        StringId phase_id = storage_->InternString(phase_string.c_str());
+        inserter->AddArg(parser_->legacy_event_phase_key_id_,
+                         Variadic::String(phase_id));
+      }
     };
     if (utid_) {
       auto* thread_slices = storage_->mutable_thread_slice_table();
@@ -939,7 +994,8 @@ class TrackEventParser::EventImporter {
       auto process_name = annotation.string_value();
       if (!process_name.size)
         return util::OkStatus();
-      auto process_name_id = storage_->InternString(process_name);
+      auto process_name_id =
+          storage_->InternString(base::StringView(process_name));
       // Don't override system-provided names.
       procs->SetProcessNameIfUnset(*upid_, process_name_id);
       return util::OkStatus();
@@ -1041,10 +1097,6 @@ class TrackEventParser::EventImporter {
       PERFETTO_DLOG("ParseTrackEventArgs error: %s", status.c_message());
     };
 
-    for (auto it = event_.debug_annotations(); it; ++it) {
-      log_errors(ParseDebugAnnotationArgs(*it, inserter));
-    }
-
     if (event_.has_source_location_iid()) {
       log_errors(AddSourceLocationArgs(event_.source_location_iid(), inserter));
     }
@@ -1060,137 +1112,24 @@ class TrackEventParser::EventImporter {
           ParseHistogramName(event_.chrome_histogram_sample(), inserter));
     }
 
-    log_errors(
-        parser_->context_->proto_to_args_table_->InternProtoFieldsIntoArgsTable(
-            blob_, ".perfetto.protos.TrackEvent", &parser_->reflect_fields_,
-            inserter, sequence_state_));
+    TrackEventArgsParser args_writer(*inserter, *storage_, *sequence_state_);
+    log_errors(parser_->args_parser_.ParseMessage(
+        blob_, ".perfetto.protos.TrackEvent", &parser_->reflect_fields_,
+        args_writer));
+
+    {
+      auto key = parser_->args_parser_.EnterDictionary("debug");
+      util::DebugAnnotationParser parser(parser_->args_parser_);
+      for (auto it = event_.debug_annotations(); it; ++it) {
+        log_errors(parser.Parse(*it, args_writer));
+      }
+    }
 
     if (legacy_passthrough_utid_) {
       inserter->AddArg(parser_->legacy_event_passthrough_utid_id_,
                        Variadic::UnsignedInteger(*legacy_passthrough_utid_),
                        ArgsTracker::UpdatePolicy::kSkipIfExists);
     }
-  }
-
-  util::Status ParseDebugAnnotationArgs(ConstBytes debug_annotation,
-                                        BoundInserter* inserter) {
-    protos::pbzero::DebugAnnotation::Decoder annotation(debug_annotation);
-
-    StringId name_id = kNullStringId;
-
-    uint64_t name_iid = annotation.name_iid();
-    if (PERFETTO_LIKELY(name_iid)) {
-      auto* decoder = sequence_state_->LookupInternedMessage<
-          protos::pbzero::InternedData::kDebugAnnotationNamesFieldNumber,
-          protos::pbzero::DebugAnnotationName>(name_iid);
-      if (!decoder)
-        return util::ErrStatus("Debug annotation with invalid name_iid");
-
-      std::string name_prefixed =
-          SafeDebugAnnotationName(decoder->name().ToStdString());
-      name_id = storage_->InternString(base::StringView(name_prefixed));
-    } else if (annotation.has_name()) {
-      name_id = storage_->InternString(annotation.name());
-    } else {
-      return util::ErrStatus("Debug annotation without name");
-    }
-
-    if (annotation.has_bool_value()) {
-      inserter->AddArg(name_id, Variadic::Boolean(annotation.bool_value()));
-    } else if (annotation.has_uint_value()) {
-      inserter->AddArg(name_id,
-                       Variadic::UnsignedInteger(annotation.uint_value()));
-    } else if (annotation.has_int_value()) {
-      inserter->AddArg(name_id, Variadic::Integer(annotation.int_value()));
-    } else if (annotation.has_double_value()) {
-      inserter->AddArg(name_id, Variadic::Real(annotation.double_value()));
-    } else if (annotation.has_string_value()) {
-      inserter->AddArg(
-          name_id,
-          Variadic::String(storage_->InternString(annotation.string_value())));
-    } else if (annotation.has_pointer_value()) {
-      inserter->AddArg(name_id, Variadic::Pointer(annotation.pointer_value()));
-    } else if (annotation.has_legacy_json_value()) {
-      if (!json::IsJsonSupported())
-        return util::ErrStatus("Ignoring legacy_json_value (no json support)");
-
-      auto value = json::ParseJsonString(annotation.legacy_json_value());
-      auto name = storage_->GetString(name_id);
-      json::AddJsonValueToArgs(*value, name, name, storage_, inserter);
-    } else if (annotation.has_nested_value()) {
-      auto name = storage_->GetString(name_id);
-      ParseNestedValueArgs(annotation.nested_value(), name, name, inserter);
-    }
-
-    return util::OkStatus();
-  }
-
-  bool ParseNestedValueArgs(ConstBytes nested_value,
-                            base::StringView flat_key,
-                            base::StringView key,
-                            BoundInserter* inserter) {
-    protos::pbzero::DebugAnnotation::NestedValue::Decoder value(nested_value);
-    switch (value.nested_type()) {
-      case protos::pbzero::DebugAnnotation::NestedValue::UNSPECIFIED: {
-        auto flat_key_id = storage_->InternString(flat_key);
-        auto key_id = storage_->InternString(key);
-        // Leaf value.
-        if (value.has_bool_value()) {
-          inserter->AddArg(flat_key_id, key_id,
-                           Variadic::Boolean(value.bool_value()));
-          return true;
-        }
-        if (value.has_int_value()) {
-          inserter->AddArg(flat_key_id, key_id,
-                           Variadic::Integer(value.int_value()));
-          return true;
-        }
-        if (value.has_double_value()) {
-          inserter->AddArg(flat_key_id, key_id,
-                           Variadic::Real(value.double_value()));
-          return true;
-        }
-        if (value.has_string_value()) {
-          inserter->AddArg(
-              flat_key_id, key_id,
-              Variadic::String(storage_->InternString(value.string_value())));
-          return true;
-        }
-        return false;
-      }
-      case protos::pbzero::DebugAnnotation::NestedValue::DICT: {
-        auto key_it = value.dict_keys();
-        auto value_it = value.dict_values();
-        bool inserted = false;
-        for (; key_it && value_it; ++key_it, ++value_it) {
-          std::string child_name = (*key_it).ToStdString();
-          std::string child_flat_key =
-              flat_key.ToStdString() + "." + child_name;
-          std::string child_key = key.ToStdString() + "." + child_name;
-          inserted |=
-              ParseNestedValueArgs(*value_it, base::StringView(child_flat_key),
-                                   base::StringView(child_key), inserter);
-        }
-        return inserted;
-      }
-      case protos::pbzero::DebugAnnotation::NestedValue::ARRAY: {
-        bool inserted_any = false;
-        std::string array_key = key.ToStdString();
-        StringId array_key_id = storage_->InternString(key);
-        for (auto value_it = value.array_values(); value_it; ++value_it) {
-          size_t array_index = inserter->GetNextArrayEntryIndex(array_key_id);
-          std::string child_key =
-              array_key + "[" + std::to_string(array_index) + "]";
-          bool inserted = ParseNestedValueArgs(
-              *value_it, flat_key, base::StringView(child_key), inserter);
-          if (inserted)
-            inserter->IncrementArrayEntryIndex(array_key_id);
-          inserted_any |= inserted;
-        }
-        return inserted_any;
-      }
-    }
-    return false;
   }
 
   util::Status ParseTaskExecutionArgs(ConstBytes task_execution,
@@ -1344,7 +1283,8 @@ class TrackEventParser::EventImporter {
 
 TrackEventParser::TrackEventParser(TraceProcessorContext* context,
                                    TrackEventTracker* track_event_tracker)
-    : context_(context),
+    : args_parser_(*context->descriptor_pool_.get()),
+      context_(context),
       track_event_tracker_(track_event_tracker),
       counter_name_thread_time_id_(
           context->storage->InternString("thread_time")),
@@ -1419,45 +1359,35 @@ TrackEventParser::TrackEventParser(TraceProcessorContext* context,
       counter_unit_ids_{{kNullStringId, context_->storage->InternString("ns"),
                          context_->storage->InternString("count"),
                          context_->storage->InternString("bytes")}} {
-  auto status = context_->proto_to_args_table_->AddProtoFileDescriptor(
-      kTrackEventDescriptor.data(), kTrackEventDescriptor.size());
-
-  PERFETTO_DCHECK(status.ok());
-
-  status = context_->proto_to_args_table_->AddProtoFileDescriptor(
-      kChromeTrackEventDescriptor.data(), kChromeTrackEventDescriptor.size());
-
-  PERFETTO_DCHECK(status.ok());
-
   // Switch |source_location_iid| into its interned data variant.
-  context_->proto_to_args_table_->AddParsingOverride(
+  args_parser_.AddParsingOverride(
       "begin_impl_frame_args.current_args.source_location_iid",
-      [](const ProtoToArgsTable::ParsingOverrideState& state,
-         const protozero::Field& field, BoundInserter* inserter) {
+      [](const protozero::Field& field,
+         util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("begin_impl_frame_args.current_args",
-                                        state, field, inserter);
+                                        field, delegate);
       });
-  context_->proto_to_args_table_->AddParsingOverride(
+  args_parser_.AddParsingOverride(
       "begin_impl_frame_args.last_args.source_location_iid",
-      [](const ProtoToArgsTable::ParsingOverrideState& state,
-         const protozero::Field& field, BoundInserter* inserter) {
+      [](const protozero::Field& field,
+         util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("begin_impl_frame_args.last_args",
-                                        state, field, inserter);
+                                        field, delegate);
       });
-  context_->proto_to_args_table_->AddParsingOverride(
+  args_parser_.AddParsingOverride(
       "begin_frame_observer_state.last_begin_frame_args.source_location_iid",
-      [](const ProtoToArgsTable::ParsingOverrideState& state,
-         const protozero::Field& field, BoundInserter* inserter) {
+      [](const protozero::Field& field,
+         util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation(
-            "begin_frame_observer_state.last_begin_frame_args", state, field,
-            inserter);
+            "begin_frame_observer_state.last_begin_frame_args", field,
+            delegate);
       });
-  context_->proto_to_args_table_->AddParsingOverride(
+  args_parser_.AddParsingOverride(
       "chrome_memory_pressure_notification.creation_location_iid",
-      [](const ProtoToArgsTable::ParsingOverrideState& state,
-         const protozero::Field& field, BoundInserter* inserter) {
+      [](const protozero::Field& field,
+         util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("chrome_memory_pressure_notification",
-                                        state, field, inserter);
+                                        field, delegate);
       });
 
   for (uint16_t index : kReflectFields) {

@@ -12,8 +12,8 @@
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/crostini/crostini_disk.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer.h"
+#include "chrome/browser/ash/crostini/crostini_disk.h"
+#include "chrome/browser/ash/crostini/crostini_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -178,13 +178,12 @@ bool CrostiniInstallerUI::RequestClosePage() {
 
 void CrostiniInstallerUI::ClickInstallForTesting() {
   web_ui()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(
-          "const app = document.querySelector('crostini-installer-app');"
-          // If flag CrostiniUsername or CrostiniDiskResizing is turned on,
-          // there will be a "next" button and we should click it to go to the
-          // config page before clicking "install" button.
-          "app.$$('#next:not([hidden])')?.click();"
-          "app.$.install.click();"),
+      u"const app = document.querySelector('crostini-installer-app');"
+      // If flag CrostiniUsername or CrostiniDiskResizing is turned on, there
+      // will be a "next" button and we should click it to go to the config page
+      // before clicking "install" button.
+      u"app.$$('#next:not([hidden])')?.click();"
+      u"app.$.install.click();",
       base::NullCallback());
 }
 

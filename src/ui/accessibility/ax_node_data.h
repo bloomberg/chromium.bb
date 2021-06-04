@@ -267,13 +267,20 @@ struct AX_BASE_EXPORT AXNodeData {
   // This data belongs to a text field that is used for entering passwords.
   bool IsPasswordField() const;
 
-  // This data belongs to a text field that doesn't accept rich text content,
-  // such as text with special formatting or styling.
-  bool IsPlainTextField() const;
+  // This data belongs to an atomic text field. An atomic text field does not
+  // expose its internal implementation to assistive software, appearing as a
+  // single leaf node in the accessibility tree. Examples include: An <input> or
+  // a <textarea> on the Web, a text field in a PDF form, a Views-based text
+  // field, or a native Android one.
+  bool IsAtomicTextField() const;
 
-  // This data belongs to a text field that accepts rich text content, such as
-  // text with special formatting or styling.
-  bool IsRichTextField() const;
+  // This data belongs to a text field whose value is exposed both on the field
+  // itself as well as on descendant nodes which are expose to platform
+  // accessibility APIs. A non-native text field also exposes stylistic and
+  // document marker information on descendant nodes. Examples include fields
+  // created using the CSS "user-modify" property, or the "contenteditable"
+  // attribute.
+  bool IsNonAtomicTextField() const;
 
   // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
   // By default, all nodes that can't be edited are readonly.

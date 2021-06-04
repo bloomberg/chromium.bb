@@ -22,6 +22,7 @@ import {assertExists, reportError, setErrorHandler} from '../base/logging';
 import {forwardRemoteCalls} from '../base/remote';
 import {Actions} from '../common/actions';
 import {AggregateData} from '../common/aggregation_data';
+import {ConversionJobStatusUpdate} from '../common/conversion_jobs';
 import {
   LogBoundsKey,
   LogEntriesKey,
@@ -60,6 +61,10 @@ import {TraceInfoPage} from './trace_info_page';
 import {ViewerPage} from './viewer_page';
 
 const EXTENSION_ID = 'lfmkphfpdbjijhpomgecfikhfohaoine';
+
+function isLocalhostTraceUrl(url: string): boolean {
+  return ['127.0.0.1', 'localhost'].includes((new URL(url)).hostname);
+}
 
 /**
  * The API the main thread exposes to the controller.
@@ -184,6 +189,16 @@ class FrontendApi {
     this.redraw();
   }
 
+  publishHasFtrace(hasFtrace: boolean) {
+    globals.hasFtrace = hasFtrace;
+    this.redraw();
+  }
+
+  publishConversionJobStatusUpdate(job: ConversionJobStatusUpdate) {
+    globals.setConversionJobStatus(job.jobName, job.jobStatus);
+    this.redraw();
+  }
+
   publishFileDownload(args: {file: File, name?: string}) {
     const url = URL.createObjectURL(args.file);
     const a = document.createElement('a');
@@ -207,7 +222,6 @@ class FrontendApi {
     const arr = new Uint8Array(args.data, 0, args.size);
     const str = (new TextDecoder('utf-8')).decode(arr);
     openBufferWithLegacyTraceViewer('trace.json', str, 0);
-    globals.dispatch(Actions.clearConversionInProgress({}));
   }
 
   publishBufferUsage(args: {percentage: number}) {
@@ -298,7 +312,7 @@ function setupContentSecurityPolicy() {
       'https://www.google-analytics.com',
       'https://www.googletagmanager.com',
     ],
-    'navigate-to': ['https://*.perfetto.dev']
+    'navigate-to': ['https://*.perfetto.dev', 'self'],
   };
   const meta = document.createElement('meta');
   meta.httpEquiv = 'Content-Security-Policy';
@@ -442,9 +456,22 @@ function onCssLoaded(router: Router) {
       hash: stateHash,
     }));
   } else if (typeof urlHash === 'string' && urlHash) {
-    globals.dispatch(Actions.openTraceFromUrl({
-      url: urlHash,
-    }));
+    if (isLocalhostTraceUrl(urlHash)) {
+      const fileName = urlHash.split('/').pop() || 'local_trace.pftrace';
+      const request = fetch(urlHash)
+                          .then(response => response.blob())
+                          .then(blob => {
+                            globals.dispatch(Actions.openTraceFromFile({
+                              file: new File([blob], fileName),
+                            }));
+                          })
+                          .catch(e => alert(`Could not load local trace ${e}`));
+      taskTracker.trackPromise(request, 'Downloading local trace');
+    } else {
+      globals.dispatch(Actions.openTraceFromUrl({
+        url: urlHash,
+      }));
+    }
   } else if (androidBugTool) {
     // TODO(hjd): Unify updateStatus and TaskTracker
     globals.dispatch(Actions.updateStatus({

@@ -16,6 +16,8 @@
 #include "components/tab_groups/tab_group_color.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/tween.h"
@@ -29,8 +31,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -91,7 +91,7 @@ class ColorPickerElementView : public views::Button {
                              : gfx::Insets(padding);
     SetBorder(views::CreateEmptyBorder(insets));
 
-    SetInkDropMode(InkDropMode::OFF);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetAnimateOnStateChange(true);
   }
 
@@ -255,12 +255,12 @@ ColorPickerView::~ColorPickerView() {
   RemoveAllChildViews(true);
 }
 
-base::Optional<int> ColorPickerView::GetSelectedElement() const {
+absl::optional<int> ColorPickerView::GetSelectedElement() const {
   for (size_t i = 0; i < elements_.size(); ++i) {
     if (elements_[i]->GetSelected())
       return static_cast<int>(i);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 views::View* ColorPickerView::GetSelectedViewForGroup(int group) {
@@ -289,5 +289,5 @@ void ColorPickerView::OnColorSelected(ColorPickerElementView* element) {
 }
 
 BEGIN_METADATA(ColorPickerView, views::View)
-ADD_READONLY_PROPERTY_METADATA(base::Optional<int>, SelectedElement)
+ADD_READONLY_PROPERTY_METADATA(absl::optional<int>, SelectedElement)
 END_METADATA

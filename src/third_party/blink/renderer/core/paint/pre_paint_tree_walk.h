@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PRE_PAINT_TREE_WALK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PRE_PAINT_TREE_WALK_H_
 
-#include "third_party/blink/renderer/core/paint/clip_rect.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -20,8 +20,8 @@ class NGFragmentChildIterator;
 // LocalFrameView, across frame boundaries. Helper classes are called for each
 // tree node to perform actual actions.  It expects to be invoked in InPrePaint
 // phase.
-class CORE_EXPORT PrePaintTreeWalk {
-  DISALLOW_NEW();
+class CORE_EXPORT PrePaintTreeWalk final {
+  STACK_ALLOCATED();
 
  public:
   PrePaintTreeWalk() = default;
@@ -30,20 +30,16 @@ class CORE_EXPORT PrePaintTreeWalk {
   static bool ObjectRequiresPrePaint(const LayoutObject&);
   static bool ObjectRequiresTreeBuilderContext(const LayoutObject&);
 
- private:
-  friend PaintInvalidatorContext::ParentContextAccessor;
-
-  // PrePaintTreewalkContext is large and can lead to stack overflows
-  // when recursion is deep so these context objects are allocated on the heap.
-  // See: https://crbug.com/698653.
   struct PrePaintTreeWalkContext {
-    PrePaintTreeWalkContext() { tree_builder_context.emplace(); }
-    PrePaintTreeWalkContext(
-        const PrePaintTreeWalkContext& parent_context,
-        const PaintInvalidatorContext::ParentContextAccessor&
-            parent_context_accessor,
-        bool needs_tree_builder_context)
-        : paint_invalidator_context(parent_context_accessor),
+    STACK_ALLOCATED();
+
+   public:
+    PrePaintTreeWalkContext() {
+      tree_builder_context.emplace();
+    }
+    PrePaintTreeWalkContext(const PrePaintTreeWalkContext& parent_context,
+                            bool needs_tree_builder_context)
+        : paint_invalidator_context(parent_context.paint_invalidator_context),
           ancestor_scroll_container_paint_layer(
               parent_context.ancestor_scroll_container_paint_layer),
           inside_blocking_touch_event_handler(
@@ -71,7 +67,8 @@ class CORE_EXPORT PrePaintTreeWalk {
 #endif
     }
 
-    base::Optional<PaintPropertyTreeBuilderContext> tree_builder_context;
+    absl::optional<PaintPropertyTreeBuilderContext> tree_builder_context;
+
     PaintInvalidatorContext paint_invalidator_context;
 
     bool NeedsTreeBuilderContext() const {
@@ -121,12 +118,7 @@ class CORE_EXPORT PrePaintTreeWalk {
                                     const PrePaintTreeWalkContext&);
 #endif
 
-  const PrePaintTreeWalkContext& ContextAt(wtf_size_t index) {
-    DCHECK_LT(index, context_storage_.size());
-    return context_storage_[index];
-  }
-
-  void Walk(LocalFrameView&);
+  void Walk(LocalFrameView&, const PrePaintTreeWalkContext& parent_context);
 
   // This is to minimize stack frame usage during recursion. Modern compilers
   // (MSVC in particular) can inline across compilation units, resulting in
@@ -134,12 +126,18 @@ class CORE_EXPORT PrePaintTreeWalk {
   // makes sure the stack frame is freed prior to making a recursive call.
   // See https://crbug.com/781301 .
   NOINLINE void WalkInternal(const LayoutObject&,
-                             const NGFragmentChildIterator*,
-                             PrePaintTreeWalkContext&);
-  void WalkNGChildren(const LayoutObject* parent, NGFragmentChildIterator*);
-  void WalkLegacyChildren(const LayoutObject&);
-  void WalkChildren(const LayoutObject*, const NGFragmentChildIterator*);
-  void Walk(const LayoutObject&, const NGFragmentChildIterator*);
+                             PrePaintTreeWalkContext&,
+                             const NGFragmentChildIterator*);
+  void WalkNGChildren(const LayoutObject* parent,
+                      PrePaintTreeWalkContext& parent_context,
+                      NGFragmentChildIterator*);
+  void WalkLegacyChildren(const LayoutObject&, PrePaintTreeWalkContext&);
+  void WalkChildren(const LayoutObject*,
+                    PrePaintTreeWalkContext&,
+                    const NGFragmentChildIterator*);
+  void Walk(const LayoutObject&,
+            const PrePaintTreeWalkContext& parent_context,
+            const NGFragmentChildIterator*);
 
   bool NeedsTreeBuilderContextUpdate(const LocalFrameView&,
                                      const PrePaintTreeWalkContext&);
@@ -158,15 +156,12 @@ class CORE_EXPORT PrePaintTreeWalk {
   void InvalidatePaintForHitTesting(const LayoutObject&,
                                     PrePaintTreeWalkContext&);
 
-  void ResizeContextStorageIfNeeded();
-
   void UpdatePaintInvalidationContainer(const LayoutObject& object,
                                         const PaintLayer* painting_layer,
                                         PrePaintTreeWalkContext& context,
                                         bool is_ng_painting);
 
   PaintInvalidator paint_invalidator_;
-  Vector<PrePaintTreeWalkContext> context_storage_;
 
   // TODO(https://crbug.com/841364): Remove is_wheel_event_regions_enabled
   // argument once kWheelEventRegions feature flag is removed.

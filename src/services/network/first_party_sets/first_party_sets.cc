@@ -5,37 +5,41 @@
 #include "services/network/first_party_sets/first_party_sets.h"
 
 #include <initializer_list>
-#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "net/base/schemeful_site.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/network/first_party_sets/first_party_set_parser.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
 namespace {
 
-base::Optional<
+absl::optional<
     std::pair<net::SchemefulSite, base::flat_set<net::SchemefulSite>>>
 CanonicalizeSet(const std::vector<std::string>& origins) {
   if (origins.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
-  const base::Optional<net::SchemefulSite> maybe_owner =
+  const absl::optional<net::SchemefulSite> maybe_owner =
       FirstPartySetParser::CanonicalizeRegisteredDomain(origins[0],
                                                         true /* emit_errors */);
   if (!maybe_owner.has_value()) {
     LOG(ERROR) << "First-Party Set owner is not valid; aborting.";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const net::SchemefulSite& owner = *maybe_owner;
   base::flat_set<net::SchemefulSite> members;
   for (auto it = origins.begin() + 1; it != origins.end(); ++it) {
-    const base::Optional<net::SchemefulSite> maybe_member =
+    const absl::optional<net::SchemefulSite> maybe_member =
         FirstPartySetParser::CanonicalizeRegisteredDomain(
             *it, true /* emit_errors */);
     if (maybe_member.has_value() && maybe_member != owner)
@@ -44,10 +48,10 @@ CanonicalizeSet(const std::vector<std::string>& origins) {
 
   if (members.empty()) {
     LOG(ERROR) << "No valid First-Party Set members were specified; aborting.";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  return base::make_optional(
+  return absl::make_optional(
       std::make_pair(std::move(owner), std::move(members)));
 }
 
@@ -66,22 +70,14 @@ void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
 
 base::flat_map<net::SchemefulSite, net::SchemefulSite>*
 FirstPartySets::ParseAndSet(base::StringPiece raw_sets) {
-  std::unique_ptr<base::flat_map<net::SchemefulSite, net::SchemefulSite>>
-      parsed = FirstPartySetParser::ParsePreloadedSets(raw_sets);
-  if (parsed) {
-    sets_.swap(*parsed);
-  } else {
-    // On any error, we clear the sets, to avoid using the old data and to make
-    // the failure as obvious as possible.
-    sets_.clear();
-  }
+  sets_ = FirstPartySetParser::ParseSetsFromComponentUpdater(raw_sets);
   ApplyManuallySpecifiedSet();
   return &sets_;
 }
 
 bool FirstPartySets::IsContextSamePartyWithSite(
     const net::SchemefulSite& site,
-    const base::Optional<net::SchemefulSite>& top_frame_site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
   const auto it = sets_.find(site);
   if (it == sets_.end())
@@ -98,6 +94,36 @@ bool FirstPartySets::IsContextSamePartyWithSite(
     return false;
 
   return base::ranges::all_of(party_context, is_owned_by_site_owner);
+}
+
+net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
+    const net::SchemefulSite& site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const std::set<net::SchemefulSite>& party_context) const {
+  const auto owner_or_site =
+      [this](const net::SchemefulSite& site) -> const net::SchemefulSite& {
+    const auto it = sets_.find(site);
+    return it == sets_.end() ? site : it->second;
+  };
+  const net::SchemefulSite& site_owner = owner_or_site(site);
+  // Note: the `party_context` consists of the intermediate frames (for frame
+  // requests) or intermediate frames and current frame for subresource
+  // requests.
+  const bool is_homogeneous = base::ranges::all_of(
+      party_context, [&](const net::SchemefulSite& middle_site) {
+        return owner_or_site(middle_site) == site_owner;
+      });
+  if (!top_frame_site.has_value()) {
+    return is_homogeneous
+               ? net::FirstPartySetsContextType::kTopFrameIgnoredHomogeneous
+               : net::FirstPartySetsContextType::kTopFrameIgnoredMixed;
+  }
+  if (owner_or_site(*top_frame_site) != site_owner)
+    return net::FirstPartySetsContextType::kTopResourceMismatch;
+
+  return is_homogeneous
+             ? net::FirstPartySetsContextType::kHomogeneous
+             : net::FirstPartySetsContextType::kTopResourceMatchMixed;
 }
 
 bool FirstPartySets::IsInNontrivialFirstPartySet(

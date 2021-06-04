@@ -31,9 +31,10 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/autofill_snackbar_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
-#include "chrome/browser/ui/autofill/save_address_profile_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -58,6 +59,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -77,7 +79,6 @@
 #include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/browser/autofill/android/internal_authenticator_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
@@ -90,12 +91,14 @@
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_view.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_selection_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
@@ -247,7 +250,7 @@ profile_metrics::BrowserProfileType ChromeAutofillClient::GetProfileType()
   Profile* profile = GetProfile();
   // Profile can only be null in tests, therefore it is safe to always return
   // |kRegular| when it does not exist.
-  return profile ? ProfileMetrics::GetBrowserProfileType(profile)
+  return profile ? profile_metrics::GetBrowserProfileType(profile)
                  : profile_metrics::BrowserProfileType::kRegular;
 }
 
@@ -429,14 +432,14 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     LocalSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
   DCHECK(options.show_prompt);
-  InfoBarService::FromWebContents(web_contents())
+  infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/false, options, card, LegalMessageLines(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs()),
-          base::nullopt));
+          absl::nullopt));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -464,7 +467,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       GetPersonalDataManager()->GetSyncSigninState() ==
       autofill::AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
 
-  base::Optional<AccountInfo> account_info = base::nullopt;
+  absl::optional<AccountInfo> account_info;
   // AccountInfo data should be passed down only if the following conditions are
   // satisfied:
   // 1) Sync is off or the
@@ -481,7 +484,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
                kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers))) {
     account_info = GetAccountInfo();
   }
-  InfoBarService::FromWebContents(web_contents())
+  infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::move(save_card_info_bar_delegate_mobile), account_info));
 #else
@@ -520,7 +523,7 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
       std::make_unique<AutofillCreditCardFillingInfoBarDelegateMobile>(
           card, std::move(callback));
   auto* raw_delegate = infobar_delegate.get();
-  if (InfoBarService::FromWebContents(web_contents())
+  if (infobars::ContentInfoBarManager::FromWebContents(web_contents())
           ->AddInfoBar(std::make_unique<AutofillCreditCardFillingInfoBar>(
               std::move(infobar_delegate)))) {
     raw_delegate->set_was_shown();
@@ -530,15 +533,21 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 
 void ChromeAutofillClient::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
+    const AutofillProfile* original_profile,
+    SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
 #if defined(OS_ANDROID)
-  save_address_profile_flow_manager_.OfferSave(web_contents(), profile,
-                                               std::move(callback));
+  // TODO(crbug.com/1167061): Respect SaveAddressProfilePromptOptions.
+  save_address_profile_flow_manager_.OfferSave(
+      web_contents(), profile, original_profile, std::move(callback));
 #else
-  SaveAddressProfileBubbleControllerImpl::CreateForWebContents(web_contents());
-  SaveAddressProfileBubbleControllerImpl* controller =
-      SaveAddressProfileBubbleControllerImpl::FromWebContents(web_contents());
-  controller->OfferSave(profile, std::move(callback));
+  SaveUpdateAddressProfileBubbleControllerImpl::CreateForWebContents(
+      web_contents());
+  SaveUpdateAddressProfileBubbleControllerImpl* controller =
+      SaveUpdateAddressProfileBubbleControllerImpl::FromWebContents(
+          web_contents());
+  controller->OfferSave(profile, original_profile, options,
+                        std::move(callback));
 #endif
 }
 
@@ -646,20 +655,47 @@ void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
 }
 
 void ChromeAutofillClient::ShowOfferNotificationIfApplicable(
-    const std::vector<GURL>& domains_to_display_bubble,
-    const GURL& offer_details_url,
-    const CreditCard* card) {
+    const AutofillOfferData* offer) {
+  if (!offer)
+    return;
+
+  // Ensure the card for a card-linked offer is successfully on the device.
+  CreditCard* card =
+      offer->eligible_instrument_id.empty()
+          ? nullptr
+          : GetPersonalDataManager()->GetCreditCardByInstrumentId(
+                offer->eligible_instrument_id[0]);
+  if (offer->IsCardLinkedOffer() && !card)
+    return;
+
+  // TODO(crbug.com/1203811): Promo code offers should eventually show offer
+  //                          details in their own format as well.
+  if (!offer->IsCardLinkedOffer())
+    return;
+
 #if defined(OS_ANDROID)
   std::unique_ptr<OfferNotificationInfoBarControllerImpl> controller =
       std::make_unique<OfferNotificationInfoBarControllerImpl>(web_contents());
-  controller->ShowIfNecessary(domains_to_display_bubble, offer_details_url,
-                              card);
+  controller->ShowIfNecessary(offer, card);
 #else
   OfferNotificationBubbleControllerImpl::CreateForWebContents(web_contents());
   OfferNotificationBubbleControllerImpl* controller =
       OfferNotificationBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowOfferNotificationIfApplicable(domains_to_display_bubble,
-                                                card);
+  controller->ShowOfferNotificationIfApplicable(offer, card);
+#endif
+}
+
+void ChromeAutofillClient::OnVirtualCardFetched(const CreditCard* credit_card,
+                                                const std::u16string& cvc) {
+#if defined(OS_ANDROID)
+  (new AutofillSnackbarControllerImpl(web_contents()))->Show();
+#else
+  VirtualCardManualFallbackBubbleControllerImpl::CreateForWebContents(
+      web_contents());
+  VirtualCardManualFallbackBubbleControllerImpl* controller =
+      VirtualCardManualFallbackBubbleControllerImpl::FromWebContents(
+          web_contents());
+  controller->ShowBubble(credit_card, cvc);
 #endif
 }
 
@@ -815,7 +851,7 @@ Profile* ChromeAutofillClient::GetProfile() const {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
-base::Optional<AccountInfo> ChromeAutofillClient::GetAccountInfo() {
+absl::optional<AccountInfo> ChromeAutofillClient::GetAccountInfo() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   CoreAccountId account_id =
@@ -839,7 +875,7 @@ std::u16string ChromeAutofillClient::GetAccountHolderName() {
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
     return std::u16string();
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   return primary_account_info

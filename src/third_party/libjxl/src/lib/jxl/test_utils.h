@@ -17,6 +17,8 @@
 
 // Macros and functions useful for tests.
 
+#include <random>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "jxl/codestream_header.h"
@@ -59,6 +61,10 @@ void JxlBasicInfoSetFromPixelFormat(JxlBasicInfo* basic_info,
     case JXL_TYPE_FLOAT:
       basic_info->bits_per_sample = 32;
       basic_info->exponent_bits_per_sample = 8;
+      break;
+    case JXL_TYPE_FLOAT16:
+      basic_info->bits_per_sample = 16;
+      basic_info->exponent_bits_per_sample = 5;
       break;
     case JXL_TYPE_UINT8:
       basic_info->bits_per_sample = 8;
@@ -269,7 +275,8 @@ std::vector<ColorEncodingDescriptor> AllEncodings() {
 std::vector<uint8_t> GetSomeTestImage(size_t xsize, size_t ysize,
                                       size_t num_channels, uint16_t seed) {
   // Cause more significant image difference for successive seeds.
-  seed = static_cast<uint16_t>(seed * 77);
+  std::mt19937 rng(seed);
+  std::uniform_int_distribution<uint16_t> dark(0, 32767);
   size_t num_pixels = xsize * ysize;
   // 16 bits per channel, big endian, 4 channels
   std::vector<uint8_t> pixels(num_pixels * num_channels * 2);
@@ -277,14 +284,16 @@ std::vector<uint8_t> GetSomeTestImage(size_t xsize, size_t ysize,
   // can be compared after roundtrip.
   for (size_t y = 0; y < ysize; y++) {
     for (size_t x = 0; x < xsize; x++) {
-      uint16_t r = (65535 - x * y) ^ seed;
-      uint16_t g = (x << 8) + y + seed;
-      uint16_t b = (y << 8) + x * seed;
-      uint16_t a = 32768 + x * 256 - y;
+      uint16_t r = dark(rng);
+      uint16_t g = dark(rng);
+      uint16_t b = dark(rng);
+      uint16_t a = dark(rng);
       // put some shape in there for visual debugging
       if (x * x + y * y < 1000) {
-        std::swap(r, g);
-        b = 0;
+        r = (65535 - x * y) ^ seed;
+        g = (x << 8) + y + seed;
+        b = (y << 8) + x * seed;
+        a = 32768 + x * 256 - y;
       }
       size_t i = (y * xsize + x) * 2 * num_channels;
       pixels[i + 0] = (r >> 8);
@@ -330,6 +339,17 @@ jxl::CodecInOut SomeTestImageToCodecInOut(const std::vector<uint8_t>& buf,
 }
 
 }  // namespace test
+
+bool operator==(const jxl::PaddedBytes& a, const jxl::PaddedBytes& b) {
+  if (a.size() != b.size()) return false;
+  if (memcmp(a.data(), b.data(), a.size()) != 0) return false;
+  return true;
+}
+
+// Allow using EXPECT_EQ on jxl::PaddedBytes
+bool operator!=(const jxl::PaddedBytes& a, const jxl::PaddedBytes& b) {
+  return !(a == b);
+}
 }  // namespace jxl
 
 #endif  // LIB_JXL_TEST_UTILS_H_

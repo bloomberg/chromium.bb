@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/arc/recommend_apps_fetcher.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Value;
@@ -52,8 +53,8 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   // Called when SimpleURLLoader completes.
   void OnDownloaded(std::unique_ptr<std::string> response_body);
 
-  // If the response is not a valid JSON, return base::nullopt.
-  // If the response contains no app, return base::nullopt;
+  // If the response is not a valid JSON, return absl::nullopt.
+  // If the response contains no app, return absl::nullopt;
   // The value, if exists, is a list containing:
   // 1. name: the title of the app.
   // 2. package_name: name of the package, for example: com.package.name
@@ -79,7 +80,7 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   //    }
   // ]
 
-  base::Optional<base::Value> ParseResponse(base::StringPiece response);
+  absl::optional<base::Value> ParseResponse(base::StringPiece response);
 
   RecommendAppsFetcherDelegate* delegate_;
 

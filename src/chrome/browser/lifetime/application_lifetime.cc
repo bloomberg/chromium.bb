@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -60,6 +61,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_data_service.h"
+#include "chrome/browser/sessions/session_data_service_factory.h"
 #endif
 
 namespace chrome {
@@ -136,8 +142,16 @@ using IgnoreUnloadHandlers =
 
 void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  for (auto* browser : *BrowserList::GetInstance())
-    content::BrowserContext::SaveSessionState(browser->profile());
+  // TODO(crbug.com/1205798): Unset SaveSessionState if the restart fails.
+  for (auto* browser : *BrowserList::GetInstance()) {
+    browser->profile()->SaveSessionState();
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+    auto* session_data_service =
+        SessionDataServiceFactory::GetForProfile(browser->profile());
+    if (session_data_service)
+      session_data_service->SetForceKeepSessionState();
+#endif
+  }
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);

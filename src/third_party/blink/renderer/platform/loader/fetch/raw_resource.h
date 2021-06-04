@@ -25,7 +25,7 @@
 
 #include <memory>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
@@ -49,9 +49,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* Fetch(FetchParameters&,
                             ResourceFetcher*,
                             RawResourceClient*);
-  static RawResource* FetchImport(FetchParameters&,
-                                  ResourceFetcher*,
-                                  RawResourceClient*);
   static RawResource* FetchMedia(FetchParameters&,
                                  ResourceFetcher*,
                                  RawResourceClient*);
@@ -135,8 +132,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 inline bool IsRawResource(ResourceType type) {
   return type == ResourceType::kRaw || type == ResourceType::kTextTrack ||
          type == ResourceType::kAudio || type == ResourceType::kVideo ||
-         type == ResourceType::kManifest ||
-         type == ResourceType::kImportResource;
+         type == ResourceType::kManifest;
 }
 inline bool IsRawResource(const Resource& resource) {
   return IsRawResource(resource.GetType());

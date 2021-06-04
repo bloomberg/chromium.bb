@@ -36,29 +36,22 @@ const AcceleratorData kDeprecatedAccelerators[] = {
 
     // Deprecated in M59.
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-     SHOW_IME_MENU_BUBBLE},
-
-    // Deprecated in M61.
-    {true, ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
-     TOGGLE_HIGH_CONTRAST}};
+     SHOW_IME_MENU_BUBBLE}};
 
 const size_t kDeprecatedAcceleratorsLength =
     base::size(kDeprecatedAccelerators);
 
 const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
+    // The action for the old shortcut was stopped in M92. Delete
+    // completely in M94.
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
-     IDS_SHORTCUT_TASK_MANAGER_NEW, true},
+     IDS_SHORTCUT_TASK_MANAGER_NEW, false},
+    // The action for the old shortcut was stopped in M92. Delete
+    // completely in M94.
     {SHOW_IME_MENU_BUBBLE, "Ash.Accelerators.Deprecated.ShowImeMenuBubble",
      IDS_DEPRECATED_SHOW_IME_BUBBLE_MSG, IDS_SHORTCUT_IME_BUBBLE_OLD,
-     IDS_SHORTCUT_IME_BUBBLE_NEW, true},
-    {
-        TOGGLE_HIGH_CONTRAST, "Ash.Accelerators.Deprecated.ToggleHighContrast",
-        IDS_DEPRECATED_TOGGLE_HIGH_CONTRAST_MSG,
-        IDS_SHORTCUT_TOGGLE_HIGH_CONTRAST_OLD,
-        IDS_SHORTCUT_TOGGLE_HIGH_CONTRAST_NEW,
-        false  // Old accelerator was disabled immediately upon deprecation.
-    }};
+     IDS_SHORTCUT_IME_BUBBLE_NEW, false}};
 
 const size_t kDeprecatedAcceleratorsDataLength =
     base::size(kDeprecatedAcceleratorsData);
@@ -80,7 +73,6 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_L, kDebugModifier, DEBUG_PRINT_LAYER_HIERARCHY},
     {true, ui::VKEY_V, kDebugModifier, DEBUG_PRINT_VIEW_HIERARCHY},
     {true, ui::VKEY_W, kDebugModifier, DEBUG_PRINT_WINDOW_HIERARCHY},
-    {true, ui::VKEY_D, kDebugModifier, DEBUG_TOGGLE_DEVICE_SCALE_FACTOR},
     {true, ui::VKEY_B, kDebugModifier, DEBUG_TOGGLE_SHOW_DEBUG_BORDERS},
     {true, ui::VKEY_F, kDebugModifier, DEBUG_TOGGLE_SHOW_FPS_COUNTER},
     {true, ui::VKEY_P, kDebugModifier, DEBUG_TOGGLE_SHOW_PAINT_RECTS},
@@ -120,6 +112,8 @@ const AcceleratorData kDeveloperAcceleratorData[] = {
     // TODO(wutao): Get a shortcut for the Ambient mode.
     {true, ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
      START_AMBIENT_MODE},
+    // For testing on Linux desktop where it's hard to rebind the caps lock key.
+    {true, ui::VKEY_A, ui::EF_ALT_DOWN, DEV_TOGGLE_APP_LIST},
 };
 
 const size_t kDeveloperAcceleratorDataLength =

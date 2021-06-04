@@ -184,15 +184,17 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, CreateNewWindow) {
   ASSERT_TRUE(controller);
 
   EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile()));
-  EXPECT_EQ(0U, chrome::GetBrowserCount(
-                    browser()->profile()->GetPrimaryOTRProfile()));
+  EXPECT_EQ(0U,
+            chrome::GetBrowserCount(browser()->profile()->GetPrimaryOTRProfile(
+                /*create_if_needed=*/true)));
 
   controller->CreateNewWindow(/*incognito=*/false);
   EXPECT_EQ(2U, chrome::GetBrowserCount(browser()->profile()));
 
   controller->CreateNewWindow(/*incognito=*/true);
-  EXPECT_EQ(1U, chrome::GetBrowserCount(
-                    browser()->profile()->GetPrimaryOTRProfile()));
+  EXPECT_EQ(1U,
+            chrome::GetBrowserCount(browser()->profile()->GetPrimaryOTRProfile(
+                /*create_if_needed=*/true)));
 }
 
 // When getting activated, SelfDestroyAppItem has itself removed from the
@@ -303,7 +305,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   ASSERT_TRUE(search_controller->FindSearchResult(app_result_id));
 
   // Open the app result.
-  client->OpenSearchResult(app_result_id, ui::EF_NONE,
+  client->OpenSearchResult(model_updater->model_id(), app_result_id,
+                           ash::AppListSearchResultType::kInstalledApp,
+                           ui::EF_NONE,
                            ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
                            ash::AppListLaunchType::kAppSearchResult, 0,
                            false /* launch_as_default */);
@@ -327,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
   ASSERT_TRUE(controller);
 
   Profile* profile = browser()->profile();
-  Profile* profile_otr = profile->GetPrimaryOTRProfile();
+  Profile* profile_otr =
+      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile);
 
@@ -493,7 +498,7 @@ class AppListAppLaunchTest : public extensions::ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest,
                        NoDemoModeAppLaunchSourceReported) {
-  EXPECT_FALSE(chromeos::DemoSession::IsDeviceInDemoMode());
+  EXPECT_FALSE(ash::DemoSession::IsDeviceInDemoMode());
   LaunchChromeAppListItem(extension_misc::kChromeAppId);
 
   // Should see 0 apps launched from the Launcher in the histogram when not in
@@ -502,9 +507,9 @@ IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest, DemoModeAppLaunchSourceReported) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
-  EXPECT_TRUE(chromeos::DemoSession::IsDeviceInDemoMode());
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(ash::DemoSession::IsDeviceInDemoMode());
 
   // Should see 0 apps launched from the Launcher in the histogram at first.
   histogram_tester_->ExpectTotalCount("DemoMode.AppLaunchSource", 0);
@@ -517,6 +522,6 @@ IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest, DemoModeAppLaunchSourceReported) {
 
   // Should see 1 app launched from the Launcher in the histogram.
   histogram_tester_->ExpectUniqueSample(
-      "DemoMode.AppLaunchSource",
-      chromeos::DemoSession::AppLaunchSource::kAppList, 1);
+      "DemoMode.AppLaunchSource", ash::DemoSession::AppLaunchSource::kAppList,
+      1);
 }

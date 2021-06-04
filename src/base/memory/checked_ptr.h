@@ -68,7 +68,8 @@ struct CheckedPtrNoOpImpl {
                   "From must be convertible to To.");
     // The outer static_cast may change the address if upcasting to base that
     // lies in the middle of the derived object.
-    return static_cast<To*>(static_cast<From*>(wrapped_ptr));
+    return const_cast<typename std::remove_cv<To>::type*>(
+        static_cast<To*>(static_cast<From*>(wrapped_ptr)));
   }
 
   // Advance the wrapped pointer by |delta| bytes.
@@ -116,10 +117,13 @@ struct BackupRefPtrImpl {
     __builtin_assume(ptr != nullptr || !ret);
 #endif
 
-#if BUILDFLAG(MAKE_GIGACAGE_GRANULARITY_PARTITION_PAGE_SIZE)
     // There may be pointers immediately after the allocation, e.g.
-    //   CheckedPtr<T> ptr = AllocateNotFromPartitionAlloc(X * sizeof(T));
-    //   for (size_t i = 0; i < X; i++) { ptr++; }
+    //   {
+    //     // Assume this allocation happens outside of PartitionAlloc.
+    //     CheckedPtr<T> ptr = new T[20];
+    //     for (size_t i = 0; i < 20; i ++) { ptr++; }
+    //   }
+    //
     // Such pointers are *not* at risk of accidentally falling into BRP pool,
     // because:
     // 1) On 64-bit systems, BRP pool is preceded by non-BRP pool.
@@ -129,30 +133,14 @@ struct BackupRefPtrImpl {
     // This allows us to make a stronger assertion that if
     // IsManagedByPartitionAllocBRPPool returns true for a valid pointer,
     // it must be at least partition page away from the beginning of a super
-    // page.
+    // page. This, however, can't be easily checked for direct maps, where a
+    // pointer on a consecutive super page may easily land in its first
+    // partition page.
+#if !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
     if (ret) {
       DCHECK(reinterpret_cast<uintptr_t>(ptr) % kSuperPageSize >=
              PartitionPageSize());
     }
-#else
-    // There is a problem on 32-bit systems, where the fake "GigaCage" has many
-    // BRP pool regions spread throughout the address space. A pointer
-    // immediately past an allocation may accidentally fall into the BRP pool,
-    // hence check if |ptr-1| belongs to that pool. However, checking only
-    // |ptr-1| causes a problem with pointers to the beginning of an
-    // out-of-the-pool allocation that happen to be where the pool ends, so
-    // checking for |ptr| is also necessary.
-    //
-    // Note, if |ptr| is in the BRP pool, |ptr-1| will not fall out of it,
-    // thanks to the leading guard pages (i.e. |ptr| will never point to the
-    // beginning of GigaCage).
-    //
-    // 64-bit systems don't have this problem, because there is only one BRP
-    // pool region, positioned *after* the non-BRP pool.
-#if !defined(PA_HAS_64_BITS_POINTERS)
-    auto* adjusted_ptr = static_cast<char*>(ptr) - 1;
-    ret &= IsManagedByPartitionAllocBRPPool(adjusted_ptr);
-#endif
 #endif
 
     return ret;
@@ -164,9 +152,9 @@ struct BackupRefPtrImpl {
       DCHECK(ptr != nullptr);
       AcquireInternal(ptr);
     }
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_GIGACAGE_BLOCKLIST)
+#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
     else
-      AddressPoolManagerBitmap::IncrementNonGigacagePtrRefCount(ptr);
+      AddressPoolManagerBitmap::IncrementOutsideOfBRPPoolPtrRefCount(ptr);
 #endif
 
     return ptr;
@@ -178,9 +166,10 @@ struct BackupRefPtrImpl {
       DCHECK(wrapped_ptr != nullptr);
       ReleaseInternal(wrapped_ptr);
     }
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_GIGACAGE_BLOCKLIST)
+#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
     else
-      AddressPoolManagerBitmap::DecrementNonGigacagePtrRefCount(wrapped_ptr);
+      AddressPoolManagerBitmap::DecrementOutsideOfBRPPoolPtrRefCount(
+          wrapped_ptr);
 #endif
   }
 

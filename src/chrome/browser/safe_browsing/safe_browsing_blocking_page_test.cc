@@ -226,10 +226,10 @@ bool Click(Browser* browser, const std::string& node_id) {
   // We don't use ExecuteScriptAndGetValue for this one, since clicking
   // the button/link may navigate away before the injected javascript can
   // reply, hanging the test.
-  rfh->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("document.getElementById('" + node_id +
-                         "').click();\n"),
-      base::NullCallback());
+  rfh->ExecuteJavaScriptForTests(u"document.getElementById('" +
+                                     base::ASCIIToUTF16(node_id) +
+                                     u"').click();\n",
+                                 base::NullCallback());
   return true;
 }
 
@@ -2966,7 +2966,7 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
         "mark_as_real_time_phishing",
         embedded_test_server()->GetURL("/empty.html").spec());
     safe_browsing::VerdictCacheManagerFactory::GetForProfile(profile)
-        ->CacheArtificialVerdict();
+        ->CacheArtificialRealTimeUrlVerdict();
   }
 
  private:

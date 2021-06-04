@@ -18,6 +18,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_server_properties.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
@@ -187,7 +188,7 @@ class CertNetFetcherURLRequestTest : public PlatformTest {
     // Start the network thread.
     network_thread_ = std::make_unique<base::Thread>("network thread");
     base::Thread::Options options(base::MessagePumpType::IO, 0);
-    EXPECT_TRUE(network_thread_->StartWithOptions(options));
+    EXPECT_TRUE(network_thread_->StartWithOptions(std::move(options)));
 
     // Initialize the URLRequestContext (and wait till it has completed).
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -259,7 +260,7 @@ class SecureDnsInterceptor : public net::URLRequestInterceptor {
   // URLRequestInterceptor implementation:
   std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
       net::URLRequest* request) const override {
-    EXPECT_TRUE(request->disable_secure_dns());
+    EXPECT_EQ(SecureDnsPolicy::kDisable, request->secure_dns_policy());
     *invoked_interceptor_ = true;
     return nullptr;
   }

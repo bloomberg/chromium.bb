@@ -26,8 +26,10 @@
 
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
+#include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -74,6 +76,8 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_panel_enclosure_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_picture_in_picture_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_play_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_playback_speed_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_playback_speed_list_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_scrubbing_message_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_text_track_list_element.h"
@@ -332,6 +336,8 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       volume_control_container_(nullptr),
       toggle_closed_captions_button_(nullptr),
       text_track_list_(nullptr),
+      playback_speed_button_(nullptr),
+      playback_speed_list_(nullptr),
       overflow_list_(nullptr),
       media_button_panel_(nullptr),
       loading_panel_(nullptr),
@@ -524,9 +530,10 @@ void MediaControlsImpl::InitializeControls() {
   timeline_ = MakeGarbageCollected<MediaControlTimelineElement>(*this);
   mute_button_ = MakeGarbageCollected<MediaControlMuteButtonElement>(*this);
 
-  volume_slider_ = MakeGarbageCollected<MediaControlVolumeSliderElement>(*this);
   volume_control_container_ =
       MakeGarbageCollected<MediaControlVolumeControlContainerElement>(*this);
+  volume_slider_ = MakeGarbageCollected<MediaControlVolumeSliderElement>(
+      *this, volume_control_container_.Get());
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
@@ -556,6 +563,11 @@ void MediaControlsImpl::InitializeControls() {
   toggle_closed_captions_button_ =
       MakeGarbageCollected<MediaControlToggleClosedCaptionsButtonElement>(
           *this);
+
+  if (base::FeatureList::IsEnabled(media::kPlaybackSpeedButton)) {
+    playback_speed_button_ =
+        MakeGarbageCollected<MediaControlPlaybackSpeedButtonElement>(*this);
+  }
   overflow_menu_ =
       MakeGarbageCollected<MediaControlOverflowMenuButtonElement>(*this);
 
@@ -567,6 +579,10 @@ void MediaControlsImpl::InitializeControls() {
   text_track_list_ =
       MakeGarbageCollected<MediaControlTextTrackListElement>(*this);
   ParserAppendChild(text_track_list_);
+
+  playback_speed_list_ =
+      MakeGarbageCollected<MediaControlPlaybackSpeedListElement>(*this);
+  ParserAppendChild(playback_speed_list_);
 
   overflow_list_ =
       MakeGarbageCollected<MediaControlOverflowMenuListElement>(*this);
@@ -590,6 +606,12 @@ void MediaControlsImpl::InitializeControls() {
       toggle_closed_captions_button_->CreateOverflowElement(
           MakeGarbageCollected<MediaControlToggleClosedCaptionsButtonElement>(
               *this)));
+  if (playback_speed_button_) {
+    overflow_list_->ParserAppendChild(
+        playback_speed_button_->CreateOverflowElement(
+            MakeGarbageCollected<MediaControlPlaybackSpeedButtonElement>(
+                *this)));
+  }
   if (picture_in_picture_button_) {
     overflow_list_->ParserAppendChild(
         picture_in_picture_button_->CreateOverflowElement(
@@ -684,6 +706,11 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
 }
 
 void MediaControlsImpl::UpdateCSSClassFromState() {
+  // Skip CSS class updates when not needed in order to avoid triggering
+  // unnecessary style calculation.
+  if (!MediaElement().ShouldShowControls() && !is_hiding_controls_)
+    return;
+
   const ControlsState state = State();
 
   Vector<String> toAdd;
@@ -944,6 +971,8 @@ void MediaControlsImpl::MaybeShow() {
 }
 
 void MediaControlsImpl::Hide() {
+  base::AutoReset<bool> auto_reset_hiding_controls(&is_hiding_controls_, true);
+
   panel_->SetIsWanted(false);
   panel_->SetIsDisplayed(false);
 
@@ -955,6 +984,9 @@ void MediaControlsImpl::Hide() {
     overlay_play_button_->SetIsWanted(false);
   if (loading_panel_)
     loading_panel_->OnControlsHidden();
+
+  // Hide any popup menus.
+  HidePopupMenu();
 
   // Cancel scrubbing if necessary.
   if (is_scrubbing_) {
@@ -1048,7 +1080,8 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   }
 
   // Don't hide the media controls when a panel is showing.
-  if (text_track_list_->IsWanted() || overflow_list_->IsWanted())
+  if (text_track_list_->IsWanted() || playback_speed_list_->IsWanted() ||
+      overflow_list_->IsWanted())
     return false;
 
   // Don't hide if we have accessiblity focus.
@@ -1132,6 +1165,14 @@ void MediaControlsImpl::ToggleTextTrackList() {
 
 bool MediaControlsImpl::TextTrackListIsWanted() {
   return text_track_list_->IsWanted();
+}
+
+void MediaControlsImpl::TogglePlaybackSpeedList() {
+  playback_speed_list_->SetIsWanted(!playback_speed_list_->IsWanted());
+}
+
+bool MediaControlsImpl::PlaybackSpeedListIsWanted() {
+  return playback_speed_list_->IsWanted();
 }
 
 MediaControlsTextTrackManager& MediaControlsImpl::GetTextTrackManager() {
@@ -1219,6 +1260,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       std::make_pair(cast_button_.Get(), false),
       std::make_pair(download_button_.Get(), false),
       std::make_pair(toggle_closed_captions_button_.Get(), false),
+      std::make_pair(playback_speed_button_.Get(), false),
   };
 
   // These are the elements in order of priority that take up vertical room.
@@ -1947,6 +1989,7 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
       mute_button_.Get(),
       volume_slider_.Get(),
       toggle_closed_captions_button_.Get(),
+      playback_speed_button_.Get(),
       picture_in_picture_button_.Get(),
       cast_button_.Get(),
       current_time_display_.Get(),
@@ -2060,6 +2103,9 @@ void MediaControlsImpl::HidePopupMenu() {
 
   if (TextTrackListIsWanted())
     ToggleTextTrackList();
+
+  if (PlaybackSpeedListIsWanted())
+    TogglePlaybackSpeedList();
 }
 
 void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
@@ -2146,11 +2192,13 @@ void MediaControlsImpl::Trace(Visitor* visitor) const {
   visitor->Trace(picture_in_picture_button_);
   visitor->Trace(animated_arrow_container_element_);
   visitor->Trace(toggle_closed_captions_button_);
+  visitor->Trace(playback_speed_button_);
   visitor->Trace(fullscreen_button_);
   visitor->Trace(download_button_);
   visitor->Trace(duration_display_);
   visitor->Trace(enclosure_);
   visitor->Trace(text_track_list_);
+  visitor->Trace(playback_speed_list_);
   visitor->Trace(overflow_menu_);
   visitor->Trace(overflow_list_);
   visitor->Trace(cast_button_);

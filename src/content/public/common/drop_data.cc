@@ -4,6 +4,7 @@
 
 #include "content/public/common/drop_data.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -52,7 +53,7 @@ DropData::DropData(const DropData& other) = default;
 
 DropData::~DropData() {}
 
-base::Optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
+absl::optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
     const {
   base::FilePath file_name = net::GenerateFileName(
       file_contents_source_url, file_contents_content_disposition,
@@ -67,7 +68,7 @@ base::Optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return file_name.ReplaceExtension(file_contents_filename_extension);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // static

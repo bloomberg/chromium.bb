@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 
 // Some versions of libstdc++ have partial support for type_traits, but misses
@@ -146,8 +147,9 @@ using is_trivially_copyable = std::is_trivially_copyable<T>;
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ <= 7
 // Workaround for g++7 and earlier family.
 // Due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80654, without this
-// Optional<std::vector<T>> where T is non-copyable causes a compile error.
-// As we know it is not trivially copy constructible, explicitly declare so.
+// absl::optional<std::vector<T>> where T is non-copyable causes a compile
+// error.  As we know it is not trivially copy constructible, explicitly declare
+// so.
 template <typename T>
 struct is_trivially_copy_constructible
     : std::is_trivially_copy_constructible<T> {};
@@ -321,6 +323,19 @@ struct remove_cvref {
 // - https://wg21.link/meta.type.synop#lib:remove_cvref_t
 template <typename T>
 using remove_cvref_t = typename remove_cvref<T>::type;
+
+// Implementation of C++20's std::is_constant_evaluated.
+//
+// References:
+// - https://en.cppreference.com/w/cpp/types/is_constant_evaluated
+// - https://wg21.link/meta.const.eval
+constexpr bool is_constant_evaluated() noexcept {
+#if HAS_BUILTIN(__builtin_is_constant_evaluated)
+  return __builtin_is_constant_evaluated();
+#else
+  return false;
+#endif
+}
 
 // Simplified implementation of C++20's std::iter_value_t.
 // As opposed to std::iter_value_t, this implementation does not restrict

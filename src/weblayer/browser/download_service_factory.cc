@@ -69,8 +69,8 @@ class SimpleDownloadManagerCoordinatorFactory
       content::BrowserContext* context) const override {
     auto* service_instance = new download::SimpleDownloadManagerCoordinator(
         {}, !context->IsOffTheRecord());
-    service_instance->SetSimpleDownloadManager(
-        content::BrowserContext::GetDownloadManager(context), true);
+    service_instance->SetSimpleDownloadManager(context->GetDownloadManager(),
+                                               true);
     return service_instance;
   }
 
@@ -99,8 +99,7 @@ class DownloadBlobContextGetterFactory
   // download::BlobContextGetterFactory:
   void RetrieveBlobContextGetter(
       download::BlobContextGetterCallback callback) override {
-    std::move(callback).Run(
-        content::BrowserContext::GetBlobStorageContext(browser_context_));
+    std::move(callback).Run(browser_context_->GetBlobStorageContext());
   }
 
   content::BrowserContext* browser_context_;
@@ -168,8 +167,7 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   leveldb_proto::ProtoDatabaseProvider* proto_db_provider =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetProtoDatabaseProvider();
+      context->GetDefaultStoragePartition()->GetProtoDatabaseProvider();
   return download::BuildDownloadService(
              key, std::move(clients), content::GetNetworkConnectionTracker(),
              storage_dir,

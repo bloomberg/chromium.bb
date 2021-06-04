@@ -38,13 +38,19 @@ TEST_F(BlocklistExtensionPrefsUnitTest, OmahaBlocklistState) {
       BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED;
   BitMapBlocklistState state2 =
       BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY;
+  BitMapBlocklistState state3 =
+      BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION;
   EXPECT_FALSE(blocklist_prefs::HasOmahaBlocklistState(kExtensionId, state1,
                                                        extension_prefs()));
+  EXPECT_FALSE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                         extension_prefs()));
 
   blocklist_prefs::AddOmahaBlocklistState(kExtensionId, state1,
                                           extension_prefs());
   EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(kExtensionId, state1,
                                                       extension_prefs()));
+  EXPECT_TRUE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                        extension_prefs()));
 
   blocklist_prefs::AddOmahaBlocklistState(kExtensionId, state2,
                                           extension_prefs());
@@ -53,6 +59,8 @@ TEST_F(BlocklistExtensionPrefsUnitTest, OmahaBlocklistState) {
   // Doesn't clear the other blocklist state.
   EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(kExtensionId, state1,
                                                       extension_prefs()));
+  EXPECT_TRUE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                        extension_prefs()));
 
   blocklist_prefs::RemoveOmahaBlocklistState(kExtensionId, state1,
                                              extension_prefs());
@@ -61,6 +69,20 @@ TEST_F(BlocklistExtensionPrefsUnitTest, OmahaBlocklistState) {
   // Doesn't remove the other blocklist state.
   EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(kExtensionId, state2,
                                                       extension_prefs()));
+  EXPECT_TRUE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                        extension_prefs()));
+
+  blocklist_prefs::AddOmahaBlocklistState(kExtensionId, state3,
+                                          extension_prefs());
+  blocklist_prefs::RemoveOmahaBlocklistState(kExtensionId, state2,
+                                             extension_prefs());
+  EXPECT_TRUE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                        extension_prefs()));
+
+  blocklist_prefs::RemoveOmahaBlocklistState(kExtensionId, state3,
+                                             extension_prefs());
+  EXPECT_FALSE(blocklist_prefs::HasAnyOmahaGreylistState(kExtensionId,
+                                                         extension_prefs()));
 }
 
 TEST_F(BlocklistExtensionPrefsUnitTest, AcknowledgedBlocklistState) {
@@ -84,13 +106,105 @@ TEST_F(BlocklistExtensionPrefsUnitTest, AcknowledgedBlocklistState) {
   EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
       kExtensionId, state1, extension_prefs()));
 
-  blocklist_prefs::RemoveAcknowledgedBlocklistState(kExtensionId, state1,
+  blocklist_prefs::ClearAcknowledgedBlocklistStates(kExtensionId,
                                                     extension_prefs());
   EXPECT_FALSE(blocklist_prefs::HasAcknowledgedBlocklistState(
       kExtensionId, state1, extension_prefs()));
-  // Doesn't remove the other blocklist state.
-  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+  EXPECT_FALSE(blocklist_prefs::HasAcknowledgedBlocklistState(
       kExtensionId, state2, extension_prefs()));
+}
+
+TEST_F(BlocklistExtensionPrefsUnitTest,
+       UpdateCurrentGreylistStatesAsAcknowledged) {
+  blocklist_prefs::AddAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      extension_prefs());
+  blocklist_prefs::AddAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY,
+      extension_prefs());
+  extension_prefs()->SetExtensionBlocklistState(
+      kExtensionId, BLOCKLISTED_POTENTIALLY_UNWANTED);
+  blocklist_prefs::AddOmahaBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION,
+      extension_prefs());
+
+  blocklist_prefs::UpdateCurrentGreylistStatesAsAcknowledged(kExtensionId,
+                                                             extension_prefs());
+
+  // The BLOCKLISTED_SECURITY_VULNERABILITY should be cleared because it is not
+  // in any greylist state.
+  EXPECT_FALSE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY,
+      extension_prefs()));
+  // BLOCKLISTED_POTENTIALLY_UNWANTED should be acknowledged because it is in
+  // the Safe Browsing greylist state.
+  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      extension_prefs()));
+  // BLOCKLISTED_CWS_POLICY_VIOLATION should be acknowledged because it is in
+  // the Omaha greylist state.
+  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION,
+      extension_prefs()));
+  // BLOCKLISTED_MALWARE should not be cleared because it is not a greylist
+  // state.
+  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      extension_prefs()));
+
+  extension_prefs()->SetExtensionBlocklistState(
+      kExtensionId, BLOCKLISTED_SECURITY_VULNERABILITY);
+  blocklist_prefs::UpdateCurrentGreylistStatesAsAcknowledged(kExtensionId,
+                                                             extension_prefs());
+
+  // The BLOCKLISTED_SECURITY_VULNERABILITY should be acknowledged because it is
+  // in the Safe Browsing greylist state.
+  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY,
+      extension_prefs()));
+  // BLOCKLISTED_POTENTIALLY_UNWANTED should be cleared because it is not in any
+  // greylist state.
+  EXPECT_FALSE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      extension_prefs()));
+  // BLOCKLISTED_CWS_POLICY_VIOLATION should be acknowledged because it is in
+  // the Omaha greylist state.
+  EXPECT_TRUE(blocklist_prefs::HasAcknowledgedBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION,
+      extension_prefs()));
+}
+
+TEST_F(BlocklistExtensionPrefsUnitTest, GetExtensionBlocklistState) {
+  EXPECT_EQ(BitMapBlocklistState::NOT_BLOCKLISTED,
+            blocklist_prefs::GetExtensionBlocklistState(kExtensionId,
+                                                        extension_prefs()));
+
+  extension_prefs()->SetExtensionBlocklistState(
+      kExtensionId, BLOCKLISTED_POTENTIALLY_UNWANTED);
+  blocklist_prefs::AddOmahaBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY,
+      extension_prefs());
+  // BLOCKLISTED_POTENTIALLY_UNWANTED has a higher precedence than
+  // BLOCKLISTED_SECURITY_VULNERABILITY.
+  EXPECT_EQ(BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+            blocklist_prefs::GetExtensionBlocklistState(kExtensionId,
+                                                        extension_prefs()));
+
+  blocklist_prefs::AddOmahaBlocklistState(
+      kExtensionId, BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION,
+      extension_prefs());
+  // BLOCKLISTED_CWS_POLICY_VIOLATION has a higher precedence than
+  // BLOCKLISTED_POTENTIALLY_UNWANTED.
+  EXPECT_EQ(BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION,
+            blocklist_prefs::GetExtensionBlocklistState(kExtensionId,
+                                                        extension_prefs()));
+
+  extension_prefs()->SetExtensionBlocklistState(kExtensionId,
+                                                BLOCKLISTED_MALWARE);
+  // BLOCKLISTED_MALWARE has the highest precedence.
+  EXPECT_EQ(BitMapBlocklistState::BLOCKLISTED_MALWARE,
+            blocklist_prefs::GetExtensionBlocklistState(kExtensionId,
+                                                        extension_prefs()));
 }
 
 }  // namespace extensions

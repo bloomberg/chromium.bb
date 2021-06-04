@@ -1,11 +1,13 @@
 # Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import division
+from __future__ import absolute_import
 import logging as real_logging
 import os
 import subprocess
-import sys
 import time
+import six
 
 from telemetry.core import local_server
 from telemetry.core import memory_cache_http_server
@@ -45,9 +47,9 @@ def GetHostPlatform():
 def _IterAllPlatformBackendClasses():
   platform_dir = os.path.dirname(os.path.realpath(
       platform_backend_module.__file__))
-  return discover.DiscoverClasses(
+  return six.itervalues(discover.DiscoverClasses(
       platform_dir, util.GetTelemetryDir(),
-      platform_backend_module.PlatformBackend).itervalues()
+      platform_backend_module.PlatformBackend))
 
 
 def GetPlatformForDevice(device, finder_options, logging=real_logging):
@@ -65,10 +67,9 @@ def GetPlatformForDevice(device, finder_options, logging=real_logging):
                                                            finder_options))
         return _REMOTE_PLATFORMS[device.guid]
     return None
-  except Exception:
-    current_exception = sys.exc_info()
+  except Exception: # pylint: disable=broad-except
     logging.error('Fail to create platform instance for %s.', device.name)
-    raise current_exception[0], current_exception[1], current_exception[2]
+    raise
 
 
 class Platform(object):
@@ -333,8 +334,8 @@ class Platform(object):
   def SetHTTPServerDirectories(self, paths, handler_class=None):
     """Returns True if the HTTP server was started, False otherwise."""
     # pylint: disable=redefined-variable-type
-    if isinstance(paths, basestring):
-      paths = set([paths])
+    if isinstance(paths, six.string_types):
+      paths = {paths}
     paths = set(os.path.realpath(p) for p in paths)
 
     # If any path is in a subdirectory of another, remove the subdirectory.
@@ -508,6 +509,7 @@ class Platform(object):
     results = {'samples': samples}
     if samples > 0:
       for ii in range(0, len(indices)):
+        #2To3-division: this line is unchanged as sums[] are floats.
         results[labels[ii]] = sums[ii] / samples
 
     os.remove(output_path)

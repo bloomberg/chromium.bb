@@ -44,6 +44,7 @@
 #include "weblayer/browser/subresource_filter_profile_context_factory.h"
 #include "weblayer/browser/translate_accept_languages_factory.h"
 #include "weblayer/browser/translate_ranker_factory.h"
+#include "weblayer/browser/web_data_service_factory.h"
 #include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/grit/weblayer_resources.h"
 #include "weblayer/public/main.h"
@@ -132,6 +133,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
     MediaRouterFactory::GetInstance();
   }
 #endif
+  WebDataServiceFactory::GetInstance();
 }
 
 void StopMessageLoop(base::OnceClosure quit_closure) {
@@ -183,7 +185,7 @@ int BrowserMainPartsImpl::PreCreateThreads() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-void BrowserMainPartsImpl::PreMainMessageLoopStart() {
+void BrowserMainPartsImpl::PreCreateMainMessageLoop() {
 #if defined(USE_AURA) && defined(USE_X11)
   if (!features::IsUsingOzonePlatform())
     ui::TouchFactory::SetTouchDeviceListFromCommandLine();
@@ -205,12 +207,6 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
   WebLayerWebappsClient::Create();
 #endif
 
-  translate::TranslateDownloadManager* download_manager =
-      translate::TranslateDownloadManager::GetInstance();
-  download_manager->set_url_loader_factory(
-      BrowserProcess::GetInstance()->GetSharedURLLoaderFactory());
-  download_manager->set_application_locale(i18n::GetApplicationLocale());
-
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -218,6 +214,12 @@ void BrowserMainPartsImpl::PostCreateThreads() {
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
           performance_manager::Decorators::kMinimal, base::DoNothing());
+
+  translate::TranslateDownloadManager* download_manager =
+      translate::TranslateDownloadManager::GetInstance();
+  download_manager->set_url_loader_factory(
+      BrowserProcess::GetInstance()->GetSharedURLLoaderFactory());
+  download_manager->set_application_locale(i18n::GetApplicationLocale());
 }
 
 int BrowserMainPartsImpl::PreMainMessageLoopRun() {
@@ -295,6 +297,10 @@ void BrowserMainPartsImpl::WillRunMainMessageLoop(
   } else {
     run_loop.reset();
   }
+}
+
+void BrowserMainPartsImpl::OnFirstIdle() {
+  startup_metric_utils::RecordBrowserMainLoopFirstIdle(base::TimeTicks::Now());
 }
 
 void BrowserMainPartsImpl::PostMainMessageLoopRun() {

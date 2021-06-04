@@ -344,8 +344,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
           ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                                 std::string()))
           .GetValue(policy::key::kQuicAllowed);
-  if (value)
-    value->GetAsBoolean(&is_quic_allowed_);
+  if (value && value->is_bool())
+    is_quic_allowed_ = value->GetBool();
 #endif
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
@@ -560,7 +560,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
               // invocation of this callback.
               network::mojom::NetworkService* network_service =
                   content::GetNetworkService();
-              network_service->SetPreloadedFirstPartySets(raw_sets);
+              network_service->SetFirstPartySets(raw_sets);
             }));
   }
 
@@ -737,7 +737,7 @@ SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
 }
 
 void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-    base::Optional<bool> enabled) {
+    absl::optional<bool> enabled) {
   g_enable_certificate_transparency =
       enabled.value_or(kCertificateTransparencyEnabled);
 }
@@ -757,7 +757,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   // These are needed for PAC scripts that use FTP URLs.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   network_context_params->enable_ftp_url_support =
-      base::FeatureList::IsEnabled(blink::features::kFtpProtocol);
+      base::FeatureList::IsEnabled(network::features::kFtpProtocol);
 #endif
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());

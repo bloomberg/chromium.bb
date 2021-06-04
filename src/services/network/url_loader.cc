@@ -19,9 +19,9 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -40,6 +40,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/cookies/static_cookie_policy.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -54,9 +55,11 @@
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/empty_url_loader_client.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -69,6 +72,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -77,6 +81,7 @@
 #include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "services/network/url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace network {
@@ -109,6 +114,8 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->connection_info = response_info.connection_info;
   response->remote_endpoint = response_info.remote_endpoint;
   response->was_fetched_via_cache = request->was_cached();
+  response->is_validated = (response_info.cache_entry_status ==
+                            net::HttpResponseInfo::ENTRY_VALIDATED);
   response->proxy_server = request->proxy_server();
   response->network_accessed = response_info.network_accessed;
   response->async_revalidation_requested =
@@ -373,29 +380,6 @@ mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
   return info;
 }
 
-bool ShouldSniffContent(net::URLRequest* url_request,
-                        const mojom::URLResponseHead& response) {
-  const std::string& mime_type = response.mime_type;
-
-  std::string content_type_options;
-  url_request->GetResponseHeaderByName("x-content-type-options",
-                                       &content_type_options);
-
-  bool sniffing_blocked =
-      base::LowerCaseEqualsASCII(content_type_options, "nosniff");
-  bool we_would_like_to_sniff =
-      net::ShouldSniffMimeType(url_request->url(), mime_type);
-
-  if (!sniffing_blocked && we_would_like_to_sniff) {
-    // We're going to look at the data before deciding what the content type
-    // is.  That means we need to delay sending the response started IPC.
-    VLOG(1) << "To buffer: " << url_request->url().spec();
-    return true;
-  }
-
-  return false;
-}
-
 // Concerning headers that consumers probably shouldn't be allowed to set.
 // Gathering numbers on these before adding them to kUnsafeHeaders.
 const struct {
@@ -449,7 +433,7 @@ void ReportFetchUploadStreamingUMA(const net::URLRequest* request,
 std::vector<mojom::WebClientHintsType> ComputeAcceptCHFrameHints(
     const std::string& accept_ch_frame,
     const net::HttpRequestHeaders& headers) {
-  base::Optional<std::vector<mojom::WebClientHintsType>> maybe_hints =
+  absl::optional<std::vector<mojom::WebClientHintsType>> maybe_hints =
       ParseClientHintsHeader(accept_ch_frame);
 
   if (!maybe_hints)
@@ -464,6 +448,35 @@ std::vector<mojom::WebClientHintsType> ComputeAcceptCHFrameHints(
   }
 
   return hints;
+}
+
+// Returns true if the |credentials_mode| of the request allows sending
+// credentials.
+bool ShouldAllowCredentials(mojom::CredentialsMode credentials_mode) {
+  switch (credentials_mode) {
+    case mojom::CredentialsMode::kInclude:
+    // TODO(crbug.com/943939): Make this work with CredentialsMode::kSameOrigin.
+    case mojom::CredentialsMode::kSameOrigin:
+      return true;
+
+    case mojom::CredentialsMode::kOmit:
+    case mojom::CredentialsMode::kOmitBug_775438_Workaround:
+      return false;
+  }
+}
+
+// Returns true when the |credentials_mode| of the request allows sending client
+// certificates.
+bool ShouldSendClientCertificates(mojom::CredentialsMode credentials_mode) {
+  switch (credentials_mode) {
+    case mojom::CredentialsMode::kInclude:
+    case mojom::CredentialsMode::kOmit:
+    case mojom::CredentialsMode::kSameOrigin:
+      return true;
+
+    case mojom::CredentialsMode::kOmitBug_775438_Workaround:
+      return false;
+  }
 }
 
 }  // namespace
@@ -519,6 +532,7 @@ URLLoader::URLLoader(
       want_raw_headers_(request.report_raw_headers),
       devtools_request_id_(request.devtools_request_id),
       request_mode_(request.mode),
+      request_credentials_mode_(request.credentials_mode),
       request_destination_(request.destination),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
@@ -590,11 +604,9 @@ URLLoader::URLLoader(
   if (ShouldForceIgnoreTopFramePartyForCookies())
     url_request_->set_force_ignore_top_frame_party_for_cookies(true);
 
-  if (factory_params_->disable_secure_dns) {
-    url_request_->SetDisableSecureDns(true);
-  } else if (request.trusted_params) {
-    url_request_->SetDisableSecureDns(
-        request.trusted_params->disable_secure_dns);
+  if (factory_params_->disable_secure_dns ||
+      (request.trusted_params && request.trusted_params->disable_secure_dns)) {
+    url_request_->SetSecureDnsPolicy(net::SecureDnsPolicy::kDisable);
   }
 
   // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
@@ -650,17 +662,7 @@ URLLoader::URLLoader(
   }
 
   url_request_->SetLoadFlags(request.load_flags);
-
-  // net::LOAD_DO_NOT_* are in the process of being converted to
-  // credentials_mode. See https://crbug.com/799935.
-  // TODO(crbug.com/943939): Make this work with CredentialsMode::kSameOrigin.
-  if (request.credentials_mode == mojom::CredentialsMode::kOmit ||
-      request.credentials_mode ==
-          mojom::CredentialsMode::kOmitBug_775438_Workaround) {
-    url_request_->set_allow_credentials(false);
-    url_request_->set_send_client_certs(request.credentials_mode ==
-                                        mojom::CredentialsMode::kOmit);
-  }
+  SetRequestCredentials(request.url);
 
   url_request_->SetRequestHeadersCallback(base::BindRepeating(
       &URLLoader::SetRawRequestHeadersAndNotify, base::Unretained(this)));
@@ -962,7 +964,7 @@ void URLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   if (!deferred_redirect_url_) {
     NOTREACHED();
     return;
@@ -1039,7 +1041,8 @@ bool URLLoader::CanConnectToAddressSpace(
   if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
       IsLessPublicAddressSpace(resource_address_space,
                                network::mojom::IPAddressSpace::kPublic)) {
-    DVLOG(1) << "CORS-RFC1918 check: failed due to loader options.";
+    // Unconditionally block requests to non-public address spaces when the URL
+    // loader options say so.
     return false;
   }
 
@@ -1048,62 +1051,43 @@ bool URLLoader::CanConnectToAddressSpace(
   // a factory) or the URLLoaderFactory's params. We prefer the factory params
   // over the request params, as the former always come from the browser
   // process.
-  //
-  // We use a raw pointer instead of a const-ref to a StructPtr in order to be
-  // able to assign a new value to the variable. A ternary operator would let us
-  // define a const-ref but would prevent logging which branch was taken.
-  const mojom::ClientSecurityState* security_state =
-      factory_params_->client_security_state.get();
-  if (security_state) {
-    DVLOG(1) << "CORS-RFC1918 check: using factory client security state.";
-  } else {
-    DVLOG(1) << "CORS-RFC1918 check: using request client security state.";
-    security_state = request_client_security_state_.get();
-  }
+  const mojom::ClientSecurityStatePtr& security_state =
+      factory_params_->client_security_state
+          ? factory_params_->client_security_state
+          : request_client_security_state_;
 
   if (!security_state) {
-    DVLOG(1) << "CORS-RFC1918 check: skipped, missing client security state.";
+    // Missing security state: allow all requests.
     return true;
   }
 
-  DVLOG(1) << "CORS-RFC1918 check: running against client security state = { "
-           << "is_web_secure_context: " << security_state->is_web_secure_context
-           << ", ip_address_space: " << security_state->ip_address_space
-           << ", private_network_request_policy: "
-           << security_state->private_network_request_policy << " }.";
+  if (!IsLessPublicAddressSpace(resource_address_space,
+                                security_state->ip_address_space)) {
+    // Resource is no less public than the initiator.
+    return true;
+  }
 
   bool is_warning = false;
   // We use a switch statement to force this code to be amended when values are
   // added to the PrivateNetworkRequestPolicy enum.
   switch (security_state->private_network_request_policy) {
     case mojom::PrivateNetworkRequestPolicy::kAllow:
-      DVLOG(1) << "CORS-RFC1918 check: unconditionally allowed.";
+      // Policy tells us to allow all.
       return true;
-    case mojom::PrivateNetworkRequestPolicy::kWarnFromInsecureToMorePrivate:
+    case mojom::PrivateNetworkRequestPolicy::kWarn:
       is_warning = true;
       break;
-    case mojom::PrivateNetworkRequestPolicy::kBlockFromInsecureToMorePrivate:
+    case mojom::PrivateNetworkRequestPolicy::kBlock:
       is_warning = false;
       break;
   }
 
-  if (!security_state->is_web_secure_context &&
-      IsLessPublicAddressSpace(resource_address_space,
-                               security_state->ip_address_space)) {
-    DVLOG(1) << "CORS-RFC1918 check: failed,"
-             << (is_warning ? "but not enforcing blocking of insecure private "
-                              "network request."
-                            : "blocking insecure private network request.");
-    if (auto* devtools_observer = GetDevToolsObserver()) {
-      devtools_observer->OnPrivateNetworkRequest(
-          devtools_request_id(), url_request_->url(), is_warning,
-          resource_address_space, security_state->Clone());
-    }
-    return is_warning;
+  if (auto* devtools_observer = GetDevToolsObserver()) {
+    devtools_observer->OnPrivateNetworkRequest(
+        devtools_request_id(), url_request_->url(), is_warning,
+        resource_address_space, security_state->Clone());
   }
-
-  DVLOG(1) << "CORS-RFC1918 check: success.";
-  return true;
+  return is_warning;
 }
 
 int URLLoader::OnConnected(net::URLRequest* url_request,
@@ -1117,7 +1101,7 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   // Now that the request endpoint's address has been resolved, check if
   // this request should be blocked by CORS-RFC1918 rules.
   mojom::IPAddressSpace resource_address_space =
-      IPAddressToIPAddressSpace(info.endpoint.address());
+      IPEndPointToIPAddressSpace(info.endpoint);
   if (!CanConnectToAddressSpace(resource_address_space)) {
     // Remember the CORS error so we can annotate the URLLoaderCompletionStatus
     // with it later, then fail the request with the same net error code as
@@ -1157,6 +1141,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
   DCHECK(!deferred_redirect_url_);
   deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
+  SetRequestCredentials(redirect_info.new_url);
 
   // Send the redirect response to the client, allowing them to inspect it and
   // optionally follow the redirect.
@@ -1181,7 +1166,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
           ? factory_params_->client_security_state->cross_origin_embedder_policy
           : kEmpty;
 
-  if (base::Optional<mojom::BlockedByResponseReason> blocked_reason =
+  if (absl::optional<mojom::BlockedByResponseReason> blocked_reason =
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response, request_mode_,
@@ -1239,12 +1224,12 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
   }
   auto* url_loader_network_observer = GetURLLoaderNetworkServiceObserver();
   if (!url_loader_network_observer) {
-    OnAuthCredentials(base::nullopt);
+    OnAuthCredentials(absl::nullopt);
     return;
   }
 
   if (do_not_prompt_for_login_) {
-    OnAuthCredentials(base::nullopt);
+    OnAuthCredentials(absl::nullopt);
     return;
   }
 
@@ -1403,7 +1388,7 @@ void URLLoader::ContinueOnResponseStarted() {
       factory_params_->client_security_state
           ? factory_params_->client_security_state->cross_origin_embedder_policy
           : kEmpty;
-  if (base::Optional<mojom::BlockedByResponseReason> blocked_reason =
+  if (absl::optional<mojom::BlockedByResponseReason> blocked_reason =
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response_, request_mode_,
@@ -1444,7 +1429,10 @@ void URLLoader::ContinueOnResponseStarted() {
     }
   }
   if ((options_ & mojom::kURLLoadOptionSniffMimeType)) {
-    if (ShouldSniffContent(url_request_.get(), *response_)) {
+    if (ShouldSniffContent(url_request_->url(), *response_)) {
+      // We're going to look at the data before deciding what the content type
+      // is.  That means we need to delay sending the response started IPC.
+      VLOG(1) << "Will sniff content for mime type: " << url_request_->url();
       is_more_mime_sniffing_needed_ = true;
     } else if (response_->mime_type.empty()) {
       // Ugg.  The server told us not to sniff the content but didn't give us
@@ -1461,7 +1449,7 @@ void URLLoader::ContinueOnResponseStarted() {
     // empty.
     DCHECK(!url_request_->isolation_info().IsEmpty());
 
-    base::Optional<std::string> origin_policy_header;
+    absl::optional<std::string> origin_policy_header;
     std::string origin_policy_header_value;
     if (url_request_->response_headers()->GetNormalizedHeader(
             "origin-policy", &origin_policy_header_value)) {
@@ -1672,7 +1660,7 @@ int URLLoader::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     const net::IPEndPoint& endpoint,
-    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
+    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
   if (header_client_) {
     header_client_->OnHeadersReceived(
         original_response_headers->raw_headers(), endpoint,
@@ -1781,7 +1769,7 @@ void URLLoader::LogConcerningRequestHeaders(
 }
 
 void URLLoader::OnAuthCredentials(
-    const base::Optional<net::AuthCredentials>& credentials) {
+    const absl::optional<net::AuthCredentials>& credentials) {
   auth_challenge_responder_receiver_.reset();
 
   if (!credentials.has_value()) {
@@ -2032,7 +2020,7 @@ void URLLoader::OnBeforeSendHeadersComplete(
     net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* out_headers,
     int result,
-    const base::Optional<net::HttpRequestHeaders>& headers) {
+    const absl::optional<net::HttpRequestHeaders>& headers) {
   if (headers)
     *out_headers = headers.value();
   std::move(callback).Run(result);
@@ -2041,10 +2029,10 @@ void URLLoader::OnBeforeSendHeadersComplete(
 void URLLoader::OnHeadersReceivedComplete(
     net::CompletionOnceCallback callback,
     scoped_refptr<net::HttpResponseHeaders>* out_headers,
-    base::Optional<GURL>* out_preserve_fragment_on_redirect_url,
+    absl::optional<GURL>* out_preserve_fragment_on_redirect_url,
     int result,
-    const base::Optional<std::string>& headers,
-    const base::Optional<GURL>& preserve_fragment_on_redirect_url) {
+    const absl::optional<std::string>& headers,
+    const absl::optional<GURL>& preserve_fragment_on_redirect_url) {
   if (headers) {
     *out_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
@@ -2056,7 +2044,7 @@ void URLLoader::OnHeadersReceivedComplete(
 void URLLoader::CompleteBlockedResponse(
     int error_code,
     bool should_report_corb_blocking,
-    base::Optional<mojom::BlockedByResponseReason> reason) {
+    absl::optional<mojom::BlockedByResponseReason> reason) {
   if (has_received_response_) {
     // The response headers and body shouldn't yet be sent to the
     // URLLoaderClient.
@@ -2165,20 +2153,20 @@ void URLLoader::ReportFlaggedResponseCookies() {
 
     // Only send the "raw" header text when the headers were actually send in
     // text form (i.e. not QUIC or SPDY)
-    base::Optional<std::string> raw_response_headers;
+    absl::optional<std::string> raw_response_headers;
 
     const net::HttpResponseInfo& response_info = url_request_->response_info();
 
     if (!response_info.DidUseQuic() && !response_info.was_fetched_via_spdy) {
       raw_response_headers =
-          base::make_optional(net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+          absl::make_optional(net::HttpUtil::ConvertHeadersBackToHTTPResponse(
               url_request_->response_headers()->raw_headers()));
     }
 
     devtools_observer->OnRawResponse(
         devtools_request_id().value(), url_request_->maybe_stored_cookies(),
         std::move(header_array), raw_response_headers,
-        IPAddressToIPAddressSpace(response_info.remote_endpoint.address()));
+        IPEndPointToIPAddressSpace(response_info.remote_endpoint));
   }
 
   if (auto* cookie_observer = GetCookieAccessObserver()) {
@@ -2294,13 +2282,13 @@ bool URLLoader::ShouldForceIgnoreSiteForCookies(
 
 bool URLLoader::ShouldForceIgnoreTopFramePartyForCookies() const {
   const net::IsolationInfo& isolation_info = url_request_->isolation_info();
-  const base::Optional<url::Origin>& top_frame_origin =
+  const absl::optional<url::Origin>& top_frame_origin =
       isolation_info.top_frame_origin();
 
   if (!top_frame_origin || top_frame_origin->opaque())
     return false;
 
-  const base::Optional<std::set<net::SchemefulSite>>& party_context =
+  const absl::optional<std::set<net::SchemefulSite>>& party_context =
       isolation_info.party_context();
   if (!party_context)
     return false;
@@ -2345,6 +2333,60 @@ URLLoader::GetURLLoaderNetworkServiceObserver() const {
   if (url_loader_factory_)
     return url_loader_factory_->GetURLLoaderNetworkServiceObserver();
   return nullptr;
+}
+
+void URLLoader::SetRequestCredentials(const GURL& url) {
+  bool coep_allow_credentials = CoepAllowCredentials(url);
+
+  bool allow_credentials = ShouldAllowCredentials(request_credentials_mode_) &&
+                           coep_allow_credentials;
+
+  bool allow_client_certificates =
+      ShouldSendClientCertificates(request_credentials_mode_) &&
+      coep_allow_credentials;
+
+  // TODO(https://crbug.com/799935) net::LOAD_DO_NOT_* are in the process of
+  // being converted to credentials_mode. Using set_allow_credentials will
+  // implicitly override the deprecated LOAD_DO_NOT_SAVE_COOKIE flag. As a
+  // result, set_allow_credentials should not be called when not needed, or it
+  // would have side effects.
+  if (url_request_->allow_credentials() != allow_credentials)
+    url_request_->set_allow_credentials(allow_credentials);
+
+  url_request_->set_send_client_certs(allow_client_certificates);
+}
+
+// https://github.com/mikewest/credentiallessness
+bool URLLoader::CoepAllowCredentials(const GURL& url) {
+  switch (request_mode_) {
+    case mojom::RequestMode::kCors:
+    case mojom::RequestMode::kCorsWithForcedPreflight:
+    case mojom::RequestMode::kNavigate:
+    case mojom::RequestMode::kSameOrigin:
+      return true;
+
+    case mojom::RequestMode::kNoCors:
+      break;
+  }
+
+  mojom::CrossOriginEmbedderPolicyValue coep_policy =
+      factory_params_->client_security_state
+          ? factory_params_->client_security_state->cross_origin_embedder_policy
+                .value
+          : mojom::CrossOriginEmbedderPolicyValue::kNone;
+  if (coep_policy != mojom::CrossOriginEmbedderPolicyValue::kCredentialless)
+    return true;
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kCrossOriginEmbedderPolicyCredentialless));
+
+  url::Origin request_origin = url::Origin::Create(url);
+  url::Origin request_initiator =
+      GetTrustworthyInitiator(url_request_->initiator(),
+                              factory_params_->request_initiator_origin_lock);
+  if (request_origin.IsSameOriginWith(request_initiator))
+    return true;
+
+  return false;
 }
 
 }  // namespace network

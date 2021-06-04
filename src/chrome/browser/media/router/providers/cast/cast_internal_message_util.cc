@@ -113,7 +113,7 @@ CastInternalMessage::Type CastInternalMessageTypeFromString(
 std::string CastInternalMessageTypeToString(CastInternalMessage::Type type) {
   auto found = cast_util::EnumToString(type);
   DCHECK(found);
-  return found.value_or(base::StringPiece()).as_string();
+  return std::string(found.value_or(base::StringPiece()));
 }
 
 // Possible types in a receiver_action message.
@@ -167,7 +167,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateMessageCommon(
     CastInternalMessage::Type type,
     base::Value payload,
     const std::string& client_id,
-    base::Optional<int> sequence_number = base::nullopt) {
+    absl::optional<int> sequence_number = absl::nullopt) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetKey("type", base::Value(CastInternalMessageTypeToString(type)));
   message.SetKey("message", std::move(payload));
@@ -323,7 +323,7 @@ std::unique_ptr<CastInternalMessage> CastInternalMessage::From(
   return base::WrapUnique(new CastInternalMessage(
       message_type, client_id,
       sequence_number_value ? sequence_number_value->GetInt()
-                            : base::Optional<int>(),
+                            : absl::optional<int>(),
       session_id, namespace_or_v2_type, std::move(new_message_body)));
 }
 
@@ -332,7 +332,7 @@ CastInternalMessage::~CastInternalMessage() = default;
 CastInternalMessage::CastInternalMessage(
     Type type,
     const std::string& client_id,
-    base::Optional<int> sequence_number,
+    absl::optional<int> sequence_number,
     const std::string& session_id,
     const std::string& namespace_or_v2_type,
     base::Value message_body)
@@ -506,14 +506,14 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     const std::string& client_id,
     const base::Value& payload,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kV2Message,
                              payload.Clone(), client_id, sequence_number);
 }
 
 blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
     const std::string& client_id,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kLeaveSession,
                              base::Value(), client_id, sequence_number);
 }
@@ -521,7 +521,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
     const std::string& client_id,
     base::Value error,
-    base::Optional<int> sequence_number) {
+    absl::optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kError,
                              std::move(error), client_id, sequence_number);
 }

@@ -10,13 +10,12 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -29,7 +28,6 @@
 #include "components/safe_browsing/core/db/fake_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 namespace prerender {
@@ -44,7 +42,7 @@ class TestNoStatePrefetchContents : public NoStatePrefetchContents,
       content::BrowserContext* browser_context,
       const GURL& url,
       const content::Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       Origin origin,
       FinalStatus expected_final_status,
       bool ignore_final_status);
@@ -52,11 +50,6 @@ class TestNoStatePrefetchContents : public NoStatePrefetchContents,
   ~TestNoStatePrefetchContents() override;
 
   bool CheckURL(const GURL& url) override;
-
-  // For tests that open the no-state prefetcher in a new background tab, the
-  // RenderView will not have been made visible when the NoStatePrefetchContents
-  // is destroyed even though it is used.
-  void set_should_be_shown(bool value) { should_be_shown_ = value; }
 
   // For tests which do not know whether the no-state prefetcher will be used.
   void set_skip_final_checks(bool value) { skip_final_checks_ = value; }
@@ -77,16 +70,13 @@ class TestNoStatePrefetchContents : public NoStatePrefetchContents,
 
   FinalStatus expected_final_status_;
 
-  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
-      observer_;
+  base::ScopedMultiSourceObservation<content::RenderWidgetHost,
+                                     content::RenderWidgetHostObserver>
+      observations_{this};
+
   // The main frame created for the prerender, if any.
   content::RenderFrameHost* new_main_frame_ = nullptr;
-  // Set to true when the prerendering RenderWidget is shown, after having been
-  // hidden.
-  bool was_shown_ = false;
-  // Expected final value of was_shown_.  Defaults to true for
-  // FINAL_STATUS_USED, and false otherwise.
-  bool should_be_shown_;
+
   // If true, |expected_final_status_| and other shutdown checks are skipped.
   bool skip_final_checks_;
 
@@ -233,7 +223,7 @@ class TestNoStatePrefetchContentsFactory
       content::BrowserContext* browser_context,
       const GURL& url,
       const content::Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       Origin origin) override;
 
  private:

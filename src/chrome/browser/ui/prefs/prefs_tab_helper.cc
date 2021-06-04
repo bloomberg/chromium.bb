@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -357,7 +356,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
       prefs::kEnableReferrers,
       !base::FeatureList::IsEnabled(features::kNoReferrers));
   registry->RegisterBooleanPref(prefs::kEnableEncryptedMedia, true);
-  registry->RegisterBooleanPref(prefs::kEnableDRM, true);
   registry->RegisterBooleanPref(prefs::kScrollToTextFragmentEnabled, true);
 #if defined(OS_ANDROID)
   registry->RegisterDoublePref(prefs::kWebKitFontScaleFactor, 1.0);

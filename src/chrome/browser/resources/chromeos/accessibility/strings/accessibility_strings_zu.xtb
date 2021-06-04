@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Swayiphela iminwe emibili phezulu</translation>
 <translation id="1126928665165112660">Akuyona i-italic</translation>
 <translation id="113582498867142724"><ph name="TAG" /> iqoqo nezinto ezingu-<ph name="NUM" /></translation>
+<translation id="1146441463334103638">Guqula uvule noma uvale isikrini</translation>
 <translation id="1156488781945104845">Isikhathi samanje</translation>
 <translation id="1161762950103988776">Yeqa</translation>
 <translation id="1164857107703583584">Imiyalelo yokweqa ingasetshenziselwa ukuzulazula kahle kukhasi lewebhu.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">I-URL yesixhumanisi: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Iya emuva ngohlamvu olulodwa</translation>
 <translation id="2220529011494928058">Bika inkinga</translation>
+<translation id="2243633977138166243">Cindezela umcibisholo ongakwesokunxele noma kwesokudla ukuze uzulazule; u-enter ukuze wenze kusebenze</translation>
 <translation id="224426591676115802">Alikho izwi elitholakalela ulimi: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Imisa Imodi Yokufunda</translation>
 <translation id="225732394367814946">Khuphula ukulinganisela kwenkulumo</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">I-Chartreuse</translation>
 <translation id="2684412629217766642">Vala okokufundisa kwe-ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">Ikhandidethi yokuguqulwa kombhalo</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{vula ubakaki}one{# vula obakaki}other{# vula obakaki}}</translation>
+<translation id="270523456882008230">Icebiso: Thepha kabili ngomunwe owodwa ukuze usebenzise into yamanje.</translation>
 <translation id="2705875883745373140">Ayicindeziwe</translation>
 <translation id="2708078563826046398">I-Peach Puff</translation>
 <translation id="2713444072780614174">Mhlophe</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Ungaswayiphela naphezulu ngomunwe owodwa kusuka kwesokudla kuya kwesobunxele ukuze uye yentweni edlule. Izame manje.</translation>
 <translation id="280499067616661124">Ukutholwa kwe-ChromeVox kukhasi</translation>
-<translation id="2808001342598757276">Susa ubumnyama kusikrini</translation>
 <translation id="2811019999044652585">Ukuze weqe kusukela kwezinye izingxenye kusikrini, ezifana namabha wamathuluzi noma ithreyi yesistimu, cindezela ku-Control+Forward. Ku-Chromebook, ukhiye we-Forward ungaphezulu nje kokhiye ongunombolo 2.</translation>
 <translation id="2811204574343810641">Irowu</translation>
 <translation id="2816868829355607410">Indawo yokuphrakthiza: Imiyalelo yokweqa</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Ithiphu lethuluzi</translation>
 <translation id="2976476721782829799">Ungaphinda uhambahambe ngokuhudula umunwe owodwa esikrinini. Lokhu kubizwa ngokuthi ukuhlola ngokuthinta. Zama ukuhudula umunwe wakho nxazonke ukuze ufunde sonke lesi sifundo</translation>
 <translation id="297825089465017871">Swayiphela iminwe emibili ngakwesokunxele</translation>
+<translation id="2988364959384217951">Icebiso: Swayipha kusuka kwesokudla kuya kwesobunxele ngeminwe emibili uma ungathanda ukuphuma kulesi sifundo.</translation>
 <translation id="2998131015536248178">Uhlamvu oludlule</translation>
 <translation id="2999559350546931576">Yehlisa iphitshi</translation>
 <translation id="3009352964623081324">Sesha + O, bese u-S. Kusebenzisele ukufaka, ukuphatha, nokwenza amazwi ngokwezifiso.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Skrolela emuva</translation>
 <translation id="3084806535845658316">akukho ukunkenteza kokuthayipha</translation>
 <translation id="3086746722712840547">inothi</translation>
+<translation id="308736057934395497">Lokhu kuthuthukisa imfihlo ngokuvala isikrini sakho ukuze singabonakali kwabanye. Ungahlala uphinda uvula isikrini ngokucindezela kokuthi Usesho + Ukugqamisa.</translation>
 <translation id="3090227230165225418">Memezela izaziso zokulanda</translation>
 <translation id="3090532668523289635">i-grp</translation>
 <translation id="3093176084511590672">Uphawu lokubekisa olulandelayo</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Igoqiwe</translation>
 <translation id="311015743332597320">Swayipha iminwe emine ngakwesokudla</translation>
 <translation id="3112457281078985179">Ukuze uvule noma uvale i-ChromeVox, sebenzisa u-Control+Alt+Z.</translation>
+<translation id="3115800313647508384">Vala isikrini?</translation>
 <translation id="3131002934070407451">Funda izinombolo ngale ndlela:</translation>
 <translation id="3134461040845705080">i-rdonly</translation>
 <translation id="3137663468179739624">I-Olive</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Okumpunga okukhanyayo</translation>
 <translation id="6036135911048686884">Thinta ukuhlola</translation>
 <translation id="6037602951055904232">Phelena phambili</translation>
-<translation id="6044160928851315051">Yenza mnyama isikrini</translation>
 <translation id="6082768461603900813">Ukuzulazula okuyisisekelo</translation>
 <translation id="609281021724813947">Asikho isilayida sangaphambilini</translation>
 <translation id="6100239002225743044">Hamba phezulu ngomugqa owodwa</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Isiqalo</translation>
 <translation id="6697092096875747123">Ibhokisi linhlanganisela edlule</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{uphawu lokumemeza}one{# izimuphawu lokumemeza}other{# izimpawu zokumemeza}}</translation>
+<translation id="670717715607710284">Isikrini sivaliwe</translation>
 <translation id="6710213216561001401">Okwedlule</translation>
 <translation id="6714813999819678458">Isihloko esedlule seleveli engu-2</translation>
 <translation id="6730312624811567147">Sebenzisa Usesho lwangakwesobunxele noma ngakwesokudla Sekhaya noma Ukuqeda, Ulawulo Losesho Lwangakwesobunxele noma Ngakwesokudla Solawulo Lwekhaya noma Ukuqeda, Seshela Phezulu noma Phansi ukuze Ukhuphule noma Wehlise Ikhasi</translation>
@@ -939,6 +945,7 @@
 <translation id="7776293189010177726">Vula amamenyu e-ChromeVox</translation>
 <translation id="7799302833060027366">Cindezela phezulu, phansi, kwesokunxele, noma kwesokudla ukuze uhlole izibalo</translation>
 <translation id="7800558923657349506">I-Epilogue</translation>
+<translation id="7801768143868631306">Icebiso: Swayiphela kwesobunxele noma kwesokudla ngomunwe owodwa ukuze uzulazule.</translation>
 <translation id="7805768142964895445">Isimo</translation>
 <translation id="7810781339813764006">Iqembu elilandelayo</translation>
 <translation id="7813616274030162878">Shintsha imenyu yokufinyelela</translation>
@@ -992,6 +999,7 @@
 <translation id="816818801578874684">Lesi yisihloko sokuqala. Cindezela okuthi Sesha + H ukuya esihlokweni esilandelayo.</translation>
 <translation id="8173092779156526980">Swayipha ngeminwe emine ngakwesokunxele</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{i-underscore}one{# ama-underscore}other{# ama-underscore}}</translation>
+<translation id="817529114347680055">Isikrini sivuliwe</translation>
 <translation id="8179976553408161302">Faka</translation>
 <translation id="8184828902145951186">umugqa</translation>
 <translation id="8186185314313222077">guqula isikrini esigcwele</translation>
@@ -1014,7 +1022,6 @@
 <translation id="8316881042119029234">I-Lace endala</translation>
 <translation id="8324974933005349667">Yenza ngezifiso izilungiselelo zokuguqula umbhalo ube inkulumo</translation>
 <translation id="8326783648485765113">Okuluhlaza okotshani</translation>
-<translation id="8328063869313048659">Shintsha isikrini esimnyama</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{upondo}one{# izimpawu zopondo}other{# izimpawu zopondo}}</translation>
 <translation id="8378855320830505539">Isifunda</translation>
 <translation id="8382679411218029383">Ukuqedela okuzenzakalelayo ngaphakathi kolayini nakuhlu</translation>

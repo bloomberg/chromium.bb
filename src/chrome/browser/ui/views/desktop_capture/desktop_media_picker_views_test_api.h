@@ -36,12 +36,11 @@ class DesktopMediaPickerViewsTestApi {
   void PressKeyOnSourceAtIndex(size_t index, const ui::KeyEvent& event);
   void SelectTabForSourceType(DesktopMediaList::Type source_type);
   views::Checkbox* GetAudioShareCheckbox();
-  views::Checkbox* GetPresenterToolsCheckbox();
 
   bool HasSourceAtIndex(size_t index) const;
   void FocusSourceAtIndex(size_t index, bool select = true);
   void DoubleTapSourceAtIndex(size_t index);
-  base::Optional<int> GetSelectedSourceId() const;
+  absl::optional<int> GetSelectedSourceId() const;
   views::View* GetSelectedListView();
 
  private:

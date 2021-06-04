@@ -30,9 +30,9 @@ Later, there may be multiple `GPUDevice`s to allow multiple test cases to run co
 ## Test parameterization
 
 The CTS provides helpers (`params().combine()`) for creating large cartesian products of test parameters.
-The harnesses runs one "test case" for each one.
+The harnesses runs one "test case" or "test subcase" for each one.
 
-TODO(github.com/gpuweb/cts/issues/305): document test subcases, once they exist.
+TODO(github.com/gpuweb/cts/issues/305): document test subcases better
 
 See `basic,params_builder` in `examples.spec.ts` for an example.
 

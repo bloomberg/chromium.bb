@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -37,7 +36,7 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
     const VideoEncoder::Options& opts,
     VideoPixelFormat format,
     VideoFrame::StorageType storage_type) {
-  base::Optional<uint32_t> initial_framerate;
+  absl::optional<uint32_t> initial_framerate;
   if (opts.framerate.has_value())
     initial_framerate = static_cast<uint32_t>(opts.framerate.value());
 
@@ -57,6 +56,9 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
     layer.num_of_temporal_layers = opts.temporal_layers;
     config.spatial_layers.push_back(layer);
   }
+
+  // We don't mind if Mac encoding will have higher latency on low resolutions.
+  config.require_low_delay = false;
 
   const bool is_rgb =
       format == PIXEL_FORMAT_XBGR || format == PIXEL_FORMAT_XRGB ||
@@ -289,9 +291,9 @@ void VideoEncodeAcceleratorAdapter::EncodeOnAcceleratorThread(
 
   StatusOr<scoped_refptr<VideoFrame>> result(nullptr);
   if (use_gpu_buffer)
-    result = PrepareGpuFrame(options_.frame_size, frame);
+    result = PrepareGpuFrame(input_coded_size_, frame);
   else
-    result = PrepareCpuFrame(options_.frame_size, frame);
+    result = PrepareCpuFrame(input_coded_size_, frame);
 
   if (result.has_error()) {
     auto status = std::move(result).error();
@@ -417,6 +419,7 @@ void VideoEncodeAcceleratorAdapter::RequireBitstreamBuffers(
     size_t output_buffer_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(accelerator_sequence_checker_);
 
+  input_coded_size_ = input_coded_size;
   input_buffer_size_ =
       VideoFrame::AllocationSize(PIXEL_FORMAT_I420, input_coded_size);
 
@@ -438,7 +441,7 @@ void VideoEncodeAcceleratorAdapter::RequireBitstreamBuffers(
 void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     int32_t buffer_id,
     const BitstreamBufferMetadata& metadata) {
-  base::Optional<CodecDescription> desc;
+  absl::optional<CodecDescription> desc;
   VideoEncoderOutput result;
   result.key_frame = metadata.key_frame;
   result.timestamp = metadata.timestamp;
@@ -627,7 +630,7 @@ VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
                               ? ConvertToMemoryMappedFrame(src_frame)
                               : src_frame;
   auto shared_frame = VideoFrame::WrapExternalData(
-      PIXEL_FORMAT_I420, options_.frame_size, gfx::Rect(size), size,
+      PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
       mapping.GetMemoryAsSpan<uint8_t>().data(), mapping.size(),
       src_frame->timestamp());
 

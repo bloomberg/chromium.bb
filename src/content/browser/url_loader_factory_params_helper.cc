@@ -5,7 +5,7 @@
 #include "content/browser/url_loader_factory_params_helper.h"
 
 #include "base/command_line.h"
-#include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -21,6 +21,7 @@
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
@@ -40,7 +41,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     const url::Origin& origin,
     const url::Origin& request_initiator_origin_lock,
     bool is_trusted,
-    const base::Optional<blink::LocalFrameToken>& top_frame_token,
+    const absl::optional<blink::LocalFrameToken>& top_frame_token,
     const net::IsolationInfo& isolation_info,
     network::mojom::ClientSecurityStatePtr client_security_state,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -105,7 +106,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
   params->url_loader_network_observer = std::move(url_loader_network_observer);
   params->devtools_observer = std::move(devtools_observer);
 
-  params->debug_tag = debug_tag.as_string();
+  params->debug_tag = std::string(debug_tag);
 
   return params;
 }
@@ -213,7 +214,7 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
       request_initiator,  // origin
       request_initiator,  // request_initiator_origin_lock
       false,              // is_trusted
-      base::nullopt,      // top_frame_token
+      absl::nullopt,      // top_frame_token
       isolation_info,
       nullptr,  // client_security_state
       std::move(coep_reporter),
@@ -227,40 +228,6 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
       // execute a trust token redemption or signing operation,
       // as these operations require the Permissions Policy feature.
       network::mojom::TrustTokenRedemptionPolicy::kForbid, debug_tag);
-}
-
-// static
-network::mojom::URLLoaderFactoryParamsPtr
-URLLoaderFactoryParamsHelper::CreateForRendererProcess(
-    RenderProcessHost* process) {
-  // Lock the |request_initiator| to an opaque origin - before something commits
-  // in a frame, requests initiated by such frame should use an opaque
-  // |request_initiator|.  See also https://crbug.com/1105794 and
-  // https://crbug.com/1098938.
-  url::Origin request_initiator_origin_lock = url::Origin();
-
-  // Since this function is about to get deprecated (crbug.com/1114822), it
-  // should be fine to not add support for isolation info thus using an empty
-  // NetworkIsolationKey.
-  //
-  // We may not be able to allow powerful APIs such as memory measurement APIs
-  // (see https://crbug.com/887967) without removing this call.
-  net::IsolationInfo isolation_info = net::IsolationInfo::CreateTransient();
-  base::Optional<blink::LocalFrameToken> top_frame_token = base::nullopt;
-
-  return CreateParams(
-      process,
-      url::Origin(),                  // origin
-      request_initiator_origin_lock,  // request_initiator_origin_lock
-      false,                          // is_trusted
-      top_frame_token, isolation_info,
-      nullptr,             // client_security_state
-      mojo::NullRemote(),  // coep_reporter
-      false,               // allow_universal_access_from_file_urls
-      false,               // is_for_isolated_world
-      mojo::NullRemote(), mojo::NullRemote(), mojo::NullRemote(),
-      network::mojom::TrustTokenRedemptionPolicy::kForbid,
-      "ParamHelper::CreateForRendererProcess");
 }
 
 }  // namespace content

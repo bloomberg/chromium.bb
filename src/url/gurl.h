@@ -437,7 +437,7 @@ class COMPONENT_EXPORT(URL) GURL {
   static bool IsAboutPath(base::StringPiece actual_path,
                           base::StringPiece allowed_path);
 
-  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
  private:
   // Variant of the string parsing constructor that allows the caller to elect
@@ -448,9 +448,8 @@ class COMPONENT_EXPORT(URL) GURL {
   enum RetainWhiteSpaceSelector { RETAIN_TRAILING_PATH_WHITEPACE };
   GURL(const std::string& url_string, RetainWhiteSpaceSelector);
 
-  template <typename CharT>
-  void InitCanonical(base::BasicStringPiece<CharT> input_spec,
-                     bool trim_path_end);
+  template <typename T, typename CharT = typename T::value_type>
+  void InitCanonical(T input_spec, bool trim_path_end);
 
   void InitializeFromCanonicalSpec();
 

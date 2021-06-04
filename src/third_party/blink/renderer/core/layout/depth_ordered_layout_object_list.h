@@ -17,6 +17,9 @@ class LayoutObject;
 struct DepthOrderedLayoutObjectListData;
 
 struct LayoutObjectWithDepth {
+  DISALLOW_NEW();
+
+ public:
   explicit LayoutObjectWithDepth(LayoutObject* in_object)
       : object(in_object), depth(DetermineDepth(in_object)) {}
 

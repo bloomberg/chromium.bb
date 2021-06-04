@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -36,7 +36,7 @@ const char kTestPolicyName7[] = "policy.test.7";
 const char kTestPolicyName8[] = "policy.test.8";
 
 // Dummy error message.
-const char kTestError[] = "Test error message";
+const char16_t kTestError[] = u"Test error message";
 
 // Utility functions for the tests.
 void SetPolicy(PolicyMap* map, const char* name, base::Value value) {
@@ -48,7 +48,7 @@ void SetPolicy(PolicyMap* map,
                const char* name,
                std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
   map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-           base::nullopt, std::move(external_data_fetcher));
+           absl::nullopt, std::move(external_data_fetcher));
 }
 
 template <class T>
@@ -83,25 +83,24 @@ TEST_F(PolicyMapTest, SetAndGet) {
   EXPECT_TRUE(expected_b.Equals(map.GetValue(kTestPolicyName1)));
   SetPolicy(&map, kTestPolicyName1, CreateExternalDataFetcher("dummy"));
   map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError,
-                 IDS_POLICY_STORE_STATUS_VALIDATION_ERROR,
-                 {base::UTF8ToUTF16(kTestError)});
+                 IDS_POLICY_STORE_STATUS_VALIDATION_ERROR, {kTestError});
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   const PolicyMap::Entry* entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != nullptr);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
-  std::string error_string = base::StrCat({"Validation error: ", kTestError});
+  std::u16string error_string =
+      base::StrCat({u"Validation error: ", kTestError});
   PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
       static_cast<std::u16string (*)(int)>(&base::NumberToString16));
-  EXPECT_EQ(
-      base::UTF8ToUTF16(error_string),
-      entry->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
+  EXPECT_EQ(error_string, entry->GetLocalizedMessages(
+                              PolicyMap::MessageType::kError, lookup));
   EXPECT_TRUE(
       ExternalDataFetcher::Equals(entry->external_data_fetcher.get(),
                                   CreateExternalDataFetcher("dummy").get()));
   map.Set(kTestPolicyName1, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-          POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt, nullptr);
+          POLICY_SOURCE_ENTERPRISE_DEFAULT, absl::nullopt, nullptr);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != nullptr);
@@ -125,9 +124,8 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
   EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(
                          PolicyMap::MessageType::kError, lookup));
   map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError, 5678);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kError, lookup));
 
   // Add second entry to make sure errors are added individually.
   SetPolicy(&map, kTestPolicyName2, base::Value(0));
@@ -135,33 +133,30 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
   // Test adding Error message with placeholder replacement (one arg)
   map.AddMessage(kTestPolicyName2, PolicyMap::MessageType::kError,
                  IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kError, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("This policy is deprecated. You should use the "
-                        "SomeNewPolicy policy instead."),
+      u"This policy is deprecated. You should use the "
+      u"SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
   map.AddMessage(kTestPolicyName2, PolicyMap::MessageType::kError, 1357);
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kError, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
   // Test adding Error message with placeholder replacement (two args)
   map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError,
                  IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
                  {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
-      base::UTF8ToUTF16(
-          "1234\n5678\nSharing from SomeSource to SomeDestination has "
-          "been blocked by administrator policy"),
+      u"1234\n5678\nSharing from SomeSource to SomeDestination has "
+      u"been blocked by administrator policy",
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
 
   // Ensure other message types are empty
@@ -183,9 +178,8 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
   EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(
                          PolicyMap::MessageType::kWarning, lookup));
   entry1->AddMessage(PolicyMap::MessageType::kWarning, 5678);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kWarning, lookup));
 
   // Add second entry to make sure warnings are added individually.
   SetPolicy(&map, kTestPolicyName2, base::Value(0));
@@ -193,33 +187,30 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
   // Test adding Warning message with placeholder replacement (one arg)
   entry2->AddMessage(PolicyMap::MessageType::kWarning,
                      IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kWarning, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("This policy is deprecated. You should use the "
-                        "SomeNewPolicy policy instead."),
+      u"This policy is deprecated. You should use the "
+      u"SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
   entry2->AddMessage(PolicyMap::MessageType::kWarning, 1357);
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kWarning, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
   // Test adding Warning message with placeholder replacement (two args)
   entry1->AddMessage(PolicyMap::MessageType::kWarning,
                      IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
                      {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
-      base::UTF8ToUTF16(
-          "1234\n5678\nSharing from SomeSource to SomeDestination has "
-          "been blocked by administrator policy"),
+      u"1234\n5678\nSharing from SomeSource to SomeDestination has "
+      u"been blocked by administrator policy",
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
 
   // Ensure other message types are empty
@@ -241,9 +232,8 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
   EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo,
                                                   lookup));
   entry1->AddMessage(PolicyMap::MessageType::kInfo, 5678);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kInfo, lookup));
 
   // Add second entry to make sure messages are added individually.
   SetPolicy(&map, kTestPolicyName2, base::Value(0));
@@ -251,33 +241,30 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
   // Test adding Info message with placeholder replacement (one arg)
   entry2->AddMessage(PolicyMap::MessageType::kInfo,
                      IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kInfo, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("This policy is deprecated. You should use the "
-                        "SomeNewPolicy policy instead."),
+      u"This policy is deprecated. You should use the "
+      u"SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
   entry2->AddMessage(PolicyMap::MessageType::kInfo, 1357);
+  EXPECT_EQ(u"1234\n5678", entry1->GetLocalizedMessages(
+                               PolicyMap::MessageType::kInfo, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1234\n5678"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
   // Test adding Info message with placeholder replacement (two args)
   entry1->AddMessage(PolicyMap::MessageType::kInfo,
                      IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
                      {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
-      base::UTF8ToUTF16(
-          "1234\n5678\nSharing from SomeSource to SomeDestination has "
-          "been blocked by administrator policy"),
+      u"1234\n5678\nSharing from SomeSource to SomeDestination has "
+      u"been blocked by administrator policy",
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
   EXPECT_EQ(
-      base::UTF8ToUTF16("1357\nThis policy is deprecated. You should use "
-                        "the SomeNewPolicy policy instead."),
+      u"1357\nThis policy is deprecated. You should use "
+      u"the SomeNewPolicy policy instead.",
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
 
   // Ensure other message types are empty
@@ -374,7 +361,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   a.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, absl::nullopt,
         CreateExternalDataFetcher("a"));
   a.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
@@ -393,7 +380,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, absl::nullopt,
         CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE, base::Value(true),
@@ -434,7 +421,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.GetMutable(kTestPolicyName2)
       ->AddConflictingPolicy(b.Get(kTestPolicyName2)->DeepCopy());
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, absl::nullopt,
         CreateExternalDataFetcher("a"));
   c.GetMutable(kTestPolicyName3)
       ->AddMessage(PolicyMap::MessageType::kWarning,
@@ -648,11 +635,9 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   expected_list_merged.Set(kTestPolicyName6, expected_case6.DeepCopy());
   expected_list_merged.Set(kTestPolicyName7, expected_case7.DeepCopy());
 
-  PolicyMap list_merged;
-  list_merged.CopyFrom(policy_not_merged);
+  PolicyMap list_merged = policy_not_merged.Clone();
 
-  PolicyMap list_merged_wildcard;
-  list_merged_wildcard.CopyFrom(policy_not_merged);
+  PolicyMap list_merged_wildcard = policy_not_merged.Clone();
 
   // Merging with no restrictions specified
   PolicyListMerger empty_policy_list({});
@@ -672,8 +657,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   list_merged.MergeValues({&good_policy_list});
   EXPECT_TRUE(list_merged.Equals(expected_list_merged));
 
-  PolicyMap expected_list_merged_wildcard;
-  expected_list_merged_wildcard.CopyFrom(expected_list_merged);
+  PolicyMap expected_list_merged_wildcard = expected_list_merged.Clone();
   expected_list_merged_wildcard.Set(kTestPolicyName5, case5.DeepCopy());
   list_merged_wildcard.MergeValues({&wildcard_policy_list});
   EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
@@ -855,11 +839,9 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   expected_list_merged.Set(kTestPolicyName6, expected_case6.DeepCopy());
   expected_list_merged.Set(kTestPolicyName7, expected_case7.DeepCopy());
 
-  PolicyMap list_merged;
-  list_merged.CopyFrom(policy_not_merged);
+  PolicyMap list_merged = policy_not_merged.Clone();
 
-  PolicyMap list_merged_wildcard;
-  list_merged_wildcard.CopyFrom(policy_not_merged);
+  PolicyMap list_merged_wildcard = policy_not_merged.Clone();
 
   // Merging with no restrictions specified
   PolicyDictionaryMerger empty_policy_list({});
@@ -885,8 +867,7 @@ TEST_F(PolicyMapTest, MergeDictionaryValues) {
   list_merged.MergeValues({&good_policy_list});
   EXPECT_TRUE(list_merged.Equals(expected_list_merged));
 
-  PolicyMap expected_list_merged_wildcard;
-  expected_list_merged_wildcard.CopyFrom(expected_list_merged);
+  PolicyMap expected_list_merged_wildcard = expected_list_merged.Clone();
   expected_list_merged_wildcard.Set(kTestPolicyName5, case5.DeepCopy());
   expected_list_merged_wildcard.Set(kTestPolicyName7, case7.DeepCopy());
   list_merged_wildcard.MergeValues({&wildcard_policy_list});
@@ -954,8 +935,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
   policy_not_merged.Set(policy::key::kExtensionInstallForcelist,
                         cloud_machine_recommended.DeepCopy());
 
-  PolicyMap group_merged;
-  group_merged.CopyFrom(policy_not_merged);
+  PolicyMap group_merged = policy_not_merged.Clone();
   PolicyGroupMerger group_merger;
   group_merged.MergeValues({&group_merger});
 
@@ -970,64 +950,6 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
                             cloud_machine_recommended.DeepCopy());
 
   EXPECT_TRUE(group_merged.Equals(expected_group_merged));
-}
-
-TEST_F(PolicyMapTest, GetDifferingKeys) {
-  PolicyMap a;
-  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value("google.com"), nullptr);
-  a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("dummy"));
-  a.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
-  a.Set(kTestPolicyName4, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("a"));
-  a.Set(kTestPolicyName5, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
-  a.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::Value("google.com/q={x}"), nullptr);
-  a.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
-
-  PolicyMap b;
-  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value("google.com"), nullptr);
-  b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("dummy"));
-  b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
-  b.Set(kTestPolicyName4, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("b"));
-  b.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
-  b.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value("google.com/q={x}"), nullptr);
-  b.Set(kTestPolicyName8, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
-
-  std::set<std::string> diff;
-  std::set<std::string> diff2;
-  a.GetDifferingKeys(b, &diff);
-  b.GetDifferingKeys(a, &diff2);
-  // Order shouldn't matter.
-  EXPECT_EQ(diff, diff2);
-  // No change.
-  EXPECT_TRUE(diff.find(kTestPolicyName1) == diff.end());
-  EXPECT_TRUE(diff.find(kTestPolicyName2) == diff.end());
-  // Different values.
-  EXPECT_TRUE(diff.find(kTestPolicyName3) != diff.end());
-  // Different external data references.
-  EXPECT_TRUE(diff.find(kTestPolicyName4) != diff.end());
-  // Different levels.
-  EXPECT_TRUE(diff.find(kTestPolicyName5) != diff.end());
-  // Different scopes.
-  EXPECT_TRUE(diff.find(kTestPolicyName6) != diff.end());
-  // Not in |a|.
-  EXPECT_TRUE(diff.find(kTestPolicyName8) != diff.end());
-  // Not in |b|.
-  EXPECT_TRUE(diff.find(kTestPolicyName7) != diff.end());
-  // No surprises.
-  EXPECT_EQ(6u, diff.size());
 }
 
 TEST_F(PolicyMapTest, LoadFromSetsLevelScopeAndSource) {
@@ -1244,6 +1166,30 @@ TEST_F(PolicyMapTest, InvalidEntry) {
   policies.SetAllInvalid();
   EXPECT_TRUE(policies.GetUntrusted("a")->ignored());
   EXPECT_TRUE(policies.GetUntrusted("b")->ignored());
+}
+
+TEST_F(PolicyMapTest, Affiliation) {
+  PolicyMap policies;
+  EXPECT_FALSE(policies.IsUserAffiliated());
+
+  base::flat_set<std::string> user_ids;
+  user_ids.insert("a");
+  base::flat_set<std::string> device_ids;
+  device_ids.insert("b");
+  policies.SetUserAffiliationIds(user_ids);
+  policies.SetUserAffiliationIds(device_ids);
+
+  // Affiliation check fails because user and device IDs don't have at least one
+  // ID in common.
+  EXPECT_FALSE(policies.IsUserAffiliated());
+
+  user_ids.insert("b");
+  device_ids.insert("c");
+  policies.SetUserAffiliationIds(user_ids);
+  policies.SetDeviceAffiliationIds(device_ids);
+
+  // Affiliation check succeeds now that 'a' is present in user and device IDs.
+  EXPECT_TRUE(policies.IsUserAffiliated());
 }
 
 }  // namespace policy

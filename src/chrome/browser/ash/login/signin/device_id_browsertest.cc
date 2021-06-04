@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
@@ -10,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -54,7 +55,7 @@ class DeviceIDTest : public OobeBaseTest,
   }
 
   void SetUpOnMainThread() override {
-    user_removal_loop_.reset(new base::RunLoop);
+    user_removal_loop_ = std::make_unique<base::RunLoop>();
     OobeBaseTest::SetUpOnMainThread();
     LoadRefreshTokenToDeviceIdMap();
     user_manager::UserManager::Get()->AddObserver(this);

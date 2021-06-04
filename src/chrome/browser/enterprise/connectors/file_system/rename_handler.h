@@ -8,12 +8,12 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/file_system/download_controller.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item_rename_handler.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 namespace content {
@@ -23,6 +23,7 @@ class WebContents;
 namespace enterprise_connectors {
 
 class AccessTokenFetcher;
+class BoxUploader;
 
 // Experimental flag to enable or disable the file system connector.
 extern const base::Feature kFileSystemConnectorEnabled;
@@ -40,16 +41,21 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
   ~FileSystemRenameHandler() override;
 
  protected:
+  // download::DownloadItemRenameHandler interface.
+  void Start(Callback callback) override;
+  void OpenDownload() override;
+  void ShowDownloadInContext() override;
+
   // These methods are declared protected to override in tests so that calls to
   // other components can be isolated.
-  virtual void TryControllerTask(content::BrowserContext* context,
-                                 const std::string& access_token);
+  virtual void TryUploaderTask(content::BrowserContext* context,
+                               const std::string& access_token);
   virtual void PromptUserSignInForAuthorization(content::WebContents* contents);
   virtual void FetchAccessToken(content::BrowserContext* context,
                                 const std::string& refresh_token);
 
   // These methods are declared protected so that they can be used in tests.
-  FileSystemDownloadController* GetControllerForTesting();
+  void SetUploaderForTesting(std::unique_ptr<BoxUploader> fake_uploader);
   // Callback for PromptUserSignInForAuthorization().
   void OnAuthorization(const GoogleServiceAuthError& status,
                        const std::string& access_token,
@@ -60,21 +66,19 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
                             const std::string& refresh_token);
 
  private:
-  static base::Optional<FileSystemSettings> IsEnabled(
+  static absl::optional<FileSystemSettings> IsEnabled(
       download::DownloadItem* download_item);
 
   static std::unique_ptr<download::DownloadItemRenameHandler> Create(
       download::DownloadItem* download_item,
       FileSystemSettings settings);
 
-  // download::DownloadItemRenameHandler interface.
-  void Start(Callback callback) override;
-  void OpenDownload() override;
-  void ShowDownloadInContext() override;
-
   void StartInternal();
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* context);
+
+  // Helper method used in OpenDownload() and ShowDownloadInContext().
+  void AddTabToShowDownload(GURL url);
 
   // Called when failure status is returned via callbacks but is not
   // GoogleServiceAuthError::State::REQUEST_CANCELED.
@@ -82,9 +86,9 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
   // Called when failure status is returned via callbacks and is
   // GoogleServiceAuthError::State::REQUEST_CANCELED.
   void OnSignInCancellation();
-  // Callback for controller_ upon API requests returning authentication error.
+  // Callback for uploader_ upon API requests returning authentication error.
   void OnApiAuthenticationError();
-  // Callback for controller_ as well as upon failure.
+  // Notify upload success or failure back to the download thread.
   void NotifyResultToDownloadThread(bool success);
 
   PrefService* GetPrefs();
@@ -98,8 +102,8 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
   Callback download_callback_;
 
   std::unique_ptr<AccessTokenFetcher> token_fetcher_;
-  // Main controller that manages the entire API call flow of file upload.
-  FileSystemDownloadController controller_;
+  // Main uploader that manages the entire API call flow of file upload.
+  std::unique_ptr<BoxUploader> uploader_;
   base::WeakPtrFactory<FileSystemRenameHandler> weak_factory_{this};
 };
 

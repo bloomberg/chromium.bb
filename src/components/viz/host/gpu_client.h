@@ -98,9 +98,9 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
   ConnectionErrorHandlerClosure connection_error_handler_;
-  // |task_runner_| is associated with the thread |gpu_bindings_| is bound on.
-  // GpuClient instance is bound to this thread, and must be destroyed on this
-  // thread.
+  // |task_runner_| is associated with the thread |gpu_bindings_| is bound
+  // on. GpuClient instance is bound to this thread, and must be destroyed on
+  // this thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<GpuClient> weak_factory_{this};
 

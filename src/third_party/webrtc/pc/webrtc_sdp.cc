@@ -82,7 +82,6 @@ using cricket::MediaContentDescription;
 using cricket::MediaProtocolType;
 using cricket::MediaType;
 using cricket::RidDescription;
-using cricket::RtpDataContentDescription;
 using cricket::RtpHeaderExtensions;
 using cricket::SctpDataContentDescription;
 using cricket::SimulcastDescription;
@@ -901,11 +900,11 @@ std::string SdpSerialize(const JsepSessionDescription& jdesc) {
   // Time Description.
   AddLine(kTimeDescription, &message);
 
-  // Group
-  if (desc->HasGroup(cricket::GROUP_TYPE_BUNDLE)) {
+  // BUNDLE Groups
+  std::vector<const cricket::ContentGroup*> groups =
+      desc->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE);
+  for (const cricket::ContentGroup* group : groups) {
     std::string group_line = kAttrGroup;
-    const cricket::ContentGroup* group =
-        desc->GetGroupByName(cricket::GROUP_TYPE_BUNDLE);
     RTC_DCHECK(group != NULL);
     for (const std::string& content_name : group->content_names()) {
       group_line.append(" ");
@@ -1415,12 +1414,7 @@ void BuildMediaDescription(const ContentInfo* content_info,
         fmt.append(kDefaultSctpmapProtocol);
       }
     } else {
-      const RtpDataContentDescription* rtp_data_desc =
-          media_desc->as_rtp_data();
-      for (const cricket::RtpDataCodec& codec : rtp_data_desc->codecs()) {
-        fmt.append(" ");
-        fmt.append(rtc::ToString(codec.id));
-      }
+      RTC_NOTREACHED() << "Data description without SCTP";
     }
   } else if (media_type == cricket::MEDIA_TYPE_UNSUPPORTED) {
     const UnsupportedContentDescription* unsupported_desc =
@@ -1971,19 +1965,6 @@ void BuildRtpMap(const MediaContentDescription* media_desc,
       ptime = std::min(ptime, min_maxptime);
       ptime = std::max(ptime, max_minptime);
       AddAttributeLine(kCodecParamPTime, ptime, message);
-    }
-  } else if (media_type == cricket::MEDIA_TYPE_DATA) {
-    if (media_desc->as_rtp_data()) {
-      for (const cricket::RtpDataCodec& codec :
-           media_desc->as_rtp_data()->codecs()) {
-        // RFC 4566
-        // a=rtpmap:<payload type> <encoding name>/<clock rate>
-        // [/<encodingparameters>]
-        InitAttrLine(kAttributeRtpmap, &os);
-        os << kSdpDelimiterColon << codec.id << " " << codec.name << "/"
-           << codec.clockrate;
-        AddLine(os.str(), message);
-      }
     }
   }
 }
@@ -2739,14 +2720,6 @@ bool ParseMediaDescription(
         }
         data_desc->set_protocol(protocol);
         content = std::move(data_desc);
-      } else if (cricket::IsRtpProtocol(protocol)) {
-        // RTP
-        std::unique_ptr<RtpDataContentDescription> data_desc =
-            ParseContentDescription<RtpDataContentDescription>(
-                message, cricket::MEDIA_TYPE_DATA, mline_index, protocol,
-                payload_types, pos, &content_name, &bundle_only,
-                &section_msid_signaling, &transport, candidates, error);
-        content = std::move(data_desc);
       } else {
         return ParseFailed(line, "Unsupported protocol for media type", error);
       }
@@ -3075,21 +3048,6 @@ bool ParseContent(const std::string& message,
       if (b < 0) {
         return ParseFailed(
             line, "b=" + bandwidth_type + " value can't be negative.", error);
-      }
-      // We should never use more than the default bandwidth for RTP-based
-      // data channels. Don't allow SDP to set the bandwidth, because
-      // that would give JS the opportunity to "break the Internet".
-      // See: https://code.google.com/p/chromium/issues/detail?id=280726
-      // Disallow TIAS since it shouldn't be generated for RTP data channels in
-      // the first place and provides another way to get around the limitation.
-      if (media_type == cricket::MEDIA_TYPE_DATA &&
-          cricket::IsRtpProtocol(protocol) &&
-          (b > cricket::kRtpDataMaxBandwidth / 1000 ||
-           bandwidth_type == kTransportSpecificBandwidth)) {
-        rtc::StringBuilder description;
-        description << "RTP-based data channels may not send more than "
-                    << cricket::kRtpDataMaxBandwidth / 1000 << "kbps.";
-        return ParseFailed(line, description.str(), error);
       }
       // Convert values. Prevent integer overflow.
       if (bandwidth_type == kApplicationSpecificBandwidth) {
@@ -3671,11 +3629,6 @@ bool ParseRtpmapAttribute(const std::string& line,
     AudioContentDescription* audio_desc = media_desc->as_audio();
     UpdateCodec(payload_type, encoding_name, clock_rate, 0, channels,
                 audio_desc);
-  } else if (media_type == cricket::MEDIA_TYPE_DATA) {
-    RtpDataContentDescription* data_desc = media_desc->as_rtp_data();
-    if (data_desc) {
-      data_desc->AddCodec(cricket::RtpDataCodec(payload_type, encoding_name));
-    }
   }
   return true;
 }

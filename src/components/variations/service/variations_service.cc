@@ -104,7 +104,7 @@ std::string GetPlatformString() {
   return "win";
 #elif defined(OS_IOS)
   return "ios";
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   return "mac";
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   return "chromeos";
@@ -359,8 +359,7 @@ VariationsService::VariationsService(
       disable_deltas_for_next_request_(false),
       resource_request_allowed_notifier_(std::move(notifier)),
       request_count_(0),
-      safe_seed_manager_(state_manager->clean_exit_beacon()->exited_cleanly(),
-                         local_state),
+      safe_seed_manager_(local_state),
       field_trial_creator_(local_state,
                            client_.get(),
                            std::make_unique<VariationsSeedStore>(
@@ -1006,7 +1005,7 @@ bool VariationsService::SetupFieldTrials(
   return field_trial_creator_.SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures, variation_ids,
       extra_overrides, CreateLowEntropyProvider(), std::move(feature_list),
-      platform_field_trials, &safe_seed_manager_,
+      state_manager_, platform_field_trials, &safe_seed_manager_,
       state_manager_->GetLowEntropySource());
 }
 

@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_region.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_image_source_util.h"
@@ -28,6 +31,7 @@ class VideoFrame;
 
 namespace blink {
 
+class ArrayBufferOrArrayBufferView;
 class CanvasImageSource;
 class ExceptionState;
 class ExecutionContext;
@@ -36,6 +40,7 @@ class ScriptPromise;
 class ScriptState;
 class VideoFrameInit;
 class VideoFramePlaneInit;
+class VideoFrameReadIntoOptions;
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                         public CanvasImageSource,
@@ -52,10 +57,17 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   explicit VideoFrame(scoped_refptr<VideoFrameHandle> handle);
 
   // video_frame.idl implementation.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  static VideoFrame* Create(ScriptState* script_state,
+                            const V8CanvasImageSource* source,
+                            const VideoFrameInit* init,
+                            ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static VideoFrame* Create(ScriptState*,
                             const CanvasImageSourceUnion&,
                             const VideoFrameInit*,
                             ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static VideoFrame* Create(ScriptState*,
                             const String& format,
                             const HeapVector<Member<PlaneInit>>&,
@@ -63,44 +75,47 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                             ExceptionState&);
 
   String format() const;
-  base::Optional<HeapVector<Member<Plane>>> planes();
+  absl::optional<HeapVector<Member<Plane>>> planes();
 
   uint32_t codedWidth() const;
   uint32_t codedHeight() const;
 
-  uint32_t cropLeft() const;
-  uint32_t cropTop() const;
-  uint32_t cropWidth() const;
-  uint32_t cropHeight() const;
+  VideoFrameRegion* codedRegion() const;
+  VideoFrameRegion* visibleRegion() const;
+
+  uint32_t cropLeft(ExecutionContext*) const;
+  uint32_t cropTop(ExecutionContext*) const;
+  uint32_t cropWidth(ExecutionContext*) const;
+  uint32_t cropHeight(ExecutionContext*) const;
 
   uint32_t displayWidth() const;
   uint32_t displayHeight() const;
 
-  base::Optional<uint64_t> timestamp() const;
-  base::Optional<uint64_t> duration() const;
+  absl::optional<int64_t> timestamp() const;
+  absl::optional<uint64_t> duration() const;
+
+  uint32_t allocationSize(VideoFrameReadIntoOptions* options, ExceptionState&);
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  ScriptPromise readInto(ScriptState* script_state,
+                         const V8BufferSource* destination,
+                         VideoFrameReadIntoOptions* options,
+                         ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  ScriptPromise readInto(ScriptState*,
+                         const ArrayBufferOrArrayBufferView& destination,
+                         VideoFrameReadIntoOptions* options,
+                         ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Invalidates |handle_|, releasing underlying media::VideoFrame references.
   // This effectively "destroys" all frames sharing the same Handle.
   void close();
 
-  // DEPRECATED. Alias for close().
-  void destroy(ExecutionContext*);
-
   // Creates a clone of |this|, with a new Handle, referencing the same
   // media::VideoFrame. The cloned frame will not be closed when |this| is,
   // and its lifetime should be independently managed.
-  VideoFrame* clone(ScriptState*, ExceptionState&);
-
-  // TODO(crbug.com/1179109): Remove this method. Internal callers should only
-  // hold onto scoped_refptr objects instead of blink::VideoFrames. Internal
-  // callers should use VideoFrameHandle::CloneForInternalUse().
-  VideoFrame* CloneFromNative(ExecutionContext*);
-
-  // TODO(crbug.com/1175907): Remove this method. window.createImageBitmap() is
-  // the preferred mechanism.
-  ScriptPromise createImageBitmap(ScriptState*,
-                                  const ImageBitmapOptions*,
-                                  ExceptionState&);
+  VideoFrame* clone(ExceptionState&);
 
   // Convenience functions
   scoped_refptr<VideoFrameHandle> handle() const { return handle_; }
@@ -124,7 +139,7 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   static constexpr uint64_t kCpuEfficientFrameSize = 320u * 240u;
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  base::Optional<IntRect> crop_rect,
+                                  absl::optional<IntRect> crop_rect,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 

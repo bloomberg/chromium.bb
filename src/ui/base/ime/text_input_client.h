@@ -15,11 +15,12 @@
 
 #include "base/component_export.h"
 #include "base/i18n/rtl.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/grammar_fragment.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -135,6 +136,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // coordinates in DIP (Density Independent Pixel).
   // If there is selection, then the selection bounds will be returned.
   virtual gfx::Rect GetCaretBounds() const = 0;
+
+  // Returns the bounds of the rectangle which encloses the selection region.
+  // Bounds are in the screen coordinates. An empty value should be returned if
+  // there is not any selection or this function is not implemented.
+  virtual gfx::Rect GetSelectionBoundingBox() const = 0;
 
   // Retrieves the composition character boundary rectangle in the universal
   // screen coordinates in DIP (Density Independent Pixel).
@@ -260,6 +266,21 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // Returns true if the operation was successful. If |range| is invalid, then
   // no modifications are made and this function returns false.
   virtual bool SetAutocorrectRange(const gfx::Range& range) = 0;
+
+  // Returns the grammar fragment which contains |range|. If non-existent,
+  // returns an empty Fragment.
+  virtual absl::optional<GrammarFragment> GetGrammarFragment(
+      const gfx::Range& range);
+
+  // Clears all the grammar fragments in |range|, returns whether the operation
+  // is successful. Should return true if the there is no fragment in the range.
+  virtual bool ClearGrammarFragments(const gfx::Range& range);
+
+  // Adds new grammar markers according to |fragments|. Clients should show
+  // some visual indications such as underlining. Returns whether the operation
+  // is successful.
+  virtual bool AddGrammarFragments(
+      const std::vector<GrammarFragment>& fragments);
 #endif
 
 #if defined(OS_WIN)
@@ -269,8 +290,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // editable element. This is used to report the layout bounds of the text
   // input control to TSF on Windows.
   virtual void GetActiveTextInputControlLayoutBounds(
-      base::Optional<gfx::Rect>* control_bounds,
-      base::Optional<gfx::Rect>* selection_bounds) = 0;
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) = 0;
   // Notifies accessibility about active composition. This API is currently
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/

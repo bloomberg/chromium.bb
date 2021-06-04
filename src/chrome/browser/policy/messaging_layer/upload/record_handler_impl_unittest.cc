@@ -8,7 +8,6 @@
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -29,6 +28,7 @@
 #include "components/reporting/util/test_support_callbacks.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -106,14 +106,14 @@ void RetrieveFinalSequencingInformation(const base::Value& request,
   }
 }
 
-base::Optional<base::Value> BuildEncryptionSettingsFromRequest(
+absl::optional<base::Value> BuildEncryptionSettingsFromRequest(
     const base::Value& request) {
   // If attach_encryption_settings it true, process that.
   const auto attach_encryption_settings =
       request.FindBoolKey("attachEncryptionSettings");
   if (!attach_encryption_settings.has_value() ||
       !attach_encryption_settings.value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   base::Value encryption_settings{base::Value::Type::DICTIONARY};
@@ -130,12 +130,11 @@ base::Optional<base::Value> BuildEncryptionSettingsFromRequest(
 // Immitates the server response for successful record upload. Since additional
 // steps and tests require the response from the server to be accurate, ASSERTS
 // that the |request| must be valid, and on a valid request updates |response|.
-void SucceedResponseFromRequest(const base::Value& request,
-                                bool force_confirm_by_server,
-                                base::Value& response) {
-  base::Value seq_info{base::Value::Type::DICTIONARY};
-  RetrieveFinalSequencingInformation(request, seq_info);
-  response.SetPath("lastSucceedUploadedRecord", std::move(seq_info));
+void SucceedResponseFromRequestHelper(const base::Value& request,
+                                      bool force_confirm_by_server,
+                                      base::Value& response,
+                                      base::Value& sequencing_info) {
+  RetrieveFinalSequencingInformation(request, sequencing_info);
 
   // If force_confirm is true, process that.
   if (force_confirm_by_server) {
@@ -148,6 +147,38 @@ void SucceedResponseFromRequest(const base::Value& request,
     response.SetPath("encryptionSettings",
                      std::move(encryption_settings_result.value()));
   }
+}
+
+void SucceedResponseFromRequest(const base::Value& request,
+                                bool force_confirm_by_server,
+                                base::Value& response) {
+  base::Value sequencing_info{base::Value::Type::DICTIONARY};
+  SucceedResponseFromRequestHelper(request, force_confirm_by_server, response,
+                                   sequencing_info);
+  response.SetPath("lastSucceedUploadedRecord", std::move(sequencing_info));
+}
+
+void SucceedResponseFromRequestMissingPriority(const base::Value& request,
+                                               bool force_confirm_by_server,
+                                               base::Value& response) {
+  base::Value sequencing_info{base::Value::Type::DICTIONARY};
+  SucceedResponseFromRequestHelper(request, force_confirm_by_server, response,
+                                   sequencing_info);
+  // Remove priority field.
+  sequencing_info.RemoveKey("priority");
+  response.SetPath("lastSucceedUploadedRecord", std::move(sequencing_info));
+}
+
+void SucceedResponseFromRequestInvalidPriority(const base::Value& request,
+                                               bool force_confirm_by_server,
+                                               base::Value& response) {
+  base::Value sequencing_info{base::Value::Type::DICTIONARY};
+  SucceedResponseFromRequestHelper(request, force_confirm_by_server, response,
+                                   sequencing_info);
+  sequencing_info.RemoveKey("priority");
+  // Set priority field to an invalid value.
+  sequencing_info.SetStringKey("priority", "abc");
+  response.SetPath("lastSucceedUploadedRecord", std::move(sequencing_info));
 }
 
 // Immitates the server response for failed record upload. Since additional
@@ -264,6 +295,64 @@ TEST_P(RecordHandlerImplTest, ForwardsRecordsToCloudPolicyClient) {
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
 
+TEST_P(RecordHandlerImplTest, MissingPriorityField) {
+  static constexpr int64_t kNumTestRecords = 10;
+  static constexpr int64_t kGenerationId = 1234;
+  auto test_records = BuildTestRecordsVector(kNumTestRecords, kGenerationId);
+  const auto force_confirm_by_server = force_confirm();
+
+  EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
+      .WillOnce(WithArgs<0, 2>(
+          Invoke([&force_confirm_by_server](
+                     base::Value request,
+                     policy::CloudPolicyClient::ResponseCallback callback) {
+            base::Value response{base::Value::Type::DICTIONARY};
+            SucceedResponseFromRequestMissingPriority(
+                request, force_confirm_by_server, response);
+            std::move(callback).Run(std::move(response));
+          })));
+
+  test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
+  test::TestEvent<DmServerUploadService::CompletionResponse> responder_event;
+
+  RecordHandlerImpl handler(client_.get());
+  handler.HandleRecords(need_encryption_key(), std::move(test_records),
+                        responder_event.cb(),
+                        encryption_key_attached_event.cb());
+
+  auto response = responder_event.result();
+  EXPECT_EQ(response.status().error_code(), error::INTERNAL);
+}
+
+TEST_P(RecordHandlerImplTest, InvalidPriorityField) {
+  static constexpr int64_t kNumTestRecords = 10;
+  static constexpr int64_t kGenerationId = 1234;
+  auto test_records = BuildTestRecordsVector(kNumTestRecords, kGenerationId);
+  const auto force_confirm_by_server = force_confirm();
+
+  EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
+      .WillOnce(WithArgs<0, 2>(
+          Invoke([&force_confirm_by_server](
+                     base::Value request,
+                     policy::CloudPolicyClient::ResponseCallback callback) {
+            base::Value response{base::Value::Type::DICTIONARY};
+            SucceedResponseFromRequestInvalidPriority(
+                request, force_confirm_by_server, response);
+            std::move(callback).Run(std::move(response));
+          })));
+
+  test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
+  test::TestEvent<DmServerUploadService::CompletionResponse> responder_event;
+
+  RecordHandlerImpl handler(client_.get());
+  handler.HandleRecords(need_encryption_key(), std::move(test_records),
+                        responder_event.cb(),
+                        encryption_key_attached_event.cb());
+
+  auto response = responder_event.result();
+  EXPECT_EQ(response.status().error_code(), error::INTERNAL);
+}
+
 TEST_P(RecordHandlerImplTest, ReportsUploadFailure) {
   static constexpr int64_t kNumTestRecords = 10;
   static constexpr int64_t kGenerationId = 1234;
@@ -271,8 +360,8 @@ TEST_P(RecordHandlerImplTest, ReportsUploadFailure) {
 
   EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
       .WillOnce(WithArgs<2>(Invoke(
-          [](base::OnceCallback<void(base::Optional<base::Value>)> callback) {
-            std::move(callback).Run(base::nullopt);
+          [](base::OnceCallback<void(absl::optional<base::Value>)> callback) {
+            std::move(callback).Run(absl::nullopt);
           })));
 
   test::TestEvent<DmServerUploadService::CompletionResponse> response_event;

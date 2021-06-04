@@ -22,15 +22,13 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTextureAdjuster.h"
 #include "src/gpu/GrYUVATextureProxies.h"
 #include "src/gpu/effects/GrYUVtoRGBEffect.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkReadPixelsRec.h"
 
-SkImage_GpuBase::SkImage_GpuBase(sk_sp<GrImageContext> context, SkISize size, uint32_t uniqueID,
-                                 SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs)
-        : INHERITED(SkImageInfo::Make(size, ct, at, std::move(cs)), uniqueID)
+SkImage_GpuBase::SkImage_GpuBase(sk_sp<GrImageContext> context, SkImageInfo info, uint32_t uniqueID)
+        : INHERITED(std::move(info), uniqueID)
         , fContext(std::move(context)) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

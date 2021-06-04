@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -42,8 +43,16 @@ const char kVersion[] = "1.0.0.1";
 // Chrome OS syncs apps as an OS type.
 class SingleClientWebAppsOsSyncTest : public OsSyncTest {
  public:
-  SingleClientWebAppsOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {}
+  SingleClientWebAppsOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
+    scoped_feature_list_.InitAndDisableFeature(features::kWebAppsCrosapi);
+#endif
+  }
   ~SingleClientWebAppsOsSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsOsSyncTest,
@@ -64,7 +73,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsOsSyncTest,
 
 class SingleClientWebAppsSyncTest : public SyncTest {
  public:
-  SingleClientWebAppsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientWebAppsSyncTest() : SyncTest(SINGLE_CLIENT) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
+    scoped_feature_list_.InitAndDisableFeature(features::kWebAppsCrosapi);
+#endif
+  }
   ~SingleClientWebAppsSyncTest() override = default;
 
   bool SetupClients() override {
@@ -89,7 +103,7 @@ class SingleClientWebAppsSyncTest : public SyncTest {
   void InjectWebAppEntityToFakeServer(
       const std::string& app_id,
       const GURL& url,
-      base::Optional<std::string> manifest_id = base::nullopt) {
+      absl::optional<std::string> manifest_id = absl::nullopt) {
     web_app::WebApp app(app_id);
     app.SetName(app_id);
     app.SetStartUrl(url);
@@ -128,17 +142,9 @@ class SingleClientWebAppsSyncTest : public SyncTest {
             /*non_unique_name=*/"", app_id, entity, kDefaultTime,
             kDefaultTime));
   }
-};
-
-class SingleClientWebAppsSyncBookmarkAppTest
-    : public SingleClientWebAppsSyncTest {
- public:
-  SingleClientWebAppsSyncBookmarkAppTest() {
-    feature_list_.InitAndEnableFeature(features::kSyncBookmarkApps);
-  }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
@@ -234,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        AppWithIdSpecifiedSyncInstalled) {
-  const base::Optional<std::string> manifest_id("explicit_id");
+  const absl::optional<std::string> manifest_id("explicit_id");
   GURL url("https://example.com/start");
   const std::string app_id = web_app::GenerateAppId(manifest_id, url);
 
@@ -251,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   WebApplicationInfo info;
   std::string name = "Test name";
   info.title = base::UTF8ToUTF16(app_id);
-  info.description = base::UTF8ToUTF16("Test description");
+  info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
   const web_app::AppId installed_app_id =
@@ -264,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        AppWithIdSpecifiedAsEmptyStringSyncInstalled) {
-  const base::Optional<std::string> manifest_id("");
+  const absl::optional<std::string> manifest_id("");
   GURL url("https://example.com/start");
   const std::string app_id = web_app::GenerateAppId(manifest_id, url);
 
@@ -281,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   WebApplicationInfo info;
   std::string name = "Test name";
   info.title = base::UTF8ToUTF16(app_id);
-  info.description = base::UTF8ToUTF16("Test description");
+  info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
   const web_app::AppId installed_app_id =
@@ -290,43 +296,5 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   const std::string expected_app_id =
       web_app::GenerateAppIdFromURL(GURL("https://example.com/"));
   EXPECT_EQ(expected_app_id, installed_app_id);
-}
-
-// bookmark app should be sync installed when kSyncBookmarkApps is
-// enabled.
-IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncBookmarkAppTest,
-                       BookmarkAppSyncInstalled) {
-  std::string url = "https://example.com/";
-  const std::string app_id = web_app::GenerateAppIdFromURL(GURL(url));
-  InjectBookmarkAppEntityToFakeServer(app_id, url);
-  ASSERT_TRUE(SetupSync());
-  AwaitWebAppQuiescence();
-
-  auto* web_app_registrar = web_app::WebAppProvider::Get(GetProfile(0))
-                                ->registrar()
-                                .AsWebAppRegistrar();
-
-  EXPECT_TRUE(web_app_registrar->IsInstalled(app_id));
-}
-
-// Web app install should commit APPS sync entity when kSyncBookmarkApps is
-// enabled.
-IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncBookmarkAppTest,
-                       AppInstallSyncBookmarkApp) {
-  ASSERT_TRUE(SetupSync());
-  WebApplicationInfo info;
-  std::string name = "Test name";
-  info.title = base::UTF8ToUTF16(name);
-  info.description = u"Test description";
-  info.start_url = GURL("http://www.chromium.org/path");
-  info.scope = GURL("http://www.chromium.org/");
-  web_app::AppId app_id = apps_helper::InstallWebApp(GetProfile(0), info);
-  ASSERT_TRUE(SetupSync());
-
-  fake_server::FakeServerVerifier fake_server_verifier(fake_server_.get());
-  EXPECT_TRUE(fake_server_verifier.VerifyEntityCountByTypeAndName(
-      1, syncer::WEB_APPS, name));
-  EXPECT_TRUE(fake_server_verifier.VerifyEntityCountByTypeAndName(
-      1, syncer::APPS, name));
 }
 }  // namespace

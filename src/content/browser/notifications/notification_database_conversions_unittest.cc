@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/notification_database_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
@@ -48,9 +48,9 @@ const int kTimeUntilCloseMillis = 33333;
 const blink::mojom::NotificationActionType kNotificationActionType =
     blink::mojom::NotificationActionType::TEXT;
 const char kOrigin[] = "https://example.com/";
-const char kNotificationTitle[] = "My Notification";
+const char16_t kNotificationTitle[] = u"My Notification";
 const char kNotificationLang[] = "nl";
-const char kNotificationBody[] = "Hello, world!";
+const char16_t kNotificationBody[] = u"Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationImageUrl[] = "https://example.com/image.jpg";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
@@ -72,11 +72,11 @@ TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeData) {
       kNotificationData, kNotificationData + base::size(kNotificationData));
 
   blink::PlatformNotificationData notification_data;
-  notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
+  notification_data.title = kNotificationTitle;
   notification_data.direction =
       blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
   notification_data.lang = kNotificationLang;
-  notification_data.body = base::ASCIIToUTF16(kNotificationBody);
+  notification_data.body = kNotificationBody;
   notification_data.tag = kNotificationTag;
   notification_data.image = GURL(kNotificationImageUrl);
   notification_data.icon = GURL(kNotificationIconUrl);
@@ -301,7 +301,7 @@ TEST(NotificationDatabaseConversionsTest,
      SerializeAndDeserializeNullPlaceholder) {
   auto action = blink::mojom::NotificationAction::New();
   action->type = kNotificationActionType;
-  action->placeholder = base::nullopt;  // null string.
+  action->placeholder = absl::nullopt;  // null string.
 
   blink::PlatformNotificationData notification_data;
   notification_data.actions.push_back(std::move(action));
@@ -325,7 +325,7 @@ TEST(NotificationDatabaseConversionsTest,
   blink::PlatformNotificationData notification_data;
 
   // explicitly empty timestamp
-  notification_data.show_trigger_timestamp = base::nullopt;
+  notification_data.show_trigger_timestamp = absl::nullopt;
 
   NotificationDatabaseData database_data;
   database_data.notification_data = notification_data;

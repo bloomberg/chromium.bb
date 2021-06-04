@@ -255,10 +255,10 @@ void PerFrameContentTranslateDriver::InitiateTranslationIfReload(
   // an infobar, it must be done after that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PerFrameContentTranslateDriver::InitiateTranslation,
-          weak_pointer_factory_.GetWeakPtr(),
-          translate_manager()->GetLanguageState()->original_language(), 0));
+      base::BindOnce(&PerFrameContentTranslateDriver::InitiateTranslation,
+                     weak_pointer_factory_.GetWeakPtr(),
+                     translate_manager()->GetLanguageState()->source_language(),
+                     0));
 }
 
 // content::WebContentsObserver methods
@@ -277,7 +277,7 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
       navigation_handle->IsSameDocument();
 
-  const base::Optional<url::Origin>& initiator_origin =
+  const absl::optional<url::Origin>& initiator_origin =
       navigation_handle->GetInitiatorOrigin();
 
   bool navigation_from_google =
@@ -436,7 +436,7 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     bool is_main_frame,
     mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
     bool cancelled,
-    const std::string& original_lang,
+    const std::string& source_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
   if (cancelled)
@@ -461,10 +461,10 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     // Post the callback on the thread's task runner in case the
     // info bar is in the process of going away.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
-                                  weak_pointer_factory_.GetWeakPtr(), cancelled,
-                                  original_lang, translated_lang,
-                                  stats_.main_frame_error));
+        FROM_HERE,
+        base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
+                       weak_pointer_factory_.GetWeakPtr(), cancelled,
+                       source_lang, translated_lang, stats_.main_frame_error));
     stats_.Report();
     stats_.Clear();
   }

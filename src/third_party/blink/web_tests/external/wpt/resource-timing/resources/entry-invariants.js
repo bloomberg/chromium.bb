@@ -37,8 +37,9 @@ const assert_positive_ = (entry, attributes) => {
 
 const invariants = {
   // Asserts that attributes of the given PerformanceResourceTiming entry match
-  // what the spec dictates for any resource fetched over HTTP.
-  assert_http_resource: entry => {
+  // what the spec dictates for any resource fetched without redirects but
+  // passing the Timing-Allow-Origin checks.
+  assert_tao_pass_no_redirect: entry => {
     assert_ordered_(entry, [
       "fetchStart",
       "domainLookupStart",
@@ -139,26 +140,93 @@ const invariants = {
       "responseEnd",
     ]);
   },
+
+  assert_same_origin_redirected_from_cross_origin_resource: entry => {
+    assert_zeroed_(entry, [
+      "workerStart",
+      "redirectStart",
+      "redirectEnd",
+      "domainLookupStart",
+      "domainLookupEnd",
+      "connectStart",
+      "connectEnd",
+      "secureConnectionStart",
+      "requestStart",
+      "responseStart",
+      "transferSize",
+      "encodedBodySize",
+      "decodedBodySize",
+    ]);
+
+    assert_ordered_(entry, [
+      "fetchStart",
+      "responseEnd",
+    ]);
+
+    assert_equals(entry.fetchStart, entry.startTime,
+      "fetchStart must equal startTime");
+  },
+
+  assert_tao_failure_resource: entry => {
+    assert_equals(entry.entryType, "resource", "entryType must always be 'resource'");
+
+    assert_positive_(entry, [
+      "startTime",
+      "duration",
+    ]);
+
+    assert_zeroed_(entry, [
+      "redirectStart",
+      "redirectEnd",
+      "domainLookupStart",
+      "domainLookupEnd",
+      "connectStart",
+      "connectEnd",
+      "secureConnectionStart",
+      "requestStart",
+      "responseStart",
+      "transferSize",
+      "encodedBodySize",
+      "decodedBodySize",
+    ]);
+  }
+
 };
 
-// Given a resource-loader and a PerformanceResourceTiming validator, loads a
-// resource and validates the resulting entry.
-const attribute_test = (load_resource, validate, test_label) => {
+const attribute_test_internal = (loader, path, validator, run_test, test_label) => {
   promise_test(
     async () => {
-      // Clear out everything that isn't the one ResourceTiming entry under test.
-      performance.clearResourceTimings();
+      let loaded_entry = new Promise((resolve, reject) => {
+        new PerformanceObserver((entry_list, self) => {
+          try {
+            const name_matches = entry_list.getEntries().forEach(entry => {
+              if (entry.name.includes(path)) {
+                resolve(entry);
+              }
+            });
+          } catch(e) {
+            // By surfacing exceptions through the Promise interface, tests can
+            // fail fast with a useful message instead of timing out.
+            reject(e);
+          }
+        }).observe({"type": "resource"});
+      });
 
-      await load_resource();
-
-      const entry_list = performance.getEntriesByType("resource");
-      if (entry_list.length != 1) {
-        const names = entry_list
-          .map(e => e.name)
-          .join(", ");
-        throw new Error(`There should be one entry for one resource (found ${entry_list.length}: ${names})`);
-      }
-
-      validate(entry_list[0]);
+      await loader(path, validator);
+      const entry = await(loaded_entry);
+      run_test(entry);
   }, test_label);
-}
+};
+
+// Given a resource-loader, a path (a relative path or absolute URL), and a
+// PerformanceResourceTiming test, applies the loader to the resource path
+// and tests the resulting PerformanceResourceTiming entry.
+const attribute_test = (loader, path, run_test, test_label) => {
+  attribute_test_internal(loader, path, () => {}, run_test, test_label);
+};
+
+// Similar to attribute test, but on top of that, validates the added element,
+// to ensure the test does what it intends to do.
+const attribute_test_with_validator = (loader, path, validator, run_test, test_label) => {
+  attribute_test_internal(loader, path, validator, run_test, test_label);
+};

@@ -4,15 +4,17 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as DataGrid from '../../data_grid/data_grid.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Protocol from '../../generated/protocol.js';
 
-import {BackgroundServiceModel, Events} from './BackgroundServiceModel.js';  // eslint-disable-line no-unused-vars
+import type {BackgroundServiceModel} from './BackgroundServiceModel.js';
+import {Events} from './BackgroundServiceModel.js';  // eslint-disable-line no-unused-vars
 
 const UIStrings = {
   /**

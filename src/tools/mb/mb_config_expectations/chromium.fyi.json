@@ -146,7 +146,7 @@
       "use_libfuzzer": true
     }
   },
-  "Linux Builder (goma cache silo)": {
+  "Linux Builder (core-32) (goma)": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -155,7 +155,34 @@
       "use_goma": true
     }
   },
-  "Linux Builder (reclient)": {
+  "Linux Builder (core-32) (reclient)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_rbe": true
+    }
+  },
+  "Linux Builder (core-32) (runsc) (reclient)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_rbe": true
+    }
+  },
+  "Linux Builder (deps-cache) (reclient)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_rbe": true
+    }
+  },
+  "Linux Builder (j-500) (reclient)": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -243,7 +270,34 @@
       "use_rbe": true
     }
   },
-  "TSAN Release (j-100) (reclient)": {
+  "TSAN Release (core-32) (goma)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_goma": true
+    }
+  },
+  "TSAN Release (core-32) (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
+  "TSAN Release (deps-cache) (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
+  "TSAN Release (deps-cache-full-files) (reclient)": {
     "gn_args": {
       "enable_nacl": false,
       "is_component_build": false,
@@ -324,6 +378,42 @@
       "use_rbe": true
     }
   },
+  "android-backuprefptr-arm-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "enable_runtime_backup_ref_ptr_control": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "put_ref_count_in_previous_slot": true,
+      "symbol_level": 1,
+      "target_cpu": "arm",
+      "target_os": "android",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
+      "use_goma": true
+    }
+  },
+  "android-backuprefptr-arm64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "enable_runtime_backup_ref_ptr_control": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "put_ref_count_in_previous_slot": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_os": "android",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
+      "use_goma": true
+    }
+  },
   "android-code-coverage": {
     "gn_args": {
       "disable_android_lint": true,
@@ -359,52 +449,6 @@
       "use_errorprone_java_compiler": false,
       "use_goma": true,
       "use_static_angle": true
-    }
-  },
-  "android-paeverywhere-arm-fyi-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "arm",
-      "target_os": "android",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "android-paeverywhere-arm-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "arm",
-      "target_os": "android",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "android-paeverywhere-arm64-fyi-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "android-paeverywhere-arm64-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_allocator": "partition",
-      "use_goma": true
     }
   },
   "chromeos-amd64-generic-rel-dchecks": {
@@ -629,6 +673,9 @@
       "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
       "enable_linux_installer": false,
       "is_chromeos_device": true,
+      "ozone_platform": "wayland",
+      "ozone_platform_drm": false,
+      "ozone_platform_gbm": false,
       "ozone_platform_headless": true,
       "ozone_platform_wayland": true,
       "ozone_platform_x11": false,
@@ -646,7 +693,7 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": true
+      "use_vaapi": false
     }
   },
   "linux-annotator-rel": {
@@ -663,6 +710,21 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
+  "linux-backuprefptr-x64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "enable_runtime_backup_ref_ptr_control": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
       "use_goma": true
     }
   },
@@ -775,6 +837,23 @@
       "use_ozone": true
     }
   },
+  "linux-lacros-code-coverage": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "chromeos_is_browser_only": true,
+      "is_clang": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_platform": "wayland",
+      "ozone_platform_wayland": true,
+      "symbol_level": 0,
+      "target_os": "chromeos",
+      "use_clang_coverage": true,
+      "use_goma": true,
+      "use_gtk": false,
+      "use_ozone": true
+    }
+  },
   "linux-lacros-tester-fyi-rel": {
     "gn_args": {
       "also_build_ash_chrome": true,
@@ -789,25 +868,17 @@
       "use_ozone": true
     }
   },
-  "linux-paeverywhere-x64-fyi-dbg": {
+  "linux-lacros-version-skew-fyi": {
     "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "linux-paeverywhere-x64-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
+      "chromeos_is_browser_only": true,
       "is_component_build": false,
       "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_goma": true
+      "ozone_platform": "wayland",
+      "ozone_platform_wayland": true,
+      "target_os": "chromeos",
+      "use_goma": true,
+      "use_gtk": false,
+      "use_ozone": true
     }
   },
   "linux-perfetto-rel": {
@@ -901,53 +972,41 @@
       "use_goma": true
     }
   },
+  "win-backuprefptr-x64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "enable_runtime_backup_ref_ptr_control": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
+      "use_goma": true
+    }
+  },
+  "win-backuprefptr-x86-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "enable_runtime_backup_ref_ptr_control": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "put_ref_count_in_previous_slot": true,
+      "symbol_level": 1,
+      "target_cpu": "x86",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
+      "use_goma": true
+    }
+  },
   "win-celab-builder-rel": {
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-paeverywhere-x64-fyi-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "win-paeverywhere-x64-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "win-paeverywhere-x86-fyi-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x86",
-      "use_allocator": "partition",
-      "use_goma": true
-    }
-  },
-  "win-paeverywhere-x86-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x86",
-      "use_allocator": "partition",
       "use_goma": true
     }
   },

@@ -60,13 +60,15 @@ class ProfileManager : public Profile::Delegate {
   // Physically remove deleted profile directories from disk.
   static void NukeDeletedProfilesFromDisk();
 
-  // Same as instance method but provides the default user_data_dir as well.
+  // Get the Profile last used (the Profile to which owns the most recently
+  // focused window) with this Chrome build. If no signed profile has been
+  // stored in Local State, hand back the Default profile.
   // If the Profile is going to be used to open a new window then consider using
   // GetLastUsedProfileAllowedByPolicy() instead.
   // Except in ChromeOS guest sessions, the returned profile is always a regular
   // profile (non-OffTheRecord).
   // WARNING: if the profile does not exist, this function creates it
-  // synchronously, causing blocking file I/O. Use GetLastUsedProfileIfExists()
+  // synchronously, causing blocking file I/O. Use GetLastUsedProfileIfLoaded()
   // to avoid creating the profile synchronously.
   static Profile* GetLastUsedProfile();
 
@@ -124,18 +126,16 @@ class ProfileManager : public Profile::Delegate {
   // Returns total number of profiles available on this machine.
   size_t GetNumberOfProfiles();
 
-  // Asynchronously loads an existing profile given its |profile_name| within
-  // the user data directory, optionally in |incognito| mode. The |callback|
-  // will be called with the Profile when it has been loaded, or with a nullptr
-  // otherwise. Should be called on the UI thread.
+  // Asynchronously loads an existing profile given its |profile_base_name|
+  // (which is the directory name within the user data directory), optionally in
+  // |incognito| mode. The |callback| will be called with the Profile when it
+  // has been loaded, or with a nullptr otherwise.
+  // Should be called on the UI thread.
   // Unlike CreateProfileAsync this will not create a profile if one doesn't
   // already exist on disk
   // Returns true if the profile exists, but the final loaded profile will come
   // as part of the callback.
-  // TODO(https://crbug.com/1195201): `profile_name` parameter indicates the
-  // name of a directory within the user data directory and not the visible
-  // profile name. Rename to `profile_basename`.
-  bool LoadProfile(const std::string& profile_name,
+  bool LoadProfile(const std::string& profile_base_name,
                    bool incognito,
                    ProfileLoadedCallback callback);
   bool LoadProfileByPath(const base::FilePath& profile_path,
@@ -156,18 +156,9 @@ class ProfileManager : public Profile::Delegate {
   // relative to the user data directory currently in use.
   base::FilePath GetInitialProfileDir();
 
-  // Get the Profile last used (the Profile to which owns the most recently
-  // focused window) with this Chrome build. If no signed profile has been
-  // stored in Local State, hand back the Default profile.
-  // TODO(https://crbug.com/1195201): Remove `user_data_dir` parameter since it
-  // always must match `user_data_dir_` field.
-  Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
-
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.
-  // TODO(https://crbug.com/1195201): Remove `user_data_dir` parameter since it
-  // always must match `user_data_dir_` field.
-  base::FilePath GetLastUsedProfileDir(const base::FilePath& user_data_dir);
+  base::FilePath GetLastUsedProfileDir();
 
   // Returns created and fully initialized profiles. Note, profiles order is NOT
   // guaranteed to be related with the creation order.
@@ -186,8 +177,12 @@ class ProfileManager : public Profile::Delegate {
   // and CREATE_STATUS_CREATED) so binding parameters with bind::Passed() is
   // prohibited. Returns the file path to the profile that will be created
   // asynchronously.
+  // If |is_hidden| is true, the new profile will be created as ephemeral
+  // (removed on the next startup) and omitted (not visible in the list of
+  // profiles).
   static base::FilePath CreateMultiProfileAsync(const std::u16string& name,
                                                 size_t icon_index,
+                                                bool is_hidden,
                                                 const CreateCallback& callback);
 
   // Returns the full path to be used for guest profiles.
@@ -278,8 +273,7 @@ class ProfileManager : public Profile::Delegate {
   // asynchronous profile creation method. Virtual so that unittests can return
   // a TestingProfile instead of the Profile's result.
   virtual std::unique_ptr<Profile> CreateProfileAsyncHelper(
-      const base::FilePath& path,
-      Delegate* delegate);
+      const base::FilePath& path);
 
   void set_do_final_services_init(bool do_final_services_init) {
     do_final_services_init_ = do_final_services_init;
@@ -339,8 +333,7 @@ class ProfileManager : public Profile::Delegate {
   // already exist. The method will return NULL if the profile doesn't exist
   // and we can't create it.
   // The profile used can be overridden by using --login-profile on cros.
-  Profile* GetActiveUserOrOffTheRecordProfileFromPath(
-      const base::FilePath& user_data_dir);
+  Profile* GetActiveUserOrOffTheRecordProfile();
 
   // Adds a pre-existing Profile object to the set managed by this
   // ProfileManager.
@@ -379,7 +372,7 @@ class ProfileManager : public Profile::Delegate {
   // Searches for the latest active profile that respects |predicate|, already
   // loaded preferably. Returns nullopt if no existing profile respects all the
   // conditions.
-  base::Optional<base::FilePath> FindLastActiveProfile(
+  absl::optional<base::FilePath> FindLastActiveProfile(
       base::RepeatingCallback<bool(ProfileAttributesEntry*)> predicate);
 #endif
 
@@ -458,7 +451,7 @@ class ProfileManager : public Profile::Delegate {
   void OnNewActiveProfileLoaded(
       const base::FilePath& profile_to_delete_path,
       const base::FilePath& last_non_supervised_profile_path,
-      ProfileLoadedCallback callback,
+      ProfileLoadedCallback* callback,
       Profile* loaded_profile,
       Profile::CreateStatus status);
 

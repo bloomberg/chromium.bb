@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lo">
+<translation id="1096883626080133124">ເຮັດສິ່ງຕ່າງໆໃຫ້ແລ້ວຫຼາຍຂຶ້ນດ້ວຍ Google Chrome ທີ່ງ່າຍ, ປອດໄພ ແລະ ໄວກວ່າທີ່ເຄີຍ</translation>
 <translation id="1282031177488366470">ຊ່ວຍປັບປຸງຄຸນສົມບັດ ແລະ ປະສິດທິພາບຂອງ Chrome</translation>
 <translation id="1314663809820920746">ທ່ານຍັງສາມາດເຫັນບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນທັງໝົດຂອງທ່ານໄດ້ໃນອຸປະກອນນີ້. ຖ້າທ່ານເຮັດການປ່ຽນແປງ, ພວກມັນຈະບໍ່ຊິ້ງຂໍ້ມູນກັບບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="1479202195792305274">Chrome ສາມາດກວດເບິ່ງລະຫັດຜ່ານຂອງທ່ານ ເມື່ອທ່ານເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີ Google ຂອງທ່ານໄດ້.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ບໍ່ສາມາດກວດການອັບເດດໄດ້. ລອງກວດເບິ່ງການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ.</translation>
 <translation id="1682483655351012182">ຊິ້ງຂໍ້ມູນ Chrome ຂອງທ່ານ</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">ຊ່ວຍປັບປຸງ Chrome ໂດຍການສົ່ງສະຖິຕິການນຳໃຊ້ ແລະ ລາຍງານການຂັດຂ້ອງໄປໃຫ້ Google</translation>
 <translation id="1917964099031477364">ບັນຊີນີ້ ແລະ ຂໍ້ມູນທີ່ບໍ່ໄດ້ບັນທຶກໄວ້ຕ່າງໆຈະຖືກລຶບອອກຈາກ Chrome ແລະ ແອັບອື່ນຂອງ Google ໃນອຸປະກອນນີ້.</translation>
 <translation id="2009224836393115614">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້. ລອງກວດເບິ່ງການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ.</translation>
 <translation id="2147651015520127414">Chrome ກວດ​ສອບ​ວ່າ <ph name="ISSUER" /> ​ໄດ້​ອອກ​ໃບ​ຢັ້ງຢືນ​ຂອງ​ເວັບ​ໄຊ​ນີ້.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ບໍ່ສາມາດກວດການອັບເດດໄດ້. ກະລຸນາລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="2732745070297234559">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານທັງໝົດໄດ້. ກະລຸນາລອງໃໝ່ໃນມື້ອື່ນ.</translation>
 <translation id="2740105938841089077">ໃຊ້ Chrome ເປີດລິ້ງ</translation>
+<translation id="2869959624320573933">ເຂົ້າສູ່ລະບົບຫາ Chrome</translation>
 <translation id="2919738076569633423">ໂດຍການໃຊ້ Chrome, ແມ່ນຖືວ່າທ່ານເຫັນນຳ <ph name="BEGIN_LINK_TOS" />ຂໍ້ກຳນົດບໍລິການ<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">ເພາະວ່າທ່ານກຳລັງອອກຈາກລະບົບບັນຊີທີ່ຈັດການໂດຍ <ph name="SIGNOUT_MANAGED_DOMAIN" />, ຂໍ້ມູນ Chrome ຂອງທ່ານຈະຖືກລຶບອອກຈາກອຸປະກອນນີ້. ຂໍ້ມູນຂອງທ່ານຈະຍັງຄົງຢູ່ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="3167189358072330585">ບັນຊີຂອງທ່ານໃຊ້ບໍ່ໄດ້ຢູ່ໃນ Google Chrome. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງໂດເມນຂອງທ່ານ ຫຼືໃຊ້ບັນຊີ Google ປົກກະຕິ ເພື່ອເຂົ້າສູ່ລະບົບ.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome ຊ່ວຍທ່ານປະຢັດເວລາໂດຍການນຳເອົາບັນຊີຂອງທ່ານມາສູ່ເວັບ. ທ່ານສາມາດເພີ່ມ ຫຼື ລຶບບັນຊີອອກໄດ້ໃນການຕັ້ງຄ່າ.</translation>
 <translation id="3282568296779691940">ລົງຊື່ເຂົ້າ​ໃຊ້ Chrome</translation>
 <translation id="3345341804167540816">ໃຊ້ Chrome ຢູ່​ທຸກ​ບ່ອນ</translation>
+<translation id="3455456143708465450">ເພື່ອໃຊ້ປະໂຫຍດສູງສຸດຈາກ Chrome, ໃຫ້ເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="3522659714780527202">ເພື່ອເຫັນແຖບຂອງທ່ານຈາກທຸກບ່ອນທີ່ທ່ານໃຊ້ Chrome, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="3533694711092285624">ບໍ່ມີລະຫັດຜ່ານທີ່ບັນທຶກໄວ້. Chrome ສາມາດກວດເບິ່ງລະຫັດຜ່ານຂອງທ່ານເມື່ອທ່ານບັນທຶກພວກມັນໄວ້.</translation>
 <translation id="3706101708757577809">ຕອນນີ້ທ່ານສາມາດໃຊ້ Chrome ໄດ້ທຸກເວລາທີ່ທ່ານແຕະລິ້ງໃນຂໍ້ຄວາມ, ເອກະສານ ແລະ ແອັບອື່ນໆ.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">ຫາກທ່ານອະນຸຍາດໃຫ້ Chrome ຮູ້ສະຖານທີ່ຂອງທ່ານ, Chrome ຈະສົ່ງມັນໄປຫາເວັບໄຊໃດກໍຕາມທີ່ທ່ານອະນຸຍາດ. ເວັບໄຊອາດຂໍສະຖານທີ່ຂອງທ່ານເມື່ອພວກມັນມີຂໍ້ມູນໃນທ້ອງຖິ່ນທີ່ຈະສະແດງໃຫ້ທ່ານເຫັນ ເຊັ່ນ: ຮ້ານຄ້າທີ່ຢູ່ໃກ້ຄຽງ ຫຼື ຂ່າວ.</translation>
 <translation id="6036420186814142909">Google Chrome ມີ​ຄຸນສົມບັດໃຊ້ງານ​ທີ່​ຊ່ວຍ​ທ່ານ​ຈັດ​ການ​ຂໍ້​ມູນ​ອິນ​ເຕີ​ເນັດ​ຂອງ​ທ່ານ ແລະ​ທ່ານ​ສາ​ມາດ​ໂຫຼດ​ໜ້າ​ເວັບ​ໄດ້​ໄວ​ປານ​ໃດ.
 <ph name="BEGIN_LINK" />ຮຽນ​ຮູ້​ເພີ່ມ​ເຕີມ<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">ອະນຸຍາດການເຂົ້າສູ່ລະບົບ Chrome</translation>
 <translation id="6181930887571472871">ປ່ຽນເປັນ Chrome</translation>
 <translation id="6238746320622508509">ອະນຸຍາດໃຫ້ Chrome ລັອກແຖບບໍ່ເປີດເຜີຍຕົວຕົນຂອງທ່ານ.</translation>
 <translation id="6573431926118603307">ແຖບທີ່ທ່ານໄດ້ເປີດໃນ Chrome ຢູ່ໃນອຸປະກອນອື່ນຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">ລຶບລ້າງຂໍ້ມູນ Chrome ຂອງທ່ານຈາກອຸປະກອນນີ້?</translation>
 <translation id="6822673484890854830">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານທັງໝົດໄດ້. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="6964931465519938134">ຕອນນີ້ທ່ານສາມາດໃຊ້ Chrome ໄດ້ທຸກເວລາທີ່ທ່ານແຕະລິ້ງໃນຂໍ້ຄວາມ, ເອກະສານ ແລະ ແອັບອື່ນໆ</translation>
+<translation id="7059914902409643750">ຕັ້ງຄ່າ Chrome ແບບກຳນົດເອງ</translation>
 <translation id="7124339256045485976">ຮັກສາໃຫ້ Chrome ໃໝ່ຫຼ້າສຸດ</translation>
 <translation id="7161390184744336561">Google Chrome ເກົ່າແລ້ວ</translation>
 <translation id="7165736900384873061">ເລີ່ມໃຊ້ເຄື່ອງສະແກນ QR ຂອງ Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome ແມ່ນເວີຊັນໃໝ່ຫຼ້າສຸດແລ້ວ</translation>
 <translation id="8022947259858476807">ໃຊ້ Chrome ເປັນຄ່າເລີ່ມຕົ້ນເພື່ອເປີດລິ້ງ, ຊອກຫາຈາກວິດເຈັດ ແລະ ການຕື່ມຂໍ້ມູນລະຫັດຜ່ານອັດຕະໂນມັດໃນແອັບອື່ນໆ</translation>
 <translation id="8160472928944011082">Chrome ບໍ່ສາມາດອັບເດດໄດ້</translation>
+<translation id="8263079278049777200">ເຂົ້າສູ່ລະບົບຫາເວັບໄຊນີ້, ບັນຊີ Google ຂອງທ່ານ ແລະ Chrome. ທ່ານສາມາດເປີດການຊິ້ງຂໍ້ມູນໃນພາຍຫຼັງໄດ້.</translation>
 <translation id="8357607116237445042">ເລືອກວ່າຈະລຶບລ້າງຂໍ້ມູນ Chrome ຂອງທ່ານອອກຈາກອຸປະກອນນີ້ ຫຼື ເກັບມັນໄວ້</translation>
 <translation id="8370517070665726704">ລິຂະສິດ <ph name="YEAR" /> Google LLC. ສະຫງວນສິດທັງໝົດ.</translation>
 <translation id="840168496893712993">ການ​ເພີ່ມ​ໃສ່​ບາງ​ອັນ​ເຮັດ​ໃຫ້ Chrome ເກີດ​ຂັດ​ຂ້ອງ. ກະ​ລຸ​ນາ​ລອງຖອນ​ຕິດ​ຕັ້ງ​ພວກ​ມັນ.</translation>
@@ -95,5 +102,6 @@
   3. ເລືອກ Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">ທ່ອງເວັບຢ່າງປອດໄພດ້ວຍ Google Chrome</translation>
+<translation id="8772179140489533211">ສະແດງຂໍ້ຄວາມເພື່ອເຂົ້າສູ່ລະບົບຫາ Chrome.</translation>
 <translation id="9112744793181547300">ຕັ້ງ Chrome ເປັນຄ່າເລີ່ມຕົ້ນບໍ?</translation>
 </translationbundle>

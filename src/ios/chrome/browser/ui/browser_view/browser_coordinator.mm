@@ -7,13 +7,12 @@
 #include <memory>
 
 #import "base/metrics/histogram_functions.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
@@ -26,7 +25,6 @@
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/policy_signout_commands.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
@@ -43,11 +41,16 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
+#import "ios/chrome/browser/ui/commands/policy_signout_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/share_highlight_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/commands/whats_new_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_coordinator.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
+#import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
@@ -57,6 +60,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
+#import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/open_in/open_in_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
@@ -70,11 +74,9 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
-#import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
-#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -95,6 +97,7 @@
 @interface BrowserCoordinator () <ActivityServiceCommands,
                                   BrowserCoordinatorCommands,
                                   DefaultBrowserPromoCommands,
+                                  DefaultPromoNonModalPresentationDelegate,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
                                   PasswordBreachCommands,
@@ -180,19 +183,11 @@
 // Coordinator for sharing scenarios.
 @property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 
-// Coordinator for displaying snackbars.
-@property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
-
 // Coordinator for presenting SKStoreProductViewController.
 @property(nonatomic, strong) StoreKitCoordinator* storeKitCoordinator;
 
 // Coordinator for Text Zoom.
 @property(nonatomic, strong) TextZoomCoordinator* textZoomCoordinator;
-
-// Coordinator for the translate infobar's language selection and translate
-// option popup menus.
-@property(nonatomic, strong)
-    LegacyTranslateInfobarCoordinator* translateInfobarCoordinator;
 
 // Coordinator that manages the default browser promo modal.
 @property(nonatomic, strong)
@@ -207,6 +202,10 @@
 @property(nonatomic, strong)
     OverlayContainerCoordinator* infobarModalOverlayContainerCoordinator;
 
+// Coordinator for the non-modal default promo.
+@property(nonatomic, strong)
+    DefaultBrowserPromoNonModalCoordinator* nonModalPromoCoordinator;
+
 // The coordinator that manages the prompt for when the user is signed out due
 // to policy.
 @property(nonatomic, strong)
@@ -217,8 +216,8 @@
 @implementation BrowserCoordinator {
   // Observers for WebStateList.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
-  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
-      _scopedWebStateListObserver;
+  std::unique_ptr<base::ScopedObservation<WebStateList, WebStateListObserver>>
+      _scopedWebStateListObservation;
 }
 
 #pragma mark - ChromeCoordinator
@@ -243,10 +242,11 @@
   // handlers.
   NSArray<Protocol*>* protocols = @[
     @protocol(ActivityServiceCommands), @protocol(BrowserCoordinatorCommands),
+    @protocol(DefaultPromoCommands),
+    @protocol(DefaultBrowserPromoNonModalCommands),
     @protocol(FindInPageCommands), @protocol(PageInfoCommands),
     @protocol(PasswordBreachCommands), @protocol(PasswordProtectionCommands),
-    @protocol(TextZoomCommands), @protocol(DefaultPromoCommands),
-    @protocol(PolicySignoutPromptCommands)
+    @protocol(TextZoomCommands), @protocol(PolicySignoutPromptCommands)
   ];
 
   for (Protocol* protocol in protocols) {
@@ -396,16 +396,6 @@
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
-  self.snackbarCoordinator = [[SnackbarCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  [self.snackbarCoordinator start];
-
-  self.translateInfobarCoordinator = [[LegacyTranslateInfobarCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  [self.translateInfobarCoordinator start];
-
   self.passKitCoordinator =
       [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser];
@@ -499,17 +489,11 @@
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
 
-  [self.snackbarCoordinator stop];
-  self.snackbarCoordinator = nil;
-
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator = nil;
 
   [self.textZoomCoordinator stop];
   self.textZoomCoordinator = nil;
-
-  [self.translateInfobarCoordinator stop];
-  self.translateInfobarCoordinator = nil;
 
   [self.addCreditCardCoordinator stop];
   self.addCreditCardCoordinator = nil;
@@ -532,10 +516,16 @@
   self.viewController.reauthHandler =
       HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
 
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+
+  self.viewController.nonModalPromoScheduler =
+      [DefaultBrowserSceneAgent agentFromScene:sceneState].nonModalScheduler;
+  self.viewController.nonModalPromoPresentationDelegate = self;
+
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
-    IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
-        agentFromScene:SceneStateBrowserAgent::FromBrowser(self.browser)
-                           ->GetSceneState()];
+    IncognitoReauthSceneAgent* reauthAgent =
+        [IncognitoReauthSceneAgent agentFromScene:sceneState];
 
     self.incognitoAuthMediator =
         [[IncognitoReauthMediator alloc] initWithConsumer:self.viewController
@@ -606,7 +596,7 @@
 
   base::UmaHistogramEnumeration(
       "Download.OpenDownloads.PerProfileType",
-      GetBrowserStateType(self.browser->GetBrowserState()));
+      profile_metrics::GetBrowserProfileType(self.browser->GetBrowserState()));
 }
 
 - (void)showRecentTabs {
@@ -940,15 +930,15 @@
 - (void)addWebStateListObserver {
   _webStateListObserverBridge =
       std::make_unique<WebStateListObserverBridge>(self);
-  _scopedWebStateListObserver =
-      std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
-          _webStateListObserverBridge.get());
-  _scopedWebStateListObserver->Add(self.browser->GetWebStateList());
+  _scopedWebStateListObservation = std::make_unique<
+      base::ScopedObservation<WebStateList, WebStateListObserver>>(
+      _webStateListObserverBridge.get());
+  _scopedWebStateListObservation->Observe(self.browser->GetWebStateList());
 }
 
 // Removes observer for WebStateList.
 - (void)removeWebStateListObserver {
-  _scopedWebStateListObserver.reset();
+  _scopedWebStateListObservation.reset();
   _webStateListObserverBridge.reset();
 }
 
@@ -1029,13 +1019,11 @@
 
 #pragma mark - PasswordBreachCommands
 
-- (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
-                                  URL:(const GURL&)URL {
+- (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType {
   self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
-                        leakType:leakType
-                             URL:URL];
+                        leakType:leakType];
   [self.passwordBreachCoordinator start];
 }
 
@@ -1068,6 +1056,47 @@
 - (void)hidePolicySignoutPrompt {
   [self.policySignoutPromptCoordinator stop];
   self.policySignoutPromptCoordinator = nil;
+}
+
+#pragma mark - DefaultBrowserPromoNonModalCommands
+
+- (void)showDefaultBrowserNonModalPromo {
+  self.nonModalPromoCoordinator =
+      [[DefaultBrowserPromoNonModalCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  [self.nonModalPromoCoordinator start];
+  self.nonModalPromoCoordinator.browser = self.browser;
+  self.nonModalPromoCoordinator.baseViewController = self.viewController;
+  [self.nonModalPromoCoordinator presentInfobarBannerAnimated:YES
+                                                   completion:nil];
+}
+
+- (void)dismissDefaultBrowserNonModalPromoAnimated:(BOOL)animated {
+  [self.nonModalPromoCoordinator dismissInfobarBannerAnimated:animated
+                                                   completion:nil];
+}
+
+- (void)defaultBrowserNonModalPromoWasDismissed {
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  DefaultBrowserSceneAgent* agent =
+      [DefaultBrowserSceneAgent agentFromScene:sceneState];
+  [agent.nonModalScheduler logPromoWasDismissed];
+  [self.nonModalPromoCoordinator stop];
+  self.nonModalPromoCoordinator = nil;
+}
+
+#pragma mark - DefaultPromoNonModalPresentationDelegate
+
+- (BOOL)defaultNonModalPromoIsShowing {
+  return self.nonModalPromoCoordinator != nil;
+}
+
+- (void)dismissDefaultNonModalPromoAnimated:(BOOL)animated
+                                 completion:(void (^)())completion {
+  [self.nonModalPromoCoordinator dismissInfobarBannerAnimated:animated
+                                                   completion:completion];
 }
 
 @end

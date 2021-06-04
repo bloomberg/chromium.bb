@@ -50,18 +50,18 @@ const char kPrinterSettings[] = R"({
 }  // namespace
 
 TEST(PrintSettingsConversionTest, ConversionTest_InvalidSettings) {
-  base::Optional<base::Value> value = base::JSONReader::Read("{}");
+  absl::optional<base::Value> value = base::JSONReader::Read("{}");
   ASSERT_TRUE(value.has_value());
   EXPECT_FALSE(PrintSettingsFromJobSettings(value.value()));
 }
 
 TEST(PrintSettingsConversionTest, ConversionTest) {
-  base::Optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  absl::optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
   ASSERT_TRUE(value.has_value());
   std::unique_ptr<PrintSettings> settings =
       PrintSettingsFromJobSettings(value.value());
   ASSERT_TRUE(settings);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   EXPECT_TRUE(settings->send_user_info());
   EXPECT_EQ("username@domain.net", settings->username());
   EXPECT_EQ("0000", settings->pin_value());
@@ -78,9 +78,9 @@ TEST(PrintSettingsConversionTest, ConversionTest) {
   EXPECT_FALSE(settings);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 TEST(PrintSettingsConversionTest, ConversionTest_DontSendUsername) {
-  base::Optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  absl::optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
   ASSERT_TRUE(value.has_value());
   value->SetKey(kSettingSendUserInfo, base::Value(false));
   std::unique_ptr<PrintSettings> settings =

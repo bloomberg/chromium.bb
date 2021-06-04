@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {DownloadListElement} from 'chrome://download-shelf.top-chrome/download_list.js';
+import {DangerType, DownloadItem, DownloadMode, DownloadState, MixedContentStatus} from 'chrome://download-shelf.top-chrome/download_shelf.mojom-webui.js';
 import {DownloadShelfApiProxyImpl} from 'chrome://download-shelf.top-chrome/download_shelf_api_proxy.js';
 
 import {assertDeepEquals, assertEquals} from '../../chai_assert.js';
@@ -17,15 +18,34 @@ suite('DownloadListTest', function() {
   /** @type {!TestDownloadShelfApiProxy} */
   let testProxy;
 
-  function testItem(id) {
-    return Object.assign(
-        {
-          id: 1,
-          filename: 'test.exe',
-          state: 'complete',
-          paused: false,
-        },
-        {id});
+  /**
+   * @param {number} id
+   * @param {boolean} isPaused
+   * @return {!DownloadItem}
+   */
+  function testItem(id, isPaused = false) {
+    return {
+      allowDownloadFeedback: false,
+      dangerType: DangerType.kNotDangerous,
+      isDangerous: false,
+      isMalicious: false,
+      id,
+      fileNameDisplayString: 'test.exe',
+      isPaused,
+      mixedContentStatus: MixedContentStatus.kSafe,
+      mode: DownloadMode.kNormal,
+      originalUrl: {url: ''},
+      receivedBytes: BigInt(1),
+      shouldOpenWhenComplete: false,
+      shouldPromoteOrigin: false,
+      showDownloadStartTime: Date.now(),
+      state: DownloadState.kComplete,
+      statusText: '',
+      tooltipText: '',
+      totalBytes: BigInt(1),
+      warningConfirmButtonText: '',
+      warningText: '',
+    };
   }
 
   function verifyDownloadIds(ids) {
@@ -48,30 +68,38 @@ suite('DownloadListTest', function() {
     verifyDownloadIds([1]);
   });
 
-  test('onEvent', () => {
+  test('onEvent', async () => {
     verifyDownloadIds([1]);
-    testProxy.create(testItem(2));
-    testProxy.create(testItem(3));
+
+    testProxy.getCallbackRouterRemote().onNewDownload(testItem(2));
+    testProxy.getCallbackRouterRemote().onNewDownload(testItem(3));
+    const listElement = downloadListElement.$('#downloadList');
+    await waitAfterNextRender(listElement);
     verifyDownloadIds([3, 2, 1]);
-    testProxy.erase(3);
+
+    testProxy.getCallbackRouterRemote().onDownloadErased(3);
+    await waitAfterNextRender(listElement);
     verifyDownloadIds([2, 1]);
-    assertEquals(false, downloadListElement.$('download-item').item.paused);
-    testProxy.change({id: 2, paused: {previous: false, current: true}});
-    assertEquals(true, downloadListElement.$('download-item').item.paused);
+    assertEquals(false, downloadListElement.$('download-item').item.isPaused);
+
+    testProxy.getCallbackRouterRemote().onDownloadUpdated(testItem(2, true));
+    await waitAfterNextRender(listElement);
+    assertEquals(true, downloadListElement.$('download-item').item.isPaused);
   });
 
   test('onResize', async () => {
-    const listElement = downloadListElement.$('#downloadList');
+    const listElement = downloadListElement.$('#download-list');
     listElement.style.width = '847px';
     await waitAfterNextRender(listElement);
     for (let i = 0; i < 10; ++i) {
-      testProxy.create(testItem(i + 1));
+      testProxy.getCallbackRouterRemote().onNewDownload(testItem(i + 1));
     }
+    await waitAfterNextRender(listElement);
     const oldWidth = listElement.offsetWidth;
     assertEquals(4, downloadListElement.$all('download-item').length);
     listElement.style.width = oldWidth * 2 + 'px';
     await waitAfterNextRender(listElement);
-    assertEquals(7, downloadListElement.$all('download-item').length);
+    assertEquals(8, downloadListElement.$all('download-item').length);
     listElement.style.width = oldWidth + 'px';
     await waitAfterNextRender(listElement);
     assertEquals(4, downloadListElement.$all('download-item').length);

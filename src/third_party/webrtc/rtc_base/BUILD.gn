@@ -101,9 +101,9 @@ rtc_library("rtc_base_approved") {
     "copy_on_write_buffer.h",
     "event_tracer.cc",
     "event_tracer.h",
+    "hash.h",
     "location.cc",
     "location.h",
-    "message_buffer_reader.h",
     "numerics/histogram_percentile_counter.cc",
     "numerics/histogram_percentile_counter.h",
     "numerics/mod_ops.h",
@@ -199,7 +199,10 @@ rtc_source_set("refcount") {
     "ref_counted_object.h",
     "ref_counter.h",
   ]
-  deps = [ ":macromagic" ]
+  deps = [
+    ":macromagic",
+    "../api:scoped_refptr",
+  ]
 }
 
 rtc_library("criticalsection") {
@@ -239,7 +242,11 @@ rtc_library("platform_thread") {
     ":timeutils",
     "../api:sequence_checker",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/memory",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 rtc_library("rtc_event") {
@@ -555,7 +562,10 @@ if (is_win) {
       "../api/task_queue",
       "synchronization:mutex",
     ]
-    absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+    absl_deps = [
+      "//third_party/abseil-cpp/absl/strings",
+      "//third_party/abseil-cpp/absl/types:optional",
+    ]
   }
 }
 
@@ -793,6 +803,7 @@ rtc_library("threading") {
     ":socket_server",
     ":timeutils",
     "../api:function_view",
+    "../api:refcountedbase",
     "../api:scoped_refptr",
     "../api:sequence_checker",
     "../api/task_queue",
@@ -917,6 +928,7 @@ rtc_library("rtc_base") {
     ":threading",
     "../api:array_view",
     "../api:function_view",
+    "../api:refcountedbase",
     "../api:scoped_refptr",
     "../api:sequence_checker",
     "../api/numerics",
@@ -1333,6 +1345,7 @@ if (rtc_include_tests) {
         "deprecated/recursive_critical_section_unittest.cc",
         "event_tracer_unittest.cc",
         "event_unittest.cc",
+        "hash_unittest.cc",
         "logging_unittest.cc",
         "numerics/divide_round_unittest.cc",
         "numerics/histogram_percentile_counter_unittest.cc",
@@ -1404,6 +1417,7 @@ if (rtc_include_tests) {
       absl_deps = [
         "//third_party/abseil-cpp/absl/base:core_headers",
         "//third_party/abseil-cpp/absl/memory",
+        "//third_party/abseil-cpp/absl/types:optional",
       ]
     }
 

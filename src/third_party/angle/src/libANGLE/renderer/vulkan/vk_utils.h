@@ -341,6 +341,7 @@ class MemoryProperties final : angle::NonCopyable
     angle::Result findCompatibleMemoryIndex(Context *context,
                                             const VkMemoryRequirements &memoryRequirements,
                                             VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                            bool isExternalMemory,
                                             VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                             uint32_t *indexOut) const;
     void destroy();
@@ -876,6 +877,8 @@ struct PerfCounters
     uint32_t stencilAttachmentResolves;
     uint32_t readOnlyDepthStencilRenderPasses;
     uint32_t descriptorSetAllocations;
+    uint32_t shaderBuffersDescriptorSetCacheHits;
+    uint32_t shaderBuffersDescriptorSetCacheMisses;
 };
 
 // A Vulkan image level index.

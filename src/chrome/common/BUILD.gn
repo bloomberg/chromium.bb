@@ -17,6 +17,7 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -119,6 +120,8 @@ static_library("common") {
     "google_url_loader_throttle.h",
     "logging_chrome.cc",
     "logging_chrome.h",
+    "media/cdm_registration.cc",
+    "media/cdm_registration.h",
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
     "media_galleries/metadata_types.h",
@@ -243,6 +246,7 @@ static_library("common") {
     "//build:chromeos_buildflags",
     "//components/crash/core/app",
     "//components/google/core/common",
+    "//components/live_caption:constants",
     "//components/metrics:call_stack_profile_builder",
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/common:mojo_bindings",
@@ -587,6 +591,7 @@ static_library("constants") {
     ":non_code_constants",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
+    "//third_party/widevine/cdm:buildflags",
   ]
 
   deps = [
@@ -720,8 +725,6 @@ mojom("mojo_bindings") {
 
   if (is_android) {
     sources += [ "sandbox_status_extension_android.mojom" ]
-  } else {
-    sources += [ "caption.mojom" ]
   }
 
   if (is_mac) {

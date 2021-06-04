@@ -15,7 +15,6 @@
     <item name="tabswitcher_multiple_drawable" type="id"/>
     <item name="tabswitcher_single_drawable" type="id"/>
     <item name="custom_tab_bottom_bar_wrapper" type="id"/>
-    <item name="default_search_engine_dialog_options" type="id"/>
 
     <!-- Media playback notification -->
     <item type="id" name="media_playback_notification" />
@@ -80,6 +79,11 @@
     <item type="id" name="contextmenu_send_message" />
     <item type="id" name="contextmenu_add_to_contacts" />
     <item type="id" name="contextmenu_copy" />
+
+    <!-- Shared Highlighting Group -->
+    <item type="id" name="contextmenu_share_highlight" />
+    <item type="id" name="contextmenu_remove_highlight" />
+    <item type="id" name="contextmenu_learn_more" />
 
     <!-- Other Group -->
     <item type="id" name="contextmenu_save_video" />

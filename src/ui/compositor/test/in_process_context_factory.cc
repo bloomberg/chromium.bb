@@ -133,7 +133,8 @@ class DirectOutputSurface : public viz::OutputSurface {
     // so we provide dummy values here.
     base::TimeTicks now = base::TimeTicks::Now();
     gfx::SwapTimings timings = {now, now};
-    client_->DidReceiveSwapBuffersAck(timings);
+    client_->DidReceiveSwapBuffersAck(timings,
+                                      /*release_fence=*/gfx::GpuFenceHandle());
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
@@ -145,7 +146,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 
 }  // namespace
 
-// TODO(sgilhuly): This class is managed heavily by InProcessTransportFactory.
+// TODO(rivr): This class is managed heavily by InProcessTransportFactory.
 // Move some of the logic in here and simplify the interface.
 class InProcessContextFactory::PerCompositorData
     : public viz::mojom::DisplayPrivate {
@@ -191,7 +192,7 @@ class InProcessContextFactory::PerCompositorData
 #endif
 
   void SetDelegatedInkPointRenderer(
-      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver)
       override {}
 
   void SetSurfaceHandle(gpu::SurfaceHandle surface_handle) {
@@ -326,6 +327,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (renderer_settings_.use_skia_renderer) {
     auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
         viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+        viz::TestGpuServiceHolder::GetInstance()->task_executor(),
         gpu::kNullSurfaceHandle);
     display_dependency =
         std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(

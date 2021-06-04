@@ -15,8 +15,8 @@
 
 namespace blink {
 
+class WebSecurityOrigin;
 class WebURL;
-struct WebURLError;
 struct WebNavigationInfo;
 struct WebNavigationParams;
 
@@ -43,8 +43,9 @@ class WebNavigationControl : public WebLocalFrame {
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
-  // Commits a same-document navigation in the frame. For history navigations, a
-  // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
+  // Commits a same-document navigation in the frame. For history navigations,
+  // a valid WebHistoryItem should be provided. |initiator_origin| is null
+  // for browser-initiated navigations. Returns CommitResult::Ok if the
   // navigation has actually committed.
   virtual mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
@@ -52,24 +53,8 @@ class WebNavigationControl : public WebLocalFrame {
       const WebHistoryItem&,
       bool is_client_redirect,
       bool has_transient_user_activation,
+      const WebSecurityOrigin& initiator_origin,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
-
-  // Loads a JavaScript URL in the frame.
-  // TODO(dgozman): this may replace the document, so perhaps we should
-  // return something meaningful?
-  virtual void LoadJavaScriptURL(const WebURL&) = 0;
-
-  enum FallbackContentResult {
-    // An error page should be shown instead of fallback.
-    NoFallbackContent,
-    // Something else committed, no fallback content or error page needed.
-    NoLoadInProgress,
-    // Fallback content rendered, no error page needed.
-    FallbackRendered
-  };
-  // On load failure, attempts to make frame's parent render fallback content.
-  virtual FallbackContentResult MaybeRenderFallbackContent(
-      const WebURLError&) const = 0;
 
   // Override the normal rules for whether a load has successfully committed
   // in this frame. Used to propagate state when this frame has navigated

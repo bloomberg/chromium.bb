@@ -32,12 +32,12 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -193,33 +194,33 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                 is_associated_with_ad_subframe)));
   }
 
-  base::Optional<ResourceRequestBlockedReason> CanRequest() {
+  absl::optional<ResourceRequestBlockedReason> CanRequest() {
     return CanRequestInternal(ReportingDisposition::kReport);
   }
 
-  base::Optional<ResourceRequestBlockedReason> CanRequestKeepAlive() {
+  absl::optional<ResourceRequestBlockedReason> CanRequestKeepAlive() {
     return CanRequestInternal(ReportingDisposition::kReport,
                               true /* keepalive */);
   }
 
-  base::Optional<ResourceRequestBlockedReason> CanRequestPreload() {
+  absl::optional<ResourceRequestBlockedReason> CanRequestPreload() {
     return CanRequestInternal(ReportingDisposition::kSuppressReporting);
   }
 
-  base::Optional<ResourceRequestBlockedReason> CanRequestAndVerifyIsAd(
+  absl::optional<ResourceRequestBlockedReason> CanRequestAndVerifyIsAd(
       bool expect_is_ad) {
-    base::Optional<ResourceRequestBlockedReason> reason =
+    absl::optional<ResourceRequestBlockedReason> reason =
         CanRequestInternal(ReportingDisposition::kReport);
     ResourceRequest request(KURL("http://example.com/"));
     FetchInitiatorInfo initiator_info;
     EXPECT_EQ(expect_is_ad, GetFetchContext()->CalculateIfAdSubresource(
-                                request, base::nullopt /* alias_url */,
+                                request, absl::nullopt /* alias_url */,
                                 ResourceType::kMock, initiator_info));
     return reason;
   }
 
  private:
-  base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
+  absl::optional<ResourceRequestBlockedReason> CanRequestInternal(
       ReportingDisposition reporting_disposition,
       bool keepalive = false) {
     const KURL input_url("http://example.com/");
@@ -233,7 +234,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     // DJKim
     return GetFetchContext()->CanRequest(ResourceType::kImage, resource_request,
                                          input_url, options,
-                                         reporting_disposition, base::nullopt);
+                                         reporting_disposition, absl::nullopt);
   }
 
   int filtered_load_callback_counter_;
@@ -835,6 +836,30 @@ TEST_F(FrameFetchContextHintsTest, MonitorUAHints) {
   }
 }
 
+TEST_F(FrameFetchContextHintsTest, MonitorPrefersColorSchemeHint) {
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
+
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSend(
+      network::mojom::WebClientHintsType::kPrefersColorScheme);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               true, "light");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
+
+  document->GetSettings()->SetPreferredColorScheme(
+      mojom::PreferredColorScheme::kDark);
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               true, "dark");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
+}
+
 TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
@@ -850,6 +875,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform-Version",
                false, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
 
   // `Sec-CH-UA` is special.
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA", true, "");
@@ -869,6 +896,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   preferences.SetShouldSend(
       network::mojom::WebClientHintsType::kUAPlatformVersion);
   preferences.SetShouldSend(network::mojom::WebClientHintsType::kUAModel);
+  preferences.SetShouldSend(
+      network::mojom::WebClientHintsType::kPrefersColorScheme);
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", true, "4");
@@ -888,6 +917,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform-Version",
                true, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", true, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               true, "light");
 
   // Value of network quality client hints may vary, so only check if the
   // header is present and the values are non-negative/non-empty.
@@ -917,7 +948,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHintsPermissionsPolicy) {
       "ch-dpr *; ch-device-memory *; ch-downlink *; ch-ect *; ch-lang *;"
       "ch-rtt *; ch-ua *; ch-ua-arch *; ch-ua-platform *; "
       "ch-ua-platform-version *; ch-ua-model *;"
-      "ch-viewport-width *; ch-width *");
+      "ch-viewport-width *; ch-width *; ch-prefers-color-scheme *");
   document->GetSettings()->SetScriptEnabled(true);
   ClientHintsPreferences preferences;
   preferences.SetShouldSend(network::mojom::WebClientHintsType::kDeviceMemory);
@@ -934,6 +965,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHintsPermissionsPolicy) {
   preferences.SetShouldSend(
       network::mojom::WebClientHintsType::kUAPlatformVersion);
   preferences.SetShouldSend(network::mojom::WebClientHintsType::kUAModel);
+  preferences.SetShouldSend(
+      network::mojom::WebClientHintsType::kPrefersColorScheme);
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
 
@@ -955,6 +988,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHintsPermissionsPolicy) {
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", true, "");
   ExpectHeader("https://www.example.net/1.gif", "Width", true, "400", 400);
   ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", true, "500");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               true, "light");
 
   // Value of network quality client hints may vary, so only check if the
   // header is present and the values are non-negative/non-empty.
@@ -1020,6 +1055,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsPermissionsPolicy) {
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", false, "");
   ExpectHeader("https://www.example.net/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Prefers-Color-Scheme",
+               false, "");
 }
 
 // Verify that the client hints are not attached for third-party subresources
@@ -1167,10 +1204,10 @@ TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
 TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kAllow);
 
-  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(false));
+  EXPECT_EQ(absl::nullopt, CanRequestAndVerifyIsAd(false));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
-  EXPECT_EQ(base::nullopt, CanRequestPreload());
+  EXPECT_EQ(absl::nullopt, CanRequestPreload());
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
@@ -1178,19 +1215,19 @@ TEST_F(FrameFetchContextSubresourceFilterTest, DuringOnFreeze) {
   document->SetFreezingInProgress(true);
   // Only keepalive requests should succeed during onfreeze.
   EXPECT_EQ(ResourceRequestBlockedReason::kOther, CanRequest());
-  EXPECT_EQ(base::nullopt, CanRequestKeepAlive());
+  EXPECT_EQ(absl::nullopt, CanRequestKeepAlive());
   document->SetFreezingInProgress(false);
-  EXPECT_EQ(base::nullopt, CanRequest());
-  EXPECT_EQ(base::nullopt, CanRequestKeepAlive());
+  EXPECT_EQ(absl::nullopt, CanRequest());
+  EXPECT_EQ(absl::nullopt, CanRequestKeepAlive());
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kWouldDisallow);
 
-  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
+  EXPECT_EQ(absl::nullopt, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
-  EXPECT_EQ(base::nullopt, CanRequestPreload());
+  EXPECT_EQ(absl::nullopt, CanRequestPreload());
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
@@ -1403,12 +1440,12 @@ TEST_F(FrameFetchContextSubresourceFilterTest,
        CanRequestBasedOnSubresourceFilterOnly) {
   const struct {
     WebDocumentSubresourceFilter::LoadPolicy policy;
-    base::Optional<ResourceRequestBlockedReason> expected_block_reason;
+    absl::optional<ResourceRequestBlockedReason> expected_block_reason;
   } kTestCases[] = {
       {WebDocumentSubresourceFilter::kDisallow,
        ResourceRequestBlockedReason::kSubresourceFilter},
-      {WebDocumentSubresourceFilter::kWouldDisallow, base::nullopt},
-      {WebDocumentSubresourceFilter::kAllow, base::nullopt}};
+      {WebDocumentSubresourceFilter::kWouldDisallow, absl::nullopt},
+      {WebDocumentSubresourceFilter::kAllow, absl::nullopt}};
 
   for (const auto& test : kTestCases) {
     SetFilterPolicy(test.policy);
@@ -1424,7 +1461,7 @@ TEST_F(FrameFetchContextSubresourceFilterTest,
     EXPECT_EQ(test.expected_block_reason,
               GetFetchContext()->CanRequestBasedOnSubresourceFilterOnly(
                   ResourceType::kScript, resource_request, url, options,
-                  ReportingDisposition::kReport, base::nullopt));
+                  ReportingDisposition::kReport, absl::nullopt));
   }
 }
 

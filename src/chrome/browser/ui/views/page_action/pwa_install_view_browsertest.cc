@@ -252,14 +252,14 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     base::RunLoop run_loop;
     web_app::WebAppProvider::Get(browser()->profile())
         ->install_finalizer()
-        .UninstallExternalAppByUser(
-            app_id, base::BindLambdaForTesting([&](bool uninstalled) {
-              EXPECT_TRUE(uninstalled);
-              run_loop.Quit();
-            }));
+        .UninstallWebApp(app_id, webapps::WebappUninstallSource::kAppMenu,
+                         base::BindLambdaForTesting([&](bool uninstalled) {
+                           EXPECT_TRUE(uninstalled);
+                           run_loop.Quit();
+                         }));
     run_loop.Run();
 
-    web_app::SetInstallBounceMetricTimeForTesting(base::nullopt);
+    web_app::SetInstallBounceMetricTimeForTesting(absl::nullopt);
 
     std::vector<base::Bucket> expected_buckets;
     if (expected_count > 0) {

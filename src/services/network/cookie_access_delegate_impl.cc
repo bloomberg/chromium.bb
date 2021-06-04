@@ -4,9 +4,11 @@
 
 #include "services/network/cookie_access_delegate_impl.h"
 
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/first_party_sets/first_party_sets.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -54,10 +56,20 @@ bool CookieAccessDelegateImpl::ShouldIgnoreSameSiteRestrictions(
 
 bool CookieAccessDelegateImpl::IsContextSamePartyWithSite(
     const net::SchemefulSite& site,
-    const base::Optional<net::SchemefulSite>& top_frame_site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
   return first_party_sets_ && first_party_sets_->IsContextSamePartyWithSite(
                                   site, top_frame_site, party_context);
+}
+
+net::FirstPartySetsContextType
+CookieAccessDelegateImpl::ComputeFirstPartySetsContextType(
+    const net::SchemefulSite& site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const std::set<net::SchemefulSite>& party_context) const {
+  return first_party_sets_ ? first_party_sets_->ComputeContextType(
+                                 site, top_frame_site, party_context)
+                           : net::FirstPartySetsContextType::kUnknown;
 }
 
 bool CookieAccessDelegateImpl::IsInNontrivialFirstPartySet(

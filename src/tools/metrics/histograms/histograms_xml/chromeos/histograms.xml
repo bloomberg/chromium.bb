@@ -41,7 +41,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </variants>
 
 <histogram name="ChromeOS.Apps.ExternalProtocolDialog"
-    enum="ArcIntentHandlerAction" expires_after="2021-08-22">
+    enum="ArcIntentHandlerAction" expires_after="M94">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <owner>mxcai@chromium.org</owner>
@@ -52,7 +52,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.ExternalProtocolDialog.Accepted"
-    enum="ArcExternalProtocolAction" expires_after="2021-08-22">
+    enum="ArcExternalProtocolAction" expires_after="M94">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <owner>mxcai@chromium.org</owner>
@@ -64,7 +64,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.ExternalProtocolDialog.Rejected"
-    enum="ArcExternalProtocolAction" expires_after="M90">
+    enum="ArcExternalProtocolAction" expires_after="M94">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <owner>mxcai@chromium.org</owner>
@@ -75,7 +75,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.IntentPickerAction"
-    enum="ArcIntentHandlerAction" expires_after="2021-08-15">
+    enum="ArcIntentHandlerAction" expires_after="2021-10-17">
   <owner>elijahtaylor@google.com</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>shihuis@google.com</owner>
@@ -99,7 +99,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.NumberOfAppsForNotification"
-    enum="BooleanMultipleApps" expires_after="2021-08-09">
+    enum="BooleanMultipleApps" expires_after="2021-10-10">
   <owner>dominickn@chromium.org</owner>
   <owner>nancylingwang@chromium.org</owner>
   <summary>
@@ -251,57 +251,58 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.CsrSignTime" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took to sign one CSR by certificate provisioning
-    worker.
+    The amount of time it took the certificate provisioning worker to sign a
+    CSR. Emitted after the sign is complete.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.Event" enum="CertProvisioningEvent"
-    expires_after="2021-06-01">
+    expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    Number of times each event is reached during certificate provisioning flow.
+    Number of times each event is reached during the certificate provisioning
+    flow.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.KeypairGenerationTime" units="ms"
-    expires_after="2021-06-01">
+    expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took to generate one key pair by certificate
-    provisioning worker.
+    The amount of time it took the certificate provisioning worker to generate
+    one key pair. Emitted after the generation is complete.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.Result"
-    enum="CertProvisioningWorkerState" expires_after="2021-06-01">
+    enum="CertProvisioningWorkerState" expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
     For final states (see the list in cert_provisioning::IsFinalState): number
-    of times certificate provisioning worker finished on every state. For other
-    states: number of times the worker failed on every state.
+    of times the certificate provisioning worker finished on every state. For
+    other states: number of times the worker failed on every state.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.VaTime" units="ms"
-    expires_after="2021-06-01">
+    expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took to build one Verified Access response by
-    certificate provisioning worker.
+    The amount of time it took the certificate provisioning worker to build one
+    Verified Access response. Emitted after the response is built.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.CWP.CollectPerf"
-    enum="ChromeOSProfileCollectionStatus" expires_after="2021-08-22">
+    enum="ChromeOSProfileCollectionStatus" expires_after="2021-10-24">
   <owner>aalexand@google.com</owner>
   <owner>gmx@chromium.org</owner>
   <summary>
@@ -332,7 +333,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.ParseCPUFrequencies"
-    enum="ChromeOSParseCPUFrequencyStatus" expires_after="2021-08-09">
+    enum="ChromeOSParseCPUFrequencyStatus" expires_after="2021-10-10">
   <owner>gmx@chromium.org</owner>
   <owner>cwp-team@google.com</owner>
   <summary>
@@ -388,7 +389,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.DiagnosticsUi.MemoryRoutineDuration" units="s"
     expires_after="2021-09-19">
-  <owner>baileyberro@chromium.org</owner>
+  <owner>gavindodd@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     Records the duration that the Memory Routine took to complete. Emitted when
@@ -398,7 +400,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.DiagnosticsUi.OpenDuration" units="ms"
     expires_after="2021-09-19">
-  <owner>baileyberro@chromium.org</owner>
+  <owner>gavindodd@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     Records the duration that the Diagnostics App is open. emitted when the app
@@ -408,7 +411,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.DiagnosticsUi.RoutineCount" units="routines"
     expires_after="2021-09-19">
-  <owner>baileyberro@chromium.org</owner>
+  <owner>gavindodd@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     Records the number of routines run while the Chrome OS Diagnostics App was
@@ -419,7 +423,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.DiagnosticsUi.{RoutineType}Result"
     enum="CrosDiagnosticsRoutineResult" expires_after="2021-07-15">
-  <owner>baileyberro@chromium.org</owner>
+  <owner>gavindodd@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>Records the result of the {RoutineType} Routine.</summary>
   <token key="RoutineType">
@@ -548,6 +553,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="FeatureName" variants="FeaturesLoggingUsageEvents"/>
 </histogram>
 
+<histogram name="ChromeOS.FeatureUsage.{FeatureName}.Usetime" units="ms"
+    expires_after="2022-01-01">
+  <owner>rsorokin@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records the duration of time (ms) a given {FeatureName} feature was used.
+  </summary>
+  <token key="FeatureName" variants="FeaturesLoggingUsageEvents"/>
+</histogram>
+
 <histogram name="ChromeOS.GAIA.AuthenticatorContentWindowNull" enum="Boolean"
     expires_after="M85">
   <obsolete>
@@ -564,8 +579,39 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
+    enum="BooleanReceived" expires_after="2022-01-01">
+  <owner>rsorokin@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records whether or not {MessageName} was received during the {GaiaAuthFlow}
+    authentication on the login screen. Recorded on the successful online
+    authentication only.
+  </summary>
+  <token key="GaiaAuthFlow">
+    <variant name="Gaia"/>
+    <variant name="Saml"/>
+  </token>
+  <token key="MessageName">
+    <variant name="CloseView"/>
+    <variant name="UserInfo"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Gaia.PasswordFlow" enum="BooleanStartedCompleted"
+    expires_after="2022-01-01">
+  <owner>rsorokin@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records events for the Gaia password flow. &quot;Started&quot; is recorded
+    on each password entry on the Gaia page. &quot;Completed&quot; is recorded
+    when Gaia authentication succeeds. Note: this is not recorded for SAML
+    flows.
+  </summary>
+</histogram>
+
 <histogram base="true" name="ChromeOS.HardwareVerifier.Report"
-    enum="HardwareVerifierQualificationStatus" expires_after="2021-08-22">
+    enum="HardwareVerifierQualificationStatus" expires_after="2021-10-25">
 <!-- Name completed by histogram_suffixes name="HardwareVerifierSupportCategory" -->
 
   <owner>itspeter@chromium.org</owner>
@@ -578,7 +624,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.HardwareVerifier.Report.IsCompliant" enum="Boolean"
-    expires_after="2021-08-22">
+    expires_after="2021-10-24">
   <owner>itspeter@chromium.org</owner>
   <owner>stimim@chromium.org</owner>
   <owner>chromeos-hw-checker@google.com</owner>
@@ -635,7 +681,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.Migration"
-    enum="KeyPermissionsManagerMigrationStatus" expires_after="2021-08-09">
+    enum="KeyPermissionsManagerMigrationStatus" expires_after="2021-10-10">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
@@ -678,13 +724,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.LegacySupervisedUsers.HiddenFromLoginScreen"
-    enum="BooleanLegacySupervisedUserHidden" expires_after="2021-09-19">
+    enum="LegacySupervisedUserStatus" expires_after="2022-04-09">
   <owner>tobyhuang@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
-    Reports true when the login screen hides a legacy supervised user. Reports
-    false when the login screen displays a Gaia user. Recorded whenever the user
-    sees the login screen.
+    Reports &quot;hidden&quot; when the login screen hides a legacy supervised
+    user (LSU). Reports &quot;displayed&quot; when the login screen displays a
+    non-LSU Gaia user. Reports &quot;deleted&quot; when the login screen
+    attempts to delete a LSU. Recorded whenever the user sees the login screen.
   </summary>
 </histogram>
 
@@ -786,7 +833,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MemoryPressureLevel" enum="MemoryPressureLevel"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>xdai@chromium.org</owner>
   <summary>
     The memory pressure level in Chrome OS, which is recorded periodically (once
@@ -847,7 +894,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.PrivacyScreen.Toggled"
-    enum="PrivacyScreenToggleUISurface" expires_after="2021-08-09">
+    enum="PrivacyScreenToggleUISurface" expires_after="2022-04-01">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -887,14 +934,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Provider" enum="ChromeOSSamlProvider"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>mslus@chromium.org</owner>
   <owner>mohammedabdon@chromium.org</owner>
   <summary>Records SAML provider when SAML login flow is used.</summary>
 </histogram>
 
 <histogram name="ChromeOS.SAML.SamlChallengeKeyHandlerResult"
-    enum="SamlChallengeKeyHandlerResult" expires_after="2021-06-01">
+    enum="SamlChallengeKeyHandlerResult" expires_after="2022-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -920,6 +967,19 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     Whether one of the scraped passwords was successfully verified as the user's
     password. This is set only when the Chrome Credentials Passing API is not
     used.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SecurityAnomaly" enum="SecurityAnomaly"
+    expires_after="M98">
+  <owner>jorgelo@chromium.org</owner>
+  <owner>chromeos-security-core@google.com</owner>
+  <summary>
+    Records when an event representing a deviation from the Chrome OS security
+    posture happens.
+
+    Writable+executable mount events are checked every thirty seconds, but each
+    anomalous event is reported only once per boot.
   </summary>
 </histogram>
 
@@ -1144,7 +1204,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.PathVisited" enum="WebUISettingsPathHashes"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-customization@google.com</owner>
   <summary>
@@ -1286,6 +1346,18 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Settings.Wifi.AddNetwork"
+    enum="NetworkDiscoveryState" expires_after="2022-03-30">
+  <owner>jonmann@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>tnagel@chromium.org</owner>
+  <owner>cros-customization@google.com</owner>
+  <owner>cros-privacy-core@google.com</owner>
+  <summary>
+    Recorded when the user adds a WiFi network that has not been added before.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.Settings.Wifi.Hidden" enum="BooleanToggled"
     expires_after="2022-03-30">
   <owner>jonmann@chromium.org</owner>
@@ -1377,7 +1449,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.SystemTray.AnimationSmoothness" units="%"
-    expires_after="2021-04-13">
+    expires_after="2022-04-13">
 <!-- Name completed by histogram suffixes
      name="SystemTrayTransitionType" -->
 
@@ -1390,8 +1462,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.BlockedNotifiersAfterUpdate"
-    units="notifiers" expires_after="2021-05-10">
-  <owner>tengs@chromium.org</owner>
+    units="notifiers" expires_after="2022-05-10">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     Tracks the number of blocked notifiers in the system tray after the user
@@ -1401,8 +1473,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.BlockedNotifiersOnOpen" units="notifiers"
-    expires_after="2021-05-10">
-  <owner>tengs@chromium.org</owner>
+    expires_after="2022-05-10">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     Tracks the number of blocked notifiers in the system tray when it is opened.
@@ -1410,9 +1482,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.FeaturePodCountOnOpen" units="count"
-    expires_after="2021-09-12">
-  <owner>tengs@chromium.org</owner>
+    expires_after="2022-04-01">
   <owner>amehfooz@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
   <summary>
     The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
     in the system tray quick settings when it is opened, including pods that
@@ -1423,8 +1495,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.FirstInteraction"
-    enum="CrosSystemTrayFirstInteraction" expires_after="2021-05-10">
-  <owner>tengs@chromium.org</owner>
+    enum="CrosSystemTrayFirstInteraction" expires_after="2022-04-01">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     Records the first interaction the user has with the system tray, which can
@@ -1435,8 +1507,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Interaction"
-    enum="CrosSystemTrayInteraction" expires_after="2021-08-15">
-  <owner>tengs@chromium.org</owner>
+    enum="CrosSystemTrayInteraction" expires_after="2022-04-01">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     An enum value how system tray bubble is interacted e.g. by tap (touch
@@ -1446,7 +1518,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.IsExpandedOnOpen" enum="Boolean"
-    expires_after="2021-05-10">
+    expires_after="2022-05-10">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1456,8 +1528,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.NotificationsRemovedByClearAll"
-    units="notifications" expires_after="2021-09-12">
-  <owner>tengs@chromium.org</owner>
+    units="notifications" expires_after="2022-04-01">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     Records the number of notifications that are removed in a single clear all
@@ -1475,7 +1547,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.ShelfPodCount" units="count"
-    expires_after="2021-10-04">
+    expires_after="2022-04-01">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1487,9 +1559,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen"
-    units="count" expires_after="2021-05-10">
-  <owner>tengs@chromium.org</owner>
+    units="count" expires_after="2022-05-10">
   <owner>amehfooz@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
   <summary>
     The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
     in the system tray quick settings when it is opened, including pods that
@@ -1499,7 +1571,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Tablet.ShelfPodCount" units="count"
-    expires_after="2021-10-04">
+    expires_after="2022-04-01">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1521,7 +1593,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.TimeToClick2" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2022-04-01">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1531,12 +1603,22 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.ToggleExpanded"
-    enum="CrosSystemTrayToggleExpanded" expires_after="2021-05-10">
-  <owner>tengs@chromium.org</owner>
+    enum="CrosSystemTrayToggleExpanded" expires_after="2022-05-10">
+  <owner>amehfooz@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
     An enum value how system tray bubble is expanded or collapsed. It can be
     toggled by the button and touch gesture.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.TypeC.CableSpeed" enum="CableSpeedMetric"
+    expires_after="2021-10-31">
+  <owner>pmalani@chromium.org</owner>
+  <owner>chromeos-power@google.com</owner>
+  <summary>
+    This value represents the speed of the USB Type-C cable which is connected
+    to a device. It is recorded every time a new peripheral is connected.
   </summary>
 </histogram>
 
@@ -1563,7 +1645,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.USB.DeviceAttached"
-    enum="ChromeOSUsbEventTiming" expires_after="2021-08-15">
+    enum="ChromeOSUsbEventTiming" expires_after="2021-10-17">
   <owner>allenwebb@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>

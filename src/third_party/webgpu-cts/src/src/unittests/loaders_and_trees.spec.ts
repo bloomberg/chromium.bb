@@ -17,7 +17,7 @@ import {
 } from '../common/framework/query/query.js';
 import { makeTestGroup, makeTestGroupForUnitTesting } from '../common/framework/test_group.js';
 import { TestSuiteListing, TestSuiteListingEntry } from '../common/framework/test_suite_listing.js';
-import { TestTreeLeaf } from '../common/framework/tree.js';
+import { ExpandThroughLevel, TestTreeLeaf } from '../common/framework/tree.js';
 import { assert, objectEquals } from '../common/framework/util/util.js';
 
 import { UnitTest } from './unit_test.js';
@@ -63,10 +63,10 @@ const specsData: { [k: string]: SpecFile } = {
     g: (() => {
       const g = makeTestGroupForUnitTesting(UnitTest);
       g.test('wye')
-        .params([{}, { x: 1 }])
+        .cases([{}, { x: 1 }])
         .fn(() => {});
       g.test('zed')
-        .params([
+        .cases([
           { a: 1, b: 2, _c: 0 },
           { b: 3, a: 1, _c: 0 },
         ])
@@ -82,7 +82,7 @@ const specsData: { [k: string]: SpecFile } = {
         t.debug('OK');
       });
       g.test('bleh')
-        .params([{ a: 1 }])
+        .cases([{ a: 1 }])
         .fn(t => {
           t.debug('OK');
           t.debug('OK');
@@ -643,10 +643,12 @@ g.test('expectations,skip_inside_failure').fn(async t => {
 
 async function testIterateCollapsed(
   t: LoadingTest,
+  alwaysExpandThroughLevel: ExpandThroughLevel,
   expectations: string[],
   expectedResult: 'throws' | string[],
   includeEmptySubtrees = false
 ) {
+  t.debug(`expandThrough=${alwaysExpandThroughLevel} expectations=${expectations}`);
   const treePromise = LoadingTest.loader.loadTree(
     new TestQueryMultiFile('suite1', []),
     expectations
@@ -656,7 +658,8 @@ async function testIterateCollapsed(
     return;
   }
   const tree = await treePromise;
-  const actual = Array.from(tree.iterateCollapsedQueries(includeEmptySubtrees), q => q.toString());
+  const actualIter = tree.iterateCollapsedQueries(includeEmptySubtrees, alwaysExpandThroughLevel);
+  const actual = Array.from(actualIter, q => q.toString());
   if (!objectEquals(actual, expectedResult)) {
     t.fail(
       `iterateCollapsed failed:
@@ -673,21 +676,66 @@ g.test('print').fn(async () => {
 });
 
 g.test('iterateCollapsed').fn(async t => {
-  // Expectations lists that have no effect
-  await testIterateCollapsed(t, [], ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:*']);
+  await testIterateCollapsed(t, 1, [], ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:*']);
   await testIterateCollapsed(
     t,
+    2,
+    [],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:*',
+      'suite1:baz:zed:*',
+    ]
+  );
+  await testIterateCollapsed(
+    t,
+    3,
+    [],
+    [
+      'suite1:foo:hello:',
+      'suite1:foo:bonjour:',
+      'suite1:foo:hola:',
+      'suite1:bar,buzz,buzz:zap:',
+      'suite1:baz:wye:',
+      'suite1:baz:wye:x=1',
+      'suite1:baz:zed:a=1;b=2',
+      'suite1:baz:zed:b=3;a=1',
+    ]
+  );
+
+  // Expectations lists that have no effect
+  await testIterateCollapsed(
+    t,
+    1,
     ['suite1:foo:*'],
     ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:*']
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:bar,buzz,buzz:*'],
     ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:*']
+  );
+  await testIterateCollapsed(
+    t,
+    2,
+    ['suite1:baz:wye:*'],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:*',
+      'suite1:baz:zed:*',
+    ]
   );
   // Test with includeEmptySubtrees=true
   await testIterateCollapsed(
     t,
+    1,
     [],
     [
       'suite1:foo:*',
@@ -698,25 +746,45 @@ g.test('iterateCollapsed').fn(async t => {
     ],
     true
   );
+  await testIterateCollapsed(
+    t,
+    2,
+    [],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,biz:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:*',
+      'suite1:baz:zed:*',
+      'suite1:empty,*',
+    ],
+    true
+  );
 
   // Expectations lists that have some effect
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:baz:wye:*'],
     ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:wye:*', 'suite1:baz:zed,*']
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:baz:zed:*'],
     ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:wye,*', 'suite1:baz:zed:*']
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:baz:wye:*', 'suite1:baz:zed:*'],
     ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:wye:*', 'suite1:baz:zed:*']
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:baz:wye:'],
     [
       'suite1:foo:*',
@@ -728,6 +796,7 @@ g.test('iterateCollapsed').fn(async t => {
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:baz:wye:x=1'],
     [
       'suite1:foo:*',
@@ -739,6 +808,7 @@ g.test('iterateCollapsed').fn(async t => {
   );
   await testIterateCollapsed(
     t,
+    1,
     ['suite1:foo:*', 'suite1:baz:wye:'],
     [
       'suite1:foo:*',
@@ -748,19 +818,65 @@ g.test('iterateCollapsed').fn(async t => {
       'suite1:baz:zed,*',
     ]
   );
+  await testIterateCollapsed(
+    t,
+    2,
+    ['suite1:baz:wye:'],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:',
+      'suite1:baz:wye:x=1;*',
+      'suite1:baz:zed:*',
+    ]
+  );
+  await testIterateCollapsed(
+    t,
+    2,
+    ['suite1:baz:wye:x=1'],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:',
+      'suite1:baz:wye:x=1',
+      'suite1:baz:zed:*',
+    ]
+  );
+  await testIterateCollapsed(
+    t,
+    2,
+    ['suite1:foo:hello:*', 'suite1:baz:wye:'],
+    [
+      'suite1:foo:hello:*',
+      'suite1:foo:bonjour:*',
+      'suite1:foo:hola:*',
+      'suite1:bar,buzz,buzz:zap:*',
+      'suite1:baz:wye:',
+      'suite1:baz:wye:x=1;*',
+      'suite1:baz:zed:*',
+    ]
+  );
 
   // Invalid expectation queries
-  await testIterateCollapsed(t, ['garbage'], 'throws');
-  await testIterateCollapsed(t, ['garbage*'], 'throws');
-  await testIterateCollapsed(t, ['suite1*'], 'throws');
-  await testIterateCollapsed(t, ['suite1:foo*'], 'throws');
-  await testIterateCollapsed(t, ['suite1:foo:he*'], 'throws');
+  await testIterateCollapsed(t, 1, ['*'], 'throws');
+  await testIterateCollapsed(t, 1, ['garbage'], 'throws');
+  await testIterateCollapsed(t, 1, ['garbage*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:foo*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:foo:he*'], 'throws');
 
   // Valid expectation queries but they don't match anything
-  await testIterateCollapsed(t, ['garbage:*'], 'throws');
-  await testIterateCollapsed(t, ['suite1:doesntexist:*'], 'throws');
-  await testIterateCollapsed(t, ['suite2:foo:*'], 'throws');
-  // Can't expand subqueries bigger than one suite.
-  await testIterateCollapsed(t, ['suite1:*'], 'throws');
-  await testIterateCollapsed(t, ['suite1:bar,*'], 'throws');
+  await testIterateCollapsed(t, 1, ['garbage:*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:doesntexist:*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite2:foo:*'], 'throws');
+  // Can't expand subqueries bigger than one file.
+  await testIterateCollapsed(t, 1, ['suite1:*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:bar,*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:bar:hello,*'], 'throws');
+  await testIterateCollapsed(t, 1, ['suite1:baz,*'], 'throws');
 });

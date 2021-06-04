@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">ଆରମ୍ଭ କରିବା ପାଇଁ ଆପଣଙ୍କ ଡକ୍ୟୁମେଣ୍ଟକୁ ସ୍କାନରରେ ରଖି 'ସ୍କାନ୍ କରନ୍ତୁ'କୁ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="2872961005593481000">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> ସେକେଣ୍ଡରେ <ph name="RATE" /> ଡିସଚାର୍ଜ ହୋଇଛି।</translation>
+<translation id="2983662233540284543">ଜଣେ ଗେମ୍ କ୍ରିଏଟରଙ୍କ ଠାରୁ ଶିଖନ୍ତୁ, ଗେମ୍ ଡିଜାଇନ୍ କରିବାର ଆପଗୁଡ଼ିକୁ ପାଆନ୍ତୁ ଏବଂ ଆହୁରି ଅନେକ କିଛି କରନ୍ତୁ</translation>
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">ପ୍ରମାଣିକରଣ</translation>
 <translation id="5154917547274118687">ମେମୋରୀ</translation>
 <translation id="5168185087976003268">ବ୍ୟାଟେରୀ ହେଲ୍ଥ</translation>
+<translation id="5170568018924773124">ଫୋଲ୍ଡରରେ ଦେଖାନ୍ତୁ</translation>
+<translation id="519607504553633437">ଆପଣଙ୍କ ନିଜର ଗେମଗୁଡ଼ିକୁ ଡିଜାଇନ୍ କରି ତିଆରି କରନ୍ତୁ</translation>
 <translation id="5212543919916444558">ଆପଣଙ୍କର ସ୍କ୍ରିନ୍‌ରେ ମୁଁ କିଛି ଖୋଜିପାଇଲି ନାହିଁ ଯାହାଦ୍ୱାରା ମୁଁ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବି।
 ମୋତେ ଯାହା କିଛି ପଚାରିବା ପାଇଁ ମାଇକ୍‌ ଟାପ୍‌ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="5222676887888702881">ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ</translation>
@@ -201,6 +204,7 @@
 <translation id="5275828089655680674">ରୁଟିନଗୁଡ଼ିକୁ ପୁଣି ଚଲାନ୍ତୁ</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">ସଂସ୍କରଣ <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">ୱିଣ୍ଡୋକୁ ଡେସ୍କ ସବମେନୁକୁ ମୁଭ୍ କରନ୍ତୁ</translation>
 <translation id="5315873049536339193">ପରିଚୟ</translation>
 <translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
 <translation id="5318334351163689047">TCP ଅନୁରୋଧ ବିଫଳ</translation>
@@ -222,6 +226,7 @@
 <translation id="5669267381087807207">ସକ୍ରିୟ ହେଉଛି</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">ଫ୍ୟାମିଲି</translation>
+<translation id="5752751666635965375">ନିଜ ଗେମ୍ ତିଆରି କରନ୍ତୁ</translation>
 <translation id="5760715441271661976">ପୋର୍ଟାଲ୍ ସ୍ଥିତି</translation>
 <translation id="5797428682393400134">ସଫଳ</translation>
 <translation id="5832805196449965646">ଲୋକଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
@@ -294,6 +299,7 @@
 <translation id="7216409898977639127">ସେଲ୍ୟୁଲାର୍ ସେବା ପ୍ରଦାତା</translation>
 <translation id="7271040990581020067">ସ୍କାନରକୁ ବର୍ତ୍ତମାନ ବ୍ୟବହାର କରାଯାଉଛି। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">ନେଟୱାର୍କ ଡିଭାଇସଗୁଡ଼ିକ</translation>
 <translation id="7359657277149375382">ଫାଇଲର ପ୍ରକାର</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@
 <translation id="8372477600026034341">ଅତିରିକ୍ତ ହୋଷ୍ଟଗୁଡ଼ିକ</translation>
 <translation id="8395584934117017006">ଏହି <ph name="DEVICE_TYPE" /> ଏଣ୍ଟରପ୍ରାଇଜ୍ ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="8398927464629426868">ଡିଭାଇସଟି ବର୍ତ୍ତମାନ ଯେଉଁ ହାରରେ ଚାର୍ଜ କିମ୍ବା ଡିସଚାର୍ଜ ହେଉଛି</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">ମୂଳ ପ୍ରଦାତା ନାମ</translation>
 <translation id="8475690821716466388">ଦୁର୍ବଳ ପ୍ରୋଟୋକଲ୍ WEP PSK ବ୍ୟବହାର କରି ୱାଇଫାଇ ନେଟୱାର୍କକୁ ସୁରକ୍ଷିତ କରାଯାଇଛି</translation>
 <translation id="8477551185774834963">DNS ଲାଟେନ୍ସି ଅନୁମୋଦିତ ସୀମା ଠାରୁ ଅଳ୍ପ ଉପରେ ଅଛି</translation>
@@ -351,6 +358,7 @@
 <translation id="8575298406870537639">ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ଏହାର ନେଟୱାର୍କ ସହ ସଂଯୋଗ କରିବାକୁ ଏହି ବିକଳ୍ପ ଆବଶ୍ୟକ କରିପାରେ। ବିବରଣୀ ପାଇଁ ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="8576249514688522074">ଆରମ୍ଭ କରାଯାଇନାହିଁ</translation>
 <translation id="8620617069779373398">ରୋମିଂ ସ୍ଥିତି</translation>
+<translation id="8660881923941176839">ପାଉଣ୍ଡ</translation>
 <translation id="8675354002693747642">ପୂର୍ବରୁ-ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>
 <translation id="871560550817059752">ବିଫଳ ହୋଇଛି - ସ୍ୟାହି ଶେଷ ହୋଇଯାଇଛି</translation>
 <translation id="8723108084122415655">ଡିଫଲ୍ଟ-ନଥିବା ନେଟୱାର୍କ ଲାଟେନ୍ସି ସୀମାର ଉପରେ ଅଛି</translation>
@@ -366,6 +374,7 @@
 <translation id="8881098542468797602">ଟେଷ୍ଟ ସଫଳ ହୋଇଛି</translation>
 <translation id="8898840733695078011">ସିଗନାଲ୍‌ ଦକ୍ଷତା</translation>
 <translation id="8910721771319628100">ଡିଫଲ୍ଟ ନେଟୱାର୍କ ଲାଟେନ୍ସି ସୀମାର ଉପରେ ଅଛି</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" />ଙ୍କ <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">ବିଫଳ ହୋଇଛି - ଟ୍ରେ ଅନୁପଲବ୍ଧ ଅଛି</translation>
 <translation id="8928727111548978589">ବିଫଳ ହୋଇଛି - କାଗଜ ଶେଷ ହୋଇଯାଇଛି</translation>
 <translation id="8930622219860340959">ୱେୟାରଲେସ୍</translation>
@@ -383,6 +392,7 @@
 <translation id="9149391708638971077">ମେମୋରୀ ଟେଷ୍ଟ ଚଲାନ୍ତୁ</translation>
 <translation id="9173638680043580060">ଗୋଟିଏ ମିନିଟରୁ କମ୍ ସମୟ ବାକି ଅଛି</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ପୂର୍ବରୁ-ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>
+<translation id="9211490828691860325">ସମସ୍ତ ଡେସ୍କ</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">ସକ୍ରିୟ ହୋ‍ଇନାହିଁ</translation>
 <translation id="960719561871045870">ଅପରେଟର୍ କୋଡ୍</translation>

@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/data_model/address.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -17,6 +18,18 @@
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
 namespace autofill {
+
+struct ProfileValueDifference {
+  // The type of the field that is different.
+  ServerFieldType type;
+  // The original value.
+  std::u16string first_value;
+  // The new value.
+  std::u16string second_value;
+  bool operator==(const ProfileValueDifference& right) const;
+};
+
+ServerFieldTypeSet GetUserVisibleTypes();
 
 // A utility class to assist in the comparison of AutofillProfile data.
 class AutofillProfileComparator {
@@ -45,9 +58,9 @@ class AutofillProfileComparator {
                WhitespaceSpec whitespace_spec = DISCARD_WHITESPACE) const;
 
   // Returns the first merge candidate from |existing_profiles| for
-  // |new_profile| as an optional. If no merge candidate exists |base::nullopt|
+  // |new_profile| as an optional. If no merge candidate exists |absl::nullopt|
   // is returned.
-  static base::Optional<AutofillProfile> GetAutofillProfileMergeCandidate(
+  static absl::optional<AutofillProfile> GetAutofillProfileMergeCandidate(
       const AutofillProfile& new_profile,
       const std::vector<AutofillProfile*>& existing_profiles,
       const std::string& app_locale);
@@ -68,6 +81,40 @@ class AutofillProfileComparator {
   // Returns true if |text| is empty or contains only skippable characters. A
   // character is skippable if it is punctuation or white space.
   bool HasOnlySkippableCharacters(base::StringPiece16 text) const;
+
+  // Get the difference in 'types' of two profiles. The difference is determined
+  // with respect to the provided `app_locale`.
+  static std::vector<ProfileValueDifference> GetProfileDifference(
+      const AutofillProfile& first_profile,
+      const AutofillProfile& second_profile,
+      ServerFieldTypeSet types,
+      const std::string& app_locale);
+
+  // Same as `GetProfileDifference()` but returns a map that maps the type to a
+  // pair of strings that contain the corresponding value from the first and
+  // second profile.
+  static base::flat_map<ServerFieldType,
+                        std::pair<std::u16string, std::u16string>>
+  GetProfileDifferenceMap(const AutofillProfile& first_profile,
+                          const AutofillProfile& second_profile,
+                          ServerFieldTypeSet types,
+                          const std::string& app_locale);
+
+  // Get the difference of two profiles for settings-visible values.
+  // The difference is determined with respect to the provided `app_locale`.
+  static std::vector<ProfileValueDifference>
+  GetSettingsVisibleProfileDifference(const AutofillProfile& first_profile,
+                                      const AutofillProfile& second_profile,
+                                      const std::string& app_locale);
+
+  // Same as `GetSettingsVisibleProfileDifference()` but returns a map that maps
+  // the type to a pair of strings that contain the corresponding value from the
+  // first and second profile.
+  static base::flat_map<ServerFieldType,
+                        std::pair<std::u16string, std::u16string>>
+  GetSettingsVisibleProfileDifferenceMap(const AutofillProfile& first_profile,
+                                         const AutofillProfile& second_profile,
+                                         const std::string& app_locale);
 
   // Returns a copy of |text| with uppercase converted to lowercase and
   // diacritics removed.

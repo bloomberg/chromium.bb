@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBID_WEBID_SIGNIN_PAGE_VIEW_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "chrome/browser/ui/views/webid/webid_dialog_views.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 class GURL;

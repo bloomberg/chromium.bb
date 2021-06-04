@@ -14,7 +14,6 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
 #include <memory>
 #include <string>
 
@@ -37,7 +36,6 @@
 #include "api/transport/sctp_transport_factory_interface.h"
 #include "api/transport/webrtc_key_value_config.h"
 #include "call/call.h"
-#include "media/sctp/sctp_transport_internal.h"
 #include "p2p/base/port_allocator.h"
 #include "pc/channel_manager.h"
 #include "pc/connection_context.h"
@@ -66,16 +64,6 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
       PeerConnectionFactoryDependencies dependencies);
 
   void SetOptions(const Options& options) override;
-
-  rtc::scoped_refptr<PeerConnectionInterface> CreatePeerConnection(
-      const PeerConnectionInterface::RTCConfiguration& configuration,
-      std::unique_ptr<cricket::PortAllocator> allocator,
-      std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
-      PeerConnectionObserver* observer) override;
-
-  rtc::scoped_refptr<PeerConnectionInterface> CreatePeerConnection(
-      const PeerConnectionInterface::RTCConfiguration& configuration,
-      PeerConnectionDependencies dependencies) override;
 
   RTCErrorOr<rtc::scoped_refptr<PeerConnectionInterface>>
   CreatePeerConnectionOrError(

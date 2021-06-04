@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">Fes lliscar dos dits cap amunt</translation>
 <translation id="1126928665165112660">Sense cursiva</translation>
 <translation id="113582498867142724"><ph name="TAG" /> col·lecció amb <ph name="NUM" /> elements</translation>
+<translation id="1146441463334103638">Commuta la pantalla a activat o desactivat</translation>
 <translation id="1156488781945104845">Hora actual</translation>
 <translation id="1161762950103988776">Salta</translation>
 <translation id="1164857107703583584">Les ordres de salt es poden utilitzar per navegar de manera eficient per una pàgina web.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">URL de l'enllaç: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Retrocedeix un caràcter</translation>
 <translation id="2220529011494928058">Informa d'un problema</translation>
+<translation id="2243633977138166243">Prem les fletxes esquerra o dreta per navegar i Retorn per activar</translation>
 <translation id="224426591676115802">No hi ha cap veu disponible en <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">S'està aturant el mode d'aprenentatge</translation>
 <translation id="225732394367814946">Augmenta la velocitat de la veu.</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">Chartreuse</translation>
 <translation id="2684412629217766642">Tanca el tutorial de ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">Candidat a la conversió de text</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{parèntesi d'obertura}other{# parèntesis d'obertura}}</translation>
+<translation id="270523456882008230">Suggeriment: fes doble toc amb un dit per activar l'element actual.</translation>
 <translation id="2705875883745373140">Sense prémer.</translation>
 <translation id="2708078563826046398">Préssec clar</translation>
 <translation id="2713444072780614174">Blanc</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{# més}other{# més}}</translation>
 <translation id="2792200646155001340">També pots fer lliscar un dit de dreta a esquerra per anar a l'element anterior. Prova-ho ara.</translation>
 <translation id="280499067616661124">Cerca a la pàgina amb ChromeVox</translation>
-<translation id="2808001342598757276">Il·lumina la pantalla</translation>
 <translation id="2811019999044652585">Per desplaçar-te a altres parts de la pantalla, com ara les barres d'eines o la safata del sistema, prem Control+Endavant. A Chromebook, la tecla Endavant es troba just a sobre de la tecla del número dos.</translation>
 <translation id="2811204574343810641">Fila</translation>
 <translation id="2816868829355607410">Zona de pràctiques: ordres de salt</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">Descripció emergent</translation>
 <translation id="2976476721782829799">També et pots moure d'un lloc a un altre arrossegant un dit per la pantalla. Aquesta acció s'anomena "Exploració tàctil". Prova d'arrossegar el dit per llegir la resta de la lliçó.</translation>
 <translation id="297825089465017871">Fes lliscar dos dits cap a l'esquerra</translation>
+<translation id="2988364959384217951">Suggeriment: fes lliscar dos dits de dreta a esquerra per sortir d'aquest tutorial.</translation>
 <translation id="2998131015536248178">Caràcter anterior</translation>
 <translation id="2999559350546931576">Disminueix la presentació.</translation>
 <translation id="3009352964623081324">Cerca+O i, després, S. Fes-ho servir per instal·lar, gestionar i personalitzar veus.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">Desplaça cap enrere</translation>
 <translation id="3084806535845658316">sense retorn d'escriptura</translation>
 <translation id="3086746722712840547">nota</translation>
+<translation id="308736057934395497">Això millora la privadesa desactivant la pantalla perquè ningú no pugui veure-la. Pots tornar a activar-la prement Cerca+Augmenta la brillantor.</translation>
 <translation id="3090227230165225418">Anuncia les notificacions de baixada</translation>
 <translation id="3090532668523289635">grup</translation>
 <translation id="3093176084511590672">Punt de referència següent</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">Reduït</translation>
 <translation id="311015743332597320">Fes lliscar quatre dits cap a la dreta</translation>
 <translation id="3112457281078985179">Per activar o desactivar ChromeVox, fes servir Control+Alt+Z.</translation>
+<translation id="3115800313647508384">Vols desactivar la pantalla?</translation>
 <translation id="3131002934070407451">Llegeix números com a:</translation>
 <translation id="3134461040845705080">només de lectura</translation>
 <translation id="3137663468179739624">Verd oliva</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">Gris clar</translation>
 <translation id="6036135911048686884">Toca per explorar</translation>
 <translation id="6037602951055904232">Desplaça cap endavant.</translation>
-<translation id="6044160928851315051">Enfosqueix la pantalla</translation>
 <translation id="6082768461603900813">Navegació bàsica</translation>
 <translation id="609281021724813947">No hi ha cap control lliscant anterior</translation>
 <translation id="6100239002225743044">Puja una línia</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">Prefaci</translation>
 <translation id="6697092096875747123">Quadre combinat anterior</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{exclamació}other{# exclamacions}}</translation>
+<translation id="670717715607710284">Desactiva la pantalla</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6714813999819678458">Capçalera del nivell 2 anterior</translation>
 <translation id="6730312624811567147">Fes servir Cerca+fletxa esquerra/dreta en comptes d'Inici/Fi; Cerca+Control+fletxa esquerra/dreta en comptes de Control+Inici/Fi, i Cerca+fletxa amunt/avall en comptes de Re/Av Pàg</translation>
@@ -939,6 +945,7 @@
 <translation id="7776293189010177726">Obre els menús de ChromeVox</translation>
 <translation id="7799302833060027366">Prem la fletxa amunt, avall, a l'esquerra o a la dreta per explorar expressions matemàtiques</translation>
 <translation id="7800558923657349506">Epíleg</translation>
+<translation id="7801768143868631306">Suggeriment: fes lliscar un dit cap a l'esquerra o cap a la dreta per navegar.</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7810781339813764006">Grup següent</translation>
 <translation id="7813616274030162878">Menú d'accés amb interruptors</translation>
@@ -992,6 +999,7 @@
 <translation id="816818801578874684">Aquest és el primer encapçalament. Prem la tecla Cerca+H per anar a l'encapçalament següent.</translation>
 <translation id="8173092779156526980">Fes lliscar quatre dits cap a l'esquerra</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
+<translation id="817529114347680055">Pantalla activada</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8184828902145951186">fila</translation>
 <translation id="8186185314313222077">activa la pantalla completa</translation>
@@ -1014,7 +1022,6 @@
 <translation id="8316881042119029234">Blanquinós</translation>
 <translation id="8324974933005349667">Personalitza la configuració de text a parla</translation>
 <translation id="8326783648485765113">Verd gespa</translation>
-<translation id="8328063869313048659">Commuta la pantalla fosca</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{lliura}other{# símbols de lliura}}</translation>
 <translation id="8378855320830505539">Regió</translation>
 <translation id="8382679411218029383">Compleció automàtica en línia i llista</translation>

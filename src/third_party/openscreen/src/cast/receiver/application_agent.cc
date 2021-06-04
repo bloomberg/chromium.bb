@@ -11,30 +11,13 @@
 #include "cast/common/public/cast_socket.h"
 #include "platform/base/tls_credentials.h"
 #include "platform/base/tls_listen_options.h"
+#include "util/json/json_helpers.h"
 #include "util/json/json_serialization.h"
 #include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {
 namespace {
-
-// Parses the given string as a JSON object. If the parse fails, an empty object
-// is returned.
-Json::Value ParseAsObject(absl::string_view value) {
-  ErrorOr<Json::Value> parsed = json::Parse(value);
-  if (parsed.is_value() && parsed.value().isObject()) {
-    return std::move(parsed.value());
-  }
-  return Json::Value(Json::objectValue);
-}
-
-// Returns true if the type field in |object| is set to the given |type|.
-bool HasType(const Json::Value& object, CastMessageType type) {
-  OSP_DCHECK(object.isObject());
-  const Json::Value& value =
-      object.get(kMessageKeyType, Json::Value::nullSingleton());
-  return value.isString() && value.asString() == CastMessageTypeToString(type);
-}
 
 // Returns the first app ID for the given |app|, or the empty string if there is
 // none.
@@ -142,25 +125,29 @@ void ApplicationAgent::OnMessage(VirtualConnectionRouter* router,
     return;
   }
 
-  const Json::Value request = ParseAsObject(message.payload_utf8());
+  const ErrorOr<Json::Value> request = json::Parse(message.payload_utf8());
+  if (request.is_error() || request.value().type() != Json::objectValue) {
+    return;
+  }
+
   Json::Value response;
   if (ns == kHeartbeatNamespace) {
-    if (HasType(request, CastMessageType::kPing)) {
+    if (HasType(request.value(), CastMessageType::kPing)) {
       response = HandlePing();
     }
   } else if (ns == kReceiverNamespace) {
-    if (request[kMessageKeyRequestId].isNull()) {
-      response = HandleInvalidCommand(request);
-    } else if (HasType(request, CastMessageType::kGetAppAvailability)) {
-      response = HandleGetAppAvailability(request);
-    } else if (HasType(request, CastMessageType::kGetStatus)) {
-      response = HandleGetStatus(request);
-    } else if (HasType(request, CastMessageType::kLaunch)) {
-      response = HandleLaunch(request, socket);
-    } else if (HasType(request, CastMessageType::kStop)) {
-      response = HandleStop(request);
+    if (request.value()[kMessageKeyRequestId].isNull()) {
+      response = HandleInvalidCommand(request.value());
+    } else if (HasType(request.value(), CastMessageType::kGetAppAvailability)) {
+      response = HandleGetAppAvailability(request.value());
+    } else if (HasType(request.value(), CastMessageType::kGetStatus)) {
+      response = HandleGetStatus(request.value());
+    } else if (HasType(request.value(), CastMessageType::kLaunch)) {
+      response = HandleLaunch(request.value(), socket);
+    } else if (HasType(request.value(), CastMessageType::kStop)) {
+      response = HandleStop(request.value());
     } else {
-      response = HandleInvalidCommand(request);
+      response = HandleInvalidCommand(request.value());
     }
   } else {
     // Ignore messages for all other namespaces.

@@ -10,25 +10,12 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 
 namespace content {
-
-namespace {
-
-PrerenderHost* FindPrerenderHost(NavigationHandle* navigation_handle) {
-  auto* navigation_request = NavigationRequest::From(navigation_handle);
-  FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
-  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-      frame_tree_node->current_frame_host()->GetStoragePartition());
-  return storage_partition_impl->GetPrerenderHostRegistry()->FindHostById(
-      frame_tree_node->frame_tree()->GetMainFrame()->GetFrameTreeNodeId());
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<PrerenderSubframeNavigationThrottle>
@@ -72,7 +59,11 @@ void PrerenderSubframeNavigationThrottle::OnActivated() {
               ->frame_tree_node()
               ->frame_tree()
               ->is_prerendering());
-  Resume();
+  if (is_deferred_) {
+    is_deferred_ = false;
+    // May delete `this`.
+    Resume();
+  }
 }
 
 void PrerenderSubframeNavigationThrottle::OnHostDestroyed() {
@@ -99,13 +90,25 @@ PrerenderSubframeNavigationThrottle::WillStartOrRedirectRequest() {
     return NavigationThrottle::PROCEED;
   }
 
-  // Defer remained cross-origin subframe navigations during prerendering.
-  // Will resume the navigation on the activation.
-  PrerenderHost* prerender_host = FindPrerenderHost(navigation_handle());
+  // Look up the PrerenderHost.
+  PrerenderHostRegistry* registry = frame_tree_node->current_frame_host()
+                                        ->delegate()
+                                        ->GetPrerenderHostRegistry();
+  int id = frame_tree_node->frame_tree()->GetMainFrame()->GetFrameTreeNodeId();
+  PrerenderHost* prerender_host = registry->FindNonReservedHostById(id);
+  if (!prerender_host) {
+    // The host might be reserved already for activation. In either case, we
+    // defer until activation for simplicity.
+    prerender_host = registry->FindReservedHostById(id);
+  }
   DCHECK(prerender_host);
+
+  // Defer cross-origin subframe navigations during prerendering.
+  // Will resume the navigation upon activation.
   if (!observation_.IsObserving())
     observation_.Observe(prerender_host);
   DCHECK(observation_.IsObservingSource(prerender_host));
+  is_deferred_ = true;
   return NavigationThrottle::DEFER;
 }
 

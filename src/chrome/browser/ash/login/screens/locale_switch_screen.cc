@@ -20,8 +20,7 @@
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr base::TimeDelta kLocaleWaitTimeout = base::TimeDelta::FromSeconds(5);
@@ -113,7 +112,7 @@ void LocaleSwitchScreen::ShowImpl() {
   identity_manager_observer_.Observe(identity_manager);
 
   gaia_id_ = user->GetAccountId().GetGaiaId();
-  base::Optional<AccountInfo> maybe_account_info =
+  absl::optional<AccountInfo> maybe_account_info =
       identity_manager
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id_);
   if (!maybe_account_info.has_value() || maybe_account_info->locale.empty()) {
@@ -198,4 +197,4 @@ void LocaleSwitchScreen::OnTimeout() {
   exit_callback_.Run(Result::LOCALE_FETCH_TIMEOUT);
 }
 
-}  // namespace chromeos
+}  // namespace ash

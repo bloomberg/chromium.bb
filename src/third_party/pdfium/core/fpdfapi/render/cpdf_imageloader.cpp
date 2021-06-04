@@ -21,7 +21,7 @@ CPDF_ImageLoader::CPDF_ImageLoader() = default;
 
 CPDF_ImageLoader::~CPDF_ImageLoader() = default;
 
-bool CPDF_ImageLoader::Start(CPDF_ImageObject* pImage,
+bool CPDF_ImageLoader::Start(const CPDF_ImageObject* pImage,
                              const CPDF_RenderStatus* pRenderStatus,
                              bool bStdCS) {
   m_pCache = pRenderStatus->GetContext()->GetPageCache();
@@ -67,12 +67,12 @@ void CPDF_ImageLoader::HandleFailure() {
     m_bCached = true;
     m_pBitmap = entry->DetachBitmap();
     m_pMask = entry->DetachMask();
-    m_MatteColor = entry->m_MatteColor;
+    m_MatteColor = entry->GetMatteColor();
     return;
   }
   RetainPtr<CPDF_Image> pImage = m_pImageObject->GetImage();
   m_bCached = false;
   m_pBitmap = pImage->DetachBitmap();
   m_pMask = pImage->DetachMask();
-  m_MatteColor = pImage->m_MatteColor;
+  m_MatteColor = pImage->GetMatteColor();
 }

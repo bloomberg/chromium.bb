@@ -26,7 +26,6 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -117,7 +116,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
-#include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -704,10 +702,6 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   if (!container_ || view_data_.rect.size.width == 0 ||
       view_data_.rect.size.height == 0)
     return;  // Nothing to do.
-  if (rect.IsEmpty())
-    container_->Invalidate();
-  else
-    container_->InvalidateRect(rect);
 
   if (texture_layer_) {
     if (rect.IsEmpty()) {
@@ -715,6 +709,8 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
     } else {
       texture_layer_->SetNeedsDisplayRect(rect);
     }
+  } else {
+    container_->Invalidate();
   }
 }
 
@@ -746,11 +742,10 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
   if (committed_texture_.mailbox_holder.mailbox.IsZero())
     return;
 
-  std::unique_ptr<viz::SingleReleaseCallback> callback(
-      viz::SingleReleaseCallback::Create(base::BindOnce(
-          &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
-          weak_factory_.GetWeakPtr(), committed_texture_,
-          committed_texture_graphics_3d_)));
+  viz::ReleaseCallback callback(base::BindOnce(
+      &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
+      weak_factory_.GetWeakPtr(), committed_texture_,
+      committed_texture_graphics_3d_));
 
   IncrementTextureReferenceCount(committed_texture_);
   texture_layer_->SetTransferableResource(committed_texture_,
@@ -1432,25 +1427,7 @@ void PepperPluginInstanceImpl::SelectAll() {
   if (!LoadPdfInterface())
     return;
 
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-
-  // TODO(https://crbug.com/836074) |kPlatformModifier| should be
-  // |ui::EF_PLATFORM_ACCELERATOR| (|ui::EF_COMMAND_DOWN| on Mac).
-  static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
-  // Synthesize a ctrl + a key event to send to the plugin and let it sort out
-  // the event. See also https://crbug.com/739529.
-  ui::KeyEvent char_event(L'A', ui::VKEY_A, ui::DomCode::NONE,
-                          kPlatformModifier);
-
-  // Also synthesize a key up event to look more like a real key press.
-  // Otherwise the plugin will not do all the required work to keep the renderer
-  // in sync.
-  ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED, ui::VKEY_A, kPlatformModifier);
-
-  ui::Cursor dummy_cursor_info;
-  HandleInputEvent(MakeWebKeyboardEvent(char_event), &dummy_cursor_info);
-  HandleInputEvent(MakeWebKeyboardEvent(keyup_event), &dummy_cursor_info);
+  plugin_pdf_interface_->SelectAll(pp_instance());
 }
 
 bool PepperPluginInstanceImpl::CanUndo() {
@@ -1997,7 +1974,7 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
     return false;
 
   if (fullscreen) {
-    if (!render_frame_->render_view()
+    if (!render_frame_->GetWebView()
              ->GetRendererPreferences()
              .plugin_fullscreen_allowed) {
       return false;
@@ -2079,7 +2056,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 bool PepperPluginInstanceImpl::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* transferable_resource,
-    std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
+    viz::ReleaseCallback* release_callback) {
   if (!bound_graphics_2d_platform_)
     return false;
   return bound_graphics_2d_platform_->PrepareTransferableResource(

@@ -107,7 +107,6 @@ ScrollableArea::ScrollableArea(
       scrollbar_captured_(false),
       mouse_over_scrollbar_(false),
       has_been_disposed_(false),
-      needs_show_scrollbar_layers_(false),
       uses_composited_scrolling_(false),
       compositor_task_runner_(std::move(compositor_task_runner)) {
   DCHECK(compositor_task_runner_);
@@ -409,9 +408,9 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
   // If the scrollbar does not have its own layer, it must always be
   // invalidated to reflect the new thumb offset, even if the theme did not
   // invalidate any individual part.
-  if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar())
+  if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
     horizontal_scrollbar->OffsetDidChange(scroll_type);
-  if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar())
+  if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
     vertical_scrollbar->OffsetDidChange(scroll_type);
 
   ScrollOffset delta = GetScrollOffset() - old_offset;
@@ -608,14 +607,21 @@ void ScrollableArea::RecalculateScrollbarOverlayColorTheme(
 
 void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
     ScrollbarOrientation orientation) {
-  if (orientation == kHorizontalScrollbar) {
-    if (cc::Layer* layer = LayerForHorizontalScrollbar())
-      layer->SetNeedsDisplay();
+  if (orientation == kHorizontalScrollbar)
     horizontal_scrollbar_needs_paint_invalidation_ = true;
-  } else {
-    if (cc::Layer* layer = LayerForVerticalScrollbar())
-      layer->SetNeedsDisplay();
+  else
     vertical_scrollbar_needs_paint_invalidation_ = true;
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    auto* frame_view = GetLayoutBox()->GetFrameView();
+    if (auto* compositor = frame_view->GetPaintArtifactCompositor())
+      compositor->SetScrollbarNeedsDisplay(GetScrollbarElementId(orientation));
+  } else {
+    cc::Layer* layer = orientation == kHorizontalScrollbar
+                           ? LayerForHorizontalScrollbar()
+                           : LayerForVerticalScrollbar();
+    if (layer)
+      layer->SetNeedsDisplay();
   }
 
   ScrollControlWasSetNeedsPaintInvalidation();
@@ -751,7 +757,6 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
     return;
 
   SetScrollbarsHiddenIfOverlay(false);
-  needs_show_scrollbar_layers_ = true;
 
   const base::TimeDelta time_until_disable =
       GetPageScrollbarTheme().OverlayScrollbarFadeOutDelay() +
@@ -976,7 +981,7 @@ bool ScrollableArea::PerformSnapping(
     const cc::SnapSelectionStrategy& strategy,
     mojom::blink::ScrollBehavior scroll_behavior,
     base::ScopedClosureRunner on_finish) {
-  base::Optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
+  absl::optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
   if (!snap_point)
     return false;
   CancelScrollAnimation();

@@ -14,6 +14,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_animations.h"
 #include "base/barrier_closure.h"
+#include "base/containers/contains.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -266,7 +267,7 @@ void GetContainersInRootWindow(int container_mask,
     };
     if (non_lock_screen_containers) {
       for (aura::Window* window : non_lock_screen_containers->children()) {
-        if ((base::Contains(ContainersToAnimate, window->id()) ||
+        if ((base::Contains(ContainersToAnimate, window->GetId()) ||
              desks_util::IsActiveDeskContainer(window))) {
           containers->push_back(window);
         }
@@ -331,7 +332,7 @@ class SessionStateAnimatorImpl::AnimationSequence
       public ui::LayerAnimationObserver {
  public:
   explicit AnimationSequence(SessionStateAnimatorImpl* animator,
-                             base::OnceClosure callback)
+                             AnimationCallback callback)
       : SessionStateAnimator::AnimationSequence(std::move(callback)),
         animator_(animator),
         sequences_attached_(0),
@@ -449,7 +450,7 @@ void SessionStateAnimatorImpl::StartAnimationWithCallback(
 }
 
 SessionStateAnimator::AnimationSequence*
-SessionStateAnimatorImpl::BeginAnimationSequence(base::OnceClosure callback) {
+SessionStateAnimatorImpl::BeginAnimationSequence(AnimationCallback callback) {
   return new AnimationSequence(this, std::move(callback));
 }
 

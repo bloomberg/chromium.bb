@@ -193,7 +193,7 @@ std::string CommandBufferAccessContext::FormatUsage(const HazardResult &hazard) 
     }
 
     // PHASE2 TODO -- add comand buffer and reset from secondary if applicable
-    out << ", " << string_UsageTag(tag) << ", reset_no: " << reset_count_;
+    out << ", " << string_UsageTag(tag) << ", reset_no: " << reset_count_ << ")";
     return out.str();
 }
 
@@ -516,10 +516,8 @@ static void ApplyOverImageRange(const IMAGE_STATE &image_state, const VkImageSub
 //
 // The signature for Action() reflect the needs of both uses.
 template <typename Action>
-void ResolveOperation(Action &action, const RENDER_PASS_STATE &rp_state, const VkRect2D &render_area,
-                      const std::vector<const IMAGE_VIEW_STATE *> &attachment_views, uint32_t subpass) {
-    VkExtent3D extent = CastTo3D(render_area.extent);
-    VkOffset3D offset = CastTo3D(render_area.offset);
+void ResolveOperation(Action &action, const RENDER_PASS_STATE &rp_state, const AttachmentViewGenVector &attachment_views,
+                      uint32_t subpass) {
     const auto &rp_ci = rp_state.createInfo;
     const auto *attachment_ci = rp_ci.pAttachments;
     const auto &subpass_ci = rp_ci.pSubpasses[subpass];
@@ -533,9 +531,11 @@ void ResolveOperation(Action &action, const RENDER_PASS_STATE &rp_state, const V
             const auto &resolve_attach = subpass_ci.pResolveAttachments[i].attachment;
             if ((color_attach != VK_ATTACHMENT_UNUSED) && (resolve_attach != VK_ATTACHMENT_UNUSED)) {
                 action("color", "resolve read", color_attach, resolve_attach, attachment_views[color_attach],
-                       SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ, SyncOrdering::kColorAttachment, offset, extent, 0);
+                       AttachmentViewGen::Gen::kRenderArea, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ,
+                       SyncOrdering::kColorAttachment);
                 action("color", "resolve write", color_attach, resolve_attach, attachment_views[resolve_attach],
-                       SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kColorAttachment, offset, extent, 0);
+                       AttachmentViewGen::Gen::kRenderArea, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE,
+                       SyncOrdering::kColorAttachment);
             }
         }
     }
@@ -551,29 +551,27 @@ void ResolveOperation(Action &action, const RENDER_PASS_STATE &rp_state, const V
         const bool resolve_depth = (ds_resolve->depthResolveMode != VK_RESOLVE_MODE_NONE) && FormatHasDepth(src_ci.format);
         const bool resolve_stencil = (ds_resolve->stencilResolveMode != VK_RESOLVE_MODE_NONE) && FormatHasStencil(src_ci.format);
         const auto dst_at = ds_resolve->pDepthStencilResolveAttachment->attachment;
-        VkImageAspectFlags aspect_mask = 0u;
 
         // Figure out which aspects are actually touched during resolve operations
         const char *aspect_string = nullptr;
+        AttachmentViewGen::Gen gen_type = AttachmentViewGen::Gen::kRenderArea;
         if (resolve_depth && resolve_stencil) {
-            // Validate all aspects together
-            aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
             aspect_string = "depth/stencil";
         } else if (resolve_depth) {
             // Validate depth only
-            aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            gen_type = AttachmentViewGen::Gen::kDepthOnlyRenderArea;
             aspect_string = "depth";
         } else if (resolve_stencil) {
             // Validate all stencil only
-            aspect_mask = VK_IMAGE_ASPECT_STENCIL_BIT;
+            gen_type = AttachmentViewGen::Gen::kStencilOnlyRenderArea;
             aspect_string = "stencil";
         }
 
-        if (aspect_mask) {
-            action(aspect_string, "resolve read", src_at, dst_at, attachment_views[src_at],
-                   SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ, SyncOrdering::kRaster, offset, extent, aspect_mask);
-            action(aspect_string, "resolve write", src_at, dst_at, attachment_views[dst_at],
-                   SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster, offset, extent, aspect_mask);
+        if (aspect_string) {
+            action(aspect_string, "resolve read", src_at, dst_at, attachment_views[src_at], gen_type,
+                   SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_READ, SyncOrdering::kRaster);
+            action(aspect_string, "resolve write", src_at, dst_at, attachment_views[dst_at], gen_type,
+                   SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster);
         }
     }
 }
@@ -590,10 +588,10 @@ class ValidateResolveAction {
           func_name_(func_name),
           skip_(false) {}
     void operator()(const char *aspect_name, const char *attachment_name, uint32_t src_at, uint32_t dst_at,
-                    const IMAGE_VIEW_STATE *view, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
-                    const VkOffset3D &offset, const VkExtent3D &extent, VkImageAspectFlags aspect_mask) {
+                    const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type, SyncStageAccessIndex current_usage,
+                    SyncOrdering ordering_rule) {
         HazardResult hazard;
-        hazard = context_.DetectHazard(view, current_usage, ordering_rule, offset, extent, aspect_mask);
+        hazard = context_.DetectHazard(view_gen, gen_type, current_usage, ordering_rule);
         if (hazard.hazard) {
             skip_ |=
                 ex_context_.GetSyncState().LogError(render_pass_, string_SyncHazardVUID(hazard.hazard),
@@ -619,11 +617,10 @@ class ValidateResolveAction {
 class UpdateStateResolveAction {
   public:
     UpdateStateResolveAction(AccessContext &context, const ResourceUsageTag &tag) : context_(context), tag_(tag) {}
-    void operator()(const char *aspect_name, const char *attachment_name, uint32_t src_at, uint32_t dst_at,
-                    const IMAGE_VIEW_STATE *view, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
-                    const VkOffset3D &offset, const VkExtent3D &extent, VkImageAspectFlags aspect_mask) {
+    void operator()(const char *, const char *, uint32_t, uint32_t, const AttachmentViewGen &view_gen,
+                    AttachmentViewGen::Gen gen_type, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule) {
         // Ignores validation only arguments...
-        context_.UpdateAccessState(view, current_usage, ordering_rule, offset, extent, aspect_mask, tag_);
+        context_.UpdateAccessState(view_gen, gen_type, current_usage, ordering_rule, tag_);
     }
 
   private:
@@ -645,7 +642,8 @@ AccessContext::AccessContext(uint32_t subpass, VkQueueFlags queue_flags,
                              const std::vector<AccessContext> &contexts, const AccessContext *external_context) {
     Reset();
     const auto &subpass_dep = dependencies[subpass];
-    prev_.reserve(subpass_dep.prev.size());
+    bool has_barrier_from_external = subpass_dep.barrier_from_external.size() > 0U;
+    prev_.reserve(subpass_dep.prev.size() + (has_barrier_from_external ? 1U : 0U));
     prev_by_subpass_.resize(subpass, nullptr);  // Can't be more prevs than the subpass we're on
     for (const auto &prev_dep : subpass_dep.prev) {
         const auto prev_pass = prev_dep.first->pass;
@@ -659,8 +657,10 @@ AccessContext::AccessContext(uint32_t subpass, VkQueueFlags queue_flags,
     for (const auto async_subpass : subpass_dep.async) {
         async_.emplace_back(&contexts[async_subpass]);
     }
-    if (subpass_dep.barrier_from_external.size()) {
-        src_external_ = TrackBack(external_context, queue_flags, subpass_dep.barrier_from_external);
+    if (has_barrier_from_external) {
+        // Store the barrier from external with the reat, but save pointer for "by subpass" lookups.
+        prev_.emplace_back(external_context, queue_flags, subpass_dep.barrier_from_external);
+        src_external_ = &prev_.back();
     }
     if (subpass_dep.barrier_to_external.size()) {
         dst_external_ = TrackBack(this, queue_flags, subpass_dep.barrier_to_external);
@@ -709,11 +709,11 @@ HazardResult AccessContext::DetectHazard(AccessAddressType type, const Detector 
     const bool detect_prev = (static_cast<uint32_t>(options) & DetectOptions::kDetectPrevious) != 0;
 
     const auto &accesses = GetAccessStateMap(type);
-    const auto from = accesses.lower_bound(range);
-    const auto to = accesses.upper_bound(range);
+    const auto the_end = accesses.cend();  // End is not invalidated
+    auto pos = accesses.lower_bound(range);
     ResourceAccessRange gap = {range.begin, range.begin};
 
-    for (auto pos = from; pos != to; ++pos) {
+    while (pos != the_end && pos->first.begin < range.end) {
         // Cover any leading gap, or gap between entries
         if (detect_prev) {
             // TODO: After profiling we may want to change the descent logic such that we don't recur per gap...
@@ -730,6 +730,7 @@ HazardResult AccessContext::DetectHazard(AccessAddressType type, const Detector 
 
         hazard = detector.Detect(pos);
         if (hazard.hazard) return hazard;
+        ++pos;
     }
 
     if (detect_prev) {
@@ -748,12 +749,14 @@ template <typename Detector>
 HazardResult AccessContext::DetectAsyncHazard(AccessAddressType type, const Detector &detector,
                                               const ResourceAccessRange &range) const {
     auto &accesses = GetAccessStateMap(type);
-    const auto from = accesses.lower_bound(range);
-    const auto to = accesses.upper_bound(range);
+    auto pos = accesses.lower_bound(range);
+    const auto the_end = accesses.end();
 
     HazardResult hazard;
-    for (auto pos = from; pos != to && !hazard.hazard; ++pos) {
+    while (pos != the_end && pos->first.begin < range.end) {
         hazard = detector.DetectAsync(pos, start_tag_);
+        if (hazard.hazard) break;
+        ++pos;
     }
 
     return hazard;
@@ -768,15 +771,22 @@ struct ApplySubpassTransitionBarriersAction {
     const std::vector<SyncBarrier> &barriers;
 };
 
-struct ApplyTrackbackBarriersAction {
-    explicit ApplyTrackbackBarriersAction(const std::vector<SyncBarrier> &barriers_) : barriers(barriers_) {}
+struct ApplyTrackbackStackAction {
+    explicit ApplyTrackbackStackAction(const std::vector<SyncBarrier> &barriers_,
+                                       const ResourceAccessStateFunction *previous_barrier_ = nullptr)
+        : barriers(barriers_), previous_barrier(previous_barrier_) {}
     void operator()(ResourceAccessState *access) const {
         assert(access);
         assert(!access->HasPendingState());
         access->ApplyBarriers(barriers, false);
         access->ApplyPendingBarriers(kCurrentCommandTag);
+        if (previous_barrier) {
+            assert(bool(*previous_barrier));
+            (*previous_barrier)(access);
+        }
     }
     const std::vector<SyncBarrier> &barriers;
+    const ResourceAccessStateFunction *previous_barrier;
 };
 
 // Splits a single map entry into piece matching the entries in [first, last) the total range over [first, last) must be
@@ -835,26 +845,26 @@ void AccessContext::ResolveAccessRange(AccessAddressType type, const ResourceAcc
         } else {
             // we have to descend to fill this gap
             if (recur_to_infill) {
-                if (current->pos_A->valid) {
-                    // Dest is valid, so we need to accumulate along the DAG and then resolve... in an N-to-1 resolve operation
-                    ResourceAccessRangeMap gap_map;
-                    ResolvePreviousAccess(type, current_range, &gap_map, infill_state);
-                    ResolveMapToEntry(resolve_map, current->pos_A->lower_bound, gap_map.begin(), gap_map.end(), barrier_action);
+                ResourceAccessRange recurrence_range = current_range;
+                // The current context is empty for the current range, so recur to fill the gap.
+                // Since we will be recurring back up the DAG, expand the gap descent to cover the full range for which B
+                // is not valid, to minimize that recurrence
+                if (current->pos_B.at_end()) {
+                    // Do the remainder here....
+                    recurrence_range.end = range.end;
                 } else {
-                    // There isn't anything in dest in current)range, so we can accumulate directly into it.
-                    ResolvePreviousAccess(type, current_range, resolve_map, infill_state);
-                    // Need to apply the barrier to the accesses we accumulated, noting that we haven't updated current
-                    for (auto pos = resolve_map->lower_bound(current_range); pos != current->pos_A->lower_bound; ++pos) {
-                        barrier_action(&pos->second);
-                    }
+                    // Recur only over the range until B becomes valid (within the limits of range).
+                    recurrence_range.end = std::min(range.end, current->pos_B->lower_bound->first.begin);
                 }
+                ResolvePreviousAccessStack(type, recurrence_range, resolve_map, infill_state, barrier_action);
+
                 // Given that there could be gaps we need to seek carefully to not repeatedly search the same gaps in the next
                 // iterator of the outer while.
 
                 // Set the parallel iterator to the end of this range s.t. ++ will move us to the next range whether or
                 // not the end of the range is a gap.  For the seek to work, first we need to warn the parallel iterator
                 // we stepped on the dest map
-                const auto seek_to = current_range.end - 1;  // The subtraction is safe as range can't be empty (loop condition)
+                const auto seek_to = recurrence_range.end - 1;  // The subtraction is safe as range can't be empty (loop condition)
                 current.invalidate_A();                      // Changes current->range
                 current.seek(seek_to);
             } else if (!current->pos_A->valid && infill_state) {
@@ -869,32 +879,39 @@ void AccessContext::ResolveAccessRange(AccessAddressType type, const ResourceAcc
     // Infill if range goes passed both the current and resolve map prior contents
     if (recur_to_infill && (current->range.end < range.end)) {
         ResourceAccessRange trailing_fill_range = {current->range.end, range.end};
-        ResourceAccessRangeMap gap_map;
-        const auto the_end = resolve_map->end();
-        ResolvePreviousAccess(type, trailing_fill_range, &gap_map, infill_state);
-        for (auto &access : gap_map) {
-            barrier_action(&access.second);
-            resolve_map->insert(the_end, access);
-        }
+        ResolvePreviousAccessStack<BarrierAction>(type, trailing_fill_range, resolve_map, infill_state, barrier_action);
     }
 }
 
+template <typename BarrierAction>
+void AccessContext::ResolvePreviousAccessStack(AccessAddressType type, const ResourceAccessRange &range,
+                                               ResourceAccessRangeMap *descent_map, const ResourceAccessState *infill_state,
+                                               const BarrierAction &previous_barrier) const {
+    ResourceAccessStateFunction stacked_barrier(std::ref(previous_barrier));
+    ResolvePreviousAccess(type, range, descent_map, infill_state, &stacked_barrier);
+}
+
 void AccessContext::ResolvePreviousAccess(AccessAddressType type, const ResourceAccessRange &range,
-                                          ResourceAccessRangeMap *descent_map, const ResourceAccessState *infill_state) const {
-    if ((prev_.size() == 0) && (src_external_.context == nullptr)) {
+                                          ResourceAccessRangeMap *descent_map, const ResourceAccessState *infill_state,
+                                          const ResourceAccessStateFunction *previous_barrier) const {
+    if (prev_.size() == 0) {
         if (range.non_empty() && infill_state) {
-            descent_map->insert(std::make_pair(range, *infill_state));
+            // Fill the empty poritions of descent_map with the default_state with the barrier function applied (iff present)
+            ResourceAccessState state_copy;
+            if (previous_barrier) {
+                assert(bool(*previous_barrier));
+                state_copy = *infill_state;
+                (*previous_barrier)(&state_copy);
+                infill_state = &state_copy;
+            }
+            sparse_container::update_range_value(*descent_map, range, *infill_state,
+                                                 sparse_container::value_precedence::prefer_dest);
         }
     } else {
         // Look for something to fill the gap further along.
         for (const auto &prev_dep : prev_) {
-            const ApplyTrackbackBarriersAction barrier_action(prev_dep.barriers);
+            const ApplyTrackbackStackAction barrier_action(prev_dep.barriers, previous_barrier);
             prev_dep.context->ResolveAccessRange(type, range, barrier_action, descent_map, infill_state);
-        }
-
-        if (src_external_.context) {
-            const ApplyTrackbackBarriersAction barrier_action(src_external_.barriers);
-            src_external_.context->ResolveAccessRange(type, range, barrier_action, descent_map, infill_state);
         }
     }
 }
@@ -902,6 +919,8 @@ void AccessContext::ResolvePreviousAccess(AccessAddressType type, const Resource
 // Non-lazy import of all accesses, WaitEvents needs this.
 void AccessContext::ResolvePreviousAccesses() {
     ResourceAccessState default_state;
+    if (!prev_.size()) return;  // If no previous contexts, nothing to do
+
     for (const auto address_type : kAddressTypes) {
         ResolvePreviousAccess(address_type, kFullRange, &GetAccessStateMap(address_type), &default_state);
     }
@@ -924,50 +943,31 @@ static SyncStageAccessIndex DepthStencilLoadUsage(VkAttachmentLoadOp load_op) {
 
 // Caller must manage returned pointer
 static AccessContext *CreateStoreResolveProxyContext(const AccessContext &context, const RENDER_PASS_STATE &rp_state,
-                                                     uint32_t subpass, const VkRect2D &render_area,
-                                                     std::vector<const IMAGE_VIEW_STATE *> attachment_views) {
+                                                     uint32_t subpass, const AttachmentViewGenVector &attachment_views) {
     auto *proxy = new AccessContext(context);
-    proxy->UpdateAttachmentResolveAccess(rp_state, render_area, attachment_views, subpass, kCurrentCommandTag);
-    proxy->UpdateAttachmentStoreAccess(rp_state, render_area, attachment_views, subpass, kCurrentCommandTag);
+    proxy->UpdateAttachmentResolveAccess(rp_state, attachment_views, subpass, kCurrentCommandTag);
+    proxy->UpdateAttachmentStoreAccess(rp_state, attachment_views, subpass, kCurrentCommandTag);
     return proxy;
 }
 
 template <typename BarrierAction>
-class ResolveAccessRangeFunctor {
-  public:
-    ResolveAccessRangeFunctor(const AccessContext &context, AccessAddressType address_type, ResourceAccessRangeMap *descent_map,
-                              const ResourceAccessState *infill_state, BarrierAction &barrier_action)
-        : context_(context),
-          address_type_(address_type),
-          descent_map_(descent_map),
-          infill_state_(infill_state),
-          barrier_action_(barrier_action) {}
-    ResolveAccessRangeFunctor() = delete;
-    void operator()(const ResourceAccessRange &range) const {
-        context_.ResolveAccessRange(address_type_, range, barrier_action_, descent_map_, infill_state_);
+void AccessContext::ResolveAccessRange(const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type,
+                                       BarrierAction &barrier_action, ResourceAccessRangeMap *descent_map,
+                                       const ResourceAccessState *infill_state) const {
+    const auto *attachment_gen = view_gen.GetRangeGen(gen_type);
+    if (!attachment_gen) return;
+
+    subresource_adapter::ImageRangeGenerator range_gen(*attachment_gen);
+    const AccessAddressType address_type = view_gen.GetAddressType();
+    for (; range_gen->non_empty(); ++range_gen) {
+        ResolveAccessRange(address_type, *range_gen, barrier_action, descent_map, infill_state);
     }
-
-  private:
-    const AccessContext &context_;
-    const AccessAddressType address_type_;
-    ResourceAccessRangeMap *const descent_map_;
-    const ResourceAccessState *infill_state_;
-    BarrierAction &barrier_action_;
-};
-
-template <typename BarrierAction>
-void AccessContext::ResolveAccessRange(const IMAGE_STATE &image_state, const VkImageSubresourceRange &subresource_range,
-                                       BarrierAction &barrier_action, AccessAddressType address_type,
-                                       ResourceAccessRangeMap *descent_map, const ResourceAccessState *infill_state) const {
-    const ResolveAccessRangeFunctor<BarrierAction> action(*this, address_type, descent_map, infill_state, barrier_action);
-    ApplyOverImageRange(image_state, subresource_range, action);
 }
 
 // Layout transitions are handled as if the were occuring in the beginning of the next subpass
 bool AccessContext::ValidateLayoutTransitions(const CommandExecutionContext &ex_context, const RENDER_PASS_STATE &rp_state,
                                               const VkRect2D &render_area, uint32_t subpass,
-                                              const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
-                                              const char *func_name) const {
+                                              const AttachmentViewGenVector &attachment_views, const char *func_name) const {
     bool skip = false;
     // As validation methods are const and precede the record/update phase, for any tranistions from the immediately
     // previous subpass, we have to validate them against a copy of the AccessContext, with resolve operations applied, as
@@ -983,10 +983,11 @@ bool AccessContext::ValidateLayoutTransitions(const CommandExecutionContext &ex_
         const bool prev_needs_proxy = transition.prev_pass != VK_SUBPASS_EXTERNAL && (transition.prev_pass + 1 == subpass);
 
         const auto *track_back = GetTrackBackFromSubpass(transition.prev_pass);
+        assert(track_back);
         if (prev_needs_proxy) {
             if (!proxy_for_prev) {
-                proxy_for_prev.reset(CreateStoreResolveProxyContext(*track_back->context, rp_state, transition.prev_pass,
-                                                                    render_area, attachment_views));
+                proxy_for_prev.reset(
+                    CreateStoreResolveProxyContext(*track_back->context, rp_state, transition.prev_pass, attachment_views));
                 proxy_track_back = *track_back;
                 proxy_track_back.context = proxy_for_prev.get();
             }
@@ -994,7 +995,7 @@ bool AccessContext::ValidateLayoutTransitions(const CommandExecutionContext &ex_
         }
         auto hazard = DetectSubpassTransitionHazard(*track_back, attachment_views[transition.attachment]);
         if (hazard.hazard) {
-            skip |= ex_context.GetSyncState().LogError(rp_state.renderPass, string_SyncHazardVUID(hazard.hazard),
+            skip |= ex_context.GetSyncState().LogError(rp_state.renderPass(), string_SyncHazardVUID(hazard.hazard),
                                                        "%s: Hazard %s in subpass %" PRIu32 " for attachment %" PRIu32
                                                        " image layout transition (old_layout: %s, new_layout: %s). Access info %s.",
                                                        func_name, string_SyncHazard(hazard.hazard), subpass, transition.attachment,
@@ -1008,19 +1009,14 @@ bool AccessContext::ValidateLayoutTransitions(const CommandExecutionContext &ex_
 
 bool AccessContext::ValidateLoadOperation(const CommandExecutionContext &ex_context, const RENDER_PASS_STATE &rp_state,
                                           const VkRect2D &render_area, uint32_t subpass,
-                                          const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
-                                          const char *func_name) const {
+                                          const AttachmentViewGenVector &attachment_views, const char *func_name) const {
     bool skip = false;
     const auto *attachment_ci = rp_state.createInfo.pAttachments;
-    VkExtent3D extent = CastTo3D(render_area.extent);
-    VkOffset3D offset = CastTo3D(render_area.offset);
 
     for (uint32_t i = 0; i < rp_state.createInfo.attachmentCount; i++) {
         if (subpass == rp_state.attachment_first_subpass[i]) {
-            if (attachment_views[i] == nullptr) continue;
-            const IMAGE_VIEW_STATE &view = *attachment_views[i];
-            const IMAGE_STATE *image = view.image_state.get();
-            if (image == nullptr) continue;
+            const auto &view_gen = attachment_views[i];
+            if (!view_gen.IsValid()) continue;
             const auto &ci = attachment_ci[i];
 
             // Need check in the following way
@@ -1039,22 +1035,19 @@ bool AccessContext::ValidateLoadOperation(const CommandExecutionContext &ex_cont
             HazardResult hazard;
             const char *aspect = nullptr;
 
-            auto hazard_range = view.normalized_subresource_range;
             bool checked_stencil = false;
             if (is_color) {
-                hazard = DetectHazard(*image, load_index, view.normalized_subresource_range, SyncOrdering::kColorAttachment, offset,
-                                      extent);
+                hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kRenderArea, load_index, SyncOrdering::kColorAttachment);
                 aspect = "color";
             } else {
                 if (has_depth) {
-                    hazard_range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                    hazard = DetectHazard(*image, load_index, hazard_range, SyncOrdering::kDepthStencilAttachment, offset, extent);
+                    hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea, load_index,
+                                          SyncOrdering::kDepthStencilAttachment);
                     aspect = "depth";
                 }
                 if (!hazard.hazard && has_stencil) {
-                    hazard_range.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-                    hazard = DetectHazard(*image, stencil_load_index, hazard_range, SyncOrdering::kDepthStencilAttachment, offset,
-                                          extent);
+                    hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea, stencil_load_index,
+                                          SyncOrdering::kDepthStencilAttachment);
                     aspect = "stencil";
                     checked_stencil = true;
                 }
@@ -1065,12 +1058,12 @@ bool AccessContext::ValidateLoadOperation(const CommandExecutionContext &ex_cont
                 const auto &sync_state = ex_context.GetSyncState();
                 if (hazard.tag == kCurrentCommandTag) {
                     // Hazard vs. ILT
-                    skip |= sync_state.LogError(rp_state.renderPass, string_SyncHazardVUID(hazard.hazard),
+                    skip |= sync_state.LogError(rp_state.renderPass(), string_SyncHazardVUID(hazard.hazard),
                                                 "%s: Hazard %s vs. layout transition in subpass %" PRIu32 " for attachment %" PRIu32
                                                 " aspect %s during load with loadOp %s.",
                                                 func_name, string_SyncHazard(hazard.hazard), subpass, i, aspect, load_op_string);
                 } else {
-                    skip |= sync_state.LogError(rp_state.renderPass, string_SyncHazardVUID(hazard.hazard),
+                    skip |= sync_state.LogError(rp_state.renderPass(), string_SyncHazardVUID(hazard.hazard),
                                                 "%s: Hazard %s in subpass %" PRIu32 " for attachment %" PRIu32
                                                 " aspect %s during load with loadOp %s. Access info %s.",
                                                 func_name, string_SyncHazard(hazard.hazard), subpass, i, aspect, load_op_string,
@@ -1088,19 +1081,14 @@ bool AccessContext::ValidateLoadOperation(const CommandExecutionContext &ex_cont
 // The latter is handled in layout transistion validation directly
 bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_context, const RENDER_PASS_STATE &rp_state,
                                            const VkRect2D &render_area, uint32_t subpass,
-                                           const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
-                                           const char *func_name) const {
+                                           const AttachmentViewGenVector &attachment_views, const char *func_name) const {
     bool skip = false;
     const auto *attachment_ci = rp_state.createInfo.pAttachments;
-    VkExtent3D extent = CastTo3D(render_area.extent);
-    VkOffset3D offset = CastTo3D(render_area.offset);
 
     for (uint32_t i = 0; i < rp_state.createInfo.attachmentCount; i++) {
         if (subpass == rp_state.attachment_last_subpass[i]) {
-            if (attachment_views[i] == nullptr) continue;
-            const IMAGE_VIEW_STATE &view = *attachment_views[i];
-            const IMAGE_STATE *image = view.image_state.get();
-            if (image == nullptr) continue;
+            const AttachmentViewGen &view_gen = attachment_views[i];
+            if (!view_gen.IsValid()) continue;
             const auto &ci = attachment_ci[i];
 
             // The spec states that "don't care" is an operation with VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -1116,22 +1104,19 @@ bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_con
             const char *aspect = nullptr;
             bool checked_stencil = false;
             if (is_color) {
-                hazard = DetectHazard(*image, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE,
-                                      view.normalized_subresource_range, SyncOrdering::kRaster, offset, extent);
+                hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kRenderArea,
+                                      SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster);
                 aspect = "color";
             } else {
                 const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
-                auto hazard_range = view.normalized_subresource_range;
                 if (has_depth && store_op_stores) {
-                    hazard_range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                    hazard = DetectHazard(*image, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, hazard_range,
-                                          SyncOrdering::kRaster, offset, extent);
+                    hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
+                                          SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster);
                     aspect = "depth";
                 }
                 if (!hazard.hazard && has_stencil && stencil_op_stores) {
-                    hazard_range.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-                    hazard = DetectHazard(*image, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, hazard_range,
-                                          SyncOrdering::kRaster, offset, extent);
+                    hazard = DetectHazard(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
+                                          SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster);
                     aspect = "stencil";
                     checked_stencil = true;
                 }
@@ -1140,7 +1125,7 @@ bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_con
             if (hazard.hazard) {
                 const char *const op_type_string = checked_stencil ? "stencilStoreOp" : "storeOp";
                 const char *const store_op_string = string_VkAttachmentStoreOp(checked_stencil ? ci.stencilStoreOp : ci.storeOp);
-                skip |= ex_context.GetSyncState().LogError(rp_state.renderPass, string_SyncHazardVUID(hazard.hazard),
+                skip |= ex_context.GetSyncState().LogError(rp_state.renderPass(), string_SyncHazardVUID(hazard.hazard),
                                                            "%s: Hazard %s in subpass %" PRIu32 " for attachment %" PRIu32
                                                            " %s aspect during store with %s %s. Access info %s",
                                                            func_name, string_SyncHazard(hazard.hazard), subpass, i, aspect,
@@ -1152,11 +1137,10 @@ bool AccessContext::ValidateStoreOperation(const CommandExecutionContext &ex_con
 }
 
 bool AccessContext::ValidateResolveOperations(const CommandExecutionContext &ex_context, const RENDER_PASS_STATE &rp_state,
-                                              const VkRect2D &render_area,
-                                              const std::vector<const IMAGE_VIEW_STATE *> &attachment_views, const char *func_name,
-                                              uint32_t subpass) const {
-    ValidateResolveAction validate_action(rp_state.renderPass, subpass, *this, ex_context, func_name);
-    ResolveOperation(validate_action, rp_state, render_area, attachment_views, subpass);
+                                              const VkRect2D &render_area, const AttachmentViewGenVector &attachment_views,
+                                              const char *func_name, uint32_t subpass) const {
+    ValidateResolveAction validate_action(rp_state.renderPass(), subpass, *this, ex_context, func_name);
+    ResolveOperation(validate_action, rp_state, attachment_views, subpass);
     return validate_action.GetSkip();
 }
 
@@ -1194,6 +1178,22 @@ HazardResult AccessContext::DetectHazard(const BUFFER_STATE &buffer, SyncStageAc
 }
 
 template <typename Detector>
+HazardResult AccessContext::DetectHazard(Detector &detector, const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type,
+                                         DetectOptions options) const {
+    const auto *attachment_gen = view_gen.GetRangeGen(gen_type);
+    if (!attachment_gen) return HazardResult();
+
+    subresource_adapter::ImageRangeGenerator range_gen(*attachment_gen);
+    const auto address_type = view_gen.GetAddressType();
+    for (; range_gen->non_empty(); ++range_gen) {
+        HazardResult hazard = DetectHazard(address_type, detector, *range_gen, options);
+        if (hazard.hazard) return hazard;
+    }
+
+    return HazardResult();
+}
+
+template <typename Detector>
 HazardResult AccessContext::DetectHazard(Detector &detector, const IMAGE_STATE &image,
                                          const VkImageSubresourceRange &subresource_range, const VkOffset3D &offset,
                                          const VkExtent3D &extent, DetectOptions options) const {
@@ -1208,20 +1208,39 @@ HazardResult AccessContext::DetectHazard(Detector &detector, const IMAGE_STATE &
     }
     return HazardResult();
 }
+template <typename Detector>
+HazardResult AccessContext::DetectHazard(Detector &detector, const IMAGE_STATE &image,
+                                         const VkImageSubresourceRange &subresource_range, DetectOptions options) const {
+    if (!SimpleBinding(image)) return HazardResult();
+    const auto base_address = ResourceBaseAddress(image);
+    subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), subresource_range, base_address);
+    const auto address_type = ImageAddressType(image);
+    for (; range_gen->non_empty(); ++range_gen) {
+        HazardResult hazard = DetectHazard(address_type, detector, *range_gen, options);
+        if (hazard.hazard) return hazard;
+    }
+    return HazardResult();
+}
 
 HazardResult AccessContext::DetectHazard(const IMAGE_STATE &image, SyncStageAccessIndex current_usage,
                                          const VkImageSubresourceLayers &subresource, const VkOffset3D &offset,
                                          const VkExtent3D &extent) const {
     VkImageSubresourceRange subresource_range = {subresource.aspectMask, subresource.mipLevel, 1, subresource.baseArrayLayer,
                                                  subresource.layerCount};
-    return DetectHazard(image, current_usage, subresource_range, offset, extent);
+    HazardDetector detector(current_usage);
+    return DetectHazard(detector, image, subresource_range, offset, extent, DetectOptions::kDetectAll);
 }
 
 HazardResult AccessContext::DetectHazard(const IMAGE_STATE &image, SyncStageAccessIndex current_usage,
-                                         const VkImageSubresourceRange &subresource_range, const VkOffset3D &offset,
-                                         const VkExtent3D &extent) const {
+                                         const VkImageSubresourceRange &subresource_range) const {
     HazardDetector detector(current_usage);
-    return DetectHazard(detector, image, subresource_range, offset, extent, DetectOptions::kDetectAll);
+    return DetectHazard(detector, image, subresource_range, DetectOptions::kDetectAll);
+}
+
+HazardResult AccessContext::DetectHazard(const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type,
+                                         SyncStageAccessIndex current_usage, SyncOrdering ordering_rule) const {
+    HazardDetectorWithOrdering detector(current_usage, ordering_rule);
+    return DetectHazard(detector, view_gen, gen_type, DetectOptions::kDetectAll);
 }
 
 HazardResult AccessContext::DetectHazard(const IMAGE_STATE &image, SyncStageAccessIndex current_usage,
@@ -1229,31 +1248,6 @@ HazardResult AccessContext::DetectHazard(const IMAGE_STATE &image, SyncStageAcce
                                          const VkOffset3D &offset, const VkExtent3D &extent) const {
     HazardDetectorWithOrdering detector(current_usage, ordering_rule);
     return DetectHazard(detector, image, subresource_range, offset, extent, DetectOptions::kDetectAll);
-}
-
-// Some common code for looking at attachments, if there's anything wrong, we return no hazard, core validation
-// should have reported the issue regarding an invalid attachment entry
-HazardResult AccessContext::DetectHazard(const IMAGE_VIEW_STATE *view, SyncStageAccessIndex current_usage,
-                                         SyncOrdering ordering_rule, const VkOffset3D &offset, const VkExtent3D &extent,
-                                         VkImageAspectFlags aspect_mask) const {
-    if (view != nullptr) {
-        const IMAGE_STATE *image = view->image_state.get();
-        if (image != nullptr) {
-            auto *detect_range = &view->normalized_subresource_range;
-            VkImageSubresourceRange masked_range;
-            if (aspect_mask) {  // If present and non-zero, restrict the normalized range to aspects present in aspect_mask
-                masked_range = view->normalized_subresource_range;
-                masked_range.aspectMask = aspect_mask & masked_range.aspectMask;
-                detect_range = &masked_range;
-            }
-
-            // NOTE: The range encoding code is not robust to invalid ranges, so we protect it from our change
-            if (detect_range->aspectMask) {
-                return DetectHazard(*image, current_usage, *detect_range, ordering_rule, offset, extent);
-            }
-        }
-    }
-    return HazardResult();
 }
 
 class BarrierHazardDetector {
@@ -1328,8 +1322,14 @@ HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, V
 
     EventBarrierHazardDetector detector(SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION, src_exec_scope, src_access_scope,
                                         event_scope, sync_event.first_scope_tag);
-    VkOffset3D zero_offset = {0, 0, 0};
-    return DetectHazard(detector, image, subresource_range, zero_offset, image.createInfo.extent, options);
+    return DetectHazard(detector, image, subresource_range, options);
+}
+
+HazardResult AccessContext::DetectImageBarrierHazard(const AttachmentViewGen &view_gen, const SyncBarrier &barrier,
+                                                     DetectOptions options) const {
+    BarrierHazardDetector detector(SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION, barrier.src_exec_scope.exec_scope,
+                                   barrier.src_access_scope);
+    return DetectHazard(detector, view_gen, AttachmentViewGen::Gen::kViewSubresource, options);
 }
 
 HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, VkPipelineStageFlags2KHR src_exec_scope,
@@ -1337,8 +1337,7 @@ HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, V
                                                      const VkImageSubresourceRange &subresource_range,
                                                      const DetectOptions options) const {
     BarrierHazardDetector detector(SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION, src_exec_scope, src_access_scope);
-    VkOffset3D zero_offset = {0, 0, 0};
-    return DetectHazard(detector, image, subresource_range, zero_offset, image.createInfo.extent, options);
+    return DetectHazard(detector, image, subresource_range, options);
 }
 
 HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, VkPipelineStageFlags2KHR src_exec_scope,
@@ -1350,7 +1349,7 @@ HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, V
 }
 HazardResult AccessContext::DetectImageBarrierHazard(const SyncImageMemoryBarrier &image_barrier) const {
     return DetectImageBarrierHazard(*image_barrier.image.get(), image_barrier.barrier.src_exec_scope.exec_scope,
-                                    image_barrier.barrier.src_access_scope, image_barrier.range.subresource_range, kDetectAll);
+                                    image_barrier.barrier.src_access_scope, image_barrier.range, kDetectAll);
 }
 
 template <typename Flags, typename Map>
@@ -1437,6 +1436,13 @@ void UpdateMemoryAccessState(ResourceAccessRangeMap *accesses, const Action &act
     }
 }
 
+template <typename Action, typename RangeGen>
+void UpdateMemoryAccessState(ResourceAccessRangeMap *accesses, const Action &action, const RangeGen &range_gen_prebuilt) {
+    RangeGen range_gen(range_gen_prebuilt);  // RangeGenerators can be expensive to create from scratch... initialize from built
+    for (; range_gen->non_empty(); ++range_gen) {
+        UpdateMemoryAccessState(accesses, *range_gen, action);
+    }
+}
 struct UpdateMemoryAccessStateFunctor {
     using Iterator = ResourceAccessRangeMap::iterator;
     Iterator Infill(ResourceAccessRangeMap *accesses, Iterator pos, ResourceAccessRange range) const {
@@ -1574,6 +1580,15 @@ void AccessContext::UpdateAccessState(const BUFFER_STATE &buffer, SyncStageAcces
 }
 
 void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
+                                      const VkImageSubresourceRange &subresource_range, const ResourceUsageTag &tag) {
+    if (!SimpleBinding(image)) return;
+    const auto base_address = ResourceBaseAddress(image);
+    subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), subresource_range, base_address);
+    const auto address_type = ImageAddressType(image);
+    UpdateMemoryAccessStateFunctor action(address_type, *this, current_usage, ordering_rule, tag);
+    UpdateMemoryAccessState(&GetAccessStateMap(address_type), action, &range_gen);
+}
+void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
                                       const VkImageSubresourceRange &subresource_range, const VkOffset3D &offset,
                                       const VkExtent3D &extent, const ResourceUsageTag &tag) {
     if (!SimpleBinding(image)) return;
@@ -1582,26 +1597,17 @@ void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessI
                                                        base_address);
     const auto address_type = ImageAddressType(image);
     UpdateMemoryAccessStateFunctor action(address_type, *this, current_usage, ordering_rule, tag);
-    for (; range_gen->non_empty(); ++range_gen) {
-        UpdateMemoryAccessState(&GetAccessStateMap(address_type), *range_gen, action);
-    }
+    UpdateMemoryAccessState(&GetAccessStateMap(address_type), action, &range_gen);
 }
-void AccessContext::UpdateAccessState(const IMAGE_VIEW_STATE *view, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
-                                      const VkOffset3D &offset, const VkExtent3D &extent, VkImageAspectFlags aspect_mask,
-                                      const ResourceUsageTag &tag) {
-    if (view != nullptr) {
-        const IMAGE_STATE *image = view->image_state.get();
-        if (image != nullptr) {
-            auto *update_range = &view->normalized_subresource_range;
-            VkImageSubresourceRange masked_range;
-            if (aspect_mask) {  // If present and non-zero, restrict the normalized range to aspects present in aspect_mask
-                masked_range = view->normalized_subresource_range;
-                masked_range.aspectMask = aspect_mask & masked_range.aspectMask;
-                update_range = &masked_range;
-            }
-            UpdateAccessState(*image, current_usage, ordering_rule, *update_range, offset, extent, tag);
-        }
-    }
+
+void AccessContext::UpdateAccessState(const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type,
+                                      SyncStageAccessIndex current_usage, SyncOrdering ordering_rule, const ResourceUsageTag &tag) {
+    const ImageRangeGen *gen = view_gen.GetRangeGen(gen_type);
+    if (!gen) return;
+    subresource_adapter::ImageRangeGenerator range_gen(*gen);
+    const auto address_type = view_gen.GetAddressType();
+    UpdateMemoryAccessStateFunctor action(address_type, *this, current_usage, ordering_rule, tag);
+    ApplyUpdateAction(address_type, action, &range_gen);
 }
 
 void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
@@ -1612,49 +1618,34 @@ void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessI
     UpdateAccessState(image, current_usage, ordering_rule, subresource_range, offset, extent, tag);
 }
 
-template <typename Action>
-void AccessContext::UpdateResourceAccess(const BUFFER_STATE &buffer, const ResourceAccessRange &range, const Action action) {
-    if (!SimpleBinding(buffer)) return;
-    const auto base_address = ResourceBaseAddress(buffer);
-    UpdateMemoryAccessState(&GetAccessStateMap(AccessAddressType::kLinear), (range + base_address), action);
+template <typename Action, typename RangeGen>
+void AccessContext::ApplyUpdateAction(AccessAddressType address_type, const Action &action, RangeGen *range_gen_arg) {
+    assert(range_gen_arg);  //  Old Google C++ styleguide require non-const object pass by * not &, but this isn't an optional arg.
+    UpdateMemoryAccessState(&GetAccessStateMap(address_type), action, range_gen_arg);
 }
 
 template <typename Action>
-void AccessContext::UpdateResourceAccess(const IMAGE_STATE &image, const VkImageSubresourceRange &subresource_range,
-                                         const Action action) {
-    if (!SimpleBinding(image)) return;
-    const auto address_type = ImageAddressType(image);
-    auto *accesses = &GetAccessStateMap(address_type);
-
-    const auto base_address = ResourceBaseAddress(image);
-    subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), subresource_range, {0, 0, 0},
-                                                       image.createInfo.extent, base_address);
-
-    for (; range_gen->non_empty(); ++range_gen) {
-        UpdateMemoryAccessState(accesses, *range_gen, action);
-    }
+void AccessContext::ApplyUpdateAction(const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type, const Action &action) {
+    const ImageRangeGen *gen = view_gen.GetRangeGen(gen_type);
+    if (!gen) return;
+    UpdateMemoryAccessState(&GetAccessStateMap(view_gen.GetAddressType()), action, *gen);
 }
 
-void AccessContext::UpdateAttachmentResolveAccess(const RENDER_PASS_STATE &rp_state, const VkRect2D &render_area,
-                                                  const std::vector<const IMAGE_VIEW_STATE *> &attachment_views, uint32_t subpass,
+void AccessContext::UpdateAttachmentResolveAccess(const RENDER_PASS_STATE &rp_state,
+                                                  const AttachmentViewGenVector &attachment_views, uint32_t subpass,
                                                   const ResourceUsageTag &tag) {
     UpdateStateResolveAction update(*this, tag);
-    ResolveOperation(update, rp_state, render_area, attachment_views, subpass);
+    ResolveOperation(update, rp_state, attachment_views, subpass);
 }
 
-void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_state, const VkRect2D &render_area,
-                                                const std::vector<const IMAGE_VIEW_STATE *> &attachment_views, uint32_t subpass,
-                                                const ResourceUsageTag &tag) {
+void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_state, const AttachmentViewGenVector &attachment_views,
+                                                uint32_t subpass, const ResourceUsageTag &tag) {
     const auto *attachment_ci = rp_state.createInfo.pAttachments;
-    VkExtent3D extent = CastTo3D(render_area.extent);
-    VkOffset3D offset = CastTo3D(render_area.offset);
 
     for (uint32_t i = 0; i < rp_state.createInfo.attachmentCount; i++) {
         if (rp_state.attachment_last_subpass[i] == subpass) {
-            if (attachment_views[i] == nullptr) continue;  // UNUSED
-            const auto &view = *attachment_views[i];
-            const IMAGE_STATE *image = view.image_state.get();
-            if (image == nullptr) continue;
+            const auto &view_gen = attachment_views[i];
+            if (!view_gen.IsValid()) continue;  // UNUSED
 
             const auto &ci = attachment_ci[i];
             const bool has_depth = FormatHasDepth(ci.format);
@@ -1663,20 +1654,17 @@ void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_stat
             const bool store_op_stores = ci.storeOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
 
             if (is_color && store_op_stores) {
-                UpdateAccessState(*image, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster,
-                                  view.normalized_subresource_range, offset, extent, tag);
+                UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea,
+                                  SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kRaster, tag);
             } else {
-                auto update_range = view.normalized_subresource_range;
                 if (has_depth && store_op_stores) {
-                    update_range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                    UpdateAccessState(*image, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster,
-                                      update_range, offset, extent, tag);
+                    UpdateAccessState(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
+                                      SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster, tag);
                 }
                 const bool stencil_op_stores = ci.stencilStoreOp != VK_ATTACHMENT_STORE_OP_NONE_QCOM;
                 if (has_stencil && stencil_op_stores) {
-                    update_range.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-                    UpdateAccessState(*image, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster,
-                                      update_range, offset, extent, tag);
+                    UpdateAccessState(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
+                                      SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE, SyncOrdering::kRaster, tag);
                 }
             }
         }
@@ -1694,7 +1682,7 @@ void AccessContext::ApplyToContext(const Action &barrier_action) {
 void AccessContext::ResolveChildContexts(const std::vector<AccessContext> &contexts) {
     for (uint32_t subpass_index = 0; subpass_index < contexts.size(); subpass_index++) {
         auto &context = contexts[subpass_index];
-        ApplyTrackbackBarriersAction barrier_action(context.GetDstExternalTrackBack().barriers);
+        ApplyTrackbackStackAction barrier_action(context.GetDstExternalTrackBack().barriers);
         for (const auto address_type : kAddressTypes) {
             context.ResolveAccessRange(address_type, kFullRange, barrier_action, &GetAccessStateMap(address_type), nullptr, false);
         }
@@ -1702,10 +1690,8 @@ void AccessContext::ResolveChildContexts(const std::vector<AccessContext> &conte
 }
 
 // Suitable only for *subpass* access contexts
-HazardResult AccessContext::DetectSubpassTransitionHazard(const TrackBack &track_back, const IMAGE_VIEW_STATE *attach_view) const {
-    if (!attach_view) return HazardResult();
-    const auto image_state = attach_view->image_state.get();
-    if (!image_state) return HazardResult();
+HazardResult AccessContext::DetectSubpassTransitionHazard(const TrackBack &track_back, const AttachmentViewGen &attach_view) const {
+    if (!attach_view.IsValid()) return HazardResult();
 
     // We should never ask for a transition from a context we don't have
     assert(track_back.context);
@@ -1713,30 +1699,23 @@ HazardResult AccessContext::DetectSubpassTransitionHazard(const TrackBack &track
     // Do the detection against the specific prior context independent of other contexts.  (Synchronous only)
     // Hazard detection for the transition can be against the merged of the barriers (it only uses src_...)
     const auto merged_barrier = MergeBarriers(track_back.barriers);
-    HazardResult hazard = track_back.context->DetectImageBarrierHazard(*image_state, merged_barrier.src_exec_scope.exec_scope,
-                                                                       merged_barrier.src_access_scope,
-                                                                       attach_view->normalized_subresource_range, kDetectPrevious);
+    HazardResult hazard = track_back.context->DetectImageBarrierHazard(attach_view, merged_barrier, kDetectPrevious);
     if (!hazard.hazard) {
         // The Async hazard check is against the current context's async set.
-        hazard = DetectImageBarrierHazard(*image_state, merged_barrier.src_exec_scope.exec_scope, merged_barrier.src_access_scope,
-                                          attach_view->normalized_subresource_range, kDetectAsync);
+        hazard = DetectImageBarrierHazard(attach_view, merged_barrier, kDetectAsync);
     }
 
     return hazard;
 }
 
 void AccessContext::RecordLayoutTransitions(const RENDER_PASS_STATE &rp_state, uint32_t subpass,
-                                            const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
-                                            const ResourceUsageTag &tag) {
+                                            const AttachmentViewGenVector &attachment_views, const ResourceUsageTag &tag) {
     const auto &transitions = rp_state.subpass_transitions[subpass];
     const ResourceAccessState empty_infill;
     for (const auto &transition : transitions) {
         const auto prev_pass = transition.prev_pass;
-        const auto attachment_view = attachment_views[transition.attachment];
-        if (!attachment_view) continue;
-        const auto *image = attachment_view->image_state.get();
-        if (!image) continue;
-        if (!SimpleBinding(*image)) continue;
+        const auto &view_gen = attachment_views[transition.attachment];
+        if (!view_gen.IsValid()) continue;
 
         const auto *trackback = GetTrackBackFromSubpass(prev_pass);
         assert(trackback);
@@ -1744,11 +1723,11 @@ void AccessContext::RecordLayoutTransitions(const RENDER_PASS_STATE &rp_state, u
         // Import the attachments into the current context
         const auto *prev_context = trackback->context;
         assert(prev_context);
-        const auto address_type = ImageAddressType(*image);
+        const auto address_type = view_gen.GetAddressType();
         auto &target_map = GetAccessStateMap(address_type);
         ApplySubpassTransitionBarriersAction barrier_action(trackback->barriers);
-        prev_context->ResolveAccessRange(*image, attachment_view->normalized_subresource_range, barrier_action, address_type,
-                                         &target_map, &empty_infill);
+        prev_context->ResolveAccessRange(view_gen, AttachmentViewGen::Gen::kViewSubresource, barrier_action, &target_map,
+                                         &empty_infill);
     }
 
     // If there were no transitions skip this global map walk
@@ -1828,33 +1807,29 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                             image_layout = image_descriptor->GetImageLayout();
                         }
                         if (!img_view_state) continue;
-                        const IMAGE_STATE *img_state = img_view_state->image_state.get();
-                        VkExtent3D extent = {};
-                        VkOffset3D offset = {};
-                        if (sync_index == SYNC_FRAGMENT_SHADER_INPUT_ATTACHMENT_READ) {
-                            extent = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.extent);
-                            offset = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.offset);
-                        } else {
-                            extent = img_state->createInfo.extent;
-                        }
                         HazardResult hazard;
+                        const IMAGE_STATE *img_state = img_view_state->image_state.get();
                         const auto &subresource_range = img_view_state->normalized_subresource_range;
-                        if (descriptor_type == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT) {
+
+                        if (sync_index == SYNC_FRAGMENT_SHADER_INPUT_ATTACHMENT_READ) {
+                            const VkExtent3D extent = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.extent);
+                            const VkOffset3D offset = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.offset);
                             // Input attachments are subject to raster ordering rules
                             hazard = current_context_->DetectHazard(*img_state, sync_index, subresource_range,
                                                                     SyncOrdering::kRaster, offset, extent);
                         } else {
-                            hazard = current_context_->DetectHazard(*img_state, sync_index, subresource_range, offset, extent);
+                            hazard = current_context_->DetectHazard(*img_state, sync_index, subresource_range);
                         }
+
                         if (hazard.hazard && !sync_state_->SupressedBoundDescriptorWAW(hazard)) {
                             skip |= sync_state_->LogError(
-                                img_view_state->image_view, string_SyncHazardVUID(hazard.hazard),
+                                img_view_state->image_view(), string_SyncHazardVUID(hazard.hazard),
                                 "%s: Hazard %s for %s, in %s, and %s, %s, type: %s, imageLayout: %s, binding #%" PRIu32
                                 ", index %" PRIu32 ". Access info %s.",
                                 func_name, string_SyncHazard(hazard.hazard),
-                                sync_state_->report_data->FormatHandle(img_view_state->image_view).c_str(),
-                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer).c_str(),
-                                sync_state_->report_data->FormatHandle(pipe->pipeline).c_str(),
+                                sync_state_->report_data->FormatHandle(img_view_state->image_view()).c_str(),
+                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(),
+                                sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
                                 string_VkDescriptorType(descriptor_type), string_VkImageLayout(image_layout),
                                 set_binding.first.second, index, FormatUsage(hazard).c_str());
@@ -1869,12 +1844,12 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                         auto hazard = current_context_->DetectHazard(*buf_state, sync_index, range);
                         if (hazard.hazard && !sync_state_->SupressedBoundDescriptorWAW(hazard)) {
                             skip |= sync_state_->LogError(
-                                buf_view_state->buffer_view, string_SyncHazardVUID(hazard.hazard),
+                                buf_view_state->buffer_view(), string_SyncHazardVUID(hazard.hazard),
                                 "%s: Hazard %s for %s in %s, %s, and %s, type: %s, binding #%d index %d. Access info %s.",
                                 func_name, string_SyncHazard(hazard.hazard),
-                                sync_state_->report_data->FormatHandle(buf_view_state->buffer_view).c_str(),
-                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer).c_str(),
-                                sync_state_->report_data->FormatHandle(pipe->pipeline).c_str(),
+                                sync_state_->report_data->FormatHandle(buf_view_state->buffer_view()).c_str(),
+                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(),
+                                sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
                                 string_VkDescriptorType(descriptor_type), set_binding.first.second, index,
                                 FormatUsage(hazard).c_str());
@@ -1890,12 +1865,12 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
                         auto hazard = current_context_->DetectHazard(*buf_state, sync_index, range);
                         if (hazard.hazard && !sync_state_->SupressedBoundDescriptorWAW(hazard)) {
                             skip |= sync_state_->LogError(
-                                buf_state->buffer, string_SyncHazardVUID(hazard.hazard),
+                                buf_state->buffer(), string_SyncHazardVUID(hazard.hazard),
                                 "%s: Hazard %s for %s in %s, %s, and %s, type: %s, binding #%d index %d. Access info %s.",
                                 func_name, string_SyncHazard(hazard.hazard),
-                                sync_state_->report_data->FormatHandle(buf_state->buffer).c_str(),
-                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer).c_str(),
-                                sync_state_->report_data->FormatHandle(pipe->pipeline).c_str(),
+                                sync_state_->report_data->FormatHandle(buf_state->buffer()).c_str(),
+                                sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(),
+                                sync_state_->report_data->FormatHandle(pipe->pipeline()).c_str(),
                                 sync_state_->report_data->FormatHandle(descriptor_set->GetSet()).c_str(),
                                 string_VkDescriptorType(descriptor_type), set_binding.first.second, index,
                                 FormatUsage(hazard).c_str());
@@ -1959,19 +1934,15 @@ void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindP
                         }
                         if (!img_view_state) continue;
                         const IMAGE_STATE *img_state = img_view_state->image_state.get();
-                        VkExtent3D extent = {};
-                        VkOffset3D offset = {};
                         if (sync_index == SYNC_FRAGMENT_SHADER_INPUT_ATTACHMENT_READ) {
-                            extent = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.extent);
-                            offset = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.offset);
+                            const VkExtent3D extent = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.extent);
+                            const VkOffset3D offset = CastTo3D(cb_state_->activeRenderPassBeginInfo.renderArea.offset);
+                            current_context_->UpdateAccessState(*img_state, sync_index, SyncOrdering::kRaster,
+                                                                img_view_state->normalized_subresource_range, offset, extent, tag);
                         } else {
-                            extent = img_state->createInfo.extent;
+                            current_context_->UpdateAccessState(*img_state, sync_index, SyncOrdering::kNonAttachment,
+                                                                img_view_state->normalized_subresource_range, tag);
                         }
-                        SyncOrdering ordering_rule = (descriptor_type == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)
-                                                         ? SyncOrdering::kRaster
-                                                         : SyncOrdering::kNonAttachment;
-                        current_context_->UpdateAccessState(*img_state, sync_index, ordering_rule,
-                                                            img_view_state->normalized_subresource_range, offset, extent, tag);
                         break;
                     }
                     case DescriptorClass::TexelBuffer: {
@@ -2015,7 +1986,7 @@ bool CommandBufferAccessContext::ValidateDrawVertex(uint32_t vertexCount, uint32
         const auto &binding_description = pipe->vertex_binding_descriptions_[i];
         if (binding_description.binding < binding_buffers_size) {
             const auto &binding_buffer = binding_buffers[binding_description.binding];
-            if (binding_buffer.buffer_state == nullptr || binding_buffer.buffer_state->destroyed) continue;
+            if (binding_buffer.buffer_state == nullptr || binding_buffer.buffer_state->Destroyed()) continue;
 
             auto *buf_state = binding_buffer.buffer_state.get();
             const ResourceAccessRange range = GetBufferRange(binding_buffer.offset, buf_state->createInfo.size, firstVertex,
@@ -2023,9 +1994,9 @@ bool CommandBufferAccessContext::ValidateDrawVertex(uint32_t vertexCount, uint32
             auto hazard = current_context_->DetectHazard(*buf_state, SYNC_VERTEX_ATTRIBUTE_INPUT_VERTEX_ATTRIBUTE_READ, range);
             if (hazard.hazard) {
                 skip |= sync_state_->LogError(
-                    buf_state->buffer, string_SyncHazardVUID(hazard.hazard), "%s: Hazard %s for vertex %s in %s. Access info %s.",
-                    func_name, string_SyncHazard(hazard.hazard), sync_state_->report_data->FormatHandle(buf_state->buffer).c_str(),
-                    sync_state_->report_data->FormatHandle(cb_state_->commandBuffer).c_str(), FormatUsage(hazard).c_str());
+                    buf_state->buffer(), string_SyncHazardVUID(hazard.hazard), "%s: Hazard %s for vertex %s in %s. Access info %s.",
+                    func_name, string_SyncHazard(hazard.hazard), sync_state_->report_data->FormatHandle(buf_state->buffer()).c_str(),
+                    sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(), FormatUsage(hazard).c_str());
             }
         }
     }
@@ -2045,7 +2016,7 @@ void CommandBufferAccessContext::RecordDrawVertex(uint32_t vertexCount, uint32_t
         const auto &binding_description = pipe->vertex_binding_descriptions_[i];
         if (binding_description.binding < binding_buffers_size) {
             const auto &binding_buffer = binding_buffers[binding_description.binding];
-            if (binding_buffer.buffer_state == nullptr || binding_buffer.buffer_state->destroyed) continue;
+            if (binding_buffer.buffer_state == nullptr || binding_buffer.buffer_state->Destroyed()) continue;
 
             auto *buf_state = binding_buffer.buffer_state.get();
             const ResourceAccessRange range = GetBufferRange(binding_buffer.offset, buf_state->createInfo.size, firstVertex,
@@ -2058,7 +2029,7 @@ void CommandBufferAccessContext::RecordDrawVertex(uint32_t vertexCount, uint32_t
 
 bool CommandBufferAccessContext::ValidateDrawVertexIndex(uint32_t indexCount, uint32_t firstIndex, const char *func_name) const {
     bool skip = false;
-    if (cb_state_->index_buffer_binding.buffer_state == nullptr || cb_state_->index_buffer_binding.buffer_state->destroyed) {
+    if (cb_state_->index_buffer_binding.buffer_state == nullptr || cb_state_->index_buffer_binding.buffer_state->Destroyed()) {
         return skip;
     }
 
@@ -2069,9 +2040,9 @@ bool CommandBufferAccessContext::ValidateDrawVertexIndex(uint32_t indexCount, ui
     auto hazard = current_context_->DetectHazard(*index_buf_state, SYNC_INDEX_INPUT_INDEX_READ, range);
     if (hazard.hazard) {
         skip |= sync_state_->LogError(
-            index_buf_state->buffer, string_SyncHazardVUID(hazard.hazard), "%s: Hazard %s for index %s in %s. Access info %s.",
-            func_name, string_SyncHazard(hazard.hazard), sync_state_->report_data->FormatHandle(index_buf_state->buffer).c_str(),
-            sync_state_->report_data->FormatHandle(cb_state_->commandBuffer).c_str(), FormatUsage(hazard).c_str());
+            index_buf_state->buffer(), string_SyncHazardVUID(hazard.hazard), "%s: Hazard %s for index %s in %s. Access info %s.",
+            func_name, string_SyncHazard(hazard.hazard), sync_state_->report_data->FormatHandle(index_buf_state->buffer()).c_str(),
+            sync_state_->report_data->FormatHandle(cb_state_->commandBuffer()).c_str(), FormatUsage(hazard).c_str());
     }
 
     // TODO: For now, we detect the whole vertex buffer. Index buffer could be changed until SubmitQueue.
@@ -2081,7 +2052,7 @@ bool CommandBufferAccessContext::ValidateDrawVertexIndex(uint32_t indexCount, ui
 }
 
 void CommandBufferAccessContext::RecordDrawVertexIndex(uint32_t indexCount, uint32_t firstIndex, const ResourceUsageTag &tag) {
-    if (cb_state_->index_buffer_binding.buffer_state == nullptr || cb_state_->index_buffer_binding.buffer_state->destroyed) return;
+    if (cb_state_->index_buffer_binding.buffer_state == nullptr || cb_state_->index_buffer_binding.buffer_state->Destroyed()) return;
 
     auto *index_buf_state = cb_state_->index_buffer_binding.buffer_state.get();
     const auto index_size = GetIndexAlignment(cb_state_->index_buffer_binding.index_type);
@@ -2153,8 +2124,6 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
     }
     const auto &list = pipe->fragmentShader_writable_output_location_list;
     const auto &subpass = rp_state_->createInfo.pSubpasses[current_subpass_];
-    VkExtent3D extent = CastTo3D(render_area_.extent);
-    VkOffset3D offset = CastTo3D(render_area_.offset);
 
     const auto &current_context = CurrentContext();
     // Subpass's inputAttachment has been done in ValidateDispatchDrawDescriptorSet
@@ -2164,15 +2133,18 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
                 subpass.pColorAttachments[location].attachment == VK_ATTACHMENT_UNUSED) {
                 continue;
             }
-            const IMAGE_VIEW_STATE *img_view_state = attachment_views_[subpass.pColorAttachments[location].attachment];
-            HazardResult hazard = current_context.DetectHazard(img_view_state, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE,
-                                                               SyncOrdering::kColorAttachment, offset, extent);
+            const AttachmentViewGen &view_gen = attachment_views_[subpass.pColorAttachments[location].attachment];
+            if (!view_gen.IsValid()) continue;
+            HazardResult hazard =
+                current_context.DetectHazard(view_gen, AttachmentViewGen::Gen::kRenderArea,
+                                             SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kColorAttachment);
             if (hazard.hazard) {
-                skip |= sync_state.LogError(img_view_state->image_view, string_SyncHazardVUID(hazard.hazard),
+                const VkImageView view_handle = view_gen.GetViewState()->image_view();
+                skip |= sync_state.LogError(view_handle, string_SyncHazardVUID(hazard.hazard),
                                             "%s: Hazard %s for %s in %s, Subpass #%d, and pColorAttachments #%d. Access info %s.",
                                             func_name, string_SyncHazard(hazard.hazard),
-                                            sync_state.report_data->FormatHandle(img_view_state->image_view).c_str(),
-                                            sync_state.report_data->FormatHandle(cmd.commandBuffer).c_str(), cmd.activeSubpass,
+                                            sync_state.report_data->FormatHandle(view_handle).c_str(),
+                                            sync_state.report_data->FormatHandle(cmd.commandBuffer()).c_str(), cmd.activeSubpass,
                                             location, ex_context.FormatUsage(hazard).c_str());
             }
         }
@@ -2180,14 +2152,16 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
 
     // PHASE1 TODO: Add layout based read/vs. write selection.
     // PHASE1 TODO: Read operations for both depth and stencil are possible in the future.
-    if (pipe->graphicsPipelineCI.pDepthStencilState && subpass.pDepthStencilAttachment &&
-        subpass.pDepthStencilAttachment->attachment != VK_ATTACHMENT_UNUSED) {
-        const IMAGE_VIEW_STATE *img_view_state = attachment_views_[subpass.pDepthStencilAttachment->attachment];
+    const uint32_t depth_stencil_attachment =
+        GetSubpassDepthStencilAttachmentIndex(pipe->graphicsPipelineCI.pDepthStencilState, subpass.pDepthStencilAttachment);
+
+    if ((depth_stencil_attachment != VK_ATTACHMENT_UNUSED) && attachment_views_[depth_stencil_attachment].IsValid()) {
+        const AttachmentViewGen &view_gen = attachment_views_[depth_stencil_attachment];
+        const IMAGE_VIEW_STATE &view_state = *view_gen.GetViewState();
         bool depth_write = false, stencil_write = false;
 
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsStencilOnly(img_view_state->create_info.format) &&
-            pipe->graphicsPipelineCI.pDepthStencilState->depthTestEnable &&
+        if (!FormatIsStencilOnly(view_state.create_info.format) && pipe->graphicsPipelineCI.pDepthStencilState->depthTestEnable &&
             pipe->graphicsPipelineCI.pDepthStencilState->depthWriteEnable &&
             IsImageLayoutDepthWritable(subpass.pDepthStencilAttachment->layout)) {
             depth_write = true;
@@ -2196,38 +2170,37 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
         //              If failOp, passOp, or depthFailOp are not KEEP, and writeMask isn't 0, it's writable.
         //              If depth test is disable, it's considered depth test passes, and then depthFailOp doesn't run.
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsDepthOnly(img_view_state->create_info.format) &&
-            pipe->graphicsPipelineCI.pDepthStencilState->stencilTestEnable &&
+        if (!FormatIsDepthOnly(view_state.create_info.format) && pipe->graphicsPipelineCI.pDepthStencilState->stencilTestEnable &&
             IsImageLayoutStencilWritable(subpass.pDepthStencilAttachment->layout)) {
             stencil_write = true;
         }
 
         // PHASE1 TODO: Add EARLY stage detection based on ExecutionMode.
         if (depth_write) {
-            HazardResult hazard =
-                current_context.DetectHazard(img_view_state, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
-                                             SyncOrdering::kDepthStencilAttachment, offset, extent, VK_IMAGE_ASPECT_DEPTH_BIT);
+            HazardResult hazard = current_context.DetectHazard(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
+                                                               SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
+                                                               SyncOrdering::kDepthStencilAttachment);
             if (hazard.hazard) {
                 skip |= sync_state.LogError(
-                    img_view_state->image_view, string_SyncHazardVUID(hazard.hazard),
+                    view_state.image_view(), string_SyncHazardVUID(hazard.hazard),
                     "%s: Hazard %s for %s in %s, Subpass #%d, and depth part of pDepthStencilAttachment. Access info %s.",
                     func_name, string_SyncHazard(hazard.hazard),
-                    sync_state.report_data->FormatHandle(img_view_state->image_view).c_str(),
-                    sync_state.report_data->FormatHandle(cmd.commandBuffer).c_str(), cmd.activeSubpass,
+                    sync_state.report_data->FormatHandle(view_state.image_view()).c_str(),
+                    sync_state.report_data->FormatHandle(cmd.commandBuffer()).c_str(), cmd.activeSubpass,
                     ex_context.FormatUsage(hazard).c_str());
             }
         }
         if (stencil_write) {
-            HazardResult hazard =
-                current_context.DetectHazard(img_view_state, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
-                                             SyncOrdering::kDepthStencilAttachment, offset, extent, VK_IMAGE_ASPECT_STENCIL_BIT);
+            HazardResult hazard = current_context.DetectHazard(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
+                                                               SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
+                                                               SyncOrdering::kDepthStencilAttachment);
             if (hazard.hazard) {
                 skip |= sync_state.LogError(
-                    img_view_state->image_view, string_SyncHazardVUID(hazard.hazard),
+                    view_state.image_view(), string_SyncHazardVUID(hazard.hazard),
                     "%s: Hazard %s for %s in %s, Subpass #%d, and stencil part of pDepthStencilAttachment. Access info %s.",
                     func_name, string_SyncHazard(hazard.hazard),
-                    sync_state.report_data->FormatHandle(img_view_state->image_view).c_str(),
-                    sync_state.report_data->FormatHandle(cmd.commandBuffer).c_str(), cmd.activeSubpass,
+                    sync_state.report_data->FormatHandle(view_state.image_view()).c_str(),
+                    sync_state.report_data->FormatHandle(cmd.commandBuffer()).c_str(), cmd.activeSubpass,
                     ex_context.FormatUsage(hazard).c_str());
             }
         }
@@ -2243,8 +2216,6 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
     }
     const auto &list = pipe->fragmentShader_writable_output_location_list;
     const auto &subpass = rp_state_->createInfo.pSubpasses[current_subpass_];
-    VkExtent3D extent = CastTo3D(render_area_.extent);
-    VkOffset3D offset = CastTo3D(render_area_.offset);
 
     auto &current_context = CurrentContext();
     // Subpass's inputAttachment has been done in RecordDispatchDrawDescriptorSet
@@ -2254,21 +2225,26 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
                 subpass.pColorAttachments[location].attachment == VK_ATTACHMENT_UNUSED) {
                 continue;
             }
-            const IMAGE_VIEW_STATE *img_view_state = attachment_views_[subpass.pColorAttachments[location].attachment];
-            current_context.UpdateAccessState(img_view_state, SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE,
-                                              SyncOrdering::kColorAttachment, offset, extent, 0, tag);
+            const AttachmentViewGen &view_gen = attachment_views_[subpass.pColorAttachments[location].attachment];
+            current_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea,
+                                              SYNC_COLOR_ATTACHMENT_OUTPUT_COLOR_ATTACHMENT_WRITE, SyncOrdering::kColorAttachment,
+                                              tag);
         }
     }
 
     // PHASE1 TODO: Add layout based read/vs. write selection.
     // PHASE1 TODO: Read operations for both depth and stencil are possible in the future.
-    if (pipe->graphicsPipelineCI.pDepthStencilState && subpass.pDepthStencilAttachment &&
-        subpass.pDepthStencilAttachment->attachment != VK_ATTACHMENT_UNUSED) {
-        const IMAGE_VIEW_STATE *img_view_state = attachment_views_[subpass.pDepthStencilAttachment->attachment];
+    const uint32_t depth_stencil_attachment =
+        GetSubpassDepthStencilAttachmentIndex(pipe->graphicsPipelineCI.pDepthStencilState, subpass.pDepthStencilAttachment);
+    if ((depth_stencil_attachment != VK_ATTACHMENT_UNUSED) && attachment_views_[depth_stencil_attachment].IsValid()) {
+        const AttachmentViewGen &view_gen = attachment_views_[depth_stencil_attachment];
+        const IMAGE_VIEW_STATE &view_state = *view_gen.GetViewState();
         bool depth_write = false, stencil_write = false;
+        const bool has_depth = 0 != (view_state.normalized_subresource_range.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT);
+        const bool has_stencil = 0 != (view_state.normalized_subresource_range.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT);
 
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsStencilOnly(img_view_state->create_info.format) &&
+        if (has_depth && !FormatIsStencilOnly(view_state.create_info.format) &&
             pipe->graphicsPipelineCI.pDepthStencilState->depthTestEnable &&
             pipe->graphicsPipelineCI.pDepthStencilState->depthWriteEnable &&
             IsImageLayoutDepthWritable(subpass.pDepthStencilAttachment->layout)) {
@@ -2278,22 +2254,17 @@ void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE
         //              If failOp, passOp, or depthFailOp are not KEEP, and writeMask isn't 0, it's writable.
         //              If depth test is disable, it's considered depth test passes, and then depthFailOp doesn't run.
         // PHASE1 TODO: These validation should be in core_checks.
-        if (!FormatIsDepthOnly(img_view_state->create_info.format) &&
+        if (has_stencil && !FormatIsDepthOnly(view_state.create_info.format) &&
             pipe->graphicsPipelineCI.pDepthStencilState->stencilTestEnable &&
             IsImageLayoutStencilWritable(subpass.pDepthStencilAttachment->layout)) {
             stencil_write = true;
         }
 
-        // PHASE1 TODO: Add EARLY stage detection based on ExecutionMode.
-        if (depth_write) {
-            current_context.UpdateAccessState(img_view_state, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
-                                              SyncOrdering::kDepthStencilAttachment, offset, extent, VK_IMAGE_ASPECT_DEPTH_BIT,
-                                              tag);
-        }
-        if (stencil_write) {
-            current_context.UpdateAccessState(img_view_state, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
-                                              SyncOrdering::kDepthStencilAttachment, offset, extent, VK_IMAGE_ASPECT_STENCIL_BIT,
-                                              tag);
+        if (depth_write || stencil_write) {
+            const auto ds_gentype = view_gen.GetDepthStencilRenderAreaGenType(depth_write, stencil_write);
+            // PHASE1 TODO: Add EARLY stage detection based on ExecutionMode.
+            current_context.UpdateAccessState(view_gen, ds_gentype, SYNC_LATE_FRAGMENT_TESTS_DEPTH_STENCIL_ATTACHMENT_WRITE,
+                                              SyncOrdering::kDepthStencilAttachment, tag);
         }
     }
 }
@@ -2326,14 +2297,15 @@ bool RenderPassAccessContext::ValidateEndRenderPass(const CommandExecutionContex
     bool skip = false;
     skip |= CurrentContext().ValidateResolveOperations(ex_context, *rp_state_, render_area_, attachment_views_, func_name,
                                                        current_subpass_);
-    skip |= CurrentContext().ValidateStoreOperation(ex_context, *rp_state_, render_area_, current_subpass_, attachment_views_,
-                                                    func_name);
+    skip |= CurrentContext().ValidateStoreOperation(ex_context, *rp_state_, render_area_, current_subpass_,
+
+                                                    attachment_views_, func_name);
     skip |= ValidateFinalSubpassLayoutTransitions(ex_context, func_name);
     return skip;
 }
 
 AccessContext *RenderPassAccessContext::CreateStoreResolveProxy() const {
-    return CreateStoreResolveProxyContext(CurrentContext(), *rp_state_, current_subpass_, render_area_, attachment_views_);
+    return CreateStoreResolveProxyContext(CurrentContext(), *rp_state_, current_subpass_, attachment_views_);
 }
 
 bool RenderPassAccessContext::ValidateFinalSubpassLayoutTransitions(const CommandExecutionContext &ex_context,
@@ -2350,7 +2322,7 @@ bool RenderPassAccessContext::ValidateFinalSubpassLayoutTransitions(const Comman
     // Get them from where there we're hidding in the extra entry.
     const auto &final_transitions = rp_state_->subpass_transitions.back();
     for (const auto &transition : final_transitions) {
-        const auto &attach_view = attachment_views_[transition.attachment];
+        const auto &view_gen = attachment_views_[transition.attachment];
         const auto &trackback = subpass_contexts_[transition.prev_pass].GetDstExternalTrackBack();
         assert(trackback.context);  // Transitions are given implicit transitions if the StateTracker is working correctly
         auto *context = trackback.context;
@@ -2365,12 +2337,10 @@ bool RenderPassAccessContext::ValidateFinalSubpassLayoutTransitions(const Comman
 
         // Use the merged barrier for the hazard check (safe since it just considers the src (first) scope.
         const auto merged_barrier = MergeBarriers(trackback.barriers);
-        auto hazard = context->DetectImageBarrierHazard(*attach_view->image_state, merged_barrier.src_exec_scope.exec_scope,
-                                                        merged_barrier.src_access_scope, attach_view->normalized_subresource_range,
-                                                        AccessContext::DetectOptions::kDetectPrevious);
+        auto hazard = context->DetectImageBarrierHazard(view_gen, merged_barrier, AccessContext::DetectOptions::kDetectPrevious);
         if (hazard.hazard) {
             skip |= ex_context.GetSyncState().LogError(
-                rp_state_->renderPass, string_SyncHazardVUID(hazard.hazard),
+                rp_state_->renderPass(), string_SyncHazardVUID(hazard.hazard),
                 "%s: Hazard %s with last use subpass %" PRIu32 " for attachment %" PRIu32
                 " final image layout transition (old_layout: %s, new_layout: %s). Access info %s.",
                 func_name, string_SyncHazard(hazard.hazard), transition.prev_pass, transition.attachment,
@@ -2389,15 +2359,11 @@ void RenderPassAccessContext::RecordLayoutTransitions(const ResourceUsageTag &ta
 void RenderPassAccessContext::RecordLoadOperations(const ResourceUsageTag &tag) {
     const auto *attachment_ci = rp_state_->createInfo.pAttachments;
     auto &subpass_context = subpass_contexts_[current_subpass_];
-    VkExtent3D extent = CastTo3D(render_area_.extent);
-    VkOffset3D offset = CastTo3D(render_area_.offset);
 
     for (uint32_t i = 0; i < rp_state_->createInfo.attachmentCount; i++) {
         if (rp_state_->attachment_first_subpass[i] == current_subpass_) {
-            if (attachment_views_[i] == nullptr) continue;  // UNUSED
-            const auto &view = *attachment_views_[i];
-            const IMAGE_STATE *image = view.image_state.get();
-            if (image == nullptr) continue;
+            const AttachmentViewGen &view_gen = attachment_views_[i];
+            if (!view_gen.IsValid()) continue;  // UNUSED
 
             const auto &ci = attachment_ci[i];
             const bool has_depth = FormatHasDepth(ci.format);
@@ -2405,34 +2371,44 @@ void RenderPassAccessContext::RecordLoadOperations(const ResourceUsageTag &tag) 
             const bool is_color = !(has_depth || has_stencil);
 
             if (is_color) {
-                subpass_context.UpdateAccessState(*image, ColorLoadUsage(ci.loadOp), SyncOrdering::kColorAttachment,
-                                                  view.normalized_subresource_range, offset, extent, tag);
+                subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kRenderArea, ColorLoadUsage(ci.loadOp),
+                                                  SyncOrdering::kColorAttachment, tag);
             } else {
-                auto update_range = view.normalized_subresource_range;
                 if (has_depth) {
-                    update_range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                    subpass_context.UpdateAccessState(*image, DepthStencilLoadUsage(ci.loadOp),
-                                                      SyncOrdering::kDepthStencilAttachment, update_range, offset, extent, tag);
+                    subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kDepthOnlyRenderArea,
+                                                      DepthStencilLoadUsage(ci.loadOp), SyncOrdering::kDepthStencilAttachment, tag);
                 }
                 if (has_stencil) {
-                    update_range.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-                    subpass_context.UpdateAccessState(*image, DepthStencilLoadUsage(ci.stencilLoadOp),
-                                                      SyncOrdering::kDepthStencilAttachment, update_range, offset, extent, tag);
+                    subpass_context.UpdateAccessState(view_gen, AttachmentViewGen::Gen::kStencilOnlyRenderArea,
+                                                      DepthStencilLoadUsage(ci.stencilLoadOp),
+                                                      SyncOrdering::kDepthStencilAttachment, tag);
                 }
             }
         }
     }
 }
+AttachmentViewGenVector RenderPassAccessContext::CreateAttachmentViewGen(
+    const VkRect2D &render_area, const std::vector<const IMAGE_VIEW_STATE *> &attachment_views) {
+    AttachmentViewGenVector view_gens;
+    VkExtent3D extent = CastTo3D(render_area.extent);
+    VkOffset3D offset = CastTo3D(render_area.offset);
+    view_gens.reserve(attachment_views.size());
+    for (const auto *view : attachment_views) {
+        view_gens.emplace_back(view, offset, extent);
+    }
+    return view_gens;
+}
 RenderPassAccessContext::RenderPassAccessContext(const RENDER_PASS_STATE &rp_state, const VkRect2D &render_area,
                                                  VkQueueFlags queue_flags,
                                                  const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
                                                  const AccessContext *external_context)
-    : rp_state_(&rp_state), render_area_(render_area), current_subpass_(0U), attachment_views_(attachment_views) {
+    : rp_state_(&rp_state), render_area_(render_area), current_subpass_(0U), attachment_views_() {
     // Add this for all subpasses here so that they exsist during next subpass validation
     subpass_contexts_.reserve(rp_state_->createInfo.subpassCount);
     for (uint32_t pass = 0; pass < rp_state_->createInfo.subpassCount; pass++) {
         subpass_contexts_.emplace_back(pass, queue_flags, rp_state_->subpass_dependencies, subpass_contexts_, external_context);
     }
+    attachment_views_ = CreateAttachmentViewGen(render_area, attachment_views);
 }
 void RenderPassAccessContext::RecordBeginRenderPass(const ResourceUsageTag &tag) {
     assert(0 == current_subpass_);
@@ -2444,8 +2420,8 @@ void RenderPassAccessContext::RecordBeginRenderPass(const ResourceUsageTag &tag)
 void RenderPassAccessContext::RecordNextSubpass(const ResourceUsageTag &prev_subpass_tag,
                                                 const ResourceUsageTag &next_subpass_tag) {
     // Resolves are against *prior* subpass context and thus *before* the subpass increment
-    CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, render_area_, attachment_views_, current_subpass_, prev_subpass_tag);
-    CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, render_area_, attachment_views_, current_subpass_, prev_subpass_tag);
+    CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, attachment_views_, current_subpass_, prev_subpass_tag);
+    CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, attachment_views_, current_subpass_, prev_subpass_tag);
 
     // Move to the next sub-command for the new subpass. The resolve and store are logically part of the previous
     // subpass, so their tag needs to be different from the layout and load operations below.
@@ -2458,8 +2434,8 @@ void RenderPassAccessContext::RecordNextSubpass(const ResourceUsageTag &prev_sub
 
 void RenderPassAccessContext::RecordEndRenderPass(AccessContext *external_context, const ResourceUsageTag &tag) {
     // Add the resolve and store accesses
-    CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, render_area_, attachment_views_, current_subpass_, tag);
-    CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, render_area_, attachment_views_, current_subpass_, tag);
+    CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, attachment_views_, current_subpass_, tag);
+    CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, attachment_views_, current_subpass_, tag);
 
     // Export the accesses from the renderpass...
     external_context->ResolveChildContexts(subpass_contexts_);
@@ -2471,14 +2447,14 @@ void RenderPassAccessContext::RecordEndRenderPass(AccessContext *external_contex
     //      that had mulitple final layout transistions from mulitple final subpasses.
     const auto &final_transitions = rp_state_->subpass_transitions.back();
     for (const auto &transition : final_transitions) {
-        const auto &attachment = attachment_views_[transition.attachment];
+        const AttachmentViewGen &view_gen = attachment_views_[transition.attachment];
         const auto &last_trackback = subpass_contexts_[transition.prev_pass].GetDstExternalTrackBack();
         assert(&subpass_contexts_[transition.prev_pass] == last_trackback.context);
         ApplyBarrierOpsFunctor<PipelineBarrierOp> barrier_action(true /* resolve */, last_trackback.barriers.size(), tag);
         for (const auto &barrier : last_trackback.barriers) {
             barrier_action.EmplaceBack(PipelineBarrierOp(barrier, true));
         }
-        external_context->UpdateResourceAccess(*attachment->image_state, attachment->normalized_subresource_range, barrier_action);
+        external_context->ApplyUpdateAction(view_gen, AttachmentViewGen::Gen::kViewSubresource, barrier_action);
     }
 }
 
@@ -3727,7 +3703,7 @@ bool SyncValidator::ValidateCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, 
 
     const auto *src_image = Get<IMAGE_STATE>(srcImage);
     const auto *dst_buffer = Get<BUFFER_STATE>(dstBuffer);
-    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem : VK_NULL_HANDLE;
+    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem() : VK_NULL_HANDLE;
     for (uint32_t region = 0; region < regionCount; region++) {
         const auto &copy_region = pRegions[region];
         if (src_image) {
@@ -3786,7 +3762,7 @@ void SyncValidator::RecordCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, Vk
 
     const auto *src_image = Get<IMAGE_STATE>(srcImage);
     auto *dst_buffer = Get<BUFFER_STATE>(dstBuffer);
-    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem : VK_NULL_HANDLE;
+    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem() : VK_NULL_HANDLE;
     const VulkanTypedHandle dst_handle(dst_mem, kVulkanObjectTypeDeviceMemory);
 
     for (uint32_t region = 0; region < regionCount; region++) {
@@ -3958,7 +3934,7 @@ bool SyncValidator::ValidateIndirectBuffer(const CommandBufferAccessContext &cb_
         const ResourceAccessRange range = MakeRange(offset, size);
         auto hazard = context.DetectHazard(*buf_state, SYNC_DRAW_INDIRECT_INDIRECT_COMMAND_READ, range);
         if (hazard.hazard) {
-            skip |= LogError(buf_state->buffer, string_SyncHazardVUID(hazard.hazard),
+            skip |= LogError(buf_state->buffer(), string_SyncHazardVUID(hazard.hazard),
                              "%s: Hazard %s for indirect %s in %s. Access info %s.", function, string_SyncHazard(hazard.hazard),
                              report_data->FormatHandle(buffer).c_str(), report_data->FormatHandle(commandBuffer).c_str(),
                              cb_context.FormatUsage(hazard).c_str());
@@ -3968,7 +3944,7 @@ bool SyncValidator::ValidateIndirectBuffer(const CommandBufferAccessContext &cb_
             const ResourceAccessRange range = MakeRange(offset + i * stride, size);
             auto hazard = context.DetectHazard(*buf_state, SYNC_DRAW_INDIRECT_INDIRECT_COMMAND_READ, range);
             if (hazard.hazard) {
-                skip |= LogError(buf_state->buffer, string_SyncHazardVUID(hazard.hazard),
+                skip |= LogError(buf_state->buffer(), string_SyncHazardVUID(hazard.hazard),
                                  "%s: Hazard %s for indirect %s in %s. Access info %s.", function, string_SyncHazard(hazard.hazard),
                                  report_data->FormatHandle(buffer).c_str(), report_data->FormatHandle(commandBuffer).c_str(),
                                  cb_context.FormatUsage(hazard).c_str());
@@ -4006,7 +3982,7 @@ bool SyncValidator::ValidateCountBuffer(const CommandBufferAccessContext &cb_con
     const ResourceAccessRange range = MakeRange(offset, 4);
     auto hazard = context.DetectHazard(*count_buf_state, SYNC_DRAW_INDIRECT_INDIRECT_COMMAND_READ, range);
     if (hazard.hazard) {
-        skip |= LogError(count_buf_state->buffer, string_SyncHazardVUID(hazard.hazard),
+        skip |= LogError(count_buf_state->buffer(), string_SyncHazardVUID(hazard.hazard),
                          "%s: Hazard %s for countBuffer %s in %s. Access info %s.", function, string_SyncHazard(hazard.hazard),
                          report_data->FormatHandle(buffer).c_str(), report_data->FormatHandle(commandBuffer).c_str(),
                          cb_context.FormatUsage(hazard).c_str());
@@ -4392,8 +4368,7 @@ bool SyncValidator::PreCallValidateCmdClearColorImage(VkCommandBuffer commandBuf
     for (uint32_t index = 0; index < rangeCount; index++) {
         const auto &range = pRanges[index];
         if (image_state) {
-            auto hazard =
-                context->DetectHazard(*image_state, SYNC_CLEAR_TRANSFER_WRITE, range, {0, 0, 0}, image_state->createInfo.extent);
+            auto hazard = context->DetectHazard(*image_state, SYNC_CLEAR_TRANSFER_WRITE, range);
             if (hazard.hazard) {
                 skip |= LogError(image, string_SyncHazardVUID(hazard.hazard),
                                  "vkCmdClearColorImage: Hazard %s for %s, range index %" PRIu32 ". Access info %s.",
@@ -4420,8 +4395,7 @@ void SyncValidator::PreCallRecordCmdClearColorImage(VkCommandBuffer commandBuffe
     for (uint32_t index = 0; index < rangeCount; index++) {
         const auto &range = pRanges[index];
         if (image_state) {
-            context->UpdateAccessState(*image_state, SYNC_CLEAR_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, {0, 0, 0},
-                                       image_state->createInfo.extent, tag);
+            context->UpdateAccessState(*image_state, SYNC_CLEAR_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, tag);
         }
     }
 }
@@ -4444,8 +4418,7 @@ bool SyncValidator::PreCallValidateCmdClearDepthStencilImage(VkCommandBuffer com
     for (uint32_t index = 0; index < rangeCount; index++) {
         const auto &range = pRanges[index];
         if (image_state) {
-            auto hazard =
-                context->DetectHazard(*image_state, SYNC_CLEAR_TRANSFER_WRITE, range, {0, 0, 0}, image_state->createInfo.extent);
+            auto hazard = context->DetectHazard(*image_state, SYNC_CLEAR_TRANSFER_WRITE, range);
             if (hazard.hazard) {
                 skip |= LogError(image, string_SyncHazardVUID(hazard.hazard),
                                  "vkCmdClearDepthStencilImage: Hazard %s for %s, range index %" PRIu32 ". Access info %s.",
@@ -4472,8 +4445,7 @@ void SyncValidator::PreCallRecordCmdClearDepthStencilImage(VkCommandBuffer comma
     for (uint32_t index = 0; index < rangeCount; index++) {
         const auto &range = pRanges[index];
         if (image_state) {
-            context->UpdateAccessState(*image_state, SYNC_CLEAR_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, {0, 0, 0},
-                                       image_state->createInfo.extent, tag);
+            context->UpdateAccessState(*image_state, SYNC_CLEAR_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, tag);
         }
     }
 }
@@ -5045,7 +5017,7 @@ bool SyncOpPipelineBarrier::Validate(const CommandBufferAccessContext &cb_contex
         if (hazard.hazard) {
             // PHASE1 TODO -- add tag information to log msg when useful.
             const auto &sync_state = cb_context.GetSyncState();
-            const auto image_handle = image_state->image;
+            const auto image_handle = image_state->image();
             skip |= sync_state.LogError(image_handle, string_SyncHazardVUID(hazard.hazard),
                                         "%s: Hazard %s for image barrier %" PRIu32 " %s. Access info %s.", CmdName(),
                                         string_SyncHazard(hazard.hazard), image_barrier.index,
@@ -5080,12 +5052,11 @@ struct SyncOpPipelineBarrierFunctorFactory {
         const auto base_address = ResourceBaseAddress(buffer);
         return (range + base_address);
     }
-    ImageRange MakeRangeGen(const IMAGE_STATE &image, const SyncImageMemoryBarrier::SubImageRange &range) const {
+    ImageRange MakeRangeGen(const IMAGE_STATE &image, const VkImageSubresourceRange &subresource_range) const {
         if (!SimpleBinding(image)) return subresource_adapter::ImageRangeGenerator();
 
         const auto base_address = ResourceBaseAddress(image);
-        subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), range.subresource_range, range.offset,
-                                                           range.extent, base_address);
+        subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), subresource_range, base_address);
         return range_gen;
     }
     GlobalRange MakeGlobalRangeGen(AccessAddressType) const { return kFullRange; }
@@ -5266,7 +5237,7 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
     const char *const ignored = "Wait operation is ignored for this event.";
     bool skip = false;
     const auto &sync_state = cb_context.GetSyncState();
-    const auto command_buffer_handle = cb_context.GetCBState().commandBuffer;
+    const auto command_buffer_handle = cb_context.GetCBState().commandBuffer();
 
     for (size_t barrier_set_index = 0; barrier_set_index < barriers_.size(); barrier_set_index++) {
         const auto &barrier_set = barriers_[barrier_set_index];
@@ -5313,7 +5284,7 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
                 barrier_set_index += barrier_set_incr;
                 continue;  // Core, Lifetimes, or Param check needs to catch invalid events.
             }
-            const auto event_handle = sync_event->event->event;
+            const auto event_handle = sync_event->event->event();
             // TODO add "destroyed" checks
 
             barrier_mask_params |= barrier_set.src_exec_scope.mask_param;
@@ -5381,16 +5352,16 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
                     if (image_memory_barrier.old_layout == image_memory_barrier.new_layout) continue;
                     const auto *image_state = image_memory_barrier.image.get();
                     if (!image_state) continue;
-                    const auto &subresource_range = image_memory_barrier.range.subresource_range;
+                    const auto &subresource_range = image_memory_barrier.range;
                     const auto &src_access_scope = image_memory_barrier.barrier.src_access_scope;
                     const auto hazard =
                         context->DetectImageBarrierHazard(*image_state, sync_event->scope.exec_scope, src_access_scope,
                                                           subresource_range, *sync_event, AccessContext::DetectOptions::kDetectAll);
                     if (hazard.hazard) {
-                        skip |= sync_state.LogError(image_state->image, string_SyncHazardVUID(hazard.hazard),
+                        skip |= sync_state.LogError(image_state->image(), string_SyncHazardVUID(hazard.hazard),
                                                     "%s: Hazard %s for image barrier %" PRIu32 " %s. Access info %s.", CmdName(),
                                                     string_SyncHazard(hazard.hazard), image_memory_barrier.index,
-                                                    sync_state.report_data->FormatHandle(image_state->image).c_str(),
+                                                    sync_state.report_data->FormatHandle(image_state->image()).c_str(),
                                                     cb_context.FormatUsage(hazard).c_str());
                         break;
                     }
@@ -5457,12 +5428,11 @@ struct SyncOpWaitEventsFunctorFactory {
         EventSimpleRangeGenerator filtered_range_gen(sync_event->FirstScope(address_type), range);
         return filtered_range_gen;
     }
-    ImageRange MakeRangeGen(const IMAGE_STATE &image, const SyncImageMemoryBarrier::SubImageRange &range) const {
+    ImageRange MakeRangeGen(const IMAGE_STATE &image, const VkImageSubresourceRange &subresource_range) const {
         if (!SimpleBinding(image)) return ImageRange();
         const auto address_type = GetAccessAddressType(image);
         const auto base_address = ResourceBaseAddress(image);
-        subresource_adapter::ImageRangeGenerator image_range_gen(*image.fragment_encoder.get(), range.subresource_range,
-                                                                 range.offset, range.extent, base_address);
+        subresource_adapter::ImageRangeGenerator image_range_gen(*image.fragment_encoder.get(), subresource_range, base_address);
         EventImageRangeGenerator filtered_range_gen(sync_event->FirstScope(address_type), image_range_gen);
 
         return filtered_range_gen;
@@ -5600,8 +5570,8 @@ bool SyncOpResetEvent::Validate(const CommandBufferAccessContext &cb_context) co
                 break;
         }
         if (vuid) {
-            skip |= sync_state.LogError(event_->event, vuid, message, CmdName(),
-                                        sync_state.report_data->FormatHandle(event_->event).c_str(), CmdName(),
+            skip |= sync_state.LogError(event_->event(), vuid, message, CmdName(),
+                                        sync_state.report_data->FormatHandle(event_->event()).c_str(), CmdName(),
                                         CommandTypeString(sync_event->last_command));
         }
     }
@@ -5686,8 +5656,8 @@ bool SyncOpSetEvent::Validate(const CommandBufferAccessContext &cb_context) cons
             assert(nullptr != message);
             std::string vuid("SYNC-");
             vuid.append(CmdName()).append(vuid_stem);
-            skip |= sync_state.LogError(event_->event, vuid.c_str(), message, CmdName(),
-                                        sync_state.report_data->FormatHandle(event_->event).c_str(), CmdName(),
+            skip |= sync_state.LogError(event_->event(), vuid.c_str(), message, CmdName(),
+                                        sync_state.report_data->FormatHandle(event_->event()).c_str(), CmdName(),
                                         CommandTypeString(sync_event->last_command));
         }
     }
@@ -5778,12 +5748,18 @@ bool SyncOpBeginRenderPass::Validate(const CommandBufferAccessContext &cb_contex
     // Validate attachment operations
     if (attachments_.size() == 0) return skip;
     const auto &render_area = renderpass_begin_info_.renderArea;
-    skip |= temp_context.ValidateLayoutTransitions(cb_context, rp_state, render_area, subpass, attachments_, CmdName());
+
+    // Since the isn't a valid RenderPassAccessContext until Record, needs to create the view/generator list... we could limit this
+    // by predicating on whether subpass 0 uses the attachment if it is too expensive to create the full list redundantly here.
+    // More broadly we could look at thread specific state shared between Validate and Record as is done for other heavyweight
+    // operations (though it's currently a messy approach)
+    AttachmentViewGenVector view_gens = RenderPassAccessContext::CreateAttachmentViewGen(render_area, attachments_);
+    skip |= temp_context.ValidateLayoutTransitions(cb_context, rp_state, render_area, subpass, view_gens, CmdName());
 
     // Validate load operations if there were no layout transition hazards
     if (!skip) {
-        temp_context.RecordLayoutTransitions(rp_state, subpass, attachments_, kCurrentCommandTag);
-        skip |= temp_context.ValidateLoadOperation(cb_context, rp_state, render_area, subpass, attachments_, CmdName());
+        temp_context.RecordLayoutTransitions(rp_state, subpass, view_gens, kCurrentCommandTag);
+        skip |= temp_context.ValidateLoadOperation(cb_context, rp_state, render_area, subpass, view_gens, CmdName());
     }
 
     return skip;
@@ -5860,3 +5836,75 @@ void SyncValidator::PreCallRecordCmdWriteBufferMarker2AMD(VkCommandBuffer comman
         context->UpdateAccessState(*dst_buffer, SYNC_COPY_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, tag);
     }
 }
+
+AttachmentViewGen::AttachmentViewGen(const IMAGE_VIEW_STATE *view, const VkOffset3D &offset, const VkExtent3D &extent)
+    : view_(view), view_mask_(), gen_store_() {
+    if (!view_ || !view_->image_state || !SimpleBinding(*view_->image_state)) return;
+    const IMAGE_STATE &image_state = *view_->image_state.get();
+    const auto base_address = ResourceBaseAddress(image_state);
+    const auto *encoder = image_state.fragment_encoder.get();
+    if (!encoder) return;
+    const VkOffset3D zero_offset = {0, 0, 0};
+    const VkExtent3D &image_extent = image_state.createInfo.extent;
+    // Intentional copy
+    VkImageSubresourceRange subres_range = view_->normalized_subresource_range;
+    view_mask_ = subres_range.aspectMask;
+    gen_store_[Gen::kViewSubresource].emplace(*encoder, subres_range, zero_offset, image_extent, base_address);
+    gen_store_[Gen::kRenderArea].emplace(*encoder, subres_range, offset, extent, base_address);
+
+    const auto depth = view_mask_ & VK_IMAGE_ASPECT_DEPTH_BIT;
+    if (depth && (depth != view_mask_)) {
+        subres_range.aspectMask = depth;
+        gen_store_[Gen::kDepthOnlyRenderArea].emplace(*encoder, subres_range, offset, extent, base_address);
+    }
+    const auto stencil = view_mask_ & VK_IMAGE_ASPECT_STENCIL_BIT;
+    if (stencil && (stencil != view_mask_)) {
+        subres_range.aspectMask = stencil;
+        gen_store_[Gen::kStencilOnlyRenderArea].emplace(*encoder, subres_range, offset, extent, base_address);
+    }
+}
+
+const ImageRangeGen *AttachmentViewGen::GetRangeGen(AttachmentViewGen::Gen gen_type) const {
+    const ImageRangeGen *got = nullptr;
+    switch (gen_type) {
+        case kViewSubresource:
+            got = &gen_store_[kViewSubresource];
+            break;
+        case kRenderArea:
+            got = &gen_store_[kRenderArea];
+            break;
+        case kDepthOnlyRenderArea:
+            got =
+                (view_mask_ == VK_IMAGE_ASPECT_DEPTH_BIT) ? &gen_store_[Gen::kRenderArea] : &gen_store_[Gen::kDepthOnlyRenderArea];
+            break;
+        case kStencilOnlyRenderArea:
+            got = (view_mask_ == VK_IMAGE_ASPECT_STENCIL_BIT) ? &gen_store_[Gen::kRenderArea]
+                                                              : &gen_store_[Gen::kStencilOnlyRenderArea];
+            break;
+        default:
+            assert(got);
+    }
+    return got;
+}
+
+AttachmentViewGen::Gen AttachmentViewGen::GetDepthStencilRenderAreaGenType(bool depth_op, bool stencil_op) const {
+    assert(IsValid());
+    assert(view_mask_ & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
+    if (depth_op) {
+        assert(view_mask_ & VK_IMAGE_ASPECT_DEPTH_BIT);
+        if (stencil_op) {
+            assert(view_mask_ & VK_IMAGE_ASPECT_STENCIL_BIT);
+            return kRenderArea;
+        }
+        return kDepthOnlyRenderArea;
+    }
+    if (stencil_op) {
+        assert(view_mask_ & VK_IMAGE_ASPECT_STENCIL_BIT);
+        return kStencilOnlyRenderArea;
+    }
+
+    assert(depth_op || stencil_op);
+    return kRenderArea;
+}
+
+AccessAddressType AttachmentViewGen::GetAddressType() const { return AccessContext::ImageAddressType(*view_->image_state); }

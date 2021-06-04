@@ -37,7 +37,7 @@ const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
 // TODO (crbug.com/1166910): Remove once the HandwritingRecognition API is more
 // widely available (likely M92).
 const base::Feature kHandwritingRecognitionWebPlatformApi{
-    "HandwritingRecognitionWebPlatformApi", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HandwritingRecognitionWebPlatformApi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the HandwritingRecognition API can be enabled. Disabling this feature
 // disables both the origin trial and the mojo interface. Defaults to enabled
@@ -97,11 +97,6 @@ const base::Feature kFrequencyCappingForLargeStickyAdDetection{
     "FrequencyCappingForLargeStickyAdDetection",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables support for FTP URLs. When disabled FTP URLs will behave the same as
-// any other URL scheme that's unknown to the UA. See https://crbug.com/333943
-const base::Feature kFtpProtocol{"FtpProtocol",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -124,7 +119,7 @@ const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable TableNG
 const base::Feature kLayoutNGTable{"LayoutNGTable",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -174,32 +169,28 @@ const base::Feature kPortals {
 const base::Feature kPortalsCrossOrigin{"PortalsCrossOrigin",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the <fencedframe> element; see crbug.com/1123606. Note that enabling
+// this feature does not automatically expose this element to the web, it only
+// allows the element to be enabled by the runtime enabled feature, for origin
+// trials.
+const base::Feature kFencedFrames{"FencedFrames",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+const base::FeatureParam<FencedFramesImplementationType>::Option
+    fenced_frame_implementation_types[] = {
+        {FencedFramesImplementationType::kShadowDOM, "shadow_dom"},
+        {FencedFramesImplementationType::kMPArch, "mparch"}};
+const base::FeatureParam<FencedFramesImplementationType>
+    kFencedFramesImplementationTypeParam{
+        &kFencedFrames, "implementation_type",
+        FencedFramesImplementationType::kShadowDOM,
+        &fenced_frame_implementation_types};
+
 // Enable the prerender2. https://crbug.com/1126305.
 const base::Feature kPrerender2{"Prerender2",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-const base::FeatureParam<Prerender2Implementation>::Option
-    prerender2_implementation_options[] = {
-        {Prerender2Implementation::kWebContents, "webcontents"},
-        {Prerender2Implementation::kMPArch, "mparch"}};
-const base::FeatureParam<Prerender2Implementation>
-    kPrerender2ImplementationParam{&kPrerender2, "implementation",
-                                   Prerender2Implementation::kMPArch,
-                                   &prerender2_implementation_options};
 
 bool IsPrerender2Enabled() {
   return base::FeatureList::IsEnabled(blink::features::kPrerender2);
-}
-
-bool IsPrerenderMPArchEnabled() {
-  return IsPrerender2Enabled() &&
-         blink::features::kPrerender2ImplementationParam.Get() ==
-             blink::features::Prerender2Implementation::kMPArch;
-}
-
-bool IsPrerenderWebContentsEnabled() {
-  return IsPrerender2Enabled() &&
-         blink::features::kPrerender2ImplementationParam.Get() ==
-             blink::features::Prerender2Implementation::kWebContents;
 }
 
 // Enable limiting previews loading hints to specific resource types.
@@ -220,11 +211,6 @@ const base::Feature kPurgeRendererMemoryWhenBackgrounded {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
-
-// Enables toggling overwrite mode when insert key is pressed.
-// https://crbug.com/1030231.
-const base::Feature kInsertKeyToggleMode = {"InsertKeyToggleMode",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Raw Clipboard. https://crbug.com/897289.
 const base::Feature kRawClipboard{"RawClipboard",
@@ -368,9 +354,9 @@ const base::Feature kFontAccess{"FontAccess",
 const base::Feature kFontAccessPersistent{"FontAccessPersistent",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Compute pressure API. https://crbug.com/1067627
+// Kill switch for the Compute Pressure API. https://crbug.com/1067627
 const base::Feature kComputePressure{"ComputePressure",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Prefetch request properties are updated to be privacy-preserving. See
 // crbug.com/988956.
@@ -404,9 +390,6 @@ const base::Feature kWebFontsCacheAwareTimeoutAdaption {
 // activation (see htpps://crbug.com/954349).
 const base::Feature kBlockingFocusWithoutUserActivation{
     "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAudioWorkletRealtimeThread{
-    "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A server-side switch for the REALTIME_AUDIO thread priority of
 // RealtimeAudioWorkletThread object. When disabled, it will use the NORMAL
@@ -472,6 +455,20 @@ const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
 // Can also set to -1 to let Blink's internal settings control the value
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
+
+const base::FeatureParam<ForceDarkIncreaseTextContrast>::Option
+    forcedark_increase_text_contrast_options[] = {
+        {ForceDarkIncreaseTextContrast::kUseBlinkSettings,
+         "use_blink_settings_for_method"},
+        {ForceDarkIncreaseTextContrast::kFalse, "false"},
+        {ForceDarkIncreaseTextContrast::kTrue, "true"}};
+
+// Should text contrast be increased.
+const base::FeatureParam<ForceDarkIncreaseTextContrast>
+    kForceDarkIncreaseTextContrastParam{
+        &kForceWebContentsDarkMode, "increase_text_contrast",
+        ForceDarkIncreaseTextContrast::kUseBlinkSettings,
+        &forcedark_increase_text_contrast_options};
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions {
@@ -594,6 +591,12 @@ const base::Feature kWebviewAccelerateSmallCanvases{
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 const base::Feature kDiscardCodeCacheAfterFirstUse{
     "DiscardCodeCacheAfterFirstUse", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for the new element.offsetParent behavior.
+// TODO(crbug.com/920069): Remove this once the feature has
+// landed and no compat issues are reported.
+const base::Feature kOffsetParentNewSpecBehavior{
+    "OffsetParentNewSpecBehavior", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Slightly delays rendering if there are fonts being preloaded, so that
 // they don't miss the first paint if they can be loaded fast enough (e.g.,
@@ -831,6 +834,15 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 const base::Feature kWebAppEnableProtocolHandlers{
     "WebAppEnableProtocolHandlers", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether web apps are able to be treated as note-taking apps. Controls parsing
+// of "note_taking" dictionary field and "new_note_url" entry in web app
+// manifests. Also controls whether the parsed field is used in browser. See
+// incubation spec:
+// https://wicg.github.io/manifest-incubations/#note_taking-member
+// TODO(crbug.com/1185678): Enable by default after M92 branches.
+const base::Feature kWebAppNoteTaking{"WebAppNoteTaking",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled NV12 frames on a GPU will be forwarded to libvpx encoders
 // without conversion to I420.
 const base::Feature kWebRtcLibvpxEncodeNV12{"WebRtcLibvpxEncodeNV12",
@@ -855,12 +867,6 @@ const base::Feature kTargetBlankImpliesNoOpener{
 // TODO(crbug.com/1152307): Remove in M91.
 const base::Feature kMediaStreamTrackUseConfigMaxFrameRate{
     "MediaStreamTrackUseConfigMaxFrameRate", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Kill switch for the new behavior whereby noopener windows no longer get their
-// sessionStorage cloned from their originator. TODO(crbug.com/1151381): Remove
-// in Chrome 92.
-const base::Feature kCloneSessionStorageForNoOpener{
-    "CloneSessionStorageForNoOpener", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, WebRTC's worker thread will run on a thread context distinct
 // from the WebRTC signaling and network threads.
@@ -906,6 +912,11 @@ const base::Feature kScopeMemoryCachePerContext{
 // elements.
 const base::Feature kEnablePenetratingImageSelection{
     "EnablePenetratingImageSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, permits shared/root element transitions. See
+// https://github.com/WICG/shared-element-transitions.
+const base::Feature kDocumentTransition{"DocumentTransition",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.
@@ -954,6 +965,13 @@ const base::Feature kFledgeInterestGroups{"FledgeInterestGroups",
 // origin trial.
 const base::Feature kFledgeInterestGroupAPI{"FledgeInterestGroupAPI",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable the ability to minimize processing in the WebRTC APM when all audio
+// tracks are disabled. If disabled, the APM in WebRTC will ignore attempts to
+// set it in a low-processing mode when all audio tracks are disabled.
+const base::Feature kMinimizeAudioProcessingForUnusedOutput{
+    "MinimizeAudioProcessingForUnusedOutput",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

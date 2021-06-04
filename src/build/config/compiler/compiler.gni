@@ -105,7 +105,7 @@ declare_args() {
   # Technology (CET). If Windows version and hardware supports the feature and
   # it's enabled by OS then additional validation of return address will be
   # performed as mitigation against Return-oriented programming (ROP).
-  # https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#cet-shadow-stack
+  # https://chromium.googlesource.com/chromium/src/+/main/docs/design/sandbox.md#cet-shadow-stack
   enable_cet_shadow_stack = target_cpu == "x64"
 }
 
@@ -129,7 +129,7 @@ declare_args() {
 # and build arguments.
 # TODO(crbug.com/1052397): Consider changing is_chromeos_ash to is_chromeos after
 # lacros-chrome switches to target_os="chromeos".
-if (is_chromeos_ash) {
+if (is_chromeos_ash || is_chromeos_lacros) {
   # ChromeOS generally prefers frame pointers, to support CWP.
   # However, Clang does not currently generate usable frame pointers in ARM
   # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
@@ -216,7 +216,7 @@ declare_args() {
 # results independent of the checkout and build directory names, which
 # in turn is important for goma compile hit rate.
 # Setting this to true may make it harder to debug binaries on Linux, see
-# https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Source-level-debug-with-fdebug_compilation_dir
+# https://chromium.googlesource.com/chromium/src/+/main/docs/linux/debugging.md#Source-level-debug-with-fdebug_compilation_dir
 # It's not clear if the crash server will correctly handle dSYMs with relative
 # paths, so we disable this feature for official benefit. The main benefit is
 # deterministic builds to reduce compile times, so this is less relevant for

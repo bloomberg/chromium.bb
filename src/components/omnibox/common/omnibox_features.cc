@@ -50,19 +50,6 @@ const auto enabled_by_default_desktop_ios =
 const base::Feature kAdaptiveSuggestionsCount{
     "OmniboxAdaptiveSuggestionsCount", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to hide the scheme from steady state URLs displayed in the
-// toolbar. It is restored during editing.
-const base::Feature kHideFileUrlScheme{
-    "OmniboxUIExperimentHideFileUrlScheme",
-    // Android and iOS don't have the File security chip, and therefore still
-    // need to show the file scheme.
-    enabled_by_default_desktop_only};
-
-// Feature used to force on the experiment of transmission of tail suggestions
-// from GWS to this client, currently testing for desktop.
-const base::Feature kOmniboxTailSuggestions{"OmniboxTailSuggestions",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature that enables the tab-switch suggestions corresponding to an open
 // tab, for a button or dedicated suggestion. Enabled by default on Desktop
 // and iOS.
@@ -89,27 +76,11 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 
 // Feature used to display the title of the current URL match.
 const base::Feature kDisplayTitleForCurrentUrl{
-    "OmniboxDisplayTitleForCurrentUrl", enabled_by_default_desktop_android};
-
-// Feature used to always swap the title and URL.
-const base::Feature kUIExperimentSwapTitleAndUrl{
-    "OmniboxUIExperimentSwapTitleAndUrl", enabled_by_default_desktop_only};
-
-// Feature used to enable speculatively starting a service worker associated
-// with the destination of the default match when the user's input looks like a
-// query.
-const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
-    "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    "OmniboxDisplayTitleForCurrentUrl", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Show the search engine logo in the omnibox on Android (desktop already does
-// this).
-const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to allow users to remove suggestions from clipboard.
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
@@ -181,29 +152,12 @@ const base::Feature kClobberTriggersContextualWebZeroSuggest{
 const base::Feature kOmniboxLocalZeroSuggestAgeThreshold{
     "OmniboxLocalZeroSuggestAgeThreshold", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, enables local zero-prefix suggestions for signed in users.
-// Local zero-prefix suggestions are enabled for signed in users by default. We
-// will be experimenting with DISABLING this behavior.
-const base::Feature kOmniboxLocalZeroSuggestForAuthenticatedUsers{
-    "OmniboxLocalZeroSuggestForAuthenticatedUsers",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, ranks the local zero-prefix suggestions based on frecency
-// (combined frequency and recency).
-const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking{
-    "OmniboxLocalZeroSuggestFrecencyRanking", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Used to force enable/disable trending zero-prefix suggestions on the NTP
 // (Omnibox and NTP realbox). This feature triggers a server-side behavior only
 // and has no direct impact on the client behavior.
 const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP{
     "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Used to enable/disable caching for remote zero-prefix suggestions. Caching is
-// enabled by default. We will be experimenting with DISABLING this behavior.
-const base::Feature kOmniboxZeroSuggestCaching{
-    "OmniboxZeroSuggestCaching", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables on-focus suggestions on the Open Web, that are contextual to the
 // current URL. Will only work if user is signed-in and syncing, or is
@@ -217,17 +171,6 @@ const base::Feature kOnFocusSuggestionsContextualWeb{
     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kOnFocusSuggestionsContextualWebOnContent{
     "OmniboxOnFocusSuggestionsContextualWebOnContent",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables Reactive Zero-Prefix Suggestions (rZPS) on the NTP, for the Omnibox
-// and Realbox respectively. Note: enabling this feature merely makes
-// ZeroSuggestProvider send the request. There are additional requirements,
-// like the user being signed-in, and the suggest server having rZPS enabled.
-const base::Feature kReactiveZeroSuggestionsOnNTPOmnibox{
-    "OmniboxReactiveZeroSuggestionsOnNTPOmnibox",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kReactiveZeroSuggestionsOnNTPRealbox{
-    "OmniboxReactiveZeroSuggestionsOnNTPRealbox",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the LocalHistoryZeroSuggestProvider to use local search history.
@@ -262,10 +205,6 @@ const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile{
 // If enabled, suggestions from a cgi param name match are scored to 0.
 const base::Feature kDisableCGIParamMatching{"OmniboxDisableCGIParamMatching",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, uses the native VoiceSuggestProvider. Android-specific.
-const base::Feature kNativeVoiceSuggestProvider{
-    "OmniboxNativeVoiceSuggestProvider", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Features used to enable matching short inputs to bookmarks for suggestions.
 // By default, if both of the following are disabled, input words shorter than 3
@@ -315,18 +254,15 @@ const base::Feature kRichAutocompletion{"OmniboxRichAutocompletion",
 const base::Feature kOmniboxSearchReadyIncognito{
     "OmniboxSearchReadyIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature that puts a single row of buttons on suggestions with actionable
-// elements like keywords, tab-switch buttons, and Pedals.
-const base::Feature kOmniboxSuggestionButtonRow{
-    "OmniboxSuggestionButtonRow", enabled_by_default_desktop_only};
-
-// Feature used to enable Pedal suggestions.
-const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
-                                             enabled_by_default_desktop_only};
-
 // Feature used to enable the second batch of Pedals (Safety Check, etc.).
 const base::Feature kOmniboxPedalsBatch2{"OmniboxPedalsBatch2",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to enable the second batch of Pedals (Safety Check, etc.)
+// for non-English locales (English locales are 'en' and 'en-GB').
+// This feature is only meaningful if `OmniboxPedalsBatch2` is enabled.
+const base::Feature kOmniboxPedalsBatch2NonEnglish{
+    "OmniboxPedalsBatch2NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that enables use of the colored version of the default Pedal icon.
 const base::Feature kOmniboxPedalsDefaultIconColored{
@@ -334,7 +270,7 @@ const base::Feature kOmniboxPedalsDefaultIconColored{
 
 // Feature used to enable the keyword search button.
 const base::Feature kOmniboxKeywordSearchButton{
-    "OmniboxKeywordSearchButton", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxKeywordSearchButton", enabled_by_default_desktop_only};
 
 // Enables new UI changes indicating focus and hover states.
 const base::Feature kOmniboxRefinedFocusState{"OmniboxRefinedFocusState",
@@ -360,10 +296,15 @@ const base::Feature kIntranetRedirectBehaviorPolicyRollout{
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to control whether space, double space, or neither triggers
-// keyword mode. When disabled, space triggering is disabled.
-const base::Feature kKeywordSpaceTriggering{"OmniboxKeywordSpaceTriggering",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+// When enabled, a setting is added to chrome://settings/searchEngines to
+// control whether <space> can be used to trigger keyword mode.
+const base::Feature kKeywordSpaceTriggeringSetting{
+    "OmniboxKeywordSpaceTriggeringSetting", enabled_by_default_desktop_only};
+
+// Experiment to introduce new security indicators for HTTPS.
+const base::Feature kUpdatedConnectionSecurityIndicators{
+    "OmniboxUpdatedConnectionSecurityIndicators",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to reveal the path, query and ref from steady state URLs
 // on hover.

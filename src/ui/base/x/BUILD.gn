@@ -16,6 +16,8 @@ component("x") {
     "selection_requestor.h",
     "selection_utils.cc",
     "selection_utils.h",
+    "visual_picker_glx.cc",
+    "visual_picker_glx.h",
     "x11_clipboard_helper.cc",
     "x11_clipboard_helper.h",
     "x11_cursor.cc",
@@ -34,6 +36,8 @@ component("x") {
     "x11_global_shortcut_listener.h",
     "x11_idle_query.cc",
     "x11_idle_query.h",
+    "x11_keyboard_hook.cc",
+    "x11_keyboard_hook.h",
     "x11_menu_list.cc",
     "x11_menu_list.h",
     "x11_menu_registrar.cc",
@@ -42,8 +46,8 @@ component("x") {
     "x11_move_loop_delegate.h",
     "x11_pointer_grab.cc",
     "x11_pointer_grab.h",
-    "x11_screensaver_window_finder.cc",
-    "x11_screensaver_window_finder.h",
+    "x11_screensaver.cc",
+    "x11_screensaver.h",
     "x11_shm_image_pool.cc",
     "x11_shm_image_pool.h",
     "x11_software_bitmap_presenter.cc",
@@ -66,7 +70,7 @@ component("x") {
 
   defines = [ "IS_UI_BASE_X_IMPL" ]
 
-  public_deps = []
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
   deps = [
     "//base",
     "//base:i18n",
@@ -77,11 +81,11 @@ component("x") {
     "//ui/base:features",
     "//ui/base/clipboard:clipboard_types",
     "//ui/base/clipboard:file_info",
-    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor:theme_manager",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/display/util",
     "//ui/events",
+    "//ui/events:dom_keycode_converter",
     "//ui/events/devices/x11",
     "//ui/events/keycodes:x11",
     "//ui/events/platform/x11",
@@ -103,7 +107,11 @@ component("x") {
       "x11_os_exchange_data_provider.cc",
       "x11_os_exchange_data_provider.h",
     ]
-    public_deps += [ "//ui/base/dragdrop:types" ]
+    public_deps += [ "//ui/base/dragdrop/mojom:mojom_shared" ]
+    deps += [
+      "//ui/base/dragdrop:types",
+      "//ui/base/dragdrop/mojom",
+    ]
   }
 }
 

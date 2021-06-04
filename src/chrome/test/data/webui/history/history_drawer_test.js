@@ -12,7 +12,7 @@ suite('drawer-test', function() {
   setup(function() {
     document.body.innerHTML = '';
     const testService = new TestBrowserService();
-    BrowserService.instance_ = testService;
+    BrowserService.setInstance(testService);
     app = document.createElement('history-app');
     document.body.appendChild(app);
     return Promise.all([
@@ -33,7 +33,9 @@ suite('drawer-test', function() {
       // opened.
       assertFalse(!!drawerSideBar);
 
-      const menuButton = app.$.toolbar.$['main-toolbar'].$$('#menuButton');
+      const menuButton =
+          app.$.toolbar.$['main-toolbar'].shadowRoot.querySelector(
+              '#menuButton');
       assertTrue(!!menuButton);
 
       menuButton.click();

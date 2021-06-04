@@ -70,25 +70,25 @@ bool PrefetchProxyNoStatePrefetchSubresources() {
                                                  "do_no_state_prefetch", false);
 }
 
-base::Optional<size_t> PrefetchProxyMaximumNumberOfPrefetches() {
+absl::optional<size_t> PrefetchProxyMaximumNumberOfPrefetches() {
   if (!PrefetchProxyIsEnabled()) {
     return 0;
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "isolated-prerender-unlimited-prefetches")) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   int max = base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
                                                    "max_srp_prefetches", 1);
   if (max < 0) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return max;
 }
 
-base::Optional<size_t> PrefetchProxyMaximumNumberOfNoStatePrefetchAttempts() {
+absl::optional<size_t> PrefetchProxyMaximumNumberOfNoStatePrefetchAttempts() {
   if (!PrefetchProxyIsEnabled() ||
       !PrefetchProxyNoStatePrefetchSubresources()) {
     return 0;
@@ -96,13 +96,13 @@ base::Optional<size_t> PrefetchProxyMaximumNumberOfNoStatePrefetchAttempts() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "isolated-prerender-unlimited-nsp")) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   int max = base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
                                                    "max_nsp", 1);
   if (max < 0) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return max;
 }
@@ -252,4 +252,9 @@ bool PrefetchProxySendDecoyRequestForIneligiblePrefetch() {
   // RandDouble returns [0.0, 1.0) so don't use <= here since that may return
   // true when the probability is supposed to be 0 (i.e.: always false).
   return base::RandDouble() < probability;
+}
+
+bool PrefetchProxyAllowAllDomains() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "isolated-prerender-allow-all-domains");
 }

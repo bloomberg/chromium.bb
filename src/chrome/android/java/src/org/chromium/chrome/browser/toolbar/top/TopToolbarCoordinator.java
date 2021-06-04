@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
@@ -245,7 +246,8 @@ public class TopToolbarCoordinator implements Toolbar {
             mOverlayCoordinator = new TopToolbarOverlayCoordinator(mToolbarLayout.getContext(),
                     layoutManager, mControlContainer::getProgressBarDrawingInfo, tabSupplier,
                     browserControlsStateProvider, mResourceManagerSupplier, topUiThemeColorProvider,
-                    mIsGridTabSwitcherEnabled);
+                    LayoutType.BROWSING | LayoutType.SIMPLE_ANIMATION | LayoutType.TAB_SWITCHER,
+                    false);
             layoutManager.addSceneOverlay(mOverlayCoordinator);
             mToolbarLayout.setOverlayCoordinator(mOverlayCoordinator);
         }
@@ -623,6 +625,16 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * Force to hide toolbar shadow.
+     * @param forceHideShadow Whether toolbar shadow should be hidden.
+     *
+     * TODO(crbug.com/1202994): change to token-based access
+     */
+    public void setForceHideShadow(boolean forceHideShadow) {
+        mToolbarLayout.setForceHideShadow(forceHideShadow);
+    }
+
+    /**
      * Finish any toolbar animations.
      */
     public void finishAnimations() {
@@ -640,39 +652,35 @@ public class TopToolbarCoordinator implements Toolbar {
      * Update the start surface toolbar state.
      * @param newState New Start Surface State.
      * @param requestToShow Whether or not request showing the start surface toolbar.
+     * @param toolbarHeight The height of start surface toolbar.
      */
     public void updateStartSurfaceToolbarState(
-            @StartSurfaceState int newState, boolean requestToShow) {
+            @StartSurfaceState int newState, boolean requestToShow, int toolbarHeight) {
         if (mStartSurfaceToolbarCoordinator == null
                 || mToolbarLayout.getToolbarDataProvider() == null) {
             return;
         }
         mStartSurfaceToolbarCoordinator.onStartSurfaceStateChanged(newState, requestToShow);
-        mToolbarLayout.onStartSurfaceStateChanged(newState == StartSurfaceState.SHOWN_HOMEPAGE);
-        updateToolbarLayoutVisibility();
+        updateToolbarLayoutVisibility(toolbarHeight);
     }
 
     /**
      * Triggered when the offset of start surface header view is changed.
      * @param verticalOffset The start surface header view's offset.
+     * @param toolbarHeight The height of start surface toolbar.
      */
-    public void onStartSurfaceHeaderOffsetChanged(int verticalOffset) {
+    public void onStartSurfaceHeaderOffsetChanged(int verticalOffset, int toolbarHeight) {
         if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.onStartSurfaceHeaderOffsetChanged(verticalOffset);
-            updateToolbarLayoutVisibility();
+            updateToolbarLayoutVisibility(toolbarHeight);
         }
     }
 
-    private void updateToolbarLayoutVisibility() {
+    private void updateToolbarLayoutVisibility(int toolbarHeight) {
         assert mStartSurfaceToolbarCoordinator != null;
-        boolean shouldHideToolbarLayout =
-                mStartSurfaceToolbarCoordinator.shouldHideToolbarLayout(getHeight());
-        mToolbarLayout.setVisibility(shouldHideToolbarLayout ? View.INVISIBLE : View.VISIBLE);
-        // When start surface toolbar is shown on the top of the screen, toolbar shadow is hidden.
-        // On start surface homepage, toolbar shadow should be shown only when start surface toolbar
-        // is scrolled out of screen. On tab switcher page, TabListRecyclerView handles another
-        // shadow.
-        mToolbarLayout.setForceHideShadow(mStartSurfaceToolbarCoordinator.isToolbarOnScreenTop());
+        mToolbarLayout.onStartSurfaceStateChanged(
+                mStartSurfaceToolbarCoordinator.shouldShowRealSearchBox(toolbarHeight),
+                mStartSurfaceToolbarCoordinator.isOnHomepage());
     }
 
     @Override

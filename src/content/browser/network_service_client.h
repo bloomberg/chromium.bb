@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
-#define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
+#ifndef CONTENT_BROWSER_NETWORK_SERVICE_CLIENT_H_
+#define CONTENT_BROWSER_NETWORK_SERVICE_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_database.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
@@ -83,12 +84,12 @@ class CONTENT_EXPORT NetworkServiceClient
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
   void OnCertificateRequested(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           cert_responder) override;
   void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       uint32_t request_id,
       const GURL& url,
       bool first_auth_attempt,
@@ -127,4 +128,4 @@ class CONTENT_EXPORT NetworkServiceClient
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
+#endif  // CONTENT_BROWSER_NETWORK_SERVICE_CLIENT_H_

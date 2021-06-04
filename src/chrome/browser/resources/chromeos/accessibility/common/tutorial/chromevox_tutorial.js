@@ -556,14 +556,23 @@ Polymer({
             this.requestSpeech.bind(this, hint, QueueMode.INTERJECT));
       }
     } else if (type === NudgeType.GENERAL) {
+      const messages = this.medium === InteractionMedium.KEYBOARD ?
+          [
+            'tutorial_hint_navigate', 'tutorial_hint_click',
+            'tutorial_hint_exit'
+          ] :
+          [
+            'tutorial_touch_hint_navigate', 'tutorial_touch_hint_click',
+            'tutorial_touch_hint_exit'
+          ];
       this.nudgeArray_ = [
         this.requestFullyDescribe.bind(this),
         this.requestFullyDescribe.bind(this),
         this.requestFullyDescribe.bind(this),
-        maybeGiveNudge.bind(this, this.getMsg('tutorial_hint_navigate')),
-        maybeGiveNudge.bind(this, this.getMsg('tutorial_hint_click')),
+        maybeGiveNudge.bind(this, this.getMsg(messages[0])),
+        maybeGiveNudge.bind(this, this.getMsg(messages[1])),
         this.requestSpeech.bind(
-            this, this.getMsg('tutorial_hint_exit'), QueueMode.INTERJECT)
+            this, this.getMsg(messages[2]), QueueMode.INTERJECT)
       ];
     } else {
       throw new Error('Invalid NudgeType: ' + type);
@@ -659,6 +668,8 @@ Polymer({
       earconElement.setAttribute('tabindex', -1);
       earconElement.addEventListener(
           'focus', this.requestEarcon.bind(this, earconId));
+      earconElement.addEventListener(
+          'blur', this.cancelEarcon_.bind(this, earconId));
       earconLesson.contentDiv.appendChild(earconElement);
     }
   },
@@ -670,6 +681,15 @@ Polymer({
   requestEarcon(earconId) {
     this.dispatchEvent(
         new CustomEvent('requestearcon', {composed: true, detail: {earconId}}));
+  },
+
+  /**
+   * @param {string} earconId
+   * @private
+   */
+  cancelEarcon_(earconId) {
+    this.dispatchEvent(
+        new CustomEvent('cancelearcon', {composed: true, detail: {earconId}}));
   },
 
   /** @private */

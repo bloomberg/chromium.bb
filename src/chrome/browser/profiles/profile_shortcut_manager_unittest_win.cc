@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/base_paths.h"
@@ -20,6 +21,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -47,7 +49,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   void SetUp() override {
     TestingBrowserProcess* browser_process =
         TestingBrowserProcess::GetGlobal();
-    profile_manager_.reset(new TestingProfileManager(browser_process));
+    profile_manager_ = std::make_unique<TestingProfileManager>(browser_process);
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_attributes_storage_ =
         profile_manager_->profile_attributes_storage();
@@ -94,9 +96,10 @@ class ProfileShortcutManagerTest : public testing::Test {
         << location.ToString();
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
         << location.ToString();
-    profile_attributes_storage_->AddProfile(
-        profile_1_path_, profile_1_name_, std::string(), std::u16string(),
-        false, 0, std::string(), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_1_path_;
+    params.profile_name = profile_1_name_;
+    profile_attributes_storage_->AddProfile(std::move(params));
     // Also create a non-badged shortcut for Chrome, which is conveniently done
     // by |CreateProfileShortcut()| since there is only one profile.
     profile_shortcut_manager_->CreateProfileShortcut(profile_1_path_);
@@ -111,9 +114,10 @@ class ProfileShortcutManagerTest : public testing::Test {
         << location.ToString();
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
         << location.ToString();
-    profile_attributes_storage_->AddProfile(
-        profile_1_path_, profile_1_name_, std::string(), std::u16string(),
-        false, 0, std::string(), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_1_path_;
+    params.profile_name = profile_1_name_;
+    profile_attributes_storage_->AddProfile(std::move(params));
     // Create a non profile shortcut for Chrome.
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
@@ -255,9 +259,10 @@ class ProfileShortcutManagerTest : public testing::Test {
                                  const base::FilePath& profile_path) {
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_name))
         << location.ToString();
-    profile_attributes_storage_->AddProfile(
-        profile_path, profile_name, std::string(), std::u16string(), false, 0,
-        std::string(), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_path;
+    params.profile_name = profile_name;
+    profile_attributes_storage_->AddProfile(std::move(params));
     profile_shortcut_manager_->CreateProfileShortcut(profile_path);
     task_environment_.RunUntilIdle();
     ValidateProfileShortcut(location, profile_name, profile_path);
@@ -443,9 +448,10 @@ TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
   ASSERT_TRUE(ProfileShortcutExistsAtDefaultPath(std::u16string()));
 
   // Create a second profile without a shortcut.
-  profile_attributes_storage_->AddProfile(
-      profile_2_path_, profile_2_name_, std::string(), std::u16string(), false,
-      0, std::string(), EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_2_path_;
+  params.profile_name = profile_2_name_;
+  profile_attributes_storage_->AddProfile(std::move(params));
   task_environment_.RunUntilIdle();
 
   // Ensure that the second profile doesn't have a shortcut and that the first
@@ -769,9 +775,10 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
       CreateRegularSystemLevelShortcut(FROM_HERE);
 
   // Create the initial profile.
-  profile_attributes_storage_->AddProfile(
-      profile_1_path_, profile_1_name_, std::string(), std::u16string(), false,
-      0, std::string(), EmptyAccountId());
+  ProfileAttributesInitParams params_1;
+  params_1.profile_path = profile_1_path_;
+  params_1.profile_name = profile_1_name_;
+  profile_attributes_storage_->AddProfile(std::move(params_1));
   task_environment_.RunUntilIdle();
   ASSERT_EQ(1u, profile_attributes_storage_->GetNumberOfProfiles());
 
@@ -788,9 +795,10 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
   EXPECT_TRUE(base::PathExists(system_level_shortcut_path));
 
   // Create a third profile without a shortcut and ensure it doesn't get one.
-  profile_attributes_storage_->AddProfile(
-      profile_3_path_, profile_3_name_, std::string(), std::u16string(), false,
-      0, std::string(), EmptyAccountId());
+  ProfileAttributesInitParams params_3;
+  params_3.profile_path = profile_3_path_;
+  params_3.profile_name = profile_3_name_;
+  profile_attributes_storage_->AddProfile(std::move(params_3));
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_3_name_));
 

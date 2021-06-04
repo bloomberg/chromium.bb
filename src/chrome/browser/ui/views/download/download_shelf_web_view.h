@@ -28,6 +28,8 @@ class DownloadShelfWebView : public DownloadShelf,
 
   // views::WebView:
   gfx::Size CalculatePreferredSize() const override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
  protected:
   // DownloadShelf:
@@ -39,8 +41,10 @@ class DownloadShelfWebView : public DownloadShelf,
   views::View* GetView() override;
 
   // DownloadShelfUIEmbedder:
-  void ShowDownloadContextMenu(DownloadUIModel* download,
-                               const gfx::Point& position) override;
+  void ShowDownloadContextMenu(
+      DownloadUIModel* download,
+      const gfx::Point& position,
+      base::OnceClosure on_menu_will_show_callback) override;
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;

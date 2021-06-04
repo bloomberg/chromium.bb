@@ -30,8 +30,8 @@ class SyncWebSocketImplTest : public testing::Test {
   ~SyncWebSocketImplTest() override {}
 
   void SetUp() override {
-    base::Thread::Options options(base::MessagePumpType::IO, 0);
-    ASSERT_TRUE(client_thread_.StartWithOptions(options));
+    ASSERT_TRUE(client_thread_.StartWithOptions(
+        base::Thread::Options(base::MessagePumpType::IO, 0)));
     context_getter_ = new URLRequestContextGetter(client_thread_.task_runner());
     ASSERT_TRUE(server_.Start());
   }
@@ -93,7 +93,7 @@ TEST_F(SyncWebSocketImplTest, DetermineRecipient) {
 
   // Getting message id and method
   base::DictionaryValue* message_dict;
-  base::Optional<base::Value> message_value = base::JSONReader::Read(message);
+  absl::optional<base::Value> message_value = base::JSONReader::Read(message);
   ASSERT_TRUE(message_value.has_value());
   ASSERT_TRUE(message_value->GetAsDictionary(&message_dict));
   std::string method;

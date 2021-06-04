@@ -66,6 +66,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/browser/client_side_phishing_model.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/metadata.pb.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
@@ -105,6 +106,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #endif
 
 #if !BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
@@ -267,7 +269,7 @@ GURL ConstructJsRequestURL(const GURL& base_url, JsRequestType request_type) {
 // Returns the new title.
 std::string JsRequestTestNavigateAndWaitForTitle(Browser* browser,
                                                  const GURL& url) {
-  auto expected_title = base::ASCIIToUTF16("ERROR");
+  std::u16string expected_title = u"ERROR";
   content::TitleWatcher title_watcher(
       browser->tab_strip_model()->GetActiveWebContents(), expected_title);
   title_watcher.AlsoWaitForTitle(u"NOT BLOCKED");
@@ -872,11 +874,11 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
       .Times(1);
   content::TestNavigationObserver observer(new_tab_contents);
   new_tab_rfh->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("var img=new Image();"
-                         "img.src=\"" +
-                         img_url.spec() +
-                         "\";"
-                         "document.body.appendChild(img);"),
+      u"var img=new Image();"
+      u"img.src=\"" +
+          base::ASCIIToUTF16(img_url.spec()) +
+          u"\";"
+          u"document.body.appendChild(img);",
       base::NullCallback());
   // Wait for interstitial to show.
   observer.WaitForNavigationFinished();
@@ -1045,9 +1047,9 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceWithAutoReloadTest,
   EXPECT_TRUE(ShowingInterstitialPage());
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   auto* reloader = error_page::NetErrorAutoReloader::FromWebContents(contents);
-  const base::Optional<base::OneShotTimer>& timer =
+  const absl::optional<base::OneShotTimer>& timer =
       reloader->next_reload_timer_for_testing();
-  EXPECT_EQ(base::nullopt, timer);
+  EXPECT_EQ(absl::nullopt, timer);
 }
 
 // Parameterised fixture to permit running the same test for Window and Worker
@@ -1227,6 +1229,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
   EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 ///////////////////////////////////////////////////////////////////////////////
 // END: These tests use SafeBrowsingService::Client to directly interact with
 // SafeBrowsingService.

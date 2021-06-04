@@ -7,21 +7,36 @@
 
 #include <vector>
 
-#include "components/arc/mojom/intent_common.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom-forward.h"
+#include "base/containers/flat_map.h"
+#include "build/chromeos_buildflags.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
-class Profile;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/arc/mojom/intent_common.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom-forward.h"
 
 namespace arc {
 class IntentFilter;
 }
+#endif
+
+class Profile;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
+
+namespace web_app {
+class WebApp;
+}  // namespace web_app
 
 namespace apps_util {
+// Create intent filters for |web_app| and append them to |target|.
+void PopulateWebAppIntentFilters(
+    const web_app::WebApp& web_app,
+    std::vector<apps::mojom::IntentFilterPtr>& target);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Create an intent struct from the file paths and mime types
 // of a list of files.
 // This util has to live under chrome/ because it uses fileapis
@@ -47,17 +62,26 @@ apps::mojom::IntentPtr CreateIntentForArcIntentAndActivity(
     arc::mojom::IntentInfoPtr arc_intent,
     arc::mojom::ActivityNamePtr activity);
 
+base::flat_map<std::string, std::string> CreateArcIntentExtras(
+    const apps::mojom::IntentPtr& intent);
+
+// Convert between App Service and ARC Intents.
+arc::mojom::IntentInfoPtr CreateArcIntent(const apps::mojom::IntentPtr& intent);
+
+// Convert an apps::mojom::Intent struct to a string to call the LaunchIntent
+// interface from arc::mojom::AppInstance. If |intent| has |ui_bypassed|, |url|
+// or |data|, returns an empty string as these intents cannot be represented in
+// string form.
+std::string CreateLaunchIntent(const std::string& package_name,
+                               const apps::mojom::IntentPtr& intent);
+
 // Convert between App Service and ARC IntentFilters.
 arc::IntentFilter CreateArcIntentFilter(
     const std::string& package_name,
     const apps::mojom::IntentFilterPtr& intent_filter);
 apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
     const arc::IntentFilter& arc_intent_filter);
-
-// Convert between App Service and ARC Intents.
-arc::mojom::IntentInfoPtr CreateArcIntent(const apps::mojom::IntentPtr& intent);
-base::flat_map<std::string, std::string> CreateArcIntentExtras(
-    const apps::mojom::IntentPtr& intent);
+#endif
 
 }  // namespace apps_util
 

@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/resources/release_callback.h"
@@ -124,8 +123,7 @@ class MEDIA_EXPORT VideoResourceUpdater
                    gfx::Rect quad_rect,
                    gfx::Rect visible_quad_rect,
                    const gfx::MaskFilterInfo& mask_filter_info,
-                   gfx::Rect clip_rect,
-                   bool is_clipped,
+                   absl::optional<gfx::Rect> clip_rect,
                    bool context_opaque,
                    float draw_opacity,
                    int sorting_context_id);

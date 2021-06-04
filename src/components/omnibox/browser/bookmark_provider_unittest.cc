@@ -13,7 +13,6 @@
 
 #include "base/guid.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -31,6 +30,7 @@
 #include "components/search_engines/omnibox_focus_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 using bookmarks::BookmarkModel;
@@ -185,7 +185,7 @@ class BookmarkProviderTest : public testing::Test {
   void TestNumMatchesAndTriggeredFeature(
       std::string input_text,
       size_t expected_matches_count,
-      base::Optional<OmniboxTriggeredFeatureService::Feature>
+      absl::optional<OmniboxTriggeredFeatureService::Feature>
           expected_triggered_feature = {});
 
   std::unique_ptr<MockAutocompleteProviderClient> provider_client_;
@@ -218,7 +218,7 @@ void BookmarkProviderTest::SetUp() {
 void BookmarkProviderTest::TestNumMatchesAndTriggeredFeature(
     std::string input_text,
     size_t expected_matches_count,
-    base::Optional<OmniboxTriggeredFeatureService::Feature>
+    absl::optional<OmniboxTriggeredFeatureService::Feature>
         expected_triggered_feature) {
   SCOPED_TRACE("[" + input_text + "]");  // Wrap |input_text| in `[]` to make
                                          // trailing whitespace apparent.
@@ -621,13 +621,13 @@ TEST_F(BookmarkProviderTest, ShortBookmarks) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
         omnibox::kRichAutocompletion,
-        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam,
+        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar.name,
           "4"},
-         {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixMinCharParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
+              .name,
           "5"},
          {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixShortcutProviderParam,
+              kRichAutocompletionAutocompleteNonPrefixShortcutProvider.name,
           "true"}});
     TestNumMatchesAndTriggeredFeature("te", 0);
     TestNumMatchesAndTriggeredFeature("te ", 0);
@@ -641,12 +641,12 @@ TEST_F(BookmarkProviderTest, ShortBookmarks) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
         omnibox::kRichAutocompletion,
-        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam,
+        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar.name,
           "4"},
-         {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixMinCharParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
+              .name,
           "5"},
-         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixAllParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixAll.name,
           "true"}});
     TestNumMatchesAndTriggeredFeature("te", 0);
     TestNumMatchesAndTriggeredFeature("te ", 0);
@@ -660,12 +660,12 @@ TEST_F(BookmarkProviderTest, ShortBookmarks) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
         omnibox::kRichAutocompletion,
-        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam,
+        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar.name,
           "4"},
-         {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixMinCharParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
+              .name,
           "5"},
-         {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitles.name,
           "true"}});
     TestNumMatchesAndTriggeredFeature("te", 0);
     TestNumMatchesAndTriggeredFeature("te ", 0);
@@ -681,15 +681,15 @@ TEST_F(BookmarkProviderTest, ShortBookmarks) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
         omnibox::kRichAutocompletion,
-        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam,
+        {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar.name,
           "4"},
-         {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixMinCharParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
+              .name,
           "5"},
-         {OmniboxFieldTrial::
-              kRichAutocompletionAutocompleteNonPrefixMinCharParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
+              .name,
           "true"},
-         {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesParam,
+         {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitles.name,
           "true"}});
     TestNumMatchesAndTriggeredFeature("te", 0);
     TestNumMatchesAndTriggeredFeature("te ", 0);

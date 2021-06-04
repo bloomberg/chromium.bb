@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/unloaded_extension_reason.h"
@@ -44,7 +45,7 @@ BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
 
 void BookmarkAppRegistrar::Start() {
-  extension_observer_.Add(ExtensionRegistry::Get(profile()));
+  extension_observation_.Observe(ExtensionRegistry::Get(profile()));
 }
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
@@ -117,7 +118,7 @@ void BookmarkAppRegistrar::OnExtensionUnloaded(
 
 void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
   NotifyAppRegistrarShutdown();
-  extension_observer_.RemoveAll();
+  extension_observation_.Reset();
 }
 
 std::string BookmarkAppRegistrar::GetAppShortName(
@@ -132,19 +133,19 @@ std::string BookmarkAppRegistrar::GetAppDescription(
   return extension ? extension->description() : std::string();
 }
 
-base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
+absl::optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
-    return base::nullopt;
+    return absl::nullopt;
 
   return AppThemeColorInfo::GetThemeColor(extension);
 }
 
-base::Optional<SkColor> BookmarkAppRegistrar::GetAppBackgroundColor(
+absl::optional<SkColor> BookmarkAppRegistrar::GetAppBackgroundColor(
     const web_app::AppId& app_id) const {
   // Only implemented for WebApp. Bookmark apps are going away.
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 const GURL& BookmarkAppRegistrar::GetAppStartUrl(
@@ -177,17 +178,28 @@ const apps::FileHandlers* BookmarkAppRegistrar::GetAppFileHandlers(
   return nullptr;
 }
 
-base::Optional<GURL> BookmarkAppRegistrar::GetAppScopeInternal(
+// Only implemented for WebApp. Bookmark apps are going away.
+const apps::ProtocolHandlers* BookmarkAppRegistrar::GetAppProtocolHandlers(
+    const web_app::AppId& app_id) const {
+  return nullptr;
+}
+
+bool BookmarkAppRegistrar::IsAppFileHandlerPermissionBlocked(
+    const web_app::AppId& app_id) const {
+  return false;
+}
+
+absl::optional<GURL> BookmarkAppRegistrar::GetAppScopeInternal(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
-    return base::nullopt;
+    return absl::nullopt;
 
   GURL scope_url = GetScopeURLFromBookmarkApp(GetBookmarkAppDchecked(app_id));
   if (scope_url.is_valid())
     return scope_url;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
@@ -378,6 +390,11 @@ std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
 }
 
 web_app::WebAppRegistrar* BookmarkAppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
+}
+
+const web_app::WebAppRegistrar* BookmarkAppRegistrar::AsWebAppRegistrar()
+    const {
   return nullptr;
 }
 

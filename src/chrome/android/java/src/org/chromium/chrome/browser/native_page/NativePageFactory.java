@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
@@ -85,7 +86,7 @@ public class NativePageFactory {
             mBottomSheetController = sheetController;
         }
 
-        protected NativePage buildNewTabPage(Tab tab) {
+        protected NativePage buildNewTabPage(Tab tab, String url) {
             NativePageHost nativePageHost = new TabShim(tab, mActivity);
             if (tab.isIncognito()) return new IncognitoNewTabPage(mActivity, nativePageHost);
 
@@ -93,7 +94,7 @@ public class NativePageFactory {
                     mActivity.getActivityTabProvider(), mActivity.getSnackbarManager(),
                     mActivity.getLifecycleDispatcher(), mActivity.getTabModelSelector(),
                     mActivity.isTablet(), mUma.get(), ColorUtils.inNightMode(mActivity),
-                    nativePageHost, tab, mBottomSheetController,
+                    nativePageHost, tab, url, mBottomSheetController,
                     mActivity.getShareDelegateSupplier(), mActivity.getWindowAndroid());
         }
 
@@ -131,13 +132,14 @@ public class NativePageFactory {
                     ()
                             -> HistoryManagerUtils.showHistoryManager(mActivity, tab,
                                     mActivity.getTabModelSelector().isIncognitoSelected()));
-            return new RecentTabsPage(mActivity, recentTabsManager, new TabShim(tab, mActivity));
+            return new RecentTabsPage(mActivity, recentTabsManager, new TabShim(tab, mActivity),
+                    mActivity.getBrowserControlsManager());
         }
 
         protected NativePage buildLaunchpadPage(Tab tab) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_LAUNCHPAD)) {
                 return new LaunchpadPage(mActivity, new TabShim(tab, mActivity),
-                        mActivity.getModalDialogManagerSupplier(),
+                        mActivity.getModalDialogManagerSupplier(), new SettingsLauncherImpl(),
                         LaunchpadUtils.retrieveWebApks(mActivity));
             } else {
                 return null;
@@ -171,7 +173,7 @@ public class NativePageFactory {
                 page = candidatePage;
                 break;
             case NativePageType.NTP:
-                page = getBuilder().buildNewTabPage(tab);
+                page = getBuilder().buildNewTabPage(tab, url);
                 break;
             case NativePageType.BOOKMARKS:
                 page = getBuilder().buildBookmarksPage(tab);

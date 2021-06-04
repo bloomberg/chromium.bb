@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler_test.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -39,12 +40,19 @@ namespace {
 
 const char kProfileId[] = "profile_id";
 const char kProfileName[] = "profile_name";
+const char16_t kProfileName16[] = u"profile_name";
 
+const char16_t kPluginName16[] = u"plugin_name";
+const char16_t kPluginVersion16[] = u"plugin_version";
+const char16_t kPluginDescription16[] = u"plugin_description";
+const char kPluginFolderPath[] = "plugin_folder_path";
+const char kPluginFileName[] = "plugin_file_name";
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kPluginName[] = "plugin_name";
 const char kPluginVersion[] = "plugin_version";
 const char kPluginDescription[] = "plugin_description";
-const char kPluginFolderPath[] = "plugin_folder_path";
-const char kPluginFileName[] = "plugin_file_name";
+#endif
 
 }  // namespace
 
@@ -67,14 +75,16 @@ class BrowserReportGeneratorTest : public ::testing::Test,
   void InitializeUpdate() {
     auto* build_state = g_browser_process->GetBuildState();
     build_state->SetUpdate(BuildState::UpdateType::kNormalUpdate,
-                           base::Version("1.2.3.4"), base::nullopt);
+                           base::Version("1.2.3.4"), absl::nullopt);
   }
 
   void InitializeProfile() {
+    ProfileAttributesInitParams params;
+    params.profile_path =
+        profile_manager()->profiles_dir().AppendASCII(kProfileId);
+    params.profile_name = kProfileName16;
     profile_manager_.profile_attributes_storage()->AddProfile(
-        profile_manager()->profiles_dir().AppendASCII(kProfileId),
-        base::ASCIIToUTF16(kProfileName), std::string(), std::u16string(),
-        false, 0, std::string(), EmptyAccountId());
+        std::move(params));
   }
 
   void InitializeIrregularProfiles() {
@@ -89,9 +99,9 @@ class BrowserReportGeneratorTest : public ::testing::Test,
 
   void InitializePlugin() {
     content::WebPluginInfo info;
-    info.name = base::ASCIIToUTF16(kPluginName);
-    info.version = base::ASCIIToUTF16(kPluginVersion);
-    info.desc = base::ASCIIToUTF16(kPluginDescription);
+    info.name = kPluginName16;
+    info.version = kPluginVersion16;
+    info.desc = kPluginDescription16;
     info.path = base::FilePath()
                     .AppendASCII(kPluginFolderPath)
                     .AppendASCII(kPluginFileName);

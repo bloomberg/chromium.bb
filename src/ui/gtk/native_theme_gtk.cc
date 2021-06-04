@@ -4,8 +4,6 @@
 
 #include "ui/gtk/native_theme_gtk.h"
 
-#include <gtk/gtk.h>
-
 #include "base/strings/strcat.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/gfx/color_palette.h"
@@ -108,8 +106,7 @@ NativeThemeGtk::NativeThemeGtk() {
 
     // Initialize the GtkTreeMenu type.  _gtk_tree_menu_get_type() is private,
     // so we need to initialize it indirectly.
-    auto model =
-        TakeGObject(GTK_TREE_MODEL(gtk_tree_store_new(1, G_TYPE_STRING)));
+    auto model = TakeGObject(GTK_TREE_MODEL(GtkTreeStoreNew(G_TYPE_STRING)));
     auto combo = TakeGObject(gtk_combo_box_new_with_model(model));
   }
 
@@ -164,11 +161,22 @@ void NativeThemeGtk::NotifyOnNativeThemeUpdated() {
   native_theme->NotifyOnNativeThemeUpdated();
 }
 
+std::string NativeThemeGtk::GetNativeThemeName() const {
+  gchar* theme = nullptr;
+  g_object_get(gtk_settings_get_default(), "gtk-theme-name", &theme, nullptr);
+  std::string theme_string;
+  if (theme) {
+    theme_string = theme;
+    g_free(theme);
+  }
+  return theme_string;
+}
+
 void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
                                     GtkParamSpec* param) {
   SetThemeCssOverride(ScopedCssProvider());
   for (auto& color : color_cache_)
-    color = base::nullopt;
+    color = absl::nullopt;
 
   // Hack to workaround a bug on GNOME standard themes which would
   // cause black patches to be rendered on GtkFileChooser dialogs.
@@ -212,15 +220,13 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
 
 bool NativeThemeGtk::AllowColorPipelineRedirection(
     ColorScheme color_scheme) const {
-  // TODO(crbug.com/1186781): Remove this override once we support NativeTheme
-  // changes for GTK in Color Pipeline.
-  return false;
+  return true;
 }
 
 SkColor NativeThemeGtk::GetSystemColorDeprecated(ColorId color_id,
                                                  ColorScheme color_scheme,
                                                  bool apply_processing) const {
-  base::Optional<SkColor> color = color_cache_[color_id];
+  absl::optional<SkColor> color = color_cache_[color_id];
   if (!color) {
     if (auto provider_color_id = ui::NativeThemeColorIdToColorId(color_id))
       color = SkColorFromColorId(provider_color_id.value());
@@ -244,7 +250,7 @@ void NativeThemeGtk::PaintArrowButton(
   // Add the "flat" styleclass to avoid drawing a border.
   auto context = GetStyleContextFromCss(
       GtkCheckVersion(3, 20)
-          ? StrCat({kGtkCSSMenuScrollbar, " #range GtkButton#button.flat"})
+          ? StrCat({GtkCssMenuScrollbar(), " #range GtkButton#button.flat"})
           : "GtkRange.scrollbar.button.flat");
   // Remove any rounded corners since arrow scrollbar buttons are tiny.
   ApplyCssToContext(context, "* { border-radius: 0px; }");
@@ -269,7 +275,7 @@ void NativeThemeGtk::PaintArrowButton(
   }
 
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, false);
-  PaintArrow(canvas, rect, direction, GetFgColorFromStyleContext(context));
+  PaintArrow(canvas, rect, direction, GtkStyleContextGetColor(context));
 }
 
 void NativeThemeGtk::PaintScrollbarTrack(
@@ -282,7 +288,7 @@ void NativeThemeGtk::PaintScrollbarTrack(
   PaintWidget(
       canvas, rect,
       GetStyleContextFromCss(GtkCheckVersion(3, 20)
-                                 ? StrCat({kGtkCSSMenuScrollbar, " #trough"})
+                                 ? StrCat({GtkCssMenuScrollbar(), " #trough"})
                                  : "GtkScrollbar.scrollbar.trough"),
       BG_RENDER_NORMAL, true);
 }
@@ -296,7 +302,7 @@ void NativeThemeGtk::PaintScrollbarThumb(
     ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
       GtkCheckVersion(3, 20)
-          ? StrCat({kGtkCSSMenuScrollbar, " #trough #slider"})
+          ? StrCat({GtkCssMenuScrollbar(), " #trough #slider"})
           : "GtkScrollbar.scrollbar.slider");
   gtk_style_context_set_state(context, StateToStateFlags(state));
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
@@ -318,7 +324,7 @@ void NativeThemeGtk::PaintMenuPopupBackground(
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background,
     ColorScheme color_scheme) const {
-  auto context = GetStyleContextFromCss(kGtkCSSMenu);
+  auto context = GetStyleContextFromCss(GtkCssMenu());
   // Chrome menus aren't rendered with transparency, so avoid rounded corners.
   ApplyCssToContext(context, "* { border-radius: 0px; }");
   PaintWidget(canvas, gfx::Rect(size), context, BG_RENDER_RECURSIVE, false);
@@ -331,7 +337,7 @@ void NativeThemeGtk::PaintMenuItemBackground(
     const MenuItemExtraParams& menu_item,
     ColorScheme color_scheme) const {
   auto context =
-      GetStyleContextFromCss(StrCat({kGtkCSSMenu, " ", kGtkCSSMenuItem}));
+      GetStyleContextFromCss(StrCat({GtkCssMenu(), " ", GtkCssMenuItem()}));
   gtk_style_context_set_state(context, StateToStateFlags(state));
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
 }
@@ -365,7 +371,7 @@ void NativeThemeGtk::PaintMenuSeparator(
   };
   if (GtkCheckVersion(3, 20)) {
     auto context = GetStyleContextFromCss(
-        StrCat({kGtkCSSMenu, " GtkSeparator#separator.horizontal"}));
+        StrCat({GtkCssMenu(), " GtkSeparator#separator.horizontal"}));
     int min_height = 1;
     auto margin = GtkStyleContextGetMargin(context);
     auto border = GtkStyleContextGetBorder(context);
@@ -383,7 +389,7 @@ void NativeThemeGtk::PaintMenuSeparator(
     PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NORMAL, true);
   } else {
     auto context = GetStyleContextFromCss(
-        StrCat({kGtkCSSMenu, " ", kGtkCSSMenuItem, ".separator.horizontal"}));
+        StrCat({GtkCssMenu(), " ", GtkCssMenuItem(), ".separator.horizontal"}));
     gboolean wide_separators = false;
     gint separator_height = 0;
     GtkStyleContextGetStyle(context, "wide-separators", &wide_separators,
@@ -399,7 +405,7 @@ void NativeThemeGtk::PaintMenuSeparator(
       PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NONE, true);
     } else {
       cc::PaintFlags flags;
-      flags.setColor(GetFgColorFromStyleContext(context));
+      flags.setColor(GtkStyleContextGetColor(context));
       flags.setAntiAlias(true);
       flags.setStrokeWidth(1);
       canvas->drawLine(x + 0.5f, y + 0.5f, x + w + 0.5f, y + 0.5f, flags);

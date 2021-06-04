@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/updater/tools/certificate_tag.h"
 
 namespace updater {
@@ -129,14 +128,14 @@ int CertificateTagMain(int argc, char** argv) {
     HandleError(logging::GetLastSystemErrorCode());
   }
 
-  base::Optional<tools::Binary> bin = tools::Binary::Parse(contents);
+  absl::optional<tools::Binary> bin = tools::Binary::Parse(contents);
   if (!bin) {
     std::cerr << "Failed to parse tag binary." << std::endl;
     std::exit(1);
   }
 
   if (args.get_superfluous_cert_tag) {
-    base::Optional<base::span<const uint8_t>> tag = bin->tag();
+    absl::optional<base::span<const uint8_t>> tag = bin->tag();
     if (!tag) {
       std::cerr << "No tag in binary." << std::endl;
       std::exit(1);

@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/socket_permission_request.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -180,7 +181,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnListenCompleted,
                          weak_ptr_factory_.GetWeakPtr(), reply_context),
-          net::ERR_FAILED, base::nullopt /* local_addr_out */));
+          net::ERR_FAILED, absl::nullopt /* local_addr_out */));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -206,7 +207,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnAcceptCompleted,
                          base::Unretained(this), reply_context,
                          std::move(socket_observer_receiver)),
-          net::ERR_FAILED, base::nullopt /* remote_addr */, mojo::NullRemote(),
+          net::ERR_FAILED, absl::nullopt /* remote_addr */, mojo::NullRemote(),
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle()));
   return PP_OK_COMPLETIONPENDING;
@@ -224,7 +225,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgStopListening(
 void PepperTCPServerSocketMessageFilter::OnListenCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result,
-    const base::Optional<net::IPEndPoint>& local_addr) {
+    const absl::optional<net::IPEndPoint>& local_addr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Exit early if this is called during Close().
@@ -291,7 +292,7 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     int net_result,
-    const base::Optional<net::IPEndPoint>& remote_addr,
+    const absl::optional<net::IPEndPoint>& remote_addr,
     mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
@@ -329,16 +330,19 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  GetIOThreadTaskRunner({})->PostTask(
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread,
+          &PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnProcessThread,
           this, context, std::move(connected_socket),
           std::move(socket_observer_receiver), std::move(receive_stream),
           std::move(send_stream), bound_addr_, pp_remote_addr));
 }
 
-void PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread(
+void PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnProcessThread(
     const ppapi::host::ReplyMessageContext& context,
     mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
@@ -347,7 +351,9 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread(
     mojo::ScopedDataPipeProducerHandle send_stream,
     PP_NetAddress_Private pp_local_addr,
     PP_NetAddress_Private pp_remote_addr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   if (!host_->IsValidInstance(instance_)) {
     // The instance has been removed while Accept was in progress. This object

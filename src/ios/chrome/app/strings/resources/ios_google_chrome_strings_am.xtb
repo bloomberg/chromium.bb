@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1096883626080133124">ከመቼውም ጊዜ በበለጠ ቀላል፣ ደህንነቱ በተጠበቀ እና ፈጣን በሆነ Google Chrome አማካኝነት ተጨማሪ ነገሮችን ያከናውኑ</translation>
 <translation id="1282031177488366470">የChrome ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
 <translation id="1314663809820920746">አሁንም በዚህ መሣሪያ ላይ ሁሉንም የእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮችን ማየት ይችላሉ። ለውጦችን ካደረጉ ከGoogle መለያዎ ጋር አይሰምርም።</translation>
 <translation id="1479202195792305274">Chrome በእርስዎ የGoogle መለያ በሚገቡበት ጊዜ የእርስዎን የይለፍ ቃላትን ሊፈትሽ ይችላል።</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ዝማኔዎች ካሉ መፈተሽ አልቻለም። የበይነመረብ ግንኙነትዎን ለመፈተሽ ይሞክሩ።</translation>
 <translation id="1682483655351012182">የChrome ውሂብዎን ያስምሩ</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">የአጠቃቀም ስታቲስቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን ለማሻሻል ያግዙ</translation>
 <translation id="1917964099031477364">ይህ መለያ እና ማንኛውም ያልተቀመጠ ውሂብ ከChrome እና በዚህ መሣሪያ ላይ ካሉት ከሌሎች የGoogle መተግበሪያዎች ይወገዳል።</translation>
 <translation id="2009224836393115614">Chrome የእርስዎን የይለፍ ቃላት መፈተሽ አልችለም። የበይነመረብ ግንኙነትዎን ለመፈተሽ ይሞክሩ።</translation>
 <translation id="2147651015520127414">Chrome የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ዝማኔዎች ካሉ መፈተሽ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="2732745070297234559">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ነገ እንደገና ይሞክሩ።</translation>
 <translation id="2740105938841089077">አገናኞችን ለመክፈት Chromeን ይጠቀሙ</translation>
+<translation id="2869959624320573933">በመለያ ወደ Chrome ይግቡ</translation>
 <translation id="2919738076569633423">Chromeን በመጠቀምዎ በ<ph name="BEGIN_LINK_TOS" />አገልግሎት ውሉ<ph name="END_LINK_TOS" /> ተስማማተዋል።</translation>
 <translation id="3030414234702425231">እርስዎ በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ Chrome ውሂብዎ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በእርስዎ Google መለያ ውስጥ ይቆያል።</translation>
 <translation id="3167189358072330585">መለያዎ በGoogle Chrome ላይ አይሠራም። እባክዎ የጎራዎ አስተዳዳሪውን ያነጋግሩ ወይም ለመግባት መደበኛ የሆነ የGoogle መለያ ይጠቀሙ።</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome የእርስዎን መለያዎች ወደ ድር በማምጣት ጊዜ ይቆጥብልዎለታል። ቅንብሮች ውስጥ መለያዎችን ማከል ወይም ማስወገድ ይችላሉ።</translation>
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3345341804167540816">Chromeን በየትኛውም ቦታ ይጠቀሙበት</translation>
+<translation id="3455456143708465450">ከChrome የበለጠ ለማግኘት በGoogle መለያዎ ይግቡ</translation>
 <translation id="3522659714780527202">Chromeን ከሚጠቀሙበት የትኛዉም ቦታ ትሮችን ለማየት ስምረትን ያብሩ</translation>
 <translation id="3533694711092285624">ምንም የተቀመጡ የይለፍ ቃላት የሉም። Chrome እርስዎ ሲያስቀምጧቸው የእርስዎን የይለፍ ቃላት መፈተሽ ይችላል።</translation>
 <translation id="3706101708757577809">አገናኞችን በመልእክቶች፣ በሰነዶች እና በሌሎች መተግበሪያዎች ውስጥ መታ በሚያደርጉበት ጊዜ ሁሉ Chromeን አሁን መጠቀም ይችላሉ።</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Chrome አካባቢዎን እንዲያውቅ ከፈቀዱ Chrome እርስዎ ወደሚፈቅዷቸው ማናቸውም ጣቢያዎች ይልከዋል። ጣቢያዎች እንደ በአቅራቢያ ያሉ ሱቆች ወይም ዜናዎች ያሉ ለእርስዎ የሚያሳዩት የአከባቢ መረጃ ሲኖራቸው አካባቢዎን ሊጠይቁ ይችላሉ።</translation>
 <translation id="6036420186814142909">Google Chrome እርስዎ የበይነመረብ ውሂብዎን እና ድረ-ገጾችን በምን ያህል ፍጥነት መጫን እንደሚችሉ እንዲያቀናብሩ የሚያስችሉዎት ባህሪያት አሉት።
 <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">የChrome በመለያ መግባትን ይፍቀዱ</translation>
 <translation id="6181930887571472871">ወደ Chrome ይቀይሩ</translation>
 <translation id="6238746320622508509">Chrome የእርስዎን ማንነት የማያሳውቁ ትሮች እንዲቆልፍ ይፍቀዱለት።</translation>
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">የChrome ውሂብዎ ከዚህ መሣሪያ ላይ ይጽዳ?</translation>
 <translation id="6822673484890854830">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="6964931465519938134">አገናኞችን በመልእክቶች፣ በሰነዶች እና በሌሎች መተግበሪያዎች ውስጥ መታ በሚያደርጉበት ጊዜ ሁሉ Chromeን አሁን መጠቀም ይችላሉ።</translation>
+<translation id="7059914902409643750">Chromeን የራስዎ ያድርጉት</translation>
 <translation id="7124339256045485976">Chromeን እንደተዘመነ ያቆዩት</translation>
 <translation id="7161390184744336561">Google Chrome ቀኑ አልፎበታል</translation>
 <translation id="7165736900384873061">የGoogle Chrome QR መቃኛን መጠቀም ይጀምሩ</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome የተዘመነ ነው</translation>
 <translation id="8022947259858476807">አገናኞችን ለመክፈት፣ ከመግብሮች ለመፈለግ እና በሌሎች መተግበሪያዎች ውስጥ የይለፍ ቃሎችን የራስ-ለመሙላት በነባሪነት Chrome ን ይጠቀሙ</translation>
 <translation id="8160472928944011082">Chromeን ማዘመን አልተቻለም</translation>
+<translation id="8263079278049777200">ወደዚህ ጣቢያ፣ ወደ የእርስዎ Google መለያ እና ወደ Chrome ይግቡ። በኋላ ስምረትን ማብራት ይችላሉ።</translation>
 <translation id="8357607116237445042">የChrome ውሂብዎን ከዚህ መሣሪያ ይጸዳ ወይም ይቆይ እንደሆነ ይምረጡ</translation>
 <translation id="8370517070665726704">የቅጂ መብት <ph name="YEAR" /> Google LLC. ሁሉም መብቶች በህግ የተጠበቁ ናቸው።</translation>
 <translation id="840168496893712993">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ እነሱን ለማራገፍ ይሞክሩ።</translation>
@@ -95,5 +102,6 @@
   3. Chromeን ይምረጡ።</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">በGoogle Chrome አማካኝነት ደህንነትዎን ይጠብቁ</translation>
+<translation id="8772179140489533211">ወደ Chrome ለመግባት ጥያቄዎችን ያሳያል።</translation>
 <translation id="9112744793181547300">Chrome እንደ ነባሪ ይቀናበር?</translation>
 </translationbundle>

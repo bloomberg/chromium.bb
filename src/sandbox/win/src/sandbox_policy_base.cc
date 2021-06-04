@@ -8,11 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/acl.h"
@@ -108,20 +109,16 @@ PolicyBase::PolicyBase()
       is_csrss_connected_(true),
       policy_maker_(nullptr),
       policy_(nullptr),
-      lowbox_sid_(nullptr),
       lockdown_default_dacl_(false),
       add_restricting_random_sid_(false),
       effective_token_(nullptr) {
   ::InitializeCriticalSection(&lock_);
-  dispatcher_.reset(new TopLevelDispatcher(this));
+  dispatcher_ = std::make_unique<TopLevelDispatcher>(this);
 }
 
 PolicyBase::~PolicyBase() {
   delete policy_maker_;
   delete policy_;
-
-  if (lowbox_sid_)
-    ::LocalFree(lowbox_sid_);
 
   ::DeleteCriticalSection(&lock_);
 }
@@ -274,7 +271,7 @@ void PolicyBase::DestroyAlternateDesktop() {
 }
 
 ResultCode PolicyBase::SetIntegrityLevel(IntegrityLevel integrity_level) {
-  if (app_container_profile_)
+  if (app_container_)
     return SBOX_ERROR_BAD_PARAMS;
   integrity_level_ = integrity_level;
   return SBOX_ALL_OK;
@@ -295,10 +292,11 @@ ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sid);
-  if (lowbox_sid_ || app_container_profile_)
+  if (app_container_)
     return SBOX_ERROR_BAD_PARAMS;
 
-  if (!ConvertStringSidToSid(sid, &lowbox_sid_))
+  app_container_ = AppContainerBase::CreateLowbox(sid);
+  if (!app_container_)
     return SBOX_ERROR_INVALID_LOWBOX_SID;
 
   return SBOX_ALL_OK;
@@ -308,7 +306,7 @@ ResultCode PolicyBase::SetProcessMitigations(MitigationFlags flags) {
   // Prior to Win10 RS5 CreateProcess fails when AppContainer and mitigation
   // flags are enabled. Return an error on downlevel platforms if trying to
   // set new mitigations.
-  if (app_container_profile_ &&
+  if (app_container_ &&
       base::win::GetVersion() < base::win::Version::WIN10_RS5) {
     return SBOX_ERROR_BAD_PARAMS;
   }
@@ -474,29 +472,12 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
     }
   }
 
-  if (lowbox_sid_) {
-    if (!lowbox_directory_.IsValid()) {
-      result =
-          CreateLowBoxObjectDirectory(lowbox_sid_, true, &lowbox_directory_);
-      DCHECK(result == ERROR_SUCCESS);
-    }
+  if (app_container_ &&
+      app_container_->GetAppContainerType() == AppContainerType::kLowbox) {
+    ResultCode result_code = app_container_->BuildLowBoxToken(lowbox, lockdown);
 
-    // The order of handles isn't important in the CreateLowBoxToken call.
-    // The kernel will maintain a reference to the object directory handle.
-    HANDLE saved_handles[1] = {lowbox_directory_.Get()};
-    DWORD saved_handles_count = lowbox_directory_.IsValid() ? 1 : 0;
-
-    Sid package_sid(lowbox_sid_);
-    SecurityCapabilities caps(package_sid);
-    if (CreateLowBoxToken(lockdown->Get(), PRIMARY, &caps, saved_handles,
-                          saved_handles_count, lowbox) != ERROR_SUCCESS) {
-      return SBOX_ERROR_CANNOT_CREATE_LOWBOX_TOKEN;
-    }
-
-    if (!ReplacePackageSidInDacl(lowbox->Get(), SE_KERNEL_OBJECT, package_sid,
-                                 TOKEN_ALL_ACCESS)) {
-      return SBOX_ERROR_CANNOT_MODIFY_LOWBOX_TOKEN_DACL;
-    }
+    if (result_code != SBOX_ALL_OK)
+      return result_code;
   }
 
   // Create the 'better' token. We use this token as the one that the main
@@ -509,10 +490,6 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN;
 
   return SBOX_ALL_OK;
-}
-
-PSID PolicyBase::GetLowBoxSid() const {
-  return lowbox_sid_;
 }
 
 ResultCode PolicyBase::AddTarget(std::unique_ptr<TargetProcess> target) {
@@ -641,19 +618,18 @@ ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(package_name);
-  if (lowbox_sid_ || app_container_profile_ ||
-      integrity_level_ != INTEGRITY_LEVEL_LAST) {
+  if (app_container_ || integrity_level_ != INTEGRITY_LEVEL_LAST) {
     return SBOX_ERROR_BAD_PARAMS;
   }
 
   if (create_profile) {
-    app_container_profile_ = AppContainerProfileBase::Create(
+    app_container_ = AppContainerBase::CreateProfile(
         package_name, L"Chrome Sandbox", L"Profile for Chrome Sandbox");
   } else {
-    app_container_profile_ = AppContainerProfileBase::Open(package_name);
+    app_container_ = AppContainerBase::Open(package_name);
   }
-  if (!app_container_profile_)
-    return SBOX_ERROR_CREATE_APPCONTAINER_PROFILE;
+  if (!app_container_)
+    return SBOX_ERROR_CREATE_APPCONTAINER;
 
   // A bug exists in CreateProcess where enabling an AppContainer profile and
   // passing a set of mitigation flags will generate ERROR_INVALID_PARAMETER.
@@ -671,8 +647,8 @@ ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
   return SBOX_ALL_OK;
 }
 
-scoped_refptr<AppContainerProfile> PolicyBase::GetAppContainerProfile() {
-  return GetAppContainerProfileBase();
+scoped_refptr<AppContainer> PolicyBase::GetAppContainer() {
+  return GetAppContainerBase();
 }
 
 void PolicyBase::SetEffectiveToken(HANDLE token) {
@@ -680,9 +656,8 @@ void PolicyBase::SetEffectiveToken(HANDLE token) {
   effective_token_ = token;
 }
 
-scoped_refptr<AppContainerProfileBase>
-PolicyBase::GetAppContainerProfileBase() {
-  return app_container_profile_;
+scoped_refptr<AppContainerBase> PolicyBase::GetAppContainerBase() {
+  return app_container_;
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess& target) {

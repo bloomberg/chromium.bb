@@ -152,7 +152,7 @@ std::string GetSubjectPublicKeyInfo(const net::X509Certificate& certificate) {
           &spki_bytes)) {
     return {};
   }
-  return spki_bytes.as_string();
+  return std::string(spki_bytes);
 }
 
 }  // namespace
@@ -197,6 +197,13 @@ SecurityTokenSessionController::~SecurityTokenSessionController() {
 
 void SecurityTokenSessionController::Shutdown() {
   pref_change_registrar_.RemoveAll();
+}
+
+void SecurityTokenSessionController::OnChallengeResponseKeysUpdated() {
+  extension_to_spkis_.clear();
+  observed_extensions_.clear();
+  LoadStoredChallengeResponseSpkiKeysForUser(
+      user_->GetAccountId(), &extension_to_spkis_, &observed_extensions_);
 }
 
 void SecurityTokenSessionController::OnCertificatesUpdated(

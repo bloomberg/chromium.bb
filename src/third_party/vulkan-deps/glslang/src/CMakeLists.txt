@@ -37,6 +37,9 @@ cmake_minimum_required(VERSION 2.8.12)
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif()
+if(POLICY CMP0054)
+  cmake_policy(SET CMP0054 NEW)
+endif()
 
 project(glslang LANGUAGES CXX)
 
@@ -195,7 +198,7 @@ elseif(MSVC)
         add_compile_options(/EHsc) # Enable Exceptions
 	else()
         string(REGEX REPLACE /EHsc "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Try to remove default /EHsc cxx_flag
-        add_compile_definitions(_HAS_EXCEPTIONS=0)
+        add_compile_options(/D_HAS_EXCEPTIONS=0)
     endif()
 endif()
 

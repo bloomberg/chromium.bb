@@ -213,4 +213,38 @@ describe('use_theme_colors', () => {
     const warnings = await lint(code);
     assert.lengthOf(warnings, 0);
   });
+
+  it('correctly only detects the relevant color variables for border-X declarations', async () => {
+    const code = 'header {border-bottom: var(--header-border-height) solid var(--color-details-hairline); }';
+    const warnings = await lint(code);
+    assert.lengthOf(warnings, 0);
+  });
+
+  it('errors on a bad variable name for a border color', async () => {
+    const code = 'header {border-top: var(--header-border-height) solid var(--color-does-not-exist); }';
+    const warnings = await lint(code);
+    assert.deepEqual(warnings, [
+      {
+        line: 1,
+        column: 9,
+        rule: 'plugin/use_theme_colors',
+        severity: 'error',
+        text: 'All CSS color declarations should use a variable defined in ui/legacy/themeColors.css'
+      },
+    ]);
+  });
+
+  it('is silent when linting code that has an empty var()', async () => {
+    /**
+     * This is a weird test case but if you've got Stylelint in your editor and
+     * you're working on changing files, I've found that after typing "var("
+     * (and my editor adding the closing ")"), the theme_colors rule tries to
+     * run against this and fails as it expects the var() to contain a variable.
+     * So if we do detect var(), we just do nothing and wait for the user to
+     * actually fill it in.
+     */
+    const code = 'header { color: var(); }';
+    const warnings = await lint(code);
+    assert.lengthOf(warnings, 0);
+  });
 });

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/media_export.h"
@@ -162,6 +163,7 @@ MEDIA_EXPORT extern const base::Feature kMediaSessionWebRTC;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
 MEDIA_EXPORT extern const base::Feature kPictureInPicture;
+MEDIA_EXPORT extern const base::Feature kPlaybackSpeedButton;
 MEDIA_EXPORT extern const base::Feature kPreloadMediaEngagementData;
 MEDIA_EXPORT extern const base::Feature kPreloadMetadataLazyLoad;
 MEDIA_EXPORT extern const base::Feature kPreloadMetadataSuspend;
@@ -205,7 +207,6 @@ MEDIA_EXPORT extern const base::Feature kMediaControlsExpandGesture;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioning;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioningAtStartup;
-MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
 MEDIA_EXPORT extern const base::Feature kCanPlayHls;
 MEDIA_EXPORT extern const base::Feature kPictureInPictureAPI;
 MEDIA_EXPORT extern const base::Feature kHlsPlayer;
@@ -245,6 +246,8 @@ MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
     const base::CommandLine& command_line);
 
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
+
+MEDIA_EXPORT bool IsLiveCaptionFeatureEnabled();
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

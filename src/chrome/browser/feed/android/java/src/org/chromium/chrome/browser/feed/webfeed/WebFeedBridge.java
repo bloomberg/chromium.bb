@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.url.GURL;
 
@@ -24,6 +25,13 @@ import java.util.Random;
  */
 @JNINamespace("feed")
 public class WebFeedBridge {
+    // Access to JNI test hooks for other libraries. This can go away once more Feed code is
+    // migrated to chrome/browser/feed.
+    public static org.chromium.base.JniStaticTestMocker<WebFeedBridge.Natives>
+    getTestHooksForTesting() {
+        return WebFeedBridgeJni.TEST_HOOKS;
+    }
+
     // TODO(crbug/1152592): remove members needed only for returning mock results.
     private static Random sRandom = new Random();
     private static int sCounter;
@@ -76,7 +84,7 @@ public class WebFeedBridge {
             this.visitUrl = visitUrl;
             this.subscriptionStatus = subscriptionStatus;
             this.isActive = isActive;
-            this.isRecommended = false;
+            this.isRecommended = isRecommended;
         }
 
         // TODO(crbug/1152592): remove mock implementation.
@@ -95,11 +103,13 @@ public class WebFeedBridge {
     /**
      * Returns the Web Feed metadata for the web feed associated with this page. May return a
      * subscribed, recently subscribed, or recommended Web Feed.
+     * @param tab The tab showing the page.
      * @param url The URL for which the status is being requested.
      * @param callback The callback to receive the Web Feed metadata, or null if it is not found.
      */
-    public void getWebFeedMetadataForPage(GURL url, Callback<WebFeedMetadata> callback) {
-        WebFeedBridgeJni.get().findWebFeedInfoForPage(new WebFeedPageInformation(url), callback);
+    public void getWebFeedMetadataForPage(Tab tab, GURL url, Callback<WebFeedMetadata> callback) {
+        WebFeedBridgeJni.get().findWebFeedInfoForPage(
+                new WebFeedPageInformation(url, tab), callback);
     }
 
     /**
@@ -124,6 +134,14 @@ public class WebFeedBridge {
             }
             callback.onResult(list);
         });
+    }
+
+    /**
+     * Refreshes the list of followed web feeds from the server. See
+     * `WebFeedSubscriptions.RefreshSubscriptions`.
+     */
+    public void refreshFollowedWebFeeds(Callback<Boolean> callback) {
+        WebFeedBridgeJni.get().refreshSubscriptions(callback);
     }
 
     /** Container for results from a follow request. */
@@ -161,11 +179,12 @@ public class WebFeedBridge {
 
     /**
      * Requests to follow of the most relevant Web Feed represented by the provided URL.
+     * @param tab The tab with the loaded page that should be followed.
      * @param url The URL that indicates the Web Feed to be followed.
      * @param callback The callback to receive the follow results.
      */
-    public void followFromUrl(GURL url, Callback<FollowResults> callback) {
-        WebFeedBridgeJni.get().followWebFeed(new WebFeedPageInformation(url), callback);
+    public void followFromUrl(Tab tab, GURL url, Callback<FollowResults> callback) {
+        WebFeedBridgeJni.get().followWebFeed(new WebFeedPageInformation(url, tab), callback);
     }
     public void followFromUrlFake(GURL url, Callback<FollowResults> callback) {
         // TODO(crbug/1152592): remove mock implementation.
@@ -214,6 +233,11 @@ public class WebFeedBridge {
         return sRandom.nextBoolean();
     }
 
+    /** Returns whether the user subscribes to at least one Web Feed. */
+    public static boolean isWebFeedSubscriber() {
+        return WebFeedBridgeJni.get().isWebFeedSubscriber();
+    }
+
     /** This is deprecated, do not use. */
     @Deprecated
     public static class FollowedIds {
@@ -244,18 +268,26 @@ public class WebFeedBridge {
 
     static class WebFeedPageInformation {
         final GURL mUrl;
-        WebFeedPageInformation(GURL url) {
+        final Tab mTab;
+        WebFeedPageInformation(GURL url, Tab tab) {
             mUrl = url;
+            mTab = tab;
         }
 
         @CalledByNative("WebFeedPageInformation")
         GURL getUrl() {
             return mUrl;
         }
+
+        @CalledByNative("WebFeedPageInformation")
+        Tab getTab() {
+            return mTab;
+        }
     }
 
+    @VisibleForTesting
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         void followWebFeed(WebFeedPageInformation pageInfo, Callback<FollowResults> callback);
         void followWebFeedById(byte[] webFeedId, Callback<FollowResults> callback);
         void unfollowWebFeed(byte[] webFeedId, Callback<UnfollowResults> callback);
@@ -263,6 +295,8 @@ public class WebFeedBridge {
                 WebFeedPageInformation pageInfo, Callback<WebFeedMetadata> callback);
         void findWebFeedInfoForWebFeedId(byte[] webFeedId, Callback<WebFeedMetadata> callback);
         void getAllSubscriptions(Callback<Object[]> callback);
+        void refreshSubscriptions(Callback<Boolean> callback);
         void getRecentVisitCountsToHost(GURL url, Callback<int[]> callback);
+        boolean isWebFeedSubscriber();
     }
 }

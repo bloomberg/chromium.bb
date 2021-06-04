@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/policy/browser_signin_policy_handler.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -158,8 +158,8 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
 
   void AddSigninDisabledEnterprisePolicy() {
     NSDictionary* policy = @{
-      base::SysUTF8ToNSString(policy::key::kBrowserSignin) :
-          [NSNumber numberWithInt:(int)policy::BrowserSigninMode::kDisabled]
+      base::SysUTF8ToNSString(policy::key::kBrowserSignin) : [NSNumber
+          numberWithInt:static_cast<int>(BrowserSigninMode::kDisabled)]
     };
 
     [[NSUserDefaults standardUserDefaults]
@@ -176,8 +176,7 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
   AuthenticationServiceFake* auth_service_ = nullptr;
   syncer::MockSyncService* sync_service_mock_ = nullptr;
   SyncSetupServiceMock* sync_setup_service_mock_ = nullptr;
-  scoped_refptr<password_manager::TestPasswordStore> password_store_mock_ =
-      nullptr;
+  scoped_refptr<password_manager::TestPasswordStore> password_store_mock_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;

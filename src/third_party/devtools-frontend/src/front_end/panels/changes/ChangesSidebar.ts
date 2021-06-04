@@ -6,10 +6,10 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Snippets from '../../snippets/snippets.js';
+import * as Workspace from '../../models/workspace/workspace.js';
+import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Workspace from '../../workspace/workspace.js';
-import * as WorkspaceDiff from '../../workspace_diff/workspace_diff.js';
+import * as Snippets from '../snippets/snippets.js';
 
 const UIStrings = {
   /**
@@ -29,7 +29,7 @@ export class ChangesSidebar extends UI.Widget.Widget {
     super();
     this._treeoutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeoutline.setFocusable(false);
-    this._treeoutline.registerRequiredCSS('panels/changes/changesSidebar.css', {enableLegacyPatching: true});
+    this._treeoutline.registerRequiredCSS('panels/changes/changesSidebar.css', {enableLegacyPatching: false});
     this._treeoutline.setComparator((a, b) => Platform.StringUtilities.compare(a.titleAsText(), b.titleAsText()));
     this._treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this._selectionChanged, this);
     UI.ARIAUtils.markAsTablist(this._treeoutline.contentElement);

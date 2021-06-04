@@ -8,12 +8,10 @@
 #include <map>
 
 #include "ash/public/cpp/file_icon_util.h"
-#include "ash/public/cpp/holding_space/holding_space_color_provider.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -57,20 +55,12 @@ gfx::ImageSkia CreateEmptyImageSkia(const gfx::Size& size) {
 // Creates an image to represent the file type of the specified `file_path`.
 gfx::ImageSkia CreateFileTypeImageSkia(const base::FilePath& file_path,
                                        bool is_folder,
-                                       const gfx::Size& size) {
-  gfx::ImageSkia file_type_icon;
-  if (is_folder) {
-    file_type_icon = gfx::CreateVectorIcon(
-        chromeos::kFiletypeFolderIcon, kFileTypeIconSize,
-        HoldingSpaceColorProvider::Get()->GetFileIconColor());
-  } else {
-    file_type_icon = GetIconForPath(
-        file_path, HoldingSpaceColorProvider::Get()->GetFileIconColor());
-  }
-  // Superimpose the `file_type_icon` over an empty image in order to center it
-  // within the image at a fixed size.
-  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
-      CreateEmptyImageSkia(size), file_type_icon);
+                                       const gfx::Size& size,
+                                       bool dark_background) {
+  const gfx::ImageSkia file_type_icon =
+      is_folder ? GetIconFromType(IconType::kFolder, dark_background)
+                : GetIconForPath(file_path, dark_background);
+  return HoldingSpaceImage::SuperimposeOverEmptyImage(file_type_icon, size);
 }
 
 }  // namespace
@@ -103,14 +93,18 @@ class HoldingSpaceImage::ImageSkiaSource : public gfx::ImageSkiaSource {
 
 // HoldingSpaceImage -----------------------------------------------------------
 
-HoldingSpaceImage::HoldingSpaceImage(const gfx::Size& max_size,
-                                     const base::FilePath& backing_file_path,
-                                     AsyncBitmapResolver async_bitmap_resolver)
+HoldingSpaceImage::HoldingSpaceImage(
+    const gfx::Size& max_size,
+    const base::FilePath& backing_file_path,
+    AsyncBitmapResolver async_bitmap_resolver,
+    absl::optional<gfx::ImageSkia> file_type_icon)
     : max_size_(max_size),
       backing_file_path_(backing_file_path),
-      async_bitmap_resolver_(async_bitmap_resolver) {
-  // Use an empty `placeholder_` until a bitmap is asynchronously returned.
-  placeholder_ = CreateEmptyImageSkia(max_size_);
+      async_bitmap_resolver_(async_bitmap_resolver),
+      file_type_icon_(std::move(file_type_icon)) {
+  // If there is no supplied `file_type_icon`, use an empty `placeholder_` until
+  // a bitmap is asynchronously returned.
+  placeholder_ = file_type_icon_.value_or(CreateEmptyImageSkia(max_size_));
   CreateImageSkia();
 }
 
@@ -120,9 +114,13 @@ HoldingSpaceImage::~HoldingSpaceImage() = default;
 gfx::Size HoldingSpaceImage::GetMaxSizeForType(HoldingSpaceItem::Type type) {
   gfx::Size size;
   switch (type) {
+    case HoldingSpaceItem::Type::kArcDownload:
+    case HoldingSpaceItem::Type::kDiagnosticsLog:
     case HoldingSpaceItem::Type::kDownload:
+    case HoldingSpaceItem::Type::kLacrosDownload:
     case HoldingSpaceItem::Type::kNearbyShare:
     case HoldingSpaceItem::Type::kPinnedFile:
+    case HoldingSpaceItem::Type::kPrintedPdf:
       size = gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize);
       break;
     case HoldingSpaceItem::Type::kScreenRecording:
@@ -141,6 +139,16 @@ gfx::Size HoldingSpaceImage::GetMaxSizeForType(HoldingSpaceItem::Type type) {
 // static
 void HoldingSpaceImage::SetUseZeroInvalidationDelayForTesting(bool value) {
   g_use_zero_invalidation_delay_for_testing = value;
+}
+
+// static
+gfx::ImageSkia HoldingSpaceImage::SuperimposeOverEmptyImage(
+    const gfx::ImageSkia& icon,
+    const gfx::Size& size) {
+  // Superimpose the `icon` over an empty image in order to center it
+  // within the image at a fixed size.
+  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      CreateEmptyImageSkia(size), icon);
 }
 
 bool HoldingSpaceImage::operator==(const HoldingSpaceImage& rhs) const {
@@ -200,7 +208,8 @@ void HoldingSpaceImage::OnBitmapLoaded(const base::FilePath& file_path,
 }
 
 gfx::ImageSkia HoldingSpaceImage::GetImageSkia(
-    const base::Optional<gfx::Size>& opt_size) const {
+    const absl::optional<gfx::Size>& opt_size,
+    bool dark_background) const {
   const gfx::Size size = opt_size.value_or(max_size_);
 
   // Requested `size` must be less than or equal to `max_size_` to avoid
@@ -216,9 +225,12 @@ gfx::ImageSkia HoldingSpaceImage::GetImageSkia(
   // When an error occurs, fallback to an image representing file type.
   if (async_bitmap_resolver_error_ &&
       async_bitmap_resolver_error_ != base::File::FILE_OK) {
+    if (file_type_icon_)
+      return file_type_icon_.value();
     const bool is_folder =
         async_bitmap_resolver_error_ == base::File::FILE_ERROR_NOT_A_FILE;
-    return CreateFileTypeImageSkia(backing_file_path_, is_folder, size);
+    return CreateFileTypeImageSkia(backing_file_path_, is_folder, size,
+                                   dark_background);
   }
 
   // Short-circuit resizing logic.

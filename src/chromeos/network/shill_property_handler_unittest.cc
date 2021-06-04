@@ -136,10 +136,9 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     if (type.empty())
       return;
     entries_[type].clear();
-    for (base::ListValue::const_iterator iter = entries.begin();
-         iter != entries.end(); ++iter) {
+    for (const auto& entry : entries.GetList()) {
       std::string path;
-      if (iter->GetAsString(&path))
+      if (entry.GetAsString(&path))
         entries_[type].push_back(path);
     }
   }
@@ -249,9 +248,9 @@ class ShillPropertyHandlerTest : public testing::Test {
   // Call this after any initial Shill client setup
   void SetupShillPropertyHandler() {
     SetupDefaultShillState();
-    listener_.reset(new TestListener);
-    shill_property_handler_.reset(
-        new internal::ShillPropertyHandler(listener_.get()));
+    listener_ = std::make_unique<TestListener>();
+    shill_property_handler_ =
+        std::make_unique<internal::ShillPropertyHandler>(listener_.get());
     shill_property_handler_->Init();
   }
 

@@ -11,6 +11,7 @@
 #include "include/private/SkSLDefines.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLSymbol.h"
+#include "src/sksl/SkSLContext.h"
 
 #include <vector>
 
@@ -57,9 +58,7 @@ public:
         kConstructorMatrixResize_Command,
         kConstructorScalarCast_Command,
         kConstructorSplat_Command,
-        kConstructorReserved3_Command,
-        kConstructorReserved4_Command,
-        kConstructorReserved5_Command,
+        kConstructorStruct_Command,
         kContinue_Command,
         kDefaultLayout_Command,
         kDefaultModifiers_Command,
@@ -152,8 +151,7 @@ public:
     };
 
     // src must remain in memory as long as the objects created from it do
-    Rehydrator(const Context* context, ModifiersPool* modifiers,
-               std::shared_ptr<SymbolTable> symbolTable, ErrorReporter* errorReporter,
+    Rehydrator(const Context* context, std::shared_ptr<SymbolTable> symbolTable,
                const uint8_t* src, size_t length);
 
     std::vector<std::unique_ptr<ProgramElement>> elements();
@@ -229,9 +227,11 @@ private:
 
     const Type* type();
 
+    ErrorReporter* errorReporter() { return &fContext.fErrors; }
+
+    ModifiersPool& modifiersPool() const { return *fContext.fModifiersPool; }
+
     const Context& fContext;
-    ModifiersPool& fModifiers;
-    ErrorReporter* fErrors;
     std::shared_ptr<SymbolTable> fSymbolTable;
     std::vector<const Symbol*> fSymbols;
 

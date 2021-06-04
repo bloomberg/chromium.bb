@@ -700,7 +700,7 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                 case 0x1000:
                     return "GL_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_ANGLE";
                 case 0x1004:
-                    return "GL_TEXTURE_BORDER_COLOR_OES";
+                    return "GL_TEXTURE_BORDER_COLOR_EXT";
                 case 0x1901:
                     return "GL_STENCIL_INDEX_OES";
                 case 0x2000:
@@ -752,7 +752,7 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                 case 0x80E9:
                     return "GL_MAX_ELEMENTS_INDICES";
                 case 0x812D:
-                    return "GL_CLAMP_TO_BORDER_OES";
+                    return "GL_CLAMP_TO_BORDER_EXT";
                 case 0x81A6:
                     return "GL_DEPTH_COMPONENT24";
                 case 0x8210:
@@ -1479,6 +1479,8 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_GPU_DISJOINT_EXT";
                 case 0x8FBD:
                     return "GL_SR8_EXT";
+                case 0x8FBE:
+                    return "GL_SRG8_EXT";
                 case 0x900A:
                     return "GL_TEXTURE_BINDING_CUBE_MAP_ARRAY";
                 case 0x900C:

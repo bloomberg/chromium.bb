@@ -7,10 +7,14 @@
   background-color: rgb(26, 115, 232);
   border-radius: 20px;
   color: white;
-  display: none;
+  display: flex;
   height: 42px;
   padding: 0 12px;
   position: absolute;
+}
+
+#ptz-toast.hidden {
+  display: none;
 }
 
 #ptz-toast::before {

@@ -10,11 +10,9 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
-#include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
@@ -24,7 +22,9 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/service_worker/service_worker_loader_helpers.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
@@ -251,7 +251,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     // to return an error as the client must be shutting down.
     DCHECK_EQ(ControllerServiceWorkerConnector::State::kNoContainerHost,
               controller_state);
-    SettleFetchEventDispatch(base::nullopt);
+    SettleFetchEventDispatch(absl::nullopt);
     return;
   }
 
@@ -283,7 +283,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEventForSubresource() {
           blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
 
   if (!controller) {
-    SettleFetchEventDispatch(base::nullopt);
+    SettleFetchEventDispatch(absl::nullopt);
     return;
   }
 
@@ -394,7 +394,7 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
 }
 
 void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
-    base::Optional<blink::ServiceWorkerStatusCode> status) {
+    absl::optional<blink::ServiceWorkerStatusCode> status) {
   if (!controller_connector_observation_.IsObserving()) {
     // Already settled.
     return;
@@ -494,7 +494,8 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     return;
   }
 
-  ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, response_head_.get());
+  blink::ServiceWorkerLoaderHelpers::SaveResponseInfo(*response,
+                                                      response_head_.get());
   response_head_->response_start = base::TimeTicks::Now();
   response_head_->load_timing.receive_headers_start = base::TimeTicks::Now();
   response_head_->load_timing.receive_headers_end =
@@ -503,7 +504,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
-  redirect_info_ = ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
+  redirect_info_ = blink::ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       resource_request_, *response_head_);
   if (redirect_info_) {
     if (redirect_limit_-- == 0) {
@@ -575,7 +576,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // Otherwise we can immediately complete side data reading so that the
   // entire resource completes when the main body is read.
   OnSideDataReadingComplete(std::move(data_pipe),
-                            base::Optional<mojo_base::BigBuffer>());
+                            absl::optional<mojo_base::BigBuffer>());
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
@@ -612,10 +613,8 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
 
-  if (error_code == net::OK) {
-    bool handled = !response_head_->was_fallback_required_by_service_worker;
-    RecordTimingMetrics(handled);
-  }
+  if (error_code == net::OK)
+    RecordTimingMetrics(/*handled=*/true);
 
   TransitionToStatus(Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
@@ -701,7 +700,7 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::FollowRedirect",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
@@ -773,7 +772,7 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
   DCHECK(body_pipe);
   DCHECK(!body_reading_complete_);
 
-  return ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
+  return blink::ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
       &body_as_blob_, body_as_blob_size_,
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnBodyReadingComplete,
                      weak_factory_.GetWeakPtr()),
@@ -782,7 +781,7 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
 
 void ServiceWorkerSubresourceLoader::OnSideDataReadingComplete(
     mojo::ScopedDataPipeConsumerHandle data_pipe,
-    base::Optional<mojo_base::BigBuffer> metadata) {
+    absl::optional<mojo_base::BigBuffer> metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerSubresourceLoader::OnSideDataReadingComplete",

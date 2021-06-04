@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_database.h"
@@ -218,7 +217,7 @@ class FaviconDatabaseTest : public testing::Test {
   std::unique_ptr<FaviconDatabase> LoadFromGolden(const char* golden_path) {
     if (!history::CreateDatabaseFromSQL(file_name_, golden_path)) {
       ADD_FAILURE() << "Failed loading " << golden_path;
-      return std::unique_ptr<FaviconDatabase>();
+      return nullptr;
     }
 
     std::unique_ptr<FaviconDatabase> db = std::make_unique<FaviconDatabase>();
@@ -892,7 +891,7 @@ TEST_F(FaviconDatabaseTest, FindFirstPageURLForHost) {
                                           {favicon_base::IconType::kFavicon}));
 
   // Expect a match when we search for a TouchIcon.
-  base::Optional<GURL> result = db.FindFirstPageURLForHost(
+  absl::optional<GURL> result = db.FindFirstPageURLForHost(
       kPageUrlHttps,
       {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon});
 

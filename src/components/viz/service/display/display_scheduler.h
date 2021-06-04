@@ -50,6 +50,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public DisplaySchedulerBase {
   class BeginFrameObserver;
 
   bool OnBeginFrame(const BeginFrameArgs& args);
+  int MaxPendingSwaps() const;
 
   base::TimeTicks current_frame_display_time() const {
     return current_begin_frame_args_.frame_time +
@@ -99,7 +100,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public DisplaySchedulerBase {
   BeginFrameSource* begin_frame_source_;
   base::SingleThreadTaskRunner* task_runner_;
   gfx::RenderingPipeline* gpu_pipeline_;
-  base::Optional<gfx::RenderingPipeline::ScopedPipelineActive>
+  absl::optional<gfx::RenderingPipeline::ScopedPipelineActive>
       gpu_pipeline_active_;
 
   BeginFrameArgs current_begin_frame_args_;

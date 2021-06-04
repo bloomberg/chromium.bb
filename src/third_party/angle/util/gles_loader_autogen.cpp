@@ -637,6 +637,7 @@ ANGLE_UTIL_EXPORT PFNGLIMPORTMEMORYFDEXTPROC l_glImportMemoryFdEXT;
 ANGLE_UTIL_EXPORT PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC
     l_glFramebufferTexture2DMultisampleEXT;
 ANGLE_UTIL_EXPORT PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC l_glRenderbufferStorageMultisampleEXT;
+ANGLE_UTIL_EXPORT PFNGLPRIMITIVEBOUNDINGBOXEXTPROC l_glPrimitiveBoundingBoxEXT;
 ANGLE_UTIL_EXPORT PFNGLGETGRAPHICSRESETSTATUSEXTPROC l_glGetGraphicsResetStatusEXT;
 ANGLE_UTIL_EXPORT PFNGLGETNUNIFORMFVEXTPROC l_glGetnUniformfvEXT;
 ANGLE_UTIL_EXPORT PFNGLGETNUNIFORMIVEXTPROC l_glGetnUniformivEXT;
@@ -695,11 +696,20 @@ ANGLE_UTIL_EXPORT PFNGLUSEPROGRAMSTAGESEXTPROC l_glUseProgramStagesEXT;
 ANGLE_UTIL_EXPORT PFNGLVALIDATEPROGRAMPIPELINEEXTPROC l_glValidateProgramPipelineEXT;
 ANGLE_UTIL_EXPORT PFNGLFRAMEBUFFERFETCHBARRIEREXTPROC l_glFramebufferFetchBarrierEXT;
 ANGLE_UTIL_EXPORT PFNGLPATCHPARAMETERIEXTPROC l_glPatchParameteriEXT;
+ANGLE_UTIL_EXPORT PFNGLGETSAMPLERPARAMETERIIVEXTPROC l_glGetSamplerParameterIivEXT;
+ANGLE_UTIL_EXPORT PFNGLGETSAMPLERPARAMETERIUIVEXTPROC l_glGetSamplerParameterIuivEXT;
+ANGLE_UTIL_EXPORT PFNGLGETTEXPARAMETERIIVEXTPROC l_glGetTexParameterIivEXT;
+ANGLE_UTIL_EXPORT PFNGLGETTEXPARAMETERIUIVEXTPROC l_glGetTexParameterIuivEXT;
+ANGLE_UTIL_EXPORT PFNGLSAMPLERPARAMETERIIVEXTPROC l_glSamplerParameterIivEXT;
+ANGLE_UTIL_EXPORT PFNGLSAMPLERPARAMETERIUIVEXTPROC l_glSamplerParameterIuivEXT;
+ANGLE_UTIL_EXPORT PFNGLTEXPARAMETERIIVEXTPROC l_glTexParameterIivEXT;
+ANGLE_UTIL_EXPORT PFNGLTEXPARAMETERIUIVEXTPROC l_glTexParameterIuivEXT;
 ANGLE_UTIL_EXPORT PFNGLTEXBUFFEREXTPROC l_glTexBufferEXT;
 ANGLE_UTIL_EXPORT PFNGLTEXBUFFERRANGEEXTPROC l_glTexBufferRangeEXT;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE1DEXTPROC l_glTexStorage1DEXT;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE2DEXTPROC l_glTexStorage2DEXT;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE3DEXTPROC l_glTexStorage3DEXT;
+ANGLE_UTIL_EXPORT PFNGLBLENDBARRIERKHRPROC l_glBlendBarrierKHR;
 ANGLE_UTIL_EXPORT PFNGLDEBUGMESSAGECALLBACKKHRPROC l_glDebugMessageCallbackKHR;
 ANGLE_UTIL_EXPORT PFNGLDEBUGMESSAGECONTROLKHRPROC l_glDebugMessageControlKHR;
 ANGLE_UTIL_EXPORT PFNGLDEBUGMESSAGEINSERTKHRPROC l_glDebugMessageInsertKHR;
@@ -1572,6 +1582,8 @@ ANGLE_UTIL_EXPORT PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTCONTEXTANGLEPROC
     l_glFramebufferTexture2DMultisampleEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTCONTEXTANGLEPROC
     l_glRenderbufferStorageMultisampleEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLPRIMITIVEBOUNDINGBOXEXTCONTEXTANGLEPROC
+    l_glPrimitiveBoundingBoxEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLGETGRAPHICSRESETSTATUSEXTCONTEXTANGLEPROC
     l_glGetGraphicsResetStatusEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLGETNUNIFORMFVEXTCONTEXTANGLEPROC l_glGetnUniformfvEXTContextANGLE;
@@ -1651,11 +1663,25 @@ ANGLE_UTIL_EXPORT PFNGLVALIDATEPROGRAMPIPELINEEXTCONTEXTANGLEPROC
 ANGLE_UTIL_EXPORT PFNGLFRAMEBUFFERFETCHBARRIEREXTCONTEXTANGLEPROC
     l_glFramebufferFetchBarrierEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLPATCHPARAMETERIEXTCONTEXTANGLEPROC l_glPatchParameteriEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLGETSAMPLERPARAMETERIIVEXTCONTEXTANGLEPROC
+    l_glGetSamplerParameterIivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLGETSAMPLERPARAMETERIUIVEXTCONTEXTANGLEPROC
+    l_glGetSamplerParameterIuivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLGETTEXPARAMETERIIVEXTCONTEXTANGLEPROC l_glGetTexParameterIivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLGETTEXPARAMETERIUIVEXTCONTEXTANGLEPROC
+    l_glGetTexParameterIuivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLSAMPLERPARAMETERIIVEXTCONTEXTANGLEPROC
+    l_glSamplerParameterIivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLSAMPLERPARAMETERIUIVEXTCONTEXTANGLEPROC
+    l_glSamplerParameterIuivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLTEXPARAMETERIIVEXTCONTEXTANGLEPROC l_glTexParameterIivEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLTEXPARAMETERIUIVEXTCONTEXTANGLEPROC l_glTexParameterIuivEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLTEXBUFFEREXTCONTEXTANGLEPROC l_glTexBufferEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLTEXBUFFERRANGEEXTCONTEXTANGLEPROC l_glTexBufferRangeEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE1DEXTCONTEXTANGLEPROC l_glTexStorage1DEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE2DEXTCONTEXTANGLEPROC l_glTexStorage2DEXTContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLTEXSTORAGE3DEXTCONTEXTANGLEPROC l_glTexStorage3DEXTContextANGLE;
+ANGLE_UTIL_EXPORT PFNGLBLENDBARRIERKHRCONTEXTANGLEPROC l_glBlendBarrierKHRContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLDEBUGMESSAGECALLBACKKHRCONTEXTANGLEPROC
     l_glDebugMessageCallbackKHRContextANGLE;
 ANGLE_UTIL_EXPORT PFNGLDEBUGMESSAGECONTROLKHRCONTEXTANGLEPROC
@@ -2770,6 +2796,8 @@ void LoadGLES(LoadProc loadProc)
     l_glRenderbufferStorageMultisampleEXT =
         reinterpret_cast<PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC>(
             loadProc("glRenderbufferStorageMultisampleEXT"));
+    l_glPrimitiveBoundingBoxEXT =
+        reinterpret_cast<PFNGLPRIMITIVEBOUNDINGBOXEXTPROC>(loadProc("glPrimitiveBoundingBoxEXT"));
     l_glGetGraphicsResetStatusEXT = reinterpret_cast<PFNGLGETGRAPHICSRESETSTATUSEXTPROC>(
         loadProc("glGetGraphicsResetStatusEXT"));
     l_glGetnUniformfvEXT =
@@ -2884,12 +2912,29 @@ void LoadGLES(LoadProc loadProc)
         loadProc("glFramebufferFetchBarrierEXT"));
     l_glPatchParameteriEXT =
         reinterpret_cast<PFNGLPATCHPARAMETERIEXTPROC>(loadProc("glPatchParameteriEXT"));
+    l_glGetSamplerParameterIivEXT = reinterpret_cast<PFNGLGETSAMPLERPARAMETERIIVEXTPROC>(
+        loadProc("glGetSamplerParameterIivEXT"));
+    l_glGetSamplerParameterIuivEXT = reinterpret_cast<PFNGLGETSAMPLERPARAMETERIUIVEXTPROC>(
+        loadProc("glGetSamplerParameterIuivEXT"));
+    l_glGetTexParameterIivEXT =
+        reinterpret_cast<PFNGLGETTEXPARAMETERIIVEXTPROC>(loadProc("glGetTexParameterIivEXT"));
+    l_glGetTexParameterIuivEXT =
+        reinterpret_cast<PFNGLGETTEXPARAMETERIUIVEXTPROC>(loadProc("glGetTexParameterIuivEXT"));
+    l_glSamplerParameterIivEXT =
+        reinterpret_cast<PFNGLSAMPLERPARAMETERIIVEXTPROC>(loadProc("glSamplerParameterIivEXT"));
+    l_glSamplerParameterIuivEXT =
+        reinterpret_cast<PFNGLSAMPLERPARAMETERIUIVEXTPROC>(loadProc("glSamplerParameterIuivEXT"));
+    l_glTexParameterIivEXT =
+        reinterpret_cast<PFNGLTEXPARAMETERIIVEXTPROC>(loadProc("glTexParameterIivEXT"));
+    l_glTexParameterIuivEXT =
+        reinterpret_cast<PFNGLTEXPARAMETERIUIVEXTPROC>(loadProc("glTexParameterIuivEXT"));
     l_glTexBufferEXT = reinterpret_cast<PFNGLTEXBUFFEREXTPROC>(loadProc("glTexBufferEXT"));
     l_glTexBufferRangeEXT =
         reinterpret_cast<PFNGLTEXBUFFERRANGEEXTPROC>(loadProc("glTexBufferRangeEXT"));
     l_glTexStorage1DEXT = reinterpret_cast<PFNGLTEXSTORAGE1DEXTPROC>(loadProc("glTexStorage1DEXT"));
     l_glTexStorage2DEXT = reinterpret_cast<PFNGLTEXSTORAGE2DEXTPROC>(loadProc("glTexStorage2DEXT"));
     l_glTexStorage3DEXT = reinterpret_cast<PFNGLTEXSTORAGE3DEXTPROC>(loadProc("glTexStorage3DEXT"));
+    l_glBlendBarrierKHR = reinterpret_cast<PFNGLBLENDBARRIERKHRPROC>(loadProc("glBlendBarrierKHR"));
     l_glDebugMessageCallbackKHR =
         reinterpret_cast<PFNGLDEBUGMESSAGECALLBACKKHRPROC>(loadProc("glDebugMessageCallbackKHR"));
     l_glDebugMessageControlKHR =
@@ -4509,6 +4554,9 @@ void LoadGLES(LoadProc loadProc)
     l_glRenderbufferStorageMultisampleEXTContextANGLE =
         reinterpret_cast<PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTCONTEXTANGLEPROC>(
             loadProc("glRenderbufferStorageMultisampleEXTContextANGLE"));
+    l_glPrimitiveBoundingBoxEXTContextANGLE =
+        reinterpret_cast<PFNGLPRIMITIVEBOUNDINGBOXEXTCONTEXTANGLEPROC>(
+            loadProc("glPrimitiveBoundingBoxEXTContextANGLE"));
     l_glGetGraphicsResetStatusEXTContextANGLE =
         reinterpret_cast<PFNGLGETGRAPHICSRESETSTATUSEXTCONTEXTANGLEPROC>(
             loadProc("glGetGraphicsResetStatusEXTContextANGLE"));
@@ -4675,6 +4723,29 @@ void LoadGLES(LoadProc loadProc)
             loadProc("glFramebufferFetchBarrierEXTContextANGLE"));
     l_glPatchParameteriEXTContextANGLE = reinterpret_cast<PFNGLPATCHPARAMETERIEXTCONTEXTANGLEPROC>(
         loadProc("glPatchParameteriEXTContextANGLE"));
+    l_glGetSamplerParameterIivEXTContextANGLE =
+        reinterpret_cast<PFNGLGETSAMPLERPARAMETERIIVEXTCONTEXTANGLEPROC>(
+            loadProc("glGetSamplerParameterIivEXTContextANGLE"));
+    l_glGetSamplerParameterIuivEXTContextANGLE =
+        reinterpret_cast<PFNGLGETSAMPLERPARAMETERIUIVEXTCONTEXTANGLEPROC>(
+            loadProc("glGetSamplerParameterIuivEXTContextANGLE"));
+    l_glGetTexParameterIivEXTContextANGLE =
+        reinterpret_cast<PFNGLGETTEXPARAMETERIIVEXTCONTEXTANGLEPROC>(
+            loadProc("glGetTexParameterIivEXTContextANGLE"));
+    l_glGetTexParameterIuivEXTContextANGLE =
+        reinterpret_cast<PFNGLGETTEXPARAMETERIUIVEXTCONTEXTANGLEPROC>(
+            loadProc("glGetTexParameterIuivEXTContextANGLE"));
+    l_glSamplerParameterIivEXTContextANGLE =
+        reinterpret_cast<PFNGLSAMPLERPARAMETERIIVEXTCONTEXTANGLEPROC>(
+            loadProc("glSamplerParameterIivEXTContextANGLE"));
+    l_glSamplerParameterIuivEXTContextANGLE =
+        reinterpret_cast<PFNGLSAMPLERPARAMETERIUIVEXTCONTEXTANGLEPROC>(
+            loadProc("glSamplerParameterIuivEXTContextANGLE"));
+    l_glTexParameterIivEXTContextANGLE = reinterpret_cast<PFNGLTEXPARAMETERIIVEXTCONTEXTANGLEPROC>(
+        loadProc("glTexParameterIivEXTContextANGLE"));
+    l_glTexParameterIuivEXTContextANGLE =
+        reinterpret_cast<PFNGLTEXPARAMETERIUIVEXTCONTEXTANGLEPROC>(
+            loadProc("glTexParameterIuivEXTContextANGLE"));
     l_glTexBufferEXTContextANGLE =
         reinterpret_cast<PFNGLTEXBUFFEREXTCONTEXTANGLEPROC>(loadProc("glTexBufferEXTContextANGLE"));
     l_glTexBufferRangeEXTContextANGLE = reinterpret_cast<PFNGLTEXBUFFERRANGEEXTCONTEXTANGLEPROC>(
@@ -4685,6 +4756,8 @@ void LoadGLES(LoadProc loadProc)
         loadProc("glTexStorage2DEXTContextANGLE"));
     l_glTexStorage3DEXTContextANGLE = reinterpret_cast<PFNGLTEXSTORAGE3DEXTCONTEXTANGLEPROC>(
         loadProc("glTexStorage3DEXTContextANGLE"));
+    l_glBlendBarrierKHRContextANGLE = reinterpret_cast<PFNGLBLENDBARRIERKHRCONTEXTANGLEPROC>(
+        loadProc("glBlendBarrierKHRContextANGLE"));
     l_glDebugMessageCallbackKHRContextANGLE =
         reinterpret_cast<PFNGLDEBUGMESSAGECALLBACKKHRCONTEXTANGLEPROC>(
             loadProc("glDebugMessageCallbackKHRContextANGLE"));

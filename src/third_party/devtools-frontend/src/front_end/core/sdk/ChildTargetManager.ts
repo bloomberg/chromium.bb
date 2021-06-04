@@ -6,10 +6,13 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
-import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
+import type * as ProtocolClient from '../protocol_client/protocol_client.js'; // eslint-disable-line no-unused-vars
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import {ParallelConnection} from './Connections.js';
-import {Capability, Events as SDKModelEvents, SDKModel, Target, TargetManager, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './SDKModel.js';
+import {Capability, Events as SDKModelEvents, SDKModel, TargetManager, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -58,7 +61,7 @@ export class ChildTargetManager extends SDKModel implements ProtocolProxyApi.Tar
                                      waitingForDebugger: boolean,
                                    }) => Promise<void>)): void {
     _attachCallback = attachCallback;
-    SDKModel.register(ChildTargetManager, Capability.Target, true);
+    SDKModel.register(ChildTargetManager, {capabilities: Capability.Target, autostart: true});
   }
 
   childTargets(): Target[] {
@@ -130,7 +133,7 @@ export class ChildTargetManager extends SDKModel implements ProtocolProxyApi.Tar
       targetName = parsedURL ? parsedURL.lastPathComponentWithFragment() : '#' + (++_lastAnonymousTargetId);
     }
 
-    let type: string = Type.Browser;
+    let type = Type.Browser;
     if (targetInfo.type === 'iframe') {
       type = Type.Frame;
     }

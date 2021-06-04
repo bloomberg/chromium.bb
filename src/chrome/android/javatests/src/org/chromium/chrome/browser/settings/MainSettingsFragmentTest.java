@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
@@ -53,7 +54,6 @@ import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
-import org.chromium.chrome.browser.notifications.settings.NotificationSettings;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
@@ -61,8 +61,8 @@ import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
-import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
-import org.chromium.chrome.browser.signin.ui.SigninActivityLauncher;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
@@ -95,7 +95,7 @@ import java.util.HashSet;
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
-    private static final int RENDER_TEST_REVISION = 2;
+    private static final int RENDER_TEST_REVISION = 3;
 
     private final HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
@@ -125,7 +125,7 @@ public class MainSettingsFragmentTest {
     private PasswordCheck mPasswordCheck;
 
     @Mock
-    private SigninActivityLauncher mMockSigninActivityLauncher;
+    private SyncConsentActivityLauncher mMockSyncConsentActivityLauncher;
 
     private @Nullable TemplateUrlService mActualTemplateUrlService;
 
@@ -136,7 +136,7 @@ public class MainSettingsFragmentTest {
         MockitoAnnotations.initMocks(this);
         InstrumentationRegistry.getInstrumentation().setInTouchMode(true);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-        SigninActivityLauncherImpl.setLauncherForTest(mMockSigninActivityLauncher);
+        SyncConsentActivityLauncherImpl.setLauncherForTest(mMockSyncConsentActivityLauncher);
         DeveloperSettings.setIsEnabledForTests(true);
         NightModeUtils.setNightModeSupportedForTesting(true);
     }
@@ -239,7 +239,12 @@ public class MainSettingsFragmentTest {
         assertSettingsExists(MainSettings.PREF_PASSWORDS, PasswordSettings.class);
         assertSettingsExists("autofill_payment_methods", AutofillPaymentMethodsFragment.class);
         assertSettingsExists("autofill_addresses", AutofillProfilesFragment.class);
-        assertSettingsExists(MainSettings.PREF_NOTIFICATIONS, NotificationSettings.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            assertSettingsExists(MainSettings.PREF_NOTIFICATIONS, null);
+        } else {
+            Assert.assertNull("Notification setting should be hidden",
+                    mMainSettings.findPreference(MainSettings.PREF_NOTIFICATIONS));
+        }
         assertSettingsExists(MainSettings.PREF_HOMEPAGE, HomepageSettings.class);
         assertSettingsExists(MainSettings.PREF_UI_THEME, ThemeSettingsFragment.class);
 
@@ -292,7 +297,12 @@ public class MainSettingsFragmentTest {
         assertSettingsExists(MainSettings.PREF_PASSWORDS, PasswordSettings.class);
         assertSettingsExists("autofill_payment_methods", AutofillPaymentMethodsFragment.class);
         assertSettingsExists("autofill_addresses", AutofillProfilesFragment.class);
-        assertSettingsExists(MainSettings.PREF_NOTIFICATIONS, NotificationSettings.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            assertSettingsExists(MainSettings.PREF_NOTIFICATIONS, null);
+        } else {
+            Assert.assertNull("Notification setting should be hidden",
+                    mMainSettings.findPreference(MainSettings.PREF_NOTIFICATIONS));
+        }
         assertSettingsExists(MainSettings.PREF_HOMEPAGE, HomepageSettings.class);
         assertSettingsExists(MainSettings.PREF_UI_THEME, ThemeSettingsFragment.class);
 
@@ -322,7 +332,7 @@ public class MainSettingsFragmentTest {
         launchSettingsActivity();
 
         onView(withText(R.string.sync_category_title)).perform(click());
-        verify(mMockSigninActivityLauncher)
+        verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
                         eq(SigninAccessPoint.SETTINGS), eq(accountInfo.getEmail()));
     }

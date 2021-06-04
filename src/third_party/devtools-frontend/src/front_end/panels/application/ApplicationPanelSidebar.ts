@@ -40,28 +40,33 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as SourceFrame from '../../source_frame/source_frame.js';
+import * as Protocol from '../../generated/protocol.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {ApplicationCacheItemsView} from './ApplicationCacheItemsView.js';
 import {ApplicationCacheModel, Events as ApplicationCacheModelEvents} from './ApplicationCacheModel.js';
-import {ApplicationCacheFrameTreeElement, ApplicationCacheManifestTreeElement, ServiceWorkerCacheTreeElement} from './ApplicationPanelCacheSection.js';
+import {ApplicationCacheFrameTreeElement, ApplicationCacheManifestTreeElement, BackForwardCacheTreeElement, ServiceWorkerCacheTreeElement} from './ApplicationPanelCacheSection.js';
 import {ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement} from './ApplicationPanelTreeElement.js';
 import {AppManifestView} from './AppManifestView.js';
 import {BackgroundServiceModel} from './BackgroundServiceModel.js';
 import {BackgroundServiceView} from './BackgroundServiceView.js';
-import {Database as DatabaseModelDatabase, DatabaseModel, Events as DatabaseModelEvents} from './DatabaseModel.js';  // eslint-disable-line no-unused-vars
+import * as ApplicationComponents from './components/components.js';
+
+import type {Database as DatabaseModelDatabase} from './DatabaseModel.js';
+import {DatabaseModel, Events as DatabaseModelEvents} from './DatabaseModel.js';  // eslint-disable-line no-unused-vars
 import {DatabaseQueryView, Events as DatabaseQueryViewEvents} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
-import {DOMStorage, DOMStorageModel, Events as DOMStorageModelEvents} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
-import {FrameDetailsView} from './FrameDetailsView.js';
-import {Database as IndexedDBModelDatabase, DatabaseId, Events as IndexedDBModelEvents, Index, IndexedDBModel, ObjectStore} from './IndexedDBModel.js';  // eslint-disable-line no-unused-vars
+import type {DOMStorage} from './DOMStorageModel.js';
+import {DOMStorageModel, Events as DOMStorageModelEvents} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
+import type {Database as IndexedDBModelDatabase, DatabaseId, Index, ObjectStore} from './IndexedDBModel.js';
+import {Events as IndexedDBModelEvents, IndexedDBModel} from './IndexedDBModel.js';  // eslint-disable-line no-unused-vars
 import {IDBDatabaseView, IDBDataView} from './IndexedDBViews.js';
 import {OpenedWindowDetailsView, WorkerDetailsView} from './OpenedWindowDetailsView.js';
-import {ResourcesPanel} from './ResourcesPanel.js';  // eslint-disable-line no-unused-vars
+import type {ResourcesPanel} from './ResourcesPanel.js'; // eslint-disable-line no-unused-vars
 import {ServiceWorkersView} from './ServiceWorkersView.js';
 import {StorageView} from './StorageView.js';
-import {TrustTokensTreeElement} from './TrustTokensView.js';
+import {TrustTokensTreeElement} from './TrustTokensTreeElement.js';
 
 const UIStrings = {
   /**
@@ -188,6 +193,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.SDKMo
   trustTokensTreeElement: TrustTokensTreeElement;
   cacheStorageListTreeElement: ServiceWorkerCacheTreeElement;
   applicationCacheListTreeElement: ExpandableApplicationPanelTreeElement;
+  private backForwardCacheListTreeElement?: BackForwardCacheTreeElement;
   backgroundFetchTreeElement: BackgroundServiceTreeElement|undefined;
   backgroundSyncTreeElement: BackgroundServiceTreeElement|undefined;
   notificationsTreeElement: BackgroundServiceTreeElement|undefined;
@@ -287,8 +293,12 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.SDKMo
         'https://developer.chrome.com/docs/devtools/storage/applicationcache/?utm_source=devtools');
     const applicationCacheIcon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
     this.applicationCacheListTreeElement.setLeadingIcons([applicationCacheIcon]);
-
     cacheTreeElement.appendChild(this.applicationCacheListTreeElement);
+
+    if (Root.Runtime.experiments.isEnabled('bfcacheDebugging')) {
+      this.backForwardCacheListTreeElement = new BackForwardCacheTreeElement(panel);
+      cacheTreeElement.appendChild(this.backForwardCacheListTreeElement);
+    }
 
     if (Root.Runtime.experiments.isEnabled('backgroundServices')) {
       const backgroundServiceSectionTitle = i18nString(UIStrings.backgroundServices);
@@ -342,6 +352,16 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.SDKMo
     if (!selection.length) {
       manifestTreeElement.select();
     }
+
+    SDK.SDKModel.TargetManager.instance().observeModels(DOMStorageModel, {
+      modelAdded: (model: DOMStorageModel): void => this._domStorageModelAdded(model),
+      modelRemoved: (model: DOMStorageModel): void => this._domStorageModelRemoved(model),
+    });
+    SDK.SDKModel.TargetManager.instance().observeModels(IndexedDBModel, {
+      modelAdded: (model: IndexedDBModel): void => model.enable(),
+      modelRemoved: (model: IndexedDBModel): void => this.indexedDBListTreeElement.removeIndexedDBForModel(model),
+    });
+
     // Work-around for crbug.com/1152713: Something is wrong with custom scrollbars and size containment.
     // @ts-ignore
     this.contentElement.style.contain = 'layout style';
@@ -423,17 +443,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.SDKMo
     if (resourceTreeModel) {
       this._populateApplicationCacheTree(resourceTreeModel);
     }
-    SDK.SDKModel.TargetManager.instance().observeModels(
-        DOMStorageModel, ({
-          modelAdded: (model: DOMStorageModel): void => this._domStorageModelAdded(model),
-          modelRemoved: (model: DOMStorageModel): void => this._domStorageModelRemoved(model),
-        } as SDK.SDKModel.SDKModelObserver<DOMStorageModel>));
-    this.indexedDBListTreeElement._initialize();
-    SDK.SDKModel.TargetManager.instance().observeModels(
-        IndexedDBModel, ({
-          modelAdded: (model: IndexedDBModel): void => model.enable(),
-          modelRemoved: (model: IndexedDBModel): void => this.indexedDBListTreeElement.removeIndexedDBForModel(model),
-        } as SDK.SDKModel.SDKModelObserver<IndexedDBModel>));
     const serviceWorkerCacheModel =
         this._target && this._target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel) || null;
     this.cacheStorageListTreeElement.initialize(serviceWorkerCacheModel);
@@ -618,6 +627,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.SDKMo
 
   async showResource(resource: SDK.Resource.Resource, line?: number, column?: number): Promise<void> {
     await this._resourcesSection.revealResource(resource, line, column);
+  }
+
+  showFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void {
+    this._resourcesSection.revealAndSelectFrame(frame);
   }
 
   _showDatabase(database: DatabaseModelDatabase, tableName?: string): void {
@@ -1039,9 +1052,10 @@ export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement 
     const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.setLeadingIcons([icon]);
     this._idbDatabaseTreeElements = [];
+    this.initialize();
   }
 
-  _initialize(): void {
+  private initialize(): void {
     SDK.SDKModel.TargetManager.instance().addModelListener(
         IndexedDBModel, IndexedDBModelEvents.DatabaseAdded, this._indexedDBAdded, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
@@ -1684,6 +1698,12 @@ export class ResourcesSection implements SDK.SDKModel.Observer {
     }
   }
 
+  revealAndSelectFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void {
+    const frameTreeElement = this._treeElementForFrameId.get(frame.id);
+    frameTreeElement?.reveal();
+    frameTreeElement?.select();
+  }
+
   _frameAdded(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void {
     const parentFrame = frame.parentFrame();
     const parentTreeElement = parentFrame ? this._treeElementForFrameId.get(parentFrame.id) : this._treeElement;
@@ -1788,7 +1808,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
   _treeElementForResource: Map<string, FrameResourceTreeElement>;
   _treeElementForWindow: Map<string, FrameWindowTreeElement>;
   _treeElementForWorker: Map<string, WorkerTreeElement>;
-  _view: FrameDetailsView|null;
+  _view: ApplicationComponents.FrameDetailsView.FrameDetailsView|null;
 
   constructor(section: ResourcesSection, frame: SDK.ResourceTreeModel.ResourceTreeFrame) {
     super(section._panel, '', false);
@@ -1835,7 +1855,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
     this._treeElementForWorker.clear();
 
     if (this.selected) {
-      this._view = new FrameDetailsView(this._frame);
+      this._view = new ApplicationComponents.FrameDetailsView.FrameDetailsView(this._frame);
       this.showView(this._view);
     } else {
       this._view = null;
@@ -1869,7 +1889,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
   onselect(selectedByUser?: boolean): boolean {
     super.onselect(selectedByUser);
     if (!this._view) {
-      this._view = new FrameDetailsView(this._frame);
+      this._view = new ApplicationComponents.FrameDetailsView.FrameDetailsView(this._frame);
     } else {
       this._view.update();
     }

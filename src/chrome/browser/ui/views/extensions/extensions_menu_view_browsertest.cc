@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -57,7 +58,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     kTerminate,
   };
 
-  static std::vector<ExtensionsMenuItemView*> GetExtensionsMenuItemViews() {
+  static base::flat_set<ExtensionsMenuItemView*> GetExtensionsMenuItemViews() {
     return ExtensionsMenuView::GetExtensionsMenuViewForTesting()
         ->extensions_menu_items_for_testing();
   }
@@ -207,18 +208,23 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
   }
 
   void TriggerSingleExtensionButton() {
-    ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
-    TriggerExtensionButton(0u);
+    auto menu_items = GetExtensionsMenuItemViews();
+    ASSERT_EQ(1u, menu_items.size());
+    TriggerExtensionButton((*menu_items.begin())->view_controller()->GetId());
   }
 
-  void TriggerExtensionButton(size_t item_index) {
+  void TriggerExtensionButton(const std::string& id) {
     auto menu_items = GetExtensionsMenuItemViews();
-    ASSERT_LT(item_index, menu_items.size());
+    auto iter =
+        base::ranges::find_if(menu_items, [id](ExtensionsMenuItemView* view) {
+          return view->view_controller()->GetId() == id;
+        });
+    ASSERT_TRUE(iter != menu_items.end());
 
     ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                gfx::Point(), base::TimeTicks(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-    menu_items[item_index]
+    (*iter)
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
@@ -340,8 +346,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
 // Invokes the UI shown when a user has to reload a page in order to run an
 // extension.
+// TODO(https://crbug.com/1184437): Very flaky on Linux and Windows.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_InvokeUi_ReloadPageBubble DISABLED_InvokeUi_ReloadPageBubble
+#else
+#define MAYBE_InvokeUi_ReloadPageBubble InvokeUi_ReloadPageBubble
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvokeUi_ReloadPageBubble) {
+                       MAYBE_InvokeUi_ReloadPageBubble) {
   ASSERT_TRUE(embedded_test_server()->Start());
   extensions::TestExtensionDir test_dir;
   // Load an extension that injects scripts at "document_start", which requires
@@ -390,6 +402,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_EQ(BrowserView::GetBrowserViewForBrowser(browser())
                 ->toolbar()
                 ->GetExtensionsButton()
+                ->ink_drop()
                 ->GetInkDrop()
                 ->GetTargetInkDropState(),
             views::InkDropState::ACTIVATED);
@@ -445,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   // action and show the view.
   auto visible_icons = GetVisibleToolbarActionViews();
   EXPECT_NE(nullptr, extensions_container->GetPoppedOutAction());
-  EXPECT_EQ(base::nullopt,
+  EXPECT_EQ(absl::nullopt,
             extensions_container->GetExtensionWithOpenContextMenuForTesting());
   ASSERT_EQ(1u, visible_icons.size());
   EXPECT_EQ(extensions_container->GetPoppedOutAction(),
@@ -461,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   visible_icons = GetVisibleToolbarActionViews();
   ASSERT_EQ(1u, visible_icons.size());
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
-  EXPECT_NE(base::nullopt,
+  EXPECT_NE(absl::nullopt,
             extensions_container->GetExtensionWithOpenContextMenuForTesting());
   EXPECT_EQ(extensions_container->GetExtensionWithOpenContextMenuForTesting(),
             visible_icons[0]->view_controller()->GetId());
@@ -499,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   auto& id2 = LoadTestExtension("extensions/uitest/window_open")->id();
   ShowUi("");
   VerifyUi();
-  TriggerExtensionButton(0u);
+  TriggerExtensionButton(id1);
 
   ExtensionsContainer* const extensions_container =
       BrowserView::GetBrowserViewForBrowser(browser())
@@ -557,7 +570,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 }
 
 // Failing on Mac. https://crbug.com/1176703
-#if defined(OS_MAC)
+// Flaky on Linux. https://crbug.com/1202112
+#if defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_PinningDisabledInIncognito DISABLED_PinningDisabledInIncognito
 #else
 #define MAYBE_PinningDisabledInIncognito PinningDisabledInIncognito
@@ -581,10 +595,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   ASSERT_TRUE(VerifyUi());
   ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
-  EXPECT_EQ(views::Button::STATE_DISABLED, GetExtensionsMenuItemViews()
-                                               .front()
-                                               ->pin_button_for_testing()
-                                               ->GetState());
+  EXPECT_EQ(views::Button::STATE_DISABLED,
+            (*GetExtensionsMenuItemViews().begin())
+                ->pin_button_for_testing()
+                ->GetState());
 
   DismissUi();
 }
@@ -606,14 +620,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ui::MouseEvent click_released_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                       gfx::Point(), base::TimeTicks(),
                                       ui::EF_LEFT_MOUSE_BUTTON, 0);
-  GetExtensionsMenuItemViews()
-      .front()
-      ->pin_button_for_testing()
-      ->OnMousePressed(click_pressed_event);
-  GetExtensionsMenuItemViews()
-      .front()
-      ->pin_button_for_testing()
-      ->OnMouseReleased(click_released_event);
+  ExtensionsMenuItemView* const menu_item_view =
+      *GetExtensionsMenuItemViews().begin();
+  menu_item_view->pin_button_for_testing()->OnMousePressed(click_pressed_event);
+  menu_item_view->pin_button_for_testing()->OnMouseReleased(
+      click_released_event);
 
   // Wait for any pending animations to finish so that correct pinned
   // extensions and dialogs are actually showing.
@@ -709,11 +720,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   auto menu_items = GetExtensionsMenuItemViews();
   ASSERT_EQ(1u, menu_items.size());
-  ExtensionsMenuItemView* item_view = menu_items[0];
+  ExtensionsMenuItemView* const item_view = *menu_items.begin();
   EXPECT_FALSE(item_view->IsContextMenuRunningForTesting());
 
   HoverButton* context_menu_button =
-      menu_items[0]->context_menu_button_for_testing();
+      item_view->context_menu_button_for_testing();
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   context_menu_button->OnMousePressed(press_event);
@@ -734,8 +745,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowAndVerifyUi();
 }
 
+#if defined(OS_LINUX)
+// TODO(crbug.com/1173344): Flaky on Linux.
+#define MAYBE_InvokeUi_UninstallDialog_Cancel \
+  DISABLED_InvokeUi_UninstallDialog_Cancel
+#else
+#define MAYBE_InvokeUi_UninstallDialog_Cancel InvokeUi_UninstallDialog_Cancel
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       InvokeUi_UninstallDialog_Cancel) {
+                       MAYBE_InvokeUi_UninstallDialog_Cancel) {
   ShowAndVerifyUi();
 }
 

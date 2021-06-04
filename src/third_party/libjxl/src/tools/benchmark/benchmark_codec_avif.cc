@@ -255,10 +255,11 @@ class AvifCodec : public ImageCodec {
             &rgb_image, &avifRGBImageFreePixels);
         const double start_convert_image = Now();
         JXL_RETURN_IF_ERROR(ConvertToExternal(
-            ib, depth, /*float_out=*/false, /*apply_srgb_tf=*/false,
+            ib, depth, /*float_out=*/false,
             /*num_channels=*/ib.HasAlpha() ? 4 : 3, JXL_NATIVE_ENDIAN,
             /*stride=*/rgb_image.rowBytes, pool, rgb_image.pixels,
             rgb_image.rowBytes * rgb_image.height,
+            /*out_callback=*/nullptr, /*out_opaque=*/nullptr,
             jxl::Orientation::kIdentity));
         const double end_convert_image = Now();
         elapsed_convert_image += end_convert_image - start_convert_image;

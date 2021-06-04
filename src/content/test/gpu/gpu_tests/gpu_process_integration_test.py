@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import sys
@@ -175,8 +177,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       error_message = "is not expected"
 
     if failure:
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
+      print('Test failed. Printing page contents:')
+      print(tab.EvaluateJavaScript('document.body.innerHTML'))
       self.fail('%s %s workarounds: %s' % (workaround_name, error_message,
                                            gpu_driver_bug_workarounds))
 
@@ -357,14 +359,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     diff = set(recorded_workarounds).symmetric_difference(new_workarounds)
     tab = self.tab
     if len(diff) > 0:
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
+      print('Test failed. Printing page contents:')
+      print(tab.EvaluateJavaScript('document.body.innerHTML'))
       self.fail('GPU process and expected list of driver bug '
                 'workarounds are not equal: %s != %s, diff: %s' %
                 (recorded_workarounds, new_workarounds, list(diff)))
     if recorded_disabled_gl_extensions != new_disabled_gl_extensions:
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
+      print('Test failed. Printing page contents:')
+      print(tab.EvaluateJavaScript('document.body.innerHTML'))
       self.fail('The expected disabled gl extensions are '
                 'incorrect: %s != %s:' % (recorded_disabled_gl_extensions,
                                           new_disabled_gl_extensions))
@@ -381,28 +383,22 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('GPU process not detected')
 
   def _GpuProcess_disable_gpu_and_swiftshader(self, test_path):
-    # Disable SwiftShader, so GPU process should not launch anywhere.
+    # Disable SwiftShader, GPU process should launch for display compositing.
     self.RestartBrowserIfNecessaryWithArgs(
         [cba.DISABLE_GPU, cba.DISABLE_SOFTWARE_RASTERIZER])
     self._NavigateAndWait(test_path)
-
-    # Windows will run the display compositor in the browser process if
-    # accelerated GL and Swiftshader are both disabled.
-    should_have_gpu_process = sys.platform != 'win32'
     has_gpu_process = self.tab.EvaluateJavaScript(
         'chrome.gpuBenchmarking.hasGpuProcess()')
-
-    if should_have_gpu_process and not has_gpu_process:
+    if not has_gpu_process:
       self.fail('GPU process not detected')
-    elif not should_have_gpu_process and has_gpu_process:
-      self.fail('GPU process detected')
 
   def _GpuProcess_disable_swiftshader(self, test_path):
     # Disable SwiftShader, GPU process should be able to launch.
     self.RestartBrowserIfNecessaryWithArgs([cba.DISABLE_SOFTWARE_RASTERIZER])
     self._NavigateAndWait(test_path)
-    if not self.tab.EvaluateJavaScript(
-        'chrome.gpuBenchmarking.hasGpuProcess()'):
+    has_gpu_process = self.tab.EvaluateJavaScript(
+        'chrome.gpuBenchmarking.hasGpuProcess()')
+    if not has_gpu_process:
       self.fail('GPU process not detected')
 
   def _GpuProcess_disabling_workarounds_works(self, test_path):
@@ -468,7 +464,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'OES_vertex_array_object',
           'WEBGL_compressed_texture_etc1',
           'WEBGL_debug_renderer_info',
-          'WEBGL_debug_shaders',
           'WEBGL_depth_texture',
           'WEBKIT_WEBGL_depth_texture',
           'WEBGL_draw_buffers',

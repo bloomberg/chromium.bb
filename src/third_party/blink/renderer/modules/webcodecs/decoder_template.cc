@@ -10,14 +10,15 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_frame_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
@@ -25,8 +26,8 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder.h"
-#include "third_party/blink/renderer/modules/webcodecs/audio_frame.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_state_helper.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder.h"
@@ -104,6 +105,11 @@ DecoderTemplate<Traits>::DecoderTemplate(ScriptState* script_state,
 template <typename Traits>
 DecoderTemplate<Traits>::~DecoderTemplate() {
   DVLOG(1) << __func__;
+  base::UmaHistogramSparse(
+      String::Format("Blink.WebCodecs.%s.FinalStatus", Traits::GetName())
+          .Ascii()
+          .c_str(),
+      static_cast<int>(logger_->status_code()));
 }
 
 template <typename Traits>
@@ -120,6 +126,11 @@ template <typename Traits>
 HardwarePreference DecoderTemplate<Traits>::GetHardwarePreference(
     const ConfigType&) {
   return HardwarePreference::kAllow;
+}
+
+template <typename Traits>
+bool DecoderTemplate<Traits>::GetLowDelayPreference(const ConfigType&) {
+  return false;
 }
 
 template <typename Traits>
@@ -157,6 +168,7 @@ void DecoderTemplate<Traits>::configure(const ConfigType* config,
   request->media_config = std::move(media_config);
   request->reset_generation = reset_generation_;
   request->hw_pref = GetHardwarePreference(*config);
+  request->low_delay = GetLowDelayPreference(*config);
   requests_.push_back(request);
   ProcessRequests();
 }
@@ -291,10 +303,10 @@ bool DecoderTemplate<Traits>::ProcessConfigureRequest(Request* request) {
     pending_request_ = request;
     initializing_sync_ = true;
 
-    SetHardwarePreference(pending_request_->hw_pref);
-
+    SetHardwarePreference(pending_request_->hw_pref.value());
     Traits::InitializeDecoder(
-        *decoder_, *pending_request_->media_config,
+        *decoder_, pending_request_->low_delay.value(),
+        *pending_request_->media_config,
         WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
         WTF::BindRepeating(&DecoderTemplate::OnOutput, WrapWeakPersistent(this),
                            reset_generation_));
@@ -494,16 +506,19 @@ void DecoderTemplate<Traits>::OnFlushDone(media::Status status) {
   // since the client is required to do so manually.
   const bool is_flush = pending_request_->type == Request::Type::kFlush;
   if (is_flush && pending_request_->reset_generation != reset_generation_) {
-    pending_request_.Release()->resolver.Release()->Resolve();
+    // TODO(crbug.com/1201299): Emit an AbortError.
+    pending_request_.Release()->resolver.Release()->Reject();
     ProcessRequests();
     return;
   }
 
-  SetHardwarePreference(pending_request_->hw_pref);
+  if (!is_flush)
+    SetHardwarePreference(pending_request_->hw_pref.value());
 
   // Processing continues in OnInitializeDone().
   Traits::InitializeDecoder(
-      *decoder_, is_flush ? *active_config_ : *pending_request_->media_config,
+      *decoder_, is_flush ? low_delay_ : pending_request_->low_delay.value(),
+      is_flush ? *active_config_ : *pending_request_->media_config,
       WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
       WTF::BindRepeating(&DecoderTemplate::OnOutput, WrapWeakPersistent(this),
                          reset_generation_));
@@ -541,6 +556,7 @@ void DecoderTemplate<Traits>::OnInitializeDone(media::Status status) {
     Traits::UpdateDecoderLog(*decoder_, *pending_request_->media_config,
                              logger_->log());
 
+    low_delay_ = pending_request_->low_delay.value();
     active_config_ = std::move(pending_request_->media_config);
     pending_request_.Release();
   }

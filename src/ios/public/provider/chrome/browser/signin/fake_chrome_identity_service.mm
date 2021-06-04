@@ -194,11 +194,13 @@ bool FakeChromeIdentityService::HasIdentities() {
   return [identities_ count] > 0;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentities() {
+NSArray* FakeChromeIdentityService::GetAllIdentities(
+    PrefService* pref_service) {
   return identities_;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
+NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay(
+    PrefService* prefService) {
   return identities_;
 }
 
@@ -297,12 +299,34 @@ NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(
   return FakeGetHostedDomainForIdentity(identity);
 }
 
+absl::optional<bool>
+FakeChromeIdentityService::IsSubjectToMinorModeRestrictions(
+    ChromeIdentity* identity) {
+  if (![identities_ containsObject:identity]) {
+    return absl::nullopt;
+  }
+  return absl::make_optional(
+      [identity.userEmail hasSuffix:kMinorModeIdentityEmailSuffix]);
+}
+
 void FakeChromeIdentityService::SetUpForIntegrationTests() {}
 
 void FakeChromeIdentityService::AddManagedIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {
     NSString* email =
         [NSString stringWithFormat:@"%@%@", name, kManagedIdentityEmailSuffix];
+    NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
+    [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
+                                                          gaiaID:gaiaID
+                                                            name:name]];
+  }
+}
+
+void FakeChromeIdentityService::AddMinorModeIdentities(
+    NSArray* identitiesNames) {
+  for (NSString* name in identitiesNames) {
+    NSString* email = [NSString
+        stringWithFormat:@"%@%@", name, kMinorModeIdentityEmailSuffix];
     NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
     [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
                                                           gaiaID:gaiaID
@@ -336,6 +360,11 @@ bool FakeChromeIdentityService::WaitForServiceCallbacksToComplete() {
     return _pendingCallback == 0;
   };
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+}
+
+void FakeChromeIdentityService::TriggerIdentityUpdateNotification(
+    ChromeIdentity* identity) {
+  FireProfileDidUpdate(identity);
 }
 
 }  // namespace ios

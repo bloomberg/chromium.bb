@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/chrome_test_launcher.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
@@ -34,7 +36,9 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/win_util.h"
 #include "chrome/test/base/always_on_top_window_killer_win.h"
+#include "chrome/test/base/test_switches.h"
 #endif
 
 class InteractiveUITestSuite : public ChromeTestSuite {
@@ -50,7 +54,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(OS_WIN)
-    com_initializer_.reset(new base::win::ScopedCOMInitializer());
+    com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
     ui_controls::InstallUIControlsAura(
         aura::test::CreateUIControlsAura(nullptr));
 #elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -173,6 +177,13 @@ int main(int argc, char** argv) {
   // foreground.
   InProcessBrowserTest::set_global_browser_set_up_function(
       &ui_test_utils::BringBrowserWindowToFront);
+
+#if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHighDpiSupport)) {
+    base::win::EnableHighDPISupport();
+  }
+#endif  // OS_WIN
 
   // Run interactive_ui_tests serially, they do not support running in parallel.
   size_t parallel_jobs = 1U;

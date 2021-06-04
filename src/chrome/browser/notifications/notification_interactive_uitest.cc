@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -17,7 +16,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +32,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_service.h"
@@ -45,6 +44,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -134,9 +134,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, DISABLED_TestUserGestureInfobar) {
       "window.domAutomationController.send(request());", &result));
   EXPECT_TRUE(result);
 
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(
+          browser()->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_EQ(1U, infobar_manager->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
@@ -393,17 +394,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, InlinePermissionRevokeUkm) {
   AllowAllOrigins();
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
-  Profile* profile = Profile::FromBrowserContext(browser()
-                                                     ->tab_strip_model()
-                                                     ->GetActiveWebContents()
-                                                     ->GetBrowserContext());
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
   base::RunLoop origin_queried_waiter;
-  history_service->set_origin_queried_closure_for_testing(
-      origin_queried_waiter.QuitClosure());
-
+  ukm_recorder.SetOnAddEntryCallback(ukm::builders::Permission::kEntryName,
+                                     origin_queried_waiter.QuitClosure());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
 
@@ -691,8 +684,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
 #if !defined(OS_MAC)
-// Disabled on other platforms because it is flaky.  http://crbug.com/1195324
-IN_PROC_BROWSER_TEST_F(NotificationsTest, DISABLED_TestShouldDisplayMultiFullscreen) {
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AllowAllOrigins();
 

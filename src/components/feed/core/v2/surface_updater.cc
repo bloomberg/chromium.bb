@@ -10,8 +10,10 @@
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/xsurface.pb.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/public/feed_stream_surface.h"
 
 namespace feed {
 namespace {
@@ -53,6 +55,11 @@ void AddSliceUpdate(const StreamModel& model,
     const feedstore::Content* content = model.FindContent(content_revision);
     DCHECK(content);
     slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
+    if (content->prefetch_metadata_size() > 0) {
+      auto metadata = content->prefetch_metadata(0);
+      slice->mutable_slice_metadata()->set_uri(metadata.uri());
+      slice->mutable_slice_metadata()->set_title(metadata.title());
+    }
   } else {
     stream_update->add_updated_slices()->set_slice_id(
         ToString(content_revision));
@@ -159,6 +166,7 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kDataInStoreIsExpired:
     case LoadStreamStatus::kDataInStoreIsForAnotherUser:
     case LoadStreamStatus::kAbortWithPendingClearAll:
+    case LoadStreamStatus::kAlreadyHaveUnreadContent:
       break;
   }
   return feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;

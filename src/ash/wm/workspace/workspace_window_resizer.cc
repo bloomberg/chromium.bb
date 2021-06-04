@@ -31,6 +31,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "base/containers/contains.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -88,11 +89,10 @@ constexpr int kResizeRestoreDragThresholdDp = 5;
 // The UMA histogram that records presentation time for tab dragging between
 // windows in clamshell mode.
 constexpr char kTabDraggingInClamshellModeHistogram[] =
-    "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.ClamshellMode";
+    "Ash.TabDrag.PresentationTime.ClamshellMode";
 
 constexpr char kTabDraggingInClamshellModeMaxLatencyHistogram[] =
-    "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.MaxLatency."
-    "ClamshellMode";
+    "Ash.TabDrag.PresentationTime.MaxLatency.ClamshellMode";
 
 // Name of smoothness histograms of the cross fade animation that happens when
 // dragging a maximized window to maximize or unmaximize. Note that for drag
@@ -118,7 +118,7 @@ constexpr int kSnapDragDwellTimeResetThreshold = 8;
 
 // Dwell time before snap to maximize. The countdown starts when window dragged
 // into snap region.
-constexpr base::TimeDelta kDwellTime = base::TimeDelta::FromMilliseconds(800);
+constexpr base::TimeDelta kDwellTime = base::TimeDelta::FromMilliseconds(400);
 // The min amount of vertical movement needed for to trigger a snap to
 // maximize.
 constexpr int kSnapTriggerVerticalMoveThreshold = 64;
@@ -468,7 +468,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (parent &&
       // TODO(afakhry): Maybe use switchable containers?
       (desks_util::IsDeskContainer(parent) ||
-       parent->id() == kShellWindowId_AlwaysOnTopContainer)) {
+       parent->GetId() == kShellWindowId_AlwaysOnTopContainer)) {
     window_resizer = WorkspaceWindowResizer::Create(window_state, {});
   } else {
     window_resizer = DefaultWindowResizer::Create(window_state);

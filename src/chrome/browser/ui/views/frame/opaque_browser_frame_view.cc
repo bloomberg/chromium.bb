@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
@@ -32,6 +33,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -43,7 +45,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/window/frame_background.h"
@@ -535,7 +536,7 @@ views::Button* OpaqueBrowserFrameView::CreateFrameCaptionButton(
     const gfx::VectorIcon& icon_image) {
   views::FrameCaptionButton* button = new views::FrameCaptionButton(
       views::Button::PressedCallback(), icon_type, ht_component);
-  button->SetImage(button->GetIcon(), views::FrameCaptionButton::ANIMATE_NO,
+  button->SetImage(button->GetIcon(), views::FrameCaptionButton::Animate::kNo,
                    icon_image);
   return button;
 }

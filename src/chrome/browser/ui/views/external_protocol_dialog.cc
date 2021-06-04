@@ -24,11 +24,11 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -36,7 +36,7 @@ using content::WebContents;
 namespace {
 
 std::u16string GetMessageTextForOrigin(
-    const base::Optional<url::Origin>& origin) {
+    const absl::optional<url::Origin>& origin) {
   if (!origin || origin->opaque())
     return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_MESSAGE);
   return l10n_util::GetStringFUTF16(
@@ -53,7 +53,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     WebContents* web_contents,
     ui::PageTransition ignored_page_transition,
     bool ignored_has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin) {
+    const absl::optional<url::Origin>& initiating_origin) {
   DCHECK(web_contents);
 
   std::u16string program_name =
@@ -73,7 +73,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(
     WebContents* web_contents,
     const GURL& url,
     const std::u16string& program_name,
-    const base::Optional<url::Origin>& initiating_origin)
+    const absl::optional<url::Origin>& initiating_origin)
     : content::WebContentsObserver(web_contents),
       url_(url),
       program_name_(program_name),
@@ -100,8 +100,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       new views::MessageBoxView(GetMessageTextForOrigin(initiating_origin_));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

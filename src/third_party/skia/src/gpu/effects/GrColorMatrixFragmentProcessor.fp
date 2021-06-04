@@ -6,15 +6,14 @@
  */
 
 in fragmentProcessor inputFP;
-layout(ctype=SkM44, tracked) in uniform half4x4 m;
-layout(ctype=SkV4, tracked) in uniform half4 v;
+layout(ctype=SkM44) in uniform half4x4 m;
+layout(ctype=SkV4) in uniform half4 v;
 layout(key) in bool unpremulInput;
 layout(key) in bool clampRGBOutput;
 layout(key) in bool premulOutput;
 
 @optimizationFlags {
-    (inputFP ? ProcessorOptimizationFlags(inputFP.get()) : kAll_OptimizationFlags) &
-    kConstantOutputForConstantInput_OptimizationFlag
+    ProcessorOptimizationFlags(inputFP.get()) & kConstantOutputForConstantInput_OptimizationFlag
 }
 
 half4 main() {

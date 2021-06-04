@@ -44,7 +44,7 @@ bool CanStartTwoFingerMove(aura::Window* window,
   // the tab strip is full and hitting the caption area is difficult. We check
   // the window type and the state type so that we do not steal touches from the
   // web contents.
-  if (window->type() != aura::client::WINDOW_TYPE_NORMAL ||
+  if (window->GetType() != aura::client::WINDOW_TYPE_NORMAL ||
       !WindowState::Get(window) ||
       !WindowState::Get(window)->IsNormalOrSnapped()) {
     return false;
@@ -68,8 +68,11 @@ void ShowResizeShadow(aura::Window* window, int component) {
   // Don't show resize shadow if
   // 1) the window is not toplevel.
   // 2) the device is in tablet mode.
+  // 3) the window is not resizable.
   if (Shell::Get()->tablet_mode_controller()->InTabletMode() ||
-      window != window->GetToplevelWindow()) {
+      window != window->GetToplevelWindow() ||
+      ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+        aura::client::kResizeBehaviorCanResize) == 0)) {
     return;
   }
 

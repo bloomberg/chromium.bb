@@ -17,6 +17,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/metrics/demographics/demographic_metrics_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/pref_names.h"
 #import "components/ukm/ios/features.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -806,6 +807,11 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
       base::SysNSStringToUTF8(GUID));
 }
 
++ (void)clearSyncFirstSetupComplete {
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+}
+
 + (void)clearSyncServerData {
   chrome_test_util::ClearSyncServerData();
 }
@@ -1013,10 +1019,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
           chrome_test_util::GetCurrentWebState()->GetView(), GURL());
 
   return webClientUserAgent == web::UserAgentType::MOBILE;
-}
-
-+ (BOOL)isIllustratedEmptyStatesEnabled {
-  return base::FeatureList::IsEnabled(kIllustratedEmptyStates);
 }
 
 + (BOOL)isNativeContextMenusEnabled {

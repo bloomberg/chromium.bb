@@ -145,9 +145,15 @@ if (rtc_include_tests) {
         sources += [ "screen_capturer_mac_unittest.cc" ]
       }
       if (rtc_enable_win_wgc) {
-        sources += [ "win/wgc_capturer_win_unittest.cc" ]
+        sources += [
+          "win/wgc_capture_source_unittest.cc",
+          "win/wgc_capturer_win_unittest.cc",
+        ]
       }
-      deps += [ ":desktop_capture_mock" ]
+      deps += [
+        ":desktop_capture_mock",
+        "../../system_wrappers:metrics",
+      ]
       public_configs = [ ":x11_config" ]
     }
   }
@@ -326,6 +332,8 @@ rtc_library("desktop_capture_generic") {
     "cropping_window_capturer.h",
     "desktop_and_cursor_composer.cc",
     "desktop_and_cursor_composer.h",
+    "desktop_capture_metrics_helper.cc",
+    "desktop_capture_metrics_helper.h",
     "desktop_capture_options.cc",
     "desktop_capture_options.h",
     "desktop_capturer.cc",
@@ -576,8 +584,6 @@ rtc_library("desktop_capture_generic") {
       "win/wgc_desktop_frame.cc",
       "win/wgc_desktop_frame.h",
     ]
-
-    defines += [ "RTC_ENABLE_WIN_WGC" ]
   }
 }
 

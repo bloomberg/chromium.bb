@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -73,6 +73,11 @@ namespace send_tab_to_self {
 class SendTabToSelfBubbleController;
 class SendTabToSelfBubbleView;
 }  // namespace send_tab_to_self
+
+namespace sharing_hub {
+class SharingHubBubbleController;
+class SharingHubBubbleView;
+}  // namespace sharing_hub
 
 namespace ui {
 class NativeTheme;
@@ -368,7 +373,7 @@ class BrowserWindow : public ui::BaseWindow {
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) = 0;
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
@@ -386,6 +391,12 @@ class BrowserWindow : public ui::BaseWindow {
   virtual send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) = 0;
+
+  // Shows the Sharing Hub bubble.
+  virtual sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
+      content::WebContents* contents,
+      sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) = 0;
 
   // Shows the translate bubble.

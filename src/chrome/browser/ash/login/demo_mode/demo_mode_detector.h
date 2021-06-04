@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ASH_LOGIN_DEMO_MODE_DEMO_MODE_DETECTOR_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,7 +16,7 @@
 
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace ash {
 
 // Helper for idle state and demo-mode detection.
 // Should be initialized on OOBE start.
@@ -76,6 +75,12 @@ class DemoModeDetector {
   DISALLOW_COPY_AND_ASSIGN(DemoModeDetector);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::DemoModeDetector;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_DEMO_MODE_DEMO_MODE_DETECTOR_H_

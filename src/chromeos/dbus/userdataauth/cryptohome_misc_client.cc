@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 
+#include <memory>
 #include <utility>
 
 #include <google/protobuf/message_lite.h>
@@ -65,7 +66,8 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
     proxy_ = bus->GetObjectProxy(
         ::user_data_auth::kUserDataAuthServiceName,
         dbus::ObjectPath(::user_data_auth::kUserDataAuthServicePath));
-    blocking_method_caller_.reset(new BlockingMethodCaller(bus, proxy_));
+    blocking_method_caller_ =
+        std::make_unique<BlockingMethodCaller>(bus, proxy_);
   }
 
   // CryptohomeMiscClient override:
@@ -119,7 +121,7 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
                     std::move(callback));
   }
 
-  base::Optional<::user_data_auth::GetSanitizedUsernameReply>
+  absl::optional<::user_data_auth::GetSanitizedUsernameReply>
   BlockingGetSanitizedUsername(
       const ::user_data_auth::GetSanitizedUsernameRequest& request) override {
     return BlockingCallProtoMethod<::user_data_auth::GetSanitizedUsernameReply>(
@@ -144,7 +146,7 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
           << "Failed to append protobuf when calling CryptohomeMisc method "
           << method_name;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
       return;
     }
     // Bind with the weak pointer of |this| so the response is not
@@ -178,14 +180,14 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
     ReplyType reply_proto;
     if (!ParseProto(response, &reply_proto)) {
       LOG(ERROR) << "Failed to parse reply protobuf from CryptohomeMisc method";
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
     std::move(callback).Run(reply_proto);
   }
 
   template <typename ReplyType, typename RequestType>
-  base::Optional<ReplyType> BlockingCallProtoMethod(
+  absl::optional<ReplyType> BlockingCallProtoMethod(
       const char* method_name,
       const char* interface_name,
       const RequestType& request) {
@@ -195,7 +197,7 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
       LOG(ERROR) << "Failed to append protobuf when calling CryptohomeMisc "
                     "method (blocking) "
                  << method_name;
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     std::unique_ptr<dbus::Response> response(
@@ -204,7 +206,7 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
     if (!response) {
       LOG(ERROR) << "DBus call failed for CryptohomeMisc method (blocking) "
                  << method_name;
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     ReplyType reply_proto;
@@ -212,7 +214,7 @@ class CryptohomeMiscClientImpl : public CryptohomeMiscClient {
       LOG(ERROR)
           << "Failed to parse proto from CryptohomeMisc method (blocking) "
           << method_name;
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     return reply_proto;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/object_path.h"

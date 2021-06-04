@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -161,8 +162,8 @@ class PageInfoBubbleViewTestApi {
   Profile* profile_;
   content::WebContents* web_contents_;
   base::RunLoop run_loop_;
-  base::Optional<bool> reload_prompt_;
-  base::Optional<views::Widget::ClosedReason> closed_reason_;
+  absl::optional<bool> reload_prompt_;
+  absl::optional<views::Widget::ClosedReason> closed_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTestApi);
 };
@@ -177,15 +178,21 @@ namespace {
 class ScopedWebContentsTestHelper {
  public:
   ScopedWebContentsTestHelper() {
-    web_contents_ = factory_.CreateWebContents(&profile_);
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
+
+    web_contents_ = factory_.CreateWebContents(profile_.get());
   }
 
-  Profile* profile() { return &profile_; }
+  Profile* profile() { return profile_.get(); }
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   content::TestWebContentsFactory factory_;
   content::WebContents* web_contents_;  // Weak. Owned by factory_.
 
@@ -229,6 +236,13 @@ class PageInfoBubbleViewTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTest);
 };
 
+base::Value ReadJson(base::StringPiece json) {
+  base::JSONReader::ValueWithError result =
+      base::JSONReader::ReadAndReturnValueWithError(json);
+  EXPECT_TRUE(result.value) << result.error_message;
+  return result.value ? std::move(*result.value) : base::Value();
+}
+
 }  // namespace
 
 // Each permission selector row is like this: [icon] [label] [selector]
@@ -239,7 +253,6 @@ TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
   TestingProfile* profile =
       static_cast<TestingProfile*>(web_contents_helper_.profile());
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  ASSERT_TRUE(profile->CreateHistoryService());
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->AddPage(origin_url, base::Time::Now(),
@@ -283,10 +296,6 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
   // checked options, and checks that the text on the MenuButtons is right.
-
-  TestingProfile* profile =
-      static_cast<TestingProfile*>(web_contents_helper_.profile());
-  ASSERT_TRUE(profile->CreateHistoryService());
 
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::GEOLOCATION;
@@ -377,7 +386,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
 namespace {
 
-constexpr char kPolicySetting[] = R"(
+constexpr char kWebUsbPolicySetting[] = R"(
     [
       {
         "devices": [{ "vendor_id": 6353, "product_id": 5678 }],
@@ -397,7 +406,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_.profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           *base::JSONReader::ReadDeprecated(kPolicySetting));
+                           ReadJson(kWebUsbPolicySetting));
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
 
   auto objects = store->GetGrantedObjects(origin);
@@ -440,7 +449,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_.profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           *base::JSONReader::ReadDeprecated(kPolicySetting));
+                           ReadJson(kWebUsbPolicySetting));
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
@@ -552,6 +561,48 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // permission is not being omitted from the UI.
   api_->SetPermissionInfo(list);
   EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
+}
+
+// Test UI construction and reconstruction with policy USB devices.
+TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicySerialPorts) {
+  constexpr size_t kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
+
+  // Add the policy setting to prefs.
+  Profile* profile = web_contents_helper_.profile();
+  profile->GetPrefs()->Set(prefs::kManagedSerialAllowUsbDevicesForUrls,
+                           ReadJson(R"([
+               {
+                 "devices": [{ "vendor_id": 6353, "product_id": 5678 }],
+                 "urls": [ "http://www.example.com" ]
+               }
+             ])"));
+
+  PermissionInfoList list;
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
+
+  ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
+      api_->permissions_view()->children()[kExpectedChildren]);
+  const auto& children = object_view->children();
+  EXPECT_EQ(4u, children.size());
+
+  views::Label* label = static_cast<views::Label*>(children[1]);
+  EXPECT_EQ(u"USB device from Google Inc. (product 162E)", label->GetText());
+
+  views::Button* button = static_cast<views::Button*>(children[2]);
+  EXPECT_EQ(button->GetState(), views::Button::STATE_DISABLED);
+
+  views::Label* desc_label = static_cast<views::Label*>(children[3]);
+  EXPECT_EQ(u"Serial port allowed by your administrator",
+            desc_label->GetText());
+
+  // Policy granted serial port permissions should not be able to be deleted.
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  views::test::ButtonTestApi(button).NotifyClick(event);
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
 }
 
 // Test that updating the number of cookies used by the current page doesn't add

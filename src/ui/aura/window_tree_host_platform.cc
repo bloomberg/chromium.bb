@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_tree_host_platform.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -92,7 +93,7 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
 #endif
   NOTREACHED();
 #elif defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, properties.bounds));
+  platform_window_ = std::make_unique<ui::WinWindow>(this, properties.bounds);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -150,7 +151,7 @@ void WindowTreeHostPlatform::ReleaseCapture() {
 }
 
 bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+    absl::optional<base::flat_set<ui::DomCode>> dom_codes) {
   // Only one KeyboardHook should be active at a time, otherwise there will be
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.

@@ -154,8 +154,8 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
     immersive_data_provider_.reset();
     immersive_frame_pose_ = nullptr;
     is_immersive_frame_position_emulated_ = false;
-    first_immersive_frame_time_ = base::nullopt;
-    first_immersive_frame_time_delta_ = base::nullopt;
+    first_immersive_frame_time_ = absl::nullopt;
+    first_immersive_frame_time_delta_ = absl::nullopt;
 
     frame_transport_ = MakeGarbageCollected<XRFrameTransport>(
         session->GetExecutionContext(),
@@ -484,9 +484,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       DCHECK(buffer_mailbox_holder_);
     }
 #endif
-    if (frame_data && (frame_data->left_eye || frame_data->right_eye)) {
-      immersive_session_->UpdateEyeParameters(frame_data->left_eye,
-                                              frame_data->right_eye);
+    if (frame_data && !frame_data->views.IsEmpty()) {
+      immersive_session_->UpdateViews(frame_data->views);
     }
 
     if (frame_data) {
@@ -561,7 +560,7 @@ void XRFrameProvider::ProcessScheduledFrame(
               FROM_HERE,
               WTF::Bind(&XRFrameProvider::OnPreDispatchInlineFrame,
                         WrapWeakPersistent(this), WrapWeakPersistent(session),
-                        high_res_now_ms, base::nullopt, base::nullopt));
+                        high_res_now_ms, absl::nullopt, absl::nullopt));
     }
   }
 }
@@ -569,8 +568,8 @@ void XRFrameProvider::ProcessScheduledFrame(
 void XRFrameProvider::OnPreDispatchInlineFrame(
     XRSession* session,
     double timestamp,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
+    const absl::optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const absl::optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   // Do nothing if the session was cleaned up or ended before we were schedueld.
   if (!session || session->ended())
     return;
@@ -660,7 +659,7 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
   if (frame_transport_->DrawingIntoSharedBuffer()) {
     // Image is written to shared buffer already. Just submit with a
     // placeholder.
-    scoped_refptr<Image> image_ref = nullptr;
+    scoped_refptr<Image> image_ref;
     DVLOG(3) << __FUNCTION__ << ": FrameSubmit for SharedBuffer mode";
     frame_transport_->FrameSubmit(immersive_presentation_provider_.get(),
                                   webgl_context->ContextGL(), webgl_context,
@@ -696,8 +695,10 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
   DCHECK(layer->session() == immersive_session_);
   DCHECK(immersive_presentation_provider_.is_bound());
 
-  XRViewport* left = layer->GetViewportForEye(XRView::kEyeLeft);
-  XRViewport* right = layer->GetViewportForEye(XRView::kEyeRight);
+  XRViewport* left =
+      layer->GetViewportForEye(device::mojom::blink::XREye::kLeft);
+  XRViewport* right =
+      layer->GetViewportForEye(device::mojom::blink::XREye::kRight);
   float width = layer->framebufferWidth();
   float height = layer->framebufferHeight();
 

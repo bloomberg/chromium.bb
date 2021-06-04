@@ -6,6 +6,8 @@ It tests the behaviors defined by the [WebGPU specification](https://gpuweb.gith
 The contents of this test suite are considered **normative**; implementations must pass
 them to be WebGPU-conformant. Mismatches between the specification and tests are bugs.
 
+This test suite can be embedded inside [WPT](https://github.com/web-platform-tests/wpt) or run in standalone.
+
 ## [Launch the standalone CTS runner / test plan viewer](https://gpuweb.github.io/cts/standalone/)
 
 ## Contributing

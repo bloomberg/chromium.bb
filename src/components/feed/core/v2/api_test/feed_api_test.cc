@@ -4,6 +4,8 @@
 
 #include "components/feed/core/v2/api_test/feed_api_test.h"
 #include "components/feed/core/proto/v2/wire/web_feeds.pb.h"
+#include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/feed_network.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #include "base/callback.h"
@@ -34,7 +36,6 @@
 #include "components/feed/core/v2/test/test_util.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
-#include "components/offline_pages/core/client_namespace_constants.h"
 
 namespace feed {
 namespace test {
@@ -59,7 +60,7 @@ std::unique_ptr<StreamModelUpdateRequest> StoredModelData(
     result = std::move(task_result);
   };
   LoadStreamFromStoreTask load_task(
-      LoadStreamFromStoreTask::LoadType::kFullLoad, stream_type, store,
+      LoadStreamFromStoreTask::LoadType::kFullLoad, nullptr, stream_type, store,
       /*missed_last_refresh=*/false, base::BindLambdaForTesting(complete));
   // We want to load the data no matter how stale.
   load_task.IgnoreStalenessForTesting();
@@ -175,15 +176,15 @@ void TestSurfaceBase::StreamUpdate(const feedui::StreamUpdate& stream_update) {
 }
 void TestSurfaceBase::ReplaceDataStoreEntry(base::StringPiece key,
                                             base::StringPiece data) {
-  data_store_entries_[key.as_string()] = data.as_string();
+  data_store_entries_[std::string(key)] = std::string(data);
 }
 void TestSurfaceBase::RemoveDataStoreEntry(base::StringPiece key) {
-  data_store_entries_.erase(key.as_string());
+  data_store_entries_.erase(std::string(key));
 }
 
 void TestSurfaceBase::Clear() {
-  initial_state = base::nullopt;
-  update = base::nullopt;
+  initial_state = absl::nullopt;
+  update = absl::nullopt;
   described_updates_.clear();
 }
 
@@ -262,10 +263,9 @@ TestFeedNetwork::~TestFeedNetwork() = default;
 void TestFeedNetwork::SendQueryRequest(
     NetworkRequestType request_type,
     const feedwire::Request& request,
-    bool force_signed_out_request,
     const std::string& gaia,
     base::OnceCallback<void(QueryRequestResult)> callback) {
-  forced_signed_out_request = force_signed_out_request;
+  last_gaia = gaia;
   ++send_query_call_count;
   // Emulate a successful response.
   // The response body is currently an empty message, because most of the
@@ -298,61 +298,111 @@ void DebugLogApiResponse(std::string request_bytes,
   }
 }
 
-void DebugLogResponse(base::StringPiece api_path,
+void DebugLogResponse(NetworkRequestType request_type,
+                      base::StringPiece api_path,
                       base::StringPiece method,
                       std::string request_bytes,
                       const FeedNetwork::RawResponse& raw_response) {
   VLOG(1) << "TestFeedNetwork responding to request " << method << " "
           << api_path;
-  if (api_path == UploadActionsDiscoverApi::RequestPath()) {
+  if (request_type == UploadActionsDiscoverApi::kRequestType) {
     DebugLogApiResponse<UploadActionsDiscoverApi>(request_bytes, raw_response);
-  } else if (api_path == ListRecommendedWebFeedDiscoverApi::RequestPath()) {
+  } else if (request_type == ListRecommendedWebFeedDiscoverApi::kRequestType) {
     DebugLogApiResponse<ListRecommendedWebFeedDiscoverApi>(request_bytes,
                                                            raw_response);
-  } else if (api_path == ListWebFeedsDiscoverApi::RequestPath()) {
+  } else if (request_type == ListWebFeedsDiscoverApi::kRequestType) {
     DebugLogApiResponse<ListWebFeedsDiscoverApi>(request_bytes, raw_response);
   }
 }
 
 void TestFeedNetwork::SendDiscoverApiRequest(
+    NetworkRequestType request_type,
     base::StringPiece api_path,
     base::StringPiece method,
     std::string request_bytes,
     const std::string& gaia,
     base::OnceCallback<void(RawResponse)> callback) {
-  api_requests_sent_[api_path.as_string()] = request_bytes;
-  ++api_request_count_[api_path.as_string()];
+  last_gaia = gaia;
+  api_requests_sent_[request_type] = request_bytes;
+  ++api_request_count_[request_type];
   std::vector<RawResponse>& injected_responses =
-      injected_api_responses_[api_path.as_string()];
+      injected_api_responses_[request_type];
+
+  bool is_feed_query_request =
+      request_type == NetworkRequestType::kFeedQuery ||
+      request_type == WebFeedListContentsDiscoverApi::kRequestType ||
+      request_type == QueryInteractiveFeedDiscoverApi::kRequestType ||
+      request_type == QueryBackgroundFeedDiscoverApi::kRequestType ||
+      request_type == QueryNextPageDiscoverApi::kRequestType;
+
+  if (is_feed_query_request) {
+    feedwire::Request request_proto;
+    request_proto.ParseFromString(request_bytes);
+    query_request_sent = request_proto;
+    send_query_call_count++;
+  }
 
   // If there is no injected response, create a default response.
   if (injected_responses.empty()) {
-    if (api_path == UploadActionsDiscoverApi::RequestPath()) {
-      feedwire::UploadActionsRequest request;
-      ASSERT_TRUE(request.ParseFromString(request_bytes));
-      feedwire::UploadActionsResponse response_message;
-      response_message.mutable_consistency_token()->set_token(
-          consistency_token);
-      InjectApiResponse<UploadActionsDiscoverApi>(response_message);
-    }
-    if (api_path == ListRecommendedWebFeedDiscoverApi::RequestPath()) {
-      feedwire::webfeed::ListRecommendedWebFeedsRequest request;
-      ASSERT_TRUE(request.ParseFromString(request_bytes));
-      feedwire::webfeed::ListRecommendedWebFeedsResponse response_message;
-      InjectResponse(response_message);
-    }
-    if (api_path == ListWebFeedsDiscoverApi::RequestPath()) {
-      feedwire::webfeed::ListWebFeedsRequest request;
-      ASSERT_TRUE(request.ParseFromString(request_bytes));
-      feedwire::webfeed::ListWebFeedsResponse response_message;
-      InjectResponse(response_message);
+    switch (request_type) {
+      case UploadActionsDiscoverApi::kRequestType: {
+        feedwire::UploadActionsRequest request;
+        ASSERT_TRUE(request.ParseFromString(request_bytes));
+        feedwire::UploadActionsResponse response_message;
+        response_message.mutable_consistency_token()->set_token(
+            consistency_token);
+        InjectApiResponse<UploadActionsDiscoverApi>(response_message);
+        break;
+      }
+      case ListRecommendedWebFeedDiscoverApi::kRequestType: {
+        feedwire::webfeed::ListRecommendedWebFeedsRequest request;
+        ASSERT_TRUE(request.ParseFromString(request_bytes));
+        feedwire::webfeed::ListRecommendedWebFeedsResponse response_message;
+        InjectResponse(response_message);
+        break;
+      }
+      case ListWebFeedsDiscoverApi::kRequestType: {
+        feedwire::webfeed::ListWebFeedsRequest request;
+        ASSERT_TRUE(request.ParseFromString(request_bytes));
+        feedwire::webfeed::ListWebFeedsResponse response_message;
+        InjectResponse(response_message);
+        break;
+      }
+
+        // For FeedQuery requests, emulate a successful response.
+        // The response body is currently an empty message, because most of the
+        // time we want to inject a translated response for ease of
+        // test-writing.
+
+      case WebFeedListContentsDiscoverApi::kRequestType: {
+        feedwire::Response response;
+        InjectApiResponse<WebFeedListContentsDiscoverApi>(response);
+        break;
+      }
+      case QueryInteractiveFeedDiscoverApi::kRequestType: {
+        feedwire::Response response;
+        InjectApiResponse<QueryInteractiveFeedDiscoverApi>(response);
+        break;
+      }
+      case QueryBackgroundFeedDiscoverApi::kRequestType: {
+        feedwire::Response response;
+        InjectApiResponse<QueryBackgroundFeedDiscoverApi>(response);
+        break;
+      }
+      case QueryNextPageDiscoverApi::kRequestType: {
+        feedwire::Response response;
+        InjectApiResponse<QueryNextPageDiscoverApi>(response);
+        break;
+      }
+      default:
+        break;
     }
   }
 
   if (!injected_responses.empty()) {
     RawResponse response = injected_responses[0];
     injected_responses.erase(injected_responses.begin());
-    DebugLogResponse(api_path, method, request_bytes, response);
+    DebugLogResponse(request_type, api_path, method, request_bytes, response);
     Reply(base::BindOnce(std::move(callback), std::move(response)));
     return;
   }
@@ -378,11 +428,29 @@ void TestFeedNetwork::InjectRealFeedQueryResponse() {
   injected_response_ = response;
 }
 
+void TestFeedNetwork::InjectRealFeedQueryResponseWithNoContent() {
+  base::FilePath response_file_path;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &response_file_path));
+  response_file_path = response_file_path.AppendASCII(
+      "components/test/data/feed/response.binarypb");
+  std::string response_data;
+  CHECK(base::ReadFileToString(response_file_path, &response_data));
+
+  feedwire::Response response;
+  CHECK(response.ParseFromString(response_data));
+  // Keep only the first two operations, the CLEAR_ALL and root, but no content.
+  auto* data_operations =
+      response.mutable_feed_response()->mutable_data_operation();
+  data_operations->erase(data_operations->begin() + 2, data_operations->end());
+
+  injected_response_ = response;
+}
+
 void TestFeedNetwork::InjectEmptyActionRequestResult() {
   InjectApiRawResponse<UploadActionsDiscoverApi>({});
 }
 
-base::Optional<feedwire::UploadActionsRequest>
+absl::optional<feedwire::UploadActionsRequest>
 TestFeedNetwork::GetActionRequestSent() {
   return GetApiRequestSent<UploadActionsDiscoverApi>();
 }
@@ -454,7 +522,7 @@ RefreshResponseData TestWireResponseTranslator::TranslateWireResponse(
 }
 void TestWireResponseTranslator::InjectResponse(
     std::unique_ptr<StreamModelUpdateRequest> response,
-    base::Optional<std::string> session_id) {
+    absl::optional<std::string> session_id) {
   DCHECK(!response->stream_data.signed_in() || !session_id);
   RefreshResponseData data;
   data.model_update_request = std::move(response);
@@ -531,66 +599,6 @@ void TestMetricsReporter::OnUploadActions(UploadActionsStatus status) {
   MetricsReporter::OnUploadActions(status);
 }
 
-TestPrefetchService::TestPrefetchService() = default;
-TestPrefetchService::~TestPrefetchService() = default;
-void TestPrefetchService::SetSuggestionProvider(
-    offline_pages::SuggestionsProvider* suggestions_provider) {
-  suggestions_provider_ = suggestions_provider;
-}
-void TestPrefetchService::NewSuggestionsAvailable() {
-  ++new_suggestions_available_call_count_;
-}
-
-offline_pages::SuggestionsProvider*
-TestPrefetchService::suggestions_provider() {
-  return suggestions_provider_;
-}
-int TestPrefetchService::NewSuggestionsAvailableCallCount() const {
-  return new_suggestions_available_call_count_;
-}
-TestOfflinePageModel::TestOfflinePageModel() = default;
-TestOfflinePageModel::~TestOfflinePageModel() = default;
-void TestOfflinePageModel::AddObserver(Observer* observer) {
-  CHECK(observers_.insert(observer).second);
-}
-void TestOfflinePageModel::RemoveObserver(Observer* observer) {
-  CHECK_EQ(1UL, observers_.erase(observer));
-}
-void TestOfflinePageModel::GetPagesWithCriteria(
-    const offline_pages::PageCriteria& criteria,
-    offline_pages::MultipleOfflinePageItemCallback callback) {
-  std::vector<offline_pages::OfflinePageItem> result;
-  for (const offline_pages::OfflinePageItem& item : items_) {
-    if (MeetsCriteria(criteria, item)) {
-      result.push_back(item);
-    }
-  }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), result));
-}
-
-void TestOfflinePageModel::AddTestPage(const GURL& url) {
-  offline_pages::OfflinePageItem item;
-  item.url = url;
-  item.client_id =
-      offline_pages::ClientId(offline_pages::kSuggestedArticlesNamespace, "");
-  items_.push_back(item);
-}
-
-void TestOfflinePageModel::CallObserverOfflinePageAdded(
-    const offline_pages::OfflinePageItem& item) {
-  for (Observer* observer : observers_) {
-    observer->OfflinePageAdded(this, item);
-  }
-}
-
-void TestOfflinePageModel::CallObserverOfflinePageDeleted(
-    const offline_pages::OfflinePageItem& item) {
-  for (Observer* observer : observers_) {
-    observer->OfflinePageDeleted(item);
-  }
-}
-
 FeedApiTest::FeedApiTest() = default;
 FeedApiTest::~FeedApiTest() = default;
 void FeedApiTest::SetUp() {
@@ -602,6 +610,12 @@ void FeedApiTest::SetUp() {
   // Disable fetching of recommended web feeds at startup to
   // avoid a delayed task in tests that don't need it.
   config.fetch_web_feed_info_delay = base::TimeDelta();
+  // `use_feed_query_requests_for_web_feeds` is a temporary option for
+  // debugging, setting it to false tests the preferred endpoint.
+  config.use_feed_query_requests_for_web_feeds = false;
+  // Disable refreshing the Web Feed stream after the for-you stream is loaded,
+  // to simplify tests unrelated to this feature.
+  config.refresh_web_feed_after_for_you_feed_loads = false;
   SetFeedConfigForTesting(config);
 
   feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
@@ -652,23 +666,30 @@ DisplayMetrics FeedApiTest::GetDisplayMetrics() {
 std::string FeedApiTest::GetLanguageTag() {
   return "en-US";
 }
+bool FeedApiTest::IsAutoplayEnabled() {
+  return false;
+}
+void FeedApiTest::ClearAll() {
+  if (on_clear_all_)
+    on_clear_all_.Run();
+}
 void FeedApiTest::PrefetchImage(const GURL& url) {
   prefetched_images_.push_back(url);
   prefetch_image_call_count_++;
 }
 
-void FeedApiTest::CreateStream() {
+void FeedApiTest::CreateStream(bool wait_for_initialization) {
   ChromeInfo chrome_info;
   chrome_info.channel = version_info::Channel::STABLE;
   chrome_info.version = base::Version({99, 1, 9911, 2});
   stream_ = std::make_unique<FeedStream>(
       &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
       &network_, image_fetcher_.get(), store_.get(),
-      persistent_key_value_store_.get(), &prefetch_service_,
-      &offline_page_model_, chrome_info);
-
-  WaitForIdleTaskQueue();  // Wait for any initialization.
+      persistent_key_value_store_.get(), chrome_info);
   stream_->SetWireResponseTranslatorForTesting(&response_translator_);
+
+  if (wait_for_initialization)
+    WaitForIdleTaskQueue();  // Wait for any initialization.
 }
 
 bool FeedApiTest::IsTaskQueueIdle() const {

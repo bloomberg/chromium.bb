@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
-import './system_data_provider.mojom-lite.js';
-import './system_routine_controller.mojom-lite.js';
-
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {PowerRoutineResult, RoutineType, StandardRoutineResult, SystemDataProviderInterface, SystemInfo, SystemRoutineControllerInterface} from './diagnostics_types.js';
-import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage, fakePowerRoutineResults, fakeRoutineResults, fakeSystemInfo} from './fake_data.js';
+import {InputDataProviderInterface, NetworkHealthProviderInterface, PowerRoutineResult, RoutineType, StandardRoutineResult, SystemDataProvider, SystemDataProviderInterface, SystemInfo, SystemRoutineController, SystemRoutineControllerInterface} from './diagnostics_types.js';
+import {fakeAllNetworksAvailable, fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCellularNetwork, fakeCpuUsage, fakeEthernetNetwork, fakeMemoryUsage, fakePowerRoutineResults, fakeRoutineResults, fakeSystemInfo, fakeWifiNetwork} from './fake_data.js';
+import {FakeNetworkHealthProvider} from './fake_network_health_provider.js';
 import {FakeSystemDataProvider} from './fake_system_data_provider.js';
 import {FakeSystemRoutineController} from './fake_system_routine_controller.js';
 
@@ -20,6 +15,12 @@ import {FakeSystemRoutineController} from './fake_system_routine_controller.js';
  * Provides singleton access to mojo interfaces with the ability
  * to override them with test/fake implementations.
  */
+
+/**
+ * If true this will replace all providers with fakes.
+ * @type {boolean}
+ */
+let useFakeProviders = false;
 
 /**
  * @type {?SystemDataProviderInterface}
@@ -32,6 +33,16 @@ let systemDataProvider = null;
 let systemRoutineController = null;
 
 /**
+ * @type {?NetworkHealthProviderInterface}
+ */
+let networkHealthProvider = null;
+
+/**
+ * @type {?InputDataProviderInterface}
+ */
+let inputDataProvider = null;
+
+/**
  * @param {!SystemDataProviderInterface} testProvider
  */
 export function setSystemDataProviderForTesting(testProvider) {
@@ -39,12 +50,28 @@ export function setSystemDataProviderForTesting(testProvider) {
 }
 
 /**
+ * Create a FakeSystemDataProvider with reasonable fake data.
+ */
+function setupFakeSystemDataProvider() {
+  systemDataProvider = new FakeSystemDataProvider();
+  systemDataProvider.setFakeBatteryChargeStatus(fakeBatteryChargeStatus);
+  systemDataProvider.setFakeBatteryHealth(fakeBatteryHealth);
+  systemDataProvider.setFakeBatteryInfo(fakeBatteryInfo);
+  systemDataProvider.setFakeCpuUsage(fakeCpuUsage);
+  systemDataProvider.setFakeMemoryUsage(fakeMemoryUsage);
+  systemDataProvider.setFakeSystemInfo(fakeSystemInfo);
+}
+
+/**
  * @return {!SystemDataProviderInterface}
  */
 export function getSystemDataProvider() {
   if (!systemDataProvider) {
-    systemDataProvider =
-        chromeos.diagnostics.mojom.SystemDataProvider.getRemote();
+    if (useFakeProviders) {
+      setupFakeSystemDataProvider();
+    } else {
+      systemDataProvider = SystemDataProvider.getRemote();
+    }
   }
 
   assert(!!systemDataProvider);
@@ -59,14 +86,83 @@ export function setSystemRoutineControllerForTesting(testController) {
 }
 
 /**
+ * Create a FakeSystemRoutineController with reasonable fake data.
+ */
+function setupFakeSystemRoutineController() {
+  systemRoutineController = new FakeSystemRoutineController();
+  systemRoutineController.setDelayTimeInMillisecondsForTesting(-1);
+
+  // Enable all routines by default.
+  systemRoutineController.setFakeSupportedRoutines(
+      [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+}
+
+/**
  * @return {!SystemRoutineControllerInterface}
  */
 export function getSystemRoutineController() {
   if (!systemRoutineController) {
-    systemRoutineController =
-        chromeos.diagnostics.mojom.SystemRoutineController.getRemote();
+    if (useFakeProviders) {
+      setupFakeSystemRoutineController();
+    } else {
+      systemRoutineController = SystemRoutineController.getRemote();
+    }
   }
 
   assert(!!systemRoutineController);
   return systemRoutineController;
+}
+
+/**
+ * @param {!NetworkHealthProviderInterface} testProvider
+ */
+export function setNetworkHealthProviderForTesting(testProvider) {
+  networkHealthProvider = testProvider;
+}
+
+/**
+ * Create a FakeNetworkHealthProvider with reasonable fake data.
+ */
+function setupFakeNetworkHealthProvider_() {
+  const provider = new FakeNetworkHealthProvider();
+  // The fake provides a stable state with all networks connected.
+  provider.setFakeNetworkGuidInfo([fakeAllNetworksAvailable]);
+  provider.setFakeNetworkState('ethernetGuid', [fakeEthernetNetwork]);
+  provider.setFakeNetworkState('wifiGuid', [fakeWifiNetwork]);
+  provider.setFakeNetworkState('cellularGuid', [fakeCellularNetwork]);
+
+  setNetworkHealthProviderForTesting(provider);
+}
+
+/**
+ * @return {!NetworkHealthProviderInterface}
+ */
+export function getNetworkHealthProvider() {
+  if (!networkHealthProvider) {
+    // TODO(michaelcheco): Instantiate a real mojo interface here.
+    setupFakeNetworkHealthProvider_();
+  }
+
+  assert(!!networkHealthProvider);
+  return networkHealthProvider;
+}
+
+/**
+ * @param {!InputDataProviderInterface} testProvider
+ */
+export function setInputDataProviderForTesting(testProvider) {
+  inputDataProvider = testProvider;
+}
+
+/**
+ * @return {!InputDataProviderInterface}
+ */
+export function getInputDataProvider() {
+  if (!inputDataProvider) {
+    inputDataProvider =
+        chromeos.diagnostics.mojom.InputDataProvider.getRemote();
+  }
+
+  assert(!!inputDataProvider);
+  return inputDataProvider;
 }

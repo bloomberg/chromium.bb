@@ -330,7 +330,7 @@ bool AreExperimentalA11yLabelsAllowed() {
 }
 
 bool IsLiveCaptionEnabled() {
-  return base::FeatureList::IsEnabled(media::kLiveCaption);
+  return media::IsLiveCaptionFeatureEnabled();
 }
 
 bool IsMagnifierPanningImprovementsEnabled() {
@@ -444,6 +444,7 @@ void AccessibilitySection::AddLoadTimeData(
       {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
       {"chromeVoxOptionsLabel", IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL},
+      {"chromeVoxTutorialLabel", IDS_SETTINGS_CHROMEVOX_TUTORIAL_LABEL},
       {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
       {"screenMagnifierHintLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_HINT_LABEL},
       {"screenMagnifierMouseFollowingModeContinuous",
@@ -581,6 +582,18 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_INTRO_TITLE},
       {"switchAccessSetupIntroBody",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_INTRO_BODY},
+      {"switchAccessSetupChooseSwitchCountTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_SWITCH_COUNT_TITLE},
+      {"switchAccessSetupChoose1Switch",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_1_SWITCH},
+      {"switchAccessSetupChoose2Switches",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_2_SWITCHES},
+      {"switchAccessSetupChoose2SwitchesDescription",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_2_SWITCHES_DESCRIPTION},
+      {"switchAccessSetupChoose3Switches",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_3_SWITCHES},
+      {"switchAccessSetupChoose3SwitchesDescription",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_3_SWITCHES_DESCRIPTION},
       {"switchAccessSetupPairBluetooth",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_PAIR_BLUETOOTH},
       {"switchAccessSetupNext", IDS_SETTINGS_SWITCH_ACCESS_SETUP_NEXT},

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative/declarative_rule.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -51,7 +52,7 @@ struct RecordingCondition {
     const base::DictionaryValue* dict = nullptr;
     if (condition.GetAsDictionary(&dict) && dict->HasKey("bad_key")) {
       *error = "Found error key";
-      return std::unique_ptr<RecordingCondition>();
+      return nullptr;
     }
 
     std::unique_ptr<RecordingCondition> result(new RecordingCondition());

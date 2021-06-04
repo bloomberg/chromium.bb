@@ -38,6 +38,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -633,7 +634,7 @@ void SplitUntilNextCaseChange(
     SmallCapsIterator::SmallCapsBehavior& small_caps_behavior) {
   // TODO(layout-dev): Add support for latin-1 to SmallCapsIterator.
   const UChar* normalized_buffer;
-  base::Optional<String> utf16_text;
+  absl::optional<String> utf16_text;
   if (text.Is8Bit()) {
     utf16_text.emplace(text);
     utf16_text->Ensure16Bit();

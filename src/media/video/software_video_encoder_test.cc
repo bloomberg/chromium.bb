@@ -12,7 +12,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
@@ -189,6 +188,20 @@ class SoftwareVideoEncoderTest
         });
   }
 
+  void DecodeAndWaitForStatus(
+      scoped_refptr<DecoderBuffer> buffer,
+      const base::Location& location = base::Location::Current()) {
+    base::RunLoop run_loop;
+    decoder_->Decode(
+        std::move(buffer), base::BindLambdaForTesting([&](Status status) {
+          EXPECT_TRUE(status.is_ok())
+              << " Callback created: " << location.ToString()
+              << " Code: " << status.code() << " Error: " << status.message();
+          run_loop.Quit();
+        }));
+    run_loop.Run(location);
+  }
+
   int CountDifferentPixels(VideoFrame& frame1, VideoFrame& frame2) {
     int diff_cnt = 0;
     uint8_t tolerance = 10;
@@ -241,7 +254,7 @@ TEST_P(SoftwareVideoEncoderTest, InitializeAndFlush) {
   options.frame_size = gfx::Size(640, 480);
   bool output_called = false;
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
-      [&](VideoEncoderOutput, base::Optional<VideoEncoder::CodecDescription>) {
+      [&](VideoEncoderOutput, absl::optional<VideoEncoder::CodecDescription>) {
         output_called = true;
       });
 
@@ -262,7 +275,7 @@ TEST_P(SoftwareVideoEncoderTest, ForceAllKeyFrames) {
 
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         EXPECT_TRUE(output.key_frame);
         outputs_count++;
       });
@@ -290,7 +303,7 @@ TEST_P(SoftwareVideoEncoderTest, ResizeFrames) {
 
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         outputs_count++;
       });
 
@@ -325,7 +338,7 @@ TEST_P(SoftwareVideoEncoderTest, OutputCountEqualsFrameCount) {
 
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         EXPECT_NE(output.data, nullptr);
         EXPECT_EQ(output.timestamp, frame_duration * outputs_count);
         outputs_count++;
@@ -369,7 +382,7 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
 
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&, this](VideoEncoderOutput output,
-                base::Optional<VideoEncoder::CodecDescription> desc) {
+                absl::optional<VideoEncoder::CodecDescription> desc) {
         auto buffer =
             DecoderBuffer::FromArray(std::move(output.data), output.size);
         buffer->set_timestamp(output.timestamp);
@@ -400,8 +413,7 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
   }
 
   encoder_->Flush(ValidatingStatusCB());
-  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), ValidatingStatusCB());
-  RunUntilIdle();
+  DecodeAndWaitForStatus(DecoderBuffer::CreateEOSBuffer());
   EXPECT_EQ(decoded_frames.size(), frames_to_encode.size());
   for (auto i = 0u; i < decoded_frames.size(); i++) {
     auto original_frame = frames_to_encode[i];
@@ -435,7 +447,7 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
 
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         chunks.push_back(std::move(output));
       });
 
@@ -476,12 +488,10 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
         auto buffer = DecoderBuffer::CopyFrom(chunk.data.get(), chunk.size);
         buffer->set_timestamp(chunk.timestamp);
         buffer->set_is_key_frame(chunk.key_frame);
-        decoder_->Decode(std::move(buffer), ValidatingStatusCB());
-        RunUntilIdle();
+        DecodeAndWaitForStatus(std::move(buffer));
       }
     }
-    decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), ValidatingStatusCB());
-    RunUntilIdle();
+    DecodeAndWaitForStatus(DecoderBuffer::CreateEOSBuffer());
 
     int rate_decimator =
         (1 << (options.temporal_layers - 1)) / (1 << max_layer);
@@ -504,7 +514,7 @@ TEST_P(H264VideoEncoderTest, AvcExtraData) {
 
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         switch (outputs_count) {
           case 0:
             // First frame should have extra_data
@@ -549,7 +559,7 @@ TEST_P(H264VideoEncoderTest, AnnexB) {
 
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         EXPECT_FALSE(desc.has_value());
         EXPECT_NE(output.data, nullptr);
 
@@ -591,7 +601,7 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
   options.avc.produce_annexb = false;
   struct ChunkWithConfig {
     VideoEncoderOutput output;
-    base::Optional<VideoEncoder::CodecDescription> desc;
+    absl::optional<VideoEncoder::CodecDescription> desc;
   };
   std::vector<scoped_refptr<VideoFrame>> frames_to_encode;
   std::vector<scoped_refptr<VideoFrame>> decoded_frames;
@@ -602,7 +612,7 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
 
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
-          base::Optional<VideoEncoder::CodecDescription> desc) {
+          absl::optional<VideoEncoder::CodecDescription> desc) {
         chunks.push_back({std::move(output), std::move(desc)});
       });
 
@@ -632,9 +642,7 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
 
     if (chunk.desc.has_value()) {
       if (decoder_)
-        decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
-                         ValidatingStatusCB());
-      RunUntilIdle();
+        DecodeAndWaitForStatus(DecoderBuffer::CreateEOSBuffer());
       PrepareDecoder(options.frame_size, std::move(decoder_output_cb),
                      chunk.desc.value());
     }
@@ -642,11 +650,9 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
     auto buffer = DecoderBuffer::FromArray(std::move(output.data), output.size);
     buffer->set_timestamp(output.timestamp);
     buffer->set_is_key_frame(output.key_frame);
-    decoder_->Decode(std::move(buffer), ValidatingStatusCB());
-    RunUntilIdle();
+    DecodeAndWaitForStatus(std::move(buffer));
   }
-  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), ValidatingStatusCB());
-  RunUntilIdle();
+  DecodeAndWaitForStatus(DecoderBuffer::CreateEOSBuffer());
   EXPECT_EQ(decoded_frames.size(), total_frames_count);
 }
 

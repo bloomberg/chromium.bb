@@ -10,8 +10,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 FindBarIcon::FindBarIcon(
     Browser* browser,
@@ -28,17 +28,17 @@ FindBarIcon::FindBarIcon(
 FindBarIcon::~FindBarIcon() {}
 
 void FindBarIcon::SetActive(bool activate, bool should_animate) {
-  if (activate ==
-      (GetInkDrop()->GetTargetInkDropState() == views::InkDropState::ACTIVATED))
+  if (activate == (ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
+                   views::InkDropState::ACTIVATED))
     return;
   if (activate) {
     if (should_animate) {
-      AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+      ink_drop()->AnimateToState(views::InkDropState::ACTIVATED, nullptr);
     } else {
-      GetInkDrop()->SnapToActivated();
+      ink_drop()->GetInkDrop()->SnapToActivated();
     }
   } else {
-    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
+    ink_drop()->AnimateToState(views::InkDropState::HIDDEN, nullptr);
   }
 }
 

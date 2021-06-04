@@ -12,12 +12,10 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
-import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -43,7 +41,7 @@ import org.chromium.url.GURL;
  * A class that manages activity-specific interactions with the BottomSheet component that it
  * otherwise shouldn't know about.
  */
-class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable {
+class BottomSheetManager extends EmptyBottomSheetObserver implements DestroyObserver {
     /** A means of accessing the focus state of the omibox. */
     private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
 
@@ -55,9 +53,6 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
 
     /** A listener for browser controls offset changes. */
     private final BrowserControlsVisibilityManager.Observer mBrowserControlsObserver;
-
-    /** An observer for the tab provider. */
-    private final ActivityTabObserver mActivityTabObserver;
 
     /** A tab observer that is only attached to the active tab. */
     private final TabObserver mTabObserver;
@@ -165,30 +160,8 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
             }
         };
 
-        mActivityTabObserver = new HintlessActivityTabObserver() {
-            @Override
-            public void onActivityTabChanged(Tab tab) {
-                // Temporarily suppress the sheet if entering a state where there is no activity
-                // tab and the Start surface homepage isn't showing.
-                updateSuppressionForTabSwitcher(tab,
-                        mStartSurfaceSupplier.get() == null ? null
-                                                            : mStartSurfaceSupplier.get()
-                                                                      .getController()
-                                                                      .getStartSurfaceState());
-
-                if (tab == null) return;
-
-                // If refocusing the same tab, simply unsuppress the sheet.
-                if (mLastActivityTab == tab) return;
-
-                // Move the observer to the new activity tab and clear the sheet.
-                if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
-                mLastActivityTab = tab;
-                mLastActivityTab.addObserver(mTabObserver);
-                controller.clearRequestsAndHide();
-            }
-        };
-        mTabProvider.addObserverAndTrigger(mActivityTabObserver);
+        mTabProvider.addObserver(this::setActivityTab);
+        setActivityTab(mTabProvider.get());
 
         mVrModeObserver = new VrModeObserver() {
             /** A token held while this object is suppressing the bottom sheet. */
@@ -230,6 +203,26 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
             }
         };
         mOmniboxFocusStateSupplier.addObserver(mOmniboxFocusObserver);
+    }
+
+    private void setActivityTab(Tab tab) {
+        // Temporarily suppress the sheet if entering a state where there is no activity
+        // tab and the Start surface homepage isn't showing.
+        updateSuppressionForTabSwitcher(tab,
+                mStartSurfaceSupplier.get() == null
+                        ? null
+                        : mStartSurfaceSupplier.get().getController().getStartSurfaceState());
+
+        if (tab == null) return;
+
+        // If refocusing the same tab, simply unsuppress the sheet.
+        if (mLastActivityTab == tab) return;
+
+        // Move the observer to the new activity tab and clear the sheet.
+        if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
+        mLastActivityTab = tab;
+        mLastActivityTab.addObserver(mTabObserver);
+        mSheetController.clearRequestsAndHide();
     }
 
     /**
@@ -395,10 +388,9 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         mCallbackController.destroy();
         if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
-        mTabProvider.removeObserver(mActivityTabObserver);
         mSheetController.removeObserver(this);
         mBrowserControlsVisibilityManager.removeObserver(mBrowserControlsObserver);
         mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);

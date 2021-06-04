@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/feed/core/v2/public/feed_api.h"
@@ -37,10 +36,6 @@ class Entry;
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
-namespace offline_pages {
-class OfflinePageModel;
-class PrefetchService;
-}  // namespace offline_pages
 namespace signin {
 class IdentityManager;
 }  // namespace signin
@@ -69,6 +64,8 @@ class FeedService : public KeyedService {
     virtual std::string GetLanguageTag() = 0;
     // Returns display metrics for the device.
     virtual DisplayMetrics GetDisplayMetrics() = 0;
+    // Returns true if autoplay is enabled.
+    virtual bool IsAutoplayEnabled() = 0;
     // Clear all stored data.
     virtual void ClearAll() = 0;
     // Fetch the image and store it in the disk cache.
@@ -92,12 +89,11 @@ class FeedService : public KeyedService {
           key_value_store_database,
       signin::IdentityManager* identity_manager,
       history::HistoryService* history_service,
-      offline_pages::PrefetchService* prefetch_service,
-      offline_pages::OfflinePageModel* offline_page_model,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& api_key,
       const ChromeInfo& chrome_info);
+  static std::unique_ptr<FeedService> CreateForTesting(FeedApi* api);
   ~FeedService() override;
   FeedService(const FeedService&) = delete;
   FeedService& operator=(const FeedService&) = delete;
@@ -113,11 +109,20 @@ class FeedService : public KeyedService {
   // Whether Feedv2 is enabled. If false, the FeedService should not be created.
   static bool IsEnabled(const PrefService& pref_service);
 
+  // Returns the client ID for reliability logging.
+  static uint64_t GetReliabilityLoggingId(const std::string& metrics_id,
+                                          PrefService* pref_service);
+
+  //  Whether autoplay is enabled.
+  static bool IsAutoplayEnabled(const PrefService& pref_service);
+
  private:
   class StreamDelegateImpl;
   class NetworkDelegateImpl;
   class HistoryObserverImpl;
   class IdentityManagerObserverImpl;
+
+  FeedService();
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
 #endif
@@ -141,6 +146,7 @@ class FeedService : public KeyedService {
       application_status_listener_;
 #endif
   std::unique_ptr<FeedStream> stream_;
+  FeedApi* api_;  // Points to `stream_`, overridden for testing.
 };
 
 }  // namespace feed

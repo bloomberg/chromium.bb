@@ -65,6 +65,10 @@ Polymer({
       type: Boolean,
     },
 
+    isCellularSetupActive: {
+      type: Boolean,
+    },
+
     /**
      * List of all network state data for the network type.
      * @private {!Array<!OncMojo.NetworkStateProperties>}
@@ -86,6 +90,30 @@ Polymer({
         return {};
       },
     },
+
+    /**
+     * Whether the browser/ChromeOS is managed by their organization
+     * through enterprise policies.
+     * @private
+     */
+    isManaged_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isManaged');
+      },
+    },
+
+    /**
+     * Always-on VPN operating mode.
+     * @private {!chromeos.networkConfig.mojom.AlwaysOnVpnMode|undefined}
+     */
+    alwaysOnVpnMode_: Number,
+
+    /**
+     * Always-on VPN service automatically started on login.
+     * @private {!string|undefined}
+     */
+    alwaysOnVpnService_: String,
 
     /**
      * List of potential Tether hosts whose "Google Play Services" notifications
@@ -155,7 +183,7 @@ Polymer({
         chromeos.settings.mojom.Setting.kWifiAddNetwork,
         chromeos.settings.mojom.Setting.kMobileOnOff,
         chromeos.settings.mojom.Setting.kInstantTetheringOnOff,
-        chromeos.settings.mojom.Setting.kCellularAddNetwork,
+        chromeos.settings.mojom.Setting.kAddESimNetwork,
       ]),
     },
   },
@@ -163,7 +191,10 @@ Polymer({
   /** settings.RouteOriginBehavior override */
   route_: settings.routes.INTERNET_NETWORKS,
 
-  observers: ['deviceStateChanged_(deviceState)'],
+  observers: [
+    'deviceStateChanged_(deviceState)',
+    'onAlwaysOnVpnChanged_(alwaysOnVpnMode_, alwaysOnVpnService_)',
+  ],
 
   /** @private {number|null} */
   scanIntervalId_: null,
@@ -202,7 +233,7 @@ Polymer({
    * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
-    if (settingId === chromeos.settings.mojom.Setting.kCellularAddNetwork) {
+    if (settingId === chromeos.settings.mojom.Setting.kAddESimNetwork) {
       Polymer.RenderStatus.afterNextRender(this, () => {
         const deepLinkElement =
             this.$$('cellular-networks-list').getAddEsimButton();
@@ -274,6 +305,9 @@ Polymer({
     // Request the list of networks and start scanning if necessary.
     this.getNetworkStateList_();
     this.updateScanning_();
+
+    // Get always-on VPN configuration.
+    this.updateAlwaysOnVpnPreferences_();
   },
 
   /**
@@ -287,6 +321,7 @@ Polymer({
   /** NetworkListenerBehavior override */
   onNetworkStateListChanged() {
     this.getNetworkStateList_();
+    this.updateAlwaysOnVpnPreferences_();
   },
 
   /** NetworkListenerBehavior override */
@@ -311,7 +346,14 @@ Polymer({
       this.hasCompletedScanSinceLastEnabled_ = this.showSpinner &&
           !this.deviceState.scanning &&
           this.deviceState.deviceState === mojom.DeviceStateType.kEnabled;
-      this.showSpinner = !!this.deviceState.scanning;
+
+      // If the cellular network list is showing and currently inhibited, there
+      // is a separate spinner that shows in the CellularNetworkList.
+      if (this.shouldShowCellularNetworkList_() && this.isDeviceInhibited_()) {
+        this.showSpinner = false;
+      } else {
+        this.showSpinner = !!this.deviceState.scanning;
+      }
     }
 
     // Scans should only be triggered by the "networks" subpage.
@@ -947,6 +989,81 @@ Polymer({
     }
 
     return this.i18n('gmscoreNotificationsManyDevicesSubtitle');
+  },
+
+  /**
+   * Tells when VPN preferences section should be displayed. It is
+   * displayed when the preferences are applicable to the current device.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowVpnPreferences_() {
+    if (!this.deviceState) {
+      return false;
+    }
+    // For now the section only contain always-on VPN settings. It should not be
+    // displayed on managed devices while the legacy always-on VPN based on ARC
+    // is not replaced/extended by the new implementation.
+    return !this.isManaged_ && this.matchesType_('VPN', this.deviceState);
+  },
+
+  /**
+   * Generates the list of VPN services available for always-on. It keeps from
+   * the network list only the supported technologies.
+   * @return {!Array<!OncMojo.NetworkStateProperties>}
+   * @private
+   */
+  getAlwaysOnVpnNetworks_() {
+    if (!this.deviceState || this.deviceState.type !== mojom.NetworkType.kVPN) {
+      return [];
+    }
+
+    /** @type {!Array<!OncMojo.NetworkStateProperties>} */
+    const alwaysOnVpnList = this.networkStateList_.slice();
+    for (const vpnList of Object.values(this.thirdPartyVpns_)) {
+      assert(vpnList.length > 0);
+      // ARC VPNs are excluded from always-on VPN for now.
+      if (vpnList[0].typeState.vpn.type === mojom.VpnType.kArc) {
+        continue;
+      }
+      alwaysOnVpnList.push(...vpnList);
+    }
+
+    return alwaysOnVpnList;
+  },
+
+  /**
+   * Fetches the always-on VPN configuration from network config.
+   * @private
+   */
+  updateAlwaysOnVpnPreferences_() {
+    if (!this.deviceState || this.deviceState.type !== mojom.NetworkType.kVPN) {
+      return;
+    }
+
+    this.networkConfig_.getAlwaysOnVpn().then(result => {
+      this.alwaysOnVpnMode_ = result.properties.mode;
+      this.alwaysOnVpnService_ = result.properties.serviceGuid;
+    });
+  },
+
+  /**
+   * Handles a change in |alwaysOnVpnMode_| or |alwaysOnVpnService_|
+   * triggered via the observer.
+   * @private
+   */
+  onAlwaysOnVpnChanged_() {
+    if (this.alwaysOnVpnMode_ === undefined ||
+        this.alwaysOnVpnService_ === undefined) {
+      return;
+    }
+
+    /** @type {!chromeos.networkConfig.mojom.AlwaysOnVpnProperties} */
+    const properties = {
+      mode: this.alwaysOnVpnMode_,
+      serviceGuid: this.alwaysOnVpnService_,
+    };
+    this.networkConfig_.setAlwaysOnVpn(properties);
   },
 });
 })();

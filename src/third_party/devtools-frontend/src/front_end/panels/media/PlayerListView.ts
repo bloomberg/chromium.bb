@@ -6,6 +6,7 @@
 
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import type {MainView, TriggerDispatcher} from './MainView.js';
 import type {PlayerEvent} from './MediaModel.js';
@@ -53,7 +54,7 @@ export class PlayerEntryTreeElement extends UI.TreeOutline.TreeElement {
     this.titleFromUrl = true;
     this._playerStatus = playerStatus;
     this._displayContainer = displayContainer;
-    this.setLeadingIcons([UI.Icon.Icon.create('smallicon-videoplayer-playing', 'media-player')]);
+    this.setLeadingIcons([UI.Icon.Icon.create('largeicon-play-animation', 'media-player')]);
     this.listItemElement.classList.add('player-entry-tree-element');
     this.listItemElement.addEventListener('contextmenu', this._rightClickContextMenu.bind(this, playerID), false);
   }
@@ -102,7 +103,7 @@ export class PlayerListView extends UI.Widget.VBox implements TriggerDispatcher 
     // The parent tree for storing sections
     this._sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
     this.contentElement.appendChild(this._sidebarTree.element);
-    this._sidebarTree.registerRequiredCSS('panels/media/playerListView.css', {enableLegacyPatching: true});
+    this._sidebarTree.registerRequiredCSS('panels/media/playerListView.css', {enableLegacyPatching: false});
 
     // Players active in this tab.
     this._playerList = this._addListSection(i18nString(UIStrings.players));
@@ -146,7 +147,7 @@ export class PlayerListView extends UI.Widget.VBox implements TriggerDispatcher 
       if (!sidebarEntry) {
         throw new Error('sidebarEntry is expected to not be null');
       }
-      sidebarEntry.setLeadingIcons([UI.Icon.Icon.create('smallicon-videoplayer-' + iconName, 'media-player')]);
+      sidebarEntry.setLeadingIcons([UI.Icon.Icon.create(iconName, 'media-player')]);
     }
   }
 
@@ -173,12 +174,13 @@ export class PlayerListView extends UI.Widget.VBox implements TriggerDispatcher 
   }
 
   onEvent(playerID: string, event: PlayerEvent): void {
-    if (event.value === 'PLAY') {
-      this.setMediaElementPlayerIcon(playerID, 'playing');
-    } else if (event.value === 'PAUSE') {
-      this.setMediaElementPlayerIcon(playerID, 'paused');
-    } else if (event.value === 'WEBMEDIAPLAYER_DESTROYED') {
-      this.setMediaElementPlayerIcon(playerID, 'destroyed');
+    const eventType = JSON.parse(event.value).event;
+    if (eventType === 'kPlay') {
+      this.setMediaElementPlayerIcon(playerID, 'largeicon-play-animation');
+    } else if (eventType === 'kPause') {
+      this.setMediaElementPlayerIcon(playerID, 'largeicon-pause-animation');
+    } else if (eventType === 'kWebMediaPlayerDestroyed') {
+      this.setMediaElementPlayerIcon(playerID, 'smallicon-videoplayer-destroyed');
     }
   }
 }

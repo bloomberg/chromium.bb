@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include "base/base64url.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
@@ -309,7 +310,7 @@ bool ParseScheme(base::StringPiece scheme, mojom::CSPSource* csp_source) {
   if (!std::all_of(scheme.begin() + 1, scheme.end(), is_scheme_character))
     return false;
 
-  csp_source->scheme = scheme.as_string();
+  csp_source->scheme = std::string(scheme);
 
   return true;
 }
@@ -343,7 +344,7 @@ bool ParseHost(base::StringPiece host, mojom::CSPSource* csp_source) {
         }))
       return false;
   }
-  csp_source->host = host.as_string();
+  csp_source->host = std::string(host);
 
   return true;
 }
@@ -452,7 +453,7 @@ bool ParseSource(CSPDirectiveName directive_name,
     parsing_errors.emplace_back(base::StringPrintf(
         "The source list for Content Security Policy directive '%s' "
         "contains a source with an invalid path: '%s'. %s",
-        ToString(directive_name).c_str(), expression.as_string().c_str(),
+        ToString(directive_name).c_str(), std::string(expression).c_str(),
         ignoring));
   }
 
@@ -508,7 +509,7 @@ bool ParseNonce(base::StringPiece expression, std::string* nonce) {
     return false;
   }
 
-  *nonce = subexpression.as_string();
+  *nonce = std::string(subexpression);
   return true;
 }
 
@@ -597,13 +598,13 @@ mojom::CSPSourceListPtr ParseSourceList(
       continue;
     }
 
-    if (ToCSPDirectiveName(expression.as_string()) !=
+    if (ToCSPDirectiveName(std::string(expression)) !=
         CSPDirectiveName::Unknown) {
       parsing_errors.emplace_back(base::StringPrintf(
           "The Content-Security-Policy directive '%s' contains '%s' as a "
           "source expression. Did you want to add it as a directive and forget "
           "a semicolon?",
-          ToString(directive_name).c_str(), expression.as_string().c_str()));
+          ToString(directive_name).c_str(), std::string(expression).c_str()));
     }
 
     auto csp_source = mojom::CSPSource::New();
@@ -619,7 +620,7 @@ mojom::CSPSourceListPtr ParseSourceList(
       parsing_errors.emplace_back(base::StringPrintf(
           "The Content-Security-Policy directive 'frame-ancestors' does not "
           "support the source expression '%s'",
-          expression.as_string().c_str()));
+          std::string(expression).c_str()));
       continue;
     }
 
@@ -677,7 +678,7 @@ mojom::CSPSourceListPtr ParseSourceList(
     parsing_errors.emplace_back(base::StringPrintf(
         "The source list for the Content Security Policy directive '%s' "
         "contains an invalid source: '%s'. It will be ignored.",
-        ToString(directive_name).c_str(), expression.as_string().c_str()));
+        ToString(directive_name).c_str(), std::string(expression).c_str()));
   }
 
   return directive;
@@ -705,7 +706,7 @@ network::mojom::CSPRequireTrustedTypesFor ParseRequireTrustedTypesFor(
       parsing_errors.emplace_back(base::StringPrintf(
           "Invalid expression in 'require-trusted-types-for' "
           "Content Security Policy directive: %s.%s\n",
-          expression.as_string().c_str(), hint));
+          std::string(expression).c_str(), hint));
     }
   }
   if (out == network::mojom::CSPRequireTrustedTypesFor::None)
@@ -756,7 +757,7 @@ network::mojom::CSPTrustedTypesPtr ParseTrustedTypes(
           "The value of the Content Security Policy directive "
           "'trusted_types' contains an invalid policy: '%s'. "
           "It will be ignored.",
-          expression.as_string().c_str()));
+          std::string(expression).c_str()));
     }
   }
   return out;
@@ -790,7 +791,7 @@ void ParseReportDirective(const GURL& request_url,
     //   |endpoint| is an arbitrary string. It refers to an endpoint declared in
     //   the "Report-To" header. See https://w3c.github.io/reporting
     if (using_reporting_api) {
-      report_endpoints->push_back(uri.as_string());
+      report_endpoints->push_back(std::string(uri));
 
       // 'report-to' only allows for a single token.
       break;
@@ -803,7 +804,7 @@ void ParseReportDirective(const GURL& request_url,
             "The Content Security Policy directive 'report-uri' specifies as "
             "endpoint '%s'. This endpoint will be ignored since it violates "
             "the policy for Mixed Content.",
-            uri.as_string().c_str()));
+            std::string(uri).c_str()));
         continue;
       }
 
@@ -811,7 +812,7 @@ void ParseReportDirective(const GURL& request_url,
         parsing_errors.emplace_back(base::StringPrintf(
             "The Content Security Policy directive 'report-uri' specifies an "
             "invalid endpoint '%s'. It will be ignored.",
-            uri.as_string().c_str()));
+            std::string(uri).c_str()));
         continue;
       }
       report_endpoints->push_back(url.spec());
@@ -827,8 +828,8 @@ void WarnIfDirectiveValueNotEmpty(
         "The Content Security Policy directive '%s' should be empty, but was "
         "delivered with a value of '%s'. The directive has been applied, and "
         "the value ignored.",
-        directive.first.as_string().c_str(),
-        directive.second.as_string().c_str()));
+        std::string(directive.first).c_str(),
+        std::string(directive.second).c_str()));
   }
 }
 
@@ -884,8 +885,8 @@ void AddContentSecurityPolicyFromHeader(
     const GURL& base_url,
     mojom::ContentSecurityPolicyPtr& out) {
   DirectivesMap directives = ParseHeaderValue(header);
-  out->header =
-      mojom::ContentSecurityPolicyHeader::New(header.as_string(), type, source);
+  out->header = mojom::ContentSecurityPolicyHeader::New(std::string(header),
+                                                        type, source);
   out->self_origin = ComputeSelfOrigin(base_url);
 
   for (auto directive : directives) {
@@ -894,16 +895,16 @@ void AddContentSecurityPolicyFromHeader(
           "The Content-Security-Policy directive name '%s' contains one or "
           "more invalid characters. Only ASCII alphanumeric characters or "
           "dashes '-' are allowed in directive names.",
-          directive.first.as_string().c_str()));
+          std::string(directive.first).c_str()));
       continue;
     }
 
     CSPDirectiveName directive_name =
-        ToCSPDirectiveName(directive.first.as_string());
+        ToCSPDirectiveName(std::string(directive.first));
 
     if (directive_name == CSPDirectiveName::Unknown) {
       out->parsing_errors.emplace_back(
-          UnrecognizedDirectiveErrorMessage(directive.first.as_string()));
+          UnrecognizedDirectiveErrorMessage(std::string(directive.first)));
       continue;
     }
 
@@ -913,10 +914,10 @@ void AddContentSecurityPolicyFromHeader(
     if (out->raw_directives.count(directive_name)) {
       out->parsing_errors.emplace_back(base::StringPrintf(
           "Ignoring duplicate Content-Security-Policy directive '%s'.",
-          directive.first.as_string().c_str()));
+          std::string(directive.first).c_str()));
       continue;
     }
-    out->raw_directives[directive_name] = directive.second.as_string();
+    out->raw_directives[directive_name] = std::string(directive.second);
 
     if (!base::ranges::all_of(directive.second, IsDirectiveValueCharacter)) {
       out->parsing_errors.emplace_back(base::StringPrintf(
@@ -928,7 +929,7 @@ void AddContentSecurityPolicyFromHeader(
           "percent-encoded, as described in RFC 3986, section 2.1 "
           "(http://tools.ietf.org/html/rfc3986#section-2.1), if part of the "
           "path.",
-          directive.first.as_string().c_str()));
+          std::string(directive.first).c_str()));
       continue;
     }
 
@@ -937,7 +938,7 @@ void AddContentSecurityPolicyFromHeader(
       out->parsing_errors.emplace_back(
           base::StringPrintf("The Content Security Policy directive '%s' is "
                              "ignored when delivered in a report-only policy.",
-                             directive.first.as_string().c_str()));
+                             std::string(directive.first).c_str()));
       continue;
     }
 
@@ -946,7 +947,7 @@ void AddContentSecurityPolicyFromHeader(
       out->parsing_errors.emplace_back(
           base::StringPrintf("The Content Security Policy directive '%s' is "
                              "ignored when delivered via a <meta> element.",
-                             directive.first.as_string().c_str()));
+                             std::string(directive.first).c_str()));
       continue;
     }
 
@@ -1184,6 +1185,7 @@ mojom::AllowCSPFromHeaderValuePtr ParseAllowCSPFromHeader(
 bool CheckContentSecurityPolicy(const mojom::ContentSecurityPolicyPtr& policy,
                                 CSPDirectiveName directive_name,
                                 const GURL& url,
+                                const GURL& url_before_redirects,
                                 bool has_followed_redirect,
                                 bool is_response_check,
                                 CSPContext* context,
@@ -1210,12 +1212,16 @@ bool CheckContentSecurityPolicy(const mojom::ContentSecurityPolicyPtr& policy,
       continue;
 
     const auto& source_list = directive->second;
-    bool allowed = CheckCSPSourceList(*source_list, url, *(policy->self_origin),
+    bool allowed = CheckCSPSourceList(directive_name, *source_list, url,
+                                      *(policy->self_origin),
                                       has_followed_redirect, is_response_check);
 
     if (!allowed) {
       ReportViolation(context, policy, effective_directive_name, directive_name,
-                      url, has_followed_redirect, source_location);
+                      directive_name == CSPDirectiveName::FrameSrc
+                          ? url
+                          : url_before_redirects,
+                      has_followed_redirect, source_location);
     }
 
     return allowed ||

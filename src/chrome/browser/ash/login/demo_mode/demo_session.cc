@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,10 +18,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
@@ -37,11 +36,10 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -52,22 +50,22 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/constants.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace ash {
+namespace {
 
 // The splash screen should be removed either when this timeout passes or the
 // screensaver app is shown, whichever comes first.
 constexpr base::TimeDelta kRemoveSplashScreenTimeout =
     base::TimeDelta::FromSeconds(10);
 
-namespace chromeos {
-
-namespace {
-
 // Global DemoSession instance.
 DemoSession* g_demo_session = nullptr;
 
 // Type of demo config forced on for tests.
-base::Optional<DemoSession::DemoModeConfig> g_force_demo_config;
+absl::optional<DemoSession::DemoModeConfig> g_force_demo_config;
 
 // Path relative to the path at which offline demo resources are loaded that
 // contains the highlights app.
@@ -83,10 +81,6 @@ constexpr char kSplashScreensPath[] = "media/splash_screens";
 
 // Prefix for the private language tag used to indicate the device's country.
 constexpr char kDemoModeCountryPrivateLanguageTagPrefix[] = "x-dm-country-";
-
-// Prefix for the HWID for KRANE-ZDKS krane devices (based on kukuid board).
-// We only care about that specific variant of krane here.
-constexpr char kHwidKraneZdksPrefix[] = "KRANE-ZDKS";
 
 // Returns the list of apps normally pinned by Demo Mode policy that shouldn't
 // be pinned if the device is offline.
@@ -115,18 +109,19 @@ void InstallDemoMedia(const base::FilePath& offline_resources_path,
     LOG(ERROR) << "Failed to install demo mode media.";
 }
 
-std::string GetBoardName() {
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return board[0];
+std::string GetSwitchOrDefault(const base::StringPiece& switch_string,
+                               const std::string& default_value) {
+  auto* const command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(switch_string)) {
+    return command_line->GetSwitchValueASCII(switch_string);
+  }
+  return default_value;
 }
 
 std::string GetHighlightsAppId() {
-  std::string board = GetBoardName();
-  if (board == "atlas")
-    return extension_misc::kHighlightsAtlasAppId;
-  return extension_misc::kHighlightsAppId;
+  return GetSwitchOrDefault(switches::kDemoModeHighlightsApp,
+                            extension_misc::kHighlightsAppId);
 }
 
 // If the current locale is not the default one, ensure it is reverted to the
@@ -170,7 +165,7 @@ void RestoreDefaultLocaleForNextSession() {
 }
 
 // Returns the list of locales (and related info) supported by demo mode.
-std::vector<ash::LocaleInfo> GetSupportedLocales() {
+std::vector<LocaleInfo> GetSupportedLocales() {
   const base::flat_set<std::string> kSupportedLocales(
       {"da", "de", "en-GB", "en-US", "es", "fi", "fr", "fr-CA", "it", "ja",
        "nb", "nl", "sv"});
@@ -180,11 +175,11 @@ std::vector<ash::LocaleInfo> GetSupportedLocales() {
   const std::string current_locale_iso_code =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
           language::prefs::kApplicationLocale);
-  std::vector<ash::LocaleInfo> supported_locales;
+  std::vector<LocaleInfo> supported_locales;
   for (const std::string& locale : available_locales) {
     if (!kSupportedLocales.contains(locale))
       continue;
-    ash::LocaleInfo locale_info;
+    LocaleInfo locale_info;
     locale_info.iso_code = locale;
     locale_info.display_name = l10n_util::GetDisplayNameForLocale(
         locale, current_locale_iso_code, true /* is_for_ui */);
@@ -284,7 +279,7 @@ void DemoSession::SetDemoConfigForTesting(DemoModeConfig demo_config) {
 
 // static
 void DemoSession::ResetDemoConfigForTesting() {
-  g_force_demo_config = base::nullopt;
+  g_force_demo_config = absl::nullopt;
 }
 
 // static
@@ -337,17 +332,8 @@ std::string DemoSession::GetAdditionalLanguageList() {
 
 // static
 std::string DemoSession::GetScreensaverAppId() {
-  std::string board = GetBoardName();
-  if (board == "atlas")
-    return extension_misc::kScreensaverAtlasAppId;
-  if (board == "kukui") {
-    std::string hwid;
-    chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-        chromeos::system::kHardwareClassKey, &hwid);
-    if (base::StartsWith(hwid, kHwidKraneZdksPrefix))
-      return extension_misc::kScreensaverKraneZdksAppId;
-  }
-  return extension_misc::kScreensaverAppId;
+  return GetSwitchOrDefault(switches::kDemoModeScreensaverApp,
+                            extension_misc::kScreensaverAppId);
 }
 
 // static
@@ -442,7 +428,8 @@ DemoSession::DemoSession()
           std::make_unique<base::OneShotTimer>()) {
   // SessionManager may be unset in unit tests.
   if (session_manager::SessionManager::Get()) {
-    session_manager_observer_.Add(session_manager::SessionManager::Get());
+    session_manager_observation_.Observe(
+        session_manager::SessionManager::Get());
     OnSessionStateChanged();
   }
   ChromeUserManager::Get()->AddSessionStateObserver(this);
@@ -459,13 +446,11 @@ void DemoSession::InstallDemoResources() {
 
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  // TODO(b/158057730): Revert this back to Downloads once the ARC++ Download
-  // folder bug in Managed Guest Sessions has been fixed.
-  const base::FilePath my_files =
-      file_manager::util::GetMyFilesFolderForProfile(profile);
+  const base::FilePath downloads =
+      file_manager::util::GetDownloadsFolderForProfile(profile);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&InstallDemoMedia, demo_resources_->path(), my_files));
+      base::BindOnce(&InstallDemoMedia, demo_resources_->path(), downloads));
 }
 
 void DemoSession::LoadAndLaunchHighlightsApp() {
@@ -501,12 +486,12 @@ void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
   DCHECK(profile);
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);
-  if (!extension_registry_observer_.IsObserving(extension_registry))
-    extension_registry_observer_.Add(extension_registry);
+  if (!extension_registry_observations_.IsObservingSource(extension_registry))
+    extension_registry_observations_.AddObservation(extension_registry);
   extensions::AppWindowRegistry* app_window_registry =
       extensions::AppWindowRegistry::Get(profile);
-  if (!app_window_registry_observer_.IsObserving(app_window_registry))
-    app_window_registry_observer_.Add(app_window_registry);
+  if (!app_window_registry_observations_.IsObservingSource(app_window_registry))
+    app_window_registry_observations_.AddObservation(app_window_registry);
   extensions_external_loader_->LoadApp(id);
 }
 
@@ -520,13 +505,13 @@ void DemoSession::OnSessionStateChanged() {
       if (ShouldRemoveSplashScreen())
         RemoveSplashScreen();
 
-      // SystemTrayClient may not exist in unit tests.
-      if (SystemTrayClient::Get()) {
+      // SystemTrayClientImpl may not exist in unit tests.
+      if (SystemTrayClientImpl::Get()) {
         const std::string current_locale_iso_code =
             ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
                 language::prefs::kApplicationLocale);
-        SystemTrayClient::Get()->SetLocaleList(GetSupportedLocales(),
-                                               current_locale_iso_code);
+        SystemTrayClientImpl::Get()->SetLocaleList(GetSupportedLocales(),
+                                                   current_locale_iso_code);
       }
       RestoreDefaultLocaleForNextSession();
 
@@ -562,7 +547,7 @@ void DemoSession::RemoveSplashScreen() {
     return;
   WallpaperControllerClientImpl::Get()->RemoveAlwaysOnTopWallpaper();
   remove_splash_screen_fallback_timer_.reset();
-  app_window_registry_observer_.RemoveAll();
+  app_window_registry_observations_.RemoveAllObservations();
   splash_screen_removed_ = true;
 }
 
@@ -597,4 +582,4 @@ void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {
     RemoveSplashScreen();
 }
 
-}  // namespace chromeos
+}  // namespace ash

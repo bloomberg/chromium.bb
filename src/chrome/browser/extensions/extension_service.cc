@@ -39,6 +39,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
+#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
+#include "chrome/browser/extensions/omaha_attributes_handler.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -146,46 +148,9 @@ const char* const kMigratedExtensionIds[] = {
 // uninstalled.
 // Note: We preserve at least one entry here for continued testing coverage.
 const char* const kObsoleteComponentExtensionIds[] = {
-    // Obsolete since M86.
-    "ljoammodoonkhnehlncldjelhidljdpi"  // Genius
+    // Obsolete since M91.
+    "nlkncpkkdoccmpiclbokaimcnedabhhm"  // Gallery
 };
-
-void ReportExtensionDisabledRemotely(bool should_be_remotely_disabled,
-                                     ExtensionUpdateCheckDataKey reason) {
-  // Report that the extension is newly disabled due to Omaha attributes.
-  if (should_be_remotely_disabled)
-    base::UmaHistogramEnumeration("Extensions.ExtensionDisabledRemotely",
-                                  reason);
-
-  // Report that the extension has added a new disable reason.
-  base::UmaHistogramEnumeration("Extensions.ExtensionAddDisabledRemotelyReason",
-                                reason);
-}
-
-void ReportPolicyViolationUWSOmahaAttributes(const std::string& extension_id,
-                                             const base::Value& attributes) {
-  const base::Value* uws_value = attributes.FindKey("_potentially_uws");
-  if (uws_value != nullptr && uws_value->GetBool()) {
-    ReportExtensionDisabledRemotely(
-        /*should_be_remotely_disabled=*/false,
-        ExtensionUpdateCheckDataKey::kPotentiallyUWS);
-  }
-  const base::Value* pv_value = attributes.FindKey("_policy_violation");
-  if (pv_value != nullptr && pv_value->GetBool()) {
-    ReportExtensionDisabledRemotely(
-        /*should_be_remotely_disabled=*/false,
-        ExtensionUpdateCheckDataKey::kPolicyViolation);
-  }
-}
-
-void ReportNoUpdateCheckKeys() {
-  base::UmaHistogramEnumeration("Extensions.ExtensionDisabledRemotely",
-                                ExtensionUpdateCheckDataKey::kNoKey);
-}
-
-void ReportReenableExtensionFromMalware() {
-  base::UmaHistogramCounts100("Extensions.ExtensionReenabledRemotely", 1);
-}
 
 }  // namespace
 
@@ -273,7 +238,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     // priority than |info.download_location|, and we aren't doing a
     // reinstall of a corrupt policy force-installed extension.
     ManifestLocation current = extension->location();
-    if (!pending_extension_manager_.IsPolicyReinstallForCorruptionExpected(
+    if (!pending_extension_manager_.IsReinstallForCorruptionExpected(
             info.extension_id) &&
         current == Manifest::GetHigherPriorityLocation(
                        current, info.download_location)) {
@@ -326,7 +291,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
       // set of extensions. If the extension is corrupted, it should be
       // reinstalled, thus it should be added to the pending extensions for
       // installation.
-      if (!pending_extension_manager_.IsPolicyReinstallForCorruptionExpected(
+      if (!pending_extension_manager_.IsReinstallForCorruptionExpected(
               info.extension_id)) {
         return false;
       }
@@ -411,6 +376,7 @@ ExtensionService::ExtensionService(Profile* profile,
       safe_browsing_verdict_handler_(extension_prefs,
                                      ExtensionRegistry::Get(profile),
                                      this),
+      omaha_attributes_handler_(extension_prefs, this),
       registry_(ExtensionRegistry::Get(profile)),
       pending_extension_manager_(profile),
       install_directory_(install_directory),
@@ -543,6 +509,12 @@ void ExtensionService::Init() {
 
   // Must be called after extensions are loaded.
   allowlist_.Init();
+
+  // Check for updates especially for corrupted user installed extension from
+  // the webstore. This will do nothing if an extension update check was
+  // triggered before and is still running.
+  if (pending_extension_manager_.HasAnyReinstallForCorruption())
+    CheckForUpdatesSoon();
 }
 
 void ExtensionService::EnabledReloadableExtensions() {
@@ -695,7 +667,8 @@ void ExtensionService::LoadExtensionsFromCommandLineFlag(
     while (t.GetNext()) {
       std::string extension_id;
       UnpackedInstaller::Create(this)->LoadFromCommandLine(
-          base::FilePath(t.token()), &extension_id, false /*only-allow-apps*/);
+          base::FilePath(t.token_piece()), &extension_id,
+          false /*only-allow-apps*/);
       // Extension id is added to allowlist after its extension is loaded
       // because code is executed asynchronously. TODO(michaelpg): Remove this
       // assumption so loading extensions does not have to be asynchronous:
@@ -877,18 +850,21 @@ void ExtensionService::PerformActionBasedOnOmahaAttributes(
     const base::Value& attributes) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HandleMalwareOmahaAttribute(extension_id, attributes);
-  ReportPolicyViolationUWSOmahaAttributes(extension_id, attributes);
+  omaha_attributes_handler_.PerformActionBasedOnOmahaAttributes(extension_id,
+                                                                attributes);
   allowlist_.PerformActionBasedOnOmahaAttributes(extension_id, attributes);
 }
 
 void ExtensionService::HandleMalwareOmahaAttribute(
     const std::string& extension_id,
     const base::Value& attributes) {
-  const base::Value* malware_value = attributes.FindKey("_malware");
+  bool has_malware_value =
+      OmahaAttributesHandler::HasOmahaBlocklistStateInAttributes(
+          attributes, BitMapBlocklistState::BLOCKLISTED_MALWARE);
   if (!base::FeatureList::IsEnabled(
           extensions_features::kDisableMalwareExtensionsRemotely) ||
-      malware_value == nullptr || !malware_value->GetBool()) {
-    ReportNoUpdateCheckKeys();
+      !has_malware_value) {
+    OmahaAttributesHandler::ReportNoUpdateCheckKeys();
     // Omaha attributes may have previously have the "_malware" key.
     MaybeEnableRemotelyDisabledExtension(extension_id);
     return;
@@ -900,7 +876,7 @@ void ExtensionService::HandleMalwareOmahaAttribute(
     return;
   }
 
-  ReportExtensionDisabledRemotely(
+  OmahaAttributesHandler::ReportExtensionDisabledRemotely(
       extension_registrar_.IsExtensionEnabled(extension_id),
       ExtensionUpdateCheckDataKey::kMalware);
 
@@ -928,7 +904,55 @@ void ExtensionService::MaybeEnableRemotelyDisabledExtension(
   unchanged.erase(extension_id);
   // Remove the extension from the blocklist.
   UpdateBlocklistedExtensions({}, unchanged);
-  ReportReenableExtensionFromMalware();
+  OmahaAttributesHandler::ReportReenableExtensionFromMalware();
+}
+
+void ExtensionService::ClearGreylistedAcknowledgedStateAndMaybeReenable(
+    const std::string& extension_id) {
+  bool is_on_sb_list = (extension_prefs_->GetExtensionBlocklistState(
+                            extension_id) != NOT_BLOCKLISTED);
+  bool is_on_omaha_list =
+      blocklist_prefs::HasAnyOmahaGreylistState(extension_id, extension_prefs_);
+  if (is_on_sb_list || is_on_omaha_list) {
+    return;
+  }
+  // Clear all acknowledged states so the extension will still get disabled if
+  // it is added to the greylist again.
+  blocklist_prefs::ClearAcknowledgedBlocklistStates(extension_id,
+                                                    extension_prefs_);
+  RemoveDisableReasonAndMaybeEnable(extension_id,
+                                    disable_reason::DISABLE_GREYLIST);
+}
+
+void ExtensionService::MaybeDisableGreylistedExtension(
+    const std::string& extension_id,
+    BitMapBlocklistState new_state) {
+#if DCHECK_IS_ON()
+  bool has_new_state_on_sb_list =
+      (blocklist_prefs::BlocklistStateToBitMapBlocklistState(
+           extension_prefs_->GetExtensionBlocklistState(extension_id)) ==
+       new_state);
+  bool has_new_state_on_omaha_list = blocklist_prefs::HasOmahaBlocklistState(
+      extension_id, new_state, extension_prefs_);
+  DCHECK(has_new_state_on_sb_list || has_new_state_on_omaha_list);
+#endif
+  if (blocklist_prefs::HasAcknowledgedBlocklistState(extension_id, new_state,
+                                                     extension_prefs_)) {
+    // If the extension is already acknowledged, don't disable it again
+    // because it can be already re-enabled by the user. This could happen if
+    // the extension is added to the SafeBrowsing blocklist, and then
+    // subsequently marked by Omaha. In this case, we don't want to disable the
+    // extension twice.
+    return;
+  }
+
+  // Set the current greylist states to acknowledge immediately because the
+  // extension is disabled silently. Clear the other acknowledged state because
+  // when the state changes to another greylist state in the future, we'd like
+  // to disable the extension again.
+  blocklist_prefs::UpdateCurrentGreylistStatesAsAcknowledged(extension_id,
+                                                             extension_prefs_);
+  DisableExtension(extension_id, disable_reason::DISABLE_GREYLIST);
 }
 
 void ExtensionService::RemoveDisableReasonAndMaybeEnable(
@@ -1468,8 +1492,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   // can upgrade without requiring this user's approval.
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
-  // Silently grant all active permissions to default apps and apps installed
-  // in kiosk mode.
+  // Silently grant all active permissions to pre-installed apps and apps
+  // installed in kiosk mode.
   bool auto_grant_permission =
       extension->was_installed_by_default() ||
       ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode();
@@ -1611,6 +1635,9 @@ void ExtensionService::OnExtensionInstalled(
     }
 
     install_parameter = pending_extension_info->install_parameter();
+    pending_extension_manager()->Remove(id);
+  } else if (pending_extension_manager()->IsReinstallForCorruptionExpected(
+                 extension->id())) {
     pending_extension_manager()->Remove(id);
   } else {
     // We explicitly want to re-enable an uninstalled external
@@ -1871,15 +1898,16 @@ bool ExtensionService::OnExternalExtensionFileFound(
       info.extension_id, ExtensionRegistry::EVERYTHING);
 
   if (existing) {
-    // The default apps will have the location set as INTERNAL. Since older
-    // default apps are installed as EXTERNAL, we override them. However, if the
-    // app is already installed as internal, then do the version check.
+    // The pre-installed apps will have the location set as INTERNAL. Since
+    // older pre-installed apps are installed as EXTERNAL, we override them.
+    // However, if the app is already installed as internal, then do the version
+    // check.
     // TODO(grv) : Remove after Q1-2013.
-    bool is_default_apps_migration =
+    bool is_preinstalled_apps_migration =
         (info.crx_location == mojom::ManifestLocation::kInternal &&
          Manifest::IsExternalLocation(existing->location()));
 
-    if (!is_default_apps_migration) {
+    if (!is_preinstalled_apps_migration) {
       switch (existing->version().CompareTo(info.version)) {
         case -1:  // existing version is older, we should upgrade
           break;
@@ -1938,8 +1966,8 @@ bool ExtensionService::OnExternalExtensionFileFound(
 
 void ExtensionService::InstallationFromExternalFileFinished(
     const std::string& extension_id,
-    const base::Optional<CrxInstallError>& error) {
-  if (error != base::nullopt) {
+    const absl::optional<CrxInstallError>& error) {
+  if (error != absl::nullopt) {
     // When installation is finished, the extension should not remain in the
     // pending extension manager. For successful installations this is done in
     // OnExtensionInstalled handler.

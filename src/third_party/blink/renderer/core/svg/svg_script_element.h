@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_SCRIPT_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_SCRIPT_ELEMENT_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -50,6 +51,13 @@ class SVGScriptElement final : public SVGElement,
   bool IsScriptElement() const override { return true; }
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8HTMLOrSVGScriptElement* AsV8HTMLOrSVGScriptElement() override;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void SetScriptElementForBinding(
+      HTMLScriptElementOrSVGScriptElement&) override;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor*) const override;
 
@@ -97,8 +105,6 @@ class SVGScriptElement final : public SVGElement,
   ExecutionContext* GetExecutionContext() const override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;
-  void SetScriptElementForBinding(
-      HTMLScriptElementOrSVGScriptElement&) override;
 
   Type GetScriptElementType() override;
 

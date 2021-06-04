@@ -1,86 +1,95 @@
 <style>
   :host {
-    --ntp-modules-drive-row-margin: 15px;
     display: block;
     height: 100%;
     width: 100%;
   }
 
+  ntp-module-header {
+    margin-bottom: 8px;
+  }
+
   #files {
     display: flex;
     flex-direction: column;
+    margin-bottom: 7px;
   }
 
   .file {
-    align-items: center;
-    border-top: 0.5px solid var(--ntp-border-color);
+    box-sizing: border-box;
     color: var(--cr-primary-text-color);
     display: flex;
     flex-shrink: 0;
-    height: 38px;
-    margin-inline-end: var(--ntp-modules-drive-row-margin);
-    margin-inline-start: var(--ntp-modules-drive-row-margin);
+    height: 56px;
+    outline: none;
+    padding: 8px 18px;
     text-decoration: none;
   }
 
   .file:hover {
     background-color: var(--ntp-hover-background-color);
-    margin-inline-end: 0;
-    margin-inline-start: 0;
-    padding-inline-end: var(--ntp-modules-drive-row-margin);
-    padding-inline-start: var(--ntp-modules-drive-row-margin);
   }
 
-  .file:hover + .file {
-    margin-inline-end: 0;
-    margin-inline-start: 0;
-    padding-inline-end: var(--ntp-modules-drive-row-margin);
-    padding-inline-start: var(--ntp-modules-drive-row-margin);
+  .file:active,
+  :host-context(.focus-outline-visible) .file:focus {
+    background-color: var(--ntp-active-background-color);
   }
 
   .file-icon {
-    margin-inline-end: 8px;
-  }
-
-  .file-title {
-    flex-basis: 0;
-    flex-grow: 250;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .file-description {
-    color: var(--cr-secondary-text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    height: 19px;
+    margin-inline-end: 19px;
+    margin-top: 3px;
+    object-fit: contain;
+    width: 19px;
   }
 
   .file-info {
     display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
   }
 
-  .justification-container {
-    align-items: center;
-    display: flex;
-    flex-basis: 0;
-    flex-grow: 186;
+  .file-title,
+  .file-description {
+    line-height: 20px;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .user-image {
-    border-radius: 50%;
-    margin-inline-end: 8px;
-    max-height: 30px;
+  .file-title {
+    font-size: 13px;
+  }
+
+  .file-description {
+    color: var(--cr-secondary-text-color);
+    font-size: 12px;
+  }
+
+  ntp-info-dialog a {
+    color: var(--cr-link-color);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  ntp-info-dialog a:focus {
+    border-radius: 2px;
+    box-shadow: var(--ntp-focus-shadow);
+    outline: none;
   }
 </style>
 <ntp-module-header
+    dismiss-text="[[i18nRecursive('',
+                                  'modulesDismissButtonText',
+                                  'modulesDriveFilesLower')]]"
     disable-text="[[i18nRecursive('',
                                   'modulesDisableButtonText',
-                                  'modulesDriveSentence')]]"
+                                  'modulesDriveSentence2')]]"
+    show-info-button on-info-button-click="onInfoButtonClick_"
+    show-dismiss-button on-dismiss-button-click="onDismissButtonClick_"
     on-disable-button-click="onDisableButtonClick_">
-  $i18n{modulesDriveTitle}
+  [[i18n('modulesDriveTitle')]]
 </ntp-module-header>
 <div id="files">
   <template id="fileRepeat" is="dom-repeat" items="[[files]]">
@@ -92,18 +101,16 @@
           draggable="false"
           auto-src="[[getImageSrc_(item)]]">
       </img>
-      <div class="file-title" title="[[item.title]]">[[item.title]]</div>
-      <div class="justification-container">
-        <template is="dom-if" if="[[item.untrustedPhotoUrl]]">
-          <img
-              is="ntp-img"
-              class="user-image"
-              draggable="false"
-              auto-src="[[item.untrustedPhotoUrl.url]]">
-          </img>
-        </template>
+      <div class="file-info">
+        <div class="file-title">[[item.title]]</div>
         <div class="file-description">[[item.justificationText]]</div>
       </div>
     </a>
   </template>
 </div>
+<cr-lazy-render id="infoDialogRender">
+  <template>
+    <ntp-info-dialog inner-h-t-m-l="[[i18nAdvanced('modulesDriveInfo')]]">
+    </ntp-info-dialog>
+  </template>
+</cr-lazy-render>

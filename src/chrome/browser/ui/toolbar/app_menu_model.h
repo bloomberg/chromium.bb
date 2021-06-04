@@ -7,9 +7,7 @@
 
 #include <memory>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"

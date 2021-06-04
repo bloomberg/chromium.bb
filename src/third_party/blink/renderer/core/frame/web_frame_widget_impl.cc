@@ -109,6 +109,8 @@
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
@@ -117,7 +119,6 @@
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -1487,18 +1488,9 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
 
   SetWindowSegments(visual_properties.root_widget_window_segments);
 
-  const bool screen_infos_changed =
-      widget_base_->screen_infos() != visual_properties.screen_infos;
-
   widget_base_->UpdateSurfaceAndScreenInfo(
       visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
       new_compositor_viewport_pixel_rect, visual_properties.screen_infos);
-
-  if (screen_infos_changed) {
-    LocalFrame* frame = LocalRootImpl()->GetFrame();
-    CoreInitializer::GetInstance().NotifyScreensChanged(*frame);
-    // TODO(crbug.com/1182855): Propagate info and events to remote frames.
-  }
 
   // Store this even when auto-resizing, it is the size of the full viewport
   // used for clipping, and this value is propagated down the Widget
@@ -1739,7 +1731,7 @@ void WebFrameWidgetImpl::ShowContextMenu(
 
 void WebFrameWidgetImpl::SetViewportIntersection(
     mojom::blink::ViewportIntersectionStatePtr intersection_state,
-    const base::Optional<VisualProperties>& visual_properties) {
+    const absl::optional<VisualProperties>& visual_properties) {
   // Remote viewports are only applicable to local frames with remote ancestors.
   // TODO(https://crbug.com/1148960): Should this deal with portals?
   DCHECK(ForSubframe());
@@ -1791,7 +1783,7 @@ void WebFrameWidgetImpl::SetIsInertForSubFrame(bool inert) {
   LocalRootImpl()->GetFrame()->SetIsInert(inert);
 }
 
-base::Optional<gfx::Point>
+absl::optional<gfx::Point>
 WebFrameWidgetImpl::GetAndResetContextMenuLocation() {
   return std::move(host_context_menu_location_);
 }
@@ -1800,6 +1792,10 @@ void WebFrameWidgetImpl::SetZoomLevel(double zoom_level) {
   // Override the zoom level with the testing one if necessary.
   if (zoom_level_for_testing_ != -INFINITY)
     zoom_level = zoom_level_for_testing_;
+
+  // Set the layout shift exclusion window for the zoom level change.
+  if (View()->ZoomLevel() != zoom_level)
+    NotifyZoomLevelChanged(LocalRootImpl()->GetFrame());
 
   View()->SetZoomLevel(zoom_level);
 
@@ -1914,19 +1910,13 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 
 void WebFrameWidgetImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    cc::TaskGraphRunner* task_graph_runner,
     const ScreenInfos& screen_infos,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings,
-    gfx::RenderingPipeline* main_thread_pipeline,
-    gfx::RenderingPipeline* compositor_thread_pipeline) {
+    const cc::LayerTreeSettings* settings) {
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
-      agent_group_scheduler, task_graph_runner, is_for_child_local_root_,
-      screen_infos, std::move(ukm_recorder_factory), settings,
-      input_handler_weak_ptr_factory_.GetWeakPtr(), main_thread_pipeline,
-      compositor_thread_pipeline);
+      agent_group_scheduler, is_for_child_local_root_, screen_infos, settings,
+      input_handler_weak_ptr_factory_.GetWeakPtr());
 
   LocalFrameView* frame_view;
   if (is_for_child_local_root_) {
@@ -1981,37 +1971,6 @@ void WebFrameWidgetImpl::Resize(const gfx::Size& new_size) {
 
   view->SetLayoutSize(IntSize(*size_));
   view->Resize(IntSize(*size_));
-
-  // FIXME: In WebViewImpl this layout was a precursor to setting the minimum
-  // scale limit.  It is not clear if this is necessary for frame-level widget
-  // resize.
-  if (view->NeedsLayout())
-    view->UpdateLayout();
-
-  // FIXME: Investigate whether this is needed; comment from eseidel suggests
-  // that this function is flawed.
-  // TODO(kenrb): It would probably make more sense to check whether lifecycle
-  // updates are throttled in the root's LocalFrameView, but for OOPIFs that
-  // doesn't happen. Need to investigate if OOPIFs can be throttled during
-  // load.
-  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted()) {
-    // FIXME: This is wrong. The LocalFrameView is responsible sending a
-    // resizeEvent as part of layout. Layout is also responsible for sending
-    // invalidations to the embedder. This method and all callers may be wrong.
-    // -- eseidel.
-    LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
-
-    // Pass the limits even though this is for subframes, as the limits will
-    // be needed in setting the raster scale. We set this value when setting
-    // up the compositor, but need to update it when the limits of the
-    // WebViewImpl have changed.
-    // TODO(wjmaclean): This is updating when the size of the *child frame*
-    // have changed which are completely independent of the WebView, and in an
-    // OOPIF where the main frame is remote, are these limits even useful?
-    SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
-                               View()->MinimumPageScaleFactor(),
-                               View()->MaximumPageScaleFactor());
-  }
 }
 
 void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
@@ -2035,7 +1994,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
     }
   }
 
-  base::Optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
+  absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
   if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
     ukm_timer.emplace(LocalRootImpl()
                           ->GetFrame()
@@ -2132,6 +2091,28 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
     bool suppress_frame_requests) {
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
+}
+
+void WebFrameWidgetImpl::CountDroppedPointerDownForEventTiming(unsigned count) {
+  if (!local_root_ || !(local_root_->GetFrame()) ||
+      !(local_root_->GetFrame()->DomWindow())) {
+    return;
+  }
+  WindowPerformance* performance = DOMWindowPerformance::performance(
+      *(local_root_->GetFrame()->DomWindow()));
+
+  performance->eventCounts()->AddMultipleEvents(event_type_names::kPointerdown,
+                                                count);
+  // We only count dropped touchstart that can trigger pointerdown.
+  performance->eventCounts()->AddMultipleEvents(event_type_names::kTouchstart,
+                                                count);
+  // TouchEnd will not be dropped. But in touch event model only touch starts
+  // can set the target and after that the touch event always goes to that
+  // target. So if a touchstart has been dropped, the following touchend will
+  // not be dispatched. Meanwhile, the pointerup can be captured in the
+  // pointer_event_manager.
+  performance->eventCounts()->AddMultipleEvents(event_type_names::kTouchend,
+                                                count);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
@@ -3001,8 +2982,8 @@ bool WebFrameWidgetImpl::ShouldSuppressKeyboardForFocusedElement() {
 }
 
 void WebFrameWidgetImpl::GetEditContextBoundsInWindow(
-    base::Optional<gfx::Rect>* edit_context_control_bounds,
-    base::Optional<gfx::Rect>* edit_context_selection_bounds) {
+    absl::optional<gfx::Rect>* edit_context_control_bounds,
+    absl::optional<gfx::Rect>* edit_context_selection_bounds) {
   WebInputMethodController* controller = GetActiveWebInputMethodController();
   if (!controller)
     return;
@@ -3100,9 +3081,9 @@ bool WebFrameWidgetImpl::HasFocus() {
   return widget_base_->has_focus();
 }
 
-void WebFrameWidgetImpl::SetToolTipText(const String& tooltip_text,
-                                        TextDirection dir) {
-  widget_base_->SetToolTipText(tooltip_text, dir);
+void WebFrameWidgetImpl::UpdateTooltipUnderCursor(const String& tooltip_text,
+                                                  TextDirection dir) {
+  widget_base_->UpdateTooltipUnderCursor(tooltip_text, dir);
 }
 
 void WebFrameWidgetImpl::DidOverscroll(
@@ -3514,7 +3495,10 @@ void WebFrameWidgetImpl::Replace(const String& word) {
   if (!focused_frame->HasSelection())
     focused_frame->SelectWordAroundCaret();
   focused_frame->ReplaceSelection(word);
-  focused_frame->Client()->SyncSelectionIfRequired();
+  // If the resulting selection is not actually a change in selection, we do not
+  // need to explicitly notify about the selection change.
+  focused_frame->Client()->SyncSelectionIfRequired(
+      blink::SyncCondition::kNotForced);
 }
 
 void WebFrameWidgetImpl::ReplaceMisspelling(const String& word) {
@@ -3836,7 +3820,19 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     View()->CancelPagePopup();
   }
 
+  // Update Screens interface data before firing any events. The API is designed
+  // to offer synchronous access to the most up-to-date cached screen
+  // information when a change event is fired.  It is not required but it
+  // is convenient to have all ScreenAdvanced objects be up to date when any
+  // window.screen events are fired as well.
+  LocalFrame* frame = LocalRootImpl()->GetFrame();
+  CoreInitializer::GetInstance().DidUpdateScreens(*frame,
+                                                  widget_base_->screen_infos());
+  // TODO(crbug.com/1182855): Propagate info and events to remote frames.
+
   if (previous_original_screen_info != original_screen_info) {
+    // TODO(enne): http://crbug.com/1202981 only send this event when properties
+    // on Screen (vs anything in ScreenInfo) change.
     local_root_->GetFrame()->DomWindow()->screen()->DispatchEvent(
         *Event::Create(event_type_names::kChange));
 
@@ -3858,7 +3854,7 @@ gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
   }
 }
 
-base::Optional<blink::mojom::ScreenOrientation>
+absl::optional<blink::mojom::ScreenOrientation>
 WebFrameWidgetImpl::ScreenOrientationOverride() {
   return View()->ScreenOrientationOverride();
 }
@@ -4218,6 +4214,15 @@ WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
 
 bool WebFrameWidgetImpl::ShouldAutoDetermineCompositingToLCDTextSetting() {
   return true;
+}
+
+void WebFrameWidgetImpl::NotifyZoomLevelChanged(LocalFrame* root) {
+  if (root) {
+    Document* document = root->GetDocument();
+    DCHECK(document);
+    if (LocalFrameView* view = document->View())
+      view->GetLayoutShiftTracker().NotifyZoomLevelChanged();
+  }
 }
 
 }  // namespace blink

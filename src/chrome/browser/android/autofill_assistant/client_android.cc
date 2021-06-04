@@ -75,7 +75,7 @@ static void JNI_AutofillAssistantClient_OnOnboardingUiChange(
 
 ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
-      java_object_(Java_AutofillAssistantClient_create(
+      java_object_(Java_AutofillAssistantClient_Constructor(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this))) {}
 
@@ -99,75 +99,54 @@ base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_object_);
 }
 
-bool ClientAndroid::Start(JNIEnv* env,
-                          const JavaParamRef<jobject>& jcaller,
-                          const JavaParamRef<jstring>& jinitial_url,
-                          const JavaParamRef<jstring>& jexperiment_ids,
-                          const JavaParamRef<jobjectArray>& jparameter_names,
-                          const JavaParamRef<jobjectArray>& jparameter_values,
-                          jboolean jis_cct,
-                          const JavaParamRef<jobject>& joverlay_coordinator,
-                          jboolean jonboarding_shown,
-                          jlong jservice) {
+bool ClientAndroid::IsRunning() const {
+  return controller_ != nullptr;
+}
+
+bool ClientAndroid::IsVisible() const {
+  return ui_controller_android_ != nullptr &&
+         ui_controller_android_->IsAttached();
+}
+
+bool ClientAndroid::Start(
+    const GURL& url,
+    std::unique_ptr<TriggerContext> trigger_context,
+    std::unique_ptr<Service> test_service_to_inject,
+    const base::android::JavaRef<jobject>& joverlay_coordinator,
+    const absl::optional<TriggerScriptProto>& trigger_script) {
   // When Start() is called, AA_START should have been measured. From now on,
   // the client is responsible for keeping track of dropouts, so that for each
   // AA_START there's a corresponding dropout.
   started_ = true;
 
-  std::unique_ptr<Service> service = nullptr;
-  if (jservice) {
-    service.reset(static_cast<Service*>(reinterpret_cast<void*>(jservice)));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> jaccount_name;
+  if (trigger_context->GetScriptParameters().GetCallerEmail().has_value()) {
+    jaccount_name = base::android::ConvertUTF8ToJavaString(
+        env, trigger_context->GetScriptParameters().GetCallerEmail().value());
   }
-  CreateController(std::move(service));
+  Java_AutofillAssistantClient_chooseAccountAsyncIfNecessary(
+      base::android::AttachCurrentThread(), java_object_, jaccount_name);
+
+  CreateController(std::move(test_service_to_inject), trigger_script);
 
   // If an overlay is already shown, then show the rest of the UI.
   if (joverlay_coordinator) {
     AttachUI(joverlay_coordinator);
   }
 
-  GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
-  auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
-      env, jexperiment_ids, jparameter_names, jparameter_values, jis_cct,
-      jonboarding_shown, /* is_direct_action = */ false, jinitial_url);
-
-  intent_ = trigger_context->GetScriptParameters().GetIntent().value_or(
-      std::string());
+  DCHECK(!trigger_context->GetDirectAction());
   if (VLOG_IS_ON(2)) {
-    std::string experiment_ids =
-        base::android::ConvertJavaStringToUTF8(env, jexperiment_ids);
-    std::map<std::string, std::string> parameters =
-        ui_controller_android_utils::CreateStringMapFromJava(
-            env, jparameter_names, jparameter_values);
-
     DVLOG(2) << "Starting autofill assistant with parameters:";
-    DVLOG(2) << "\tinitial_url: " << initial_url;
-    DVLOG(2) << "\texperiment_ids: " << experiment_ids;
+    DVLOG(2) << "\ttarget_url: " << url;
+    DVLOG(2) << "\texperiment_ids: " << trigger_context->GetExperimentIds();
     DVLOG(2) << "\tparameters:";
+    auto parameters = trigger_context->GetScriptParameters().ToProto();
     for (const auto& param : parameters) {
-      DVLOG(2) << "\t\t" << param.first << ": " << param.second;
+      DVLOG(2) << "\t\t" << param.name() << ": " << param.value();
     }
   }
-  return controller_->Start(initial_url, std::move(trigger_context));
-}
-
-void ClientAndroid::StartTriggerScript(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jdelegate,
-    const base::android::JavaParamRef<jstring>& jinitial_url,
-    const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
-    const base::android::JavaParamRef<jobjectArray>& jparameter_values,
-    jlong jservice_request_sender) {
-  // TODO(arbesser): populate is_cct field correctly for trigger scripts.
-  trigger_script_bridge_.StartTriggerScript(
-      web_contents_, jdelegate,
-      GURL(base::android::ConvertJavaStringToUTF8(env, jinitial_url)),
-      ui_controller_android_utils::CreateTriggerContext(
-          env, jexperiment_ids, jparameter_names, jparameter_values,
-          /* is_cct = */ false, /* onboarding_shown = */ false,
-          /* is_direct_action = */ false, jinitial_url),
-      jservice_request_sender);
+  return controller_->Start(url, std::move(trigger_context));
 }
 
 void ClientAndroid::OnJavaDestroyUI(
@@ -228,13 +207,14 @@ void ClientAndroid::FetchWebsiteActions(
     const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
   if (!controller_)
-    CreateController(nullptr);
+    CreateController(nullptr, absl::nullopt);
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
       ui_controller_android_utils::CreateTriggerContext(
-          env, jexperiment_ids, jparameter_names, jparameter_values,
-          /* is_cct = */ false, /* onboarding_shown = */ false,
+          env, web_contents_, jexperiment_ids, jparameter_names,
+          jparameter_values,
+          /* onboarding_shown = */ false,
           /* is_direct_action = */ true,
           /* jinitial_url = */ nullptr),
       base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
@@ -353,8 +333,8 @@ bool ClientAndroid::PerformDirectAction(
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
   auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
-      env, jexperiment_ids, jparameter_names, jparameter_values,
-      /* is_cct = */ false, /* onboarding_shown = */ false,
+      env, web_contents_, jexperiment_ids, jparameter_names, jparameter_values,
+      /* onboarding_shown = */ false,
       /* is_direct_action = */ true,
       /* jinitial_url = */ nullptr);
 
@@ -407,7 +387,7 @@ void ClientAndroid::AttachUI() {
 }
 
 void ClientAndroid::AttachUI(
-    const JavaParamRef<jobject>& joverlay_coordinator) {
+    const base::android::JavaRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
         web_contents_, joverlay_coordinator);
@@ -423,7 +403,7 @@ void ClientAndroid::AttachUI(
       (controller_ != nullptr &&
        !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
-      CreateController(nullptr);
+      CreateController(nullptr, absl::nullopt);
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
   }
 }
@@ -451,11 +431,11 @@ std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
   return account_info.email;
 }
 
-base::Optional<std::pair<int, int>> ClientAndroid::GetWindowSize() const {
+absl::optional<std::pair<int, int>> ClientAndroid::GetWindowSize() const {
   if (ui_controller_android_) {
     return ui_controller_android_->GetWindowSize();
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 ClientContextProto::ScreenOrientation ClientAndroid::GetScreenOrientation()
@@ -569,29 +549,29 @@ void ClientAndroid::InvalidateAccessToken(const std::string& access_token) {
       base::android::ConvertUTF8ToJavaString(env, access_token));
 }
 
-void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
+void ClientAndroid::CreateController(
+    std::unique_ptr<Service> service,
+    const absl::optional<TriggerScriptProto>& trigger_script) {
   // Persist status message and progress bar when transitioning from trigger
   // script.
   std::string status_message;
-  base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
       progress_bar_config;
-  base::Optional<int> progress_bar_active_step;
-  if (trigger_script_bridge_.GetLastShownTriggerScript().has_value()) {
-    auto last_shown_trigger_script =
-        trigger_script_bridge_.GetLastShownTriggerScript();
-    status_message =
-        last_shown_trigger_script->regular_script_loading_status_message();
-    if (last_shown_trigger_script->has_progress_bar()) {
+  absl::optional<int> progress_bar_active_step;
+  if (trigger_script.has_value()) {
+    status_message = trigger_script->user_interface()
+                         .regular_script_loading_status_message();
+    if (trigger_script->user_interface().has_progress_bar()) {
       progress_bar_config =
           ShowProgressBarProto::StepProgressBarConfiguration();
       progress_bar_config->set_use_step_progress_bar(true);
       for (const auto& step_icon :
-           last_shown_trigger_script->progress_bar().step_icons()) {
+           trigger_script->user_interface().progress_bar().step_icons()) {
         *progress_bar_config->add_annotated_step_icons()->mutable_icon() =
             step_icon;
       }
       progress_bar_active_step =
-          last_shown_trigger_script->progress_bar().active_step();
+          trigger_script->user_interface().progress_bar().active_step();
     }
   }
 
@@ -605,7 +585,6 @@ void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
     controller_->SetStepProgressBarConfiguration(*progress_bar_config);
     controller_->SetProgressActiveStep(*progress_bar_active_step);
   }
-  trigger_script_bridge_.ClearLastShownTriggerScript();
 }
 
 void ClientAndroid::DestroyController() {

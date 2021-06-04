@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry import decorators
 from telemetry.internal.actions.load_media import LoadMediaAction
 from telemetry.testing import tab_test_case
@@ -21,6 +22,7 @@ class LoadMediaActionTest(tab_test_case.TabTestCase):
         selector=selector, event=event)
 
   @decorators.Disabled('win', 'linux', 'chromeos')  # crbug.com/749890
+  @decorators.Disabled('debug')    # Debug build too slow for this test
   def testAwaitedEventIsConfigurable(self):
     """It's possible to wait for different events."""
     action = LoadMediaAction(selector='#video_1', timeout_in_seconds=0.1,

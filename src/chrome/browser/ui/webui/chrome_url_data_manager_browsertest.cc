@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 
 namespace {
 
@@ -146,6 +148,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     if (GetParam() == std::string("chrome://welcome"))
       enabled_features.push_back(welcome::kForceEnabled);
 #endif
+    enabled_features.push_back(media::kUseMediaHistoryStore);
     feature_list_.InitWithFeatures(enabled_features, {});
   }
 
@@ -174,6 +177,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
 };
 
 // Verify that there's no Trusted Types violation in chrome://chrome-urls
@@ -300,7 +304,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://internet-config-dialog",
     "chrome://internet-detail-dialog",
     "chrome://linux-proxy-config",
-    "chrome://machine-learning-internals",
     "chrome://multidevice-setup",
     "chrome://network",
     "chrome://oobe",

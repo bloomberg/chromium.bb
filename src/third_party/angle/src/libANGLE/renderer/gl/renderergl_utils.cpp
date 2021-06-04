@@ -1309,6 +1309,13 @@ void GenerateCaps(const FunctionsGL *functions,
         LimitVersion(maxSupportedESVersion, gl::Version(3, 1));
     }
 
+    if (!nativegl::SupportsVertexArrayObjects(functions) ||
+        features.syncVertexArraysToDefault.enabled)
+    {
+        // ES 3.1 vertex bindings are not emulated on the default vertex array
+        LimitVersion(maxSupportedESVersion, gl::Version(3, 0));
+    }
+
     // Extension support
     extensions->setTextureExtensionSupport(*textureCapsMap);
     extensions->textureCompressionASTCHDRKHR =
@@ -1793,6 +1800,19 @@ bool GetSystemInfoVendorIDAndDeviceID(const FunctionsGL *functions,
     return isGetSystemInfoSuccess;
 }
 
+bool Has9thGenIntelGPU(const angle::SystemInfo &systemInfo)
+{
+    for (const angle::GPUDeviceInfo &deviceInfo : systemInfo.gpus)
+    {
+        if (IsIntel(deviceInfo.vendorId) && Is9thGenIntel(deviceInfo.deviceId))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *features)
 {
     angle::VendorID vendor;
@@ -1918,9 +1938,10 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
     // anglebug.com/3031
     // crbug.com/922936
     // crbug.com/1184692
+    // crbug.com/1202928
     ANGLE_FEATURE_CONDITION(features, disableWorkerContexts,
                             (IsWindows() && (isIntel || isAMD)) || (IsLinux() && isNvidia) ||
-                                IsIOS() || IsAndroidEmulator(functions));
+                                IsIOS() || IsAndroid() || IsAndroidEmulator(functions));
 
     bool limitMaxTextureSize = isIntel && IsLinux() && GetLinuxOSVersion() < OSVersion(5, 0, 0);
     ANGLE_FEATURE_CONDITION(features, limitMaxTextureSizeTo4096,
@@ -2080,6 +2101,22 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
     // now.
     ANGLE_FEATURE_CONDITION(features, shiftInstancedArrayDataWithExtraOffset,
                             IsApple() && IsIntel(vendor) && !IsHaswell(device));
+    ANGLE_FEATURE_CONDITION(features, syncVertexArraysToDefault,
+                            !nativegl::SupportsVertexArrayObjects(functions));
+
+    // http://crbug.com/1181193
+    // On desktop Linux/AMD when using the amdgpu drivers, the precise kernel and DRM version are
+    // leaked via GL_RENDERER. We workaround this too improve user security.
+    ANGLE_FEATURE_CONDITION(features, sanitizeAmdGpuRendererString, IsLinux() && hasAMD);
+
+    // http://crbug.com/1187513
+    // Imagination drivers are buggy with context switching. It needs to unbind fbo before context
+    // switching to workadround the driver issues.
+    ANGLE_FEATURE_CONDITION(features, unbindFBOOnContextSwitch, IsPowerVR(vendor));
+
+    // http://crbug.com/1181068 and http://crbug.com/783979
+    ANGLE_FEATURE_CONDITION(features, flushOnFramebufferChange,
+                            IsApple() && Has9thGenIntelGPU(systemInfo));
 }
 
 void InitializeFrontendFeatures(const FunctionsGL *functions, angle::FrontendFeatures *features)
@@ -2112,6 +2149,20 @@ void ReInitializeFeaturesAtGPUSwitch(const FunctionsGL *functions, angle::Featur
 
 namespace nativegl
 {
+
+bool SupportsVertexArrayObjects(const FunctionsGL *functions)
+{
+    return functions->isAtLeastGLES(gl::Version(3, 0)) ||
+           functions->hasGLESExtension("GL_OES_vertex_array_object") ||
+           functions->isAtLeastGL(gl::Version(3, 0)) ||
+           functions->hasGLExtension("GL_ARB_vertex_array_object");
+}
+
+bool CanUseDefaultVertexArrayObject(const FunctionsGL *functions)
+{
+    return (functions->profile & GL_CONTEXT_CORE_PROFILE_BIT) == 0;
+}
+
 bool SupportsCompute(const FunctionsGL *functions)
 {
     // OpenGL 4.2 is required for GL_ARB_compute_shader, some platform drivers have the extension,
@@ -2547,17 +2598,7 @@ std::string GetVendorString(const FunctionsGL *functions)
 
 std::string GetVersionString(const FunctionsGL *functions)
 {
-    std::string versionString = GetString(functions, GL_VERSION);
-    if (versionString.find("OpenGL") == std::string::npos)
-    {
-        std::string prefix = "OpenGL ";
-        if (functions->standard == STANDARD_GL_ES)
-        {
-            prefix += "ES ";
-        }
-        versionString = prefix + versionString;
-    }
-    return versionString;
+    return GetString(functions, GL_VERSION);
 }
 
 }  // namespace rx

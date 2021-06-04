@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
@@ -35,7 +36,7 @@ using testing::SaveArg;
 using testing::StrictMock;
 using testing::WithArg;
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -53,9 +54,8 @@ std::string AssertGetStringFromMojoHandle(mojo::ScopedHandle handle) {
   if (!handle)
     return std::string();
   base::ReadOnlySharedMemoryMapping shared_memory;
-  std::string contents =
-      MojoUtils::GetStringPieceFromMojoHandle(std::move(handle), &shared_memory)
-          .as_string();
+  std::string contents(MojoUtils::GetStringPieceFromMojoHandle(
+      std::move(handle), &shared_memory));
   CHECK(!contents.empty());
   return contents;
 }
@@ -74,7 +74,7 @@ using SendUiMessageToWilcoDtcImplCallback =
     base::RepeatingCallback<void(const std::string& response_json_message)>;
 
 class MockMojoWilcoDtcSupportdService
-    : public wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
+    : public chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
  public:
   void SendUiMessageToWilcoDtc(
       mojo::ScopedHandle json_message,
@@ -454,4 +454,4 @@ TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
   RunUntilIdle();
 }
 
-}  // namespace chromeos
+}  // namespace ash

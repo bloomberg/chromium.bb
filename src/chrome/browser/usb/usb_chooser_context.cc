@@ -78,12 +78,13 @@ std::u16string GetDeviceNameFromIds(int vendor_id, int product_id) {
   const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
   if (vendor_name) {
     if (product_id == kDeviceIdWildcard) {
-      return l10n_util::GetStringFUTF16(IDS_DEVICE_DESCRIPTION_FOR_VENDOR_NAME,
-                                        base::UTF8ToUTF16(vendor_name));
+      return l10n_util::GetStringFUTF16(
+          IDS_USB_POLICY_DEVICE_DESCRIPTION_FOR_VENDOR_NAME,
+          base::UTF8ToUTF16(vendor_name));
     }
 
     return l10n_util::GetStringFUTF16(
-        IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_NAME,
+        IDS_USB_POLICY_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_NAME,
         base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
         base::UTF8ToUTF16(vendor_name));
   }
@@ -91,15 +92,16 @@ std::u16string GetDeviceNameFromIds(int vendor_id, int product_id) {
 
   if (product_id == kDeviceIdWildcard) {
     if (vendor_id == kDeviceIdWildcard)
-      return l10n_util::GetStringUTF16(IDS_DEVICE_DESCRIPTION_FOR_ANY_VENDOR);
+      return l10n_util::GetStringUTF16(
+          IDS_USB_POLICY_DEVICE_DESCRIPTION_FOR_ANY_VENDOR);
 
     return l10n_util::GetStringFUTF16(
-        IDS_DEVICE_DESCRIPTION_FOR_VENDOR_ID,
+        IDS_USB_POLICY_DEVICE_DESCRIPTION_FOR_VENDOR_ID,
         base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
   }
 
   return l10n_util::GetStringFUTF16(
-      IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_ID,
+      IDS_USB_POLICY_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_ID,
       base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
       base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
 }
@@ -152,9 +154,10 @@ void UsbChooserContext::DeviceObserver::OnDeviceRemoved(
 void UsbChooserContext::DeviceObserver::OnDeviceManagerConnectionError() {}
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
-    : ChooserContextBase(ContentSettingsType::USB_GUARD,
-                         ContentSettingsType::USB_CHOOSER_DATA,
-                         HostContentSettingsMapFactory::GetForProfile(profile)),
+    : ObjectPermissionContextBase(
+          ContentSettingsType::USB_GUARD,
+          ContentSettingsType::USB_CHOOSER_DATA,
+          HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {
   usb_policy_allowed_devices_ =
       std::make_unique<UsbPolicyAllowedDevices>(profile->GetPrefs());
@@ -251,10 +254,10 @@ UsbChooserContext::~UsbChooserContext() {
   OnDeviceManagerConnectionError();
 }
 
-std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
 UsbChooserContext::GetGrantedObjects(const url::Origin& origin) {
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-      objects = permissions::ChooserContextBase::GetGrantedObjects(origin);
+  std::vector<std::unique_ptr<Object>> objects =
+      ObjectPermissionContextBase::GetGrantedObjects(origin);
 
   if (CanRequestObjectPermission(origin)) {
     auto it = ephemeral_devices_.find(origin);
@@ -267,11 +270,10 @@ UsbChooserContext::GetGrantedObjects(const url::Origin& origin) {
         // which always returns after the device list initialization in this
         // class.
         DCHECK(base::Contains(devices_, guid));
-        objects.push_back(
-            std::make_unique<permissions::ChooserContextBase::Object>(
-                origin, DeviceInfoToValue(*devices_[guid]),
-                content_settings::SettingSource::SETTING_SOURCE_USER,
-                is_incognito_));
+        objects.push_back(std::make_unique<Object>(
+            origin, DeviceInfoToValue(*devices_[guid]),
+            content_settings::SettingSource::SETTING_SOURCE_USER,
+            is_incognito_));
       }
     }
   }
@@ -317,20 +319,19 @@ UsbChooserContext::GetGrantedObjects(const url::Origin& origin) {
         object = DeviceIdsToValue(vendor_id, product_id);
       }
 
-      objects.push_back(
-          std::make_unique<permissions::ChooserContextBase::Object>(
-              url, std::move(object), content_settings::SETTING_SOURCE_POLICY,
-              is_incognito_));
+      objects.push_back(std::make_unique<Object>(
+          url, std::move(object), content_settings::SETTING_SOURCE_POLICY,
+          is_incognito_));
     }
   }
 
   return objects;
 }
 
-std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
 UsbChooserContext::GetAllGrantedObjects() {
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-      objects = permissions::ChooserContextBase::GetAllGrantedObjects();
+  std::vector<std::unique_ptr<Object>> objects =
+      ObjectPermissionContextBase::GetAllGrantedObjects();
 
   for (const auto& map_entry : ephemeral_devices_) {
     const url::Origin& origin = map_entry.first;
@@ -340,10 +341,9 @@ UsbChooserContext::GetAllGrantedObjects() {
 
     for (const std::string& guid : map_entry.second) {
       DCHECK(base::Contains(devices_, guid));
-      objects.push_back(
-          std::make_unique<permissions::ChooserContextBase::Object>(
-              origin, DeviceInfoToValue(*devices_[guid]),
-              content_settings::SETTING_SOURCE_USER, is_incognito_));
+      objects.push_back(std::make_unique<Object>(
+          origin, DeviceInfoToValue(*devices_[guid]),
+          content_settings::SETTING_SOURCE_USER, is_incognito_));
     }
   }
 
@@ -384,11 +384,10 @@ UsbChooserContext::GetAllGrantedObjects() {
         object = DeviceIdsToValue(vendor_id, product_id);
       }
 
-      objects.push_back(
-          std::make_unique<permissions::ChooserContextBase::Object>(
-              url, std::move(object),
-              content_settings::SettingSource::SETTING_SOURCE_POLICY,
-              is_incognito_));
+      objects.push_back(std::make_unique<Object>(
+          url, std::move(object),
+          content_settings::SettingSource::SETTING_SOURCE_POLICY,
+          is_incognito_));
     }
   }
 
@@ -400,7 +399,7 @@ void UsbChooserContext::RevokeObjectPermission(const url::Origin& origin,
   const std::string* guid = object.FindStringKey(kGuidKey);
 
   if (!guid) {
-    permissions::ChooserContextBase::RevokeObjectPermission(origin, object);
+    ObjectPermissionContextBase::RevokeObjectPermission(origin, object);
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
     return;
   }
@@ -431,8 +430,8 @@ std::u16string UsbChooserContext::GetObjectDisplayName(
   if (!name->empty())
     return base::UTF8ToUTF16(*name);
 
-  base::Optional<int> vendor_id = object.FindIntKey(kVendorIdKey);
-  base::Optional<int> product_id = object.FindIntKey(kProductIdKey);
+  absl::optional<int> vendor_id = object.FindIntKey(kVendorIdKey);
+  absl::optional<int> product_id = object.FindIntKey(kProductIdKey);
   DCHECK(vendor_id && product_id);
   return GetDeviceNameFromIds(*vendor_id, *product_id);
 }
@@ -467,8 +466,7 @@ bool UsbChooserContext::HasDevicePermission(
     return true;
   }
 
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-      object_list = GetGrantedObjects(origin);
+  std::vector<std::unique_ptr<Object>> object_list = GetGrantedObjects(origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));
@@ -590,8 +588,8 @@ void UsbChooserContext::OnDeviceRemoved(
   }
 
   for (auto& observer : permission_observer_list_) {
-    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
-                                              data_content_settings_type_);
+    observer.OnObjectPermissionChanged(guard_content_settings_type_,
+                                       data_content_settings_type_);
     for (auto& url : revoked_urls) {
       observer.OnPermissionRevoked(url);
     }
@@ -616,8 +614,8 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
 
   // Notify all permission observers.
   for (auto& observer : permission_observer_list_) {
-    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
-                                              data_content_settings_type_);
+    observer.OnObjectPermissionChanged(guard_content_settings_type_,
+                                       data_content_settings_type_);
     for (auto& origin : revoked_origins) {
       observer.OnPermissionRevoked(origin);
     }

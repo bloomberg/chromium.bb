@@ -433,8 +433,7 @@ void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemListAddedOrRemoved() {
 
   auto item_ids = clipboard_history_controller->GetHistoryItemIds();
 
-  std::unique_ptr<base::ListValue> ids =
-      keyboard_api::OnClipboardHistoryChanged::Create(item_ids);
+  auto ids = keyboard_api::OnClipboardHistoryChanged::Create(item_ids);
 
   auto event = std::make_unique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_CLIPBOARD_HISTORY_CHANGED,
@@ -479,7 +478,7 @@ void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemsUpdated(
       clipboard_item.id = item.FindKey("idToken")->GetString();
     }
 
-    std::unique_ptr<base::ListValue> item_value =
+    auto item_value =
         keyboard_api::OnClipboardItemUpdated::Create(clipboard_item);
 
     auto event = std::make_unique<extensions::Event>(
@@ -534,15 +533,15 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
           chromeos::features::kVirtualKeyboardFloatingDefault)));
 
   // Flag used to enable system built-in IME decoder instead of NaCl.
-  bool mojoDecoder =
+  bool mojo_decoder =
       base::FeatureList::IsEnabled(chromeos::features::kImeMojoDecoder);
-  features->AppendString(GenerateFeatureFlag("usemojodecoder", mojoDecoder));
+  features->AppendString(GenerateFeatureFlag("usemojodecoder", mojo_decoder));
   // Enabling MojoDecoder implies the 2 previous flags are auto-enabled.
   //   * fstinputlogic
   //   * hmminputlogic
   // TODO(b/171846787): Remove the 3 flags after they are removed from clients.
-  features->AppendString(GenerateFeatureFlag("fstinputlogic", mojoDecoder));
-  features->AppendString(GenerateFeatureFlag("hmminputlogic", mojoDecoder));
+  features->AppendString(GenerateFeatureFlag("fstinputlogic", mojo_decoder));
+  features->AppendString(GenerateFeatureFlag("hmminputlogic", mojo_decoder));
   features->AppendString(GenerateFeatureFlag(
       "imemozcproto",
       base::FeatureList::IsEnabled(chromeos::features::kImeMozcProto)));
@@ -553,10 +552,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "assistiveAutoCorrect",
       base::FeatureList::IsEnabled(chromeos::features::kAssistAutoCorrect)));
-  features->AppendString(
-      GenerateFeatureFlag("systemlatinphysicaltyping",
-                          base::FeatureList::IsEnabled(
-                              chromeos::features::kSystemLatinPhysicalTyping)));
+  features->AppendString(GenerateFeatureFlag(
+      "systemlatinphysicaltyping",
+      chromeos::features::IsSystemLatinPhysicalTypingEnabled()));
   features->AppendString(GenerateFeatureFlag(
       "multilingualtyping",
       base::FeatureList::IsEnabled(chromeos::features::kMultilingualTyping)));
@@ -582,7 +580,7 @@ void ChromeVirtualKeyboardDelegate::DispatchConfigChangeEvent(
 
   auto event = std::make_unique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CONFIG_CHANGED,
-      keyboard_api::OnKeyboardConfigChanged::kEventName, std::move(event_args),
+      keyboard_api::OnKeyboardConfigChanged::kEventName, event_args->TakeList(),
       browser_context_);
   router->BroadcastEvent(std::move(event));
 }

@@ -55,15 +55,6 @@
 
 namespace chromeos {
 
-namespace {
-
-void LaunchResetScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
-}
-
-}  // namespace
-
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
@@ -147,20 +138,6 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("enableShelfButtons", &CoreOobeHandler::HandleEnableShelfButtons);
 }
 
-void CoreOobeHandler::ShowSignInError(
-    int login_attempts,
-    const std::string& error_text,
-    const std::string& help_link_text,
-    HelpAppLauncher::HelpTopic help_topic_id) {
-  LOG(ERROR) << "CoreOobeHandler::ShowSignInError: error_text=" << error_text;
-  CallJS("cr.ui.Oobe.showSignInError", login_attempts, error_text,
-         help_link_text, static_cast<int>(help_topic_id));
-}
-
-void CoreOobeHandler::ShowDeviceResetScreen() {
-  LaunchResetScreen();
-}
-
 void CoreOobeHandler::FocusReturned(bool reverse) {
   CallJS("cr.ui.Oobe.focusReturned", reverse);
 }
@@ -169,22 +146,8 @@ void CoreOobeHandler::ResetSignInUI(bool force_online) {
   CallJS("cr.ui.Oobe.resetSigninUI", force_online);
 }
 
-void CoreOobeHandler::ClearErrors() {
-  CallJS("cr.ui.Oobe.clearErrors");
-}
-
 void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
   CallJS("cr.ui.Oobe.reloadContent", dictionary);
-}
-
-void CoreOobeHandler::ReloadEulaContent(
-    const base::DictionaryValue& dictionary) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.reloadEulaContent", dictionary);
-  } else {
-    LOG(ERROR) << "Silently dropping ReloadEulaContent request.";
-  }
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
@@ -264,7 +227,7 @@ void CoreOobeHandler::HandleSkipToUpdateForTesting() {
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {
-  base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+  base::OnceCallback<void(bool, absl::optional<tpm_firmware_update::Mode>)>
       callback =
           base::BindOnce(&CoreOobeHandler::HandleToggleResetScreenCallback,
                          weak_ptr_factory_.GetWeakPtr());
@@ -273,7 +236,7 @@ void CoreOobeHandler::HandleToggleResetScreen() {
 
 void CoreOobeHandler::HandleToggleResetScreenCallback(
     bool is_reset_allowed,
-    base::Optional<tpm_firmware_update::Mode> tpm_firmware_update_mode) {
+    absl::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode) {
   if (!is_reset_allowed)
     return;
   if (tpm_firmware_update_mode.has_value()) {
@@ -282,7 +245,8 @@ void CoreOobeHandler::HandleToggleResetScreenCallback(
         prefs::kFactoryResetTPMFirmwareUpdateMode,
         static_cast<int>(tpm_firmware_update_mode.value()));
   }
-  LaunchResetScreen();
+  DCHECK(LoginDisplayHost::default_host());
+  LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {

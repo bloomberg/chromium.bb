@@ -30,6 +30,18 @@ if(WIN32)
                      ${PROJECT_BINARY_DIR}/LICENSE.libqt5widgets5 COPYONLY)
     endif()  # JPEGXL_DEP_LICENSE_DIR
   endif()
+elseif(APPLE)
+  find_package(Qt5 QUIET COMPONENTS Widgets)
+  if (Qt5_FOUND)
+    add_library(icc_detect STATIC
+      icc_detect/icc_detect_empty.cc
+      icc_detect/icc_detect.h
+    )
+    target_include_directories(icc_detect PRIVATE "${PROJECT_SOURCE_DIR}")
+    target_link_libraries(icc_detect PUBLIC Qt5::Widgets)
+  else()
+    message(WARNING "APPLE: Qt5 was not found.")
+  endif()
 else()
   find_package(Qt5 QUIET COMPONENTS Widgets X11Extras)
   find_package(ECM QUIET NO_MODULE)
@@ -91,6 +103,7 @@ target_link_libraries(cjxltool
     jxl_extras-static
     jxl_threads-static
 )
+
 
 add_executable(cjxl cjxl_main.cc)
 target_link_libraries(cjxl cjxltool)
@@ -253,7 +266,11 @@ if(${JPEGXL_ENABLE_COVERAGE})
     set(BINARY "${FUZZER}_runner")
     add_executable("${BINARY}" "fuzzer_stub.cc" "${FUZZER}.cc")
     target_include_directories("${BINARY}" PRIVATE "${CMAKE_SOURCE_DIR}")
-    target_link_libraries("${BINARY}" jxl-static jxl_extras-static jxl_threads-static jxl_tool)
+    if(${FUZZER} STREQUAL djxl_fuzzer)
+      target_link_libraries("${BINARY}" jxl_dec-static jxl_threads-static)
+    else()
+      target_link_libraries("${BINARY}" jxl-static jxl_extras-static jxl_threads-static jxl_tool)
+    endif()
   endforeach()
 endif()  # JPEGXL_ENABLE_COVERAGE
 
@@ -291,6 +308,7 @@ add_subdirectory(flicker_test)
 endif()
 
 add_subdirectory(box)
+add_subdirectory(conformance)
 
 if ("${JPEGXL_EMSCRIPTEN}")
 # WASM API facade.
@@ -314,3 +332,39 @@ set_target_properties(jxl_emcc PROPERTIES LINK_FLAGS "\
   ]\"\
 ")
 endif ()  # JPEGXL_EMSCRIPTEN
+
+find_package(JNI QUIET)
+find_package(Java QUIET)
+
+if ("${JNI_FOUND}" AND "${Java_FOUND}")
+  include(UseJava)
+
+  # decoder_jni_onload.cc might be necessary for Android; not used yet.
+  add_library(jxl_jni SHARED jni/org/jpeg/jpegxl/wrapper/decoder_jni.cc)
+  target_include_directories(jxl_jni PRIVATE "${JNI_INCLUDE_DIRS}" "${PROJECT_SOURCE_DIR}")
+  target_link_libraries(jxl_jni PUBLIC jxl_dec-static jxl_threads-static)
+
+  add_jar(jxl_jni_wrapper
+    jni/org/jpeg/jpegxl/wrapper/Decoder.java
+    jni/org/jpeg/jpegxl/wrapper/DecoderJni.java
+    jni/org/jpeg/jpegxl/wrapper/ImageData.java
+  )
+  get_target_property(JXL_JNI_WRAPPER_JAR jxl_jni_wrapper JAR_FILE)
+
+  add_jar(jxl_jni_wrapper_test
+    SOURCES jni/org/jpeg/jpegxl/wrapper/DecoderTest.java
+    INCLUDE_JARS jxl_jni_wrapper
+  )
+  get_target_property(JXL_JNI_WRAPPER_TEST_JAR jxl_jni_wrapper_test JAR_FILE)
+
+  # NB: Vanilla OpenJDK 8 / 11 are known to work well (i.e. either "which java"
+  #     or JAVA_HOME environment variable point to the path like
+  #     "/usr/lib/jvm/java-xx-openjdk-yyy" on Debian Linux).
+  add_test(
+    NAME test_jxl_jni_wrapper
+    COMMAND ${Java_JAVA_EXECUTABLE}
+            -cp "${JXL_JNI_WRAPPER_JAR}:${JXL_JNI_WRAPPER_TEST_JAR}"
+            -Dorg.jpeg.jpegxl.wrapper.lib=$<TARGET_FILE:jxl_jni>
+            org.jpeg.jpegxl.wrapper.DecoderTest
+  )
+endif()  # JNI_FOUND & Java_FOUND

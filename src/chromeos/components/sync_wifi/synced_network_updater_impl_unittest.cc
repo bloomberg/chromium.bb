@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -28,6 +27,7 @@
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
@@ -92,11 +92,6 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
     updater_ = std::make_unique<SyncedNetworkUpdaterImpl>(
         std::move(tracker_unique_ptr), remote_cros_network_config_.get(),
         timer_factory_.get(), metrics_logger_.get());
-  }
-
-  void TearDown() override {
-    chromeos::NetworkHandler::Shutdown();
-    testing::Test::TearDown();
   }
 
   network_config::mojom::ManagedPropertiesPtr GetManagedProperties(

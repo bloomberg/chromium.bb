@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Requires cleanup. See crbug.com/800374.
 enum SpeechRecognizerStatus {
@@ -58,7 +59,7 @@ class SpeechRecognizerDelegate {
   virtual void OnSpeechResult(
       const std::u16string& text,
       bool is_final,
-      const base::Optional<TranscriptTiming>& timing) = 0;
+      const absl::optional<TranscriptTiming>& timing) = 0;
 
   // Invoked regularly to indicate the average sound volume.
   virtual void OnSpeechSoundLevelChanged(int16_t level) = 0;

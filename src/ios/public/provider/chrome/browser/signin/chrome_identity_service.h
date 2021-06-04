@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 @class ChromeIdentity;
 @protocol ChromeIdentityBrowserOpener;
@@ -23,6 +24,7 @@
 @class NSError;
 @class NSString;
 @class NSURL;
+class PrefService;
 @class UIApplication;
 @class UIImage;
 @class UINavigationController;
@@ -164,13 +166,15 @@ class ChromeIdentityService {
   // Returns true if there is at least one identity.
   virtual bool HasIdentities();
 
-  // Returns all ChromeIdentity objects in an array.
-  virtual NSArray* GetAllIdentities();
+  // Returns all ChromeIdentity objects in an array.It uses PrefService to
+  // filter ChromeIdentities according to enterprise policies.
+  virtual NSArray* GetAllIdentities(PrefService* pref_service);
 
   // Returns all ChromeIdentity objects sorted by the ordering used in the
   // account manager, which is typically based on the keychain ordering of
-  // accounts.
-  virtual NSArray* GetAllIdentitiesSortedForDisplay();
+  // accounts.It uses PrefService to filter ChromeIdentities according to
+  // enterprise policies.
+  virtual NSArray* GetAllIdentitiesSortedForDisplay(PrefService* pref_service);
 
   // Forgets the given identity on the device. This method logs the user out.
   // It is asynchronous because it needs to contact the server to revoke the
@@ -215,7 +219,14 @@ class ChromeIdentityService {
   //     has a hosted domain.
   virtual NSString* GetCachedHostedDomainForIdentity(ChromeIdentity* identity);
 
-  // Retuns the MDM device status associated with |user_info|.
+  // Returns the cached value of the account capability that determines whether
+  // Chrome should apply minor mode restrictions to |identity|.
+  // This value will have a refresh period of 24 hours, meaning that at
+  // retrieval it may be stale or unpopulated, in the case of a fresh install.
+  virtual absl::optional<bool> IsSubjectToMinorModeRestrictions(
+      ChromeIdentity* identity);
+
+  // Returns the MDM device status associated with |user_info|.
   virtual MDMDeviceStatus GetMDMDeviceStatus(NSDictionary* user_info);
 
   // Handles a potential MDM (Mobile Device Management) notification. Returns

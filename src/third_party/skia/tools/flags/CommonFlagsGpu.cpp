@@ -30,14 +30,17 @@ static DEFINE_string(pr, "",
               "[~]none [~]dashline [~]ccpr [~]aahairline [~]aaconvex [~]aalinearizing "
               "[~]small [~]tri [~]tess [~]all");
 
-static DEFINE_int(internalSamples, 4,
-                  "Number of samples for internal draws that use MSAA or mixed samples.");
+static DEFINE_int(internalSamples, 4, "Number of samples for internal draws that use MSAA.");
 
 static DEFINE_bool(disableDriverCorrectnessWorkarounds, false,
                    "Disables all GPU driver correctness workarounds");
 
-static DEFINE_bool(reduceOpsTaskSplitting, false, "Improve opsTask sorting");
-static DEFINE_bool(dontReduceOpsTaskSplitting, false, "Allow more opsTask splitting");
+static DEFINE_bool(dontReduceOpsTaskSplitting, false,
+                   "Don't reorder tasks to reduce render passes");
+
+static DEFINE_int(gpuResourceCacheLimit, -1,
+                  "Maximum number of bytes to use for budgeted GPU resources. "
+                  "Default is -1, which means GrResourceCache::kDefaultMaxSize.");
 
 static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
     if (!strcmp(name, "none")) {
@@ -98,11 +101,11 @@ void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
     ctxOptions->fGpuPathRenderers                    = collect_gpu_path_renderers_from_flags();
     ctxOptions->fInternalMultisampleCount            = FLAGS_internalSamples;
     ctxOptions->fDisableDriverCorrectnessWorkarounds = FLAGS_disableDriverCorrectnessWorkarounds;
+    ctxOptions->fResourceCacheLimitOverride          = FLAGS_gpuResourceCacheLimit;
 
-    if (FLAGS_reduceOpsTaskSplitting) {
-        SkASSERT(!FLAGS_dontReduceOpsTaskSplitting);
-        ctxOptions->fReduceOpsTaskSplitting = GrContextOptions::Enable::kYes;
-    } else if (FLAGS_dontReduceOpsTaskSplitting) {
+    if (FLAGS_dontReduceOpsTaskSplitting) {
         ctxOptions->fReduceOpsTaskSplitting = GrContextOptions::Enable::kNo;
+    } else {
+        ctxOptions->fReduceOpsTaskSplitting = GrContextOptions::Enable::kYes;
     }
 }

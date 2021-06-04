@@ -8,24 +8,20 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/as_const.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
-#include "base/i18n/rtl.h"
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -34,10 +30,13 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
@@ -49,7 +48,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
@@ -84,6 +82,7 @@ class ContextMenuController;
 class DragController;
 class FocusManager;
 class FocusTraversable;
+class LayoutProvider;
 class ScrollView;
 class ViewAccessibility;
 class ViewMaskLayer;
@@ -126,11 +125,7 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
   View* move_view = nullptr;
 };
 
-// Used to identify the CallbackList<> within the PropertyChangedVectors map.
-using PropertyKey = const void*;
-
-using PropertyChangedCallbacks = base::RepeatingClosureList;
-using PropertyChangedCallback = PropertyChangedCallbacks::CallbackType;
+using PropertyChangedCallback = ui::metadata::PropertyChangedCallback;
 
 // The elements in PropertyEffects represent bits which define what effect(s) a
 // changed Property has on the containing class. Additional elements should
@@ -273,9 +268,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::EventTarget,
                           public ui::EventHandler,
                           public ui::PropertyHandler,
-                          public views::metadata::MetaDataProvider {
+                          public ui::metadata::MetaDataProvider {
  public:
   using Views = std::vector<View*>;
+
+  using DropCallback =
+      base::OnceCallback<void(const ui::DropTargetEvent& event,
+                              ui::mojom::DragOperation& output_drag_op)>;
 
   METADATA_HEADER_BASE(View);
 
@@ -383,6 +382,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Creation and lifetime -----------------------------------------------------
 
   View();
+  View(const View&) = delete;
+  View& operator=(const View&) = delete;
   ~View() override;
 
   // By default a View is owned by its parent unless specified otherwise here.
@@ -893,10 +894,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Get the theme provider from the parent widget.
   const ui::ThemeProvider* GetThemeProvider() const;
 
+  // Get the layout provider for the View.
+  const LayoutProvider* GetLayoutProvider() const;
+
   // Returns the ColorProvider from the ColorProviderManager.
   ui::ColorProvider* GetColorProvider() {
     return const_cast<ui::ColorProvider*>(
-        static_cast<const View*>(this)->GetColorProvider());
+        base::as_const(*this).GetColorProvider());
   }
   const ui::ColorProvider* GetColorProvider() const;
 
@@ -906,8 +910,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // set. Warning: the default theme might not be correct; you should probably
   // override OnThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
-    return const_cast<ui::NativeTheme*>(
-        static_cast<const View*>(this)->GetNativeTheme());
+    return const_cast<ui::NativeTheme*>(base::as_const(*this).GetNativeTheme());
   }
   const ui::NativeTheme* GetNativeTheme() const;
 
@@ -1074,6 +1077,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // view hierarchy, events won't be sent.
   virtual void SetMouseAndGestureHandler(View* new_handler);
 
+  // Sets a new mouse handler.
+  virtual void SetMouseHandler(View* new_handler);
+
   // Invoked when a key is pressed or released.
   // Subclasses should return true if the event has been processed and false
   // otherwise. If the event has not been processed, the parent will be given a
@@ -1094,8 +1100,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Convenience method to retrieve the InputMethod associated with the
   // Widget that contains this view.
   ui::InputMethod* GetInputMethod() {
-    return const_cast<ui::InputMethod*>(
-        const_cast<const View*>(this)->GetInputMethod());
+    return const_cast<ui::InputMethod*>(base::as_const(*this).GetInputMethod());
   }
   const ui::InputMethod* GetInputMethod() const;
 
@@ -1317,12 +1322,19 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Invoked during a drag and drop session when OnDragUpdated returns a valid
   // operation and the user release the mouse.
+  // TODO(crbug.com/1175682): Remove OnPerformDrop and switch to GetDropCallback
+  // instead.
   virtual ui::mojom::DragOperation OnPerformDrop(
       const ui::DropTargetEvent& event);
 
   // Invoked from DoDrag after the drag completes. This implementation does
   // nothing, and is intended for subclasses to do cleanup.
   virtual void OnDragDone();
+
+  // Invoked during a drag and drop session when OnDragUpdated returns a valid
+  // operation and the user release the mouse but the drop is held because of
+  // DataTransferPolicyController.
+  virtual DropCallback GetDropCallback(const ui::DropTargetEvent& event);
 
   // Returns true if the mouse was dragged enough to start a drag operation.
   // delta_x and y are the distance the mouse was dragged.
@@ -1531,7 +1543,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnLayerTransformed(const gfx::Transform& old_transform,
-                          ui::PropertyChangeReason reason) override;
+                          ui::PropertyChangeReason reason) final;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
 
@@ -1601,12 +1613,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
 
+  // PropertyHandler -----------------------------------------------------------
+
+  // Note: you MUST call this base method from derived classes that override it
+  // or else your class  will not properly register for ElementTrackerViews and
+  // won't be available for interactive tests or in-product help/tutorials which
+  // use that system.
+  void AfterPropertyChange(const void* key, int64_t old_value) override;
+
   // Property Support ----------------------------------------------------------
 
-  base::CallbackListSubscription AddPropertyChangedCallback(
-      PropertyKey property,
-      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
-  void OnPropertyChanged(PropertyKey property,
+  void OnPropertyChanged(ui::metadata::PropertyKey property,
                          PropertyEffects property_effects);
 
  private:
@@ -1644,9 +1661,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     gfx::Size GetPreferredSize(const View* host) const override;
     int GetPreferredHeightForWidth(const View* host, int width) const override;
   };
-
-  using PropertyChangedVectors =
-      std::map<PropertyKey, std::unique_ptr<PropertyChangedCallbacks>>;
 
   // Painting  -----------------------------------------------------------------
 
@@ -1969,7 +1983,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Size and disposition ------------------------------------------------------
 
-  base::Optional<gfx::Size> preferred_size_;
+  absl::optional<gfx::Size> preferred_size_;
 
   // This View's bounds in the parent coordinate system.
   gfx::Rect bounds_;
@@ -2019,7 +2033,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The default "fill" layout manager. This is set only if |layout_manager_|
   // isn't set and SetUseDefaultFillLayout(true) is called or
   // |kUseDefaultFillLayout| is true.
-  base::Optional<DefaultFillLayout> default_fill_layout_;
+  absl::optional<DefaultFillLayout> default_fill_layout_;
 
   // Whether this View's layer should be snapped to the pixel boundary.
   bool snap_layer_to_pixel_boundary_ = false;
@@ -2057,7 +2071,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // positioned onscreen. The default behavior should be correct in most cases,
   // but can be overridden if a particular view must always be laid out in some
   // direction regardless of the application's default UI direction.
-  base::Optional<bool> is_mirrored_;
+  absl::optional<bool> is_mirrored_;
 
   // Accelerated painting ------------------------------------------------------
 
@@ -2126,13 +2140,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   base::ObserverList<ViewObserver>::Unchecked observers_;
 
-  // Property Changed Callbacks ------------------------------------------------
-  PropertyChangedVectors property_changed_vectors_;
-
   // http://crbug.com/1162949 : Instrumentation that indicates if this is alive.
   LifeCycleState life_cycle_state_ = LifeCycleState::kAlive;
-
-  DISALLOW_COPY_AND_ASSIGN(View);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, View, BaseView)

@@ -5448,6 +5448,41 @@ void GL_APIENTRY GL_RenderbufferStorageMultisampleEXT(GLenum target,
 
 // IsQueryEXT is already defined.
 
+// GL_EXT_primitive_bounding_box
+void GL_APIENTRY GL_PrimitiveBoundingBoxEXT(GLfloat minX,
+                                            GLfloat minY,
+                                            GLfloat minZ,
+                                            GLfloat minW,
+                                            GLfloat maxX,
+                                            GLfloat maxY,
+                                            GLfloat maxZ,
+                                            GLfloat maxW)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLPrimitiveBoundingBoxEXT,
+          "context = %d, minX = %f, minY = %f, minZ = %f, minW = %f, maxX = %f, maxY = %f, maxZ = "
+          "%f, maxW = %f",
+          CID(context), minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+
+    if (context)
+    {
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidatePrimitiveBoundingBoxEXT(context, minX, minY, minZ, minW, maxX,
+                                                            maxY, maxZ, maxW));
+        if (isCallValid)
+        {
+            context->primitiveBoundingBox(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+        }
+        ANGLE_CAPTURE(PrimitiveBoundingBoxEXT, isCallValid, context, minX, minY, minZ, minW, maxX,
+                      maxY, maxZ, maxW);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
 // GL_EXT_read_format_bgra
 
 // GL_EXT_robustness
@@ -7185,6 +7220,215 @@ void GL_APIENTRY GL_PatchParameteriEXT(GLenum pname, GLint value)
     }
 }
 
+// GL_EXT_texture_border_clamp
+void GL_APIENTRY GL_GetSamplerParameterIivEXT(GLuint sampler, GLenum pname, GLint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLGetSamplerParameterIivEXT,
+          "context = %d, sampler = %u, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateGetSamplerParameterIivEXT(context, samplerPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getSamplerParameterIiv(samplerPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetSamplerParameterIivEXT, isCallValid, context, samplerPacked, pname,
+                      params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_GetSamplerParameterIuivEXT(GLuint sampler, GLenum pname, GLuint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLGetSamplerParameterIuivEXT,
+          "context = %d, sampler = %u, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateGetSamplerParameterIuivEXT(context, samplerPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getSamplerParameterIuiv(samplerPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetSamplerParameterIuivEXT, isCallValid, context, samplerPacked, pname,
+                      params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_GetTexParameterIivEXT(GLenum target, GLenum pname, GLint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLGetTexParameterIivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateGetTexParameterIivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getTexParameterIiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetTexParameterIivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_GetTexParameterIuivEXT(GLenum target, GLenum pname, GLuint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLGetTexParameterIuivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateGetTexParameterIuivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getTexParameterIuiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetTexParameterIuivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_SamplerParameterIivEXT(GLuint sampler, GLenum pname, const GLint *param)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLSamplerParameterIivEXT,
+          "context = %d, sampler = %u, pname = %s, param = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)param);
+
+    if (context)
+    {
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateSamplerParameterIivEXT(context, samplerPacked, pname, param));
+        if (isCallValid)
+        {
+            context->samplerParameterIiv(samplerPacked, pname, param);
+        }
+        ANGLE_CAPTURE(SamplerParameterIivEXT, isCallValid, context, samplerPacked, pname, param);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_SamplerParameterIuivEXT(GLuint sampler, GLenum pname, const GLuint *param)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLSamplerParameterIuivEXT,
+          "context = %d, sampler = %u, pname = %s, param = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)param);
+
+    if (context)
+    {
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateSamplerParameterIuivEXT(context, samplerPacked, pname, param));
+        if (isCallValid)
+        {
+            context->samplerParameterIuiv(samplerPacked, pname, param);
+        }
+        ANGLE_CAPTURE(SamplerParameterIuivEXT, isCallValid, context, samplerPacked, pname, param);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_TexParameterIivEXT(GLenum target, GLenum pname, const GLint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLTexParameterIivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::TextureParameterName, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateTexParameterIivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->texParameterIiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(TexParameterIivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+void GL_APIENTRY GL_TexParameterIuivEXT(GLenum target, GLenum pname, const GLuint *params)
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLTexParameterIuivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::TextureParameterName, pname), (uintptr_t)params);
+
+    if (context)
+    {
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateTexParameterIuivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->texParameterIuiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(TexParameterIuivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
 // GL_EXT_texture_buffer
 void GL_APIENTRY GL_TexBufferEXT(GLenum target, GLenum internalformat, GLuint buffer)
 {
@@ -7265,6 +7509,8 @@ void GL_APIENTRY GL_TexBufferRangeEXT(GLenum target,
 // GL_EXT_texture_format_BGRA8888
 
 // GL_EXT_texture_sRGB_R8
+
+// GL_EXT_texture_sRGB_RG8
 
 // GL_EXT_texture_storage
 void GL_APIENTRY GL_TexStorage1DEXT(GLenum target,
@@ -7355,6 +7601,28 @@ void GL_APIENTRY GL_TexStorage3DEXT(GLenum target,
         }
         ANGLE_CAPTURE(TexStorage3DEXT, isCallValid, context, targetPacked, levels, internalformat,
                       width, height, depth);
+    }
+    else
+    {
+        GenerateContextLostErrorOnCurrentGlobalContext();
+    }
+}
+
+// GL_KHR_blend_equation_advanced
+void GL_APIENTRY GL_BlendBarrierKHR()
+{
+    Context *context = GetValidGlobalContext();
+    EVENT(context, GLBlendBarrierKHR, "context = %d", CID(context));
+
+    if (context)
+    {
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid = (context->skipValidation() || ValidateBlendBarrierKHR(context));
+        if (isCallValid)
+        {
+            context->blendBarrier();
+        }
+        ANGLE_CAPTURE(BlendBarrierKHR, isCallValid, context);
     }
     else
     {
@@ -10988,6 +11256,28 @@ void GL_APIENTRY GL_BlendBarrierContextANGLE(GLeglContext ctx)
             context->blendBarrier();
         }
         ANGLE_CAPTURE(BlendBarrier, isCallValid, context);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
+void GL_APIENTRY GL_BlendBarrierKHRContextANGLE(GLeglContext ctx)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLBlendBarrierKHR, "context = %d", CID(context));
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid = (context->skipValidation() || ValidateBlendBarrierKHR(context));
+        if (isCallValid)
+        {
+            context->blendBarrier();
+        }
+        ANGLE_CAPTURE(BlendBarrierKHR, isCallValid, context);
     }
     else
     {
@@ -19002,6 +19292,37 @@ void GL_APIENTRY GL_GetSamplerParameterIivContextANGLE(GLeglContext ctx,
     }
 }
 
+void GL_APIENTRY GL_GetSamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                          GLuint sampler,
+                                                          GLenum pname,
+                                                          GLint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLGetSamplerParameterIivEXT,
+          "context = %d, sampler = %u, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateGetSamplerParameterIivEXT(context, samplerPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getSamplerParameterIiv(samplerPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetSamplerParameterIivEXT, isCallValid, context, samplerPacked, pname,
+                      params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
 void GL_APIENTRY GL_GetSamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                           GLuint sampler,
                                                           GLenum pname,
@@ -19055,6 +19376,37 @@ void GL_APIENTRY GL_GetSamplerParameterIuivContextANGLE(GLeglContext ctx,
             context->getSamplerParameterIuiv(samplerPacked, pname, params);
         }
         ANGLE_CAPTURE(GetSamplerParameterIuiv, isCallValid, context, samplerPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
+void GL_APIENTRY GL_GetSamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                           GLuint sampler,
+                                                           GLenum pname,
+                                                           GLuint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLGetSamplerParameterIuivEXT,
+          "context = %d, sampler = %u, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateGetSamplerParameterIuivEXT(context, samplerPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getSamplerParameterIuiv(samplerPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetSamplerParameterIuivEXT, isCallValid, context, samplerPacked, pname,
+                      params);
     }
     else
     {
@@ -19674,6 +20026,36 @@ void GL_APIENTRY GL_GetTexParameterIivContextANGLE(GLeglContext ctx,
     }
 }
 
+void GL_APIENTRY GL_GetTexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                      GLenum target,
+                                                      GLenum pname,
+                                                      GLint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLGetTexParameterIivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateGetTexParameterIivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getTexParameterIiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetTexParameterIivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
 void GL_APIENTRY GL_GetTexParameterIivOESContextANGLE(GLeglContext ctx,
                                                       GLenum target,
                                                       GLenum pname,
@@ -19727,6 +20109,36 @@ void GL_APIENTRY GL_GetTexParameterIuivContextANGLE(GLeglContext ctx,
             context->getTexParameterIuiv(targetPacked, pname, params);
         }
         ANGLE_CAPTURE(GetTexParameterIuiv, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
+void GL_APIENTRY GL_GetTexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                       GLenum target,
+                                                       GLenum pname,
+                                                       GLuint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLGetTexParameterIuivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateGetTexParameterIuivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->getTexParameterIuiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(GetTexParameterIuivEXT, isCallValid, context, targetPacked, pname, params);
     }
     else
     {
@@ -23125,6 +23537,42 @@ void GL_APIENTRY GL_PrimitiveBoundingBoxContextANGLE(GLeglContext ctx,
     }
 }
 
+void GL_APIENTRY GL_PrimitiveBoundingBoxEXTContextANGLE(GLeglContext ctx,
+                                                        GLfloat minX,
+                                                        GLfloat minY,
+                                                        GLfloat minZ,
+                                                        GLfloat minW,
+                                                        GLfloat maxX,
+                                                        GLfloat maxY,
+                                                        GLfloat maxZ,
+                                                        GLfloat maxW)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLPrimitiveBoundingBoxEXT,
+          "context = %d, minX = %f, minY = %f, minZ = %f, minW = %f, maxX = %f, maxY = %f, maxZ = "
+          "%f, maxW = %f",
+          CID(context), minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidatePrimitiveBoundingBoxEXT(context, minX, minY, minZ, minW, maxX,
+                                                            maxY, maxZ, maxW));
+        if (isCallValid)
+        {
+            context->primitiveBoundingBox(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+        }
+        ANGLE_CAPTURE(PrimitiveBoundingBoxEXT, isCallValid, context, minX, minY, minZ, minW, maxX,
+                      maxY, maxZ, maxW);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
 void GL_APIENTRY GL_ProgramBinaryContextANGLE(GLeglContext ctx,
                                               GLuint program,
                                               GLenum binaryFormat,
@@ -26135,6 +26583,35 @@ void GL_APIENTRY GL_SamplerParameterIivContextANGLE(GLeglContext ctx,
     }
 }
 
+void GL_APIENTRY GL_SamplerParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                       GLuint sampler,
+                                                       GLenum pname,
+                                                       const GLint *param)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLSamplerParameterIivEXT,
+          "context = %d, sampler = %u, pname = %s, param = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)param);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateSamplerParameterIivEXT(context, samplerPacked, pname, param));
+        if (isCallValid)
+        {
+            context->samplerParameterIiv(samplerPacked, pname, param);
+        }
+        ANGLE_CAPTURE(SamplerParameterIivEXT, isCallValid, context, samplerPacked, pname, param);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
 void GL_APIENTRY GL_SamplerParameterIivOESContextANGLE(GLeglContext ctx,
                                                        GLuint sampler,
                                                        GLenum pname,
@@ -26186,6 +26663,35 @@ void GL_APIENTRY GL_SamplerParameterIuivContextANGLE(GLeglContext ctx,
             context->samplerParameterIuiv(samplerPacked, pname, param);
         }
         ANGLE_CAPTURE(SamplerParameterIuiv, isCallValid, context, samplerPacked, pname, param);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
+void GL_APIENTRY GL_SamplerParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                        GLuint sampler,
+                                                        GLenum pname,
+                                                        const GLuint *param)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLSamplerParameterIuivEXT,
+          "context = %d, sampler = %u, pname = %s, param = 0x%016" PRIxPTR "", CID(context),
+          sampler, GLenumToString(GLenumGroup::SamplerParameterName, pname), (uintptr_t)param);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        SamplerID samplerPacked                               = PackParam<SamplerID>(sampler);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateSamplerParameterIuivEXT(context, samplerPacked, pname, param));
+        if (isCallValid)
+        {
+            context->samplerParameterIuiv(samplerPacked, pname, param);
+        }
+        ANGLE_CAPTURE(SamplerParameterIuivEXT, isCallValid, context, samplerPacked, pname, param);
     }
     else
     {
@@ -27516,6 +28022,36 @@ void GL_APIENTRY GL_TexParameterIivContextANGLE(GLeglContext ctx,
     }
 }
 
+void GL_APIENTRY GL_TexParameterIivEXTContextANGLE(GLeglContext ctx,
+                                                   GLenum target,
+                                                   GLenum pname,
+                                                   const GLint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLTexParameterIivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::TextureParameterName, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateTexParameterIivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->texParameterIiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(TexParameterIivEXT, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
 void GL_APIENTRY GL_TexParameterIivOESContextANGLE(GLeglContext ctx,
                                                    GLenum target,
                                                    GLenum pname,
@@ -27569,6 +28105,36 @@ void GL_APIENTRY GL_TexParameterIuivContextANGLE(GLeglContext ctx,
             context->texParameterIuiv(targetPacked, pname, params);
         }
         ANGLE_CAPTURE(TexParameterIuiv, isCallValid, context, targetPacked, pname, params);
+    }
+    else
+    {
+        GenerateContextLostErrorOnContext(context);
+    }
+}
+
+void GL_APIENTRY GL_TexParameterIuivEXTContextANGLE(GLeglContext ctx,
+                                                    GLenum target,
+                                                    GLenum pname,
+                                                    const GLuint *params)
+{
+    Context *context = static_cast<gl::Context *>(ctx);
+    EVENT(context, GLTexParameterIuivEXT,
+          "context = %d, target = %s, pname = %s, params = 0x%016" PRIxPTR "", CID(context),
+          GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::TextureParameterName, pname), (uintptr_t)params);
+
+    if (context && !context->isContextLost())
+    {
+        ASSERT(context == GetValidGlobalContext());
+        TextureType targetPacked                              = PackParam<TextureType>(target);
+        std::unique_lock<angle::GlobalMutex> shareContextLock = GetContextLock(context);
+        bool isCallValid                                      = (context->skipValidation() ||
+                            ValidateTexParameterIuivEXT(context, targetPacked, pname, params));
+        if (isCallValid)
+        {
+            context->texParameterIuiv(targetPacked, pname, params);
+        }
+        ANGLE_CAPTURE(TexParameterIuivEXT, isCallValid, context, targetPacked, pname, params);
     }
     else
     {

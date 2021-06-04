@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
@@ -35,6 +36,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -175,6 +178,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @implementation TabGridViewController
 // TabGridPaging property.
 @synthesize activePage = _activePage;
+@synthesize tabGridMode = _tabGridMode;
 
 - (instancetype)initWithPageConfiguration:
     (TabGridPageConfiguration)tabGridPageConfiguration {
@@ -272,16 +276,22 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  __weak TabGridViewController* weakSelf = self;
   auto animate = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-    // Sync the scroll view offset to the  current page value. SInce this is
-    // already inside an animation block, the scrolling doesn't need to be
-    // animated.
-    [self scrollToPage:_currentPage animated:NO];
-    [self configureViewControllerForCurrentSizeClassesAndPage];
-    [self setInsetForRemoteTabs];
-    [self setInsetForGridViews];
+    [weakSelf animateTransition:context];
   };
   [coordinator animateAlongsideTransition:animate completion:nil];
+}
+
+- (void)animateTransition:
+    (id<UIViewControllerTransitionCoordinatorContext>)context {
+  // Sync the scroll view offset to the current page value. Since this is
+  // invoked inside an animation block, the scrolling doesn't need to be
+  // animated.
+  [self scrollToPage:_currentPage animated:NO];
+  [self configureViewControllerForCurrentSizeClassesAndPage];
+  [self setInsetForRemoteTabs];
+  [self setInsetForGridViews];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -490,6 +500,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureButtonsForActiveAndCurrentPage];
 }
 
+- (void)dismissModals {
+  [self.regularTabsConsumer dismissModals];
+  [self.incognitoTabsConsumer dismissModals];
+  [self.remoteTabsViewController dismissModals];
+}
+
 #pragma mark - Public Properties
 
 - (id<GridConsumer>)regularTabsConsumer {
@@ -538,6 +554,24 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _incognitoThumbStripHandler = handler;
   self.regularTabsViewController.thumbStripHandler =
       self.incognitoThumbStripHandler;
+}
+
+- (void)setRegularTabsContextMenuProvider:
+    (id<GridContextMenuProvider>)provider {
+  if (_regularTabsContextMenuProvider == provider)
+    return;
+  _regularTabsContextMenuProvider = provider;
+
+  self.regularTabsViewController.menuProvider = provider;
+}
+
+- (void)setIncognitoTabsContextMenuProvider:
+    (id<GridContextMenuProvider>)provider {
+  if (_incognitoTabsContextMenuProvider == provider)
+    return;
+  _incognitoTabsContextMenuProvider = provider;
+
+  self.incognitoTabsViewController.menuProvider = provider;
 }
 
 #pragma mark - TabGridPaging
@@ -1156,6 +1190,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   topToolbar.trailingButton.target = self;
   topToolbar.trailingButton.action = @selector(doneButtonTapped:);
   [topToolbar setNewTabButtonTarget:self action:@selector(newTabButtonTapped:)];
+  [topToolbar setSelectTabButtonTarget:self
+                                action:@selector(selectButtonTapped:)];
 
   // Configure and initialize the page control.
   [topToolbar.pageControl addTarget:self
@@ -1198,6 +1234,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   [bottomToolbar setNewTabButtonTarget:self
                                 action:@selector(newTabButtonTapped:)];
+
+  NamedGuide* guide =
+      [[NamedGuide alloc] initWithName:kTabGridBottomToolbarGuide];
+  [self.view addLayoutGuide:guide];
+  guide.constrainedView = bottomToolbar;
 }
 
 // Adds the foreground view and sets constraints.
@@ -1259,6 +1300,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)configureButtonsForActiveAndCurrentPage {
   self.bottomToolbar.page = self.currentPage;
+  self.bottomToolbar.mode = self.tabGridMode;
   // When current page is a remote tabs page.
   if (self.currentPage == TabGridPageRemoteTabs) {
     if (self.pageConfiguration ==
@@ -1769,6 +1811,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // tab.
     base::RecordAction(base::UserMetricsAction("MobileTabGridDone"));
   }
+}
+
+- (void)selectButtonTapped:(id)sender {
+  self.tabGridMode = TabGridModeSelection;
+  self.bottomToolbar.mode = self.tabGridMode;
+  base::RecordAction(base::UserMetricsAction("MobileTabGridSelectTabs"));
 }
 
 // Shows an action sheet that asks for confirmation when 'Close All' button is

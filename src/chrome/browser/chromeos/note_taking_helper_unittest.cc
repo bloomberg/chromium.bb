@@ -30,7 +30,6 @@
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_app_migration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -289,9 +288,9 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
 
   void InitWebAppProvider() {
     auto* provider = web_app::TestWebAppProvider::Get(profile());
-    // Migration manager won't complete initialization due to using a test
-    // extensions system that is never started. Not needed so just disable it.
-    provider->SetMigrationManager(nullptr);
+    // TestWebAppProvider should not wait for a test extension system, that is
+    // never started, to be ready.
+    provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
@@ -866,7 +865,7 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   // Now uninstall the prod app and check that we fall back to the dev app.
   UninstallExtension(prod_extension.get(), profile());
   launched_chrome_apps_.clear();
-  histogram_tester.reset(new HistogramTester());
+  histogram_tester = std::make_unique<HistogramTester>();
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, launched_chrome_apps_.size());
   EXPECT_EQ(NoteTakingHelper::kDevKeepExtensionId, launched_chrome_apps_[0].id);
@@ -881,7 +880,7 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   // Now uninstall the dev app and check that we fall back to the test web app.
   UninstallExtension(dev_extension.get(), profile());
   launched_chrome_apps_.clear();
-  histogram_tester.reset(new HistogramTester());
+  histogram_tester = std::make_unique<HistogramTester>();
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   // Not a chrome app.
   EXPECT_EQ(0u, launched_chrome_apps_.size());
@@ -907,7 +906,7 @@ TEST_F(NoteTakingHelperTest, PlayStoreInitiallyDisabled) {
 
   // After the callback to receive intent handlers has run, the "apps received"
   // member should be updated (even if there aren't any apps).
-  helper()->OnIntentFiltersUpdated(base::nullopt);
+  helper()->OnIntentFiltersUpdated(absl::nullopt);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
@@ -943,7 +942,7 @@ TEST_F(NoteTakingHelperTest, AddProfileWithPlayStoreEnabled) {
 
   // Notification of updated intent filters should result in the apps being
   // refreshed.
-  helper()->OnIntentFiltersUpdated(base::nullopt);
+  helper()->OnIntentFiltersUpdated(absl::nullopt);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
@@ -1037,14 +1036,14 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
   handlers.emplace_back(CreateIntentHandlerInfo("App 2", kPackage2));
   intent_helper_.SetIntentHandlers(NoteTakingHelper::kIntentAction,
                                    std::move(handlers));
-  helper()->OnIntentFiltersUpdated(base::nullopt);
+  helper()->OnIntentFiltersUpdated(absl::nullopt);
   base::RunLoop().RunUntilIdle();
   helper()->SetPreferredApp(profile(), kPackage2);
 
   // The second app should be launched now.
   intent_helper_.clear_handled_intents();
   file_system_->clear_handled_requests();
-  histogram_tester.reset(new HistogramTester());
+  histogram_tester = std::make_unique<HistogramTester>();
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, file_system_->handledUrlRequests().size());
   EXPECT_EQ(arc::mojom::ActionType::CREATE_NOTE,
@@ -1178,7 +1177,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
 
   // Update intent filters and check that the observer is notified again after
   // apps are received.
-  helper()->OnIntentFiltersUpdated(base::nullopt);
+  helper()->OnIntentFiltersUpdated(absl::nullopt);
   EXPECT_EQ(3, observer.num_updates());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, observer.num_updates());

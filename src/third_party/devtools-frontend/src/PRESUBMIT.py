@@ -36,13 +36,8 @@ import sys
 import six
 import time
 
-EXCLUSIVE_CHANGE_DIRECTORIES = [
-    ['third_party', 'v8'],
-    ['node_modules'],
-    ['OWNERS', 'config/owner'],
-]
-
 AUTOROLL_ACCOUNT = "devtools-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com"
+USE_PYTHON3 = True
 
 
 def _ExecuteSubProcess(input_api, output_api, script_path, args, results):
@@ -59,9 +54,11 @@ def _ExecuteSubProcess(input_api, output_api, script_path, args, results):
     time_difference = end_time - start_time
     time_info = "Script execution time was %.1fs seconds\n" % (time_difference)
     if process.returncode != 0:
-        results.append(output_api.PresubmitError(time_info + out))
+        results.append(
+            output_api.PresubmitError(time_info + out.decode('utf-8')))
     else:
-        results.append(output_api.PresubmitNotifyResult(time_info + out))
+        results.append(
+            output_api.PresubmitNotifyResult(time_info + out.decode('utf-8')))
     return results
 
 
@@ -82,11 +79,27 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
             if IsParentDir(file, dir):
                 return True
 
+    EXCLUSIVE_CHANGE_DIRECTORIES = [
+        [
+            'third_party', 'v8',
+            input_api.os_path.join('front_end', 'generated')
+        ],
+        [
+            'node_modules',
+            'package.json',
+            'package-lock.json',
+            input_api.os_path.join('scripts', 'deps', 'manage_node_deps.py'),
+        ],
+        ['OWNERS', input_api.os_path.join('config', 'owner')],
+    ]
+
     affected_files = input_api.LocalPaths()
     num_affected = len(affected_files)
     for dirs in EXCLUSIVE_CHANGE_DIRECTORIES:
         dir_list = ', '.join(dirs)
-        affected_in_dir = filter(lambda f: FileIsInDir(f, dirs), affected_files)
+        affected_in_dir = [
+            file for file in affected_files if FileIsInDir(file, dirs)
+        ]
         num_in_dir = len(affected_in_dir)
         if num_in_dir == 0:
             continue
@@ -94,9 +107,16 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
         if '.gitignore' in affected_files:
             num_in_dir = num_in_dir + 1
         if num_in_dir < num_affected:
-            results.append(output_api
-                .PresubmitError(('CLs that affect files in "%s" should be limited to these files/directories.' % dir_list) +
-                                ' You can disable this check by adding DISABLE_THIRD_PARTY_CHECK=<reason> to your commit message'))
+            unexpected_files = [
+                file for file in affected_files if file not in affected_in_dir
+            ]
+            results.append(
+                output_api.PresubmitError(
+                    ('CLs that affect files in "%s" should be limited to these files/directories.'
+                     % dir_list) +
+                    ('\nUnexpected files: %s.' % unexpected_files) +
+                    '\nYou can disable this check by adding DISABLE_THIRD_PARTY_CHECK=<reason> to your commit message'
+                ))
             break
 
     return results
@@ -190,7 +210,8 @@ def _CheckDevToolsStyleJS(input_api, output_api):
     front_end_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'front_end')
     component_docs_directory = input_api.os_path.join(front_end_directory,
-                                                      'component_docs')
+                                                      'ui', 'components',
+                                                      'docs')
     inspector_overlay_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'inspector_overlay')
     test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
@@ -230,6 +251,11 @@ def _CheckDevToolsStyleJS(input_api, output_api):
         ['.js', '.ts'], results)
     if should_bail_out:
         return results
+
+    # If there are more than 50 files to check, don't bother and check
+    # everything, so as to not run into command line length limits on Windows.
+    if len(files_to_lint) > 50:
+        files_to_lint = []
 
     results.extend(
         _checkWithNodeScript(input_api, output_api, lint_path, files_to_lint))
@@ -302,15 +328,27 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
 def _CheckDarkModeStyleSheetsUpToDate(input_api, output_api):
     devtools_root = input_api.PresubmitLocalPath()
     devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
-    affected_css_files = _getAffectedFiles(input_api, [devtools_front_end], [],
-                                           ['.css'])
+    dark_mode_scripts_folder = input_api.os_path.join(devtools_root, 'scripts',
+                                                      'dark_mode')
+    dark_mode_script_files = _getAffectedFiles(input_api,
+                                               dark_mode_scripts_folder, [],
+                                               ['.js'])
+    script_arguments = []
+    if len(dark_mode_script_files) > 0:
+        # If the scripts have changed, we should check all darkmode files as they may need to be updated.
+        script_arguments += ['--check-all-files']
+    else:
+        affected_css_files = _getAffectedFiles(input_api, [devtools_front_end],
+                                               [], ['.css'])
+        script_arguments += affected_css_files
+
     results = [output_api.PresubmitNotifyResult('Dark Mode CSS check:')]
     script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                          'scripts', 'dark_mode',
                                          'check_darkmode_css_up_to_date.js')
     results.extend(
         _checkWithNodeScript(input_api, output_api, script_path,
-                             affected_css_files))
+                             script_arguments))
     return results
 
 
@@ -356,19 +394,23 @@ def _CheckGeneratedFiles(input_api, output_api):
     generated_aria_path = input_api.os_path.join(scripts_build_path, 'generate_aria.py')
     generated_supported_css_path = input_api.os_path.join(scripts_build_path, 'generate_supported_css.py')
     generated_protocol_path = input_api.os_path.join(scripts_build_path, 'code_generator_frontend.py')
+    generated_protocol_typescript_path = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'scripts', 'protocol_typescript')
     concatenate_protocols_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'inspector_protocol',
                                                         'concatenate_protocols.py')
 
     affected_files = _getAffectedFiles(input_api, [
         v8_directory_path,
         blink_directory_path,
-        input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party', 'pyjson5'),
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'third_party',
+                               'pyjson5'),
         generated_aria_path,
         generated_supported_css_path,
         concatenate_protocols_path,
         generated_protocol_path,
         scripts_generated_output_path,
-    ], [], ['.pdl', '.json5', '.py', '.js'])
+        generated_protocol_typescript_path,
+    ], [], ['.pdl', '.json5', '.py', '.js', '.ts'])
 
     if len(affected_files) == 0:
         return [
@@ -421,8 +463,9 @@ def _CheckNoUncheckedFiles(input_api, output_api):
         files_changed, _ = files_changed_process.communicate()
 
         return [
-            output_api.PresubmitError('You have changed files that need to be committed:'),
-            output_api.PresubmitError(files_changed)
+            output_api.PresubmitError(
+                'You have changed files that need to be committed:'),
+            output_api.PresubmitError(files_changed.decode('utf-8'))
         ]
     return []
 
@@ -539,8 +582,12 @@ def _getAffectedFiles(input_api, parent_directories, excluded_actions, accepted_
         f.AbsoluteLocalPath() for f in input_api.AffectedFiles() if all(f.Action() != action for action in excluded_actions)
     ]
     affected_files = [
-        file_name for file_name in local_paths if any(parent_directory in file_name for parent_directory in parent_directories) and
-        (len(accepted_endings) is 0 or any(file_name.endswith(accepted_ending) for accepted_ending in accepted_endings))
+        file_name for file_name in local_paths
+        if any(parent_directory in file_name
+               for parent_directory in parent_directories) and (
+                   len(accepted_endings) == 0 or any(
+                       file_name.endswith(accepted_ending)
+                       for accepted_ending in accepted_endings))
     ]
     return affected_files
 
@@ -583,7 +630,7 @@ def _checkWithTypeScript(input_api,
     if tsc_compiler_process.returncode != 0:
         return [
             output_api.PresubmitError('Error compiling briges regenerator:\n' +
-                                      str(out))
+                                      out.decode('utf-8'))
         ]
 
     return _checkWithNodeScript(input_api, output_api, script_path,
@@ -596,7 +643,7 @@ def _getFilesToLint(input_api, output_api, lint_config_files,
     files_to_lint = []
 
     # We are changing the lint configuration; run the full check.
-    if len(lint_config_files) is not 0:
+    if len(lint_config_files) != 0:
         results.append(
             output_api.PresubmitNotifyResult('Running full lint check'))
         run_full_check = True
@@ -607,15 +654,16 @@ def _getFilesToLint(input_api, output_api, lint_config_files,
                                           accepted_endings)
 
         # Exclude front_end/third_party files.
-        files_to_lint = filter(lambda path: "third_party" not in path,
-                               files_to_lint)
+        files_to_lint = [
+            file for file in files_to_lint if "third_party" not in file
+        ]
 
-        if len(files_to_lint) is 0:
+        if len(files_to_lint) == 0:
             results.append(
                 output_api.PresubmitNotifyResult(
                     'No affected files for lint check'))
 
-    should_bail_out = len(files_to_lint) is 0 and not run_full_check
+    should_bail_out = len(files_to_lint) == 0 and not run_full_check
     return should_bail_out, files_to_lint
 
 

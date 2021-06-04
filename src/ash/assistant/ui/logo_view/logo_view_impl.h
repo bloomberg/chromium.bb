@@ -6,7 +6,6 @@
 #define ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_IMPL_H_
 
 #include <cstdint>
-#include <memory>
 
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/ui/logo_view/shape/mic_part_shape.h"
@@ -17,8 +16,8 @@
 #include "chromeos/assistant/internal/logo_view/state_animator_timer_delegate.h"
 #include "chromeos/assistant/internal/logo_view/state_model.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/compositor_animation_observer.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace chromeos {
 namespace assistant {

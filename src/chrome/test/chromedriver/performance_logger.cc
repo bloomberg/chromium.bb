@@ -219,7 +219,7 @@ Status PerformanceLogger::HandleTraceEvents(
       return Status(kUnknownError,
                     "received DevTools trace data in unexpected format");
     }
-    for (const auto& trace : *traces) {
+    for (const auto& trace : traces->GetList()) {
       const base::DictionaryValue* event_dict;
       if (!trace.GetAsDictionary(&event_dict))
         return Status(kUnknownError, "trace event must be a dictionary");
@@ -260,10 +260,12 @@ Status PerformanceLogger::StartTrace() {
     return Status(kOk);
   }
   std::unique_ptr<base::ListValue> categories(new base::ListValue());
-  categories->AppendStrings(base::SplitString(prefs_.trace_categories,
-                                              ",",
-                                              base::TRIM_WHITESPACE,
-                                              base::SPLIT_WANT_NONEMPTY));
+  const std::vector<std::string> str_list =
+      base::SplitString(prefs_.trace_categories, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& str : str_list) {
+    categories->Append(str);
+  }
   base::DictionaryValue params;
   params.Set("traceConfig.includedCategories", std::move(categories));
   params.SetString("traceConfig.recordingMode", "recordAsMuchAsPossible");

@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -94,6 +93,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pem.h"
@@ -1003,7 +1003,7 @@ std::vector<uint16_t> GetTLSVersions() {
           SSL_PROTOCOL_VERSION_TLS1_2, SSL_PROTOCOL_VERSION_TLS1_3};
 }
 
-base::Optional<SpawnedTestServer::SSLOptions::TLSMaxVersion>
+absl::optional<SpawnedTestServer::SSLOptions::TLSMaxVersion>
 ProtocolVersionToSpawnedTestServer(uint16_t version) {
   switch (version) {
     case SSL_PROTOCOL_VERSION_TLS1:
@@ -1014,10 +1014,10 @@ ProtocolVersionToSpawnedTestServer(uint16_t version) {
       return SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
     case SSL_PROTOCOL_VERSION_TLS1_3:
       // SpawnedTestServer does not support TLS 1.3.
-      return base::nullopt;
+      return absl::nullopt;
     default:
       ADD_FAILURE() << "Unknown version " << version;
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -3453,13 +3453,28 @@ TEST_F(SSLClientSocketTest, 3DES) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
+  // 3DES is allowed by default.
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
 
+  // disable_legacy_crypto, among other things, disables 3DES.
   SSLConfig config;
   config.disable_legacy_crypto = true;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+
+  SSLContextConfig context_config;
+  context_config.triple_des_enabled = false;
+  ssl_config_service_->UpdateSSLConfigAndNotify(context_config);
+
+  // Disabling 3DES at both the context and disable_legacy_crypto disables 3DES.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+
+  // Use a fresh SSLConfig to test that disabling 3DES at the context alone also
+  // disables 3DES.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 

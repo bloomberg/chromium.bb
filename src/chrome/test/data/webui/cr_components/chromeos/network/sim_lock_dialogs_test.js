@@ -96,7 +96,7 @@ suite('NetworkSimLockDialogsTest', function() {
     await flushAsync();
     assertEquals(
         simLockDialog.i18n('networkSimErrorInvalidPinPlural', 3),
-        unlockPinDialog.querySelector('.dialog-error').textContent.trim());
+        unlockPinDialog.querySelector('.pinEntrySubtext').textContent.trim());
 
     // Set SIM to PIN locked state with single retry left.
     simLockDialog.deviceState = {
@@ -108,7 +108,7 @@ suite('NetworkSimLockDialogsTest', function() {
     await flushAsync();
     assertEquals(
         simLockDialog.i18n('networkSimErrorInvalidPin', 1),
-        unlockPinDialog.querySelector('.dialog-error').textContent.trim());
+        unlockPinDialog.querySelector('.pinEntrySubtext').textContent.trim());
   });
 
   test(
@@ -255,5 +255,26 @@ suite('NetworkSimLockDialogsTest', function() {
         networkConfigRemote_.getDeviceStateForTest(mojom.NetworkType.kCellular);
 
     assertEquals(2, deviceState.simLockStatus.retriesLeft);
+  });
+
+  test('Close dialog on cancel event pressed', async function() {
+    // cancel event can be triggered by pressing the Escape key
+    const mojom = chromeos.networkConfig.mojom;
+    simLockDialog.deviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+      simInfos: [{slot_id: 0, iccid: '1111111111111111'}],
+      simLockStatus: {lockEnabled: false, lockType: '', retriesLeft: 3}
+    };
+
+    await flushAsync();
+    const enterPinDialog = simLockDialog.$$('#enterPinDialog');
+    assertTrue(!!enterPinDialog);
+    assertTrue(enterPinDialog.open);
+    assertTrue(simLockDialog.isDialogOpen);
+    enterPinDialog.fire('cancel');
+    await flushAsync();
+    assertFalse(enterPinDialog.open);
+    assertFalse(simLockDialog.isDialogOpen);
   });
 });

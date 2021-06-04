@@ -11,12 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kAutofillCacheQueryResponsesName[] =
-    "Cache Autofill Query Responses";
-const char kAutofillCacheQueryResponsesDescription[] =
-    "When enabled, autofill will cache the responses it receives from the "
-    "crowd-sourced field type prediction server.";
-
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
@@ -49,18 +43,6 @@ const char kAutofillSaveCardDismissOnNavigationName[] =
 const char kAutofillSaveCardDismissOnNavigationDescription[] =
     "Dismisses the Save Card Infobar on a user initiated Navigation, other "
     "than one caused by submitted form.";
-
-const char kAutofillSaveCardInfobarEditSupportName[] =
-    "Save Card Infobar Edit Support";
-const char kAutofillSaveCardInfobarEditSupportDescription[] =
-    "When enabled and saving a credit card to Google Payments, a dialog is "
-    "displayed that allows editing the card info before confirming save.";
-
-const char kAutofillRichMetadataQueriesName[] =
-    "Autofill - Rich metadata queries (Canary/Dev only)";
-const char kAutofillRichMetadataQueriesDescription[] =
-    "Transmit rich form/field metadata when querying the autofill server. "
-    "This feature only works on the Canary and Dev channels.";
 
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
@@ -178,6 +160,11 @@ const char kRestoreSessionFromCacheDescription[] =
     "Enable iOS_TBA instant session restoration for faster and more "
     "web session restoration.";
 
+const char kEnableAutofillAccountWalletStorageName[] =
+    "Enable the account data storage for autofill";
+const char kEnableAutofillAccountWalletStorageDescription[] =
+    "Enable the ephemeral storage for account data for autofill.";
+
 const char kEnableAutofillAddressSavePromptName[] =
     "Autofill Address Save Prompts";
 const char kEnableAutofillAddressSavePromptDescription[] =
@@ -240,9 +227,11 @@ extern const char kIncognitoAuthenticationDescription[] =
     "When enabled, a setting appears to enable biometric authentication for "
     "accessing incognito.";
 
-const char kIllustratedEmptyStatesName[] = "Illustrated empty states";
-const char kIllustratedEmptyStatesDescription[] =
-    "Display new illustrations and layout on empty states.";
+const char kIncognitoBrandConsistencyForIOSName[] =
+    "Enable Incognito brand consistency in iOS.";
+const char kIncognitoBrandConsistencyForIOSDescription[] =
+    "When enabled, keeps Incognito UI consistent regardless of any selected "
+    "theme.";
 
 const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
 const char kInfobarOverlayUIDescription[] =
@@ -310,6 +299,10 @@ const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "
     "into fullscreen mode.";
 
+const char kMICEWebSignInName[] = "MICE Web Sign-in";
+const char kMICEWebSignInDescription[] =
+    "Enables MICE web sign-in. Requires #mobile-identity-consistency.";
+
 const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
@@ -369,12 +362,6 @@ const char kRefactoredNTPDescription[] =
     "When enabled, the new tab page is replaced with the refactored version, "
     "which changes the ownership and containment of views.";
 
-const char kRestoreGaiaCookiesIfDeletedName[] =
-    "Restore GAIA cookies if deleted";
-const char kRestoreGaiaCookiesIfDeletedDescription[] =
-    "When enabled, will restore GAIA cookies for signed-in Chrome users if "
-    "they are deleted.";
-
 const char kRestoreGaiaCookiesOnUserActionName[] =
     "Restore GAIA cookies on user action";
 const char kRestoreGaiaCookiesOnUserActionDescription[] =
@@ -394,12 +381,6 @@ const char kSafeBrowsingRealTimeLookupDescription[] =
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
-
-const char kScrollToTextIOSName[] = "Enable Scroll to Text";
-const char kScrollToTextIOSDescription[] =
-    "When enabled, opening a URL with a text fragment (e.g., "
-    "example.com/#:~:text=examples) will cause matching text in the page to be "
-    "highlighted and scrolled into view.";
 
 const char kSearchHistoryLinkIOSName[] = "Enables Search History Link";
 const char kSearchHistoryLinkIOSDescription[] =
@@ -424,7 +405,7 @@ const char kSettingsRefreshDescription[] =
 const char kSharedHighlightingIOSName[] = "Enable Shared Highlighting features";
 const char kSharedHighlightingIOSDescription[] =
     "Adds a Link to Text option in the Edit Menu which generates URLs with a "
-    "text fragment. Works best with the #scroll-to-text-ios flag.";
+    "text fragment.";
 
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
@@ -444,10 +425,25 @@ const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
     "icon or the app switcher.";
 
+const char kTabGridContextMenuName[] = "Enable Tab Grid context menu";
+const char kTabGridContextMenuDescription[] =
+    "Enables the context menu for long press on tabs on the tab grid.";
+
+const char kTabsBulkActionsName[] = "Enable Tab Grid Bulk Actions";
+const char kTabsBulkActionsDescription[] =
+    "Enables the selection mode in the Tab grid where users can perform "
+    "actions on multiple tabs at once for iOS 13 and above.";
+
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
+
+const char kUpdateHistoryEntryPointsInIncognitoName[] =
+    "Update history entry points in Incongito.";
+const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
+    "When enabled, the entry points to history UI from Incognito mode will be "
+    "removed.";
 
 const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
 const char kURLBlocklistIOSDescription[] =

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/metrics/ukm_smoothness_data.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -25,11 +26,11 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/history_clusters/core/visit_data.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
-#include "components/no_state_prefetch/browser/prerender_util.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_utils.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -40,9 +41,11 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/mime_util.h"
 #include "net/base/load_timing_info.h"
+#include "net/cookies/cookie_options.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -205,6 +208,10 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   downstream_kbps_estimate_ =
       network_quality_tracker_->GetDownstreamThroughputKbps();
   page_transition_ = navigation_handle->GetPageTransition();
+  UpdateMainFrameRequestHadCookie(
+      navigation_handle->GetWebContents()->GetBrowserContext(),
+      navigation_handle->GetURL());
+
   return CONTINUE_OBSERVING;
 }
 
@@ -212,7 +219,32 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
   main_frame_request_redirect_count_++;
+  UpdateMainFrameRequestHadCookie(
+      navigation_handle->GetWebContents()->GetBrowserContext(),
+      navigation_handle->GetURL());
+
   return CONTINUE_OBSERVING;
+}
+
+void UkmPageLoadMetricsObserver::UpdateMainFrameRequestHadCookie(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  content::StoragePartition* partition =
+      browser_context->GetStoragePartitionForUrl(url);
+
+  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      url, net::CookieOptions::MakeAllInclusive(),
+      base::BindOnce(
+          &UkmPageLoadMetricsObserver::OnMainFrameRequestHadCookieResult,
+          weak_factory_.GetWeakPtr(), base::Time::Now()));
+}
+
+void UkmPageLoadMetricsObserver::OnMainFrameRequestHadCookieResult(
+    base::Time query_start_time,
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
+  main_frame_request_had_cookies_ =
+      main_frame_request_had_cookies_.value_or(false) || !cookies.empty();
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy
@@ -525,7 +557,7 @@ void UkmPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 void UkmPageLoadMetricsObserver::RecordSiteEngagement() const {
   ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
 
-  base::Optional<int64_t> rounded_site_engagement_score =
+  absl::optional<int64_t> rounded_site_engagement_score =
       GetRoundedSiteEngagementScore();
   if (rounded_site_engagement_score) {
     builder.SetSiteEngagementScore(rounded_site_engagement_score.value());
@@ -669,6 +701,18 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetInteractiveTiming_FirstInputProcessingTimes(
         first_input_processing_time.InMilliseconds());
   }
+  if (timing.user_timing_mark_fully_loaded) {
+    builder.SetPageTiming_UserTimingMarkFullyLoaded(
+        timing.user_timing_mark_fully_loaded.value().InMilliseconds());
+  }
+  if (timing.user_timing_mark_fully_visible) {
+    builder.SetPageTiming_UserTimingMarkFullyVisible(
+        timing.user_timing_mark_fully_visible.value().InMilliseconds());
+  }
+  if (timing.user_timing_mark_interactive) {
+    builder.SetPageTiming_UserTimingMarkInteractive(
+        timing.user_timing_mark_interactive.value().InMilliseconds());
+  }
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
   // Use a bucket spacing factor of 1.3 for bytes.
@@ -754,7 +798,7 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
     base::TimeTicks app_background_time) {
   ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
 
-  base::Optional<bool> third_party_cookie_blocking_enabled =
+  absl::optional<bool> third_party_cookie_blocking_enabled =
       GetThirdPartyCookieBlockingEnabled();
   if (third_party_cookie_blocking_enabled) {
     builder.SetThirdPartyCookieBlockingEnabledForSite(
@@ -763,7 +807,7 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
                           third_party_cookie_blocking_enabled.value());
   }
 
-  base::Optional<base::TimeDelta> foreground_duration =
+  absl::optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
                                                       app_background_time);
   if (foreground_duration) {
@@ -905,6 +949,10 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
     builder.SetMainFrameResource_RedirectCount(
         main_frame_request_redirect_count_);
   }
+  if (main_frame_request_had_cookies_.has_value()) {
+    builder.SetMainFrameResource_RequestHadCookies(
+        main_frame_request_had_cookies_.value() ? 1 : 0);
+  }
 }
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability() {
@@ -1041,23 +1089,23 @@ void UkmPageLoadMetricsObserver::RecordMemoriesMetrics(
       HistoryClustersTabHelper::FromWebContents(web_contents);
   if (!clusters_helper)
     return;
-  const memories::VisitContextSignals memories_signals =
+  const history::VisitContextAnnotations context_annotations =
       clusters_helper->OnUkmNavigationComplete(navigation_id_, page_end_reason);
   // Send ALL Memories signals to UKM at page end. This is to harmonize with
   // the fact that they may only be recorded into History at page end, when
   // we can be sure that the visit row already exists.
   //
-  // Please note: We don't record everything in |memories_signals_| into UKM,
+  // Please note: We don't record everything in |context_annotations| into UKM,
   // because some of these signals are already recorded elsewhere.
-  builder.SetOmniboxUrlCopied(memories_signals.omnibox_url_copied);
+  builder.SetOmniboxUrlCopied(context_annotations.omnibox_url_copied);
   builder.SetIsExistingPartOfTabGroup(
-      memories_signals.is_existing_part_of_tab_group);
-  builder.SetIsPlacedInTabGroup(memories_signals.is_placed_in_tab_group);
-  builder.SetIsExistingBookmark(memories_signals.is_existing_bookmark);
-  builder.SetIsNewBookmark(memories_signals.is_new_bookmark);
-  builder.SetIsNTPCustomLink(memories_signals.is_ntp_custom_link);
+      context_annotations.is_existing_part_of_tab_group);
+  builder.SetIsPlacedInTabGroup(context_annotations.is_placed_in_tab_group);
+  builder.SetIsExistingBookmark(context_annotations.is_existing_bookmark);
+  builder.SetIsNewBookmark(context_annotations.is_new_bookmark);
+  builder.SetIsNTPCustomLink(context_annotations.is_ntp_custom_link);
   builder.SetDurationSinceLastVisitSeconds(
-      memories_signals.duration_since_last_visit_seconds);
+      context_annotations.duration_since_last_visit.InSeconds());
 }
 
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
@@ -1195,10 +1243,10 @@ void UkmPageLoadMetricsObserver::RecordPageEndMetrics(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
-base::Optional<int64_t>
+absl::optional<int64_t>
 UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore() const {
   if (!browser_context_)
-    return base::nullopt;
+    return absl::nullopt;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   site_engagement::SiteEngagementService* engagement_service =
@@ -1218,15 +1266,15 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore() const {
   return rounded_document_engagement_score;
 }
 
-base::Optional<bool>
+absl::optional<bool>
 UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
   if (!browser_context_)
-    return base::nullopt;
+    return absl::nullopt;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   if (!cookie_settings->ShouldBlockThirdPartyCookies())
-    return base::nullopt;
+    return absl::nullopt;
 
   return !cookie_settings->IsThirdPartyAccessAllowed(GetDelegate().GetUrl(),
                                                      nullptr /* source */);

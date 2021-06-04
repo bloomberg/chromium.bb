@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.tabbed_mode;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -41,12 +43,12 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtilsJni;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettingsJni;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
@@ -58,16 +60,13 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.components.prefs.PrefService;
-import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content.browser.ContentFeatureListImpl;
 import org.chromium.content.browser.ContentFeatureListImplJni;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.util.ArrayList;
@@ -114,13 +113,13 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     @Mock
     Profile mProfileMock;
     @Mock
-    private UserPrefs.Natives mUserPrefsJniMock;
-    @Mock
-    private PrefService mPrefServiceMock;
-    @Mock
     private DataReductionProxySettings.Natives mDataReductionJniMock;
     @Mock
     private ContentFeatureListImpl.Natives mContentFeatureListJniMock;
+    @Mock
+    private WebFeedSnackbarController.FeedLauncher mFeedLauncher;
+    @Mock
+    private ModalDialogManager mDialogManager;
     @Mock
     private SnackbarManager mSnackbarManager;
     @Mock
@@ -139,6 +138,15 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
 
     private TabbedAppMenuPropertiesDelegate mTabbedAppMenuPropertiesDelegate;
 
+    // Boolean flags to test multi-window menu visibility for various combinations.
+    private boolean mIsMultiTab;
+    private boolean mIsMultiInstance;
+    private boolean mIsMultiWindow;
+    private boolean mIsPartnerHomepageEnabled;
+    private boolean mIsTabletScreen;
+    private boolean mIsMultiWindowApiSupported;
+    private boolean mIsNewWindowMenuFeatureEnabled;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -154,10 +162,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         when(mTabModelFilterProvider.getCurrentTabModelFilter()).thenReturn(mTabModelFilter);
         when(mTabModelFilter.getTabModel()).thenReturn(mTabModel);
         jniMocker.mock(ProfileJni.TEST_HOOKS, mProfileJniMock);
-        jniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
         when(mProfileJniMock.fromWebContents(any(WebContents.class))).thenReturn(mProfileMock);
-        when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefServiceMock);
-        when(mPrefServiceMock.getBoolean(Pref.ENABLE_WEB_FEED_UI)).thenReturn(true);
         jniMocker.mock(ManagedBrowserUtilsJni.TEST_HOOKS, mManagedBrowserUtilsJniMock);
         Profile.setLastUsedProfileForTesting(mProfile);
         jniMocker.mock(DataReductionProxySettingsJni.TEST_HOOKS, mDataReductionJniMock);
@@ -169,31 +174,17 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
         FeatureList.setTestCanUseDefaultsForTesting();
 
-        mTabbedAppMenuPropertiesDelegate = Mockito.spy(
-                new TabbedAppMenuPropertiesDelegate(ContextUtils.getApplicationContext(),
-                        mActivityTabProvider, mMultiWindowModeStateDispatcher, mTabModelSelector,
-                        mToolbarManager, mDecorView, mAppMenuDelegate, mOverviewModeSupplier,
-                        mBookmarkBridgeSupplier, mSnackbarManager, mWebFeedBridge));
+        mTabbedAppMenuPropertiesDelegate = Mockito.spy(new TabbedAppMenuPropertiesDelegate(
+                ContextUtils.getApplicationContext(), mActivityTabProvider,
+                mMultiWindowModeStateDispatcher, mTabModelSelector, mToolbarManager, mDecorView,
+                mAppMenuDelegate, mOverviewModeSupplier, mBookmarkBridgeSupplier, mFeedLauncher,
+                mDialogManager, mSnackbarManager, mWebFeedBridge));
     }
 
     @Test
     @Config(qualifiers = "sw320dp")
-    @EnableFeatures({ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM})
     public void testPageMenuItems_Phone_RegularPage_enterprise_user() {
         setUpMocksForPageMenu();
-        when(mTab.getUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL));
-        when(mTab.isNativePage()).thenReturn(false);
-        doReturn(false)
-                .when(mTabbedAppMenuPropertiesDelegate)
-                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
-        doReturn(true)
-                .when(mTabbedAppMenuPropertiesDelegate)
-                .shouldShowTranslateMenuItem(any(Tab.class));
-        doReturn(new AppBannerManager.InstallStringPair(
-                         R.string.menu_add_to_homescreen, R.string.add))
-                .when(mTabbedAppMenuPropertiesDelegate)
-                .getAddToHomeScreenTitle(mTab);
-        when(mManagedBrowserUtilsJniMock.hasBrowserPoliciesApplied(any())).thenReturn(true);
 
         Menu menu = createTestMenu();
         mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
@@ -206,6 +197,226 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
                 R.id.request_desktop_site_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
                 R.id.help_id, R.id.managed_by_menu_id};
         assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    private void setMultiWindowMenuFlags(int i) {
+        mIsMultiTab = (i & 1) == 1;
+        mIsMultiInstance = ((i >> 1) & 1) == 1;
+        mIsMultiWindow = ((i >> 2) & 1) == 1;
+        mIsPartnerHomepageEnabled = ((i >> 3) & 1) == 1;
+        mIsTabletScreen = ((i >> 4) & 1) == 1;
+        mIsMultiWindowApiSupported = ((i >> 5) & 1) == 1;
+    }
+
+    private Menu initMocksForMultiWindowMenu(boolean isNewWindowFeatureEnabled) {
+        doReturn(mIsMultiTab ? 2 : 1).when(mTabModelSelector).getTotalTabCount();
+        doReturn(mIsMultiWindow).when(mMultiWindowModeStateDispatcher).isInMultiWindowMode();
+        doReturn(mIsMultiWindowApiSupported)
+                .when(mMultiWindowModeStateDispatcher)
+                .canEnterMultiWindowMode();
+        doReturn(mIsMultiInstance).when(mMultiWindowModeStateDispatcher).isMultiInstanceRunning();
+        doReturn(mIsPartnerHomepageEnabled)
+                .when(mTabbedAppMenuPropertiesDelegate)
+                .isPartnerHomepageEnabled();
+        doReturn(mIsTabletScreen).when(mTabbedAppMenuPropertiesDelegate).isTabletSizeScreen();
+        doReturn(isNewWindowFeatureEnabled)
+                .when(mTabbedAppMenuPropertiesDelegate)
+                .isNewWindowMenuFeatureEnabled();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+        return menu;
+    }
+
+    @Test
+    public void testPageMenuItems_doNotShowNewWindowForNonTablet() {
+        setUpMocksForPageMenu();
+
+        for (int i = 0; i < (1 << 6); ++i) {
+            setMultiWindowMenuFlags(i);
+            mIsTabletScreen = false;
+            Menu menu = initMocksForMultiWindowMenu(true);
+
+            // 'New Window' is never enabled on non-tablet-sized screen.
+            assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        }
+    }
+
+    @Test
+    public void testPageMenuItems_neverShowBothNewWindowAndMoveToOtherWindow() {
+        setUpMocksForPageMenu();
+
+        for (int i = 0; i < (1 << 6); ++i) {
+            setMultiWindowMenuFlags(i);
+            Menu menu = initMocksForMultiWindowMenu(true);
+            assertFalse(isMenuVisible(menu, R.id.new_window_menu_id)
+                    && isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+        }
+    }
+
+    @Test
+    public void testPageMenuItems_noMoveToOtherWindowForPartnerHomepageWithSingleTab() {
+        setUpMocksForPageMenu();
+
+        for (int i = 0; i < (1 << 6); ++i) {
+            setMultiWindowMenuFlags(i);
+            mIsPartnerHomepageEnabled = true;
+            mIsMultiTab = false;
+            Menu menu = initMocksForMultiWindowMenu(true);
+            assertFalse(isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+        }
+    }
+
+    @Test
+    public void testPageMenuItems_disabledFeature() {
+        // If the feature is disabled, show 'move to other window' as before.
+        setUpMocksForPageMenu();
+        mIsMultiTab = true;
+        mIsMultiWindow = true;
+        mIsTabletScreen = true;
+        Menu menu = initMocksForMultiWindowMenu(false);
+        assertFalse(isMenuVisible(menu, R.id.new_window_menu_id));
+        assertTrue(isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+
+        // Hide even 'move to other window' for single tab/enabled partner homepage.
+        mIsPartnerHomepageEnabled = true;
+        mIsMultiTab = false;
+        menu = initMocksForMultiWindowMenu(false);
+        assertFalse(isMenuVisible(menu, R.id.new_window_menu_id));
+        assertFalse(isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+    }
+
+    @Test
+    public void testPageMenuItems_showMoveToOtherWindowOnPhone() {
+        setUpMocksForPageMenu();
+        mIsMultiTab = true;
+        mIsMultiWindow = true;
+        Menu menu = initMocksForMultiWindowMenu(true);
+        assertFalse(isMenuVisible(menu, R.id.new_window_menu_id));
+        assertTrue(isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+    }
+
+    @Test
+    public void testPageMenuItems_singleTab_singleWindow() {
+        setUpMocksForPageMenu();
+
+        doReturn(1).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).canEnterMultiWindowMode();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Single tab in single-window mode shows 'New Window' only.
+        assertMenuContains(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+
+        doReturn(false).when(mMultiWindowModeStateDispatcher).canEnterMultiWindowMode();
+        menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Show neither if multi-window mode cannot be entered through menu.
+        assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+    }
+
+    @Test
+    public void testPageMenuItems_singletab_multiwindow_multiinstance() {
+        setUpMocksForPageMenu();
+
+        doReturn(1).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isInMultiWindowMode();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isMultiInstanceRunning();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Single tab in the current window can be moved to the other window, leaving
+        // the current instance empty-tabbed.
+        assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        assertMenuContains(menu, R.id.move_to_other_window_menu_id);
+    }
+
+    @Test
+    public void testPageMenuItems_singletab_multiwindow_partnerhomepage() {
+        setUpMocksForPageMenu();
+
+        doReturn(1).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isInMultiWindowMode();
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).isPartnerHomepageEnabled();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // 'Move to other window' should be hidden when there is a single tab on the current
+        // window but partner homepage is set, since that would close the current instance,
+        // which apparently is not intended.
+        assertMenuContains(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+
+        // Should be invisible when in multi-instance mode as well.
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isMultiInstanceRunning();
+        menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+    }
+
+    @Test
+    public void testPageMenuItems_multipletab_singlewindow_singleinstance() {
+        setUpMocksForPageMenu();
+
+        doReturn(2).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).canEnterMultiWindowMode();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Multiple tabs in single-window mode with single instance shows 'New Window' only
+        // if it's capable of entering multi-window mode.
+        assertMenuContains(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+    }
+
+    @Test
+    public void testPageMenuItems_multipletab_multiwindow_multiinstance() {
+        setUpMocksForPageMenu();
+
+        doReturn(2).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isInMultiWindowMode();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isMultiInstanceRunning();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Multiple tabs in multi-window mode shows 'move to other window' only.
+        assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        assertMenuContains(menu, R.id.move_to_other_window_menu_id);
+
+        // Partner homepage doesn't affect when there are multiple tabs.
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).isPartnerHomepageEnabled();
+        menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Multiple tabs in multi-window mode shows 'move to other window' only.
+        assertMenuDoesNotContain(menu, R.id.new_window_menu_id);
+        assertMenuContains(menu, R.id.move_to_other_window_menu_id);
+    }
+
+    @Test
+    public void testPageMenuItems_multiwindow_singleinstance() {
+        setUpMocksForPageMenu();
+
+        doReturn(2).when(mTabModelSelector).getTotalTabCount();
+        doReturn(true).when(mMultiWindowModeStateDispatcher).isInMultiWindowMode();
+        Menu menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // In multi-window, single instance mode we show 'new window'.
+        assertMenuContains(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
+
+        doReturn(1).when(mTabModelSelector).getTotalTabCount();
+        menu = createTestMenu();
+        mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        // Even with single tab, we show 'new window'.
+        assertMenuContains(menu, R.id.new_window_menu_id);
+        assertMenuDoesNotContain(menu, R.id.move_to_other_window_menu_id);
     }
 
     @Test
@@ -266,8 +477,24 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         doReturn(false)
                 .when(mTabbedAppMenuPropertiesDelegate)
                 .shouldShowReaderModePrefs(any(Tab.class));
+        doReturn(false).when(mTabbedAppMenuPropertiesDelegate).isPartnerHomepageEnabled();
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).isTabletSizeScreen();
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).isNewWindowMenuFeatureEnabled();
 
         setUpIncognitoMocks();
+        when(mTab.getUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL));
+        when(mTab.isNativePage()).thenReturn(false);
+        doReturn(false)
+                .when(mTabbedAppMenuPropertiesDelegate)
+                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        doReturn(true)
+                .when(mTabbedAppMenuPropertiesDelegate)
+                .shouldShowTranslateMenuItem(any(Tab.class));
+        doReturn(new AppBannerManager.InstallStringPair(
+                         R.string.menu_add_to_homescreen, R.string.add))
+                .when(mTabbedAppMenuPropertiesDelegate)
+                .getAddToHomeScreenTitle(mTab);
+        when(mManagedBrowserUtilsJniMock.hasBrowserPoliciesApplied(any())).thenReturn(true);
     }
 
     private void setUpIncognitoMocks() {
@@ -275,10 +502,17 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     }
 
     private Menu createTestMenu() {
+        // mMultiWindowModeStateDispatcher.isOpenInOtherWindowSupported() is determined by
+        // isInMultiWindowMode() and isInMultiDisplayMode(). Set that condition here.
+        boolean openInOtherWindow = mMultiWindowModeStateDispatcher.isInMultiWindowMode()
+                || mMultiWindowModeStateDispatcher.isInMultiDisplayMode();
+        doReturn(openInOtherWindow)
+                .when(mMultiWindowModeStateDispatcher)
+                .isOpenInOtherWindowSupported();
+
         PopupMenu tempMenu = new PopupMenu(ContextUtils.getApplicationContext(), mDecorView);
         tempMenu.inflate(mTabbedAppMenuPropertiesDelegate.getAppMenuLayoutId());
-        Menu menu = tempMenu.getMenu();
-        return menu;
+        return tempMenu.getMenu();
     }
 
     private void assertMenuItemsAreEqual(Menu menu, Integer... expectedItems) {
@@ -291,6 +525,27 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
 
         Assert.assertThat("Populated menu items were:" + getMenuTitles(menu), actualItems,
                 Matchers.containsInAnyOrder(expectedItems));
+    }
+
+    private boolean isMenuVisible(Menu menu, int itemId) {
+        boolean found = false;
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).isVisible() && menu.getItem(i).getItemId() == itemId) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
+    private void assertMenuContains(Menu menu, int itemId) {
+        Assert.assertTrue("Item should must be contained in the menu: " + itemId,
+                isMenuVisible(menu, itemId));
+    }
+
+    private void assertMenuDoesNotContain(Menu menu, int itemId) {
+        Assert.assertFalse("Item should must not be contained in the menu: " + itemId,
+                isMenuVisible(menu, itemId));
     }
 
     private String getMenuTitles(Menu menu) {

@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_WEBUI_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_WEBUI_H_
 
-#include <string>
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ash/login/signin_specifics.h"
@@ -34,9 +31,6 @@ class LoginDisplayWebUI : public LoginDisplay,
             bool allow_new_user) override;
   void OnPreferencesChanged() override;
   void SetUIEnabled(bool is_enabled) override;
-  void ShowError(int error_msg_id,
-                 int login_attempts,
-                 HelpAppLauncher::HelpTopic help_topic_id) override;
   void ShowAllowlistCheckFailedError() override;
 
   // SigninScreenHandlerDelegate implementation:
@@ -44,7 +38,6 @@ class LoginDisplayWebUI : public LoginDisplay,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;
   void OnSigninScreenReady() override;
-  void CancelUserAdding() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;

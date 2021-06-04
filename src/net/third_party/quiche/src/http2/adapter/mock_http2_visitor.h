@@ -14,6 +14,11 @@ class MockHttp2Visitor : public Http2VisitorInterface {
   MockHttp2Visitor() = default;
 
   MOCK_METHOD(void, OnConnectionError, (), (override));
+  MOCK_METHOD(
+      void,
+      OnFrameHeader,
+      (Http2StreamId stream_id, size_t length, uint8_t type, uint8_t flags),
+      (override));
   MOCK_METHOD(void, OnSettingsStart, (), (override));
   MOCK_METHOD(void, OnSetting, (Http2Setting setting), (override));
   MOCK_METHOD(void, OnSettingsEnd, (), (override));
@@ -52,10 +57,8 @@ class MockHttp2Visitor : public Http2VisitorInterface {
               (Http2StreamId stream_id, Http2ErrorCode error_code),
               (override));
 
-  MOCK_METHOD(void, OnCloseStream, (Http2StreamId stream_id), (override));
-
   MOCK_METHOD(void,
-              OnAbortStream,
+              OnCloseStream,
               (Http2StreamId stream_id, Http2ErrorCode error_code),
               (override));
 

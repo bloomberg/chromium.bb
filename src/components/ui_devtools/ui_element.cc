@@ -135,7 +135,6 @@ UIElement::UIElement(const UIElementType type,
 }
 
 bool UIElement::SetPropertiesFromString(const std::string& text) {
-  NOTREACHED();
   return false;
 }
 
@@ -151,6 +150,10 @@ std::vector<UIElement::Source> UIElement::GetSources() {
 }
 
 bool UIElement::DispatchMouseEvent(protocol::DOM::MouseEvent* event) {
+  return false;
+}
+
+bool UIElement::DispatchKeyEvent(protocol::DOM::KeyEvent* event) {
   return false;
 }
 

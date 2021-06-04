@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">ప్రారంభించడానికి మీ డాక్యుమెంట్‌ను స్కానర్ మీద పెట్టి, స్కాన్ చేయిని ఎంచుకోండి</translation>
 <translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> సెకన్లలో <ph name="RATE" /> డిశ్చార్జ్ చేయబడింది.</translation>
+<translation id="2983662233540284543">గేమ్ క్రియేటర్ నుండి తెలుసుకోండి, గేమ్ డిజైన్ యాప్‌లను పొందండి, ఇంకా మరెన్నో ప్రయోజనాలను పొందండి</translation>
 <translation id="3008341117444806826">రిఫ్రెష్ చేయి</translation>
 <translation id="3009958530611748826">దీనిలో సేవ్ చేయడానికి ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">ప్రమాణీకరణ</translation>
 <translation id="5154917547274118687">మెమరీ</translation>
 <translation id="5168185087976003268">బ్యాటరీ సామర్థ్యం</translation>
+<translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
+<translation id="519607504553633437">మీ గేమ్‌లను మీరే డిజైన్ చేసి, క్రియేట్ చేసుకోండి</translation>
 <translation id="5212543919916444558">నేను సహాయం అందించగలిగేలా మీ స్క్రీన్‌పై నాకు ఏదీ కనిపించలేదు. మైక్‌ను నొక్కి, నన్ను ఏదైనా అడగడానికి ప్రయత్నించండి.</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5252456968953390977">రోమింగ్</translation>
@@ -200,6 +203,7 @@
 <translation id="5275828089655680674">రొటీన్‌లను మళ్లీ అమలు చేయి</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">వెర్షన్ <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">విండోను డెస్క్‌కు తరలించు</translation>
 <translation id="5315873049536339193">గుర్తింపు</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5318334351163689047">TCP రిక్వెస్ట్ వైఫల్యాలు</translation>
@@ -221,6 +225,7 @@
 <translation id="5669267381087807207">సక్రియమవుతోంది</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">కుటుంబం</translation>
+<translation id="5752751666635965375">మీ స్వంత గేమ్‌ను చేయండి</translation>
 <translation id="5760715441271661976">పోర్టల్ స్థితి</translation>
 <translation id="5797428682393400134">విజయవంతమైంది</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
@@ -293,6 +298,7 @@
 <translation id="7216409898977639127">సెల్యులార్ ప్రదాత</translation>
 <translation id="7271040990581020067">స్కానర్ ప్రస్తుతం వినియోగంలో ఉంది. తర్వాత మళ్లీ ట్రై చేయండి.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">నెట్‌వర్క్ పరికరాలు</translation>
 <translation id="7359657277149375382">ఫైల్ రకం</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -341,6 +347,7 @@
 <translation id="8372477600026034341">అదనపు హోస్ట్‌లు</translation>
 <translation id="8395584934117017006">ఈ <ph name="DEVICE_TYPE" /> ఎంటర్‌ప్రైజ్ ద్వారా మేనేజ్ చేయబడుతుంది</translation>
 <translation id="8398927464629426868">పరికరం ప్రస్తుతం ఛార్జ్ అవుతున్న లేదా డిశ్చార్జ్ అవుతున్న రేట్</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">స్వస్థల నెట్‌వర్క్ ప్రదాత పేరు</translation>
 <translation id="8475690821716466388">బలహీనమైన ప్రోటోకాల్ WEP PSKతో Wi-Fi నెట్‌వర్క్ సురక్షితం చేయబడింది</translation>
 <translation id="8477551185774834963">DNS ప్రతిస్పందన సమయం అనుమతించదగిన పరిమితికి కొద్దిగా మించి ఉంది</translation>
@@ -350,6 +357,7 @@
 <translation id="8575298406870537639">వారి నెట్‌వర్క్‌కు కనెక్ట్ అవ్వడానికి మీ క్యారియర్‌కు ఈ ఆప్షన్ అవసరం పడవచ్చు. వివరాల కోసం మీ క్యారియర్‌ను సంప్రదించండి.</translation>
 <translation id="8576249514688522074">ప్రారంభం కాలేదు</translation>
 <translation id="8620617069779373398">రోమింగ్ స్థితి</translation>
+<translation id="8660881923941176839">పౌండ్‌లు</translation>
 <translation id="8675354002693747642">ముందే షేర్ చేసిన కీ</translation>
 <translation id="871560550817059752">విఫలమైంది - ఇంక్ అయిపోయింది</translation>
 <translation id="8723108084122415655">పరిమితిని మించి ప్రతిస్పందన సమయం ఉన్న డిఫాల్ట్-యేతర నెట్‌వర్క్</translation>
@@ -365,6 +373,7 @@
 <translation id="8881098542468797602">పరీక్ష విజయవంతమైంది</translation>
 <translation id="8898840733695078011">సిగ్నల్ సామర్థ్యం</translation>
 <translation id="8910721771319628100">పరిమితిని మించి ప్రతిస్పందన సమయం ఉన్న డిఫాల్ట్ నెట్‌వర్క్</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" />కు చెందిన <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">విఫలమైంది - ట్రే అందుబాటులో లేదు</translation>
 <translation id="8928727111548978589">విఫలమైంది - పేపర్ లేదు</translation>
 <translation id="8930622219860340959">వైర్‌లెస్</translation>
@@ -382,6 +391,7 @@
 <translation id="9149391708638971077">మెమరీ పరీక్షను రన్ చేయండి</translation>
 <translation id="9173638680043580060">నిమిషం కంటే తక్కువ సమయం మిగిలి ఉంది</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ముందుగా భాగస్వామ్యం చేసిన కీ</translation>
+<translation id="9211490828691860325">అన్ని డెస్క్‌లు</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">సక్రియం చెయ్యబడలేదు</translation>
 <translation id="960719561871045870">ఆపరేటర్ కోడ్</translation>

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -102,9 +103,9 @@ bool PointerEvent::IsMouseEvent() const {
 }
 
 bool PointerEvent::ShouldHaveIntegerCoordinates() const {
-  if (RuntimeEnabledFeatures::ClickPointerEventIntegerCoordinatesEnabled() &&
-      (type() == event_type_names::kClick ||
-       type() == event_type_names::kContextmenu)) {
+  if (type() == event_type_names::kClick ||
+      type() == event_type_names::kContextmenu ||
+      type() == event_type_names::kAuxclick) {
     return true;
   }
   return false;
@@ -171,7 +172,7 @@ base::TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
     // Assume that time stamps of coalesced events are in ascending order.
     return coalesced_events_[0]->PlatformTimeStamp();
   }
-  return this->PlatformTimeStamp();
+  return PlatformTimeStamp();
 }
 
 void PointerEvent::Trace(Visitor* visitor) const {

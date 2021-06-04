@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -36,7 +37,6 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

@@ -110,7 +110,7 @@ class MockMediaStreamDispatcherHost
         page_request_id, controls, false,
         blink::mojom::StreamSelectionInfo::New(
             blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID,
-            base::nullopt),
+            absl::nullopt),
         base::BindOnce(&MockMediaStreamDispatcherHost::OnStreamGenerated,
                        base::Unretained(this), page_request_id));
   }
@@ -143,6 +143,9 @@ class MockMediaStreamDispatcherHost
   void OnDeviceChanged(const std::string& label,
                        const blink::MediaStreamDevice& old_device,
                        const blink::MediaStreamDevice& new_device) override {}
+  void OnDeviceCaptureHandleChange(
+      const std::string& label,
+      const blink::MediaStreamDevice& device) override {}
   void OnDeviceRequestStateChange(
       const std::string& label,
       const blink::MediaStreamDevice& device,

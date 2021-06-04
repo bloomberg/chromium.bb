@@ -16,18 +16,20 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/pending_app_manager_impl.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_externally_managed_app_manager_impl.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
-#include "chrome/browser/web_applications/test/test_pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
@@ -41,6 +43,9 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/idle/idle.h"
+#include "ui/base/idle/scoped_set_idle_state.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -52,82 +57,29 @@ const char kCameraAppInternalName[] = "Camera";
 GURL AppUrl1() {
   return GURL(content::GetWebUIURL("system-app1"));
 }
-GURL AppIconUrl1() {
-  return GURL(content::GetWebUIURL("system-app1/app.ico"));
-}
 GURL AppUrl2() {
   return GURL(content::GetWebUIURL("system-app2"));
 }
-GURL AppIconUrl2() {
-  return GURL(content::GetWebUIURL("system-app2/app.ico"));
-}
-GURL AppUrl3() {
-  return GURL(content::GetWebUIURL("system-app3"));
-}
-GURL AppIconUrl3() {
-  return GURL(content::GetWebUIURL("system-app3/app.ico"));
-}
 
-std::unique_ptr<WebApplicationInfo> GetApp1WebApplicationInfo() {
+std::unique_ptr<WebApplicationInfo> GetWebApplicationInfo(const GURL& url) {
   std::unique_ptr<WebApplicationInfo> info =
       std::make_unique<WebApplicationInfo>();
-  info->start_url = AppUrl1();
-  info->scope = AppUrl1().GetWithoutFilename();
-  info->title = u"Foo Web App";
+  info->start_url = url;
+  info->scope = url.GetWithoutFilename();
+  info->title = u"Web App";
   return info;
 }
 
 WebApplicationInfoFactory GetApp1WebAppInfoFactory() {
   // "static" so that ExternalInstallOptions comparisons in tests work.
-  static auto factory = base::BindRepeating(&GetApp1WebApplicationInfo);
+  static auto factory = base::BindRepeating(&GetWebApplicationInfo, AppUrl1());
   return factory;
-}
-
-std::unique_ptr<WebApplicationInfo> GetApp2WebApplicationInfo() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
-  info->start_url = AppUrl2();
-  info->scope = AppUrl2().GetWithoutFilename();
-  info->title = u"Bar Web App";
-  return info;
 }
 
 WebApplicationInfoFactory GetApp2WebAppInfoFactory() {
   // "static" so that ExternalInstallOptions comparisons in tests work.
-  static auto factory = base::BindRepeating(&GetApp2WebApplicationInfo);
+  static auto factory = base::BindRepeating(&GetWebApplicationInfo, AppUrl2());
   return factory;
-}
-
-std::unique_ptr<WebApplicationInfo> GetApp3WebApplicationInfo() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
-  info->start_url = AppUrl3();
-  info->scope = AppUrl3().GetWithoutFilename();
-  info->title = u"Bar Web App";
-  return info;
-}
-
-WebApplicationInfoFactory GetApp3WebAppInfoFactory() {
-  // "static" so that ExternalInstallOptions comparisons in tests work.
-  static auto factory = base::BindRepeating(&GetApp3WebApplicationInfo);
-  return factory;
-}
-
-ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(AppUrl1(), DisplayMode::kStandalone,
-                                 ExternalInstallSource::kSystemInstalled);
-  options.add_to_applications_menu = true;
-  options.add_to_desktop = false;
-  options.add_to_quick_launch_bar = false;
-  options.add_to_search = true;
-  options.add_to_management = false;
-  options.is_disabled = false;
-  options.bypass_service_worker_check = true;
-  options.force_reinstall = true;
-  options.only_use_app_info_factory = true;
-  options.system_app_type = SystemAppType::SETTINGS;
-  options.app_info_factory = GetApp1WebAppInfoFactory();
-  return options;
 }
 
 struct SystemAppData {
@@ -180,11 +132,11 @@ class SystemWebAppManagerTest : public WebAppTest {
         std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
     icon_manager_ = std::make_unique<WebAppIconManager>(
         profile(), controller().registrar(), std::make_unique<TestFileUtils>());
-    install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        profile(), &icon_manager(), /*legacy_finalizer=*/nullptr);
+    install_finalizer_ =
+        std::make_unique<WebAppInstallFinalizer>(profile(), &icon_manager());
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
-    test_pending_app_manager_impl_ =
-        std::make_unique<TestPendingAppManagerImpl>(profile());
+    test_externally_managed_app_manager_impl_ =
+        std::make_unique<TestExternallyManagedAppManagerImpl>(profile());
     web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
     test_system_web_app_manager_ =
         std::make_unique<TestSystemWebAppManager>(profile());
@@ -198,17 +150,17 @@ class SystemWebAppManagerTest : public WebAppTest {
                                     &controller().os_integration_manager(),
                                     &install_finalizer());
 
-    pending_app_manager().SetSubsystems(
+    externally_managed_app_manager().SetSubsystems(
         &controller().registrar(), &controller().os_integration_manager(),
         &ui_manager(), &install_finalizer(), &install_manager());
 
     web_app_policy_manager().SetSubsystems(
-        &pending_app_manager(), &controller().registrar(),
+        &externally_managed_app_manager(), &controller().registrar(),
         &controller().sync_bridge(), &system_web_app_manager(),
         &controller().os_integration_manager());
 
     system_web_app_manager().SetSubsystems(
-        &pending_app_manager(), &controller().registrar(),
+        &externally_managed_app_manager(), &controller().registrar(),
         &controller().sync_bridge(), &ui_manager(),
         &controller().os_integration_manager(), &web_app_policy_manager());
 
@@ -226,7 +178,7 @@ class SystemWebAppManagerTest : public WebAppTest {
     test_ui_manager_.reset();
     test_system_web_app_manager_.reset();
     web_app_policy_manager_.reset();
-    test_pending_app_manager_impl_.reset();
+    test_externally_managed_app_manager_impl_.reset();
     install_manager_.reset();
     install_finalizer_.reset();
     icon_manager_.reset();
@@ -249,8 +201,8 @@ class SystemWebAppManagerTest : public WebAppTest {
 
   WebAppInstallManager& install_manager() { return *install_manager_; }
 
-  TestPendingAppManagerImpl& pending_app_manager() {
-    return *test_pending_app_manager_impl_;
+  TestExternallyManagedAppManagerImpl& externally_managed_app_manager() {
+    return *test_externally_managed_app_manager_impl_;
   }
 
   TestSystemWebAppManager& system_web_app_manager() {
@@ -326,7 +278,8 @@ class SystemWebAppManagerTest : public WebAppTest {
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
-  std::unique_ptr<TestPendingAppManagerImpl> test_pending_app_manager_impl_;
+  std::unique_ptr<TestExternallyManagedAppManagerImpl>
+      test_externally_managed_app_manager_impl_;
   std::unique_ptr<TestSystemWebAppManager> test_system_web_app_manager_;
   std::unique_ptr<TestWebAppUiManager> test_ui_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
@@ -347,7 +300,7 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
   StartAndWaitForAppsToSynchronize();
 
-  EXPECT_EQ(2u, pending_app_manager().install_requests().size());
+  EXPECT_EQ(2u, externally_managed_app_manager().install_requests().size());
 }
 
 // Test that changing the set of System Apps uninstalls apps.
@@ -355,9 +308,13 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
   InitRegistrarWithSystemApps(
-      {{AppUrl1(), AppIconUrl1(), ExternalInstallSource::kSystemInstalled},
-       {AppUrl2(), AppIconUrl2(), ExternalInstallSource::kSystemInstalled},
-       {AppUrl3(), AppIconUrl3(), ExternalInstallSource::kInternalDefault}});
+      {{AppUrl1(), GURL(content::GetWebUIURL("system-app1/app.ico")),
+        ExternalInstallSource::kSystemInstalled},
+       {AppUrl2(), GURL(content::GetWebUIURL("system-app2/app.ico")),
+        ExternalInstallSource::kSystemInstalled},
+       {GURL(content::GetWebUIURL("system-app3")),
+        GURL(content::GetWebUIURL("system-app3/app.ico")),
+        ExternalInstallSource::kInternalDefault}});
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps.emplace(SystemAppType::SETTINGS,
@@ -368,15 +325,27 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   StartAndWaitForAppsToSynchronize();
 
   // We should only try to install the app in the System App list.
-  std::vector<ExternalInstallOptions> expected_install_options_list;
-  expected_install_options_list.push_back(GetWindowedInstallOptions());
-  EXPECT_EQ(pending_app_manager().install_requests(),
+  ExternalInstallOptions options(AppUrl1(), DisplayMode::kStandalone,
+                                 ExternalInstallSource::kSystemInstalled);
+  options.add_to_applications_menu = true;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
+  options.add_to_search = true;
+  options.add_to_management = false;
+  options.is_disabled = false;
+  options.bypass_service_worker_check = true;
+  options.force_reinstall = true;
+  options.only_use_app_info_factory = true;
+  options.system_app_type = SystemAppType::SETTINGS;
+  options.app_info_factory = GetApp1WebAppInfoFactory();
+  std::vector<ExternalInstallOptions> expected_install_options_list = {options};
+  EXPECT_EQ(externally_managed_app_manager().install_requests(),
             expected_install_options_list);
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
   EXPECT_EQ(std::vector<GURL>({AppUrl2()}),
-            pending_app_manager().uninstall_requests());
+            externally_managed_app_manager().uninstall_requests());
 }
 
 TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
@@ -394,7 +363,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
   StartAndWaitForAppsToSynchronize();
 
-  EXPECT_EQ(1u, pending_app_manager().install_requests().size());
+  EXPECT_EQ(1u, externally_managed_app_manager().install_requests().size());
 
   // Create another app. The version hasn't changed but the app should still
   // install.
@@ -406,12 +375,12 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   // This one returns because on_apps_synchronized runs immediately.
   StartAndWaitForAppsToSynchronize();
 
-  EXPECT_EQ(3u, pending_app_manager().install_requests().size());
+  EXPECT_EQ(3u, externally_managed_app_manager().install_requests().size());
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   system_web_app_manager().SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
@@ -459,9 +428,10 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   // Changing the install URL of a system app propagates even without a
   // version change.
-  system_apps.find(SystemAppType::SETTINGS)->second.install_url = AppUrl3();
+  const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
+  system_apps.find(SystemAppType::SETTINGS)->second.install_url = kAppUrl3;
   system_apps.find(SystemAppType::SETTINGS)->second.app_info_factory =
-      GetApp3WebAppInfoFactory();
+      base::BindRepeating(&GetWebApplicationInfo, kAppUrl3);
   system_web_app_manager().SetSystemAppsForTesting(system_apps);
   StartAndWaitForAppsToSynchronize();
 
@@ -470,12 +440,12 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_FALSE(install_requests[6].force_reinstall);
   EXPECT_FALSE(IsInstalled(AppUrl1()));
   EXPECT_TRUE(IsInstalled(AppUrl2()));
-  EXPECT_TRUE(IsInstalled(AppUrl3()));
+  EXPECT_TRUE(IsInstalled(kAppUrl3));
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   system_web_app_manager().SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
@@ -560,11 +530,12 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemWebAppManager::kInstallDurationHistogramName, 1);
   }
 
-  pending_app_manager().SetHandleInstallRequestCallback(
-      base::BindLambdaForTesting([](const ExternalInstallOptions&)
-                                     -> PendingAppManager::InstallResult {
-        return {.code = InstallResultCode::kWebAppDisabled};
-      }));
+  externally_managed_app_manager().SetHandleInstallRequestCallback(
+      base::BindLambdaForTesting(
+          [](const ExternalInstallOptions&)
+              -> ExternallyManagedAppManager::InstallResult {
+            return {.code = InstallResultCode::kWebAppDisabled};
+          }));
 
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
@@ -656,13 +627,14 @@ TEST_F(SystemWebAppManagerTest,
                                     GetApp2WebAppInfoFactory()));
   system_web_app_manager().SetSystemAppsForTesting(system_apps);
 
-  pending_app_manager().SetHandleInstallRequestCallback(
-      base::BindLambdaForTesting([](const ExternalInstallOptions& opts)
-                                     -> PendingAppManager::InstallResult {
-        if (opts.install_url == AppUrl1())
-          return {.code = InstallResultCode::kSuccessAlreadyInstalled};
-        return {.code = InstallResultCode::kSuccessNewInstall};
-      }));
+  externally_managed_app_manager().SetHandleInstallRequestCallback(
+      base::BindLambdaForTesting(
+          [](const ExternalInstallOptions& opts)
+              -> ExternallyManagedAppManager::InstallResult {
+            if (opts.install_url == AppUrl1())
+              return {.code = InstallResultCode::kSuccessAlreadyInstalled};
+            return {.code = InstallResultCode::kSuccessNewInstall};
+          }));
 
   StartAndWaitForAppsToSynchronize();
 
@@ -691,13 +663,14 @@ TEST_F(SystemWebAppManagerTest,
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   {
-    pending_app_manager().SetHandleInstallRequestCallback(
-        base::BindLambdaForTesting([](const ExternalInstallOptions& opts)
-                                       -> PendingAppManager::InstallResult {
-          if (opts.install_url == AppUrl1())
-            return {.code = InstallResultCode::kWriteDataFailed};
-          return {.code = InstallResultCode::kSuccessNewInstall};
-        }));
+    externally_managed_app_manager().SetHandleInstallRequestCallback(
+        base::BindLambdaForTesting(
+            [](const ExternalInstallOptions& opts)
+                -> ExternallyManagedAppManager::InstallResult {
+              if (opts.install_url == AppUrl1())
+                return {.code = InstallResultCode::kWriteDataFailed};
+              return {.code = InstallResultCode::kSuccessNewInstall};
+            }));
 
     StartAndWaitForAppsToSynchronize();
 
@@ -708,13 +681,14 @@ TEST_F(SystemWebAppManagerTest,
   }
 
   {
-    pending_app_manager().SetHandleInstallRequestCallback(
-        base::BindLambdaForTesting([](const ExternalInstallOptions& opts)
-                                       -> PendingAppManager::InstallResult {
-          if (opts.install_url == AppUrl1())
-            return {.code = InstallResultCode::kSuccessNewInstall};
-          return {.code = InstallResultCode::kSuccessAlreadyInstalled};
-        }));
+    externally_managed_app_manager().SetHandleInstallRequestCallback(
+        base::BindLambdaForTesting(
+            [](const ExternalInstallOptions& opts)
+                -> ExternallyManagedAppManager::InstallResult {
+              if (opts.install_url == AppUrl1())
+                return {.code = InstallResultCode::kSuccessNewInstall};
+              return {.code = InstallResultCode::kSuccessAlreadyInstalled};
+            }));
     StartAndWaitForAppsToSynchronize();
 
     // Don't record install duration histogram, because this time we don't ask
@@ -726,7 +700,7 @@ TEST_F(SystemWebAppManagerTest,
 
 TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   system_web_app_manager().SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
@@ -749,22 +723,22 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
   // Bump the version number, and an update will trigger, and force
   // reinstallation of both apps.
   system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
-  pending_app_manager().SetDropRequestsForTesting(true);
+  externally_managed_app_manager().SetDropRequestsForTesting(true);
   // Can't use the normal method because RunLoop::Run goes until
   // on_app_synchronized is called, and this fails, never calling that.
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
   EXPECT_EQ(5u, install_requests.size());
@@ -777,18 +751,18 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
 
   // If we don't abandon at the same version, it doesn't even attempt another
   // request
-  pending_app_manager().SetDropRequestsForTesting(false);
+  externally_managed_app_manager().SetDropRequestsForTesting(false);
   system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(5u, install_requests.size());
 
   // Bump the version, and it works.
   system_web_app_manager().set_current_version(base::Version("3.0.0.0"));
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   EXPECT_EQ(6u, install_requests.size());
 }
@@ -796,7 +770,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
 // Same test, but for locale change.
 TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   system_web_app_manager().SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
@@ -820,22 +794,22 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
   // Bump the version number, and an update will trigger, and force
   // reinstallation of both apps.
   system_web_app_manager().set_current_locale("en/au");
-  pending_app_manager().SetDropRequestsForTesting(true);
+  externally_managed_app_manager().SetDropRequestsForTesting(true);
   // Can't use the normal method because RunLoop::Run goes until
   // on_app_synchronized is called, and this fails, never calling that.
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
   EXPECT_EQ(5u, install_requests.size());
@@ -848,22 +822,22 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
 
   // If we don't abandon at the same version, it doesn't even attempt another
   // request
-  pending_app_manager().SetDropRequestsForTesting(false);
+  externally_managed_app_manager().SetDropRequestsForTesting(false);
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(5u, install_requests.size());
 
   // Bump the version, and it works.
   system_web_app_manager().set_current_locale("fr/fr");
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 }
 
 TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   system_web_app_manager().SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
@@ -879,7 +853,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
 
   system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
   StartAndWaitForAppsToSynchronize();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   EXPECT_EQ(1u, install_requests.size());
   EXPECT_TRUE(install_requests[0].force_reinstall);
@@ -887,18 +861,18 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   // Bump the version number, and an update will trigger, and force
   // reinstallation. But, this fails!
   system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
-  pending_app_manager().SetDropRequestsForTesting(true);
+  externally_managed_app_manager().SetDropRequestsForTesting(true);
 
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   EXPECT_EQ(2u, install_requests.size());
   EXPECT_TRUE(install_requests[1].force_reinstall);
   EXPECT_TRUE(IsInstalled(AppUrl1()));
   system_web_app_manager().Start();
   base::RunLoop().RunUntilIdle();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // Retry a few times, but not until abandonment.
   EXPECT_EQ(3u, install_requests.size());
@@ -908,12 +882,12 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   EXPECT_TRUE(IsInstalled(AppUrl1()));
 
   // Now we succeed at the same version
-  pending_app_manager().SetDropRequestsForTesting(false);
+  externally_managed_app_manager().SetDropRequestsForTesting(false);
   StartAndWaitForAppsToSynchronize();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   StartAndWaitForAppsToSynchronize();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(5u, install_requests.size());
   EXPECT_TRUE(install_requests[3].force_reinstall);
   EXPECT_FALSE(install_requests[4].force_reinstall);
@@ -923,7 +897,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   system_web_app_manager().set_current_version(base::Version("3.0.0.0"));
 
   StartAndWaitForAppsToSynchronize();
-  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(6u, install_requests.size());
   EXPECT_TRUE(install_requests[5].force_reinstall);
 
@@ -934,7 +908,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
 
 TEST_F(SystemWebAppManagerTest, ForceReinstallFeature) {
   const std::vector<ExternalInstallOptions>& install_requests =
-      pending_app_manager().install_requests();
+      externally_managed_app_manager().install_requests();
 
   InitEmptyRegistrar();
   system_web_app_manager().SetUpdatePolicy(
@@ -980,7 +954,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
   system_apps.emplace(
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppInternalName, AppUrl1(),
-                    base::BindRepeating(&GetApp1WebApplicationInfo)));
+                    base::BindRepeating(&GetWebApplicationInfo, AppUrl1())));
   system_web_app_manager().SetSystemAppsForTesting(system_apps);
 
   system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
@@ -992,7 +966,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
       std::make_unique<TestSystemWebAppManager>(profile());
 
   unsynced_system_web_app_manager->SetSubsystems(
-      &pending_app_manager(), &controller().registrar(),
+      &externally_managed_app_manager(), &controller().registrar(),
       &controller().sync_bridge(), &ui_manager(),
       &controller().os_integration_manager(), &web_app_policy_manager());
 
@@ -1007,24 +981,26 @@ class SystemWebAppManagerTimerTest : public SystemWebAppManagerTest {
   SystemWebAppManagerTimerTest()
       : SystemWebAppManagerTest(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  void SetupTimer(absl::optional<base::TimeDelta> period,
+                  bool open_immediately) {
+    InitEmptyRegistrar();
+
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo(kSettingsAppInternalName, AppUrl1(),
+                      base::BindRepeating(&GetWebApplicationInfo, AppUrl1())));
+
+    system_apps.at(SystemAppType::SETTINGS).timer_info =
+        SystemAppBackgroundTaskInfo(period, AppUrl1(), open_immediately);
+
+    system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  }
 };
 
 TEST_F(SystemWebAppManagerTimerTest, TestTimer) {
-  InitEmptyRegistrar();
-
-  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppInternalName, AppUrl1(),
-                    base::BindRepeating(&GetApp1WebApplicationInfo)));
-
-  system_apps.at(SystemAppType::SETTINGS).timer_info =
-      SystemAppBackgroundTaskInfo();
-  system_apps.at(SystemAppType::SETTINGS).timer_info->period =
-      base::TimeDelta::FromSeconds(60);
-  system_apps.at(SystemAppType::SETTINGS).timer_info->url = AppUrl1();
-
-  system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);
+  SetupTimer(base::TimeDelta::FromSeconds(60), false);
   StartAndWaitForAppsToSynchronize();
 
   auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
@@ -1041,16 +1017,22 @@ TEST_F(SystemWebAppManagerTimerTest, TestTimer) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            timers[0]->get_state_for_testing());
   EXPECT_EQ(0u, timers[0]->opened_count_for_testing());
   // Fast forward until the timer fires.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(61));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(
+      SystemAppBackgroundTask::kInitialWaitForBackgroundTasksSeconds));
   EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
   EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
 
   loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
   loader->SetNextLoadUrlResult(AppUrl1(), WebAppUrlLoader::Result::kUrlLoaded);
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(61));
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+            timers[0]->get_state_for_testing());
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(60));
 
   EXPECT_EQ(2u, timers[0]->timer_activated_count_for_testing());
   EXPECT_EQ(2u, timers[0]->opened_count_for_testing());
@@ -1066,23 +1048,100 @@ TEST_F(SystemWebAppManagerTimerTest, TestTimer) {
   EXPECT_EQ(2u, timers[0]->opened_count_for_testing());
 }
 
+TEST_F(SystemWebAppManagerTimerTest,
+       TestTimerStartsImmediatelyThenRunsPeriodic) {
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);
+  SetupTimer(base::TimeDelta::FromSeconds(300), true);
+  TestWebAppUrlLoader* loader = nullptr;
+  SystemWebAppWaiter waiter(&system_web_app_manager());
+
+  // We need to wait until the web contents and url loader are created to
+  // intercept the url loader with a TestWebAppUrlLoader. Do that by having a
+  // hook into on_apps_synchronized.
+  system_web_app_manager().on_apps_synchronized().Post(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
+
+        auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+        loader = url_loader.get();
+        timers[0]->SetUrlLoaderForTesting(std::move(url_loader));
+        loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+        loader->SetNextLoadUrlResult(AppUrl1(),
+                                     WebAppUrlLoader::Result::kUrlLoaded);
+      }));
+  system_web_app_manager().Start();
+  waiter.Wait();
+
+  auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            timers[0]->get_state_for_testing());
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(121));
+  EXPECT_EQ(1u, timers.size());
+  EXPECT_EQ(true, timers[0]->open_immediately_for_testing());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300), timers[0]->period_for_testing());
+  EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+            timers[0]->get_state_for_testing());
+  loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+  loader->SetNextLoadUrlResult(AppUrl1(), WebAppUrlLoader::Result::kUrlLoaded);
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(300));
+
+  EXPECT_EQ(2u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(2u, timers[0]->opened_count_for_testing());
+}
+
 TEST_F(SystemWebAppManagerTimerTest, TestTimerStartsImmediately) {
-  InitEmptyRegistrar();
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);
+  SetupTimer(absl::nullopt, true);
+  TestWebAppUrlLoader* loader = nullptr;
+  SystemWebAppWaiter waiter(&system_web_app_manager());
 
-  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppInternalName, AppUrl1(),
-                    base::BindRepeating(&GetApp1WebApplicationInfo)));
+  // We need to wait until the web contents and url loader are created to
+  // intercept the url loader with a TestWebAppUrlLoader. Do that by having a
+  // hook into on_apps_synchronized.
+  system_web_app_manager().on_apps_synchronized().Post(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
 
-  system_apps.at(SystemAppType::SETTINGS).timer_info =
-      SystemAppBackgroundTaskInfo();
-  system_apps.at(SystemAppType::SETTINGS).timer_info->period =
-      base::TimeDelta::FromSeconds(300);
-  system_apps.at(SystemAppType::SETTINGS).timer_info->url = AppUrl1();
-  system_apps.at(SystemAppType::SETTINGS).timer_info->open_immediately = true;
+        auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+        loader = url_loader.get();
+        timers[0]->SetUrlLoaderForTesting(std::move(url_loader));
+        loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+        loader->SetNextLoadUrlResult(AppUrl1(),
+                                     WebAppUrlLoader::Result::kUrlLoaded);
+      }));
+  system_web_app_manager().Start();
+  waiter.Wait();
 
-  system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            timers[0]->get_state_for_testing());
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(121));
+  EXPECT_EQ(1u, timers.size());
+  EXPECT_EQ(true, timers[0]->open_immediately_for_testing());
+  EXPECT_EQ(absl::nullopt, timers[0]->period_for_testing());
+  EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
+
+  timers[0]->web_contents_for_testing()->Close();
+
+  EXPECT_EQ(nullptr, timers[0]->web_contents_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+            timers[0]->get_state_for_testing());
+  loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+  loader->SetNextLoadUrlResult(AppUrl1(), WebAppUrlLoader::Result::kUrlLoaded);
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(300));
+
+  EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
+}
+
+TEST_F(SystemWebAppManagerTimerTest, TestTimerWaitsForIdle) {
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_ACTIVE);
+  SetupTimer(base::TimeDelta::FromSeconds(300), true);
 
   TestWebAppUrlLoader* loader = nullptr;
   SystemWebAppWaiter waiter(&system_web_app_manager());
@@ -1105,21 +1164,107 @@ TEST_F(SystemWebAppManagerTimerTest, TestTimerStartsImmediately) {
   waiter.Wait();
 
   auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
-
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(121));
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            timers[0]->get_state_for_testing());
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(
+      SystemAppBackgroundTask::kInitialWaitForBackgroundTasksSeconds));
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_IDLE,
+            timers[0]->get_state_for_testing());
   EXPECT_EQ(1u, timers.size());
   EXPECT_EQ(true, timers[0]->open_immediately_for_testing());
   EXPECT_EQ(base::TimeDelta::FromSeconds(300), timers[0]->period_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_IDLE,
+            timers[0]->get_state_for_testing());
+  EXPECT_EQ(0u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(0u, timers[0]->opened_count_for_testing());
+  EXPECT_EQ(base::Time::Now(), timers[0]->polling_since_time_for_testing());
+
+  {
+    ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+    EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+              timers[0]->get_state_for_testing());
+    EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
+    EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
+    EXPECT_EQ(base::Time(), timers[0]->polling_since_time_for_testing());
+    loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+    loader->SetNextLoadUrlResult(AppUrl1(),
+                                 WebAppUrlLoader::Result::kUrlLoaded);
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(300));
+
+    EXPECT_EQ(2u, timers[0]->timer_activated_count_for_testing());
+    EXPECT_EQ(2u, timers[0]->opened_count_for_testing());
+  }
+  {
+    ui::ScopedSetIdleState idle(ui::IDLE_STATE_LOCKED);
+    loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+    loader->SetNextLoadUrlResult(AppUrl1(),
+                                 WebAppUrlLoader::Result::kUrlLoaded);
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(300));
+    EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+              timers[0]->get_state_for_testing());
+    EXPECT_EQ(3u, timers[0]->timer_activated_count_for_testing());
+    EXPECT_EQ(3u, timers[0]->opened_count_for_testing());
+  }
+}
+
+TEST_F(SystemWebAppManagerTimerTest, TestTimerRunsAfterIdleLimitReached) {
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_ACTIVE);
+  SetupTimer(base::TimeDelta::FromSeconds(300), true);
+
+  TestWebAppUrlLoader* loader = nullptr;
+  SystemWebAppWaiter waiter(&system_web_app_manager());
+
+  // We need to wait until the web contents and url loader are created to
+  // intercept the url loader with a TestWebAppUrlLoader. Do that by having a
+  // hook into on_apps_synchronized.
+  system_web_app_manager().on_apps_synchronized().Post(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
+
+        auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+        loader = url_loader.get();
+        timers[0]->SetUrlLoaderForTesting(std::move(url_loader));
+        loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+        loader->SetNextLoadUrlResult(AppUrl1(),
+                                     WebAppUrlLoader::Result::kUrlLoaded);
+      }));
+  system_web_app_manager().Start();
+  waiter.Wait();
+
+  auto& timers = system_web_app_manager().GetBackgroundTasksForTesting();
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            timers[0]->get_state_for_testing());
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(
+      SystemAppBackgroundTask::kInitialWaitForBackgroundTasksSeconds));
+  EXPECT_EQ(1u, timers.size());
+  EXPECT_EQ(true, timers[0]->open_immediately_for_testing());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300), timers[0]->period_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_IDLE,
+            timers[0]->get_state_for_testing());
+  EXPECT_EQ(0u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(0u, timers[0]->opened_count_for_testing());
+
+  base::Time polling_since(timers[0]->polling_since_time_for_testing());
+  // Poll up to not quite the maximum.
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(
+      SystemAppBackgroundTask::kIdlePollMaxTimeToWaitSeconds - 1));
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_IDLE,
+            timers[0]->get_state_for_testing());
+  EXPECT_EQ(polling_since, timers[0]->polling_since_time_for_testing());
+  EXPECT_EQ(0u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(0u, timers[0]->opened_count_for_testing());
+
+  // Poll to the maximum wait.
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+            timers[0]->get_state_for_testing());
   EXPECT_EQ(1u, timers[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(base::Time(), timers[0]->polling_since_time_for_testing());
   EXPECT_EQ(1u, timers[0]->opened_count_for_testing());
 
   loader->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
   loader->SetNextLoadUrlResult(AppUrl1(), WebAppUrlLoader::Result::kUrlLoaded);
-
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(300));
-
-  EXPECT_EQ(2u, timers[0]->timer_activated_count_for_testing());
-  EXPECT_EQ(2u, timers[0]->opened_count_for_testing());
 }
 
 TEST_F(SystemWebAppManagerTest,
@@ -1130,7 +1275,7 @@ TEST_F(SystemWebAppManagerTest,
   system_apps.emplace(
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppInternalName, AppUrl1(),
-                    base::BindRepeating(&GetApp1WebApplicationInfo)));
+                    base::BindRepeating(&GetWebApplicationInfo, AppUrl1())));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
 
   base::RunLoop run_loop;
@@ -1153,7 +1298,7 @@ TEST_F(SystemWebAppManagerTest,
       std::make_unique<TestSystemWebAppManager>(profile());
 
   unsynced_system_web_app_manager->SetSubsystems(
-      &pending_app_manager(), &controller().registrar(),
+      &externally_managed_app_manager(), &controller().registrar(),
       &controller().sync_bridge(), &ui_manager(),
       &controller().os_integration_manager(), &web_app_policy_manager());
 

@@ -147,10 +147,6 @@ class ScriptExecutor : public ActionDelegate,
                    ElementFinder::Callback callback) const override;
   void FindAllElements(const Selector& selector,
                        ElementFinder::Callback callback) const override;
-  void ClickOrTapElement(
-      ClickType click_type,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void CollectUserData(
       CollectUserDataOptions* collect_user_data_options) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
@@ -252,7 +248,12 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&)> end_action_callback,
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) override;
+  void SetPersistentGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override;
   void ClearGenericUi() override;
+  void ClearPersistentGenericUi() override;
   void SetOverlayBehavior(
       ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void MaybeShowSlowWebsiteWarning(
@@ -447,10 +448,6 @@ class ScriptExecutor : public ActionDelegate,
       base::TimeDelta wait_time);
   void OnResume();
 
-  // Actions that can manipulate the UserActions should be interrupted, such
-  // that they do not overwrite the paused state.
-  bool ShouldInterruptOnPause(const ActionProto& proto);
-
   // Maybe shows the message specified in a callout, depending on the current
   // state and client settings.
   bool MaybeShowSlowWarning(const std::string& message, bool enabled);
@@ -521,7 +518,7 @@ class ScriptExecutor : public ActionDelegate,
     base::OnceCallback<void()> end_prompt_on_navigation_callback;
   };
   CurrentActionData current_action_data_;
-  base::Optional<size_t> current_action_index_;
+  absl::optional<size_t> current_action_index_;
 
   const UserData* user_data_ = nullptr;
 

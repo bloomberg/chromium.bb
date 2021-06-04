@@ -32,8 +32,13 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrImageContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrBicubicEffect.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Gpu.h"
 #endif
 #include "include/gpu/GrBackendSurface.h"
@@ -315,6 +320,135 @@ std::tuple<GrSurfaceProxyView, GrColorType> SkImage_Base::asView(GrRecordingCont
     }
     return this->onAsView(context, mipmapped, policy);
 }
+
+std::unique_ptr<GrFragmentProcessor> SkImage_Base::asFragmentProcessor(
+        GrRecordingContext* rContext,
+        SkSamplingOptions sampling,
+        const SkTileMode tileModes[2],
+        const SkMatrix& m,
+        const SkRect* subset,
+        const SkRect* domain) const {
+    if (!rContext) {
+        return {};
+    }
+    if (sampling.useCubic && !GrValidCubicResampler(sampling.cubic)) {
+        return {};
+    }
+    if (sampling.mipmap != SkMipmapMode::kNone &&
+        (!rContext->priv().caps()->mipmapSupport() || this->dimensions().area() <= 1)) {
+        sampling = SkSamplingOptions(sampling.filter);
+    }
+    return this->onAsFragmentProcessor(rContext, sampling, tileModes, m, subset, domain);
+}
+
+std::unique_ptr<GrFragmentProcessor> SkImage_Base::MakeFragmentProcessorFromView(
+        GrRecordingContext* rContext,
+        GrSurfaceProxyView view,
+        SkAlphaType at,
+        SkSamplingOptions sampling,
+        const SkTileMode tileModes[2],
+        const SkMatrix& m,
+        const SkRect* subset,
+        const SkRect* domain) {
+    if (!view) {
+        return nullptr;
+    }
+    const GrCaps& caps = *rContext->priv().caps();
+    auto wmx = SkTileModeToWrapMode(tileModes[0]);
+    auto wmy = SkTileModeToWrapMode(tileModes[1]);
+    if (sampling.useCubic) {
+        if (subset) {
+            if (domain) {
+                return GrBicubicEffect::MakeSubset(std::move(view),
+                                                   at,
+                                                   m,
+                                                   wmx,
+                                                   wmy,
+                                                   *subset,
+                                                   *domain,
+                                                   sampling.cubic,
+                                                   GrBicubicEffect::Direction::kXY,
+                                                   *rContext->priv().caps());
+            }
+            return GrBicubicEffect::MakeSubset(std::move(view),
+                                               at,
+                                               m,
+                                               wmx,
+                                               wmy,
+                                               *subset,
+                                               sampling.cubic,
+                                               GrBicubicEffect::Direction::kXY,
+                                               *rContext->priv().caps());
+        }
+        return GrBicubicEffect::Make(std::move(view),
+                                     at,
+                                     m,
+                                     wmx,
+                                     wmy,
+                                     sampling.cubic,
+                                     GrBicubicEffect::Direction::kXY,
+                                     *rContext->priv().caps());
+    }
+    if (view.proxy()->asTextureProxy()->mipmapped() == GrMipmapped::kNo) {
+        sampling = SkSamplingOptions(sampling.filter);
+    }
+    GrSamplerState sampler(wmx, wmy, sampling.filter, sampling.mipmap);
+    if (subset) {
+        if (domain) {
+            return GrTextureEffect::MakeSubset(std::move(view),
+                                               at,
+                                               m,
+                                               sampler,
+                                               *subset,
+                                               *domain,
+                                               caps);
+        }
+        return GrTextureEffect::MakeSubset(std::move(view),
+                                           at,
+                                           m,
+                                           sampler,
+                                           *subset,
+                                           caps);
+    } else {
+        return GrTextureEffect::Make(std::move(view), at, m, sampler, caps);
+    }
+}
+
+GrSurfaceProxyView SkImage_Base::FindOrMakeCachedMipmappedView(GrRecordingContext* rContext,
+                                                               GrSurfaceProxyView view,
+                                                               uint32_t imageUniqueID) {
+    SkASSERT(rContext);
+    SkASSERT(imageUniqueID != SK_InvalidUniqueID);
+
+    if (!view || view.proxy()->asTextureProxy()->mipmapped() == GrMipmapped::kYes) {
+        return view;
+    }
+    GrProxyProvider* proxyProvider = rContext->priv().proxyProvider();
+
+    GrUniqueKey baseKey;
+    GrMakeKeyFromImageID(&baseKey, imageUniqueID, SkIRect::MakeSize(view.dimensions()));
+    SkASSERT(baseKey.isValid());
+    GrUniqueKey mipmappedKey;
+    static const GrUniqueKey::Domain kMipmappedDomain = GrUniqueKey::GenerateDomain();
+    {  // No extra values beyond the domain are required. Must name the var to please
+       // clang-tidy.
+        GrUniqueKey::Builder b(&mipmappedKey, baseKey, kMipmappedDomain, 0);
+    }
+    SkASSERT(mipmappedKey.isValid());
+    if (sk_sp<GrTextureProxy> cachedMippedView =
+                proxyProvider->findOrCreateProxyByUniqueKey(mipmappedKey)) {
+        return {std::move(cachedMippedView), view.origin(), view.swizzle()};
+    }
+
+    auto copy = GrCopyBaseMipMapToView(rContext, view);
+    if (!copy) {
+        return view;
+    }
+    // TODO: If we move listeners up from SkImage_Lazy to SkImage_Base then add one here.
+    proxyProvider->assignUniqueKeyToProxy(mipmappedKey, copy.asTextureProxy());
+    return copy;
+}
+
 #endif
 
 GrBackendTexture SkImage_Base::onGetBackendTexture(bool flushPendingGrContextIO,
@@ -399,10 +533,12 @@ sk_sp<SkImage> SkImage::makeWithFilter(GrRecordingContext* rContext, const SkIma
         return nullptr;
     }
     srcSpecialImage = SkSpecialImage::MakeFromImage(rContext, subset,
-                                                    sk_ref_sp(const_cast<SkImage*>(this)));
+                                                    sk_ref_sp(const_cast<SkImage*>(this)),
+                                                    SkSurfaceProps());
 #else
     srcSpecialImage = SkSpecialImage::MakeFromImage(nullptr, subset,
-                                                    sk_ref_sp(const_cast<SkImage*>(this)));
+                                                    sk_ref_sp(const_cast<SkImage*>(this)),
+                                                    SkSurfaceProps());
 #endif
     if (!srcSpecialImage) {
         return nullptr;

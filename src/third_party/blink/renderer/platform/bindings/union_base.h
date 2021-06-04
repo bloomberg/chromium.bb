@@ -5,14 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_UNION_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_UNION_BASE_H_
 
-#include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
+class ExceptionState;
 class ScriptState;
 
 namespace bindings {
@@ -32,8 +31,9 @@ class PLATFORM_EXPORT UnionBase : public GarbageCollected<UnionBase> {
   virtual void Trace(Visitor*) const {}
 
  protected:
-  static String ProduceUnionNameInIDL(
-      const base::span<const char* const>& member_names);
+  // Helper function to reduce the binary size of the generated bindings.
+  static void ThrowTypeErrorNotOfType(ExceptionState& exception_state,
+                                      const char* expected_type);
 
   UnionBase() = default;
 };

@@ -47,6 +47,10 @@ class MetricsServiceClient {
   // Returns the UkmService instance that this client is associated with.
   virtual ukm::UkmService* GetUkmService();
 
+  // Returns true if metrics should be uploaded for the given |user_id|, which
+  // corresponds to the |user_id| field in ChromeUserMetricsExtension.
+  virtual bool ShouldUploadMetricsForUserId(const uint64_t user_id);
+
   // Registers the client id with other services (e.g. crash reporting), called
   // when metrics recording gets enabled.
   virtual void SetMetricsClientId(const std::string& client_id) = 0;
@@ -77,9 +81,6 @@ class MetricsServiceClient {
   // |serialized_environment| are consumed by the call, but the caller maintains
   // ownership.
   virtual void OnEnvironmentUpdate(std::string* serialized_environment) {}
-
-  // Called by the metrics service to record a clean shutdown.
-  virtual void OnLogCleanShutdown() {}
 
   // Called prior to a metrics log being closed, allowing the client to collect
   // extra histograms that will go in that log. Asynchronous API - the client

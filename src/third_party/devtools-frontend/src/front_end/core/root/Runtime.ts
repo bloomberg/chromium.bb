@@ -45,7 +45,25 @@ export const mappingForLayoutTests = new Map<string, string>([
   ['panels/network', 'network'],
   ['panels/profiler', 'profiler'],
   ['panels/application', 'resources'],
+  ['panels/search', 'search'],
+  ['panels/sources', 'sources'],
+  ['panels/snippets', 'snippets'],
+  ['panels/settings', 'settings'],
+  ['panels/timeline', 'timeline'],
+  ['panels/web_audio', 'web_audio'],
   ['models/persistence', 'persistence'],
+  ['models/workspace_diff', 'workspace_diff'],
+  ['entrypoints/main', 'main'],
+  ['third_party/diff', 'diff'],
+  ['ui/legacy/components/inline_editor', 'inline_editor'],
+  ['ui/legacy/components/data_grid', 'data_grid'],
+  ['ui/legacy/components/perf_ui', 'perf_ui'],
+  ['ui/legacy/components/source_frame', 'source_frame'],
+  ['ui/legacy/components/color_picker', 'color_picker'],
+  ['ui/legacy/components/cookie_table', 'cookie_table'],
+  ['ui/legacy/components/text_editor', 'text_editor'],
+  ['ui/legacy/components/quick_open', 'quick_open'],
+  ['ui/legacy/components/utils', 'components'],
 ]);
 
 export class Runtime {
@@ -545,6 +563,7 @@ export enum ExperimentName {
   PROTOCOL_MONITOR = 'protocolMonitor',
   WEBAUTHN_PANE = 'webauthnPane',
   RECORDER = 'recorder',
+  LOCALIZED_DEVTOOLS = 'localizedDevTools',
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again

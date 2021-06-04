@@ -785,6 +785,10 @@ void getInstanceExtensionFunctions (deUint32 apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_NV_inherited_viewport_scissor")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_texel_buffer_alignment")
 	{
 		return;
@@ -825,6 +829,10 @@ void getInstanceExtensionFunctions (deUint32 apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_EXT_ycbcr_2plane_444_formats")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_fragment_density_map2")
 	{
 		return;
@@ -851,6 +859,18 @@ void getInstanceExtensionFunctions (deUint32 apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_EXT_vertex_input_dynamic_state")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_extended_dynamic_state2")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_color_write_enable")
+	{
+		return;
+	}
 	if (extName == "VK_KHR_acceleration_structure")
 	{
 		return;
@@ -872,13 +892,47 @@ void getInstanceExtensionFunctions (deUint32 apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_KHR_video_queue")
+	{
+		functions.push_back("vkGetPhysicalDeviceVideoCapabilitiesKHR");
+		functions.push_back("vkGetPhysicalDeviceVideoFormatPropertiesKHR");
+		return;
+	}
+	if (extName == "VK_KHR_video_decode_queue")
+	{
+		return;
+	}
 	if (extName == "VK_KHR_portability_subset")
+	{
+		return;
+	}
+	if (extName == "VK_KHR_video_encode_queue")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_video_encode_h264")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_video_decode_h264")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_video_decode_h265")
 	{
 		return;
 	}
 	if (extName == "VK_FUCHSIA_imagepipe_surface")
 	{
 		functions.push_back("vkCreateImagePipeSurfaceFUCHSIA");
+		return;
+	}
+	if (extName == "VK_FUCHSIA_external_memory")
+	{
+		return;
+	}
+	if (extName == "VK_FUCHSIA_external_semaphore")
+	{
 		return;
 	}
 	if (extName == "VK_GGP_stream_descriptor_surface")
@@ -1873,6 +1927,10 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 		functions.push_back("vkDestroyIndirectCommandsLayoutNV");
 		return;
 	}
+	if (extName == "VK_NV_inherited_viewport_scissor")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_texel_buffer_alignment")
 	{
 		return;
@@ -1918,6 +1976,10 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 		functions.push_back("vkCmdSetFragmentShadingRateEnumNV");
 		return;
 	}
+	if (extName == "VK_EXT_ycbcr_2plane_444_formats")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_fragment_density_map2")
 	{
 		return;
@@ -1940,6 +2002,25 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 	}
 	if (extName == "VK_VALVE_mutable_descriptor_type")
 	{
+		return;
+	}
+	if (extName == "VK_EXT_vertex_input_dynamic_state")
+	{
+		functions.push_back("vkCmdSetVertexInputEXT");
+		return;
+	}
+	if (extName == "VK_EXT_extended_dynamic_state2")
+	{
+		functions.push_back("vkCmdSetPatchControlPointsEXT");
+		functions.push_back("vkCmdSetRasterizerDiscardEnableEXT");
+		functions.push_back("vkCmdSetDepthBiasEnableEXT");
+		functions.push_back("vkCmdSetLogicOpEXT");
+		functions.push_back("vkCmdSetPrimitiveRestartEnableEXT");
+		return;
+	}
+	if (extName == "VK_EXT_color_write_enable")
+	{
+		functions.push_back("vkCmdSetColorWriteEnableEXT");
 		return;
 	}
 	if (extName == "VK_KHR_acceleration_structure")
@@ -1986,12 +2067,60 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 		functions.push_back("vkGetMemoryAndroidHardwareBufferANDROID");
 		return;
 	}
+	if (extName == "VK_KHR_video_queue")
+	{
+		functions.push_back("vkCreateVideoSessionKHR");
+		functions.push_back("vkDestroyVideoSessionKHR");
+		functions.push_back("vkGetVideoSessionMemoryRequirementsKHR");
+		functions.push_back("vkBindVideoSessionMemoryKHR");
+		functions.push_back("vkCreateVideoSessionParametersKHR");
+		functions.push_back("vkUpdateVideoSessionParametersKHR");
+		functions.push_back("vkDestroyVideoSessionParametersKHR");
+		functions.push_back("vkCmdBeginVideoCodingKHR");
+		functions.push_back("vkCmdEndVideoCodingKHR");
+		functions.push_back("vkCmdControlVideoCodingKHR");
+		return;
+	}
+	if (extName == "VK_KHR_video_decode_queue")
+	{
+		functions.push_back("vkCmdDecodeVideoKHR");
+		return;
+	}
 	if (extName == "VK_KHR_portability_subset")
+	{
+		return;
+	}
+	if (extName == "VK_KHR_video_encode_queue")
+	{
+		functions.push_back("vkCmdEncodeVideoKHR");
+		return;
+	}
+	if (extName == "VK_EXT_video_encode_h264")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_video_decode_h264")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_video_decode_h265")
 	{
 		return;
 	}
 	if (extName == "VK_FUCHSIA_imagepipe_surface")
 	{
+		return;
+	}
+	if (extName == "VK_FUCHSIA_external_memory")
+	{
+		functions.push_back("vkGetMemoryZirconHandleFUCHSIA");
+		functions.push_back("vkGetMemoryZirconHandlePropertiesFUCHSIA");
+		return;
+	}
+	if (extName == "VK_FUCHSIA_external_semaphore")
+	{
+		functions.push_back("vkImportSemaphoreZirconHandleFUCHSIA");
+		functions.push_back("vkGetSemaphoreZirconHandleFUCHSIA");
 		return;
 	}
 	if (extName == "VK_GGP_stream_descriptor_surface")
@@ -2103,6 +2232,7 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 	"VK_EXT_headless_surface",
 	"VK_NV_acquire_winrt_display",
 	"VK_KHR_android_surface",
+	"VK_KHR_video_queue",
 	"VK_FUCHSIA_imagepipe_surface",
 	"VK_GGP_stream_descriptor_surface",
 	"VK_MVK_ios_surface",
@@ -2172,9 +2302,16 @@ void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::
 	"VK_NV_device_generated_commands",
 	"VK_EXT_private_data",
 	"VK_NV_fragment_shading_rate_enums",
+	"VK_EXT_vertex_input_dynamic_state",
+	"VK_EXT_extended_dynamic_state2",
+	"VK_EXT_color_write_enable",
 	"VK_KHR_acceleration_structure",
 	"VK_KHR_ray_tracing_pipeline",
 	"VK_ANDROID_external_memory_android_hardware_buffer",
+	"VK_KHR_video_decode_queue",
+	"VK_KHR_video_encode_queue",
+	"VK_FUCHSIA_external_memory",
+	"VK_FUCHSIA_external_semaphore",
 	"VK_KHR_external_memory_win32",
 	"VK_KHR_external_semaphore_win32",
 	"VK_KHR_external_fence_win32",

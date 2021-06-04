@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -21,7 +22,6 @@
 #include "chromecast/browser/webui/cast_webui_controller_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -72,8 +72,7 @@ CastWebView::Scoped CastWebService::CreateWebView(
 }
 
 void CastWebService::FlushDomLocalStorage() {
-  content::BrowserContext::ForEachStoragePartition(
-      browser_context_,
+  browser_context_->ForEachStoragePartition(
       base::BindRepeating([](content::StoragePartition* storage_partition) {
         DVLOG(1) << "Starting DOM localStorage flush.";
         storage_partition->Flush();
@@ -81,8 +80,7 @@ void CastWebService::FlushDomLocalStorage() {
 }
 
 void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
-  content::BrowserContext::ForEachStoragePartition(
-      browser_context_,
+  browser_context_->ForEachStoragePartition(
       base::BindRepeating(
           [](base::OnceClosure cb, content::StoragePartition* partition) {
             auto cookie_delete_filter =
@@ -97,10 +95,6 @@ void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
                 base::Time::Min(), base::Time::Max(), std::move(cb));
           },
           base::Passed(std::move(callback))));
-}
-
-void CastWebService::StopGpuProcess(base::OnceClosure callback) const {
-  content::StopGpuProcess(std::move(callback));
 }
 
 void CastWebService::RegisterWebUiClient(

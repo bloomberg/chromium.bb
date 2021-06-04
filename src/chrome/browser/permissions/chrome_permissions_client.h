@@ -25,7 +25,7 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       content::BrowserContext* browser_context) override;
   permissions::PermissionManager* GetPermissionManager(
       content::BrowserContext* browser_context) override;
-  permissions::ChooserContextBase* GetChooserContext(
+  permissions::ObjectPermissionContextBase* GetChooserContext(
       content::BrowserContext* browser_context,
       ContentSettingsType type) override;
   double GetSiteEngagementScore(content::BrowserContext* browser_context,
@@ -43,24 +43,24 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
                       GetUkmSourceIdCallback callback) override;
   permissions::IconId GetOverrideIconId(
       permissions::RequestType request_type) override;
-  std::vector<std::unique_ptr<permissions::NotificationPermissionUiSelector>>
-  CreateNotificationPermissionUiSelectors(
+  std::vector<std::unique_ptr<permissions::PermissionUiSelector>>
+  CreatePermissionUiSelectors(
       content::BrowserContext* browser_context) override;
   void OnPromptResolved(content::BrowserContext* browser_context,
                         permissions::RequestType request_type,
                         permissions::PermissionAction action,
                         const GURL& origin,
-                        base::Optional<QuietUiReason> quiet_ui_reason) override;
-  base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+                        absl::optional<QuietUiReason> quiet_ui_reason) override;
+  absl::optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
       content::BrowserContext* browser_context) override;
-  base::Optional<bool> HasPreviouslyAutoRevokedPermission(
+  absl::optional<bool> HasPreviouslyAutoRevokedPermission(
       content::BrowserContext* browser_context,
       const GURL& origin,
       ContentSettingsType permission) override;
-  base::Optional<url::Origin> GetAutoApprovalOrigin() override;
+  absl::optional<url::Origin> GetAutoApprovalOrigin() override;
   bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                      const GURL& embedding_origin) override;
-  base::Optional<GURL> OverrideCanonicalOrigin(
+  absl::optional<GURL> OverrideCanonicalOrigin(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
 #if defined(OS_ANDROID)

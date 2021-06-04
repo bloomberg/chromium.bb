@@ -14,11 +14,11 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -263,7 +263,6 @@ class FaviconHandler {
   // - A mapping is known to exist (reflected by |notification_icon_type_|).
   // - All download attempts returned 404s OR no relevant candidate was
   //   provided (as per |icon_types_|).
-  // - The corresponding feature is enabled (currently behind variations).
   void MaybeDeleteFaviconMappings();
 
   // Notifies |driver_| that FaviconHandler found an icon which matches the
@@ -355,7 +354,7 @@ class FaviconHandler {
 
   // The prioritized favicon candidates from the page back from the renderer.
   // Populated by OnGotFinalIconURLCandidates().
-  base::Optional<std::vector<FaviconCandidate>> final_candidates_;
+  absl::optional<std::vector<FaviconCandidate>> final_candidates_;
 
   // The icon URL and the icon type of the favicon in the most recent
   // FaviconDriver::OnFaviconAvailable() notification.

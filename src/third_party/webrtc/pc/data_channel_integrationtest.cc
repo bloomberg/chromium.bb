@@ -27,17 +27,19 @@
 #include "rtc_base/gunit.h"
 #include "rtc_base/ref_counted_object.h"
 #include "rtc_base/virtual_socket_server.h"
+#include "test/gtest.h"
 
 namespace webrtc {
 
 namespace {
 
-class DataChannelIntegrationTest
-    : public PeerConnectionIntegrationBaseTest,
-      public ::testing::WithParamInterface<SdpSemantics> {
+class DataChannelIntegrationTest : public PeerConnectionIntegrationBaseTest,
+                                   public ::testing::WithParamInterface<
+                                       std::tuple<SdpSemantics, std::string>> {
  protected:
   DataChannelIntegrationTest()
-      : PeerConnectionIntegrationBaseTest(GetParam()) {}
+      : PeerConnectionIntegrationBaseTest(std::get<0>(GetParam()),
+                                          std::get<1>(GetParam())) {}
 };
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DataChannelIntegrationTest);
@@ -146,204 +148,6 @@ TEST_P(DataChannelIntegrationTest, DataChannelWhileDisconnectedIceRestart) {
                  kDefaultTimeout);
 }
 
-#endif  // WEBRTC_HAVE_SCTP
-
-// This test sets up a call between two parties with audio, video and an RTP
-// data channel.
-TEST_P(DataChannelIntegrationTest, EndToEndCallWithRtpDataChannel) {
-  PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.enable_rtp_data_channel = true;
-  rtc_config.enable_dtls_srtp = false;
-  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(rtc_config, rtc_config));
-  ConnectFakeSignaling();
-  // Expect that data channel created on caller side will show up for callee as
-  // well.
-  caller()->CreateDataChannel();
-  caller()->AddAudioVideoTracks();
-  callee()->AddAudioVideoTracks();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  // Ensure the existence of the RTP data channel didn't impede audio/video.
-  MediaExpectations media_expectations;
-  media_expectations.ExpectBidirectionalAudioAndVideo();
-  ASSERT_TRUE(ExpectNewFrames(media_expectations));
-  ASSERT_NE(nullptr, caller()->data_channel());
-  ASSERT_NE(nullptr, callee()->data_channel());
-  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
-  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
-
-  // Ensure data can be sent in both directions.
-  std::string data = "hello world";
-  SendRtpDataWithRetries(caller()->data_channel(), data, 5);
-  EXPECT_EQ_WAIT(data, callee()->data_observer()->last_message(),
-                 kDefaultTimeout);
-  SendRtpDataWithRetries(callee()->data_channel(), data, 5);
-  EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
-                 kDefaultTimeout);
-}
-
-TEST_P(DataChannelIntegrationTest, RtpDataChannelWorksAfterRollback) {
-  PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.enable_rtp_data_channel = true;
-  rtc_config.enable_dtls_srtp = false;
-  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(rtc_config, rtc_config));
-  ConnectFakeSignaling();
-  auto data_channel = caller()->pc()->CreateDataChannel("label_1", nullptr);
-  ASSERT_TRUE(data_channel.get() != nullptr);
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-
-  caller()->CreateDataChannel("label_2", nullptr);
-  rtc::scoped_refptr<MockSetSessionDescriptionObserver> observer(
-      new rtc::RefCountedObject<MockSetSessionDescriptionObserver>());
-  caller()->pc()->SetLocalDescription(observer,
-                                      caller()->CreateOfferAndWait().release());
-  EXPECT_TRUE_WAIT(observer->called(), kDefaultTimeout);
-  caller()->Rollback();
-
-  std::string data = "hello world";
-  SendRtpDataWithRetries(data_channel, data, 5);
-  EXPECT_EQ_WAIT(data, callee()->data_observer()->last_message(),
-                 kDefaultTimeout);
-}
-
-// Ensure that an RTP data channel is signaled as closed for the caller when
-// the callee rejects it in a subsequent offer.
-TEST_P(DataChannelIntegrationTest, RtpDataChannelSignaledClosedInCalleeOffer) {
-  // Same procedure as above test.
-  PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.enable_rtp_data_channel = true;
-  rtc_config.enable_dtls_srtp = false;
-  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(rtc_config, rtc_config));
-  ConnectFakeSignaling();
-  caller()->CreateDataChannel();
-  caller()->AddAudioVideoTracks();
-  callee()->AddAudioVideoTracks();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  ASSERT_NE(nullptr, caller()->data_channel());
-  ASSERT_NE(nullptr, callee()->data_channel());
-  ASSERT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
-  ASSERT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
-
-  // Close the data channel on the callee, and do an updated offer/answer.
-  callee()->data_channel()->Close();
-  callee()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  EXPECT_FALSE(caller()->data_observer()->IsOpen());
-  EXPECT_FALSE(callee()->data_observer()->IsOpen());
-}
-
-#if !defined(THREAD_SANITIZER)
-// This test provokes TSAN errors. See bugs.webrtc.org/11282
-
-// Tests that data is buffered in an RTP data channel until an observer is
-// registered for it.
-//
-// NOTE: RTP data channels can receive data before the underlying
-// transport has detected that a channel is writable and thus data can be
-// received before the data channel state changes to open. That is hard to test
-// but the same buffering is expected to be used in that case.
-//
-// Use fake clock and simulated network delay so that we predictably can wait
-// until an SCTP message has been delivered without "sleep()"ing.
-TEST_P(DataChannelIntegrationTestWithFakeClock,
-       DataBufferedUntilRtpDataChannelObserverRegistered) {
-  virtual_socket_server()->set_delay_mean(5);  // 5 ms per hop.
-  virtual_socket_server()->UpdateDelayDistribution();
-
-  PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.enable_rtp_data_channel = true;
-  rtc_config.enable_dtls_srtp = false;
-  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(rtc_config, rtc_config));
-  ConnectFakeSignaling();
-  caller()->CreateDataChannel();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE(caller()->data_channel() != nullptr);
-  ASSERT_TRUE_SIMULATED_WAIT(callee()->data_channel() != nullptr,
-                             kDefaultTimeout, FakeClock());
-  ASSERT_TRUE_SIMULATED_WAIT(caller()->data_observer()->IsOpen(),
-                             kDefaultTimeout, FakeClock());
-  ASSERT_EQ_SIMULATED_WAIT(DataChannelInterface::kOpen,
-                           callee()->data_channel()->state(), kDefaultTimeout,
-                           FakeClock());
-
-  // Unregister the observer which is normally automatically registered.
-  callee()->data_channel()->UnregisterObserver();
-  // Send data and advance fake clock until it should have been received.
-  std::string data = "hello world";
-  caller()->data_channel()->Send(DataBuffer(data));
-  SIMULATED_WAIT(false, 50, FakeClock());
-
-  // Attach data channel and expect data to be received immediately. Note that
-  // EXPECT_EQ_WAIT is used, such that the simulated clock is not advanced any
-  // further, but data can be received even if the callback is asynchronous.
-  MockDataChannelObserver new_observer(callee()->data_channel());
-  EXPECT_EQ_SIMULATED_WAIT(data, new_observer.last_message(), kDefaultTimeout,
-                           FakeClock());
-}
-
-#endif  // !defined(THREAD_SANITIZER)
-
-// This test sets up a call between two parties with audio, video and but only
-// the caller client supports RTP data channels.
-TEST_P(DataChannelIntegrationTest, RtpDataChannelsRejectedByCallee) {
-  PeerConnectionInterface::RTCConfiguration rtc_config_1;
-  rtc_config_1.enable_rtp_data_channel = true;
-  // Must disable DTLS to make negotiation succeed.
-  rtc_config_1.enable_dtls_srtp = false;
-  PeerConnectionInterface::RTCConfiguration rtc_config_2;
-  rtc_config_2.enable_dtls_srtp = false;
-  rtc_config_2.enable_dtls_srtp = false;
-  ASSERT_TRUE(
-      CreatePeerConnectionWrappersWithConfig(rtc_config_1, rtc_config_2));
-  ConnectFakeSignaling();
-  caller()->CreateDataChannel();
-  ASSERT_TRUE(caller()->data_channel() != nullptr);
-  caller()->AddAudioVideoTracks();
-  callee()->AddAudioVideoTracks();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  // The caller should still have a data channel, but it should be closed, and
-  // one should ever have been created for the callee.
-  EXPECT_TRUE(caller()->data_channel() != nullptr);
-  EXPECT_FALSE(caller()->data_observer()->IsOpen());
-  EXPECT_EQ(nullptr, callee()->data_channel());
-}
-
-// This test sets up a call between two parties with audio, and video. When
-// audio and video is setup and flowing, an RTP data channel is negotiated.
-TEST_P(DataChannelIntegrationTest, AddRtpDataChannelInSubsequentOffer) {
-  PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.enable_rtp_data_channel = true;
-  rtc_config.enable_dtls_srtp = false;
-  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(rtc_config, rtc_config));
-  ConnectFakeSignaling();
-  // Do initial offer/answer with audio/video.
-  caller()->AddAudioVideoTracks();
-  callee()->AddAudioVideoTracks();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  // Create data channel and do new offer and answer.
-  caller()->CreateDataChannel();
-  caller()->CreateAndSetAndSignalOffer();
-  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  ASSERT_NE(nullptr, caller()->data_channel());
-  ASSERT_NE(nullptr, callee()->data_channel());
-  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
-  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
-  // Ensure data can be sent in both directions.
-  std::string data = "hello world";
-  SendRtpDataWithRetries(caller()->data_channel(), data, 5);
-  EXPECT_EQ_WAIT(data, callee()->data_observer()->last_message(),
-                 kDefaultTimeout);
-  SendRtpDataWithRetries(callee()->data_channel(), data, 5);
-  EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
-                 kDefaultTimeout);
-}
-
-#ifdef WEBRTC_HAVE_SCTP
-
 // This test sets up a call between two parties with audio, video and an SCTP
 // data channel.
 TEST_P(DataChannelIntegrationTest, EndToEndCallWithSctpDataChannel) {
@@ -414,6 +218,52 @@ TEST_P(DataChannelIntegrationTest,
     EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
                    kDefaultTimeout);
   }
+}
+
+// This test sets up a call between two parties with an SCTP
+// data channel only, and sends empty messages
+TEST_P(DataChannelIntegrationTest,
+       EndToEndCallWithSctpDataChannelEmptyMessages) {
+  ASSERT_TRUE(CreatePeerConnectionWrappers());
+  ConnectFakeSignaling();
+  // Expect that data channel created on caller side will show up for callee as
+  // well.
+  caller()->CreateDataChannel();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  // Caller data channel should already exist (it created one). Callee data
+  // channel may not exist yet, since negotiation happens in-band, not in SDP.
+  ASSERT_NE(nullptr, caller()->data_channel());
+  ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
+  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
+  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
+
+  // Ensure data can be sent in both directions.
+  // Sending empty string data
+  std::string data = "";
+  caller()->data_channel()->Send(DataBuffer(data));
+  EXPECT_EQ_WAIT(1u, callee()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  EXPECT_TRUE(callee()->data_observer()->last_message().empty());
+  EXPECT_FALSE(callee()->data_observer()->messages().back().binary);
+  callee()->data_channel()->Send(DataBuffer(data));
+  EXPECT_EQ_WAIT(1u, caller()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  EXPECT_TRUE(caller()->data_observer()->last_message().empty());
+  EXPECT_FALSE(caller()->data_observer()->messages().back().binary);
+
+  // Sending empty binary data
+  rtc::CopyOnWriteBuffer empty_buffer;
+  caller()->data_channel()->Send(DataBuffer(empty_buffer, true));
+  EXPECT_EQ_WAIT(2u, callee()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  EXPECT_TRUE(callee()->data_observer()->last_message().empty());
+  EXPECT_TRUE(callee()->data_observer()->messages().back().binary);
+  callee()->data_channel()->Send(DataBuffer(empty_buffer, true));
+  EXPECT_EQ_WAIT(2u, caller()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  EXPECT_TRUE(caller()->data_observer()->last_message().empty());
+  EXPECT_TRUE(caller()->data_observer()->messages().back().binary);
 }
 
 TEST_P(DataChannelIntegrationTest,
@@ -514,8 +364,22 @@ TEST_P(DataChannelIntegrationTest, CalleeClosesSctpDataChannel) {
   // Close the data channel on the callee side, and wait for it to reach the
   // "closed" state on both sides.
   callee()->data_channel()->Close();
-  EXPECT_TRUE_WAIT(!caller()->data_observer()->IsOpen(), kDefaultTimeout);
-  EXPECT_TRUE_WAIT(!callee()->data_observer()->IsOpen(), kDefaultTimeout);
+
+  DataChannelInterface::DataState expected_states[] = {
+      DataChannelInterface::DataState::kConnecting,
+      DataChannelInterface::DataState::kOpen,
+      DataChannelInterface::DataState::kClosing,
+      DataChannelInterface::DataState::kClosed};
+
+  EXPECT_EQ_WAIT(DataChannelInterface::DataState::kClosed,
+                 caller()->data_observer()->state(), kDefaultTimeout);
+  EXPECT_THAT(caller()->data_observer()->states(),
+              ::testing::ElementsAreArray(expected_states));
+
+  EXPECT_EQ_WAIT(DataChannelInterface::DataState::kClosed,
+                 callee()->data_observer()->state(), kDefaultTimeout);
+  EXPECT_THAT(callee()->data_observer()->states(),
+              ::testing::ElementsAreArray(expected_states));
 }
 
 TEST_P(DataChannelIntegrationTest, SctpDataChannelConfigSentToOtherSide) {
@@ -584,10 +448,16 @@ TEST_P(DataChannelIntegrationTest, StressTestUnorderedSctpDataChannel) {
                  kDefaultTimeout);
 
   // Sort and compare to make sure none of the messages were corrupted.
-  std::vector<std::string> caller_received_messages =
-      caller()->data_observer()->messages();
-  std::vector<std::string> callee_received_messages =
-      callee()->data_observer()->messages();
+  std::vector<std::string> caller_received_messages;
+  absl::c_transform(caller()->data_observer()->messages(),
+                    std::back_inserter(caller_received_messages),
+                    [](const auto& a) { return a.data; });
+
+  std::vector<std::string> callee_received_messages;
+  absl::c_transform(callee()->data_observer()->messages(),
+                    std::back_inserter(callee_received_messages),
+                    [](const auto& a) { return a.data; });
+
   absl::c_sort(sent_messages);
   absl::c_sort(caller_received_messages);
   absl::c_sort(callee_received_messages);
@@ -686,8 +556,6 @@ TEST_P(DataChannelIntegrationTest,
                  kDefaultTimeout);
 }
 
-#endif  // WEBRTC_HAVE_SCTP
-
 // Test that after closing PeerConnections, they stop sending any packets (ICE,
 // DTLS, RTP...).
 TEST_P(DataChannelIntegrationTest, ClosingConnectionStopsPacketFlow) {
@@ -695,9 +563,7 @@ TEST_P(DataChannelIntegrationTest, ClosingConnectionStopsPacketFlow) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
   ConnectFakeSignaling();
   caller()->AddAudioVideoTracks();
-#ifdef WEBRTC_HAVE_SCTP
   caller()->CreateDataChannel();
-#endif
   caller()->CreateAndSetAndSignalOffer();
   ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
   MediaExpectations media_expectations;
@@ -715,7 +581,6 @@ TEST_P(DataChannelIntegrationTest, ClosingConnectionStopsPacketFlow) {
 // Test that transport stats are generated by the RTCStatsCollector for a
 // connection that only involves data channels. This is a regression test for
 // crbug.com/826972.
-#ifdef WEBRTC_HAVE_SCTP
 TEST_P(DataChannelIntegrationTest,
        TransportStatsReportedForDataChannelOnlyConnection) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
@@ -732,15 +597,81 @@ TEST_P(DataChannelIntegrationTest,
   EXPECT_EQ(1u, callee_report->GetStatsOfType<RTCTransportStats>().size());
 }
 
-INSTANTIATE_TEST_SUITE_P(DataChannelIntegrationTest,
-                         DataChannelIntegrationTest,
-                         Values(SdpSemantics::kPlanB,
-                                SdpSemantics::kUnifiedPlan));
+TEST_P(DataChannelIntegrationTest, QueuedPacketsGetDeliveredInReliableMode) {
+  CreatePeerConnectionWrappers();
+  ConnectFakeSignaling();
+  caller()->CreateDataChannel();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  ASSERT_TRUE_WAIT(callee()->data_channel(), kDefaultTimeout);
 
-INSTANTIATE_TEST_SUITE_P(DataChannelIntegrationTest,
-                         DataChannelIntegrationTestWithFakeClock,
-                         Values(SdpSemantics::kPlanB,
-                                SdpSemantics::kUnifiedPlan));
+  caller()->data_channel()->Send(DataBuffer("hello first"));
+  ASSERT_EQ_WAIT(1u, callee()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  // Cause a temporary network outage
+  virtual_socket_server()->set_drop_probability(1.0);
+  for (int i = 1; i <= 10; i++) {
+    caller()->data_channel()->Send(DataBuffer("Sent while blocked"));
+  }
+  // Nothing should be delivered during outage. Short wait.
+  EXPECT_EQ_WAIT(1u, callee()->data_observer()->received_message_count(), 10);
+  // Reverse outage
+  virtual_socket_server()->set_drop_probability(0.0);
+  // All packets should be delivered.
+  EXPECT_EQ_WAIT(11u, callee()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+}
+
+TEST_P(DataChannelIntegrationTest, QueuedPacketsGetDeliveredInUnReliableMode) {
+  CreatePeerConnectionWrappers();
+  ConnectFakeSignaling();
+  DataChannelInit init;
+  init.maxRetransmits = 0;
+  init.ordered = false;
+  caller()->CreateDataChannel(&init);
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  ASSERT_TRUE_WAIT(callee()->data_channel(), kDefaultTimeout);
+  caller()->data_channel()->Send(DataBuffer("hello first"));
+  ASSERT_EQ_WAIT(1u, callee()->data_observer()->received_message_count(),
+                 kDefaultTimeout);
+  // Cause a temporary network outage
+  virtual_socket_server()->set_drop_probability(1.0);
+  for (int i = 1; i <= 10; i++) {
+    caller()->data_channel()->Send(DataBuffer("Sent while blocked"));
+  }
+  // Nothing should be delivered during outage.
+  // We do a short wait to verify that delivery count is still 1.
+  WAIT(false, 10);
+  EXPECT_EQ(1u, callee()->data_observer()->received_message_count());
+  // Reverse the network outage.
+  virtual_socket_server()->set_drop_probability(0.0);
+  // Send a new packet, and wait for it to be delivered.
+  caller()->data_channel()->Send(DataBuffer("After block"));
+  EXPECT_EQ_WAIT("After block", callee()->data_observer()->last_message(),
+                 kDefaultTimeout);
+  // Some messages should be lost, but first and last message should have
+  // been delivered.
+  // First, check that the protocol guarantee is preserved.
+  EXPECT_GT(11u, callee()->data_observer()->received_message_count());
+  EXPECT_LE(2u, callee()->data_observer()->received_message_count());
+  // Then, check that observed behavior (lose all messages) has not changed
+  EXPECT_EQ(2u, callee()->data_observer()->received_message_count());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DataChannelIntegrationTest,
+    DataChannelIntegrationTest,
+    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+            Values("WebRTC-DataChannel-Dcsctp/Enabled/",
+                   "WebRTC-DataChannel-Dcsctp/Disabled/")));
+
+INSTANTIATE_TEST_SUITE_P(
+    DataChannelIntegrationTest,
+    DataChannelIntegrationTestWithFakeClock,
+    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+            Values("WebRTC-DataChannel-Dcsctp/Enabled/",
+                   "WebRTC-DataChannel-Dcsctp/Disabled/")));
 
 TEST_F(DataChannelIntegrationTestUnifiedPlan,
        EndToEndCallWithBundledSctpDataChannel) {
@@ -751,11 +682,10 @@ TEST_F(DataChannelIntegrationTestUnifiedPlan,
   callee()->AddAudioVideoTracks();
   caller()->CreateAndSetAndSignalOffer();
   ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
-  network_thread()->Invoke<void>(RTC_FROM_HERE, [this] {
-    ASSERT_EQ_WAIT(SctpTransportState::kConnected,
-                   caller()->pc()->GetSctpTransport()->Information().state(),
-                   kDefaultTimeout);
-  });
+  ASSERT_TRUE_WAIT(caller()->pc()->GetSctpTransport(), kDefaultTimeout);
+  ASSERT_EQ_WAIT(SctpTransportState::kConnected,
+                 caller()->pc()->GetSctpTransport()->Information().state(),
+                 kDefaultTimeout);
   ASSERT_TRUE_WAIT(callee()->data_channel(), kDefaultTimeout);
   ASSERT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
 }

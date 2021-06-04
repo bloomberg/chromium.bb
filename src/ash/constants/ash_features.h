@@ -54,6 +54,8 @@ extern const base::Feature kAmbientModePhotoPreviewFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAmbientModeDevUseProdFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kAppListBubble;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kArcAdbSideloadingFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kArcManagedAdbSideloadingSupport;
@@ -90,11 +92,11 @@ extern const base::Feature kPreferConstantFrameRate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCdmFactoryDaemon;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCellularForbidAttachApn;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseAttachApn;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseExternalEuicc;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kChildSpecificSignin;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCroshSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -105,8 +107,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniGpuSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniUseDlc;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCrostiniEnableDlc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDiagnosticsApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -121,6 +121,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceSync;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2Enrollment;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDemoModeSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDisableOfficeEditingComponentApp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDriveFs;
@@ -129,14 +130,20 @@ extern const base::Feature kDriveFsBidirectionalNativeMessaging;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDriveFsMirroring;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWA;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWAResizing;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEmojiSuggestAddition;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnableDnsProxy;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableHostnameSetting;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kEnableInputInDiagnosticsApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableLocalSearchService;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableNetworkingInDiagnosticsApp;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kEnableInputNoiseCancellationUi;
 extern const base::Feature kEnableOobeChromeVoxHint;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnablePciguardUi;
@@ -152,14 +159,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kExoLockNotification;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFamilyLinkOnSchoolDevice;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesJsModules;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kAudioPlayerJsModules;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kVideoPlayerJsModules;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVideoPlayerAppHidden;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesNG;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesSWA;
@@ -175,16 +176,23 @@ extern const base::Feature kClipboardHistoryNudgeSessionReset;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryContextMenuNudge;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kClipboardHistoryScreenshotNudge;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableFilesAppCopyImage;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHandwritingGestureEditing;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kGaiaCloseViewMessage;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kGaiaReauthEndpoint;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kGamepadVibration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kGesturePropertiesDBusService;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kHelpAppDiscoverTab;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kHelpAppDiscoverTabNotificationAllChannels;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHelpAppLauncherSearch;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -206,16 +214,15 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguageSettingsUpdate2;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kLoginDeviceManagementDisclosure;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMediaApp;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppAnnotation;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppDisplayExif;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kMediaAppPdfInInk;
+extern const base::Feature kMediaAppHandlesPdf;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppVideoControls;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMicMuteNotifications;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMinimumChromeVersion;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -225,13 +232,19 @@ extern const base::Feature kNoteTakingForEnabledWebApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOnDeviceGrammarCheck;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOnDeviceSpeechRecognition;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kNewOobeLayout;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOsFeedback;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsDeepLinking;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPhoneHub;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPinSetupForFamilyLink;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kPinSetupForManagedUsers;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPluginVmFullscreen;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -280,6 +293,8 @@ extern const base::Feature kFiltersInRecents;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kScanAppMediaLink;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kScanAppSearchablePdf;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kScanAppStickySettings;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSessionManagerLongKillTimeout;
@@ -296,9 +311,9 @@ extern const base::Feature kSplitSettingsSync;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemLatinPhysicalTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kTelemetryExtension;
+extern const base::Feature kSystemProxyForSystemServices;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kUnifiedMediaView;
+extern const base::Feature kTelemetryExtension;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUpdatedCellularActivationUi;
 // Visible for testing. Call UseBrowserSyncConsent() to check the flag.
@@ -325,7 +340,11 @@ extern const base::Feature kWakeOnWifiAllowed;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWallpaperWebUI;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kWebApkGenerator;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWifiSyncAllowDeletes;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kWifiSyncApplyDeletes;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWifiSyncAndroid;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -341,28 +360,35 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAccountManagementFlowsV2Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAppListBubbleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistantEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCellularActivationUiEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsChildSpecificSigninEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryContextMenuNudgeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsClipboardHistoryScreenshotNudgeEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryNudgeSessionResetEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDemoModeSWAEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDeepLinkingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAResizingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaCloseViewMessageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaReauthEndpointEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHostnameSettingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsImeSandboxEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsInputInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsKerberosSettingsSectionEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLoginDeviceManagementDisclosureEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMicMuteNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsInputNoiseCancellationUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeChromeVoxHintEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeScreensPriorityEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
@@ -371,6 +397,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubUseBleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitBackfillFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinSetupForFamilyLinkEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinSetupForManagedUsersEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorFeaturePodEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersDogfood();
@@ -379,20 +406,22 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersOnEditableTextEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersRichUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersSettingToggleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersStandaloneSettingsEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersTextAnnotatorEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersTranslationCloudAPIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersTranslationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSamlReauthenticationOnLockscreenEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSplitSettingsSyncEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemLatinPhysicalTypingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWallpaperWebUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWifiSyncAndroidEnabled();
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseBrowserSyncConsent();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseQuickAnswersTextAnnotator();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseV1DeviceSync();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseV2DeviceSync();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseAttachApn();
 
 // Keep alphabetized.
 

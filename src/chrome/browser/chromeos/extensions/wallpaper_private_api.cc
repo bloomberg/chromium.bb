@@ -91,17 +91,6 @@ bool IsOEMDefaultWallpaper() {
       chromeos::switches::kDefaultWallpaperIsOem);
 }
 
-// Returns a suffix to be appended to the base url of Backdrop wallpapers.
-std::string GetBackdropWallpaperSuffix() {
-  // FIFE url is used for Backdrop wallpapers and the desired image size should
-  // be specified. Currently we are using two times the display size. This is
-  // determined by trial and error and is subject to change.
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  return "=w" + std::to_string(
-                    2 * std::max(display_size.width(), display_size.height()));
-}
-
 // Saves |data| as |file_name| to directory with |key|. Return false if the
 // directory can not be found/created or failed to write file.
 bool SaveData(int key,
@@ -260,7 +249,8 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetString("highResolutionSuffix", GetBackdropWallpaperSuffix());
+  dict->SetString("highResolutionSuffix",
+                  WallpaperControllerClientImpl::GetBackdropWallpaperSuffix());
 
   auto info =
       WallpaperControllerClientImpl::Get()->GetActiveUserWallpaperInfo();
@@ -671,9 +661,11 @@ WallpaperPrivateGetOfflineWallpaperListFunction::Run() {
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::
     OnOfflineWallpaperListReturned(const std::vector<std::string>& url_list) {
-  auto results = std::make_unique<base::ListValue>();
-  results->AppendStrings(url_list);
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(results))));
+  base::Value results(base::Value::Type::LIST);
+  for (const std::string& url : url_list) {
+    results.Append(url);
+  }
+  Respond(OneArgument(std::move(results)));
 }
 
 ExtensionFunction::ResponseAction

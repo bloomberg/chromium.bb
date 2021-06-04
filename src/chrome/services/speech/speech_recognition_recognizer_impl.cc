@@ -33,12 +33,12 @@ constexpr char kInvalidAudioDataError[] = "Invalid audio data received.";
 // static
 const char
     SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName[] =
-        "Accessibility.LiveCaption.Duration.CaptionBubbleVisible";
+        "Accessibility.LiveCaption.Duration.CaptionBubbleVisible2";
 
 // static
 const char
     SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName[] =
-        "Accessibility.LiveCaption.Duration.CaptionBubbleHidden";
+        "Accessibility.LiveCaption.Duration.CaptionBubbleHidden2";
 
 namespace {
 
@@ -90,6 +90,19 @@ void OnSodaResponse(const char* serialized_proto,
   }
 }
 
+speech::soda::chrome::ExtendedSodaConfigMsg::RecognitionMode
+GetSodaSpeechRecognitionMode(
+    media::mojom::SpeechRecognitionMode recognition_mode) {
+  switch (recognition_mode) {
+    case media::mojom::SpeechRecognitionMode::kUnknown:
+      return soda::chrome::ExtendedSodaConfigMsg::UNKNOWN;
+    case media::mojom::SpeechRecognitionMode::kIme:
+      return soda::chrome::ExtendedSodaConfigMsg::IME;
+    case media::mojom::SpeechRecognitionMode::kCaption:
+      return soda::chrome::ExtendedSodaConfigMsg::CAPTION;
+  }
+}
+
 }  // namespace
 
 SpeechRecognitionRecognizerImpl::~SpeechRecognitionRecognizerImpl() {
@@ -101,12 +114,13 @@ void SpeechRecognitionRecognizerImpl::Create(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
     base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<SpeechRecognitionRecognizerImpl>(
           std::move(remote), std::move(speech_recognition_service_impl),
-          binary_path, config_path),
+          std::move(options), binary_path, config_path),
       std::move(receiver));
 }
 
@@ -117,24 +131,40 @@ bool SpeechRecognitionRecognizerImpl::IsMultichannelSupported() {
 void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
     const std::string& result,
     const bool is_final) {
+  if (!client_remote_.is_bound())
+    return;
   client_remote_->OnSpeechRecognitionRecognitionEvent(
-      media::mojom::SpeechRecognitionResult::New(result, is_final));
+      media::mojom::SpeechRecognitionResult::New(result, is_final),
+      base::BindOnce(&SpeechRecognitionRecognizerImpl::
+                         OnSpeechRecognitionRecognitionEventCallback,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SpeechRecognitionRecognizerImpl::
+    OnSpeechRecognitionRecognitionEventCallback(bool success) {
+  is_client_requesting_speech_recognition_ = success;
 }
 
 void SpeechRecognitionRecognizerImpl::OnLanguageIdentificationEvent(
     const std::string& language,
     const media::mojom::ConfidenceLevel confidence_level) {
-  client_remote_->OnLanguageIdentificationEvent(
-      media::mojom::LanguageIdentificationEvent::New(language,
-                                                     confidence_level));
+  if (client_remote_.is_bound()) {
+    client_remote_->OnLanguageIdentificationEvent(
+        media::mojom::LanguageIdentificationEvent::New(language,
+                                                       confidence_level));
+  }
 }
 
 SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
     base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
+    media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path)
-    : client_remote_(std::move(remote)), config_path_(config_path) {
+    : enable_soda_(base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)),
+      client_remote_(std::move(remote)),
+      config_path_(config_path),
+      options_(std::move(options)) {
   recognition_event_callback_ = media::BindToCurrentLoop(
       base::BindRepeating(&SpeechRecognitionRecognizerImpl::OnRecognitionEvent,
                           weak_factory_.GetWeakPtr()));
@@ -142,23 +172,32 @@ SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
       media::BindToCurrentLoop(base::BindRepeating(
           &SpeechRecognitionRecognizerImpl::OnLanguageIdentificationEvent,
           weak_factory_.GetWeakPtr()));
-  // On Chrome OS Ash, soda_client_ is not used, so don't try to create it
-  // here because it exists at a different location. Instead,
-  // CrosSpeechRecognitionRecognizerImpl has its own CrosSodaClient.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  enable_soda_ = base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption);
-#endif
+
+  // Unretained is safe because |this| owns the mojo::Remote.
+  client_remote_.set_disconnect_handler(
+      base::BindOnce(&SpeechRecognitionRecognizerImpl::OnClientHostDisconnected,
+                     weak_factory_.GetWeakPtr()));
+
   if (enable_soda_) {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    // On Chrome OS Ash, soda_client_ is not used, so don't try to create it
+    // here because it exists at a different location. Instead,
+    // CrosSpeechRecognitionRecognizerImpl has its own CrosSodaClient.
     DCHECK(base::PathExists(binary_path));
     soda_client_ = std::make_unique<::soda::SodaClient>(binary_path);
     if (!soda_client_->BinaryLoadedSuccessfully()) {
       OnSpeechRecognitionError();
     }
+#endif
   } else {
     cloud_client_ = std::make_unique<CloudSpeechRecognitionClient>(
         recognition_event_callback(),
         std::move(speech_recognition_service_impl));
   }
+}
+
+void SpeechRecognitionRecognizerImpl::OnClientHostDisconnected() {
+  is_client_requesting_speech_recognition_ = false;
 }
 
 void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
@@ -172,10 +211,11 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
   // Update watch time durations.
   base::TimeDelta duration =
       media::AudioTimestampHelper::FramesToTime(frame_count, sample_rate);
-  if (!caption_bubble_closed_) {
+  if (is_client_requesting_speech_recognition_) {
     caption_bubble_visible_duration_ += duration;
   } else {
     caption_bubble_hidden_duration_ += duration;
+    return;
   }
 
   // Verify the channel count.
@@ -204,7 +244,9 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
 }
 
 void SpeechRecognitionRecognizerImpl::OnSpeechRecognitionError() {
-  client_remote_->OnSpeechRecognitionError();
+  if (client_remote_.is_bound()) {
+    client_remote_->OnSpeechRecognitionError();
+  }
 }
 
 void SpeechRecognitionRecognizerImpl::
@@ -247,18 +289,9 @@ void SpeechRecognitionRecognizerImpl::
   }
 }
 
-void SpeechRecognitionRecognizerImpl::OnCaptionBubbleClosed() {
-  caption_bubble_closed_ = true;
-}
-
-void SpeechRecognitionRecognizerImpl::AudioReceivedAfterBubbleClosed(
-    base::TimeDelta duration) {
-  caption_bubble_hidden_duration_ += duration;
-}
-
 void SpeechRecognitionRecognizerImpl::OnLanguageChanged(
     const std::string& language) {
-  base::Optional<speech::SodaLanguagePackComponentConfig>
+  absl::optional<speech::SodaLanguagePackComponentConfig>
       language_component_config = GetLanguageComponentConfig(language);
   if (!language_component_config.has_value())
     return;
@@ -280,13 +313,13 @@ void SpeechRecognitionRecognizerImpl::OnLanguageChanged(
 
 void SpeechRecognitionRecognizerImpl::RecordDuration() {
   if (caption_bubble_visible_duration_ > base::TimeDelta()) {
-    base::UmaHistogramMediumTimes(kCaptionBubbleVisibleHistogramName,
-                                  caption_bubble_visible_duration_);
+    base::UmaHistogramLongTimes100(kCaptionBubbleVisibleHistogramName,
+                                   caption_bubble_visible_duration_);
   }
 
   if (caption_bubble_hidden_duration_ > base::TimeDelta()) {
-    base::UmaHistogramMediumTimes(kCaptionBubbleHiddenHistogramName,
-                                  caption_bubble_hidden_duration_);
+    base::UmaHistogramLongTimes100(kCaptionBubbleHiddenHistogramName,
+                                   caption_bubble_hidden_duration_);
   }
 }
 
@@ -303,8 +336,8 @@ void SpeechRecognitionRecognizerImpl::ResetSoda() {
   config_msg.set_language_pack_directory(language_pack_directory);
   config_msg.set_simulate_realtime_testonly(false);
   config_msg.set_enable_lang_id(false);
-  // SODA wants to listen as CAPTION.
-  config_msg.set_recognition_mode(soda::chrome::ExtendedSodaConfigMsg::CAPTION);
+  config_msg.set_recognition_mode(
+      GetSodaSpeechRecognitionMode(options_->recognition_mode));
   auto serialized = config_msg.SerializeAsString();
 
   SerializedSodaConfig config;

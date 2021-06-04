@@ -10,6 +10,8 @@
 #include "components/exo/seat_observer.h"
 #include "ui/events/event_handler.h"
 
+class FullscreenControlPopup;
+
 namespace exo {
 
 class Seat;
@@ -38,7 +40,8 @@ class UILockController : public ui::EventHandler, public SeatObserver {
   void OnSurfaceFocusing(Surface* gaining_focus) override {}
   void OnSurfaceFocused(Surface* gained_focus) override;
 
-  bool IsBubbleVisibleForTesting(aura::Window* window);
+  views::Widget* GetEscNotificationForTesting(aura::Window* window);
+  FullscreenControlPopup* GetExitPopupForTesting(aura::Window* window);
 
  private:
   void OnEscapeKey(bool pressed);

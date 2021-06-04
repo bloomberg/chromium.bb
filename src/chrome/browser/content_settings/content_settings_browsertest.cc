@@ -278,8 +278,7 @@ class CookieSettingsTest
     }
 
     auto* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
-            ->GetNetworkContext();
+        browser->profile()->GetDefaultStoragePartition()->GetNetworkContext();
     content::LoadBasicRequest(network_context, url);
 
     {
@@ -310,7 +309,7 @@ class CookieSettingsTest
 
   // Read a cookie with JavaScript cookie-store API
   std::string JSAsyncReadCookie(Browser* browser) {
-    return content::EvalJsWithManualReply(
+    return content::EvalJs(
                browser->tab_strip_model()->GetActiveWebContents(),
                "async function doGet() {"
                "  const cookies = await window.cookieStore.getAll();"
@@ -319,7 +318,8 @@ class CookieSettingsTest
                "    cookie_str += `${cookie.name}=${cookie.value};`;"
                "  window.domAutomationController.send(cookie_str);"
                "}"
-               "doGet()")
+               "doGet()",
+               content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
         .ExtractString();
   }
 
@@ -343,17 +343,18 @@ class CookieSettingsTest
 
   // Set a cookie with JavaScript cookie-store api.
   void JSAsyncWriteCookie(Browser* browser) {
-    content::EvalJsResult result = content::EvalJsWithManualReply(
-        browser->tab_strip_model()->GetActiveWebContents(),
-        "async function doSet() {"
-        "  await window.cookieStore.set("
-        "       { name: 'name',"
-        "         value: 'Good',"
-        "         expires: Date.now() + 3600*1000,"
-        "         sameSite: 'none' });"
-        "  window.domAutomationController.send(true);"
-        "}"
-        "doSet()");
+    content::EvalJsResult result =
+        content::EvalJs(browser->tab_strip_model()->GetActiveWebContents(),
+                        "async function doSet() {"
+                        "  await window.cookieStore.set("
+                        "       { name: 'name',"
+                        "         value: 'Good',"
+                        "         expires: Date.now() + 3600*1000,"
+                        "         sameSite: 'none' });"
+                        "  window.domAutomationController.send(true);"
+                        "}"
+                        "doSet()",
+                        content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
     // Failure ignored here since some tests purposefully try to set disallowed
     // cookies.
   }
@@ -749,8 +750,6 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
     const char* code;
   };
 
-  // TODO(fivedots): Add test cases for getRemainingCapacity(),
-  // requestCapacity(), releaseCapacity() once they land.
   const TestOp kTestOps[] = {
       {.name = "storageFoundation.open()",
        .code = "storageFoundation.open('foo')"},
@@ -760,6 +759,12 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
        .code = "storageFoundation.rename('foo', 'bar')"},
       {.name = "storageFoundation.getAll()",
        .code = "storageFoundation.getAll()"},
+      {.name = "storageFoundation.requestCapacity()",
+       .code = "storageFoundation.requestCapacity(10)"},
+      {.name = "storageFoundation.releaseCapacity()",
+       .code = "storageFoundation.releaseCapacity(10)"},
+      {.name = "storageFoundation.getRemainingCapacity()",
+       .code = "storageFoundation.getRemainingCapacity()"},
   };
 
   content::WebContents* tab =
@@ -787,10 +792,15 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // TODO(fivedots): Add test cases for getRemainingCapacitySync(),
-  // requestCapacitySync(), releaseCapacitySync() once they land.
-  const char* kTestOps[] = {"openSync", "deleteSync", "renameSync",
-                            "getAllSync"};
+  const char* kTestOps[] = {
+      "openSync",
+      "deleteSync",
+      "renameSync",
+      "getAllSync",
+      "requestCapacitySync",
+      "releaseCapacitySync",
+      "getRemainingCapacitySync",
+  };
 
   for (auto* op : kTestOps) {
     EXPECT_TRUE(ExecJs(tab, base::StringPrintf(kBaseCall, op)));
@@ -941,7 +951,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   ui_test_utils::NavigateToURL(browser(), other_url);
-  EXPECT_TRUE(main_frame->IsInBackForwardCache());
+  EXPECT_EQ(main_frame->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
   EXPECT_FALSE(
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
@@ -1051,6 +1062,31 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
   EXPECT_TRUE(
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
           ->IsContentBlocked(ContentSettingsType::COOKIES));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, SendRendererContentRules) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_1 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  const GURL url_2 =
+      embedded_test_server()->GetURL("b.com", "/javaScriptTitle.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(browser(), url_1);
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  EXPECT_NE(map, nullptr);
+  EXPECT_FALSE(
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+  map->SetContentSettingDefaultScope(url_2, url_2,
+                                     ContentSettingsType::JAVASCRIPT,
+                                     ContentSetting::CONTENT_SETTING_BLOCK);
+  ui_test_utils::NavigateToURL(browser(), url_2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
 class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {

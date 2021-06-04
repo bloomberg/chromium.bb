@@ -21,7 +21,7 @@ namespace {
             wgpu::TextureDescriptor descriptor;
             descriptor.size.width = kWidth;
             descriptor.size.height = kHeight;
-            descriptor.size.depth = kDefaultDepth;
+            descriptor.size.depthOrArrayLayers = kDefaultDepth;
             descriptor.mipLevelCount = kDefaultMipLevels;
             descriptor.sampleCount = kDefaultSampleCount;
             descriptor.dimension = wgpu::TextureDimension::e2D;
@@ -92,6 +92,22 @@ namespace {
             wgpu::Texture internalTexture = device.CreateTexture(&textureDescriptor);
             externalDesc.plane0 = internalTexture.CreateView();
             externalDesc.format = kUnsupportedFormat;
+            ASSERT_DEVICE_ERROR(device.CreateExternalTexture(&externalDesc));
+        }
+
+        // Creating an external texture with an error texture view should fail.
+        {
+            wgpu::Texture internalTexture = device.CreateTexture(&textureDescriptor);
+            wgpu::TextureViewDescriptor errorViewDescriptor;
+            errorViewDescriptor.format = kDefaultTextureFormat;
+            errorViewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
+            errorViewDescriptor.mipLevelCount = 1;
+            errorViewDescriptor.arrayLayerCount = 2;
+            ASSERT_DEVICE_ERROR(wgpu::TextureView errorTextureView =
+                                    internalTexture.CreateView(&errorViewDescriptor));
+
+            externalDesc.plane0 = errorTextureView;
+            externalDesc.format = kDefaultTextureFormat;
             ASSERT_DEVICE_ERROR(device.CreateExternalTexture(&externalDesc));
         }
     }

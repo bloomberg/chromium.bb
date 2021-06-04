@@ -35,6 +35,7 @@ class WaylandConnection;
 class WaylandSubsurface;
 class WaylandWindowDragController;
 class WaylandOutput;
+class WaylandPopup;
 
 using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 
@@ -58,7 +59,7 @@ class WaylandWindow : public PlatformWindow,
   // primary one if their widget is not yet created, children inherit scale from
   // their parent.  The method recalculates window bounds appropriately if asked
   // to do so (this is not needed upon window initialization).
-  void UpdateBufferScale(bool update_bounds);
+  virtual void UpdateBufferScale(bool update_bounds);
 
   WaylandSurface* root_surface() const { return root_surface_.get(); }
   WaylandSubsurface* primary_subsurface() const {
@@ -104,7 +105,7 @@ class WaylandWindow : public PlatformWindow,
   WaylandWindow* child_window() const { return child_window_; }
 
   int32_t buffer_scale() const { return root_surface_->buffer_scale(); }
-  int32_t ui_scale() const { return ui_scale_; }
+  float ui_scale() const { return ui_scale_; }
 
   // A preferred output is the one with the largest scale. This is needed to
   // properly render contents as it seems like an expectation of Wayland.
@@ -155,7 +156,7 @@ class WaylandWindow : public PlatformWindow,
   void Deactivate() override;
   void SetUseNativeFrame(bool use_native_frame) override;
   bool ShouldUseNativeFrame() const override;
-  void SetCursor(PlatformCursor cursor) override;
+  void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
@@ -165,7 +166,7 @@ class WaylandWindow : public PlatformWindow,
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
-  bool ShouldUseLayerForShapedWindow() const override;
+  bool ShouldUpdateWindowShape() const override;
 
   // PlatformEventDispatcher
   bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -193,9 +194,9 @@ class WaylandWindow : public PlatformWindow,
   virtual int OnDragMotion(const gfx::PointF& point, int operation);
   virtual void OnDragDrop();
   virtual void OnDragLeave();
-  virtual void OnDragSessionClose(uint32_t dnd_action);
+  virtual void OnDragSessionClose(ui::mojom::DragOperation operation);
 
-  virtual base::Optional<std::vector<gfx::Rect>> GetWindowShape() const;
+  virtual absl::optional<std::vector<gfx::Rect>> GetWindowShape() const;
 
   // Returns a root parent window within the same hierarchy.
   WaylandWindow* GetRootParentWindow();
@@ -219,6 +220,11 @@ class WaylandWindow : public PlatformWindow,
   // not support that).
   virtual bool IsActive() const;
 
+  // WaylandWindow can be any type of object - WaylandToplevelWindow,
+  // WaylandPopup, WaylandAuxiliaryWindow. This method casts itself to
+  // WaylandPopup, if |this| has type of WaylandPopup.
+  virtual WaylandPopup* AsWaylandPopup();
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
   }
@@ -233,7 +239,7 @@ class WaylandWindow : public PlatformWindow,
   // Sets bounds in dip.
   void SetBoundsDip(const gfx::Rect& bounds_dip);
 
-  void set_ui_scale(int32_t ui_scale) { ui_scale_ = ui_scale; }
+  void set_ui_scale(float ui_scale) { ui_scale_ = ui_scale; }
 
   // Calls set_opaque_region for this window.
   virtual void UpdateWindowMask();
@@ -264,6 +270,8 @@ class WaylandWindow : public PlatformWindow,
   friend WaylandWindowDragController;
   std::unique_ptr<WaylandSurface> TakeWaylandSurface();
 
+  void UpdateCursorShape(scoped_refptr<BitmapCursorOzone> cursor);
+
   PlatformWindowDelegate* delegate_;
   WaylandConnection* connection_;
   WaylandWindow* parent_window_ = nullptr;
@@ -288,7 +296,7 @@ class WaylandWindow : public PlatformWindow,
   std::list<WaylandSubsurface*> subsurface_stack_below_;
 
   // The current cursor bitmap (immutable).
-  scoped_refptr<BitmapCursorOzone> bitmap_;
+  scoped_refptr<BitmapCursorOzone> cursor_;
 
   // Current bounds of the platform window. This is either initialized, or the
   // requested size by the Wayland compositor. When this is set in SetBounds(),
@@ -314,7 +322,7 @@ class WaylandWindow : public PlatformWindow,
   // The UI scale may be forced through the command line, which means that it
   // replaces the default value that is equal to the natural device scale.
   // We need it to place and size the menus properly.
-  float ui_scale_ = 1.0;
+  float ui_scale_ = 1.0f;
 
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;

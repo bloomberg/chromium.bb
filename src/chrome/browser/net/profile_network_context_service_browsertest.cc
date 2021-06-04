@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -69,6 +68,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -83,8 +83,9 @@ class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    loader_factory_ = content::BrowserContext::GetDefaultStoragePartition(
-                          browser()->profile())
+    loader_factory_ = browser()
+                          ->profile()
+                          ->GetDefaultStoragePartition()
                           ->GetURLLoaderFactoryForBrowserProcess()
                           .get();
   }
@@ -359,9 +360,11 @@ class AmbientAuthenticationTestWithPolicy
         service->GetInteger(prefs::kAmbientAuthenticationInPrivateModesEnabled);
 
     Profile* regular_profile = browser()->profile();
-    Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
+    Profile* incognito_profile =
+        regular_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
     Profile* non_primary_otr_profile = regular_profile->GetOffTheRecordProfile(
-        Profile::OTRProfileID("Test::AmbientAuthentication"));
+        Profile::OTRProfileID::CreateUniqueForTesting(),
+        /*create_if_needed=*/true);
 
     EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
         regular_profile));
@@ -470,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
   // Cache directory should now exist.
   base::FilePath expected_cache_path =
       TempPath()
-          .Append(browser()->profile()->GetPath().BaseName())
+          .Append(browser()->profile()->GetBaseName())
           .Append(chrome::kCacheDirname);
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(expected_cache_path));
@@ -568,8 +571,7 @@ IN_PROC_BROWSER_TEST_P(
     ProfileNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
     Test) {
   {
-    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
-        ->GetNetworkContext();
+    CreateNewProfile()->GetDefaultStoragePartition()->GetNetworkContext();
 
     ExpectUseBuiltinCertVerifierCorrect(
         use_builtin_cert_verifier()
@@ -588,8 +590,7 @@ IN_PROC_BROWSER_TEST_P(
   UpdateProviderPolicy(policies);
 
   {
-    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
-        ->GetNetworkContext();
+    CreateNewProfile()->GetDefaultStoragePartition()->GetNetworkContext();
 
     ExpectUseBuiltinCertVerifierCorrect(
         cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
@@ -601,8 +602,7 @@ IN_PROC_BROWSER_TEST_P(
   UpdateProviderPolicy(policies);
 
   {
-    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
-        ->GetNetworkContext();
+    CreateNewProfile()->GetDefaultStoragePartition()->GetNetworkContext();
 
     ExpectUseBuiltinCertVerifierCorrect(
         cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
@@ -620,7 +620,7 @@ INSTANTIATE_TEST_SUITE_P(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class ProfileNetworkContextServiceMemoryPressureFeatureBrowsertest
     : public ProfileNetworkContextServiceBrowsertest,
-      public ::testing::WithParamInterface<base::Optional<bool>> {
+      public ::testing::WithParamInterface<absl::optional<bool>> {
  public:
   ProfileNetworkContextServiceMemoryPressureFeatureBrowsertest() = default;
   ~ProfileNetworkContextServiceMemoryPressureFeatureBrowsertest() override =
@@ -670,5 +670,5 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     ProfileNetworkContextServiceMemoryPressureFeatureBrowsertest,
     /*disable_idle_sockets_close_on_memory_pressure=*/
-    ::testing::Values(base::nullopt, true, false));
+    ::testing::Values(absl::nullopt, true, false));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

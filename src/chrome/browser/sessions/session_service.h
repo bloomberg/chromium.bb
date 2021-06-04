@@ -12,12 +12,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/sessions/session_service_base.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/sessions/core/command_storage_manager_delegate.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -63,7 +63,7 @@ class SessionService : public SessionServiceBase {
   // start of a session (with potential session restore, startup URLs, etc.).
   // In particular, this is true if there are no tabbed browsers running
   // currently (eg. because only background or other app pages are running).
-  bool ShouldNewWindowStartSession();
+  bool ShouldNewWindowStartSession(Browser* browser);
 
   // Invoke at a point when you think session restore might occur. For example,
   // during startup and window creation this is invoked to see if a session
@@ -87,7 +87,7 @@ class SessionService : public SessionServiceBase {
   // multiple windows.
   void SetTabGroup(const SessionID& window_id,
                    const SessionID& tab_id,
-                   base::Optional<tab_groups::TabGroupId> group);
+                   absl::optional<tab_groups::TabGroupId> group);
 
   // Updates the metadata associated with a tab group. |window_id| should be
   // the window where the group currently resides. Note that a group can't be
@@ -164,7 +164,7 @@ class SessionService : public SessionServiceBase {
   void BuildCommandsForTab(const SessionID& window_id,
                            content::WebContents* tab,
                            int index_in_window,
-                           base::Optional<tab_groups::TabGroupId> group,
+                           absl::optional<tab_groups::TabGroupId> group,
                            bool is_pinned,
                            IdToRange* tab_to_available_range) override;
 
@@ -187,9 +187,6 @@ class SessionService : public SessionServiceBase {
 
   // Will rebuild session commands if rebuild_on_next_save_ is true.
   void RebuildCommandsIfRequired() override;
-
-  // Deletes session data if no windows are open for the current profile.
-  void MaybeDeleteSessionOnlyData();
 
   // Invoked with true when all browsers start closing.
   void OnClosingAllBrowsersChanged(bool closing);

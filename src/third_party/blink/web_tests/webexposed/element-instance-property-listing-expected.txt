@@ -327,8 +327,12 @@ namespace http://www.w3.org/1999/xhtml
     property webkitRequestFullScreen
     property webkitRequestFullscreen
 html element a
+    property attributionDestination
+    property attributionExpiry
+    property attributionReportTo
+    property attributionSourceEventId
+    property attributionSourcePriority
     property charset
-    property conversionDestination
     property coords
     property download
     property hash
@@ -337,8 +341,6 @@ html element a
     property href
     property hrefTranslate
     property hreflang
-    property impressionData
-    property impressionExpiry
     property name
     property origin
     property password
@@ -347,9 +349,9 @@ html element a
     property port
     property protocol
     property referrerPolicy
+    property registerAttributionSource
     property rel
     property relList
-    property reportingOrigin
     property rev
     property search
     property shape
@@ -555,6 +557,8 @@ html element embed
     property src
     property type
     property width
+html element fencedframe
+    property src
 html element fieldset
     property checkValidity
     property disabled
@@ -904,7 +908,9 @@ html element param
 html element picture
 html element plaintext
 html element popup
+    property anchor
     property hide
+    property initiallyOpen
     property open
     property show
 html element pre

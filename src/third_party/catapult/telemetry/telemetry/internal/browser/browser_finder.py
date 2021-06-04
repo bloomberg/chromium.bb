@@ -4,6 +4,7 @@
 
 """Finds browsers that can be controlled by telemetry."""
 
+from __future__ import absolute_import
 import logging
 
 from telemetry import decorators
@@ -113,7 +114,7 @@ def FindBrowser(options):
 
     raise browser_finder_exceptions.BrowserTypeRequiredException(
         '--browser must be specified. Available browsers:\n%s' %
-        '\n'.join(sorted(set([b.browser_type for b in browsers]))))
+        '\n'.join(sorted({b.browser_type for b in browsers})))
 
   chosen_browser = None
   if options.browser_type == 'any':
@@ -180,7 +181,7 @@ def GetAllAvailableBrowserTypes(options):
   possible_browsers = []
   for device in devices:
     possible_browsers.extend(GetAllAvailableBrowsers(options, device))
-  type_list = set([browser.browser_type for browser in possible_browsers])
+  type_list = {browser.browser_type for browser in possible_browsers}
   # The reference build should be available for mac, linux and win, but the
   # desktop browser finder won't return it in the list of browsers.
   for browser in possible_browsers:

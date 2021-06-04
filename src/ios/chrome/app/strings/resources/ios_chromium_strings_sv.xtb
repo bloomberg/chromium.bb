@@ -9,6 +9,7 @@
 <translation id="1431818719585918472">Låt Chromium låsa inkognitoflikarna.</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
 <translation id="1507010443238049608">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
+<translation id="1531155317299575425">Visar meddelanden om att logga in i Chromium.</translation>
 <translation id="1617663976202781617">Data från Chromium-synkronisering</translation>
 <translation id="1736662517232558588">Chromium-data har rensats</translation>
 <translation id="1838412507805038478">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
@@ -20,6 +21,7 @@
 <translation id="2168108852149185974">Några tillägg har fått Chromium att krascha. Avinstallera följande:</translation>
 <translation id="2178608107313874732">Chromium kan inte använda kameran just nu</translation>
 <translation id="2195025571279539885">Vill du att Chromium ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
+<translation id="2567507405773541360">Få mer gjort med Chromium, som är enklare, säkrare och snabbare än någonsin</translation>
 <translation id="2590893390871230428">Synkronisera data i Chromium</translation>
 <translation id="2650312721222849884">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chromium</translation>
 <translation id="2684230048001240293">Ställ in Chromium som standardwebbläsare och synkronisera flikar, lösenord och betalningsuppgifter på alla enheter</translation>
@@ -41,9 +43,12 @@
 <translation id="4681781466797808448">Aktivera Chromium som skanner</translation>
 <translation id="4736424910885271643">Eftersom ditt konto hanteras av <ph name="HOSTED_DOMAIN" /> raderas din data i Chromium från enheten</translation>
 <translation id="4787850887676698916">Här visas flikar som du har öppnat i Chromium på andra enheter.</translation>
+<translation id="4806326830773390517">Hjälp oss att göra Chromium bättre genom att skicka användningsstatistik och felrapporter till Google</translation>
 <translation id="4828317641996116749">Chromium kunde inte kontrollera alla lösenord. Försök igen senare.</translation>
+<translation id="4852878756222711218">Logga in med Google-kontot så att du får ut mesta möjliga av Chromium</translation>
 <translation id="4985291216379576555">Chromium kan inte söka efter uppdateringar offline</translation>
 <translation id="4999538639245140991">Din data i Chromium raderas från den här enheten eftersom du loggar ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Din data finns kvar i Google-kontot.</translation>
+<translation id="5171868502429358653">Logga in i Chromium</translation>
 <translation id="5224391634244552924">Inga sparade lösenord. Chromium kan bara kontrollera dina lösenord om du sparar dem.</translation>
 <translation id="5308226104666789935">Chromium kan inte söka efter uppdateringar</translation>
 <translation id="5396916991083608703">Vill du ställa in Chromium som standardwebbläsare?</translation>
@@ -59,12 +64,15 @@
 1. Öppna inställningarna
 2. Tryck på Standardwebbläsarapp
 3. Välj Chromium.</translation>
+<translation id="6155422572367400359">Logga in på den här webbplatsen, i ditt Google-konto och i Chromium. Du kan aktivera synkronisering senare.</translation>
 <translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
+<translation id="632825460376924298">Tillåt inloggning i Chromium</translation>
 <translation id="6337530241089703714">Välj om din data i Chromium ska raderas från den här enheten eller vara kvar</translation>
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="6820823224820483452">Chromium kunde inte kontrollera alla lösenord. Försök igen i morgon.</translation>
 <translation id="6827294685447036764">När du ger Chromium åtkomst till din plats skickas den från Chromium till alla webbplatser som du ger behörighet. Webbplatser kan fråga efter din plats när det finns lokal information att visa, till exempel butiker i närheten eller nyheter.</translation>
 <translation id="7018284295775193585">Chromium kan inte uppdateras</translation>
+<translation id="7045244423563602563">Anpassa Chromium</translation>
 <translation id="7099326575020694068">Chromium kan inte använda kameran i delad vy</translation>
 <translation id="7118091470949186573">Nu kan du använda Chromium varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="7208566199746267865">Med Chromium sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>

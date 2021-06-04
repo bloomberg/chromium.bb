@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace re2 {
 class RE2;
@@ -39,6 +39,7 @@ enum class VerificationStatus {
   kUserVerified = 4,
   // The token was parsed by the server.
   kServerParsed = 5,
+  kMaxValue = kServerParsed
 };
 
 // Prints the string representation of |status| to |os|.
@@ -552,7 +553,7 @@ class AddressComponent {
   bool ParseValueAndAssignSubcomponentsByRegularExpressions();
 
   // The unstructured value of this component.
-  base::Optional<std::u16string> value_;
+  absl::optional<std::u16string> value_;
 
   // The verification status of |value_| indicates the certainty of the value
   // to be correct.
@@ -568,7 +569,7 @@ class AddressComponent {
   // meaning that it was converted to lower case and diacritics have been
   // removed. |value_| is tokenized by splitting the string by white spaces and
   // commas. It is calculated when |value_| is set.
-  base::Optional<std::vector<AddressToken>> sorted_normalized_tokens_;
+  absl::optional<std::vector<AddressToken>> sorted_normalized_tokens_;
 
   // A pointer to the parent node. It is set to nullptr if the node is the root
   // node of the AddressComponent tree.

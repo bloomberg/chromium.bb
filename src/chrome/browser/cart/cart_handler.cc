@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cart/cart_handler.h"
+
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service.h"
@@ -63,6 +65,7 @@ void CartHandler::GetCartDataCallback(GetMerchantCartsCallback callback,
                                       bool success,
                                       std::vector<CartDB::KeyAndValue> res) {
   std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
+  bool show_discount = cart_service_->IsCartDiscountEnabled();
   for (CartDB::KeyAndValue proto_pair : res) {
     auto cart = chrome_cart::mojom::MerchantCart::New();
     cart->merchant = std::move(proto_pair.second.merchant());
@@ -73,8 +76,10 @@ void CartHandler::GetCartDataCallback(GetMerchantCartsCallback callback,
       for (std::string image_url : proto_pair.second.product_image_urls()) {
         cart->product_image_urls.emplace_back(std::move(image_url));
       }
-      cart->discount_text =
-          std::move(proto_pair.second.discount_info().discount_text());
+      if (show_discount) {
+        cart->discount_text =
+            std::move(proto_pair.second.discount_info().discount_text());
+      }
     }
     carts.push_back(std::move(cart));
   }
@@ -89,19 +94,14 @@ void CartHandler::GetWarmWelcomeVisible(
   std::move(callback).Run(cart_service_->ShouldShowWelcomeSurface());
 }
 
-// TODO(crbug.com/1174281): Below metrics collection can be moved to JS to avoid
-// cross-process calls.
-void CartHandler::OnCartItemClicked(uint32_t index) {
-  base::UmaHistogramCounts100("NewTabPage.Carts.ClickCart", index);
-}
-
-void CartHandler::OnModuleCreated(uint32_t count) {
-  base::UmaHistogramCounts100("NewTabPage.Carts.CartCount", count);
+void CartHandler::GetDiscountURL(const GURL& cart_url,
+                                 GetDiscountURLCallback callback) {
+  cart_service_->GetDiscountURL(cart_url, std::move(callback));
 }
 
 void CartHandler::GetDiscountConsentCardVisible(
     GetDiscountConsentCardVisibleCallback callback) {
-  std::move(callback).Run(cart_service_->ShouldShowDiscountConsent());
+  cart_service_->ShouldShowDiscountConsent(std::move(callback));
 }
 
 void CartHandler::OnDiscountConsentAcknowledged(bool accept) {

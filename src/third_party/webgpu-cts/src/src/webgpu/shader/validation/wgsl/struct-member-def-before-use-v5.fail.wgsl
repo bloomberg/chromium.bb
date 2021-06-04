@@ -10,7 +10,7 @@ struct foo {
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var f : foo;
   f.a = 2.0;
   f.b = 5.0;

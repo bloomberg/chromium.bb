@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -57,7 +58,7 @@ SystemLabelButton::SystemLabelButton(PressedCallback callback,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetTextSubpixelRenderingEnabled(false);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
@@ -80,17 +81,8 @@ gfx::Insets SystemLabelButton::GetInsets() const {
       kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp);
 }
 
-void SystemLabelButton::SetDisplayType(DisplayType display_type) {
-  // We only support transitions from a non-icon display type to another.
-  DCHECK(display_type_ != DisplayType::ALERT_WITH_ICON);
-  DCHECK(display_type != DisplayType::ALERT_WITH_ICON);
-  display_type_ = display_type;
-  bool alert_mode = display_type == DisplayType::ALERT_NO_ICON;
-  SetAlertMode(alert_mode);
-}
-
 void SystemLabelButton::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  views::LabelButton::OnThemeChanged();
   if (display_type_ == DisplayType::ALERT_WITH_ICON) {
     SetImage(
         views::Button::STATE_NORMAL,
@@ -102,6 +94,15 @@ void SystemLabelButton::OnThemeChanged() {
   bool is_alert = display_type_ == DisplayType::ALERT_WITH_ICON ||
                   display_type_ == DisplayType::ALERT_NO_ICON;
   SetAlertMode(is_alert);
+}
+
+void SystemLabelButton::SetDisplayType(DisplayType display_type) {
+  // We only support transitions from a non-icon display type to another.
+  DCHECK(display_type_ != DisplayType::ALERT_WITH_ICON);
+  DCHECK(display_type != DisplayType::ALERT_WITH_ICON);
+  display_type_ = display_type;
+  bool alert_mode = display_type == DisplayType::ALERT_NO_ICON;
+  SetAlertMode(alert_mode);
 }
 
 void SystemLabelButton::SetAlertMode(bool alert_mode) {
@@ -127,9 +128,9 @@ void SystemLabelButton::SetAlertMode(bool alert_mode) {
       AshColorProvider::Get()->GetBaseLayerColor(kBubbleLayerType));
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(effective_background_color);
-  SetInkDropBaseColor(ripple_attributes.base_color);
-  SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
-  SetInkDropHighlightOpacity(ripple_attributes.highlight_opacity);
+  ink_drop()->SetBaseColor(ripple_attributes.base_color);
+  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  ink_drop()->SetHighlightOpacity(ripple_attributes.highlight_opacity);
 }
 
 }  // namespace ash

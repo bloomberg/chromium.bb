@@ -3,6 +3,6 @@
 var<workgroup> w : array<i32, 4> = array<i32, 4>(0, 1, 0, 1);
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }
 

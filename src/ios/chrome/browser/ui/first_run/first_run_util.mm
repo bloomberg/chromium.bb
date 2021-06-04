@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -22,6 +21,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
@@ -43,21 +43,43 @@ void CreateSentinel() {
   base::File::Error file_error;
   FirstRun::SentinelResult sentinel_created =
       FirstRun::CreateSentinel(&file_error);
-  UMA_HISTOGRAM_ENUMERATION("FirstRun.Sentinel.Created", sentinel_created,
-                            FirstRun::SentinelResult::SENTINEL_RESULT_MAX);
+  base::UmaHistogramEnumeration("FirstRun.Sentinel.Created", sentinel_created,
+                                FirstRun::SentinelResult::SENTINEL_RESULT_MAX);
   if (sentinel_created == FirstRun::SentinelResult::SENTINEL_RESULT_FILE_ERROR)
-    UMA_HISTOGRAM_ENUMERATION("FirstRun.Sentinel.CreatedFileError", -file_error,
-                              -base::File::FILE_ERROR_MAX);
+    base::UmaHistogramExactLinear("FirstRun.Sentinel.CreatedFileError",
+                                  -file_error, -base::File::FILE_ERROR_MAX);
 }
 
-// Helper function for recording first run metrics.
-void RecordFirstRunMetricsInternal(
+bool kFirstRunSentinelCreated = false;
+
+// Creates the First Run sentinel file so that the user will not be shown First
+// Run on subsequent cold starts. The user is considered done with First Run
+// only after a successful sign-in or explicitly skipping signing in. First Run
+// metrics are recorded iff the sentinel file didn't previous exist and was
+// successfully created.
+void WriteFirstRunSentinelAndRecordMetrics(
     ChromeBrowserState* browserState,
     first_run::SignInAttemptStatus sign_in_attempt_status,
-    bool has_sso_accounts) {
+    BOOL has_sso_account) {
+  DCHECK(!base::FeatureList::IsEnabled(kEnableFREUIModuleIOS));
+  kFirstRunSentinelCreated = true;
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&CreateSentinel));
+  RecordFirstRunSignInMetrics(
+      IdentityManagerFactory::GetForBrowserState(browserState),
+      sign_in_attempt_status, has_sso_account);
+}
+
+}  // namespace
+
+void RecordFirstRunSignInMetrics(
+    signin::IdentityManager* identity_manager,
+    first_run::SignInAttemptStatus sign_in_attempt_status,
+    BOOL has_sso_accounts) {
+  bool user_signed_in =
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin);
   first_run::SignInStatus sign_in_status;
-  bool user_signed_in = IdentityManagerFactory::GetForBrowserState(browserState)
-                            ->HasPrimaryAccount(signin::ConsentLevel::kSync);
   if (user_signed_in) {
     sign_in_status = has_sso_accounts
                          ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
@@ -79,30 +101,18 @@ void RecordFirstRunMetricsInternal(
         break;
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("FirstRun.SignIn", sign_in_status,
-                            first_run::SIGNIN_SIZE);
-}
-
-bool kFirstRunSentinelCreated = false;
-
-}  // namespace
-
-void WriteFirstRunSentinelAndRecordMetrics(
-    ChromeBrowserState* browserState,
-    first_run::SignInAttemptStatus sign_in_attempt_status,
-    BOOL has_sso_account) {
-  kFirstRunSentinelCreated = true;
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&CreateSentinel));
-  RecordFirstRunMetricsInternal(browserState, sign_in_attempt_status,
-                                has_sso_account);
+  base::UmaHistogramEnumeration("FirstRun.SignIn", sign_in_status,
+                                first_run::SIGNIN_SIZE);
 }
 
 void FinishFirstRun(ChromeBrowserState* browserState,
                     web::WebState* web_state,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter) {
+  // This method souldn't be called with the new FRE, and should be removed
+  // after the new FRE module is shipped.
+  DCHECK(!base::FeatureList::IsEnabled(kEnableFREUIModuleIOS));
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kChromeFirstRunUIWillFinishNotification
                     object:nil];
@@ -111,6 +121,13 @@ void FinishFirstRun(ChromeBrowserState* browserState,
 
   // Display the sync errors infobar.
   DisplaySyncErrors(browserState, web_state, presenter);
+}
+
+void WriteFirstRunSentinel() {
+  kFirstRunSentinelCreated = true;
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&CreateSentinel));
 }
 
 void FirstRunDismissed() {

@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
@@ -82,6 +83,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/action_after_pagehide.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 using base::ASCIIToUTF16;
@@ -2447,7 +2449,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  EXPECT_TRUE(
+      NavigateToURLAndExpectNoCommit(shell(), GURL(blink::kChromeUICrashURL)));
   crash_observer.Wait();
 
   // We should not change SiteInstance and BrowsingInstance on navigations to
@@ -2474,12 +2477,13 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  EXPECT_TRUE(
+      NavigateToURLAndExpectNoCommit(shell(), GURL(blink::kChromeUICrashURL)));
   crash_observer.Wait();
 
   // Load the crash URL again but don't wait for any action.  If it is not
   // ignored this time, we will fail the WebUI CHECK in InitRenderView.
-  shell()->LoadURL(GURL(kChromeUICrashURL));
+  shell()->LoadURL(GURL(blink::kChromeUICrashURL));
 
   // Ensure that such URLs can still work as the initial navigation of a tab.
   // We postpone the initial navigation of the tab using an empty GURL, so that
@@ -2489,7 +2493,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                              GURL(), nullptr, gfx::Size());
   RenderProcessHostWatcher crash_observer2(
       shell2->web_contents(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell2, GURL(kChromeUIKillURL)));
+  EXPECT_TRUE(
+      NavigateToURLAndExpectNoCommit(shell2, GURL(blink::kChromeUIKillURL)));
   crash_observer2.Wait();
 }
 
@@ -2996,7 +3001,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   std::unique_ptr<NavigationEntryImpl> cloned_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              url1, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              url1, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
               false, std::string(),
               shell()->web_contents()->GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
@@ -8064,9 +8069,17 @@ class AssertForegroundHelper {
 // "visible" widget being added to the process. This test discards the spare
 // RenderProcessHost if present, to ensure that it is not used in the
 // cross-process navigation.
+// TODO(https://crbug.com/1197438): Flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess \
+  DISABLED_ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess
+#else
+#define MAYBE_ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess \
+  ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess
+#endif
 IN_PROC_BROWSER_TEST_P(
     RenderFrameHostManagerTest,
-    ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess) {
+    MAYBE_ForegroundNavigationIsNeverBackgroundedWithoutSpareProcess) {
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -8470,10 +8483,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_NE(process1, process2);
   EXPECT_EQ(GURL("http://foo.com"),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(ProcessLock(
-                SiteInfo(GURL("http://foo.com"), GURL("http://foo.com"),
-                         false /* is_origin_keyed */,
-                         CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated())),
+  EXPECT_EQ(ProcessLock(SiteInfo(GURL("http://foo.com"), GURL("http://foo.com"),
+                                 false /* is_origin_keyed */,
+                                 WebExposedIsolationInfo::CreateNonIsolated())),
             policy->GetProcessLock(process2->GetID()));
 
   // Ensure also that the foo.com process didn't change midway through the
@@ -9044,7 +9056,7 @@ class RenderFrameHostManagerClearWindowNameTest
  public:
   RenderFrameHostManagerClearWindowNameTest() {
     feature_list_.InitAndEnableFeature(
-        features::kClearCrossBrowsingContextGroupMainFrameName);
+        features::kClearCrossSiteCrossBrowsingContextGroupWindowName);
   }
   ~RenderFrameHostManagerClearWindowNameTest() override = default;
 
@@ -9110,7 +9122,7 @@ class ProactivelySwapBrowsingInstancesSameSiteClearWindowNameTest
  public:
   ProactivelySwapBrowsingInstancesSameSiteClearWindowNameTest() {
     feature_list_.InitAndEnableFeature(
-        features::kClearCrossBrowsingContextGroupMainFrameName);
+        features::kClearCrossSiteCrossBrowsingContextGroupWindowName);
   }
   ~ProactivelySwapBrowsingInstancesSameSiteClearWindowNameTest() override =
       default;

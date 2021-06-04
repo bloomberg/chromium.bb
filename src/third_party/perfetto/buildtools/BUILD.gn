@@ -1040,8 +1040,10 @@ source_set("libunwindstack") {
     "//gn/standalone:visibility_hidden",
   ]
   cflags = [ "-DFAKE_LOG_DEVICE=1" ]
-  configs += [ "//gn/standalone:c++17" ]
-  public_configs = [ ":libunwindstack_config" ]
+  public_configs = [
+    ":libunwindstack_config",
+    "//gn/standalone:c++17",
+  ]
 }
 
 config("bionic_kernel_uapi_headers") {
@@ -1056,6 +1058,7 @@ config("jsoncpp_config") {
   visibility = _buildtools_visibility
   cflags = [
     "-DJSON_USE_EXCEPTION=0",
+    "-Wno-deprecated-declarations",
 
     # Using -isystem instead of include_dirs (-I), so we don't need to suppress
     # warnings coming from third-party headers. Doing so would mask warnings in

@@ -23,7 +23,6 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
@@ -128,7 +127,7 @@ memory_instrumentation::mojom::ProcessType GetCoordinatorClientProcessType(
   }
 }
 
-void BindTracedProcessOnIOThread(
+void BindTracedProcessOnProcessThread(
     base::WeakPtr<BrowserChildProcessHostImpl> weak_host,
     mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
   if (!weak_host)
@@ -140,8 +139,13 @@ void BindTracedProcessOnIOThread(
 void BindTracedProcessFromUIThread(
     base::WeakPtr<BrowserChildProcessHostImpl> weak_host,
     mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    BindTracedProcessOnProcessThread(std::move(weak_host), std::move(receiver));
+    return;
+  }
+
   GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&BindTracedProcessOnIOThread,
+      FROM_HERE, base::BindOnce(&BindTracedProcessOnProcessThread,
                                 std::move(weak_host), std::move(receiver)));
 }
 
@@ -721,7 +725,7 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
                      client_process,
                  memory_instrumentation::mojom::ProcessType process_type,
                  base::ProcessId process_id,
-                 base::Optional<std::string> service_name) {
+                 absl::optional<std::string> service_name) {
                 GetMemoryInstrumentationRegistry()->RegisterClientProcess(
                     std::move(receiver), std::move(client_process),
                     process_type, process_id, std::move(service_name));

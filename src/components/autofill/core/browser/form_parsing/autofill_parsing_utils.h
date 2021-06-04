@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "components/autofill/core/common/language_code.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
 
@@ -63,4 +63,4 @@ struct MatchingPattern {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_PARSING_UTILS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_AUTOFILL_PARSING_UTILS_H_

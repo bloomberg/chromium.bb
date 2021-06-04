@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -24,7 +25,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/focus_ring.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 
 float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
@@ -63,7 +63,7 @@ PageActionIconView::PageActionIconView(
   DCHECK(delegate_);
 
   image()->SetFlipCanvasOnPaintForRTLUI(true);
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   button_controller()->set_notify_action(
@@ -108,7 +108,7 @@ std::u16string PageActionIconView::GetTooltipText(const gfx::Point& p) const {
 void PageActionIconView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
-  if (details.is_add && details.child == this && GetNativeTheme()) {
+  if (details.is_add && details.child == this) {
     UpdateIconImage();
     UpdateBorder();
   }
@@ -263,6 +263,6 @@ void PageActionIconView::UpdateBorder() {
 }
 
 BEGIN_METADATA(PageActionIconView, IconLabelBubbleView)
-ADD_PROPERTY_METADATA(SkColor, IconColor, views::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, IconColor, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, Active)
 END_METADATA

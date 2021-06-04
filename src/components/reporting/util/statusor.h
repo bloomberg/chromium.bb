@@ -57,14 +57,13 @@
 #define COMPONENTS_REPORTING_UTIL_STATUSOR_H_
 
 #include <new>
-#include <string>
 #include <type_traits>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "components/reporting/util/status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 
@@ -299,7 +298,7 @@ class WARN_UNUSED_RESULT StatusOr {
   }
 
   Status status_;
-  base::Optional<T> value_;
+  absl::optional<T> value_;
 };
 
 }  // namespace reporting

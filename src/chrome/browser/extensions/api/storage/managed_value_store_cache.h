@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -70,7 +69,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // Posted by OnPolicyUpdated() to update a PolicyValueStore on the backend
   // sequence.
   void UpdatePolicyOnBackend(const std::string& extension_id,
-                             std::unique_ptr<policy::PolicyMap> current_policy);
+                             const policy::PolicyMap& current_policy);
 
   // Returns an existing PolicyValueStore for |extension_id|, or NULL.
   PolicyValueStore* GetStoreFor(const std::string& extension_id);

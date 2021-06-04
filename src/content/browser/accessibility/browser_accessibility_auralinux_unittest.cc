@@ -30,18 +30,18 @@ class BrowserAccessibilityAuraLinuxTest : public testing::Test {
   void SetUp() override;
 
   content::BrowserTaskEnvironment task_environment_;
+  ui::testing::ScopedAxModeSetter ax_mode_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAuraLinuxTest);
 };
 
-BrowserAccessibilityAuraLinuxTest::BrowserAccessibilityAuraLinuxTest() =
-    default;
+BrowserAccessibilityAuraLinuxTest::BrowserAccessibilityAuraLinuxTest()
+    : ax_mode_setter_(ui::kAXModeComplete) {}
 
 BrowserAccessibilityAuraLinuxTest::~BrowserAccessibilityAuraLinuxTest() =
     default;
 
 void BrowserAccessibilityAuraLinuxTest::SetUp() {
-  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
   test_browser_accessibility_delegate_ =
       std::make_unique<TestBrowserAccessibilityDelegate>();
 }
@@ -166,6 +166,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
   combo_box.id = 12;
   combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
   combo_box.AddState(ax::mojom::State::kEditable);
+  combo_box.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "input");
   combo_box.SetName(combo_box_name);
   combo_box.SetValue(combo_box_value);
 
@@ -362,7 +363,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
        TestTextAttributesInContentEditables) {
   auto has_attribute = [](AtkAttributeSet* attributes,
                           AtkTextAttribute text_attribute,
-                          base::Optional<const char*> expected_value) {
+                          absl::optional<const char*> expected_value) {
     const char* name = atk_text_attribute_get_name(text_attribute);
     while (attributes) {
       const AtkAttribute* attribute =
@@ -524,8 +525,8 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
     ASSERT_TRUE(
         has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
     ASSERT_FALSE(
-        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
-    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, base::nullopt));
+        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, absl::nullopt));
+    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, absl::nullopt));
     ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, "single"));
     ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_LANGUAGE, "fr"));
 
@@ -548,12 +549,12 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
     ASSERT_TRUE(
         has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
     ASSERT_FALSE(
-        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
-    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, base::nullopt));
+        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, absl::nullopt));
+    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, absl::nullopt));
     ASSERT_FALSE(
-        has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
+        has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, absl::nullopt));
     ASSERT_FALSE(
-        has_attribute(attributes, ATK_TEXT_ATTR_INVALID, base::nullopt));
+        has_attribute(attributes, ATK_TEXT_ATTR_INVALID, absl::nullopt));
 
     atk_attribute_set_free(attributes);
   }
@@ -571,8 +572,8 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, "700"));
   ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, "italic"));
   ASSERT_FALSE(
-      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
-  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_INVALID, base::nullopt));
+      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, absl::nullopt));
+  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_INVALID, absl::nullopt));
   atk_attribute_set_free(attributes);
 
   AtkObject* ax_after_atk_object =
@@ -583,10 +584,10 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   EXPECT_EQ(7, end_offset);
   ASSERT_TRUE(
       has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
-  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
+  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, absl::nullopt));
   ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, "italic"));
   ASSERT_FALSE(
-      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
+      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, absl::nullopt));
   atk_attribute_set_free(attributes);
 
   manager.reset();
@@ -674,6 +675,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   combo_box.id = 2;
   combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
   combo_box.AddState(ax::mojom::State::kEditable);
+  combo_box.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "input");
   combo_box.AddState(ax::mojom::State::kFocusable);
   combo_box.SetValue(value1 + value2);
 

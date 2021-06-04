@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
@@ -21,7 +22,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -65,6 +68,8 @@ public class WebApkIntegrationTest {
     @Test
     @LargeTest
     @Feature({"Webapps"})
+    @DisableIf.Build(message = "See https://crbug.com/1199869",
+            sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q)
     public void testDeepLink() {
         String pageUrl = "https://pwa-directory.appspot.com/defaultresponse";
 
@@ -85,6 +90,7 @@ public class WebApkIntegrationTest {
     @Test
     @LargeTest
     @Feature({"Webapps"})
+    @FlakyTest(message = "https://crbug.com/1112352")
     public void testShare() throws TimeoutException {
         final String sharedSubject = "Fun tea parties";
         final String sharedText = "Boston";

@@ -132,8 +132,8 @@ class ASH_EXPORT ContentsView : public views::View,
 
   int NumLauncherPages() const;
 
-  SearchResultPageView* search_results_page_view() const {
-    return search_results_page_view_;
+  SearchResultPageView* search_result_page_view() const {
+    return search_result_page_view_;
   }
   AppsContainerView* apps_container_view() const {
     return apps_container_view_;
@@ -275,7 +275,7 @@ class ASH_EXPORT ContentsView : public views::View,
   // Sub-views of the ContentsView. All owned by the views hierarchy.
   AssistantPageView* assistant_page_view_ = nullptr;
   AppsContainerView* apps_container_view_ = nullptr;
-  SearchResultPageView* search_results_page_view_ = nullptr;
+  SearchResultPageView* search_result_page_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;
@@ -308,8 +308,8 @@ class ASH_EXPORT ContentsView : public views::View,
   // state (either using UpdateYPositionAndOpacity() or AnimateToViewState()).
   // Used primarily to determine the initial search box position when animating
   // to a new app list view state.
-  base::Optional<AppListState> target_page_for_last_view_state_update_;
-  base::Optional<AppListViewState> last_target_view_state_;
+  absl::optional<AppListState> target_page_for_last_view_state_update_;
+  absl::optional<AppListViewState> last_target_view_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };

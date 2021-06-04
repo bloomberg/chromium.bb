@@ -54,7 +54,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   SVGUnitTypes::SVGUnitType ClipPathUnits() const;
   AffineTransform CalculateClipTransform(const FloatRect& reference_box) const;
 
-  base::Optional<Path> AsPath();
+  absl::optional<Path> AsPath();
   sk_sp<const PaintRecord> CreatePaintRecord();
 
  private:
@@ -104,4 +104,4 @@ inline LayoutSVGResourceClipper* GetSVGResourceAsType(
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_CLIPPER_H_

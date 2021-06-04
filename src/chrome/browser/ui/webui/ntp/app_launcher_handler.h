@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -31,6 +30,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ExtensionEnableFlow;
 class PrefChangeRegistrar;
@@ -207,9 +207,6 @@ class AppLauncherHandler
       std::unique_ptr<AppInstallInfo> install_info,
       const favicon_base::FaviconImageResult& image_result);
 
-  // Sends |highlight_app_id_| to the js.
-  void SetAppToBeHighlighted();
-
   void OnExtensionPreferenceChanged();
 
   // Called when an extension is removed (unloaded or uninstalled). Updates the
@@ -218,7 +215,7 @@ class AppLauncherHandler
                         bool is_uninstall);
 
   // True if the extension should be displayed.
-  bool ShouldShow(const extensions::Extension* extension) const;
+  bool ShouldShow(const extensions::Extension* extension);
 
   // Handle installing OS hooks for Web App installs from chrome://apps page.
   void InstallOsHooks(const web_app::AppId& app_id);
@@ -228,8 +225,7 @@ class AppLauncherHandler
   extensions::ExtensionService* const extension_service_;
 
   // The apps are represented in the web apps model, which outlives us since
-  // it's owned by our containing profile. Populated iff
-  // features::kDesktopPWAsWithoutExtensions is enabled.
+  // it's owned by our containing profile.
   web_app::WebAppProvider* const web_app_provider_;
 
   base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
@@ -272,16 +268,11 @@ class AppLauncherHandler
 
   // When populated, we have attempted to install a bookmark app, and are still
   // waiting to hear about success or failure from the extensions system.
-  base::Optional<syncer::StringOrdinal>
+  absl::optional<syncer::StringOrdinal>
       attempting_web_app_install_page_ordinal_;
 
   // True if we have executed HandleGetApps() at least once.
   bool has_loaded_apps_;
-
-  // The ID of the app to be highlighted on the NTP (i.e. shown on the page
-  // and pulsed). This is done for new installs. The actual higlighting occurs
-  // when the app is added to the page (via getAppsCallback or appAdded).
-  std::string highlight_app_id_;
 
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;

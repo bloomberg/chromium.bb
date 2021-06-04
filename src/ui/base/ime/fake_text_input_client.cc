@@ -20,6 +20,10 @@ void FakeTextInputClient::set_text_input_type(TextInputType text_input_type) {
   text_input_type_ = text_input_type;
 }
 
+void FakeTextInputClient::set_source_id(ukm::SourceId source_id) {
+  source_id_ = source_id;
+}
+
 void FakeTextInputClient::SetTextAndSelection(const std::u16string& text,
                                               gfx::Range selection) {
   DCHECK_LE(selection_.end(), text.length());
@@ -76,6 +80,10 @@ bool FakeTextInputClient::CanComposeInline() const {
 }
 
 gfx::Rect FakeTextInputClient::GetCaretBounds() const {
+  return {};
+}
+
+gfx::Rect FakeTextInputClient::GetSelectionBoundingBox() const {
   return {};
 }
 
@@ -140,7 +148,7 @@ void FakeTextInputClient::SetTextEditCommandForNextKeyEvent(
     TextEditCommand command) {}
 
 ukm::SourceId FakeTextInputClient::GetClientSourceForMetrics() const {
-  return {};
+  return source_id_;
 }
 
 bool FakeTextInputClient::ShouldDoLearning() {
@@ -177,8 +185,8 @@ bool FakeTextInputClient::SetAutocorrectRange(const gfx::Range& range) {
 
 #if defined(OS_WIN)
 void FakeTextInputClient::GetActiveTextInputControlLayoutBounds(
-    base::Optional<gfx::Rect>* control_bounds,
-    base::Optional<gfx::Rect>* selection_bounds) {}
+    absl::optional<gfx::Rect>* control_bounds,
+    absl::optional<gfx::Rect>* selection_bounds) {}
 
 void FakeTextInputClient::SetActiveCompositionForAccessibility(
     const gfx::Range& range,

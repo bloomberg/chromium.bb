@@ -6,11 +6,10 @@
 #define MEDIA_BASE_VIDEO_ENCODER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/optional.h"
 #include "media/base/media_export.h"
 #include "media/base/status.h"
 #include "media/base/video_codecs.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -44,12 +43,12 @@ class MEDIA_EXPORT VideoEncoder {
     Options();
     Options(const Options&);
     ~Options();
-    base::Optional<uint64_t> bitrate;
-    base::Optional<double> framerate;
+    absl::optional<uint64_t> bitrate;
+    absl::optional<double> framerate;
 
     gfx::Size frame_size;
 
-    base::Optional<int> keyframe_interval = 10000;
+    absl::optional<int> keyframe_interval = 10000;
 
     // Requested number of SVC temporal layers.
     int temporal_layers = 1;
@@ -67,12 +66,14 @@ class MEDIA_EXPORT VideoEncoder {
   // becomes available.
   using OutputCB =
       base::RepeatingCallback<void(VideoEncoderOutput output,
-                                   base::Optional<CodecDescription>)>;
+                                   absl::optional<CodecDescription>)>;
 
   // Callback to report success and errors in encoder calls.
   using StatusCB = base::OnceCallback<void(Status error)>;
 
   VideoEncoder();
+  VideoEncoder(const VideoEncoder&) = delete;
+  VideoEncoder& operator=(const VideoEncoder&) = delete;
   virtual ~VideoEncoder();
 
   // Initializes a VideoEncoder with the given |options|, executing the
@@ -117,9 +118,6 @@ class MEDIA_EXPORT VideoEncoder {
   // Requests all outputs for already encoded frames to be
   // produced via |output_cb| and calls |dene_cb| after that.
   virtual void Flush(StatusCB done_cb) = 0;
-
- protected:
-  DISALLOW_COPY_AND_ASSIGN(VideoEncoder);
 };
 
 }  // namespace media

@@ -18,17 +18,21 @@
 #include "base/util/type_safety/id_type.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/mojom/print.mojom-shared.h"
+#include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
 #include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 #include "tools/ipc_fuzzer/message_lib/message_cracker.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/range/range.h"
 #include "ui/latency/latency_info.h"
 
 #if defined(OS_POSIX)
@@ -1665,12 +1669,12 @@ struct FuzzTraits<url::Origin> {
     if (!FuzzParam(&port, fuzzer))
       return false;
 
-    base::Optional<url::Origin> origin;
+    absl::optional<url::Origin> origin;
     if (!opaque) {
       origin = url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
           scheme, host, port);
     } else {
-      base::Optional<base::UnguessableToken> token =
+      absl::optional<base::UnguessableToken> token =
           p->GetNonceForSerialization();
       if (!token)
         token = base::UnguessableToken::Deserialize(RandU64(), RandU64());

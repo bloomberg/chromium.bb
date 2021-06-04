@@ -933,6 +933,7 @@ interface Crypto
     getter subtle
     method constructor
     method getRandomValues
+    method randomUUID
 interface CryptoKey
     attribute @@toStringTag
     getter algorithm
@@ -2121,6 +2122,7 @@ interface FontFace
     getter featureSettings
     getter lineGapOverride
     getter loaded
+    getter sizeAdjust
     getter status
     getter stretch
     getter style
@@ -2135,6 +2137,7 @@ interface FontFace
     setter family
     setter featureSettings
     setter lineGapOverride
+    setter sizeAdjust
     setter stretch
     setter style
     setter unicodeRange
@@ -4083,6 +4086,7 @@ interface ImageCapture
     method takePhoto
 interface ImageData
     attribute @@toStringTag
+    getter colorSpace
     getter data
     getter height
     getter width
@@ -5092,7 +5096,6 @@ interface Performance : EventTarget
     method getEntriesByType
     method mark
     method measure
-    method measureUserAgentSpecificMemory
     method now
     method setResourceTimingBufferSize
     method toJSON

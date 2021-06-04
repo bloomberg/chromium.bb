@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_provider_utils.h"
@@ -28,7 +28,7 @@ namespace ui {
 
 namespace {
 
-base::Optional<SkColor> GetHighContrastColor(
+absl::optional<SkColor> GetHighContrastColor(
     NativeTheme::ColorId color_id,
     NativeTheme::ColorScheme color_scheme) {
   switch (color_id) {
@@ -48,11 +48,11 @@ base::Optional<SkColor> GetHighContrastColor(
                  ? gfx::kGoogleBlue100
                  : gfx::kGoogleBlue900;
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
-base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id,
+absl::optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id,
                                            const NativeTheme* base_theme) {
   switch (color_id) {
     // Alert
@@ -83,6 +83,10 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey500;
     case NativeTheme::kColorId_LabelEnabledColor:
       return gfx::kGoogleGrey200;
+
+    // Shadow
+    case NativeTheme::kColorId_ShadowBase:
+      return SK_ColorBLACK;
 
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
@@ -117,7 +121,7 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id,
       return color_utils::BlendTowardMaxContrast(gfx::kGoogleGrey900, 0x0A);
 
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -164,7 +168,16 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_BubbleBorder:
       return base_theme->GetUnprocessedSystemColor(
           NativeTheme::kColorId_SeparatorColor, color_scheme);
-
+    case NativeTheme::kColorId_BubbleBorderShadowLarge:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x1A);
+    case NativeTheme::kColorId_BubbleBorderShadowSmall:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x33);
+    case NativeTheme::kColorId_BubbleBorderWhenShadowPresent:
+      return SkColorSetA(SK_ColorBLACK, 0x26);
     // Button
     case NativeTheme::kColorId_ButtonColor:
       return base_theme->GetUnprocessedSystemColor(
@@ -252,6 +265,8 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
           NativeTheme::kColorId_DefaultIconColor, color_scheme);
       return SkColorSetA(icon, gfx::kDisabledControlAlpha);
     }
+    case NativeTheme::kColorId_SecondaryIconColor:
+      return gfx::kGoogleGrey600;
 
     // Label
     case NativeTheme::kColorId_LabelDisabledColor: {
@@ -386,6 +401,27 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
       return gfx::kGoogleGrey300;
+
+    // Shadow
+    case NativeTheme::kColorId_ShadowBase:
+      return gfx::kGoogleGrey800;
+
+    case NativeTheme::kColorId_ShadowValueAmbientShadowElevationThree:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x40);
+    case NativeTheme::kColorId_ShadowValueKeyShadowElevationThree:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x66);
+    case NativeTheme::kColorId_ShadowValueAmbientShadowElevationSixteen:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x3d);
+    case NativeTheme::kColorId_ShadowValueKeyShadowElevationSixteen:
+      return SkColorSetA(base_theme->GetUnprocessedSystemColor(
+                             NativeTheme::kColorId_ShadowBase, color_scheme),
+                         0x1a);
 
     // Slider
     case NativeTheme::kColorId_SliderThumbMinimal:
@@ -557,6 +593,12 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       // switch enumeration.
       NOTREACHED();
       return gfx::kPlaceholderColor;
+
+    // Focus ring
+    case NativeTheme::kColorId_FocusAuraColor:
+      const SkColor focus_color = base_theme->GetUnprocessedSystemColor(
+          NativeTheme::kColorId_ProminentButtonColor, color_scheme);
+      return SkColorSetA(focus_color, 0x3D);
   }
 }
 
@@ -583,7 +625,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   // High contrast overrides the normal colors for certain ColorIds to be much
   // darker or lighter.
   if (base_theme->UserHasContrastPreference()) {
-    base::Optional<SkColor> color =
+    absl::optional<SkColor> color =
         GetHighContrastColor(color_id, color_scheme);
     if (color.has_value()) {
       DVLOG(2) << "GetHighContrastColor: "
@@ -594,7 +636,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   }
 
   if (color_scheme == NativeTheme::ColorScheme::kDark) {
-    base::Optional<SkColor> color = GetDarkSchemeColor(color_id, base_theme);
+    absl::optional<SkColor> color = GetDarkSchemeColor(color_id, base_theme);
     if (color.has_value()) {
       DVLOG(2) << "GetDarkSchemeColor: "
                << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)

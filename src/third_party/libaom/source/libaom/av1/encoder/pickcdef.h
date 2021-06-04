@@ -58,20 +58,6 @@ typedef uint64_t (*compute_cdef_dist_t)(void *dst, int dstride, uint16_t *src,
                                         BLOCK_SIZE bsize, int coeff_shift,
                                         int row, int col);
 
-// Data related to CDEF search multi-thread synchronization.
-typedef struct AV1CdefSyncData {
-#if CONFIG_MULTITHREAD
-  // Mutex lock used while dispatching jobs.
-  pthread_mutex_t *mutex_;
-#endif  // CONFIG_MULTITHREAD
-  // Flag to indicate all blocks are processed and end of frame is reached
-  int end_of_frame;
-  // Row index in units of 64x64 block
-  int fbr;
-  // Column index in units of 64x64 block
-  int fbc;
-} AV1CdefSync;
-
 /*! \brief CDEF search context.
  */
 typedef struct {

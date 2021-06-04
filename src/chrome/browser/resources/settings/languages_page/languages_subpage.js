@@ -6,6 +6,8 @@
  * @fileoverview 'settings-languages-page' is the settings page
  * for language and input method settings.
  */
+
+// TODO(crbug.com/1097328): Remove all chromeos references here.
 import 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
@@ -91,6 +93,12 @@ Polymer({
     /** @private */
     showAddLanguagesDialog_: Boolean,
 
+    /** @private */
+    showAddAlwaysTranslateDialog_: Boolean,
+
+    /** @private */
+    showAddNeverTranslateDialog_: Boolean,
+
     /** @private {?Array<!chrome.languageSettingsPrivate.Language>} */
     addLanguagesDialogLanguages_: Array,
 
@@ -112,11 +120,12 @@ Polymer({
       },
     },
 
+    // TODO(crbug.com/1097328): Delete this.
     /** @private */
     isChromeOSLanguagesSettingsUpdate_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean('isChromeOSLanguagesSettingsUpdate');
+        return true;
       },
     },
     // </if>
@@ -126,6 +135,20 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    enableDesktopDetailedLanguageSettings_: {
+      type: Boolean,
+      value() {
+        let enabled = false;
+        // <if expr="not chromeos and not lacros">
+        enabled =
+            loadTimeData.getBoolean('enableDesktopDetailedLanguageSettings');
+        // </if>
+        return enabled;
+      },
+    },
+
   },
 
   // <if expr="chromeos">
@@ -199,6 +222,51 @@ Polymer({
   },
 
   /**
+   * Stamps and opens the Add Languages dialog, registering a listener to
+   * disable the dialog's dom-if again on close.
+   * @param {!Event} e
+   * @private
+   */
+  onAddAlwaysTranslateLanguagesClick_(e) {
+    e.preventDefault();
+
+    const translatableLanguages = this.getTranslatableLanguages_();
+    this.addLanguagesDialogLanguages_ = translatableLanguages.filter(
+        language => !this.languages.alwaysTranslate.includes(language));
+    this.showAddAlwaysTranslateDialog_ = true;
+  },
+
+  /** @private */
+  onAlwaysTranslateDialogClose_() {
+    this.showAddAlwaysTranslateDialog_ = false;
+    this.addLanguagesDialogLanguages_ = null;
+    focusWithoutInk(assert(this.$$('#addAlwaysTranslate')));
+  },
+
+  /**
+   * Helper function fired by the add dialog's on-languages-added event. Adds
+   * selected languages to the always-translate languages list.
+   * @param {!CustomEvent<!Array<string>>} e
+   * @private
+   */
+  onAlwaysTranslateLanguagesAdded_(e) {
+    const languagesToAdd = e.detail;
+    languagesToAdd.forEach(languageCode => {
+      this.languageHelper.setLanguageAlwaysTranslateState(languageCode, true);
+    });
+  },
+
+  /**
+   * Removes a language from the always translate languages list.
+   * @param {!Event} e
+   * @private
+   */
+  onRemoveAlwaysTranslateLanguageClick_(e) {
+    const languageCode = e.model.item.code;
+    this.languageHelper.setLanguageAlwaysTranslateState(languageCode, false);
+  },
+
+  /**
    * Checks if there are supported languages that are not enabled but can be
    * enabled.
    * @param {LanguagesModel|undefined} languages
@@ -209,6 +277,48 @@ Polymer({
     return languages === undefined || languages.supported.some(language => {
       return this.languageHelper.canEnableLanguage(language);
     });
+  },
+
+  /**
+   * Stamps and opens the Add Languages dialog, registering a listener to
+   * disable the dialog's dom-if again on close.
+   * @param {!Event} e
+   * @private
+   */
+  onAddNeverTranslateLanguagesClick_(e) {
+    e.preventDefault();
+
+    this.addLanguagesDialogLanguages_ = this.languages.supported.filter(
+        language => !this.languages.neverTranslate.includes(language));
+    this.showAddNeverTranslateDialog_ = true;
+  },
+
+  /** @private */
+  onNeverTranslateDialogClose_() {
+    this.showAddNeverTranslateDialog_ = false;
+    this.addLanguagesDialogLanguages_ = null;
+    focusWithoutInk(assert(this.$$('#addNeverTranslate')));
+  },
+
+  /**
+   * @param {!CustomEvent<!Array<string>>} e
+   * @private
+   */
+  onNeverTranslateLanguagesAdded_(e) {
+    const languagesToAdd = e.detail;
+    languagesToAdd.forEach(languageCode => {
+      this.languageHelper.disableTranslateLanguage(languageCode);
+    });
+  },
+
+  /**
+   * Removes a language from the never translate languages list.
+   * @param {!Event} e
+   * @private
+   */
+  onRemoveNeverTranslateLanguageClick_(e) {
+    const languageCode = e.model.item.code;
+    this.languageHelper.enableTranslateLanguage(languageCode);
   },
 
   /**
@@ -641,5 +751,25 @@ Polymer({
    */
   onManagedLanguageDialogClosed_() {
     this.showManagedLanguageDialog_ = false;
-  }
+  },
+
+  /**
+   * @param {Array<?>} list
+   * @return {boolean} Returns true if the list is non-null and has items.
+   * @private
+   */
+  hasSome_(list) {
+    return !!(list && list.length);
+  },
+
+  /**
+   * Gets the list of languages that chrome can translate
+   * @private
+   * @returns {!Array<!chrome.languageSettingsPrivate.Language>}
+   */
+  getTranslatableLanguages_() {
+    return this.languages.supported.filter(language => {
+      return this.languageHelper.isLanguageTranslatable(language);
+    });
+  },
 });

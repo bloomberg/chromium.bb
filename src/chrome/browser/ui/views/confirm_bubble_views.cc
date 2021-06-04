@@ -17,12 +17,12 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -50,7 +50,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
 

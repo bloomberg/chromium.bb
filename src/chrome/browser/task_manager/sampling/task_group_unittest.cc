@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +32,9 @@ class FakeTask : public Task {
         type_(type),
         is_running_in_vm_(is_running_in_vm) {}
 
+  FakeTask(const FakeTask&) = delete;
+  FakeTask& operator=(const FakeTask&) = delete;
+
   Type GetType() const override { return type_; }
 
   int GetChildProcessUniqueID() const override { return 0; }
@@ -45,8 +48,6 @@ class FakeTask : public Task {
  private:
   Type type_;
   bool is_running_in_vm_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTask);
 };
 
 }  // namespace
@@ -56,6 +57,9 @@ class TaskGroupTest : public testing::Test {
   TaskGroupTest()
       : io_task_runner_(content::GetIOThreadTaskRunner({})),
         run_loop_(std::make_unique<base::RunLoop>()) {}
+
+  TaskGroupTest(const TaskGroupTest&) = delete;
+  TaskGroupTest& operator=(const TaskGroupTest&) = delete;
 
  protected:
   void OnBackgroundCalculationsDone() {
@@ -70,7 +74,11 @@ class TaskGroupTest : public testing::Test {
         is_running_in_vm,
         base::BindRepeating(&TaskGroupTest::OnBackgroundCalculationsDone,
                             base::Unretained(this)),
-        new SharedSampler(io_task_runner_), io_task_runner_);
+        new SharedSampler(io_task_runner_),
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        /*crosapi_task_provider=*/nullptr,
+#endif
+        io_task_runner_);
     // Refresh() is only valid on non-empty TaskGroups, so add a fake Task.
     fake_task_ = std::make_unique<FakeTask>(base::Process::Current().Pid(),
                                             Task::UNKNOWN, is_running_in_vm);
@@ -83,8 +91,6 @@ class TaskGroupTest : public testing::Test {
   std::unique_ptr<TaskGroup> task_group_;
   std::unique_ptr<FakeTask> fake_task_;
   bool background_refresh_complete_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskGroupTest);
 };
 
 // Verify that calling TaskGroup::Refresh() without specifying any fields to
@@ -163,10 +169,12 @@ TEST_F(TaskGroupTest, NaclRefreshWithTask) {
   task_group_->Refresh(gpu::VideoMemoryUsageStats(), base::TimeDelta(),
                        REFRESH_TYPE_NACL);
 #if BUILDFLAG(ENABLE_NACL)
-  EXPECT_FALSE(task_group_->AreBackgroundCalculationsDone());
+  if (!base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    EXPECT_FALSE(task_group_->AreBackgroundCalculationsDone());
 
-  ASSERT_FALSE(background_refresh_complete_);
-  run_loop_->Run();
+    ASSERT_FALSE(background_refresh_complete_);
+    run_loop_->Run();
+  }
 
   EXPECT_TRUE(background_refresh_complete_);
 #endif  // BUILDFLAG(ENABLE_NACL)

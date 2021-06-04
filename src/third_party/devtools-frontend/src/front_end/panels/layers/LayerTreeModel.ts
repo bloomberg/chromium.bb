@@ -33,6 +33,8 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export class LayerTreeModel extends SDK.SDKModel.SDKModel {
   _layerTreeAgent: ProtocolProxyApi.LayerTreeApi;
@@ -140,7 +142,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(LayerTreeModel, SDK.SDKModel.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(LayerTreeModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

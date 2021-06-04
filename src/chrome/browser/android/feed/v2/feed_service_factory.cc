@@ -15,8 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -45,6 +43,9 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   }
   DisplayMetrics GetDisplayMetrics() override {
     return FeedServiceBridge::GetDisplayMetrics();
+  }
+  bool IsAutoplayEnabled() override {
+    return FeedServiceBridge::IsAutoplayEnabled();
   }
   void ClearAll() override { FeedServiceBridge::ClearAll(); }
   void PrefetchImage(const GURL& url) override {
@@ -89,8 +90,6 @@ FeedServiceFactory::FeedServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(background_task::BackgroundTaskSchedulerFactory::GetInstance());
-  DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
-  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
 }
 
 FeedServiceFactory::~FeedServiceFactory() = default;
@@ -100,7 +99,7 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(context);
+      context->GetDefaultStoragePartition();
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -122,12 +121,6 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   chrome_info.version = base::Version({CHROME_VERSION});
   chrome_info.channel = chrome::GetChannel();
 
-  offline_pages::PrefetchService* prefetch_service = nullptr;
-  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
-    prefetch_service = offline_pages::PrefetchServiceFactory::GetForKey(
-        profile->GetProfileKey());
-  }
-
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),
       std::make_unique<RefreshTaskSchedulerImpl>(
@@ -143,9 +136,6 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
       identity_manager,
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      prefetch_service,
-      offline_pages::OfflinePageModelFactory::GetForKey(
-          profile->GetProfileKey()),
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

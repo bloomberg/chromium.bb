@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -114,7 +115,8 @@ void SigninReauthViewController::SetWebContents(
 }
 
 void SigninReauthViewController::OnModalSigninClosed() {
-  dialog_delegate_observer_.Remove(dialog_delegate_);
+  DCHECK(dialog_delegate_observation_.IsObservingSource(dialog_delegate_));
+  dialog_delegate_observation_.Reset();
   dialog_delegate_ = nullptr;
 
   DCHECK(ui_state_ == UIState::kConfirmationDialog ||
@@ -176,7 +178,7 @@ void SigninReauthViewController::OnGaiaReauthPageComplete(
 
   if (ui_state_ == UIState::kGaiaReauthDialog ||
       ui_state_ == UIState::kGaiaReauthTab) {
-    base::Optional<UserAction> action;
+    absl::optional<UserAction> action;
     if (gaia_reauth_page_result_ == signin::ReauthResult::kSuccess) {
       action = UserAction::kPassGaiaReauth;
     }
@@ -215,7 +217,8 @@ void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
   }
 
   if (dialog_delegate_) {
-    dialog_delegate_observer_.Remove(dialog_delegate_);
+    DCHECK(dialog_delegate_observation_.IsObservingSource(dialog_delegate_));
+    dialog_delegate_observation_.Reset();
     dialog_delegate_->CloseModalSignin();
     dialog_delegate_ = nullptr;
   }
@@ -307,7 +310,7 @@ void SigninReauthViewController::ShowReauthConfirmationDialog() {
   dialog_delegate_ =
       SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
           browser_, account_id_, access_point_);
-  dialog_delegate_observer_.Add(dialog_delegate_);
+  dialog_delegate_observation_.Observe(dialog_delegate_);
 
   SigninReauthUI* web_dialog_ui = dialog_delegate_->GetWebContents()
                                       ->GetWebUI()
@@ -340,7 +343,8 @@ void SigninReauthViewController::ShowGaiaReauthPageInNewTab() {
   ui_state_ = UIState::kGaiaReauthTab;
   // Remove the observer to not trigger OnModalSigninClosed() that will abort
   // the reauth flow.
-  dialog_delegate_observer_.Remove(dialog_delegate_);
+  DCHECK(dialog_delegate_observation_.IsObservingSource(dialog_delegate_));
+  dialog_delegate_observation_.Reset();
   dialog_delegate_->CloseModalSignin();
   dialog_delegate_ = nullptr;
 

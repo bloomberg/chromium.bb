@@ -210,6 +210,7 @@ void avifEncoderDestroy(avifEncoder * encoder)
 
 void avifEncoderSetCodecSpecificOption(avifEncoder * encoder, const char * key, const char * value)
 {
+    avifDiagnosticsClearError(&encoder->diag);
     avifCodecSpecificOptionsSet(encoder->csOptions, key, value);
 }
 
@@ -396,7 +397,7 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
                                               uint32_t gridRows,
                                               const avifImage * const * cellImages,
                                               uint64_t durationInTimescales,
-                                              uint32_t addImageFlags)
+                                              avifAddImageFlags addImageFlags)
 {
     // -----------------------------------------------------------------------
     // Verify encoding is possible
@@ -492,6 +493,7 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
                 return AVIF_RESULT_NO_CODEC_AVAILABLE;
             }
             item->codec->csOptions = encoder->csOptions;
+            item->codec->diag = &encoder->diag;
 
             if (cellCount > 1) {
                 item->dimgFromID = gridColorID;
@@ -548,6 +550,7 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
                     return AVIF_RESULT_NO_CODEC_AVAILABLE;
                 }
                 item->codec->csOptions = encoder->csOptions;
+                item->codec->diag = &encoder->diag;
                 item->alpha = AVIF_TRUE;
 
                 if (cellCount > 1) {
@@ -649,13 +652,19 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
     return AVIF_RESULT_OK;
 }
 
-avifResult avifEncoderAddImage(avifEncoder * encoder, const avifImage * image, uint64_t durationInTimescales, uint32_t addImageFlags)
+avifResult avifEncoderAddImage(avifEncoder * encoder, const avifImage * image, uint64_t durationInTimescales, avifAddImageFlags addImageFlags)
 {
+    avifDiagnosticsClearError(&encoder->diag);
     return avifEncoderAddImageInternal(encoder, 1, 1, &image, durationInTimescales, addImageFlags);
 }
 
-avifResult avifEncoderAddImageGrid(avifEncoder * encoder, uint32_t gridCols, uint32_t gridRows, const avifImage * const * cellImages, uint32_t addImageFlags)
+avifResult avifEncoderAddImageGrid(avifEncoder * encoder,
+                                   uint32_t gridCols,
+                                   uint32_t gridRows,
+                                   const avifImage * const * cellImages,
+                                   avifAddImageFlags addImageFlags)
 {
+    avifDiagnosticsClearError(&encoder->diag);
     if ((gridCols == 0) || (gridCols > 256) || (gridRows == 0) || (gridRows > 256)) {
         return AVIF_RESULT_INVALID_IMAGE_GRID;
     }
@@ -680,6 +689,7 @@ static size_t avifEncoderFindExistingChunk(avifRWStream * s, size_t mdatStartOff
 
 avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
 {
+    avifDiagnosticsClearError(&encoder->diag);
     if (encoder->data->items.count == 0) {
         return AVIF_RESULT_NO_CONTENT;
     }
@@ -1235,12 +1245,13 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
 
         for (uint32_t itemIndex = 0; itemIndex < encoder->data->items.count; ++itemIndex) {
             avifEncoderItem * item = &encoder->data->items.item[itemIndex];
+            const avifBool isGrid = (item->gridCols > 0); // Grids store their payload in metadataPayload, so use this to distinguish grid payloads from XMP/Exif
             if ((item->metadataPayload.size == 0) && (item->encodeOutput->samples.count == 0)) {
                 // this item has nothing for the mdat box
                 continue;
             }
-            if (metadataPass != (item->metadataPayload.size > 0)) {
-                // only process metadata payloads when metadataPass is true
+            if (!isGrid && (metadataPass != (item->metadataPayload.size > 0))) {
+                // only process metadata (XMP/Exif) payloads when metadataPass is true
                 continue;
             }
             if (alphaPass != item->alpha) {

@@ -18,11 +18,6 @@
 
 namespace media {
 
-// This flag is used to decide whether or not to use the SampleBufferTransformer
-// to convert captured images to NV12, see
-// video_capture_device_avfoundation_mac.mm.
-CAPTURE_EXPORT extern const base::Feature kInCaptureConvertToNv12;
-
 // Capable of converting from any supported capture format (NV12, YUY2, UYVY and
 // MJPEG) to NV12 or I420 and doing rescaling. This class can be configured to
 // use VTPixelTransferSession (sometimes HW-accelerated) or third_party/libyuv
@@ -60,7 +55,7 @@ class CAPTURE_EXPORT SampleBufferTransformer {
   void Reconfigure(Transformer transformer,
                    OSType destination_pixel_format,
                    const gfx::Size& destination_size,
-                   base::Optional<size_t> buffer_pool_size = base::nullopt);
+                   absl::optional<size_t> buffer_pool_size = absl::nullopt);
 
   // Converts the input buffer to an IOSurface-backed pixel buffer according to
   // current configurations. If no transformation is needed (input format is the

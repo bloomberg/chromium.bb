@@ -1554,11 +1554,14 @@ static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
   return bs;
 }
 
-void av1_predict_intra_block(
-    const AV1_COMMON *cm, const MACROBLOCKD *xd, int wpx, int hpx,
-    TX_SIZE tx_size, PREDICTION_MODE mode, int angle_delta, int use_palette,
-    FILTER_INTRA_MODE filter_intra_mode, const uint8_t *ref, int ref_stride,
-    uint8_t *dst, int dst_stride, int col_off, int row_off, int plane) {
+void av1_predict_intra_block(const MACROBLOCKD *xd, BLOCK_SIZE sb_size,
+                             int enable_intra_edge_filter, int wpx, int hpx,
+                             TX_SIZE tx_size, PREDICTION_MODE mode,
+                             int angle_delta, int use_palette,
+                             FILTER_INTRA_MODE filter_intra_mode,
+                             const uint8_t *ref, int ref_stride, uint8_t *dst,
+                             int dst_stride, int col_off, int row_off,
+                             int plane) {
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
@@ -1620,14 +1623,14 @@ void av1_predict_intra_block(
     bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
   }
 
-  const int have_top_right = has_top_right(
-      cm->seq_params.sb_size, bsize, mi_row, mi_col, have_top, right_available,
-      partition, tx_size, row_off, col_off, ss_x, ss_y);
+  const int have_top_right =
+      has_top_right(sb_size, bsize, mi_row, mi_col, have_top, right_available,
+                    partition, tx_size, row_off, col_off, ss_x, ss_y);
   const int have_bottom_left = has_bottom_left(
-      cm->seq_params.sb_size, bsize, mi_row, mi_col, bottom_available,
-      have_left, partition, tx_size, row_off, col_off, ss_x, ss_y);
+      sb_size, bsize, mi_row, mi_col, bottom_available, have_left, partition,
+      tx_size, row_off, col_off, ss_x, ss_y);
 
-  const int disable_edge_filter = !cm->seq_params.enable_intra_edge_filter;
+  const int disable_edge_filter = !enable_intra_edge_filter;
   const int intra_edge_filter_type = get_intra_edge_filter_type(xd, plane);
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
@@ -1664,6 +1667,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
           ? mbmi->filter_intra_mode_info.filter_intra_mode
           : FILTER_INTRA_MODES;
   const int angle_delta = mbmi->angle_delta[plane != AOM_PLANE_Y] * ANGLE_STEP;
+  const SequenceHeader *seq_params = cm->seq_params;
 
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
 #if CONFIG_DEBUG
@@ -1682,10 +1686,11 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     CFL_CTX *const cfl = &xd->cfl;
     CFL_PRED_TYPE pred_plane = get_cfl_pred_type(plane);
     if (cfl->dc_pred_is_cached[pred_plane] == 0) {
-      av1_predict_intra_block(cm, xd, pd->width, pd->height, tx_size, mode,
-                              angle_delta, use_palette, filter_intra_mode, dst,
-                              dst_stride, dst, dst_stride, blk_col, blk_row,
-                              plane);
+      av1_predict_intra_block(xd, seq_params->sb_size,
+                              seq_params->enable_intra_edge_filter, pd->width,
+                              pd->height, tx_size, mode, angle_delta,
+                              use_palette, filter_intra_mode, dst, dst_stride,
+                              dst, dst_stride, blk_col, blk_row, plane);
       if (cfl->use_dc_pred_cache) {
         cfl_store_dc_pred(xd, dst, pred_plane, tx_size_wide[tx_size]);
         cfl->dc_pred_is_cached[pred_plane] = 1;
@@ -1696,9 +1701,10 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     cfl_predict_block(xd, dst, dst_stride, tx_size, plane);
     return;
   }
-  av1_predict_intra_block(cm, xd, pd->width, pd->height, tx_size, mode,
-                          angle_delta, use_palette, filter_intra_mode, dst,
-                          dst_stride, dst, dst_stride, blk_col, blk_row, plane);
+  av1_predict_intra_block(
+      xd, seq_params->sb_size, seq_params->enable_intra_edge_filter, pd->width,
+      pd->height, tx_size, mode, angle_delta, use_palette, filter_intra_mode,
+      dst, dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 }
 
 void av1_init_intra_predictors(void) {

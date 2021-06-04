@@ -529,6 +529,32 @@ struct FeaturesGL : FeatureSetBase
         "shift_instanced_array_data_with_offset", FeatureCategory::OpenGLWorkarounds,
         "glDrawArraysInstanced is buggy on certain new Mac Intel GPUs", &members,
         "http://crbug.com/1144207"};
+
+    // ANGLE needs to support devices that have no native VAOs. Sync everything to the default VAO.
+    Feature syncVertexArraysToDefault = {
+        "sync_vertex_arrays_to_default", FeatureCategory::OpenGLWorkarounds,
+        "Only use the default VAO because of missing support or driver bugs", &members,
+        "http://anglebug.com/5577"};
+
+    // On desktop Linux/AMD when using the amdgpu drivers, the precise kernel and DRM version are
+    // leaked via GL_RENDERER. We workaround this to improve user privacy.
+    Feature sanitizeAmdGpuRendererString = {
+        "sanitize_amdgpu_renderer_string", FeatureCategory::OpenGLWorkarounds,
+        "Strip precise kernel and DRM version information from amdgpu renderer strings.", &members,
+        "http://crbug.com/1181193"};
+
+    // Imagination GL drivers are buggy with context switching. We need to ubind fbo to workaround a
+    // crash in the driver.
+    Feature unbindFBOOnContextSwitch = {"unbind_fbo_before_switching_context",
+                                        FeatureCategory::OpenGLWorkarounds,
+                                        "Imagination GL drivers are buggy with context switching.",
+                                        &members, "http://crbug.com/1181193"};
+
+    Feature flushOnFramebufferChange = {"flush_on_framebuffer_change",
+                                        FeatureCategory::OpenGLWorkarounds,
+                                        "Switching framebuffers without a flush can lead to "
+                                        "crashes on Intel 9th Generation GPU Macs.",
+                                        &members, "http://crbug.com/1181068"};
 };
 
 inline FeaturesGL::FeaturesGL()  = default;

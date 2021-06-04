@@ -36,7 +36,6 @@
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
-#import "ios/web/text_fragments/crw_text_fragments_handler.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "ios/web/web_view/content_type_util.h"
@@ -112,8 +111,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 @property(nonatomic, readonly, assign) GURL documentURL;
 // Returns the js injector from self.delegate.
 @property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
-// Will handle highlighting text fragments on the page when necessary.
-@property(nonatomic, strong) CRWTextFragmentsHandler* textFragmentsHandler;
 
 @end
 
@@ -131,9 +128,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
             kMaxCertErrorsCount);
 
     _delegate = delegate;
-
-    _textFragmentsHandler =
-        [[CRWTextFragmentsHandler alloc] initWithDelegate:_delegate];
   }
   return self;
 }
@@ -197,6 +191,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
   [self didReceiveWKNavigationDelegateCallback];
+
+  BOOL forceBlockUniversalLinks = self.blockUniversalLinksOnNextDecidePolicy;
+  self.blockUniversalLinksOnNextDecidePolicy = NO;
 
   if (@available(iOS 13, *)) {
   } else {
@@ -359,6 +356,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       self.webStateImpl->GetNavigationManager()->LoadURLWithParams(loadParams);
       return;
     }
+    // On iOS 12, we allow the navigation since cancelling it here causes
+    // crbug.com/965067. The underlying issue is a WebKit bug that converts
+    // valid URLs into invalid ones. This issue is fixed in iOS 13.
+    if (@available(iOS 13, *)) {
+      decisionHandler(WKNavigationActionPolicyCancel);
+      return;
+    }
   }
 
   // First check if the navigation action should be blocked by the controller
@@ -502,7 +506,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     return;
   }
   BOOL isOffTheRecord = self.webStateImpl->GetBrowserState()->IsOffTheRecord();
-  decisionHandler(web::GetAllowNavigationActionPolicy(isOffTheRecord));
+  decisionHandler(web::GetAllowNavigationActionPolicy(
+      isOffTheRecord || forceBlockUniversalLinks));
 }
 
 - (void)webView:(WKWebView*)webView
@@ -517,8 +522,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
        IsPlaceholderUrl(responseURL)) ||
       (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
        [CRWErrorPageHelper isErrorPageFileURL:responseURL])) {
-    handler(WKNavigationResponsePolicyAllow);
-    return;
+    if (self.webStateImpl->ShouldAllowErrorPageToBeDisplayed(
+            WKResponse.response, WKResponse.forMainFrame)) {
+      handler(WKNavigationResponsePolicyAllow);
+      return;
+    }
   }
 
   if (self.pendingNavigationInfo.unsafeRedirect) {
@@ -689,12 +697,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   }
 
   self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(webViewURL);
-
-  // When a client-side redirect occurs while an interstitial warning is
-  // displayed, clear the warning and its navigation item, so that a new
-  // pending item is created for |context| in |registerLoadRequestForURL|. See
-  // crbug.com/861836.
-  self.webStateImpl->ClearTransientContent();
 
   BOOL isPlaceholderURL =
       base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)
@@ -1158,10 +1160,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                                    webView:webView];
     }
   }
-
-  [self.textFragmentsHandler
-      processTextFragmentsWithContext:context
-                             referrer:self.currentReferrer];
 
   [self.navigationStates setState:web::WKNavigationState::FINISHED
                     forNavigation:navigation];
@@ -2122,7 +2120,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
 
   net::SSLInfo info;
-  base::Optional<net::SSLInfo> ssl_info = base::nullopt;
+  absl::optional<net::SSLInfo> ssl_info = absl::nullopt;
 
   if (web::IsWKWebViewSSLCertError(error)) {
     web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
@@ -2153,7 +2151,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                                 cacheHit);
         }
       }
-      ssl_info = base::make_optional<net::SSLInfo>(info);
+      ssl_info = absl::make_optional<net::SSLInfo>(info);
     }
   }
   NSString* failingURLString =

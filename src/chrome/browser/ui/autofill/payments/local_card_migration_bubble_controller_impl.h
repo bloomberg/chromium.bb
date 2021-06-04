@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_LOCAL_CARD_MIGRATION_BUBBLE_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_LOCAL_CARD_MIGRATION_BUBBLE_CONTROLLER_IMPL_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_controller_base.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_controller_observer.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
@@ -57,7 +54,6 @@ class LocalCardMigrationBubbleControllerImpl
       LocalCardMigrationBubbleControllerImpl>;
 
   friend class LocalCardMigrationBrowserTest;
-
 
   void UpdateLocalCardMigrationIcon();
 

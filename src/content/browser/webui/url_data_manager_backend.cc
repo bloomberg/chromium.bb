@@ -8,16 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -265,9 +264,7 @@ bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
   if (net_error_codes_dict != nullptr) {
     for (base::DictionaryValue::Iterator itr(*net_error_codes_dict);
          !itr.IsAtEnd(); itr.Advance()) {
-      int net_error_code;
-      itr.value().GetAsInteger(&net_error_code);
-      if (error_code == net_error_code)
+      if (error_code == itr.value().GetInt())
         return true;
     }
   }

@@ -19,7 +19,6 @@
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -30,6 +29,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
 #include "components/omnibox/browser/clipboard_provider.h"
@@ -40,7 +40,6 @@
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
 #include "components/omnibox/browser/most_visited_sites_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/query_tile_provider.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -54,6 +53,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -489,9 +489,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // only do this once per session. Additionally, a default match is expected to
   // be available at this point but we check anyway to guard against an invalid
   // dereference.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kSpeculativeServiceWorkerStartOnQueryInput) &&
-      input.type() == metrics::OmniboxInputType::QUERY &&
+  if (input.type() == metrics::OmniboxInputType::QUERY &&
       !search_service_worker_signal_sent_ && result_.default_match()) {
     search_service_worker_signal_sent_ = true;
     provider_client_->StartServiceWorker(
@@ -575,10 +573,10 @@ void AutocompleteController::AddProviderAndTriggeringLogs(
     // add for every provider.
   }
 
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
-    // OmniboxPedalProvider is not a "true" AutocompleteProvider and isn't
-    // included in the list of providers, though needs to report information for
-    // its field trial.  Manually call AddProviderInfo for pedals.
+  // OmniboxPedalProvider is not a "true" AutocompleteProvider and isn't
+  // included in the list of providers, though needs to report information for
+  // its field trial.  Manually call AddProviderInfo for pedals.
+  if (provider_client_->GetPedalProvider()) {
     provider_client_->GetPedalProvider()->AddProviderInfo(
         &logs->providers_info);
   }
@@ -595,9 +593,9 @@ void AutocompleteController::ResetSession() {
     provider->ResetSession();
   }
 
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
-    // OmniboxPedalProvider is not included in the list of providers as it's not
-    // a "true" AutocompleteProvider.  Manually call ResetSession() for pedals.
+  // OmniboxPedalProvider is not included in the list of providers as it's not
+  // a "true" AutocompleteProvider.  Manually call ResetSession() for pedals.
+  if (provider_client_->GetPedalProvider()) {
     provider_client_->GetPedalProvider()->ResetSession();
   }
 
@@ -636,7 +634,7 @@ void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
     for (const auto& experiment_stat :
          zero_suggest_provider_->experiment_stats()) {
       DCHECK(experiment_stat.is_dict());
-      base::Optional<int> type_int =
+      absl::optional<int> type_int =
           experiment_stat.FindIntPath(kTypeIntFieldNumber);
       const std::string* string_value =
           experiment_stat.FindStringPath(kStringValueFieldNumber);
@@ -671,6 +669,9 @@ void AutocompleteController::UpdateMatchDestinationURL(
 
   match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
       search_terms_args, template_url_service_->search_terms_data()));
+#if defined(OS_ANDROID)
+  match->UpdateJavaDestinationUrl();
+#endif
 }
 
 void AutocompleteController::InlineTailPrefixes() {
@@ -682,7 +683,7 @@ void AutocompleteController::UpdateResult(
     bool force_notify_default_match_changed) {
   TRACE_EVENT0("omnibox", "AutocompleteController::UpdateResult");
 
-  base::Optional<AutocompleteMatch> last_default_match;
+  absl::optional<AutocompleteMatch> last_default_match;
   std::u16string last_default_associated_keyword;
   if (result_.default_match()) {
     last_default_match = *result_.default_match();
@@ -716,9 +717,7 @@ void AutocompleteController::UpdateResult(
   }
   result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
-    result_.AttachPedalsToMatches(input_, *provider_client_);
-  }
+  result_.AttachPedalsToMatches(input_, *provider_client_);
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
@@ -812,6 +811,9 @@ void AutocompleteController::UpdateAssociatedKeywords(
       match->associated_keyword = std::make_unique<AutocompleteMatch>(
           keyword_provider_->CreateVerbatimMatch(exact_keyword, exact_keyword,
                                                  input_));
+#if defined(OS_ANDROID)
+      match->UpdateJavaAnswer();
+#endif
       continue;
     }
 
@@ -876,6 +878,10 @@ void AutocompleteController::UpdateKeywordDescriptions(
           i->description_class.push_back(
               ACMatchClassification(0, ACMatchClassification::DIM));
         }
+#if defined(OS_ANDROID)
+        i->UpdateJavaDescription();
+#endif
+
         last_keyword = i->keyword;
       }
     } else {

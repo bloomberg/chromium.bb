@@ -24,6 +24,7 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "extensions/browser/app_window/app_delegate.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
@@ -142,10 +143,21 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     bool position_specified =
         window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
         window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;
-    if (!position_specified)
+    if (!position_specified) {
+#if defined(OS_MAC)
+      // On Mac, this will call NativeWidgetMac's CenterWindow() which relies
+      // on the size being its content size instead of window size. That
+      // API only causes a problem when we use system title bar in an old
+      // platform app.
+      gfx::Rect content_bounds = window_bounds;
+      content_bounds.Inset(frame_insets);
+      widget()->CenterWindow(content_bounds.size());
+#else
       widget()->CenterWindow(window_bounds.size());
-    else
+#endif
+    } else {
       widget()->SetBounds(window_bounds);
+    }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

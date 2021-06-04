@@ -70,7 +70,7 @@ static inline IntRect NormalizeRect(const IntRect& rect) {
 }
 
 ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
-                                        base::Optional<IntRect> crop_rect,
+                                        absl::optional<IntRect> crop_rect,
                                         IntSize source_size) {
   ImageBitmap::ParsedOptions parsed_options;
   if (options->imageOrientation() == kImageOrientationFlipY) {
@@ -365,8 +365,9 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
         CreateProvider(image->ContextProviderWrapper(), image_info, image,
                        false /* fallback_to_software */);
     if (resource_provider) {
-      SkSamplingOptions sampling(parsed_options.resize_quality,
-                                 SkSamplingOptions::kMedium_asMipmapLinear);
+      SkSamplingOptions sampling =
+          cc::PaintFlags::FilterQualityToSkSamplingOptions(
+              parsed_options.resize_quality);
       cc::PaintFlags paint;
       paint.setBlendMode(SkBlendMode::kSrc);
       resource_provider->Canvas()->drawImageRect(
@@ -394,10 +395,9 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
   auto sk_image = image->PaintImageForCurrentFrame().GetSwSkImage();
   if (!sk_image)
     return nullptr;
-  sk_image->scalePixels(
-      resized_pixmap,
-      SkSamplingOptions(parsed_options.resize_quality,
-                        SkSamplingOptions::kMedium_asMipmapLinear));
+  sk_image->scalePixels(resized_pixmap,
+                        cc::PaintFlags::FilterQualityToSkSamplingOptions(
+                            parsed_options.resize_quality));
   // Tag the resized Pixmap with the correct color space.
   resized_pixmap.setColorSpace(GetSkImageInfo(image).refColorSpace());
 
@@ -476,11 +476,12 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   DCHECK(!image->Data());
 
   IntRect img_rect(IntPoint(), IntSize(image->width(), image->height()));
-  const IntRect src_rect = Intersection(img_rect, parsed_options.crop_rect);
+  const IntRect& src_rect{parsed_options.crop_rect};
+  const IntRect intersect_rect = Intersection(img_rect, src_rect);
 
   // If cropRect doesn't intersect the source image, return a transparent black
   // image.
-  if (src_rect.IsEmpty())
+  if (intersect_rect.IsEmpty())
     return MakeBlankImage(parsed_options);
 
   scoped_refptr<StaticBitmapImage> result = image;
@@ -564,7 +565,7 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
 }
 
 ImageBitmap::ImageBitmap(ImageElementBase* image,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   scoped_refptr<Image> input = image->CachedImage()->GetImage();
   DCHECK(!input->IsTextureBacked());
@@ -633,7 +634,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, video->BitmapSourceSize());
@@ -659,7 +660,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> image_input =
@@ -685,7 +686,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
 }
 
 ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
@@ -724,7 +725,7 @@ ImageBitmap::ImageBitmap(const SkPixmap& pixmap,
 }
 
 ImageBitmap::ImageBitmap(ImageData* data,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, data->BitmapSourceSize());
@@ -733,14 +734,14 @@ ImageBitmap::ImageBitmap(ImageData* data,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
-  IntRect data_src_rect = IntRect(IntPoint(), data->Size());
-  IntRect src_rect = crop_rect
-                         ? Intersection(parsed_options.crop_rect, data_src_rect)
-                         : data_src_rect;
+  const IntRect& src_rect{parsed_options.crop_rect};
+  const IntRect data_src_rect = IntRect(IntPoint(), data->Size());
+  const IntRect intersect_rect =
+      crop_rect ? Intersection(src_rect, data_src_rect) : data_src_rect;
 
   // If cropRect doesn't intersect the source image, return a transparent black
   // image.
-  if (src_rect.IsEmpty()) {
+  if (intersect_rect.IsEmpty()) {
     image_ = MakeBlankImage(parsed_options);
     return;
   }
@@ -805,7 +806,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   scoped_refptr<StaticBitmapImage> input = bitmap->BitmapImage();
   if (!input)
@@ -828,7 +829,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
 }
 
 ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
-                         base::Optional<IntRect> crop_rect,
+                         absl::optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   bool origin_clean = image->OriginClean();
   ParsedOptions parsed_options =
@@ -946,7 +947,7 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
-                                       base::Optional<IntRect> crop_rect,
+                                       absl::optional<IntRect> crop_rect,
                                        ScriptState* script_state,
                                        const ImageBitmapOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -1065,7 +1066,7 @@ IntSize ImageBitmap::Size() const {
 }
 
 ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
-                                             base::Optional<IntRect> crop_rect,
+                                             absl::optional<IntRect> crop_rect,
                                              const ImageBitmapOptions* options,
                                              ExceptionState& exception_state) {
   return ImageBitmapSource::FulfillImageBitmap(

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_validation_error.h"
@@ -65,10 +66,11 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client, dawn_device),
       adapter_(adapter),
-      feature_name_list_(ToStringVector(descriptor->nonGuaranteedFeatures())),
+      features_(MakeGarbageCollected<GPUSupportedFeatures>(
+          ToStringVector(descriptor->nonGuaranteedFeatures()))),
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
-          GetProcs().deviceGetDefaultQueue(GetHandle()))),
+          GetProcs().deviceGetQueue(GetHandle()))),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
       error_callback_(BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                                 WrapWeakPersistent(this))),
@@ -129,7 +131,7 @@ void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
   } else {
     return;
   }
-  this->DispatchEvent(*GPUUncapturedErrorEvent::Create(
+  DispatchEvent(*GPUUncapturedErrorEvent::Create(
       event_type_names::kUncapturederror, init));
 }
 
@@ -206,15 +208,8 @@ GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
 }
 
-Vector<String> GPUDevice::features() const {
-  return feature_name_list_;
-}
-
-Vector<String> GPUDevice::extensions() {
-  AddConsoleWarning(
-      "The extensions attribute has been deprecated in favor of the features "
-      "attribute, and will soon be removed.");
-  return feature_name_list_;
+GPUSupportedFeatures* GPUDevice::features() const {
+  return features_;
 }
 
 ScriptPromise GPUDevice::lost(ScriptState* script_state) {
@@ -222,13 +217,6 @@ ScriptPromise GPUDevice::lost(ScriptState* script_state) {
 }
 
 GPUQueue* GPUDevice::queue() {
-  return queue_;
-}
-
-GPUQueue* GPUDevice::defaultQueue() {
-  AddConsoleWarning(
-      "The defaultQueue attribute has been deprecated in favor of the queue "
-      "attribute, and will soon be removed.");
   return queue_;
 }
 
@@ -283,7 +271,14 @@ GPURenderPipeline* GPUDevice::createRenderPipeline(
 }
 
 GPUComputePipeline* GPUDevice::createComputePipeline(
-    const GPUComputePipelineDescriptor* descriptor) {
+    const GPUComputePipelineDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  // Check for required members. Can't do this in the IDL because then the
+  // deprecated members would be required.
+  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
+    exception_state.ThrowTypeError("required member compute is undefined.");
+    return nullptr;
+  }
   return GPUComputePipeline::Create(this, descriptor);
 }
 
@@ -293,19 +288,10 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!descriptor->hasVertex()) {
-    // Shim asynchronous pipeline compilation with the deprecated shape of the
-    // GPURenderPipelineDescriptor by immediately creating a pipeline and
-    // resolving the promise.
-    resolver->Resolve(
-        GPURenderPipeline::Create(script_state, this, descriptor));
-    return promise;
-  }
-
   v8::Isolate* isolate = script_state->GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "GPUDevice", "createRenderPipelineAsync");
-  OwnedRenderPipelineDescriptor2 dawn_desc_info;
+  OwnedRenderPipelineDescriptor dawn_desc_info;
   ConvertToDawnType(isolate, this, descriptor, &dawn_desc_info,
                     exception_state);
   if (exception_state.HadException()) {
@@ -328,10 +314,19 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  // Check for required members. Can't do this in the IDL because then the
+  // deprecated members would be required.
+  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError,
+        "required member compute is undefined."));
+    return promise;
+  }
+
   std::string label;
   OwnedProgrammableStageDescriptor computeStageDescriptor;
   WGPUComputePipelineDescriptor dawn_desc =
-      AsDawnType(descriptor, &label, &computeStageDescriptor);
+      AsDawnType(descriptor, &label, &computeStageDescriptor, this);
 
   auto* callback =
       BindDawnCallback(&GPUDevice::OnCreateComputePipelineAsyncCallback,
@@ -343,24 +338,6 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
   // ensure commands are flushed.
   EnsureFlush();
   return promise;
-}
-
-ScriptPromise GPUDevice::createReadyRenderPipeline(
-    ScriptState* script_state,
-    const GPURenderPipelineDescriptor* descriptor) {
-  AddConsoleWarning(
-      "createReadyRenderPipeline is deprecated in favor of "
-      "createRenderPipelineAsync");
-  return createRenderPipelineAsync(script_state, descriptor);
-}
-
-ScriptPromise GPUDevice::createReadyComputePipeline(
-    ScriptState* script_state,
-    const GPUComputePipelineDescriptor* descriptor) {
-  AddConsoleWarning(
-      "createReadyComputePipeline is deprecated in favor of "
-      "createComputePipelineAsync");
-  return createComputePipelineAsync(script_state, descriptor);
 }
 
 GPUCommandEncoder* GPUDevice::createCommandEncoder(
@@ -440,6 +417,7 @@ const AtomicString& GPUDevice::InterfaceName() const {
 
 void GPUDevice::Trace(Visitor* visitor) const {
   visitor->Trace(adapter_);
+  visitor->Trace(features_);
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);
   ExecutionContextClient::Trace(visitor);

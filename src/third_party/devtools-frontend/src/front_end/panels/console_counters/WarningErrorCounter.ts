@@ -4,17 +4,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as BrowserSDK from '../../browser_sdk/browser_sdk.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Components from '../../ui/components/components.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import {DisplayMode, IssueCounter} from './IssueCounter.js';
-
-import {getIssueCountsEnumeration} from './IssueCounter.js';
 
 const UIStrings = {
   /**
@@ -46,9 +44,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let warningErrorCounterInstance: WarningErrorCounter;
 export class WarningErrorCounter implements UI.Toolbar.Provider {
   _toolbarItem: UI.Toolbar.ToolbarItem;
-  _consoleCounter: Components.IconButton.IconButton;
-  _violationCounter: Components.IconButton.IconButton|null;
-  _issueCounter: IssueCounter;
+  _consoleCounter: IconButton.IconButton.IconButton;
+  _violationCounter: IconButton.IconButton.IconButton|null;
+  _issueCounter: IssueCounter.IssueCounter.IssueCounter;
   _throttler: Common.Throttler.Throttler;
   _updatingForTest?: boolean;
 
@@ -59,7 +57,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     this._toolbarItem = new UI.Toolbar.ToolbarItem(countersWrapper);
     this._toolbarItem.setVisible(false);
 
-    this._consoleCounter = new Components.IconButton.IconButton();
+    this._consoleCounter = new IconButton.IconButton.IconButton();
     countersWrapper.appendChild(this._consoleCounter);
     this._consoleCounter.data = {
       clickHandler: Common.Console.Console.instance().show.bind(Common.Console.Console.instance()),
@@ -68,7 +66,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
 
     this._violationCounter = null;
     if (Root.Runtime.experiments.isEnabled('spotlight')) {
-      this._violationCounter = new Components.IconButton.IconButton();
+      this._violationCounter = new IconButton.IconButton.IconButton();
       countersWrapper.appendChild(this._violationCounter);
       this._violationCounter.data = {
         clickHandler: (): Promise<void> => UI.ViewManager.ViewManager.instance().showView('lighthouse'),
@@ -76,8 +74,8 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
       };
     }
 
-    const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
-    this._issueCounter = new IssueCounter();
+    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+    this._issueCounter = new IssueCounter.IssueCounter.IssueCounter();
     countersWrapper.appendChild(this._issueCounter);
     this._issueCounter.data = {
       clickHandler: (): void => {
@@ -85,7 +83,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
         UI.ViewManager.ViewManager.instance().showView('issues-pane');
       },
       issuesManager,
-      displayMode: DisplayMode.OnlyMostImportant,
+      displayMode: IssueCounter.IssueCounter.DisplayMode.OnlyMostImportant,
     };
 
     this._throttler = new Common.Throttler.Throttler(100);
@@ -96,7 +94,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
         SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
 
-    issuesManager.addEventListener(BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this._update, this);
+    issuesManager.addEventListener(IssuesManager.IssuesManager.Events.IssuesCountUpdated, this._update, this);
 
     this._update();
   }
@@ -127,7 +125,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     const errors = SDK.ConsoleModel.ConsoleModel.instance().errors();
     const warnings = SDK.ConsoleModel.ConsoleModel.instance().warnings();
     const violations = this._violationCounter ? SDK.ConsoleModel.ConsoleModel.instance().violations() : 0;
-    const issuesManager = BrowserSDK.IssuesManager.IssuesManager.instance();
+    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
     const issues = issuesManager.numberOfIssues();
 
     const countToText = (c: number): string|undefined => c === 0 ? undefined : `${c}`;
@@ -161,7 +159,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     }
 
     /* Update issuesCounter items. */
-    const issueEnumeration = getIssueCountsEnumeration(issuesManager);
+    const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(issuesManager);
     const issuesTitleLead = i18nString(UIStrings.openIssuesToView, {n: issues});
     const issuesTitle = `${issuesTitleLead} ${issueEnumeration}`;
     // TODO(chromium:1167711): Let the component handle the title and ARIA label.

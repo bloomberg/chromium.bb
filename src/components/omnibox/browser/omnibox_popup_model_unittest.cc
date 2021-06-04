@@ -102,38 +102,6 @@ class OmniboxPopupModelTest : public ::testing::Test {
   OmniboxPopupModel popup_model_;
 };
 
-// A test fixture that enables the #omnibox-suggestion-button-row field trial.
-class OmniboxPopupModelSuggestionButtonRowTest : public OmniboxPopupModelTest {
- public:
-  OmniboxPopupModelSuggestionButtonRowTest() = default;
-  OmniboxPopupModelSuggestionButtonRowTest(
-      const OmniboxPopupModelSuggestionButtonRowTest&) = delete;
-  OmniboxPopupModelSuggestionButtonRowTest& operator=(
-      const OmniboxPopupModelSuggestionButtonRowTest&) = delete;
-
- protected:
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(
-        omnibox::kOmniboxSuggestionButtonRow);
-    OmniboxPopupModelTest::SetUp();
-  }
-
-  void TearDown() override { scoped_feature_list_.reset(); }
-
-  void InitKeywordButtonFeature() {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitWithFeatures(
-        {omnibox::kOmniboxSuggestionButtonRow,
-         omnibox::kOmniboxKeywordSearchButton},
-        {});
-  }
-
- private:
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-};
-
 // This verifies that the new treatment of the user's selected match in
 // |SetSelectedLine()| with removed |AutocompleteResult::Selection::empty()|
 // is correct in the face of various replacement versions of |empty()|.
@@ -220,8 +188,11 @@ TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
 }
 
 TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kOmniboxKeywordSearchButton);
+
   ACMatches matches;
-  for (size_t i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < 5; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
                             AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     match.keyword = u"match";
@@ -230,14 +201,19 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   }
   // Make match index 1 deletable to verify we can step to that.
   matches[1].deletable = true;
-  // Make match index 2 have an associated keyword for irregular state stepping.
-  // Make it deleteable also to verify that we correctly handle matches with
-  // keywords that are ALSO deleteable (this is an edge case that was broken).
+  // Make match index 2 only have an associated keyword to verify we can step
+  // backwards into keyword search mode if keyword search button is enabled.
   matches[2].associated_keyword =
       std::make_unique<AutocompleteMatch>(matches.back());
-  matches[2].deletable = true;
-  // Make match index 3 have a suggestion_group_id to test header behavior.
-  matches[3].suggestion_group_id = 7;
+  // Make match index 3 have an associated keyword, tab match, and deletable to
+  // verify keyword mode doesn't override tab match and remove suggestion
+  // buttons (as it does with button row disabled)
+  matches[3].associated_keyword =
+      std::make_unique<AutocompleteMatch>(matches.back());
+  matches[3].has_tab_match = true;
+  matches[3].deletable = true;
+  // Make match index 4 have a suggestion_group_id to test header behavior.
+  matches[4].suggestion_group_id = 7;
 
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
@@ -249,44 +225,53 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   EXPECT_EQ(0u, model()->popup_model()->selected_line());
 
   // Step by lines forward.
-  for (size_t n : {1, 2, 3, 0}) {
+  for (size_t n : {1, 2, 3, 4, 0}) {
     popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(n, model()->popup_model()->selected_line());
   }
   // Step by lines backward.
-  for (size_t n : {3, 2, 1, 0}) {
+  for (size_t n : {4, 3, 2, 1, 0}) {
     popup_model()->StepSelection(OmniboxPopupModel::kBackward,
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(n, model()->popup_model()->selected_line());
   }
+
   // Step by states forward.
   for (auto selection : {
            Selection(1, OmniboxPopupModel::NORMAL),
            Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
            Selection(2, OmniboxPopupModel::NORMAL),
            Selection(2, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
            Selection(3, OmniboxPopupModel::NORMAL),
+           Selection(3, OmniboxPopupModel::KEYWORD_MODE),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
+           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(4, OmniboxPopupModel::NORMAL),
            Selection(0, OmniboxPopupModel::NORMAL),
        }) {
     popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                  OmniboxPopupModel::kStateOrLine);
     EXPECT_EQ(selection, model()->popup_model()->selection());
   }
-  // Step by states backward.
-  // Note the lack of KEYWORD. This is by design. Stepping forward
-  // should land on KEYWORD, but stepping backward should not.
+  // Step by states backward. Unlike prior to suggestion button row, there is
+  // no difference in behavior for KEYWORD mode moving forward or backward.
   for (auto selection : {
+           Selection(4, OmniboxPopupModel::NORMAL),
+           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+           Selection(3, OmniboxPopupModel::KEYWORD_MODE),
            Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
            Selection(2, OmniboxPopupModel::NORMAL),
            Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
            Selection(1, OmniboxPopupModel::NORMAL),
            Selection(0, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(2, OmniboxPopupModel::NORMAL),
+           Selection(4, OmniboxPopupModel::NORMAL),
+           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
+           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
        }) {
     popup_model()->StepSelection(OmniboxPopupModel::kBackward,
                                  OmniboxPopupModel::kStateOrLine);
@@ -300,7 +285,7 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
             model()->popup_model()->selection());
   popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(Selection(3, OmniboxPopupModel::NORMAL),
+  EXPECT_EQ(Selection(4, OmniboxPopupModel::NORMAL),
             model()->popup_model()->selection());
 }
 
@@ -373,199 +358,6 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelectionWithHiddenGroupIds) {
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(selection, model()->popup_model()->selection());
   }
-}
-
-TEST_F(OmniboxPopupModelSuggestionButtonRowTest,
-       PopupStepSelectionWithButtonRow) {
-  ACMatches matches;
-  for (size_t i = 0; i < 4; ++i) {
-    AutocompleteMatch match(nullptr, 1000, false,
-                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-    match.keyword = u"match";
-    match.allowed_to_be_default_match = true;
-    matches.push_back(match);
-  }
-  // Make match index 1 have a tab match and be deletable to verify we can step
-  // to each.
-  matches[1].has_tab_match = true;
-  matches[1].deletable = true;
-  // Make match index 2 have an associated keyword for irregular state stepping.
-  // Make it deleteable and with a tab match to verify that we correctly skip
-  // those on matches with an associated keyword.
-  matches[2].associated_keyword =
-      std::make_unique<AutocompleteMatch>(matches.back());
-  matches[2].deletable = true;
-  matches[2].has_tab_match = true;
-  // Make match index 3 have a suggestion_group_id to test header behavior.
-  matches[3].suggestion_group_id = 7;
-
-  auto* result = &model()->autocomplete_controller()->result_;
-  AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
-                          TestSchemeClassifier());
-  result->AppendMatches(input, matches);
-  result->MergeHeadersMap({{7, u"header"}});
-  result->SortAndCull(input, nullptr);
-  popup_model()->OnResultChanged();
-  EXPECT_EQ(0u, model()->popup_model()->selected_line());
-
-  // Step by lines forward.
-  for (size_t n : {1, 2, 3, 0}) {
-    popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                                 OmniboxPopupModel::kWholeLine);
-    EXPECT_EQ(n, model()->popup_model()->selected_line());
-  }
-  // Step by lines backward.
-  for (size_t n : {3, 2, 1, 0}) {
-    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                                 OmniboxPopupModel::kWholeLine);
-    EXPECT_EQ(n, model()->popup_model()->selected_line());
-  }
-  // Step by states forward.
-  for (auto selection : {
-           Selection(1, OmniboxPopupModel::NORMAL),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(2, OmniboxPopupModel::NORMAL),
-           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(0, OmniboxPopupModel::NORMAL),
-       }) {
-    popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                                 OmniboxPopupModel::kStateOrLine);
-    EXPECT_EQ(selection, model()->popup_model()->selection());
-  }
-  // Step by states backward.
-  // Note the lack of KEYWORD. This is by design. Stepping forward
-  // should land on KEYWORD, but stepping backward should not.
-  for (auto selection : {
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(2, OmniboxPopupModel::NORMAL),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
-           Selection(1, OmniboxPopupModel::NORMAL),
-           Selection(0, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(2, OmniboxPopupModel::NORMAL),
-       }) {
-    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                                 OmniboxPopupModel::kStateOrLine);
-    EXPECT_EQ(selection, model()->popup_model()->selection());
-  }
-
-  // Try the kAllLines step behavior.
-  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                               OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(Selection(0, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(Selection(3, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-}
-
-TEST_F(OmniboxPopupModelSuggestionButtonRowTest,
-       PopupStepSelectionWithButtonRowAndKeywordButton) {
-  InitKeywordButtonFeature();
-
-  ACMatches matches;
-  for (size_t i = 0; i < 5; ++i) {
-    AutocompleteMatch match(nullptr, 1000, false,
-                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-    match.keyword = u"match";
-    match.allowed_to_be_default_match = true;
-    matches.push_back(match);
-  }
-  // Make match index 1 deletable to verify we can step to that.
-  matches[1].deletable = true;
-  // Make match index 2 only have an associated keyword to verify we can step
-  // backwards into keyword search mode.
-  matches[2].associated_keyword =
-      std::make_unique<AutocompleteMatch>(matches.back());
-  // Make match index 3 have an associated keyword, tab match, and deletable to
-  // verify keyword mode doesn't override tab match and remove suggestion
-  // buttons (as it does with button row disabled)
-  matches[3].associated_keyword =
-      std::make_unique<AutocompleteMatch>(matches.back());
-  matches[3].has_tab_match = true;
-  matches[3].deletable = true;
-  // Make match index 4 have a suggestion_group_id to test header behavior.
-  matches[4].suggestion_group_id = 7;
-
-  auto* result = &model()->autocomplete_controller()->result_;
-  AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
-                          TestSchemeClassifier());
-  result->AppendMatches(input, matches);
-  result->MergeHeadersMap({{7, u"header"}});
-  result->SortAndCull(input, nullptr);
-  popup_model()->OnResultChanged();
-  EXPECT_EQ(0u, model()->popup_model()->selected_line());
-
-  // Step by lines forward.
-  for (size_t n : {1, 2, 3, 4, 0}) {
-    popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                                 OmniboxPopupModel::kWholeLine);
-    EXPECT_EQ(n, model()->popup_model()->selected_line());
-  }
-  // Step by lines backward.
-  for (size_t n : {4, 3, 2, 1, 0}) {
-    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                                 OmniboxPopupModel::kWholeLine);
-    EXPECT_EQ(n, model()->popup_model()->selected_line());
-  }
-  // Step by states forward.
-  for (auto selection : {
-           Selection(1, OmniboxPopupModel::NORMAL),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(2, OmniboxPopupModel::NORMAL),
-           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(3, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(4, OmniboxPopupModel::NORMAL),
-           Selection(0, OmniboxPopupModel::NORMAL),
-       }) {
-    popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                                 OmniboxPopupModel::kStateOrLine);
-    EXPECT_EQ(selection, model()->popup_model()->selection());
-  }
-
-  // Step by states backward. Unlike without suggestion button row, there is no
-  // difference in behavior for KEYWORD mode moving forward or backward.
-  for (auto selection : {
-           Selection(4, OmniboxPopupModel::NORMAL),
-           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
-           Selection(3, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(3, OmniboxPopupModel::NORMAL),
-           Selection(2, OmniboxPopupModel::KEYWORD_MODE),
-           Selection(2, OmniboxPopupModel::NORMAL),
-           Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-           Selection(1, OmniboxPopupModel::NORMAL),
-           Selection(0, OmniboxPopupModel::NORMAL),
-           Selection(4, OmniboxPopupModel::NORMAL),
-           Selection(4, OmniboxPopupModel::FOCUSED_BUTTON_HEADER),
-           Selection(3, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-       }) {
-    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                                 OmniboxPopupModel::kStateOrLine);
-    EXPECT_EQ(selection, model()->popup_model()->selection());
-  }
-
-  // Try the kAllLines step behavior.
-  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                               OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(Selection(0, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(Selection(4, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
 }
 
 TEST_F(OmniboxPopupModelTest, PopupInlineAutocompleteAndTemporaryText) {
@@ -646,141 +438,6 @@ TEST_F(OmniboxPopupModelTest, PopupInlineAutocompleteAndTemporaryText) {
             model()->popup_model()->selection());
   EXPECT_EQ(u"a2", model()->text());
   EXPECT_TRUE(model()->is_temporary_text());
-}
-
-TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
-  int contents_max_width, description_max_width;
-  const int separator_width = 10;
-  const int kMinimumContentsWidth = 300;
-  int contents_width, description_width, available_width;
-
-  // Both contents and description fit fine.
-  contents_width = 100;
-  description_width = 50;
-  available_width = 200;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ(description_width, description_max_width);
-
-  // Contents should be given as much space as it wants up to 300 pixels.
-  contents_width = 100;
-  description_width = 50;
-  available_width = 100;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ(0, description_max_width);
-
-  // Description should be hidden if it's at least 75 pixels wide but doesn't
-  // get 75 pixels of space.
-  contents_width = 300;
-  description_width = 100;
-  available_width = 384;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ(0, description_max_width);
-
-  // If contents and description are on separate lines, each can take the full
-  // available width.
-  contents_width = 300;
-  description_width = 100;
-  available_width = 384;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width, true,
-      true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ(description_width, description_max_width);
-
-  // Both contents and description will be limited.
-  contents_width = 310;
-  description_width = 150;
-  available_width = 400;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(kMinimumContentsWidth, contents_max_width);
-  EXPECT_EQ(available_width - kMinimumContentsWidth - separator_width,
-            description_max_width);
-
-  // Contents takes all available space.
-  contents_width = 400;
-  description_width = 0;
-  available_width = 200;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(available_width, contents_max_width);
-  EXPECT_EQ(0, description_max_width);
-
-  // Large contents will be truncated but small description won't if two line
-  // suggestion.
-  contents_width = 400;
-  description_width = 100;
-  available_width = 200;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width, true,
-      true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(available_width, contents_max_width);
-  EXPECT_EQ(description_width, description_max_width);
-
-  // Large description will be truncated but small contents won't if two line
-  // suggestion.
-  contents_width = 100;
-  description_width = 400;
-  available_width = 200;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width, true,
-      true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ(available_width, description_max_width);
-
-  // Half and half.
-  contents_width = 395;
-  description_width = 395;
-  available_width = 700;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(345, contents_max_width);
-  EXPECT_EQ(345, description_max_width);
-
-  // When we disallow shrinking the contents, it should get as much space as
-  // it wants.
-  contents_width = 395;
-  description_width = 395;
-  available_width = 700;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, false, &contents_max_width, &description_max_width);
-  EXPECT_EQ(contents_width, contents_max_width);
-  EXPECT_EQ((available_width - contents_width - separator_width),
-            description_max_width);
-
-  // (available_width - separator_width) is odd, so contents gets the extra
-  // pixel.
-  contents_width = 395;
-  description_width = 395;
-  available_width = 699;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(345, contents_max_width);
-  EXPECT_EQ(344, description_max_width);
-
-  // Not enough space to draw anything.
-  contents_width = 1;
-  description_width = 1;
-  available_width = 0;
-  OmniboxPopupModel::ComputeMatchMaxWidths(
-      contents_width, separator_width, description_width, available_width,
-      false, true, &contents_max_width, &description_max_width);
-  EXPECT_EQ(0, contents_max_width);
-  EXPECT_EQ(0, description_max_width);
 }
 
 // Makes sure focus remains on the tab switch button when nothing changes,

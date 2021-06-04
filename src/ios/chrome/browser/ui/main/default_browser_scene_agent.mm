@@ -10,6 +10,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/whats_new_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -18,20 +19,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface DefaultBrowserSceneAgent ()
-
-// Command Dispatcher.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
-
-@end
-
 @implementation DefaultBrowserSceneAgent
 
 - (instancetype)initWithCommandDispatcher:(CommandDispatcher*)dispatcher {
   if ([super init]) {
     _dispatcher = dispatcher;
-    if (base::FeatureList::IsEnabled(kDefaultPromoNonModal)) {
+    if (NonModalPromosEnabled()) {
       _nonModalScheduler = [[DefaultBrowserPromoNonModalScheduler alloc] init];
+      _nonModalScheduler.dispatcher = _dispatcher;
     }
   }
   return self;
@@ -46,6 +41,7 @@
   if (!base::ios::IsRunningOnOrLater(14, 0, 1)) {
     return;
   }
+
   AppState* appState = self.sceneState.appState;
   // Can only present UI when activation level is
   // SceneActivationLevelForegroundActive. Show the UI if user has met the

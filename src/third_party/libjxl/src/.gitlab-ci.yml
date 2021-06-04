@@ -72,6 +72,9 @@ variables:
   - build/tools/comparison_viewer/compare_codecs*
   - build/tools/comparison_viewer/compare_images*
   - build/tools/viewer/viewer*
+  # Brotli shared dependencies if built
+  - build/third_party/brotli/libbrotli*so*
+  - build/third_party/brotli/libbrotli*.dll
   # All the test binaries in the build/ directory and .cmake files used by
   # ctest, compressed into this file together to save space when uploading.
   - build/tests.tar.xz
@@ -339,6 +342,33 @@ test:aarch64:clang:release:
     # LeakSanitizer doesn't work when running under qemu-arm.
     - ASAN_OPTIONS=detect_leaks=0 ./ci.sh test
 
+build:aarch64:clang:release-nhp:
+  <<: *linux_host_build_template
+  stage: build
+  only:
+    - master
+    - merge_requests
+    - schedules
+    - tags
+    - web
+  script:
+    - BUILD_TARGET=aarch64-linux-gnu
+        CMAKE_CXX_FLAGS="-DJXL_DISABLE_SLOW_TESTS -DJXL_HIGH_PRECISION=0"
+        SKIP_TEST=1 PACK_TEST=1 STACK_SIZE=1
+        ./ci.sh release
+    - tools/build_stats.py --save build/stats.json
+        --binutils=aarch64-linux-gnu-
+        cjxl djxl libjxl.so
+
+test:aarch64:clang:release-nhp:
+  <<: *linux_host_template
+  stage: test
+  dependencies:
+    - build:aarch64:clang:release-nhp
+  script:
+    # LeakSanitizer doesn't work when running under qemu-arm.
+    - ASAN_OPTIONS=detect_leaks=0 ./ci.sh test
+
 # arm release
 build:armhf:clang:release:
   <<: *linux_host_build_template
@@ -353,7 +383,7 @@ build:armhf:clang:release:
     - BUILD_TARGET=arm-linux-gnueabihf
         CMAKE_CXX_FLAGS="-DJXL_DISABLE_SLOW_TESTS -march=armv7a -Wno-unused-command-line-argument" SKIP_TEST=1 PACK_TEST=1
         STACK_SIZE=1
-        ./ci.sh release
+        ./ci.sh release -DJPEGXL_FORCE_NEON=ON
     - tools/build_stats.py --save build/stats.json
         --binutils=arm-linux-gnueabihf-
         cjxl djxl libjxl.so
@@ -373,6 +403,7 @@ build:armhf:clang:debug:
   only:
     - merge_requests
   script:
+    # Debug build without NEON enabled.
     - BUILD_TARGET=arm-linux-gnueabihf SKIP_TEST=1 ./ci.sh debug
 
 # "debug" build enabled for merge_requests. This is here to check that
@@ -518,9 +549,6 @@ test:fast_benchmark.msan:
   script:
     - STORE_IMAGES=0 ./ci.sh fast_benchmark
 
-# The aarch64 benchmarks are temporarily disabled until we can run them again.
-# TODO(sboukortt): Have them run again.
-
 # This template runs on actual aarch64 hardware.
 .benchmark_aarch64_template: &benchmark_aarch64_template
   <<: *linux_host_template
@@ -537,8 +565,6 @@ test:fast_benchmark.msan:
 
 test:aarch64:fast_benchmark:release:
   <<: *benchmark_aarch64_template
-  only: # TODO(sboukortt): Remove this.
-    - web
   dependencies:
     - build:aarch64:clang:release
   script:
@@ -553,8 +579,7 @@ test:aarch64:arm_benchmark:release:
   <<: *benchmark_aarch64_template
   only:
     - web
-    # TODO(sboukortt): Uncommment this.
-    # - master
+    - master
   dependencies:
     - build:aarch64:clang:release
   script:

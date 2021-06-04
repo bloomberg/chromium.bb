@@ -186,7 +186,7 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
   id_to_animation_.Set(id, &animation);
 
   double current_time = Timing::NullValue();
-  base::Optional<AnimationTimeDelta> animation_current_time =
+  absl::optional<AnimationTimeDelta> animation_current_time =
       animation.CurrentTimeInternal();
   if (animation_current_time) {
     current_time = animation_current_time.value().InMillisecondsF();
@@ -233,17 +233,17 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
 
   *current_time = Timing::NullValue();
   if (animation->Paused() || !animation->timeline()->IsActive()) {
-    base::Optional<AnimationTimeDelta> animation_current_time =
+    absl::optional<AnimationTimeDelta> animation_current_time =
         animation->CurrentTimeInternal();
     if (animation_current_time) {
       *current_time = animation_current_time.value().InMillisecondsF();
     }
   } else {
     // Use startTime where possible since currentTime is limited.
-    base::Optional<AnimationTimeDelta> animation_start_time =
+    absl::optional<AnimationTimeDelta> animation_start_time =
         animation->StartTimeInternal();
     if (animation_start_time) {
-      base::Optional<AnimationTimeDelta> timeline_time =
+      absl::optional<AnimationTimeDelta> timeline_time =
           animation->timeline()->CurrentTime();
       // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
       if (timeline_time) {
@@ -268,14 +268,14 @@ Response InspectorAnimationAgent::setPaused(
       return Response::ServerError("Failed to clone detached animation");
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
-      base::Optional<AnimationTimeDelta> current_time;
+      absl::optional<AnimationTimeDelta> current_time;
       if (!clone->timeline()->IsActive()) {
         current_time = clone->CurrentTimeInternal();
       } else {
-        base::Optional<AnimationTimeDelta> start_time =
+        absl::optional<AnimationTimeDelta> start_time =
             clone->StartTimeInternal();
         if (start_time) {
-          base::Optional<AnimationTimeDelta> timeline_time =
+          absl::optional<AnimationTimeDelta> timeline_time =
               clone->timeline()->CurrentTime();
           // TODO(crbug.com/916117): Handle NaN values.
           if (timeline_time) {
@@ -331,9 +331,13 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    clone->setStartTime(animation->startTime(), ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     CSSNumberish start_time;
     animation->startTime(start_time);
     clone->setStartTime(start_time);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
     animation->SetEffectSuppressed(true);
   }
@@ -535,7 +539,7 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
   double time_ms = Timing::NullValue();
-  base::Optional<AnimationTimeDelta> start_time = animation.StartTimeInternal();
+  absl::optional<AnimationTimeDelta> start_time = animation.StartTimeInternal();
   if (start_time) {
     time_ms = start_time.value().InMillisecondsF();
   }

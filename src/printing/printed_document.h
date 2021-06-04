@@ -32,7 +32,7 @@ class PrintingContext;
 // will have write access. Sensible functions are protected by a lock.
 // Warning: Once a page is loaded, it cannot be replaced. Pages may be discarded
 // under low memory conditions.
-class PRINTING_EXPORT PrintedDocument
+class COMPONENT_EXPORT(PRINTING) PrintedDocument
     : public base::RefCountedThreadSafe<PrintedDocument> {
  public:
   // The cookie shall be unique and has a specific relationship with its
@@ -112,14 +112,14 @@ class PRINTING_EXPORT PrintedDocument
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never
-  // set, no files are generated. |debug_dump_path| must not be empty.
+  // set, no files are generated. `debug_dump_path` must not be empty.
   static void SetDebugDumpPath(const base::FilePath& debug_dump_path);
 
   // Returns true if SetDebugDumpPath() has been called.
   static bool HasDebugDumpPath();
 
-  // Creates debug file name from given |document_name| and |extension|.
-  // |extension| should include the leading dot. e.g. ".pdf"
+  // Creates debug file name from given `document_name` and `extension`.
+  // `extension` should include the leading dot. e.g. ".pdf"
   // Should only be called when debug dumps are enabled.
   static base::FilePath CreateDebugDumpPath(
       const std::u16string& document_name,

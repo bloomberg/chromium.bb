@@ -82,6 +82,8 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
     ScriptState* script_state = ToScriptStateForMainWorld(GetSupplementable());
     DCHECK(script_state);
     ScriptState::Scope scope(script_state);
+    v8::MicrotasksScope microtasks_scope(
+        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     if (devtools_host_)
       devtools_host_->DisconnectClient();
     devtools_host_ =
@@ -123,9 +125,9 @@ void DevToolsFrontendImpl::SetupDevToolsExtensionAPI(
   api_script_ = extension_api;
 }
 
-void DevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
+void DevToolsFrontendImpl::SendMessageToEmbedder(base::Value message) {
   if (host_.is_bound())
-    host_->DispatchEmbedderMessage(message);
+    host_->DispatchEmbedderMessage(std::move(message));
 }
 
 void DevToolsFrontendImpl::DestroyOnHostGone() {

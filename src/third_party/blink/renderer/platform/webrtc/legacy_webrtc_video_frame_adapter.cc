@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/platform/webrtc/legacy_webrtc_video_frame_adapter.h"
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/video_util.h"
@@ -207,8 +207,7 @@ scoped_refptr<media::VideoFrame> MakeScaledI420VideoFrame(
                          dst_frame->data(media::VideoFrame::kAPlane),
                          dst_frame->stride(media::VideoFrame::kAPlane),
                          dst_frame->coded_size().width(),
-                         dst_frame->coded_size().height(),
-                         libyuv::kFilterBilinear);
+                         dst_frame->coded_size().height(), libyuv::kFilterBox);
       // Fallthrough to I420 in order to scale the YUV planes as well.
       ABSL_FALLTHROUGH_INTENDED;
     case media::PIXEL_FORMAT_I420:
@@ -227,8 +226,7 @@ scoped_refptr<media::VideoFrame> MakeScaledI420VideoFrame(
                         dst_frame->data(media::VideoFrame::kVPlane),
                         dst_frame->stride(media::VideoFrame::kVPlane),
                         dst_frame->coded_size().width(),
-                        dst_frame->coded_size().height(),
-                        libyuv::kFilterBilinear);
+                        dst_frame->coded_size().height(), libyuv::kFilterBox);
       break;
     case media::PIXEL_FORMAT_NV12: {
       webrtc::NV12ToI420Scaler scaler;
@@ -276,21 +274,21 @@ scoped_refptr<media::VideoFrame> MakeScaledI420VideoFrame(
             tmp_frame->data(media::VideoFrame::kVPlane),
             tmp_frame->stride(media::VideoFrame::kVPlane), visible_size.width(),
             visible_size.height());
-        libyuv::I420Scale(
-            tmp_frame->data(media::VideoFrame::kYPlane),
-            tmp_frame->stride(media::VideoFrame::kYPlane),
-            tmp_frame->data(media::VideoFrame::kUPlane),
-            tmp_frame->stride(media::VideoFrame::kUPlane),
-            tmp_frame->data(media::VideoFrame::kVPlane),
-            tmp_frame->stride(media::VideoFrame::kVPlane), visible_size.width(),
-            visible_size.height(), dst_frame->data(media::VideoFrame::kYPlane),
-            dst_frame->stride(media::VideoFrame::kYPlane),
-            dst_frame->data(media::VideoFrame::kUPlane),
-            dst_frame->stride(media::VideoFrame::kUPlane),
-            dst_frame->data(media::VideoFrame::kVPlane),
-            dst_frame->stride(media::VideoFrame::kVPlane),
-            dst_frame->coded_size().width(), dst_frame->coded_size().height(),
-            libyuv::kFilterBilinear);
+        libyuv::I420Scale(tmp_frame->data(media::VideoFrame::kYPlane),
+                          tmp_frame->stride(media::VideoFrame::kYPlane),
+                          tmp_frame->data(media::VideoFrame::kUPlane),
+                          tmp_frame->stride(media::VideoFrame::kUPlane),
+                          tmp_frame->data(media::VideoFrame::kVPlane),
+                          tmp_frame->stride(media::VideoFrame::kVPlane),
+                          visible_size.width(), visible_size.height(),
+                          dst_frame->data(media::VideoFrame::kYPlane),
+                          dst_frame->stride(media::VideoFrame::kYPlane),
+                          dst_frame->data(media::VideoFrame::kUPlane),
+                          dst_frame->stride(media::VideoFrame::kUPlane),
+                          dst_frame->data(media::VideoFrame::kVPlane),
+                          dst_frame->stride(media::VideoFrame::kVPlane),
+                          dst_frame->coded_size().width(),
+                          dst_frame->coded_size().height(), libyuv::kFilterBox);
       }
     } break;
     default:
@@ -454,6 +452,10 @@ LegacyWebRtcVideoFrameAdapter::SharedResources::ConstructVideoFrameFromGpu(
   DCHECK_EQ(source_frame->format(), media::PIXEL_FORMAT_NV12);
   DCHECK_EQ(source_frame->storage_type(),
             media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  // This is necessary because mapping may require waiting on IO thread,
+  // but webrtc API is synchronous.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
   return media::ConvertToMemoryMappedFrame(std::move(source_frame));
 }

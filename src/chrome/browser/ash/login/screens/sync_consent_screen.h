@@ -10,17 +10,18 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/user_manager/user.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
-namespace chromeos {
+namespace ash {
 
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
@@ -157,16 +158,16 @@ class SyncConsentScreen : public BaseScreen,
   ScreenExitCallback exit_callback_;
 
   // Manages sync service observer lifetime.
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_service_observer_{this};
+  base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observation_{this};
 
   // Primary user ind his Profile (if screen is shown).
   const user_manager::User* user_ = nullptr;
   Profile* profile_ = nullptr;
   bool is_initialized_ = false;
 
-  base::Optional<bool> test_sync_disabled_by_policy_;
-  base::Optional<bool> test_sync_engine_initialized_;
+  absl::optional<bool> test_sync_disabled_by_policy_;
+  absl::optional<bool> test_sync_engine_initialized_;
 
   // Notify tests.
   SyncConsentScreenTestDelegate* test_delegate_ = nullptr;
@@ -174,10 +175,12 @@ class SyncConsentScreen : public BaseScreen,
   DISALLOW_COPY_AND_ASSIGN(SyncConsentScreen);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-using ::chromeos::SyncConsentScreen;
+namespace chromeos {
+using ::ash::SyncConsentScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_SYNC_CONSENT_SCREEN_H_

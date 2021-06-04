@@ -447,12 +447,6 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   HistoryTabHelper::FromWebState(webState.get())
       ->SetDelayHistoryServiceNotification(false);
 
-  if (!webState->IsLoading()) {
-    [[OmniboxGeolocationController sharedInstance]
-        finishPageLoadForWebState:webState.get()
-                      loadSuccess:YES];
-  }
-
   return webState;
 }
 
@@ -596,7 +590,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   [self schedulePrerenderCancel];
 }
 
-- (void)onShowConsistencyPromo {
+- (void)onShowConsistencyPromo:(const GURL&)url {
   [self schedulePrerenderCancel];
 }
 

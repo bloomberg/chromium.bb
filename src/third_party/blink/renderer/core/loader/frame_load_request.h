@@ -31,11 +31,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -106,6 +107,13 @@ struct CORE_EXPORT FrameLoadRequest {
     initiator_policy_container_keep_alive_handle_ = std::move(handle);
   }
 
+  std::unique_ptr<SourceLocation> TakeSourceLocation() {
+    return std::move(source_location_);
+  }
+  void SetSourceLocation(std::unique_ptr<SourceLocation> source_location) {
+    source_location_ = std::move(source_location);
+  }
+
   HTMLFormElement* Form() const { return form_; }
   void SetForm(HTMLFormElement* form) { form_ = form; }
 
@@ -159,11 +167,11 @@ struct CORE_EXPORT FrameLoadRequest {
 
   // Impressions are set when a FrameLoadRequest is created for a click on an
   // anchor tag that has conversion measurement attributes.
-  void SetImpression(const base::Optional<WebImpression>& impression) {
+  void SetImpression(const absl::optional<WebImpression>& impression) {
     impression_ = impression;
   }
 
-  const base::Optional<WebImpression>& Impression() const {
+  const absl::optional<WebImpression>& Impression() const {
     return impression_;
   }
 
@@ -194,10 +202,11 @@ struct CORE_EXPORT FrameLoadRequest {
   mojom::RequestContextFrameType frame_type_ =
       mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
-  base::Optional<WebImpression> impression_;
-  base::Optional<LocalFrameToken> initiator_frame_token_;
+  absl::optional<WebImpression> impression_;
+  absl::optional<LocalFrameToken> initiator_frame_token_;
   mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
       initiator_policy_container_keep_alive_handle_;
+  std::unique_ptr<SourceLocation> source_location_;
 };
 
 }  // namespace blink

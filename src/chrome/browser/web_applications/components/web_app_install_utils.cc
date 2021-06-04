@@ -10,7 +10,6 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -24,6 +23,7 @@
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -91,8 +91,8 @@ UpdateShortcutsMenuItemInfosFromManifest(
     shortcut_info.name = shortcut.name;
     shortcut_info.url = shortcut.url;
 
-    std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                           IconPurpose::MASKABLE};
+    std::array<IconPurpose, 3> purposes = {
+        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
     for (IconPurpose purpose : purposes) {
       std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icons;
       for (const auto& icon : shortcut.icons) {
@@ -158,10 +158,10 @@ apps::ShareTarget::Enctype ToAppsShareTargetEnctype(
   NOTREACHED();
 }
 
-base::Optional<apps::ShareTarget> ToWebAppShareTarget(
-    const base::Optional<blink::Manifest::ShareTarget>& share_target) {
+absl::optional<apps::ShareTarget> ToWebAppShareTarget(
+    const absl::optional<blink::Manifest::ShareTarget>& share_target) {
   if (!share_target) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   apps::ShareTarget apps_share_target;
   apps_share_target.action = share_target->action;
@@ -249,9 +249,6 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     DCHECK(!icon.purpose.empty());
 
     for (IconPurpose purpose : icon.purpose) {
-      if (purpose != IconPurpose::ANY && purpose != IconPurpose::MASKABLE)
-        continue;
-
       WebApplicationIconInfo info;
 
       if (!icon.sizes.empty()) {
@@ -319,9 +316,8 @@ std::vector<GURL> GetValidIconUrlsToDownload(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     // Also add shortcut icon urls, so they can be downloaded.
-    // TODO (crbug.com/1114638): Support Monochrome icons.
-    std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                           IconPurpose::MASKABLE};
+    std::array<IconPurpose, 3> purposes = {
+        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
     for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
       for (IconPurpose purpose : purposes) {
         for (const auto& icon :
@@ -343,8 +339,8 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
   for (auto& shortcut : web_app_info->shortcuts_menu_item_infos) {
     IconBitmaps shortcut_icon_bitmaps;
 
-    std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                           IconPurpose::MASKABLE};
+    std::array<IconPurpose, 3> purposes = {
+        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
     for (IconPurpose purpose : purposes) {
       std::map<SquareSizePx, SkBitmap> bitmaps;
       for (const auto& icon :
@@ -381,6 +377,7 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
 
   std::vector<WebApplicationIconInfo> icon_infos_any;
   std::vector<WebApplicationIconInfo> icon_infos_maskable;
+  std::vector<WebApplicationIconInfo> icon_infos_monochrome;
   for (WebApplicationIconInfo& icon_info : web_app_info->icon_infos) {
     switch (icon_info.purpose) {
       case IconPurpose::ANY:
@@ -390,18 +387,21 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
         icon_infos_maskable.push_back(icon_info);
         break;
       case IconPurpose::MONOCHROME:
-        // Not used.
+        icon_infos_monochrome.push_back(icon_info);
         break;
     }
   }
 
   std::vector<SkBitmap> square_icons_any;
   std::vector<SkBitmap> square_icons_maskable;
+  std::vector<SkBitmap> square_icons_monochrome;
   if (icons_map) {
     AddSquareIconsFromMapMatchingIconInfos(&square_icons_any, icon_infos_any,
                                            *icons_map);
     AddSquareIconsFromMapMatchingIconInfos(&square_icons_maskable,
                                            icon_infos_maskable, *icons_map);
+    AddSquareIconsFromMapMatchingIconInfos(&square_icons_monochrome,
+                                           icon_infos_monochrome, *icons_map);
     // Fall back to using all icons from |icons_map| if none match icon_infos.
     if (square_icons_any.empty())
       AddSquareIconsFromMap(&square_icons_any, *icons_map);
@@ -412,6 +412,12 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
     // Retain any bitmaps provided as input to the installation.
     if (web_app_info->icon_bitmaps.maskable.count(bitmap.width()) == 0)
       web_app_info->icon_bitmaps.maskable[bitmap.width()] = std::move(bitmap);
+  }
+
+  for (SkBitmap& bitmap : square_icons_monochrome) {
+    // Retain any bitmaps provided as input to the installation.
+    if (web_app_info->icon_bitmaps.monochrome.count(bitmap.width()) == 0)
+      web_app_info->icon_bitmaps.monochrome[bitmap.width()] = std::move(bitmap);
   }
 
   char16_t icon_letter =
@@ -465,6 +471,30 @@ webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(
   }
 
   return install_source;
+}
+
+webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
+    ExternalInstallSource external_install_source) {
+  webapps::WebappUninstallSource uninstall_source;
+  switch (external_install_source) {
+    case ExternalInstallSource::kInternalDefault:
+      uninstall_source = webapps::WebappUninstallSource::kInternalPreinstalled;
+      break;
+    case ExternalInstallSource::kExternalDefault:
+      uninstall_source = webapps::WebappUninstallSource::kExternalPreinstalled;
+      break;
+    case ExternalInstallSource::kExternalPolicy:
+      uninstall_source = webapps::WebappUninstallSource::kExternalPolicy;
+      break;
+    case ExternalInstallSource::kSystemInstalled:
+      uninstall_source = webapps::WebappUninstallSource::kSystemPreinstalled;
+      break;
+    case ExternalInstallSource::kArc:
+      uninstall_source = webapps::WebappUninstallSource::kArc;
+      break;
+  }
+
+  return uninstall_source;
 }
 
 }  // namespace web_app

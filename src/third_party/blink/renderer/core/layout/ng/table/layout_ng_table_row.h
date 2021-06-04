@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_LAYOUT_NG_TABLE_ROW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_LAYOUT_NG_TABLE_ROW_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
@@ -70,7 +71,9 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
     return false;
   }
 
+#if DCHECK_IS_ON()
   void AddVisualOverflowFromBlockChildren() override;
+#endif
 
   bool VisualRectRespectsVisibility() const final {
     NOT_DESTROYED();

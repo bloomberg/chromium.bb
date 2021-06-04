@@ -28,6 +28,16 @@ namespace {
   }
 }
 
+mojom::LoggerStatusPtr LoggerUninitializedStatus() {
+  return mojom::LoggerStatus::New(mojom::LoggerErrorCode::kUnavailable,
+                                  "Meet logger service not yet initialised.");
+}
+
+::reporting::Status LogPolicyDisabled() {
+  return ::reporting::Status(reporting::error::UNAUTHENTICATED,
+                             "System log upload policy not enabled");
+}
+
 constexpr auto kHandlerDestination =
     ::reporting::Destination::MEET_DEVICE_TELEMETRY;
 
@@ -64,7 +74,7 @@ void ReportingPipeline::Enqueue(const std::string& record,
                                 CfmLoggerService::EnqueueCallback callback) {
   if (!report_queue_) {
     LOG(ERROR) << "Report Queue has not been initialised";
-    std::move(callback).Run(mojom::LoggerState::kUninitialized);
+    std::move(callback).Run(LoggerUninitializedStatus());
     return;
   }
 
@@ -73,9 +83,15 @@ void ReportingPipeline::Enqueue(const std::string& record,
       base::BindOnce(
           [](CfmLoggerService::EnqueueCallback callback,
              reporting::Status status) {
-            auto state = status.ok() ? mojom::LoggerState::kReadyForRequests
-                                     : mojom::LoggerState::kFailed;
-            std::move(callback).Run(state);
+            auto message = status.error_message();
+            auto code =
+                static_cast<mojom::LoggerErrorCode>(status.error_code());
+
+            if (!mojom::IsKnownEnumValue(code))
+              code = mojom::LoggerErrorCode::kUnknown;
+
+            std::move(callback).Run(mojom::LoggerStatus::New(
+                std::move(code), std::string(message.begin(), message.end())));
           },
           std::move(callback)));
 }
@@ -108,7 +124,8 @@ void ReportingPipeline::UpdateToken(std::string request_token) {
 
   auto config_result = reporting::ReportQueueConfiguration::Create(
       dm_token_, kHandlerDestination,
-      base::BindRepeating([]() { return ::reporting::Status::StatusOK(); }));
+      base::BindRepeating(&ReportingPipeline::CheckPolicy,
+                          base::Unretained(this)));
 
   if (!config_result.ok()) {
     LOG(ERROR) << "Report Client Configuration failed with error message: "
@@ -134,6 +151,21 @@ void ReportingPipeline::UpdateToken(std::string request_token) {
                 std::move(config), std::move(queue_callback));
           },
           std::move(config_result).ValueOrDie(), std::move(queue_callback)));
+}
+
+::reporting::Status ReportingPipeline::CheckPolicy() const {
+  auto* chrome_device_settings =
+      ash::DeviceSettingsService::Get()->device_settings();
+  bool policy_enabled = false;
+
+  if (chrome_device_settings &&
+      chrome_device_settings->has_device_log_upload_settings()) {
+    auto device_upload_settings =
+        chrome_device_settings->device_log_upload_settings();
+    policy_enabled = device_upload_settings.system_log_upload_enabled();
+  }
+
+  return policy_enabled ? ::reporting::Status::StatusOK() : LogPolicyDisabled();
 }
 
 void ReportingPipeline::OnReportQueueUpdated(

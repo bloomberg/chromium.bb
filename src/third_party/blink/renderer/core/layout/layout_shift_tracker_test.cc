@@ -62,7 +62,7 @@ TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
 TEST_F(LayoutShiftTrackerTest, CompositedShiftBeforeFirstPaint) {
   // Tests that we don't crash if a new layer shifts during a second compositing
   // update before prepaint sets up property tree state.  See crbug.com/881735
-  // (which invokes UpdateLifecycleToCompositingCleanPlusScrolling through
+  // (which invokes UpdateAllLifecyclePhasesExceptPaint through
   // accessibilityController.accessibleElementById).
 
   SetBodyInnerHTML(R"HTML(
@@ -80,7 +80,7 @@ TEST_F(LayoutShiftTrackerTest, CompositedShiftBeforeFirstPaint) {
 
   GetDocument().getElementById("B")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("tr"));
-  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling(
+  GetFrameView().UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   GetDocument().getElementById("A")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("hide"));
@@ -207,6 +207,37 @@ TEST_F(LayoutShiftTrackerSimTest, ViewportSizeChange) {
   // to change position during block layout flow. Since it was the result of a
   // viewport size change, this position change should not affect the score.
   WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 600));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  LayoutShiftTracker& layout_shift_tracker =
+      MainFrame().GetFrameView()->GetLayoutShiftTracker();
+  EXPECT_FLOAT_EQ(0.0, layout_shift_tracker.Score());
+}
+
+TEST_F(LayoutShiftTrackerSimTest, ZoomLevelChange) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      body { margin: 0; }
+      .square {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background:yellow;
+      }
+    </style>
+    <div class='square'></div>
+    <div class='square'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  WebView().MainFrameViewWidget()->SetZoomLevelForTesting(1.0);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

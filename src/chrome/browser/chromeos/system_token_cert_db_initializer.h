@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "crypto/scoped_nss_types.h"
@@ -29,7 +28,7 @@ class SystemTokenCertDBInitializer : public TpmManagerClient::Observer {
  public:
   // It is stated in cryptohome implementation that 5 minutes is enough time to
   // wait for any TPM operations. For more information, please refer to:
-  // https://chromium.googlesource.com/chromiumos/platform2/+/master/cryptohome/cryptohome.cc
+  // https://chromium.googlesource.com/chromiumos/platform2/+/main/cryptohome/cryptohome.cc
   static constexpr base::TimeDelta kMaxCertDbRetrievalDelay =
       base::TimeDelta::FromMinutes(5);
 

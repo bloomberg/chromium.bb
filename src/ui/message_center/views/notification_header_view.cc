@@ -13,6 +13,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,8 +29,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
 
@@ -362,7 +362,7 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
   NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
 }
 
-void NotificationHeaderView::SetAccentColor(base::Optional<SkColor> color) {
+void NotificationHeaderView::SetAccentColor(absl::optional<SkColor> color) {
   accent_color_ = std::move(color);
   UpdateColors();
 }
@@ -392,7 +392,7 @@ const std::u16string& NotificationHeaderView::app_name_for_testing() const {
   return app_name_view_->GetText();
 }
 
-const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
+gfx::ImageSkia NotificationHeaderView::app_icon_for_testing() const {
   return app_icon_view_->GetImage();
 }
 
@@ -410,6 +410,8 @@ void NotificationHeaderView::UpdateSummaryTextVisibility() {
 }
 
 void NotificationHeaderView::UpdateColors() {
+  if (!GetWidget())
+    return;
   SkColor color = accent_color_.value_or(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_NotificationDefaultAccentColor));
   app_name_view_->SetEnabledColor(color);

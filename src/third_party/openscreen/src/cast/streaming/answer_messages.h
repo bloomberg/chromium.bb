@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "cast/streaming/resolution.h"
 #include "cast/streaming/ssrc.h"
 #include "json/value.h"
 #include "platform/base/error.h"
@@ -46,23 +47,13 @@ struct AudioConstraints {
   absl::optional<std::chrono::milliseconds> max_delay = {};
 };
 
-struct Dimensions {
-  static bool ParseAndValidate(const Json::Value& value, Dimensions* out);
-  Json::Value ToJson() const;
-  bool IsValid() const;
-
-  int width = 0;
-  int height = 0;
-  SimpleFraction frame_rate;
-};
-
 struct VideoConstraints {
   static bool ParseAndValidate(const Json::Value& value, VideoConstraints* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
   absl::optional<double> max_pixels_per_second = {};
-  absl::optional<Dimensions> min_dimensions = {};
+  absl::optional<Dimensions> min_resolution = {};
   Dimensions max_dimensions = {};
   int min_bit_rate = 0;  // optional
   int max_bit_rate = 0;
@@ -123,7 +114,6 @@ struct Answer {
   absl::optional<DisplayDescription> display;
   std::vector<int> receiver_rtcp_event_log;
   std::vector<int> receiver_rtcp_dscp;
-  bool supports_wifi_status_reporting = false;
 
   // RTP extensions should be empty, but not null.
   std::vector<std::string> rtp_extensions = {};

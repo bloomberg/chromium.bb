@@ -156,7 +156,7 @@ class AccessibilityCanvasActionBrowserTest
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, DoDefaultAction) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <div id="button" role="button" tabIndex=0>Click</div>
-      <p></p>
+      <p role="group"></p>
       <script>
         document.getElementById('button').addEventListener('click', () => {
           document.querySelector('p').setAttribute('aria-label', 'success');
@@ -252,14 +252,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
-      <div style="width:100; height:50; overflow:scroll"
+      <div role="group" style="width:100; height:50; overflow:scroll"
           aria-label="shakespeare">
         To be or not to be, that is the question.
       </div>
       )HTML");
 
   BrowserAccessibility* target =
-      FindNode(ax::mojom::Role::kGenericContainer, "shakespeare");
+      FindNode(ax::mojom::Role::kGroup, "shakespeare");
   EXPECT_NE(target, nullptr);
 
   int y_before = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
     BrowserAccessibility* node = FindNode(ax::mojom::Role::kButton, node_name);
     ASSERT_NE(nullptr, node);
 
-    EXPECT_TRUE(ExecuteScript(shell(), focus_node_script));
+    EXPECT_TRUE(ExecJs(shell(), focus_node_script));
     WaitForAccessibilityFocusChange();
 
     EXPECT_EQ(node->GetId(),
@@ -819,7 +819,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
       <html>
       <body>
         <div style='height: 5000px; width: 5000px;'></div>
-        <div aria-label='target' style='position: relative;
+        <div role='group' aria-label='target' style='position: relative;
              left: 2000px; width: 100px;'>One</div>
         <div style='height: 5000px;'></div>
       </body>
@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
   doc_right_third.set_x(doc_bounds.right() - one_third_doc_width);
 
   BrowserAccessibility* target_node =
-      FindNode(ax::mojom::Role::kGenericContainer, "target");
+      FindNode(ax::mojom::Role::kGroup, "target");
   EXPECT_NE(target_node, nullptr);
 
   ScrollNodeIntoView(target_node,
@@ -851,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
                      ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge);
   gfx::Rect bounds = target_node->GetUnclippedScreenBoundsRect();
   {
-    testing::Message message;
+    ::testing::Message message;
     message << "Expected" << bounds.ToString() << " to be within "
             << doc_bottom_third.ToString() << " and "
             << doc_right_third.ToString();
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
                      ax::mojom::ScrollAlignment::kScrollAlignmentTop);
   bounds = target_node->GetUnclippedScreenBoundsRect();
   {
-    testing::Message message;
+    ::testing::Message message;
     message << "Expected" << bounds.ToString() << " to be within "
             << doc_top_third.ToString() << " and " << doc_left_third.ToString();
     EXPECT_TRUE(doc_bounds.Contains(bounds));
@@ -894,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
                      ax::mojom::ScrollAlignment::kScrollAlignmentBottom);
   bounds = target_node->GetUnclippedScreenBoundsRect();
   {
-    testing::Message message;
+    ::testing::Message message;
     message << "Expected" << bounds.ToString() << " to be within "
             << doc_bottom_third.ToString() << " and "
             << doc_right_third.ToString();
@@ -938,7 +938,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
                      ax::mojom::ScrollAlignment::kScrollAlignmentCenter);
   bounds = target_node->GetUnclippedScreenBoundsRect();
   {
-    testing::Message message;
+    ::testing::Message message;
     message << "Expected" << bounds.ToString() << " to not be within "
             << doc_top_third.ToString() << ", " << doc_bottom_third.ToString()
             << ", " << doc_left_third.ToString() << ", and "

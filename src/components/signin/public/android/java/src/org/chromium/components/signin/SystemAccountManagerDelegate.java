@@ -28,20 +28,15 @@ import androidx.annotation.Nullable;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ObserverList;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.gms.ChromiumPlayServicesAvailability;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 
 import java.io.IOException;
 
@@ -51,26 +46,26 @@ import java.io.IOException;
  */
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     private final AccountManager mAccountManager;
-    private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
-    private boolean mRegisterObserversCalled;
+    private AccountsChangeObserver mObserver;
 
     private static final String TAG = "Auth";
 
     public SystemAccountManagerDelegate() {
         Context context = ContextUtils.getApplicationContext();
         mAccountManager = AccountManager.get(context);
+        mObserver = null;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void registerObservers() {
-        assert !mRegisterObserversCalled;
+    public void attachAccountsChangeObserver(AccountsChangeObserver observer) {
+        assert mObserver == null : "Another AccountsChangeObserver is already attached!";
 
+        mObserver = observer;
         Context context = ContextUtils.getApplicationContext();
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(final Context context, final Intent intent) {
-                fireOnAccountsChangedNotification();
+                mObserver.onAccountsChanged();
             }
         };
         IntentFilter accountsChangedIntentFilter = new IntentFilter();
@@ -84,56 +79,27 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 "com.google.android.gms", PatternMatcher.PATTERN_PREFIX);
 
         context.registerReceiver(receiver, gmsPackageReplacedFilter);
-
-        mRegisterObserversCalled = true;
     }
 
-    protected void checkCanUseGooglePlayServices() throws AccountManagerDelegateException {
-        Context context = ContextUtils.getApplicationContext();
-        final int resultCode =
-                ChromiumPlayServicesAvailability.getGooglePlayServicesConnectionResult(context);
-        if (resultCode == ConnectionResult.SUCCESS) {
-            return;
+    @Override
+    public Account[] getAccounts() {
+        if (hasGetAccountsPermission() && isGooglePlayServicesAvailable()) {
+            long startTime = SystemClock.elapsedRealtime();
+            Account[] accounts =
+                    mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+            recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager",
+                    SystemClock.elapsedRealtime() - startTime);
+            return accounts;
         }
-
-        throw new GmsAvailabilityException(
-                String.format("Can't use Google Play Services: %s",
-                        GoogleApiAvailability.getInstance().getErrorString(resultCode)),
-                resultCode);
-    }
-
-    @Override
-    public void addObserver(AccountsChangeObserver observer) {
-        assert mRegisterObserversCalled : "Should call registerObservers first";
-        mObservers.addObserver(observer);
-    }
-
-    @Override
-    public void removeObserver(AccountsChangeObserver observer) {
-        boolean success = mObservers.removeObserver(observer);
-        assert success : "Can't find observer";
-    }
-
-    @Override
-    public Account[] getAccountsSync() throws AccountManagerDelegateException {
         // Account seeding relies on GoogleAuthUtil.getAccountId to get GAIA ids,
         // so don't report any accounts if Google Play Services are out of date.
-        checkCanUseGooglePlayServices();
-
-        if (!hasGetAccountsPermission()) {
-            return new Account[] {};
-        }
-        long now = SystemClock.elapsedRealtime();
-        Account[] accounts = mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-        long elapsed = SystemClock.elapsedRealtime() - now;
-        recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
-        return accounts;
+        return new Account[] {};
     }
 
     @Override
     public AccessTokenData getAuthToken(Account account, String authTokenScope)
             throws AuthException {
-        assert !ThreadUtils.runningOnUiThread();
+        ThreadUtils.assertOnBackgroundThread();
         assert AccountUtils.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
             return new AccessTokenData(GoogleAuthUtil.getTokenWithNotification(
@@ -152,8 +118,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     public void invalidateAuthToken(String authToken) throws AuthException {
         try {
             GoogleAuthUtil.clearToken(ContextUtils.getApplicationContext(), authToken);
-        } catch (GooglePlayServicesAvailabilityException ex) {
-            throw new AuthException(AuthException.NONTRANSIENT, ex);
         } catch (GoogleAuthException ex) {
             throw new AuthException(AuthException.NONTRANSIENT, ex);
         } catch (IOException ex) {
@@ -259,11 +223,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public boolean isGooglePlayServicesAvailable() {
-        // TODO(http://crbug.com/577190): Remove StrictMode override.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            return ChromiumPlayServicesAvailability.isGooglePlayServicesAvailable(
-                    ContextUtils.getApplicationContext());
-        }
+        return ExternalAuthUtils.getInstance().canUseGooglePlayServices();
     }
 
     protected boolean hasGetAccountsPermission() {
@@ -279,11 +239,5 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
                        "android.permission.MANAGE_ACCOUNTS", Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void fireOnAccountsChangedNotification() {
-        for (AccountsChangeObserver observer : mObservers) {
-            observer.onAccountsChanged();
-        }
     }
 }

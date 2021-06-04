@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/core/style/cursor_list.h"
 #include "third_party/blink/renderer/core/style/data_ref.h"
+#include "third_party/blink/renderer/core/style/style_cached_data.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -90,8 +91,6 @@ class StyleInitialData;
 class StyleResolver;
 class StyleSelfAlignmentData;
 class TransformationMatrix;
-
-typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoElementStyleCache;
 
 namespace css_longhand {
 
@@ -209,6 +208,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Accesses GetColor().
   friend class ComputedStyleUtils;
   // These get visited and unvisited colors separately.
+  friend class css_longhand::AccentColor;
   friend class css_longhand::BackgroundColor;
   friend class css_longhand::BorderBottomColor;
   friend class css_longhand::BorderLeftColor;
@@ -274,26 +274,13 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleResolver;
 
  protected:
-  // This cache stores ComputedStyles for pseudo elements originating from this
-  // ComputedStyle's element. Pseudo elements which are represented by
-  // PseudoElement in DOM store the ComputedStyle on those elements, so this
-  // cache is for:
-  //
-  // 1. Pseudo elements which do not generate a PseudoElement internally like
-  //    ::first-line and ::selection.
-  //
-  // 2. Pseudo element style requested from getComputedStyle() where the element
-  //    currently doesn't generate a PseudoElement. E.g.:
-  //
-  //    <style>
-  //      #div::before { color: green /* no content property! */}
-  //    </style>
-  //    <div id=div></div>
-  //    <script>
-  //      getComputedStyle(div, "::before").color // still green.
-  //    </script>
-  mutable std::unique_ptr<PseudoElementStyleCache>
-      cached_pseudo_element_styles_;
+  mutable std::unique_ptr<StyleCachedData> cached_data_;
+
+  StyleCachedData& EnsureCachedData() const;
+
+  bool HasCachedPseudoElementStyles() const;
+  PseudoElementStyleCache* GetPseudoElementStyleCache() const;
+  PseudoElementStyleCache& EnsurePseudoElementStyleCache() const;
 
  private:
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
@@ -391,13 +378,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
-  CORE_EXPORT const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
+  CORE_EXPORT const ComputedStyle* GetCachedPseudoElementStyle(
+      PseudoId,
+      const AtomicString& pseudo_argument = g_null_atom) const;
   const ComputedStyle* AddCachedPseudoElementStyle(
       scoped_refptr<const ComputedStyle>) const;
-  void ClearCachedPseudoElementStyles() const {
-    if (cached_pseudo_element_styles_)
-      cached_pseudo_element_styles_->clear();
-  }
+  void ClearCachedPseudoElementStyles() const;
 
   /**
    * ComputedStyle properties
@@ -862,6 +848,12 @@ class ComputedStyle : public ComputedStyleBase,
     return ScrollbarGutter() & kScrollbarGutterForce;
   }
 
+  // ignore non-standard ::-webkit-scrollbar when standard properties are in use
+  bool HasCustomScrollbarStyle() const {
+    return HasPseudoElementStyle(kPseudoIdScrollbar) &&
+           ScrollbarWidth() == EScrollbarWidth::kAuto;
+  }
+
   // shape-image-threshold (aka -webkit-shape-image-threshold)
   void SetShapeImageThreshold(float shape_image_threshold) {
     float clamped_shape_image_threshold =
@@ -1018,8 +1010,11 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT float ComputedFontSize() const {
     return GetFontDescription().ComputedSize();
   }
+  static inline LayoutUnit ComputedFontSizeAsFixed(const Font& font) {
+    return LayoutUnit::FromFloatRound(font.GetFontDescription().ComputedSize());
+  }
   LayoutUnit ComputedFontSizeAsFixed() const {
-    return LayoutUnit::FromFloatRound(GetFontDescription().ComputedSize());
+    return ComputedFontSizeAsFixed(GetFont());
   }
 
   // font-size-adjust
@@ -1118,7 +1113,7 @@ class ComputedStyle : public ComputedStyleBase,
   // accent-color
   const StyleAutoColor& AccentColor() const { return AccentColorInternal(); }
   // An empty optional means the accent-color is 'auto'
-  base::Optional<Color> AccentColorResolved() const;
+  absl::optional<Color> AccentColorResolved() const;
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.
@@ -1451,6 +1446,7 @@ class ComputedStyle : public ComputedStyleBase,
   const Length& SpecifiedLineHeight() const { return LineHeightInternal(); }
   int ComputedLineHeight() const;
   LayoutUnit ComputedLineHeightAsFixed() const;
+  LayoutUnit ComputedLineHeightAsFixed(const Font& font) const;
 
   // Width/height utility functions.
   const Length& LogicalWidth() const {
@@ -2633,13 +2629,13 @@ class ComputedStyle : public ComputedStyleBase,
     FloatSize ratio = AspectRatio().GetRatio();
     if (!IsHorizontalWritingMode())
       ratio = ratio.TransposedSize();
-    return LogicalSize(LayoutUnit(ratio.Width()), LayoutUnit(ratio.Height()));
+    return LogicalSize::AspectRatioFromFloatSize(ratio);
   }
 
   EBoxSizing BoxSizingForAspectRatio() const {
-    if (AspectRatio().GetType() == EAspectRatioType::kAutoAndRatio)
-      return EBoxSizing::kContentBox;
-    return BoxSizing();
+    if (AspectRatio().GetType() == EAspectRatioType::kRatio)
+      return BoxSizing();
+    return EBoxSizing::kContentBox;
   }
 
  private:

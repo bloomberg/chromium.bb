@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -67,11 +68,11 @@ ManifestTest::~ManifestTest() {
 // Helper class that simplifies creating methods that take either a filename
 // to a manifest or the manifest itself.
 ManifestTest::ManifestData::ManifestData(base::StringPiece name)
-    : name_(name.as_string()) {}
+    : name_(name) {}
 
 ManifestTest::ManifestData::ManifestData(base::Value manifest,
                                          base::StringPiece name)
-    : name_(name.as_string()), manifest_(std::move(manifest)) {
+    : name_(name), manifest_(std::move(manifest)) {
   CHECK(manifest_.is_dict()) << "Manifest must be a dictionary. " << name_;
 }
 
@@ -153,7 +154,8 @@ scoped_refptr<Extension> ManifestTest::LoadAndExpectWarning(
   EXPECT_TRUE(extension.get()) << manifest.name();
   EXPECT_EQ(std::string(), error) << manifest.name();
   EXPECT_EQ(1u, extension->install_warnings().size());
-  EXPECT_EQ(expected_warning, extension->install_warnings()[0].message);
+  if (extension->install_warnings().size() == 1)
+    EXPECT_EQ(expected_warning, extension->install_warnings()[0].message);
   return extension;
 }
 

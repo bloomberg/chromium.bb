@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -311,6 +312,10 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
       ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
   bool waiting_for_camera_photo = false;
 
+  // track the index of previous selected message to be compared with the index
+  // of the new image.
+  int previous_image_index = GetUser()->image_index();
+
   if (image_type == "old") {
     // Previous image (from camera or manually uploaded) re-selected.
     DCHECK(!previous_image_.isNull());
@@ -350,6 +355,16 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
     user_image_manager->SaveUserImageFromProfileImage();
   } else {
     NOTREACHED() << "Unexpected image type: " << image_type;
+  }
+
+  int image_index = GetUser()->image_index();
+  // `previous_image_index` is used instead of `previous_image_index_` as the
+  // latter has the same value of `image_index` after new image is selected
+  if (previous_image_index != image_index) {
+    base::UmaHistogramExactLinear(
+        "UserImage.Changed",
+        user_image_manager->ImageIndexToHistogramIndex(image_index),
+        default_user_image::kHistogramImagesCount + 1);
   }
 
   // Ignore the result of the previous decoding if it's no longer needed.
@@ -406,7 +421,7 @@ void ChangePictureHandler::OnUserProfileImageUpdated(
   SendProfileImage(profile_image, false);
 }
 
-gfx::NativeWindow ChangePictureHandler::GetBrowserWindow() const {
+gfx::NativeWindow ChangePictureHandler::GetBrowserWindow() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   return browser->window()->GetNativeWindow();
@@ -421,7 +436,7 @@ void ChangePictureHandler::OnDecodeImageFailed() {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
-const user_manager::User* ChangePictureHandler::GetUser() const {
+const user_manager::User* ChangePictureHandler::GetUser() {
   Profile* profile = Profile::FromWebUI(web_ui());
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);

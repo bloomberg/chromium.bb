@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Ijro slayderi</translation>
 <translation id="1404323374378969387">Norveg</translation>
 <translation id="1430915738399379752">Chop etish</translation>
+<translation id="1433628812591023318">Windows tizmiga nusxalanishi kerak fayllarni Parallels Desktop oynasiga tashlang.</translation>
 <translation id="1435838927755162558">Jildni Parallels Desktopga ulashish</translation>
 <translation id="1467432559032391204">Chapga</translation>
 <translation id="1471718551822868769">Slovak</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows fayllari</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> orqali yuborish</translation>
 <translation id="3083975830683400843">Chromebit qurilmalari</translation>
+<translation id="3113153474486991170">“<ph name="PATH" />” faylni bu joydan ochilmadi. Uni ochish uchun “Mening fayllarim” jildiga nusxalang.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">TAYYOR</translation>
 <translation id="3188257591659621405">Fayllarim</translation>
@@ -448,6 +450,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="5602622065581044566">Bolgar (fonetik klaviatura)</translation>
 <translation id="5605830556594064952">AQSH (Dvorak)</translation>
 <translation id="5625294776298156701">Tamil (Tamil99 klaviaturasi)</translation>
+<translation id="5633226425545095130">Bu fayl koʻchirilsa, u <ph name="DESTINATION_NAME" /> jildiga ruxsati bor barcha foydalanuvchilarga ulashiladi.</translation>
 <translation id="5649768706273821470">Tinglash</translation>
 <translation id="5678784840044122290">Linux ilovasi terminal ichida ham ishlaydi, shuningdek, Launcherda ham ikonkasi chiqadi.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Arxiv yoki virtual disk uzilmadi<ph name="END_BOLD" />
@@ -609,6 +612,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7417453074306512035">Efiop klaviaturasi</translation>
 <translation id="7417705661718309329">Google xaritasi</translation>
 <translation id="7460898608667578234">Ukrayin tili</translation>
+<translation id="7486315294984620427">Windowsga nusxalanishi kerak fayllarni Parallels Desktop oynasiga tashlang.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> topildi
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> xizmatiga zaxiralash uchun tayyor</translation>
@@ -721,6 +725,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8395901698320285466">O‘lchamlar</translation>
 <translation id="8437209419043462667">Ingliz (AQSH)</translation>
 <translation id="8456681095658380701">Yaroqsiz nom</translation>
+<translation id="8459404855768962328">Bu fayl nusxalansa, u <ph name="DESTINATION_NAME" /> jildiga ruxsati bor barcha foydalanuvchilarga ulashiladi.</translation>
 <translation id="8461467696380332069">Fayl ustida oʻng tugmani bosing va javon ichidagi fayllarga tezkor kirish uchun “Javonga mahkamlash” bandini tanlang.</translation>
 <translation id="8463494891489624050">Vyetnam (VIQR klaviaturasi)</translation>
 <translation id="8466234950814670489">Tar arxivi</translation>

@@ -68,7 +68,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
       InterfaceRegistry*,
       WebFrame* previous_sibling,
       const WebFrameOwnerProperties&,
-      mojom::FrameOwnerElementType,
       const LocalFrameToken& frame_token,
       WebFrame* opener,
       std::unique_ptr<blink::WebPolicyContainer> policy_container) override;
@@ -76,7 +75,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
       mojom::blink::TreeScopeType,
       const WebString& name,
       const FramePolicy&,
-      mojom::FrameOwnerElementType,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
@@ -140,8 +138,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // to call these on a WebRemoteFrameImpl.
   bool IsWebLocalFrame() const override;
   WebLocalFrame* ToWebLocalFrame() override;
+  const WebLocalFrame* ToWebLocalFrame() const override;
   bool IsWebRemoteFrame() const override;
   WebRemoteFrame* ToWebRemoteFrame() override;
+  const WebRemoteFrame* ToWebRemoteFrame() const override;
 
   WebRemoteFrameClient* client_;
   // TODO(dcheng): Inline this field directly rather than going through Member.

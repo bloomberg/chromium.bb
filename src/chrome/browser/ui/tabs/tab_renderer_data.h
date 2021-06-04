@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -52,6 +52,7 @@ struct TabRendererData {
   std::vector<TabAlertState> alert_state;
   bool should_hide_throbber = false;
   bool should_render_empty_title = false;
+  bool should_themify_favicon = false;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_

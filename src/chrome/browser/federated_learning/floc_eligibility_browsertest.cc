@@ -37,7 +37,7 @@ class FixedFlocIdProvider : public federated_learning::FlocIdProvider {
 
   blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
       const GURL& url,
-      const base::Optional<url::Origin>& top_frame_origin) const override {
+      const absl::optional<url::Origin>& top_frame_origin) const override {
     blink::mojom::InterestCohortPtr cohort =
         blink::mojom::InterestCohort::New();
     cohort->id = "12345";
@@ -46,6 +46,10 @@ class FixedFlocIdProvider : public federated_learning::FlocIdProvider {
   }
 
   void MaybeRecordFlocToUkm(ukm::SourceId source_id) override {}
+
+  base::Time GetApproximateNextComputeTime() const override {
+    return base::Time();
+  }
 };
 
 }  // namespace
@@ -101,11 +105,11 @@ class FlocEligibilityBrowserTest
         .ExtractString();
   }
 
-  // Returns base::nullopt if there's no matching result in the history query.
-  // Otherwise, the returned base::Optional contains a bit representing whether
+  // Returns absl::nullopt if there's no matching result in the history query.
+  // Otherwise, the returned absl::optional contains a bit representing whether
   // the entry is eligible in floc computation.
-  base::Optional<bool> QueryFlocEligibleForURL(const GURL& url) {
-    base::Optional<bool> query_result;
+  absl::optional<bool> QueryFlocEligibleForURL(const GURL& url) {
+    absl::optional<bool> query_result;
 
     history::QueryOptions options;
     options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
@@ -201,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
   NavigateAndWaitForResourcesCompeletion(main_page_url, 4);
 
   // Expect that the navigation history is not eligible for floc computation.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -221,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
   NavigateAndWaitForResourcesCompeletion(main_page_url, 4);
 
   // Expect that the navigation history is not eligible for floc computation.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -242,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
   EXPECT_EQ("{\"id\":\"12345\",\"version\":\"chrome.6.7.8.9\"}",
             InvokeInterestCohortJsApi(web_contents()));
 
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_TRUE(query_floc_eligible.value());
@@ -264,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
 
   // Expect that the navigation history is not eligible for floc computation as
   // the permissions policy disallows it.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -285,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
 
   // Expect that the navigation history is not eligible for floc computation as
   // the permissions policy disallows it.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -303,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
 
   // Expect that the navigation history is not eligible for floc computation as
   // the IP was not publicly routable.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -472,6 +476,39 @@ IN_PROC_BROWSER_TEST_F(FlocEligibilityBrowserTest,
           .ExtractString());
 }
 
+class FlocEligibilityBrowserTestBypassIPIsPubliclyRoutableCheck
+    : public FlocEligibilityBrowserTest {
+ public:
+  FlocEligibilityBrowserTestBypassIPIsPubliclyRoutableCheck() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kInterestCohortFeaturePolicy,
+                              federated_learning::
+                                  kFlocBypassIPIsPubliclyRoutableCheck},
+        /*disabled_features=*/{
+            federated_learning::
+                kFlocPagesWithAdResourcesDefaultIncludedInFlocComputation});
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    FlocEligibilityBrowserTestBypassIPIsPubliclyRoutableCheck,
+    EligibleForHistoryOnPrivateIP) {
+  GURL main_page_url = https_server_.GetURL(
+      "a.test", "/federated_learning/page_with_script_and_iframe.html");
+
+  // Three resources in the main frame and one favicon.
+  NavigateAndWaitForResourcesCompeletion(main_page_url, 4);
+
+  InvokeInterestCohortJsApi(web_contents());
+
+  // Expect that the navigation history is eligible for floc computation.
+  absl::optional<bool> query_floc_eligible =
+      QueryFlocEligibleForURL(main_page_url);
+  EXPECT_TRUE(query_floc_eligible);
+  EXPECT_TRUE(query_floc_eligible.value());
+}
+
 class FlocEligibilityBrowserTestPagesWithAdResourcesDefaultIncluded
     : public FlocEligibilityBrowserTest {
  public:
@@ -501,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Expect that the navigation history is eligible for floc computation as the
   // page contains an ad resource.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_TRUE(query_floc_eligible.value());
@@ -519,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(
   NavigateAndWaitForResourcesCompeletion(main_page_url, 4);
 
   // Expect that the navigation history is not eligible for floc computation.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_FALSE(query_floc_eligible.value());
@@ -577,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(
             InvokeInterestCohortJsApi(child));
 
   // Expect that the navigation history is eligible for floc computation.
-  base::Optional<bool> query_floc_eligible =
+  absl::optional<bool> query_floc_eligible =
       QueryFlocEligibleForURL(main_page_url);
   EXPECT_TRUE(query_floc_eligible);
   EXPECT_TRUE(query_floc_eligible.value());

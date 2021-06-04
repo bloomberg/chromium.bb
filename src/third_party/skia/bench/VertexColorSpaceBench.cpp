@@ -75,12 +75,13 @@ public:
                 fragBuilder->codeAppendf("half4 %s = %s;", args.fOutputColor, varying.fsIn());
 
                 // Position
-                this->writeOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
+                WriteOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
 
                 // Coverage
                 fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             }
             void setData(const GrGLSLProgramDataManager& pdman,
+                         const GrShaderCaps&,
                          const GrGeometryProcessor& geomProc) override {
                 const GP& gp = geomProc.cast<GP>();
                 fColorSpaceHelper.setData(pdman, gp.fColorSpaceXform.get());
@@ -159,8 +160,7 @@ public:
         return FixedFunctionFlags::kNone;
     }
 
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
@@ -308,8 +308,9 @@ public:
         const int kDrawsPerLoop = 32;
 
         for (int i = 0; i < loops; ++i) {
-            auto rtc = GrSurfaceDrawContext::Make(
-                    context, GrColorType::kRGBA_8888, p3, SkBackingFit::kApprox, {100, 100});
+            auto rtc = GrSurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, p3,
+                                                  SkBackingFit::kApprox, {100, 100},
+                                                  SkSurfaceProps());
             SkASSERT(rtc);
 
             for (int j = 0; j < kDrawsPerLoop; ++j) {

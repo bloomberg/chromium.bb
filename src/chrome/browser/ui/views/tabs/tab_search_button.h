@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/views/bubble/webui_bubble_manager.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/menu_button_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -57,7 +57,7 @@ class TabSearchButton : public NewTabButton,
   WebUIBubbleManager* webui_bubble_manager_for_testing() {
     return &webui_bubble_manager_;
   }
-  const base::Optional<base::TimeTicks>& bubble_created_time_for_testing()
+  const absl::optional<base::TimeTicks>& bubble_created_time_for_testing()
       const {
     return bubble_created_time_;
   }
@@ -74,7 +74,7 @@ class TabSearchButton : public NewTabButton,
   views::WidgetOpenTimer widget_open_timer_;
 
   // Timestamp for when the current bubble was created.
-  base::Optional<base::TimeTicks> bubble_created_time_;
+  absl::optional<base::TimeTicks> bubble_created_time_;
 
   views::MenuButtonController* menu_button_controller_ = nullptr;
 

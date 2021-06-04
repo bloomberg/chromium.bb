@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
@@ -33,7 +34,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -42,6 +42,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_navigation_ui_data.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
@@ -193,7 +194,7 @@ TEST(TimeSmoother, ClockBackwardsJump) {
 class NavigationControllerTest : public RenderViewHostImplTestHarness,
                                  public WebContentsObserver {
  public:
-  NavigationControllerTest() {}
+  NavigationControllerTest() = default;
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -201,14 +202,9 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
     WebContentsObserver::Observe(web_contents);
 
-    WebUIControllerFactory::RegisterFactory(
-        ContentWebUIControllerFactory::GetInstance());
-  }
-
-  void TearDown() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(
-        ContentWebUIControllerFactory::GetInstance());
-    RenderViewHostImplTestHarness::TearDown();
+    factory_registration_ =
+        std::make_unique<ScopedWebUIControllerFactoryRegistration>(
+            ContentWebUIControllerFactory::GetInstance());
   }
 
   // WebContentsObserver:
@@ -276,6 +272,10 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
   size_t navigation_entries_deleted_counter_ = 0;
   PrunedDetails last_navigation_entry_pruned_details_;
   ReloadType last_reload_type_;
+
+ private:
+  std::unique_ptr<ScopedWebUIControllerFactoryRegistration>
+      factory_registration_;
 };
 
 class TestWebContentsDelegate : public WebContentsDelegate {
@@ -1354,6 +1354,7 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   const GURL url1("http://foo/1");
   auto navigation =
       NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation->set_should_replace_current_entry(true);
   navigation->Start();
 
   // Set up some sample values.
@@ -1373,7 +1374,6 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_TRUE(pending_entry->should_clear_history_list());
 
   // Fake a commit response.
-  navigation->set_should_replace_current_entry(true);
   navigation->Commit();
 
   // Certain values that are only used for pending entries get reset after
@@ -2393,7 +2393,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> entry =
       NavigationController::CreateNavigationEntry(
-          url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
+          url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entry->SetTitle(u"Title");
@@ -2461,7 +2461,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
+          url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   new_entry->SetTitle(u"Title");
@@ -3771,7 +3771,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   for (size_t i = 0; i < base::size(kRestoredUrls); ++i) {
     std::unique_ptr<NavigationEntry> entry =
         NavigationController::CreateNavigationEntry(
-            kRestoredUrls[i], Referrer(), base::nullopt,
+            kRestoredUrls[i], Referrer(), absl::nullopt,
             ui::PAGE_TRANSITION_RELOAD, false, std::string(), browser_context(),
             nullptr /* blob_url_loader_factory */);
     entries.push_back(std::move(entry));
@@ -4420,8 +4420,8 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
       url::Origin::Create(kUrl2), true /* is_renderer_initiated */,
       main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */,
-      blink::NavigationDownloadPolicy(), "GET", nullptr, "", nullptr,
-      base::nullopt);
+      blink::NavigationDownloadPolicy(), "GET", nullptr, "",
+      network::mojom::SourceLocation::New(), nullptr, absl::nullopt);
 
   // Clean up the handler.
   BrowserURLHandlerImpl::GetInstance()->RemoveHandlerForTesting(
@@ -4459,7 +4459,8 @@ TEST_F(NavigationControllerTest,
       url::Origin::Create(main_url), true /* is_renderer_initiated */,
       main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
       should_replace_current_entry, blink::NavigationDownloadPolicy(), "GET",
-      nullptr, "", nullptr, base::nullopt);
+      nullptr, "", network::mojom::SourceLocation::New(), nullptr,
+      absl::nullopt);
   NavigationRequest* request = node->navigation_request();
   ASSERT_TRUE(request);
 

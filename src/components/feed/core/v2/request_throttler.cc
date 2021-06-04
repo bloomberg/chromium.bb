@@ -19,10 +19,14 @@ int GetMaxRequestsPerDay(NetworkRequestType request_type) {
   const Config& config = GetFeedConfig();
   switch (request_type) {
     case NetworkRequestType::kFeedQuery:
+    case NetworkRequestType::kWebFeedListContents:
+    case NetworkRequestType::kQueryInteractiveFeed:
+    case NetworkRequestType::kQueryBackgroundFeed:
       return config.max_feed_query_requests_per_day;
     case NetworkRequestType::kUploadActions:
       return config.max_action_upload_requests_per_day;
     case NetworkRequestType::kNextPage:
+    case NetworkRequestType::kQueryNextPage:
       return config.max_next_page_requests_per_day;
     case NetworkRequestType::kListWebFeeds:
       return config.max_list_web_feeds_requests_per_day;

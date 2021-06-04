@@ -3,22 +3,20 @@
 // found in the LICENSE file.
 
 /**
- * This file co-works with a html file to test a promise that should be deferred
- * during prerendering.
+ * This file co-works with a html file and utils.js to test a promise that
+ * should be deferred during prerendering.
  *
  * Usage example:
  *  Suppose the html is "prerender-promise-test.html"
  *  On prerendering page, prerender-promise-test.html?prerendering:
- *    const promise = {a promise that should be deferred during prerendering};
  *    const prerenderEventCollector = new PrerenderEventCollector();
+ *    const promise = {a promise that should be deferred during prerendering};
  *    prerenderEventCollector.start(promise, {promise name});
  *
  *  On the initiator page, prerender-promise-test.html:
  *   execute
  *    `loadInitiatorPage();`
  */
-
-import('./utils.js');
 
 // Collects events that happen relevant to a prerendering page.
 // An event is added when:
@@ -28,10 +26,6 @@ import('./utils.js');
 // 4. addEvent() is called manually.
 class PrerenderEventCollector {
   constructor() {
-    // Used to communicate with the initiator page.
-    this.prerenderChannel_ = new BroadcastChannel('prerender-channel');
-    // Used to communicate with the main test page.
-    this.testChannel_ = new BroadcastChannel('test-channel');
     this.eventsSeen_ = [];
   }
 
@@ -42,57 +36,41 @@ class PrerenderEventCollector {
         {event: eventMessage, prerendering: document.prerendering});
   }
 
-  // Starts collecting events until the promise resolves.
+  // Starts collecting events until the promise resolves. Triggers activation by
+  // telling the initiator page that it is ready for activation.
   async start(promise, promiseName) {
     assert_true(document.prerendering);
     this.addEvent(`started waiting ${promiseName}`);
-    promise.then(() => {
-      this.addEvent(`finished waiting ${promiseName}`);
-      // Send the observed events back to the main test page.
-      this.testChannel_.postMessage(this.eventsSeen_);
-      this.prerenderChannel_.close();
-      this.testChannel_.close();
-      window.close();
-    });
+    promise
+        .then(
+            () => {
+              this.addEvent(`finished waiting ${promiseName}`);
+            },
+            (error) => {
+              if (error instanceof Error)
+                error = error.name;
+              this.addEvent(`${promiseName} rejected: ${error}`);
+            })
+        .finally(() => {
+          // Used to communicate with the main test page.
+          const testChannel = new BroadcastChannel('test-channel');
+          // Send the observed events back to the main test page.
+          testChannel.postMessage(this.eventsSeen_);
+          testChannel.close();
+          window.close();
+        });
     document.addEventListener('prerenderingchange', () => {
       this.addEvent('prerendering change');
     });
 
-    window.addEventListener('load', () => {
-      // Inform the initiator page that this page was loaded.
-      this.prerenderChannel_.postMessage('loaded');
-    });
+    // Post a task to give the implementation a chance to fail in case it
+    // resolves a promise without waiting for activation.
+    setTimeout(() => {
+      // Used to communicate with the initiator page.
+      const prerenderChannel = new BroadcastChannel('prerender-channel');
+      // Inform the initiator page that this page is ready to be activated.
+      prerenderChannel.postMessage('readyToActivate');
+      prerenderChannel.close();
+    }, 0);
   }
-}
-
-/**
- * Loads the initiator page, and the page will start a prerender.
- */
-function loadInitiatorPage() {
-  // Used to communicate with the prerendering page.
-  const prerenderChannel = new BroadcastChannel('prerender-channel');
-  window.addEventListener('unload', () => {
-    prerenderChannel.close();
-  });
-
-  // We need to wait for load before navigation since the prerendering
-  // implementation in Chromium can only activate if the response for the
-  // prerendering navigation has already been received and the prerendering
-  // document was created.
-  const loaded = new Promise(resolve => {
-    prerenderChannel.addEventListener('message', e => {
-      resolve(e.data);
-    }, {once: true});
-  });
-
-  const url = new URL(document.URL);
-  url.searchParams.append('prerendering', '');
-  // Prerender a page that attempts to execute a deferred promise.
-  startPrerendering(url.toString());
-
-  // Navigate to the prerendered page after being informed.
-  loaded.then(() => {
-    // navigate to the prerenderered page.
-    window.location = url.toString();
-  });
 }

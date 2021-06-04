@@ -11,29 +11,32 @@ group("legacy_test_runner") {
   ]
 
   data = [ "$target_gen_dir/legacy_test_runner.js" ]
+
+  metadata = {
+    grd_files = data
+  }
 }
 
 ts_library("legacy_test_runner-source") {
   sources = [ "legacy_test_runner.ts" ]
 
   deps = [
-    "../:devtools_app",
-    "../color_picker:legacy",
     "../core/common:legacy",
     "../core/host:legacy",
     "../core/root:legacy",
     "../core/sdk:legacy",
-    "../data_grid:legacy",
-    "../diff:legacy",
-    "../formatter:legacy",
-    "../har_importer:legacy",
-    "../inline_editor:legacy",
+    "../entrypoints/devtools_app",
     "../models/bindings:legacy",
     "../models/extensions:legacy",
+    "../models/formatter:legacy",
     "../panels/accessibility:legacy",
     "../panels/animation:legacy",
-    "../panels/developer_resources:legacy",
-    "../panels/event_listeners:legacy",
+    "../panels/console_counters:bundle",
+    "../panels/event_listeners:bundle",
+    "../third_party/diff:legacy",
+    "../ui/legacy/components/color_picker:legacy",
+    "../ui/legacy/components/data_grid:legacy",
+    "../ui/legacy/components/inline_editor:legacy",
     "test_runner:bundle",
   ]
 }

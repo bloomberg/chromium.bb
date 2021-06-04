@@ -42,6 +42,7 @@ static std::unique_ptr<GrSurfaceDrawContext> new_RTC(GrRecordingContext* rContex
                                       nullptr,
                                       SkBackingFit::kExact,
                                       {wh, wh},
+                                      SkSurfaceProps(),
                                       1,
                                       GrMipMapped::kNo,
                                       GrProtected::kNo,
@@ -446,8 +447,7 @@ private:
 
     const char* name() const override { return "GrThreadSafeVertexTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 

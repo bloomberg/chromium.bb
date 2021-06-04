@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -126,9 +128,9 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     create_drive_integration_service_ = base::BindRepeating(
         &FileSystemApiTestForDrive::CreateDriveIntegrationService,
         base::Unretained(this));
-    service_factory_for_test_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &create_drive_integration_service_));
+    service_factory_for_test_ = std::make_unique<
+        drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>(
+        &create_drive_integration_service_);
   }
 
   // Ensure the fake service's data is fetch in the local file system. This is
@@ -223,9 +225,9 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
     create_drive_integration_service_ = base::BindRepeating(
         &FileSystemApiTestForRequestFileSystem::CreateDriveIntegrationService,
         base::Unretained(this));
-    service_factory_for_test_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &create_drive_integration_service_));
+    service_factory_for_test_ = std::make_unique<
+        drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>(
+        &create_drive_integration_service_);
   }
 
   void SetUpOnMainThread() override {
@@ -272,10 +274,9 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
     ASSERT_TRUE(base::CreateDirectory(mount_point_path));
     ASSERT_TRUE(
         base::CreateDirectory(mount_point_path.Append(kChildDirectory)));
-    ASSERT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
-                    ->RegisterFileSystem(
-                        mount_point_name, storage::kFileSystemTypeLocal,
-                        storage::FileSystemMountOption(), mount_point_path));
+    ASSERT_TRUE(browser()->profile()->GetMountPoints()->RegisterFileSystem(
+        mount_point_name, storage::kFileSystemTypeLocal,
+        storage::FileSystemMountOption(), mount_point_path));
     VolumeManager* const volume_manager =
         VolumeManager::Get(browser()->profile());
     ASSERT_TRUE(volume_manager);
@@ -329,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/open_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunExtensionTest({.name = "api_test/file_system/open_existing",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -340,9 +341,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/open_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/file_system/open_existing_with_write",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -353,9 +353,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
   ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
       chrome::DIR_USER_DOCUMENTS, test_file.DirName(), true, false));
   FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/open_multiple_with_suggested_name",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_multiple_with_suggested_name",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -370,9 +370,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
   test_files.push_back(test_file2);
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
       &test_files);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/file_system/open_multiple_existing",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_multiple_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -382,8 +381,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunExtensionTest({.name = "api_test/file_system/open_directory",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -393,9 +392,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/open_directory_with_write",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -405,9 +403,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/open_directory_without_permission",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_directory_without_permission",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -417,9 +415,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/open_directory_with_only_write",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_directory_with_only_write",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -429,8 +427,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/save_new.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunExtensionTest({.name = "api_test/file_system/save_new",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_new",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -440,8 +438,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/save_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunExtensionTest({.name = "api_test/file_system/save_existing",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -451,9 +449,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/save_new.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/file_system/save_new_with_write",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_new_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -463,53 +460,52 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       GetDriveMountPoint().AppendASCII("root/save_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/file_system/save_existing_with_write",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_existing_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, Background) {
   EnterKioskSession();
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_background",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/request_file_system_background",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, ReadOnly) {
   EnterKioskSession();
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_read_only",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/request_file_system_read_only",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, Writable) {
   EnterKioskSession();
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_writable",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/request_file_system_writable",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, UserReject) {
   EnterKioskSession();
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_user_reject",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/request_file_system_user_reject",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, NotKioskSession) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
   ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_not_kiosk_session",
-       .launch_as_platform_app = true}))
+      "api_test/file_system/request_file_system_not_kiosk_session",
+      {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -517,9 +513,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        AllowlistedComponent) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_file_system_whitelisted_component",
-       .load_as_component = true,
-       .launch_as_platform_app = true}))
+      "api_test/file_system/request_file_system_whitelisted_component",
+      {.launch_as_platform_app = true}, {.load_as_component = true}))
       << message_;
 }
 
@@ -527,25 +522,23 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        NotAllowlistedComponent) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
   ASSERT_TRUE(RunExtensionTest(
-      {.name =
-           "api_test/file_system/request_file_system_not_whitelisted_component",
-       .load_as_component = true,
-       .launch_as_platform_app = true}))
+      "api_test/file_system/request_file_system_not_whitelisted_component",
+      {.launch_as_platform_app = true}, {.load_as_component = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, GetVolumeList) {
   EnterKioskSession();
-  ASSERT_TRUE(RunExtensionTest({.name = "api_test/file_system/get_volume_list",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/get_volume_list",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        GetVolumeList_NotKioskSession) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/get_volume_list_not_kiosk_session",
-       .launch_as_platform_app = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/get_volume_list_not_kiosk_session",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -559,9 +552,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
       base::BindOnce(&FileSystemApiTestForRequestFileSystem::MountFakeVolume,
                      base::Unretained(this)));
 
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/file_system/on_volume_list_changed",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/on_volume_list_changed",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -569,8 +561,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        AllowlistedExtensionForDownloads) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunExtensionTest(
-      {.name = "api_test/file_system/request_downloads_whitelisted_extension",
-       .launch_as_platform_app = true}))
+      "api_test/file_system/request_downloads_whitelisted_extension",
+      {.launch_as_platform_app = true}))
       << message_;
 }
 

@@ -98,20 +98,20 @@ ReadableStreamBYOBRequest* ReadableByteStreamController::byobRequest() {
   return byob_request_;
 }
 
-base::Optional<double> ReadableByteStreamController::desiredSize() {
+absl::optional<double> ReadableByteStreamController::desiredSize() {
   // https://streams.spec.whatwg.org/#rbs-controller-desired-size
   // 1. Return ! ReadableByteStreamControllerGetDesiredSize(this).
   return GetDesiredSize(this);
 }
 
-base::Optional<double> ReadableByteStreamController::GetDesiredSize(
+absl::optional<double> ReadableByteStreamController::GetDesiredSize(
     ReadableByteStreamController* controller) {
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-get-desired-size
   // 1. Let state be controller.[[stream]].[[state]].
   switch (controller->controlled_readable_stream_->state_) {
       // 2. If state is "errored", return null.
     case ReadableStream::kErrored:
-      return base::nullopt;
+      return absl::nullopt;
 
       // 3. If state is "closed", return 0.
     case ReadableStream::kClosed:
@@ -175,6 +175,16 @@ void ReadableByteStreamController::enqueue(ScriptState* script_state,
   if (controlled_readable_stream_->state_ != ReadableStream::kReadable) {
     exception_state.ThrowTypeError("stream is not readable");
     return;
+  }
+
+  // Bug fix based on https://github.com/whatwg/streams/pull/1123.
+  // TODO(ricea): Update this when that spec change is landed.
+  if (!pending_pull_intos_.IsEmpty()) {
+    const PullIntoDescriptor* first_descriptor = pending_pull_intos_[0];
+    if (first_descriptor->buffer->IsDetached()) {
+      exception_state.ThrowTypeError("pending view is detached");
+      return;
+    }
   }
 
   // 5. Return ! ReadableByteStreamControllerEnqueue(this, chunk).
@@ -520,7 +530,7 @@ bool ReadableByteStreamController::ShouldCallPull(
   }
   // 7. Let desiredSize be !
   // ReadableByteStreamControllerGetDesiredSize(controller).
-  const base::Optional<double> desired_size = GetDesiredSize(controller);
+  const absl::optional<double> desired_size = GetDesiredSize(controller);
   // 8. Assert: desiredSize is not null.
   DCHECK(desired_size);
   // 9. If desiredSize > 0, return true.

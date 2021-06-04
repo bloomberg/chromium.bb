@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -41,7 +41,7 @@ struct ExternalInstallOptions {
 
   // App name to use for placeholder apps or web apps that have no name in
   // their manifest.
-  base::Optional<std::string> fallback_app_name;
+  absl::optional<std::string> fallback_app_name;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
   // Menu on Linux and Windows and launcher on Chrome OS. If false, we skip
@@ -86,14 +86,20 @@ struct ExternalInstallOptions {
   // the first time.
   bool only_for_new_users = false;
 
+  // Whether the app should be omitted for new preinstalls. This is the opposite
+  // of |only_for_new_users| option. It can be used for partial deprecation of
+  // a preinstalled app: do not preinstall the app for new users but leave
+  // existing users unaffected.
+  bool only_if_previously_preinstalled = false;
+
   // Which user types this app should be installed for.
   // See apps::DetermineUserType() for relevant string constants.
   std::vector<std::string> user_type_allowlist;
 
   // Which feature flag should be enabled to install this app. See
-  // chrome/browser/web_applications/components/external_app_install_features.h
+  // chrome/browser/web_applications/components/preinstalled_app_install_features.h
   // for available features to gate on.
-  base::Optional<std::string> gate_on_feature;
+  absl::optional<std::string> gate_on_feature;
 
   // Whether this should not be installed for devices that support ARC.
   bool disable_if_arc_supported = false;
@@ -106,8 +112,10 @@ struct ExternalInstallOptions {
   // programmatically.
   bool bypass_service_worker_check = false;
 
-  // This should be used for installing all default apps so that good metadata
-  // is ensured.
+  // When set to true this will fail installation with
+  // |kNotValidManifestForWebApp| if the |install_url| doesn't have a manifest
+  // that passes basic validity checks. This is ignored when |app_info_factory|
+  // is used.
   bool require_manifest = false;
 
   // Whether the app should be reinstalled even if it is already installed.
@@ -117,7 +125,7 @@ struct ExternalInstallOptions {
   // goes from less the milestone specified to greater or equal than the
   // milestone specified. For example, if this value is 89 then we update the
   // app on all browser upgrades from <89 to >=89. The update happens only once.
-  base::Optional<int> force_reinstall_for_milestone;
+  absl::optional<int> force_reinstall_for_milestone;
 
   // Whether we should wait for all app windows being closed before reinstalling
   // the placeholder.
@@ -135,7 +143,7 @@ struct ExternalInstallOptions {
   bool reinstall_placeholder = false;
 
   // Optional query parameters to add to the start_url when launching the app.
-  base::Optional<std::string> launch_query_params;
+  absl::optional<std::string> launch_query_params;
 
   // Whether we should load |service_worker_registration_url| after successful
   // installation to allow the site to install its service worker and set up
@@ -146,7 +154,7 @@ struct ExternalInstallOptions {
   // configurable by sites that wish to be able to track install metrics of the
   // install_url separate from the service worker registration step. Defaults to
   // install_url if unset.
-  base::Optional<GURL> service_worker_registration_url;
+  absl::optional<GURL> service_worker_registration_url;
 
   // A list of app_ids that the Web App System should attempt to uninstall and
   // replace with this app (e.g maintain shelf pins, app list positions).
@@ -166,7 +174,7 @@ struct ExternalInstallOptions {
   WebApplicationInfoFactory app_info_factory;
 
   // The type of SystemWebApp, if this app is a System Web App.
-  base::Optional<SystemAppType> system_app_type = base::nullopt;
+  absl::optional<SystemAppType> system_app_type = absl::nullopt;
 
   // Whether the app was installed by an OEM and should be placed in a special
   // OEM folder in the app launcher. Only used on Chrome OS.

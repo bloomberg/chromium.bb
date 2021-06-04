@@ -72,7 +72,9 @@ bool GrRecordingContext::init() {
     }
 
     bool reduceOpsTaskSplitting = false;
-    if (GrContextOptions::Enable::kYes == this->options().fReduceOpsTaskSplitting) {
+    if (this->caps()->avoidReorderingRenderTasks()) {
+        reduceOpsTaskSplitting = false;
+    } else if (GrContextOptions::Enable::kYes == this->options().fReduceOpsTaskSplitting) {
         reduceOpsTaskSplitting = true;
     } else if (GrContextOptions::Enable::kNo == this->options().fReduceOpsTaskSplitting) {
         reduceOpsTaskSplitting = false;
@@ -211,6 +213,39 @@ void GrRecordingContext::Stats::dumpKeyValuePairs(SkTArray<SkString>* keys,
 
     keys->push_back(SkString("path_mask_cache_hits"));
     values->push_back(fNumPathMaskCacheHits);
+}
+
+void GrRecordingContext::DMSAAStats::dumpKeyValuePairs(SkTArray<SkString>* keys,
+                                                       SkTArray<double>* values) const {
+    keys->push_back(SkString("dmsaa_render_passes"));
+    values->push_back(fNumRenderPasses);
+
+    keys->push_back(SkString("dmsaa_multisample_render_passes"));
+    values->push_back(fNumMultisampleRenderPasses);
+
+    for (const auto& [name, count] : fTriggerCounts) {
+        keys->push_back(SkStringPrintf("dmsaa_trigger_%s", name.c_str()));
+        values->push_back(count);
+    }
+}
+
+void GrRecordingContext::DMSAAStats::dump() const {
+    SkDebugf("DMSAA Render Passes: %d\n", fNumRenderPasses);
+    SkDebugf("DMSAA Multisample Render Passes: %d\n", fNumMultisampleRenderPasses);
+    if (!fTriggerCounts.empty()) {
+        SkDebugf("DMSAA Triggers:\n");
+        for (const auto& [name, count] : fTriggerCounts) {
+            SkDebugf("    %s: %d\n", name.c_str(), count);
+        }
+    }
+}
+
+void GrRecordingContext::DMSAAStats::merge(const DMSAAStats& stats) {
+    fNumRenderPasses += stats.fNumRenderPasses;
+    fNumMultisampleRenderPasses += stats.fNumMultisampleRenderPasses;
+    for (const auto& [name, count] : stats.fTriggerCounts) {
+        fTriggerCounts[name] += count;
+    }
 }
 
 #endif // GR_GPU_STATS

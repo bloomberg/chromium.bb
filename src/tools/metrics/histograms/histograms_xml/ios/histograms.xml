@@ -21,6 +21,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
+    expires_after="2022-01-28">
+  <owner>rohitrao@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
+  <summary>
+    Whether or not the allocator shim was installed successfully. False
+    indicates an unexpected error at the OS level which merits investigation.
+  </summary>
+</histogram>
+
 <histogram name="IOS.CommittedNavigationHasContext" enum="Boolean"
     expires_after="2021-09-24">
   <owner>ajuma@chromium.org</owner>
@@ -282,7 +292,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMe"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-09-05">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-11-07">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -292,7 +302,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMeSecondPromo"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-07-01">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-10-10">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -329,6 +339,44 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The action taken by the user in response to the &quot;Stay Safe&quot;
     default browser tailored promo.
   </summary>
+</histogram>
+
+<histogram name="IOS.DefaultBrowserPromo.NonModal.OnScreenTime" units="ms"
+    expires_after="2022-04-20">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@chromium.org</owner>
+  <summary>
+    Logs the time on screen for an impression of a non modal promo. iOS only.
+  </summary>
+</histogram>
+
+<histogram name="IOS.DefaultBrowserPromo.NonModal.{Impression}"
+    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2022-04-20">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@chromium.org</owner>
+  <summary>
+    Logged when an action happens on the {Impression} impression of a non modal
+    promo. Records the action of the promo. iOS only.
+  </summary>
+  <token key="Impression">
+    <variant name="FirstImpression" summary="first"/>
+    <variant name="SecondImpression" summary="second"/>
+  </token>
+</histogram>
+
+<histogram name="IOS.DefaultBrowserPromo.NonModal.{PromoType}"
+    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2022-04-20">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@chromium.org</owner>
+  <summary>
+    Logged when an action happens on a non modal promo triggered by {PromoType}.
+    Records the action of the promo. iOS only.
+  </summary>
+  <token key="PromoType">
+    <variant name="GrowthKit" summary="GrowthKit opening Chrome"/>
+    <variant name="Share" summary="sharing a website"/>
+    <variant name="VisitPastedLink" summary="visiting a pasted link"/>
+  </token>
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.TailoredFullscreen.{Action}"
@@ -378,7 +426,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="IOS.FinishedNavigationHasContext" enum="Boolean"
     expires_after="2019-05-01">
-  <owner>danyao@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
   <summary>
     When a navigation is finished, it should have a non-null NavigationContext.
     This histogram counts the frequency of this invariant holding at the time
@@ -391,7 +440,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="IOS.FinishedNavigationHasItem" enum="Boolean"
     expires_after="2019-05-01">
-  <owner>danyao@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
   <summary>
     When a navigation is finished, it should have a non-null NavigationItem.
     This histogram counts the frequency of this invariant holding at the time
@@ -571,7 +621,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.ApplicationResumeTime" units="ms"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -584,7 +634,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.AverageSuspendedMemory" units="MB"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -598,9 +648,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.BackgroundExitData" enum="MetricKitExitData"
-    expires_after="2021-09-12">
+    expires_after="never">
+<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <summary>
     The reason for the application termination in background. Recorded when a
     MXMetricPayload is received from the OS (at most once per day) at
@@ -608,8 +661,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     previous recording. All buckets from MetricKitExitData are available on iOS
     14 and higher (unless MetricKitExitData bucket comments specify otherwise).
 
+    Note that crashes while in the background are not considered crashes /
+    unclean shutdowns in UMA stability metrics. This is because the
+    &quot;CleanExitBeacon&quot; is set when Chrome is put in the background.
+
     Recorded only if user opted in for sharing diagnostic data on iOS device.
     Note: The date the data is reported is later than the day it account for.
+
+    This histogram is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </summary>
 </histogram>
 
@@ -629,9 +689,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.ForegroundExitData" enum="MetricKitExitData"
-    expires_after="2021-09-19">
+    expires_after="never">
+<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <summary>
     The reason for the application termination in foreground. Recorded when a
     MXMetricPayload is received from the OS (at most once per day) at
@@ -647,6 +710,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
     Note: The date the data is reported is later than the day it account for.
+
+    This histogram is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </summary>
 </histogram>
 
@@ -708,7 +774,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MultiWindow.OpenInNewWindow" enum="WindowActivityOrigin"
-    expires_after="2021-08-29">
+    expires_after="2021-11-14">
   <owner>marq@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -728,7 +794,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.NTP.Impression" enum="IOSNTPImpression"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>gambard@chromium.org</owner>
   <summary>
     The type of NTP impressions on iOS, split by type of suggestions shown
@@ -737,7 +803,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.OpenIn.DownloadResult" enum="IOSOpenInDownloadResult"
-    expires_after="2021-08-01">
+    expires_after="2021-10-10">
   <owner>mrefaat@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -758,14 +824,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.PageLoadCount.Counts"
-    enum="IOSPageLoadCountNavigationType" expires_after="2021-08-15">
-  <owner>danyao@chromium.org</owner>
+    enum="IOSPageLoadCountNavigationType" expires_after="2021-10-17">
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
   <summary>The number of navigation started events by navigation type.</summary>
 </histogram>
 
 <histogram name="IOS.PageLoadCount.LoadingStarted" units="units"
     expires_after="2021-08-22">
-  <owner>danyao@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
   <summary>
     The &quot;true&quot; value of this boolean histogram counts the number of
     page loading started events. The &quot;false&quot; value will never be seen.
@@ -812,6 +880,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="IOS.ReconcileEULAPref" enum="Boolean"
+    expires_after="2022-05-01">
+  <owner>olivierrobin@google.com</owner>
+  <owner>rohitrao@google.com</owner>
+  <summary>
+    Track the reconciliation of EULA pref and First run sentinel. Reported once
+    on startup when it is detected that EULA pref is not set but First run
+    sentinel is set. There is no base event (false) as this should be an
+    exceptional case and should tend to 0 occurence.
+  </summary>
+</histogram>
+
 <histogram name="IOS.RepeatedExternalAppPromptResponse"
     enum="IOSRepeatedExternalAppPromptResponse" expires_after="2021-08-01">
   <owner>mrefaat@chromium.org</owner>
@@ -823,7 +903,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.RestoreNavigationItemCount" units="rank"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -837,7 +917,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.RestoreNavigationTime" units="ms"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -958,7 +1038,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="IOS.Snapshots.CacheSize" units="KB" expires_after="2021-09-12">
+<histogram name="IOS.Snapshots.CacheSize" units="KB" expires_after="2021-11-14">
   <owner>ajuma@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
@@ -1010,14 +1090,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.Spotlight.BookmarksInitialIndexSize" units="units"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>Number of bookmarks indexed during initial indexation.</summary>
 </histogram>
 
 <histogram name="IOS.Spotlight.Origin" enum="IOSSpotlightOrigin"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -1084,7 +1164,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>muradyan@google.com</owner>
   <summary>
     Measures UI interactions in WidgetKit extension. Recorded after a user taps
-    in a widget and Chrome is openned.
+    in a widget and Chrome is opened.
   </summary>
 </histogram>
 
@@ -1122,7 +1202,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="IOS.WKWebViewFinishBeforeCommit" enum="Boolean"
     expires_after="M77">
-  <owner>danyao@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
   <summary>
     WKWebView should notify navigation commit before navigation finish, but
     exceptions have been observed. This histogram counts the frequency of this

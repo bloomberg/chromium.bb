@@ -14,12 +14,11 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/fake_translate_agent.h"
@@ -34,6 +33,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -129,8 +129,7 @@ class TranslateManagerRenderViewHostTest
             base::Unretained(this))),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
-        infobar_observer_(this) {}
+                &test_url_loader_factory_)) {}
 
 #if !defined(USE_AURA) && !defined(OS_MAC)
   // Ensure that we are testing under the bubble UI.
@@ -149,7 +148,7 @@ class TranslateManagerRenderViewHostTest
       return bubble != nullptr;
     } else {
       bool result = (GetTranslateInfoBar() != nullptr);
-      EXPECT_EQ(infobar_service()->infobar_count() != 0, result);
+      EXPECT_EQ(infobar_manager()->infobar_count() != 0, result);
       return result;
     }
   }
@@ -256,8 +255,8 @@ class TranslateManagerRenderViewHostTest
 
     // Reset
     fake_agent_.called_translate_ = false;
-    fake_agent_.source_lang_ = base::nullopt;
-    fake_agent_.target_lang_ = base::nullopt;
+    fake_agent_.source_lang_ = absl::nullopt;
+    fake_agent_.target_lang_ = absl::nullopt;
 
     return true;
   }
@@ -267,17 +266,19 @@ class TranslateManagerRenderViewHostTest
     return fake_agent_.called_revert_translation_;
   }
 
-  InfoBarService* infobar_service() {
-    return InfoBarService::FromWebContents(web_contents());
+  infobars::ContentInfoBarManager* infobar_manager() {
+    return infobars::ContentInfoBarManager::FromWebContents(web_contents());
   }
 
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   translate::TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    return (infobar_service()->infobar_count() == 1) ?
-        infobar_service()->infobar_at(0)->delegate()->
-            AsTranslateInfoBarDelegate() :
-        NULL;
+    return (infobar_manager()->infobar_count() == 1)
+               ? infobar_manager()
+                     ->infobar_at(0)
+                     ->delegate()
+                     ->AsTranslateInfoBarDelegate()
+               : NULL;
   }
 
 #if !defined(USE_AURA) && !defined(OS_MAC)
@@ -288,7 +289,7 @@ class TranslateManagerRenderViewHostTest
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
-    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+    infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
     return true;
   }
 
@@ -315,7 +316,7 @@ class TranslateManagerRenderViewHostTest
       if (!infobar)
         return false;
       infobar->TranslationDeclined();
-      infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+      infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
       return true;
     }
   }
@@ -358,10 +359,6 @@ class TranslateManagerRenderViewHostTest
     removed_infobars_.insert(infobar->delegate());
   }
 
-  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override {
-    infobar_observer_.Remove(manager);
-  }
-
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
  protected:
@@ -382,17 +379,18 @@ class TranslateManagerRenderViewHostTest
     download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
     download_manager->set_url_loader_factory(test_shared_loader_factory_);
 
-    InfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
     ChromeTranslateClient::CreateForWebContents(web_contents());
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
         ->set_translate_max_reload_attempts(0);
 
-    infobar_observer_.Add(infobar_service());
+    infobar_observation_.Observe(infobar_manager());
   }
 
   void TearDown() override {
-    infobar_observer_.Remove(infobar_service());
+    DCHECK(infobar_observation_.IsObservingSource(infobar_manager()));
+    infobar_observation_.Reset();
 
     ChromeRenderViewHostTestHarness::TearDown();
     TranslateService::ShutdownForTesting();
@@ -457,8 +455,9 @@ class TranslateManagerRenderViewHostTest
   std::unique_ptr<MockTranslateBubbleFactory> bubble_factory_;
   FakeTranslateAgent fake_agent_;
 
-  ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
-      infobar_observer_;
+  base::ScopedObservation<infobars::InfoBarManager,
+                          infobars::InfoBarManager::Observer>
+      infobar_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };

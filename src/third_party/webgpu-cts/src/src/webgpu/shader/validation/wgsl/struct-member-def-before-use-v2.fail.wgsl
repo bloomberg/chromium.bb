@@ -13,7 +13,7 @@ struct foo {
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var f : foo;
   f.x.y.t = 2.0;
   return;

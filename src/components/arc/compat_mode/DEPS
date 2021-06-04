@@ -3,5 +3,7 @@ include_rules = [
   "+ash/resources/vector_icons",
   "+components/strings/grit/components_strings.h",
   "+ui/aura",
+  "+ui/gfx",
+  "+ui/strings",
   "+ui/views",
 ]

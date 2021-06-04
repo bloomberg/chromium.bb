@@ -46,7 +46,7 @@ void RunOrPostGetMostVisitedURLsCallback(
     task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), urls));
 }
 
-// Checks if the titles stored in |old_list| and |new_list| have changes.
+// Checks if the titles stored in `old_list` and `new_list` have changes.
 bool DoTitlesDiffer(const MostVisitedURLList& old_list,
                     const MostVisitedURLList& new_list) {
   // If the two lists have different sizes, the most visited titles are
@@ -145,7 +145,7 @@ void TopSitesImpl::SyncWithHistory() {
 bool TopSitesImpl::HasBlockedUrls() const {
   const base::DictionaryValue* blocked_urls =
       pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
-  return blocked_urls && !blocked_urls->empty();
+  return blocked_urls && !blocked_urls->DictEmpty();
 }
 
 void TopSitesImpl::AddBlockedUrl(const GURL& url) {
@@ -155,7 +155,8 @@ void TopSitesImpl::AddBlockedUrl(const GURL& url) {
   {
     DictionaryPrefUpdate update(pref_service_, kBlockedUrlsPrefsKey);
     base::DictionaryValue* blocked_urls = update.Get();
-    blocked_urls->SetWithoutPathExpansion(GetURLHash(url), std::move(dummy));
+    blocked_urls->SetKey(GetURLHash(url),
+                         base::Value::FromUniquePtrValue(std::move(dummy)));
   }
 
   ResetThreadSafeCache();
@@ -371,7 +372,7 @@ int TopSitesImpl::num_results_to_request_from_history() const {
 
   const base::DictionaryValue* blocked_urls =
       pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
-  return kTopSitesNumber + (blocked_urls ? blocked_urls->size() : 0);
+  return kTopSitesNumber + (blocked_urls ? blocked_urls->DictSize() : 0);
 }
 
 void TopSitesImpl::MoveStateToLoaded() {
@@ -419,7 +420,7 @@ void TopSitesImpl::ScheduleUpdateTimer() {
 void TopSitesImpl::OnGotMostVisitedURLs(MostVisitedURLList sites) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Set |top_sites_| directly so that SetTopSites() diffs correctly.
+  // Set `top_sites_` directly so that SetTopSites() diffs correctly.
   top_sites_ = sites;
   SetTopSites(std::move(sites), CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
 

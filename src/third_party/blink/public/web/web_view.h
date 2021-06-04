@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
@@ -105,12 +106,21 @@ class WebView {
   // their output.
   // |page_handle| is only set for views that are part of a WebContents' frame
   // tree.
+  // |widgets_never_composited| is an indication that all WebWidgets associated
+  // with this WebView will never be user-visible and thus never need to produce
+  // pixels for display. This is separate from page visibility, as background
+  // pages can be marked visible in blink even though they are not user-visible.
+  // Page visibility controls blink behaviour for javascript, timers, and such
+  // to inform blink it is in the foreground or background. Whereas this bit
+  // refers to user-visibility and whether the tab needs to produce pixels to
+  // put on the screen at some point or not.
   // TODO(yuzus): Remove |is_hidden| and start using |PageVisibilityState|.
   BLINK_EXPORT static WebView* Create(
       WebViewClient*,
       bool is_hidden,
       bool is_inside_portal,
       bool compositing_enabled,
+      bool widgets_never_composited,
       WebView* opener,
       CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
           page_handle,
@@ -130,7 +140,12 @@ class WebView {
   virtual void DidDetachLocalMainFrame() = 0;
 
   // Called to inform WebViewImpl that a remote main frame has been attached.
-  virtual void DidAttachRemoteMainFrame() = 0;
+  // Associated channels should be passed and bound.
+  virtual void DidAttachRemoteMainFrame(
+      CrossVariantMojoAssociatedRemote<mojom::RemoteMainFrameHostInterfaceBase>
+          main_frame_host,
+      CrossVariantMojoAssociatedReceiver<mojom::RemoteMainFrameInterfaceBase>
+          main_frame) = 0;
 
   // Called to inform WebViewImpl that a remote main frame has been detached.
   virtual void DidDetachRemoteMainFrame() = 0;
@@ -170,6 +185,7 @@ class WebView {
   // Frames --------------------------------------------------------------
 
   virtual WebFrame* MainFrame() = 0;
+  virtual const WebFrame* MainFrame() const = 0;
 
   // Focus ---------------------------------------------------------------
 
@@ -267,7 +283,7 @@ class WebView {
 
   // Override the screen orientation override.
   virtual void SetScreenOrientationOverrideForTesting(
-      base::Optional<blink::mojom::ScreenOrientation> orientation) = 0;
+      absl::optional<blink::mojom::ScreenOrientation> orientation) = 0;
 
   // Enable/Disable synchronous resize mode that is used for web tests.
   virtual void UseSynchronousResizeModeForTesting(bool enable) = 0;
@@ -417,7 +433,7 @@ class WebView {
 
   virtual void SetRendererPreferences(
       const RendererPreferences& preferences) = 0;
-  virtual const RendererPreferences& GetRendererPreferences() = 0;
+  virtual const RendererPreferences& GetRendererPreferences() const = 0;
 
   // Web preferences ---------------------------------------------------
 
@@ -437,14 +453,14 @@ class WebView {
   // History list ---------------------------------------------------------
   virtual void SetHistoryListFromNavigation(
       int32_t history_offset,
-      base::Optional<int32_t> history_length) = 0;
+      absl::optional<int32_t> history_length) = 0;
   virtual void IncreaseHistoryListFromNavigation() = 0;
 
   // Session history -----------------------------------------------------
   // Returns the number of history items before/after the current
   // history item.
-  virtual int32_t HistoryBackListCount() = 0;
-  virtual int32_t HistoryForwardListCount() = 0;
+  virtual int32_t HistoryBackListCount() const = 0;
+  virtual int32_t HistoryForwardListCount() const = 0;
 
   // Portals --------------------------------------------------------------
 
@@ -454,4 +470,4 @@ class WebView {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_

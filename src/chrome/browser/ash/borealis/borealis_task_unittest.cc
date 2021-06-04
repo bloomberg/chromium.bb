@@ -11,10 +11,13 @@
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_cicerone_client.h"
-#include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -47,10 +50,11 @@ class BorealisTasksTest : public testing::Test {
  protected:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
-    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
-        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
+    chromeos::SeneschalClient::InitializeFake();
+    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
     CreateProfile();
     context_ = BorealisContext::CreateBorealisContextForTesting(profile_.get());
     context_->set_vm_name("borealis");
@@ -61,19 +65,22 @@ class BorealisTasksTest : public testing::Test {
   }
 
   void TearDown() override {
-    profile_.reset();
     context_.reset();  // must destroy before DBus shutdown
+    profile_.reset();
 
     chromeos::DlcserviceClient::Shutdown();
+    chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<BorealisContext> context_;
   content::BrowserTaskEnvironment task_environment_;
-  // Owned by chromeos::DBusThreadManager
   chromeos::FakeConciergeClient* fake_concierge_client_;
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
+  // Owned by chromeos::DBusThreadManager
   chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
 
  private:
@@ -110,7 +117,7 @@ TEST_F(BorealisTasksTest, CreateDiskSucceedsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), path);
 }
 
@@ -130,7 +137,7 @@ TEST_F(BorealisTasksTest,
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), path);
 }
 
@@ -146,7 +153,7 @@ TEST_F(BorealisTasksTest, StartBorealisVmSucceedsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
 }
 
 TEST_F(BorealisTasksTest,
@@ -162,7 +169,7 @@ TEST_F(BorealisTasksTest,
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
 }
 
 TEST_F(BorealisTasksTest,
@@ -256,7 +263,7 @@ TEST_P(BorealisTasksTestDiskImage, CreateDiskFailsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), base::FilePath());
 }
 
@@ -288,7 +295,7 @@ TEST_P(BorealisTasksTestsStartBorealisVm,
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

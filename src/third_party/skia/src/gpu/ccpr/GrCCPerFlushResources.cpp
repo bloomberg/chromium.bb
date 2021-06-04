@@ -8,6 +8,7 @@
 #include "src/gpu/ccpr/GrCCPerFlushResources.h"
 
 #include "include/gpu/GrRecordingContext.h"
+#include "src/core/SkIPoint16.h"
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
@@ -94,19 +95,6 @@ static void draw_stencil_to_coverage(GrOnFlushResourceProvider* onFlushRP,
     // This will be the final op in the surfaceDrawContext. So if Ganesh is planning to discard the
     // stencil values anyway, then we might not actually need to reset the stencil values back to 0.
     bool mustResetStencil = !onFlushRP->caps()->discardStencilValuesAfterRenderPass();
-
-    if (surfaceDrawContext->numSamples() == 1) {
-        // We are mixed sampled. We need to either enable conservative raster (preferred) or disable
-        // MSAA in order to avoid double blend artifacts. (Even if we disable MSAA for the cover
-        // geometry, the stencil test is still multisampled and will still produce smooth results.)
-        if (onFlushRP->caps()->conservativeRasterSupport()) {
-            fillRectFlags |= GrSimpleMeshDrawOpHelper::InputFlags::kConservativeRaster;
-        } else {
-            aaType = GrAAType::kNone;
-        }
-        mustResetStencil = true;
-    }
-
     const GrUserStencilSettings* stencil;
     if (mustResetStencil) {
         constexpr static GrUserStencilSettings kTestAndResetStencil(

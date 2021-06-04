@@ -9,12 +9,38 @@
 #define GrRenderTargetProxy_DEFINED
 
 #include "include/private/GrTypesPriv.h"
+#include "src/core/SkArenaAlloc.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrNativeRect.h"
+#include "src/gpu/GrSubRunAllocator.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSwizzle.h"
 
 class GrResourceProvider;
+
+// GrArenas matches the lifetime of a single frame. It is created and held on the
+// GrSurfaceFillContext's RenderTargetProxy with the first call to get an arena. Each GrOpsTask
+// takes a ref on it to keep the arenas alive. When the first GrOpsTask's onExecute() is
+// completed, the arena ref on the GrSurfaceFillContext's RenderTargetProxy is nulled out so that
+// any new GrOpsTasks will create and ref a new set of arenas.
+class GrArenas : public SkNVRefCnt<GrArenas> {
+public:
+    SkArenaAlloc* arenaAlloc() {
+        SkDEBUGCODE(if (fIsFlushed) SK_ABORT("Using a flushed arena");)
+        return &fArenaAlloc;
+    }
+    void flush() {
+        SkDEBUGCODE(fIsFlushed = true;)
+    }
+    GrSubRunAllocator* subRunAlloc() { return &fSubRunAllocator; }
+
+private:
+    SkArenaAlloc fArenaAlloc{1024};
+    // An allocator specifically designed to minimize the overhead of sub runs. It provides a
+    // different dtor semantics than SkArenaAlloc.
+    GrSubRunAllocator fSubRunAllocator{1024};
+    SkDEBUGCODE(bool fIsFlushed = false;)
+};
 
 // This class delays the acquisition of RenderTargets until they are actually
 // required
@@ -28,31 +54,17 @@ public:
     // Actually instantiate the backing rendertarget, if necessary.
     bool instantiate(GrResourceProvider*) override;
 
-    bool canUseMixedSamples(const GrCaps& caps) const {
-        return caps.mixedSamplesSupport() && !this->glRTFBOIDIs0() &&
-               caps.internalMultisampleCount(this->backendFormat()) > 1 &&
-               this->canChangeStencilAttachment();
-    }
-
     // Returns true if this proxy either has a stencil attachment already, or if we can attach one
     // during flush. Wrapped render targets without stencil will return false, since we are unable
     // to modify their attachments.
     bool canUseStencil(const GrCaps& caps) const;
 
     /*
-     * Indicate that a draw to this proxy requires stencil, and how many stencil samples it needs.
-     * The number of stencil samples on this proxy will be equal to the largest sample count passed
-     * to this method.
+     * Indicate that a draw to this proxy requires stencil.
      */
-    void setNeedsStencil(int8_t numStencilSamples) {
-        SkASSERT(numStencilSamples >= fSampleCnt);
-        fNumStencilSamples = std::max(numStencilSamples, fNumStencilSamples);
-    }
+    void setNeedsStencil() { fNeedsStencil = true; }
 
-    /**
-     * Returns the number of stencil samples this proxy will use, or 0 if it does not use stencil.
-     */
-    int numStencilSamples() const { return fNumStencilSamples; }
+    int needsStencil() const { return fNeedsStencil; }
 
     /**
      * Returns the number of samples/pixel in the color buffer (One if non-MSAA).
@@ -89,6 +101,20 @@ public:
 
     // TODO: move this to a priv class!
     bool refsWrappedObjects() const;
+
+    sk_sp<GrArenas> arenas() {
+        if (fArenas == nullptr) {
+            fArenas = sk_make_sp<GrArenas>();
+        }
+        return fArenas;
+    }
+
+    void clearArenas() {
+        if (fArenas != nullptr) {
+            fArenas->flush();
+        }
+        fArenas = nullptr;
+    }
 
 protected:
     friend class GrProxyProvider;  // for ctors
@@ -136,8 +162,6 @@ protected:
     sk_sp<GrSurface> createSurface(GrResourceProvider*) const override;
 
 private:
-    bool canChangeStencilAttachment() const;
-
     size_t onUninstantiatedGpuMemorySize() const override;
     SkDEBUGCODE(void onValidateSurface(const GrSurface*) override;)
 
@@ -151,9 +175,11 @@ private:
     // that particular class don't require it. Changing the size of this object can move the start
     // address of other types, leading to this problem.
     int8_t             fSampleCnt;
-    int8_t             fNumStencilSamples = 0;
+    int8_t             fNeedsStencil = false;
     WrapsVkSecondaryCB fWrapsVkSecondaryCB;
     SkIRect            fMSAADirtyRect = SkIRect::MakeEmpty();
+    sk_sp<GrArenas>    fArenas{nullptr};
+
     // This is to fix issue in large comment above. Without the padding we can end up with the
     // GrTextureProxy starting 8 byte aligned by not 16. This happens when the RT ends at bytes 1-8.
     // Note: with the virtual inheritance an 8 byte pointer is at the start of GrRenderTargetProxy.

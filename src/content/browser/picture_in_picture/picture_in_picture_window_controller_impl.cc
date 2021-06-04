@@ -94,6 +94,10 @@ void PictureInPictureWindowControllerImpl::Show() {
   GetWebContentsImpl()->SetHasPictureInPictureVideo(true);
 }
 
+void PictureInPictureWindowControllerImpl::FocusInitiator() {
+  GetWebContentsImpl()->Activate();
+}
+
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   if (!window_ || !window_->IsVisible())
     return;
@@ -104,12 +108,13 @@ void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
 
 void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
   Close(false /* should_pause_video */);
-  GetWebContentsImpl()->Activate();
+  FocusInitiator();
 }
 
-void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
+void PictureInPictureWindowControllerImpl::OnWindowDestroyed(
+    bool should_pause_video) {
   window_ = nullptr;
-  CloseInternal(true /* should_pause_video */);
+  CloseInternal(should_pause_video);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(

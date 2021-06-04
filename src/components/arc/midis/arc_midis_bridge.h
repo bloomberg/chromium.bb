@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <vector>
-
 #include "base/macros.h"
 #include "components/arc/mojom/midis.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,6 +28,8 @@ class ArcMidisBridge : public KeyedService,
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcMidisBridge* GetForBrowserContext(content::BrowserContext* context);
+  static ArcMidisBridge* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   ArcMidisBridge(content::BrowserContext* context,
                  ArcBridgeService* bridge_service);

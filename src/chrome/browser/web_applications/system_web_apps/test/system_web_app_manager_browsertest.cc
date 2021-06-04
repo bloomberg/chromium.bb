@@ -27,6 +27,8 @@
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -40,10 +42,12 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -54,6 +58,8 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/base/idle/idle.h"
+#include "ui/base/idle/scoped_set_idle_state.h"
 #include "ui/display/types/display_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -65,6 +71,7 @@
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #endif
 
 namespace {
@@ -164,9 +171,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, LaunchMetricsWork) {
       maybe_installation_->GetAppUrl());
   navigation_observer.StartWatchingNewWebContents();
 
-  LaunchSystemWebAppAsync(
-      browser()->profile(), GetMockAppType(),
-      {.launch_source = apps::mojom::LaunchSource::kFromAppListGrid});
+  SystemAppLaunchParams params;
+  params.launch_source = apps::mojom::LaunchSource::kFromAppListGrid;
+  LaunchSystemWebAppAsync(browser()->profile(), GetMockAppType(), params);
 
   navigation_observer.Wait();
   histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
@@ -875,7 +882,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
   // removed from the |AppList| when they are hidden.
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   ASSERT_TRUE(client);
-  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+  AppListModelUpdater* model_updater = ::test::GetModelUpdater(client);
   const ChromeAppListItem* mock_app = model_updater->FindItem(app_id);
   // |mock_app| shouldn't be found in |AppList| because it should be hidden in
   // launcher.
@@ -933,6 +940,67 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
       });
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
+
+class SystemWebAppManagerHasTabStripTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerHasTabStripTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithTabStrip(true);
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerHasTabStripTest, HasTabStrip) {
+  WaitForTestSystemAppInstall();
+
+  Browser* browser;
+  EXPECT_TRUE(LaunchApp(GetMockAppType(), &browser));
+  EXPECT_TRUE(browser->app_controller()->has_tab_strip());
+}
+
+class SystemWebAppManagerHasNoTabStripTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerHasNoTabStripTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithTabStrip(false);
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerHasNoTabStripTest, HasNoTabStrip) {
+  WaitForTestSystemAppInstall();
+
+  Browser* browser;
+  EXPECT_TRUE(LaunchApp(GetMockAppType(), &browser));
+  EXPECT_FALSE(browser->app_controller()->has_tab_strip());
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// We only support custom bounds on Chrome OS.
+class SystemWebAppManagerDefaultBoundsTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerDefaultBoundsTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithDefaultBounds(kDefaultBounds);
+  }
+
+ protected:
+  const gfx::Rect kDefaultBounds = {0, 0, 333, 444};
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerDefaultBoundsTest, HasDefaultBounds) {
+  WaitForTestSystemAppInstall();
+
+  Browser* browser;
+  EXPECT_TRUE(LaunchApp(GetMockAppType(), &browser));
+  EXPECT_EQ(kDefaultBounds, browser->app_controller()->GetDefaultBounds());
+  EXPECT_EQ(kDefaultBounds, browser->window()->GetBounds());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests that SWA are correctly uninstalled across restarts.
 class SystemWebAppManagerUninstallBrowserTest
@@ -1042,75 +1110,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest, Upgrade) {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Tests that SWA-specific data is correctly migrated to Web Apps without
-// Extensions.
-class SystemWebAppManagerMigrationTest : public SystemWebAppBrowserTestBase {
- public:
-  SystemWebAppManagerMigrationTest()
-      : SystemWebAppBrowserTestBase(/*install_mock=*/false) {
-    maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms();
-    maybe_installation_->set_update_policy(
-        SystemWebAppManager::UpdatePolicy::kOnVersionChange);
-
-    if (content::IsPreTest()) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kDesktopPWAsWithoutExtensions);
-    } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kDesktopPWAsWithoutExtensions);
-    }
-  }
-  ~SystemWebAppManagerMigrationTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// These tests use the App Service which is only enabled on Chrome OS.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_PRE_ExtraDataIsMigrated PRE_ExtraDataIsMigrated
-#else
-#define MAYBE_PRE_ExtraDataIsMigrated DISABLED_PRE_ExtraDataIsMigrated
-#endif
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest,
-                       MAYBE_PRE_ExtraDataIsMigrated) {
-  WaitForTestSystemAppInstall();
-  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
-
-  const bool app_found =
-      GetAppServiceProxy(browser()->profile())
-          ->AppRegistryCache()
-          .ForOneApp(app_id, [](const apps::AppUpdate& update) {
-            EXPECT_EQ(std::vector<std::string>({"Security"}),
-                      update.AdditionalSearchTerms());
-            EXPECT_EQ(apps::mojom::OptionalBool::kFalse,
-                      update.ShowInManagement());
-          });
-  ASSERT_TRUE(app_found);
-}
-
-// These tests use the App Service which is only enabled on Chrome OS.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_ExtraDataIsMigrated ExtraDataIsMigrated
-#else
-#define MAYBE_ExtraDataIsMigrated DISABLED_ExtraDataIsMigrated
-#endif
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMigrationTest,
-                       MAYBE_ExtraDataIsMigrated) {
-  WaitForTestSystemAppInstall();
-  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
-
-  auto* proxy = GetAppServiceProxy(browser()->profile());
-  const bool app_found = proxy->AppRegistryCache().ForOneApp(
-      app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(std::vector<std::string>({"Security"}),
-                  update.AdditionalSearchTerms());
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
-      });
-  ASSERT_TRUE(app_found);
-}
 
 class SystemWebAppManagerChromeUntrustedTest
     : public SystemWebAppManagerBrowserTest {
@@ -1356,7 +1355,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     list->Append(policy::SystemFeature::kOsSettings);
   }
   WaitForTestSystemAppInstall();
-  base::Optional<AppId> settings_id =
+  absl::optional<AppId> settings_id =
       GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
   DCHECK(settings_id.has_value());
 
@@ -1382,7 +1381,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
                        AppSuspendedAfterInstall) {
   WaitForTestSystemAppInstall();
-  base::Optional<AppId> settings_id =
+  absl::optional<AppId> settings_id =
       GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
   DCHECK(settings_id.has_value());
   EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
@@ -1412,7 +1411,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
 }
-// This feature will only work when DesktopPWAsWithoutExtensions launches.
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerAppSuspensionBrowserTest);
 
@@ -1452,26 +1450,29 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   content::TestNavigationObserver navigation_observer(
       GURL("chrome://test-system-app/page2.html"));
   navigation_observer.StartWatchingNewWebContents();
+  ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);
 
   WaitForSystemAppsBackgroundTasksStart();
 
   auto& tasks = GetManager().GetBackgroundTasksForTesting();
-  auto* start_timer = tasks[0]->get_start_timer_for_testing();
-  EXPECT_EQ(base::TimeDelta::FromSeconds(120), start_timer->GetCurrentDelay());
-  EXPECT_EQ(base::TimeDelta::FromDays(1),
-            tasks[0]->get_repeating_timer_for_testing()->GetCurrentDelay());
-
+  auto* timer = tasks[0]->get_timer_for_testing();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(120), timer->GetCurrentDelay());
+  EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
+            tasks[0]->get_state_for_testing());
   // The "Immediate" timer waits for 2 minutes, and it's really hard to mock
   // time properly in a browser test, so just fire the thing now. We're not
   // testing that base::Timer works.
-  start_timer->FireNow();
+  timer->FireNow();
 
   navigation_observer.Wait();
-  EXPECT_FALSE(start_timer->IsRunning());
+  EXPECT_TRUE(timer->IsRunning());
   EXPECT_EQ(1u, tasks.size());
   EXPECT_TRUE(tasks[0]->open_immediately_for_testing());
   EXPECT_EQ(base::TimeDelta::FromDays(1), tasks[0]->period_for_testing());
   EXPECT_EQ(1u, tasks[0]->timer_activated_count_for_testing());
+  EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
+            tasks[0]->get_state_for_testing());
+  EXPECT_EQ(base::TimeDelta::FromDays(1), timer->GetCurrentDelay());
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
@@ -1516,5 +1517,16 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerBackgroundTaskTest);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppManagerHasTabStripTest);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppManagerHasNoTabStripTest);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppManagerDefaultBoundsTest);
+#endif
 
 }  // namespace web_app

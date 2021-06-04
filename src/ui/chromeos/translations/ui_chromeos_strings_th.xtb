@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">แถบเลื่อนสำหรับกรอวิดีโอ</translation>
 <translation id="1404323374378969387">นอร์เวย์</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
+<translation id="1433628812591023318">ต้องย้ายไฟล์ดังกล่าวไปยังไฟล์ Windows เพื่อวางใน Parallels Desktop</translation>
 <translation id="1435838927755162558">แชร์โฟลเดอร์กับ Parallels Desktop</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="1471718551822868769">สโลวัก</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">ไฟล์ Windows</translation>
 <translation id="3078461028045006476">แชร์กับ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">เปิด "<ph name="PATH" />" จากตำแหน่งนี้ไม่ได้ โปรดคัดลอกไปที่ "ไฟล์ของฉัน" เพื่อเปิด</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">เสร็จสิ้น</translation>
 <translation id="3188257591659621405">ไฟล์ของฉัน</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">บัลแกเรียด้วยแป้นพิมพ์ตามการออกเสียง</translation>
 <translation id="5605830556594064952">ดีโวรักสหรัฐอเมริกา</translation>
 <translation id="5625294776298156701">ทมิฬด้วยแป้นพิมพ์ Tamil99</translation>
+<translation id="5633226425545095130">การย้ายรายการนี้จะเป็นการแชร์กับทุกคนที่ดูโฟลเดอร์ที่แชร์ "<ph name="DESTINATION_NAME" />" ได้</translation>
 <translation id="5649768706273821470">ฟัง</translation>
 <translation id="5678784840044122290">แอปพลิเคชัน Linux จะพร้อมให้ใช้งานในเทอร์มินัลของคุณและอาจแสดงไอคอนใน Launcher ด้วย</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />ยกเลิกการเชื่อมต่อจากที่เก็บถาวรหรือดิสก์เสมือนไม่สำเร็จ<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">แป้นพิมพ์ภาษาเอธิโอเปีย</translation>
 <translation id="7417705661718309329">แผนที่ Google</translation>
 <translation id="7460898608667578234">ยูเครน</translation>
+<translation id="7486315294984620427">ต้องคัดลอกไฟล์ดังกล่าวไปยังไฟล์ Windows เพื่อวางใน Parallels Desktop</translation>
 <translation id="7489215562877293245">พบ <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     พร้อมสำรองไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">มิติข้อมูล</translation>
 <translation id="8437209419043462667">สหรัฐอเมริกา</translation>
 <translation id="8456681095658380701">ชื่อไม่ถูกต้อง</translation>
+<translation id="8459404855768962328">การคัดลอกรายการนี้จะเป็นการแชร์กับทุกคนที่ดูโฟลเดอร์ที่แชร์ "<ph name="DESTINATION_NAME" />" ได้</translation>
 <translation id="8461467696380332069">คลิกขวาที่ไฟล์แล้วเลือก "ตรึงที่ชั้นวาง" เพื่อให้เข้าถึงไฟล์ในชั้นวางได้อย่างรวดเร็ว</translation>
 <translation id="8463494891489624050">เวียดนาม (VIQR)</translation>
 <translation id="8466234950814670489">ไฟล์ Tar</translation>

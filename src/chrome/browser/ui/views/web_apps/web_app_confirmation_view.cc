@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -29,7 +30,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -58,8 +58,8 @@ WebAppConfirmationView::WebAppConfirmationView(
   SetModalType(ui::MODAL_TYPE_CHILD);
   SetTitle(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
-                                                             views::TEXT));
+  set_margins(layout_provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kControl, views::DialogContentType::kText));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
   constexpr int kColumnSetId = 0;

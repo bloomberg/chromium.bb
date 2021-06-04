@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SCHEDULER_HELPER_H_
 
 #include <stddef.h>
-#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -142,7 +141,7 @@ class PLATFORM_EXPORT SchedulerHelper
   Observer* observer_;  // NOT OWNED
 
   UkmTaskSampler ukm_task_sampler_;
-  base::Optional<base::SimpleTaskExecutor> simple_task_executor_;
+  absl::optional<base::SimpleTaskExecutor> simple_task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

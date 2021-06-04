@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -166,7 +167,7 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   static bool return_ocr_results_;
   static bool return_label_results_;
   static std::map<std::string, std::string> custom_label_result_mapping_;
-  static base::Optional<image_annotation::mojom::AnnotateImageError>
+  static absl::optional<image_annotation::mojom::AnnotateImageError>
       return_error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAnnotator);
@@ -179,7 +180,7 @@ bool FakeAnnotator::return_label_results_ = false;
 // static
 std::map<std::string, std::string> FakeAnnotator::custom_label_result_mapping_;
 // static
-base::Optional<image_annotation::mojom::AnnotateImageError>
+absl::optional<image_annotation::mojom::AnnotateImageError>
     FakeAnnotator::return_error_code_;
 
 // The fake ImageAnnotationService, which handles mojo calls from the renderer
@@ -322,6 +323,20 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
                            "image Appears to say: printer.png Annotation",
                            "link Appears to say: green.png Annotation",
                            "image Appears to say: green.png Annotation"));
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInIframe) {
+  FakeAnnotator::SetReturnOcrResults(true);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_iframe.html"));
+
+  // Block until the accessibility tree has the annotated image from the
+  // iframe in it. The test times out if it never appears.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents, "Appears to say: green.png Annotation");
 }
 
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AugmentImageNames) {

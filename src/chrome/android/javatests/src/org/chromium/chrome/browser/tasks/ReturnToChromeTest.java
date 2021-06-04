@@ -11,6 +11,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createTabStateFile;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -52,7 +53,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
-import org.chromium.chrome.features.start_surface.InstantStartTest;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -141,7 +141,7 @@ public class ReturnToChromeTest {
     @DisabledTest(message="https://crbug.com/1130696")
     public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
         // clang-format on
-        InstantStartTest.createTabStateFile(new int[] {0, 1});
+        createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(null);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
@@ -176,7 +176,7 @@ public class ReturnToChromeTest {
     @DisabledTest(message="https://crbug.com/1144184")
     public void testTabSwitcherModeNotTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
-        InstantStartTest.createTabStateFile(new int[] {0, 1});
+        createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(UrlConstants.NTP_URL);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
@@ -246,7 +246,7 @@ public class ReturnToChromeTest {
     @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1) // See https://crbug.com/1091268.
     public void testTabSwitcherModeTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
-        InstantStartTest.createTabStateFile(new int[] {0, 1});
+        createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(UrlConstants.NTP_URL);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
@@ -312,11 +312,11 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @DisabledTest(message = "https://crbug.com/1130696")
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
         // clang-format on
-        InstantStartTest.createTabStateFile(new int[] {0, 1});
+        createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(null);
 
         if (!mActivityTestRule.getActivity().isTablet()) {
@@ -340,7 +340,7 @@ public class ReturnToChromeTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_UMA() throws Exception {
         // clang-format on
@@ -376,7 +376,7 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, sdk_is_greater_than = VERSION_CODES.O,
             message = "crbug.com/1134361")
     @DisabledTest(message = "https://crbug.com/1130696")
@@ -408,7 +408,7 @@ public class ReturnToChromeTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart_UMA() throws Exception {
         // clang-format on
@@ -444,7 +444,7 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() {
         // clang-format on
         // Cannot use ChromeTabbedActivityTestRule.startMainActivityFromLauncher() because
@@ -472,7 +472,7 @@ public class ReturnToChromeTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs_UMA() {
         // clang-format on
@@ -500,8 +500,8 @@ public class ReturnToChromeTest {
     }
 
     /**
-     * Ideally we should use {@link InstantStartTest#createTabStateFile} so that we don't need to
-     * create tabs with thumbnails and then restart. However, we cannot use stock serialized
+     * Ideally we should use {@link StartSurfaceTestUtils#createTabStateFile} so that we don't need
+     * to create tabs with thumbnails and then restart. However, we cannot use stock serialized
      * TabStates like {@link TestTabModelDirectory#M26_GOOGLE_COM} because all of them have URLs
      * that requires network. Serializing URL for EmbeddedTestServer doesn't work because each run
      * might be different. Serializing "about:blank" doesn't work either because when loaded, the
@@ -513,7 +513,7 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome", "RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+            + "/start_surface_variation/single"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisabledTest(message = "https://crbug.com/1063984")
     public void testInitialScrollIndex() throws Exception {

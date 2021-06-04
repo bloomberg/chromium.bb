@@ -4,7 +4,6 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
-import("//build/config/python.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
 import("//chrome/common/features.gni")
@@ -44,7 +43,6 @@ chromevox_modules = [
   "background/custom_automation_event.js",
   "background/desktop_automation_handler.js",
   "background/download_handler.js",
-  "background/earcon_engine.js",
   "background/editing/editable_line.js",
   "background/editing/editing.js",
   "background/editing/intent_handler.js",
@@ -65,7 +63,9 @@ chromevox_modules = [
   "background/math_handler.js",
   "background/pointer_handler.js",
   "background/output/output.js",
+  "background/output/output_format_parser.js",
   "background/output/output_format_tree.js",
+  "background/output/output_types.js",
   "background/panel_command.js",
   "background/phonetic_data.js",
   "background/prefs.js",
@@ -118,11 +118,12 @@ chromevox_modules = [
 # ES6 modules.
 chromevox_es6_modules = [
   "background/background.js",
-  "background/live_regions.js",
+  "background/earcon_engine.js",
+  "background/earcons.js",
   "background/es6_loader.js",
   "background/find_handler.js",
+  "background/live_regions.js",
   "background/media_automation_handler.js",
-  "background/earcons.js",
   "background/range_automation_handler.js",
 ]
 
@@ -244,8 +245,7 @@ template("generate_deps_js") {
   }
 }
 
-# TODO(crbug.com/1112471): Get this to run under Python3.
-python2_action("chromevox_phonetic_dictionaries_js") {
+action("chromevox_phonetic_dictionaries_js") {
   script = "tools/phonetic_dictionaries.py"
   src_dir = [ "$root_out_dir/resources/chromeos/accessibility/_locales" ]
   output_file = "$chromevox_out_dir/phonetic_dictionaries.js"
@@ -326,8 +326,7 @@ if (is_chromeos_ash) {
     data += js2gtest_js_libraries
   }
 
-  # TODO(crbug.com/1112471): Get this to run under Python3.
-  python2_action("chromevox_test_messages_js") {
+  action("chromevox_test_messages_js") {
     script = "tools/generate_test_messages.py"
     sources = [ "$root_out_dir/resources/chromeos/accessibility/_locales/en/messages.json.gz" ]
     output_file = "$root_out_dir/test_data/chrome/browser/resources/chromeos/accessibility/chromevox/host/testing/test_messages.js"
@@ -359,8 +358,10 @@ if (is_chromeos_ash) {
   js2gtest("chromevox_unit_js_tests") {
     test_type = "unit"
     sources = [
+      "background/phonetic_data_test.js",
       "braille/expanding_braille_translator_test.js",
       "braille/pan_strategy_test.js",
+      "common/editable_text_base_test.js",
       "common/key_sequence_test.js",
       "common/spannable_test.js",
       "testing/mock_feedback_test.js",
@@ -370,19 +371,24 @@ if (is_chromeos_ash) {
       "../common/testing/callback_helper.js",
       "../common/closure_shim.js",
       "../common/key_code.js",
+      "background/phonetic_data.js",
       "braille/expanding_braille_translator.js",
       "braille/nav_braille.js",
       "braille/pan_strategy.js",
       "braille/spans.js",
       "braille/liblouis.js",
       "common/abstract_earcons.js",
+      "common/abstract_tts.js",
       "common/braille_interface.js",
       "common/chromevox.js",
+      "common/editable_text_base.js",
       "common/key_sequence.js",
+      "common/msgs.js",
       "common/spannable.js",
       "common/tts_interface.js",
       "testing/fake_dom.js",
       "testing/mock_feedback.js",
+      "third_party/tamachiyomi/ja_phonetic_data.js",
     ]
   }
 

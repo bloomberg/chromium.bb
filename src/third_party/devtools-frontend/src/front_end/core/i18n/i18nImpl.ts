@@ -5,18 +5,15 @@
 // eslint-disable-next-line
 import i18nBundle from '../../third_party/i18n/i18n-bundle.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 
-import * as i18nTypes from './i18nTypes.js';
+import {DevToolsLocale} from './DevToolsLocale.js';
+import type * as i18nTypes from './i18nTypes.js';
 
-/**
- * The locale that DevTools displays
- */
-export const registerLocaleData = i18nBundle.registerLocaleData;
-
-/**
- * The locale that DevTools displays
- */
-export let registeredLocale: string|undefined;
+// All the locales that are part of the DevTools bundle and should not be fetched
+// remotely. Keep this list in sync with "copied_devtools_locale_files" in
+// "all_devtools_files.gni" (except the pseudo locales).
+const BUNDLED_LOCALES = new Set<string>(['en-US', 'en-XL', 'zh']);
 
 /**
  * The strings from the module.json file
@@ -28,20 +25,48 @@ let moduleJSONStrings: Object|undefined;
  * set at the time of calling, it is created.
  */
 function getOrSetModuleJSONStrings(): Object {
-  if (!registeredLocale) {
-    throw new Error(`Unsupported locale '${registeredLocale}'`);
-  }
-
-  moduleJSONStrings = moduleJSONStrings || i18nBundle.getRendererFormattedStrings(registeredLocale);
+  moduleJSONStrings = moduleJSONStrings || i18nBundle.getRendererFormattedStrings(DevToolsLocale.instance().locale);
   return moduleJSONStrings;
 }
 
 /**
- * Take the locale passed in from the browser(host), run through the fallback logic (example: es-419 -> es)
- * to find the DevTools supported locale and register it.
+ * Look up the best available locale for the requested language through these fall backs:
+ * - exact match
+ * - progressively shorter prefixes (`de-CH-1996` -> `de-CH` -> `de`)
+ * - the default locale ('en-US') if no match is found
+ *
+ * If `locale` isn't provided, the default is used.
  */
-export function registerLocale(locale: string): void {
-  registeredLocale = i18nBundle.lookupLocale(locale);
+export function lookupClosestSupportedDevToolsLocale(locale: string): string {
+  return i18nBundle.lookupLocale(locale);
+}
+
+/**
+ * Returns the Url from which a locale can be fetched. This depends on the
+ * specific locale, as some are bundled with DevTools while others
+ * have to be fetched remotely.
+ */
+function getLocaleFetchUrl(locale: Intl.UnicodeBCP47LocaleIdentifier): string {
+  const remoteBase = Root.Runtime.getRemoteBase();
+  if (remoteBase && remoteBase.base && !BUNDLED_LOCALES.has(locale)) {
+    return `${remoteBase.base}core/i18n/locales/${locale}.json`;
+  }
+  return new URL(`../../core/i18n/locales/${locale}.json`, import.meta.url).toString();
+}
+
+/**
+ * Fetches the locale data of the specified locale.
+ * Callers have to ensure that `locale` is an officilly supported locale.
+ * Depending whether a locale is present in `bundledLocales`, the data will be
+ * fetched locally or remotely.
+ */
+export async function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47LocaleIdentifier): Promise<void> {
+  const localeDataTextPromise = Root.Runtime.loadResourcePromise(getLocaleFetchUrl(locale));
+  const timeoutPromise =
+      new Promise((resolve, reject) => setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
+  const localeDataText = await Promise.race([timeoutPromise, localeDataTextPromise]);
+  const localeData = JSON.parse(localeDataText as string);
+  i18nBundle.registerLocaleData(locale, localeData);
 }
 
 /**
@@ -65,12 +90,8 @@ export function getLocalizedString(
     // eslint-disable-next-line @typescript-eslint/naming-convention
     str_: (id: string, values: Object) => Platform.UIString.LocalizedString, id: string,
     values: Object = {}): Platform.UIString.LocalizedString {
-  if (!registeredLocale) {
-    throw new Error(`Unsupported locale '${registeredLocale}'`);
-  }
-
   const icuMessage = str_(id, values);
-  return i18nBundle.getFormatted(icuMessage, registeredLocale) as Platform.UIString.LocalizedString;
+  return i18nBundle.getFormatted(icuMessage, DevToolsLocale.instance().locale) as Platform.UIString.LocalizedString;
 }
 
 /**
@@ -84,8 +105,8 @@ export function registerUIStrings(path: string, stringStructure: Object): (id: s
    * */
   const str: (id: string, value: Object) => Platform.UIString.LocalizedString = (id: string, value: Object) => {
     try {
-      const i18nInstance = i18nBundle.createMessageInstanceIdFn(path, stringStructure) as (
-                               id: string, values: Object) => Platform.UIString.LocalizedString;
+      const i18nInstance = i18nBundle.createIcuMessageFn(path, stringStructure) as (id: string, values: Object) =>
+                               Platform.UIString.LocalizedString;
       return i18nInstance(id, value);
     } catch (e) {
       // ID was not in the main file search for module.json strings
@@ -111,12 +132,8 @@ export function getFormatLocalizedString(
     // eslint-disable-next-line @typescript-eslint/naming-convention
     str_: (id: string, values: Object) => Platform.UIString.LocalizedString, stringId: string,
     placeholders: Record<string, Object>): Element {
-  if (!registeredLocale) {
-    throw new Error(`Unsupported locale '${registeredLocale}'`);
-  }
-
   const icuMessage = str_(stringId, placeholders);
-  const formatter = i18nBundle.getFormatter(icuMessage, registeredLocale);
+  const formatter = i18nBundle.getFormatter(icuMessage, DevToolsLocale.instance().locale);
 
   const icuElements = formatter.getAst().elements;
   const args: Array<Object> = [];
@@ -179,4 +196,41 @@ export function lockedString(str: string): Platform.UIString.LocalizedString {
  */
 export function lockedLazyString(str: string): () => Platform.UIString.LocalizedString {
   return (): Platform.UIString.LocalizedString => str as Platform.UIString.LocalizedString;
+}
+
+/**
+ * Returns a string of the form:
+ *   "German (Austria) - Deutsch (Österreich)"
+ * where the former locale representation is written in the currently enabled DevTools
+ * locale and the latter locale representation is written in the locale of `localeString`.
+ *
+ * Should the two locales match (i.e. have the same language) then the latter locale
+ * representation is written in English.
+ */
+export function getLocalizedLanguageRegion(
+    localeString: Intl.UnicodeBCP47LocaleIdentifier,
+    devtoolsLocale: DevToolsLocale): Platform.UIString.LocalizedString {
+  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
+  const locale = new Intl.Locale(localeString);
+  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
+  const devtoolsLoc = new Intl.Locale(devtoolsLocale.locale);
+  const targetLanguage = locale.language === devtoolsLoc.language ? 'en' : locale.baseName;
+  const languageInCurrentLocale =
+      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language);
+  const languageInTargetLocale = new Intl.DisplayNames([targetLanguage], {type: 'language'}).of(locale.language);
+
+  let wrappedRegionInCurrentLocale = '';
+  let wrappedRegionInTargetLocale = '';
+
+  if (locale.region) {
+    const regionInCurrentLocale =
+        new Intl.DisplayNames([devtoolsLocale.locale], {type: 'region', style: 'short'}).of(locale.region);
+    const regionInTargetLocale =
+        new Intl.DisplayNames([targetLanguage], {type: 'region', style: 'short'}).of(locale.region);
+    wrappedRegionInCurrentLocale = ` (${regionInCurrentLocale})`;
+    wrappedRegionInTargetLocale = ` (${regionInTargetLocale})`;
+  }
+
+  return `${languageInCurrentLocale}${wrappedRegionInCurrentLocale} - ${languageInTargetLocale}${
+             wrappedRegionInTargetLocale}` as Platform.UIString.LocalizedString;
 }

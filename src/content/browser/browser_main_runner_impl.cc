@@ -91,7 +91,7 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     // Ole must be initialized before starting message pump, so that TSF
     // (Text Services Framework) module can interact with the message pump
     // on Windows 8 Metro mode.
-    ole_initializer_.reset(new ui::ScopedOleInitializer);
+    ole_initializer_ = std::make_unique<ui::ScopedOleInitializer>();
 #endif  // OS_WIN
 
     gfx::InitializeFonts();
@@ -115,9 +115,9 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     if (!main_loop_->InitializeToolkit())
       return 1;
 
-    main_loop_->PreMainMessageLoopStart();
-    main_loop_->MainMessageLoopStart();
-    main_loop_->PostMainMessageLoopStart();
+    main_loop_->PreCreateMainMessageLoop();
+    main_loop_->CreateMainMessageLoop();
+    main_loop_->PostCreateMainMessageLoop();
 
     // WARNING: If we get a WM_ENDSESSION, objects created on the stack here
     // are NOT deleted. If you need something to run during WM_ENDSESSION add it

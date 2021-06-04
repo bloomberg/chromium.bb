@@ -7,11 +7,12 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-
+import * as Protocol from '../../generated/protocol.js';
 import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {ConsoleFilter, FilterType, LevelsMask} from './ConsoleFilter.js';
+import type {LevelsMask} from './ConsoleFilter.js';
+import {ConsoleFilter, FilterType} from './ConsoleFilter.js';
 import type {ConsoleViewMessage} from './ConsoleViewMessage.js';
 
 const UIStrings = {
@@ -60,17 +61,22 @@ export class ConsoleSidebar extends UI.Widget.VBox {
     this.setMinimumSize(125, 0);
 
     this._tree = new UI.TreeOutline.TreeOutlineInShadow();
-    this._tree.registerRequiredCSS('panels/console/consoleSidebar.css', {enableLegacyPatching: true});
+    this._tree.registerRequiredCSS('panels/console/consoleSidebar.css', {enableLegacyPatching: false});
     this._tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this._selectionChanged.bind(this));
     this.contentElement.appendChild(this._tree.element);
     this._selectedTreeElement = null;
     this._treeElements = [];
-    const selectedFilterSetting: Common.Settings.Setting<string> =
-        Common.Settings.Settings.instance().createSetting('console.sidebarSelectedFilter', null);
+    const selectedFilterSetting =
+        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
+        // @ts-expect-error
+        Common.Settings.Settings.instance().createSetting<string>('console.sidebarSelectedFilter', null);
 
-    const Levels = SDK.ConsoleModel.MessageLevel;
-    const consoleAPIParsedFilters =
-        [{key: FilterType.Source, text: SDK.ConsoleModel.MessageSource.ConsoleAPI, negative: false, regex: undefined}];
+    const consoleAPIParsedFilters = [{
+      key: FilterType.Source,
+      text: SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI,
+      negative: false,
+      regex: undefined,
+    }];
     this._appendGroup(
         GroupName.All, [], ConsoleFilter.allLevelsFilterValue(), UI.Icon.Icon.create('mediumicon-list'),
         selectedFilterSetting);
@@ -78,17 +84,17 @@ export class ConsoleSidebar extends UI.Widget.VBox {
         GroupName.ConsoleAPI, consoleAPIParsedFilters, ConsoleFilter.allLevelsFilterValue(),
         UI.Icon.Icon.create('mediumicon-account-circle'), selectedFilterSetting);
     this._appendGroup(
-        GroupName.Error, [], ConsoleFilter.singleLevelMask(Levels.Error),
+        GroupName.Error, [], ConsoleFilter.singleLevelMask(Protocol.Log.LogEntryLevel.Error),
         UI.Icon.Icon.create('mediumicon-error-circle'), selectedFilterSetting);
     this._appendGroup(
-        GroupName.Warning, [], ConsoleFilter.singleLevelMask(Levels.Warning),
+        GroupName.Warning, [], ConsoleFilter.singleLevelMask(Protocol.Log.LogEntryLevel.Warning),
         UI.Icon.Icon.create('mediumicon-warning-triangle'), selectedFilterSetting);
     this._appendGroup(
-        GroupName.Info, [], ConsoleFilter.singleLevelMask(Levels.Info), UI.Icon.Icon.create('mediumicon-info-circle'),
-        selectedFilterSetting);
+        GroupName.Info, [], ConsoleFilter.singleLevelMask(Protocol.Log.LogEntryLevel.Info),
+        UI.Icon.Icon.create('mediumicon-info-circle'), selectedFilterSetting);
     this._appendGroup(
-        GroupName.Verbose, [], ConsoleFilter.singleLevelMask(Levels.Verbose), UI.Icon.Icon.create('mediumicon-bug'),
-        selectedFilterSetting);
+        GroupName.Verbose, [], ConsoleFilter.singleLevelMask(Protocol.Log.LogEntryLevel.Verbose),
+        UI.Icon.Icon.create('mediumicon-bug'), selectedFilterSetting);
     const selectedTreeElementName = selectedFilterSetting.get();
     const defaultTreeElement =
         this._treeElements.find(x => x.name() === selectedTreeElementName) || this._treeElements[0];
@@ -225,8 +231,8 @@ export class FilterTreeElement extends ConsoleSidebarTreeElement {
 
   onMessageAdded(viewMessage: ConsoleViewMessage): void {
     const message = viewMessage.consoleMessage();
-    const shouldIncrementCounter = message.type !== SDK.ConsoleModel.MessageType.Command &&
-        message.type !== SDK.ConsoleModel.MessageType.Result && !message.isGroupMessage();
+    const shouldIncrementCounter = message.type !== SDK.ConsoleModel.FrontendMessageType.Command &&
+        message.type !== SDK.ConsoleModel.FrontendMessageType.Result && !message.isGroupMessage();
     if (!this._filter.shouldBeVisible(viewMessage) || !shouldIncrementCounter) {
       return;
     }

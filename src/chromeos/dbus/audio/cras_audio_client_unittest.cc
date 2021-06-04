@@ -35,6 +35,9 @@ const uint64_t kInternalMicId = 20001;
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = cras::EFFECT_TYPE_NOISE_CANCELLATION;
+const uint32_t kOutputAudioEffect = 0;
+
 const AudioNode kInternalSpeaker(false,
                                  kInternalSpeakerId,
                                  false /* has_v2_stable_device_id */,
@@ -45,7 +48,8 @@ const AudioNode kInternalSpeaker(false,
                                  "Speaker",
                                  false,
                                  0,
-                                 kOutputMaxSupportedChannels);
+                                 kOutputMaxSupportedChannels,
+                                 kOutputAudioEffect);
 
 const AudioNode kInternalMic(true,
                              kInternalMicId,
@@ -57,7 +61,8 @@ const AudioNode kInternalMic(true,
                              "Internal Mic",
                              false,
                              0,
-                             kInputMaxSupportedChannels);
+                             kInputMaxSupportedChannels,
+                             kInputAudioEffect);
 
 const AudioNode kInternalSpeakerV2(
     false,
@@ -72,7 +77,8 @@ const AudioNode kInternalSpeakerV2(
     "Speaker",
     false,
     0,
-    kOutputMaxSupportedChannels);
+    kOutputMaxSupportedChannels,
+    kOutputAudioEffect);
 
 const AudioNode kInternalMicV2(true,
                                kInternalMicId,
@@ -86,7 +92,8 @@ const AudioNode kInternalMicV2(true,
                                "Internal Mic",
                                false,
                                0,
-                               kInputMaxSupportedChannels);
+                               kInputMaxSupportedChannels,
+                               kInputAudioEffect);
 
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {
@@ -289,6 +296,11 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
       sub_writer.CloseContainer(&entry_writer);
     }
 
+    sub_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(cras::kAudioEffectProperty);
+    entry_writer.AppendVariantOfUint32(node_list[i].audio_effect);
+    sub_writer.CloseContainer(&entry_writer);
+
     writer->CloseContainer(&sub_writer);
   }
 }
@@ -296,7 +308,7 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
 // Expect the AudioNodeList result.
 void ExpectAudioNodeListResult(bool* called,
                                const AudioNodeList& expected_node_list,
-                               base::Optional<AudioNodeList> result) {
+                               absl::optional<AudioNodeList> result) {
   *called = true;
   ASSERT_TRUE(result.has_value());
   const AudioNodeList& node_list = result.value();
@@ -315,6 +327,7 @@ void ExpectAudioNodeListResult(bool* called,
     EXPECT_EQ(expected_node_list[i].plugged_time, node_list[i].plugged_time);
     EXPECT_EQ(expected_node_list[i].StableDeviceIdVersion(),
               node_list[i].StableDeviceIdVersion());
+    EXPECT_EQ(expected_node_list[i].audio_effect, node_list[i].audio_effect);
   }
 }
 
@@ -1124,6 +1137,22 @@ TEST_F(CrasAudioClientTest, SetInputMute) {
                        response.get());
   // Call method.
   client()->SetInputMute(kInputMuteOn);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetNoiseCancellationEnabled) {
+  const bool kNoiseCancellationOn = true;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(
+      cras::kSetNoiseCancellationEnabled,
+      base::BindRepeating(&ExpectBoolArgument, kNoiseCancellationOn),
+      response.get());
+  // Call method.
+  client()->SetNoiseCancellationEnabled(kNoiseCancellationOn);
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

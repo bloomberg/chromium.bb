@@ -40,8 +40,7 @@ std::vector<base::FilePath> ResolveFileUrls(
     const std::vector<GURL>& file_urls) {
   std::vector<base::FilePath> file_paths;
   storage::FileSystemContext* fs_context =
-      file_manager::util::GetFileSystemContextForExtensionId(
-          profile, file_manager::kFileManagerAppId);
+      file_manager::util::GetFileManagerFileSystemContext(profile);
   for (const auto& file_url : file_urls) {
     storage::FileSystemURL fs_url = fs_context->CrackURL(file_url);
     file_paths.push_back(fs_url.path());
@@ -51,7 +50,7 @@ std::vector<base::FilePath> ResolveFileUrls(
 
 std::string GetFirstFilenameFromFileUrls(
     Profile* profile,
-    base::Optional<std::vector<GURL>> file_urls) {
+    absl::optional<std::vector<GURL>> file_urls) {
   if (!file_urls) {
     return std::string();
   }

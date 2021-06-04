@@ -29,6 +29,7 @@
 #include "components/safe_browsing/content/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/password_protection/password_protection_request_content.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/password_protection/metrics_util.h"
@@ -85,6 +86,7 @@ class MockSafeBrowsingTokenFetcher : public SafeBrowsingTokenFetcher {
   ~MockSafeBrowsingTokenFetcher() override = default;
 
   MOCK_METHOD1(Start, void(Callback));
+  MOCK_METHOD1(OnInvalidAccessToken, void(const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingTokenFetcher);
@@ -116,7 +118,7 @@ class TestPhishingDetector : public mojom::PhishingDetector {
         mojo::PendingReceiver<mojom::PhishingDetector>(std::move(handle)));
   }
 
-  void SetPhishingModel(const std::string& model) override {}
+  void SetPhishingModel(const std::string& model, base::File file) override {}
 
   void StartPhishingDetection(
       const GURL& url,
@@ -462,14 +464,16 @@ class PasswordProtectionServiceBaseTest
 
     std::unique_ptr<base::DictionaryValue> invalid_cache_expression_entry =
         std::make_unique<base::DictionaryValue>();
-    invalid_cache_expression_entry->SetWithoutPathExpansion(
-        "invalid_cache_expression", std::move(invalid_verdict_entry));
-    verdict_dictionary->SetWithoutPathExpansion(
+    invalid_cache_expression_entry->SetKey(
+        "invalid_cache_expression",
+        base::Value::FromUniquePtrValue(std::move(invalid_verdict_entry)));
+    verdict_dictionary->SetKey(
         base::NumberToString(static_cast<std::underlying_type_t<PasswordType>>(
             password_protection_service_
                 ->ConvertReusedPasswordAccountTypeToPasswordType(
                     password_type))),
-        std::move(invalid_cache_expression_entry));
+        base::Value::FromUniquePtrValue(
+            std::move(invalid_cache_expression_entry)));
     content_setting_map_->SetWebsiteSettingDefaultScope(
         invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
         std::move(verdict_dictionary));
@@ -1035,7 +1039,7 @@ TEST_P(PasswordProtectionServiceBaseTest,
         std::string out;
         EXPECT_TRUE(request.headers.GetHeader(
             net::HttpRequestHeaders::kAuthorization, &out));
-        EXPECT_EQ(out, "Bearer " + access_token);
+        EXPECT_EQ(out, kAuthHeaderBearer + access_token);
       }));
   // Set up mock call to token fetcher.
   SafeBrowsingTokenFetcher::Callback cb;

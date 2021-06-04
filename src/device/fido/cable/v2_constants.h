@@ -45,6 +45,14 @@ constexpr size_t kPairingIDSize = 8;
 // communication. This specifies a Google service and the short domain seed is
 // necessary to fit within a BLE advert.
 constexpr uint16_t kTunnelServer = 0;
+// kPostHandshakeMsgPaddingGranularity is the granularity of the padding added
+// to the post-handshake message. This should be sufficiently large to pad away
+// all information about the contents of this message.
+constexpr size_t kPostHandshakeMsgPaddingGranularity = 256;
+// kFuturePostHandshakeMsgPaddingGranularity will be the granularity of the
+// padding added to the post-handshake message. This is currently only used for
+// testing.
+constexpr size_t kFuturePostHandshakeMsgPaddingGranularity = 512;
 
 }  // namespace cablev2
 }  // namespace device

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -31,23 +32,14 @@
 
 namespace {
 
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL FakeSearch() {
-  return GURL("https://www.fakesearch.com/");
-}
-
-GURL GoogleSearch() {
-  return GURL("https://www.google.com/");
-}
-
 class SearchEnginePreconnectorBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest,
       public predictors::PreconnectManager::Observer {
  public:
-  SearchEnginePreconnectorBrowserTest()
-      : subresource_filter::SubresourceFilterBrowserTest() {}
+  static constexpr char kFakeSearch[] = "https://www.fakesearch.com/";
+  static constexpr char kGoogleSearch[] = "https://www.google.com/";
 
+  SearchEnginePreconnectorBrowserTest() = default;
   ~SearchEnginePreconnectorBrowserTest() override = default;
 
   void SetUp() override {
@@ -58,8 +50,8 @@ class SearchEnginePreconnectorBrowserTest
     ASSERT_TRUE(https_server_->Start());
 
     preresolve_counts_[GetTestURL("/").GetOrigin()] = 0;
-    preresolve_counts_[GoogleSearch()] = 0;
-    preresolve_counts_[FakeSearch()] = 0;
+    preresolve_counts_[GURL(kGoogleSearch)] = 0;
+    preresolve_counts_[GURL(kFakeSearch)] = 0;
 
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
@@ -83,24 +75,26 @@ class SearchEnginePreconnectorBrowserTest
       const GURL& url,
       const net::NetworkIsolationKey& network_isolation_key,
       bool success) override {
-    if (!base::Contains(preresolve_counts_, url.GetOrigin())) {
+    const GURL origin = url.GetOrigin();
+    if (!base::Contains(preresolve_counts_, origin)) {
       return;
     }
 
     // Only the test URL should successfully preconnect.
-    EXPECT_EQ(url.GetOrigin() == GetTestURL("/").GetOrigin(), success);
+    EXPECT_EQ(origin == GetTestURL("/").GetOrigin(), success);
 
-    preresolve_counts_[url.GetOrigin()]++;
-    if (run_loops_[url.GetOrigin()])
-      run_loops_[url.GetOrigin()]->Quit();
+    ++preresolve_counts_[origin];
+    if (run_loops_[origin])
+      run_loops_[origin]->Quit();
   }
 
-  void WaitForPreresolveCountForURL(const GURL url, int expected_count) {
-    EXPECT_TRUE(base::Contains(preresolve_counts_, url.GetOrigin()));
-    while (preresolve_counts_[url.GetOrigin()] < expected_count) {
-      run_loops_[url.GetOrigin()] = std::make_unique<base::RunLoop>();
-      run_loops_[url.GetOrigin()]->Run();
-      run_loops_[url.GetOrigin()].reset();
+  void WaitForPreresolveCountForURL(const GURL& url, int expected_count) {
+    const GURL origin = url.GetOrigin();
+    EXPECT_TRUE(base::Contains(preresolve_counts_, origin));
+    while (preresolve_counts_[origin] < expected_count) {
+      run_loops_[origin] = std::make_unique<base::RunLoop>();
+      run_loops_[origin]->Run();
+      run_loops_[origin].reset();
     }
   }
 
@@ -122,18 +116,20 @@ class SearchEnginePreconnectorBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SearchEnginePreconnectorBrowserTest);
 };
 
+// static
+constexpr char SearchEnginePreconnectorBrowserTest::kFakeSearch[];
+constexpr char SearchEnginePreconnectorBrowserTest::kGoogleSearch[];
+
 class SearchEnginePreconnectorNoDelaysBrowserTest
     : public SearchEnginePreconnectorBrowserTest {
  public:
   SearchEnginePreconnectorNoDelaysBrowserTest() {
-    {
-      feature_list_.InitWithFeaturesAndParameters(
-          {{features::kPreconnectToSearch, {{"startup_delay_ms", "1000000"}}},
-           {features::kPreconnectToSearchNonGoogle, {{}}},
-           {net::features::kNetUnusedIdleSocketTimeout,
-            {{"unused_idle_socket_timeout_seconds", "0"}}}},
-          {});
-    }
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kPreconnectToSearch, {{"startup_delay_ms", "1000000"}}},
+         {features::kPreconnectToSearchNonGoogle, {{}}},
+         {net::features::kNetUnusedIdleSocketTimeout,
+          {{"unused_idle_socket_timeout_seconds", "0"}}}},
+        {});
   }
 
   ~SearchEnginePreconnectorNoDelaysBrowserTest() override = default;
@@ -151,9 +147,8 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
       ->search_engine_preconnector()
       ->StartPreconnecting(/*with_startup_delay=*/false);
   // Verifies that the default search is preconnected.
-  static const char kShortName[] = "test";
-  static const char kSearchURL[] =
-      "/anchors_different_area.html?q={searchTerms}";
+  constexpr char16_t kShortName[] = u"test";
+  constexpr char kSearchURL[] = "/anchors_different_area.html?q={searchTerms}";
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(model);
@@ -161,12 +156,13 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   // Check default URL is being preconnected and test URL is not.
-  WaitForPreresolveCountForURL(GoogleSearch(), 2);
-  EXPECT_EQ(2, preresolve_counts_[GoogleSearch().GetOrigin()]);
+  const GURL kDefaultUrl(kGoogleSearch);
+  WaitForPreresolveCountForURL(kDefaultUrl, 2);
+  EXPECT_EQ(2, preresolve_counts_[kDefaultUrl]);
   EXPECT_EQ(0, preresolve_counts_[GetTestURL("/").GetOrigin()]);
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -193,9 +189,8 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
                        PreconnectOnlyInForeground) {
-  static const char kShortName[] = "test";
-  static const char kSearchURL[] =
-      "/anchors_different_area.html?q={searchTerms}";
+  constexpr char16_t kShortName[] = u"test";
+  constexpr char kSearchURL[] = "/anchors_different_area.html?q={searchTerms}";
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(model);
@@ -203,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -216,9 +211,9 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
 
   TemplateURLData data_fake_search;
-  data_fake_search.SetShortName(base::ASCIIToUTF16(kShortName));
+  data_fake_search.SetShortName(kShortName);
   data_fake_search.SetKeyword(data.short_name());
-  data_fake_search.SetURL(FakeSearch().spec());
+  data_fake_search.SetURL(kFakeSearch);
 
   template_url = model->Add(std::make_unique<TemplateURL>(data_fake_search));
   ASSERT_TRUE(template_url);
@@ -229,10 +224,11 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
       Profile::FromBrowserContext(browser()->profile()))
       ->search_engine_preconnector()
       ->StartPreconnecting(/*with_startup_delay=*/false);
-  WaitForPreresolveCountForURL(FakeSearch(), 2);
+  const GURL search_url = template_url->GenerateSearchURL({});
+  WaitForPreresolveCountForURL(search_url, 2);
 
   // Preconnect should occur for fake search (2 since there are 2 NIKs).
-  EXPECT_EQ(2, preresolve_counts_[FakeSearch()]);
+  EXPECT_EQ(2, preresolve_counts_[search_url]);
 
   // No preconnects should have been issued for the test URL.
   EXPECT_EQ(0, preresolve_counts_[GetTestURL("/").GetOrigin()]);
@@ -288,7 +284,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 IN_PROC_BROWSER_TEST_P(SearchEnginePreconnectorForegroundBrowserTest,
                        PreconnectOnlyInForeground) {
   base::HistogramTester histogram_tester;
-  static const char kShortName[] = "test";
+  static const char16_t kShortName[] = u"test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
   static const char kSearchURLWithQuery[] =
@@ -301,7 +297,7 @@ IN_PROC_BROWSER_TEST_P(SearchEnginePreconnectorForegroundBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -314,9 +310,10 @@ IN_PROC_BROWSER_TEST_P(SearchEnginePreconnectorForegroundBrowserTest,
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
 
   TemplateURLData data_fake_search;
-  data_fake_search.SetShortName(base::ASCIIToUTF16(kShortName));
+  data_fake_search.SetShortName(kShortName);
   data_fake_search.SetKeyword(data.short_name());
-  data_fake_search.SetURL(FakeSearch().spec());
+  const GURL fake_search_url(kFakeSearch);
+  data_fake_search.SetURL(kFakeSearch);
 
   template_url = model->Add(std::make_unique<TemplateURL>(data_fake_search));
   ASSERT_TRUE(template_url);
@@ -340,13 +337,13 @@ IN_PROC_BROWSER_TEST_P(SearchEnginePreconnectorForegroundBrowserTest,
       ->StartPreconnecting(/*with_startup_delay=*/false);
 
   if (!skip_in_background() || load_page()) {
-    WaitForPreresolveCountForURL(FakeSearch(), 2);
+    WaitForPreresolveCountForURL(fake_search_url, 2);
   }
 
   // If preconnects are skipped in background and no web contents is in
   // foreground, then no preconnect should happen.
   EXPECT_EQ(skip_in_background() && !load_page() ? 0 : 2,
-            preresolve_counts_[FakeSearch()]);
+            preresolve_counts_[fake_search_url]);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.SearchEnginePreconnector."
       "IsBrowserAppLikelyInForeground",
@@ -360,14 +357,12 @@ class SearchEnginePreconnectorKeepSocketBrowserTest
     : public SearchEnginePreconnectorBrowserTest {
  public:
   SearchEnginePreconnectorKeepSocketBrowserTest() {
-    {
-      feature_list_.InitWithFeaturesAndParameters(
-          {{features::kPreconnectToSearch, {{"startup_delay_ms", "1000000"}}},
-           {features::kPreconnectToSearchNonGoogle, {{}}},
-           {net::features::kNetUnusedIdleSocketTimeout,
-            {{"unused_idle_socket_timeout_seconds", "60"}}}},
-          {});
-    }
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kPreconnectToSearch, {{"startup_delay_ms", "1000000"}}},
+         {features::kPreconnectToSearchNonGoogle, {{}}},
+         {net::features::kNetUnusedIdleSocketTimeout,
+          {{"unused_idle_socket_timeout_seconds", "60"}}}},
+        {});
   }
 
   ~SearchEnginePreconnectorKeepSocketBrowserTest() override = default;
@@ -379,11 +374,9 @@ class SearchEnginePreconnectorKeepSocketBrowserTest
 IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorKeepSocketBrowserTest,
                        SocketWarmForSearch) {
   // Verifies that a navigation to search will use a warm socket.
-  static const char kShortName[] = "test";
-  static const char kSearchURL[] =
-      "/anchors_different_area.html?q={searchTerms}";
-  static const char kSearchURLWithQuery[] =
-      "/anchors_different_area.html?q=porgs";
+  constexpr char16_t kShortName[] = u"test";
+  constexpr char kSearchURL[] = "/anchors_different_area.html?q={searchTerms}";
+  constexpr char kSearchURLWithQuery[] = "/anchors_different_area.html?q=porgs";
 
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
@@ -392,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorKeepSocketBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -430,13 +423,11 @@ class SearchEnginePreconnectorDesktopAutoStartBrowserTest
     : public SearchEnginePreconnectorBrowserTest {
  public:
   SearchEnginePreconnectorDesktopAutoStartBrowserTest() {
-    {
-      feature_list_.InitWithFeaturesAndParameters(
-          {{features::kPreconnectToSearch, {{"startup_delay_ms", "0"}}},
-           {net::features::kNetUnusedIdleSocketTimeout,
-            {{"unused_idle_socket_timeout_seconds", "0"}}}},
-          {});
-    }
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kPreconnectToSearch, {{"startup_delay_ms", "0"}}},
+         {net::features::kNetUnusedIdleSocketTimeout,
+          {{"unused_idle_socket_timeout_seconds", "0"}}}},
+        {});
   }
 
   ~SearchEnginePreconnectorDesktopAutoStartBrowserTest() override = default;
@@ -448,7 +439,7 @@ class SearchEnginePreconnectorDesktopAutoStartBrowserTest
 IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorDesktopAutoStartBrowserTest,
                        AutoStartDesktop) {
   // Verifies that the default search is preconnected.
-  WaitForPreresolveCountForURL(GoogleSearch(), 2);
+  WaitForPreresolveCountForURL(GURL(kGoogleSearch), 2);
 }
 
 class SearchEnginePreconnectorGoogleOnlyBrowserTest
@@ -474,9 +465,8 @@ class SearchEnginePreconnectorGoogleOnlyBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorGoogleOnlyBrowserTest,
                        GoogleOnly) {
-  static const char kShortName[] = "test";
-  static const char kSearchURL[] =
-      "/anchors_different_area.html?q={searchTerms}";
+  constexpr char16_t kShortName[] = u"test";
+  constexpr char kSearchURL[] = "/anchors_different_area.html?q={searchTerms}";
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(model);
@@ -484,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorGoogleOnlyBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -499,9 +489,9 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorGoogleOnlyBrowserTest,
       ->StartPreconnecting(/*with_startup_delay=*/false);
 
   TemplateURLData data_google_search;
-  data_google_search.SetShortName(base::ASCIIToUTF16(kShortName));
+  data_google_search.SetShortName(kShortName);
   data_google_search.SetKeyword(data.short_name());
-  data_google_search.SetURL(GoogleSearch().spec());
+  data_google_search.SetURL(kGoogleSearch);
 
   template_url = model->Add(std::make_unique<TemplateURL>(data_google_search));
   ASSERT_TRUE(template_url);
@@ -512,10 +502,11 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorGoogleOnlyBrowserTest,
       ->search_engine_preconnector()
       ->StartPreconnecting(/*with_startup_delay=*/false);
 
-  WaitForPreresolveCountForURL(GoogleSearch(), 2);
+  const GURL search_url = template_url->GenerateSearchURL({});
+  WaitForPreresolveCountForURL(search_url, 2);
 
   // Preconnect should occur for Google search (2 since there are 2 NIKs).
-  EXPECT_EQ(2, preresolve_counts_[GoogleSearch()]);
+  EXPECT_EQ(2, preresolve_counts_[search_url]);
 
   // No preconnects should have been issued for the test URL.
   EXPECT_EQ(0, preresolve_counts_[GetTestURL("/").GetOrigin()]);

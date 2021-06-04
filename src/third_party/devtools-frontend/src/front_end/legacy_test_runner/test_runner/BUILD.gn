@@ -12,9 +12,9 @@ devtools_module("test_runner") {
     "../../core/common:bundle",
     "../../core/protocol_client:bundle",
     "../../models/bindings:bundle",
-    "../../text_editor:bundle",
+    "../../models/workspace:bundle",
     "../../ui/legacy:bundle",
-    "../../workspace:bundle",
+    "../../ui/legacy/components/text_editor:bundle",
   ]
 }
 
@@ -22,4 +22,6 @@ devtools_entrypoint("bundle") {
   entrypoint = "test_runner.js"
 
   deps = [ ":test_runner" ]
+
+  visibility = [ "../*" ]
 }

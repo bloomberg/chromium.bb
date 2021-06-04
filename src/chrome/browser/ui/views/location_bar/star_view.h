@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class MenuRunner;
@@ -64,7 +64,7 @@ class StarView : public PageActionIconView,
 
   BooleanPrefMember edit_bookmarks_enabled_;
 
-  base::Optional<FeaturePromoController::PromoHandle>
+  absl::optional<FeaturePromoController::PromoHandle>
       reading_list_entry_point_promo_handle_;
 };
 

@@ -137,6 +137,12 @@ VideoTrackRecorderImpl::CodecProfile::CodecProfile(CodecId codec_id)
 
 VideoTrackRecorderImpl::CodecProfile::CodecProfile(
     CodecId codec_id,
+    absl::optional<media::VideoCodecProfile> opt_profile,
+    absl::optional<uint8_t> opt_level)
+    : codec_id(codec_id), profile(opt_profile), level(opt_level) {}
+
+VideoTrackRecorderImpl::CodecProfile::CodecProfile(
+    CodecId codec_id,
     media::VideoCodecProfile profile,
     uint8_t level)
     : codec_id(codec_id), profile(profile), level(level) {}
@@ -351,10 +357,8 @@ void VideoTrackRecorderImpl::Encoder::RetrieveFrameOnEncodingTaskRunner(
     attributes.support_grcontext = true;
 
     Platform::GraphicsInfo info;
-    bool using_gpu_compositing = true;
     encoder_thread_context_ = CreateContextProviderOnWorkerThread(
-        attributes, &info, &using_gpu_compositing,
-        KURL("chrome://VideoTrackRecorderImpl"));
+        attributes, &info, KURL("chrome://VideoTrackRecorderImpl"));
 
     if (encoder_thread_context_ &&
         !encoder_thread_context_->BindToCurrentThread()) {
@@ -679,7 +683,8 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::H264:
         encoder_ = base::MakeRefCounted<H264Encoder>(
-            on_encoded_video_cb, bits_per_second, main_task_runner_);
+            on_encoded_video_cb, codec_profile, bits_per_second,
+            main_task_runner_);
         break;
 #endif
       case CodecId::VP8:
@@ -799,7 +804,7 @@ void VideoTrackRecorderPassthrough::HandleEncodedVideoFrame(
   }
   state_ = KeyFrameState::kKeyFrameReceivedOK;
 
-  base::Optional<gfx::ColorSpace> color_space;
+  absl::optional<gfx::ColorSpace> color_space;
   if (encoded_frame->ColorSpace())
     color_space = encoded_frame->ColorSpace()->ToGfxColorSpace();
   auto span = encoded_frame->Data();

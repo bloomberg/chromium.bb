@@ -33,10 +33,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "net/base/load_flags.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -75,7 +77,7 @@ class NeverRunsExternalProtocolHandlerDelegate
       content::WebContents* web_contents,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const base::Optional<url::Origin>& initiating_origin) override {
+      const absl::optional<url::Origin>& initiating_origin) override {
     NOTREACHED();
   }
 
@@ -95,7 +97,7 @@ TestNoStatePrefetchContents::TestNoStatePrefetchContents(
     content::BrowserContext* browser_context,
     const GURL& url,
     const content::Referrer& referrer,
-    const base::Optional<url::Origin>& initiator_origin,
+    const absl::optional<url::Origin>& initiator_origin,
     Origin origin,
     FinalStatus expected_final_status,
     bool ignore_final_status)
@@ -108,8 +110,6 @@ TestNoStatePrefetchContents::TestNoStatePrefetchContents(
           initiator_origin,
           origin),
       expected_final_status_(expected_final_status),
-      observer_(this),
-      should_be_shown_(expected_final_status == FINAL_STATUS_USED),
       skip_final_checks_(ignore_final_status) {}
 
 TestNoStatePrefetchContents::~TestNoStatePrefetchContents() {
@@ -126,14 +126,12 @@ TestNoStatePrefetchContents::~TestNoStatePrefetchContents() {
   // NavigateToURLImpl().
   if (final_status() == FINAL_STATUS_USED)
     EXPECT_TRUE(new_main_frame_);
-
-  EXPECT_EQ(should_be_shown_, was_shown_);
 }
 
 bool TestNoStatePrefetchContents::CheckURL(const GURL& url) {
   // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
   // the PrerenderRendererCrash test.
-  if (url.spec() != content::kChromeUICrashURL)
+  if (url.spec() != blink::kChromeUICrashURL)
     return NoStatePrefetchContents::CheckURL(url);
   return true;
 }
@@ -145,7 +143,7 @@ void TestNoStatePrefetchContents::RenderFrameHostChanged(
   if (!new_frame_host->GetParent()) {
     // Used to make sure the main frame widget is hidden and, if used,
     // subsequently shown.
-    observer_.Add(new_frame_host->GetRenderWidgetHost());
+    observations_.AddObservation(new_frame_host->GetRenderWidgetHost());
     new_main_frame_ = new_frame_host;
   }
 
@@ -156,19 +154,13 @@ void TestNoStatePrefetchContents::RenderFrameHostChanged(
 void TestNoStatePrefetchContents::RenderWidgetHostVisibilityChanged(
     content::RenderWidgetHost* widget_host,
     bool became_visible) {
-  EXPECT_EQ(new_main_frame_->GetRenderWidgetHost(), widget_host);
-
-  if (became_visible) {
-    // A prerendered main frame should only be shown after being removed
-    // from the NoStatePrefetchContents for display.
-    EXPECT_FALSE(GetMainFrame());
-    was_shown_ = true;
-  }
+  // The NoStatePrefetchContents should never be visible.
+  NOTREACHED();
 }
 
 void TestNoStatePrefetchContents::RenderWidgetHostDestroyed(
     content::RenderWidgetHost* widget_host) {
-  observer_.Remove(widget_host);
+  observations_.RemoveObservation(widget_host);
 }
 
 DestructionWaiter::DestructionWaiter(
@@ -352,7 +344,7 @@ TestNoStatePrefetchContentsFactory::CreateNoStatePrefetchContents(
     content::BrowserContext* browser_context,
     const GURL& url,
     const content::Referrer& referrer,
-    const base::Optional<url::Origin>& initiator_origin,
+    const absl::optional<url::Origin>& initiator_origin,
     Origin origin) {
   ExpectedContents expected;
   if (!expected_contents_queue_.empty()) {
@@ -513,6 +505,7 @@ void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {
   https_src_server_->RegisterRequestMonitor(base::BindRepeating(
       &PrerenderInProcessBrowserTest::MonitorResourceRequest,
       base::Unretained(this)));
+  net::test_server::RegisterDefaultHandlers(https_src_server_.get());
   CHECK(https_src_server_->Start());
 }
 

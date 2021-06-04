@@ -90,6 +90,7 @@ rtc_library("rtp_packet_info") {
     ":scoped_refptr",
     "../rtc_base:rtc_base_approved",
     "../rtc_base/system:rtc_export",
+    "units:timestamp",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
@@ -160,6 +161,7 @@ rtc_library("libjingle_peerconnection_api") {
   ]
   deps = [
     ":array_view",
+    ":async_dns_resolver",
     ":audio_options_api",
     ":callfactory_api",
     ":fec_controller_api",
@@ -195,6 +197,7 @@ rtc_library("libjingle_peerconnection_api") {
     "units:data_rate",
     "units:timestamp",
     "video:encoded_image",
+    "video:video_bitrate_allocator_factory",
     "video:video_frame",
     "video:video_rtp_headers",
 
@@ -249,13 +252,21 @@ rtc_library("rtc_error") {
 rtc_source_set("packet_socket_factory") {
   visibility = [ "*" ]
   sources = [
-    "async_dns_resolver.h",
     "async_resolver_factory.h",
     "packet_socket_factory.h",
   ]
   deps = [
+    ":async_dns_resolver",
     "../rtc_base:async_resolver_interface",
     "../rtc_base:rtc_base",
+    "../rtc_base:socket_address",
+    "../rtc_base/system:rtc_export",
+  ]
+}
+
+rtc_source_set("async_dns_resolver") {
+  sources = [ "async_dns_resolver.h" ]
+  deps = [
     "../rtc_base:socket_address",
     "../rtc_base/system:rtc_export",
   ]
@@ -552,6 +563,7 @@ rtc_source_set("rtc_stats_api") {
 
   deps = [
     ":scoped_refptr",
+    "../api:refcountedbase",
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "../rtc_base/system:rtc_export",
@@ -673,7 +685,10 @@ rtc_source_set("array_view") {
 rtc_source_set("refcountedbase") {
   visibility = [ "*" ]
   sources = [ "ref_counted_base.h" ]
-  deps = [ "../rtc_base:rtc_base_approved" ]
+  deps = [
+    "../rtc_base:macromagic",
+    "../rtc_base:refcount",
+  ]
 }
 
 rtc_library("ice_transport_factory") {
@@ -940,6 +955,15 @@ if (rtc_include_tests) {
     ]
   }
 
+  rtc_source_set("mock_async_dns_resolver") {
+    testonly = true
+    sources = [ "test/mock_async_dns_resolver.h" ]
+    deps = [
+      ":async_dns_resolver",
+      "../test:test_support",
+    ]
+  }
+
   rtc_source_set("mock_rtp") {
     visibility = [ "*" ]
     testonly = true
@@ -1092,6 +1116,7 @@ if (rtc_include_tests) {
       ":dummy_peer_connection",
       ":fake_frame_decryptor",
       ":fake_frame_encryptor",
+      ":mock_async_dns_resolver",
       ":mock_audio_mixer",
       ":mock_data_channel",
       ":mock_frame_decryptor",

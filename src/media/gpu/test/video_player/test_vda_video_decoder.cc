@@ -323,7 +323,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   ASSERT_NE(timestamp_it, decode_start_timestamps_.end());
   video_frame->set_timestamp(timestamp_it->second);
 
-  scoped_refptr<VideoFrame> wrapped_video_frame = nullptr;
+  scoped_refptr<VideoFrame> wrapped_video_frame;
 
   // Wrap the video frame in another frame that calls ReusePictureBufferTask()
   // upon destruction. When the renderer and video frame processors are done
@@ -375,7 +375,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
 
 // static
 void TestVDAVideoDecoder::ReusePictureBufferThunk(
-    base::Optional<base::WeakPtr<TestVDAVideoDecoder>> vda_video_decoder,
+    absl::optional<base::WeakPtr<TestVDAVideoDecoder>> vda_video_decoder,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     int32_t picture_buffer_id) {
   DCHECK(vda_video_decoder);

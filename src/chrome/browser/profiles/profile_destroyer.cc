@@ -58,7 +58,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   profile->MaybeSendDestroyedNotification();
 
   if (!profile->IsOffTheRecord()) {
-    DestroyRegularProfileNow(profile);
+    DestroyOriginalProfileNow(profile);
     return;
   }
 
@@ -101,10 +101,10 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
 }
 
 // static
-void ProfileDestroyer::DestroyRegularProfileNow(Profile* const profile) {
+void ProfileDestroyer::DestroyOriginalProfileNow(Profile* const profile) {
   DCHECK(profile);
-  DCHECK(profile->IsRegularProfile());
-  TRACE_EVENT("shutdown", "ProfileDestroyer::DestroyRegularProfileNow",
+  DCHECK(!profile->IsOffTheRecord());
+  TRACE_EVENT("shutdown", "ProfileDestroyer::DestroyOriginalProfileNow",
               [&](perfetto::EventContext ctx) {
                 auto* proto =
                     ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>()
@@ -112,8 +112,10 @@ void ProfileDestroyer::DestroyRegularProfileNow(Profile* const profile) {
                 proto->set_profile_ptr(reinterpret_cast<uint64_t>(profile));
               });
 
+  HostSet all_profile_hosts = GetHostsForProfile(profile, true);
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose) &&
-      content::RenderProcessHost::run_renderer_in_process()) {
+      content::RenderProcessHost::run_renderer_in_process() &&
+      !all_profile_hosts.empty()) {
     // With DestroyProfileOnBrowserClose and --single-process, we need to clean
     // up the RPH first. Single-process mode does not support multiple Profiles,
     // so this will not interfere with other Profiles.
@@ -276,7 +278,8 @@ void ProfileDestroyer::DestroyProfile() {
 
 // static
 ProfileDestroyer::HostSet ProfileDestroyer::GetHostsForProfile(
-    void* const profile_ptr) {
+    void* const profile_ptr,
+    bool include_spare_rph) {
   HostSet hosts;
   for (content::RenderProcessHost::iterator iter(
         content::RenderProcessHost::AllHostsIterator());
@@ -288,7 +291,7 @@ ProfileDestroyer::HostSet ProfileDestroyer::GetHostsForProfile(
       continue;
 
     // Ignore the spare RenderProcessHost.
-    if (render_process_host->HostHasNotBeenUsed())
+    if (render_process_host->HostHasNotBeenUsed() && !include_spare_rph)
       continue;
 
     TRACE_EVENT(

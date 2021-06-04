@@ -12,8 +12,10 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -142,15 +144,17 @@ void ServiceWorkerRegisterJob::StartImpl() {
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      context_->registry()->GetUninstallingRegistration(scope_);
+      context_->registry()->GetUninstallingRegistration(
+          scope_, storage::StorageKey(url::Origin::Create(scope_)));
   if (registration.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(next_step),
                        blink::ServiceWorkerStatusCode::kOk, registration));
   else
-    context_->registry()->FindRegistrationForScope(scope_,
-                                                   std::move(next_step));
+    context_->registry()->FindRegistrationForScope(
+        scope_, storage::StorageKey(url::Origin::Create(scope_)),
+        std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {
@@ -370,6 +374,7 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
   context_->registry()->NotifyInstallingRegistration(registration());
   context_->registry()->CreateNewVersion(
       registration(), script_url_, worker_script_type_,
+      storage::StorageKey(url::Origin::Create(script_url_)),
       base::BindOnce(&ServiceWorkerRegisterJob::StartWorkerForUpdate,
                      weak_factory_.GetWeakPtr()));
 }
@@ -458,8 +463,13 @@ void ServiceWorkerRegisterJob::OnScriptFetchCompleted(
     // Null `main_script_load_params` means the main script failed to be loaded.
     // Use DeduceStartWorkerFailureReason() because it returns an error code
     // based on the main script's net error.
+    std::string message =
+        version->script_cache_map()->main_script_status_message();
+    if (message.empty())
+      message = ServiceWorkerConsts::kServiceWorkerFetchScriptError;
     Complete(version->DeduceStartWorkerFailureReason(
-        blink::ServiceWorkerStatusCode::kErrorFailed));
+                 blink::ServiceWorkerStatusCode::kErrorFailed),
+             message);
     return;
   }
   DCHECK(version->cross_origin_embedder_policy().has_value());
@@ -535,7 +545,9 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                          weak_factory_.GetWeakPtr());
     }
     context_->registry()->CreateNewVersion(
-        registration(), script_url_, worker_script_type_, std::move(next_task));
+        registration(), script_url_, worker_script_type_,
+        storage::StorageKey(url::Origin::Create(script_url_)),
+        std::move(next_task));
     return;
   }
 
@@ -751,7 +763,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
         registration()->NotifyRegistrationFailed();
         if (!registration()->is_deleted()) {
           context_->registry()->DeleteRegistration(
-              registration(), registration()->scope().GetOrigin(),
+              registration(), storage::StorageKey(registration()->origin()),
               base::DoNothing());
           context_->registry()->NotifyDoneUninstallingRegistration(
               registration(), ServiceWorkerRegistration::Status::kUninstalled);
@@ -811,7 +823,9 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingContainerHosts(
   // while they are in bfcache or after they are restored from bfcache.
   for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
            context_->GetClientContainerHostIterator(
-               registration->scope().GetOrigin(),
+               // TODO(crbug.com/1199077): Update this when
+               // ServiceWorkerRegistration implements StorageKey.
+               storage::StorageKey(registration->origin()),
                true /* include_reserved_clients */,
                true /* include_back_forward_cached_clients */);
        !it->IsAtEnd(); it->Advance()) {
@@ -855,7 +869,7 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
 
     if (registration()->newest_installed_version()) {
       context_->registry()->UpdateLastUpdateCheckTime(
-          registration()->id(), registration()->scope().GetOrigin(),
+          registration()->id(), storage::StorageKey(registration()->origin()),
           registration()->last_update_check(),
           base::BindOnce([](blink::ServiceWorkerStatusCode status) {
             // Ignore errors; bumping the update check time is just best-effort.

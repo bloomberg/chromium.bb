@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
@@ -101,7 +100,7 @@ class AuthenticationServiceTest : public PlatformTest {
   }
 
   void SetExpectationsForSignIn() {
-    EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup());
+    EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(0);
   }
 
   void StoreKnownAccountsWhileInForeground() {
@@ -167,7 +166,7 @@ class AuthenticationServiceTest : public PlatformTest {
   }
 
   ChromeIdentity* identity(NSUInteger index) {
-    return [identity_service()->GetAllIdentitiesSortedForDisplay()
+    return [identity_service()->GetAllIdentitiesSortedForDisplay(nullptr)
         objectAtIndex:index];
   }
 
@@ -657,7 +656,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
 
 TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
   // Sign in.
-  SetExpectationsForSignIn();
+  EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(0);
   authentication_service()->SignIn(identity(0));
 
   EXPECT_NSEQ(identity(0),
@@ -669,6 +668,7 @@ TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
   EXPECT_TRUE(authentication_service()->IsAuthenticated());
 
   // Grant Sync consent.
+  EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(1);
   EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
               SetSyncRequested(true));
   authentication_service()->GrantSyncConsent(identity(0));

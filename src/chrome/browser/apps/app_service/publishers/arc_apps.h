@@ -15,8 +15,7 @@
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/app_shortcut_item.h"
@@ -35,12 +34,14 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
 namespace apps {
 
 class AppServiceProxyChromeOs;
+class WebApkManager;
 
 // An app publisher (in the App Service sense) of ARC++ apps,
 //
@@ -146,7 +147,7 @@ class ArcApps : public KeyedService,
 
   // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated(
-      const base::Optional<std::string>& package_name) override;
+      const absl::optional<std::string>& package_name) override;
   void OnPreferredAppsChanged() override;
 
   // ash::ArcNotificationsHostInitializer::Observer overrides.
@@ -215,21 +216,25 @@ class ArcApps : public KeyedService,
   // Handles requesting app shortcuts from Android.
   std::unique_ptr<arc::ArcAppShortcutsRequest> arc_app_shortcuts_request_;
 
-  ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
-      arc_intent_helper_observer_{this};
+  std::unique_ptr<apps::WebApkManager> web_apk_manager_;
 
-  ScopedObserver<ash::ArcNotificationsHostInitializer,
-                 ash::ArcNotificationsHostInitializer::Observer>
-      notification_initializer_observer_{this};
+  base::ScopedObservation<arc::ArcIntentHelperBridge,
+                          arc::ArcIntentHelperObserver>
+      arc_intent_helper_observation_{this};
 
-  ScopedObserver<ash::ArcNotificationManagerBase,
-                 ash::ArcNotificationManagerBase::Observer>
-      notification_observer_{this};
+  base::ScopedObservation<ash::ArcNotificationsHostInitializer,
+                          ash::ArcNotificationsHostInitializer::Observer>
+      notification_initializer_observation_{this};
+
+  base::ScopedObservation<ash::ArcNotificationManagerBase,
+                          ash::ArcNotificationManagerBase::Observer>
+      notification_observation_{this};
 
   AppNotifications app_notifications_;
 
-  ScopedObserver<apps::InstanceRegistry, apps::InstanceRegistry::Observer>
-      instance_registry_observer_{this};
+  base::ScopedObservation<apps::InstanceRegistry,
+                          apps::InstanceRegistry::Observer>
+      instance_registry_observation_{this};
 
   bool settings_app_is_active_ = false;
 

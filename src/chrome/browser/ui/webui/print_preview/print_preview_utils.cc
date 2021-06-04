@@ -27,6 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/page_range.h"
+#include "printing/print_job_constants.h"
 
 namespace printing {
 
@@ -220,7 +221,7 @@ bool ParseSettings(const base::Value& settings,
     NOTREACHED();
     return false;
   }
-  base::Optional<base::Value> ticket_value =
+  absl::optional<base::Value> ticket_value =
       base::JSONReader::Read(*ticket_opt);
   if (!ticket_value)
     return false;

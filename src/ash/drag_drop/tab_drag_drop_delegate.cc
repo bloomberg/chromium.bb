@@ -5,6 +5,7 @@
 #include "ash/drag_drop/tab_drag_drop_delegate.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -20,6 +21,7 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect.h"
@@ -44,6 +46,14 @@ constexpr float kMinimumDragToSnapDistanceDp = 96.f;
 // has dragged the window to pass the |kIndicatorThresholdRatio| vertical
 // threshold.
 constexpr float kSourceWindowScale = 0.85;
+
+// The UMA histogram that records presentation time for tab dragging in
+// tablet mode with webui tab strip enable.
+constexpr char kTabDraggingInTabletModeHistogram[] =
+    "Ash.TabDrag.PresentationTime.TabletMode";
+
+constexpr char kTabDraggingInTabletModeMaxLatencyHistogram[] =
+    "Ash.TabDrag.PresentationTime.MaxLatency.TabletMode";
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsSourceWindowForDrag, false)
 
@@ -74,9 +84,16 @@ TabDragDropDelegate::TabDragDropDelegate(
   source_window_->SetProperty(kIsSourceWindowForDrag, true);
   split_view_drag_indicators_ =
       std::make_unique<SplitViewDragIndicators>(root_window_);
+
+  tab_dragging_recorder_ = CreatePresentationTimeHistogramRecorder(
+      source_window_->layer()->GetCompositor(),
+      kTabDraggingInTabletModeHistogram,
+      kTabDraggingInTabletModeMaxLatencyHistogram);
 }
 
 TabDragDropDelegate::~TabDragDropDelegate() {
+  tab_dragging_recorder_.reset();
+
   if (!source_window_->GetProperty(kIsSourceWindowForDrag))
     return;
 
@@ -108,10 +125,14 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
           snap_position));
 
   UpdateSourceWindowBoundsIfNecessary(snap_position);
+
+  tab_dragging_recorder_->RequestNext();
 }
 
 void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
                                const ui::OSExchangeData& drop_data) {
+  tab_dragging_recorder_.reset();
+
   aura::Window* const new_window =
       Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(source_window_,
                                                               drop_data);

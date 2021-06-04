@@ -69,6 +69,19 @@ bool MockIMEInputContextHandler::SetAutocorrectRange(const gfx::Range& range) {
   return true;
 }
 
+bool MockIMEInputContextHandler::ClearGrammarFragments(
+    const gfx::Range& range) {
+  grammar_fragments_.clear();
+  return true;
+}
+
+bool MockIMEInputContextHandler::AddGrammarFragments(
+    const std::vector<GrammarFragment>& fragments) {
+  grammar_fragments_.insert(grammar_fragments_.end(), fragments.begin(),
+                            fragments.end());
+  return true;
+}
+
 bool MockIMEInputContextHandler::SetSelectionRange(uint32_t start,
                                                    uint32_t end) {
   ++set_selection_range_call_count_;
@@ -121,6 +134,10 @@ void MockIMEInputContextHandler::ConfirmCompositionText(bool reset_engine,
 
 bool MockIMEInputContextHandler::HasCompositionText() {
   return !last_update_composition_arg_.composition_text.text.empty();
+}
+
+ukm::SourceId MockIMEInputContextHandler::GetClientSourceForMetrics() {
+  return ukm::kInvalidSourceId;
 }
 
 }  // namespace ui

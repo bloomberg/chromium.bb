@@ -8,10 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -23,12 +24,14 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace optimization_guide {
 
@@ -73,7 +76,7 @@ class TestConsumer : public PageTextObserver::Consumer {
 
   bool was_called() const { return was_called_; }
 
-  base::Optional<PageTextDumpResult> result() {
+  absl::optional<PageTextDumpResult> result() {
     return base::OptionalFromPtr(result_.get());
   }
 
@@ -281,6 +284,12 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, FirstLayoutAndOnLoad) {
 }
 
 IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFAMPSubframe) {
+  if (content::IsIsolatedOriginRequiredToGuaranteeDedicatedProcess()) {
+    // Isolate b.com so that it is guaranteed to be in a different process.
+    content::IsolateOriginsForTesting(
+        embedded_test_server(),
+        browser()->tab_strip_model()->GetActiveWebContents(), {"b.com"});
+  }
   PageTextObserver::CreateForWebContents(web_contents());
   ASSERT_TRUE(observer());
 
@@ -330,7 +339,13 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFAMPSubframe) {
       }));
 }
 
-IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFNotAmpSubframe) {
+// Disable due to flaky. https://crbug.com/1206352
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_OOPIFNotAmpSubframe DISABLED_OOPIFNotAmpSubframe
+#else
+#define MAYBE_OOPIFNotAmpSubframe OOPIFNotAmpSubframe
+#endif  // defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, MAYBE_OOPIFNotAmpSubframe) {
   PageTextObserver::CreateForWebContents(web_contents());
   ASSERT_TRUE(observer());
 

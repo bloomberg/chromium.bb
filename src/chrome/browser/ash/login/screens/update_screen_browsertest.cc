@@ -9,7 +9,6 @@
 #include "ash/constants/ash_features.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -37,10 +36,10 @@
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kStubWifiGuid[] = "wlan0";
@@ -103,8 +102,6 @@ chromeos::OobeUI* GetOobeUI() {
   return host ? host->GetOobeUI() : nullptr;
 }
 
-}  // namespace
-
 // TODO(https://crbug.com/1161276) Merge BetterUpdateScreenTest into
 // UpdateScreenTest.
 class UpdateScreenTest : public OobeBaseTest {
@@ -161,7 +158,7 @@ class UpdateScreenTest : public OobeBaseTest {
 
   base::HistogramTester histogram_tester_;
 
-  base::Optional<UpdateScreen::Result> last_screen_result_;
+  absl::optional<UpdateScreen::Result> last_screen_result_;
 
  private:
   void HandleScreenExit(UpdateScreen::Result result) {
@@ -1032,4 +1029,5 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularShown) {
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

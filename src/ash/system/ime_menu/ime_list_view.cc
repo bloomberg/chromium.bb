@@ -18,12 +18,15 @@
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -33,7 +36,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -57,7 +59,7 @@ class ImeListItemView : public ActionableView {
       : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
@@ -183,7 +185,7 @@ class KeyboardStatusRow : public views::View {
     tri_view->AddView(TriView::Container::CENTER, label);
 
     // The on-screen keyboard toggle button.
-    toggle_ = TrayPopupUtils::CreateToggleButton(
+    toggle_ = new TrayToggleButton(
         std::move(callback),
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
     toggle_->SetIsOn(keyboard::IsKeyboardEnabled());
@@ -383,6 +385,8 @@ ImeListViewTestApi::ImeListViewTestApi(ImeListView* ime_list_view)
 ImeListViewTestApi::~ImeListViewTestApi() = default;
 
 views::View* ImeListViewTestApi::GetToggleView() const {
+  if (!ime_list_view_->keyboard_status_row_)
+    return nullptr;
   return ime_list_view_->keyboard_status_row_->toggle();
 }
 

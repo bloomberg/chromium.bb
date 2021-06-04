@@ -23,6 +23,8 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/device_api/managed_configuration_api.h"
 #include "chrome/browser/device_api/managed_configuration_api_factory.h"
+#include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,13 +43,15 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
@@ -170,6 +174,7 @@ const char kManagementReportExtensions[] = "managementReportExtensions";
 const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
 const char kManagementReportPrintJobs[] = "managementReportPrintJobs";
+const char kManagementReportDlpEvents[] = "managementReportDlpEvents";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
 const char kManagementCrostiniContainerConfiguration[] =
@@ -217,7 +222,8 @@ enum class DeviceReportingType {
   kCrostini,
   kUsername,
   kExtensions,
-  kAndroidApplication
+  kAndroidApplication,
+  kDlpEvents
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -249,6 +255,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "extension";
     case DeviceReportingType::kAndroidApplication:
       return "android application";
+    case DeviceReportingType::kDlpEvents:
+      return "dlp events";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -326,10 +334,19 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
   }
 }
 
+void AddThreatProtectionPermission(const char* title,
+                                   const char* permission,
+                                   base::Value* info) {
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetStringKey("title", title);
+  value.SetStringKey("permission", permission);
+  info->Append(std::move(value));
+}
+
 }  // namespace
 
 std::string ManagementUIHandler::GetAccountManager(Profile* profile) {
-  base::Optional<std::string> account_manager =
+  absl::optional<std::string> account_manager =
       chrome::GetAccountManagerIdentity(profile);
   return account_manager ? *account_manager : std::string();
 }
@@ -518,6 +535,10 @@ ManagementUIHandler::GetDeviceCloudPolicyManager() const {
   return connector->GetDeviceCloudPolicyManager();
 }
 
+const policy::DlpRulesManager* ManagementUIHandler::GetDlpRulesManager() const {
+  return policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+}
+
 void ManagementUIHandler::AddDeviceReportingInfo(
     base::Value* report_sources,
     const policy::StatusCollector* collector,
@@ -572,6 +593,11 @@ void ManagementUIHandler::AddDeviceReportingInfo(
   if (report_print_username && !report_print_jobs) {
     AddDeviceReportingElement(report_sources, kManagementPrinting,
                               DeviceReportingType::kPrint);
+  }
+
+  if (GetDlpRulesManager() && GetDlpRulesManager()->IsReportingEnabled()) {
+    AddDeviceReportingElement(report_sources, kManagementReportDlpEvents,
+                              DeviceReportingType::kDlpEvents);
   }
 
   if (crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
@@ -741,62 +767,44 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
   return response;
 }
 
-base::Value ManagementUIHandler::GetThreatProtectionInfo(
-    Profile* profile) const {
+base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
   base::Value info(base::Value::Type::LIST);
-  const policy::PolicyService* policy_service = GetPolicyService();
-  const auto& chrome_policies = policy_service->GetPolicies(
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
 
-  auto* on_file_attached =
-      chrome_policies.GetValue(policy::key::kOnFileAttachedEnterpriseConnector);
-  if (on_file_attached && on_file_attached->is_list() &&
-      !on_file_attached->GetList().empty()) {
-    base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementOnFileAttachedEvent);
-    value.SetStringKey("permission", kManagementOnFileAttachedVisibleData);
-    info.Append(std::move(value));
+  constexpr struct {
+    enterprise_connectors::AnalysisConnector connector;
+    const char* title;
+    const char* permission;
+  } analysis_connector_permissions[] = {
+      {enterprise_connectors::FILE_ATTACHED, kManagementOnFileAttachedEvent,
+       kManagementOnFileAttachedVisibleData},
+      {enterprise_connectors::FILE_DOWNLOADED, kManagementOnFileDownloadedEvent,
+       kManagementOnFileDownloadedVisibleData},
+      {enterprise_connectors::BULK_DATA_ENTRY, kManagementOnBulkDataEntryEvent,
+       kManagementOnBulkDataEntryVisibleData},
+  };
+  auto* connectors_service =
+      enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+          profile);
+  for (auto& entry : analysis_connector_permissions) {
+    if (!connectors_service->GetAnalysisServiceProviderNames(entry.connector)
+             .empty()) {
+      AddThreatProtectionPermission(entry.title, entry.permission, &info);
+    }
   }
 
-  auto* on_file_downloaded = chrome_policies.GetValue(
-      policy::key::kOnFileDownloadedEnterpriseConnector);
-  if (on_file_downloaded && on_file_downloaded->is_list() &&
-      !on_file_downloaded->GetList().empty()) {
-    base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementOnFileDownloadedEvent);
-    value.SetStringKey("permission", kManagementOnFileDownloadedVisibleData);
-    info.Append(std::move(value));
+  if (!connectors_service
+           ->GetReportingServiceProviderNames(
+               enterprise_connectors::ReportingConnector::SECURITY_EVENT)
+           .empty()) {
+    AddThreatProtectionPermission(kManagementEnterpriseReportingEvent,
+                                  kManagementEnterpriseReportingVisibleData,
+                                  &info);
   }
 
-  auto* on_bulk_data_entry = chrome_policies.GetValue(
-      policy::key::kOnBulkDataEntryEnterpriseConnector);
-  if (on_bulk_data_entry && on_bulk_data_entry->is_list() &&
-      !on_bulk_data_entry->GetList().empty()) {
-    base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementOnBulkDataEntryEvent);
-    value.SetStringKey("permission", kManagementOnBulkDataEntryVisibleData);
-    info.Append(std::move(value));
-  }
-
-  auto* on_security_event = chrome_policies.GetValue(
-      policy::key::kOnSecurityEventEnterpriseConnector);
-  if (on_security_event && on_security_event->is_list() &&
-      !on_security_event->GetList().empty()) {
-    base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementEnterpriseReportingEvent);
-    value.SetStringKey("permission", kManagementEnterpriseReportingVisibleData);
-    info.Append(std::move(value));
-  }
-
-  auto* on_page_visited_event =
-      chrome_policies.GetValue(policy::key::kEnterpriseRealTimeUrlCheckMode);
-  if (on_page_visited_event && on_page_visited_event->is_int() &&
-      on_page_visited_event->GetInt() !=
-          safe_browsing::REAL_TIME_CHECK_DISABLED) {
-    base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementOnPageVisitedEvent);
-    value.SetStringKey("permission", kManagementOnPageVisitedVisibleData);
-    info.Append(std::move(value));
+  if (connectors_service->GetAppliedRealTimeUrlCheck() !=
+      safe_browsing::REAL_TIME_CHECK_DISABLED) {
+    AddThreatProtectionPermission(kManagementOnPageVisitedEvent,
+                                  kManagementOnPageVisitedVisibleData, &info);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -835,7 +843,7 @@ base::Value ManagementUIHandler::GetManagedWebsitesInfo(
   return managed_websites;
 }
 
-policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
+policy::PolicyService* ManagementUIHandler::GetPolicyService() {
   return Profile::FromWebUI(web_ui())
       ->GetProfilePolicyConnector()
       ->policy_service();
@@ -852,10 +860,9 @@ void ManagementUIHandler::AsyncUpdateLogo() {
     icon_fetcher_->Init(std::string(), net::ReferrerPolicy::NEVER_CLEAR,
                         network::mojom::CredentialsMode::kOmit);
     auto* profile = Profile::FromWebUI(web_ui());
-    icon_fetcher_->Start(
-        content::BrowserContext::GetDefaultStoragePartition(profile)
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get());
+    icon_fetcher_->Start(profile->GetDefaultStoragePartition()
+                             ->GetURLLoaderFactoryForBrowserProcess()
+                             .get());
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }

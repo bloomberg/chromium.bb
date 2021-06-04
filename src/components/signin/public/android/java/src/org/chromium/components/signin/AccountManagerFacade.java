@@ -14,9 +14,10 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import com.google.common.base.Optional;
+
 import org.chromium.base.Callback;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,18 +49,7 @@ public interface AccountManagerFacade {
     void removeObserver(AccountsChangeObserver observer);
 
     /**
-     * Runs a callback after the account list cache is populated. In the callback
-     * {@link #getGoogleAccounts()} and similar methods are guaranteed to return instantly
-     * (without blocking and waiting for the cache to be populated). If the cache has already
-     * been populated, the callback will be posted on UI thread.
-     * @param runnable The callback to call after cache is populated. Invoked on the main
-     *         thread.
-     */
-    @MainThread
-    void runAfterCacheIsPopulated(Runnable runnable);
-
-    /**
-     * Returns whether the account cache has already been populated. {@link #getGoogleAccounts()}
+     * Returns whether the account cache has already been populated. {@link #tryGetGoogleAccounts()}
      * and similar methods will return instantly if the cache has been populated, otherwise these
      * methods may block waiting for the cache to be populated.
      */
@@ -67,41 +57,27 @@ public interface AccountManagerFacade {
     boolean isCachePopulated();
 
     /**
-     * Gets Google account names asynchronously.
-     * Retrieves all Google accounts on the device.
-     *
-     * @throws AccountManagerDelegateException if Google Play Services are out of date,
-     *         Chrome lacks necessary permissions, etc.
+     * Retrieves all Google accounts on the device from the cache.
+     * Returns an empty array if an error occurs while getting account list.
+     * If the cache is not yet populated, the optional will be empty.
      */
     @AnyThread
-    List<Account> getGoogleAccounts() throws AccountManagerDelegateException;
+    Optional<List<Account>> getGoogleAccounts();
+
+    /**
+     * Retrieves all Google accounts on the device.
+     * Returns an empty array if an error occurs while getting account list.
+     * This method is blocking, use {@link #getGoogleAccounts()} instead.
+     */
+    @AnyThread
+    @Deprecated
+    List<Account> tryGetGoogleAccounts();
 
     /**
      * Asynchronous version of {@link #getGoogleAccounts()}.
      */
     @MainThread
-    void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback);
-
-    /**
-     * Retrieves all Google accounts on the device.
-     * Returns an empty array if an error occurs while getting account list.
-     */
-    @AnyThread
-    default List<Account> tryGetGoogleAccounts() {
-        try {
-            return getGoogleAccounts();
-        } catch (AccountManagerDelegateException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetGoogleAccounts()}.
-     */
-    @MainThread
-    default void tryGetGoogleAccounts(final Callback<List<Account>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccounts()));
-    }
+    void tryGetGoogleAccounts(final Callback<List<Account>> callback);
 
     /**
      * @return Whether or not there is an account authenticator for Google accounts.
@@ -137,6 +113,12 @@ public interface AccountManagerFacade {
     void checkChildAccountStatus(Account account, ChildAccountStatusListener listener);
 
     /**
+     * Gets the boolean for whether the account is subject to minor mode restrictions.
+     * If the result is not yet fetched, the optional will be empty.
+     */
+    Optional<Boolean> isAccountSubjectToMinorModeRestrictions(Account account);
+
+    /**
      * Creates an intent that will ask the user to add a new account to the device. See
      * {@link AccountManager#addAccount} for details.
      * @param callback The callback to get the created intent. Will be invoked on the main
@@ -161,14 +143,6 @@ public interface AccountManagerFacade {
     @MainThread
     @Nullable
     ProfileDataSource getProfileDataSource();
-
-    /**
-     * Executes the callback after all pending account list updates finish. If there are no
-     * pending account list updates, executes the callback right away.
-     * @param callback the callback to be executed
-     */
-    @MainThread
-    void waitForPendingUpdates(Runnable callback);
 
     /**
      * Returns the Gaia id for the account associated with the given email address.

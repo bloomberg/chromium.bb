@@ -31,6 +31,18 @@ constexpr char kVisibleOnAllWorkspacesKey[] = "all_desk";
 constexpr char kRestoreBoundsKey[] = "restore_bounds";
 constexpr char kCurrentBoundsKey[] = "current_bounds";
 constexpr char kWindowStateTypeKey[] = "window_state_type";
+constexpr char kMinimumSizeKey[] = "min_size";
+constexpr char kMaximumSizeKey[] = "max_size";
+constexpr char kPrimaryColorKey[] = "primary_color";
+constexpr char kStatusBarColorKey[] = "status_bar_color";
+
+// Converts |size| to base::Value, e.g. { 100, 300 }.
+base::Value ConvertSizeToValue(const gfx::Size& size) {
+  base::Value size_list(base::Value::Type::LIST);
+  size_list.Append(base::Value(size.width()));
+  size_list.Append(base::Value(size.height()));
+  return size_list;
+}
 
 // Converts |rect| to base::Value, e.g. { 0, 100, 200, 300 }.
 base::Value ConvertRectToValue(const gfx::Rect& rect) {
@@ -42,25 +54,42 @@ base::Value ConvertRectToValue(const gfx::Rect& rect) {
   return rect_list;
 }
 
+// Converts |uint32_t| to base::Value in string, e.g 123 to "123".
+base::Value ConvertUintToValue(uint32_t number) {
+  return base::Value(base::NumberToString(number));
+}
+
 // Gets bool value from base::DictionaryValue, e.g. { "key": true } returns
 // true.
-base::Optional<bool> GetBoolValueFromDict(const base::DictionaryValue& dict,
+absl::optional<bool> GetBoolValueFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name) {
-  return dict.HasKey(key_name) ? dict.FindBoolKey(key_name) : base::nullopt;
+  return dict.HasKey(key_name) ? dict.FindBoolKey(key_name) : absl::nullopt;
 }
 
 // Gets int value from base::DictionaryValue, e.g. { "key": 100 } returns 100.
-base::Optional<int32_t> GetIntValueFromDict(const base::DictionaryValue& dict,
+absl::optional<int32_t> GetIntValueFromDict(const base::DictionaryValue& dict,
                                             const std::string& key_name) {
-  return dict.HasKey(key_name) ? dict.FindIntKey(key_name) : base::nullopt;
+  return dict.HasKey(key_name) ? dict.FindIntKey(key_name) : absl::nullopt;
+}
+
+// Gets uint32_t value from base::DictionaryValue, e.g. { "key": "123" } returns
+// 123.
+absl::optional<uint32_t> GetUIntValueFromDict(const base::DictionaryValue& dict,
+                                              const std::string& key_name) {
+  uint32_t result = 0;
+  if (!dict.HasKey(key_name) ||
+      !base::StringToUint(dict.FindStringKey(key_name)->c_str(), &result)) {
+    return absl::nullopt;
+  }
+  return result;
 }
 
 // Gets display id from base::DictionaryValue, e.g. { "display_id": "22000000" }
 // returns 22000000.
-base::Optional<int64_t> GetDisplayIdFromDict(
+absl::optional<int64_t> GetDisplayIdFromDict(
     const base::DictionaryValue& dict) {
   if (!dict.HasKey(kDisplayIdKey))
-    return base::nullopt;
+    return absl::nullopt;
 
   const std::string* display_id_str = dict.FindStringKey(kDisplayIdKey);
   int64_t display_id_value;
@@ -69,21 +98,21 @@ base::Optional<int64_t> GetDisplayIdFromDict(
     return display_id_value;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // Gets std::vector<base::FilePath> from base::DictionaryValue, e.g.
 // {"file_paths": { "aa.cc", "bb.h", ... }} returns
 // std::vector<base::FilePath>{"aa.cc", "bb.h", ...}.
-base::Optional<std::vector<base::FilePath>> GetFilePathsFromDict(
+absl::optional<std::vector<base::FilePath>> GetFilePathsFromDict(
     const base::DictionaryValue& dict) {
   if (!dict.HasKey(kFilePathsKey))
-    return base::nullopt;
+    return absl::nullopt;
 
   const base::Value* file_paths_value = dict.FindListKey(kFilePathsKey);
   if (!file_paths_value || !file_paths_value->is_list() ||
       file_paths_value->GetList().empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   std::vector<base::FilePath> file_paths;
   for (const auto& item : file_paths_value->GetList()) {
@@ -95,36 +124,56 @@ base::Optional<std::vector<base::FilePath>> GetFilePathsFromDict(
   return file_paths;
 }
 
+// Gets gfx::Size from base::Value, e.g. { 100, 300 } returns
+// gfx::Size(100, 300).
+absl::optional<gfx::Size> GetSizeFromDict(const base::DictionaryValue& dict,
+                                          const std::string& key_name) {
+  if (!dict.HasKey(key_name))
+    return absl::nullopt;
+
+  const base::Value* size_value = dict.FindListKey(key_name);
+  if (!size_value || !size_value->is_list() ||
+      size_value->GetList().size() != 2) {
+    return absl::nullopt;
+  }
+
+  std::vector<int> size;
+  for (const auto& item : size_value->GetList())
+    size.push_back(item.GetInt());
+
+  return gfx::Size(size[0], size[1]);
+}
+
 // Gets gfx::Rect from base::Value, e.g. { 0, 100, 200, 300 } returns
 // gfx::Rect(0, 100, 200, 300).
-base::Optional<gfx::Rect> GetBoundsRectFromDict(
+absl::optional<gfx::Rect> GetBoundsRectFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
   if (!dict.HasKey(key_name))
-    return base::nullopt;
+    return absl::nullopt;
 
   const base::Value* rect_value = dict.FindListKey(key_name);
   if (!rect_value || !rect_value->is_list() || rect_value->GetList().empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   std::vector<int> rect;
   for (const auto& item : rect_value->GetList())
     rect.push_back(item.GetInt());
 
   if (rect.size() != 4)
-    return base::nullopt;
+    return absl::nullopt;
 
   return gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
 }
 
 // Gets WindowStateType from base::DictionaryValue, e.g. { "window_state_type":
 // 2 } returns WindowStateType::kMinimized.
-base::Optional<chromeos::WindowStateType> GetWindowStateTypeFromDict(
+absl::optional<chromeos::WindowStateType> GetWindowStateTypeFromDict(
     const base::DictionaryValue& dict) {
   return dict.HasKey(kWindowStateTypeKey)
-             ? base::make_optional(static_cast<chromeos::WindowStateType>(
+             ? absl::make_optional(static_cast<chromeos::WindowStateType>(
                    dict.FindIntKey(kWindowStateTypeKey).value()))
-             : base::nullopt;
+             : absl::nullopt;
 }
 
 }  // namespace
@@ -152,6 +201,10 @@ AppRestoreData::AppRestoreData(base::Value&& value) {
   restore_bounds = GetBoundsRectFromDict(*data_dict, kRestoreBoundsKey);
   current_bounds = GetBoundsRectFromDict(*data_dict, kCurrentBoundsKey);
   window_state_type = GetWindowStateTypeFromDict(*data_dict);
+  maximum_size = GetSizeFromDict(*data_dict, kMaximumSizeKey);
+  minimum_size = GetSizeFromDict(*data_dict, kMinimumSizeKey);
+  primary_color = GetUIntValueFromDict(*data_dict, kPrimaryColorKey);
+  status_bar_color = GetUIntValueFromDict(*data_dict, kStatusBarColorKey);
 
   if (data_dict->HasKey(kIntentKey)) {
     intent = apps_util::ConvertValueToIntent(
@@ -216,6 +269,18 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (window_state_type.has_value())
     data->window_state_type = window_state_type.value();
 
+  if (maximum_size.has_value())
+    data->maximum_size = maximum_size.value();
+
+  if (minimum_size.has_value())
+    data->minimum_size = minimum_size.value();
+
+  if (primary_color.has_value())
+    data->primary_color = primary_color.value();
+
+  if (status_bar_color.has_value())
+    data->status_bar_color = status_bar_color.value();
+
   return data;
 }
 
@@ -277,6 +342,26 @@ base::Value AppRestoreData::ConvertToValue() const {
                                static_cast<int>(window_state_type.value()));
   }
 
+  if (maximum_size.has_value()) {
+    launch_info_dict.SetKey(kMaximumSizeKey,
+                            ConvertSizeToValue(maximum_size.value()));
+  }
+
+  if (minimum_size.has_value()) {
+    launch_info_dict.SetKey(kMinimumSizeKey,
+                            ConvertSizeToValue(minimum_size.value()));
+  }
+
+  if (primary_color.has_value()) {
+    launch_info_dict.SetKey(kPrimaryColorKey,
+                            ConvertUintToValue(primary_color.value()));
+  }
+
+  if (status_bar_color.has_value()) {
+    launch_info_dict.SetKey(kStatusBarColorKey,
+                            ConvertUintToValue(status_bar_color.value()));
+  }
+
   return launch_info_dict;
 }
 
@@ -301,6 +386,17 @@ void AppRestoreData::ModifyWindowInfo(const WindowInfo& window_info) {
 
   if (window_info.display_id.has_value())
     display_id = window_info.display_id.value();
+
+  if (window_info.arc_extra_info.has_value()) {
+    minimum_size = window_info.arc_extra_info->minimum_size;
+    maximum_size = window_info.arc_extra_info->maximum_size;
+  }
+}
+
+void AppRestoreData::ModifyThemeColor(uint32_t window_primary_color,
+                                      uint32_t window_status_bar_color) {
+  primary_color = window_primary_color;
+  status_bar_color = window_status_bar_color;
 }
 
 void AppRestoreData::ClearWindowInfo() {
@@ -310,6 +406,10 @@ void AppRestoreData::ClearWindowInfo() {
   restore_bounds.reset();
   current_bounds.reset();
   window_state_type.reset();
+  minimum_size.reset();
+  maximum_size.reset();
+  primary_color.reset();
+  status_bar_color.reset();
 }
 
 std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {
@@ -332,6 +432,12 @@ std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {
 
   if (window_state_type.has_value())
     window_info->window_state_type = window_state_type.value();
+
+  if (maximum_size.has_value() || minimum_size.has_value()) {
+    window_info->arc_extra_info = WindowInfo::ArcExtraInfo();
+    window_info->arc_extra_info->maximum_size = maximum_size;
+    window_info->arc_extra_info->minimum_size = minimum_size;
+  }
 
   // Display id is set as the app launch parameter, so we don't need to return
   // the display id to restore the display id.

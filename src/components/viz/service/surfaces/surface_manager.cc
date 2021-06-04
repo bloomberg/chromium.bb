@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -35,7 +36,7 @@ constexpr base::TimeDelta kExpireInterval = base::TimeDelta::FromSeconds(10);
 
 SurfaceManager::SurfaceManager(
     SurfaceManagerDelegate* delegate,
-    base::Optional<uint32_t> activation_deadline_in_frames)
+    absl::optional<uint32_t> activation_deadline_in_frames)
     : delegate_(delegate),
       activation_deadline_in_frames_(activation_deadline_in_frames),
       root_surface_id_(FrameSinkId(0u, 0u),
@@ -83,7 +84,7 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 #endif
 
 void SurfaceManager::SetActivationDeadlineInFramesForTesting(
-    base::Optional<uint32_t> activation_deadline_in_frames) {
+    absl::optional<uint32_t> activation_deadline_in_frames) {
   activation_deadline_in_frames_ = activation_deadline_in_frames;
 }
 
@@ -453,6 +454,11 @@ void SurfaceManager::SurfaceActivated(Surface* surface) {
   if (!SurfaceModified(surface->surface_id(), metadata.begin_frame_ack)) {
     TRACE_EVENT_INSTANT0("viz", "Damage not visible.",
                          TRACE_EVENT_SCOPE_THREAD);
+    surface->SendAckToClient();
+  } else if (HasBlockedEmbedder(surface->surface_id().frame_sink_id())) {
+    // If the Surface is a part of a blocked embedding group, Ack even if it is
+    // modified. This will allow frame production to continue for this client
+    // leading to the group being unblocked.
     surface->SendAckToClient();
   }
 

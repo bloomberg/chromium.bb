@@ -30,6 +30,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
@@ -358,8 +359,10 @@ public final class TabImpl extends ITab.Stub {
             if (mBrowser.getContext() == null) {
                 // The Context and ViewContainer in which Autofill was previously operating have
                 // gone away, so tear down |mAutofillProvider|.
-                mAutofillProvider = null;
-                TabImplJni.get().onAutofillProviderChanged(mNativeTab, null);
+                if (mAutofillProvider != null) {
+                    mAutofillProvider.destroy();
+                    mAutofillProvider = null;
+                }
                 selectionController.setNonSelectionActionModeCallback(null);
             } else {
                 if (mAutofillProvider == null) {
@@ -367,8 +370,9 @@ public final class TabImpl extends ITab.Stub {
                     // the context won't change unless it is first nulled out, since the fragment
                     // must be detached before it can be reattached to a new Context.
                     mAutofillProvider = new AutofillProvider(mBrowser.getContext(),
-                            mBrowser.getViewAndroidDelegateContainerView(), "WebLayer");
-                    TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
+                            mBrowser.getViewAndroidDelegateContainerView(), mWebContents,
+                            "WebLayer");
+                    TabImplJni.get().initializeAutofillIfNecessary(mNativeTab);
                 }
                 mAutofillProvider.onContainerViewChanged(
                         mBrowser.getViewAndroidDelegateContainerView());
@@ -501,6 +505,11 @@ public final class TabImpl extends ITab.Stub {
         String url = loadUrlParams.getUrl();
         if (url == null || url.isEmpty()) return;
 
+        // TODO(https://crbug.com/783819): Don't fix up all URLs. Documentation on FixupURL
+        // explicitly says not to use it on URLs coming from untrustworthy sources, like other apps.
+        // Once migrations of Java code to GURL are complete and incoming URLs are converted to
+        // GURLs at their source, we can make decisions of whether or not to fix up GURLs on a
+        // case-by-case basis based on trustworthiness of the incoming URL.
         GURL fixedUrl = UrlFormatter.fixupUrl(url);
         if (!fixedUrl.isValid()) return;
 
@@ -1007,6 +1016,11 @@ public final class TabImpl extends ITab.Stub {
             mMediaSessionHelper = null;
         }
 
+        if (mAutofillProvider != null) {
+            mAutofillProvider.destroy();
+            mAutofillProvider = null;
+        }
+
         // Destroying FaviconCallbackProxy removes from mFaviconCallbackProxies. Copy to avoid
         // problems.
         Set<FaviconCallbackProxy> faviconCallbackProxies = mFaviconCallbackProxies;
@@ -1186,12 +1200,24 @@ public final class TabImpl extends ITab.Stub {
 
                     @Override
                     public InsetObserverView getInsetObserverView() {
-                        return mBrowser.getViewController().getInsetObserverView();
+                        BrowserViewController controller = mBrowser.getPossiblyNullViewController();
+                        return controller != null ? controller.getInsetObserverView() : null;
+                    }
+
+                    @Override
+                    public ObservableSupplier<Integer> getBrowserDisplayCutoutModeSupplier() {
+                        // No activity-wide display cutout mode override.
+                        return null;
                     }
 
                     @Override
                     public boolean isInteractable() {
                         return isVisible();
+                    }
+
+                    @Override
+                    public boolean isInBrowserFullscreen() {
+                        return false;
                     }
                 });
     }
@@ -1240,7 +1266,7 @@ public final class TabImpl extends ITab.Stub {
         void removeTabFromBrowserBeforeDestroying(long nativeTabImpl);
         void deleteTab(long tab);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
-        void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);
+        void initializeAutofillIfNecessary(long nativeTabImpl);
         void setBrowserControlsContainerViews(long nativeTabImpl,
                 long nativeTopBrowserControlsContainerView,
                 long nativeBottomBrowserControlsContainerView);

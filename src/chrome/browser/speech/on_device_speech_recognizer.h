@@ -12,6 +12,8 @@
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 class SpeechRecognizerDelegate;
@@ -31,10 +33,14 @@ class OnDeviceSpeechRecognizer
   static bool IsOnDeviceSpeechRecognizerAvailable(
       std::string language_or_locale);
 
+  // |language_or_locale| specificies the recognition language.
+  // |recognition_mode_ime| is whether to use speech recognition configured for
+  // IME or Captions.
   OnDeviceSpeechRecognizer(
       const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
       Profile* profile,
-      std::string language_or_locale);
+      std::string language_or_locale,
+      bool recognition_mode_ime);
   ~OnDeviceSpeechRecognizer() override;
   OnDeviceSpeechRecognizer(const OnDeviceSpeechRecognizer&) = delete;
   OnDeviceSpeechRecognizer& operator=(const OnDeviceSpeechRecognizer&) = delete;
@@ -46,7 +52,8 @@ class OnDeviceSpeechRecognizer
 
   // media::mojom::SpeechRecognitionRecognizerClient:
   void OnSpeechRecognitionRecognitionEvent(
-      media::mojom::SpeechRecognitionResultPtr result) override;
+      media::mojom::SpeechRecognitionResultPtr result,
+      OnSpeechRecognitionRecognitionEventCallback reply) override;
   void OnSpeechRecognitionError() override;
   void OnLanguageIdentificationEvent(
       media::mojom::LanguageIdentificationEventPtr event) override;
@@ -57,7 +64,7 @@ class OnDeviceSpeechRecognizer
   void OnRecognizerBound(bool success);
   void OnRecognizerDisconnected();
   void StartFetchingOnInputDeviceInfo(
-      const base::Optional<media::AudioParameters>& params);
+      const absl::optional<media::AudioParameters>& params);
 
   // Helper function to send the delegate updates to SpeechRecognizerStatus
   // only when the status has changed.

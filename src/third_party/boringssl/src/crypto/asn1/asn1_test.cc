@@ -26,6 +26,7 @@
 #include <openssl/mem.h>
 #include <openssl/obj.h>
 #include <openssl/span.h>
+#include <openssl/x509v3.h>
 
 #include "../test/test_util.h"
 
@@ -125,9 +126,33 @@ TEST(ASN1Test, SerializeObject) {
 TEST(ASN1Test, SerializeBoolean) {
   static const uint8_t kTrue[] = {0x01, 0x01, 0xff};
   TestSerialize(0xff, i2d_ASN1_BOOLEAN, kTrue);
+  // Other constants are also correctly encoded as TRUE.
+  TestSerialize(1, i2d_ASN1_BOOLEAN, kTrue);
+  TestSerialize(0x100, i2d_ASN1_BOOLEAN, kTrue);
 
   static const uint8_t kFalse[] = {0x01, 0x01, 0x00};
   TestSerialize(0x00, i2d_ASN1_BOOLEAN, kFalse);
+}
+
+// The templates go through a different codepath, so test them separately.
+TEST(ASN1Test, SerializeEmbeddedBoolean) {
+  bssl::UniquePtr<BASIC_CONSTRAINTS> val(BASIC_CONSTRAINTS_new());
+  ASSERT_TRUE(val);
+
+  // BasicConstraints defaults to FALSE, so the encoding should be empty.
+  static const uint8_t kLeaf[] = {0x30, 0x00};
+  val->ca = 0;
+  TestSerialize(val.get(), i2d_BASIC_CONSTRAINTS, kLeaf);
+
+  // TRUE should always be encoded as 0xff, independent of what value the caller
+  // placed in the |ASN1_BOOLEAN|.
+  static const uint8_t kCA[] = {0x30, 0x03, 0x01, 0x01, 0xff};
+  val->ca = 0xff;
+  TestSerialize(val.get(), i2d_BASIC_CONSTRAINTS, kCA);
+  val->ca = 1;
+  TestSerialize(val.get(), i2d_BASIC_CONSTRAINTS, kCA);
+  val->ca = 0x100;
+  TestSerialize(val.get(), i2d_BASIC_CONSTRAINTS, kCA);
 }
 
 TEST(ASN1Test, ASN1Type) {
@@ -188,6 +213,29 @@ TEST(ASN1Test, UnusedBooleanBits) {
   ASN1_TYPE_set(val.get(), V_ASN1_BOOLEAN, NULL);
   EXPECT_EQ(V_ASN1_BOOLEAN, val->type);
   EXPECT_FALSE(val->value.ptr);
+}
+
+TEST(ASN1Test, ASN1ObjectReuse) {
+  // 1.2.840.113554.4.1.72585.2, an arbitrary unknown OID.
+  static const uint8_t kOID[] = {0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12,
+                                 0x04, 0x01, 0x84, 0xb7, 0x09, 0x02};
+  ASN1_OBJECT *obj = ASN1_OBJECT_create(NID_undef, kOID, sizeof(kOID),
+                                        "short name", "long name");
+  ASSERT_TRUE(obj);
+
+  // OBJECT_IDENTIFIER { 1.3.101.112 }
+  static const uint8_t kDER[] = {0x06, 0x03, 0x2b, 0x65, 0x70};
+  const uint8_t *ptr = kDER;
+  EXPECT_TRUE(d2i_ASN1_OBJECT(&obj, &ptr, sizeof(kDER)));
+  EXPECT_EQ(NID_ED25519, OBJ_obj2nid(obj));
+  ASN1_OBJECT_free(obj);
+
+  // Repeat the test, this time overriding a static |ASN1_OBJECT|.
+  obj = OBJ_nid2obj(NID_rsaEncryption);
+  ptr = kDER;
+  EXPECT_TRUE(d2i_ASN1_OBJECT(&obj, &ptr, sizeof(kDER)));
+  EXPECT_EQ(NID_ED25519, OBJ_obj2nid(obj));
+  ASN1_OBJECT_free(obj);
 }
 
 // The ASN.1 macros do not work on Windows shared library builds, where usage of

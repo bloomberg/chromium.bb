@@ -36,7 +36,7 @@ ruleTester.run('es_modules_import', rule, {
     },
     {
       code: 'import \'../../common/common.js\';',
-      filename: 'front_end/formatter_worker/formatter_worker.js',
+      filename: 'front_end/entrypoints/formatter_worker/formatter_worker.js',
     },
     {
       code: 'import * as ARIAUtils from \'./ARIAUtils.js\';',
@@ -50,7 +50,11 @@ ruleTester.run('es_modules_import', rule, {
     // that really needs to be removed and folded into UI directly.
     {
       code: 'import {appendStyle} from \'./append-style.js\';',
-      filename: 'front_end/ui/utils/utils.js',
+      filename: 'front_end/ui/legacy/utils/utils.js',
+    },
+    {
+      code: 'import * as UI from \'../../legacy.js\';',
+      filename: 'front_end/ui/legacy/components/data_grid/DataGrid.ts',
     },
     // the `ls` helper from Platform is an exception
     {
@@ -73,14 +77,6 @@ ruleTester.run('es_modules_import', rule, {
       filename: 'test/unittests/front_end/elements/ElementsBreadcrumbs_test.ts',
     },
     {
-      code: 'import * as WasmDis from \'../third_party/wasmparser/WasmDis.js\';',
-      filename: 'front_end/wasmparser_worker/WasmParserWorker.js',
-    },
-    {
-      code: 'import * as Acorn from \'../third_party/acorn/package/dist/acorn.mjs\';',
-      filename: 'front_end/formatter_worker/JavascriptOutline.js',
-    },
-    {
       code: 'import * as LitHtml from \'../third_party/lit-html/lit-html.js\';',
       filename: 'front_end/elements/ElementBreadcrumbs.ts',
     },
@@ -95,6 +91,10 @@ ruleTester.run('es_modules_import', rule, {
     {
       code: 'export {UIString} from \'../platform/platform.js\';',
       filename: 'front_end/common/common.js',
+    },
+    {
+      code: 'import * as ElementsComponents from \'./components/components.js\';',
+      filename: 'front_end/elements/ComputedStyleWidget.js',
     },
     {
       code: 'export async function foo() {};',
@@ -120,11 +120,19 @@ ruleTester.run('es_modules_import', rule, {
     // Component doc files can reach into the test directory to use the helpers
     {
       code: 'import * as FrontendHelpers from \'../../../test/unittests/front_end/helpers/EnvironmentHelpers.js\'',
-      filename: 'front_end/component_docs/data_grid/basic.ts',
+      filename: 'front_end/ui/components/docs/data_grid/basic.ts',
     },
   ],
 
   invalid: [
+    {
+      code: 'import {Foo} from \'./app\'',
+      filename: 'front_end/common/Importing.ts',
+      output: 'import {Foo} from \'./app.js\'',
+      errors: [{
+        message: 'Missing file extension for import "./app"',
+      }],
+    },
     {
       code: 'import { Exporting } from \'../namespace/Exporting.js\';',
       filename: 'front_end/common/Importing.js',

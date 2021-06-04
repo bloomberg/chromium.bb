@@ -29,7 +29,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.IntentUtils;
@@ -38,7 +37,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.IntentWithRequestMetadataHandler;
@@ -63,6 +61,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.net.HttpUtil;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
@@ -1384,10 +1383,10 @@ public class IntentHandler {
      * @param intent The intent to which we add a referrer.
      * @param url The referrer URL.
      */
-    public static void setPendingReferrer(Intent intent, String url) {
-        intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(url));
+    public static void setPendingReferrer(Intent intent, GURL url) {
+        intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(url.getSpec()));
         intent.putExtra(IntentHandler.EXTRA_REFERRER_ID, ++sReferrerId);
-        sPendingReferrer = new Pair<Integer, String>(sReferrerId, url);
+        sPendingReferrer = new Pair<Integer, String>(sReferrerId, url.getSpec());
     }
 
     /**
@@ -1503,16 +1502,6 @@ public class IntentHandler {
     @Nullable
     public static Intent createTrustedBringTabToFrontIntent(
             int tabId, @BringToFrontSource int bringToFrontSource) {
-        // Iterate through all {@link CustomTab}s and check whether the given tabId belongs to a
-        // {@link CustomTab}. If so, return null as the client app's task cannot be foregrounded.
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (activity instanceof CustomTabActivity
-                    && ((CustomTabActivity) activity).getActivityTab() != null
-                    && tabId == ((CustomTabActivity) activity).getActivityTab().getId()) {
-                return null;
-            }
-        }
-
         Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent(context, ChromeLauncherActivity.class);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
@@ -1568,6 +1557,19 @@ public class IntentHandler {
             return newIntent;
         }
         return intent;
+    }
+
+    /**
+     * Bring the browser to foreground and switch to the tab.
+     * @param tab Tab to switch to.
+     */
+    public static void bringTabToFront(Tab tab) {
+        Intent newIntent =
+                createTrustedBringTabToFrontIntent(tab.getId(), BringToFrontSource.SEARCH_ACTIVITY);
+        if (newIntent != null) {
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), newIntent);
+        }
     }
 
     /**

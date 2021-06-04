@@ -97,9 +97,16 @@ std::string GetDevicePath(const device::mojom::UsbDeviceInfo& device_info) {
 
 }  // namespace
 
+// static
 ArcUsbHostBridge* ArcUsbHostBridge::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcUsbHostBridgeFactory::GetForBrowserContext(context);
+}
+
+// static
+ArcUsbHostBridge* ArcUsbHostBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcUsbHostBridgeFactory::GetForBrowserContextForTesting(context);
 }
 
 ArcUsbHostBridge::ArcUsbHostBridge(content::BrowserContext* context,
@@ -162,7 +169,7 @@ void ArcUsbHostBridge::RequestPermission(const std::string& guid,
 }
 
 void ArcUsbHostBridge::OpenDevice(const std::string& guid,
-                                  const base::Optional<std::string>& package,
+                                  const absl::optional<std::string>& package,
                                   OpenDeviceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
 
@@ -185,17 +192,16 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
     return;
   }
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   chromeos::PermissionBrokerClient::Get()->OpenPath(
       GetDevicePath(*iter->second),
-      base::BindOnce(&OnDeviceOpened, repeating_callback),
-      base::BindOnce(&OnDeviceOpenError, repeating_callback));
+      base::BindOnce(&OnDeviceOpened, std::move(split_callback.first)),
+      base::BindOnce(&OnDeviceOpenError, std::move(split_callback.second)));
 }
 
 void ArcUsbHostBridge::OpenDeviceDeprecated(
     const std::string& guid,
-    const base::Optional<std::string>& package,
+    const absl::optional<std::string>& package,
     OpenDeviceCallback callback) {
   LOG(ERROR) << "ArcUsbHostBridge::OpenDeviceDeprecated is deprecated";
   OpenDevice(guid, package, std::move(callback));
@@ -300,11 +306,6 @@ std::vector<std::string> ArcUsbHostBridge::GetEventReceiverPackages(
 }
 
 void ArcUsbHostBridge::OnDeviceChecked(const std::string& guid, bool allowed) {
-  if (!base::FeatureList::IsEnabled(arc::kUsbHostFeature)) {
-    VLOG(1) << "AndroidUSBHost: feature is disabled; ignoring";
-    return;
-  }
-
   if (!allowed)
     return;
 

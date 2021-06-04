@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_style.h"
 #include "components/permissions/permission_prompt.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace permissions {
 enum class RequestType;
@@ -66,7 +66,7 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   bool GetDisplayNameIsOrigin() const;
 
   // Get extra information to display for the permission, if any.
-  base::Optional<std::u16string> GetExtraText() const;
+  absl::optional<std::u16string> GetExtraText() const;
 
   // Record UMA Permissions.*.TimeToDecision.|action| metric. Can be
   // Permissions.Prompt.TimeToDecision.* or Permissions.Chip.TimeToDecision.*,

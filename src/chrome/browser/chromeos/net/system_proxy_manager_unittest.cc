@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/net/system_proxy_manager.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
@@ -13,10 +15,10 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -44,7 +46,9 @@ using testing::WithArg;
 
 namespace {
 constexpr char kBrowserUsername[] = "browser_username";
+constexpr char16_t kBrowserUsername16[] = u"browser_username";
 constexpr char kBrowserPassword[] = "browser_password";
+constexpr char16_t kBrowserPassword16[] = u"browser_password";
 constexpr char kPolicyUsername[] = "policy_username";
 constexpr char kPolicyPassword[] = "policy_password";
 constexpr char kKerberosActivePrincipalName[] = "kerberos_princ_name";
@@ -53,6 +57,7 @@ constexpr char kProxyAuthEmptyPath[] = "http://example.com:3128/";
 constexpr char kRealm[] = "My proxy";
 constexpr char kScheme[] = "dIgEsT";
 constexpr char kProxyAuthChallenge[] = "challenge";
+constexpr char kLocalProxyAddress[] = "local-proxy.com:3128";
 
 std::unique_ptr<network::NetworkContext>
 CreateNetworkContextForDefaultStoragePartition(
@@ -65,8 +70,8 @@ CreateNetworkContextForDefaultStoragePartition(
   auto network_context = std::make_unique<network::NetworkContext>(
       network_service, network_context_remote.InitWithNewPipeAndPassReceiver(),
       std::move(params));
-  content::BrowserContext::GetDefaultStoragePartition(browser_context)
-      ->SetNetworkContextForTesting(std::move(network_context_remote));
+  browser_context->GetDefaultStoragePartition()->SetNetworkContextForTesting(
+      std::move(network_context_remote));
   return network_context;
 }
 
@@ -107,8 +112,7 @@ class SystemProxyManagerTest : public testing::Test {
   // testing::Test
   void SetUp() override {
     testing::Test::SetUp();
-    shill_clients::InitializeFakes();
-    NetworkHandler::Initialize();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     LoginState::Initialize();
 
     profile_ = std::make_unique<TestingProfile>();
@@ -126,8 +130,7 @@ class SystemProxyManagerTest : public testing::Test {
     system_proxy_manager_.reset();
     LoginState::Shutdown();
     SystemProxyClient::Shutdown();
-    NetworkHandler::Shutdown();
-    shill_clients::Shutdown();
+    network_handler_test_helper_.reset();
   }
 
  protected:
@@ -144,6 +147,7 @@ class SystemProxyManagerTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   ScopedTestingLocalState local_state_;
   std::unique_ptr<SystemProxyManager> system_proxy_manager_;
   std::unique_ptr<TestingProfile> profile_;
@@ -245,8 +249,7 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
       ->Add(GURL(kProxyAuthEmptyPath), net::HttpAuth::AUTH_PROXY, kRealm,
             net::HttpAuth::AUTH_SCHEME_DIGEST, net::NetworkIsolationKey(),
             kProxyAuthChallenge,
-            net::AuthCredentials(base::ASCIIToUTF16(kBrowserUsername),
-                                 base::ASCIIToUTF16(kBrowserPassword)),
+            net::AuthCredentials(kBrowserUsername16, kBrowserPassword16),
             std::string() /* path */);
 
   system_proxy::ProtectionSpace protection_space;
@@ -290,6 +293,10 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
 // worker which tunnels ARC++ traffic according to policy.
 TEST_F(SystemProxyManagerTest, EnableArcWorker) {
   int expected_set_auth_details_call_count = 0;
+  int expected_shutdown_calls = 0;
+  EXPECT_EQ(++expected_shutdown_calls,
+            client_test_interface()->GetShutDownCallCount());
+
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
 
@@ -302,13 +309,13 @@ TEST_F(SystemProxyManagerTest, EnableArcWorker) {
             client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   profile_->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
-  EXPECT_EQ(1, client_test_interface()->GetShutDownCallCount());
+  EXPECT_EQ(++expected_shutdown_calls,
+            client_test_interface()->GetShutDownCallCount());
 }
 
 // Tests that the user preference used by ARC++ to point to the local proxy is
 // kept in sync.
 TEST_F(SystemProxyManagerTest, ArcWorkerAddressPrefSynced) {
-  const char kLocalProxyAddress[] = "local address";
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
 
@@ -429,6 +436,112 @@ TEST_F(SystemProxyManagerTest, CanUsePolicyCredentialsMgsMaxTries) {
       GetAuthInfo(), /*first_auth_attempt=*/true));
   EXPECT_FALSE(system_proxy_manager_->CanUsePolicyCredentials(
       GetAuthInfo(), /*first_auth_attempt=*/false));
+}
+
+TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringDefault) {
+  SetPolicy(/*system_proxy_enabled=*/true,
+            /*system_services_username=*/kPolicyUsername,
+            /*system_services_password=*/kPolicyPassword);
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::SYSTEM);
+  details.set_local_proxy_url(kProxyAuthUrl);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
+                SystemProxyOverride::kDefault),
+            "PROXY http://example.com:3128");
+}
+
+TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringOptOut) {
+  SetPolicy(/*system_proxy_enabled=*/true,
+            /*system_services_username=*/kPolicyUsername,
+            /*system_services_password=*/kPolicyPassword);
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::SYSTEM);
+  details.set_local_proxy_url(kProxyAuthUrl);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(system_proxy_manager_
+                  ->SystemServicesProxyPacString(SystemProxyOverride::kOptOut)
+                  .empty());
+}
+
+// Tests the behaviour of SystemProxyManager when enabled via the feature flag
+// `ash::features::kSystemProxyForSystemServices`.
+class FeatureEnabledSystemProxyTest : public SystemProxyManagerTest {
+ public:
+  FeatureEnabledSystemProxyTest() : SystemProxyManagerTest() {}
+  ~FeatureEnabledSystemProxyTest() override = default;
+
+  // testing::Test
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kSystemProxyForSystemServices);
+    SystemProxyManagerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that system services get the address of the local proxy worker for
+// system services.
+TEST_F(FeatureEnabledSystemProxyTest, SystemServicesDefault) {
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::SYSTEM);
+  details.set_local_proxy_url(kLocalProxyAddress);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(system_proxy_manager_
+                  ->SystemServicesProxyPacString(SystemProxyOverride::kDefault)
+                  .empty());
+}
+
+TEST_F(FeatureEnabledSystemProxyTest, SystemServicesOptIn) {
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::SYSTEM);
+  details.set_local_proxy_url(kLocalProxyAddress);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
+                SystemProxyOverride::kOptIn),
+            "PROXY local-proxy.com:3128");
+}
+
+// Tests that the pref which sets the local proxy worker address for ARC++ is
+// not set when the flag is enabled.
+TEST_F(FeatureEnabledSystemProxyTest, Arc) {
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::USER);
+  details.set_local_proxy_url(kLocalProxyAddress);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(profile_->GetPrefs()
+                  ->GetString(::prefs::kSystemProxyUserTrafficHostAndPort)
+                  .empty());
+}
+
+// Tests that enabling system-proxy via policy will still work as expected for
+// ARC++.
+TEST_F(FeatureEnabledSystemProxyTest, ArcPolicyEnabled) {
+  SetPolicy(/*system_proxy_enabled=*/true,
+            /*system_services_username=*/"",
+            /*system_services_password=*/"");
+
+  system_proxy::WorkerActiveSignalDetails details;
+  details.set_traffic_origin(system_proxy::TrafficOrigin::USER);
+  details.set_local_proxy_url(kLocalProxyAddress);
+  client_test_interface()->SendWorkerActiveSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(kLocalProxyAddress,
+            profile_->GetPrefs()->GetString(
+                ::prefs::kSystemProxyUserTrafficHostAndPort));
 }
 
 }  // namespace chromeos

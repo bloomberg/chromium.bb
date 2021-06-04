@@ -844,6 +844,17 @@ message ActiveTimePeriod {
   // Email address of the active user. Present only if the user type is managed
   // and affiliated.
   optional string user_email = 3;
+
+  enum SessionType {
+    SESSION_UNKNOWN = 0;
+    SESSION_AFFILIATED_USER = 1;
+    SESSION_MANAGED_GUEST = 2;
+    SESSION_KIOSK = 3;
+    SESSION_ARC_KIOSK = 4;
+    SESSION_WEB_KIOSK = 5;
+  }
+
+  optional SessionType session_type = 4;
 }
 
 // Details about a network interface.
@@ -974,9 +985,13 @@ message CPUTempInfo {
 // device.
 message StatefulPartitionInfo {
   // Available space for user data storage in the device in bytes.
-  optional int64 available_space = 1;
+  optional uint64 available_space = 1;
   // Total space for user data storage in the device in bytes.
-  optional int64 total_space = 2;
+  optional uint64 total_space = 2;
+  // File system on stateful partition. e.g. ext4.
+  optional string filesystem = 3;
+  // Source of stateful partition. e.g. /dev/mmcblk0p1.
+  optional string mount_source = 4;
 }
 
 // Chrome release channel, shared for different reports.
@@ -1782,6 +1797,10 @@ message Policy {
 
     // A policy is set by command line switch for testing purpose.
     SOURCE_COMMAND_LINE = 8;
+
+    // A policy is set by Google's cloud management tool in Ash and piped to
+    // Lacros.
+    SOURCE_CLOUD_FROM_ASH = 9;
   }
   optional PolicySource source = 4;
 
@@ -3386,11 +3405,11 @@ message PrintJobEvent {
     // The final status of the job.
     optional int32 status = 3;
 
-    // The time the print job was created.
-    optional int64 creation_time = 4;
+    // The time the print job was created in milliseconds since epoch.
+    optional int64 creation_timestamp_ms = 4;
 
-    // The time the print job was completed.
-    optional int64 completion_time = 5;
+    // The time the print job was completed in milliseconds since epoch.
+    optional int64 completion_timestamp_ms = 5;
 
     // The number of pages in the document.
     optional int32 number_of_pages = 6;
@@ -3400,7 +3419,7 @@ message PrintJobEvent {
   }
 
   enum UserType {
-    UNKNOWN = 0;
+    UNKNOWN_USER_TYPE = 0;
     REGULAR = 1;
     GUEST = 2;
     KIOSK = 3;

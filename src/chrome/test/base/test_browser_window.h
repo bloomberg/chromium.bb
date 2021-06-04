@@ -36,6 +36,11 @@ class SendTabToSelfBubbleController;
 class SendTabToSelfBubbleView;
 }  // namespace send_tab_to_self
 
+namespace sharing_hub {
+class SharingHubBubbleController;
+class SharingHubBubbleView;
+}  // namespace sharing_hub
+
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
 // However, some of them can be preset to a specific value.
@@ -142,12 +147,16 @@ class TestBrowserWindow : public BrowserWindow {
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) override;
+  sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
+      content::WebContents* contents,
+      sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
@@ -216,6 +225,8 @@ class TestBrowserWindow : public BrowserWindow {
   void set_visible_on_all_workspaces(bool visible_on_all_workspaces) {
     visible_on_all_workspaces_ = visible_on_all_workspaces;
   }
+  void set_is_active(bool active) { is_active_ = active; }
+  void set_is_minimized(bool minimized) { is_minimized_ = minimized; }
 
  protected:
   void DestroyBrowser() override {}
@@ -253,6 +264,8 @@ class TestBrowserWindow : public BrowserWindow {
 
   std::string workspace_;
   bool visible_on_all_workspaces_ = false;
+  bool is_minimized_ = false;
+  bool is_active_ = false;
   bool is_tab_strip_editable_ = true;
 
   std::unique_ptr<FeaturePromoController> feature_promo_controller_;

@@ -7,7 +7,7 @@ The WebGPU CTS is written in TypeScript.
 After checking out the repository and installing node/npm, run:
 
 ```sh
-npm install
+npm ci
 ```
 
 `npm run` will show available npm scripts.
@@ -56,7 +56,7 @@ Since this project is written in TypeScript, it integrates best with
 [Visual Studio Code](https://code.visualstudio.com/).
 This is optional, but highly recommended: it automatically adds `import` lines and
 provides robust completions, cross-references, renames, error highlighting,
-and type/JSDoc popups.
+deprecation highlighting, and type/JSDoc popups.
 
 Open the `cts.code-workspace` workspace file to load settings convienient for this project.
 You can make local configuration changes in `.vscode/`, which is untracked by Git.
@@ -69,11 +69,11 @@ To make the review process smoother, once a reviewer has started looking at your
 
 - Avoid major additions or changes that would be best done in a follow-up PR.
 - Avoid rebases (`git rebase`) and force pushes (`git push -f`). These can make
-  it difficult for reviewers to review incremental changes as GitHub cannot
+  it difficult for reviewers to review incremental changes as GitHub often cannot
   view a useful diff across a rebase. If it's necessary to resolve conflicts
   with upstream changes, use a merge commit (`git merge`) and don't include any
   consequential changes in the merge, so a reviewer can skip over merge commits
   when working through the individual commits in the PR.
 - When you address a review comment, mark the thread as "Resolved".
 
-Pull requests will be landed with the "Squash and merge" option.
+Pull requests will (usually) be landed with the "Squash and merge" option.

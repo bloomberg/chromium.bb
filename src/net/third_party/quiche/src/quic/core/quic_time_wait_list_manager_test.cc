@@ -19,6 +19,7 @@
 #include "quic/core/quic_packet_writer.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/mock_quic_session_visitor.h"
@@ -747,6 +748,24 @@ TEST_F(QuicTimeWaitListManagerTest,
         self_address_, peer_address_, cid, IETF_QUIC_SHORT_HEADER_PACKET,
         kTestPacketSize, std::make_unique<QuicPerPacketContext>());
   }
+}
+
+// Regression test for b/184053898.
+TEST_F(QuicTimeWaitListManagerTest, DonotCrashOnNullStatelessReset) {
+  // Received a packet with length <
+  // QuicFramer::GetMinStatelessResetPacketLength(), and this will result in a
+  // null stateless reset.
+  time_wait_list_manager_.SendPublicReset(
+      self_address_, peer_address_, TestConnectionId(1),
+      /*ietf_quic=*/true,
+      /*received_packet_length=*/
+      QuicFramer::GetMinStatelessResetPacketLength() - 1,
+      /*packet_context=*/nullptr);
+}
+
+TEST_F(QuicTimeWaitListManagerTest, SendOrQueueNullPacket) {
+  QuicTimeWaitListManagerPeer::SendOrQueuePacket(&time_wait_list_manager_,
+                                                 nullptr, nullptr);
 }
 
 }  // namespace

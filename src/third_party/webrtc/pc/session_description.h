@@ -44,7 +44,6 @@ namespace cricket {
 
 typedef std::vector<AudioCodec> AudioCodecs;
 typedef std::vector<VideoCodec> VideoCodecs;
-typedef std::vector<RtpDataCodec> RtpDataCodecs;
 typedef std::vector<CryptoParams> CryptoParamsVec;
 typedef std::vector<webrtc::RtpExtension> RtpHeaderExtensions;
 
@@ -60,7 +59,6 @@ const int kAutoBandwidth = -1;
 
 class AudioContentDescription;
 class VideoContentDescription;
-class RtpDataContentDescription;
 class SctpDataContentDescription;
 class UnsupportedContentDescription;
 
@@ -82,11 +80,6 @@ class MediaContentDescription {
   // nullptr if the cast fails.
   virtual VideoContentDescription* as_video() { return nullptr; }
   virtual const VideoContentDescription* as_video() const { return nullptr; }
-
-  virtual RtpDataContentDescription* as_rtp_data() { return nullptr; }
-  virtual const RtpDataContentDescription* as_rtp_data() const {
-    return nullptr;
-  }
 
   virtual SctpDataContentDescription* as_sctp() { return nullptr; }
   virtual const SctpDataContentDescription* as_sctp() const { return nullptr; }
@@ -361,20 +354,6 @@ class VideoContentDescription : public MediaContentDescriptionImpl<VideoCodec> {
   }
 };
 
-class RtpDataContentDescription
-    : public MediaContentDescriptionImpl<RtpDataCodec> {
- public:
-  RtpDataContentDescription() {}
-  MediaType type() const override { return MEDIA_TYPE_DATA; }
-  RtpDataContentDescription* as_rtp_data() override { return this; }
-  const RtpDataContentDescription* as_rtp_data() const override { return this; }
-
- private:
-  RtpDataContentDescription* CloneInternal() const override {
-    return new RtpDataContentDescription(*this);
-  }
-};
-
 class SctpDataContentDescription : public MediaContentDescription {
  public:
   SctpDataContentDescription() {}
@@ -588,6 +567,8 @@ class SessionDescription {
   // Group accessors.
   const ContentGroups& groups() const { return content_groups_; }
   const ContentGroup* GetGroupByName(const std::string& name) const;
+  std::vector<const ContentGroup*> GetGroupsByName(
+      const std::string& name) const;
   bool HasGroup(const std::string& name) const;
 
   // Group mutators.

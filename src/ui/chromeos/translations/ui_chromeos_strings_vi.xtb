@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Thanh trượt tìm kiếm</translation>
 <translation id="1404323374378969387">Tiếng Na Uy</translation>
 <translation id="1430915738399379752">In</translation>
+<translation id="1433628812591023318">Để thả tệp vào Parallels Desktop, bạn phải chuyển tệp đó vào thư mục tệp Windows.</translation>
 <translation id="1435838927755162558">Chia sẻ thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1471718551822868769">Tiếng Slovak</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Tệp Windows</translation>
 <translation id="3078461028045006476">Chia sẻ với <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Không thể mở "<ph name="PATH" />" từ vị trí này. Vui lòng sao chép vào "Tệp của tôi" để mở.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">XONG</translation>
 <translation id="3188257591659621405">Tệp của tôi</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Tiếng Bulgaria bằng bàn phím phiên âm</translation>
 <translation id="5605830556594064952">Dvorak Hoa Kỳ</translation>
 <translation id="5625294776298156701">Tiếng Tamil bằng bàn phím Tamil99</translation>
+<translation id="5633226425545095130">Khi bạn di chuyển mục này, mục này sẽ được chia sẻ với những người có thể xem thư mục dùng chung "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Nghe</translation>
 <translation id="5678784840044122290">Ứng dụng Linux sẽ có trong Thiết bị của bạn và cũng có thể hiển thị một biểu tượng trong Trình chạy.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Không thể ngắt kết nối khỏi vùng lưu trữ hoặc ổ đĩa ảo<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Bàn phím tiếng Ethiopic</translation>
 <translation id="7417705661718309329">Bản đồ Google</translation>
 <translation id="7460898608667578234">Tiếng Ukraina</translation>
+<translation id="7486315294984620427">Để thả tệp vào Parallels Desktop, bạn phải sao chép tệp đó vào thư mục tệp Windows.</translation>
 <translation id="7489215562877293245">Đã tìm thấy <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Đã sẵn sàng sao lưu vào <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Kích thước</translation>
 <translation id="8437209419043462667">Hoa Kỳ</translation>
 <translation id="8456681095658380701">Tên không hợp lệ</translation>
+<translation id="8459404855768962328">Khi bạn sao chép mục này, mục này sẽ được chia sẻ với những người có thể xem thư mục dùng chung "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Nhấp chuột phải vào một tệp rồi chọn "Ghim vào kệ" để có thể truy cập nhanh vào tệp trong kệ khi cần.</translation>
 <translation id="8463494891489624050">Tiếng Việt (VIQR)</translation>
 <translation id="8466234950814670489">Lưu trữ tar</translation>

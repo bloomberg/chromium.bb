@@ -33,6 +33,9 @@ AX_BASE_EXPORT bool IsAlert(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a native or an ARIA button.
 AX_BASE_EXPORT bool IsButton(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a cell or a table header.
+AX_BASE_EXPORT bool IsCellOrTableHeader(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to an object on which a click
 // handler is commonly attached, or to an object that carries out an action when
 // clicked, such as activating itself, opening a dialog or closing a menu.
@@ -49,8 +52,8 @@ AX_BASE_EXPORT bool IsButton(const ax::mojom::Role role);
 // so that users will know that they could activate them if they so choose.
 AX_BASE_EXPORT bool IsClickable(const ax::mojom::Role role);
 
-// Returns true if the provided role belongs to a cell or a table header.
-AX_BASE_EXPORT bool IsCellOrTableHeader(const ax::mojom::Role role);
+// Returns true if the provided role is any of the combobox-related roles.
+AX_BASE_EXPORT bool IsComboBox(ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a container with selectable
 // children.
@@ -92,9 +95,6 @@ AX_BASE_EXPORT bool IsImageOrVideo(const ax::mojom::Role role);
 // Returns true if the provided role is item-like, specifically if it can hold
 // pos_in_set and set_size values. Roles that are item-like are not set-like.
 AX_BASE_EXPORT bool IsItemLike(const ax::mojom::Role role);
-
-// Returns true if the role is a subclass of the ARIA Landmark abstract role.
-AX_BASE_EXPORT bool IsLandmark(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a link.
 AX_BASE_EXPORT bool IsLink(const ax::mojom::Role role);
@@ -145,15 +145,6 @@ AX_BASE_EXPORT bool IsRootLike(ax::mojom::Role role);
 // table or grid row.
 AX_BASE_EXPORT bool IsRowContainer(const ax::mojom::Role role);
 
-// Returns true if the role is a subclass of the ARIA Section abstract role.
-AX_BASE_EXPORT bool IsSection(const ax::mojom::Role role);
-
-// Returns true if the role is a subclass of the ARIA Sectionhead role.
-AX_BASE_EXPORT bool IsSectionhead(const ax::mojom::Role role);
-
-// Returns true if the role is a subclass of the ARIA Select abstract role.
-AX_BASE_EXPORT bool IsSelect(const ax::mojom::Role role);
-
 // Returns true if the role is one of those exposed by the HTML <select>
 // element.
 AX_BASE_EXPORT bool IsSelectElement(const ax::mojom::Role role);
@@ -164,9 +155,6 @@ AX_BASE_EXPORT bool IsSetLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a non-interactive list.
 AX_BASE_EXPORT bool IsStaticList(const ax::mojom::Role role);
-
-// Returns true if the role is a subclass of the ARIA Structure abstract role.
-AX_BASE_EXPORT bool IsStructure(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a table or grid column, and the
 // table is not used for layout purposes.
@@ -186,8 +174,9 @@ AX_BASE_EXPORT bool IsTableRow(ax::mojom::Role role);
 // break, or inline text box.
 AX_BASE_EXPORT bool IsText(ax::mojom::Role role);
 
-// Returns true if the provided role is any of the combobox-related roles.
-AX_BASE_EXPORT bool IsComboBox(ax::mojom::Role role);
+// Returns true if the provided role belongs to a native text field, i.e.
+// <input> or <textarea>.
+AX_BASE_EXPORT bool IsTextField(ax::mojom::Role role);
 
 // Returns true if the node should be read only by default
 AX_BASE_EXPORT bool ShouldHaveReadonlyStateByDefault(

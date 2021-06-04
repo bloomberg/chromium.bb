@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
@@ -30,6 +29,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -37,19 +37,7 @@ namespace web_app {
 
 namespace {
 
-const char kFooTitle[] = "Foo Title";
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL FooUrl() {
-  return GURL("https://foo.example");
-}
-GURL FooUrl2() {
-  return GURL("https://foo.example/bar");
-}
-GURL BarUrl() {
-  return GURL("https://bar.example");
-}
+const char16_t kFooTitle[] = u"Foo Title";
 
 }  // namespace
 
@@ -142,23 +130,6 @@ class WebAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
     std::move(quit_closure).Run();
   }
 
-  std::unique_ptr<WebApplicationInfo> CreateWebApplicationInfo(
-      const GURL& url,
-      const std::string name,
-      const std::string description,
-      const GURL& scope,
-      base::Optional<SkColor> theme_color) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-
-    web_app_info->start_url = url;
-    web_app_info->title = base::UTF8ToUTF16(name);
-    web_app_info->description = base::UTF8ToUTF16(description);
-    web_app_info->scope = scope;
-    web_app_info->theme_color = theme_color;
-
-    return web_app_info;
-  }
-
  protected:
   content::WebContentsTester* web_contents_tester() {
     return content::WebContentsTester::For(web_contents());
@@ -172,7 +143,7 @@ class WebAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
 
  private:
   FakeWebPageMetadataAgent fake_chrome_render_frame_;
-  base::Optional<std::unique_ptr<WebApplicationInfo>> web_app_info_;
+  absl::optional<std::unique_ptr<WebApplicationInfo>> web_app_info_;
   std::vector<WebApplicationIconInfo> icons_;
 };
 
@@ -193,7 +164,8 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_NoEntry) {
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  const GURL kFooUrl("https://foo.example");
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   WebApplicationInfo original_web_app_info;
   original_web_app_info.start_url = GURL();
@@ -210,16 +182,16 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
 
   // If the WebApplicationInfo has no URL, we fallback to the last committed
   // URL.
-  EXPECT_EQ(FooUrl(), web_app_info()->start_url);
+  EXPECT_EQ(kFooUrl, web_app_info()->start_url);
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   WebApplicationInfo original_web_app_info;
-  original_web_app_info.start_url = BarUrl();
+  original_web_app_info.start_url = GURL("https://bar.example");
 
   SetRendererWebApplicationInfo(original_web_app_info);
 
@@ -237,10 +209,9 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_TitleAbsentFromRenderer) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
-  const auto web_contents_title = base::UTF8ToUTF16(kFooTitle);
-  web_contents_tester()->SetTitle(web_contents_title);
+  web_contents_tester()->SetTitle(kFooTitle);
 
   WebApplicationInfo original_web_app_info;
   original_web_app_info.title = u"";
@@ -257,14 +228,14 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_TitleAbsentFromRenderer) {
 
   // If the WebApplicationInfo has no title, we fallback to the WebContents
   // title.
-  EXPECT_EQ(web_contents_title, web_app_info()->title);
+  EXPECT_EQ(kFooTitle, web_app_info()->title);
 }
 
 TEST_F(WebAppDataRetrieverTest,
        GetWebApplicationInfo_TitleAbsentFromWebContents) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   web_contents_tester()->SetTitle(u"");
 
@@ -290,7 +261,7 @@ TEST_F(WebAppDataRetrieverTest,
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_ConnectionError) {
   // Do not set fake WebPageMetadataAgent to simulate connection error.
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
@@ -306,7 +277,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_ConnectionError) {
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_WebContentsDestroyed) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
@@ -324,7 +295,7 @@ TEST_F(WebAppDataRetrieverTest,
        CheckInstallabilityAndRetrieveManifest_WebContentsDestroyed) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
@@ -336,7 +307,7 @@ TEST_F(WebAppDataRetrieverTest,
   WebAppDataRetriever retriever;
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(), /*bypass_service_worker_check=*/false,
-      base::BindLambdaForTesting([&](base::Optional<blink::Manifest> manifest,
+      base::BindLambdaForTesting([&](absl::optional<blink::Manifest> manifest,
                                      const GURL& manifest_url,
                                      bool valid_manifest_for_web_app,
                                      bool is_installable) {
@@ -353,7 +324,7 @@ TEST_F(WebAppDataRetrieverTest,
 TEST_F(WebAppDataRetrieverTest, GetIcons_WebContentsDestroyed) {
   SetFakeWebPageMetadataAgent();
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  web_contents_tester()->NavigateAndCommit(GURL("https://foo.example"));
 
   const std::vector<GURL> icon_urls;
   bool skip_page_favicons = true;
@@ -373,10 +344,10 @@ TEST_F(WebAppDataRetrieverTest, GetIcons_WebContentsDestroyed) {
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   SetFakeWebPageMetadataAgent();
 
-  const auto web_contents_title = base::UTF8ToUTF16(kFooTitle);
-  web_contents_tester()->SetTitle(web_contents_title);
+  web_contents_tester()->SetTitle(kFooTitle);
 
-  web_contents_tester()->NavigateAndCommit(FooUrl());
+  const GURL kFooUrl("https://foo.example/bar");
+  web_contents_tester()->NavigateAndCommit(kFooUrl.GetOrigin());
 
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
@@ -384,11 +355,11 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
       web_contents(),
       base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
                      base::Unretained(this), run_loop.QuitClosure()));
-  web_contents_tester()->NavigateAndCommit(FooUrl2());
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
   run_loop.Run();
 
-  EXPECT_EQ(FooUrl(), web_app_info()->start_url);
-  EXPECT_EQ(web_contents_title, web_app_info()->title);
+  EXPECT_EQ(kFooUrl.GetOrigin(), web_app_info()->start_url);
+  EXPECT_EQ(kFooTitle, web_app_info()->title);
 }
 
 TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
@@ -398,7 +369,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
   const std::u16string manifest_short_name = u"Short Name from Manifest";
   const std::u16string manifest_name = u"Name from Manifest";
   const GURL manifest_scope = GURL("https://example.com/scope");
-  const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
+  const absl::optional<SkColor> manifest_theme_color = 0xAABBCCDD;
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
@@ -421,7 +392,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(), /*bypass_service_worker_check=*/false,
       base::BindLambdaForTesting(
-          [&](base::Optional<blink::Manifest> result, const GURL& manifest_url,
+          [&](absl::optional<blink::Manifest> result, const GURL& manifest_url,
               bool valid_manifest_for_web_app, bool is_installable) {
             EXPECT_TRUE(is_installable);
 
@@ -458,7 +429,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityFails) {
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(), /*bypass_service_worker_check=*/false,
       base::BindLambdaForTesting(
-          [&](base::Optional<blink::Manifest> result, const GURL& manifest_url,
+          [&](absl::optional<blink::Manifest> result, const GURL& manifest_url,
               bool valid_manifest_for_web_app, bool is_installable) {
             EXPECT_FALSE(is_installable);
             EXPECT_FALSE(valid_manifest_for_web_app);

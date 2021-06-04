@@ -5,10 +5,22 @@
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
 import("../../../scripts/build/ninja/devtools_pre_built.gni")
+import("../visibility.gni")
 
 devtools_pre_built("lit-html") {
+  sources_are_release = false
+
   sources = [
     "lit-html-tsconfig.json",
+    "package/async-directive.d.ts",
+    "package/async-directive.js",
+    "package/async-directive.js.map",
+    "package/directive-helpers.d.ts",
+    "package/directive-helpers.js",
+    "package/directive-helpers.js.map",
+    "package/directive.d.ts",
+    "package/directive.js",
+    "package/directive.js.map",
     "package/directives/class-map.d.ts",
     "package/directives/class-map.js",
     "package/directives/class-map.js.map",
@@ -64,7 +76,10 @@ devtools_pre_built("lit-html") {
 }
 
 devtools_module("lit-html-directives") {
-  sources = [ "directives.ts" ]
+  sources = [
+    "directive.ts",
+    "directives.ts",
+  ]
 
   deps = [ ":lit-html" ]
 }
@@ -76,4 +91,11 @@ devtools_entrypoint("bundle") {
     ":lit-html",
     ":lit-html-directives",
   ]
+
+  visibility = [
+    # Only visible to the indirect form of Lit that is used by components.
+    "../../ui/lit-html/*",
+  ]
+
+  visibility += devtools_third_party_visibility
 }

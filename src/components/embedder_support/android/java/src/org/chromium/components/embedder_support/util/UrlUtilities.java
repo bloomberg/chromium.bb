@@ -18,7 +18,10 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
 import org.chromium.url.GURL;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -36,6 +39,15 @@ public class UrlUtilities {
     /** Regular expression for prefixes to strip from publisher hostnames. */
     private static final Pattern HOSTNAME_PREFIX_PATTERN =
             Pattern.compile("^(www[0-9]*|web|ftp|wap|home|mobile|amp)\\.");
+
+    private static final List<String> SUPPORTED_SCHEMES = new ArrayList<String>(
+            Arrays.asList(ContentUrlConstants.ABOUT_SCHEME, UrlConstants.DATA_SCHEME,
+                    UrlConstants.FILE_SCHEME, UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
+                    UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME));
+
+    private static final List<String> DOWNLOADABLE_SCHEMES = new ArrayList<String>(Arrays.asList(
+            UrlConstants.DATA_SCHEME, UrlConstants.BLOB_SCHEME, UrlConstants.FILE_SCHEME,
+            UrlConstants.FILESYSTEM_SCHEME, UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME));
 
     /**
      * URI schemes that are internal to Chrome.
@@ -71,27 +83,31 @@ public class UrlUtilities {
      * @param uri A URI.
      *
      * @return True if the URI's scheme is one that ContentView can handle.
+     * @deprecated use {@link #isAcceptedScheme(GURL)} instead.
      */
+    @Deprecated
     public static boolean isAcceptedScheme(String uri) {
-        return UrlUtilitiesJni.get().isAcceptedScheme(uri);
+        return isAcceptedScheme(new GURL(uri));
     }
 
     /**
-     * @param uri A URI.
+     * @param url A GURL.
      *
-     * @return True if the URI is valid for Intent fallback navigation.
+     * @return True if the GURL's scheme is one that ContentView can handle.
      */
-    public static boolean isValidForIntentFallbackNavigation(String uri) {
-        return UrlUtilitiesJni.get().isValidForIntentFallbackNavigation(uri);
+    public static boolean isAcceptedScheme(GURL url) {
+        if (GURL.isEmptyOrInvalid(url)) return false;
+        return SUPPORTED_SCHEMES.contains(url.getScheme());
     }
 
     /**
-     * @param uri A URI.
+     * @param url A GURL.
      *
-     * @return True if the URI's scheme is one that Chrome can download.
+     * @return True if the GURL's scheme is one that Chrome can download.
      */
     public static boolean isDownloadableScheme(@NonNull GURL url) {
-        return UrlUtilitiesJni.get().isDownloadable(url);
+        if (!url.isValid()) return false;
+        return DOWNLOADABLE_SCHEMES.contains(url.getScheme());
     }
 
     /**
@@ -156,6 +172,17 @@ public class UrlUtilities {
             String primaryUrl, String secondaryUrl, boolean includePrivateRegistries) {
         return UrlUtilitiesJni.get().sameDomainOrHost(
                 primaryUrl, secondaryUrl, includePrivateRegistries);
+    }
+
+    /**
+     * Returns a new URL without the port in the hostname if it was present.
+     * @param url The url to process.
+     * @return
+     */
+    // TODO(crbug/783819): Expose GURL::Replacements to Java.
+    public static GURL clearPort(GURL url) {
+        if (url == null || TextUtils.isEmpty(url.getPort())) return url;
+        return UrlUtilitiesJni.get().clearPort(url);
     }
 
     /**
@@ -262,6 +289,19 @@ public class UrlUtilities {
         return isNTPUrl(gurl);
     }
 
+    /**
+     * Returns whether the url matches an NTP URL exactly. This is used to support features
+     * showing the omnibox before native is loaded. Prefer using {@see #isNTPUrl(GURL gurl)} when
+     * native is loaded.
+     * @param url The current URL to compare.
+     * @return Whether the given URL matches the NTP urls exactly.
+     */
+    public static boolean isCanonicalizedNTPUrl(String url) {
+        return TextUtils.equals(url, UrlConstants.NTP_URL)
+                || TextUtils.equals(url, UrlConstants.NTP_NON_NATIVE_URL)
+                || TextUtils.equals(url, UrlConstants.NTP_ABOUT_URL);
+    }
+
     public static String extractPublisherFromPublisherUrl(String publisherUrl) {
         String publisher =
                 UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl));
@@ -270,11 +310,28 @@ public class UrlUtilities {
         return BidiFormatter.getInstance().unicodeWrap(trimmedPublisher);
     }
 
+    /**
+     * See native url_util::GetValueForKeyInQuery().
+     *
+     * Equivalent to {@link Uri#getQueryParameter(String)}.
+     *
+     * @return null if the key doesn't exist in the query string for the URL. Otherwise, returns the
+     * value for the key in the query string.
+     */
+    public static String getValueForKeyInQuery(GURL url, String key) {
+        return UrlUtilitiesJni.get().getValueForKeyInQuery(url, key);
+    }
+
+    /**
+     * @return true if |url|'s scheme is for an Android intent.
+     */
+    public static boolean hasIntentScheme(GURL url) {
+        return url.getScheme().equals(UrlConstants.APP_INTENT_SCHEME)
+                || url.getScheme().equals(UrlConstants.INTENT_SCHEME);
+    }
+
     @NativeMethods
     public interface Natives {
-        boolean isDownloadable(GURL url);
-        boolean isValidForIntentFallbackNavigation(String url);
-        boolean isAcceptedScheme(String url);
         boolean sameDomainOrHost(
                 String primaryUrl, String secondaryUrl, boolean includePrivateRegistries);
         String getDomainAndRegistry(String url, boolean includePrivateRegistries);
@@ -295,5 +352,8 @@ public class UrlUtilities {
         boolean urlsFragmentsDiffer(String url, String url2);
 
         String escapeQueryParamValue(String url, boolean usePlus);
+        String getValueForKeyInQuery(GURL url, String key);
+
+        GURL clearPort(GURL url);
     }
 }

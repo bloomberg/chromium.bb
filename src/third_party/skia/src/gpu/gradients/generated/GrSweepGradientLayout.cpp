@@ -51,20 +51,10 @@ private:
                    const GrFragmentProcessor& _proc) override {
         const GrSweepGradientLayout& _outer = _proc.cast<GrSweepGradientLayout>();
         {
-            float biasValue = _outer.bias;
-            if (biasPrev != biasValue) {
-                biasPrev = biasValue;
-                pdman.set1f(biasVar, biasValue);
-            }
-            float scaleValue = _outer.scale;
-            if (scalePrev != scaleValue) {
-                scalePrev = scaleValue;
-                pdman.set1f(scaleVar, scaleValue);
-            }
+            pdman.set1f(biasVar, _outer.bias);
+            pdman.set1f(scaleVar, _outer.scale);
         }
     }
-    float biasPrev = SK_FloatNaN;
-    float scalePrev = SK_FloatNaN;
     UniformHandle biasVar;
     UniformHandle scaleVar;
 };
@@ -99,8 +89,9 @@ GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrSweepGradientLayout);
 #if GR_TEST_UTILS
 std::unique_ptr<GrFragmentProcessor> GrSweepGradientLayout::TestCreate(GrProcessorTestData* d) {
     SkScalar scale = GrGradientShader::RandomParams::kGradientScale;
-    SkPoint center = {d->fRandom->nextRangeScalar(0.0f, scale),
-                      d->fRandom->nextRangeScalar(0.0f, scale)};
+    SkPoint center;
+    center.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+    center.fY = d->fRandom->nextRangeScalar(0.0f, scale);
 
     GrGradientShader::RandomParams params(d->fRandom);
     auto shader = params.fUseColors4f ? SkGradientShader::MakeSweep(center.fX,

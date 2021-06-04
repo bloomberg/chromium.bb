@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -308,7 +309,7 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
   void SimulateMediaSeeked(const base::UnguessableToken& id) {
     auto item_itr = sessions().find(id.ToString());
     EXPECT_NE(sessions().end(), item_itr);
-    item_itr->second.MediaSessionPositionChanged(base::nullopt);
+    item_itr->second.MediaSessionPositionChanged(absl::nullopt);
   }
 
   void SimulateNotificationClicked(const base::UnguessableToken& id) {

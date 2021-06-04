@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -32,6 +33,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -52,6 +54,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
@@ -75,9 +78,6 @@ constexpr SkColor kAppListBackgroundColor = gfx::kGoogleGrey900;
 
 // The height of the half app list from the bottom of the screen.
 constexpr int kHalfAppListHeight = 545;
-
-// The scroll offset in order to transition from PEEKING to FULLSCREEN
-constexpr int kAppListMinScrollToSwitchStates = 20;
 
 // The DIP distance from the bezel in which a gesture drag end results in a
 // closed app list.
@@ -284,14 +284,14 @@ class AppListView::StateAnimationMetricsReporter {
 
  private:
   static void RecordMetricsInTablet(
-      base::Optional<TabletModeAnimationTransition> transition,
+      absl::optional<TabletModeAnimationTransition> transition,
       int value);
   static void RecordMetricsInClamshell(
-      base::Optional<AppListViewState> target_state,
+      absl::optional<AppListViewState> target_state,
       int value);
 
-  base::Optional<AppListViewState> target_state_;
-  base::Optional<TabletModeAnimationTransition> tablet_transition_;
+  absl::optional<AppListViewState> target_state_;
+  absl::optional<TabletModeAnimationTransition> tablet_transition_;
 };
 
 void AppListView::StateAnimationMetricsReporter::Reset() {
@@ -301,7 +301,7 @@ void AppListView::StateAnimationMetricsReporter::Reset() {
 
 // static
 void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
-    base::Optional<TabletModeAnimationTransition> tablet_transition,
+    absl::optional<TabletModeAnimationTransition> tablet_transition,
     int value) {
   UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
 
@@ -360,7 +360,7 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
 
 // static
 void AppListView::StateAnimationMetricsReporter::RecordMetricsInClamshell(
-    base::Optional<AppListViewState> target_state,
+    absl::optional<AppListViewState> target_state,
     int value) {
   UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
 
@@ -483,13 +483,13 @@ class StateTransitionNotifier : public ui::ImplicitAnimationObserver {
     state_ = State::kIdle;
 
     AppListViewState app_list_state = *target_app_list_view_state_;
-    target_app_list_view_state_ = base::nullopt;
+    target_app_list_view_state_ = absl::nullopt;
     view_->OnBoundsAnimationCompleted(app_list_state);
   }
 
   State state_ = State::kIdle;
   AppListView* const view_;
-  base::Optional<AppListViewState> target_app_list_view_state_;
+  absl::optional<AppListViewState> target_app_list_view_state_;
 
   DISALLOW_COPY_AND_ASSIGN(StateTransitionNotifier);
 };
@@ -537,7 +537,7 @@ class AppListBackgroundShieldView : public views::View {
   void UpdateBackgroundRadius(
       AppListViewState state,
       bool shelf_has_rounded_corners,
-      base::Optional<base::TimeTicks> animation_end_timestamp) {
+      absl::optional<base::TimeTicks> animation_end_timestamp) {
     const double target_corner_radius =
         (state == AppListViewState::kClosed && !shelf_has_rounded_corners)
             ? 0
@@ -807,9 +807,9 @@ void AppListView::Show(AppListViewState preferred_state, bool is_side_shelf) {
   OnTabletModeChanged(delegate_->IsInTabletMode());
   app_list_main_view_->ShowAppListWhenReady();
 
-  UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
+  UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
                       base::Time::Now() - time_shown_.value());
-  time_shown_ = base::nullopt;
+  time_shown_ = absl::nullopt;
   RecordFolderMetrics();
 }
 
@@ -1264,7 +1264,7 @@ void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
   if (transition == kMaxAppListStateTransition)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(kAppListStateTransitionSourceHistogram, transition,
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListStateTransitionSource", transition,
                             kMaxAppListStateTransition);
 
   switch (transition) {
@@ -1475,7 +1475,7 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
         // in drag.
         gfx::Vector2dF drag_distance =
             event->root_location_f() - initial_mouse_drag_point_;
-        if (abs(drag_distance.y()) < kMouseDragThreshold)
+        if (std::abs(drag_distance.y()) < kMouseDragThreshold)
           return;
 
         StartDrag(initial_mouse_drag_point_);
@@ -1602,62 +1602,109 @@ void AppListView::OnWallpaperColorsChanged() {
   search_box_view_->OnWallpaperColorsChanged();
 }
 
+bool AppListView::ShouldScrollDismissAppList(const gfx::Point& location,
+                                             const gfx::Vector2d& offset,
+                                             ui::EventType type,
+                                             bool is_in_vertical_bounds) {
+  if (delegate_->IsInTabletMode())
+    return false;
+
+  if (GetAppsContainerView()->IsInFolderView() && is_in_vertical_bounds)
+    return false;
+
+  if (!is_side_shelf() && is_in_vertical_bounds)
+    return false;
+
+  if (is_side_shelf()) {
+    // This offset will be adjusted for scrolling preferences, as well as
+    // for shelf alignment. Positive values are toward the shelf.
+    int adjusted_offset =
+        delegate_->AdjustAppListViewScrollOffset(offset.x(), type);
+
+    // If the magnitude is big enough and the scroll is toward the shelf,
+    // dismiss the full screen AppList.
+    if (adjusted_offset > AppListView::kAppListMinScrollToSwitchStates &&
+        app_list_state_ == AppListViewState::kFullscreenAllApps) {
+      return true;
+    }
+  } else {
+    int adjusted_offset =
+        delegate_->AdjustAppListViewScrollOffset(offset.y(), type);
+
+    // If the event is a mousewheel event, the offset is always large
+    // enough, otherwise the offset must be larger than the scroll
+    // threshold to dismiss from full screen.
+    if ((type == ui::ET_MOUSEWHEEL ||
+         std::abs(adjusted_offset) >
+             AppListView::kAppListMinScrollToSwitchStates) &&
+        app_list_state_ == AppListViewState::kFullscreenAllApps &&
+        adjusted_offset < 0) {
+      return true;
+    }
+
+    // For upward touchpad or mousewheel scrolling, expand to full screen.
+    if (app_list_state_ == AppListViewState::kPeeking && adjusted_offset < 0)
+      return true;
+  }
+  return false;
+}
+
 bool AppListView::HandleScroll(const gfx::Point& location,
                                const gfx::Vector2d& offset,
                                ui::EventType type) {
   // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
   // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
   // touchpad mouse moves. Those may be passed via mojo APIs and handled here.
-  if ((offset.y() == 0 && offset.x() == 0) || is_in_drag() ||
-      ShouldIgnoreScrollEvents()) {
+  if ((offset.y() == 0 && offset.x() == 0) || ShouldIgnoreScrollEvents())
     return false;
-  }
 
-  if (app_list_state_ != AppListViewState::kPeeking &&
-      app_list_state_ != AppListViewState::kFullscreenAllApps) {
-    return false;
-  }
+  AppsGridView* apps_grid_view = GetAppsContainerView()->IsInFolderView()
+                                     ? GetFolderAppsGridView()
+                                     : GetRootAppsGridView();
+  gfx::Point apps_grid_location(location);
+  views::View::ConvertPointToTarget(this, apps_grid_view, &apps_grid_location);
 
-  // Let the Apps grid view handle the event first in FULLSCREEN_ALL_APPS.
-  if (app_list_state_ == AppListViewState::kFullscreenAllApps) {
-    AppsGridView* apps_grid_view = GetAppsContainerView()->IsInFolderView()
-                                       ? GetFolderAppsGridView()
-                                       : GetRootAppsGridView();
-    gfx::Point apps_grid_location(location);
-    views::View::ConvertPointToTarget(this, apps_grid_view,
-                                      &apps_grid_location);
+  // For the purposes of whether or not to dismiss the AppList, we treat any
+  // scroll to the left or the right of the apps grid as though it was in the
+  // apps grid, as long as it is within the vertical bounds of the apps grid.
+  bool is_in_vertical_bounds =
+      location.y() > GetRootAppsGridView()->bounds().y() &&
+      location.y() < GetRootAppsGridView()->bounds().bottom();
 
-    if (apps_grid_view->HandleScrollFromAppListView(apps_grid_location, offset,
-                                                    type)) {
-      return true;
-    }
-  }
-
-  // The AppList should not be dismissed with scroll in tablet mode.
-  if (delegate_->IsInTabletMode())
+  // First see if we need to collapse the app list from this scroll when in a
+  // side shelf alignment. We do this first because if this happens anywhere on
+  // the app list or shelf, we're going to dismiss and not scroll.
+  if (ShouldScrollDismissAppList(location, offset, type,
+                                 is_in_vertical_bounds)) {
+    Dismiss();
     return true;
+  }
 
-  // If the event is a mousewheel event, the offset is always large enough,
-  // otherwise the offset must be larger than the scroll threshold.
-  if (type == ui::ET_MOUSEWHEEL ||
-      abs(offset.y()) > kAppListMinScrollToSwitchStates) {
-    if (app_list_state_ == AppListViewState::kFullscreenAllApps) {
-      if (offset.y() > 0)
-        Dismiss();
+  // For upward touchpad or mousewheel scrolling, expand to full screen.
+  // For downward, dismiss the peeking launcher.
+  if (app_list_state_ == AppListViewState::kPeeking &&
+      delegate_->AdjustAppListViewScrollOffset(offset.y(), type) > 0) {
+    SetState(AppListViewState::kFullscreenAllApps);
+    const AppListPeekingToFullscreenSource source =
+        type == ui::ET_MOUSEWHEEL ? kMousewheelScroll : kMousepadScroll;
+    UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, source,
+                              kMaxPeekingToFullscreen);
+    return true;
+  }
+
+  // Now if we haven't dismissed or expanded we pass the event on to
+  // `apps_grid_view`.
+  if (app_list_state_ == AppListViewState::kFullscreenAllApps) {
+    bool is_in_active_apps_grid =
+        apps_grid_view->bounds().Contains(apps_grid_location);
+    // If we are not in a folder, the event just need to be within the vertical
+    // bounds of the apps grid. If we are in a folder, it must be inside that
+    // folder's view.
+    if ((!GetAppsContainerView()->IsInFolderView() && is_in_vertical_bounds) ||
+        is_in_active_apps_grid) {
+      apps_grid_view->HandleScrollFromAppListView(apps_grid_location, offset,
+                                                  type);
       return true;
-    }
-
-    DCHECK_EQ(AppListViewState::kPeeking, app_list_state_);
-    // For upward touchpad or mousewheel scrolling, expand to full screen. For
-    // downward, dismiss the peeking launcher.
-    if (offset.y() > 0) {
-      SetState(AppListViewState::kFullscreenAllApps);
-      const AppListPeekingToFullscreenSource source =
-          type == ui::ET_MOUSEWHEEL ? kMousewheelScroll : kMousepadScroll;
-      UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, source,
-                                kMaxPeekingToFullscreen);
-    } else {
-      Dismiss();
     }
   }
   return true;
@@ -1868,7 +1915,7 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-  base::Optional<ui::AnimationThroughputReporter> reporter;
+  absl::optional<ui::AnimationThroughputReporter> reporter;
   if (report_animation_throughput) {
     reporter.emplace(
         animation.GetAnimator(),
@@ -2224,7 +2271,7 @@ void AppListView::SetShelfHasRoundedCorners(bool shelf_has_rounded_corners) {
   if (shelf_has_rounded_corners_ == shelf_has_rounded_corners)
     return;
   shelf_has_rounded_corners_ = shelf_has_rounded_corners;
-  base::Optional<base::TimeTicks> animation_end_timestamp;
+  absl::optional<base::TimeTicks> animation_end_timestamp;
   if (GetWidget() && GetWidget()->GetLayer()->GetAnimator()->is_animating()) {
     animation_end_timestamp = animation_end_timestamp_;
   }
@@ -2374,6 +2421,7 @@ void AppListView::SetBackgroundShieldColor() {
 void AppListView::RecordFolderMetrics() {
   int number_of_apps_in_folders = 0;
   int number_of_folders = 0;
+  int non_system_folders = 0;
   AppListItemList* item_list =
       app_list_main_view_->model()->top_level_item_list();
   for (size_t i = 0; i < item_list->item_count(); ++i) {
@@ -2385,16 +2433,26 @@ void AppListView::RecordFolderMetrics() {
     if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
       continue;  // Don't count items in OEM folders.
     number_of_apps_in_folders += folder->item_list()->item_count();
+    if (folder->id() == kCrostiniFolderId)
+      continue;
+    // Folders that are not the OEM folder and not "Linux apps".
+    ++non_system_folders;
   }
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfFoldersHistogram, number_of_folders);
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfAppsInFoldersHistogram,
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfFolders", number_of_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfNonSystemFolders", non_system_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.AppsInFolders.FullscreenAppListEnabled",
                            number_of_apps_in_folders);
 }
 
 bool AppListView::ShouldIgnoreScrollEvents() {
   // When the app list is doing state change animation or the apps grid view is
   // in transition, ignore the scroll events to prevent triggering extra state
-  // changes or transtions.
+  // changes or transitions.
+  if (is_in_drag())
+    return true;
+  if (app_list_state_ != AppListViewState::kPeeking &&
+      app_list_state_ != AppListViewState::kFullscreenAllApps)
+    return true;
   return GetWidget()->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
 }

@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -852,7 +853,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1025, 1025), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+      transfer_resource, base::DoNothing());
 
   std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
@@ -867,8 +868,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(1023, 1023), gfx::MaskFilterInfo(),
-                       gfx::Rect(1023, 1023), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1023, 1023),
                        gfx::Rect(1023, 1023), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -915,7 +915,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1023, 1023), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+      transfer_resource, base::DoNothing());
 
   std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
@@ -930,8 +930,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(1025, 1025), gfx::MaskFilterInfo(),
-                       gfx::Rect(1025, 1025), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1025, 1025),
                        gfx::Rect(1025, 1025), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -975,7 +974,7 @@ class GLRendererTextureDrawQuadHDRTest
         kTextureSize, true);
     transfer_resource.color_space = gfx::ColorSpace::CreateSCRGBLinear();
     ResourceId client_resource_id = child_resource_provider->ImportResource(
-        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+        transfer_resource, base::DoNothing());
 
     std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
         cc::SendResourceAndGetChildToParentMap(
@@ -988,8 +987,7 @@ class GLRendererTextureDrawQuadHDRTest
     SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
     shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                          gfx::Rect(kTextureSize), gfx::MaskFilterInfo(),
-                         gfx::Rect(kTextureSize), false, false, 1,
-                         SkBlendMode::kSrcOver, 0);
+                         absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
     overlay_quad->SetNew(shared_state, gfx::Rect(kTextureSize),
                          gfx::Rect(kTextureSize), needs_blending, resource_id,
                          premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -1497,7 +1495,7 @@ TEST_F(GLRendererTest, DrawYUVVideoDrawQuadWithVisibleRect) {
 
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(), rect,
-                       gfx::MaskFilterInfo(), rect, false, false, 1,
+                       gfx::MaskFilterInfo(), absl::nullopt, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   YUVVideoDrawQuad* quad =
@@ -2053,7 +2051,6 @@ TEST_F(GLRendererSkipTest, SkipVisibleRect) {
       gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 10, 10);
   cc::AddQuad(root_pass, quad_rect, SK_ColorGREEN);
-  root_pass->shared_quad_state_list.front()->is_clipped = true;
   root_pass->shared_quad_state_list.front()->clip_rect =
       gfx::Rect(0, 0, 40, 40);
   root_pass->quad_list.front()->visible_rect = gfx::Rect(20, 20, 20, 20);
@@ -2149,8 +2146,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       child_rect.size(), false /* is_overlay_candidate */);
-  ResourceId mask = child_resource_provider_->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+  ResourceId mask = child_resource_provider_->ImportResource(transfer_resource,
+                                                             base::DoNothing());
 
   // Return the mapped resource id.
   std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
@@ -2690,8 +2687,9 @@ class TestOverlayProcessor : public OverlayProcessorStub {
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
 
 static void CollectResources(std::vector<ReturnedResource>* array,
-                             const std::vector<ReturnedResource>& returned) {
-  array->insert(array->end(), returned.begin(), returned.end());
+                             std::vector<ReturnedResource> returned) {
+  array->insert(array->end(), std::make_move_iterator(returned.begin()),
+                std::make_move_iterator(returned.end()));
 }
 
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
@@ -2713,14 +2711,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2922,14 +2919,13 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2972,8 +2968,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::MaskFilterInfo(),
-                       gfx::Rect(viewport_size), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), needs_blending,
                        parent_resource_id, premultiplied_alpha, uv_top_left,
@@ -3701,14 +3696,13 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -3749,7 +3743,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
       shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                           rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                           absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
       YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       quad->SetNew(shared_state, rect, rect, needs_blending, tex_coord_rect,
@@ -4071,7 +4065,7 @@ class CALayerGLRendererTest : public GLRendererTest {
 
     DrawFrame(&renderer(), viewport_size);
     renderer().SwapBuffers(DirectRenderer::SwapFrameData());
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4190,11 +4184,10 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
     SharedQuadState* sqs =
         const_cast<SharedQuadState*>(quad->shared_quad_state);
 
-    sqs->is_clipped = true;
     sqs->clip_rect = gfx::Rect(2, 2, 6, 6);
     const float radius = 2;
     sqs->mask_filter_info =
-        gfx::MaskFilterInfo(gfx::RRectF(gfx::RectF(sqs->clip_rect), radius));
+        gfx::MaskFilterInfo(gfx::RRectF(gfx::RectF(*sqs->clip_rect), radius));
 
     switch (subtest) {
       case 0:
@@ -4294,7 +4287,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
 
   // The texture will be checked to verify if it is free yet.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Frame number 2. We change the size of the child RenderPass to be smaller
@@ -4340,7 +4333,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
 
   // There are now 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // The first (256x256) texture is returned to the GLRenderer.
@@ -4449,7 +4442,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
 
   // The texture will be checked to verify if it is free yet.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Frame number 2. We change the size of the child RenderPass to be much
@@ -4493,7 +4486,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
 
   // There are now 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // The first (256x256) texture is returned to the GLRenderer.
@@ -4627,7 +4620,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
 
   // There are 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Both textures get returned and the 2nd one can be reused.
@@ -4727,7 +4720,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
 
     // All sent textures will be checked to verify if they are free yet.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4796,7 +4789,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
     // also 1 outstanding texture to check for that wasn't returned yet from the
     // above loop.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 2, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 }
@@ -4856,7 +4849,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
 
     // All sent textures will be checked to verify if they are free yet.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4889,7 +4882,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
 
     // There's just 1 outstanding RenderPass texture to query for.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -5112,7 +5105,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
         gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
         gfx::Size(256, 256), true);
     ResourceId client_resource_id = child_resource_provider_->ImportResource(
-        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+        transfer_resource, base::DoNothing());
 
     std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
         cc::SendResourceAndGetChildToParentMap(
@@ -5177,9 +5170,8 @@ TEST_F(GLRendererWithGpuFenceTest,
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(50, 50), gfx::MaskFilterInfo(),
-                       gfx::Rect(viewport_size), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(50, 50), gfx::MaskFilterInfo(), absl::nullopt,
+                       false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(
       shared_state, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
       needs_blending, create_overlay_resource(), premultiplied_alpha,

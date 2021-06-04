@@ -20,7 +20,6 @@
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/managed_user_setting_specifics.pb.h"
-#include "components/sync/protocol/managed_user_whitelist_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/os_preference_specifics.pb.h"
 #include "components/sync/protocol/os_priority_preference_specifics.pb.h"
@@ -46,7 +45,7 @@ namespace {
     specifics.mutable_##Key();                                      \
     std::unique_ptr<base::DictionaryValue> value(                   \
         EntitySpecificsToValue(specifics));                         \
-    EXPECT_EQ(1, static_cast<int>(value->size()));                  \
+    EXPECT_EQ(1, static_cast<int>(value->DictSize()));              \
   }
 
 // We'd also like to check if we changed any field in our messages. However,
@@ -56,7 +55,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(38 == syncer::GetNumModelTypes(),
+static_assert(37 == syncer::GetNumModelTypes(),
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -76,7 +75,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(extension)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist)
 DEFINE_SPECIFICS_TO_VALUE_TEST(nigori)
 DEFINE_SPECIFICS_TO_VALUE_TEST(os_preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(os_priority_preference)
@@ -157,7 +155,7 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
 
   std::unique_ptr<base::DictionaryValue> value(
       BookmarkSpecificsToValue(specifics));
-  EXPECT_FALSE(value->empty());
+  EXPECT_FALSE(value->DictEmpty());
   std::string encoded_time;
   EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
   EXPECT_EQ(base::NumberToString(creation_time.ToInternalValue()),
@@ -236,13 +234,13 @@ TEST(ProtoValueConversionsTest, ClientToServerMessageToValue) {
 
   std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerMessageToValue(message, true /* include_specifics */));
-  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_FALSE(value_with_specifics->DictEmpty());
   EXPECT_TRUE(
       ValueHasSpecifics(*(value_with_specifics.get()), "commit.entries"));
 
   std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerMessageToValue(message, false /* include_specifics */));
-  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(value_without_specifics->DictEmpty());
   EXPECT_FALSE(
       ValueHasSpecifics(*(value_without_specifics.get()), "commit.entries"));
 }
@@ -257,13 +255,13 @@ TEST(ProtoValueConversionsTest, ClientToServerResponseToValue) {
 
   std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerResponseToValue(message, true /* include_specifics */));
-  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_FALSE(value_with_specifics->DictEmpty());
   EXPECT_TRUE(
       ValueHasSpecifics(*(value_with_specifics.get()), "get_updates.entries"));
 
   std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerResponseToValue(message, false /* include_specifics */));
-  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(value_without_specifics->DictEmpty());
   EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),
                                  "get_updates.entries"));
 }

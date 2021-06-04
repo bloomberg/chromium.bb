@@ -106,7 +106,9 @@ void GrGLProgram::updateUniforms(const GrRenderTarget* renderTarget,
     // We must bind to texture units in the same order in which we set the uniforms in
     // GrGLProgramDataManager. That is, we bind textures for processors in this order:
     // primProc, fragProcs, XP.
-    fGeometryProcessor->setData(fProgramDataManager, programInfo.geomProc());
+    fGeometryProcessor->setData(fProgramDataManager,
+                                *fGpu->caps()->shaderCaps(),
+                                programInfo.geomProc());
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
@@ -152,11 +154,7 @@ void GrGLProgram::bindTextures(const GrGeometryProcessor& geomProc,
 void GrGLProgram::setRenderTargetState(const GrRenderTarget* rt,
                                        GrSurfaceOrigin origin,
                                        const GrGeometryProcessor& geomProc) {
-    // Load the RT size uniforms if they are needed
-    if (fBuiltinUniformHandles.fRTWidthUni.isValid() &&
-        fRenderTargetState.fRenderTargetSize.fWidth != rt->width()) {
-        fProgramDataManager.set1f(fBuiltinUniformHandles.fRTWidthUni, SkIntToScalar(rt->width()));
-    }
+    // Load the RT height uniform if it is needed
     if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
         fRenderTargetState.fRenderTargetSize.fHeight != rt->height()) {
         fProgramDataManager.set1f(fBuiltinUniformHandles.fRTHeightUni, SkIntToScalar(rt->height()));

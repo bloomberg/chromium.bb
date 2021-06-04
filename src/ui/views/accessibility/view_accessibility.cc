@@ -35,7 +35,6 @@ bool IsValidRoleForViews(ax::mojom::Role role) {
     case ax::mojom::Role::kDocument:  // Used for ARIA role="document".
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kIframePresentational:
-    case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPdfRoot:
     case ax::mojom::Role::kPortal:
     case ax::mojom::Role::kRootWebArea:
@@ -444,7 +443,7 @@ Widget* ViewAccessibility::GetPreviousFocus() const {
 
 void ViewAccessibility::OverrideChildTreeID(ui::AXTreeID tree_id) {
   if (tree_id == ui::AXTreeIDUnknown())
-    child_tree_id_ = base::nullopt;
+    child_tree_id_ = absl::nullopt;
   else
     child_tree_id_ = tree_id;
 }
@@ -458,8 +457,7 @@ gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() const {
 }
 
 void ViewAccessibility::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
-  // On certain platforms, e.g. Chrome OS, we don't create any
-  // AXPlatformDelegates, so the base method in this file would be called.
+  // Used for unit testing.
   if (accessibility_events_callback_)
     accessibility_events_callback_.Run(nullptr, event_type);
 }

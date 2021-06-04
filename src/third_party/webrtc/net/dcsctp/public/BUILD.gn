@@ -13,8 +13,34 @@ rtc_source_set("strong_alias") {
 }
 
 rtc_source_set("types") {
-  deps = [ ":strong_alias" ]
-  sources = [ "types.h" ]
+  deps = [
+    ":strong_alias",
+    "../../../api:array_view",
+  ]
+  sources = [
+    "dcsctp_message.h",
+    "dcsctp_options.h",
+    "types.h",
+  ]
+}
+
+rtc_source_set("socket") {
+  deps = [
+    ":types",
+    "../../../api:array_view",
+    "../../../rtc_base",
+    "../../../rtc_base:checks",
+    "../../../rtc_base:rtc_base_approved",
+  ]
+  sources = [
+    "dcsctp_socket.h",
+    "packet_observer.h",
+    "timeout.h",
+  ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 if (rtc_include_tests) {
@@ -23,11 +49,15 @@ if (rtc_include_tests) {
 
     deps = [
       ":strong_alias",
+      ":types",
       "../../../rtc_base:checks",
       "../../../rtc_base:gunit_helpers",
       "../../../rtc_base:rtc_base_approved",
       "../../../test:test_support",
     ]
-    sources = [ "strong_alias_test.cc" ]
+    sources = [
+      "strong_alias_test.cc",
+      "types_test.cc",
+    ]
   }
 }

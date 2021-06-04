@@ -90,16 +90,6 @@ struct FeaturesVk : FeatureSetBase
         "supportsIncrementalPresent", FeatureCategory::VulkanFeatures,
         "VkDevice supports the VK_KHR_incremental_present extension", &members};
 
-    // Whether the Vulkan presentation engine rotates the present region rectangles of the
-    // VK_KHR_incremental_present extension in pre-rotation situations.  The Android presentation
-    // engine assumes that these rectangles need to be rotated, and thus ANGLE should not also
-    // pre-rotate them.
-    Feature disablePreRotateIncrementalPresentRectangles = {
-        "disablePreRotateIncrementalPresentRectangles", FeatureCategory::VulkanFeatures,
-        "Presentation engine performs necessary rotation for present region rectangles of the "
-        "VK_KHR_incremental_present extension",
-        &members};
-
     // Whether texture copies on cube map targets should be done on GPU.  This is a workaround for
     // Intel drivers on windows that have an issue with creating single-layer views on cube map
     // textures.
@@ -433,11 +423,41 @@ struct FeaturesVk : FeatureSetBase
         "Works around a bug on platforms which destroy oldSwapchain in vkCreateSwapchainKHR.",
         &members, "http://anglebug.com/5061"};
 
+    // Allow forcing an LOD offset on all sampling operations for performance comparisons. ANGLE is
+    // non-conformant if this feature is enabled.
+    std::array<angle::Feature, 4> forceTextureLODOffset = {
+        angle::Feature{"force_texture_lod_offset_1", angle::FeatureCategory::VulkanWorkarounds,
+                       "Increase the minimum texture level-of-detail by 1 when sampling.",
+                       &members},
+        angle::Feature{"force_texture_lod_offset_2", angle::FeatureCategory::VulkanWorkarounds,
+                       "Increase the minimum texture level-of-detail by 2 when sampling.",
+                       &members},
+        angle::Feature{"force_texture_lod_offset_3", angle::FeatureCategory::VulkanWorkarounds,
+                       "Increase the minimum texture level-of-detail by 3 when sampling.",
+                       &members},
+        angle::Feature{"force_texture_lod_offset_4", angle::FeatureCategory::VulkanWorkarounds,
+                       "Increase the minimum texture level-of-detail by 4 when sampling.",
+                       &members},
+    };
+
+    // Translate non-nearest filtering modes to nearest for all samplers for performance
+    // comparisons. ANGLE is non-conformant if this feature is enabled.
+    Feature forceNearestFiltering = {"force_nearest_filtering", FeatureCategory::VulkanWorkarounds,
+                                     "Force nearest filtering when sampling.", &members};
+
     // Translate  non-nearest mip filtering modes to nearest mip for all samplers for performance
     // comparisons. ANGLE is non-conformant if this feature is enabled.
     Feature forceNearestMipFiltering = {"forceNearestMipFiltering",
                                         FeatureCategory::VulkanWorkarounds,
                                         "Force nearest mip filtering when sampling.", &members};
+
+    // Compress float32 vertices in static buffers to float16 at draw time. ANGLE is non-conformant
+    // if this feature is enabled.
+    angle::Feature compressVertexData = {"compress_vertex_data",
+                                         angle::FeatureCategory::VulkanWorkarounds,
+                                         "Compress vertex data to smaller data types when "
+                                         "possible. Using this feature makes ANGLE non-conformant.",
+                                         &members};
 
     // Qualcomm missynchronizes vkCmdClearAttachments in the middle of render pass.
     // https://issuetracker.google.com/166809097
@@ -489,13 +509,18 @@ struct FeaturesVk : FeatureSetBase
         "supportsNegativeViewport", FeatureCategory::VulkanFeatures,
         "The driver supports inverting the viewport with a negative height.", &members};
 
-    // The EGL_EXT_buffer_age implementation causes
-    // android.graphics.cts.BitmapTest#testDrawingHardwareBitmapNotLeaking to fail on Cuttlefish
-    // with SwANGLE. Needs investigation whether this is a race condition which could affect other
-    // Vulkan drivers, or if it's a SwiftShader bug.
-    // http://anglebug.com/3529
-    Feature enableBufferAge = {"enableBufferAge", FeatureCategory::VulkanWorkarounds,
-                               "Expose EGL_EXT_buffer_age", &members, "http://anglebug.com/3529"};
+    // Whether we should force any highp precision in the fragment shader to mediump.
+    // ANGLE is non-conformant if this feature is enabled.
+    Feature forceFragmentShaderPrecisionHighpToMediump = {
+        "forceFragmentShaderPrecisionHighpToMediump", FeatureCategory::VulkanWorkarounds,
+        "Forces highp precision in fragment shader to mediump.", &members,
+        "https://issuetracker.google.com/184850002"};
+
+    // Whether we should submit at each FBO boundary.
+    Feature preferSubmitAtFBOBoundary = {
+        "preferSubmitAtFBOBoundary", FeatureCategory::VulkanWorkarounds,
+        "Submit commands to driver at each FBO boundary for performance improvements.", &members,
+        "https://issuetracker.google.com/187425444"};
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

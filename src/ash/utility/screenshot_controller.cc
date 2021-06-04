@@ -14,11 +14,12 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -74,7 +75,7 @@ aura::Window* FindWindowForEvent(const ui::LocatedEvent& event) {
 bool IsTopLevelWindow(aura::Window* window) {
   if (!window)
     return false;
-  if (window->type() == aura::client::WINDOW_TYPE_CONTROL ||
+  if (window->GetType() == aura::client::WINDOW_TYPE_CONTROL ||
       !window->delegate()) {
     return false;
   }
@@ -130,7 +131,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
   bool draw_inactive_overlay() const { return draw_inactive_overlay_; }
 
-  const base::Optional<gfx::Point>& start_position() const {
+  const absl::optional<gfx::Point>& start_position() const {
     return start_position_;
   }
 
@@ -298,7 +299,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
   gfx::Point cursor_location_in_root_;
 
-  base::Optional<gfx::Point> start_position_;
+  absl::optional<gfx::Point> start_position_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotLayer);
 };
@@ -506,8 +507,9 @@ void ScreenshotController::UpdateSelectedWindow(const ui::LocatedEvent& event) {
   while (selected && !IsTopLevelWindow(selected))
     selected = selected->parent();
 
-  if (selected->parent()->id() == kShellWindowId_WallpaperContainer ||
-      selected->parent()->id() == kShellWindowId_LockScreenWallpaperContainer)
+  if (selected->parent()->GetId() == kShellWindowId_WallpaperContainer ||
+      selected->parent()->GetId() ==
+          kShellWindowId_LockScreenWallpaperContainer)
     selected = nullptr;
 
   SetSelectedWindow(selected);

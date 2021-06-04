@@ -58,6 +58,7 @@ void MaybeOverrideScanResult(DownloadCheckResultReason reason,
     // take precedence.
     case DownloadCheckResult::DANGEROUS_HOST:
     case DownloadCheckResult::DANGEROUS:
+    case DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE:
       callback.Run(deep_scan_result);
       return;
 
@@ -77,6 +78,8 @@ void MaybeOverrideScanResult(DownloadCheckResultReason reason,
         callback.Run(DownloadCheckResult::POTENTIALLY_UNWANTED);
       else if (reason == REASON_DOWNLOAD_UNCOMMON)
         callback.Run(DownloadCheckResult::UNCOMMON);
+      else if (reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE)
+        callback.Run(DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE);
       else
         callback.Run(deep_scan_result);
       return;
@@ -227,20 +230,21 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-base::Optional<enterprise_connectors::AnalysisSettings>
+absl::optional<enterprise_connectors::AnalysisSettings>
 CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   // If the download was destroyed, we can't upload it.
   if (reason == REASON_DOWNLOAD_DESTROYED)
-    return base::nullopt;
+    return absl::nullopt;
 
   auto settings = DeepScanningRequest::ShouldUploadBinary(item_);
   if (settings && (reason == REASON_DOWNLOAD_DANGEROUS ||
                    reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
-                   reason == REASON_ALLOWLISTED_URL)) {
+                   reason == REASON_ALLOWLISTED_URL ||
+                   reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE)) {
     settings->tags.erase("malware");
     if (settings->tags.empty())
-      return base::nullopt;
+      return absl::nullopt;
   }
 
   return settings;
@@ -252,7 +256,8 @@ void CheckClientDownloadRequest::UploadBinary(
   if (reason == REASON_DOWNLOAD_DANGEROUS ||
       reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
       reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED ||
-      reason == REASON_DOWNLOAD_UNCOMMON || reason == REASON_ALLOWLISTED_URL) {
+      reason == REASON_DOWNLOAD_UNCOMMON || reason == REASON_ALLOWLISTED_URL ||
+      reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE) {
     service()->UploadForDeepScanning(
         item_, base::BindRepeating(&MaybeOverrideScanResult, reason, callback_),
         DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,

@@ -113,9 +113,6 @@ class CopyTextureForBrowserTests : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
-        // TODO(crbug.com/tint/682): error: runtime array not supported yet
-        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
         testPipeline = MakeTestPipeline();
 
         uint32_t uniformBufferData[] = {
@@ -151,16 +148,16 @@ class CopyTextureForBrowserTests : public DawnTest {
             [[group(0), binding(1)]] var dst : texture_2d<f32>;
             [[group(0), binding(2)]] var<storage> output : [[access(read_write)]] OutputBuf;
             [[group(0), binding(3)]] var<uniform> uniforms : Uniforms;
-            [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
             fn aboutEqual(value : f32, expect : f32) -> bool {
                 // The value diff should be smaller than the hard coded tolerance.
                 return abs(value - expect) < 0.001;
             }
-            [[stage(compute), workgroup_size(1, 1, 1)]] fn main() -> void {
-                var srcSize : vec2<i32> = textureDimensions(src);
-                var dstSize : vec2<i32> = textureDimensions(dst);
-                var dstTexCoord : vec2<u32> = vec2<u32>(GlobalInvocationID.xy);
-                var nonCoveredColor : vec4<f32> =
+            [[stage(compute), workgroup_size(1, 1, 1)]]
+            fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+                let srcSize : vec2<i32> = textureDimensions(src);
+                let dstSize : vec2<i32> = textureDimensions(dst);
+                let dstTexCoord : vec2<u32> = vec2<u32>(GlobalInvocationID.xy);
+                let nonCoveredColor : vec4<f32> =
                     vec4<f32>(0.0, 1.0, 0.0, 1.0); // should be green
 
                 var success : bool = true;
@@ -182,8 +179,8 @@ class CopyTextureForBrowserTests : public DawnTest {
                         srcTexCoord.y = u32(srcSize.y) - srcTexCoord.y - 1u;
                     }
 
-                    var srcColor : vec4<f32> = textureLoad(src, vec2<i32>(srcTexCoord), 0);
-                    var dstColor : vec4<f32> = textureLoad(dst, vec2<i32>(dstTexCoord), 0);
+                    let srcColor : vec4<f32> = textureLoad(src, vec2<i32>(srcTexCoord), 0);
+                    let dstColor : vec4<f32> = textureLoad(dst, vec2<i32>(dstTexCoord), 0);
 
                     // Not use loop and variable index format to workaround
                     // crbug.com/tint/638.
@@ -199,7 +196,7 @@ class CopyTextureForBrowserTests : public DawnTest {
                                   aboutEqual(dstColor.a, srcColor.a);
                     }
                 }
-                var outputIndex : u32 = GlobalInvocationID.y * u32(dstSize.x) +
+                let outputIndex : u32 = GlobalInvocationID.y * u32(dstSize.x) +
                                         GlobalInvocationID.x;
                 if (success) {
                     output.result[outputIndex] = 1u;
@@ -290,7 +287,7 @@ class CopyTextureForBrowserTests : public DawnTest {
         dstDescriptor.format = dstSpec.format;
         dstDescriptor.mipLevelCount = dstSpec.level + 1;
         dstDescriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled |
-                              wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+                              wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         dstTexture = device.CreateTexture(&dstDescriptor);
 
         if (testSubRectCopy) {
@@ -392,8 +389,6 @@ class CopyTextureForBrowserTests : public DawnTest {
 // Verify CopyTextureForBrowserTests works with internal pipeline.
 // The case do copy without any transform.
 TEST_P(CopyTextureForBrowserTests, PassthroughCopy) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
 
     constexpr uint32_t kWidth = 10;
     constexpr uint32_t kHeight = 1;
@@ -405,9 +400,6 @@ TEST_P(CopyTextureForBrowserTests, PassthroughCopy) {
 }
 
 TEST_P(CopyTextureForBrowserTests, VerifyCopyOnXDirection) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
-
     constexpr uint32_t kWidth = 1000;
     constexpr uint32_t kHeight = 1;
 
@@ -418,9 +410,6 @@ TEST_P(CopyTextureForBrowserTests, VerifyCopyOnXDirection) {
 }
 
 TEST_P(CopyTextureForBrowserTests, VerifyCopyOnYDirection) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
-
     constexpr uint32_t kWidth = 1;
     constexpr uint32_t kHeight = 1000;
 
@@ -431,8 +420,6 @@ TEST_P(CopyTextureForBrowserTests, VerifyCopyOnYDirection) {
 }
 
 TEST_P(CopyTextureForBrowserTests, VerifyCopyFromLargeTexture) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
 
     constexpr uint32_t kWidth = 899;
     constexpr uint32_t kHeight = 999;
@@ -444,9 +431,6 @@ TEST_P(CopyTextureForBrowserTests, VerifyCopyFromLargeTexture) {
 }
 
 TEST_P(CopyTextureForBrowserTests, VerifyFlipY) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
-
     constexpr uint32_t kWidth = 901;
     constexpr uint32_t kHeight = 1001;
 
@@ -459,9 +443,6 @@ TEST_P(CopyTextureForBrowserTests, VerifyFlipY) {
 }
 
 TEST_P(CopyTextureForBrowserTests, VerifyFlipYInSlimTexture) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
-
     constexpr uint32_t kWidth = 1;
     constexpr uint32_t kHeight = 1001;
 
@@ -476,8 +457,6 @@ TEST_P(CopyTextureForBrowserTests, VerifyFlipYInSlimTexture) {
 // Verify |CopyTextureForBrowser| doing color conversion correctly when
 // the source texture is RGBA8Unorm format.
 TEST_P(CopyTextureForBrowserTests, FromRGBA8UnormCopy) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
     // Skip OpenGLES backend because it fails on using RGBA8Unorm as
     // source texture format.
     DAWN_SKIP_TEST_IF(IsOpenGLES());
@@ -495,8 +474,6 @@ TEST_P(CopyTextureForBrowserTests, FromRGBA8UnormCopy) {
 // Verify |CopyTextureForBrowser| doing color conversion correctly when
 // the source texture is BGRAUnorm format.
 TEST_P(CopyTextureForBrowserTests, FromBGRA8UnormCopy) {
-    // Tests skip due to crbug.com/dawn/592.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
     // Skip OpenGLES backend because it fails on using BGRA8Unorm as
     // source texture format.
     DAWN_SKIP_TEST_IF(IsOpenGLES());

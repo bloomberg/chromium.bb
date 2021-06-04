@@ -28,7 +28,6 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -560,10 +559,10 @@ NextProto SSLClientSocketImpl::GetNegotiatedProtocol() const {
   return negotiated_protocol_;
 }
 
-base::Optional<base::StringPiece>
+absl::optional<base::StringPiece>
 SSLClientSocketImpl::GetPeerApplicationSettings() const {
   if (!SSL_has_application_settings(ssl_.get())) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const uint8_t* out_data;
@@ -789,7 +788,7 @@ int SSLClientSocketImpl::Init() {
   if (IsCachingEnabled()) {
     bssl::UniquePtr<SSL_SESSION> session =
         context_->ssl_client_session_cache()->Lookup(
-            GetSessionCacheKey(/*dest_ip_addr=*/base::nullopt));
+            GetSessionCacheKey(/*dest_ip_addr=*/absl::nullopt));
     if (!session) {
       // If a previous session negotiated an RSA cipher suite then it may have
       // been inserted into the cache keyed by both hostname and resolved IP
@@ -856,8 +855,10 @@ int SSLClientSocketImpl::Init() {
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA");
-  if (ssl_config_.disable_legacy_crypto)
+  if (!context_->config().triple_des_enabled ||
+      ssl_config_.disable_legacy_crypto) {
     command.append(":!3DES");
+  }
 
   // Remove any disabled ciphers.
   for (uint16_t id : context_->config().disabled_cipher_suites) {
@@ -1561,7 +1562,7 @@ void SSLClientSocketImpl::DoPeek() {
     if (err == ERR_EARLY_DATA_REJECTED ||
         err == ERR_WRONG_VERSION_ON_EARLY_DATA) {
       context_->ssl_client_session_cache()->ClearEarlyData(
-          GetSessionCacheKey(base::nullopt));
+          GetSessionCacheKey(absl::nullopt));
     }
 
     handled_early_data_result_ = true;
@@ -1685,7 +1686,7 @@ int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
   if (!IsCachingEnabled())
     return 0;
 
-  base::Optional<IPAddress> ip_addr;
+  absl::optional<IPAddress> ip_addr;
   if (SSL_CIPHER_get_kx_nid(SSL_SESSION_get0_cipher(session)) == NID_kx_rsa) {
     // If RSA key exchange was used, additionally key the cache with the
     // destination IP address. Of course, if a proxy is being used, the
@@ -1706,7 +1707,7 @@ int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
 }
 
 SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
-    base::Optional<IPAddress> dest_ip_addr) const {
+    absl::optional<IPAddress> dest_ip_addr) const {
   SSLClientSessionCache::Key key;
   key.server = host_and_port_;
   key.dest_ip_addr = dest_ip_addr;

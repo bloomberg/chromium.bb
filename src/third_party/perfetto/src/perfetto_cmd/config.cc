@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/trace_config.h"
 
@@ -116,10 +117,18 @@ bool CreateConfigFromOptions(const ConfigOptions& options,
   std::vector<std::string> atrace_apps = options.atrace_apps;
 
   for (const auto& category : options.categories) {
-    if (category.find('/') == std::string::npos) {
-      atrace_categories.push_back(category);
-    } else {
+    if (base::Contains(category, '/')) {
       ftrace_events.push_back(category);
+    } else {
+      atrace_categories.push_back(category);
+    }
+
+    // For the gfx category, also add the frame timeline data source
+    // as it's very useful for debugging gfx issues.
+    if (category == "gfx") {
+      auto* frame_timeline = config->add_data_sources();
+      frame_timeline->mutable_config()->set_name(
+          "android.surfaceflinger.frametimeline");
     }
   }
 

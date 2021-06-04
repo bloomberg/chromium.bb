@@ -10,6 +10,9 @@
 #include "chromeos/ui/frame/frame_utils.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/class_property.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -18,8 +21,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -148,6 +149,11 @@ void FrameHeader::FrameAnimatorView::OnViewBoundsChanged(
   SetBoundsRect(parent_->GetLocalBounds());
 }
 
+void FrameHeader::FrameAnimatorView::LayerDestroyed(ui::Layer* layer) {
+  CHECK(!layer_owner_ || layer_owner_->root() != layer);
+  views::View::LayerDestroyed(layer);
+}
+
 void FrameHeader::FrameAnimatorView::OnImplicitAnimationsCompleted() {
   // TODO(crbug.com/1172694): Remove this DCHECK if this is indeed the cause.
   DCHECK(layer_owner_);
@@ -251,7 +257,7 @@ void FrameHeader::SetBackButton(views::FrameCaptionButton* back_button) {
   if (back_button_) {
     back_button_->SetBackgroundColor(GetCurrentFrameColor());
     back_button_->SetImage(views::CAPTION_BUTTON_ICON_BACK,
-                           views::FrameCaptionButton::ANIMATE_NO,
+                           views::FrameCaptionButton::Animate::kNo,
                            chromeos::kWindowControlBackIcon);
   }
 }

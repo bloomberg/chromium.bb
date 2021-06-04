@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "fuchsia/base/init_logging.h"
 #include "url/gurl.h"
 
@@ -54,7 +55,7 @@ void PrintUsage() {
             << "WebEngine to be processed." << std::endl;
 }
 
-base::Optional<uint16_t> ParseRemoteDebuggingPort(
+absl::optional<uint16_t> ParseRemoteDebuggingPort(
     const base::CommandLine& command_line) {
   std::string port_str =
       command_line.GetSwitchValueNative(kRemoteDebuggingPortSwitch);
@@ -63,7 +64,7 @@ base::Optional<uint16_t> ParseRemoteDebuggingPort(
       port_parsed > 65535) {
     LOG(ERROR) << "Invalid value for --remote-debugging-port (must be in the "
                   "range 0-65535).";
-    return base::nullopt;
+    return absl::nullopt;
   }
   return (uint16_t)port_parsed;
 }
@@ -131,7 +132,7 @@ int main(int argc, char** argv) {
   CHECK(cr_fuchsia::InitLoggingFromCommandLineDefaultingToStderrForTest(
       command_line));
 
-  base::Optional<uint16_t> remote_debugging_port;
+  absl::optional<uint16_t> remote_debugging_port;
   if (command_line->HasSwitch(kRemoteDebuggingPortSwitch)) {
     remote_debugging_port = ParseRemoteDebuggingPort(*command_line);
     if (!remote_debugging_port) {
@@ -183,8 +184,10 @@ int main(int argc, char** argv) {
   // Enable other WebEngine features.
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::AUDIO |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+#if defined(ARCH_CPU_ARM64)
+  features |= fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+#endif
   if (is_headless)
     features |= fuchsia::web::ContextFeatureFlags::HEADLESS;
   else

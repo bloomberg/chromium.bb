@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
@@ -25,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -143,11 +145,10 @@ class ViewTreeHostRootView::LayerTreeViewTreeFrameSinkHolder
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
-  base::Optional<viz::HitTestRegionList> BuildHitTestData() override {
+  absl::optional<viz::HitTestRegionList> BuildHitTestData() override {
     return {};
   }
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override {
+  void ReclaimResources(std::vector<viz::ReturnedResource> resources) override {
     if (delete_pending_)
       return;
     for (auto& entry : resources) {
@@ -280,7 +281,8 @@ ViewTreeHostRootView::ObtainResource() {
       buffer_size_,
       SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
                    : gfx::BufferFormat::BGRA_8888,
-      gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+      gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
+      nullptr);
   if (!resource->gpu_memory_buffer) {
     LOG(ERROR) << "Failed to create GPU memory buffer";
     return nullptr;
@@ -456,14 +458,14 @@ void ViewTreeHostRootView::SubmitCompositorFrame() {
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(
-      buffer_to_target_transform,
-      /*quad_layer_rect=*/output_rect,
-      /*visible_quad_layer_rect=*/output_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(),
-      /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  quad_state->SetAll(buffer_to_target_transform,
+                     /*quad_layer_rect=*/output_rect,
+                     /*visible_layer_rect=*/output_rect,
+                     /*mask_filter_info=*/gfx::MaskFilterInfo(),
+                     /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+                     /*opacity=*/1.f,
+                     /*blend_mode=*/SkBlendMode::kSrcOver,
+                     /*sorting_context_id=*/0);
 
   viz::CompositorFrame frame;
   // TODO(eseckler): ViewTreeHostRootView should use BeginFrames and set

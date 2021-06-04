@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.webauthn;
 
+import android.annotation.TargetApi;
+import android.app.KeyguardManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +19,7 @@ import android.widget.LinearLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -40,8 +45,6 @@ public class CableAuthenticatorModuleProvider extends Fragment {
             "org.chromium.chrome.modules.cablev2_authenticator.NetworkContext";
     private static final String REGISTRATION_KEY =
             "org.chromium.chrome.modules.cablev2_authenticator.Registration";
-    private static final String ACTIVITY_CLASS_NAME_KEY =
-            "org.chromium.chrome.modules.cablev2_authenticator.ActivityClassName";
     private static final String ACTIVITY_CLASS_NAME =
             "org.chromium.chrome.browser.webauth.authenticator.CableAuthenticatorActivity";
     private static final String SECRET_KEY =
@@ -83,7 +86,6 @@ public class CableAuthenticatorModuleProvider extends Fragment {
                 CableAuthenticatorModuleProviderJni.get().getSystemNetworkContext());
         arguments.putLong(
                 REGISTRATION_KEY, CableAuthenticatorModuleProviderJni.get().getRegistration());
-        arguments.putString(ACTIVITY_CLASS_NAME_KEY, ACTIVITY_CLASS_NAME);
         arguments.putByteArray(SECRET_KEY, CableAuthenticatorModuleProviderJni.get().getSecret());
         fragment.setArguments(arguments);
         transaction.replace(getId(), fragment);
@@ -119,6 +121,28 @@ public class CableAuthenticatorModuleProvider extends Fragment {
             Cablev2AuthenticatorModule.getImpl().onCloudMessage(
                     event, networkContext, registration, ACTIVITY_CLASS_NAME, secret);
         });
+    }
+
+    @CalledByNative
+    public static boolean canDeviceSupportCable() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N
+                || BluetoothAdapter.getDefaultAdapter() == null) {
+            return false;
+        }
+
+        // GMSCore will immediately fail all requests if a screenlock
+        // isn't configured.
+        return hasScreenLockConfigured();
+    }
+
+    // canDeviceSupportCable has checked that the system is >= N (API level 24)
+    // before calling this function.
+    @TargetApi(24)
+    private static boolean hasScreenLockConfigured() {
+        KeyguardManager km =
+                (KeyguardManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.KEYGUARD_SERVICE);
+        return km.isDeviceSecure();
     }
 
     @NativeMethods

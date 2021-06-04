@@ -635,6 +635,9 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, TopLevel) {
   //   Ze Extension with multiple Context Menus
   //     Context Menu #1
   //     Context Menu #2
+  // TODO(crbug.com/1208359): Service Worker version is very flaky.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
 
   // Load extensions and wait until it's created a single menu item.
   ExtensionTestMessageListener listener1("created item", false);
@@ -985,7 +988,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest,
                                                  false);
 
   // Create an incognito profile.
-  Profile* incognito = browser()->profile()->GetPrimaryOTRProfile();
+  Profile* incognito =
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   ASSERT_TRUE(incognito);
   ASSERT_TRUE(LoadContextMenuExtensionWithIncognitoFlags("incognito"));
 

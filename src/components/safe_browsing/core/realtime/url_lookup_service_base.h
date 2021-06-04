@@ -11,13 +11,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -107,7 +107,7 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Called to send the request to the Safe Browsing backend over the network.
   // It also attached an auth header if |access_token_string| has a value.
   void SendRequest(const GURL& url,
-                   base::Optional<std::string> access_token_string,
+                   absl::optional<std::string> access_token_string,
                    RTLookupRequestCallback request_callback,
                    RTLookupResponseCallback response_callback);
 
@@ -140,8 +140,12 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
                               RTLookupRequestCallback request_callback,
                               RTLookupResponseCallback response_callback) = 0;
 
+  // Called when the response from the server is unauthorized, so child classes
+  // can add extra handling when this happens.
+  virtual void OnResponseUnauthorized(const std::string& invalid_access_token);
+
   // Gets a dm token string to be set in a request proto.
-  virtual base::Optional<std::string> GetDMTokenString() const = 0;
+  virtual absl::optional<std::string> GetDMTokenString() const = 0;
 
   // Suffix for logging metrics.
   virtual std::string GetMetricSuffix() const = 0;
@@ -182,14 +186,17 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
       std::unique_ptr<network::ResourceRequest> resource_request,
       const std::string& req_data,
       const GURL& url,
+      absl::optional<std::string> access_token_string,
       RTLookupResponseCallback response_callback);
 
   // Called when the response from the real-time lookup remote endpoint is
   // received. |url_loader| is the unowned loader that was used to send the
   // request. |request_start_time| is the time when the request was sent.
   // |response_body| is the response received. |url| is used for calling
-  // |MayBeCacheRealTimeUrlVerdict|.
+  // |MayBeCacheRealTimeUrlVerdict|. |access_token_string| is used for calling
+  // |OnResponseUnauthorized| in case the response code is HTTP_UNAUTHORIZED.
   void OnURLLoaderComplete(const GURL& url,
+                           absl::optional<std::string> access_token_string,
                            network::SimpleURLLoader* url_loader,
                            base::TimeTicks request_start_time,
                            std::unique_ptr<std::string> response_body);

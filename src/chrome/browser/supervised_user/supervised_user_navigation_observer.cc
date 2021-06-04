@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -161,12 +162,6 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
 
   MaybeUpdateRequestedHosts();
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  SupervisedUserService* service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-  if (!service->IsSupervisedUserIframeFilterEnabled())
-    return;
 
   // Iframe filtering has been enabled.
   web_contents()->ForEachFrame(

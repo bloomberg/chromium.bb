@@ -189,9 +189,9 @@ class ShelfObserverIconTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    observer_.reset(new TestShelfObserver(GetPrimaryShelf()));
-    shelf_view_test_.reset(
-        new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
+    observer_ = std::make_unique<TestShelfObserver>(GetPrimaryShelf());
+    shelf_view_test_ = std::make_unique<ShelfViewTestAPI>(
+        GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_->SetAnimationDuration(
         base::TimeDelta::FromMilliseconds(1));
   }
@@ -351,7 +351,7 @@ class ShelfViewTest : public AshTestBase {
                   .width(),
               500);
 
-    test_api_.reset(new ShelfViewTestAPI(shelf_view_));
+    test_api_ = std::make_unique<ShelfViewTestAPI>(shelf_view_);
     test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
 
     // Add a browser shortcut shelf item, as chrome does, for testing.
@@ -501,8 +501,10 @@ class ShelfViewTest : public AshTestBase {
                     bool progressively) {
     views::View* to = test_api_->GetViewAt(to_index);
     views::View* from = test_api_->GetViewAt(from_index);
-    int dist_x = to->x() - from->x();
-    int dist_y = to->y() - from->y();
+    gfx::Rect to_rect = to->GetMirroredBounds();
+    gfx::Rect from_rect = from->GetMirroredBounds();
+    int dist_x = to_rect.x() - from_rect.x();
+    int dist_y = to_rect.y() - from_rect.y();
     if (progressively) {
       int sgn = dist_x > 0 ? 1 : -1;
       dist_x = abs(dist_x);
@@ -607,6 +609,8 @@ class LtrRtlShelfViewTest : public ShelfViewTest,
   LtrRtlShelfViewTest& operator=(const LtrRtlShelfViewTest&) = delete;
   ~LtrRtlShelfViewTest() = default;
 
+  bool IsRtlEnabled() const { return GetParam(); }
+
  private:
   // Restores locale to the default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale scoped_locale_;
@@ -672,7 +676,7 @@ TEST_P(LtrRtlShelfViewTest, EnforceDragType) {
 
 // Check that model changes are handled correctly while a shelf icon is being
 // dragged.
-TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
+TEST_P(LtrRtlShelfViewTest, ModelChangesWhileDragging) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
@@ -714,7 +718,7 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
 }
 
 // Check that 2nd drag from the other pointer would be ignored.
-TEST_F(ShelfViewTest, SimultaneousDrag) {
+TEST_P(LtrRtlShelfViewTest, SimultaneousDrag) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
@@ -899,7 +903,7 @@ TEST_F(ShelfViewDragToPinTest, DragAppAroundSeparator) {
 }
 
 // Ensure that clicking on one item and then dragging another works as expected.
-TEST_F(ShelfViewTest, ClickOneDragAnother) {
+TEST_P(LtrRtlShelfViewTest, ClickOneDragAnother) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
@@ -1721,7 +1725,7 @@ TEST_P(LtrRtlShelfViewTest, CompletedItemDragPreventsContextMenuShow) {
 
 // Tests that shelf items in always shown shelf can be dragged through gesture
 // events after context menu is shown.
-TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
+TEST_P(LtrRtlShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
   ASSERT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
   ui::test::EventGenerator* generator = GetEventGenerator();
   const ShelfID first_app_id = AddAppShortcut();
@@ -1739,7 +1743,7 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
 
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
-  const gfx::Point end(start.x() + 100, start.y());
+  const gfx::Point end(start.x() + (IsRtlEnabled() ? -100 : 100), start.y());
   generator->set_current_screen_location(start);
   generator->PressTouch();
   ASSERT_TRUE(button->FireDragTimerForTest());
@@ -1785,7 +1789,7 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
 
 // Tests that shelf items in AUTO_HIDE_SHOWN shelf can be dragged through
 // gesture events after context menu is shown.
-TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
+TEST_P(LtrRtlShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   const ShelfID first_app_id = AddAppShortcut();
   const ShelfID second_app_id = AddAppShortcut();
@@ -1811,7 +1815,7 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
 
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
-  const gfx::Point end = gfx::Point(start.x() + 100, start.y());
+  const gfx::Point end(start.x() + (IsRtlEnabled() ? -100 : 100), start.y());
   generator->set_current_screen_location(start);
   generator->PressTouch();
   ASSERT_TRUE(button->FireDragTimerForTest());
@@ -2096,7 +2100,7 @@ TEST_P(LtrRtlShelfViewTest, ReplacingDelegateCancelsContextMenu) {
 
 // Verifies that shelf is shown with the app list in fullscreen mode, and that
 // shelf app buttons are clickable.
-TEST_F(ShelfViewTest, ClickItemInFullscreen) {
+TEST_P(LtrRtlShelfViewTest, ClickItemInFullscreen) {
   ShelfID app_button_id = AddAppShortcut();
   auto selection_tracker_owned = std::make_unique<ShelfItemSelectionTracker>();
   ShelfItemSelectionTracker* selection_tracker = selection_tracker_owned.get();
@@ -2133,7 +2137,7 @@ TEST_F(ShelfViewTest, ClickItemInFullscreen) {
 
 // Verifies that shelf is shown with the app list in fullscreen mode, and that
 // shelf app buttons are tappable.
-TEST_F(ShelfViewTest, TapInFullscreen) {
+TEST_P(LtrRtlShelfViewTest, TapInFullscreen) {
   ShelfID app_button_id = AddAppShortcut();
   auto selection_tracker_owned = std::make_unique<ShelfItemSelectionTracker>();
   ShelfItemSelectionTracker* selection_tracker = selection_tracker_owned.get();
@@ -2384,11 +2388,11 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   void InitHomeButtonInkDrop() {
     home_button_ = GetPrimaryShelf()->navigation_widget()->GetHomeButton();
 
-    auto home_button_ink_drop =
-        std::make_unique<InkDropSpy>(std::make_unique<views::InkDropImpl>(
-            home_button_, home_button_->size()));
+    auto home_button_ink_drop = std::make_unique<InkDropSpy>(
+        views::InkDrop::CreateInkDropWithoutAutoHighlight(
+            home_button_->ink_drop()));
     home_button_ink_drop_ = home_button_ink_drop.get();
-    views::test::InkDropHostViewTestApi(home_button_)
+    views::test::InkDropHostTestApi(home_button_->ink_drop())
         .SetInkDrop(std::move(home_button_ink_drop), false);
   }
 
@@ -2396,13 +2400,14 @@ class ShelfViewInkDropTest : public ShelfViewTest {
     browser_button_ = test_api_->GetButton(0);
 
     auto ink_drop_impl = std::make_unique<views::InkDropImpl>(
-        browser_button_, browser_button_->size());
+        browser_button_->ink_drop(), browser_button_->size(),
+        views::InkDropImpl::AutoHighlightMode::NONE);
     browser_button_ink_drop_impl_ = ink_drop_impl.get();
 
     auto browser_button_ink_drop =
         std::make_unique<InkDropSpy>(std::move(ink_drop_impl));
     browser_button_ink_drop_ = browser_button_ink_drop.get();
-    views::test::InkDropHostViewTestApi(browser_button_)
+    views::test::InkDropHostTestApi(browser_button_->ink_drop())
         .SetInkDrop(std::move(browser_button_ink_drop));
   }
 

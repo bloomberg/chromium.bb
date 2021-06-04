@@ -28,10 +28,6 @@ class ASH_EXPORT DeskButtonBase
   // LabelButton:
   const char* GetClassName() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  SkColor GetInkDropBaseColor() const override;
   void OnThemeChanged() override;
 
   // OverviewHighlightController::OverviewHighlightableView:
@@ -108,7 +104,7 @@ class ASH_EXPORT ZeroStateDefaultDeskButton : public DeskButtonBase {
 // ExpandedStateNewDeskButton.
 class ASH_EXPORT ZeroStateNewDeskButton : public DeskButtonBase {
  public:
-  ZeroStateNewDeskButton();
+  ZeroStateNewDeskButton(DesksBarView* bar_view);
   ZeroStateNewDeskButton(const ZeroStateNewDeskButton&) = delete;
   ZeroStateNewDeskButton& operator=(const ZeroStateNewDeskButton&) = delete;
   ~ZeroStateNewDeskButton() override = default;
@@ -122,6 +118,9 @@ class ASH_EXPORT ZeroStateNewDeskButton : public DeskButtonBase {
   // views::Button:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+
+ private:
+  DesksBarView* bar_view_;
 };
 
 }  // namespace ash

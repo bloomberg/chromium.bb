@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_POLICY_HANDLERS_H_
 #define CHROME_BROWSER_EXTENSIONS_POLICY_HANDLERS_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -101,6 +99,12 @@ class ExtensionSettingsPolicyHandler
                            PrefValueMap* prefs) override;
 
  private:
+  // Performs sanitization for both Check/ApplyPolicySettings(). If an entry
+  // in |dict_value| doesn't pass validation, that entry is removed from the
+  // dictionary. Validation errors are stored in |errors| if non-null.
+  void SanitizePolicySettings(base::Value* dict_value,
+                              policy::PolicyErrorMap* errors);
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsPolicyHandler);
 };
 

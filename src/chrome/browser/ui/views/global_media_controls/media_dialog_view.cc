@@ -19,14 +19,16 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "chrome/browser/ui/views/user_education/new_badge_label.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/live_caption/pref_names.h"
+#include "components/soda/constants.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -35,7 +37,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/views_features.h"
 
 using media_session::mojom::MediaSessionAction;
@@ -178,7 +179,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 
 void MediaDialogView::UpdateBubbleSize() {
   SizeToContents();
-  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
+  if (!media::IsLiveCaptionFeatureEnabled())
     return;
 
   const int width = active_sessions_view_->GetPreferredSize().width();
@@ -253,7 +254,7 @@ MediaDialogView::~MediaDialogView() {
 void MediaDialogView::Init() {
   // Remove margins.
   set_margins(gfx::Insets());
-  if (!base::FeatureList::IsEnabled(media::kLiveCaption)) {
+  if (!media::IsLiveCaptionFeatureEnabled()) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     return;
   }
@@ -367,9 +368,10 @@ void MediaDialogView::OnSodaError() {
       IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_ERROR));
 }
 
-void MediaDialogView::OnSodaProgress(int progress) {
+void MediaDialogView::OnSodaProgress(int combined_progress) {
   live_caption_title_->SetText(l10n_util::GetStringFUTF16Int(
-      IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS, progress));
+      IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS,
+      combined_progress));
 }
 
 BEGIN_METADATA(MediaDialogView, views::BubbleDialogDelegateView)

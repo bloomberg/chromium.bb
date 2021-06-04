@@ -2,53 +2,52 @@
   :host {
     display: flex;
     flex-direction: column;
-    max-height: 100%;
-    width: 100%;
+    overflow-y: scroll;
+    --emoji-picker-search-margins: 14px;
   }
   cr-search-field {
-    --cr-search-field-clear-icon-margin-end: 14px;
-    --cr-search-field-clear-icon-margin-end:14px;
+    --cr-search-field-clear-icon-margin-end: var(--emoji-picker-search-margins);
     --cr-search-field-clear-icon-size:20px;
     --cr-search-field-input-border-bottom: none;
     --cr-search-field-input-padding-bottom: 0;
-    --cr-search-field-clear-icon-size:20px;
-    --cr-search-field-input-border-bottom: none;
-    --cr-search-field-input-padding-bottom: 0;
+    --cr-search-field-input-padding-start: 8px;
     --cr-search-field-input-padding-top: 0;
-    --cr-search-field-input-padding-top: 0;
-    --cr-search-field-input-width: calc(100% - 24px);
-    --cr-search-field-search-icon-padding: 0px 8px 0px 14px;
-    --cr-search-field-search-icon-size: 20px;
+    --cr-search-field-input-width: 100%;
+    --cr-search-field-search-icon-display: none;
+    --cr-search-field-search-icon-fill: var(--cr-secondary-text-color);
+    --cr-search-field-search-icon-inline-display: block;
+    --cr-search-field-search-icon-inline-margin-start:
+      var(--emoji-picker-search-margins);
     --cr-search-field-underline-display: none;
     align-items: center;
-    background-color: var(--cr-separator-color);
-    border-radius: 41px;
+    background-color: var(--google-grey-100);
+    border: 2px solid transparent;
+    border-radius: 40px;
     height: 40px;
     line-height: 40px;
     margin-bottom: 8px;
   }
 
-  cr-search-field::part(searchIcon) {
-    height: 20px;
-    padding: 0 8px 0 14px;
-    width: 20px;
-  }
-
-  #container {
-    flex-grow: 1;
-    overflow-y: scroll;
+  cr-search-field:focus-within {
+    border: 2px solid var(--cr-focus-outline-color);
   }
 
   .result {
+    border: 2px solid transparent;
+    border-radius: 40px;
     display: flex;
+    margin-inline-end: var(--emoji-picker-search-margins);
   }
   .result:focus,
   .result:active {
-    border-color: var(--cr-toggle-color);
-    border-radius: 4px;
+    border-color: var(--cr-focus-outline-color);
     border-style: solid;
     border-width: 2px;
     outline-style: none;
+  }
+
+  .result:hover {
+    background-color: var(--cr-hover-background-color);
   }
 
   emoji-button {
@@ -66,14 +65,41 @@
     position: absolute;
     z-index: -2;
   }
+
+  .no-result {
+    color: var(--google-grey-600);
+    font-family: 'Google Sans';
+    left: 50%;
+    line-height: 24px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  #search-shadow {
+    background-color: var(--cr-card-background-color);
+    margin-inline-end: calc(0px - var(--emoji-picker-side-padding));
+    margin-inline-start: calc(0px - var(--emoji-picker-side-padding));
+    padding-inline-end: var(--emoji-picker-side-padding);
+    padding-inline-start: var(--emoji-picker-side-padding);
+    position: sticky;
+    top:0;
+    width: calc(var(--emoji-picker-width) - 2*var(--emoji-picker-side-padding));
+  }
+
+  #results {
+    flex-grow: 1;
+    margin-inline-end: calc(0px - var(--emoji-picker-side-padding));
+    overflow-y: scroll;
+  }
 </style>
 
+<div id="search-shadow">
 <cr-search-field id="search" label="Search" autofocus="true"></cr-search-field>
+</div>
 
-<div id="container">
-
-  <template is="dom-if" if="[[search]]">
-
+<template is="dom-if" if="[[search]]">
+  <div id="results" on-scroll="onSearchScroll">
     <div class="sr-only" role="heading" aria-level="1">
       Emoji Search Results
     </div>
@@ -88,10 +114,9 @@
     </template>
     <template is="dom-if" if="[[!results.length]]">
       <div class="no-result">
-        No results
-      </div>
+        <img src="no_results.svg">
+        No emoji found
+        </div>
     </template>
-
-  </template>
-
-</div>
+  </div>
+</template>

@@ -34,11 +34,11 @@
 #include <sys/platform/ppc.h>  // NOLINT __ppc_get_timebase_freq
 #elif HWY_ARCH_X86
 
-#ifdef _MSC_VER
+#if HWY_COMPILER_MSVC
 #include <intrin.h>
 #else
 #include <cpuid.h>  // NOLINT
-#endif              // _MSC_VER
+#endif              // HWY_COMPILER_MSVC
 
 #endif  // HWY_ARCH_X86
 
@@ -80,7 +80,7 @@ std::string BrandString() {
   }
 
   for (size_t i = 0; i < 3; ++i) {
-    Cpuid(0x80000002U + i, 0, abcd.data());
+    Cpuid(static_cast<uint32_t>(0x80000002U + i), 0, abcd.data());
     memcpy(brand_string + i * 16, abcd.data(), sizeof(abcd));
   }
   brand_string[48] = 0;

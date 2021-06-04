@@ -521,6 +521,87 @@ for (size_t i = 0; i < request->element_size(); ++i) {
 ```
 
 
+### All possible message values are semantically valid
+
+When possible, messages should be defined in such a way that all possible values
+are semantically valid. As a corollary, avoid having the value of one field
+dictate the validity of other fields.
+
+**_Good_**
+
+```c++
+union CreateTokenResult {
+  // Implies success.
+  string token;
+
+  // Implies failure.
+  string error_message;
+};
+
+struct TokenManager {
+  CreateToken() => (CreateTokenResult result);
+};
+```
+
+**_Bad_**
+```c++
+struct TokenManager {
+  // Requires caller to handle edge case where |success| is set to true, but
+  // |token| is null.
+  CreateToken() => (bool success, string? token, string? error_message);
+
+  // Requires caller to handle edge case where both |token| and |error_message|
+  // are set, or both are null.
+  CreateToken() => (string? token, string? error_message);
+};
+```
+
+There are some known exceptions to this rule because mojo does not handle
+optional primitives.
+
+**_Allowed because mojo has no support for optional primitives_**
+```c++
+  struct Foo {
+    int32 x;
+    bool has_x;  // does the value of `x` have meaning?
+    int32 y;
+    bool has_y;  // does the value of `y` have meaning?
+  };
+```
+
+Another common case where we tolerate imperfect message semantics is
+with weakly typed integer [bitfields](#handling-bitfields).
+
+### Handling bitfields
+
+Mojom has no native support for bitfields. There are two common approaches: a
+type-safe struct of bools which is a bit clunky (preferred) and an integer-based
+approach (allowed but not preferred).
+
+**_Type-safe bitfields_**
+```c++
+struct VehicleBits {
+  bool has_car;
+  bool has_bicycle;
+  bool has_boat;
+};
+
+struct Person {
+  VehicleBits bits;
+};
+```
+
+**_Integer based approach_**
+```c++
+struct Person {
+  const uint64 kHasCar = 1;
+  const uint64 kHasBicycle = 2;
+  const uint64 kHasGoat= 4;
+
+  uint32 vehicle_bitfield;
+};
+```
+
 ## C++ Best Practices
 
 
@@ -800,5 +881,5 @@ safe, vulnerabilities could arise.
 
 [security-tips-for-ipc]: https://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc
 [NfcTypeConverter.java]: https://chromium.googlesource.com/chromium/src/+/e97442ee6e8c4cf6bcf7f5623c6fb2cc8cce92ac/services/device/nfc/android/java/src/org/chromium/device/nfc/NfcTypeConverter.java
-[mojo-doc-process-crashes]: https://chromium.googlesource.com/chromium/src/+/master/mojo/public/cpp/bindings#Best-practices-for-dealing-with-process-crashes-and-callbacks
+[mojo-doc-process-crashes]: https://chromium.googlesource.com/chromium/src/+/main/mojo/public/cpp/bindings#Best-practices-for-dealing-with-process-crashes-and-callbacks
 [serialize-struct-tm-safely]: https://chromium-review.googlesource.com/c/chromium/src/+/679441

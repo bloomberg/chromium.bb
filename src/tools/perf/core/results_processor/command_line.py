@@ -22,12 +22,12 @@ from core.results_processor import util
 
 def ArgumentParser(standalone=False):
   """Create an ArgumentParser defining options required by the processor."""
-  all_output_formats = formatters.FORMATTERS.keys()
+  all_output_formats = list(formatters.FORMATTERS.keys())
   if not standalone:
     all_output_formats.append('none')
   parser, group = _CreateTopLevelParser(standalone)
   parser.add_argument(
-      '-v', '--verbose', action='count', dest='verbosity',
+      '-v', '--verbose', action='count', dest='verbosity', default=0,
       help='Increase verbosity level (repeat as needed)')
   group.add_argument(
       '--output-format', action='append', dest='output_formats',
@@ -95,6 +95,10 @@ def ArgumentParser(standalone=False):
       help=('Compute an extra metric on the test results. Metric should have '
             'the form "version:name", e.g. "tbmv3:power_rails_metric". '
             'Can be used multiple times.'))
+  group.add_argument(
+      '--is-unittest',
+      action='store_true',
+      help='Is running inside a unittest.')
   return parser
 
 

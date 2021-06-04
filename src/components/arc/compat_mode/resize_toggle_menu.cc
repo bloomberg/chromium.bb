@@ -8,9 +8,9 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "components/arc/compat_mode/resize_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget.h"
@@ -19,7 +19,7 @@ namespace arc {
 
 namespace {
 
-base::Optional<ResizeToggleMenu::CommandId> PredictCurrentMode(
+absl::optional<ResizeToggleMenu::CommandId> PredictCurrentMode(
     views::Widget* widget) {
   const int width = widget->GetWindowBoundsInScreen().width();
   const int height = widget->GetWindowBoundsInScreen().height();
@@ -32,7 +32,7 @@ base::Optional<ResizeToggleMenu::CommandId> PredictCurrentMode(
     return ResizeToggleMenu::CommandId::kResizePhone;
   else if (width > height)
     return ResizeToggleMenu::CommandId::kResizeTablet;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -48,9 +48,9 @@ ResizeToggleMenu::ResizeToggleMenu(views::Widget* widget,
   if (currentMode) {
     auto* item = root_view_->GetMenuItemByID(*currentMode);
     item->SetSelected(true);
-    item->SetMinorIcon(
-        ui::ThemedVectorIcon(&ash::kHollowCheckCircleIcon,
-                             ui::NativeTheme::kColorId_ProminentButtonColor));
+    item->SetMinorIcon(ui::ImageModel::FromVectorIcon(
+        ash::kHollowCheckCircleIcon,
+        ui::NativeTheme::kColorId_ProminentButtonColor));
   }
 
   menu_runner_ = std::make_unique<views::MenuRunner>(

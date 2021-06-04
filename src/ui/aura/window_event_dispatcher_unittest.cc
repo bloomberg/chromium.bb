@@ -296,10 +296,10 @@ class TestEventClient : public client::EventClient {
     client::SetEventClient(root_window_, this);
     Window* lock_window =
         test::CreateTestWindowWithBounds(root_window_->bounds(), root_window_);
-    lock_window->set_id(kLockWindowId);
+    lock_window->SetId(kLockWindowId);
     Window* non_lock_window =
         test::CreateTestWindowWithBounds(root_window_->bounds(), root_window_);
-    non_lock_window->set_id(kNonLockWindowId);
+    non_lock_window->SetId(kNonLockWindowId);
   }
   ~TestEventClient() override { client::SetEventClient(root_window_, NULL); }
 
@@ -348,10 +348,10 @@ TEST_F(WindowEventDispatcherTest, GetCanProcessEventsWithinSubtree) {
 
   Window* w1 = test::CreateTestWindowWithBounds(gfx::Rect(10, 10, 20, 20),
                                                 client.GetNonLockWindow());
-  w1->set_id(1);
+  w1->SetId(1);
   Window* w2 = test::CreateTestWindowWithBounds(gfx::Rect(30, 30, 20, 20),
                                                 client.GetNonLockWindow());
-  w2->set_id(2);
+  w2->SetId(2);
   std::unique_ptr<Window> w3(test::CreateTestWindowWithDelegate(
       &d, 3, gfx::Rect(30, 30, 20, 20), client.GetLockWindow()));
 
@@ -967,6 +967,35 @@ TEST_F(WindowEventDispatcherTest, DispatchMouseExitWhenHidingWindow) {
 
   // Hide the window and verify a mouse exit event's location.
   window->Hide();
+  EXPECT_FALSE(recorder.events().empty());
+  EXPECT_EQ("MOUSE_EXITED", EventTypesToString(recorder.events()));
+  ASSERT_EQ(1u, recorder.mouse_locations().size());
+  EXPECT_EQ(gfx::Point(12, 23).ToString(),
+            recorder.mouse_locations()[0].ToString());
+  window->RemovePreTargetHandler(&recorder);
+}
+
+TEST_F(WindowEventDispatcherTest, HeldMovesDispatchMouseExitWhenHidingWindow) {
+  EventFilterRecorder recorder;
+
+  test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(10, 10, 50, 50), root_window()));
+  window->Show();
+  window->AddPreTargetHandler(&recorder);
+
+  // Dispatch a mouse move event into the window.
+  const gfx::Point event_location(22, 33);
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                       ui::EventTimeForNow(), 0, 0);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_FALSE(recorder.events().empty());
+  recorder.Reset();
+
+  // Hide the window and verify a mouse exit event's location.
+  host()->dispatcher()->HoldPointerMoves();
+  window->Hide();
+  host()->dispatcher()->ReleasePointerMoves();
   EXPECT_FALSE(recorder.events().empty());
   EXPECT_EQ("MOUSE_EXITED", EventTypesToString(recorder.events()));
   ASSERT_EQ(1u, recorder.mouse_locations().size());

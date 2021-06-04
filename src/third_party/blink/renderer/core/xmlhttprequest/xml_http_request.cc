@@ -39,6 +39,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/document_or_xml_http_request_body_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_blob_document_formdata_urlsearchparams_usvstring.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -97,7 +98,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -763,6 +763,34 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
   return true;
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void XMLHttpRequest::send(const V8UnionDocumentOrXMLHttpRequestBodyInit* body,
+                          ExceptionState& exception_state) {
+  probe::WillSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
+
+  if (!body)
+    return send(String(), exception_state);
+
+  switch (body->GetContentType()) {
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kArrayBuffer:
+      return send(body->GetAsArrayBuffer(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kArrayBufferView:
+      return send(body->GetAsArrayBufferView().Get(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kBlob:
+      return send(body->GetAsBlob(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kDocument:
+      return send(body->GetAsDocument(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kFormData:
+      return send(body->GetAsFormData(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kURLSearchParams:
+      return send(body->GetAsURLSearchParams(), exception_state);
+    case V8UnionDocumentOrXMLHttpRequestBodyInit::ContentType::kUSVString:
+      return send(body->GetAsUSVString(), exception_state);
+  }
+
+  NOTREACHED();
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void XMLHttpRequest::send(
     const DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString&
         body,
@@ -807,6 +835,7 @@ void XMLHttpRequest::send(
   DCHECK(body.IsUSVString());
   send(body.GetAsUSVString(), exception_state);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {
   return method_ != http_names::kGET && method_ != http_names::kHEAD &&
@@ -1178,11 +1207,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
 void XMLHttpRequest::abort() {
   DVLOG(1) << this << " abort()";
 
-  // internalAbort() clears the response. Save the data needed for
-  // dispatching ProgressEvents.
-  int64_t expected_length = response_.ExpectedContentLength();
-  int64_t received_length = received_length_;
-
   InternalAbort();
 
   // The script never gets any chance to call abort() on a sync XHR between
@@ -1198,8 +1222,7 @@ void XMLHttpRequest::abort() {
     if ((state_ == kOpened && send_flag_) || state_ == kHeadersReceived ||
         state_ == kLoading) {
       DCHECK(!loader_);
-      HandleRequestError(DOMExceptionCode::kNoError, event_type_names::kAbort,
-                         received_length, expected_length);
+      HandleRequestError(DOMExceptionCode::kNoError, event_type_names::kAbort);
     }
   }
   if (state_ == kDone)
@@ -1316,36 +1339,24 @@ void XMLHttpRequest::DispatchProgressEventFromSnapshot(
 void XMLHttpRequest::HandleNetworkError() {
   DVLOG(1) << this << " handleNetworkError()";
 
-  // Response is cleared next, save needed progress event data.
-  int64_t expected_length = response_.ExpectedContentLength();
-  int64_t received_length = received_length_;
-
   InternalAbort();
 
-  HandleRequestError(DOMExceptionCode::kNetworkError, event_type_names::kError,
-                     received_length, expected_length);
+  HandleRequestError(DOMExceptionCode::kNetworkError, event_type_names::kError);
 }
 
 void XMLHttpRequest::HandleDidCancel() {
   DVLOG(1) << this << " handleDidCancel()";
-
-  // Response is cleared next, save needed progress event data.
-  int64_t expected_length = response_.ExpectedContentLength();
-  int64_t received_length = received_length_;
 
   InternalAbort();
 
   pending_abort_event_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
       WTF::Bind(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
-                DOMExceptionCode::kAbortError, event_type_names::kAbort,
-                received_length, expected_length));
+                DOMExceptionCode::kAbortError, event_type_names::kAbort));
 }
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
-                                        const AtomicString& type,
-                                        int64_t received_length,
-                                        int64_t expected_length) {
+                                        const AtomicString& type) {
   DVLOG(1) << this << " handleRequestError()";
 
   probe::DidFinishXHR(GetExecutionContext(), this);
@@ -1371,13 +1382,9 @@ void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
       upload_->HandleRequestError(type);
   }
 
-  // Note: The below event dispatch may be called while |hasPendingActivity() ==
-  // false|, when |handleRequestError| is called after |internalAbort()|.  This
-  // is safe, however, as |this| will be kept alive from a strong ref
-  // |Event::m_target|.
-  DispatchProgressEvent(type, received_length, expected_length);
-  DispatchProgressEvent(event_type_names::kLoadend, received_length,
-                        expected_length);
+  DispatchProgressEvent(type, /*received_length=*/0, /*expected_length=*/0);
+  DispatchProgressEvent(event_type_names::kLoadend, /*received_length=*/0,
+                        /*expected_length=*/0);
 }
 
 // https://xhr.spec.whatwg.org/#the-overridemimetype()-method
@@ -2045,15 +2052,10 @@ void XMLHttpRequest::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
 void XMLHttpRequest::HandleDidTimeout() {
   DVLOG(1) << this << " handleDidTimeout()";
 
-  // Response is cleared next, save needed progress event data.
-  int64_t expected_length = response_.ExpectedContentLength();
-  int64_t received_length = received_length_;
-
   InternalAbort();
 
   HandleRequestError(DOMExceptionCode::kTimeoutError,
-                     event_type_names::kTimeout, received_length,
-                     expected_length);
+                     event_type_names::kTimeout);
 }
 
 void XMLHttpRequest::ContextDestroyed() {

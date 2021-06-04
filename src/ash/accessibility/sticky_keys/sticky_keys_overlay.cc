@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -210,7 +211,7 @@ StickyKeysOverlay::StickyKeysOverlay() {
   params.bounds = CalculateOverlayBounds();
   params.parent = Shell::GetContainer(Shell::GetRootWindowForNewWindows(),
                                       kShellWindowId_OverlayContainer);
-  overlay_widget_.reset(new views::Widget);
+  overlay_widget_ = std::make_unique<views::Widget>();
   overlay_widget_->Init(std::move(params));
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(false);
   overlay_view_ = overlay_widget_->SetContentsView(std::move(overlay_view));

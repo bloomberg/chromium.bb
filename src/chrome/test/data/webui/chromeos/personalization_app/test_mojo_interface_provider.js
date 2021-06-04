@@ -14,22 +14,59 @@ export class TestWallpaperProvider extends TestBrowserProxy {
     super([
       'fetchCollections',
       'fetchImagesForCollection',
+      'selectWallpaper',
     ]);
 
     /**
+     * URLs are not real but must have the correct origin to pass CSP checks.
      * @private
      * @type {?Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
      */
-    this.collections_ = [{id: 'id_0', name: 'zero'}, {id: 'id_1', name: 'one'}];
+    this.collections_ = [
+      {
+        id: 'id_0',
+        name: 'zero',
+        preview: {url: 'https://collections.googleusercontent.com/0'}
+      },
+      {
+        id: 'id_1',
+        name: 'one',
+        preview: {url: 'https://collections.googleusercontent.com/1'}
+      },
+    ];
 
     /**
+     * URLs are not real but must have the correct origin to pass CSP checks.
      * @private
      * @type {?Array<!chromeos.personalizationApp.mojom.WallpaperImage>}
      */
     this.images_ = [
-      {url: {url: 'https://url_0/'}},
-      {url: {url: 'https://url_1/'}},
+      {
+        url: {url: 'https://images.googleusercontent.com/0'},
+        assetId: BigInt(0),
+      },
+      {
+        url: {url: 'https://images.googleusercontent.com/1'},
+        assetId: BigInt(1),
+      },
     ];
+
+    /** @public */
+    this.selectWallpaperResponse = true;
+  }
+
+  /**
+   * @return {?Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
+   */
+  get collections() {
+    return this.collections_;
+  }
+
+  /**
+   * @return {?Array<!chromeos.personalizationApp.mojom.WallpaperImage>}
+   */
+  get images() {
+    return this.images_;
   }
 
   /** @override */
@@ -46,6 +83,12 @@ export class TestWallpaperProvider extends TestBrowserProxy {
         'Must request images for existing wallpaper collection',
     );
     return Promise.resolve({images: this.images_});
+  }
+
+  /** @override */
+  selectWallpaper(assetId) {
+    this.methodCalled('selectWallpaper', assetId);
+    return Promise.resolve({success: this.selectWallpaperResponse});
   }
 
   /**

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -114,7 +115,7 @@ TestDataStore::~TestDataStore() {}
 
 DataStore::Status TestDataStore::Get(base::StringPiece key,
                                      std::string* value) {
-  auto value_iter = map_.find(key.as_string());
+  auto value_iter = map_.find(std::string(key));
   if (value_iter == map_.end())
     return NOT_FOUND;
 
@@ -131,7 +132,7 @@ DataStore::Status TestDataStore::Put(
 }
 
 DataStore::Status TestDataStore::Delete(base::StringPiece key) {
-  map_.erase(key.as_string());
+  map_.erase(std::string(key));
 
   return OK;
 }

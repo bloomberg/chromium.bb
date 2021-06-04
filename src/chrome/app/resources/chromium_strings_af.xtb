@@ -24,6 +24,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1911763535808217981">Deur dit af te skakel, kan jy by Google-werwe soos Gmail aanmeld sonder om by Chromium aan te meld</translation>
 <translation id="1929939181775079593">Chromium reageer nie. Herbegin nou?</translation>
 <translation id="1966382378801805537">Chromium kan nie die verstekblaaier bepaal of stel nie</translation>
+<translation id="1981611865800294956">Begin weer om &amp;Chromium OS op te dateer</translation>
 <translation id="2008474315282236005">Dit sal 1 item op hierdie toestel uitvee. Meld as <ph name="USER_EMAIL" /> by Chromium aan om jou data later op te haal.</translation>
 <translation id="2020032459870799438"><ph name="BEGIN_LINK" />Meld by Chromium aan<ph name="END_LINK" /> om te kyk of jou ander wagwoorde teen dataskendings en ander sekuriteitkwessies beveilig word.</translation>
 <translation id="2174178932569897599">Pasmaak Chromium</translation>
@@ -39,6 +40,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="2560420686485554789">Chromium het bergingtoegang nodig om lêers af te laai</translation>
 <translation id="2572494885440352020">Chromium-helper</translation>
 <translation id="2577788541081224677">Meld aan sodat jy sinkronisering kan aanskakel om op al jou toestelle toegang tot jou Chromium-goed te kry.</translation>
+<translation id="2580426763510374355">Installeer Chromium-bedryfstelsel</translation>
 <translation id="2583187216237139145">Enige Chromium-data wat tydens die gebruik van hierdie profiel gegenereer word (soos die skepping van boekmerke, geskiedenis, wagwoorde, en ander instellings) kan deur die werkprofieladministrateur verwyder word. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Chromium-bedryfstelsel moet herbegin word om die opdatering toe te pas.</translation>
 <translation id="2648074677641340862">'n Bedryfstelselfout het voorgekom met installering. Laai Chromium asseblief weer af.</translation>
@@ -52,7 +54,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="2847479871509788944">Verwyder uit Chromium …</translation>
 <translation id="2885378588091291677">Taakbestuurder</translation>
 <translation id="2910007522516064972">Meer oor Chromium</translation>
-<translation id="2942419255987443909">Chromium OS word moontlik gemaak deur bykomende <ph name="BEGIN_LINK_CROS_OSS" />oopbronsagteware<ph name="END_LINK_CROS_OSS" />, en so ook <ph name="BEGIN_LINK_LINUX_OSS" />Linux-ontwikkelingomgewing (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2977470724722393594">Chromium is op datum</translation>
 <translation id="2983934633046890458">Chromium probeer tans wagwoorde wysig.</translation>
 <translation id="3032706164202344641">Chromium kan nie jou wagwoorde nagaan nie. Probeer later weer.</translation>
@@ -112,6 +113,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="454579500955453258">Gaan voort in 'n nuwe Chromium-profiel?</translation>
 <translation id="4567424176335768812">Jy is as <ph name="USER_EMAIL_ADDRESS" /> aangemeld. Nou kan jy op al jou aangemelde toestelle by jou boekmerke, geskiedenis en ander instellings ingaan.</translation>
 <translation id="459535195905078186">Chromium-programme</translation>
+<translation id="4665829708273112819">Waarskuwing: Chromium kan nie keer dat uitbreidings rekord hou van jou blaaigeskiedenis nie. Ontkies hierdie opsie om hierdie uitbreiding in Incognito-modus te deaktiveer.</translation>
 <translation id="4677944499843243528">Dit lyk of die profiel deur 'n ander Chromium-proses (<ph name="PROCESS_ID" />) op 'n ander rekenaar (<ph name="HOST_NAME" />) gebruik word. Chromium het jou profiel gesluit sodat dit nie gekorrupteer word nie. As jy seker is dat geen ander prosesse hierdie profiel gebruik nie, kan jy die profiel ontsluit en Chromium herbegin.</translation>
 <translation id="469338717132742108">Kry hulp met Chromium-bedryfstelsel</translation>
 <translation id="4708774505295300557">Iemand het voorheen op hierdie rekenaar as <ph name="ACCOUNT_EMAIL_LAST" /> by Chromium aangemeld. Skep asseblief 'n nuwe Chromium-gebruiker om jou inligting apart te hou.</translation>
@@ -121,6 +123,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="4788777615168560705">Chromium kan nie jou wagwoorde nagaan nie. Probeer ná 24 uur weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Dit gebruik dieselfde speltoetser wat in Google-soektog gebruik word. Teks wat jy in die blaaier tik, word na Google toe gestuur. Jy kan altyd hierdie gedrag in instellings verander.</translation>
 <translation id="4888717733111232871">Inkomende reël vir Chromium om mDNS-verkeer toe te laat.</translation>
+<translation id="4893347770495441059">Begin weer om &amp;Chromium op te dateer</translation>
 <translation id="4943838377383847465">Chromium is in agtergrondmodus.</translation>
 <translation id="4987820182225656817">Gaste kan Chromium gebruik sonder om iets agter te laat.</translation>
 <translation id="4994636714258228724">Voeg jouself by Chromium</translation>
@@ -136,6 +139,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS kan nie hierdie bladsy oopmaak nie.</translation>
 <translation id="5480860683791598150">Chromium het toegang tot jou ligging nodig om jou ligging met hierdie werf te deel</translation>
+<translation id="5481338274774984070">Chromium beveel aan dat jy nie hierdie lêer aflaai of oomaak nie.</translation>
 <translation id="549669000822060376">Wag terwyl Chromium die jongste stelselopdaterings installeer.</translation>
 <translation id="5496810170689441661">Chromium probeer tans om wagwoorde te wysig. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
 <translation id="5527463683072221100">Maak PDF's in Chromium oop</translation>
@@ -144,6 +148,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="5653831366781983928">Herbegin Chromium asseblief nou</translation>
 <translation id="5698481217667032250">Wys Chromium in hierdie taal</translation>
 <translation id="5820394555380036790">Chromium-bedryfstelsel</translation>
+<translation id="5854740544000584380">Chromium-bedryfstelsel word moontlik gemaak deur bykomende <ph name="BEGIN_LINK_CROS_OSS" />oopbronsagteware<ph name="END_LINK_CROS_OSS" /> soos die geval ook is met <ph name="BEGIN_LINK_LINUX_OSS" />Linux-ontwikkelingomgewing<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="5862307444128926510">Welkom by Chromium</translation>
 <translation id="5895138241574237353">Herbegin</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Netwerkaanmelding</translation>
@@ -199,7 +204,6 @@ Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielg
 <translation id="6964305034639999644">Maak skakel in 'n incognitovenster in Chromium oop</translation>
 <translation id="6978145336957848883">Swak wagwoorde is maklik om te raai. Laat Chromium <ph name="BEGIN_LINK" />sterk wagwoorde vir jou skep en onthou<ph name="END_LINK" />.</translation>
 <translation id="6990124437352146030">Chromium het toestemming nodig om toegang te kry tot jou mikrofoon vir hierdie werf</translation>
-<translation id="701244094609242530">Chromium kan nie jou uitbreidings nagaan nie. Probeer later weer.</translation>
 <translation id="705851970750939768">Dateer Chromium op</translation>
 <translation id="7067091210845072982">As 'n prent nie 'n nuttige beskrywing het nie, sal Chromium probeer om een vir jou te verskaf. Prente word na Google toe gestuur om beskrywings te skep.</translation>
 <translation id="7196312274710523067">Kon nie Chromium begin nie. Probeer weer.</translation>
@@ -230,9 +234,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="7729447699958282447">Chromium kon nie jou data sinkroniseer nie, omdat Sinkronisering nie vir jou domein beskikbaar is nie.</translation>
 <translation id="7745317241717453663">Dit sal jou blaaierdata op hierdie toestel uitvee. Meld as <ph name="USER_EMAIL" /> by Chromium aan om jou data later op te haal.</translation>
 <translation id="7747138024166251722">Die installeerder kon nie 'n tydelike gids skep nie. Gaan asseblief na vir beskikbare skyfspasie en toestemming om sagteware te installeer.</translation>
-<translation id="7773960292263897147">Waarskuwing: Chromium kan nie verhoed dat uitbreidings rekord hou van jou blaaigeskiedenis nie. Om hierdie uitbreiding in incognitomodus te deaktiveer, moet jy hierdie opsie ontmerk.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
-<translation id="7827169012280634081">Vee webkoekies en werfdata uit wanneer jy Chromium verlaat</translation>
 <translation id="7828947555739565424">'n Chromium-profiel met hierdie rekening bestaan reeds op hierdie toestel</translation>
 <translation id="7857220146454061152">Jy het OS X 10.11 of nuwer nodig om in die toekoms Chromium-opdaterings te kry. Hierdie rekenaar gebruik OS X 10.10.</translation>
 <translation id="7867198900892795913">Chromium kon nie na die nuutste weergawe opdateer nie en daarom het jy nie nuwe kenmerke en sekuriteitregstellings nie.</translation>
@@ -276,6 +278,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="91086099826398415">Maak skakel in 'n nuwe Chromium-oortjie oop</translation>
 <translation id="911206726377975832">Vee ook jou blaaidata uit?</translation>
 <translation id="9158494823179993217">Jou stelseladministrateur het Chromium opgestel om 'n alternatiewe blaaier oop te maak om na <ph name="TARGET_URL_HOSTNAME" /> toe te gaan.</translation>
+<translation id="9185526690718004400">Begin weer om &amp;Chromium op te dateer</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9214764063801632699">Chromium OS-bedryfstelsel</translation>
 <translation id="93478295209880648">Chromium sal dalk nie reg werk nie omdat dit nie meer in Windows XP en Windows Vista gesteun word nie</translation>

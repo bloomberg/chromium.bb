@@ -7,9 +7,12 @@
 
 #include <string>
 
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
+
+class AccountId;
 
 namespace base {
 class FilePath;
@@ -31,10 +34,13 @@ class UserImageSyncObserver;
 // There is an instance of this class for each user in the system.
 class UserImageManager {
  public:
+  // Converts `image_index` to UMA histogram value.
+  static int ImageIndexToHistogramIndex(int image_index);
+
   // Registers user image manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  explicit UserImageManager(const std::string& user_id);
+  explicit UserImageManager(const AccountId& account_id);
   virtual ~UserImageManager();
 
   // Loads user image data from Local State.
@@ -101,11 +107,9 @@ class UserImageManager {
                                      std::unique_ptr<std::string> data) = 0;
 
  protected:
-  const std::string& user_id() const { return user_id_; }
-
   // ID of user which images are managed by current instance of
   // UserImageManager.
-  const std::string user_id_;
+  const AccountId account_id_;
 };
 
 }  // namespace ash

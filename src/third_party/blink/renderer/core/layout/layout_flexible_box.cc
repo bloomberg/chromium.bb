@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -1215,7 +1214,7 @@ MinMaxSizes LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
                                  : resolved_main_size;
 
         sizes.min_size = std::min(specified_size, content_size);
-      } else if (UseChildAspectRatio(child)) {
+      } else if (child.IsLayoutReplaced() && UseChildAspectRatio(child)) {
         const Length& cross_size_length = IsHorizontalFlow()
                                               ? child.StyleRef().Height()
                                               : child.StyleRef().Width();
@@ -1359,7 +1358,7 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
                                       child.MarginBottom(), child.MarginLeft());
   algorithm->emplace_back(
       &child, child.StyleRef(), child_inner_flex_base_size, sizes,
-      /* min_max_cross_sizes */ base::nullopt, main_axis_border_padding,
+      /* min_max_cross_sizes */ absl::nullopt, main_axis_border_padding,
       cross_axis_border_padding, physical_margins, /* unused */ NGBoxStrut());
 }
 

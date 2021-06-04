@@ -157,6 +157,8 @@ const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
 const char kGoAwayOnPathDegrading[] = "go_away_on_path_degrading";
 
+const char kAllowPortMigration[] = "allow_port_migration";
+
 // "goaway_sessions_on_ip_change" is default on for iOS unless overrided via
 // experimental options explicitly.
 #if defined(OS_IOS)
@@ -248,7 +250,7 @@ URLRequestContextConfig::URLRequestContextConfig(
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
     bool enable_network_quality_estimator,
     bool bypass_public_key_pinning_for_local_trust_anchors,
-    base::Optional<double> network_thread_priority)
+    absl::optional<double> network_thread_priority)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
@@ -517,6 +519,12 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             quic_race_stale_dns_on_connection;
       }
 
+      bool quic_allow_port_migration = false;
+      if (quic_args->GetBoolean(kAllowPortMigration,
+                                &quic_allow_port_migration)) {
+        quic_params->allow_port_migration = quic_allow_port_migration;
+      }
+
       bool quic_disable_bidirectional_streams = false;
       if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
                                 &quic_disable_bidirectional_streams)) {
@@ -659,12 +667,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             preloaded_nel_headers_config->GetList());
       }
     } else if (it.key() == kDisableIPv6OnWifi) {
-      if (!it.value().GetAsBoolean(&disable_ipv6_on_wifi)) {
+      if (!it.value().is_bool()) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a bool";
         effective_experimental_options->Remove(it.key(), nullptr);
         continue;
       }
+      disable_ipv6_on_wifi = it.value().GetBool();
     } else if (it.key() == kSSLKeyLogFile) {
       std::string ssl_key_log_file_string;
       if (it.value().GetAsString(&ssl_key_log_file_string)) {

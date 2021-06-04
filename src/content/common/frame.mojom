@@ -28,7 +28,6 @@ import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
-import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/frame/frame.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
@@ -84,7 +83,7 @@ struct CreateViewParams {
   // The session storage namespace ID this view should use.
   string session_storage_namespace_id;
 
-  // The frame token of the opener frame if one exists, or base::nullopt
+  // The frame token of the opener frame if one exists, or absl::nullopt
   // otherwise.
   blink.mojom.FrameToken? opener_frame_token;
 
@@ -159,6 +158,9 @@ struct CreateLocalMainFrameParams {
   blink.mojom.PolicyContainer? policy_container;
 
   CreateFrameWidgetParams widget_params;
+
+  // Subresource loader factories to be used by the initial empty document.
+  blink.mojom.URLLoaderFactoryBundle subresource_loader_factories;
 };
 
 // Parameters used for brower-initiated remote main frame creation.
@@ -168,6 +170,9 @@ struct CreateRemoteMainFrameParams {
   // The ID of the proxy object for the main frame in this view. Must not be
   // kRoutingIdNone.
   int32 routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The communication channels for the RemoteMainFrame in this view.
+  RemoteMainFrameInterfaces main_frame_interfaces;
 };
 
 // Parameters used for creating a new frame widget.
@@ -210,7 +215,7 @@ struct CreateFrameParams {
   int32 previous_routing_id;
 
   // Specifies the new frame's opener.  The opener will be null if this is
-  // base::nullopt.
+  // absl::nullopt.
   blink.mojom.FrameToken? opener_frame_token;
 
   // The new frame should be created as a child of the object
@@ -313,6 +318,12 @@ enum FrameDeleteIntention {
   kSpeculativeMainFrameForNavigationCancelled,
 };
 
+// Struct for communication channels of the RemoteFrame in blink.
+struct RemoteMainFrameInterfaces {
+  pending_associated_remote<blink.mojom.RemoteMainFrameHost> main_frame_host;
+  pending_associated_receiver<blink.mojom.RemoteMainFrame> main_frame;
+};
+
 // Implemented by the frame provider, and must be associated with other content
 // mojoms bound to frames, widgets, views, and currently also with the legacy
 // IPC channel.
@@ -329,9 +340,6 @@ interface Frame {
       CommitNavigationParams request_params)
       => (blink.mojom.CommitResult commit_result);
 
-  // Asks the renderer to handle a renderer-debug URL.
-  HandleRendererDebugURL(url.mojom.Url url);
-
   // Provides the renderer an updated |subresource_loader_factories|.
   //
   // This method is intended to fix broken loaders after a Network Service
@@ -341,69 +349,6 @@ interface Frame {
   // receiver's existing bundle.
   UpdateSubresourceLoaderFactories(
       blink.mojom.URLLoaderFactoryBundle subresource_loader_factories);
-
-  // Returns a DevToolsAgent interface for this frame, used for
-  // remote debugging. See DevToolsAgent for details.
-  // Returned DevToolsAgent must be associated with navigation control,
-  // due to various ordering dependencies between DevTools protocol and
-  // navigation.
-  BindDevToolsAgent(
-      pending_associated_remote<blink.mojom.DevToolsAgentHost> agent_host,
-      pending_associated_receiver<blink.mojom.DevToolsAgent> agent);
-
-  // Request for the renderer to execute a given JavaScript method on a given
-  // object (both identified by name) in the frame's context.
-  //
-  // |object_name| is the global name of the object.
-  //
-  // |method_name| is the name of the method on the object.
-  //
-  // |arguments| is the list of arguments to pass to the method invocation.
-  //
-  // |wants_result| is true if the result of this execution is required by the
-  // caller. If it is false, a reply is still required by Mojo, but a null value
-  // should be returned to avoid issues serializing a large, unwanted reply.
-  JavaScriptMethodExecuteRequest(
-      mojo_base.mojom.String16 object_name,
-      mojo_base.mojom.String16 method_name,
-      mojo_base.mojom.ListValue arguments,
-      bool wants_result) => (mojo_base.mojom.Value result);
-
-  // Request for the renderer to execute JavaScript in the frame's context.
-  //
-  // |javascript| is the string containing the JavaScript to be executed in the
-  // target frame's context. Note that this uses BigString16 rather than
-  // String16 as this is used in contexts, like DevTools, where the contents of
-  // the JavaScript script is user-provided, and therefore we can't guarantee
-  // the size of the script.
-  //
-  // |wants_result| is true if the result of this execution is required by the
-  // caller. If it is false, a reply is still required by Mojo, but a null value
-  // should be returned to avoid issues serializing a large, unwanted reply.
-  //
-  // TODO(hajimehoshi): This requires navigate association to keep the message
-  // order with other navigation-related messages. Fix this and move this to a
-  // non-navigate-related interface if possible.
-  JavaScriptExecuteRequest(
-      mojo_base.mojom.BigString16 javascript,
-      bool wants_result) => (mojo_base.mojom.Value result);
-
-  // ONLY FOR TESTS: Same as above but this can optionally trigger a fake user
-  // activation notification to test functionalities that are gated by user
-  // activation.
-  JavaScriptExecuteRequestForTests(
-      mojo_base.mojom.BigString16 javascript,
-      bool wants_result,
-      bool has_user_gesture,
-      int32 world_id)
-      => (mojo_base.mojom.Value result);
-
-  // Same as JavaScriptExecuteRequest above except the script is run in the
-  // isolated world specified by the fourth parameter.
-  JavaScriptExecuteRequestInIsolatedWorld(
-      mojo_base.mojom.BigString16 javascript,
-      bool wants_result,
-      int32 world_id) => (mojo_base.mojom.Value result);
 
   // Indicates that the frame host (browser) wants the |untrusted_stack_trace|
   // parameter of DidAddMessageToConsole() filled in for Error messages if at
@@ -419,10 +364,12 @@ interface Frame {
   // be posted back to the event loop to be invoked later. This is to ensure
   // that any postMessage() calls executed by JS during unload are dispatched,
   // since postMessage dispatch is always scheduled asynchronously.
-  Unload(int32 new_remote_frame_routing_id,
-         bool is_loading,
-         blink.mojom.FrameReplicationState new_remote_frame_replication_state,
-         blink.mojom.RemoteFrameToken new_remote_frame_token);
+  Unload(
+      int32 new_remote_frame_routing_id,
+      bool is_loading,
+      blink.mojom.FrameReplicationState new_remote_frame_replication_state,
+      blink.mojom.RemoteFrameToken new_remote_frame_token,
+      RemoteMainFrameInterfaces new_remote_main_frame_interfaces);
 
   // Delete the frame. This is only called for child frames that the browser
   // wants to detach, or for speculative main frames which are owned by the
@@ -440,8 +387,6 @@ interface Frame {
 
   GetInterfaceProvider(
       pending_receiver<service_manager.mojom.InterfaceProvider> interfaces);
-
-  GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
 
   // Requests a one-time snapshot of the accessibility tree without enabling
   // accessibility if it wasn't already enabled.
@@ -623,15 +568,6 @@ interface FrameHost {
           blink.mojom.FrameReplicationState replicated_state,
           blink.mojom.RemoteFrameToken frame_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
-
-
-  // Similar to CreateNewWindow, except used for sub-widgets, like <select>
-  // dropdowns. Upon return, the renderer side popup will be owned by the
-  // PopupWidgetHost.
-  CreateNewPopupWidget(
-         pending_associated_receiver<blink.mojom.PopupWidgetHost> popup_host,
-         pending_associated_receiver<blink.mojom.WidgetHost> blink_widget_host,
-         pending_associated_remote<blink.mojom.Widget> blink_widget);
 
   // Asynchronously creates a child frame. A routing ID must be allocated first
   // by calling RenderMessageFilter::GenerateFrameRoutingID()

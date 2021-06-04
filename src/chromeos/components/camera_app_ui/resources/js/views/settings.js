@@ -262,7 +262,7 @@ export class ResolutionSettings extends BaseSettings {
     this.frontSetting_ = null;
 
     /**
-     * Device setting of back camera. Null if no front camera.
+     * Device setting of back camera. Null if no back camera.
      * @type {?DeviceSetting}
      * @private
      */
@@ -641,8 +641,6 @@ export class ResolutionSettings extends BaseSettings {
 
     resolutions.forEach((r) => {
       const item = util.instantiateTemplate('#resolution-item-template');
-      const label = dom.getFrom(item, 'label', HTMLLabelElement);
-      util.setInkdropEffect(label);
       const input = dom.getFrom(item, 'input', HTMLInputElement);
       dom.getFrom(item, 'span', HTMLSpanElement).textContent =
           optTextTempl(r, resolutions);

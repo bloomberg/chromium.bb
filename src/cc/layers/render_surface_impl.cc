@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "base/strings/stringprintf.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
@@ -145,7 +144,7 @@ const FilterOperations& RenderSurfaceImpl::BackdropFilters() const {
   return OwningEffectNode()->backdrop_filters;
 }
 
-base::Optional<gfx::RRectF> RenderSurfaceImpl::BackdropFilterBounds() const {
+absl::optional<gfx::RRectF> RenderSurfaceImpl::BackdropFilterBounds() const {
   return OwningEffectNode()->backdrop_filter_bounds;
 }
 
@@ -413,10 +412,14 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   bool contents_opaque = false;
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(
-      draw_transform(), content_rect(), content_rect(), mask_filter_info(),
-      draw_properties_.clip_rect, draw_properties_.is_clipped, contents_opaque,
-      draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
+  absl::optional<gfx::Rect> clip_rect;
+  if (draw_properties_.is_clipped) {
+    clip_rect = draw_properties_.clip_rect;
+  }
+  shared_quad_state->SetAll(draw_transform(), content_rect(), content_rect(),
+                            mask_filter_info(), clip_rect, contents_opaque,
+                            draw_properties_.draw_opacity, BlendMode(),
+                            sorting_context_id);
 
   if (layer_tree_impl_->debug_state().show_debug_borders.test(
           DebugBorderType::RENDERPASS)) {

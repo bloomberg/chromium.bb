@@ -42,6 +42,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -671,8 +672,16 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestCtrlL) {
   EXPECT_TRUE(browser_view()->GetLocationBarView()->omnibox_view()->HasFocus());
 }
 
+// Fails on Linux ChromiumOS MSan Tests (https://crbug.com/1194575).
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestScrollingPageAndSwitchingToNTP \
+  DISABLED_TestScrollingPageAndSwitchingToNTP
+#else
+#define MAYBE_TestScrollingPageAndSwitchingToNTP \
+  TestScrollingPageAndSwitchingToNTP
+#endif
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       TestScrollingPageAndSwitchingToNTP) {
+                       MAYBE_TestScrollingPageAndSwitchingToNTP) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
@@ -729,8 +738,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
       scrollable_page_contents));
 }
 
-// Fails on Linux Chromium OS ASan LSan Tests (https://crbug.com/1191327).
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+// Fails on Linux Chromium OS Tests (https://crbug.com/1191327).
+#if defined(OS_CHROMEOS)
 #define MAYBE_TestClosingATab DISABLED_TestClosingATab
 #else
 #define MAYBE_TestClosingATab TestClosingATab

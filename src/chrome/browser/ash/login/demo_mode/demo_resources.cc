@@ -14,7 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // Path relative to the path at which demo resources are loaded that
@@ -120,7 +120,7 @@ void DemoResources::InstalledComponentLoaded(
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& path) {
   component_error_ = error;
-  OnDemoResourcesLoaded(base::make_optional(path));
+  OnDemoResourcesLoaded(absl::make_optional(path));
 }
 
 void DemoResources::LoadPreinstalledOfflineResources() {
@@ -133,7 +133,7 @@ void DemoResources::LoadPreinstalledOfflineResources() {
 }
 
 void DemoResources::OnDemoResourcesLoaded(
-    base::Optional<base::FilePath> mounted_path) {
+    absl::optional<base::FilePath> mounted_path) {
   loaded_ = true;
 
   if (mounted_path.has_value())
@@ -145,4 +145,4 @@ void DemoResources::OnDemoResourcesLoaded(
     std::move(callback).Run();
 }
 
-}  // namespace chromeos
+}  // namespace ash

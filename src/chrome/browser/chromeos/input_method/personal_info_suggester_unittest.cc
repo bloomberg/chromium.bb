@@ -28,6 +28,12 @@
 namespace chromeos {
 namespace {
 
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
+
+// TODO(crbug/1201529): Update this unit test to use `FakeSuggestionHandler`
+// instead.
 class TestSuggestionHandler : public SuggestionHandlerInterface {
  public:
   bool DismissSuggestion(int context_id, std::string* error) override {
@@ -831,7 +837,11 @@ TEST_F(PersonalInfoSuggesterTest,
 
   suggester_->Suggest(u"my email is ");
   suggestion_handler_->VerifySuggestion(email_, 0);
-  EXPECT_FALSE(suggester_->GetSuggestions().empty());
+  EXPECT_EQ(suggester_->GetSuggestions(),
+            (std::vector<TextSuggestion>{TextSuggestion{
+                .mode = TextSuggestionMode::kPrediction,
+                .type = TextSuggestionType::kAssistivePersonalInfo,
+                .text = base::UTF16ToUTF8(email_)}}));
 }
 
 TEST_F(PersonalInfoSuggesterTest,

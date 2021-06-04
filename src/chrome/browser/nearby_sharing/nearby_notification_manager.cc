@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
@@ -219,7 +218,7 @@ std::u16string GetFailureNotificationTitle(const ShareTarget& share_target) {
       /*use_capitalized_attachments=*/false);
 }
 
-base::Optional<std::u16string> GetFailureNotificationMessage(
+absl::optional<std::u16string> GetFailureNotificationMessage(
     TransferMetadata::Status status) {
   switch (status) {
     case TransferMetadata::Status::kTimedOut:
@@ -229,7 +228,7 @@ base::Optional<std::u16string> GetFailureNotificationMessage(
     case TransferMetadata::Status::kUnsupportedAttachmentType:
       return l10n_util::GetStringUTF16(IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE);
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -251,7 +250,7 @@ std::u16string GetConnectionRequestNotificationMessage(
     std::u16string token = l10n_util::GetStringFUTF16(
         IDS_NEARBY_SECURE_CONNECTION_ID,
         base::UTF8ToUTF16(*transfer_metadata.token()));
-    message = base::StrCat({message, base::UTF8ToUTF16("\n"), token});
+    message = base::StrCat({message, u"\n", token});
   }
 
   return message;
@@ -294,7 +293,7 @@ class ProgressNotificationDelegate : public NearbyNotificationDelegate {
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const base::Optional<int>& action_index) override {
+               const absl::optional<int>& action_index) override {
     // Clicking on the notification is a noop.
     if (!action_index)
       return;
@@ -334,7 +333,7 @@ class ConnectionRequestNotificationDelegate
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const base::Optional<int>& action_index) override {
+               const absl::optional<int>& action_index) override {
     // Clicking on the notification is a noop.
     if (!action_index)
       return;
@@ -368,7 +367,7 @@ class ReceivedImageDecoder : public ImageDecoder::ImageRequest {
       : callback_(std::move(callback)) {}
   ~ReceivedImageDecoder() override = default;
 
-  void DecodeImage(const base::Optional<base::FilePath>& image_path) {
+  void DecodeImage(const absl::optional<base::FilePath>& image_path) {
     if (!image_path) {
       OnDecodeImageFailed();
       return;
@@ -432,7 +431,7 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const base::Optional<int>& action_index) override {
+               const absl::optional<int>& action_index) override {
     switch (type_) {
       case NearbyNotificationManager::ReceivedContentType::kText:
         if (action_index.has_value() && action_index.value() == 0) {
@@ -476,8 +475,7 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
   void OpenDownloadsFolder() {
     platform_util::OpenItem(
         profile_,
-        DownloadPrefs::FromDownloadManager(
-            content::BrowserContext::GetDownloadManager(profile_))
+        DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
             ->DownloadPath(),
         platform_util::OPEN_FOLDER, platform_util::OpenOperationCallback());
 
@@ -539,7 +537,7 @@ class OnboardingNotificationDelegate : public NearbyNotificationDelegate {
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const base::Optional<int>& action_index) override {
+               const absl::optional<int>& action_index) override {
     manager_->OnOnboardingClicked();
   }
 
@@ -574,7 +572,7 @@ void UpdateOnboardingDismissedTime(PrefService* pref_service) {
 }
 
 bool ShouldClearNotification(
-    base::Optional<TransferMetadata::Status> last_status,
+    absl::optional<TransferMetadata::Status> last_status,
     TransferMetadata::Status new_status) {
   if (!last_status)
     return true;
@@ -641,10 +639,8 @@ void NearbyNotificationManager::OnTransferUpdate(
     case TransferMetadata::Status::kInProgress:
       ShowProgress(share_target, transfer_metadata);
       break;
-    case TransferMetadata::Status::kRejected:
     case TransferMetadata::Status::kCancelled:
-      // Only show the notification if the remote Receiver rejected
-      // or the remote Sender cancelled.
+      // Only show the notification if the remote cancelled.
       if (!nearby_service_->DidLocalUserCancelTransfer(share_target))
         ShowCancelled(share_target);
       break;
@@ -669,6 +665,7 @@ void NearbyNotificationManager::OnTransferUpdate(
     case TransferMetadata::Status::kComplete:
       ShowSuccess(share_target);
       break;
+    case TransferMetadata::Status::kRejected:
     case TransferMetadata::Status::kTimedOut:
     case TransferMetadata::Status::kFailed:
     case TransferMetadata::Status::kNotEnoughSpace:
@@ -716,8 +713,8 @@ void NearbyNotificationManager::OnNearbyProcessStopped() {
         *share_target_,
         TransferMetadataBuilder().set_status(*last_transfer_status_).build());
   }
-  share_target_ = base::nullopt;
-  last_transfer_status_ = base::nullopt;
+  share_target_ = absl::nullopt;
+  last_transfer_status_ = absl::nullopt;
 }
 
 void NearbyNotificationManager::ShowProgress(
@@ -769,7 +766,7 @@ void NearbyNotificationManager::ShowConnectionRequest(
 
   std::vector<message_center::ButtonInfo> notification_actions;
   notification_actions.emplace_back(
-      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ACCEPT_ACTION));
   notification_actions.emplace_back(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
   notification.set_buttons(notification_actions);
@@ -884,15 +881,12 @@ void NearbyNotificationManager::ShowIncomingSuccess(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
 
-  if (ash::features::IsTemporaryHoldingSpaceEnabled()) {
-    ash::HoldingSpaceKeyedService* holding_space_keyed_service =
-        ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
-            profile_);
-    if (holding_space_keyed_service) {
-      for (const auto& file : share_target.file_attachments) {
-        if (file.file_path().has_value())
-          holding_space_keyed_service->AddNearbyShare(file.file_path().value());
-      }
+  ash::HoldingSpaceKeyedService* holding_space_keyed_service =
+      ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile_);
+  if (holding_space_keyed_service) {
+    for (const auto& file : share_target.file_attachments) {
+      if (file.file_path().has_value())
+        holding_space_keyed_service->AddNearbyShare(file.file_path().value());
     }
   }
 }
@@ -906,7 +900,7 @@ void NearbyNotificationManager::ShowFailure(
       CreateNearbyNotification(kNearbyNotificationId);
   notification.set_title(GetFailureNotificationTitle(share_target));
 
-  base::Optional<std::u16string> message =
+  absl::optional<std::u16string> message =
       GetFailureNotificationMessage(transfer_metadata.status());
   if (message) {
     notification.set_message(*message);
@@ -926,10 +920,7 @@ void NearbyNotificationManager::ShowCancelled(const ShareTarget& share_target) {
       CreateNearbyNotification(kNearbyNotificationId);
 
   notification.set_title(base::ReplaceStringPlaceholders(
-      l10n_util::GetStringUTF16(
-          share_target.is_incoming
-              ? IDS_NEARBY_NOTIFICATION_SENDER_CANCELLED
-              : IDS_NEARBY_NOTIFICATION_RECEIVER_CANCELLED),
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SENDER_CANCELLED),
       {base::UTF8ToUTF16(share_target.device_name)}, /*offsets=*/nullptr));
 
   delegate_map_.erase(kNearbyNotificationId);

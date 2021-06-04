@@ -71,7 +71,6 @@ using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
 using autofill::UNKNOWN_TYPE;
 using autofill::password_generation::PasswordGenerationType;
-using base::ASCIIToUTF16;
 using testing::_;
 using testing::AllOf;
 using testing::Contains;
@@ -182,9 +181,9 @@ void CheckPendingCredentials(const PasswordForm& expected,
 }
 
 struct ExpectedGenerationUKM {
-  base::Optional<int64_t> generation_popup_shown;
+  absl::optional<int64_t> generation_popup_shown;
   int64_t has_generated_password;
-  base::Optional<int64_t> generated_password_modified;
+  absl::optional<int64_t> generated_password_modified;
 };
 
 // Check that UKM |metric_name| in |entry| is equal to |expected|. |expected| ==
@@ -1458,7 +1457,7 @@ TEST_P(PasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   form_data.fields[kPasswordFieldIndex].value =
       form_with_generated_password.password_value;
   EXPECT_CALL(form_saver,
-              UpdateReplace(_, IsEmpty(), ASCIIToUTF16(""),
+              UpdateReplace(_, IsEmpty(), testing::Eq(u""),
                             FormHasUniqueKey(form_with_generated_password)))
       .WillOnce(SaveArg<0>(&saved_form));
 
@@ -1477,9 +1476,9 @@ TEST_P(PasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   // Check UKM metrics.
   form_manager_.reset();
   ExpectedGenerationUKM expected_metrics = {
-      base::make_optional(1u) /* shown automatically */,
+      absl::make_optional(1u) /* shown automatically */,
       1 /* password generated */,
-      base::make_optional(1u) /* password modified */};
+      absl::make_optional(1u) /* password modified */};
 
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
@@ -1507,7 +1506,7 @@ TEST_P(PasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
   form_data.fields[kUsernameFieldIndex].value =
       form_with_generated_password.username_value;
 
-  EXPECT_CALL(form_saver, UpdateReplace(_, IsEmpty(), ASCIIToUTF16(""),
+  EXPECT_CALL(form_saver, UpdateReplace(_, IsEmpty(), testing::Eq(u""),
                                         FormHasUniqueKey(saved_form)))
       .WillOnce(SaveArg<0>(&saved_form));
   form_manager_->PresaveGeneratedPassword(
@@ -1523,9 +1522,9 @@ TEST_P(PasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
   // Check UKM metrics.
   form_manager_.reset();
   ExpectedGenerationUKM expected_metrics = {
-      base::make_optional(1u) /* shown automatically */,
+      absl::make_optional(1u) /* shown automatically */,
       1 /* password generated */,
-      base::make_optional(0u) /* password modified */};
+      absl::make_optional(0u) /* password modified */};
 
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
@@ -1555,7 +1554,7 @@ TEST_P(PasswordFormManagerTest, GeneratedPasswordWhichIsNotInFormData) {
   EXPECT_TRUE(form_manager_->HasGeneratedPassword());
 
   // Check that the generated password is saved.
-  EXPECT_CALL(form_saver, UpdateReplace(_, IsEmpty(), ASCIIToUTF16(""),
+  EXPECT_CALL(form_saver, UpdateReplace(_, IsEmpty(), testing::Eq(u""),
                                         FormHasUniqueKey(saved_form)))
       .WillOnce(SaveArg<0>(&saved_form));
   EXPECT_CALL(client_, UpdateFormManagers());
@@ -1614,7 +1613,7 @@ TEST_P(PasswordFormManagerTest, PasswordNoLongerGenerated) {
   // Check UKM metrics.
   form_manager_.reset();
   ExpectedGenerationUKM expected_metrics = {
-      base::make_optional(2u) /* shown manually */,
+      absl::make_optional(2u) /* shown manually */,
       0 /* password generated */,
       {} /* generated password is not modified */};
 
@@ -2805,7 +2804,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PasswordNoLongerGenerated) {
   // Check UKM metrics.
   form_manager_.reset();
   ExpectedGenerationUKM expected_metrics = {
-      base::make_optional(2u) /* shown manually */,
+      absl::make_optional(2u) /* shown manually */,
       0 /* password generated */,
       {} /* generated password is not modified */};
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../all_devtools_modules.gni")
 import("../../../third_party/typescript/typescript.gni")
 import("./copy.gni")
 import("./vars.gni")
@@ -26,30 +25,22 @@ template("devtools_module") {
 
     visibility += [ ":*" ]
   }
-
-  if (is_debug) {
-    _target_outputs = get_target_outputs(_typescript_target_dep)
-    _filtered_target_outputs =
-        filter_include(
-            filter_exclude(_target_outputs, generated_typescript_modules),
-            [ "*.js" ])
-
-    assert(
-        _filtered_target_outputs == [],
-        "$_filtered_target_outputs are not listed in all_typescript_module_sources")
-  }
+  _target_outputs = get_target_outputs(_typescript_target_dep)
+  _javascript_implementation_files =
+      filter_include(_target_outputs + invoker.data, [ "*.js" ])
 
   group(target_name) {
     public_deps = [ _typescript_target_dep ]
 
     visibility = invoker.visibility + [ ":*" ]
 
-    data = invoker.data +
-           filter_include(get_target_outputs(_typescript_target_dep),
-                          [
-                            "*.js",
-                            "*.map",
-                          ])
+    data = _javascript_implementation_files +
+           filter_include(invoker.data + _target_outputs, [ "*.map" ])
+    if (is_debug) {
+      metadata = {
+        grd_files = _javascript_implementation_files
+      }
+    }
   }
 }
 

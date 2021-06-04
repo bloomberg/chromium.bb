@@ -283,6 +283,7 @@ component("core") {
     "//build:chromeos_buildflags",
     "//components/paint_preview/common",
     "//components/performance_manager/public/mojom:mojom_blink",
+    "//components/power_scheduler",
     "//components/shared_highlighting/core/common",
     "//gpu/config",
     "//mojo/public/cpp/bindings:bindings",
@@ -882,6 +883,11 @@ make_names("make_core_generated_performance_entry_names") {
   output_dir = blink_core_output_dir
 }
 
+make_names("make_core_generated_securitypolicyviolation_disposition_names") {
+  in_files = [ "events/securitypolicyviolation_disposition_names.json5" ]
+  output_dir = blink_core_output_dir
+}
+
 make_names("make_core_generated_shadow_element_names") {
   in_files = [ "html/shadow/shadow_element_names.json5" ]
   output_dir = "$blink_core_output_dir/html/shadow"
@@ -1080,6 +1086,7 @@ targets_generating_sources = [
   ":make_core_generated_origin_trials",
   ":make_core_generated_performance_entry_names",
   ":make_core_generated_permissions_policy_helper",
+  ":make_core_generated_securitypolicyviolation_disposition_names",
   ":make_core_generated_shadow_element_names",
   ":make_core_generated_style_property_shorthand",
   ":make_core_generated_svg_element_type_helpers",
@@ -1193,6 +1200,7 @@ fuzzer_test("text_resource_decoder_fuzzer") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "accessibility/ax_context_test.cc",
     "app_history/app_history_test.cc",
     "clipboard/clipboard_utilities_test.cc",
     "content_capture/content_capture_test.cc",
@@ -1205,6 +1213,7 @@ source_set("unit_tests") {
     "css/mock_css_paint_image_generator.h",
     "display_lock/display_lock_context_test.cc",
     "display_lock/display_lock_utilities_test.cc",
+    "document_transition/document_transition_origin_trial_test.cc",
     "document_transition/document_transition_test.cc",
     "editing/caret_display_item_client_test.cc",
     "editing/finder/text_finder_test.cc",
@@ -1257,7 +1266,6 @@ source_set("unit_tests") {
     "frame/csp/conversion_util_test.cc",
     "frame/csp/csp_directive_list_test.cc",
     "frame/csp/csp_source_test.cc",
-    "frame/csp/require_trusted_types_for_directive_test.cc",
     "frame/csp/source_list_directive_test.cc",
     "frame/csp/trusted_types_directive_test.cc",
     "frame/deprecation_report_body_test.cc",
@@ -1316,6 +1324,7 @@ source_set("unit_tests") {
     "layout/force_legacy_layout_test.cc",
     "layout/geometry/axis_test.cc",
     "layout/geometry/logical_rect_test.cc",
+    "layout/geometry/logical_size_test.cc",
     "layout/geometry/physical_rect_test.cc",
     "layout/geometry/physical_size_test.cc",
     "layout/geometry/writing_mode_converter_test.cc",
@@ -1332,6 +1341,7 @@ source_set("unit_tests") {
     "layout/layout_list_marker_test.cc",
     "layout/layout_media_test.cc",
     "layout/layout_multi_column_flow_thread_test.cc",
+    "layout/layout_object_factory_test.cc",
     "layout/layout_object_test.cc",
     "layout/layout_progress_test.cc",
     "layout/layout_replaced_test.cc",
@@ -1399,6 +1409,7 @@ source_set("unit_tests") {
     "layout/ng/ng_physical_box_fragment_test.cc",
     "layout/ng/ng_physical_fragment_test.cc",
     "layout/ng/ng_relative_utils_test.cc",
+    "layout/ng/svg/ng_svg_text_layout_algorithm_test.cc",
     "layout/ng/table/ng_table_layout_algorithm_helpers_test.cc",
     "layout/overflow_model_test.cc",
     "layout/paint_containment_test.cc",
@@ -1793,18 +1804,6 @@ fuzzer_test("html_preload_scanner_fuzzer") {
     ":core",
     "../platform:blink_fuzzer_test_support",
   ]
-}
-
-# Fuzzer for blink::ContentSecurityPolicy.
-fuzzer_test("content_security_policy_fuzzer") {
-  sources = [ "frame/csp/content_security_policy_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//third_party/blink/renderer/core:testing",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-  ]
-  dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"
-  seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
 }
 
 fuzzer_test("content_security_policy_conversion_util_fuzzer") {

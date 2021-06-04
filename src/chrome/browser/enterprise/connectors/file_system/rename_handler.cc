@@ -9,8 +9,11 @@
 #include "base/files/file_util.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/connectors/file_system/access_token_fetcher.h"
+#include "chrome/browser/enterprise/connectors/file_system/box_uploader.h"
 #include "chrome/browser/enterprise/connectors/file_system/signin_dialog_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -43,10 +46,10 @@ const base::Feature kFileSystemConnectorEnabled{
     "FileSystemConnectorsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // static
-base::Optional<FileSystemSettings> FileSystemRenameHandler::IsEnabled(
+absl::optional<FileSystemSettings> FileSystemRenameHandler::IsEnabled(
     download::DownloadItem* download_item) {
   if (!base::FeatureList::IsEnabled(kFileSystemConnectorEnabled))
-    return base::nullopt;
+    return absl::nullopt;
 
   // Check to see if the download item matches any rules.  If the URL of the
   // download itself does not match then check the URL of site on which the
@@ -67,7 +70,7 @@ base::Optional<FileSystemSettings> FileSystemRenameHandler::IsEnabled(
     return settings;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // static
@@ -97,13 +100,15 @@ FileSystemRenameHandler::FileSystemRenameHandler(
     : download::DownloadItemRenameHandler(download_item),
       target_path_(download_item->GetTargetFilePath()),
       settings_(std::move(settings)),
-      controller_(download_item) {}
+      uploader_(BoxUploader::Create(download_item)) {
+  DCHECK_EQ(settings_.service_provider, "box");
+}
 
 FileSystemRenameHandler::~FileSystemRenameHandler() = default;
 
 void FileSystemRenameHandler::Start(Callback callback) {
   download_callback_ = std::move(callback);
-  controller_.Init(
+  uploader_->Init(
       base::BindRepeating(&FileSystemRenameHandler::OnApiAuthenticationError,
                           weak_factory_.GetWeakPtr()),
       base::BindOnce(&FileSystemRenameHandler::NotifyResultToDownloadThread,
@@ -112,10 +117,9 @@ void FileSystemRenameHandler::Start(Callback callback) {
   StartInternal();
 }
 
-void FileSystemRenameHandler::TryControllerTask(
-    content::BrowserContext* context,
-    const std::string& access_token) {
-  controller_.TryTask(GetURLLoaderFactory(context), access_token);
+void FileSystemRenameHandler::TryUploaderTask(content::BrowserContext* context,
+                                              const std::string& access_token) {
+  uploader_->TryTask(GetURLLoaderFactory(context), access_token);
 }
 
 void FileSystemRenameHandler::PromptUserSignInForAuthorization(
@@ -138,14 +142,28 @@ void FileSystemRenameHandler::FetchAccessToken(
                         settings_.scopes);
 }
 
-FileSystemDownloadController*
-FileSystemRenameHandler::GetControllerForTesting() {
-  return &controller_;
+void FileSystemRenameHandler::SetUploaderForTesting(
+    std::unique_ptr<BoxUploader> fake_uploader) {
+  CHECK(fake_uploader);
+  uploader_ = std::move(fake_uploader);
 }
 
-void FileSystemRenameHandler::OpenDownload() {}
+void FileSystemRenameHandler::OpenDownload() {
+  AddTabToShowDownload(uploader_->GetUploadedFileUrl());
+}
 
-void FileSystemRenameHandler::ShowDownloadInContext() {}
+void FileSystemRenameHandler::ShowDownloadInContext() {
+  AddTabToShowDownload(uploader_->GetDestinationFolderUrl());
+}
+
+void FileSystemRenameHandler::AddTabToShowDownload(GURL url) {
+  content::BrowserContext* context =
+      content::DownloadItemUtils::GetBrowserContext(download_item());
+  Profile* profile = Profile::FromBrowserContext(context);
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  Browser* browser = displayer.browser();
+  chrome::AddTabAt(browser, url, /*index =*/-1, /*foreground =*/true);
+}
 
 void FileSystemRenameHandler::StartInternal() {
   PrefService* prefs;
@@ -170,7 +188,7 @@ void FileSystemRenameHandler::StartInternal() {
                                       &access_token, &refresh_token);
 
   if (ok && !access_token.empty()) {  // Case 2.
-    TryControllerTask(context, access_token);
+    TryUploaderTask(context, access_token);
   } else if (ok && !refresh_token.empty()) {  // Case 3.
     // Start AccessTokenFetcher to obtain access token with refresh token.
     FetchAccessToken(context, refresh_token);
@@ -184,14 +202,14 @@ void FileSystemRenameHandler::StartInternal() {
 // The OAuth2 "Dance":
 //      AToken  || RToken || Action
 // (1)  N       || N      || PromptUserSignInForAuthorization()
-// (2)  Y       ||        || TryControllerTask()
+// (2)  Y       ||        || TryUploaderTask()
 // (3)  N       || Y      || FetchAccessToken
 //
 // (1) PromptUserSignInForAuthorization()
 //    (a) Success: SaveTokens -> (2).
 //    (b) Failure with GoogleServiceAuthError::State::REQUEST_CANCELED: [Abort].
 //    (c) Other failures: Retry (1).
-// (2) TryControllerTask()
+// (2) TryUploaderTask()
 //    (a) No authentication error: NotifyResultToDownloadThread() [Done].
 //    (b) Authentication error: ClearAToken -> (3).
 // (3) FetchAccessToken
@@ -202,8 +220,7 @@ void FileSystemRenameHandler::StartInternal() {
 scoped_refptr<network::SharedURLLoaderFactory>
 FileSystemRenameHandler::GetURLLoaderFactory(content::BrowserContext* context) {
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForUrl(context,
-                                                         settings_.home);
+      context->GetStoragePartitionForUrl(settings_.home);
   return partition->GetURLLoaderFactoryForBrowserProcess();
 }
 
@@ -247,9 +264,12 @@ void FileSystemRenameHandler::OnAuthenticationError(
   PrefService* prefs = GetPrefs();
   if (prefs && ClearFileSystemAccessToken(prefs, settings_.service_provider)) {
     // Case 2b, but also Case 1c and 3b so that now both tokens are cleared.
+    VLOG(20) << "Re-authenticating...";
     StartInternal();
   } else {
+    DLOG(ERROR) << "Failed to clear OAuth2 tokens. Notifying failure back.";
     NotifyResultToDownloadThread(false);
+    // TODO(https://crbug.com/1184351): Handle local temporary file.
   }
 }
 
@@ -264,7 +284,7 @@ void FileSystemRenameHandler::OnSignInCancellation() {
 }
 
 void FileSystemRenameHandler::OnApiAuthenticationError() {
-  DLOG(ERROR) << "Authentication failed in service provider API calls.";
+  VLOG(20) << "Authentication failed in service provider API calls.";
   return OnAuthenticationError(
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -277,6 +297,11 @@ void FileSystemRenameHandler::NotifyResultToDownloadThread(bool success) {
                         : download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
   // Make sure target_path_ has been initialized.
   DCHECK(!target_path_.empty());
+  // TODO(https://crbug.com/1206299): Returns the uploaded file URL here using
+  // uploader_->GetUploadedFileUrl() instead, but make sure the download UI
+  // displays the uploaded status properly. Currently, upon opening the
+  // item/folder for the first time, DownloadItem detects that the file is
+  // deleted and turns the menu bar grey.
   std::move(download_callback_).Run(reason, target_path_);
 }
 

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,11 +22,13 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/media/capture_handle_config.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -90,7 +91,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // listen for when RenderFrame objects are created.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
 
-  // This method is invoked whenever one of the current frames of a WebContents
+  // This method is invoked whenever one of the frames of a WebContents
   // swaps its RenderFrameHost with another one; for example because that frame
   // navigated and the new content is in a different process. The
   // RenderFrameHost that has been replaced is in |old_host|, which can be
@@ -98,8 +99,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // created and no old RenderFrameHost exists.
   //
   // This method, in combination with |FrameDeleted|, is appropriate for
-  // observers wishing to track the set of current RenderFrameHosts -- i.e.,
-  // those hosts that would be visited by calling WebContents::ForEachFrame().
+  // observers wishing to track the set of RenderFrameHosts that are current in
+  // their frame tree. Note that being current in a frame tree is separate from
+  // the lifecycle state of the RenderFrameHosts. Consider using
+  // |RenderFrameHostStateChanged|.
   virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
                                       RenderFrameHost* new_host) {}
 
@@ -144,6 +147,19 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       RenderFrameHost* render_frame_host,
       RenderFrameHost::LifecycleState old_state,
       RenderFrameHost::LifecycleState new_state) {}
+
+  // This method is invoked when something "replaces" the contents of the
+  // WebContents or otherwise changes the FrameSinkId of the contents that
+  // should be captured if capturing this WebContents, WITHOUT changing the
+  // RenderFrameHost.
+  virtual void CaptureTargetChanged() {}
+
+  // This method is invoked when the capture handle config changes. This can
+  // happen when:
+  // 1. The web-application calls |mediaDevices.setCaptureHandleConfig|.
+  // 2. The top-level frame is navigated cross-document.
+  virtual void OnCaptureHandleConfigUpdate(
+      const blink::mojom::CaptureHandleConfig& config) {}
 
   // This method is invoked when the RenderView of the current RenderViewHost
   // is ready, e.g. because we recreated it after a crash.
@@ -311,6 +327,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
 
   // This method is invoked when content was loaded from an in-memory cache.
   virtual void DidLoadResourceFromMemoryCache(
+      RenderFrameHost* render_frame_host,
       const GURL& url,
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) {}
@@ -581,7 +598,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const std::u16string& message,
       int32_t line_no,
       const std::u16string& source_id,
-      const base::Optional<std::u16string>& untrusted_stack_trace) {}
+      const absl::optional<std::u16string>& untrusted_stack_trace) {}
 
   // Invoked when media is playing or paused.  |id| is unique per player and per
   // RenderFrameHost.  There may be multiple players within a RenderFrameHost
@@ -657,7 +674,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // be invoked before DidUpdateFaviconURL().
   virtual void DidUpdateWebManifestURL(
       RenderFrameHost* target_frame,
-      const base::Optional<GURL>& manifest_url) {}
+      const absl::optional<GURL>& manifest_url) {}
 
   // DEPRECATED. Please register interface binders with BrowserInterfaceBroker
   // instead (see 'Interface-Brokers' section in //docs/mojo_and_services.md).

@@ -51,7 +51,7 @@ def fyi_goma_rbe_canary_builder(
         *,
         name,
         goma_backend = goma.backend.RBE_PROD,
-        os = os.LINUX_DEFAULT,
+        os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
         **kwargs):
     return builder(
         name = name,
@@ -112,12 +112,24 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = "Win Builder (dbg) Goma RBE Canary",
-    goma_enable_ats = True,
+    goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_rbe_canary_builder(
     name = "Win Builder Goma RBE Canary",
+    goma_enable_ats = False,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_canary_builder(
+    name = "Win Builder (dbg) Goma RBE ATS Canary",
+    goma_enable_ats = True,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_canary_builder(
+    name = "Win Builder Goma RBE ATS Canary",
     goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
@@ -126,7 +138,7 @@ def fyi_goma_rbe_latest_client_builder(
         *,
         name,
         goma_backend = goma.backend.RBE_PROD,
-        os = os.LINUX_DEFAULT,
+        os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
         **kwargs):
     return builder(
         name = name,
@@ -150,14 +162,24 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = "Win Builder (dbg) Goma RBE Latest Client",
-    goma_backend = goma.backend.RBE_STAGING,
-    goma_enable_ats = True,
+    goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_rbe_latest_client_builder(
     name = "Win Builder Goma RBE Latest Client",
-    goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = False,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_latest_client_builder(
+    name = "Win Builder (dbg) Goma RBE ATS Latest Client",
+    goma_enable_ats = True,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_latest_client_builder(
+    name = "Win Builder Goma RBE ATS Latest Client",
     goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
@@ -203,7 +225,7 @@ def goma_builder(
         *,
         name,
         builderless = False,
-        os = os.LINUX_DEFAULT,
+        os = os.LINUX_XENIAL_OR_BIONIC_SWITCH_TO_DEFAULT,
         **kwargs):
     return builder(
         name = name,
@@ -216,18 +238,21 @@ def goma_builder(
 goma_builder(
     name = "Chromium Android ARM 32-bit Goma RBE Staging",
     goma_backend = goma.backend.RBE_STAGING,
+    execution_timeout = 4 * time.hour,
 )
 
 goma_builder(
     name = "Chromium Android ARM 32-bit Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
+    execution_timeout = 4 * time.hour,
 )
 
 goma_builder(
     name = "Chromium Android ARM 32-bit Goma RBE ToT (ATS)",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
+    execution_timeout = 4 * time.hour,
 )
 
 goma_builder(
@@ -318,11 +343,10 @@ def goma_windows_builder(
         *,
         name,
         goma_enable_ats = True,
-        cores = 32,
         **kwargs):
+    kwargs["execution_timeout"] = 4 * time.hour
     return goma_builder(
         name = name,
-        cores = cores,
         goma_enable_ats = goma_enable_ats,
         os = os.WINDOWS_DEFAULT,
         **kwargs
@@ -331,14 +355,35 @@ def goma_windows_builder(
 goma_windows_builder(
     name = "Chromium Win Goma RBE Staging",
     goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = False,
 )
 
 goma_windows_builder(
     name = "Chromium Win Goma RBE Staging (clobber)",
     goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = False,
 )
 
 goma_windows_builder(
     name = "Chromium Win Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
+    goma_enable_ats = False,
+)
+
+goma_windows_builder(
+    name = "Chromium Win Goma RBE ATS Staging",
+    goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = True,
+)
+
+goma_windows_builder(
+    name = "Chromium Win Goma RBE ATS Staging (clobber)",
+    goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = True,
+)
+
+goma_windows_builder(
+    name = "Chromium Win Goma RBE ATS ToT",
+    goma_backend = goma.backend.RBE_TOT,
+    goma_enable_ats = True,
 )

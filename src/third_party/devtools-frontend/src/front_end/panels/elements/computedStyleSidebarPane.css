@@ -20,7 +20,7 @@
 }
 
 .styles-sidebar-pane-filter-box > input {
-  outline: none !important;
+  outline: none !important; /* stylelint-disable-line declaration-no-important */
   border: none;
   width: 100%;
   background: var(--color-background);
@@ -30,7 +30,7 @@
 
 .styles-sidebar-pane-filter-box > input:focus,
 .styles-sidebar-pane-filter-box > input:not(:placeholder-shown) {
-  box-shadow: var(--focus-ring-active-shadow);
+  box-shadow: var(--legacy-focus-ring-active-shadow);
 }
 
 .styles-sidebar-pane-filter-box > input::placeholder {

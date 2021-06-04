@@ -18,12 +18,13 @@
 #include "quic/core/quic_framer.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_socket_address.h"
-#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 
@@ -324,6 +325,13 @@ void QuicTimeWaitListManager::SendPublicReset(
   if (ietf_quic) {
     std::unique_ptr<QuicEncryptedPacket> ietf_reset_packet =
         BuildIetfStatelessResetPacket(connection_id, received_packet_length);
+    if (GetQuicRestartFlag(quic_fix_stateless_reset2) &&
+        ietf_reset_packet == nullptr) {
+      // This could happen when trying to reject a short header packet of
+      // a connection which is in the time wait list (and with no termination
+      // packet).
+      return;
+    }
     QUIC_DVLOG(2) << "Dispatcher sending IETF reset packet for "
                   << connection_id << std::endl
                   << quiche::QuicheTextUtils::HexDump(
@@ -381,6 +389,10 @@ QuicTimeWaitListManager::BuildIetfStatelessResetPacket(
 bool QuicTimeWaitListManager::SendOrQueuePacket(
     std::unique_ptr<QueuedPacket> packet,
     const QuicPerPacketContext* /*packet_context*/) {
+  if (packet == nullptr) {
+    QUIC_LOG(ERROR) << "Tried to send or queue a null packet";
+    return true;
+  }
   if (WriteToWire(packet.get())) {
     // Allow the packet to be deleted upon leaving this function.
     return true;

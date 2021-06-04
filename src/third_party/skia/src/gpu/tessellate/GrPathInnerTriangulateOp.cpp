@@ -36,10 +36,9 @@ GrDrawOp::FixedFunctionFlags GrPathInnerTriangulateOp::fixedFunctionFlags() cons
 
 GrProcessorSet::Analysis GrPathInnerTriangulateOp::finalize(const GrCaps& caps,
                                                             const GrAppliedClip* clip,
-                                                            bool hasMixedSampledCoverage,
                                                             GrClampType clampType) {
-    return fProcessors.finalize(fColor, GrProcessorAnalysisCoverage::kNone, clip, nullptr,
-                                hasMixedSampledCoverage, caps, clampType, &fColor);
+    return fProcessors.finalize(fColor, GrProcessorAnalysisCoverage::kNone, clip, nullptr, caps,
+                                clampType, &fColor);
 }
 
 void GrPathInnerTriangulateOp::pushFanStencilProgram(const GrPathShader::ProgramArgs& args,
@@ -71,10 +70,9 @@ void GrPathInnerTriangulateOp::prePreparePrograms(const GrPathShader::ProgramArg
         return;
     }
 
-    // If using wireframe or mixed samples, we have to fall back on a standard Redbook "stencil then
-    // fill" algorithm instead of bypassing the stencil buffer to fill the fan directly.
-    bool forceRedbookStencilPass = (fOpFlags & (OpFlags::kStencilOnly | OpFlags::kWireframe)) ||
-                                   fAAType == GrAAType::kCoverage;  // i.e., mixed samples!
+    // If using wireframe, we have to fall back on a standard Redbook "stencil then fill" algorithm
+    // instead of bypassing the stencil buffer to fill the fan directly.
+    bool forceRedbookStencilPass = (fOpFlags & (OpFlags::kStencilOnly | OpFlags::kWireframe));
     bool doFill = !(fOpFlags & OpFlags::kStencilOnly);
 
     bool isLinear;
@@ -101,10 +99,9 @@ void GrPathInnerTriangulateOp::prePreparePrograms(const GrPathShader::ProgramArg
         // and the middle-out topology used by indirect draws is easier on the rasterizer than what
         // we can do with hw tessellation. So far we haven't found any platforms where trying to use
         // hw tessellation here is worth it.
-        using DrawInnerFan = GrPathIndirectTessellator::DrawInnerFan;
-        fTessellator = args.fArena->make<GrPathIndirectTessellator>(fViewMatrix, fPath,
-                                                                    DrawInnerFan::kNo);
-        fStencilCurvesProgram = GrStencilPathShader::MakeStencilProgram<GrMiddleOutCubicShader>(
+        fTessellator = args.fArena->make<GrPathIndirectTessellator>(
+                fViewMatrix, fPath, GrPathTessellator::DrawInnerFan::kNo);
+        fStencilCurvesProgram = GrStencilPathShader::MakeStencilProgram<GrCurveMiddleOutShader>(
                 args, fViewMatrix, pipelineForStencils, fPath.getFillType());
     }
 

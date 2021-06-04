@@ -22,15 +22,9 @@ namespace optimization_guide {
 namespace features {
 
 // Enables the syncing of the Optimization Hints component, which provides
-// hints for what Previews can be applied on a page load.
-const base::Feature kOptimizationHints {
-  "OptimizationHints",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
+// hints for what optimizations can be applied on a page load.
+const base::Feature kOptimizationHints{"OptimizationHints",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature flag that contains a feature param that specifies the field trials
 // that are allowed to be sent up to the Optimization Guide Server.
@@ -38,18 +32,17 @@ const base::Feature kOptimizationHintsFieldTrials{
     "OptimizationHintsFieldTrials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fetching from a remote Optimization Guide Service.
-const base::Feature kRemoteOptimizationGuideFetching {
-  "OptimizationHintsFetching",
+const base::Feature kRemoteOptimizationGuideFetching{
+    "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+  "OptimizationHintsFetchingAnonymousDataConsent",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else   // !defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // defined(OS_ANDROID)
 };
-
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
-    "OptimizationHintsFetchingAnonymousDataConsent",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables performance info in the context menu and fetching from a remote
 // Optimization Guide Service.
@@ -74,6 +67,10 @@ const base::Feature kOptimizationGuideModelDownloading {
 // Enables page content to be annotated.
 const base::Feature kPageContentAnnotations{"PageContentAnnotations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables push notification of hints.
+const base::Feature kPushNotifications{"OptimizationGuidePushNotifications",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This feature flag does not turn off any behavior, it is only used for
 // experiment parameters.
@@ -223,7 +220,7 @@ int MaxServerBloomFilterByteSize() {
       kOptimizationHints, "max_bloom_filter_byte_size", 250 * 1024 /* 250KB */);
 }
 
-base::Optional<net::EffectiveConnectionType>
+absl::optional<net::EffectiveConnectionType>
 GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(
       kRemoteOptimizationGuideFetching,
@@ -351,18 +348,6 @@ base::TimeDelta PredictionModelFetchInterval() {
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
 }
 
-base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
-  std::string value = base::GetFieldTrialParamValueByFeature(
-      kRemoteOptimizationGuideFetching, "approved_external_app_packages");
-  if (value.empty())
-    return {};
-
-  std::vector<std::string> app_packages_list = base::SplitString(
-      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return base::flat_set<std::string>(app_packages_list.begin(),
-                                     app_packages_list.end());
-}
-
 base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
   std::string value = base::GetFieldTrialParamValueByFeature(
       kOptimizationHintsFieldTrials, "allowed_field_trial_names");
@@ -405,6 +390,12 @@ bool ShouldWriteContentAnnotationsToHistoryService() {
 
 bool LoadModelFileForEachExecution() {
   return base::FeatureList::IsEnabled(kLoadModelFileForEachExecution);
+}
+
+base::TimeDelta GetOnloadDelayForHintsFetching() {
+  return base::TimeDelta::FromMilliseconds(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching, "onload_delay_for_hints_fetching_ms",
+      0));
 }
 
 }  // namespace features

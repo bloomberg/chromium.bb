@@ -233,10 +233,10 @@ void ContentTranslateDriver::InitiateTranslationIfReload(
   // an infobar, it must be done after that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ContentTranslateDriver::InitiateTranslation,
-          weak_pointer_factory_.GetWeakPtr(),
-          translate_manager_->GetLanguageState()->original_language(), 0));
+      base::BindOnce(&ContentTranslateDriver::InitiateTranslation,
+                     weak_pointer_factory_.GetWeakPtr(),
+                     translate_manager_->GetLanguageState()->source_language(),
+                     0));
 }
 
 // content::WebContentsObserver methods
@@ -255,7 +255,7 @@ void ContentTranslateDriver::DidFinishNavigation(
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
       navigation_handle->IsSameDocument();
 
-  const base::Optional<url::Origin>& initiator_origin =
+  const absl::optional<url::Origin>& initiator_origin =
       navigation_handle->GetInitiatorOrigin();
 
   bool navigation_from_google =
@@ -325,11 +325,13 @@ void ContentTranslateDriver::RegisterPage(
       details.model_detected_language);
   translate_manager_->GetActiveTranslateMetricsLogger()
       ->LogDetectionReliabilityScore(details.model_reliability_score);
+  translate_manager_->GetActiveTranslateMetricsLogger()->LogWasContentEmpty(
+      details.contents.length() > 0);
 }
 
 void ContentTranslateDriver::OnPageTranslated(
     bool cancelled,
-    const std::string& original_lang,
+    const std::string& source_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
   if (cancelled) {
@@ -339,10 +341,9 @@ void ContentTranslateDriver::OnPageTranslated(
     return;
   }
 
-  translate_manager_->PageTranslated(
-      original_lang, translated_lang, error_type);
+  translate_manager_->PageTranslated(source_lang, translated_lang, error_type);
   for (auto& observer : translation_observers_)
-    observer.OnPageTranslated(original_lang, translated_lang, error_type);
+    observer.OnPageTranslated(source_lang, translated_lang, error_type);
 }
 
 void ContentTranslateDriver::GetLanguageDetectionModel(

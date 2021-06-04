@@ -30,7 +30,7 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_mem_slice_storage.h"
-#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_text_utils.h"
 #include "spdy/core/spdy_protocol.h"
 
 using spdy::SpdyHeaderBlock;
@@ -434,7 +434,12 @@ QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
   QuicConnection::ScopedPacketFlusher flusher(spdy_session_->connection());
 
   // Write frame header.
+#if !defined(__ANDROID__)
   struct iovec header_iov = {static_cast<void*>(buffer.get()), header_length};
+#else
+  struct iovec header_iov = {static_cast<void*>(buffer.get()),
+                             static_cast<__kernel_size_t>(header_length)};
+#endif
   QuicMemSliceStorage storage(
       &header_iov, 1,
       spdy_session_->connection()->helper()->GetStreamSendBufferAllocator(),

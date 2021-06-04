@@ -17,12 +17,6 @@ namespace policy {
 
 namespace {
 
-// Well-known requisition types.
-const char kNoRequisition[] = "none";
-const char kRemoraRequisition[] = "remora";
-const char kSharkRequisition[] = "shark";
-const char kRialtoRequisition[] = "rialto";
-
 // Fetches a machine statistic value from StatisticsProvider, returns an empty
 // string on failure.
 std::string GetMachineStatistic(const std::string& key) {
@@ -50,6 +44,12 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
 }  // namespace
 
 // static
+const char EnrollmentRequisitionManager::kNoRequisition[] = "none";
+const char EnrollmentRequisitionManager::kRemoraRequisition[] = "remora";
+const char EnrollmentRequisitionManager::kSharkRequisition[] = "shark";
+const char EnrollmentRequisitionManager::kRialtoRequisition[] = "rialto";
+
+// static
 void EnrollmentRequisitionManager::Initialize() {
   // OEM statistics are only loaded when OOBE is not completed.
   if (chromeos::StartupUtils::IsOobeCompleted())
@@ -57,7 +57,7 @@ void EnrollmentRequisitionManager::Initialize() {
 
   // Demo requisition may have been set in a prior enrollment attempt that was
   // interrupted.
-  chromeos::DemoSetupController::ClearDemoRequisition();
+  ash::DemoSetupController::ClearDemoRequisition();
   auto* local_state = g_browser_process->local_state();
   const PrefService::Preference* pref =
       local_state->FindPreference(prefs::kDeviceEnrollmentRequisition);

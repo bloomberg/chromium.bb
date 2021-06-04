@@ -10,11 +10,14 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/contexts/clipboard_read_write_permission_context.h"
 #include "components/permissions/contexts/clipboard_sanitized_write_permission_context.h"
+#include "components/permissions/contexts/midi_permission_context.h"
+#include "components/permissions/contexts/midi_sysex_permission_context.h"
 #include "components/permissions/contexts/payment_handler_permission_context.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
+#include "weblayer/browser/background_fetch/background_fetch_permission_context.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/geolocation_permission_context_delegate.h"
 #include "weblayer/browser/permissions/weblayer_nfc_permission_context_delegate.h"
@@ -61,6 +64,11 @@ class SafePermissionContext : public permissions::PermissionContextBase {
 permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
     content::BrowserContext* browser_context) {
   permissions::PermissionManager::PermissionContextMap permission_contexts;
+  permission_contexts[ContentSettingsType::MIDI_SYSEX] =
+      std::make_unique<permissions::MidiSysexPermissionContext>(
+          browser_context);
+  permission_contexts[ContentSettingsType::MIDI] =
+      std::make_unique<permissions::MidiPermissionContext>(browser_context);
 #if defined(OS_ANDROID)
   using GeolocationPermissionContext =
       permissions::GeolocationPermissionContextAndroid;
@@ -108,6 +116,8 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<SafePermissionContext>(
           browser_context, ContentSettingsType::MEDIASTREAM_CAMERA,
           blink::mojom::PermissionsPolicyFeature::kCamera);
+  permission_contexts[ContentSettingsType::BACKGROUND_FETCH] =
+      std::make_unique<BackgroundFetchPermissionContext>(browser_context);
   permission_contexts[ContentSettingsType::BACKGROUND_SYNC] =
       std::make_unique<BackgroundSyncPermissionContext>(browser_context);
 

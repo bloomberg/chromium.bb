@@ -293,6 +293,15 @@ Polymer({
   },
 
   /**
+   * Handle OS install button for "Welcome" screen.
+   *
+   * @private
+   */
+  onOsInstallButtonClicked_() {
+    this.userActed('startOsInstall');
+  },
+
+  /**
    * Handles "enable-debugging" link for "Welcome" screen.
    *
    * @private
@@ -594,6 +603,11 @@ Polymer({
   /** @private */
   onChromeVoxHintDismissed_() {
     this.userActed('dismissChromeVoxHint');
+    chrome.tts.isSpeaking((speaking) => {
+      if (speaking) {
+        chrome.tts.stop();
+      }
+    });
   },
 
   /**

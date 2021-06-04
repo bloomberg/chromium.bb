@@ -17,7 +17,7 @@ g.test('single')
   - covers the end of the dstBuffer
   - covers neither the beginning nor the end of the dstBuffer`
   )
-  .params(
+  .subcases(() =>
     params()
       .combine(poptions('srcOffset', [0, 4, 8, 16]))
       .combine(poptions('dstOffset', [0, 4, 8, 16]))

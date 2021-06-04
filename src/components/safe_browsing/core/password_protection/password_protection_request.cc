@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/allowlist_checker_client.h"
 #include "components/safe_browsing/core/db/database_manager.h"
@@ -28,8 +29,6 @@ namespace safe_browsing {
 
 using ReusedPasswordAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
-
-constexpr char kAuthHeaderBearer[] = "Bearer ";
 
 namespace {
 
@@ -232,10 +231,6 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
   SetReferringAppInfo();
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-  SetReferringAppInfo();
-#endif  // defined(OS_ANDROID)
-
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
       LoginReputationClientRequest::Frame::Form* password_form;
@@ -332,7 +327,7 @@ void PasswordProtectionRequest::SendRequestWithToken(
     const std::string& access_token) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
 
-  MaybeAddPingToWebUI();
+  MaybeAddPingToWebUI(access_token);
 
   std::string serialized_request;
   // TODO(crbug.com/1158582): Return early if request serialization fails.

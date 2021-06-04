@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
-#include "sandbox/win/src/sandbox_constants.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/win_utils.h"
@@ -29,6 +28,26 @@
 namespace sandbox {
 
 namespace {
+
+// Keys in base::Value snapshots of Policies for chrome://sandbox.
+const char kAppContainerCapabilities[] = "appContainerCapabilities";
+const char kAppContainerInitialCapabilities[] =
+    "appContainerInitialCapabilities";
+const char kAppContainerSid[] = "appContainerSid";
+const char kDesiredIntegrityLevel[] = "desiredIntegrityLevel";
+const char kDesiredMitigations[] = "desiredMitigations";
+const char kDisconnectCsrss[] = "disconnectCsrss";
+const char kHandlesToClose[] = "handlesToClose";
+const char kJobLevel[] = "jobLevel";
+const char kLockdownLevel[] = "lockdownLevel";
+const char kLowboxSid[] = "lowboxSid";
+const char kPlatformMitigations[] = "platformMitigations";
+const char kPolicyRules[] = "policyRules";
+const char kProcessIds[] = "processIds";
+
+// Values in snapshots of Policies.
+const char kDisabled[] = "disabled";
+const char kEnabled[] = "enabled";
 
 base::Value ProcessIdList(std::vector<uint32_t> process_ids) {
   base::Value results(base::Value::Type::LIST);
@@ -378,19 +397,19 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
 
   desired_mitigations_ = policy->mitigations_ | policy->delayed_mitigations_;
 
-  if (policy->app_container_profile_) {
+  if (policy->app_container_) {
     app_container_sid_ =
-        std::make_unique<Sid>(policy->app_container_profile_->GetPackageSid());
-    for (const auto& sid : policy->app_container_profile_->GetCapabilities()) {
+        std::make_unique<Sid>(policy->app_container_->GetPackageSid());
+    for (const auto& sid : policy->app_container_->GetCapabilities()) {
       capabilities_.push_back(sid);
     }
     for (const auto& sid :
-         policy->app_container_profile_->GetImpersonationCapabilities()) {
+         policy->app_container_->GetImpersonationCapabilities()) {
       initial_capabilities_.push_back(sid);
     }
+
+    app_container_type_ = policy->app_container_->GetAppContainerType();
   }
-  if (policy->lowbox_sid_)
-    lowbox_sid_ = std::make_unique<Sid>(policy->lowbox_sid_);
 
   if (policy->policy_) {
     size_t policy_mem_size = policy->policy_->data_size + sizeof(PolicyGlobal);
@@ -455,11 +474,11 @@ const char* PolicyDiagnostic::JsonString() {
       value.SetKey(kAppContainerInitialCapabilities,
                    base::Value(std::move(imp_caps)));
     }
-  }
 
-  if (lowbox_sid_) {
-    value.SetStringKey(
-        kLowboxSid, base::AsStringPiece16(GetSidAsString(lowbox_sid_.get())));
+    if (app_container_type_ == AppContainerType::kLowbox)
+      value.SetStringKey(
+          kLowboxSid,
+          base::AsStringPiece16(GetSidAsString(app_container_sid_.get())));
   }
 
   if (policy_rules_)

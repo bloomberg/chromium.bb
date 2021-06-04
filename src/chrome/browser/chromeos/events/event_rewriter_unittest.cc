@@ -9,6 +9,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
@@ -187,8 +190,8 @@ class EventRewriterTest : public ChromeAshTestBase {
         nullptr, std::move(deprecation_controller));
     delegate_->set_pref_service_for_testing(prefs());
     device_data_manager_test_api_.SetKeyboardDevices({});
-    rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(delegate_.get(),
-                                                            nullptr, false);
+    rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
+        delegate_.get(), nullptr, false, &fake_ime_keyboard_);
     ChromeAshTestBase::SetUp();
   }
 
@@ -252,8 +255,8 @@ class EventRewriterTest : public ChromeAshTestBase {
 
     fake_udev_.Reset();
     fake_udev_.AddFakeDevice(keyboard.name, keyboard.sys_path.value(),
-                             /*subsystem=*/"input", /*devnode=*/base::nullopt,
-                             /*devtype=*/base::nullopt,
+                             /*subsystem=*/"input", /*devnode=*/absl::nullopt,
+                             /*devtype=*/absl::nullopt,
                              std::move(sysfs_attributes),
                              std::move(sysfs_properties));
 
@@ -361,6 +364,7 @@ class EventRewriterTest : public ChromeAshTestBase {
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<EventRewriterDelegateImpl> delegate_;
+  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> rewriter_;
   ash::DeprecationNotificationController*
       deprecation_controller_;  // Not owned.
@@ -1283,10 +1287,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kCapsLockKey);
 
-  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   SetupKeyboard("Internal Keyboard");
-  rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(
@@ -1297,7 +1299,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_COMMAND_DOWN,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(
@@ -1307,7 +1309,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_NONE,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
@@ -1318,7 +1320,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
                                       ui::DomKey::META, kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(
@@ -1328,7 +1330,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_NONE,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Do the same on external Chrome OS keyboard.
   SetupKeyboard("External Chrome Keyboard", kKbdTopRowLayout1Tag,
@@ -1343,7 +1345,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_COMMAND_DOWN,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(
@@ -1353,7 +1355,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_NONE,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
@@ -1364,7 +1366,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
                                       ui::DomKey::META, kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(
@@ -1374,7 +1376,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
       GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED, ui::VKEY_LWIN,
                                 ui::DomCode::META_LEFT, ui::EF_NONE,
                                 ui::DomKey::META, kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Try external keyboard with Caps Lock.
   SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
@@ -1389,7 +1391,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK, kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Caps Lock.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
@@ -1399,17 +1401,15 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK,
                                       kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
 
-  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
                 ui::INPUT_DEVICE_UNKNOWN);
-  rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // On Chrome OS, CapsLock is mapped to CapsLock with Mod3Mask.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
@@ -1420,7 +1420,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK,
                                       kNoScanCode));
-  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
@@ -1429,30 +1429,117 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK,
                                       kNoScanCode));
-  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Remap Caps Lock to Control.
   IntegerPrefMember caps_lock;
   InitModifierKeyPref(&caps_lock, prefs::kLanguageRemapCapsLockKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
 
-  // Press Caps Lock.
-  EXPECT_EQ(GetExpectedResultAsString(
-                ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
-                ui::EF_CONTROL_DOWN, ui::DomKey::CONTROL, kNoScanCode),
+  // Press Caps Lock. CapsLock is enabled but we have remapped the key to
+  // now be Control. We want to ensure that the CapsLock modifier is still
+  // active even after pressing the remapped Capslock key.
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
+                                      ui::DomCode::CONTROL_LEFT,
+                                      ui::EF_CONTROL_DOWN | ui::EF_CAPS_LOCK_ON,
+                                      ui::DomKey::CONTROL, kNoScanCode),
             GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK, kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
 
   // Release Caps Lock.
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
-                                      ui::DomCode::CONTROL_LEFT, ui::EF_NONE,
-                                      ui::DomKey::CONTROL, kNoScanCode),
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
+                                ui::DomCode::CONTROL_LEFT, ui::EF_CAPS_LOCK_ON,
+                                ui::DomKey::CONTROL, kNoScanCode),
+      GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
+                                ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                ui::EF_CAPS_LOCK_ON, ui::DomKey::CAPS_LOCK,
+                                kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
+}
+
+TEST_F(EventRewriterTest, TestRewriteExternalCapsLockWithDifferentScenarios) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
+  SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
+                ui::INPUT_DEVICE_UNKNOWN);
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  // Turn on CapsLock.
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
+                                      ui::DomCode::CAPS_LOCK,
+                                      ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode),
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK,
+                                      kNoScanCode));
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
+                                      ui::DomCode::CAPS_LOCK, ui::EF_NONE,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode),
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK,
+                                      kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  // Remap CapsLock to Search.
+  IntegerPrefMember search;
+  InitModifierKeyPref(&search, prefs::kLanguageRemapCapsLockKeyTo,
+                      ui::chromeos::ModifierKey::kSearchKey);
+
+  // Now that CapsLock is enabled, press the remapped CapsLock button again
+  // and expect to not disable CapsLock.
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_LWIN,
+                                      ui::DomCode::META_LEFT,
+                                      ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
+                                      ui::DomKey::META, kNoScanCode),
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_CAPS_LOCK_ON,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_RELEASED, ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+                ui::EF_CAPS_LOCK_ON, ui::DomKey::META, kNoScanCode),
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_CAPS_LOCK_ON,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  // Remap CapsLock key back to CapsLock.
+  IntegerPrefMember capslock;
+  InitModifierKeyPref(&capslock, prefs::kLanguageRemapCapsLockKeyTo,
+                      ui::chromeos::ModifierKey::kCapsLockKey);
+
+  // Now press CapsLock again and now expect that the CapsLock modifier is
+  // removed.
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
+                                      ui::DomCode::CAPS_LOCK,
+                                      ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode),
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK,
+                                      kNoScanCode));
+  EXPECT_TRUE(fake_ime_keyboard_.caps_lock_is_enabled_);
+
+  // Disabling CapsLocks only happens on release of the CapsLock key.
+  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
+                                      ui::DomCode::CAPS_LOCK, ui::EF_NONE,
+                                      ui::DomKey::CAPS_LOCK, kNoScanCode),
             GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK,
                                       kNoScanCode));
+  EXPECT_FALSE(fake_ime_keyboard_.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
@@ -1513,8 +1600,11 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   input_method_manager_mock_->set_mod3_used(false);
 }
 
-TEST_F(EventRewriterTest, TestRewriteExtendedKeys_AltVariants) {
+// TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
+TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariantsOld) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  scoped_feature_list_.InitAndDisableFeature(
+      ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
       // Alt+Backspace -> Delete
       {ui::ET_KEY_PRESSED,
@@ -1582,11 +1672,8 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys_AltVariants) {
   });
 }
 
-TEST_F(EventRewriterTest, TestRewriteExtendedKeys_AltVariants_Deprecated) {
+TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariants) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
-  scoped_feature_list_.InitAndEnableFeature(
-      ::features::kImprovedKeyboardShortcuts);
-
   // All the previously supported Alt based rewrites no longer have any
   // effect. The Search workarounds no longer take effect and the Search+Key
   // portion is rewritten as expected.
@@ -1672,8 +1759,11 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys_AltVariants_Deprecated) {
   });
 }
 
-TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsert) {
+// TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
+TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertOld) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  scoped_feature_list_.InitAndDisableFeature(
+      ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
       // Period -> Period
       {ui::ET_KEY_PRESSED,
@@ -1696,7 +1786,60 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsert) {
   });
 }
 
-TEST_F(EventRewriterTest, TestRewriteExtendedKeys_SearchVariants) {
+TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertDeprecatedNotification) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  scoped_feature_list_.InitAndEnableFeature(
+      ::features::kImprovedKeyboardShortcuts);
+  TestNonAppleKeyboardVariants({
+      // Period -> Period
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD, ui::EF_NONE,
+        ui::DomKey::Constant<'.'>::Character},
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD, ui::EF_NONE,
+        ui::DomKey::Constant<'.'>::Character}},
+      // Search+Period -> No rewrite (and shows notification)
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'.'>::Character},
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'.'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
+      // Control+Search+Period -> No rewrite (and shows notification)
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD,
+        ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'.'>::Character},
+       {ui::VKEY_OEM_PERIOD, ui::DomCode::PERIOD,
+        ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'.'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
+  });
+}
+
+// TODO(crbug.com/1179893): Rename once the feature is enabled permanently.
+TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertNew) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  scoped_feature_list_.InitAndEnableFeature(
+      ::features::kImprovedKeyboardShortcuts);
+  TestNonAppleKeyboardVariants({
+      // Search+Shift+Backspace -> Insert
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BACK, ui::DomCode::BACKSPACE,
+        ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::DomKey::BACKSPACE},
+       {ui::VKEY_INSERT, ui::DomCode::INSERT, ui::EF_NONE, ui::DomKey::INSERT}},
+      // Control+Search+Shift+Backspace -> Control+Insert
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BACK, ui::DomCode::BACKSPACE,
+        ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+        ui::DomKey::BACKSPACE},
+       {ui::VKEY_INSERT, ui::DomCode::INSERT, ui::EF_CONTROL_DOWN,
+        ui::DomKey::INSERT}},
+  });
+}
+
+TEST_F(EventRewriterTest, TestRewriteExtendedKeysSearchVariants) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
   TestNonAppleKeyboardVariants({
       // Search+Backspace -> Delete
@@ -1808,9 +1951,11 @@ TEST_F(EventRewriterTest, TestNumberRowIsNotRewritten) {
   });
 }
 
-TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKey) {
+// TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
+TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyOld) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
-
+  scoped_feature_list_.InitAndDisableFeature(
+      ::features::kImprovedKeyboardShortcuts);
   TestNonAppleNonCustomLayoutKeyboardVariants({
       // The number row should be rewritten as the F<number> row with Search
       // key.
@@ -1865,10 +2010,8 @@ TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKey) {
   });
 }
 
-TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKey_Deprecated) {
+TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyNoAction) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
-  scoped_feature_list_.InitAndEnableFeature(
-      ::features::kImprovedKeyboardShortcuts);
   TestNonAppleNonCustomLayoutKeyboardVariants({
       // Search+Number should now have no effect but a notification will
       // be shown the first time F1 to F10 is pressed.
@@ -2045,18 +2188,18 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysNonCustomLayouts) {
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_ALT_DOWN, ui::DomKey::F3},
        {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_ALT_DOWN,
         ui::DomKey::BROWSER_REFRESH}},
-      // F4 -> Launch App 2
+      // F4 -> Zoom (aka Fullscreen)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F4, ui::DomCode::F4, ui::EF_CONTROL_DOWN, ui::DomKey::F4},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE,
-        ui::EF_CONTROL_DOWN, ui::DomKey::ZOOM_TOGGLE}},
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_CONTROL_DOWN,
+        ui::DomKey::ZOOM_TOGGLE}},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F4, ui::DomCode::F4, ui::EF_ALT_DOWN, ui::DomKey::F4},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_ALT_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_ALT_DOWN,
         ui::DomKey::ZOOM_TOGGLE}},
       // F5 -> Launch App 1
       {ui::ET_KEY_PRESSED,
@@ -2517,19 +2660,19 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
            {ui::VKEY_F2, ui::DomCode::F2, ui::EF_ALT_DOWN, ui::DomKey::F2},
            {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH,
             ui::EF_ALT_DOWN, ui::DomKey::BROWSER_REFRESH}},
-          // F3 -> Launch App 2
+          // F3 -> Zoom (aka Fullscreen)
           {ui::ET_KEY_PRESSED,
            {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
-           {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+           {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
             ui::DomKey::ZOOM_TOGGLE}},
           {ui::ET_KEY_PRESSED,
            {ui::VKEY_F3, ui::DomCode::F3, ui::EF_CONTROL_DOWN, ui::DomKey::F3},
-           {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE,
-            ui::EF_CONTROL_DOWN, ui::DomKey::ZOOM_TOGGLE}},
+           {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_CONTROL_DOWN,
+            ui::DomKey::ZOOM_TOGGLE}},
           {ui::ET_KEY_PRESSED,
            {ui::VKEY_F3, ui::DomCode::F3, ui::EF_ALT_DOWN, ui::DomKey::F3},
-           {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE,
-            ui::EF_ALT_DOWN, ui::DomKey::ZOOM_TOGGLE}},
+           {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_ALT_DOWN,
+            ui::DomKey::ZOOM_TOGGLE}},
           // F4 -> Launch App 1
           {ui::ET_KEY_PRESSED,
            {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4},
@@ -2649,6 +2792,65 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
       });
 }
 
+// TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
+TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayoutsDeprecated) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  scoped_feature_list_.InitAndDisableFeature(
+      ::features::kImprovedKeyboardShortcuts);
+  std::vector<KeyTestCase> wilco_standard_tests({
+      // The number row should be rewritten as the F<number> row with Search
+      // key.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'1'>::Character},
+       {ui::VKEY_F1, ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'2'>::Character},
+       {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'3'>::Character},
+       {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'4'>::Character},
+       {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'5'>::Character},
+       {ui::VKEY_F5, ui::DomCode::F5, ui::EF_NONE, ui::DomKey::F5}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'6'>::Character},
+       {ui::VKEY_F6, ui::DomCode::F6, ui::EF_NONE, ui::DomKey::F6}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'7'>::Character},
+       {ui::VKEY_F7, ui::DomCode::F7, ui::EF_NONE, ui::DomKey::F7}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'8'>::Character},
+       {ui::VKEY_F8, ui::DomCode::F8, ui::EF_NONE, ui::DomKey::F8}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'9'>::Character},
+       {ui::VKEY_F9, ui::DomCode::F9, ui::EF_NONE, ui::DomKey::F9}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'0'>::Character},
+       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_NONE, ui::DomKey::F10}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_MINUS, ui::DomCode::MINUS, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'-'>::Character},
+       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_PLUS, ui::DomCode::EQUAL, ui::EF_COMMAND_DOWN,
+        ui::DomKey::Constant<'='>::Character},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+  });
+}
+
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
 
@@ -2681,13 +2883,13 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F2, ui::DomCode::F2, ui::EF_ALT_DOWN, ui::DomKey::F2},
        {ui::VKEY_F2, ui::DomCode::F2, ui::EF_ALT_DOWN, ui::DomKey::F2}},
-      // F3 -> F3, Search + F3 -> Full Screen
+      // F3 -> F3, Search + F3 -> Zoom (aka Fullscreen)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3}},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_COMMAND_DOWN, ui::DomKey::F3},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_CONTROL_DOWN, ui::DomKey::F3},
@@ -2877,65 +3079,13 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
         ui::DomKey::Constant<'='>::Character},
        {ui::VKEY_OEM_PLUS, ui::DomCode::EQUAL, ui::EF_NONE,
         ui::DomKey::Constant<'='>::Character}},
-
-      // The number row should be rewritten as the F<number> row with Search
-      // key.
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'1'>::Character},
-       {ui::VKEY_F1, ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'2'>::Character},
-       {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'3'>::Character},
-       {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'4'>::Character},
-       {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'5'>::Character},
-       {ui::VKEY_F5, ui::DomCode::F5, ui::EF_NONE, ui::DomKey::F5}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'6'>::Character},
-       {ui::VKEY_F6, ui::DomCode::F6, ui::EF_NONE, ui::DomKey::F6}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'7'>::Character},
-       {ui::VKEY_F7, ui::DomCode::F7, ui::EF_NONE, ui::DomKey::F7}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'8'>::Character},
-       {ui::VKEY_F8, ui::DomCode::F8, ui::EF_NONE, ui::DomKey::F8}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'9'>::Character},
-       {ui::VKEY_F9, ui::DomCode::F9, ui::EF_NONE, ui::DomKey::F9}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'0'>::Character},
-       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_NONE, ui::DomKey::F10}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_OEM_MINUS, ui::DomCode::MINUS, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'-'>::Character},
-       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_OEM_PLUS, ui::DomCode::EQUAL, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'='>::Character},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
   });
 
   KeyTestCase wilco_1_test =
-      // Search + F12 -> Ctrl + Launch App 2 (Display toggle)
+      // Search + F12 -> Ctrl + Zoom (aka Fullscreen) (Display toggle)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_COMMAND_DOWN, ui::DomKey::F12},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
-        ui::DomKey::F12}};
+       {ui::VKEY_ZOOM, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12}};
 
   KeyTestCase drallion_test_no_privacy_screen =
       // Search + F12 -> F12 (Privacy screen not supported)
@@ -3001,7 +3151,7 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_COMMAND_DOWN,
@@ -3083,15 +3233,13 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}}};
 
   KeyTestCase wilco_1_tests[] = {
-      // Ctrl + Launch App 1 (Display toggle) -> Unchanged
-      // Search + Ctrl + Launch App 1 (Display toggle) -> F12
+      // Ctrl + Zoom (Display toggle) -> Unchanged
+      // Search + Ctrl + Zoom (Display toggle) -> F12
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
-        ui::DomKey::F12},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
-        ui::DomKey::F12}},
+       {ui::VKEY_ZOOM, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12},
+       {ui::VKEY_ZOOM, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12,
+       {ui::VKEY_ZOOM, ui::DomCode::F12,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::F12},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}}};
 
@@ -3106,17 +3254,17 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
         ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
-      // Ctrl + Launch App 1 (Display toggle) -> Unchanged
-      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      // Ctrl + Zoom (Display toggle) -> Unchanged
+      // Search + Ctrl + Zoom (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}}};
 
   KeyTestCase drallion_tests_privacy_screen[] = {
@@ -3131,17 +3279,17 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
         ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
-      // Ctrl + Launch App 1 (Display toggle) -> Unchanged
-      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      // Ctrl + Zoom (Display toggle) -> Unchanged
+      // Search + Ctrl + Zoom (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}}};
 
   // Set keyboard layout to Wilco 1.0
@@ -3210,7 +3358,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_COMMAND_DOWN,
         ui::DomKey::ZOOM_TOGGLE},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       // Launch App 1 -> F4, Search + Launch App 1 -> Launch App 1
       {ui::ET_KEY_PRESSED,
@@ -3288,16 +3436,15 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}}};
 
   KeyTestCase wilco_1_tests[] = {
-      // Ctrl + Launch App 1 (Display toggle) -> F12
-      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      // Ctrl + Zoom (Display toggle) -> F12
+      // Search + Ctrl + Zoom (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
-        ui::DomKey::F12},
+       {ui::VKEY_ZOOM, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12,
+       {ui::VKEY_ZOOM, ui::DomCode::F12,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::F12},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
         ui::DomKey::F12}}};
 
   KeyTestCase drallion_tests_no_privacy_screen[] = {
@@ -3311,17 +3458,17 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
         ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
-      // Ctrl + Launch App 1 (Display toggle) -> Unchanged
-      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      // Ctrl + Zoom (Display toggle) -> Unchanged
+      // Search + Ctrl + Zoom (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+       {ui::VKEY_ZOOM, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}}};
 
   KeyTestCase drallion_tests_privacy_screen[] = {
@@ -3380,10 +3527,10 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
        {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
         ui::DomKey::BROWSER_REFRESH}},
-      // F4 -> Launch App 2
+      // F4 -> Zoom (aka Fullscreen)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       // F7 -> Brightness up
       {ui::ET_KEY_PRESSED,
@@ -3402,10 +3549,10 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
        {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2},
        {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
         ui::DomKey::BROWSER_REFRESH}},
-      // F3 -> Launch App 2
+      // F3 -> Zoom (aka Fullscreen)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       // F4 -> Launch App 1
       {ui::ET_KEY_PRESSED,
@@ -3424,25 +3571,25 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
                layout2_tests);
 }
 
-TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
-  // Remap Search to Control.
+// Tests that event rewrites still work even if modifiers are remapped.
+TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithControlRemapped) {
+  // Remap Control to Search.
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
-  InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
-                      ui::chromeos::ModifierKey::kControlKey);
+  InitModifierKeyPref(&search, prefs::kLanguageRemapControlKeyTo,
+                      ui::chromeos::ModifierKey::kSearchKey);
 
   TestChromeKeyboardVariants({
-      // Alt+Search+Down -> End
+      // Ctrl+Right -> End
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_DOWN, ui::DomCode::ARROW_DOWN,
-        ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, ui::DomKey::ARROW_DOWN},
+       {ui::VKEY_RIGHT, ui::DomCode::ARROW_RIGHT, ui::EF_CONTROL_DOWN,
+        ui::DomKey::ARROW_RIGHT},
        {ui::VKEY_END, ui::DomCode::END, ui::EF_NONE, ui::DomKey::END}},
 
-      // Shift+Alt+Search+Down -> Shift+End
+      // Shift+Ctrl+Right -> Shift+End
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_DOWN, ui::DomCode::ARROW_DOWN,
-        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
-        ui::DomKey::ARROW_DOWN},
+       {ui::VKEY_RIGHT, ui::DomCode::ARROW_RIGHT,
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ui::DomKey::ARROW_RIGHT},
        {ui::VKEY_END, ui::DomCode::END, ui::EF_SHIFT_DOWN, ui::DomKey::END}},
   });
 }
@@ -3592,7 +3739,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
     delegate_ = std::make_unique<EventRewriterDelegateImpl>(nullptr);
     delegate_->set_pref_service_for_testing(prefs());
     rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
-        delegate_.get(), sticky_keys_controller_, false);
+        delegate_.get(), sticky_keys_controller_, false, &fake_ime_keyboard_);
     chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
     source_.AddEventRewriter(rewriter_.get());
     sticky_keys_controller_->Enable(true);
@@ -3608,6 +3755,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
 
  private:
   std::unique_ptr<EventRewriterDelegateImpl> delegate_;
+  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> rewriter_;
 
   EventBuffer buffer_;
@@ -4367,6 +4515,152 @@ TEST_F(StickyKeysOverlayTest, ModifierVisibility) {
   sticky_keys_controller_->SetModifiersEnabled(false, false);
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+}
+
+class ExtensionRewriterInputTest : public EventRewriterAshTest,
+                                   public ui::EventRewriterChromeOS::Delegate {
+ public:
+  ExtensionRewriterInputTest() = default;
+  ExtensionRewriterInputTest(const ExtensionRewriterInputTest&) = delete;
+  ExtensionRewriterInputTest& operator=(const ExtensionRewriterInputTest&) =
+      delete;
+  ~ExtensionRewriterInputTest() override {}
+
+  void SetUp() override {
+    EventRewriterAshTest::SetUp();
+    event_rewriter_chromeos_ = std::make_unique<ui::EventRewriterChromeOS>(
+        this, nullptr, false, &fake_ime_keyboard_);
+  }
+
+  void SetModifierRemapping(const std::string& pref_name,
+                            ui::chromeos::ModifierKey value) {
+    modifier_remapping_[pref_name] = static_cast<int>(value);
+  }
+
+  void RegisterExtensionShortcut(ui::KeyboardCode key_code, int flags) {
+    constexpr int kModifierMasks = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                   ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
+    // No other masks should be present aside from the ones speicifed in
+    // kModifierMasks.
+    DCHECK((flags & kModifierMasks) == flags);
+    registered_extension_shortcuts_.emplace(key_code, flags);
+  }
+
+  void RemoveAllExtensionShortcuts() {
+    registered_extension_shortcuts_.clear();
+  }
+
+  void ExpectEventRewrittenTo(const KeyTestCase& test) {
+    CheckKeyTestCase(event_rewriter_chromeos_.get(), test);
+  }
+
+ protected:
+  sync_preferences::TestingPrefServiceSyncable prefs_;
+  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos_;
+
+ private:
+  // ui::EventRewriterChromeOS::Delegate:
+  bool RewriteModifierKeys() override { return true; }
+
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                    int* value) const override {
+    auto it = modifier_remapping_.find(pref_name);
+    if (it == modifier_remapping_.end()) {
+      return false;
+    }
+
+    *value = it->second;
+    return true;
+  }
+
+  bool TopRowKeysAreFunctionKeys() const override { return false; }
+
+  bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
+                                    int flags) const override {
+    return base::Contains(registered_extension_shortcuts_,
+                          ui::Accelerator(key_code, flags));
+  }
+
+  bool IsSearchKeyAcceleratorReserved() const override { return false; }
+  bool NotifyDeprecatedRightClickRewrite() override { return false; }
+  bool NotifyDeprecatedFKeyRewrite() override { return false; }
+  bool NotifyDeprecatedSixPackKeyRewrite(ui::KeyboardCode key_code) override {
+    return false;
+  }
+
+  std::map<std::string, int> modifier_remapping_;
+  base::flat_set<ui::Accelerator> registered_extension_shortcuts_;
+};
+
+TEST_F(ExtensionRewriterInputTest, RewrittenModifier) {
+  // Register Control + B as an extension shortcut.
+  RegisterExtensionShortcut(ui::VKEY_B, ui::EF_CONTROL_DOWN);
+
+  // Check that standard extension input has no rewritten modifiers.
+  ExpectEventRewrittenTo({ui::ET_KEY_PRESSED,
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character},
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character}});
+
+  // Remap Control -> Alt.
+  SetModifierRemapping(prefs::kLanguageRemapControlKeyTo,
+                       ui::chromeos::ModifierKey::kAltKey);
+  // Pressing Control + B should now be remapped to Alt + B.
+  ExpectEventRewrittenTo({ui::ET_KEY_PRESSED,
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character},
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_ALT_DOWN,
+                           ui::DomKey::Constant<'b'>::Character}});
+
+  // Remap Alt -> Control.
+  SetModifierRemapping(prefs::kLanguageRemapAltKeyTo,
+                       ui::chromeos::ModifierKey::kControlKey);
+  // Pressing Alt + B should now be remapped to Control + B.
+  ExpectEventRewrittenTo({ui::ET_KEY_PRESSED,
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_ALT_DOWN,
+                           ui::DomKey::Constant<'b'>::Character},
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character}});
+
+  // Remove all extension shortcuts and still expect the remapping to work.
+  RemoveAllExtensionShortcuts();
+
+  ExpectEventRewrittenTo({ui::ET_KEY_PRESSED,
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character},
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_ALT_DOWN,
+                           ui::DomKey::Constant<'b'>::Character}});
+  ExpectEventRewrittenTo({ui::ET_KEY_PRESSED,
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_ALT_DOWN,
+                           ui::DomKey::Constant<'b'>::Character},
+                          {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                           ui::DomKey::Constant<'b'>::Character}});
+}
+
+TEST_F(ExtensionRewriterInputTest, RewriteNumpadExtensionCommand) {
+  // Register Control + NUMPAD1 as an extension shortcut.
+  RegisterExtensionShortcut(ui::VKEY_NUMPAD1, ui::EF_CONTROL_DOWN);
+  // Check that extension shortcuts that involve numpads keys are properly
+  // rewritten. Note that VKEY_END is associated with NUMPAD1 if Num Lock is
+  // disabled. The result should be "NumPad 1 with Control".
+  ExpectEventRewrittenTo(
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_END, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
+        ui::DomKey::END},
+       {ui::VKEY_NUMPAD1, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'1'>::Character}});
+
+  // Remove the extension shortcut and expect the numpad event to still be
+  // rewritten.
+  RemoveAllExtensionShortcuts();
+  ExpectEventRewrittenTo(
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_END, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
+        ui::DomKey::END},
+       {ui::VKEY_NUMPAD1, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'1'>::Character}});
 }
 
 }  // namespace chromeos

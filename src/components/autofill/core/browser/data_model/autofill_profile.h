@@ -207,7 +207,12 @@ class AutofillProfile : public AutofillDataModel {
 
   // Logs the number of days since the profile was last used, records its
   // use and updates |previous_use_date_| to the last value of |use_date_|.
+  // Also initiates the logging of the structured token verification statuses.
   void RecordAndLogUse();
+
+  // Logs the verification status of non-empty structured name and address
+  // tokens. Should be called when a profile is used to fill a form.
+  void LogVerificationStatuses();
 
   // Returns true if the current profile has greater frescocency than the
   // |other|. Frescocency is a combination of validation score and frecency to
@@ -299,6 +304,19 @@ class AutofillProfile : public AutofillDataModel {
   // Returns a constant reference to the |address_| field.
   const Address& GetAddress() const { return address_; }
 
+  // Returns the label of the profile.
+  const std::string& profile_label() const { return profile_label_; }
+
+  // Sets the label of the profile.
+  void set_profile_label(const std::string& label) { profile_label_ = label; }
+
+  bool disallow_settings_visible_updates() const {
+    return disallow_settings_visible_updates_;
+  }
+  void set_disallow_settings_visible_updates(bool disallow) {
+    disallow_settings_visible_updates_ = disallow;
+  }
+
  private:
   // FormGroup:
   std::u16string GetInfoImpl(const AutofillType& type,
@@ -346,8 +364,20 @@ class AutofillProfile : public AutofillDataModel {
   PhoneNumber phone_number_;
   Address address_;
 
+  // The label is chosen by the user and can contain an arbitrary value.
+  // However, there are two labels that play a special role to indicate that an
+  // address is either a 'HOME' or a 'WORK' address. In this case, the value of
+  // the label is '$HOME$' or '$WORK$', respectively.
+  std::string profile_label_;
+
   // The BCP 47 language code that can be used to format |address_| for display.
   std::string language_code_;
+
+  // The state indicates if the profile qualifies to get merged with a
+  // profile observed in a form submission. If true, the profile can still be
+  // updated silently, but it should not be considered for merges that need to
+  // involve user interactions.
+  bool disallow_settings_visible_updates_{false};
 
   // ID used for identifying this profile. Only set for SERVER_PROFILEs. This is
   // a hash of the contents.

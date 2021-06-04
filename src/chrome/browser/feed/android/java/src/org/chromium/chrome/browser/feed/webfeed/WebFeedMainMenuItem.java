@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed.webfeed;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,12 +19,15 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge.WebFeedMetadata;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.favicon.IconType;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.LoadingView;
 import org.chromium.url.GURL;
@@ -37,6 +41,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
     private final Context mContext;
 
     private GURL mUrl;
+    private Tab mTab;
     private String mTitle;
     private AppMenuHandler mAppMenuHandler;
     private ChipView mChipView;
@@ -62,23 +67,27 @@ public class WebFeedMainMenuItem extends FrameLayout {
     /**
      * Initialize the Web Feed main menu item.
      *
-     * @param url {@link GURL} of the page.
+     * @param tab The current {@link Tab}.
      * @param appMenuHandler {@link AppMenuHandler} to control hiding the app menu.
+     * @param feedLauncher {@link FeedLauncher}
      * @param largeIconBridge {@link LargeIconBridge} to get the favicon of the page.
+     * @param dialogManager {@link ModalDialogManager} for managing the dialog.
      * @param snackbarManager {@link SnackbarManager} to display snackbars.
      * @param webFeedBridge {@link WebFeedBridge} to display the menu item and follow/unfollow.
      */
-    public void initialize(GURL url, AppMenuHandler appMenuHandler, LargeIconBridge largeIconBridge,
+    public void initialize(Tab tab, AppMenuHandler appMenuHandler, LargeIconBridge largeIconBridge,
+            FeedLauncher feedLauncher, ModalDialogManager dialogManager,
             SnackbarManager snackbarManager, WebFeedBridge webFeedBridge) {
-        mUrl = url;
+        mUrl = tab.getOriginalUrl();
+        mTab = tab;
         mAppMenuHandler = appMenuHandler;
         mLargeIconBridge = largeIconBridge;
         mWebFeedBridge = webFeedBridge;
-        mWebFeedSnackbarController =
-                new WebFeedSnackbarController(mContext, snackbarManager, webFeedBridge);
+        mWebFeedSnackbarController = new WebFeedSnackbarController(
+                mContext, feedLauncher, dialogManager, snackbarManager, webFeedBridge);
 
         initializeFavicon();
-        mWebFeedBridge.getWebFeedMetadataForPage(mUrl, result -> {
+        mWebFeedBridge.getWebFeedMetadataForPage(mTab, mUrl, result -> {
             initializeText(result);
             initializeChipView(result);
         });
@@ -93,7 +102,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
 
     private void initializeText(WebFeedMetadata webFeedMetadata) {
         TextView itemText = findViewById(R.id.menu_item_text);
-        if (webFeedMetadata != null && webFeedMetadata.title != null) {
+        if (webFeedMetadata != null && !TextUtils.isEmpty(webFeedMetadata.title)) {
             mTitle = webFeedMetadata.title;
         } else {
             mTitle = UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(mUrl);
@@ -148,10 +157,11 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mChipView = findViewById(R.id.follow_chip_view);
         showEnabledChipView(
                 mChipView, mContext.getText(R.string.menu_follow), R.drawable.ic_add, (view) -> {
-                    mWebFeedBridge.followFromUrl(mUrl,
-                            (result)
-                                    -> mWebFeedSnackbarController.showSnackbarForFollow(
-                                            result, mUrl, mTitle));
+                    mWebFeedBridge.followFromUrl(mTab, mUrl, result -> {
+                        byte[] followId = result.metadata != null ? result.metadata.id : null;
+                        mWebFeedSnackbarController.showPostFollowHelp(
+                                result, followId, mUrl, mTitle);
+                    });
                     mAppMenuHandler.hideAppMenu();
                 });
     }
@@ -186,9 +196,9 @@ public class WebFeedMainMenuItem extends FrameLayout {
                 public void onHideLoadingUIComplete() {}
             });
         }
-        postDelayed(
-                ()
-                        -> mWebFeedBridge.getWebFeedMetadataForPage(mUrl, this::initializeChipView),
+        postDelayed(()
+                            -> mWebFeedBridge.getWebFeedMetadataForPage(
+                                    mTab, mUrl, this::initializeChipView),
                 LOADING_REFRESH_TIME_MS);
     }
 
@@ -211,7 +221,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
         if (icon == null) {
             // TODO(crbug/1152592): Update monogram according to specs.
             RoundedIconGenerator iconGenerator = createRoundedIconGenerator(fallbackColor);
-            icon = iconGenerator.generateIconForUrl(mUrl.getSpec());
+            icon = iconGenerator.generateIconForUrl(mUrl);
             mIcon.setImageBitmap(icon);
             // generateIconForUrl() might return null if the URL is empty or the domain cannot be
             // resolved. See https://crbug.com/987101

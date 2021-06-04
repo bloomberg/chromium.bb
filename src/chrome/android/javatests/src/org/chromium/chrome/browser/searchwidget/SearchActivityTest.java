@@ -53,9 +53,6 @@ import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
-import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog;
-import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.DefaultSearchEnginePromoDialogObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -65,6 +62,10 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.chrome.browser.search_engines.DefaultSearchEngineDialogHelperUtils;
+import org.chromium.chrome.browser.search_engines.DefaultSearchEnginePromoDialog;
+import org.chromium.chrome.browser.search_engines.DefaultSearchEnginePromoDialog.DefaultSearchEnginePromoDialogObserver;
+import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
@@ -72,7 +73,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.MultiActivityTestRule;
-import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.omnibox.AutocompleteMatch;
@@ -191,7 +192,7 @@ public class SearchActivityTest {
 
         mTestDelegate = new TestDelegate();
         SearchActivity.setDelegateForTests(mTestDelegate);
-        DefaultSearchEnginePromoDialog.setObserverForTests(mTestDelegate);
+        DefaultSearchEnginePromoDialog.setObserverForTests2(mTestDelegate);
     }
 
     @After
@@ -394,7 +395,7 @@ public class SearchActivityTest {
         List<AutocompleteMatch> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);
-        AutocompleteResult data = new AutocompleteResult(list, null);
+        AutocompleteResult data = AutocompleteResult.fromCache(list, null);
         CachedZeroSuggestionsManager.saveToCache(data);
 
         // Wait for the activity to load, but don't let it load the native library.
@@ -595,7 +596,7 @@ public class SearchActivityTest {
 
 
         // Make sure the new tab is launched.
-        final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
+        final ChromeTabbedActivity cta = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class,
                 new Callable<Void>() {
                     @Override
@@ -665,7 +666,7 @@ public class SearchActivityTest {
         intent.putExtra(IntentHandler.EXTRA_POST_DATA, imageSuggestion.getPostData());
 
         final ChromeTabbedActivity cta =
-                ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
+                ActivityTestUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
                         ChromeTabbedActivity.class, new Callable<Void>() {
                             @Override
                             public Void call() {
@@ -775,13 +776,13 @@ public class SearchActivityTest {
 
     private void waitForChromeTabbedActivityToStart(Callable<Void> trigger, String expectedUrl)
             throws Exception {
-        final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
+        final ChromeTabbedActivity cta = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class, trigger);
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = cta.getActivityTab();
             Criteria.checkThat(tab, Matchers.notNullValue());
-            Criteria.checkThat(tab.getUrlString(), Matchers.is(expectedUrl));
+            Criteria.checkThat(tab.getUrl().getSpec(), Matchers.is(expectedUrl));
         });
         mActivityTestRule.setActivity(cta);
     }

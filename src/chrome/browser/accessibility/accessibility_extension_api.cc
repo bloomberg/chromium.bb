@@ -19,12 +19,12 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -35,6 +35,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -53,6 +54,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #endif
 
 namespace {
@@ -386,17 +388,33 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   if (mouse_data->touch_accessibility && *(mouse_data->touch_accessibility))
     flags |= ui::EF_TOUCH_ACCESSIBILITY;
 
-  // Locations are assumed to be display relative (and in DIPs).
-  // TODO(crbug/893752) Choose correct display
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  gfx::Point location(mouse_data->x, mouse_data->y);
-  std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
-      std::make_unique<ui::MouseEvent>(type, location, location,
-                                       ui::EventTimeForNow(), flags,
-                                       changed_button_flags);
-
+  // Locations are assumed to be in screen coordinates.
+  gfx::Point location_in_screen(mouse_data->x, mouse_data->y);
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
   auto* host = ash::GetWindowTreeHostForDisplay(display.id());
-  DCHECK(host);
+  if (!host)
+    return RespondNow(NoArguments());
+
+  aura::Window* root_window = host->window();
+  if (!root_window)
+    return RespondNow(NoArguments());
+
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+
+  bool is_mouse_events_enabled = cursor_client->IsMouseEventsEnabled();
+  if (!is_mouse_events_enabled) {
+    cursor_client->EnableMouseEvents();
+  }
+
+  ::wm::ConvertPointFromScreen(root_window, &location_in_screen);
+
+  std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
+      std::make_unique<ui::MouseEvent>(
+          type, location_in_screen, location_in_screen, ui::EventTimeForNow(),
+          flags, changed_button_flags);
+
   // Transforming the coordinate to the root will apply the screen scale factor
   // to the event's location and also the screen rotation degree.
   synthetic_mouse_event->UpdateForRootTransform(
@@ -404,6 +422,10 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
       host->GetRootTransformForLocalEventCoordinates());
   // This skips rewriters.
   host->DeliverEventToSink(synthetic_mouse_event.get());
+
+  if (!is_mouse_events_enabled) {
+    cursor_client->DisableMouseEvents();
+  }
 
   return RespondNow(NoArguments());
 }
@@ -455,9 +477,6 @@ AccessibilityPrivateMoveMagnifierToRectFunction::Run() {
   std::unique_ptr<accessibility_private::MoveMagnifierToRect::Params> params =
       accessibility_private::MoveMagnifierToRect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  if (!features::IsMagnifierNewFocusFollowingEnabled()) {
-    return RespondNow(NoArguments());
-  }
   gfx::Rect bounds(params->rect.left, params->rect.top, params->rect.width,
                    params->rect.height);
 

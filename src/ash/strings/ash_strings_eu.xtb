@@ -21,6 +21,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1104621072296271835">Gailuek are hobeto funtzionatzen dute batera</translation>
 <translation id="1119348796022671382">Gaikako kolore moduak horma-paperetik ateratako koloreak erabiltzen ditu interfazea pixka bat koloreztatzeko.</translation>
 <translation id="112308213915226829">Ezkutatu apala automatikoki</translation>
+<translation id="1148499908455722006">Ireki <ph name="USER_NAME" /> erabiltzailearen informazio-leihoa</translation>
 <translation id="1153356358378277386">Parekatutako gailuak</translation>
 <translation id="1165712434476988950">Gailua berrabiarazi egin behar da eguneratzea aplikatzeko.</translation>
 <translation id="1175572348579024023">Egin gora edo behera</translation>
@@ -39,6 +40,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1247372569136754018">Mikrofonoa (barnekoa)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> gailutik kargatzen</translation>
 <translation id="1255033239764210633">Zer eguraldi dago?</translation>
+<translation id="1266097335951928626">Abiarazi autoargazkiak ateratzeko kamera</translation>
 <translation id="1267032506238418139">Aldatu egin da lasterbidea</translation>
 <translation id="1269405891096105529">Gailu periferikoa ez da onartzen gonbidatu moduan</translation>
 <translation id="1270290102613614947">Pantailako teklatua desgaitu egin da</translation>
@@ -80,8 +82,10 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="15373452373711364">Saguaren kurtsore handia</translation>
 <translation id="1546492247443594934">2. lan-eremua</translation>
 <translation id="1550523713251050646">Aukera gehiago ikusteko, egin klik hemen</translation>
+<translation id="1555130319947370107">Urdina</translation>
 <translation id="1570871743947603115">Gaitu/Desgaitu Bluetooth-a. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Atzitu saio honetan egin dituzun jarduera guztiak</translation>
+<translation id="159255010947577753">Markatzailea</translation>
 <translation id="1611993646327628135">Aktibatuta</translation>
 <translation id="1615402009686901181">Administratzailearen gidalerroek pantaila-kapturak ateratzea eragozten dute isilpeko edukia ikusgai dagoenean</translation>
 <translation id="1632985212731562677">Ezarpenak &gt; Erabilerraztasuna atalean desgai dezakezu erabilerraztasun-osagarria.</translation>
@@ -99,6 +103,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1746730358044914197">Administratzaileak konfiguratzen ditu idazketa-metodoak.</translation>
 <translation id="1747827819627189109">Pantailako teklatua gaitu egin da</translation>
 <translation id="1761222317188459878">Gaitu/Desgaitu sareko konexioa. <ph name="STATE_TEXT" /></translation>
+<translation id="1768366657309696705"><ph name="LAUNCHER_KEY_NAME" /> + puntua lasterbidea aldatu egin da. "Txertatu" tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + Maius + Atzera tekla.</translation>
 <translation id="1771761307086386028">Egin eskuinera</translation>
 <translation id="1782199038061388045">itzulpena</translation>
 <translation id="1787955149152357925">Desaktibatuta</translation>
@@ -108,7 +113,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Laguntzailea (kargatzen…)</translation>
 <translation id="1838895407229022812">Gaueko argia itzalita dago.</translation>
-<translation id="1850504506766569011">Wi-Fi konexioa desaktibatuta dago.</translation>
 <translation id="1864454756846565995">USB-C gailua (atzealdeko ataka)</translation>
 <translation id="1882814835921407042">Ez dago sare mugikorrik</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> pantailan islatzen</translation>
@@ -130,22 +134,28 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1993072747612765854">Lortu informazio gehiago <ph name="SYSTEM_APP_NAME" /> aplikazioaren azken eguneratzeari buruz</translation>
 <translation id="1995660704900986789">Itzali</translation>
 <translation id="1998100899771863792">Oraingo lan-eremua</translation>
-<translation id="2012624427112548395">Ktrl + Bilatu + H</translation>
 <translation id="2016340657076538683">Idatzi mezu bat</translation>
 <translation id="2018630726571919839">Kontatu txiste bat</translation>
 <translation id="2021864487439853900">Desblokeatzeko, sakatu</translation>
+<translation id="2047639699071423250">Gehitu ideia nagusi bat</translation>
 <translation id="2049240716062114887"><ph name="DESK_NAME" /> izena jarri zaio lan-eremuari</translation>
 <translation id="2050339315714019657">Bertikala</translation>
+<translation id="2066708475850724665">Itxi lupa</translation>
 <translation id="2067602449040652523">Teklatuaren distira</translation>
 <translation id="2078034614700056995">Hurrengo lan-eremura joateko, pasatu lau hatz eskuinera</translation>
 <translation id="2079504693865562705">Ezkutatu aplikazioak apaletik</translation>
+<translation id="2079545284768500474">Desegin</translation>
 <translation id="2083190527011054446">Gabon, <ph name="GIVEN_NAME" />:</translation>
 <translation id="209965399369889474">Ez zaude sarera konektatuta</translation>
+<translation id="2108303511227308752">Alt + Atzera tekla lasterbidea aldatu egin da. "Ezabatu" tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + Atzera tekla.</translation>
+<translation id="211328683600082144">AKTIBATU MIKROFONOA</translation>
 <translation id="2126242104232412123">Lan-eremu berria</translation>
 <translation id="2127372758936585790">Potentzia txikiko kargagailua</translation>
 <translation id="2132302418721800944">Grabatu pantaila osoa</translation>
 <translation id="2135456203358955318">Lupa ainguratua</translation>
+<translation id="2146800439053023141">Aldatu barraren kokapena</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Saiatu berriro</translation>
+<translation id="2167870087604746126">+ V</translation>
 <translation id="2170530631236737939">Pasatu hiru hatz behera ikuspegi orokorretik irteteko</translation>
 <translation id="2208323208084708176">Mahaigain bateratuko modua</translation>
 <translation id="2220572644011485463">PIN kodea edo pasahitza</translation>
@@ -207,6 +217,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2704781753052663061">Konektatu beste wifi-sare batzuetara</translation>
 <translation id="2705001408393684014">Aktibatu/Desaktibatu mikrofonoa. <ph name="STATE_TEXT" />.</translation>
 <translation id="2706462751667573066">Gora</translation>
+<translation id="2713444072780614174">Zuria</translation>
 <translation id="2718395828230677721">Gaueko argia</translation>
 <translation id="2726420622004325180">Telefonoak datu-konexioa erabili behar du wifi-gune bat sortzeko</translation>
 <translation id="2727175239389218057">Erantzun</translation>
@@ -234,6 +245,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Instalatu aplikazioak, luzapenak eta gaiak</translation>
 <translation id="2977598380246111477">Hurrengo zenbakia</translation>
+<translation id="2992327365391326550">Gailuaren mikrofonoaren botoia desaktibatuta dago.</translation>
 <translation id="2995447421581609334">Erakutsi igorpen-gailuak.</translation>
 <translation id="2996462380875591307">Gaituta dago lupa ainguratua. Desaktibatzeko, sakatu berriro Ktrl + Bilatu + D.</translation>
 <translation id="3000461861112256445">Audio monofonikoa</translation>
@@ -244,6 +256,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3038571455154067151">Saioa hasteko, idatzi Family Link-eko gurasoen sarbide-kodea</translation>
 <translation id="3039939407102840004">Arkatzaren bateriari <ph name="PERCENTAGE" /> gelditzen zaio.</translation>
 <translation id="3045488863354895414">Arratsalde on:</translation>
+<translation id="3051189971848907985">Profilaren izena aldatzen. Itxaron minutu batzuk.</translation>
 <translation id="3055162170959710888">Gailua erabiltzen emandako denbora, gaur: <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">maius</translation>
 <translation id="3081696990447829002">Zabaldu menua</translation>
@@ -267,7 +280,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3207953481422525583">Erabiltzaile-ezarpenak</translation>
 <translation id="3217205077783620295">Bolumena aktibatuta dago. Aldatzen baduzu, audioa isilaraziko da.</translation>
 <translation id="3226991577105957773">eta beste <ph name="COUNT" /></translation>
-<translation id="3236488194889173876">Ez dago sare mugikor erabilgarririk</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> leihoa <ph name="ACTIVE_DESK" /> lan-eremutik <ph name="TARGET_DESK" /> lan-eremura eraman da</translation>
 <translation id="3255483164551725916">Zer egin dezakezu?</translation>
 <translation id="3269597722229482060">Egin klik eskuineko botoiarekin</translation>
@@ -278,7 +290,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3308453408813785101">Geroago ere has dezake saioa <ph name="USER_EMAIL_ADDRESS" /> erabiltzaileak.</translation>
 <translation id="3321628682574733415">Gurasoen kodea ez da zuzena</translation>
 <translation id="332587331255250389">Ordeztu bateria</translation>
-<translation id="3333741161915951567">Modema berrabiarazten ari da. Itxaron 30 segundo berriro saiatu aurretik.</translation>
 <translation id="3341303451326249809">Atera da pantaila-argazkia</translation>
 <translation id="334252345105450327">Atera pantaila-argazki bat</translation>
 <translation id="3351879221545518001">Pantailako edukia igortzen ari zara.</translation>
@@ -286,6 +297,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3368922792935385530">Konektatuta</translation>
 <translation id="3371140690572404006">USB-C gailua (eskuinaldeko aurreko ataka)</translation>
 <translation id="3375634426936648815">Konektatuta</translation>
+<translation id="3378442621503952303">Profilera konektatzen. Itxaron minutu batzuk.</translation>
 <translation id="3386978599540877378">pantaila osoko lupa</translation>
 <translation id="3400357268283240774">Ezarpen gehigarriak</translation>
 <translation id="3410336247007142655">Erakutsi gai ilunaren ezarpenak</translation>
@@ -304,6 +316,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3486220673238053218">definizioa</translation>
 <translation id="3510164367642747937">Nabarmendu saguaren kurtsorea</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> kontuaren bidez kudeatzen da kontu hau</translation>
+<translation id="3552189655002856821">Desaktibatuta dago wifi-konexioa</translation>
 <translation id="3563775809269155755">Gaitu wifi-gunea</translation>
 <translation id="3571734092741541777">Konfiguratu</translation>
 <translation id="3573179567135747900">Itzuli "<ph name="FROM_LOCALE" />" ezarpenera (berrabiarazi egin behar da)</translation>
@@ -322,6 +335,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3638400994746983214">Aktibatu/Desaktibatu pribatutasun-pantaila. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, erabiltzaile kudeatua</translation>
 <translation id="3665889125180354336">Mikrofono bidezko grabaketa</translation>
+<translation id="3680908746918359504">Garbitu markatzaile guztiak</translation>
 <translation id="36813544980941320">Wifi-sareak telefonoaren eta <ph name="DEVICE_NAME" /> gailuaren artean partekatuko dira</translation>
 <translation id="3702809606464356667">Une honetako lan-eremuko leihoak daude ikusgai. Lan-eremu guztietako leihoak egon daitezen ikusgai, sakatu gora egiteko gezi-tekla.</translation>
 <translation id="3702846122927433391">Zenbat biztanle ditu Nigeriak</translation>
@@ -352,6 +366,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="3899995891769452915">Ahozko idazketa</translation>
 <translation id="3900355044994618856"><ph name="SESSION_TIME_REMAINING" /> barru amaituko da saioa</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> sarera konektatzen</translation>
+<translation id="3923494859158167397">Ez da konfiguratu sare mugikorrik</translation>
 <translation id="3943857333388298514">Itsatsi</translation>
 <translation id="394485226368336402">Audio-ezarpenak</translation>
 <translation id="3945319193631853098">Sakatu hau konfiguratzen amaitzeko</translation>
@@ -372,6 +387,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{1 apl. desakt.}other{# apl. desakt.}}</translation>
 <translation id="4066027111132117168"><ph name="REMAINING_TIME" /> barru desaktibatuko da</translation>
 <translation id="4072264167173457037">Tarteko seinalea</translation>
+<translation id="4095366824370681039">Bolaluma</translation>
 <translation id="4112140312785995938">Atzeratu</translation>
 <translation id="4114315158543974537">Aktibatu Phone Hub</translation>
 <translation id="412298498316631026">leiho bat</translation>
@@ -382,6 +398,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4195877955194704651">Klik automatikoen botoia</translation>
 <translation id="4197790712631116042">Desaktibatuta</translation>
 <translation id="4201033867194214117"><ph name="FEATURE_NAME" /> ez dago erabilgarri.</translation>
+<translation id="4209973997261364186">Aktibatuta dago wifia</translation>
 <translation id="4212472694152630271">Aldatu PIN kodera</translation>
 <translation id="4215497585250573029">VPN ezarpenak</translation>
 <translation id="4217571870635786043">Diktaketa</translation>
@@ -391,6 +408,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="425364040945105958">Ez dago SIM txartelik</translation>
 <translation id="4261870227682513959">Erakutsi jakinarazpen-ezarpenak. Desaktibatuta daude jakinarazpenak.</translation>
 <translation id="4269883910223712419">Gailuaren administratzaileak honako hauek egin ditzake:</translation>
+<translation id="4274537685965975248">Ktrl + Alt + behera egiteko gezi-tekla lasterbidea aldatu egin da. Amaiera tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + eskuinera egiteko gezi-tekla.</translation>
 <translation id="4279490309300973883">Islatzen</translation>
 <translation id="4285498937028063278">Desainguratu</translation>
 <translation id="4294319844246081198">Egun on, <ph name="GIVEN_NAME" />:</translation>
@@ -399,6 +417,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4303223480529385476">Zabaldu egoeraren eremua</translation>
 <translation id="4321179778687042513">ktrl</translation>
 <translation id="4321776623976362024">Kontraste handiaren lasterbidea sakatu duzu. Aktibatu egin nahi duzu?</translation>
+<translation id="4322742403972824594">Ktrl + Alt + gora egiteko gezi-tekla lasterbidea aldatu egin da. Hasiera tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + ezkerrera egiteko gezi-tekla.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4333628967105022692">Ezin da abiarazi Lacros saio bat baino gehiago baldin badaude hasita.</translation>
 <translation id="4338109981321384717">Lupa</translation>
@@ -416,9 +435,9 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4445159312344259901">Desblokeatzeko, hasi saioa</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 jakinarazpen garrantzitsu}other{# jakinarazpen garrantzitsu}}</translation>
 <translation id="4450893287417543264">Ez erakutsi berriro</translation>
+<translation id="4451374464530248585">Alt + behera egiteko gezi-tekla lasterbidea aldatu egin da. Orrian behera egiteko tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + behera egiteko gezi-tekla.</translation>
 <translation id="445864333228800152">Arratsalde on:</translation>
 <translation id="4458688154122353284">Utzi pantaila grabatzeari</translation>
-<translation id="4467143075433126295">Pantaila osotik irteteko, eduki sakatuta [Ihes]</translation>
 <translation id="4472575034687746823">Hasi erabiltzen</translation>
 <translation id="4477350412780666475">Hurrengo pista</translation>
 <translation id="4477892968187500306">Baliteke Google-k egiaztatu ez dituen aplikazioak egotea gailuan.</translation>
@@ -437,9 +456,15 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4570957409596482333">"Hautatu ozen irakurtzeko" botoia</translation>
 <translation id="4577274620589681794">Agortu egin da denbora · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Erakutsi aurrebistak</translation>
+<translation id="4578196883126898996">Mikrofonoa desaktibatuta dago. Aktibatu gailuko mikrofono-botoia.</translation>
 <translation id="4578906031062871102">Ezarpenen menua ireki da</translation>
+<translation id="4581047786858252841">Aktibatu da mikrofonoa</translation>
 <translation id="4585337515783392668">Utzi hargailu ezezagun batera igortzeari</translation>
+<translation id="4586483766170476230">Itxi autoargazkiak ateratzeko kamera</translation>
+<translation id="4587299710837179226">Desaktibatu da mikrofonoa</translation>
 <translation id="4596144739579517758">Desaktibatuta dago gai iluna.</translation>
+<translation id="4611292653554630842">Hasi saioa</translation>
+<translation id="4614295562446151104">Zabaldu markatzailearen tresnak</translation>
 <translation id="4623167406982293031">Egiaztatu kontua</translation>
 <translation id="4628757576491864469">Gailuak</translation>
 <translation id="4642092649622328492">Atera eremu baten pantaila-argazkia</translation>
@@ -450,6 +475,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4705716602320768426">Bidali oharrak</translation>
 <translation id="4731797938093519117">Gurasoen sarbidea</translation>
 <translation id="4734965478015604180">Horizontala</translation>
+<translation id="4735498845456076464"><ph name="LAUNCHER_KEY_NAME" /> + zenbakia lasterbidea aldatu egin da. Funtzio-teklak erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + goiko errenkadako tekla bat.</translation>
 <translation id="4744944742468440486">Zure hautapenarekin erlazionatutako informazioa</translation>
 <translation id="4759238208242260848">Deskargak</translation>
 <translation id="4774338217796918551">Itzuli bihar ordu honetan: <ph name="COME_BACK_TIME" />.</translation>
@@ -467,7 +493,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4890408602550914571">Ziurtatu telefonoa hurbil dagoela eta Bluetooth-a aktibatuta daukala.</translation>
 <translation id="4895488851634969361">Bateria beteta dago.</translation>
 <translation id="490375751687810070">Bertikala</translation>
-<translation id="4905614135390995787">Aldatu egin da kontraste handiko modua aktibatzeko eta desaktibatzeko lasterbidea. Hemendik aurrera, erabili <ph name="NEW_SHORTCUT" />, eta ez <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240">Bateria: % <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="4917385247580444890">Sendoa</translation>
 <translation id="4918086044614829423">Onartu</translation>
@@ -497,6 +522,8 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> beste telefono batekin konektatu da</translation>
 <translation id="5035389544768382859">Berretsi pantailaren konfigurazioa</translation>
 <translation id="504465286040788597">Aurreko paragrafoa</translation>
+<translation id="5071064518267176975">Aplikazio batek mikrofonoa erabili nahi du</translation>
+<translation id="5075554201838155866">Abiarazi azpitituluak</translation>
 <translation id="5078796286268621944">Okerreko PIN kodea</translation>
 <translation id="5083553833479578423">Lortu Laguntzailea eginbidearen aukera gehiago.</translation>
 <translation id="5136175204352732067">Beste teklatu bat konektatu duzu</translation>
@@ -559,6 +586,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5689633613396158040">Gaueko argia eginbideari esker, ez zaizu egingo horren nekagarria argi gutxiko inguruetan pantailari begira egotea. Sakatu hau Gaueko argia aktibatzeko ordua aldatzeko, edo aukera hori erabat desaktibatzeko.</translation>
 <translation id="5691772641933328258">Ez da ezagutu hatz-marka</translation>
 <translation id="5710450975648804523">Aktibatuta dago ez molestatzeko modua</translation>
+<translation id="571295407079589142">Desaktibatuta dago datu-konexioa</translation>
 <translation id="573413375004481890">Ezin dira zure pantaila guztiak konektatu gailu honetara; beraz, haietako bat deskonektatu da</translation>
 <translation id="574392208103952083">Ertaina</translation>
 <translation id="5744083938413354016">Sakatze bidezko arrastatzea</translation>
@@ -569,8 +597,10 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5777841717266010279">Pantaila-partekatzea gelditu nahi duzu?</translation>
 <translation id="5779721926447984944">Ainguratutako fitxategiak</translation>
 <translation id="5790085346892983794">Behar bezala egin da</translation>
+<translation id="5805809050170488595">Sakatu hau <ph name="NETWORK_NAME" /> aktibatzeko</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5825969630400862129">Konektatutako gailuen ezarpenak</translation>
+<translation id="583281660410589416">Ezezaguna</translation>
 <translation id="5837036133683224804">Utzi <ph name="ROUTE_TITLE" /> (<ph name="RECEIVER_NAME" />) hargailura igortzeari</translation>
 <translation id="5860033963881614850">Desaktibatuta</translation>
 <translation id="5860491529813859533">Aktibatu</translation>
@@ -586,7 +616,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5946788582095584774">Aktibatuta dago <ph name="FEATURE_NAME" />.</translation>
 <translation id="5947494881799873997">Leheneratu</translation>
 <translation id="595202126637698455">Errendimenduaren jarraipena egiteko aukera gaitu da</translation>
-<translation id="5957083217255311415">Desaktibatuta dago datu-konexioa.</translation>
 <translation id="5958529069007801266">Erabiltzaile gainbegiratua</translation>
 <translation id="5960825221082587934">Laguntzailea eginbideak erakutsiko dizu zure hautapenari buruzko informazioa, hala nola definizioa, itzulpena edo bihurketa-unitatea.</translation>
 <translation id="5977415296283489383">Entzungailua</translation>
@@ -665,6 +694,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6612802754306526077">Pantaila grabatzeko modua hautatu da</translation>
 <translation id="6614169507485700968">Aktibatuta dago pribatutasun-pantaila</translation>
 <translation id="6627638273713273709">Bilatu + Maius + K</translation>
+<translation id="6629480180092995136"><ph name="APP_NAME" /> aplikazioak mikrofonoa erabili nahi du</translation>
 <translation id="6637729079642709226">Aldatu ordua</translation>
 <translation id="6641720045729354415">Aldatu Istanteko azpitituluak eginbidearen egoera. <ph name="STATE_TEXT" /></translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> webguneak zeu zarela berretsi nahi du</translation>
@@ -674,7 +704,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6667908387435388584">Konektatu telefonoaren wifi-gunera, desaktibatu gailuaren audioa, aurkitu gailua eta ikusi bertan Chrome-n ireki dituzu azken fitxak</translation>
 <translation id="6670153871843998651">3. lan-eremua</translation>
 <translation id="6671495933530132209">Kopiatu irudia</translation>
-<translation id="6691659475504239918">Bilatu + Maius + H</translation>
 <translation id="6692996468359469499">Lortu hautatutakoari buruzko informazioa</translation>
 <translation id="6696025732084565524">Bereiz daitekeen teklatuak ezinbesteko eguneratze bat behar du</translation>
 <translation id="6700713906295497288">IME menu-botoia</translation>
@@ -706,6 +735,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6919251195245069855">Ezin izan da hauteman txartel adimenduna. Saiatu berriro.</translation>
 <translation id="6945221475159498467">Hautatu</translation>
 <translation id="6961121602502368900">Telefonoa isilarazteko aukera ez dago erabilgarri laneko profilean</translation>
+<translation id="6961840794482373852">Alt + gora egiteko gezi-tekla lasterbidea aldatu egin da. Orrian gora egiteko tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + gora egiteko gezi-tekla.</translation>
 <translation id="6965382102122355670">Ados</translation>
 <translation id="6972754398087986839">Hasi erabiltzen</translation>
 <translation id="6981982820502123353">Erabilerraztasuna</translation>
@@ -718,6 +748,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7029814467594812963">Irten saiotik</translation>
 <translation id="703425375924687388">Google-ren Laguntzailea (<ph name="QUERY_NAME" />)</translation>
 <translation id="7042322267639375032">Tolestu egoeraren eremua</translation>
+<translation id="7045595904618419789">Abiarazi lupa</translation>
 <translation id="7055910611768509537">Arkatza ez da erabili astebetean baino gehiagoan</translation>
 <translation id="7066646422045619941">Administratzaileak desgaitu du sare hau.</translation>
 <translation id="7067196344162293536">Biratu automatikoki</translation>
@@ -738,6 +769,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7256634071279256947">Atzeko mikrofonoa</translation>
 <translation id="726276584504105859">Arrastatu hona pantaila zatitzeko</translation>
 <translation id="7262906531272962081">Sortu abisua</translation>
+<translation id="7279434993080105272">Markatzailearen kolorea: <ph name="COLOR_PARAMETER" /></translation>
 <translation id="7302889331339392448">Istanteko azpitituluak desaktibatuta daude.</translation>
 <translation id="7303365578352795231">Beste gailu batean erantzuten.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -767,6 +799,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7466449121337984263">Ukitu sentsorea</translation>
 <translation id="7477793887173910789">Kontrolatu musika, bideoak eta beste</translation>
 <translation id="7483025031359818980">Hautapen-eremua pantaila osoan dago ezarrita</translation>
+<translation id="7486227320194954040">Tolestu markatzailearen tresnak</translation>
 <translation id="7497767806359279797">Aukeratu hizkuntza eta teklatua</translation>
 <translation id="7509246181739783082">Egiaztatu zeu zarela</translation>
 <translation id="7513622367902644023">Pantaila-argazkiak ateratzeko modua hautatu da</translation>
@@ -777,6 +810,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7561982940498449837">Itxi menua</translation>
 <translation id="7564874036684306347">Leihoak beste mahaigain batera eramaten badira, baliteke ustekabeko portaerak izatea. Aurrerantzeko jakinarazpenak, baliteke leihoak eta elkarrizketa-koadroak bi mahaigainen artean banatuta agertzea.</translation>
 <translation id="7569509451529460200">Braillea eta ChromeVox gaituta daude</translation>
+<translation id="7569983096843329377">Beltza</translation>
 <translation id="7579778809502851308">Pantaila-argazkia edo -bideoa</translation>
 <translation id="7590883480672980941">Idazketa-metodoaren ezarpenak</translation>
 <translation id="7593891976182323525">Bilatu edo aldatu</translation>
@@ -784,6 +818,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7607002721634913082">Pausatuta</translation>
 <translation id="7618774594543487847">Neutroa</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
+<translation id="7631906263969450674">Markatzailea</translation>
 <translation id="7633755430369750696">Erakutsi Nearby Share-ren ezarpenak.</translation>
 <translation id="7641938616688887143">Grabatu</translation>
 <translation id="7642647758716480637">Ireki <ph name="NETWORK_NAME" /> sarearen (<ph name="CONNECTION_STATUS" />) ezarpenak</translation>
@@ -799,6 +834,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7724603315864178912">Ebaki</translation>
 <translation id="7745560842763881396">Bistaratu aplikazioak apalean</translation>
 <translation id="7749443890790263709">Gehieneko lan-eremuen kopurura iritsi zara.</translation>
+<translation id="7749640678855296659">Mikrofonoa desaktibatuta dago</translation>
 <translation id="776344839111254542">Egin klik eguneratzearen xehetasunak ikusteko</translation>
 <translation id="7780159184141939021">Biratu pantaila</translation>
 <translation id="7796353162336583443">Sakatu apaleko arkatzaren botoia oharrak idazteko, pantaila-argazkiak ateratzeko, edo Google-ren Laguntzailea, laser-erakuslea nahiz lupa erabiltzeko.</translation>
@@ -846,6 +882,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8113423164597455979">Guzt. aktibat.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Berretsi</translation>
+<translation id="8132487352815776550">Itxi azpitituluak</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> sarera konektatuta</translation>
 <translation id="813913629614996137">Hasieratzen…</translation>
 <translation id="8142441511840089262">Egin klik bikoitza</translation>
@@ -886,7 +923,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8433977262951327081">Aldatu egin da idazketa-aukeren burbuila apalean erakusteko lasterbidea. Aurrerantzean, erabili <ph name="NEW_SHORTCUT" />, eta ez <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8444246603146515890"><ph name="DESK_TITILE" /> lan-eremua aktibatu da</translation>
 <translation id="8452135315243592079">SIM txartela falta da</translation>
-<translation id="8454013096329229812">Wi-Fi konexioa aktibatuta dago.</translation>
 <translation id="8462305545768648477">Itxi Hautatu ozen irakurtzeko</translation>
 <translation id="847056008324733326">Bistaratu eskala-ezarpenak</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> erakundeak <ph name="FEATURE_STATE" /> dauka <ph name="FEATURE_NAME" />.</translation>
@@ -903,6 +939,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8631727435199967028">Erabilerraztasun-ezarpenak</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> geratzen da</translation>
+<translation id="8641805545866562088">Profilen zerrenda freskatzen. Itxaron minutu batzuk.</translation>
 <translation id="8646417893960517480">Tenporizadorea: <ph name="TOTAL_TIME" /></translation>
 <translation id="8647931990447795414">Pertsona bat gehitzeko, idatzi Family Link-eko gurasoen sarbide-kodea</translation>
 <translation id="8649101189709089199">Hautatu ozen irakurtzeko</translation>
@@ -930,6 +967,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi konexioa</translation>
 <translation id="881757059229893486">Idazketa-metodoen ezarpenak</translation>
+<translation id="8818320199597151042">Profila kentzen. Itxaron minutu batzuk.</translation>
 <translation id="8825863694328519386">Atzera egiteko, pasatu hatza ezkerretik eskuinera</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Atzera botoia</translation>
@@ -975,6 +1013,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="9091626656156419976">Kendu da <ph name="DISPLAY_NAME" /> pantaila</translation>
 <translation id="9098969848082897657">Isilarazi telefonoa</translation>
 <translation id="9099154003160514616">Lacros-en eguneratze bat dago</translation>
+<translation id="9100887602489003640">Profila gehitzen. Itxaron minutu batzuk.</translation>
 <translation id="9105450214093926548">Lacros arakatzailea abian den bitartean ezin da hasi saiorik beste erabiltzaile batekin. Horren ordez, erabili beste erabiltzaile-profil bat Lacros-en bertan, edo itxi arakatzailea eta saiatu berriro.</translation>
 <translation id="9133335900048457298">Ezin da kapturatu eduki babestua</translation>
 <translation id="9151726767154816831">Berrabiarazi eta berrezarri Powerwash bidez fabrikako ezarpenak eguneratzeko</translation>

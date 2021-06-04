@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1096883626080133124">Opravite več s preprostim in varnim Chromom, ki je hitrejši kot kdaj prej.</translation>
 <translation id="1282031177488366470">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
 <translation id="1314663809820920746">Še vedno si lahko ogledate zaznamke, zgodovino, gesla in druge nastavitve v tej napravi. Če naredite spremembe, ne bodo sinhronizirane z računom Google.</translation>
 <translation id="1479202195792305274">Chrome lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome ni mogel preveriti, ali so na voljo posodobitve. Poskusite preveriti internetno povezavo.</translation>
 <translation id="1682483655351012182">Sinhronizacija podatkov v Chromu</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Pomagajte izboljšati Chrome, tako da Googlu pošiljate statistične podatke uporabe in poročila o zrušitvah.</translation>
 <translation id="1917964099031477364">Ta račun in vsi neshranjeni podatki bodo odstranjeni iz Chroma in drugih Googlovih aplikacij v tej napravi.</translation>
 <translation id="2009224836393115614">Chromu ni uspelo preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="2147651015520127414">Chrome je preveril, da je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome ni mogel preveriti, ali so na voljo posodobitve. Poskusite pozneje.</translation>
 <translation id="2732745070297234559">Chromu ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
 <translation id="2740105938841089077">Uporaba Chroma za odpiranje povezav</translation>
+<translation id="2869959624320573933">Prijava v Chrome</translation>
 <translation id="2919738076569633423">Če uporabljate Chrome, se strinjate s <ph name="BEGIN_LINK_TOS" />pogoji storitve<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Ker se boste odjavili iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, boste iz te naprave izbrisali podatke v Chromu. Vaši podatki bodo še vedno na voljo v Google Računu.</translation>
 <translation id="3167189358072330585">Vaš račun ne deluje v Google Chromu. Obrnite se na skrbnika domene ali za prijavo uporabite običajen Google Račun.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome poskrbi, da so vaši računi v spletu, in vam tako prihrani čas. Račune lahko dodajate ali odstranjujete v nastavitvah.</translation>
 <translation id="3282568296779691940">Prijava v Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
+<translation id="3455456143708465450">Če želite kar najbolje izkoristiti Chrome, se prijavite z računom Google.</translation>
 <translation id="3522659714780527202">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chrome, vklopite sinhronizacijo</translation>
 <translation id="3533694711092285624">Ni shranjenih gesel. Chrome lahko preveri gesla, če jih shranite.</translation>
 <translation id="3706101708757577809">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Če Chromu omogočite dostop do podatkov o lokaciji, jih Chrome pošlje na spletna mesta, ki jim podelite dovoljenje. Spletna mesta morda zahtevajo podatke o lokaciji, ko želijo prikazati lokalne informacije, na primer trgovine v bližini ali novice.</translation>
 <translation id="6036420186814142909">Google Chrome ima funkcije, s katerimi lažje upravljate internetne podatke in hitrost nalaganja spletnih strani.
 <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Omogočanje prijave v Chrome</translation>
 <translation id="6181930887571472871">Preklop na Chrome</translation>
 <translation id="6238746320622508509">Naj Chrome zaklene vaše anonimne zavihke.</translation>
 <translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Ali želite izbrisati podatke v Chromu iz te naprave?</translation>
 <translation id="6822673484890854830">Chromu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="6964931465519938134">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
+<translation id="7059914902409643750">Prilagodite si Chrome</translation>
 <translation id="7124339256045485976">Posodobitev Chroma</translation>
 <translation id="7161390184744336561">Google Chrome je zastarel</translation>
 <translation id="7165736900384873061">Začetek uporabe bralnika kod QR Google Chroma</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome je posodobljen</translation>
 <translation id="8022947259858476807">Uporabljajte Chrome kot privzeto možnost odpiranja povezav, iskanja v pripomočkih in samodejnega izpolnjevanja gesel v drugih aplikacijah.</translation>
 <translation id="8160472928944011082">Chroma ni mogoče posodobiti</translation>
+<translation id="8263079278049777200">Prijavite se v to spletno mesto, svoj račun Google in Chrome. Sinhronizacijo lahko vklopite pozneje.</translation>
 <translation id="8357607116237445042">Izberite, ali želite izbrisati podatke v Chromu iz te naprave ali jih obdržati.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Vse pravice pridržane.</translation>
 <translation id="840168496893712993">Nekateri dodatki povzročajo zrušitve Chroma. Poskusite jih odstraniti.</translation>
@@ -95,5 +102,6 @@
   3. Izberite Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Ostanite varni z Google Chromom</translation>
+<translation id="8772179140489533211">Pokaže pozive za prijavo v Chrome.</translation>
 <translation id="9112744793181547300">Želite nastaviti Chrome kot privzeto možnost?</translation>
 </translationbundle>

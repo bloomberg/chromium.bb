@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -11,14 +12,16 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -29,8 +32,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
 
@@ -54,8 +55,15 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     SetCornerRadius(GetInsets().height() +
                     GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
 
-    SetInkDropHighlightOpacity(
+    ink_drop()->SetHighlightOpacity(
         GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+    ink_drop()->SetBaseColorCallback(base::BindRepeating(
+        [](OmniboxSuggestionRowButton* host) {
+          return color_utils::GetColorWithMaxContrast(
+              host->omnibox_bg_color_.value());
+        },
+        this));
+
     focus_ring()->SetHasFocusPredicate([=](View* view) {
       return view->GetVisible() &&
              popup_contents_view_->model()->selection() == selection_;
@@ -68,10 +76,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
 
   ~OmniboxSuggestionRowButton() override = default;
 
-  SkColor GetInkDropBaseColor() const override {
-    return color_utils::GetColorWithMaxContrast(omnibox_bg_color_.value());
-  }
-
   void OnOmniboxBackgroundChange(SkColor omnibox_bg_color) {
     focus_ring()->SchedulePaint();
     omnibox_bg_color_ = omnibox_bg_color;
@@ -79,14 +83,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   }
 
   OmniboxPopupModel::Selection selection() { return selection_; }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    // MdTextButton uses custom colors when creating ink drop highlight.
-    // We need the base implementation that uses GetInkDropBaseColor for
-    // highlight.
-    return views::InkDropHostView::CreateInkDropHighlight();
-  }
 
   void OnThemeChanged() override {
     MdTextButton::OnThemeChanged();
@@ -134,7 +130,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   const gfx::VectorIcon* icon_;
   OmniboxPopupContentsView* popup_contents_view_;
   OmniboxPopupModel::Selection selection_;
-  base::Optional<SkColor> omnibox_bg_color_;
+  absl::optional<SkColor> omnibox_bg_color_;
 };
 
 BEGIN_METADATA(OmniboxSuggestionRowButton, views::MdTextButton)

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_METRICS_H_
 
 #include <stddef.h>
-#include <string>
 
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -20,7 +19,6 @@ class FilePath;
 }
 
 namespace profile_metrics {
-enum class BrowserProfileType;
 struct Counts;
 }
 
@@ -163,11 +161,6 @@ class ProfileMetrics {
   static void CountProfileInformation(ProfileAttributesStorage* storage,
                                       profile_metrics::Counts* counts);
 
-  // Returns profile type for logging.
-  // TODO(https://crbug.com/1169142): Deprecated, remove.
-  static profile_metrics::BrowserProfileType GetBrowserProfileType(
-      Profile* profile);
-
   static void LogNumberOfProfiles(ProfileAttributesStorage* storage);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAddSignInFlowOutcome(
@@ -190,6 +183,5 @@ class ProfileMetrics {
   static void LogProfileLaunch(Profile* profile);
   static void LogProfileUpdate(const base::FilePath& profile_path);
 };
-
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_METRICS_H_

@@ -189,7 +189,7 @@ class UtilityProcessClient : public UtilityProcessHost::Client {
 
  private:
   const std::string service_interface_name_;
-  base::Optional<ServiceProcessInfo> process_info_;
+  absl::optional<ServiceProcessInfo> process_info_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessClient);
 };
@@ -236,9 +236,13 @@ void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
   auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
                          ? GetUIThreadTaskRunner({})
                          : GetIOThreadTaskRunner({});
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&LaunchServiceProcess, std::move(receiver),
-                                std::move(options)));
+  if (task_runner->BelongsToCurrentThread()) {
+    LaunchServiceProcess(std::move(receiver), std::move(options));
+  } else {
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&LaunchServiceProcess, std::move(receiver),
+                                  std::move(options)));
+  }
 }
 
 void LaunchUtilityProcessServiceDeprecated(
@@ -256,7 +260,7 @@ void LaunchUtilityProcessServiceDeprecated(
       service_name, std::move(service_pipe),
       base::BindOnce(
           [](base::OnceCallback<void(base::ProcessId)> callback,
-             const base::Optional<base::ProcessId> pid) {
+             const absl::optional<base::ProcessId> pid) {
             std::move(callback).Run(pid.value_or(base::kNullProcessId));
           },
           std::move(callback)));

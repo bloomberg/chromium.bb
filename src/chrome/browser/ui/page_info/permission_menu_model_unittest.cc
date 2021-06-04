@@ -34,11 +34,12 @@ class PermissionMenuModelTest : public testing::Test {
 
  protected:
   TestingProfile* profile() { return &profile_; }
-  PageInfoUiDelegate* delegate() { return delegate_.get(); }
+  ChromePageInfoUiDelegate* delegate() { return delegate_.get(); }
 
   void SetOffTheRecordProfile() {
     delegate_ = std::make_unique<ChromePageInfoUiDelegate>(
-        profile()->GetPrimaryOTRProfile(), GURL("http://www.google.com"));
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+        GURL("http://www.google.com"));
   }
 
   void SetPageInfoUiDelegate() {
@@ -49,7 +50,7 @@ class PermissionMenuModelTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  std::unique_ptr<PageInfoUiDelegate> delegate_;
+  std::unique_ptr<ChromePageInfoUiDelegate> delegate_;
 };
 
 }  // namespace

@@ -201,6 +201,7 @@ cast_source_set("browser_base") {
     "//chromecast/base",
     "//chromecast/base:cast_sys_info_util",
     "//chromecast/base:cast_version",
+    "//chromecast/bindings/public/mojom",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",
     "//chromecast/browser/mojom",
@@ -212,6 +213,7 @@ cast_source_set("browser_base") {
     "//chromecast/graphics",
     "//chromecast/media",
     "//chromecast/media:libcast_media",
+    "//chromecast/media/audio",
     "//chromecast/media/base:media_codec_support",
     "//chromecast/media/base:video_plane_controller",
     "//chromecast/media/cdm:cdm_origin_provider",
@@ -228,6 +230,7 @@ cast_source_set("browser_base") {
     "//components/metrics:content",
     "//components/metrics:net",
     "//components/on_load_script_injector/browser",
+    "//components/profile_metrics",
     "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
@@ -258,7 +261,7 @@ cast_source_set("browser_base") {
     "//services/network/public/mojom",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
-    "//third_party/blink/public/common:headers",
+    "//third_party/blink/public/common",
     "//ui/base",
     "//ui/compositor",
     "//ui/display",
@@ -308,6 +311,8 @@ cast_source_set("browser_base") {
       "cast_content_window_aura.cc",
       "cast_content_window_aura.h",
       "cast_web_service_aura.cc",
+      "display_configurator_observer.cc",
+      "display_configurator_observer.h",
     ]
 
     deps += [
@@ -449,6 +454,7 @@ cast_source_set("browser_base") {
       "//extensions/browser/api/messaging",
       "//extensions/browser/updater",
       "//extensions/common",
+      "//extensions/common:mojom",
       "//extensions/common/api",
       "//google_apis:google_apis",
       "//ui/events:gesture_detection",
@@ -693,10 +699,6 @@ if (is_android) {
       "android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java",
       "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     ]
-
-    if (is_android_things_non_public) {
-      sources += [ "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
-    }
   }
 
   java_cpp_enum("java_enums") {

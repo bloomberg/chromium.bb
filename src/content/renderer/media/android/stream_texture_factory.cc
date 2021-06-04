@@ -89,7 +89,7 @@ void StreamTextureProxy::OnFrameWithInfoAvailable(
     const gpu::Mailbox& mailbox,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
-    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
+    const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
   base::AutoLock lock(lock_);
   // Set the ycbcr info before running the received frame callback so that the
   // first frame has it.
@@ -137,9 +137,10 @@ bool StreamTextureFactory::IsLost() const {
 unsigned StreamTextureFactory::CreateStreamTexture() {
   int32_t stream_id = channel_->GenerateRouteID();
   bool succeeded = false;
-  channel_->Send(new GpuChannelMsg_CreateStreamTexture(stream_id, &succeeded));
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  channel_->GetGpuChannel().CreateStreamTexture(stream_id, &succeeded);
   if (!succeeded) {
-    DLOG(ERROR) << "GpuChannelMsg_CreateStreamTexture returned failure";
+    DLOG(ERROR) << "CreateStreamTexture returned failure";
     return 0;
   }
   return stream_id;

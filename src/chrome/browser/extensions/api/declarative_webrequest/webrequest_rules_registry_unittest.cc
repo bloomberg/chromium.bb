@@ -34,7 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/scoped_lacros_chrome_service_test_helper.h"
+#include "chromeos/lacros/lacros_test_helper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace helpers = extension_web_request_api_helpers;
@@ -229,17 +229,17 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::ScopedLacrosServiceTestHelper lacros_service_test_helper_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   TestingProfile profile_;
   // Two extensions with host permissions for all URLs and the DWR permission.
   // Installation times will be so that |extension_| is older than
   // |extension2_|.
   scoped_refptr<Extension> extension_;
   scoped_refptr<Extension> extension2_;
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  chromeos::ScopedLacrosChromeServiceTestHelper
-      scoped_lacros_chrome_service_test_helper_;
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
 void WebRequestRulesRegistryTest::SetUp() {

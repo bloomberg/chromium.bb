@@ -71,9 +71,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void SetContentSettings(const ContentSettingsForOneType& settings) override;
   void DeleteCookies(mojom::CookieDeletionFilterPtr filter,
                      DeleteCookiesCallback callback) override;
+  void DeleteSessionOnlyCookies(
+      DeleteSessionOnlyCookiesCallback callback) override;
   void AddCookieChangeListener(
       const GURL& url,
-      const base::Optional<std::string>& name,
+      const absl::optional<std::string>& name,
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void AddGlobalChangeListener(
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;

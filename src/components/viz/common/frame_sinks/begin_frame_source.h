@@ -9,12 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"

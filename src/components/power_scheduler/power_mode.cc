@@ -12,12 +12,20 @@ const char* PowerModeToString(PowerMode mode) {
   switch (mode) {
     case PowerMode::kIdle:
       return "Idle";
+    case PowerMode::kNopAnimation:
+      return "NopAnimation";
     case PowerMode::kAudible:
       return "Audible";
+    case PowerMode::kVideoPlayback:
+      return "VideoPlayback";
+    case PowerMode::kMainThreadAnimation:
+      return "MainThreadAnimation";
     case PowerMode::kLoading:
       return "Loading";
     case PowerMode::kAnimation:
       return "Animation";
+    case PowerMode::kLoadingAnimation:
+      return "LoadingAnimation";
     case PowerMode::kResponse:
       return "Response";
     case PowerMode::kNonWebActivity:

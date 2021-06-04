@@ -24,6 +24,7 @@ component("memory") {
     "//chromeos:chromeos_export",
     "//chromeos/dbus",
     "//chromeos/dbus/constants",
+    "//chromeos/dbus/resourced:resourced",
     "//crypto",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
   ]
@@ -36,8 +37,6 @@ component("memory") {
     "memory_ablation_study.h",
     "pagemap.cc",
     "pagemap.h",
-    "pressure/pressure.cc",
-    "pressure/pressure.h",
     "pressure/system_memory_pressure_evaluator.cc",
     "pressure/system_memory_pressure_evaluator.h",
     "swap_configuration.cc",
@@ -61,7 +60,6 @@ source_set("unit_tests") {
   sources = [
     "memory_ablation_study_unittest.cc",
     "pagemap_unittest.cc",
-    "pressure/pressure_unittest.cc",
     "pressure/system_memory_pressure_evaluator_unittest.cc",
   ]
 }

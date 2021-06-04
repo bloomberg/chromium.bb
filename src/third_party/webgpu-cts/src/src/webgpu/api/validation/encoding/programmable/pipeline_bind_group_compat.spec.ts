@@ -34,16 +34,15 @@ class F extends ValidationTest {
             };
             [[group(0), binding(0)]] var<uniform> uniforms : VertexUniforms;
 
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_index)]] var<in> VertexIndex : i32;
-            [[stage(vertex)]] fn main() -> void {
+            [[stage(vertex)]] fn main(
+              [[builtin(vertex_index)]] VertexIndex : i32
+              ) -> [[builtin(position)]] vec4<f32> {
               var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -1.0),
                 vec2<f32>( 1.0, -1.0),
                 vec2<f32>(-1.0,  1.0)
               );
-              Position = vec4<f32>(uniforms.transform * pos[VertexIndex], 0.0, 1.0);
-              return;
+              return vec4<f32>(uniforms.transform * pos[VertexIndex], 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -56,10 +55,8 @@ class F extends ValidationTest {
             };
             [[group(1), binding(0)]] var<uniform> uniforms : FragmentUniforms;
 
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-              fragColor = uniforms.color;
-              return;
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+              return uniforms.color;
             }`,
         }),
         entryPoint: 'main',
@@ -80,8 +77,9 @@ class F extends ValidationTest {
     return commandEncoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: attachmentTexture.createView(),
+          view: attachmentTexture.createView(),
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          storeOp: 'store',
         },
       ],
     });

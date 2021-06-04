@@ -131,40 +131,37 @@ int GetCellularNetworkSubText(const NetworkInfo& info) {
 
 // Returns color for cellular network item text label.
 SkColor GetCellularNetworkPrimaryTextColor(const NetworkInfo& info) {
-  SkColor text_label_primary_color =
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorPrimary);
-
-  // When inihibited or when SIM is locked and user is not logged in, network
-  // row is disabled, return disabled color.
-  if (info.inhibited ||
-      (info.sim_locked &&
-       !Shell::Get()->session_controller()->IsActiveUserSessionStarted())) {
-    return AshColorProvider::GetDisabledColor(text_label_primary_color);
-  }
-
-  return text_label_primary_color;
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary);
 }
 
 // Returns color for cellular network item sub text label.
 SkColor GetCellularNetworkSubTextColor(const NetworkInfo& info) {
-  if (info.inhibited) {
-    return AshColorProvider::GetDisabledColor(
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kTextColorPositive));
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorWarning);
+}
+
+// Updates the cellular list item's label text colors to disabled if the item is
+// disabled.
+void SetupCellularListItem(HoverHighlightView* view, const NetworkInfo& info) {
+  //  The network row is disabled if inhibited or when SIM is locked and user is
+  //  not logged in.
+  if (!info.inhibited &&
+      !(info.sim_locked &&
+        !Shell::Get()->session_controller()->IsActiveUserSessionStarted())) {
+    return;
   }
 
-  SkColor text_label_warning_color =
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorWarning);
-
-  // If user is not logged in network row is disabled, return disabled color.
-  if (info.sim_locked &&
-      !Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
-    return AshColorProvider::GetDisabledColor(text_label_warning_color);
+  if (view->text_label()) {
+    SkColor primary_text_color = view->text_label()->GetEnabledColor();
+    view->text_label()->SetEnabledColor(
+        AshColorProvider::GetDisabledColor(primary_text_color));
   }
-
-  return text_label_warning_color;
+  if (view->sub_text_label()) {
+    SkColor sub_text_color = view->sub_text_label()->GetEnabledColor();
+    view->sub_text_label()->SetEnabledColor(
+        AshColorProvider::GetDisabledColor(sub_text_color));
+  }
 }
 
 void SetupCellularListItemWithSubtext(HoverHighlightView* view,
@@ -176,6 +173,7 @@ void SetupCellularListItemWithSubtext(HoverHighlightView* view,
   }
   view->SetSubText(l10n_util::GetStringUTF16(cellular_subtext_message_id));
   view->sub_text_label()->SetEnabledColor(GetCellularNetworkSubTextColor(info));
+  SetupCellularListItem(view, info);
 }
 
 bool ComputeNetworkDisabledProperty(const NetworkStatePropertiesPtr& network,
@@ -255,24 +253,19 @@ void NetworkListView::OnGetNetworkStateList(
         cellular_device = model()->GetDevice(NetworkType::kCellular);
     switch (network->type) {
       case NetworkType::kCellular:
+        mobile_has_networks_ = true;
         activation_state =
             network->type_state->get_cellular()->activation_state;
         info->activation_state = activation_state;
         info->sim_locked = network->type_state->get_cellular()->sim_locked;
         if (cellular_device && IsInhibited(cellular_device))
           info->inhibited = true;
-
-        // If cellular is not enabled, skip cellular networks with no service,
-        // unless the device state is inhibited.
+        // If cellular is not enabled, skip cellular networks with no service.
         if (model()->GetDeviceState(NetworkType::kCellular) !=
                 DeviceStateType::kEnabled &&
-            !info->inhibited &&
             activation_state == ActivationStateType::kNoService) {
           continue;
         }
-        // Real (non 'default') Cellular networks are always connectable.
-        if (network->connectable)
-          mobile_has_networks_ = true;
         break;
       case NetworkType::kWiFi:
         wifi_has_networks_ = true;
@@ -493,10 +486,15 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
   int cellular_subtext_message_id = GetCellularNetworkSubText(info);
   if (cellular_subtext_message_id) {
     SetupCellularListItemWithSubtext(view, info, cellular_subtext_message_id);
-  } else if (StateIsConnected(info.connection_state)) {
-    SetupConnectedScrollListItem(view);
-  } else if (info.connection_state == ConnectionStateType::kConnecting) {
-    SetupConnectingScrollListItem(view);
+  } else {
+    if (StateIsConnected(info.connection_state)) {
+      SetupConnectedScrollListItem(view);
+    } else if (info.connection_state == ConnectionStateType::kConnecting) {
+      SetupConnectingScrollListItem(view);
+    }
+    if (NetworkTypeMatchesType(info.type, NetworkType::kCellular)) {
+      SetupCellularListItem(view, info);
+    }
   }
   view->SetTooltipText(info.tooltip);
 
@@ -522,10 +520,17 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
 
 std::u16string NetworkListView::GenerateAccessibilityLabel(
     const NetworkInfo& info) {
-  if (CanNetworkConnect(info.connection_state, info.type, info.connectable)) {
+  if (CanNetworkConnect(info.connection_state, info.type, info.activation_state,
+                        info.connectable)) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT, info.label);
   }
+
+  if (ShouldShowActivateCellularNetwork(info)) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE, info.label);
+  }
+
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN,
                                     info.label);
 }
@@ -693,8 +698,7 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
       UpdateViewForNetwork(network_view, *info);
   }
   PlaceViewAtIndex(network_view, index);
-  if (info->disable)
-    network_view->SetEnabled(false);
+  network_view->SetEnabled(!info->disable);
   network_map_[network_view] = info->guid;
   network_guid_map_[info->guid] = network_view;
 }

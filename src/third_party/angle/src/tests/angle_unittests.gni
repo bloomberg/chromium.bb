@@ -124,7 +124,6 @@ angle_unittests_compiler_tests_sources = [
   "compiler_tests/QualificationOrder_test.cpp",
   "compiler_tests/RecordConstantPrecision_test.cpp",
   "compiler_tests/RegenerateStructNames_test.cpp",
-  "compiler_tests/RemovePow_test.cpp",
   "compiler_tests/RemoveUnreferencedVariables_test.cpp",
   "compiler_tests/SamplerMultisample_test.cpp",
   "compiler_tests/SamplerVideoWEBGL_test.cpp",
@@ -155,6 +154,9 @@ angle_unittests_hlsl_sources = [
   "compiler_tests/HLSLOutput_test.cpp",
   "compiler_tests/UnrollFlatten_test.cpp",
 ]
+
+angle_unittests_gl_sources =
+    [ "../libANGLE/renderer/gl/DisplayGL_unittest.cpp" ]
 
 if (is_android) {
   angle_unittests_sources +=

@@ -19,13 +19,13 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/pin.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -45,8 +45,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
  public:
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
 
-  enum class RequestType { kMakeCredential, kGetAssertion };
-
   using AuthenticatorMap =
       std::map<std::string, FidoAuthenticator*, std::less<>>;
 
@@ -60,9 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         const TransportAvailabilityInfo& other);
     ~TransportAvailabilityInfo();
 
-    // TODO(hongjunchoi): Factor |request_type| from TransportAvailabilityInfo.
-    // See: https://crbug.com/875011
-    RequestType request_type = RequestType::kMakeCredential;
+    FidoRequestType request_type = FidoRequestType::kMakeCredential;
 
     // Indicates whether this is a GetAssertion request with an empty allow
     // list.
@@ -76,7 +72,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // request. This is only set for a GetAssertion request and if a platform
     // authenticator has been added to the request handler. (The Windows
     // WebAuthn API does NOT count as a platform authenticator in this case.)
-    base::Optional<bool> has_recognized_platform_authenticator_credential;
+    absl::optional<bool> has_recognized_platform_authenticator_credential;
 
     // The set of recognized platform credential user entities that can fulfill
     // a GetAssertion request. Not all platform authenticators report this, so
@@ -202,8 +198,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
       const base::flat_set<FidoTransportProtocol>& available_transports);
   ~FidoRequestHandlerBase() override;
 
-  // Triggers DispatchRequest() if |active_authenticators_| hold
-  // FidoAuthenticator with given |authenticator_id|.
+  // Invokes |FidoAuthenticator::InitializeAuthenticator|, followed by
+  // either calling |DispatchRequest| or queuing the authenticator until
+  // |TransportAvailabilityInfo| is ready. |InitializeAuthenticator| sends a
+  // GetInfo command to FidoDeviceAuthenticator instances in order to determine
+  // their protocol versions before a request can be dispatched.
   void StartAuthenticatorRequest(const std::string& authenticator_id);
 
   // Invokes |FidoAuthenticator::Cancel| on all authenticators, except if
@@ -306,15 +305,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void MaybeSignalTransportsEnumerated();
 
-  // Invokes FidoAuthenticator::InitializeAuthenticator(), followed by
-  // DispatchRequest(). InitializeAuthenticator() sends a GetInfo command
-  // to FidoDeviceAuthenticator instances in order to determine their protocol
-  // versions before a request can be dispatched.
-  void InitializeAuthenticatorAndDispatchRequest(
-      const std::string& authenticator_id);
+  // DispatchOrQueueAuthenticator either calls |DispatchRequest| on the
+  // indicated authenticator, starting the full request flow or, if
+  // TransportAvailabilityInfo is not yet ready, queues the authenticator so
+  // that can be done later.
+  void DispatchOrQueueAuthenticator(std::string authenticator_id);
   void ConstructBleAdapterPowerManager();
 
   AuthenticatorMap active_authenticators_;
+  base::flat_set<std::string> authenticator_ids_queued_for_dispatch_;
   std::vector<std::unique_ptr<FidoDiscoveryBase>> discoveries_;
   Observer* observer_ = nullptr;
   TransportAvailabilityInfo transport_availability_info_;

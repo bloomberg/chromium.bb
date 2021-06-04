@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include "base/command_line.h"
@@ -28,6 +27,7 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_art_image.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -46,7 +46,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using sync_pb::EntityMetadata;
@@ -103,14 +102,13 @@ bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
                   b.date_last_used());
 }
 
-AutofillEntry MakeAutofillEntry(const std::string& name,
-                                const std::string& value,
+AutofillEntry MakeAutofillEntry(const std::u16string& name,
+                                const std::u16string& value,
                                 time_t date_created,
                                 time_t date_last_used) {
   if (date_last_used < 0)
     date_last_used = date_created;
-  return AutofillEntry(AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)),
-                       Time::FromTimeT(date_created),
+  return AutofillEntry(AutofillKey(name, value), Time::FromTimeT(date_created),
                        Time::FromTimeT(date_last_used));
 }
 
@@ -331,16 +329,16 @@ TEST_F(AutofillTableTest, Autofill_GetCountOfValuesContainedBetween) {
   TimeDelta second = TimeDelta::FromSeconds(1);
 
   struct Entry {
-    const char* name;
-    const char* value;
-  } entries[] = {{"Alter ego", "Superman"}, {"Name", "Superman"},
-                 {"Name", "Clark Kent"},    {"Name", "Superman"},
-                 {"Name", "Clark Sutter"},  {"Nomen", "Clark Kent"}};
+    const char16_t* name;
+    const char16_t* value;
+  } entries[] = {{u"Alter ego", u"Superman"}, {u"Name", u"Superman"},
+                 {u"Name", u"Clark Kent"},    {u"Name", u"Superman"},
+                 {u"Name", u"Clark Sutter"},  {u"Nomen", u"Clark Kent"}};
 
   for (Entry entry : entries) {
     FormFieldData field;
-    field.name = ASCIIToUTF16(entry.name);
-    field.value = ASCIIToUTF16(entry.value);
+    field.name = entry.name;
+    field.value = entry.value;
     ASSERT_TRUE(table_->AddFormFieldValueTime(field, &changes, now));
     now += second;
   }
@@ -438,7 +436,7 @@ TEST_F(AutofillTableTest, Autofill_AddChanges) {
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
-  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, -1));
+  AutofillEntry entry(MakeAutofillEntry(u"foo", u"bar", 1, -1));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
@@ -452,7 +450,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
-  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
+  AutofillEntry entry(MakeAutofillEntry(u"foo", u"bar", 1, 2));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
@@ -466,7 +464,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
 }
 
 TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
-  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
+  AutofillEntry entry(MakeAutofillEntry(u"foo", u"bar", 1, 2));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
@@ -479,8 +477,8 @@ TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
-  AutofillEntry entry0(MakeAutofillEntry("foo", "bar0", 1, -1));
-  AutofillEntry entry1(MakeAutofillEntry("foo", "bar1", 2, 3));
+  AutofillEntry entry0(MakeAutofillEntry(u"foo", u"bar0", 1, -1));
+  AutofillEntry entry1(MakeAutofillEntry(u"foo", u"bar1", 2, 3));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry0);
   entries.push_back(entry1);
@@ -491,10 +489,10 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateNullTerminated) {
-  const char kName[] = "foo";
-  const char kValue[] = "bar";
+  const char16_t kName[] = u"foo";
+  const char16_t kValue[] = u"bar";
   // A value which contains terminating character.
-  std::string value(kValue, base::size(kValue));
+  std::u16string value(kValue, base::size(kValue));
 
   AutofillEntry entry0(MakeAutofillEntry(kName, kValue, 1, -1));
   AutofillEntry entry1(MakeAutofillEntry(kName, value, 2, 3));
@@ -503,10 +501,8 @@ TEST_F(AutofillTableTest, Autofill_UpdateNullTerminated) {
   entries.push_back(entry1);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
 
-  EXPECT_EQ(1, GetAutofillEntryCount(ASCIIToUTF16(kName), ASCIIToUTF16(kValue),
-                                     db_.get()));
-  EXPECT_EQ(2, GetAutofillEntryCount(ASCIIToUTF16(kName), ASCIIToUTF16(value),
-                                     db_.get()));
+  EXPECT_EQ(1, GetAutofillEntryCount(kName, kValue, db_.get()));
+  EXPECT_EQ(2, GetAutofillEntryCount(kName, value, db_.get()));
 
   std::vector<AutofillEntry> all_entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&all_entries));
@@ -523,7 +519,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
   field.value = u"Superman";
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
 
-  AutofillEntry entry(MakeAutofillEntry("Name", "Superman", 1, 2));
+  AutofillEntry entry(MakeAutofillEntry(u"Name", u"Superman", 1, 2));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
@@ -537,7 +533,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
 TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
   Time t = AutofillClock::Now();
   AutofillEntry existing(
-      MakeAutofillEntry("Name", "Superman", t.ToTimeT(), -1));
+      MakeAutofillEntry(u"Name", u"Superman", t.ToTimeT(), -1));
 
   AutofillChangeList changes;
   // Add a form field.  This will NOT be replaced.
@@ -545,7 +541,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
   field.name = existing.key().name();
   field.value = existing.key().value();
   EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, t));
-  AutofillEntry entry(MakeAutofillEntry("Name", "Clark Kent", 1, 2));
+  AutofillEntry entry(MakeAutofillEntry(u"Name", u"Clark Kent", 1, 2));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
@@ -1299,6 +1295,7 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
   home_profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"MAGIC ###");
   home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
+  home_profile.set_disallow_settings_visible_updates(true);
   home_profile.set_language_code("en");
   home_profile.SetClientValidityFromBitfieldValue(6);
   home_profile.set_is_client_validity_states_updated(true);
@@ -2462,6 +2459,8 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2020");
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   inputs[0].set_instrument_id(321);
+  inputs[0].set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
 
   inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   inputs[1].SetRawInfo(CREDIT_CARD_NAME_FULL, u"Rick Roman");
@@ -2474,6 +2473,9 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetNickname(nickname);
   inputs[1].set_card_issuer(CreditCard::Issuer::GOOGLE);
   inputs[1].set_instrument_id(123);
+  inputs[1].set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  inputs[1].set_card_art_url(GURL("https://www.example.com"));
 
   test::SetServerCreditCards(table_.get(), inputs);
 
@@ -2507,6 +2509,14 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_EQ(321, outputs[0]->instrument_id());
   EXPECT_EQ(123, outputs[1]->instrument_id());
+
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::UNENROLLED,
+            outputs[0]->virtual_card_enrollment_state());
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::ENROLLED,
+            outputs[1]->virtual_card_enrollment_state());
+
+  EXPECT_EQ(GURL(), outputs[0]->card_art_url());
+  EXPECT_EQ(GURL("https://www.example.com"), outputs[1]->card_art_url());
 }
 
 TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
@@ -2717,6 +2727,9 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
   inputs[0].SetServerStatus(CreditCard::EXPIRED);
   inputs[0].SetNickname(u"Grocery card");
   inputs[0].set_instrument_id(1);
+  inputs[0].set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  inputs[0].set_card_art_url(GURL("https://www.example.com"));
   table_->SetServerCardsData(inputs);
 
   // Make sure the card was added correctly.
@@ -2732,6 +2745,11 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
 
   EXPECT_EQ(inputs[0], *outputs[0]);
   EXPECT_EQ(CreditCard::EXPIRED, outputs[0]->GetServerStatus());
+
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::ENROLLED,
+            outputs[0]->virtual_card_enrollment_state());
+
+  EXPECT_EQ(GURL("https://www.example.com"), outputs[0]->card_art_url());
 
   // Make sure no metadata was added.
   std::map<std::string, AutofillMetadata> metadata_map;
@@ -3239,10 +3257,10 @@ TEST_F(AutofillTableTest, GetCreditCardCloudData_NoData) {
 
 const size_t kMaxCount = 2;
 struct GetFormValuesTestCase {
-  const char* const field_suggestion[kMaxCount];
-  const char* const field_contents;
+  const char16_t* const field_suggestion[kMaxCount];
+  const char16_t* const field_contents;
   size_t expected_suggestion_count;
-  const char* const expected_suggestion[kMaxCount];
+  const char16_t* const expected_suggestion[kMaxCount];
 };
 
 class GetFormValuesTest : public testing::TestWithParam<GetFormValuesTestCase> {
@@ -3288,18 +3306,16 @@ TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
   FormFieldData field;
   for (size_t k = 0; k < kMaxCount; ++k) {
     field.name = u"Name";
-    field.value = ASCIIToUTF16(test_case.field_suggestion[k]);
+    field.value = test_case.field_suggestion[k];
     table_->AddFormFieldValue(field, &changes);
   }
 
   std::vector<AutofillEntry> v;
-  table_->GetFormValuesForElementName(
-      u"Name", ASCIIToUTF16(test_case.field_contents), &v, 6);
+  table_->GetFormValuesForElementName(u"Name", test_case.field_contents, &v, 6);
 
   EXPECT_EQ(test_case.expected_suggestion_count, v.size());
   for (size_t j = 0; j < test_case.expected_suggestion_count; ++j) {
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]),
-              v[j].key().value());
+    EXPECT_EQ(test_case.expected_suggestion[j], v[j].key().value());
   }
 
   changes.clear();
@@ -3309,36 +3325,36 @@ TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
 INSTANTIATE_TEST_SUITE_P(
     AutofillTableTest,
     GetFormValuesTest,
-    testing::Values(GetFormValuesTestCase{{"user.test", "test_user"},
-                                          "TEST",
+    testing::Values(GetFormValuesTestCase{{u"user.test", u"test_user"},
+                                          u"TEST",
                                           2,
-                                          {"test_user", "user.test"}},
-                    GetFormValuesTestCase{{"user test", "test-user"},
-                                          "user",
+                                          {u"test_user", u"user.test"}},
+                    GetFormValuesTestCase{{u"user test", u"test-user"},
+                                          u"user",
                                           2,
-                                          {"user test", "test-user"}},
-                    GetFormValuesTestCase{{"user test", "test-rest"},
-                                          "user",
+                                          {u"user test", u"test-user"}},
+                    GetFormValuesTestCase{{u"user test", u"test-rest"},
+                                          u"user",
                                           1,
-                                          {"user test", nullptr}},
-                    GetFormValuesTestCase{{"user@test", "test_user"},
-                                          "user@t",
+                                          {u"user test", nullptr}},
+                    GetFormValuesTestCase{{u"user@test", u"test_user"},
+                                          u"user@t",
                                           1,
-                                          {"user@test", nullptr}},
-                    GetFormValuesTestCase{{"user.test", "test_user"},
-                                          "er.tes",
+                                          {u"user@test", nullptr}},
+                    GetFormValuesTestCase{{u"user.test", u"test_user"},
+                                          u"er.tes",
                                           0,
                                           {nullptr, nullptr}},
-                    GetFormValuesTestCase{{"user test", "test_user"},
-                                          "_ser",
+                    GetFormValuesTestCase{{u"user test", u"test_user"},
+                                          u"_ser",
                                           0,
                                           {nullptr, nullptr}},
-                    GetFormValuesTestCase{{"user.test", "test_user"},
-                                          "%ser",
+                    GetFormValuesTestCase{{u"user.test", u"test_user"},
+                                          u"%ser",
                                           0,
                                           {nullptr, nullptr}},
-                    GetFormValuesTestCase{{"user.test", "test_user"},
-                                          "; DROP TABLE autofill;",
+                    GetFormValuesTestCase{{u"user.test", u"test_user"},
+                                          u"; DROP TABLE autofill;",
                                           0,
                                           {nullptr, nullptr}}));
 
@@ -3641,10 +3657,12 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
   credit_card_offer_2.offer_id = 2;
   credit_card_offer_3.offer_id = 3;
 
-  // Set reward amounts.
+  // Set reward amounts for card-linked offers on offer 1 and 2.
   credit_card_offer_1.offer_reward_amount = "$5";
   credit_card_offer_2.offer_reward_amount = "10%";
-  credit_card_offer_3.offer_reward_amount = "5%";
+
+  // Set promo code for offer 3.
+  credit_card_offer_3.promo_code = "5PCTOFFSHOES";
 
   // Set expiry.
   credit_card_offer_1.expiry = base::Time::FromDoubleT(1000);
@@ -3675,15 +3693,28 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
   credit_card_offer_3.merchant_domain.emplace_back(
       "http://www.merchant_domain_3_2.com/");
 
-  // Set eligible instrument ID for offer 1.
+  // Set display strings for all 3 offers.
+  credit_card_offer_1.display_strings.value_prop_text = "$5 off your purchase";
+  credit_card_offer_2.display_strings.value_prop_text = "10% off your purchase";
+  credit_card_offer_3.display_strings.value_prop_text =
+      "5% off shoes. Up to $50.";
+  credit_card_offer_1.display_strings.see_details_text = "Terms apply.";
+  credit_card_offer_2.display_strings.see_details_text = "Terms apply.";
+  credit_card_offer_3.display_strings.see_details_text = "See details.";
+  credit_card_offer_1.display_strings.usage_instructions_text =
+      "Check out with this card to activate.";
+  credit_card_offer_2.display_strings.usage_instructions_text =
+      "Check out with this card to activate.";
+  credit_card_offer_3.display_strings.usage_instructions_text =
+      "Click the promo code field at checkout to autofill it.";
+
+  // Set eligible card-linked instrument ID for offer 1.
   credit_card_offer_1.eligible_instrument_id.push_back(10);
   credit_card_offer_1.eligible_instrument_id.push_back(11);
-  // Set eligible instrument ID for offer 2.
+  // Set eligible card-linked instrument ID for offer 2.
   credit_card_offer_2.eligible_instrument_id.push_back(20);
   credit_card_offer_2.eligible_instrument_id.push_back(21);
   credit_card_offer_2.eligible_instrument_id.push_back(22);
-  // Set eligible instrument ID for offer 3.
-  credit_card_offer_3.eligible_instrument_id.push_back(30);
 
   // Create vector of offer data.
   std::vector<AutofillOfferData> autofill_offer_data;
@@ -3691,11 +3722,11 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
   autofill_offer_data.push_back(credit_card_offer_2);
   autofill_offer_data.push_back(credit_card_offer_3);
 
-  table_->SetCreditCardOffers(autofill_offer_data);
+  table_->SetAutofillOffers(autofill_offer_data);
 
   std::vector<std::unique_ptr<AutofillOfferData>> output_offer_data;
 
-  EXPECT_TRUE(table_->GetCreditCardOffers(&output_offer_data));
+  EXPECT_TRUE(table_->GetAutofillOffers(&output_offer_data));
   EXPECT_EQ(autofill_offer_data.size(), output_offer_data.size());
 
   for (const auto& data : autofill_offer_data) {
@@ -3715,9 +3746,18 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
     EXPECT_EQ(data.offer_id, output_offer_data[output_index]->offer_id);
     EXPECT_EQ(data.offer_reward_amount,
               output_offer_data[output_index]->offer_reward_amount);
+    EXPECT_EQ(data.promo_code, output_offer_data[output_index]->promo_code);
     EXPECT_EQ(data.expiry, output_offer_data[output_index]->expiry);
     EXPECT_EQ(data.offer_details_url.spec(),
               output_offer_data[output_index]->offer_details_url.spec());
+    EXPECT_EQ(data.display_strings.value_prop_text,
+              output_offer_data[output_index]->display_strings.value_prop_text);
+    EXPECT_EQ(
+        data.display_strings.see_details_text,
+        output_offer_data[output_index]->display_strings.see_details_text);
+    EXPECT_EQ(data.display_strings.usage_instructions_text,
+              output_offer_data[output_index]
+                  ->display_strings.usage_instructions_text);
     ASSERT_THAT(data.merchant_domain,
                 testing::UnorderedElementsAreArray(
                     output_offer_data[output_index]->merchant_domain));
@@ -3725,6 +3765,36 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
                 testing::UnorderedElementsAreArray(
                     output_offer_data[output_index]->eligible_instrument_id));
   }
+}
+
+TEST_F(AutofillTableTest, SetAndGetAndClearCreditCardArtImage) {
+  CreditCardArtImage image1("image1", 1, {UINT8_MAX});
+  table_->AddCreditCardArtImage(image1);
+  CreditCardArtImage image2("image2", 2, {UINT8_MAX});
+  table_->AddCreditCardArtImage(image2);
+
+  std::vector<std::unique_ptr<CreditCardArtImage>> output;
+  EXPECT_TRUE(table_->GetCreditCardArtImages(&output));
+  EXPECT_EQ(2U, output.size());
+  EXPECT_EQ("image1", output[0]->id);
+  EXPECT_EQ(1, output[0]->instrument_id);
+  EXPECT_EQ(UINT8_MAX, output[0]->card_art_image[0]);
+  EXPECT_EQ("image2", output[1]->id);
+  EXPECT_EQ(2, output[1]->instrument_id);
+  EXPECT_EQ(UINT8_MAX, output[1]->card_art_image[0]);
+
+  EXPECT_TRUE(table_->ClearCreditCardArtImage("image1"));
+  output.clear();
+  EXPECT_TRUE(table_->GetCreditCardArtImages(&output));
+  EXPECT_EQ(1U, output.size());
+  EXPECT_EQ("image2", output[0]->id);
+  EXPECT_EQ(2, output[0]->instrument_id);
+  EXPECT_EQ(UINT8_MAX, output[0]->card_art_image[0]);
+
+  EXPECT_TRUE(table_->ClearAllServerData());
+  output.clear();
+  EXPECT_TRUE(table_->GetCreditCardArtImages(&output));
+  EXPECT_EQ(0U, output.size());
 }
 
 }  // namespace autofill

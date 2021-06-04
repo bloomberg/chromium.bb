@@ -7,6 +7,7 @@
 #include "ash/clipboard/views/clipboard_history_item_view.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/scoped_light_mode_as_default.h"
+#include "base/bind.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -29,11 +30,28 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
           base::Unretained(container))),
       container_(container) {
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   SetID(ClipboardHistoryUtil::kMainButtonViewID);
 
   // Let the parent handle accessibility features.
   GetViewAccessibility().OverrideIsIgnored(/*value=*/true);
+
+  // TODO(crbug.com/1205227): Revisit if this comment makes sense still. It was
+  // attached to CreateInkDrop() but sounds more about talking about a null
+  // CreateInkDropHighlight(), but at the time of writing the class inherited
+  // from Button and had no other InkDrop-related override than CreateInkDrop().
+  // This may need an upstream fix in InkDrop.
+  //
+  // We do not use the ripple highlight due to the following reasons:
+  // (1) Events may be intercepted by the menu controller. As a result, the
+  // ripple highlight may not update properly.
+  // (2) The animation to fade in/out highlight does not look good when the menu
+  // selection is advanced by the up/down arrow key.
+  // Hence, highlighted background is implemented by customizing in
+  // `PaintButtonContents()`.
+  views::InkDrop::UseInkDropForFloodFillRipple(
+      ink_drop(), /*highlight_on_hover=*/false,
+      /*highlight_on_focus=*/!focus_ring());
 }
 
 ClipboardHistoryMainButton::~ClipboardHistoryMainButton() = default;
@@ -54,21 +72,6 @@ const char* ClipboardHistoryMainButton::GetClassName() const {
   return "ClipboardHistoryMainButton";
 }
 
-std::unique_ptr<views::InkDrop> ClipboardHistoryMainButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop = views::Button::CreateInkDrop();
-
-  // We do not use the ripple highlight due to the following reasons:
-  // (1) Events may be intercepted by the menu controller. As a result, the
-  // ripple highlight may not update properly.
-  // (2) The animation to fade in/out highlight does not look good when the menu
-  // selection is advanced by the up/down arrow key.
-  // Hence, highlighted background is implemented by customizing in
-  // `PaintButtonContents()`.
-  ink_drop->SetShowHighlightOnHover(false);
-
-  return ink_drop;
-}
-
 void ClipboardHistoryMainButton::OnClickCanceled(const ui::Event& event) {
   DCHECK(event.IsMouseEvent());
 
@@ -87,8 +90,8 @@ void ClipboardHistoryMainButton::OnThemeChanged() {
 
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes();
-  SetInkDropBaseColor(ripple_attributes.base_color);
-  SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  ink_drop()->SetBaseColor(ripple_attributes.base_color);
+  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
 }
 
 void ClipboardHistoryMainButton::OnGestureEvent(ui::GestureEvent* event) {

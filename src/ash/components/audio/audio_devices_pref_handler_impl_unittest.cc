@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "ash/components/audio/audio_device.h"
 #include "ash/components/audio/audio_devices_pref_handler.h"
 #include "ash/constants/ash_pref_names.h"
@@ -76,13 +78,16 @@ const AudioNodeInfo kOutputDeviceWithSpecialCharacters = {
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = 1;
+const uint32_t kOutputAudioEffect = 0;
+
 AudioDevice CreateAudioDevice(const AudioNodeInfo& info, int version) {
   return AudioDevice(chromeos::AudioNode(
       info.is_input, info.id, version == 2, info.id /* stable_device_id_v1 */,
       version == 1 ? 0 : info.id ^ 0xFF /* stable_device_id_v2 */,
       info.device_name, info.type, info.name, false, 0,
-      info.is_input ? kInputMaxSupportedChannels
-                    : kOutputMaxSupportedChannels));
+      info.is_input ? kInputMaxSupportedChannels : kOutputMaxSupportedChannels,
+      info.is_input ? kInputAudioEffect : kOutputAudioEffect));
 }
 
 // Test param determines whether the test should test input or output devices
@@ -94,7 +99,7 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   ~AudioDevicesPrefHandlerTest() override = default;
 
   void SetUp() override {
-    pref_service_.reset(new TestingPrefServiceSimple());
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     AudioDevicesPrefHandlerImpl::RegisterPrefs(pref_service_->registry());
 
     // Set the preset pref values directly, to ensure it doesn't depend on pref
@@ -445,6 +450,12 @@ TEST_P(AudioDevicesPrefHandlerTest, TestSettingV2DeviceStateRemovesV1Entry) {
   ReloadPrefHandler();
   EXPECT_FALSE(DeviceStateExists(device_v1));
   ExpectDeviceStateEquals(device_v2, false, false);
+}
+
+TEST_P(AudioDevicesPrefHandlerTest, InputNoiseCancellationPrefRegistered) {
+  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+  audio_pref_handler_->SetNoiseCancellationState(true);
+  EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
 }
 
 }  // namespace ash

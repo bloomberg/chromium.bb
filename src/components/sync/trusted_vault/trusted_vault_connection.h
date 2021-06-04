@@ -6,11 +6,10 @@
 #define COMPONENTS_SYNC_TRUSTED_VAULT_TRUSTED_VAULT_CONNECTION_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 struct CoreAccountInfo;
 
@@ -19,13 +18,35 @@ namespace syncer {
 class SecureBoxKeyPair;
 class SecureBoxPublicKey;
 
-enum class TrustedVaultRequestStatus {
+enum class TrustedVaultRegistrationStatus {
   kSuccess,
   // Used when trusted vault request can't be completed successfully due to
   // vault key being outdated or device key being not registered.
   kLocalDataObsolete,
   // Used for all network, http and protocol errors.
   kOtherError
+};
+
+enum class TrustedVaultDownloadKeysStatus {
+  kSuccess,
+  // Member corresponding to the authentication factor doesn't exist, not
+  // registered in the security domain or corrupted.
+  kMemberNotFoundOrCorrupted,
+  // Keys were successfully downloaded and verified, but no new keys exist.
+  kNoNewKeys,
+  // At least one of the key proofs isn't valid or unable to verify them using
+  // latest local trusted vault key (e.g. it's too old).
+  kKeyProofsVerificationFailed,
+  // Used for all network, http and protocol errors, when no statuses above
+  // fits.
+  kOtherError
+};
+
+enum class TrustedVaultRecoverabilityStatus {
+  // Recoverability status not retrieved due to network, http or protocol error.
+  kError,
+  kNotDegraded,
+  kDegraded
 };
 
 enum class AuthenticationFactorType { kPhysicalDevice };
@@ -45,11 +66,13 @@ struct TrustedVaultKeyAndVersion {
 class TrustedVaultConnection {
  public:
   using RegisterAuthenticationFactorCallback =
-      base::OnceCallback<void(TrustedVaultRequestStatus)>;
+      base::OnceCallback<void(TrustedVaultRegistrationStatus)>;
   using DownloadNewKeysCallback =
-      base::OnceCallback<void(TrustedVaultRequestStatus,
+      base::OnceCallback<void(TrustedVaultDownloadKeysStatus,
                               const std::vector<std::vector<uint8_t>>& /*keys*/,
                               int /*last_key_version*/)>;
+  using IsRecoverabilityDegradedCallback =
+      base::OnceCallback<void(TrustedVaultRecoverabilityStatus)>;
 
   // Used to control ongoing request lifetime, destroying Request object causes
   // request cancellation.
@@ -70,13 +93,13 @@ class TrustedVaultConnection {
   // Asynchronously attempts to register the authentication factor on the
   // trusted vault server to allow further vault server API calls using this
   // authentication factor. If |last_trusted_vault_key_and_version| is
-  // base::nullopt, registration attempt with constant key will be made. Calls
+  // absl::nullopt, registration attempt with constant key will be made. Calls
   // |callback| upon completion, unless the returned object is destroyed
   // earlier. Caller should hold returned request object until |callback| call
   // or until request needs to be cancelled.
   virtual std::unique_ptr<Request> RegisterAuthenticationFactor(
       const CoreAccountInfo& account_info,
-      const base::Optional<TrustedVaultKeyAndVersion>&
+      const absl::optional<TrustedVaultKeyAndVersion>&
           last_trusted_vault_key_and_version,
       const SecureBoxPublicKey& authentication_factor_public_key,
       AuthenticationFactorType authentication_factor_type,
@@ -88,10 +111,17 @@ class TrustedVaultConnection {
   // |callback| call or until request needs to be cancelled.
   virtual std::unique_ptr<Request> DownloadNewKeys(
       const CoreAccountInfo& account_info,
-      const base::Optional<TrustedVaultKeyAndVersion>&
+      const absl::optional<TrustedVaultKeyAndVersion>&
           last_trusted_vault_key_and_version,
       std::unique_ptr<SecureBoxKeyPair> device_key_pair,
       DownloadNewKeysCallback callback) WARN_UNUSED_RESULT = 0;
+
+  // Asynchronously attempts to retrieve degraded recoverability status from the
+  // trusted vault server. Caller should hold returned request object until
+  // |callback| call or until request needs to be cancelled.
+  virtual std::unique_ptr<Request> RetrieveIsRecoverabilityDegraded(
+      const CoreAccountInfo& account_info,
+      IsRecoverabilityDegradedCallback callback) WARN_UNUSED_RESULT = 0;
 };
 
 }  // namespace syncer

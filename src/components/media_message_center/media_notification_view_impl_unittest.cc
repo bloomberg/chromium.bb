@@ -54,8 +54,8 @@ const int kMediaButtonIconSize = 24;
 // The title artist row should always have the same height.
 const int kMediaTitleArtistRowExpectedHeight = 48;
 
-const char kTestDefaultAppName[] = "default app name";
-const char kTestAppName[] = "app name";
+const char16_t kTestDefaultAppName[] = u"default app name";
+const char16_t kTestAppName[] = u"app name";
 
 const gfx::Size kWidgetSize(500, 500);
 
@@ -254,7 +254,7 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
         ->artwork_;
   }
 
-  const gfx::ImageSkia& GetAppIcon() const {
+  gfx::ImageSkia GetAppIcon() const {
     return header_row()->app_icon_for_testing();
   }
 
@@ -319,8 +319,7 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     // Create a MediaNotificationViewImpl.
     auto view = std::make_unique<MediaNotificationViewImpl>(
         &container_, item_->GetWeakPtr(),
-        nullptr /* header_row_controls_view */,
-        base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth,
+        nullptr /* header_row_controls_view */, kTestDefaultAppName, kViewWidth,
         /*should_show_icon=*/true);
     view->SetSize(kViewSize);
 
@@ -657,19 +656,17 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateMetadata_FromObserver) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateMetadata_AppName) {
-  EXPECT_EQ(base::ASCIIToUTF16(kTestDefaultAppName),
-            header_row()->app_name_for_testing());
+  EXPECT_EQ(kTestDefaultAppName, header_row()->app_name_for_testing());
 
   {
     media_session::MediaMetadata metadata;
     metadata.title = u"title";
     metadata.artist = u"artist";
-    metadata.source_title = base::ASCIIToUTF16(kTestAppName);
+    metadata.source_title = kTestAppName;
     GetItem()->MediaSessionMetadataChanged(metadata);
   }
 
-  EXPECT_EQ(base::ASCIIToUTF16(kTestAppName),
-            header_row()->app_name_for_testing());
+  EXPECT_EQ(kTestAppName, header_row()->app_name_for_testing());
 
   {
     media_session::MediaMetadata metadata;
@@ -678,8 +675,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateMetadata_AppName) {
     GetItem()->MediaSessionMetadataChanged(metadata);
   }
 
-  EXPECT_EQ(base::ASCIIToUTF16(kTestDefaultAppName),
-            header_row()->app_name_for_testing());
+  EXPECT_EQ(kTestDefaultAppName, header_row()->app_name_for_testing());
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
@@ -1100,7 +1096,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingDoesntMissUpdates) {
   EXPECT_CALL(unfrozen_callback, Run).Times(0);
   GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
-  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaSessionMetadataChanged(absl::nullopt);
 
   // The item should be frozen and the view should contain the old data.
   EXPECT_TRUE(GetItem()->frozen());
@@ -1163,7 +1159,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForArtwork_Timeout) {
   EXPECT_CALL(unfrozen_callback, Run).Times(0);
   GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
-  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaSessionMetadataChanged(absl::nullopt);
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
 
@@ -1236,7 +1232,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForActions) {
   EXPECT_CALL(unfrozen_callback, Run).Times(0);
   GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
-  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaSessionMetadataChanged(absl::nullopt);
   DisableAction(MediaSessionAction::kPlay);
   DisableAction(MediaSessionAction::kPause);
   DisableAction(MediaSessionAction::kNextTrack);
@@ -1324,7 +1320,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
   EXPECT_CALL(unfrozen_callback, Run).Times(0);
   GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
-  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaSessionMetadataChanged(absl::nullopt);
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
 

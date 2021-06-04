@@ -49,6 +49,7 @@ public:
         class GLSLProcessor : public GrGLSLGeometryProcessor {
         public:
             void setData(const GrGLSLProgramDataManager& pdman,
+                         const GrShaderCaps&,
                          const GrGeometryProcessor& geomProc) override {
                 const auto& latticeGP = geomProc.cast<LatticeGP>();
                 fColorSpaceXformHelper.setData(pdman, latticeGP.fColorSpaceXform.get());
@@ -62,7 +63,7 @@ public:
                                                 latticeGP.fColorSpaceXform.get());
 
                 args.fVaryingHandler->emitAttributes(latticeGP);
-                this->writeOutputPosition(args.fVertBuilder, gpArgs, latticeGP.fInPosition.name());
+                WriteOutputPosition(args.fVertBuilder, gpArgs, latticeGP.fInPosition.name());
                 gpArgs->fLocalCoordVar = latticeGP.fInTextureCoords.asShaderVar();
 
                 args.fFragBuilder->codeAppend("float2 textureCoords;");
@@ -176,16 +177,15 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
         auto opaque = fPatches[0].fColor.isOpaque() && fAlphaType == kOpaque_SkAlphaType
                               ? GrProcessorAnalysisColor::Opaque::kYes
                               : GrProcessorAnalysisColor::Opaque::kNo;
         auto analysisColor = GrProcessorAnalysisColor(opaque);
-        auto result = fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType, GrProcessorAnalysisCoverage::kNone,
-                &analysisColor);
+        auto result = fHelper.finalizeProcessors(caps, clip, clampType,
+                                                 GrProcessorAnalysisCoverage::kNone,
+                                                 &analysisColor);
         analysisColor.isConstant(&fPatches[0].fColor);
         fWideColor = !fPatches[0].fColor.fitsInBytes();
         return result;

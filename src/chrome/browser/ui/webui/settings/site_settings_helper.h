@@ -32,7 +32,7 @@ class ExtensionRegistry;
 }
 
 namespace permissions {
-class ChooserContextBase;
+class ObjectPermissionContextBase;
 }
 
 namespace site_settings {
@@ -63,6 +63,7 @@ constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kRecentPermissions[] = "recentPermissions";
 constexpr char kSetting[] = "setting";
+constexpr char kSettingDetail[] = "settingDetail";
 constexpr char kSites[] = "sites";
 constexpr char kPolicyIndicator[] = "indicator";
 constexpr char kSource[] = "source";
@@ -73,7 +74,6 @@ enum class SiteSettingSource {
   kAllowlist,
   kAdsFilterBlocklist,
   kDefault,
-  kDrmDisabled,
   kEmbargo,
   kExtension,
   kInsecureOrigin,
@@ -124,6 +124,8 @@ base::Value GetValueForManagedState(const ManagedState& state);
 
 // Helper function to construct a dictionary for an exception.
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
+    ContentSettingsType content_type,
+    Profile* profile,
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
     const std::string& display_name,
@@ -184,7 +186,7 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
 // for a given content settings type and is declared early so that it can used
 // by functions below.
 struct ChooserTypeNameEntry {
-  permissions::ChooserContextBase* (*get_context)(Profile*);
+  permissions::ObjectPermissionContextBase* (*get_context)(Profile*);
   const char* name;
 };
 

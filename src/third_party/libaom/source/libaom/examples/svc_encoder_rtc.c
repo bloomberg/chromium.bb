@@ -287,6 +287,9 @@ static void parse_command_line(int argc, const char **argv_,
       if (app_input->speed > 9) {
         warn("Mapping speed %d to speed 9.\n", app_input->speed);
       }
+      if (app_input->speed <= 6) {
+        die("Encoder speed setting should be in [7, 9].\n");
+      }
     } else if (arg_match(&arg, &aqmode_arg, argi)) {
       app_input->aq_mode = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &threads_arg, argi)) {
@@ -1105,11 +1108,12 @@ int main(int argc, const char **argv) {
   app_input.input_ctx.framerate.denominator = 1;
   app_input.input_ctx.only_i420 = 1;
   app_input.input_ctx.bit_depth = 0;
+  app_input.speed = 7;
   exec_name = argv[0];
 
   // start with default encoder configuration
-  aom_codec_err_t res =
-      aom_codec_enc_config_default(aom_codec_av1_cx(), &cfg, 0);
+  aom_codec_err_t res = aom_codec_enc_config_default(aom_codec_av1_cx(), &cfg,
+                                                     AOM_USAGE_REALTIME);
   if (res) {
     die("Failed to get config: %s\n", aom_codec_err_to_string(res));
   }
@@ -1243,6 +1247,7 @@ int main(int argc, const char **argv) {
   aom_codec_control(&codec, AV1E_SET_COEFF_COST_UPD_FREQ, 3);
   aom_codec_control(&codec, AV1E_SET_MODE_COST_UPD_FREQ, 3);
   aom_codec_control(&codec, AV1E_SET_MV_COST_UPD_FREQ, 3);
+  aom_codec_control(&codec, AV1E_SET_DV_COST_UPD_FREQ, 3);
   aom_codec_control(&codec, AV1E_SET_CDF_UPDATE_MODE, 1);
   aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS,
                     cfg.g_threads ? get_msb(cfg.g_threads) : 0);
@@ -1267,8 +1272,8 @@ int main(int argc, const char **argv) {
     svc_params.scaling_factor_num[1] = 1;
     svc_params.scaling_factor_den[1] = 2;
   }
-  svc_params.ksvc_fixed_mode = 0;  // Set to 1 to do KSVC in fixed mode.
   aom_codec_control(&codec, AV1E_SET_SVC_PARAMS, &svc_params);
+  // TODO(aomedia:3032): Configure KSVC in fixed mode.
 
   // This controls the maximum target size of the key frame.
   // For generating smaller key frames, use a smaller max_intra_size_pct

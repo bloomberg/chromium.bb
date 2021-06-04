@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -119,11 +118,11 @@ CategoryStatus ContentSuggestionsService::GetCategoryStatus(
   return iterator->second->GetCategoryStatus(category);
 }
 
-base::Optional<CategoryInfo> ContentSuggestionsService::GetCategoryInfo(
+absl::optional<CategoryInfo> ContentSuggestionsService::GetCategoryInfo(
     Category category) const {
   auto iterator = providers_by_category_.find(category);
   if (iterator == providers_by_category_.end()) {
-    return base::Optional<CategoryInfo>();
+    return absl::optional<CategoryInfo>();
   }
   return iterator->second->GetCategoryInfo(category);
 }
@@ -676,15 +675,15 @@ void ContentSuggestionsService::RestoreDismissedCategoriesFromPrefs() {
 
   const base::ListValue* list =
       pref_service_->GetList(prefs::kDismissedCategories);
-  for (const base::Value& entry : *list) {
-    int id = 0;
-    if (!entry.GetAsInteger(&id)) {
+  for (const base::Value& entry : list->GetList()) {
+    if (!entry.is_int()) {
       DLOG(WARNING) << "Invalid category pref value: " << entry;
       continue;
     }
 
     // When the provider is registered, it will be stored in this map.
-    dismissed_providers_by_category_[Category::FromIDValue(id)] = nullptr;
+    dismissed_providers_by_category_[Category::FromIDValue(entry.GetInt())] =
+        nullptr;
   }
 }
 

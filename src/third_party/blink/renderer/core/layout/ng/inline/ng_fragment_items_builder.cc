@@ -358,13 +358,13 @@ void NGFragmentItemsBuilder::ConvertToPhysical(const PhysicalSize& outer_size) {
   is_converted_to_physical_ = true;
 }
 
-base::Optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
+absl::optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
     const LayoutObject& layout_object) const {
   for (const ItemWithOffset& item : items_) {
     if (item->GetLayoutObject() == &layout_object)
       return item.offset;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void NGFragmentItemsBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
@@ -384,8 +384,10 @@ void NGFragmentItemsBuilder::ToFragmentItems(const PhysicalSize& outer_size,
                                              void* data) {
   DCHECK(text_content_);
   ConvertToPhysical(outer_size);
-  if (node_.IsSVGText())
-    NGSVGTextLayoutAlgorithm(node_, GetWritingMode()).Layout(items_);
+  if (node_.IsSVGText()) {
+    NGSVGTextLayoutAlgorithm(node_, GetWritingMode())
+        .Layout(TextContent(false), items_);
+  }
   new (data) NGFragmentItems(this);
 }
 

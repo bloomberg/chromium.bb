@@ -68,10 +68,6 @@ id<GREYMatcher> SearchIconButton() {
 id<GREYMatcher> CancelButton() {
   return grey_accessibilityID(kHistoryToolbarCancelButtonIdentifier);
 }
-// Matcher for the empty TableView background
-id<GREYMatcher> EmptyTableViewBackground() {
-  return grey_accessibilityID(kTableViewEmptyViewID);
-}
 // Matcher for the empty TableView illustrated background
 id<GREYMatcher> EmptyIllustratedTableViewBackground() {
   return grey_accessibilityID(kTableViewIllustratedEmptyViewID);
@@ -465,7 +461,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_longPress()];
 
   [ChromeEarlGrey
-      verifyShareActionWithPageTitle:[NSString stringWithUTF8String:kTitle1]];
+      verifyShareActionWithURL:_URL1
+                     pageTitle:[NSString stringWithUTF8String:kTitle1]];
 }
 
 // Tests the Delete context menu action for a History entry.
@@ -596,27 +593,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   [ChromeEarlGreyUI openAndClearBrowsingDataFromHistory];
 
-  if ([ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    // Toolbar should only contain CBD button and the background should contain
-    // the Illustrated empty view
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            HistoryClearBrowsingDataButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
-        assertWithMatcher:grey_nil()];
-    [[EarlGrey selectElementWithMatcher:EmptyIllustratedTableViewBackground()]
-        assertWithMatcher:grey_notNil()];
-  } else {
-    // The toolbar should still contain the CBD and Edit buttons and the
-    // background should contain the empty view
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            HistoryClearBrowsingDataButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:EmptyTableViewBackground()]
-        assertWithMatcher:grey_notNil()];
-  }
+  // Toolbar should only contain CBD button and the background should contain
+  // the Illustrated empty view
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          HistoryClearBrowsingDataButton()]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:EmptyIllustratedTableViewBackground()]
+      assertWithMatcher:grey_notNil()];
 }
 
 #pragma mark Multiwindow

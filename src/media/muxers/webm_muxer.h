@@ -21,6 +21,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,13 +58,13 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
     VideoParameters(gfx::Size visible_rect_size,
                     double frame_rate,
                     VideoCodec codec,
-                    base::Optional<gfx::ColorSpace> color_space);
+                    absl::optional<gfx::ColorSpace> color_space);
     VideoParameters(const VideoParameters&);
     ~VideoParameters();
     gfx::Size visible_rect_size;
     double frame_rate;
     VideoCodec codec;
-    base::Optional<gfx::ColorSpace> color_space;
+    absl::optional<gfx::ColorSpace> color_space;
   };
 
   // |audio_codec| should coincide with whatever is sent in OnEncodedAudio(),
@@ -121,7 +122,7 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // frame size.
   void AddVideoTrack(const gfx::Size& frame_size,
                      double frame_rate,
-                     const base::Optional<gfx::ColorSpace>& color_space);
+                     const absl::optional<gfx::ColorSpace>& color_space);
   void AddAudioTrack(const media::AudioParameters& params);
 
   // IMkvWriter interface.

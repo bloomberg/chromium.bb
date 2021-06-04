@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -40,13 +39,13 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "dbus/object_path.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace em = enterprise_management;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+namespace em = ::enterprise_management;
 
 const test::UIPath kUpdateRequiredScreen = {"update-required"};
 const test::UIPath kUpdateRequiredStep = {"update-required",
@@ -129,8 +128,6 @@ void WaitForConfirmationDialogToClose() {
           ".open === false")
       ->Wait();
 }
-
-}  // namespace
 
 class UpdateRequiredScreenTest : public OobeBaseTest {
  public:
@@ -548,4 +545,5 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenPolicyPresentTest,
   test::OobeJS().ExpectHiddenPath(kEolDeleteUsersDataMessage);
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

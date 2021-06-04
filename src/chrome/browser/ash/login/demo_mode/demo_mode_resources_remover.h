@@ -12,11 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
-#include "base/scoped_observer.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -33,7 +32,7 @@ namespace ui {
 class Event;
 }  // namespace ui
 
-namespace chromeos {
+namespace ash {
 
 // Handles removal of pre-installed demo mode resources.
 // Observes system state to detect when pre-installed demo mode resources are
@@ -187,19 +186,25 @@ class DemoModeResourcesRemover
   const base::TickClock* tick_clock_;
 
   // Used to track the duration of last unrecorded interval of user activity.
-  base::Optional<base::TimeTicks> usage_start_;
-  base::Optional<base::TimeTicks> usage_end_;
+  absl::optional<base::TimeTicks> usage_start_;
+  absl::optional<base::TimeTicks> usage_end_;
 
   base::ScopedObservation<UserDataAuthClient, UserDataAuthClient::Observer>
-      userdataauth_observer_{this};
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
-      user_activity_observer_{this};
+      userdataauth_observation_{this};
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observation_{this};
 
   base::WeakPtrFactory<DemoModeResourcesRemover> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoModeResourcesRemover);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::DemoModeResourcesRemover;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_DEMO_MODE_DEMO_MODE_RESOURCES_REMOVER_H_

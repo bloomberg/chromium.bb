@@ -651,7 +651,7 @@ ultag_getTKeyStart(const char *localeID) {
     const char *result = localeID;
     const char *sep;
     while((sep = uprv_strchr(result, SEP)) != nullptr) {
-        if (_isTKey(result, sep - result)) {
+        if (_isTKey(result, static_cast<int32_t>(sep - result))) {
             return result;
         }
         result = ++sep;
@@ -2047,7 +2047,10 @@ ultag_parse(const char* tag, int32_t tagLen, int32_t* parsedLen, UErrorCode* sta
         *status = U_MEMORY_ALLOCATION_ERROR;
         return NULL;
     }
-    uprv_memcpy(tagBuf, tag, tagLen);
+    
+    if (tagLen > 0) {
+        uprv_memcpy(tagBuf, tag, tagLen);
+    }
     *(tagBuf + tagLen) = 0;
 
     /* create a ULanguageTag */

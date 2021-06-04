@@ -60,7 +60,7 @@ WebViewPlugin::WebViewPlugin(WebView* web_view,
       focused_(false),
       is_painting_(false),
       is_resizing_(false),
-      web_view_helper_(this, preferences) {}
+      web_view_helper_(this, preferences, web_view->GetRendererPreferences()) {}
 
 // static
 WebViewPlugin* WebViewPlugin::Create(WebView* web_view,
@@ -258,8 +258,10 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
   error_ = std::make_unique<WebURLError>(error);
 }
 
-WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
-                                            const WebPreferences& preferences)
+WebViewPlugin::WebViewHelper::WebViewHelper(
+    WebViewPlugin* plugin,
+    const WebPreferences& parent_web_preferences,
+    const blink::RendererPreferences& parent_renderer_preferences)
     : plugin_(plugin),
       agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
@@ -269,12 +271,19 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                       /*is_hidden=*/false,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/false,
+                      /*widgets_never_composited=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
                       *agent_group_scheduler_,
                       /*session_storage_namespace_id=*/base::EmptyString());
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
-  blink::WebView::ApplyWebPreferences(preferences, web_view_);
+  blink::WebView::ApplyWebPreferences(parent_web_preferences, web_view_);
+
+  // Turn off AcceptLoadDrops for this plugin webview.
+  blink::RendererPreferences renderer_preferences = parent_renderer_preferences;
+  renderer_preferences.can_accept_load_drops = false;
+  web_view_->SetRendererPreferences(renderer_preferences);
+
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       web_view_, this, nullptr, blink::LocalFrameToken(), nullptr);
   blink::WebFrameWidget* frame_widget = web_frame->InitializeFrameWidget(
@@ -298,15 +307,7 @@ WebViewPlugin::WebViewHelper::~WebViewHelper() {
   web_view_->Close();
 }
 
-bool WebViewPlugin::WebViewHelper::AcceptsLoadDrops() {
-  return false;
-}
-
-bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
-  return true;
-}
-
-void WebViewPlugin::WebViewHelper::SetToolTipText(
+void WebViewPlugin::WebViewHelper::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text,
     base::i18n::TextDirection hint) {
   if (plugin_->container_) {
@@ -315,9 +316,9 @@ void WebViewPlugin::WebViewHelper::SetToolTipText(
   }
 }
 
-void WebViewPlugin::WebViewHelper::DidInvalidateRect(const gfx::Rect& rect) {
+void WebViewPlugin::WebViewHelper::InvalidateContainer() {
   if (plugin_->container_)
-    plugin_->container_->InvalidateRect(rect);
+    plugin_->container_->Invalidate();
 }
 
 void WebViewPlugin::WebViewHelper::SetCursor(const ui::Cursor& cursor) {
@@ -361,6 +362,8 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 

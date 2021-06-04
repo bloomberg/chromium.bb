@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
@@ -27,7 +26,7 @@ CustomElementRegistry* CustomElement::Registry(const Element& element) {
 }
 
 CustomElementRegistry* CustomElement::Registry(const Document& document) {
-  if (LocalDOMWindow* window = document.ExecutingWindow())
+  if (LocalDOMWindow* window = document.domWindow())
     return window->customElements();
   return nullptr;
 }
@@ -273,6 +272,17 @@ void CustomElement::EnqueueFormDisabledCallback(Element& element,
   }
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void CustomElement::EnqueueFormStateRestoreCallback(Element& element,
+                                                    const V8ControlValue* value,
+                                                    const String& mode) {
+  auto& definition = *DefinitionForElementWithoutCheck(element);
+  if (definition.HasFormStateRestoreCallback()) {
+    Enqueue(element, CustomElementReactionFactory::CreateFormStateRestore(
+                         definition, value, mode));
+  }
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void CustomElement::EnqueueFormStateRestoreCallback(
     Element& element,
     const FileOrUSVStringOrFormData& value,
@@ -283,6 +293,7 @@ void CustomElement::EnqueueFormStateRestoreCallback(
                          definition, value, mode));
   }
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void CustomElement::TryToUpgrade(Element& element) {
   // Try to upgrade an element

@@ -9,15 +9,16 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/printing_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace printing {
 
-class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
+class COMPONENT_EXPORT(PRINTING) PrintingContextChromeos
+    : public PrintingContext {
  public:
   static std::unique_ptr<PrintingContextChromeos> CreateForTesting(
       Delegate* delegate,
@@ -53,7 +54,7 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   PrintingContextChromeos(Delegate* delegate,
                           std::unique_ptr<CupsConnection> connection);
 
-  // Lazily initializes |printer_|.
+  // Lazily initializes `printer_`.
   Result InitializeDevice(const std::string& device);
 
   const std::unique_ptr<CupsConnection> connection_;
@@ -65,7 +66,8 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
 
 // This has the side effect of recording UMA for advanced attributes usage,
 // so only call once per job.
-PRINTING_EXPORT std::vector<ScopedCupsOption> SettingsToCupsOptions(
+COMPONENT_EXPORT(PRINTING)
+std::vector<ScopedCupsOption> SettingsToCupsOptions(
     const PrintSettings& settings);
 
 }  // namespace printing

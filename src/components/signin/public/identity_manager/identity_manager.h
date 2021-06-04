@@ -251,17 +251,23 @@ class IdentityManager : public KeyedService,
   GoogleServiceAuthError GetErrorStateOfRefreshTokenForAccount(
       const CoreAccountId& account_id) const;
 
+  // Returns extended information for account identified by |account_id|.
+  // The information will be returned if the information is available regardless
+  // of whether the refresh token is available for the account.
+  absl::optional<AccountInfo> FindExtendedAccountInfoByAccountId(
+      const CoreAccountId& account_id) const;
+
   // Returns extended information for account identified by |account_info|.
   // The information will be returned if the information is available and
   // refresh token is available for account.
-  base::Optional<AccountInfo> FindExtendedAccountInfoForAccountWithRefreshToken(
+  absl::optional<AccountInfo> FindExtendedAccountInfoForAccountWithRefreshToken(
       const CoreAccountInfo& account_info) const;
 
   // Looks up and returns information for account with given |account_id|. If
   // the account cannot be found, return an empty optional. This is equivalent
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
-  base::Optional<AccountInfo>
+  absl::optional<AccountInfo>
   FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
       const CoreAccountId& account_id) const;
 
@@ -269,7 +275,7 @@ class IdentityManager : public KeyedService,
   // the account cannot be found, return an empty optional. This is equivalent
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
-  base::Optional<AccountInfo>
+  absl::optional<AccountInfo>
   FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
       const std::string& email_address) const;
 
@@ -277,7 +283,7 @@ class IdentityManager : public KeyedService,
   // account cannot be found, return an empty optional. This is equivalent to
   // searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
-  base::Optional<AccountInfo>
+  absl::optional<AccountInfo>
   FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
       const std::string& gaia_id) const;
 
@@ -486,10 +492,8 @@ class IdentityManager : public KeyedService,
  private:
   // These test helpers need to use some of the private methods below.
   friend CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                                           const std::string& email);
-  friend CoreAccountInfo SetUnconsentedPrimaryAccount(
-      IdentityManager* identity_manager,
-      const std::string& email);
+                                           const std::string& email,
+                                           ConsentLevel consent_level);
   friend void SetRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager,
       const std::string& token_value);
@@ -499,7 +503,8 @@ class IdentityManager : public KeyedService,
       IdentityManager* identity_manager);
   friend AccountInfo MakePrimaryAccountAvailable(
       IdentityManager* identity_manager,
-      const std::string& email);
+      const std::string& email,
+      ConsentLevel consent_level);
   friend void RevokeSyncConsent(IdentityManager* identity_manager);
   friend void ClearPrimaryAccount(IdentityManager* identity_manager);
   friend AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,

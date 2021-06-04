@@ -103,15 +103,18 @@ and control algorithms.
 The following are the main high level data structures used by the libaom AV1
 encoder and referenced elsewhere in this overview document:
 
+- \ref AV1_PRIMARY
+    - \ref AV1_PRIMARY.gf_group (\ref GF_GROUP)
+    - \ref AV1_PRIMARY.lap_enabled
+    - \ref AV1_PRIMARY.twopass (\ref TWO_PASS)
+    - \ref AV1_PRIMARY.p_rc (\ref PRIMARY_RATE_CONTROL)
+    - \ref AV1_PRIMARY.alt_ref_buffer (\ref yv12_buffer_config)
+
 - \ref AV1_COMP
     - \ref AV1_COMP.oxcf (\ref AV1EncoderConfig)
-    - \ref AV1_COMP.alt_ref_buffer (\ref yv12_buffer_config)
     - \ref AV1_COMP.rc (\ref RATE_CONTROL)
-    - \ref AV1_COMP.twopass (\ref TWO_PASS)
-    - \ref AV1_COMP.gf_group (\ref GF_GROUP)
     - \ref AV1_COMP.speed
     - \ref AV1_COMP.sf (\ref SPEED_FEATURES)
-    - \ref AV1_COMP.lap_enabled
 
 - \ref AV1EncoderConfig (Encoder configuration parameters)
     - \ref AV1EncoderConfig.pass
@@ -141,10 +144,12 @@ encoder and referenced elsewhere in this overview document:
     - \ref RateControlCfg.vbrmin_section
     - \ref RateControlCfg.vbrmax_section
 
+- \ref PRIMARY_RATE_CONTROL (Primary Rate control status)
+    - \ref PRIMARY_RATE_CONTROL.gf_intervals[]
+    - \ref PRIMARY_RATE_CONTROL.cur_gf_index
+
 - \ref RATE_CONTROL (Rate control status)
     - \ref RATE_CONTROL.intervals_till_gf_calculate_due
-    - \ref RATE_CONTROL.gf_intervals[]
-    - \ref RATE_CONTROL.cur_gf_index
     - \ref RATE_CONTROL.frames_till_gf_update_due
     - \ref RATE_CONTROL.frames_to_key
 
@@ -322,9 +327,11 @@ value is estimated based on the prediction error and quantizer setting.
 The following are the main data structures referenced in this section
 (see also \ref architecture_enc_data_structures):
 
+- \ref AV1_PRIMARY ppi (the primary compressor instance data structure)
+    - \ref AV1_PRIMARY.alt_ref_buffer (\ref yv12_buffer_config)
+
 - \ref AV1_COMP cpi (the main compressor instance data structure)
     - \ref AV1_COMP.oxcf (\ref AV1EncoderConfig)
-    - \ref AV1_COMP.alt_ref_buffer (\ref yv12_buffer_config)
 
 - \ref AV1EncoderConfig (Encoder configuration parameters)
     - \ref AV1EncoderConfig.algo_cfg (\ref AlgoCfg)
@@ -446,7 +453,7 @@ It is recommended that the reader refers to the code for more details.
 The main entry point for temporal filtering is \ref av1_temporal_filter().
 This function returns 1 if temporal filtering is successful, otherwise 0.
 When temporal filtering is applied, the filtered frame will be held in
-the frame buffer \ref AV1_COMP.alt_ref_buffer, which is the frame to be
+the frame buffer \ref AV1_PRIMARY.alt_ref_buffer, which is the frame to be
 encoded in the following encoding process.
 
 Almost all temporal filter related code is in av1/encoder/temporal_filter.c
@@ -482,10 +489,12 @@ Inside \ref av1_temporal_filter(), the reader's attention is directed to
 The following are the main data structures referenced in this section
 (see also \ref architecture_enc_data_structures):
 
+ - \ref AV1_PRIMARY ppi (the primary compressor instance data structure)
+    - \ref AV1_PRIMARY.twopass (\ref TWO_PASS)
+
  - \ref AV1_COMP cpi (the main compressor instance data structure)
     - \ref AV1_COMP.oxcf (\ref AV1EncoderConfig)
     - \ref AV1_COMP.rc (\ref RATE_CONTROL)
-    - \ref AV1_COMP.twopass (\ref TWO_PASS)
     - \ref AV1_COMP.sf (\ref SPEED_FEATURES)
 
  - \ref AV1EncoderConfig (Encoder configuration parameters)
@@ -662,7 +671,7 @@ first pass starts encoding the clip and the second pass lags behind it by a
 few frames.  When using this method, full sequence level statistics are not
 available, but it is possible to collect and use frame or group of frame level
 data to help in the allocation of bits and in defining ARF/GF coding
-hierarchies.  The reader is referred to the \ref AV1_COMP.lap_enabled field
+hierarchies.  The reader is referred to the \ref AV1_PRIMARY.lap_enabled field
 in the main compressor instance (where <b>lap</b> stands for
 <b>look ahead processing</b>). This encoding mode for the most part uses the
 same rate control pathways as two pass VBR encoding.
@@ -790,7 +799,7 @@ calculate_gf_length(). The following encoder use cases are supported:
   current and the following GF groups (a total number of MAX_NUM_GF_INTERVALS
   groups) to be the maximum value allowed.</li>
 
-  <li><b>Single pass with look-ahead enabled (\ref AV1_COMP.lap_enabled):</b>
+  <li><b>Single pass with look-ahead enabled (\ref AV1_PRIMARY.lap_enabled):</b>
   look-ahead processing is enabled for single pass, therefore there is a
   limited amount of information available regarding future frames. In this
   case the function will determine the length based on \ref FIRSTPASS_STATS
@@ -829,9 +838,9 @@ into two parts:
 As mentioned, for two-pass encoding, the function \ref
 calculate_gf_length() tries to determine the length of as many as
 MAX_NUM_GF_INTERVALS groups. The decisions are stored in
-\ref RATE_CONTROL.gf_intervals[]. The variables
+\ref PRIMARY_RATE_CONTROL.gf_intervals[]. The variables
 \ref RATE_CONTROL.intervals_till_gf_calculate_due and
-\ref RATE_CONTROL.cur_gf_index help with managing and updating the stored
+\ref PRIMARY_RATE_CONTROL.gf_intervals[] help with managing and updating the stored
 decisions. In the function \ref define_gf_group(), the corresponding
 stored length decision will be used to define the current GF group.
 
@@ -855,7 +864,7 @@ processing of the current GF group is done, the encoder will check whether
 \ref RATE_CONTROL.intervals_till_gf_calculate_due is zero. If it is, as
 discussed above, \ref calculate_gf_length() is called with original
 maximum length. If it is not zero, then the GF group length value stored
-in \ref RATE_CONTROL.gf_intervals[\ref RATE_CONTROL.cur_gf_index] is used
+in \ref PRIMARY_RATE_CONTROL.gf_intervals[\ref PRIMARY_RATE_CONTROL.cur_gf_index] is used
 (subject to change as discussed above).
 
 \subsection architecture_enc_gf_structure Defining a GF Group's Structure
@@ -868,7 +877,7 @@ The function first iterates through the first pass statistics in the GF group to
 accumulate various stats, using accumulate_this_frame_stats() and
 accumulate_next_frame_stats(). The accumulated statistics are then used to
 determine the use of the use of ALTREF frame along with other properties of the
-GF group. The values of \ref RATE_CONTROL.cur_gf_index, \ref
+GF group. The values of \ref PRIMARY_RATE_CONTROL.cur_gf_index, \ref
 RATE_CONTROL.intervals_till_gf_calculate_due and \ref
 RATE_CONTROL.frames_till_gf_update_due are also updated accordingly.
 
@@ -899,7 +908,7 @@ special case is indicated by the setting parameter <b>is_final_pass</b> for to
 zero.
 
 For single pass encodes where look-ahead processing is disabled
-(\ref AV1_COMP.lap_enabled = 0), \ref define_gf_group_pass0() is used
+(\ref AV1_PRIMARY.lap_enabled = 0), \ref define_gf_group_pass0() is used
 instead of \ref define_gf_group().
 
 \subsection architecture_enc_kf_groups Key Frame Groups

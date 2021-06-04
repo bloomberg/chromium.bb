@@ -19,16 +19,18 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/desks_helper.h"
-#include "chrome/browser/ui/toolbar/move_to_desks_menu_model.h"
+#include "ash/public/cpp/move_to_desks_menu_delegate.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
+#include "chromeos/ui/frame/move_to_desks_menu_model.h"
 #include "ui/views/widget/widget.h"
 #endif
 
@@ -44,13 +46,16 @@ WebAppMenuModel::~WebAppMenuModel() {}
 bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case kUninstallAppCommandId:
-      return browser()->app_controller()->CanUninstall();
+      return browser()->app_controller()->CanUserUninstall();
     case kExtensionsMenuCommandId:
-      return base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu) &&
-             base::FeatureList::IsEnabled(
+      return base::FeatureList::IsEnabled(
                  features::kDesktopPWAsElidedExtensionsMenu) &&
              browser()->window()->GetExtensionsContainer() &&
              browser()->window()->GetExtensionsContainer()->HasAnyExtensions();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case chromeos::MoveToDesksMenuModel::kMenuCommandId:
+      return ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu();
+#endif
     default:
       return AppMenuModel::IsCommandIdEnabled(command_id);
   }
@@ -58,12 +63,8 @@ bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool WebAppMenuModel::IsCommandIdVisible(int command_id) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (command_id == IDC_MOVE_TO_DESKS_MENU) {
-    auto* desks_helper = ash::DesksHelper::Get();
-    const bool menu_is_visible =
-        desks_helper && desks_helper->GetNumberOfDesks() > 1;
-    return menu_is_visible;
-  }
+  if (command_id == chromeos::MoveToDesksMenuModel::kMenuCommandId)
+    return ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu();
 #endif
   return AppMenuModel::IsCommandIdVisible(command_id);
 }
@@ -72,7 +73,8 @@ void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case kUninstallAppCommandId:
       LogMenuAction(MENU_ACTION_UNINSTALL_APP);
-      browser()->app_controller()->Uninstall();
+      browser()->app_controller()->Uninstall(
+          webapps::WebappUninstallSource::kAppMenu);
       break;
     case kExtensionsMenuCommandId:
       browser()->window()->GetExtensionsContainer()->ToggleExtensionsMenu();
@@ -105,16 +107,15 @@ void WebAppMenuModel::Build() {
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsBentoEnabled()) {
-    auto* desks_helper = ash::DesksHelper::Get();
-    if (desks_helper && desks_helper->GetNumberOfDesks() > 1) {
-      AddSeparator(ui::NORMAL_SEPARATOR);
-      move_to_desks_submenu_ = std::make_unique<MoveToDesksMenuModel>(
-          this, views::Widget::GetWidgetForNativeWindow(
-                    browser()->window()->GetNativeWindow()));
-      AddSubMenuWithStringId(IDC_MOVE_TO_DESKS_MENU, IDS_MOVE_TO_DESKS_MENU,
-                             move_to_desks_submenu_.get());
-    }
+  if (ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu()) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    move_to_desks_submenu_ = std::make_unique<chromeos::MoveToDesksMenuModel>(
+        std::make_unique<ash::MoveToDesksMenuDelegate>(
+            views::Widget::GetWidgetForNativeWindow(
+                browser()->window()->GetNativeWindow())));
+    AddSubMenuWithStringId(chromeos::MoveToDesksMenuModel::kMenuCommandId,
+                           IDS_MOVE_TO_DESKS_MENU,
+                           move_to_desks_submenu_.get());
   }
 #endif
 

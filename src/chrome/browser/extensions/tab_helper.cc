@@ -33,7 +33,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -44,6 +46,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_net_request/web_contents_helper.h"
 #include "extensions/browser/disable_reason.h"
@@ -58,6 +61,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -76,6 +80,9 @@ using content::WebContents;
 namespace extensions {
 
 namespace {
+
+// User data key for caching if bfcache is disabled.
+const char kIsBFCacheDisabledKey[] = "extensions.backforward.browsercontext";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -147,6 +154,68 @@ void RecordExtensionPermissionsPerNavigation(
   RecordPermission(ExtensionPermissionsOnLoad::kTotal);
 }
 
+bool AreAllExtensionsAllowedForBFCache() {
+  // If back forward cache is disabled, indicate we accept everything.
+  if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled())
+    return true;
+
+  static base::FeatureParam<bool> all_extensions_allowed(
+      &features::kBackForwardCache, "all_extensions_allowed", false);
+  return all_extensions_allowed.Get();
+}
+
+void DisableBackForwardCacheIfNecessary(
+    const ExtensionSet& enabled_extensions,
+    content::BrowserContext* context,
+    content::NavigationHandle* navigation_handle) {
+  // If we allow all extensions for bfcache then just return.
+  if (AreAllExtensionsAllowedForBFCache())
+    return;
+
+  bool disable_bfcache = false;
+  // If the user data exists we know we are disabled.
+  if (context->GetUserData(kIsBFCacheDisabledKey)) {
+    disable_bfcache = true;
+  } else {
+    // Compute whether we need to disable it.
+    for (const auto& extension : enabled_extensions) {
+      // Skip component extensions, apps, themes, shared modules and the google
+      // docs pre-installed extension.
+      if (Manifest::IsComponentLocation(extension->location()) ||
+          extension->is_app() || extension->is_theme() ||
+          extension->is_shared_module() ||
+          extension->id() == extension_misc::kDocsOfflineExtensionId) {
+        continue;
+      }
+      if (util::IsExtensionVisibleToContext(*extension, context)) {
+        VLOG(1) << "Disabled bfcache due to " << extension->short_name() << ","
+                << extension->id();
+        if (!disable_bfcache) {
+          // Set a user data key indicating we've disabled disabled bfcache for
+          // this context.
+          context->SetUserData(
+              kIsBFCacheDisabledKey,
+              std::make_unique<base::SupportsUserData::Data>());
+          disable_bfcache = true;
+        }
+
+        // TODO(dtapuska): Early termination disabled for now to capture VLOG(1)
+        // break;
+      }
+    }
+  }
+
+  if (disable_bfcache) {
+    // We do not care if GetPreviousRenderFrameHostId returns a reused
+    // RenderFrameHost since disabling the cache multiple times has no side
+    // effects.
+    content::BackForwardCache::DisableForRenderFrameHost(
+        navigation_handle->GetPreviousRenderFrameHostId(),
+        back_forward_cache::DisabledReason(
+            back_forward_cache::DisabledReasonId::kExtensions));
+  }
+}
+
 }  // namespace
 
 TabHelper::~TabHelper() = default;
@@ -180,6 +249,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   ExtensionWebContentsObserver::GetForWebContents(web_contents)->dispatcher()->
       set_delegate(this);
 
+  registry_observation_.Observe(
+      ExtensionRegistry::Get(web_contents->GetBrowserContext()));
+
   BookmarkManagerPrivateDragEventRouter::CreateForWebContents(web_contents);
 }
 
@@ -193,13 +265,6 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
     DCHECK(!extension->from_bookmark());
   }
   extension_app_ = extension;
-
-  if (extension_app_) {
-    registry_observation_.Observe(
-        ExtensionRegistry::Get(web_contents()->GetBrowserContext()));
-  } else {
-    registry_observation_.Reset();
-  }
 
   UpdateExtensionAppIcon(extension_app_);
 
@@ -233,6 +298,14 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
     return nullptr;
 
   return &extension_app_icon_;
+}
+
+void TabHelper::OnWatchedPageChanged(
+    const std::vector<std::string>& css_selectors) {
+  InvokeForContentRulesRegistries(
+      [this, css_selectors](ContentRulesRegistry* registry) {
+        registry->OnWatchedPageChanged(web_contents(), css_selectors);
+      });
 }
 
 // Encapsulates the logic to decide which ContentRulesRegistries need to be
@@ -282,6 +355,9 @@ void TabHelper::DidFinishNavigation(
       sessions::SessionTabHelper::IdForTab(web_contents()).id(),
       navigation_handle->GetURL());
 
+  DisableBackForwardCacheIfNecessary(enabled_extensions, context,
+                                     navigation_handle);
+
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser && browser->deprecated_is_app()) {
     const Extension* extension = registry->GetExtensionById(
@@ -302,8 +378,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* sender) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(TabHelper, message, sender)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
-                        OnGetAppInstallState)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
                         OnContentScriptsExecuting)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -326,30 +400,6 @@ void TabHelper::WebContentsDestroyed() {
   InvokeForContentRulesRegistries([this](ContentRulesRegistry* registry) {
     registry->WebContentsDestroyed(web_contents());
   });
-}
-
-void TabHelper::OnGetAppInstallState(content::RenderFrameHost* host,
-                                     const GURL& requestor_url,
-                                     int return_route_id,
-                                     int callback_id) {
-  ExtensionRegistry* registry =
-      ExtensionRegistry::Get(web_contents()->GetBrowserContext());
-  const ExtensionSet& extensions = registry->enabled_extensions();
-  const ExtensionSet& disabled_extensions = registry->disabled_extensions();
-
-  std::string state;
-  if (extensions.GetHostedAppByURL(requestor_url))
-    state = extension_misc::kAppStateInstalled;
-  else if (disabled_extensions.GetHostedAppByURL(requestor_url))
-    state = extension_misc::kAppStateDisabled;
-  else
-    state = extension_misc::kAppStateNotInstalled;
-
-  // We use the |host| to send the message because using
-  // WebContentsObserver::Send() defaults to using the main RenderView, which
-  // might be in a different process if the request came from a frame.
-  host->Send(new ExtensionMsg_GetAppInstallStateResponse(return_route_id, state,
-                                                         callback_id));
 }
 
 void TabHelper::OnContentScriptsExecuting(
@@ -404,10 +454,21 @@ WebContents* TabHelper::GetAssociatedWebContents() const {
   return web_contents();
 }
 
+void TabHelper::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                  const Extension* extension) {
+  // Clear the back forward cache for the associated tab to accommodate for any
+  // side effects of loading/unloading the extension.
+  web_contents()->GetController().GetBackForwardCache().Flush();
+}
+
 void TabHelper::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                     const Extension* extension,
                                     UnloadedExtensionReason reason) {
-  DCHECK(extension_app_);
+  // Clear the back forward cache for the associated tab to accommodate for any
+  // side effects of loading/unloading the extension.
+  web_contents()->GetController().GetBackForwardCache().Flush();
+  if (!extension_app_)
+    return;
   if (extension == extension_app_)
     SetExtensionApp(nullptr);
 }

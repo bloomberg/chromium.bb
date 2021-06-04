@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/conversions/conversion_host.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
@@ -31,6 +32,8 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
 
 // WebContentsObserver that waits until an impression is available on a
 // navigation handle for a finished navigation.
@@ -79,9 +82,59 @@ class ImpressionObserver : public TestNavigationObserver {
  private:
   size_t num_impressions_ = 0u;
   const size_t expected_num_impressions_ = 0u;
-  base::Optional<blink::Impression> last_impression_;
+  absl::optional<blink::Impression> last_impression_;
   bool waiting_for_null_impression_ = false;
   base::RunLoop impression_loop_;
+};
+
+// A mock conversion host which waits until an impression registration
+// mojo message is received. Tracks the last seen impression data.
+class TestConversionHost : public ConversionHost {
+ public:
+  static std::unique_ptr<TestConversionHost> ReplaceAndGetConversionHost(
+      WebContents* contents) {
+    static_cast<WebContentsImpl*>(contents)->RemoveReceiverSetForTesting(
+        blink::mojom::ConversionHost::Name_);
+    return std::make_unique<TestConversionHost>(contents);
+  }
+
+  explicit TestConversionHost(WebContents* contents)
+      : ConversionHost(contents) {}
+
+  void RegisterImpression(const blink::Impression& impression) override {
+    last_impression_data_ = impression.impression_data;
+    num_impressions_++;
+
+    // Don't quit the run loop if we have not seen the expected number of
+    // impressions.
+    if (num_impressions_ < expected_num_impressions_)
+      return;
+    impression_waiter_.Quit();
+  }
+
+  // Returns the last impression data after |expected_num_impressions| have been
+  // observed.
+  uint64_t WaitForNumImpressions(size_t expected_num_impressions) {
+    if (expected_num_impressions == num_impressions_)
+      return last_impression_data_;
+    expected_num_impressions_ = expected_num_impressions;
+    impression_waiter_.Run();
+    return last_impression_data_;
+  }
+
+  size_t num_impressions() { return num_impressions_; }
+
+  void ResetImpressionWaitData() {
+    last_impression_data_ = 0;
+    num_impressions_ = 0;
+    expected_num_impressions_ = 0;
+  }
+
+ private:
+  uint64_t last_impression_data_ = 0;
+  size_t num_impressions_ = 0;
+  size_t expected_num_impressions_ = 0;
+  base::RunLoop impression_waiter_;
 };
 
 class ImpressionDisabledBrowserTest : public ContentBrowserTest {
@@ -118,6 +171,8 @@ class ImpressionDisabledBrowserTest : public ContentBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
+
+}  // namespace
 
 // Verifies that impressions are not logged when the Runtime feature isn't
 // enabled.
@@ -178,6 +233,9 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_EQ(url::Origin::Create(GURL("https://report.com")),
             last_impression.reporting_origin);
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), *last_impression.expiry);
+
+  // Verify default attribution source priority.
+  EXPECT_EQ(0, last_impression.priority);
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
@@ -293,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
   EXPECT_TRUE(ExecJs(shell(), R"(
      let frame = document.getElementById('test_iframe');
-     frame.setAttribute('allow', 'conversion-measurement');)"));
+     frame.setAttribute('allow', 'attribution-reporting');)"));
 
   GURL subframe_url =
       https_server()->GetURL("c.test", "/page_with_impression_creator.html");
@@ -457,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
   EXPECT_TRUE(ExecJs(shell(), R"(
      let frame = document.getElementById('test_iframe');
-     frame.setAttribute('allow', 'conversion-measurement');)"));
+     frame.setAttribute('allow', 'attribution-reporting');)"));
 
   GURL subframe_url =
       https_server()->GetURL("c.test", "/page_with_impression_creator.html");
@@ -663,6 +721,208 @@ IN_PROC_BROWSER_TEST_F(
 
   histograms.ExpectBucketCount("Conversions.RegisteredImpressionsPerPage", 2,
                                1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    ImpressionTagWithRegisterAttributionSource_ImpressionReceived) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
+
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTagWithRegisterAttributionSource("link" /* id */,
+                        "page_with_conversion_redirect.html" /* url */,
+                        "200" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+
+  EXPECT_EQ(200UL, host->WaitForNumImpressions(1));
+  EXPECT_EQ(1u, host->num_impressions());
+
+  host->ResetImpressionWaitData();
+
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    document.getElementById("link").removeAttribute("registerattributionsource");)"));
+
+  // Conversion mojo messages are sent on the same message pipe as navigation
+  // messages. Because the conversion would have been sequenced prior to the
+  // navigation message, it would be observed before the NavigateToURL() call
+  // finishes.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  EXPECT_EQ(0u, host->num_impressions());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    ImpressionTagWithRegisterAttributionSource_ImpressionReceivedWithNewData) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
+
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTagWithRegisterAttributionSource("link" /* id */,
+                        "page_with_conversion_redirect.html" /* url */,
+                        "200" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+
+  EXPECT_EQ(200UL, host->WaitForNumImpressions(1));
+  EXPECT_EQ(1u, host->num_impressions());
+
+  host->ResetImpressionWaitData();
+
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    let link = document.getElementById("link");
+    link.removeAttribute("registerattributionsource");
+    link.setAttribute("attributionsourceeventid", "300");
+    link.setAttribute("registerattributionsource", "");)"));
+
+  EXPECT_EQ(300UL, host->WaitForNumImpressions(1));
+  EXPECT_EQ(1u, host->num_impressions());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    RegisterAttributionSourceInSubFrameWithoutPermissionsPolicy_NotReceived) {
+  GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL subframe_url =
+      https_server()->GetURL("c.test", "/page_with_impression_creator.html");
+  NavigateIframeToURL(web_contents(), "test_iframe", subframe_url);
+
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  RenderFrameHost* subframe = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  EXPECT_TRUE(ExecJs(subframe, R"(
+    createImpressionTagWithRegisterAttributionSource("link" /* id */,
+                        "page_with_conversion_redirect.html" /* url */,
+                        "200" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  EXPECT_EQ(0u, host->num_impressions());
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       WindowOpenImpression_ImpressionReceived) {
+  ImpressionObserver impression_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  // Navigate the page using window.open and set an impression.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    window.open("https://a.com", "_top",
+    "attributionsourceeventid=1,attributiondestination=https://a.com,\
+    attributionreportto=https://report.com,attributionexpiry=1000,\
+    attributionsourcepriority=10");)"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = impression_observer.Wait();
+
+  // Verify the attributes of the impression are set as expected.
+  EXPECT_EQ(1UL, last_impression.impression_data);
+  EXPECT_EQ(url::Origin::Create(GURL("https://a.com")),
+            last_impression.conversion_destination);
+  EXPECT_EQ(url::Origin::Create(GURL("https://report.com")),
+            last_impression.reporting_origin);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), *last_impression.expiry);
+  EXPECT_EQ(10, last_impression.priority);
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       WindowOpenAttributionSourceFeatures_FeaturesHandled) {
+  struct {
+    std::string features;
+    bool expected;
+  } kTestCases[] = {
+      {"", false},
+      {"attributionsourceeventid=1", false},
+      {"attributiondestination=1", false},
+      {"attributionexpiry=1", false},
+      {"attributionsourcepriority=10", false},
+      {"attributionsourceeventid=1,attributiondestination=1234", false},
+      {"attributionsourceeventid=1,attributiondestination=abcdefg", false},
+      {"attributionsourceeventid=1,attributiondestination=http://a.com", false},
+      {"attributionsourceeventid=1,attributiondestination=https://a.com", true},
+      {"attributionsourceeventid=bb,attributiondestination=https://a.com",
+       true},
+      {"attributionsourceeventid=bb,attributiondestination=https://"
+       "a.com,attributionsourcepriority=10",
+       true},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    ImpressionObserver impression_observer(web_contents());
+    GURL page_url =
+        https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+    EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+    // Navigate the page using window.open and set an impression.
+    EXPECT_TRUE(ExecJs(web_contents(),
+                       JsReplace(R"(window.open("https://a.com", "_top", $1);)",
+                                 test_case.features)));
+
+    // Wait for the impression to be seen by the observer.
+    if (test_case.expected)
+      impression_observer.Wait();
+    else
+      EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       WindowOpenNoUserGesture_NoImpression) {
+  ImpressionObserver impression_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  // Navigate the page using window.open and set an impression, but do not give
+  // a user gesture.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    window.open("https://a.com", "_top",
+    "attributionsourceeventid=1,attributiondestination=https://a.com");)",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       ImpressionTagWithPriorityClicked_ImpressionReceived) {
+  ImpressionObserver impression_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  // Create an anchor tag with impression attributes and click the link. By
+  // default the target is set to "_top".
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTagWithReportingAndPriority("link" /* id */,
+                        "page_with_conversion_redirect.html" /* url */,
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */,
+                        "https://report.com" /* report_origin */,
+                        1000 /* attribution_source_priority */);)"));
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link\');"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = impression_observer.Wait();
+
+  // Verify the attributes of the impression are set as expected.
+  EXPECT_EQ(1UL, last_impression.impression_data);
+  EXPECT_EQ(url::Origin::Create(GURL("https://a.com")),
+            last_impression.conversion_destination);
+  EXPECT_EQ(url::Origin::Create(GURL("https://report.com")),
+            last_impression.reporting_origin);
+  EXPECT_EQ(1000, last_impression.priority);
 }
 
 }  // namespace content

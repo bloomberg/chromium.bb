@@ -24,6 +24,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -50,6 +51,8 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -72,8 +75,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
@@ -114,34 +115,6 @@ bool IsRecentTabsCommand(int command_id) {
   return command_id >= AppMenuModel::kMinRecentTabsCommandId &&
          command_id <= AppMenuModel::kMaxRecentTabsCommandId;
 }
-
-// Subclass of ImageButton whose preferred size includes the size of the border.
-class FullscreenButton : public ImageButton {
- public:
-  METADATA_HEADER(FullscreenButton);
-  explicit FullscreenButton(PressedCallback callback)
-      : ImageButton(std::move(callback)) {}
-  FullscreenButton(const FullscreenButton&) = delete;
-  FullscreenButton& operator=(const FullscreenButton&) = delete;
-
-  // Overridden from ImageButton.
-  gfx::Size CalculatePreferredSize() const override {
-    gfx::Size pref = ImageButton::CalculatePreferredSize();
-    if (border()) {
-      gfx::Insets insets = border()->GetInsets();
-      pref.Enlarge(insets.width(), insets.height());
-    }
-    return pref;
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    ImageButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kMenuItem;
-  }
-};
-
-BEGIN_METADATA(FullscreenButton, ImageButton)
-END_METADATA
 
 // Combination border/background for the buttons contained in the menu. The
 // painting of the border/background is done here as LabelButton does not always
@@ -311,27 +284,34 @@ class AppMenuView : public views::View {
       int string_id,
       InMenuButtonBackground::ButtonType type,
       int index) {
-    return CreateButtonWithAccName(std::move(callback), string_id, type, index,
-                                   string_id,
-                                   /*add_accelerator_text*/ true);
+    return CreateButtonWithAccessibleName(
+        std::move(callback), string_id, type, index, string_id,
+        /*add_accelerator_text=*/true,
+        /*use_accessible_name_as_tooltip_text=*/false);
   }
 
-  InMenuButton* CreateButtonWithAccName(views::Button::PressedCallback callback,
-                                        int string_id,
-                                        InMenuButtonBackground::ButtonType type,
-                                        int index,
-                                        int acc_string_id,
-                                        bool add_accelerator_text) {
+  InMenuButton* CreateButtonWithAccessibleName(
+      views::Button::PressedCallback callback,
+      int string_id,
+      InMenuButtonBackground::ButtonType type,
+      int index,
+      int accessible_name_id,
+      bool add_accelerator_text,
+      bool use_accessible_name_as_tooltip_text) {
     // Should only be invoked during construction when |menu_| is valid.
     DCHECK(menu_);
+
     InMenuButton* button = new InMenuButton(
         std::move(callback),
         gfx::RemoveAccelerator(l10n_util::GetStringUTF16(string_id)));
     button->Init(type);
     button->SetAccessibleName(GetAccessibleNameForAppMenuItem(
-        menu_model_, index, acc_string_id, add_accelerator_text));
+        menu_model_, index, accessible_name_id, add_accelerator_text));
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
+    if (use_accessible_name_as_tooltip_text) {
+      button->SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+    }
 
     AddChildView(button);
     // all buttons on menu should must be a custom button in order for
@@ -353,6 +333,59 @@ class AppMenuView : public views::View {
 };
 
 BEGIN_METADATA(AppMenuView, views::View)
+END_METADATA
+
+// Subclass of ImageButton whose preferred size includes the size of the border.
+class FullscreenButton : public ImageButton {
+ public:
+  METADATA_HEADER(FullscreenButton);
+  explicit FullscreenButton(PressedCallback callback,
+                            ButtonMenuItemModel* menu_model,
+                            int fullscreen_index)
+      : ImageButton(std::move(callback)) {
+    // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
+    // focusable regardless of the platform.
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_tag(fullscreen_index);
+    SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
+    SetBackground(std::make_unique<InMenuButtonBackground>(
+        InMenuButtonBackground::LEADING_BORDER));
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_FULLSCREEN));
+    SetAccessibleName(GetAccessibleNameForAppMenuItem(
+        menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        // ChromeOS uses a dedicated "fullscreen" media key for fullscreen
+        // mode on most ChromeOS devices which cannot be specified in the
+        // standard way here, so omit the accelerator to avoid providing
+        // misleading or confusing information to screen reader users.
+        // See crbug.com/1110468 for more context.
+        /*add_accelerator_text=*/false
+#else
+        /*add_accelerator_text=*/true
+#endif
+        ));
+  }
+  FullscreenButton(const FullscreenButton&) = delete;
+  FullscreenButton& operator=(const FullscreenButton&) = delete;
+
+  // Overridden from ImageButton.
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size pref = ImageButton::CalculatePreferredSize();
+    if (border()) {
+      gfx::Insets insets = border()->GetInsets();
+      pref.Enlarge(insets.width(), insets.height());
+    }
+    return pref;
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ImageButton::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kMenuItem;
+  }
+};
+
+BEGIN_METADATA(FullscreenButton, ImageButton)
 END_METADATA
 
 }  // namespace
@@ -449,11 +482,12 @@ class AppMenu::ZoomView : public AppMenuView {
     const auto activate = [](ButtonMenuItemModel* menu_model, int index) {
       menu_model->ActivatedAt(index);
     };
-    decrement_button_ = CreateButtonWithAccName(
+    decrement_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, decrement_index),
         IDS_ZOOM_MINUS2, InMenuButtonBackground::LEADING_BORDER,
         decrement_index, IDS_ACCNAME_ZOOM_MINUS2,
-        /*add_accelerator_text*/ false);
+        /*add_accelerator_text=*/false,
+        /*use_accessible_name_as_tooltip_text=*/true);
 
     zoom_label_ = new Label(base::FormatPercent(100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
@@ -472,41 +506,23 @@ class AppMenu::ZoomView : public AppMenuView {
 
     AddChildView(zoom_label_);
 
-    increment_button_ = CreateButtonWithAccName(
+    increment_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, increment_index),
         IDS_ZOOM_PLUS2, InMenuButtonBackground::NO_BORDER, increment_index,
-        IDS_ACCNAME_ZOOM_PLUS2, /*add_accelerator_text*/ false);
+        IDS_ACCNAME_ZOOM_PLUS2, /*add_accelerator_text=*/false,
+        /*use_accessible_name_as_tooltip_text=*/true);
 
-    fullscreen_button_ = new FullscreenButton(base::BindRepeating(
-        [](AppMenu* menu, ButtonMenuItemModel* menu_model, int index) {
-          menu->CancelAndEvaluate(menu_model, index);
-        },
-        menu, menu_model, fullscreen_index));
+    fullscreen_button_ = new FullscreenButton(
+        base::BindRepeating(
+            [](AppMenu* menu, ButtonMenuItemModel* menu_model, int index) {
+              menu->CancelAndEvaluate(menu_model, index);
+            },
+            menu, menu_model, fullscreen_index),
+        menu_model, fullscreen_index);
+
     // all buttons on menu should must be a custom button in order for
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
-
-    // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
-    // focusable regardless of the platform.
-    fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
-    fullscreen_button_->set_tag(fullscreen_index);
-    fullscreen_button_->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
-    fullscreen_button_->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
-    fullscreen_button_->SetBackground(std::make_unique<InMenuButtonBackground>(
-        InMenuButtonBackground::LEADING_BORDER));
-    fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
-        menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-        // ChromeOS uses a dedicated "fullscreen" media key for fullscreen
-        // mode on most ChromeOS devices which cannot be specified in the
-        // standard way here, so omit the accelerator to avoid providing
-        // misleading or confusing information to screen reader users.
-        // See crbug.com/1110468 for more context.
-        /*add_accelerator_text*/ false
-#else
-        /*add_accelerator_text*/ true
-#endif
-        ));
     AddChildView(fullscreen_button_);
 
     // The max width for `zoom_label_` should not be valid until the calls into
@@ -704,12 +720,7 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     int command_id = model_->GetCommandIdAt(index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
-    ui::ImageModel image = model_->GetIconAt(index);
-    // TODO (kylixrd): Use a utility function to get this as an actual image.
-    if (image.IsImage())
-      item->SetIcon(*image.GetImage().ToImageSkia());
-    else if (image.IsVectorIcon())
-      item->SetIcon(ui::ThemedVectorIcon(image.GetVectorIcon()));
+    item->SetIcon(model_->GetIconAt(index));
   }
 
   void OnMenuStructureChanged() override {
@@ -922,6 +933,12 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
 
   if (command_id == IDC_MORE_TOOLS_MENU)
     return true;
+
+  if (command_id == IDC_SHARING_HUB_MENU) {
+    DCHECK(
+        base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu));
+    return true;
+  }
 
   // The items representing the cut menu (cut/copy/paste), zoom menu
   // (increment/decrement/reset) and extension toolbar view are always enabled.
@@ -1149,11 +1166,7 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
-      ui::ImageModel icon = model->GetIconAt(model_index);
-      if (icon.IsImage())
-        menu_item->SetIcon(*icon.GetImage().ToImageSkia());
-      else if (icon.IsVectorIcon())
-        menu_item->SetIcon(ui::ThemedVectorIcon(icon.GetVectorIcon()));
+      menu_item->SetIcon(model->GetIconAt(model_index));
     }
 
     // If we want to show items relating to reopening the last-closed tab as

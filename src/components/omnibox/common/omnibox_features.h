@@ -12,17 +12,12 @@ namespace omnibox {
 // Please do not add more features to this "big blob" list.
 // Instead, use the categorized and alphabetized lists below this "big blob".
 // You can create a new category if none of the existing ones fit.
-extern const base::Feature kHideFileUrlScheme;
-extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kImageSearchSuggestionThumbnail;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kDisplayTitleForCurrentUrl;
-extern const base::Feature kUIExperimentSwapTitleAndUrl;
-extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
-extern const base::Feature kOmniboxSearchEngineLogo;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
 extern const base::Feature kDebounceDocumentProvider;
 
@@ -48,14 +43,9 @@ extern const base::Feature kDynamicMaxAutocomplete;
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
-extern const base::Feature kOmniboxLocalZeroSuggestForAuthenticatedUsers;
-extern const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking;
 extern const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP;
-extern const base::Feature kOmniboxZeroSuggestCaching;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
 extern const base::Feature kOnFocusSuggestionsContextualWebOnContent;
-extern const base::Feature kReactiveZeroSuggestionsOnNTPOmnibox;
-extern const base::Feature kReactiveZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kLocalHistoryZeroSuggest;
 // Related, kMaxZeroSuggestMatches.
 
@@ -67,7 +57,6 @@ extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
 extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
-extern const base::Feature kNativeVoiceSuggestProvider;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
 
@@ -79,9 +68,8 @@ extern const base::Feature kCompactSuggestions;
 extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxSearchReadyIncognito;
-extern const base::Feature kOmniboxSuggestionButtonRow;
-extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kOmniboxPedalsBatch2;
+extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsDefaultIconColored;
 extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kOmniboxRefinedFocusState;
@@ -91,7 +79,9 @@ extern const base::Feature kWebUIOmniboxPopup;
 // popup).
 extern const base::Feature kIntranetRedirectBehaviorPolicyRollout;
 extern const base::Feature kOmniboxAssistantVoiceSearch;
-extern const base::Feature kKeywordSpaceTriggering;
+extern const base::Feature kKeywordSpaceTriggeringSetting;
+// Experiment to introduce new security indicators for HTTPS.
+extern const base::Feature kUpdatedConnectionSecurityIndicators;
 
 // Path-hiding experiments - these hide the path and other URL components in
 // some circumstances in the steady-state omnibox.

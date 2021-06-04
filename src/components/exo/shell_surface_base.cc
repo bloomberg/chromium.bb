@@ -20,18 +20,22 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
-#include "chromeos/ui/base//window_properties.h"
 #include "chromeos/ui/base/window_pin_type.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/full_restore/full_restore_info.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -48,6 +52,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -111,8 +116,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
                   ShellSurfaceBase* shell_surface,
                   bool enabled)
       : NonClientFrameViewAsh(widget), shell_surface_(shell_surface) {
-    SetEnabled(enabled);
-    SetVisible(enabled);
+    SetFrameEnabled(enabled);
     if (!enabled)
       NonClientFrameViewAsh::SetShouldPaintHeader(false);
   }
@@ -121,7 +125,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
 
   // Overridden from ash::NonClientFrameViewAsh:
   void SetShouldPaintHeader(bool paint) override {
-    if (GetVisible()) {
+    if (GetFrameEnabled()) {
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
@@ -129,46 +133,46 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
 
   // Overridden from views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::GetBoundsForClientView();
     return bounds();
   }
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
-    if (GetVisible()) {
+    if (GetFrameEnabled()) {
       return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
           client_bounds);
     }
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (GetVisible() || shell_surface_->server_side_resize())
+    if (GetFrameEnabled() || shell_surface_->server_side_resize())
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::GetWindowMask(size, window_mask);
   }
   void ResetWindowControls() override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowIcon() override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowTitle() override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::UpdateWindowTitle();
   }
   void SizeConstraintsChanged() override {
-    if (GetVisible())
+    if (GetFrameEnabled())
       return ash::NonClientFrameViewAsh::SizeConstraintsChanged();
   }
   gfx::Size GetMinimumSize() const override {
     gfx::Size minimum_size = shell_surface_->GetMinimumSize();
-    if (GetVisible()) {
+    if (GetFrameEnabled()) {
       return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
                  gfx::Rect(minimum_size))
           .size();
@@ -177,7 +181,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
   }
   gfx::Size GetMaximumSize() const override {
     gfx::Size maximum_size = shell_surface_->GetMaximumSize();
-    if (GetVisible() && !maximum_size.IsEmpty()) {
+    if (GetFrameEnabled() && !maximum_size.IsEmpty()) {
       return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
                  gfx::Rect(maximum_size))
           .size();
@@ -288,14 +292,13 @@ class CustomWindowStateDelegate : public ash::WindowStateDelegate {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowStateDelegate);
 };
 
-void CloseAllTransientChildren(aura::Window* window) {
-  // Deleting a window may delete other transient children, so
-  // delete them by popping from the list.
-  for (;;) {
-    auto list = wm::GetTransientChildren(window);
-    if (list.empty())
-      return;
-    wm::RemoveTransientChild(window, *list.begin());
+void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
+  // Deleting a window may delete other transient children. Remove other shell
+  // surface bases first so they don't get deleted.
+  auto list = wm::GetTransientChildren(window);
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (GetShellSurfaceBaseForWindow(list[i]))
+      wm::RemoveTransientChild(window, list[i]);
   }
 }
 
@@ -351,8 +354,9 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   if (widget_) {
     widget_->GetNativeWindow()->RemoveObserver(this);
     widget_->RemoveObserver(this);
-    // Remove transient children so they are not automatically destroyed.
-    CloseAllTransientChildren(widget_->GetNativeWindow());
+    // Remove transient children which are shell surfaces so they are not
+    // automatically destroyed.
+    CloseAllShellSurfaceTransientChildren(widget_->GetNativeWindow());
     if (widget_->IsVisible())
       widget_->Hide();
     widget_->CloseNow();
@@ -491,6 +495,16 @@ void ShellSurfaceBase::UnsetSnap() {
   CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
 }
 
+void ShellSurfaceBase::SetCanGoBack() {
+  if (widget_)
+    widget_->GetNativeWindow()->SetProperty(ash::kMinimizeOnBackKey, false);
+}
+
+void ShellSurfaceBase::UnsetCanGoBack() {
+  if (widget_)
+    widget_->GetNativeWindow()->SetProperty(ash::kMinimizeOnBackKey, true);
+}
+
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   GetViewAccessibility().OverrideChildTreeID(child_ax_tree_id);
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
@@ -571,8 +585,28 @@ void ShellSurfaceBase::DisableMovement() {
 }
 
 void ShellSurfaceBase::UpdateCanResize() {
+  if (overlay_widget_ && overlay_can_resize_.has_value()) {
+    SetCanResize(*overlay_can_resize_);
+    return;
+  }
   SetCanResize(!movement_disabled_ &&
                (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_));
+}
+
+void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
+                                         bool can_minimize,
+                                         int container) {
+  can_minimize_ = can_minimize;
+  container_ = container;
+  this->root_surface()->RemoveSurfaceObserver(this);
+  root_surface->AddSurfaceObserver(this);
+  SetRootSurface(root_surface);
+  host_window()->Show();
+
+  SetCanMinimize(can_minimize_);
+  SetCanMaximize(ash::desks_util::IsDeskContainerId(container_));
+  SetCanResize(true);
+  SetShowTitle(false);
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -599,6 +633,8 @@ ShellSurfaceBase::AsTracedValue() const {
 void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   DCHECK(widget_);
   DCHECK(!overlay_widget_);
+  overlay_overlaps_frame_ = overlay_params.overlaps_frame;
+  overlay_can_resize_ = std::move(overlay_params.can_resize);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.parent = widget_->GetNativeWindow();
@@ -607,7 +643,7 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 
   if (overlay_params.focusable)
-    params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+    params.activatable = views::Widget::InitParams::Activatable::kYes;
 
   params.delegate = new views::WidgetDelegate();
   params.delegate->SetContentsView(std::move(overlay_params.contents_view));
@@ -633,6 +669,7 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   }
 
   UpdateWidgetBounds();
+  UpdateCanResize();
 }
 
 void ShellSurfaceBase::RemoveOverlay() {
@@ -642,6 +679,7 @@ void ShellSurfaceBase::RemoveOverlay() {
     GetWidget()->GetNativeWindow()->SetProperty(
         aura::client::kSkipImeProcessing, true);
   }
+  UpdateCanResize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -710,11 +748,10 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
 
   CustomFrameView* frame_view =
       static_cast<CustomFrameView*>(widget_->non_client_view()->frame_view());
-  if (frame_view->GetEnabled() == frame_enabled())
+  if (frame_view->GetFrameEnabled() == frame_enabled())
     return;
 
-  frame_view->SetEnabled(frame_enabled());
-  frame_view->SetVisible(frame_enabled());
+  frame_view->SetFrameEnabled(frame_enabled());
   frame_view->SetShouldPaintHeader(frame_enabled());
   widget_->GetRootView()->Layout();
   // TODO(oshima): We probably should wait applying these if the
@@ -769,8 +806,9 @@ void ShellSurfaceBase::OnSurfaceDestroying(Surface* surface) {
   // Hide widget before surface is destroyed. This allows hide animations to
   // run using the current surface contents.
   if (widget_) {
-    // Remove transient children so they are not automatically hidden.
-    CloseAllTransientChildren(widget_->GetNativeWindow());
+    // Remove transient children which are shell surfaces so they are not
+    // automatically hidden.
+    CloseAllShellSurfaceTransientChildren(widget_->GetNativeWindow());
     widget_->Hide();
   }
 
@@ -1015,11 +1053,16 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   params.show_state = show_state;
   // Make shell surface a transient child if |parent_| has been set and
   // container_ isn't specified.
-  if (ash::desks_util::IsDeskContainerId(container_) && parent_) {
-    params.parent = parent_;
+  aura::Window* root_window =
+      WMHelper::GetInstance()->GetRootWindowForNewWindows();
+  if (ash::desks_util::IsDeskContainerId(container_)) {
+    DCHECK_EQ(ash::desks_util::GetActiveDeskContainerId(), container_);
+    if (parent_)
+      params.parent = parent_;
+    else
+      params.context = root_window;
   } else {
-    params.parent = ash::Shell::GetContainer(
-        WMHelper::GetInstance()->GetRootWindowForNewWindows(), container_);
+    params.parent = ash::Shell::GetContainer(root_window, container_);
   }
   params.bounds = gfx::Rect(origin_, gfx::Size());
 
@@ -1045,8 +1088,15 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Transient child needs to have an application id to be activatable.
   if (parent_)
     activatable &= application_id_.has_value();
-  params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
-                                   : views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = activatable
+                           ? views::Widget::InitParams::Activatable::kYes
+                           : views::Widget::InitParams::Activatable::kNo;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  full_restore::ModifyWidgetParams(params.init_properties_container.GetProperty(
+                                       full_restore::kRestoreWindowIdKey),
+                                   &params);
+#endif
 
   OverrideInitParams(&params);
 
@@ -1111,9 +1161,19 @@ bool ShellSurfaceBase::IsResizing() const {
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
-  base::Optional<gfx::Rect> bounds = GetWidgetBounds();
-  if (bounds && overlay_widget_)
-    overlay_widget_->SetBounds(gfx::Rect(bounds->size()));
+  absl::optional<gfx::Rect> bounds = GetWidgetBounds();
+  if (bounds && overlay_widget_) {
+    gfx::Rect content_bounds(bounds->size());
+    int height = 0;
+    if (!overlay_overlaps_frame_ && frame_enabled()) {
+      auto* frame_view = static_cast<const ash::NonClientFrameViewAsh*>(
+          widget_->non_client_view()->frame_view());
+      height = frame_view->NonClientTopBorderHeight();
+    }
+    content_bounds.set_height(content_bounds.height() - height);
+    content_bounds.set_y(height);
+    overlay_widget_->SetBounds(content_bounds);
+  }
 
   aura::Window* window = widget_->GetNativeWindow();
   ash::WindowState* window_state = ash::WindowState::Get(window);

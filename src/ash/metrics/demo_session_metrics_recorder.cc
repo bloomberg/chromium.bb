@@ -33,7 +33,7 @@ using DemoModeApp = DemoSessionMetricsRecorder::DemoModeApp;
 // How often to sample.
 constexpr auto kSamplePeriod = base::TimeDelta::FromSeconds(1);
 
-// Redefining chromeos::default_web_apps::kHelpAppId as ash can't depend on
+// Redefining chromeos::preinstalled_web_apps::kHelpAppId as ash can't depend on
 // chrome.
 constexpr char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
 
@@ -131,9 +131,11 @@ DemoModeApp GetAppFromPackageName(const std::string& package_name) {
   if (package_name == "com.chucklefish.stardewvalley" ||
       package_name == "com.chucklefish.stardewvalleydemo")
     return DemoModeApp::kStardewValley;
-  if (package_name == "com.nexstreaming.app.kinemasterfree" ||
-      package_name == "com.nexstreaming.app.kinemasterfree.demo.chromebook")
-    return DemoModeApp::kKinemaster;
+  if (package_name == "com.nexstreaming.app.kinemasterfree" ||  // nocheck
+      package_name ==
+          "com.nexstreaming.app.kinemasterfree.demo.chromebook") {  // nocheck
+    return DemoModeApp::kKinemaster;                                // nocheck
+  }
   if (package_name == "com.pixlr.express" ||
       package_name == "com.pixlr.express.chromebook.demo")
     return DemoModeApp::kPixlr;
@@ -385,7 +387,7 @@ void DemoSessionMetricsRecorder::OnWindowActivated(ActivationReason reason,
     return;
 
   // Don't count popup windows.
-  if (gained_active->type() != aura::client::WINDOW_TYPE_NORMAL)
+  if (gained_active->GetType() != aura::client::WINDOW_TYPE_NORMAL)
     return;
 
   AppType app_type = GetAppType(gained_active);
@@ -465,7 +467,7 @@ void DemoSessionMetricsRecorder::TakeSampleOrPause() {
     return;
   }
 
-  DemoModeApp app = window->type() == aura::client::WINDOW_TYPE_NORMAL
+  DemoModeApp app = window->GetType() == aura::client::WINDOW_TYPE_NORMAL
                         ? GetAppFromWindow(window)
                         : DemoModeApp::kOtherWindow;
   RecordActiveAppSample(app);

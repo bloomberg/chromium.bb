@@ -39,6 +39,10 @@ const char kAggressiveCacheDiscardThreshold[] = "aggressive-cache-discard";
 const char kAllowFailedPolicyFetchForTest[] =
     "allow-failed-policy-fetch-for-test";
 
+// When this flag is set, the OS installation UI can be accessed. This
+// allows the user to install from USB to disk.
+const char kAllowOsInstall[] = "allow-os-install";
+
 // Allows remote attestation (RA) in dev mode for testing purpose. Usually RA
 // is disabled in dev mode because it will always fail. However, there are cases
 // in testing where we do want to go through the permission flow even in dev
@@ -198,6 +202,12 @@ const char kDefaultWallpaperLarge[] = "default-wallpaper-large";
 // file).
 const char kDefaultWallpaperSmall[] = "default-wallpaper-small";
 
+// App ID to use for highlights app in demo mode.
+const char kDemoModeHighlightsApp[] = "demo-mode-highlights-extension";
+
+// App ID to use for screensaver app in demo mode.
+const char kDemoModeScreensaverApp[] = "demo-mode-screensaver-extension";
+
 // Time in seconds before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 
@@ -275,6 +285,9 @@ const char kEnableArcVm[] = "enable-arcvm";
 
 // Enables ARCVM realtime VCPU feature.
 const char kEnableArcVmRtVcpu[] = "enable-arcvm-rt-vcpu";
+
+// Madvises the kernel to use Huge Pages for guest memory.
+const char kArcVmUseHugePages[] = "arcvm-use-hugepages";
 
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
@@ -510,8 +523,11 @@ const char kOobeEulaUrlForTests[] = "oobe-eula-url-for-tests";
 // is not in tablet mode.
 const char kOobeForceTabletFirstRun[] = "oobe-force-tablet-first-run";
 
-// Indicates that a guest session has been started before OOBE completion.
-const char kOobeGuestSession[] = "oobe-guest-session";
+// Indicates that OOBE should be scaled for big displays similar to how Meets
+// app scales UI.
+// TODO(crbug.com/1205364): Remove after adding new scheme.
+const char kOobeLargeScreenSpecialScaling[] =
+    "oobe-large-screen-special-scaling";
 
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
@@ -551,6 +567,11 @@ const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 // TODO(crbug.com/1177416): Clean up once testing is complete
 const char kOfflineSignInTimeLimitInSecondsOverrideForTesting[] =
     "offline-signin-timelimit-in-seconds-override-for-testing";
+
+// Used for overriding the required user activity time before running the
+// onboarding survey.
+const char kTimeBeforeOnboardingSurveyInSecondsForTesting[] =
+    "time-before-onboarding-survey-in-seconds-for-testing";
 
 // Used for overriding the preference set by the policy
 // kSamlLockScreenReauthenticationEnabled to true.
@@ -706,6 +727,11 @@ bool ShouldOobeUseTabletModeFirstRun() {
       kOobeForceTabletFirstRun);
 }
 
+bool ShouldScaleOobe() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kOobeLargeScreenSpecialScaling);
+}
+
 bool IsAueReachedForUpdateRequiredForTest() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUpdateRequiredAueForTest);
@@ -724,6 +750,10 @@ bool IsOOBEChromeVoxHintEnabledForDevMode() {
 bool IsDeviceRequisitionConfigurable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableRequisitionEdits);
+}
+
+bool IsOsInstallAllowed() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kAllowOsInstall);
 }
 
 }  // namespace switches

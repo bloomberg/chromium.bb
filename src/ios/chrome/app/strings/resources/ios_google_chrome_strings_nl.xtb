@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1096883626080133124">Krijg meer gedaan met Google Chrome. Nu nog eenvoudiger, veiliger en sneller dan ooit</translation>
 <translation id="1282031177488366470">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="1314663809820920746">Je bookmarks, geschiedenis, wachtwoorden en andere instellingen blijven zichtbaar op dit apparaat. Als je wijzigingen aanbrengt, worden deze niet gesynchroniseerd met je Google-account.</translation>
 <translation id="1479202195792305274">Chrome kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome kan niet checken op updates. Check de internetverbinding.</translation>
 <translation id="1682483655351012182">Je Chrome-gegevens synchroniseren</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Help Chrome beter te maken door gebruiksstatistieken en crashrapporten naar Google te sturen</translation>
 <translation id="1917964099031477364">Dit account en niet-opgeslagen gegevens worden verwijderd uit Chrome en andere Google-apps op dit apparaat.</translation>
 <translation id="2009224836393115614">Chrome kan je wachtwoorden niet checken. Check de internetverbinding.</translation>
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome kan niet checken op updates. Probeer het later opnieuw.</translation>
 <translation id="2732745070297234559">Chrome kan niet alle wachtwoorden checken. Probeer het morgen opnieuw.</translation>
 <translation id="2740105938841089077">Chrome gebruiken om links te openen</translation>
+<translation id="2869959624320573933">Inloggen bij Chrome</translation>
 <translation id="2919738076569633423">Door Chrome te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK_TOS" />servicevoorwaarden<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chrome-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
 <translation id="3167189358072330585">Je account werkt niet in Google Chrome. Neem contact op met je domeinbeheerder of gebruik een gewoon Google-account om je aan te melden.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome bespaart je tijd door je accounts beschikbaar te maken op internet. Je kunt accounts toevoegen of verwijderen bij Instellingen.</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3345341804167540816">Chrome overal gebruiken</translation>
+<translation id="3455456143708465450">Log in met je Google-account om het maximale uit Chrome te halen</translation>
 <translation id="3522659714780527202">Zet de synchronisatie aan om je tabbladen te bekijken vanaf elk apparaat waarop je Chrome gebruikt</translation>
 <translation id="3533694711092285624">Geen opgeslagen wachtwoorden. Chrome kan je wachtwoorden controleren als je deze hebt opgeslagen.</translation>
 <translation id="3706101708757577809">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Als je Chrome toestaat je locatie te gebruiken, stuurt Chrome deze naar sites waarvoor je toestemming geeft. Sites kunnen om je locatie vragen als ze je lokale informatie willen laten zien, zoals winkels in de buurt of lokaal nieuws.</translation>
 <translation id="6036420186814142909">Google Chrome bevat functies die je helpen je internetgegevens te beheren en te bepalen hoe snel je webpagina's kunt laden.
 <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Inloggen bij Chrome toestaan</translation>
 <translation id="6181930887571472871">Overschakelen naar Chrome</translation>
 <translation id="6238746320622508509">Laat Chrome je incognitotabbladen vergrendelen.</translation>
 <translation id="6573431926118603307">Hier zie je tabbladen die je op andere apparaten in Chrome hebt geopend.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Je Chrome-gegevens van dit apparaat wissen?</translation>
 <translation id="6822673484890854830">Chrome kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
 <translation id="6964931465519938134">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
+<translation id="7059914902409643750">Chrome personaliseren</translation>
 <translation id="7124339256045485976">Houd Chrome up-to-date</translation>
 <translation id="7161390184744336561">Google Chrome is verouderd</translation>
 <translation id="7165736900384873061">QR-scanner van Google Chrome gebruiken</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome is up-to-date</translation>
 <translation id="8022947259858476807">Gebruik standaard Chrome om links te openen, te zoeken via widgets en om wachtwoorden in andere apps automatisch in te vullen</translation>
 <translation id="8160472928944011082">Chrome kan niet updaten</translation>
+<translation id="8263079278049777200">Log in op deze site, op je Google-account en bij Chrome. Je kunt synchronisatie later aanzetten.</translation>
 <translation id="8357607116237445042">Kies of je je Chrome-gegevens voor dit apparaat wilt verwijderen of behouden</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Alle rechten voorbehouden.</translation>
 <translation id="840168496893712993">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder deze add-ons.</translation>
@@ -95,5 +102,6 @@
 3. Selecteer Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Blijf veilig met Google Chrome</translation>
+<translation id="8772179140489533211">Toont prompts om in te loggen bij Chrome.</translation>
 <translation id="9112744793181547300">Chrome instellen als standaard?</translation>
 </translationbundle>

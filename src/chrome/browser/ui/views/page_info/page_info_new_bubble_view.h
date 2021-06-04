@@ -7,11 +7,17 @@
 
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
+#include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
+
+class ChromePageInfoUiDelegate;
+class PageSwitcherView;
+class PageInfoViewFactory;
 
 // The experimental new implementation of the Views page info UI (under a flag
 // PageInfoV2Desktop). Current implementation (PageInfoBubbleView) will be
 // deprecated when the redesign is finished.
-class PageInfoNewBubbleView : public PageInfoBubbleViewBase {
+class PageInfoNewBubbleView : public PageInfoBubbleViewBase,
+                              public PageInfoNavigationHandler {
  public:
   PageInfoNewBubbleView(views::View* anchor_view,
                         const gfx::Rect& anchor_rect,
@@ -23,6 +29,11 @@ class PageInfoNewBubbleView : public PageInfoBubbleViewBase {
 
   ~PageInfoNewBubbleView() override;
 
+  // PageInfoNavigationHandler:
+  void OpenMainPage() override;
+  void OpenSecurityPage() override;
+  void CloseBubble() override;
+
  private:
   // PageInfoBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
@@ -30,14 +41,16 @@ class PageInfoNewBubbleView : public PageInfoBubbleViewBase {
   void WebContentsDestroyed() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  views::View* page_container_ = nullptr;
+  PageSwitcherView* page_container_ = nullptr;
 
   // The presenter that controls the Page Info UI.
   std::unique_ptr<PageInfo> presenter_;
 
   PageInfoClosingCallback closing_callback_;
 
-  std::unique_ptr<PageInfoUiDelegate> ui_delegate_;
+  std::unique_ptr<ChromePageInfoUiDelegate> ui_delegate_;
+
+  std::unique_ptr<PageInfoViewFactory> view_factory_;
 
   base::WeakPtrFactory<PageInfoNewBubbleView> weak_factory_{this};
 };

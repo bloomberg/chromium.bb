@@ -6,6 +6,9 @@
 
 const mojom = chromeos.networkConfig.mojom;
 
+/** @type {number} */
+const ESIM_PROFILE_LIMIT = 5;
+
 /**
  * @fileoverview
  * 'settings-internet-page' is the settings page containing internet
@@ -119,6 +122,16 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Page name, if defined, indicating that the next deviceStates update
+     * should call attemptShowCellularSetupDialog_().
+     * @private {cellularSetup.CellularSetupPageName|null}
+     */
+    pendingShowCellularSetupDialogAttemptPageName_: {
+      type: String,
+      value: null,
+    },
+
     /** @private {boolean} */
     showCellularSetupDialog_: {
       type: Boolean,
@@ -132,7 +145,7 @@ Polymer({
     cellularSetupDialogPageName_: String,
 
     /** @private {boolean} */
-    hasActivePSimNetwork_: {
+    hasActiveCellularNetwork_: {
       type: Boolean,
       value: false,
     },
@@ -151,6 +164,16 @@ Polymer({
 
     /** @private {boolean} */
     showESimRemoveProfileDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Flag, if true, indicating that the next deviceStates update
+     * should set showSimLockDialog_ to true.
+     * @private
+     */
+    pendingShowSimLockDialog_: {
       type: Boolean,
       value: false,
     },
@@ -194,6 +217,14 @@ Polymer({
     errorToastMessage_: {
       type: String,
       value: '',
+    },
+
+    /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
     },
   },
 
@@ -281,17 +312,25 @@ Polymer({
         this.subpageType_ = OncMojo.getNetworkTypeFromString(type);
       }
 
-      this.showCellularSetupDialog_ =
-          queryParams.get('showCellularSetup') === 'true';
-      const showPSimFlow = queryParams.get('showPsimFlow') === 'true';
-      if (showPSimFlow && this.showCellularSetupDialog_) {
-        this.cellularSetupDialogPageName_ =
-            cellularSetup.CellularSetupPageName.PSIM_FLOW_UI;
+      if (!oldRoute && queryParams.get('showCellularSetup') === 'true') {
+        const pageName = queryParams.get('showPsimFlow') === 'true' ?
+            cellularSetup.CellularSetupPageName.PSIM_FLOW_UI :
+            cellularSetup.CellularSetupPageName.ESIM_FLOW_UI;
+        // If the page just loaded, deviceStates will not be fully initialized
+        // yet. Set pendingShowCellularSetupDialogAttemptPageName_ to indicate
+        // showCellularSetupDialogAttempt_() should be called next deviceStates
+        // update.
+        this.pendingShowCellularSetupDialogAttemptPageName_ = pageName;
       }
 
-      this.showSimLockDialog_ = !!queryParams.get('showSimLockDialog') &&
+      // If the page just loaded, deviceStates will not be fully initialized
+      // yet. Set pendingShowSimLockDialog_ to indicate
+      // showSimLockDialog_ should be set next deviceStates
+      // update.
+      this.pendingShowSimLockDialog_ = !oldRoute &&
+          !!queryParams.get('showSimLockDialog') &&
           this.subpageType_ === mojom.NetworkType.kCellular &&
-          loadTimeData.getBoolean('updatedCellularActivationUi');
+          this.isUpdatedCellularUiEnabled_;
     } else if (route === settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
@@ -343,12 +382,10 @@ Polymer({
 
   /** NetworkListenerBehavior override */
   onNetworkStateListChanged() {
-    hasActivePSimNetwork().then((hasActive) => {
-      this.hasActivePSimNetwork_ = hasActive;
+    hasActiveCellularNetwork().then((hasActive) => {
+      this.hasActiveCellularNetwork_ = hasActive;
     });
-    isConnectedToNonCellularNetwork().then((isConnected) => {
-      this.isConnectedToNonCellularNetwork_ = isConnected;
-    });
+    this.updateIsConnectedToNonCellularNetwork_();
   },
 
   onVpnProvidersChanged() {
@@ -356,6 +393,17 @@ Polymer({
       const providers = response.providers;
       providers.sort(this.compareVpnProviders_);
       this.vpnProviders_ = providers;
+    });
+  },
+
+  /**
+   * @return {!Promise<boolean>}
+   * @private
+   */
+  updateIsConnectedToNonCellularNetwork_() {
+    return isConnectedToNonCellularNetwork().then((isConnected) => {
+      this.isConnectedToNonCellularNetwork_ = isConnected;
+      return isConnected;
     });
   },
 
@@ -394,12 +442,54 @@ Polymer({
    * @private
    */
   onShowCellularSetupDialog_(event) {
-    if (this.isConnectedToNonCellularNetwork_) {
-      this.showCellularSetupDialog_ = true;
-      this.cellularSetupDialogPageName_ = event.detail.pageName;
-    } else {
-      this.showErrorToast_(this.i18n('eSimNoConnectionErrorToast'));
+    this.attemptShowCellularSetupDialog_(event.detail.pageName);
+  },
+
+  /**
+   * Opens the cellular setup dialog if pageName is PSIM_FLOW_UI, or if pageName
+   * is ESIM_FLOW_UI and isConnectedToNonCellularNetwork_ is true. If
+   * isConnectedToNonCellularNetwork_ is false, shows an error toast.
+   * @param {cellularSetup.CellularSetupPageName} pageName
+   * @private
+   */
+  attemptShowCellularSetupDialog_(pageName) {
+    const cellularDeviceState =
+        this.getDeviceState_(mojom.NetworkType.kCellular, this.deviceStates);
+    if (!cellularDeviceState ||
+        cellularDeviceState.deviceState !== mojom.DeviceStateType.kEnabled) {
+      this.showErrorToast_(this.i18n('eSimMobileDataNotEnabledErrorToast'));
+      return;
     }
+
+    if (pageName === cellularSetup.CellularSetupPageName.PSIM_FLOW_UI) {
+      this.showCellularSetupDialog_ = true;
+      this.cellularSetupDialogPageName_ = pageName;
+    } else {
+      this.attemptShowESimSetupDialog_();
+    }
+  },
+
+  /** @private */
+  async attemptShowESimSetupDialog_() {
+    const numProfiles = await cellular_setup.getNumESimProfiles();
+    if (numProfiles >= ESIM_PROFILE_LIMIT) {
+      this.showErrorToast_(
+          this.i18n('eSimProfileLimitReachedErrorToast', ESIM_PROFILE_LIMIT));
+      return;
+    }
+    // isConnectedToNonCellularNetwork_ may
+    // not be fetched yet if the page just opened, fetch it
+    // explicitly.
+    this.updateIsConnectedToNonCellularNetwork_().then(
+        ((isConnected) => {
+          this.showCellularSetupDialog_ = isConnected;
+          if (!isConnected) {
+            this.showErrorToast_(this.i18n('eSimNoConnectionErrorToast'));
+            return;
+          }
+          this.cellularSetupDialogPageName_ =
+              cellularSetup.CellularSetupPageName.ESIM_FLOW_UI;
+        }).bind(this));
   },
 
   /**
@@ -585,6 +675,17 @@ Polymer({
       if (detailPage) {
         detailPage.close();
       }
+    }
+
+    if (this.pendingShowCellularSetupDialogAttemptPageName_) {
+      this.attemptShowCellularSetupDialog_(
+          this.pendingShowCellularSetupDialogAttemptPageName_);
+      this.pendingShowCellularSetupDialogAttemptPageName_ = null;
+    }
+
+    if (this.pendingShowSimLockDialog_) {
+      this.showSimLockDialog_ = true;
+      this.pendingShowSimLockDialog_ = false;
     }
   },
 

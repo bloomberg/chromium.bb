@@ -55,6 +55,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryAndroidHardwareBuffer
       gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       int client_id,
       SurfaceHandle surface_handle) override;
   unsigned RequiredTextureType() override;

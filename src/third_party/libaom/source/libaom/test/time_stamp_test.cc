@@ -95,8 +95,13 @@ TEST_P(TimestampTest, TestAv1Rollover) {
   video.set_starting_pts(922337170351ll);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
-
+#if CONFIG_REALTIME_ONLY
 AV1_INSTANTIATE_TEST_SUITE(TimestampTest,
-                           ::testing::Values(::libaom_test::kTwoPassGood));
+                           ::testing::Values(::libaom_test::kRealTime));
+#else
+AV1_INSTANTIATE_TEST_SUITE(TimestampTest,
+                           ::testing::Values(::libaom_test::kRealTime,
+                                             ::libaom_test::kTwoPassGood));
+#endif
 
 }  // namespace

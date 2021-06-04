@@ -25,10 +25,8 @@ namespace syncer {
 
 FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
                                  ModelTypeSet progress_marker_types,
-                                 ModelTypeSet configure_fail_types,
-                                 bool should_fail_on_init)
-    : should_fail_on_init_(should_fail_on_init),
-      initial_sync_ended_types_(initial_sync_ended_types),
+                                 ModelTypeSet configure_fail_types)
+    : initial_sync_ended_types_(initial_sync_ended_types),
       progress_marker_types_(progress_marker_types),
       configure_fail_types_(configure_fail_types),
       last_configure_reason_(CONFIGURE_REASON_UNKNOWN) {}
@@ -71,12 +69,6 @@ void FakeSyncManager::Init(InitArgs* args) {
   cache_guid_ = args->cache_guid;
   birthday_ = args->birthday;
   bag_of_chips_ = args->bag_of_chips;
-
-  for (auto& observer : observers_) {
-    observer.OnInitializationComplete(WeakHandle<JsBackend>(),
-                                      WeakHandle<DataTypeDebugInfoListener>(),
-                                      !should_fail_on_init_);
-  }
 }
 
 ModelTypeSet FakeSyncManager::InitialSyncEndedTypes() {
@@ -142,6 +134,14 @@ ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
 std::unique_ptr<ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
   return std::make_unique<FakeModelTypeConnector>();
+}
+
+WeakHandle<JsBackend> FakeSyncManager::GetJsBackend() {
+  return WeakHandle<JsBackend>();
+}
+
+WeakHandle<DataTypeDebugInfoListener> FakeSyncManager::GetDebugInfoListener() {
+  return WeakHandle<DataTypeDebugInfoListener>();
 }
 
 std::string FakeSyncManager::cache_guid() {

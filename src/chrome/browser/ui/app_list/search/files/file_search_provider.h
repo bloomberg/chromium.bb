@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SEARCH_PROVIDER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -38,11 +39,14 @@ class FileSearchProvider : public SearchProvider {
   }
 
  private:
-  void OnSearchComplete(const std::vector<base::FilePath>& paths);
-  std::unique_ptr<FileResult> MakeResult(const base::FilePath& path);
+  void OnSearchComplete(
+      const std::vector<std::pair<base::FilePath, bool>>& paths);
+  std::unique_ptr<FileResult> MakeResult(
+      const std::pair<base::FilePath, bool>& path);
 
   base::TimeTicks query_start_time_;
-  base::Optional<chromeos::string_matching::TokenizedString>
+  std::u16string last_query_;
+  absl::optional<chromeos::string_matching::TokenizedString>
       last_tokenized_query_;
 
   Profile* const profile_;

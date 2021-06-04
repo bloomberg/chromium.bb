@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/byte_string.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
@@ -98,6 +99,13 @@ struct CryptConfig {
   // The product name to use for permission prompts.
   string product_name;
 
+  // The application name to store the crypto key against. For Chromium/Chrome
+  // builds leave this unset and it will default correctly.  This config option
+  // is for embedders to provide their application name in place of "Chromium".
+  // Only used when the allow_runtime_configurable_key_storage feature is
+  // enabled
+  string application_name;
+
   // Controls whether preference on using or ignoring backends is used.
   bool should_use_preference;
 
@@ -127,7 +135,7 @@ struct NetworkServiceParams {
 
 // Information about how logging should be configured.
 // Corresponds to logging::LoggingSettings.
-[EnableIf=is_chromeos]
+[EnableIf=is_chromeos_ash]
 struct LoggingSettings {
   uint32 logging_dest;
   handle<platform> log_file_descriptor;
@@ -145,7 +153,7 @@ interface NetworkService {
   // Reinitializes the Network Service's logging with the given settings. This
   // is needed on Chrome OS, which switches to a log file in the user's home
   // directory once they log in.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   ReinitializeLogging(LoggingSettings settings);
 
   // Starts observing the NetLog event stream and writing entries to |file|.
@@ -180,13 +188,13 @@ interface NetworkService {
   // https://tools.ietf.org/html/rfc1034#section-5.3.1 for definition of a stub
   // resolver.
   //
-  // |dns_over_https_servers| is an optional list of DNS over HTTPS servers.
-  // DnsTransactions will by default follow the behavior of |secure_dns_mode|.
+  // `dns_over_https_servers` is an optional list of DNS over HTTPS servers.
+  // DnsTransactions will by default follow the behavior of `secure_dns_mode`.
   // In SECURE mode, only DoH lookups will be performed. In AUTOMATIC mode,
   // DoH lookups to available servers will be performed first, and insecure
   // lookups will be used as a fallback. In OFF mode, only insecure lookups will
   // be performed. When insecure lookups are performed, they will be sent by
-  // the async resolver first if |insecure_dns_client_enabled| is true and
+  // the async resolver first if `insecure_dns_client_enabled` is true and
   // then by the system resolver as a fallback.
   //
   // DNS over HTTPS will use the primary NetworkContext, so can only be enabled
@@ -194,9 +202,15 @@ interface NetworkService {
   // limitation, this method can be called at any time to change DNS
   // configuration, though calling it will fail any DNS lookups that have
   // already been started.
+  //
+  // `additional_dns_types_enabled` controls whether additional DNS query types,
+  // e.g. HTTPS (DNS type 65) will be allowed besides the traditional A and AAAA
+  // queries when a request is being made via insecure DNS. Has no effect on
+  // Secure DNS which always allows additional types.
   ConfigureStubHostResolver(bool insecure_dns_client_enabled,
                             SecureDnsMode secure_dns_mode,
-                            array<DnsOverHttpsServer>? dns_over_https_servers);
+                            array<DnsOverHttpsServer>? dns_over_https_servers,
+                            bool additional_dns_types_enabled);
 
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
   // and all new ones that are created. Once called, QUIC cannot be re-enabled.
@@ -266,11 +280,11 @@ interface NetworkService {
 
   // Send the encryption key to the network service to use for AES encryption.
   [EnableIf=is_mac]
-  SetEncryptionKey(string encryption_key);
+  SetEncryptionKey(mojo_base.mojom.ByteString encryption_key);
 
   // Send the encryption key to the network service to use for AES encryption.
   [EnableIf=is_win]
-  SetEncryptionKey(string encryption_key);
+  SetEncryptionKey(mojo_base.mojom.ByteString encryption_key);
 
   // Notifies |request_initiator_origin_lock| enforcement code that |process_id|
   // is proxying requests on behalf of a plugin from
@@ -334,16 +348,14 @@ interface NetworkService {
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 
-  // Sets the preloaded First-Party Sets data. |raw_sets| is the JSON-encoded
+  // Sets the First-Party Sets data. |raw_sets| is the JSON-encoded
   // string representation of a collection of set declarations according to the
   // format specified in this document:
   // https://github.com/privacycg/first-party-sets
-  // Note that by setting the preloaded First-Party Sets, any previous notion of
-  // preloaded First-Party Sets is cleared. This method can be partially
-  // successful in the event of malformed input (which also clears previously-
-  // known First-Party Sets), but does nothing if given non-JSON input or JSON
-  // which is not a dictionary.
-  SetPreloadedFirstPartySets(string raw_sets);
+  // Note that by setting the First-Party Sets, any previous notion of
+  // First-Party Sets is cleared. On any kind of error, all First-Party Sets are
+  // cleared (except for the manually-specified set, if one exists).
+  SetFirstPartySets(string raw_sets);
 
   // Sets the list of ports which will be permitted even if they normally would
   // be restricted.

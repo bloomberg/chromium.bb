@@ -262,7 +262,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
                                       bool profile_autofill_enabled,
                                       bool credit_card_autofill_enabled) {
   std::unique_ptr<CreditCard> imported_credit_card;
-  base::Optional<std::string> detected_upi_id;
+  absl::optional<std::string> detected_upi_id;
 
   bool is_credit_card_upstream_enabled =
       credit_card_save_manager_->IsCreditCardUploadEnabled();
@@ -424,7 +424,7 @@ bool FormDataImporter::ImportFormData(
     bool credit_card_autofill_enabled,
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card,
-    base::Optional<std::string>* imported_upi_id) {
+    absl::optional<std::string>* imported_upi_id) {
   // We try the same |form| for both credit card and address import/update.
   // - ImportCreditCard may update an existing card, or fill
   //   |imported_credit_card| with an extracted card. See .h for details of
@@ -645,7 +645,7 @@ bool FormDataImporter::ImportAddressProfileForSection(
       const translate::LanguageState* language_state =
           client_->GetLanguageState();
       if (language_state)
-        page_language = language_state->original_language();
+        page_language = language_state->source_language();
       // Retry to set the country of there is known page language.
       if (!page_language.empty()) {
         candidate_profile.SetInfoWithVerificationStatus(
@@ -731,7 +731,8 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // incognito mode but the import is not triggered if the browser is in the
   // incognito mode.
   DCHECK(!personal_data_manager_->IsOffTheRecord());
-  address_profile_save_manager_->SaveProfile(candidate_profile);
+  address_profile_save_manager_->ImportProfileFromForm(
+      candidate_profile, app_locale_, form.source_url());
 
   return true;
 }
@@ -915,13 +916,13 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
   return candidate_credit_card;
 }
 
-base::Optional<std::string> FormDataImporter::ImportUpiId(
+absl::optional<std::string> FormDataImporter::ImportUpiId(
     const FormStructure& form) {
   for (const auto& field : form) {
     if (IsUPIVirtualPaymentAddress(field->value))
       return base::UTF16ToUTF8(field->value);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace autofill

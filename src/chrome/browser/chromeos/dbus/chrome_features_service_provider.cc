@@ -13,12 +13,12 @@
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -133,6 +133,13 @@ void ChromeFeaturesServiceProvider::Start(
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsPeripheralDataAccessEnabled,
           weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsDNSProxyEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsDnsProxyEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -255,6 +262,13 @@ void ChromeFeaturesServiceProvider::IsPeripheralDataAccessEnabled(
                                   &peripheral_data_access_enabled);
   SendResponse(method_call, std::move(response_sender),
                peripheral_data_access_enabled);
+}
+
+void ChromeFeaturesServiceProvider::IsDnsProxyEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(method_call, std::move(response_sender),
+               base::FeatureList::IsEnabled(features::kEnableDnsProxy));
 }
 
 }  // namespace chromeos

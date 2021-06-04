@@ -347,7 +347,7 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
 
 std::unique_ptr<base::Value>
 ProximityAuthWebUIHandler::GetTruncatedLocalDeviceId() {
-  base::Optional<multidevice::RemoteDeviceRef> local_device_metadata =
+  absl::optional<multidevice::RemoteDeviceRef> local_device_metadata =
       device_sync_client_->GetLocalDeviceMetadata();
 
   std::string device_id =
@@ -370,12 +370,12 @@ ProximityAuthWebUIHandler::GetRemoteDevicesList() {
 
 void ProximityAuthWebUIHandler::StartRemoteDeviceLifeCycle(
     multidevice::RemoteDeviceRef remote_device) {
-  base::Optional<multidevice::RemoteDeviceRef> local_device;
+  absl::optional<multidevice::RemoteDeviceRef> local_device;
   local_device = device_sync_client_->GetLocalDeviceMetadata();
 
   selected_remote_device_ = remote_device;
-  life_cycle_.reset(new proximity_auth::RemoteDeviceLifeCycleImpl(
-      *selected_remote_device_, local_device, secure_channel_client_));
+  life_cycle_ = std::make_unique<proximity_auth::RemoteDeviceLifeCycleImpl>(
+      *selected_remote_device_, local_device, secure_channel_client_);
   life_cycle_->AddObserver(this);
   life_cycle_->Start();
 }
@@ -386,7 +386,7 @@ void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
                     << selected_remote_device_->name();
   }
   life_cycle_.reset();
-  selected_remote_device_ = base::nullopt;
+  selected_remote_device_ = absl::nullopt;
   last_remote_status_update_.reset();
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onRemoteDevicesChanged", *GetRemoteDevicesList());
@@ -495,8 +495,8 @@ void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
                   << "\n  trust_agent_state: "
                   << static_cast<int>(status_update.trust_agent_state);
 
-  last_remote_status_update_.reset(
-      new proximity_auth::RemoteStatusUpdate(status_update));
+  last_remote_status_update_ =
+      std::make_unique<proximity_auth::RemoteStatusUpdate>(status_update);
   std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onRemoteDevicesChanged", *synced_devices);

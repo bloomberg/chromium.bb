@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "components/embedder_support/switches.h"
@@ -49,6 +50,13 @@
 #include "components/crash/core/app/breakpad_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif  // defined(HEADLESS_USE_BREAKPAD)
+
+#if defined(HEADLESS_USE_POLICY)
+#include "components/policy/content/policy_blocklist_navigation_throttle.h"
+#include "components/policy/core/common/policy_service.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
+#endif  // defined(HEADLESS_USE_POLICY)
 
 namespace headless {
 
@@ -250,7 +258,7 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       if (!languages.empty()) {
         command_line->AppendSwitchASCII(::switches::kLang,
-                                        languages[0].as_string());
+                                        std::string(languages[0]));
       }
     }
 
@@ -375,13 +383,31 @@ bool HeadlessContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
       switches::kUserDataDir);
 }
 
-device::GeolocationSystemPermissionManager*
-HeadlessContentBrowserClient::GetLocationPermissionManager() {
+device::GeolocationManager*
+HeadlessContentBrowserClient::GetGeolocationManager() {
 #if defined(OS_MAC)
-  return browser_->browser_main_parts()->GetLocationPermissionManager();
+  return browser_->browser_main_parts()->GetGeolocationManager();
 #else
   return nullptr;
 #endif
 }
+
+#if defined(HEADLESS_USE_POLICY)
+std::vector<std::unique_ptr<content::NavigationThrottle>>
+HeadlessContentBrowserClient::CreateThrottlesForNavigation(
+    content::NavigationHandle* handle) {
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+
+  // Avoid creating naviagtion throttle if preferences are not available
+  // (happens in tests).
+  if (browser_->GetPrefs()) {
+    policy::PolicyService* policy_service = browser_->GetPolicyService();
+    throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
+        handle, handle->GetWebContents()->GetBrowserContext(), policy_service));
+  }
+
+  return throttles;
+}
+#endif  // defined(HEADLESS_USE_POLICY)
 
 }  // namespace headless

@@ -55,7 +55,7 @@ namespace {
 // Returns a matcher for |userEmail| in IdentityChooserViewController.
 id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   return grey_allOf(grey_accessibilityID(userEmail),
-                    grey_kindOfClassName(@"IdentityChooserCell"),
+                    grey_kindOfClassName(@"TableViewIdentityCell"),
                     grey_sufficientlyVisible(), nil);
 }
 
@@ -466,6 +466,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
     // Should be not signed in.
     [SigninEarlGrey verifySignedOut];
   }
+
   // Check that the web page is visible.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(

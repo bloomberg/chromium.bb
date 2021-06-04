@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -10,7 +10,7 @@ Builds applications in release mode:
 and the application loader into a single script.
 """
 
-from cStringIO import StringIO
+from io import StringIO
 from os import path
 from os.path import join
 import copy
@@ -23,7 +23,6 @@ import subprocess
 from modular_build import read_file, write_file, bail_error
 import modular_build
 import rjsmin
-import special_case_namespaces
 
 try:
     import simplejson as json
@@ -85,10 +84,10 @@ class ReleaseBuilder(object):
         self.application_dir = application_dir
         self.output_path_gen_dir = output_path_gen_dir
         self.use_rollup = use_rollup
-        self._special_case_namespaces = special_case_namespaces.special_case_namespaces
 
     def app_file(self, extension):
-        return self.application_name + '.' + extension
+        return path.join('entrypoints', self.application_name,
+                         self.application_name + '.' + extension)
 
     def autorun_resource_names(self):
         result = []
@@ -153,8 +152,7 @@ class ReleaseBuilder(object):
             resource_content = read_file(path.join(self.application_dir, resource_name))
             if not (resource_name.endswith('.html')
                     or resource_name.endswith('md')):
-                resource_content += resource_source_url(resource_name).encode(
-                    'utf-8')
+                resource_content += resource_source_url(resource_name)
             resource_content = resource_content.replace('\\', '\\\\')
             resource_content = resource_content.replace('\n', '\\n')
             resource_content = resource_content.replace('"', '\\"')
@@ -180,11 +178,13 @@ class ReleaseBuilder(object):
     def _concatenate_application_script(self, output):
         output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
         if self.descriptors.extends:
-            output.write('Root.applicationDescriptor.modules.push(...%s);' % json.dumps(self.descriptors.application.values()))
+            output.write(
+                'Root.applicationDescriptor.modules.push(...%s);' %
+                json.dumps(list(self.descriptors.application.values())))
         else:
             output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
 
-        output.write("import * as RootModule from './core/root/root.js';")
+        output.write("import * as RootModule from '../../core/root/root.js';")
         self._write_module_resources(self.autorun_resource_names(), output)
 
         output.write(minify_js(read_file(join(self.application_dir, self.app_file('js')))))
@@ -199,7 +199,8 @@ class ReleaseBuilder(object):
         if resources:
             relative_file_name = '../core/root/root.js'
             if "/" in module_name:
-                relative_file_name = '../' + relative_file_name
+                relative_file_name = (
+                    '../' * module_name.count('/')) + relative_file_name
             output.write("import * as RootModule from '%s';" %
                          relative_file_name)
             self._write_module_resources(resources, output)

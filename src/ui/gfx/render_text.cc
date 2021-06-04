@@ -435,8 +435,6 @@ void ApplyRenderParams(const FontRenderParams& params,
 // static
 constexpr char16_t RenderText::kPasswordReplacementChar;
 constexpr bool RenderText::kDragToEndIfOutsideVerticalBounds;
-constexpr SkColor RenderText::kDefaultColor;
-constexpr SkColor RenderText::kDefaultSelectionBackgroundColor;
 constexpr int RenderText::kInvalidBaseline;
 constexpr SkScalar RenderText::kLineThicknessFactor;
 
@@ -616,7 +614,7 @@ void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
   }
 }
 
-void RenderText::SetWhitespaceElision(base::Optional<bool> whitespace_elision) {
+void RenderText::SetWhitespaceElision(absl::optional<bool> whitespace_elision) {
   if (whitespace_elision_ != whitespace_elision) {
     whitespace_elision_ = whitespace_elision;
     OnDisplayTextAttributeChanged();

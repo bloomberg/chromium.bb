@@ -234,7 +234,7 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     std::string decision_string;
-    base::Optional<PermissionAction> action;
+    absl::optional<PermissionAction> action;
     if (decision == CONTENT_SETTING_ALLOW) {
       decision_string = "Accepted";
       action = PermissionAction::GRANTED;
@@ -774,10 +774,6 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
   TestRequestPermissionInvalidUrl(ContentSettingsType::GEOLOCATION);
   TestRequestPermissionInvalidUrl(ContentSettingsType::NOTIFICATIONS);
   TestRequestPermissionInvalidUrl(ContentSettingsType::MIDI_SYSEX);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  TestRequestPermissionInvalidUrl(
-      ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
-#endif
 }
 
 // Simulates granting and revoking of permissions.

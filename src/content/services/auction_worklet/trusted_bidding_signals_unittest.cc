@@ -22,7 +22,7 @@
 namespace auction_worklet {
 namespace {
 
-// Common JSON used for most tests. Key 5 is deliberately skipped.
+// Common JSON used for most tests. Key 4 is deliberately skipped.
 const char kBaseJson[] = R"(
   {
     "key1": 1,
@@ -30,7 +30,8 @@ const char kBaseJson[] = R"(
     "key3": null,
     "key5": "value5",
     "key 6": 6,
-    "key=7": 7
+    "key=7": 7,
+    "key,8": 8
   }
 )";
 
@@ -98,8 +99,11 @@ class TrustedBiddingSignalsTest : public testing::Test {
   }
 
  protected:
-  void LoadSignalsCallback(bool success) {
+  void LoadSignalsCallback(bool success,
+                           absl::optional<std::string> error_msg) {
     load_signals_succeeded_ = success;
+    error_msg_ = std::move(error_msg);
+    EXPECT_EQ(load_signals_succeeded_, !error_msg_.has_value());
     load_signals_run_loop_->Quit();
   }
 
@@ -113,6 +117,7 @@ class TrustedBiddingSignalsTest : public testing::Test {
   // synchronously.
   std::unique_ptr<base::RunLoop> load_signals_run_loop_;
   bool load_signals_succeeded_ = false;
+  absl::optional<std::string> error_msg_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   AuctionV8Helper v8_helper_;
@@ -123,18 +128,29 @@ TEST_F(TrustedBiddingSignalsTest, NetworkError) {
       "https://url.test/?hostname=publisher&keys=key1", kBaseJson,
       net::HTTP_NOT_FOUND);
   EXPECT_FALSE(FetchBiddingSignals({"key1"}, kHostname));
+  ASSERT_TRUE(error_msg_.has_value());
+  EXPECT_EQ(
+      "Failed to load https://url.test/?hostname=publisher&keys=key1 "
+      "HTTP status = 404 Not Found.",
+      error_msg_.value());
 }
 
 TEST_F(TrustedBiddingSignalsTest, ResponseNotJson) {
   EXPECT_FALSE(FetchBiddingSignalsWithResponse(
       GURL("https://url.test/?hostname=publisher&keys=key1"), "Not Json",
       {"key1"}, kHostname));
+  ASSERT_TRUE(error_msg_.has_value());
+  EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
+            error_msg_.value());
 }
 
 TEST_F(TrustedBiddingSignalsTest, ResponseNotObject) {
   EXPECT_FALSE(FetchBiddingSignalsWithResponse(
       GURL("https://url.test/?hostname=publisher&keys=key1"), "42", {"key1"},
       kHostname));
+  ASSERT_TRUE(error_msg_.has_value());
+  EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
+            error_msg_.value());
 }
 
 TEST_F(TrustedBiddingSignalsTest, KeyMissing) {
@@ -172,11 +188,13 @@ TEST_F(TrustedBiddingSignalsTest, FetchMultipleKeys) {
 TEST_F(TrustedBiddingSignalsTest, EscapeQueryParams) {
   std::unique_ptr<TrustedBiddingSignals> signals =
       FetchBiddingSignalsWithResponse(
-          GURL("https://url.test/?hostname=pub+li%26sher&keys=key+6,key%3D7"),
-          kBaseJson, {"key 6", "key=7"}, "pub li&sher");
+          GURL("https://url.test/"
+               "?hostname=pub+li%26sher&keys=key+6,key%3D7,key%2C8"),
+          kBaseJson, {"key 6", "key=7", "key,8"}, "pub li&sher");
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key 6":6})", ExtractSignals(signals.get(), {"key 6"}));
   EXPECT_EQ(R"({"key=7":7})", ExtractSignals(signals.get(), {"key=7"}));
+  EXPECT_EQ(R"({"key,8":8})", ExtractSignals(signals.get(), {"key,8"}));
 }
 
 }  // namespace

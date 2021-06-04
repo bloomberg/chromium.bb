@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 
@@ -41,6 +41,13 @@ class ASH_EXPORT OverviewHighlightController {
     // Attempts to swap the view with its neighbor views. (Mainly used for
     // |DeskMiniView|).
     virtual void MaybeSwapHighlightedView(bool right) = 0;
+
+    // Activates highlighted view when exiting overview. Currently, it is only
+    // used for the case of exiting overview by using 3-finger vertical swipes.
+    // Note that not all the highlighted views support this behavior. Return
+    // true means the highlighted view is activated and the overview is exited.
+    virtual bool MaybeActivateHighlightedViewOnOverviewExit(
+        OverviewSession* overview_session);
 
     void SetHighlightVisibility(bool visible);
 
@@ -104,8 +111,11 @@ class ASH_EXPORT OverviewHighlightController {
   bool MaybeActivateHighlightedView();
   bool MaybeCloseHighlightedView();
 
-  // Swap the currently highlighted view with its neighbor views.
+  // Swaps the currently highlighted view with its neighbor views.
   bool MaybeSwapHighlightedView(bool right);
+
+  // Activates highlighted view when exiting overview mode.
+  bool MaybeActivateHighlightedViewOnOverviewExit();
 
   // Tries to get the item that is currently highlighted. Returns null if there
   // is no highlight, or if the highlight is on a desk view.
@@ -134,7 +144,7 @@ class ASH_EXPORT OverviewHighlightController {
 
   // If an item that is selected is deleted, store its index, so the next
   // traversal can pick up where it left off.
-  base::Optional<int> deleted_index_ = base::nullopt;
+  absl::optional<int> deleted_index_ = absl::nullopt;
 
   // The current view that is being highlighted, if any.
   OverviewHighlightableView* highlighted_view_ = nullptr;

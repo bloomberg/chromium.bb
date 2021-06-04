@@ -4,6 +4,9 @@
 
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
 
+#include "base/containers/contains.h"
+#include "base/threading/thread_restrictions.h"
+
 FakeNearbyConnectionsManager::FakeNearbyConnectionsManager() = default;
 
 FakeNearbyConnectionsManager::~FakeNearbyConnectionsManager() = default;
@@ -72,7 +75,7 @@ void FakeNearbyConnectionsManager::StopDiscovery() {
 void FakeNearbyConnectionsManager::Connect(
     std::vector<uint8_t> endpoint_info,
     const std::string& endpoint_id,
-    base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
+    absl::optional<std::vector<uint8_t>> bluetooth_mac_address,
     DataUsage data_usage,
     NearbyConnectionCallback callback) {
   DCHECK(!is_shutdown());
@@ -148,7 +151,7 @@ void FakeNearbyConnectionsManager::Cancel(int64_t payload_id) {
             location::nearby::connections::mojom::PayloadStatus::kCanceled,
             /*total_bytes=*/0,
             /*bytes_transferred=*/0),
-        /*upgraded_medium=*/base::nullopt);
+        /*upgraded_medium=*/absl::nullopt);
     payload_status_listeners_.erase(payload_id);
   }
 
@@ -162,7 +165,7 @@ void FakeNearbyConnectionsManager::ClearIncomingPayloads() {
   payload_status_listeners_.clear();
 }
 
-base::Optional<std::vector<uint8_t>>
+absl::optional<std::vector<uint8_t>>
 FakeNearbyConnectionsManager::GetRawAuthenticationToken(
     const std::string& endpoint_id) {
   DCHECK(!is_shutdown());
@@ -171,7 +174,7 @@ FakeNearbyConnectionsManager::GetRawAuthenticationToken(
   if (iter != endpoint_auth_tokens_.end())
     return iter->second;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void FakeNearbyConnectionsManager::SetRawAuthenticationToken(
@@ -242,11 +245,11 @@ bool FakeNearbyConnectionsManager::WasPayloadCanceled(
   return base::Contains(canceled_payload_ids_, payload_id);
 }
 
-base::Optional<base::FilePath>
+absl::optional<base::FilePath>
 FakeNearbyConnectionsManager::GetRegisteredPayloadPath(int64_t payload_id) {
   auto it = registered_payload_paths_.find(payload_id);
   if (it == registered_payload_paths_.end())
-    return base::nullopt;
+    return absl::nullopt;
 
   return it->second;
 }

@@ -82,12 +82,9 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
   // on the platform.
   // |allow_protected_memory| suggests that the vulkan implementation should
   // create protected-capable resources, such as VkQueue.
-  // |enforce_protected_memory| suggests that the vulkan implementation should
-  // always use protected memory and resources, such as CommandBuffers.
   virtual std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
       bool use_swiftshader,
-      bool allow_protected_memory,
-      bool enforce_protected_memory);
+      bool allow_protected_memory);
 
   // Creates a scanout NativePixmap that can be rendered using Vulkan.
   // TODO(spang): Remove this once VK_EXT_image_drm_format_modifier is
@@ -140,7 +137,7 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      base::Optional<gfx::Size> framebuffer_size = base::nullopt);
+      absl::optional<gfx::Size> framebuffer_size = absl::nullopt);
 
   // Similar to CreateNativePixmap, but returns the result asynchronously.
   using NativePixmapCallback =

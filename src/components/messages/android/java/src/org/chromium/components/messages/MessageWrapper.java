@@ -66,6 +66,16 @@ public final class MessageWrapper {
     }
 
     @CalledByNative
+    int getDescriptionMaxLines() {
+        return mMessageProperties.get(MessageBannerProperties.DESCRIPTION_MAX_LINES);
+    }
+
+    @CalledByNative
+    void setDescriptionMaxLines(int maxLines) {
+        mMessageProperties.set(MessageBannerProperties.DESCRIPTION_MAX_LINES, maxLines);
+    }
+
+    @CalledByNative
     String getPrimaryButtonText() {
         return mMessageProperties.get(MessageBannerProperties.PRIMARY_BUTTON_TEXT);
     }
@@ -98,6 +108,12 @@ public final class MessageWrapper {
     }
 
     @CalledByNative
+    void disableIconTint() {
+        mMessageProperties.set(
+                MessageBannerProperties.ICON_TINT_COLOR, MessageBannerProperties.TINT_NONE);
+    }
+
+    @CalledByNative
     @DrawableRes
     int getSecondaryIconResourceId() {
         return mMessageProperties.get(MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID);
@@ -106,6 +122,11 @@ public final class MessageWrapper {
     @CalledByNative
     void setSecondaryIconResourceId(@DrawableRes int resourceId) {
         mMessageProperties.set(MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID, resourceId);
+    }
+
+    @CalledByNative
+    void setDuration(long customDuration) {
+        mMessageProperties.set(MessageBannerProperties.DISMISSAL_DURATION, customDuration);
     }
 
     @CalledByNative

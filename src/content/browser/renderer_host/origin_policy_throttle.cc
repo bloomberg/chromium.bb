@@ -61,7 +61,7 @@ void OriginPolicyThrottle::AddExceptionFor(BrowserContext* browser_context,
                                            const GURL& url) {
   DCHECK(browser_context);
   StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartitionForUrl(browser_context, url));
+      browser_context->GetStoragePartitionForUrl(url));
   network::mojom::OriginPolicyManager* origin_policy_manager =
       storage_partition->GetOriginPolicyManagerForBrowserProcess();
 
@@ -86,7 +86,7 @@ OriginPolicyThrottle::WillProcessResponse() {
 
   // If no test origin policy is set, look at the actual origin policy from the
   // response.
-  const base::Optional<network::OriginPolicy>& origin_policy =
+  const absl::optional<network::OriginPolicy>& origin_policy =
       GetTestOriginPolicy().has_value()
           ? GetTestOriginPolicy()
           : NavigationRequest::From(navigation_handle())
@@ -120,7 +120,7 @@ const char* OriginPolicyThrottle::GetNameForLogging() {
 // static
 void OriginPolicyThrottle::SetOriginPolicyForTesting(
     const network::OriginPolicy& origin_policy) {
-  base::Optional<network::OriginPolicy> new_test_origin_policy = origin_policy;
+  absl::optional<network::OriginPolicy> new_test_origin_policy = origin_policy;
   GetTestOriginPolicy().swap(new_test_origin_policy);
 }
 
@@ -133,9 +133,9 @@ OriginPolicyThrottle::OriginPolicyThrottle(NavigationHandle* handle)
     : NavigationThrottle(handle) {}
 
 // static
-base::Optional<network::OriginPolicy>&
+absl::optional<network::OriginPolicy>&
 OriginPolicyThrottle::GetTestOriginPolicy() {
-  static base::NoDestructor<base::Optional<network::OriginPolicy>>
+  static base::NoDestructor<absl::optional<network::OriginPolicy>>
       test_origin_policy;
   return *test_origin_policy;
 }

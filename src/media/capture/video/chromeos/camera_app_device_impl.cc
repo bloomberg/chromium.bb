@@ -125,7 +125,7 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   std::move(consumption_callback).Run(std::move(result_task_queue));
 }
 
-base::Optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange() {
+absl::optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange() {
   base::AutoLock lock(fps_ranges_lock_);
 
   return specified_fps_range_;
@@ -247,8 +247,15 @@ void CameraAppDeviceImpl::SetCaptureIntent(
     SetCaptureIntentCallback callback) {
   DCHECK(mojo_task_runner_->BelongsToCurrentThread());
 
-  base::AutoLock lock(capture_intent_lock_);
-  capture_intent_ = capture_intent;
+  {
+    base::AutoLock lock(capture_intent_lock_);
+    capture_intent_ = capture_intent;
+  }
+  // Reset fps range for VCD to determine it if not explicitly set by app.
+  {
+    base::AutoLock lock(fps_ranges_lock_);
+    specified_fps_range_ = {};
+  }
   std::move(callback).Run();
 }
 

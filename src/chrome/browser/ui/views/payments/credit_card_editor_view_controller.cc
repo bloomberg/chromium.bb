@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/payments/autofill_dialog_models.h"
@@ -41,6 +40,7 @@
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/md_text_button.h"

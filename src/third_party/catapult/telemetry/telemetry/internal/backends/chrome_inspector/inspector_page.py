@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import time
 
 from telemetry.util import image_util
@@ -78,7 +79,7 @@ class InspectorPage(object):
         'method': 'Page.enable'
         }
     res = self._inspector_websocket.SyncRequest(request, timeout)
-    assert len(res['result'].keys()) == 0
+    assert len(res['result']) == 0
 
   def WaitForNavigate(self, timeout=60):
     """Waits for the navigation to complete.

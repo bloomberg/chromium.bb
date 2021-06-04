@@ -10,6 +10,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_test_model.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -26,6 +27,10 @@
 namespace ash {
 namespace {
 
+int64_t GetPrimaryDisplayId() {
+  return display::Screen::GetScreen()->GetPrimaryDisplay().id();
+}
+
 class AppListPresenterImplTest : public AshTestBase {
  public:
   AppListPresenterImplTest() = default;
@@ -39,6 +44,15 @@ class AppListPresenterImplTest : public AshTestBase {
   void ShowAppList() {
     presenter()->Show(AppListViewState::kPeeking, GetPrimaryDisplay().id(),
                       base::TimeTicks());
+  }
+
+  // Shows the Assistant UI.
+  void ShowAssistantUI() {
+    presenter()->ShowEmbeddedAssistantUI(/*show=*/true);
+  }
+
+  bool IsShowingAssistantUI() {
+    return presenter()->IsShowingEmbeddedAssistantUI();
   }
 
  private:
@@ -110,6 +124,56 @@ TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
   // model's observer list.
   presenter()->Dismiss(base::TimeTicks());
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests, in tablet mode, that when specific container id widgets are focused,
+// that the shelf background type remains in kHomeLauncher and does not change
+// to kInApp.
+TEST_F(AppListPresenterImplTest,
+       ShelfBackgroundWithHomeLauncherAndContainerIdsShown) {
+  // Enter tablet mode to display the home launcher.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
+          ->shelf_layout_manager();
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher,
+            shelf_layout_manager->GetShelfBackgroundType());
+  HotseatWidget* hotseat = GetPrimaryShelf()->hotseat_widget();
+
+  for (int id : AppListPresenterImpl::kIdsOfContainersThatWontHideAppList) {
+    // Create a widget with a specific container id and make sure that the
+    // kHomeLauncher background is still shown.
+    std::unique_ptr<views::Widget> widget = CreateTestWidget(nullptr, id);
+
+    EXPECT_EQ(ShelfBackgroundType::kHomeLauncher,
+              shelf_layout_manager->GetShelfBackgroundType());
+    EXPECT_EQ(hotseat->state(), HotseatState::kShownHomeLauncher);
+  }
+}
+
+// Tests that Assistant UI in tablet mode is closed when open another window.
+TEST_F(AppListPresenterImplTest, HideAssistantUIOnFocusOut) {
+  // Enter tablet mode to display the home launcher.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(presenter()->IsVisibleDeprecated());
+  EXPECT_FALSE(IsShowingAssistantUI());
+
+  // Open a window to cover Home Launcher.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  EXPECT_FALSE(presenter()->IsVisibleDeprecated());
+
+  // Open Assistant UI.
+  ShowAssistantUI();
+  // Assistant UI is visible but Home Launcher is considered not visible.
+  EXPECT_TRUE(IsShowingAssistantUI());
+  EXPECT_FALSE(presenter()->IsVisibleDeprecated());
+
+  // Open another window should close Assistant UI.
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  EXPECT_FALSE(IsShowingAssistantUI());
+  EXPECT_FALSE(presenter()->IsVisibleDeprecated());
 }
 
 }  // namespace

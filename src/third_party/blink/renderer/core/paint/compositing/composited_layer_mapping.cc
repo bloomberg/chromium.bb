@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -473,9 +474,9 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
   // transformed by a non-translation transform.
   owning_layer_.SetSubpixelAccumulation(subpixel_accumulation);
 
-  base::Optional<IntRect> mask_bounding_box =
+  absl::optional<IntRect> mask_bounding_box =
       CSSMaskPainter::MaskBoundingBox(GetLayoutObject(), subpixel_accumulation);
-  base::Optional<FloatRect> clip_path_bounding_box =
+  absl::optional<FloatRect> clip_path_bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject());
   if (clip_path_bounding_box)
     clip_path_bounding_box->MoveBy(FloatPoint(subpixel_accumulation));
@@ -578,9 +579,9 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   // subtracting squashLayerOriginInCompositingContainerSpace, but then the
   // offset overall needs to be negated because that's the direction that the
   // painting code expects the offset to be.
-  for (wtf_size_t i = 0; i < layers.size(); ++i) {
+  for (auto& layer : layers) {
     const PhysicalOffset squashed_layer_offset_from_transformed_ancestor =
-        layers[i].paint_layer->ComputeOffsetFromAncestor(
+        layer.paint_layer->ComputeOffsetFromAncestor(
             *common_transform_ancestor);
     const PhysicalOffset offset_from_squash_layer_origin =
         (squashed_layer_offset_from_transformed_ancestor -
@@ -592,14 +593,13 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     PhysicalOffset subpixel_accumulation =
         offset_from_squash_layer_origin +
         PhysicalOffset(new_offset_from_layout_object);
-    if (layers[i].offset_from_layout_object_set &&
-        layers[i].offset_from_layout_object != new_offset_from_layout_object) {
-      layers_needing_paint_invalidation.push_back(layers[i].paint_layer);
+    if (layer.offset_from_layout_object_set &&
+        layer.offset_from_layout_object != new_offset_from_layout_object) {
+      layers_needing_paint_invalidation.push_back(layer.paint_layer);
     }
-    layers[i].offset_from_layout_object = new_offset_from_layout_object;
-    layers[i].offset_from_layout_object_set = true;
-
-    layers[i].paint_layer->SetSubpixelAccumulation(subpixel_accumulation);
+    layer.offset_from_layout_object = new_offset_from_layout_object;
+    layer.offset_from_layout_object_set = true;
+    layer.paint_layer->SetSubpixelAccumulation(subpixel_accumulation);
   }
 
   non_scrolling_squashing_layer_->SetSize(
@@ -979,12 +979,6 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
           CompositingReason::kLayerForVerticalScrollbar);
     }
     scrollable_area->ResetRebuildScrollbarLayerFlags();
-
-    if (scrolling_contents_layer_ &&
-        scrollable_area->NeedsShowScrollbarLayers()) {
-      scrolling_contents_layer_->CcLayer().ShowScrollbars();
-      scrollable_area->DidShowScrollbarLayers();
-    }
   }
 
   // If the subtree is invisible, we don't actually need scrollbar layers.
@@ -1290,10 +1284,9 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
         HasBoxDecorationsOrBackgroundImage(root_object->StyleRef()))
       return true;
 
-    // Now look at the body's layoutObject.
-    HTMLElement* body = layout_object.GetDocument().body();
-    LayoutObject* body_object =
-        IsA<HTMLBodyElement>(body) ? body->GetLayoutObject() : nullptr;
+    // Now look at the body's LayoutObject.
+    HTMLElement* body = layout_object.GetDocument().FirstBodyElement();
+    LayoutObject* body_object = body ? body->GetLayoutObject() : nullptr;
     if (body_object &&
         HasBoxDecorationsOrBackgroundImage(body_object->StyleRef()))
       return true;
@@ -1526,7 +1519,7 @@ void CompositedLayerMapping::DoPaintTask(
   // Largest Contentful Paint. For the latter we special-case the nodes where
   // the opacity:0 depth is 1, so we need to only compute up to the first two
   // opacity:0 effects in here and can ignore the rest.
-  base::Optional<IgnorePaintTimingScope> ignore_paint_timing_scope;
+  absl::optional<IgnorePaintTimingScope> ignore_paint_timing_scope;
   int num_ignores = 0;
   DCHECK_EQ(IgnorePaintTimingScope::IgnoreDepth(), 0);
   for (const auto* effect_node = &paint_info.paint_layer->GetLayoutObject()

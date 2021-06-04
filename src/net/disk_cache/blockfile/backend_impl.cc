@@ -1607,13 +1607,8 @@ int BackendImpl::NewEntry(Addr address, scoped_refptr<EntryImpl>* entry) {
   IncreaseNumRefs();
   *entry = nullptr;
 
-  TimeTicks start = TimeTicks::Now();
   if (!cache_entry->entry()->Load())
     return ERR_READ_FAILURE;
-
-  if (IsLoaded()) {
-    CACHE_UMA(AGE_MS, "LoadTime", 0, start);
-  }
 
   if (!cache_entry->SanityCheck()) {
     LOG(WARNING) << "Messed up entry found.";
@@ -1997,9 +1992,6 @@ void BackendImpl::ReportStats() {
 
   stats_.ResetRatios();
   stats_.SetCounter(Stats::TRIM_ENTRY, 0);
-
-  if (GetCacheType() == net::DISK_CACHE)
-    block_files_.ReportStats();
 }
 
 void BackendImpl::UpgradeTo2_1() {

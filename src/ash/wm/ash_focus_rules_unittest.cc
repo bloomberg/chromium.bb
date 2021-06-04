@@ -60,7 +60,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
  private:
   void CreateLockScreen() {
     auto lock_view = std::make_unique<views::View>();
-    lock_screen_widget_.reset(new views::Widget);
+    lock_screen_widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     gfx::Size ps = lock_view->GetPreferredSize();
@@ -144,7 +144,7 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     aura::Window* root_window = Shell::GetPrimaryRootWindow();
     aura::Window* container = Shell::GetContainer(root_window, container_id);
     aura::Window* window = new aura::Window(nullptr);
-    window->set_id(0);
+    window->SetId(0);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->Show();

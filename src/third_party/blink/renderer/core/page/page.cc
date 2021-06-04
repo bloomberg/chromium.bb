@@ -135,7 +135,7 @@ void Page::InsertOrdinaryPageForTesting(Page* page) {
 
 HeapVector<Member<Page>> Page::RelatedPages() {
   HeapVector<Member<Page>> result;
-  Page* ptr = this->next_related_page_;
+  Page* ptr = next_related_page_;
   while (ptr != this) {
     result.push_back(ptr);
     ptr = ptr->next_related_page_;
@@ -153,17 +153,19 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 }
 
 Page* Page::CreateNonOrdinary(
-    PageClients& page_clients,
+    ChromeClient& chrome_client,
     scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
-  return MakeGarbageCollected<Page>(page_clients, agent_group_scheduler,
+  return MakeGarbageCollected<Page>(base::PassKey<Page>(), chrome_client,
+                                    agent_group_scheduler,
                                     /*is_ordinary=*/false);
 }
 
 Page* Page::CreateOrdinary(
-    PageClients& page_clients,
+    ChromeClient& chrome_client,
     Page* opener,
     scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
-  Page* page = MakeGarbageCollected<Page>(page_clients, agent_group_scheduler,
+  Page* page = MakeGarbageCollected<Page>(base::PassKey<Page>(), chrome_client,
+                                          agent_group_scheduler,
                                           /*is_ordinary=*/true);
 
   if (opener) {
@@ -182,7 +184,8 @@ Page* Page::CreateOrdinary(
   return page;
 }
 
-Page::Page(PageClients& page_clients,
+Page::Page(base::PassKey<Page>,
+           ChromeClient& chrome_client,
            scheduler::WebAgentGroupScheduler& agent_group_scheduler,
            bool is_ordinary)
     : SettingsDelegate(std::make_unique<Settings>()),
@@ -190,7 +193,7 @@ Page::Page(PageClients& page_clients,
       agent_group_scheduler_(agent_group_scheduler),
       animator_(MakeGarbageCollected<PageAnimator>(*this)),
       autoscroll_controller_(MakeGarbageCollected<AutoscrollController>(*this)),
-      chrome_client_(page_clients.chrome_client),
+      chrome_client_(&chrome_client),
       drag_caret_(MakeGarbageCollected<DragCaret>()),
       drag_controller_(MakeGarbageCollected<DragController>(this)),
       focus_controller_(MakeGarbageCollected<FocusController>(this)),
@@ -202,7 +205,6 @@ Page::Page(PageClients& page_clients,
           MakeGarbageCollected<PointerLockController>(this)),
       browser_controls_(MakeGarbageCollected<BrowserControls>(*this)),
       console_message_storage_(MakeGarbageCollected<ConsoleMessageStorage>()),
-      inspector_issue_storage_(MakeGarbageCollected<InspectorIssueStorage>()),
       global_root_scroller_controller_(
           MakeGarbageCollected<TopDocumentRootScrollerController>(*this)),
       visual_viewport_(MakeGarbageCollected<VisualViewport>(*this)),
@@ -303,11 +305,11 @@ const ConsoleMessageStorage& Page::GetConsoleMessageStorage() const {
 }
 
 InspectorIssueStorage& Page::GetInspectorIssueStorage() {
-  return *inspector_issue_storage_;
+  return inspector_issue_storage_;
 }
 
 const InspectorIssueStorage& Page::GetInspectorIssueStorage() const {
-  return *inspector_issue_storage_;
+  return inspector_issue_storage_;
 }
 
 TopDocumentRootScrollerController& Page::GlobalRootScrollerController() const {
@@ -921,7 +923,6 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(scrolling_coordinator_);
   visitor->Trace(browser_controls_);
   visitor->Trace(console_message_storage_);
-  visitor->Trace(inspector_issue_storage_);
   visitor->Trace(global_root_scroller_controller_);
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);
@@ -976,12 +977,12 @@ void Page::WillBeDestroyed() {
     // Before: ... -> prev -> this -> next -> ...
     // After: ... -> prev -> next -> ...
     // (this is ok even if |this| is the only element on the list).
-    Page* prev = this->prev_related_page_;
-    Page* next = this->next_related_page_;
+    Page* prev = prev_related_page_;
+    Page* next = next_related_page_;
     next->prev_related_page_ = prev;
     prev->next_related_page_ = next;
-    this->prev_related_page_ = nullptr;
-    this->next_related_page_ = nullptr;
+    prev_related_page_ = nullptr;
+    next_related_page_ = nullptr;
   }
 
   if (scrolling_coordinator_)
@@ -1100,8 +1101,6 @@ void Page::SetVisionDeficiency(VisionDeficiency new_vision_deficiency) {
     SettingsChanged(ChangeType::kVisionDeficiency);
   }
 }
-
-Page::PageClients::PageClients() : chrome_client(nullptr) {}
 
 template class CORE_TEMPLATE_EXPORT Supplement<Page>;
 

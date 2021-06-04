@@ -5,7 +5,6 @@
 #include <map>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -36,6 +35,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 // The tests in this file use a mock implementation of NetworkContext, to test
@@ -152,7 +152,7 @@ class MockHostResolver : public network::mojom::HostResolver {
         host, network_isolation_key,
         net::NetLogWithSource::Make(net::NetLog::Get(),
                                     net::NetLogSourceType::NONE),
-        base::nullopt);
+        absl::nullopt);
     mojo::Remote<network::mojom::ResolveHostClient> response_client(
         std::move(pending_response_client));
 
@@ -192,6 +192,13 @@ class MockHostResolver : public network::mojom::HostResolver {
   net::HostResolver* const internal_resolver_;
 };
 
+class MockNetworkContext;
+
+std::unique_ptr<network::mojom::UDPSocket> CreateMockUDPSocket(
+    MockNetworkContext* network_context,
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener);
+
 class MockNetworkContext : public network::TestNetworkContext {
  public:
   explicit MockNetworkContext(net::Error result) : result_(result) {}
@@ -199,11 +206,15 @@ class MockNetworkContext : public network::TestNetworkContext {
   MockNetworkContext(const MockNetworkContext&) = delete;
   MockNetworkContext& operator=(const MockNetworkContext&) = delete;
 
+  void Record(RecordedCall call) { history_.push_back(std::move(call)); }
+
+  net::Error result() const { return result_; }
+
   const std::vector<RecordedCall>& history() const { return history_; }
 
   // network::TestNetworkContext:
   void CreateTCPConnectedSocket(
-      const base::Optional<net::IPEndPoint>& local_addr,
+      const absl::optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
       network::mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -211,12 +222,11 @@ class MockNetworkContext : public network::TestNetworkContext {
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateTCPConnectedSocketCallback callback) override {
     const net::IPEndPoint& peer_addr = remote_addr_list.front();
-    history_.push_back(
-        RecordedCall{DirectSocketsServiceImpl::ProtocolType::kTcp,
-                     peer_addr.address().ToString(), peer_addr.port(),
-                     tcp_connected_socket_options->send_buffer_size,
-                     tcp_connected_socket_options->receive_buffer_size,
-                     tcp_connected_socket_options->no_delay});
+    Record(RecordedCall{DirectSocketsServiceImpl::ProtocolType::kTcp,
+                        peer_addr.address().ToString(), peer_addr.port(),
+                        tcp_connected_socket_options->send_buffer_size,
+                        tcp_connected_socket_options->receive_buffer_size,
+                        tcp_connected_socket_options->no_delay});
 
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
@@ -226,15 +236,23 @@ class MockNetworkContext : public network::TestNetworkContext {
                             std::move(producer));
   }
 
+  void CreateUDPSocket(
+      mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+      mojo::PendingRemote<network::mojom::UDPSocketListener> listener)
+      override {
+    udp_socket_ =
+        CreateMockUDPSocket(this, std::move(receiver), std::move(listener));
+  }
+
   void CreateHostResolver(
-      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      const absl::optional<net::DnsConfigOverrides>& config_overrides,
       mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     DCHECK(!config_overrides.has_value());
     DCHECK(!internal_resolver_);
     DCHECK(!host_resolver_);
 
     internal_resolver_ = net::HostResolver::CreateStandaloneResolver(
-        net::NetLog::Get(), /*options=*/base::nullopt, host_mapping_rules_,
+        net::NetLog::Get(), /*options=*/absl::nullopt, host_mapping_rules_,
         /*enable_caching=*/false);
     host_resolver_ = std::make_unique<MockHostResolver>(
         std::move(receiver), internal_resolver_.get());
@@ -254,7 +272,110 @@ class MockNetworkContext : public network::TestNetworkContext {
   std::string host_mapping_rules_;
   std::unique_ptr<net::HostResolver> internal_resolver_;
   std::unique_ptr<network::mojom::HostResolver> host_resolver_;
+  std::unique_ptr<network::mojom::UDPSocket> udp_socket_;
 };
+
+class MockUDPSocket : public network::mojom::UDPSocket {
+ public:
+  typedef net::IPAddress IPAddress;
+  typedef net::IPEndPoint IPEndPoint;
+  typedef net::MutableNetworkTrafficAnnotationTag
+      MutableNetworkTrafficAnnotationTag;
+
+  MockUDPSocket(MockNetworkContext* network_context,
+                mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+                mojo::PendingRemote<network::mojom::UDPSocketListener> listener)
+      : network_context_(network_context) {
+    receiver_.Bind(std::move(receiver));
+    listener_.Bind(std::move(listener));
+  }
+
+  ~MockUDPSocket() override = default;
+
+  // network::mojom::UDPSocket:
+  void Bind(const IPEndPoint& local_addr,
+            network::mojom::UDPSocketOptionsPtr options,
+            BindCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void Connect(const IPEndPoint& remote_addr,
+               network::mojom::UDPSocketOptionsPtr socket_options,
+               ConnectCallback callback) override {
+    const net::Error result = (remote_addr.port() == 0)
+                                  ? net::ERR_INVALID_ARGUMENT
+                                  : network_context_->result();
+    network_context_->Record(RecordedCall{
+        DirectSocketsServiceImpl::ProtocolType::kUdp,
+        remote_addr.address().ToString(), remote_addr.port(),
+        socket_options->send_buffer_size, socket_options->receive_buffer_size,
+        /*no_delay=*/false});
+
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result,
+                                  /*local_addr_out=*/absl::nullopt));
+  }
+
+  void SetBroadcast(bool broadcast, SetBroadcastCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void SetSendBufferSize(int32_t send_buffer_size,
+                         SetSendBufferSizeCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void SetReceiveBufferSize(int32_t receive_buffer_size,
+                            SetSendBufferSizeCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void JoinGroup(const IPAddress& group_address,
+                 JoinGroupCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void LeaveGroup(const IPAddress& group_address,
+                  LeaveGroupCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ReceiveMore(uint32_t num_additional_datagrams) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ReceiveMoreWithBufferSize(uint32_t num_additional_datagrams,
+                                 uint32_t buffer_size) override {
+    NOTIMPLEMENTED();
+  }
+
+  void SendTo(const IPEndPoint& dest_addr,
+              base::span<const uint8_t> data,
+              const MutableNetworkTrafficAnnotationTag& traffic_annotation,
+              SendToCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void Send(base::span<const uint8_t> data,
+            const MutableNetworkTrafficAnnotationTag& traffic_annotation,
+            SendCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void Close() override { NOTIMPLEMENTED(); }
+
+  MockNetworkContext* const network_context_;
+  mojo::Receiver<network::mojom::UDPSocket> receiver_{this};
+  mojo::Remote<network::mojom::UDPSocketListener> listener_;
+};
+
+std::unique_ptr<network::mojom::UDPSocket> CreateMockUDPSocket(
+    MockNetworkContext* network_context,
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener) {
+  return std::make_unique<MockUDPSocket>(network_context, std::move(receiver),
+                                         std::move(listener));
+}
 
 net::Error UnconditionallyPermitConnection(
     const blink::mojom::DirectSocketOptions& options) {
@@ -341,6 +462,30 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_Success_Hostname) {
       "openTcp({remoteAddress: '%s', remotePort: 993})", kExampleHostname);
 
   EXPECT_EQ(expected_result, EvalJs(shell(), script));
+}
+
+// TODO(crbug.com/1196515): Fix this flaky test.
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       DISABLED_OpenTcp_TransientActivation) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(
+      kPermissionDeniedHistogramName,
+      DirectSocketsServiceImpl::FailureType::kTransientActivation, 0);
+
+  MockNetworkContext mock_network_context(net::OK);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  const std::string script =
+      "openTcp({remoteAddress: '::1', remotePort: 993});\
+       openTcp({remoteAddress: '::1', remotePort: 993})";
+
+  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
+            EvalJs(shell(), script));
+  histogram_tester.ExpectBucketCount(
+      kPermissionDeniedHistogramName,
+      DirectSocketsServiceImpl::FailureType::kTransientActivation, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_CannotEvadeCors) {
@@ -472,16 +617,18 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
   EXPECT_EQ(true, call.no_delay);
 }
 
-// TODO(crbug.com/1141241): Resolve failures on linux-bfcache-rel bots.
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, DISABLED_OpenUdp_Success) {
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_Success) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
   DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
       base::BindRepeating(&UnconditionallyPermitConnection));
 
-  // TODO(crbug.com/1119620): Use port from a listening net::UDPServerSocket.
+  MockNetworkContext mock_network_context(net::OK);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  uint16_t remotePort = 513;
   const std::string script = base::StringPrintf(
-      "openUdp({remoteAddress: '127.0.0.1', remotePort: %d})", 0);
+      "openUdp({remoteAddress: '127.0.0.1', remotePort: %d})", remotePort);
 
   EXPECT_EQ("openUdp succeeded", EvalJs(shell(), script));
 }
@@ -510,7 +657,10 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_NotAllowedError) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
-  // TODO(crbug.com/1119620): Use port from a listening net::UDPServerSocket.
+  MockNetworkContext mock_network_context(net::OK);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  // Port 0 is not permitted by MockUDPSocket.
   const std::string script = base::StringPrintf(
       "openUdp({remoteAddress: '127.0.0.1', remotePort: %d})", 0);
 
@@ -580,6 +730,67 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
   // entire IPv6 address range.
   for (const auto& test : kIPv6_tests)
     IPRoutableTest(base::StrCat({"[", test, "]"}), protocol);
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsOne) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
+      base::BindRepeating(&UnconditionallyPermitConnection));
+
+  MockNetworkContext mock_network_context(net::ERR_PROXY_CONNECTION_FAILED);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+  const std::string expected_result =
+      "openUdp failed: NotAllowedError: Permission denied";
+
+  const std::string script =
+      R"(
+          openUdp({
+            remoteAddress: '12.34.56.78',
+            remotePort: 9012,
+            sendBufferSize: 3456,
+            receiveBufferSize: 7890
+          })
+        )";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
+
+  DCHECK_EQ(1U, mock_network_context.history().size());
+  const RecordedCall& call = mock_network_context.history()[0];
+  EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kUdp, call.protocol_type);
+  EXPECT_EQ("12.34.56.78", call.remote_address);
+  EXPECT_EQ(9012, call.remote_port);
+  EXPECT_EQ(3456, call.send_buffer_size);
+  EXPECT_EQ(7890, call.receive_buffer_size);
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsTwo) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
+      base::BindRepeating(&UnconditionallyPermitConnection));
+
+  MockNetworkContext mock_network_context(net::OK);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  const std::string script =
+      R"(
+          openUdp({
+            remoteAddress: 'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
+            remotePort: 789,
+            sendBufferSize: 0,
+            receiveBufferSize: 1234
+          })
+        )";
+  EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
+              StartsWith("openUdp succeeded"));
+
+  DCHECK_EQ(1U, mock_network_context.history().size());
+  const RecordedCall& call = mock_network_context.history()[0];
+  EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kUdp, call.protocol_type);
+  EXPECT_EQ("fedc:ba98:7654:3210:fedc:ba98:7654:3210", call.remote_address);
+  EXPECT_EQ(789, call.remote_port);
+  EXPECT_EQ(0, call.send_buffer_size);
+  EXPECT_EQ(1234, call.receive_buffer_size);
 }
 
 }  // namespace content

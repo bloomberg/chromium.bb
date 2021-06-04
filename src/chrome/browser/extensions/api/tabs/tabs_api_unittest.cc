@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/containers/contains.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +32,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 
@@ -417,7 +417,6 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
 
   scoped_refptr<TabsUpdateFunction> function = new TabsUpdateFunction();
   function->set_extension(extension.get());
-  function->set_browser_context(profile());
   std::unique_ptr<base::ListValue> args(
       extension_function_test_utils::ParseList(
           base::StringPrintf(R"([%d, {"url":"http://example.com"}])", tab_id)));
@@ -690,7 +689,7 @@ TEST_F(TabsApiUnitTest, TabsGroupWithinWindow) {
   EXPECT_EQ(tab_strip_model->GetWebContentsAt(3), web_contentses[1]);
   EXPECT_EQ(tab_strip_model->GetWebContentsAt(4), web_contentses[3]);
 
-  base::Optional<tab_groups::TabGroupId> group =
+  absl::optional<tab_groups::TabGroupId> group =
       tab_strip_model->GetTabGroupForTab(0);
   EXPECT_TRUE(group.has_value());
   EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(1));
@@ -742,7 +741,7 @@ TEST_F(TabsApiUnitTest, TabsGroupMixedTabIds) {
   EXPECT_EQ(tab_strip_model->GetWebContentsAt(3), web_contentses[3]);
   EXPECT_EQ(tab_strip_model->GetWebContentsAt(4), web_contentses[4]);
 
-  base::Optional<tab_groups::TabGroupId> group =
+  absl::optional<tab_groups::TabGroupId> group =
       tab_strip_model->GetTabGroupForTab(1);
   EXPECT_TRUE(group.has_value());
   EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(0));

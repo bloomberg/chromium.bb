@@ -24,7 +24,11 @@ enum class MenuActionType {
   Unread = 12,
   ViewOffline = 13,
   OpenJavascript = 14,
-  kMaxValue = OpenJavascript
+  AddToReadingList = 15,
+  AddToBookmarks = 16,
+  CloseTab = 17,
+  EditBookmark = 18,
+  kMaxValue = EditBookmark
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_
 
 #include "base/allocator/buildflags.h"
+#include "base/dcheck_is_on.h"
 #include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
@@ -26,6 +27,17 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_ALLOW_PCSCAN 1
 #else
 #define PA_ALLOW_PCSCAN 0
+#endif
+
+#if defined(PA_HAS_64_BITS_POINTERS) && \
+    (defined(__ARM_NEON) || defined(__ARM_NEON__)) && defined(__ARM_FP)
+#define PA_STARSCAN_NEON_SUPPORTED
+#endif
+
+#if defined(PA_HAS_64_BITS_POINTERS) && \
+    (defined(OS_LINUX) || defined(OS_ANDROID))
+// TODO(bikineev): Enable for ChromeOS.
+#define PA_STARSCAN_UFFD_WRITE_PROTECTOR_SUPPORTED
 #endif
 
 // POSIX is not only UNIX, e.g. macOS and other OSes. We do use Linux-specific
@@ -68,11 +80,14 @@ static_assert(sizeof(void*) != 8, "");
 // TODO(lizeb): Enable in as many configurations as possible.
 //
 // Disabled when putting refcount in the previous slot, which is what
-// REF_COUNT_AT_END_OF_ALLOCATION does. In this case the refcount overlaps with
+// PUT_REF_COUNT_IN_PREVIOUS_SLOT does. In this case the refcount overlaps with
 // the next pointer shadow for the smallest bucket.
 #if !(defined(OS_MAC) && defined(ARCH_CPU_ARM64)) && \
-    !BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+    !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 #define PA_HAS_FREELIST_HARDENING
 #endif
+
+// Specifies whether allocation extras need to be added.
+#define PA_EXTRAS_REQUIRED (DCHECK_IS_ON() || BUILDFLAG(USE_BACKUP_REF_PTR))
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_

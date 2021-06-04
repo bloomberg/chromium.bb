@@ -79,6 +79,52 @@ class BadExtensionsTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
+class CheckForSuperfluousStlIncludesInHeadersTest(unittest.TestCase):
+  def testGoodFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      # The check is not smart enough to figure out which definitions correspond
+      # to which header.
+      MockFile('other/path/foo.h',
+               ['#include <string>',
+                'std::vector']),
+      # The check is not smart enough to do IWYU.
+      MockFile('other/path/bar.h',
+               ['#include "base/check.h"',
+                'std::vector']),
+      MockFile('other/path/qux.h',
+               ['#include "base/stl_util.h"',
+                'foobar']),
+      MockFile('other/path/baz.h',
+               ['#include "set/vector.h"',
+                'bazzab']),
+      # The check is only for header files.
+      MockFile('other/path/not_checked.cc',
+               ['#include <vector>',
+                'bazbaz']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testBadFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('other/path/foo.h',
+               ['#include <vector>',
+                'vector']),
+      MockFile('other/path/bar.h',
+               ['#include <limits>',
+                '#include <set>',
+                'no_std_namespace']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertTrue('foo.h: Includes STL' in results[0].message)
+    self.assertTrue('bar.h: Includes STL' in results[0].message)
+
+
 class CheckSingletonInHeadersTest(unittest.TestCase):
   def testSingletonInArbitraryHeader(self):
     diff_singleton_h = ['base::subtle::AtomicWord '
@@ -244,17 +290,17 @@ class JSONParsingTest(unittest.TestCase):
     test_data = [
       ('invalid_json_1.json',
        ['{ x }'],
-       'Expecting property name:'),
+       'Expecting property name'),
       ('invalid_json_2.json',
        ['// Hello world!',
         '{ "hello": "world }'],
        'Unterminated string starting at:'),
       ('invalid_json_3.json',
        ['{ "a": "b", "c": "d", }'],
-       'Expecting property name:'),
+       'Expecting property name'),
       ('invalid_json_4.json',
        ['{ "a": "b" "c": "d" }'],
-       'Expecting , delimiter:'),
+       "Expecting ',' delimiter:"),
     ]
 
     input_api.files = [MockFile(filename, contents)
@@ -284,10 +330,10 @@ class JSONParsingTest(unittest.TestCase):
                        MockFile(file_without_comments,
                                 contents_without_comments)]
 
-    self.assertEqual('No JSON object could be decoded',
-                     str(PRESUBMIT._GetJSONParseError(input_api,
-                                                      file_with_comments,
-                                                      eat_comments=False)))
+    self.assertNotEqual(None,
+                        str(PRESUBMIT._GetJSONParseError(input_api,
+                                                         file_with_comments,
+                                                         eat_comments=False)))
     self.assertEqual(None,
                      PRESUBMIT._GetJSONParseError(input_api,
                                                   file_without_comments,
@@ -420,98 +466,6 @@ class IDLParsingTest(unittest.TestCase):
       actual_error = PRESUBMIT._GetIDLParseError(input_api, filename)
       self.assertTrue(expected_error in str(actual_error),
                       "'%s' not found in '%s'" % (expected_error, actual_error))
-
-
-class TryServerMasterTest(unittest.TestCase):
-  def testTryServerMasters(self):
-    bots = {
-        'master.tryserver.chromium.android': [
-            'android_archive_rel_ng',
-            'android_arm64_dbg_recipe',
-            'android_blink_rel',
-            'android_clang_dbg_recipe',
-            'android_compile_dbg',
-            'android_compile_x64_dbg',
-            'android_compile_x86_dbg',
-            'android_coverage',
-            'android_cronet_tester'
-            'android_swarming_rel',
-            'cast_shell_android',
-            'linux_android_dbg_ng',
-            'linux_android_rel_ng',
-        ],
-        'master.tryserver.chromium.mac': [
-            'ios_dbg_simulator',
-            'ios_rel_device',
-            'ios_rel_device_ninja',
-            'mac_asan',
-            'mac_asan_64',
-            'mac_chromium_compile_dbg',
-            'mac_chromium_compile_rel',
-            'mac_chromium_dbg',
-            'mac_chromium_rel',
-            'mac_nacl_sdk',
-            'mac_nacl_sdk_build',
-            'mac_rel_naclmore',
-            'mac_x64_rel',
-            'mac_xcodebuild',
-        ],
-        'master.tryserver.chromium.linux': [
-            'chromium_presubmit',
-            'linux_arm_cross_compile',
-            'linux_arm_tester',
-            'linux_chromeos_asan',
-            'linux_chromeos_browser_asan',
-            'linux_chromeos_valgrind',
-            'linux_chromium_chromeos_dbg',
-            'linux_chromium_chromeos_rel',
-            'linux_chromium_compile_dbg',
-            'linux_chromium_compile_rel',
-            'linux_chromium_dbg',
-            'linux_chromium_gn_dbg',
-            'linux_chromium_gn_rel',
-            'linux_chromium_rel',
-            'linux_chromium_trusty32_dbg',
-            'linux_chromium_trusty32_rel',
-            'linux_chromium_trusty_dbg',
-            'linux_chromium_trusty_rel',
-            'linux_clang_tsan',
-            'linux_ecs_ozone',
-            'linux_layout',
-            'linux_layout_asan',
-            'linux_layout_rel',
-            'linux_layout_rel_32',
-            'linux_nacl_sdk',
-            'linux_nacl_sdk_bionic',
-            'linux_nacl_sdk_bionic_build',
-            'linux_nacl_sdk_build',
-            'linux_redux',
-            'linux_rel_naclmore',
-            'linux_rel_precise32',
-            'linux_valgrind',
-            'tools_build_presubmit',
-        ],
-        'master.tryserver.chromium.win': [
-            'win8_aura',
-            'win8_chromium_dbg',
-            'win8_chromium_rel',
-            'win_chromium_compile_dbg',
-            'win_chromium_compile_rel',
-            'win_chromium_dbg',
-            'win_chromium_rel',
-            'win_chromium_rel',
-            'win_chromium_x64_dbg',
-            'win_chromium_x64_rel',
-            'win_nacl_sdk',
-            'win_nacl_sdk_build',
-            'win_rel_naclmore',
-         ],
-    }
-    for master, bots in bots.iteritems():
-      for bot in bots:
-        self.assertEqual(master, PRESUBMIT.GetTryServerMasterForBot(bot),
-                         'bot=%s: expected %s, computed %s' % (
-            bot, master, PRESUBMIT.GetTryServerMasterForBot(bot)))
 
 
 class UserMetricsActionTest(unittest.TestCase):
@@ -2264,9 +2218,9 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
-    self.assertEquals(result[0].type, 'notify')
-    self.assertEquals(result[0].message,
+    self.assertEqual(1, len(result))
+    self.assertEqual(result[0].type, 'notify')
+    self.assertEqual(result[0].message,
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
@@ -2283,9 +2237,9 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
-    self.assertEquals(result[0].type, 'error')
-    self.assertEquals(result[0].message,
+    self.assertEqual(1, len(result))
+    self.assertEqual(result[0].type, 'error')
+    self.assertEqual(result[0].message,
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
@@ -2302,7 +2256,7 @@ class SecurityChangeTest(unittest.TestCase):
         mock_input_api, 'owner@chromium.org',
         ['apple@chromium.org', 'banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(0, len(result))
+    self.assertEqual(0, len(result))
 
   def testChangeOwnerIsSecurityOwner(self):
     mock_input_api = MockInputApi()
@@ -2314,7 +2268,7 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'orange@chromium.org', ['pear@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
+    self.assertEqual(1, len(result))
 
 
 class BannedTypeCheckTest(unittest.TestCase):
@@ -2334,10 +2288,8 @@ class BannedTypeCheckTest(unittest.TestCase):
                ['using namespace std;  // nocheck']),
       MockFile('some/cpp/comment/file.cc',
                ['  // A comment about `using namespace std;`']),
-      MockFile('ascii/to/utf16/banned.cc', ['ASCIIToUTF16("Hello World")']),
-      MockFile('ascii/to/utf16/allowed.cc', ['ASCIIToUTF16("Hello" + kWorld)']),
-      MockFile('utf8/to/utf16/banned.cc', [r'UTF8ToUTF16("Hello \" World")']),
-      MockFile('utf8/to/utf16/allowed.cc', ['UTF8ToUTF16(kHello + "World")']),
+      MockFile('some/cpp/macro/file.h',
+               ['DISALLOW_COPY_AND_ASSIGN(foo)']),
     ]
 
     results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
@@ -2353,12 +2305,8 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
-    self.assertTrue('ascii/to/utf16/banned.cc' in results[0].message)
-    self.assertFalse('ascii/to/utf16/allowed.cc' in results[0].message)
-    self.assertFalse('ascii/to/utf16/allowed.cc' in results[1].message)
-    self.assertTrue('utf8/to/utf16/banned.cc' in results[0].message)
-    self.assertFalse('utf8/to/utf16/allowed.cc' in results[0].message)
-    self.assertFalse('utf8/to/utf16/allowed.cc' in results[1].message)
+    self.assertTrue('some/cpp/macro/file.h' in results[0].message)
+    self.assertFalse('some/cpp/macro/file.h' in results[1].message)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -2410,32 +2358,12 @@ class BannedTypeCheckTest(unittest.TestCase):
     error_paths = ['third_party/blink', 'content']
     test_cases = [
       {
-        'type': 'mojo::AssociatedBinding<>;',
-        'file': 'file1.c'
-      },
-      {
-        'type': 'mojo::AssociatedBindingSet<>;',
-        'file': 'file2.c'
-      },
-      {
-        'type': 'mojo::AssociatedInterfacePtr<>',
-        'file': 'file3.cc'
-      },
-      {
         'type': 'mojo::AssociatedInterfacePtrInfo<>',
         'file': 'file4.cc'
       },
       {
         'type': 'mojo::AssociatedInterfaceRequest<>',
         'file': 'file5.cc'
-      },
-      {
-        'type': 'mojo::Binding<>',
-        'file': 'file6.cc'
-      },
-      {
-        'type': 'mojo::BindingSet<>',
-        'file': 'file7.cc'
       },
       {
         'type': 'mojo::InterfacePtr<>',
@@ -2452,34 +2380,6 @@ class BannedTypeCheckTest(unittest.TestCase):
       {
         'type': 'mojo::MakeRequest()',
         'file': 'file11.cc'
-      },
-      {
-        'type': 'mojo::MakeRequestAssociatedWithDedicatedPipe()',
-        'file': 'file12.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongBinding()<>',
-        'file': 'file13.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongAssociatedBinding()<>',
-        'file': 'file14.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBinding<>',
-        'file': 'file15.cc'
-      },
-      {
-        'type': 'mojo::StrongBinding<>',
-        'file': 'file16.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBindingSet<>',
-        'file': 'file17.cc'
-      },
-      {
-        'type': 'mojo::StrongBindingSet<>',
-        'file': 'file18.cc'
       },
     ]
 
@@ -2730,8 +2630,8 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
       MockFile('dir/jumbo.h', ['#include "sphelper.h"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(1, len(results))
-    self.assertEquals(4, len(results[0].items))
+    self.assertEqual(1, len(results))
+    self.assertEqual(4, len(results[0].items))
     self.assertTrue('StrCat' in results[0].message)
     self.assertTrue('foo_win.cc' in results[0].items[0])
     self.assertTrue('bar.h' in results[0].items[1])
@@ -2745,7 +2645,7 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
       MockFile('dir/baz-win.h', ['#include "base/win/atl.h"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(0, len(results))
+    self.assertEqual(0, len(results))
 
   def testAllowsToCreateWrapper(self):
     mock_input_api = MockInputApi()
@@ -2755,7 +2655,7 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
         '#include "base/win/windows_defines.inc"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(0, len(results))
+    self.assertEqual(0, len(results))
 
 
 class StringTest(unittest.TestCase):
@@ -3748,50 +3648,6 @@ class CheckForUseOfChromeAppsDeprecationsTest(unittest.TestCase):
                 '+Peppapig',
                 ' B']),
             action='M')
-    ]
-    mock_output_api = MockOutputApi()
-    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
-                                                     mock_output_api)
-    self.assertEqual(0, len(errors))
-
-  def testWarningChromeApps(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-        MockAffectedFile(
-            'foo.js',
-            ['A', 'chrome.app.window.init()', 'B'],
-            ['A', 'chrome.window.init()', 'B'],
-            scm_diff='\n'.join([
-                '--- foo.js.old  2020-12-02 20:40:54.430676385 +0100',
-                '+++ foo.js.new  2020-12-02 20:41:02.086700197 +0100',
-                '@@ -1,3 +1,3 @@',
-                ' A',
-                '+chrome.app.window.init()',
-                ' B']),
-            action='M')
-    ]
-    mock_output_api = MockOutputApi()
-    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
-                                                     mock_output_api)
-    self.assertEqual(1, len(errors))
-    self.assertTrue( self.ERROR_MSG_PIECE in errors[0].message)
-    self.assertTrue( 'foo.js' in errors[0].message)
-
-  def testOKChromeAppsRemoved(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-        MockAffectedFile(
-            'foo.js',
-            ['A', 'B'],
-            ['A', 'chrome.app.window.init()', 'B'],
-            scm_diff='\n'.join([
-                '--- foo.js.old  2020-12-02 20:40:54.430676385 +0100',
-                '+++ foo.js.new  2020-12-02 20:41:02.086700197 +0100',
-                '@@ -1,3 +1,2 @@',
-                ' A',
-                '-chrome.app.window.init()',
-                ' B']),
-            action='D')
     ]
     mock_output_api = MockOutputApi()
     errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,

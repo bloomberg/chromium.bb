@@ -254,7 +254,8 @@ PageLoadTracker::PageLoadTracker(
 
   UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadStartedInForeground,
                         started_in_foreground_);
-  if (embedder_interface_->IsPrerender(navigation_handle->GetWebContents()))
+  if (embedder_interface_->IsNoStatePrefetch(
+          navigation_handle->GetWebContents()))
     UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadPrerender, true);
 }
 
@@ -799,7 +800,7 @@ void PageLoadTracker::DidActivatePortal(base::TimeTicks activation_time) {
 
 void PageLoadTracker::UpdateFeaturesUsage(
     content::RenderFrameHost* rfh,
-    const mojom::PageLoadFeatures& new_features) {
+    const std::vector<blink::UseCounterFeature>& new_features) {
   for (const auto& observer : observers_) {
     observer->OnFeaturesUsageObserved(rfh, new_features);
   }
@@ -853,12 +854,12 @@ base::TimeTicks PageLoadTracker::GetNavigationStart() const {
   return navigation_start_;
 }
 
-const base::Optional<base::TimeDelta>& PageLoadTracker::GetFirstBackgroundTime()
+const absl::optional<base::TimeDelta>& PageLoadTracker::GetFirstBackgroundTime()
     const {
   return first_background_time_;
 }
 
-const base::Optional<base::TimeDelta>& PageLoadTracker::GetFirstForegroundTime()
+const absl::optional<base::TimeDelta>& PageLoadTracker::GetFirstForegroundTime()
     const {
   return first_foreground_time_;
 }
@@ -896,8 +897,8 @@ const UserInitiatedInfo& PageLoadTracker::GetPageEndUserInitiatedInfo() const {
   return page_end_user_initiated_info_;
 }
 
-base::Optional<base::TimeDelta> PageLoadTracker::GetPageEndTime() const {
-  base::Optional<base::TimeDelta> page_end_time;
+absl::optional<base::TimeDelta> PageLoadTracker::GetPageEndTime() const {
+  absl::optional<base::TimeDelta> page_end_time;
 
   if (page_end_reason_ != END_NONE) {
     DCHECK_GE(page_end_time_, navigation_start_);

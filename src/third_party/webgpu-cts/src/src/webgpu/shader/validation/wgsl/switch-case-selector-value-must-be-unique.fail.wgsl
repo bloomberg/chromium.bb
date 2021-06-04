@@ -2,7 +2,7 @@
 // switch statement: '0'
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var a: u32 = 2;
   switch (a) {
     case 10u: {}

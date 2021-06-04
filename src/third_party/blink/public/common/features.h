@@ -38,8 +38,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kFrequencyCappingForOverlayPopupDetection;
 BLINK_COMMON_EXPORT extern const base::Feature
     kFrequencyCappingForLargeStickyAdDetection;
-BLINK_COMMON_EXPORT extern const base::Feature kFtpProtocol;
-BLINK_COMMON_EXPORT extern const base::Feature kInsertKeyToggleMode;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
@@ -53,17 +51,20 @@ BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsEmpty;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
+BLINK_COMMON_EXPORT extern const base::Feature kFencedFrames;
+enum class FencedFramesImplementationType {
+  kShadowDOM,
+  kMPArch,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    FencedFramesImplementationType>
+    kFencedFramesImplementationTypeParam;
 
 // Prerender2:
 BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
-enum class Prerender2Implementation { kWebContents, kMPArch };
-BLINK_COMMON_EXPORT extern const base::FeatureParam<Prerender2Implementation>
-    kPrerender2ImplementationParam;
 
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
-BLINK_COMMON_EXPORT bool IsPrerenderMPArchEnabled();
-BLINK_COMMON_EXPORT bool IsPrerenderWebContentsEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
@@ -116,7 +117,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
 
-BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAudioWorkletThreadRealtimePriority;
 
@@ -133,6 +133,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkTextLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkBackgroundLightnessThresholdParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    ForceDarkIncreaseTextContrast>
+    kForceDarkIncreaseTextContrastParam;
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
@@ -179,6 +182,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
+
+// TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the feature
+// is in stable with no issues.
+BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
 
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -328,6 +335,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppNoteTaking;
+
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcLibvpxEncodeNV12;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
@@ -338,8 +347,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kMediaStreamTrackUseConfigMaxFrameRate;
-
-BLINK_COMMON_EXPORT extern const base::Feature kCloneSessionStorageForNoOpener;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcDistinctWorkerThread;
 
@@ -361,6 +368,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kDisableDocumentDomainByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
 
 BLINK_COMMON_EXPORT extern const base::Feature kEnablePenetratingImageSelection;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDocumentTransition;
 
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.
@@ -392,6 +401,11 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // Master control for Fledge Interest Group feature
 BLINK_COMMON_EXPORT extern const base::Feature kFledgeInterestGroups;
 BLINK_COMMON_EXPORT extern const base::Feature kFledgeInterestGroupAPI;
+
+// Control switch for minimizing processing in the WebRTC APM when all audio
+// tracks are disabled.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kMinimizeAudioProcessingForUnusedOutput;
 
 }  // namespace features
 }  // namespace blink

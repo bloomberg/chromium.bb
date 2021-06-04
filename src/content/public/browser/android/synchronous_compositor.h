@@ -59,7 +59,7 @@ class CONTENT_EXPORT SynchronousCompositor {
     std::unique_ptr<viz::CompositorFrame> frame;
     // Invalid if |frame| is nullptr.
     viz::LocalSurfaceId local_surface_id;
-    base::Optional<viz::HitTestRegionList> hit_test_region_list;
+    absl::optional<viz::HitTestRegionList> hit_test_region_list;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);
@@ -95,7 +95,7 @@ class CONTENT_EXPORT SynchronousCompositor {
   // Note that all resources must be returned before ReleaseHwDraw.
   virtual void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
-      const std::vector<viz::ReturnedResource>& resources) = 0;
+      std::vector<viz::ReturnedResource> resources) = 0;
 
   virtual void DidPresentCompositorFrames(
       viz::FrameTimingDetailsMap timing_details,
@@ -103,7 +103,9 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).
-  virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
+  // `software canvas` being true means drawing happens immediately instead
+  // of being cached, which allows more efficient drawing.
+  virtual bool DemandDrawSw(SkCanvas* canvas, bool software_canvas) = 0;
 
   // Set the memory limit policy of this compositor.
   virtual void SetMemoryPolicy(size_t bytes_limit) = 0;

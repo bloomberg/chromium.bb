@@ -5,13 +5,16 @@
 #include "chrome/browser/task_manager/providers/crosapi/crosapi_task.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/task_manager_ash.h"
 
 namespace {
 
-constexpr char kCrosapiTaskTitlePrefix[] = "Lacros: ";
+constexpr char16_t kCrosapiTaskTitlePrefix[] = u"Lacros: ";
 
 std::u16string GetCrosapiTaskTitle(const std::u16string& mojo_task_title) {
-  return base::UTF8ToUTF16(kCrosapiTaskTitlePrefix) + mojo_task_title;
+  return kCrosapiTaskTitlePrefix + mojo_task_title;
 }
 
 task_manager::Task::Type FromMojo(crosapi::mojom::TaskType mojo_type) {
@@ -68,8 +71,8 @@ namespace task_manager {
 CrosapiTask::CrosapiTask(const crosapi::mojom::TaskPtr& mojo_task)
     : Task(GetCrosapiTaskTitle(mojo_task->title),
            &mojo_task->icon,
-           mojo_task->process_id, /* process handle, which is the same as pid on
-                                     POSIX */
+           mojo_task->process_id,  // process handle, which is the same as pid
+                                   // on POSIX
            mojo_task->process_id),
       // cache the |mojo_task| received from crosapi.
       mojo_task_(mojo_task.Clone()) {}
@@ -120,16 +123,25 @@ blink::WebCacheResourceTypeStats CrosapiTask::GetWebCacheStats() const {
   return FromMojo(mojo_task_->web_cache_stats);
 }
 
+void CrosapiTask::Activate() {
+  if (crosapi::CrosapiManager::IsInitialized()) {
+    crosapi::CrosapiManager::Get()
+        ->crosapi_ash()
+        ->task_manager_ash()
+        ->ActivateTask(mojo_task_->task_uuid);
+  }
+}
+
 void CrosapiTask::Refresh(const base::TimeDelta& update_interval,
                           int64_t refresh_flags) {}
 
-void CrosapiTask::Update(const crosapi::mojom::TaskPtr& mojo_task) {
-  DCHECK_EQ(mojo_task_->task_uuid, mojo_task->task_uuid);
-  DCHECK_EQ(mojo_task_->type, mojo_task_->type);
+void CrosapiTask::Update(const crosapi::mojom::TaskPtr& task) {
+  DCHECK_EQ(mojo_task_->task_uuid, task->task_uuid);
+  DCHECK_EQ(mojo_task_->type, task->type);
 
-  set_title(GetCrosapiTaskTitle(mojo_task->title));
-  set_icon(mojo_task->icon);
-  mojo_task_ = mojo_task.Clone();
+  set_title(GetCrosapiTaskTitle(task->title));
+  set_icon(task->icon);
+  mojo_task_ = task.Clone();
 }
 
 }  // namespace task_manager

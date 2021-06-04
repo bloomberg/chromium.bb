@@ -16,14 +16,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
-#include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_activity_report_interface.h"
+#include "chrome/browser/ash/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -45,7 +45,7 @@ class ChildStatusCollectorState;
 // itself (e.g. OS version). Doesn't include anything related to other users on
 // the device.
 class ChildStatusCollector : public StatusCollector,
-                             public chromeos::UsageTimeStateNotifier::Observer {
+                             public ash::UsageTimeStateNotifier::Observer {
  public:
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
@@ -79,9 +79,9 @@ class ChildStatusCollector : public StatusCollector,
   static const char* GetTimeSinceLastReportHistogramNameForTest();
 
  protected:
-  // chromeos::UsageTimeStateNotifier::Observer:
+  // ash::UsageTimeStateNotifier::Observer:
   void OnUsageTimeStateChange(
-      chromeos::UsageTimeStateNotifier::UsageTimeState state) override;
+      ash::UsageTimeStateNotifier::UsageTimeState state) override;
 
   // Updates the child's active time.
   void UpdateChildUsageTime();
@@ -137,7 +137,7 @@ class ChildStatusCollector : public StatusCollector,
   int64_t last_reported_end_timestamp_ = 0;
 
   // The parameters associated with last app activity report.
-  base::Optional<chromeos::app_time::AppActivityReportInterface::ReportParams>
+  absl::optional<ash::app_time::AppActivityReportInterface::ReportParams>
       last_report_params_;
 
   base::RepeatingTimer update_child_usage_timer_;

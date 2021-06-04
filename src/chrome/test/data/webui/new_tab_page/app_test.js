@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BackgroundManager, BackgroundSelectionType, CustomizeDialogPage, ModuleRegistry, NewTabPageProxy, PromoBrowserCommandProxy, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BackgroundManager, BackgroundSelectionType, CustomizeDialogPage, ModuleRegistry, NewTabPageProxy, NtpElement, PromoBrowserCommandProxy, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
@@ -48,12 +48,6 @@ suite('NewTabPageAppTest', () => {
   /** @type {PromiseResolver} */
   let moduleResolver;
 
-  suiteSetup(() => {
-    loadTimeData.overrideValues({
-      modulesLoadTimeout: 0,
-    });
-  });
-
   setup(async () => {
     PolymerTest.clearBody();
 
@@ -64,9 +58,6 @@ suite('NewTabPageAppTest', () => {
     }));
     handler.setResultFor('getDoodle', Promise.resolve({
       doodle: null,
-    }));
-    handler.setResultFor('getOneGoogleBarParts', Promise.resolve({
-      parts: null,
     }));
     handler.setResultFor('getPromo', Promise.resolve({promo: null}));
     windowProxy.setResultMapperFor('matchMedia', () => ({
@@ -182,9 +173,11 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(1, metrics.count('NewTabPage.VoiceActions'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.kActivateSearchBox,
-        await handler.whenCalled('onVoiceSearchAction'));
+        1,
+        metrics.count(
+            'NewTabPage.VoiceActions', VoiceAction.kActivateSearchBox));
   });
 
   test('voice search keyboard shortcut', async () => {
@@ -199,9 +192,11 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(1, metrics.count('NewTabPage.VoiceActions'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.kActivateKeyboard,
-        await handler.whenCalled('onVoiceSearchAction'));
+        1,
+        metrics.count(
+            'NewTabPage.VoiceActions', VoiceAction.kActivateKeyboard));
 
     // Test other shortcut doesn't close voice search.
     // Act
@@ -463,177 +458,68 @@ suite('NewTabPageAppTest', () => {
     assertTrue(commandExecuted);
   });
 
-  function createModulesSuite(modulesLoadEnabled) {
+  suite('click recording', () => {
     suiteSetup(() => {
       loadTimeData.overrideValues({
         modulesEnabled: true,
-        modulesLoadEnabled,
       });
     });
 
-    [true, false].forEach(visible => {
-      test(`modules appended to page if visibility ${visible}`, async () => {
-        // Arrange.
-        loadTimeData.overrideValues({
-          navigationStartTime: 0.0,
-        });
-        windowProxy.setResultFor('now', 123);
-
-
+    [['#content', NtpElement.kBackground],
+     ['ntp-logo', NtpElement.kLogo],
+     ['ntp-realbox', NtpElement.kRealbox],
+     ['ntp-most-visited', NtpElement.kMostVisited],
+     ['ntp-middle-slot-promo', NtpElement.kMiddleSlotPromo],
+     ['ntp-modules', NtpElement.kModule],
+    ].forEach(([selector, element]) => {
+      test(`clicking '${selector}' records click`, () => {
         // Act.
-        moduleResolver.resolve([
-          {
-            id: 'foo',
-            element: document.createElement('div'),
-          },
-          {
-            id: 'bar',
-            element: document.createElement('div'),
-          }
-        ]);
-        $$(app, 'ntp-middle-slot-promo')
-            .dispatchEvent(new Event(
-                'ntp-middle-slot-promo-loaded',
-                {bubbles: true, composed: true}));
-        callbackRouterRemote.setDisabledModules(!visible, ['bar']);
-        await flushTasks();  // Wait for module descriptor resolution.
+        $$(app, selector).click();
 
         // Assert.
-        const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
-        assertEquals(2, modules.length);
-        assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime'));
-        assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime', 123));
-        const histogram = 'NewTabPage.Modules.EnabledOnNTPLoad';
-        assertEquals(1, metrics.count(`${histogram}.foo`, visible));
-        assertEquals(1, metrics.count(`${histogram}.bar`, false));
-        assertEquals(
-            1, metrics.count('NewTabPage.Modules.VisibleOnNTPLoad', visible));
-        assertEquals(1, handler.getCallCount('updateDisabledModules'));
-        assertEquals(1, handler.getCallCount('onModulesLoadedWithData'));
+        assertEquals(1, metrics.count('NewTabPage.Click'));
+        assertEquals(1, metrics.count('NewTabPage.Click', element));
       });
     });
 
-    test('modules can be dismissed and restored', async () => {
-      // Arrange.
-      let restoreCalled = false;
-      const moduleElement = document.createElement('div');
-
+    test('clicking customize records click', () => {
       // Act.
-      moduleResolver.resolve([{
-        id: 'foo',
-        element: moduleElement,
-      }]);
-      await flushTasks();  // Wait for module descriptor resolution.
+      $$(app, '#customizeButton').click();
+      $$(app, '#customizeDialogIf').render();
+      $$(app, 'ntp-customize-dialog').click();
 
       // Assert.
-      const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
-      assertEquals(1, modules.length);
-      assertFalse($$(app, '#removeModuleToast').open);
-
-      // Act.
-      moduleElement.dispatchEvent(new CustomEvent('dismiss-module', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          message: 'Foo',
-          restoreCallback: _ => {
-            restoreCalled = true;
-          },
-        },
-      }));
-      await flushTasks();
-
-      // Assert.
-      assertTrue($$(app, '#removeModuleToast').open);
-      assertEquals(
-          'Foo', $$(app, '#removeModuleToastMessage').textContent.trim());
-      assertNotStyle($$(app, '#undoRemoveModuleButton'), 'display', 'none');
-      assertEquals('foo', await handler.whenCalled('onDismissModule'));
-      assertFalse(restoreCalled);
-
-      // Act.
-      $$(app, '#undoRemoveModuleButton').click();
-      await flushTasks();
-
-      // Assert.
-      assertFalse($$(app, '#removeModuleToast').open);
-      assertTrue(restoreCalled);
-      assertEquals('foo', await handler.whenCalled('onRestoreModule'));
+      assertEquals(2, metrics.count('NewTabPage.Click'));
+      assertEquals(2, metrics.count('NewTabPage.Click', NtpElement.kCustomize));
     });
 
-    test('modules can be disabled and restored', async () => {
-      // Arrange.
-      let restoreCalled = false;
-      const moduleElement = document.createElement('div');
-
+    test('clicking OGB records click', () => {
       // Act.
-      moduleResolver.resolve([{
-        id: 'foo',
-        name: 'bar',
-        element: moduleElement,
-      }]);
-      await flushTasks();  // Wait for module descriptor resolution.
-
-      // Assert.
-      const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
-      assertEquals(1, modules.length);
-      assertFalse($$(app, '#removeModuleToast').open);
-
-      // Act.
-      moduleElement.dispatchEvent(new CustomEvent('disable-module', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          message: 'Foo',
-          restoreCallback: _ => {
-            restoreCalled = true;
-          },
-        },
-      }));
-      await flushTasks();
-
-      // Assert.
-      assertTrue($$(app, '#removeModuleToast').open);
-      assertEquals(
-          'Foo', $$(app, '#removeModuleToastMessage').textContent.trim());
-      assertNotStyle($$(app, '#undoRemoveModuleButton'), 'display', 'none');
-      assertEquals(1, metrics.count('NewTabPage.Modules.Disabled', 'foo'));
-      assertEquals(
-          1, metrics.count('NewTabPage.Modules.Disabled.ModuleRequest', 'foo'));
-      assertFalse(restoreCalled);
-
-      // Act.
-      $$(app, '#undoRemoveModuleButton').click();
-      await flushTasks();
-
-      // Assert.
-      assertFalse($$(app, '#removeModuleToast').open);
-      assertTrue(restoreCalled);
-      assertEquals(1, metrics.count('NewTabPage.Modules.Enabled', 'foo'));
-      assertEquals(1, metrics.count('NewTabPage.Modules.Enabled.Toast', 'foo'));
-
-      // Act.
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'z',
-        ctrlKey: true,
+      window.dispatchEvent(new MessageEvent('message', {
+        data: {
+          frameType: 'one-google-bar',
+          messageType: 'click',
+        }
       }));
 
-      // Assert: no crash.
+      // Assert.
+      assertEquals(1, metrics.count('NewTabPage.Click'));
+      assertEquals(
+          1, metrics.count('NewTabPage.Click', NtpElement.kOneGoogleBar));
+    });
+  });
+
+  suite('modules', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesEnabled: true,
+      });
     });
 
     test('modules can open customize dialog', async () => {
-      // Arrange.
-      const moduleElement = document.createElement('div');
-      moduleResolver.resolve([{
-        id: 'foo',
-        element: moduleElement,
-      }]);
-      await flushTasks();  // Wait for module descriptor resolution.
-
       // Act.
-      moduleElement.dispatchEvent(
-          new Event('customize-module', {bubbles: true, composed: true}));
-      await flushTasks();  // Wait for customize dialog to open.
+      $$(app, 'ntp-modules').dispatchEvent(new Event('customize-module'));
+      $$(app, '#customizeDialogIf').render();
 
       // Assert.
       assertTrue(!!$$(app, 'ntp-customize-dialog'));
@@ -641,44 +527,63 @@ suite('NewTabPageAppTest', () => {
           CustomizeDialogPage.MODULES,
           $$(app, 'ntp-customize-dialog').selectedPage);
     });
-  }
 
-  suite('modules load enabled', () => createModulesSuite(true));
-  suite('modules load disabled', () => createModulesSuite(false));
+    test('promo and modules coordinate', async () => {
+      // Arrange.
+      loadTimeData.overrideValues({navigationStartTime: 0.0});
+      windowProxy.setResultFor('now', 123.0);
+      const middleSlotPromo = $$(app, 'ntp-middle-slot-promo');
+      const modules = $$(app, 'ntp-modules');
 
-  test('modules loaded but not rendered if counterfactual', async () => {
-    // Arrange.
-    loadTimeData.overrideValues({
-      modulesEnabled: false,
-      modulesLoadEnabled: true,
+      // Assert.
+      assertStyle(middleSlotPromo, 'display', 'none');
+      assertStyle(modules, 'display', 'none');
+
+      // Act.
+      middleSlotPromo.dispatchEvent(new Event('ntp-middle-slot-promo-loaded'));
+
+      // Assert.
+      assertStyle(middleSlotPromo, 'display', 'none');
+      assertStyle(modules, 'display', 'none');
+
+      // Act.
+      modules.dispatchEvent(new Event('modules-loaded'));
+
+      // Assert.
+      assertNotStyle(middleSlotPromo, 'display', 'none');
+      assertNotStyle(modules, 'display', 'none');
+      assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime'));
+      assertEquals(1, metrics.count('NewTabPage.Modules.ShownTime', 123));
+    });
+  });
+
+  suite('counterfactual modules', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesEnabled: false,
+        modulesLoadEnabled: true,
+      });
     });
 
-    // Act.
-    moduleResolver.resolve([
-      {
-        id: 'foo',
-        element: document.createElement('div'),
-      },
-      {
-        id: 'bar',
-        element: document.createElement('div'),
-      }
-    ]);
-    await flushTasks();
+    test('modules loaded but not rendered if counterfactual', async () => {
+      // Act.
+      moduleResolver.resolve([
+        {
+          descriptor: {id: 'foo'},
+          element: document.createElement('div'),
+        },
+        {
+          descriptor: {id: 'bar'},
+          element: document.createElement('div'),
+        }
+      ]);
+      await flushTasks();
 
-    // TODO(crbug.com/1196355): Need to re-initialize modules because load time
-    // data gets applied racily. We should remove the race condition.
-    moduleRegistry.reset();
-    handler.reset();
-    moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
-    await app.onLazyRendered_();
-
-    $$(app, '#modules').render();
-
-    // Assert.
-    assertEquals(1, moduleRegistry.getCallCount('initializeModules'));
-    assertEquals(1, handler.getCallCount('onModulesLoadedWithData'));
-    assertEquals(
-        0, app.shadowRoot.querySelectorAll('ntp-module-wrapper').length);
+      // Assert.
+      assertEquals(1, moduleRegistry.getCallCount('initializeModules'));
+      assertEquals(1, handler.getCallCount('onModulesLoadedWithData'));
+      assertEquals(
+          0, app.shadowRoot.querySelectorAll('ntp-module-wrapper').length);
+    });
   });
 });

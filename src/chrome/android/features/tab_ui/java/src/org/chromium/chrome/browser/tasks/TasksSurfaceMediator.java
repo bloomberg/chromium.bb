@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
+import org.chromium.chrome.browser.lens.LensMetrics;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
@@ -46,13 +47,10 @@ class TasksSurfaceMediator implements OverviewModeObserver {
     private final IncognitoCookieControlsManager mIncognitoCookieControlsManager;
     private IncognitoCookieControlsManager.Observer mIncognitoCookieControlsObserver;
     private final PropertyModel mModel;
-    private final Runnable mTrendyTermUpdater;
 
     TasksSurfaceMediator(PropertyModel model, View.OnClickListener incognitoLearnMoreClickListener,
-            IncognitoCookieControlsManager incognitoCookieControlsManager, boolean isTabCarousel,
-            Runnable trendyTermUpdater) {
+            IncognitoCookieControlsManager incognitoCookieControlsManager, boolean isTabCarousel) {
         mModel = model;
-        mTrendyTermUpdater = trendyTermUpdater;
         mModel.set(IS_TAB_CAROUSEL_VISIBLE, isTabCarousel);
 
         model.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, incognitoLearnMoreClickListener);
@@ -110,8 +108,8 @@ class TasksSurfaceMediator implements OverviewModeObserver {
         mModel.set(LENS_BUTTON_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LensMetrics.recordClicked(LensEntryPoint.TASKS_SURFACE);
                 mOmniboxStub.startLens(LensEntryPoint.TASKS_SURFACE);
-                RecordUserAction.record("TasksSurface.FakeBox.Lens");
             }
         });
 
@@ -138,11 +136,7 @@ class TasksSurfaceMediator implements OverviewModeObserver {
     }
 
     @Override
-    public void startedShowing() {
-        if (mTrendyTermUpdater != null) {
-            mTrendyTermUpdater.run();
-        }
-    }
+    public void startedShowing() {}
 
     @Override
     public void finishedShowing() {}

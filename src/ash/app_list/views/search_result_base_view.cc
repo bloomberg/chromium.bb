@@ -8,7 +8,6 @@
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
 
@@ -35,7 +34,7 @@ const char* SearchResultBaseView::GetClassName() const {
 }
 
 void SearchResultBaseView::SetSelected(bool selected,
-                                       base::Optional<bool> reverse_tab_order) {
+                                       absl::optional<bool> reverse_tab_order) {
   if (selected_ == selected)
     return;
 
@@ -104,7 +103,7 @@ void SearchResultBaseView::UpdateAccessibleName() {
 void SearchResultBaseView::ClearResult() {
   if (result_)
     result_->RemoveObserver(this);
-  SetSelected(false, base::nullopt);
+  SetSelected(false, absl::nullopt);
   result_ = nullptr;
 }
 

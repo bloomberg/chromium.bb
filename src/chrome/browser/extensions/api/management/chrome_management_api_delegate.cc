@@ -334,6 +334,14 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
   if (display_mode == blink::mojom::DisplayMode::kBrowser)
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
 
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    // If the profile doesn't have an App Service Proxy available, that means
+    // this extension has been explicitly permitted to run in an incognito
+    // context. Treat this as if the extension is running in the original
+    // profile, so it is allowed to access apps in the original profile.
+    profile = profile->GetOriginalProfile();
+  }
+
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
       ->LaunchAppWithParams(apps::AppLaunchParams(
@@ -355,7 +363,7 @@ void OnWebAppInstallabilityChecked(
     InstallOrLaunchWebAppCallback callback,
     std::unique_ptr<content::WebContents> web_contents,
     InstallableCheckResult result,
-    base::Optional<web_app::AppId> app_id) {
+    absl::optional<web_app::AppId> app_id) {
   switch (result) {
     case InstallableCheckResult::kAlreadyInstalled:
       DCHECK(app_id);
@@ -400,6 +408,13 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   Profile* profile = Profile::FromBrowserContext(context);
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    // If the profile doesn't have an App Service Proxy available, that means
+    // this extension has been explicitly permitted to run in an incognito
+    // context. Treat this as if the extension is running in the original
+    // profile, so it is allowed to access apps in the original profile.
+    profile = profile->GetOriginalProfile();
+  }
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
       ->LaunchAppWithParams(apps::AppLaunchParams(
@@ -408,8 +423,8 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
           apps::mojom::AppLaunchSource::kSourceManagementApi));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
-      chromeos::DemoSession::AppLaunchSource::kExtensionApi);
+  ash::DemoSession::RecordAppLaunchSourceIfInDemoMode(
+      ash::DemoSession::AppLaunchSource::kExtensionApi);
 #endif
 
   extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_EXTENSION_API,

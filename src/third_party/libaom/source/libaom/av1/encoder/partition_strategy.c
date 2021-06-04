@@ -61,7 +61,7 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
                                   int *partition_vert_allowed,
                                   int *do_rectangular_split,
                                   int *do_square_split) {
-  assert(cm->seq_params.sb_size >= BLOCK_64X64 &&
+  assert(cm->seq_params->sb_size >= BLOCK_64X64 &&
          "Invalid sb_size for intra_cnn!");
   const int bsize_idx = convert_bsize_to_idx(bsize);
 
@@ -356,7 +356,7 @@ static int simple_motion_search_get_best_ref(
       int_mv best_mv =
           av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
                                    start_mvs[ref], num_planes, use_subpixel);
-      curr_var = cpi->fn_ptr[bsize].vf(
+      curr_var = cpi->ppi->fn_ptr[bsize].vf(
           x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].dst.buf,
           xd->plane[0].dst.stride, &curr_sse);
       if (curr_sse < *best_sse) {
@@ -636,7 +636,7 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
                                         float *features) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
 
   // Currently this only allows 128X128 SB size. May extend it to 64X64 SB size.
   assert(sb_size == BLOCK_128X128);
@@ -782,7 +782,7 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
     }
   } else if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
              ADAPT_PRED) {
-    const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
+    const BLOCK_SIZE sb_size = cpi->common.seq_params->sb_size;
     const MACROBLOCKD *const xd = &x->e_mbd;
     // TODO(debargha): x->source_variance is unavailable at this point,
     // so compute. The redundant recomputation later can be removed.
@@ -1380,7 +1380,7 @@ void av1_prune_partitions_before_search(
   const int try_intra_cnn_split =
       !cpi->use_screen_content_tools && frame_is_intra_only(cm) &&
       cpi->sf.part_sf.intra_cnn_split &&
-      cm->seq_params.sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
+      cm->seq_params->sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
       bsize >= BLOCK_8X8 &&
       mi_row + mi_size_high[bsize] <= mi_params->mi_rows &&
       mi_col + mi_size_wide[bsize] <= mi_params->mi_cols;

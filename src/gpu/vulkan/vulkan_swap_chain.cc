@@ -13,7 +13,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -28,8 +27,8 @@ VkSemaphore CreateSemaphore(VkDevice vk_device) {
       VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
 
   VkSemaphore vk_semaphore = VK_NULL_HANDLE;
-  auto result = vkCreateSemaphore(vk_device, &semaphore_create_info, nullptr,
-                                  &vk_semaphore);
+  auto result = vkCreateSemaphore(vk_device, &semaphore_create_info,
+                                  /*pAllocator=*/nullptr, &vk_semaphore);
   LOG_IF(FATAL, VK_SUCCESS != result)
       << "vkCreateSemaphore() failed: " << result;
   return vk_semaphore;
@@ -40,6 +39,7 @@ VkSemaphore CreateSemaphore(VkDevice vk_device) {
 VulkanSwapChain::VulkanSwapChain(uint64_t acquire_next_image_timeout_ns)
     : acquire_next_image_timeout_ns_(acquire_next_image_timeout_ns) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_GT(acquire_next_image_timeout_ns, 0u);
 }
 
 VulkanSwapChain::~VulkanSwapChain() {
@@ -59,14 +59,11 @@ bool VulkanSwapChain::Initialize(
     uint32_t min_image_count,
     VkImageUsageFlags image_usage_flags,
     VkSurfaceTransformFlagBitsKHR pre_transform,
-    bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   base::AutoLock auto_lock(lock_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(device_queue);
-  DCHECK(!use_protected_memory || device_queue->allow_protected_memory());
 
-  use_protected_memory_ = use_protected_memory;
   device_queue_ = device_queue;
   is_incremental_present_supported_ =
       gfx::HasExtension(device_queue_->enabled_extensions(),
@@ -74,7 +71,7 @@ bool VulkanSwapChain::Initialize(
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();
   return InitializeSwapChain(surface, surface_format, image_size,
                              min_image_count, image_usage_flags, pre_transform,
-                             use_protected_memory, std::move(old_swap_chain)) &&
+                             std::move(old_swap_chain)) &&
          InitializeSwapImages(surface_format) && AcquireNextImage();
 }
 
@@ -84,33 +81,22 @@ void VulkanSwapChain::Destroy() {
 
   WaitUntilPostSubBufferAsyncFinished();
 
-#if !defined(OS_FUCHSIA)
-  if (UNLIKELY(!fence_and_semaphores_queue_.empty())) {
-    VkDevice device = device_queue_->GetVulkanDevice();
-    {
-      // Make sure the last enqueued fence is passed, so we can release all
-      // other fences and semaphores safely.
-      base::ScopedBlockingCall scoped_blocking_call(
-          FROM_HERE, base::BlockingType::MAY_BLOCK);
-      // Use 1 second timeout for vkWaitForFences(), it should be long enough.
-      constexpr auto kTimeout = base::TimeTicks::kNanosecondsPerSecond;
-      auto result =
-          vkWaitForFences(device, 1, &fence_and_semaphores_queue_.back().fence,
-                          VK_TRUE, kTimeout);
-      if (result != VK_SUCCESS)
-        LOG(ERROR) << "vkWaitForFences() failed: " << result;
-    }
-    for (auto& fence_and_semaphores : fence_and_semaphores_queue_) {
-      vkDestroyFence(device, fence_and_semaphores.fence,
-                     nullptr /* pAllocator */);
-      vkDestroySemaphore(device, fence_and_semaphores.semaphores[0],
-                         nullptr /* pAllocator */);
-      vkDestroySemaphore(device, fence_and_semaphores.semaphores[1],
-                         nullptr /* pAllocator */);
-    }
-    fence_and_semaphores_queue_.clear();
+  if (UNLIKELY(!pending_semaphores_queue_.empty())) {
+    auto* fence_helper = device_queue_->GetFenceHelper();
+    fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+        [](base::circular_deque<PendingSemaphores> pending_semaphores_queue,
+           VulkanDeviceQueue* device_queue, bool device_lost) {
+          VkDevice device = device_queue->GetVulkanDevice();
+          for (auto& pending_semaphores : pending_semaphores_queue) {
+            vkDestroySemaphore(device, pending_semaphores.acquire_semaphore,
+                               /*pAllocator=*/nullptr);
+            vkDestroySemaphore(device, pending_semaphores.present_semaphore,
+                               /*pAllocator=*/nullptr);
+          }
+        },
+        std::move(pending_semaphores_queue_)));
+    pending_semaphores_queue_.clear();
   }
-#endif  // !defined(OS_FUCHSIA)
 
   DCHECK(!is_writing_);
   DestroySwapImages();
@@ -179,7 +165,6 @@ bool VulkanSwapChain::InitializeSwapChain(
     uint32_t min_image_count,
     VkImageUsageFlags image_usage_flags,
     VkSurfaceTransformFlagBitsKHR pre_transform,
-    bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -188,7 +173,7 @@ bool VulkanSwapChain::InitializeSwapChain(
 
   VkSwapchainCreateInfoKHR swap_chain_create_info = {
       .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      .flags = use_protected_memory ? VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR : 0,
+      .flags = 0,
       .surface = surface,
       .minImageCount = min_image_count,
       .imageFormat = surface_format.format,
@@ -208,19 +193,17 @@ bool VulkanSwapChain::InitializeSwapChain(
     base::AutoLock auto_lock(old_swap_chain->lock_);
     old_swap_chain->WaitUntilPostSubBufferAsyncFinished();
     swap_chain_create_info.oldSwapchain = old_swap_chain->swap_chain_;
-    // Reuse |post_sub_buffer_task_runner_| and |fence_and_semaphores_queue_|
+    // Reuse |post_sub_buffer_task_runner_| and |pending_semaphores_queue_|
     // from the |old_swap_chain|.
     post_sub_buffer_task_runner_ = old_swap_chain->post_sub_buffer_task_runner_;
-#if !defined(OS_FUCHSIA)
-    fence_and_semaphores_queue_ =
-        std::move(old_swap_chain->fence_and_semaphores_queue_);
-    old_swap_chain->fence_and_semaphores_queue_.clear();
-#endif  // !defined(OS_FUCHSIA)
+    pending_semaphores_queue_ =
+        std::move(old_swap_chain->pending_semaphores_queue_);
+    old_swap_chain->pending_semaphores_queue_.clear();
   }
 
   VkSwapchainKHR new_swap_chain = VK_NULL_HANDLE;
-  result = vkCreateSwapchainKHR(device, &swap_chain_create_info, nullptr,
-                                &new_swap_chain);
+  result = vkCreateSwapchainKHR(device, &swap_chain_create_info,
+                                /*pAllocator=*/nullptr, &new_swap_chain);
 
   if (LIKELY(old_swap_chain)) {
     auto* fence_helper = device_queue_->GetFenceHelper();
@@ -260,7 +243,7 @@ void VulkanSwapChain::DestroySwapChain() {
   // TODO(penghuang): remove this workaround when Xserver issue is fixed
   // upstream. https://crbug.com/1130495
   if (!destroy_swapchain_will_hang_)
-    vkDestroySwapchainKHR(device, swap_chain_, nullptr /* pAllocator */);
+    vkDestroySwapchainKHR(device, swap_chain_, /*pAllocator=*/nullptr);
   swap_chain_ = VK_NULL_HANDLE;
 }
 
@@ -300,9 +283,9 @@ void VulkanSwapChain::DestroySwapImages() {
   VkDevice device = device_queue_->GetVulkanDevice();
   for (auto& image : images_) {
     vkDestroySemaphore(device, image.acquire_semaphore,
-                       nullptr /* pAllocator */);
+                       /*pAllocator=*/nullptr);
     vkDestroySemaphore(device, image.present_semaphore,
-                       nullptr /* pAllocator */);
+                       /*pAllocator=*/nullptr);
   }
   images_.clear();
 }
@@ -427,34 +410,25 @@ bool VulkanSwapChain::AcquireNextImage() {
   // initialization, so it is safe for now.
   // TODO(penghuang): make VulkanDeviceQueue threadsafe.
   VkDevice device = device_queue_->GetVulkanDevice();
-  auto fence_and_semaphores = GetOrCreateFenceAndSemaphores();
-  if (UNLIKELY(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE)) {
-#if !defined(OS_FUCHSIA)
-    DCHECK(fence_and_semaphores.fence == VK_NULL_HANDLE);
-#endif  // !defined(OS_FUCHSIA)
-    DCHECK(fence_and_semaphores.semaphores[1] == VK_NULL_HANDLE);
+
+  VkSemaphore acquire_semaphore = VK_NULL_HANDLE;
+  VkSemaphore present_semaphore = VK_NULL_HANDLE;
+  if (!GetOrCreateSemaphores(&acquire_semaphore, &present_semaphore))
     return false;
-  }
 
-  DCHECK(fence_and_semaphores.semaphores[0] != VK_NULL_HANDLE);
-  DCHECK(fence_and_semaphores.semaphores[1] != VK_NULL_HANDLE);
-
-  VkFence acquire_fence = fence_and_semaphores.fence;
-  VkSemaphore acquire_semaphore = fence_and_semaphores.semaphores[0];
-  VkSemaphore present_semaphore = fence_and_semaphores.semaphores[1];
   uint32_t next_image;
   auto result = ({
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
     vkAcquireNextImageKHR(device, swap_chain_, acquire_next_image_timeout_ns_,
-                          acquire_semaphore, acquire_fence, &next_image);
+                          acquire_semaphore, /*fence=*/VK_NULL_HANDLE,
+                          &next_image);
   });
 
   if (UNLIKELY(result == VK_TIMEOUT)) {
     LOG(ERROR) << "vkAcquireNextImageKHR() hangs.";
-    vkDestroySemaphore(device, acquire_semaphore, nullptr);
-    vkDestroySemaphore(device, present_semaphore, nullptr);
-    vkDestroyFence(device, acquire_fence, nullptr);
+    vkDestroySemaphore(device, acquire_semaphore, /*pAllocator=*/nullptr);
+    vkDestroySemaphore(device, present_semaphore, /*pAllocator=*/nullptr);
     state_ = VK_ERROR_SURFACE_LOST_KHR;
     destroy_swapchain_will_hang_ = true;
     return false;
@@ -462,9 +436,8 @@ bool VulkanSwapChain::AcquireNextImage() {
 
   if (UNLIKELY(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)) {
     LOG(DFATAL) << "vkAcquireNextImageKHR() failed: " << result;
-    vkDestroySemaphore(device, acquire_semaphore, nullptr);
-    vkDestroySemaphore(device, present_semaphore, nullptr);
-    vkDestroyFence(device, acquire_fence, nullptr);
+    vkDestroySemaphore(device, acquire_semaphore, /*pAllocator=*/nullptr);
+    vkDestroySemaphore(device, present_semaphore, /*pAllocator=*/nullptr);
     state_ = result;
     return false;
   }
@@ -476,11 +449,11 @@ bool VulkanSwapChain::AcquireNextImage() {
   // has been wait on for the compositing work last time,
   // and |current_image_data.present_semaphore| has been wait on by present
   // engine for presenting the image last time, so those two semaphores should
-  // be free for reusing, when the |acquire_fence| is passed.
+  // be free for reusing when |num_images() * 2| frames are passed, because it
+  // is impossible there are more than |num_images() * 2| frames are in flight.
   auto& current_image_data = images_[next_image];
-  ReturnFenceAndSemaphores({acquire_fence,
-                            {current_image_data.acquire_semaphore,
-                             current_image_data.present_semaphore}});
+  ReturnSemaphores(current_image_data.acquire_semaphore,
+                   current_image_data.present_semaphore);
   current_image_data.acquire_semaphore = acquire_semaphore;
   current_image_data.present_semaphore = present_semaphore;
 
@@ -498,83 +471,47 @@ void VulkanSwapChain::WaitUntilPostSubBufferAsyncFinished() {
   DCHECK(acquired_image_ || state_ != VK_SUCCESS);
 }
 
-VulkanSwapChain::FenceAndSemaphores
-VulkanSwapChain::GetOrCreateFenceAndSemaphores() {
+bool VulkanSwapChain::GetOrCreateSemaphores(VkSemaphore* acquire_semaphore,
+                                            VkSemaphore* present_semaphore) {
+  // When pending semaphores are more than |num_images() * 2|, we will
+  // assume the semaphores at the front of the queue has been signaled
+  // and can be reused (because it is impossible there are more than
+  // |num_images() * 2| frames are in flight). Otherwise, new semaphores
+  // will be created.
+  if (LIKELY(pending_semaphores_queue_.size() >= num_images() * 2)) {
+    const auto& semaphores = pending_semaphores_queue_.front();
+    DCHECK(semaphores.acquire_semaphore != VK_NULL_HANDLE);
+    DCHECK(semaphores.present_semaphore != VK_NULL_HANDLE);
+    pending_semaphores_queue_.pop_front();
+    *acquire_semaphore = semaphores.acquire_semaphore;
+    *present_semaphore = semaphores.present_semaphore;
+    return true;
+  }
+
   VkDevice device = device_queue_->GetVulkanDevice();
-  FenceAndSemaphores fence_and_semaphores;
-  do {
-#if !defined(OS_FUCHSIA)
-    // This crash key is for diagnosing OOM crash.
-    // TODO(penghuang): remove it when OOM crash is fixed, or find out it is not
-    // related.
-    SCOPED_CRASH_KEY_NUMBER("VulkanSwapChian", "queue_.size()",
-                            fence_and_semaphores_queue_.size());
+  *acquire_semaphore = CreateSemaphore(device);
+  if (*acquire_semaphore == VK_NULL_HANDLE)
+    return false;
 
-    if (LIKELY(!fence_and_semaphores_queue_.empty())) {
-      fence_and_semaphores = fence_and_semaphores_queue_.front();
-      auto result = vkGetFenceStatus(device, fence_and_semaphores.fence);
-      if (LIKELY(result == VK_SUCCESS)) {
-        fence_and_semaphores_queue_.pop_front();
-        vkResetFences(device, 1, &fence_and_semaphores.fence);
-      } else if (LIKELY(result == VK_NOT_READY)) {
-        // If fence is not passed, new fence and semaphores will be created.
-        fence_and_semaphores = {};
-      } else {
-        DLOG(ERROR) << "vkGetFenceStatus() failed: " << result;
-        fence_and_semaphores = {};
-        break;
-      }
-    }
+  *present_semaphore = CreateSemaphore(device);
+  if (*present_semaphore == VK_NULL_HANDLE) {
+    // Failed to get or create semaphores, release resources.
+    vkDestroySemaphore(device, *acquire_semaphore, /*pAllocator=*/nullptr);
+    return false;
+  }
 
-    if (UNLIKELY(fence_and_semaphores.fence == VK_NULL_HANDLE)) {
-      constexpr VkFenceCreateInfo fence_create_info = {
-          .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-      };
-      auto result =
-          vkCreateFence(device, &fence_create_info,
-                        /*pAllocator=*/nullptr, &fence_and_semaphores.fence);
-      if (result != VK_SUCCESS) {
-        DLOG(ERROR) << "vkCreateFence() failed: " << result;
-        break;
-      }
-    }
-#endif  // !defined(OS_FUCHSIA)
-
-    if (UNLIKELY(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE))
-      fence_and_semaphores.semaphores[0] = CreateSemaphore(device);
-    if (UNLIKELY(fence_and_semaphores.semaphores[1] == VK_NULL_HANDLE))
-      fence_and_semaphores.semaphores[1] = CreateSemaphore(device);
-
-    if (UNLIKELY(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE ||
-                 fence_and_semaphores.semaphores[1] == VK_NULL_HANDLE)) {
-      break;
-    }
-
-    return fence_and_semaphores;
-  } while (false);
-
-  // Failed to get or create fence and semaphores, release resources.
-  vkDestroyFence(device, fence_and_semaphores.fence, nullptr /* pAllocator */);
-  vkDestroySemaphore(device, fence_and_semaphores.semaphores[0],
-                     nullptr /* pAllocator */);
-  vkDestroySemaphore(device, fence_and_semaphores.semaphores[1],
-                     nullptr /* pAllocator */);
-  return {};
+  return true;
 }
 
-void VulkanSwapChain::ReturnFenceAndSemaphores(
-    const FenceAndSemaphores& fence_and_semaphores) {
-#if defined(OS_FUCHSIA)
-  VkDevice device = device_queue_->GetVulkanDevice();
-  DCHECK(fence_and_semaphores.fence == VK_NULL_HANDLE);
-  vkDestroySemaphore(device, fence_and_semaphores.semaphores[0],
-                     nullptr /* pAllocator */);
-  vkDestroySemaphore(device, fence_and_semaphores.semaphores[1],
-                     nullptr /* pAllocator */);
-#else
-  DCHECK(fence_and_semaphores.fence != VK_NULL_HANDLE);
-  fence_and_semaphores_queue_.push_back(fence_and_semaphores);
-#endif
+void VulkanSwapChain::ReturnSemaphores(VkSemaphore acquire_semaphore,
+                                       VkSemaphore present_semaphore) {
+  DCHECK_EQ(acquire_semaphore != VK_NULL_HANDLE,
+            present_semaphore != VK_NULL_HANDLE);
+
+  if (acquire_semaphore == VK_NULL_HANDLE)
+    return;
+
+  pending_semaphores_queue_.push_back({acquire_semaphore, present_semaphore});
 }
 
 VulkanSwapChain::ScopedWrite::ScopedWrite(VulkanSwapChain* swap_chain)

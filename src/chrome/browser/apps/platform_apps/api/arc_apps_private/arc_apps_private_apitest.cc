@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetPackageNameAndLaunchApp) {
   app_instance()->SendRefreshAppList({launchable_app});
   static_cast<arc::mojom::AppHost*>(prefs)->OnTaskCreated(
       0 /* task_id */, "Package_1", "Dummy_activity_1", "App_1",
-      base::nullopt /* intent */, 0 /* session_id */);
+      absl::nullopt /* intent */, 0 /* session_id */);
 
   // Stopping the service makes the app non-ready.
   arc::ArcServiceManager::Get()->arc_bridge_service()->app()->CloseInstance(
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, OnInstalled) {
   app_instance()->SendRefreshAppList({launchable_app});
   static_cast<arc::mojom::AppHost*>(prefs)->OnTaskCreated(
       0 /* task_id */, "Package_1", "Dummy_activity_1", "App_1",
-      base::nullopt /* intent */, 0 /* session_id */);
+      absl::nullopt /* intent */, 0 /* session_id */);
   // Verify the JS test receives the onInstalled event for the launchable app
   // only, and the app is launched successfully.
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, OnInstalled) {
 IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest,
                        NoDemoModeAppLaunchSourceReported) {
   // Not in Demo mode
-  EXPECT_FALSE(chromeos::DemoSession::IsDeviceInDemoMode());
+  EXPECT_FALSE(ash::DemoSession::IsDeviceInDemoMode());
 
   base::HistogramTester histogram_tester;
 
@@ -169,9 +169,9 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, DemoModeAppLaunchSourceReported) {
   // Set Demo mode
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
-  EXPECT_TRUE(chromeos::DemoSession::IsDeviceInDemoMode());
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(ash::DemoSession::IsDeviceInDemoMode());
 
   base::HistogramTester histogram_tester;
 
@@ -192,5 +192,5 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, DemoModeAppLaunchSourceReported) {
   // Should see 1 app launched from the highlights app in the histogram.
   histogram_tester.ExpectUniqueSample(
       "DemoMode.AppLaunchSource",
-      chromeos::DemoSession::AppLaunchSource::kExtensionApi, 1);
+      ash::DemoSession::AppLaunchSource::kExtensionApi, 1);
 }

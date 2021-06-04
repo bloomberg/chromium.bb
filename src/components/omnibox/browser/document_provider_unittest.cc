@@ -336,7 +336,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
      })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponse);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -409,7 +409,7 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
      })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -419,26 +419,23 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   EXPECT_EQ(matches.size(), 3u);
 
   // match.destination_url is used as the match's temporary text in the Omnibox.
-  EXPECT_EQ(
-      AutocompleteMatchType::ToAccessibilityLabel(
-          matches[0], base::ASCIIToUTF16(matches[0].destination_url.spec()), 1,
-          4),
-      base::ASCIIToUTF16("My Google Doc, 10/15/07 - Google Docs, "
-                         "https://documentprovider.tld/doc?id=1, 2 of 4"));
+  EXPECT_EQ(AutocompleteMatchType::ToAccessibilityLabel(
+                matches[0],
+                base::ASCIIToUTF16(matches[0].destination_url.spec()), 1, 4),
+            u"My Google Doc, 10/15/07 - Google Docs, "
+            u"https://documentprovider.tld/doc?id=1, 2 of 4");
   // Unhandled MIME Type falls back to "Google Drive" where the file was stored.
-  EXPECT_EQ(
-      AutocompleteMatchType::ToAccessibilityLabel(
-          matches[1], base::ASCIIToUTF16(matches[1].destination_url.spec()), 2,
-          4),
-      base::ASCIIToUTF16("My File in Drive, 10/10/10 - Google Drive, "
-                         "https://documentprovider.tld/doc?id=2, 3 of 4"));
+  EXPECT_EQ(AutocompleteMatchType::ToAccessibilityLabel(
+                matches[1],
+                base::ASCIIToUTF16(matches[1].destination_url.spec()), 2, 4),
+            u"My File in Drive, 10/10/10 - Google Drive, "
+            "https://documentprovider.tld/doc?id=2, 3 of 4");
   // No modified time was specified for the last file.
-  EXPECT_EQ(
-      AutocompleteMatchType::ToAccessibilityLabel(
-          matches[2], base::ASCIIToUTF16(matches[2].destination_url.spec()), 3,
-          4),
-      base::ASCIIToUTF16("Shared Spreadsheet, Google Sheets, "
-                         "https://documentprovider.tld/doc?id=3, 4 of 4"));
+  EXPECT_EQ(AutocompleteMatchType::ToAccessibilityLabel(
+                matches[2],
+                base::ASCIIToUTF16(matches[2].destination_url.spec()), 3, 4),
+            u"Shared Spreadsheet, Google Sheets, "
+            "https://documentprovider.tld/doc?id=3, 4 of 4");
 }
 
 TEST_F(DocumentProviderTest, MatchDescriptionString) {
@@ -505,7 +502,7 @@ TEST_F(DocumentProviderTest, MatchDescriptionString) {
     })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -590,7 +587,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
      })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -651,7 +648,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
      })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -714,7 +711,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
      })",
       SAMPLE_ORIGINAL_URL.c_str());
 
-  base::Optional<base::Value> response =
+  absl::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -761,7 +758,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBadResponse) {
   ACMatches matches;
   ASSERT_FALSE(provider_->backoff_for_session_);
 
-  base::Optional<base::Value> bad_response = base::JSONReader::Read(
+  absl::optional<base::Value> bad_response = base::JSONReader::Read(
       kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(bad_response);
   ASSERT_TRUE(bad_response->is_dict());
@@ -913,7 +910,7 @@ TEST_F(DocumentProviderTest, Scoring) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(omnibox::kDocumentProvider,
                                                     parameters);
-    base::Optional<base::Value> response = base::JSONReader::Read(response_str);
+    absl::optional<base::Value> response = base::JSONReader::Read(response_str);
     provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
     ACMatches matches = provider_->ParseDocumentSearchResults(*response);
 

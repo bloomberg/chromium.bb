@@ -6,9 +6,7 @@
 #define CHROME_TEST_CHROMEDRIVER_SESSION_COMMANDS_H_
 
 #include <memory>
-#include <string>
 
-#include "base/callback_forward.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/session_connection_map.h"

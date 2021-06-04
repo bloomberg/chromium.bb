@@ -84,8 +84,8 @@ void PersistentNotificationHandler::OnClick(
     Profile* profile,
     const GURL& origin,
     const std::string& notification_id,
-    const base::Optional<int>& action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply,
     base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(origin.is_valid());
@@ -109,9 +109,8 @@ void PersistentNotificationHandler::OnClick(
 #endif
 
   blink::mojom::PermissionStatus permission_status =
-      content::BrowserContext::GetPermissionController(profile)
-          ->GetPermissionStatus(content::PermissionType::NOTIFICATIONS, origin,
-                                origin);
+      profile->GetPermissionController()->GetPermissionStatus(
+          content::PermissionType::NOTIFICATIONS, origin, origin);
 
   // Don't process click events when the |origin| doesn't have permission. This
   // can't be a DCHECK because of potential races with native notifications.

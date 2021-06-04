@@ -37,35 +37,10 @@ let feedbackInfo = {
 
 
 class FeedbackHelper {
-  constructor() {
-    /**
-     * @type {boolean}
-     */
-    this.systemInformationLoaded = false;
-  }
 
   getSystemInformation() {
     return new Promise(
         resolve => chrome.feedbackPrivate.getSystemInformation(resolve));
-  }
-
-  getFullSystemInformation() {
-    return new Promise(resolve => {
-      if (this.systemInformationLoaded) {
-        resolve(feedbackInfo.systemInformation);
-      } else {
-        this.getSystemInformation().then(function(sysInfo) {
-          if (feedbackInfo.systemInformation) {
-            feedbackInfo.systemInformation =
-                feedbackInfo.systemInformation.concat(sysInfo);
-          } else {
-            feedbackInfo.systemInformation = sysInfo;
-          }
-          this.systemInformationLoaded = true;
-          resolve(feedbackInfo.systemInformation);
-        });
-      }
-    });
   }
 
   getUserEmail() {
@@ -76,12 +51,26 @@ class FeedbackHelper {
    * @param {boolean} useSystemInfo
    */
   sendFeedbackReport(useSystemInfo) {
+    if (!useSystemInfo) {
+      feedbackInfo.systemInformation = [];
+      this.sendFeedbackReportNow();
+      return;
+    }
+
+    this.getSystemInformation().then(sysInfo => {
+      if (feedbackInfo.systemInformation) {
+        feedbackInfo.systemInformation =
+            feedbackInfo.systemInformation.concat(sysInfo);
+      } else {
+        feedbackInfo.systemInformation = sysInfo;
+      }
+      this.sendFeedbackReportNow();
+    });
+  }
+
+  sendFeedbackReportNow() {
     const ID = Math.round(Date.now() / 1000);
     const FLOW = feedbackInfo.flow;
-    if (!useSystemInfo) {
-      this.systemInformationLoaded = false;
-      feedbackInfo.systemInformation = [];
-    }
 
     chrome.feedbackPrivate.sendFeedback(
         feedbackInfo, function(result, landingPageType) {
@@ -103,6 +92,7 @@ class FeedbackHelper {
           if (FLOW == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
             chrome.feedbackPrivate.loginFeedbackComplete();
           }
+          scheduleWindowClose();
         });
   }
 
@@ -114,6 +104,24 @@ class FeedbackHelper {
   // Send a message to close the WebDialog
   closeDialog() {
     chrome.send('dialogClose');
+  }
+
+  // <if expr="chromeos">
+  showAssistantLogsInfo() {
+    chrome.send('showAssistantLogsInfo');
+  }
+
+  showBluetoothLogsInfo() {
+    chrome.send('showBluetoothLogsInfo');
+  }
+  // </if>
+
+  showSystemInfo() {
+    chrome.send('showSystemInfo');
+  }
+
+  showMetrics() {
+    chrome.send('showMetrics');
   }
 }
 
@@ -212,6 +220,12 @@ const nearbyShareRegEx = new RegExp('nearby|phone', 'i');
  * @param {Event} fileSelectedEvent The onChanged event for the file input box.
  */
 function onFileSelected(fileSelectedEvent) {
+  // <if expr="chromeos">
+  // This is needed on CrOS. Otherwise, the feedback window will stay behind
+  // the Chrome window.
+  feedbackHelper.showDialog();
+  // </if>
+
   const file = fileSelectedEvent.target.files[0];
   if (!file) {
     // User canceled file selection.
@@ -403,7 +417,7 @@ function sendReport() {
 
   // Request sending the report, show the landing page (if allowed)
   feedbackHelper.sendFeedbackReport(useSystemInfo);
-  scheduleWindowClose();
+
   return true;
 }
 
@@ -565,15 +579,8 @@ function initialize() {
       // information.
       sysInfoUrlElement.onclick = function(e) {
         e.preventDefault();
-        const params = `status=no,location=no,toolbar=no,menubar=no,
-              width=640,height=400,left=200,top=200`;
 
-        const sysWin =
-            window.open('/html/sys_info.html', SYSINFO_WINDOW_ID, params);
-
-        if (sysWin) {
-          sysWin.window.getFullSystemInfo = feedbackHelper.getSystemInformation;
-        }
+        feedbackHelper.showSystemInfo();
       };
 
       sysInfoUrlElement.onauxclick = function(e) {
@@ -583,13 +590,21 @@ function initialize() {
 
     const histogramUrlElement = $('histograms-url');
     if (histogramUrlElement) {
-      // Opens a new window showing the histogram metrics.
-      setupLinkHandlers(
-          histogramUrlElement, 'chrome://histograms', true /* useAppWindow */);
+      histogramUrlElement.onclick = function(e) {
+        e.preventDefault();
+
+        feedbackHelper.showMetrics();
+      };
+
+      histogramUrlElement.onauxclick = function(e) {
+        e.preventDefault();
+      };
     }
 
     // The following URLs don't open on login screen, so hide them.
     // TODO(crbug.com/1116383): Find a solution to display them properly.
+    // Update: the bluetooth and assistant logs links will work on login
+    // screen now. But to limit the scope of this CL, they are still hidden.
     if (feedbackInfo.flow != chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
       const legalHelpPageUrlElement = $('legal-help-page-url');
       if (legalHelpPageUrlElement) {
@@ -612,17 +627,13 @@ function initialize() {
             false /* useAppWindow */);
       }
 
+      // <if expr="chromeos">
       const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
       if (bluetoothLogsInfoLinkElement) {
         bluetoothLogsInfoLinkElement.onclick = function(e) {
           e.preventDefault();
 
-          const params = `status=no,location=no,toolbar=no,menubar=no,
-              width=400,height=120,left=200,top=200,resizable=no,`;
-
-          const blueToothWin = window.open(
-              '/html/bluetooth_logs_info.html', 'bluetooth_logs_window',
-              params);
+          feedbackHelper.showBluetoothLogsInfo();
 
           bluetoothLogsInfoLinkElement.onauxclick = function(e) {
             e.preventDefault();
@@ -635,18 +646,14 @@ function initialize() {
         assistantLogsInfoLinkElement.onclick = function(e) {
           e.preventDefault();
 
-          const params = `status=no,location=no,toolbar=no,menubar=no,
-              width=400,height=120,left=200,top=200,resizable=no,`;
-
-          const blueToothWin = window.open(
-              '/html/assistant_logs_info.html', 'assistant_logs_window',
-              params);
+          feedbackHelper.showAssistantLogsInfo();
 
           assistantLogsInfoLinkElement.onauxclick = function(e) {
             e.preventDefault();
           };
         };
       }
+      // </if>
     }
 
     // Make sure our focus starts on the description field.

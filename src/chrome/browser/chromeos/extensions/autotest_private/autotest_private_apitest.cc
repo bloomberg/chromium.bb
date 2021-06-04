@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
+
+#include <memory>
+
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -14,10 +18,9 @@
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "components/arc/arc_prefs.h"
@@ -25,6 +28,7 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -54,6 +58,17 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
     // due to app pin syncing code. Sync isn't relevant to this test, so skip
     // pinned app sync. https://crbug.com/1085597
     SkipPinnedAppsFromSyncForTest();
+
+    // Switching to tablet mode can cause in-product help (IPH) to show. The IPH
+    // bubble can affect window activation when a browser window closes: if
+    // browser A has the IPH bubble, and browser B is active, closing browser B
+    // will lead to the IPH bubble being activated instead of browser A. This
+    // affects some tests that expect browser A to be active.
+    //
+    // Disable the IPH to avoid this issue. TODO(crbug.com/1209011): fix the
+    // issue more generally and remove this feature override.
+    scoped_feature_list_.InitAndDisableFeature(
+        feature_engagement::kIPHWebUITabStripFeature);
   }
   ~AutotestPrivateApiTest() override = default;
 
@@ -79,13 +94,14 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivate) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "default",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private", {.custom_arg = "default"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -104,8 +120,7 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   // Start ARC
   arc::ArcSessionManager::Get()->StartArcForTesting();
 
-  std::unique_ptr<arc::FakeAppInstance> app_instance;
-  app_instance.reset(new arc::FakeAppInstance(prefs));
+  auto app_instance = std::make_unique<arc::FakeAppInstance>(prefs);
   prefs->app_connection_holder()->SetInstance(app_instance.get());
   arc::WaitForInstanceReady(prefs->app_connection_holder());
 
@@ -125,25 +140,23 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
       true /* sync */));
   app_instance->SendRefreshPackageList(std::move(packages));
 
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "arcEnabled",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private", {.custom_arg = "arcEnabled"},
+                               {.load_as_component = true}))
       << message_;
 
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
 }
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ScrollableShelfAPITest) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "scrollableShelf",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "scrollableShelf"},
+                               {.load_as_component = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ShelfAPITest) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "shelf",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private", {.custom_arg = "shelf"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -179,9 +192,9 @@ class AutotestPrivateApiOverviewTest : public AutotestPrivateApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateApiOverviewTest, Default) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "overviewDefault",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "overviewDefault"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -207,9 +220,9 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiOverviewTest, Drag) {
   const gfx::Point end_point(start_point.x() + 50, start_point.y());
   generator.MoveTouch(end_point);
 
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "overviewDrag",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "overviewDrag"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -235,9 +248,9 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiOverviewTest, LeftSnapped) {
   generator.MoveTouch(end_point);
   generator.ReleaseTouch();
 
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "splitviewLeftSnapped",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "splitviewLeftSnapped"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -272,9 +285,9 @@ class AutotestPrivateWithPolicyApiTest : public AutotestPrivateApiTest {
 
 // GetAllEnterprisePolicies Sanity check.
 IN_PROC_BROWSER_TEST_F(AutotestPrivateWithPolicyApiTest, PolicyAPITest) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "enterprisePolicies",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "enterprisePolicies"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -323,9 +336,9 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateArcPerformanceTracing, Basic) {
       wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
       arc_widget->GetNativeWindow(), arc_widget->GetNativeWindow());
 
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "arcPerformanceTracing",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "arcPerformanceTracing"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -347,9 +360,9 @@ class AutotestPrivateStartStopTracing : public AutotestPrivateApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateStartStopTracing, StartStopTracing) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "startStopTracing",
-                                .load_as_component = true}))
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "startStopTracing"},
+                               {.load_as_component = true}))
       << message_;
 }
 
@@ -365,10 +378,12 @@ class AutotestPrivateSystemWebAppsTest : public AutotestPrivateApiTest {
   std::unique_ptr<web_app::TestSystemWebAppInstallation> installation_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutotestPrivateSystemWebAppsTest, SystemWebApps) {
-  ASSERT_TRUE(RunExtensionTest({.name = "autotest_private",
-                                .custom_arg = "systemWebApps",
-                                .load_as_component = true}))
+// TODO(crbug.com/1201545): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(AutotestPrivateSystemWebAppsTest,
+                       DISABLED_SystemWebApps) {
+  ASSERT_TRUE(RunExtensionTest("autotest_private",
+                               {.custom_arg = "systemWebApps"},
+                               {.load_as_component = true}))
       << message_;
 }
 

@@ -5,6 +5,8 @@
 #include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"
 
 #include "base/files/file_path.h"
+#include "chromeos/components/media_app_ui/media_app_guest_ui.h"
+#include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 
@@ -22,13 +24,19 @@ constexpr base::FilePath::CharType kCr[] =
 constexpr base::FilePath::CharType kTestLibraryPath[] = FILE_PATH_LITERAL(
     "chromeos/components/media_app_ui/test/dom_testing_helpers.js");
 
-// File containing the query handlers for JS unit tests.
-constexpr base::FilePath::CharType kGuestQueryHandler[] = FILE_PATH_LITERAL(
-    "chromeos/components/media_app_ui/test/guest_query_receiver.js");
-
 // Test cases that run in the guest context.
-constexpr base::FilePath::CharType kGuestTestCases[] = FILE_PATH_LITERAL(
-    "chromeos/components/media_app_ui/test/media_app_guest_ui_browsertest.js");
+constexpr char kGuestTestCases[] = "media_app_guest_ui_browsertest.js";
+
+// Path to test files loaded via the TestFileRequestFilter.
+constexpr base::FilePath::CharType kTestFileLocation[] =
+    FILE_PATH_LITERAL("chromeos/components/media_app_ui/test");
+
+// Paths requested on the media-app origin that should be delivered by the test
+// handler.
+constexpr const char* kTestFiles[] = {
+    kGuestTestCases,  "media_app_ui_browsertest.js", "driver.js",
+    "test_worker.js", "guest_query_receiver.js",
+};
 
 }  // namespace
 
@@ -37,8 +45,12 @@ MediaAppUiBrowserTest::MediaAppUiBrowserTest()
           chromeos::kChromeUIMediaAppURL,
           chromeos::kChromeUIMediaAppGuestURL,
           {base::FilePath(kTestLibraryPath), base::FilePath(kCr),
-           base::FilePath(kWebUiTestUtil), base::FilePath(kGuestQueryHandler),
-           base::FilePath(kGuestTestCases)}) {}
+           base::FilePath(kWebUiTestUtil)},
+          kGuestTestCases) {
+  ConfigureDefaultTestRequestHandler(
+      base::FilePath(kTestFileLocation),
+      {std::begin(kTestFiles), std::end(kTestFiles)});
+}
 
 MediaAppUiBrowserTest::~MediaAppUiBrowserTest() = default;
 

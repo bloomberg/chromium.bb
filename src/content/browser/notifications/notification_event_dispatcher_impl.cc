@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/notifications/devtools_event_logging.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -20,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/persistent_notification_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
 namespace content {
@@ -181,12 +182,14 @@ void FindServiceWorkerRegistration(
     return;
   }
 
+  // If Push Notification becomes usable from a 3p context then
+  // NotificationDatabaseData should be changed to use StorageKey.
   RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&ServiceWorkerContextWrapper::FindReadyRegistrationForId,
                      service_worker_context,
                      notification_database_data.service_worker_registration_id,
-                     origin,
+                     storage::StorageKey(origin),
                      base::BindOnce(&DispatchNotificationEventOnRegistration,
                                     notification_database_data,
                                     std::move(notification_action_callback),
@@ -219,8 +222,8 @@ void ReadNotificationDatabaseData(
 void DispatchNotificationClickEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
-    const base::Optional<int>& action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply,
     ServiceWorkerVersion::StatusCallback callback,
     blink::ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -244,8 +247,8 @@ void DispatchNotificationClickEventOnWorker(
 
 // Dispatches the notification click event on the |service_worker_registration|.
 void DoDispatchNotificationClickEvent(
-    const base::Optional<int>& action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     BrowserContext* browser_context,
     const ServiceWorkerRegistration* service_worker_registration,
@@ -370,7 +373,7 @@ void DispatchNotificationEvent(
   DCHECK(origin.is_valid());
 
   StoragePartition* partition =
-      BrowserContext::GetStoragePartitionForUrl(browser_context, origin);
+      browser_context->GetStoragePartitionForUrl(origin);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
       static_cast<ServiceWorkerContextWrapper*>(
@@ -428,8 +431,8 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    const base::Optional<int>& action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply,
     NotificationDispatchCompleteCallback dispatch_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

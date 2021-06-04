@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
+#include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -24,7 +26,10 @@
 #include "components/vector_icons/vector_icons.h"
 #include "media/audio/audio_device_description.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/compositor/layer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
@@ -34,8 +39,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -96,7 +99,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     MediaNotificationService* service,
     GlobalMediaControlsEntryPoint entry_point,
-    base::Optional<media_message_center::NotificationTheme> theme)
+    absl::optional<media_message_center::NotificationTheme> theme)
     : views::Button(base::BindRepeating(
           [](MediaNotificationContainerImplView* view) {
             // If |is_dragging_| is set, this click should be treated as a drag
@@ -394,7 +397,7 @@ void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
     UpdateDismissButtonIcon();
     if (stop_cast_button_) {
       stop_cast_button_->SetEnabledTextColors(foreground_color_);
-      stop_cast_button_->SetInkDropBaseColor(foreground_color_);
+      stop_cast_button_->ink_drop()->SetBaseColor(foreground_color_);
     }
   }
 
@@ -513,11 +516,12 @@ void MediaNotificationContainerImplView::AddStopCastButton(
                               base::Unretained(cast_item)),
           l10n_util::GetStringUTF16(
               IDS_GLOBAL_MEDIA_CONTROLS_STOP_CASTING_BUTTON_LABEL)));
-  stop_cast_button_->SetInkDropMode(InkDropMode::ON);
+  views::InstallRoundRectHighlightPathGenerator(
+      stop_cast_button_, gfx::Insets(), kStopCastButtonStripSize.height() / 2);
+
+  stop_cast_button_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   stop_cast_button_->SetHasInkDropActionOnClick(true);
-  stop_cast_button_->SetInkDropBaseColor(foreground_color_);
-  stop_cast_button_->SetInkDropLargeCornerRadius(
-      kStopCastButtonStripSize.height());
+  stop_cast_button_->ink_drop()->SetBaseColor(foreground_color_);
   stop_cast_button_->SetEnabledTextColors(foreground_color_);
   stop_cast_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   stop_cast_button_->SetBorder(views::CreatePaddedBorder(

@@ -354,6 +354,14 @@ bool GrAATriangulator::collapseOverlapRegions(VertexList* mesh, const Comparator
                 this->makeEvent(ssEdge, &events);
                 if (!isOuterBoundary) {
                     e->disconnect();
+                } else {
+                    SkASSERT(e->fType != EdgeType::kConnector);
+                    // Ensure winding values match expected scale for the edge type. During merging of
+                    // collinear edges in overlap regions, windings are summed and so could exceed the
+                    // expected +/-1 for outer and +/-2 for inner that is used to fill properly during
+                    // subsequent polygon generation.
+                    e->fWinding = SkScalarCopySign(e->fType == EdgeType::kInner ? 2 : 1,
+                                                   e->fWinding);
                 }
             }
             e = prev;
@@ -637,6 +645,8 @@ Poly* GrAATriangulator::tessellate(const VertexList& mesh, const Comparator& c) 
         this->connectPartners(&fOuterMesh, c);
         this->connectPartners(&innerMesh, c);
         SortedMerge(&innerMesh, &fOuterMesh, &aaMesh, c);
+        TESS_LOG("\nmerged mesh:\n");
+        DUMP_MESH(aaMesh);
         this->mergeCoincidentVertices(&aaMesh, c);
         result = this->simplify(&aaMesh, c);
         TESS_LOG("combined and simplified mesh:\n");

@@ -10,13 +10,15 @@
 #include "chrome/browser/ash/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/ash/borealis/borealis_service_factory.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_scheduler_user_service.h"
+#include "chrome/browser/ash/crostini/crostini_engagement_metrics_service.h"
+#include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/ash/web_applications/crosh_loader_factory.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
@@ -24,11 +26,8 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
-#include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_service_factory.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
-#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/chromeos/nearby/nearby_connections_dependencies_provider_factory.h"
 #include "chrome/browser/chromeos/nearby/nearby_process_manager_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
@@ -90,7 +89,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   guest_os::GuestOsRegistryServiceFactory::GetInstance();
   ash::HoldingSpaceKeyedServiceFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
-  launcher_search_provider::ServiceFactory::GetInstance();
   nearby::NearbyConnectionsDependenciesProviderFactory::GetInstance();
   nearby::NearbyProcessManagerFactory::GetInstance();
   OwnerSettingsServiceAshFactory::GetInstance();

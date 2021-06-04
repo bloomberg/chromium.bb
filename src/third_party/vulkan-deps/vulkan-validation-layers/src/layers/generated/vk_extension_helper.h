@@ -110,7 +110,7 @@ struct InstanceExtensions {
     };
 
     typedef layer_data::unordered_map<std::string,InstanceInfo> InstanceInfoMap;
-    static const InstanceInfo &get_info(const char *name) {
+    static const InstanceInfoMap &get_info_map() {
         static const InstanceInfoMap info_map = {
             {"VK_VERSION_1_1", InstanceInfo(&InstanceExtensions::vk_feature_version_1_1, {})},
             {"VK_VERSION_1_2", InstanceInfo(&InstanceExtensions::vk_feature_version_1_2, {})},
@@ -203,9 +203,14 @@ struct InstanceExtensions {
 #endif
         };
 
+        return info_map;
+    }
+
+    static const InstanceInfo &get_info(const char *name) {
         static const InstanceInfo empty_info {nullptr, InstanceReqVec()};
-        InstanceInfoMap::const_iterator info = info_map.find(name);
-        if ( info != info_map.cend()) {
+        const auto &ext_map = InstanceExtensions::get_info_map();
+        const auto info = ext_map.find(name);
+        if ( info != ext_map.cend()) {
             return info->second;
         }
         return empty_info;
@@ -358,6 +363,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_blend_operation_advanced{kNotEnabled};
     ExtEnabled vk_ext_buffer_device_address{kNotEnabled};
     ExtEnabled vk_ext_calibrated_timestamps{kNotEnabled};
+    ExtEnabled vk_ext_color_write_enable{kNotEnabled};
     ExtEnabled vk_ext_conditional_rendering{kNotEnabled};
     ExtEnabled vk_ext_conservative_rasterization{kNotEnabled};
     ExtEnabled vk_ext_custom_border_color{kNotEnabled};
@@ -369,6 +375,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_discard_rectangles{kNotEnabled};
     ExtEnabled vk_ext_display_control{kNotEnabled};
     ExtEnabled vk_ext_extended_dynamic_state{kNotEnabled};
+    ExtEnabled vk_ext_extended_dynamic_state_2{kNotEnabled};
     ExtEnabled vk_ext_external_memory_dma_buf{kNotEnabled};
     ExtEnabled vk_ext_external_memory_host{kNotEnabled};
     ExtEnabled vk_ext_filter_cubic{kNotEnabled};
@@ -391,6 +398,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_pipeline_creation_feedback{kNotEnabled};
     ExtEnabled vk_ext_post_depth_coverage{kNotEnabled};
     ExtEnabled vk_ext_private_data{kNotEnabled};
+    ExtEnabled vk_ext_provoking_vertex{kNotEnabled};
     ExtEnabled vk_ext_queue_family_foreign{kNotEnabled};
     ExtEnabled vk_ext_robustness_2{kNotEnabled};
     ExtEnabled vk_ext_sample_locations{kNotEnabled};
@@ -411,7 +419,14 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_transform_feedback{kNotEnabled};
     ExtEnabled vk_ext_validation_cache{kNotEnabled};
     ExtEnabled vk_ext_vertex_attribute_divisor{kNotEnabled};
+    ExtEnabled vk_ext_vertex_input_dynamic_state{kNotEnabled};
+    ExtEnabled vk_ext_video_decode_h264{kNotEnabled};
+    ExtEnabled vk_ext_video_decode_h265{kNotEnabled};
+    ExtEnabled vk_ext_video_encode_h264{kNotEnabled};
+    ExtEnabled vk_ext_ycbcr_2plane_444_formats{kNotEnabled};
     ExtEnabled vk_ext_ycbcr_image_arrays{kNotEnabled};
+    ExtEnabled vk_fuchsia_external_memory{kNotEnabled};
+    ExtEnabled vk_fuchsia_external_semaphore{kNotEnabled};
     ExtEnabled vk_ggp_frame_token{kNotEnabled};
     ExtEnabled vk_google_decorate_string{kNotEnabled};
     ExtEnabled vk_google_display_timing{kNotEnabled};
@@ -482,10 +497,14 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_khr_timeline_semaphore{kNotEnabled};
     ExtEnabled vk_khr_uniform_buffer_standard_layout{kNotEnabled};
     ExtEnabled vk_khr_variable_pointers{kNotEnabled};
+    ExtEnabled vk_khr_video_decode_queue{kNotEnabled};
+    ExtEnabled vk_khr_video_encode_queue{kNotEnabled};
+    ExtEnabled vk_khr_video_queue{kNotEnabled};
     ExtEnabled vk_khr_vulkan_memory_model{kNotEnabled};
     ExtEnabled vk_khr_win32_keyed_mutex{kNotEnabled};
     ExtEnabled vk_khr_workgroup_memory_explicit_layout{kNotEnabled};
     ExtEnabled vk_khr_zero_initialize_workgroup_memory{kNotEnabled};
+    ExtEnabled vk_nvx_binary_import{kNotEnabled};
     ExtEnabled vk_nvx_image_view_handle{kNotEnabled};
     ExtEnabled vk_nvx_multiview_per_view_attributes{kNotEnabled};
     ExtEnabled vk_nv_acquire_winrt_display{kNotEnabled};
@@ -508,6 +527,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_nv_framebuffer_mixed_samples{kNotEnabled};
     ExtEnabled vk_nv_geometry_shader_passthrough{kNotEnabled};
     ExtEnabled vk_nv_glsl_shader{kNotEnabled};
+    ExtEnabled vk_nv_inherited_viewport_scissor{kNotEnabled};
     ExtEnabled vk_nv_mesh_shader{kNotEnabled};
     ExtEnabled vk_nv_ray_tracing{kNotEnabled};
     ExtEnabled vk_nv_representative_fragment_test{kNotEnabled};
@@ -538,7 +558,7 @@ struct DeviceExtensions : public InstanceExtensions {
     };
 
     typedef layer_data::unordered_map<std::string,DeviceInfo> DeviceInfoMap;
-    static const DeviceInfo &get_info(const char *name) {
+    static const DeviceInfoMap &get_info_map() {
         static const DeviceInfoMap info_map = {
             {"VK_VERSION_1_1", DeviceInfo(&DeviceExtensions::vk_feature_version_1_1, {})},
             {"VK_VERSION_1_2", DeviceInfo(&DeviceExtensions::vk_feature_version_1_2, {})},
@@ -584,6 +604,8 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_buffer_device_address, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_calibrated_timestamps, {})},
+            {VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_color_write_enable, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_conditional_rendering, {})},
             {VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_conservative_rasterization, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
@@ -603,6 +625,8 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_ext_display_surface_counter, VK_EXT_DISPLAY_SURFACE_COUNTER_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_swapchain, VK_KHR_SWAPCHAIN_EXTENSION_NAME}}})},
             {VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_extended_dynamic_state, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_extended_dynamic_state_2, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_external_memory_dma_buf, {{
                            {&DeviceExtensions::vk_khr_external_memory_fd, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME}}})},
@@ -650,6 +674,8 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_EXT_PIPELINE_CREATION_FEEDBACK_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_pipeline_creation_feedback, {})},
             {VK_EXT_POST_DEPTH_COVERAGE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_post_depth_coverage, {})},
             {VK_EXT_PRIVATE_DATA_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_private_data, {})},
+            {VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_provoking_vertex, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_queue_family_foreign, {{
                            {&DeviceExtensions::vk_khr_external_memory, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME}}})},
             {VK_EXT_ROBUSTNESS_2_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_robustness_2, {})},
@@ -682,8 +708,34 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_EXT_VALIDATION_CACHE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_validation_cache, {})},
             {VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_vertex_attribute_divisor, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_vertex_input_dynamic_state, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_EXT_VIDEO_DECODE_H264_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_video_decode_h264, {{
+                           {&DeviceExtensions::vk_khr_video_decode_queue, VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME}}})},
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_EXT_VIDEO_DECODE_H265_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_video_decode_h265, {{
+                           {&DeviceExtensions::vk_khr_video_decode_queue, VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME}}})},
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_EXT_VIDEO_ENCODE_H264_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_video_encode_h264, {{
+                           {&DeviceExtensions::vk_khr_video_encode_queue, VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME}}})},
+#endif
+            {VK_EXT_YCBCR_2PLANE_444_FORMATS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_ycbcr_2plane_444_formats, {{
+                           {&DeviceExtensions::vk_khr_sampler_ycbcr_conversion, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME}}})},
             {VK_EXT_YCBCR_IMAGE_ARRAYS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_ycbcr_image_arrays, {{
                            {&DeviceExtensions::vk_khr_sampler_ycbcr_conversion, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME}}})},
+#ifdef VK_USE_PLATFORM_FUCHSIA
+            {VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_fuchsia_external_memory, {{
+                           {&DeviceExtensions::vk_khr_external_memory_capabilities, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_external_memory, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME}}})},
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+            {VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_fuchsia_external_semaphore, {{
+                           {&DeviceExtensions::vk_khr_external_semaphore_capabilities, VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_external_semaphore, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME}}})},
+#endif
 #ifdef VK_USE_PLATFORM_GGP
             {VK_GGP_FRAME_TOKEN_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ggp_frame_token, {{
                            {&DeviceExtensions::vk_khr_swapchain, VK_KHR_SWAPCHAIN_EXTENSION_NAME},
@@ -837,6 +889,21 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_variable_pointers, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_storage_buffer_storage_class, VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME}}})},
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_video_decode_queue, {{
+                           {&DeviceExtensions::vk_khr_video_queue, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_synchronization_2, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME}}})},
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_video_encode_queue, {{
+                           {&DeviceExtensions::vk_khr_video_queue, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_synchronization_2, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME}}})},
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+            {VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_video_queue, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_sampler_ycbcr_conversion, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME}}})},
+#endif
             {VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_vulkan_memory_model, {})},
 #ifdef VK_USE_PLATFORM_WIN32_KHR
             {VK_KHR_WIN32_KEYED_MUTEX_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_win32_keyed_mutex, {{
@@ -846,6 +913,7 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_KHR_ZERO_INITIALIZE_WORKGROUP_MEMORY_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_zero_initialize_workgroup_memory, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_NVX_BINARY_IMPORT_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nvx_binary_import, {})},
             {VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nvx_image_view_handle, {})},
             {VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nvx_multiview_per_view_attributes, {{
                            {&DeviceExtensions::vk_khr_multiview, VK_KHR_MULTIVIEW_EXTENSION_NAME}}})},
@@ -886,6 +954,7 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_framebuffer_mixed_samples, {})},
             {VK_NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_geometry_shader_passthrough, {})},
             {VK_NV_GLSL_SHADER_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_glsl_shader, {})},
+            {VK_NV_INHERITED_VIEWPORT_SCISSOR_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_inherited_viewport_scissor, {})},
             {VK_NV_MESH_SHADER_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_mesh_shader, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties_2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_NV_RAY_TRACING_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_nv_ray_tracing, {{
@@ -910,7 +979,7 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_nv_external_memory_win32, VK_NV_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME}}})},
 #endif
             {VK_QCOM_RENDER_PASS_SHADER_RESOLVE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_qcom_render_pass_shader_resolve, {})},
-            {VK_QCOM_render_pass_store_ops_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_qcom_render_pass_store_ops, {})},
+            {VK_QCOM_RENDER_PASS_STORE_OPS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_qcom_render_pass_store_ops, {})},
             {VK_QCOM_RENDER_PASS_TRANSFORM_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_qcom_render_pass_transform, {{
                            {&DeviceExtensions::vk_khr_swapchain, VK_KHR_SWAPCHAIN_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_surface, VK_KHR_SURFACE_EXTENSION_NAME}}})},
@@ -921,9 +990,14 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_maintenance3, VK_KHR_MAINTENANCE3_EXTENSION_NAME}}})},
         };
 
+        return info_map;
+    }
+
+    static const DeviceInfo &get_info(const char *name) {
         static const DeviceInfo empty_info {nullptr, DeviceReqVec()};
-        DeviceInfoMap::const_iterator info = info_map.find(name);
-        if ( info != info_map.cend()) {
+        const auto &ext_map = DeviceExtensions::get_info_map();
+        const auto info = ext_map.find(name);
+        if ( info != ext_map.cend()) {
             return info->second;
         }
         return empty_info;
@@ -1048,6 +1122,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME,
     VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
     VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+    VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME,
     VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
     VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
     VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME,
@@ -1059,6 +1134,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME,
     VK_EXT_DISPLAY_CONTROL_EXTENSION_NAME,
     VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME,
+    VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
     VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
     VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
     VK_EXT_FILTER_CUBIC_EXTENSION_NAME,
@@ -1083,6 +1159,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_PIPELINE_CREATION_FEEDBACK_EXTENSION_NAME,
     VK_EXT_POST_DEPTH_COVERAGE_EXTENSION_NAME,
     VK_EXT_PRIVATE_DATA_EXTENSION_NAME,
+    VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME,
     VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME,
     VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
     VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
@@ -1103,7 +1180,24 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME,
     VK_EXT_VALIDATION_CACHE_EXTENSION_NAME,
     VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME,
+    VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_EXT_VIDEO_DECODE_H264_EXTENSION_NAME,
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_EXT_VIDEO_DECODE_H265_EXTENSION_NAME,
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_EXT_VIDEO_ENCODE_H264_EXTENSION_NAME,
+#endif
+    VK_EXT_YCBCR_2PLANE_444_FORMATS_EXTENSION_NAME,
     VK_EXT_YCBCR_IMAGE_ARRAYS_EXTENSION_NAME,
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+#endif
 #ifdef VK_USE_PLATFORM_GGP
     VK_GGP_FRAME_TOKEN_EXTENSION_NAME,
 #endif
@@ -1184,12 +1278,22 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
     VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME,
     VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME,
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME,
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME,
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    VK_KHR_VIDEO_QUEUE_EXTENSION_NAME,
+#endif
     VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME,
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     VK_KHR_WIN32_KEYED_MUTEX_EXTENSION_NAME,
 #endif
     VK_KHR_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_EXTENSION_NAME,
     VK_KHR_ZERO_INITIALIZE_WORKGROUP_MEMORY_EXTENSION_NAME,
+    VK_NVX_BINARY_IMPORT_EXTENSION_NAME,
     VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
     VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME,
 #ifdef VK_USE_PLATFORM_WIN32_KHR
@@ -1216,6 +1320,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME,
     VK_NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME,
     VK_NV_GLSL_SHADER_EXTENSION_NAME,
+    VK_NV_INHERITED_VIEWPORT_SCISSOR_EXTENSION_NAME,
     VK_NV_MESH_SHADER_EXTENSION_NAME,
     VK_NV_RAY_TRACING_EXTENSION_NAME,
     VK_NV_REPRESENTATIVE_FRAGMENT_TEST_EXTENSION_NAME,
@@ -1231,7 +1336,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_NV_WIN32_KEYED_MUTEX_EXTENSION_NAME,
 #endif
     VK_QCOM_RENDER_PASS_SHADER_RESOLVE_EXTENSION_NAME,
-    VK_QCOM_render_pass_store_ops_EXTENSION_NAME,
+    VK_QCOM_RENDER_PASS_STORE_OPS_EXTENSION_NAME,
     VK_QCOM_RENDER_PASS_TRANSFORM_EXTENSION_NAME,
     VK_QCOM_ROTATED_COPY_COMMANDS_EXTENSION_NAME,
     VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,

@@ -12,13 +12,13 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 
 namespace gl {
 class DCLayerTree;
-class GLImageDXGI;
 class GLImageMemory;
 
 // SwapChainPresenter holds a swap chain, direct composition visuals, and other
@@ -50,7 +50,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
                                         gfx::Rect* clip_rect) const {
     *transform = visual_info_.transform;
     *offset = visual_info_.offset;
-    *clip_rect = visual_info_.clip_rect;
+    *clip_rect = visual_info_.clip_rect.value_or(gfx::Rect());
   }
 
  private:
@@ -132,7 +132,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
       const gfx::Rect& content_rect,
       const gfx::ColorSpace& src_color_space,
       bool content_is_hdr,
-      base::Optional<DXGI_HDR_METADATA_HDR10> stream_hdr_metadata);
+      absl::optional<DXGI_HDR_METADATA_HDR10> stream_hdr_metadata);
 
   gfx::Size GetMonitorSize();
 
@@ -160,14 +160,20 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // Try presenting to a decode swap chain based on various conditions such as
   // global state (e.g. finch, NV12 support), texture flags, and transform.
   // Returns true on success.  See PresentToDecodeSwapChain() for more info.
-  bool TryPresentToDecodeSwapChain(GLImageDXGI* nv12_image,
-                                   const gfx::Rect& content_rect,
-                                   const gfx::Size& swap_chain_size);
+  bool TryPresentToDecodeSwapChain(
+      Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+      unsigned array_slice,
+      const gfx::ColorSpace& color_space,
+      const gfx::Rect& content_rect,
+      const gfx::Size& swap_chain_size,
+      DXGI_FORMAT swap_chain_format);
 
   // Present to a decode swap chain created from compatible video decoder
   // buffers using given |nv12_image| with destination size |swap_chain_size|.
   // Returns true on success.
-  bool PresentToDecodeSwapChain(GLImageDXGI* nv12_image,
+  bool PresentToDecodeSwapChain(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+                                unsigned array_slice,
+                                const gfx::ColorSpace& color_space,
                                 const gfx::Rect& content_rect,
                                 const gfx::Size& swap_chain_size);
 
@@ -202,6 +208,9 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // Current swap chain format.
   DXGI_FORMAT swap_chain_format_ = DXGI_FORMAT_B8G8R8A8_UNORM;
 
+  // Last time tick when switching to BGRA8888 format.
+  base::TimeTicks switched_to_BGRA8888_time_tick_;
+
   // Whether the swap chain was reallocated, and next present will be the first.
   bool first_present_ = false;
 
@@ -229,10 +238,12 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // being presented so that properties that aren't changed aren't sent to
   // DirectComposition.
   struct VisualInfo {
+    VisualInfo();
+    ~VisualInfo();
+
     gfx::Point offset;
     gfx::Transform transform;
-    bool is_clipped = false;
-    gfx::Rect clip_rect;
+    absl::optional<gfx::Rect> clip_rect;
     int z_order = 0;
   } visual_info_;
 

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -142,11 +143,11 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
     base::ListValue* values;
     ASSERT_TRUE(parsed_json.value->GetAsList(&values));
 
-    for (auto it = values->begin(); it != values->end(); ++it) {
+    for (const auto& entry : values->GetList()) {
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;
-      ASSERT_TRUE(it->GetAsDictionary(&dict));
+      ASSERT_TRUE(entry.GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("kind", &kind));
       ASSERT_TRUE(dict->GetString("id", &device_id));
       ASSERT_FALSE(device_id.empty());
@@ -611,8 +612,17 @@ IN_PROC_BROWSER_TEST_F(
   ExecuteJavascriptAndWaitForOk(call);
 }
 
+// TODO(http://crbug.com/1205560): This test is flaky on mac bots. Re-enable the
+// test after fixing the issue.
+#if defined(OS_MAC)
+#define MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb \
+  DISABLED_InvalidSourceIdInIFrameAndCloseInFailureCb
+#else
+#define MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb \
+  InvalidSourceIdInIFrameAndCloseInFailureCb
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       InvalidSourceIdInIFrameAndCloseInFailureCb) {
+                       MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));

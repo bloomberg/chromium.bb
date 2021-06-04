@@ -282,15 +282,17 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       // current thread.
 
       // As in ProcessNextWindowsMessage().
-      auto scoped_do_native_work = run_state_->delegate->BeginNativeWork();
+      auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
       {
-        TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork GetQueueStatus");
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("base"),
+                     "MessagePumpForUI::WaitForWork GetQueueStatus");
         if (HIWORD(::GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE)
           return;
       }
       {
         MSG msg;
-        TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("base"),
+                     "MessagePumpForUI::WaitForWork PeekMessage");
         if (::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
           return;
       }
@@ -455,12 +457,12 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     // |had_messages| as ::GetQueueStatus() is an optimistic check that may
     // racily have missed an incoming event -- it doesn't hurt to have empty
     // internal units of work when ::PeekMessage turns out to be a no-op).
-    // Instantiate |scoped_do_native_work| ahead of GetQueueStatus() so that
+    // Instantiate |scoped_do_work| ahead of GetQueueStatus() so that
     // trace events it emits fully outscope GetQueueStatus' events
     // (GetQueueStatus() itself not being expected to do work; it's fine to use
-    // only on ScopedDoNativeWork for both calls -- we trace them independently
+    // only one ScopedDoWorkItem for both calls -- we trace them independently
     // just in case internal work stalls).
-    auto scoped_do_native_work = run_state_->delegate->BeginNativeWork();
+    auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
 
     {
       // Individually trace ::GetQueueStatus and ::PeekMessage because sampling
@@ -471,7 +473,8 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
       // sampling profiler's thread while the sampled thread is swapped out on
       // this frame).
       TRACE_EVENT0(
-          "base", "MessagePumpForUI::ProcessNextWindowsMessage GetQueueStatus");
+          TRACE_DISABLED_BY_DEFAULT("base"),
+          "MessagePumpForUI::ProcessNextWindowsMessage GetQueueStatus");
       DWORD queue_status = ::GetQueueStatus(QS_SENDMESSAGE);
 
       // If there are sent messages in the queue then PeekMessage internally
@@ -487,7 +490,8 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
       // and emit the boolean param to see if it ever janks independently (ref.
       // comment on GetQueueStatus).
       TRACE_EVENT(
-          "base", "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
+          TRACE_DISABLED_BY_DEFAULT("base"),
+          "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
           [&](perfetto::EventContext ctx) {
             perfetto::protos::pbzero::ChromeMessagePump* msg_pump_data =
                 ctx.event()->set_chrome_message_pump();
@@ -505,12 +509,6 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
-  TRACE_EVENT("base,toplevel", "MessagePumpForUI::ProcessMessageHelper",
-              [&](perfetto::EventContext ctx) {
-                ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>()
-                    ->set_chrome_message_pump_for_ui()
-                    ->set_message_id(msg.message);
-              });
   if (msg.message == WM_QUIT) {
     // WM_QUIT is the standard way to exit a ::GetMessage() loop. Our
     // MessageLoop has its own quit mechanism, so WM_QUIT should only terminate
@@ -529,7 +527,14 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
-  auto scoped_do_native_work = run_state_->delegate->BeginNativeWork();
+  auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
+
+  TRACE_EVENT("base,toplevel", "MessagePumpForUI DispatchMessage",
+              [&](perfetto::EventContext ctx) {
+                ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>()
+                    ->set_chrome_message_pump_for_ui()
+                    ->set_message_id(msg.message);
+              });
 
   for (Observer& observer : observers_)
     observer.WillDispatchMSG(msg);
@@ -556,25 +561,15 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   MSG msg;
   bool have_message = false;
   {
-    // ::PeekMessage may process internal events. Consider it native work.
-    auto scoped_do_native_work = run_state_->delegate->BeginNativeWork();
-
-    TRACE_EVENT0("base",
+    // Note: Ideally this call wouldn't process sent-messages (as we already did
+    // that in the PeekMessage call that lead to receiving this kMsgHaveWork),
+    // but there's no way to specify this (omitting PM_QS_SENDMESSAGE as in
+    // crrev.com/791043 doesn't do anything). Hence this call must be considered
+    // as a potential work item.
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("base"),
                  "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
-
-    // The system headers don't define PM_QS_ALLEVENTS; it's equivalent to
-    // PM_QS_INPUT | PM_QS_PAINT | PM_QS_POSTMESSAGE. i.e., anything but
-    // QS_SENDMESSAGE.
-    // Since we're looking to replace our kMsgHaveWork posted message, we can
-    // ignore sent messages (which never compete with posted messages in the
-    // initial PeekMessage call).
-    constexpr auto PM_QS_ALLEVENTS = QS_ALLEVENTS << 16;
-    static_assert(
-        PM_QS_ALLEVENTS == (PM_QS_INPUT | PM_QS_PAINT | PM_QS_POSTMESSAGE), "");
-    static_assert((PM_QS_ALLEVENTS & PM_QS_SENDMESSAGE) == 0, "");
-
-    have_message = ::PeekMessage(&msg, nullptr, 0, 0,
-                                 PM_REMOVE | PM_QS_ALLEVENTS) != FALSE;
+    auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
+    have_message = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
   }
 
   // Expect no message or a message different than kMsgHaveWork.
@@ -614,7 +609,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
     // ProcessPumpReplacementMessage() which finds the WM_TIMER message
     // installed by ScheduleNativeTimer(). That message needs to be handled
     // directly as handing it off to ProcessMessageHelper() below would cause an
-    // unnecessary ScopedDoNativeWork which may incorrectly lead the Delegate's
+    // unnecessary ScopedDoWorkItem which may incorrectly lead the Delegate's
     // heuristics to conclude that the DoWork() in HandleTimerMessage() is
     // nested inside a native task. It's also safe to skip the below
     // ScheduleWork() as it is not mandatory before invoking DoWork() and
@@ -774,6 +769,8 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout) {
   if (ProcessInternalIOItem(item))
     return true;
 
+  auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
+
   TRACE_EVENT(
       "base,toplevel", "IOHandler::OnIOCompleted",
       [&](perfetto::EventContext ctx) {
@@ -783,7 +780,6 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout) {
                           item.handler->io_handler_location())));
       });
 
-  auto scoped_do_native_work = run_state_->delegate->BeginNativeWork();
   item.handler->OnIOCompleted(item.context, item.bytes_transfered, item.error);
 
   return true;

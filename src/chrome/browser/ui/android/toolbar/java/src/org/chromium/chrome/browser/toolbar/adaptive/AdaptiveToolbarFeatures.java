@@ -36,7 +36,7 @@ public class AdaptiveToolbarFeatures {
      */
     @IntDef({AdaptiveToolbarButtonVariant.UNKNOWN, AdaptiveToolbarButtonVariant.NONE,
             AdaptiveToolbarButtonVariant.NEW_TAB, AdaptiveToolbarButtonVariant.SHARE,
-            AdaptiveToolbarButtonVariant.VOICE})
+            AdaptiveToolbarButtonVariant.VOICE, AdaptiveToolbarButtonVariant.AUTO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AdaptiveToolbarButtonVariant {
         int UNKNOWN = 0;
@@ -44,13 +44,23 @@ public class AdaptiveToolbarFeatures {
         int NEW_TAB = 2;
         int SHARE = 3;
         int VOICE = 4;
+        int AUTO = 5;
 
-        int NUM_ENTRIES = 5;
+        int NUM_ENTRIES = 6;
     }
 
     /** Returns {@code true} if the adaptive toolbar is enabled. */
     public static boolean isEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR);
+    }
+
+    /**
+     * Returns {@code true} if the adaptive button customization is enabled. Requires native
+     * libraries.
+     */
+    public static boolean isCustomizationEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION);
     }
 
     /**

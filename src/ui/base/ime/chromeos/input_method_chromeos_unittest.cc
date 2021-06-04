@@ -35,14 +35,12 @@
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/geometry/rect.h"
 
-using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 
 namespace ui {
 namespace {
 
-const std::u16string kSampleText = base::UTF8ToUTF16(
-    "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
+const std::u16string kSampleText = u"あいうえお";
 
 using KeyEventCallback = IMEEngineHandlerInterface::KeyEventDoneCallback;
 
@@ -226,13 +224,13 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void SetUp() override {
     IMEBridge::Initialize();
 
-    mock_ime_engine_handler_.reset(
-        new chromeos::MockIMEEngineHandler());
+    mock_ime_engine_handler_ =
+        std::make_unique<chromeos::MockIMEEngineHandler>();
     IMEBridge::Get()->SetCurrentEngineHandler(
         mock_ime_engine_handler_.get());
 
-    mock_ime_candidate_window_handler_.reset(
-        new chromeos::MockIMECandidateWindowHandler());
+    mock_ime_candidate_window_handler_ =
+        std::make_unique<chromeos::MockIMECandidateWindowHandler>();
     IMEBridge::Get()->SetCandidateWindowHandler(
         mock_ime_candidate_window_handler_.get());
 
@@ -1286,6 +1284,59 @@ TEST_F(InputMethodChromeOSTest, CommitTextReplacesSelection) {
       u"", TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
 
   EXPECT_EQ(fake_text_input_client.text(), u"");
+}
+
+TEST_F(InputMethodChromeOSTest, ResetsEngineWithComposition) {
+  FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
+  fake_text_input_client.SetTextAndSelection(u"hello ", gfx::Range(6, 6));
+  InputMethodChromeOS ime(this);
+  ime.SetFocusedTextInputClient(&fake_text_input_client);
+
+  ui::CompositionText composition;
+  composition.text = u"world";
+  ime.UpdateCompositionText(composition, /*cursor_pos=*/5, /*visible=*/true);
+  ime.CancelComposition(&fake_text_input_client);
+
+  EXPECT_EQ(mock_ime_engine_handler_->reset_call_count(), 1);
+}
+
+TEST_F(InputMethodChromeOSTest, DoesNotResetEngineWithNoComposition) {
+  FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
+  InputMethodChromeOS ime(this);
+  ime.SetFocusedTextInputClient(&fake_text_input_client);
+
+  ime.CommitText(
+      u"hello",
+      TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  ime.CancelComposition(&fake_text_input_client);
+
+  EXPECT_EQ(mock_ime_engine_handler_->reset_call_count(), 0);
+}
+
+TEST_F(InputMethodChromeOSTest, CommitTextThenKeyEventOnlyInsertsOnce) {
+  FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
+  InputMethodChromeOS ime(this);
+  ime.SetFocusedTextInputClient(&fake_text_input_client);
+
+  ime.CommitText(
+      u"a", TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  ui::KeyEvent key(ET_KEY_PRESSED, VKEY_A, EF_NONE);
+  ime.DispatchKeyEvent(&key);
+  std::move(mock_ime_engine_handler_->last_passed_callback())
+      .Run(/*handled=*/true);
+
+  EXPECT_EQ(fake_text_input_client.text(), u"a");
+}
+
+TEST_F(InputMethodChromeOSTest, AddsAndClearsGrammarFragments) {
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  std::vector<GrammarFragment> fragments;
+  fragments.emplace_back(gfx::Range(0, 1), "fake");
+  fragments.emplace_back(gfx::Range(3, 10), "test");
+  ime_->AddGrammarFragments(fragments);
+  EXPECT_EQ(get_grammar_fragments(), fragments);
+  ime_->ClearGrammarFragments(gfx::Range(0, 10));
+  EXPECT_EQ(get_grammar_fragments().size(), 0u);
 }
 
 }  // namespace ui

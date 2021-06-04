@@ -37,22 +37,31 @@ suite('NetworkListItemTest', function() {
   let eventTriggered;
 
   setup(function() {
-    loadTimeData.overrideValues({
-      updatedCellularActivationUi: true,
-    });
-
     mojom = chromeos.networkConfig.mojom;
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     eSimManagerRemote = new FakeESimManagerRemote();
     setESimManagerRemoteForTesting(eSimManagerRemote);
+  });
+
+  /** @param {boolean=} opt_cellularFlagValue */
+  function init(opt_cellularFlagValue) {
+    let cellularFlagValue = true;
+    if (opt_cellularFlagValue === false) {
+      cellularFlagValue = opt_cellularFlagValue;
+    }
+
+    loadTimeData.overrideValues({
+      updatedCellularActivationUi: cellularFlagValue,
+    });
+
     listItem = document.createElement('network-list-item');
     listItem.showButtons = true;
     setEventListeners();
     eventTriggered = false;
     document.body.appendChild(listItem);
     Polymer.dom.flush();
-  });
+  }
 
   function initCellularNetwork(iccid, eid, simLocked) {
     const properties = OncMojo.getDefaultManagedProperties(
@@ -90,6 +99,8 @@ suite('NetworkListItemTest', function() {
   }
 
   test('Network icon visibility', function() {
+    init();
+
     // The network icon is not shown if there is no network state.
     let networkIcon = listItem.$$('network-icon');
     assertFalse(!!networkIcon);
@@ -108,26 +119,75 @@ suite('NetworkListItemTest', function() {
   });
 
   test('Network provider name visibilty', async () => {
-    const properties = OncMojo.getDefaultManagedProperties(
+    init();
+
+    const getTitle = () => {
+      const element = listItem.$$('#itemTitle');
+      return element ? element.textContent.trim() : '';
+    };
+
+    const euicc = eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 2);
+    const profiles = (await euicc.getProfileList()).profiles;
+    assertEquals(2, profiles.length);
+    profiles[0].setDeferGetProperties(/*defer=*/ true);
+    profiles[1].setDeferGetProperties(/*defer=*/ true);
+
+    const networkState1 = initCellularNetwork(/*iccid=*/ '1', /*eid=*/ '1');
+    const networkState2 = initCellularNetwork(/*iccid=*/ '2', /*eid=*/ '1');
+
+    // Change network states to simulate list item recycling.
+    listItem.item = networkState1;
+    await flushAsync();
+    listItem.item = networkState2;
+    await flushAsync();
+
+    // Allow last getESimProfileProperties call for networkState2 to complete.
+    profiles[0].resolveLastGetPropertiesPromise();
+    await flushAsync();
+    profiles[1].resolveLastGetPropertiesPromise();
+    await flushAsync();
+
+    // Simulate getESimProfileProperties for networkState1 resolving out of
+    // order.
+    profiles[0].resolveLastGetPropertiesPromise();
+    await flushAsync();
+
+    // Verify that full title is displayed correctly even if promise from
+    // previous network resolves out of order.
+    assertEquals(
+        listItem.i18n('networkListItemTitle', 'Cellular', 'provider2'),
+        getTitle());
+
+    // Change to network state without provider name and verify that that title
+    // is displayed correctly.
+    const ethernetProperties = OncMojo.getDefaultManagedProperties(
         mojom.NetworkType.kEthernet, 'eth0');
-    mojoApi_.setManagedPropertiesForTest(properties);
-    listItem.item = OncMojo.managedPropertiesToNetworkState(properties);
+    mojoApi_.setManagedPropertiesForTest(ethernetProperties);
+    listItem.item = OncMojo.managedPropertiesToNetworkState(ethernetProperties);
     await flushAsync();
+    assertEquals('Ethernet', getTitle());
+  });
 
-    let providerName = listItem.$$('#subtitle');
-    assertFalse(!!providerName.textContent.trim());
+  test('Network title is escaped', async () => {
+    init();
 
-    eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
-    const networkState = initCellularNetwork(/*iccid=*/ '1', /*eid=*/ '1');
-    listItem.item = networkState;
+    listItem.item = {
+      customItemType: NetworkList.CustomItemType.ESIM_PENDING_PROFILE,
+      customItemName: '<a>Bad Name</a>',
+      customItemSubtitle: '<a>Bad Subtitle</a>',
+      polymerIcon: 'network:cellular-0',
+      showBeforeNetworksList: false,
+      customData: {
+        iccid: 'iccid',
+      },
+    };
     await flushAsync();
-
-    providerName = listItem.$$('#subtitle');
-    assertTrue(!!providerName);
-    assertEquals('provider1', providerName.textContent.trim());
+    assertFalse(!!listItem.$$('a'));
   });
 
   test('Pending activation pSIM UI visibility', async () => {
+    init();
+
     const networkStateText = listItem.$.networkStateText;
     assertTrue(!!networkStateText);
     assertTrue(networkStateText.hidden);
@@ -211,9 +271,17 @@ suite('NetworkListItemTest', function() {
     listItem.$.divOuter.click();
     const showDetailEvent = await showDetailPromise;
     assertEquals(showDetailEvent.detail, networkState);
+
+    // Setting showButtons to false should hide activate and arrow button.
+    listItem.showButtons = false;
+    await flushAsync();
+    assertFalse(!!listItem.$$('#activateButton'));
+    assertFalse(!!listItem.$$('#subpageButton'));
   });
 
   test('Unavailable pSIM UI visibility', async () => {
+    init();
+
     const networkStateText = listItem.$.networkStateText;
     assertTrue(!!networkStateText);
     assertTrue(networkStateText.hidden);
@@ -333,6 +401,8 @@ suite('NetworkListItemTest', function() {
   test(
       'Pending eSIM profile name, provider, install button visibilty',
       async () => {
+        init();
+
         const itemName = 'Item Name';
         const itemSubtitle = 'Item Subtitle';
         listItem.item = {
@@ -347,13 +417,11 @@ suite('NetworkListItemTest', function() {
         };
         await flushAsync();
 
-        let networkName = listItem.$$('#networkName');
-        assertTrue(!!networkName);
-        assertEquals(itemName, networkName.textContent.trim());
-
-        let subtitle = listItem.$$('#subtitle');
-        assertTrue(!!subtitle);
-        assertEquals(itemSubtitle, subtitle.textContent.trim());
+        let title = listItem.$$('#itemTitle');
+        assertTrue(!!title);
+        assertEquals(
+            listItem.i18n('networkListItemTitle', itemName, itemSubtitle),
+            title.textContent.trim());
 
         let installButton = listItem.$$('#installButton');
         assertTrue(!!installButton);
@@ -366,10 +434,17 @@ suite('NetworkListItemTest', function() {
 
         await flushAsync();
         assertEquals(installProfileEventIccid, 'iccid');
+
+        // Setting showButtons to false should hide install button.
+        listItem.showButtons = false;
+        await flushAsync();
+        assertFalse(!!listItem.$$('#installButton'));
       });
 
   test(
       'Installing eSIM profile name, provider, spinner visibilty', async () => {
+        init();
+
         const itemName = 'Item Name';
         const itemSubtitle = 'Item Subtitle';
         listItem.item = {
@@ -384,19 +459,19 @@ suite('NetworkListItemTest', function() {
         };
         await flushAsync();
 
-        let networkName = listItem.$$('#networkName');
-        assertTrue(!!networkName);
-        assertEquals(itemName, networkName.textContent.trim());
-
-        let subtitle = listItem.$$('#subtitle');
-        assertTrue(!!subtitle);
-        assertEquals(itemSubtitle, subtitle.textContent.trim());
+        let title = listItem.$$('#itemTitle');
+        assertTrue(!!title);
+        assertEquals(
+            listItem.i18n('networkListItemTitle', itemName, itemSubtitle),
+            title.textContent.trim());
 
         let spinner = listItem.$$('#installingESimSpinner');
         assertTrue(!!spinner);
       });
 
   test('Only active SIMs should show scanning subtext', async () => {
+    init(/*opt_cellularFlagValue=*/ false);
+
     const kTestIccid1 = '00000000000000000000';
     const kTestIccid2 = '11111111111111111111';
     const kTestEid = '1';
@@ -430,6 +505,8 @@ suite('NetworkListItemTest', function() {
   });
 
   test('Show sim lock dialog when cellular network is locked', async () => {
+    init();
+
     const iccid = '11111111111111111111';
     const eid = '1';
     eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
@@ -472,9 +549,16 @@ suite('NetworkListItemTest', function() {
     networkStateText = listItem.$$('#networkStateText');
     assertTrue(!!networkStateText);
     assertEquals(networkStateLockedText, networkStateText.textContent.trim());
+
+    // Setting showButtons to false should hide unlock button.
+    listItem.showButtons = false;
+    await flushAsync();
+    assertFalse(!!listItem.$$('#unlockButton'));
   });
 
   test('Disable sim lock button when device is inhibited', async () => {
+    init();
+
     const iccid = '11111111111111111111';
     const eid = '1';
     eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
@@ -492,6 +576,8 @@ suite('NetworkListItemTest', function() {
   });
 
   test('Network disabled, Pending eSIM, install button visible', async () => {
+    init();
+
     const itemName = 'Item Name';
     const itemSubtitle = 'Item Subtitle';
     listItem.item = {
@@ -534,6 +620,8 @@ suite('NetworkListItemTest', function() {
   test(
       'Network disabled, no arrow and enter and click does not fire events',
       async () => {
+        init();
+
         const properties = OncMojo.getDefaultManagedProperties(
             mojom.NetworkType.kCellular, 'cellular');
         mojoApi_.setManagedPropertiesForTest(properties);
@@ -558,6 +646,8 @@ suite('NetworkListItemTest', function() {
       });
 
   test('Show locked sublabel when cellular network is locked', async () => {
+    init();
+
     const iccid = '11111111111111111111';
     const eid = '1';
     eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
@@ -575,6 +665,8 @@ suite('NetworkListItemTest', function() {
   test(
       'Show locked sublabel when cellular network is locked and scanning',
       async () => {
+        init();
+
         const iccid = '11111111111111111111';
         const eid = '1';
         eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
@@ -594,65 +686,4 @@ suite('NetworkListItemTest', function() {
         assertNotEquals(
             networkStateScanningText, networkStateText.textContent.trim());
       });
-
-  test('Cellular network item standard height', async () => {
-    eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
-    const networkState = initCellularNetwork(/*iccid=*/ '1', /*eid=*/ '1');
-    networkState.connectionState = mojom.ConnectionStateType.kNotConnected;
-    listItem.item = networkState;
-
-    const networkStateText = listItem.$$('#networkStateText');
-    networkStateText.hidden = true;
-    networkStateText.active = false;
-    await flushAsync();
-    assertTrue(networkStateText.hidden);
-    assertFalse(networkStateText.active);
-    assertEquals(networkStateText.textContent.trim(), '');
-
-    const networkName = listItem.$$('#networkName');
-    assertFalse(networkName.hidden);
-
-    const subtitle = listItem.$$('#subtitle');
-    subtitle.hidden = false;
-    await flushAsync();
-    assertFalse(subtitle.hidden);
-
-    const divOuter = listItem.$$('#divOuter');
-    assertTrue(!!divOuter);
-    assertTrue(divOuter.classList.contains('div-outer-with-standard-height'));
-    assertFalse(divOuter.classList.contains('div-outer-with-subtitle-height'));
-  });
-
-  test('Cellular network item subtitle height', async () => {
-    eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
-    const networkState = initCellularNetwork(/*iccid=*/ '1', /*eid=*/ '1');
-    networkState.connectionState = mojom.ConnectionStateType.kConnected;
-    listItem.item = networkState;
-
-    const networkStateText = listItem.$$('#networkStateText');
-    networkStateText.hidden = false;
-    networkStateText.active = true;
-    await flushAsync();
-    assertTrue(!!networkStateText);
-    assertFalse(networkStateText.hidden);
-    assertTrue(networkStateText.active);
-    assertEquals(
-        networkStateText.textContent.trim(),
-        listItem.i18n('networkListItemConnected'));
-
-    const networkName = listItem.$$('#networkName');
-    assertFalse(!!networkName.hidden);
-
-    const subtitle = listItem.$$('#subtitle');
-    subtitle.hidden = false;
-    await flushAsync();
-    assertTrue(!!subtitle);
-    assertFalse(subtitle.hidden);
-
-    const divOuter = listItem.$$('#divOuter');
-    assertTrue(!!divOuter);
-    assertFalse(divOuter.classList.contains('div-outer-with-standard-height'));
-    assertTrue(divOuter.classList.contains('div-outer-with-subtitle-height'));
-  });
-
 });

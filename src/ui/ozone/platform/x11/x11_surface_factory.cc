@@ -123,8 +123,7 @@ GLOzone* X11SurfaceFactory::GetGLOzone(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 X11SurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
-                                              bool allow_protected_memory,
-                                              bool enforce_protected_memory) {
+                                              bool allow_protected_memory) {
   return std::make_unique<gpu::VulkanImplementationX11>(use_swiftshader);
 }
 #endif
@@ -148,7 +147,7 @@ scoped_refptr<gfx::NativePixmap> X11SurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
   auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(
       format, size, usage);

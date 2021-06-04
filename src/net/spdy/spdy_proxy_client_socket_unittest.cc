@@ -18,6 +18,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -93,8 +94,8 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
       NetLogWithSource()));
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), NetworkIsolationKey(),
-      false /* disable_secure_dns */, OnHostResolutionCallback());
+      key.host_port_pair(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+      OnHostResolutionCallback());
 
   SSLConfig ssl_config;
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
@@ -109,9 +110,8 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
 
   base::WeakPtr<SpdySession> spdy_session =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key, false /* is_trusted_proxy */,
-          connect_job_delegate.ReleaseSocket(), LoadTimingInfo::ConnectTiming(),
-          NetLogWithSource());
+          key, connect_job_delegate.ReleaseSocket(),
+          LoadTimingInfo::ConnectTiming(), NetLogWithSource());
   // Failure is reported asynchronously.
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
@@ -218,7 +218,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  SpdySessionKey::IsProxySession::kFalse,
                                  SocketTag(),
                                  NetworkIsolationKey(),
-                                 false /* disable_secure_dns */),
+                                 SecureDnsPolicy::kAllow),
       ssl_(SYNCHRONOUS, OK) {
   session_deps_.net_log = net_log_.bound().net_log();
 }

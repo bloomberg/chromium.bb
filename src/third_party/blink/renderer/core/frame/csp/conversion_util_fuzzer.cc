@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/csp/conversion_util.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -24,6 +25,14 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
   if (it == data + size) {
     // Not much point in going on with an empty CSP string.
+    return EXIT_SUCCESS;
+  }
+  if (it - data > 250) {
+    // Origins should not be too long. The origin of size 'N' is copied into 'M'
+    // policies. The fuzzer can send an input of size N+M and use O(N*M) memory.
+    // Due to this quadratic behavior, we must limit the size of the origin to
+    // prevent the fuzzer from triggering OOM crash. Note that real domain names
+    // are limited to 253 characters.
     return EXIT_SUCCESS;
   }
 
@@ -47,14 +56,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
             : network::mojom::ContentSecurityPolicySource::kOriginPolicy;
   }
 
-  scoped_refptr<SecurityOrigin> self_origin = SecurityOrigin::Create(KURL(url));
-
   // Construct a policy from the string.
-  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp->DidReceiveHeader(header, *self_origin, header_type, header_source);
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr> parsed_policies =
+      ParseContentSecurityPolicies(header, header_type, header_source,
+                                   KURL(url));
 
-  const Vector<network::mojom::blink::ContentSecurityPolicyPtr>&
-      parsed_policies = csp->GetParsedPolicies();
   if (parsed_policies.size() > 0) {
     network::mojom::blink::ContentSecurityPolicyPtr converted_csp =
         ConvertToMojoBlink(ConvertToPublic(parsed_policies[0]->Clone()));

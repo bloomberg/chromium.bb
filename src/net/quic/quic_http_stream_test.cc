@@ -27,6 +27,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
@@ -399,7 +400,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicSessionKey(kDefaultServerHostName, kDefaultServerPort,
                        PRIVACY_MODE_DISABLED, SocketTag(),
-                       NetworkIsolationKey(), false /* disable_secure_dns */),
+                       NetworkIsolationKey(), SecureDnsPolicy::kAllow),
         /*require_confirmation=*/false,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
@@ -2703,7 +2704,7 @@ TEST_P(QuicHttpStreamTest, GetAcceptChViaAlps) {
   base::HistogramTester histogram_tester;
 
   session_->OnAcceptChFrameReceivedViaAlps(
-      {{{"https://www.example.org", "Sec-UA-CH-Platform"}}});
+      {{{"https://www.example.org", "Sec-CH-UA-Platform"}}});
 
   request_.method = "GET";
   request_.url = GURL("https://www.example.org/foo");
@@ -2711,7 +2712,7 @@ TEST_P(QuicHttpStreamTest, GetAcceptChViaAlps) {
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
-  EXPECT_EQ("Sec-UA-CH-Platform", stream_->GetAcceptChViaAlps());
+  EXPECT_EQ("Sec-CH-UA-Platform", stream_->GetAcceptChViaAlps());
   EXPECT_TRUE(AtEof());
 
   histogram_tester.ExpectBucketCount(

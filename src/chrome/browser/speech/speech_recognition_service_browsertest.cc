@@ -16,6 +16,7 @@
 #include "chrome/browser/speech/chrome_speech_recognition_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/speech/soda/soda_test_paths.h"
 #include "chrome/services/speech/speech_recognition_recognizer_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/audio_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
@@ -38,19 +40,7 @@ using testing::StrictMock;
 
 namespace speech {
 
-constexpr base::FilePath::CharType kSodaResourcesDir[] =
-    FILE_PATH_LITERAL("third_party/soda/resources");
-
-constexpr base::FilePath::CharType kSodaLanguagePackRelativePath[] =
-    FILE_PATH_LITERAL("en_us");
-
-constexpr base::FilePath::CharType kSodaTestAudioRelativePath[] =
-    FILE_PATH_LITERAL("hey_google.wav");
-
 constexpr int kExpectedChannelCount = 1;
-
-constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
-    FILE_PATH_LITERAL("libsoda_for_testing.so");
 
 // TODO: Should be a way to generate this, this seems way too brittle.
 const size_t kShMemSize = 82240;
@@ -111,7 +101,7 @@ class TestStreamFactory : public audio::FakeStreamFactory {
   mojo::Remote<media::mojom::AudioInputStreamClient> client_;
   mojo::Receiver<media::mojom::AudioInputStream> stream_receiver_;
   std::string device_id_;
-  base::Optional<media::AudioParameters> params_;
+  absl::optional<media::AudioParameters> params_;
 
  private:
   void OnTimer() {
@@ -137,7 +127,8 @@ class SpeechRecognitionServiceTest
 
   // media::mojom::SpeechRecognitionRecognizerClient
   void OnSpeechRecognitionRecognitionEvent(
-      media::mojom::SpeechRecognitionResultPtr result) override;
+      media::mojom::SpeechRecognitionResultPtr result,
+      OnSpeechRecognitionRecognitionEventCallback reply) override;
   void OnSpeechRecognitionError() override;
   void OnLanguageIdentificationEvent(
       media::mojom::LanguageIdentificationEventPtr event) override;
@@ -149,8 +140,15 @@ class SpeechRecognitionServiceTest
   }
 
  protected:
+  void CloseCaptionBubble() {
+    is_client_requesting_speech_recognition_ = false;
+  }
+  void SetUpPrefs();
   void LaunchService();
   void LaunchServiceWithAudioSourceFetcher();
+  void SendAudioChunk(const std::vector<int16_t>& audio_data,
+                      media::WavAudioHandler* handler,
+                      size_t kMaxChunkSize);
 
   // The root directory for test files.
   base::FilePath test_data_dir_;
@@ -169,6 +167,8 @@ class SpeechRecognitionServiceTest
 
   std::vector<std::string> recognition_results_;
 
+  bool is_client_requesting_speech_recognition_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionServiceTest);
 };
 
@@ -178,8 +178,10 @@ void SpeechRecognitionServiceTest::SetUp() {
 }
 
 void SpeechRecognitionServiceTest::OnSpeechRecognitionRecognitionEvent(
-    media::mojom::SpeechRecognitionResultPtr result) {
+    media::mojom::SpeechRecognitionResultPtr result,
+    OnSpeechRecognitionRecognitionEventCallback reply) {
   recognition_results_.push_back(std::move(result->transcription));
+  std::move(reply).Run(is_client_requesting_speech_recognition_);
 }
 
 void SpeechRecognitionServiceTest::OnSpeechRecognitionError() {
@@ -189,6 +191,21 @@ void SpeechRecognitionServiceTest::OnSpeechRecognitionError() {
 void SpeechRecognitionServiceTest::OnLanguageIdentificationEvent(
     media::mojom::LanguageIdentificationEventPtr event) {
   NOTREACHED();
+}
+
+void SpeechRecognitionServiceTest::SetUpPrefs() {
+  g_browser_process->local_state()->SetFilePath(
+      prefs::kSodaBinaryPath,
+      test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
+          .Append(soda::kSodaTestBinaryRelativePath));
+  g_browser_process->local_state()->SetFilePath(
+      prefs::kSodaEnUsConfigPath,
+      test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
+          .Append(soda::kSodaLanguagePackRelativePath));
+
+  PrefService* profile_prefs = browser()->profile()->GetPrefs();
+  // TODO(crbug.com/1173135): Disconnect from kLiveCaptionEnabled.
+  profile_prefs->SetBoolean(prefs::kLiveCaptionEnabled, true);
 }
 
 void SpeechRecognitionServiceTest::LaunchService() {
@@ -212,6 +229,8 @@ void SpeechRecognitionServiceTest::LaunchService() {
   speech_recognition_context_->BindRecognizer(
       std::move(pending_recognizer_receiver),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
+      media::mojom::SpeechRecognitionOptions::New(
+          media::mojom::SpeechRecognitionMode::kCaption),
       base::BindOnce(
           [](bool* p_is_multichannel_supported, base::RunLoop* run_loop,
              bool is_multichannel_supported) {
@@ -241,6 +260,8 @@ void SpeechRecognitionServiceTest::LaunchServiceWithAudioSourceFetcher() {
   speech_recognition_context_->BindAudioSourceFetcher(
       audio_source_fetcher_.BindNewPipeAndPassReceiver(),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
+      media::mojom::SpeechRecognitionOptions::New(
+          media::mojom::SpeechRecognitionMode::kIme),
       base::BindOnce(
           [](bool* p_is_multichannel_supported, base::RunLoop* run_loop,
              bool is_multichannel_supported) {
@@ -252,24 +273,44 @@ void SpeechRecognitionServiceTest::LaunchServiceWithAudioSourceFetcher() {
   ASSERT_FALSE(is_multichannel_supported);
 }
 
+void SpeechRecognitionServiceTest::SendAudioChunk(
+    const std::vector<int16_t>& audio_data,
+    media::WavAudioHandler* handler,
+    size_t kMaxChunkSize) {
+  int chunk_start = 0;
+  // Upload chunks of 1024 frames at a time.
+  while (chunk_start < static_cast<int>(audio_data.size())) {
+    int chunk_size = kMaxChunkSize < audio_data.size() - chunk_start
+                         ? kMaxChunkSize
+                         : audio_data.size() - chunk_start;
+
+    auto signed_buffer = media::mojom::AudioDataS16::New();
+    signed_buffer->channel_count = kExpectedChannelCount;
+    signed_buffer->frame_count = chunk_size;
+    signed_buffer->sample_rate = handler->sample_rate();
+    for (int i = 0; i < chunk_size; i++) {
+      signed_buffer->data.push_back(audio_data[chunk_start + i]);
+    }
+
+    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
+        std::move(signed_buffer));
+    chunk_start += chunk_size;
+
+    // Sleep for 20ms to simulate real-time audio. SODA requires audio
+    // streaming in order to return events.
+    usleep(20000);
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
   base::HistogramTester histograms;
-  g_browser_process->local_state()->SetFilePath(
-      prefs::kSodaBinaryPath,
-      test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
-          .Append(kSodaBinaryRelativePath));
-  g_browser_process->local_state()->SetFilePath(
-      prefs::kSodaEnUsConfigPath,
-      test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
-          .Append(kSodaLanguagePackRelativePath));
-
-  PrefService* profile_prefs = browser()->profile()->GetPrefs();
-  profile_prefs->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetUpPrefs();
   LaunchService();
 
   std::string buffer;
-  auto audio_file = test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
-                        .Append(base::FilePath(kSodaTestAudioRelativePath));
+  auto audio_file =
+      test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
+          .Append(base::FilePath(soda::kSodaTestAudioRelativePath));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::PathExists(audio_file));
@@ -293,31 +334,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
   constexpr size_t kMaxChunkSize = 1024;
   constexpr int kReplayAudioCount = 2;
   for (int i = 0; i < kReplayAudioCount; i++) {
-    int chunk_start = 0;
-    // Upload chunks of 1024 frames at a time.
-    while (chunk_start < static_cast<int>(audio_data.size())) {
-      int chunk_size = kMaxChunkSize < audio_data.size() - chunk_start
-                           ? kMaxChunkSize
-                           : audio_data.size() - chunk_start;
-
-      auto signed_buffer = media::mojom::AudioDataS16::New();
-      signed_buffer->channel_count = kExpectedChannelCount;
-      signed_buffer->frame_count = chunk_size;
-      signed_buffer->sample_rate = handler->sample_rate();
-      for (int i = 0; i < chunk_size; i++) {
-        signed_buffer->data.push_back(audio_data[chunk_start + i]);
-      }
-
-      speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
-          std::move(signed_buffer));
-      chunk_start += chunk_size;
-
-      // Sleep for 20ms to simulate real-time audio. SODA requires audio
-      // streaming in order to return events.
-      usleep(20000);
-    }
-
-    speech_recognition_recognizer_->OnCaptionBubbleClosed();
+    SendAudioChunk(audio_data, handler.get(), kMaxChunkSize);
   }
 
   speech_recognition_recognizer_.reset();
@@ -331,7 +348,77 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectUniqueTimeSample(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName,
-      base::TimeDelta::FromMilliseconds(1260), 1);
+      base::TimeDelta::FromMilliseconds(2520), 1);
+  histograms.ExpectTotalCount(
+      SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest,
+                       ClosingCaptionBubbleStopsRecognition) {
+  base::HistogramTester histograms;
+  SetUpPrefs();
+  LaunchService();
+
+  std::string buffer;
+  auto audio_file =
+      test_data_dir_.Append(base::FilePath(soda::kSodaResourcePath))
+          .Append(base::FilePath(soda::kSodaTestAudioRelativePath));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::PathExists(audio_file));
+    ASSERT_TRUE(base::ReadFileToString(audio_file, &buffer));
+  }
+
+  auto handler = media::WavAudioHandler::Create(buffer);
+  ASSERT_TRUE(handler.get());
+  ASSERT_EQ(handler->num_channels(), kExpectedChannelCount);
+
+  auto bus =
+      media::AudioBus::Create(kExpectedChannelCount, handler->total_frames());
+
+  size_t bytes_written = 0u;
+  ASSERT_TRUE(handler->CopyTo(bus.get(), 0, &bytes_written));
+
+  std::vector<int16_t> audio_data(bus->frames());
+  bus->ToInterleaved<media::SignedInt16SampleTypeTraits>(bus->frames(),
+                                                         audio_data.data());
+  constexpr size_t kMaxChunkSize = 1024;
+
+  // Send an audio chunk to the service. It will output "Hey Google". When the
+  // client receives the result, it responds to the service with `success =
+  // true`, informing the speech recognition service that it still wants
+  // transcriptions.
+  SendAudioChunk(audio_data, handler.get(), kMaxChunkSize);
+  base::RunLoop().RunUntilIdle();
+
+  // Close caption bubble. This means that the next time the client receives a
+  // transcription, it will respond to the speech service with `success =
+  // false`, informing the speech recognition service that it is no longer
+  // requesting speech recognition.
+  CloseCaptionBubble();
+
+  // Send an audio chunk to the service. It will output "Hey Google". When the
+  // client receives the result, it responds to the service with `success =
+  // false`, informing the speech recognition service that it is no longer
+  // requesting speech recognition.
+  SendAudioChunk(audio_data, handler.get(), kMaxChunkSize);
+  base::RunLoop().RunUntilIdle();
+
+  // Send an audio chunk to the service. It does not get transcribed.
+  SendAudioChunk(audio_data, handler.get(), kMaxChunkSize);
+
+  speech_recognition_recognizer_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Sleep for 50ms to ensure SODA has returned real-time results.
+  usleep(50000);
+  ASSERT_GT(static_cast<int>(recognition_results_.size()), 3);
+  ASSERT_EQ(recognition_results_.back(), "Hey Google Hey Google");
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectUniqueTimeSample(
+      SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName,
+      base::TimeDelta::FromMilliseconds(2520), 1);
   histograms.ExpectUniqueTimeSample(
       SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName,
       base::TimeDelta::FromMilliseconds(1260), 1);
@@ -339,18 +426,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, CreateAudioSourceFetcher) {
   base::HistogramTester histograms;
-  g_browser_process->local_state()->SetFilePath(
-      prefs::kSodaBinaryPath,
-      test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
-          .Append(kSodaBinaryRelativePath));
-  g_browser_process->local_state()->SetFilePath(
-      prefs::kSodaEnUsConfigPath,
-      test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
-          .Append(kSodaLanguagePackRelativePath));
-
-  PrefService* profile_prefs = browser()->profile()->GetPrefs();
-  // TODO(crbug.com/1173135): Disconnect from kLiveCaptionEnabled.
-  profile_prefs->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetUpPrefs();
   LaunchServiceWithAudioSourceFetcher();
 
   // TODO(crbug.com/1185978): Check implementation / sandbox policy on Mac and

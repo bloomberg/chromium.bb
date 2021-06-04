@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, InstallSourceRecorded) {
     NavigateToURLAndWait(browser(), url);
     AppId app_id = InstallShortcutAppForCurrentUrl();
 
-    base::Optional<int> install_source = GetIntWebAppPref(
+    absl::optional<int> install_source = GetIntWebAppPref(
         profile()->GetPrefs(), app_id, kLatestWebAppInstallSource);
     EXPECT_TRUE(install_source.has_value());
     EXPECT_EQ(static_cast<webapps::WebappInstallSource>(*install_source),
@@ -164,10 +164,11 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, WorksAfterDelayedIFrameLoad) {
     iframe.srcdoc = 'inner page';
     document.body.appendChild(iframe);
   )";
-  EXPECT_EQ(content::EvalJsWithManualReply(
-                browser()->tab_strip_model()->GetActiveWebContents(), script)
-                .ExtractString(),
-            "success");
+  EXPECT_EQ(
+      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      script, content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+          .ExtractString(),
+      "success");
 
   InstallShortcutAppForCurrentUrl();
 }

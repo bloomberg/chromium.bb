@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Copyright 2015-2020 LunarG, Inc. -->
+<!-- Copyright 2015-2021 LunarG, Inc. -->
 
 [![Khronos Vulkan][1]][2]
 
@@ -8,10 +8,6 @@
 
 # VK\_LAYER\_KHRONOS\_validation
 
-[![Creative Commons][3]][4]
-
-[3]: https://i.creativecommons.org/l/by-nd/4.0/88x31.png "Creative Commons License"
-[4]: https://creativecommons.org/licenses/by-nd/4.0/
 The `VK_LAYER_KHRONOS_validation` layer supports the following validation coverage areas:
 
 - [Core validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/core_checks.md)
@@ -86,6 +82,18 @@ annotated with valid usage identifiers.
 | Warn | `VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT` | `VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT` |
 | Perf Warn | `VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT` | `VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT` |
 | Info | `VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT` | `VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT` or `VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT` |
+
+By default, if an app uses the VK_EXT_debug_utils extension and registers a messenger, the validation layer default messenger log callback will not
+execute, as it is considered to be handled by the app. However, using the validation layer callback can be very useful, as it provides a unified log
+that can be easily parsed. On Android, the validation layer default callback can be forced to always execute, and log its contents to logcat, using
+the following system property:
+
+```bash
+adb shell setprop debug.vvl.forcelayerlog 1
+```
+
+The debug.vvl namespace signifies validation layers, and setting this property forces the validation layer callback to always execute, even if the app registers
+a messenger callback itself. This is especially useful for automation tasks, ensuring that errors can be read in a parseable format.
 
 Refer to [VK_EXT_debug_utils](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_debug_utils)
 in the Vulkan Specification for details on this feature.

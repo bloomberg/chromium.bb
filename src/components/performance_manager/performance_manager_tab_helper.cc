@@ -64,10 +64,9 @@ bool ConnectWindowOpenRelationshipIfExists(PerformanceManagerTabHelper* helper,
     return false;
 
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNode,
                                 base::Unretained(helper->page_node()),
-                                base::Unretained(opener_frame_node),
-                                PageNode::OpenedType::kPopup));
+                                base::Unretained(opener_frame_node)));
   return true;
 }
 
@@ -372,10 +371,10 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
   DCHECK(page);
   auto* frame = GetFrameNode(render_frame_host);
 
-  // Determine the opened type.
-  auto opened_type = PageNode::OpenedType::kInvalid;
+  // Determine the embedded type.
+  auto embedding_type = PageNode::EmbeddingType::kInvalid;
   if (inner_web_contents->IsPortal()) {
-    opened_type = PageNode::OpenedType::kPortal;
+    embedding_type = PageNode::EmbeddingType::kPortal;
 
     // In the case of portals there can be a temporary RFH that is created that
     // will never actually be committed to the frame tree (for which we'll never
@@ -385,15 +384,11 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
     if (!frame)
       frame = GetFrameNode(render_frame_host->GetParent());
   } else {
-    opened_type = PageNode::OpenedType::kGuestView;
+    embedding_type = PageNode::EmbeddingType::kGuestView;
     // For a guest view, the RFH should already have been seen.
-
     // Note that guest views can simultaneously have openers *and* be embedded.
-    // The embedded relationship has higher priority, but we'll fall back to
-    // using the window.open relationship if the embedded relationship is
-    // severed.
   }
-  DCHECK_NE(PageNode::OpenedType::kInvalid, opened_type);
+  DCHECK_NE(PageNode::EmbeddingType::kInvalid, embedding_type);
   if (!frame) {
     DCHECK(!render_frame_host->IsRenderFrameCreated());
     DCHECK(!inner_web_contents->IsPortal());
@@ -406,24 +401,20 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
   }
 
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
-                                base::Unretained(page), base::Unretained(frame),
-                                opened_type));
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetEmbedderFrameNodeAndEmbeddingType,
+                     base::Unretained(page), base::Unretained(frame),
+                     embedding_type));
 }
 
 void PerformanceManagerTabHelper::InnerWebContentsDetached(
     content::WebContents* inner_web_contents) {
   auto* helper = FromWebContents(inner_web_contents);
   DCHECK(helper);
-
-  // Fall back to using the window.open opener if it exists. If not, simply
-  // clear the opener relationship entirely.
-  if (!ConnectWindowOpenRelationshipIfExists(helper, inner_web_contents)) {
-    PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindOnce(&PageNodeImpl::ClearOpenerFrameNodeAndOpenedType,
-                       base::Unretained(helper->page_node())));
-  }
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::ClearEmbedderFrameNodeAndEmbeddingType,
+                     base::Unretained(helper->page_node())));
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {

@@ -53,7 +53,6 @@
 
 interface CoreProbes {
 
-  class InspectorIssue;
   class ConsoleMessage;
   class FontCustomPlatformData;
   class FontFace;
@@ -88,11 +87,11 @@ interface CoreProbes {
   void DidResizeMainFrame(LocalFrame*);
   void ApplyAcceptLanguageOverride(ExecutionContext*, String* accept_language);
   void ApplyUserAgentOverride(CoreProbeSink*, String* user_agent);
-  void ApplyUserAgentMetadataOverride(CoreProbeSink*, base::Optional<blink::UserAgentMetadata>* ua_metadata_override);
+  void ApplyUserAgentMetadataOverride(CoreProbeSink*, absl::optional<blink::UserAgentMetadata>* ua_metadata_override);
   void DidBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const ResourceLoaderOptions&, ResourceRequestBlockedReason, ResourceType);
   void DidChangeResourcePriority(LocalFrame*, DocumentLoader*, uint64_t identifier, ResourceLoadPriority load_priority);
   void PrepareRequest(CoreProbeSink*, DocumentLoader*, ResourceRequest&, ResourceLoaderOptions&, ResourceType);
-  void WillSendRequest(CoreProbeSink*, DocumentLoader*, const KURL& fetch_context_url, const ResourceRequest&, const ResourceResponse& redirect_response, const ResourceLoaderOptions&, ResourceType, RenderBlockingBehavior);
+  void WillSendRequest(CoreProbeSink*, DocumentLoader*, const KURL& fetch_context_url, const ResourceRequest&, const ResourceResponse& redirect_response, const ResourceLoaderOptions&, ResourceType, RenderBlockingBehavior, base::TimeTicks timestamp);
   void WillSendNavigationRequest(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
   void MarkResourceAsCached(LocalFrame*, DocumentLoader*, uint64_t identifier);
   void DidReceiveResourceResponse(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceResponse&, const Resource*);
@@ -149,7 +148,7 @@ interface CoreProbes {
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
   void WindowOpen(ExecutionContext*, const KURL& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
   void ConsoleMessageAdded(ExecutionContext*, ConsoleMessage*);
-  void InspectorIssueAdded(CoreProbeSink*, InspectorIssue*);
+  void InspectorIssueAdded(CoreProbeSink*, protocol::Audits::InspectorIssue*);
   void WillRunJavaScriptDialog(LocalFrame* frame);
   void DidRunJavaScriptDialog(LocalFrame* frame);
   void DocumentWriteFetchScript([Keep] Document*);

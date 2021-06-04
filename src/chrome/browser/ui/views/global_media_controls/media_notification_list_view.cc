@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
+#include "base/containers/contains.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -36,12 +37,12 @@ MediaNotificationListView::SeparatorStyle::SeparatorStyle(
       separator_thickness(separator_thickness) {}
 
 MediaNotificationListView::MediaNotificationListView()
-    : MediaNotificationListView(base::nullopt) {}
+    : MediaNotificationListView(absl::nullopt) {}
 
 MediaNotificationListView::MediaNotificationListView(
-    const base::Optional<SeparatorStyle>& separator_style)
+    const absl::optional<SeparatorStyle>& separator_style)
     : separator_style_(separator_style) {
-  SetBackgroundColor(base::nullopt);
+  SetBackgroundColor(absl::nullopt);
   SetContents(std::make_unique<views::View>());
   contents()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));

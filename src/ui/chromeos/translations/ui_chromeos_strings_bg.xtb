@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Плъзгач за търсене</translation>
 <translation id="1404323374378969387">Норвежки</translation>
 <translation id="1430915738399379752">Печат</translation>
+<translation id="1433628812591023318">За да хванете и преместите файлове в Parallels Desktop, те трябва да бъдат преместени в папката с файлове на Windows.</translation>
 <translation id="1435838927755162558">Споделяне на папката с Parallels Desktop</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1471718551822868769">Словашки</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Файлове на Windows</translation>
 <translation id="3078461028045006476">Споделяне с/ъс <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Устройствата Chromebit</translation>
+<translation id="3113153474486991170">„<ph name="PATH" />“ не можа да се отвори от това място. За да отворите, копирайте в „Моите файлове“.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">ГОТОВО</translation>
 <translation id="3188257591659621405">Моите файлове</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Български с фонетична клавиатура</translation>
 <translation id="5605830556594064952">Американска (Дворак) клавиатура</translation>
 <translation id="5625294776298156701">Тамилски с клавиатура Tamil99</translation>
+<translation id="5633226425545095130">Ако преместите този елемент, той ще бъде споделен с всеки, който може да вижда споделената папка „<ph name="DESTINATION_NAME" />“.</translation>
 <translation id="5649768706273821470">Слушане</translation>
 <translation id="5678784840044122290">Приложението за Linux ще бъде налично в терминала и може също да има икона в стартовия панел.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Не може да се прекрати връзката с архив или виртуален диск<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Етиопска клавиатура</translation>
 <translation id="7417705661718309329">Карта на Google</translation>
 <translation id="7460898608667578234">украински</translation>
+<translation id="7486315294984620427">За да хванете и преместите файлове в Parallels Desktop, те трябва да бъдат копирани в папката с файлове на Windows.</translation>
 <translation id="7489215562877293245">Намерихме <ph name="FILE_COUNT" />
 <ph name="LINE_BREAK1" />
 Готови сме да създадем резервно копие в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Размери</translation>
 <translation id="8437209419043462667">Американска клавиатура</translation>
 <translation id="8456681095658380701">Невалидно име</translation>
+<translation id="8459404855768962328">Ако копирате този елемент, той ще бъде споделен с всеки, който може да вижда споделената папка „<ph name="DESTINATION_NAME" />“.</translation>
 <translation id="8461467696380332069">Кликнете с десния бутон върху даден файл и изберете „Фиксиране в лавицата“, за да имате бърз достъп до него в лавицата.</translation>
 <translation id="8463494891489624050">Виетнамски (VIQR)</translation>
 <translation id="8466234950814670489">Tar архив</translation>

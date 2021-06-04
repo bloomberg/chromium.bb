@@ -90,8 +90,8 @@
     "gray 4-bit bitmap",
     "LCD 8-bit bitmap",
     "vertical LCD 8-bit bitmap",
-    "BGRA 32-bit color image bitmap"
-    "SDF 16-bit bitmap",
+    "BGRA 32-bit color image bitmap",
+    "SDF 16-bit bitmap"
   };
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -1087,19 +1087,24 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_TRACE5(( "FT_Load_Glyph: index %d, flags 0x%x\n",
                 glyph_index, load_flags ));
+    FT_TRACE5(( "  bitmap %dx%d %s, %s (mode %d)\n",
+                slot->bitmap.width,
+                slot->bitmap.rows,
+                slot->outline.points ?
+                  slot->bitmap.buffer ? "rendered"
+                                      : "preset"
+                                     :
+                  slot->internal->flags & FT_GLYPH_OWN_BITMAP ? "owned"
+                                                              : "unowned",
+                pixel_modes[slot->bitmap.pixel_mode],
+                slot->bitmap.pixel_mode ));
+    FT_TRACE5(( "\n" ));
     FT_TRACE5(( "  x advance: %f\n", slot->advance.x / 64.0 ));
     FT_TRACE5(( "  y advance: %f\n", slot->advance.y / 64.0 ));
     FT_TRACE5(( "  linear x advance: %f\n",
                 slot->linearHoriAdvance / 65536.0 ));
     FT_TRACE5(( "  linear y advance: %f\n",
                 slot->linearVertAdvance / 65536.0 ));
-    FT_TRACE5(( "\n" ));
-    FT_TRACE5(( "  bitmap %dx%d, %s (mode %d)\n",
-                slot->bitmap.width,
-                slot->bitmap.rows,
-                pixel_modes[slot->bitmap.pixel_mode],
-                slot->bitmap.pixel_mode ));
-    FT_TRACE5(( "\n" ));
 
     {
       FT_Glyph_Metrics*  metrics = &slot->metrics;
@@ -1813,7 +1818,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( sfnt_ps, (FT_Long)length ) )
+    if ( FT_QALLOC( sfnt_ps, (FT_Long)length ) )
       goto Exit;
 
     error = FT_Stream_Read( stream, (FT_Byte *)sfnt_ps, length );
@@ -1923,7 +1928,7 @@
       goto Exit;
     }
 
-    if ( FT_ALLOC( pfb_data, (FT_Long)pfb_len + 2 ) )
+    if ( FT_QALLOC( pfb_data, (FT_Long)pfb_len + 2 ) )
       goto Exit;
 
     pfb_data[0] = 0x80;
@@ -2123,7 +2128,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( sfnt_data, rlen ) )
+    if ( FT_QALLOC( sfnt_data, rlen ) )
       return error;
     error = FT_Stream_Read( stream, (FT_Byte *)sfnt_data, (FT_ULong)rlen );
     if ( error ) {

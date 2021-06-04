@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -253,7 +254,15 @@ class ServiceWorkerInternalsHandler::PartitionObserver
   PartitionObserver(int partition_id,
                     WeakPtr<ServiceWorkerInternalsHandler> handler)
       : partition_id_(partition_id), handler_(handler) {}
-  ~PartitionObserver() override = default;
+  ~PartitionObserver() override {
+    if (handler_) {
+      // We need to remove PartitionObserver from the list of
+      // ServiceWorkerContextCoreObserver.
+      scoped_refptr<ServiceWorkerContextWrapper> context;
+      if (handler_->GetServiceWorkerContext(partition_id_, &context))
+        context->RemoveObserver(this);
+    }
+  }
   // ServiceWorkerContextCoreObserver overrides:
   void OnStarting(int64_t version_id) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -416,13 +425,11 @@ void ServiceWorkerInternalsHandler::RegisterMessages() {
 void ServiceWorkerInternalsHandler::OnJavascriptDisallowed() {
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
-  // Safe to use base::Unretained(this) because
-  // ForEachStoragePartition is synchronous.
-  BrowserContext::ForEachStoragePartition(
-      browser_context,
-      base::BindRepeating(
-          &ServiceWorkerInternalsHandler::RemoveObserverFromStoragePartition,
-          base::Unretained(this)));
+  // Safe to use base::Unretained(this) because ForEachStoragePartition is
+  // synchronous.
+  browser_context->ForEachStoragePartition(base::BindRepeating(
+      &ServiceWorkerInternalsHandler::RemoveObserverFromStoragePartition,
+      base::Unretained(this)));
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -514,11 +521,9 @@ void ServiceWorkerInternalsHandler::HandleGetAllRegistrations(
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
-  BrowserContext::ForEachStoragePartition(
-      browser_context,
-      base::BindRepeating(
-          &ServiceWorkerInternalsHandler::AddContextFromStoragePartition,
-          base::Unretained(this)));
+  browser_context->ForEachStoragePartition(base::BindRepeating(
+      &ServiceWorkerInternalsHandler::AddContextFromStoragePartition,
+      base::Unretained(this)));
 }
 
 void ServiceWorkerInternalsHandler::AddContextFromStoragePartition(
@@ -562,7 +567,7 @@ void ServiceWorkerInternalsHandler::RemoveObserverFromStoragePartition(
   context->RemoveObserver(observer.get());
 }
 
-void ServiceWorkerInternalsHandler::FindContext(
+void ServiceWorkerInternalsHandler::FindStoragePartitionById(
     int partition_id,
     StoragePartition** result_partition,
     StoragePartition* storage_partition) const {
@@ -574,15 +579,13 @@ void ServiceWorkerInternalsHandler::FindContext(
 
 bool ServiceWorkerInternalsHandler::GetServiceWorkerContext(
     int partition_id,
-    scoped_refptr<ServiceWorkerContextWrapper>* context) const {
+    scoped_refptr<ServiceWorkerContextWrapper>* context) {
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   StoragePartition* result_partition(nullptr);
-  BrowserContext::ForEachStoragePartition(
-      browser_context,
-      base::BindRepeating(&ServiceWorkerInternalsHandler::FindContext,
-                          base::Unretained(this), partition_id,
-                          &result_partition));
+  browser_context->ForEachStoragePartition(base::BindRepeating(
+      &ServiceWorkerInternalsHandler::FindStoragePartitionById,
+      base::Unretained(this), partition_id, &result_partition));
   if (!result_partition)
     return false;
   *context = static_cast<ServiceWorkerContextWrapper*>(
@@ -675,7 +678,10 @@ void ServiceWorkerInternalsHandler::HandleStartWorker(const ListValue* args) {
   base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback =
       base::BindOnce(OperationCompleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback_id);
-  context->StartActiveServiceWorker(GURL(scope_string), std::move(callback));
+  context->StartActiveServiceWorker(
+      GURL(scope_string),
+      storage::StorageKey(url::Origin::Create(GURL(scope_string))),
+      std::move(callback));
 }
 
 void ServiceWorkerInternalsHandler::StopWorkerWithId(
@@ -728,9 +734,11 @@ void ServiceWorkerInternalsHandler::UnregisterWithScope(
 
   // ServiceWorkerContextWrapper::UnregisterServiceWorker doesn't work here
   // because that reduces a status code to boolean.
+  // TODO(crbug.com/1199077): Update this when ServiceWorkerInternalsHandler
+  // implements StorageKey.
   context->context()->UnregisterServiceWorker(
-      scope, /*is_immediate=*/false,
-      base::AdaptCallbackForRepeating(std::move(callback)));
+      scope, storage::StorageKey(url::Origin::Create(scope)),
+      /*is_immediate=*/false, std::move(callback));
 }
 
 }  // namespace content

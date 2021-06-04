@@ -104,14 +104,14 @@ namespace utils {
         uint32_t colorAttachmentIndex = 0;
         for (const wgpu::TextureView& colorAttachment : colorAttachmentInfo) {
             if (colorAttachment.Get() != nullptr) {
-                cColorAttachments[colorAttachmentIndex].attachment = colorAttachment;
+                cColorAttachments[colorAttachmentIndex].view = colorAttachment;
             }
             ++colorAttachmentIndex;
         }
         colorAttachments = cColorAttachments.data();
 
         if (depthStencil.Get() != nullptr) {
-            cDepthStencilAttachmentInfo.attachment = depthStencil;
+            cDepthStencilAttachmentInfo.view = depthStencil;
             depthStencilAttachment = &cDepthStencilAttachmentInfo;
         } else {
             depthStencilAttachment = nullptr;
@@ -223,6 +223,14 @@ namespace utils {
             descriptor.bindGroupLayoutCount = 0;
             descriptor.bindGroupLayouts = nullptr;
         }
+        return device.CreatePipelineLayout(&descriptor);
+    }
+
+    wgpu::PipelineLayout MakePipelineLayout(const wgpu::Device& device,
+                                            std::vector<wgpu::BindGroupLayout> bgls) {
+        wgpu::PipelineLayoutDescriptor descriptor;
+        descriptor.bindGroupLayoutCount = uint32_t(bgls.size());
+        descriptor.bindGroupLayouts = bgls.data();
         return device.CreatePipelineLayout(&descriptor);
     }
 

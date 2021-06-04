@@ -1,7 +1,7 @@
 Name: CodeMirror is a versatile text editor implemented in JavaScript for the browser.
 Short Name: CodeMirror
 URL: https://github.com/codemirror/CodeMirror/
-Version: 5.60.0
+Version: 5.61.0
 License: MIT
 License File: LICENSE
 Security Critical: no
@@ -14,9 +14,9 @@ Every language comes with fully-featured code and syntax highlighting to help wi
 To update this package, run the following command (replace version number with updated version number):
 
 ```bash
-wget -qO- https://registry.npmjs.org/codemirror/-/codemirror-5.60.0.tgz | tar xzf -
+wget -qO- https://registry.npmjs.org/codemirror/-/codemirror-5.61.0.tgz | tar xzf -
 ```
 
 Local changes applied:
-- Run `wget -qOpackage/mode/wast/wast.js https://raw.githubusercontent.com/codemirror/CodeMirror/37345aafb1bcbe2bf3324f0131ee09c946a782e5/mode/wast/wast.js` to synchronize unreleased changes for WebAssembly disassembly syntax highlighting.
+- Run `wget -qOpackage/mode/wast/wast.js https://raw.githubusercontent.com/codemirror/CodeMirror/0bf9231f90925acc7b273ef9aaf89730ddf6e07b/mode/wast/wast.js` to synchronize unreleased changes for WebAssembly disassembly syntax highlighting.
 - Some files have a `.d.ts` file added, as they are used during TypeScript compilation

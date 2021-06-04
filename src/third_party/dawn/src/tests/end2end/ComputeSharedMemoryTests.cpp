@@ -22,13 +22,6 @@ class ComputeSharedMemoryTests : public DawnTest {
   public:
     static constexpr uint32_t kInstances = 11;
 
-    void SetUp() override {
-        DawnTest::SetUp();
-
-        // TODO(crbug.com/tint/688): error: undeclared identifier '_tint_7'
-        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-    }
-
     void BasicTest(const char* shader);
 };
 
@@ -78,10 +71,8 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
 // Basic shared memory test
 TEST_P(ComputeSharedMemoryTests, Basic) {
     BasicTest(R"(
-        const kTileSize : u32 = 4;
-        const kInstances : u32 = 11;
-
-        [[builtin(local_invocation_id)]] var<in> LocalInvocationID : vec3<u32>;
+        let kTileSize : u32 = 4u;
+        let kInstances : u32 = 11u;
 
         [[block]] struct Dst {
             x : u32;
@@ -91,8 +82,8 @@ TEST_P(ComputeSharedMemoryTests, Basic) {
         var<workgroup> tmp : u32;
 
         [[stage(compute), workgroup_size(4,4,1)]]
-        fn main() -> void {
-            var index : u32 = LocalInvocationID.y * kTileSize + LocalInvocationID.x;
+        fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
+            let index : u32 = LocalInvocationID.y * kTileSize + LocalInvocationID.x;
             if (index == 0u) {
                 tmp = 0u;
             }

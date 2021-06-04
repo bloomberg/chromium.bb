@@ -38,20 +38,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 
-import * as Components from '../../components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as DataGrid from '../../data_grid/data_grid.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as PerfUI from '../../perf_ui/perf_ui.js';
+import * as Logs from '../../models/logs/logs.js';
+import * as Workspace from '../../models/workspace/workspace.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Workspace from '../../workspace/workspace.js';
 
 import {Tabs as NetworkItemViewTabs} from './NetworkItemView.js';
-import {NetworkTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js'; // eslint-disable-line no-unused-vars
 
 const UIStrings = {
   /**
@@ -770,7 +773,7 @@ export class NetworkRequestNode extends NetworkNode {
   showingInitiatorChainChanged(): void {
     const showInitiatorChain = this.showingInitiatorChain();
 
-    const initiatorGraph = SDK.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
+    const initiatorGraph = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
     for (const request of initiatorGraph.initiators) {
       if (request === this._request) {
         continue;
@@ -843,7 +846,7 @@ export class NetworkRequestNode extends NetworkNode {
   }
 
   isNavigationRequest(): boolean {
-    const pageLoad = SDK.NetworkLog.PageLoad.forRequest(this._request);
+    const pageLoad = SDK.PageLoad.PageLoad.forRequest(this._request);
     return pageLoad ? pageLoad.mainRequest === this._request : false;
   }
 
@@ -1155,7 +1158,7 @@ export class NetworkRequestNode extends NetworkNode {
   _renderInitiatorCell(cell: HTMLElement): void {
     this._initiatorCell = cell;
     const request = this._request;
-    const initiator = SDK.NetworkLog.NetworkLog.instance().initiatorInfoForRequest(request);
+    const initiator = Logs.NetworkLog.NetworkLog.instance().initiatorInfoForRequest(request);
 
     const timing = request.timing;
     if (timing && timing.pushStart) {

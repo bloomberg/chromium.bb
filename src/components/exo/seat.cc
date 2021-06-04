@@ -5,11 +5,6 @@
 #include "components/exo/seat.h"
 
 #include <memory>
-#include "ui/gfx/geometry/point_f.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/shell.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -18,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/chromeos_buildflags.h"
@@ -39,30 +35,14 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/geometry/point_f.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/shell.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace exo {
 namespace {
-
-Surface* GetEffectiveFocus(aura::Window* window) {
-  if (!window)
-    return nullptr;
-  Surface* const surface = Surface::AsSurface(window);
-  if (surface)
-    return surface;
-  ShellSurfaceBase* shell_surface_base = nullptr;
-  for (auto* current = window; current && !shell_surface_base;
-       current = current->parent()) {
-    shell_surface_base = GetShellSurfaceBaseForWindow(current);
-  }
-  // Make sure the |window| is the toplevel or a host window, but not
-  // another window added to the toplevel.
-  if (shell_surface_base &&
-      (shell_surface_base->GetWidget()->GetNativeWindow() == window ||
-       shell_surface_base->host_window()->Contains(window))) {
-    return shell_surface_base->root_surface();
-  }
-  return nullptr;
-}
 
 }  // namespace
 
@@ -96,10 +76,15 @@ Seat::~Seat() {
   Shutdown();
 }
 
+void Seat::SetFocusChangedCallback(FocusChangedCallback callback) {
+  focus_changed_callback_ = std::move(callback);
+  OnWindowFocused(WMHelper::GetInstance()->GetActiveWindow(), nullptr);
+}
+
 void Seat::Shutdown() {
-  if (shutdown_)
+  if (was_shutdown_)
     return;
-  shutdown_ = true;
+  was_shutdown_ = true;
   DCHECK(!selection_source_) << "DataSource must be released before Seat";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::Shell::Get()->ime_controller()->RemoveObserver(this);
@@ -120,7 +105,8 @@ void Seat::RemoveObserver(SeatObserver* observer) {
 }
 
 Surface* Seat::GetFocusedSurface() {
-  return GetEffectiveFocus(WMHelper::GetInstance()->GetFocusedWindow());
+  return GetTargetSurfaceForKeyboardFocus(
+      WMHelper::GetInstance()->GetFocusedWindow());
 }
 
 void Seat::StartDrag(DataSource* source,
@@ -164,7 +150,7 @@ void Seat::SetSelection(DataSource* source) {
       base::MakeRefCounted<RefCountedScopedClipboardWriter>(endpoint_type);
 
   base::RepeatingClosure data_read_callback = base::BarrierClosure(
-      kMaxClipboardDataTypes,
+      DataSource::kMaxDataTypes,
       base::BindOnce(&Seat::OnAllReadsFinished, weak_ptr_factory_.GetWeakPtr(),
                      writer));
 
@@ -179,7 +165,7 @@ void Seat::SetSelection(DataSource* source) {
                      data_read_callback),
       base::BindOnce(&Seat::OnFilenamesRead, weak_ptr_factory_.GetWeakPtr(),
                      endpoint_type, writer, data_read_callback),
-      data_read_callback);
+      DataSource::ReadFileContentsDataCallback(), data_read_callback);
 }
 
 class Seat::RefCountedScopedClipboardWriter
@@ -289,12 +275,20 @@ void Seat::OnAllReadsFinished(
 
 void Seat::OnWindowFocused(aura::Window* gained_focus,
                            aura::Window* lost_focus) {
-  Surface* const surface = GetEffectiveFocus(gained_focus);
-  for (auto& observer : observers_) {
-    observer.OnSurfaceFocusing(surface);
+  Surface* const gaining_focus_surface =
+      GetTargetSurfaceForKeyboardFocus(gained_focus);
+  Surface* const lost_focus_surface =
+      GetTargetSurfaceForKeyboardFocus(lost_focus);
+
+  if (!focus_changed_callback_.is_null()) {
+    focus_changed_callback_.Run(gaining_focus_surface, lost_focus_surface,
+                                !!gained_focus);
   }
   for (auto& observer : observers_) {
-    observer.OnSurfaceFocused(surface);
+    observer.OnSurfaceFocusing(gaining_focus_surface);
+  }
+  for (auto& observer : observers_) {
+    observer.OnSurfaceFocused(gaining_focus_surface);
   }
 }
 

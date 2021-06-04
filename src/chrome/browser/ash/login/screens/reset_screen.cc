@@ -35,12 +35,8 @@
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace reset = ::ash::reset;
 
 constexpr const char kUserActionCancelReset[] = "cancel-reset";
 constexpr const char kUserActionResetRestartPressed[] = "restart-pressed";
@@ -96,7 +92,7 @@ void StartTPMFirmwareUpdate(
 // Checks if powerwash is allowed based on update modes and passes the result
 // to `callback`.
 void OnUpdateModesAvailable(
-    base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+    base::OnceCallback<void(bool, absl::optional<tpm_firmware_update::Mode>)>
         callback,
     const std::set<tpm_firmware_update::Mode>& modes) {
   using tpm_firmware_update::Mode;
@@ -107,7 +103,7 @@ void OnUpdateModesAvailable(
     std::move(callback).Run(true, mode);
     return;
   }
-  std::move(callback).Run(false, base::nullopt);
+  std::move(callback).Run(false, absl::nullopt);
 }
 
 }  // namespace
@@ -120,7 +116,7 @@ void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
 
 // static
 void ResetScreen::CheckIfPowerwashAllowed(
-    base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+    base::OnceCallback<void(bool, absl::optional<tpm_firmware_update::Mode>)>
         callback) {
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
@@ -132,7 +128,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
     CrosSettings::Get()->GetBoolean(kDevicePowerwashAllowed,
                                     &is_powerwash_allowed);
     if (is_powerwash_allowed) {
-      std::move(callback).Run(true, base::nullopt);
+      std::move(callback).Run(true, absl::nullopt);
       return;
     }
 
@@ -151,7 +147,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
   std::move(callback).Run(
       AutoEnrollmentController::GetFRERequirement() !=
           AutoEnrollmentController::FRERequirement::kExplicitlyRequired,
-      base::nullopt);
+      absl::nullopt);
 }
 
 ResetScreen::ResetScreen(ResetView* view,
@@ -202,7 +198,7 @@ void ResetScreen::ShowImpl() {
   // reset screen is shown.
   if (!scoped_guest_button_blocker_) {
     scoped_guest_button_blocker_ =
-        ash::LoginScreen::Get()->GetScopedGuestButtonBlocker();
+        LoginScreen::Get()->GetScopedGuestButtonBlocker();
   }
 
   reset::DialogViewType dialog_type =
@@ -465,4 +461,4 @@ void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(
     view_->SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode::kPowerwash);
 }
 
-}  // namespace chromeos
+}  // namespace ash

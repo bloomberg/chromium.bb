@@ -69,10 +69,11 @@
 
       s['heightMultiplier'] = s['heightMultiplier'] || 0;
       s['maxLines'] = s['maxLines'] || 0;
+      s['strutStyle'] = strutStyle(s['strutStyle']);
       s['textAlign'] = s['textAlign'] || CanvasKit.TextAlign.Start;
       s['textDirection'] = s['textDirection'] || CanvasKit.TextDirection.LTR;
+      s['textHeightBehavior'] = s['textHeightBehavior'] || CanvasKit.TextHeightBehavior.All;
       s['textStyle'] = CanvasKit.TextStyle(s['textStyle']);
-      s['strutStyle'] = strutStyle(s['strutStyle']);
       return s;
     };
 
@@ -101,6 +102,7 @@
         s['fontStyle'] = fontStyle(s['fontStyle']);
         s['fontSize'] = s['fontSize'] || 0;
         s['heightMultiplier'] = s['heightMultiplier'] || 0;
+        s['halfLeading'] = s['halfLeading'] || false;
         s['leading'] = s['leading'] || 0;
         s['forceStrutHeight'] = s['forceStrutHeight'] || false;
         return s;
@@ -120,6 +122,7 @@
       s['letterSpacing'] = s['letterSpacing'] || 0;
       s['wordSpacing'] = s['wordSpacing'] || 0;
       s['heightMultiplier'] = s['heightMultiplier'] || 0;
+      s['halfLeading'] = s['halfLeading'] || false;
       if (s['locale']) {
         var str = s['locale'];
         s['_localePtr'] = cacheOrCopyString(str);
@@ -259,6 +262,17 @@
         var result =  CanvasKit.ParagraphBuilder._MakeFromFontProvider(paragraphStyle, fontProvider);
         freeArrays(paragraphStyle['textStyle']);
         return result;
+    };
+
+    CanvasKit.ParagraphBuilder.ShapeText = function(text, blocks, width) {
+        let length = 0;
+        for (const b of blocks) {
+            length += b.length;
+        }
+        if (length !== text.length) {
+            throw "Accumulated block lengths must equal text.length";
+        }
+        return CanvasKit.ParagraphBuilder._ShapeText(text, blocks, width);
     };
 
     CanvasKit.ParagraphBuilder.prototype.pushStyle = function(textStyle) {

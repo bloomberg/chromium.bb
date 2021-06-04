@@ -73,11 +73,12 @@ bool ChromeIdentityService::HasIdentities() {
   return false;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentities() {
+NSArray* ChromeIdentityService::GetAllIdentities(PrefService* pref_service) {
   return nil;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
+NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay(
+    PrefService* pref_service) {
   return nil;
 }
 
@@ -117,6 +118,11 @@ NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
     return @"";
   }
   return nil;
+}
+
+absl::optional<bool> ChromeIdentityService::IsSubjectToMinorModeRestrictions(
+    ChromeIdentity* identity) {
+  return absl::nullopt;
 }
 
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(

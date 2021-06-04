@@ -16,6 +16,9 @@ declare_args() {
   # Defaults to capture building to $root_out_dir/angle_libs/with_capture.
   # Switch on to build capture to $root_out_dir.
   angle_with_capture_by_default = false
+
+  # Enables OpenCL support, off by default.
+  angle_enable_cl = false
 }
 
 if (angle_has_build) {
@@ -33,8 +36,13 @@ if (angle_has_build) {
     import("//build/config/win/visual_studio_version.gni")
   }
 
+  if (is_chromecast) {
+    angle_vulkan_display_mode = "headless"
+  }
+
   angle_use_x11 = use_x11 && !is_ggp
-  angle_use_vulkan_display = is_linux && !use_x11 && !is_ggp && !use_ozone
+  angle_use_vulkan_display =
+      is_linux && !use_x11 && !is_ggp && (!use_ozone || is_chromecast)
 } else {
   declare_args() {
     is_ubsan = false
@@ -111,9 +119,9 @@ declare_args() {
 
   angle_enable_d3d9 = is_win && !angle_is_winuwp
   angle_enable_d3d11 = is_win
-  angle_enable_gl = (ozone_platform_gbm || (!is_linux && !is_chromeos) ||
-                     (angle_use_x11 && !is_chromeos)) && !is_fuchsia &&
-                    !angle_is_winuwp && !is_ggp && !is_win_arm64
+  angle_enable_gl =
+      (ozone_platform_gbm || !is_linux || (angle_use_x11 && !is_chromeos)) &&
+      !is_fuchsia && !angle_is_winuwp && !is_ggp && !is_win_arm64
 
   angle_enable_vulkan =
       angle_has_build &&
@@ -127,6 +135,18 @@ declare_args() {
 
   # http://anglebug.com/2634
   angle_enable_metal = is_mac
+
+  # Enables the OpenCL pass-through back end
+  angle_enable_cl_passthrough = angle_enable_cl
+}
+
+# OpenCL is not supported on Windows UWP, because the CL headers include DX9, which is not
+# supported by UWP. A workaround might be possible if CL support on UWP is required.
+assert(!angle_is_winuwp || !angle_enable_cl,
+       "OpenCL is not supported on Windows UWP")
+
+if (!angle_enable_cl) {
+  angle_enable_cl_passthrough = false
 }
 
 declare_args() {
@@ -146,10 +166,12 @@ declare_args() {
   # TODO(anglebug.com/4082) enable validation layers on mac for swiftshader
   # Vulkan Validation Layers require Android NDK API level 26, i.e. Oreo, due to
   # Vulkan Validation Layers compatibility issues, see http://crrev/c/1405714.
+  # TODO(http://fxbug.dev/73208) Validation is temporarily disabled on Fuchsia.
+  # Re-enable once the issue is resolved.
   angle_enable_vulkan_validation_layers =
       angle_enable_vulkan && !is_ubsan && !is_tsan && !is_asan &&
       (is_debug || dcheck_always_on) && !is_mac &&
-      (!is_android || ndk_api_level_at_least_26)
+      (!is_android || ndk_api_level_at_least_26) && !is_fuchsia
 
   # ISpriteVisual windows cannot be validated and can lead to crashes if an invalid window is
   # provided to ANGLE. Disable them for non-standalone ANGLE builds. crbug.com/1176118
@@ -210,6 +232,7 @@ set_defaults("angle_executable") {
   configs = angle_common_configs
   public_configs = []
   suppressed_configs = angle_remove_configs
+  data_deps = []
 }
 
 set_defaults("angle_shared_library") {
@@ -262,6 +285,10 @@ template("angle_executable") {
 
     configs += invoker.configs
     configs -= invoker.suppressed_configs
+
+    if (angle_has_build && is_win) {
+      data_deps += [ "//build/win:runtime_libs" ]
+    }
   }
 }
 
@@ -424,17 +451,14 @@ if (angle_standalone || build_with_chromium) {
 
       if (is_android) {
         public_configs += [ "$angle_root:build_id_config" ]
-        if (build_with_chromium) {
-          configs -= [ "//build/config/android:hide_all_but_jni" ]
-          use_default_launcher = false
-          android_manifest_template = "$angle_root/src/tests/test_utils/runner/android/java/AndroidManifest.xml.jinja2"
-          deps += [
-            "$angle_root/src/tests:native_test_java",
-            "$angle_root/src/tests:native_test_support_android",
-          ]
-        } else {
-          use_raw_android_executable = true
-        }
+        configs -= [ "//build/config/android:hide_all_but_jni" ]
+        use_default_launcher = false
+        generate_final_jni = false
+        android_manifest_template = "$angle_root/src/tests/test_utils/runner/android/java/AndroidManifest.xml.jinja2"
+        deps += [
+          "$angle_root/src/tests:native_test_java",
+          "$angle_root/src/tests:native_test_support_android",
+        ]
       }
       if (is_ios) {
         # We use a special main function on iOS to initialize UIKit before the normal main runs.
@@ -443,6 +467,10 @@ if (angle_standalone || build_with_chromium) {
           "_ios_main",
         ]
         sources += [ "$angle_root/util/ios/ios_main.mm" ]
+      }
+
+      if (angle_has_build && is_win) {
+        data_deps += [ "//build/win:runtime_libs" ]
       }
     }
   }
@@ -471,6 +499,10 @@ template("angle_trace_fixture") {
     public_configs = [ ":${_config_name}" ]
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
+    }
+    if (is_ios) {
+      # shared libraries are hidden inside ios_framework_bundle, but we include headers from them
+      check_includes = false
     }
   }
 }

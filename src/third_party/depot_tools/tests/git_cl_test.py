@@ -31,8 +31,9 @@ else:
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import metrics
+import metrics_utils
 # We have to disable monitoring before importing git_cl.
-metrics.DISABLE_METRICS_COLLECTION = True
+metrics_utils.COLLECT_METRICS = False
 
 import clang_format
 import contextlib
@@ -2997,6 +2998,12 @@ class TestGitCl(unittest.TestCase):
 
 
 class ChangelistTest(unittest.TestCase):
+  LAST_COMMIT_SUBJECT = 'Fixes goat teleporter destination to be Australia'
+
+  def _mock_run_git(commands):
+    if commands == ['show', '-s', '--format=%s', 'HEAD']:
+      return ChangelistTest.LAST_COMMIT_SUBJECT
+
   def setUp(self):
     super(ChangelistTest, self).setUp()
     mock.patch('gclient_utils.FileRead').start()
@@ -3023,11 +3030,13 @@ class ChangelistTest(unittest.TestCase):
 
   def testRunHook(self):
     expected_results = {
-        'more_cc': ['more@example.com', 'cc@example.com'],
-        'should_continue': True,
+        'more_cc': ['cc@example.com', 'more@example.com'],
+        'errors': [],
+        'notifications': [],
+        'warnings': [],
     }
     gclient_utils.FileRead.return_value = json.dumps(expected_results)
-    git_cl.time_time.side_effect = [100, 200]
+    git_cl.time_time.side_effect = [100, 200, 300, 400]
     mockProcess = mock.Mock()
     mockProcess.wait.return_value = 0
     subprocess2.Popen.return_value = mockProcess
@@ -3044,7 +3053,7 @@ class ChangelistTest(unittest.TestCase):
         resultdb=False)
 
     self.assertEqual(expected_results, results)
-    subprocess2.Popen.assert_called_once_with([
+    subprocess2.Popen.assert_any_call([
         'vpython', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
         '--upstream', 'upstream',
@@ -3062,7 +3071,25 @@ class ChangelistTest(unittest.TestCase):
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
     ])
-    gclient_utils.FileWrite.assert_called_once_with(
+    subprocess2.Popen.assert_any_call([
+        'vpython3', 'PRESUBMIT_SUPPORT',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--verbose', '--verbose',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
+        '--gerrit_project', 'project',
+        '--gerrit_branch', 'refs/heads/main',
+        '--author', 'author',
+        '--issue', '123456',
+        '--patchset', '7',
+        '--commit',
+        '--may_prompt',
+        '--parallel',
+        '--all_files',
+        '--json_output', '/tmp/fake-temp4',
+        '--description_file', '/tmp/fake-temp3',
+    ])
+    gclient_utils.FileWrite.assert_any_call(
         '/tmp/fake-temp1', 'description')
     metrics.collector.add_repeated('sub_commands', {
       'command': 'presubmit',
@@ -3072,11 +3099,13 @@ class ChangelistTest(unittest.TestCase):
 
   def testRunHook_FewerOptions(self):
     expected_results = {
-        'more_cc': ['more@example.com', 'cc@example.com'],
-        'should_continue': True,
+        'more_cc': ['cc@example.com', 'more@example.com'],
+        'errors': [],
+        'notifications': [],
+        'warnings': [],
     }
     gclient_utils.FileRead.return_value = json.dumps(expected_results)
-    git_cl.time_time.side_effect = [100, 200]
+    git_cl.time_time.side_effect = [100, 200, 300, 400]
     mockProcess = mock.Mock()
     mockProcess.wait.return_value = 0
     subprocess2.Popen.return_value = mockProcess
@@ -3097,7 +3126,7 @@ class ChangelistTest(unittest.TestCase):
         resultdb=False)
 
     self.assertEqual(expected_results, results)
-    subprocess2.Popen.assert_called_once_with([
+    subprocess2.Popen.assert_any_call([
         'vpython', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
         '--upstream', 'upstream',
@@ -3108,7 +3137,7 @@ class ChangelistTest(unittest.TestCase):
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
     ])
-    gclient_utils.FileWrite.assert_called_once_with(
+    gclient_utils.FileWrite.assert_any_call(
         '/tmp/fake-temp1', 'description')
     metrics.collector.add_repeated('sub_commands', {
       'command': 'presubmit',
@@ -3118,11 +3147,13 @@ class ChangelistTest(unittest.TestCase):
 
   def testRunHook_FewerOptionsResultDB(self):
     expected_results = {
-      'more_cc': ['more@example.com', 'cc@example.com'],
-      'should_continue': True,
+      'more_cc': ['cc@example.com', 'more@example.com'],
+      'errors': [],
+      'notifications': [],
+      'warnings': [],
     }
     gclient_utils.FileRead.return_value = json.dumps(expected_results)
-    git_cl.time_time.side_effect = [100, 200]
+    git_cl.time_time.side_effect = [100, 200, 300, 400]
     mockProcess = mock.Mock()
     mockProcess.wait.return_value = 0
     subprocess2.Popen.return_value = mockProcess
@@ -3144,7 +3175,7 @@ class ChangelistTest(unittest.TestCase):
         realm='chromium:public')
 
     self.assertEqual(expected_results, results)
-    subprocess2.Popen.assert_called_once_with([
+    subprocess2.Popen.assert_any_call([
         'rdb', 'stream', '-new', '-realm', 'chromium:public', '--',
         'vpython', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
@@ -3198,6 +3229,25 @@ class ChangelistTest(unittest.TestCase):
     ])
     gclient_utils.FileWrite.assert_called_once_with(
         '/tmp/fake-temp1', 'description')
+
+  @mock.patch('git_cl.RunGit', _mock_run_git)
+  def testDefaultTitleEmptyMessage(self):
+    cl = git_cl.Changelist()
+    cl.issue = 100
+    options = optparse.Values({
+        'squash': True,
+        'title': None,
+        'message': None,
+        'force': None,
+        'skip_title': None
+    })
+
+    mock.patch('gclient_utils.AskForData', lambda _: user_title).start()
+    for user_title in ['', 'y', 'Y']:
+      self.assertEqual(cl._GetTitleForUpload(options), self.LAST_COMMIT_SUBJECT)
+
+    for user_title in ['not empty', 'yes', 'YES']:
+      self.assertEqual(cl._GetTitleForUpload(options), user_title)
 
 
 class CMDTestCaseBase(unittest.TestCase):
@@ -3923,8 +3973,8 @@ class CMDFormatTestCase(unittest.TestCase):
     super(CMDFormatTestCase, self).tearDown()
 
   def _make_temp_file(self, fname, contents):
-    with open(os.path.join(self._top_dir, fname), 'w') as tf:
-      tf.write('\n'.join(contents))
+    gclient_utils.FileWrite(os.path.join(self._top_dir, fname),
+                            ('\n'.join(contents)))
 
   def _make_yapfignore(self, contents):
     self._make_temp_file('.yapfignore', contents)
@@ -4032,6 +4082,18 @@ class CMDFormatTestCase(unittest.TestCase):
     self._make_yapfignore(['test.py', '#test2.py'])
     files = [
       'test.py',
+      'test2.py',
+    ]
+    expected = [
+      'test2.py',
+    ]
+    self._check_yapf_filtering(files, expected)
+
+  def testYapfHandleUtf8(self):
+    self._make_yapfignore(['test.py', 'test_🌐.py'])
+    files = [
+      'test.py',
+      'test_🌐.py',
       'test2.py',
     ]
     expected = [

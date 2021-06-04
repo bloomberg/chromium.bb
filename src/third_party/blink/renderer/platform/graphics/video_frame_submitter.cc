@@ -42,9 +42,9 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       roughness_reporter_(std::make_unique<cc::VideoPlaybackRoughnessReporter>(
           std::move(roughness_reporting_callback))),
       frame_trackers_(false, nullptr),
-      animation_power_mode_voter_(
+      power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Animation.Video")) {
+              "PowerModeVoter.VideoPlayback")) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -72,8 +72,7 @@ void VideoFrameSubmitter::StartRendering() {
 
   if (compositor_frame_sink_) {
     compositor_frame_sink_->SetNeedsBeginFrame(IsDrivingFrameUpdates());
-    animation_power_mode_voter_->VoteFor(
-        power_scheduler::PowerMode::kAnimation);
+    power_mode_voter_->VoteFor(power_scheduler::PowerMode::kVideoPlayback);
   }
 
   frame_trackers_.StartSequence(cc::FrameSequenceTrackerType::kVideo);
@@ -183,9 +182,9 @@ void VideoFrameSubmitter::OnContextLost() {
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
-    const WTF::Vector<viz::ReturnedResource>& resources) {
+    WTF::Vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ReclaimResources(resources);
+  ReclaimResources(std::move(resources));
   waiting_for_compositor_ack_ = false;
 }
 
@@ -281,9 +280,9 @@ void VideoFrameSubmitter::OnBeginFrame(
 }
 
 void VideoFrameSubmitter::ReclaimResources(
-    const WTF::Vector<viz::ReturnedResource>& resources) {
+    WTF::Vector<viz::ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  resource_provider_->ReceiveReturnsFromParent(resources);
+  resource_provider_->ReceiveReturnsFromParent(std::move(resources));
 }
 
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
@@ -383,14 +382,14 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
 
   const auto is_driving_frame_updates = IsDrivingFrameUpdates();
   compositor_frame_sink_->SetNeedsBeginFrame(is_driving_frame_updates);
-  animation_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kAnimation);
+  power_mode_voter_->VoteFor(power_scheduler::PowerMode::kVideoPlayback);
   // If we're not driving frame updates, then we're paused / off-screen / etc.
   // Roughness reporting should stop until we resume.  Since the current frame
   // might be on-screen for a long time, we also discard the current window.
   if (!is_driving_frame_updates) {
     roughness_reporter_->Reset();
-    animation_power_mode_voter_->ResetVoteAfterTimeout(
-        power_scheduler::PowerModeVoter::kAnimationTimeout);
+    power_mode_voter_->ResetVoteAfterTimeout(
+        power_scheduler::PowerModeVoter::kVideoTimeout);
   }
 
   // These two calls are very important; they are responsible for significant
@@ -512,7 +511,7 @@ bool VideoFrameSubmitter::SubmitFrame(
   // contain any SurfaceDrawQuads.
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      std::move(compositor_frame), base::nullopt, 0);
+      std::move(compositor_frame), absl::nullopt, 0);
   frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
                                     last_begin_frame_args_);
   resource_provider_->ReleaseFrameResources();
@@ -540,7 +539,7 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
 
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      std::move(compositor_frame), base::nullopt, 0);
+      std::move(compositor_frame), absl::nullopt, 0);
   frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
                                     last_begin_frame_args_);
 

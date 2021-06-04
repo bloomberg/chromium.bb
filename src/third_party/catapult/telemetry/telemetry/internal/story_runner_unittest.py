@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import json
 import os
 import shutil
@@ -9,6 +10,7 @@ import sys
 import tempfile
 import unittest
 import logging
+import six
 
 import mock
 
@@ -309,7 +311,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
   """
   def setUp(self):
     self.finder_options = options_for_unittests.GetCopy()
-    self.finder_options.periodic_screenshot_frequency_ms = 0
+    self.finder_options.periodic_screenshot_frequency_ms = None
 
   def _CreateErrorProcessingMock(self, method_exceptions=None,
                                  legacy_test=False):
@@ -329,7 +331,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
     if method_exceptions:
       root_mock.configure_mock(**{
           path + '.side_effect': exception
-          for path, exception in method_exceptions.iteritems()})
+          for path, exception in six.iteritems(method_exceptions)})
 
     return root_mock
 
@@ -946,9 +948,9 @@ class RunBenchmarkTest(unittest.TestCase):
     self.assertEqual(len(test_results), 31)
 
     expected = []
-    expected.extend(('story_%i' % i, 'PASS') for i in xrange(10, 30))
+    expected.extend(('story_%i' % i, 'PASS') for i in range(10, 30))
     expected.append(('story_30', 'FAIL'))
-    expected.extend(('story_%i' % i, 'SKIP') for i in xrange(31, 41))
+    expected.extend(('story_%i' % i, 'SKIP') for i in range(31, 41))
 
     for (story, status), result in zip(expected, test_results):
       self.assertEqual(result['testPath'], 'fake_benchmark/%s' % story)

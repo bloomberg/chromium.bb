@@ -57,7 +57,7 @@ class PaintPreviewFileMixin {
   // will return the kExpired status.
   virtual void GetCapturedPaintPreviewProto(
       const DirectoryKey& key,
-      base::Optional<base::TimeDelta> expiry_horizon,
+      absl::optional<base::TimeDelta> expiry_horizon,
       OnReadProtoCallback on_read_proto_callback);
 
   // Writes an Accessibility Tree snapshot to the directory listed in key.
@@ -76,4 +76,4 @@ class PaintPreviewFileMixin {
 
 }  // namespace paint_preview
 
-#endif  // COMPONENTS_PAINT_PREVIEW_BROWSER_PAINT_PREVIEW_FILE_HELPER_H_
+#endif  // COMPONENTS_PAINT_PREVIEW_BROWSER_PAINT_PREVIEW_FILE_MIXIN_H_

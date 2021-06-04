@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 
-#include <memory>
-
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "media/mojo/mojom/media_player.mojom.h"
@@ -42,7 +40,7 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
   void StartSession(
       uint32_t player_id,
       mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
-      const base::Optional<viz::SurfaceId>& surface_id,
+      const absl::optional<viz::SurfaceId>& surface_id,
       const gfx::Size& natural_size,
       bool show_play_pause_button,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,

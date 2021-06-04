@@ -13,8 +13,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "components/safe_browsing/buildflags.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if !defined(OS_ANDROID)
@@ -86,14 +87,16 @@ class PageInfoUI {
   // |ChosenObjectInfo| contains information about a single |chooser_object| of
   // a chooser |type| that the current website has been granted access to.
   struct ChosenObjectInfo {
-    ChosenObjectInfo(const PageInfo::ChooserUIInfo& ui_info,
-                     std::unique_ptr<permissions::ChooserContextBase::Object>
-                         chooser_object);
+    ChosenObjectInfo(
+        const PageInfo::ChooserUIInfo& ui_info,
+        std::unique_ptr<permissions::ObjectPermissionContextBase::Object>
+            chooser_object);
     ~ChosenObjectInfo();
     // |ui_info| for this chosen object type.
     const PageInfo::ChooserUIInfo& ui_info;
     // The opaque |chooser_object| representing the thing the user selected.
-    std::unique_ptr<permissions::ChooserContextBase::Object> chooser_object;
+    std::unique_ptr<permissions::ObjectPermissionContextBase::Object>
+        chooser_object;
   };
 
   // |IdentityInfo| contains information about the site's identity and
@@ -195,26 +198,37 @@ class PageInfoUI {
   // Returns icons for the given PageInfo::PermissionInfo |info|. If |info|'s
   // current setting is CONTENT_SETTING_DEFAULT, it will return the icon for
   // |info|'s default setting.
-  static const gfx::ImageSkia GetPermissionIcon(
-      const PageInfo::PermissionInfo& info,
-      const SkColor related_text_color);
+  static const ui::ImageModel GetPermissionIcon(
+      const PageInfo::PermissionInfo& info);
 
   // Returns the icon for the given object |info|.
-  static const gfx::ImageSkia GetChosenObjectIcon(
-      const ChosenObjectInfo& info,
-      bool deleted,
-      const SkColor related_text_color);
+  static const ui::ImageModel GetChosenObjectIcon(const ChosenObjectInfo& info,
+                                                  bool deleted);
 
-  // Returns the icon for the page Certificate.
-  static const gfx::ImageSkia GetCertificateIcon(
-      const SkColor related_text_color);
+  // Returns the icon for the page's certificate when it's valid.
+  static const ui::ImageModel GetValidCertificateIcon();
+
+  // Returns the icon for the page's certificate when it's invalid.
+  static const ui::ImageModel GetInvalidCertificateIcon();
 
   // Returns the icon for the button / link to Site settings.
-  static const gfx::ImageSkia GetSiteSettingsIcon(
-      const SkColor related_text_color);
+  static const ui::ImageModel GetSiteSettingsIcon();
 
   // Returns the icon for VR settings.
-  static const gfx::ImageSkia GetVrSettingsIcon(SkColor related_text_color);
+  static const ui::ImageModel GetVrSettingsIcon();
+
+  // Returns the icon for a button which opens an external dialog or page (ex.
+  // cookies dialog or site settings page).
+  static const ui::ImageModel GetLaunchIcon();
+
+  // Returns the not secure state icon for the SecurityInformationView.
+  static const ui::ImageModel GetConnectionNotSecureIcon();
+
+  // Returns the icon for the secure connection button.
+  static const ui::ImageModel GetConnectionSecureIcon();
+
+  // Returns the icon for a button which opens a subpage within page info.
+  static const ui::ImageModel GetOpenSubpageIcon();
 #endif
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
@@ -224,17 +238,19 @@ class PageInfoUI {
   CreateSafetyTipSecurityDescription(const security_state::SafetyTipInfo& info);
 
   // Sets cookie information.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
+  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) {}
 
   // Sets permission information.
-  virtual void SetPermissionInfo(
-      const PermissionInfoList& permission_info_list,
-      ChosenObjectInfoList chosen_object_info_list) = 0;
+  virtual void SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                                 ChosenObjectInfoList chosen_object_info_list) {
+  }
 
   // Sets site identity information.
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
+  virtual void SetIdentityInfo(const IdentityInfo& identity_info) {}
 
-  virtual void SetPageFeatureInfo(const PageFeatureInfo& page_feature_info) = 0;
+  // Sets feature related information; for now only if VR content is being
+  // presented in a headset.
+  virtual void SetPageFeatureInfo(const PageFeatureInfo& page_feature_info) {}
 
   // Helper to get security description info to display to the user.
   std::unique_ptr<SecurityDescription> GetSecurityDescription(

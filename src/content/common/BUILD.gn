@@ -135,8 +135,6 @@ source_set("common") {
     "process_type.cc",
     "process_visibility_tracker.cc",
     "process_visibility_tracker.h",
-    "service_worker/service_worker_loader_helpers.cc",
-    "service_worker/service_worker_loader_helpers.h",
     "service_worker/service_worker_utils.cc",
     "service_worker/service_worker_utils.h",
     "set_process_title.cc",
@@ -266,6 +264,8 @@ source_set("common") {
     sources += [
       "android/cpu_time_metrics.cc",
       "android/cpu_time_metrics.h",
+      "android/cpu_time_metrics_internal.cc",
+      "android/cpu_time_metrics_internal.h",
       "android/gin_java_bridge_errors.cc",
       "android/gin_java_bridge_errors.h",
       "android/gin_java_bridge_value.cc",

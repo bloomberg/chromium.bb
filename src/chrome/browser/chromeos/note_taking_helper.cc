@@ -39,6 +39,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
@@ -418,7 +419,7 @@ void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,
 }
 
 void NoteTakingHelper::OnIntentFiltersUpdated(
-    const base::Optional<std::string>& package_name) {
+    const absl::optional<std::string>& package_name) {
   if (play_store_enabled_)
     UpdateAndroidApps();
 }
@@ -435,8 +436,8 @@ void NoteTakingHelper::OnArcPlayStoreEnabledChanged(bool enabled) {
 
 void NoteTakingHelper::OnProfileAdded(Profile* profile) {
   auto* registry = extensions::ExtensionRegistry::Get(profile);
-  DCHECK(!extension_registry_observer_.IsObserving(registry));
-  extension_registry_observer_.Add(registry);
+  DCHECK(!extension_registry_observations_.IsObservingSource(registry));
+  extension_registry_observations_.AddObservation(registry);
 
   // TODO(derat): Remove this once OnArcPlayStoreEnabledChanged() is always
   // called after an ARC-enabled user logs in: http://b/36655474
@@ -486,7 +487,7 @@ NoteTakingHelper::NoteTakingHelper()
   play_store_enabled_ = false;
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    extension_registry_observer_.Add(
+    extension_registry_observations_.AddObservation(
         extensions::ExtensionRegistry::Get(profile));
     // Check if the profile has already enabled Google Play Store.
     // IsArcPlayStoreEnabledForProfile() can return true only for the primary
@@ -690,9 +691,8 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
     arc_file_system->OpenUrlsWithPermission(std::move(request),
                                             base::DoNothing());
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_STYLUS_TOOLS);
+    arc::ArcMetricsService::RecordArcUserInteraction(
+        profile, arc::UserInteractionType::APP_STARTED_FROM_STYLUS_TOOLS);
 
     return LaunchResult::ANDROID_SUCCESS;
   }
@@ -741,7 +741,7 @@ void NoteTakingHelper::OnExtensionUnloaded(
 }
 
 void NoteTakingHelper::OnShutdown(extensions::ExtensionRegistry* registry) {
-  extension_registry_observer_.Remove(registry);
+  extension_registry_observations_.RemoveObservation(registry);
 }
 
 // TODO(crbug.com/1006642): Move this to a lock-screen-specific place.

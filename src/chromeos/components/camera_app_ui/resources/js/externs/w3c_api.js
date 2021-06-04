@@ -84,3 +84,51 @@ MediaTrackSettings.prototype.pan;
 
 /** @type {number} */
 MediaTrackSettings.prototype.tilt;
+
+// TODO(b/172881094): Upstream the externs of pointer event to Closure Compiler.
+// https://www.w3.org/TR/pointerevents2/#dom-globaleventhandlers-onpointerdown
+
+/** @type {?function (Event)} */ Element.prototype.onpointerdown;
+/** @type {?function (Event)} */ Element.prototype.onpointerup;
+/** @type {?function (Event)} */ Element.prototype.onpointerleave;
+
+/**
+ * @record
+ * @struct
+ */
+function OverconstrainedError() {}
+
+/** @type {string} */
+OverconstrainedError.prototype.constraint;
+
+/** @type {string} */
+OverconstrainedError.prototype.name;
+
+/** @type {string} */
+OverconstrainedError.prototype.message;
+
+/**
+ * @constructor
+ */
+function CSSStyleValue() {}
+
+/**
+ * @type {number}
+ */
+CSSStyleValue.prototype.value;
+
+/**
+ * @constructor
+ */
+function StylePropertyMapReadOnly() {}
+
+/**
+ * @param {string} property
+ * @return {?CSSStyleValue}
+ */
+StylePropertyMapReadOnly.prototype.get = function(property) {};
+
+/**
+ * @return {!StylePropertyMapReadOnly}
+ */
+Element.prototype.computedStyleMap = function() {};

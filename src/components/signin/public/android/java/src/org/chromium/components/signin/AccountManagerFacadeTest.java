@@ -41,14 +41,14 @@ public class AccountManagerFacadeTest {
         private final CallbackHelper mBlockGetAccounts = new CallbackHelper();
 
         @Override
-        public Account[] getAccountsSync() {
+        public Account[] getAccounts() {
             // Blocks thread that's trying to get accounts from the delegate.
             try {
                 mBlockGetAccounts.waitForFirst();
             } catch (TimeoutException e) {
                 throw new RuntimeException(e);
             }
-            return super.getAccountsSync();
+            return super.getAccounts();
         }
 
         void unblockGetAccounts() {
@@ -74,13 +74,18 @@ public class AccountManagerFacadeTest {
 
     @Test
     @SmallTest
-    public void testIsCachePopulated() throws AccountManagerDelegateException {
+    public void testIsCachePopulated() throws InterruptedException {
         // Cache shouldn't be populated until getAccountsSync is unblocked.
         assertFalse(AccountManagerFacadeProvider.getInstance().isCachePopulated());
 
         mDelegate.unblockGetAccounts();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(
+                    accounts -> countDownLatch.countDown());
+        });
         // Wait for cache population to finish.
-        AccountManagerFacadeProvider.getInstance().getGoogleAccounts();
+        countDownLatch.await();
         assertTrue(AccountManagerFacadeProvider.getInstance().isCachePopulated());
     }
 
@@ -90,8 +95,8 @@ public class AccountManagerFacadeTest {
         CountDownLatch firstCounter = new CountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Add callback. This should be done on the main thread.
-            AccountManagerFacadeProvider.getInstance().runAfterCacheIsPopulated(
-                    firstCounter::countDown);
+            AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(
+                    accounts -> firstCounter.countDown());
         });
         assertEquals("Callback shouldn't be invoked until cache is populated", 1,
                 firstCounter.getCount());
@@ -102,8 +107,8 @@ public class AccountManagerFacadeTest {
 
         CountDownLatch secondCounter = new CountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountManagerFacadeProvider.getInstance().runAfterCacheIsPopulated(
-                    secondCounter::countDown);
+            AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(
+                    accounts -> secondCounter.countDown());
             assertEquals("Callback should be posted on UI thread, not executed synchronously", 1,
                     secondCounter.getCount());
         });

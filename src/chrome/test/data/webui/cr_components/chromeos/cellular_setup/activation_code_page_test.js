@@ -10,6 +10,7 @@
 // #import {assertTrue} from '../../../chai_assert.js';
 // #import {FakeMediaDevices} from './fake_media_devices.m.js';
 // #import {FakeBarcodeDetector, FakeImageCapture} from './fake_barcode_detector.m.js';
+// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 suite('CrComponentsActivationCodePageTest', function() {
@@ -70,10 +71,11 @@ suite('CrComponentsActivationCodePageTest', function() {
     const startScanningButton = activationCodePage.$$('#startScanningButton');
     const scanFinishContainer = activationCodePage.$$('#scanFinishContainer');
     const switchCameraButton = activationCodePage.$$('#switchCameraButton');
-    const useCameraAgainButton = activationCodePage.$$('#useCameraAgainButton');
+    const getUseCameraAgainButton = () => {
+      return activationCodePage.$$('#useCameraAgainButton');
+    };
     const scanSuccessContainer = activationCodePage.$$('#scanSuccessContainer');
     const scanFailureContainer = activationCodePage.$$('#scanFailureContainer');
-    const spinner = activationCodePage.$$('paper-spinner-lite');
 
     assertTrue(!!qrCodeDetectorContainer);
     assertTrue(!!activationCodeContainer);
@@ -82,10 +84,10 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(!!startScanningButton);
     assertTrue(!!scanFinishContainer);
     assertTrue(!!switchCameraButton);
-    assertTrue(!!useCameraAgainButton);
+    assertFalse(!!getUseCameraAgainButton());
     assertTrue(!!scanSuccessContainer);
     assertTrue(!!scanFailureContainer);
-    assertTrue(!!spinner);
+    assertFalse(!!activationCodePage.$$('paper-spinner-lite'));
 
     // Initial state should only be showing the start scanning UI.
     assertFalse(startScanningContainer.hidden);
@@ -93,7 +95,7 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(video.hidden);
     assertTrue(scanFinishContainer.hidden);
     assertTrue(switchCameraButton.hidden);
-    assertTrue(spinner.hidden);
+    assertFalse(!!activationCodePage.$$('paper-spinner-lite'));
 
     // Click the start scanning button.
     startScanningButton.click();
@@ -105,50 +107,24 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(scanFinishContainer.hidden);
     assertTrue(switchCameraButton.hidden);
 
+    const focusNextButtonPromise =
+        test_util.eventToPromise('focus-default-button', activationCodePage);
+
     // Mock camera scanning a code.
     await intervalFunction();
     await flushAsync();
 
     // The scanFinishContainer and scanSuccessContainer should now be visible,
-    // video, start scanning UI and scanFailureContainer hidden.
+    // video, start scanning UI, scanFailureContainer hidden and nextbutton
+    // is focused.
+    await Promise.all([focusNextButtonPromise, test_util.flushTasks()]);
     assertFalse(scanFinishContainer.hidden);
     assertTrue(startScanningContainer.hidden);
     assertTrue(video.hidden);
     assertFalse(scanSuccessContainer.hidden);
     assertTrue(scanFailureContainer.hidden);
-
-    // Click the 'Use camera again' button.
-    useCameraAgainButton.click();
-    await flushAsync();
-
-    // The video should be visible and start scanning UI hidden.
-    assertFalse(video.hidden);
-    assertTrue(startScanningContainer.hidden);
-    assertTrue(scanFinishContainer.hidden);
-    assertTrue(switchCameraButton.hidden);
-
-    // Scan a new code.
-    await intervalFunction();
-    await flushAsync();
-
-    // The scanFinishContainer and scanSuccessContainer should now be visible,
-    // video, start scanning UI and scanFailureContainer hidden.
-    assertFalse(scanFinishContainer.hidden);
-    assertTrue(startScanningContainer.hidden);
-    assertTrue(video.hidden);
-    assertFalse(scanSuccessContainer.hidden);
-    assertTrue(scanFailureContainer.hidden);
+    assertFalse(!!getUseCameraAgainButton());
     assertFalse(activationCodePage.showError);
-
-    // Click the 'Use camera again' button.
-    useCameraAgainButton.click();
-    await flushAsync();
-
-    // The video should be visible and start scanning UI hidden.
-    assertFalse(video.hidden);
-    assertTrue(startScanningContainer.hidden);
-    assertTrue(scanFinishContainer.hidden);
-    assertTrue(switchCameraButton.hidden);
 
     // Simulate typing in the input.
     activationCodePage.$$('#activationCode')
@@ -161,10 +137,11 @@ suite('CrComponentsActivationCodePageTest', function() {
     assertTrue(video.hidden);
     assertTrue(scanFinishContainer.hidden);
     assertTrue(switchCameraButton.hidden);
-    assertTrue(spinner.hidden);
+    assertFalse(!!activationCodePage.$$('paper-spinner-lite'));
 
     activationCodePage.showBusy = true;
-    assertFalse(spinner.hidden);
+    await flushAsync();
+    assertTrue(!!activationCodePage.$$('paper-spinner-lite'));
 
     // Mock, no media devices present
     mediaDevices.removeDevice();
@@ -250,19 +227,16 @@ suite('CrComponentsActivationCodePageTest', function() {
     await flushAsync();
     const startScanningButton = activationCodePage.$$('#startScanningButton');
     const switchCameraButton = activationCodePage.$$('#switchCameraButton');
-    const useCameraAgainButton = activationCodePage.$$('#useCameraAgainButton');
     const tryAgainButton = activationCodePage.$$('#tryAgainButton');
     const input = activationCodePage.$$('#activationCode');
 
     assertTrue(!!startScanningButton);
     assertTrue(!!switchCameraButton);
-    assertTrue(!!useCameraAgainButton);
     assertTrue(!!tryAgainButton);
     assertTrue(!!input);
 
     assertFalse(startScanningButton.disabled);
     assertFalse(switchCameraButton.disabled);
-    assertFalse(useCameraAgainButton.disabled);
     assertFalse(tryAgainButton.disabled);
     assertFalse(input.disabled);
 
@@ -270,7 +244,6 @@ suite('CrComponentsActivationCodePageTest', function() {
 
     assertTrue(startScanningButton.disabled);
     assertTrue(switchCameraButton.disabled);
-    assertTrue(useCameraAgainButton.disabled);
     assertTrue(tryAgainButton.disabled);
     assertTrue(input.disabled);
   });
@@ -350,12 +323,16 @@ suite('CrComponentsActivationCodePageTest', function() {
         const scanInstallFailureHeader =
             activationCodePage.$$('#scanInstallFailureHeader');
         const scanSucessHeader = activationCodePage.$$('#scanSucessHeader');
+        const getUseCameraAgainButton = () => {
+          return activationCodePage.$$('#useCameraAgainButton');
+        };
         assertTrue(!!input);
         assertTrue(!!startScanningContainer);
         assertTrue(!!startScanningButton);
         assertTrue(!!scanFinishContainer);
         assertTrue(!!scanInstallFailureHeader);
         assertTrue(!!scanSucessHeader);
+        assertFalse(!!getUseCameraAgainButton());
         assertFalse(input.invalid);
 
         // Click the start scanning button.
@@ -371,17 +348,75 @@ suite('CrComponentsActivationCodePageTest', function() {
         assertFalse(scanFinishContainer.hidden);
         assertFalse(scanSucessHeader.hidden);
         assertTrue(scanInstallFailureHeader.hidden);
+        assertFalse(!!getUseCameraAgainButton());
 
         // Mock an install error.
         activationCodePage.showError = true;
+        await flushAsync();
 
         // The scan install failure UI should be showing.
         assertTrue(startScanningContainer.hidden);
         assertFalse(scanFinishContainer.hidden);
         assertTrue(scanSucessHeader.hidden);
         assertFalse(scanInstallFailureHeader.hidden);
+        assertTrue(!!getUseCameraAgainButton());
 
         // There should be no error displayed on the input.
         assertFalse(input.invalid);
+      });
+
+  test('Tabbing does not close video stream', async function() {
+    await flushAsync();
+    const startScanningButton = activationCodePage.$$('#startScanningButton');
+    const getVideo = () => activationCodePage.$$('#video');
+    const input = activationCodePage.$$('#activationCode');
+
+    assertTrue(!!startScanningButton);
+    assertTrue(!!getVideo());
+    assertTrue(getVideo().hidden);
+    assertTrue(!!input);
+
+    // Click the start scanning button.
+    startScanningButton.click();
+    await flushAsync();
+
+    assertFalse(getVideo().hidden);
+
+    // Simulate keyboard 'Tab' key press.
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Tab'}));
+    await flushAsync();
+
+    assertFalse(getVideo().hidden);
+
+    // Simulate keyboard 'A' key press.
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'KeyA'}));
+    await flushAsync();
+
+    assertTrue(getVideo().hidden);
+  });
+
+  test(
+      'Clear qr code detection timeout when video is hidden', async function() {
+        await flushAsync();
+        const startScanningButton =
+            activationCodePage.$$('#startScanningButton');
+        const getVideo = () => activationCodePage.$$('#video');
+
+        assertTrue(!!startScanningButton);
+        assertTrue(!!getVideo());
+        assertTrue(getVideo().hidden);
+
+        // Click the start scanning button.
+        startScanningButton.click();
+        await flushAsync();
+
+        assertFalse(getVideo().hidden);
+        assertTrue(!!activationCodePage.getQrCodeDetectorTimerForTest());
+
+        // Mock camera scanning a code.
+        await intervalFunction();
+        await flushAsync();
+
+        assertFalse(!!activationCodePage.getQrCodeDetectorTimerForTest());
       });
 });

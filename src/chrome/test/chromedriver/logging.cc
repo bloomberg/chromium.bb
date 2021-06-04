@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -213,10 +214,9 @@ std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
 
 bool GetFirstErrorMessageFromList(const base::ListValue* list,
                                   std::string* message) {
-  for (auto it = list->begin(); it != list->end(); ++it) {
-    const base::DictionaryValue* log_entry = NULL;
-    it->GetAsDictionary(&log_entry);
-    if (log_entry != NULL) {
+  for (const auto& entry : list->GetList()) {
+    const base::DictionaryValue* log_entry = nullptr;
+    if (entry.GetAsDictionary(&log_entry)) {
       std::string level;
       if (log_entry->GetString("level", &level))
         if (level == kLevelToName[Log::kError])

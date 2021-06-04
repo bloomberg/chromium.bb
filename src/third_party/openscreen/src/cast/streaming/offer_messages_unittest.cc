@@ -21,7 +21,6 @@ namespace {
 
 constexpr char kValidOffer[] = R"({
   "castMode": "mirroring",
-  "receiverGetStatus": true,
   "supportedStreams": [
     {
       "index": 0,
@@ -100,7 +99,6 @@ void ExpectFailureOnParse(
 
 void ExpectEqualsValidOffer(const Offer& offer) {
   EXPECT_EQ(CastMode::kMirroring, offer.cast_mode);
-  EXPECT_EQ(true, offer.supports_wifi_status_reporting);
 
   // Verify list of video streams.
   EXPECT_EQ(2u, offer.video_streams.size());
@@ -456,18 +454,16 @@ TEST(OfferTest, ParseAndToJsonResultsInSameOffer) {
   ErrorOr<Json::Value> root = json::Parse(kValidOffer);
   ASSERT_TRUE(root.is_value());
   ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
-
   ExpectEqualsValidOffer(offer.value());
 
-  auto eoj = offer.value().ToJson();
-  EXPECT_TRUE(eoj.is_value()) << eoj.error();
-  ErrorOr<Offer> reparsed_offer = Offer::Parse(std::move(eoj.value()));
+  ErrorOr<Offer> reparsed_offer =
+      Offer::Parse(std::move(offer.value().ToJson()));
   ExpectEqualsValidOffer(reparsed_offer.value());
 }
 
 // We don't want to enforce that a given offer must have both audio and
 // video, so we don't assert on either.
-TEST(OfferTest, ToJsonSucceedsWithMissingStreams) {
+TEST(OfferTest, IsValidWithMissingStreams) {
   ErrorOr<Json::Value> root = json::Parse(kValidOffer);
   ASSERT_TRUE(root.is_value());
   ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
@@ -476,14 +472,14 @@ TEST(OfferTest, ToJsonSucceedsWithMissingStreams) {
 
   Offer missing_audio_streams = valid_offer;
   missing_audio_streams.audio_streams.clear();
-  EXPECT_TRUE(missing_audio_streams.ToJson().is_value());
+  EXPECT_TRUE(missing_audio_streams.IsValid());
 
   Offer missing_video_streams = valid_offer;
   missing_video_streams.audio_streams.clear();
-  EXPECT_TRUE(missing_video_streams.ToJson().is_value());
+  EXPECT_TRUE(missing_video_streams.IsValid());
 }
 
-TEST(OfferTest, ToJsonFailsWithInvalidStreams) {
+TEST(OfferTest, InvalidIfInvalidStreams) {
   ErrorOr<Json::Value> root = json::Parse(kValidOffer);
   ASSERT_TRUE(root.is_value());
   ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
@@ -491,12 +487,12 @@ TEST(OfferTest, ToJsonFailsWithInvalidStreams) {
   const Offer valid_offer = std::move(offer.value());
 
   Offer video_stream_invalid = valid_offer;
-  video_stream_invalid.video_streams[0].max_frame_rate.denominator = 0;
-  EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
+  video_stream_invalid.video_streams[0].max_frame_rate = SimpleFraction{1, 0};
+  EXPECT_FALSE(video_stream_invalid.IsValid());
 
   Offer audio_stream_invalid = valid_offer;
   video_stream_invalid.audio_streams[0].bit_rate = 0;
-  EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
+  EXPECT_FALSE(video_stream_invalid.IsValid());
 }
 
 TEST(OfferTest, FailsIfUnencrypted) {

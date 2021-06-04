@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import functools
 import logging
 import socket
 import sys
 import time
+import six
+from six.moves import input # pylint: disable=redefined-builtin
 
 from py_trace_event import trace_event
 
@@ -44,14 +47,12 @@ def _HandleInspectorWebSocketExceptions(func):
   return Inner
 
 
-class InspectorBackend(object):
+class InspectorBackend(six.with_metaclass(trace_event.TracedMetaClass, object)):
   """Class for communicating with a devtools client.
 
   The owner of an instance of this class is responsible for calling
   Disconnect() before disposing of the instance.
   """
-
-  __metaclass__ = trace_event.TracedMetaClass
 
   def __init__(self, devtools_client, context, timeout=120):
     self._websocket = inspector_websocket.InspectorWebsocket()
@@ -325,11 +326,14 @@ class InspectorBackend(object):
             'Exception thrown when trying to capture console output: %s' %
             repr(e))
       # Rethrow with the original stack trace for better debugging.
-      raise py_utils.TimeoutException, \
+      six.reraise(
+          py_utils.TimeoutException,
           py_utils.TimeoutException(
-              'Timeout after %ss while waiting for JavaScript:' % timeout +
-              condition + '\n' +  e.message + '\n' + debug_message), \
+              'Timeout after %ss while waiting for JavaScript:'
+              % timeout + condition + '\n' +  e.message + '\n' + debug_message
+          ),
           sys.exc_info()[2]
+      )
 
 
   def AddTimelineMarker(self, marker):
@@ -653,9 +657,9 @@ class InspectorBackend(object):
 
   def _WaitForInspectorToGoAway(self):
     self._websocket.Disconnect()
-    raw_input('The connection to Chrome was lost to the inspector ui.\n'
-              'Please close the inspector and press enter to resume '
-              'Telemetry run...')
+    input('The connection to Chrome was lost to the inspector ui.\n'
+          'Please close the inspector and press enter to resume '
+          'Telemetry run...')
     raise exceptions.DevtoolsTargetCrashException(
         self.app, 'Devtool connection with the browser was interrupted due to '
         'the opening of an inspector.')
@@ -698,7 +702,7 @@ class InspectorBackend(object):
     new_error.AddDebuggingMessage(original_error_msg)
     self._AddDebuggingInformation(new_error)
 
-    raise new_error, None, sys.exc_info()[2]
+    six.reraise(new_error, None, sys.exc_info()[2])
 
   def _AddDebuggingInformation(self, error):
     """Adds debugging information to error.

@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.lens;
 import android.content.Intent;
 import android.net.Uri;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.contextmenu.ChipRenderParams;
@@ -19,6 +17,21 @@ import org.chromium.ui.base.WindowAndroid;
  * A class which manages communication with the Lens SDK.
  */
 public class LensController {
+    private static LensController sInstance = new LensController();
+
+    private final LensControllerDelegate mDelegate;
+
+    /**
+     * @return The singleton instance of LensController.
+     */
+    public static LensController getInstance() {
+        return sInstance;
+    }
+
+    public LensController() {
+        mDelegate = new LensControllerDelegateImpl();
+    }
+
     /**
      * Whether the Lens SDK is available.
      * @return Whether the Lens SDK is available.
@@ -32,9 +45,7 @@ public class LensController {
      * @return Whether the Lens SDK is available.
      */
     public boolean isQueryEnabled() {
-        // Return true by default to support integration testing where
-        // internal code is not available.
-        return true;
+        return mDelegate.isQueryEnabled();
     }
 
     /**
@@ -45,13 +56,17 @@ public class LensController {
      *
      */
     public void queryImage(
-            LensQueryParams lensQueryParams, Callback<LensQueryResult> queryCallback) {}
+            LensQueryParams lensQueryParams, Callback<LensQueryResult> queryCallback) {
+        mDelegate.queryImage(lensQueryParams, queryCallback);
+    }
 
     /*
      * If an image classification request is pending but no longer needed, explicitly terminate
      * the request.
      */
-    public void terminateClassification() {}
+    public void terminateClassification() {
+        mDelegate.terminateClassification();
+    }
 
     /**
      * Get the data to generate a chip as an entry point to Lens.
@@ -61,7 +76,9 @@ public class LensController {
      * @param chipRenderParamsCallback A callback to trigger once the classification is compelete.
      */
     public void getChipRenderParams(
-            LensQueryParams lensQueryParams, Callback<ChipRenderParams> chipRenderParamsCallback) {}
+            LensQueryParams lensQueryParams, Callback<ChipRenderParams> chipRenderParamsCallback) {
+        mDelegate.getChipRenderParams(lensQueryParams, chipRenderParamsCallback);
+    }
 
     // TODO(benwgold): Delete this function after internal code is switched over.
     /**
@@ -82,7 +99,8 @@ public class LensController {
     public Intent getShareWithGoogleLensIntent(Uri imageUri, boolean isIncognito, String srcUrl,
             boolean requiresConfirmation, String titleOrAltText, String pageUrl,
             @Nullable String lensIntentType) {
-        return null;
+        return mDelegate.getShareWithGoogleLensIntent(imageUri, isIncognito, srcUrl,
+                requiresConfirmation, titleOrAltText, pageUrl, lensIntentType);
     }
 
     /**
@@ -90,45 +108,28 @@ public class LensController {
      * @param window The current window.
      * @param intent The intent to Google Lens.
      */
-    public void startLens(WindowAndroid window, Intent intent) {}
+    public void startLens(WindowAndroid window, Intent intent) {
+        mDelegate.startLens(window, intent);
+    }
 
     /**
      * Launch lens with an intent.
      * @param window The current window.
      * @param lensIntentParams The intent parameters for Lens
      */
-    public void startLens(WindowAndroid window, LensIntentParams lensIntentParams) {}
-
-    /**
-     * Retrieve the Text resource id for "Shop with Google Lens".
-     * @return The resource id for "Shop with Google Lens" string.
-     */
-    protected @StringRes int getShopWithGoogleLensTextResourceId() {
-        return R.string.contextmenu_shop_image_with_google_lens;
-    }
-
-    /**
-     * Retrieve the Lens icon resource id.
-     * Need to put the resource id on the base class to suppress the UnusedResources warning.
-     * @return The resource id for Lens icon.
-     */
-    protected @DrawableRes int getLensIconResourceId() {
-        return R.drawable.lens_icon;
-    }
-
-    /**
-     * Retrieve the Text resource id for "Translate image with Google Lens".
-     * @return The resource id for "Translate image with Google Lens" string.
-     */
-    protected @StringRes int getTranslateWithGoogleLensTextResourceId() {
-        return R.string.contextmenu_translate_image_with_google_lens;
+    public void startLens(WindowAndroid window, LensIntentParams lensIntentParams) {
+        mDelegate.startLens(window, lensIntentParams);
     }
 
     /** Starts the Lens connection. */
-    public void startLensConnection() {}
+    public void startLensConnection() {
+        mDelegate.startLensConnection();
+    }
 
     /** Terminate any active Lens connections. */
-    public void terminateLensConnections() {}
+    public void terminateLensConnections() {
+        mDelegate.terminateLensConnections();
+    }
 
     // TODO(b/180960783): Revisit the wrapper object for this enablement check. LensQueryParams
     // was designed to be only used in the Prime classification query.
@@ -138,6 +139,21 @@ public class LensController {
      * @return True if Lens is enabled.
      */
     public boolean isLensEnabled(@NonNull LensQueryParams lensQueryParams) {
-        return false;
+        return mDelegate.isLensEnabled(lensQueryParams);
+    }
+
+    /** Enables lens debug mode for chrome://internals/lens. */
+    public void enableDebugMode() {
+        mDelegate.enableDebugMode();
+    }
+
+    /** Disables lens debug mode for chrome://internals/lens. */
+    public void disableDebugMode() {
+        mDelegate.disableDebugMode();
+    }
+
+    /** Gets debug data to populate chrome://internals/lens. */
+    public String[][] getDebugData() {
+        return mDelegate.getDebugData();
     }
 }

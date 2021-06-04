@@ -23,7 +23,7 @@ const base::Feature kIPHGlobalMediaControlsFeature{
 const base::Feature kIPHLiveCaptionFeature{"IPH_LiveCaption",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHPasswordsAccountStorageFeature{
-    "IPH_PasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_PasswordsAccountStorage", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHReadingListDiscoveryFeature{
     "IPH_ReadingListDiscovery", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReadingListEntryPointFeature{
@@ -38,6 +38,10 @@ const base::Feature kIPHDesktopPwaInstallFeature{
     "IPH_DesktopPwaInstall", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHProfileSwitchFeature{"IPH_ProfileSwitch",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature{
+    "IPH_UpdatedConnectionSecurityIndicators",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -154,9 +158,15 @@ const base::Feature kIPHChromeReengagementNotification2Feature{
 const base::Feature kIPHChromeReengagementNotification3Feature{
     "IPH_ChromeReengagementNotification3", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPwaInstallAvailableFeature{
-    "IPH_PwaInstallAvailable", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_PwaInstallAvailableFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHShareScreenshotFeature{
     "IPH_ShareScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHWebFeedFollowFeature{"IPH_WebFeedFollow",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHWebFeedPostFollowDialogFeature{
+    "IPH_WebFeedPostFollowDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHSharedHighlightingBuilder{
+    "IPH_SharedHighlightingBuilder", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

@@ -8,11 +8,11 @@
 
 Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingum verða ekki vistaðar.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> var áður að nota Chrome</translation>
-<translation id="1097330777386562916">Hreinsa fótspor og vefsvæðisgögn þegar þú lokar Chrome</translation>
 <translation id="110877069173485804">Þetta er þitt Chrome</translation>
 <translation id="1125124144982679672">Hver er að nota Chrome?</translation>
 <translation id="1142745911746664600">Ekki er hægt að uppfæra Chrome</translation>
 <translation id="1154147086299354128">&amp;Opna í Chrome</translation>
+<translation id="1278833599417554002">Endurræstu til að uppfæra &amp;Chrome</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> krefst þess að þú lesir og samþykkir eftirfarandi skilmála áður en þú notar þetta tæki. Þessir skilmálar auka ekki við, breyta eða takmarka skilmála Google Chrome OS.</translation>
 <translation id="1302523850133262269">Bíddu á meðan Chrome setur upp nýjustu kerfisuppfærslurnar.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
@@ -49,6 +49,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="2063848847527508675">Endurræsa þarf Chrome OS til að nota uppfærsluna.</translation>
 <translation id="2094919256425865063">Viltu samt loka Chrome?</translation>
 <translation id="2120620239521071941">Þetta mun eyða <ph name="ITEMS_COUNT" /> atriðum úr þessu tæki. Skráðu þig inn í Chrome sem <ph name="USER_EMAIL" /> til að endurheimta gögnin síðar.</translation>
+<translation id="2121284319307530122">Endurræstu til að uppfæra &amp;Chrome</translation>
 <translation id="2123055963409958220">Hjálpa til við að gera Google Chrome betra með því að tilkynna um <ph name="BEGIN_LINK" />núverandi stillingar<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Endurræstu Chrome núna</translation>
 <translation id="2246246234298806438">Google Chrome getur ekki birt prentforskoðun ef innbyggðan PDF-skoðara vantar.</translation>
@@ -59,7 +60,6 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="234869673307233423">Chrome getur ekki athugað aðgangsorðin þín. Reyndu aftur síðar.</translation>
 <translation id="235650106824528204">Stjórnandi vinnuprófíla getur fjarlægt öll Chrome gögn sem verða til við notkun þessa prófíls (þ.m.t. bókamerki, feril, aðgangsorð og aðrar stillingar). <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">Google Chrome gat ekki samstillt gögnin þín vegna þess að samstilling er ekki í boði fyrir lénið þitt.</translation>
-<translation id="245659736593643560">Chrome OS á tilvist sína að þakka öðrum <ph name="BEGIN_LINK_CROS_OSS" />opnum hugbúnaði<ph name="END_LINK_CROS_OSS" /> og það sama á við um <ph name="BEGIN_LINK_LINUX_OSS" />Linux-forritunarumhverfið (tilraunaútgáfu)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">Google Chrome vill flytja út aðgangsorðin þín. Sláðu inn Windows-aðgangsorðið þitt til að leyfa það.</translation>
 <translation id="2485422356828889247">Fjarlægja</translation>
 <translation id="2534507159460261402">Google Pay (afritað í Chrome)</translation>
@@ -72,6 +72,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="2652691236519827073">Opna tengil í nýjum &amp;flipa í Chrome</translation>
 <translation id="2665296953892887393">Hjálpaðu til við að bæta Google Chrome með því að senda tilkynningar um hrun og <ph name="UMA_LINK" /> til Google.</translation>
 <translation id="2689103672227170538">Þessi viðbót hefur breytt því hvaða síða birtist þegar þú ræsir Chrome.</translation>
+<translation id="2742320827292110288">Viðvörun: Google Chrome getur ekki komið í veg fyrir að viðbætur skrái vafraferilinn þinn. Afturkallaðu þennan valkost til að gera þessa viðbót óvirka í huliðsstillingu.</translation>
 <translation id="2765403129283291972">Chrome þarf leyfi til að nota hljóðnemann á þessu vefsvæði</translation>
 <translation id="2770231113462710648">Breyta sjálfgefnum vafra í:</translation>
 <translation id="2775140325783767197">Chrome getur ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
@@ -167,13 +168,13 @@ Sumir eiginleikar kunna að vera óaðgengilegir. Tilgreindu aðra prófílmöpp
 <translation id="5193136243808726294">Stýrikerfi Google Chrome getur ekki opnað þessa síðu.</translation>
 <translation id="521447420733633466">Ef nokkrir deila sama tæki geta vinir og fjölskyldumeðlimir vafrað hver á sínum prófíl og sett Chrome upp eins og hverjum og einum líkar best</translation>
 <translation id="5251420635869119124">Gestir geta notað Chrome án þess að skilja eftir sig nokkur spor.</translation>
-<translation id="532046782124376502">Viðvörun: Google Chrome getur ekki komið í veg fyrir að viðbætur skrái vafraferilinn þinn. Taktu valið af þessum valkosti til að gera þessa viðbót óvirka í huliðsstillingu.</translation>
 <translation id="5386244825306882791">Þetta stýrir því einnig hvaða síða er birt þegar þú ræsir Chrome eða leitar úr veffangastikunni.</translation>
 <translation id="5394833366792865639">Deila Chrome flipa</translation>
 <translation id="5430073640787465221">Kjörstillingaskráin þín er skemmd eða ógild.
 
 Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="5434383153637353914">Á þessari síðu geturðu haft umsjón með Google reikningunum sem þú ert skráð(ur) inn á. Reikningarnir verða tiltækir í Chrome vafranum og Play Store forritum sem og í þjónustum á borð við Gmail, Drive og YouTube. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">Setja upp Chrome OS</translation>
 <translation id="556024056938947818">Google Chrome er að reyna að birta aðgangsorð.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-inn)</translation>
 <translation id="5657226924540934362">Ef stilling sést ekki á þessari síðu skaltu athuga <ph name="LINK_BEGIN" />
@@ -225,6 +226,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7106741999175697885">Verkstjórn – Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Ný uppfærsla fyrir Chrome er í boði og hún verður sett upp þegar þú endurræsir.}=1{Ný uppfærsla fyrir Chrome er í boði og hún verður sett upp þegar þú endurræsir. Huliðsglugginn enduropnast ekki.}one{Ný uppfærsla fyrir Chrome er í boði og hún verður sett upp þegar þú endurræsir. # huliðsgluggi enduropnast ekki.}other{Ný uppfærsla fyrir Chrome er í boði og hún verður sett upp þegar þú endurræsir. # huliðsgluggar enduropnast ekki.}}</translation>
 <translation id="7155997830309522122">Ef svo er skaltu breyta vistaða aðgangsorðinu í Chrome í nýja aðgangsorðið.</translation>
+<translation id="7161904924553537242">Velkomin(n) í Google Chrome</translation>
 <translation id="7242029209006116544">Þú ert að skrá þig inn á stýrðan reikning og gefur stjórnanda hans stjórn yfir Google Chrome prófílnum þínum. Gögnin þín í Chrome, s.s. forrit, bókamerki, ferill, aðgangsorð og aðrar stillingar, verða tengd varanlega við <ph name="USER_NAME" />. Þú getur eytt þessum gögnum á stjórnborði Google reikninga en getur ekki tengt þau öðrum reikningi. Einnig getur þú búið til nýjan prófíl til að halda eldri gögnum þínum á Chrome aðskildum. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Þetta tungumál er notað til að birta notendaviðmót Google Chrome</translation>
 <translation id="7296210096911315575">Mikilvægar notkunar- og öryggisupplýsingar</translation>
@@ -242,6 +244,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7629695634924605473">Chrome lætur þig vita ef aðgangsorðin þín eru einhvern tímann í hættu</translation>
 <translation id="7641148173327520642">Kerfisstjórinn hefur stillt Google Chrome á að opna <ph name="ALTERNATIVE_BROWSER_NAME" /> til að fá aðgang að <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Lógó Chrome Enterprise</translation>
+<translation id="7665553140559834626">Endurræstu til að uppfæra &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Uppsetningarforritið gat ekki búið til tímabundna möppu. Athugaðu laust diskpláss og heimildir fyrir uppsetningu hugbúnaðar.</translation>
 <translation id="7761834446675418963">Smelltu á nafnið þitt til að opna Chrome og byrja að vafra.</translation>
 <translation id="7777080907402804672">Ef gagnlega lýsingu vantar við mynd reynir Chrome að útvega þér lýsingu. Til að búa til lýsingar eru myndir sendar til Google. Þú getur slökkt á þessu hvenær sem er í stillingunum.</translation>
@@ -253,9 +256,10 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7855730255114109580">Google Chrome er uppfært</translation>
 <translation id="7890208801193284374">Ef nokkrir eru um sömu tölvu geta vinir og fjölskyldumeðlimir vafrað hver á sínum prófíl og sett Chrome upp eins og hverjum og einum líkar best.</translation>
 <translation id="7896673875602241923">Einhver hefur skráð sig inn á Chrome í þessari tölvu sem <ph name="ACCOUNT_EMAIL_LAST" />. Búðu til nýjan notanda í Chrome til að halda upplýsingum ykkar aðskildum.</translation>
-<translation id="7905891027772979035">Chrome getur ekki athugað viðbæturnar þínar. Reyndu aftur síðar.</translation>
 <translation id="7930071585467473040">Google Chrome er að reyna að afrita aðgangsorð.</translation>
+<translation id="7951988079884443914">Chrome mælir með að þú sækir hvorki né opnir þessa skrá.</translation>
 <translation id="7962410387636238736">Þessi tölva tekur ekki lengur við uppfærslum á Google Chrome vegna þess að stýrikerfin Windows XP og Windows Vista eru ekki lengur studd</translation>
+<translation id="79947657522496226">Chrome OS á tilvist sína að þakka öðrum <ph name="BEGIN_LINK_CROS_OSS" />opnum hugbúnaði<ph name="END_LINK_CROS_OSS" /> og það sama á við um <ph name="BEGIN_LINK_LINUX_OSS" />Linux-forritunarumhverfið <ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">Setja Chrome aftur upp</translation>
 <translation id="8013993649590906847">Ef gagnlega lýsingu vantar við mynd reynir Chrome að útvega þér lýsingu. Til að búa til lýsingar eru myndir sendar til Google.</translation>
 <translation id="8129812357326543296">Um &amp;Google Chrome</translation>

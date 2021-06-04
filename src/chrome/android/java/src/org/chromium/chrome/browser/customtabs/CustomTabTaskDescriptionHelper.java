@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,7 +43,7 @@ import javax.inject.Inject;
  * The task description is what is shown in Android's Overview/Recents screen for each entry.
  */
 @ActivityScope
-public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destroyable {
+public class CustomTabTaskDescriptionHelper implements NativeInitObserver, DestroyObserver {
     private final Activity mActivity;
     private final CustomTabActivityTabProvider mTabProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
@@ -252,7 +252,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
 
         Bitmap bitmap = null;
         if (!currentTab.isIncognito()) {
-            bitmap = mIconGenerator.getBitmap(currentTab.getUrlString(), mLargestFavicon);
+            bitmap = mIconGenerator.getBitmap(currentTab.getUrl(), mLargestFavicon);
         }
         return bitmap;
     }
@@ -272,7 +272,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
 
         final String currentUrl = currentTab.getUrlString();
         mFaviconHelper.getLocalFaviconImageForURL(
-                Profile.fromWebContents(currentTab.getWebContents()), currentTab.getUrlString(), 0,
+                Profile.fromWebContents(currentTab.getWebContents()), currentTab.getUrl(), 0,
                 (image, iconUrl) -> {
                     if (mTabProvider.getTab() == null
                             || !TextUtils.equals(
@@ -297,7 +297,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
      * Destroys all dependent components of the task description helper.
      */
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
         }

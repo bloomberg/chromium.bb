@@ -17,13 +17,13 @@
 
 $VerifiedPlatform windows-amd64 linux-amd64 mac-amd64
 
-# TODO(https://crbug.com/1184768): Remove `=amd64` once mac/arm64 python exists
 @Subdir python
-infra/3pp/tools/cpython/${os}-${arch=amd64} version:2.7.17.chromium.22
+infra/3pp/tools/cpython/${os=mac,windows}-${arch} version:2@2.7.18.chromium.35
+# Linux version is held back for https://crbug.com/1208146
+infra/3pp/tools/cpython/${os=linux}-${arch} version:2.7.17.chromium.22
 
-# TODO(https://crbug.com/1103326): Remove `=amd64` once mac/arm64 python3 exists
 @Subdir python3
-infra/3pp/tools/cpython3/${os}-${arch=amd64} version:3.8.0.chromium.8
+infra/3pp/tools/cpython3/${platform} version:2@3.8.10.chromium.17
 
 # TODO(https://crbug.com/1184766): Remove `=amd64` once mac/arm64 git exists
 @Subdir git

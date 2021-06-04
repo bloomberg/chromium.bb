@@ -9,26 +9,34 @@
 
 namespace net {
 
-class IPAddress;
+class IPEndPoint;
 
 }  // namespace net
 
 namespace network {
 
-// Returns the IPAddressSpace from an IPAddress.
+// Returns the IPAddressSpace to which `endpoint` belongs.
+//
+// Returns `kUnknown` for invalid IP addresses. Otherwise, takes into account
+// the `--ip-address-space-overrides` command-line switch.
+//
+// `endpoint`'s port is only used for matching to command-line overrides. It is
+// ignored otherwise. In particular, if no overrides are specified on the
+// command-line, then this function ignores the port entirely.
 //
 // WARNING: This can only be used as-is for subresource requests loaded over the
-// network. For other cases, see the Calculate*AddressSpace() functions below.
+// network. Special URL schemes and resource headers must also be taken into
+// account at higher layers.
 mojom::IPAddressSpace COMPONENT_EXPORT(NETWORK_CPP)
-    IPAddressToIPAddressSpace(const net::IPAddress& address);
+    IPEndPointToIPAddressSpace(const net::IPEndPoint& endpoint);
 
-// Returns whether |lhs| is less public than |rhs|.
+// Returns whether `lhs` is less public than `rhs`.
 //
 // This comparator is compatible with std::less.
 //
 // Address spaces go from most public to least public in the following order:
 //
-//  - public and unknown
+//  - public and unknown (equivalent)
 //  - private
 //  - local
 //

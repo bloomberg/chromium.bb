@@ -10,8 +10,10 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -26,10 +28,12 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -48,7 +52,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -121,7 +124,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // HighlightPathGenerator:
-  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
     bounds.Inset(insets_);
     return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
@@ -159,6 +162,41 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(TrayWidgetObserver);
 };
 
+// Handles `TrayBackgroundView`'s animation on session changed.
+class TrayBackgroundView::TrayBackgroundViewSessionChangeHandler
+    : public SessionObserver {
+ public:
+  explicit TrayBackgroundViewSessionChangeHandler(
+      TrayBackgroundView* tray_background_view)
+      : tray_(tray_background_view) {
+    DCHECK(tray_);
+  }
+  TrayBackgroundViewSessionChangeHandler(
+      const TrayBackgroundViewSessionChangeHandler&) = delete;
+  TrayBackgroundViewSessionChangeHandler& operator=(
+      const TrayBackgroundViewSessionChangeHandler&) = delete;
+  ~TrayBackgroundViewSessionChangeHandler() override = default;
+
+ private:  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override {
+    DisableShowAnimationInSequence();
+  }
+  void OnActiveUserSessionChanged(const AccountId& account_id) override {
+    DisableShowAnimationInSequence();
+  }
+
+  // Disables the `TrayBackgroundView`'s show animation until all queued tasks
+  // in the current task sequence are run.
+  void DisableShowAnimationInSequence() {
+    base::ScopedClosureRunner callback = tray_->DisableShowAnimation();
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     callback.Release());
+  }
+
+  TrayBackgroundView* const tray_;
+  ScopedSessionObserver session_observer_{this};
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
@@ -172,15 +210,48 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
       visible_preferred_(false),
       show_with_virtual_keyboard_(false),
       show_when_collapsed_(true),
-      widget_observer_(new TrayWidgetObserver(this)) {
+      widget_observer_(new TrayWidgetObserver(this)),
+      handler_(new TrayBackgroundViewSessionChangeHandler(this)) {
   DCHECK(shelf_);
   SetNotifyEnterExitOnChild(true);
 
   auto ripple_attributes = AshColorProvider::Get()->GetRippleAttributes();
-  SetInkDropBaseColor(ripple_attributes.base_color);
-  SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  ink_drop()->SetBaseColor(ripple_attributes.base_color);
+  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
 
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+  ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+      [](TrayBackgroundView* host) {
+        gfx::Rect bounds = host->GetBackgroundBounds();
+        // Currently, we don't handle view resize. To compensate for that,
+        // enlarge the bounds by two tray icons so that the highlight looks good
+        // even if two more icons are added when it is visible. Note that ink
+        // drop mask handles resize correctly, so the extra highlight would be
+        // clipped.
+        // TODO(mohsen): Remove this extra size when resize is handled properly
+        // (see https://crbug.com/669253).
+        const int icon_size = kTrayIconSize + 2 * kTrayImageItemPadding;
+        bounds.set_width(bounds.width() + 2 * icon_size);
+        bounds.set_height(bounds.height() + 2 * icon_size);
+        const AshColorProvider::RippleAttributes ripple_attributes =
+            AshColorProvider::Get()->GetRippleAttributes();
+        auto highlight = std::make_unique<views::InkDropHighlight>(
+            gfx::SizeF(bounds.size()), ripple_attributes.base_color);
+        highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
+        return highlight;
+      },
+      this));
+  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+      [](TrayBackgroundView* host) -> std::unique_ptr<views::InkDropRipple> {
+        const AshColorProvider::RippleAttributes ripple_attributes =
+            AshColorProvider::Get()->GetRippleAttributes();
+        return std::make_unique<views::FloodFillInkDropRipple>(
+            host->size(), host->GetBackgroundInsets(),
+            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            ripple_attributes.base_color, ripple_attributes.inkdrop_opacity);
+      },
+      this));
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
@@ -209,6 +280,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 TrayBackgroundView::~TrayBackgroundView() {
   Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
   widget_observer_.reset();
+  handler_.reset();
 }
 
 void TrayBackgroundView::Initialize() {
@@ -257,16 +329,41 @@ void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
     // layer->SetVisible(true) immediately interrupts the animation of this
     // property, and keeps the layer visible.
     layer()->SetVisible(true);
-  }
 
-  if (visible) {
-    if (use_bounce_in_animation_)
-      BounceInAnimation();
-    else
-      FadeInAnimation();
+    // We only show visible animation when `IsShowAnimationEnabled()`.
+    if (IsShowAnimationEnabled()) {
+      if (use_bounce_in_animation_)
+        BounceInAnimation();
+      else
+        FadeInAnimation();
+    } else {
+      // The opacity and scale of the `layer()` may have been manipulated, so
+      // reset it before it is shown.
+      layer()->SetOpacity(1.0f);
+      layer()->SetTransform(gfx::Transform());
+    }
   } else {
     HideAnimation();
   }
+}
+
+base::ScopedClosureRunner TrayBackgroundView::DisableShowAnimation() {
+  if (layer()->GetAnimator()->is_animating())
+    layer()->GetAnimator()->StopAnimating();
+
+  ++disable_show_animation_count_;
+  if (disable_show_animation_count_ == 1u)
+    OnShouldShowAnimationChanged(false);
+
+  return base::ScopedClosureRunner(base::BindOnce(
+      [](const base::WeakPtr<TrayBackgroundView>& ptr) {
+        if (ptr) {
+          --ptr->disable_show_animation_count_;
+          if (ptr->IsShowAnimationEnabled())
+            ptr->OnShouldShowAnimationChanged(true);
+        }
+      },
+      weak_factory_.GetWeakPtr()));
 }
 
 void TrayBackgroundView::UpdateStatusArea(bool should_log_visible_pod_count) {
@@ -325,33 +422,9 @@ std::unique_ptr<ui::Layer> TrayBackgroundView::RecreateLayer() {
   return views::View::RecreateLayer();
 }
 
-std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
-    const {
-  const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes();
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetBackgroundInsets(), GetInkDropCenterBasedOnLastEvent(),
-      ripple_attributes.base_color, ripple_attributes.inkdrop_opacity);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-TrayBackgroundView::CreateInkDropHighlight() const {
-  gfx::Rect bounds = GetBackgroundBounds();
-  // Currently, we don't handle view resize. To compensate for that, enlarge the
-  // bounds by two tray icons so that the highlight looks good even if two more
-  // icons are added when it is visible. Note that ink drop mask handles resize
-  // correctly, so the extra highlight would be clipped.
-  // TODO(mohsen): Remove this extra size when resize is handled properly (see
-  // https://crbug.com/669253).
-  const int icon_size = kTrayIconSize + 2 * kTrayImageItemPadding;
-  bounds.set_width(bounds.width() + 2 * icon_size);
-  bounds.set_height(bounds.height() + 2 * icon_size);
-  const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes();
-  auto highlight = std::make_unique<views::InkDropHighlight>(
-      gfx::SizeF(bounds.size()), ripple_attributes.base_color);
-  highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
-  return highlight;
+void TrayBackgroundView::OnThemeChanged() {
+  ActionableView::OnThemeChanged();
+  UpdateBackground();
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
@@ -563,13 +636,9 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
   if (is_active_ == is_active)
     return;
   is_active_ = is_active;
-  AnimateInkDrop(is_active_ ? views::InkDropState::ACTIVATED
-                            : views::InkDropState::DEACTIVATED,
-                 nullptr);
-}
-
-void TrayBackgroundView::UpdateBubbleViewArrow(TrayBubbleView* bubble_view) {
-  // Nothing to do here.
+  ink_drop()->AnimateToState(is_active_ ? views::InkDropState::ACTIVATED
+                                        : views::InkDropState::DEACTIVATED,
+                             nullptr);
 }
 
 views::View* TrayBackgroundView::GetBubbleAnchor() const {

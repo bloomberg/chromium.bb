@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
 
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet_init.h"
@@ -195,6 +196,8 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
       value_wrapper_synthetic_module_script =
           static_cast<const ValueWrapperSyntheticModuleScript*>(
               module_record_resolver->GetModuleScriptFromModuleRecord(module));
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::TryCatch try_catch(isolate);
   v8::Maybe<bool> result = module->SetSyntheticModuleExport(
       isolate, V8String(isolate, "default"),

@@ -35,6 +35,8 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlelement_long.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmloptgroupelement_htmloptionelement.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -45,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -232,6 +235,41 @@ HTMLOptionElement* HTMLSelectElement::ActiveSelectionEnd() const {
   return select_type_->ActiveSelectionEnd();
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void HTMLSelectElement::add(
+    const V8UnionHTMLOptGroupElementOrHTMLOptionElement* element,
+    const V8UnionHTMLElementOrLong* before,
+    ExceptionState& exception_state) {
+  DCHECK(element);
+
+  HTMLElement* element_to_insert = nullptr;
+  switch (element->GetContentType()) {
+    case V8UnionHTMLOptGroupElementOrHTMLOptionElement::ContentType::
+        kHTMLOptGroupElement:
+      element_to_insert = element->GetAsHTMLOptGroupElement();
+      break;
+    case V8UnionHTMLOptGroupElementOrHTMLOptionElement::ContentType::
+        kHTMLOptionElement:
+      element_to_insert = element->GetAsHTMLOptionElement();
+      break;
+  }
+
+  HTMLElement* before_element = nullptr;
+  if (before) {
+    switch (before->GetContentType()) {
+      case V8UnionHTMLElementOrLong::ContentType::kHTMLElement:
+        before_element = before->GetAsHTMLElement();
+        break;
+      case V8UnionHTMLElementOrLong::ContentType::kLong:
+        before_element = options()->item(before->GetAsLong());
+        break;
+    }
+  }
+
+  InsertBefore(element_to_insert, before_element, exception_state);
+  SetNeedsValidityCheck();
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void HTMLSelectElement::add(
     const HTMLOptionElementOrHTMLOptGroupElement& element,
     const HTMLElementOrLong& before,
@@ -254,6 +292,7 @@ void HTMLSelectElement::add(
   InsertBefore(element_to_insert, before_element, exception_state);
   SetNeedsValidityCheck();
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLSelectElement::remove(int option_index) {
   if (HTMLOptionElement* option = item(option_index))
@@ -421,6 +460,26 @@ void HTMLSelectElement::SetOption(unsigned index,
                        index, kMaxListItems)));
     return;
   }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* element =
+      MakeGarbageCollected<V8UnionHTMLOptGroupElementOrHTMLOptionElement>(
+          option);
+  V8UnionHTMLElementOrLong* before = nullptr;
+  // Out of array bounds? First insert empty dummies.
+  if (diff > 0) {
+    setLength(index, exception_state);
+    if (exception_state.HadException())
+      return;
+    // Replace an existing entry?
+  } else if (diff < 0) {
+    if (auto* before_element = options()->item(index + 1))
+      before = MakeGarbageCollected<V8UnionHTMLElementOrLong>(before_element);
+    remove(index);
+  }
+  // Finally add the new element.
+  EventQueueScope scope;
+  add(element, before, exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HTMLOptionElementOrHTMLOptGroupElement element;
   element.SetHTMLOptionElement(option);
   HTMLElementOrLong before;
@@ -437,6 +496,7 @@ void HTMLSelectElement::SetOption(unsigned index,
   // Finally add the new element.
   EventQueueScope scope;
   add(element, before, exception_state);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (exception_state.HadException())
     return;
   if (diff >= 0 && option->Selected())

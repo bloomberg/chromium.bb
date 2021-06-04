@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants_builder.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/test_app/constants.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
@@ -34,6 +34,7 @@
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace updater {
@@ -56,13 +57,13 @@ base::FilePath GetTestAppExecutablePath() {
   return test_executable.DirName().AppendASCII(TEST_APP_FULLNAME_STRING ".exe");
 }
 
-base::Optional<base::FilePath> GetProductPath() {
+absl::optional<base::FilePath> GetProductPath() {
   base::FilePath app_data_dir;
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &app_data_dir))
-    return base::nullopt;
+    return absl::nullopt;
   return app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
       .AppendASCII(PRODUCT_FULLNAME_STRING)
-      .AppendASCII(UPDATER_VERSION_STRING);
+      .AppendASCII(kUpdaterVersion);
 }
 
 std::wstring GetAppClientStateKey(const std::string& id) {
@@ -82,26 +83,26 @@ bool DeleteRegKey(HKEY root, REGSAM regsam, const std::wstring& path) {
 
 }  // namespace
 
-base::Optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
-  base::Optional<base::FilePath> path = GetProductPath();
+absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
+  absl::optional<base::FilePath> path = GetProductPath();
   if (!path)
-    return base::nullopt;
+    return absl::nullopt;
   return path->AppendASCII("updater.exe");
 }
 
-base::Optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
+absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
     UpdaterScope scope,
     const base::Version& version) {
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   if (!path)
-    return base::nullopt;
+    return absl::nullopt;
   return path->AppendASCII(version.GetString());
 }
 
-base::Optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
+absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
   base::FilePath app_data_dir;
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &app_data_dir))
-    return base::nullopt;
+    return absl::nullopt;
   return app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
       .AppendASCII(PRODUCT_FULLNAME_STRING);
 }
@@ -112,7 +113,8 @@ void Clean(UpdaterScope scope) {
   for (const char* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
     EXPECT_TRUE(DeleteRegKey(root, KEY_WOW64_32KEY, base::ASCIIToWide(key)));
   }
-  for (const wchar_t* key : {COMPANY_POLICIES_KEY, UPDATER_POLICIES_KEY}) {
+  for (const wchar_t* key : {kRegKeyCompanyCloudManagement,
+                             kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
     EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, 0, key));
   }
   for (const CLSID& clsid : GetSideBySideServers()) {
@@ -131,7 +133,7 @@ void Clean(UpdaterScope scope) {
   }
   // TODO(crbug.com/1062288): Delete the COM service items.
   // TODO(crbug.com/1062288): Delete the Wake task.
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::DeletePathRecursively(*path));
@@ -147,7 +149,8 @@ void ExpectClean(UpdaterScope scope) {
   for (const char* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
     EXPECT_FALSE(RegKeyExists(root, KEY_WOW64_32KEY, base::ASCIIToWide(key)));
   }
-  for (const wchar_t* key : {COMPANY_POLICIES_KEY, UPDATER_POLICIES_KEY}) {
+  for (const wchar_t* key : {kRegKeyCompanyCloudManagement,
+                             kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
     EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, 0, key));
   }
   for (const CLSID& clsid : GetSideBySideServers()) {
@@ -168,7 +171,7 @@ void ExpectClean(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert there are no Wake tasks.
 
   // Files must not exist on the file system.
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
   if (path)
     EXPECT_FALSE(base::PathExists(*path));
@@ -195,7 +198,7 @@ void ExpectInstalled(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert there are Wake tasks.
 
   // Files must exist on the file system.
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::PathExists(*path));
@@ -206,7 +209,7 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert there are no Wake tasks.
 
   // Files must not exist on the file system.
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
   if (path)
     EXPECT_FALSE(base::PathExists(*path));
@@ -216,7 +219,7 @@ void ExpectActiveUpdater(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert that COM interfaces point to this version.
 
   // Files must exist on the file system.
-  base::Optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::PathExists(*path));
@@ -243,15 +246,6 @@ void Install(UpdaterScope scope) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  if (::testing::Test::HasFailure())
-    PrintLog(scope);
-  // Copy logs from GetDataDirPath() before updater uninstalls itself
-  // and deletes the path.
-  base::Optional<base::FilePath> data_dir_path = GetDataDirPath(scope);
-  EXPECT_TRUE(data_dir_path);
-  if (data_dir_path)
-    CopyLog(*data_dir_path);
-
   // Note: updater.exe --uninstall is run from the build dir, not the install
   // dir, because it is useful for tests to be able to run it to clean the
   // system even if installation has failed or the installed binaries have
@@ -298,6 +292,12 @@ void ExpectNotActive(UpdaterScope scope, const std::string& id) {
     if (key.ReadValue(kDidRun, &value) == ERROR_SUCCESS)
       EXPECT_EQ(value, L"0");
   }
+}
+
+void WaitForServerExit(UpdaterScope scope) {
+  // TODO(crbug.com/1096654): Need to pass `scope` here.
+  // CreateGlobalPrefs will block until it can acquire the prefs lock.
+  CreateGlobalPrefs();
 }
 
 // Tests if the typelibs and some of the public, internal, and

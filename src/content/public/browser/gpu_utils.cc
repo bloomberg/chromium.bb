@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
@@ -28,20 +29,6 @@
 #include "ui/gfx/switches.h"
 
 namespace {
-
-void RunTaskOnTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::OnceClosure callback) {
-  task_runner->PostTask(FROM_HERE, std::move(callback));
-}
-
-void StopGpuProcessImpl(base::OnceClosure callback,
-                        content::GpuProcessHost* host) {
-  if (host)
-    host->gpu_service()->Stop(std::move(callback));
-  else
-    std::move(callback).Run();
-}
 
 void KillGpuProcessImpl(content::GpuProcessHost* host) {
   if (host) {
@@ -110,8 +97,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       base::FeatureList::IsEnabled(features::kOopRasterizationDDL);
   gpu_preferences.enable_vulkan_protected_memory =
       command_line->HasSwitch(switches::kEnableVulkanProtectedMemory);
-  gpu_preferences.enforce_vulkan_protected_memory =
-      command_line->HasSwitch(switches::kEnforceVulkanProtectedMemory);
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
       command_line->HasSwitch(switches::kDisableVulkanFallbackToGLForTesting);
 
@@ -168,15 +153,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;
-}
-
-void StopGpuProcess(base::OnceClosure callback) {
-  GpuProcessHost::CallOnIO(
-      GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-      base::BindOnce(&StopGpuProcessImpl,
-                     base::BindOnce(RunTaskOnTaskRunner,
-                                    base::ThreadTaskRunnerHandle::Get(),
-                                    std::move(callback))));
 }
 
 void KillGpuProcess() {

@@ -17,14 +17,12 @@ namespace holding_space_metrics {
 
 namespace {
 
-// Helpers ---------------------------------------------------------------------
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Note that 2, 3, and 4 are reserved in
 // case additional special values need to be added in the future.
-constexpr int kEmptyExtension = 0;
-constexpr int kOtherExtension = 1;
-constexpr int kFirstKnownExtension = 5;
+constexpr size_t kEmptyExtension = 0u;
+constexpr size_t kOtherExtension = 1u;
+constexpr size_t kFirstKnownExtension = 5u;
 constexpr std::array<const char*, 72> kKnownExtensions = {
     ".3ga",     ".3gp",  ".aac",        ".alac", ".arw",   ".asf",  ".avi",
     ".bmp",     ".cr2",  ".crdownload", ".crx",  ".csv",   ".dmg",  ".dng",
@@ -38,25 +36,10 @@ constexpr std::array<const char*, 72> kKnownExtensions = {
     ".txt",     ".wav",  ".webm",       ".webp", ".wma",   ".wmv",  ".xls",
     ".xlsx",    ".zip",
 };
+constexpr size_t kExtensionsSize =
+    kFirstKnownExtension + kKnownExtensions.size();
 
-// Returns the integer representation of the extension for the specified
-// `file_path`. Note that these values are persisted to histograms so should
-// remain unchanged.
-int FilePathToExtension(const base::FilePath& file_path) {
-  if (file_path.empty())
-    return kEmptyExtension;
-
-  const std::string extension = base::ToLowerASCII(file_path.Extension());
-  if (extension.empty())
-    return kEmptyExtension;
-
-  auto* const* it =
-      std::find(kKnownExtensions.begin(), kKnownExtensions.end(), extension);
-  if (it == kKnownExtensions.end())
-    return kOtherExtension;
-
-  return kFirstKnownExtension + std::distance(kKnownExtensions.begin(), it);
-}
+// Helpers ---------------------------------------------------------------------
 
 // Returns the string representation of the specified `action`. Note that these
 // values are persisted to histograms so should remain unchanged.
@@ -85,22 +68,49 @@ std::string ItemActionToString(ItemAction action) {
 // values are persisted to histograms so should remain unchanged.
 std::string ItemTypeToString(HoldingSpaceItem::Type type) {
   switch (type) {
+    case HoldingSpaceItem::Type::kArcDownload:
+      return "ArcDownload";
+    case HoldingSpaceItem::Type::kDiagnosticsLog:
+      return "DiagnosticsLog";
     case HoldingSpaceItem::Type::kDownload:
       return "Download";
-    case HoldingSpaceItem::Type::kPinnedFile:
-      return "PinnedFile";
-    case HoldingSpaceItem::Type::kScreenshot:
-      return "Screenshot";
+    case HoldingSpaceItem::Type::kLacrosDownload:
+      return "LacrosDownload";
     case HoldingSpaceItem::Type::kNearbyShare:
       return "NearbyShare";
+    case HoldingSpaceItem::Type::kPinnedFile:
+      return "PinnedFile";
+    case HoldingSpaceItem::Type::kPrintedPdf:
+      return "PrintedPdf";
     case HoldingSpaceItem::Type::kScreenRecording:
       return "ScreenRecording";
+    case HoldingSpaceItem::Type::kScreenshot:
+      return "Screenshot";
   }
   NOTREACHED();
   return std::string();
 }
 
 }  // namespace
+
+// Utilities -------------------------------------------------------------------
+
+// Note that these values are persisted to histograms so must remain unchanged.
+size_t FilePathToExtension(const base::FilePath& file_path) {
+  if (file_path.empty())
+    return kEmptyExtension;
+
+  const std::string extension = base::ToLowerASCII(file_path.Extension());
+  if (extension.empty())
+    return kEmptyExtension;
+
+  auto* const* it =
+      std::find(kKnownExtensions.begin(), kKnownExtensions.end(), extension);
+  if (it == kKnownExtensions.end())
+    return kOtherExtension;
+
+  return kFirstKnownExtension + std::distance(kKnownExtensions.begin(), it);
+}
 
 // Metrics ---------------------------------------------------------------------
 
@@ -119,7 +129,6 @@ void RecordFilesAppChipAction(FilesAppChipAction action) {
 void RecordItemAction(const std::vector<const HoldingSpaceItem*>& items,
                       ItemAction action) {
   const std::string action_string = ItemActionToString(action);
-  const int extensions_size = kFirstKnownExtension + kKnownExtensions.size();
 
   for (const HoldingSpaceItem* item : items) {
     base::UmaHistogramEnumeration("HoldingSpace.Item.Action.All", action);
@@ -127,7 +136,7 @@ void RecordItemAction(const std::vector<const HoldingSpaceItem*>& items,
                                   item->type());
     base::UmaHistogramExactLinear(
         "HoldingSpace.Item.Action." + action_string + ".Extension",
-        FilePathToExtension(item->file_path()), extensions_size);
+        FilePathToExtension(item->file_path()), kExtensionsSize);
   }
 }
 
@@ -147,8 +156,12 @@ void RecordItemCounts(const std::vector<const HoldingSpaceItem*>& items) {
   }
 }
 
-void RecordItemFailureToLaunch(HoldingSpaceItem::Type type) {
+void RecordItemFailureToLaunch(HoldingSpaceItem::Type type,
+                               const base::FilePath& file_path) {
   base::UmaHistogramEnumeration("HoldingSpace.Item.FailureToLaunch", type);
+  base::UmaHistogramExactLinear("HoldingSpace.Item.FailureToLaunch.Extension",
+                                FilePathToExtension(file_path),
+                                kExtensionsSize);
 }
 
 void RecordTimeFromFirstAvailabilityToFirstAdd(base::TimeDelta time_delta) {

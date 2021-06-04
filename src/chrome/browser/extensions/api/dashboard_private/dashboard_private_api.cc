@@ -77,10 +77,10 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
 
   network::mojom::URLLoaderFactory* loader_factory = nullptr;
   if (!icon_url.is_empty()) {
-    loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context())
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get();
+    loader_factory = browser_context()
+                         ->GetDefaultStoragePartition()
+                         ->GetURLLoaderFactoryForBrowserProcess()
+                         .get();
   }
 
   auto helper = base::MakeRefCounted<WebstoreInstallHelper>(
@@ -175,15 +175,11 @@ ExtensionFunction::ResponseValue
 DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::BuildResponse(
     api::dashboard_private::Result result, const std::string& error) {
   // The web store expects an empty string on success.
+  std::vector<base::Value> args =
+      ShowPermissionPromptForDelegatedInstall::Results::Create(result);
   if (result == api::dashboard_private::RESULT_EMPTY_STRING)
-    return ArgumentList(CreateResults(result));
-  return ErrorWithArguments(CreateResults(result), error);
-}
-
-std::unique_ptr<base::ListValue>
-DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::CreateResults(
-    api::dashboard_private::Result result) const {
-  return ShowPermissionPromptForDelegatedInstall::Results::Create(result);
+    return ArgumentList(std::move(args));
+  return ErrorWithArguments(std::move(args), error);
 }
 
 }  // namespace extensions

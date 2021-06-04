@@ -68,15 +68,22 @@ const char kRunAllCompositorStagesBeforeDraw[] =
 // real damage rect, which could hide damage rect problems.
 const char kShowAggregatedDamage[] = "show-aggregated-damage";
 
+// Modulates the debug compositor tint color so that damage and page flip
+// updates are made clearly visible. This feature was useful in determining the
+// root cause of https://b.corp.google.com/issues/183260320 . The tinting flag
+// "tint-composited-content" must also be enabled for this flag to used.
+const char kTintCompositedContentModulate[] =
+    "tint-composited-content-modulate";
+
 // Show debug borders for DC layers - red for overlays and blue for underlays.
 // The debug borders are offset from the layer rect by a few pixels for clarity.
 const char kShowDCLayerDebugBorders[] = "show-dc-layer-debug-borders";
 
-base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
+absl::optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     // In full-pipeline mode, surface deadlines should always be unlimited.
-    return base::nullopt;
+    return absl::nullopt;
   }
   std::string deadline_to_synchronize_surfaces_string =
       command_line->GetSwitchValueASCII(
@@ -87,7 +94,7 @@ base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   uint32_t activation_deadline_in_frames;
   if (!base::StringToUint(deadline_to_synchronize_surfaces_string,
                           &activation_deadline_in_frames)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return activation_deadline_in_frames;
 }

@@ -24,6 +24,7 @@
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -273,8 +274,8 @@ void AssistantDialogPlate::OnCommittedQueryChanged(
 void AssistantDialogPlate::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (new_visibility == AssistantVisibility::kVisible) {
     UpdateModalityVisibility();
     UpdateKeyboardVisibility();

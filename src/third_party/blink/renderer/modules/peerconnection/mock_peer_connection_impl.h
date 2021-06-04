@@ -10,14 +10,13 @@
 
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
-#include "third_party/webrtc/api/test/dummy_peer_connection.h"
 
 namespace blink {
 
@@ -94,10 +93,10 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
       cricket::MediaType media_type,
       rtc::scoped_refptr<FakeRtpSender> sender,
       rtc::scoped_refptr<FakeRtpReceiver> receiver,
-      base::Optional<std::string> mid,
+      absl::optional<std::string> mid,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,
-      base::Optional<webrtc::RtpTransceiverDirection> current_direction);
+      absl::optional<webrtc::RtpTransceiverDirection> current_direction);
   ~FakeRtpTransceiver() override;
 
   void ReplaceWith(const FakeRtpTransceiver& other);
@@ -139,7 +138,7 @@ class FakeDtlsTransport : public webrtc::DtlsTransportInterface {
 // this. It introduces complexity, is error prone (not testing the right thing
 // and bugs in the mocks). This class is a maintenance burden and should be
 // removed. https://crbug.com/788659
-class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
+class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
  public:
   explicit MockPeerConnectionImpl(MockPeerConnectionDependencyFactory* factory,
                                   webrtc::PeerConnectionObserver* observer);
@@ -292,6 +291,8 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
       const override {
     return nullptr;
   }
+
+  void RestartIce() override { NOTIMPLEMENTED(); }
 
   // JSEP01 APIs
   void CreateOffer(webrtc::CreateSessionDescriptionObserver* observer,

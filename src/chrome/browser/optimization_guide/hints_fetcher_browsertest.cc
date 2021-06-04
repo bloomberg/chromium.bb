@@ -169,8 +169,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(hints_server_->Start());
 
-    param_feature_list_.InitWithFeatures(
-        {blink::features::kNavigationPredictor}, {});
+    std::map<std::string, std::string> params;
+    params["random_anchor_sampling_period"] = "1";
+    param_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor, params);
 
     InProcessBrowserTest::SetUp();
   }
@@ -282,7 +284,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     const base::DictionaryValue* top_host_blocklist =
         pref_service->GetDictionary(
             optimization_guide::prefs::kHintsFetcherTopHostBlocklist);
-    return top_host_blocklist->size();
+    return top_host_blocklist->DictSize();
   }
 
   // Adds |host_count| HTTPS origins to site engagement service.
@@ -348,19 +350,6 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     count_hints_requests_received_ = 0;
   }
 
-  // Wait for page layout to happen. This is needed in some tests since the
-  // anchor elements are extracted from the webpage after page layout finishes.
-  void WaitForPageLayout() {
-    const char* entry_name =
-        ukm::builders::NavigationPredictorPageLinkMetrics::kEntryName;
-
-    if (ukm_recorder_->GetEntriesByName(entry_name).empty()) {
-      base::RunLoop run_loop;
-      ukm_recorder_->SetOnAddEntryCallback(entry_name, run_loop.QuitClosure());
-      run_loop.Run();
-    }
-  }
-
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
@@ -372,8 +361,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
       const net::test_server::HttpRequest& request) {
     EXPECT_EQ(request.method, net::test_server::METHOD_GET);
-    std::unique_ptr<net::test_server::BasicHttpResponse> response;
-    response = std::make_unique<net::test_server::BasicHttpResponse>();
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_OK);
 
     return std::move(response);
@@ -384,9 +372,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     base::AutoLock lock(lock_);
 
     ++count_hints_requests_received_;
-    std::unique_ptr<net::test_server::BasicHttpResponse> response;
-
-    response = std::make_unique<net::test_server::BasicHttpResponse>();
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     // If the request is a GET, it corresponds to a navigation so return a
     // normal response.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
@@ -495,7 +481,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   // expected to arrive. This set is verified to match with the set of hosts and
   // URLs present in the hints request. If null, then the verification is not
   // done.
-  base::Optional<base::flat_set<std::string>>
+  absl::optional<base::flat_set<std::string>>
       expect_hints_request_for_hosts_and_urls_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
@@ -516,7 +502,8 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
         {
             {optimization_guide::features::kOptimizationHints, {}},
             {optimization_guide::features::kRemoteOptimizationGuideFetching,
-             {{"max_concurrent_page_navigation_fetches", "2"}}},
+             {{"max_concurrent_page_navigation_fetches", "2"},
+              {"onload_delay_for_hints_fetching_ms", "200"}}},
             {optimization_guide::features::kOptimizationHintsFieldTrials,
              {{"allowed_field_trial_names",
                "scoped_feature_list_trial_for_OptimizationHintsFetching"}}},
@@ -1255,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHost,
+            kRaceNavigationFetchNotAttempted,
         1);
   }
 
@@ -1264,7 +1251,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
     base::HistogramTester incognito_histogram_tester;
     // Instantiate off the record Optimization Guide Service.
     OptimizationGuideKeyedServiceFactory::GetForProfile(
-        browser()->profile()->GetPrimaryOTRProfile())
+        browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true))
         ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
 
     Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
@@ -1462,7 +1449,7 @@ IN_PROC_BROWSER_TEST_F(
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHost,
+            kRaceNavigationFetchNotAttempted,
         1);
   }
 }
@@ -1610,11 +1597,6 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPageBrowserTest,
   // should be recorded as not covered by the hints fetcher.
   ResetCountHintsRequestsReceived();
   ui_test_utils::NavigateToURL(browser(), search_results_page_url());
-  WaitForPageLayout();
-
-  RetryForHistogramUntilCountReached(
-      histogram_tester,
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 1);
 
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());

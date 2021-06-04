@@ -28,6 +28,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   View* GetSelectedViewForGroup(int group) override;
   bool IsGroupFocusTraversable() const override;
   void OnFocus() override;
+  void OnThemeChanged() override;
 
   // Overridden from Button:
   void RequestFocusFromEvent() override;

@@ -5,8 +5,7 @@
  */
 
 .paint-profiler-overview {
-  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
 }
 
 .paint-profiler-canvas-container {
@@ -15,8 +14,8 @@
 }
 
 .paint-profiler-pie-chart {
-  width: 60px !important;
-  height: 60px !important;
+  width: 60px !important; /* stylelint-disable-line declaration-no-important */
+  height: 60px !important; /* stylelint-disable-line declaration-no-important */
   padding: 2px;
   overflow: hidden;
   font-size: 10px;

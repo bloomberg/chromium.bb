@@ -69,17 +69,17 @@ class SwapChainValidationTests : public DawnTest {
     wgpu::SwapChainDescriptor goodDescriptor;
     wgpu::SwapChainDescriptor badDescriptor;
 
-    // Checks that an RenderAttachment view is an error by trying to create a render pass on it.
+    // Checks that a RenderAttachment view is an error by trying to create a render pass on it.
     void CheckTextureViewIsError(wgpu::TextureView view) {
         CheckTextureView(view, true, false);
     }
 
-    // Checks that an RenderAttachment view is an error by trying to submit a render pass on it.
+    // Checks that a RenderAttachment view is an error by trying to submit a render pass on it.
     void CheckTextureViewIsDestroyed(wgpu::TextureView view) {
         CheckTextureView(view, false, true);
     }
 
-    // Checks that an OutputAttachment view is valid by submitting a render pass on it.
+    // Checks that a RenderAttachment view is valid by submitting a render pass on it.
     void CheckTextureViewIsValid(wgpu::TextureView view) {
         CheckTextureView(view, false, false);
     }
@@ -222,14 +222,12 @@ TEST_P(SwapChainValidationTests, ViewDestroyedAfterPresent) {
 TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     utils::ComboRenderPipelineDescriptor2 pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[stage(vertex)]] fn main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
-        [[location(0)]] var<out> fragColor : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
     // Validation will check that the sample count of the view matches this format.
     pipelineDesc.multisample.count = 1;

@@ -12,7 +12,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,6 +58,7 @@
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using autofill::FieldRendererId;
 using autofill::FormData;
@@ -3071,8 +3071,8 @@ namespace {
 
 // A convenience helper for type conversions.
 template <typename T>
-base::Optional<int64_t> MetricValue(T value) {
-  return base::Optional<int64_t>(static_cast<int64_t>(value));
+absl::optional<int64_t> MetricValue(T value) {
+  return absl::optional<int64_t>(static_cast<int64_t>(value));
 }
 
 struct MissingFormManagerTestCase {
@@ -3087,8 +3087,8 @@ struct MissingFormManagerTestCase {
   // A list of forms to be processed for saving, one at a time.
   std::vector<FormData> processed_form_data;
   // The expected value of the PageWithPassword::kFormManagerAvailableName
-  // metric, or base::nullopt if no value should be logged.
-  base::Optional<int64_t> expected_metric_value;
+  // metric, or absl::nullopt if no value should be logged.
+  absl::optional<int64_t> expected_metric_value;
 };
 
 }  // namespace
@@ -3157,7 +3157,7 @@ TEST_P(PasswordManagerTest, ReportMissingFormManager) {
           .save_signal = MissingFormManagerTestCase::Signal::None,
           .parsed_forms_data = {},
           .processed_form_data = {},
-          .expected_metric_value = base::nullopt,
+          .expected_metric_value = absl::nullopt,
       },
       {
           .description = "Not enabled, no report.",
@@ -3165,7 +3165,7 @@ TEST_P(PasswordManagerTest, ReportMissingFormManager) {
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
           .parsed_forms_data = {form_data},
           .processed_form_data = {form_data},
-          .expected_metric_value = base::nullopt,
+          .expected_metric_value = absl::nullopt,
       },
   };
 
@@ -4086,6 +4086,85 @@ TEST_P(PasswordManagerTest, SubmittedManagerClearingOnSuccessfulLogin) {
 
   // There should be no submitted manager after the login detection.
   EXPECT_FALSE(manager()->GetSubmittedManagerForTest());
+}
+
+// Check that on successful login the credentials are checked for leak depending
+// on mute state of insecure credential.
+TEST_P(PasswordManagerTest, DontStartLeakDetectionWhenMuted) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(features::kMutingCompromisedCredentials,
+                                    true);
+
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  manager()->set_leak_factory(std::move(mock_factory));
+
+  const PasswordForm form = MakeSimpleForm();
+  std::vector<FormData> observed = {form.form_data};
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Add muted insecure credentials.
+  std::vector<InsecureCredential> insecure_credentials = {InsecureCredential(
+      form.signon_realm, form.username_value, base::Time::FromTimeT(1),
+      InsecureType::kLeaked, IsMuted(true))};
+  EXPECT_CALL(*store_, GetMatchingInsecureCredentialsImpl(form.signon_realm))
+      .WillOnce(Return(insecure_credentials));
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form.form_data);
+
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance, Start).Times(0);
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// Tests that check for leaks happens even if there are muted credentials for
+// the same domain, but with different username.
+TEST_P(PasswordManagerTest, StartLeakCheckWhenForUsernameNotMuted) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(features::kMutingCompromisedCredentials,
+                                    true);
+
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  MockLeakDetectionCheckFactory* weak_factory = mock_factory.get();
+  manager()->set_leak_factory(std::move(mock_factory));
+
+  const PasswordForm form = MakeSimpleForm();
+  std::vector<FormData> observed = {form.form_data};
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Add muted insecure credentials.
+  std::vector<InsecureCredential> insecure_credentials = {InsecureCredential(
+      form.signon_realm, u"different_username", base::Time::FromTimeT(1),
+      InsecureType::kLeaked, IsMuted(true))};
+  EXPECT_CALL(*store_, GetMatchingInsecureCredentialsImpl(form.signon_realm))
+      .WillOnce(Return(insecure_credentials));
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form.form_data);
+
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance, Start);
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
+      .WillOnce(Return(ByMove(std::move(check_instance))));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
 INSTANTIATE_TEST_SUITE_P(, PasswordManagerTest, testing::Bool());

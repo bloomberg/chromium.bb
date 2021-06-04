@@ -8,7 +8,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -50,12 +49,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using testing::Contains;
-using testing::Eq;
-using testing::UnorderedElementsAreArray;
-
-namespace chromeos {
+namespace ash {
 namespace {
+
+using ::testing::Contains;
+using ::testing::Eq;
+using ::testing::UnorderedElementsAreArray;
 
 constexpr char kSyncConsent[] = "sync-consent";
 
@@ -203,7 +202,7 @@ class SyncConsentTest : public OobeBaseTest {
   }
 
  protected:
-  base::Optional<SyncConsentScreen::Result> screen_result_;
+  absl::optional<SyncConsentScreen::Result> screen_result_;
   base::HistogramTester histogram_tester_;
   std::vector<int> expected_consent_ids_;
 
@@ -281,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, SkippedSyncDisabledByPolicy) {
 class SyncConsentRecorderTest : public SyncConsentTest {
  public:
   SyncConsentRecorderTest() {
-    features_.InitAndDisableFeature(chromeos::features::kSplitSettingsSync);
+    features_.InitAndDisableFeature(features::kSplitSettingsSync);
   }
   ~SyncConsentRecorderTest() override = default;
 
@@ -397,8 +396,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 class SyncConsentSplitSettingsSyncTest : public SyncConsentTest {
  public:
   SyncConsentSplitSettingsSyncTest() {
-    sync_feature_list_.InitAndEnableFeature(
-        chromeos::features::kSplitSettingsSync);
+    sync_feature_list_.InitAndEnableFeature(features::kSplitSettingsSync);
   }
   ~SyncConsentSplitSettingsSyncTest() override = default;
 
@@ -421,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
 
   // Dialog not completed yet.
-  EXPECT_FALSE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 
   // Wait for content to load.
   SyncConsentScreen* screen = GetSyncConsentScreen();
@@ -490,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
                                        true, 1);
 
   // Dialog is completed.
-  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 }
 
 // Flaky failures on sanitizer builds. https://crbug.com/1054377
@@ -538,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DisableSync) {
                                        false, 1);
 
   // Dialog is completed.
-  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, LanguageSwitch) {
@@ -598,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
 
   // Dialog is completed.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 
   histogram_tester_.ExpectUniqueSample(
       "OOBE.SyncConsentScreen.Behavior",
@@ -625,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
 
   // Dialog is completed.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 
   histogram_tester_.ExpectUniqueSample(
       "OOBE.SyncConsentScreen.Behavior",
@@ -639,8 +637,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
 class SyncConsentActiveDirectoryTest : public OobeBaseTest {
  public:
   SyncConsentActiveDirectoryTest() {
-    sync_feature_list_.InitAndEnableFeature(
-        chromeos::features::kSplitSettingsSync);
+    sync_feature_list_.InitAndEnableFeature(features::kSplitSettingsSync);
   }
   ~SyncConsentActiveDirectoryTest() override = default;
 
@@ -670,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentActiveDirectoryTest, LoginDoesNotStartSync) {
 
   // Dialog is marked completed (because it was skipped).
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSyncOobeCompleted));
 
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 0);
@@ -702,4 +699,4 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTimezoneOverride, MakesTimezoneRequest) {
 }
 
 }  // namespace
-}  // namespace chromeos
+}  // namespace ash

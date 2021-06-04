@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1096883626080133124">‏يمكنك إنجاز المزيد من المهام باستخدام متصفِّح Google Chrome السهل الاستخدام والآمن والأسرع من ذي قبل.</translation>
 <translation id="1282031177488366470">‏المساعدة على تحسين ميزات Chrome وأدائه</translation>
 <translation id="1314663809820920746">‏سيظل بإمكانك الاطّلاع على جميع الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى المتوفّرة على هذا الجهاز. وفي حال إجراء أي تغييرات، لن يتم مزامنتها مع حسابك على Google.</translation>
 <translation id="1479202195792305274">‏يجب تسجيل الدخول إلى حسابك على Google ليتمكّن Chrome من التحقُّق من كلمات المرور.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">‏تعذّر على Chrome البحث عن تحديثات. يُرجى التحقُّق من اتصال الإنترنت.</translation>
 <translation id="1682483655351012182">‏مزامنة بيانات Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">‏المساعدة في تحسين Chrome من خلال إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google</translation>
 <translation id="1917964099031477364">‏ستتم إزالة هذا الحساب بالإضافة إلى أي بيانات لم يتم حفظها من Chrome وتطبيقات Google الأخرى على هذا الجهاز.</translation>
 <translation id="2009224836393115614">‏تعذّر على متصفِّح Chrome التحقُّق من كلمات المرور. يُرجى التحقُّق من اتصال الإنترنت.</translation>
 <translation id="2147651015520127414">‏لقد تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة الموقع الإلكتروني.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">‏تعذّر على Chrome البحث عن تحديثات. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="2732745070297234559">‏تعذّر على متصفِّح Chrome التحقُّق من جميع كلمات المرور. يُرجى إعادة المحاولة غدًا.</translation>
 <translation id="2740105938841089077">‏استخدام Chrome لفتح الروابط</translation>
+<translation id="2869959624320573933">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="2919738076569633423">‏يعني استخدامك لمتصفّح Chrome موافقتك على <ph name="BEGIN_LINK_TOS" />بنود الخدمة<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">‏نظرًا لتسجيل خروجك من حساب يديره <ph name="SIGNOUT_MANAGED_DOMAIN" />، ستُحذَف بيانات Chrome من هذا الجهاز، ولكن ستظل البيانات محفوظة في حسابك على Google.</translation>
 <translation id="3167189358072330585">‏لا يعمل حسابك على Google Chrome. يُرجى الاتصال بمشرف النطاق أو استخدام حساب Google عادي لتسجيل الدخول.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">‏يوفر Chrome وقتك من خلال تجميع حساباتك على شبكة الإنترنت. ويمكنك إضافة أو إزالة حسابات في الإعدادات.</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3345341804167540816">‏استخدم Chrome في كل مكان</translation>
+<translation id="3455456143708465450">‏للاستفادة إلى أقصى حدّ من Chrome، سجِّل الدخول إلى حسابك على Google.</translation>
 <translation id="3522659714780527202">‏للاطّلاع على علامات التبويب من أي جهاز تستخدم فيه Chrome، فعِّل المزامنة.</translation>
 <translation id="3533694711092285624">‏ما مِن كلمات مرور محفوظة. لا يستطيع متصفّح Chrome التحقّق من كلمات المرور إلا عند حفظها.</translation>
 <translation id="3706101708757577809">‏يمكنك الآن استخدام Chrome في أي وقت تنقر فيه على روابط في الرسائل والمستندات والتطبيقات الأخرى.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">‏عند السماح لمتصفِّح Chrome بمعرفة موقعك الجغرافي، سيرسِل Chrome موقعك الجغرافي إلى المواقع الإلكترونية التي منحتها إذنًا بالوصول إليه. قد تطلب المواقع الإلكترونية موقعك الجغرافي عند توفُّر معلومات محلية لعرضها مثل المتاجر القريبة أو الأخبار.</translation>
 <translation id="6036420186814142909">‏يشتمل Google Chrome على ميزات من شأنها مساعدتك على إدارة بيانات الإنترنت والوقوف على مدى السرعة التي يمكنك تحميل صفحات الويب من خلالها.
 <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">‏السماح بتسجيل الدخول إلى Chrome</translation>
 <translation id="6181930887571472871">‏التبديل إلى Chrome</translation>
 <translation id="6238746320622508509">‏اسمح لمتصفّح Chrome بقفل علامات التبويب في وضع التصفّح المتخفي.</translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">‏هل تريد محو بيانات Chrome من هذا الجهاز؟</translation>
 <translation id="6822673484890854830">‏تعذّر على متصفِّح Chrome التحقُّق من جميع كلمات المرور. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="6964931465519938134">‏يمكنك الآن استخدام Chrome في أي وقت تنقر فيه على الروابط في الرسائل والمستندات والتطبيقات الأخرى.</translation>
+<translation id="7059914902409643750">‏اجعل Chrome متصفِّحك الدائم.</translation>
 <translation id="7124339256045485976">‏تحديث متصفِّح Chrome باستمرار</translation>
 <translation id="7161390184744336561">‏إصدار Google Chrome قديم.</translation>
 <translation id="7165736900384873061">‏بدء استخدام الماسح الضوئي للاستجابة السريعة في Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">‏Google Chrome محدّث</translation>
 <translation id="8022947259858476807">‏يمكنك استخدام Chrome كمتصفّح تلقائي لفتح الروابط والبحث من خلال الأدوات وملء كلمات المرور تلقائيًا في التطبيقات الأخرى.</translation>
 <translation id="8160472928944011082">‏يتعذّر تحديث Chrome.</translation>
+<translation id="8263079278049777200">‏يُرجى تسجيل الدخول إلى هذا الموقع الإلكتروني وحسابك على Google وChrome. يمكنك تفعيل المزامنة لاحقًا.</translation>
 <translation id="8357607116237445042">‏اختيار ما إذا كنت تريد محو بيانات Chrome المخزَّنة على هذا الجهاز أو الاحتفاظ بها</translation>
 <translation id="8370517070665726704">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لشركة Google LLC. جميع الحقوق محفوظة.</translation>
 <translation id="840168496893712993">‏تتسبب بعض الإضافات في تعطل Chrome. يُرجى محاولة إزالتها.</translation>
@@ -95,5 +102,6 @@
   3. اختَر Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">‏الحفاظ على أمانك باستخدام Google Chrome</translation>
+<translation id="8772179140489533211">‏عرض رسائل مطالبة تسجيل الدخول إلى Chrome</translation>
 <translation id="9112744793181547300">‏هل تريد ضبط Chrome كمتصفّح تلقائي؟</translation>
 </translationbundle>

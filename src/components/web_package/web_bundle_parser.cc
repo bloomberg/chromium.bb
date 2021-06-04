@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/cbor/reader.h"
 #include "components/web_package/web_bundle_utils.h"
@@ -80,21 +81,21 @@ bool IsMetadataSection(const std::string& name) {
 
 // Parses a `section-lengths` CBOR item.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-base::Optional<SectionLengths> ParseSectionLengths(
+absl::optional<SectionLengths> ParseSectionLengths(
     base::span<const uint8_t> data) {
   cbor::Reader::DecoderError error;
-  base::Optional<cbor::Value> value = cbor::Reader::Read(data, &error);
+  absl::optional<cbor::Value> value = cbor::Reader::Read(data, &error);
   if (!value.has_value() || !value->is_array())
-    return base::nullopt;
+    return absl::nullopt;
 
   const cbor::Value::ArrayValue& array = value->GetArray();
   if (array.size() % 2 != 0)
-    return base::nullopt;
+    return absl::nullopt;
 
   SectionLengths result;
   for (size_t i = 0; i < array.size(); i += 2) {
     if (!array[i].is_string() || !array[i + 1].is_unsigned())
-      return base::nullopt;
+      return absl::nullopt;
     result.emplace_back(array[i].GetString(), array[i + 1].GetUnsigned());
   }
   return result;
@@ -106,12 +107,12 @@ struct ParsedHeaders {
 };
 
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#cbor-headers
-base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
+absl::optional<ParsedHeaders> ConvertCBORValueToHeaders(
     const cbor::Value& headers_value) {
   // Step 1. If item doesn’t match the headers rule in the above CDDL, return
   // an error.
   if (!headers_value.is_map())
-    return base::nullopt;
+    return absl::nullopt;
 
   // Step 2. Let headers be a new header list ([FETCH]).
   // Step 3. Let pseudos be an empty map ([INFRA]).
@@ -120,7 +121,7 @@ base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
   // Step 4. For each pair (name, value) in item:
   for (const auto& item : headers_value.GetMap()) {
     if (!item.first.is_bytestring() || !item.second.is_bytestring())
-      return base::nullopt;
+      return absl::nullopt;
     base::StringPiece name = item.first.GetBytestringAsString();
     base::StringPiece value = item.second.GetBytestringAsString();
 
@@ -128,7 +129,7 @@ base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
     // an error. This matches the requirement in Section 8.1.2 of [RFC7540].
     if (!base::IsStringASCII(name) ||
         std::any_of(name.begin(), name.end(), base::IsAsciiUpper<char>))
-      return base::nullopt;
+      return absl::nullopt;
 
     // Step 4.2. If name starts with a ‘:’:
     if (!name.empty() && name[0] == ':') {
@@ -138,7 +139,7 @@ base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
       DCHECK(!result.pseudos.contains(name));
       // Step 4.2.2. Set pseudos[name] to value.
       result.pseudos.insert(
-          std::make_pair(name.as_string(), value.as_string()));
+          std::make_pair(std::string(name), std::string(value)));
       // Step 4.3.3. Continue.
       continue;
     }
@@ -147,7 +148,7 @@ base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
     // in [FETCH], return an error.
     if (!net::HttpUtil::IsValidHeaderName(name) ||
         !net::HttpUtil::IsValidHeaderValue(value))
-      return base::nullopt;
+      return absl::nullopt;
 
     // Step 4.4. Assert: headers does not contain ([FETCH]) name, because CBOR
     // maps cannot contain duplicate keys and an earlier step rejected
@@ -156,7 +157,8 @@ base::Optional<ParsedHeaders> ConvertCBORValueToHeaders(
     DCHECK(!result.headers.contains(name));
 
     // Step 4.5. Append (name, value) to headers.
-    result.headers.insert(std::make_pair(name.as_string(), value.as_string()));
+    result.headers.insert(
+        std::make_pair(std::string(name), std::string(value)));
   }
 
   // Step 5. Return (headers, pseudos).
@@ -171,9 +173,9 @@ class InputReader {
   uint64_t CurrentOffset() const { return current_offset_; }
   size_t Size() const { return buf_.size(); }
 
-  base::Optional<uint8_t> ReadByte() {
+  absl::optional<uint8_t> ReadByte() {
     if (buf_.empty())
-      return base::nullopt;
+      return absl::nullopt;
     uint8_t byte = buf_[0];
     Advance(1);
     return byte;
@@ -188,41 +190,41 @@ class InputReader {
     return true;
   }
 
-  base::Optional<base::span<const uint8_t>> ReadBytes(size_t n) {
+  absl::optional<base::span<const uint8_t>> ReadBytes(size_t n) {
     if (buf_.size() < n)
-      return base::nullopt;
+      return absl::nullopt;
     auto result = buf_.subspan(0, n);
     Advance(n);
     return result;
   }
 
-  base::Optional<base::StringPiece> ReadString(size_t n) {
+  absl::optional<base::StringPiece> ReadString(size_t n) {
     auto bytes = ReadBytes(n);
     if (!bytes)
-      return base::nullopt;
+      return absl::nullopt;
     base::StringPiece str(reinterpret_cast<const char*>(bytes->data()),
                           bytes->size());
     if (!base::IsStringUTF8(str))
-      return base::nullopt;
+      return absl::nullopt;
     return str;
   }
 
   // Parses the type and argument of a CBOR item from the input head. If parsed
   // successfully and the type matches |expected_type|, returns the argument.
   // Otherwise returns nullopt.
-  base::Optional<uint64_t> ReadCBORHeader(CBORType expected_type) {
+  absl::optional<uint64_t> ReadCBORHeader(CBORType expected_type) {
     auto pair = ReadTypeAndArgument();
     if (!pair || pair->first != expected_type)
-      return base::nullopt;
+      return absl::nullopt;
     return pair->second;
   }
 
  private:
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#parse-type-argument
-  base::Optional<std::pair<CBORType, uint64_t>> ReadTypeAndArgument() {
-    base::Optional<uint8_t> first_byte = ReadByte();
+  absl::optional<std::pair<CBORType, uint64_t>> ReadTypeAndArgument() {
+    absl::optional<uint8_t> first_byte = ReadByte();
     if (!first_byte)
-      return base::nullopt;
+      return absl::nullopt;
 
     CBORType type = static_cast<CBORType>((*first_byte & 0xE0) / 0x20);
     uint8_t b = *first_byte & 0x1F;
@@ -232,28 +234,28 @@ class InputReader {
     if (b == 24) {
       auto content = ReadByte();
       if (!content || *content < 24)
-        return base::nullopt;
+        return absl::nullopt;
       return std::make_pair(type, *content);
     }
     if (b == 25) {
       uint16_t content;
       if (!ReadBigEndian(&content) || content >> 8 == 0)
-        return base::nullopt;
+        return absl::nullopt;
       return std::make_pair(type, content);
     }
     if (b == 26) {
       uint32_t content;
       if (!ReadBigEndian(&content) || content >> 16 == 0)
-        return base::nullopt;
+        return absl::nullopt;
       return std::make_pair(type, content);
     }
     if (b == 27) {
       uint64_t content;
       if (!ReadBigEndian(&content) || content >> 32 == 0)
-        return base::nullopt;
+        return absl::nullopt;
       return std::make_pair(type, content);
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   void Advance(size_t n) {
@@ -327,7 +329,7 @@ class WebBundleParser::MetadataParser
  private:
   // Step 1-4 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-  void ParseMagicBytes(const base::Optional<std::vector<uint8_t>>& data) {
+  void ParseMagicBytes(const absl::optional<std::vector<uint8_t>>& data) {
     if (!data) {
       RunErrorCallbackAndDestroy("Error reading bundle magic bytes.");
       return;
@@ -387,7 +389,7 @@ class WebBundleParser::MetadataParser
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
   void ParseBundleHeader(uint64_t url_length,
                          uint64_t offset_in_stream,
-                         const base::Optional<std::vector<uint8_t>>& data) {
+                         const absl::optional<std::vector<uint8_t>>& data) {
     if (!data) {
       RunErrorCallbackAndDestroy("Error reading bundle header.");
       return;
@@ -601,7 +603,7 @@ class WebBundleParser::MetadataParser
 
   void ParseMetadataSection(SectionOffsets::const_iterator section_iter,
                             uint64_t expected_data_length,
-                            const base::Optional<std::vector<uint8_t>>& data) {
+                            const absl::optional<std::vector<uint8_t>>& data) {
     if (!data || data->size() != expected_data_length) {
       RunErrorCallbackAndDestroy("Error reading section content.");
       return;
@@ -609,7 +611,7 @@ class WebBundleParser::MetadataParser
 
     // Parse the section contents as a CBOR item.
     cbor::Reader::DecoderError error;
-    base::Optional<cbor::Value> section_value =
+    absl::optional<cbor::Value> section_value =
         cbor::Reader::Read(*data, &error);
     if (!section_value) {
       RunErrorCallbackAndDestroy(
@@ -758,7 +760,7 @@ class WebBundleParser::MetadataParser
       }
       requests.insert(std::make_pair(
           parsed_url,
-          mojom::BundleIndexValue::New(variants_value.as_string(),
+          mojom::BundleIndexValue::New(std::string(variants_value),
                                        std::move(response_locations))));
     }
 
@@ -944,7 +946,7 @@ class WebBundleParser::MetadataParser
       const cbor::Value::BinaryValue& signed_bytes) {
     // Parse |signed_bytes| as a CBOR item.
     cbor::Reader::DecoderError error;
-    base::Optional<cbor::Value> value =
+    absl::optional<cbor::Value> value =
         cbor::Reader::Read(signed_bytes, &error);
     if (!value) {
       RunErrorCallbackAndDestroy(
@@ -1051,7 +1053,7 @@ class WebBundleParser::MetadataParser
       }
       subset_hashes.insert(std::make_pair(
           parsed_url,
-          mojom::SubsetHashesValue::New(variants_value.as_string(),
+          mojom::SubsetHashesValue::New(std::string(variants_value),
                                         std::move(resource_integrities))));
     }
 
@@ -1127,7 +1129,7 @@ class WebBundleParser::ResponseParser
  private:
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-response
   void ParseResponseHeader(uint64_t expected_data_length,
-                           const base::Optional<std::vector<uint8_t>>& data) {
+                           const absl::optional<std::vector<uint8_t>>& data) {
     // Step 1. "Seek to offset requestMetadata.offset in stream. If this fails,
     // return an error."
     if (!data || data->size() != expected_data_length) {
@@ -1181,7 +1183,7 @@ class WebBundleParser::ResponseParser
       return;
     }
     cbor::Reader::DecoderError error;
-    base::Optional<cbor::Value> headers_value =
+    absl::optional<cbor::Value> headers_value =
         cbor::Reader::Read(*headers_bytes, &error);
     if (!headers_value) {
       RunErrorCallbackAndDestroy("Cannot parse response headers.");

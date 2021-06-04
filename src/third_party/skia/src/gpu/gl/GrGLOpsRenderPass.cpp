@@ -17,7 +17,7 @@
 
 #define GL_CALL(X) GR_GL_CALL(fGpu->glInterface(), X)
 
-void GrGLOpsRenderPass::set(GrRenderTarget* rt, const SkIRect& contentBounds,
+void GrGLOpsRenderPass::set(GrRenderTarget* rt, bool useMSAASurface, const SkIRect& contentBounds,
                             GrSurfaceOrigin origin, const LoadAndStoreInfo& colorInfo,
                             const StencilLoadAndStoreInfo& stencilInfo) {
     SkASSERT(fGpu);
@@ -25,24 +25,47 @@ void GrGLOpsRenderPass::set(GrRenderTarget* rt, const SkIRect& contentBounds,
     SkASSERT(fGpu == rt->getContext()->priv().getGpu());
 
     this->INHERITED::set(rt, origin);
+    fUseMultisampleFBO = useMSAASurface;
     fContentBounds = contentBounds;
     fColorLoadAndStoreInfo = colorInfo;
     fStencilLoadAndStoreInfo = stencilInfo;
 }
 
 void GrGLOpsRenderPass::onBegin() {
-    fGpu->beginCommandBuffer(fRenderTarget, fContentBounds, fOrigin, fColorLoadAndStoreInfo,
-                             fStencilLoadAndStoreInfo);
+    auto glRT = static_cast<GrGLRenderTarget*>(fRenderTarget);
+    if (fUseMultisampleFBO && fColorLoadAndStoreInfo.fLoadOp == GrLoadOp::kLoad &&
+        glRT->hasDynamicMSAAAttachment()) {
+        // Blit the single sample fbo into the dmsaa attachment.
+        auto nativeBounds = GrNativeRect::MakeRelativeTo(fOrigin, fRenderTarget->height(),
+                                                         fContentBounds);
+        fGpu->resolveRenderFBOs(glRT, nativeBounds.asSkIRect(),
+                                GrGLGpu::ResolveDirection::kSingleToMSAA);
+    }
+
+    fGpu->beginCommandBuffer(glRT, fUseMultisampleFBO, fContentBounds, fOrigin,
+                             fColorLoadAndStoreInfo, fStencilLoadAndStoreInfo);
 }
 
 void GrGLOpsRenderPass::onEnd() {
-    fGpu->endCommandBuffer(fRenderTarget, fColorLoadAndStoreInfo, fStencilLoadAndStoreInfo);
+    auto glRT = static_cast<GrGLRenderTarget*>(fRenderTarget);
+    fGpu->endCommandBuffer(glRT, fUseMultisampleFBO, fColorLoadAndStoreInfo,
+                           fStencilLoadAndStoreInfo);
+
+    if (fUseMultisampleFBO && fColorLoadAndStoreInfo.fStoreOp == GrStoreOp::kStore &&
+        glRT->hasDynamicMSAAAttachment()) {
+        // Blit the msaa attachment into the single sample fbo.
+        auto nativeBounds = GrNativeRect::MakeRelativeTo(fOrigin, fRenderTarget->height(),
+                                                         fContentBounds);
+        fGpu->resolveRenderFBOs(glRT, nativeBounds.asSkIRect(),
+                                GrGLGpu::ResolveDirection::kMSAAToSingle,
+                                true /*invalidateReadBufferAfterBlit*/);
+    }
 }
 
 bool GrGLOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
                                        const SkRect& drawBounds) {
     fPrimitiveType = programInfo.primitiveType();
-    return fGpu->flushGLState(fRenderTarget, programInfo);
+    return fGpu->flushGLState(fRenderTarget, fUseMultisampleFBO, programInfo);
 }
 
 void GrGLOpsRenderPass::onSetScissorRect(const SkIRect& scissor) {
@@ -384,9 +407,9 @@ void GrGLOpsRenderPass::multiDrawElementsANGLEOrWebGL(const GrBuffer* drawIndire
 }
 
 void GrGLOpsRenderPass::onClear(const GrScissorState& scissor, std::array<float, 4> color) {
-    fGpu->clear(scissor, color, fRenderTarget, fOrigin);
+    fGpu->clear(scissor, color, fRenderTarget, fUseMultisampleFBO, fOrigin);
 }
 
 void GrGLOpsRenderPass::onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) {
-    fGpu->clearStencilClip(scissor, insideStencilMask, fRenderTarget, fOrigin);
+    fGpu->clearStencilClip(scissor, insideStencilMask, fRenderTarget, fUseMultisampleFBO, fOrigin);
 }

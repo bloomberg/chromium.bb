@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -84,7 +85,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // they are painted in a fragmented context and may do something bad in a
   // fragmented context, e.g. creating subsequences. Skip cache to avoid that.
   // This will be unnecessary when the contents are fragment aware.
-  base::Optional<DisplayItemCacheSkipper> cache_skipper;
+  absl::optional<DisplayItemCacheSkipper> cache_skipper;
   if (layout_replaced_.IsLayoutEmbeddedContent()) {
     DCHECK(layout_replaced_.HasLayer());
     if (layout_replaced_.Layer()->EnclosingPaginationLayer())
@@ -177,7 +178,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   if (!draw_selection_tint)
     return;
 
-  base::Optional<SelectionBoundsRecorder> selection_recorder;
+  absl::optional<SelectionBoundsRecorder> selection_recorder;
   const FrameSelection& frame_selection =
       layout_replaced_.GetFrame()->Selection();
   SelectionState selection_state = layout_replaced_.GetSelectionState();

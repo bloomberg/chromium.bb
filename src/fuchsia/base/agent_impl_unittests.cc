@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "base/testfidl/cpp/fidl.h"
-#include "fuchsia/base/fit_adapter.h"
-#include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/test/fit_adapter.h"
+#include "fuchsia/base/test/result_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cr_fuchsia {
@@ -25,7 +25,7 @@ const char kKeepAliveComponentId[] = "keep-alive";
 
 class EmptyComponentState : public AgentImpl::ComponentStateBase {
  public:
-  EmptyComponentState(base::StringPiece component)
+  explicit EmptyComponentState(base::StringPiece component)
       : ComponentStateBase(component) {}
 };
 
@@ -47,7 +47,7 @@ class AccumulatingTestInterfaceImpl : public base::testfidl::TestInterface {
 
 class AccumulatorComponentState : public AgentImpl::ComponentStateBase {
  public:
-  AccumulatorComponentState(base::StringPiece component)
+  explicit AccumulatorComponentState(base::StringPiece component)
       : ComponentStateBase(component),
         service_binding_(outgoing_directory(), &service_) {}
 
@@ -58,7 +58,7 @@ class AccumulatorComponentState : public AgentImpl::ComponentStateBase {
 
 class KeepAliveComponentState : public AccumulatorComponentState {
  public:
-  KeepAliveComponentState(base::StringPiece component)
+  explicit KeepAliveComponentState(base::StringPiece component)
       : AccumulatorComponentState(component) {
     AddKeepAliveBinding(&service_binding_);
   }

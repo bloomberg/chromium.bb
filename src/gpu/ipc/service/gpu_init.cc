@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
@@ -590,8 +591,13 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // In SwiftShader case, the implementation is actually EGLGLES2.
   if (!gl_use_swiftshader_ && command_line->HasSwitch(switches::kUseGL)) {
     std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+    std::string use_angle =
+        command_line->GetSwitchValueASCII(switches::kUseANGLE);
     if (use_gl == gl::kGLImplementationSwiftShaderName ||
-        use_gl == gl::kGLImplementationSwiftShaderForWebGLName) {
+        use_gl == gl::kGLImplementationSwiftShaderForWebGLName ||
+        (use_gl == gl::kGLImplementationANGLEName &&
+         (use_angle == gl::kANGLEImplementationSwiftShaderName ||
+          use_angle == gl::kANGLEImplementationSwiftShaderForWebGLName))) {
       gl_use_swiftshader_ = true;
     }
   }
@@ -833,13 +839,8 @@ bool GpuInit::InitializeVulkan() {
       gpu_preferences_.use_vulkan == VulkanImplementationName::kForcedNative;
   bool use_swiftshader = gl_use_swiftshader_ || vulkan_use_swiftshader;
 
-  // If |enforce_vulkan_protected_memory| is true, then we expect
-  // |enable_vulkan_protected_memory| to be true.
-  DCHECK(!gpu_preferences_.enforce_vulkan_protected_memory ||
-         gpu_preferences_.enable_vulkan_protected_memory);
   vulkan_implementation_ = CreateVulkanImplementation(
-      vulkan_use_swiftshader, gpu_preferences_.enable_vulkan_protected_memory,
-      gpu_preferences_.enforce_vulkan_protected_memory);
+      vulkan_use_swiftshader, gpu_preferences_.enable_vulkan_protected_memory);
   if (!vulkan_implementation_ ||
       !vulkan_implementation_->InitializeVulkanInstance(
           !gpu_preferences_.disable_vulkan_surface)) {

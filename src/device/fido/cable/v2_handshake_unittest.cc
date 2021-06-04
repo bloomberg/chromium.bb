@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "device/fido/cable/v2_handshake.h"
+#include "components/cbor/reader.h"
 #include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
@@ -48,7 +50,7 @@ TEST(CableV2Encoding, EIDEncrypt) {
   crypto::RandBytes(key);
   std::array<uint8_t, kAdvertSize> advert = eid::Encrypt(eid, key);
 
-  const base::Optional<CableEidArray> eid2 = eid::Decrypt(advert, key);
+  const absl::optional<CableEidArray> eid2 = eid::Decrypt(advert, key);
   ASSERT_TRUE(eid2.has_value());
   EXPECT_TRUE(memcmp(eid.data(), eid2->data(), eid.size()) == 0);
 
@@ -61,7 +63,7 @@ TEST(CableV2Encoding, QRs) {
   crypto::RandBytes(qr_key);
   std::string url = qr::Encode(qr_key);
   EXPECT_LE(url.size(), 81u) << "QR code doesn't fit into version five";
-  const base::Optional<qr::Components> decoded = qr::Parse(url);
+  const absl::optional<qr::Components> decoded = qr::Parse(url);
   ASSERT_TRUE(decoded.has_value());
   static_assert(EXTENT(qr_key) >= EXTENT(decoded->secret), "");
   EXPECT_EQ(memcmp(decoded->secret.data(),
@@ -75,25 +77,89 @@ TEST(CableV2Encoding, QRs) {
 }
 
 TEST(CableV2Encoding, PaddedCBOR) {
-  cbor::Value::MapValue map;
-  base::Optional<std::vector<uint8_t>> encoded =
-      EncodePaddedCBORMap(std::move(map));
+  cbor::Value::MapValue map1;
+  absl::optional<std::vector<uint8_t>> encoded =
+      EncodePaddedCBORMap(std::move(map1));
   ASSERT_TRUE(encoded);
-  EXPECT_EQ(256u, encoded->size());
+  EXPECT_EQ(kPostHandshakeMsgPaddingGranularity, encoded->size());
 
-  base::Optional<cbor::Value> decoded = DecodePaddedCBORMap(*encoded);
+  absl::optional<cbor::Value> decoded = DecodePaddedCBORMap(*encoded);
   ASSERT_TRUE(decoded);
   EXPECT_EQ(0u, decoded->GetMap().size());
 
-  uint8_t blob[256] = {0};
-  map.emplace(1, base::span<const uint8_t>(blob, sizeof(blob)));
-  encoded = EncodePaddedCBORMap(std::move(map));
+  cbor::Value::MapValue map2;
+  uint8_t blob[kPostHandshakeMsgPaddingGranularity] = {0};
+  map2.emplace(1, base::span<const uint8_t>(blob, sizeof(blob)));
+  encoded = EncodePaddedCBORMap(std::move(map2));
   ASSERT_TRUE(encoded);
-  EXPECT_EQ(512u, encoded->size());
+  EXPECT_EQ(kPostHandshakeMsgPaddingGranularity * 2, encoded->size());
 
   decoded = DecodePaddedCBORMap(*encoded);
   ASSERT_TRUE(decoded);
   EXPECT_EQ(1u, decoded->GetMap().size());
+}
+
+// FutureEncodePaddedCBORMapFunction is the future replacement for
+// |EncodePaddedCBORMap|. See comment on |DecodePaddedCBORMap16|.
+absl::optional<std::vector<uint8_t>> FutureEncodePaddedCBORMapFunction(
+    cbor::Value::MapValue map) {
+  // TODO: when promoting this function, update comment on
+  // |kPostHandshakeMsgPaddingGranularity|.
+
+  // The number of padding bytes is a uint16_t, so the granularity cannot be
+  // larger than that.
+  static_assert(kFuturePostHandshakeMsgPaddingGranularity > 0, "");
+  static_assert(kFuturePostHandshakeMsgPaddingGranularity - 1 <=
+                    std::numeric_limits<uint16_t>::max(),
+                "");
+
+  absl::optional<std::vector<uint8_t>> cbor_bytes =
+      cbor::Writer::Write(cbor::Value(std::move(map)));
+  if (!cbor_bytes) {
+    return absl::nullopt;
+  }
+
+  base::CheckedNumeric<size_t> padded_size_checked = cbor_bytes->size();
+  padded_size_checked += sizeof(uint16_t);  // padding-length bytes
+  padded_size_checked =
+      (padded_size_checked + kFuturePostHandshakeMsgPaddingGranularity - 1) &
+      ~(kFuturePostHandshakeMsgPaddingGranularity - 1);
+  if (!padded_size_checked.IsValid()) {
+    return absl::nullopt;
+  }
+
+  const size_t padded_size = padded_size_checked.ValueOrDie();
+  DCHECK_GE(padded_size, cbor_bytes->size() + sizeof(uint16_t));
+  const size_t extra_bytes = padded_size - cbor_bytes->size();
+  const size_t num_padding_bytes =
+      extra_bytes - sizeof(uint16_t) /* length of padding length */;
+
+  cbor_bytes->resize(padded_size);
+  const uint16_t num_padding_bytes16 =
+      base::checked_cast<uint16_t>(num_padding_bytes);
+  memcpy(&cbor_bytes.value()[padded_size - sizeof(num_padding_bytes16)],
+         &num_padding_bytes16, sizeof(num_padding_bytes16));
+
+  return *cbor_bytes;
+}
+
+TEST(CableV2Encoding, FuturePaddedCBOR) {
+  // Test that we can decode messages padded by the encoding function that
+  // will be used in the future.
+  for (size_t i = 0; i < 512; i++) {
+    SCOPED_TRACE(i);
+
+    // Check that new->old direction works.
+    const std::vector<uint8_t> dummy_array(i);
+    cbor::Value::MapValue map;
+    map.emplace(1, dummy_array);
+    absl::optional<std::vector<uint8_t>> encoded =
+        FutureEncodePaddedCBORMapFunction(std::move(map));
+    ASSERT_TRUE(encoded);
+
+    absl::optional<cbor::Value> decoded = DecodePaddedCBORMap(*encoded);
+    ASSERT_TRUE(decoded);
+  }
 }
 
 std::array<uint8_t, kP256X962Length> PublicKeyOf(const EC_KEY* private_key) {
@@ -198,19 +264,19 @@ TEST_F(CableV2HandshakeTest, NKHandshake) {
   for (const bool use_correct_key : {false, true}) {
     HandshakeInitiator initiator(use_correct_key ? psk_ : wrong_psk,
                                  identity_public_,
-                                 /*identity_seed=*/base::nullopt);
+                                 /*identity_seed=*/absl::nullopt);
     std::vector<uint8_t> message = initiator.BuildInitialMessage();
     std::vector<uint8_t> response;
     EC_KEY_up_ref(identity_key_.get());
     HandshakeResult responder_result(RespondToHandshake(
         psk_, bssl::UniquePtr<EC_KEY>(identity_key_.get()),
-        /*peer_identity=*/base::nullopt, message, &response));
+        /*peer_identity=*/absl::nullopt, message, &response));
     ASSERT_EQ(responder_result.has_value(), use_correct_key);
     if (!use_correct_key) {
       continue;
     }
 
-    base::Optional<std::pair<std::unique_ptr<Crypter>, HandshakeHash>>
+    absl::optional<std::pair<std::unique_ptr<Crypter>, HandshakeHash>>
         initiator_result(initiator.ProcessResponse(response));
     ASSERT_TRUE(initiator_result.has_value());
     EXPECT_EQ(initiator_result->second, responder_result->second);
@@ -230,7 +296,7 @@ TEST_F(CableV2HandshakeTest, KNHandshake) {
     base::span<const uint8_t, kQRSeedSize> seed =
         use_correct_key ? identity_seed_ : wrong_seed;
     HandshakeInitiator initiator(psk_,
-                                 /*peer_identity=*/base::nullopt, seed);
+                                 /*peer_identity=*/absl::nullopt, seed);
     std::vector<uint8_t> message = initiator.BuildInitialMessage();
     std::vector<uint8_t> response;
     HandshakeResult responder_result(RespondToHandshake(
@@ -242,7 +308,7 @@ TEST_F(CableV2HandshakeTest, KNHandshake) {
       continue;
     }
 
-    base::Optional<std::pair<std::unique_ptr<Crypter>, HandshakeHash>>
+    absl::optional<std::pair<std::unique_ptr<Crypter>, HandshakeHash>>
         initiator_result(initiator.ProcessResponse(response));
     ASSERT_TRUE(initiator_result.has_value());
     EXPECT_TRUE(responder_result->first->IsCounterpartyOfForTesting(

@@ -20,6 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
+#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -156,6 +157,41 @@ RenderFrameHost* CreateSubframe(WebContentsImpl* web_contents,
     subframe_nav_observer.Wait();
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   return root->child_at(root->child_count() - 1)->current_frame_host();
+}
+
+std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
+    RenderFrameHostImpl* starting_rfh) {
+  std::vector<RenderFrameHostImpl*> visited_frames;
+  starting_rfh->ForEachRenderFrameHost(base::BindLambdaForTesting(
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  return visited_frames;
+}
+
+std::vector<RenderFrameHostImpl*>
+CollectAllRenderFrameHostsIncludingSpeculative(
+    RenderFrameHostImpl* starting_rfh) {
+  std::vector<RenderFrameHostImpl*> visited_frames;
+  starting_rfh->ForEachRenderFrameHostIncludingSpeculative(
+      base::BindLambdaForTesting(
+          [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  return visited_frames;
+}
+
+std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
+    WebContentsImpl* web_contents) {
+  std::vector<RenderFrameHostImpl*> visited_frames;
+  web_contents->ForEachRenderFrameHost(base::BindLambdaForTesting(
+      [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  return visited_frames;
+}
+
+std::vector<RenderFrameHostImpl*>
+CollectAllRenderFrameHostsIncludingSpeculative(WebContentsImpl* web_contents) {
+  std::vector<RenderFrameHostImpl*> visited_frames;
+  web_contents->ForEachRenderFrameHostIncludingSpeculative(
+      base::BindLambdaForTesting(
+          [&](RenderFrameHostImpl* rfh) { visited_frames.push_back(rfh); }));
+  return visited_frames;
 }
 
 Shell* OpenBlankWindow(WebContentsImpl* web_contents) {
@@ -385,19 +421,11 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   observer.StartWatchingNewWebContents();
 
   ShellAddedObserver new_shell_observer;
-  bool did_create_popup = false;
-  std::string popup_script =
-      "window.domAutomationController.send("
-      "    !!window.open('" +
-      url.spec() + "', '" + name + "', '" + features + "'));";
-  bool did_execute_script =
-      ExecuteScriptAndExtractBool(opener, popup_script, &did_create_popup);
+  std::string popup_script = "!!window.open('" + url.spec() + "', '" + name +
+                             "', '" + features + "');";
+  bool did_create_popup = EvalJs(opener, popup_script).ExtractBool();
 
-  // Don't check the value of |did_create_popup| since there are valid reasons
-  // for it to be false, e.g. |features| specifies 'noopener', or 'noreferrer'
-  // or others.
-  if (!did_execute_script ||
-      !(did_create_popup || !expect_return_from_window_open)) {
+  if (!(did_create_popup || !expect_return_from_window_open)) {
     return nullptr;
   }
 
@@ -474,11 +502,11 @@ RenderProcessHostBadIpcMessageWaiter::RenderProcessHostBadIpcMessageWaiter(
     : internal_waiter_(render_process_host,
                        "Stability.BadMessageTerminated.Content") {}
 
-base::Optional<bad_message::BadMessageReason>
+absl::optional<bad_message::BadMessageReason>
 RenderProcessHostBadIpcMessageWaiter::Wait() {
-  base::Optional<int> internal_result = internal_waiter_.Wait();
+  absl::optional<int> internal_result = internal_waiter_.Wait();
   if (!internal_result.has_value())
-    return base::nullopt;
+    return absl::nullopt;
   return static_cast<bad_message::BadMessageReason>(internal_result.value());
 }
 
@@ -685,7 +713,7 @@ void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
   base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
                                 message.size());
   auto parsed_message = base::JSONReader::Read(message_str);
-  base::Optional<int> command_id = parsed_message->FindIntPath("id");
+  absl::optional<int> command_id = parsed_message->FindIntPath("id");
   if (command_id.has_value()) {
     switch (command_id.value()) {
       case kEnableLogMessageId:
@@ -742,7 +770,8 @@ void FrameNavigateParamsCapturer::DidFinishNavigation(
   is_renderer_initiateds_.push_back(navigation_handle->IsRendererInitiated());
   has_user_gestures_.push_back(navigation_handle->HasUserGesture());
   is_overriding_user_agents_.push_back(
-      navigation_handle->GetIsOverridingUserAgent());
+      NavigationRequest::From(navigation_handle)->is_overriding_user_agent());
+  is_error_pages_.push_back(navigation_handle->IsErrorPage());
   if (!navigations_remaining_ &&
       (!web_contents()->IsLoading() || !wait_for_load_))
     loop_.Quit();

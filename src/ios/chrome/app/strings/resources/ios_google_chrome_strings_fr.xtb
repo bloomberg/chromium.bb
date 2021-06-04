@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1096883626080133124">Soyez plus efficace grâce à Google Chrome, un navigateur simple, sécurisé et encore plus rapide</translation>
 <translation id="1282031177488366470">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="1314663809820920746">Vos favoris, votre historique, vos mots de passe et autres paramètres resteront accessibles sur cet appareil, mais les modifications ne seront pas synchronisées avec votre compte Google.</translation>
 <translation id="1479202195792305274">Chrome peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
@@ -8,6 +9,7 @@
 <translation id="1504372625950710826">Chrome n'est pas parvenu à rechercher les mises à jour. Vérifiez votre connexion Internet.</translation>
 <translation id="1682483655351012182">Synchroniser vos données Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1812249337131447686">Contribuez à améliorer Chrome en envoyant des statistiques d'utilisation et des rapports d'erreurs à Google</translation>
 <translation id="1917964099031477364">Ce compte et les données non enregistrées seront supprimés de Chrome et des autres applications Google sur cet appareil.</translation>
 <translation id="2009224836393115614">Chrome n'est pas parvenu à vérifier vos mots de passe. Vérifiez votre connexion Internet.</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
@@ -22,6 +24,7 @@
 <translation id="2695886661449553974">Chrome n'est pas parvenu à rechercher les mises à jour. Réessayez plus tard.</translation>
 <translation id="2732745070297234559">Chrome n'est pas parvenu à vérifier tous les mots de passe. Réessayez demain.</translation>
 <translation id="2740105938841089077">Utiliser Chrome pour ouvrir des liens</translation>
+<translation id="2869959624320573933">Connectez-vous à Chrome</translation>
 <translation id="2919738076569633423">En utilisant Chrome, vous acceptez les <ph name="BEGIN_LINK_TOS" />Conditions d'utilisation<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Comme vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />, vos données Chrome seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="3167189358072330585">Votre compte n'est pas compatible avec Google Chrome. Veuillez contacter l'administrateur de votre domaine ou utiliser un compte Google standard pour vous connecter.</translation>
@@ -29,6 +32,7 @@
 <translation id="3196546062792660320">Chrome vous permet de gagner du temps en connectant vos comptes au Web. Vous pouvez ajouter ou supprimer des comptes dans la section "Paramètres".</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3345341804167540816">Utilisez Chrome où que vous soyez</translation>
+<translation id="3455456143708465450">Pour tirer pleinement parti de Chrome, connectez-vous avec votre compte Google</translation>
 <translation id="3522659714780527202">Pour retrouver vos onglets Chrome quel que soit l'appareil utilisé, activez la synchronisation</translation>
 <translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="3706101708757577809">Chaque fois que vous appuierez sur des liens dans des messages, des documents et d'autres applications, vous pourrez désormais voir le contenu correspondant dans Chrome.</translation>
@@ -57,6 +61,7 @@
 <translation id="5876773482963502140">Si vous l'autorisez à connaître votre position, Chrome la communique à tous les sites que vous autorisez. Certains sites peuvent demander votre position lorsqu'ils souhaitent vous montrer des informations locales, comme des magasins à proximité ou des actualités.</translation>
 <translation id="6036420186814142909">Google Chrome dispose de fonctionnalités qui vous permettent de gérer vos données Internet et la vitesse de chargement des pages Web.
 <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="6063091872902370735">Autoriser la connexion à Chrome</translation>
 <translation id="6181930887571472871">Passer à Chrome</translation>
 <translation id="6238746320622508509">Chrome peut verrouiller vos onglets de navigation privée.</translation>
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
@@ -66,6 +71,7 @@
 <translation id="6676840375528380067">Supprimer vos données Chrome sur cet appareil ?</translation>
 <translation id="6822673484890854830">Chrome n'a pas pu vérifier tous les mots de passe. Réessayez plus tard.</translation>
 <translation id="6964931465519938134">Chaque fois que vous appuierez sur des liens dans des messages, des documents et d'autres applications, vous pourrez désormais voir le contenu correspondant dans Chrome.</translation>
+<translation id="7059914902409643750">Personnalisez Chrome</translation>
 <translation id="7124339256045485976">Pour garder Chrome à jour</translation>
 <translation id="7161390184744336561">La version de Google Chrome est obsolète</translation>
 <translation id="7165736900384873061">Commencer à utiliser le lecteur de code QR Google Chrome</translation>
@@ -85,6 +91,7 @@
 <translation id="7855730255114109580">Google Chrome est à jour</translation>
 <translation id="8022947259858476807">Utilisez Chrome par défaut pour ouvrir les liens, faire des recherches depuis les widgets et saisir automatiquement les mots de passe dans d'autres applis</translation>
 <translation id="8160472928944011082">Impossible mettre à jour Chrome</translation>
+<translation id="8263079278049777200">Connectez-vous à ce site, à votre compte Google et à Chrome. Vous pourrez activer la synchronisation plus tard.</translation>
 <translation id="8357607116237445042">Indiquez si vous voulez effacer ou garder les données Chrome de cet appareil</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="840168496893712993">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>
@@ -95,5 +102,6 @@
   3. Sélectionnez "Chrome".</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Restez protégé avec Google Chrome</translation>
+<translation id="8772179140489533211">Permet d'afficher des invites de connexion à Chrome.</translation>
 <translation id="9112744793181547300">Utiliser Chrome par défaut ?</translation>
 </translationbundle>

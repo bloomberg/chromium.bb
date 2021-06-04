@@ -1435,6 +1435,7 @@ KHR-GL46.shaders.indexing.tmp_array.vec4_static_loop_write_static_read_vertex
 KHR-GL46.shaders.indexing.tmp_array.vec4_static_loop_write_static_read_fragment
 KHR-GL46.shaders.indexing.tmp_array.vec4_dynamic_loop_write_static_read_vertex
 KHR-GL46.shaders.indexing.tmp_array.vec4_dynamic_loop_write_static_read_fragment
+KHR-GL46.shaders.indexing.tmp_array.vertexid
 KHR-GL46.shaders.indexing.vector_subscript.vec2_direct_write_static_subscript_read_vertex
 KHR-GL46.shaders.indexing.vector_subscript.vec2_direct_write_static_subscript_read_fragment
 KHR-GL46.shaders.indexing.vector_subscript.vec2_direct_write_dynamic_subscript_read_vertex
@@ -8051,6 +8052,8 @@ KHR-GL46.enhanced_layouts.xfb_block_stride
 KHR-GL46.enhanced_layouts.xfb_override_qualifiers_with_api
 KHR-GL46.enhanced_layouts.xfb_vertex_streams
 KHR-GL46.enhanced_layouts.xfb_global_buffer
+KHR-GL46.enhanced_layouts.xfb_explicit_location
+KHR-GL46.enhanced_layouts.xfb_struct_explicit_location
 KHR-GL46.enhanced_layouts.fragment_data_location_api
 KHR-GL46.enhanced_layouts.varying_location_limit
 KHR-GL46.enhanced_layouts.varying_components

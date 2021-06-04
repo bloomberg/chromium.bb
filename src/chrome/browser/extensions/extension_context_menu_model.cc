@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -61,7 +62,7 @@ namespace extensions {
 namespace {
 
 // Returns true if the given |item| is of the given |type|.
-bool MenuItemMatchesAction(const base::Optional<ActionInfo::Type> action_type,
+bool MenuItemMatchesAction(const absl::optional<ActionInfo::Type> action_type,
                            const MenuItem* item) {
   if (!action_type)
     return false;
@@ -152,7 +153,7 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
 
 // A stub for the uninstall dialog.
 // TODO(devlin): Ideally, we would just have the uninstall dialog take a
-// base::Callback, but that's a bunch of churn.
+// base::OnceCallback, but that's a bunch of churn.
 class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
  public:
   // Kicks off the asynchronous process to confirm and uninstall the given
@@ -365,7 +366,7 @@ void ExtensionContextMenuModel::MenuClosed(ui::SimpleMenuModel* menu) {
   if (action_taken_) {
     ContextMenuAction action = *action_taken_;
     UMA_HISTOGRAM_ENUMERATION("Extensions.ContextMenuAction", action);
-    action_taken_ = base::nullopt;
+    action_taken_ = absl::nullopt;
   }
 }
 
@@ -375,7 +376,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
-  base::Optional<ActionInfo::Type> action_type;
+  absl::optional<ActionInfo::Type> action_type;
   extension_action_ =
       ExtensionActionManager::Get(profile_)->GetExtensionAction(*extension);
   if (extension_action_)

@@ -24,6 +24,7 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
@@ -31,10 +32,12 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -57,7 +60,6 @@
 #include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -86,7 +88,7 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
 #endif
@@ -210,7 +212,7 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
                ? base::TimeDelta()
                : base::TimeDelta::FromMilliseconds(system_value);
   }
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   base::TimeDelta system_value;
   if (ui::TextInsertionCaretBlinkPeriod(&system_value))
     return system_value;
@@ -232,7 +234,6 @@ Textfield::Textfield()
   set_drag_controller(this);
   auto cursor_view = std::make_unique<View>();
   cursor_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  cursor_view->layer()->SetColor(GetTextColor());
   cursor_view->GetViewAccessibility().OverrideIsIgnored(true);
   cursor_view_ = AddChildView(std::move(cursor_view));
   GetRenderText()->SetFontList(GetDefaultFontList());
@@ -242,7 +243,7 @@ Textfield::Textfield()
   if (use_focus_ring_)
     focus_ring_ = FocusRing::Install(this);
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
   // keybindings that a user has set. But also on Mac, these commands dispatch
   // via the "responder chain" when the OS searches through menu items in the
@@ -302,8 +303,10 @@ void Textfield::SetReadOnly(bool read_only) {
   read_only_ = read_only;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  SetColor(GetTextColor());
-  UpdateBackgroundColor();
+  if (GetWidget()) {
+    SetColor(GetTextColor());
+    UpdateBackgroundColor();
+  }
   OnPropertyChanged(&read_only_, kPropertyEffectsPaint);
 }
 
@@ -400,7 +403,8 @@ SkColor Textfield::GetTextColor() const {
 
 void Textfield::SetTextColor(SkColor color) {
   text_color_ = color;
-  SetColor(color);
+  if (GetWidget())
+    SetColor(color);
 }
 
 SkColor Textfield::GetBackgroundColor() const {
@@ -412,7 +416,8 @@ SkColor Textfield::GetBackgroundColor() const {
 
 void Textfield::SetBackgroundColor(SkColor color) {
   background_color_ = color;
-  UpdateBackgroundColor();
+  if (GetWidget())
+    UpdateBackgroundColor();
 }
 
 SkColor Textfield::GetSelectionTextColor() const {
@@ -673,12 +678,11 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 #endif
   }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!handled && !had_focus && event.IsOnlyMiddleMouseButton())
-    RequestFocusWithPointer(ui::EventPointerType::kMouse);
-#endif
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    if (!handled && !had_focus && event.IsOnlyMiddleMouseButton())
+      RequestFocusWithPointer(ui::EventPointerType::kMouse);
+  }
 
   return selection_controller_.OnMousePressed(
       event, handled,
@@ -759,19 +763,9 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
-  static const bool kTakeFocusOnTapUp =
-      base::FeatureList::IsEnabled(features::kTextfieldFocusOnTapUp);
-
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      if (!kTakeFocusOnTapUp) {
-        RequestFocusForGesture(event->details());
-        event->SetHandled();
-      }
-      break;
     case ui::ET_GESTURE_TAP:
-      if (kTakeFocusOnTapUp)
-        RequestFocusForGesture(event->details());
+      RequestFocusForGesture(event->details());
       if (controller_ && controller_->HandleGestureEvent(this, *event)) {
         event->SetHandled();
         return;
@@ -877,7 +871,7 @@ bool Textfield::CanHandleAccelerators() const {
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  SelectAll(PlatformStyle::kTextfieldScrollsToStartOnFocusChange);
+  SelectAll(false);
 }
 
 bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1076,11 +1070,11 @@ void Textfield::OnFocus() {
   if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
     focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     password_input_enabler_ =
         std::make_unique<ui::ScopedPasswordInputEnabler>();
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
   GetRenderText()->set_focused(true);
   if (GetInputMethod())
@@ -1094,11 +1088,6 @@ void Textfield::OnBlur() {
 
   gfx::RenderText* render_text = GetRenderText();
   render_text->set_focused(false);
-
-  // If necessary, yank the cursor to the logical start of the textfield.
-  if (PlatformStyle::kTextfieldScrollsToStartOnFocusChange &&
-      !render_text->multiline())
-    model_->MoveCursorTo(gfx::SelectionModel(0, gfx::CURSOR_FORWARD));
 
   if (GetInputMethod()) {
     GetInputMethod()->DetachTextInputClient(this);
@@ -1115,9 +1104,9 @@ void Textfield::OnBlur() {
   SchedulePaint();
   View::OnBlur();
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   password_input_enabler_.reset();
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {
@@ -1505,6 +1494,11 @@ gfx::Rect Textfield::GetCaretBounds() const {
   return rect;
 }
 
+gfx::Rect Textfield::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
+}
+
 bool Textfield::GetCompositionCharacterBounds(uint32_t index,
                                               gfx::Rect* rect) const {
   DCHECK(rect);
@@ -1724,7 +1718,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::SCROLL_PAGE_UP:
 // On Mac, the textfield should respond to Up/Down arrows keys and
 // PageUp/PageDown.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       return true;
 #else
       return GetRenderText()->multiline();
@@ -1819,8 +1813,8 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
 
 #if defined(OS_WIN)
 void Textfield::GetActiveTextInputControlLayoutBounds(
-    base::Optional<gfx::Rect>* control_bounds,
-    base::Optional<gfx::Rect>* selection_bounds) {
+    absl::optional<gfx::Rect>* control_bounds,
+    absl::optional<gfx::Rect>* selection_bounds) {
   gfx::Rect origin = GetContentsBounds();
   ConvertRectToScreen(this, &origin);
   *control_bounds = origin;
@@ -2155,7 +2149,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
     return ui::TextEditCommand::INVALID_COMMAND;
 
   const bool shift = event.IsShiftDown();
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   const bool command = event.IsCommandDown();
 #endif
   const bool control = event.IsControlDown() || event.IsCommandDown();
@@ -2206,7 +2200,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
         return ui::TextEditCommand::
             MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION;
       }
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       return ui::TextEditCommand::SCROLL_TO_BEGINNING_OF_DOCUMENT;
 #else
       return ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;
@@ -2214,13 +2208,13 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
     case ui::VKEY_END:
       if (shift)
         return ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       return ui::TextEditCommand::SCROLL_TO_END_OF_DOCUMENT;
 #else
       return ui::TextEditCommand::MOVE_TO_END_OF_LINE;
 #endif
     case ui::VKEY_UP:
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       if (control && shift) {
         return ui::TextEditCommand::
             MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION;
@@ -2236,7 +2230,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
                    : ui::TextEditCommand::INVALID_COMMAND;
 #endif
     case ui::VKEY_DOWN:
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       if (control && shift) {
         return ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION;
       }
@@ -2355,16 +2349,15 @@ bool Textfield::PasteSelectionClipboard() {
 }
 
 void Textfield::UpdateSelectionClipboard() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
-        .WriteText(GetSelectedText());
-    if (controller_)
-      controller_->OnAfterCutOrCopy(ui::ClipboardBuffer::kSelection);
+  if (ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
+    if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
+      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
+          .WriteText(GetSelectedText());
+      if (controller_)
+        controller_->OnAfterCutOrCopy(ui::ClipboardBuffer::kSelection);
+    }
   }
-#endif
 }
 
 void Textfield::UpdateBackgroundColor() {
@@ -2413,7 +2406,7 @@ void Textfield::UpdateSelectionBackgroundColor() {
 void Textfield::UpdateAfterChange(
     TextChangeType text_change_type,
     bool cursor_changed,
-    base::Optional<bool> notify_caret_bounds_changed) {
+    absl::optional<bool> notify_caret_bounds_changed) {
   if (text_change_type != TextChangeType::kNone) {
     if ((text_change_type == TextChangeType::kUserTriggered) && controller_)
       controller_->ContentsChanged(this, GetText());
@@ -2659,12 +2652,14 @@ ADD_PROPERTY_METADATA(bool, ReadOnly)
 ADD_PROPERTY_METADATA(std::u16string, Text)
 ADD_PROPERTY_METADATA(ui::TextInputType, TextInputType)
 ADD_PROPERTY_METADATA(int, TextInputFlags)
-ADD_PROPERTY_METADATA(SkColor, TextColor, metadata::SkColorConverter)
-ADD_PROPERTY_METADATA(SkColor, SelectionTextColor, metadata::SkColorConverter)
-ADD_PROPERTY_METADATA(SkColor, BackgroundColor, metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, TextColor, ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor,
+                      SelectionTextColor,
+                      ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(SkColor,
                       SelectionBackgroundColor,
-                      metadata::SkColorConverter)
+                      ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, CursorEnabled)
 ADD_PROPERTY_METADATA(std::u16string, PlaceholderText)
 ADD_PROPERTY_METADATA(bool, Invalid)

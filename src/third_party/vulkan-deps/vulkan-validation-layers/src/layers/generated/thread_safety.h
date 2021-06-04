@@ -324,6 +324,8 @@ public:
     counter<VkBuffer> c_VkBuffer;
     counter<VkBufferView> c_VkBufferView;
     counter<VkCommandPool> c_VkCommandPool;
+    counter<VkCuFunctionNVX> c_VkCuFunctionNVX;
+    counter<VkCuModuleNVX> c_VkCuModuleNVX;
     counter<VkDebugReportCallbackEXT> c_VkDebugReportCallbackEXT;
     counter<VkDebugUtilsMessengerEXT> c_VkDebugUtilsMessengerEXT;
     counter<VkDeferredOperationKHR> c_VkDeferredOperationKHR;
@@ -354,6 +356,8 @@ public:
     counter<VkSurfaceKHR> c_VkSurfaceKHR;
     counter<VkSwapchainKHR> c_VkSwapchainKHR;
     counter<VkValidationCacheEXT> c_VkValidationCacheEXT;
+    counter<VkVideoSessionKHR> c_VkVideoSessionKHR;
+    counter<VkVideoSessionParametersKHR> c_VkVideoSessionParametersKHR;
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
@@ -377,6 +381,8 @@ public:
           c_VkBuffer("VkBuffer", kVulkanObjectTypeBuffer, this),
           c_VkBufferView("VkBufferView", kVulkanObjectTypeBufferView, this),
           c_VkCommandPool("VkCommandPool", kVulkanObjectTypeCommandPool, this),
+          c_VkCuFunctionNVX("VkCuFunctionNVX", kVulkanObjectTypeCuFunctionNVX, this),
+          c_VkCuModuleNVX("VkCuModuleNVX", kVulkanObjectTypeCuModuleNVX, this),
           c_VkDebugReportCallbackEXT("VkDebugReportCallbackEXT", kVulkanObjectTypeDebugReportCallbackEXT, this),
           c_VkDebugUtilsMessengerEXT("VkDebugUtilsMessengerEXT", kVulkanObjectTypeDebugUtilsMessengerEXT, this),
           c_VkDeferredOperationKHR("VkDeferredOperationKHR", kVulkanObjectTypeDeferredOperationKHR, this),
@@ -406,7 +412,9 @@ public:
           c_VkShaderModule("VkShaderModule", kVulkanObjectTypeShaderModule, this),
           c_VkSurfaceKHR("VkSurfaceKHR", kVulkanObjectTypeSurfaceKHR, this),
           c_VkSwapchainKHR("VkSwapchainKHR", kVulkanObjectTypeSwapchainKHR, this),
-          c_VkValidationCacheEXT("VkValidationCacheEXT", kVulkanObjectTypeValidationCacheEXT, this)
+          c_VkValidationCacheEXT("VkValidationCacheEXT", kVulkanObjectTypeValidationCacheEXT, this),
+          c_VkVideoSessionKHR("VkVideoSessionKHR", kVulkanObjectTypeVideoSessionKHR, this),
+          c_VkVideoSessionParametersKHR("VkVideoSessionParametersKHR", kVulkanObjectTypeVideoSessionParametersKHR, this)
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
@@ -466,6 +474,8 @@ WRAPPER(VkAccelerationStructureNV)
 WRAPPER(VkBuffer)
 WRAPPER(VkBufferView)
 WRAPPER(VkCommandPool)
+WRAPPER(VkCuFunctionNVX)
+WRAPPER(VkCuModuleNVX)
 WRAPPER_PARENT_INSTANCE(VkDebugReportCallbackEXT)
 WRAPPER_PARENT_INSTANCE(VkDebugUtilsMessengerEXT)
 WRAPPER(VkDeferredOperationKHR)
@@ -496,6 +506,8 @@ WRAPPER(VkShaderModule)
 WRAPPER_PARENT_INSTANCE(VkSurfaceKHR)
 WRAPPER_PARENT_INSTANCE(VkSwapchainKHR)
 WRAPPER(VkValidationCacheEXT)
+WRAPPER(VkVideoSessionKHR)
+WRAPPER(VkVideoSessionParametersKHR)
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
@@ -2775,6 +2787,127 @@ void PostCallRecordCreateWin32SurfaceKHR(
     VkResult                                    result) override;
 #endif // VK_USE_PLATFORM_WIN32_KHR
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void PreCallRecordCreateVideoSessionKHR(
+    VkDevice                                    device,
+    const VkVideoSessionCreateInfoKHR*          pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionKHR*                          pVideoSession) override;
+
+void PostCallRecordCreateVideoSessionKHR(
+    VkDevice                                    device,
+    const VkVideoSessionCreateInfoKHR*          pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionKHR*                          pVideoSession,
+    VkResult                                    result) override;
+
+void PreCallRecordDestroyVideoSessionKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PostCallRecordDestroyVideoSessionKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PreCallRecordGetVideoSessionMemoryRequirementsKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t*                                   pVideoSessionMemoryRequirementsCount,
+    VkVideoGetMemoryPropertiesKHR*              pVideoSessionMemoryRequirements) override;
+
+void PostCallRecordGetVideoSessionMemoryRequirementsKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t*                                   pVideoSessionMemoryRequirementsCount,
+    VkVideoGetMemoryPropertiesKHR*              pVideoSessionMemoryRequirements,
+    VkResult                                    result) override;
+
+void PreCallRecordBindVideoSessionMemoryKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t                                    videoSessionBindMemoryCount,
+    const VkVideoBindMemoryKHR*                 pVideoSessionBindMemories) override;
+
+void PostCallRecordBindVideoSessionMemoryKHR(
+    VkDevice                                    device,
+    VkVideoSessionKHR                           videoSession,
+    uint32_t                                    videoSessionBindMemoryCount,
+    const VkVideoBindMemoryKHR*                 pVideoSessionBindMemories,
+    VkResult                                    result) override;
+
+void PreCallRecordCreateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    const VkVideoSessionParametersCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionParametersKHR*                pVideoSessionParameters) override;
+
+void PostCallRecordCreateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    const VkVideoSessionParametersCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkVideoSessionParametersKHR*                pVideoSessionParameters,
+    VkResult                                    result) override;
+
+void PreCallRecordUpdateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkVideoSessionParametersUpdateInfoKHR* pUpdateInfo) override;
+
+void PostCallRecordUpdateVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkVideoSessionParametersUpdateInfoKHR* pUpdateInfo,
+    VkResult                                    result) override;
+
+void PreCallRecordDestroyVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PostCallRecordDestroyVideoSessionParametersKHR(
+    VkDevice                                    device,
+    VkVideoSessionParametersKHR                 videoSessionParameters,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PreCallRecordCmdBeginVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoBeginCodingInfoKHR*            pBeginInfo) override;
+
+void PostCallRecordCmdBeginVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoBeginCodingInfoKHR*            pBeginInfo) override;
+
+void PreCallRecordCmdEndVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEndCodingInfoKHR*              pEndCodingInfo) override;
+
+void PostCallRecordCmdEndVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEndCodingInfoKHR*              pEndCodingInfo) override;
+
+void PreCallRecordCmdControlVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoCodingControlInfoKHR*          pCodingControlInfo) override;
+
+void PostCallRecordCmdControlVideoCodingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoCodingControlInfoKHR*          pCodingControlInfo) override;
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void PreCallRecordCmdDecodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoDecodeInfoKHR*                 pFrameInfo) override;
+
+void PostCallRecordCmdDecodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoDecodeInfoKHR*                 pFrameInfo) override;
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 void PreCallRecordGetDeviceGroupPeerMemoryFeaturesKHR(
     VkDevice                                    device,
     uint32_t                                    heapIndex,
@@ -3397,6 +3530,17 @@ void PostCallRecordGetPipelineExecutableInternalRepresentationsKHR(
     VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations,
     VkResult                                    result) override;
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+
+void PreCallRecordCmdEncodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEncodeInfoKHR*                 pEncodeInfo) override;
+
+void PostCallRecordCmdEncodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEncodeInfoKHR*                 pEncodeInfo) override;
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 void PreCallRecordCmdSetEvent2KHR(
     VkCommandBuffer                             commandBuffer,
     VkEvent                                     event,
@@ -3670,6 +3814,60 @@ void PostCallRecordCmdDrawIndirectByteCountEXT(
     uint32_t                                    counterOffset,
     uint32_t                                    vertexStride) override;
 
+void PreCallRecordCreateCuModuleNVX(
+    VkDevice                                    device,
+    const VkCuModuleCreateInfoNVX*              pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuModuleNVX*                              pModule) override;
+
+void PostCallRecordCreateCuModuleNVX(
+    VkDevice                                    device,
+    const VkCuModuleCreateInfoNVX*              pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuModuleNVX*                              pModule,
+    VkResult                                    result) override;
+
+void PreCallRecordCreateCuFunctionNVX(
+    VkDevice                                    device,
+    const VkCuFunctionCreateInfoNVX*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuFunctionNVX*                            pFunction) override;
+
+void PostCallRecordCreateCuFunctionNVX(
+    VkDevice                                    device,
+    const VkCuFunctionCreateInfoNVX*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkCuFunctionNVX*                            pFunction,
+    VkResult                                    result) override;
+
+void PreCallRecordDestroyCuModuleNVX(
+    VkDevice                                    device,
+    VkCuModuleNVX                               module,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PostCallRecordDestroyCuModuleNVX(
+    VkDevice                                    device,
+    VkCuModuleNVX                               module,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PreCallRecordDestroyCuFunctionNVX(
+    VkDevice                                    device,
+    VkCuFunctionNVX                             function,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PostCallRecordDestroyCuFunctionNVX(
+    VkDevice                                    device,
+    VkCuFunctionNVX                             function,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PreCallRecordCmdCuLaunchKernelNVX(
+    VkCommandBuffer                             commandBuffer,
+    const VkCuLaunchInfoNVX*                    pLaunchInfo) override;
+
+void PostCallRecordCmdCuLaunchKernelNVX(
+    VkCommandBuffer                             commandBuffer,
+    const VkCuLaunchInfoNVX*                    pLaunchInfo) override;
+
 void PreCallRecordGetImageViewHandleNVX(
     VkDevice                                    device,
     const VkImageViewHandleInfoNVX*             pInfo) override;
@@ -3724,6 +3922,12 @@ void PostCallRecordCmdDrawIndexedIndirectCountAMD(
     VkDeviceSize                                countBufferOffset,
     uint32_t                                    maxDrawCount,
     uint32_t                                    stride) override;
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#endif // VK_ENABLE_BETA_EXTENSIONS
 
 void PreCallRecordGetShaderInfoAMD(
     VkDevice                                    device,
@@ -4438,6 +4642,9 @@ void PostCallRecordGetCalibratedTimestampsEXT(
     uint64_t*                                   pMaxDeviation,
     VkResult                                    result) override;
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 #ifdef VK_USE_PLATFORM_GGP
 #endif // VK_USE_PLATFORM_GGP
 
@@ -4984,6 +5191,110 @@ void PostCallRecordCreateDirectFBSurfaceEXT(
     VkResult                                    result) override;
 #endif // VK_USE_PLATFORM_DIRECTFB_EXT
 
+void PreCallRecordCmdSetVertexInputEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    vertexBindingDescriptionCount,
+    const VkVertexInputBindingDescription2EXT*  pVertexBindingDescriptions,
+    uint32_t                                    vertexAttributeDescriptionCount,
+    const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) override;
+
+void PostCallRecordCmdSetVertexInputEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    vertexBindingDescriptionCount,
+    const VkVertexInputBindingDescription2EXT*  pVertexBindingDescriptions,
+    uint32_t                                    vertexAttributeDescriptionCount,
+    const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) override;
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void PreCallRecordGetMemoryZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkMemoryGetZirconHandleInfoFUCHSIA*   pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle) override;
+
+void PostCallRecordGetMemoryZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkMemoryGetZirconHandleInfoFUCHSIA*   pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle,
+    VkResult                                    result) override;
+
+void PreCallRecordGetMemoryZirconHandlePropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkExternalMemoryHandleTypeFlagBits          handleType,
+    zx_handle_t                                 zirconHandle,
+    VkMemoryZirconHandlePropertiesFUCHSIA*      pMemoryZirconHandleProperties) override;
+
+void PostCallRecordGetMemoryZirconHandlePropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkExternalMemoryHandleTypeFlagBits          handleType,
+    zx_handle_t                                 zirconHandle,
+    VkMemoryZirconHandlePropertiesFUCHSIA*      pMemoryZirconHandleProperties,
+    VkResult                                    result) override;
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void PreCallRecordImportSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo) override;
+
+void PostCallRecordImportSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkImportSemaphoreZirconHandleInfoFUCHSIA* pImportSemaphoreZirconHandleInfo,
+    VkResult                                    result) override;
+
+void PreCallRecordGetSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle) override;
+
+void PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
+    VkDevice                                    device,
+    const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
+    zx_handle_t*                                pZirconHandle,
+    VkResult                                    result) override;
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+void PreCallRecordCmdSetPatchControlPointsEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    patchControlPoints) override;
+
+void PostCallRecordCmdSetPatchControlPointsEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    patchControlPoints) override;
+
+void PreCallRecordCmdSetRasterizerDiscardEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    rasterizerDiscardEnable) override;
+
+void PostCallRecordCmdSetRasterizerDiscardEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    rasterizerDiscardEnable) override;
+
+void PreCallRecordCmdSetDepthBiasEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    depthBiasEnable) override;
+
+void PostCallRecordCmdSetDepthBiasEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    depthBiasEnable) override;
+
+void PreCallRecordCmdSetLogicOpEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkLogicOp                                   logicOp) override;
+
+void PostCallRecordCmdSetLogicOpEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkLogicOp                                   logicOp) override;
+
+void PreCallRecordCmdSetPrimitiveRestartEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    primitiveRestartEnable) override;
+
+void PostCallRecordCmdSetPrimitiveRestartEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkBool32                                    primitiveRestartEnable) override;
+
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 
 void PreCallRecordCreateScreenSurfaceQNX(
@@ -4999,6 +5310,16 @@ void PostCallRecordCreateScreenSurfaceQNX(
     VkSurfaceKHR*                               pSurface,
     VkResult                                    result) override;
 #endif // VK_USE_PLATFORM_SCREEN_QNX
+
+void PreCallRecordCmdSetColorWriteEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    attachmentCount,
+    const VkBool32*                             pColorWriteEnables) override;
+
+void PostCallRecordCmdSetColorWriteEnableEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    attachmentCount,
+    const VkBool32*                             pColorWriteEnables) override;
 
 void PreCallRecordCreateAccelerationStructureKHR(
     VkDevice                                    device,

@@ -129,7 +129,7 @@ TEST_P(DeviceLostTest, GetBindGroupLayoutFails) {
             pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UniformBuffer;
-        [[stage(compute)]] fn main() -> void {
+        [[stage(compute)]] fn main() {
         })");
 
     wgpu::ComputePipelineDescriptor descriptor;
@@ -212,10 +212,9 @@ TEST_P(DeviceLostTest, CreateShaderModuleFails) {
     SetCallbackAndLoseForTesting();
 
     ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
-        [[location(0)]] var<in> color : vec4<f32>;
-        [[location(0)]] var<out> fragColor : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            fragColor = color;
+        [[stage(fragment)]]
+        fn main([[location(0)]] color : vec4<f32>) -> [[location(0)]] vec4<f32> {
+            return color;
         })"));
 }
 
@@ -553,6 +552,26 @@ TEST_P(DeviceLostTest, DeviceLostDoesntCallUncapturedError) {
                                       mockErrorCallback.MakeUserdata(nullptr));
     EXPECT_CALL(mockErrorCallback, Call(_, _, _)).Times(Exactly(0));
     device.LoseForTesting();
+}
+
+// Test that WGPUCreatePipelineAsyncStatus_DeviceLost can be correctly returned when device is lost
+// before the callback of Create*PipelineAsync() is called.
+TEST_P(DeviceLostTest, DeviceLostBeforeCreatePipelineAsyncCallback) {
+    wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
+        [[stage(compute)]] fn main() {
+        })");
+
+    wgpu::ComputePipelineDescriptor descriptor;
+    descriptor.computeStage.module = csModule;
+    descriptor.computeStage.entryPoint = "main";
+
+    auto callback = [](WGPUCreatePipelineAsyncStatus status, WGPUComputePipeline returnPipeline,
+                       const char* message, void* userdata) {
+        EXPECT_EQ(WGPUCreatePipelineAsyncStatus::WGPUCreatePipelineAsyncStatus_DeviceLost, status);
+    };
+
+    device.CreateComputePipelineAsync(&descriptor, callback, nullptr);
+    SetCallbackAndLoseForTesting();
 }
 
 DAWN_INSTANTIATE_TEST(DeviceLostTest,

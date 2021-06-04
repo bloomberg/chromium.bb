@@ -12,15 +12,15 @@ import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
-import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {Debouncer, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {I18nBehavior, loadTimeData} from './i18n_setup.js';
 import {NewTabPageProxy} from './new_tab_page_proxy.js';
 import {WindowProxy} from './window_proxy.js';
 
@@ -86,7 +86,12 @@ function normalizeUrl(urlString) {
   return null;
 }
 
-class MostVisitedElement extends PolymerElement {
+/**
+ * @polymer
+ * @extends {PolymerElement}
+ */
+class MostVisitedElement extends mixinBehaviors
+([I18nBehavior], PolymerElement) {
   static get is() {
     return 'ntp-most-visited';
   }
@@ -609,7 +614,7 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   onAddShortcutKeyDown_(e) {
-    if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
+    if (hasKeyModifiers(e)) {
       return;
     }
 
@@ -801,7 +806,7 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   onTileKeyDown_(e) {
-    if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
+    if (hasKeyModifiers(e)) {
       return;
     }
 

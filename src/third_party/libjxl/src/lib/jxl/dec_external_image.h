@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "jxl/decode.h"
 #include "jxl/types.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/color_encoding_internal.h"
@@ -36,19 +37,17 @@ namespace jxl {
 // color space conversion.
 // TODO(lode): support 1-bit output (bits_per_sample == 1)
 // TODO(lode): support rectangle crop.
-// apply_srgb_tf applies conversion from linear sRGB to nonlinear sRGB. This
-// requires that the ImageBundle is in linear sRGB.
 // stride_out is output scanline size in bytes, must be >=
-// output_xsize * bytes_per_pixel.
+// output_xsize * output_bytes_per_pixel.
 // undo_orientation is an EXIF orientation to undo. Depending on the
 // orientation, the output xsize and ysize are swapped compared to input
 // xsize and ysize.
 Status ConvertToExternal(const jxl::ImageBundle& ib, size_t bits_per_sample,
-                         bool float_out, bool apply_srgb_tf,
-                         size_t num_channels, JxlEndianness endianness,
-                         size_t stride_out, jxl::ThreadPool* thread_pool,
-                         void* out_image, size_t out_size,
-                         jxl::Orientation undo_orientation);
+                         bool float_out, size_t num_channels,
+                         JxlEndianness endianness, size_t stride_out,
+                         jxl::ThreadPool* thread_pool, void* out_image,
+                         size_t out_size, JxlImageOutCallback out_callback,
+                         void* out_opaque, jxl::Orientation undo_orientation);
 
 }  // namespace jxl
 

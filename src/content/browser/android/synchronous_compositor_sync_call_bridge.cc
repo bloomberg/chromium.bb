@@ -4,6 +4,8 @@
 
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -40,9 +42,9 @@ void SynchronousCompositorSyncCallBridge::RemoteClosedOnIOThread() {
 bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
     int layer_tree_frame_sink_id,
     uint32_t metadata_version,
-    base::Optional<viz::LocalSurfaceId> local_surface_id,
-    base::Optional<viz::CompositorFrame> compositor_frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
+    absl::optional<viz::LocalSurfaceId> local_surface_id,
+    absl::optional<viz::CompositorFrame> compositor_frame,
+    absl::optional<viz::HitTestRegionList> hit_test_region_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY || frame_futures_.empty())
@@ -61,7 +63,7 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
                                       ProcessFrameMetadataOnUIThread,
                                   this, metadata_version,
                                   compositor_frame->metadata.Clone()));
-    frame_ptr->frame.reset(new viz::CompositorFrame);
+    frame_ptr->frame = std::make_unique<viz::CompositorFrame>();
     *frame_ptr->frame = std::move(*compositor_frame);
     frame_ptr->local_surface_id = local_surface_id.value();
     frame_ptr->hit_test_region_list = std::move(hit_test_region_list);

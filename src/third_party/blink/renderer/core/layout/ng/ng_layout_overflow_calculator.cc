@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_overflow_calculator.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -52,7 +53,7 @@ PhysicalRect NGLayoutOverflowCalculator::RecalculateLayoutOverflowForFragment(
       PhysicalRect child_overflow =
           RecalculateLayoutOverflowForFragment(*box_fragment);
       child_overflow.offset += child.offset;
-      calculator.AddOverflow(child_overflow);
+      calculator.AddOverflow(child_overflow, /* child_is_fragmentainer */ true);
     } else {
       calculator.AddChild(*box_fragment, child.offset);
     }
@@ -93,7 +94,7 @@ NGLayoutOverflowCalculator::NGLayoutOverflowCalculator(
 }
 
 const PhysicalRect NGLayoutOverflowCalculator::Result(
-    const base::Optional<PhysicalRect> inflow_bounds) {
+    const absl::optional<PhysicalRect> inflow_bounds) {
   if (!inflow_bounds || !is_scroll_container_)
     return layout_overflow_;
 
@@ -311,7 +312,7 @@ PhysicalRect NGLayoutOverflowCalculator::LayoutOverflowForPropagation(
   }
 
   // Apply any transforms to the overflow.
-  if (base::Optional<TransformationMatrix> transform =
+  if (absl::optional<TransformationMatrix> transform =
           node_.GetTransformForChildFragment(child_fragment, size_)) {
     overflow =
         PhysicalRect::EnclosingRect(transform->MapRect(FloatRect(overflow)));

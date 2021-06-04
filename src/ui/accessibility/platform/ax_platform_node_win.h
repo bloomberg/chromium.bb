@@ -286,6 +286,11 @@ enum {
   UMA_API_ADVISE_EVENT_ADDED = 248,
   UMA_API_ADVISE_EVENT_REMOVED = 249,
   UMA_API_ITEMCONTAINER_FINDITEMBYPROPERTY = 250,
+  UMA_API_ANNOTATION_GET_ANNOTATIONTYPEID = 251,
+  UMA_API_ANNOTATION_GET_ANNOTATIONTYPENAME = 252,
+  UMA_API_ANNOTATION_GET_AUTHOR = 253,
+  UMA_API_ANNOTATION_GET_DATETIME = 254,
+  UMA_API_ANNOTATION_GET_TARGET = 255,
 
   // This must always be the last enum. It's okay for its value to
   // increase, but none of the other enum values may change.
@@ -337,6 +342,8 @@ class AX_EXPORT WinAccessibilityAPIUsageObserver {
   virtual void OnScreenReaderHoneyPotQueried() = 0;
   virtual void OnAccNameCalled() = 0;
   virtual void OnUIAutomationUsed() = 0;
+  virtual void StartFiringUIAEvents() = 0;
+  virtual void EndFiringUIAEvents() = 0;
 };
 
 // Get an observer list that allows modules across the codebase to
@@ -344,6 +351,13 @@ class AX_EXPORT WinAccessibilityAPIUsageObserver {
 extern AX_EXPORT
     base::ObserverList<WinAccessibilityAPIUsageObserver>::Unchecked&
     GetWinAccessibilityAPIUsageObserverList();
+
+// Used to simplify calling StartFiringUIAEvents and EndFiringEvents
+class AX_EXPORT WinAccessibilityAPIUsageScopedUIAEventsNotifier {
+ public:
+  WinAccessibilityAPIUsageScopedUIAEventsNotifier();
+  ~WinAccessibilityAPIUsageScopedUIAEventsNotifier();
+};
 
 // TODO(nektar): Remove multithread superclass since we don't support it.
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
@@ -357,6 +371,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
                         public IAccessibleValue,
+                        public IAnnotationProvider,
                         public IExpandCollapseProvider,
                         public IGridItemProvider,
                         public IGridProvider,
@@ -399,6 +414,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IAccessibleValue)
     COM_INTERFACE_ENTRY(IChromeAccessible)
+    COM_INTERFACE_ENTRY(IAnnotationProvider)
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
@@ -582,6 +598,20 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   IFACEMETHODIMP GetIAccessiblePair(IAccessible** accessible,
                                     LONG* child_id) override;
+
+  //
+  // IAnnotationProvider methods.
+  //
+
+  IFACEMETHODIMP get_AnnotationTypeId(int* type_id) override;
+
+  IFACEMETHODIMP get_AnnotationTypeName(BSTR* type_name) override;
+
+  IFACEMETHODIMP get_Author(BSTR* author) override;
+
+  IFACEMETHODIMP get_DateTime(BSTR* date_time) override;
+
+  IFACEMETHODIMP get_Target(IRawElementProviderSimple** target) override;
 
   //
   // IExpandCollapseProvider methods.
@@ -1073,8 +1103,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // If either |start_offset| or |end_offset| are not provided then the
   // endpoint is treated as the start or end of the node respectively.
   HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
-                                const base::Optional<int>& start_offset,
-                                const base::Optional<int>& end_offset,
+                                const absl::optional<int>& start_offset,
+                                const absl::optional<int>& end_offset,
                                 base::win::VariantVector* result);
 
   // IRawElementProviderSimple support method.
@@ -1115,13 +1145,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   AXPlatformNodeWin* GetFirstTextOnlyDescendant();
 
   // Convert a mojo event to an MSAA event. Exposed for testing.
-  static base::Optional<DWORD> MojoEventToMSAAEvent(ax::mojom::Event event);
+  static absl::optional<DWORD> MojoEventToMSAAEvent(ax::mojom::Event event);
 
   // Convert a mojo event to a UIA event. Exposed for testing.
-  static base::Optional<EVENTID> MojoEventToUIAEvent(ax::mojom::Event event);
+  static absl::optional<EVENTID> MojoEventToUIAEvent(ax::mojom::Event event);
 
   // Convert a mojo event to a UIA property id. Exposed for testing.
-  static base::Optional<PROPERTYID> MojoEventToUIAProperty(
+  static absl::optional<PROPERTYID> MojoEventToUIAProperty(
       ax::mojom::Event event);
 
  protected:
@@ -1156,7 +1186,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   bool IsUIAControl() const;
 
-  base::Optional<LONG> ComputeUIALandmarkType() const;
+  absl::optional<LONG> ComputeUIALandmarkType() const;
 
   bool IsInaccessibleDueToAncestor() const;
 
@@ -1170,7 +1200,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Relationships between this node and other nodes.
   std::vector<Microsoft::WRL::ComPtr<AXPlatformRelationWin>> relations_;
 
-  AXHypertext old_hypertext_;
+  AXLegacyHypertext old_hypertext_;
 
   // These protected methods are still used by BrowserAccessibilityComWin. At
   // some point post conversion, we can probably move these to be private
@@ -1210,7 +1240,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
  private:
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
-
+  int GetAnnotationTypeImpl() const;
   // Get the value attribute as a Bstr, this means something different depending
   // on the type of element being queried. (e.g. kColorWell uses kColorValue).
   static BSTR GetValueAttributeAsBstr(AXPlatformNodeWin* target);
@@ -1359,13 +1389,15 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Getters for UIA GetTextAttributeValue
   //
 
+  // Computes the AnnotationObjects Attribute for the current node.
+  void GetAnnotationObjectsAttribute(base::win::VariantVector* result);
   // Computes the AnnotationTypes Attribute for the current node.
-  HRESULT GetAnnotationTypesAttribute(const base::Optional<int>& start_offset,
-                                      const base::Optional<int>& end_offset,
+  HRESULT GetAnnotationTypesAttribute(const absl::optional<int>& start_offset,
+                                      const absl::optional<int>& end_offset,
                                       base::win::VariantVector* result);
   // Lookup the LCID for the language this node is using.
-  // Returns base::nullopt if there was an error.
-  base::Optional<LCID> GetCultureAttributeAsLCID() const;
+  // Returns absl::nullopt if there was an error.
+  absl::optional<LCID> GetCultureAttributeAsLCID() const;
   // Converts an int attribute to a COLORREF
   COLORREF GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute attribute) const;
   // Converts the ListStyle to UIA BulletStyle
@@ -1373,7 +1405,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to get the UIA StyleId enumeration for this node
   LONG ComputeUIAStyleId() const;
   // Convert mojom TextAlign to UIA HorizontalTextAlignment enumeration
-  static base::Optional<HorizontalTextAlignment>
+  static absl::optional<HorizontalTextAlignment>
   AXTextAlignToUIAHorizontalTextAlignment(ax::mojom::TextAlign text_align);
   // Converts IntAttribute::kHierarchicalLevel to UIA StyleId enumeration
   static LONG AXHierarchicalLevelToUIAStyleId(int32_t hierarchical_level);
@@ -1403,13 +1435,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Determine if a text range overlaps a |marker_type|, and whether
   // the overlap is a partial or or complete match.
   MarkerTypeRangeResult GetMarkerTypeFromRange(
-      const base::Optional<int>& start_offset,
-      const base::Optional<int>& end_offset,
+      const absl::optional<int>& start_offset,
+      const absl::optional<int>& end_offset,
       ax::mojom::MarkerType marker_type);
 
   bool IsAncestorComboBox();
-
-  bool IsPlaceholderText() const;
 
   // Helper method for getting the horizontal scroll percent.
   double GetHorizontalScrollPercent();

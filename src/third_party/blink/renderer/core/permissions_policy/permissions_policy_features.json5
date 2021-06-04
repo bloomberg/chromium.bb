@@ -1,10 +1,8 @@
 {
   // All permissions policy (https://github.com/w3c/webappsec-permissions-policy)
   // features are defined here.
-  // All Features have to be defined in PermissionsPolicyFeature enum as well
-  // (defined in third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom).
-  // The enum value has to have the same name as the feature name here.
-  // This list is used to generate "permissions_policy_helper.cc".
+  // For more details on adding a new permissions policy, see:
+  // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/permissions_policy/README.md
   // TODO(yashard): Add all permissions policy features here.
 
   parameters: {
@@ -77,6 +75,11 @@
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
+      name: "ClientHintPrefersColorScheme",
+      permissions_policy_name: "ch-prefers-color-scheme",
+      depends_on: ["FeaturePolicyForClientHints"],
+    },
+    {
       name: "ClientHintRTT",
       permissions_policy_name: "ch-rtt",
       depends_on: ["FeaturePolicyForClientHints"],
@@ -137,14 +140,19 @@
       permissions_policy_name: "clipboard-write",
     },
     {
-      name: "ConversionMeasurement",
-      permissions_policy_name: "conversion-measurement",
+      name: "AttributionReporting",
+      permissions_policy_name: "attribution-reporting",
       depends_on: ["ConversionMeasurement"],
     },
     {
       name: "CrossOriginIsolated",
       permissions_policy_name: "cross-origin-isolated",
       depends_on: ["CrossOriginIsolation"],
+    },
+    {
+      name: "DirectSockets",
+      permissions_policy_name: "direct-sockets",
+      depends_on: ["DirectSockets"],
     },
     {
       name: "DisplayCapture",
@@ -259,6 +267,11 @@
       depends_on: ["Serial"],
     },
     {
+      name: "SharedAutofill",
+      permissions_policy_name: "shared-autofill",
+      depends_on: ["SharedAutofill"],
+    },
+    {
       name: "StorageAccessAPI",
       feature_default: "EnableForAll",
       permissions_policy_name: "storage-access-api",
@@ -294,6 +307,11 @@
       name: "WebXr",
       permissions_policy_name: "xr-spatial-tracking",
       depends_on: ["WebXR"],
+    },
+    {
+      name: "WindowPlacement",
+      permissions_policy_name: "window-placement",
+      depends_on: ["WindowPlacement"],
     },
   ],
 }

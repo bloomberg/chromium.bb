@@ -141,7 +141,7 @@ bool ParseCellularScanResults(const base::ListValue& list,
                               std::vector<CellularScanResult>* scan_results) {
   scan_results->clear();
   scan_results->reserve(list.GetSize());
-  for (const auto& value : list) {
+  for (const auto& value : list.GetList()) {
     const base::DictionaryValue* dict;
     if (!value.GetAsDictionary(&dict))
       return false;
@@ -186,7 +186,7 @@ bool ParseCellularSIMSlotInfo(
     if (iccid)
       sim_slot_info.iccid = *iccid;
 
-    base::Optional<bool> primary =
+    absl::optional<bool> primary =
         value.FindBoolKey(shill::kSIMSlotInfoPrimary);
     sim_slot_info.primary = primary.has_value() ? *primary : false;
 

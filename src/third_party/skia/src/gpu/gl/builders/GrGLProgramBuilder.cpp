@@ -48,7 +48,6 @@ static void cleanup_program(GrGLGpu* gpu, GrGLuint programID,
 
 sk_sp<GrGLProgram> GrGLProgramBuilder::CreateProgram(
                                                GrDirectContext* dContext,
-                                               GrRenderTarget* renderTarget,
                                                const GrProgramDesc& desc,
                                                const GrProgramInfo& programInfo,
                                                const GrGLPrecompiledProgram* precompiledProgram) {
@@ -59,7 +58,7 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::CreateProgram(
 
     // create a builder.  This will be handed off to effects so they can use it to add
     // uniforms, varyings, textures, etc
-    GrGLProgramBuilder builder(glGpu, renderTarget, desc, programInfo);
+    GrGLProgramBuilder builder(glGpu, desc, programInfo);
 
     auto persistentCache = dContext->priv().getPersistentCache();
     if (persistentCache && !precompiledProgram) {
@@ -78,10 +77,9 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::CreateProgram(
 /////////////////////////////////////////////////////////////////////////////
 
 GrGLProgramBuilder::GrGLProgramBuilder(GrGLGpu* gpu,
-                                       GrRenderTarget* renderTarget,
                                        const GrProgramDesc& desc,
                                        const GrProgramInfo& programInfo)
-        : INHERITED(renderTarget, desc, programInfo)
+        : INHERITED(desc, programInfo)
         , fGpu(gpu)
         , fVaryingHandler(this)
         , fUniformHandler(this)
@@ -149,9 +147,6 @@ void GrGLProgramBuilder::computeCountsAndStrides(GrGLuint programID,
 }
 
 void GrGLProgramBuilder::addInputVars(const SkSL::Program::Inputs& inputs) {
-    if (inputs.fRTWidth) {
-        this->addRTWidthUniform(SKSL_RTWIDTH_NAME);
-    }
     if (inputs.fRTHeight) {
         this->addRTHeightUniform(SKSL_RTHEIGHT_NAME);
     }
@@ -175,7 +170,7 @@ void GrGLProgramBuilder::storeShaderInCache(const SkSL::Program::Inputs& inputs,
         GL_CALL(GetProgramiv(programID, GL_PROGRAM_BINARY_LENGTH, &length));
         if (length > 0) {
             SkBinaryWriteBuffer writer;
-            writer.writeInt(GrPersistentCacheUtils::kCurrentVersion);
+            writer.writeInt(GrPersistentCacheUtils::GetCurrentVersion());
             writer.writeUInt(kGLPB_Tag);
 
             writer.writePad32(&inputs, sizeof(inputs));
@@ -394,8 +389,8 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
                 versionAndExtensionDecls.appendf("#extension %s : require\n", extensionString);
             }
 
-            SkString tessControlShader = geomProc.getTessControlShaderGLSL(
-                    fGeometryProcessor.get(), versionAndExtensionDecls.c_str(), fUniformHandler,
+            SkString tessControlShader = fGeometryProcessor->getTessControlShaderGLSL(
+                    geomProc, versionAndExtensionDecls.c_str(), fUniformHandler,
                     *this->shaderCaps());
             if (!this->compileAndAttachShaders(tessControlShader.c_str(), programID,
                                                GR_GL_TESS_CONTROL_SHADER, &shadersToDelete,
@@ -404,8 +399,8 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
                 return nullptr;
             }
 
-            SkString tessEvaluationShader = geomProc.getTessEvaluationShaderGLSL(
-                    fGeometryProcessor.get(), versionAndExtensionDecls.c_str(), fUniformHandler,
+            SkString tessEvaluationShader = fGeometryProcessor->getTessEvaluationShaderGLSL(
+                    geomProc, versionAndExtensionDecls.c_str(), fUniformHandler,
                     *this->shaderCaps());
             if (!this->compileAndAttachShaders(tessEvaluationShader.c_str(), programID,
                                                GR_GL_TESS_EVALUATION_SHADER, &shadersToDelete,
@@ -464,7 +459,7 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
     if (!cached && !geomProc.willUseTessellationShaders() && !precompiledProgram) {
         // FIXME: Remove the check for tessellation shaders in the above 'if' once the back door
         // GLSL mechanism is removed.
-        (void)&GrGeometryProcessor::getTessControlShaderGLSL;
+        (void)&GrGLSLGeometryProcessor::getTessControlShaderGLSL;
         bool isSkSL = false;
         if (fGpu->getContext()->priv().options().fShaderCacheStrategy ==
                 GrContextOptions::ShaderCacheStrategy::kSkSL) {

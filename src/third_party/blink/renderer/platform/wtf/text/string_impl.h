@@ -30,6 +30,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
@@ -948,4 +949,4 @@ using WTF::EqualNonNull;
 using WTF::LengthOfNullTerminatedString;
 using WTF::ReverseFind;
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_IMPL_H_

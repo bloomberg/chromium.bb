@@ -10,10 +10,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -29,7 +31,11 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/biometric_authenticator.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/mock_biometric_authenticator.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -40,6 +46,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,9 +62,10 @@ using autofill::AccessoryTabType;
 using autofill::FooterCommand;
 using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
-using base::ASCIIToUTF16;
+using base::test::RunOnceCallback;
 using password_manager::CreateEntry;
 using password_manager::CredentialCache;
+using password_manager::MockBiometricAuthenticator;
 using password_manager::MockPasswordStore;
 using password_manager::OriginCredentialStore;
 using password_manager::PasswordForm;
@@ -77,11 +85,12 @@ using IsPslMatch = autofill::UserInfo::IsPslMatch;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleHttpSite[] = "http://example.com";
+constexpr char16_t kExampleHttpSite16[] = u"http://example.com";
 constexpr char kExampleSiteMobile[] = "https://m.example.com";
 constexpr char kExampleSignonRealm[] = "https://example.com/";
-constexpr char kExampleDomain[] = "example.com";
-constexpr char kUsername[] = "alice";
-constexpr char kPassword[] = "password123";
+constexpr char16_t kExampleDomain[] = u"example.com";
+constexpr char16_t kUsername[] = u"alice";
+constexpr char16_t kPassword[] = u"password123";
 
 class MockPasswordGenerationController
     : public PasswordGenerationControllerImpl {
@@ -121,6 +130,11 @@ class MockPasswordManagerClient
               (const GURL&),
               (const, override));
 
+  MOCK_METHOD(scoped_refptr<password_manager::BiometricAuthenticator>,
+              GetBiometricAuthenticator,
+              (),
+              (override));
+
   password_manager::PasswordStore* GetProfilePasswordStore() const override {
     return password_store_;
   }
@@ -129,24 +143,28 @@ class MockPasswordManagerClient
   PasswordStore* password_store_;
 };
 
+class MockPasswordManagerDriver
+    : public password_manager::StubPasswordManagerDriver {
+ public:
+  MOCK_METHOD(void,
+              FillIntoFocusedField,
+              (bool, const std::u16string&),
+              (override));
+};
+
 std::u16string password_for_str(const std::u16string& user) {
   return l10n_util::GetStringFUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION, user);
 }
 
-std::u16string password_for_str(const std::string& user) {
-  return password_for_str(ASCIIToUTF16(user));
+std::u16string passwords_empty_str(const std::u16string& domain) {
+  return l10n_util::GetStringFUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE, domain);
 }
 
-std::u16string passwords_empty_str(const std::string& domain) {
+std::u16string passwords_title_str(const std::u16string& domain) {
   return l10n_util::GetStringFUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE,
-      ASCIIToUTF16(domain));
-}
-
-std::u16string passwords_title_str(const std::string& domain) {
-  return l10n_util::GetStringFUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE, ASCIIToUTF16(domain));
+      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE, domain);
 }
 
 std::u16string no_user_str() {
@@ -186,8 +204,8 @@ PasswordForm MakeSavedPassword() {
   PasswordForm form;
   form.signon_realm = std::string(kExampleSite);
   form.url = GURL(kExampleSite);
-  form.username_value = base::ASCIIToUTF16(kUsername);
-  form.password_value = base::ASCIIToUTF16(kPassword);
+  form.username_value = kUsername;
+  form.password_value = kPassword;
   form.username_element = u"";
   form.in_store = PasswordForm::Store::kProfileStore;
   return form;
@@ -213,7 +231,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     MockPasswordGenerationController::CreateForWebContents(web_contents());
     mock_pwd_manager_client_ = std::make_unique<MockPasswordManagerClient>(
         CreateInternalPasswordStore());
-
     NavigateAndCommit(GURL(kExampleSite));
   }
 
@@ -227,7 +244,10 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
       security_state::SecurityLevel security_level = security_state::SECURE) {
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
         web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr(),
-        mock_pwd_manager_client_.get());
+        mock_pwd_manager_client_.get(),
+        base::BindRepeating(&PasswordAccessoryControllerTest::GetBaseDriver,
+                            base::Unretained(this)));
+
     controller()->RegisterFillingSourceObserver(filling_source_observer_.Get());
     controller()->SetSecurityLevelForTesting(security_level);
   }
@@ -242,6 +262,8 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_pwd_manager_client_.get();
   }
 
+  MockPasswordManagerDriver* driver() { return &mock_driver_; }
+
  protected:
   virtual PasswordStore* CreateInternalPasswordStore() {
     mock_password_store_ = base::MakeRefCounted<MockPasswordStore>();
@@ -253,10 +275,18 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   base::MockCallback<AccessoryController::FillingSourceObserver>
       filling_source_observer_;
   scoped_refptr<MockPasswordStore> mock_password_store_;
+  scoped_refptr<MockBiometricAuthenticator> mock_authenticator_ =
+      base::MakeRefCounted<MockBiometricAuthenticator>();
 
  private:
+  password_manager::PasswordManagerDriver* GetBaseDriver(
+      content::WebContents*) {
+    return driver();
+  }
+
   password_manager::CredentialCache credential_cache_;
   std::unique_ptr<MockPasswordManagerClient> mock_pwd_manager_client_;
+  MockPasswordManagerDriver mock_driver_;
 };
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -275,7 +305,6 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   cache()->SaveCredentialsAndBlocklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       CredentialCache::IsOriginBlocklisted(false),
-
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -283,7 +312,7 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -334,16 +363,16 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
       PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Alf", u"Alf", false, true)
-          .AppendField(u"PWD", password_for_str("Alf"), true, false)
+          .AppendField(u"PWD", password_for_str(u"Alf"), true, false)
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Ben", u"Ben", false, true)
-          .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+          .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Cat", u"Cat", false, true)
-          .AppendField(u"M1@u", password_for_str("Cat"), true, false)
+          .AppendField(u"M1@u", password_for_str(u"Cat"), true, false)
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Zebra", u"Zebra", false, true)
-          .AppendField(u"M3h", password_for_str("Zebra"), true, false)
+          .AppendField(u"M3h", password_for_str(u"Zebra"), true, false)
           .Build());
 }
 
@@ -361,7 +390,7 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -397,7 +426,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -411,7 +440,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, false)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, true)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, true)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillablePasswordField,
@@ -430,7 +459,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -446,7 +475,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Alf", u"Alf", false, true)
-              .AppendField(u"M3lm4k", password_for_str("Alf"), true, false)
+              .AppendField(u"M3lm4k", password_for_str(u"Alf"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -479,7 +508,7 @@ TEST_F(PasswordAccessoryControllerTest, HidesEntriesForPSLMatchedOriginsInV1) {
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Ben", u"Ben",
                        /*is_obfuscated=*/false, /*selectable=*/true)
-          .AppendField(u"S3cur3", password_for_str("Ben"),
+          .AppendField(u"S3cur3", password_for_str(u"Ben"),
                        /*is_obfuscated=*/true, /*selectable=*/false)
           .Build());
 }
@@ -508,12 +537,12 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
           .AddUserInfo(kExampleSite, IsPslMatch(false))
           .AppendField(u"Ben", u"Ben",
                        /*is_obfuscated=*/false, /*selectable=*/true)
-          .AppendField(u"S3cur3", password_for_str("Ben"),
+          .AppendField(u"S3cur3", password_for_str(u"Ben"),
                        /*is_obfuscated=*/true, /*selectable=*/false)
           .AddUserInfo(kExampleSiteMobile, IsPslMatch(true))
           .AppendField(u"Alf", u"Alf",
                        /*is_obfuscated=*/false, /*selectable=*/true)
-          .AppendField(u"R4nd0m", password_for_str("Alf"),
+          .AppendField(u"R4nd0m", password_for_str(u"Alf"),
                        /*is_obfuscated=*/true, /*selectable=*/false)
           .Build());
 }
@@ -532,7 +561,7 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -563,7 +592,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo(kExampleSite, IsPslMatch(false))
               .AppendField(u"Ben", u"Ben", false, true)
-              .AppendField(u"S3cur3", password_for_str("Ben"), true, false)
+              .AppendField(u"S3cur3", password_for_str(u"Ben"), true, false)
               .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
@@ -576,7 +605,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestions(PasswordAccessorySheetDataBuilder(
-                             passwords_empty_str("random.other-site.org"))
+                             passwords_empty_str(u"random.other-site.org"))
                              .Build()));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kUnfillableElement,
@@ -851,6 +880,159 @@ TEST_F(PasswordAccessoryControllerTest, SavePasswordsDisabledUpdatesStore) {
       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS, false);
 }
 
+TEST_F(PasswordAccessoryControllerTest, FillsUsername) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kRecoverFromNeverSaveAndroid,
+       autofill::features::kAutofillKeyboardAccessory},
+      {});
+  CreateSheetController();
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+
+  UserInfo::Field selected_field(u"Ben", u"Ben", false, true);
+  EXPECT_CALL(*driver(),
+              FillIntoFocusedField(selected_field.is_obfuscated(),
+                                   Eq(selected_field.display_text())));
+  controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
+}
+
+TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfNoAuthAvailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kRecoverFromNeverSaveAndroid,
+       autofill::features::kAutofillKeyboardAccessory},
+      {});
+  CreateSheetController();
+
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+
+  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  EXPECT_CALL(*password_client(), GetBiometricAuthenticator)
+      .WillOnce(Return(mock_authenticator_));
+  EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
+      .WillOnce(Return(password_manager::BiometricsAvailability::kNotEnrolled));
+  EXPECT_CALL(*driver(),
+              FillIntoFocusedField(selected_field.is_obfuscated(),
+                                   Eq(selected_field.display_text())));
+  controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
+}
+
+TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfAuthSuccessful) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kRecoverFromNeverSaveAndroid,
+       autofill::features::kAutofillKeyboardAccessory},
+      {});
+  CreateSheetController();
+
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+
+  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  ON_CALL(*password_client(), GetBiometricAuthenticator)
+      .WillByDefault(Return(mock_authenticator_));
+  EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
+      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
+  EXPECT_CALL(
+      *mock_authenticator_.get(),
+      Authenticate(password_manager::BiometricAuthRequester::kFallbackSheet, _))
+      .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/true));
+  EXPECT_CALL(*driver(),
+              FillIntoFocusedField(selected_field.is_obfuscated(),
+                                   Eq(selected_field.display_text())));
+  controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
+}
+
+TEST_F(PasswordAccessoryControllerTest, DoesntFillPasswordIfAuthFails) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kRecoverFromNeverSaveAndroid,
+       autofill::features::kAutofillKeyboardAccessory},
+      {});
+  CreateSheetController();
+
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+
+  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  ON_CALL(*password_client(), GetBiometricAuthenticator)
+      .WillByDefault(Return(mock_authenticator_));
+  EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
+      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
+  EXPECT_CALL(
+      *mock_authenticator_.get(),
+      Authenticate(password_manager::BiometricAuthRequester::kFallbackSheet, _))
+      .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/false));
+  EXPECT_CALL(*driver(),
+              FillIntoFocusedField(selected_field.is_obfuscated(),
+                                   Eq(selected_field.display_text())))
+      .Times(0);
+  controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
+}
+
+TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kRecoverFromNeverSaveAndroid,
+       autofill::features::kAutofillKeyboardAccessory},
+      {});
+  CreateSheetController();
+
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+
+  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  ON_CALL(*password_client(), GetBiometricAuthenticator)
+      .WillByDefault(Return(mock_authenticator_));
+  EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
+      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*mock_authenticator_.get(),
+              Authenticate(
+                  password_manager::BiometricAuthRequester::kFallbackSheet, _));
+
+  EXPECT_CALL(*driver(),
+              FillIntoFocusedField(selected_field.is_obfuscated(),
+                                   Eq(selected_field.display_text())))
+      .Times(0);
+  controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
+
+  EXPECT_CALL(*mock_authenticator_.get(),
+              Cancel(password_manager::BiometricAuthRequester::kFallbackSheet));
+}
+
 class PasswordAccessoryControllerWithTestStoreTest
     : public PasswordAccessoryControllerTest {
  public:
@@ -957,7 +1139,7 @@ TEST_F(PasswordAccessoryControllerWithTestStoreTest,
   EXPECT_EQ(
       last_sheet,
       AccessorySheetData::Builder(AccessoryTabType::PASSWORDS,
-                                  passwords_empty_str(kExampleHttpSite))
+                                  passwords_empty_str(kExampleHttpSite16))
           .AppendFooterCommand(manage_passwords_str(),
                                autofill::AccessoryAction::MANAGE_PASSWORDS)
           .Build());

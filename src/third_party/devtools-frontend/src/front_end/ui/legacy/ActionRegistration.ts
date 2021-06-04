@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 
 import {Context} from './Context.js';
@@ -221,6 +221,7 @@ export const enum IconClass {
   LARGEICON_VISIBILITY = 'largeicon-visibility',
   LARGEICON_PHONE = 'largeicon-phone',
   LARGEICON_PLAY = 'largeicon-play',
+  LARGEICON_DOWNLOAD = 'largeicon-download',
   LARGEICON_PAUSE = 'largeicon-pause',
   LARGEICON_RESUME = 'largeicon-resume',
   LARGEICON_TRASH_BIN = 'largeicon-trash-bin',

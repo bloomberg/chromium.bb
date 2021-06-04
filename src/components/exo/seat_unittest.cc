@@ -56,16 +56,13 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override {}
-  void OnTarget(const base::Optional<std::string>& mime_type) override {}
+  void OnTarget(const absl::optional<std::string>& mime_type) override {}
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
     if (!data_.has_value()) {
-      std::string test_data = "TestData";
-      ASSERT_TRUE(base::WriteFileDescriptor(fd.get(), test_data.data(),
-                                            test_data.size()));
+      const char kTestData[] = "TestData";
+      ASSERT_TRUE(base::WriteFileDescriptor(fd.get(), kTestData));
     } else {
-      ASSERT_TRUE(base::WriteFileDescriptor(
-          fd.get(), reinterpret_cast<const char*>(data_->data()),
-          data_->size()));
+      ASSERT_TRUE(base::WriteFileDescriptor(fd.get(), *data_));
     }
   }
   void OnCancelled() override { cancelled_ = true; }
@@ -82,7 +79,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 
  private:
   bool cancelled_ = false;
-  base::Optional<std::vector<uint8_t>> data_;
+  absl::optional<std::vector<uint8_t>> data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataSourceDelegate);
 };

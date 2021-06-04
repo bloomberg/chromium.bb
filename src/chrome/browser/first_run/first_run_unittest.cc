@@ -46,7 +46,7 @@ class FirstRunTest : public testing::Test {
 
 TEST_F(FirstRunTest, SetupInitialPrefsFromInstallPrefs_NoVariationsSeed) {
   installer::InitialPreferences install_prefs("{ }");
-  EXPECT_TRUE(install_prefs.initial_dictionary().empty());
+  EXPECT_TRUE(install_prefs.initial_dictionary().DictEmpty());
 
   EXPECT_TRUE(install_prefs.GetCompressedVariationsSeed().empty());
   EXPECT_TRUE(install_prefs.GetVariationsSeedSignature().empty());
@@ -57,12 +57,12 @@ TEST_F(FirstRunTest,
   installer::InitialPreferences install_prefs(
       "{\"variations_compressed_seed\":\"xyz\","
       " \"variations_seed_signature\":\"abc\"}");
-  EXPECT_EQ(2U, install_prefs.initial_dictionary().size());
+  EXPECT_EQ(2U, install_prefs.initial_dictionary().DictSize());
 
   EXPECT_EQ("xyz", install_prefs.GetCompressedVariationsSeed());
   EXPECT_EQ("abc", install_prefs.GetVariationsSeedSignature());
   // Variations prefs should have been extracted (removed) from the dictionary.
-  EXPECT_TRUE(install_prefs.initial_dictionary().empty());
+  EXPECT_TRUE(install_prefs.initial_dictionary().DictEmpty());
 }
 
 // No switches and no sentinel present. This is the standard case for first run.

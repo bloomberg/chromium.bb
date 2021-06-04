@@ -1957,7 +1957,7 @@ class UnifiedScrollingInputHandlerProxyTest : public testing::Test {
   using LatencyInfo = ui::LatencyInfo;
   using ScrollGranularity = ui::ScrollGranularity;
   using ScrollState = cc::ScrollState;
-  using ReturnedDisposition = base::Optional<EventDisposition>;
+  using ReturnedDisposition = absl::optional<EventDisposition>;
 
   UnifiedScrollingInputHandlerProxyTest()
       : input_handler_proxy_(mock_input_handler_, &mock_client_) {}
@@ -2416,7 +2416,7 @@ TEST_F(UnifiedScrollingInputHandlerProxyTest, MainThreadHitTestFailed) {
     DispatchEvent(ScrollUpdate());
 
     EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
-    disposition = base::nullopt;
+    disposition = absl::nullopt;
 
     DispatchEvent(ScrollUpdate(), &disposition);
     EXPECT_FALSE(disposition);
@@ -2515,6 +2515,8 @@ TEST_F(InputHandlerProxyEventQueueTest,
   EXPECT_EQ(2ul, event_queue().size());
   EXPECT_EQ(event_queue()[0]->event().GetType(),
             WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_TRUE(static_cast<const WebGestureEvent&>(event_queue()[0]->event())
+                  .data.scroll_begin.synthetic);
   EXPECT_EQ(event_queue()[1]->event().GetType(),
             WebInputEvent::Type::kGestureScrollUpdate);
   cc::InputHandlerPointerResult pointer_up_result;

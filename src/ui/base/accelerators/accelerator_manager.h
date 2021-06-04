@@ -11,6 +11,11 @@
 
 #include "base/component_export.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_map.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
+#endif
 
 namespace ui {
 
@@ -79,6 +84,13 @@ class COMPONENT_EXPORT(UI_BASE) AcceleratorManager {
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;
 
+#if defined(OS_CHROMEOS)
+  void SetUsePositionalLookup(bool use_positional_lookup) {
+    DCHECK(::features::IsImprovedKeyboardShortcutsEnabled());
+    accelerators_.set_use_positional_lookup(use_positional_lookup);
+  }
+#endif  // defined(OS_CHROMEOS)
+
  private:
   // Private helper class to manage the accelerator targets and priority. Each
   // set of targets for a given accelerator can only have 0 or 1 priority
@@ -112,13 +124,16 @@ class COMPONENT_EXPORT(UI_BASE) AcceleratorManager {
     // Returns true if there are registered targets.
     bool HasTargets() const { return !targets_.empty(); }
 
+    // Returns the number of targets for this accelerator.
+    size_t size() const { return targets_.size(); }
+
    private:
     std::list<AcceleratorTarget*> targets_;
     bool has_priority_handler_ = false;
   };
 
   // The accelerators and associated targets.
-  std::map<Accelerator, AcceleratorTargetInfo> accelerators_;
+  AcceleratorMap<AcceleratorTargetInfo> accelerators_;
 };
 
 }  // namespace ui

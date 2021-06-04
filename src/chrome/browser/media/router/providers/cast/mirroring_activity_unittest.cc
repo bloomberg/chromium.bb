@@ -17,6 +17,7 @@
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 using base::test::IsJson;
 using testing::_;
@@ -365,11 +366,28 @@ TEST_F(MirroringActivityTest, GetScrubbedLogMessage) {
       "type": "OFFER"
     })";
 
-  base::Optional<base::Value> message_json = base::JSONReader::Read(message);
+  absl::optional<base::Value> message_json = base::JSONReader::Read(message);
   EXPECT_TRUE(message_json);
   EXPECT_THAT(scrubbed_message,
               base::test::IsJson(MirroringActivity::GetScrubbedLogMessage(
                   message_json.value())));
+}
+
+// Site-initiated mirroring activities must be able to send messages to the
+// client, which may be expecting to receive Cast protocol messages.
+// See crbug.com/1078481 for context.
+TEST_F(MirroringActivityTest, SendMessageToClient) {
+  MakeActivity();
+
+  static constexpr char kClientId[] = "theClientId";
+  blink::mojom::PresentationConnectionMessagePtr message =
+      blink::mojom::PresentationConnectionMessage::NewMessage("\"theMessage\"");
+  auto* message_ptr = message.get();
+  auto* client = AddMockClient(activity_.get(), kClientId, 1);
+  EXPECT_CALL(*client, SendMessageToClient).WillOnce([=](auto arg) {
+    EXPECT_EQ(message_ptr, arg.get());
+  });
+  activity_->SendMessageToClient(kClientId, std::move(message));
 }
 
 }  // namespace media_router

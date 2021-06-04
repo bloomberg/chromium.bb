@@ -5,6 +5,7 @@
 #ifndef CHROME_APP_CHROME_COMMAND_IDS_H_
 #define CHROME_APP_CHROME_COMMAND_IDS_H_
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -91,18 +92,6 @@
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_5 34083
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT IDC_VISIT_DESKTOP_OF_LRU_USER_2
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_LAST IDC_VISIT_DESKTOP_OF_LRU_USER_5
-
-// Move to desk commands
-#define IDC_MOVE_TO_DESKS_MENU 34090
-#define IDC_MOVE_TO_DESK_1 34091
-#define IDC_MOVE_TO_DESK_2 34092
-#define IDC_MOVE_TO_DESK_3 34093
-#define IDC_MOVE_TO_DESK_4 34094
-#define IDC_MOVE_TO_DESK_5 34095
-#define IDC_MOVE_TO_DESK_6 34096
-#define IDC_MOVE_TO_DESK_7 34097
-#define IDC_MOVE_TO_DESK_8 34098
-#define IDC_TOGGLE_ASSIGN_TO_ALL_DESKS 34099
 #endif
 
 // Page-related commands
@@ -133,6 +122,9 @@
 #define IDC_SAVE_AUTOFILL_ADDRESS       35025
 #define IDC_OFFERS_AND_REWARDS_FOR_PAGE 35026
 #define IDC_WEBAUTHN                    35027
+#define IDC_SHARING_HUB                 35028
+#define IDC_SHARING_HUB_MENU            35029
+#define IDC_VIRTUAL_CARD_MANUAL_FALLBACK 35030
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -398,7 +390,9 @@
 #define IDC_MEDIA_ROUTER_ABOUT 51200
 #define IDC_MEDIA_ROUTER_HELP 51201
 #define IDC_MEDIA_ROUTER_LEARN_MORE 51202
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define IDC_MEDIA_ROUTER_REPORT_ISSUE 51203
+#endif
 #define IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION 51204
 #define IDC_MEDIA_ROUTER_SHOWN_BY_POLICY 51206
 #define IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR 51207

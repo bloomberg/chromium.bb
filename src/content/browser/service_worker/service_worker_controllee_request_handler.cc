@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -29,6 +29,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -169,7 +170,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 
   // Look up a registration.
   context_->registry()->FindRegistrationForClientUrl(
-      stripped_url_,
+      stripped_url_, storage::StorageKey(url::Origin::Create(stripped_url_)),
       base::BindOnce(
           &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
           weak_factory_.GetWeakPtr()));
@@ -187,7 +188,7 @@ void ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
                               tentative_resource_request.trusted_params
                                   ? tentative_resource_request.trusted_params
                                         ->isolation_info.top_frame_origin()
-                                  : base::nullopt);
+                                  : absl::nullopt);
 }
 
 void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
@@ -448,7 +449,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.
     context_->registry()->FindRegistrationForClientUrl(
-        stripped_url_,
+        stripped_url_, storage::StorageKey(url::Origin::Create(stripped_url_)),
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
             weak_factory_.GetWeakPtr()));
@@ -504,7 +505,7 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     // continue with the incumbent version.
     // In case unregister job may have run, look up the registration again.
     context_->registry()->FindRegistrationForClientUrl(
-        stripped_url_,
+        stripped_url_, storage::StorageKey(url::Origin::Create(stripped_url_)),
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
             weak_factory_.GetWeakPtr()));

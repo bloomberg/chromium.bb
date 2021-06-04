@@ -42,6 +42,9 @@ declare_args() {
 
   # Enables non-conformant extensions and features
   angle_expose_non_conformant_extensions_and_versions = false
+
+  # Optional feature that forces dirty state whenever we use a new context regardless of thread.
+  angle_force_context_check_every_call = false
 }
 
 if (angle_build_all) {
@@ -53,9 +56,11 @@ if (angle_build_all) {
       ":translator_fuzzer",
       ":xxhash_fuzzer",
       "$angle_root/samples:angle_samples",
-      "$angle_root/src/libOpenCL:angle_cl",
       "$angle_root/src/tests:angle_tests",
     ]
+    if (angle_enable_cl) {
+      deps += [ "$angle_root/src/libOpenCL:angle_cl" ]
+    }
   }
 }
 
@@ -204,7 +209,6 @@ config("extra_warnings") {
     if (!use_xcode_clang) {
       # Mac catalyst uses a clang version that doesn't have these.
       cflags += [
-        "-Wdeprecated-copy",
         "-Wsuggest-destructor-override",
         "-Wsuggest-override",
       ]
@@ -262,9 +266,17 @@ config("angle_uwp_env") {
   }
 }
 
+angle_source_set("cl_includes") {
+  sources = cl_includes
+  public_configs = [ ":external_config" ]
+}
+
 angle_source_set("includes") {
   sources = libangle_includes
   public_configs = [ ":includes_config" ]
+  if (angle_enable_cl) {
+    public_deps = [ ":cl_includes" ]
+  }
 }
 
 angle_static_library("preprocessor") {
@@ -334,6 +346,9 @@ if (angle_has_build) {
 
 angle_static_library("angle_common") {
   sources = libangle_common_sources
+  if (angle_enable_cl) {
+    sources += libangle_common_cl_sources
+  }
 
   configs += [
     ":angle_common_config",
@@ -424,6 +439,7 @@ angle_static_library("angle_gpu_info_util") {
   if (!is_chromeos && angle_has_build) {
     sources += libangle_gpu_info_util_vulkan_sources
     deps += [ "$angle_vulkan_headers_dir:vulkan_headers" ]
+    defines += [ "ANGLE_HAS_VULKAN_SYSTEM_INFO" ]
   }
 
   if (is_android) {
@@ -551,6 +567,7 @@ template("translator_lib") {
     deps = [
       ":includes",
       ":preprocessor",
+      "$angle_root/src/common/spirv:angle_spirv_headers",
     ]
 
     if (_uses_spirv) {
@@ -580,8 +597,10 @@ translator_lib("translator") {
   gl_d3d_only = false
 }
 
-translator_lib("translator_gl_d3d_only") {
-  gl_d3d_only = true
+if (angle_enable_essl || angle_enable_glsl || angle_enable_hlsl) {
+  translator_lib("translator_gl_d3d_only") {
+    gl_d3d_only = true
+  }
 }
 
 angle_source_set("translator_fuzzer") {
@@ -646,11 +665,18 @@ config("angle_backend_config") {
     defines += [ "ANGLE_DELEGATE_WORKERS" ]
   }
 
+  if (angle_force_context_check_every_call) {
+    defines += [ "ANGLE_FORCE_CONTEXT_CHECK_EVERY_CALL=1" ]
+  }
+
+  if (angle_expose_non_conformant_extensions_and_versions) {
+    defines += [ "ANGLE_EXPOSE_NON_CONFORMANT_EXTENSIONS_AND_VERSIONS" ]
+  }
+
   configs = []
 
   if (angle_enable_d3d11) {
     configs += [ "src/libANGLE/renderer/d3d:angle_d3d11_backend_config" ]
-    defines += [ "ANGLE_FORCE_CONTEXT_CHECK_EVERY_CALL=1" ]
   }
 
   if (angle_enable_d3d9) {
@@ -671,6 +697,10 @@ config("angle_backend_config") {
 
   if (angle_enable_vulkan) {
     configs += [ "src/libANGLE/renderer/vulkan:angle_vulkan_backend_config" ]
+  }
+
+  if (angle_enable_cl_passthrough) {
+    configs += [ "src/libANGLE/renderer/cl:angle_cl_backend_config" ]
   }
 
   if (angle_is_winuwp) {
@@ -714,6 +744,9 @@ config("libANGLE_config") {
 
 angle_source_set("libANGLE_headers") {
   sources = libangle_headers
+  if (angle_enable_cl) {
+    sources += libangle_cl_headers
+  }
   public_deps = [
     ":angle_common",
     ":angle_translator_headers",
@@ -732,6 +765,7 @@ if (angle_enable_vulkan || angle_enable_metal) {
       ":libANGLE_headers",
       "$angle_root/src/common/spirv:angle_spirv_base",
       "$angle_root/src/common/spirv:angle_spirv_builder",
+      "$angle_root/src/common/spirv:angle_spirv_headers",
       "$angle_root/src/common/spirv:angle_spirv_parser",
       "${angle_spirv_headers_dir}:spv_headers",
     ]
@@ -761,6 +795,9 @@ if (is_win) {
 
 angle_source_set("libANGLE_base") {
   sources = libangle_sources
+  if (angle_enable_cl) {
+    sources += libangle_cl_sources
+  }
 
   include_dirs = []
   libs = []
@@ -819,6 +856,10 @@ angle_source_set("libANGLE_base") {
 
   if (angle_enable_metal) {
     public_deps += [ "src/libANGLE/renderer/metal:angle_metal_backend" ]
+  }
+
+  if (angle_enable_cl_passthrough) {
+    public_deps += [ "src/libANGLE/renderer/cl:angle_cl_backend" ]
   }
 
   # Enable extra Chromium style warnings for libANGLE.
@@ -1016,6 +1057,9 @@ set_defaults("angle_libGLESv2") {
 template("angle_libGLESv2") {
   angle_shared_library(target_name) {
     sources = libglesv2_sources + invoker.sources
+    if (angle_enable_cl) {
+      sources += libglesv2_cl_sources
+    }
 
     if (is_win) {
       sources += [ "src/libGLESv2/${invoker.output_name}_autogen.def" ]
@@ -1085,6 +1129,9 @@ if (is_win && !angle_is_winuwp) {
 
 angle_static_library("libGLESv2_static") {
   sources = libglesv2_sources
+  if (angle_enable_cl) {
+    sources += libglesv2_cl_sources
+  }
   configs += [ ":debug_annotations_config" ]
 
   public_configs += [ ":angle_static" ]
@@ -1112,16 +1159,6 @@ angle_shared_library("libGLESv1_CM") {
   if (is_win) {
     sources += [ "src/libGLESv1_CM/libGLESv1_CM.def" ]
   }
-}
-
-angle_static_library("libGLESv1_CM_static") {
-  sources = libglesv1_cm_sources
-  configs += [ ":debug_annotations_config" ]
-  public_configs += [ ":angle_static" ]
-  deps = [
-    ":includes",
-    ":libGLESv2_static",
-  ]
 }
 
 config("libEGL_egl_loader_config") {
@@ -1304,7 +1341,7 @@ if (is_android && symbol_level != 0) {
   }
 }
 
-if (build_with_chromium && is_android &&
+if ((angle_standalone || build_with_chromium) && is_android &&
     current_toolchain == default_toolchain) {
   apk_version_code = "0"
   if (angle_enable_commit_id) {

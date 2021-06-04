@@ -8,11 +8,11 @@
 
 Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruhen.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> ka përdorur më parë Chrome</translation>
-<translation id="1097330777386562916">Pastro kukit dhe të dhënat e sajteve kur të mbyllësh Chrome</translation>
 <translation id="110877069173485804">Ky është Chrome për ty</translation>
 <translation id="1125124144982679672">Kush po e përdor Chrome?</translation>
 <translation id="1142745911746664600">Chrome nuk mund të përditësohet</translation>
 <translation id="1154147086299354128">&amp;Hape në Chrome</translation>
+<translation id="1278833599417554002">Nise përsëri për të përditësuar &amp;Chrome</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> kërkon që të lexosh dhe të pranosh Kushtet e shërbimit më poshtë para se ta përdorësh këtë pajisje. Këto kushte nuk i zgjerojnë, modifikojnë apo kufizojnë kushtet e sistemit operativ të Google Chrome.</translation>
 <translation id="1302523850133262269">Prit ndërsa Chrome instalon përditësimet më të fundit të sistemit.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
@@ -49,6 +49,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2063848847527508675">Chrome OS ka nevojë të riniset për të zbatuar përditësimin.</translation>
 <translation id="2094919256425865063">Dëshiron ta mbyllësh Chrome gjithsesi?</translation>
 <translation id="2120620239521071941">Kjo do të fshijë <ph name="ITEMS_COUNT" /> artikuj nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chrome si <ph name="USER_EMAIL" />.</translation>
+<translation id="2121284319307530122">Nise përsëri për të përditësuar &amp;Chrome</translation>
 <translation id="2123055963409958220">Ndihmo në përmirësimin e Chrome duke raportuar <ph name="BEGIN_LINK" />cilësimet aktuale<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Rinise Chrome tani</translation>
 <translation id="2246246234298806438">Google Chrome nuk mund ta tregojë afishimin paraprak të printimit kur mungon shikuesi i integruar për PDF-të.</translation>
@@ -59,7 +60,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="234869673307233423">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri më vonë.</translation>
 <translation id="235650106824528204">Çdo e dhënë e Chrome që krijohet gjatë përdorimit të këtij profili (si p.sh. krijimi i faqeshënuesve, historikut, fjalëkalimeve dhe cilësimeve të tjera) mund të hiqet nga administratori i profilit të punës. <ph name="LEARN_MORE" /></translation>
 <translation id="2429317896000329049">Google Chrome nuk mund t'i sinkronizonte të dhënat për shkak se sinkronizimi nuk ofrohet për domenin tënd.</translation>
-<translation id="245659736593643560">Chrome OS mundësohet nga <ph name="BEGIN_LINK_CROS_OSS" />softuerë shtesë me burim të hapur<ph name="END_LINK_CROS_OSS" />, si p.sh. <ph name="BEGIN_LINK_LINUX_OSS" />mjedisi i zhvillimit të Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="2467438592969358367">Google Chrome dëshiron të eksportojë fjalëkalimet e tua. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="2485422356828889247">Çinstalo</translation>
 <translation id="2534507159460261402">Google Pay (kopjuar në Chrome)</translation>
@@ -72,6 +72,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2652691236519827073">Hape lidhjen në një &amp;skedë të re të Chrome</translation>
 <translation id="2665296953892887393">Ndihmo në përmirësimin e Google Chrome duke dërguar te Google raportet e ndërprerjeve aksidentale dhe <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Kjo shtesë ka ndryshuar se cila faqe shfaqet kur nis Chrome.</translation>
+<translation id="2742320827292110288">Paralajmërim: Google Chrome nuk mund të parandalojë regjistrimin e historikut të shfletimit nga shtesat. Për ta çaktivizuar këtë shtesë në modalitetin "e fshehtë", anulo zgjedhjen e këtij opsioni.</translation>
 <translation id="2765403129283291972">Chrome ka nevojë për leje për t'u qasur te mikrofoni yt për këtë sajt</translation>
 <translation id="2770231113462710648">Ndrysho shfletuesin me parazgjedhje në:</translation>
 <translation id="2775140325783767197">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo të kontrollosh lidhjen e internetit.</translation>
@@ -167,13 +168,13 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër të profil
 <translation id="5193136243808726294">Sistemi operativ Google Chrome nuk mund ta hapë këtë faqe.</translation>
 <translation id="521447420733633466">Nëse e ndan një pajisje, miqtë dhe familja mund të shfletojnë veçmas dhe ta konfigurojnë Chrome pikërisht ashtu si dëshirojnë.</translation>
 <translation id="5251420635869119124">Vizitorët mund të përdorin Chrome pa lënë asgjë prapa.</translation>
-<translation id="532046782124376502">Paralajmërim: Google Chrome nuk mund të parandalojë regjistrimin e historikut të shfletimit nga shtesat. Për ta çaktivizuar këtë shtesë në modalitetin "e fshehtë", anulo zgjedhjen e këtij opsioni.</translation>
 <translation id="5386244825306882791">Kontrollon po ashtu se cila faqe shfaqet kur nis Chrome ose kur kërkon nga Omnibox.</translation>
 <translation id="5394833366792865639">Ndaj një skedë të Chrome</translation>
 <translation id="5430073640787465221">Skedari i preferencave është i dëmtuar ose i pavlefshëm.
 
 Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="5434383153637353914">Kjo faqe të lejon të menaxhosh "Llogaritë e tua të Google" ku je identifikuar. Këto llogari do të ofrohen në shfletuesin Chrome dhe në aplikacionet e "Dyqanit të Play", si dhe në shërbimet si Gmail, "Disku" dhe YouTube. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
+<translation id="5486618155264784386">Instalo Chrome OS</translation>
 <translation id="556024056938947818">Google Chrome po përpiqet të shfaqë fjalëkalimet.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Nëse cilësimi nuk shfaqet në këtë faqe, shiko te <ph name="LINK_BEGIN" />
@@ -225,6 +226,7 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7106741999175697885">Menaxheri i detyrave - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Ka një përditësim të ri për Chrome dhe do të zbatohet sapo ta rinisësh.}=1{Ka një përditësim të ri për Chrome dhe do të zbatohet sapo ta rinisësh. Dritarja jote "e fshehtë" nuk do të rihapet.}other{Ka një përditësim të ri për Chrome dhe do të zbatohet sapo ta rinisësh. # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
 <translation id="7155997830309522122">Nëse po, modifiko fjalëkalimin e ruajtur në Chrome që të përputhet me fjalëkalimin tënd të ri.</translation>
+<translation id="7161904924553537242">Mirë se vjen në Google Chrome</translation>
 <translation id="7242029209006116544">Po identifikohesh me një llogari të menaxhuar dhe po i jep administratorit të saj kontroll mbi profilin tënd të Google Chrome. Të dhënat e tua të Chrome, siç janë aplikacionet, faqeshënuesit, fjalëkalimet dhe cilësime të tjera do të lidhen në mënyrë të përhershme me <ph name="USER_NAME" />. Ti do të jesh në gjendje t'i fshish këto të dhëna përmes Panelit të llogarive të Google, por nuk do të jesh në gjendje t'i shoqërosh këto të dhëna me një llogari tjetër. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Kjo gjuhë përdoret për të afishuar ndërfaqen e përdoruesit të Google Chrome</translation>
 <translation id="7296210096911315575">Informacione të rëndësishme për përdorimin dhe sigurinë</translation>
@@ -242,6 +244,7 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7629695634924605473">Chrome të informon nëse fjalëkalimet e tua komprometohen ndonjëherë</translation>
 <translation id="7641148173327520642">Administratori i sistemit ka konfiguruar Google Chrome që të hapë <ph name="ALTERNATIVE_BROWSER_NAME" /> për t'u qasur te <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logoja e Chrome Enterprise</translation>
+<translation id="7665553140559834626">Nise përsëri për të përditësuar &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Instaluesi nuk mund të krijonte një direktori të përkohshme. Kontrollo për hapësirë të lirë në disk dhe për lejen për të instaluar softuerin.</translation>
 <translation id="7761834446675418963">Kliko tek emri yt për të hapur Chrome dhe fillo shfletimin.</translation>
 <translation id="7777080907402804672">Nëse një imazh nuk ka një përshkrim të dobishëm, Chrome do të përpiqet të të japë një përshkrim. Për të krijuar përshkrime, imazhet dërgohen te Google. Këtë mund ta çaktivizosh te cilësimet në çdo moment.</translation>
@@ -253,9 +256,10 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7855730255114109580">Google Chrome është i përditësuar</translation>
 <translation id="7890208801193284374">Nëse e ndan një kompjuter, miqtë dhe familja mund të shfletojnë veçmas dhe ta konfigurojnë Chrome pikërisht ashtu si dëshirojnë.</translation>
 <translation id="7896673875602241923">Dikush është identifikuar më parë në Chrome në këtë kompjuter si <ph name="ACCOUNT_EMAIL_LAST" />. Krijo një përdorues të ri të Chrome për t'i mbajtur të ndara informacionet e tua.</translation>
-<translation id="7905891027772979035">Chrome nuk mund t'i kontrollojë shtesat e tua. Provo përsëri më vonë.</translation>
 <translation id="7930071585467473040">Google Chrome po përpiqet të kopjojë fjalëkalimet.</translation>
+<translation id="7951988079884443914">Chrome rekomandon që të mos e shkarkosh apo hapësh këtë skedar.</translation>
 <translation id="7962410387636238736">Ky kompjuter nuk do të marrë më përditësime të Google Chrome sepse Windows XP dhe Windows Vista nuk mbështeten më</translation>
+<translation id="79947657522496226">Chrome OS mundësohet nga <ph name="BEGIN_LINK_CROS_OSS" />softuerë shtesë me burim të hapur<ph name="END_LINK_CROS_OSS" />, si p.sh. <ph name="BEGIN_LINK_LINUX_OSS" />mjedisi i zhvillimit të Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">Instalo përsëri Chrome</translation>
 <translation id="8013993649590906847">Nëse një imazh nuk ka një përshkrim të dobishëm, Chrome do të përpiqet të të japë një përshkrim. Për të krijuar përshkrime, imazhet dërgohen te Google.</translation>
 <translation id="8129812357326543296">Informacion rreth &amp;Google Chrome</translation>

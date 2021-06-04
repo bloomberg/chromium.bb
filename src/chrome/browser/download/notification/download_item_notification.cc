@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -301,8 +303,8 @@ void DownloadItemNotification::Close(bool by_user) {
 }
 
 void DownloadItemNotification::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<std::u16string>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   if (!item_)
     return;
 
@@ -514,7 +516,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
   std::unique_ptr<std::vector<DownloadCommands::Command>> actions(
       GetExtraActions());
 
-  button_actions_.reset(new std::vector<DownloadCommands::Command>);
+  button_actions_ = std::make_unique<std::vector<DownloadCommands::Command>>();
   for (auto it = actions->begin(); it != actions->end(); it++) {
     button_actions_->push_back(*it);
     message_center::ButtonInfo button_info =
@@ -857,6 +859,15 @@ std::u16string DownloadItemNotification::GetWarningStatusString() const {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
                                         elided_filename);
+    }
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE: {
+      return base::FeatureList::IsEnabled(
+                 safe_browsing::kSafeBrowsingCTDownloadWarning)
+                 ? l10n_util::GetStringFUTF16(
+                       IDS_PROMPT_DANGEROUS_DOWNLOAD_ACCOUNT_COMPROMISE,
+                       elided_filename)
+                 : l10n_util::GetStringFUTF16(
+                       IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT, elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       bool requests_ap_verdicts =

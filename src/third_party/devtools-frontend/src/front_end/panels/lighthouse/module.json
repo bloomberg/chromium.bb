@@ -1,9 +1,9 @@
 {
   "dependencies": [
-    "components",
+    "ui/legacy/components/utils",
     "panels/emulation",
-    "timeline",
-    "inspector_main",
+    "panels/timeline",
+    "entrypoints/inspector_main",
     "ui/legacy"
   ],
     "resources": [

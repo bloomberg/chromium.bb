@@ -50,6 +50,7 @@ class SharedImageBackingFactory {
       int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,

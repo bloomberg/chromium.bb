@@ -12,6 +12,7 @@
 
 namespace apps {
 class AppUpdate;
+enum class AppTypeName;
 }
 
 class Profile;
@@ -53,6 +54,8 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
   void SetForceLaunchBrowserForTesting();
 
  private:
+  friend class AppLaunchHandlerArcAppBrowserTest;
+
   void OnGetRestoreData(
       std::unique_ptr<::full_restore::RestoreData> restore_data);
 
@@ -67,11 +70,15 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
   void LaunchApp(apps::mojom::AppType app_type, const std::string& app_id);
 
   void LaunchSystemWebAppOrChromeApp(
+      apps::mojom::AppType app_type,
       const std::string& app_id,
       const ::full_restore::RestoreData::LaunchList& launch_list);
 
   void LaunchArcApp(const std::string& app_id,
                     const ::full_restore::RestoreData::LaunchList& launch_list);
+
+  void RecordRestoredAppLaunch(apps::AppTypeName app_type_name);
+  void RecordArcGhostWindowLaunch(bool is_arc_ghost_window);
 
   Profile* profile_ = nullptr;
 

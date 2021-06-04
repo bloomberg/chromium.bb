@@ -21,6 +21,7 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -89,7 +90,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   explicit TestSyncProcessorStub(syncer::SyncChangeList* output)
       : output_(output), fail_next_(false) {}
 
-  base::Optional<syncer::ModelError> ProcessSyncChanges(
+  absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (output_)
@@ -98,7 +99,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
       fail_next_ = false;
       return syncer::ModelError(FROM_HERE, "Error");
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   void FailNextProcessSyncChanges() { fail_next_ = true; }
@@ -168,8 +169,10 @@ syncer::SyncChange MakeRemoteChange(const std::string& name,
       PrefModelAssociator::GetMutableSpecifics(model_type, &entity);
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncChange(FROM_HERE, change_type,
-                            syncer::SyncData::CreateRemoteData(entity));
+  return syncer::SyncChange(
+      FROM_HERE, change_type,
+      syncer::SyncData::CreateRemoteData(
+          entity, syncer::ClientTagHash::FromUnhashed(model_type, name)));
 }
 
 // Creates a SyncChange for model type |PREFERENCES|.
@@ -189,7 +192,9 @@ SyncData CreateRemoteSyncData(const std::string& name,
   sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
   pref_one->set_name(name);
   pref_one->set_value(serialized);
-  return SyncData::CreateRemoteData(one);
+  return SyncData::CreateRemoteData(
+      one, syncer::ClientTagHash::FromUnhashed(syncer::ModelType::PREFERENCES,
+                                               name));
 }
 
 class PrefServiceSyncableTest : public testing::Test {
@@ -221,7 +226,7 @@ class PrefServiceSyncableTest : public testing::Test {
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
-    base::Optional<syncer::ModelError> error =
+    absl::optional<syncer::ModelError> error =
         pref_sync_service_->MergeDataAndStartSyncing(
             syncer::PREFERENCES, initial_data,
             std::make_unique<TestSyncProcessorStub>(output),
@@ -445,7 +450,9 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     pref_one->set_name(name);
     pref_one->set_value(serialized);
     return syncer::SyncChange(FROM_HERE, type,
-                              syncer::SyncData::CreateRemoteData(entity));
+                              syncer::SyncData::CreateRemoteData(
+                                  entity, syncer::ClientTagHash::FromUnhashed(
+                                              syncer::PREFERENCES, name)));
   }
 
   void AddToRemoteDataList(const std::string& name,
@@ -458,12 +465,13 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
     pref_one->set_name(name);
     pref_one->set_value(serialized);
-    out->push_back(SyncData::CreateRemoteData(one));
+    out->push_back(SyncData::CreateRemoteData(
+        one, syncer::ClientTagHash::FromUnhashed(syncer::PREFERENCES, name)));
   }
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
-    base::Optional<syncer::ModelError> error =
+    absl::optional<syncer::ModelError> error =
         pref_sync_service_->MergeDataAndStartSyncing(
             syncer::PREFERENCES, initial_data,
             std::make_unique<TestSyncProcessorStub>(output),
@@ -533,10 +541,11 @@ TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedListValues) {
 // managed preferences.
 TEST_F(PrefServiceSyncableMergeTest, ManagedListPreferences) {
   // Make the list of urls to restore on startup managed.
-  base::ListValue managed_value;
-  managed_value.AppendString(kExampleUrl0);
-  managed_value.AppendString(kExampleUrl1);
-  managed_prefs_->SetValue(kListPrefName, managed_value.CreateDeepCopy(),
+  base::Value managed_value(base::Value::Type::LIST);
+  managed_value.Append(kExampleUrl0);
+  managed_value.Append(kExampleUrl1);
+  managed_prefs_->SetValue(kListPrefName,
+                           base::Value::ToUniquePtrValue(managed_value.Clone()),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Set a cloud version.
@@ -678,7 +687,7 @@ TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   syncer::SyncChangeList output;
   TestSyncProcessorStub* stub = new TestSyncProcessorStub(&output);
   stub->FailNextProcessSyncChanges();
-  base::Optional<syncer::ModelError> error =
+  absl::optional<syncer::ModelError> error =
       pref_sync_service_->MergeDataAndStartSyncing(
           syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
           std::make_unique<syncer::SyncErrorFactoryMock>());
@@ -938,7 +947,7 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
   void InitSyncForType(ModelType type,
                        syncer::SyncChangeList* output = nullptr) {
     syncer::SyncDataList empty_data;
-    base::Optional<syncer::ModelError> error =
+    absl::optional<syncer::ModelError> error =
         prefs_->GetSyncableService(type)->MergeDataAndStartSyncing(
             type, empty_data, std::make_unique<TestSyncProcessorStub>(output),
             std::make_unique<syncer::SyncErrorFactoryMock>());
@@ -973,7 +982,8 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
         PrefModelAssociator::GetMutableSpecifics(model_type, &entity);
     pref->set_name(name);
     pref->set_value(serialized);
-    return SyncData::CreateRemoteData(entity);
+    return SyncData::CreateRemoteData(
+        entity, syncer::ClientTagHash::FromUnhashed(model_type, name));
   }
 
  protected:

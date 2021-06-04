@@ -15,16 +15,6 @@ namespace cast {
 namespace capture_recommendations {
 namespace {
 
-bool DoubleEquals(double a, double b) {
-  // Choice of epsilon for double comparison allows for proper comparison
-  // for both aspect ratios and frame rates. For frame rates, it is based on the
-  // broadcast rate of 29.97fps, which is actually 29.976. For aspect ratios, it
-  // allows for a one-pixel difference at a 4K resolution, we want it to be
-  // relatively high to avoid false negative comparison results.
-  const double kEpsilon = .0001;
-  return std::abs(a - b) < kEpsilon;
-}
-
 void ApplyDisplay(const DisplayDescription& description,
                   Recommendations* recommendations) {
   recommendations->video.supports_scaling =
@@ -35,14 +25,15 @@ void ApplyDisplay(const DisplayDescription& description,
   // We should never exceed the display's resolution, since it will always
   // force scaling.
   if (description.dimensions) {
-    const double frame_rate =
-        static_cast<double>(description.dimensions->frame_rate);
-    recommendations->video.maximum =
-        Resolution{description.dimensions->width,
-                   description.dimensions->height, frame_rate};
+    recommendations->video.maximum = description.dimensions.value();
     recommendations->video.bit_rate_limits.maximum =
         recommendations->video.maximum.effective_bit_rate();
-    recommendations->video.minimum.set_minimum(recommendations->video.maximum);
+
+    if (recommendations->video.maximum.width <
+        recommendations->video.minimum.width) {
+      recommendations->video.minimum =
+          recommendations->video.maximum.ToResolution();
+    }
   }
 
   // If the receiver gives us an aspect ratio that doesn't match the display
@@ -53,16 +44,6 @@ void ApplyDisplay(const DisplayDescription& description,
   if (description.aspect_ratio) {
     aspect_ratio = static_cast<double>(description.aspect_ratio->width) /
                    description.aspect_ratio->height;
-#if OSP_DCHECK_IS_ON()
-    if (description.dimensions) {
-      const double from_dims =
-          static_cast<double>(description.dimensions->width) /
-          description.dimensions->height;
-      if (!DoubleEquals(from_dims, aspect_ratio)) {
-        OSP_DLOG_WARN << "Received mismatched aspect ratio from the receiver.";
-      }
-    }
-#endif
     recommendations->video.maximum.width =
         recommendations->video.maximum.height * aspect_ratio;
   } else if (description.dimensions) {
@@ -73,10 +54,6 @@ void ApplyDisplay(const DisplayDescription& description,
   }
   recommendations->video.minimum.width =
       recommendations->video.minimum.height * aspect_ratio;
-}
-
-Resolution ToResolution(const Dimensions& dims) {
-  return {dims.width, dims.height, static_cast<double>(dims.frame_rate)};
 }
 
 void ApplyConstraints(const Constraints& constraints,
@@ -109,17 +86,18 @@ void ApplyConstraints(const Constraints& constraints,
                              recommendations->video.bit_rate_limits.minimum),
                     std::min(constraints.video.max_bit_rate,
                              recommendations->video.bit_rate_limits.maximum)};
-  Resolution max = ToResolution(constraints.video.max_dimensions);
-  if (max <= kDefaultMinResolution) {
-    recommendations->video.maximum = kDefaultMinResolution;
-  } else if (max < recommendations->video.maximum) {
-    recommendations->video.maximum = std::move(max);
+  Dimensions dimensions = constraints.video.max_dimensions;
+  if (dimensions.width <= kDefaultMinResolution.width) {
+    recommendations->video.maximum = {kDefaultMinResolution.width,
+                                      kDefaultMinResolution.height,
+                                      kDefaultFrameRate};
+  } else if (dimensions.width < recommendations->video.maximum.width) {
+    recommendations->video.maximum = std::move(dimensions);
   }
-  // Implicit else: maximum = kDefaultMaxResolution.
 
-  if (constraints.video.min_dimensions) {
-    Resolution min = ToResolution(constraints.video.min_dimensions.value());
-    if (kDefaultMinResolution < min) {
+  if (constraints.video.min_resolution) {
+    const Resolution& min = constraints.video.min_resolution->ToResolution();
+    if (kDefaultMinResolution.width < min.width) {
       recommendations->video.minimum = std::move(min);
     }
   }
@@ -135,25 +113,6 @@ bool Audio::operator==(const Audio& other) const {
   return std::tie(bit_rate_limits, max_delay, max_channels, max_sample_rate) ==
          std::tie(other.bit_rate_limits, other.max_delay, other.max_channels,
                   other.max_sample_rate);
-}
-
-bool Resolution::operator==(const Resolution& other) const {
-  return (std::tie(width, height) == std::tie(other.width, other.height)) &&
-         DoubleEquals(frame_rate, other.frame_rate);
-}
-
-bool Resolution::operator<(const Resolution& other) const {
-  return effective_bit_rate() < other.effective_bit_rate();
-}
-
-bool Resolution::operator<=(const Resolution& other) const {
-  return (*this == other) || (*this < other);
-}
-
-void Resolution::set_minimum(const Resolution& other) {
-  if (other < *this) {
-    *this = other;
-  }
 }
 
 bool Video::operator==(const Video& other) const {

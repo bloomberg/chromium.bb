@@ -31,6 +31,25 @@ CSSNumericSumValue::UnitMap MultiplyUnitMaps(
 
 }  // namespace
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+CSSMathProduct* CSSMathProduct::Create(
+    const HeapVector<Member<V8CSSNumberish>>& args,
+    ExceptionState& exception_state) {
+  if (args.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Arguments can't be empty");
+    return nullptr;
+  }
+
+  CSSMathProduct* result = Create(CSSNumberishesToNumericValues(args));
+  if (!result) {
+    exception_state.ThrowTypeError("Incompatible types");
+    return nullptr;
+  }
+
+  return result;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSMathProduct* CSSMathProduct::Create(const HeapVector<CSSNumberish>& args,
                                        ExceptionState& exception_state) {
   if (args.IsEmpty()) {
@@ -47,6 +66,7 @@ CSSMathProduct* CSSMathProduct::Create(const HeapVector<CSSNumberish>& args,
 
   return result;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSMathProduct* CSSMathProduct::Create(CSSNumericValueVector values) {
   bool error = false;
@@ -58,7 +78,7 @@ CSSMathProduct* CSSMathProduct::Create(CSSNumericValueVector values) {
                      final_type);
 }
 
-base::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
+absl::optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
   CSSNumericSumValue sum;
   // Start with the number '1', which is the multiplicative identity.
   sum.terms.push_back(CSSNumericSumValue::Term{1, {}});
@@ -66,7 +86,7 @@ base::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
   for (const auto& value : NumericValues()) {
     const auto child_sum = value->SumValue();
     if (!child_sum)
-      return base::nullopt;
+      return absl::nullopt;
 
     CSSNumericSumValue new_sum;
     for (const auto& a : sum.terms) {

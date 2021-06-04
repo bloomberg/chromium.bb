@@ -19,7 +19,7 @@
 class AppDistributionProvider;
 class BrandedImageProvider;
 class BrowserURLRewriterProvider;
-class ChromeBrowserState;
+class ModalsProvider;
 class DiscoverFeedProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
@@ -35,7 +35,6 @@ class CommandLine;
 }
 
 namespace web {
-class SerializableUserDataManager;
 class WebState;
 }
 
@@ -111,23 +110,9 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Creates and returns a new styled text field.
   virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
-  // Allow embedders to inject data.
-  virtual void AddSerializableData(
-      web::SerializableUserDataManager* user_data_manager,
-      web::WebState* web_state);
-
-  // Whether the embedder might block specific URL.
-  virtual bool MightBlockUrlDuringRestore();
-
-  // Attaches any embedder-specific tab helpers to the given |web_state|.
-  virtual void AttachTabHelpers(web::WebState* web_state) const;
 
   // Attaches any embedder-specific browser agents to the given |browser|.
   virtual void AttachBrowserAgents(Browser* browser) const;
-
-  // Schedule any embedder-specific startup tasks.
-  virtual void ScheduleDeferredStartupTasks(
-      ChromeBrowserState* browser_state) const;
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
@@ -175,6 +160,8 @@ class ChromeBrowserProvider {
 
   virtual TextZoomProvider* GetTextZoomProvider() const;
 
+  virtual ModalsProvider* GetModalsProvider() const;
+
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -186,6 +173,7 @@ class ChromeBrowserProvider {
  private:
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
+  std::unique_ptr<ModalsProvider> modals_provider_;
   std::unique_ptr<TextZoomProvider> text_zoom_provider_;
 };
 

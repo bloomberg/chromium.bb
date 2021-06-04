@@ -20,7 +20,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -256,17 +255,17 @@ std::string GetSecureDirectiveValues(
     if (is_secure_csp_token) {
       sane_csp_parts.push_back(source_literal);
     } else if (warnings) {
-      warnings->push_back(InstallWarning(
-          ErrorUtils::FormatErrorMessage(
-              manifest_errors::kInvalidCSPInsecureValueIgnored, manifest_key,
-              source_literal.as_string(), directive_name),
-          manifest_key));
+      warnings->push_back(
+          InstallWarning(ErrorUtils::FormatErrorMessage(
+                             manifest_errors::kInvalidCSPInsecureValueIgnored,
+                             manifest_key, source_literal, directive_name),
+                         manifest_key));
     }
   }
   // End of CSP directive that was started at the beginning of this method. If
   // none of the values are secure, the policy will be empty and default to
   // 'none', which is secure.
-  std::string last_part = sane_csp_parts.back().as_string();
+  std::string last_part(sane_csp_parts.back());
   last_part.push_back(kDirectiveSeparator);
   sane_csp_parts.back() = last_part;
   return base::JoinString(sane_csp_parts, " ");
@@ -294,11 +293,11 @@ std::string GetAppSandboxSecureDirectiveValues(
       seen_self_or_none |= source_lower == "'none'" || source_lower == "'self'";
       sane_csp_parts.push_back(source_lower);
     } else if (warnings) {
-      warnings->push_back(InstallWarning(
-          ErrorUtils::FormatErrorMessage(
-              manifest_errors::kInvalidCSPInsecureValueIgnored, manifest_key,
-              source_literal.as_string(), directive_name),
-          manifest_key));
+      warnings->push_back(
+          InstallWarning(ErrorUtils::FormatErrorMessage(
+                             manifest_errors::kInvalidCSPInsecureValueIgnored,
+                             manifest_key, source_literal, directive_name),
+                         manifest_key));
     }
   }
 
@@ -352,12 +351,12 @@ class CSPDirectiveToken {
     if (secure_value_)
       return secure_value_.value();
     // This token didn't require modification.
-    return directive_.directive_string.as_string() + kDirectiveSeparator;
+    return std::string(directive_.directive_string) + kDirectiveSeparator;
   }
 
  private:
   const Directive& directive_;
-  base::Optional<std::string> secure_value_;
+  absl::optional<std::string> secure_value_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPDirectiveToken);
 };

@@ -22,6 +22,7 @@
 <translation id="1120938014254001895">ორი თითით გადაფურცვლა ზემოთ</translation>
 <translation id="1126928665165112660">დაუხრელი</translation>
 <translation id="113582498867142724"><ph name="TAG" /> კოლექცია <ph name="NUM" /> ელემენტით</translation>
+<translation id="1146441463334103638">ეკრანის ჩართვა ან გამორთვა</translation>
 <translation id="1156488781945104845">მიმდინარე დრო</translation>
 <translation id="1161762950103988776">გადასვლა</translation>
 <translation id="1164857107703583584">გადასვლის ბრძანებების მეშვეობით შესაძლებელია ეფექტური ნავიგაცია ვებგვერდზე.</translation>
@@ -179,6 +180,7 @@
 <translation id="2216790501338699346">ბმულის URL: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">ერთი სიმბოლოთი უკან გადასვლა</translation>
 <translation id="2220529011494928058">შეტყობინება პრობლემის შესახებ</translation>
+<translation id="2243633977138166243">ნავიგაციისთვის დააჭირეთ კლავიშებს მარცხნივ ან მარჯვნივ მიმართული ისრებით, გასააქტიურებლად — კლავიშს enter</translation>
 <translation id="224426591676115802"><ph name="LANGUAGE" /> ხმები მიუწვდომელია</translation>
 <translation id="2247700577781885251">მიმდინარეობს სწავლის რეჟიმის შეწყვეტა</translation>
 <translation id="225732394367814946">მეტყველების სიჩქარის გაზრდა</translation>
@@ -239,7 +241,9 @@
 <translation id="2675533876313964202">შარტრეზისფერი</translation>
 <translation id="2684412629217766642">ChromeVox-ის სახელმძღვანელოს დახურვა</translation>
 <translation id="2697408785920771974">autoinl</translation>
+<translation id="2697786971245905543">ტექსტის გარდაქმნის კანდიდატი</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{ღია ფრჩხილი}other{# ღია ფრჩხილები}}</translation>
+<translation id="270523456882008230">მინიშნება: ამჟამინდელი ერთეულის გასააქტიურებლად შეეხეთ ორმაგად ერთი თითით.</translation>
 <translation id="2705875883745373140">არ არის დაჭერილი</translation>
 <translation id="2708078563826046398">მუქი ატმისფერი</translation>
 <translation id="2713444072780614174">თეთრი</translation>
@@ -255,7 +259,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">წინა ერთეულზე გადასასვლელად შეგიძლიათ ერთი თითით მარჯვნიდან მარცხნივ გადაფურცვლაც. ცადეთ ახლავე.</translation>
 <translation id="280499067616661124">ChromeVox-ის გვერდზე ძიების ფუნქცია</translation>
-<translation id="2808001342598757276">ეკრანის დაბნელების გაუქმება</translation>
 <translation id="2811019999044652585">ეკრანის ისეთ ნაწილებზე გადასასვლელად, როგორიცაა ხელსაწყოთა ზოლები ან სისტემური არე, დააჭირეთ კლავიშთა კომბინაციას: Control + წინ. Chromebook-ზე კლავიში „წინ“ 2-იანის თავზე მდებარეობს.</translation>
 <translation id="2811204574343810641">სტრიქონი</translation>
 <translation id="2816868829355607410">პრაქტიკის არე: გადასვლის ბრძანებები</translation>
@@ -285,6 +288,7 @@
 <translation id="2972205263822847197">მინიშნება</translation>
 <translation id="2976476721782829799">გადაადგილება შეგიძლიათ ერთი თითის ეკრანის გარშემო გადატარებითაც. ამას ეწოდება შეხებით დათვალიერება. ცადეთ თითის გადატარება, ამ გაკვეთილის დარჩენილი ნაწილი რომ წაიკითხოთ.</translation>
 <translation id="297825089465017871">ორი თითით გადაფურცვლა მარცხნივ</translation>
+<translation id="2988364959384217951">მინიშნება: თუ ამ სახელმძღვანელოდან გასვლა გსურთ, გადაფურცლეთ ორი თითით მარჯვნიდან მარცხნივ.</translation>
 <translation id="2998131015536248178">წინა სიმბოლო</translation>
 <translation id="2999559350546931576">სიმაღლის შემცირება</translation>
 <translation id="3009352964623081324">Search + O, შემდეგ S. გამოიყენეთ ხმების ინსტალაციისთვის, მართვისთვის და მორგებისთვის.</translation>
@@ -302,6 +306,7 @@
 <translation id="3082249673510793544">უკან გადაადგილება</translation>
 <translation id="3084806535845658316">აკრეფისის ექო არ არის</translation>
 <translation id="3086746722712840547">შენიშვნა</translation>
+<translation id="308736057934395497">კონფიდენციალურობის გაუმჯობესების მიზნით, თქვენი ეკრანი გამოირთვება, რომ სხვებმა ვერ ნახონ. ეკრანის ხელახლა ჩართვას ნებისმიერ დროს შეძლებთ კლავიშთა კომბინაციით Search + სიკაშკაშის აწევა.</translation>
 <translation id="3090227230165225418">ჩამოტვირთვის შეტყობინებების გამოცხადება</translation>
 <translation id="3090532668523289635">ჯგუფი</translation>
 <translation id="3093176084511590672">შემდეგი ორიენტირი</translation>
@@ -312,6 +317,7 @@
 <translation id="3109724472072898302">აკეცილი</translation>
 <translation id="311015743332597320">ოთხი თითით გადაფურცვლა მარჯვნივ</translation>
 <translation id="3112457281078985179">ChromeVox-ის ჩასართავად ან გამოსართავად, გამოიყენეთ კლავიშთა კომბინაცია: Control + Alt + Z.</translation>
+<translation id="3115800313647508384">გსურთ ეკრანის გამორთვა?</translation>
 <translation id="3131002934070407451">რიცხვების წაკითხვა, როგორც:</translation>
 <translation id="3134461040845705080">მხოლოდ წაკითხვადი</translation>
 <translation id="3137663468179739624">ზეთისხილისფერი</translation>
@@ -719,7 +725,6 @@
 <translation id="6034000775414344507">ღია ნაცრისფერი</translation>
 <translation id="6036135911048686884">შეხებით დათვალიერება</translation>
 <translation id="6037602951055904232">წინ გადაწევა</translation>
-<translation id="6044160928851315051">ეკრანის დაბნელება</translation>
 <translation id="6082768461603900813">ძირითადი ნავიგაცია</translation>
 <translation id="609281021724813947">წინა სლაიდერი არ არის</translation>
 <translation id="6100239002225743044">ერთი ხაზით ზემოთ გადასვლა</translation>
@@ -790,6 +795,7 @@
 <translation id="6696967141280706829">წინათქმა</translation>
 <translation id="6697092096875747123">წინა კომბო-ველი</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{ძახილის ნიშანი}other{# ძახილის ნიშანი}}</translation>
+<translation id="670717715607710284">ეკრანის გამორთვა</translation>
 <translation id="6710213216561001401">წინა</translation>
 <translation id="6714813999819678458">წინა მე-2 დონის სათაური</translation>
 <translation id="6730312624811567147">გამოიყენეთ კლავიშთა კომბინაცია Search და ისარი მარცხნივ ან მარჯვნივ Home ან End კლავიშის ასამოქმედებლად, კლავიშთა კომბინაცია Search Control და ისარი მარცხნივ ან მარჯვნივ კლავიშთა კომბინაციის Control Home ან Control End ასამოქმედებლად, კლავიშთა კომბინაცია Search და ისარი ზემოთ ან ქვემოთ Page Up ან Page Down კლავიშის ასამოქმედებლად</translation>
@@ -938,6 +944,7 @@
 <translation id="7776293189010177726">ChromeVox-ის მენიუების გახსნა</translation>
 <translation id="7799302833060027366">მათემატიკური კონტენტისთვის გამოიყენეთ ზემოთ, ქვემოთ, მარცხნივ ან მარჯვნივ მიმართული ისრებიანი კლავიშები</translation>
 <translation id="7800558923657349506">ეპილოგი</translation>
+<translation id="7801768143868631306">მინიშნება: ნავიგაციისთვის გადაფურცლეთ ერთი თითით მარცხნივ ან მარჯვნივ.</translation>
 <translation id="7805768142964895445">სტატუსი</translation>
 <translation id="7810781339813764006">შემდეგი ჯგუფი</translation>
 <translation id="7813616274030162878">გადამრთველით წვდომის მენიუ</translation>
@@ -991,6 +998,7 @@
 <translation id="816818801578874684">ეს არის პირველი სათაური. შემდეგ სათაურზე გადასასვლელად დააჭირეთ კლავიშთა კომბინაციას Search + H.</translation>
 <translation id="8173092779156526980">ოთხი თითით გადაფურცვლა მარცხნივ</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ქვეტირე}other{# ქვეტირეები}}</translation>
+<translation id="817529114347680055">ეკრანის ჩართვა</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">მწკრივი</translation>
 <translation id="8186185314313222077">სრულ ეკრანზე გადართვა</translation>
@@ -1013,7 +1021,6 @@
 <translation id="8316881042119029234">ძველი მაქმანისფერი</translation>
 <translation id="8324974933005349667">ტექსტის გახმოვანების პარამეტრების პერსონალიზება</translation>
 <translation id="8326783648485765113">მოლისფერი</translation>
-<translation id="8328063869313048659">მუქი ეკრანის რეჟიმის გადართვა</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{ფუნტი}other{# ფუნტის ნიშანი}}</translation>
 <translation id="8378855320830505539">რეგიონი</translation>
 <translation id="8382679411218029383">ავტომატური შევსების თანმიმდევრობა და სია</translation>

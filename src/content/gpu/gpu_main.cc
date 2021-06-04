@@ -15,7 +15,6 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool.h"
@@ -184,33 +183,6 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
 };
-
-#if defined(OS_MAC)
-void TestShaderCallback(metal::TestShaderComponent component,
-                        metal::TestShaderResult result,
-                        const base::TimeDelta& callback_time) {
-  switch (result) {
-    case metal::TestShaderResult::kNotAttempted:
-    case metal::TestShaderResult::kFailed:
-      // Don't include data if no Metal device was created (e.g, due to hardware
-      // or macOS version reasons).
-      return;
-    case metal::TestShaderResult::kTimedOut:
-      break;
-    case metal::TestShaderResult::kSucceeded:
-      break;
-  }
-  switch (component) {
-    case metal::TestShaderComponent::kCompile:
-      UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime",
-                                 callback_time);
-      break;
-    case metal::TestShaderComponent::kLink:
-      UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderLinkTime", callback_time);
-      break;
-  }
-}
-#endif
 
 }  // namespace
 
@@ -438,11 +410,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   // process exits, it appears that the browser process is no longer considered
   // to be using the GPU, so it "succeeds" the 'wait'.
   metal::RegisterGracefulExitOnDeviceRemoval();
-
-  // Launch a test metal shader compile to see how long it takes to complete (if
-  // it ever completes).
-  // https://crbug.com/974219
-  metal::TestShader(base::BindOnce(TestShaderCallback));
 #endif
 
 #if defined(OS_ANDROID)
@@ -500,7 +467,7 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   if (watchdog_thread) {
     base::Thread::Options thread_options;
     thread_options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    watchdog_thread->StartWithOptions(thread_options);
+    watchdog_thread->StartWithOptions(std::move(thread_options));
   }
 
   return res;

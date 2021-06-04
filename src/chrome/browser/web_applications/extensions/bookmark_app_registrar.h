@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
@@ -42,9 +41,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
   std::string GetAppDescription(const web_app::AppId& app_id) const override;
-  base::Optional<SkColor> GetAppThemeColor(
+  absl::optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
-  base::Optional<SkColor> GetAppBackgroundColor(
+  absl::optional<SkColor> GetAppBackgroundColor(
       const web_app::AppId& app_id) const override;
   const GURL& GetAppStartUrl(const web_app::AppId& app_id) const override;
   const std::string* GetAppLaunchQueryParams(
@@ -55,7 +54,11 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const apps::FileHandlers* GetAppFileHandlers(
       const web_app::AppId& app_id) const override;
-  base::Optional<GURL> GetAppScopeInternal(
+  const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const web_app::AppId& app_id) const override;
+  bool IsAppFileHandlerPermissionBlocked(
+      const web_app::AppId& app_id) const override;
+  absl::optional<GURL> GetAppScopeInternal(
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
@@ -81,6 +84,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
   web_app::WebAppRegistrar* AsWebAppRegistrar() override;
+  const web_app::WebAppRegistrar* AsWebAppRegistrar() const override;
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
 
   syncer::StringOrdinal GetUserPageOrdinal(const web_app::AppId& app_id) const;
@@ -121,8 +125,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   const Extension* GetBookmarkAppDchecked(const web_app::AppId& app_id) const;
   const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_observation_{this};
 
   // Observers may find this pointer via FindExtension method.
   const Extension* bookmark_app_being_observed_ = nullptr;

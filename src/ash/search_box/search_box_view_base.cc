@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/search_box/search_box_view_delegate.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -92,9 +93,36 @@ class SearchBoxImageButton : public views::ImageButton {
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
     // InkDropState will reset after clicking.
     SetHasInkDropActionOnClick(true);
+    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+        [](Button* host) {
+          constexpr SkColor ripple_color =
+              SkColorSetA(gfx::kGoogleGrey900, 0x12);
+          auto highlight = std::make_unique<views::InkDropHighlight>(
+              gfx::SizeF(host->size()), ripple_color);
+          highlight->set_visible_opacity(1.f);
+          return highlight;
+        },
+        this));
+    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+        [](SearchBoxImageButton* host)
+            -> std::unique_ptr<views::InkDropRipple> {
+          const gfx::Point center = host->GetLocalBounds().CenterPoint();
+          const int ripple_radius = host->GetInkDropRadius();
+          gfx::Rect bounds(center.x() - ripple_radius,
+                           center.y() - ripple_radius, 2 * ripple_radius,
+                           2 * ripple_radius);
+          constexpr SkColor ripple_color =
+              SkColorSetA(gfx::kGoogleGrey900, 0x17);
+
+          return std::make_unique<views::FloodFillInkDropRipple>(
+              host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              ripple_color, 1.0f);
+        },
+        this));
 
     SetPreferredSize({kSearchBoxButtonSizeDip, kSearchBoxButtonSizeDip});
     SetImageHorizontalAlignment(ALIGN_CENTER);
@@ -124,28 +152,6 @@ class SearchBoxImageButton : public views::ImageButton {
   void OnBlur() override {
     views::ImageButton::OnBlur();
     SchedulePaint();
-  }
-
-  // views::InkDropHostView:
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    const gfx::Point center = GetLocalBounds().CenterPoint();
-    const int ripple_radius = GetInkDropRadius();
-    gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
-                     2 * ripple_radius, 2 * ripple_radius);
-    constexpr SkColor ripple_color = SkColorSetA(gfx::kGoogleGrey900, 0x17);
-
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), ripple_color, 1.0f);
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    constexpr SkColor ripple_color = SkColorSetA(gfx::kGoogleGrey900, 0x12);
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(size()), ripple_color);
-    highlight->set_visible_opacity(1.f);
-    return highlight;
   }
 
  private:

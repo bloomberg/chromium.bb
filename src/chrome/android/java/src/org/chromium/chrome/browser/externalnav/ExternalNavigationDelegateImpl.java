@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.provider.Browser;
-import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
@@ -26,7 +24,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -39,12 +36,12 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorSupplier;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
-import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 import java.util.List;
@@ -119,7 +116,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean shouldDisableExternalIntentRequestsForUrl(String url) {
+    public boolean shouldDisableExternalIntentRequestsForUrl(GURL url) {
         return false;
     }
 
@@ -151,34 +148,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
             Intent intent, boolean proxy) {
         return StartActivityIfNeededResult.DID_NOT_HANDLE;
-    }
-
-    @Override
-    public OverrideUrlLoadingResult handleIncognitoIntentTargetingSelf(
-            final Intent intent, final String referrerUrl, final String fallbackUrl) {
-        String primaryUrl = intent.getDataString();
-        boolean isUrlLoadedInTheSameTab = ExternalNavigationHandler.loadUrlFromIntent(
-                referrerUrl, primaryUrl, fallbackUrl, this, false, true);
-        return (isUrlLoadedInTheSameTab) ? OverrideUrlLoadingResult.forClobberingTab()
-                                         : OverrideUrlLoadingResult.forExternalIntent();
-    }
-
-    @Override
-    public boolean supportsCreatingNewTabs() {
-        return true;
-    }
-
-    @Override
-    public void loadUrlInNewTab(final String url, final boolean launchIncognito) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        String packageName = ContextUtils.getApplicationContext().getPackageName();
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
-        if (launchIncognito) intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        intent.setClassName(packageName, ChromeLauncherActivity.class.getName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        IntentHandler.addTrustedIntentExtras(intent);
-        ExternalNavigationHandler.startActivity(intent, false, this);
     }
 
     @Override
@@ -242,7 +211,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
+    public void maybeSetPendingReferrer(Intent intent, GURL referrerUrl) {
         IntentHandler.setPendingReferrer(intent, referrerUrl);
     }
 
@@ -253,7 +222,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean maybeLaunchInstantApp(
-            String url, String referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer) {
+            GURL url, GURL referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer) {
         if (!hasValidTab() || mTab.getWebContents() == null) return false;
 
         InstantAppsHandler handler = InstantAppsHandler.getInstance();
@@ -264,14 +233,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             // Set the URL the redirect was resolved to for checking the existence of the
             // instant app inside handleIncomingIntent().
             Intent resolvedIntent = new Intent(intent);
-            resolvedIntent.setData(Uri.parse(url));
+            resolvedIntent.setData(Uri.parse(url.getSpec()));
             return handler.handleIncomingIntent(getAvailableContext(), resolvedIntent,
                     LaunchIntentDispatcher.isCustomTabIntent(resolvedIntent), true);
         } else if (!isIncomingRedirect) {
             // Check if the navigation is coming from SERP and skip instant app handling.
             if (isSerpReferrer) return false;
-            return handler.handleNavigation(getAvailableContext(), url,
-                    TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl), mTab);
+            return handler.handleNavigation(getAvailableContext(), url, referrerUrl, mTab);
         }
         return false;
     }
@@ -301,10 +269,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      * Starts the autofill assistant with the given intent. Exists to allow tests to stub out this
      * functionality.
      */
-    protected void startAutofillAssistantWithIntent(
-            Intent targetIntent, String browserFallbackUrl) {
+    protected void startAutofillAssistantWithIntent(Intent targetIntent, GURL browserFallbackUrl) {
         AutofillAssistantFacade.start(
-                TabUtils.getActivity(mTab), targetIntent.getExtras(), browserFallbackUrl);
+                TabUtils.getActivity(mTab), targetIntent.getExtras(), browserFallbackUrl.getSpec());
     }
 
     /**
@@ -348,8 +315,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean handleWithAutofillAssistant(ExternalNavigationParams params, Intent targetIntent,
-            String browserFallbackUrl, boolean isGoogleReferrer) {
-        if (browserFallbackUrl != null && !params.isIncognito()
+            GURL browserFallbackUrl, boolean isGoogleReferrer) {
+        if (!browserFallbackUrl.isEmpty() && !params.isIncognito()
                 && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
                         targetIntent)
                 && isGoogleReferrer) {

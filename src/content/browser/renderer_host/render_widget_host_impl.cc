@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
@@ -28,9 +29,9 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
@@ -82,7 +83,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -113,6 +113,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_base.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
@@ -1013,7 +1014,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // The root widget's window segments are computed here - child frames just
   // use the value provided from the parent.
   if (is_top_most_widget) {
-    base::Optional<DisplayFeature> display_feature = view_->GetDisplayFeature();
+    absl::optional<DisplayFeature> display_feature = view_->GetDisplayFeature();
     if (display_feature) {
       visual_properties.root_widget_window_segments =
           display_feature->ComputeWindowSegments(
@@ -1138,15 +1139,21 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       delegate_->DidChangeScreenOrientation();
   }
 
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
-      visual_properties->local_surface_id.value_or(viz::LocalSurfaceId())
-          .submission_trace_id(),
-      TRACE_EVENT_FLAG_FLOW_OUT, "message",
-      "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
-      visual_properties->local_surface_id.value_or(viz::LocalSurfaceId())
-          .ToString());
+  // If we do not have a valid viz::LocalSurfaceId then we are a child frame
+  // waiting on the id to be propagated from our parent. We cannot create a hash
+  // for tracing of an invalid id.
+  //
+  // TODO(jonross): Untangle startup so that we don't have this invalid partial
+  // state. (https://crbug.com/1185286) (https://crbug.com/419087)
+  if (visual_properties->local_surface_id.has_value()) {
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
+        visual_properties->local_surface_id->submission_trace_id(),
+        TRACE_EVENT_FLAG_FLOW_OUT, "message",
+        "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
+        visual_properties->local_surface_id->ToString());
+  }
   visual_properties_ack_pending_ =
       DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
   old_visual_properties_ = std::move(visual_properties);
@@ -1496,10 +1503,10 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::Type::kGestureFlingStart) {
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
-      // TODO(sahel): Remove the VR specific case when motion events are used
-      // for Android VR event processing and VR touchpad scrolling is handled by
-      // sending wheel events rather than directly injecting Gesture Scroll
-      // Events. https://crbug.com/797322
+      // TODO(crbug.com/797322): Remove the VR specific case when motion events
+      // are used for Android VR event processing and VR touchpad scrolling is
+      // handled by sending wheel events rather than directly injecting Gesture
+      // Scroll Events.
       if (GetView()->IsInVR()) {
         // Regardless of the state of the wheel scroll latching
         // WebContentsEventForwarder doesn't inject any GSE events before GFS.
@@ -1817,11 +1824,11 @@ float RenderWidgetHostImpl::GetDeviceScaleFactor() {
   return GetScaleFactorForView(view_.get());
 }
 
-base::Optional<cc::TouchAction> RenderWidgetHostImpl::GetAllowedTouchAction() {
+absl::optional<cc::TouchAction> RenderWidgetHostImpl::GetAllowedTouchAction() {
   return input_router_->AllowedTouchAction();
 }
 
-void RenderWidgetHostImpl::WriteIntoTracedValue(perfetto::TracedValue context) {
+void RenderWidgetHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("routing_id", GetRoutingID());
 }
@@ -2024,14 +2031,6 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   blink::ScreenInfo current_screen_info;
   GetScreenInfo(&current_screen_info);
 
-  // TODO(enne): RenderWidgetHostViewMac caches the ScreenInfo and chooses
-  // not to change it during resizes.  This means that the RWHV::GetScreenInfo
-  // returned might be stale wrt GetAllDisplays() below.  Fix this.
-  // For now, just return the legacy screen info for mac.
-#if defined(OS_MAC)
-  return blink::ScreenInfos(current_screen_info);
-#else
-
   // If this widget has not been connected to a view yet (or has been
   // disconnected), the display code may be using a fake primary display.
   // In these cases, temporarily return the legacy screen info until
@@ -2049,12 +2048,10 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
     return blink::ScreenInfos(current_screen_info);
   }
 
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    return blink::ScreenInfos(current_screen_info);
-  }
-
-  const std::vector<display::Display>& displays = screen->GetAllDisplays();
+  // Get displays from RenderWidgetHostView, not directly from display::Screen.
+  // This helps maintain consistency with the legacy singular GetScreenInfo().
+  // For example, Mac may cache display info from a remote process NSWindow.
+  const std::vector<display::Display>& displays = view_->GetDisplays();
 
   // Just return the legacy singular ScreenInfo, if its id is invalid or if the
   // display::Screen is not initialized; each of which occurs in various tests.
@@ -2066,9 +2063,8 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
     return blink::ScreenInfos(current_screen_info);
   }
 
-  // If we get here, we are asserting that the current display as reported
-  // by the RenderWidgetHostView is inside of GetAllDisplays().
-
+  // Build multi-screen info from the displays returned by RenderWidgetHostView,
+  // ensure its legacy singular screen info struct is included in this set.
   blink::ScreenInfos result;
   bool current_display_added = false;
   for (const auto& display : displays) {
@@ -2115,7 +2111,6 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
 
   // Fall back to legacy screen info, if we are in a bad state.
   return blink::ScreenInfos(current_screen_info);
-#endif
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
@@ -2158,7 +2153,7 @@ void RenderWidgetHostImpl::SelectionBoundsChanged(
     bool is_anchor_first) {
   if (view_)
     view_->SelectionBoundsChanged(anchor_rect, anchor_dir, focus_rect,
-                                  focus_dir, is_anchor_first);
+                                  focus_dir, bounding_box, is_anchor_first);
 }
 
 void RenderWidgetHostImpl::OnUpdateDragCursor(
@@ -2479,7 +2474,7 @@ void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_rect,
   std::move(callback).Run();
 }
 
-void RenderWidgetHostImpl::SetToolTipText(
+void RenderWidgetHostImpl::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text,
     base::i18n::TextDirection text_direction_hint) {
   if (!GetView())
@@ -2510,7 +2505,7 @@ void RenderWidgetHostImpl::SetToolTipText(
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
     }
   }
-  view_->SetTooltipText(wrapped_tooltip_text);
+  view_->UpdateTooltipUnderCursor(wrapped_tooltip_text);
 }
 
 void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
@@ -2898,7 +2893,7 @@ void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
 }
 
 bool RenderWidgetHostImpl::RequestKeyboardLock(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
+    absl::optional<base::flat_set<ui::DomCode>> codes) {
   if (!delegate_) {
     CancelKeyboardLock();
     return false;
@@ -3084,10 +3079,10 @@ RenderWidgetHostImpl::GetFrameWidgetInputHandler() {
   return frame_widget_input_handler_.get();
 }
 
-base::Optional<blink::VisualProperties>
+absl::optional<blink::VisualProperties>
 RenderWidgetHostImpl::LastComputedVisualProperties() const {
   if (!old_visual_properties_)
-    return base::nullopt;
+    return absl::nullopt;
   return *old_visual_properties_;
 }
 
@@ -3527,7 +3522,7 @@ bool RenderWidgetHostImpl::LockKeyboard() {
   // KeyboardLock can be activated and deactivated several times per request,
   // for example when a fullscreen tab loses and gains focus multiple times,
   // so we need to retain a copy of the keys requested.
-  base::Optional<base::flat_set<ui::DomCode>> copy = keyboard_keys_to_lock_;
+  absl::optional<base::flat_set<ui::DomCode>> copy = keyboard_keys_to_lock_;
   return view_->LockKeyboard(std::move(copy));
 }
 

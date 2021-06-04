@@ -15,12 +15,12 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 using AccessType = FileSystemAccessPermissionRequestManager::Access;
@@ -87,7 +87,8 @@ FileSystemAccessPermissionView::FileSystemAccessPermissionView(
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      provider->GetDialogInsetsForContentType(views::DialogContentType::kText,
+                                              views::DialogContentType::kText),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   AddChildView(file_system_access_ui_helper::CreateOriginPathLabel(

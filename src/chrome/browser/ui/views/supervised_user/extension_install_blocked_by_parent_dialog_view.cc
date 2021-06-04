@@ -23,13 +23,13 @@
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace chrome {
 
@@ -125,8 +125,8 @@ void ExtensionInstallBlockedByParentDialogView::CreateContents() {
                                 SK_ColorDKGRAY);
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const gfx::Insets content_insets =
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText);
 
   set_margins(gfx::Insets(content_insets.top(), content_insets.left(),
                           content_insets.bottom(), content_insets.right()));

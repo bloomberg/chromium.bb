@@ -39,7 +39,6 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   content::WebContents* GetCurrentWebContents() override {
     return web_contents_;
   }
-  void OnToolbarActionViewDragDone() override {}
   views::MenuButton* GetOverflowReferenceView() const override {
     return overflow_reference_view_.get();
   }
@@ -247,16 +246,11 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
   view_controller->HidePopup();
   EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
 
-  // Ensure that the button's enabled state reflects that of the controller.
-  view_controller->SetEnabled(false);
-  EXPECT_EQ(views::Button::STATE_DISABLED, view->GetState());
-  view_controller->SetEnabled(true);
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
-
-  // Ensure that clicking on an otherwise-disabled action optionally opens the
+  // Ensure that clicking on an otherwise-disabled action opens the
   // context menu.
-  view_controller->SetDisabledClickOpensMenu(true);
   view_controller->SetEnabled(false);
+  // Even though the controller is disabled, the button remains enabled
+  // because it will open the context menu.
   EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
   int old_execute_action_count = view_controller->execute_action_count();
   {

@@ -4,6 +4,8 @@
 
 #include "cc/layers/mirror_layer_impl.h"
 
+#include <memory>
+
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
@@ -40,9 +42,10 @@ void MirrorLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   const bool contents_opaque = false;
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
+  // TODO(crbug.com/1196414): Support 2D scales in mirror layers.
   PopulateScaledSharedQuadStateWithContentRects(
-      shared_quad_state, mirrored_layer->GetIdealContentsScale(), content_rect,
-      content_rect, contents_opaque);
+      shared_quad_state, mirrored_layer->GetIdealContentsScaleKey(),
+      content_rect, content_rect, contents_opaque);
 
   AppendDebugBorderQuad(render_pass, content_rect, shared_quad_state,
                         append_quads_data);
@@ -74,11 +77,11 @@ gfx::Rect MirrorLayerImpl::GetDamageRect() const {
   return gfx::Rect(bounds());
 }
 
-gfx::Rect MirrorLayerImpl::GetEnclosingRectInTargetSpace() const {
+gfx::Rect MirrorLayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
   const LayerImpl* mirrored_layer =
       layer_tree_impl()->LayerById(mirrored_layer_id_);
-  return GetScaledEnclosingRectInTargetSpace(
-      mirrored_layer->GetIdealContentsScale());
+  return GetScaledEnclosingVisibleRectInTargetSpace(
+      mirrored_layer->GetIdealContentsScaleKey());
 }
 
 const char* MirrorLayerImpl::LayerTypeAsString() const {

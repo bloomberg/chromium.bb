@@ -28,10 +28,10 @@
 namespace content {
 namespace internal {
 
-base::Optional<mojo::NamedPlatformChannel>
+absl::optional<mojo::NamedPlatformChannel>
 ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
@@ -75,8 +75,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   if (!no_sandbox) {
     // Generate the profile string.
-    std::string profile =
-        sandbox::policy::SandboxMac::GetSandboxProfile(sandbox_type);
+    std::string profile = sandbox::policy::GetSandboxProfile(sandbox_type);
 
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.

@@ -7,9 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include <string>
 
-#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"

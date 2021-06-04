@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -277,7 +276,7 @@ void OtaActivatorImpl::AttemptConnectionToCellularNetwork() {
         cellular_network->path(), base::DoNothing(),
         base::BindOnce(&OtaActivatorImpl::OnNetworkConnectionError,
                        weak_ptr_factory_.GetWeakPtr()),
-        false /* check_error_state */, ConnectCallbackMode::ON_STARTED);
+        false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
     return;
   }
 

@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -174,16 +175,14 @@ CastContentBrowserClient::CastContentBrowserClient(
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
   });
 
-  cast_feature_list_creator_->SetExtraDisableFeatures({
-      // TODO(juke): Reenable this after solving casting issue on LAN.
-      blink::features::kMixedContentAutoupgrade,
 #if defined(OS_ANDROID)
-          ::media::kAudioFocusLossSuspendMediaSession,
-          ::media::kRequestSystemAudioFocus,
-          // Disable AAudio improve AV sync performance.
-          ::features::kUseAAudioDriver,
-#endif
+  cast_feature_list_creator_->SetExtraDisableFeatures({
+      ::media::kAudioFocusLossSuspendMediaSession,
+      ::media::kRequestSystemAudioFocus,
+      // Disable AAudio improve AV sync performance.
+      ::features::kUseAAudioDriver,
   });
+#endif
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {
@@ -224,7 +223,7 @@ CastContentBrowserClient::GetMediaTaskRunner() {
     // We need the media thread to be IO-capable to use the mixer service.
     options.message_pump_type = base::MessagePumpType::IO;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
-    CHECK(media_thread_->StartWithOptions(options));
+    CHECK(media_thread_->StartWithOptions(std::move(options)));
     // Start the media_resource_tracker as soon as the media thread is created.
     // There are services that run on the media thread that depend on it,
     // and we want to initialize it with the correct task runner before any
@@ -273,14 +272,14 @@ CastContentBrowserClient::CreateAudioManager(
   // initialize the CastSessionIdMap as soon as possible, so that the task
   // runner gets set before any calls to it.
   auto audio_thread = std::make_unique<::media::AudioThreadImpl>();
-  shell::CastSessionIdMap::GetInstance(audio_thread->GetTaskRunner());
+  auto* cast_session_id_map =
+      shell::CastSessionIdMap::GetInstance(audio_thread->GetTaskRunner());
 
 #if defined(USE_ALSA)
   return std::make_unique<media::CastAudioManagerAlsa>(
-      std::move(audio_thread), audio_log_factory,
+      std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
@@ -292,19 +291,16 @@ CastContentBrowserClient::CreateAudioManager(
   }
 
   return std::make_unique<media::CastAudioManagerAndroid>(
-      std::move(audio_thread), audio_log_factory,
+      std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::BindRepeating(&shell::CastSessionIdMap::IsAudioOnlySession),
       GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId));
 #else
   return std::make_unique<media::CastAudioManager>(
-      std::move(audio_thread), audio_log_factory,
+      std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
@@ -535,11 +531,6 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
     content::WebContents* web_contents,
     blink::web_pref::WebPreferences* prefs) {
   prefs->allow_scripts_to_close_windows = true;
-  // TODO(halliwell): http://crbug.com/391089. This pref defaults to to true
-  // because some content providers such as YouTube use plain http requests
-  // to retrieve media data chunks while running in a https page. This pref
-  // should be disabled once all the content providers are no longer doing that.
-  prefs->allow_running_insecure_content = true;
 
   // Enable 5% margins for WebVTT cues to keep within title-safe area
   prefs->text_track_margin_percentage = 5;
@@ -735,13 +726,13 @@ void CastContentBrowserClient::GetApplicationMediaInfo(
   }
 }
 
-base::Optional<service_manager::Manifest>
+absl::optional<service_manager::Manifest>
 CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   if (service_name == ServiceManagerContext::kBrowserServiceName)
     return GetCastContentBrowserOverlayManifest();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::vector<service_manager::Manifest>

@@ -67,14 +67,17 @@ class StandaloneTrustedVaultClient : public TrustedVaultClient {
                                    base::OnceCallback<void(bool)> cb) override;
   void AddTrustedRecoveryMethod(const std::string& gaia_id,
                                 const std::vector<uint8_t>& public_key,
+                                int method_type_hint,
                                 base::OnceClosure cb) override;
 
   // Runs |cb| when all requests have completed.
   void WaitForFlushForTesting(base::OnceClosure cb) const;
   void FetchBackendPrimaryAccountForTesting(
-      base::OnceCallback<void(const base::Optional<CoreAccountInfo>&)> callback)
+      base::OnceCallback<void(const absl::optional<CoreAccountInfo>&)> callback)
       const;
   void SetRecoverabilityDegradedForTesting();
+  void GetLastAddedRecoveryMethodPublicKeyForTesting(
+      base::OnceCallback<void(const std::vector<uint8_t>&)> callback);
 
  private:
   void NotifyRecoverabilityDegradedChanged();

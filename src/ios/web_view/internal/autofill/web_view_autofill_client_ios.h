@@ -16,8 +16,8 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
-#include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/web_state.h"
@@ -87,6 +87,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
                                    base::OnceClosure callback) override;
   void ConfirmSaveAddressProfile(
       const AutofillProfile& profile,
+      const AutofillProfile* original_profile,
+      SaveAddressProfilePromptOptions options,
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;

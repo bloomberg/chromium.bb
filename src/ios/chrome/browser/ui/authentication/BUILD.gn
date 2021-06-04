@@ -24,6 +24,8 @@ source_set("authentication") {
     "signin_notification_infobar_delegate.mm",
     "signin_promo_view_mediator.h",
     "signin_promo_view_mediator.mm",
+    "signout_action_sheet_coordinator.h",
+    "signout_action_sheet_coordinator.mm",
   ]
   deps = [
     "resources:signin_confirmation_more",
@@ -50,7 +52,6 @@ source_set("authentication") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
-    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/settings:settings_root",
@@ -100,6 +101,7 @@ source_set("unit_tests") {
     "re_signin_infobar_delegate_unittest.mm",
     "signed_in_accounts_view_controller_unittest.mm",
     "signin_promo_view_mediator_unittest.mm",
+    "signout_action_sheet_coordinator_unittest.mm",
   ]
   deps = [
     ":authentication",
@@ -140,6 +142,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
+    "//ui/strings:ui_strings_grit",
   ]
 }
 

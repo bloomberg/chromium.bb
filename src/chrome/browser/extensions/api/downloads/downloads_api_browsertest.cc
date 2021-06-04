@@ -67,10 +67,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -294,6 +294,8 @@ class DownloadOpenObserver : public download::DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(DownloadOpenObserver);
 };
 
+}  // namespace
+
 class DownloadExtensionTest : public ExtensionApiTest {
  public:
   DownloadExtensionTest()
@@ -459,11 +461,13 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   DownloadManager* GetOnRecordManager() {
-    return BrowserContext::GetDownloadManager(browser()->profile());
+    return browser()->profile()->GetDownloadManager();
   }
   DownloadManager* GetOffRecordManager() {
-    return BrowserContext::GetDownloadManager(
-        browser()->profile()->GetPrimaryOTRProfile());
+    return browser()
+        ->profile()
+        ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+        ->GetDownloadManager();
   }
   DownloadManager* GetCurrentManager() {
     return (current_browser_ == incognito_browser_) ?
@@ -682,6 +686,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   DISALLOW_COPY_AND_ASSIGN(DownloadExtensionTest);
 };
+
+namespace {
 
 class MockIconExtractorImpl : public DownloadFileIconExtractor {
  public:
@@ -929,7 +935,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
   base::Value args_list(base::Value::Type::LIST);
   args_list.Append(static_cast<int>(download_item->GetId()));
   scoped_open->SetArgs(std::move(args_list));
-  scoped_open->set_browser_context(current_browser()->profile());
   scoped_open->set_extension(extension());
   DownloadsOpenFunction::OnPromptCreatedCallback callback =
       base::BindOnce(&OnOpenPromptCreated, base::Unretained(download_item));
@@ -937,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
   api_test_utils::SendResponseHelper response_helper(scoped_open.get());
   std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(
       new ExtensionFunctionDispatcher(current_browser()->profile()));
-  scoped_open->set_dispatcher(dispatcher->AsWeakPtr());
+  scoped_open->SetDispatcher(dispatcher->AsWeakPtr());
   scoped_open->RunWithValidation()->Execute();
   response_helper.WaitForResponse();
   EXPECT_TRUE(response_helper.has_response());
@@ -1119,9 +1124,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // Once the download item is deleted, we should return kInvalidId.
   int id = download_item->GetId();
   download_item->Remove();
-  download_item = NULL;
-  EXPECT_EQ(static_cast<DownloadItem*>(NULL),
-            GetCurrentManager()->GetDownload(id));
+  download_item = nullptr;
+  EXPECT_EQ(nullptr, GetCurrentManager()->GetDownload(id));
   error = RunFunctionAndReturnError(new DownloadsGetFileIconFunction(), args32);
   EXPECT_STREQ(errors::kInvalidId,
                error.c_str());
@@ -1604,8 +1608,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -1655,8 +1659,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.spec().c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -1703,8 +1707,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
@@ -1805,8 +1809,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.spec().c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -1941,8 +1945,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"sub/dir/ect/ory.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -1994,7 +1998,7 @@ class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
   DownloadExtensionTestWithFtp() {
     // DownloadExtensionTest_Download_InvalidURLs2 requires FTP support.
     // TODO(https://crbug.com/333943): Remove FTP tests and FTP feature flags.
-    scoped_feature_list_.InitAndEnableFeature(blink::features::kFtpProtocol);
+    scoped_feature_list_.InitAndEnableFeature(network::features::kFtpProtocol);
   }
 
  private:
@@ -2030,7 +2034,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
       new DownloadsDownloadFunction(),
       "[{\"url\": \"javascript:document.write(\\\"hello\\\");\"}]"));
   ASSERT_TRUE(result.get());
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
@@ -2042,7 +2047,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
       RunFunctionAndReturnResult(new DownloadsDownloadFunction(),
                                  "[{\"url\": \"javascript:return false;\"}]"));
   ASSERT_TRUE(result.get());
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
@@ -2054,7 +2060,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
       new DownloadsDownloadFunction(),
       "[{\"url\": \"ftp://example.com/example.txt\"}]"));
   ASSERT_TRUE(result.get());
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitForInterruption(
@@ -2079,8 +2086,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2122,8 +2129,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2158,8 +2165,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
           "[{\"url\": \"%s\",  \"conflictAction\": \"overwrite\"}]",
           download_url.c_str())));
   ASSERT_TRUE(result.get());
-  result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller2(item);
@@ -2203,8 +2210,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"data.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2259,8 +2266,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"file.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2309,8 +2316,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"auth-basic-fail.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2347,8 +2354,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "    {\"name\": \"Qx\", \"value\":\"yo\"}]}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2401,8 +2408,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"headers-fail.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2441,8 +2448,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "    \"value\": \"Basic %s\"}]}]",
                          download_url.c_str(), kAuthorization)));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2487,8 +2494,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"body\": \"BODY\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2542,8 +2549,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"post-get.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2583,8 +2590,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\": \"post-nobody.txt\"}]",
                          download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2619,8 +2626,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2669,7 +2676,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   // Setup a file in the filesystem which we can download.
   ASSERT_TRUE(HTML5FileWriter::CreateFileForTesting(
-      BrowserContext::GetDefaultStoragePartition(current_browser()->profile())
+      current_browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
           ->GetFileSystemContext(),
       storage::FileSystemURL::CreateForTest(GURL(download_url)), kPayloadData,
       strlen(kPayloadData)));
@@ -2679,8 +2688,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
 
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
@@ -2729,8 +2738,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2797,8 +2806,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2853,8 +2862,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -2970,8 +2979,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3028,8 +3037,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3101,8 +3110,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3163,8 +3172,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3225,8 +3234,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3294,8 +3303,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3356,8 +3365,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3418,8 +3427,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3480,8 +3489,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3544,8 +3553,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3608,8 +3617,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3659,8 +3668,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(), base::StringPrintf(
           "[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller2(item);
@@ -3724,8 +3733,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3775,8 +3784,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(), base::StringPrintf(
           "[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller2(item);
@@ -3851,8 +3860,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
@@ -3915,8 +3924,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_FALSE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
@@ -3978,8 +3987,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(), base::StringPrintf(
           "[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
@@ -4056,8 +4065,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_FALSE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
@@ -4119,8 +4128,8 @@ IN_PROC_BROWSER_TEST_F(
       new DownloadsDownloadFunction(), base::StringPrintf(
           "[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  result_id = result->GetInt();
   item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
@@ -4366,8 +4375,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       "[{\"url\": \"data:application/x-shockwave-flash,\", \"filename\": "
       "\"dangerous.swf\"}]"));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
@@ -4387,7 +4396,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       base::BindOnce(&OnDangerPromptCreated);
   DownloadsAcceptDangerFunction::OnPromptCreatedForTesting(
       &callback);
-  ExtensionActionTestHelper::Create(current_browser())->Press(0);
+  ExtensionActionTestHelper::Create(current_browser())->Press(GetExtensionId());
   observer->WaitForFinished();
 }
 
@@ -4405,8 +4414,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsDownloadFunction(),
       base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(result.get());
-  int result_id = -1;
-  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  ASSERT_TRUE(result->is_int());
+  int result_id = result->GetInt();
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);

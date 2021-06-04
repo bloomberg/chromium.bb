@@ -25,6 +25,7 @@ struct GrUserStencilSettings;
 struct SkIRect;
 class SkMatrix;
 class SkPath;
+class SkSurfaceProps;
 
 /**
  *  Base class for drawing paths into a GrOpsTask.
@@ -83,6 +84,7 @@ public:
         const SkMatrix*             fViewMatrix;
         const GrStyledShape*        fShape;
         const GrPaint*              fPaint;
+        const SkSurfaceProps*       fSurfaceProps;
         GrAAType                    fAAType;
 
         // This is only used by GrTessellationPathRenderer
@@ -95,6 +97,7 @@ public:
             SkASSERT(fClipConservativeBounds);
             SkASSERT(fViewMatrix);
             SkASSERT(fShape);
+            SkASSERT(fSurfaceProps);
         }
 #endif
     };

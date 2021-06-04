@@ -5,7 +5,6 @@
 #ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_H_
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_H_
 
-#include <string>
 
 #include "base/compiler_specific.h"
 #include "ui/events/events_base_export.h"
@@ -111,6 +110,10 @@ DomCodeToUsLayoutNonLocatedKeyboardCode(DomCode dom_code);
 // Returns the ui::EventFlags value associated with a modifier key,
 // or 0 (EF_NONE) if the key is not a modifier.
 EVENTS_BASE_EXPORT int ModifierDomKeyToEventFlag(DomKey key);
+
+// Returns the physical DOM code along with a corresponding non-located
+// Windows-based key_code.
+EVENTS_BASE_EXPORT DomCode UsLayoutDomKeyToDomCode(DomKey dom_key);
 
 }  // namespace ui
 

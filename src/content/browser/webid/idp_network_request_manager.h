@@ -7,12 +7,15 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -75,7 +78,13 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   enum class TokenResponse {
     kSuccess,
     kNetError,
+    kInvalidRequestError,
     kInvalidResponseError,
+  };
+
+  enum class LogoutResponse {
+    kSuccess,
+    kError,
   };
 
   struct Endpoints {
@@ -95,12 +104,16 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
       base::OnceCallback<void(AccountsResponse, const AccountList&)>;
   using TokenRequestCallback =
       base::OnceCallback<void(TokenResponse, const std::string&)>;
+  using LogoutCallback = base::OnceCallback<void(LogoutResponse)>;
 
   static std::unique_ptr<IdpNetworkRequestManager> Create(
       const GURL& provider,
       RenderFrameHost* host);
 
-  IdpNetworkRequestManager(const GURL& provider, RenderFrameHost* host);
+  IdpNetworkRequestManager(
+      const GURL& provider,
+      const url::Origin& relying_party,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   virtual ~IdpNetworkRequestManager();
 
@@ -125,14 +138,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
                                 const std::string& request,
                                 TokenRequestCallback callback);
 
-  // Parses accounts from given Value. Returns true if parse is successful and
-  // adds parsed accounts to the |account_list|.
-  // TODO(majidvp): Make this function private and update tests to test the
-  // actual public interface of this class rather than its implementation
-  // details such as this.
-  static bool ParseAccounts(
-      const base::Value* accounts,
-      IdpNetworkRequestManager::AccountList& account_list);
+  // Send logout request to a single target.
+  virtual void SendLogout(const GURL& logout_url, LogoutCallback);
 
  private:
   void OnWellKnownLoaded(std::unique_ptr<std::string> response_body);
@@ -143,16 +150,20 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   void OnAccountsRequestParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnTokenRequestResponse(std::unique_ptr<std::string> response_body);
   void OnTokenRequestParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnLogoutCompleted(std::unique_ptr<std::string> response_body);
 
   // URL of the Identity Provider.
   GURL provider_;
 
-  RenderFrameHost* render_frame_host_;
+  url::Origin relying_party_origin_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   FetchWellKnownCallback idp_well_known_callback_;
   SigninRequestCallback signin_request_callback_;
   AccountsRequestCallback accounts_request_callback_;
   TokenRequestCallback token_request_callback_;
+  LogoutCallback logout_callback_;
 
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 

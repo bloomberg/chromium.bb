@@ -32,8 +32,8 @@ class ArcClientAdapter {
   };
 
   // DemoModeDelegate contains functions used to load the demo session apps for
-  // ARC. The adapter cannot do this directly because chromeos::DemoSession
-  // classes are in //chrome.
+  // ARC. The adapter cannot do this directly because ash::DemoSession classes
+  // are in //chrome.
   class DemoModeDelegate {
    public:
     virtual ~DemoModeDelegate() = default;
@@ -74,6 +74,12 @@ class ArcClientAdapter {
   // Provides the DemoModeDelegate which will be used to load the demo session
   // apps path.
   virtual void SetDemoModeDelegate(DemoModeDelegate* delegate) = 0;
+
+  // Trims VM's memory by moving it to zram. |callback| is called when the
+  // operation is done.
+  using TrimVmMemoryCallback =
+      base::OnceCallback<void(bool success, const std::string& failure_reason)>;
+  virtual void TrimVmMemory(TrimVmMemoryCallback callback) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

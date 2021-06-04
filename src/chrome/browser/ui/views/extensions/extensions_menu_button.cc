@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -15,8 +16,8 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 
 ExtensionsMenuButton::ExtensionsMenuButton(
@@ -29,19 +30,29 @@ ExtensionsMenuButton::ExtensionsMenuButton(
       browser_(browser),
       controller_(controller),
       allow_pinning_(allow_pinning) {
-  ConfigureBubbleMenuItem(this, 0);
   controller_->SetDelegate(this);
-  UpdateState();
+  // TODO(pbos): This currently inherits HoverButton, is this not a no-op?
+  // Also see call in OnThemeChanged() to ink_drop()->SetBaseColor which
+  // tries to do the same thing.
+  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+      [](views::View* host) { return HoverButton::GetInkDropColor(host); },
+      this));
 }
 
 ExtensionsMenuButton::~ExtensionsMenuButton() = default;
 
-SkColor ExtensionsMenuButton::GetInkDropBaseColor() const {
-  return HoverButton::GetInkDropColor(this);
-}
-
 bool ExtensionsMenuButton::CanShowIconInToolbar() const {
   return allow_pinning_;
+}
+
+void ExtensionsMenuButton::AddedToWidget() {
+  ConfigureBubbleMenuItem(this, 0);
+  UpdateState();
+}
+
+void ExtensionsMenuButton::OnThemeChanged() {
+  HoverButton::OnThemeChanged();
+  ink_drop()->SetBaseColor(HoverButton::GetInkDropColor(this));
 }
 
 // ToolbarActionViewDelegateViews:
@@ -81,6 +92,13 @@ void ExtensionsMenuButton::UpdateState() {
                       2,
                   12);
   SetBorder(views::CreateEmptyBorder(kBorderInsets));
+}
+
+void ExtensionsMenuButton::ShowContextMenuAsFallback() {
+  // The items in the extensions menu are disabled and unclickable if the
+  // primary action cannot be taken; ShowContextMenuAsFallback() should never
+  // be called directly.
+  NOTREACHED();
 }
 
 void ExtensionsMenuButton::ButtonPressed() {

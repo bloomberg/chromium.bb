@@ -15,6 +15,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
@@ -26,7 +27,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -592,13 +592,13 @@ LegacyCacheStorage::LegacyCacheStorage(
       owner_(owner),
       cache_storage_manager_(cache_storage_manager) {
   if (memory_only) {
-    cache_loader_.reset(new MemoryLoader(
+    cache_loader_ = base::WrapUnique<CacheLoader>(new MemoryLoader(
         cache_task_runner_.get(), std::move(scheduler_task_runner),
         quota_manager_proxy, blob_storage_context_, this, origin, owner));
     return;
   }
 
-  cache_loader_.reset(new SimpleCacheLoader(
+  cache_loader_ = base::WrapUnique<CacheLoader>(new SimpleCacheLoader(
       origin_path_, cache_task_runner_.get(), std::move(scheduler_task_runner),
       quota_manager_proxy, blob_storage_context_, this, origin, owner));
 

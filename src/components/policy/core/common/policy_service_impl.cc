@@ -408,6 +408,16 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   PolicyDictionaryMerger policy_dictionary_merger(
       std::move(policy_dictionaries_to_merge));
 
+  // Pass affiliation and CloudUserPolicyMerge values to both mergers.
+  const bool is_affiliated = chrome_policies.IsUserAffiliated();
+  const bool is_user_cloud_merging_enabled =
+      chrome_policies.GetValue(key::kCloudUserPolicyMerge) &&
+      chrome_policies.GetValue(key::kCloudUserPolicyMerge)->GetBool();
+  policy_list_merger.SetAllowUserCloudPolicyMerging(
+      is_affiliated && is_user_cloud_merging_enabled);
+  policy_dictionary_merger.SetAllowUserCloudPolicyMerging(
+      is_affiliated && is_user_cloud_merging_enabled);
+
   std::vector<PolicyMerger*> mergers{&policy_list_merger,
                                      &policy_dictionary_merger};
 
@@ -415,8 +425,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   if (atomic_policy_group_enabled)
     mergers.push_back(&policy_group_merger);
 
-  for (auto it = bundle.begin(); it != bundle.end(); ++it)
-    it->second->MergeValues(mergers);
+  for (auto& entry : bundle)
+    entry.second.MergeValues(mergers);
 
   for (auto& migrator : migrators_)
     migrator->Migrate(&bundle);
@@ -434,16 +444,16 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   while (it_new != end_new && it_old != end_old) {
     if (it_new->first < it_old->first) {
       // A new namespace is available.
-      NotifyNamespaceUpdated(it_new->first, kEmpty, *it_new->second);
+      NotifyNamespaceUpdated(it_new->first, kEmpty, it_new->second);
       ++it_new;
     } else if (it_old->first < it_new->first) {
       // A previously available namespace is now gone.
-      NotifyNamespaceUpdated(it_old->first, *it_old->second, kEmpty);
+      NotifyNamespaceUpdated(it_old->first, it_old->second, kEmpty);
       ++it_old;
     } else {
-      if (!it_new->second->Equals(*it_old->second)) {
+      if (!it_new->second.Equals(it_old->second)) {
         // An existing namespace's policies have changed.
-        NotifyNamespaceUpdated(it_new->first, *it_old->second, *it_new->second);
+        NotifyNamespaceUpdated(it_new->first, it_old->second, it_new->second);
       }
       ++it_new;
       ++it_old;
@@ -452,11 +462,11 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 
   // Send updates for the remaining new namespaces, if any.
   for (; it_new != end_new; ++it_new)
-    NotifyNamespaceUpdated(it_new->first, kEmpty, *it_new->second);
+    NotifyNamespaceUpdated(it_new->first, kEmpty, it_new->second);
 
   // Sends updates for the remaining removed namespaces, if any.
   for (; it_old != end_old; ++it_old)
-    NotifyNamespaceUpdated(it_old->first, *it_old->second, kEmpty);
+    NotifyNamespaceUpdated(it_old->first, it_old->second, kEmpty);
 
   CheckPolicyDomainStatus();
   CheckRefreshComplete();

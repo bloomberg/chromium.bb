@@ -38,10 +38,10 @@ namespace {
 // (http://crbug.com/582170). This texture copy can be avoided if
 // AImageReader/AHardwareBuffer is supported and AImageReader
 // max size is not limited to 1 (crbug.com/1091945).
-base::Optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
+absl::optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
     bool enable_threaded_texture_mailboxes) {
   if (!enable_threaded_texture_mailboxes)
-    return base::nullopt;
+    return absl::nullopt;
 
   return features::IsWebViewZeroCopyVideoEnabled()
              ? VideoFrameMetadata::CopyMode::kCopyMailboxesOnly
@@ -50,7 +50,7 @@ base::Optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
 
 gpu::TextureOwner::Mode GetTextureOwnerMode(
     VideoFrameFactory::OverlayMode overlay_mode,
-    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode) {
+    const absl::optional<VideoFrameMetadata::CopyMode>& copy_mode) {
   if (copy_mode == VideoFrameMetadata::kCopyMailboxesOnly) {
     DCHECK(features::IsWebViewZeroCopyVideoEnabled());
     return gpu::TextureOwner::Mode::kAImageReaderInsecureMultithreaded;
@@ -79,7 +79,7 @@ gpu::TextureOwner::Mode GetTextureOwnerMode(
 static void AllocateTextureOwnerOnGpuThread(
     VideoFrameFactory::InitCB init_cb,
     VideoFrameFactory::OverlayMode overlay_mode,
-    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode,
+    const absl::optional<VideoFrameMetadata::CopyMode>& copy_mode,
     scoped_refptr<gpu::SharedContextState> shared_context_state) {
   if (!shared_context_state) {
     std::move(init_cb).Run(nullptr);
@@ -88,7 +88,7 @@ static void AllocateTextureOwnerOnGpuThread(
 
   std::move(init_cb).Run(gpu::TextureOwner::Create(
       gpu::TextureOwner::CreateTexture(shared_context_state),
-      GetTextureOwnerMode(overlay_mode, copy_mode)));
+      GetTextureOwnerMode(overlay_mode, copy_mode), shared_context_state));
 }
 
 }  // namespace
@@ -202,8 +202,7 @@ void VideoFrameFactoryImpl::RequestImage(
     ImageWithInfoReadyCB image_ready_cb) {
   auto info_cb =
       base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady,
-                     weak_factory_.GetWeakPtr(), std::move(image_ready_cb),
-                     codec_buffer_wait_coordinator_);
+                     weak_factory_.GetWeakPtr(), std::move(image_ready_cb));
 
   frame_info_helper_->GetFrameInfo(std::move(buffer_renderer),
                                    std::move(info_cb));
@@ -211,7 +210,6 @@ void VideoFrameFactoryImpl::RequestImage(
 
 void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
     ImageWithInfoReadyCB image_ready_cb,
-    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
     FrameInfoHelper::FrameInfo frame_info) {
   // If we don't have output buffer here we can't rely on reply from
@@ -237,11 +235,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
 
   auto cb = base::BindOnce(std::move(image_ready_cb),
                            std::move(output_buffer_renderer), frame_info);
-
-  auto texture_owner = codec_buffer_wait_coordinator
-                           ? codec_buffer_wait_coordinator->texture_owner()
-                           : nullptr;
-  image_provider_->RequestImage(std::move(cb), image_spec_, texture_owner);
+  image_provider_->RequestImage(std::move(cb), image_spec_);
 }
 
 // static
@@ -254,7 +248,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
-    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode,
+    const absl::optional<VideoFrameMetadata::CopyMode>& copy_mode,
     scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
     FrameInfoHelper::FrameInfo frame_info,

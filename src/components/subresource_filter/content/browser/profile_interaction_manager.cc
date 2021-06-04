@@ -9,13 +9,17 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/subresource_filter/content/browser/ads_intervention_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_ANDROID)
+#include "components/infobars/content/content_infobar_manager.h"  // nogncheck
+#include "components/subresource_filter/content/browser/ads_blocked_infobar_delegate.h"
+#endif
 
 namespace subresource_filter {
 
@@ -66,7 +70,7 @@ void ProfileInteractionManager::OnAdsViolationTriggered(
   // TODO(https://crbug.com/1131971): Add support for enabling ads interventions
   // separately for different ads violations.
   const GURL& url = rfh->GetLastCommittedURL();
-  base::Optional<AdsInterventionManager::LastAdsIntervention>
+  absl::optional<AdsInterventionManager::LastAdsIntervention>
       last_intervention =
           profile_context_->ads_intervention_manager()->GetLastAdsIntervention(
               url);
@@ -119,12 +123,18 @@ mojom::ActivationLevel ProfileInteractionManager::OnPageActivationComputed(
   return effective_activation_level;
 }
 
-void ProfileInteractionManager::MaybeShowNotification(
-    SubresourceFilterClient* client) {
+void ProfileInteractionManager::MaybeShowNotification() {
   const GURL& top_level_url = web_contents()->GetLastCommittedURL();
   if (profile_context_->settings_manager()->ShouldShowUIForSite(
           top_level_url)) {
-    client->ShowNotification();
+#if defined(OS_ANDROID)
+    // NOTE: It is acceptable for the embedder to not have installed an infobar
+    // manager.
+    if (auto* infobar_manager =
+            infobars::ContentInfoBarManager::FromWebContents(web_contents())) {
+      subresource_filter::AdsBlockedInfobarDelegate::Create(infobar_manager);
+    }
+#endif
 
     // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
     // (it comes from

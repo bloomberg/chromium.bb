@@ -31,7 +31,7 @@ static void RecordWatchTimeInternal(
     base::TimeDelta value,
     base::TimeDelta minimum = kMinimumElapsedWatchTime) {
   DCHECK(!key.empty());
-  base::UmaHistogramCustomTimes(key.as_string(), value, minimum,
+  base::UmaHistogramCustomTimes(std::string(key), value, minimum,
                                 base::TimeDelta::FromHours(10), 50);
 }
 
@@ -47,13 +47,13 @@ static void RecordMeanTimeBetweenRebuffers(base::StringPiece key,
 static void RecordDiscardedWatchTime(base::StringPiece key,
                                      base::TimeDelta value) {
   DCHECK(!key.empty());
-  base::UmaHistogramCustomTimes(key.as_string(), value, base::TimeDelta(),
+  base::UmaHistogramCustomTimes(std::string(key), value, base::TimeDelta(),
                                 kMinimumElapsedWatchTime, 50);
 }
 
 static void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
   DCHECK(!key.empty());
-  base::UmaHistogramCounts100(key.as_string(), underflow_count);
+  base::UmaHistogramCounts100(std::string(key), underflow_count);
 }
 
 WatchTimeRecorder::WatchTimeUkmRecord::WatchTimeUkmRecord(
@@ -328,7 +328,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     return;
 
   // Round duration to the most significant digit in milliseconds for privacy.
-  base::Optional<uint64_t> clamped_duration_ms;
+  absl::optional<uint64_t> clamped_duration_ms;
   if (duration_ != kNoTimestamp && duration_ != kInfiniteDuration) {
     clamped_duration_ms = duration_.InMilliseconds();
     if (duration_ > base::TimeDelta::FromSeconds(1)) {

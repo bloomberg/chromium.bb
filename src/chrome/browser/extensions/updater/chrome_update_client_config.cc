@@ -129,7 +129,7 @@ void ExtensionActivityDataService::GetAndClearActiveBits(
 // communication with the update backend.
 ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context,
-    base::Optional<GURL> url_override)
+    absl::optional<GURL> url_override)
     : context_(context),
       impl_(ExtensionUpdateClientCommandLineConfigPolicy(
                 base::CommandLine::ForCurrentProcess()),
@@ -210,7 +210,7 @@ ChromeUpdateClientConfig::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
-            content::BrowserContext::GetDefaultStoragePartition(context_)
+            context_->GetDefaultStoragePartition()
                 ->GetURLLoaderFactoryForBrowserProcess(),
             // Only extension updates that require authentication are served
             // from chrome.google.com, so send cookies if and only if that is
@@ -292,7 +292,7 @@ ChromeUpdateClientConfig::~ChromeUpdateClientConfig() = default;
 // static
 scoped_refptr<ChromeUpdateClientConfig> ChromeUpdateClientConfig::Create(
     content::BrowserContext* context,
-    base::Optional<GURL> update_url_override) {
+    absl::optional<GURL> update_url_override) {
   FactoryCallback& factory = GetFactoryCallback();
   return factory.is_null() ? base::MakeRefCounted<ChromeUpdateClientConfig>(
                                  context, update_url_override)

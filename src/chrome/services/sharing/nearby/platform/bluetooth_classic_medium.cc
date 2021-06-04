@@ -4,6 +4,8 @@
 
 #include "chrome/services/sharing/nearby/platform/bluetooth_classic_medium.h"
 
+#include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/services/sharing/nearby/platform/bluetooth_server_socket.h"
 #include "chrome/services/sharing/nearby/platform/bluetooth_socket.h"
@@ -183,6 +185,9 @@ BluetoothDevice* BluetoothClassicMedium::GetRemoteDevice(
 }
 
 void BluetoothClassicMedium::PresentChanged(bool present) {
+  // TODO(crbug.com/1191815): Remove this ASAP.
+  VLOG(1) << __func__ << ": " << present;
+
   // TODO(hansberry): It is unclear to me how the API implementation can signal
   // to Core that |present| has become unexpectedly false. Need to ask
   // Nearby team.
@@ -191,6 +196,9 @@ void BluetoothClassicMedium::PresentChanged(bool present) {
 }
 
 void BluetoothClassicMedium::PoweredChanged(bool powered) {
+  // TODO(crbug.com/1191815): Remove this ASAP.
+  VLOG(1) << __func__ << ": " << powered;
+
   // TODO(hansberry): It is unclear to me how the API implementation can signal
   // to Core that |powered| has become unexpectedly false. Need to ask
   // Nearby team.
@@ -199,16 +207,23 @@ void BluetoothClassicMedium::PoweredChanged(bool powered) {
 }
 
 void BluetoothClassicMedium::DiscoverableChanged(bool discoverable) {
+  // TODO(crbug.com/1191815): Remove this ASAP.
+  VLOG(1) << __func__ << ": " << discoverable;
+
   // Do nothing. BluetoothClassicMedium is not responsible for managing
   // discoverable state.
 }
 
 void BluetoothClassicMedium::DiscoveringChanged(bool discovering) {
+  // TODO(crbug.com/1191815): Remove this ASAP.
+  VLOG(1) << __func__ << ": " << discovering;
+
   // TODO(hansberry): It is unclear to me how the API implementation can signal
   // to Core that |discovering| has become unexpectedly false. Need to ask
   // Nearby team.
-  if (!discovering)
+  if (!discovering) {
     StopDiscovery();
+  }
 }
 
 void BluetoothClassicMedium::DeviceAdded(
@@ -218,6 +233,12 @@ void BluetoothClassicMedium::DeviceAdded(
     return;
   }
 
+  // TODO(crbug.com/1191815): Remove these logs. They are temporary logs used
+  // to debug this issue.
+  VLOG(1) << "Device added or changed. Address: " << device->address
+          << ", Name: '" << (device->name ? device->name_for_display : "<None>")
+          << "'";
+
   // Best-effort attempt to filter out BLE advertisements. BLE advertisements
   // represented as "devices" may have their |name| set if the system has
   // created a GATT connection to the advertiser, but all BT Classic devices
@@ -225,8 +246,6 @@ void BluetoothClassicMedium::DeviceAdded(
   // for separate discovery of BLE advertisements (BlePeripherals).
   if (!device->name)
     return;
-
-  VLOG(1) << "Discovered Bluetooth device: " << device->name_for_display;
 
   const std::string& address = device->address;
   if (base::Contains(discovered_bluetooth_devices_map_, address)) {

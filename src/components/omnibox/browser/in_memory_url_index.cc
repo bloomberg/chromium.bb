@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,7 +57,10 @@ InMemoryURLIndex::SaveCacheObserver::~SaveCacheObserver() {
 InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index,
                                         const SchemeSet& scheme_allowlist)
-    : index_(index), scheme_allowlist_(scheme_allowlist), succeeded_(false) {}
+    : index_(index),
+      scheme_allowlist_(scheme_allowlist),
+      succeeded_(false),
+      task_creation_time_(base::TimeTicks::Now()) {}
 
 bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
     history::HistoryBackend* backend,
@@ -71,6 +75,8 @@ bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
 void InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     DoneRunOnMainThread() {
   index_->DoneRebuidingPrivateDataFromHistoryDB(succeeded_, data_);
+  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime.RoundTripTime",
+                      base::TimeTicks::Now() - task_creation_time_);
 }
 
 InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
@@ -250,7 +256,7 @@ bool InMemoryURLIndex::OnMemoryDump(
 
 void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("browser", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
+  TRACE_EVENT0("omnibox", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
 
   if (base::FeatureList::IsEnabled(
           omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile)) {
@@ -336,6 +342,9 @@ void InMemoryURLIndex::Shutdown() {
 // Restoring from the History DB -----------------------------------------------
 
 void InMemoryURLIndex::ScheduleRebuildFromHistory() {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "omnibox", "InMemoryURLIndex::ScheduleRebuildFromHistory",
+      TRACE_ID_LOCAL(this));
   DCHECK(history_service_);
   history_service_->ScheduleDBTask(
       FROM_HERE,
@@ -348,6 +357,9 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
 void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     bool succeeded,
     scoped_refptr<URLIndexPrivateData> private_data) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "omnibox", "InMemoryURLIndex::ScheduleRebuildFromHistory",
+      TRACE_ID_LOCAL(this));
   DCHECK(thread_checker_.CalledOnValidThread());
   if (succeeded) {
     private_data_tracker_.TryCancelAll();

@@ -9,11 +9,11 @@
 #include <gdk/gdk.h>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
+#include <gtk/gtkunixprint.h>
 
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/version.h"
 #include "ui/base/glib/scoped_gobject.h"
@@ -28,10 +28,16 @@ extern "C" {
 #include "ui/gtk/gtk.sigs"
 }
 
+#define GDK_KEY_PRESS Do_not_use_GDK_KEY_PRESS_because_it_is_not_ABI_compatible
+#define GDK_KEY_RELEASE \
+  Do_not_use_GDK_KEY_RELEASE_because_it_is_not_ABI_compatible
+
+using SkColor = uint32_t;
+
 namespace gtk {
 
 // Loads libgtk and related libraries and returns true on success.
-COMPONENT_EXPORT(GTK) bool LoadGtk(int gtk_version);
+bool LoadGtk();
 
 const base::Version& GtkVersion();
 
@@ -51,6 +57,15 @@ gfx::Insets GtkStyleContextGetBorder(GtkStyleContext* context);
 
 gfx::Insets GtkStyleContextGetMargin(GtkStyleContext* context);
 
+SkColor GtkStyleContextGetColor(GtkStyleContext* context);
+
+// Only available in Gtk3.
+SkColor GtkStyleContextGetBackgroundColor(GtkStyleContext* context);
+
+// Only available in Gtk3.
+SkColor GtkStyleContextLookupColor(GtkStyleContext* context,
+                                   const gchar* color_name);
+
 bool GtkImContextFilterKeypress(GtkIMContext* context, GdkEventKey* event);
 
 bool GtkFileChooserSetCurrentFolder(GtkFileChooser* dialog,
@@ -62,6 +77,12 @@ void GtkRenderIcon(GtkStyleContext* context,
                    GdkTexture* texture,
                    double x,
                    double y);
+
+GtkWidget* GtkToplevelWindowNew();
+
+void GtkCssProviderLoadFromData(GtkCssProvider* css_provider,
+                                const char* data,
+                                gssize length);
 
 ScopedGObject<GListModel> Gtk4FileChooserGetFiles(GtkFileChooser* dialog);
 
@@ -94,6 +115,32 @@ void GtkStyleContextGet(GtkStyleContext* context, ...);
 
 void GtkStyleContextGetStyle(GtkStyleContext* context, ...);
 
+// These variadic functions do not have corresponding va_list equivalents,
+// so instances with only a fixed set of arguments are provided.
+
+GtkWidget* GtkFileChooserDialogNew(const gchar* title,
+                                   GtkWindow* parent,
+                                   GtkFileChooserAction action,
+                                   const gchar* first_button_text,
+                                   GtkResponseType first_response,
+                                   const gchar* second_button_text,
+                                   GtkResponseType second_response);
+
+GtkTreeStore* GtkTreeStoreNew(GType type);
+
+// These functions have dropped "const" in their signatures, so cannot be
+// declared in *.sigs.
+
+GdkEventType GdkEventGetEventType(GdkEvent* event);
+
+guint32 GdkEventGetTime(GdkEvent* event);
+
+// Some enum values have changed between versions.
+
+GdkEventType GdkKeyPress();
+
+GdkEventType GdkKeyRelease();
+
 }  // namespace gtk
 
-#endif
+#endif  // UI_GTK_GTK_COMPAT_H_

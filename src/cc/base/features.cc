@@ -21,6 +21,10 @@ const base::Feature kAnimatedImageResume = {"AnimatedImageResume",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables impulse-style scroll animations in place of the default ones.
+//
+// Note: Do not enable this on the Mac. The animation does not match the system
+// scroll animation curve to such an extent that it makes Chromium stand out in
+// a bad way.
 const base::Feature kImpulseScrollAnimations = {
     "ImpulseScrollAnimations",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -66,12 +70,5 @@ const base::Feature kHudDisplayForPerformanceMetrics{
 
 const base::Feature kJankInjectionAblationFeature{
     "JankInjectionAblation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDocumentTransition{"DocumentTransition",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsDocumentTransitionEnabled() {
-  return base::FeatureList::IsEnabled(kDocumentTransition);
-}
 
 }  // namespace features

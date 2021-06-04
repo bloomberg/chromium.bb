@@ -32,7 +32,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -53,6 +53,7 @@ class HTMLParserOptions;
 class HTMLTokenizer;
 class LazyLoadImageObserver;
 class SegmentedString;
+class SubresourceRedirectOriginsPreloader;
 
 struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
@@ -69,6 +70,8 @@ struct CORE_EXPORT CachedDocumentParameters {
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
   WeakPersistent<LazyLoadImageObserver> lazy_load_image_observer;
+  WeakPersistent<SubresourceRedirectOriginsPreloader>
+      subresource_redirect_origins_preloader;
   HashSet<String> disabled_image_types;
 };
 
@@ -88,12 +91,12 @@ class TokenPreloadScanner {
   void Scan(const HTMLToken&,
             const SegmentedString&,
             PreloadRequestStream& requests,
-            base::Optional<ViewportDescription>*,
+            absl::optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
   void Scan(const CompactHTMLToken&,
             const SegmentedString&,
             PreloadRequestStream& requests,
-            base::Optional<ViewportDescription>*,
+            absl::optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
 
   void SetPredictedBaseElementURL(const KURL& url) {
@@ -112,7 +115,7 @@ class TokenPreloadScanner {
   inline void ScanCommon(const Token&,
                          const SegmentedString&,
                          PreloadRequestStream& requests,
-                         base::Optional<ViewportDescription>*,
+                         absl::optional<ViewportDescription>*,
                          bool* is_csp_meta_tag);
 
   template <typename Token>
@@ -188,7 +191,7 @@ class CORE_EXPORT HTMLPreloadScanner {
 
   void AppendToEnd(const SegmentedString&);
   PreloadRequestStream Scan(const KURL& document_base_element_url,
-                            base::Optional<ViewportDescription>*,
+                            absl::optional<ViewportDescription>*,
                             bool& has_csp_meta_tag);
 
  private:
@@ -202,4 +205,4 @@ class CORE_EXPORT HTMLPreloadScanner {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PRELOAD_SCANNER_H_

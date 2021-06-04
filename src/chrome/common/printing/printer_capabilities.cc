@@ -23,6 +23,8 @@
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/mojom/print.mojom.h"
+#include "printing/print_job_constants.h"
 
 #if defined(OS_WIN)
 #include "base/strings/string_split.h"
@@ -32,11 +34,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 #include "chrome/common/printing/ipp_l10n.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "chrome/common/printing/print_media_l10n.h"
@@ -72,7 +74,7 @@ void PopulateAllPaperDisplayNames(PrinterSemanticCapsAndDefaults& info) {
 }
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 void PopulateAdvancedCapsLocalization(
     std::vector<AdvancedCapability>* advanced_capabilities) {
   auto& l10n_map = CapabilityLocalizationMap();
@@ -88,7 +90,7 @@ void PopulateAdvancedCapsLocalization(
     }
   }
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 // Returns a dictionary representing printer capabilities as CDD, or an empty
 // value if no capabilities are provided.
@@ -116,12 +118,12 @@ base::Value AssemblePrinterCapabilities(
 
   caps->user_defined_papers = std::move(user_defined_papers);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     caps->pin_supported = false;
 
   PopulateAdvancedCapsLocalization(&caps->advanced_capabilities);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(*caps);
 }
@@ -164,12 +166,12 @@ base::Value AssemblePrinterSettings(
 
   base::Value options(base::Value::Type::DICTIONARY);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
       base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
                   basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
   printer_info.SetKey(kSettingPrinterOptions, std::move(options));
 
@@ -195,12 +197,13 @@ base::Value GetSettingsOnBlockingTaskRunner(
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(device_name));
 
-  auto caps = base::make_optional<PrinterSemanticCapsAndDefaults>();
-  if (!print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &*caps)) {
+  auto caps = absl::make_optional<PrinterSemanticCapsAndDefaults>();
+  if (print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &*caps) !=
+      mojom::ResultCode::kSuccess) {
     // Failed to get capabilities, but proceed to assemble the settings to
     // return what information we do have.
     LOG(WARNING) << "Failed to get capabilities for " << device_name;
-    caps = base::nullopt;
+    caps = absl::nullopt;
   }
 
   return AssemblePrinterSettings(device_name, basic_info, user_defined_papers,

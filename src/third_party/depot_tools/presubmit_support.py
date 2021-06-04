@@ -29,6 +29,7 @@ import os  # Somewhat exposed through the API.
 import random
 import re  # Exposed through the API.
 import signal
+import six
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import threading
@@ -643,6 +644,8 @@ class InputApi(object):
     # repos (e.g. src.git) to automatically pick up that repo's .vpython file,
     # instead of inheriting the one in depot_tools.
     self.python_executable = 'vpython'
+    # Offer a python 3 executable for use during the migration off of python 2.
+    self.python3_executable = 'vpython3'
     self.environ = os.environ
 
     # InputApi.platform is the platform you're currently running on.
@@ -1564,6 +1567,16 @@ class PresubmitExecuter(object):
     output_api = OutputApi(self.committing)
     context = {}
 
+    # Try to figure out whether these presubmit checks should be run under
+    # python2 or python3. We need to do this without actually trying to
+    # compile the text, since the text might compile in one but not the
+    # other.
+    m = re.search('^USE_PYTHON3 = True$', script_text, flags=re.MULTILINE)
+    use_python3 = m is not None
+    if (((sys.version_info.major == 2) and use_python3) or
+        ((sys.version_info.major == 3) and not use_python3)):
+      return []
+
     try:
       exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
            context)
@@ -1647,11 +1660,16 @@ class PresubmitExecuter(object):
     try:
       result = eval(function_name + '(*__args)', context)
       self._check_result_type(result)
-    except Exception as e:
+    except Exception:
       if sink:
         elapsed_time = time_time() - start_time
         sink.report(function_name, rdb_wrapper.STATUS_FAIL, elapsed_time)
-      raise type(e)('Evaluation of %s failed: %s' % (function_name, e))
+      # TODO(crbug.com/953884): replace reraise with native py3:
+      #   raise .. from e
+      e_type, e_value, e_tb = sys.exc_info()
+      six.reraise(e_type, 'Evaluation of %s failed: %s' % (function_name,
+                                                           e_value),
+                  e_tb)
 
     if sink:
       elapsed_time = time_time() - start_time
@@ -1712,10 +1730,13 @@ def DoPresubmitChecks(change,
     os.environ = os.environ.copy()
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
+    python_version = 'Python %s' % sys.version_info.major
     if committing:
-      sys.stdout.write('Running presubmit commit checks ...\n')
+      sys.stdout.write('Running %s presubmit commit checks ...\n' % 
+                       python_version)
     else:
-      sys.stdout.write('Running presubmit upload checks ...\n')
+      sys.stdout.write('Running %s presubmit upload checks ...\n' %
+                       python_version)
     start_time = time_time()
     presubmit_files = ListRelevantPresubmitFiles(
         change.AbsoluteLocalPaths(), change.RepositoryRoot())
@@ -1765,9 +1786,9 @@ def DoPresubmitChecks(change,
           'Presubmit checks took %.1fs to calculate.\n\n' % total_time)
 
     if not should_prompt and not presubmits_failed:
-      sys.stdout.write('Presubmit checks passed.\n')
+      sys.stdout.write('%s presubmit checks passed.\n' % python_version)
     elif should_prompt:
-      sys.stdout.write('There were presubmit warnings. ')
+      sys.stdout.write('There were %s presubmit warnings. ' % python_version)
       if may_prompt:
         presubmits_failed = not prompt_should_continue(
             'Are you sure you wish to continue? (y/N): ')

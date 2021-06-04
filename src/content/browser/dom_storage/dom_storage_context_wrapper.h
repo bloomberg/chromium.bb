@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
@@ -171,7 +170,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   mojo::Remote<storage::mojom::SessionStorageControl> session_storage_control_;
   mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control_;
 
-  base::Optional<storage::StoragePolicyObserver> storage_policy_observer_;
+  absl::optional<storage::StoragePolicyObserver> storage_policy_observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };

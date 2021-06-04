@@ -8,9 +8,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/web_apps_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -30,77 +34,10 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/services/app_service/public/cpp/intent_filter_util.h"
-#include "components/services/app_service/public/cpp/intent_util.h"
-#include "components/services/app_service/public/cpp/share_target.h"
-#include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #endif
-
-namespace {
-
-constexpr char kTextPlain[] = "text/plain";
-
-// Only supporting important permissions for now.
-const ContentSettingsType kSupportedPermissionTypes[] = {
-    ContentSettingsType::MEDIASTREAM_MIC,
-    ContentSettingsType::MEDIASTREAM_CAMERA,
-    ContentSettingsType::GEOLOCATION,
-    ContentSettingsType::NOTIFICATIONS,
-};
-
-apps::mojom::InstallSource GetHighestPriorityInstallSource(
-    const web_app::WebApp* web_app) {
-  switch (web_app->GetHighestPrioritySource()) {
-    case web_app::Source::kSystem:
-      return apps::mojom::InstallSource::kSystem;
-    case web_app::Source::kPolicy:
-      return apps::mojom::InstallSource::kPolicy;
-    case web_app::Source::kWebAppStore:
-      return apps::mojom::InstallSource::kUser;
-    case web_app::Source::kSync:
-      return apps::mojom::InstallSource::kUser;
-    case web_app::Source::kDefault:
-      return apps::mojom::InstallSource::kDefault;
-  }
-}
-
-apps::mojom::IntentFilterPtr CreateShareFileFilter(
-    const std::vector<std::string>& intent_actions,
-    const std::vector<std::string>& content_types) {
-  DCHECK(!content_types.empty());
-  auto intent_filter = apps::mojom::IntentFilter::New();
-
-  std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
-  for (auto& action : intent_actions) {
-    action_condition_values.push_back(apps_util::MakeConditionValue(
-        action, apps::mojom::PatternMatchType::kNone));
-  }
-  if (!action_condition_values.empty()) {
-    auto action_condition =
-        apps_util::MakeCondition(apps::mojom::ConditionType::kAction,
-                                 std::move(action_condition_values));
-    intent_filter->conditions.push_back(std::move(action_condition));
-  }
-
-  std::vector<apps::mojom::ConditionValuePtr> mime_type_condition_values;
-  for (auto& mime_type : content_types) {
-    mime_type_condition_values.push_back(apps_util::MakeConditionValue(
-        mime_type, apps::mojom::PatternMatchType::kMimeType));
-  }
-  if (!mime_type_condition_values.empty()) {
-    auto mime_type_condition =
-        apps_util::MakeCondition(apps::mojom::ConditionType::kMimeType,
-                                 std::move(mime_type_condition_values));
-    intent_filter->conditions.push_back(std::move(mime_type_condition));
-  }
-
-  return intent_filter;
-}
-
-}  // namespace
 
 namespace apps {
 
@@ -116,7 +53,7 @@ WebAppsBase::WebAppsBase(
 // the publisher for Lacros web apps.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (crosapi::browser_util::IsLacrosEnabled() &&
-      base::FeatureList::IsEnabled(features::kLacrosWebApps)) {
+      base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
     app_type_ = apps::mojom::AppType::kSystemWeb;
   }
 #endif
@@ -128,8 +65,8 @@ WebAppsBase::~WebAppsBase() = default;
 
 void WebAppsBase::Shutdown() {
   if (provider_) {
-    registrar_observer_.RemoveAll();
-    content_settings_observer_.RemoveAll();
+    registrar_observation_.Reset();
+    content_settings_observation_.Reset();
   }
 }
 
@@ -153,45 +90,8 @@ void WebAppsBase::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
     return;
   }
 
-  // Construct an App with only the information required to identify an
-  // uninstallation.
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = app_type_;
-  app->app_id = web_app->app_id();
-  // TODO(loyso): Plumb uninstall source (reason) here.
-  app->readiness = apps::mojom::Readiness::kUninstalledByUser;
-
-  SetShowInFields(app, web_app);
-  Publish(std::move(app), subscribers_);
-
-  if (app_service_) {
-    app_service_->RemovePreferredApp(app_type_, web_app->app_id());
-  }
-}
-
-apps::mojom::AppPtr WebAppsBase::ConvertImpl(const web_app::WebApp* web_app,
-                                             apps::mojom::Readiness readiness) {
-  apps::mojom::AppPtr app = PublisherBase::MakeApp(
-      app_type_, web_app->app_id(), readiness, web_app->name(),
-      GetHighestPriorityInstallSource(web_app));
-
-  app->description = web_app->description();
-  app->additional_search_terms = web_app->additional_search_terms();
-  app->last_launch_time = web_app->last_launch_time();
-  app->install_time = web_app->install_time();
-
-  // Web App's publisher_id the start url.
-  app->publisher_id = web_app->start_url().spec();
-
-  // app->version is left empty here.
-  PopulatePermissions(web_app, &app->permissions);
-
-  SetShowInFields(app, web_app);
-
-  // Get the intent filters for PWAs.
-  PopulateIntentFilters(*web_app, app->intent_filters);
-
-  return app;
+  Publish(apps_util::ConvertUninstalledWebApp(web_app, app_type_),
+          subscribers_);
 }
 
 IconEffects WebAppsBase::GetIconEffects(const web_app::WebApp* web_app) {
@@ -249,8 +149,8 @@ void WebAppsBase::Initialize(
   provider_ = web_app::WebAppProvider::Get(profile_);
   DCHECK(provider_);
 
-  registrar_observer_.Add(&provider_->registrar());
-  content_settings_observer_.Add(
+  registrar_observation_.Observe(&provider_->registrar());
+  content_settings_observation_.Observe(
       HostContentSettingsMapFactory::GetForProfile(profile_));
 
   web_app_launch_manager_ =
@@ -339,6 +239,7 @@ void WebAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+    case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       break;
   }
 
@@ -400,7 +301,7 @@ void WebAppsBase::SetPermission(const std::string& app_id,
 
   ContentSettingsType permission_type =
       static_cast<ContentSettingsType>(permission->permission_id);
-  if (!base::Contains(kSupportedPermissionTypes, permission_type)) {
+  if (!apps_util::IsSupportedWebAppPermissionType(permission_type)) {
     return;
   }
 
@@ -443,7 +344,7 @@ void WebAppsBase::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
   // If content_type is not one of the supported permissions, do nothing.
-  if (!base::Contains(kSupportedPermissionTypes, content_type)) {
+  if (!apps_util::IsSupportedWebAppPermissionType(content_type)) {
     return;
   }
 
@@ -463,7 +364,8 @@ void WebAppsBase::OnContentSettingChanged(
       apps::mojom::AppPtr app = apps::mojom::App::New();
       app->app_type = app_type_;
       app->app_id = web_app.app_id();
-      PopulatePermissions(&web_app, &app->permissions);
+      apps_util::PopulateWebAppPermissions(profile_, &web_app,
+                                           &app->permissions);
 
       Publish(std::move(app), subscribers_);
     }
@@ -475,11 +377,7 @@ void WebAppsBase::OnWebAppLastLaunchTimeChanged(
     const base::Time& last_launch_time) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_type = app_type_;
-    app->app_id = app_id;
-    app->last_launch_time = web_app->last_launch_time();
-    Publish(std::move(app), subscribers_);
+    Publish(apps_util::ConvertLaunchedWebApp(web_app, app_type_), subscribers_);
   }
 }
 
@@ -492,7 +390,7 @@ void WebAppsBase::OnWebAppManifestUpdated(const web_app::AppId& app_id,
 }
 
 void WebAppsBase::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
+  registrar_observation_.Reset();
 }
 
 void WebAppsBase::OnWebAppLocallyInstalledStateChanged(
@@ -506,73 +404,6 @@ void WebAppsBase::OnWebAppLocallyInstalledStateChanged(
   app->app_id = app_id;
   app->icon_key = icon_key_factory().MakeIconKey(GetIconEffects(web_app));
   Publish(std::move(app), subscribers_);
-}
-
-void WebAppsBase::SetShowInFields(apps::mojom::AppPtr& app,
-                                  const web_app::WebApp* web_app) {
-  if (web_app->chromeos_data().has_value()) {
-    auto& chromeos_data = web_app->chromeos_data().value();
-    app->show_in_launcher = chromeos_data.show_in_launcher
-                                ? apps::mojom::OptionalBool::kTrue
-                                : apps::mojom::OptionalBool::kFalse;
-    app->show_in_shelf = app->show_in_search =
-        chromeos_data.show_in_search ? apps::mojom::OptionalBool::kTrue
-                                     : apps::mojom::OptionalBool::kFalse;
-    app->show_in_management = chromeos_data.show_in_management
-                                  ? apps::mojom::OptionalBool::kTrue
-                                  : apps::mojom::OptionalBool::kFalse;
-    return;
-  }
-
-  // Show the app everywhere by default.
-  auto show = apps::mojom::OptionalBool::kTrue;
-  app->show_in_launcher = show;
-  app->show_in_shelf = show;
-  app->show_in_search = show;
-  app->show_in_management = show;
-}
-
-void WebAppsBase::PopulatePermissions(
-    const web_app::WebApp* web_app,
-    std::vector<mojom::PermissionPtr>* target) {
-  const GURL url = web_app->start_url();
-
-  auto* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  DCHECK(host_content_settings_map);
-
-  for (ContentSettingsType type : kSupportedPermissionTypes) {
-    ContentSetting setting =
-        host_content_settings_map->GetContentSetting(url, url, type);
-
-    // Map ContentSettingsType to an apps::mojom::TriState value
-    apps::mojom::TriState setting_val;
-    switch (setting) {
-      case CONTENT_SETTING_ALLOW:
-        setting_val = apps::mojom::TriState::kAllow;
-        break;
-      case CONTENT_SETTING_ASK:
-        setting_val = apps::mojom::TriState::kAsk;
-        break;
-      case CONTENT_SETTING_BLOCK:
-        setting_val = apps::mojom::TriState::kBlock;
-        break;
-      default:
-        setting_val = apps::mojom::TriState::kAsk;
-    }
-
-    content_settings::SettingInfo setting_info;
-    host_content_settings_map->GetWebsiteSetting(url, url, type, &setting_info);
-
-    auto permission = apps::mojom::Permission::New();
-    permission->permission_id = static_cast<uint32_t>(type);
-    permission->value_type = apps::mojom::PermissionValueType::kTriState;
-    permission->value = static_cast<uint32_t>(setting_val);
-    permission->is_managed =
-        setting_info.source == content_settings::SETTING_SOURCE_POLICY;
-
-    target->push_back(std::move(permission));
-  }
 }
 
 void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
@@ -600,48 +431,6 @@ void WebAppsBase::StartPublishingWebApps(
                      true /* should_notify_initialized */);
 
   subscribers_.Add(std::move(subscriber));
-}
-
-void PopulateIntentFilters(const web_app::WebApp& web_app,
-                           std::vector<mojom::IntentFilterPtr>& target) {
-  if (web_app.scope().is_empty())
-    return;
-
-  target.push_back(apps_util::CreateIntentFilterForUrlScope(
-      web_app.scope(),
-      base::FeatureList::IsEnabled(features::kIntentHandlingSharing)));
-
-  if (!base::FeatureList::IsEnabled(features::kIntentHandlingSharing) ||
-      !web_app.share_target().has_value()) {
-    return;
-  }
-
-  const apps::ShareTarget& share_target = web_app.share_target().value();
-
-  if (!share_target.params.text.empty()) {
-    // The share target accepts navigator.share() calls with text.
-    target.push_back(
-        CreateShareFileFilter({apps_util::kIntentActionSend}, {kTextPlain}));
-  }
-
-  std::vector<std::string> content_types;
-  for (const auto& files_entry : share_target.params.files) {
-    for (const auto& file_type : files_entry.accept) {
-      // Skip any file_type that is not a MIME type.
-      if (file_type.empty() || file_type[0] == '.' ||
-          std::count(file_type.begin(), file_type.end(), '/') != 1) {
-        continue;
-      }
-
-      content_types.push_back(file_type);
-    }
-  }
-
-  if (!content_types.empty()) {
-    const std::vector<std::string> intent_actions(
-        {apps_util::kIntentActionSend, apps_util::kIntentActionSendMultiple});
-    target.push_back(CreateShareFileFilter(intent_actions, content_types));
-  }
 }
 
 }  // namespace apps

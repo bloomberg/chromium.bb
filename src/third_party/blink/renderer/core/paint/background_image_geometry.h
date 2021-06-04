@@ -24,7 +24,7 @@ class ImageResourceObserver;
 class LayoutNGTableCell;
 
 class BackgroundImageGeometry {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   // Constructor for LayoutView where the coordinate space is different.
@@ -48,7 +48,6 @@ class BackgroundImageGeometry {
 
   void Calculate(const LayoutBoxModelObject* container,
                  PaintPhase,
-                 GlobalPaintFlags,
                  const FillLayer&,
                  const PhysicalRect& paint_rect);
 
@@ -75,7 +74,7 @@ class BackgroundImageGeometry {
   // Phase() represents the point in the image that will appear at (0,0) in the
   // destination space. The point is defined in TileSize() coordinates, that is,
   // in the scaled image.
-  const FloatPoint& Phase() const { return phase_; }
+  const PhysicalOffset& Phase() const { return phase_; }
 
   // SpaceSize() represents extra width and height that may be added to
   // the image if used as a pattern with background-repeat: space.
@@ -102,8 +101,8 @@ class BackgroundImageGeometry {
   void SetSpaceSize(const PhysicalSize& repeat_spacing) {
     repeat_spacing_ = repeat_spacing;
   }
-  void SetPhaseX(float x) { phase_.SetX(x); }
-  void SetPhaseY(float y) { phase_.SetY(y); }
+  void SetPhaseX(LayoutUnit x) { phase_.left = x; }
+  void SetPhaseY(LayoutUnit y) { phase_.top = y; }
 
   void SetNoRepeatX(const FillLayer&,
                     LayoutUnit x_offset,
@@ -148,7 +147,6 @@ class BackgroundImageGeometry {
 
   void ComputePositioningArea(const LayoutBoxModelObject*,
                               PaintPhase,
-                              GlobalPaintFlags,
                               const FillLayer&,
                               const PhysicalRect&,
                               PhysicalRect&,
@@ -171,7 +169,7 @@ class BackgroundImageGeometry {
   // and sizing the background. It also provides the background properties if
   // painting the view background or a table-cell using its container's
   // (row's/column's) background.
-  const LayoutBoxModelObject* positioning_box_;
+  const LayoutBoxModelObject* const positioning_box_;
 
   // When painting table cells or the view, the positioning area
   // differs from the requested paint rect.
@@ -183,7 +181,7 @@ class BackgroundImageGeometry {
 
   PhysicalRect unsnapped_dest_rect_;
   PhysicalRect snapped_dest_rect_;
-  FloatPoint phase_;
+  PhysicalOffset phase_;
   PhysicalSize tile_size_;
   PhysicalSize repeat_spacing_;
   bool has_non_local_geometry_ = false;

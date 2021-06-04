@@ -673,7 +673,7 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         const int is_chroma = 1;
         const int is_intra_frame = frame_is_intra_only(cm);
         prune_intra_mode_with_hog(
-            x, bsize, cm->seq_params.sb_size,
+            x, bsize, cm->seq_params->sb_size,
             thresh[is_intra_frame]
                   [sf->intra_sf.chroma_intra_pruning_with_hog - 1],
             intra_search_state.directional_mode_skip_mask, is_chroma);
@@ -1020,6 +1020,7 @@ static INLINE void handle_filter_intra_mode(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
+// Evaluate a given luma intra-mode in inter frames.
 int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
                             const AV1_COMP *cpi, MACROBLOCK *x,
                             BLOCK_SIZE bsize, unsigned int ref_frame_cost,
@@ -1039,7 +1040,7 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
   int known_rate = mode_cost;
   const int intra_cost_penalty = av1_get_intra_cost_penalty(
       cm->quant_params.base_qindex, cm->quant_params.y_dc_delta_q,
-      cm->seq_params.bit_depth);
+      cm->seq_params->bit_depth);
 
   if (mode != DC_PRED && mode != PAETH_PRED) known_rate += intra_cost_penalty;
   known_rate += AOMMIN(mode_costs->skip_txfm_cost[skip_ctx][0],
@@ -1057,7 +1058,7 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
         !intra_search_state->dir_mode_skip_mask_ready) {
       const float thresh[4] = { -1.2f, 0.0f, 0.0f, 1.2f };
       const int is_chroma = 0;
-      prune_intra_mode_with_hog(x, bsize, cm->seq_params.sb_size,
+      prune_intra_mode_with_hog(x, bsize, cm->seq_params->sb_size,
                                 thresh[sf->intra_sf.intra_pruning_with_hog - 1],
                                 intra_search_state->directional_mode_skip_mask,
                                 is_chroma);
@@ -1082,8 +1083,12 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
     int try_filter_intra = 1;
     int64_t best_rd_so_far = INT64_MAX;
     if (rd_stats_y->rate != INT_MAX) {
-      const int tmp_rate = rd_stats_y->rate +
-                           mode_costs->filter_intra_cost[bsize][0] + mode_cost;
+      // best_rd_so_far is the rdcost of DC_PRED without using filter_intra.
+      // Later, in filter intra search, best_rd_so_far is used for comparison.
+      mbmi->filter_intra_mode_info.use_filter_intra = 0;
+      const int tmp_rate =
+          rd_stats_y->rate +
+          intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
       best_rd_so_far = RDCOST(x->rdmult, tmp_rate, rd_stats_y->dist);
       try_filter_intra = (best_rd_so_far / 2) <= best_rd;
     }
@@ -1207,7 +1212,7 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     const float thresh[4] = { -1.2f, -1.2f, -0.6f, 0.4f };
     const int is_chroma = 0;
     prune_intra_mode_with_hog(
-        x, bsize, cpi->common.seq_params.sb_size,
+        x, bsize, cpi->common.seq_params->sb_size,
         thresh[cpi->sf.intra_sf.intra_pruning_with_hog - 1],
         directional_mode_skip_mask, is_chroma);
   }

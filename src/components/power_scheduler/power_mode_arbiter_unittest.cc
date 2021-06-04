@@ -12,6 +12,10 @@ namespace power_scheduler {
 
 TEST(PowerModeArbiterTest, SingleVote) {
   PowerModeArbiter arbiter;
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+
+  // Clear the initial kCharging vote.
+  arbiter.SetOnBatteryPowerForTesting(/*on_battery_power=*/true);
   EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
 
   std::unique_ptr<PowerModeVoter> voter1 = arbiter.NewVoter("voter1");
@@ -29,6 +33,12 @@ TEST(PowerModeArbiterTest, SingleVote) {
 
 TEST(PowerModeArbiterTest, MultipleVotes) {
   PowerModeArbiter arbiter;
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+
+  // Clear the initial kCharging vote.
+  arbiter.SetOnBatteryPowerForTesting(/*on_battery_power=*/true);
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
   EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
 
   std::unique_ptr<PowerModeVoter> voter1 = arbiter.NewVoter("voter1");
@@ -54,13 +64,23 @@ TEST(PowerModeArbiterTest, MultipleVotes) {
 
   // Charging trumps anything.
   vote_and_expect(PowerMode::kCharging, PowerMode::kIdle, PowerMode::kCharging);
+  vote_and_expect(PowerMode::kCharging, PowerMode::kNopAnimation,
+                  PowerMode::kCharging);
   vote_and_expect(PowerMode::kCharging, PowerMode::kAudible,
+                  PowerMode::kCharging);
+  vote_and_expect(PowerMode::kCharging, PowerMode::kVideoPlayback,
+                  PowerMode::kCharging);
+  vote_and_expect(PowerMode::kCharging, PowerMode::kMainThreadAnimation,
                   PowerMode::kCharging);
   vote_and_expect(PowerMode::kCharging, PowerMode::kLoading,
                   PowerMode::kCharging);
   vote_and_expect(PowerMode::kCharging, PowerMode::kAnimation,
                   PowerMode::kCharging);
+  vote_and_expect(PowerMode::kCharging, PowerMode::kLoadingAnimation,
+                  PowerMode::kCharging);
   vote_and_expect(PowerMode::kCharging, PowerMode::kResponse,
+                  PowerMode::kCharging);
+  vote_and_expect(PowerMode::kCharging, PowerMode::kNonWebActivity,
                   PowerMode::kCharging);
   vote_and_expect(PowerMode::kCharging, PowerMode::kBackground,
                   PowerMode::kCharging);
@@ -68,39 +88,130 @@ TEST(PowerModeArbiterTest, MultipleVotes) {
   // Background trumps remaining modes, but not audible.
   vote_and_expect(PowerMode::kBackground, PowerMode::kIdle,
                   PowerMode::kBackground);
+  vote_and_expect(PowerMode::kBackground, PowerMode::kNopAnimation,
+                  PowerMode::kBackground);
   vote_and_expect(PowerMode::kBackground, PowerMode::kAudible,
                   PowerMode::kAudible);
+  vote_and_expect(PowerMode::kBackground, PowerMode::kVideoPlayback,
+                  PowerMode::kBackground);
+  vote_and_expect(PowerMode::kBackground, PowerMode::kMainThreadAnimation,
+                  PowerMode::kBackground);
   vote_and_expect(PowerMode::kBackground, PowerMode::kLoading,
                   PowerMode::kBackground);
   vote_and_expect(PowerMode::kBackground, PowerMode::kAnimation,
                   PowerMode::kBackground);
+  vote_and_expect(PowerMode::kBackground, PowerMode::kLoadingAnimation,
+                  PowerMode::kBackground);
   vote_and_expect(PowerMode::kBackground, PowerMode::kResponse,
                   PowerMode::kBackground);
+  vote_and_expect(PowerMode::kBackground, PowerMode::kNonWebActivity,
+                  PowerMode::kBackground);
+
+  // NonWebActivity trumps remaining modes.
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kIdle,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kNopAnimation,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kAudible,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kVideoPlayback,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kMainThreadAnimation,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kLoading,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kAnimation,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kLoadingAnimation,
+                  PowerMode::kNonWebActivity);
+  vote_and_expect(PowerMode::kNonWebActivity, PowerMode::kResponse,
+                  PowerMode::kNonWebActivity);
 
   // Response trumps remaining modes.
   vote_and_expect(PowerMode::kResponse, PowerMode::kIdle, PowerMode::kResponse);
+  vote_and_expect(PowerMode::kResponse, PowerMode::kNopAnimation,
+                  PowerMode::kResponse);
   vote_and_expect(PowerMode::kResponse, PowerMode::kAudible,
+                  PowerMode::kResponse);
+  vote_and_expect(PowerMode::kResponse, PowerMode::kVideoPlayback,
+                  PowerMode::kResponse);
+  vote_and_expect(PowerMode::kResponse, PowerMode::kMainThreadAnimation,
                   PowerMode::kResponse);
   vote_and_expect(PowerMode::kResponse, PowerMode::kLoading,
                   PowerMode::kResponse);
   vote_and_expect(PowerMode::kResponse, PowerMode::kAnimation,
                   PowerMode::kResponse);
+  vote_and_expect(PowerMode::kResponse, PowerMode::kLoadingAnimation,
+                  PowerMode::kResponse);
+
+  // LoadingAnimation trumps remaining modes.
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kIdle,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kNopAnimation,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kAudible,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kVideoPlayback,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kMainThreadAnimation,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kLoading,
+                  PowerMode::kLoadingAnimation);
+  vote_and_expect(PowerMode::kLoadingAnimation, PowerMode::kAnimation,
+                  PowerMode::kLoadingAnimation);
 
   // Animation trumps remaining modes.
   vote_and_expect(PowerMode::kAnimation, PowerMode::kIdle,
                   PowerMode::kAnimation);
+  vote_and_expect(PowerMode::kAnimation, PowerMode::kNopAnimation,
+                  PowerMode::kAnimation);
   vote_and_expect(PowerMode::kAnimation, PowerMode::kAudible,
                   PowerMode::kAnimation);
-  vote_and_expect(PowerMode::kAnimation, PowerMode::kLoading,
+  vote_and_expect(PowerMode::kAnimation, PowerMode::kVideoPlayback,
                   PowerMode::kAnimation);
+  vote_and_expect(PowerMode::kAnimation, PowerMode::kMainThreadAnimation,
+                  PowerMode::kAnimation);
+  // Animation while loading breaks out into a separate mode.
+  vote_and_expect(PowerMode::kAnimation, PowerMode::kLoading,
+                  PowerMode::kLoadingAnimation);
 
   // Loading trumps remaining modes.
   vote_and_expect(PowerMode::kLoading, PowerMode::kIdle, PowerMode::kLoading);
+  vote_and_expect(PowerMode::kLoading, PowerMode::kNopAnimation,
+                  PowerMode::kLoading);
   vote_and_expect(PowerMode::kLoading, PowerMode::kAudible,
                   PowerMode::kLoading);
+  vote_and_expect(PowerMode::kLoading, PowerMode::kVideoPlayback,
+                  PowerMode::kLoading);
+  vote_and_expect(PowerMode::kLoading, PowerMode::kMainThreadAnimation,
+                  PowerMode::kLoading);
 
-  // Audible trumps idle.
+  // MainThreadAnimation trumps remaining modes.
+  vote_and_expect(PowerMode::kMainThreadAnimation, PowerMode::kIdle,
+                  PowerMode::kMainThreadAnimation);
+  vote_and_expect(PowerMode::kMainThreadAnimation, PowerMode::kNopAnimation,
+                  PowerMode::kMainThreadAnimation);
+  vote_and_expect(PowerMode::kMainThreadAnimation, PowerMode::kAudible,
+                  PowerMode::kMainThreadAnimation);
+  vote_and_expect(PowerMode::kMainThreadAnimation, PowerMode::kVideoPlayback,
+                  PowerMode::kMainThreadAnimation);
+
+  // VideoPlayback trumps remaining modes.
+  vote_and_expect(PowerMode::kVideoPlayback, PowerMode::kIdle,
+                  PowerMode::kVideoPlayback);
+  vote_and_expect(PowerMode::kVideoPlayback, PowerMode::kNopAnimation,
+                  PowerMode::kVideoPlayback);
+  vote_and_expect(PowerMode::kVideoPlayback, PowerMode::kAudible,
+                  PowerMode::kVideoPlayback);
+
+  // Audible trumps idle and no-op animation.
   vote_and_expect(PowerMode::kAudible, PowerMode::kIdle, PowerMode::kAudible);
+  vote_and_expect(PowerMode::kAudible, PowerMode::kNopAnimation,
+                  PowerMode::kAudible);
+
+  // NopAnimation trumps idle.
+  vote_and_expect(PowerMode::kNopAnimation, PowerMode::kIdle,
+                  PowerMode::kNopAnimation);
 }
 
 namespace {
@@ -118,6 +229,9 @@ TEST(PowerModeArbiterTest, Observer) {
   base::test::TaskEnvironment env;
   PowerModeArbiter arbiter;
   MockObserver observer;
+
+  // Clear the initial kCharging vote.
+  arbiter.SetOnBatteryPowerForTesting(/*on_battery_power=*/true);
 
   // Observer is notified of initial mode right away.
   EXPECT_CALL(observer, OnPowerModeChanged(PowerMode::kIdle, PowerMode::kIdle));
@@ -145,10 +259,33 @@ TEST(PowerModeArbiterTest, Observer) {
   arbiter.RemoveObserver(&observer);
 }
 
+namespace {
+class FakeObserver : public PowerModeArbiter::Observer {
+ public:
+  ~FakeObserver() override = default;
+  void OnPowerModeChanged(PowerMode old_mode, PowerMode new_mode) override {}
+};
+}  // namespace
+
 TEST(PowerModeArbiterTest, ResetVoteAfterTimeout) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  // Align the mock clock with the phase of the reset tasks.
+  base::TimeTicks target_time = env.NowTicks().SnappedToNextTick(
+      base::TimeTicks(), PowerModeArbiter::kResetVoteTimeResolution);
+  env.AdvanceClock(target_time - env.NowTicks());
+
   PowerModeArbiter arbiter;
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+
+  // Clear the initial kCharging vote.
+  arbiter.SetOnBatteryPowerForTesting(/*on_battery_power=*/true);
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
+  // Add a fake observer to enable reset tasks.
+  FakeObserver observer;
+  arbiter.AddObserver(&observer);
 
   base::TimeDelta delta1s = base::TimeDelta::FromSeconds(1);
   base::TimeDelta delta2s = base::TimeDelta::FromSeconds(2);
@@ -211,11 +348,82 @@ TEST(PowerModeArbiterTest, ResetVoteAfterTimeout) {
   env.FastForwardBy(delta1s);  // Execute the second reset task.
   EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
 
+  // Unaligned reset timeouts get aligned to the resolution.
+  voter1->VoteFor(PowerMode::kAnimation);
+  voter2->VoteFor(PowerMode::kCharging);
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+  voter2->ResetVoteAfterTimeout(PowerModeArbiter::kResetVoteTimeResolution / 3);
+  voter1->ResetVoteAfterTimeout(PowerModeArbiter::kResetVoteTimeResolution / 2);
+  base::TimeDelta first_half = PowerModeArbiter::kResetVoteTimeResolution / 2;
+  env.FastForwardBy(first_half);
+  // No change, since the timeouts were aligned to kResetVoteTimeResolution.
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+  // Executes the resets.
+  env.FastForwardBy(PowerModeArbiter::kResetVoteTimeResolution - first_half);
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
   // If the voter is destroyed, the task doesn't cause crashes.
   voter1->VoteFor(PowerMode::kAnimation);
   voter1->ResetVoteAfterTimeout(delta1s);
   voter1.reset();
   env.FastForwardBy(delta1s);  // Execute the reset task.
+
+  arbiter.RemoveObserver(&observer);
+}
+
+TEST(PowerModeArbiterTest, ObserverEnablesResetTasks) {
+  base::test::TaskEnvironment env(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  // Align the mock clock with the phase of the reset tasks.
+  base::TimeTicks target_time = env.NowTicks().SnappedToNextTick(
+      base::TimeTicks(), PowerModeArbiter::kResetVoteTimeResolution);
+  env.AdvanceClock(target_time - env.NowTicks());
+
+  PowerModeArbiter arbiter;
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kCharging);
+
+  // Clear the initial kCharging vote.
+  arbiter.SetOnBatteryPowerForTesting(/*on_battery_power=*/true);
+  EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
+  FakeObserver observer;
+  base::TimeDelta delta1s = base::TimeDelta::FromSeconds(1);
+
+  arbiter.OnThreadPoolAvailable();
+
+  std::unique_ptr<PowerModeVoter> voter1 = arbiter.NewVoter("voter1");
+
+  for (int i = 0; i < 2; i++) {
+    // Without observer, reset tasks are not executed and resets not serviced.
+    voter1->VoteFor(PowerMode::kAnimation);
+    EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kAnimation);
+    voter1->ResetVoteAfterTimeout(delta1s);
+    {
+      base::AutoLock lock(arbiter.lock_);
+      EXPECT_EQ(arbiter.next_pending_vote_update_time_, base::TimeTicks());
+    }
+    env.FastForwardBy(delta1s);
+    EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kAnimation);
+
+    // Adding the observer services the reset.
+    arbiter.AddObserver(&observer);
+    EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
+    // While observer is registered, resets are serviced.
+    voter1->VoteFor(PowerMode::kAnimation);
+    EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kAnimation);
+    voter1->ResetVoteAfterTimeout(delta1s);
+    {
+      base::AutoLock lock(arbiter.lock_);
+      EXPECT_NE(arbiter.next_pending_vote_update_time_, base::TimeTicks());
+    }
+    env.FastForwardBy(delta1s);
+    EXPECT_EQ(arbiter.GetActiveModeForTesting(), PowerMode::kIdle);
+
+    // After removing the observer, resets are no longer serviced.
+    arbiter.RemoveObserver(&observer);
+  }
 }
 
 }  // namespace power_scheduler

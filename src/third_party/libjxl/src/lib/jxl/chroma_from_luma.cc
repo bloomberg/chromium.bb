@@ -14,27 +14,6 @@
 
 #include "lib/jxl/chroma_from_luma.h"
 
-#include <float.h>
-#include <stdlib.h>
-
-#include <algorithm>
-#include <array>
-#include <cmath>
-
-#include "lib/jxl/aux_out.h"
-#include "lib/jxl/base/bits.h"
-#include "lib/jxl/base/padded_bytes.h"
-#include "lib/jxl/base/profiler.h"
-#include "lib/jxl/base/span.h"
-#include "lib/jxl/base/status.h"
-#include "lib/jxl/common.h"
-#include "lib/jxl/dec_transforms-inl.h"
-#include "lib/jxl/enc_transforms-inl.h"
-#include "lib/jxl/entropy_coder.h"
-#include "lib/jxl/image_ops.h"
-#include "lib/jxl/modular/encoding/encoding.h"
-#include "lib/jxl/quantizer.h"
-
 namespace jxl {
 
 ColorCorrelationMap::ColorCorrelationMap(size_t xsize, size_t ysize, bool XYB)

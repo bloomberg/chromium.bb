@@ -22,6 +22,7 @@
 #include "ash/style/default_color_constants.h"
 #include "ash/style/default_colors.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -43,8 +44,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/system/sys_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -359,7 +360,7 @@ class SplitViewController::DividerSnapAnimation
   SplitViewController* split_view_controller_;
   int starting_position_;
   int ending_position_;
-  base::Optional<ui::ThroughputTracker> tracker_;
+  absl::optional<ui::ThroughputTracker> tracker_;
 };
 
 // The controller that observes the window state and performs auto snapping
@@ -728,10 +729,26 @@ bool SplitViewController::InTabletSplitViewMode() const {
 }
 
 bool SplitViewController::CanSnapWindow(aura::Window* window) const {
-  return ShouldAllowSplitView() && wm::CanActivateWindow(window) &&
-         WindowState::Get(window)->CanSnap() &&
-         GetMinimumWindowSize(window, IsLayoutHorizontal()) <=
-             GetDividerEndPosition() / 2 - kSplitviewDividerShortSideLength / 2;
+  if (!ShouldAllowSplitView())
+    return false;
+
+  if (!WindowState::Get(window)->CanSnap())
+    return false;
+
+  // Windows created by full restore are not activatable while being restored.
+  // However, we still want to be able to snap these windows at this point.
+  bool restoring_snap_state = false;
+  if (features::IsFullRestoreEnabled()) {
+    restoring_snap_state =
+        FullRestoreController::Get()->is_restoring_snap_state();
+  }
+
+  // TODO(sammiequon): Investigate if we need to check for window activation.
+  if (!restoring_snap_state && !wm::CanActivateWindow(window))
+    return false;
+
+  return GetMinimumWindowSize(window, IsLayoutHorizontal()) <=
+         GetDividerEndPosition() / 2 - kSplitviewDividerShortSideLength / 2;
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
@@ -1279,8 +1296,8 @@ void SplitViewController::OnWindowDragEnded(
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
   if (window_util::IsDraggingTabs(dragged_window)) {
-    dragged_window_observer_.reset(new TabDraggedWindowObserver(
-        this, dragged_window, desired_snap_position, last_location_in_screen));
+    dragged_window_observer_ = std::make_unique<TabDraggedWindowObserver>(
+        this, dragged_window, desired_snap_position, last_location_in_screen);
   } else {
     EndWindowDragImpl(dragged_window, /*is_being_destroyed=*/false,
                       desired_snap_position, last_location_in_screen);
@@ -1303,14 +1320,24 @@ void SplitViewController::RemoveObserver(SplitViewObserver* observer) {
 void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
-  // If the window's resizibility property changes (must from resizable ->
+  // If the window's resizibility property changes (must be from resizable ->
   // unresizable), end the split view mode and also end overview mode if
   // overview mode is active at the moment.
-  if (key == aura::client::kResizeBehaviorKey && !CanSnapWindow(window)) {
-    EndSplitView();
-    Shell::Get()->overview_controller()->EndOverview();
-    ShowAppCannotSnapToast();
+  if (key != aura::client::kResizeBehaviorKey)
+    return;
+
+  // It is possible the property gets updated and is still the same value.
+  if (window->GetProperty(aura::client::kResizeBehaviorKey) ==
+      static_cast<int>(old)) {
+    return;
   }
+
+  if (CanSnapWindow(window))
+    return;
+
+  EndSplitView();
+  Shell::Get()->overview_controller()->EndOverview();
+  ShowAppCannotSnapToast();
 }
 
 void SplitViewController::OnWindowBoundsChanged(

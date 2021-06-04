@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -43,17 +43,49 @@ namespace extensions {
 namespace {
 
 // Returns the current ActivationSequence of |extension| if the extension is
-// Service Worker-based, otherwise returns base::nullopt.
-base::Optional<ActivationSequence> GetWorkerActivationSequence(
+// Service Worker-based, otherwise returns absl::nullopt.
+absl::optional<ActivationSequence> GetWorkerActivationSequence(
     BrowserContext* browser_context,
     const Extension& extension) {
   if (BackgroundInfo::IsServiceWorkerBased(&extension)) {
     return ServiceWorkerTaskQueue::Get(browser_context)
         ->GetCurrentSequence(extension.id());
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
+PermissionSet CreatePermissionSet(const PermissionSet& set) {
+  return PermissionSet(set.apis().Clone(), set.manifest_permissions().Clone(),
+                       set.explicit_hosts().Clone(),
+                       set.scriptable_hosts().Clone());
+}
+
+mojom::ExtensionLoadedParamsPtr CreateExtensionLoadedParams(
+    const Extension& extension,
+    bool include_tab_permissions,
+    BrowserContext* browser_context) {
+  const PermissionsData* permissions_data = extension.permissions_data();
+
+  base::flat_map<int, PermissionSet> tab_specific_permissions;
+  if (include_tab_permissions) {
+    for (const auto& pair : permissions_data->tab_specific_permissions()) {
+      tab_specific_permissions[pair.first] = CreatePermissionSet(*pair.second);
+    }
+  }
+
+  return mojom::ExtensionLoadedParams::New(
+      static_cast<base::DictionaryValue&&>(
+          extension.manifest()->value()->Clone()),
+      extension.location(), extension.path(),
+      CreatePermissionSet(permissions_data->active_permissions()),
+      CreatePermissionSet(permissions_data->withheld_permissions()),
+      std::move(tab_specific_permissions),
+      permissions_data->policy_blocked_hosts(),
+      permissions_data->policy_allowed_hosts(),
+      permissions_data->UsesDefaultPolicyHostRestrictions(), extension.id(),
+      GetWorkerActivationSequence(browser_context, extension),
+      extension.creation_flags(), extension.guid());
+}
 }  // namespace
 
 RendererStartupHelper::RendererStartupHelper(BrowserContext* browser_context)
@@ -134,7 +166,7 @@ void RendererStartupHelper::InitializeProcess(
       PermissionsData::GetDefaultPolicyAllowedHosts(context_id));
 
   // Loaded extensions.
-  std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
+  std::vector<mojom::ExtensionLoadedParamsPtr> loaded_extensions;
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& ext : extensions) {
@@ -149,15 +181,13 @@ void RendererStartupHelper::InitializeProcess(
     // processes, no other process needs it, so it's mildly wasteful.
     // I am not sure this is possible to know this here, at such a low
     // level of the stack. Perhaps site isolation can help.
-    bool include_tab_permissions = true;
-    loaded_extensions.push_back(ExtensionMsg_Loaded_Params(
-        ext.get(), include_tab_permissions,
-        GetWorkerActivationSequence(renderer_context, *ext)));
+    loaded_extensions.push_back(CreateExtensionLoadedParams(
+        *ext, true /* include tab permissions*/, renderer_context));
     extension_process_map_[ext->id()].insert(process);
   }
 
   // Activate pending extensions.
-  process->Send(new ExtensionMsg_Loaded(loaded_extensions));
+  renderer->LoadExtensions(std::move(loaded_extensions));
   auto iter = pending_active_extensions_.find(process);
   if (iter != pending_active_extensions_.end()) {
     for (const ExtensionId& id : iter->second) {
@@ -246,20 +276,24 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   if (extension.is_theme())
     return;
 
-  // We don't need to include tab permisisons here, since the extension
-  // was just loaded.
-  // Uninitialized renderers will be informed of the extension load during the
-  // first batch of messages.
-  std::vector<ExtensionMsg_Loaded_Params> params;
-  params.emplace_back(&extension, false /* no tab permissions */,
-                      GetWorkerActivationSequence(browser_context_, extension));
-
   for (auto& process_entry : process_mojo_map_) {
     content::RenderProcessHost* process = process_entry.first;
     if (!util::IsExtensionVisibleToContext(extension,
                                            process->GetBrowserContext()))
       continue;
-    process->Send(new ExtensionMsg_Loaded(params));
+
+    // We don't need to include tab permissions here, since the extension
+    // was just loaded.
+    // Uninitialized renderers will be informed of the extension load during the
+    // first batch of messages.
+    std::vector<mojom::ExtensionLoadedParamsPtr> params;
+    params.emplace_back(CreateExtensionLoadedParams(
+        extension, false /* no tab permissions */, browser_context_));
+
+    mojom::Renderer* renderer = GetRenderer(process);
+    if (renderer)
+      renderer->LoadExtensions(std::move(params));
+
     loaded_process_set.insert(process);
   }
 }

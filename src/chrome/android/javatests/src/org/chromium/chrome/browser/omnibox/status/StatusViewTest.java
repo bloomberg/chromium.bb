@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconRes
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ToolbarTestUtils;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -158,7 +157,6 @@ public class StatusViewTest extends DummyUiActivityTestCase {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    @EnableFeatures("OmniboxSearchEngineLogo")
     public void testSearchEngineLogo_incognito_noMarginEnd() {
         // Set incognito badge visible.
         runOnUiThreadBlocking(
@@ -179,23 +177,20 @@ public class StatusViewTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @Feature({"Omnibox"})
-    @EnableFeatures("OmniboxSearchEngineLogo")
     public void testSearchEngineLogo_noIncognito_statusDimensions() {
-        doReturn(true).when(mSearchEngineLogoUtils).isSearchEngineLogoEnabled();
         doReturn(true).when(mSearchEngineLogoUtils).shouldShowSearchEngineLogo(false);
         runOnUiThreadBlocking(() -> {
             mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
                     new StatusIconResource(R.drawable.ic_logo_googleg_24dp, 0));
             mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
-            mStatusView.updateSearchEngineStatusIcon();
         });
         int expectedWidth = getActivity().getResources().getDimensionPixelSize(
                 R.dimen.location_bar_status_icon_width);
         onView(withId(R.id.location_bar_status_icon)).check((view, e) -> {
             assertEquals(expectedWidth, view.getMeasuredWidth());
         });
-        int expectedPadding = getActivity().getResources().getDimensionPixelOffset(
-                R.dimen.sei_location_bar_icon_end_padding);
+        int expectedPadding = getActivity().getResources().getDimensionPixelSize(
+                R.dimen.location_bar_icon_end_padding);
         onView(withId(R.id.location_bar_status)).check((view, e) -> {
             assertEquals(expectedPadding, view.getPaddingEnd());
         });

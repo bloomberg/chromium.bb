@@ -36,11 +36,10 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.feed.NtpStreamLifecycleManager;
-import org.chromium.chrome.browser.feed.StreamLifecycleManager;
+import org.chromium.chrome.browser.feed.FeedSurfaceLifecycleManager;
+import org.chromium.chrome.browser.feed.NtpFeedSurfaceLifecycleManager;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
-import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
@@ -284,7 +283,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param browserControlsStateProvider {@link BrowserControlsStateProvider} to observe for
      *         offset changes.
      * @param activityTabProvider Provides the current active tab.
-     * @param snackbarManager {@link SnackBarManager} object.
+     * @param snackbarManager {@link SnackbarManager} object.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
      * @param tabModelSelector {@link TabModelSelector} object.
      * @param isTablet {@code true} if running on a Tablet device.
@@ -292,6 +291,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param isInNightMode {@code true} if the night mode setting is on.
      * @param nativePageHost The host that is showing this new tab page.
      * @param tab The {@link Tab} that contains this new tab page.
+     * @param url The URL that launched this new tab page.
      * @param bottomSheetController The controller for bottom sheets, used by the feed.
      * @param shareDelegateSupplier Supplies the Delegate used to open SharingHub.
      * @param windowAndroid
@@ -300,7 +300,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             Supplier<Tab> activityTabProvider, SnackbarManager snackbarManager,
             ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
             boolean isTablet, NewTabPageUma uma, boolean isInNightMode,
-            NativePageHost nativePageHost, Tab tab, BottomSheetController bottomSheetController,
+            NativePageHost nativePageHost, Tab tab, String url,
+            BottomSheetController bottomSheetController,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier, WindowAndroid windowAndroid) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
@@ -363,7 +364,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         updateSearchProviderHasLogo();
         initializeMainView(activity, windowAndroid, snackbarManager, uma, isInNightMode,
-                bottomSheetController, shareDelegateSupplier);
+                bottomSheetController, shareDelegateSupplier, tabModelSelector, url);
 
         mBrowserControlsStateProvider = browserControlsStateProvider;
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -416,7 +417,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected void initializeMainView(Activity activity, WindowAndroid windowAndroid,
             SnackbarManager snackbarManager, NewTabPageUma uma, boolean isInNightMode,
             BottomSheetController bottomSheetController,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            TabModelSelector tabModelSelector, String url) {
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
         LayoutInflater inflater = LayoutInflater.from(activity);
@@ -436,7 +438,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 sectionHeaderView, isInNightMode, this, mNewTabPageManager.getNavigationDelegate(),
                 profile,
                 /* isPlaceholderShownInitially= */ false, bottomSheetController,
-                shareDelegateSupplier, /* externalScrollableContainerDelegate= */ null);
+                shareDelegateSupplier, /* externalScrollableContainerDelegate= */ null,
+                tabModelSelector, NewTabPageUtils.decodeOriginFromNtpUrl(url));
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);
@@ -859,8 +862,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
     // Implements FeedSurfaceDelegate
     @Override
-    public StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity) {
-        return new NtpStreamLifecycleManager(stream, activity, mTab);
+    public FeedSurfaceLifecycleManager createStreamLifecycleManager(
+            Activity activity, FeedSurfaceCoordinator coordinator) {
+        return new NtpFeedSurfaceLifecycleManager(activity, mTab, coordinator);
     }
 
     @Override

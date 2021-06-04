@@ -16,9 +16,9 @@
  */
 'use strict';
 
-/* globals self, URL */
+/* globals self */
 
-/** @typedef {import('./i18n')} I18n */
+/** @template T @typedef {import('./i18n')<T>} I18n */
 
 const ELLIPSIS = '\u2026';
 const NBSP = '\xa0';
@@ -102,10 +102,29 @@ class Util {
 
     // For convenience, smoosh all AuditResults into their auditRef (which has just weight & group)
     if (typeof clone.categories !== 'object') throw new Error('No categories provided.');
+
+    /** @type {Map<string, Array<LH.ReportResult.AuditRef>>} */
+    const relevantAuditToMetricsMap = new Map();
+
     for (const category of Object.values(clone.categories)) {
+      // Make basic lookup table for relevantAudits
+      category.auditRefs.forEach(metricRef => {
+        if (!metricRef.relevantAudits) return;
+        metricRef.relevantAudits.forEach(auditId => {
+          const arr = relevantAuditToMetricsMap.get(auditId) || [];
+          arr.push(metricRef);
+          relevantAuditToMetricsMap.set(auditId, arr);
+        });
+      });
+
       category.auditRefs.forEach(auditRef => {
         const result = clone.audits[auditRef.id];
         auditRef.result = result;
+
+        // Attach any relevantMetric auditRefs
+        if (relevantAuditToMetricsMap.has(auditRef.id)) {
+          auditRef.relevantMetrics = relevantAuditToMetricsMap.get(auditRef.id);
+        }
 
         // attach the stackpacks to the auditRef object
         if (clone.stackPacks) {
@@ -508,7 +527,7 @@ Util.getUniqueSuffix = (() => {
   };
 })();
 
-/** @type {I18n} */
+/** @type {I18n<typeof Util['UIStrings']>} */
 // @ts-expect-error: Is set in report renderer.
 Util.i18n = null;
 
@@ -520,6 +539,8 @@ Util.UIStrings = {
   varianceDisclaimer: 'Values are estimated and may vary. The [performance score is calculated](https://web.dev/performance-scoring/) directly from these metrics.',
   /** Text link pointing to an interactive calculator that explains Lighthouse scoring. The link text should be fairly short. */
   calculatorLink: 'See calculator.',
+  /** Label preceding a radio control for filtering the list of audits. The radio choices are various performance metrics (FCP, LCP, TBT), and if chosen, the audits in the report are hidden if they are not relevant to the selected metric. */
+  showRelevantAudits: 'Show audits relevant to:',
   /** Column heading label for the listing of opportunity audits. Each audit title represents an opportunity. There are only 2 columns, so no strict character limit.  */
   opportunityResourceColumnLabel: 'Opportunity',
   /** Column heading label for the estimated page load savings of opportunity audits. Estimated Savings is the total amount of time (in seconds) that Lighthouse computed could be reduced from the total page load time, if the suggested action is taken. There are only 2 columns, so no strict character limit. */
@@ -560,6 +581,8 @@ Util.UIStrings = {
 
   /** This label is for a checkbox above a table of items loaded by a web page. The checkbox is used to show or hide third-party (or "3rd-party") resources in the table, where "third-party resources" refers to items loaded by a web page from URLs that aren't controlled by the owner of the web page. */
   thirdPartyResourcesLabel: 'Show 3rd-party resources',
+  /** This label is for a button that opens a new tab to a webapp called "Treemap", which is a nested visual representation of a heierarchy of data releated to the reports (script bytes and coverage, resource breakdown, etc.) */
+  viewTreemapLabel: 'View Treemap',
 
   /** Option in a dropdown menu that opens a small, summary report in a print dialog.  */
   dropdownPrintSummary: 'Print Summary',
@@ -641,9 +664,10 @@ if (typeof module !== 'undefined' && module.exports) {
  */
 'use strict';
 
-/* globals URL self Util */
+/* globals self Util */
 
 /** @typedef {HTMLElementTagNameMap & {[id: string]: HTMLElement}} HTMLElementByTagName */
+/** @template {string} T @typedef {import('typed-query-selector/parser').ParseSelector<T, Element>} ParseSelector */
 
 class DOM {
   /**
@@ -841,13 +865,18 @@ class DOM {
    * @template {string} T
    * @param {T} query
    * @param {ParentNode} context
+   * @return {ParseSelector<T>}
    */
   find(query, context) {
     const result = context.querySelector(query);
     if (result === null) {
       throw new Error(`query ${query} not found`);
     }
-    return result;
+
+    // Because we control the report layout and templates, use the simpler
+    // `typed-query-selector` types that don't require differentiating between
+    // e.g. HTMLAnchorElement and SVGAElement. See https://github.com/GoogleChrome/lighthouse/issues/12011
+    return /** @type {ParseSelector<T>} */ (result);
   }
 
   /**
@@ -868,201 +897,6 @@ if (typeof module !== 'undefined' && module.exports) {
   self.DOM = DOM;
 }
 ;
-/*
-Details Element Polyfill 2.4.0
-Copyright © 2019 Javan Makhmali
- */
-(function() {
-  "use strict";
-  var element = document.createElement("details");
-  var elementIsNative = typeof HTMLDetailsElement != "undefined" && element instanceof HTMLDetailsElement;
-  var support = {
-    open: "open" in element || elementIsNative,
-    toggle: "ontoggle" in element
-  };
-  var styles = '\ndetails, summary {\n  display: block;\n}\ndetails:not([open]) > *:not(summary) {\n  display: none;\n}\nsummary::before {\n  content: "►";\n  padding-right: 0.3rem;\n  font-size: 0.6rem;\n  cursor: default;\n}\n[open] > summary::before {\n  content: "▼";\n}\n';
-  var _ref = [], forEach = _ref.forEach, slice = _ref.slice;
-  if (!support.open) {
-    polyfillStyles();
-    polyfillProperties();
-    polyfillToggle();
-    polyfillAccessibility();
-  }
-  if (support.open && !support.toggle) {
-    polyfillToggleEvent();
-  }
-  function polyfillStyles() {
-    document.head.insertAdjacentHTML("afterbegin", "<style>" + styles + "</style>");
-  }
-  function polyfillProperties() {
-    var prototype = document.createElement("details").constructor.prototype;
-    var setAttribute = prototype.setAttribute, removeAttribute = prototype.removeAttribute;
-    var open = Object.getOwnPropertyDescriptor(prototype, "open");
-    Object.defineProperties(prototype, {
-      open: {
-        get: function get() {
-          if (this.tagName == "DETAILS") {
-            return this.hasAttribute("open");
-          } else {
-            if (open && open.get) {
-              return open.get.call(this);
-            }
-          }
-        },
-        set: function set(value) {
-          if (this.tagName == "DETAILS") {
-            return value ? this.setAttribute("open", "") : this.removeAttribute("open");
-          } else {
-            if (open && open.set) {
-              return open.set.call(this, value);
-            }
-          }
-        }
-      },
-      setAttribute: {
-        value: function value(name, _value) {
-          var _this = this;
-          var call = function call() {
-            return setAttribute.call(_this, name, _value);
-          };
-          if (name == "open" && this.tagName == "DETAILS") {
-            var wasOpen = this.hasAttribute("open");
-            var result = call();
-            if (!wasOpen) {
-              var summary = this.querySelector("summary");
-              if (summary) summary.setAttribute("aria-expanded", true);
-              triggerToggle(this);
-            }
-            return result;
-          }
-          return call();
-        }
-      },
-      removeAttribute: {
-        value: function value(name) {
-          var _this2 = this;
-          var call = function call() {
-            return removeAttribute.call(_this2, name);
-          };
-          if (name == "open" && this.tagName == "DETAILS") {
-            var wasOpen = this.hasAttribute("open");
-            var result = call();
-            if (wasOpen) {
-              var summary = this.querySelector("summary");
-              if (summary) summary.setAttribute("aria-expanded", false);
-              triggerToggle(this);
-            }
-            return result;
-          }
-          return call();
-        }
-      }
-    });
-  }
-  function polyfillToggle() {
-    onTogglingTrigger(function(element) {
-      element.hasAttribute("open") ? element.removeAttribute("open") : element.setAttribute("open", "");
-    });
-  }
-  function polyfillToggleEvent() {
-    if (window.MutationObserver) {
-      new MutationObserver(function(mutations) {
-        forEach.call(mutations, function(mutation) {
-          var target = mutation.target, attributeName = mutation.attributeName;
-          if (target.tagName == "DETAILS" && attributeName == "open") {
-            triggerToggle(target);
-          }
-        });
-      }).observe(document.documentElement, {
-        attributes: true,
-        subtree: true
-      });
-    } else {
-      onTogglingTrigger(function(element) {
-        var wasOpen = element.getAttribute("open");
-        setTimeout(function() {
-          var isOpen = element.getAttribute("open");
-          if (wasOpen != isOpen) {
-            triggerToggle(element);
-          }
-        }, 1);
-      });
-    }
-  }
-  function polyfillAccessibility() {
-    setAccessibilityAttributes(document);
-    if (window.MutationObserver) {
-      new MutationObserver(function(mutations) {
-        forEach.call(mutations, function(mutation) {
-          forEach.call(mutation.addedNodes, setAccessibilityAttributes);
-        });
-      }).observe(document.documentElement, {
-        subtree: true,
-        childList: true
-      });
-    } else {
-      document.addEventListener("DOMNodeInserted", function(event) {
-        setAccessibilityAttributes(event.target);
-      });
-    }
-  }
-  function setAccessibilityAttributes(root) {
-    findElementsWithTagName(root, "SUMMARY").forEach(function(summary) {
-      var details = findClosestElementWithTagName(summary, "DETAILS");
-      summary.setAttribute("aria-expanded", details.hasAttribute("open"));
-      if (!summary.hasAttribute("tabindex")) summary.setAttribute("tabindex", "0");
-      if (!summary.hasAttribute("role")) summary.setAttribute("role", "button");
-    });
-  }
-  function eventIsSignificant(event) {
-    return !(event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.target.isContentEditable);
-  }
-  function onTogglingTrigger(callback) {
-    addEventListener("click", function(event) {
-      if (eventIsSignificant(event)) {
-        if (event.which <= 1) {
-          var element = findClosestElementWithTagName(event.target, "SUMMARY");
-          if (element && element.parentNode && element.parentNode.tagName == "DETAILS") {
-            callback(element.parentNode);
-          }
-        }
-      }
-    }, false);
-    addEventListener("keydown", function(event) {
-      if (eventIsSignificant(event)) {
-        if (event.keyCode == 13 || event.keyCode == 32) {
-          var element = findClosestElementWithTagName(event.target, "SUMMARY");
-          if (element && element.parentNode && element.parentNode.tagName == "DETAILS") {
-            callback(element.parentNode);
-            event.preventDefault();
-          }
-        }
-      }
-    }, false);
-  }
-  function triggerToggle(element) {
-    var event = document.createEvent("Event");
-    event.initEvent("toggle", false, false);
-    element.dispatchEvent(event);
-  }
-  function findElementsWithTagName(root, tagName) {
-    return (root.tagName == tagName ? [ root ] : []).concat(typeof root.getElementsByTagName == "function" ? slice.call(root.getElementsByTagName(tagName)) : []);
-  }
-  function findClosestElementWithTagName(element, tagName) {
-    if (typeof element.closest == "function") {
-      return element.closest(tagName);
-    } else {
-      while (element) {
-        if (element.tagName == tagName) {
-          return element;
-        } else {
-          element = element.parentNode;
-        }
-      }
-    }
-  }
-})();
-;
 /**
  * @license
  * Copyright 2017 The Lighthouse Authors. All Rights Reserved.
@@ -1081,7 +915,7 @@ Copyright © 2019 Javan Makhmali
  */
 'use strict';
 
-/* globals self CriticalRequestChainRenderer SnippetRenderer ElementScreenshotRenderer Util URL */
+/* globals self CriticalRequestChainRenderer SnippetRenderer ElementScreenshotRenderer Util */
 
 /** @typedef {import('./dom.js')} DOM */
 
@@ -1135,6 +969,7 @@ class DetailsRenderer {
       case 'screenshot':
       case 'debugdata':
       case 'full-page-screenshot':
+      case 'treemap-data':
         return null;
 
       default: {
@@ -2283,6 +2118,15 @@ if (typeof module !== 'undefined' && module.exports) {
 /** @typedef {{width: number, height: number}} Size */
 
 /**
+ * @typedef InstallOverlayFeatureParams
+ * @property {DOM} dom
+ * @property {Element} reportEl
+ * @property {Element} overlayContainerEl
+ * @property {ParentNode} templateContext
+ * @property {LH.Artifacts.FullPageScreenshot} fullPageScreenshot
+ */
+
+/**
  * @param {LH.Artifacts.FullPageScreenshot['screenshot']} screenshot
  * @param {LH.Artifacts.Rect} rect
  * @return {boolean}
@@ -2383,40 +2227,30 @@ class ElementScreenshotRenderer {
   }
 
   /**
-   * Called externally and must be injected to the report in order to use this renderer.
-   * @param {DOM} dom
+   * Called by report renderer. Defines a css variable used by any element screenshots
+   * in the provided report element.
+   * Allows for multiple Lighthouse reports to be rendered on the page, each with their
+   * own full page screenshot.
+   * @param {HTMLElement} el
    * @param {LH.Artifacts.FullPageScreenshot['screenshot']} screenshot
    */
-  static createBackgroundImageStyle(dom, screenshot) {
-    const styleEl = dom.createElement('style');
-    styleEl.id = 'full-page-screenshot-style';
-    styleEl.textContent = `
-      .lh-element-screenshot__image {
-        background-image: url(${screenshot.data})
-      }`;
-    return styleEl;
+  static installFullPageScreenshot(el, screenshot) {
+    el.style.setProperty('--element-screenshot-url', `url(${screenshot.data})`);
   }
 
   /**
    * Installs the lightbox elements and wires up click listeners to all .lh-element-screenshot elements.
-   * @param {DOM} dom
-   * @param {ParentNode} templateContext
-   * @param {LH.Artifacts.FullPageScreenshot} fullPageScreenshot
+   * @param {InstallOverlayFeatureParams} opts
    */
-  static installOverlayFeature(dom, templateContext, fullPageScreenshot) {
-    const rootEl = dom.find('.lh-root', dom.document());
-    if (!rootEl) {
-      console.warn('No lh-root. Overlay install failed.'); // eslint-disable-line no-console
-      return;
-    }
-
+  static installOverlayFeature(opts) {
+    const {dom, reportEl, overlayContainerEl, templateContext, fullPageScreenshot} = opts;
     const screenshotOverlayClass = 'lh-screenshot-overlay--enabled';
     // Don't install the feature more than once.
-    if (rootEl.classList.contains(screenshotOverlayClass)) return;
-    rootEl.classList.add(screenshotOverlayClass);
+    if (reportEl.classList.contains(screenshotOverlayClass)) return;
+    reportEl.classList.add(screenshotOverlayClass);
 
-    // Add a single listener to the root element to handle all clicks within (event delegation).
-    rootEl.addEventListener('click', e => {
+    // Add a single listener to the provided element to handle all clicks within (event delegation).
+    reportEl.addEventListener('click', e => {
       const target = /** @type {?HTMLElement} */ (e.target);
       if (!target) return;
       // Only activate the overlay for clicks on the screenshot *preview* of an element, not the full-size too.
@@ -2424,7 +2258,7 @@ class ElementScreenshotRenderer {
       if (!el) return;
 
       const overlay = dom.createElement('div', 'lh-element-screenshot__overlay');
-      rootEl.append(overlay);
+      overlayContainerEl.append(overlay);
 
       // The newly-added overlay has the dimensions we need.
       const maxLightboxSize = {
@@ -2567,8 +2401,6 @@ if (typeof module !== 'undefined' && module.exports) {
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 'use strict';
-
-/* global URL */
 
 /**
  * @fileoverview
@@ -2778,7 +2610,7 @@ class ReportUIFeatures {
     this._setupMediaQueryListeners();
     this._dropDown.setup(this.onDropDownMenuClick);
     this._setupThirdPartyFilter();
-    this._setupElementScreenshotOverlay();
+    this._setupElementScreenshotOverlay(this._dom.find('.lh-container', this._document));
     this._setUpCollapseDetailsAfterPrinting();
     this._resetUIState();
     this._document.addEventListener('keyup', this.onKeyUp);
@@ -2838,6 +2670,17 @@ class ReportUIFeatures {
       toggleInputEl.checked = true;
     }
 
+    const showTreemapApp =
+      this.json.audits['script-treemap-data'] && this.json.audits['script-treemap-data'].details;
+    // TODO: need window.opener to work in DevTools.
+    if (showTreemapApp && !this._dom.isDevTools()) {
+      this.addButton({
+        text: Util.i18n.strings.viewTreemapLabel,
+        icon: 'treemap',
+        onClick: () => ReportUIFeatures.openTreemap(this.json),
+      });
+    }
+
     // Fill in all i18n data.
     for (const node of this._dom.findAll('[data-i18n]', this._dom.document())) {
       // These strings are guaranteed to (at least) have a default English string in Util.UIStrings,
@@ -2854,6 +2697,28 @@ class ReportUIFeatures {
    */
   setTemplateContext(context) {
     this._templateContext = context;
+  }
+
+  /**
+   * @param {{text: string, icon?: string, onClick: () => void}} opts
+   */
+  addButton(opts) {
+    const metricsEl = this._document.querySelector('.lh-audit-group--metrics');
+    // Not supported without metrics group.
+    if (!metricsEl) return;
+
+    const classes = [
+      'lh-button',
+    ];
+    if (opts.icon) {
+      classes.push('report-icon');
+      classes.push(`report-icon--${opts.icon}`);
+    }
+    const buttonEl = this._dom.createChildOf(metricsEl, 'button', classes.join(' '));
+    buttonEl.addEventListener('click', opts.onClick);
+    buttonEl.textContent = opts.text;
+    metricsEl.append(buttonEl);
+    return buttonEl;
   }
 
   /**
@@ -2994,7 +2859,10 @@ class ReportUIFeatures {
     });
   }
 
-  _setupElementScreenshotOverlay() {
+  /**
+   * @param {Element} el
+   */
+  _setupElementScreenshotOverlay(el) {
     const fullPageScreenshot =
       this.json.audits['full-page-screenshot'] &&
       this.json.audits['full-page-screenshot'].details &&
@@ -3002,8 +2870,13 @@ class ReportUIFeatures {
       this.json.audits['full-page-screenshot'].details;
     if (!fullPageScreenshot) return;
 
-    ElementScreenshotRenderer.installOverlayFeature(
-      this._dom, this._templateContext, fullPageScreenshot);
+    ElementScreenshotRenderer.installOverlayFeature({
+      dom: this._dom,
+      reportEl: el,
+      overlayContainerEl: el,
+      templateContext: this._templateContext,
+      fullPageScreenshot,
+    });
   }
 
   /**
@@ -3196,9 +3069,8 @@ class ReportUIFeatures {
    * @param {LH.Result} json
    */
   static openTreemap(json) {
-    const treemapDebugData = /** @type {LH.Audit.Details.DebugData} */ (
-      json.audits['script-treemap-data'].details);
-    if (!treemapDebugData) {
+    const treemapData = json.audits['script-treemap-data'].details;
+    if (!treemapData) {
       throw new Error('no script treemap data found');
     }
 
@@ -3655,8 +3527,15 @@ class CategoryRenderer {
 
     const titleEl = this.dom.find('.lh-audit__title', auditEl);
     titleEl.appendChild(this.dom.convertMarkdownCodeSnippets(audit.result.title));
-    this.dom.find('.lh-audit__description', auditEl)
-        .appendChild(this.dom.convertMarkdownLinkSnippets(audit.result.description));
+    const descEl = this.dom.find('.lh-audit__description', auditEl);
+    descEl.appendChild(this.dom.convertMarkdownLinkSnippets(audit.result.description));
+
+    for (const relevantMetric of audit.relevantMetrics || []) {
+      const adornEl = this.dom.createChildOf(descEl, 'span', 'lh-audit__adorn', {
+        title: `Relevant to ${relevantMetric.result.title}`,
+      });
+      adornEl.textContent = relevantMetric.acronym || relevantMetric.id;
+    }
 
     if (audit.stackPacks) {
       audit.stackPacks.forEach(pack => {
@@ -4198,18 +4077,6 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     if (fci) v5andv6metrics.push(fci);
     if (fmp) v5andv6metrics.push(fmp);
 
-    /** @type {Record<string, string>} */
-    const acronymMapping = {
-      'cumulative-layout-shift': 'CLS',
-      'first-contentful-paint': 'FCP',
-      'first-cpu-idle': 'FCI',
-      'first-meaningful-paint': 'FMP',
-      'interactive': 'TTI',
-      'largest-contentful-paint': 'LCP',
-      'speed-index': 'SI',
-      'total-blocking-time': 'TBT',
-    };
-
     /**
      * Clamp figure to 2 decimal places
      * @param {number} val
@@ -4227,7 +4094,7 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
       } else {
         value = 'null';
       }
-      return [acronymMapping[audit.id] || audit.id, value];
+      return [audit.acronym || audit.id, value];
     });
     const paramPairs = [...metricPairs];
 
@@ -4300,31 +4167,17 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
       filmstripEl && timelineEl.appendChild(filmstripEl);
     }
 
-    // Budgets
-    /** @type {Array<Element>} */
-    const budgetTableEls = [];
-    ['performance-budget', 'timing-budget'].forEach((id) => {
-      const audit = category.auditRefs.find(audit => audit.id === id);
-      if (audit && audit.result.details) {
-        const table = this.detailsRenderer.render(audit.result.details);
-        if (table) {
-          table.id = id;
-          table.classList.add('lh-audit');
-          budgetTableEls.push(table);
-        }
-      }
-    });
-    if (budgetTableEls.length > 0) {
-      const budgetsGroupEl = this.renderAuditGroup(groups.budgets);
-      budgetTableEls.forEach(table => budgetsGroupEl.appendChild(table));
-      budgetsGroupEl.classList.add('lh-audit-group--budgets');
-      element.appendChild(budgetsGroupEl);
-    }
-
     // Opportunities
     const opportunityAudits = category.auditRefs
         .filter(audit => audit.group === 'load-opportunities' && !Util.showAsPassed(audit.result))
         .sort((auditA, auditB) => this._getWastedMs(auditB) - this._getWastedMs(auditA));
+
+
+    const filterableMetrics = metricAudits.filter(a => !!a.relevantAudits);
+    // TODO: only add if there are opportunities & diagnostics rendered.
+    if (filterableMetrics.length) {
+      this.renderMetricAuditFilter(filterableMetrics, element);
+    }
 
     if (opportunityAudits.length) {
       // Scale the sparklines relative to savings, minimum 2s to not overstate small savings
@@ -4376,7 +4229,94 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     };
     const passedElem = this.renderClump('passed', clumpOpts);
     element.appendChild(passedElem);
+
+    // Budgets
+    /** @type {Array<Element>} */
+    const budgetTableEls = [];
+    ['performance-budget', 'timing-budget'].forEach((id) => {
+      const audit = category.auditRefs.find(audit => audit.id === id);
+      if (audit && audit.result.details) {
+        const table = this.detailsRenderer.render(audit.result.details);
+        if (table) {
+          table.id = id;
+          table.classList.add('lh-audit');
+          budgetTableEls.push(table);
+        }
+      }
+    });
+    if (budgetTableEls.length > 0) {
+      const budgetsGroupEl = this.renderAuditGroup(groups.budgets);
+      budgetTableEls.forEach(table => budgetsGroupEl.appendChild(table));
+      budgetsGroupEl.classList.add('lh-audit-group--budgets');
+      element.appendChild(budgetsGroupEl);
+    }
+
     return element;
+  }
+
+  /**
+   * Render the control to filter the audits by metric. The filtering is done at runtime by CSS only
+   * @param {LH.ReportResult.AuditRef[]} filterableMetrics
+   * @param {HTMLDivElement} categoryEl
+   */
+  renderMetricAuditFilter(filterableMetrics, categoryEl) {
+    const metricFilterEl = this.dom.createElement('div', 'lh-metricfilter');
+    const textEl = this.dom.createChildOf(metricFilterEl, 'span', 'lh-metricfilter__text');
+    textEl.textContent = Util.i18n.strings.showRelevantAudits;
+
+    const filterChoices = /** @type {LH.ReportResult.AuditRef[]} */ ([
+      ({acronym: 'All'}),
+      ...filterableMetrics,
+    ]);
+    for (const metric of filterChoices) {
+      const elemId = `metric-${metric.acronym}`;
+      const labelEl = this.dom.createChildOf(metricFilterEl, 'label', 'lh-metricfilter__label', {
+        for: elemId,
+        title: metric.result && metric.result.title,
+      });
+      labelEl.textContent = metric.acronym || metric.id;
+      const radioEl = this.dom.createChildOf(labelEl, 'input', 'lh-metricfilter__radio', {
+        type: 'radio',
+        name: 'metricsfilter',
+        id: elemId,
+        hidden: 'true',
+      });
+
+      if (metric.acronym === 'All') {
+        radioEl.checked = true;
+        labelEl.classList.add('lh-metricfilter__label--active');
+      }
+      categoryEl.append(metricFilterEl);
+
+      // Toggle class/hidden state based on filter choice.
+      radioEl.addEventListener('input', _ => {
+        for (const elem of categoryEl.querySelectorAll('label.lh-metricfilter__label')) {
+          elem.classList.toggle('lh-metricfilter__label--active', elem.htmlFor === elemId);
+        }
+        categoryEl.classList.toggle('lh-category--filtered', metric.acronym !== 'All');
+
+        for (const perfAuditEl of categoryEl.querySelectorAll('div.lh-audit')) {
+          if (metric.acronym === 'All') {
+            perfAuditEl.hidden = false;
+            continue;
+          }
+
+          perfAuditEl.hidden = true;
+          if (metric.relevantAudits && metric.relevantAudits.includes(perfAuditEl.id)) {
+            perfAuditEl.hidden = false;
+          }
+        }
+
+        // Hide groups/clumps if all child audits are also hidden.
+        const groupEls = categoryEl.querySelectorAll('div.lh-audit-group, details.lh-audit-group');
+        for (const groupEl of groupEls) {
+          groupEl.hidden = false;
+          const childEls = Array.from(groupEl.querySelectorAll('div.lh-audit'));
+          const areAllHidden = !!childEls.length && childEls.every(auditEl => auditEl.hidden);
+          groupEl.hidden = areAllHidden;
+        }
+      });
+    }
   }
 }
 
@@ -4789,9 +4729,6 @@ class ReportRenderer {
     const detailsRenderer = new DetailsRenderer(this._dom, {
       fullPageScreenshot,
     });
-    const fullPageScreenshotStyleEl = fullPageScreenshot &&
-      ElementScreenshotRenderer.createBackgroundImageStyle(
-        this._dom, fullPageScreenshot.screenshot);
 
     const categoryRenderer = new CategoryRenderer(this._dom, detailsRenderer);
     categoryRenderer.setTemplateContext(this._templateContext);
@@ -4850,8 +4787,12 @@ class ReportRenderer {
     reportFragment.appendChild(reportContainer);
     reportContainer.appendChild(headerContainer);
     reportContainer.appendChild(reportSection);
-    fullPageScreenshotStyleEl && reportContainer.appendChild(fullPageScreenshotStyleEl);
     reportSection.appendChild(this._renderReportFooter(report));
+
+    if (fullPageScreenshot) {
+      ElementScreenshotRenderer.installFullPageScreenshot(
+        reportContainer, fullPageScreenshot.screenshot);
+    }
 
     return reportFragment;
   }
@@ -4870,15 +4811,20 @@ if (typeof module !== 'undefined' && module.exports) {
  */
 'use strict';
 
-/* globals self, URL */
+/* globals self */
 
 // Not named `NBSP` because that creates a duplicate identifier (util.js).
 const NBSP2 = '\xa0';
+const KiB = 1024;
+const MiB = KiB * KiB;
 
+/**
+ * @template T
+ */
 class I18n {
   /**
    * @param {LH.Locale} locale
-   * @param {LH.I18NRendererStrings=} strings
+   * @param {T} strings
    */
   constructor(locale, strings) {
     // When testing, use a locale with more exciting numeric formatting.
@@ -4886,7 +4832,8 @@ class I18n {
 
     this._numberDateLocale = locale;
     this._numberFormatter = new Intl.NumberFormat(locale);
-    this._strings = /** @type {LH.I18NRendererStrings} */ (strings || {});
+    this._percentFormatter = new Intl.NumberFormat(locale, {style: 'percent'});
+    this._strings = strings;
   }
 
   get strings() {
@@ -4905,6 +4852,15 @@ class I18n {
   }
 
   /**
+   * Format percent.
+   * @param {number} number 0–1
+   * @return {string}
+   */
+  formatPercent(number) {
+    return this._percentFormatter.format(number);
+  }
+
+  /**
    * @param {number} size
    * @param {number=} granularity Controls how coarse the displayed value is, defaults to 0.1
    * @return {string}
@@ -4917,6 +4873,17 @@ class I18n {
 
   /**
    * @param {number} size
+   * @param {number=} granularity Controls how coarse the displayed value is, defaults to 0.1
+   * @return {string}
+   */
+  formatBytesToMiB(size, granularity = 0.1) {
+    const formatter = this._byteFormatterForGranularity(granularity);
+    const kbs = formatter.format(Math.round(size / 1024 ** 2 / granularity) * granularity);
+    return `${kbs}${NBSP2}MiB`;
+  }
+
+  /**
+   * @param {number} size
    * @param {number=} granularity Controls how coarse the displayed value is, defaults to 1
    * @return {string}
    */
@@ -4924,6 +4891,17 @@ class I18n {
     const formatter = this._byteFormatterForGranularity(granularity);
     const kbs = formatter.format(Math.round(size / granularity) * granularity);
     return `${kbs}${NBSP2}bytes`;
+  }
+
+  /**
+   * @param {number} size
+   * @param {number=} granularity Controls how coarse the displayed value is, defaults to 0.1
+   * @return {string}
+   */
+  formatBytesWithBestUnit(size, granularity = 0.1) {
+    if (size >= MiB) return this.formatBytesToMiB(size, granularity);
+    if (size >= KiB) return this.formatBytesToKiB(size, granularity);
+    return this.formatNumber(size, granularity) + '\xa0B';
   }
 
   /**

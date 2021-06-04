@@ -60,8 +60,8 @@ void ChangeListPref(int index,
                     const base::ListValue& new_value) {
   ListPrefUpdate update(GetPrefs(index), pref_name);
   base::ListValue* list = update.Get();
-  for (const auto& it : new_value) {
-    list->Append(it.CreateDeepCopy());
+  for (const auto& it : new_value.GetList()) {
+    list->Append(it.Clone());
   }
 }
 
@@ -130,7 +130,7 @@ bool ClearedPrefMatches(const char* pref_name) {
 bool ListPrefMatches(const char* pref_name) {
   const base::ListValue* reference_value = GetPrefs(0)->GetList(pref_name);
   for (int i = 1; i < test()->num_clients(); ++i) {
-    if (!reference_value->Equals(GetPrefs(i)->GetList(pref_name))) {
+    if (*reference_value != *GetPrefs(i)->GetList(pref_name)) {
       DVLOG(1) << "List preference " << pref_name << " mismatched in"
                << " profile " << i << ".";
       return false;
@@ -139,7 +139,7 @@ bool ListPrefMatches(const char* pref_name) {
   return true;
 }
 
-base::Optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
+absl::optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
     const std::string& pref_name,
     fake_server::FakeServer* fake_server) {
   for (const sync_pb::SyncEntity& entity :
@@ -149,7 +149,7 @@ base::Optional<sync_pb::PreferenceSpecifics> GetPreferenceInFakeServer(
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace preferences_helper
@@ -222,7 +222,7 @@ FakeServerPrefMatchesValueChecker::FakeServerPrefMatchesValueChecker(
 
 bool FakeServerPrefMatchesValueChecker::IsExitConditionSatisfied(
     std::ostream* os) {
-  const base::Optional<sync_pb::PreferenceSpecifics> actual_specifics =
+  const absl::optional<sync_pb::PreferenceSpecifics> actual_specifics =
       preferences_helper::GetPreferenceInFakeServer(pref_name_, fake_server());
   if (!actual_specifics.has_value()) {
     *os << "No sync entity in FakeServer for pref " << pref_name_;

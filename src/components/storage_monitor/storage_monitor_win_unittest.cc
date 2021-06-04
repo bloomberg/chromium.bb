@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -84,9 +85,11 @@ StorageMonitorWinTest::~StorageMonitorWinTest() {
 }
 
 void StorageMonitorWinTest::SetUp() {
-  volume_mount_watcher_ = new TestVolumeMountWatcherWin;
-  monitor_.reset(new TestStorageMonitorWin(volume_mount_watcher_,
-                                           new TestPortableDeviceWatcherWin));
+  auto volume_mount_watcher = std::make_unique<TestVolumeMountWatcherWin>();
+  volume_mount_watcher_ = volume_mount_watcher.get();
+  monitor_ = std::make_unique<TestStorageMonitorWin>(
+      std::move(volume_mount_watcher),
+      std::make_unique<TestPortableDeviceWatcherWin>());
 
   monitor_->Init();
   content::RunAllTasksUntilIdle();
@@ -104,7 +107,8 @@ void StorageMonitorWinTest::TearDown() {
 
 void StorageMonitorWinTest::PreAttachDevices() {
   monitor_.reset();
-  volume_mount_watcher_ = new TestVolumeMountWatcherWin;
+  auto volume_mount_watcher = std::make_unique<TestVolumeMountWatcherWin>();
+  volume_mount_watcher_ = volume_mount_watcher.get();
   volume_mount_watcher_->SetAttachedDevicesFake();
 
   int expect_attach_calls = 0;
@@ -118,8 +122,9 @@ void StorageMonitorWinTest::PreAttachDevices() {
       expect_attach_calls++;
   }
 
-  monitor_.reset(new TestStorageMonitorWin(volume_mount_watcher_,
-                                           new TestPortableDeviceWatcherWin));
+  monitor_ = std::make_unique<TestStorageMonitorWin>(
+      std::move(volume_mount_watcher),
+      std::make_unique<TestPortableDeviceWatcherWin>());
 
   monitor_->AddObserver(&observer_);
   monitor_->Init();

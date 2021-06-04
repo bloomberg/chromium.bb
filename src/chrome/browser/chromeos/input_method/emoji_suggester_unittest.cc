@@ -15,6 +15,13 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace chromeos {
+namespace {
+
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
+
+}  // namespace
 
 ui::KeyEvent CreateKeyEventFromCode(const ui::DomCode& code) {
   return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, ui::EF_NONE,
@@ -147,7 +154,7 @@ TEST_F(EmojiSuggesterTest, SuggestWhenStringEndsWithSpaceAndIsUppercase) {
 }
 
 TEST_F(EmojiSuggesterTest, DoNotSuggestWhenStringEndsWithNewLine) {
-  EXPECT_FALSE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy\n")));
+  EXPECT_FALSE(emoji_suggester_->Suggest(u"happy\n"));
 }
 
 TEST_F(EmojiSuggesterTest, DoNotSuggestWhenStringDoesNotEndWithSpace) {
@@ -367,7 +374,18 @@ TEST_F(EmojiSuggesterTest, IsShowingSuggestionFalseWhenCandidatesUnavailable) {
 
 TEST_F(EmojiSuggesterTest, GetSuggestionReturnsCandidatesWhenAvailable) {
   EXPECT_TRUE(emoji_suggester_->Suggest(u"happy "));
-  EXPECT_FALSE(emoji_suggester_->GetSuggestions().empty());
+  EXPECT_EQ(emoji_suggester_->GetSuggestions(),
+            (std::vector<TextSuggestion>{
+                TextSuggestion{.mode = TextSuggestionMode::kPrediction,
+                               .type = TextSuggestionType::kAssistiveEmoji,
+                               .text = "😀"},
+                TextSuggestion{.mode = TextSuggestionMode::kPrediction,
+                               .type = TextSuggestionType::kAssistiveEmoji,
+                               .text = "😃"},
+                TextSuggestion{.mode = TextSuggestionMode::kPrediction,
+                               .type = TextSuggestionType::kAssistiveEmoji,
+                               .text = "😄"},
+            }));
 }
 
 TEST_F(EmojiSuggesterTest,

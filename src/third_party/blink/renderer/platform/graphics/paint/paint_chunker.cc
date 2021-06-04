@@ -44,7 +44,7 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
     if (chunk_id)
       next_chunk_id_.emplace(*chunk_id);
     else
-      next_chunk_id_ = base::nullopt;
+      next_chunk_id_ = absl::nullopt;
   }
   current_properties_ = properties;
 }
@@ -74,7 +74,7 @@ bool PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
     FinalizeLastChunkProperties();
     wtf_size_t begin = chunks_->IsEmpty() ? 0 : chunks_->back().end_index;
     chunks_->emplace_back(begin, begin, *next_chunk_id_, current_properties_);
-    next_chunk_id_ = base::nullopt;
+    next_chunk_id_ = absl::nullopt;
     will_force_new_chunk_ = false;
     return true;
   }
@@ -99,15 +99,13 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   // set the candidate to be this item.
   if (item.IsDrawing() && item.DrawsContent()) {
     float item_area;
-    Color item_color =
-        static_cast<const DrawingDisplayItem&>(item).BackgroundColor(item_area);
+    Color item_color = To<DrawingDisplayItem>(item).BackgroundColor(item_area);
     ProcessBackgroundColorCandidate(chunk.id, item_color, item_area);
   }
 
   constexpr wtf_size_t kMaxRegionComplexity = 10;
   if (should_compute_contents_opaque_ && item.IsDrawing()) {
-    const DrawingDisplayItem& drawing =
-        static_cast<const DrawingDisplayItem&>(item);
+    const DrawingDisplayItem& drawing = To<DrawingDisplayItem>(item);
     if (drawing.KnownToBeOpaque() &&
         last_chunk_known_to_be_opaque_region_.Complexity() <
             kMaxRegionComplexity) {
@@ -168,8 +166,8 @@ bool PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
 }
 
 void PaintChunker::AddSelectionToCurrentChunk(
-    base::Optional<PaintedSelectionBound> start,
-    base::Optional<PaintedSelectionBound> end) {
+    absl::optional<PaintedSelectionBound> start,
+    absl::optional<PaintedSelectionBound> end) {
   // We should have painted the selection when calling this method.
   DCHECK(chunks_);
   DCHECK(!chunks_->IsEmpty());

@@ -26,12 +26,14 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_utils.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_utils_win.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace content {
 
+using ui::AXFormatValue;
 using ui::IAccessible2RoleToString;
 using ui::IAccessible2StateToStringVector;
 using ui::IAccessibleStateToStringVector;
@@ -272,7 +274,19 @@ void AccessibilityTreeFormatterWin::RecursiveBuildTree(
     base::Value* dict,
     LONG root_x,
     LONG root_y) const {
+  ui::AXPlatformNode* platform_node =
+      ui::AXPlatformNode::FromNativeViewAccessible(node.Get());
+  DCHECK(platform_node);
+
+  ui::AXPlatformNodeDelegate* delegate = platform_node->GetDelegate();
+  DCHECK(delegate);
+
+  if (!ShouldDumpNode(*delegate))
+    return;
+
   AddProperties(node, dict, root_x, root_y);
+  if (!ShouldDumpChildren(*delegate))
+    return;
 
   base::Value child_list(base::Value::Type::LIST);
   for (const ui::MSAAChild& msaa_child : ui::MSAAChildren(node)) {
@@ -424,7 +438,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
     dict->SetStringPath("window_class", "[Error]");
   }
 
-  if (SUCCEEDED(node->get_accValue(variant_self, bstr.Receive())))
+  if (SUCCEEDED(node->get_accValue(variant_self, bstr.Receive())) && bstr.Get())
     dict->SetStringPath("value", base::WideToUTF8(bstr.Get()));
   bstr.Reset();
 
@@ -443,25 +457,25 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
     dict->SetPath("states", base::Value(std::move(states)));
   }
 
-  if (SUCCEEDED(node->get_accDescription(variant_self, bstr.Receive()))) {
+  if (S_OK == node->get_accDescription(variant_self, bstr.Receive())) {
     dict->SetStringPath("description", base::WideToUTF8(bstr.Get()));
   }
   bstr.Reset();
 
   // |get_accDefaultAction| returns a localized string.
-  if (SUCCEEDED(node->get_accDefaultAction(variant_self, bstr.Receive()))) {
+  if (S_OK == node->get_accDefaultAction(variant_self, bstr.Receive())) {
     dict->SetStringPath("default_action", base::WideToUTF8(bstr.Get()));
   }
   bstr.Reset();
 
-  if (SUCCEEDED(node->get_accKeyboardShortcut(variant_self, bstr.Receive()))) {
+  if (S_OK == node->get_accKeyboardShortcut(variant_self, bstr.Receive())) {
     dict->SetStringPath("keyboard_shortcut", base::WideToUTF8(bstr.Get()));
   }
   bstr.Reset();
 
-  if (SUCCEEDED(node->get_accHelp(variant_self, bstr.Receive())))
+  if (S_OK == node->get_accHelp(variant_self, bstr.Receive())) {
     dict->SetStringPath("help", base::WideToUTF8(bstr.Get()));
-
+  }
   bstr.Reset();
 
   LONG x, y, width, height;
@@ -557,7 +571,7 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
     dict->SetIntPath("position_in_group", position_in_group);
   }
 
-  if (SUCCEEDED(ia2->get_localizedExtendedRole(bstr.Receive()))) {
+  if (SUCCEEDED(ia2->get_localizedExtendedRole(bstr.Receive())) && bstr.Get()) {
     dict->SetStringPath("localized_extended_role",
                         base::WideToUTF8(bstr.Get()));
   }
@@ -575,7 +589,8 @@ void AccessibilityTreeFormatterWin::AddIA2ActionProperties(
 
   // |IAccessibleAction::get_name| returns a localized string.
   base::win::ScopedBstr name;
-  if (SUCCEEDED(ia2action->get_name(0 /* action_index */, name.Receive()))) {
+  if (SUCCEEDED(ia2action->get_name(0 /* action_index */, name.Receive())) &&
+      name.Get()) {
     dict->SetStringPath("action_name", base::WideToUTF8(name.Get()));
   }
 }
@@ -835,31 +850,6 @@ std::string AccessibilityTreeFormatterWin::ProcessTreeForOutput(
       continue;
 
     switch (value->type()) {
-      case base::Value::Type::STRING: {
-        std::string string_value;
-        value->GetAsString(&string_value);
-        WriteAttribute(
-            false,
-            base::StringPrintf("%s='%s'", attribute_name, string_value.c_str()),
-            &line);
-        break;
-      }
-      case base::Value::Type::INTEGER: {
-        int int_value = 0;
-        value->GetAsInteger(&int_value);
-        WriteAttribute(false,
-                       base::StringPrintf("%s=%d", attribute_name, int_value),
-                       &line);
-        break;
-      }
-      case base::Value::Type::DOUBLE: {
-        double double_value = 0.0;
-        value->GetAsDouble(&double_value);
-        WriteAttribute(
-            false, base::StringPrintf("%s=%.2f", attribute_name, double_value),
-            &line);
-        break;
-      }
       case base::Value::Type::LIST: {
         // Currently all list values are string and are written without
         // attribute names.
@@ -867,10 +857,9 @@ std::string AccessibilityTreeFormatterWin::ProcessTreeForOutput(
         value->GetAsList(&list_value);
         std::unique_ptr<base::ListValue> filtered_list(new base::ListValue());
 
-        for (base::ListValue::const_iterator it = list_value->begin();
-             it != list_value->end(); ++it) {
+        for (const auto& entry : list_value->GetList()) {
           std::string string_value;
-          if (it->GetAsString(&string_value))
+          if (entry.GetAsString(&string_value))
             if (WriteAttribute(false, string_value, &line))
               filtered_list->AppendString(string_value);
         }
@@ -893,7 +882,10 @@ std::string AccessibilityTreeFormatterWin::ProcessTreeForOutput(
         break;
       }
       default:
-        NOTREACHED();
+        WriteAttribute(false,
+                       base::StringPrintf("%s=%s", attribute_name,
+                                          AXFormatValue(*value).c_str()),
+                       &line);
         break;
     }
   }

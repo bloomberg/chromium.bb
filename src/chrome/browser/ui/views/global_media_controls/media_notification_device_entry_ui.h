@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_DEVICE_ENTRY_UI_H_
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 enum class DeviceEntryUIType {
   kAudio = 0,
@@ -56,9 +56,6 @@ class AudioDeviceEntryView : public DeviceEntryUI, public HoverButton {
                        SkColor background_color) override;
   DeviceEntryUIType GetType() const override;
 
-  // HoverButton
-  SkColor GetInkDropBaseColor() const override;
-
   void SetHighlighted(bool highlighted);
   bool GetHighlighted() const;
 };
@@ -78,9 +75,6 @@ class CastDeviceEntryView : public DeviceEntryUI,
   void OnColorsChanged(SkColor foreground_color,
                        SkColor background_color) override;
   DeviceEntryUIType GetType() const override;
-
-  // HoverButton
-  SkColor GetInkDropBaseColor() const override;
 
   // media_router::CastDialogSinkButton
   void OnFocus() override;

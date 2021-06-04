@@ -28,12 +28,11 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
-  void ReturnResources(
-      uint32_t layer_tree_frame_sink_id,
-      const std::vector<viz::ReturnedResource>& resources) override;
+  void ReturnResources(uint32_t layer_tree_frame_sink_id,
+                       std::vector<viz::ReturnedResource> resources) override;
   void DidPresentCompositorFrames(viz::FrameTimingDetailsMap timing_details,
                                   uint32_t frame_token) override {}
-  bool DemandDrawSw(SkCanvas* canvas) override;
+  bool DemandDrawSw(SkCanvas* canvas, bool software_canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidBecomeActive() override {}
   void DidChangeRootLayerScrollOffset(
@@ -50,7 +49,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
 
   struct ReturnedResources {
     ReturnedResources();
-    ReturnedResources(const ReturnedResources& other);
+    ReturnedResources(ReturnedResources&&);
     ~ReturnedResources();
 
     uint32_t layer_tree_frame_sink_id;

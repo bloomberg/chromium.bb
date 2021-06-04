@@ -4,8 +4,12 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_pre_built.gni")
+import("../../../scripts/build/ninja/vars.gni")
+import("../visibility.gni")
 
 devtools_pre_built("acorn") {
+  sources_are_release = false
+
   sources = [
     "acorn-tsconfig.json",
     "package/dist/acorn.d.ts",
@@ -15,8 +19,28 @@ devtools_pre_built("acorn") {
   ]
 }
 
+copy_to_gen("estree") {
+  sources = [
+    "estree-legacy.d.ts",
+    "estree-tsconfig.json",
+  ]
+}
+
 devtools_entrypoint("bundle") {
   entrypoint = "acorn.ts"
 
-  deps = [ ":acorn" ]
+  inputs =
+      [ devtools_location_prepend + "node_modules/@types/estree/index.d.ts" ]
+
+  deps = [
+    ":acorn",
+    ":estree",
+  ]
+
+  visibility = [
+    "../../entrypoints/formatter_worker/*",
+    "../acorn-loose/*",
+  ]
+
+  visibility += devtools_third_party_visibility
 }

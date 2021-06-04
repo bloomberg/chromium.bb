@@ -224,7 +224,7 @@ void RasterImplementationGLES::RasterCHROMIUM(
     const gfx::Rect& full_raster_rect,
     const gfx::Rect& playback_rect,
     const gfx::Vector2dF& post_translate,
-    GLfloat post_scale,
+    const gfx::Vector2dF& post_scale,
     bool requires_clear,
     size_t* max_op_size_hint) {
   NOTREACHED();
@@ -251,32 +251,38 @@ SyncToken RasterImplementationGLES::ScheduleImageDecode(
 void RasterImplementationGLES::ReadbackARGBPixelsAsync(
     const gpu::Mailbox& source_mailbox,
     GLenum source_target,
-    const gfx::Size& dst_size,
+    GrSurfaceOrigin src_origin,
+    const SkImageInfo& dst_info,
+    GLuint dst_row_bytes,
     unsigned char* out,
-    GLenum format,
-    base::OnceCallback<void(bool)> readback_done) {
+    base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done) {
   DCHECK(!readback_done.is_null());
-
+  DCHECK(dst_info.colorType() == kRGBA_8888_SkColorType ||
+         dst_info.colorType() == kBGRA_8888_SkColorType);
+  GLenum format =
+      dst_info.colorType() == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA_EXT;
+  gfx::Size dst_gfx_size(dst_info.width(), dst_info.height());
   GLuint texture_id = CreateAndConsumeForGpuRaster(source_mailbox);
   BeginSharedImageAccessDirectCHROMIUM(
       texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
   GetGLHelper()->ReadbackTextureAsync(
-      texture_id, source_target, dst_size, out, format,
+      texture_id, source_target, dst_gfx_size, out, format,
       base::BindOnce(&RasterImplementationGLES::OnReadARGBPixelsAsync,
                      weak_ptr_factory_.GetWeakPtr(), texture_id,
-                     std::move(readback_done)));
+                     std::move(readback_done), src_origin));
 }
 
 void RasterImplementationGLES::OnReadARGBPixelsAsync(
     GLuint texture_id,
-    base::OnceCallback<void(bool)> readback_done,
+    base::OnceCallback<void(GrSurfaceOrigin, bool)> readback_done,
+    GrSurfaceOrigin source_origin,
     bool success) {
   DCHECK(texture_id);
   EndSharedImageAccessDirectCHROMIUM(texture_id);
   DeleteGpuRasterTexture(texture_id);
 
-  std::move(readback_done).Run(success);
+  std::move(readback_done).Run(source_origin, success);
 }
 
 void RasterImplementationGLES::ReadbackYUVPixelsAsync(

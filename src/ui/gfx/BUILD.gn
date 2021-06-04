@@ -148,6 +148,9 @@ component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "vector_icon_types.h",
+    "vector_icon_utils.cc",
+    "vector_icon_utils.h",
     "video_types.h",
     "vsync_provider.cc",
     "vsync_provider.h",
@@ -377,7 +380,6 @@ component("gfx") {
       "render_text_harfbuzz.cc",
       "render_text_harfbuzz.h",
       "text_utils_skia.cc",
-      "vector_icon_types.h",
     ]
   }
 
@@ -437,6 +439,8 @@ component("color_space") {
     "color_space_export.h",
     "display_color_spaces.cc",
     "display_color_spaces.h",
+    "hdr_static_metadata.cc",
+    "hdr_static_metadata.h",
     "icc_profile.cc",
     "icc_profile.h",
     "skia_color_space_util.cc",

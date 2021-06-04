@@ -5,16 +5,16 @@
 import './diagnostics_card.js';
 import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
+import './network_info.js';
 import './routine_section.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {RoutineType} from './diagnostics_types.js'
+import {RoutineType} from './diagnostics_types.js';
 
 /**
  * @fileoverview
- * 'connectivity-card' displays runs network routines and displays
- *  network health data.
+ * 'connectivity-card' runs network routines and displays network health data.
  */
 Polymer({
   is: 'connectivity-card',
@@ -33,18 +33,24 @@ Polymer({
     routines_: {
       type: Array,
       value: [
-        chromeos.diagnostics.mojom.RoutineType.kCaptivePortal,
-        chromeos.diagnostics.mojom.RoutineType.kDnsLatency,
-        chromeos.diagnostics.mojom.RoutineType.kDnsResolution,
-        chromeos.diagnostics.mojom.RoutineType.kDnsResolverPresent,
-        chromeos.diagnostics.mojom.RoutineType.kGatewayCanBePinged,
-        chromeos.diagnostics.mojom.RoutineType.kHasSecureWiFiConnection,
-        chromeos.diagnostics.mojom.RoutineType.kHttpFirewall,
-        chromeos.diagnostics.mojom.RoutineType.kHttpsFirewall,
-        chromeos.diagnostics.mojom.RoutineType.kHttpsLatency,
-        chromeos.diagnostics.mojom.RoutineType.kLanConnectivity,
-        chromeos.diagnostics.mojom.RoutineType.kSignalStrength,
+        RoutineType.kCaptivePortal,
+        RoutineType.kDnsLatency,
+        RoutineType.kDnsResolution,
+        RoutineType.kDnsResolverPresent,
+        RoutineType.kGatewayCanBePinged,
+        RoutineType.kHasSecureWiFiConnection,
+        RoutineType.kHttpFirewall,
+        RoutineType.kHttpsFirewall,
+        RoutineType.kHttpsLatency,
+        RoutineType.kLanConnectivity,
+        RoutineType.kSignalStrength,
       ],
+    },
+
+    /** @type {string} */
+    activeGuid: {
+      type: String,
+      value: '',
     },
   },
 

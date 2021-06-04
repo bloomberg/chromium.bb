@@ -5,15 +5,16 @@
 #include "chrome/browser/speech/on_device_speech_recognizer.h"
 
 #include <map>
+#include <memory>
 
-#include "chrome/browser/accessibility/soda_installer.h"
-#include "chrome/browser/ash/accessibility/soda_installer_impl_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/fake_speech_recognition_service.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/soda/soda_installer.h"
+#include "components/soda/soda_installer_impl_chromeos.h"
 #include "content/public/test/browser_test.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
@@ -40,7 +41,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
       OnSpeechResult,
       void(const std::u16string& text,
            bool is_final,
-           const base::Optional<SpeechRecognizerDelegate::TranscriptTiming>&
+           const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
                timing));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
@@ -78,12 +79,12 @@ class MockAudioSystem : public media::AudioSystem {
 
   void SetInputStreamParameters(
       const std::string& device_id,
-      const base::Optional<media::AudioParameters>& params) {
+      const absl::optional<media::AudioParameters>& params) {
     params_[device_id] = params;
   }
 
  private:
-  std::map<std::string, base::Optional<media::AudioParameters>> params_;
+  std::map<std::string, absl::optional<media::AudioParameters>> params_;
 };
 
 // Tests OnDeviceSpeechRecognizer plumbing with a fake SpeechRecognitionService.
@@ -104,8 +105,8 @@ class OnDeviceSpeechRecognizerTest : public InProcessBrowserTest {
         base::BindRepeating(
             &OnDeviceSpeechRecognizerTest::CreateTestSpeechRecognitionService,
             base::Unretained(this)));
-    mock_speech_delegate_.reset(
-        new testing::StrictMock<MockSpeechRecognizerDelegate>());
+    mock_speech_delegate_ =
+        std::make_unique<testing::StrictMock<MockSpeechRecognizerDelegate>>();
     // Fake that SODA is installed.
     static_cast<speech::SodaInstallerImplChromeOS*>(
         speech::SodaInstaller::GetInstance())
@@ -131,7 +132,8 @@ class OnDeviceSpeechRecognizerTest : public InProcessBrowserTest {
         .WillOnce(InvokeWithoutArgs(&loop, &base::RunLoop::Quit))
         .RetiresOnSaturation();
     recognizer_ = std::make_unique<OnDeviceSpeechRecognizer>(
-        mock_speech_delegate_->GetWeakPtr(), browser()->profile(), "en-US");
+        mock_speech_delegate_->GetWeakPtr(), browser()->profile(), "en-US",
+        true /* is IME */);
     loop.Run();
   }
 
@@ -146,7 +148,7 @@ class OnDeviceSpeechRecognizerTest : public InProcessBrowserTest {
   }
 
   void StartListeningWithAudioParams(
-      const base::Optional<media::AudioParameters>& params) {
+      const absl::optional<media::AudioParameters>& params) {
     std::unique_ptr<MockAudioSystem> mock_audio_system =
         std::make_unique<MockAudioSystem>();
     mock_audio_system->SetInputStreamParameters(
@@ -199,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest,
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_delegate_,
-              OnSpeechResult(base::ASCIIToUTF16("All mammals have hair"), false,
+              OnSpeechResult(std::u16string(u"All mammals have hair"), false,
                              testing::_))
       .Times(1)
       .RetiresOnSaturation();
@@ -209,9 +211,9 @@ IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*mock_speech_delegate_,
-              OnSpeechResult(base::ASCIIToUTF16(
-                                 "All mammals drink milk from their mothers"),
-                             true, testing::_))
+              OnSpeechResult(
+                  std::u16string(u"All mammals drink milk from their mothers"),
+                  true, testing::_))
       .Times(1)
       .RetiresOnSaturation();
   fake_service_->SendSpeechRecognitionResult(
@@ -292,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest,
 IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest, DefaultParameters) {
   fake_service_->set_multichannel_supported(true);
   ConstructRecognizerAndWaitForReady();
-  StartListeningWithAudioParams(base::nullopt);
+  StartListeningWithAudioParams(absl::nullopt);
 
   EXPECT_EQ(media::AudioDeviceDescription::kDefaultDeviceId,
             fake_service_->device_id());

@@ -9,10 +9,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -20,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -69,7 +68,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     // activity. It could be different from |last_activity_time_of_day|
     // if the last activity is not a user activity (e.g. video). It is unset if
     // there is no user activity before the idle event is fired.
-    base::Optional<TimeOfDay> last_user_activity_time_of_day;
+    absl::optional<TimeOfDay> last_user_activity_time_of_day;
 
     // Duration of activity up to the last activity.
     base::TimeDelta recent_time_active;
@@ -77,14 +76,14 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     // Duration from the last key/mouse/touch to the time when idle event is
     // generated.  It is unset if there is no key/mouse/touch activity before
     // the idle event.
-    base::Optional<base::TimeDelta> time_since_last_key;
-    base::Optional<base::TimeDelta> time_since_last_mouse;
-    base::Optional<base::TimeDelta> time_since_last_touch;
+    absl::optional<base::TimeDelta> time_since_last_key;
+    absl::optional<base::TimeDelta> time_since_last_mouse;
+    absl::optional<base::TimeDelta> time_since_last_touch;
     // How long recent video has been playing.
     base::TimeDelta video_playing_time;
     // Duration from when video ended. It is unset if video did not play
     // (|video_playing_time| = 0).
-    base::Optional<base::TimeDelta> time_since_video_ended;
+    absl::optional<base::TimeDelta> time_since_video_ended;
 
     int key_events_in_last_hour = 0;
     int mouse_events_in_last_hour = 0;
@@ -147,14 +146,14 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
 
   BootClock boot_clock_;
 
-  ScopedObserver<chromeos::PowerManagerClient,
-                 chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_;
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
-      user_activity_observer_;
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_client_observation_{this};
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observation_{this};
 
   // Last-received external power state. Changes are treated as user activity.
-  base::Optional<power_manager::PowerSupplyProperties_ExternalPower>
+  absl::optional<power_manager::PowerSupplyProperties_ExternalPower>
       external_power_;
 
   base::ObserverList<Observer>::Unchecked observers_;

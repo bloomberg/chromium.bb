@@ -11,13 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/style/typography.h"
@@ -428,7 +428,7 @@ class VIEWS_EXPORT Label : public View,
 
   int text_context_;
   int text_style_;
-  base::Optional<int> line_height_;
+  absl::optional<int> line_height_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> full_text_;

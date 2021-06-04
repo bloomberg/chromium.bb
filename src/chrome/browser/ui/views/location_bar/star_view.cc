@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -35,11 +36,11 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -82,6 +83,7 @@ StarView::StarView(CommandUpdater* command_updater,
 StarView::~StarView() {}
 
 void StarView::AfterPropertyChange(const void* key, int64_t old_value) {
+  View::AfterPropertyChange(key, old_value);
   if (key == kHasInProductHelpPromoKey) {
     views::InkDropState next_state;
     if (GetProperty(kHasInProductHelpPromoKey) || GetVisible()) {
@@ -89,7 +91,7 @@ void StarView::AfterPropertyChange(const void* key, int64_t old_value) {
     } else {
       next_state = views::InkDropState::DEACTIVATED;
     }
-    GetInkDrop()->AnimateToState(next_state);
+    ink_drop()->GetInkDrop()->AnimateToState(next_state);
   }
 }
 

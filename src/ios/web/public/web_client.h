@@ -11,12 +11,11 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/values.h"
 #include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
 
 namespace base {
@@ -25,6 +24,7 @@ class RefCountedMemory;
 
 class GURL;
 
+@protocol UITraitEnvironment;
 @class UIWebView;
 @class NSString;
 
@@ -37,7 +37,6 @@ namespace web {
 class BrowserState;
 class BrowserURLRewriter;
 class JavaScriptFeature;
-class SerializableUserDataManager;
 class WebClient;
 class WebMainParts;
 class WebState;
@@ -85,10 +84,6 @@ class WebClient {
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
 
-  // Allow embedder to inject data.
-  virtual void AddSerializableData(
-      web::SerializableUserDataManager* user_data_manager,
-      web::WebState* web_state);
   // Returns text to be displayed for an unsupported plugin.
   virtual std::u16string GetPluginNotSupportedText() const;
 
@@ -166,7 +161,7 @@ class WebClient {
                                 NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
-                                const base::Optional<net::SSLInfo>& info,
+                                const absl::optional<net::SSLInfo>& info,
                                 int64_t navigation_id,
                                 base::OnceCallback<void(NSString*)> callback);
 
@@ -192,6 +187,8 @@ class WebClient {
   // content, based on the size class of |web_view| and the |url|.
   virtual UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
                                             const GURL& url);
+
+  virtual bool RestoreSessionFromCache(web::WebState* web_state) const;
 };
 
 }  // namespace web

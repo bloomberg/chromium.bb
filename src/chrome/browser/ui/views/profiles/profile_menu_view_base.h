@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -17,10 +18,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/style/typography.h"
 
 class Browser;
@@ -64,19 +65,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kEditProfileButton = 17,
     kCreateIncognitoShortcutButton = 18,
     kMaxValue = kCreateIncognitoShortcutButton,
-  };
-
-  enum class SyncInfoContainerBackgroundState {
-    kNoError,
-    kPaused,
-    kError,
-    kNoPrimaryAccount,
-  };
-
-  struct SyncInfo {
-    int description_string_id;
-    int button_string_id;
-    SyncInfoContainerBackgroundState background_state;
   };
 
   struct EditButtonParams {
@@ -127,14 +115,23 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetProfileIdentityInfo(
       const std::u16string& profile_name,
       SkColor profile_background_color,
-      base::Optional<EditButtonParams> edit_button_params,
+      absl::optional<EditButtonParams> edit_button_params,
       const ui::ImageModel& image_model,
       const std::u16string& title,
       const std::u16string& subtitle = std::u16string(),
       const ui::ThemedVectorIcon& avatar_header_art = ui::ThemedVectorIcon());
-  void SetSyncInfo(const SyncInfo& sync_info,
-                   const base::RepeatingClosure& action,
-                   bool show_badge);
+  // Displays the sync info section as a rounded rectangle with text on top and
+  // a button on the bottom. Clicking the button triggers |action|.
+  void BuildSyncInfoWithCallToAction(
+      const std::u16string& description,
+      const std::u16string& button_text,
+      ui::NativeTheme::ColorId background_color_id,
+      const base::RepeatingClosure& action,
+      bool show_badge);
+  // Displays the sync info section as a rectangle with text. Clicking the
+  // rectangle triggers |action|.
+  void BuildSyncInfoWithoutCallToAction(const std::u16string& text,
+                                        const base::RepeatingClosure& action);
   void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
                                 const std::u16string& text,
                                 base::RepeatingClosure action);
@@ -183,6 +180,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // Requests focus for a button when opened by keyboard.
   void FocusButtonOnKeyboardOpen();
 
+  void BuildSyncInfoCallToActionBackground(
+      ui::NativeTheme::ColorId background_color_id,
+      ui::NativeTheme* native_theme);
+
   // views::BubbleDialogDelegateView:
   void Init() final;
   void OnThemeChanged() override;
@@ -193,8 +194,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                          const content::ContextMenuParams& params) override;
 
   void ButtonPressed(base::RepeatingClosure action);
-
-  void UpdateSyncInfoContainerBackground();
 
   Browser* const browser_;
 
@@ -222,8 +221,11 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 
-  SyncInfoContainerBackgroundState sync_background_state_ =
-      SyncInfoContainerBackgroundState::kNoError;
+  // Builds the background for |sync_info_container_|. This requires
+  // ui::NativeTheme, which is only available once OnThemeChanged() is called,
+  // so the class caches this callback and calls it afterwards.
+  base::RepeatingCallback<void(ui::NativeTheme*)>
+      sync_info_background_callback_ = base::DoNothing();
 
   // Actual heading string would be set by children classes.
   std::u16string profile_mgmt_heading_;

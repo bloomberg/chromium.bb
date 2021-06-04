@@ -14,6 +14,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/posix/safe_strerror.h"
@@ -307,8 +308,11 @@ void CameraDeviceDelegate::AllocateAndStart(
   device_context_ = device_context;
   device_context_->SetState(CameraDeviceContext::State::kStarting);
 
-  if (camera_app_device_) {
-    camera_app_device_->SetCameraDeviceContext(device_context_);
+  auto camera_app_device =
+      CameraAppDeviceBridgeImpl::GetInstance()->GetWeakCameraAppDevice(
+          device_descriptor_.device_id);
+  if (camera_app_device) {
+    camera_app_device->SetCameraDeviceContext(device_context_);
   }
 
   auto camera_info = camera_hal_delegate_->GetCameraInfoFromDeviceId(
@@ -320,6 +324,7 @@ void CameraDeviceDelegate::AllocateAndStart(
     return;
   }
 
+  device_api_version_ = camera_info->device_version;
   SortCameraMetadata(&camera_info->static_camera_characteristics);
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
 
@@ -369,8 +374,11 @@ void CameraDeviceDelegate::StopAndDeAllocate(
   // CameraDeviceContext::State::kStopping.
   DCHECK_NE(device_context_->GetState(), CameraDeviceContext::State::kStopping);
 
-  if (camera_app_device_) {
-    camera_app_device_->SetCameraDeviceContext(nullptr);
+  auto camera_app_device =
+      CameraAppDeviceBridgeImpl::GetInstance()->GetWeakCameraAppDevice(
+          device_descriptor_.device_id);
+  if (camera_app_device) {
+    camera_app_device->SetCameraDeviceContext(nullptr);
   }
 
   device_close_callback_ = std::move(device_close_callback);
@@ -610,7 +618,7 @@ void CameraDeviceDelegate::ReconfigureStreams(
     // ReconfigureStreams is used for video recording. It does not require
     // photo.
     request_manager_->StopPreview(base::BindOnce(
-        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), false, base::nullopt));
+        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), false, absl::nullopt));
   }
 }
 
@@ -645,7 +653,7 @@ bool CameraDeviceDelegate::MaybeReconfigureForPhotoStream(
                        std::move(new_blob_resolution)));
   } else {
     request_manager_->StopPreview(base::BindOnce(
-        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), true, base::nullopt));
+        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), true, absl::nullopt));
   }
   return true;
 }
@@ -666,7 +674,7 @@ void CameraDeviceDelegate::TakePhotoImpl() {
   // Trigger the reconfigure process if it not yet triggered.
   if (on_reconfigured_callbacks_.empty()) {
     request_manager_->StopPreview(base::BindOnce(
-        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), true, base::nullopt));
+        &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), true, absl::nullopt));
   }
   auto on_reconfigured_callback = base::BindOnce(
       [](base::WeakPtr<Camera3AController> controller,
@@ -703,7 +711,7 @@ void CameraDeviceDelegate::OnMojoConnectionError() {
 
 void CameraDeviceDelegate::OnFlushed(
     bool require_photo,
-    base::Optional<gfx::Size> new_blob_resolution,
+    absl::optional<gfx::Size> new_blob_resolution,
     int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (result) {
@@ -790,7 +798,8 @@ void CameraDeviceDelegate::Initialize() {
       device_context_,
       chrome_capture_params_[ClientType::kPreviewClient].buffer_type,
       std::make_unique<CameraBufferFactory>(),
-      base::BindRepeating(&RotateAndBlobify), ipc_task_runner_);
+      base::BindRepeating(&RotateAndBlobify), ipc_task_runner_,
+      device_api_version_);
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(
@@ -837,12 +846,12 @@ void CameraDeviceDelegate::OnInitialized(int32_t result) {
         return false;
     }
   }();
-  ConfigureStreams(require_photo, base::nullopt);
+  ConfigureStreams(require_photo, absl::nullopt);
 }
 
 void CameraDeviceDelegate::ConfigureStreams(
     bool require_photo,
-    base::Optional<gfx::Size> new_blob_resolution) {
+    absl::optional<gfx::Size> new_blob_resolution) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(),
             CameraDeviceContext::State::kInitialized);
@@ -871,6 +880,9 @@ void CameraDeviceDelegate::ConfigureStreams(
     stream->data_space = 0;
     stream->rotation =
         cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+    if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+      stream->physical_camera_id = "";
+    }
 
     stream_config->streams.push_back(std::move(stream));
   }
@@ -903,6 +915,9 @@ void CameraDeviceDelegate::ConfigureStreams(
     still_capture_stream->data_space = 0;
     still_capture_stream->rotation =
         cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+    if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+      still_capture_stream->physical_camera_id = "";
+    }
     stream_config->streams.push_back(std::move(still_capture_stream));
 
     int32_t max_yuv_width = 0, max_yuv_height = 0;
@@ -919,6 +934,9 @@ void CameraDeviceDelegate::ConfigureStreams(
       reprocessing_stream_input->data_space = 0;
       reprocessing_stream_input->rotation =
           cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+      if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+        reprocessing_stream_input->physical_camera_id = "";
+      }
 
       auto reprocessing_stream_output = cros::mojom::Camera3Stream::New();
       reprocessing_stream_output->id =
@@ -935,6 +953,9 @@ void CameraDeviceDelegate::ConfigureStreams(
       reprocessing_stream_output->data_space = 0;
       reprocessing_stream_output->rotation =
           cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+      if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+        reprocessing_stream_output->physical_camera_id = "";
+      }
 
       stream_config->streams.push_back(std::move(reprocessing_stream_input));
       stream_config->streams.push_back(std::move(reprocessing_stream_output));
@@ -943,6 +964,9 @@ void CameraDeviceDelegate::ConfigureStreams(
 
   stream_config->operation_mode = cros::mojom::Camera3StreamConfigurationMode::
       CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE;
+  if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_5) {
+    stream_config->session_parameters = cros::mojom::CameraMetadata::New();
+  }
   device_ops_->ConfigureStreams(
       std::move(stream_config),
       base::BindOnce(&CameraDeviceDelegate::OnConfiguredStreams, GetWeakPtr(),
@@ -1125,7 +1149,7 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
       CameraAppDeviceBridgeImpl::GetInstance()->GetWeakCameraAppDevice(
           device_descriptor_.device_id);
   auto specified_fps_range =
-      camera_app_device ? camera_app_device->GetFpsRange() : base::nullopt;
+      camera_app_device ? camera_app_device->GetFpsRange() : absl::nullopt;
   if (specified_fps_range) {
     SetFpsRangeInMetadata(&settings, specified_fps_range->GetMin(),
                           specified_fps_range->GetMax());
@@ -1152,15 +1176,14 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
 
     SetFpsRangeInMetadata(&settings, target_min, target_max);
   }
-  request_manager_->StartPreview(std::move(settings));
-
-  if (!take_photo_callbacks_.empty()) {
-    TakePhotoImpl();
-  }
-
   while (!on_reconfigured_callbacks_.empty()) {
     std::move(on_reconfigured_callbacks_.front()).Run();
     on_reconfigured_callbacks_.pop();
+  }
+
+  request_manager_->StartPreview(std::move(settings));
+  if (!take_photo_callbacks_.empty()) {
+    TakePhotoImpl();
   }
 }
 
@@ -1193,7 +1216,7 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
 }
 
 gfx::Size CameraDeviceDelegate::GetBlobResolution(
-    base::Optional<gfx::Size> new_blob_resolution) {
+    absl::optional<gfx::Size> new_blob_resolution) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   std::vector<gfx::Size> blob_resolutions;
@@ -1304,7 +1327,7 @@ bool CameraDeviceDelegate::SetPointsOfInterest(
 
 mojom::RangePtr CameraDeviceDelegate::GetControlRangeByVendorTagName(
     const std::string& range_name,
-    const base::Optional<int32_t>& current) {
+    const absl::optional<int32_t>& current) {
   const VendorTagInfo* info =
       camera_hal_delegate_->GetVendorTagInfoByName(range_name);
   if (info == nullptr) {
@@ -1338,7 +1361,7 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
   auto get_vendor_int =
       [&](const std::string& name,
           const cros::mojom::CameraMetadataPtr& result_metadata,
-          base::Optional<int32_t>* returned_value) {
+          absl::optional<int32_t>* returned_value) {
         returned_value->reset();
         const VendorTagInfo* info =
             camera_hal_delegate_->GetVendorTagInfoByName(name);

@@ -67,6 +67,8 @@ class SpeechMonitor : public content::TtsPlatform {
   // Delayed utterances.
   double GetDelayForLastUtteranceMS();
 
+  int stop_count() { return stop_count_; }
+
  private:
   typedef std::pair<std::function<bool()>, std::string> ReplayArgs;
 
@@ -92,6 +94,7 @@ class SpeechMonitor : public content::TtsPlatform {
   void ClearError() override;
   void SetError(const std::string& error) override;
   void Shutdown() override;
+  bool PreferEngineDelegateVoices() override;
 
   void MaybeContinueReplay();
   void MaybePrintExpectations();
@@ -124,6 +127,9 @@ class SpeechMonitor : public content::TtsPlatform {
 
   // Whether |Replay| was called.
   bool replay_called_ = false;
+
+  // The number of times StopSpeaking() has been called.
+  int stop_count_ = 0;
 
   base::WeakPtrFactory<SpeechMonitor> weak_factory_{this};
 

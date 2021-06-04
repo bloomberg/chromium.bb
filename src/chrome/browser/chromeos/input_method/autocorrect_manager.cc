@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
@@ -21,19 +22,6 @@
 namespace chromeos {
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Needs to match ImeAutocorrectActions
-// in enums.xml.
-enum class AutocorrectActions {
-  kWindowShown = 0,
-  kUnderlined = 1,
-  kReverted = 2,
-  kUserAcceptedAutocorrect = 3,
-  kUserActionClearedUnderline = 4,
-  kUserExitedTextFieldWithUnderline = 5,
-  kMaxValue = kUserExitedTextFieldWithUnderline,
-};
-
 bool IsCurrentInputMethodExperimentalMultilingual() {
   auto* input_method_manager = input_method::InputMethodManager::Get();
   if (!input_method_manager) {
@@ -41,15 +29,6 @@ bool IsCurrentInputMethodExperimentalMultilingual() {
   }
   return extension_ime_util::IsExperimentalMultilingual(
       input_method_manager->GetActiveIMEState()->GetCurrentInputMethod().id());
-}
-
-void LogAssistiveAutocorrectAction(AutocorrectActions action) {
-  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Actions",
-                                action);
-  if (IsCurrentInputMethodExperimentalMultilingual()) {
-    base::UmaHistogramEnumeration(
-        "InputMethod.MultilingualExperiment.Autocorrect.Actions", action);
-  }
 }
 
 void LogAssistiveAutocorrectDelay(base::TimeDelta delay) {
@@ -87,8 +66,10 @@ void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
   if (!input_context)
     return;
 
-  // TODO(crbug/1159297): Record diacritics-related metrics for multilingual
-  // experiment, based on `current_text` and `original_text`.
+  in_diacritical_autocorrect_session_ =
+      IsCurrentInputMethodExperimentalMultilingual() &&
+      diacritics_insensitive_string_comparator_.Equal(original_text,
+                                                      current_text);
 
   original_text_ = original_text;
   key_presses_until_underline_hide_ = kKeysUntilAutocorrectWindowHides;
@@ -102,11 +83,34 @@ void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
   autocorrect_time_ = base::TimeTicks::Now();
 }
 
+void AutocorrectManager::LogAssistiveAutocorrectAction(
+    AutocorrectActions action) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Actions",
+                                action);
+
+  if (ChromeKeyboardControllerClient::HasInstance() &&
+      ChromeKeyboardControllerClient::Get()->is_keyboard_visible()) {
+    base::UmaHistogramEnumeration(
+        "InputMethod.Assistive.Autocorrect.Actions.VK", action);
+  }
+
+  if (IsCurrentInputMethodExperimentalMultilingual()) {
+    base::UmaHistogramEnumeration(
+        "InputMethod.MultilingualExperiment.Autocorrect.Actions", action);
+
+    if (in_diacritical_autocorrect_session_) {
+      base::UmaHistogramEnumeration(
+          "InputMethod.MultilingualExperiment.DiacriticalAutocorrect.Actions",
+          action);
+    }
+  }
+}
+
 bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
   if (event.type() != ui::ET_KEY_PRESSED) {
     return false;
   }
-  if (event.code() == ui::DomCode::ARROW_UP && window_visible) {
+  if (event.code() == ui::DomCode::ARROW_UP && window_visible_) {
     std::string error;
     auto button = ui::ime::AssistiveWindowButton();
     button.id = ui::ime::ButtonId::kUndo;
@@ -115,11 +119,11 @@ bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
         IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON, original_text_);
     suggestion_handler_->SetButtonHighlighted(context_id_, button, true,
                                               &error);
-    button_highlighted = true;
+    button_highlighted_ = true;
     return true;
   }
-  if (event.code() == ui::DomCode::ENTER && window_visible &&
-      button_highlighted) {
+  if (event.code() == ui::DomCode::ENTER && window_visible_ &&
+      button_highlighted_) {
     UndoAutocorrect();
     return true;
   }
@@ -146,14 +150,14 @@ void AutocorrectManager::ClearUnderline() {
 
 void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
                                                   const int cursor_pos,
-                                                  const int anchpr_pos) {
+                                                  const int anchor_pos) {
   std::string error;
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   const gfx::Range range = input_context->GetAutocorrectRange();
   if (!range.is_empty() && cursor_pos >= range.start() &&
       cursor_pos <= range.end()) {
-    if (!window_visible) {
+    if (!window_visible_) {
       const std::u16string autocorrected_text =
           text.substr(range.start(), range.length());
       chromeos::AssistiveWindowProperties properties;
@@ -162,20 +166,20 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
       properties.announce_string = l10n_util::GetStringFUTF8(
           IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN, original_text_,
           autocorrected_text);
-      window_visible = true;
-      button_highlighted = false;
+      window_visible_ = true;
+      button_highlighted_ = false;
       suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                         &error);
       LogAssistiveAutocorrectAction(AutocorrectActions::kWindowShown);
       RecordAssistiveCoverage(AssistiveType::kAutocorrectWindowShown);
     }
     key_presses_until_underline_hide_ = kKeysUntilAutocorrectWindowHides;
-  } else if (window_visible) {
+  } else if (window_visible_) {
     chromeos::AssistiveWindowProperties properties;
     properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
     properties.visible = false;
-    window_visible = false;
-    button_highlighted = false;
+    window_visible_ = false;
+    button_highlighted_ = false;
     suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                       &error);
   }
@@ -197,9 +201,8 @@ void AutocorrectManager::UndoAutocorrect() {
   chromeos::AssistiveWindowProperties properties;
   properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = false;
-  window_visible = false;
-  button_highlighted = false;
-  window_visible = false;
+  window_visible_ = false;
+  button_highlighted_ = false;
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                     &error);
 

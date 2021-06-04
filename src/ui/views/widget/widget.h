@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -98,8 +100,10 @@ enum class CloseRequestResult { kCanClose, kCannotClose };
 class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public ui::EventSource,
                             public FocusTraversable,
-                            public ui::NativeThemeObserver {
+                            public ui::NativeThemeObserver,
+                            public ui::metadata::MetaDataProvider {
  public:
+  METADATA_HEADER_BASE(Widget);
   using Widgets = std::set<Widget*>;
   using ShapeRects = std::vector<gfx::Rect>;
   using PaintAsActiveCallbackList = base::RepeatingClosureList;
@@ -190,12 +194,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       kTranslucent,
     };
 
-    enum Activatable {
+    enum class Activatable {
       // Infer whether the window should be activatable from the window type.
-      ACTIVATABLE_DEFAULT,
+      kDefault,
 
-      ACTIVATABLE_YES,
-      ACTIVATABLE_NO
+      kYes,
+      kNo
     };
 
     enum Ownership {
@@ -229,7 +233,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     InitParams& operator=(InitParams&& rhs) = default;
 
     // Returns the activatablity based on |activatable|, but also handles the
-    // case where |activatable| is |ACTIVATABLE_DEFAULT|.
+    // case where |activatable| is |kDefault|.
     bool CanActivate() const;
 
     // Returns the z-order level, based on the overriding |z_order| but also
@@ -262,10 +266,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     bool accept_events = true;
 
-    Activatable activatable = ACTIVATABLE_DEFAULT;
+    Activatable activatable = Activatable::kDefault;
 
     // The class of window and its overall z-order.
-    base::Optional<ui::ZOrderLevel> z_order;
+    absl::optional<ui::ZOrderLevel> z_order;
 
     bool visible_on_all_workspaces = false;
 
@@ -278,10 +282,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     // A hint about the size of the shadow if the type is ShadowType::kDrop. May
     // be ignored on some platforms. No value indicates no preference.
-    base::Optional<int> shadow_elevation;
+    absl::optional<int> shadow_elevation;
 
     // The window corner radius. May be ignored on some platforms.
-    base::Optional<int> corner_radius;
+    absl::optional<int> corner_radius;
 
     // Specifies that the system default caption and icon should not be
     // rendered, and that the client area should be equivalent to the window
@@ -509,8 +513,20 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the top level widget in a hierarchy (see is_top_level() for
   // the definition of top level widget.) Will return NULL if called
   // before the widget is attached to the top level widget's hierarchy.
+  //
+  // If you want to get the absolute primary application window, accounting for
+  // e.g. bubble and menu anchoring, use GetPrimaryWindowWidget() instead.
   Widget* GetTopLevelWidget();
   const Widget* GetTopLevelWidget() const;
+
+  // Returns the widget of the primary window this widget is associated with,
+  // such as an application window, accounting for anchoring and other
+  // relationships not accounted for in GetTopLevelWidget().
+  //
+  // Equivalent to GetTopLevelWidget() by default; override in derived classes
+  // that require additional logic.
+  virtual Widget* GetPrimaryWindowWidget();
+  const Widget* GetPrimaryWindowWidget() const;
 
   // Gets/Sets the WidgetDelegate.
   WidgetDelegate* widget_delegate() const { return widget_delegate_; }
@@ -929,6 +945,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // this.
   ui::GestureRecognizer* GetGestureRecognizer();
 
+  // Returns the associated gesture consumer.
+  ui::GestureConsumer* GetGestureConsumer();
+
   // Called when the delegate's CanResize or CanMaximize changes.
   void OnSizeConstraintsChanged();
 
@@ -1007,6 +1026,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Overridden from ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
+  // Set the native theme from which this widget gets color from.
+  void SetNativeThemeForTest(ui::NativeTheme* native_theme) {
+    SetNativeTheme(native_theme);
+  }
+
  protected:
   // Call this to propagate native theme changes to the root view. Subclasses
   // may override this to customize how native theme updates are propagated.
@@ -1027,6 +1051,24 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Notification that the drag performed by RunShellDrag() has completed.
   virtual void OnDragComplete();
+
+  // Set the native theme from which this widget gets color from.
+  void SetNativeTheme(ui::NativeTheme* native_theme);
+
+  // The following methods are used by the property access system described in
+  // the comments on views::View. They follow the required naming convention in
+  // order to allow them to be visible via the metadata.
+  // TODO(kylixrd): Refactor code to use these methods directly.
+  int GetX() const;
+  int GetY() const;
+  int GetWidth() const;
+  int GetHeight() const;
+  bool GetVisible() const;
+  void SetX(int x);
+  void SetY(int y);
+  void SetWidth(int width);
+  void SetHeight(int height);
+  void SetVisible(bool visible);
 
  private:
   // Type of ways to ignore activation changes.
@@ -1204,8 +1246,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Block the widget from closing.
   bool block_close_ = false;
 
+  // The native theme this widget is using.
+  // If nullptr, defaults to use the regular native theme.
+  ui::NativeTheme* native_theme_ = nullptr;
+
   base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
-      observation_{this};
+      native_theme_observation_{this};
 
   base::WeakPtrFactory<Widget> weak_ptr_factory_{this};
 

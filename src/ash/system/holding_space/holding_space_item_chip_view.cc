@@ -13,18 +13,18 @@
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 namespace {
@@ -36,6 +36,14 @@ constexpr gfx::Insets kLabelMargins(0, 0, 0, /*right=*/2);
 constexpr gfx::Insets kPadding(8, 8, 8, /*right=*/10);
 constexpr int kPreferredHeight = 40;
 constexpr int kPreferredWidth = 160;
+
+// Helpers ---------------------------------------------------------------------
+
+// TODO(crbug.com/1202796): Create ash colors.
+SkColor GetMultiSelectTextColor() {
+  return AshColorProvider::Get()->IsDarkModeEnabled() ? gfx::kGoogleBlue100
+                                                      : gfx::kGoogleBlue800;
+}
 
 // PaintCallbackLabel ----------------------------------------------------------
 
@@ -84,12 +92,6 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
           kHoldingSpaceChipIconSize / 2,
           RoundedImageView::Alignment::kLeading));
   image_->SetID(kHoldingSpaceItemImageId);
-
-  // Shrink circular background by a single pixel to prevent painting outside of
-  // the image which may otherwise occur due to pixel rounding. Failure to do so
-  // could result in white paint artifacts.
-  image_->SetBackground(holding_space_util::CreateCircleBackground(
-      SK_ColorWHITE, gfx::InsetsF(0.5f)));
 
   // Subscribe to be notified of changes to `item_`'s image.
   image_subscription_ =
@@ -173,6 +175,7 @@ void HoldingSpaceItemChipView::OnSelectionUiChanged() {
 
 void HoldingSpaceItemChipView::OnThemeChanged() {
   HoldingSpaceItemView::OnThemeChanged();
+  UpdateImage();
   UpdateLabel();
 }
 
@@ -202,7 +205,8 @@ void HoldingSpaceItemChipView::OnPaintLabelMask(gfx::Canvas* canvas) {
 
 void HoldingSpaceItemChipView::UpdateImage() {
   image_->SetImage(item()->image().GetImageSkia(
-      gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize)));
+      gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize),
+      /*dark_background=*/AshColorProvider::Get()->IsDarkModeEnabled()));
   SchedulePaint();
 }
 
@@ -213,8 +217,7 @@ void HoldingSpaceItemChipView::UpdateLabel() {
 
   label_->SetEnabledColor(
       selected() && multiselect
-          ? AshColorProvider::Get()->GetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kFocusRingColor)
+          ? GetMultiSelectTextColor()
           : AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kTextColorPrimary));
 }

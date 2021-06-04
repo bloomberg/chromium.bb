@@ -55,6 +55,7 @@ preprocess_if_expr("preprocess_web_components") {
   out_manifest = "$target_gen_dir/$preprocess_web_components_manifest"
   in_files = [
     "app.js",
+    "download_button.js",
     "download_item.js",
     "download_list.js",
   ]
@@ -78,6 +79,7 @@ grit("resources") {
 }
 
 js_type_check("closure_compile") {
+  is_polymer3 = true
   closure_flags = default_closure_args + mojom_js_args + [
                     "js_module_root=" + rebase_path(".", root_build_dir),
                     "js_module_root=" + rebase_path(
@@ -86,10 +88,15 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     ":app",
+    ":download_button",
     ":download_item",
     ":download_list",
     ":download_shelf_api_proxy",
   ]
+}
+
+js_library("download_button") {
+  deps = [ "//ui/webui/resources/js:custom_element" ]
 }
 
 js_library("download_shelf_api_proxy") {
@@ -102,8 +109,10 @@ js_library("download_shelf_api_proxy") {
 
 js_library("download_item") {
   deps = [
+    ":download_button",
     ":download_shelf_api_proxy",
     "//ui/webui/resources/js:custom_element",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
@@ -114,19 +123,23 @@ js_library("download_list") {
     ":download_shelf_api_proxy",
     "//ui/webui/resources/js:custom_element",
   ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("app") {
   deps = [
-    ":download_item",
     ":download_list",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
     "//ui/webui/resources/js:custom_element",
+    "//ui/webui/resources/js:icon.m",
   ]
 }
 
 html_to_js("web_components") {
   js_files = [
     "app.js",
+    "download_button.js",
     "download_item.js",
     "download_list.js",
   ]

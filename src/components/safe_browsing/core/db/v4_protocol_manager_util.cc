@@ -120,7 +120,7 @@ PlatformType GetCurrentPlatformType() {
   return LINUX_PLATFORM;
 #elif defined(OS_IOS)
   return IOS_PLATFORM;
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   return OSX_PLATFORM;
 #else
   // TODO(crbug.com/1030487): This file is, in fact, intended to be compiled on
@@ -317,8 +317,11 @@ void V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
     const char* metric_name,
     int net_error,
     int response_code) {
-  base::UmaHistogramSparse(metric_name,
-                           net_error == net::OK ? response_code : net_error);
+  base::UmaHistogramSparse(
+      metric_name,
+      net_error == net::OK || net_error == net::ERR_HTTP_RESPONSE_CODE_FAILURE
+          ? response_code
+          : net_error);
 }
 
 // static

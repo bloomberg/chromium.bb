@@ -29,27 +29,26 @@ bool GrCustomXfermode::IsSupportedMode(SkBlendMode mode) {
 ///////////////////////////////////////////////////////////////////////////////
 
 static constexpr GrBlendEquation hw_blend_equation(SkBlendMode mode) {
-// In C++14 this could be a constexpr int variable.
-#define EQ_OFFSET (kOverlay_GrBlendEquation - (int)SkBlendMode::kOverlay)
-    static_assert(kOverlay_GrBlendEquation == (int)SkBlendMode::kOverlay + EQ_OFFSET);
-    static_assert(kDarken_GrBlendEquation == (int)SkBlendMode::kDarken + EQ_OFFSET);
-    static_assert(kLighten_GrBlendEquation == (int)SkBlendMode::kLighten + EQ_OFFSET);
-    static_assert(kColorDodge_GrBlendEquation == (int)SkBlendMode::kColorDodge + EQ_OFFSET);
-    static_assert(kColorBurn_GrBlendEquation == (int)SkBlendMode::kColorBurn + EQ_OFFSET);
-    static_assert(kHardLight_GrBlendEquation == (int)SkBlendMode::kHardLight + EQ_OFFSET);
-    static_assert(kSoftLight_GrBlendEquation == (int)SkBlendMode::kSoftLight + EQ_OFFSET);
-    static_assert(kDifference_GrBlendEquation == (int)SkBlendMode::kDifference + EQ_OFFSET);
-    static_assert(kExclusion_GrBlendEquation == (int)SkBlendMode::kExclusion + EQ_OFFSET);
-    static_assert(kMultiply_GrBlendEquation == (int)SkBlendMode::kMultiply + EQ_OFFSET);
-    static_assert(kHSLHue_GrBlendEquation == (int)SkBlendMode::kHue + EQ_OFFSET);
-    static_assert(kHSLSaturation_GrBlendEquation == (int)SkBlendMode::kSaturation + EQ_OFFSET);
-    static_assert(kHSLColor_GrBlendEquation == (int)SkBlendMode::kColor + EQ_OFFSET);
-    static_assert(kHSLLuminosity_GrBlendEquation == (int)SkBlendMode::kLuminosity + EQ_OFFSET);
+    constexpr int kEqOffset = (kOverlay_GrBlendEquation - (int)SkBlendMode::kOverlay);
+    static_assert(kOverlay_GrBlendEquation == (int)SkBlendMode::kOverlay + kEqOffset);
+    static_assert(kDarken_GrBlendEquation == (int)SkBlendMode::kDarken + kEqOffset);
+    static_assert(kLighten_GrBlendEquation == (int)SkBlendMode::kLighten + kEqOffset);
+    static_assert(kColorDodge_GrBlendEquation == (int)SkBlendMode::kColorDodge + kEqOffset);
+    static_assert(kColorBurn_GrBlendEquation == (int)SkBlendMode::kColorBurn + kEqOffset);
+    static_assert(kHardLight_GrBlendEquation == (int)SkBlendMode::kHardLight + kEqOffset);
+    static_assert(kSoftLight_GrBlendEquation == (int)SkBlendMode::kSoftLight + kEqOffset);
+    static_assert(kDifference_GrBlendEquation == (int)SkBlendMode::kDifference + kEqOffset);
+    static_assert(kExclusion_GrBlendEquation == (int)SkBlendMode::kExclusion + kEqOffset);
+    static_assert(kMultiply_GrBlendEquation == (int)SkBlendMode::kMultiply + kEqOffset);
+    static_assert(kHSLHue_GrBlendEquation == (int)SkBlendMode::kHue + kEqOffset);
+    static_assert(kHSLSaturation_GrBlendEquation == (int)SkBlendMode::kSaturation + kEqOffset);
+    static_assert(kHSLColor_GrBlendEquation == (int)SkBlendMode::kColor + kEqOffset);
+    static_assert(kHSLLuminosity_GrBlendEquation == (int)SkBlendMode::kLuminosity + kEqOffset);
 
     // There's an illegal GrBlendEquation that corresponds to no SkBlendMode, hence the extra +1.
-    static_assert(kGrBlendEquationCnt == (int)SkBlendMode::kLastMode + 1 + 1 + EQ_OFFSET);
+    static_assert(kGrBlendEquationCnt == (int)SkBlendMode::kLastMode + 1 + 1 + kEqOffset);
 
-    return static_cast<GrBlendEquation>((int)mode + EQ_OFFSET);
+    return static_cast<GrBlendEquation>((int)mode + kEqOffset);
 #undef EQ_OFFSET
 }
 
@@ -78,8 +77,8 @@ public:
         , fMode(mode)
         , fHWBlendEquation(hwBlendEquation) {}
 
-    CustomXP(bool hasMixedSamples, SkBlendMode mode, GrProcessorAnalysisCoverage coverage)
-            : INHERITED(kCustomXP_ClassID, true, hasMixedSamples, coverage)
+    CustomXP(SkBlendMode mode, GrProcessorAnalysisCoverage coverage)
+            : INHERITED(kCustomXP_ClassID, true, coverage)
             , fMode(mode)
             , fHWBlendEquation(kIllegal_GrBlendEquation) {
     }
@@ -141,8 +140,8 @@ private:
         GrGLSLXPFragmentBuilder* fragBuilder = args.fXPFragBuilder;
         fragBuilder->enableAdvancedBlendEquationIfNeeded(xp.hwBlendEquation());
 
-        // Apply coverage by multiplying it into the src color before blending. Mixed samples will
-        // "just work" automatically. (See onGetOptimizations())
+        // Apply coverage by multiplying it into the src color before blending. This will "just
+        // work" automatically. (See analysisProperties())
         fragBuilder->codeAppendf("%s = %s * %s;", args.fOutputPrimary, args.fInputCoverage,
                                  args.fInputColor);
     }
@@ -218,13 +217,11 @@ public:
 private:
     sk_sp<const GrXferProcessor> makeXferProcessor(const GrProcessorAnalysisColor&,
                                                    GrProcessorAnalysisCoverage,
-                                                   bool hasMixedSamples,
                                                    const GrCaps&,
                                                    GrClampType) const override;
 
     AnalysisProperties analysisProperties(const GrProcessorAnalysisColor&,
                                           const GrProcessorAnalysisCoverage&,
-                                          bool hasMixedSamples,
                                           const GrCaps&,
                                           GrClampType) const override;
 
@@ -245,19 +242,18 @@ private:
 sk_sp<const GrXferProcessor> CustomXPFactory::makeXferProcessor(
         const GrProcessorAnalysisColor&,
         GrProcessorAnalysisCoverage coverage,
-        bool hasMixedSamples,
         const GrCaps& caps,
         GrClampType clampType) const {
     SkASSERT(GrCustomXfermode::IsSupportedMode(fMode));
     if (can_use_hw_blend_equation(fHWBlendEquation, coverage, caps)) {
         return sk_sp<GrXferProcessor>(new CustomXP(fMode, fHWBlendEquation));
     }
-    return sk_sp<GrXferProcessor>(new CustomXP(hasMixedSamples, fMode, coverage));
+    return sk_sp<GrXferProcessor>(new CustomXP(fMode, coverage));
 }
 
 GrXPFactory::AnalysisProperties CustomXPFactory::analysisProperties(
         const GrProcessorAnalysisColor&, const GrProcessorAnalysisCoverage& coverage,
-        bool hasMixedSamples, const GrCaps& caps, GrClampType clampType) const {
+        const GrCaps& caps, GrClampType clampType) const {
     /*
       The general SVG blend equation is defined in the spec as follows:
 

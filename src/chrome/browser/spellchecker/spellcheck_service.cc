@@ -44,6 +44,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -203,7 +207,7 @@ void SpellcheckService::GetDictionaries(
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
   std::set<std::string> spellcheck_dictionaries;
   for (const auto& value :
-       *prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
+       prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)->GetList()) {
     std::string dictionary;
     if (value.GetAsString(&dictionary))
       spellcheck_dictionaries.insert(dictionary);
@@ -855,6 +859,13 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
 }
 
 void SpellcheckService::OnAcceptLanguagesChanged() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Accept-Languages and spell check are decoupled in LSV2 Update 2.
+  if (base::FeatureList::IsEnabled(ash::features::kLanguageSettingsUpdate2)) {
+    return;
+  }
+#endif
+
   std::vector<std::string> accept_languages = GetNormalizedAcceptLanguages();
 
   StringListPrefMember dictionaries_pref;

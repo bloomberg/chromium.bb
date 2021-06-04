@@ -45,8 +45,7 @@ void CreateAndStartUserSession(const AccountId& account_id) {
   using session_manager::SessionManager;
 
   user_manager::known_user::SetProfileRequiresPolicy(
-      account_id,
-      user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
+      account_id, user_manager::ProfileRequiresPolicy::kNoPolicyRequired);
   const std::string user_id_hash =
       ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail());
   SessionManager::Get()->CreateSession(account_id, user_id_hash, false);
@@ -312,19 +311,11 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(
           chromeos::settings::mojom::kLanguagesAndInputSectionPath));
   TestOpenOSSettingsChromePage(
-      ChromePage::OSLANGUAGESDETAILS,
-      base_url.Resolve(
-          chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath));
-  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESEDITDICTIONARY,
       base_url.Resolve(chromeos::settings::mojom::kEditDictionarySubpagePath));
   TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESINPUT,
       base_url.Resolve(chromeos::settings::mojom::kInputSubpagePath));
-  TestOpenOSSettingsChromePage(
-      ChromePage::OSLANGUAGESINPUTMETHODS,
-      base_url.Resolve(
-          chromeos::settings::mojom::kManageInputMethodsSubpagePath));
   TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESLANGUAGES,
       base_url.Resolve(chromeos::settings::mojom::kLanguagesSubpagePath));
@@ -453,6 +444,9 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::KERBEROSACCOUNTSV2,
       base_url.Resolve(
           chromeos::settings::mojom::kKerberosAccountsV2SubpagePath));
+  TestOpenOSSettingsChromePage(
+      ChromePage::SEARCHSUBPAGE,
+      base_url.Resolve(chromeos::settings::mojom::kSearchSubpagePath));
 }
 
 void TestAllBrowserSettingPages(const GURL& base_url) {

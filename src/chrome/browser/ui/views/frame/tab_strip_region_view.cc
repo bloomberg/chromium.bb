@@ -19,14 +19,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
@@ -55,7 +55,7 @@ std::unique_ptr<views::ImageButton> CreateScrollButton(
   scroll_button->SetImageHorizontalAlignment(
       views::ImageButton::HorizontalAlignment::ALIGN_CENTER);
   scroll_button->SetHasInkDropActionOnClick(true);
-  scroll_button->SetInkDropMode(views::Button::InkDropMode::ON);
+  scroll_button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   scroll_button->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   scroll_button->SetPreferredSize(gfx::Size(28, 28));
   views::HighlightPathGenerator::Install(
@@ -166,7 +166,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
     views::ScrollView* tab_strip_scroll_container =
         AddChildView(std::make_unique<views::ScrollView>(
             views::ScrollView::ScrollWithLayers::kEnabled));
-    tab_strip_scroll_container->SetBackgroundColor(base::nullopt);
+    tab_strip_scroll_container->SetBackgroundColor(absl::nullopt);
     tab_strip_scroll_container->SetHorizontalScrollBarMode(
         views::ScrollView::ScrollBarMode::kHiddenButEnabled);
     tab_strip_scroll_container->SetTreatAllScrollEventsAsHorizontal(true);

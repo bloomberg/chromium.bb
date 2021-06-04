@@ -23,6 +23,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/buildflags.h"
@@ -32,6 +33,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -92,7 +94,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     }
 
     // `info` may become invalid after this call.
-    InitEntryWithKey(it.key());
+    // Profiles loaded from disk can never be omitted.
+    InitEntryWithKey(it.key(), /*is_omitted=*/false);
   }
 
   // A profile name can depend on other profile names. Do an additional pass to
@@ -129,55 +132,52 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 
 ProfileInfoCache::~ProfileInfoCache() = default;
 
-void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
-                                         const std::u16string& name,
-                                         const std::string& gaia_id,
-                                         const std::u16string& user_name,
-                                         bool is_consented_primary_account,
-                                         size_t icon_index,
-                                         const std::string& supervised_user_id,
-                                         const AccountId& account_id) {
-  std::string key = CacheKeyFromProfilePath(profile_path);
+void ProfileInfoCache::AddProfileToCache(ProfileAttributesInitParams params) {
+  std::string key = CacheKeyFromProfilePath(params.profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
 
   std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
-  info->SetString(ProfileAttributesEntry::kNameKey, name);
-  info->SetString(ProfileAttributesEntry::kGAIAIdKey, gaia_id);
-  info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
-  DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
-         !user_name.empty());
+  info->SetString(ProfileAttributesEntry::kNameKey, params.profile_name);
+  info->SetString(ProfileAttributesEntry::kGAIAIdKey, params.gaia_id);
+  info->SetString(ProfileAttributesEntry::kUserNameKey, params.user_name);
+  DCHECK(!params.is_consented_primary_account || !params.gaia_id.empty() ||
+         !params.user_name.empty());
   info->SetBoolean(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
-                   is_consented_primary_account);
+                   params.is_consented_primary_account);
   info->SetString(ProfileAttributesEntry::kAvatarIconKey,
-                  profiles::GetDefaultAvatarIconUrl(icon_index));
+                  profiles::GetDefaultAvatarIconUrl(params.icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(ProfileAttributesEntry::kBackgroundAppsKey, false);
   info->SetString(ProfileAttributesEntry::kSupervisedUserId,
-                  supervised_user_id);
-  info->SetBoolean(ProfileAttributesEntry::kProfileIsEphemeral, false);
-  info->SetBoolean(ProfileAttributesEntry::kProfileIsGuest, false);
+                  params.supervised_user_id);
+  info->SetBoolean(ProfileAttributesEntry::kProfileIsEphemeral,
+                   params.is_ephemeral);
+  info->SetBoolean(ProfileAttributesEntry::kProfileIsGuest, params.is_guest);
   // Either the user has provided a name manually on purpose, and in this case
   // we should not check for legacy profile names or this a new profile but then
   // it is not a legacy name, so we dont need to check for legacy names.
-  info->SetBoolean(ProfileAttributesEntry::kIsUsingDefaultNameKey,
-                   IsDefaultProfileName(
-                       name, /*include_check_for_legacy_profile_name*/ false));
+  info->SetBoolean(
+      ProfileAttributesEntry::kIsUsingDefaultNameKey,
+      IsDefaultProfileName(params.profile_name,
+                           /*include_check_for_legacy_profile_name*/ false));
   // Assume newly created profiles use a default avatar.
   info->SetBoolean(kIsUsingDefaultAvatarKey, true);
-  if (account_id.HasAccountIdKey())
-    info->SetString(kAccountIdKey, account_id.GetAccountIdKey());
-  cache->SetWithoutPathExpansion(key, std::move(info));
-  ProfileAttributesEntry* entry = InitEntryWithKey(key);
+  if (params.account_id.HasAccountIdKey())
+    info->SetString(kAccountIdKey, params.account_id.GetAccountIdKey());
+  info->SetBoolKey(prefs::kSignedInWithCredentialProvider,
+                   params.is_signed_in_with_credential_provider);
+  cache->SetKey(key, base::Value::FromUniquePtrValue(std::move(info)));
+  ProfileAttributesEntry* entry = InitEntryWithKey(key, params.is_omitted);
   entry->InitializeLastNameToDisplay();
 
   // `OnProfileAdded()` must be the first observer method being called right
   // after a new profile is added to cache.
   for (auto& observer : observer_list_)
-    observer.OnProfileAdded(profile_path);
+    observer.OnProfileAdded(params.profile_path);
 
   if (!disable_avatar_download_for_testing_)
-    DownloadHighResAvatarIfNeeded(icon_index, profile_path);
+    DownloadHighResAvatarIfNeeded(params.icon_index, params.profile_path);
 
   NotifyIfProfileNamesHaveChanged();
 }
@@ -302,7 +302,7 @@ bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
   if (!value) {
     // Prefer the GAIA avatar over a non-customized avatar.
     value = ProfileIsUsingDefaultAvatarAtIndex(index) &&
-        GetGAIAPictureOfProfileAtIndex(index);
+            GetGAIAPictureOfProfileAtIndex(index);
   }
   return value;
 }
@@ -517,7 +517,7 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(
     std::unique_ptr<base::DictionaryValue> info) {
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
-  cache->SetWithoutPathExpansion(keys_[index], std::move(info));
+  cache->SetKey(keys_[index], base::Value::FromUniquePtrValue(std::move(info)));
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(
@@ -563,16 +563,16 @@ void ProfileInfoCache::LoadGAIAPictureIfNeeded() {
 #endif
 
 ProfileAttributesEntry* ProfileInfoCache::InitEntryWithKey(
-    const std::string& key) {
-  // TODO(https://crbug.com/1195784): revert CHECKs back to DCHECKs after the
-  // crash is investigated.
-  CHECK(!base::Contains(keys_, key));
+    const std::string& key,
+    bool is_omitted) {
+  DCHECK(!base::Contains(keys_, key));
   keys_.push_back(key);
   base::FilePath path = user_data_dir_.AppendASCII(key);
-  CHECK(!base::Contains(profile_attributes_entries_, path.value()));
+  DCHECK(!base::Contains(profile_attributes_entries_, path.value()));
   auto new_entry = std::make_unique<ProfileAttributesEntry>();
   auto* new_entry_raw = new_entry.get();
   new_entry->Initialize(this, path, prefs_);
+  new_entry->SetIsOmittedInternal(is_omitted);
   profile_attributes_entries_[path.value()] = std::move(new_entry);
   return new_entry_raw;
 }
@@ -627,17 +627,8 @@ void ProfileInfoCache::DownloadAvatars() {
 #endif
 }
 
-void ProfileInfoCache::AddProfile(const base::FilePath& profile_path,
-                                  const std::u16string& name,
-                                  const std::string& gaia_id,
-                                  const std::u16string& user_name,
-                                  bool is_consented_primary_account,
-                                  size_t icon_index,
-                                  const std::string& supervised_user_id,
-                                  const AccountId& account_id) {
-  AddProfileToCache(profile_path, name, gaia_id, user_name,
-                    is_consented_primary_account, icon_index,
-                    supervised_user_id, account_id);
+void ProfileInfoCache::AddProfile(ProfileAttributesInitParams params) {
+  AddProfileToCache(std::move(params));
 }
 
 void ProfileInfoCache::RemoveProfileByAccountId(const AccountId& account_id) {

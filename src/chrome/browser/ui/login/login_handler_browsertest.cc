@@ -30,6 +30,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -47,7 +48,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -237,14 +237,14 @@ class LoginPromptBrowserTest
     if (GetParam() == SplitAuthCacheByNetworkIsolationKey::kFalse) {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
-          {blink::features::kFtpProtocol},
+          {network::features::kFtpProtocol},
           // disabled_features
           {network::features::kSplitAuthCacheByNetworkIsolationKey});
     } else {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
           {network::features::kSplitAuthCacheByNetworkIsolationKey,
-           blink::features::kFtpProtocol},
+           network::features::kFtpProtocol},
           // disabled_features
           {});
     }
@@ -376,7 +376,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, TestBasicAuth) {
 
       SimulateNetworkServiceCrash();
       // Flush the network interface to make sure it notices the crash.
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
           ->FlushNetworkInterfaceForTesting();
     }
 
@@ -1467,7 +1469,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   EXPECT_EQ(1, observer.auth_needed_count());
 
   base::RunLoop run_loop;
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->ClearHttpCache(base::Time(), base::Time(), nullptr,
                        run_loop.QuitClosure());
@@ -1524,7 +1528,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   // the same pipe that the pref change uses, making sure the change is applied
   // before the network process receives credentials, but seems safest to flush
   // the NetworkContext pipe explicitly.
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
 
   GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
@@ -1554,7 +1560,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   EXPECT_EQ(1, observer.auth_needed_count());
 
   base::RunLoop run_loop;
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->ClearHttpCache(base::Time(), base::Time(), nullptr,
                        run_loop.QuitClosure());
@@ -1842,7 +1850,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, TestBasicAuthDisabled) {
     if (crash_network_service && content::IsOutOfProcessNetworkService()) {
       SimulateNetworkServiceCrash();
       // Flush the network interface to make sure it notices the crash.
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
           ->FlushNetworkInterfaceForTesting();
     }
 
@@ -2274,7 +2284,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest,
 
   console_observer.Wait();
   ASSERT_EQ(1u, console_observer.messages().size());
-  EXPECT_EQ(base::ASCIIToUTF16("onAuthRequired " + test_page.spec()),
+  EXPECT_EQ(u"onAuthRequired " + base::ASCIIToUTF16(test_page.spec()),
             console_observer.messages()[0].message);
 
   // End the response that prompted for basic auth.
@@ -2309,7 +2319,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest,
   ui_test_utils::NavigateToURL(browser(), second_test_page);
   second_auth_needed_waiter.Wait();
   ASSERT_EQ(2u, console_observer.messages().size());
-  EXPECT_EQ(base::ASCIIToUTF16("onAuthRequired " + second_test_page.spec()),
+  EXPECT_EQ(u"onAuthRequired " + base::ASCIIToUTF16(second_test_page.spec()),
             console_observer.messages()[1].message);
 }
 

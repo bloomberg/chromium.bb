@@ -7,20 +7,29 @@
 #include "base/check.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
+namespace {
+
+constexpr int kFocusRingRadius = 16;
+
+}  // namespace
+
 RadioButton::RadioButton(const std::u16string& label, int group_id)
     : Checkbox(label) {
   SetGroup(group_id);
+  focus_ring()->SetShouldPaintFocusAura(true);
 }
 
 RadioButton::~RadioButton() = default;
@@ -50,6 +59,11 @@ bool RadioButton::IsGroupFocusTraversable() const {
 void RadioButton::OnFocus() {
   Checkbox::OnFocus();
   SetChecked(true);
+}
+
+void RadioButton::OnThemeChanged() {
+  Checkbox::OnThemeChanged();
+  SchedulePaint();
 }
 
 void RadioButton::RequestFocusFromEvent() {
@@ -100,7 +114,8 @@ const gfx::VectorIcon& RadioButton::GetVectorIcon() const {
 
 SkPath RadioButton::GetFocusRingPath() const {
   SkPath path;
-  path.addOval(gfx::RectToSkRect(image()->GetMirroredBounds()));
+  const gfx::Point center = image()->GetMirroredBounds().CenterPoint();
+  path.addCircle(center.x(), center.y(), kFocusRingRadius);
   return path;
 }
 

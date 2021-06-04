@@ -20,14 +20,19 @@
 #include "avakin_life/avakin_life_capture_context1.h"
 #include "aztec_ruins/aztec_ruins_capture_context1.h"
 #include "brawl_stars/brawl_stars_capture_context1.h"
+#include "bubble_shooter/bubble_shooter_capture_context5.h"
 #include "bus_simulator_indonesia/bus_simulator_indonesia_capture_context1.h"
+#include "call_break_offline_card_game/call_break_offline_card_game_capture_context2.h"
 #include "candy_crush_500/candy_crush_500_capture_context1.h"
+#include "candy_crush_soda_saga/candy_crush_soda_saga_capture_context2.h"
 #include "car_parking_multiplayer/car_parking_multiplayer_capture_context1.h"
 #include "clash_of_clans/clash_of_clans_capture_context1.h"
 #include "clash_royale/clash_royale_capture_context1.h"
 #include "cod_mobile/cod_mobile_capture_context1.h"
 #include "coin_master/coin_master_capture_context1.h"
+#include "command_and_conquer_rivals/command_and_conquer_rivals_capture_context2.h"
 #include "disney_tsum_tsum/disney_tsum_tsum_capture_context3.h"
+#include "dr_driving/dr_driving_capture_context3.h"
 #include "dragon_ball_legends/dragon_ball_legends_capture_context1.h"
 #include "dragon_raja/dragon_raja_capture_context1.h"
 #include "efootball_pes_2021/efootball_pes_2021_capture_context1.h"
@@ -38,17 +43,22 @@
 #include "fate_grand_order/fate_grand_order_capture_context1.h"
 #include "fifa_mobile/fifa_mobile_capture_context1.h"
 #include "free_fire/free_fire_capture_context1.h"
+#include "gardenscapes/gardenscapes_capture_context1.h"
 #include "google_maps/google_maps_capture_context1.h"
 #include "happy_color/happy_color_capture_context1.h"
 #include "hay_day/hay_day_capture_context1.h"
 #include "hearthstone/hearthstone_capture_context1.h"
+#include "higgs_domino_island/higgs_domino_island_capture_context2.h"
 #include "hill_climb_racing/hill_climb_racing_capture_context1.h"
+#include "homescapes/homescapes_capture_context1.h"
+#include "idle_heroes/idle_heroes_capture_context2.h"
 #include "junes_journey/junes_journey_capture_context1.h"
 #include "kartrider_rush/kartrider_rush_capture_context1.h"
 #include "klondike_adventures/klondike_adventures_capture_context1.h"
 #include "league_of_legends_wild_rift/league_of_legends_wild_rift_capture_context1.h"
 #include "lego_legacy/lego_legacy_capture_context1.h"
 #include "lineage_m/lineage_m_capture_context1.h"
+#include "ludo_king/ludo_king_capture_context1.h"
 #include "magic_tiles_3/magic_tiles_3_capture_context1.h"
 #include "manhattan_10/manhattan_10_capture_context1.h"
 #include "manhattan_31/manhattan_31_capture_context1.h"
@@ -59,6 +69,7 @@
 #include "nba2k20_800/nba2k20_800_capture_context1.h"
 #include "one_punch_man/one_punch_man_capture_context1.h"
 #include "plants_vs_zombies_2/plants_vs_zombies_2_capture_context1.h"
+#include "professional_baseball_spirits/professional_baseball_spirits_capture_context1.h"
 #include "pubg_mobile_lite/pubg_mobile_lite_capture_context1.h"
 #include "ragnarok_m_eternal_love/ragnarok_m_eternal_love_capture_context1.h"
 #include "raid_shadow_legends/raid_shadow_legends_capture_context1.h"
@@ -70,9 +81,12 @@
 #include "rope_hero_vice_town/rope_hero_vice_town_capture_context1.h"
 #include "saint_seiya_awakening/saint_seiya_awakening_capture_context1.h"
 #include "shadow_fight_2/shadow_fight_2_capture_context1.h"
+#include "slingshot_test1/slingshot_test1_capture_context2.h"
+#include "slingshot_test2/slingshot_test2_capture_context2.h"
 #include "sniper_3d/sniper_3d_capture_context1.h"
 #include "standoff_2/standoff_2_capture_context1.h"
 #include "subway_surfers/subway_surfers_capture_context1.h"
+#include "summoners_war/summoners_war_capture_context2.h"
 #include "talking_tom_hero_dash/talking_tom_hero_dash_capture_context1.h"
 #include "temple_run_2/temple_run_2_capture_context1.h"
 #include "temple_run_300/temple_run_300_capture_context1.h"
@@ -121,17 +135,35 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {brawl_stars::kReplayContextClientMajorVersion, brawl_stars::kReplayContextClientMinorVersion,
       brawl_stars::kReplayFrameStart, brawl_stars::kReplayFrameEnd,
       brawl_stars::kReplayDrawSurfaceWidth, brawl_stars::kReplayDrawSurfaceHeight, "brawl_stars"}},
+    {RestrictedTraceID::bubble_shooter,
+     {bubble_shooter::kReplayContextClientMajorVersion,
+      bubble_shooter::kReplayContextClientMinorVersion, bubble_shooter::kReplayFrameStart,
+      bubble_shooter::kReplayFrameEnd, bubble_shooter::kReplayDrawSurfaceWidth,
+      bubble_shooter::kReplayDrawSurfaceHeight, "bubble_shooter"}},
     {RestrictedTraceID::bus_simulator_indonesia,
      {bus_simulator_indonesia::kReplayContextClientMajorVersion,
       bus_simulator_indonesia::kReplayContextClientMinorVersion,
       bus_simulator_indonesia::kReplayFrameStart, bus_simulator_indonesia::kReplayFrameEnd,
       bus_simulator_indonesia::kReplayDrawSurfaceWidth,
       bus_simulator_indonesia::kReplayDrawSurfaceHeight, "bus_simulator_indonesia"}},
+    {RestrictedTraceID::call_break_offline_card_game,
+     {call_break_offline_card_game::kReplayContextClientMajorVersion,
+      call_break_offline_card_game::kReplayContextClientMinorVersion,
+      call_break_offline_card_game::kReplayFrameStart,
+      call_break_offline_card_game::kReplayFrameEnd,
+      call_break_offline_card_game::kReplayDrawSurfaceWidth,
+      call_break_offline_card_game::kReplayDrawSurfaceHeight, "call_break_offline_card_game"}},
     {RestrictedTraceID::candy_crush_500,
      {candy_crush_500::kReplayContextClientMajorVersion,
       candy_crush_500::kReplayContextClientMinorVersion, candy_crush_500::kReplayFrameStart,
       candy_crush_500::kReplayFrameEnd, candy_crush_500::kReplayDrawSurfaceWidth,
       candy_crush_500::kReplayDrawSurfaceHeight, "candy_crush_500"}},
+    {RestrictedTraceID::candy_crush_soda_saga,
+     {candy_crush_soda_saga::kReplayContextClientMajorVersion,
+      candy_crush_soda_saga::kReplayContextClientMinorVersion,
+      candy_crush_soda_saga::kReplayFrameStart, candy_crush_soda_saga::kReplayFrameEnd,
+      candy_crush_soda_saga::kReplayDrawSurfaceWidth,
+      candy_crush_soda_saga::kReplayDrawSurfaceHeight, "candy_crush_soda_saga"}},
     {RestrictedTraceID::car_parking_multiplayer,
      {car_parking_multiplayer::kReplayContextClientMajorVersion,
       car_parking_multiplayer::kReplayContextClientMinorVersion,
@@ -156,11 +188,21 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {coin_master::kReplayContextClientMajorVersion, coin_master::kReplayContextClientMinorVersion,
       coin_master::kReplayFrameStart, coin_master::kReplayFrameEnd,
       coin_master::kReplayDrawSurfaceWidth, coin_master::kReplayDrawSurfaceHeight, "coin_master"}},
+    {RestrictedTraceID::command_and_conquer_rivals,
+     {command_and_conquer_rivals::kReplayContextClientMajorVersion,
+      command_and_conquer_rivals::kReplayContextClientMinorVersion,
+      command_and_conquer_rivals::kReplayFrameStart, command_and_conquer_rivals::kReplayFrameEnd,
+      command_and_conquer_rivals::kReplayDrawSurfaceWidth,
+      command_and_conquer_rivals::kReplayDrawSurfaceHeight, "command_and_conquer_rivals"}},
     {RestrictedTraceID::disney_tsum_tsum,
      {disney_tsum_tsum::kReplayContextClientMajorVersion,
       disney_tsum_tsum::kReplayContextClientMinorVersion, disney_tsum_tsum::kReplayFrameStart,
       disney_tsum_tsum::kReplayFrameEnd, disney_tsum_tsum::kReplayDrawSurfaceWidth,
       disney_tsum_tsum::kReplayDrawSurfaceHeight, "disney_tsum_tsum"}},
+    {RestrictedTraceID::dr_driving,
+     {dr_driving::kReplayContextClientMajorVersion, dr_driving::kReplayContextClientMinorVersion,
+      dr_driving::kReplayFrameStart, dr_driving::kReplayFrameEnd,
+      dr_driving::kReplayDrawSurfaceWidth, dr_driving::kReplayDrawSurfaceHeight, "dr_driving"}},
     {RestrictedTraceID::dragon_ball_legends,
      {dragon_ball_legends::kReplayContextClientMajorVersion,
       dragon_ball_legends::kReplayContextClientMinorVersion, dragon_ball_legends::kReplayFrameStart,
@@ -210,6 +252,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {free_fire::kReplayContextClientMajorVersion, free_fire::kReplayContextClientMinorVersion,
       free_fire::kReplayFrameStart, free_fire::kReplayFrameEnd, free_fire::kReplayDrawSurfaceWidth,
       free_fire::kReplayDrawSurfaceHeight, "free_fire"}},
+    {RestrictedTraceID::gardenscapes,
+     {gardenscapes::kReplayContextClientMajorVersion,
+      gardenscapes::kReplayContextClientMinorVersion, gardenscapes::kReplayFrameStart,
+      gardenscapes::kReplayFrameEnd, gardenscapes::kReplayDrawSurfaceWidth,
+      gardenscapes::kReplayDrawSurfaceHeight, "gardenscapes"}},
     {RestrictedTraceID::google_maps,
      {google_maps::kReplayContextClientMajorVersion, google_maps::kReplayContextClientMinorVersion,
       google_maps::kReplayFrameStart, google_maps::kReplayFrameEnd,
@@ -226,11 +273,24 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {hearthstone::kReplayContextClientMajorVersion, hearthstone::kReplayContextClientMinorVersion,
       hearthstone::kReplayFrameStart, hearthstone::kReplayFrameEnd,
       hearthstone::kReplayDrawSurfaceWidth, hearthstone::kReplayDrawSurfaceHeight, "hearthstone"}},
+    {RestrictedTraceID::higgs_domino_island,
+     {higgs_domino_island::kReplayContextClientMajorVersion,
+      higgs_domino_island::kReplayContextClientMinorVersion, higgs_domino_island::kReplayFrameStart,
+      higgs_domino_island::kReplayFrameEnd, higgs_domino_island::kReplayDrawSurfaceWidth,
+      higgs_domino_island::kReplayDrawSurfaceHeight, "higgs_domino_island"}},
     {RestrictedTraceID::hill_climb_racing,
      {hill_climb_racing::kReplayContextClientMajorVersion,
       hill_climb_racing::kReplayContextClientMinorVersion, hill_climb_racing::kReplayFrameStart,
       hill_climb_racing::kReplayFrameEnd, hill_climb_racing::kReplayDrawSurfaceWidth,
       hill_climb_racing::kReplayDrawSurfaceHeight, "hill_climb_racing"}},
+    {RestrictedTraceID::homescapes,
+     {homescapes::kReplayContextClientMajorVersion, homescapes::kReplayContextClientMinorVersion,
+      homescapes::kReplayFrameStart, homescapes::kReplayFrameEnd,
+      homescapes::kReplayDrawSurfaceWidth, homescapes::kReplayDrawSurfaceHeight, "homescapes"}},
+    {RestrictedTraceID::idle_heroes,
+     {idle_heroes::kReplayContextClientMajorVersion, idle_heroes::kReplayContextClientMinorVersion,
+      idle_heroes::kReplayFrameStart, idle_heroes::kReplayFrameEnd,
+      idle_heroes::kReplayDrawSurfaceWidth, idle_heroes::kReplayDrawSurfaceHeight, "idle_heroes"}},
     {RestrictedTraceID::junes_journey,
      {junes_journey::kReplayContextClientMajorVersion,
       junes_journey::kReplayContextClientMinorVersion, junes_journey::kReplayFrameStart,
@@ -260,6 +320,10 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {lineage_m::kReplayContextClientMajorVersion, lineage_m::kReplayContextClientMinorVersion,
       lineage_m::kReplayFrameStart, lineage_m::kReplayFrameEnd, lineage_m::kReplayDrawSurfaceWidth,
       lineage_m::kReplayDrawSurfaceHeight, "lineage_m"}},
+    {RestrictedTraceID::ludo_king,
+     {ludo_king::kReplayContextClientMajorVersion, ludo_king::kReplayContextClientMinorVersion,
+      ludo_king::kReplayFrameStart, ludo_king::kReplayFrameEnd, ludo_king::kReplayDrawSurfaceWidth,
+      ludo_king::kReplayDrawSurfaceHeight, "ludo_king"}},
     {RestrictedTraceID::magic_tiles_3,
      {magic_tiles_3::kReplayContextClientMajorVersion,
       magic_tiles_3::kReplayContextClientMinorVersion, magic_tiles_3::kReplayFrameStart,
@@ -309,6 +373,13 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       plants_vs_zombies_2::kReplayContextClientMinorVersion, plants_vs_zombies_2::kReplayFrameStart,
       plants_vs_zombies_2::kReplayFrameEnd, plants_vs_zombies_2::kReplayDrawSurfaceWidth,
       plants_vs_zombies_2::kReplayDrawSurfaceHeight, "plants_vs_zombies_2"}},
+    {RestrictedTraceID::professional_baseball_spirits,
+     {professional_baseball_spirits::kReplayContextClientMajorVersion,
+      professional_baseball_spirits::kReplayContextClientMinorVersion,
+      professional_baseball_spirits::kReplayFrameStart,
+      professional_baseball_spirits::kReplayFrameEnd,
+      professional_baseball_spirits::kReplayDrawSurfaceWidth,
+      professional_baseball_spirits::kReplayDrawSurfaceHeight, "professional_baseball_spirits"}},
     {RestrictedTraceID::pubg_mobile_lite,
      {pubg_mobile_lite::kReplayContextClientMajorVersion,
       pubg_mobile_lite::kReplayContextClientMinorVersion, pubg_mobile_lite::kReplayFrameStart,
@@ -368,6 +439,16 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       shadow_fight_2::kReplayContextClientMinorVersion, shadow_fight_2::kReplayFrameStart,
       shadow_fight_2::kReplayFrameEnd, shadow_fight_2::kReplayDrawSurfaceWidth,
       shadow_fight_2::kReplayDrawSurfaceHeight, "shadow_fight_2"}},
+    {RestrictedTraceID::slingshot_test1,
+     {slingshot_test1::kReplayContextClientMajorVersion,
+      slingshot_test1::kReplayContextClientMinorVersion, slingshot_test1::kReplayFrameStart,
+      slingshot_test1::kReplayFrameEnd, slingshot_test1::kReplayDrawSurfaceWidth,
+      slingshot_test1::kReplayDrawSurfaceHeight, "slingshot_test1"}},
+    {RestrictedTraceID::slingshot_test2,
+     {slingshot_test2::kReplayContextClientMajorVersion,
+      slingshot_test2::kReplayContextClientMinorVersion, slingshot_test2::kReplayFrameStart,
+      slingshot_test2::kReplayFrameEnd, slingshot_test2::kReplayDrawSurfaceWidth,
+      slingshot_test2::kReplayDrawSurfaceHeight, "slingshot_test2"}},
     {RestrictedTraceID::sniper_3d,
      {sniper_3d::kReplayContextClientMajorVersion, sniper_3d::kReplayContextClientMinorVersion,
       sniper_3d::kReplayFrameStart, sniper_3d::kReplayFrameEnd, sniper_3d::kReplayDrawSurfaceWidth,
@@ -381,6 +462,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       subway_surfers::kReplayContextClientMinorVersion, subway_surfers::kReplayFrameStart,
       subway_surfers::kReplayFrameEnd, subway_surfers::kReplayDrawSurfaceWidth,
       subway_surfers::kReplayDrawSurfaceHeight, "subway_surfers"}},
+    {RestrictedTraceID::summoners_war,
+     {summoners_war::kReplayContextClientMajorVersion,
+      summoners_war::kReplayContextClientMinorVersion, summoners_war::kReplayFrameStart,
+      summoners_war::kReplayFrameEnd, summoners_war::kReplayDrawSurfaceWidth,
+      summoners_war::kReplayDrawSurfaceHeight, "summoners_war"}},
     {RestrictedTraceID::talking_tom_hero_dash,
      {talking_tom_hero_dash::kReplayContextClientMajorVersion,
       talking_tom_hero_dash::kReplayContextClientMinorVersion,

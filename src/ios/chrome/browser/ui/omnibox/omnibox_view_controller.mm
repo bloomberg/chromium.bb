@@ -626,7 +626,7 @@ const CGFloat kClearButtonSize = 28.0f;
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
-      base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
+      base::BindOnce(^(absl::optional<gfx::Image> optionalImage) {
         if (!optionalImage) {
           return;
         }
@@ -641,10 +641,11 @@ const CGFloat kClearButtonSize = 28.0f;
   // A search using clipboard link is activity that should indicate a user
   // that would be interested in setting Chrome as the default browser.
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
+  [self.delegate omniboxViewControllerUserDidVisitCopiedLink:self];
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
-      base::BindOnce(^(base::Optional<GURL> optionalURL) {
+      base::BindOnce(^(absl::optional<GURL> optionalURL) {
         if (!optionalURL) {
           return;
         }
@@ -663,7 +664,7 @@ const CGFloat kClearButtonSize = 28.0f;
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
-      base::BindOnce(^(base::Optional<std::u16string> optionalText) {
+      base::BindOnce(^(absl::optional<std::u16string> optionalText) {
         if (!optionalText) {
           return;
         }

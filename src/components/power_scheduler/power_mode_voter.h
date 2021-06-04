@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_POWER_SCHEDULER_POWER_MODE_VOTER_H_
 #define COMPONENTS_POWER_SCHEDULER_POWER_MODE_VOTER_H_
 
+#include <memory>
+
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "components/power_scheduler/power_mode.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace power_scheduler {
 
@@ -35,11 +38,20 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeVoter {
   // timeout is applied before resetting animation votes to avoid frequent vote
   // reversals.
   static constexpr base::TimeDelta kAnimationTimeout =
-      base::TimeDelta::FromMilliseconds(50);
+      base::TimeDelta::FromMilliseconds(100);
+  static constexpr base::TimeDelta kVideoTimeout = kAnimationTimeout;
 
+  // Software draws can take longer than the rest of animations. We use a
+  // different timeout constant for them to allow individual tweaking.
+  static constexpr base::TimeDelta kSoftwareDrawTimeout =
+      base::TimeDelta::FromMilliseconds(100);
+
+  // Give frames an extra second to draw & settle after load completion.
+  static constexpr base::TimeDelta kLoadingTimeout =
+      base::TimeDelta::FromSeconds(1);
   // Avoid getting stuck in loading stage forever. More than 99.9% of
   // navigations load (to largest contentful paint) in less than a minute.
-  static constexpr base::TimeDelta kLoadingTimeout =
+  static constexpr base::TimeDelta kStuckLoadingTimeout =
       base::TimeDelta::FromSeconds(60);
 
   ~PowerModeVoter();
@@ -60,6 +72,63 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeVoter {
   explicit PowerModeVoter(Delegate* delegate);
 
   Delegate* delegate_;
+};
+
+// Tracks the BeginFrame signal as well as produced and skipped frames to vote
+// either for the kAnimation, kNopAnimation, or kIdle modes.
+class COMPONENT_EXPORT(POWER_SCHEDULER) FrameProductionPowerModeVoter {
+ public:
+  explicit FrameProductionPowerModeVoter(const char* name);
+  ~FrameProductionPowerModeVoter();
+
+  FrameProductionPowerModeVoter(const FrameProductionPowerModeVoter&) = delete;
+  FrameProductionPowerModeVoter& operator=(
+      const FrameProductionPowerModeVoter&) = delete;
+
+  // Should be called when starting or stoping observing BeginFrames.
+  void OnNeedsBeginFramesChanged(bool needs_begin_frames);
+  // Should be called when a frame is produced.
+  void OnFrameProduced();
+  // Should be called when a frame is skipped. |frame_completed| should be true
+  // if the frame production resulted in no visible updates and was completed on
+  // time. In other cases (e.g. if the deadline was missed and frame production
+  // continues for the next vsync), it should be false. |waiting_on_main| should
+  // be true if the frame was not completed because the main thread's frame
+  // production was not finished on time for the deadline.
+  void OnFrameSkipped(bool frame_completed, bool waiting_on_main);
+  // Should be called when BeginFrame was not followed by a draw within a set
+  // timeframe.
+  void OnFrameTimeout();
+
+ private:
+  // 10 Frames: 166ms on 60fps, 111ms on 90fps, 83ms on 120fps. This should be a
+  // reasonable compromise to avoid frequent flip-flopping between different
+  // animation modes.
+  static constexpr int kMinFramesSkippedForIdleAnimation = 10;
+
+  std::unique_ptr<PowerModeVoter> voter_;
+  int consecutive_frames_skipped_ = 0;
+  base::TimeTicks last_frame_produced_timestamp_;
+  bool needs_begin_frames_ = false;
+};
+
+// PowerModeVoter that requires two consecutive votes for the same PowerMode
+// within a given timeout to move out of idle.
+class COMPONENT_EXPORT(POWER_SCHEDULER) DebouncedPowerModeVoter {
+ public:
+  DebouncedPowerModeVoter(const char* name, base::TimeDelta timeout);
+  ~DebouncedPowerModeVoter();
+
+  void VoteFor(PowerMode vote);
+
+  void ResetVoteAfterTimeout() { voter_->ResetVoteAfterTimeout(timeout_); }
+
+ private:
+  std::unique_ptr<PowerModeVoter> voter_;
+  const base::TimeDelta timeout_;
+
+  absl::optional<PowerMode> last_vote_;
+  base::TimeTicks last_vote_timestamp_;
 };
 
 }  // namespace power_scheduler

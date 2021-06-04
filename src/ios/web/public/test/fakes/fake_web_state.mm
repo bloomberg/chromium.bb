@@ -234,15 +234,9 @@ GURL FakeWebState::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
 base::CallbackListSubscription FakeWebState::AddScriptCommandCallback(
     const ScriptCommandCallback& callback,
     const std::string& command_prefix) {
+  last_added_callback_ = callback;
+  last_command_prefix_ = command_prefix;
   return callback_list_.Add(callback);
-}
-
-bool FakeWebState::IsShowingWebInterstitial() const {
-  return false;
-}
-
-WebInterstitial* FakeWebState::GetWebInterstitial() const {
-  return nullptr;
 }
 
 void FakeWebState::SetBrowserState(BrowserState* browser_state) {
@@ -401,6 +395,15 @@ std::u16string FakeWebState::GetLastExecutedJavascript() const {
   return last_executed_javascript_;
 }
 
+absl::optional<WebState::ScriptCommandCallback>
+FakeWebState::GetLastAddedCallback() const {
+  return last_added_callback_;
+}
+
+std::string FakeWebState::GetLastCommandPrefix() const {
+  return last_command_prefix_;
+}
+
 NSData* FakeWebState::GetLastLoadedData() const {
   return last_loaded_data_;
 }
@@ -465,6 +468,14 @@ void FakeWebState::TakeSnapshot(const gfx::RectF& rect,
 void FakeWebState::CreateFullPagePdf(
     base::OnceCallback<void(NSData*)> callback) {
   std::move(callback).Run([[NSData alloc] init]);
+}
+
+bool FakeWebState::SetSessionStateData(NSData* data) {
+  return false;
+}
+
+NSData* FakeWebState::SessionStateData() {
+  return nil;
 }
 
 }  // namespace web

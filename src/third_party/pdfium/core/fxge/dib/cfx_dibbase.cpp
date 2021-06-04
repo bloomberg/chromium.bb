@@ -19,6 +19,7 @@
 #include "core/fxge/dib/cfx_imagestretcher.h"
 #include "core/fxge/dib/cfx_imagetransformer.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
@@ -64,11 +65,11 @@ class CFX_Palette {
   std::vector<uint32_t> m_Palette;
   // (Amount, Color) pairs
   std::vector<std::pair<uint32_t, uint32_t>> m_Luts;
-  int m_lut;
+  int m_lut = 0;
 };
 
 CFX_Palette::CFX_Palette(const RetainPtr<CFX_DIBBase>& pBitmap)
-    : m_Palette(256), m_Luts(4096), m_lut(0) {
+    : m_Palette(256), m_Luts(4096) {
   int bpp = pBitmap->GetBPP() / 8;
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
@@ -248,8 +249,11 @@ void ConvertBuffer_Plt2PltRgb8(uint8_t* dest_buf,
                                pdfium::span<uint32_t> dst_plt) {
   ConvertBuffer_IndexCopy(dest_buf, dest_pitch, width, height, pSrcBitmap,
                           src_left, src_top);
-  const uint32_t* src_plt = pSrcBitmap->GetPaletteData();
-  size_t plt_size = pSrcBitmap->GetPaletteSize();
+  const size_t plt_size = pSrcBitmap->GetRequiredPaletteSize();
+  pdfium::span<const uint32_t> src_span = pSrcBitmap->GetPaletteSpan();
+  CHECK(plt_size <= src_span.size());
+
+  const uint32_t* src_plt = src_span.data();
   for (size_t i = 0; i < plt_size; ++i)
     dst_plt[i] = src_plt[i];
 }
@@ -669,8 +673,8 @@ bool CFX_DIBBase::BuildAlphaMask() {
   return true;
 }
 
-size_t CFX_DIBBase::GetPaletteSize() const {
-  if (IsMask())
+size_t CFX_DIBBase::GetRequiredPaletteSize() const {
+  if (IsMaskFormat())
     return 0;
 
   switch (GetBppFromFormat(m_Format)) {
@@ -684,7 +688,7 @@ size_t CFX_DIBBase::GetPaletteSize() const {
 }
 
 uint32_t CFX_DIBBase::GetPaletteArgb(int index) const {
-  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMask());
+  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMaskFormat());
   if (HasPalette())
     return GetPaletteSpan()[index];
 
@@ -695,13 +699,13 @@ uint32_t CFX_DIBBase::GetPaletteArgb(int index) const {
 }
 
 void CFX_DIBBase::SetPaletteArgb(int index, uint32_t color) {
-  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMask());
+  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMaskFormat());
   BuildPalette();
   m_palette[index] = color;
 }
 
 int CFX_DIBBase::FindPalette(uint32_t color) const {
-  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMask());
+  DCHECK((GetBPP() == 1 || GetBPP() == 8) && !IsMaskFormat());
   if (HasPalette()) {
     int palsize = (1 << GetBPP());
     pdfium::span<const uint32_t> palette = GetPaletteSpan();
@@ -845,8 +849,28 @@ void CFX_DIBBase::GetPalette(uint32_t* pal, int alpha) const {
   }
 }
 
+uint32_t CFX_DIBBase::GetAlphaMaskPitch() const {
+  return m_pAlphaMask ? m_pAlphaMask->GetPitch() : 0;
+}
+
+const uint8_t* CFX_DIBBase::GetAlphaMaskScanline(int line) const {
+  return m_pAlphaMask ? m_pAlphaMask->GetScanline(line) : nullptr;
+}
+
+uint8_t* CFX_DIBBase::GetWritableAlphaMaskScanline(int line) {
+  return m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(line) : nullptr;
+}
+
+uint8_t* CFX_DIBBase::GetAlphaMaskBuffer() {
+  return m_pAlphaMask ? m_pAlphaMask->GetBuffer() : nullptr;
+}
+
+RetainPtr<CFX_DIBitmap> CFX_DIBBase::GetAlphaMask() {
+  return m_pAlphaMask;
+}
+
 RetainPtr<CFX_DIBitmap> CFX_DIBBase::CloneAlphaMask() const {
-  DCHECK(GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(GetFormat(), FXDIB_Format::kArgb);
   FX_RECT rect(0, 0, m_Width, m_Height);
   auto pMask = pdfium::MakeRetain<CFX_DIBitmap>();
   if (!pMask->Create(rect.Width(), rect.Height(), FXDIB_Format::k8bppMask))
@@ -865,7 +889,7 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::CloneAlphaMask() const {
 
 bool CFX_DIBBase::SetAlphaMask(const RetainPtr<CFX_DIBBase>& pAlphaMask,
                                const FX_RECT* pClip) {
-  if (!HasAlpha() || GetFormat() == FXDIB_Format::kArgb)
+  if (!IsAlphaFormat() || GetFormat() == FXDIB_Format::kArgb)
     return false;
 
   if (!pAlphaMask) {
@@ -932,7 +956,7 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::FlipImage(bool bXFlip, bool bYFlip) const {
         src_scan += 3;
       }
     } else {
-      DCHECK(Bpp == 4);
+      DCHECK_EQ(Bpp, 4);
       for (int col = 0; col < m_Width; ++col) {
         const auto* src_scan32 = reinterpret_cast<const uint32_t*>(src_scan);
         uint32_t* dest_scan32 = reinterpret_cast<uint32_t*>(dest_scan);
@@ -973,7 +997,7 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::CloneConvert(FXDIB_Format dest_format) {
     return nullptr;
 
   RetainPtr<CFX_DIBitmap> pSrcAlpha;
-  if (HasAlpha()) {
+  if (IsAlphaFormat()) {
     pSrcAlpha =
         (GetFormat() == FXDIB_Format::kArgb) ? CloneAlphaMask() : m_pAlphaMask;
     if (!pSrcAlpha)

@@ -203,10 +203,10 @@ constexpr char InvalidPolicyNoUrls[] = R"(
       }
     ])";
 
-base::Optional<base::Value> ReadJson(base::StringPiece json) {
-  base::Optional<base::Value> value = base::JSONReader::Read(json);
-  EXPECT_TRUE(value);
-  return value;
+absl::optional<base::Value> ReadJson(base::StringPiece json) {
+  auto result = base::JSONReader::ReadAndReturnValueWithError(json);
+  EXPECT_TRUE(result.value) << result.error_message;
+  return std::move(result.value);
 }
 
 }  // namespace
@@ -260,9 +260,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[1]\": Missing or invalid required "
-      "property: devices");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[1]\": Missing or invalid required "
+      u"property: devices";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -280,9 +280,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0]\": Missing or invalid required "
-      "property: devices");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0]\": Missing or invalid required "
+      u"property: devices";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -300,9 +300,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0]\": Missing or invalid required "
-      "property: urls");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0]\": Missing or invalid required "
+      u"property: urls";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -320,9 +320,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_TRUE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].devices.items[0]\": Unknown "
-      "property: serialNumber");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].devices.items[0]\": Unknown "
+      u"property: serialNumber";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -380,9 +380,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].devices.items[0]\": A vendor_id "
-      "must also be specified");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].devices.items[0]\": A vendor_id "
+      u"must also be specified";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -400,9 +400,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].urls.items[0]\": The urls item "
-      "must contain valid URLs");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].urls.items[0]\": The urls item "
+      u"must contain valid URLs";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -420,9 +420,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].urls.items[0]\": The urls item "
-      "must contain valid URLs");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].urls.items[0]\": The urls item "
+      u"must contain valid URLs";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -440,9 +440,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].urls.items[0]\": Each urls "
-      "string entry must contain between 1 to 2 URLs");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].urls.items[0]\": Each urls "
+      u"string entry must contain between 1 to 2 URLs";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -460,9 +460,9 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(1ul, errors.size());
 
-  const std::u16string kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].urls.items[0]\": Each urls "
-      "string entry must contain between 1 to 2 URLs");
+  static constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0].urls.items[0]\": Each urls "
+      u"string entry must contain between 1 to 2 URLs";
   EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
 }
 
@@ -612,7 +612,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
       store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
   EXPECT_TRUE(pref_value);
 
-  base::Optional<base::Value> expected_pref_value =
+  absl::optional<base::Value> expected_pref_value =
       ReadJson(kInvalidPolicyUnknownPropertyAfterCleanup);
   EXPECT_EQ(*expected_pref_value, *pref_value);
 }
@@ -733,6 +733,70 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettingsNoUrls) {
   EXPECT_FALSE(
       store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
   EXPECT_FALSE(pref_value);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       CheckAndApplyPolicySettingsWithUnknownTopLevelKey) {
+  // A policy with an unknown top-level key should generate an error but have
+  // the unknown key removed during normaliziation and be applied successfully.
+  constexpr char kPolicy[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }
+        ],
+        "unknown_top_level_property": true,
+        "urls": [
+          "https://www.youtube.com"
+        ]
+      }
+    ]
+  )";
+  constexpr char kNormalizedPolicy[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }
+        ],
+        "urls": [
+          "https://www.youtube.com"
+        ]
+      }
+    ]
+  )";
+
+  PolicyMap policy;
+  policy.Set(key::kWebUsbAllowDevicesForUrls,
+             PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD, ReadJson(kPolicy), nullptr);
+
+  PolicyErrorMap errors;
+  EXPECT_TRUE(errors.empty());
+  EXPECT_TRUE(handler()->CheckPolicySettings(policy, &errors));
+
+  constexpr char16_t kExpected[] =
+      u"Schema validation error at \"items[0]\": Unknown property: "
+      u"unknown_top_level_property";
+  EXPECT_EQ(kExpected, errors.GetErrors(key::kWebUsbAllowDevicesForUrls));
+
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
+  UpdateProviderPolicy(policy);
+
+  const base::Value* pref_value = nullptr;
+  EXPECT_TRUE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
+  ASSERT_TRUE(pref_value);
+
+  absl::optional<base::Value> expected_pref_value = ReadJson(kNormalizedPolicy);
+  EXPECT_EQ(*expected_pref_value, *pref_value);
 }
 
 }  // namespace policy

@@ -562,7 +562,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   ClearPrimaryAccount(identity_manager());
 
-  SetPrimaryAccount(identity_manager(), kTestEmail);
+  SetPrimaryAccount(identity_manager(), kTestEmail, ConsentLevel::kSync);
   auto event = identity_manager_observer()->GetPrimaryAccountChangedEvent();
   EXPECT_EQ(PrimaryAccountChangeEvent::Type::kSet,
             event.GetEventTypeFor(ConsentLevel::kSync));
@@ -598,7 +598,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   ClearPrimaryAccount(identity_manager());
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
-  SetPrimaryAccount(identity_manager(), kTestEmail);
+  SetPrimaryAccount(identity_manager(), kTestEmail, ConsentLevel::kSync);
 
   // Sign the user out and check that the IdentityManager responds
   // appropriately.
@@ -642,7 +642,7 @@ TEST_F(IdentityManagerTest,
   ClearPrimaryAccount(identity_manager());
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
-  SetPrimaryAccount(identity_manager(), kTestEmail);
+  SetPrimaryAccount(identity_manager(), kTestEmail, ConsentLevel::kSync);
 
   identity_manager()->account_fetcher_service_->EnableAccountRemovalForTest();
   // Revoke the primary's account credentials from the token service and
@@ -1259,8 +1259,7 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      primary_account_id());
-
+      primary_account_id(), ConsentLevel::kSync);
   SetRefreshTokenForAccount(identity_manager(), primary_account_id(),
                             "refresh_token");
 
@@ -1303,7 +1302,7 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      primary_account_id());
+      primary_account_id(), ConsentLevel::kSync);
   SetRefreshTokenForAccount(identity_manager(), primary_account_id(),
                             "refresh_token");
 
@@ -1396,7 +1395,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      primary_account_id());
+      primary_account_id(), ConsentLevel::kSync);
   SetRefreshTokenForAccount(identity_manager(), primary_account_id(),
                             "refresh_token");
 
@@ -1454,7 +1453,7 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      primary_account_id());
+      primary_account_id(), ConsentLevel::kSync);
   SetRefreshTokenForAccount(identity_manager(), primary_account_id(),
                             "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
@@ -2146,7 +2145,7 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
                                                                   kTestEmail);
   identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      primary_account_id());
+      primary_account_id(), ConsentLevel::kSync);
   SetRefreshTokenForAccount(identity_manager(), primary_account_id(),
                             "refresh_token");
 
@@ -2155,6 +2154,26 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()->BatchChangeRecords().at(0).size());
   EXPECT_EQ(primary_account_id(),
             identity_manager_observer()->BatchChangeRecords().at(0).at(0));
+}
+
+// Checks that FindExtendedAccountInfoByAccountId() returns information about
+// the account if the account is found or nullopt if there are no accounts with
+// requested |account_id|.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfoByAccountId) {
+  auto account_id =
+      identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
+
+  absl::optional<AccountInfo> maybe_account_info;
+  maybe_account_info = identity_manager()->FindExtendedAccountInfoByAccountId(
+      CoreAccountId("dummy_value"));
+  EXPECT_FALSE(maybe_account_info.has_value());
+
+  maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
+  EXPECT_TRUE(maybe_account_info.has_value());
+  EXPECT_EQ(account_id, maybe_account_info.value().account_id);
+  EXPECT_EQ(kTestEmail, maybe_account_info.value().email);
+  EXPECT_EQ(kTestGaiaId, maybe_account_info.value().gaia);
 }
 
 // Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId()
@@ -2167,7 +2186,7 @@ TEST_F(IdentityManagerTest,
   const AccountInfo foo_account_info =
       MakeAccountAvailable(identity_manager(), "foo@bar.com");
 
-  base::Optional<AccountInfo> maybe_account_info;
+  absl::optional<AccountInfo> maybe_account_info;
   maybe_account_info =
       identity_manager()
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
@@ -2194,7 +2213,7 @@ TEST_F(IdentityManagerTest,
   const AccountInfo foo_account_info =
       MakeAccountAvailable(identity_manager(), "foo@bar.com");
 
-  base::Optional<AccountInfo> maybe_account_info;
+  absl::optional<AccountInfo> maybe_account_info;
   maybe_account_info =
       identity_manager()
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
@@ -2221,7 +2240,7 @@ TEST_F(IdentityManagerTest,
   const AccountInfo foo_account_info =
       MakeAccountAvailable(identity_manager(), "foo@bar.com");
 
-  base::Optional<AccountInfo> maybe_account_info;
+  absl::optional<AccountInfo> maybe_account_info;
   maybe_account_info =
       identity_manager()
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
@@ -2375,7 +2394,7 @@ TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccountWithRefreshToken) {
 
   // FindExtendedAccountInfoForAccountWithRefreshToken() returns extended
   // account information if the account is known and has valid refresh token.
-  const base::Optional<AccountInfo> extended_account_info =
+  const absl::optional<AccountInfo> extended_account_info =
       identity_manager()->FindExtendedAccountInfoForAccountWithRefreshToken(
           account_info);
 
@@ -2388,9 +2407,9 @@ TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccountWithRefreshToken) {
 #if defined(OS_ANDROID)
 TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
   // The flow of this test results in an interaction with
-  // ChildAccountInfoFetcherAndroid, which requires initialization in order to
-  // avoid a crash.
-  ChildAccountInfoFetcherAndroid::InitializeForTests();
+  // ChildAccountInfoFetcherAndroid, which requires initialization of
+  // AccountManagerFacade in java code to avoid a crash.
+  SetUpMockAccountManagerFacade();
 
   identity_manager()->GetAccountFetcherService()->OnNetworkInitialized();
   AccountInfo account_info =

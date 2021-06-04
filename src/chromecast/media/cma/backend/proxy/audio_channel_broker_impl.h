@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromecast/media/cma/backend/proxy/cast_runtime_audio_channel_broker.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/grpc/src/include/grpcpp/impl/codegen/status.h"
 #include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_channel_service.grpc.pb.h"
 #include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_channel_service.pb.h"
@@ -178,11 +178,27 @@ class AudioChannelBrokerImpl
             std::unique_ptr<Response>,
             CastRuntimeAudioChannelBroker::StatusCode)) {
       auto bound_async_call = base::BindOnce(
-          async_call, base::Unretained(instance->stub_->async()));
+          async_call,
+          base::Unretained(instance->stub_factory_.GetStub()->async()));
       auto bound_callback =
           base::BindOnce(callback, instance->weak_factory_.GetWeakPtr());
       return Request(std::move(bound_async_call), std::move(bound_callback));
     }
+  };
+
+  // Helper to initialize the service stub at runtime instead of instance
+  // creation time.
+  class LazyStubFactory {
+   public:
+    using Stub = cast::media::CastAudioChannelService::StubInterface;
+
+    LazyStubFactory();
+    ~LazyStubFactory();
+
+    Stub* GetStub();
+
+   private:
+    std::unique_ptr<Stub> stub_;
   };
 
   // Some aliases to make the code more readable.
@@ -201,11 +217,6 @@ class AudioChannelBrokerImpl
 
   // Helper to create the call types used more than once.
   StateChangeCall::Request CreateStateChangeCallRequest();
-
-  AudioChannelBrokerImpl(
-      std::unique_ptr<cast::media::CastAudioChannelService::StubInterface> stub,
-      TaskRunner* task_runner,
-      Handler* handler);
 
   // Calls PushBuffer if data to push is available. Else, schedule this task to
   // run again in the future.
@@ -229,7 +240,7 @@ class AudioChannelBrokerImpl
   void OnPushBuffer(std::unique_ptr<PushBufferCall::Response> call_details,
                     CastRuntimeAudioChannelBroker::StatusCode status_code);
 
-  std::unique_ptr<GrpcStub> const stub_;
+  LazyStubFactory stub_factory_;
 
   Handler* const handler_;
   TaskRunner* const task_runner_;

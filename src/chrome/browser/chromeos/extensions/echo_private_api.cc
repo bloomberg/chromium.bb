@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/extensions/api/echo_private.h"
 #include "chrome/common/pref_names.h"
@@ -100,7 +101,8 @@ ExtensionFunction::ResponseAction EchoPrivateSetOfferInfoFunction::Run() {
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate offer_update(local_state, prefs::kEchoCheckedOffers);
-  offer_update->SetWithoutPathExpansion("echo." + service_id, std::move(dict));
+  offer_update->SetKey("echo." + service_id,
+                       base::Value::FromUniquePtrValue(std::move(dict)));
   return RespondNow(NoArguments());
 }
 

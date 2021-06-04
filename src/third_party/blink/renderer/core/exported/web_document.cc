@@ -110,11 +110,11 @@ WebString WebDocument::GetReferrer() const {
   return ConstUnwrap<Document>()->referrer();
 }
 
-base::Optional<SkColor> WebDocument::ThemeColor() const {
-  base::Optional<Color> color = ConstUnwrap<Document>()->ThemeColor();
+absl::optional<SkColor> WebDocument::ThemeColor() const {
+  absl::optional<Color> color = ConstUnwrap<Document>()->ThemeColor();
   if (color)
     return color->Rgb();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 WebURL WebDocument::OpenSearchDescriptionURL() const {
@@ -207,11 +207,18 @@ WebElement WebDocument::FocusedElement() const {
   return WebElement(ConstUnwrap<Document>()->FocusedElement());
 }
 
-WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
-                                               const WebStyleSheetKey* key,
-                                               CSSOrigin origin) {
+WebStyleSheetKey WebDocument::InsertStyleSheet(
+    const WebString& source_code,
+    const WebStyleSheetKey* key,
+    CSSOrigin origin,
+    BackForwardCacheAware back_forward_cache_aware) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
+  if (back_forward_cache_aware == BackForwardCacheAware::kPossiblyDisallow) {
+    document->GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kInjectedStyleSheet,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
   auto* parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(*document));
   parsed_sheet->ParseString(source_code);

@@ -35,6 +35,7 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/thread_annotations.h"
@@ -115,12 +116,11 @@ bool Partitions::InitializeOnce() {
 #if PA_ALLOW_PCSCAN
   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan) ||
       base::FeatureList::IsEnabled(kPCScanBlinkPartitions)) {
-    auto& pcscan = base::internal::PCScan::Instance();
-    pcscan.RegisterNonScannableRoot(array_buffer_root_);
+    base::internal::PCScan::RegisterNonScannableRoot(array_buffer_root_);
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-    pcscan.RegisterScannableRoot(fast_malloc_root_);
+    base::internal::PCScan::RegisterScannableRoot(fast_malloc_root_);
 #endif
-    pcscan.RegisterScannableRoot(buffer_root_);
+    base::internal::PCScan::RegisterScannableRoot(buffer_root_);
   }
 #endif
 

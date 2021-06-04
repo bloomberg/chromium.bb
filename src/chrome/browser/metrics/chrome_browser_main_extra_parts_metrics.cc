@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 
 #include <cmath>
+#include <memory>
 #include <string>
 
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/metrics/authenticator_utility.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/power/battery_level_provider.h"
@@ -234,8 +234,6 @@ void RecordStartupMetrics() {
       shell_integration::GetDefaultBrowser();
   base::UmaHistogramEnumeration("DefaultBrowser.State", default_state,
                                 shell_integration::NUM_DEFAULT_STATES);
-
-  authenticator_utility::ReportUVPlatformAuthenticatorAvailability();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   RecordChromeOSChannel();
@@ -620,16 +618,20 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   // In the 32-bit case, PCScan is always disabled, but we'll deliberately
   // misrepresent it as enabled here (and later ignored when analyzing results),
   // in order to keep each population at 33%.
+  //
+  // Alsto note that USE_BACKUP_REF_PTR_FAKE is only used to fake that the
+  // feature is enabled for the purpose of this Finch setting, while in fact
+  // there are no behavior changes.
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "BackupRefPtrAndPCScan",
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(USE_BACKUP_REF_PTR) || BUILDFLAG(USE_BACKUP_REF_PTR_FAKE)
       "BackupRefPtrEnabled"
 #else
       base::FeatureList::IsEnabled(
           base::features::kPartitionAllocPCScanBrowserOnly)
           ? "PCScanEnabled"
           : "Disabled"
-#endif
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) || BUILDFLAG(USE_BACKUP_REF_PTR_FAKE)
   );
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
@@ -693,11 +695,6 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "BackupRefPtrNoEnterprise", group_name);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "PartitionAllocGigaCageSynthetic",
-      base::features::IsPartitionAllocGigaCageEnabled() ? "Enabled"
-                                                        : "Disabled");
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
@@ -728,8 +725,8 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   if (ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
     RecordTouchEventState();
   } else {
-    input_device_event_observer_.reset(
-        new AsynchronousTouchEventStateRecorder());
+    input_device_event_observer_ =
+        std::make_unique<AsynchronousTouchEventStateRecorder>();
   }
 #else
   RecordTouchEventState();

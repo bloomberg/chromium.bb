@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/history/core/browser/url_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -38,7 +37,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 44;
+const int kCurrentVersionNumber = 45;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -102,7 +101,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!db_.Open(history_name))
     return LogInitFailure(InitStep::OPEN);
 
-  // Wrap the rest of init in a tranaction. This will prevent the database from
+  // Wrap the rest of init in a transaction. This will prevent the database from
   // getting corrupted if we crash in the middle of initialization or migration.
   sql::Transaction committer(&db_);
   if (!committer.Begin())
@@ -116,16 +115,13 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   // Prime the cache.
   db_.Preload();
 
-  // Create the tables and indices.
-  // NOTE: If you add something here, also add it to
-  //       RecreateAllButStarAndURLTables.
+  // Create the tables and indices. If you add something here, also add it to
+  // `RecreateAllTablesButURL()`.
   if (!meta_table_.Init(&db_, GetCurrentVersion(), kCompatibleVersionNumber))
     return LogInitFailure(InitStep::META_TABLE_INIT);
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
-      !InitSegmentTables() || !InitSyncTable())
-    return LogInitFailure(InitStep::CREATE_TABLES);
-  if (!InitVisitAnnotationsTables())
+      !InitSegmentTables() || !InitSyncTable() || !InitVisitAnnotationsTables())
     return LogInitFailure(InitStep::CREATE_TABLES);
   CreateMainURLIndex();
 
@@ -641,6 +637,12 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 43) {
     if (!CanMigrateFlocAllowed() || !MigrateFlocAllowedToAnnotationsTable())
       return LogMigrationFailure(43);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 44) {
+    MigrateReplaceClusterVisitsTable();
     cur_version++;
     meta_table_.SetVersionNumber(cur_version);
   }

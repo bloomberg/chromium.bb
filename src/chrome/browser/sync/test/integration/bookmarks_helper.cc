@@ -23,7 +23,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -249,14 +248,14 @@ struct FaviconData {
 
 // Gets the favicon and icon URL associated with |node| in |model|. Returns
 // nullopt if the favicon is still loading.
-base::Optional<FaviconData> GetFaviconData(BookmarkModel* model,
+absl::optional<FaviconData> GetFaviconData(BookmarkModel* model,
                                            const BookmarkNode* node) {
   // We may need to wait for the favicon to be loaded via
   // BookmarkModel::GetFavicon(), which is an asynchronous operation.
   if (!node->is_favicon_loaded()) {
     model->GetFavicon(node);
     // Favicon still loading, no data available just yet.
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Favicon loaded: return actual image, if there is one (the no-favicon case
@@ -344,8 +343,8 @@ bool FaviconsMatch(BookmarkModel* model_a,
   DCHECK(!node_a->is_folder());
   DCHECK(!node_b->is_folder());
 
-  base::Optional<FaviconData> favicon_data_a = GetFaviconData(model_a, node_a);
-  base::Optional<FaviconData> favicon_data_b = GetFaviconData(model_b, node_b);
+  absl::optional<FaviconData> favicon_data_a = GetFaviconData(model_a, node_a);
+  absl::optional<FaviconData> favicon_data_b = GetFaviconData(model_b, node_b);
 
   // If either of the two favicons is still loading, let's return false now
   // because observers will get notified when the load completes. Note that even

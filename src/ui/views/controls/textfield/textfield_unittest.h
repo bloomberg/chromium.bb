@@ -16,8 +16,6 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/test/views_test_base.h"
 
-#define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(base::ASCIIToUTF16(ascii), utf16)
-
 namespace ui {
 namespace test {
 class EventGenerator;
@@ -44,7 +42,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
   ui::ClipboardBuffer GetAndResetCopiedToClipboard();
   std::u16string GetClipboardText(ui::ClipboardBuffer type);
-  void SetClipboardText(ui::ClipboardBuffer type, const std::string& text);
+  void SetClipboardText(ui::ClipboardBuffer type, const std::u16string& text);
 
   // TextfieldController:
   void ContentsChanged(Textfield* sender,
@@ -151,7 +149,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void TapAtCursor(ui::EventPointerType pointer_type);
 
   // We need widget to populate wrapper class.
-  std::unique_ptr<Widget> widget_ = nullptr;
+  std::unique_ptr<Widget> widget_;
 
   TestTextfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> test_api_;

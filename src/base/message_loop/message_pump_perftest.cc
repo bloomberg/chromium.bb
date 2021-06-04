@@ -106,7 +106,7 @@ class ScheduleWorkTest : public testing::Test {
   void ScheduleWork(MessagePumpType target_type, int num_scheduling_threads) {
 #if defined(OS_ANDROID)
     if (target_type == MessagePumpType::JAVA) {
-      java_thread_.reset(new JavaHandlerThreadForTest("target"));
+      java_thread_ = std::make_unique<JavaHandlerThreadForTest>("target");
       java_thread_->Start();
     } else
 #endif
@@ -115,7 +115,7 @@ class ScheduleWorkTest : public testing::Test {
 
       Thread::Options options(target_type, 0u);
       options.message_pump_type = target_type;
-      target_->StartWithOptions(options);
+      target_->StartWithOptions(std::move(options));
 
       // Without this, it's possible for the scheduling threads to start and run
       // before the target thread. In this case, the scheduling threads will

@@ -43,6 +43,7 @@ mojom("mojom_platform") {
     "clipboard/clipboard.mojom",
     "clipboard/raw_clipboard.mojom",
     "commit_result/commit_result.mojom",
+    "compute_pressure/compute_pressure.mojom",
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
     "conversions/conversions.mojom",
@@ -112,6 +113,7 @@ mojom("mojom_platform") {
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
     "manifest/manifest_observer.mojom",
+    "media/capture_handle_config.mojom",
     "media/fullscreen_video_element.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
@@ -172,6 +174,8 @@ mojom("mojom_platform") {
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
+    "service_worker/service_worker_worker_client.mojom",
+    "service_worker/service_worker_worker_client_registry.mojom",
     "site_engagement/site_engagement.mojom",
     "sms/webotp_service.mojom",
     "speculation_rules/speculation_rules.mojom",
@@ -185,6 +189,7 @@ mojom("mojom_platform") {
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
     "timing/worker_timing_container.mojom",
+    "use_counter/use_counter_feature.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
@@ -196,7 +201,7 @@ mojom("mojom_platform") {
     "webid/federated_auth_response.mojom",
     "webpreferences/web_preferences.mojom",
     "websockets/websocket_connector.mojom",
-    "webtransport/quic_transport_connector.mojom",
+    "webtransport/web_transport_connector.mojom",
     "widget/device_emulation_params.mojom",
     "widget/screen_info.mojom",
     "widget/screen_infos.mojom",
@@ -630,6 +635,16 @@ mojom("mojom_platform") {
     {
       types = [
         {
+          mojom = "blink.mojom.UseCounterFeature"
+          cpp = "::blink::UseCounterFeature"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/common/use_counter/use_counter_feature_mojom_traits.h" ]
+      traits_sources = [ "//third_party/blink/common/use_counter/use_counter_feature_mojom_traits.cc" ]
+    },
+    {
+      types = [
+        {
           mojom = "blink.mojom.UserAgentBrandVersion"
           cpp = "::blink::UserAgentBrandVersion"
         },
@@ -1026,6 +1041,7 @@ mojom("mojom_core") {
   component_deps_blink = [
     "//cc/mojom",
     "//services/viz/public/mojom",
+    "//third_party/blink/renderer/bindings:generate_bindings_all",
     "//third_party/blink/renderer/platform",
   ]
 
@@ -1245,6 +1261,9 @@ mojom("mojom_broadcastchannel_bindings") {
 
   overridden_deps = [ ":mojom_core" ]
   component_deps = [ "//third_party/blink/public/common" ]
+  overridden_deps_blink = []
+  component_deps_blink =
+      [ "//third_party/blink/renderer/bindings:generate_bindings_all" ]
 
   component_output_prefix = "blink_mojom_broadcastchannel_bindings"
 

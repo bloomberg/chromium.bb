@@ -72,10 +72,11 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
 
   void WillRecalcAssignedNodes() { ClearAssignedNodes(); }
-  void DidRecalcAssignedNodes() {
-    UpdateManuallyAssignedNodesOrdering();
+  void DidRecalcAssignedNodes(bool display_locked_subtree) {
     UpdateFlatTreeNodeDataForAssignedNodes();
     RecalcFlatTreeChildren();
+    if (display_locked_subtree)
+      DetachDisplayLockedAssignedNodesLayoutTreeIfNeeded();
   }
 
   void AttachLayoutTree(AttachContext&) final;
@@ -113,11 +114,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   // For imperative Shadow DOM distribution APIs
   void assign(HeapVector<Member<Node>> nodes, ExceptionState&);
-  const HeapLinkedHashSet<Member<Node>>& AssignedNodesCandidates() const {
-    return assigned_nodes_candidates_;
+  const HeapLinkedHashSet<WeakMember<Node>>& ManuallyAssignedNodes() const {
+    return manually_assigned_nodes_;
   }
-  void ClearAssignedNodesCandidates();
-  void RemoveAssignedNodeCandidate(Node&);
+  void RemoveManuallyAssignedNode(Node&);
 
   void Trace(Visitor*) const override;
 
@@ -144,20 +144,18 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void SetShadowRootNeedsAssignmentRecalc();
   bool CheckNodesValidity(HeapVector<Member<Node>> nodes, ExceptionState&);
 
-  // SlotAssignnment:recalc runs in tree order. Update to assigned order.
-  void UpdateManuallyAssignedNodesOrdering();
   void RecalcFlatTreeChildren();
   void UpdateFlatTreeNodeDataForAssignedNodes();
   void ClearAssignedNodesAndFlatTreeChildren();
+  void DetachDisplayLockedAssignedNodesLayoutTreeIfNeeded();
 
   HeapVector<Member<Node>> assigned_nodes_;
   HeapVector<Member<Node>> flat_tree_children_;
 
   bool slotchange_event_enqueued_ = false;
 
-  // For imperative Shadow DOM distribution APIs.
-  // LinkedHashSet because candidates are ordered.
-  HeapLinkedHashSet<Member<Node>> assigned_nodes_candidates_;
+  // Imperative Shadow DOM distribution API.
+  HeapLinkedHashSet<WeakMember<Node>> manually_assigned_nodes_;
 
   template <typename T, wtf_size_t S>
   struct LCSArray {

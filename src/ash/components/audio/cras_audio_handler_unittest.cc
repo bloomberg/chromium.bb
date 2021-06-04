@@ -97,6 +97,9 @@ struct AudioNodeInfo {
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = 1;
+const uint32_t kOutputAudioEffect = 0;
+
 const AudioNodeInfo kInternalSpeaker[] = {
     {false, kInternalSpeakerId, "Fake Speaker", "INTERNAL_SPEAKER", "Speaker"}};
 
@@ -310,7 +313,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   void SetUp() override {
     fake_manager_ = std::make_unique<FakeMediaControllerManager>();
     system_monitor_.AddDevicesChangedObserver(&system_monitor_observer_);
-    video_capture_manager_.reset(new FakeVideoCaptureManager);
+    video_capture_manager_ = std::make_unique<FakeVideoCaptureManager>();
   }
 
   void TearDown() override {
@@ -327,12 +330,14 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
     uint64_t stable_device_id_v2 = GetParam() == 1 ? 0 : (node_info->id ^ 0xFF);
     uint64_t stable_device_id_v1 = node_info->id;
-    return AudioNode(node_info->is_input, node_info->id, GetParam() == 2,
-                     stable_device_id_v1, stable_device_id_v2,
-                     node_info->device_name, node_info->type, node_info->name,
-                     false /* is_active*/, 0 /* pluged_time */,
-                     node_info->is_input ? kInputMaxSupportedChannels
-                                         : kOutputMaxSupportedChannels);
+    return AudioNode(
+        node_info->is_input, node_info->id, GetParam() == 2,
+        stable_device_id_v1, stable_device_id_v2, node_info->device_name,
+        node_info->type, node_info->name, false /* is_active*/,
+        0 /* pluged_time */,
+        node_info->is_input ? kInputMaxSupportedChannels
+                            : kOutputMaxSupportedChannels,
+        node_info->is_input ? kInputAudioEffect : kOutputAudioEffect);
   }
 
   AudioNodeList GenerateAudioNodeList(
@@ -351,7 +356,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     CrasAudioHandler::Initialize(fake_manager_->MakeRemote(),
                                  audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
-    test_observer_.reset(new TestObserver);
+    test_observer_ = std::make_unique<TestObserver>();
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
     video_capture_manager_->AddObserver(cras_audio_handler_);
     base::RunLoop().RunUntilIdle();
@@ -385,7 +390,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
                                  audio_pref_handler_);
 
     cras_audio_handler_ = CrasAudioHandler::Get();
-    test_observer_.reset(new TestObserver);
+    test_observer_ = std::make_unique<TestObserver>();
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
     base::RunLoop().RunUntilIdle();
   }
@@ -400,7 +405,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     CrasAudioHandler::Initialize(fake_manager_->MakeRemote(),
                                  audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
-    test_observer_.reset(new TestObserver);
+    test_observer_ = std::make_unique<TestObserver>();
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
     base::RunLoop().RunUntilIdle();
   }
@@ -4263,6 +4268,58 @@ TEST_P(CrasAudioHandlerTest, SuspendAllSessionsForInput) {
   audio_nodes.clear();
   audio_nodes.push_back(GenerateAudioNode(kInternalMic));
   ChangeAudioNodes(audio_nodes);
+}
+
+TEST_P(CrasAudioHandlerTest, MicrophoneMuteHwSwitchMutesInput) {
+  // Set up initial input audio devices, with internal mic and mic jack.
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalMic, kMicJack});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Simulate hw microphone mute switch toggle.
+  ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
+      /*muted=*/true);
+
+  // Verify the input is muted, OnInputMuteChanged event is fired.
+  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(1, test_observer_->input_mute_changed_count());
+
+  // Unmuting input while the hw mute switch is on should fail.
+  cras_audio_handler_->SetInputMute(false);
+
+  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(1, test_observer_->input_mute_changed_count());
+
+  // Verify the input is unmuted if the hw mute switch is toggled again.
+  ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
+      /*muted=*/false);
+  EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(2, test_observer_->input_mute_changed_count());
+}
+
+TEST_P(CrasAudioHandlerTest, MicrophoneMuteSwitchToggledBeforeHandlerSetup) {
+  // Simulate hw microphone mute switch toggle.
+  ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
+      /*muted=*/true);
+
+  // Set up initial input audio devices, with internal mic and mic jack.
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalMic, kMicJack});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the input is muted, OnInputMuteChanged event is fired.
+  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(0, test_observer_->input_mute_changed_count());
+
+  // Unmuting input while the hw mute switch is on should fail.
+  cras_audio_handler_->SetInputMute(false);
+
+  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(0, test_observer_->input_mute_changed_count());
+
+  // Verify the input is unmuted if the hw mute switch is toggled again.
+  ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
+      /*muted=*/false);
+  EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
+  EXPECT_EQ(1, test_observer_->input_mute_changed_count());
 }
 
 }  // namespace ash

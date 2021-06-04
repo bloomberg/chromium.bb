@@ -75,16 +75,6 @@ bool SysmemBufferCollection::IsNativePixmapConfigSupported(
 
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-#if defined(ARCH_CPU_X86_64)
-      // SwiftShader currently doesn't support liner image layouts (b/171299814)
-      // required for images accessed by CPU, so these formats cannot be
-      // supported with Goldfish Vulkan drivers running under emulator.It's not
-      // straightforward to detect format support here because this code runs in
-      // the renderer process. Disable these formats for all X64 devices for
-      // now.
-      // TODO(crbug.com/1141538): remove this workaround.
-      return false;
-#endif
       break;
 
     default:
@@ -108,7 +98,6 @@ bool SysmemBufferCollection::Initialize(
     gfx::BufferUsage usage,
     VkDevice vk_device,
     size_t min_buffer_count,
-    bool force_protected,
     bool register_with_image_pipe) {
   DCHECK(IsNativePixmapConfigSupported(format, usage));
   DCHECK(!collection_);
@@ -137,7 +126,7 @@ bool SysmemBufferCollection::Initialize(
   format_ = format;
   usage_ = usage;
   vk_device_ = vk_device;
-  is_protected_ = force_protected;
+  is_protected_ = false;
 
   if (register_with_image_pipe) {
     overlay_view_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -218,7 +207,7 @@ bool SysmemBufferCollection::CreateVkImage(
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
     VkDeviceSize* mem_allocation_size,
-    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
+    absl::optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
   DCHECK_CALLED_ON_VALID_THREAD(vulkan_thread_checker_);
 
   if (vk_device_ != vk_device) {
@@ -297,7 +286,7 @@ bool SysmemBufferCollection::CreateVkImage(
       buffers_info_.settings.image_format_constraints.color_space[0].type;
   switch (color_space) {
     case fuchsia::sysmem::ColorSpaceType::SRGB:
-      *ycbcr_info = base::nullopt;
+      *ycbcr_info = absl::nullopt;
       break;
 
     case fuchsia::sysmem::ColorSpaceType::REC709: {

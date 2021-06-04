@@ -26,6 +26,7 @@
 #include <utility>
 
 #include "base/base_paths_fuchsia.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
@@ -54,29 +55,13 @@ enum SandboxFeature {
   // Read only access to /config/ssl, which contains root certs info.
   kProvideSslConfig = 1 << 2,
 
-  // Uses a service directory channel that is explicitly passed by the caller
-  // instead of automatically connecting to the service directory of the current
-  // process' namespace. Intended for use by SandboxType::kWebContext.
-  kUseServiceDirectoryOverride = 1 << 3,
-
   // Allows the process to use the ambient mark-vmo-as-executable capability.
-  kAmbientMarkVmoAsExecutable = 1 << 4,
+  kAmbientMarkVmoAsExecutable = 1 << 3,
 };
 
 struct SandboxConfig {
   base::span<const char* const> services;
   uint32_t features;
-};
-
-constexpr SandboxConfig kWebContextConfig = {
-    // Services directory is passed by calling SetServiceDirectory().
-    base::span<const char* const>(),
-
-    // Context processes only actually use the kUseServiceDirectoryOverride
-    // and kCloneJob |features| themselves. However, they must be granted
-    // all of the other features to delegate to child processes.
-    kCloneJob | kProvideVulkanResources | kProvideSslConfig |
-        kUseServiceDirectoryOverride,
 };
 
 constexpr SandboxConfig kGpuConfig = {
@@ -131,15 +116,12 @@ const SandboxConfig* GetConfigForSandboxType(SandboxType type) {
       return &kNetworkConfig;
     case SandboxType::kRenderer:
       return &kRendererConfig;
-    case SandboxType::kWebContext:
-      return &kWebContextConfig;
     case SandboxType::kVideoCapture:
       return &kVideoCaptureConfig;
     // Remaining types receive no-access-to-anything.
     case SandboxType::kAudio:
     case SandboxType::kCdm:
     case SandboxType::kPpapi:
-    case SandboxType::kPrintBackend:
     case SandboxType::kPrintCompositor:
     case SandboxType::kService:
     case SandboxType::kSpeechRecognition:
@@ -149,9 +131,13 @@ const SandboxConfig* GetConfigForSandboxType(SandboxType type) {
 }
 
 // Services that are passed to all processes.
-constexpr base::span<const char* const> kDefaultServices = base::make_span(
-    (const char* const[]){fuchsia::intl::PropertyProvider::Name_,
-                          fuchsia::logger::LogSink::Name_});
+constexpr auto kDefaultServices = base::make_span((const char* const[]) {
+// DebugData service is needed only for profiling.
+#if BUILDFLAG(CLANG_PROFILING)
+  "fuchsia.debugdata.DebugData",
+#endif
+      fuchsia::intl::PropertyProvider::Name_, fuchsia::logger::LogSink::Name_
+});
 
 }  // namespace
 
@@ -161,12 +147,13 @@ SandboxPolicyFuchsia::SandboxPolicyFuchsia(SandboxType type) {
   } else {
     type_ = type;
   }
+
   // If we need to pass some services for the given sandbox type then create
   // |sandbox_directory_| and initialize it with the corresponding list of
   // services. FilteredServiceDirectory must be initialized on a thread that has
   // async_dispatcher.
   const SandboxConfig* config = GetConfigForSandboxType(type_);
-  if (config && !(config->features & kUseServiceDirectoryOverride)) {
+  if (config) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ = std::make_unique<base::FilteredServiceDirectory>(
         base::ComponentContextForProcess()->svc().get());
@@ -196,14 +183,6 @@ SandboxPolicyFuchsia::~SandboxPolicyFuchsia() {
   }
 }
 
-void SandboxPolicyFuchsia::SetServiceDirectory(
-    fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client) {
-  DCHECK(GetConfigForSandboxType(type_)->features &
-         kUseServiceDirectoryOverride);
-  DCHECK(!service_directory_client_);
-
-  service_directory_client_ = std::move(service_directory_client);
-}
 
 void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     base::LaunchOptions* options) {
@@ -255,13 +234,13 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     if (base::PathExists(vulkan_icd_path))
       options->paths_to_clone.push_back(vulkan_icd_path);
 
-    // /dev/class/goldfish-pipe, /dev/class/goldfish-address-space and
-    // /dev/class/goldfish-control are used for Fuchsia Emulator.
+    // The following devices are used for Fuchsia Emulator.
     options->paths_to_clone.insert(
         options->paths_to_clone.end(),
-        {base::FilePath("/dev/class/goldfish-pipe"),
+        {base::FilePath("/dev/class/goldfish-address-space"),
          base::FilePath("/dev/class/goldfish-control"),
-         base::FilePath("/dev/class/goldfish-address-space")});
+         base::FilePath("/dev/class/goldfish-pipe"),
+         base::FilePath("/dev/class/goldfish-sync")});
   }
 
   // If the process needs access to any services then transfer the

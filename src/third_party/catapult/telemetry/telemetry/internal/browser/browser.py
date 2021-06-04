@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
+import six
 
 from py_utils import cloud_storage
 from py_utils import exc_util
@@ -75,14 +77,14 @@ class Browser(app.App):
 
   @property
   def foreground_tab(self):
-    for i in xrange(len(self._tabs)):
+    for tab in self._tabs:
       # The foreground tab is the first (only) one that isn't hidden.
       # This only works through luck on Android, due to crbug.com/322544
       # which means that tabs that have never been in the foreground return
       # document.hidden as false; however in current code the Android foreground
       # tab is always tab 0, which will be the first one that isn't hidden
-      if self._tabs[i].EvaluateJavaScript('!document.hidden'):
-        return self._tabs[i]
+      if tab.EvaluateJavaScript('!document.hidden'):
+        return tab
     raise exceptions.TabMissingError("No foreground tab found")
 
   @property
@@ -120,11 +122,11 @@ class Browser(app.App):
         if not trim_logs:
           if system_info.gpu.aux_attributes:
             logs.append(' GPU Attributes:')
-            for k, v in sorted(system_info.gpu.aux_attributes.iteritems()):
+            for k, v in sorted(six.iteritems(system_info.gpu.aux_attributes)):
               logs.append('  %-20s: %s' % (k, v))
           if system_info.gpu.feature_status:
             logs.append(' Feature Status:')
-            for k, v in sorted(system_info.gpu.feature_status.iteritems()):
+            for k, v in sorted(six.iteritems(system_info.gpu.feature_status)):
               logs.append('  %-20s: %s' % (k, v))
           if system_info.gpu.driver_bug_workarounds:
             logs.append(' Driver Bug Workarounds:')
@@ -364,3 +366,9 @@ class Browser(app.App):
     '''UI Devtools is mainly used to interact with native UI'''
     return ui_devtools.UIDevTools(
         self._browser_backend.GetUIDevtoolsBackend(port))
+
+  def GetWindowForTarget(self, target_id):
+    return self._browser_backend.GetWindowForTarget(target_id)
+
+  def SetWindowBounds(self, window_id, bounds):
+    self._browser_backend.SetWindowBounds(window_id, bounds)

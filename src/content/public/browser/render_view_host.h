@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
-#include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
@@ -89,7 +88,7 @@ class CONTENT_EXPORT RenderViewHost {
   virtual bool IsRenderViewLive() = 0;
 
   // Write a representation of this object into a trace.
-  virtual void WriteIntoTracedValue(perfetto::TracedValue context) = 0;
+  virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
 
  private:
   // This interface should only be implemented inside content.

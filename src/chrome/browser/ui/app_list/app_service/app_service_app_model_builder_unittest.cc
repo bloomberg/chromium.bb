@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -22,12 +23,12 @@
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,41 +41,44 @@
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/seneschal/seneschal_client.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/image_loader.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/image/image_unittest_util.h"
-
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/image_loader.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 using crostini::CrostiniTestHelper;
 using display::test::ScopedScreenOverride;
@@ -238,7 +242,7 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
   void SetUp() override {
     AppServiceAppModelBuilderTest::SetUp();
 
-    default_apps_ = {"Hosted App", "Packaged App 1", "Packaged App 2"};
+    preinstalled_apps_ = {"Hosted App", "Packaged App 1", "Packaged App 2"};
     CreateBuilder();
   }
 
@@ -301,7 +305,7 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
                                                   &result));
   }
 
-  std::vector<std::string> default_apps_;
+  std::vector<std::string> preinstalled_apps_;
 };
 
 class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
@@ -329,7 +333,7 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
     web_app_info->scope = kAppUrl;
     web_app_info->open_as_window = true;
 
-    return web_app::InstallWebApp(profile(), std::move(web_app_info));
+    return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
   void GenerateWebAppIcon(const std::string& app_id,
@@ -417,7 +421,7 @@ TEST_F(BuiltInAppTest, BuildGuestMode) {
 TEST_F(ExtensionAppTest, Build) {
   // The apps list would have 3 extension apps in the profile.
   EXPECT_EQ(kDefaultAppCount, model_updater_->ItemCount());
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppTest, HideWebStore) {
@@ -469,11 +473,11 @@ TEST_F(ExtensionAppTest, DisableAndEnable) {
   service_->DisableExtension(kHostedAppId,
                              extensions::disable_reason::DISABLE_USER_ACTION);
   app_service_test_.FlushMojoCalls();
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 
   service_->EnableExtension(kHostedAppId);
   app_service_test_.FlushMojoCalls();
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppTest, Uninstall) {
@@ -502,7 +506,7 @@ TEST_F(ExtensionAppTest, UninstallTerminatedApp) {
 }
 
 TEST_F(ExtensionAppTest, Reinstall) {
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 
   // Install kPackagedApp1Id again should not create a new entry.
   extensions::InstallTracker* tracker =
@@ -512,7 +516,7 @@ TEST_F(ExtensionAppTest, Reinstall) {
   tracker->OnBeginExtensionInstall(params);
   app_service_test_.FlushMojoCalls();
 
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppTest, OrdinalPrefsChange) {
@@ -524,7 +528,7 @@ TEST_F(ExtensionAppTest, OrdinalPrefsChange) {
   app_service_test_.FlushMojoCalls();
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 
   syncer::StringOrdinal app1_ordinal =
       sorting->GetAppLaunchOrdinal(kPackagedApp1Id);
@@ -536,7 +540,7 @@ TEST_F(ExtensionAppTest, OrdinalPrefsChange) {
   app_service_test_.FlushMojoCalls();
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppTest, OnExtensionMoved) {
@@ -548,19 +552,19 @@ TEST_F(ExtensionAppTest, OnExtensionMoved) {
   app_service_test_.FlushMojoCalls();
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
   app_service_test_.FlushMojoCalls();
   // Old behavior: This would be restored to the default order.
   // New behavior: Sorting order still doesn't change.
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
   app_service_test_.FlushMojoCalls();
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
+  EXPECT_EQ(preinstalled_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppTest, InvalidOrdinal) {
@@ -664,6 +668,9 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
+    chromeos::SeneschalClient::InitializeFake();
     AppServiceAppModelBuilderTest::SetUp();
     test_helper_ = std::make_unique<CrostiniTestHelper>(testing_profile());
     test_helper_->ReInitializeAppServiceIntegration();
@@ -680,6 +687,9 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
     // DBusThreadManager to ensure all keyed services that might rely on DBus
     // clients are destroyed.
     profile_.reset();
+    chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -710,7 +720,7 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
       existing_item_ids.emplace_back(pair.first);
     }
     for (const std::string& id : existing_item_ids) {
-      if (id == crostini::kCrostiniFolderId ||
+      if (id == ash::kCrostiniFolderId ||
           id == crostini::kCrostiniTerminalSystemAppId) {
         continue;
       }
@@ -766,10 +776,9 @@ TEST_F(CrostiniAppTest, EnableAndDisableCrostini) {
   EXPECT_EQ(0u, GetModelItemCount());
 
   CrostiniTestHelper::EnableCrostini(testing_profile());
-  EXPECT_THAT(GetAllApps(),
-              testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), crostini::kCrostiniFolderId)));
+  EXPECT_THAT(GetAllApps(), testing::UnorderedElementsAre(IsChromeApp(
+                                crostini::kCrostiniTerminalSystemAppId,
+                                TerminalAppName(), ash::kCrostiniFolderId)));
 
   CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_THAT(GetAllApps(), testing::IsEmpty());
@@ -784,19 +793,19 @@ TEST_F(CrostiniAppTest, AppInstallation) {
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
                   IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId)));
+                              TerminalAppName(), ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp1Name, ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp2Name, ash::kCrostiniFolderId)));
 
   test_helper_->AddApp(
       CrostiniTestHelper::BasicApp(kBananaAppId, kBananaAppName));
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
                   IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kBananaAppName, crostini::kCrostiniFolderId)));
+                              TerminalAppName(), ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp1Name, ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp2Name, ash::kCrostiniFolderId),
+                  IsChromeApp(_, kBananaAppName, ash::kCrostiniFolderId)));
 }
 
 // Test that the app model builder correctly picks up changes to existing apps.
@@ -856,25 +865,24 @@ TEST_F(CrostiniAppTest, RemoveApps) {
 
 // Tests that the crostini folder is (re)created with the correct parameters.
 TEST_F(CrostiniAppTest, CreatesFolder) {
-  EXPECT_THAT(GetAllApps(),
-              testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), crostini::kCrostiniFolderId)));
+  EXPECT_THAT(GetAllApps(), testing::UnorderedElementsAre(IsChromeApp(
+                                crostini::kCrostiniTerminalSystemAppId,
+                                TerminalAppName(), ash::kCrostiniFolderId)));
 
   // We simulate ash creating the crostini folder and calling back into chrome
   // (rather than use a full browser test).
   auto metadata = std::make_unique<ash::AppListItemMetadata>();
-  metadata->id = crostini::kCrostiniFolderId;
+  metadata->id = ash::kCrostiniFolderId;
   metadata->is_folder = true;
   GetModelUpdater()->OnItemAdded(std::move(metadata));
 
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
                   IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), crostini::kCrostiniFolderId),
-                  testing::AllOf(IsChromeApp(crostini::kCrostiniFolderId,
-                                             kRootFolderName, ""),
-                                 IsPersistentApp())));
+                              TerminalAppName(), ash::kCrostiniFolderId),
+                  testing::AllOf(
+                      IsChromeApp(ash::kCrostiniFolderId, kRootFolderName, ""),
+                      IsPersistentApp())));
 }
 
 // Test that the Terminal app is removed when Crostini is disabled.
@@ -911,8 +919,18 @@ class PluginVmAppTest : public testing::Test {
   // Required to ensure that the Plugin VM manager can be accessed in order to
   // retrieve permissions.
   struct ScopedDBusThreadManager {
-    ScopedDBusThreadManager() { chromeos::DBusThreadManager::Initialize(); }
-    ~ScopedDBusThreadManager() { chromeos::DBusThreadManager::Shutdown(); }
+    ScopedDBusThreadManager() {
+      chromeos::DBusThreadManager::Initialize();
+      chromeos::CiceroneClient::InitializeFake();
+      chromeos::ConciergeClient::InitializeFake();
+      chromeos::SeneschalClient::InitializeFake();
+    }
+    ~ScopedDBusThreadManager() {
+      chromeos::SeneschalClient::Shutdown();
+      chromeos::ConciergeClient::Shutdown();
+      chromeos::CiceroneClient::Shutdown();
+      chromeos::DBusThreadManager::Shutdown();
+    }
   } dbus_thread_manager_;
 
   // Destroys any existing builder in the correct order.

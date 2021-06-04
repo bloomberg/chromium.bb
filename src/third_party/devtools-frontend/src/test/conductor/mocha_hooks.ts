@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {postFileTeardown, preFileSetup, resetPages} from './hooks.js';
+import * as fs from 'fs';
+import {createCoverageMap, createFileCoverage} from 'istanbul-lib-coverage';
+import * as report from 'istanbul-lib-report';
+import {createSourceMapStore} from 'istanbul-lib-source-maps';
+import * as reports from 'istanbul-reports';
+import * as path from 'path';
+import * as rimraf from 'rimraf';
+
+import {collectCoverageFromPage, postFileTeardown, preFileSetup, resetPages} from './hooks.js';
 import {getTestRunnerConfigSetting} from './test_runner_config.js';
 import {startServer, stopServer} from './test_server.js';
 
@@ -10,6 +18,15 @@ import {startServer, stopServer} from './test_server.js';
 
 process.on('SIGINT', postFileTeardown);
 
+// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
+const TEST_SERVER_TYPE = getTestRunnerConfigSetting('test-server-type', process.env.TEST_SERVER_TYPE);
+
+if (TEST_SERVER_TYPE !== 'hosted-mode' && TEST_SERVER_TYPE !== 'component-docs') {
+  throw new Error(`Invalid test server type: ${TEST_SERVER_TYPE}`);
+}
+
+// Required to reassign to allow for TypeScript to correctly deduce its type
+const DERIVED_SERVER_TYPE = TEST_SERVER_TYPE;
 
 // We can run Mocha in two modes: serial and parallel. In parallel mode, Mocha
 // starts multiple node processes which don't know about each other. It provides
@@ -25,17 +42,11 @@ process.on('SIGINT', postFileTeardown);
 // https://mochajs.org/#global-setup-fixtures. These let us start one hosted
 // mode server and share it between all the parallel test runners.
 export async function mochaGlobalSetup(this: Mocha.Suite) {
-  // TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
-  const TEST_SERVER_TYPE = getTestRunnerConfigSetting('test-server-type', process.env.TEST_SERVER_TYPE);
-
-  if (TEST_SERVER_TYPE !== 'hosted-mode' && TEST_SERVER_TYPE !== 'component-docs') {
-    throw new Error(`Invalid test server type: ${TEST_SERVER_TYPE}`);
-  }
   // Start the test server in the 'main' process. In parallel mode, we
   // share one server between all parallel runners. The parallel runners are all
   // in different processes, so we pass the port number as an environment var.
-  process.env.testServerPort = String(await startServer(TEST_SERVER_TYPE));
-  console.log(`Started ${TEST_SERVER_TYPE} server on port ${process.env.testServerPort}`);
+  process.env.testServerPort = String(await startServer(DERIVED_SERVER_TYPE));
+  console.log(`Started ${DERIVED_SERVER_TYPE} server on port ${process.env.testServerPort}`);
 }
 
 export function mochaGlobalTeardown() {
@@ -43,12 +54,16 @@ export function mochaGlobalTeardown() {
   stopServer();
 }
 
+const testSuiteCoverageMap = createCoverageMap();
+const SHOULD_GATHER_COVERAGE_INFORMATION = process.env.COVERAGE === '1' && DERIVED_SERVER_TYPE === 'component-docs';
+const INTERACTIONS_COVERAGE_LOCATION = path.join(process.cwd(), 'interactions-coverage/');
+
 // These are the 'root hook plugins': https://mochajs.org/#root-hook-plugins
 // These open and configure the browser before tests are run.
 export const mochaHooks = {
   // In serial mode (Mocha’s default), before all tests begin, once only.
   // In parallel mode, run before all tests begin, for each file.
-  async beforeAll(this: Mocha.Suite) {
+  beforeAll: async function(this: Mocha.Suite) {
     // It can take arbitrarly long on bots to boot up a server and start
     // DevTools. Since this timeout only applies for this hook, we can let it
     // take an arbitrarily long time, while still enforcing that tests run
@@ -75,13 +90,56 @@ export const mochaHooks = {
   },
   // In serial mode, run after all tests end, once only.
   // In parallel mode, run after all tests end, for each file.
-  async afterAll() {
+  afterAll: async function(this: Mocha.Suite) {
     await postFileTeardown();
+
+    if (!SHOULD_GATHER_COVERAGE_INFORMATION) {
+      return;
+    }
+
+    // Writing the coverage files to disk can take a lot longer on CQ than the
+    // default timeout. Since all of this work is synchronous (and would
+    // immediately fail if it went wrong), we can set the timeout to infinite
+    // here.
+    this.timeout(0);
+
+    // Make sure that any previously existing coverage reports are purged.
+    if (fs.existsSync(INTERACTIONS_COVERAGE_LOCATION)) {
+      rimraf.sync(INTERACTIONS_COVERAGE_LOCATION);
+    }
+
+    const remappedCoverageMap = await createSourceMapStore().transformCoverage(testSuiteCoverageMap);
+    const context = report.createContext({
+      dir: INTERACTIONS_COVERAGE_LOCATION,
+      coverageMap: remappedCoverageMap,
+      defaultSummarizer: 'nested',
+    });
+    // The types in @types/istanbul-lib-report are incorrectly typing `create`
+    // to return a Visitor instead of a ReportBase.
+    (reports.create('html') as unknown as report.ReportBase).execute(context);
+    (reports.create('json') as unknown as report.ReportBase).execute(context);
+    (reports.create('json-summary') as unknown as report.ReportBase).execute(context);
   },
   // In both modes, run before each test.
-  async beforeEach(this: Mocha.Suite) {
+  beforeEach: async function(this: Mocha.Suite) {
     // Sets the timeout higher for this hook only.
     this.timeout(10000);
     await resetPages();
+  },
+  afterEach: async function(this: Mocha.Suite) {
+    if (!SHOULD_GATHER_COVERAGE_INFORMATION) {
+      return;
+    }
+
+    const coverageData = await collectCoverageFromPage();
+    const testCoverageMap = createCoverageMap();
+
+    if (coverageData) {
+      for (const file of Object.values(coverageData)) {
+        testCoverageMap.addFileCoverage(createFileCoverage(file));
+      }
+    }
+
+    testSuiteCoverageMap.merge(testCoverageMap);
   },
 };

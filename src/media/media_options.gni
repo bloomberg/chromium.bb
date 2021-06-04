@@ -249,6 +249,7 @@ media_subcomponent_deps = [
 
 if (is_fuchsia) {
   media_subcomponent_deps += [
+    "//media/fuchsia/audio",
     "//media/fuchsia/cdm",
     "//media/fuchsia/common",
   ]
@@ -258,6 +259,6 @@ if (media_use_ffmpeg) {
   media_subcomponent_deps += [ "//media/ffmpeg" ]
 }
 
-if (enable_library_cdms) {
+if (enable_library_cdms || is_win) {
   media_subcomponent_deps += [ "//media/cdm:cdm_type_conversion" ]
 }

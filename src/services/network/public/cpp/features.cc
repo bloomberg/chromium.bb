@@ -76,7 +76,7 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables Cross-Origin-Embedder-Policy: cors-or-credentialless.
+// Enables Cross-Origin-Embedder-Policy: credentialless.
 // https://github.com/mikewest/credentiallessness
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicyCredentialless{
@@ -216,6 +216,14 @@ const base::Feature kWebSocketReassembleShortMessages{
 // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02#section-4.3
 const base::Feature kAcceptCHFrame{"AcceptCHFrame",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables support for FTP URLs. When disabled FTP URLs will behave the same as
+// any other URL scheme that's unknown to the UA. See https://crbug.com/333943
+const base::Feature kFtpProtocol{"FtpProtocol",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSCTAuditingRetryAndPersistReports{
+    "SCTAuditingRetryAndPersistReports", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

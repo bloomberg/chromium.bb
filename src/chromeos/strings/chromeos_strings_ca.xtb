@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Col·loca el document a l'escàner i selecciona Escaneja per començar</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2878387241690264070">S'ha descarregat un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segons.</translation>
+<translation id="2983662233540284543">Aprèn d'un creador de videojocs, obtén aplicacions de disseny de videojocs i molt més</translation>
 <translation id="3008341117444806826">ACTUALITZA</translation>
 <translation id="3009958530611748826">Selecciona en quina carpeta vols que es desi</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Autenticació</translation>
 <translation id="5154917547274118687">Memòria</translation>
 <translation id="5168185087976003268">Estat de la bateria</translation>
+<translation id="5170568018924773124">Mostra a la carpeta</translation>
+<translation id="519607504553633437">Dissenya i crea els teus propis videojocs</translation>
 <translation id="5212543919916444558">No he trobat res a la pantalla amb què et pugui ajudar.
 Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
@@ -201,6 +204,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5275828089655680674">Torna a executar les rutines</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">versió <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Mou la finestra a l'escriptori</translation>
 <translation id="5315873049536339193">Identitat</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5318334351163689047">Errors en la sol·licitud de TCP</translation>
@@ -222,6 +226,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5669267381087807207">Activant</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Família</translation>
+<translation id="5752751666635965375">Crea el teu propi joc</translation>
 <translation id="5760715441271661976">Estat del portal</translation>
 <translation id="5797428682393400134">SUPERADA</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
@@ -294,6 +299,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7216409898977639127">Proveïdor de dades mòbils</translation>
 <translation id="7271040990581020067">L'escàner s'està utilitzant en aquests moments. Torna-ho a provar més tard.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Dispositius de xarxa</translation>
 <translation id="7359657277149375382">Tipus de fitxer</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8372477600026034341">Amfitrions addicionals</translation>
 <translation id="8395584934117017006">Aquest <ph name="DEVICE_TYPE" /> està gestionat per una empresa</translation>
 <translation id="8398927464629426868">El percentatge al qual s'està carregant o descarregant el dispositiu actualment</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Nom del proveïdor domèstic</translation>
 <translation id="8475690821716466388">La xarxa Wi-Fi està protegida amb el protocol dèbil WEP PSK</translation>
 <translation id="8477551185774834963">La latència DNS supera lleugerament el llindar permès</translation>
@@ -351,6 +358,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8575298406870537639">El teu operador pot requerir aquesta opció per connectar-te a la seva xarxa. Contacta-hi per obtenir-ne més informació.</translation>
 <translation id="8576249514688522074">No s'ha inicialitzat</translation>
 <translation id="8620617069779373398">Estat d'itinerància</translation>
+<translation id="8660881923941176839">lliures</translation>
 <translation id="8675354002693747642">Clau precompartida</translation>
 <translation id="871560550817059752">Error: no hi ha tinta</translation>
 <translation id="8723108084122415655">La xarxa no predeterminada supera el llindar de latència</translation>
@@ -366,6 +374,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8881098542468797602">La prova s'ha superat</translation>
 <translation id="8898840733695078011">Intensitat del senyal</translation>
 <translation id="8910721771319628100">La xarxa predeterminada supera el llindar de latència</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> de <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Error: no es troba la safata</translation>
 <translation id="8928727111548978589">Error: no hi ha paper</translation>
 <translation id="8930622219860340959">Sense fil</translation>
@@ -383,6 +392,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="9149391708638971077">Executa la prova de memòria</translation>
 <translation id="9173638680043580060">Queda menys d'un minut</translation>
 <translation id="9190063653747922532">L2TP/IPsec + clau precompartida</translation>
+<translation id="9211490828691860325">Tots els escriptoris</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">No activat</translation>
 <translation id="960719561871045870">Codi d'operador</translation>

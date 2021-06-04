@@ -4,6 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
+import("//printing/buildflags/buildflags.gni")
 
 java_cpp_enum("browser_enums") {
   sources = [
@@ -198,7 +199,7 @@ source_set("browser") {
     "//android_webview/common:mojom",
     "//android_webview/proto:aw_variations_seed_proto",
     "//base",
-    "//components/autofill/android/provider",
+    "//components/android_autofill/android",
     "//components/autofill/content/browser",
     "//components/cdm/browser",
     "//components/component_updater/android:embedded_component_loader",
@@ -211,6 +212,7 @@ source_set("browser") {
     "//components/favicon_base:favicon_base",
     "//components/flags_ui",
     "//components/keyed_service/content",
+    "//components/profile_metrics",
 
     # Called via JNI in CrashpadMain
     "//components/crash/android:crashpad_main",
@@ -232,9 +234,6 @@ source_set("browser") {
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/printing/browser",
-    "//components/printing/common",
-    "//components/printing/common:mojo_interfaces",
     "//components/safe_browsing/android:remote_database_manager",
     "//components/safe_browsing/content",
     "//components/safe_browsing/content/browser",
@@ -263,10 +262,8 @@ source_set("browser") {
     "//components/webdata/common",
     "//content/public/browser",
     "//media/mojo:buildflags",
-    "//printing",
     "//services/cert_verifier/public/mojom",
     "//services/network/public/mojom",
-    "//services/preferences/tracked",
     "//services/proxy_resolver:lib",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom/frame",
@@ -277,6 +274,15 @@ source_set("browser") {
     "//ui/touch_selection",
     "//url:gurl_android",
   ]
+
+  if (enable_basic_printing) {
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/common",
+      "//components/printing/common:mojo_interfaces",
+      "//printing",
+    ]
+  }
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser" ]

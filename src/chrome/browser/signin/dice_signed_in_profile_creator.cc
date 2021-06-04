@@ -94,7 +94,7 @@ DiceSignedInProfileCreator::DiceSignedInProfileCreator(
     Profile* source_profile,
     CoreAccountId account_id,
     const std::u16string& local_profile_name,
-    base::Optional<size_t> icon_index,
+    absl::optional<size_t> icon_index,
     bool use_guest_profile,
     base::OnceCallback<void(Profile*)> callback)
     : source_profile_(source_profile),
@@ -126,7 +126,7 @@ DiceSignedInProfileCreator::DiceSignedInProfileCreator(
                               ? storage.ChooseNameForNewProfile(*icon_index)
                               : local_profile_name;
     ProfileManager::CreateMultiProfileAsync(
-        name, *icon_index,
+        name, *icon_index, /*is_hidden=*/false,
         base::BindRepeating(&DiceSignedInProfileCreator::OnNewProfileCreated,
                             weak_pointer_factory_.GetWeakPtr()));
   }

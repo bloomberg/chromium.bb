@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_swap_chain_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
@@ -54,9 +56,28 @@ CanvasRenderingContext::ContextType GPUCanvasContext::GetContextType() const {
   return CanvasRenderingContext::kContextGPUPresent;
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+V8RenderingContext* GPUCanvasContext::AsV8RenderingContext() {
+  return MakeGarbageCollected<V8RenderingContext>(this);
+}
+
+V8OffscreenRenderingContext* GPUCanvasContext::AsV8OffscreenRenderingContext() {
+  return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
 void GPUCanvasContext::SetCanvasGetContextResult(RenderingContext& result) {
   result.SetGPUCanvasContext(this);
 }
+
+void GPUCanvasContext::SetOffscreenCanvasGetContextResult(
+    OffscreenRenderingContext& result) {
+  result.SetGPUCanvasContext(this);
+}
+
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void GPUCanvasContext::Stop() {
   if (swapchain_) {
@@ -82,9 +103,16 @@ void GPUCanvasContext::SetFilterQuality(SkFilterQuality filter_quality) {
   }
 }
 
-void GPUCanvasContext::SetOffscreenCanvasGetContextResult(
-    OffscreenRenderingContext& result) {
-  result.SetGPUCanvasContext(this);
+bool GPUCanvasContext::PushFrame() {
+  DCHECK(Host());
+  DCHECK(Host()->IsOffscreenCanvas());
+  auto canvas_resource = swapchain_->ExportCanvasResource();
+  if (!canvas_resource)
+    return false;
+  const int width = canvas_resource->Size().Width();
+  const int height = canvas_resource->Size().Height();
+  return Host()->PushFrame(std::move(canvas_resource),
+                           SkIRect::MakeWH(width, height));
 }
 
 ImageBitmap* GPUCanvasContext::TransferToImageBitmap(
@@ -117,15 +145,6 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
   switch (format) {
     case WGPUTextureFormat_BGRA8Unorm:
       break;
-    case WGPUTextureFormat_RGBA8Unorm:
-      if ((usage & WGPUTextureUsage_OutputAttachment) != usage) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kOperationError,
-            "rgba8unorm can only support OUTPUT_ATTACHMENT usage");
-      }
-      descriptor->device()->AddConsoleWarning(
-          "rgba8unorm swap chain is deprecated (for now); use bgra8unorm");
-      break;
     case WGPUTextureFormat_RGBA16Float:
       exception_state.ThrowDOMException(
           DOMExceptionCode::kUnknownError,
@@ -147,24 +166,6 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
   Host()->SetNeedsCompositingUpdate();
 
   return swapchain_;
-}
-
-ScriptPromise GPUCanvasContext::getSwapChainPreferredFormat(
-    ScriptState* script_state,
-    GPUDevice* device) {
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  device->AddConsoleWarning(
-      "Passing a GPUDevice to getSwapChainPreferredFormat is deprecated. "
-      "Pass a GPUAdapter instead, and update the calling code to expect a "
-      "GPUTextureFormat to be retured instead of a Promise.");
-
-  // TODO(crbug.com/1007166): Return actual preferred format for the swap chain.
-  resolver->Resolve("bgra8unorm");
-
-  return promise;
 }
 
 String GPUCanvasContext::getSwapChainPreferredFormat(

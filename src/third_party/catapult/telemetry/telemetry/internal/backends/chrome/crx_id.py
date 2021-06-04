@@ -9,6 +9,8 @@ and 'http://stackoverflow.com/questions/'
 for docs on the format.
 """
 
+from __future__ import division
+from __future__ import absolute_import
 import base64
 import os
 import hashlib
@@ -20,8 +22,8 @@ EXPECTED_CRX_VERSION = 2
 def HexToInt(hex_chars):
   """ Convert bytes like \xab -> 171 """
   val = 0
-  for i in xrange(len(hex_chars)):
-    val += pow(256, i) * ord(hex_chars[i])
+  for i, hex_char in enumerate(hex_chars):
+    val += pow(256, i) * ord(hex_char)
   return val
 
 def HexToMPDecimal(hex_chars):
@@ -30,9 +32,9 @@ def HexToMPDecimal(hex_chars):
   """
   result = ''
   base = ord('a')
-  for i in xrange(len(hex_chars)):
-    value = ord(hex_chars[i])
-    dig1 = value / 16
+  for hex_char in hex_chars:
+    value = ord(hex_char)
+    dig1 = value // 16
     dig2 = value % 16
     result += chr(dig1 + base)
     result += chr(dig2 + base)
@@ -43,9 +45,9 @@ def HexTo256(hex_chars):
       The format is taylored for copy and paste into C code:
       const uint8 sha256_hash[] = { ... }; """
   result = []
-  for i in xrange(len(hex_chars)):
-    value = ord(hex_chars[i])
-    dig1 = value / 16
+  for hex_char in hex_chars:
+    value = ord(hex_char)
+    dig1 = value // 16
     dig2 = value % 16
     result.append('0x' + hex(dig1)[2:] + hex(dig2)[2:])
   return '{%s}' % ', '.join(result)
@@ -127,4 +129,4 @@ def GetCRXAppID(filename, from_file_path=False, is_win_path=False):
   pub_key = GetPublicKey(filename, from_file_path, is_win_path=is_win_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   # AppID is the MPDecimal of only the first 128 bits of the hash.
-  return HexToMPDecimal(pub_key_hash[:128/8])
+  return HexToMPDecimal(pub_key_hash[:128//8])

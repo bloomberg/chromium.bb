@@ -32,11 +32,9 @@ constexpr size_t PushBufferQueue::kBufferSizeBytes;
 PushBufferQueue::PushBufferQueue()
     : producer_handler_(this),
       consumer_handler_(this),
-      consumer_stream_(base::in_place_t(), &consumer_handler_),
-      protobuf_consumer_stream_(base::in_place_t(),
-                                &consumer_stream_.value(),
-                                1),
-      producer_stream_(base::in_place_t(), &producer_handler_) {
+      consumer_stream_(absl::in_place, &consumer_handler_),
+      protobuf_consumer_stream_(absl::in_place, &consumer_stream_.value(), 1),
+      producer_stream_(absl::in_place, &producer_handler_) {
   DETACH_FROM_SEQUENCE(producer_sequence_checker_);
   DETACH_FROM_SEQUENCE(consumer_sequence_checker_);
 }
@@ -72,7 +70,7 @@ bool PushBufferQueue::PushBufferImpl(const PushBufferRequest& request) {
     // when the entire |buffer_| is full at time of writing.
     bytes_written_during_current_write_ = 0;
     producer_handler_.overflow();
-    producer_stream_ = base::nullopt;
+    producer_stream_ = absl::nullopt;
     producer_stream_.emplace(&producer_handler_);
   }
 
@@ -84,7 +82,7 @@ bool PushBufferQueue::HasBufferedData() const {
   return !is_in_invalid_state_ && GetAvailableyByteCount() != size_t{0};
 }
 
-base::Optional<PushBufferQueue::PushBufferRequest>
+absl::optional<PushBufferQueue::PushBufferRequest>
 PushBufferQueue::GetBufferedData() {
   auto result = GetBufferedDataImpl();
   if (result.has_value()) {
@@ -94,7 +92,7 @@ PushBufferQueue::GetBufferedData() {
   return result;
 }
 
-base::Optional<PushBufferQueue::PushBufferRequest>
+absl::optional<PushBufferQueue::PushBufferRequest>
 PushBufferQueue::GetBufferedDataImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(consumer_sequence_checker_);
   DCHECK(HasBufferedData());
@@ -129,12 +127,12 @@ PushBufferQueue::GetBufferedDataImpl() {
 
     // If |!succeeded|, the streams have ended up in an unexpected state and
     // need to be recreated.
-    protobuf_consumer_stream_ = base::nullopt;
-    consumer_stream_ = base::nullopt;
+    protobuf_consumer_stream_ = absl::nullopt;
+    consumer_stream_ = absl::nullopt;
     consumer_stream_.emplace(&consumer_handler_);
     protobuf_consumer_stream_.emplace(&consumer_stream_.value(), 1);
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   consecuitive_read_failures_ = 0;

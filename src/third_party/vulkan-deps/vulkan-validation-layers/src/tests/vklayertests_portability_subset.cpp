@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020 The Khronos Group Inc.
- * Copyright (c) 2020 Valve Corporation
- * Copyright (c) 2020 LunarG, Inc.
+ * Copyright (c) 2020-2021 The Khronos Group Inc.
+ * Copyright (c) 2020-2021 Valve Corporation
+ * Copyright (c) 2020-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,6 +155,11 @@ TEST_F(VkPortabilitySubsetTest, CreateImageView) {
     }
     m_device_extension_names.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
+    const bool test_bits_per_comp = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    if (test_bits_per_comp) {
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    }
+
     auto portability_feature = LvlInitStruct<VkPhysicalDevicePortabilitySubsetFeaturesKHR>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&portability_feature);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
@@ -211,8 +216,10 @@ TEST_F(VkPortabilitySubsetTest, CreateImageView) {
     ci.format = VK_FORMAT_R5G6B5_UNORM_PACK16;  // Wrong number of components
     CreateImageViewTest(*this, &ci, "VUID-VkImageViewCreateInfo-imageViewFormatReinterpretation-04466");
 
-    ci.format = VK_FORMAT_R12X4G12X4_UNORM_2PACK16;  // Wrong number of bits per component
-    CreateImageViewTest(*this, &ci, "VUID-VkImageViewCreateInfo-imageViewFormatReinterpretation-04466");
+    if (test_bits_per_comp) {
+        ci.format = VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR;  // Wrong number of bits per component
+        CreateImageViewTest(*this, &ci, "VUID-VkImageViewCreateInfo-imageViewFormatReinterpretation-04466");
+    }
 }
 
 TEST_F(VkPortabilitySubsetTest, CreateSampler) {
@@ -463,12 +470,20 @@ TEST_F(VkPortabilitySubsetTest, CreateGraphicsPipelinesDepthStencilState) {
     pipe.InitInfo();
     pipe.gp_ci_.pDepthStencilState = &depth_stencil_ci;
     pipe.rs_state_ci_.cullMode = VK_CULL_MODE_NONE;
-    pipe.rs_state_ci_.rasterizerDiscardEnable = VK_TRUE;
     pipe.InitState();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineDepthStencilStateCreateInfo-separateStencilMaskRef-04453");
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
+
+    // Ensure using without depth-stencil works
+    m_errorMonitor->ExpectSuccess();
+    pipe.rs_state_ci_.rasterizerDiscardEnable = VK_TRUE;
+    // pDepthStencilState should be ignored if rasterization is disabled or if the referenced subpass does not use a depth/stencil
+    // attachment
+    pipe.gp_ci_.pDepthStencilState = nullptr;
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyNotFound();
 }
 
 TEST_F(VkPortabilitySubsetTest, CreateGraphicsPipelinesColorBlendAttachmentState) {

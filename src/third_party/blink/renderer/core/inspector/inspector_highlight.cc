@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
@@ -392,7 +394,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
 }
 
 void AppendLineStyleConfig(
-    const base::Optional<LineStyle>& line_style,
+    const absl::optional<LineStyle>& line_style,
     std::unique_ptr<protocol::DictionaryValue>& parent_config,
     String line_name) {
   if (!line_style || line_style->IsTransparent()) {
@@ -408,7 +410,7 @@ void AppendLineStyleConfig(
 }
 
 void AppendBoxStyleConfig(
-    const base::Optional<BoxStyle>& box_style,
+    const absl::optional<BoxStyle>& box_style,
     std::unique_ptr<protocol::DictionaryValue>& parent_config,
     String box_name) {
   if (!box_style || box_style->IsTransparent()) {
@@ -2021,7 +2023,7 @@ bool InspectorHighlight::GetContentQuads(
     quad.Scale(scale, scale);
   }
 
-  result->reset(new protocol::Array<protocol::Array<double>>());
+  *result = std::make_unique<protocol::Array<protocol::Array<double>>>();
   for (FloatQuad& quad : quads)
     (*result)->emplace_back(BuildArrayForQuad(quad));
   return true;
@@ -2074,13 +2076,13 @@ std::unique_ptr<protocol::DictionaryValue> BuildSnapContainerInfo(Node* node) {
   if (!node)
     return nullptr;
 
-  LayoutBox* layout_box = node->GetLayoutBox();
+  // If scroll snapping is enabled for the document element, we should use
+  // document's layout box for reading snap areas.
+  LayoutBox* layout_box = node == node->GetDocument().documentElement()
+                              ? node->GetDocument().GetLayoutBoxForScrolling()
+                              : node->GetLayoutBox();
 
   if (!layout_box)
-    return nullptr;
-
-  auto* snap_areas = layout_box->SnapAreas();
-  if (!snap_areas)
     return nullptr;
 
   LocalFrameView* containing_view = node->GetDocument().View();
@@ -2097,6 +2099,9 @@ std::unique_ptr<protocol::DictionaryValue> BuildSnapContainerInfo(Node* node) {
   auto scroll_position = scrollable_area->ScrollPosition();
   auto* container_data = scrollable_area->GetSnapContainerData();
 
+  if (!container_data)
+    return nullptr;
+
   FloatQuad snapport_quad =
       layout_box->LocalToAbsoluteQuad(ToFloatQuad(container_data->rect()));
   scroll_snap_info->setValue("snapport",
@@ -2110,7 +2115,6 @@ std::unique_ptr<protocol::DictionaryValue> BuildSnapContainerInfo(Node* node) {
   auto snap_type = container_data->scroll_snap_type();
   std::unique_ptr<protocol::ListValue> result_areas =
       protocol::ListValue::create();
-  DCHECK_EQ(snap_areas->size(), container_data->size());
   std::vector<cc::SnapAreaData> snap_area_items;
   snap_area_items.reserve(container_data->size());
   for (size_t i = 0; i < container_data->size(); i++) {
@@ -2233,21 +2237,21 @@ InspectorFlexContainerHighlightConfig
 InspectorHighlight::DefaultFlexContainerConfig() {
   InspectorFlexContainerHighlightConfig config;
   config.container_border =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.line_separator =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.item_separator =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.main_distributed_space =
-      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+      absl::optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
   config.cross_distributed_space =
-      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+      absl::optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
   config.row_gap_space =
-      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+      absl::optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
   config.column_gap_space =
-      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+      absl::optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
   config.cross_alignment =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   return config;
 }
 
@@ -2255,11 +2259,11 @@ InspectorHighlight::DefaultFlexContainerConfig() {
 InspectorFlexItemHighlightConfig InspectorHighlight::DefaultFlexItemConfig() {
   InspectorFlexItemHighlightConfig config;
   config.base_size_box =
-      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+      absl::optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
   config.base_size_border =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.flexibility_arrow =
-      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      absl::optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   return config;
 }
 

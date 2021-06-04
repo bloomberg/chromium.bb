@@ -293,8 +293,9 @@ g.test('it_is_invalid_to_use_a_texture_view_created_from_a_destroyed_texture').f
   const renderPass = commandEncoder.beginRenderPass({
     colorAttachments: [
       {
-        attachment: texture.createView(),
+        view: texture.createView(),
         loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        storeOp: 'store',
       },
     ],
   });

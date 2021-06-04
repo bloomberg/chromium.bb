@@ -10,6 +10,10 @@
 #include "absl/strings/string_view.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
+namespace Json {
+class Value;
+}
+
 namespace openscreen {
 namespace cast {
 
@@ -242,6 +246,8 @@ inline bool IsTransportNamespace(absl::string_view namespace_) {
 // |prefix| of "sender" will result in a string like "sender-12345".
 std::string MakeUniqueSessionId(const char* prefix);
 
+// Returns true if the type field in |object| is set to the given |type|.
+bool HasType(const Json::Value& object, CastMessageType type);
 }  // namespace cast
 }  // namespace openscreen
 

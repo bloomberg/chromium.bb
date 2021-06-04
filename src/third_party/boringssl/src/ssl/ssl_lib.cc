@@ -275,9 +275,7 @@ ssl_open_record_t ssl_open_app_data(SSL *ssl, Span<uint8_t> *out,
 void ssl_update_cache(SSL_HANDSHAKE *hs, int mode) {
   SSL *const ssl = hs->ssl;
   SSL_CTX *ctx = ssl->session_ctx.get();
-  // Never cache sessions with empty session IDs.
-  if (ssl->s3->established_session->session_id_length == 0 ||
-      ssl->s3->established_session->not_resumable ||
+  if (!SSL_SESSION_is_resumable(ssl->s3->established_session.get()) ||
       (ctx->session_cache_mode & mode) != mode) {
     return;
   }
@@ -463,7 +461,8 @@ static bool ssl_can_renegotiate(const SSL *ssl) {
     return false;
   }
 
-  if (ssl_protocol_version(ssl) >= TLS1_3_VERSION) {
+  if (ssl->s3->have_version &&
+      ssl_protocol_version(ssl) >= TLS1_3_VERSION) {
     return false;
   }
 
@@ -1378,6 +1377,7 @@ int SSL_get_error(const SSL *ssl, int ret_code) {
     case SSL_ERROR_EARLY_DATA_REJECTED:
     case SSL_ERROR_WANT_CERTIFICATE_VERIFY:
     case SSL_ERROR_WANT_RENEGOTIATE:
+    case SSL_ERROR_HANDSHAKE_HINTS_READY:
       return ssl->s3->rwstate;
 
     case SSL_ERROR_WANT_READ: {
@@ -1463,6 +1463,8 @@ const char *SSL_error_description(int err) {
       return "HANDOFF";
     case SSL_ERROR_HANDBACK:
       return "HANDBACK";
+    case SSL_ERROR_HANDSHAKE_HINTS_READY:
+      return "HANDSHAKE_HINTS_READY";
     default:
       return nullptr;
   }
@@ -1784,6 +1786,9 @@ int SSL_renegotiate(SSL *ssl) {
     OPENSSL_PUT_ERROR(SSL, SSL_R_NO_RENEGOTIATION);
     return 0;
   }
+
+  // We should not have told the caller to release the private key.
+  assert(!SSL_can_release_private_key(ssl));
 
   // Renegotiation is only supported at quiescent points in the application
   // protocol, namely in HTTPS, just before reading the HTTP response.
@@ -2186,6 +2191,66 @@ int SSL_CTX_set_tlsext_servername_arg(SSL_CTX *ctx, void *arg) {
   return 1;
 }
 
+SSL_ECH_SERVER_CONFIG_LIST *SSL_ECH_SERVER_CONFIG_LIST_new() {
+  return New<SSL_ECH_SERVER_CONFIG_LIST>();
+}
+
+void SSL_ECH_SERVER_CONFIG_LIST_up_ref(SSL_ECH_SERVER_CONFIG_LIST *configs) {
+  CRYPTO_refcount_inc(&configs->references);
+}
+
+void SSL_ECH_SERVER_CONFIG_LIST_free(SSL_ECH_SERVER_CONFIG_LIST *configs) {
+  if (configs == nullptr ||
+      !CRYPTO_refcount_dec_and_test_zero(&configs->references)) {
+    return;
+  }
+
+  configs->~ssl_ech_server_config_list_st();
+  OPENSSL_free(configs);
+}
+
+int SSL_ECH_SERVER_CONFIG_LIST_add(SSL_ECH_SERVER_CONFIG_LIST *configs,
+                                   int is_retry_config,
+                                   const uint8_t *ech_config,
+                                   size_t ech_config_len,
+                                   const uint8_t *private_key,
+                                   size_t private_key_len) {
+  UniquePtr<ECHServerConfig> parsed_config = MakeUnique<ECHServerConfig>();
+  if (!parsed_config) {
+    return 0;
+  }
+  if (!parsed_config->Init(MakeConstSpan(ech_config, ech_config_len),
+                           MakeConstSpan(private_key, private_key_len),
+                           !!is_retry_config)) {
+    OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
+    return 0;
+  }
+  if (!configs->configs.Push(std::move(parsed_config))) {
+    OPENSSL_PUT_ERROR(SSL, ERR_R_MALLOC_FAILURE);
+    return 0;
+  }
+  return 1;
+}
+
+int SSL_CTX_set1_ech_server_config_list(SSL_CTX *ctx,
+                                        SSL_ECH_SERVER_CONFIG_LIST *list) {
+  bool has_retry_config = false;
+  for (const auto &config : list->configs) {
+    if (config->is_retry_config()) {
+      has_retry_config = true;
+      break;
+    }
+  }
+  if (!has_retry_config) {
+    OPENSSL_PUT_ERROR(SSL, SSL_R_ECH_SERVER_WOULD_HAVE_NO_RETRY_CONFIGS);
+    return 0;
+  }
+  UniquePtr<SSL_ECH_SERVER_CONFIG_LIST> owned_list = UpRef(list);
+  MutexWriteLock lock(&ctx->lock);
+  ctx->ech_server_config_list.swap(owned_list);
+  return 1;
+}
+
 int SSL_select_next_proto(uint8_t **out, uint8_t *out_len, const uint8_t *peer,
                           unsigned peer_len, const uint8_t *supported,
                           unsigned supported_len) {
@@ -2243,21 +2308,26 @@ void SSL_CTX_set_next_proto_select_cb(
 
 int SSL_CTX_set_alpn_protos(SSL_CTX *ctx, const uint8_t *protos,
                             unsigned protos_len) {
-  // Note this function's calling convention is backwards.
-  return ctx->alpn_client_proto_list.CopyFrom(MakeConstSpan(protos, protos_len))
-             ? 0
-             : 1;
+  // Note this function's return value is backwards.
+  auto span = MakeConstSpan(protos, protos_len);
+  if (!span.empty() && !ssl_is_valid_alpn_list(span)) {
+    OPENSSL_PUT_ERROR(SSL, SSL_R_INVALID_ALPN_PROTOCOL_LIST);
+    return 1;
+  }
+  return ctx->alpn_client_proto_list.CopyFrom(span) ? 0 : 1;
 }
 
 int SSL_set_alpn_protos(SSL *ssl, const uint8_t *protos, unsigned protos_len) {
-  // Note this function's calling convention is backwards.
+  // Note this function's return value is backwards.
   if (!ssl->config) {
     return 1;
   }
-  return ssl->config->alpn_client_proto_list.CopyFrom(
-             MakeConstSpan(protos, protos_len))
-             ? 0
-             : 1;
+  auto span = MakeConstSpan(protos, protos_len);
+  if (!span.empty() && !ssl_is_valid_alpn_list(span)) {
+    OPENSSL_PUT_ERROR(SSL, SSL_R_INVALID_ALPN_PROTOCOL_LIST);
+    return 1;
+  }
+  return ssl->config->alpn_client_proto_list.CopyFrom(span) ? 0 : 1;
 }
 
 void SSL_CTX_set_alpn_select_cb(SSL_CTX *ctx,
@@ -2773,6 +2843,17 @@ void SSL_CTX_set_current_time_cb(SSL_CTX *ctx,
                                  void (*cb)(const SSL *ssl,
                                             struct timeval *out_clock)) {
   ctx->current_time_cb = cb;
+}
+
+int SSL_can_release_private_key(const SSL *ssl) {
+  if (ssl_can_renegotiate(ssl)) {
+    // If the connection can renegotiate (client only), the private key may be
+    // used in a future handshake.
+    return 0;
+  }
+
+  // Otherwise, this is determined by the current handshake.
+  return !ssl->s3->hs || ssl->s3->hs->can_release_private_key;
 }
 
 int SSL_is_init_finished(const SSL *ssl) {

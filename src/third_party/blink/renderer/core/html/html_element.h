@@ -42,6 +42,7 @@ class HTMLFormElement;
 class KeyboardEvent;
 class StringOrTrustedScript;
 class StringTreatNullAsEmptyStringOrTrustedScript;
+class V8UnionStringTreatNullAsEmptyStringOrTrustedScript;
 
 enum TranslateAttributeMode {
   kTranslateAttributeYes,
@@ -62,13 +63,20 @@ class CORE_EXPORT HTMLElement : public Element {
 
   String title() const final;
 
-  void setInnerText(const String&, ExceptionState&);
-  virtual void setInnerText(const StringOrTrustedScript&, ExceptionState&);
-  virtual void setInnerText(const StringTreatNullAsEmptyStringOrTrustedScript&,
-                            ExceptionState&);
   String innerText();
-  void innerText(StringOrTrustedScript& result);
-  void innerText(StringTreatNullAsEmptyStringOrTrustedScript& result);
+  void setInnerText(const String&, ExceptionState&);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionStringTreatNullAsEmptyStringOrTrustedScript* innerTextForBinding();
+  virtual void setInnerTextForBinding(
+      const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+          string_or_trusted_script,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void innerTextForBinding(StringTreatNullAsEmptyStringOrTrustedScript& result);
+  virtual void setInnerTextForBinding(
+      const StringTreatNullAsEmptyStringOrTrustedScript&,
+      ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setOuterText(const String&, ExceptionState&);
 
   virtual bool HasCustomFocusLogic() const;
@@ -108,6 +116,9 @@ class CORE_EXPORT HTMLElement : public Element {
   bool HasDirectionAuto() const;
 
   virtual bool IsHTMLBodyElement() const { return false; }
+  // TODO(crbug.com/1123606): Remove this virtual method once the fenced frame
+  // origin trial is over.
+  virtual bool IsHTMLFencedFrameElement() const { return false; }
   virtual bool IsHTMLFrameSetElement() const { return false; }
   virtual bool IsHTMLPortalElement() const { return false; }
   virtual bool IsHTMLUnknownElement() const { return false; }

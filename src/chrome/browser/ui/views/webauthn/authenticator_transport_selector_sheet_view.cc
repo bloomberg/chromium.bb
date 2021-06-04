@@ -4,11 +4,6 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_transport_selector_sheet_view.h"
 
-#include <utility>
-
-#include "chrome/browser/webauthn/authenticator_transport.h"
-#include "device/fido/features.h"
-
 AuthenticatorTransportSelectorSheetView::
     AuthenticatorTransportSelectorSheetView(
         std::unique_ptr<AuthenticatorTransportSelectorSheetModel> model)
@@ -20,11 +15,8 @@ AuthenticatorTransportSelectorSheetView::
 std::pair<std::unique_ptr<views::View>,
           AuthenticatorRequestSheetView::AutoFocus>
 AuthenticatorTransportSelectorSheetView::BuildStepSpecificContent() {
-  AuthenticatorRequestDialogModel* const dialog_model = model()->dialog_model();
-  base::flat_set<AuthenticatorTransport> transports =
-      dialog_model->available_transports();
   return std::make_pair(
       std::make_unique<HoverListView>(std::make_unique<TransportHoverListModel>(
-          transports, dialog_model->win_native_api_enabled(), model())),
+          model()->dialog_model()->mechanisms())),
       AutoFocus::kYes);
 }

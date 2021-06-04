@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/rounded_label_button.h"
+#include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -46,7 +47,31 @@ class StackingBarLabelButton : public views::LabelButton {
     label()->SetSubpixelRenderingEnabled(false);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-    TrayPopupUtils::ConfigureTrayPopupButton(this);
+    TrayPopupUtils::ConfigureTrayPopupButton(
+        this, TrayPopupInkDropStyle::FILL_BOUNDS, /*highlight_on_hover=*/true,
+        /*highlight_on_focus=*/true);
+    // SetCreateHighlightCallback and SetCreateRippleCallback are
+    // explicitly called after ConfigureTrayPopupButton as
+    // ConfigureTrayPopupButton configures the InkDrop and these callbacks
+    // override that behavior.
+    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+        [](Button* host) {
+          auto highlight = std::make_unique<views::InkDropHighlight>(
+              gfx::SizeF(host->size()), message_center_style::kInkRippleColor);
+          highlight->set_visible_opacity(
+              message_center_style::kInkRippleOpacity);
+          return highlight;
+        },
+        this));
+    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+        [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
+          return std::make_unique<views::FloodFillInkDropRipple>(
+              host->size(),
+              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              message_center_style::kInkRippleColor,
+              message_center_style::kInkRippleOpacity);
+        },
+        this));
   }
 
   ~StackingBarLabelButton() override = default;
@@ -73,28 +98,6 @@ class StackingBarLabelButton : public views::LabelButton {
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
     views::LabelButton::PaintButtonContents(canvas);
-  }
-
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    auto ink_drop = TrayPopupUtils::CreateInkDrop(this);
-    ink_drop->SetShowHighlightOnFocus(true);
-    ink_drop->SetShowHighlightOnHover(true);
-    return ink_drop;
-  }
-
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), GetInkDropCenterBasedOnLastEvent(),
-        message_center_style::kInkRippleColor,
-        message_center_style::kInkRippleOpacity);
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(size()), message_center_style::kInkRippleColor);
-    highlight->set_visible_opacity(message_center_style::kInkRippleOpacity);
-    return highlight;
   }
 
  private:

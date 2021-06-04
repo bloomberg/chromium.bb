@@ -19,6 +19,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -30,7 +31,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 #if defined(OS_MAC)
 #include "base/task/current_thread.h"
@@ -52,7 +52,7 @@ constexpr int kLogoHeight = 20;  // The height of Chrome enterprise logo.
 
 gfx::Insets GetDialogInsets() {
   return ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::CONTROL, views::TEXT);
+      views::DialogContentType::kControl, views::DialogContentType::kText);
 }
 
 std::unique_ptr<views::Label> CreateText(const std::u16string& message) {
@@ -132,7 +132,7 @@ void EnterpriseStartupDialogView::DisplayLaunchingInformationWithThrobber(
 
 void EnterpriseStartupDialogView::DisplayErrorMessage(
     const std::u16string& error_message,
-    const base::Optional<std::u16string>& accept_button) {
+    const absl::optional<std::u16string>& accept_button) {
   ResetDialog(accept_button.has_value());
   std::unique_ptr<views::Label> text = CreateText(error_message);
   auto error_icon = std::make_unique<views::ImageView>();
@@ -264,7 +264,7 @@ void EnterpriseStartupDialogImpl::DisplayLaunchingInformationWithThrobber(
 
 void EnterpriseStartupDialogImpl::DisplayErrorMessage(
     const std::u16string& error_message,
-    const base::Optional<std::u16string>& accept_button) {
+    const absl::optional<std::u16string>& accept_button) {
   if (dialog_view_)
     dialog_view_->DisplayErrorMessage(error_message, accept_button);
 }

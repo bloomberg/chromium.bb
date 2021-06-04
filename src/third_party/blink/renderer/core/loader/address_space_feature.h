@@ -31,14 +31,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_ADDRESS_SPACE_FEATURE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_ADDRESS_SPACE_FEATURE_H_
 
-#include "base/optional.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
 class LocalFrame;
+class ResourceError;
 class ResourceResponse;
 
 // Describes a type of fetch for the purposes of categorizing feature use.
@@ -62,7 +63,7 @@ enum class FetchType {
 //
 // Returns nullopt if the load is not a private network request, as defined in
 // https://wicg.github.io/cors-rfc1918/#private-network-request.
-base::Optional<mojom::blink::WebFeature> CORE_EXPORT AddressSpaceFeature(
+absl::optional<mojom::blink::WebFeature> CORE_EXPORT AddressSpaceFeature(
     FetchType fetch_type,
     network::mojom::blink::IPAddressSpace client_address_space,
     bool client_is_secure_context,
@@ -76,6 +77,13 @@ base::Optional<mojom::blink::WebFeature> CORE_EXPORT AddressSpaceFeature(
 void RecordAddressSpaceFeature(FetchType fetch_type,
                                LocalFrame* client_frame,
                                const ResourceResponse& response);
+
+// Same as above, for cases where the fetch failed.
+// Does nothing if the fetch failed due to an error other than a failed Private
+// Network Access check.
+void RecordAddressSpaceFeature(FetchType fetch_type,
+                               LocalFrame* client_frame,
+                               const ResourceError& error);
 
 }  // namespace blink
 

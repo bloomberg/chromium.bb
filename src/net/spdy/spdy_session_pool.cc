@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -88,7 +88,7 @@ SpdySessionPool::SpdySessionPool(
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
-    const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
+    const absl::optional<GreasedHttp2Frame>& greased_http2_frame,
     bool http2_end_stream_with_data_frame,
     bool enable_priority_update,
     SpdySessionPool::TimeFunc time_func,
@@ -144,7 +144,6 @@ SpdySessionPool::~SpdySessionPool() {
 
 int SpdySessionPool::CreateAvailableSessionFromSocketHandle(
     const SpdySessionKey& key,
-    bool is_trusted_proxy,
     std::unique_ptr<ClientSocketHandle> client_socket_handle,
     const NetLogWithSource& net_log,
     base::WeakPtr<SpdySession>* session) {
@@ -152,7 +151,7 @@ int SpdySessionPool::CreateAvailableSessionFromSocketHandle(
                "SpdySessionPool::CreateAvailableSessionFromSocketHandle");
 
   std::unique_ptr<SpdySession> new_session =
-      CreateSession(key, is_trusted_proxy, net_log.net_log());
+      CreateSession(key, net_log.net_log());
   std::vector<std::string> dns_aliases =
       client_socket_handle->socket()->GetDnsAliases();
 
@@ -179,7 +178,6 @@ int SpdySessionPool::CreateAvailableSessionFromSocketHandle(
 
 base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
-    bool is_trusted_proxy,
     std::unique_ptr<StreamSocket> socket_stream,
     const LoadTimingInfo::ConnectTiming& connect_timing,
     const NetLogWithSource& net_log) {
@@ -187,7 +185,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
                "SpdySessionPool::CreateAvailableSessionFromSocket");
 
   std::unique_ptr<SpdySession> new_session =
-      CreateSession(key, is_trusted_proxy, net_log.net_log());
+      CreateSession(key, net_log.net_log());
   std::vector<std::string> dns_aliases = socket_stream->GetDnsAliases();
 
   new_session->InitializeWithSocket(std::move(socket_stream), connect_timing,
@@ -331,7 +329,7 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
                                old_key.privacy_mode(),
                                old_key.is_proxy_session(), key.socket_tag(),
                                old_key.network_isolation_key(),
-                               old_key.disable_secure_dns());
+                               old_key.secure_dns_policy());
 
         // If there is already a session with |new_key|, skip this one.
         // It will be found in |aliases_| in a future iteration.
@@ -375,7 +373,7 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
           SpdySessionKey new_pool_alias_key = SpdySessionKey(
               it->host_port_pair(), it->proxy_server(), it->privacy_mode(),
               it->is_proxy_session(), key.socket_tag(),
-              it->network_isolation_key(), it->disable_secure_dns());
+              it->network_isolation_key(), it->secure_dns_policy());
           MapKeyToAvailableSession(new_pool_alias_key, available_session,
                                    std::move(pooled_alias_old_dns_aliases));
           auto old_it = it;
@@ -578,9 +576,6 @@ void SpdySessionPool::DumpMemoryStats(
     if (is_session_active)
       num_active_sessions++;
   }
-  total_size +=
-      base::trace_event::EstimateMemoryUsage(spdy::ObtainHpackStaticTable()) +
-      base::trace_event::EstimateMemoryUsage(push_promise_index_);
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(base::StringPrintf(
           "%s/spdy_session_pool", parent_dump_absolute_name.c_str()));
@@ -687,7 +682,6 @@ void SpdySessionPool::CloseCurrentSessionsHelper(Error error,
 
 std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
     const SpdySessionKey& key,
-    bool is_trusted_proxy,
     NetLog* net_log) {
   UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", IMPORTED_FROM_SOCKET,
                             SPDY_SESSION_GET_MAX);
@@ -711,7 +705,7 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       ssl_client_context_ ? ssl_client_context_->ssl_config_service() : nullptr,
       quic_supported_versions_, enable_sending_initial_data_,
       enable_ping_based_connection_checking_, is_http2_enabled_,
-      is_quic_enabled_, is_trusted_proxy, session_max_recv_window_size_,
+      is_quic_enabled_, session_max_recv_window_size_,
       session_max_queued_capped_frames_, initial_settings_,
       greased_http2_frame_, http2_end_stream_with_data_frame_,
       enable_priority_update_, time_func_, push_delegate_,

@@ -147,6 +147,10 @@ def GenTests(api):
       api.properties(with_tags=True)
   )
   yield (
+      api.test('with_experiments') +
+      api.properties(bot_update_experiments=['no_sync','cool_experiment'])
+  )
+  yield (
       api.test('deprecated_got_revision_mapping') +
       try_build() +
       api.properties(

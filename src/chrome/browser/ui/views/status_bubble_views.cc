@@ -23,6 +23,8 @@
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -31,6 +33,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
@@ -40,8 +43,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -434,6 +435,11 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   const float radius = kBubbleCornerRadius * scale;
 
   SkScalar rad[8] = {};
+  auto round_corner = [&rad, radius](gfx::RRectF::Corner c) {
+    int index = base::to_underlying(c);
+    rad[2 * index] = radius;
+    rad[2 * index + 1] = radius;
+  };
 
   // Top Edges - if the bubble is in its bottom position (sticking downwards),
   // then we square the top edges. Otherwise, we square the edges based on the
@@ -442,14 +448,9 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   if (style_ != BubbleStyle::kBottom) {
     if (base::i18n::IsRTL() != (style_ == BubbleStyle::kStandardRight)) {
       // The text is RtL or the bubble is on the right side (but not both).
-
-      // Top Left corner.
-      rad[0] = radius;
-      rad[1] = radius;
+      round_corner(gfx::RRectF::Corner::kUpperLeft);
     } else {
-      // Top Right corner.
-      rad[2] = radius;
-      rad[3] = radius;
+      round_corner(gfx::RRectF::Corner::kUpperRight);
     }
   }
 
@@ -457,13 +458,20 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   // position (sticking upward).
   if (style_ != BubbleStyle::kStandard &&
       style_ != BubbleStyle::kStandardRight) {
-    // Bottom Right Corner.
-    rad[4] = radius;
-    rad[5] = radius;
-
-    // Bottom Left Corner.
-    rad[6] = radius;
-    rad[7] = radius;
+    round_corner(gfx::RRectF::Corner::kLowerRight);
+    round_corner(gfx::RRectF::Corner::kLowerLeft);
+  } else {
+#if defined(OS_MAC)
+    // Mac's window has rounded corners, but the corner radius might be
+    // different on different versions. Status bubble will use its own round
+    // corner on Mac when there is no download shelf beneath.
+    if (!status_bubble_->download_shelf_is_visible_) {
+      if (base::i18n::IsRTL() != (style_ == BubbleStyle::kStandard))
+        round_corner(gfx::RRectF::Corner::kLowerLeft);
+      else
+        round_corner(gfx::RRectF::Corner::kLowerRight);
+    }
+#endif
   }
 
   // Snap to pixels to avoid shadow blurriness.

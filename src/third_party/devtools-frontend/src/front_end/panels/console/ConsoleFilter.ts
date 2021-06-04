@@ -5,6 +5,7 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 
 import type {ConsoleViewMessage} from './ConsoleViewMessage.js';
@@ -30,7 +31,13 @@ export class ConsoleFilter {
 
   static allLevelsFilterValue(): LevelsMask {
     const result: LevelsMask = {};
-    for (const name of Object.values(SDK.ConsoleModel.MessageLevel)) {
+    const logLevels: Protocol.EnumerableEnum<typeof Protocol.Log.LogEntryLevel> = {
+      Verbose: Protocol.Log.LogEntryLevel.Verbose,
+      Info: Protocol.Log.LogEntryLevel.Info,
+      Warning: Protocol.Log.LogEntryLevel.Warning,
+      Error: Protocol.Log.LogEntryLevel.Error,
+    };
+    for (const name of Object.values(logLevels)) {
       result[name] = true;
     }
     return result;
@@ -38,7 +45,7 @@ export class ConsoleFilter {
 
   static defaultLevelsFilterValue(): LevelsMask {
     const result = ConsoleFilter.allLevelsFilterValue();
-    result[SDK.ConsoleModel.MessageLevel.Verbose] = false;
+    result[Protocol.Log.LogEntryLevel.Verbose] = false;
     return result;
   }
 
@@ -62,8 +69,8 @@ export class ConsoleFilter {
       return false;
     }
 
-    if (message.type === SDK.ConsoleModel.MessageType.Command || message.type === SDK.ConsoleModel.MessageType.Result ||
-        message.isGroupMessage()) {
+    if (message.type === SDK.ConsoleModel.FrontendMessageType.Command ||
+        message.type === SDK.ConsoleModel.FrontendMessageType.Result || message.isGroupMessage()) {
       return true;
     }
     if (message.level && !this.levelsMask[message.level as string]) {

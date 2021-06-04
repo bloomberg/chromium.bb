@@ -11,15 +11,20 @@
   // Show all messages, including verbose.
   Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
   Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:script");
-  Console.ConsoleView.instance()._filter._onFilterChanged();
-  Console.ConsoleView.instance()._filter._currentFilter.levelsMask = Console.ConsoleFilter.allLevelsFilterValue();
+  Console.ConsoleView.instance()._filter._messageLevelFiltersSetting.set(Console.ConsoleFilter.allLevelsFilterValue());
 
   for (var i = 0; i < 5; i++) {
     // Groupable messages.
-    addViolationMessage('Verbose-level violation', `script${i}.js`, SDK.ConsoleMessage.MessageLevel.Verbose);
-    addViolationMessage('Error-level violation', `script${i}.js`, SDK.ConsoleMessage.MessageLevel.Error);
+    addViolationMessage(
+        'Verbose-level violation', `script${i}.js`,
+        Protocol.Log.LogEntryLevel.Verbose);
+    addViolationMessage(
+        'Error-level violation', `script${i}.js`,
+        Protocol.Log.LogEntryLevel.Error);
     addConsoleAPIMessage('ConsoleAPI log', `script${i}.js`);
-    addViolationMessage('Violation hidden by filter', `zzz.js`, SDK.ConsoleMessage.MessageLevel.Verbose);
+    addViolationMessage(
+        'Violation hidden by filter', `zzz.js`,
+        Protocol.Log.LogEntryLevel.Verbose);
 
     // Non-groupable messages.
     await ConsoleTestRunner.evaluateInConsolePromise(`'evaluated command'`);
@@ -40,8 +45,8 @@
    */
   function addViolationMessage(text, url, level) {
     var message = new SDK.ConsoleMessage(
-        null, SDK.ConsoleMessage.MessageSource.Violation, level,
-        text, SDK.ConsoleMessage.MessageType.Log, url);
+        null, Protocol.Log.LogEntrySource.Violation, level, text,
+        Protocol.Runtime.ConsoleAPICalledEventType.Log, url);
     SDK.consoleModel.addMessage(message);
   }
 
@@ -51,8 +56,9 @@
    */
   function addConsoleAPIMessage(text,  url) {
     var message = new SDK.ConsoleMessage(
-        null, SDK.ConsoleMessage.MessageSource.ConsoleAPI, SDK.ConsoleMessage.MessageLevel.Info,
-        text, SDK.ConsoleMessage.MessageType.Log, url);
+        null, SDK.ConsoleMessage.FrontendMessageSource.ConsoleAPI,
+        Protocol.Log.LogEntryLevel.Info, text,
+        Protocol.Runtime.ConsoleAPICalledEventType.Log, url);
     SDK.consoleModel.addMessage(message);
   }
 })();

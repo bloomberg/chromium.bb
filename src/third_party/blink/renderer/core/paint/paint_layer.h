@@ -46,7 +46,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_H_
 
 #include <memory>
+
 #include "base/auto_reset.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -803,20 +805,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     // better isolation.
     const PaintLayer* nearest_contained_layout_layer = nullptr;
 
-    // These two boxes do not include any applicable scroll offset of the
-    // root PaintLayer. Note that 'absolute' here is potentially misleading as
-    // the actual coordinate system depends on if this layer is affected by the
-    // viewport's scroll offset or not. For content that is not affected by the
-    // viewport scroll offsets, this ends up being a rect in viewport coords.
-    // For content that is affected by the viewport's scroll offset this
-    // coordinate system is in absolute coords.
-    // Note: This stores LocalBoundingBoxForCompositingOverlapTest and not the
-    // expanded bounds (ExpandedBoundingBoxForCompositingOverlapTest).
-    IntRect clipped_absolute_bounding_box;
-    IntRect unclipped_absolute_bounding_box;
-
-    const LayoutBoxModelObject* clipping_container = nullptr;
+    const LayoutBoxModelObject* clipping_container;
   };
+
   bool NeedsVisualOverflowRecalc() const {
     return needs_visual_overflow_recalc_;
   }
@@ -854,7 +845,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     ancestor_scroll_container_layer_ = ancestor_scroll_container_layer;
   }
   void UpdateAncestorDependentCompositingInputs(
-      const AncestorDependentCompositingInputs&);
+      const PaintLayer* opacity_ancestor,
+      const PaintLayer* transform_ancestor,
+      const PaintLayer* filter_ancestor,
+      const PaintLayer* clip_path_ancestor,
+      const PaintLayer* mask_ancestor,
+      const PaintLayer* ancestor_scrolling_layer,
+      const PaintLayer* nearest_fixed_position_layer,
+      const PaintLayer* scroll_parent,
+      const PaintLayer* clip_parent,
+      const PaintLayer* nearest_contained_layout_layer,
+      const LayoutBoxModelObject* clipping_container);
   void ClearChildNeedsCompositingInputsUpdate();
 
   const AncestorDependentCompositingInputs&
@@ -1534,4 +1535,4 @@ CORE_EXPORT void showLayerTree(const blink::PaintLayer*);
 CORE_EXPORT void showLayerTree(const blink::LayoutObject*);
 #endif
 
-#endif  // Layer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_H_

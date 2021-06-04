@@ -67,7 +67,7 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
     case ui::VKEY_BROWSER_REFRESH:
     case ui::VKEY_F3:
       return "BrowserRefresh";
-    case ui::VKEY_MEDIA_LAUNCH_APP2:
+    case ui::VKEY_ZOOM:
     case ui::VKEY_F4:
       return "ChromeOSFullscreen";
     case ui::VKEY_MEDIA_LAUNCH_APP1:
@@ -145,7 +145,7 @@ void ImeObserver::OnActivate(const std::string& component_id) {
   if (extension_id_.empty())
     return;
 
-  std::unique_ptr<base::ListValue> args(input_ime::OnActivate::Create(
+  auto args(input_ime::OnActivate::Create(
       component_id, input_ime::ParseScreenType(GetCurrentScreenType())));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_ACTIVATE,
@@ -154,6 +154,7 @@ void ImeObserver::OnActivate(const std::string& component_id) {
 }
 
 void ImeObserver::OnFocus(
+    const std::string& engine_id,
     int context_id,
     const IMEEngineHandlerInterface::InputContext& context) {
   if (extension_id_.empty() || !HasListener(input_ime::OnFocus::kEventName))
@@ -169,18 +170,17 @@ void ImeObserver::OnFocus(
   context_value.spell_check = ConvertInputContextSpellCheck(context);
   context_value.should_do_learning = context.should_do_learning;
 
-  std::unique_ptr<base::ListValue> args(
-      input_ime::OnFocus::Create(context_value));
+  auto args(input_ime::OnFocus::Create(context_value));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_FOCUS,
                            input_ime::OnFocus::kEventName, std::move(args));
 }
 
-void ImeObserver::OnBlur(int context_id) {
+void ImeObserver::OnBlur(const std::string& engine_id, int context_id) {
   if (extension_id_.empty() || !HasListener(input_ime::OnBlur::kEventName))
     return;
 
-  std::unique_ptr<base::ListValue> args(input_ime::OnBlur::Create(context_id));
+  auto args(input_ime::OnBlur::Create(context_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_BLUR,
                            input_ime::OnBlur::kEventName, std::move(args));
@@ -235,7 +235,7 @@ void ImeObserver::OnKeyEvent(
   keyboard_event.shift_key = std::make_unique<bool>(event.IsShiftDown());
   keyboard_event.caps_lock = std::make_unique<bool>(event.IsCapsLockOn());
 
-  std::unique_ptr<base::ListValue> args(
+  auto args(
       input_ime::OnKeyEvent::Create(component_id, keyboard_event, request_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
@@ -246,8 +246,7 @@ void ImeObserver::OnReset(const std::string& component_id) {
   if (extension_id_.empty() || !HasListener(input_ime::OnReset::kEventName))
     return;
 
-  std::unique_ptr<base::ListValue> args(
-      input_ime::OnReset::Create(component_id));
+  auto args(input_ime::OnReset::Create(component_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_RESET,
                            input_ime::OnReset::kEventName, std::move(args));
@@ -258,8 +257,7 @@ void ImeObserver::OnDeactivated(const std::string& component_id) {
       !HasListener(input_ime::OnDeactivated::kEventName))
     return;
 
-  std::unique_ptr<base::ListValue> args(
-      input_ime::OnDeactivated::Create(component_id));
+  auto args(input_ime::OnDeactivated::Create(component_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_DEACTIVATED,
                            input_ime::OnDeactivated::kEventName,
@@ -288,8 +286,7 @@ void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
   info.focus = cursor_pos;
   info.anchor = anchor_pos;
   info.offset = offset_pos;
-  std::unique_ptr<base::ListValue> args(
-      input_ime::OnSurroundingTextChanged::Create(component_id, info));
+  auto args(input_ime::OnSurroundingTextChanged::Create(component_id, info));
 
   DispatchEventToExtension(
     extensions::events::INPUT_IME_ON_SURROUNDING_TEXT_CHANGED,
@@ -412,9 +409,10 @@ InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
     // receive events. If |profile| has an off-the-record profile, attach the
     // off-the-record profile. e.g. In guest mode, the extension is running with
     // the incognito profile instead of its original profile.
-    router = new InputImeEventRouter(profile->HasPrimaryOTRProfile()
-                                         ? profile->GetPrimaryOTRProfile()
-                                         : profile);
+    router = new InputImeEventRouter(
+        profile->HasPrimaryOTRProfile()
+            ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+            : profile);
     router_map_[profile] = router;
   }
   return router;

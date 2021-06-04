@@ -60,10 +60,6 @@ const char kTranslatePageLoadRankerVersion[] =
     "Translate.PageLoad.Ranker.Version";
 const char kTranslatePageLoadTriggerDecision[] =
     "Translate.PageLoad.TriggerDecision";
-const char kTranslatePageLoadTriggerDecisionAllTriggerDecisions[] =
-    "Translate.PageLoad.TriggerDecision.AllTriggerDecisions";
-const char kTranslatePageLoadTriggerDecisionTotalCount[] =
-    "Translate.PageLoad.TriggerDecision.TotalCount";
 
 TranslationType NullTranslateMetricsLogger::GetNextManualTranslationType() {
   return TranslationType::kUninitialized;
@@ -166,6 +162,7 @@ void TranslateMetricsLoggerImpl::RecordMetrics(bool is_final) {
           int(base::HashMetricName(model_detected_language_)))
       .SetHTMLContentLanguage(int(base::HashMetricName(html_content_language_)))
       .SetHTMLDocumentLanguage(int(base::HashMetricName(html_doc_language_)))
+      .SetWasContentEmpty(was_content_empty_)
       .Record(ukm_recorder);
 
   sequence_no_++;
@@ -188,12 +185,6 @@ void TranslateMetricsLoggerImpl::RecordPageLoadUmaMetrics(
 
   base::UmaHistogramEnumeration(kTranslatePageLoadTriggerDecision,
                                 trigger_decision_);
-  base::UmaHistogramCounts100(kTranslatePageLoadTriggerDecisionTotalCount,
-                              all_trigger_decisions_.size());
-  for (const auto& trigger_decision : all_trigger_decisions_) {
-    base::UmaHistogramEnumeration(
-        kTranslatePageLoadTriggerDecisionAllTriggerDecisions, trigger_decision);
-  }
   if (has_href_translate_target_) {
     base::UmaHistogramEnumeration(kTranslatePageLoadHrefTriggerDecision,
                                   trigger_decision_);
@@ -282,8 +273,6 @@ void TranslateMetricsLoggerImpl::LogTriggerDecision(
        trigger_decision_ != TriggerDecision::kAutomaticTranslationByHref)) {
     trigger_decision_ = trigger_decision;
   }
-
-  all_trigger_decisions_.push_back(trigger_decision);
 }
 
 void TranslateMetricsLoggerImpl::LogAutofillAssistantDeferredTriggerDecision() {
@@ -563,6 +552,10 @@ void TranslateMetricsLoggerImpl::LogDetectedLanguage(
 void TranslateMetricsLoggerImpl::LogDetectionReliabilityScore(
     const float& model_detection_reliability_score) {
   model_detection_reliability_score_ = model_detection_reliability_score;
+}
+
+void TranslateMetricsLoggerImpl::LogWasContentEmpty(bool was_content_empty) {
+  was_content_empty_ = was_content_empty;
 }
 
 }  // namespace translate

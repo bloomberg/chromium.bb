@@ -16,15 +16,16 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/apps/app_service/app_platform_metrics.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/ash/crostini/crostini_mime_types_service_factory.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -152,7 +153,7 @@ void FindGuestOsApps(
     std::vector<guest_os::GuestOsRegistryService::VmType>* vm_types) {
   // Ensure all files can be shared with VMs.
   storage::FileSystemContext* file_system_context =
-      util::GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
+      util::GetFileManagerFileSystemContext(profile);
   base::FilePath dummy_vm_mount("/");
   base::FilePath not_used;
   for (const GURL& file_url : file_urls) {
@@ -264,7 +265,7 @@ void ExecuteGuestOsTask(
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
 
-  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
+  absl::optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(task.app_id);
   if (!registration) {
     std::move(done).Run(
@@ -283,6 +284,10 @@ void ExecuteGuestOsTask(
   switch (vm_type) {
     case guest_os::GuestOsRegistryService::VmType::
         ApplicationList_VmType_TERMINA:
+      apps::RecordAppLaunchMetrics(
+          profile, apps::mojom::AppType::kCrostini, task.app_id,
+          apps::mojom::LaunchSource::kFromFileManager,
+          apps::mojom::LaunchContainer::kLaunchContainerWindow);
       crostini::LaunchCrostiniApp(
           profile, task.app_id, display::kInvalidDisplayId, args,
           base::BindOnce(
@@ -304,6 +309,10 @@ void ExecuteGuestOsTask(
       return;
     case guest_os::GuestOsRegistryService::VmType::
         ApplicationList_VmType_PLUGIN_VM:
+      apps::RecordAppLaunchMetrics(
+          profile, apps::mojom::AppType::kPluginVm, task.app_id,
+          apps::mojom::LaunchSource::kFromFileManager,
+          apps::mojom::LaunchContainer::kLaunchContainerWindow);
       DCHECK(plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
       plugin_vm::LaunchPluginVmApp(
           profile, task.app_id, args,

@@ -26,6 +26,7 @@
 
 namespace {
 constexpr gfx::Size kDefaultWindowSize(340, 390);
+constexpr int kPaddingAroundCursor = 8;
 
 class EmojiiBubbleDialogView : public WebUIBubbleDialogView {
  public:
@@ -74,10 +75,14 @@ void EmojiUI::Show(Profile* profile) {
   const gfx::Rect caret_bounds =
       input_client ? input_client->GetCaretBounds() : gfx::Rect();
 
-  // This rect is used for positioning the emoji picker.  All that really
-  // matters is a position, so it has 0 height/width
-  auto anchor_rect = gfx::Rect(caret_bounds.x() + kDefaultWindowSize.width(),
-                               caret_bounds.bottom(), 0, 0);
+  // This rect is used for positioning the emoji picker. It anchors either top
+  // right / bottom left of the emoji picker window depending on where the text
+  // field is. 8px padding around cursor is applied so that the emoji picker
+  // does not cramp existing text.
+  auto anchor_rect =
+      gfx::Rect(caret_bounds.x() + kDefaultWindowSize.width(),
+                caret_bounds.y() - kPaddingAroundCursor, 0,
+                caret_bounds.height() + kPaddingAroundCursor * 2);
 
   // TODO(b/181703133): Refactor so that the webui_bubble_manager can be used
   // here to reduce code duplication.
@@ -96,6 +101,8 @@ void EmojiUI::Show(Profile* profile) {
   auto weak_ptr = bubble_view->GetWeakPtr();
   views::BubbleDialogDelegateView::CreateBubble(std::move(bubble_view));
   weak_ptr->SetAnchorRect(anchor_rect);
+  weak_ptr->GetBubbleFrameView()->SetPreferredArrowAdjustment(
+      views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
   weak_ptr->set_adjust_if_offscreen(true);
 }
 

@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
@@ -23,6 +22,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -77,7 +77,7 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   // LorgnetteScannerManager::GetScannerCapabilities().
   void OnScannerCapabilitiesReceived(
       GetScannerCapabilitiesCallback callback,
-      const base::Optional<lorgnette::ScannerCapabilities>& capabilities);
+      const absl::optional<lorgnette::ScannerCapabilities>& capabilities);
 
   // Receives progress updates after calling LorgnetteScannerManager::Scan().
   // |page_number| indicates the page the |progress_percent| corresponds to.
@@ -94,7 +94,9 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
                       uint32_t page_number);
 
   // Processes the final result of calling LorgnetteScannerManager::Scan().
-  void OnScanCompleted(bool success, lorgnette::ScanFailureMode failure_mode);
+  // |failure_mode| is set to SCAN_FAILURE_MODE_NO_FAILURE when the scan
+  // succeeds; otherwise, its value indicates what caused the scan to fail.
+  void OnScanCompleted(lorgnette::ScanFailureMode failure_mode);
 
   // Processes the final result of calling
   // LorgnetteScannerManager::CancelScan().
@@ -107,7 +109,7 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   void OnPageSaved(const base::FilePath& saved_file_path);
 
   // Called once the task runner finishes saving the last page of a scan.
-  void OnAllPagesSaved(bool success, lorgnette::ScanFailureMode failure_mode);
+  void OnAllPagesSaved(lorgnette::ScanFailureMode failure_mode);
 
   // Sets the local member variables back to their initial empty state.
   void ClearScanState();

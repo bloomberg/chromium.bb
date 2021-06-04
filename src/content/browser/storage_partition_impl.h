@@ -24,6 +24,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -41,7 +42,6 @@
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
-#include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/push_messaging/push_messaging_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -80,6 +80,7 @@ namespace content {
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
 class ConversionManagerImpl;
+class ComputePressureManager;
 class CookieStoreContext;
 class FontAccessContext;
 class GeneratedCodeCacheContext;
@@ -133,6 +134,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
+  base::FilePath GetBucketBasePath() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() override;
@@ -157,6 +159,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   FontAccessContext* GetFontAccessContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
+  storage::mojom::LocalStorageControl* GetLocalStorageControl() override;
   LockManager* GetLockManager();  // override; TODO: Add to interface
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
   FileSystemAccessEntryFactory* GetFileSystemAccessEntryFactory() override;
@@ -227,7 +230,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   ConversionManagerImpl* GetConversionManager();
   FontAccessManagerImpl* GetFontAccessManager();
   InterestGroupManager* GetInterestGroupStorage();
-  PrerenderHostRegistry* GetPrerenderHostRegistry();
+  ComputePressureManager* GetComputePressureManager();
   std::string GetPartitionDomain();
 
   // blink::mojom::DomStorage interface.
@@ -276,7 +279,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
   void OnCertificateRequested(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           cert_responder) override;
@@ -284,7 +287,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       mojo::PendingReceiver<network::mojom::URLLoaderNetworkServiceObserver>
           listener) override;
   void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
+      const absl::optional<base::UnguessableToken>& window_id,
       uint32_t request_id,
       const GURL& url,
       bool first_auth_attempt,
@@ -563,7 +566,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<ConversionManagerImpl> conversion_manager_;
   std::unique_ptr<FontAccessManagerImpl> font_access_manager_;
   std::unique_ptr<InterestGroupManager> interest_group_manager_;
-  std::unique_ptr<PrerenderHostRegistry> prerender_host_registry_;
+
+  // TODO(crbug.com/1205695): ComputePressureManager should live elsewher. The
+  //                          Compute Pressure API does not store data.
+  std::unique_ptr<ComputePressureManager> compute_pressure_manager_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

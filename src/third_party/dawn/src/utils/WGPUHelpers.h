@@ -28,8 +28,6 @@ namespace utils {
 
     enum Expectation { Success, Failure };
 
-    enum class SingleShaderStage { Vertex, Fragment, Compute };
-
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source);
     wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* source);
 
@@ -95,6 +93,9 @@ namespace utils {
 
     wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
                                                  const wgpu::BindGroupLayout* bindGroupLayout);
+
+    wgpu::PipelineLayout MakePipelineLayout(const wgpu::Device& device,
+                                            std::vector<wgpu::BindGroupLayout> bgls);
 
     // Helpers to make creating bind group layouts look nicer:
     //

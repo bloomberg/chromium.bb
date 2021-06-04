@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -44,6 +45,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -53,13 +55,13 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunActivityTestObserver.ScopedObserverData;
-import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.search_engines.DefaultSearchEngineDialogHelperUtils;
+import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
@@ -88,6 +90,7 @@ public class FirstRunIntegrationTest {
     private static final String TEST_URL = "https://test.com";
     private static final String FOO_URL = "https://foo.com";
     private static final long ACTIVITY_WAIT_LONG_MS = TimeUnit.SECONDS.toMillis(10);
+    private static final String TEST_ENROLLMENT_TOKEN = "enrollment-token";
 
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
@@ -146,6 +149,7 @@ public class FirstRunIntegrationTest {
         FirstRunAppRestrictionInfo.setInitializedInstanceForTest(null);
         ToSAndUMAFirstRunFragment.setShowUmaCheckBoxForTesting(false);
         EnterpriseInfo.setInstanceForTest(null);
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     private ActivityMonitor getMonitor(Class activityClass) {
@@ -203,6 +207,13 @@ public class FirstRunIntegrationTest {
         setDeviceOwnedForMock();
     }
 
+    private void enableCloudManagementViaPolicy() {
+        setHasAppRestrictionForMock(true);
+        Bundle restrictions = new Bundle();
+        restrictions.putString("CloudManagementEnrollmentToken", TEST_ENROLLMENT_TOKEN);
+        AbstractAppRestrictionsProvider.setTestRestrictions(restrictions);
+    }
+
     private void launchCustomTabs(String url) {
         mContext.startActivity(CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, url));
     }
@@ -239,7 +250,7 @@ public class FirstRunIntegrationTest {
         }
 
         // Select a default search engine.
-        if (searchPromoType == LocaleManager.SearchEnginePromoType.DONT_SHOW) {
+        if (searchPromoType == SearchEnginePromoType.DONT_SHOW) {
             Assert.assertFalse("Search engine page was shown.",
                     freProperties.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         } else {
@@ -311,6 +322,17 @@ public class FirstRunIntegrationTest {
         return mTestObserver.getScopedObserverData(freActivity);
     }
 
+    private void blockOnFlowIsKnown() {
+        AccountManagerFacadeProvider.setInstanceForTests(mAccountManagerFacade);
+    }
+
+    private void unblockOnFlowIsKnown() {
+        Mockito.verify(mAccountManagerFacade)
+                .tryGetGoogleAccounts(mGetGoogleAccountsCaptor.capture());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mGetGoogleAccountsCaptor.getValue().onResult(Collections.emptyList()));
+    }
+
     @Test
     @SmallTest
     public void testHelpPageSkipsFirstRun() {
@@ -352,13 +374,13 @@ public class FirstRunIntegrationTest {
     @Test
     @MediumTest
     public void testDefaultSearchEngine_DontShow() throws Exception {
-        runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.DONT_SHOW);
+        runSearchEnginePromptTest(SearchEnginePromoType.DONT_SHOW);
     }
 
     @Test
     @MediumTest
     public void testDefaultSearchEngine_ShowExisting() throws Exception {
-        runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.SHOW_EXISTING);
+        runSearchEnginePromptTest(SearchEnginePromoType.SHOW_EXISTING);
     }
 
     @Test
@@ -366,7 +388,7 @@ public class FirstRunIntegrationTest {
     public void testDefaultSearchEngine_WithCctPolicy() throws Exception {
         skipTosDialogViaPolicy();
 
-        runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.SHOW_EXISTING);
+        runSearchEnginePromptTest(SearchEnginePromoType.SHOW_EXISTING);
     }
 
     private void runSearchEnginePromptTest(@SearchEnginePromoType final int searchPromoType)
@@ -497,14 +519,29 @@ public class FirstRunIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1197556")
     public void testResetOnBackPress() throws Exception {
+        testResetOnBackPressImpl(true);
+    }
+
+    @Test
+    @MediumTest
+    @DisabledTest(message = "https://crbug.com/1197556")
+    public void testResetOnBackPress_NoUmaAccepted() throws Exception {
+        testResetOnBackPressImpl(false);
+    }
+
+    private void testResetOnBackPressImpl(boolean allowedCrashUpLoad) throws Exception {
         // Inspired by crbug.com/1192854.
         // When the policy initialization is finishing after ToS accepted, the small loading circle
         // will be shown on the screen. If user decide to go back with backpress, the UI should be
         // reset with ToS UI visible.
         FirstRunStatus.setSkipWelcomePage(true);
-        SharedPreferencesManager.getInstance().writeBoolean(
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
+        sharedPreferencesManager.writeBoolean(
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, allowedCrashUpLoad);
         setHasAppRestrictionForMock(false);
         FirstRunActivity freActivity = launchFirstRunActivity();
 
@@ -522,11 +559,14 @@ public class FirstRunIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mLastActivity.onBackPressed());
 
         View tosAndPrivacy = mLastActivity.findViewById(R.id.tos_and_privacy);
-        View umaCheckbox = mLastActivity.findViewById(R.id.send_report_checkbox);
-        Assert.assertNotNull(tosAndPrivacy);
-        Assert.assertNotNull(umaCheckbox);
-        Assert.assertEquals(View.VISIBLE, tosAndPrivacy.getVisibility());
-        Assert.assertEquals(View.VISIBLE, umaCheckbox.getVisibility());
+        CheckBox umaCheckbox = mLastActivity.findViewById(R.id.send_report_checkbox);
+        Assert.assertNotNull("ToS should not be null.", tosAndPrivacy);
+        Assert.assertNotNull("UMA Checkbox should not be null.", umaCheckbox);
+        Assert.assertEquals("ToS should be visible.", View.VISIBLE, tosAndPrivacy.getVisibility());
+        Assert.assertEquals(
+                "UMA Checkbox should be visible.", View.VISIBLE, umaCheckbox.getVisibility());
+        Assert.assertEquals(
+                "UMA Checkbox state is different.", allowedCrashUpLoad, umaCheckbox.isChecked());
     }
 
     @Test
@@ -538,7 +578,7 @@ public class FirstRunIntegrationTest {
         launchViewIntent(FOO_URL);
         FirstRunActivity secondFreActivity = waitForDifferentFirstRunActivity(firstFreActivity);
 
-        clickThroughFirstRun(secondFreActivity, LocaleManager.SearchEnginePromoType.DONT_SHOW);
+        clickThroughFirstRun(secondFreActivity, SearchEnginePromoType.DONT_SHOW);
         verifyUrlEquals(FOO_URL, waitAndGetUriFromChromeActivity(ChromeTabbedActivity.class));
     }
 
@@ -551,7 +591,7 @@ public class FirstRunIntegrationTest {
         launchCustomTabs(FOO_URL);
         FirstRunActivity secondFreActivity = waitForDifferentFirstRunActivity(firstFreActivity);
 
-        clickThroughFirstRun(secondFreActivity, LocaleManager.SearchEnginePromoType.DONT_SHOW);
+        clickThroughFirstRun(secondFreActivity, SearchEnginePromoType.DONT_SHOW);
         verifyUrlEquals(FOO_URL, waitAndGetUriFromChromeActivity(CustomTabActivity.class));
     }
 
@@ -564,7 +604,7 @@ public class FirstRunIntegrationTest {
         launchViewIntent(FOO_URL);
         FirstRunActivity secondFreActivity = waitForDifferentFirstRunActivity(firstFreActivity);
 
-        clickThroughFirstRun(secondFreActivity, LocaleManager.SearchEnginePromoType.DONT_SHOW);
+        clickThroughFirstRun(secondFreActivity, SearchEnginePromoType.DONT_SHOW);
         verifyUrlEquals(FOO_URL, waitAndGetUriFromChromeActivity(ChromeTabbedActivity.class));
     }
 
@@ -591,8 +631,8 @@ public class FirstRunIntegrationTest {
     @Test
     @MediumTest
     public void testInitialDrawBlocked() throws Exception {
-        // This should block the FRE from showing any UI, as #onFlowIsKnown will not be called.
-        AccountManagerFacadeProvider.setInstanceForTests(mAccountManagerFacade);
+        // This should block the FRE from showing any UI.
+        blockOnFlowIsKnown();
 
         launchViewIntent(TEST_URL);
         FirstRunActivity firstRunActivity = waitForActivity(FirstRunActivity.class);
@@ -614,11 +654,52 @@ public class FirstRunIntegrationTest {
 
         // Now return account status which should result in both the first fragment being generated,
         // and the first draw call being let happen.
-        Mockito.verify(mAccountManagerFacade)
-                .tryGetGoogleAccounts(mGetGoogleAccountsCaptor.capture());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mGetGoogleAccountsCaptor.getValue().onResult(Collections.emptyList()));
+        unblockOnFlowIsKnown();
         onDrawCallbackHelper.waitForCallback(0);
+    }
+
+    @Test
+    @MediumTest
+    public void testNativeInitBeforeFragment() throws Exception {
+        // Inspired by https://crbug.com/1207683 where a notification was dropped because native
+        // initialized before the first fragment was attached to the activity.
+        blockOnFlowIsKnown();
+
+        launchViewIntent(TEST_URL);
+        FirstRunActivity firstRunActivity = waitForActivity(FirstRunActivity.class);
+        CriteriaHelper.pollUiThread((() -> firstRunActivity.isNativeSideIsInitializedForTest()),
+                "native never initialized.");
+
+        unblockOnFlowIsKnown();
+        clickThroughFirstRun(firstRunActivity, SearchEnginePromoType.DONT_SHOW);
+        verifyUrlEquals(TEST_URL, waitAndGetUriFromChromeActivity(ChromeTabbedActivity.class));
+    }
+
+    @Test
+    @MediumTest
+    public void testNativeInitBeforeFragmentSkip() throws Exception {
+        skipTosDialogViaPolicy();
+        blockOnFlowIsKnown();
+
+        launchCustomTabs(TEST_URL);
+        FirstRunActivity firstRunActivity = waitForActivity(FirstRunActivity.class);
+        CriteriaHelper.pollUiThread((() -> firstRunActivity.isNativeSideIsInitializedForTest()),
+                "native never initialized.");
+
+        unblockOnFlowIsKnown();
+        verifyUrlEquals(TEST_URL, waitAndGetUriFromChromeActivity(CustomTabActivity.class));
+    }
+
+    @Test
+    @MediumTest
+    public void testCloudManagementDoesNotBlockFirstRun() throws Exception {
+        // Ensures FRE is not blocked if cloud management is enabled.
+        enableCloudManagementViaPolicy();
+
+        launchViewIntent(TEST_URL);
+        FirstRunActivity firstRunActivity = waitForActivity(FirstRunActivity.class);
+        clickThroughFirstRun(firstRunActivity, SearchEnginePromoType.DONT_SHOW);
+        verifyUrlEquals(TEST_URL, waitAndGetUriFromChromeActivity(ChromeTabbedActivity.class));
     }
 
     private void clickButton(final Activity activity, final int id, final String message) {

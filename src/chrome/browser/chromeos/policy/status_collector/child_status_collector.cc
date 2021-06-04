@@ -21,7 +21,6 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -51,6 +50,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -157,7 +157,7 @@ ChildStatusCollector::ChildStatusCollector(
       chromeos::kReportDeviceBootMode, callback);
 
   // Watch for changes on the device state to calculate the child's active time.
-  chromeos::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
+  ash::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -177,7 +177,7 @@ ChildStatusCollector::ChildStatusCollector(
 }
 
 ChildStatusCollector::~ChildStatusCollector() {
-  chromeos::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
+  ash::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 }
 
 TimeDelta ChildStatusCollector::GetActiveChildScreenTime() {
@@ -219,8 +219,8 @@ void ChildStatusCollector::UpdateReportingSettings() {
 void ChildStatusCollector::OnAppActivityReportSubmitted() {
   DCHECK(last_report_params_);
   if (last_report_params_->anything_reported) {
-    chromeos::app_time::AppActivityReportInterface* app_activity_reporting =
-        chromeos::app_time::AppActivityReportInterface::Get(profile_);
+    ash::app_time::AppActivityReportInterface* app_activity_reporting =
+        ash::app_time::AppActivityReportInterface::Get(profile_);
     DCHECK(app_activity_reporting);
     app_activity_reporting->AppActivityReportSubmitted(
         last_report_params_->generation_time);
@@ -230,10 +230,10 @@ void ChildStatusCollector::OnAppActivityReportSubmitted() {
 }
 
 void ChildStatusCollector::OnUsageTimeStateChange(
-    chromeos::UsageTimeStateNotifier::UsageTimeState state) {
+    ash::UsageTimeStateNotifier::UsageTimeState state) {
   UpdateChildUsageTime();
   last_state_active_ =
-      state == chromeos::UsageTimeStateNotifier::UsageTimeState::ACTIVE;
+      state == ash::UsageTimeStateNotifier::UsageTimeState::ACTIVE;
 }
 
 void ChildStatusCollector::UpdateChildUsageTime() {
@@ -298,8 +298,8 @@ bool ChildStatusCollector::GetActivityTimes(
 
 bool ChildStatusCollector::GetAppActivity(
     em::ChildStatusReportRequest* status) {
-  chromeos::app_time::AppActivityReportInterface* app_activity_reporting =
-      chromeos::app_time::AppActivityReportInterface::Get(profile_);
+  ash::app_time::AppActivityReportInterface* app_activity_reporting =
+      ash::app_time::AppActivityReportInterface::Get(profile_);
   DCHECK(app_activity_reporting);
 
   last_report_params_ =
@@ -394,7 +394,7 @@ void ChildStatusCollector::FillChildStatusReportRequest(
   anything_reported |= GetAppActivity(status);
 
   if (report_boot_mode_) {
-    base::Optional<std::string> boot_mode =
+    absl::optional<std::string> boot_mode =
         StatusCollector::GetBootMode(statistics_provider_);
     if (boot_mode) {
       status->set_boot_mode(*boot_mode);

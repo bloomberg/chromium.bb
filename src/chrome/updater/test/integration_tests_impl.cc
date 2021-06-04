@@ -12,10 +12,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
-#include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -35,6 +35,7 @@
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace test {
@@ -64,7 +65,7 @@ void ExpectVersionNotActive(const std::string& version) {
 
 void PrintLog(UpdaterScope scope) {
   std::string contents;
-  base::Optional<base::FilePath> path = GetDataDirPath(scope);
+  absl::optional<base::FilePath> path = GetDataDirPath(scope);
   EXPECT_TRUE(path);
   if (path &&
       base::ReadFileToString(path->AppendASCII("updater.log"), &contents)) {
@@ -83,13 +84,15 @@ const testing::TestInfo* GetTestInfo() {
 base::FilePath GetLogDestinationDir() {
   // Fetch path to ${ISOLATED_OUTDIR} env var.
   // ResultDB reads logs and test artifacts info from there.
-  return base::FilePath::FromUTF8Unsafe(std::getenv("ISOLATED_OUTDIR"));
+  const char* var = std::getenv("ISOLATED_OUTDIR");
+  return var ? base::FilePath::FromUTF8Unsafe(var) : base::FilePath();
 }
 
 void CopyLog(const base::FilePath& src_dir) {
   // TODO(crbug.com/1159189): copy other test artifacts.
   base::FilePath dest_dir = GetLogDestinationDir();
-  if (base::PathExists(dest_dir) && base::PathExists(src_dir)) {
+  if (!dest_dir.empty() && base::PathExists(dest_dir) &&
+      base::PathExists(src_dir)) {
     base::FilePath test_name_path = dest_dir.AppendASCII(base::StrCat(
         {GetTestInfo()->test_suite_name(), ".", GetTestInfo()->name()}));
     EXPECT_TRUE(base::CreateDirectory(test_name_path));
@@ -103,7 +106,7 @@ void CopyLog(const base::FilePath& src_dir) {
 }
 
 void RunWake(UpdaterScope scope, int expected_exit_code) {
-  const base::Optional<base::FilePath> installed_executable_path =
+  const absl::optional<base::FilePath> installed_executable_path =
       GetInstalledExecutablePath(scope);
   ASSERT_TRUE(installed_executable_path);
   EXPECT_TRUE(base::PathExists(*installed_executable_path));
@@ -128,7 +131,7 @@ void SetupFakeUpdaterPrefs(const base::Version& version) {
 
 void SetupFakeUpdaterInstallFolder(UpdaterScope scope,
                                    const base::Version& version) {
-  const base::Optional<base::FilePath> folder_path =
+  const absl::optional<base::FilePath> folder_path =
       GetFakeUpdaterInstallFolderPath(scope, version);
   ASSERT_TRUE(folder_path);
   ASSERT_TRUE(base::CreateDirectory(*folder_path));
@@ -142,7 +145,7 @@ void SetupFakeUpdater(UpdaterScope scope, const base::Version& version) {
 void SetupFakeUpdaterVersion(UpdaterScope scope, int offset) {
   ASSERT_NE(offset, 0);
   std::vector<uint32_t> components =
-      base::Version(UPDATER_VERSION_STRING).components();
+      base::Version(kUpdaterVersion).components();
   base::CheckedNumeric<uint32_t> new_version = components[0];
   new_version += offset;
   ASSERT_TRUE(new_version.AssignIfValid(&components[0]));
@@ -157,19 +160,12 @@ void SetupFakeUpdaterHigherVersion(UpdaterScope scope) {
   SetupFakeUpdaterVersion(scope, 1);
 }
 
-void SetFakeExistenceCheckerPath(const std::string& app_id) {
+void SetExistenceCheckerPath(const std::string& app_id,
+                             const base::FilePath& path) {
   std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-  auto persisted_data =
-      base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
-  base::FilePath fake_ecp =
-      persisted_data->GetExistenceCheckerPath(app_id).Append(
-          FILE_PATH_LITERAL("NOT_THERE"));
-  persisted_data->SetExistenceCheckerPath(app_id, fake_ecp);
-
+  base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService())
+      ->SetExistenceCheckerPath(app_id, path);
   PrefsCommitPendingWrites(global_prefs->GetPrefService());
-
-  EXPECT_EQ(fake_ecp.value(),
-            persisted_data->GetExistenceCheckerPath(app_id).value());
 }
 
 void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {

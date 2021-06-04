@@ -7,6 +7,7 @@
 
 #include "src/gpu/GrResourceAllocator.h"
 
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpuResourcePriv.h"
 #include "src/gpu/GrOpsTask.h"
 #include "src/gpu/GrRenderTargetProxy.h"
@@ -37,7 +38,7 @@ uint32_t GrResourceAllocator::Register::CreateUniqueID() {
 #endif
 
 GrResourceAllocator::~GrResourceAllocator() {
-    SkASSERT(fIntvlList.empty());
+    SkASSERT(fFailedInstantiation || fIntvlList.empty());
     SkASSERT(fActiveIntvls.empty());
     SkASSERT(!fIntvlHash.count());
 }
@@ -56,7 +57,8 @@ void GrResourceAllocator::addInterval(GrSurfaceProxy* proxy, unsigned int start,
     // recycled. We don't need to assign a texture to it and no other proxy can be instantiated
     // with the same texture.
     if (proxy->readOnly()) {
-        if (proxy->isLazy() && !proxy->priv().doLazyInstantiation(fResourceProvider)) {
+        auto resourceProvider = fDContext->priv().resourceProvider();
+        if (proxy->isLazy() && !proxy->priv().doLazyInstantiation(resourceProvider)) {
             fFailedInstantiation = true;
         } else {
             // Since we aren't going to add an interval we won't revisit this proxy in assign(). So
@@ -98,11 +100,34 @@ void GrResourceAllocator::addInterval(GrSurfaceProxy* proxy, unsigned int start,
     fIntvlHash.set(proxyID, newIntvl);
 }
 
+// Tragically we have cases where we always have to make new textures.
+static bool can_proxy_use_scratch(const GrCaps& caps, GrSurfaceProxy* proxy) {
+    return caps.reuseScratchTextures() || proxy->asRenderTargetProxy();
+}
+
+GrResourceAllocator::Register::Register(GrSurfaceProxy* originatingProxy,
+                                        GrScratchKey scratchKey,
+                                        GrResourceProvider* provider)
+        : fOriginatingProxy(originatingProxy)
+        , fScratchKey(std::move(scratchKey)) {
+    SkASSERT(originatingProxy);
+    SkASSERT(!originatingProxy->isInstantiated());
+    SkASSERT(!originatingProxy->isLazy());
+    SkDEBUGCODE(fUniqueID = CreateUniqueID();)
+    if (scratchKey.isValid()) {
+        if (can_proxy_use_scratch(*provider->caps(), originatingProxy)) {
+            fExistingSurface = provider->findAndRefScratchTexture(fScratchKey);
+        }
+    } else {
+        SkASSERT(this->uniqueKey().isValid());
+        fExistingSurface = provider->findByUniqueKey<GrSurface>(this->uniqueKey());
+    }
+}
+
 bool GrResourceAllocator::Register::isRecyclable(const GrCaps& caps,
                                                  GrSurfaceProxy* proxy,
                                                  int knownUseCount) const {
-    if (!caps.reuseScratchTextures() && !proxy->asRenderTargetProxy()) {
-        // Tragically, scratch texture reuse is totally disabled in this case.
+    if (!can_proxy_use_scratch(caps, proxy)) {
         return false;
     }
 
@@ -121,23 +146,19 @@ bool GrResourceAllocator::Register::instantiateSurface(GrSurfaceProxy* proxy,
                                                        GrResourceProvider* resourceProvider) {
     SkASSERT(!proxy->peekSurface());
 
-    sk_sp<GrSurface> surface;
-    if (const auto& uniqueKey = proxy->getUniqueKey(); uniqueKey.isValid()) {
-        SkASSERT(uniqueKey == fOriginatingProxy->getUniqueKey());
-        // First try to reattach to a cached surface if the proxy is uniquely keyed
-        surface = resourceProvider->findByUniqueKey<GrSurface>(uniqueKey);
-    }
-    if (!surface) {
+    sk_sp<GrSurface> newSurface;
+    if (!fExistingSurface) {
         if (proxy == fOriginatingProxy) {
-            surface = proxy->priv().createSurface(resourceProvider);
+            newSurface = proxy->priv().createSurface(resourceProvider);
         } else {
-            surface = sk_ref_sp(fOriginatingProxy->peekSurface());
+            newSurface = sk_ref_sp(fOriginatingProxy->peekSurface());
         }
     }
-    if (!surface) {
+    if (!fExistingSurface && !newSurface) {
         return false;
     }
 
+    GrSurface* surface = newSurface ? newSurface.get() : fExistingSurface.get();
     // Make surface budgeted if this proxy is budgeted.
     if (SkBudgeted::kYes == proxy->isBudgeted() &&
         GrBudgetedType::kBudgeted != surface->resourcePriv().budgetedType()) {
@@ -149,11 +170,11 @@ bool GrResourceAllocator::Register::instantiateSurface(GrSurfaceProxy* proxy,
     // Propagate the proxy unique key to the surface if we have one.
     if (const auto& uniqueKey = proxy->getUniqueKey(); uniqueKey.isValid()) {
         if (!surface->getUniqueKey().isValid()) {
-            resourceProvider->assignUniqueKeyToResource(uniqueKey, surface.get());
+            resourceProvider->assignUniqueKeyToResource(uniqueKey, surface);
         }
         SkASSERT(surface->getUniqueKey() == uniqueKey);
     }
-    proxy->priv().assign(std::move(surface));
+    proxy->priv().assign(fExistingSurface ? fExistingSurface : std::move(newSurface));
     return true;
 }
 
@@ -249,20 +270,21 @@ void GrResourceAllocator::IntervalList::validate() const {
 
 // First try to reuse one of the recently allocated/used registers in the free pool.
 GrResourceAllocator::Register* GrResourceAllocator::findOrCreateRegisterFor(GrSurfaceProxy* proxy) {
+    auto resourceProvider = fDContext->priv().resourceProvider();
     // Handle uniquely keyed proxies
     if (const auto& uniqueKey = proxy->getUniqueKey(); uniqueKey.isValid()) {
         if (auto p = fUniqueKeyRegisters.find(uniqueKey)) {
             return *p;
         }
         // No need for a scratch key. These don't go in the free pool.
-        Register* r = fInternalAllocator.make<Register>(proxy, GrScratchKey());
+        Register* r = fInternalAllocator.make<Register>(proxy, GrScratchKey(), resourceProvider);
         fUniqueKeyRegisters.set(uniqueKey, r);
         return r;
     }
 
     // Then look in the free pool
     GrScratchKey scratchKey;
-    proxy->priv().computeScratchKey(*fResourceProvider->caps(), &scratchKey);
+    proxy->priv().computeScratchKey(*fDContext->priv().caps(), &scratchKey);
 
     auto filter = [] (const Register* r) {
         return true;
@@ -271,7 +293,7 @@ GrResourceAllocator::Register* GrResourceAllocator::findOrCreateRegisterFor(GrSu
         return r;
     }
 
-    return fInternalAllocator.make<Register>(proxy, std::move(scratchKey));
+    return fInternalAllocator.make<Register>(proxy, std::move(scratchKey), resourceProvider);
 }
 
 // Remove any intervals that end before the current index. Add their registers
@@ -282,7 +304,7 @@ void GrResourceAllocator::expire(unsigned int curIndex) {
         SkASSERT(!intvl->next());
 
         Register* r = intvl->getRegister();
-        if (r && r->isRecyclable(*fResourceProvider->caps(), intvl->proxy(), intvl->uses())) {
+        if (r && r->isRecyclable(*fDContext->priv().caps(), intvl->proxy(), intvl->uses())) {
 #if GR_ALLOCATION_SPEW
             SkDebugf("putting register %d back into pool\n", r->uniqueID());
 #endif
@@ -293,28 +315,35 @@ void GrResourceAllocator::expire(unsigned int curIndex) {
     }
 }
 
-bool GrResourceAllocator::assign() {
+bool GrResourceAllocator::planAssignment() {
     fIntvlHash.reset(); // we don't need the interval hash anymore
 
-    SkDEBUGCODE(fAssigned = true;)
-
-    if (fIntvlList.empty()) {
-        return !fFailedInstantiation;          // no resources to assign
-    }
+    SkASSERT(!fPlanned && !fAssigned);
+    SkDEBUGCODE(fPlanned = true;)
 
 #if GR_ALLOCATION_SPEW
     SkDebugf("assigning %d ops\n", fNumOps);
     this->dumpIntervals();
 #endif
 
+    auto resourceProvider = fDContext->priv().resourceProvider();
     while (Interval* cur = fIntvlList.popHead()) {
         this->expire(cur->start());
+        fActiveIntvls.insertByIncreasingEnd(cur);
 
         // Already-instantiated proxies and lazy proxies don't use registers.
-        // No need to compute scratch keys (or CANT, in the case of fully-lazy).
-        if (cur->proxy()->isInstantiated() || cur->proxy()->isLazy()) {
-            fActiveIntvls.insertByIncreasingEnd(cur);
+        if (cur->proxy()->isInstantiated()) {
+            continue;
+        }
 
+        // Instantiate fully-lazy proxies immediately. Ignore other lazy proxies at this stage.
+        if (cur->proxy()->isLazy()) {
+            if (cur->proxy()->isFullyLazy()) {
+                fFailedInstantiation = !cur->proxy()->priv().doLazyInstantiation(resourceProvider);
+                if (fFailedInstantiation) {
+                    break;
+                }
+            }
             continue;
         }
 
@@ -326,17 +355,60 @@ bool GrResourceAllocator::assign() {
 #endif
         SkASSERT(!cur->proxy()->peekSurface());
         cur->setRegister(r);
-
-        fActiveIntvls.insertByIncreasingEnd(cur);
     }
 
     // expire all the remaining intervals to drain the active interval list
     this->expire(std::numeric_limits<unsigned int>::max());
+    return !fFailedInstantiation;
+}
 
-    // TODO: Return here and give the caller a chance to estimate memory cost and bail before
-    // instantiating anything.
+bool GrResourceAllocator::makeBudgetHeadroom() {
+    SkASSERT(fPlanned);
+    SkASSERT(!fFailedInstantiation);
+    size_t additionalBytesNeeded = 0;
+    for (Interval* cur = fFinishedIntvls.peekHead(); cur; cur = cur->next()) {
+        GrSurfaceProxy* proxy = cur->proxy();
+        if (SkBudgeted::kNo == proxy->isBudgeted() || proxy->isInstantiated()) {
+            continue;
+        }
 
-    // Instantiate surfaces
+        // N.B Fully-lazy proxies were already instantiated in planAssignment
+        if (proxy->isLazy()) {
+            additionalBytesNeeded += proxy->gpuMemorySize();
+        } else {
+            Register* r = cur->getRegister();
+            SkASSERT(r);
+            if (!r->accountedForInBudget() && !r->existingSurface()) {
+                additionalBytesNeeded += proxy->gpuMemorySize();
+            }
+            r->setAccountedForInBudget();
+        }
+    }
+    return fDContext->priv().getResourceCache()->purgeToMakeHeadroom(additionalBytesNeeded);
+}
+
+void GrResourceAllocator::reset() {
+    // NOTE: We do not reset the failedInstantiation flag because we currently do not attempt
+    // to recover from failed instantiations. The user is responsible for checking this flag and
+    // bailing early.
+    SkDEBUGCODE(fPlanned = false;)
+    SkDEBUGCODE(fAssigned = false;)
+    SkASSERT(fActiveIntvls.empty());
+    fFinishedIntvls = IntervalList();
+    fIntvlList = IntervalList();
+    fIntvlHash.reset();
+    fUniqueKeyRegisters.reset();
+    fFreePool.reset();
+    fInternalAllocator.reset();
+}
+
+bool GrResourceAllocator::assign() {
+    if (fFailedInstantiation) {
+        return false;
+    }
+    SkASSERT(fPlanned && !fAssigned);
+    SkDEBUGCODE(fAssigned = true;)
+    auto resourceProvider = fDContext->priv().resourceProvider();
     while (Interval* cur = fFinishedIntvls.popHead()) {
         if (fFailedInstantiation) {
             break;
@@ -345,12 +417,12 @@ bool GrResourceAllocator::assign() {
             continue;
         }
         if (cur->proxy()->isLazy()) {
-            fFailedInstantiation = !cur->proxy()->priv().doLazyInstantiation(fResourceProvider);
+            fFailedInstantiation = !cur->proxy()->priv().doLazyInstantiation(resourceProvider);
             continue;
         }
         Register* r = cur->getRegister();
         SkASSERT(r);
-        fFailedInstantiation = !r->instantiateSurface(cur->proxy(), fResourceProvider);
+        fFailedInstantiation = !r->instantiateSurface(cur->proxy(), resourceProvider);
     }
     return !fFailedInstantiation;
 }

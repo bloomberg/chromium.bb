@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
@@ -85,7 +86,7 @@ void LockProcessIfNeeded(int process_id,
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForUrlInfo(
           browser_context, UrlInfo::CreateForTesting(url),
-          CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+          WebExposedIsolationInfo::CreateNonIsolated());
   if (site_instance->RequiresDedicatedProcess() &&
       site_instance->GetSiteInfo().ShouldLockProcessToSite(
           site_instance->GetIsolationContext())) {
@@ -2670,7 +2671,7 @@ TEST_F(ChildProcessSecurityPolicyTest, ProcessLockMatching) {
       SetBrowserClientForTesting(&modified_client);
 
   IsolationContext isolation_context(browser_context());
-  const auto coi_info = CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated();
+  const auto coi_info = WebExposedIsolationInfo::CreateNonIsolated();
 
   auto ui_nonapp_url_siteinfo = SiteInfo::Create(
       isolation_context, UrlInfo::CreateForTesting(nonapp_url), coi_info);

@@ -28,7 +28,9 @@
 
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::Property;
 using ::testing::SizeIs;
 
 namespace webrtc {
@@ -139,7 +141,7 @@ TEST_F(RtcpSenderTest, SetRtcpStatus) {
 TEST_F(RtcpSenderTest, SetSendingStatus) {
   auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
   EXPECT_FALSE(rtcp_sender->Sending());
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), true));
+  rtcp_sender->SetSendingStatus(feedback_state(), true);
   EXPECT_TRUE(rtcp_sender->Sending());
 }
 
@@ -276,11 +278,11 @@ TEST_F(RtcpSenderTest, SendRrWithTwoReportBlocks) {
   EXPECT_EQ(0, rtcp_sender->SendRTCP(feedback_state(), kRtcpRr));
   EXPECT_EQ(1, parser()->receiver_report()->num_packets());
   EXPECT_EQ(kSenderSsrc, parser()->receiver_report()->sender_ssrc());
-  EXPECT_EQ(2U, parser()->receiver_report()->report_blocks().size());
-  EXPECT_EQ(kRemoteSsrc,
-            parser()->receiver_report()->report_blocks()[0].source_ssrc());
-  EXPECT_EQ(kRemoteSsrc + 1,
-            parser()->receiver_report()->report_blocks()[1].source_ssrc());
+  EXPECT_THAT(
+      parser()->receiver_report()->report_blocks(),
+      UnorderedElementsAre(
+          Property(&rtcp::ReportBlock::source_ssrc, Eq(kRemoteSsrc)),
+          Property(&rtcp::ReportBlock::source_ssrc, Eq(kRemoteSsrc + 1))));
 }
 
 TEST_F(RtcpSenderTest, SendSdes) {
@@ -315,8 +317,8 @@ TEST_F(RtcpSenderTest, SendBye) {
 TEST_F(RtcpSenderTest, StopSendingTriggersBye) {
   auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
   rtcp_sender->SetRTCPStatus(RtcpMode::kReducedSize);
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), true));
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), false));
+  rtcp_sender->SetSendingStatus(feedback_state(), true);
+  rtcp_sender->SetSendingStatus(feedback_state(), false);
   EXPECT_EQ(1, parser()->bye()->num_packets());
   EXPECT_EQ(kSenderSsrc, parser()->bye()->sender_ssrc());
 }
@@ -513,7 +515,7 @@ TEST_F(RtcpSenderTest, SendXrWithRrtr) {
   config.non_sender_rtt_measurement = true;
   auto rtcp_sender = CreateRtcpSender(config);
   rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), false));
+  rtcp_sender->SetSendingStatus(feedback_state(), false);
   NtpTime ntp = TimeMicrosToNtp(clock_.TimeInMicroseconds());
   EXPECT_EQ(0, rtcp_sender->SendRTCP(feedback_state(), kRtcpReport));
   EXPECT_EQ(1, parser()->xr()->num_packets());
@@ -528,7 +530,7 @@ TEST_F(RtcpSenderTest, TestNoXrRrtrSentIfSending) {
   config.non_sender_rtt_measurement = true;
   auto rtcp_sender = CreateRtcpSender(config);
   rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), true));
+  rtcp_sender->SetSendingStatus(feedback_state(), true);
   EXPECT_EQ(0, rtcp_sender->SendRTCP(feedback_state(), kRtcpReport));
   EXPECT_EQ(0, parser()->xr()->num_packets());
 }
@@ -538,7 +540,7 @@ TEST_F(RtcpSenderTest, TestNoXrRrtrSentIfNotEnabled) {
   config.non_sender_rtt_measurement = false;
   auto rtcp_sender = CreateRtcpSender(config);
   rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
-  EXPECT_EQ(0, rtcp_sender->SetSendingStatus(feedback_state(), false));
+  rtcp_sender->SetSendingStatus(feedback_state(), false);
   EXPECT_EQ(0, rtcp_sender->SendRTCP(feedback_state(), kRtcpReport));
   EXPECT_EQ(0, parser()->xr()->num_packets());
 }

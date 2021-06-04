@@ -44,7 +44,6 @@ std::unique_ptr<WebAppMover> WebAppMover::CreateIfNeeded(
     InstallFinalizer* install_finalizer,
     InstallManager* install_manager,
     AppRegistryController* controller) {
-  DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions));
   if (g_disabled_for_testing)
     return nullptr;
 
@@ -244,7 +243,7 @@ void WebAppMover::OnInstallManifestFetched(
     base::ScopedClosureRunner complete_callback_runner,
     std::unique_ptr<content::WebContents> web_contents,
     InstallManager::InstallableCheckResult result,
-    base::Optional<AppId> app_id) {
+    absl::optional<AppId> app_id) {
   switch (result) {
     case InstallManager::InstallableCheckResult::kAlreadyInstalled:
       LOG(WARNING) << "App already installed.";
@@ -272,8 +271,8 @@ void WebAppMover::OnInstallManifestFetched(
                      std::move(complete_callback_runner),
                      std::move(web_contents), success_accumulator));
   for (const AppId& id : apps_to_uninstall_) {
-    install_finalizer_->UninstallExternalAppByUser(
-        id,
+    install_finalizer_->UninstallWebApp(
+        id, webapps::WebappUninstallSource::kMigration,
         base::BindOnce(
             [](base::OnceClosure done,
                scoped_refptr<base::RefCountedData<bool>> success_accumulator,

@@ -13,10 +13,11 @@
 #include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/animating_layout_manager.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -108,6 +109,7 @@ class VIEWS_EXPORT EditableCombobox
   ui::ComboboxModel* GetComboboxModelForTest() { return combobox_model_.get(); }
   int GetItemCountForTest();
   std::u16string GetItemForTest(int index);
+  ui::ImageModel GetIconForTest(int index);
   MenuRunner* GetMenuRunnerForTest() { return menu_runner_.get(); }
   Textfield* GetTextfieldForTest() { return textfield_; }
 

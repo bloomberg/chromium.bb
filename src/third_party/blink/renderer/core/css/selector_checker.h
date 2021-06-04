@@ -30,7 +30,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
@@ -73,25 +75,27 @@ class CORE_EXPORT SelectorChecker {
     kQueryingRules,
   };
 
-  struct Init {
-    STACK_ALLOCATED();
+  explicit inline SelectorChecker(const Mode& mode)
+      : element_style_(nullptr),
+        scrollbar_(nullptr),
+        part_names_(nullptr),
+        pseudo_argument_(g_null_atom),
+        scrollbar_part_(kNoPart),
+        mode_(mode),
+        is_ua_rule_(false) {}
+  inline SelectorChecker(ComputedStyle* element_style,
+                         PartNames* part_names,
+                         const StyleRequest& style_request,
+                         const Mode& mode,
+                         const bool& is_ua_rule)
+      : element_style_(element_style),
+        scrollbar_(style_request.scrollbar),
+        part_names_(part_names),
+        pseudo_argument_(style_request.pseudo_argument),
+        scrollbar_part_(style_request.scrollbar_part),
+        mode_(mode),
+        is_ua_rule_(is_ua_rule) {}
 
-   public:
-    Mode mode = kResolvingStyle;
-    bool is_ua_rule = false;
-    ComputedStyle* element_style = nullptr;
-    CustomScrollbar* scrollbar = nullptr;
-    ScrollbarPart scrollbar_part = kNoPart;
-    PartNames* part_names = nullptr;
-  };
-
-  explicit SelectorChecker(const Init& init)
-      : element_style_(init.element_style),
-        scrollbar_(init.scrollbar),
-        part_names_(init.part_names),
-        scrollbar_part_(init.scrollbar_part),
-        mode_(init.mode),
-        is_ua_rule_(init.is_ua_rule) {}
   SelectorChecker(const SelectorChecker&) = delete;
   SelectorChecker& operator=(const SelectorChecker&) = delete;
 
@@ -188,6 +192,7 @@ class CORE_EXPORT SelectorChecker {
   ComputedStyle* element_style_;
   CustomScrollbar* scrollbar_;
   PartNames* part_names_;
+  const String pseudo_argument_;
   ScrollbarPart scrollbar_part_;
   Mode mode_;
   bool is_ua_rule_;
@@ -198,4 +203,4 @@ class CORE_EXPORT SelectorChecker {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_

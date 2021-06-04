@@ -37,13 +37,12 @@ class ChannelInterface {
 
   virtual const std::string& content_name() const = 0;
 
-  virtual bool enabled() const = 0;
-
   // Enables or disables this channel
-  virtual bool Enable(bool enable) = 0;
+  virtual void Enable(bool enable) = 0;
 
   // Used for latency measurements.
-  virtual sigslot::signal1<ChannelInterface*>& SignalFirstPacketReceived() = 0;
+  virtual void SetFirstPacketReceivedCallback(
+      std::function<void()> callback) = 0;
 
   // Channel control
   virtual bool SetLocalContent(const MediaContentDescription* content,
@@ -64,9 +63,6 @@ class ChannelInterface {
   //   * An SrtpTransport for SDES.
   //   * A DtlsSrtpTransport for DTLS-SRTP.
   virtual bool SetRtpTransport(webrtc::RtpTransportInternal* rtp_transport) = 0;
-
-  // Returns the last negotiated header extensions.
-  virtual RtpHeaderExtensions GetNegotiatedRtpHeaderExtensions() const = 0;
 
  protected:
   virtual ~ChannelInterface() = default;

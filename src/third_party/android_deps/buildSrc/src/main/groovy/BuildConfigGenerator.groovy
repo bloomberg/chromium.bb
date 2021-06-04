@@ -243,7 +243,7 @@ class BuildConfigGenerator extends DefaultTask {
             appendBuildTarget(dependency, depGraph.dependencies, sb)
         }
 
-        sb.append("if (build_with_chromium) {\n")
+        sb.append("if (!limit_android_deps) {\n")
         def buildWithChromiumDependencies = depGraph.dependencies.values().findAll {
             dependency -> !dependency.usedInBuild
         }
@@ -604,6 +604,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('    "com/google/protobuf/Wrappers*",\n')
                 sb.append('  ]')
                 break
+            case 'androidx_startup_startup_runtime':
+                sb.append('  # Keeps emoji2 code. See http://crbug.com/1205141\n')
+                sb.append('  ignore_proguard_configs = true\n')
+                break
             case 'androidx_webkit_webkit':
                 sb.append('  visibility = [\n')
                 sb.append('    "//android_webview/tools/system_webview_shell:*",\n')
@@ -645,6 +649,9 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # this for other purposes, change buildCompileNoDeps in build.gradle.\n')
                 sb.append('  visibility = [ "//build/android/gyp/resources_shrinker:*" ]\n')
                 break
+            case 'org_jetbrains_kotlinx_kotlinx_coroutines_android':
+               sb.append('requires_android = true')
+               break
         }
     }
 
@@ -812,7 +819,7 @@ class BuildConfigGenerator extends DefaultTask {
 
     static String makeOwners() {
         // Make it easier to upgrade existing dependencies without full third_party review.
-        return "file://third_party/android_deps/OWNERS"
+        return "file://third_party/android_deps/OWNERS\n"
     }
 
     static String makeReadme(ChromiumDepGraph.DependencyDescription dependency) {
@@ -820,6 +827,7 @@ class BuildConfigGenerator extends DefaultTask {
         for (ChromiumDepGraph.LicenseSpec license : dependency.licenses) {
             // Replace license names with ones that are whitelisted, see third_party/PRESUBMIT.py
             switch (license.name) {
+                case "The Apache License, Version 2.0":
                 case "The Apache Software License, Version 2.0":
                     licenseStrings.add("Apache Version 2.0")
                     break

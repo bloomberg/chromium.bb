@@ -35,6 +35,7 @@
 #include <set>
 #include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/single_thread_task_runner.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
@@ -43,7 +44,6 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
@@ -129,7 +129,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebFrame* FindFrameByName(const WebString& name) override;
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken()
+  const absl::optional<base::UnguessableToken>& GetEmbeddingToken()
       const override;
   void SendPings(const WebURL& destination_url) override;
   void StartReload(WebFrameLoadType) override;
@@ -144,11 +144,15 @@ class CORE_EXPORT WebLocalFrameImpl final
   void GetPageDescription(uint32_t page_index,
                           WebPrintPageDescription*) override;
   void ExecuteScript(const WebScriptSource&) override;
-  void ExecuteScriptInIsolatedWorld(int32_t world_id,
-                                    const WebScriptSource&) override;
+  void ExecuteScriptInIsolatedWorld(
+      int32_t world_id,
+      const WebScriptSource&,
+      BackForwardCacheAware back_forward_cache_aware) override;
   WARN_UNUSED_RESULT v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
-                                             const WebScriptSource&) override;
+  ExecuteScriptInIsolatedWorldAndReturnValue(
+      int32_t world_id,
+      const WebScriptSource&,
+      BackForwardCacheAware back_forward_cache_aware) override;
   void ClearIsolatedWorldCSPForTesting(int32_t world_id) override;
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       const WebScriptSource&) override;
@@ -181,17 +185,14 @@ class CORE_EXPORT WebLocalFrameImpl final
       unsigned num_sources,
       bool user_gesture,
       ScriptExecutionType,
-      WebScriptExecutionCallback*) override;
+      WebScriptExecutionCallback*,
+      BackForwardCacheAware back_forward_cache_aware) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
                    const WebString& default_value) override;
-  void BindDevToolsAgent(CrossVariantMojoAssociatedRemote<
-                             mojom::blink::DevToolsAgentHostInterfaceBase>
-                             devtools_agent_host_remote,
-                         CrossVariantMojoAssociatedReceiver<
-                             mojom::blink::DevToolsAgentInterfaceBase>
-                             devtools_agent_receiver) override;
+  void GenerateInterventionReport(const WebString& message_id,
+                                  const WebString& message) override;
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;
@@ -299,11 +300,13 @@ class CORE_EXPORT WebLocalFrameImpl final
                                       WebPrintPresetOptions*) override;
   bool CapturePaintPreview(const gfx::Rect& bounds,
                            cc::PaintCanvas* canvas,
-                           bool include_linked_destinations) override;
+                           bool include_linked_destinations,
+                           bool skip_accelerated_content) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;
-  void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
+  void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) override;
+  const absl::optional<blink::FrameAdEvidence>& AdEvidence() override;
   bool IsSubframeCreatedByAdScript() override;
   gfx::Size SpoolSizeInPixelsForTesting(const gfx::Size& page_size_in_pixels,
                                         uint32_t page_count) override;
@@ -337,10 +340,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebHistoryItem&,
       bool is_client_redirect,
       bool has_transient_user_activation,
+      const WebSecurityOrigin& initiator_origin,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
-  void LoadJavaScriptURL(const WebURL&) override;
-  FallbackContentResult MaybeRenderFallbackContent(
-      const WebURLError&) const override;
   void SetCommittedFirstRealLoad() override;
   bool HasCommittedFirstRealLoad() override;
   bool WillStartNavigation(const WebNavigationInfo&) override;
@@ -487,7 +488,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ShowContextMenu(
       mojo::PendingAssociatedRemote<mojom::blink::ContextMenuClient> client,
       const blink::ContextMenuData& data,
-      const base::Optional<gfx::Point>& host_context_menu_location);
+      const absl::optional<gfx::Point>& host_context_menu_location);
 
   virtual void Trace(Visitor*) const;
 
@@ -508,8 +509,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   // to call these on a WebLocalFrameImpl.
   bool IsWebLocalFrame() const override;
   WebLocalFrame* ToWebLocalFrame() override;
+  const WebLocalFrame* ToWebLocalFrame() const override;
   bool IsWebRemoteFrame() const override;
   WebRemoteFrame* ToWebRemoteFrame() override;
+  const WebRemoteFrame* ToWebRemoteFrame() const override;
   void CreateFrameWidgetInternal(
       base::PassKey<WebLocalFrame> pass_key,
       CrossVariantMojoAssociatedRemote<
@@ -522,8 +525,7 @@ class CORE_EXPORT WebLocalFrameImpl final
           mojo_widget,
       const viz::FrameSinkId& frame_sink_id,
       bool is_for_nested_main_frame,
-      bool hidden,
-      bool never_composited) override;
+      bool hidden) override;
 
   HitTestResult HitTestResultForVisualViewportPos(const IntPoint&);
 

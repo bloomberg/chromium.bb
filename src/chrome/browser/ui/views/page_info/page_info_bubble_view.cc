@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/safety_tip_ui_helper.h"
@@ -48,6 +47,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/page_info/features.h"
 #include "components/page_info/page_info.h"
 #include "components/safe_browsing/buildflags.h"
@@ -58,6 +58,8 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
@@ -78,10 +80,9 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -101,12 +102,6 @@ namespace {
 // Bubble width constraints.
 constexpr int kMinBubbleWidth = 320;
 constexpr int kMaxBubbleWidth = 1000;
-
-SkColor GetRelatedTextColor() {
-  views::Label label;
-  return views::style::GetColor(label, views::style::CONTEXT_LABEL,
-                                views::style::STYLE_PRIMARY);
-}
 
 }  // namespace
 
@@ -310,8 +305,8 @@ PageInfoBubbleView::PageInfoBubbleView(
               view->HandleMoreInfoRequest(view->site_settings_link);
             },
             this),
-        PageInfoUI::GetSiteSettingsIcon(GetRelatedTextColor()),
-        IDS_PAGE_INFO_SITE_SETTINGS_LINK, std::u16string(),
+        PageInfoUI::GetSiteSettingsIcon(), IDS_PAGE_INFO_SITE_SETTINGS_LINK,
+        std::u16string(),
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
         tooltip, std::u16string()));
   }
@@ -402,8 +397,7 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
     PageInfo::PermissionInfo info;
     info.type = ContentSettingsType::COOKIES;
     info.setting = CONTENT_SETTING_ALLOW;
-    const gfx::ImageSkia icon =
-        PageInfoUI::GetPermissionIcon(info, GetRelatedTextColor());
+    const ui::ImageModel icon = PageInfoUI::GetPermissionIcon(info);
 
     const std::u16string& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
@@ -562,8 +556,7 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     }
 
     // Add the Certificate Section.
-    const gfx::ImageSkia icon =
-        PageInfoUI::GetCertificateIcon(GetRelatedTextColor());
+    const ui::ImageModel icon = PageInfoUI::GetValidCertificateIcon();
     const std::u16string secondary_text = l10n_util::GetStringUTF16(
         valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                        : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
@@ -639,14 +632,33 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   if (!info.is_vr_presentation_in_headset)
     return;
 
-  auto* layout = page_feature_info_view_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStretch);
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  page_feature_info_view_
+      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  auto* content_view =
+      page_feature_info_view_->AddChildView(std::make_unique<views::View>());
+  auto* flex_layout =
+      content_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   auto icon = std::make_unique<NonAccessibleImageView>();
-  icon->SetImage(PageInfoUI::GetVrSettingsIcon(GetRelatedTextColor()));
+  icon->SetImage(PageInfoUI::GetVrSettingsIcon());
+  content_view->AddChildView(std::move(icon));
+
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_PRESENTING_TEXT),
+      views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  const int icon_label_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+  label->SetProperty(views::kMarginsKey, gfx::Insets(0, icon_label_spacing));
+  label->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithWeight(1));
+  content_view->AddChildView(std::move(label));
+
   auto exit_button = std::make_unique<views::MdTextButton>(
       base::BindRepeating(
           [](PageInfoBubbleView* view) {
@@ -659,16 +671,14 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT));
   exit_button->SetID(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
   exit_button->SetProminent(true);
+  // Set views::kInternalPaddingKey for flex layout to account for internal
+  // button padding when calculating margins.
+  exit_button->SetProperty(views::kInternalPaddingKey,
+                           gfx::Insets(exit_button->GetInsets().top(), 0));
+  content_view->AddChildView(std::move(exit_button));
 
-  auto button = std::make_unique<HoverButton>(
-      views::Button::PressedCallback(), std::move(icon),
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_PRESENTING_TEXT),
-      std::u16string(), std::move(exit_button),
-      false,  // Try not to change the row height while adding secondary view
-      true);  // Secondary view can handle events.
-  button->SetID(VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION);
-
-  page_feature_info_view_->AddChildView(button.release());
+  flex_layout->SetInteriorMargin(layout_provider->GetInsetsMetric(
+      ChromeInsetsMetric::INSETS_PAGE_INFO_HOVER_BUTTON));
 
   Layout();
   SizeToContents();

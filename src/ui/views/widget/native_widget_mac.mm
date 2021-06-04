@@ -12,7 +12,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -26,6 +25,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer_impl_mac.h"
@@ -36,7 +36,6 @@
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/cocoa/text_input_host.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -554,10 +553,15 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
       break;
   }
   auto window_state = WindowVisibilityState::kShowAndActivateWindow;
-  if (show_state == ui::SHOW_STATE_INACTIVE)
+  if (show_state == ui::SHOW_STATE_INACTIVE) {
     window_state = WindowVisibilityState::kShowInactive;
-  else if (show_state == ui::SHOW_STATE_MINIMIZED)
+  } else if (show_state == ui::SHOW_STATE_MINIMIZED) {
     window_state = WindowVisibilityState::kHideWindow;
+  } else if (show_state == ui::SHOW_STATE_DEFAULT) {
+    window_state = delegate_->CanActivate()
+                       ? window_state
+                       : WindowVisibilityState::kShowInactive;
+  }
   GetNSWindowMojo()->SetVisibilityState(window_state);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
@@ -799,6 +803,11 @@ ui::GestureRecognizer* NativeWidgetMac::GetGestureRecognizer() {
   return recognizer.get();
 }
 
+ui::GestureConsumer* NativeWidgetMac::GetGestureConsumer() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void NativeWidgetMac::OnSizeConstraintsChanged() {
   Widget* widget = GetWidget();
   GetNSWindowMojo()->SetSizeConstraints(
@@ -937,16 +946,6 @@ void Widget::CloseAllSecondaryWidgets() {
     if (widget && widget->is_secondary_widget())
       [window close];
   }
-}
-
-const ui::NativeTheme* Widget::GetNativeTheme() const {
-  if (base::FeatureList::IsEnabled(
-          features::kInheritNativeThemeFromParentWidget) &&
-      parent_) {
-    return parent_->GetNativeTheme();
-  }
-
-  return ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 namespace internal {

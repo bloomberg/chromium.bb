@@ -82,6 +82,7 @@ True
 True
 """
 
+from __future__ import absolute_import
 import errno
 import heapq
 import os
@@ -89,6 +90,7 @@ import stat
 import sys
 import time
 import warnings
+import six
 try:
   import cStringIO as io  # pylint: disable-msg=C6204
 except ImportError:
@@ -1105,7 +1107,7 @@ class FakePathModule(object):
   def abspath(self, path):
     """Return the absolute version of a path."""
     if not self.isabs(path):
-      if sys.version_info < (3, 0) and isinstance(path, unicode):
+      if sys.version_info < (3, 0) and isinstance(path, six.text_type):
         cwd = self.os.getcwdu()
       else:
         cwd = self.os.getcwd()
@@ -1375,7 +1377,7 @@ class FakeOsModule(object):
     """Return current working directory. Deprecated in Python 3."""
     if sys.version_info >= (3, 0):
       raise AttributeError('no attribute getcwdu')
-    return unicode(self.filesystem.cwd)
+    return six.text_type(self.filesystem.cwd)
 
   def listdir(self, target_directory):
     """Returns a sorted list of filenames in target_directory.
@@ -2194,7 +2196,7 @@ class FakeFileOpen(object):
 def _RunDoctest():
   # pylint: disable-msg=C6204
   import doctest
-  import fake_filesystem  # pylint: disable-msg=W0406
+  from . import fake_filesystem  # pylint: disable-msg=W0406
   return doctest.testmod(fake_filesystem)
 
 

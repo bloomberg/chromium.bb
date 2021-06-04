@@ -172,6 +172,7 @@ const SiteSettingsBehaviorImpl = {
       origin: origin,
       displayName: exception.displayName,
       setting: exception.setting,
+      settingDetail: exception.settingDetail,
       enforcement: enforcement,
       controlledBy: controlledBy,
     };
@@ -227,10 +228,6 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         ContentSettingsTypes.WINDOW_PLACEMENT,
         'enableExperimentalWebPlatformFeatures');
-    addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.FONT_ACCESS, 'enableFontAccessContentSetting');
-    addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.FILE_HANDLING, 'enableFileHandlingContentSetting');
     return this.contentTypes_.slice(0);
   },
 

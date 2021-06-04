@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -36,6 +37,11 @@
 #include "ash/shell.h"
 #include "ui/display/test/display_manager_test_api.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 using url::kAboutBlankURL;
 using content::WebContents;
@@ -93,8 +99,8 @@ class FullscreenControllerInteractiveTest : public ExclusiveAccessTest {
   }
 
  private:
-   void ToggleTabFullscreen_Internal(bool enter_fullscreen,
-                                     bool retry_until_success);
+  void ToggleTabFullscreen_Internal(bool enter_fullscreen,
+                                    bool retry_until_success);
 };
 
 void FullscreenControllerInteractiveTest::ToggleTabFullscreen(
@@ -153,6 +159,14 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
 // Tests that while in fullscreen creating a new tab will exit fullscreen.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        TestNewTabExitsFullscreen) {
+#if defined(OS_LINUX) && defined(USE_OZONE)
+  // Flaky in Linux interactive_ui_tests_wayland: crbug.com/1200036
+  if (features::IsUsingOzonePlatform() &&
+      ui::OzonePlatform::GetPlatformNameForTest() == "wayland") {
+    GTEST_SKIP();
+  }
+#endif
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
@@ -317,9 +331,7 @@ IN_PROC_BROWSER_TEST_F(ExclusiveAccessTest,
 #endif
 
 // Tests mouse lock can be escaped with ESC key.
-// TODO(crbug.com/1191959) Disable the test because of its flakiness.
-IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       DISABLED_EscapingMouseLock) {
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kFullscreenMouseLockHTML));
@@ -652,7 +664,6 @@ class ExperimentalFullscreenControllerInteractiveTest
 // where the window server's async handling of the fullscreen window state may
 // transition the window into fullscreen on the actual (non-mocked) display
 // bounds before or after the window bounds checks, yielding flaky results.
-// TODO(crbug.com/1194700): Disabled on Mac because of GetScreenInfos staleness.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_FullscreenOnSecondDisplay DISABLED_FullscreenOnSecondDisplay
 #else
@@ -737,7 +748,6 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
 // transition the window into fullscreen on the actual (non-mocked) display
 // bounds before or after the window bounds checks, yielding flaky results.
 // TODO(msw): Parameterize the maximized state and combine with the test above.
-// TODO(crbug.com/1194700): Disabled on Mac because of GetScreenInfos staleness.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_FullscreenOnSecondDisplayMaximized \
   DISABLED_FullscreenOnSecondDisplayMaximized
@@ -827,7 +837,6 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
 // where the window server's async handling of the fullscreen window state may
 // transition the window into fullscreen on the actual (non-mocked) display
 // bounds before or after the window bounds checks, yielding flaky results.
-// TODO(crbug.com/1194700): Disabled on Mac because of GetScreenInfos staleness.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_FullscreenChangeDisplays DISABLED_FullscreenChangeDisplays
 #else

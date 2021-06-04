@@ -35,6 +35,7 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -94,7 +95,7 @@ DevToolsURLLoaderInterceptor::Modifications::Modifications(
       modified_headers(std::move(modified_headers)) {}
 
 DevToolsURLLoaderInterceptor::Modifications::Modifications(
-    base::Optional<net::Error> error_reason,
+    absl::optional<net::Error> error_reason,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     scoped_refptr<base::RefCountedMemory> response_body,
     size_t body_offset,
@@ -269,7 +270,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       const std::string& id,
       const base::UnguessableToken& frame_token,
       int32_t process_id,
-      const base::Optional<std::string>& renderer_request_id,
+      const absl::optional<std::string>& renderer_request_id,
       std::unique_ptr<CreateLoaderParameters> create_loader_params,
       bool is_download,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
@@ -346,7 +347,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override;
+      const absl::optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -416,12 +417,12 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   std::unique_ptr<ResponseMetadata> response_metadata_;
   bool registered_in_global_request_map_;
 
-  base::Optional<std::pair<net::RequestPriority, int32_t>> priority_;
+  absl::optional<std::pair<net::RequestPriority, int32_t>> priority_;
   DevToolsURLLoaderInterceptor::HandleAuthRequestCallback
       pending_auth_callback_;
   TakeResponseBodyPipeCallback pending_response_body_pipe_callback_;
 
-  const base::Optional<std::string> renderer_request_id_;
+  const absl::optional<std::string> renderer_request_id_;
 
   // List of URLs that have been redirected through. The last member is the
   // current request URL. Tracked for the purpose of computing the proper
@@ -435,7 +436,7 @@ void DevToolsURLLoaderInterceptor::CreateJob(
     const base::UnguessableToken& frame_token,
     int32_t process_id,
     bool is_download,
-    const base::Optional<std::string>& renderer_request_id,
+    const absl::optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_params,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
@@ -594,7 +595,7 @@ void DevToolsURLLoaderInterceptor::HandleAuthRequest(
   if (auto* job = InterceptionJob::FindByRequestId(req_id))
     job->OnAuthRequest(auth_info, std::move(callback));
   else
-    std::move(callback).Run(true, base::nullopt);
+    std::move(callback).Run(true, absl::nullopt);
 }
 
 DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
@@ -684,7 +685,7 @@ InterceptionJob::InterceptionJob(
     const std::string& id,
     const base::UnguessableToken& frame_token,
     int process_id,
-    const base::Optional<std::string>& renderer_request_id,
+    const absl::optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
     bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
@@ -851,7 +852,7 @@ void InterceptionJob::Detach() {
   if (state_ == State::kAuthRequired) {
     state_ = State::kRequestSent;
     waiting_for_resolution_ = false;
-    std::move(pending_auth_callback_).Run(true, base::nullopt);
+    std::move(pending_auth_callback_).Run(true, absl::nullopt);
     return;
   }
   InnerContinueRequest(std::make_unique<Modifications>());
@@ -904,7 +905,7 @@ Response InterceptionJob::InnerContinueRequest(
     } else {
       // TODO(caseq): report error if other modifications are present.
       state_ = State::kRequestSent;
-      loader_->FollowRedirect({}, {}, {}, base::nullopt);
+      loader_->FollowRedirect({}, {}, {}, absl::nullopt);
       return Response::Success();
     }
   }
@@ -996,10 +997,10 @@ void InterceptionJob::ProcessAuthResponse(
   DCHECK_EQ(kAuthRequired, state_);
   switch (response.response_type) {
     case DevToolsURLLoaderInterceptor::AuthChallengeResponse::kDefault:
-      std::move(pending_auth_callback_).Run(true, base::nullopt);
+      std::move(pending_auth_callback_).Run(true, absl::nullopt);
       break;
     case DevToolsURLLoaderInterceptor::AuthChallengeResponse::kCancelAuth:
-      std::move(pending_auth_callback_).Run(false, base::nullopt);
+      std::move(pending_auth_callback_).Run(false, absl::nullopt);
       break;
     case DevToolsURLLoaderInterceptor::AuthChallengeResponse::
         kProvideCredentials:
@@ -1037,15 +1038,22 @@ Response InterceptionJob::ProcessResponseOverride(
         base::MakeRefCounted<net::HttpResponseHeaders>(kDummyHeaders);
   }
   head->headers->GetMimeTypeAndCharset(&head->mime_type, &head->charset);
-  if (head->mime_type.empty() && body_size) {
-    size_t bytes_to_sniff =
-        std::min(body_size, static_cast<size_t>(net::kMaxBytesToSniff));
-    net::SniffMimeType(
-        base::StringPiece(body->front_as<const char>() + response_body_offset,
-                          bytes_to_sniff),
-        create_loader_params_->request.url, "",
-        net::ForceSniffFileUrlsForHtml::kDisabled, &head->mime_type);
-    head->did_mime_sniff = true;
+  const GURL& url = create_loader_params_->request.url;
+  if (create_loader_params_->options &
+      network::mojom::kURLLoadOptionSniffMimeType) {
+    if (body_size && network::ShouldSniffContent(url, *head)) {
+      size_t bytes_to_sniff =
+          std::min(body_size, static_cast<size_t>(net::kMaxBytesToSniff));
+      const std::string hint = head->mime_type;
+      net::SniffMimeType(
+          base::StringPiece(body->front_as<const char>() + response_body_offset,
+                            bytes_to_sniff),
+          url, hint, net::ForceSniffFileUrlsForHtml::kDisabled,
+          &head->mime_type);
+      head->did_mime_sniff = true;
+    } else if (head->mime_type.empty()) {
+      head->mime_type.assign("text/plain");
+    }
   }
   // TODO(caseq): we're cheating here a bit, raw_headers() have \0's
   // where real headers would have \r\n, but the sizes here
@@ -1067,7 +1075,7 @@ Response InterceptionJob::ProcessResponseOverride(
   base::OnceClosure continue_after_cookies_set;
   std::string location;
   if (head->headers->IsRedirect(&location)) {
-    GURL redirect_url = create_loader_params_->request.url.Resolve(location);
+    GURL redirect_url = url.Resolve(location);
     if (redirect_url.is_valid()) {
       continue_after_cookies_set =
           base::BindOnce(&InterceptionJob::ProcessRedirectByClient,
@@ -1093,9 +1101,9 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
 
   std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
   base::Time response_date;
-  base::Optional<base::Time> server_time = base::nullopt;
+  absl::optional<base::Time> server_time = absl::nullopt;
   if (headers.GetDateValue(&response_date))
-    server_time = base::make_optional(response_date);
+    server_time = absl::make_optional(response_date);
   base::Time now = base::Time::Now();
 
   const base::StringPiece name("Set-Cookie");
@@ -1319,7 +1327,7 @@ void InterceptionJob::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(!waiting_for_resolution_);
@@ -1371,7 +1379,7 @@ void InterceptionJob::FollowRedirect(
     state_ = State::kRequestSent;
     loader_->FollowRedirect(removed_headers, modified_headers,
                             modified_cors_exempt_headers,
-                            base::nullopt /* new_url */);
+                            absl::nullopt /* new_url */);
     return;
   }
 
@@ -1523,7 +1531,7 @@ void InterceptionJob::OnAuthRequest(
 
   if (!(stage_ & InterceptionStage::REQUEST) || !interceptor_ ||
       !interceptor_->handle_auth_) {
-    std::move(callback).Run(true, base::nullopt);
+    std::move(callback).Run(true, absl::nullopt);
     return;
   }
   state_ = State::kAuthRequired;

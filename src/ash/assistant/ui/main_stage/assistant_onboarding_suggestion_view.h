@@ -7,8 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/unguessable_token.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace chromeos {
 namespace assistant {
@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingSuggestionView
   void RemoveLayerBeneathView(ui::Layer* layer) override;
 
   // Returns the icon for the suggestion.
-  const gfx::ImageSkia& GetIcon() const;
+  gfx::ImageSkia GetIcon() const;
 
   // Returns the text for the suggestion.
   const std::u16string& GetText() const;

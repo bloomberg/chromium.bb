@@ -527,6 +527,7 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyRepeatRateFast", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST},
       {"showKeyboardShortcutViewer",
        IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
+      // TODO(crbug.com/1097328): Remove this string, as it is unused.
       {"keyboardShowLanguageAndInput",
        IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT},
       {"keyboardShowInputSettings", IDS_SETTINGS_KEYBOARD_SHOW_INPUT_SETTINGS},
@@ -791,7 +792,7 @@ DeviceSection::DeviceSection(Profile* profile,
   if (power_manager_client) {
     power_manager_client->AddObserver(this);
 
-    const base::Optional<power_manager::PowerSupplyProperties>& last_status =
+    const absl::optional<power_manager::PowerSupplyProperties>& last_status =
         power_manager_client->GetLastStatus();
     if (last_status)
       PowerChanged(*last_status);
@@ -850,10 +851,7 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kDeviceStrings);
 
-  html_source->AddBoolean("isDemoSession",
-                          chromeos::DemoSession::IsDeviceInDemoMode());
-  // TODO(crbug.com/1097328): Delete this.
-  html_source->AddBoolean("enableLanguageSettingsV2", true);
+  html_source->AddBoolean("isDemoSession", DemoSession::IsDeviceInDemoMode());
 
   AddDevicePointersStrings(html_source);
   AddDeviceKeyboardStrings(html_source);
@@ -1162,7 +1160,7 @@ void DeviceSection::OnGetDisplayLayoutInfo(
 }
 
 void DeviceSection::OnGotSwitchStates(
-    base::Optional<PowerManagerClient::SwitchStates> result) {
+    absl::optional<PowerManagerClient::SwitchStates> result) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
 
   if (result && result->lid_state != PowerManagerClient::LidState::NOT_PRESENT)

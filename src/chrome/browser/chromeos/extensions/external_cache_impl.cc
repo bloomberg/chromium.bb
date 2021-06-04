@@ -77,7 +77,7 @@ void ExternalCacheImpl::UpdateExtensionsList(
     std::unique_ptr<base::DictionaryValue> prefs) {
   extensions_ = std::move(prefs);
 
-  if (extensions_->empty()) {
+  if (extensions_->DictEmpty()) {
     // If list of know extensions is empty, don't init cache on disk. It is
     // important shortcut for test to don't wait forever for cache dir
     // initialization that should happen outside of Chrome on real device.
@@ -288,7 +288,7 @@ void ExternalCacheImpl::CheckCache() {
     downloader_->StartAllPending(nullptr);
 
   VLOG(1) << "Updated ExternalCacheImpl, there are "
-          << cached_extensions_->size() << " extensions cached";
+          << cached_extensions_->DictSize() << " extensions cached";
 
   UpdateExtensionLoader();
 }

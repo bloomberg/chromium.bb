@@ -18,13 +18,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_concepts.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -37,15 +38,15 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
-#include "components/omnibox/browser/omnibox_pedal_concepts.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -723,15 +724,12 @@ void OmniboxEditModel::ExecutePedal(const AutocompleteMatch& match,
   // Record the presence of any Pedals in the result set.
   for (const AutocompleteMatch& match_in_result : result()) {
     if (match_in_result.pedal) {
-      base::UmaHistogramEnumeration("Omnibox.PedalShown",
-                                    match_in_result.pedal->id(),
-                                    OmniboxPedalId::TOTAL_COUNT);
+      match_in_result.pedal->RecordActionShown();
     }
   }
 
-  // Record the use of this Pedal.
-  base::UmaHistogramEnumeration("Omnibox.SuggestionUsed.Pedal", pedal->id(),
-                                OmniboxPedalId::TOTAL_COUNT);
+  pedal->RecordActionExecuted();
+
   {
     // This block resets omnibox to unedited state and closes popup, which
     // may not seem necessary in cases of navigation but makes sense for
@@ -762,18 +760,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // Record the presence of any Pedals in the result set.
   for (const AutocompleteMatch& match_in_result : result()) {
     if (match_in_result.pedal) {
-      base::UmaHistogramEnumeration("Omnibox.PedalShown",
-                                    match_in_result.pedal->id(),
-                                    OmniboxPedalId::TOTAL_COUNT);
+      match_in_result.pedal->RecordActionShown();
     }
-  }
-
-  // Matches with |pedal| may be opened normally or executed, but when a match
-  // is a dedicated Pedal suggestion, it should always be executed. This only
-  // happens when the button row feature is disabled.
-  if (match.pedal && !OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-    ExecutePedal(match, match_selection_timestamp);
-    return;
   }
 
   std::u16string input_text(pasted_text);
@@ -981,16 +969,16 @@ bool OmniboxEditModel::AcceptKeyword(
     StartAutocomplete(false, true);
   }
 
-  // When entering keyword mode via tab, the new text to show is whatever the
-  // newly-selected match in the dropdown is.  When entering via space, however,
-  // we should make sure to use the actual |user_text_| as the basis for the new
+  // When entering keyword mode via tab (or if keyword search button is enabled,
+  // when the user text is empty), the new text to show is whatever the
+  // newly-selected match in the dropdown is.  When entering via space (or, if
+  // keyword button is enabled, when user text is not empty), however, we should
+  // make sure to use the actual |user_text_| as the basis for the new
   // text.  This ensures that if the user types "<keyword><space>" and the
   // default match would have inline autocompleted a further string (e.g.
   // because there's a past multi-word search beginning with this keyword), the
   // inline autocompletion doesn't get filled in as the keyword search query
-  // text. When the Keyword Search Button is enabled, the keyword hint/button is
-  // visible even if their query looks like "<keyword><space><user text>",
-  // so treat it as a space in this instance.
+  // text.
   //
   // We also treat tabbing into keyword mode like tabbing through the popup in
   // that we set |has_temporary_text_|, whereas pressing space is treated like
@@ -1001,9 +989,11 @@ bool OmniboxEditModel::AcceptKeyword(
   // which we don't want to switch back to when exiting keyword mode; see
   // comments in ClearKeyword().
   const AutocompleteMatch& match = CurrentMatch(nullptr);
-  if (entry_method == OmniboxEventProto::TAB &&
-      (!OmniboxFieldTrial::IsKeywordSearchButtonEnabled() ||
-       user_text_.empty())) {
+  const bool can_overwrite_user_text =
+      OmniboxFieldTrial::IsKeywordSearchButtonEnabled()
+          ? user_text_.empty()
+          : entry_method == OmniboxEventProto::TAB;
+  if (can_overwrite_user_text) {
     // Ensure the current selection is saved before showing keyword mode
     // so that moving to another line and then reverting the text will restore
     // the current state properly.
@@ -1509,13 +1499,12 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   // |allow_exact_keyword_match_| will be used by StartAutocomplete() method,
   // which will be called by |view_->UpdatePopup()|; so after that returns we
   // can safely reset this flag.
-  // Entering keyword mode by space is disabled if the keyword button is
-  // enabled, so do not set |allow_exact_keyword_match_| in that case.
+  // If entering keyword mode by space is disabled, do not set
+  // |allow_exact_keyword_match_|.
   allow_exact_keyword_match_ =
-      (OmniboxFieldTrial::GetKeywordSpaceTrigger() !=
-       OmniboxFieldTrial::SPACE_TRIGGERING_DISABLED) &&
-      state_changes.text_differs && allow_keyword_ui_change &&
-      !state_changes.just_deleted_text && no_selection &&
+      AllowKeywordSpaceTriggering() && state_changes.text_differs &&
+      allow_keyword_ui_change && !state_changes.just_deleted_text &&
+      no_selection &&
       CreatedKeywordSearchByInsertingSpaceInMiddle(
           *state_changes.old_text, user_text_, state_changes.new_sel_start);
   view_->UpdatePopup();
@@ -1697,23 +1686,20 @@ bool OmniboxEditModel::ShouldPreventElision() const {
   return controller()->GetLocationBarModel()->ShouldPreventElision();
 }
 
+bool OmniboxEditModel::AllowKeywordSpaceTriggering() const {
+  PrefService* pref_service =
+      autocomplete_controller()->autocomplete_provider_client()->GetPrefs();
+  return !base::FeatureList::IsEnabled(
+             omnibox::kKeywordSpaceTriggeringSetting) ||
+         pref_service->GetBoolean(omnibox::kKeywordSpaceTriggeringEnabled);
+}
+
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(
     const std::u16string& new_text) {
-  // Entering keyword mode by space is disabled when the keyword button is
-  // enabled, so do not accept keyword.
-  if (OmniboxFieldTrial::GetKeywordSpaceTrigger() ==
-      OmniboxFieldTrial::SPACE_TRIGGERING_DISABLED)
+  if (!AllowKeywordSpaceTriggering())
     return false;
 
   size_t keyword_length = new_text.length() - 1;
-  if (OmniboxFieldTrial::GetKeywordSpaceTrigger() ==
-      OmniboxFieldTrial::DOUBLE_SPACE_TRIGGERS_KEYWORD) {
-    // Check if the second character after a keyword is a space.  The first
-    // character is checked as usual below.
-    if (!IsSpaceCharForAcceptingKeyword(new_text[keyword_length]))
-      return false;
-    keyword_length--;
-  }
   return is_keyword_hint_ && (keyword_.length() == keyword_length) &&
          IsSpaceCharForAcceptingKeyword(new_text[keyword_length]) &&
          !new_text.compare(0, keyword_length, keyword_, 0, keyword_length) &&

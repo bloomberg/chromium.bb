@@ -26,12 +26,6 @@ const HELP_CANT_ACCESS_ACCOUNT = 188036;
 // not be extended by user activity.
 const VIDEO_LOGIN_TIMEOUT = 90 * 1000;
 
-// Horizontal padding for the error bubble.
-const BUBBLE_HORIZONTAL_PADDING = 65;
-
-// Vertical padding for the error bubble.
-const BUBBLE_VERTICAL_PADDING = -213;
-
 /**
  * The authentication mode for the screen.
  * @enum {number}
@@ -315,9 +309,6 @@ Polymer({
 
   /** @override */
   ready() {
-    this.authenticator_.addEventListener(
-        'authCompleted', this.onAuthCompletedMessage_.bind(this));
-
     this.authenticator_.confirmPasswordCallback =
         this.onAuthConfirmPassword_.bind(this);
     this.authenticator_.onePasswordCallback =
@@ -385,6 +376,14 @@ Polymer({
 
   onInterstitialBackButtonClicked_() {
     this.cancel(true /* isBackClicked */);
+  },
+
+  /**
+   * Handles user closes the dialog on the SAML page.
+   * @private
+   */
+  closeSaml_() {
+    this.cancel();
   },
 
   /**
@@ -644,14 +643,6 @@ Polymer({
     chrome.send('samlStateChanged', [this.isSaml_]);
 
     this.classList.toggle('saml', this.isSaml_);
-
-    // Skip these updates in the initial observer run, which is happening during
-    // the property initialization.
-    if (oldValue !== undefined) {
-      if (Oobe.getInstance().currentScreen.id == 'gaia-signin') {
-        Oobe.getInstance().updateScreenSize(this);
-      }
-    }
   },
 
   /**
@@ -709,12 +700,6 @@ Polymer({
    * @private
    */
   onLoginUIVisible_() {
-    // Show deferred error bubble.
-    if (this.errorBubble_) {
-      this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
-      this.errorBubble_ = undefined;
-    }
-
     chrome.send('loginWebuiReady');
     chrome.send('loginVisible', ['gaia-signin']);
   },
@@ -863,9 +848,6 @@ Polymer({
     // screen is shown.
     this.navigationButtonsHidden_ = true;
 
-    // Clear any error messages that were shown before login.
-    Oobe.clearErrors();
-
     this.clearVideoTimer_();
     this.authCompleted_ = true;
   },
@@ -946,22 +928,6 @@ Polymer({
   },
 
   /**
-   * Shows sign-in error bubble.
-   * @param {number} loginAttempts Number of login attempts tried.
-   * @param {HTMLElement} error Content to show in bubble.
-   */
-  showErrorBubble(loginAttempts, error) {
-    if (!this.loadingFrameContents_) {
-      $('bubble').showContentForElement(
-          this, cr.ui.Bubble.Attachment.BOTTOM, error,
-          BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
-    } else {
-      // Defer the bubble until the frame has been loaded.
-      this.errorBubble_ = [loginAttempts, error];
-    }
-  },
-
-  /**
    * Called when user canceled signin.
    */
   cancel(isBackClicked = false) {
@@ -1034,14 +1000,16 @@ Polymer({
       // somewhere in the middle of animations.
       if (this.screenMode_ == AuthMode.DEFAULT)
         this.authenticator_.resetWebview();
+
+      // It might show the OOBE screen id=SCREEN_CONFIRM_PASSWORD.
+      // Ensures showing the screen id=SCREEN_GAIA_SIGNIN.
+      Oobe.showScreen({id: SCREEN_GAIA_SIGNIN});
+      this.$['gaia-allowlist-error'].submitButton.focus();
+    } else {
+      Oobe.showSigninUI();
     }
 
     this.isAllowlistErrorShown_ = show;
-
-    if (show)
-      this.$['gaia-allowlist-error'].submitButton.focus();
-    else
-      Oobe.showSigninUI();
   },
 
   /**

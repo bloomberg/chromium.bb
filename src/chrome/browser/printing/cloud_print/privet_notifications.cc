@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -329,7 +330,7 @@ void PrivetNotificationService::StartLister() {
 
   std::unique_ptr<PrivetHTTPAsynchronousFactory> http_factory(
       PrivetHTTPAsynchronousFactory::CreateInstance(
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
+          profile_->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess()));
 
   privet_notifications_listener_ =
@@ -349,8 +350,8 @@ PrivetNotificationDelegate::~PrivetNotificationDelegate() {
 }
 
 void PrivetNotificationDelegate::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<std::u16string>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   if (!button_index)
     return;
 

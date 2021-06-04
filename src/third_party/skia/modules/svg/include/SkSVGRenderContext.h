@@ -9,6 +9,7 @@
 #define SkSVGRenderContext_DEFINED
 
 #include "include/core/SkFontMgr.h"
+#include "include/core/SkM44.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkPath.h"
 #include "include/core/SkRect.h"
@@ -56,12 +57,19 @@ struct SkSVGPresentationContext {
 
 class SkSVGRenderContext {
 public:
+    // Captures data required for object bounding box resolution.
+    struct OBBScope {
+        const SkSVGNode*          fNode;
+        const SkSVGRenderContext* fCtx;
+    };
+
     SkSVGRenderContext(SkCanvas*, const sk_sp<SkFontMgr>&,
                        const sk_sp<skresources::ResourceProvider>&, const SkSVGIDMapper&,
                        const SkSVGLengthContext&, const SkSVGPresentationContext&,
-                       const SkSVGNode*);
+                       const OBBScope&);
     SkSVGRenderContext(const SkSVGRenderContext&);
     SkSVGRenderContext(const SkSVGRenderContext&, SkCanvas*);
+    // Establish a new OBB scope.  Normally used when entering a node's render scope.
     SkSVGRenderContext(const SkSVGRenderContext&, const SkSVGNode*);
     ~SkSVGRenderContext();
 
@@ -122,9 +130,6 @@ public:
     // The local computed clip path (not inherited).
     const SkPath* clipPath() const { return fClipPath.getMaybeNull(); }
 
-    // The node being rendered (may be null).
-    const SkSVGNode* node() const { return fNode; }
-
     const sk_sp<skresources::ResourceProvider>& resourceProvider() const {
         return fResourceProvider;
     }
@@ -132,6 +137,13 @@ public:
     sk_sp<SkFontMgr> fontMgr() const {
         return fFontMgr ? fFontMgr : SkFontMgr::RefDefault();
     }
+
+    // Returns the translate/scale transformation required to map into the current OBB scope,
+    // with the specified units.
+    struct OBBTransform {
+        SkV2 offset, scale;
+    };
+    OBBTransform transformForCurrentOBB(SkSVGObjectBoundingBoxUnits) const;
 
     SkRect resolveOBBRect(const SkSVGLength& x, const SkSVGLength& y,
                           const SkSVGLength& w, const SkSVGLength& h,
@@ -166,7 +178,8 @@ private:
     // Deferred opacity optimization for leaf nodes.
     float                                         fDeferredPaintOpacity = 1;
 
-    const SkSVGNode* fNode;
+    // Current object bounding box scope.
+    const OBBScope                                fOBBScope;
 };
 
 #endif // SkSVGRenderContext_DEFINED

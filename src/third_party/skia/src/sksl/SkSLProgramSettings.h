@@ -9,20 +9,13 @@
 #define SKSL_PROGRAMSETTINGS
 
 #include "include/private/SkSLDefines.h"
+#include "include/private/SkSLProgramKind.h"
+
+#include <vector>
 
 namespace SkSL {
 
-/**
- * SkSL supports several different program kinds.
- */
-enum class ProgramKind : int8_t {
-    kFragment,
-    kVertex,
-    kGeometry,
-    kFragmentProcessor,
-    kRuntimeEffect,
-    kGeneric,
-};
+class ExternalFunction;
 
 /**
  * Holds the compiler settings for a program.
@@ -75,6 +68,17 @@ struct ProgramSettings {
     // producing H and CPP code; the static tests don't have to have constant values *yet*, but
     // the generated code will contain a static test which then does have to be a constant.
     bool fPermitInvalidStaticTests = false;
+    // If true, configurations which demand strict ES2 conformance (runtime effects, generic
+    // programs, and SkVM rendering) will fail during compilation if ES2 restrictions are violated.
+    bool fEnforceES2Restrictions = true;
+    // If true, the DSL should automatically mangle symbol names.
+    bool fDSLMangling = true;
+    // If true, the DSL should automatically mark variables declared upon creation.
+    bool fDSLMarkVarsDeclared = false;
+    // External functions available for use in runtime effects. These values are registered in the
+    // symbol table of the Program, but ownership is *not* transferred. It is up to the caller to
+    // keep them alive.
+    const std::vector<std::unique_ptr<ExternalFunction>>* fExternalFunctions = nullptr;
 };
 
 /**
@@ -85,7 +89,10 @@ struct ProgramConfig {
     ProgramSettings fSettings;
 
     bool strictES2Mode() const {
-        return fKind == ProgramKind::kRuntimeEffect || fKind == ProgramKind::kGeneric;
+        return fSettings.fEnforceES2Restrictions &&
+               (fKind == ProgramKind::kRuntimeColorFilter ||
+                fKind == ProgramKind::kRuntimeShader ||
+                fKind == ProgramKind::kGeneric);
     }
 };
 

@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/usb/web_usb_histograms.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
@@ -88,13 +90,13 @@ UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     blink::mojom::WebUsbService::GetPermissionCallback callback)
-    : ChooserController(render_frame_host,
-                        IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
-                        IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
+    : ChooserController(
+          CreateChooserTitle(render_frame_host,
+                             IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
+                             IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME)),
       filters_(std::move(device_filters)),
       callback_(std::move(callback)),
-      web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
-      observer_(this) {
+      web_contents_(WebContents::FromRenderFrameHost(render_frame_host)) {
   RenderFrameHost* main_frame = web_contents_->GetMainFrame();
   origin_ = main_frame->GetLastCommittedOrigin();
   Profile* profile =
@@ -231,7 +233,7 @@ void UsbChooserController::OnDeviceRemoved(
 }
 
 void UsbChooserController::OnDeviceManagerConnectionError() {
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 // Get a list of devices that can be shown in the chooser bubble UI for
@@ -250,7 +252,7 @@ void UsbChooserController::GotUsbDeviceList(
   // Listen to UsbChooserContext for OnDeviceAdded/Removed events after the
   // enumeration.
   if (chooser_context_)
-    observer_.Add(chooser_context_.get());
+    observation_.Observe(chooser_context_.get());
 
   if (view())
     view()->OnOptionsInitialized();

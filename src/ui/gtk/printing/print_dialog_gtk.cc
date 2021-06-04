@@ -4,8 +4,6 @@
 
 #include "ui/gtk/printing/print_dialog_gtk.h"
 
-#include <gtk/gtkunixprint.h>
-
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -28,13 +26,14 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "ui/aura/window.h"
+#include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_ui.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_platform.h"
 #include "ui/gtk/gtk_util.h"
 #include "ui/gtk/printing/printing_gtk_util.h"
 
 #if defined(USE_CUPS)
-#include "printing/mojom/print.mojom.h"
+#include "printing/mojom/print.mojom.h"  // nogncheck
 #endif
 
 using printing::PageRanges;
@@ -371,12 +370,12 @@ void PrintDialogGtk::ShowDialog(
   gtk::SetGtkTransientForAura(dialog_, parent_view);
   if (parent_view)
     parent_view->AddObserver(this);
-#if BUILDFLAG(GTK_VERSION) >= 4
-  gtk_window_set_hide_on_close(GTK_WINDOW(dialog_), true);
-#else
-  g_signal_connect(dialog_, "delete-event",
-                   G_CALLBACK(gtk_widget_hide_on_delete), nullptr);
-#endif
+  if (gtk::GtkCheckVersion(4)) {
+    gtk_window_set_hide_on_close(GTK_WINDOW(dialog_), true);
+  } else {
+    g_signal_connect(dialog_, "delete-event",
+                     G_CALLBACK(gtk_widget_hide_on_delete), nullptr);
+  }
 
   // Handle the case when the existing |gtk_settings_| has "selection" selected
   // as the page range, but |has_selection| is false.
@@ -408,7 +407,7 @@ void PrintDialogGtk::ShowDialog(
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   gtk_widget_show(dialog_);
 
-  gtk::GtkUi::GetDelegate()->ShowGtkWindow(GTK_WINDOW(dialog_));
+  gtk::GtkUi::GetPlatform()->ShowGtkWindow(GTK_WINDOW(dialog_));
 }
 
 void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,

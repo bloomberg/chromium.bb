@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -207,9 +208,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -325,9 +327,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -446,9 +449,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -473,9 +477,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -552,9 +557,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -614,9 +620,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -729,9 +736,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -811,9 +819,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -900,9 +909,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -984,9 +994,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -1074,9 +1085,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -1418,9 +1430,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, StartIn_ID) {
 
   FakeFileSystemAccessPermissionContext permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
@@ -1489,9 +1502,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, StartIn_Priority) {
 
   FakeFileSystemAccessPermissionContext permission_context;
   static_cast<FileSystemAccessManagerImpl*>(
-      BrowserContext::GetStoragePartition(
-          shell()->web_contents()->GetBrowserContext(),
-          shell()->web_contents()->GetSiteInstance())
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
           ->GetFileSystemAccessEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 

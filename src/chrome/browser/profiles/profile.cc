@@ -11,7 +11,9 @@
 #include "base/guid.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
@@ -21,8 +23,10 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/media_router/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/variations/variations.mojom.h"
 #include "components/variations/variations_client.h"
@@ -83,6 +87,7 @@ namespace {
 
 const char kDevToolsOTRProfileIDPrefix[] = "Devtools::BrowserContext";
 const char kMediaRouterOTRProfileIDPrefix[] = "MediaRouter::Presentation";
+const char kTestOTRProfileIDPrefix[] = "Test::OTR";
 
 }  // namespace
 
@@ -123,6 +128,11 @@ Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForDevTools() {
 // static
 Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForMediaRouter() {
   return CreateUnique(kMediaRouterOTRProfileIDPrefix);
+}
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForTesting() {
+  return CreateUnique(kTestOTRProfileIDPrefix);
 }
 
 const std::string& Profile::OTRProfileID::ToString() const {
@@ -241,6 +251,15 @@ void Profile::RemoveObserver(ProfileObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+base::FilePath Profile::GetBaseName() const {
+  return GetPath().BaseName();
+}
+
+std::string Profile::GetDebugName() const {
+  std::string name = GetBaseName().MaybeAsASCII();
+  return name.empty() ? "UnknownProfile" : name;
+}
+
 TestingProfile* Profile::AsTestingProfile() {
   return nullptr;
 }
@@ -250,10 +269,6 @@ ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
   return nullptr;
 }
 #endif  // !defined(OS_ANDROID)
-
-PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
-  return GetOffTheRecordPrefs();
-}
 
 Profile::Delegate::~Delegate() {
 }
@@ -273,7 +288,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif  // defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
   registry->RegisterStringPref(prefs::kSessionExitType, std::string());
   registry->RegisterBooleanPref(prefs::kDisableExtensions, false);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -301,7 +315,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
 #endif  // !defined(OS_ANDROID)
-  registry->RegisterStringPref(prefs::kDefaultApps, "install");
+  registry->RegisterStringPref(prefs::kPreinstalledApps, "install");
   registry->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
                                 true);
   registry->RegisterIntegerPref(prefs::kProfileIconVersion, 0);
@@ -357,19 +371,14 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // chrome/browser/prefs/browser_prefs.cc.
 }
 
-std::string Profile::GetDebugName() const {
-  std::string name = GetPath().BaseName().MaybeAsASCII();
-  return name.empty() ? "UnknownProfile" : name;
-}
-
 bool Profile::IsRegularProfile() const {
-  return !IsOffTheRecord();
+  return profile_metrics::GetBrowserProfileType(this) ==
+         profile_metrics::BrowserProfileType::kRegular;
 }
 
 bool Profile::IsIncognitoProfile() const {
-  // TODO(https://1169142): Replace logic of this function and other
-  // IsXProfile functions with GetBrowserProfileType().
-  return IsPrimaryOTRProfile() && !IsGuestSession() && !IsSystemProfile();
+  return profile_metrics::GetBrowserProfileType(this) ==
+         profile_metrics::BrowserProfileType::kIncognito;
 }
 
 // static
@@ -394,23 +403,28 @@ bool Profile::IsGuestSession() const {
 #else
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   DCHECK(chromeos::LacrosChromeServiceImpl::Get());
-  if (chromeos::LacrosChromeServiceImpl::Get()->init_params()->session_type !=
-      crosapi::mojom::SessionType::kUnknown) {
-    return chromeos::LacrosChromeServiceImpl::Get()
-               ->init_params()
-               ->session_type == crosapi::mojom::SessionType::kGuestSession;
+  if (chromeos::LacrosChromeServiceImpl::Get()->init_params()->session_type ==
+      crosapi::mojom::SessionType::kGuestSession) {
+    return true;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  return is_guest_profile_ && !IsEphemeralGuestProfileEnabled();
+  return profile_metrics::GetBrowserProfileType(this) ==
+         profile_metrics::BrowserProfileType::kGuest;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
+  return nullptr;
+}
+
 bool Profile::IsEphemeralGuestProfile() const {
-  return is_guest_profile_ && IsEphemeralGuestProfileEnabled();
+  return profile_metrics::GetBrowserProfileType(this) ==
+         profile_metrics::BrowserProfileType::kEphemeralGuest;
 }
 
 bool Profile::IsSystemProfile() const {
-  return is_system_profile_;
+  return profile_metrics::GetBrowserProfileType(this) ==
+         profile_metrics::BrowserProfileType::kSystem;
 }
 
 bool Profile::IsPrimaryOTRProfile() const {
@@ -443,7 +457,7 @@ void Profile::MaybeSendDestroyedNotification() {
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;
 
-    NotifyWillBeDestroyed(this);
+    NotifyWillBeDestroyed();
 
     for (auto& observer : observers_)
       observer.OnProfileWillBeDestroyed(this);
@@ -471,14 +485,12 @@ bool ProfileCompare::operator()(Profile* a, Profile* b) const {
 
 #if !defined(OS_ANDROID)
 double Profile::GetDefaultZoomLevelForProfile() {
-  return GetDefaultStoragePartition(this)
-      ->GetHostZoomMap()
-      ->GetDefaultZoomLevel();
+  return GetDefaultStoragePartition()->GetHostZoomMap()->GetDefaultZoomLevel();
 }
 #endif  // !defined(OS_ANDROID)
 
 void Profile::Wipe() {
-  content::BrowserContext::GetBrowsingDataRemover(this)->Remove(
+  GetBrowsingDataRemover()->Remove(
       base::Time(), base::Time::Max(),
       chrome_browsing_data_remover::WIPE_PROFILE,
       chrome_browsing_data_remover::ALL_ORIGIN_TYPES);
@@ -491,8 +503,8 @@ void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
     observer.OnOffTheRecordProfileCreated(off_the_record);
 }
 
-Profile* Profile::GetPrimaryOTRProfile() {
-  return GetOffTheRecordProfile(OTRProfileID::PrimaryID());
+Profile* Profile::GetPrimaryOTRProfile(bool create_if_needed) {
+  return GetOffTheRecordProfile(OTRProfileID::PrimaryID(), create_if_needed);
 }
 
 bool Profile::HasPrimaryOTRProfile() {

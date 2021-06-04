@@ -1,4 +1,6 @@
 {
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": { "project": "./tsconfig.json" },
   "extends": [
     "./node_modules/gts",
     "plugin:import/errors",
@@ -9,16 +11,14 @@
     "browser": true,
     "node": true
   },
-  "plugins": ["node", "ban", "import"],
+  "plugins": ["node", "ban", "import", "deprecation"],
   "rules": {
     "linebreak-style": ["warn", "unix"],
     "no-console": "warn",
     "no-undef": "off",
     "no-useless-rename": "warn",
     "object-shorthand": "warn",
-    "quotes": ["warn",
-      "single", { "avoidEscape": true, "allowTemplateLiterals": true }
-    ],
+    "quotes": ["warn", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
 
     "ban/ban": [
       "warn",
@@ -27,6 +27,7 @@
         "message": "WPT disallows setTimeout; use `framework/util/timeout.js`."
       }
     ],
+    //"deprecation/deprecation": "warn",
     "@typescript-eslint/no-inferrable-types": "off",
     "import/order": [
       "warn",

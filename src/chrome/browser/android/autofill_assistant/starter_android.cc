@@ -7,9 +7,16 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/time/default_tick_clock.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDependenciesImpl_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantServiceInjector_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers_public/Starter_jni.h"
+#include "chrome/browser/android/autofill_assistant/client_android.h"
+#include "chrome/browser/android/autofill_assistant/trigger_script_bridge_android.h"
+#include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill_assistant/browser/public/runtime_manager_impl.h"
 #include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/website_login_manager_impl.h"
 #include "components/version_info/channel.h"
@@ -23,7 +30,6 @@ namespace autofill_assistant {
 
 static jlong JNI_Starter_FromWebContents(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& jweb_contents) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   CHECK(web_contents);
@@ -44,13 +50,37 @@ void StarterAndroid::Attach(JNIEnv* env, const JavaParamRef<jobject>& jcaller) {
   Detach(env, jcaller);
   java_object_ = base::android::ScopedJavaGlobalRef<jobject>(jcaller);
 
-  starter_ =
-      std::make_unique<Starter>(web_contents_, this, ukm::UkmRecorder::Get());
+  starter_ = std::make_unique<Starter>(
+      web_contents_, this, ukm::UkmRecorder::Get(),
+      RuntimeManagerImpl::GetForWebContents(web_contents_)->GetWeakPtr(),
+      base::DefaultTickClock::GetInstance());
 }
 
 void StarterAndroid::Detach(JNIEnv* env, const JavaParamRef<jobject>& jcaller) {
   java_object_ = nullptr;
+  java_dependencies_ = nullptr;
   starter_.reset();
+}
+
+std::unique_ptr<TriggerScriptCoordinator::UiDelegate>
+StarterAndroid::CreateTriggerScriptUiDelegate() {
+  CreateJavaDependenciesIfNecessary();
+  return std::make_unique<TriggerScriptBridgeAndroid>(
+      base::android::AttachCurrentThread(), java_dependencies_);
+}
+
+std::unique_ptr<ServiceRequestSender>
+StarterAndroid::GetTriggerScriptRequestSenderToInject() {
+  DCHECK(GetFeatureModuleInstalled());
+  jlong jtest_service_request_sender_to_inject =
+      Java_AutofillAssistantServiceInjector_getServiceRequestSenderToInject(
+          base::android::AttachCurrentThread());
+  std::unique_ptr<ServiceRequestSender> test_service_request_sender;
+  if (jtest_service_request_sender_to_inject) {
+    test_service_request_sender.reset(static_cast<ServiceRequestSender*>(
+        reinterpret_cast<void*>(jtest_service_request_sender_to_inject)));
+  }
+  return test_service_request_sender;
 }
 
 WebsiteLoginManager* StarterAndroid::GetWebsiteLoginManager() const {
@@ -89,12 +119,23 @@ void StarterAndroid::OnInteractabilityChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean is_interactable) {
-  if (!is_interactable || !starter_) {
+  if (!starter_) {
     return;
   }
 
-  // The tab has become interactable again. Users may have adjusted their
-  // settings, so we need to check them again.
+  starter_->OnTabInteractabilityChanged(is_interactable);
+}
+
+void StarterAndroid::OnActivityAttachmentChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  java_dependencies_ = nullptr;
+  if (!starter_) {
+    return;
+  }
+
+  // Notify the starter. Some flows are only available in CCT or in regular tab,
+  // so we need to cancel ongoing flows if they are no longer supported.
   starter_->CheckSettings();
 }
 
@@ -121,7 +162,7 @@ void StarterAndroid::ShowOnboarding(
     bool use_dialog_onboarding,
     const TriggerContext& trigger_context,
     base::OnceCallback<void(bool shown, OnboardingResult result)> callback) {
-  DCHECK(java_object_);
+  CreateJavaDependenciesIfNecessary();
   if (onboarding_finished_callback_) {
     DCHECK(false) << "onboarding requested while already being shown";
     std::move(callback).Run(false, OnboardingResult::DISMISSED);
@@ -136,9 +177,8 @@ void StarterAndroid::ShowOnboarding(
     values.emplace_back(param.value());
   }
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Starter_showOnboarding(env, java_object_, use_dialog_onboarding,
-                              base::android::ConvertUTF8ToJavaString(
-                                  env, trigger_context.GetInitialUrl()),
+  Java_Starter_showOnboarding(env, java_object_, java_dependencies_,
+                              use_dialog_onboarding,
                               base::android::ConvertUTF8ToJavaString(
                                   env, trigger_context.GetExperimentIds()),
                               base::android::ToJavaArrayOfStrings(env, keys),
@@ -146,7 +186,11 @@ void StarterAndroid::ShowOnboarding(
 }
 
 void StarterAndroid::HideOnboarding() {
-  // TODO(arbesser): implement this.
+  if (!java_dependencies_) {
+    return;
+  }
+  Java_Starter_hideOnboarding(base::android::AttachCurrentThread(),
+                              java_object_, java_dependencies_);
 }
 
 void StarterAndroid::OnOnboardingFinished(
@@ -154,7 +198,13 @@ void StarterAndroid::OnOnboardingFinished(
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean shown,
     jint result) {
-  DCHECK(onboarding_finished_callback_);
+  // Currently, java may end up attempting to notify the native starter more
+  // than once. The first notification is the user-triggered one, the others are
+  // due to secondary effects, e.g., due to the dialog being hidden.
+  // TODO(arbesser): fix this such that the callback is only called once.
+  if (!onboarding_finished_callback_) {
+    return;
+  }
   std::move(onboarding_finished_callback_)
       .Run(shown, static_cast<OnboardingResult>(result));
 }
@@ -172,6 +222,78 @@ void StarterAndroid::SetProactiveHelpSettingEnabled(bool enabled) {
 bool StarterAndroid::GetMakeSearchesAndBrowsingBetterEnabled() const {
   return Java_Starter_getMakeSearchesAndBrowsingBetterSettingEnabled(
       base::android::AttachCurrentThread());
+}
+
+bool StarterAndroid::GetIsCustomTab() const {
+  return ui_controller_android_utils::IsCustomTab(web_contents_);
+}
+
+void StarterAndroid::CreateJavaDependenciesIfNecessary() {
+  if (java_dependencies_) {
+    return;
+  }
+
+  java_dependencies_ = base::android::ScopedJavaGlobalRef<jobject>(
+      Java_Starter_getOrCreateDependencies(base::android::AttachCurrentThread(),
+                                           java_object_));
+}
+
+void StarterAndroid::Start(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaRef<jstring>& jexperiment_ids,
+    const base::android::JavaRef<jobjectArray>& jparameter_names,
+    const base::android::JavaRef<jobjectArray>& jparameter_values,
+    const base::android::JavaRef<jstring>& jinitial_url) {
+  DCHECK(starter_);
+  auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
+      env, web_contents_, jexperiment_ids, jparameter_names, jparameter_values,
+      /* onboarding_shown = */ false, /* is_direct_action = */ false,
+      jinitial_url);
+
+  starter_->Start(std::move(trigger_context));
+}
+
+void StarterAndroid::StartRegularScript(
+    GURL url,
+    std::unique_ptr<TriggerContext> trigger_context,
+    const absl::optional<TriggerScriptProto>& trigger_script) {
+  ClientAndroid::CreateForWebContents(web_contents_);
+  auto* client_android = ClientAndroid::FromWebContents(web_contents_);
+  DCHECK(client_android);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jlong jtest_service_to_inject =
+      Java_AutofillAssistantServiceInjector_getServiceToInject(
+          env, reinterpret_cast<intptr_t>(client_android));
+  std::unique_ptr<Service> test_service = nullptr;
+  if (jtest_service_to_inject) {
+    test_service.reset(static_cast<Service*>(
+        reinterpret_cast<void*>(jtest_service_to_inject)));
+  }
+
+  CreateJavaDependenciesIfNecessary();
+  client_android->Start(
+      url, std::move(trigger_context), std::move(test_service),
+      Java_AssistantDependenciesImpl_transferOnboardingOverlayCoordinator(
+          env, java_dependencies_),
+      trigger_script);
+}
+
+bool StarterAndroid::IsRegularScriptRunning() const {
+  auto* client_android = ClientAndroid::FromWebContents(web_contents_);
+  if (!client_android) {
+    return false;
+  }
+  return client_android->IsRunning();
+}
+
+bool StarterAndroid::IsRegularScriptVisible() const {
+  auto* client_android = ClientAndroid::FromWebContents(web_contents_);
+  if (!client_android) {
+    return false;
+  }
+  return client_android->IsVisible();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(StarterAndroid)

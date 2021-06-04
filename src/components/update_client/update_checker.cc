@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
@@ -283,7 +282,7 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
 
   base::OnceClosure reply =
       base::BindOnce(std::move(update_check_callback_),
-                     base::make_optional<ProtocolParser::Results>(results),
+                     absl::make_optional<ProtocolParser::Results>(results),
                      ErrorCategory::kNone, 0, retry_after_sec);
 
   if (daynum != ProtocolParser::kNoDaystart) {
@@ -302,7 +301,7 @@ void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(update_check_callback_), base::nullopt,
+      base::BindOnce(std::move(update_check_callback_), absl::nullopt,
                      error_category, error, retry_after_sec));
 }
 

@@ -87,7 +87,7 @@ int ModelLoader::GetModelNumber() {
 #endif
   int model_number = 0;
   if (!base::StringToInt(num_str, &model_number)) {
-    model_number = 6;  // Default model
+    model_number = 8;  // Default model
   }
   return model_number;
 }
@@ -129,7 +129,6 @@ ModelLoader::ModelLoader(
       url_loader_factory_(url_loader_factory),
       last_client_model_status_(ClientModelStatus::MODEL_NEVER_FETCHED) {
   DCHECK(url_.is_valid());
-  StartFetch(/*only_from_cache=*/true);
 }
 
 // For testing only

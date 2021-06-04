@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/shell_surface_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -23,6 +24,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -286,10 +288,10 @@ void ShellSurface::InitializeWindowState(ash::WindowState* window_state) {
   MaybeMakeTransient();
 }
 
-base::Optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
+absl::optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
   // Defer if configure requests are pending.
   if (!pending_configs_.empty() || scoped_configure_)
-    return base::nullopt;
+    return absl::nullopt;
 
   gfx::Rect visible_bounds = GetVisibleBounds();
   gfx::Rect new_widget_bounds =

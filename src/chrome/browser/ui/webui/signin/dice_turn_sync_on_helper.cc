@@ -211,9 +211,8 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       shutdown_subscription_(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
-              ->Subscribe(base::AdaptCallbackForRepeating(
-                  base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                 base::Unretained(this))))) {
+              ->Subscribe(base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                         base::Unretained(this)))) {
   DCHECK(delegate_);
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
@@ -395,7 +394,7 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
       AccountIdFromAccountInfo(account_info_), dm_token_, client_id_,
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       base::BindOnce(&DiceTurnSyncOnHelper::OnPolicyFetchComplete,
                      weak_pointer_factory_.GetWeakPtr()));
@@ -437,7 +436,7 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
   dice_signed_in_profile_creator_ =
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_info_.account_id,
-          /*local_profile_name=*/std::u16string(), /*icon_index=*/base::nullopt,
+          /*local_profile_name=*/std::u16string(), /*icon_index=*/absl::nullopt,
           /*use_guest=*/false,
           base::BindOnce(&DiceTurnSyncOnHelper::OnNewSignedInProfileCreated,
                          base::Unretained(this)));
@@ -479,7 +478,8 @@ void DiceTurnSyncOnHelper::OnNewSignedInProfileCreated(Profile* new_profile) {
 void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   // Signin.
   auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  primary_account_mutator->SetPrimaryAccount(account_info_.account_id);
+  primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                             signin::ConsentLevel::kSync);
   signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
                                                 signin_promo_action_);
   signin_metrics::LogSigninReason(signin_reason_);
@@ -619,8 +619,8 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   shutdown_subscription_ =
       DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
           ->Get(profile_)
-          ->Subscribe(base::AdaptCallbackForRepeating(base::BindOnce(
-              &DiceTurnSyncOnHelper::AbortAndDelete, base::Unretained(this))));
+          ->Subscribe(base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                     base::Unretained(this)));
   delegate_->SwitchToProfile(new_profile);
 }
 

@@ -9,5 +9,5 @@ struct PositionBuffer {
 var<storage> s : PositionBuffer;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

@@ -5,8 +5,11 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -17,9 +20,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +42,7 @@ class BrowserUtilTest : public testing::Test {
     fake_user_manager_ = new ash::FakeChromeUserManager;
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_user_manager_));
+    browser_util::RegisterLocalStatePrefs(pref_service_.registry());
   }
 
   void AddRegularUser(const std::string& email) {
@@ -55,6 +61,7 @@ class BrowserUtilTest : public testing::Test {
   TestingProfile testing_profile_;
   ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  TestingPrefServiceSimple pref_service_;
 
   ScopedTestingLocalState local_state_;
 };
@@ -361,7 +368,7 @@ TEST_F(BrowserUtilTest, MetadataMissingVersion) {
      "metadata_version": 1
    }
   )###";
-  base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+  absl::optional<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_FALSE(
       browser_util::DoesMetadataSupportNewAccountManager(&value.value()));
 }
@@ -375,7 +382,7 @@ TEST_F(BrowserUtilTest, MetadataVersionBadFormat) {
      "metadata_version": 1
    }
   )###";
-  base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+  absl::optional<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_FALSE(
       browser_util::DoesMetadataSupportNewAccountManager(&value.value()));
 }
@@ -389,7 +396,7 @@ TEST_F(BrowserUtilTest, MetadataOldVersion) {
      "metadata_version": 1
    }
   )###";
-  base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+  absl::optional<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_FALSE(
       browser_util::DoesMetadataSupportNewAccountManager(&value.value()));
 }
@@ -403,9 +410,141 @@ TEST_F(BrowserUtilTest, MetadataNewVersion) {
      "metadata_version": 1
    }
   )###";
-  base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+  absl::optional<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(
       browser_util::DoesMetadataSupportNewAccountManager(&value.value()));
+}
+
+TEST_F(BrowserUtilTest, GetMissingDataVer) {
+  std::string user_id_hash = "1234";
+  base::Version version =
+      browser_util::GetDataVer(&pref_service_, user_id_hash);
+  EXPECT_FALSE(version.IsValid());
+}
+
+TEST_F(BrowserUtilTest, GetCorruptDataVer) {
+  base::DictionaryValue dictionary_value;
+  std::string user_id_hash = "1234";
+  dictionary_value.SetString(user_id_hash, "corrupted");
+  pref_service_.Set(browser_util::kDataVerPref, dictionary_value);
+  base::Version version =
+      browser_util::GetDataVer(&pref_service_, user_id_hash);
+  EXPECT_FALSE(version.IsValid());
+}
+
+TEST_F(BrowserUtilTest, GetDataVer) {
+  base::DictionaryValue dictionary_value;
+  std::string user_id_hash = "1234";
+  base::Version version{"1.1.1.1"};
+  dictionary_value.SetString(user_id_hash, version.GetString());
+  pref_service_.Set(browser_util::kDataVerPref, dictionary_value);
+
+  base::Version result_version =
+      browser_util::GetDataVer(&pref_service_, user_id_hash);
+  EXPECT_EQ(version, result_version);
+}
+
+TEST_F(BrowserUtilTest, RecordDataVer) {
+  std::string user_id_hash = "1234";
+  base::Version version{"1.1.1.1"};
+  browser_util::RecordDataVer(&pref_service_, user_id_hash, version);
+
+  base::DictionaryValue expected;
+  expected.SetString(user_id_hash, version.GetString());
+  const base::DictionaryValue* dict =
+      pref_service_.GetDictionary(browser_util::kDataVerPref);
+  EXPECT_TRUE(dict->Equals(&expected));
+}
+
+TEST_F(BrowserUtilTest, RecordDataVerOverrides) {
+  std::string user_id_hash = "1234";
+
+  base::Version version1{"1.1.1.1"};
+  base::Version version2{"1.1.1.2"};
+  browser_util::RecordDataVer(&pref_service_, user_id_hash, version1);
+  browser_util::RecordDataVer(&pref_service_, user_id_hash, version2);
+
+  base::DictionaryValue expected;
+  expected.SetString(user_id_hash, version2.GetString());
+
+  const base::DictionaryValue* dict =
+      pref_service_.GetDictionary(browser_util::kDataVerPref);
+  EXPECT_TRUE(dict->Equals(&expected));
+}
+
+TEST_F(BrowserUtilTest, RecordDataVerWithMultipleUsers) {
+  std::string user_id_hash_1 = "1234";
+  std::string user_id_hash_2 = "2345";
+  base::Version version1{"1.1.1.1"};
+  base::Version version2{"1.1.1.2"};
+  browser_util::RecordDataVer(&pref_service_, user_id_hash_1, version1);
+  browser_util::RecordDataVer(&pref_service_, user_id_hash_2, version2);
+
+  EXPECT_EQ(version1, browser_util::GetDataVer(&pref_service_, user_id_hash_1));
+  EXPECT_EQ(version2, browser_util::GetDataVer(&pref_service_, user_id_hash_2));
+
+  base::Version version3{"3.3.3.3"};
+  browser_util::RecordDataVer(&pref_service_, user_id_hash_1, version3);
+
+  base::DictionaryValue expected;
+  expected.SetString(user_id_hash_1, version3.GetString());
+  expected.SetString(user_id_hash_2, version2.GetString());
+
+  const base::DictionaryValue* dict =
+      pref_service_.GetDictionary(browser_util::kDataVerPref);
+  EXPECT_TRUE(dict->Equals(&expected));
+}
+
+TEST_F(BrowserUtilTest, GetRootfsLacrosVersionMayBlock) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  const std::string kVersion = "91.0.4457";
+  const std::string kContent =
+      "{\"content\":{\"version\":\"" + kVersion + "\"}}";
+  auto path = tmp_dir.GetPath().Append("file");
+  ASSERT_TRUE(base::WriteFile(path, kContent));
+
+  EXPECT_EQ(browser_util::GetRootfsLacrosVersionMayBlock(path),
+            base::Version(kVersion));
+}
+
+TEST_F(BrowserUtilTest, GetRootfsLacrosVersionMayBlockMissingVersion) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  const std::string kContent = "{\"content\":{}}";
+  auto path = tmp_dir.GetPath().Append("file");
+  ASSERT_TRUE(base::WriteFile(path, kContent));
+
+  EXPECT_FALSE(browser_util::GetRootfsLacrosVersionMayBlock(path).IsValid());
+}
+
+TEST_F(BrowserUtilTest, GetRootfsLacrosVersionMayBlockMissingContent) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  const std::string kContent = "{}";
+  auto path = tmp_dir.GetPath().Append("file");
+  ASSERT_TRUE(base::WriteFile(path, kContent));
+
+  EXPECT_FALSE(browser_util::GetRootfsLacrosVersionMayBlock(path).IsValid());
+}
+
+TEST_F(BrowserUtilTest, GetRootfsLacrosVersionMayBlockMissingFile) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  auto bad_path = tmp_dir.GetPath().Append("file");
+
+  EXPECT_FALSE(
+      browser_util::GetRootfsLacrosVersionMayBlock(bad_path).IsValid());
+}
+
+TEST_F(BrowserUtilTest, GetRootfsLacrosVersionMayBlockBadJson) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  const std::string kContent = "!@#$";
+  auto path = tmp_dir.GetPath().Append("file");
+  ASSERT_TRUE(base::WriteFile(path, kContent));
+
+  EXPECT_FALSE(browser_util::GetRootfsLacrosVersionMayBlock(path).IsValid());
 }
 
 }  // namespace crosapi

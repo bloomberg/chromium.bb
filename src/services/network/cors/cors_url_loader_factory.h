@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -87,10 +86,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
       uint32_t process_id,
-      const base::Optional<url::Origin>& request_initiator_origin_lock,
-      const base::Optional<url::Origin>& request_initiator);
+      const absl::optional<url::Origin>& request_initiator_origin_lock,
+      const absl::optional<url::Origin>& request_initiator);
 
   bool GetAllowAnyCorsExemptHeaderForBrowser() const;
+
+  mojo::PendingRemote<mojom::DevToolsObserver> GetDevToolsObserver(
+      const ResourceRequest& resource_request) const;
 
   mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
 
@@ -105,7 +107,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
   const int32_t process_id_ = mojom::kInvalidProcessId;
-  const base::Optional<url::Origin> request_initiator_origin_lock_;
+  const absl::optional<url::Origin> request_initiator_origin_lock_;
   const bool ignore_isolated_world_origin_;
   const mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy_;
   net::IsolationInfo isolation_info_;

@@ -35,6 +35,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/impl/gc_info.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"

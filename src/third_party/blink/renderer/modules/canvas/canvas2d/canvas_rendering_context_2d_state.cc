@@ -38,8 +38,7 @@ static const char defaultFilter[] = "none";
 namespace blink {
 
 CanvasRenderingContext2DState::CanvasRenderingContext2DState()
-    : unrealized_save_count_(0),
-      stroke_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
+    : stroke_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
       fill_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
       shadow_blur_(0.0),
       shadow_color_(Color::kTransparent),
@@ -72,8 +71,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
 CanvasRenderingContext2DState::CanvasRenderingContext2DState(
     const CanvasRenderingContext2DState& other,
     ClipListCopyMode mode)
-    : unrealized_save_count_(other.unrealized_save_count_),
-      unparsed_stroke_color_(other.unparsed_stroke_color_),
+    : unparsed_stroke_color_(other.unparsed_stroke_color_),
       unparsed_fill_color_(other.unparsed_fill_color_),
       stroke_style_(other.stroke_style_),
       fill_style_(other.fill_style_),
@@ -97,6 +95,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       unparsed_font_(other.unparsed_font_),
       font_(other.font_),
       font_for_filter_(other.font_for_filter_),
+      filter_state_(other.filter_state_),
       canvas_filter_(other.canvas_filter_),
       unparsed_css_filter_(other.unparsed_css_filter_),
       css_filter_value_(other.css_filter_value_),
@@ -124,6 +123,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
   }
   if (realized_font_)
     font_.GetFontSelector()->RegisterForInvalidationCallbacks(this);
+  ValidateFilterState();
 }
 
 CanvasRenderingContext2DState::~CanvasRenderingContext2DState() = default;
@@ -138,7 +138,7 @@ void CanvasRenderingContext2DState::FontsNeedUpdate(FontSelector* font_selector,
 
   // FIXME: We only really need to invalidate the resolved filter if the font
   // update above changed anything and the filter uses font-dependent units.
-  resolved_filter_.reset();
+  ClearResolvedFilter();
 }
 
 void CanvasRenderingContext2DState::Trace(Visitor* visitor) const {
@@ -334,13 +334,34 @@ void CanvasRenderingContext2DState::ResetTransform() {
   is_transform_invertible_ = true;
 }
 
+void CanvasRenderingContext2DState::ValidateFilterState() const {
+#if DCHECK_IS_ON()
+  switch (filter_state_) {
+    case FilterState::kNone:
+      DCHECK(!resolved_filter_);
+      DCHECK(!css_filter_value_);
+      DCHECK(!canvas_filter_);
+      break;
+    case FilterState::kUnresolved:
+    case FilterState::kInvalid:
+      DCHECK(!resolved_filter_);
+      DCHECK(css_filter_value_ || canvas_filter_);
+      break;
+    case FilterState::kResolved:
+      DCHECK(resolved_filter_);
+      DCHECK(css_filter_value_ || canvas_filter_);
+      break;
+    default:
+      NOTREACHED();
+  }
+#endif
+}
+
 sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
     IntSize canvas_size,
-    BaseRenderingContext2D* context) const {
-  if (!css_filter_value_ && !canvas_filter_)
-    return nullptr;
-
-  if (resolved_filter_)
+    BaseRenderingContext2D* context) {
+  ValidateFilterState();
+  if (filter_state_ != FilterState::kUnresolved)
     return resolved_filter_;
 
   FilterOperations operations;
@@ -373,19 +394,21 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
         paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
   }
 
+  filter_state_ =
+      resolved_filter_ ? FilterState::kResolved : FilterState::kInvalid;
+  ValidateFilterState();
   return resolved_filter_;
 }
 
 sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     Element* style_resolution_host,
     IntSize canvas_size,
-    CanvasRenderingContext2D* context) const {
+    CanvasRenderingContext2D* context) {
   // TODO(1189879): Investigate refactoring all filter logic into the
   // CanvasFilterOperationResolver class
-  if (!css_filter_value_ && !canvas_filter_)
-    return nullptr;
+  ValidateFilterState();
 
-  if (resolved_filter_)
+  if (filter_state_ != FilterState::kUnresolved)
     return resolved_filter_;
 
   FilterOperations operations;
@@ -459,12 +482,15 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     }
   }
 
+  filter_state_ =
+      resolved_filter_ ? FilterState::kResolved : FilterState::kInvalid;
+  ValidateFilterState();
   return resolved_filter_;
 }
 
 bool CanvasRenderingContext2DState::HasFilterForOffscreenCanvas(
     IntSize canvas_size,
-    BaseRenderingContext2D* context) const {
+    BaseRenderingContext2D* context) {
   // Checking for a non-null m_filterValue isn't sufficient, since this value
   // might refer to a non-existent filter.
   return !!GetFilterForOffscreenCanvas(canvas_size, context);
@@ -473,24 +499,29 @@ bool CanvasRenderingContext2DState::HasFilterForOffscreenCanvas(
 bool CanvasRenderingContext2DState::HasFilter(
     Element* style_resolution_host,
     IntSize canvas_size,
-    CanvasRenderingContext2D* context) const {
+    CanvasRenderingContext2D* context) {
   // Checking for a non-null m_filterValue isn't sufficient, since this value
   // might refer to a non-existent filter.
   return !!GetFilter(style_resolution_host, canvas_size, context);
 }
 
-void CanvasRenderingContext2DState::ClearResolvedFilter() const {
+void CanvasRenderingContext2DState::ClearResolvedFilter() {
   resolved_filter_.reset();
+  filter_state_ = (canvas_filter_ || css_filter_value_)
+                      ? FilterState::kUnresolved
+                      : FilterState::kNone;
+  ValidateFilterState();
 }
 
-SkDrawLooper* CanvasRenderingContext2DState::EmptyDrawLooper() const {
+sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::EmptyDrawLooper() const {
   if (!empty_draw_looper_)
     empty_draw_looper_ = DrawLooperBuilder().DetachDrawLooper();
 
-  return empty_draw_looper_.get();
+  return empty_draw_looper_;
 }
 
-SkDrawLooper* CanvasRenderingContext2DState::ShadowOnlyDrawLooper() const {
+sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::ShadowOnlyDrawLooper()
+    const {
   if (!shadow_only_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
     draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
@@ -499,11 +530,11 @@ SkDrawLooper* CanvasRenderingContext2DState::ShadowOnlyDrawLooper() const {
                                   DrawLooperBuilder::kShadowRespectsAlpha);
     shadow_only_draw_looper_ = draw_looper_builder.DetachDrawLooper();
   }
-  return shadow_only_draw_looper_.get();
+  return shadow_only_draw_looper_;
 }
 
-SkDrawLooper* CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper()
-    const {
+sk_sp<SkDrawLooper>&
+CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper() const {
   if (!shadow_and_foreground_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
     draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
@@ -513,10 +544,10 @@ SkDrawLooper* CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper()
     draw_looper_builder.AddUnmodifiedContent();
     shadow_and_foreground_draw_looper_ = draw_looper_builder.DetachDrawLooper();
   }
-  return shadow_and_foreground_draw_looper_.get();
+  return shadow_and_foreground_draw_looper_;
 }
 
-sk_sp<PaintFilter> CanvasRenderingContext2DState::ShadowOnlyImageFilter()
+sk_sp<PaintFilter>& CanvasRenderingContext2DState::ShadowOnlyImageFilter()
     const {
   using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_only_image_filter_) {
@@ -528,7 +559,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::ShadowOnlyImageFilter()
   return shadow_only_image_filter_;
 }
 
-sk_sp<PaintFilter>
+sk_sp<PaintFilter>&
 CanvasRenderingContext2DState::ShadowAndForegroundImageFilter() const {
   using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_and_foreground_image_filter_) {
@@ -570,14 +601,14 @@ void CanvasRenderingContext2DState::SetShadowColor(SkColor shadow_color) {
 void CanvasRenderingContext2DState::SetCSSFilter(const CSSValue* filter_value) {
   css_filter_value_ = filter_value;
   canvas_filter_ = nullptr;
-  resolved_filter_.reset();
+  ClearResolvedFilter();
 }
 
 void CanvasRenderingContext2DState::SetCanvasFilter(
     CanvasFilter* canvas_filter) {
   canvas_filter_ = canvas_filter;
   css_filter_value_ = nullptr;
-  resolved_filter_.reset();
+  ClearResolvedFilter();
 }
 
 void CanvasRenderingContext2DState::SetGlobalComposite(SkBlendMode mode) {
@@ -631,9 +662,6 @@ void CanvasRenderingContext2DState::UpdateFilterQuality() const {
   if (!image_smoothing_enabled_) {
     UpdateFilterQualityWithSkFilterQuality(kNone_SkFilterQuality);
   } else {
-    base::UmaHistogramExactLinear("Blink.Canvas.ImageSmoothingQuality",
-                                  static_cast<int>(image_smoothing_quality_),
-                                  static_cast<int>(kLast_SkFilterQuality) + 1);
     UpdateFilterQualityWithSkFilterQuality(image_smoothing_quality_);
   }
 }
@@ -683,7 +711,7 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
   }
 
   if (!ShouldDrawShadows() && shadow_mode == kDrawShadowOnly) {
-    flags->setLooper(sk_ref_sp(EmptyDrawLooper()));  // draw nothing
+    flags->setLooper(EmptyDrawLooper());  // draw nothing
     flags->setImageFilter(nullptr);
     return flags;
   }
@@ -694,7 +722,7 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
       flags->setImageFilter(ShadowOnlyImageFilter());
       return flags;
     }
-    flags->setLooper(sk_ref_sp(ShadowOnlyDrawLooper()));
+    flags->setLooper(ShadowOnlyDrawLooper());
     flags->setImageFilter(nullptr);
     return flags;
   }
@@ -705,7 +733,7 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
     flags->setImageFilter(ShadowAndForegroundImageFilter());
     return flags;
   }
-  flags->setLooper(sk_ref_sp(ShadowAndForegroundDrawLooper()));
+  flags->setLooper(ShadowAndForegroundDrawLooper());
   flags->setImageFilter(nullptr);
   return flags;
 }

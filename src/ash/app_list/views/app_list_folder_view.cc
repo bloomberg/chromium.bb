@@ -30,6 +30,8 @@
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
@@ -41,7 +43,6 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -514,8 +515,8 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
       GetWidget()->GetCompositor()->RequestNewThroughputTracker();
   show_hide_metrics_tracker_->Start(
       metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
-        UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness,
-                                 smoothness);
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.AppListFolder.ShowHide.AnimationSmoothness", smoothness);
       })));
 
   hide_for_reparent_ = hide_for_reparent;

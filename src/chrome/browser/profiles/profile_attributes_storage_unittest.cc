@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <unordered_set>
 
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -52,10 +54,10 @@ namespace {
                   first_value, \
                   second_value);
 
-#define TEST_STRING16_ACCESSORS(entry_type, entry, member) \
-    TEST_ACCESSORS(entry_type, entry, member, \
-        base::ASCIIToUTF16("first_" #member "_value"), \
-        base::ASCIIToUTF16("second_" #member "_value"));
+#define TEST_STRING16_ACCESSORS(entry_type, entry, member)   \
+  TEST_ACCESSORS(entry_type, entry, member,                  \
+                 std::u16string(u"first_" #member "_value"), \
+                 std::u16string(u"second_" #member "_value"));
 
 #define TEST_STRING_ACCESSORS(entry_type, entry, member) \
     TEST_ACCESSORS(entry_type, entry, member, \
@@ -76,6 +78,34 @@ void TestAccessors(ProfileAttributesEntry** entry,
   EXPECT_EQ(first_value, (*entry->*getter_func)());
   (*entry->*setter_func)(second_value);
   EXPECT_EQ(second_value, (*entry->*getter_func)());
+}
+
+void VerifyInitialValues(ProfileAttributesEntry* entry,
+                         const base::FilePath& profile_path,
+                         const std::u16string& profile_name,
+                         const std::string& gaia_id,
+                         const std::u16string& user_name,
+                         bool is_consented_primary_account,
+                         size_t icon_index,
+                         const std::string& supervised_user_id,
+                         bool is_guest,
+                         bool is_ephemeral,
+                         bool is_omitted,
+                         bool is_signed_in_with_credential_provider) {
+  ASSERT_NE(entry, nullptr);
+  EXPECT_EQ(profile_path, entry->GetPath());
+  EXPECT_EQ(profile_name, entry->GetName());
+  EXPECT_EQ(gaia_id, entry->GetGAIAId());
+  EXPECT_EQ(user_name, entry->GetUserName());
+  EXPECT_EQ(is_consented_primary_account, entry->IsAuthenticated());
+  EXPECT_EQ(icon_index, entry->GetAvatarIconIndex());
+  EXPECT_EQ(supervised_user_id, entry->GetSupervisedUserId());
+  EXPECT_EQ(is_guest, entry->IsGuest());
+  EXPECT_EQ(is_ephemeral, entry->IsEphemeral());
+  EXPECT_EQ(is_omitted, entry->IsOmitted());
+  EXPECT_EQ(is_signed_in_with_credential_provider,
+            entry->IsSignedInWithCredentialProvider());
+  EXPECT_EQ(std::string(), entry->GetHostedDomain());
 }
 
 class ProfileAttributesTestObserver
@@ -181,14 +211,17 @@ class ProfileAttributesStorageTest : public testing::Test {
         .Times(1)
         .RetiresOnSaturation();
 
-    storage()->AddProfile(
-        profile_path,
-        base::ASCIIToUTF16(base::StringPrintf("testing_profile_name%" PRIuS,
-                                              number_of_profiles)),
-        base::StringPrintf("testing_profile_gaia%" PRIuS, number_of_profiles),
-        base::ASCIIToUTF16(base::StringPrintf("testing_profile_user%" PRIuS,
-                                              number_of_profiles)),
-        true, number_of_profiles, std::string(""), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_path;
+    params.profile_name = base::ASCIIToUTF16(
+        base::StringPrintf("testing_profile_name%" PRIuS, number_of_profiles));
+    params.gaia_id =
+        base::StringPrintf("testing_profile_gaia%" PRIuS, number_of_profiles);
+    params.user_name = base::ASCIIToUTF16(
+        base::StringPrintf("testing_profile_user%" PRIuS, number_of_profiles));
+    params.is_consented_primary_account = true;
+    params.icon_index = number_of_profiles;
+    storage()->AddProfile(std::move(params));
 
     EXPECT_EQ(number_of_profiles + 1, storage()->GetNumberOfProfiles());
   }
@@ -224,10 +257,14 @@ TEST_F(ProfileAttributesStorageTest, AddProfile) {
   EXPECT_CALL(observer(), OnProfileAdded(GetProfilePath("new_profile_path_1")))
       .Times(1);
 
-  storage()->AddProfile(
-      GetProfilePath("new_profile_path_1"), u"new_profile_name_1",
-      std::string("new_profile_gaia_1"), u"new_profile_username_1", true, 1,
-      std::string(""), EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = GetProfilePath("new_profile_path_1");
+  params.profile_name = u"new_profile_name_1";
+  params.gaia_id = "new_profile_gaia_1";
+  params.user_name = u"new_profile_username_1";
+  params.is_consented_primary_account = true;
+  params.icon_index = 1;
+  storage()->AddProfile(std::move(params));
 
   VerifyAndResetCallExpectations();
   EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
@@ -296,18 +333,77 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
 }
 
 TEST_F(ProfileAttributesStorageTest, InitialValues) {
-  AddTestingProfile();
+#if defined(OS_ANDROID)
+  // Android has only one default avatar.
+  size_t kIconIndex = 0;
+#else
+  size_t kIconIndex = 1;
+#endif
+  base::FilePath profile_path = GetProfilePath("testing_profile_path");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
 
-  ProfileAttributesEntry* entry = storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path0"));
-  ASSERT_NE(entry, nullptr);
-  EXPECT_EQ(GetProfilePath("testing_profile_path0"), entry->GetPath());
-  EXPECT_EQ(u"testing_profile_name0", entry->GetName());
-  EXPECT_EQ(std::string("testing_profile_gaia0"), entry->GetGAIAId());
-  EXPECT_EQ(u"testing_profile_user0", entry->GetUserName());
-  EXPECT_EQ(0U, entry->GetAvatarIconIndex());
-  EXPECT_EQ(std::string(), entry->GetSupervisedUserId());
-  EXPECT_EQ(std::string(), entry->GetHostedDomain());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"testing_profile_name";
+  params.gaia_id = "testing_profile_gaia";
+  params.user_name = u"testing_profile_username";
+  params.is_consented_primary_account = true;
+  params.icon_index = kIconIndex;
+  params.supervised_user_id = "testing_supervised_user_id";
+  params.account_id = AccountId::FromUserEmailGaiaId(
+      base::UTF16ToUTF8(params.user_name), params.gaia_id);
+  params.is_guest = true;
+  params.is_ephemeral = true;
+  params.is_omitted = true;
+  params.is_signed_in_with_credential_provider = true;
+  storage()->AddProfile(std::move(params));
+
+  VerifyAndResetCallExpectations();
+
+  ProfileAttributesEntry* entry =
+      storage()->GetProfileAttributesWithPath(profile_path);
+  VerifyInitialValues(
+      entry, profile_path, /*profile_name=*/u"testing_profile_name",
+      /*gaia_id=*/"testing_profile_gaia",
+      /*user_name=*/u"testing_profile_username",
+      /*is_consented_primary_account=*/true, /*icon_index=*/kIconIndex,
+      /*supervised_user_id=*/"testing_supervised_user_id", /*is_guest=*/true,
+      /*is_ephemeral=*/true, /*is_omitted=*/true,
+      /*is_signed_in_with_credential_provider=*/true);
+}
+
+TEST_F(ProfileAttributesStorageTest, InitialValues_Defaults) {
+  base::FilePath profile_path = GetProfilePath("testing_profile_path");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+
+  // Verify defaults of ProfileAttributesInitParams.
+  EXPECT_TRUE(params.profile_name.empty());
+  EXPECT_TRUE(params.gaia_id.empty());
+  EXPECT_TRUE(params.user_name.empty());
+  EXPECT_FALSE(params.is_consented_primary_account);
+  EXPECT_EQ(0U, params.icon_index);
+  EXPECT_TRUE(params.supervised_user_id.empty());
+  EXPECT_TRUE(params.account_id.empty());
+  EXPECT_FALSE(params.is_guest);
+  EXPECT_FALSE(params.is_ephemeral);
+  EXPECT_FALSE(params.is_omitted);
+  EXPECT_FALSE(params.is_signed_in_with_credential_provider);
+
+  storage()->AddProfile(std::move(params));
+
+  VerifyAndResetCallExpectations();
+
+  ProfileAttributesEntry* entry =
+      storage()->GetProfileAttributesWithPath(profile_path);
+  VerifyInitialValues(entry, profile_path, /*profile_name=*/std::u16string(),
+                      /*gaia_id=*/std::string(), /*user_name=*/std::u16string(),
+                      /*is_consented_primary_account=*/false, /*icon_index=*/0,
+                      /*supervised_user_id=*/std::string(), /*is_guest=*/false,
+                      /*is_ephemeral=*/false, /*is_omitted=*/false,
+                      /*is_signed_in_with_credential_provider=*/false);
 }
 
 TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
@@ -536,13 +632,23 @@ TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
 TEST_F(ProfileAttributesStorageTest, ReSortTriggered) {
   DisableObserver();  // No need to test observers in this test.
 
-  storage()->AddProfile(GetProfilePath("alpha_path"), u"alpha",
-                        std::string("alpha_gaia"), u"alpha_username", true, 1,
-                        std::string(""), EmptyAccountId());
+  ProfileAttributesInitParams alpha_params;
+  alpha_params.profile_path = GetProfilePath("alpha_path");
+  alpha_params.profile_name = u"alpha";
+  alpha_params.gaia_id = "alpha_gaia";
+  alpha_params.user_name = u"alpha_username";
+  alpha_params.is_consented_primary_account = true;
+  alpha_params.icon_index = 1;
+  storage()->AddProfile(std::move(alpha_params));
 
-  storage()->AddProfile(GetProfilePath("lima_path"), u"lima",
-                        std::string("lima_gaia"), u"lima_username", true, 1,
-                        std::string(""), EmptyAccountId());
+  ProfileAttributesInitParams lima_params;
+  lima_params.profile_path = GetProfilePath("lime_path");
+  lima_params.profile_name = u"lima";
+  lima_params.gaia_id = "lima_gaia";
+  lima_params.user_name = u"lima_username";
+  lima_params.is_consented_primary_account = true;
+  lima_params.icon_index = 1;
+  storage()->AddProfile(std::move(lima_params));
 
   ProfileAttributesEntry* entry =
       storage()->GetProfileAttributesWithPath(GetProfilePath("alpha_path"));
@@ -647,9 +753,10 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
     base::FilePath profile_path =
         GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS, i));
     EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
-    storage()->AddProfile(profile_path, std::u16string(), std::string(),
-                          std::u16string(), false, icon_index, std::string(),
-                          EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_path;
+    params.icon_index = icon_index;
+    storage()->AddProfile(std::move(params));
     VerifyAndResetCallExpectations();
   }
 
@@ -660,8 +767,83 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
   }
 }
 
+TEST_F(ProfileAttributesStorageTest, IsSigninRequiredOnInit_NotAuthenticated) {
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
+
+  base::FilePath profile_path = GetProfilePath("testing_profile_path");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"testing_profile_name";
+  params.is_consented_primary_account = false;
+  storage()->AddProfile(std::move(params));
+
+  VerifyAndResetCallExpectations();
+
+  ProfileAttributesEntry* entry =
+      storage()->GetProfileAttributesWithPath(profile_path);
+  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_TRUE(entry->IsSigninRequired());
+}
+
+TEST_F(ProfileAttributesStorageTest, IsSigninRequiredOnInit_Authenticated) {
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
+
+  base::FilePath profile_path = GetProfilePath("testing_profile_path");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"testing_profile_name";
+  params.gaia_id = "testing_profile_gaia";
+  params.user_name = u"testing_profile_username";
+  params.is_consented_primary_account = true;
+  storage()->AddProfile(std::move(params));
+
+  VerifyAndResetCallExpectations();
+
+  ProfileAttributesEntry* entry =
+      storage()->GetProfileAttributesWithPath(profile_path);
+  EXPECT_TRUE(entry->IsAuthenticated());
+  EXPECT_FALSE(entry->IsSigninRequired());
+}
+
+TEST_F(ProfileAttributesStorageTest,
+       IsSigninRequiredOnInit_AuthenticatedWithError) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kForceSignInReauth);
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
+
+  base::FilePath profile_path = GetProfilePath("testing_profile_path");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"testing_profile_name";
+  params.gaia_id = "testing_profile_gaia";
+  params.user_name = u"testing_profile_username";
+  params.is_consented_primary_account = true;
+  storage()->AddProfile(std::move(params));
+
+  VerifyAndResetCallExpectations();
+
+  // IsAuthError() cannot be set as an init parameter. Set it after an entry
+  // is initialized and reset the cache to reinitialize an entry from prefs.
+  ProfileAttributesEntry* entry =
+      storage()->GetProfileAttributesWithPath(profile_path);
+  entry->SetIsAuthError(true);
+  testing_profile_manager_.DeleteProfileInfoCache();
+
+  entry = storage()->GetProfileAttributesWithPath(profile_path);
+  ASSERT_NE(entry, nullptr);
+  EXPECT_TRUE(entry->IsAuthenticated());
+  EXPECT_TRUE(entry->IsAuthError());
+  EXPECT_TRUE(entry->IsSigninRequired());
+}
+
 TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
-  signin_util::ScopedForceSigninSetterForTesting signin_setter(true);
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
 
   AddTestingProfile();
 
@@ -721,9 +903,11 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
   ASSERT_EQ(0U, storage()->GetNumberOfProfiles());
   base::FilePath profile_path = GetProfilePath("path_1");
   EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
-  storage()->AddProfile(profile_path, u"name_1", std::string(),
-                        std::u16string(), false, kIconIndex, std::string(),
-                        EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"name_1";
+  params.icon_index = kIconIndex;
+  storage()->AddProfile(std::move(params));
   ASSERT_EQ(1U, storage()->GetNumberOfProfiles());
   VerifyAndResetCallExpectations();
 
@@ -807,9 +991,11 @@ TEST_F(ProfileAttributesStorageTest, NothingToDownloadHighResAvatarTest) {
   EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
   base::FilePath profile_path = GetProfilePath("path_1");
   EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
-  storage()->AddProfile(profile_path, u"name_1", std::string(),
-                        std::u16string(), false, kIconIndex, std::string(),
-                        EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"name_1";
+  params.icon_index = kIconIndex;
+  storage()->AddProfile(std::move(params));
   EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
   content::RunAllTasksUntilIdle();
 
@@ -842,9 +1028,11 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   ASSERT_EQ(0U, storage()->GetNumberOfProfiles());
   base::FilePath profile_path = GetProfilePath("path_1");
   EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
-  storage()->AddProfile(profile_path, u"name_1", std::string(),
-                        std::u16string(), false, kIconIndex, std::string(),
-                        EmptyAccountId());
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = u"name_1";
+  params.icon_index = kIconIndex;
+  storage()->AddProfile(std::move(params));
   EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
   VerifyAndResetCallExpectations();
 
@@ -984,10 +1172,10 @@ TEST_F(ProfileAttributesStorageTest, ProfileThemeColors) {
   ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(false);
   EXPECT_EQ(entry->GetProfileThemeColors(), colors);
 
-  // base::nullopt resets the colors to default.
+  // absl::nullopt resets the colors to default.
   EXPECT_CALL(observer(), OnProfileAvatarChanged(profile_path)).Times(1);
   EXPECT_CALL(observer(), OnProfileThemeColorsChanged(profile_path)).Times(1);
-  entry->SetProfileThemeColors(base::nullopt);
+  entry->SetProfileThemeColors(absl::nullopt);
   EXPECT_EQ(entry->GetProfileThemeColors(),
             GetDefaultProfileThemeColors(false));
   VerifyAndResetCallExpectations();

@@ -72,6 +72,14 @@ static SkM44 inv(const SkM44& m) {
     return inverse;
 }
 
+// Compute the inverse transpose (of the upper-left 3x3) of a matrix, used to transform vectors
+static SkM44 normals(SkM44 m) {
+    m.setRow(3, {0, 0, 0, 1});
+    m.setCol(3, {0, 0, 0, 1});
+    SkAssertResult(m.invert(&m));
+    return m.transpose();
+}
+
 class Sample3DView : public Sample {
 protected:
     float   fNear = 0.05f;
@@ -81,8 +89,6 @@ protected:
     SkV3    fEye { 0, 0, 1.0f/tan(fAngle/2) - 1 };
     SkV3    fCOA { 0, 0, 0 };
     SkV3    fUp  { 0, 1, 0 };
-
-    const char* kLocalToWorld = "local_to_world";
 
 public:
     void concatCamera(SkCanvas* canvas, const SkRect& area, SkScalar zscale) {
@@ -258,7 +264,8 @@ public:
         return this->Sample3DView::onChar(uni);
     }
 
-    virtual void drawContent(SkCanvas* canvas, SkColor, int index, bool drawFront) = 0;
+    virtual void drawContent(
+            SkCanvas* canvas, SkColor, int index, bool drawFront, const SkM44& localToWorld) = 0;
 
     void onDrawContent(SkCanvas* canvas) override {
         if (!canvas->recordingContext() && !(fFlags & kCanRunOnCPU)) {
@@ -281,10 +288,10 @@ public:
                 canvas->concat(trans);
 
                 // "World" space - content is centered at the origin, in device scale (+-200)
-                canvas->markCTM(kLocalToWorld);
+                SkM44 localToWorld = m * inv(trans);
 
-                canvas->concat(m * inv(trans));
-                this->drawContent(canvas, f.fColor, index++, drawFront);
+                canvas->concat(localToWorld);
+                this->drawContent(canvas, f.fColor, index++, drawFront, localToWorld);
             }
         }
 
@@ -371,8 +378,8 @@ public:
             uniform shader color_map;
             uniform shader normal_map;
 
-            layout (marker=local_to_world)          uniform float4x4 localToWorld;
-            layout (marker=normals(local_to_world)) uniform float4x4 localToWorldAdjInv;
+            uniform float4x4 localToWorld;
+            uniform float4x4 localToWorldAdjInv;
             uniform float3   lightPos;
 
             float3 convert_normal_sample(half4 c) {
@@ -395,21 +402,26 @@ public:
                 return sample(color_map, p) * scale.xxx1;
             }
         )";
-        auto [effect, error] = SkRuntimeEffect::Make(SkString(code));
+        auto [effect, error] = SkRuntimeEffect::MakeForShader(SkString(code));
         if (!effect) {
             SkDebugf("runtime error %s\n", error.c_str());
         }
         fEffect = effect;
     }
 
-    void drawContent(SkCanvas* canvas, SkColor color, int index, bool drawFront) override {
+    void drawContent(SkCanvas* canvas,
+                     SkColor color,
+                     int index,
+                     bool drawFront,
+                     const SkM44& localToWorld) override {
         if (!drawFront || !front(canvas->getLocalToDevice())) {
             return;
         }
 
         SkRuntimeShaderBuilder builder(fEffect);
         builder.uniform("lightPos") = fLight.computeWorldPos(fSphere);
-        // localToWorld matrices are automatically populated, via layout(marker)
+        builder.uniform("localToWorld") = localToWorld;
+        builder.uniform("localToWorldAdjInv") = normals(localToWorld);
 
         builder.child("color_map")  = fImgShader;
         builder.child("normal_map") = fBmpShader;
@@ -422,87 +434,6 @@ public:
     }
 };
 DEF_SAMPLE( return new SampleBump3D; )
-
-class SampleVerts3D : public SampleCubeBase {
-    sk_sp<SkRuntimeEffect> fEffect;
-    sk_sp<SkVertices>      fVertices;
-
-public:
-    SampleVerts3D() : SampleCubeBase(kShowLightDome) {}
-
-    SkString name() override { return SkString("verts3d"); }
-
-    void onOnceBeforeDraw() override {
-        using Attr = SkVertices::Attribute;
-        Attr attrs[] = {
-            Attr(Attr::Type::kFloat3, Attr::Usage::kNormalVector),
-        };
-
-        SkVertices::Builder builder(SkVertices::kTriangleFan_VertexMode, 66, 0, attrs, 1);
-
-        SkPoint* pos = builder.positions();
-        SkV3* nrm = (SkV3*)builder.customData();
-
-        SkPoint center = { 200, 200 };
-        SkScalar radius = 200;
-
-        pos[0] = center;
-        nrm[0] = { 0, 0, 1 };
-
-        for (int i = 0; i < 65; ++i) {
-            SkScalar t = (i / 64.0f) * 2 * SK_ScalarPI;
-            SkScalar s = SkScalarSin(t),
-                     c = SkScalarCos(t);
-            pos[i + 1] = center + SkPoint { c * radius, s * radius };
-            nrm[i + 1] = { c, s, 0 };
-        }
-
-        fVertices = builder.detach();
-
-        const char code[] = R"(
-            varying float3 vtx_normal;
-
-            layout (marker=local_to_world)          uniform float4x4 localToWorld;
-            layout (marker=normals(local_to_world)) uniform float4x4 localToWorldAdjInv;
-            uniform float3   lightPos;
-
-            half4 main(float2 p) {
-                float3 norm = normalize(vtx_normal);
-                float3 plane_norm = normalize(localToWorldAdjInv * norm.xyz0).xyz;
-
-                float3 plane_pos = (localToWorld * p.xy01).xyz;
-                float3 light_dir = normalize(lightPos - plane_pos);
-
-                float ambient = 0.2;
-                float dp = dot(plane_norm, light_dir);
-                float scale = min(ambient + max(dp, 0), 1);
-
-                return half4(0.7, 0.9, 0.3, 1) * scale.xxx1;
-            }
-        )";
-        auto [effect, error] = SkRuntimeEffect::Make(SkString(code));
-        if (!effect) {
-            SkDebugf("runtime error %s\n", error.c_str());
-        }
-        fEffect = effect;
-    }
-
-    void drawContent(SkCanvas* canvas, SkColor color, int index, bool drawFront) override {
-        if (!drawFront || !front(canvas->getLocalToDevice())) {
-            return;
-        }
-
-        SkRuntimeShaderBuilder builder(fEffect);
-        builder.uniform("lightPos") = fLight.computeWorldPos(fSphere);
-
-        SkPaint paint;
-        paint.setColor(color);
-        paint.setShader(builder.makeShader(nullptr, true));
-
-        canvas->drawVertices(fVertices, paint);
-    }
-};
-DEF_SAMPLE( return new SampleVerts3D; )
 
 #include "modules/skottie/include/Skottie.h"
 
@@ -531,7 +462,8 @@ public:
         }
     }
 
-    void drawContent(SkCanvas* canvas, SkColor color, int index, bool drawFront) override {
+    void drawContent(
+            SkCanvas* canvas, SkColor color, int index, bool drawFront, const SkM44&) override {
         if (!drawFront || !front(canvas->getLocalToDevice())) {
             return;
         }

@@ -12,8 +12,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -29,6 +33,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/webui/webui_allowlist.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -37,11 +42,14 @@ using content::BrowserContext;
 using content::WebContents;
 using content::WebContentsTester;
 using permissions::PermissionAction;
+using GrantType = ChromeFileSystemAccessPermissionContext::GrantType;
 using HandleType = ChromeFileSystemAccessPermissionContext::HandleType;
 using PathType = ChromeFileSystemAccessPermissionContext::PathType;
 using UserAction = ChromeFileSystemAccessPermissionContext::UserAction;
 using PermissionStatus =
     content::FileSystemAccessPermissionGrant::PermissionStatus;
+using PersistedPermissionOptions =
+    ChromeFileSystemAccessPermissionContext::PersistedPermissionOptions;
 using PermissionRequestOutcome =
     content::FileSystemAccessPermissionGrant::PermissionRequestOutcome;
 using SensitiveDirectoryResult =
@@ -53,9 +61,21 @@ class TestFileSystemAccessPermissionContext
     : public ChromeFileSystemAccessPermissionContext {
  public:
   explicit TestFileSystemAccessPermissionContext(
-      content::BrowserContext* context)
-      : ChromeFileSystemAccessPermissionContext(context) {}
+      content::BrowserContext* context,
+      const base::Clock* clock)
+      : ChromeFileSystemAccessPermissionContext(context, clock) {
+    EXPECT_EQ(
+        base::FeatureList::IsEnabled(
+            features::kFileSystemAccessPersistentPermissions),
+        periodic_sweep_persisted_permissions_timer_for_testing().IsRunning());
+    periodic_sweep_persisted_permissions_timer_for_testing().Stop();
+  }
   ~TestFileSystemAccessPermissionContext() override = default;
+
+ protected:
+  bool OriginIsInstalledPWA(const url::Origin& origin) override {
+    return false;
+  }
 
  private:
   base::WeakPtrFactory<TestFileSystemAccessPermissionContext> weak_factory_{
@@ -64,24 +84,28 @@ class TestFileSystemAccessPermissionContext
 
 class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
  public:
+  ChromeFileSystemAccessPermissionContextTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kFileSystemAccessPersistentPermissions);
+  }
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     FileSystemAccessPermissionRequestManager::CreateForWebContents(
-        web_contents_.get());
-    content::WebContentsTester::For(web_contents_.get())
+        web_contents());
+    content::WebContentsTester::For(web_contents())
         ->NavigateAndCommit(kTestOrigin.GetURL());
 
-    FileSystemAccessPermissionRequestManager::FromWebContents(
-        web_contents_.get())
+    FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
         ->set_auto_response_for_test(PermissionAction::DISMISSED);
     permission_context_ =
         std::make_unique<TestFileSystemAccessPermissionContext>(
-            browser_context());
+            browser_context(), task_environment_.GetMockClock());
   }
 
   void TearDown() override {
+    task_environment_.RunUntilIdle();
     ASSERT_TRUE(temp_dir_.Delete());
     web_contents_.reset();
   }
@@ -120,6 +144,11 @@ class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
         origin.GetURL(), origin.GetURL(), type, value);
   }
 
+  void ExpectUmaEntryPersistedPermissionAge(base::TimeDelta age, int count) {
+    histogram_tester_.ExpectTimeBucketCount(
+        "Storage.FileSystemAccess.PersistedPermissions.Age.NonPWA", age, count);
+  }
+
   ChromeFileSystemAccessPermissionContext* permission_context() {
     return permission_context_.get();
   }
@@ -136,6 +165,9 @@ class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
         process_id(), web_contents()->GetMainFrame()->GetRoutingID());
   }
 
+  base::Time Now() const { return task_environment_.GetMockClock()->Now(); }
+  void Advance(base::TimeDelta delta) { task_environment_.AdvanceClock(delta); }
+
  protected:
   const url::Origin kTestOrigin =
       url::Origin::Create(GURL("https://example.com"));
@@ -146,12 +178,27 @@ class ChromeFileSystemAccessPermissionContextTest : public testing::Test {
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
   const url::Origin kChromeOrigin = url::Origin::Create(GURL("chrome://test"));
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ChromeFileSystemAccessPermissionContext> permission_context_;
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   TestingProfile profile_;
   std::unique_ptr<WebContents> web_contents_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
+};
+
+class ChromeFileSystemAccessPermissionContextNoPersistenceTest
+    : public ChromeFileSystemAccessPermissionContextTest {
+ public:
+  ChromeFileSystemAccessPermissionContextNoPersistenceTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kFileSystemAccessPersistentPermissions);
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 #if !defined(OS_ANDROID)
@@ -517,10 +564,13 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, LimitNumberOfIds) {
   // Set the maximum number of IDs. Only set IDs should return non-empty paths.
   permission_context()->SetLastPickedDirectory(kTestOrigin, id1, path1,
                                                PathType::kLocal);
+  Advance(base::TimeDelta::FromMinutes(1));
   permission_context()->SetLastPickedDirectory(kTestOrigin, id2, path2,
                                                PathType::kLocal);
+  Advance(base::TimeDelta::FromMinutes(1));
   permission_context()->SetLastPickedDirectory(kTestOrigin, id3, path3,
                                                PathType::kLocal);
+  Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id1).path,
             path1);
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id2).path,
@@ -533,6 +583,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, LimitNumberOfIds) {
   // Once the 4th id has been set, only `id1` should have been evicted.
   permission_context()->SetLastPickedDirectory(kTestOrigin, id4, path4,
                                                PathType::kLocal);
+  Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id1).path,
             base::FilePath());  // Unset.
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id2).path,
@@ -545,6 +596,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, LimitNumberOfIds) {
   // Re-set `id1`, evicting `id2`.
   permission_context()->SetLastPickedDirectory(kTestOrigin, id1, path1,
                                                PathType::kLocal);
+  Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id1).path,
             path1);
   EXPECT_EQ(permission_context()->GetLastPickedDirectory(kTestOrigin, id2).path,
@@ -578,7 +630,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
             path);
 
   TestFileSystemAccessPermissionContext new_permission_context(
-      browser_context());
+      browser_context(), task_environment_.GetMockClock());
   EXPECT_EQ(new_permission_context
                 .GetLastPickedDirectory(kTestOrigin, kTestStartingDirectoryId)
                 .path,
@@ -636,7 +688,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
        GetWellKnownDirectoryPath_Base_OK) {
   base::ScopedPathOverride user_desktop_override(
       base::DIR_USER_DESKTOP, temp_dir_.GetPath(), true, true);
-  EXPECT_EQ(permission_context_->GetWellKnownDirectoryPath(
+  EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
                 blink::mojom::WellKnownDirectory::kDirDesktop),
             temp_dir_.GetPath());
 }
@@ -645,7 +697,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
        GetWellKnownDirectoryPath_Chrome_OK) {
   base::ScopedPathOverride user_documents_override(
       chrome::DIR_USER_DOCUMENTS, temp_dir_.GetPath(), true, true);
-  EXPECT_EQ(permission_context_->GetWellKnownDirectoryPath(
+  EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
                 blink::mojom::WellKnownDirectory::kDirDocuments),
             temp_dir_.GetPath());
 }
@@ -654,7 +706,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
        GetWellKnownDirectoryPath_Default) {
   base::ScopedPathOverride user_documents_override(
       chrome::DIR_USER_DOCUMENTS, temp_dir_.GetPath(), true, true);
-  EXPECT_EQ(permission_context_->GetWellKnownDirectoryPath(
+  EXPECT_EQ(permission_context()->GetWellKnownDirectoryPath(
                 blink::mojom::WellKnownDirectory::kDefault),
             temp_dir_.GetPath());
 }
@@ -664,6 +716,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kLoadFromStorage);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -671,6 +725,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -678,6 +734,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -685,6 +743,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kLoadFromStorage);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -692,6 +752,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -699,6 +761,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -706,17 +770,26 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
-  // The existing grant should not change if the permission is blocked globally.
+  // The existing grant should not change if the permission is blocked globally,
+  // and the persisted permission should not be accessible.
   SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // The persistent permission is inaccessible because of the BLOCK, but will
+  // still exist until it expires.
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   // Getting a grant for the same file again should also not change the grant,
   // even now asking for more permissions is blocked globally.
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -727,14 +800,17 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   auto grant3 = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
-  // All grants should be the same grant, and be granted.
+  // All grants should be the same grant, and be granted and persisted.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
-       GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed) {
+TEST_F(
+    ChromeFileSystemAccessPermissionContextNoPersistenceTest,
+    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_NoPersistentPermissions) {
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
@@ -745,6 +821,36 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetWritePermissionGrant_GrantIsAutoGrantedViaPersistentPermissions) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // A valid persisted permission should be created.
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  grant.reset();
+
+  // Permission should not be granted for |kOpen|.
+  grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+
+  // Permission should be auto-granted here via the persisted permission.
+  base::RunLoop loop;
+  grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kGrantedByPersistentPermission,
+                  outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  ExpectUmaEntryPersistedPermissionAge(base::TimeDelta::FromSeconds(0), 1);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -764,6 +870,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(
@@ -777,6 +885,9 @@ TEST_F(
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
   SetContentSettingValueForOrigin(kTestOrigin,
                                   ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                                   CONTENT_SETTING_ASK);
@@ -784,6 +895,8 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(
@@ -803,6 +916,8 @@ TEST_F(
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
   EXPECT_EQ(PermissionStatus::DENIED, grant1->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(
@@ -810,7 +925,6 @@ TEST_F(
     GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedBeforeNewGrant) {
   SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                                 CONTENT_SETTING_BLOCK);
-
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
@@ -821,15 +935,22 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(
-    ChromeFileSystemAccessPermissionContextTest,
-    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedAfterNewGrant) {
+    ChromeFileSystemAccessPermissionContextNoPersistenceTest,
+    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedAfterNewGrant_NoPersistentPermissions) {
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // Revoke active and persisted permissions.
+  permission_context()->RevokeGrants(
+      kTestOrigin, PersistedPermissionOptions::kUpdatePersistedPermission);
   grant.reset();
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   // After reset grant should go away, but the new grant request should be in
   // ASK state.
@@ -843,11 +964,662 @@ TEST_F(
   // After the guard is blocked, the permission status for |grant| should remain
   // unchanged.
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(
+    ChromeFileSystemAccessPermissionContextTest,
+    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedAfterNewGrant_HasPersistentPermissions) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // Revoke active and persisted permissions.
+  permission_context()->RevokeGrants(
+      kTestOrigin, PersistedPermissionOptions::kUpdatePersistedPermission);
+  grant.reset();
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  // After reset grant should go away, but the new grant request should be in
+  // ASK state.
+  grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
+
+  // After the guard is blocked, the permission status for |grant| should remain
+  // unchanged.
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetReadPermissionGrant_InheritFromAncestor) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
+
+  // A file in |dir_path|'s directory should be auto-granted permissions.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kRead));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetWritePermissionGrant_InheritFromAncestor) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
+
+  // A file in |dir_path|'s directory should be auto-granted permissions.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       DoNotInheritFromAncestorOfOppositeType) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
+
+  // |dir_path| has read permission while we're asking for write permission, so
+  // do not auto-grant the permission.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::ASK, file_grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetReadPermissionGrant_InheritFromPersistedAncestor) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
+
+  // Remove the active grant, but not the persisted permission.
+  dir_grant.reset();
+
+  // A file in |dir_path|'s directory should not be granted permission until
+  // permission is explicitly requested.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::ASK, file_grant->GetStatus());
+  base::RunLoop loop2;
+  file_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(
+            PermissionRequestOutcome::kGrantedByAncestorPersistentPermission,
+            outcome);
+        loop2.Quit();
+      }));
+  loop2.Run();
+  // Age should not be recorded if granted via an ancestor's permission.
+  ExpectUmaEntryPersistedPermissionAge(base::TimeDelta::FromSeconds(0), 0);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kRead));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       GetWritePermissionGrant_InheritFromPersistedAncestor) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
+
+  // Remove the active grant, but not the persisted permission.
+  dir_grant.reset();
+
+  // A file in |dir_path|'s directory should not be granted permission until
+  // permission is explicitly requested.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::ASK, file_grant->GetStatus());
+  base::RunLoop loop2;
+  file_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(
+            PermissionRequestOutcome::kGrantedByAncestorPersistentPermission,
+            outcome);
+        loop2.Quit();
+      }));
+  loop2.Run();
+  // Age should not be recorded if granted via an ancestor's permission.
+  ExpectUmaEntryPersistedPermissionAge(base::TimeDelta::FromSeconds(0), 0);
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       DoNotInheritFromPersistedAncestorOfOppositeType) {
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
+      ->set_auto_response_for_test(PermissionAction::GRANTED);
+
+  auto dir_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, dir_grant->GetStatus());
+  base::RunLoop loop;
+  dir_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, dir_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
+
+  // Remove the active grant, but not the persisted permission.
+  dir_grant.reset();
+
+  // |dir_path| has read permission while we're asking for write permission, so
+  // do not auto-grant the permission and do not grant via persisted permission.
+  auto file_path = kTestPath.AppendASCII("baz");
+  auto file_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, file_path, HandleType::kFile, UserAction::kLoadFromStorage);
+  EXPECT_EQ(PermissionStatus::ASK, file_grant->GetStatus());
+  base::RunLoop loop2;
+  file_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserGranted, outcome);
+        loop2.Quit();
+      }));
+  loop2.Run();
+  EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, file_path, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_GrantExpired) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  grant.reset();
+
+  // Advance the clock far enough that all permissions should be expired.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          base::TimeDelta::FromMinutes(1));
+
+  // Permission should not be granted for |kOpen|.
+  grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+
+  // Once a permission grant has expired, it should not auto-grant
+  base::RunLoop loop;
+  grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kUserDismissed, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_RevokeOnlyActiveGrants) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // Revoke active grant, but not persisted permission.
+  permission_context()->RevokeGrants(
+      kTestOrigin, PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_NotAccessibleIfContentSettingBlock) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  grant.reset();
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  // After reset grant should go away, but the new grant request should be in
+  // ASK state.
+  grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+
+  SetDefaultContentSettingValue(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                                CONTENT_SETTING_BLOCK);
+
+  // After the guard is blocked, the permission status for |grant| should remain
+  // unchanged, but the persisted permission should not be accessible.
+  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_UpdatePermissions_Write) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          base::TimeDelta::FromSeconds(1));
+  auto advance_once = Now();
+  // The active grant exists, so its timestamp should have been updated.
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+
+  grant.reset();
+
+  // Do not advance far enough to expire the persisted permission. The timestamp
+  // should NOT have been updated, since the active permission no longer exists.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+
+  // |grant| should now be expired, but not revokable until after grace period.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  EXPECT_EQ(objects.size(), 1u);
+
+  // Get(All)GrantedObjects should not list permissions which are expired,
+  // including those in the grace period.
+  objects = permission_context()->GetAllGrantedObjects();
+  EXPECT_EQ(objects.size(), 0u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin);
+  EXPECT_EQ(objects.size(), 0u);
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionGracePeriod +
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  EXPECT_EQ(objects.size(), 0u);
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_UpdatePermissions_Read) {
+  auto grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          base::TimeDelta::FromSeconds(1));
+  auto advance_once = Now();
+  // The active grant exists, so its timestamp should have been updated.
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+
+  grant.reset();
+
+  // Do not advance far enough to expire the persisted permission. The timestamp
+  // should NOT have been updated, since the active permission no longer exists.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+
+  // |grant| should now be expired, but not revokable until after grace period.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  EXPECT_EQ(objects.size(), 1u);
+
+  // Get(All)GrantedObjects should not list permissions which are expired,
+  // including those in the grace period.
+  objects = permission_context()->GetAllGrantedObjects();
+  EXPECT_EQ(objects.size(), 0u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin);
+  EXPECT_EQ(objects.size(), 0u);
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionGracePeriod +
+          base::TimeDelta::FromSeconds(1));
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  EXPECT_EQ(objects.size(), 0u);
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_UpdateWhenRequested) {
+  auto initial_time = Now();
+
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  grant1.reset();
+  grant2.reset();
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+
+  // Both grants are still valid.
+  permission_context()->UpdatePersistedPermissionsForTesting();
+  auto objects = permission_context()->GetAllGrantedObjects();
+  ASSERT_EQ(objects.size(), 2u);
+
+  // Requesting permission for |grant2| should update its timestamp.
+  grant2 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::ASK, grant2->GetStatus());
+  base::RunLoop loop;
+  grant2->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kGrantedByPersistentPermission,
+                  outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+  ExpectUmaEntryPersistedPermissionAge(Now() - initial_time, 1);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+
+  // |grant1| should now be expired, but not revoked.
+  Advance(base::TimeDelta::FromSeconds(2));
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  EXPECT_EQ(objects.size(), 2u);
+
+  // Get(All)GrantedObjects only list permissions which are not expired.
+  objects = permission_context()->GetAllGrantedObjects();
+  EXPECT_EQ(objects.size(), 1u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin);
+  EXPECT_EQ(objects.size(), 0u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin2);
+  EXPECT_EQ(objects.size(), 1u);
+
+  // |grant1| should not be revoked until after the grace period.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionGracePeriod);
+
+  // Clean up |grant1|'s expired entry from HostContentSettingsMap.
+  permission_context()->UpdatePersistedPermissionsForTesting();
+
+  // Only |grant2| should be persisted.
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin2.GetURL());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
+  objects = permission_context()->GetAllGrantedObjects();
+  EXPECT_EQ(objects.size(), 1u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin);
+  EXPECT_EQ(objects.size(), 0u);
+  objects = permission_context()->GetGrantedObjects(kTestOrigin2);
+  EXPECT_EQ(objects.size(), 1u);
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_RenewWhenActivePermissionExists) {
+  auto initial_time = Now();
+
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+
+  // Auto-grant because active permissions exist. This should update the
+  // timestamp of the persisted permission for |grant2|.
+  base::RunLoop loop;
+  grant2->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+
+  // Only |grant2|'s timestamp should have been updated.
+  auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 2u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(objects[1]->origin, kTestOrigin2.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
+  EXPECT_EQ(util::ValueToTime(objects[1]->value.FindKey("time")), Now());
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_SweepOnRestart) {
+  auto initial_time = Now();
+
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  grant.reset();
+
+  // Permissions should still be valid.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromMinutes(1));
+
+  // Resetting the permission context should kick off a sweep.
+  permission_context_ = std::make_unique<TestFileSystemAccessPermissionContext>(
+      browser_context(), task_environment_.GetMockClock());
+  task_environment_.RunUntilIdle();
+
+  // The timestamp should not have been updated.
+  auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
+  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
+
+  // Permissions should now be expired and can be revoked.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA +
+          ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionGracePeriod +
+          base::TimeDelta::FromMinutes(1));
+
+  // Resetting the permission context should kick off a sweep.
+  permission_context_ = std::make_unique<TestFileSystemAccessPermissionContext>(
+      browser_context(), task_environment_.GetMockClock());
+  task_environment_.RunUntilIdle();
+
+  // The timestamp should not have been updated.
+  objects = permission_context()->GetAllGrantedOrExpiredObjects();
+  ASSERT_EQ(objects.size(), 0u);
+
+  // The two sweeps should have been recorded in UMA.
+  auto* uma_prefix = "Storage.FileSystemAccess.PersistedPermissions.";
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[base::StrCat({uma_prefix, "SweepTime.All"})] = 2;
+  expected_counts[base::StrCat({uma_prefix, "Count"})] = 2;
+  EXPECT_THAT(histogram_tester_.GetTotalCountsForPrefix(uma_prefix),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_SharedFateReadAndWrite) {
+  auto read_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, read_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
+
+  auto write_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, write_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  read_grant.reset();
+
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+
+  // Auto-grant because active permissions exist. This should update the
+  // timestamp of the persisted permission for |write_grant|.
+  base::RunLoop loop;
+  write_grant->RequestPermission(
+      frame_id(), UserActivationState::kNotRequired,
+      base::BindLambdaForTesting([&](PermissionRequestOutcome outcome) {
+        EXPECT_EQ(PermissionRequestOutcome::kRequestAborted, outcome);
+        loop.Quit();
+      }));
+  loop.Run();
+
+  // Though only |write_grant| was accessed, we should not lose read access.
+  Advance(ChromeFileSystemAccessPermissionContext::
+              kPersistentPermissionExpirationTimeoutNonPWA -
+          base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        RequestPermission_Dismissed) {
-  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents_.get())
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(PermissionAction::DISMISSED);
   content::RenderFrameHostTester::For(web_contents_->GetMainFrame())
       ->SimulateUserActivation();
@@ -865,10 +1637,12 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   loop.Run();
   // Dismissed, so status should not change.
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest, RequestPermission_Granted) {
-  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents_.get())
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(PermissionAction::GRANTED);
   content::RenderFrameHostTester::For(web_contents_->GetMainFrame())
       ->SimulateUserActivation();
@@ -885,10 +1659,12 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, RequestPermission_Granted) {
       }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest, RequestPermission_Denied) {
-  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents_.get())
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(PermissionAction::DENIED);
   content::RenderFrameHostTester::For(web_contents_->GetMainFrame())
       ->SimulateUserActivation();
@@ -905,11 +1681,13 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, RequestPermission_Denied) {
       }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        RequestPermission_NoUserActivation) {
-  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents_.get())
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(PermissionAction::GRANTED);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -925,11 +1703,13 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   loop.Run();
   // No user activation, so status should not change.
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        RequestPermission_NoUserActivation_UserActivationNotRequired) {
-  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents_.get())
+  FileSystemAccessPermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(PermissionAction::GRANTED);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -945,6 +1725,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   loop.Run();
   // No user activation, so status should not change.
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -964,6 +1746,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -986,6 +1770,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   auto grant2 = permission_context()->GetWritePermissionGrant(
       kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
@@ -999,6 +1785,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop2.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   grant2.reset();
   SetContentSettingValueForOrigin(kTestOrigin2,
@@ -1017,6 +1805,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop3.Run();
   EXPECT_EQ(PermissionStatus::ASK, grant2->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1041,6 +1831,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   base::RunLoop loop2;
   grant2->RequestPermission(
@@ -1051,6 +1843,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop2.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   grant.reset();
   grant2.reset();
@@ -1072,6 +1866,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop3.Run();
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   base::RunLoop loop4;
   grant2->RequestPermission(
@@ -1082,6 +1878,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
       }));
   loop4.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin2, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1099,18 +1897,29 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant1 = permission_context()->GetWritePermissionGrant(
       kChromeOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+  // Permissions are not persisted for allowlisted origins.
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kChromeOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   auto grant2 = permission_context()->GetWritePermissionGrant(
       kChromeOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+  // Permissions are not persisted for allowlisted origins.
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kChromeOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
 
   // Other origin should gets blocked.
   auto grant3 = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant3->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
   auto grant4 = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant4->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1128,6 +1937,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant1 = permission_context()->GetWritePermissionGrant(
       kChromeOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+  // Permissions are not persisted for allowlisted origins.
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kChromeOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   // Existing grant (file).
   auto grant2 = permission_context()->GetWritePermissionGrant(
@@ -1138,6 +1950,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto grant3 = permission_context()->GetWritePermissionGrant(
       kChromeOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant3->GetStatus());
+  // Permissions are not persisted for allowlisted origins.
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kChromeOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
 
   // Existing grant (directory).
   auto grant4 = permission_context()->GetWritePermissionGrant(
@@ -1150,14 +1965,20 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto file_grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
 
   auto directory_grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kRead));
 
   // Requesting a permission grant for a directory which was previously a file
   // should have revoked the original file permission.
   EXPECT_EQ(PermissionStatus::DENIED, file_grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kRead));
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1165,14 +1986,20 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto file_grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 
   auto directory_grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kDirectory, GrantType::kWrite));
 
   // Requesting a permission grant for a directory which was previously a file
   // should have revoked the original file permission.
   EXPECT_EQ(PermissionStatus::DENIED, file_grant->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -11,8 +11,7 @@
 #include "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/path_service.h"
-#include "base/scoped_observer.h"
-#include "base/strings/stringprintf.h"
+#include "base/scoped_observation.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
@@ -69,7 +68,7 @@ using wk_navigation_util::CreateRedirectUrl;
 
 const char kExpectedMimeType[] = "text/html";
 
-const char kFailedTitle[] = "failed_title";
+const char16_t kFailedTitle[] = u"failed_title";
 
 // Location of a test page.
 const char kTestPageURL[] = "/pony.html";
@@ -778,13 +777,13 @@ using test::WaitForWebViewContainingText;
 // WebStatePolicyDecider.
 class WebStateObserverTest : public WebIntTest {
  public:
-  WebStateObserverTest() : scoped_observer_(&observer_) {}
+  WebStateObserverTest() {}
 
   void SetUp() override {
     WebIntTest::SetUp();
 
     decider_ = std::make_unique<StrictMock<PolicyDeciderMock>>(web_state());
-    scoped_observer_.Add(web_state());
+    scoped_observation_.Observe(web_state());
 
     test_server_ = std::make_unique<EmbeddedTestServer>();
     test_server_->RegisterRequestHandler(
@@ -800,7 +799,7 @@ class WebStateObserverTest : public WebIntTest {
   }
 
   void TearDown() override {
-    scoped_observer_.RemoveAll();
+    scoped_observation_.Reset();
     WebIntTest::TearDown();
   }
 
@@ -810,7 +809,8 @@ class WebStateObserverTest : public WebIntTest {
   std::unique_ptr<EmbeddedTestServer> test_server_;
 
  private:
-  ScopedObserver<WebState, WebStateObserver> scoped_observer_;
+  base::ScopedObservation<WebState, WebStateObserver> scoped_observation_{
+      &observer_};
   ::testing::InSequence callbacks_sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateObserverTest);
@@ -1017,13 +1017,60 @@ TEST_F(WebStateObserverTest, FailedNavigation) {
   // Ensure that title is not overridden by a placeholder navigation.
   web::NavigationManager* manager = web_state()->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
-  item->SetTitle(base::UTF8ToUTF16(kFailedTitle));
+  item->SetTitle(kFailedTitle);
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), testing::GetErrorText(web_state(), url,
                                          testing::CreateConnectionLostError(),
                                          /*is_post=*/false, /*is_otr=*/false,
                                          /*cert_status=*/0)));
-  EXPECT_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
+  EXPECT_EQ(item->GetTitle(), kFailedTitle);
+}
+
+// Tests that navigation to an invalid URL is disallowed.
+TEST_F(WebStateObserverTest, InvalidURL) {
+  // Navigations to invalid URLs are allowed on iOS 12 (see crbug.com/965067).
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    return;
+  }
+
+  const GURL url = test_server_->GetURL("/echoall");
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*target_frame_is_cross_origin=*/false,
+      /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(url));
+
+  // Navigate to an invalid URL using JavaScript.
+  // There should be no calls to WebStatePolicyDecider, since the navigation
+  // should get cancelled before that is reached.
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).Times(0);
+  ExecuteJavaScript(@"window.location.pathname = '/%00%50'");
 }
 
 // Tests navigation to a URL with /..; suffix. On iOS 12 and earlier this

@@ -19,6 +19,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -323,9 +324,9 @@ int BluetoothDetailedView::AddSameTypeDevicesToScrollList(
       case BluetoothDeviceInfo::ConnectionState::kConnected:
         SetupConnectedScrollListItem(
             container, device->battery_info
-                           ? base::make_optional<uint8_t>(
+                           ? absl::make_optional<uint8_t>(
                                  device->battery_info->battery_percentage)
-                           : base::nullopt);
+                           : absl::nullopt);
         break;
     }
     scroll_content()->ReorderChildView(container, child_index++);
@@ -366,13 +367,13 @@ void BluetoothDetailedView::ShowSettings() {
   }
 }
 
-base::Optional<BluetoothAddress>
+absl::optional<BluetoothAddress>
 BluetoothDetailedView::GetFocusedDeviceAddress() const {
   for (const auto& view_and_address : device_map_) {
     if (view_and_address.first->HasFocus())
       return view_and_address.second;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void BluetoothDetailedView::FocusDeviceByAddress(
@@ -414,7 +415,7 @@ void BluetoothDetailedView::CreateExtraTitleRowButtons() {
 
   tri_view()->SetContainerVisible(TriView::Container::END, true);
 
-  toggle_ = TrayPopupUtils::CreateToggleButton(
+  toggle_ = new TrayToggleButton(
       base::BindRepeating(&BluetoothDetailedView::ToggleButtonPressed,
                           base::Unretained(this)),
       IDS_ASH_STATUS_TRAY_BLUETOOTH);

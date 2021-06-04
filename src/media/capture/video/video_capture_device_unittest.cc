@@ -109,13 +109,9 @@
 #define MAYBE_UsingRealWebcam_AllocateBadSize \
   DISABLED_UsingRealWebcam_AllocateBadSize
 #define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
-// Flaky: https://crbug.com/1096082
-#define MAYBE_UsingRealWebcam_TakePhoto DISABLED_UsingRealWebcam_TakePhoto
-#define MAYBE_UsingRealWebcam_GetPhotoState \
-  DISABLED_UsingRealWebcam_GetPhotoState
-// Flaky crash: https://crbug.com/1069608
-#define MAYBE_UsingRealWebcam_CaptureWithSize \
-  DISABLED_UsingRealWebcam_CaptureWithSize
+#define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
+#define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -374,7 +370,7 @@ class VideoCaptureDeviceTest
     run_loop_->Run();
   }
 
-  base::Optional<VideoCaptureDeviceInfo> FindUsableDevice() {
+  absl::optional<VideoCaptureDeviceInfo> FindUsableDevice() {
     base::RunLoop run_loop;
     video_capture_device_factory_->GetDevicesInfo(base::BindLambdaForTesting(
         [this, &run_loop](std::vector<VideoCaptureDeviceInfo> devices_info) {
@@ -385,7 +381,7 @@ class VideoCaptureDeviceTest
 
     if (devices_info_.empty()) {
       DLOG(WARNING) << "No camera found";
-      return base::nullopt;
+      return absl::nullopt;
     }
 #if defined(OS_ANDROID)
     for (const auto& device : devices_info_) {
@@ -400,7 +396,7 @@ class VideoCaptureDeviceTest
       }
     }
     DLOG(WARNING) << "No usable camera found";
-    return base::nullopt;
+    return absl::nullopt;
 #else
     auto device = devices_info_.front();
     DLOG(INFO) << "Using camera " << device.descriptor.GetNameAndModel();
@@ -410,10 +406,10 @@ class VideoCaptureDeviceTest
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
-  base::Optional<VideoCaptureDeviceInfo> GetFirstDeviceSupportingPixelFormat(
+  absl::optional<VideoCaptureDeviceInfo> GetFirstDeviceSupportingPixelFormat(
       const VideoPixelFormat& pixel_format) {
     if (!FindUsableDevice())
-      return base::nullopt;
+      return absl::nullopt;
 
     for (const auto& device : devices_info_) {
       for (const auto& format : device.supported_formats) {
@@ -424,7 +420,7 @@ class VideoCaptureDeviceTest
     }
     DVLOG_IF(1, pixel_format != PIXEL_FORMAT_MAX)
         << VideoPixelFormatToString(pixel_format);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   bool IsCaptureSizeSupported(const VideoCaptureDeviceInfo& device_info,
@@ -477,15 +473,17 @@ class VideoCaptureDeviceTest
   std::unique_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
-// Causes a flaky crash on Chrome OS. https://crbug.com/1069608
 // Cause hangs on Windows Debug. http://crbug.com/417824
-#if BUILDFLAG(IS_CHROMEOS_ASH) || (defined(OS_WIN) && !defined(NDEBUG))
-#define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
+#if (defined(OS_WIN) && !defined(NDEBUG))
+#define MAYBE_UsingRealWebcam_OpenInvalidDevice \
+  DISABLED_UsingRealWebcam_OpenInvalidDevice
 #else
-#define MAYBE_OpenInvalidDevice OpenInvalidDevice
+#define MAYBE_UsingRealWebcam_OpenInvalidDevice \
+  UsingRealWebcam_OpenInvalidDevice
 #endif
 // Tries to allocate an invalid device and verifies it doesn't work.
-WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
+WRAPPED_TEST_P(VideoCaptureDeviceTest,
+               MAYBE_UsingRealWebcam_OpenInvalidDevice) {
   RunTestCase(
       base::BindOnce(&VideoCaptureDeviceTest::RunOpenInvalidDeviceTestCase,
                      base::Unretained(this)));
@@ -707,14 +705,10 @@ void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
   device->StopAndDeAllocate();
 }
 
-// Flaky on ChromeOS. See https://crbug.com/1096082
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_NoCameraSupportsPixelFormatMax \
-  DISABLED_NoCameraSupportsPixelFormatMax
-#else
-#define MAYBE_NoCameraSupportsPixelFormatMax NoCameraSupportsPixelFormatMax
-#endif
-WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_NoCameraSupportsPixelFormatMax) {
+#define MAYBE_UsingRealWebcam_NoCameraSupportsPixelFormatMax \
+  UsingRealWebcam_NoCameraSupportsPixelFormatMax
+WRAPPED_TEST_P(VideoCaptureDeviceTest,
+               MAYBE_UsingRealWebcam_NoCameraSupportsPixelFormatMax) {
   RunTestCase(base::BindOnce(
       &VideoCaptureDeviceTest::RunNoCameraSupportsPixelFormatMaxTestCase,
       base::Unretained(this)));

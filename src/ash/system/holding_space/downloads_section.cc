@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
@@ -42,7 +43,7 @@ class CallbackPathGenerator : public views::HighlightPathGenerator {
 
  private:
   // views::HighlightPathGenerator:
-  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     return callback_.Run();
   }
 
@@ -72,20 +73,12 @@ class Header : public views::Button {
     layout->SetFlexForView(label, 1);
 
     // Chevron.
-    AshColorProvider* const ash_color_provider = AshColorProvider::Get();
-    auto* chevron = AddChildView(std::make_unique<views::ImageView>());
-    chevron->SetFlipCanvasOnPaintForRTLUI(true);
-    chevron->SetImage(gfx::CreateVectorIcon(
-        kChevronRightIcon, kHoldingSpaceDownloadsChevronIconSize,
-        ash_color_provider->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+    chevron_ = AddChildView(std::make_unique<views::ImageView>());
+    chevron_->SetFlipCanvasOnPaintForRTLUI(true);
 
     // Focus ring.
-    focus_ring()->SetColor(ash_color_provider->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kFocusRingColor));
-
     // Though the entirety of the header is focusable and behaves as a single
-    // button, the focus ring is drawn as a circle around just the `chevron`.
+    // button, the focus ring is drawn as a circle around just the `chevron_`.
     focus_ring()->SetPathGenerator(
         std::make_unique<CallbackPathGenerator>(base::BindRepeating(
             [](const views::View* chevron) {
@@ -98,16 +91,35 @@ class Header : public views::Button {
               }
               return path;
             },
-            base::Unretained(chevron))));
+            base::Unretained(chevron_))));
   }
 
  private:
+  // views::Button:
+  void OnThemeChanged() override {
+    views::Button::OnThemeChanged();
+    AshColorProvider* const ash_color_provider = AshColorProvider::Get();
+
+    // Chevron.
+    chevron_->SetImage(gfx::CreateVectorIcon(
+        kChevronRightIcon, kHoldingSpaceDownloadsChevronIconSize,
+        ash_color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+
+    // Focus ring.
+    focus_ring()->SetColor(ash_color_provider->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kFocusRingColor));
+  }
+
   void OnPressed() {
     holding_space_metrics::RecordDownloadsAction(
         holding_space_metrics::DownloadsAction::kClick);
 
     HoldingSpaceController::Get()->client()->OpenDownloads(base::DoNothing());
   }
+
+  // Owned by view hierarchy.
+  views::ImageView* chevron_ = nullptr;
 };
 
 }  // namespace
@@ -117,8 +129,12 @@ class Header : public views::Button {
 DownloadsSection::DownloadsSection(HoldingSpaceItemViewDelegate* delegate)
     : HoldingSpaceItemViewsSection(delegate,
                                    /*supported_types=*/
-                                   {HoldingSpaceItem::Type::kDownload,
-                                    HoldingSpaceItem::Type::kNearbyShare},
+                                   {HoldingSpaceItem::Type::kArcDownload,
+                                    HoldingSpaceItem::Type::kDiagnosticsLog,
+                                    HoldingSpaceItem::Type::kDownload,
+                                    HoldingSpaceItem::Type::kLacrosDownload,
+                                    HoldingSpaceItem::Type::kNearbyShare,
+                                    HoldingSpaceItem::Type::kPrintedPdf},
                                    /*max_count=*/kMaxDownloads) {}
 
 DownloadsSection::~DownloadsSection() = default;

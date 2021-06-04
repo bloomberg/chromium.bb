@@ -138,7 +138,7 @@ class CORE_EXPORT FrameLoader final {
   void DidExplicitOpen();
 
   String UserAgent() const;
-  base::Optional<blink::UserAgentMetadata> UserAgentMetadata() const;
+  absl::optional<blink::UserAgentMetadata> UserAgentMetadata() const;
 
   void DispatchDidClearWindowObjectInMainWorld();
   void DispatchDidClearDocumentOfWindowObject();
@@ -181,7 +181,7 @@ class CORE_EXPORT FrameLoader final {
   // events and abort XHR requests. Returns true if the frame is ready to
   // receive the next document commit, or false otherwise.
   bool DetachDocument(SecurityOrigin* committing_origin,
-                      base::Optional<Document::UnloadEventTiming>*);
+                      absl::optional<Document::UnloadEventTiming>*);
 
   bool ShouldClose(bool is_reload = false);
 
@@ -194,7 +194,7 @@ class CORE_EXPORT FrameLoader final {
   // If the dispatch of the unload event is not due to a commit, both parameters
   // should be null.
   void DispatchUnloadEvent(SecurityOrigin* committing_origin,
-                           base::Optional<Document::UnloadEventTiming>*);
+                           absl::optional<Document::UnloadEventTiming>*);
 
   bool AllowPlugins();
 
@@ -205,8 +205,6 @@ class CORE_EXPORT FrameLoader final {
   bool HasProvisionalNavigation() const {
     return committing_navigation_ || client_navigation_.get();
   }
-
-  bool MaybeRenderFallbackContent();
 
   // Like ClearClientNavigation, but also notifies the client to actually cancel
   // the navigation.
@@ -227,7 +225,7 @@ class CORE_EXPORT FrameLoader final {
 
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);
 
-  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
@@ -261,7 +259,7 @@ class CORE_EXPORT FrameLoader final {
 
   // Commits the given |document_loader|.
   void CommitDocumentLoader(DocumentLoader* document_loader,
-                            const base::Optional<Document::UnloadEventTiming>&,
+                            const absl::optional<Document::UnloadEventTiming>&,
                             HistoryItem* previous_history_item,
                             CommitReason);
 

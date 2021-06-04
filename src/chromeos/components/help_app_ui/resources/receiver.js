@@ -44,6 +44,25 @@ const DELEGATE = {
     return /** @type {!Promise<!helpApp.FindResponse>} */ (
         parentMessagePipe.sendMessage(Message.FIND_IN_SEARCH_INDEX, {query}));
   },
+  closeBackgroundPage() {
+    parentMessagePipe.sendMessage(Message.CLOSE_BACKGROUND_PAGE);
+  },
+  /**
+   * @override
+   * @param {!Array<!helpApp.LauncherSearchableItem>} data
+   */
+  async updateLauncherSearchIndex(data) {
+    await parentMessagePipe.sendMessage(
+        Message.UPDATE_LAUNCHER_SEARCH_INDEX, data);
+  },
+  async maybeShowDiscoverNotification() {
+    await parentMessagePipe.sendMessage(
+        Message.MAYBE_SHOW_DISCOVER_NOTIFICATION);
+  }
+};
+
+window.customLaunchData = {
+  delegate: DELEGATE,
 };
 
 /**

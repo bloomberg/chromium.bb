@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -201,11 +202,14 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
     delegate_ = delegate.get();
     layout_ = std::make_unique<BrowserViewLayout>(
         std::move(delegate),
-        nullptr,  // NativeView.
-        nullptr,  // BrowserView.
-        top_container_, tab_strip_region_view, tab_strip_, toolbar_,
-        infobar_container_, contents_container_, nullptr,  // SidePanel.
-        immersive_mode_controller_.get(), nullptr, separator_);
+        /*host_view=*/nullptr,
+        /*browser_view=*/nullptr, top_container_, tab_strip_region_view,
+        tab_strip_, toolbar_, infobar_container_, contents_container_,
+        /*left_aligned_side_panel=*/nullptr,
+        /*left_aligned_side_panel_separator=*/nullptr,
+        /*right_aligned_side_panel=*/nullptr,
+        /*left_aligned_side_panel_separator=*/nullptr,
+        immersive_mode_controller_.get(), separator_);
     layout_->set_webui_tab_strip(webui_tab_strip());
   }
 

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
@@ -20,7 +19,6 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
 
@@ -127,6 +125,11 @@ class ControllerObserver : public base::CheckedObserver {
 
   // Called when the generic user interface to show has been changed or cleared.
   virtual void OnGenericUserInterfaceChanged(
+      const GenericUserInterfaceProto* generic_ui) = 0;
+
+  // Called when the persistent generic user interface to show has been changed
+  // or cleared.
+  virtual void OnPersistentGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) = 0;
 
   // Called when the desired overlay behavior has changed.

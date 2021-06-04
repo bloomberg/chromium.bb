@@ -14,6 +14,7 @@
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLFloatLiteral.h"
@@ -102,9 +103,7 @@ static std::unique_ptr<Expression> simplify_vector(const Context& context,
                              right.getConstantSubexpression(i)->as<Literal<T>>().value());
             args.push_back(Literal<T>::Make(left.fOffset, value, &componentType));
         }
-        auto foldedCtor = Constructor::Convert(context, left.fOffset, type, std::move(args));
-        SkASSERT(foldedCtor);
-        return foldedCtor;
+        return ConstructorCompound::Make(context, left.fOffset, type, std::move(args));
     };
 
     switch (op.kind()) {
@@ -232,6 +231,15 @@ const Expression* ConstantFolder::GetConstantValueForVariable(const Expression& 
     }
     // We didn't find a compile-time constant at the end. Return the expression as-is.
     return &inExpr;
+}
+
+std::unique_ptr<Expression> ConstantFolder::MakeConstantValueForVariable(
+        std::unique_ptr<Expression> expr) {
+    const Expression* constantExpr = GetConstantValueForVariable(*expr);
+    if (constantExpr != expr.get()) {
+        expr = constantExpr->clone();
+    }
+    return expr;
 }
 
 static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& context,
@@ -410,9 +418,9 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // precision to calculate the results and hope the result makes sense.
     // TODO(skia:10932): detect and handle integer overflow properly.
     using SKSL_UINT = uint64_t;
-    #define RESULT(t, op) t ## Literal::Make(context, offset, leftVal op rightVal)
-    #define URESULT(t, op) t ## Literal::Make(context, offset, (SKSL_UINT) leftVal op \
-                                                               (SKSL_UINT) rightVal)
+    #define RESULT(t, op)   t ## Literal::Make(offset, leftVal op rightVal, &resultType)
+    #define URESULT(t, op)  t ## Literal::Make(offset, (SKSL_UINT)(leftVal) op \
+                                                       (SKSL_UINT)(rightVal), &resultType)
     if (left->is<IntLiteral>() && right->is<IntLiteral>()) {
         SKSL_INT leftVal  = left->as<IntLiteral>().value();
         SKSL_INT rightVal = right->as<IntLiteral>().value();

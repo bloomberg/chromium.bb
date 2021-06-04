@@ -61,6 +61,24 @@ class TF_HLG {
     return e;
   }
 
+  // Maximum error 5e-7.
+  template <class D, class V>
+  JXL_INLINE V EncodedFromDisplay(D d, V x) const {
+    const hwy::HWY_NAMESPACE::Rebind<uint32_t, D> du;
+    const V kSign = BitCast(d, Set(du, 0x80000000u));
+    const V original_sign = And(x, kSign);
+    x = AndNot(kSign, x);  // abs
+    const V below_div12 = Sqrt(Set(d, 3.0f) * x);
+    const V e =
+        MulAdd(Set(d, kA * 0.693147181f),
+               FastLog2f(d, MulAdd(Set(d, 12), x, Set(d, -kB))), Set(d, kC));
+    const V magnitude = IfThenElse(x <= Set(d, kDiv12), below_div12, e);
+    const V lifted = Or(AndNot(kSign, magnitude), original_sign);
+    const V kMul = Set(d, 1.0f / (1.0f - kBeta));
+    const V kAdd = Set(d, -kBeta / (1.0f - kBeta));
+    return MulAdd(kMul, lifted, kAdd);
+  }
+
  private:
   // OETF (defines the HLG approach). s = scene, returns encoded.
   JXL_INLINE double OETF(double s) const {
@@ -68,11 +86,11 @@ class TF_HLG {
     const double original_sign = s;
     s = std::abs(s);
 
-    if (s <= kDiv12) return std::copysign(std::sqrt(3.0 * s), original_sign);
+    if (s <= kDiv12) return copysignf(std::sqrt(3.0 * s), original_sign);
 
     const double e = kA * std::log(12 * s - kB) + kC;
     JXL_ASSERT(e > 0.0);
-    return std::copysign(e, original_sign);
+    return copysignf(e, original_sign);
   }
 
   // e = encoded, returns scene.
@@ -81,11 +99,11 @@ class TF_HLG {
     const double original_sign = e;
     e = std::abs(e);
 
-    if (e <= 0.5) return std::copysign(e * e * (1.0 / 3), original_sign);
+    if (e <= 0.5) return copysignf(e * e * (1.0 / 3), original_sign);
 
     const double s = (std::exp((e - kC) * kRA) + kB) * kDiv12;
     JXL_ASSERT(s >= 0);
-    return std::copysign(s, original_sign);
+    return copysignf(s, original_sign);
   }
 
   // s = scene, returns display.
@@ -113,6 +131,30 @@ class TF_HLG {
   static constexpr double kDiv12 = 1.0 / 12;
 };
 
+class TF_709 {
+ public:
+  JXL_INLINE double EncodedFromDisplay(const double d) const {
+    if (d < kThresh) return kMulLow * d;
+    return kMulHi * std::pow(d, kPowHi) + kSub;
+  }
+
+  // Maximum error 1e-6.
+  template <class D, class V>
+  JXL_INLINE V EncodedFromDisplay(D d, V x) const {
+    auto low = Set(d, kMulLow) * x;
+    auto hi =
+        MulAdd(Set(d, kMulHi), FastPowf(d, x, Set(d, kPowHi)), Set(d, kSub));
+    return IfThenElse(x <= Set(d, kThresh), low, hi);
+  }
+
+ private:
+  static constexpr double kThresh = 0.018;
+  static constexpr double kMulLow = 4.5;
+  static constexpr double kMulHi = 1.099;
+  static constexpr double kPowHi = 0.45;
+  static constexpr double kSub = -0.099;
+};
+
 // Perceptual Quantization
 class TF_PQ {
  public:
@@ -128,7 +170,7 @@ class TF_PQ {
     JXL_DASSERT(den != 0.0);
     const double d = std::pow(num / den, 1.0 / kM1);
     JXL_DASSERT(d >= 0.0);  // Equal for e ~= 1E-9
-    return std::copysign(d, original_sign);
+    return copysignf(d, original_sign);
   }
 
   // Maximum error 3e-6
@@ -166,7 +208,7 @@ class TF_PQ {
     const double den = 1.0 + xp * kC3;
     const double e = std::pow(num / den, kM2);
     JXL_DASSERT(e > 0.0);
-    return std::copysign(e, original_sign);
+    return copysignf(e, original_sign);
   }
 
   // Maximum error 7e-7.

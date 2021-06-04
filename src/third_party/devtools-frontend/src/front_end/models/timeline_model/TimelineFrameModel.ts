@@ -33,6 +33,7 @@
 
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 import {RecordType, TimelineData} from './TimelineModel.js';
 import type {TracingLayerPayload, TracingLayerTile} from './TracingLayerTree.js';
@@ -377,7 +378,7 @@ export class TracingFrameLayerTree {
   }
 
   async layerTreePromise(): Promise<TracingLayerTree|null> {
-    const result = (await this._snapshot.objectPromise() as {
+    const result = (await this._snapshot.objectPromise() as unknown as {
       active_tiles: TracingLayerTile[],
       device_viewport_size: {
         width: number,

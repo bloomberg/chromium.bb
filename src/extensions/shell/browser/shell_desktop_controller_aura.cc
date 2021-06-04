@@ -5,6 +5,7 @@
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/check_op.h"
@@ -71,7 +72,6 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
     cursor_loader_.SetPlatformCursor(&cursor);
-    cursor.set_image_scale_factor(cursor_loader_.scale());
     delegate->CommitCursor(cursor);
 
     if (delegate->IsCursorVisible())
@@ -143,7 +143,7 @@ ShellDesktopControllerAura::ShellDesktopControllerAura(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::PowerManagerClient::Get()->AddObserver(this);
-  display_configurator_.reset(new display::DisplayConfigurator);
+  display_configurator_ = std::make_unique<display::DisplayConfigurator>();
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
   display_configurator_->ForceInitialConfigure();
@@ -322,7 +322,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
     display::Screen::SetScreenInstance(screen_.get());
 #else
     // TODO(crbug.com/756680): Refactor DesktopScreen out of views.
-    screen_.reset(views::CreateDesktopScreen());
+    screen_ = views::CreateDesktopScreen();
 #endif
   }
 

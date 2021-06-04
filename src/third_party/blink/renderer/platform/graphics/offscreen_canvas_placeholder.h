@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_PLACEHOLDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_PLACEHOLDER_H_
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
@@ -73,9 +73,9 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
     kShouldActivateAnimation,
   };
   AnimationState animation_state_ = kActiveAnimation;
-  base::Optional<SkFilterQuality> filter_quality_ = base::nullopt;
+  absl::optional<SkFilterQuality> filter_quality_ = absl::nullopt;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_PLACEHOLDER_H_

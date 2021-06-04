@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -123,17 +122,14 @@ ExecutionContextCSPDelegate::GetSourceLocation() {
   return SourceLocation::Capture(execution_context_);
 }
 
-base::Optional<uint16_t> ExecutionContextCSPDelegate::GetStatusCode() {
-  base::Optional<uint16_t> status_code;
+absl::optional<uint16_t> ExecutionContextCSPDelegate::GetStatusCode() {
+  absl::optional<uint16_t> status_code;
 
   // TODO(mkwst): We only have status code information for Documents. It would
   // be nice to get them for Workers as well.
-  // TODO(crbug.com/1153336) Use network::IsUrlPotentiallyTrustworthy().
   Document* document = GetDocument();
-  if (document && !SecurityOrigin::IsSecure(document->Url()) &&
-      document->Loader()) {
+  if (document && document->Loader())
     status_code = document->Loader()->GetResponse().HttpStatusCode();
-  }
 
   return status_code;
 }
@@ -199,24 +195,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
     return;
 
   for (const auto& report_endpoint : report_endpoints) {
-    // Use the frame's document to complete the endpoint URL, overriding its URL
-    // with the blocked document's URL.
-    // https://w3c.github.io/webappsec-csp/#report-violation
-    // Step 3.4.2.1. Let endpoint be the result of executing the URL parser with
-    // token as the input, and violation’s url as the base URL. [spec text]
-    KURL url = is_frame_ancestors_violation
-                   ? document->CompleteURLWithOverride(
-                         report_endpoint, KURL(violation_data.blockedURI()))
-                   // We use the FallbackBaseURL to ensure that we don't
-                   // respect base elements when determining the report
-                   // endpoint URL.
-                   // Note: According to Step 3.4.2.1 mentioned above, the base
-                   // URL is "violation’s url" which should be violation's
-                   // global object's URL. So using FallbackBaseURL() might be
-                   // inconsistent.
-                   : document->CompleteURLWithOverride(
-                         report_endpoint, document->FallbackBaseURL());
-    PingLoader::SendViolationReport(frame, url, report);
+    PingLoader::SendViolationReport(frame, KURL(report_endpoint), report);
   }
 }
 

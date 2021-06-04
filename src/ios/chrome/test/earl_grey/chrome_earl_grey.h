@@ -162,6 +162,10 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 // Clears fake sync server data if the server is running.
 - (void)clearSyncServerData;
 
+// Clears the first sync setup preference. The user will be effectively in
+// the signed-in state with no syncing consent.
+- (void)clearSyncFirstSetupComplete;
+
 // Starts the sync server. The server should not be running when calling this.
 - (void)startSync;
 
@@ -613,9 +617,6 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 // Returns whether the mobile version of the websites are requested by default.
 - (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
 
-// Returns whether the illustrated empty stated feature is enabled.
-- (BOOL)isIllustratedEmptyStatesEnabled;
-
 // Returns whether the native context menus feature is enabled or not.
 - (BOOL)isNativeContextMenusEnabled;
 
@@ -700,8 +701,10 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
                               useNewString:(BOOL)useNewString;
 
 // Taps on the Share context menu action and validates that the ActivityView
-// was brought up with |pageTitle| in its header.
-- (void)verifyShareActionWithPageTitle:(NSString*)pageTitle;
+// was brought up with the correct title in its header. The title starts as the
+// host of the loaded |URL| and is then updated to the page title |pageTitle|.
+- (void)verifyShareActionWithURL:(const GURL&)URL
+                       pageTitle:(NSString*)pageTitle;
 
 #pragma mark - Unified Consent utilities
 

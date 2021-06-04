@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -1317,6 +1316,44 @@ TEST_F(NGLayoutSelectionTest, WBRStatus) {
             ComputeLayoutSelectionStatus(*layout_wbr));
   EXPECT_EQ(SelectionState::kInside,
             ComputeLayoutSelectionStateForCursor(*layout_wbr));
+}
+
+TEST_F(NGLayoutSelectionTest, SoftHyphen0to1) {
+  SetSelectionAndUpdateLayoutSelection(
+      "<div id='container' style='width:3ch'>^0|123&shy;456</div>");
+  auto* element = GetElementById("container");
+  auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
+  NGInlineCursor cursor(*block_flow);
+  while (!cursor.Current()->IsLayoutGeneratedText())
+    cursor.MoveToNext();
+  auto status = Selection().ComputeLayoutSelectionStatus(cursor);
+  EXPECT_FALSE(status.HasValidRange());
+}
+
+TEST_F(NGLayoutSelectionTest, SoftHyphen0to4) {
+  SetSelectionAndUpdateLayoutSelection(
+      "<div id='container' style='width:3ch'>^0123|&shy;456</div>");
+  auto* element = GetElementById("container");
+  auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
+  NGInlineCursor cursor(*block_flow);
+  while (!cursor.Current()->IsLayoutGeneratedText())
+    cursor.MoveToNext();
+  auto status = Selection().ComputeLayoutSelectionStatus(cursor);
+  EXPECT_FALSE(status.HasValidRange());
+}
+
+TEST_F(NGLayoutSelectionTest, SoftHyphen1to5) {
+  SetSelectionAndUpdateLayoutSelection(
+      "<div id='container' style='width:3ch'>0^123&shy;|456</div>");
+  auto* element = GetElementById("container");
+  auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
+  NGInlineCursor cursor(*block_flow);
+  while (!cursor.Current()->IsLayoutGeneratedText())
+    cursor.MoveToNext();
+  auto status = Selection().ComputeLayoutSelectionStatus(cursor);
+  EXPECT_TRUE(status.HasValidRange());
+  EXPECT_EQ(LayoutSelectionStatus(0u, 1u, SelectSoftLineBreak::kNotSelected),
+            status);
 }
 
 }  // namespace blink

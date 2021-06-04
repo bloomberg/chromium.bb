@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/include/perfetto/test/traced_value_test_support.h"
 
 namespace base {
@@ -17,7 +18,7 @@ struct RefCountedData : RefCounted<RefCountedData> {
  public:
   explicit RefCountedData(std::string data) : data_(data) {}
 
-  void WriteIntoTracedValue(perfetto::TracedValue context) const {
+  void WriteIntoTrace(perfetto::TracedValue context) const {
     std::move(context).WriteString(data_);
   }
 
@@ -32,7 +33,7 @@ struct WeakData {
  public:
   explicit WeakData(std::string data) : data_(data) {}
 
-  void WriteIntoTracedValue(perfetto::TracedValue context) const {
+  void WriteIntoTrace(perfetto::TracedValue context) const {
     std::move(context).WriteString(data_);
   }
 
@@ -58,8 +59,8 @@ TEST(TracedValueSupportTest, ScopedRefPtr) {
 }
 
 TEST(TracedValueSupportTest, Optional) {
-  EXPECT_EQ(perfetto::TracedValueToString(base::Optional<int>()), "0x0");
-  EXPECT_EQ(perfetto::TracedValueToString(base::Optional<const int>(42)), "42");
+  EXPECT_EQ(perfetto::TracedValueToString(absl::optional<int>()), "0x0");
+  EXPECT_EQ(perfetto::TracedValueToString(absl::optional<const int>(42)), "42");
 }
 
 TEST(TracedValueSupportTest, WeakPtr) {

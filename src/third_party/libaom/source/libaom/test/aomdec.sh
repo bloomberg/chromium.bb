@@ -147,12 +147,16 @@ aomdec_av1_webm() {
 }
 
 aomdec_tests="aomdec_av1_ivf
-              aomdec_av1_ivf_error_resilient
               aomdec_av1_ivf_multithread
               aomdec_av1_ivf_multithread_row_mt
-              aomdec_aom_ivf_pipe_input
-              aomdec_av1_obu_annexb
-              aomdec_av1_obu_section5
-              aomdec_av1_webm"
+              aomdec_aom_ivf_pipe_input"
+
+if [ ! "$(realtime_only_build)" = "yes" ]; then
+  aomdec_tests="${aomdec_tests}
+                aomdec_av1_ivf_error_resilient
+                aomdec_av1_obu_annexb
+                aomdec_av1_obu_section5
+                aomdec_av1_webm"
+fi
 
 run_tests aomdec_verify_environment "${aomdec_tests}"

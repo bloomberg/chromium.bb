@@ -17,9 +17,9 @@
 #include "components/media_message_center/media_notification_view_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 
 namespace media_message_center {
@@ -55,8 +55,8 @@ class MediaNotificationContainerImplView
       base::WeakPtr<media_message_center::MediaNotificationItem> item,
       MediaNotificationService* service,
       GlobalMediaControlsEntryPoint entry_point,
-      base::Optional<media_message_center::NotificationTheme> theme =
-          base::nullopt);
+      absl::optional<media_message_center::NotificationTheme> theme =
+          absl::nullopt);
   MediaNotificationContainerImplView(
       const MediaNotificationContainerImplView&) = delete;
   MediaNotificationContainerImplView& operator=(

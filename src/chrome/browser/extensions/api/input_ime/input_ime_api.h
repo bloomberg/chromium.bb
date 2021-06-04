@@ -49,9 +49,10 @@ class ImeObserver : public InputMethodEngineBase::Observer {
 
   // InputMethodEngineBase::Observer overrides.
   void OnActivate(const std::string& component_id) override;
-  void OnFocus(int context_id,
+  void OnFocus(const std::string& engine_id,
+               int context_id,
                const IMEEngineHandlerInterface::InputContext& context) override;
-  void OnBlur(int context_id) override;
+  void OnBlur(const std::string& engine_id, int context_id) override;
   void OnKeyEvent(
       const std::string& component_id,
       const ui::KeyEvent& event,
@@ -72,7 +73,7 @@ class ImeObserver : public InputMethodEngineBase::Observer {
   virtual void DispatchEventToExtension(
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> args) = 0;
+      std::vector<base::Value> args) = 0;
 
   // Returns the type of the current screen.
   virtual std::string GetCurrentScreenType() = 0;

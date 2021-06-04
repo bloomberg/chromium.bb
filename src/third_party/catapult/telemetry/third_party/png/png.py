@@ -165,6 +165,11 @@ And now, my famous members
 # http://www.python.org/doc/2.2.3/whatsnew/node5.html
 from __future__ import generators
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from functools import reduce
+from six.moves import map
 __version__ = "$URL$ $Rev$"
 
 from array import array
@@ -187,6 +192,7 @@ try:
 except ImportError:
     pass
 
+# 2To3-division: the / operations with float as operands are not changed.
 
 __all__ = ['Image', 'Reader', 'Writer', 'write_chunks', 'from_array']
 
@@ -206,7 +212,7 @@ _adam7 = ((0, 0, 8, 8),
 def group(s, n):
     # See
     # http://www.python.org/doc/2.6/library/functions.html#zip
-    return zip(*[iter(s)]*n)
+    return list(zip(*[iter(s)]*n))
 
 def isarray(x):
     """Same as ``isinstance(x, array)`` except on Python 2.2, where it
@@ -282,8 +288,8 @@ def check_palette(palette):
     if not (0 < len(p) <= 256):
         raise ValueError("a palette must have between 1 and 256 entries")
     seen_triple = False
-    for i,t in enumerate(p):
-        if len(t) not in (3,4):
+    for i, t in enumerate(p):
+        if len(t) not in (3, 4):
             raise ValueError(
               "palette entry %d: entries must be 3- or 4-tuples." % i)
         if len(t) == 3:
@@ -509,7 +515,7 @@ class Writer:
                 raise ValueError(
                   "size[1] (%r) and height (%r) should match when both are used."
                     % (size[1], height))
-            width,height = size
+            width, height = size
         del size
 
         if width <= 0 or height <= 0:
@@ -538,7 +544,7 @@ class Writer:
 
         self.rescale = None
         if palette:
-            if bitdepth not in (1,2,4,8):
+            if bitdepth not in (1, 2, 4, 8):
                 raise ValueError("with palette, bitdepth must be 1, 2, 4, or 8")
             if transparent is not None:
                 raise ValueError("transparent and palette not compatible")
@@ -549,21 +555,21 @@ class Writer:
         else:
             # No palette, check for sBIT chunk generation.
             if alpha or not greyscale:
-                if bitdepth not in (8,16):
-                    targetbitdepth = (8,16)[bitdepth > 8]
+                if bitdepth not in (8, 16):
+                    targetbitdepth = (8, 16)[bitdepth > 8]
                     self.rescale = (bitdepth, targetbitdepth)
                     bitdepth = targetbitdepth
                     del targetbitdepth
             else:
                 assert greyscale
                 assert not alpha
-                if bitdepth not in (1,2,4,8,16):
+                if bitdepth not in (1, 2, 4, 8, 16):
                     if bitdepth > 8:
                         targetbitdepth = 16
                     elif bitdepth == 3:
                         targetbitdepth = 4
                     else:
-                        assert bitdepth in (5,6,7)
+                        assert bitdepth in (5, 6, 7)
                         targetbitdepth = 8
                     self.rescale = (bitdepth, targetbitdepth)
                     bitdepth = targetbitdepth
@@ -597,12 +603,12 @@ class Writer:
         self.palette = check_palette(palette)
 
         self.color_type = 4*self.alpha + 2*(not greyscale) + 1*self.colormap
-        assert self.color_type in (0,2,3,4,6)
+        assert self.color_type in (0, 2, 3, 4, 6)
 
-        self.color_planes = (3,1)[self.greyscale or self.colormap]
+        self.color_planes = (3, 1)[self.greyscale or self.colormap]
         self.planes = self.color_planes + self.alpha
         # :todo: fix for bitdepth < 8
-        self.psize = (self.bitdepth/8) * self.planes
+        self.psize = (self.bitdepth / 8) * self.planes
 
     def make_palette(self):
         """Create the byte sequences for a ``PLTE`` and if necessary a
@@ -620,8 +626,8 @@ class Writer:
         p = tostring(p)
         t = tostring(t)
         if t:
-            return p,t
-        return p,None
+            return p, t
+        return p, None
 
     def write(self, outfile, rows):
         """Write a PNG image to the output file.  `rows` should be
@@ -695,7 +701,7 @@ class Writer:
         # chunk which must precede tRNS and bKGD.
         # See http://www.w3.org/TR/PNG/#5ChunkOrdering
         if self.palette:
-            p,t = self.make_palette()
+            p, t = self.make_palette()
             write_chunk(outfile, 'PLTE', p)
             if t:
                 # tRNS chunk is optional.  Only needed if palette entries
@@ -741,7 +747,7 @@ class Writer:
             # Pack into bytes
             assert self.bitdepth < 8
             # samples per byte
-            spb = int(8/self.bitdepth)
+            spb = int(8 // self.bitdepth)
             def extend(sl):
                 a = array('B', sl)
                 # Adding padding bytes so we can group into a whole
@@ -751,7 +757,7 @@ class Writer:
                 a.extend([0]*int(extra))
                 # Pack into bytes
                 l = group(a, spb)
-                l = map(lambda e: reduce(lambda x,y:
+                l = map(lambda e: reduce(lambda x, y:
                                            (x << self.bitdepth) + y, e), l)
                 data.extend(l)
         if self.rescale:
@@ -774,7 +780,7 @@ class Writer:
         # :todo: Certain exceptions in the call to ``.next()`` or the
         # following try would indicate no row data supplied.
         # Should catch.
-        i,row = enumrows.next()
+        i, row = next(enumrows)
         try:
             # If this fails...
             extend(row)
@@ -789,7 +795,7 @@ class Writer:
             del wrapmapint
             extend(row)
 
-        for i,row in enumrows:
+        for i, row in enumrows:
             # Add "None" filter type.  Currently, it's essential that
             # this filter type be used for every scanline as we do not
             # mark the first row of a reduced pass image; that means we
@@ -860,7 +866,7 @@ class Writer:
         if self.interlace:
             pixels = array('B')
             pixels.fromfile(infile,
-                            (self.bitdepth/8) * self.color_planes *
+                            (self.bitdepth // 8) * self.color_planes *
                             self.width * self.height)
             self.write_passes(outfile, self.array_scanlines_interlace(pixels))
         else:
@@ -873,15 +879,15 @@ class Writer:
         """
         pixels = array('B')
         pixels.fromfile(ppmfile,
-                        (self.bitdepth/8) * self.color_planes *
+                        (self.bitdepth // 8) * self.color_planes *
                         self.width * self.height)
         apixels = array('B')
         apixels.fromfile(pgmfile,
-                         (self.bitdepth/8) *
+                         (self.bitdepth // 8) *
                          self.width * self.height)
         pixels = interleave_planes(pixels, apixels,
-                                   (self.bitdepth/8) * self.color_planes,
-                                   (self.bitdepth/8))
+                                   (self.bitdepth // 8) * self.color_planes,
+                                   (self.bitdepth // 8))
         if self.interlace:
             self.write_passes(outfile, self.array_scanlines_interlace(pixels))
         else:
@@ -944,7 +950,7 @@ class Writer:
             if xstart >= self.width:
                 continue
             # Pixels per row (of reduced image)
-            ppr = int(math.ceil((self.width-xstart)/float(xstep)))
+            ppr = int(math.ceil((self.width-xstart) / float(xstep)))
             # number of values in reduced image row.
             row_len = ppr*self.planes
             for y in range(ystart, self.height, ystep):
@@ -1010,12 +1016,12 @@ def filter_scanline(type, line, fo, prev=None):
             out.append(x)
             ai += 1
     def up():
-        for i,x in enumerate(line):
+        for i, x in enumerate(line):
             x = (x - prev[i]) & 0xff
             out.append(x)
     def average():
         ai = -fo
-        for i,x in enumerate(line):
+        for i, x in enumerate(line):
             if ai >= 0:
                 x = (x - ((line[ai] + prev[i]) >> 1)) & 0xff
             else:
@@ -1025,7 +1031,7 @@ def filter_scanline(type, line, fo, prev=None):
     def paeth():
         # http://www.w3.org/TR/PNG/#9Filter-type-4-Paeth
         ai = -fo # also used for ci
-        for i,x in enumerate(line):
+        for i, x in enumerate(line):
             a = 0
             b = prev[i]
             c = 0
@@ -1162,7 +1168,7 @@ def from_array(a, mode=None, info={}):
     bitdepth = None
     try:
         mode = mode.split(';')
-        if len(mode) not in (1,2):
+        if len(mode) not in (1, 2):
             raise Error()
         if mode[0] not in ('L', 'LA', 'RGB', 'RGBA'):
             raise Error()
@@ -1186,13 +1192,13 @@ def from_array(a, mode=None, info={}):
     # Dimensions.
     if 'size' in info:
         # Check width, height, size all match where used.
-        for dimension,axis in [('width', 0), ('height', 1)]:
+        for dimension, axis in [('width', 0), ('height', 1)]:
             if dimension in info:
                 if info[dimension] != info['size'][axis]:
                     raise Error(
                       "info[%r] shhould match info['size'][%r]." %
                       (dimension, axis))
-        info['width'],info['height'] = info['size']
+        info['width'], info['height'] = info['size']
     if 'height' not in info:
         try:
             l = len(a)
@@ -1218,8 +1224,8 @@ def from_array(a, mode=None, info={}):
     # In order to work out whether we the array is 2D or 3D we need its
     # first row, which requires that we take a copy of its iterator.
     # We may also need the first row to derive width and bitdepth.
-    a,t = itertools.tee(a)
-    row = t.next()
+    a, t = itertools.tee(a)
+    row = next(t)
     del t
     try:
         row[0][0]
@@ -1398,7 +1404,7 @@ class Reader:
             # http://www.w3.org/TR/PNG/#5Chunk-layout
             if not self.atchunk:
                 self.atchunk = self.chunklentype()
-            length,type = self.atchunk
+            length, type = self.atchunk
             self.atchunk = None
             data = self.file.read(length)
             if len(data) != length:
@@ -1435,8 +1441,8 @@ class Reader:
         """
 
         while True:
-            t,v = self.chunk()
-            yield t,v
+            t, v = self.chunk()
+            yield t, v
             if t == 'IEND':
                 break
 
@@ -1464,7 +1470,7 @@ class Reader:
         if filter_type == 0:
             return result
 
-        if filter_type not in (1,2,3,4):
+        if filter_type not in (1, 2, 3, 4):
             raise FormatError('Invalid PNG Filter Type.'
               '  See http://www.w3.org/TR/2003/REC-PNG-20031110/#9Filters .')
 
@@ -1579,7 +1585,7 @@ class Reader:
             # line.
             recon = None
             # Pixels per row (reduced pass image)
-            ppr = int(math.ceil((self.width-xstart)/float(xstep)))
+            ppr = int(math.ceil((self.width-xstart) / float(xstep)))
             # Row size in bytes for this pass.
             row_size = int(math.ceil(self.psize * ppr))
             for y in range(ystart, self.height, ystep):
@@ -1617,11 +1623,11 @@ class Reader:
                 return raw
             if self.bitdepth == 16:
                 raw = tostring(raw)
-                return array('H', struct.unpack('!%dH' % (len(raw)//2), raw))
+                return array('H', struct.unpack('!%dH' % (len(raw) // 2), raw))
             assert self.bitdepth < 8
             width = self.width
             # Samples per byte
-            spb = 8//self.bitdepth
+            spb = 8 // self.bitdepth
             out = array('B')
             mask = 2**self.bitdepth - 1
             shifts = map(self.bitdepth.__mul__, reversed(range(spb)))
@@ -1629,7 +1635,7 @@ class Reader:
                 out.extend(map(lambda i: mask&(o>>i), shifts))
             return out[:width]
 
-        return itertools.imap(asvalues, rows)
+        return map(asvalues, rows)
 
     def serialtoflat(self, bytes, width=None):
         """Convert serial format (byte stream) pixel data to flat row
@@ -1641,12 +1647,12 @@ class Reader:
         if self.bitdepth == 16:
             bytes = tostring(bytes)
             return array('H',
-              struct.unpack('!%dH' % (len(bytes)//2), bytes))
+              struct.unpack('!%dH' % (len(bytes) // 2), bytes))
         assert self.bitdepth < 8
         if width is None:
             width = self.width
         # Samples per byte
-        spb = 8//self.bitdepth
+        spb = 8 // self.bitdepth
         out = array('B')
         mask = 2**self.bitdepth - 1
         shifts = map(self.bitdepth.__mul__, reversed(range(spb)))
@@ -1733,11 +1739,11 @@ class Reader:
         if len(x) != 8:
             raise FormatError(
               'End of file whilst reading chunk length and type.')
-        length,type = struct.unpack('!I4s', x)
+        length, type = struct.unpack('!I4s', x)
         type = bytestostr(type)
         if length > 2**31-1:
-            raise FormatError('Chunk %s is too large: %d.' % (type,length))
-        return length,type
+            raise FormatError('Chunk %s is too large: %d.' % (type, length))
+        return length, type
 
     def process_chunk(self, lenient=False):
         """Process the next chunk and its data.  This only processes the
@@ -1758,15 +1764,15 @@ class Reader:
              self.interlace) = struct.unpack("!2I5B", data)
 
             # Check that the header specifies only valid combinations.
-            if self.bitdepth not in (1,2,4,8,16):
+            if self.bitdepth not in (1, 2, 4, 8, 16):
                 raise Error("invalid bit depth %d" % self.bitdepth)
-            if self.color_type not in (0,2,3,4,6):
+            if self.color_type not in (0, 2, 3, 4, 6):
                 raise Error("invalid colour type %d" % self.color_type)
             # Check indexed (palettized) images have 8 or fewer bits
             # per pixel; check only indexed or greyscale images have
             # fewer than 8 bits per pixel.
             if ((self.color_type & 1 and self.bitdepth > 8) or
-                (self.bitdepth < 8 and self.color_type not in (0,3))):
+                (self.bitdepth < 8 and self.color_type not in (0, 3))):
                 raise FormatError("Illegal combination of bit depth (%d)"
                   " and colour type (%d)."
                   " See http://www.w3.org/TR/2003/REC-PNG-20031110/#table111 ."
@@ -1777,7 +1783,7 @@ class Reader:
                 raise FormatError("Unknown filter method %d,"
                   " see http://www.w3.org/TR/2003/REC-PNG-20031110/#9Filters ."
                   % self.filter)
-            if self.interlace not in (0,1):
+            if self.interlace not in (0, 1):
                 raise FormatError("Unknown interlace method %d,"
                   " see http://www.w3.org/TR/2003/REC-PNG-20031110/#8InterlaceMethods ."
                   % self.interlace)
@@ -1787,7 +1793,7 @@ class Reader:
             colormap =  bool(self.color_type & 1)
             greyscale = not (self.color_type & 2)
             alpha = bool(self.color_type & 4)
-            color_planes = (3,1)[greyscale or colormap]
+            color_planes = (3, 1)[greyscale or colormap]
             planes = color_planes + alpha
 
             self.colormap = colormap
@@ -1795,7 +1801,7 @@ class Reader:
             self.alpha = alpha
             self.color_planes = color_planes
             self.planes = planes
-            self.psize = float(self.bitdepth)/float(8) * planes
+            self.psize = float(self.bitdepth) / float(8) * planes
             if int(self.psize) == self.psize:
                 self.psize = int(self.psize)
             self.row_bytes = int(math.ceil(self.width * self.psize))
@@ -1838,7 +1844,7 @@ class Reader:
                 if not self.plte:
                     warnings.warn("PLTE chunk is required before tRNS chunk.")
                 else:
-                    if len(data) > len(self.plte)/3:
+                    if len(data) > len(self.plte) // 3:
                         # Was warning, but promoted to Error as it
                         # would otherwise cause pain later on.
                         raise FormatError("tRNS chunk is too long.")
@@ -1881,7 +1887,7 @@ class Reader:
             while True:
                 try:
                     type, data = self.chunk(lenient=lenient)
-                except ValueError, e:
+                except ValueError as e:
                     raise ChunkError(e.args[0])
                 if type == 'IEND':
                     # http://www.w3.org/TR/PNG/#11IEND
@@ -1919,7 +1925,7 @@ class Reader:
             arraycode = 'BH'[self.bitdepth>8]
             # Like :meth:`group` but producing an array.array object for
             # each row.
-            pixels = itertools.imap(lambda *row: array(arraycode, row),
+            pixels = map(lambda *row: array(arraycode, row),
                        *[iter(self.deinterlace(raw))]*self.width*self.planes)
         else:
             pixels = self.iterboxed(self.iterstraight(raw))
@@ -2021,7 +2027,7 @@ class Reader:
         if not self.colormap and not self.trns and not self.sbit:
             return self.read()
 
-        x,y,pixels,meta = self.read()
+        x, y, pixels, meta = self.read()
 
         if self.colormap:
             meta['colormap'] = False
@@ -2057,7 +2063,7 @@ class Reader:
                     row = group(row, planes)
                     opa = map(it.__ne__, row)
                     opa = map(maxval.__mul__, opa)
-                    opa = zip(opa) # convert to 1-tuples
+                    opa = list(zip(opa)) # convert to 1-tuples
                     yield array(typecode,
                       itertools.chain(*map(operator.add, row, opa)))
             pixels = itertrns(pixels)
@@ -2067,7 +2073,7 @@ class Reader:
             targetbitdepth = max(sbit)
             if targetbitdepth > meta['bitdepth']:
                 raise Error('sBIT chunk %r exceeds bitdepth %d' %
-                    (sbit,self.bitdepth))
+                    (sbit, self.bitdepth))
             if min(sbit) <= 0:
                 raise Error('sBIT chunk %r has a 0-entry' % sbit)
             if targetbitdepth == meta['bitdepth']:
@@ -2079,7 +2085,7 @@ class Reader:
                 for row in pixels:
                     yield map(shift.__rrshift__, row)
             pixels = itershift(pixels)
-        return x,y,pixels,meta
+        return x, y, pixels, meta
 
     def asFloat(self, maxval=1.0):
         """Return image pixels as per :meth:`asDirect` method, but scale
@@ -2087,20 +2093,20 @@ class Reader:
         *maxval*.
         """
 
-        x,y,pixels,info = self.asDirect()
+        x, y, pixels, info = self.asDirect()
         sourcemaxval = 2**info['bitdepth']-1
         del info['bitdepth']
         info['maxval'] = float(maxval)
-        factor = float(maxval)/float(sourcemaxval)
+        factor = float(maxval) / float(sourcemaxval)
         def iterfloat():
             for row in pixels:
                 yield map(factor.__mul__, row)
-        return x,y,iterfloat(),info
+        return x, y, iterfloat(), info
 
     def _as_rescale(self, get, targetbitdepth):
         """Helper used by :meth:`asRGB8` and :meth:`asRGBA8`."""
 
-        width,height,pixels,meta = get()
+        width, height, pixels, meta = get()
         maxval = 2**meta['bitdepth'] - 1
         targetmaxval = 2**targetbitdepth - 1
         factor = float(targetmaxval) / float(maxval)
@@ -2157,11 +2163,11 @@ class Reader:
         ``metadata['greyscale']`` will be ``False``.
         """
 
-        width,height,pixels,meta = self.asDirect()
+        width, height, pixels, meta = self.asDirect()
         if meta['alpha']:
             raise Error("will not convert image with alpha channel to RGB")
         if not meta['greyscale']:
-            return width,height,pixels,meta
+            return width, height, pixels, meta
         meta['greyscale'] = False
         typecode = 'BH'[meta['bitdepth'] > 8]
         def iterrgb():
@@ -2170,7 +2176,7 @@ class Reader:
                 for i in range(3):
                     a[i::3] = row
                 yield a
-        return width,height,iterrgb(),meta
+        return width, height, iterrgb(), meta
 
     def asRGBA(self):
         """Return image as RGBA pixels.  Greyscales are expanded into
@@ -2182,9 +2188,9 @@ class Reader:
         ``metadata['alpha']`` will be ``True``.
         """
 
-        width,height,pixels,meta = self.asDirect()
+        width, height, pixels, meta = self.asDirect()
         if meta['alpha'] and not meta['greyscale']:
-            return width,height,pixels,meta
+            return width, height, pixels, meta
         typecode = 'BH'[meta['bitdepth'] > 8]
         maxval = 2**meta['bitdepth'] - 1
         maxbuffer = struct.pack('=' + typecode, maxval) * 4 * width
@@ -2218,7 +2224,7 @@ class Reader:
                     yield a
         meta['alpha'] = True
         meta['greyscale'] = False
-        return width,height,convert(),meta
+        return width, height, convert(), meta
 
 
 # === Legacy Version Support ===
@@ -2274,7 +2280,7 @@ except:
     except:
         # Expect to get here on Python 2.2
         def array(typecode, init=()):
-            if type(init) == str:
+            if isinstance(init, str):
                 return map(ord, init)
             return list(init)
 
@@ -2285,7 +2291,7 @@ except:
     def enumerate(seq):
         i=0
         for x in seq:
-            yield i,x
+            yield i, x
             i += 1
 
 try:
@@ -2444,7 +2450,7 @@ def topngbytes(name, rows, x, y, **k):
 
     import os
 
-    print name
+    print(name)
     f = BytesIO()
     w = Writer(x, y, **k)
     w.write(f, rows)
@@ -2463,13 +2469,13 @@ def testWithIO(inp, out, f):
     import os
 
     try:
-        oldin,sys.stdin = sys.stdin,inp
-        oldout,sys.stdout = sys.stdout,out
+        oldin, sys.stdin = sys.stdin, inp
+        oldout, sys.stdout = sys.stdout, out
         x = f()
     finally:
         sys.stdin = oldin
         sys.stdout = oldout
-    if os.environ.get('PYPNG_TEST_TMP') and hasattr(out,'getvalue'):
+    if os.environ.get('PYPNG_TEST_TMP') and hasattr(out, 'getvalue'):
         name = mycallersname()
         if name:
             w = open(name+'.png', 'wb')
@@ -2489,7 +2495,7 @@ def mycallersname():
     frame = inspect.currentframe()
     if not frame:
         return None
-    frame_,filename_,lineno_,funname,linelist_,listi_ = (
+    frame_, filename_, lineno_, funname, linelist_, listi_ = (
       inspect.getouterframes(frame)[2])
     return funname
 
@@ -2517,11 +2523,11 @@ class Test(unittest.TestCase):
         f = BytesIO()
         w.write_array(f, array('B', map(mask.__and__, range(1, 256))))
         r = Reader(bytes=f.getvalue())
-        x,y,pixels,meta = r.read()
+        x, y, pixels, meta = r.read()
         self.assertEqual(x, 15)
         self.assertEqual(y, 17)
         self.assertEqual(list(itertools.chain(*pixels)),
-                         map(mask.__and__, range(1,256)))
+                         map(mask.__and__, range(1, 256)))
     def testL8(self):
         return self.helperLN(8)
     def testL4(self):
@@ -2532,50 +2538,50 @@ class Test(unittest.TestCase):
         f = BytesIO()
         w.write_array(f, array('B', range(4)))
         r = Reader(bytes=f.getvalue())
-        x,y,pixels,meta = r.asRGB8()
+        x, y, pixels, meta = r.asRGB8()
         self.assertEqual(x, 1)
         self.assertEqual(y, 4)
-        for i,row in enumerate(pixels):
+        for i, row in enumerate(pixels):
             self.assertEqual(len(row), 3)
             self.assertEqual(list(row), [0x55*i]*3)
     def testP2(self):
         "2-bit palette."
-        a = (255,255,255)
-        b = (200,120,120)
-        c = (50,99,50)
-        w = Writer(1, 4, bitdepth=2, palette=[a,b,c])
+        a = (255, 255, 255)
+        b = (200, 120, 120)
+        c = (50, 99, 50)
+        w = Writer(1, 4, bitdepth=2, palette=[a, b, c])
         f = BytesIO()
-        w.write_array(f, array('B', (0,1,1,2)))
+        w.write_array(f, array('B', (0, 1, 1, 2)))
         r = Reader(bytes=f.getvalue())
-        x,y,pixels,meta = r.asRGB8()
+        x, y, pixels, meta = r.asRGB8()
         self.assertEqual(x, 1)
         self.assertEqual(y, 4)
         self.assertEqual(map(list, pixels), map(list, [a, b, b, c]))
     def testPtrns(self):
         "Test colour type 3 and tRNS chunk (and 4-bit palette)."
-        a = (50,99,50,50)
-        b = (200,120,120,80)
-        c = (255,255,255)
-        d = (200,120,120)
-        e = (50,99,50)
-        w = Writer(3, 3, bitdepth=4, palette=[a,b,c,d,e])
+        a = (50, 99, 50, 50)
+        b = (200, 120, 120, 80)
+        c = (255, 255, 255)
+        d = (200, 120, 120)
+        e = (50, 99, 50)
+        w = Writer(3, 3, bitdepth=4, palette=[a, b, c, d, e])
         f = BytesIO()
         w.write_array(f, array('B', (4, 3, 2, 3, 2, 0, 2, 0, 1)))
         r = Reader(bytes=f.getvalue())
-        x,y,pixels,meta = r.asRGBA8()
+        x, y, pixels, meta = r.asRGBA8()
         self.assertEqual(x, 3)
         self.assertEqual(y, 3)
         c = c+(255,)
         d = d+(255,)
         e = e+(255,)
-        boxed = [(e,d,c),(d,c,a),(c,a,b)]
+        boxed = [(e, d, c), (d, c, a), (c, a, b)]
         flat = map(lambda row: itertools.chain(*row), boxed)
         self.assertEqual(map(list, pixels), map(list, flat))
     def testRGBtoRGBA(self):
         "asRGBA8() on colour type 2 source."""
         # Test for Issue 26
         r = Reader(bytes=_pngsuite['basn2c08'])
-        x,y,pixels,meta = r.asRGBA8()
+        x, y, pixels, meta = r.asRGBA8()
         # Test the pixels at row 9 columns 0 and 1.
         row9 = list(pixels)[9]
         self.assertEqual(list(row9[0:8]),
@@ -2584,7 +2590,7 @@ class Test(unittest.TestCase):
         "asRGBA() on grey source."""
         # Test for Issue 60
         r = Reader(bytes=_pngsuite['basi0g08'])
-        x,y,pixels,meta = r.asRGBA()
+        x, y, pixels, meta = r.asRGBA()
         row9 = list(list(pixels)[9])
         self.assertEqual(row9[0:8],
           [222, 222, 222, 255, 221, 221, 221, 255])
@@ -2592,7 +2598,7 @@ class Test(unittest.TestCase):
         "Test colour type 2 and tRNS chunk."
         # Test for Issue 25
         r = Reader(bytes=_pngsuite['tbrn2c08'])
-        x,y,pixels,meta = r.asRGBA8()
+        x, y, pixels, meta = r.asRGBA8()
         # I just happen to know that the first pixel is transparent.
         # In particular it should be #7f7f7f00
         row0 = list(pixels)[0]
@@ -2608,7 +2614,7 @@ class Test(unittest.TestCase):
             candi = candidate.replace('n', 'i')
             if candi not in _pngsuite:
                 continue
-            print 'adam7 read', candidate
+            print('adam7 read', candidate)
             straight = Reader(bytes=_pngsuite[candidate])
             adam7 = Reader(bytes=_pngsuite[candi])
             # Just compare the pixels.  Ignore x,y (because they're
@@ -2625,26 +2631,26 @@ class Test(unittest.TestCase):
         # Not such a great test, because the only way we can check what
         # we have written is to read it back again.
 
-        for name,bytes in _pngsuite.items():
+        for name, bytes in _pngsuite.items():
             # Only certain colour types supported for this test.
             if name[3:5] not in ['n0', 'n2', 'n4', 'n6']:
                 continue
             it = Reader(bytes=bytes)
-            x,y,pixels,meta = it.read()
+            x, y, pixels, meta = it.read()
             pngi = topngbytes('adam7wn'+name+'.png', pixels,
               x=x, y=y, bitdepth=it.bitdepth,
               greyscale=it.greyscale, alpha=it.alpha,
               transparent=it.transparent,
               interlace=False)
-            x,y,ps,meta = Reader(bytes=pngi).read()
+            x, y, ps, meta = Reader(bytes=pngi).read()
             it = Reader(bytes=bytes)
-            x,y,pixels,meta = it.read()
+            x, y, pixels, meta = it.read()
             pngs = topngbytes('adam7wi'+name+'.png', pixels,
               x=x, y=y, bitdepth=it.bitdepth,
               greyscale=it.greyscale, alpha=it.alpha,
               transparent=it.transparent,
               interlace=True)
-            x,y,pi,meta = Reader(bytes=pngs).read()
+            x, y, pi, meta = Reader(bytes=pngs).read()
             self.assertEqual(map(list, ps), map(list, pi))
     def testPGMin(self):
         """Test that the command line tool can read PGM files."""
@@ -2658,7 +2664,7 @@ class Test(unittest.TestCase):
         o = BytesIO()
         testWithIO(s, o, do)
         r = Reader(bytes=o.getvalue())
-        x,y,pixels,meta = r.read()
+        x, y, pixels, meta = r.read()
         self.assertTrue(r.greyscale)
         self.assertEqual(r.bitdepth, 2)
     def testPAMin(self):
@@ -2669,7 +2675,7 @@ class Test(unittest.TestCase):
         s.write(strtobytes('P7\nWIDTH 3\nHEIGHT 1\nDEPTH 4\nMAXVAL 255\n'
                 'TUPLTYPE RGB_ALPHA\nENDHDR\n'))
         # The pixels in flat row flat pixel format
-        flat =  [255,0,0,255, 0,255,0,120, 0,0,255,30]
+        flat =  [255, 0, 0, 255, 0, 255, 0, 120, 0, 0, 255, 30]
         asbytes = seqtobytes(flat)
         s.write(asbytes)
         s.flush()
@@ -2677,7 +2683,7 @@ class Test(unittest.TestCase):
         o = BytesIO()
         testWithIO(s, o, do)
         r = Reader(bytes=o.getvalue())
-        x,y,pixels,meta = r.read()
+        x, y, pixels, meta = r.read()
         self.assertTrue(r.alpha)
         self.assertTrue(not r.greyscale)
         self.assertEqual(list(itertools.chain(*pixels)), flat)
@@ -2690,7 +2696,7 @@ class Test(unittest.TestCase):
     def testPal(self):
         """Test that a palette PNG returns the palette in info."""
         r = Reader(bytes=_pngsuite['basn3p04'])
-        x,y,pixels,info = r.read()
+        x, y, pixels, info = r.read()
         self.assertEqual(x, 32)
         self.assertEqual(y, 32)
         self.assertTrue('palette' in info)
@@ -2698,20 +2704,20 @@ class Test(unittest.TestCase):
         """Test metadata for paletted PNG can be passed from one PNG
         to another."""
         r = Reader(bytes=_pngsuite['basn3p04'])
-        x,y,pixels,info = r.read()
+        x, y, pixels, info = r.read()
         w = Writer(**info)
         o = BytesIO()
         w.write(o, pixels)
         o.flush()
         o.seek(0)
         r = Reader(file=o)
-        _,_,_,again_info = r.read()
+        _, _, _, again_info = r.read()
         # Same palette
         self.assertEqual(again_info['palette'], info['palette'])
     def testPalExpand(self):
         """Test that bitdepth can be used to fiddle with pallete image."""
         r = Reader(bytes=_pngsuite['basn3p04'])
-        x,y,pixels,info = r.read()
+        x, y, pixels, info = r.read()
         pixels = [list(row) for row in pixels]
         info['bitdepth'] = 8
         w = Writer(**info)
@@ -2720,7 +2726,7 @@ class Test(unittest.TestCase):
         o.flush()
         o.seek(0)
         r = Reader(file=o)
-        _,_,again_pixels,again_info = r.read()
+        _, _, again_pixels, again_info = r.read()
         # Same pixels
         again_pixels = [list(row) for row in again_pixels]
         self.assertEqual(again_pixels, pixels)
@@ -2748,12 +2754,12 @@ class Test(unittest.TestCase):
         return self.helperLtrns((0,))
     def helperLtrns(self, transparent):
         """Helper used by :meth:`testLtrns*`."""
-        pixels = zip([0x00, 0x38, 0x4c, 0x54, 0x5c, 0x40, 0x38, 0x00])
+        pixels = list(zip([0x00, 0x38, 0x4c, 0x54, 0x5c, 0x40, 0x38, 0x00]))
         o = BytesIO()
         w = Writer(8, 8, greyscale=True, bitdepth=1, transparent=transparent)
         w.write_packed(o, pixels)
         r = Reader(bytes=o.getvalue())
-        x,y,pixels,meta = r.asDirect()
+        x, y, pixels, meta = r.asDirect()
         self.assertTrue(meta['alpha'])
         self.assertTrue(meta['greyscale'])
         self.assertEqual(meta['bitdepth'], 1)
@@ -2774,7 +2780,7 @@ class Test(unittest.TestCase):
         w.write_packed(o, [itertools.chain([0x0a], [0xaa]),
                            itertools.chain([0x0f], [0xff])])
         r = Reader(bytes=o.getvalue())
-        x,y,pixels,info = r.asDirect()
+        x, y, pixels, info = r.asDirect()
         pixels = list(pixels)
         self.assertEqual(len(pixels), 2)
         self.assertEqual(len(pixels[0]), 16)
@@ -2850,7 +2856,7 @@ class Test(unittest.TestCase):
         import hashlib
 
         r = Reader(bytes=_pngsuite['basn0g02'])
-        x,y,pixel,meta = r.read_flat()
+        x, y, pixel, meta = r.read_flat()
         d = hashlib.md5(seqtobytes(pixel)).digest()
         self.assertEqual(_enhex(d), '255cd971ab8cd9e7275ff906e5041aa0')
     def testfromarray(self):
@@ -2860,15 +2866,15 @@ class Test(unittest.TestCase):
         img = from_array(group(range(2**16), 256), 'L;16')
         img.save('testL16.png')
     def testfromarrayRGB(self):
-        img = from_array([[0,0,0, 0,0,1, 0,1,0, 0,1,1],
-                          [1,0,0, 1,0,1, 1,1,0, 1,1,1]], 'RGB;1')
+        img = from_array([[0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1],
+                          [1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1]], 'RGB;1')
         o = BytesIO()
         img.save(o)
     def testfromarrayIter(self):
         import itertools
 
         i = itertools.islice(itertools.count(10), 20)
-        i = itertools.imap(lambda x: [x, x, x], i)
+        i = map(lambda x: [x, x, x], i)
         img = from_array(i, 'RGB;5', dict(height=20))
         f = open('testiter.png', 'wb')
         img.save(f)
@@ -2882,10 +2888,10 @@ class Test(unittest.TestCase):
         try:
             import numpy
         except ImportError:
-            print >>sys.stderr, "skipping numpy test"
+            print("skipping numpy test", file=sys.stderr)
             return
 
-        rows = [map(numpy.uint16, range(0,0x10000,0x5555))]
+        rows = [map(numpy.uint16, range(0, 0x10000, 0x5555))]
         b = topngbytes('numpyuint16.png', rows, 4, 1,
             greyscale=True, alpha=False, bitdepth=16)
     def testNumpyuint8(self):
@@ -2894,10 +2900,10 @@ class Test(unittest.TestCase):
         try:
             import numpy
         except ImportError:
-            print >>sys.stderr, "skipping numpy test"
+            print("skipping numpy test", file=sys.stderr)
             return
 
-        rows = [map(numpy.uint8, range(0,0x100,0x55))]
+        rows = [map(numpy.uint8, range(0, 0x100, 0x55))]
         b = topngbytes('numpyuint8.png', rows, 4, 1,
             greyscale=True, alpha=False, bitdepth=8)
     def testNumpybool(self):
@@ -2906,10 +2912,10 @@ class Test(unittest.TestCase):
         try:
             import numpy
         except ImportError:
-            print >>sys.stderr, "skipping numpy test"
+            print("skipping numpy test", file=sys.stderr)
             return
 
-        rows = [map(numpy.bool, [0,1])]
+        rows = [map(numpy.bool, [0, 1])]
         b = topngbytes('numpybool.png', rows, 2, 1,
             greyscale=True, alpha=False, bitdepth=1)
     def testNumpyarray(self):
@@ -2917,10 +2923,10 @@ class Test(unittest.TestCase):
         try:
             import numpy
         except ImportError:
-            print >>sys.stderr, "skipping numpy test"
+            print("skipping numpy test", file=sys.stderr)
             return
 
-        pixels = numpy.array([[0,0x5555],[0x5555,0xaaaa]], numpy.uint16)
+        pixels = numpy.array([[0, 0x5555], [0x5555, 0xaaaa]], numpy.uint16)
         img = from_array(pixels, 'L')
         img.save('testnumpyL16.png')
 
@@ -3579,7 +3585,7 @@ def read_pam_header(infile):
 
     required = ['WIDTH', 'HEIGHT', 'DEPTH', 'MAXVAL']
     required = [strtobytes(x) for x in required]
-    WIDTH,HEIGHT,DEPTH,MAXVAL = required
+    WIDTH, HEIGHT, DEPTH, MAXVAL = required
     present = [x for x in required if x in header]
     if len(present) != len(required):
         raise Error('PAM file must specify WIDTH, HEIGHT, DEPTH, and MAXVAL')
@@ -3595,7 +3601,7 @@ def read_pam_header(infile):
           'WIDTH, HEIGHT, DEPTH, MAXVAL must all be positive integers')
     return 'P7', width, height, depth, maxval
 
-def read_pnm_header(infile, supported=('P5','P6')):
+def read_pnm_header(infile, supported=('P5', 'P6')):
     """
     Read a PNM header, returning (format,width,height,depth,maxval).
     `width` and `height` are in pixels.  `depth` is the number of
@@ -3671,7 +3677,7 @@ def read_pnm_header(infile, supported=('P5','P6')):
     if type in pbm:
         # synthesize a MAXVAL
         header.append(1)
-    depth = (1,3)[type == strtobytes('P6')]
+    depth = (1, 3)[type == strtobytes('P6')]
     return header[0], header[1], header[2], depth, header[3]
 
 def write_pnm(file, width, height, pixels, meta):
@@ -3684,8 +3690,8 @@ def write_pnm(file, width, height, pixels, meta):
     planes = meta['planes']
     # Can be an assert as long as we assume that pixels and meta came
     # from a PNG file.
-    assert planes in (1,2,3,4)
-    if planes in (1,3):
+    assert planes in (1, 2, 3, 4)
+    if planes in (1, 3):
         if 1 == planes:
             # PGM
             # Could generate PBM if maxval is 1, but we don't (for one
@@ -3696,7 +3702,7 @@ def write_pnm(file, width, height, pixels, meta):
             # PPM
             fmt = 'P6'
         file.write('%s %d %d %d\n' % (fmt, width, height, maxval))
-    if planes in (2,4):
+    if planes in (2, 4):
         # PAM
         # See http://netpbm.sourceforge.net/doc/pam.html
         if 2 == planes:
@@ -3802,12 +3808,12 @@ def _main(argv):
     if options.read_png:
         # Encode PNG to PPM
         png = Reader(file=infile)
-        width,height,pixels,meta = png.asDirect()
+        width, height, pixels, meta = png.asDirect()
         write_pnm(outfile, width, height, pixels, meta) 
     else:
         # Encode PNM to PNG
         format, width, height, depth, maxval = \
-          read_pnm_header(infile, ('P5','P6','P7'))
+          read_pnm_header(infile, ('P5', 'P6', 'P7'))
         # When it comes to the variety of input formats, we do something
         # rather rude.  Observe that L, LA, RGB, RGBA are the 4 colour
         # types supported by PNG and that they correspond to 1, 2, 3, 4
@@ -3815,8 +3821,8 @@ def _main(argv):
         # the source image to determine which one we have.  We do not
         # care about TUPLTYPE.
         greyscale = depth <= 2
-        pamalpha = depth in (2,4)
-        supported = map(lambda x: 2**x-1, range(1,17))
+        pamalpha = depth in (2, 4)
+        supported = map(lambda x: 2**x-1, range(1, 17))
         try:
             mi = supported.index(maxval)
         except ValueError:
@@ -3853,5 +3859,5 @@ def _main(argv):
 if __name__ == '__main__':
     try:
         _main(sys.argv)
-    except Error, e:
-        print >>sys.stderr, e
+    except Error as e:
+        print(e, file=sys.stderr)

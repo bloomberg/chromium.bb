@@ -30,7 +30,7 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -203,4 +203,4 @@ struct DowncastTraits<BitmapImage> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BITMAP_IMAGE_H_

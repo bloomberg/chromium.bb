@@ -4,7 +4,10 @@
 
 #include "services/network/public/cpp/ip_address_space_util.h"
 
+#include "base/command_line.h"
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -13,6 +16,7 @@ namespace {
 using mojom::IPAddressSpace;
 using net::IPAddress;
 using net::IPAddressBytes;
+using net::IPEndPoint;
 
 IPAddress PublicIPv4Address() {
   return IPAddress(64, 233, 160, 0);
@@ -22,36 +26,339 @@ IPAddress PrivateIPv4Address() {
   return IPAddress(192, 168, 1, 1);
 }
 
-TEST(IPAddressSpaceTest, IPAddressToIPAddressSpacev4) {
-  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress()), IPAddressSpace::kUnknown);
+// Helper for tests that do not care about command-line overrides.
+IPAddressSpace IPAddressToIPAddressSpace(const IPAddress& address) {
+  return IPEndPointToIPAddressSpace(IPEndPoint(address, 80));
+}
 
+// Verifies that the address space of an invalid IP address is `unknown`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceInvalid) {
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress()), IPAddressSpace::kUnknown);
+}
+
+// Verifies that the address space of a regular IP address is `public`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV4Public) {
   EXPECT_EQ(IPAddressToIPAddressSpace(PublicIPv4Address()),
             IPAddressSpace::kPublic);
+}
 
+// Verifies that the address space of IP addresses belonging to any of the
+// three "Private Use" address blocks defined in RFC 1918 is `private`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV4PrivateUse) {
   EXPECT_EQ(IPAddressToIPAddressSpace(PrivateIPv4Address()),
             IPAddressSpace::kPrivate);
-  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(10, 1, 1, 1)),
+
+  // 10.0.0.0/8
+
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(9, 255, 255, 255)),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(10, 0, 0, 0)),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(10, 255, 255, 255)),
             IPAddressSpace::kPrivate);
 
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(11, 0, 0, 0)),
+            IPAddressSpace::kPublic);
+
+  // 172.16.0.0/12
+
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(172, 15, 255, 255)),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(172, 16, 0, 0)),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(172, 31, 255, 255)),
+            IPAddressSpace::kPrivate);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(172, 32, 0, 0)),
+            IPAddressSpace::kPublic);
+
+  // 192.168.0.0/16
+
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(192, 167, 255, 255)),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(192, 168, 0, 0)),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(192, 168, 255, 255)),
+            IPAddressSpace::kPrivate);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(169, 169, 0, 0)),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that the address space of IP addresses belonging to the "Link-local"
+// 169.254.0.0/16 block are `private`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV4LinkLocal) {
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(169, 253, 255, 255)),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(169, 254, 0, 0)),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(169, 254, 255, 255)),
+            IPAddressSpace::kPrivate);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(169, 255, 0, 0)),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that the address space of IPv4 localhost and the rest of the
+// 127.0.0.0/8 block is `local`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV4Localhost) {
   EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress::IPv4Localhost()),
+            IPAddressSpace::kLocal);
+
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(126, 255, 255, 255)),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(127, 0, 0, 0)),
+            IPAddressSpace::kLocal);
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(127, 255, 255, 255)),
+            IPAddressSpace::kLocal);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(128, 0, 0, 0)),
+            IPAddressSpace::kPublic);
+}
+
+IPAddress ParseIPAddress(base::StringPiece str) {
+  IPAddress address;
+  EXPECT_TRUE(address.AssignFromIPLiteral(str))
+      << "Failed to parse IP address: " << str;
+  return address;
+}
+
+// Verifies that the address space of a regular IPv6 address is `public`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV6Public) {
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("42::")),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that the address space of IPv6 addresses in the "Unique-local"
+// (fc00::/7) address block is `private`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV6UniqueLocal) {
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                ParseIPAddress("fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("fc00::")),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                ParseIPAddress("fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
+            IPAddressSpace::kPrivate);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("fe00::")),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that the address space of IPv6 addresses in the "Link-local unicast"
+// (fe80::/10) address block is `private`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV6LinkLocalUnicast) {
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                ParseIPAddress("fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
+            IPAddressSpace::kPublic);
+
+  // Lower and upper bounds (inclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("fe80::")),
+            IPAddressSpace::kPrivate);
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                ParseIPAddress("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
+            IPAddressSpace::kPrivate);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("fec0::")),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that the address space of IPv6 localhost (::1/128) is `local`.
+TEST(IPAddressSpaceTest, IPEndPointToIPAddressSpaceV6Localhost) {
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress::IPv6Localhost()),
+            IPAddressSpace::kLocal);
+
+  // Lower bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("::0")),
+            IPAddressSpace::kPublic);
+
+  // Upper bound (exclusive).
+  EXPECT_EQ(IPAddressToIPAddressSpace(ParseIPAddress("::2")),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that IPv4-mapped IPv6 addresses belong to the address space of the
+// mapped IPv4 address.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceIPv4MappedIPv6) {
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                net::ConvertIPv4ToIPv4MappedIPv6(PublicIPv4Address())),
+            IPAddressSpace::kPublic);
+
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                net::ConvertIPv4ToIPv4MappedIPv6(PrivateIPv4Address())),
+            IPAddressSpace::kPrivate);
+
+  EXPECT_EQ(IPAddressToIPAddressSpace(
+                net::ConvertIPv4ToIPv4MappedIPv6(IPAddress::IPv4Localhost())),
             IPAddressSpace::kLocal);
 }
 
-IPAddressBytes IPv6BytesWithPrefix(uint8_t prefix) {
-  IPAddressBytes bytes;
-  bytes.Resize(IPAddress::kIPv6AddressSize);
-  bytes.data()[0] = prefix;
-  return bytes;
+// Verifies that the `ip-address-space-overrides` switch can be present and
+// empty, in which case it is ignored.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideEmpty) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides, "");
+
+  // Check a single address, to make sure things do not crash.
+  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress::IPv6Localhost()),
+            IPAddressSpace::kLocal);
 }
 
-TEST(IPAddressSpaceTest, IPAddressToAddressSpacev6) {
-  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(IPv6BytesWithPrefix(42))),
+// Verifies that a single IPv4 endpoints can be overridden.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideSingle) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "127.0.0.1:80=public");
+
+  // Wrong IP address.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(127, 0, 0, 0), 80)),
+            IPAddressSpace::kLocal);
+
+  // Wrong port.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(127, 0, 0, 1), 81)),
+            IPAddressSpace::kLocal);
+
+  // Exact match.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(127, 0, 0, 1), 80)),
+            IPAddressSpace::kPublic);
+}
+
+// Verifies that multiple IPv4 endpoints can be overridden.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideMultiple) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "10.2.3.4:80=public,8.8.8.8:8888=private");
+
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(10, 2, 3, 4), 80)),
             IPAddressSpace::kPublic);
 
-  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress(IPv6BytesWithPrefix(0xfd))),
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(8, 8, 8, 8), 8888)),
             IPAddressSpace::kPrivate);
+}
 
-  EXPECT_EQ(IPAddressToIPAddressSpace(IPAddress::IPv6Localhost()),
+// Verifies that invalid entries in the command-line switch comma-separated list
+// are simply ignored, and that subsequent entries are still applied.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideInvalid) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 ","                       // Empty.
+                                 "1.2.3.4:80foo=public,"   // Invalid port.
+                                 "1.2.3.4:65536=private,"  // Port out of range.
+                                 "1:80=public,"            // Invalid address.
+                                 "1.2.3.4:80=potato,"  // Invalid address space.
+                                 "1.2.3.4:=public,"    // Missing port.
+                                 "1.2.3.4=public,"     // Missing colon, port.
+                                 "1.2.3.4:80=,"        // Missing address space.
+                                 "1.2.3.4:80,"  // Missing equal, address space.
+                                 "1.2.3.4:80=private");
+
+  // Valid override applies, despite preceding garbage.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(1, 2, 3, 4), 80)),
+            IPAddressSpace::kPrivate);
+}
+
+// Verifies that command-line overrides that overlap with previously-given
+// overrides are ignored. In other words, the first matching override is
+// applied.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideOverlap) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "8.8.8.8:80=local,8.8.8.8:80=private");
+
+  // The first matching override applies.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(8, 8, 8, 8), 80)),
+            IPAddressSpace::kLocal);
+}
+
+// Verifies that invalid IP addresses are not subject to overrides.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideInvalidAddress) {
+  // 0.0.0.0:80 should not really match the invalid IP address, but it is still
+  // the most likely to match.
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "0.0.0.0:80=local");
+
+  // Check that the override *does not apply* to an invalid IP address.
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(IPAddress(), 80)),
+            IPAddressSpace::kUnknown);
+}
+
+// Verifies that command-line overrides can specify IPv6 addresses.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideV6) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "[2001::]:2001=local,[2020::1]:1234=private");
+
+  // First override.
+
+  // Wrong address.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2001::1"), 2001)),
+      IPAddressSpace::kPublic);
+
+  // Wrong port.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2001::"), 2000)),
+      IPAddressSpace::kPublic);
+
+  // Exact match.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2001::"), 2001)),
+      IPAddressSpace::kLocal);
+
+  // Second override block.
+
+  // Wrong address.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2020::"), 1234)),
+      IPAddressSpace::kPublic);
+
+  // Wrong port.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2020::1"), 1235)),
+      IPAddressSpace::kPublic);
+
+  // Exact match.
+  EXPECT_EQ(
+      IPEndPointToIPAddressSpace(IPEndPoint(ParseIPAddress("2020::1"), 1234)),
+      IPAddressSpace::kPrivate);
+}
+
+// Verifies that IPv4-mapped IPv6 addresses are not overridden as though they
+// were the mapped IPv4 address instead.
+TEST(IPAddressSpaceTest, IPEndPointToAddressSpaceOverrideIPv4MappedIPv6) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kIpAddressSpaceOverrides,
+                                 "127.0.0.1:80=public");
+
+  EXPECT_EQ(IPEndPointToIPAddressSpace(IPEndPoint(
+                net::ConvertIPv4ToIPv4MappedIPv6(IPAddress(127, 0, 0, 1)), 80)),
             IPAddressSpace::kLocal);
 }
 

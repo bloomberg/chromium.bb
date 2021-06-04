@@ -152,6 +152,11 @@ uint32_t ScanCodeFromNative(const PlatformEvent& native_event) {
 }
 #endif  // defined(USE_OZONE)
 
+bool IsNearZero(const float num) {
+  // Epsilon of 1e-10 at 0.
+  return (std::fabs(num) < 1e-10);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -618,7 +623,8 @@ void MouseEvent::SetClickCount(int click_count) {
 std::string MouseEvent::ToString() const {
   return base::StrCat(
       {LocatedEvent::ToString(), " flags ",
-       base::JoinString(make_span(MouseEventFlagsNames(flags())), " | ")});
+       base::JoinString(base::make_span(MouseEventFlagsNames(flags())),
+                        " | ")});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -657,7 +663,7 @@ MouseWheelEvent::MouseWheelEvent(
     base::TimeTicks time_stamp,
     int flags,
     int changed_button_flags,
-    const base::Optional<gfx::Vector2d> tick_120ths)
+    const absl::optional<gfx::Vector2d> tick_120ths)
     : MouseEvent(ET_UNKNOWN,
                  location,
                  root_location,
@@ -759,13 +765,39 @@ void TouchEvent::UpdateForRootTransform(
     const gfx::Transform& inverted_local_transform) {
   LocatedEvent::UpdateForRootTransform(inverted_root_transform,
                                        inverted_local_transform);
-  gfx::DecomposedTransform decomp;
-  bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
-  DCHECK(success);
-  if (decomp.scale[0])
-    pointer_details_.radius_x *= decomp.scale[0];
-  if (decomp.scale[1])
-    pointer_details_.radius_y *= decomp.scale[1];
+
+  // We could create a vector and then rely on Transform::TransformVector , but
+  // that ends up creating a 4 dimensional vector and applying a 4 dim
+  // transform. Really what we're looking at is only in the (x,y) plane, and
+  // given that we can run this relatively frequently we will inline execute the
+  // matrix here.
+  const auto& matrix = inverted_root_transform.matrix();
+  const double new_x = fabs(pointer_details_.radius_x * matrix.get(0, 0) +
+                            pointer_details_.radius_y * matrix.get(0, 1));
+  const double new_y = fabs(pointer_details_.radius_x * matrix.get(1, 0) +
+                            pointer_details_.radius_y * matrix.get(1, 1));
+  pointer_details_.radius_x = new_x;
+  pointer_details_.radius_y = new_y;
+
+  // for stylus touches, tilt needs to be rotated appropriately. We don't handle
+  // screen rotations other than 0/90/180/270, but those should be handled and
+  // translated appropriately. Other rotations leave tilts untouched for now. We
+  // add a small check that tilt is set at all before looking through this
+  // section.
+  if (!IsNearZero(pointer_details_.tilt_x) ||
+      !IsNearZero(pointer_details_.tilt_y)) {
+    if (IsNearZero(matrix.get(0, 1)) && IsNearZero(matrix.get(1, 0))) {
+      pointer_details_.tilt_x *= std::copysign(1, matrix.get(0, 0));
+      pointer_details_.tilt_y *= std::copysign(1, matrix.get(1, 1));
+    } else if (IsNearZero(matrix.get(0, 0)) && IsNearZero(matrix.get(1, 1))) {
+      double new_tilt_x =
+          pointer_details_.tilt_y * std::copysign(1, matrix.get(0, 1));
+      double new_tilt_y =
+          pointer_details_.tilt_x * std::copysign(1, matrix.get(1, 0));
+      pointer_details_.tilt_x = new_tilt_x;
+      pointer_details_.tilt_y = new_tilt_y;
+    }
+  }
 }
 
 void TouchEvent::DisableSynchronousHandling() {
@@ -1104,7 +1136,7 @@ std::string KeyEvent::ToString() const {
   return base::StrCat(
       {Event::ToString(), " key ", base::StringPrintf("(0x%.4x)", key_code_),
        " flags ",
-       base::JoinString(make_span(KeyEventFlagsNames(flags())), " | ")});
+       base::JoinString(base::make_span(KeyEventFlagsNames(flags())), " | ")});
 }
 
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {

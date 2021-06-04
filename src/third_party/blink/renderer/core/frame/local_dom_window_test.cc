@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 
-#include "base/strings/stringprintf.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -228,9 +228,11 @@ TEST_F(PageTestBase, CSPForWorld) {
 
   // Set a CSP for the main world.
   const char* kMainWorldCSP = "connect-src https://google.com;";
-  GetFrame().DomWindow()->GetContentSecurityPolicy()->DidReceiveHeader(
-      kMainWorldCSP, *(GetFrame().DomWindow()->GetSecurityOrigin()),
-      ContentSecurityPolicyType::kEnforce, ContentSecurityPolicySource::kHTTP);
+  GetFrame().DomWindow()->GetContentSecurityPolicy()->AddPolicies(
+      ParseContentSecurityPolicies(
+          kMainWorldCSP, ContentSecurityPolicyType::kEnforce,
+          ContentSecurityPolicySource::kHTTP,
+          *(GetFrame().DomWindow()->GetSecurityOrigin())));
   const Vector<
       network::mojom::blink::ContentSecurityPolicyPtr>& parsed_main_world_csp =
       GetFrame().DomWindow()->GetContentSecurityPolicy()->GetParsedPolicies();

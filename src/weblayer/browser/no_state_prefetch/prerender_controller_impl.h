@@ -5,8 +5,6 @@
 #ifndef WEBLAYER_BROWSER_NO_STATE_PREFETCH_PRERENDER_CONTROLLER_IMPL_H_
 #define WEBLAYER_BROWSER_NO_STATE_PREFETCH_PRERENDER_CONTROLLER_IMPL_H_
 
-#include <memory>
-
 #include "build/build_config.h"
 #include "weblayer/public/prerender_controller.h"
 
@@ -36,6 +34,7 @@ class PrerenderControllerImpl : public PrerenderController {
 
   // PrerenderController
   void Prerender(const GURL& url) override;
+  void DestroyAllContents() override;
 
  private:
   content::BrowserContext* browser_context_;

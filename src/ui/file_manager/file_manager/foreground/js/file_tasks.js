@@ -481,34 +481,29 @@
   }
 
   /**
+   * Show dialog when user opens or drags a file with PluginVM and the file
+   * is not in PvmSharedDir or shared with PluginVM. The dialog tells the
+   * user to move or copy the file to PvmSharedDir and offers an action to do
+   * that.
+   *
    * @param {!Array<!Entry>} entries Selected entries to be moved or copied.
    * @param {!VolumeManager} volumeManager
+   * @param {!MetadataModel} metadataModel
    * @param {!FileManagerUI} ui FileManager UI to show dialog.
-   * @param {string} title Dialog title.
+   * @param {string} moveMessage Message if files are local and can be moved.
+   * @param {string} copyMessage Message if files should be copied.
    * @param {?FileTransferController} fileTransferController
    * @param {!DirectoryModel} directoryModel
    */
-  static showPluginVmMoveDialog(
-      entries, volumeManager, ui, title, fileTransferController,
-      directoryModel) {
-    if (entries.length == 0) {
-      return;
-    }
+  static showPluginVmNotSharedDialog(
+      entries, volumeManager, metadataModel, ui, moveMessage, copyMessage,
+      fileTransferController, directoryModel) {
+    assert(entries.length > 0);
     const isMyFiles = FileTasks.isMyFilesEntry(entries[0], volumeManager);
-    const [messageId, buttonId, toMove] = isMyFiles ?
-        [
-          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
-          'CONFIRM_MOVE_BUTTON_LABEL',
-          true,
-        ] :
-        [
-          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
-          'CONFIRM_COPY_BUTTON_LABEL',
-          false,
-        ];
     const dialog = new FilesConfirmDialog(ui.element);
-    dialog.setOkLabel(strf(buttonId));
-    dialog.show(strf(messageId, title), async () => {
+    dialog.setOkLabel(strf(
+        isMyFiles ? 'CONFIRM_MOVE_BUTTON_LABEL' : 'CONFIRM_COPY_BUTTON_LABEL'));
+    dialog.show(isMyFiles ? moveMessage : copyMessage, async () => {
       if (!fileTransferController) {
         console.error('FileTransferController not set');
         return;
@@ -516,9 +511,11 @@
 
       const pvmDir = await FileTasks.getPvmSharedDir_(volumeManager);
 
+      assert(volumeManager.getLocationInfo(pvmDir));
+
       fileTransferController.executePaste(new FileTransferController.PastePlan(
-          entries.map(e => e.toURL()), [], pvmDir,
-          assert(volumeManager.getLocationInfo(pvmDir)), toMove));
+          entries.map(e => e.toURL()), [], pvmDir, metadataModel,
+          /*isMove=*/ isMyFiles));
       directoryModel.changeDirectoryEntry(pvmDir);
     });
   }
@@ -678,9 +675,16 @@
           });
           break;
         case taskResult.FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
-          FileTasks.showPluginVmMoveDialog(
-              this.entries_, this.volumeManager_, this.ui_, task.title,
-              this.fileTransferController_, this.directoryModel_);
+          const moveMessage = strf(
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
+              task.title);
+          const copyMessage = strf(
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
+              task.title);
+          FileTasks.showPluginVmNotSharedDialog(
+              this.entries_, this.volumeManager_, this.metadataModel_, this.ui_,
+              moveMessage, copyMessage, this.fileTransferController_,
+              this.directoryModel_);
           break;
       }
     };
@@ -688,7 +692,7 @@
     this.checkAvailability_(() => {
       this.taskHistory_.recordTaskExecuted(task.taskId);
       let msg;
-      if (this.entries.length === 1) {
+      if (this.entries_.length === 1) {
         msg = strf('OPEN_A11Y', this.entries_[0].name);
       } else {
         msg = strf('OPEN_A11Y_PLURAL', this.entries_.length);
@@ -947,7 +951,10 @@
       const item = new ProgressCenterItem();
       item.id = 'Cannot mount: ' + url;
       item.type = ProgressItemType.MOUNT_ARCHIVE;
-      item.message = strf('ARCHIVE_MOUNT_FAILED', filename);
+      const msgId = error === VolumeManagerCommon.VolumeError.INVALID_PATH ?
+          'ARCHIVE_MOUNT_INVALID_PATH' :
+          'ARCHIVE_MOUNT_FAILED';
+      item.message = strf(msgId, filename);
       item.state = ProgressItemState.ERROR;
       this.progressCenter_.updateItem(item);
 

@@ -215,6 +215,11 @@ chromium_strings.grd. -->
           Welcome to Chrome; new browser window opened
         </message>
       </if>
+      <if expr="is_macosx or is_linux">
+        <message name="IDS_FIRST_RUN_DIALOG_WINDOW_TITLE" desc="Window title of First Run dialog on Mac and Linux, displayed in title bar">
+          Welcome to Google Chrome
+        </message>
+      </if>
       <if expr="chromeos">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Google Chrome OS
@@ -299,7 +304,7 @@ chromium_strings.grd. -->
           Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS when Crostini is installed.">
-          Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux development environment (Beta)<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
+          Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux development environment<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_SAFETY_INFORMATION" desc="The safety label in the About box.">
           Important use and safety information
@@ -547,6 +552,11 @@ Google Chrome is unable to recover your settings.
         This file may be dangerous, so Chrome has blocked it.
       </message>
 
+      <message name="IDS_PROMPT_CONFIRM_DANGEROUS_DOWNLOAD_ACCOUNT_COMPROMISE_BODY"
+        desc="Body prompt text for the confirmation dialog asking whether the user really meant to keep a download deemed to be associated with account compromise by safebrowsing">
+        Chrome recommends that you don't download or open this file.
+      </message>
+
       <!-- Abandon in-progress downloads confirmation dialog -->
       <if expr="not is_macosx">
         <message name="IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE" desc="Message on a dialog shown when the user closes the browser while one or more downloads are in progress. This string is shown on Windows, Chrome OS, and Linux, which all use 'Exit' to refer to closing a browser.">
@@ -585,8 +595,8 @@ Google Chrome is unable to recover your settings.
       </if>
 
       <!-- chrome://settings/extensions page -->
-      <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
-        Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
+      <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in Incognito mode. Displayed in extensions management UI after an extension is selected to be run in Incognito mode.">
+        Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in Incognito mode, unselect this option.
       </message>
       <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
         Remove from Chrome...
@@ -628,6 +638,9 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_UPDATE_NOW" desc="In Title Case: The text label of the Update Chrome Now menu item">
           Update &amp;Google Chrome
         </message>
+        <message name="IDS_RELAUNCH_TO_UPDATE" desc="In Title Case: The text label of the Update Chrome menu item, when relaunch to update experiment is enabled">
+          Relaunch to Update &amp;Chrome
+        </message>
       </if>
       <if expr="not use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
@@ -636,6 +649,9 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
           Update &amp;Google Chrome
         </message>
+        <message name="IDS_RELAUNCH_TO_UPDATE" desc="The text label of the Update Chrome menu item, when relaunch to update experiment is enabled">
+          Relaunch to update &amp;Chrome
+        </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
@@ -643,6 +659,9 @@ Google Chrome is unable to recover your settings.
         </message>
         <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome OS Now menu item">
           Update &amp;Chrome OS
+        </message>
+        <message name="IDS_RELAUNCH_TO_UPDATE" desc="The text label of the Update Chrome OS menu item, when relaunch to update experiment is enabled">
+          Relaunch to update &amp;Chrome OS
         </message>
       </if>
 
@@ -953,7 +972,7 @@ Google Chrome is unable to recover your settings.
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP" desc="The name of the command to open a link in a newly created browser tab when the user is in an app window">
             Open link in new Chrome &amp;tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="The name of the command to open a link in an incognito browser window when the user is in an app window">
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="The name of the command to open a link in an Incognito browser window when the user is in an app window">
             Open link in Chrome inco&amp;gnito window
           </message>
         </if>
@@ -961,7 +980,7 @@ Google Chrome is unable to recover your settings.
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP" desc="In Title Case: The name of the command to open a link in a newly created browser tab when the user is in an app window">
             Open Link in New Chrome &amp;tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="In Title Case: The name of the command to open a link in an incognito browser window when the user is in an app window">
+          <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="In Title Case: The name of the command to open a link in an Incognito browser window when the user is in an app window">
             Open Link in Chrome Inco&amp;gnito Window
           </message>
         </if>
@@ -972,7 +991,7 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
           Relaunch Chrome
         </message>
-        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog with a count of open incognito windows.">
+        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog with a count of open Incognito windows.">
           {COUNT, plural,
            =0 {A new update for Chrome is available and will be applied as soon as you relaunch.}
            =1 {A new update for Chrome is available and will be applied as soon as you relaunch. Your Incognito window won't reopen.}
@@ -1101,6 +1120,13 @@ Google Chrome is unable to recover your settings.
         </message>
         <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
           Chrome OS terms
+        </message>
+        <message name="IDS_OOBE_WELCOME_START_OS_INSTALL" desc="Label for button shown on the OOBE welcome screen to show the OS installation screens">
+          Install Chrome OS
+        </message>
+
+        <message name="IDS_OS_INSTALL_SCREEN_INTRO_TITLE" desc="Title of the introduction page in the OS install screen">
+          Install Chrome OS
         </message>
       </if>
 

@@ -44,7 +44,7 @@
 }
 
 .heap-snapshot-view .data-grid span.percent-column {
-  width: 35px !important;
+  width: 35px !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .heap-snapshot-view .object-value-object,
@@ -185,12 +185,12 @@
 }
 
 .heap-allocation-stack .stack-frame:focus {
-  background-color: var(--selection-bg-color);
-  color: var(--selection-fg-color);
+  background-color: var(--legacy-selection-bg-color);
+  color: var(--legacy-selection-fg-color);
 }
 
 .heap-allocation-stack .stack-frame:focus:hover {
-  background-color: var(--accent-color-hover);
+  background-color: var(--legacy-accent-color-hover);
 }
 
 .heap-allocation-stack .stack-frame:hover:not(:focus) {
@@ -202,7 +202,7 @@
 }
 
 .heap-allocation-stack .stack-frame:focus .devtools-link {
-  color: var(--selection-fg-color);
+  color: var(--legacy-selection-fg-color);
 }
 
 .no-heap-allocation-stack {

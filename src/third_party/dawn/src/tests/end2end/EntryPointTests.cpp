@@ -24,18 +24,12 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
     // TODO(crbug.com/dawn/658): Crashes on bots
     DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-
-        [[stage(vertex)]] fn vertex_main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-            return;
+        [[stage(vertex)]] fn vertex_main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         }
 
-        [[location(0)]] var<out> outColor : vec4<f32>;
-
-        [[stage(fragment)]] fn fragment_main() -> void {
-          outColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
-          return;
+        [[stage(fragment)]] fn fragment_main() -> [[location(0)]] vec4<f32> {
+          return vec4<f32>(1.0, 0.0, 0.0, 1.0);
         }
     )");
 
@@ -66,22 +60,18 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
 
 // Test creating two compute pipelines from the same module.
 TEST_P(EntryPointTests, TwoComputeInModule) {
-    // TODO: Reenable once Tint's HLSL writer supports multiple entryPoints on a single stage.
-    // https://crbug.com/tint/297
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
             data : u32;
         };
         [[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
 
-        [[stage(compute)]] fn write1() -> void {
+        [[stage(compute)]] fn write1() {
             data.data = 1u;
             return;
         }
 
-        [[stage(compute)]] fn write42() -> void {
+        [[stage(compute)]] fn write42() {
             data.data = 42u;
             return;
         }

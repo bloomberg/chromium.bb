@@ -48,10 +48,10 @@ class BackgroundSyncDelegateImpl
 
    private:
     std::unique_ptr<ScopedKeepAlive, content::BrowserThread::DeleteOnUIThread>
-        keepalive_ = nullptr;
+        keepalive_;
     std::unique_ptr<ScopedProfileKeepAlive,
                     content::BrowserThread::DeleteOnUIThread>
-        profile_keepalive_ = nullptr;
+        profile_keepalive_;
   };
 
   std::unique_ptr<
@@ -60,7 +60,7 @@ class BackgroundSyncDelegateImpl
 #endif
 
   void GetUkmSourceId(const url::Origin& origin,
-                      base::OnceCallback<void(base::Optional<ukm::SourceId>)>
+                      base::OnceCallback<void(absl::optional<ukm::SourceId>)>
                           callback) override;
   void Shutdown() override;
   HostContentSettingsMap* GetHostContentSettingsMap() override;

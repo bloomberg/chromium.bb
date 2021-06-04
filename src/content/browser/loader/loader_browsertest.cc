@@ -49,6 +49,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
@@ -88,7 +89,7 @@ class LoaderBrowserTest : public ContentBrowserTest,
     ShellAddedObserver new_shell_observer;
 
     // Create dynamic popup.
-    if (!ExecuteScript(shell(), "OpenPopup();"))
+    if (!ExecJs(shell(), "OpenPopup();"))
       return false;
 
     Shell* new_shell = new_shell_observer.GetShell();
@@ -170,14 +171,16 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   // racy, however in practice the renderer will always handle the IPC message
   // before the stale-revalidation request. This is because the renderer is
   // never completely blocked from the time the test starts.
-  EXPECT_TRUE(ExecuteScript(shell(), "runTest()"));
+  EXPECT_TRUE(ExecJs(shell(), "runTest()"));
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffNoContentTypeNoData) {
   // Make sure no downloads start.
-  BrowserContext::GetDownloadManager(
-      shell()->web_contents()->GetBrowserContext())
+  shell()
+      ->web_contents()
+      ->GetBrowserContext()
+      ->GetDownloadManager()
       ->AddObserver(this);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/content-sniffer-test3.html"));
@@ -215,11 +218,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest) {
       shell(), embedded_test_server()->GetURL("/sync_xmlhttprequest.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(DidSyncRequestSucceed());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "DidSyncRequestSucceed();"));
 }
 
 // If this flakes, use http://crbug.com/62776.
@@ -230,10 +229,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
       embedded_test_server()->GetURL("/sync_xmlhttprequest_disallowed.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(DidSucceed());", &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "DidSucceed();"));
 }
 
 // Test for bug #1159553 -- A synchronous xhr (whose content-type is
@@ -249,8 +245,10 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        MAYBE_SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  BrowserContext::GetDownloadManager(
-      shell()->web_contents()->GetBrowserContext())
+  shell()
+      ->web_contents()
+      ->GetBrowserContext()
+      ->GetDownloadManager()
       ->AddObserver(this);
 
   CheckTitleTest(
@@ -315,13 +313,8 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_SyncXMLHttpRequest_Cancelled) {
       shell(),
       embedded_test_server()->GetURL("/sync_xmlhttprequest_cancelled.html")));
 
-  int status_code = -1;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      shell(), "window.domAutomationController.send(getErrorCode());",
-      &status_code));
-
   // 19 is the value of NETWORK_ERROR on DOMException.
-  EXPECT_EQ(19, status_code);
+  EXPECT_EQ(19, EvalJs(shell(), "getErrorCode();"));
 }
 
 // Flaky everywhere. http://crbug.com/130404
@@ -367,8 +360,9 @@ std::unique_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(path, request.relative_url,
-                        base::CompareCase::SENSITIVE))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -420,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_CrossSiteAfterCrash) {
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_FALSE(NavigateToURL(shell(), GURL(kChromeUICrashURL)));
+  EXPECT_FALSE(NavigateToURL(shell(), GURL(blink::kChromeUICrashURL)));
   // Wait for browser to notice the renderer crash.
   crash_observer.Wait();
 
@@ -483,12 +477,10 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   std::u16string expected_title16(u"Title Of Awesomeness");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
 
-  bool success;
   GURL test_url(embedded_test_server()->GetURL("/title2.html"));
-  std::string redirect_script = "window.location='" +
-                                test_url.possibly_invalid_spec() + "';" +
-                                "window.domAutomationController.send(true);";
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), redirect_script, &success));
+  std::string redirect_script =
+      "window.location='" + test_url.possibly_invalid_spec() + "';" + "true;";
+  EXPECT_EQ(true, EvalJs(shell(), redirect_script));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 
@@ -553,8 +545,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
     const std::string& request_path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, request_path,
-                        base::CompareCase::SENSITIVE))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -612,11 +605,10 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SubresourceRedirectToDataURLBlocked) {
     xhr.onerror = () => domAutomationController.send("BLOCKED");
     xhr.send();
   }))";
-  std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell(), script + "('" + subresource_url.spec() + "')", &result));
 
-  EXPECT_EQ("BLOCKED", result);
+  EXPECT_EQ("BLOCKED",
+            EvalJs(shell(), script + "('" + subresource_url.spec() + "')",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RedirectToDataURLBlocked) {
@@ -637,9 +629,7 @@ namespace {
 
 // Creates a valid filesystem URL.
 GURL CreateFileSystemURL(Shell* window) {
-  std::string filesystem_url_string;
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractString(window, R"(
+  std::string filesystem_url_string = EvalJs(window, R"(
       var blob = new Blob(['<html><body>hello</body></html>'],
                           {type: 'text/html'});
       window.webkitRequestFileSystem(TEMPORARY, blob.size, fs => {
@@ -651,7 +641,9 @@ GURL CreateFileSystemURL(Shell* window) {
             }
           });
         });
-      });)", &filesystem_url_string));
+      });)",
+                                             EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                                          .ExtractString();
   GURL filesystem_url(filesystem_url_string);
   EXPECT_TRUE(filesystem_url.is_valid());
   EXPECT_TRUE(filesystem_url.SchemeIsFileSystem());
@@ -675,11 +667,10 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
     xhr.onerror = () => domAutomationController.send("BLOCKED");
     xhr.send();
   }))";
-  std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell(), script + "('" + subresource_url.spec() + "')", &result));
 
-  EXPECT_EQ("BLOCKED", result);
+  EXPECT_EQ("BLOCKED",
+            EvalJs(shell(), script + "('" + subresource_url.spec() + "')",
+                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RedirectToFileSystemURLBlocked) {
@@ -697,13 +688,13 @@ namespace {
 struct RequestData {
   const GURL url;
   const net::SiteForCookies site_for_cookies;
-  const base::Optional<url::Origin> initiator;
+  const absl::optional<url::Origin> initiator;
   const int load_flags;
   const std::string referrer;
 
   RequestData(const GURL& url,
               const net::SiteForCookies& site_for_cookies,
-              const base::Optional<url::Origin>& initiator,
+              const absl::optional<url::Origin>& initiator,
               int load_flags,
               const std::string& referrer)
       : url(url),
@@ -921,12 +912,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteNewWindowLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteNewWindowLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
@@ -956,21 +942,13 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
-  const char kReplacePortNumber[] =
-      "window.domAutomationController.send(setPortNumber(%d));";
+  const char kReplacePortNumber[] = "setPortNumber(%d);";
   uint16_t port_number = embedded_test_server()->port();
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), base::StringPrintf(kReplacePortNumber, port_number), &success));
-  success = false;
+  EXPECT_TRUE(
+      ExecJs(shell(), base::StringPrintf(kReplacePortNumber, port_number)));
 
   ShellAddedObserver new_shell_observer;
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickCrossSiteNewWindowLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickCrossSiteNewWindowLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
@@ -1079,17 +1057,15 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   {
     TestNavigationObserver new_tab_observer(shell()->web_contents(), 1);
     new_tab_observer.StartWatchingNewWebContents();
-    EXPECT_TRUE(ExecuteScript(shell(), script));
+    EXPECT_TRUE(ExecJs(shell(), script));
     new_tab_observer.Wait();
     ASSERT_EQ(2u, Shell::windows().size());
     Shell* new_shell = Shell::windows()[1];
     EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     // Only the cookie without "SameSite=Strict" should be sent.
-    std::string html_content;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_shell, "domAutomationController.send(document.body.textContent)",
-        &html_content));
+    std::string html_content =
+        EvalJs(new_shell, "document.body.textContent").ExtractString();
     EXPECT_THAT(html_content.c_str(), Not(HasSubstr("cookie_A=A")));
     EXPECT_THAT(html_content.c_str(), HasSubstr("cookie_B=B"));
   }
@@ -1098,16 +1074,14 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   {
     Shell* new_shell = Shell::windows()[1];
     TestNavigationObserver new_tab_observer(new_shell->web_contents(), 1);
-    EXPECT_TRUE(ExecuteScript(shell(), script));
+    EXPECT_TRUE(ExecJs(shell(), script));
     new_tab_observer.Wait();
     ASSERT_EQ(2u, Shell::windows().size());
     EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     // Only the cookie without "SameSite=Strict" should be sent.
-    std::string html_content;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_shell, "domAutomationController.send(document.body.textContent)",
-        &html_content));
+    std::string html_content =
+        EvalJs(new_shell, "document.body.textContent").ExtractString();
     EXPECT_THAT(html_content.c_str(), Not(HasSubstr("cookie_A=A")));
     EXPECT_THAT(html_content.c_str(), HasSubstr("cookie_B=B"));
   }

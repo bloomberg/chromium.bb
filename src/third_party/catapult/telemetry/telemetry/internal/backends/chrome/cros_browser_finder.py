@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Finds CrOS browsers that can be started and controlled by telemetry."""
 
+from __future__ import absolute_import
 import logging
 import os
 import platform
@@ -183,6 +184,8 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
         '--ash-disable-system-sounds',
         # Skip user image selection screen, and post login screens.
         '--oobe-skip-postlogin',
+        # Enable OOBE test API
+        '--enable-oobe-test-api',
         # Debug logging.
         '--vmodule=%s' % vmodule,
         # Enable crash dumping.
@@ -198,12 +201,7 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
     if not browser_options.expect_policy_fetch:
       startup_args.append('--allow-failed-policy-fetch-for-test')
 
-    # If we're using GAIA, skip to login screen, enable GaiaActionButtons
-    # feature, and do not disable GAIA services.
-    if browser_options.gaia_login:
-      startup_args.append('--oobe-skip-to-login')
-      startup_args.append('--enable-features=GaiaActionButtons')
-    elif browser_options.disable_gaia_services:
+    if browser_options.disable_gaia_services:
       startup_args.append('--disable-gaia-services')
 
     trace_config_file = (self._platform_backend.tracing_controller_backend
@@ -265,7 +263,7 @@ def FindAllAvailableBrowsers(finder_options, device):
   # Check ssh
   try:
     plat = platform_module.GetPlatformForDevice(device, finder_options)
-  except cros_interface.LoginException, ex:
+  except cros_interface.LoginException as ex:
     if isinstance(ex, cros_interface.KeylessLoginRequiredException):
       logging.warn('Could not ssh into %s. Your device must be configured',
                    finder_options.cros_remote)

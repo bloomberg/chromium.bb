@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.Context;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
 import com.google.android.gms.auth.AccountChangeEvent;
@@ -16,6 +17,8 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.Promise;
+import org.chromium.base.task.AsyncTask;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,8 +28,13 @@ import java.util.List;
  */
 public final class AccountRenameChecker {
     private static final String TAG = "AccountRenameChecker";
+    private static AccountRenameChecker sInstance;
 
-    private static final class SystemDelegate {
+    /**
+     * The delegate is used to query the accounts rename event.
+     */
+    @VisibleForTesting
+    public interface Delegate {
         /**
          * Gets the new account name of the renamed account.
          * @return The new name that the given account email is renamed to or null if the given
@@ -34,7 +42,15 @@ public final class AccountRenameChecker {
          */
         @WorkerThread
         @Nullable
-        String getNewNameOfRenamedAccount(String accountEmail) {
+        String getNewNameOfRenamedAccount(String accountEmail);
+    }
+
+    private static final class SystemDelegate implements Delegate {
+        /**
+         * Gets the new account name of the renamed account.
+         */
+        @Override
+        public @Nullable String getNewNameOfRenamedAccount(String accountEmail) {
             final Context context = ContextUtils.getApplicationContext();
             try {
                 final List<AccountChangeEvent> accountChangeEvents =
@@ -51,19 +67,55 @@ public final class AccountRenameChecker {
         }
     }
 
-    private final SystemDelegate mDelegate;
+    private final Delegate mDelegate;
 
-    public AccountRenameChecker() {
-        mDelegate = new SystemDelegate();
+    private AccountRenameChecker(Delegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
-     * Gets the new account name of the renamed account.
-     * @return If the old account email is renamed to an account that exists in the given list of
-     *         accounts, the renamed-to account name will be returned. Otherwise it returns null.
+     * @return The Singleton instance of {@link AccountRenameChecker}.
      */
+    public static AccountRenameChecker get() {
+        if (sInstance == null) {
+            sInstance = new AccountRenameChecker(new SystemDelegate());
+        }
+        return sInstance;
+    }
+
+    /**
+     * Overrides the {@link Delegate} for tests.
+     */
+    @VisibleForTesting
+    public static void overrideDelegateForTests(Delegate delegate) {
+        sInstance = new AccountRenameChecker(delegate);
+    }
+
+    /**
+     * Gets the new account name of the renamed account asynchronously.
+     *
+     * @return A {@link Promise} of the new account name if the old account is renamed to an account
+     * that exists in the given list of accounts; otherwise a {@link Promise} of null.
+     */
+    public Promise<String> getNewNameOfRenamedAccountAsync(
+            String oldAccountEmail, List<Account> accounts) {
+        final Promise<String> newNamePromise = new Promise<>();
+        new AsyncTask<String>() {
+            @Override
+            protected String doInBackground() {
+                return getNewNameOfRenamedAccount(oldAccountEmail, accounts);
+            }
+
+            @Override
+            protected void onPostExecute(String newAccountName) {
+                newNamePromise.fulfill(newAccountName);
+            }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        return newNamePromise;
+    }
+
     @WorkerThread
-    public @Nullable String getNewNameOfRenamedAccount(
+    private @Nullable String getNewNameOfRenamedAccount(
             String oldAccountEmail, List<Account> accounts) {
         String newAccountEmail = mDelegate.getNewNameOfRenamedAccount(oldAccountEmail);
         while (newAccountEmail != null) {

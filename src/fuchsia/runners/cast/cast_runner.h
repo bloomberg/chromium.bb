@@ -19,13 +19,17 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/fuchsia/startup_context.h"
-#include "base/optional.h"
 #include "fuchsia/runners/cast/cast_component.h"
 #include "fuchsia/runners/cast/pending_cast_component.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilteredServiceDirectory;
 }  // namespace base
+
+namespace cr_fuchsia {
+class WebInstanceHost;
+}  // namespace cr_fuchsia
 
 class WebContentRunner;
 
@@ -36,9 +40,11 @@ class CastRunner : public fuchsia::sys::Runner,
   static constexpr uint16_t kRemoteDebuggingPort = 9222;
 
   // Creates the Runner for Cast components.
+  // |web_instance_host|: Used to create an isolated web_instance
+  //     Component in which to host the fuchsia.web.Context.
   // |is_headless|: True if this instance should create Contexts with the
   //                HEADLESS feature set.
-  explicit CastRunner(bool is_headless);
+  CastRunner(cr_fuchsia::WebInstanceHost* web_instance_host, bool is_headless);
   ~CastRunner() final;
 
   CastRunner(const CastRunner&) = delete;
@@ -80,7 +86,7 @@ class CastRunner : public fuchsia::sys::Runner,
 
   // Returns CreateContextParams for |app_config|. Returns nullopt if there is
   // no need to create an isolated context.
-  base::Optional<fuchsia::web::CreateContextParams>
+  absl::optional<fuchsia::web::CreateContextParams>
   GetContextParamsForAppConfig(chromium::cast::ApplicationConfig* app_config);
 
   // Launches an isolated Context with the given |create_context_params| and
@@ -122,6 +128,9 @@ class CastRunner : public fuchsia::sys::Runner,
   void CreatePersistedCacheSentinel();
   bool WasPersistedCacheErased();
 
+  // Passed to WebContentRunners to use to create web_instance Components.
+  cr_fuchsia::WebInstanceHost* const web_instance_host_;
+
   // True if this Runner uses Context(s) with the HEADLESS feature set.
   const bool is_headless_;
 
@@ -149,7 +158,7 @@ class CastRunner : public fuchsia::sys::Runner,
 
   // Used to fetch & cache the list of CORS exempt HTTP headers to configure
   // each web.Context with.
-  base::Optional<std::vector<std::vector<uint8_t>>> cors_exempt_headers_;
+  absl::optional<std::vector<std::vector<uint8_t>>> cors_exempt_headers_;
   chromium::cast::CorsExemptHeaderProviderPtr cors_exempt_headers_provider_;
   std::vector<base::OnceClosure> on_have_cors_exempt_headers_;
 

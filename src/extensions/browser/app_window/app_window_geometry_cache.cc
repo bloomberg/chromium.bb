@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
@@ -120,7 +120,8 @@ void AppWindowGeometryCache::SyncToStorage() {
       value->SetInteger("state", it->second.window_state);
       value->SetString(
           "ts", base::NumberToString(it->second.last_change.ToInternalValue()));
-      dict->SetWithoutPathExpansion(it->first, std::move(value));
+      dict->SetKey(it->first,
+                   base::Value::FromUniquePtrValue(std::move(value)));
 
       for (auto& observer : observers_)
         observer.OnGeometryCacheChanged(extension_id, it->first, bounds);

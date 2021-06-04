@@ -51,6 +51,7 @@ preprocess_if_expr("preprocess_src") {
     "cr_search_field/cr_search_field_behavior.js",
     "cr_splitter/cr_splitter.js",
     "find_shortcut_behavior.js",
+    "mouse_hoverable_mixin.js",
   ]
 }
 
@@ -86,10 +87,6 @@ preprocess_if_expr("preprocess_polymer2") {
     "cr_lazy_render/cr_lazy_render.js",
     "cr_lottie/cr_lottie.html",
     "cr_lottie/cr_lottie.js",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector_grid.html",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector.html",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector.js",
     "cr_radio_button/cr_card_radio_button.html",
     "cr_radio_button/cr_card_radio_button.js",
     "cr_radio_button/cr_radio_button_behavior.html",
@@ -126,6 +123,14 @@ preprocess_if_expr("preprocess_polymer2") {
     "shared_vars_css.html",
   ]
 
+  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+  if (is_chromeos) {
+    in_files += [
+      "cr_searchable_drop_down/cr_searchable_drop_down.html",
+      "cr_searchable_drop_down/cr_searchable_drop_down.js",
+    ]
+  }
+
   if (is_chromeos_ash) {
     in_files += [
       "chromeos/cros_color_overrides.html",
@@ -140,8 +145,6 @@ preprocess_if_expr("preprocess_polymer2") {
       "chromeos/cr_picture/icons.html",
       "chromeos/cr_picture/png.html",
       "chromeos/cr_picture/png.js",
-      "cr_searchable_drop_down/cr_searchable_drop_down.html",
-      "cr_searchable_drop_down/cr_searchable_drop_down.js",
     ]
   }
 }
@@ -173,8 +176,8 @@ preprocess_if_expr("preprocess_generated") {
     "cr_lottie/cr_lottie.m.js",
     "cr_menu_selector/cr_menu_selector.js",
     "cr_page_host_style_css.js",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector_grid.m.js",
-    "cr_profile_avatar_selector/cr_profile_avatar_selector.m.js",
+    "cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js",
+    "cr_profile_avatar_selector/cr_profile_avatar_selector.js",
     "cr_radio_button/cr_card_radio_button.m.js",
     "cr_radio_button/cr_radio_button_behavior.m.js",
     "cr_radio_button/cr_radio_button.m.js",
@@ -207,6 +210,11 @@ preprocess_if_expr("preprocess_generated") {
     "shared_vars_css.m.js",
   ]
 
+  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+  if (is_chromeos) {
+    in_files += [ "cr_searchable_drop_down/cr_searchable_drop_down.m.js" ]
+  }
+
   if (is_chromeos_ash) {
     in_files += [
       "chromeos/cros_color_overrides.m.js",
@@ -216,7 +224,6 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/cr_picture/cr_picture_types.m.js",
       "chromeos/cr_picture/icons.m.js",
       "chromeos/cr_picture/png.m.js",
-      "cr_searchable_drop_down/cr_searchable_drop_down.m.js",
     ]
   }
 }
@@ -235,7 +242,6 @@ group("closure_compile") {
     "cr_input:closure_compile",
     "cr_lottie:closure_compile",
     "cr_menu_selector:closure_compile",
-    "cr_profile_avatar_selector:closure_compile",
     "cr_radio_button:closure_compile",
     "cr_radio_group:closure_compile",
     "cr_slider:closure_compile",
@@ -271,7 +277,7 @@ group("closure_compile") {
     "policy:closure_compile_module",
   ]
 
-  if (is_chromeos_ash) {
+  if (is_chromeos) {
     deps += [
       "chromeos:closure_compile",
 
@@ -297,6 +303,12 @@ js_library("cr_scrollable_behavior") {
 
 js_library("cr_container_shadow_behavior") {
   deps = [ "//ui/webui/resources/js:assert" ]
+}
+
+js_library("mouse_hoverable_mixin") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
 }
 
 # Targets for auto-generating Polymer 3 JS Modules.
@@ -382,7 +394,7 @@ group("polymer3_elements") {
     "cr_link_row:cr_link_row_module",
     "cr_lottie:cr_lottie_module",
     "cr_menu_selector:web_components",
-    "cr_profile_avatar_selector:polymer3_elements",
+    "cr_profile_avatar_selector:web_components",
     "cr_radio_button:polymer3_elements",
     "cr_radio_group:cr_radio_group_module",
     "cr_search_field:web_components",
@@ -395,7 +407,7 @@ group("polymer3_elements") {
     "policy:polymer3_elements",
   ]
 
-  if (is_chromeos_ash) {
+  if (is_chromeos) {
     public_deps += [
       "chromeos:polymer3_elements",
 

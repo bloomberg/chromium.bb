@@ -26,11 +26,14 @@ void av1_init_intra_predictors(void);
 void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                     int plane, int blk_col, int blk_row,
                                     TX_SIZE tx_size);
-void av1_predict_intra_block(
-    const AV1_COMMON *cm, const MACROBLOCKD *xd, int wpx, int hpx,
-    TX_SIZE tx_size, PREDICTION_MODE mode, int angle_delta, int use_palette,
-    FILTER_INTRA_MODE filter_intra_mode, const uint8_t *ref, int ref_stride,
-    uint8_t *dst, int dst_stride, int col_off, int row_off, int plane);
+void av1_predict_intra_block(const MACROBLOCKD *xd, BLOCK_SIZE sb_size,
+                             int enable_intra_edge_filter, int wpx, int hpx,
+                             TX_SIZE tx_size, PREDICTION_MODE mode,
+                             int angle_delta, int use_palette,
+                             FILTER_INTRA_MODE filter_intra_mode,
+                             const uint8_t *ref, int ref_stride, uint8_t *dst,
+                             int dst_stride, int col_off, int row_off,
+                             int plane);
 
 // Mapping of interintra to intra mode for use in the intra component
 static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
@@ -64,7 +67,7 @@ static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
 
 static INLINE int av1_filter_intra_allowed_bsize(const AV1_COMMON *const cm,
                                                  BLOCK_SIZE bs) {
-  if (!cm->seq_params.enable_filter_intra || bs == BLOCK_INVALID) return 0;
+  if (!cm->seq_params->enable_filter_intra || bs == BLOCK_INVALID) return 0;
 
   return block_size_wide[bs] <= 32 && block_size_high[bs] <= 32;
 }

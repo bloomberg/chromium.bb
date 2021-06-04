@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 css_files = [
+  "focus_ring.css",
+  "inkdrop.css",
   "main.css",
   "ptz_panel.css",
   "ptz_toast.css",

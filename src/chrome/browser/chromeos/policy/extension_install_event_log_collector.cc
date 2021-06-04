@@ -490,9 +490,8 @@ void AddErrorCodesToFailureEvent(
     event->set_fetch_error_code(data.response_code.value());
   else if (data.network_error_code)
     event->set_fetch_error_code(data.network_error_code.value());
-
-  DCHECK(data.fetch_tries);
-  event->set_fetch_tries(data.fetch_tries.value_or(0));
+  if (data.fetch_tries)
+    event->set_fetch_tries(data.fetch_tries.value());
 }
 
 }  // namespace
@@ -506,8 +505,9 @@ ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
     : InstallEventLogCollectorBase(profile),
       registry_(registry),
       delegate_(delegate) {
-  registry_observer_.Add(registry_);
-  stage_tracker_observer_.Add(extensions::InstallStageTracker::Get(profile_));
+  registry_observation_.Observe(registry_);
+  stage_tracker_observation_.Observe(
+      extensions::InstallStageTracker::Get(profile_));
 }
 
 ExtensionInstallEventLogCollector::~ExtensionInstallEventLogCollector() {

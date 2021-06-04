@@ -22,6 +22,8 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -256,13 +258,13 @@ class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
 
 class RespondNowAction : public ExtensionFunction::ResponseActionObject {
  public:
-  typedef base::Callback<void(bool)> SendResponseCallback;
+  typedef base::OnceCallback<void(bool)> SendResponseCallback;
   RespondNowAction(ExtensionFunction::ResponseValue result,
-                   const SendResponseCallback& send_response)
-      : result_(std::move(result)), send_response_(send_response) {}
-  ~RespondNowAction() override {}
+                   SendResponseCallback send_response)
+      : result_(std::move(result)), send_response_(std::move(send_response)) {}
+  ~RespondNowAction() override = default;
 
-  void Execute() override { send_response_.Run(result_->Apply()); }
+  void Execute() override { std::move(send_response_).Run(result_->Apply()); }
 
  private:
   ExtensionFunction::ResponseValue result_;
@@ -327,7 +329,33 @@ void UserGestureForTests::DecrementCount() {
   --count_;
 }
 
+class BrowserContextShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static BrowserContextShutdownNotifierFactory* GetInstance() {
+    static base::NoDestructor<BrowserContextShutdownNotifierFactory> s_factory;
+    return s_factory.get();
+  }
+
+  // No copying.
+  BrowserContextShutdownNotifierFactory(
+      const BrowserContextShutdownNotifierFactory&) = delete;
+  BrowserContextShutdownNotifierFactory& operator=(
+      const BrowserContextShutdownNotifierFactory&) = delete;
+
+ private:
+  friend class base::NoDestructor<BrowserContextShutdownNotifierFactory>;
+  BrowserContextShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory("ExtensionFunction") {
+  }
+};
+
 }  // namespace
+
+// static
+void ExtensionFunction::EnsureShutdownNotifierFactoryBuilt() {
+  BrowserContextShutdownNotifierFactory::GetInstance();
+}
 
 void ExtensionFunction::ResponseValueObject::SetFunctionResults(
     ExtensionFunction* function,
@@ -408,6 +436,9 @@ ExtensionFunction::~ExtensionFunction() {
     if (ignore_all_did_respond_for_testing_do_not_use)
       return true;
 
+    if (!browser_context())
+      return true;
+
     auto* registry = extensions::ExtensionRegistry::Get(browser_context());
     if (registry && extension() &&
         !registry->enabled_extensions().Contains(extension_id())) {
@@ -418,6 +449,17 @@ ExtensionFunction::~ExtensionFunction() {
   };
 
   DCHECK(did_respond() || can_be_destroyed_before_responding()) << name();
+
+  // If ignore_did_respond_for_testing() has been called it could cause another
+  // DCHECK about not calling Mojo callback.
+  // Since the ExtensionFunction request on the frame is a Mojo message
+  // which has a reply callback, it should be called before it's destroyed.
+  if (!response_callback_.is_null()) {
+    constexpr char kShouldCallMojoCallback[] = "Ignored did_respond()";
+    std::move(response_callback_)
+        .Run(ResponseType::FAILED, base::Value(base::Value::Type::LIST),
+             kShouldCallMojoCallback);
+  }
 #endif  // DCHECK_IS_ON()
 }
 
@@ -520,6 +562,40 @@ bool ExtensionFunction::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
+void ExtensionFunction::SetBrowserContextForTesting(
+    content::BrowserContext* context) {
+  browser_context_for_testing_ = context;
+}
+
+content::BrowserContext* ExtensionFunction::browser_context() const {
+  if (browser_context_for_testing_)
+    return browser_context_for_testing_;
+  return browser_context_;
+}
+
+void ExtensionFunction::SetDispatcher(
+    const base::WeakPtr<extensions::ExtensionFunctionDispatcher>& dispatcher) {
+  dispatcher_ = dispatcher;
+
+  // Update |browser_context_| to the one from the dispatcher. Make it reset to
+  // nullptr on shutdown.
+  if (!dispatcher_ || !dispatcher_->browser_context()) {
+    browser_context_ = nullptr;
+    shutdown_subscription_ = base::CallbackListSubscription();
+    return;
+  }
+  browser_context_ = dispatcher_->browser_context();
+  shutdown_subscription_ =
+      BrowserContextShutdownNotifierFactory::GetInstance()
+          ->Get(browser_context_)
+          ->Subscribe(base::BindRepeating(&ExtensionFunction::Shutdown,
+                                          base::Unretained(this)));
+}
+
+void ExtensionFunction::Shutdown() {
+  browser_context_ = nullptr;
+}
+
 void ExtensionFunction::SetRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
   // An extension function from Service Worker does not have a RenderFrameHost.
@@ -568,6 +644,12 @@ ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
+    std::vector<base::Value> results) {
+  return ResponseValue(
+      new ArgumentListResponseValue(this, base::Value(std::move(results))));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
     std::unique_ptr<base::ListValue> args) {
   base::Value new_args;
   if (args)
@@ -605,6 +687,13 @@ ExtensionFunction::ResponseValue ExtensionFunction::Error(
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::ErrorWithArguments(
+    std::vector<base::Value> args,
+    const std::string& error) {
+  return ResponseValue(new ErrorWithArgumentsResponseValue(
+      this, base::Value(std::move(args)), error));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::ErrorWithArguments(
     std::unique_ptr<base::ListValue> args,
     const std::string& error) {
   base::Value new_args;
@@ -622,7 +711,7 @@ ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
     ResponseValue result) {
   return ResponseAction(new RespondNowAction(
       std::move(result),
-      base::Bind(&ExtensionFunction::SendResponseImpl, this)));
+      base::BindOnce(&ExtensionFunction::SendResponseImpl, this)));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
@@ -650,11 +739,12 @@ void ExtensionFunction::OnResponded() {
     extensions::mojom::Renderer* renderer =
         extensions::RendererStartupHelperFactory::GetForBrowserContext(
             browser_context())
-            ->GetRenderer(render_frame_host_->GetProcess());
+            ->GetRenderer(
+                content::RenderProcessHost::FromID(source_process_id()));
     if (renderer) {
-      renderer->TransferBlobs(base::BindOnce(
-          &ExtensionFunction::OnTransferBlobsAck, this,
-          render_frame_host_->GetProcess()->GetID(), transferred_blob_uuids_));
+      renderer->TransferBlobs(
+          base::BindOnce(&ExtensionFunction::OnTransferBlobsAck, this,
+                         source_process_id(), transferred_blob_uuids_));
     }
   }
 }

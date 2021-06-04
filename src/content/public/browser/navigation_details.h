@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_DETAILS_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_DETAILS_H_
 
-#include <string>
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
 #include "url/gurl.h"
@@ -53,6 +52,9 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // True when the main frame was navigated. False means the navigation was a
   // sub-frame.
   bool is_main_frame;
+
+  // True when the navigation triggered a prerender activation.
+  bool is_prerender_activation = false;
 
   // Returns whether the main frame navigated to a different page (e.g., not
   // scrolling to a fragment inside the current page). We often need this logic

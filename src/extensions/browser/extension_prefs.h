@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -33,6 +32,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ExtensionPrefValueMap;
 class PrefService;
@@ -195,6 +195,7 @@ class ExtensionPrefs : public KeyedService {
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
+  // TODO(devlin): Remove this. The pref is no longer used.
   ExtensionIdList GetToolbarOrder() const;
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
@@ -240,10 +241,18 @@ class ExtensionPrefs : public KeyedService {
   void SetExtensionDisabled(const std::string& extension_id,
                             int disable_reasons);
 
+  // TODO(crbug.com/1180996): Rename this function to
+  // SetSafeBrowsingExtensionBlocklistState and move it to the
+  // blocklist_extension_prefs file.
   void SetExtensionBlocklistState(const std::string& extension_id,
                                   BlocklistState state);
 
   // Checks whether |extension_id| is marked as greylisted.
+  // Warning: This function only takes Safe Browsing blocklist states into
+  // account. Please use blocklist_prefs::GetExtensionBlocklistState instead.
+  // TODO(crbug.com/1180996): Rename this function to
+  // GetSafeBrowsingExtensionBlocklistState and move it to the
+  // blocklist_extension_prefs file.
   // TODO(oleg): Replace IsExtensionBlocklisted by this method.
   BlocklistState GetExtensionBlocklistState(
       const std::string& extension_id) const;
@@ -678,9 +687,9 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
                                     int checksum);
 
-  // Returns the set of enabled static ruleset IDs or base::nullopt if the
+  // Returns the set of enabled static ruleset IDs or absl::nullopt if the
   // extension hasn't updated the set of enabled static rulesets.
-  base::Optional<std::set<declarative_net_request::RulesetID>>
+  absl::optional<std::set<declarative_net_request::RulesetID>>
   GetDNREnabledStaticRulesets(const ExtensionId& extension_id) const;
   // Updates the set of enabled static rulesets for the |extension_id|. This
   // preference gets cleared on extension update.

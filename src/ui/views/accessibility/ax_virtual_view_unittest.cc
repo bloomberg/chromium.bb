@@ -46,14 +46,13 @@ class TestButton : public Button {
 
 class AXVirtualViewTest : public ViewsTestBase {
  public:
-  AXVirtualViewTest() = default;
+  AXVirtualViewTest() : ax_mode_setter_(ui::kAXModeComplete) {}
   AXVirtualViewTest(const AXVirtualViewTest&) = delete;
   AXVirtualViewTest& operator=(const AXVirtualViewTest&) = delete;
   ~AXVirtualViewTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
 
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -112,6 +111,7 @@ class AXVirtualViewTest : public ViewsTestBase {
   std::vector<
       std::pair<const ui::AXPlatformNodeDelegate*, const ax::mojom::Event>>
       accessibility_events_;
+  ui::testing::ScopedAxModeSetter ax_mode_setter_;
 };
 
 TEST_F(AXVirtualViewTest, AccessibilityRoleAndName) {
@@ -585,7 +585,7 @@ TEST_F(AXVirtualViewTest, TreeNavigationWithIgnoredVirtualViews) {
             virtual_child_2->ChildAtIndex(1));
 
   // Try ignoring a node by changing its role, instead of its state.
-  virtual_child_2->GetCustomData().role = ax::mojom::Role::kIgnored;
+  virtual_child_2->GetCustomData().role = ax::mojom::Role::kNone;
 
   EXPECT_EQ(button_->GetNativeViewAccessible(), virtual_label_->GetParent());
   EXPECT_EQ(virtual_label_->GetNativeObject(), virtual_child_1->GetParent());
@@ -744,15 +744,6 @@ TEST_F(AXVirtualViewTest, HitTesting) {
   EXPECT_EQ(virtual_child_4->GetNativeObject(),
             virtual_label_->HitTestSync(point_3.x(), point_3.y()));
 }
-
-#if defined(USE_AURA)
-TEST_F(AXVirtualViewTest, GetOrCreateWrapper) {
-  std::unique_ptr<AXAuraObjCache> cache;
-  auto* wrapper1 = virtual_label_->GetOrCreateWrapper(cache.get());
-  cache = std::make_unique<AXAuraObjCache>();
-  EXPECT_NE(wrapper1, virtual_label_->GetOrCreateWrapper(cache.get()));
-}
-#endif
 
 // Test for GetTargetForNativeAccessibilityEvent().
 #if defined(OS_WIN)

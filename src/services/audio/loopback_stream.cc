@@ -216,7 +216,7 @@ void LoopbackStream::OnError() {
 
   receiver_.reset();
   if (client_) {
-    client_->OnError();
+    client_->OnError(media::mojom::InputStreamErrorCode::kUnknown);
     client_.reset();
   }
   observer_.reset();
@@ -317,7 +317,7 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
     // underruns in the inputs. http://crbug.com/934770
     delayed_capture_time = next_generate_time_ - capture_delay_;
     for (SnooperNode* node : inputs_) {
-      const base::Optional<base::TimeTicks> suggestion =
+      const absl::optional<base::TimeTicks> suggestion =
           node->SuggestLatestRenderTime(mix_bus_->frames());
       if (suggestion.value_or(delayed_capture_time) < delayed_capture_time) {
         const base::TimeDelta increase = delayed_capture_time - (*suggestion);

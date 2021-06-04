@@ -12,9 +12,9 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
@@ -135,6 +135,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Update the resizability for the surface.
   virtual void UpdateCanResize();
 
+  // Rebind a surface as the root surface of the shell surface.
+  void RebindRootSurface(Surface* root_surface,
+                         bool can_minimize,
+                         int container);
+
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
@@ -145,6 +150,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     ~OverlayParams();
 
     bool translucent = false;
+    bool overlaps_frame = true;
+    absl::optional<bool> can_resize;
+    // TODO(oshima): It's unlikely for overlay not to request focus.
+    // Remove this.
     bool focusable = true;
     std::unique_ptr<views::View> contents_view;
   };
@@ -175,6 +184,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void UnsetSnap() override;
   void OnActivationRequested() override;
   void OnSetServerStartResize() override;
+  void SetCanGoBack() override;
+  void UnsetCanGoBack() override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -232,6 +243,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   }
 
   bool server_side_resize() const { return server_side_resize_; }
+
+  const views::Widget* overlay_widget_for_testing() const {
+    return overlay_widget_.get();
+  }
 
  protected:
   // Creates the |widget_| for |surface_|. |show_state| is the initial state
@@ -300,7 +315,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Rect pending_geometry_;
   int64_t display_id_ = display::kInvalidDisplayId;
   int64_t pending_display_id_ = display::kInvalidDisplayId;
-  base::Optional<gfx::Rect> shadow_bounds_;
+  absl::optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
   SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
   bool is_popup_ = false;
@@ -320,7 +335,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Return the bounds of the widget/origin of surface taking visible
   // bounds and current resize direction into account.
-  virtual base::Optional<gfx::Rect> GetWidgetBounds() const = 0;
+  virtual absl::optional<gfx::Rect> GetWidgetBounds() const = 0;
   virtual gfx::Point GetSurfaceOrigin() const = 0;
 
   // Commit is deferred if this returns false.
@@ -337,8 +352,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   SkColor active_frame_color_ = SK_ColorBLACK;
   SkColor inactive_frame_color_ = SK_ColorBLACK;
   bool pending_show_widget_ = false;
-  base::Optional<std::string> application_id_;
-  base::Optional<std::string> startup_id_;
+  absl::optional<std::string> application_id_;
+  absl::optional<std::string> startup_id_;
   bool immersive_implied_by_fullscreen_ = true;
   base::RepeatingClosure close_callback_;
   base::RepeatingClosure pre_close_callback_;
@@ -351,8 +366,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size pending_maximum_size_;
   gfx::SizeF pending_aspect_ratio_;
 
-  bool skip_ime_processing_ = false;
+  // Overlay members.
   std::unique_ptr<views::Widget> overlay_widget_;
+  bool skip_ime_processing_ = false;
+  bool overlay_overlaps_frame_ = true;
+  absl::optional<bool> overlay_can_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBase);
 };

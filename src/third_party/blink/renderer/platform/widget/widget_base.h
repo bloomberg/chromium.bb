@@ -31,13 +31,7 @@ namespace cc {
 class AnimationHost;
 class LayerTreeHost;
 class LayerTreeSettings;
-class TaskGraphRunner;
-class UkmRecorderFactory;
 }  // namespace cc
-
-namespace gfx {
-class RenderingPipeline;
-}  // namespace gfx
 
 namespace ui {
 class Cursor;
@@ -89,15 +83,11 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // destroyed/invalidated.
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-      cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
       const ScreenInfos& screen_infos,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings,
       base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
-          frame_widget_input_handler,
-      gfx::RenderingPipeline* main_thread_pipeline,
-      gfx::RenderingPipeline* compositor_thread_pipeline);
+          frame_widget_input_handler);
 
   // Similar to `InitializeCompositing()` but for non-compositing widgets.
   // Exactly one of either `InitializeCompositing()` or this method must
@@ -164,6 +154,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void WillBeginMainFrame() override;
   void RunPaintBenchmark(int repeat_count,
                          cc::PaintBenchmarkResult& result) override;
+  void ScheduleAnimationForWebTests() override;
 
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
@@ -195,7 +186,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   WidgetBaseClient* client() { return client_; }
 
-  void SetToolTipText(const String& tooltip_text, TextDirection dir);
+  void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
 
   // Posts a task with the given delay, then calls ScheduleAnimation() on the
   // WidgetBaseClient.
@@ -287,6 +278,11 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void SetVisibleViewportSizeInDIPs(const gfx::Size& size) {
     visible_viewport_size_in_dips_ = size;
   }
+
+  // Some touch start which can trigger pointerdown will not be sent to the main
+  // thread. And following touchend can't be dispatched. We want to count those
+  // touchstart, touchend and pointerdown for EventTiming.
+  void CountDroppedPointerDownForEventTiming(unsigned count);
 
   // Converts from DIPs to Blink coordinate space (ie. Viewport/Physical
   // pixels).
@@ -380,6 +376,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   bool initialized_ = false;
 
   // The client which handles behaviour specific to the type of widget.
+  // It's the owner of the widget and will outlive this class.
   WidgetBaseClient* const client_;
 
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
@@ -474,7 +471,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // A pending window rect that is inflight and hasn't been acknowledged by the
   // browser yet. This should only be set if |pending_window_rect_count_| is
   // non-zero.
-  base::Optional<gfx::Rect> pending_window_rect_;
+  absl::optional<gfx::Rect> pending_window_rect_;
 
   // The size of the visible viewport (in DIPs).
   // TODO(dtapuska): Figure out if we can change this to Blink Space.

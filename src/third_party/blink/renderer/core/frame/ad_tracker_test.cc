@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -983,6 +984,7 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
 
   frame.Complete(kPageWithVanillaExternalStylesheet);
   stylesheet.Complete(kStylesheetWithVanillaResources);
+  Compositor().BeginFrame();
 
   // Wait for stylesheet to fetch resources.
   ad_tracker_->WaitForSubresource(vanilla_font_url);

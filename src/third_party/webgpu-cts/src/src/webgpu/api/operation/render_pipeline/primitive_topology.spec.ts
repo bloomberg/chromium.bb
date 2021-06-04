@@ -55,6 +55,7 @@ Test locations are framebuffer coordinates:
                                                                 and {v3, v4, v5}.
 `;
 
+import { params, pbool, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
@@ -200,6 +201,74 @@ function getTriangleStripTestLocations(expectedColor: Uint8Array): TestLocation[
   ];
 }
 
+function getDefaultTestLocations({
+  topology,
+  primitiveRestart = false,
+  invalidateLastInList = false,
+}: {
+  topology: GPUPrimitiveTopology;
+  primitiveRestart?: boolean;
+  invalidateLastInList?: boolean;
+}) {
+  function maybeInvalidateLast(locations: TestLocation[]) {
+    if (!invalidateLastInList) return locations;
+
+    return locations.map((tl, i) => {
+      if (i === locations.length - 1) {
+        return {
+          location: tl.location,
+          color: kInvalidPixelColor,
+        };
+      } else {
+        return tl;
+      }
+    });
+  }
+
+  let testLocations: TestLocation[];
+  switch (topology) {
+    case 'point-list':
+      testLocations = [
+        ...getPointTestLocations(kValidPixelColor),
+        ...getLineStripTestLocations(kInvalidPixelColor),
+        ...getTriangleListTestLocations(kInvalidPixelColor),
+        ...getTriangleStripTestLocations(kInvalidPixelColor),
+      ];
+      break;
+    case 'line-list':
+      testLocations = [
+        ...maybeInvalidateLast(getLineTestLocations(kValidPixelColor)),
+        ...getLineStripTestLocations(kInvalidPixelColor),
+        ...getTriangleListTestLocations(kInvalidPixelColor),
+        ...getTriangleStripTestLocations(kInvalidPixelColor),
+      ];
+      break;
+    case 'line-strip':
+      testLocations = [
+        ...(primitiveRestart
+          ? getPrimitiveRestartLineTestLocations(kValidPixelColor)
+          : getLineTestLocations(kValidPixelColor)),
+        ...getLineStripTestLocations(kValidPixelColor),
+        ...getTriangleListTestLocations(kInvalidPixelColor),
+        ...getTriangleStripTestLocations(kInvalidPixelColor),
+      ];
+      break;
+    case 'triangle-list':
+      testLocations = [
+        ...maybeInvalidateLast(getTriangleListTestLocations(kValidPixelColor)),
+        ...getTriangleStripTestLocations(kInvalidPixelColor),
+      ];
+      break;
+    case 'triangle-strip':
+      testLocations = [
+        ...getTriangleListTestLocations(kValidPixelColor),
+        ...getTriangleStripTestLocations(primitiveRestart ? kInvalidPixelColor : kValidPixelColor),
+      ];
+      break;
+  }
+  return testLocations;
+}
+
 function generateVertexBuffer(vertexLocations: Point2D[]): Float32Array {
   const vertexCoords = new Float32Array(vertexLocations.length * 4);
   for (let i = 0; i < vertexLocations.length; i++) {
@@ -212,6 +281,7 @@ function generateVertexBuffer(vertexLocations: Point2D[]): Float32Array {
   return vertexCoords;
 }
 
+const kDefaultDrawCount = 6;
 class PrimitiveTopologyTest extends GPUTest {
   makeAttachmentTexture(): GPUTexture {
     return this.device.createTexture({
@@ -221,11 +291,19 @@ class PrimitiveTopologyTest extends GPUTest {
     });
   }
 
-  run(
-    topology: GPUPrimitiveTopology,
-    testLocations: TestLocation[],
-    usePrimitiveRestart: boolean
-  ): void {
+  run({
+    topology,
+    indirect,
+    testLocations,
+    primitiveRestart = false,
+    drawCount = kDefaultDrawCount,
+  }: {
+    topology: GPUPrimitiveTopology;
+    indirect: boolean;
+    testLocations: TestLocation[];
+    primitiveRestart?: boolean;
+    drawCount?: number;
+  }): void {
     const colorAttachment = this.makeAttachmentTexture();
 
     // Color load operator will clear color attachment to zero.
@@ -233,8 +311,9 @@ class PrimitiveTopologyTest extends GPUTest {
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachment.createView(),
+          view: colorAttachment.createView(),
           loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          storeOp: 'store',
         },
       ],
     });
@@ -254,12 +333,10 @@ class PrimitiveTopologyTest extends GPUTest {
         vertex: {
           module: this.device.createShaderModule({
             code: `
-              [[location(0)]] var<in> pos : vec4<f32>;
-              [[builtin(position)]] var<out> Position : vec4<f32>;
-
-              [[stage(vertex)]] fn main() -> void {
-                Position = pos;
-                return;
+              [[stage(vertex)]] fn main(
+                [[location(0)]] pos : vec4<f32>
+                ) -> [[builtin(position)]] vec4<f32> {
+                return pos;
               }`,
           }),
           entryPoint: 'main',
@@ -279,10 +356,8 @@ class PrimitiveTopologyTest extends GPUTest {
         fragment: {
           module: this.device.createShaderModule({
             code: `
-              [[location(0)]] var<out> fragColor : vec4<f32>;
-              [[stage(fragment)]] fn main() -> void {
-                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-                return;
+              [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               }`,
           }),
           entryPoint: 'main',
@@ -301,15 +376,36 @@ class PrimitiveTopologyTest extends GPUTest {
     renderPass.setVertexBuffer(0, vertexBuffer);
 
     // Restart the strip between [v3, <restart>, v4].
-    if (usePrimitiveRestart) {
+    if (primitiveRestart) {
       const indexBuffer = this.makeBufferWithContents(
         new Uint32Array([0, 1, 2, -1, 3, 4, 5]),
         GPUBufferUsage.INDEX
       );
       renderPass.setIndexBuffer(indexBuffer, 'uint32');
-      renderPass.drawIndexed(7); // extra index for restart
+
+      if (indirect) {
+        renderPass.drawIndexedIndirect(
+          this.makeBufferWithContents(
+            new Uint32Array([drawCount + 1, 1, 0, 0, 0]),
+            GPUBufferUsage.INDIRECT
+          ),
+          0
+        );
+      } else {
+        renderPass.drawIndexed(drawCount + 1); // extra index for restart
+      }
     } else {
-      renderPass.draw(6);
+      if (indirect) {
+        renderPass.drawIndirect(
+          this.makeBufferWithContents(
+            new Uint32Array([drawCount, 1, 0, 0]),
+            GPUBufferUsage.INDIRECT
+          ),
+          0
+        );
+      } else {
+        renderPass.draw(drawCount);
+      }
     }
 
     renderPass.endPass();
@@ -329,78 +425,73 @@ class PrimitiveTopologyTest extends GPUTest {
 
 export const g = makeTestGroup(PrimitiveTopologyTest);
 
-// Compute test locations for valid and invalid pixels for each topology.
-// If the primitive covers the pixel, the color value will be |kValidPixelColor|.
-// Otherwise, a non-covered pixel will be |kInvalidPixelColor|.
-g.test('point_list').fn(async t => {
-  // Check valid test locations
-  const testLocations = getPointTestLocations(kValidPixelColor);
+const topologies: GPUPrimitiveTopology[] = [
+  'point-list',
+  'line-list',
+  'line-strip',
+  'triangle-list',
+  'triangle-strip',
+];
 
-  // Check invalid test locations
-  testLocations.concat(getLineStripTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleListTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
+g.test('basic')
+  .desc(
+    `Compute test locations for valid and invalid pixels for each topology.
+  If the primitive covers the pixel, the color value will be |kValidPixelColor|.
+  Otherwise, a non-covered pixel will be |kInvalidPixelColor|.
 
-  t.run('point-list', testLocations, /*usePrimitiveRestart=*/ false);
-});
+  Params:
+    - topology= {...all topologies}
+    - indirect= {true, false}
+    - primitiveRestart= { true, false } - always false for non-strip topologies
+  `
+  )
+  .cases(
+    params() //
+      .combine(poptions('topology', topologies))
+      .combine(pbool('indirect'))
+      .combine(pbool('primitiveRestart'))
+      .unless(
+        p => p.primitiveRestart && p.topology !== 'line-strip' && p.topology !== 'triangle-strip'
+      )
+  )
+  .fn(t => {
+    t.run({
+      ...t.params,
+      testLocations: getDefaultTestLocations(t.params),
+    });
+  });
 
-g.test('line_list').fn(async t => {
-  // Check valid test locations
-  const testLocations = getLineTestLocations(kValidPixelColor);
+g.test('unaligned_vertex_count')
+  .desc(
+    `Test that drawing with a number of vertices that's not a multiple of the vertices a given primitive list topology is not an error. The last primitive is not drawn.
 
-  // Check invalid test locations
-  testLocations.concat(getLineStripTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleListTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
-  t.run('line-list', testLocations, /*usePrimitiveRestart=*/ false);
-});
-
-g.test('line_strip').fn(async t => {
-  // Check valid test locations
-  const testLocations = getLineTestLocations(kValidPixelColor);
-  testLocations.concat(getLineStripTestLocations(kValidPixelColor));
-
-  // Check invalid test locations
-  testLocations.concat(getTriangleListTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
-
-  t.run('line-strip', testLocations, /*usePrimitiveRestart=*/ false);
-});
-
-g.test('line_strip,primitive_restart').fn(async t => {
-  // Check valid test locations
-  const testLocations = getPrimitiveRestartLineTestLocations(kValidPixelColor);
-  testLocations.concat(getLineStripTestLocations(kValidPixelColor));
-
-  // Check invalid test locations
-  testLocations.concat(getTriangleListTestLocations(kInvalidPixelColor));
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
-
-  t.run('line-strip', testLocations, /*usePrimitiveRestart=*/ true);
-});
-
-g.test('triangle_list').fn(async t => {
-  // Check valid test locations
-  const testLocations = getTriangleListTestLocations(kValidPixelColor);
-
-  // Check invalid test locations
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
-
-  t.run('triangle-list', testLocations, /*usePrimitiveRestart=*/ false);
-});
-
-g.test('triangle_strip').fn(async t => {
-  // Check valid test locations
-  const testLocations = getTriangleListTestLocations(kValidPixelColor);
-  testLocations.concat(getTriangleStripTestLocations(kValidPixelColor));
-
-  t.run('triangle-strip', testLocations, /*usePrimitiveRestart=*/ false);
-});
-
-g.test('triangle_strip,primitive_restart').fn(async t => {
-  // Check valid test locations
-  const testLocations = getTriangleListTestLocations(kValidPixelColor);
-  testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));
-
-  t.run('triangle-strip', testLocations, /*usePrimitiveRestart=*/ true);
-});
+    Params:
+    - topology= {line-list, triangle-list}
+    - indirect= {true, false}
+    - drawCount - number of vertices to draw. A value smaller than the test's default of ${kDefaultDrawCount}.
+                   One smaller for line-list. One or two smaller for triangle-list.
+    `
+  )
+  .cases(
+    params() //
+      .combine(poptions('topology', ['line-list', 'triangle-list'] as const))
+      .combine(pbool('indirect'))
+      .expand(function* (p) {
+        switch (p.topology) {
+          case 'line-list':
+            yield { drawCount: kDefaultDrawCount - 1 };
+            break;
+          case 'triangle-list':
+            yield { drawCount: kDefaultDrawCount - 1 };
+            yield { drawCount: kDefaultDrawCount - 2 };
+            break;
+        }
+      })
+  )
+  .fn(t => {
+    const testLocations = getDefaultTestLocations({ ...t.params, invalidateLastInList: true });
+    t.run({
+      ...t.params,
+      testLocations,
+    });
+  });

@@ -92,7 +92,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
   service_worker_loader_helpers::CheckVersionStatusBeforeWorkerScriptLoad(
-      version_->status(), is_main_script_);
+      version_->status(), is_main_script_, version_->script_type());
 #endif  // DCHECK_IS_ON()
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -108,9 +108,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     // may be used by ServiceWorkerMainResourceLoader for navigations handled
     // by this service worker.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
-
-    // TODO(crbug.com/1199892): Investigate if we still need to set the header
-    // here.
     resource_request.headers.SetHeader("Service-Worker", "script");
   }
 
@@ -182,7 +179,7 @@ void ServiceWorkerNewScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   // Resource requests for service worker scripts should not follow redirects.
   // See comments in OnReceiveRedirect().
   NOTREACHED();

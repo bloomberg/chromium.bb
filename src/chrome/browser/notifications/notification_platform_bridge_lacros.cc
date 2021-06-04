@@ -10,10 +10,10 @@
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/notification.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
@@ -116,7 +116,7 @@ class NotificationPlatformBridgeLacros::RemoteNotificationDelegate
 
   mojo::PendingRemote<crosapi::mojom::NotificationDelegate>
   BindNotificationDelegate() {
-    return receiver_.BindNewPipeAndPassRemote();
+    return receiver_.BindNewPipeAndPassRemoteWithVersion();
   }
 
   // crosapi::mojom::NotificationDelegate:
@@ -135,7 +135,7 @@ class NotificationPlatformBridgeLacros::RemoteNotificationDelegate
     // Chrome OS does not support inline reply.
     bridge_delegate_->HandleNotificationButtonClicked(
         notification_id_, base::checked_cast<int>(button_index),
-        /*reply=*/base::nullopt);
+        /*reply=*/absl::nullopt);
   }
 
   void OnNotificationSettingsButtonClicked() override {

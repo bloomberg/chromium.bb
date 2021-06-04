@@ -56,6 +56,10 @@ const char kWebDriverWindowRectCommand[] = "rect";
 // the given file is copied and served from a local EmbeddedTestServer.
 const char kChromeCrashTestCommand[] = "chrome_crashtest";
 
+// This returns the Chrome version (e.g., "92.0.4483.0") along with the
+// revision number (e.g, "872495") used for the current build.
+const char kChromeVersionInfoCommand[] = "chrome_versionInfo";
+
 // WebDriver error codes.
 const char kWebDriverInvalidArgumentError[] = "invalid argument";
 const char kWebDriverInvalidSessionError[] = "invalid session id";
@@ -118,6 +122,8 @@ const char kWebDriverStackTraceValueField[] = "stacktrace";
 // Non-standard value field names, used only when testing Chrome.
 // Stderr output from the app.
 const char kChromeStderrValueField[] = "chrome_stderr";
+// The revision number used for the current build.
+const char kChromeRevisionNumberField[] = "chrome_revisionNumber";
 
 // Field names for the "capabilities" struct that's included in the response
 // when creating a session.
@@ -169,7 +175,7 @@ CWTRequestHandler::CWTRequestHandler(ProceduralBlock session_completion_handler)
 
 CWTRequestHandler::~CWTRequestHandler() = default;
 
-base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
+absl::optional<base::Value> CWTRequestHandler::ProcessCommand(
     const std::string& command,
     net::test_server::HttpMethod http_method,
     const std::string& request_content) {
@@ -188,11 +194,14 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     if (command == kWebDriverScreenshotCommand)
       return GetSnapshot();
 
-    return base::nullopt;
+    if (command == kChromeVersionInfoCommand)
+      return GetVersionInfo();
+
+    return absl::nullopt;
   }
 
   if (http_method == net::test_server::METHOD_POST) {
-    base::Optional<base::Value> content =
+    absl::optional<base::Value> content =
         base::JSONReader::Read(request_content);
     if (!content || !content->is_dict()) {
       return CreateErrorValue(kWebDriverInvalidArgumentError,
@@ -234,7 +243,7 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     if (command == kWebDriverWindowRectCommand)
       return SetWindowRect(*content);
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (http_method == net::test_server::METHOD_DELETE) {
@@ -249,16 +258,16 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     if (command == kWebDriverWindowCommand)
       return CloseTargetTab();
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
 CWTRequestHandler::HandleRequest(const net::test_server::HttpRequest& request) {
   std::string command = request.GetURL().ExtractFileName();
-  base::Optional<base::Value> result =
+  absl::optional<base::Value> result =
       ProcessCommand(command, request.method, request.content);
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
@@ -526,7 +535,7 @@ base::Value CWTRequestHandler::ExecuteScript(const base::Value* script,
                             kWebDriverScriptTimeoutMessage);
   }
 
-  base::Optional<base::Value> result =
+  absl::optional<base::Value> result =
       base::JSONReader::Read(base::SysNSStringToUTF8(result_as_json));
   DCHECK(result);
   return std::move(*result);
@@ -545,4 +554,24 @@ base::Value CWTRequestHandler::GetSnapshot() {
 
 base::Value CWTRequestHandler::SetWindowRect(const base::Value& rect) {
   return base::Value();
+}
+
+base::Value CWTRequestHandler::GetVersionInfo() {
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetStringKey(kCapabilitiesBrowserVersionField,
+                      version_info::GetVersionNumber());
+
+  // The full revision starts with a git hash and ends with the revision
+  // number in the following format: @{#123456}
+  std::string full_revision = version_info::GetLastChange();
+  size_t start_position = full_revision.rfind("#") + 1;
+
+  if (start_position == std::string::npos) {
+    result.SetStringKey(kChromeRevisionNumberField, "0");
+  } else {
+    size_t length = full_revision.size() - start_position - 1;
+    result.SetStringKey(kChromeRevisionNumberField,
+                        full_revision.substr(start_position, length));
+  }
+  return result;
 }

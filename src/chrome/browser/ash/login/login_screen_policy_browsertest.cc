@@ -25,7 +25,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -47,6 +46,7 @@ namespace chromeos {
 
 namespace {
 const char kDomain[] = "domain.com";
+const char16_t kDomain16[] = u"domain.com";
 }  // namespace
 
 class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
@@ -228,11 +228,9 @@ IN_PROC_BROWSER_TEST_F(LoginScreenButtonsLocalePolicy, UnifiedTrayLabelsText) {
   // Text on EnterpriseManagedView tooltip in current locale.
   std::u16string expected_text =
       ash::features::IsManagedDeviceUIRedesignEnabled()
-          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
-                                       base::UTF8ToUTF16(kDomain))
+          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, kDomain16)
           : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                       ui::GetChromeOSDeviceName(),
-                                       base::UTF8ToUTF16(kDomain));
+                                       ui::GetChromeOSDeviceName(), kDomain16);
   EXPECT_EQ(expected_text, unified_tray_test_api->GetBubbleViewTooltip(
                                ash::VIEW_ID_TRAY_ENTERPRISE));
 }

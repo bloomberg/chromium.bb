@@ -18,7 +18,7 @@ TEST(LocationBarModelUtilTest, GetSecurityVectorIconWithNoneLevel) {
 TEST(LocationBarModelUtilTest, GetSecurityVectorIconWithSecureLevel) {
   const gfx::VectorIcon& icon = location_bar_model::GetSecurityVectorIcon(
       security_state::SecurityLevel::SECURE);
-  EXPECT_EQ(icon.name, omnibox::kHttpsValidIcon.name);
+  EXPECT_EQ(icon.name, vector_icons::kHttpsValidIcon.name);
 }
 
 TEST(LocationBarModelUtilTest,
@@ -31,11 +31,11 @@ TEST(LocationBarModelUtilTest,
 TEST(LocationBarModelUtilTest, GetSecurityVectorIconWithDangerousLevel) {
   const gfx::VectorIcon& icon = location_bar_model::GetSecurityVectorIcon(
       security_state::SecurityLevel::DANGEROUS);
-  EXPECT_EQ(icon.name, omnibox::kNotSecureWarningIcon.name);
+  EXPECT_EQ(icon.name, vector_icons::kNotSecureWarningIcon.name);
 }
 
 TEST(LocationBarModelUtilTest, GetSecurityVectorIconWithWarningLevel) {
   const gfx::VectorIcon& icon = location_bar_model::GetSecurityVectorIcon(
       security_state::SecurityLevel::WARNING);
-  EXPECT_EQ(icon.name, omnibox::kNotSecureWarningIcon.name);
+  EXPECT_EQ(icon.name, vector_icons::kNotSecureWarningIcon.name);
 }

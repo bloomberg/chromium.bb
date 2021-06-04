@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -22,7 +23,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 

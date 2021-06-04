@@ -137,7 +137,7 @@ function getCategoryItemMap() {
       icon: 'settings:cookie',
       enabledLabel: 'siteSettingsCookiesAllowed',
       disabledLabel: 'siteSettingsBlocked',
-      otherLabel: 'deleteDataPostSession',
+      otherLabel: 'cookiePageClearOnExit',
     },
     {
       route: routes.SITE_SETTINGS_LOCATION,
@@ -221,8 +221,6 @@ function getCategoryItemMap() {
       icon: 'settings:file-handling',
       enabledLabel: 'siteSettingsFileHandlingAsk',
       disabledLabel: 'siteSettingsFileHandlingBlock',
-      shouldShow: () =>
-          loadTimeData.getBoolean('enableFileHandlingContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
@@ -243,8 +241,6 @@ function getCategoryItemMap() {
                                       'siteSettingsFontAccessAsk',
       disabledLabel: redesignEnabled ? 'siteSettingsFontsBlocked' :
                                        'siteSettingsFontAccessBlock',
-      shouldShow: () =>
-          loadTimeData.getBoolean('enableFontAccessContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_NOTIFICATIONS,

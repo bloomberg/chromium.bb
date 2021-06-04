@@ -3,5 +3,5 @@
 var<function> f : vec2<f32>;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

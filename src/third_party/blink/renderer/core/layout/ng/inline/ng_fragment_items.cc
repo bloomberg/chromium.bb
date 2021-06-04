@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {

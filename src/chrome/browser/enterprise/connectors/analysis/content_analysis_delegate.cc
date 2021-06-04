@@ -97,9 +97,16 @@ StringAnalysisRequest::StringAnalysisRequest(
     data_.contents = std::move(text);
     result_ = BinaryUploadService::Result::SUCCESS;
   }
+  safe_browsing::IncrementCrashKey(
+      safe_browsing::ScanningCrashKey::PENDING_TEXT_UPLOADS);
+  safe_browsing::IncrementCrashKey(
+      safe_browsing::ScanningCrashKey::TOTAL_TEXT_UPLOADS);
 }
 
-StringAnalysisRequest::~StringAnalysisRequest() = default;
+StringAnalysisRequest::~StringAnalysisRequest() {
+  safe_browsing::DecrementCrashKey(
+      safe_browsing::ScanningCrashKey::PENDING_TEXT_UPLOADS);
+}
 
 void StringAnalysisRequest::GetRequestData(DataCallback callback) {
   std::move(callback).Run(result_, data_);
@@ -313,6 +320,7 @@ void ContentAnalysisDelegate::CreateForWebContents(
 
     int files_count = delegate_ptr->data_.paths.size();
 
+    // This dialog is owned by the constrained_window code.
     delegate_ptr->dialog_ =
         new ContentAnalysisDialog(std::move(delegate), web_contents,
                                   std::move(access_point), files_count);
@@ -397,9 +405,9 @@ void ContentAnalysisDelegate::StringRequestCallback(
     if (should_warn) {
       text_warning_ = true;
       text_response_ = std::move(response);
-      UpdateFinalResult(FinalResult::WARNING);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING);
     } else {
-      UpdateFinalResult(FinalResult::FAILURE);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE);
     }
   }
 
@@ -430,17 +438,20 @@ void ContentAnalysisDelegate::CompleteFileRequestCallback(
 
   if (!file_complies) {
     if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      UpdateFinalResult(FinalResult::LARGE_FILES);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES);
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-      UpdateFinalResult(FinalResult::ENCRYPTED_FILES);
+      UpdateFinalResult(
+          ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES);
     } else if (should_warn) {
       file_warnings_[index] = std::move(response);
-      UpdateFinalResult(FinalResult::WARNING);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING);
     } else {
-      UpdateFinalResult(FinalResult::FAILURE);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE);
     }
   }
 
+  safe_browsing::DecrementCrashKey(
+      safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS);
   MaybeCompleteScanRequest();
 }
 
@@ -473,6 +484,11 @@ bool ContentAnalysisDelegate::UploadData() {
 
   // Create a text request and a file request for each file.
   PrepareTextRequest();
+  safe_browsing::IncrementCrashKey(
+      safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS,
+      data_.paths.size());
+  safe_browsing::IncrementCrashKey(
+      safe_browsing::ScanningCrashKey::TOTAL_FILE_UPLOADS, data_.paths.size());
   for (const base::FilePath& path : data_.paths)
     PrepareFileRequest(path);
 
@@ -582,7 +598,7 @@ void ContentAnalysisDelegate::MaybeCompleteScanRequest() {
 
   // If showing the warning message, wait before running the callback. The
   // callback will be called either in BypassWarnings or Cancel.
-  if (final_result_ != FinalResult::WARNING)
+  if (final_result_ != ContentAnalysisDelegateBase::FinalResult::WARNING)
     RunCallback();
 
   if (!UpdateDialog() && data_uploaded_) {
@@ -628,7 +644,8 @@ void ContentAnalysisDelegate::OnGotFileInfo(
   UploadFileForDeepScanning(result, data_.paths[index], std::move(request));
 }
 
-void ContentAnalysisDelegate::UpdateFinalResult(FinalResult result) {
+void ContentAnalysisDelegate::UpdateFinalResult(
+    ContentAnalysisDelegateBase::FinalResult result) {
   if (result < final_result_)
     final_result_ = result;
 }

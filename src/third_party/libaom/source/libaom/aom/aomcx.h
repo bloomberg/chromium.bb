@@ -222,10 +222,14 @@ enum aome_enc_control_id {
 
   /* NOTE: enum 15 unused */
 
-  /*!\brief Codec control function to set loop filter sharpness,
+  /*!\brief Codec control function to set the sharpness parameter,
    * unsigned int parameter.
    *
-   * Valid range: 0..7. The default is 0.
+   * This parameter controls the level at which transform coeff RD favours
+   * sharpness in the block.
+   *
+   * Valid range: 0..7. The default is 0. Values 1-7 will avoid eob and skip
+   * block optimization and will change rdmult in favour of block sharpness.
    */
   AOME_SET_SHARPNESS = AOME_SET_ENABLEAUTOALTREF + 2,  // 16
 
@@ -1327,6 +1331,21 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_DIAGONAL_INTRA = 141,
 
+  /*!\brief Control to set frequency of the cost updates for intrabc motion
+   * vectors, unsigned int parameter
+   *
+   * - 0 = update at SB level (default)
+   * - 1 = update at SB row level in tile
+   * - 2 = update at tile level
+   * - 3 = turn off
+   */
+  AV1E_SET_DV_COST_UPD_FREQ = 142,
+
+  /*!\brief Codec control to set the path for partition stats read and write.
+   * const char * parameter.
+   */
+  AV1E_SET_PARTITION_INFO_PATH = 143,
+
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
   // No encoder control ID should be added below.
@@ -1449,8 +1468,6 @@ typedef struct aom_svc_params {
   int layer_target_bitrate[AOM_MAX_LAYERS];
   /*! Frame rate factor for each temporal layer */
   int framerate_factor[AOM_MAX_TS_LAYERS];
-  /*! Flag to do KSVC for fixed mode */
-  int ksvc_fixed_mode;
 } aom_svc_params_t;
 
 /*!brief Parameters for setting ref frame config */
@@ -1861,6 +1878,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DNL_DENOISING, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DNL_DENOISING
+
+AOM_CTRL_USE_TYPE(AV1E_SET_DV_COST_UPD_FREQ, unsigned int)
+#define AOM_CTRL_AV1E_SET_DV_COST_UPD_FREQ
+
+AOM_CTRL_USE_TYPE(AV1E_SET_PARTITION_INFO_PATH, const char *)
+#define AOM_CTRL_AV1E_SET_PARTITION_INFO_PATH
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

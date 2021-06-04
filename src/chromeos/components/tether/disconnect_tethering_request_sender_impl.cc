@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
@@ -73,7 +74,7 @@ bool DisconnectTetheringRequestSenderImpl::HasPendingRequests() {
 
 void DisconnectTetheringRequestSenderImpl::OnTetherHostFetched(
     const std::string& device_id,
-    base::Optional<multidevice::RemoteDeviceRef> tether_host) {
+    absl::optional<multidevice::RemoteDeviceRef> tether_host) {
   num_pending_host_fetches_--;
   DCHECK(num_pending_host_fetches_ >= 0);
 

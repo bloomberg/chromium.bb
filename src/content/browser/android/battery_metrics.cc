@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/trace_event/trace_event.h"
 #include "net/android/network_library.h"
 #include "net/android/traffic_stats.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 const base::Feature kForegroundRadioStateCountWakeups{
     "ForegroundRadioStateCountWakeups", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -26,8 +26,9 @@ void Report30SecondRadioUsage(int64_t tx_bytes, int64_t rx_bytes, int wakeups) {
   if (!base::android::RadioUtils::IsSupported())
     return;
 
-  if (base::android::RadioUtils::IsWifiConnected()) {
-    base::Optional<int32_t> maybe_level = net::android::GetWifiSignalLevel();
+  if (base::android::RadioUtils::GetConnectionType() ==
+      base::android::RadioConnectionType::kWifi) {
+    absl::optional<int32_t> maybe_level = net::android::GetWifiSignalLevel();
     if (!maybe_level.has_value())
       return;
 
@@ -46,7 +47,7 @@ void Report30SecondRadioUsage(int64_t tx_bytes, int64_t rx_bytes, int wakeups) {
         "Power.ForegroundRadio.ReceivedKiB.Wifi.30Seconds", wifi_level,
         rx_bytes, 1024);
   } else {
-    base::Optional<base::android::RadioSignalLevel> maybe_level =
+    absl::optional<base::android::RadioSignalLevel> maybe_level =
         base::android::RadioUtils::GetCellSignalLevel();
     if (!maybe_level.has_value())
       return;
@@ -203,18 +204,20 @@ void AndroidBatteryMetrics::UpdateMetricsEnabled() {
 }
 
 void AndroidBatteryMetrics::MonitorRadioState() {
-  base::android::RadioDataActivity activity =
-      base::android::RadioUtils::GetCellDataActivity();
+  auto maybe_activity = base::android::RadioUtils::GetCellDataActivity();
+  if (!maybe_activity.has_value())
+    return;
+
   if (last_activity_ == base::android::RadioDataActivity::kDormant &&
-      activity != base::android::RadioDataActivity::kDormant) {
+      *maybe_activity != base::android::RadioDataActivity::kDormant) {
     TRACE_EVENT_INSTANT0("power", "RadioWakeup", TRACE_EVENT_SCOPE_GLOBAL);
     ++radio_wakeups_;
   }
   if (last_activity_ != base::android::RadioDataActivity::kDormant &&
-      activity == base::android::RadioDataActivity::kDormant) {
+      *maybe_activity == base::android::RadioDataActivity::kDormant) {
     TRACE_EVENT_INSTANT0("power", "RadioDormant", TRACE_EVENT_SCOPE_GLOBAL);
   }
-  last_activity_ = activity;
+  last_activity_ = *maybe_activity;
 }
 
 void AndroidBatteryMetrics::UpdateAndReportRadio() {

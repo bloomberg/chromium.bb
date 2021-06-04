@@ -31,9 +31,9 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -90,6 +90,7 @@ class ImageBitmap;
 class ImageData;
 class IntSize;
 class OESVertexArrayObject;
+class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 class VideoFrame;
 class WebGLActiveInfo;
 class WebGLBuffer;
@@ -162,7 +163,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   CreateWebGraphicsContext3DProvider(CanvasRenderingContextHost*,
                                      const CanvasContextCreationAttributesCore&,
                                      Platform::ContextType context_type,
-                                     bool* using_gpu_compositing);
+                                     Platform::GraphicsInfo* graphics_info);
   static void ForceNextWebGLContextCreationToFail();
 
   Platform::ContextType ContextType() const { return context_type_; }
@@ -296,7 +297,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebGLActiveInfo* getActiveAttrib(WebGLProgram*, GLuint index);
   WebGLActiveInfo* getActiveUniform(WebGLProgram*, GLuint index);
   bool getAttachedShaders(WebGLProgram*, HeapVector<Member<WebGLShader>>&);
-  base::Optional<HeapVector<Member<WebGLShader>>> getAttachedShaders(
+  absl::optional<HeapVector<Member<WebGLShader>>> getAttachedShaders(
       WebGLProgram*);
   GLint getAttribLocation(WebGLProgram*, const String& name);
   ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
@@ -318,7 +319,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebGLShaderPrecisionFormat* getShaderPrecisionFormat(GLenum shader_type,
                                                        GLenum precision_type);
   String getShaderSource(WebGLShader*);
-  base::Optional<Vector<String>> getSupportedExtensions();
+  absl::optional<Vector<String>> getSupportedExtensions();
   virtual ScriptValue getTexParameter(ScriptState*,
                                       GLenum target,
                                       GLenum pname);
@@ -628,11 +629,20 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     void Trace(Visitor*) const;
   };
 
+  // TODO(https://crbug.com/1208480): This function applies only to 2D rendering
+  // contexts, and should be removed.
+  CanvasColorParams CanvasRenderingContextColorParams() const override {
+    return color_params_;
+  }
   scoped_refptr<StaticBitmapImage> GetImage() override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2() { return context_type_ == Platform::kWebGL2ContextType; }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void commit();
 
@@ -679,12 +689,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
-                            bool using_gpu_compositing,
+                            const Platform::GraphicsInfo& graphics_info,
                             const CanvasContextCreationAttributesCore&,
                             Platform::ContextType);
   scoped_refptr<DrawingBuffer> CreateDrawingBuffer(
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      bool using_gpu_compositing);
+      const Platform::GraphicsInfo& graphics_info);
   void SetupFlags();
 
   // CanvasRenderingContext implementation.
@@ -1810,7 +1820,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             scoped_refptr<base::SingleThreadTaskRunner>,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
-                            bool using_gpu_compositing,
+                            const Platform::GraphicsInfo& graphics_info,
                             const CanvasContextCreationAttributesCore&,
                             Platform::ContextType);
   static bool SupportOwnOffscreenSurface(ExecutionContext*);
@@ -1818,7 +1828,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   CreateContextProviderInternal(CanvasRenderingContextHost*,
                                 const CanvasContextCreationAttributesCore&,
                                 Platform::ContextType context_type,
-                                bool* using_gpu_compositing);
+                                Platform::GraphicsInfo* graphics_info);
 
   void TexImageHelperMediaVideoFrame(
       TexImageFunctionID function_id,
@@ -1894,6 +1904,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   int number_of_user_allocated_multisampled_renderbuffers_;
 
   bool has_been_drawn_to_ = false;
+
+  CanvasColorParams color_params_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };

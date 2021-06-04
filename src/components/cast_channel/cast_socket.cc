@@ -19,7 +19,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -62,8 +61,8 @@ bool IsTerminalState(ConnectionState state) {
 void OnConnected(
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback,
     int result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -79,7 +78,7 @@ void ConnectOnUIThread(
     mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   network_context_getter.Run()->CreateTCPConnectedSocket(
-      base::nullopt /* local_addr */, remote_address_list,
+      absl::nullopt /* local_addr */, remote_address_list,
       nullptr /* tcp_connected_socket_options */,
       net::MutableNetworkTrafficAnnotationTag(
           CastSocketImpl::GetNetworkTrafficAnnotationTag()),
@@ -550,8 +549,8 @@ int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
 
 void CastSocketImpl::OnConnect(
     int result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DoConnectLoop(result);
@@ -561,7 +560,7 @@ void CastSocketImpl::OnUpgradeToTLS(
     int result,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream,
-    const base::Optional<net::SSLInfo>& ssl_info) {
+    const absl::optional<net::SSLInfo>& ssl_info) {
   if (result == net::OK) {
     mojo_data_pump_ = std::make_unique<MojoDataPump>(std::move(receive_stream),
                                                      std::move(send_stream));

@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/dcheck_is_on.h"
 #include "cc/base/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -636,7 +637,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   inline bool IsContainerForContainerQueries() const {
     NOT_DESTROYED();
-    return ShouldApplyLayoutContainment() &&
+    return ShouldApplyLayoutContainment() && ShouldApplyStyleContainment() &&
            (ShouldApplyInlineSizeContainment() ||
             ShouldApplyBlockSizeContainment());
   }
@@ -1206,6 +1207,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGTextPath() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGTextPath);
+  }
+  bool IsSVGTSpan() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectSVGTSpan);
   }
   bool IsSVGInline() const {
     NOT_DESTROYED();
@@ -2098,6 +2103,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // PaintLayer descendants.
   virtual void RecalcVisualOverflow();
   void RecalcNormalFlowChildVisualOverflowIfNeeded();
+#if DCHECK_IS_ON()
+  // Enables DCHECK to ensure that the visual overflow for |this| is computed.
+  // The actual invalidation is maintained in |PaintLayer|.
+  void InvalidateVisualOverflow();
+#endif
 
   // Subclasses must reimplement this method to compute the size and position
   // of this object and all its descendants.
@@ -2211,7 +2221,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 ApplyStyleChanges = ApplyStyleChanges::kYes);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoElementStyle(scoped_refptr<const ComputedStyle>);
+  void SetPseudoElementStyle(scoped_refptr<const ComputedStyle>,
+                             bool match_parent_size = false);
 
   // In some cases we modify the ComputedStyle after the style recalc, either
   // for updating anonymous style or doing layout hacks for special elements
@@ -2428,7 +2439,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // box of named anchors.
   // TODO(crbug.com/953479): After the bug is fixed, investigate whether we
   // can combine this with AbsoluteBoundingBoxRect().
-  virtual PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline() const;
+  virtual PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline(
+      MapCoordinatesFlags flags = 0) const;
   // This returns an IntRect expanded from
   // AbsoluteBoundingBoxRectHandlingEmptyInline by ScrollMargin.
   PhysicalRect AbsoluteBoundingBoxRectForScrollIntoView() const;
@@ -3479,6 +3491,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGText,
     kLayoutObjectSVGTextPath,
     kLayoutObjectSVGTransformableContainer,
+    kLayoutObjectSVGTSpan,
     kLayoutObjectSVGViewportContainer,
   };
   virtual bool IsOfType(LayoutObjectType type) const {

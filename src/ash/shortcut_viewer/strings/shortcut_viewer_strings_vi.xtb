@@ -5,7 +5,6 @@
 <translation id="104962181688258143">Mở ứng dụng Tệp</translation>
 <translation id="1122869341872663659">Hiển thị <ph name="N" /> kết quả tìm kiếm cho <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của thẻ</translation>
-<translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
 <translation id="1251638888133819822">Bật hoặc tắt tính năng phóng to toàn bộ màn hình</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Thoát</translation>
@@ -15,6 +14,7 @@
 <translation id="1477442857810932985">Chuyển đến cuối dòng</translation>
 <translation id="1499072997694708844">Đóng bất kỳ cửa sổ tìm kiếm nào đang mở hoặc ngừng tải trang hiện tại</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
+<translation id="1516966594427080024">Mở một cửa sổ mới trong chế độ Ẩn danh</translation>
 <translation id="152892567002884378">Tăng âm lượng</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Di chuyển tới phần đầu của từ trước</translation>

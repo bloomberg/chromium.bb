@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_animation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeanimationoptions_unrestricteddouble.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "v8/include/v8.h"
@@ -62,9 +64,15 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
       return Timing();
     }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* timing_input =
+        MakeGarbageCollected<V8UnionKeyframeEffectOptionsOrUnrestrictedDouble>(
+            timing_input_dictionary);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
         UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
             timing_input_dictionary);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
     if (exception_state.HadException())
       return Timing();
@@ -75,9 +83,15 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
     if (exception_state.HadException())
       return Timing();
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* timing_input = MakeGarbageCollected<
+        V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble>(
+        timing_input_dictionary);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     UnrestrictedDoubleOrKeyframeAnimationOptions timing_input =
         UnrestrictedDoubleOrKeyframeAnimationOptions::
             FromKeyframeAnimationOptions(timing_input_dictionary);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
     if (exception_state.HadException())
       return Timing();
@@ -106,9 +120,15 @@ Timing AnimationTimingInputTest::ApplyTimingInputString(
     if (exception_state.HadException())
       return Timing();
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* timing_input =
+        MakeGarbageCollected<V8UnionKeyframeEffectOptionsOrUnrestrictedDouble>(
+            timing_input_dictionary);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
         UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
             timing_input_dictionary);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
     if (exception_state.HadException())
       return Timing();
@@ -119,9 +139,15 @@ Timing AnimationTimingInputTest::ApplyTimingInputString(
     if (exception_state.HadException())
       return Timing();
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* timing_input = MakeGarbageCollected<
+        V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble>(
+        timing_input_dictionary);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     UnrestrictedDoubleOrKeyframeAnimationOptions timing_input =
         UnrestrictedDoubleOrKeyframeAnimationOptions::
             FromKeyframeAnimationOptions(timing_input_dictionary);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
     if (exception_state.HadException())
       return Timing();
@@ -135,35 +161,35 @@ TEST_F(AnimationTimingInputTest, TimingInputStartDelay) {
   bool did_success;
   EXPECT_EQ(1.1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", 1100,
                                         did_success)
-                     .start_delay);
+                     .start_delay.InSecondsF());
   EXPECT_TRUE(did_success);
   EXPECT_EQ(-1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", -1000,
                                        did_success)
-                    .start_delay);
+                    .start_delay.InSecondsF());
   EXPECT_TRUE(did_success);
   EXPECT_EQ(1, ApplyTimingInputString(scope.GetIsolate(), "delay", "1000",
                                       did_success)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_TRUE(did_success);
   EXPECT_EQ(
       0, ApplyTimingInputString(scope.GetIsolate(), "delay", "1s", did_success)
-             .start_delay);
+             .start_delay.InSecondsF());
   EXPECT_FALSE(did_success);
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "Infinity",
                                       did_success)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_FALSE(did_success);
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "-Infinity",
                                       did_success)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_FALSE(did_success);
   EXPECT_EQ(
       0, ApplyTimingInputString(scope.GetIsolate(), "delay", "NaN", did_success)
-             .start_delay);
+             .start_delay.InSecondsF());
   EXPECT_FALSE(did_success);
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "rubbish",
                                       did_success)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_FALSE(did_success);
 }
 
@@ -173,28 +199,28 @@ TEST_F(AnimationTimingInputTest,
   bool ignored_success;
   EXPECT_EQ(1.1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", 1100,
                                         ignored_success, false)
-                     .start_delay);
+                     .start_delay.InSecondsF());
   EXPECT_EQ(-1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", -1000,
                                        ignored_success, false)
-                    .start_delay);
+                    .start_delay.InSecondsF());
   EXPECT_EQ(1, ApplyTimingInputString(scope.GetIsolate(), "delay", "1000",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "1s",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "Infinity",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "-Infinity",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "NaN",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "rubbish",
                                       ignored_success, false)
-                   .start_delay);
+                   .start_delay.InSecondsF());
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputEndDelay) {
@@ -202,10 +228,10 @@ TEST_F(AnimationTimingInputTest, TimingInputEndDelay) {
   bool ignored_success;
   EXPECT_EQ(10, ApplyTimingInputNumber(scope.GetIsolate(), "endDelay", 10000,
                                        ignored_success)
-                    .end_delay);
+                    .end_delay.InSecondsF());
   EXPECT_EQ(-2.5, ApplyTimingInputNumber(scope.GetIsolate(), "endDelay", -2500,
                                          ignored_success)
-                      .end_delay);
+                      .end_delay.InSecondsF());
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputFillMode) {
@@ -453,9 +479,15 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction) {
 TEST_F(AnimationTimingInputTest, TimingInputEmpty) {
   DummyExceptionStateForTesting exception_state;
   Timing control_timing;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* timing_input =
+      MakeGarbageCollected<V8UnionKeyframeEffectOptionsOrUnrestrictedDouble>(
+          KeyframeEffectOptions::Create());
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
       UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
           KeyframeEffectOptions::Create());
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Timing updated_timing =
       TimingInput::Convert(timing_input, nullptr, exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -472,9 +504,15 @@ TEST_F(AnimationTimingInputTest, TimingInputEmpty) {
 TEST_F(AnimationTimingInputTest, TimingInputEmptyKeyframeAnimationOptions) {
   DummyExceptionStateForTesting exception_state;
   Timing control_timing;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* input_timing =
+      MakeGarbageCollected<V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble>(
+          KeyframeAnimationOptions::Create());
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   UnrestrictedDoubleOrKeyframeAnimationOptions input_timing =
       UnrestrictedDoubleOrKeyframeAnimationOptions::
           FromKeyframeAnimationOptions(KeyframeAnimationOptions::Create());
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Timing updated_timing =
       TimingInput::Convert(input_timing, nullptr, exception_state);
   EXPECT_FALSE(exception_state.HadException());

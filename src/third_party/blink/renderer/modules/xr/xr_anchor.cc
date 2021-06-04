@@ -63,12 +63,18 @@ XRSpace* XRAnchor::anchorSpace(ExceptionState& exception_state) const {
   return anchor_space_;
 }
 
-base::Optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
+device::mojom::blink::XRNativeOriginInformationPtr XRAnchor::NativeOrigin()
+    const {
+  return device::mojom::blink::XRNativeOriginInformation::NewAnchorId(
+      this->id());
+}
+
+absl::optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
   DVLOG(3) << __func__ << ": id_=" << id_;
 
   if (!mojo_from_anchor_) {
     DVLOG(3) << __func__ << ": id_=" << id_ << ", mojo_from_anchor_ is not set";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return TransformationMatrix(mojo_from_anchor_->ToTransform().matrix());
@@ -79,7 +85,7 @@ void XRAnchor::Delete() {
 
   if (!is_deleted_) {
     session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
-    mojo_from_anchor_ = base::nullopt;
+    mojo_from_anchor_ = absl::nullopt;
     anchor_space_ = nullptr;
   }
 

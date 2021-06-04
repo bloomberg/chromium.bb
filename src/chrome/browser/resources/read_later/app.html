@@ -5,9 +5,18 @@
     justify-content: flex-end;
   }
 
+  :host([side-panel]) #top-container {
+    display: none;
+  }
+
   #readLaterList {
     max-height: 500px;
     overflow: auto;
+  }
+
+  :host([side-panel]) #readLaterList {
+    margin-block-start: 8px;
+    max-height: none;
   }
 
   #header {
@@ -32,12 +41,6 @@
     }
   }
 
-  #read-later-list {
-    max-height: 444px;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
   .mwb-list-item:focus-within {
     background-color: var(--mwb-list-item-hover-background-color);
   }
@@ -55,6 +58,19 @@
     height: 24px;
     margin-inline-start: var(--mwb-list-item-horizontal-margin);
     margin-top: 4px;
+  }
+
+  :host([side-panel]) .sub-heading {
+    border: none;
+    font-weight: 600;
+    height: 20px;
+    margin: 0;
+    padding: 8px 16px;
+  }
+
+  :host([side-panel]) #ureadItemsList + .sub-heading {
+    border-top: 1px solid #dbdbdb;
+    margin-block-start: 8px;
   }
 
   #empty-state-header {
@@ -105,8 +121,8 @@
       </read-later-item>
     </template>
   </iron-selector>
-  <div hidden="[[!isReadingListEmpty_(unreadItems_, readItems_)]]">
-    <div id="empty-state-header">$i18n{emptyStateHeader}</div>
-    <div id="empty-state-subheader">$i18n{emptyStateSubheader}</div>
-  </div>
+</div>
+<div hidden="[[!isReadingListEmpty_(unreadItems_, readItems_)]]">
+  <div id="empty-state-header">$i18n{emptyStateHeader}</div>
+  <div id="empty-state-subheader">$i18n{emptyStateSubheader}</div>
 </div>

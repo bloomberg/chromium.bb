@@ -19,7 +19,6 @@ modules_idl_files = [
   "gpu_compute_pipeline.idl",
   "gpu_device.idl",
   "gpu_device_lost_info.idl",
-  "gpu_fence.idl",
   "gpu_map_mode.idl",
   "gpu_out_of_memory_error.idl",
   "gpu_pipeline_layout.idl",
@@ -32,6 +31,7 @@ modules_idl_files = [
   "gpu_sampler.idl",
   "gpu_shader_module.idl",
   "gpu_shader_stage.idl",
+  "gpu_supported_features.idl",
   "gpu_swap_chain.idl",
   "gpu_texture.idl",
   "gpu_texture_usage.idl",
@@ -61,7 +61,6 @@ modules_dictionary_idl_files = [
   "gpu_depth_stencil_state.idl",
   "gpu_device_descriptor.idl",
   "gpu_extent_3d_dict.idl",
-  "gpu_fence_descriptor.idl",
   "gpu_fragment_state.idl",
   "gpu_image_copy_buffer.idl",
   "gpu_image_copy_image_bitmap.idl",
@@ -80,8 +79,8 @@ modules_dictionary_idl_files = [
   "gpu_rasterization_state_descriptor.idl",
   "gpu_render_bundle_descriptor.idl",
   "gpu_render_bundle_encoder_descriptor.idl",
-  "gpu_render_pass_color_attachment_descriptor.idl",
-  "gpu_render_pass_depth_stencil_attachment_descriptor.idl",
+  "gpu_render_pass_color_attachment.idl",
+  "gpu_render_pass_depth_stencil_attachment.idl",
   "gpu_render_pass_descriptor.idl",
   "gpu_render_pipeline_descriptor.idl",
   "gpu_request_adapter_options.idl",
@@ -98,7 +97,6 @@ modules_dictionary_idl_files = [
   "gpu_vertex_attribute.idl",
   "gpu_vertex_buffer_layout.idl",
   "gpu_vertex_state.idl",
-  "gpu_vertex_state_descriptor.idl",
 ]
 
 modules_dependency_idl_files = [

@@ -10,10 +10,11 @@
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/color_id.h"
@@ -111,9 +112,10 @@ NativeTheme::NativeTheme(bool should_use_dark_colors)
 
 NativeTheme::~NativeTheme() = default;
 
-base::Optional<SkColor> NativeTheme::GetColorProviderColor(
+absl::optional<SkColor> NativeTheme::GetColorProviderColor(
     ColorId color_id,
-    ColorScheme color_scheme) const {
+    ColorScheme color_scheme,
+    std::string theme_name) const {
   if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
       AllowColorPipelineRedirection(color_scheme)) {
     if (auto provider_color_id = NativeThemeColorIdToColorId(color_id)) {
@@ -123,12 +125,13 @@ base::Optional<SkColor> NativeTheme::GetColorProviderColor(
                : ColorProviderManager::ColorMode::kLight,
            (color_scheme == NativeTheme::ColorScheme::kPlatformHighContrast)
                ? ColorProviderManager::ContrastMode::kHigh
-               : ColorProviderManager::ContrastMode::kNormal});
+               : ColorProviderManager::ContrastMode::kNormal,
+           std::move(theme_name)});
       ReportHistogramBooleanUsesColorProvider(true);
       return color_provider->GetColor(provider_color_id.value());
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool NativeTheme::ShouldUseDarkColors() const {
@@ -152,6 +155,10 @@ NativeTheme::GetPlatformHighContrastColorScheme() const {
   return (GetPreferredColorScheme() == PreferredColorScheme::kDark)
              ? PlatformHighContrastColorScheme::kDark
              : PlatformHighContrastColorScheme::kLight;
+}
+
+std::string NativeTheme::GetNativeThemeName() const {
+  return std::string();
 }
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
@@ -203,7 +210,7 @@ SkColor NativeTheme::GetSystemColorDeprecated(ColorId color_id,
   return GetAuraColor(color_id, this, color_scheme);
 }
 
-base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
+absl::optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
   return CaptionStyle::FromSystemSettings();
 }
 
@@ -212,13 +219,13 @@ NativeTheme::GetSystemColors() const {
   return system_colors_;
 }
 
-base::Optional<SkColor> NativeTheme::GetSystemThemeColor(
+absl::optional<SkColor> NativeTheme::GetSystemThemeColor(
     SystemThemeColor theme_color) const {
   auto color = system_colors_.find(theme_color);
   if (color != system_colors_.end())
     return color->second;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool NativeTheme::HasDifferentSystemColors(
@@ -307,8 +314,10 @@ SkColor NativeTheme::GetSystemColorCommon(ColorId color_id,
   if (color_scheme == NativeTheme::ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
 
-  if (auto color = GetColorProviderColor(color_id, color_scheme))
+  if (auto color =
+          GetColorProviderColor(color_id, color_scheme, GetNativeThemeName())) {
     return color.value();
+  }
 
   ReportHistogramBooleanUsesColorProvider(false);
   return GetSystemColorDeprecated(color_id, color_scheme, apply_processing);

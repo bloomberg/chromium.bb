@@ -14,13 +14,13 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 
 namespace ash {
@@ -136,6 +136,10 @@ void AssistantWebContainerView::OpenUrl(const GURL& url) {
   ContentsView()->Navigate(url);
 }
 
+void AssistantWebContainerView::SetCanGoBackForTesting(bool can_go_back) {
+  DidChangeCanGoBack(can_go_back);
+}
+
 AssistantWebView* AssistantWebContainerView::ContentsView() {
   return contents_view_ptr_ ? contents_view_ptr_ : contents_view_.get();
 }
@@ -159,6 +163,10 @@ void AssistantWebContainerView::RemoveContents() {
 
   SetFocusBehavior(FocusBehavior::NEVER);
 
+  // Remove back button.
+  web_container_view_delegate_->UpdateBackButtonVisibility(
+      GetWidget(),
+      /*can_go_back=*/false);
   RemoveChildViewT(contents_view_ptr_)->RemoveObserver(this);
   contents_view_ptr_ = nullptr;
 }

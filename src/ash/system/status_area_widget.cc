@@ -16,7 +16,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
-#include "ash/system/accessibility/select_to_speak_tray.h"
+#include "ash/system/accessibility/select_to_speak/select_to_speak_tray.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/media/media_tray.h"
@@ -39,6 +39,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "media/base/media_switches.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 
@@ -101,10 +102,8 @@ void StatusAreaWidget::Initialize() {
       std::make_unique<StatusAreaOverflowButtonTray>(shelf_);
   AddTrayButton(overflow_button_tray_.get());
 
-  if (features::IsTemporaryHoldingSpaceEnabled()) {
-    holding_space_tray_ = std::make_unique<HoldingSpaceTray>(shelf_);
-    AddTrayButton(holding_space_tray_.get());
-  }
+  holding_space_tray_ = std::make_unique<HoldingSpaceTray>(shelf_);
+  AddTrayButton(holding_space_tray_.get());
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   AddTrayButton(logout_button_tray_.get());
@@ -146,25 +145,25 @@ void StatusAreaWidget::Initialize() {
   overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
   AddTrayButton(overview_button_tray_.get());
 
-  // Initialize after all trays have been created.
-  for (TrayBackgroundView* tray_button : tray_buttons_)
-    tray_button->Initialize();
+  // Each tray_button's animation will be disabled for the life time of this
+  // local `animation_disablers`, which means the closures to enable the
+  // animation will be executed when it's out of this method (Initialize())
+  // scope.
+  std::list<base::ScopedClosureRunner> animation_disablers;
 
-  // Move the |stop_recording_button_tray_| to the front so that it's more
-  // visible. This ensure the |stop_recording_button_tray_| always sticks to
-  // the left most side.
-  if (features::IsCaptureModeEnabled()) {
-    status_area_widget_delegate_->ReorderChildView(
-        stop_recording_button_tray_.get(), 1);
+  // Initialize after all trays have been created.
+  for (TrayBackgroundView* tray_button : tray_buttons_) {
+    tray_button->Initialize();
+    animation_disablers.push_back(tray_button->DisableShowAnimation());
   }
+
+  EnsureTrayOrder();
 
   UpdateAfterLoginStatusChange(
       Shell::Get()->session_controller()->login_status());
   UpdateLayout(/*animate=*/false);
 
   Shell::Get()->session_controller()->AddObserver(this);
-
-  Shell::Get()->system_tray_model()->clock()->AddObserver(this);
 
   // NOTE: Container may be hidden depending on login/display state.
   Show();
@@ -174,7 +173,6 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-  Shell::Get()->system_tray_model()->clock()->RemoveObserver(this);
 }
 
 // static
@@ -200,18 +198,6 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
     tray->CloseBubble();
     Hide();
   }
-}
-
-void StatusAreaWidget::OnDateFormatChanged() {
-  CalculateTargetBounds();
-  UpdateLayout(false /*animate*/);
-  UpdateCollapseState();
-}
-
-void StatusAreaWidget::OnSystemClockTimeUpdated() {
-  CalculateTargetBounds();
-  UpdateLayout(false /*animate*/);
-  UpdateCollapseState();
 }
 
 void StatusAreaWidget::OnSessionStateChanged(
@@ -331,8 +317,18 @@ void StatusAreaWidget::UpdateTargetBoundsForGesture(int shelf_position) {
 }
 
 void StatusAreaWidget::HandleLocaleChange() {
-  for (auto* tray_button : tray_buttons_)
+  // Here we force the layer's bounds to be updated for text direction (if
+  // needed).
+  status_area_widget_delegate_->RemoveAllChildViews(/*delete_children=*/false);
+
+  // The layout manager will be updated when shelf layout gets updated, which is
+  // done by the shelf layout manager after `HandleLocaleChange()` gets called.
+  status_area_widget_delegate_->SetLayoutManager(nullptr);
+  for (auto* tray_button : tray_buttons_) {
     tray_button->HandleLocaleChange();
+    status_area_widget_delegate_->AddChildView(tray_button);
+  }
+  EnsureTrayOrder();
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
@@ -404,6 +400,13 @@ void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
   overflow_button_tray_->UpdateAfterStatusAreaCollapseChange();
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterStatusAreaCollapseChange();
+}
+
+void StatusAreaWidget::EnsureTrayOrder() {
+  if (features::IsCaptureModeEnabled()) {
+    status_area_widget_delegate_->ReorderChildView(
+        stop_recording_button_tray_.get(), 1);
+  }
 }
 
 StatusAreaWidget::CollapseState StatusAreaWidget::CalculateCollapseState()
@@ -561,7 +564,7 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
-    shelf_->ProcessMouseWheelEvent(mouse_wheel_event, /*from_touchpad=*/false);
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
     return;
   }
 

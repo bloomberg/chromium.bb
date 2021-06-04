@@ -6,18 +6,39 @@
 
 #include "base/metrics/field_trial_params.h"
 
-namespace memories {
+namespace history_clusters {
+
+namespace {
+
+const base::FeatureParam<std::string> kRemoteModelEndpoint{
+    &kRemoteModelForDebugging, "MemoriesRemoteModelEndpoint", ""};
+
+}  // namespace
 
 GURL RemoteModelEndpoint() {
-  return GURL(base::GetFieldTrialParamValueByFeature(
-      kMemories, kRemoteModelEndpointParam));
+  return GURL(kRemoteModelEndpoint.Get());
 }
 
-// Enables the Chrome Memories history clustering feature.
-const base::Feature kMemories{"Memories", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kRemoteModelEndpointParam[] = "MemoriesRemoteModelEndpoint";
+const base::FeatureParam<std::string> kRemoteModelEndpointExperimentName{
+    &kRemoteModelForDebugging, "MemoriesRemoteModelEndpointExperimentName", ""};
 
-// Enables debug info; e.g. shows visit metadata on chrome://history entries.
+const base::FeatureParam<bool> kPersistContextAnnotationsInHistoryDb{
+    &kMemories, "MemoriesPersistContextAnnotationsInHistoryDb", false};
+
+const base::FeatureParam<int> kMaxVisitsToCluster{
+    &kMemories, "MemoriesMaxVisitsToCluster", 10};
+
+const base::FeatureParam<int> kMaxDaysToCluster{&kMemories,
+                                                "MemoriesMaxDaysToCluster", 9};
+
+const base::FeatureParam<bool> kPersistClustersInHistoryDb{
+    &kMemories, "MemoriesPersistClustersInHistoryDb", false};
+
+const base::Feature kMemories{"Memories", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDebug{"MemoriesDebug", base::FEATURE_DISABLED_BY_DEFAULT};
 
-}  // namespace memories
+const base::Feature kRemoteModelForDebugging{"MemoriesRemoteModelForDebugging",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace history_clusters

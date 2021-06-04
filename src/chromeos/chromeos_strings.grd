@@ -238,6 +238,14 @@ Try tapping the mic to ask me anything.
         Launcher
       </message>
 
+      <!-- Virtual desks -->
+      <message name="IDS_MOVE_TO_DESKS_MENU" desc="The text label of the Move to Desks submenu">
+        Move window to desk
+      </message>
+      <message name="IDS_ASSIGN_TO_ALL_DESKS" desc="The text label of the Assign to All Desks menu item">
+        All desks
+      </message>
+
       <!-- Password expiry notifications -->
       <message name="IDS_PASSWORD_CHANGE_OVERDUE_TITLE" desc="Message title for a notification that tells the user they are already late in changing their password, since the password has already expired.">
         Password change overdue
@@ -309,8 +317,17 @@ Try tapping the mic to ask me anything.
       <message name="IDS_HELP_APP_PERKS" desc="Name of a tab in the Help app that offers users additional perks like apps or drive storage space.">
         Perks
       </message>
+      <message name="IDS_HELP_APP_DISCOVER_TAB_SUGGESTION_CHIP" desc="Text for the suggestion chip to view a magazine showing the user how they could build/code/develop a game. [CHAR_LIMIT=24]">
+        Make your own game
+      </message>
       <message name="IDS_HELP_APP_WHATS_NEW_SUGGESTION_CHIP" desc="Text for the suggestion chip to view updated patch notes are available. [CHAR_LIMIT=24]">
         What's new with Chrome OS
+      </message>
+      <message name="IDS_HELP_APP_DISCOVER_TAB_NOTIFICATION_TITLE" desc="Title for a notification that points to the Help app's Discover tab, which features a magazine to teach users how they can create games with Chrome OS.">
+        Design and build your own games
+      </message>
+      <message name="IDS_HELP_APP_DISCOVER_TAB_NOTIFICATION_MESSAGE" desc="Message on a notification that points to the Help app's Discover tab, which features a magazine to teach users how they can create games with Chrome OS.">
+        Learn from a game creator, get game design apps, and more
       </message>
 
       <!-- Media App -->
@@ -504,6 +521,10 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_PNG_OPTION_TEXT" desc="The text displayed for the PNG file type option.">
         PNG
       </message>
+      <!-- TODO (kmoed): Remove "translateable="false"" once string is confirmed. -->
+      <message translateable="false" name="IDS_SCANNING_APP_SEARCHABLE_PDF_OPTION_TEXT" desc="The text displayed for the Searchable PDF file type option. This option utilizes the Object Character Recognition (OCR) service to generate a PDF file whose text has been added as a searchable layer.">
+        Searchable PDF
+      </message>
       <message name="IDS_SCANNING_APP_COLOR_MODE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available color modes (e.g. color, grayscale, black and white, etc.).">
         Color
       </message>
@@ -644,6 +665,9 @@ Try tapping the mic to ask me anything.
         {0, plural,
         =1 {Edit file}
         other {Edit files}}
+      </message>
+      <message name="IDS_SCANNING_APP_SHOW_IN_FOLDER_BUTTON_LABEL" desc="The label for the button that opens the files app in the location of the saved scan.">
+        Show in folder
       </message>
 
       <!-- Diagnostics App -->
@@ -861,6 +885,10 @@ Try tapping the mic to ask me anything.
         Running a CPU test may affect your system performance
       </message>
 
+      <message name="IDS_ECHE_APP_DEFAULT_DEVICE_NAME" desc="The default device name used to display on Android endpoint of Eche app.">
+        <ph name="GIVEN_NAME">$1<ex>Josh</ex></ph>'s <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
+      </message>
+
       <!-- Quick Answers -->
       <message name="IDS_QUICK_ANSWERS_DEFINITION_TITLE_TEXT" desc="The title text format string used for Quick Answers definition result card. The first placeholder contains the source query text and the second placeholder contains the phonetics.">
         <ph name="QUERY_TEXT">$1<ex>unfathomable</ex></ph> · /<ph name="PHONETICS">$2<ex>ˌənˈfaT͟Həməb(ə)</ex></ph>/
@@ -873,6 +901,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_RESULT_TEXT" desc="The result text format string used for Quick Answers unit conversion result card. The first placeholder contains the value of result unit and the second placeholder contains the display name of the result unit.">
         <ph name="VALUE">$1<ex>220.462</ex></ph> <ph name="DISPLAY_NAME">$2<ex>pounds</ex></ph>
+      </message>
+      <message name="IDS_UNIT_CONVERSION_POUND_DISPLAY_TEXT" desc="The display text of pound unit type.">
+        pounds
       </message>
 
     <!-- Common Network type strings -->
@@ -1055,6 +1086,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME" desc="ONC Property label for APN-AccessPointName">
         Access point name
       </message>
+      <message name="IDS_ONC_CELLULAR_ICCID" desc="ONC Property label for Cellular.ICCID">
+        ICCID
+      </message>
+      <message name="IDS_ONC_CELLULAR_IMEI" desc="ONC Property label for Cellular.IMEI">
+        IMEI
+      </message>
       <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME_NONE" desc="ONC Property label for APN-AccessPointName = none (or empty)">
         None
       </message>
@@ -1064,7 +1101,7 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_CELLULAR_APN_PASSWORD" desc="ONC Property label for APN-Password">
         Password
       </message>
-      <message name="IDS_ONC_CELLULAR_APN_ATTACH" desc="ONC Property label for APN-Attach APN that is required by some cellular network providers in order to connect">
+      <message name="IDS_ONC_CELLULAR_APN_ATTACH" translateable="false" desc="ONC Property label for APN-Attach APN that is required by some cellular network providers in order to connect">
         Attach APN
       </message>
       <message name="IDS_ONC_CELLULAR_APN_ATTACH_TOOLTIP_TEXT" desc="Text for help tooltip present in the Attach APN setting row informing users that the associated toggle may be required by some cellular network providers in order to connect">

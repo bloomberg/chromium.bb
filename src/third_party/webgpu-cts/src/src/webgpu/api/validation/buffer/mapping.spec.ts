@@ -26,6 +26,7 @@ TODO: review existing tests and merge with this plan:
 
 import { pbool, poptions, params } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { attemptGarbageCollection } from '../../../../common/framework/util/collect_garbage.js';
 import { assert, unreachable } from '../../../../common/framework/util/util.js';
 import { kBufferUsages } from '../../../capability_info.js';
 import { GPUConst } from '../../../constants.js';
@@ -104,7 +105,7 @@ g.test('mapAsync,usage')
     Test that the mapAsync call is valid iff the mapping usage is not 0 and the buffer usage
     the mapMode flag.`
   )
-  .params(
+  .subcases(() =>
     params()
       .combine([
         { mapMode: GPUConst.MapMode.READ, validUsage: GPUConst.BufferUsage.MAP_READ },
@@ -128,7 +129,7 @@ g.test('mapAsync,usage')
 
 g.test('mapAsync,invalidBuffer')
   .desc('Test that mapAsync is an error when called on an invalid buffer.')
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
     const buffer = t.getErrorBuffer();
@@ -137,7 +138,7 @@ g.test('mapAsync,invalidBuffer')
 
 g.test('mapAsync,state,destroyed')
   .desc('Test that mapAsync is an error when called on a destroyed buffer.')
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
     const buffer = t.createMappableBuffer(mapMode, 16);
@@ -150,7 +151,7 @@ g.test('mapAsync,state,mappedAtCreation')
     `Test that mapAsync is an error when called on a buffer mapped at creation,
     but succeeds after unmapping it.`
   )
-  .params([
+  .subcases(() => [
     { mapMode: GPUConst.MapMode.READ, validUsage: GPUConst.BufferUsage.MAP_READ },
     { mapMode: GPUConst.MapMode.WRITE, validUsage: GPUConst.BufferUsage.MAP_WRITE },
   ])
@@ -173,7 +174,7 @@ g.test('mapAsync,state,mapped')
     `Test that mapAsync is an error when called on a mapped buffer, but succeeds
     after unmapping it.`
   )
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
 
@@ -190,7 +191,7 @@ g.test('mapAsync,state,mappingPending')
     `Test that mapAsync is an error when called on a buffer that is being mapped,
     but succeeds after the previous mapping request is cancelled.`
   )
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
 
@@ -218,7 +219,7 @@ g.test('mapAsync,sizeUnspecifiedOOB')
     with various cases at the limits of the buffer size or with a misaligned offset.
     Also test for an empty buffer.`
   )
-  .params(
+  .subcases(() =>
     params()
       .combine(kMapModeOptions)
       .combine([
@@ -245,7 +246,7 @@ g.test('mapAsync,sizeUnspecifiedOOB')
 
 g.test('mapAsync,offsetAndSizeAlignment')
   .desc("Test that mapAsync fails if the alignment of offset and size isn't correct.")
-  .params(
+  .subcases(() =>
     params()
       .combine(kMapModeOptions)
       .combine([
@@ -270,7 +271,7 @@ g.test('mapAsync,offsetAndSizeAlignment')
 
 g.test('mapAsync,offsetAndSizeOOB')
   .desc('Test that mapAsync fails if offset + size is larger than the buffer size.')
-  .params(
+  .subcases(() =>
     params()
       .combine(kMapModeOptions)
       .combine([
@@ -312,7 +313,7 @@ g.test('mapAsync,offsetAndSizeOOB')
 
 g.test('getMappedRange,state,mapped')
   .desc('Test that it is valid to call getMappedRange in the mapped state')
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
     const buffer = t.createMappableBuffer(mapMode, 16);
@@ -325,7 +326,7 @@ g.test('getMappedRange,state,mappedAtCreation')
   .desc(
     'Test that it is valid to call getMappedRange in the mapped at creation state, for all buffer usages'
   )
-  .params(poptions('bufferUsage', kBufferUsages))
+  .subcases(() => poptions('bufferUsage', kBufferUsages))
   .fn(async t => {
     const { bufferUsage } = t.params;
     const buffer = t.device.createBuffer({
@@ -447,7 +448,7 @@ g.test('getMappedRange,sizeAndOffsetOOB,forMappedAtCreation')
     `Test that getMappedRange size + offset must be less than the buffer size for a
     buffer mapped at creation. (and offset has not constraints on its own)`
   )
-  .params([
+  .subcases(() => [
     // Tests for a zero-sized buffer, with and without a size defined.
     { bufferSize: 0, offset: undefined, size: undefined },
     { bufferSize: 0, offset: undefined, size: 0 },
@@ -494,7 +495,7 @@ g.test('getMappedRange,sizeAndOffsetOOB,forMappedAtCreation')
 
 g.test('getMappedRange,sizeAndOffsetOOB,forMapped')
   .desc('Test that getMappedRange size + offset must be less than the mapAsync range.')
-  .params(
+  .subcases(() =>
     params()
       .combine(kMapModeOptions)
       .combine([
@@ -608,7 +609,7 @@ g.test('getMappedRange,sizeAndOffsetOOB,forMapped')
 
 g.test('getMappedRange,disjointRanges')
   .desc('Test that the ranges asked through getMappedRange must be disjoint.')
-  .params(
+  .subcases(() =>
     params()
       .combine(pbool('remapBetweenCalls'))
       .combine([
@@ -763,7 +764,7 @@ g.test('unmap,state,destroyed')
 
 g.test('unmap,state,mappedAtCreation')
   .desc('Test it is valid to call unmap on a buffer mapped at creation, for various usages')
-  .params(poptions('bufferUsage', kBufferUsages))
+  .subcases(() => poptions('bufferUsage', kBufferUsages))
   .fn(t => {
     const { bufferUsage } = t.params;
     const buffer = t.device.createBuffer({ size: 16, usage: bufferUsage, mappedAtCreation: true });
@@ -773,7 +774,7 @@ g.test('unmap,state,mappedAtCreation')
 
 g.test('unmap,state,mapped')
   .desc("Test it is valid to call unmap on a buffer that's mapped")
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(async t => {
     const { mapMode } = t.params;
     const buffer = t.createMappableBuffer(mapMode, 16);
@@ -784,7 +785,7 @@ g.test('unmap,state,mapped')
 
 g.test('unmap,state,mappingPending')
   .desc("Test it is valid to call unmap on a buffer that's being mapped")
-  .params(kMapModeOptions)
+  .subcases(() => kMapModeOptions)
   .fn(t => {
     const { mapMode } = t.params;
     const buffer = t.createMappableBuffer(mapMode, 16);
@@ -793,4 +794,68 @@ g.test('unmap,state,mappingPending')
     t.shouldReject('AbortError', mapping);
 
     buffer.unmap();
+  });
+
+g.test('gc_behavior,mappedAtCreation')
+  .desc(
+    "Test that GCing the buffer while mappings are handed out doesn't invalidate them - mappedAtCreation case"
+  )
+  .fn(async t => {
+    let buffer = null;
+    buffer = t.device.createBuffer({
+      size: 256,
+      usage: GPUBufferUsage.COPY_DST,
+      mappedAtCreation: true,
+    });
+
+    // Write some non-zero data to the buffer.
+    const contents = new Uint32Array(buffer.getMappedRange());
+    for (let i = 0; i < contents.length; i++) {
+      contents[i] = i;
+    }
+
+    // Trigger garbage collection that should collect the buffer (or as if it collected it)
+    // NOTE: This won't fail unless the browser immediately starts reusing the memory, or gives it
+    // back to the OS. One good option for browsers to check their logic is good is to zero-out the
+    // memory on GPUBuffer (or internal gpu::Buffer-like object) destruction.
+    buffer = null;
+    await attemptGarbageCollection();
+
+    // Use the mapping again both for read and write, it should work.
+    for (let i = 0; i < contents.length; i++) {
+      t.expect(contents[i] === i);
+      contents[i] = i + 1;
+    }
+  });
+
+g.test('gc_behavior,mapAsync')
+  .desc(
+    "Test that GCing the buffer while mappings are handed out doesn't invalidate them - mapAsync case"
+  )
+  .subcases(() => kMapModeOptions)
+  .fn(async t => {
+    const { mapMode } = t.params;
+
+    let buffer = null;
+    buffer = t.createMappableBuffer(mapMode, 256);
+    await buffer.mapAsync(mapMode);
+
+    // Write some non-zero data to the buffer.
+    const contents = new Uint32Array(buffer.getMappedRange());
+    for (let i = 0; i < contents.length; i++) {
+      contents[i] = i;
+    }
+
+    // Trigger garbage collection that should collect the buffer (or as if it collected it)
+    // NOTE: This won't fail unless the browser immediately starts reusing the memory, or gives it
+    // back to the OS. One good option for browsers to check their logic is good is to zero-out the
+    // memory on GPUBuffer (or internal gpu::Buffer-like object) destruction.
+    buffer = null;
+    await attemptGarbageCollection();
+
+    // Use the mapping again both for read and write, it should work.
+    for (let i = 0; i < contents.length; i++) {
+      t.expect(contents[i] === i);
+      contents[i] = i + 1;
+    }
   });

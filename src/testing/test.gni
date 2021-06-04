@@ -6,13 +6,14 @@
 # TEST SETUP
 # ==============================================================================
 
+import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/rts.gni")
 import("//build_overrides/build.gni")
 
 declare_args() {
-  # For more info about RTS, please see
-  # //docs/testing/regression-test-selection.md
-  use_rts = false
+  # Some component repos (e.g. ANGLE) import //testing but do not have "location_tags.json"
+  tests_have_location_tags = true
 }
 
 if (is_android) {
@@ -26,7 +27,7 @@ if (is_android) {
   import("//build/config/fuchsia/generate_runner_scripts.gni")
   import("//build/config/fuchsia/package.gni")
   import("//third_party/fuchsia-sdk/sdk/build/cmc.gni")
-} else if (is_chromeos_ash) {
+} else if ((is_chromeos_ash || is_chromeos_lacros) && is_chromeos_device) {
   import("//build/config/chromeos/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
   import("//build/util/generate_wrapper.gni")
@@ -48,8 +49,6 @@ if (is_android) {
 #   is_xctest: (iOS, optional) whether to build the executable as XCTest.
 #      Similar to the GN arg 'enable_run_ios_unittests_with_xctest' but
 #      for build targets.
-#   override_board: (ash, optional) override the 'cros_board' used in
-#      generating the test runner script.
 template("test") {
   # Ensures the rts file exists and if not, creates a dummy file
   if (use_rts) {
@@ -66,16 +65,24 @@ template("test") {
     assert(!defined(invoker.is_xctest) || !invoker.is_xctest,
            "is_xctest can be set only for iOS builds")
   }
-  if (!is_chromeos_ash || cros_board == "") {
-    assert(
-        !defined(invoker.override_board),
-        "override_board can be set only for ChromeOS builds with target board")
-  }
   if (is_android) {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
 
-    _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
-                                  invoker.use_raw_android_executable
+    _use_default_launcher =
+        !defined(invoker.use_default_launcher) || invoker.use_default_launcher
+    if (!defined(invoker.use_raw_android_executable)) {
+      # Checkouts where build_with_chromium == false often have a custom GN
+      # template wrapper around test() which sets use_default_launcher == false.
+      # Set the _use_raw_android_executable default so that test() targets which
+      # do not use the custom wrapper
+      # (1) Do not cause "gn gen" to fail
+      # (2) Do not need to be moved into if(build_with_chromium) block.
+      _use_raw_android_executable =
+          !build_with_chromium && _use_default_launcher
+    } else {
+      not_needed([ "_use_default_launcher" ])
+      _use_raw_android_executable = invoker.use_raw_android_executable
+    }
 
     # output_name is used to allow targets with the same name but in different
     # packages to still produce unique runner scripts.
@@ -93,6 +100,8 @@ template("test") {
     assert(_use_raw_android_executable || enable_java_templates)
 
     if (_use_raw_android_executable) {
+      not_needed(invoker, [ "add_unwind_tables_in_apk" ])
+
       _exec_target = "${target_name}__exec"
       _dist_target = "${target_name}__dist"
       _exec_output =
@@ -125,7 +134,9 @@ template("test") {
         if (!defined(data)) {
           data = []
         }
-        data += [ "//testing/location_tags.json" ]
+        if (tests_have_location_tags) {
+          data += [ "//testing/location_tags.json" ]
+        }
 
         # Don't output to the root or else conflict with the group() below.
         output_name = rebase_path(_exec_output, root_out_dir)
@@ -159,6 +170,7 @@ template("test") {
         "android_manifest_template",
         "app_as_shared_lib",
         "enable_multidex",
+        "generate_final_jni",
         "product_config_java_packages",
         "min_sdk_version",
         "proguard_configs",
@@ -204,8 +216,7 @@ template("test") {
           }
         }
 
-        if (!defined(invoker.use_default_launcher) ||
-            invoker.use_default_launcher) {
+        if (_use_default_launcher) {
           deps += [ "//testing/android/native_test:native_test_native_code" ]
         }
       }
@@ -225,7 +236,9 @@ template("test") {
         }
 
         # Add the Java classes so that each target does not have to do it.
-        deps += [ "//base/test:test_support_java" ]
+        if (_use_default_launcher) {
+          deps += [ "//base/test:test_support_java" ]
+        }
 
         if (defined(_unwind_table_asset_name)) {
           deps += [ ":${_unwind_table_asset_name}" ]
@@ -286,7 +299,9 @@ template("test") {
       } else {
         data_deps = []
       }
-      data = [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data = [ "//testing/location_tags.json" ]
+      }
 
       if (use_rts) {
         data_deps += [ ":${invoker.target_name}__rts_filters" ]
@@ -328,7 +343,9 @@ template("test") {
       package = ":$_pkg_target"
       package_name_override = _output_name
 
-      data = [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data = [ "//testing/location_tags.json" ]
+      }
       data_deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
 
       if (use_rts) {
@@ -337,9 +354,16 @@ template("test") {
     }
 
     cr_fuchsia_package(_pkg_target) {
+      forward_variables_from(invoker, [ "additional_manifests" ])
       binary = ":$_exec_target"
       package_name_override = _output_name
       deps = [ ":$combined_manifest" ]
+
+      # Pass on the test() target's |deps|, in case any of the files listed in
+      # |additional_manifests| are generated by them.
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
     }
 
     executable(_exec_target) {
@@ -392,7 +416,9 @@ template("test") {
       if (!defined(data)) {
         data = []
       }
-      data += [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data += [ "//testing/location_tags.json" ]
+      }
     }
 
     _resources_bundle_data = target_name + "_resources_bundle_data"
@@ -453,10 +479,11 @@ template("test") {
         data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
-  } else if (is_chromeos_ash && cros_board != "") {
+  } else if ((is_chromeos_ash || (is_chromeos_lacros && is_chromeos_device)) &&
+             cros_board != "") {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
 
-    # Building for a cros board (ie: not linux-chromeos).
+    # Building for a cros board (ie: not linux-chromeos or linux-lacros).
 
     _gen_runner_target = "${target_name}__runner"
     _runtime_deps_file =
@@ -468,11 +495,16 @@ template("test") {
       test_exe = invoker.target_name
       runtime_deps_file = _runtime_deps_file
 
-      if (defined(invoker.override_board)) {
-        override_board = invoker.override_board
+      if (is_chromeos_lacros) {
+        # At build time, Lacros tests don't know whether they'll run on VM or
+        # HW, and instead, these flags are specified at runtime when invoking
+        # the generated runner script.
+        skip_generating_board_args = true
       }
 
-      data = [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data = [ "//testing/location_tags.json" ]
+      }
 
       if (use_rts) {
         data_deps = [ ":${invoker.target_name}__rts_filters" ]
@@ -504,7 +536,7 @@ template("test") {
         data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
-  } else if (chromeos_is_browser_only) {
+  } else if (is_chromeos_lacros && !is_chromeos_device) {
     _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
     _executable = target_name
     _gen_runner_target = "${target_name}__runner"
@@ -533,7 +565,9 @@ template("test") {
       } else {
         executable = "//testing/test_env.py"
       }
-      data += [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data += [ "//testing/location_tags.json" ]
+      }
 
       executable_args = [
         "@WrappedPath(../../build/lacros/test_runner.py)",
@@ -617,7 +651,9 @@ template("test") {
       } else {
         executable = "//testing/test_env.py"
       }
-      data += [ "//testing/location_tags.json" ]
+      if (tests_have_location_tags) {
+        data += [ "//testing/location_tags.json" ]
+      }
 
       executable_args = [
         "@WrappedPath(./${_executable})",
@@ -739,7 +775,9 @@ template("script_test") {
     if (defined(invoker.data)) {
       data += invoker.data
     }
-    data += [ "//testing/location_tags.json" ]
+    if (tests_have_location_tags) {
+      data += [ "//testing/location_tags.json" ]
+    }
 
     data_deps = [ "//testing:test_scripts_shared" ]
     if (defined(invoker.data_deps)) {

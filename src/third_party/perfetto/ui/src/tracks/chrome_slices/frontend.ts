@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {hsluvToHex} from 'hsluv';
+
 import {Actions} from '../../common/actions';
 import {cropText, drawIncompleteSlice} from '../../common/canvas_utils';
-import {hueForSlice} from '../../common/colorizer';
+import {hslForSlice} from '../../common/colorizer';
+import {TRACE_MARGIN_TIME_S} from '../../common/constants';
 import {TrackState} from '../../common/state';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
@@ -25,7 +28,6 @@ import {Config, Data, SLICE_TRACK_KIND} from './common';
 
 const SLICE_HEIGHT = 18;
 const TRACK_PADDING = 4;
-const INCOMPLETE_SLICE_TIME_S = 0.00003;
 const CHEVRON_WIDTH_PX = 10;
 const HALF_CHEVRON_WIDTH_PX = CHEVRON_WIDTH_PX / 2;
 const INNER_CHEVRON_OFFSET = -3;
@@ -84,7 +86,7 @@ export class ChromeSliceTrack extends Track<Config, Data> {
       const title = data.strings[titleId];
       const colorOverride = data.colors && data.strings[data.colors[i]];
       if (isIncomplete) {  // incomplete slice
-        tEnd = tStart + INCOMPLETE_SLICE_TIME_S;
+        tEnd = visibleWindowTime.end;
       }
 
       const rect = this.getSliceRect(tStart, tEnd, depth);
@@ -98,14 +100,15 @@ export class ChromeSliceTrack extends Track<Config, Data> {
           currentSelection.id !== undefined && currentSelection.id === sliceId;
 
       const name = title.replace(/( )?\d+/g, '');
-      const hue = hueForSlice(name);
-      const saturation = isSelected ? 80 : 50;
       const highlighted = titleId === this.hoveredTitleId ||
           globals.frontendLocalState.highlightedSliceId === sliceId;
 
+      const [hue, saturation, lightness] =
+          hslForSlice(name, highlighted || isSelected);
+
       let color: string;
       if (colorOverride === undefined) {
-        color = `hsl(${hue}, ${saturation}%, ${highlighted ? 30 : 65}%)`;
+        color = hsluvToHex([hue, saturation, lightness]);
       } else {
         color = colorOverride;
       }
@@ -128,7 +131,8 @@ export class ChromeSliceTrack extends Track<Config, Data> {
             ctx.save();
             ctx.translate(0, INNER_CHEVRON_OFFSET);
             ctx.scale(INNER_CHEVRON_SCALE, INNER_CHEVRON_SCALE);
-            ctx.fillStyle = `hsl(${hue}, ${saturation}%, 30%)`;
+            ctx.fillStyle = hsluvToHex([hue, 100, 10]);
+
             this.drawChevron(ctx);
             ctx.restore();
 
@@ -155,7 +159,7 @@ export class ChromeSliceTrack extends Track<Config, Data> {
       // Selected case
       if (isSelected) {
         drawRectOnSelected = () => {
-          ctx.strokeStyle = `hsl(${hue}, ${saturation}%, 30%)`;
+          ctx.strokeStyle = hsluvToHex([hue, 100, 10]);
           ctx.beginPath();
           ctx.lineWidth = 3;
           ctx.strokeRect(
@@ -164,7 +168,7 @@ export class ChromeSliceTrack extends Track<Config, Data> {
         };
       }
 
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = lightness > 65 ? '#404040' : 'white';
       const displayText = cropText(title, charWidth, rect.width);
       const rectXCenter = rect.left + rect.width / 2;
       ctx.textBaseline = "middle";
@@ -205,7 +209,7 @@ export class ChromeSliceTrack extends Track<Config, Data> {
       } else {
         let tEnd = data.ends[i];
         if (data.isIncomplete[i]) {
-          tEnd = tStart + INCOMPLETE_SLICE_TIME_S;
+          tEnd = globals.frontendLocalState.visibleWindowTime.end;
         }
         if (tStart <= t && t <= tEnd) {
           return i;
@@ -255,7 +259,7 @@ export class ChromeSliceTrack extends Track<Config, Data> {
       |undefined {
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
     const pxEnd = timeScale.timeToPx(visibleWindowTime.end);
-    const left = Math.max(timeScale.timeToPx(tStart), 0);
+    const left = Math.max(timeScale.timeToPx(tStart), -TRACE_MARGIN_TIME_S);
     const right = Math.min(timeScale.timeToPx(tEnd), pxEnd);
     return {
       left,

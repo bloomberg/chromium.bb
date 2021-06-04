@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
@@ -26,7 +27,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -86,8 +86,8 @@ ChromeCleanerDialog::ChromeCleanerDialog(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  set_margins(
-      layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  set_margins(layout_provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       layout_provider->GetDistanceMetric(

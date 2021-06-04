@@ -22,7 +22,7 @@
 #         release release-x64 ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
-#         apple apple-apple-m1 apple-metal-renderer:-apple-m1
+#         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
@@ -92,6 +92,7 @@ crbug.com/1058744 [ no-passthrough ] WebglExtension_OES_draw_buffers_indexed [ S
 
 crbug.com/1142754 [ linux ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
 crbug.com/1142754 [ fuchsia ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
+crbug.com/1194209 [ mac no-passthrough ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
 
 # Disabling all multiview checks temporarily while ANGLE side changes
 # get merged in.
@@ -170,10 +171,17 @@ crbug.com/1085222 [ win10 intel-0x5912 ] deqp/functional/gles3/shaderoperator/un
 crbug.com/1085222 [ win10 intel-0x5912 ] deqp/functional/gles3/shaderoperator/unary_operator_02.html [ Failure ]
 crbug.com/1085222 [ catalina intel-0xa2e ] deqp/functional/gles3/shaderoperator/binary_operator_* [ RetryOnFailure ]
 crbug.com/1085222 [ catalina intel-0xa2e ] deqp/functional/gles3/shaderoperator/unary_operator_* [ RetryOnFailure ]
+crbug.com/1085222 [ mac amd-0x6821 ] deqp/functional/gles3/shaderoperator/binary_operator_* [ RetryOnFailure ]
+crbug.com/1085222 [ mac amd-0x6821 ] deqp/functional/gles3/shaderoperator/unary_operator_* [ RetryOnFailure ]
+crbug.com/1198658 [ android android-pixel-2 ] deqp/functional/gles3/shaderoperator/binary_operator_* [ Failure ]
+crbug.com/1198658 [ android android-pixel-2 ] deqp/functional/gles3/shaderoperator/unary_operator_* [ Failure ]
 
 ####################
 # Win failures     #
 ####################
+
+crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/video/* [ RetryOnFailure ]
+crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
@@ -350,6 +358,16 @@ crbug.com/1037650 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangl
 crbug.com/1073538 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
 crbug.com/1086194 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
 crbug.com/1136231 [ mac nvidia-0xfe9 ] conformance/extensions/s3tc-and-rgtc.html [ Failure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] conformance/ogles/GL/functions/functions_017_to_024.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/multisample/fbo_8_samples.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/negativevertexarrayapi.html [ Failure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/shadermatrix/mul_dynamic_highp.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/shadermatrix/mul_dynamic_lowp.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/shadermatrix/mul_dynamic_mediump.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/shadermatrix/sub_const.html [ RetryOnFailure ]
+crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/shadermatrix/sub_dynamic.html [ RetryOnFailure ]
 
 crbug.com/772651 [ mac nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop-complex.html [ Failure ]
 
@@ -679,7 +697,7 @@ crbug.com/1175234 [ android android-pixel-4 angle-disabled no-passthrough ] deqp
 crbug.com/1175233 [ android android-pixel-4 no-passthrough ] deqp/functional/gles3/fborender/resize_03.html [ RetryOnFailure ]
 
 crbug.com/1179432 [ android android-pixel-4 angle-disabled no-passthrough ] deqp/functional/gles3/texturespecification/basic_teximage2d_2d_01.html [ RetryOnFailure ]
-crbug.com/1179432 [ android android-pixel-4 angle-disabled no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ RetryOnFailure ]
+crbug.com/1179432 [ android android-pixel-4 angle-disabled no-passthrough ] deqp/functional/gles3/transformfeedback/* [ RetryOnFailure ]
 
 crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
 

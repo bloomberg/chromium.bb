@@ -16,10 +16,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node.h"
@@ -164,6 +164,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // this object. Otherwise, returns the lowest ancestor that is exposed to the
   // platform.
   virtual BrowserAccessibility* PlatformGetLowestPlatformAncestor() const;
+
+  // If this node is within an editable region, such as a content editable,
+  // returns the node that is at the root of that editable region, otherwise
+  // returns nullptr. In accessibility, an editable region includes all types of
+  // text fields, (see `AXNodeData::IsTextField()`).
+  BrowserAccessibility* PlatformGetTextFieldAncestor() const;
 
   bool IsPreviousSiblingOnSameLine() const;
   bool IsNextSiblingOnSameLine() const;
@@ -348,11 +354,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // See AXNodeData::IsPasswordField().
   bool IsPasswordField() const;
 
-  // See AXNodeData::IsPlainTextField().
-  bool IsPlainTextField() const;
+  // See AXNodeData::IsAtomicTextField().
+  bool IsAtomicTextField() const;
 
-  // See AXNodeData::IsRichTextField().
-  bool IsRichTextField() const;
+  // See AXNodeData::IsNonAtomicTextField().
+  bool IsNonAtomicTextField() const;
 
   // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
@@ -400,12 +406,13 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
   bool IsChildOfLeaf() const override;
-  bool IsDescendantOfPlainTextField() const override;
+  bool IsDescendantOfAtomicTextField() const override;
   bool IsLeaf() const override;
   bool IsFocused() const override;
   bool IsInvisibleOrIgnored() const override;
   bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetLowestPlatformAncestor() const override;
+  gfx::NativeViewAccessible GetTextFieldAncestor() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
   std::unique_ptr<ChildIterator> ChildrenEnd() override;
@@ -440,7 +447,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   int GetIndexInParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
-  base::Optional<int> FindTextBoundary(
+  absl::optional<int> FindTextBoundary(
       ax::mojom::TextBoundary boundary,
       int offset,
       ax::mojom::MoveDirection direction,
@@ -452,12 +459,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::string GetLanguage() const override;
 
   bool IsTable() const override;
-  base::Optional<int> GetTableColCount() const override;
-  base::Optional<int> GetTableRowCount() const override;
-  base::Optional<int> GetTableAriaColCount() const override;
-  base::Optional<int> GetTableAriaRowCount() const override;
-  base::Optional<int> GetTableCellCount() const override;
-  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
+  absl::optional<int> GetTableColCount() const override;
+  absl::optional<int> GetTableRowCount() const override;
+  absl::optional<int> GetTableAriaColCount() const override;
+  absl::optional<int> GetTableAriaRowCount() const override;
+  absl::optional<int> GetTableCellCount() const override;
+  absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
   std::vector<ui::AXNodeID> GetColHeaderNodeIds() const override;
   std::vector<ui::AXNodeID> GetColHeaderNodeIds(int col_index) const override;
   std::vector<ui::AXNodeID> GetRowHeaderNodeIds() const override;
@@ -465,19 +472,19 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;
-  base::Optional<int> GetTableRowRowIndex() const override;
+  absl::optional<int> GetTableRowRowIndex() const override;
 
   bool IsTableCellOrHeader() const override;
-  base::Optional<int> GetTableCellIndex() const override;
-  base::Optional<int> GetTableCellColIndex() const override;
-  base::Optional<int> GetTableCellRowIndex() const override;
-  base::Optional<int> GetTableCellColSpan() const override;
-  base::Optional<int> GetTableCellRowSpan() const override;
-  base::Optional<int> GetTableCellAriaColIndex() const override;
-  base::Optional<int> GetTableCellAriaRowIndex() const override;
-  base::Optional<int32_t> GetCellId(int row_index,
+  absl::optional<int> GetTableCellIndex() const override;
+  absl::optional<int> GetTableCellColIndex() const override;
+  absl::optional<int> GetTableCellRowIndex() const override;
+  absl::optional<int> GetTableCellColSpan() const override;
+  absl::optional<int> GetTableCellRowSpan() const override;
+  absl::optional<int> GetTableCellAriaColIndex() const override;
+  absl::optional<int> GetTableCellAriaRowIndex() const override;
+  absl::optional<int32_t> GetCellId(int row_index,
                                     int col_index) const override;
-  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
+  absl::optional<int32_t> CellIndexToId(int cell_index) const override;
 
   bool IsCellOrHeaderOfARIATable() const override;
   bool IsCellOrHeaderOfARIAGrid() const override;
@@ -508,8 +515,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  base::Optional<int> GetPosInSet() const override;
-  base::Optional<int> GetSetSize() const override;
+  absl::optional<int> GetPosInSet() const override;
+  absl::optional<int> GetSetSize() const override;
   SkColor GetColor() const override;
   SkColor GetBackgroundColor() const override;
 
@@ -525,11 +532,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // button needs to be the parent of a menu list popup and needs to be
   // collapsed.
   BrowserAccessibility* GetCollapsedMenuListPopUpButtonAncestor() const;
-
-  // If this node is within an editable region, returns the node that is at the
-  // root of that editable region, otherwise returns nullptr. In accessibility,
-  // an editable region is synonymous to a text field.
-  BrowserAccessibility* GetTextFieldAncestor() const;
 
   // Returns true if:
   // 1. This node is a list, AND
@@ -610,10 +612,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // If the node has a child tree, get the root node.
   BrowserAccessibility* PlatformGetRootOfChildTree() const;
 
-#if DCHECK_IS_ON()
-  // DCHECKs to determine whether current node is valid.
-  void CheckValidity() const;
-#endif
+  // Determines whether this object is valid.
+  bool IsValid() const;
 
   // Given a set of map of spelling text attributes and a start offset, merge
   // them into the given map of existing text attributes. Merges the given

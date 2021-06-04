@@ -254,6 +254,10 @@ class ExtensionTabUtil {
   // unmodified.
   static api::tabs::TabStatus GetLoadingStatus(content::WebContents* contents);
 
+  // Clears the back-forward cache for all active tabs across all browser
+  // contexts.
+  static void ClearBackForwardCache();
+
   // Check TabStripModel editability in every browser because a drag session
   // could be running in another browser that reverts to the current browser. Or
   // a drag could be mid-handoff if from one browser to another.

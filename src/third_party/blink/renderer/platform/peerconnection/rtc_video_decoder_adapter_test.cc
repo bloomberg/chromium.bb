@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -130,8 +129,11 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
             [this](media::MediaLog* media_log,
                    media::VideoDecoderImplementation impl,
                    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
-              DCHECK(this->owned_video_decoder_);
-              return std::move(this->owned_video_decoder_);
+              // If gpu factories tries to get a second video decoder, for
+              // testing purposes we will just return null.
+              // RTCVideoDecodeAdapter already handles the case where the
+              // decoder is null.
+              return std::move(owned_video_decoder_);
             });
     EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
   }
@@ -270,7 +272,8 @@ TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
   EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
-      .WillOnce(Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
+      .WillRepeatedly(
+          Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
   rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
       &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
                            webrtc::kVideoCodecVP9)));

@@ -8,14 +8,15 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/token.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace aura {
 class Window;
@@ -23,6 +24,7 @@ class Window;
 
 namespace base {
 class FilePath;
+class Version;
 }  // namespace base
 
 namespace mojo {
@@ -64,8 +66,15 @@ extern const base::Feature kLacrosAllowOnStableChannel;
 // A command-line switch that can also be set from chrome://flags that affects
 // the frequency of Lacros updates.
 extern const char kLacrosStabilitySwitch[];
+extern const char kLacrosStabilityLeastStable[];
 extern const char kLacrosStabilityLessStable[];
 extern const char kLacrosStabilityMoreStable[];
+
+// A command-line switch that can also be set from chrome://flags that chooses
+// which selection of Lacros to use.
+extern const char kLacrosSelectionSwitch[];
+extern const char kLacrosSelectionRootfs[];
+extern const char kLacrosSelectionStateful[];
 
 // Boolean preference. Whether to launch lacros-chrome on login.
 extern const char kLaunchOnLoginPref[];
@@ -76,8 +85,15 @@ extern const char kLaunchOnLoginPref[];
 // introduced by account_manager in M91/M92 timeframe.
 extern const char kClearUserDataDir1Pref[];
 
+// A dictionary local state pref that records the last data version of
+// lacros-chrome.
+extern const char kDataVerPref[];
+
 // Registers user profile preferences related to the lacros-chrome binary.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+// Registers prefs used via local state PrefService.
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 // Returns the user directory for lacros-chrome.
 base::FilePath GetUserDataDir();
@@ -116,8 +132,8 @@ bool IsLacrosPrimaryBrowser();
 bool IsLacrosPrimaryBrowser(version_info::Channel channel);
 
 // Forces IsLacrosPrimaryBrowser() to return true or false for testing.
-// Passing base::nullopt will reset the state.
-void SetLacrosPrimaryBrowserForTest(base::Optional<bool> value);
+// Passing absl::nullopt will reset the state.
+void SetLacrosPrimaryBrowserForTest(absl::optional<bool> value);
 
 // Returns true if the lacros can be used as a primary browser
 // for the current session.
@@ -166,6 +182,23 @@ mojo::Remote<crosapi::mojom::BrowserService> SendMojoInvitationToLacrosChrome(
 base::ScopedFD CreateStartupData(
     ::crosapi::EnvironmentProvider* environment_provider,
     crosapi::mojom::InitialBrowserAction initial_browser_action);
+
+// Reads `kDataVerPref` and gets corresponding data version for `user_id_hash`.
+// If no such version is registered yet, returns `Version` that is invalid.
+// Should only be called on UI thread since it reads from `LocalState`.
+base::Version GetDataVer(PrefService* local_state,
+                         const std::string& user_id_hash);
+
+// Records data version for `user_id_hash` in `LocalState`. Should only be
+// called on UI thread since it reads from `LocalState`.
+void RecordDataVer(PrefService* local_state,
+                   const std::string& user_id_hash,
+                   const base::Version& version);
+
+// Gets the version of the rootfs lacros-chrome. By reading the metadata json
+// file in the correct format.
+base::Version GetRootfsLacrosVersionMayBlock(
+    const base::FilePath& version_file_path);
 
 }  // namespace browser_util
 }  // namespace crosapi

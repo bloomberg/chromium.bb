@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -46,11 +46,16 @@ CHROMITE_PATH = os.path.abspath(
 CROS_RUN_TEST_PATH = os.path.abspath(
     os.path.join(CHROMITE_PATH, 'bin', 'cros_run_test'))
 
+LACROS_LAUNCHER_SCRIPT_PATH = os.path.abspath(
+    os.path.join(CHROMIUM_SRC_PATH, 'build', 'lacros',
+                 'mojo_connection_lacros_launcher.py'))
+
 # This is a special hostname that resolves to a different DUT in the lab
 # depending on which lab machine you're on.
 LAB_DUT_HOSTNAME = 'variable_chromeos_device_hostname'
 
 SYSTEM_LOG_LOCATIONS = [
+    '/home/chronos/crash/',
     '/var/log/chrome/',
     '/var/log/messages',
     '/var/log/ui/',
@@ -162,7 +167,7 @@ class RemoteTest(object):
     logging.info('\n' + '\n'.join(script_contents))
     fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
     os.fchmod(fd, 0o755)
-    with os.fdopen(fd, 'wb') as f:
+    with os.fdopen(fd, 'w') as f:
       f.write('\n'.join(script_contents) + '\n')
     return tmp_path
 
@@ -170,7 +175,7 @@ class RemoteTest(object):
     # Traps SIGTERM and kills all child processes of cros_run_test when it's
     # caught. This will allow us to capture logs from the device if a test hangs
     # and gets timeout-killed by swarming. See also:
-    # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+    # https://chromium.googlesource.com/infra/luci/luci-py/+/main/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
     test_proc = None
 
     def _kill_child_procs(trapped_signal, _):
@@ -308,8 +313,10 @@ class TastTest(RemoteTest):
         ]
 
     # Lacros deployment mounts itself by default.
-    self._test_cmd.extend(
-        ['--deploy-lacros'] if self._deploy_lacros else ['--deploy', '--mount'])
+    self._test_cmd.extend([
+        '--deploy-lacros', '--lacros-launcher-script',
+        LACROS_LAUNCHER_SCRIPT_PATH
+    ] if self._deploy_lacros else ['--deploy', '--mount'])
     self._test_cmd += [
         '--build-dir',
         os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)
@@ -414,7 +421,10 @@ class TastTest(RemoteTest):
       # Use dateutil to parse the timestamps since datetime can't handle
       # nanosecond precision.
       duration = dateutil.parser.parse(end) - dateutil.parser.parse(start)
-      duration_ms = duration.total_seconds() * 1000
+      # If the duration is negative, Tast has likely reported an incorrect
+      # duration. See https://issuetracker.google.com/issues/187973541. Round
+      # up to 0 in that case to avoid confusing RDB.
+      duration_ms = max(duration.total_seconds() * 1000, 0)
       if bool(test['skipReason']):
         result = base_test_result.ResultType.SKIP
       elif errors:
@@ -426,7 +436,7 @@ class TastTest(RemoteTest):
         # See the link below for the format of these errors:
         # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/tast/testing#Error
         for err in errors:
-          error_log += err['stack'].encode('utf-8') + '\n'
+          error_log += err['stack'] + '\n'
       error_log += (
           "\nIf you're unsure why this test failed, consult the steps "
           'outlined in\n%s\n' % TAST_DEBUG_DOC)
@@ -717,7 +727,7 @@ def host_cmd(args, cmd_args):
       '--board',
       args.board,
       '--cache-dir',
-      args.cros_cache,
+      os.path.join(CHROMIUM_SRC_PATH, args.cros_cache),
   ]
   if args.use_vm:
     cros_run_test_cmd += [
@@ -745,14 +755,16 @@ def host_cmd(args, cmd_args):
     ]
 
   test_env = setup_env()
-  if args.deploy_chrome:
+  if args.deploy_chrome or args.deploy_lacros:
     # Mounting ash-chrome gives it enough disk space to not need stripping.
-    cros_run_test_cmd.extend(['--deploy-lacros'] if args.deploy_lacros else
-                             ['--deploy', '--mount', '--nostrip'])
+    cros_run_test_cmd.extend([
+        '--deploy-lacros', '--lacros-launcher-script',
+        LACROS_LAUNCHER_SCRIPT_PATH
+    ] if args.deploy_lacros else ['--deploy', '--mount', '--nostrip'])
 
     cros_run_test_cmd += [
         '--build-dir',
-        os.path.abspath(args.path_to_outdir),
+        os.path.join(CHROMIUM_SRC_PATH, args.path_to_outdir)
     ]
 
   cros_run_test_cmd += [
@@ -911,7 +923,7 @@ def main():
   tast_test_parser = subparsers.add_parser(
       'tast',
       help='Runs a device-side set of Tast tests. For more details, see: '
-      'https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/running_tests.md'
+      'https://chromium.googlesource.com/chromiumos/platform/tast/+/main/docs/running_tests.md'
   )
   tast_test_parser.set_defaults(func=device_test)
   tast_test_parser.add_argument(
@@ -976,6 +988,12 @@ def main():
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
   if not args.use_vm and not args.device:
+    logging.warning(
+        'The test runner is now assuming running in the lab environment, if '
+        'this is unintentional, please re-invoke the test runner with the '
+        '"--use-vm" arg if using a VM, otherwise use the "--device=<DUT>" arg '
+        'to specify a DUT.')
+
     # If we're not running on a VM, but haven't specified a hostname, assume
     # we're on a lab bot and are trying to run a test on a lab DUT. See if the
     # magic lab DUT hostname resolves to anything. (It will in the lab and will
@@ -983,11 +1001,10 @@ def main():
     try:
       socket.getaddrinfo(LAB_DUT_HOSTNAME, None)
     except socket.gaierror:
-      logging.error('The default DUT hostname of %s is unreachable.',
+      logging.error('The default lab DUT hostname of %s is unreachable.',
                     LAB_DUT_HOSTNAME)
       return 1
 
-  args.cros_cache = os.path.abspath(args.cros_cache)
   return args.func(args, unknown_args)
 
 

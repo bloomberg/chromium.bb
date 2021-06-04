@@ -170,7 +170,7 @@ You query Vulkan Instance functions using `vkGetInstanceProcAddr`.
 `vkGetInstanceProcAddr` can be used to query either device or instance entry
 points in addition to all core entry points.  The returned function pointer is
 valid for this Instance and any object created under this Instance (including
-all `VkDevice` objects).  
+all `VkDevice` objects).
 
 Similarly, an Instance extension is a set of Vulkan Instance functions extending
 the Vulkan language.  These will be discussed in more detail later.
@@ -697,6 +697,7 @@ target-specific extensions:
 | Linux (Wayland) | VK_KHR_wayland_surface |
 | Linux (X11) |  VK_KHR_xcb_surface and VK_KHR_xlib_surface |
 | macOS (MoltenVK) | VK_MVK_macos_surface |
+| QNX (Screen) | VK_QNX_screen_surface |
 
 It is important to understand that while the loader may support the various
 entry points for these extensions, there is a handshake required to actually
@@ -753,7 +754,7 @@ extensions when an application calls `vkEnumerateInstanceExtensionProperties`.
 Additionally, this behavior will cause the loader to throw an error during
 `vkCreateInstance` if you still attempt to use one of these extensions.  The intent is
 to protect applications so that they don't inadvertently use functionality
-which could lead to a crash.  
+which could lead to a crash.
 
 On the other hand, if you know you can safely use the extension, you may disable
 the filtering by defining the environment variable `VK_LOADER_DISABLE_INST_EXT_FILTER`
@@ -1546,6 +1547,7 @@ In order to intercept the pre-instance functions, several conditions must be met
 The functions that may be intercepted in this way are:
 * `vkEnumerateInstanceExtensionProperties`
 * `vkEnumerateInstanceLayerProperties`
+* `vkEnumerateInstanceVersion`
 
 Pre-instance functions work differently from all other layer intercept functions.
 Other intercept functions have a function prototype identical to that of the function they are intercepting.
@@ -2448,10 +2450,10 @@ then the value of NULL should be returned.
 
 This support is optional and should not be considered a requirement.  This is
 only required if an ICD intends to support some functionality not directly
-supported by a significant population of loaders in the public.  If an ICD
-does implement this support, it should return the address of its
-`vk_icdGetPhysicalDeviceProcAddr` function through the `vkGetInstanceProcAddr`
-function.
+supported by a significant population of loaders in the public.  If an ICD does
+implement this support, it must export the function from the ICD library using
+the name vk_icdGetPhysicalDeviceProcAddr so that the symbol can be located
+through the platform's dynamic linking utilities.
 
 The new behavior of the loader's vkGetInstanceProcAddr with support for the
 `vk_icdGetPhysicalDeviceProcAddr` function is as follows:
@@ -2553,9 +2555,9 @@ vkObj alloc_icd_obj()
 ### Handling KHR Surface Objects in WSI Extensions
 
 Normally, ICDs handle object creation and destruction for various Vulkan
-objects. The WSI surface extensions for Linux, Windows, and macOS
+objects. The WSI surface extensions for Linux, Windows, macOS, and QNX
 ("VK\_KHR\_win32\_surface", "VK\_KHR\_xcb\_surface", "VK\_KHR\_xlib\_surface",
-"VK\_KHR\_wayland\_surface", "VK\_MVK\_macos\_surface"
+"VK\_KHR\_wayland\_surface", "VK\_MVK\_macos\_surface", "VK\_QNX\_screen\_surface"
 and "VK\_KHR\_surface")
 are handled differently.  For these extensions, the `VkSurfaceKHR` object
 creation and destruction may be handled by either the loader  or an ICD.
@@ -2571,6 +2573,7 @@ If the loader handles the management of the `VkSurfaceKHR` objects:
       * Windows
       * Android
       * MacOS (`vkCreateMacOSSurfaceMVK`)
+      * QNX (`vkCreateScreenSurfaceQNX`)
  2. The loader creates a `VkIcdSurfaceXXX` object for the corresponding
 `vkCreateXXXSurfaceKHR` call.
     * The `VkIcdSurfaceXXX` structures are defined in `include/vulkan/vk_icd.h`.
@@ -2578,7 +2581,7 @@ If the loader handles the management of the `VkSurfaceKHR` objects:
     `VkIcdSurfaceXXX` structure.
  4. The first field of all the `VkIcdSurfaceXXX` structures is a
 `VkIcdSurfaceBase` enumerant that indicates whether the
-    surface object is Win32, XCB, Xlib, or Wayland.
+    surface object is Win32, XCB, Xlib, Wayland, or Screen.
 
 The ICD may choose to handle `VkSurfaceKHR` object creation instead.  If an ICD
 desires to handle creating and destroying it must do the following:

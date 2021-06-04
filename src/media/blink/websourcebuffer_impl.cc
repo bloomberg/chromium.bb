@@ -16,6 +16,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_source_buffer_client.h"
 
@@ -49,14 +50,11 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
   if (time == std::numeric_limits<double>::infinity())
     return kInfiniteDuration;
 
-  // Don't use base::TimeDelta::Max() here, as we want the largest finite time
-  // delta.
-  base::TimeDelta max_time = base::TimeDelta::FromInternalValue(
-      std::numeric_limits<int64_t>::max() - 1);
-  double max_time_in_seconds = max_time.InSecondsF();
+  constexpr double max_time_in_seconds =
+      base::TimeDelta::FiniteMax().InSecondsF();
 
   if (time >= max_time_in_seconds)
-    return max_time;
+    return base::TimeDelta::FiniteMax();
 
   return base::TimeDelta::FromMicroseconds(
       time * base::Time::kMicrosecondsPerSecond);

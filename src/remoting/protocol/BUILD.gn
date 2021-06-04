@@ -153,8 +153,6 @@ static_library("protocol") {
     "secure_channel_factory.cc",
     "secure_channel_factory.h",
     "session.h",
-    "session_config.cc",
-    "session_config.h",
     "session_manager.h",
     "session_options_provider.h",
     "session_plugin.h",
@@ -220,6 +218,7 @@ static_library("protocol") {
   ]
 
   public_deps = [
+    ":session_config",
     "//remoting/proto",
     "//third_party/webrtc_overrides:webrtc_component",
   ]
@@ -274,6 +273,8 @@ static_library("protocol") {
       "webrtc_frame_scheduler.h",
       "webrtc_frame_scheduler_simple.cc",
       "webrtc_frame_scheduler_simple.h",
+      "webrtc_video_encoder_wrapper.cc",
+      "webrtc_video_encoder_wrapper.h",
       "webrtc_video_frame_adapter.cc",
       "webrtc_video_frame_adapter.h",
       "webrtc_video_stream.cc",
@@ -282,6 +283,15 @@ static_library("protocol") {
 
     deps += [ "//remoting/codec:encoder" ]
   }
+}
+
+static_library("session_config") {
+  sources = [
+    "session_config.cc",
+    "session_config.h",
+  ]
+
+  deps = [ "//base" ]
 }
 
 static_library("test_support") {
@@ -390,7 +400,9 @@ source_set("unit_tests") {
       "video_frame_pump_unittest.cc",
       "webrtc_audio_source_adapter_unittest.cc",
       "webrtc_frame_scheduler_unittest.cc",
+      "webrtc_video_encoder_wrapper_unittest.cc",
       "webrtc_video_frame_adapter_unittest.cc",
+      "webrtc_video_track_source_unittest.cc",
     ]
   }
 

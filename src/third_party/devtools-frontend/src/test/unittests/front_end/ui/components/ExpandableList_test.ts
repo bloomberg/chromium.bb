@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as LitHtml from '../../../../../front_end/third_party/lit-html/lit-html.js';
-import * as UIComponents from '../../../../../front_end/ui/components/components.js';
+import * as ExpandableList from '../../../../../front_end/ui/components/expandable_list/expandable_list.js';
+import * as LitHtml from '../../../../../front_end/ui/lit-html/lit-html.js';
 import {assertShadowRoot, renderElementIntoDOM} from '../../helpers/DOMHelpers.js';
 import {MutationType, withMutations} from '../../helpers/MutationHelpers.js';
 
 describe('ExpandableList', () => {
   it('can be expanded', async () => {
-    const list = new UIComponents.ExpandableList.ExpandableList();
+    const list = new ExpandableList.ExpandableList.ExpandableList();
     renderElementIntoDOM(list);
     list.data = {
       rows: [
@@ -39,7 +39,7 @@ describe('ExpandableList', () => {
   });
 
   it('does not render when given 0 rows', async () => {
-    const list = new UIComponents.ExpandableList.ExpandableList();
+    const list = new ExpandableList.ExpandableList.ExpandableList();
     renderElementIntoDOM(list);
     list.data = {
       rows: [],
@@ -54,7 +54,7 @@ describe('ExpandableList', () => {
   });
 
   it('cannot be expanded when given 1 row', async () => {
-    const list = new UIComponents.ExpandableList.ExpandableList();
+    const list = new ExpandableList.ExpandableList.ExpandableList();
     renderElementIntoDOM(list);
     list.data = {
       rows: [

@@ -34,7 +34,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Action.WithDisposition" enum="PermissionAction"
-    expires_after="2021-08-08">
+    expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -155,7 +155,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Chip.TimeToInteraction" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>bsep@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>olesiamarukhno@google.com</owner>
@@ -184,7 +184,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.DelayedPushNotification"
-    units="ms" expires_after="2021-08-29">
+    units="ms" expires_after="2021-10-31">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -212,7 +212,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.NotificationUxQuality"
-    enum="CrowdDenyNotificationUxQuality" expires_after="2021-08-09">
+    enum="CrowdDenyNotificationUxQuality" expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -223,7 +223,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2021-08-08">
+    units="date" expires_after="2021-10-10">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -233,7 +233,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.WarningOnly" enum="Boolean"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -245,7 +245,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.SafeBrowsing.RequestDuration" units="ms"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -269,7 +269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.Accepted" units="%"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -279,7 +279,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.AcceptedOnce" units="%"
-    expires_after="2021-08-22">
+    expires_after="2021-10-31">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -290,7 +290,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.Denied" units="%"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -300,7 +300,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.Dismissed" units="%"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -310,7 +310,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.Ignored" units="%"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -320,7 +320,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.MissingOSLevelPermission.Action"
-    enum="PermissionAction" expires_after="2021-08-22">
+    enum="PermissionAction" expires_after="2021-10-25">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -348,7 +348,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Prompt.Accepted" enum="PermissionRequestType"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -422,7 +422,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Prompt.Denied" enum="PermissionRequestType"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -566,7 +566,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Permissions.QuietNotificationPrompts.DidEnableAdapativelyInPrefs"
-    enum="Boolean" expires_after="2021-08-09">
+    enum="Boolean" expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -578,7 +578,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Permissions.QuietNotificationPrompts.EnabledStateInPrefsChangedTo"
-    enum="BooleanEnabled" expires_after="2021-08-09">
+    enum="BooleanEnabled" expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -589,7 +589,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.QuietNotificationPrompts.IsEnabledInPrefs"
-    enum="BooleanEnabled" expires_after="2021-08-09">
+    enum="BooleanEnabled" expires_after="2021-10-10">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -601,7 +601,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Permissions.Revocation.ElapsedTimeSinceGrant"
-    units="seconds" expires_after="2021-08-20">
+    units="seconds" expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -611,7 +611,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Serial.ChooserClosed" enum="SerialChooserOutcome"
-    expires_after="2021-06-21">
+    expires_after="never">
+<!-- expires-never: Used to monitor user interaction with the Web Serial API. -->
+
   <owner>reillyg@chromium.org</owner>
   <owner>src/content/browser/serial/OWNERS</owner>
   <summary>
@@ -621,14 +623,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Serial.Revoked" enum="SerialPermissionRevoked"
-    expires_after="2021-06-21">
+    expires_after="never">
+<!-- expires-never: Used to monitor user interaction with the Web Serial API. -->
+
   <owner>reillyg@chromium.org</owner>
   <owner>src/content/browser/serial/OWNERS</owner>
   <summary>Records when permission to access a serial port is revoked.</summary>
 </histogram>
 
 <histogram base="true" name="Permissions.Usage.ElapsedTimeSinceGrant"
-    units="seconds" expires_after="2021-08-20">
+    units="seconds" expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>

@@ -9,6 +9,7 @@
 <translation id="1431818719585918472">Naj Chromium zaklene anonimne zavihke.</translation>
 <translation id="1472013873724362412">Vaš račun ne deluje v Chromiumu. Obrnite se na skrbnika domene ali za prijavo uporabite običajen Google Račun.</translation>
 <translation id="1507010443238049608">Pomagajte izboljšati funkcije in delovanje Chromiuma</translation>
+<translation id="1531155317299575425">Pokaže pozive za prijavo v Chromium.</translation>
 <translation id="1617663976202781617">Podatki iz sinhronizacije za Chromium</translation>
 <translation id="1736662517232558588">Podatki Chromiuma so izbrisani</translation>
 <translation id="1838412507805038478">Chromium je preveril, ali je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
@@ -20,6 +21,7 @@
 <translation id="2168108852149185974">Nekateri dodatki povzročajo zrušitve Chromiuma. Odstranite jih:</translation>
 <translation id="2178608107313874732">Chromium trenutno ne more uporabljati fotoaparata</translation>
 <translation id="2195025571279539885">Želite, da Chromium naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE_NAME" /> s tega spletnega mesta?</translation>
+<translation id="2567507405773541360">Opravite več s preprostim in varnim Chromiumom, ki je hitrejši kot kdaj prej.</translation>
 <translation id="2590893390871230428">Sinhroniziranje podatkov v Chromiumu</translation>
 <translation id="2650312721222849884">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chromium, vklopite sinhronizacijo</translation>
 <translation id="2684230048001240293">Nastavite Chromium kot privzeto možnost sinhroniziranja zavihkov, gesel in podatkov za plačilo v vseh napravah.</translation>
@@ -41,9 +43,12 @@
 <translation id="4681781466797808448">Vklopite optični bralnik Chromium</translation>
 <translation id="4736424910885271643">Vaš račun upravlja domena <ph name="HOSTED_DOMAIN" />, zato bodo podatki v Chromiumu izbrisani iz te naprave.</translation>
 <translation id="4787850887676698916">Zavihki, ki ste jih odprli v Chromiumu v drugih napravah, bodo prikazani tukaj.</translation>
+<translation id="4806326830773390517">Pomagajte izboljšati Chromium, tako da Googlu pošiljate statistične podatke uporabe in poročila o zrušitvah.</translation>
 <translation id="4828317641996116749">Chromiumu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
+<translation id="4852878756222711218">Če želite kar najbolje izkoristiti Chromium, se prijavite z računom Google.</translation>
 <translation id="4985291216379576555">Chromium brez povezave ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="4999538639245140991">Ker se boste odjavili iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, boste iz te naprave izbrisali podatke v Chromiumu. Vaši podatki bodo še vedno na voljo v Google Računu.</translation>
+<translation id="5171868502429358653">Prijavite se v Chromium</translation>
 <translation id="5224391634244552924">Ni shranjenih gesel. Chromium lahko preveri gesla, če jih shranite.</translation>
 <translation id="5308226104666789935">Chromium ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="5396916991083608703">Želite nastaviti Chromium kot privzeto možnost?</translation>
@@ -59,12 +64,15 @@
 1. Odprite nastavitve.
 2. Dotaknite se možnosti za privzeto aplikacijo za brskanje.
 3. Izberite Chromium.</translation>
+<translation id="6155422572367400359">Prijavite se na tem spletnem mestu, v svoj račun Google in Chromium. Sinhronizacijo lahko vklopite pozneje.</translation>
 <translation id="6268381023930128611">Se želite odjaviti iz Chromiuma?</translation>
+<translation id="632825460376924298">Omogočanje prijave v Chromium</translation>
 <translation id="6337530241089703714">Izberite, ali želite izbrisati podatke v Chromiumu iz te naprave ali jih obdržati.</translation>
 <translation id="6424492062988593837">Chromium je izboljšan! Na voljo je nova različica.</translation>
 <translation id="6820823224820483452">Chromiumu ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
 <translation id="6827294685447036764">Če Chromiumu omogočite dostop do podatkov o lokaciji, jih Chromium pošlje na spletna mesta, ki jim podelite dovoljenje. Spletna mesta morda zahtevajo podatke o lokaciji, ko želijo prikazati lokalne informacije, na primer trgovine v bližini ali novice.</translation>
 <translation id="7018284295775193585">Chromiuma ni mogoče posodobiti</translation>
+<translation id="7045244423563602563">Prilagodite si Chromium</translation>
 <translation id="7099326575020694068">Chromium ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
 <translation id="7118091470949186573">Zdaj lahko uporabljate Chromium, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
 <translation id="7208566199746267865">Chromium poskrbi, da so vaši računi v spletu, in vam tako prihrani čas. Račune lahko dodajate ali odstranjujete v nastavitvah.</translation>

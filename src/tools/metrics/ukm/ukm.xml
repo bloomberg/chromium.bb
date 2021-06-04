@@ -1409,7 +1409,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Autofill.FormFillSuccessIOS">
-  <owner>kazinova@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <summary>
     Records whether the the form was successfully filled by Autofill on iOS. The
     metric is used to measure silent renderer fails when the filling request is
@@ -1764,6 +1764,31 @@ be describing additional metrics about the same event.
       Field's |ServerFieldType| returned by server. See
       |AutofillField.server_type()|.
     </summary>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.InChromeTriggering">
+  <owner>arbesser@google.com</owner>
+  <owner>mcarlen@google.com</owner>
+  <owner>marianfe@google.com</owner>
+  <summary>
+    Recorded when a navigation finishes successfully (is committed and not an
+    error page), if autofill_assistant and its proactive help setting are
+    enabled and MSBB is turned on.
+  </summary>
+  <metric name="InChromeTriggerAction"
+      enum="AutofillAssistantInChromeTriggerAction">
+    <summary>
+      An enum that captures the trigger action the client chose for a specific
+      URL.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -2209,6 +2234,12 @@ be describing additional metrics about the same event.
 
     This event is not recorded on machines with low-resolution clocks.
   </summary>
+  <metric name="AnchorElementMetricsIntersectionObserver">
+    <summary>
+      Time spent computing IntersectionObservations for anchor elements, in
+      microseconds.
+    </summary>
+  </metric>
   <metric name="Animate">
     <summary>
       The time spent in main frame animation, between navigation and First
@@ -2456,6 +2487,26 @@ be describing additional metrics about the same event.
 
     This event is not recorded on machines with low-resolution clocks.
   </summary>
+  <metric name="AnchorElementMetricsIntersectionObserver">
+    <summary>
+      Time spent computing IntersectionObservations for anchor elements, in
+      microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="AnchorElementMetricsIntersectionObserverBeginMainFrame">
+    <summary>
+      The total main frame time used to compute IntersectionObservations for
+      anchor elements, in microseconds.
+    </summary>
+  </metric>
   <metric name="Animate">
     <summary>
       The time taken for main frame animation in microseconds during the sampled
@@ -7060,6 +7111,14 @@ be describing additional metrics about the same event.
       BackForwardCache::DisableForRenderFrameHost calls.
     </summary>
   </metric>
+  <metric name="BackForwardCache.IsAmpPage" enum="Boolean">
+    <summary>
+      Boolean whether the now-restored page uses AMP (see https://amp.dev). If
+      the page wasn't restored from the back-forward cache, this metric will not
+      be populated. This metric will never be true when
+      BackForwardCache.IsServedFromBackForwardCache is false.
+    </summary>
+  </metric>
   <metric name="BackForwardCache.IsServedFromBackForwardCache">
     <summary>
       Boolean whether the page was restored from the back-forward cache or not.
@@ -7335,6 +7394,29 @@ be describing additional metrics about the same event.
         <index fields="profile.is_latest_version"/>
         <statistics>
           <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="InputMethod.NonCompliantApi">
+  <owner>shend@chromium.org</owner>
+  <summary>
+    Metrics indicating what Input Method Editor (IME) operations are behaving
+    incorrectly on an input field. This event is recorded whenever an IME
+    operation is executed on the input field but the result does not match the
+    IME's expectations (e.g. IME wants to insert 'a' but the input field
+    inserted 'b' instead).
+  </summary>
+  <metric name="NonCompliantOperation" enum="InputMethodApiOperation">
+    <summary>
+      The operation that behaved incorrectly.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
         </statistics>
       </history>
     </aggregation>
@@ -9860,12 +9942,22 @@ be describing additional metrics about the same event.
 <event name="NavigationPredictorPageLinkClick">
   <owner>ryansturm@chromium.org</owner>
   <summary>
-    Sent on an in-page link click. An integer from 0-10 (1-indexed),
-    corresponding to the index of that anchor element in the list of top ten
-    anchor elements on that page, sorted by their navigation scores. If an
-    anchor element is clicked that is not on the top ten list, 0 is returned.
+    Sent on an in-page link click.
   </summary>
-  <metric name="AnchorElementIndex"/>
+  <metric name="AnchorElementIndex">
+    <summary>
+      An integer (0-indexed), corresponding to the index of that anchor element
+      in the list of top ten anchor elements on that page, sorted by their
+      navigation scores. If an anchor element is clicked that is not in
+      NavigationPredictorAnchorElementMetrics, -1 is returned.
+    </summary>
+  </metric>
+  <metric name="HrefUnchanged">
+    <summary>
+      1 if the href of the anchor element at the time the click is handled is
+      the same as the href when the element was created. 0 if the href changed.
+    </summary>
+  </metric>
 </event>
 
 <event name="NavigationPredictorPageLinkMetrics" singular="True">
@@ -11278,6 +11370,13 @@ be describing additional metrics about the same event.
       there were no redirects.
     </summary>
   </metric>
+  <metric name="MainFrameResource.RequestHadCookies" enum="Boolean">
+    <summary>
+      A boolean indicating if any mainpage request in the redirect chain or
+      committed request had cookies set on it. Only set when a query result was
+      received from the cookie manager before event recording.
+    </summary>
+  </metric>
   <metric name="MainFrameResource.RequestStartToReceiveHeadersEnd">
     <summary>
       The duration from when the request was started to the time when its
@@ -11491,6 +11590,27 @@ be describing additional metrics about the same event.
       Measures the time in milliseconds from navigation timing's navigation
       start to the time the provisional load failed. Only measures provisional
       loads that failed in the foreground.
+    </summary>
+  </metric>
+  <metric name="PageTiming.UserTimingMarkFullyLoaded">
+    <summary>
+      When the page UserTiming mark API is called with the standard
+      'mark_fully_loaded' name to mark that the page is fully loaded. If the
+      mark is called more than once, the last is used.
+    </summary>
+  </metric>
+  <metric name="PageTiming.UserTimingMarkFullyVisible">
+    <summary>
+      When the page UserTiming mark API is called with the standard
+      'mark_fully_visible' name to mark that the page is fully visible. If the
+      mark is called more than once, the last is used.
+    </summary>
+  </metric>
+  <metric name="PageTiming.UserTimingMarkInteractive">
+    <summary>
+      When the page UserTiming mark API is called with the standard
+      'mark_interactive' name to mark that the page is interactive. If the mark
+      is called more than once, the last is used.
     </summary>
   </metric>
   <metric name="PaintTiming.NavigationToExperimentalLargestContentfulPaint">
@@ -12208,7 +12328,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PasswordManager.WellKnownChangePasswordResult">
-  <owner>jdoerrie@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
     Metrics related to the usage and support of .well-known/change-password. The
@@ -12233,7 +12353,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentApp.CheckoutEvents">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
     Records checkout events as well as completion status for the invoked payment
@@ -12266,7 +12386,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentRequest.CheckoutEvents">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <metric name="CompletionStatus">
     <summary>
@@ -12291,7 +12411,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentRequest.TransactionAmount">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <metric name="Category">
     <summary>
@@ -12332,6 +12452,177 @@ be describing additional metrics about the same event.
       Set to 1 when blink::ResourceLoadScheduler delays competing low priority
       requests. See https://crbug.com/1112515 for details.
     </summary>
+  </metric>
+</event>
+
+<event name="PerformanceAPI.LongTask">
+  <owner>hpayer@chromium.org</owner>
+  <owner>mlippautz@chromium.org</owner>
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    This event is associated with the LongTask Web Platform API. The metrics are
+    recorded when a long task is detected and reported to the page. For more
+    details see the design doc linked in https://crbug.com/1173527.
+  </summary>
+  <metric name="Duration">
+    <summary>
+      The duration of the long task in microseconds. Mirrors the value reported
+      in PerformanceEntry.duration.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration.V8.GC">
+    <summary>
+      The total time in microseconds that V8 spent collecting garbage within the
+      long task.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration.V8.GC.Full.Atomic">
+    <summary>
+      The total time in microseconds that V8 spent in the atomic pause of the
+      full garbage collector within the long task.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration.V8.GC.Full.Incremental">
+    <summary>
+      The total time in microseconds that V8 spent in the incremental pause of
+      the full garbage collector within the long task.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration.V8.GC.Young">
+    <summary>
+      The total time in microseconds that V8 spent in the young garbage
+      collector within the long task.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="StartTime">
+    <summary>
+      The duration in millseconds between the document navigation start and the
+      long task start. Mirrors the value reported in PerformanceEntry.startTime.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="PerformanceAPI.Memory">
+  <owner>hpayer@chromium.org</owner>
+  <owner>mlippautz@chromium.org</owner>
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    This event is associated with the performance.measureUserAgentSpecificMemory
+    API. The metrics are recorded when the memory measurement is reported to the
+    page. All values represent memory consumption in KB.
+  </summary>
+  <metric name="Dom">
+    <summary>
+      The total DOM memory measured in KB.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="JavaScript">
+    <summary>
+      The total JavaScript memory measured in KB.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="JavaScript.DedicatedWorker">
+    <summary>
+      The total JavaScript memory in the DedicatedWorker scope measured in KB.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Shared">
+    <summary>
+      The total shared memory measured in KB.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="PerformanceAPI.Memory.Legacy">
+  <owner>hpayer@chromium.org</owner>
+  <owner>mlippautz@chromium.org</owner>
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    This event is associated with the performance.memory API. The metrics are
+    recorded when the memory measurement is reported to the page. All values
+    represent memory consumption in KB.
+  </summary>
+  <metric name="JavaScript">
+    <summary>
+      The JavaScript memory (usedJSHeapSize) measured in KB.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -12485,6 +12776,22 @@ be describing additional metrics about the same event.
       Time (in milliseconds) taken by the user to make a decision on a
       permission prompt after it was displayed, if at all. Ignoring a prompt
       doesnt count as a decision.
+    </summary>
+  </metric>
+</event>
+
+<event name="PermissionUsage">
+  <owner>engedy@chromium.org</owner>
+  <owner>ravjit@chromium.org</owner>
+  <owner>permissions-dev@chromium.org</owner>
+  <summary>
+    Metrics for usage of capabilities gated behind permission prompts. One event
+    is recorded per permission type for each page load that uses that permission
+    type.
+  </summary>
+  <metric name="PermissionType">
+    <summary>
+      An enum of type ContentSettingsType.
     </summary>
   </metric>
 </event>
@@ -12832,6 +13139,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="mainpage_request_had_cookies" enum="Boolean">
+    <obsolete>
+      Replaced by PageLoad.MainFrameResource.RequestHadCookies in M92.
+    </obsolete>
     <summary>
       A boolean indicating if any mainpage request in the redirect chain or
       committed request had cookies set on it. Only set when a query result was
@@ -15250,7 +15560,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="TouchToFill.Shown">
-  <owner>jdoerrie@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Recorded when the Touch To Fill sheet is shown to the user.
@@ -15454,6 +15764,12 @@ be describing additional metrics about the same event.
     <summary>
       The highest priority trigger that determined the initial state of
       Translate for this page load.
+    </summary>
+  </metric>
+  <metric name="WasContentEmpty" enum="Boolean">
+    <summary>
+      Whether the page content used to detect the page language was empty or
+      not.
     </summary>
   </metric>
 </event>

@@ -85,7 +85,8 @@ std::unique_ptr<data_decoder::DataDecoder> CreateSharedDataDecoder() {
 
   int idle_timeout = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kEntitySuggestionsReduceLatency,
-      OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderTimeoutParam, 0);
+      OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderTimeoutParam,
+      405);
 
   return idle_timeout > 0 ? std::make_unique<data_decoder::DataDecoder>(
                                 base::TimeDelta::FromSeconds(idle_timeout))
@@ -237,10 +238,9 @@ std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
       std::string(),
       net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       network::mojom::CredentialsMode::kInclude);
-  new_fetcher->Start(
-      content::BrowserContext::GetDefaultStoragePartition(context_)
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get());
+  new_fetcher->Start(context_->GetDefaultStoragePartition()
+                         ->GetURLLoaderFactoryForBrowserProcess()
+                         .get());
   return new_fetcher;
 }
 

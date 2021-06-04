@@ -123,6 +123,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter subtle
 [Worker]     method constructor
 [Worker]     method getRandomValues
+[Worker]     method randomUUID
 [Worker] interface CryptoKey
 [Worker]     attribute @@toStringTag
 [Worker]     getter algorithm
@@ -486,6 +487,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter featureSettings
 [Worker]     getter lineGapOverride
 [Worker]     getter loaded
+[Worker]     getter sizeAdjust
 [Worker]     getter status
 [Worker]     getter stretch
 [Worker]     getter style
@@ -500,6 +502,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter family
 [Worker]     setter featureSettings
 [Worker]     setter lineGapOverride
+[Worker]     setter sizeAdjust
 [Worker]     setter stretch
 [Worker]     setter style
 [Worker]     setter unicodeRange
@@ -681,6 +684,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method transferFromImageBitmap
 [Worker] interface ImageData
 [Worker]     attribute @@toStringTag
+[Worker]     getter colorSpace
 [Worker]     getter data
 [Worker]     getter height
 [Worker]     getter width

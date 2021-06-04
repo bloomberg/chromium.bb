@@ -297,7 +297,7 @@ let lastQueryLevelToExpand: TestQueryLevel = 2;
   }
   const tree = await loader.loadTree(rootQuery);
 
-  tree.dissolveLevelBoundaries();
+  tree.dissolveSingleChildTrees();
 
   const { runSubtree, generateSubtreeHTML } = makeSubtreeHTML(tree.root, 1);
   const setTreeCheckedRecursively = generateSubtreeHTML(resultsVis);

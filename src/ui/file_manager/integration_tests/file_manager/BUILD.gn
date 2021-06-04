@@ -28,12 +28,11 @@ js_type_check("closure_compile") {
     ":grid_view",
     ":install_linux_package_dialog",
     ":keyboard_operations",
-    ":launcher_search",
     ":metadata",
     ":metrics",
     ":my_files",
     ":open_audio_files",
-    ":open_image_files",
+    ":open_image_media_app",
     ":open_video_files",
     ":providers",
     ":quick_view",
@@ -157,11 +156,6 @@ js_library("keyboard_operations") {
   deps = []
 }
 
-js_library("launcher_search") {
-  testonly = true
-  deps = []
-}
-
 js_library("metadata") {
   testonly = true
   deps = []
@@ -182,7 +176,7 @@ js_library("open_audio_files") {
   deps = []
 }
 
-js_library("open_image_files") {
+js_library("open_image_media_app") {
   testonly = true
   deps = []
 }

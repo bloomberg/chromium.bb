@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/observer_list_threadsafe.h"
@@ -42,6 +43,11 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
     virtual void OnPowerModeChanged(PowerMode old_mode, PowerMode new_mode) = 0;
   };
 
+  // Limits the frequency at which we can run the UpdatePendingResets() task.
+  // All pending resets are aligned to this time resolution. Public for testing.
+  static constexpr base::TimeDelta kResetVoteTimeResolution =
+      base::TimeDelta::FromMilliseconds(100);
+
   static PowerModeArbiter* GetInstance();
 
   // Public for testing.
@@ -65,10 +71,16 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
   // pool is available.
   void OnThreadPoolAvailable();
 
-  // Returns the currently active PowerMode. Public for testing.
+  // Provide a custom task runner for unit tests. Replaces a call to
+  // OnThreadPoolAvailable().
+  void SetTaskRunnerForTesting(scoped_refptr<base::SequencedTaskRunner>);
+
   PowerMode GetActiveModeForTesting();
+  void SetOnBatteryPowerForTesting(bool on_battery_power);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PowerModeArbiterTest, ObserverEnablesResetTasks);
+
   class ChargingPowerModeVoter;
 
   // PowerModeVoter::Delegate implementation:
@@ -76,8 +88,13 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
   void SetVote(PowerModeVoter*, PowerMode) override;
   void ResetVoteAfterTimeout(PowerModeVoter*, base::TimeDelta timeout) override;
 
-  void UpdatePendingResets();
+  void OnTaskRunnerAvailable(scoped_refptr<base::SequencedTaskRunner>,
+                             int sequence_number);
+
+  void UpdatePendingResets(int sequence_number);
   void OnVotesUpdated();
+
+  void ServicePendingResetsLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   PowerMode ComputeActiveModeLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -85,15 +102,19 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  scoped_refptr<base::TaskRunner> task_runner_;
-  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
+  std::unique_ptr<Observer> trace_observer_;
 
-  base::Lock lock_;
+  base::Lock lock_;  // Protects subsequent members.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_ GUARDED_BY(lock_);
   std::map<PowerModeVoter*, TracedPowerMode> votes_ GUARDED_BY(lock_);
   std::map<PowerModeVoter*, base::TimeTicks /*effective_time*/> pending_resets_
       GUARDED_BY(lock_);
   base::TimeTicks next_pending_vote_update_time_ GUARDED_BY(lock_);
   TracedPowerMode active_mode_ GUARDED_BY(lock_);
+  int update_task_sequence_number_ GUARDED_BY(lock_) = 0;
+  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_
+      GUARDED_BY(lock_);
+  bool has_observers_ GUARDED_BY(lock_) = false;
 
   // Owned by the arbiter but otherwise behaves like a regular voter.
   std::unique_ptr<ChargingPowerModeVoter> charging_voter_;

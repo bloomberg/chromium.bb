@@ -145,7 +145,8 @@ class ProcessOutputWatcherTest : public testing::Test {
 
   void RunTest(const std::vector<TestCase>& test_cases) {
     ASSERT_FALSE(output_watch_thread_started_);
-    output_watch_thread_.reset(new base::Thread("ProcessOutpuWatchThread"));
+    output_watch_thread_ =
+        std::make_unique<base::Thread>("ProcessOutpuWatchThread");
     output_watch_thread_started_ = output_watch_thread_->StartWithOptions(
         base::Thread::Options(base::MessagePumpType::IO, 0));
     ASSERT_TRUE(output_watch_thread_started_);
@@ -174,8 +175,8 @@ class ProcessOutputWatcherTest : public testing::Test {
       ssize_t test_size = test_str.length() * sizeof(*test_str.c_str());
       if (test_cases[i].should_send_terminating_null)
         test_size += sizeof(*test_str.c_str());
-      EXPECT_TRUE(base::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
-                                            test_size));
+      EXPECT_TRUE(base::WriteFileDescriptor(
+          pt_pipe[1], base::StringPiece(test_str.c_str(), test_size)));
 
       run_loop.Run();
       EXPECT_TRUE(expectations_.IsDone());

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_OBSERVER_CHROMEOS_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,8 +33,11 @@ class TtsEngineExtensionObserverChromeOS
 
   Profile* profile() { return profile_; }
 
-  void BindTtsStreamFactory(
-      mojo::PendingReceiver<chromeos::tts::mojom::TtsStreamFactory> receiver);
+  void BindGoogleTtsStream(
+      mojo::PendingReceiver<chromeos::tts::mojom::GoogleTtsStream> receiver);
+  void BindPlaybackTtsStream(
+      mojo::PendingReceiver<chromeos::tts::mojom::PlaybackTtsStream> receiver,
+      chromeos::tts::mojom::TtsService::BindPlaybackTtsStreamCallback callback);
 
   // Implementation of KeyedService.
   void Shutdown() override;
@@ -49,6 +52,10 @@ class TtsEngineExtensionObserverChromeOS
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
 
+  mojo::Remote<chromeos::tts::mojom::TtsService>* tts_service_for_testing() {
+    return &tts_service_;
+  }
+
  private:
   explicit TtsEngineExtensionObserverChromeOS(Profile* profile);
   ~TtsEngineExtensionObserverChromeOS() override;
@@ -58,9 +65,11 @@ class TtsEngineExtensionObserverChromeOS
   void OnAccessibilityStatusChanged(
       const ash::AccessibilityStatusEventDetails& details);
 
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+  void CreateTtsServiceIfNeeded();
+
+  base::ScopedObservation<extensions::ExtensionRegistry,
+                          extensions::ExtensionRegistryObserver>
+      extension_registry_observation_{this};
 
   Profile* profile_;
 

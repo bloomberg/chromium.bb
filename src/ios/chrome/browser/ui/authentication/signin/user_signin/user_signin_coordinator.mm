@@ -8,6 +8,7 @@
 #import "base/feature_list.h"
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -25,6 +26,8 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -154,6 +157,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.viewController.delegate = self;
   self.viewController.useFirstRunSkipButton =
       self.signinIntent == UserSigninIntentFirstRun;
+  self.viewController.forceEqualVisualWeightDistribution =
+      [self shouldForceEqualWeightDistribution];
 
   // Start.
   [self presentUserSigninViewController];
@@ -162,53 +167,13 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
-  if (self.mediator.isAuthenticationInProgress) {
-    [self.logger
-        logSigninCompletedWithResult:SigninCoordinatorResultInterrupted
-                        addedAccount:self.addAccountSigninCoordinator != nil
-               advancedSettingsShown:self.advancedSettingsSigninCoordinator !=
-                                     nil];
-  }
+  SigninCompletionInfo* completionInfo = [SigninCompletionInfo
+      signinCompletionInfoWithIdentity:self.unifiedConsentCoordinator
+                                           .selectedIdentity];
 
-  __weak UserSigninCoordinator* weakSelf = self;
-  if (self.addAccountSigninCoordinator) {
-    // |self.addAccountSigninCoordinator| needs to be interupted before
-    // interrupting |self.viewController|.
-    // The add account view should not be dismissed since the
-    // |self.viewController| will take care of that according to |action|.
-    [self.addAccountSigninCoordinator
-        interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
-                 completion:^{
-                   // |self.addAccountSigninCoordinator.signinCompletion|
-                   // is expected to be called before this block.
-                   // Therefore |weakSelf.addAccountSigninCoordinator| is
-                   // expected to be nil.
-                   DCHECK(!weakSelf.addAccountSigninCoordinator);
-                   [weakSelf interruptUserSigninUIWithAction:action
-                                                  completion:completion];
-                 }];
-    return;
-  } else if (self.advancedSettingsSigninCoordinator) {
-    // |self.viewController| has already been dismissed. The interruption should
-    // be sent to |self.advancedSettingsSigninCoordinator|.
-    DCHECK(!self.viewController);
-    DCHECK(!self.mediator);
-    DCHECK(!self.unifiedConsentCoordinator);
-    [self.advancedSettingsSigninCoordinator
-        interruptWithAction:action
-                 completion:^{
-                   // |self.advancedSettingsSigninCoordinator.signinCompletion|
-                   // is expected to be called before this block.
-                   // Therefore |weakSelf.advancedSettingsSigninCoordinator| is
-                   // expected to be nil.
-                   DCHECK(!weakSelf.advancedSettingsSigninCoordinator);
-                   if (completion) {
-                     completion();
-                   }
-                 }];
-    return;
-  }
-  [self interruptUserSigninUIWithAction:action completion:completion];
+  [self interruptWithAction:action
+       signinCompletionInfo:completionInfo
+                 completion:completion];
 }
 
 - (void)stop {
@@ -218,6 +183,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   DCHECK(!self.addAccountSigninCoordinator);
   DCHECK(!self.advancedSettingsSigninCoordinator);
   [super stop];
+  [self.logger disconnect];
 }
 
 #pragma mark - UnifiedConsentCoordinatorDelegate
@@ -242,7 +208,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
-  [self.viewController setConfirmationButtonProperties];
+  [self.viewController updatePrimaryActionButtonStyle];
 }
 
 #pragma mark - UserSigninViewControllerDelegate
@@ -264,13 +230,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.addAccountSigninCoordinator.signinCompletion =
       ^(SigninCoordinatorResult signinResult,
         SigninCompletionInfo* signinCompletionInfo) {
-        if (signinResult == SigninCoordinatorResultSuccess) {
-          weakSelf.unifiedConsentCoordinator.selectedIdentity =
-              signinCompletionInfo.identity;
-          weakSelf.addedAccount = YES;
-        }
-        [weakSelf.addAccountSigninCoordinator stop];
-        weakSelf.addAccountSigninCoordinator = nil;
+        [weakSelf addAccountSigninCompleteWithResult:signinResult
+                                      completionInfo:signinCompletionInfo];
       };
   [self.addAccountSigninCoordinator start];
 }
@@ -312,13 +273,17 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                       advancedSettingsShown:self.unifiedConsentCoordinator
                                                 .settingsLinkWasTapped];
 
-  BOOL settingsWasTapped = self.unifiedConsentCoordinator.settingsLinkWasTapped;
-  ChromeIdentity* identity = self.unifiedConsentCoordinator.selectedIdentity;
+  SigninCompletionAction completionAction =
+      self.unifiedConsentCoordinator.settingsLinkWasTapped
+          ? SigninCompletionActionShowAdvancedSettingsSignin
+          : SigninCompletionActionNone;
+  SigninCompletionInfo* completionInfo = [[SigninCompletionInfo alloc]
+            initWithIdentity:self.unifiedConsentCoordinator.selectedIdentity
+      signinCompletionAction:completionAction];
   __weak UserSigninCoordinator* weakSelf = self;
   ProceduralBlock completion = ^void() {
     [weakSelf viewControllerDismissedWithResult:signinResult
-                                       identity:identity
-                          settingsLinkWasTapped:settingsWasTapped];
+                                 completionInfo:completionInfo];
   };
   switch (self.signinIntent) {
     case UserSigninIntentFirstRun: {
@@ -354,10 +319,30 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
   self.unifiedConsentCoordinator.uiDisabled = NO;
   [self.viewController signinDidStop];
-  [self.viewController setConfirmationButtonProperties];
+  [self.viewController updatePrimaryActionButtonStyle];
 }
 
 #pragma mark - Private
+
+// Enables equal visual weight distribution across interactive properties.
+// TODO(crbug.com/1202731): Add a test for enabling the restriction once UI
+// decisions have been finalized.
+- (BOOL)shouldForceEqualWeightDistribution {
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
+  // If any account on the device is subject to minor mode restrictions then
+  // display the equal visual weight distribution UI.
+  for (ChromeIdentity* identity :
+       identityService->GetAllIdentities(prefService)) {
+    absl::optional<bool> hasMinorModeRestriction =
+        identityService->IsSubjectToMinorModeRestrictions(identity);
+    if (hasMinorModeRestriction && hasMinorModeRestriction.value()) {
+      return YES;
+    }
+  }
+  return NO;
+}
 
 // Cancels the sign-in flow if it is in progress, or dismiss the sign-in view
 // if the sign-in is not in progress.
@@ -372,13 +357,14 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                     object:self];
 }
 
-// Called when |self.viewController| is dismissed. If |settingsWasTapped| is
-// NO, the sign-in is finished and
-// |runCompletionCallbackWithSigninResult:identity:| is called.
-// Otherwise, the advanced settings sign-in is presented.
+// Called when |self.viewController| is dismissed. If |completionInfo|'s
+// signinCompletionAction is SigninCompletionActionShowAdvancedSettingsSignin,
+// the advanced settings sign-in is presented. Otherwise, the sign-in is
+// finished and |runCompletionCallbackWithSigninResult:completionInfo:| is
+// called.
 - (void)viewControllerDismissedWithResult:(SigninCoordinatorResult)signinResult
-                                 identity:(ChromeIdentity*)identity
-                    settingsLinkWasTapped:(BOOL)settingsWasTapped {
+                           completionInfo:
+                               (SigninCompletionInfo*)completionInfo {
   DCHECK(!self.addAccountSigninCoordinator);
   DCHECK(!self.advancedSettingsSigninCoordinator);
   DCHECK(self.unifiedConsentCoordinator);
@@ -399,7 +385,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     case UserSigninIntentUpgrade:
     case UserSigninIntentSignin: {
       DCHECK(!self.viewController.presentingViewController);
-      if (settingsWasTapped) {
+      if (completionInfo.signinCompletionAction ==
+          SigninCompletionActionShowAdvancedSettingsSignin) {
         [self displayAdvancedSettings];
         return;
       }
@@ -408,8 +395,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   }
 
   [self runCompletionCallbackWithSigninResult:signinResult
-                                     identity:identity
-                   showAdvancedSettingsSignin:settingsWasTapped];
+                               completionInfo:completionInfo];
 }
 
 // Displays the Advanced Settings screen of the sign-in flow.
@@ -462,12 +448,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       NSUInteger supportedOrientationsMask =
           [self.viewController supportedInterfaceOrientations];
       if (!((1 << orientation) & supportedOrientationsMask)) {
-        [self
-            runCompletionCallbackWithSigninResult:
-                SigninCoordinatorResultInterrupted
-                                         identity:self.unifiedConsentCoordinator
-                                                      .selectedIdentity
-                       showAdvancedSettingsSignin:NO];
+        SigninCompletionInfo* completionInfo = [SigninCompletionInfo
+            signinCompletionInfoWithIdentity:self.unifiedConsentCoordinator
+                                                 .selectedIdentity];
+        [self runCompletionCallbackWithSigninResult:
+                  SigninCoordinatorResultInterrupted
+                                     completionInfo:completionInfo];
         return;
       }
       [self presentUserViewControllerToBaseViewController];
@@ -504,11 +490,76 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                                       completion:completion];
 }
 
+// Interrupts the sign-in flow.
+// |signinCompletion(SigninCoordinatorResultInterrupted, nil)| is guaranteed to
+// be called before |completion()|.
+// |action| action describing how to interrupt the sign-in.
+// |signinCompletionInfo| describes the completion info.
+// |completion| called once the sign-in is fully interrupted.
+- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+       signinCompletionInfo:(SigninCompletionInfo*)signinCompletionInfo
+                 completion:(ProceduralBlock)completion {
+  if (self.mediator.isAuthenticationInProgress) {
+    [self.logger
+        logSigninCompletedWithResult:SigninCoordinatorResultInterrupted
+                        addedAccount:self.addAccountSigninCoordinator != nil
+               advancedSettingsShown:self.advancedSettingsSigninCoordinator !=
+                                     nil];
+  }
+
+  __weak UserSigninCoordinator* weakSelf = self;
+  if (self.addAccountSigninCoordinator) {
+    // |self.addAccountSigninCoordinator| needs to be interupted before
+    // interrupting |self.viewController|.
+    // The add account view should not be dismissed since the
+    // |self.viewController| will take care of that according to |action|.
+    [self.addAccountSigninCoordinator
+        interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
+                 completion:^{
+                   // |self.addAccountSigninCoordinator.signinCompletion|
+                   // is expected to be called before this block.
+                   // Therefore |weakSelf.addAccountSigninCoordinator| is
+                   // expected to be nil.
+                   DCHECK(!weakSelf.addAccountSigninCoordinator);
+                   [weakSelf
+                       interruptUserSigninUIWithAction:action
+                                  signinCompletionInfo:signinCompletionInfo
+                                            completion:completion];
+                 }];
+    return;
+  } else if (self.advancedSettingsSigninCoordinator) {
+    // |self.viewController| has already been dismissed. The interruption should
+    // be sent to |self.advancedSettingsSigninCoordinator|.
+    DCHECK(!self.viewController);
+    DCHECK(!self.mediator);
+    DCHECK(!self.unifiedConsentCoordinator);
+    [self.advancedSettingsSigninCoordinator
+        interruptWithAction:action
+                 completion:^{
+                   // |self.advancedSettingsSigninCoordinator.signinCompletion|
+                   // is expected to be called before this block.
+                   // Therefore |weakSelf.advancedSettingsSigninCoordinator| is
+                   // expected to be nil.
+                   DCHECK(!weakSelf.advancedSettingsSigninCoordinator);
+                   if (completion) {
+                     completion();
+                   }
+                 }];
+    return;
+  }
+  [self interruptUserSigninUIWithAction:action
+                   signinCompletionInfo:signinCompletionInfo
+                             completion:completion];
+}
+
 // Interrupts the sign-in when |self.viewController| is presented, by dismissing
 // it if needed (according to |action|). Then |completion| is called.
 // This method should not be called if |self.addAccountSigninCoordinator| has
-// not been stopped before.
+// not been stopped before. |signinCompletionInfo| is used for the signin
+// callback.
 - (void)interruptUserSigninUIWithAction:(SigninCoordinatorInterruptAction)action
+                   signinCompletionInfo:
+                       (SigninCompletionInfo*)signinCompletinInfo
                              completion:(ProceduralBlock)completion {
   if (self.viewControllerPresentingAnimation) {
     // UIKit doesn't allow a view controller to be dismissed during the
@@ -518,7 +569,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     DCHECK(!self.interruptCallback);
     __weak __typeof(self) weakSelf = self;
     self.interruptCallback = ^() {
-      [weakSelf interruptUserSigninUIWithAction:action completion:completion];
+      [weakSelf interruptUserSigninUIWithAction:action
+                           signinCompletionInfo:signinCompletinInfo
+                                     completion:completion];
     };
     return;
   }
@@ -531,9 +584,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   ProceduralBlock runCompletionCallback = ^{
     [weakSelf
         viewControllerDismissedWithResult:SigninCoordinatorResultInterrupted
-                                 identity:weakSelf.unifiedConsentCoordinator
-                                              .selectedIdentity
-                    settingsLinkWasTapped:NO];
+                           completionInfo:signinCompletinInfo];
     if (completion) {
       completion();
     }
@@ -601,7 +652,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 }
 
 // Triggers |self.signinCompletion| by calling
-// |runCompletionCallbackWithSigninResult:identity:| when
+// |runCompletionCallbackWithSigninResult:completionInfo:| when
 // |self.advancedSettingsSigninCoordinator| is done.
 - (void)advancedSettingsSigninCoordinatorFinishedWithResult:
             (SigninCoordinatorResult)signinResult
@@ -610,9 +661,33 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   DCHECK(self.advancedSettingsSigninCoordinator);
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
+  SigninCompletionInfo* completionInfo =
+      [SigninCompletionInfo signinCompletionInfoWithIdentity:identity];
   [self runCompletionCallbackWithSigninResult:signinResult
-                                     identity:identity
-                   showAdvancedSettingsSignin:NO];
+                               completionInfo:completionInfo];
+}
+
+// Callback handling the completion of the AddAccount action.
+- (void)addAccountSigninCompleteWithResult:(SigninCoordinatorResult)signinResult
+                            completionInfo:
+                                (SigninCompletionInfo*)signinCompletionInfo {
+  [self.addAccountSigninCoordinator stop];
+  self.addAccountSigninCoordinator = nil;
+  if (signinResult == SigninCoordinatorResultSuccess) {
+    self.unifiedConsentCoordinator.selectedIdentity =
+        signinCompletionInfo.identity;
+    self.addedAccount = YES;
+  }
+  if (signinCompletionInfo.signinCompletionAction ==
+      SigninCompletionActionOpenCompletionURL) {
+    SigninCoordinatorInterruptAction interruptAction =
+        self.signinIntent == UserSigninIntentFirstRun
+            ? SigninCoordinatorInterruptActionNoDismiss
+            : SigninCoordinatorInterruptActionDismissWithAnimation;
+    [self interruptWithAction:interruptAction
+         signinCompletionInfo:signinCompletionInfo
+                   completion:nil];
+  }
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate

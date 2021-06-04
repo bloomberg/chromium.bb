@@ -76,6 +76,7 @@
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" /> x <ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> мегапиксели</translation>
 <translation id="6681668084120808868">Фотографирај</translation>
 <translation id="6778482348691154169">Не може да се фотографира</translation>
+<translation id="695140971690006676">Ресетирај ги сите</translation>
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="698156982839284926">3 секунди</translation>
 <translation id="712848772518857951">Дали навистина сакате да отстраните <ph name="COUNT" /> ставки?</translation>
@@ -89,7 +90,6 @@
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7670511624014457267">60 FPS</translation>
-<translation id="7974782136796202581">Прикажувај ги опциите за движење, навалување и зумирање</translation>
 <translation id="7983668134180549431">Препознаен е текст.</translation>
 <translation id="8067883171444229417">Пушти го видеото</translation>
 <translation id="8120146556401698679">Движи Навали Зумирај</translation>

@@ -103,6 +103,12 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // Gets any available group ID for the system AEC
   virtual void GetSystemAecGroupId(DBusMethodCallback<int32_t> callback) = 0;
 
+  // Gets if system NS is supported.
+  virtual void GetSystemNsSupported(DBusMethodCallback<bool> callback) = 0;
+
+  // Gets if system AGC is supported.
+  virtual void GetSystemAgcSupported(DBusMethodCallback<bool> callback) = 0;
+
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(DBusMethodCallback<AudioNodeList> callback) = 0;
 
@@ -132,6 +138,13 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 
   // Sets input mute state to |mute_on| value.
   virtual void SetInputMute(bool mute_on) = 0;
+
+  // Sets input noise cancellation state to |noise_cancellation_on| value.
+  virtual void SetNoiseCancellationEnabled(bool noise_cancellation_on) = 0;
+
+  // Gets if Noise Cancellation is supported.
+  virtual void GetNoiseCancellationSupported(
+      DBusMethodCallback<bool> callback) = 0;
 
   // Sets the active output node to |node_id|.
   virtual void SetActiveOutputNode(uint64_t node_id) = 0;

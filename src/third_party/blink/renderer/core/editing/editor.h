@@ -31,6 +31,7 @@
 #include "base/macros.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/editing_style.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
@@ -123,9 +124,6 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   bool InsertLineBreak();
   bool InsertParagraphSeparator();
 
-  bool IsOverwriteModeEnabled() const { return overwrite_mode_enabled_; }
-  void ToggleOverwriteModeEnabled();
-
   bool CanUndo();
   void Undo();
   bool CanRedo();
@@ -178,6 +176,7 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   EphemeralRange RangeForPoint(const IntPoint&) const;
 
   void RespondToChangedSelection();
+  void SyncSelection(blink::SyncCondition force_sync);
 
   bool MarkedTextMatchesAreHighlighted() const;
   void SetMarkedTextMatchesAreHighlighted(bool);
@@ -240,7 +239,6 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   VisibleSelection mark_;
   bool are_marked_text_matches_highlighted_;
   EditorParagraphSeparator default_paragraph_separator_;
-  bool overwrite_mode_enabled_;
   Member<EditingStyle> typing_style_;
   bool mark_is_directional_ = false;
 

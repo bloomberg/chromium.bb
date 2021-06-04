@@ -30,10 +30,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -226,8 +227,8 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
   EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(nullptr));
 
   // false for incognito mode profile.
-  EXPECT_FALSE(
-      IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
+  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
@@ -241,8 +242,8 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
   EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(nullptr));
 
   // false for incognito mode profile.
-  EXPECT_FALSE(
-      IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
+  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true)));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
@@ -686,8 +687,8 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultPublicSession) {
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -698,8 +699,8 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultOfflineDemoMode) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOffline);
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOffline);
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -712,8 +713,8 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithoutPlayStore) {
                                     false /* disabled */);
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -728,10 +729,36 @@ TEST_F(ChromeArcUtilTest, ArcStartModeWithoutPlayStore) {
   EXPECT_FALSE(IsPlayStoreAvailable());
 }
 
+TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOn) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      arc::kEnableUnmanagedToManagedTransitionFeature);
+
+  profile()->GetPrefs()->SetInteger(
+      arc::prefs::kArcSupervisionTransition,
+      static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+
+  EXPECT_EQ(GetSupervisionTransition(profile()),
+            arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED);
+}
+
+TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      arc::kEnableUnmanagedToManagedTransitionFeature);
+
+  profile()->GetPrefs()->SetInteger(
+      arc::prefs::kArcSupervisionTransition,
+      static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+
+  EXPECT_EQ(GetSupervisionTransition(profile()),
+            arc::ArcSupervisionTransition::NO_TRANSITION);
+}
+
 class ArcOobeTest : public ChromeArcUtilTest {
  public:
   ArcOobeTest() {
-    chromeos::DBusThreadManager::GetSetterForTesting();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     oobe_configuration_ = std::make_unique<chromeos::OobeConfiguration>();
   }
 
@@ -740,7 +767,7 @@ class ArcOobeTest : public ChromeArcUtilTest {
     // configuration.
     fake_login_display_host_.reset();
     oobe_configuration_.reset();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
   }
 
  protected:

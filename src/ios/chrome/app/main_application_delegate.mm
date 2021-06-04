@@ -26,7 +26,6 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#import "ios/testing/perf/startupLoggers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -122,8 +121,6 @@ const int kMainIntentCheckDelay = 1;
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   self.didFinishLaunching = YES;
 
-  startup_loggers::RegisterAppDidFinishLaunchingTime();
-
   _mainController.window = self.window;
 
   BOOL inBackground =
@@ -169,8 +166,7 @@ const int kMainIntentCheckDelay = 1;
     self.sceneState.activationLevel = SceneActivationLevelForegroundActive;
   }
 
-  startup_loggers::RegisterAppDidBecomeActiveTime();
-  if ([_appState isInSafeMode])
+  if (_appState.initStage <= InitStageSafeMode)
     return;
 
   if (!base::ios::IsSceneStartupSupported()) {
@@ -185,7 +181,7 @@ const int kMainIntentCheckDelay = 1;
     self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
   }
 
-  if ([_appState isInSafeMode])
+  if (_appState.initStage <= InitStageSafeMode)
     return;
 
   [_appState willResignActiveTabModel];
@@ -220,7 +216,7 @@ const int kMainIntentCheckDelay = 1;
   if (!self.didFinishLaunching)
     return;
 
-  if ([_appState isInSafeMode])
+  if (_appState.initStage <= InitStageSafeMode)
     return;
 
   // Instead of adding code here, consider if it could be handled by listening
@@ -229,7 +225,7 @@ const int kMainIntentCheckDelay = 1;
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application {
-  if ([_appState isInSafeMode])
+  if (_appState.initStage <= InitStageSafeMode)
     return;
 
   [_memoryHelper handleMemoryPressure];
@@ -332,44 +328,14 @@ const int kMainIntentCheckDelay = 1;
   }
 }
 
-#pragma mark Downloading Data in the Background
-
-- (void)application:(UIApplication*)application
-    handleEventsForBackgroundURLSession:(NSString*)identifier
-                      completionHandler:(void (^)(void))completionHandler {
-  if ([_appState isInSafeMode])
-    return;
-  // This initialization to BACKGROUND stage may not be necessary, but is
-  // preserved in case somewhere there is a dependency on this.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_BACKGROUND];
-  completionHandler();
-}
-
 #pragma mark Continuing User Activity and Handling Quick Actions
-
-- (BOOL)application:(UIApplication*)application
-    willContinueUserActivityWithType:(NSString*)userActivityType {
-  if ([_appState isInSafeMode])
-    return NO;
-
-  // Enusre Chrome is fuilly started up in case it had launched to the
-  // background.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
-
-  return
-      [UserActivityHandler willContinueUserActivityWithType:userActivityType];
-}
 
 - (BOOL)application:(UIApplication*)application
     continueUserActivity:(NSUserActivity*)userActivity
       restorationHandler:
           (void (^)(NSArray<id<UIUserActivityRestoring>>*))restorationHandler {
-  if ([_appState isInSafeMode])
+  if (_appState.initStage < InitStageBrowserObjectsForUI)
     return NO;
-
-  // Enusre Chrome is fuilly started up in case it had launched to the
-  // background.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   BOOL applicationIsActive =
       [application applicationState] == UIApplicationStateActive;
@@ -381,18 +347,15 @@ const int kMainIntentCheckDelay = 1;
       connectionInformation:self.sceneController
          startupInformation:_startupInformation
                browserState:_mainController.interfaceProvider.currentInterface
-                                .browserState];
+                                .browserState
+                  initStage:_appState.initStage];
 }
 
 - (void)application:(UIApplication*)application
     performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                completionHandler:(void (^)(BOOL succeeded))completionHandler {
-  if ([_appState isInSafeMode])
+  if (_appState.initStage < InitStageBrowserObjectsForUI)
     return;
-
-  // Enusre Chrome is fuilly started up in case it had launched to the
-  // background.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   [UserActivityHandler
       performActionForShortcutItem:shortcutItem
@@ -400,7 +363,8 @@ const int kMainIntentCheckDelay = 1;
                          tabOpener:_tabOpener
              connectionInformation:self.sceneController
                 startupInformation:_startupInformation
-                 interfaceProvider:_mainController.interfaceProvider];
+                 interfaceProvider:_mainController.interfaceProvider
+                         initStage:_appState.initStage];
 }
 
 #pragma mark Opening a URL-Specified Resource
@@ -412,15 +376,8 @@ const int kMainIntentCheckDelay = 1;
 - (BOOL)application:(UIApplication*)application
             openURL:(NSURL*)url
             options:(NSDictionary<NSString*, id>*)options {
-  if ([_appState isInSafeMode])
+  if (_appState.initStage < InitStageBrowserObjectsForUI)
     return NO;
-
-  // The various URL handling mechanisms require that the application has
-  // fully started up; there are some cases (crbug.com/658420) where a
-  // launch via this method crashes because some services (specifically,
-  // CommandLine) aren't initialized yet. So: before anything further is
-  // done, make sure that Chrome is fully started up.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   if (ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
@@ -438,7 +395,8 @@ const int kMainIntentCheckDelay = 1;
       connectionInformation:self.sceneController
          startupInformation:_startupInformation
                 prefService:_mainController.interfaceProvider.currentInterface
-                                .browserState->GetPrefs()];
+                                .browserState->GetPrefs()
+                  initStage:_appState.initStage];
 }
 
 #pragma mark - Testing methods

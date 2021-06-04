@@ -37,7 +37,7 @@ class ToolbarButtonTestApi {
   const gfx::Insets layout_inset_delta() const {
     return button_->layout_inset_delta_;
   }
-  const base::Optional<SkColor> last_border_color() const {
+  const absl::optional<SkColor> last_border_color() const {
     return button_->last_border_color_;
   }
   void SetAnimationTimingForTesting() {
@@ -99,6 +99,8 @@ using ToolbarButtonViewsTest = ChromeViewsTestBase;
 TEST_F(ToolbarButtonViewsTest, NoDefaultLayoutInsets) {
   ToolbarButton button;
   gfx::Insets default_insets = ::GetLayoutInsets(TOOLBAR_BUTTON);
+  // Colors and insets are not ready until OnThemeChanged()
+  button.OnThemeChanged();
   EXPECT_FALSE(button.GetLayoutInsets().has_value());
   EXPECT_EQ(default_insets, button.GetInsets());
 }

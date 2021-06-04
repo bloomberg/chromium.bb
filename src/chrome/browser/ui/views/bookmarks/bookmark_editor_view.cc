@@ -29,6 +29,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -39,7 +40,6 @@
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -75,7 +75,7 @@ BookmarkEditorView::BookmarkEditorView(
     new_folder_button_->SetEnabled(bb_model_->loaded());
   }
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::CONTROL, views::CONTROL));
+      views::DialogContentType::kControl, views::DialogContentType::kControl));
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK_EDITOR);
 }

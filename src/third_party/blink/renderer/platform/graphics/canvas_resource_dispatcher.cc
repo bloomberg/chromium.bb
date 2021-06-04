@@ -8,13 +8,14 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "components/power_scheduler/power_mode.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -42,13 +43,13 @@ struct CanvasResourceDispatcher::FrameResource {
   FrameResource() = default;
   ~FrameResource() {
     if (release_callback)
-      release_callback->Run(sync_token, is_lost);
+      std::move(release_callback).Run(sync_token, is_lost);
   }
 
   // TODO(junov):  What does this do?
   bool spare_lock = true;
 
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  viz::ReleaseCallback release_callback;
   gpu::SyncToken sync_token;
   bool is_lost = false;
 };
@@ -130,7 +131,7 @@ void CanvasResourceDispatcher::PostImageToPlaceholderIfNotBlocked(
   // Determines whether the main thread may be blocked. If unblocked, post
   // |canvas_resource|. Otherwise, save it but do not post it.
   if (num_unreclaimed_frames_posted_ < kMaxUnreclaimedPlaceholderFrames) {
-    this->PostImageToPlaceholder(std::move(canvas_resource), resource_id);
+    PostImageToPlaceholder(std::move(canvas_resource), resource_id);
     num_unreclaimed_frames_posted_++;
   } else {
     DCHECK(num_unreclaimed_frames_posted_ == kMaxUnreclaimedPlaceholderFrames);
@@ -173,8 +174,8 @@ void CanvasResourceDispatcher::DispatchFrameSync(
   WTF::Vector<viz::ReturnedResource> resources;
   sink_->SubmitCompositorFrameSync(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      std::move(frame), base::nullopt, 0, &resources);
-  DidReceiveCompositorFrameAck(resources);
+      std::move(frame), absl::nullopt, 0, &resources);
+  DidReceiveCompositorFrameAck(std::move(resources));
 }
 
 void CanvasResourceDispatcher::DispatchFrame(
@@ -193,7 +194,7 @@ void CanvasResourceDispatcher::DispatchFrame(
   pending_compositor_frames_++;
   sink_->SubmitCompositorFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      std::move(frame), base::nullopt, 0);
+      std::move(frame), absl::nullopt, 0);
 }
 
 bool CanvasResourceDispatcher::PrepareFrame(
@@ -232,7 +233,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   const gfx::Rect bounds(size_.Width(), size_.Height());
   constexpr viz::CompositorRenderPassId kRenderPassId{1};
-  constexpr bool is_clipped = false;
   auto pass =
       viz::CompositorRenderPass::Create(/*shared_quad_state_list_size=*/1u,
                                         /*quad_list_size=*/1u);
@@ -242,8 +242,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
                gfx::Transform());
 
   viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(gfx::Transform(), bounds, bounds, gfx::MaskFilterInfo(), bounds,
-              is_clipped, is_opaque, 1.f, SkBlendMode::kSrcOver, 0);
+  sqs->SetAll(gfx::Transform(), bounds, bounds, gfx::MaskFilterInfo(),
+              absl::nullopt, is_opaque, 1.f, SkBlendMode::kSrcOver, 0);
 
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();
@@ -301,8 +301,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
 }
 
 void CanvasResourceDispatcher::DidReceiveCompositorFrameAck(
-    const WTF::Vector<viz::ReturnedResource>& resources) {
-  ReclaimResources(resources);
+    WTF::Vector<viz::ReturnedResource> resources) {
+  ReclaimResources(std::move(resources));
   pending_compositor_frames_--;
   DCHECK_GE(pending_compositor_frames_, 0);
 }
@@ -385,7 +385,7 @@ void CanvasResourceDispatcher::OnBeginFrame(
 }
 
 void CanvasResourceDispatcher::ReclaimResources(
-    const WTF::Vector<viz::ReturnedResource>& resources) {
+    WTF::Vector<viz::ReturnedResource> resources) {
   for (const auto& resource : resources) {
     auto it = resources_.find(resource.id);
 
@@ -453,12 +453,12 @@ void CanvasResourceDispatcher::SetPlaceholderCanvasDispatcher(
   // the canvas resource dispatcher directly. So Offscreen Canvas can behave in
   // a more synchronous way when it's on the main thread.
   if (IsMainThread()) {
-    UpdatePlaceholderDispatcher(this->GetWeakPtr(), dispatcher_task_runner,
+    UpdatePlaceholderDispatcher(GetWeakPtr(), dispatcher_task_runner,
                                 placeholder_canvas_id);
   } else {
     PostCrossThreadTask(
         *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
-        CrossThreadBindOnce(UpdatePlaceholderDispatcher, this->GetWeakPtr(),
+        CrossThreadBindOnce(UpdatePlaceholderDispatcher, GetWeakPtr(),
                             std::move(dispatcher_task_runner),
                             placeholder_canvas_id));
   }

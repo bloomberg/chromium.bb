@@ -15,11 +15,13 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -129,8 +131,15 @@ class ToastOverlayButton : public views::LabelButton {
  public:
   ToastOverlayButton(PressedCallback callback, const std::u16string& text)
       : views::LabelButton(std::move(callback), text, CONTEXT_TOAST_OVERLAY) {
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
+    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+        [](Button* host) {
+          return std::make_unique<views::InkDropHighlight>(
+              gfx::SizeF(host->GetLocalBounds().size()),
+              host->ink_drop()->GetBaseColor());
+        },
+        this));
 
     // Treat the space below the baseline as a margin.
     int vertical_spacing =
@@ -147,14 +156,6 @@ class ToastOverlayButton : public views::LabelButton {
   ToastOverlayButton& operator=(const ToastOverlayButton&) = delete;
   ~ToastOverlayButton() override = default;
 
- protected:
-  // views::LabelButton:
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(GetLocalBounds().size()), GetInkDropBaseColor());
-  }
-
  private:
   friend class ToastOverlay;  // for ToastOverlay::ClickDismissButtonForTesting.
 
@@ -162,7 +163,7 @@ class ToastOverlayButton : public views::LabelButton {
   void OnThemeChanged() override {
     views::LabelButton::OnThemeChanged();
     const auto* color_provider = AshColorProvider::Get();
-    SetInkDropBaseColor(color_provider->GetRippleAttributes().base_color);
+    ink_drop()->SetBaseColor(color_provider->GetRippleAttributes().base_color);
     SetEnabledTextColors(color_provider->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kButtonLabelColorBlue));
   }
@@ -175,7 +176,7 @@ class ToastOverlayView : public views::View {
   // This object is not owned by the views hierarchy or by the widget.
   ToastOverlayView(ToastOverlay* overlay,
                    const std::u16string& text,
-                   const base::Optional<std::u16string>& dismiss_text,
+                   const absl::optional<std::u16string>& dismiss_text,
                    const bool is_managed) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -259,7 +260,7 @@ class ToastOverlayView : public views::View {
 //  ToastOverlay
 ToastOverlay::ToastOverlay(Delegate* delegate,
                            const std::u16string& text,
-                           base::Optional<std::u16string> dismiss_text,
+                           absl::optional<std::u16string> dismiss_text,
                            bool show_on_lock_screen,
                            bool is_managed)
     : delegate_(delegate),

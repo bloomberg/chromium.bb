@@ -18,6 +18,10 @@ enum class NetworkRequestType : int {
   kUnfollowWebFeed = 4,
   kFollowWebFeed = 5,
   kListRecommendedWebFeeds = 6,
+  kWebFeedListContents = 7,
+  kQueryInteractiveFeed = 8,
+  kQueryBackgroundFeed = 9,
+  kQueryNextPage = 10,
 };
 
 // This must be kept in sync with FeedLoadStreamStatus in enums.xml.
@@ -59,7 +63,8 @@ enum class LoadStreamStatus {
   kDataInStoreIsExpired = 22,
   kDataInStoreIsForAnotherUser = 23,
   kAbortWithPendingClearAll = 24,
-  kMaxValue = kAbortWithPendingClearAll,
+  kAlreadyHaveUnreadContent = 25,
+  kMaxValue = kAlreadyHaveUnreadContent,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

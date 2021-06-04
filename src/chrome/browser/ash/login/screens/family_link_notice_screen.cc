@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 
-#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -12,11 +11,12 @@
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
+namespace ash {
 namespace {
-constexpr char kUserActionContinue[] = "continue";
-}  // namespace
 
-namespace chromeos {
+constexpr char kUserActionContinue[] = "continue";
+
+}  // namespace
 
 std::string FamilyLinkNoticeScreen::GetResultString(Result result) {
   switch (result) {
@@ -48,7 +48,7 @@ void FamilyLinkNoticeScreen::OnViewDestroyed(FamilyLinkNoticeView* view) {
 }
 
 bool FamilyLinkNoticeScreen::MaybeSkip(WizardContext* context) {
-  if (features::IsChildSpecificSigninEnabled() && context->sign_in_as_child &&
+  if (context->sign_in_as_child &&
       !ProfileManager::GetActiveUserProfile()->IsChild()) {
     return false;
   }
@@ -82,4 +82,4 @@ void FamilyLinkNoticeScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

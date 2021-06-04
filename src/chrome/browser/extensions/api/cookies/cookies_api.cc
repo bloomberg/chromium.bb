@@ -82,7 +82,7 @@ network::mojom::CookieManager* ParseStoreCookieManager(
     *store_id = cookies_helpers::GetStoreIdFromProfile(store_profile);
   }
 
-  return content::BrowserContext::GetDefaultStoragePartition(store_profile)
+  return store_profile->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess();
 }
 
@@ -119,7 +119,8 @@ void CookiesEventRouter::OnCookieChange(bool otr,
                    change.cause != net::CookieChangeCause::INSERTED);
 
   Profile* profile =
-      otr ? profile_->GetPrimaryOTRProfile() : profile_->GetOriginalProfile();
+      otr ? profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          : profile_->GetOriginalProfile();
   api::cookies::Cookie cookie = cookies_helpers::CreateCookie(
       change.cookie, cookies_helpers::GetStoreIdFromProfile(profile));
   dict->Set(cookies_api_constants::kCookieKey, cookie.ToValue());
@@ -175,9 +176,10 @@ void CookiesEventRouter::MaybeStartListening() {
   DCHECK(profile_);
 
   Profile* original_profile = profile_->GetOriginalProfile();
-  Profile* otr_profile = original_profile->HasPrimaryOTRProfile()
-                             ? original_profile->GetPrimaryOTRProfile()
-                             : nullptr;
+  Profile* otr_profile =
+      original_profile->HasPrimaryOTRProfile()
+          ? original_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          : nullptr;
 
   if (!receiver_.is_bound())
     BindToCookieManager(&receiver_, original_profile);
@@ -189,7 +191,7 @@ void CookiesEventRouter::BindToCookieManager(
     mojo::Receiver<network::mojom::CookieChangeListener>* receiver,
     Profile* profile) {
   network::mojom::CookieManager* cookie_manager =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetCookieManagerForBrowserProcess();
   if (!cookie_manager)
     return;
@@ -218,7 +220,7 @@ void CookiesEventRouter::DispatchEvent(
   if (!router)
     return;
   auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(event_args), context);
+                                       event_args->TakeList(), context);
   event->event_url = cookie_domain;
   router->BroadcastEvent(std::move(event));
 }
@@ -565,7 +567,8 @@ ExtensionFunction::ResponseAction CookiesGetAllCookieStoresFunction::Run() {
   std::unique_ptr<base::ListValue> incognito_tab_ids;
   if (include_incognito_information() &&
       original_profile->HasPrimaryOTRProfile()) {
-    incognito_profile = original_profile->GetPrimaryOTRProfile();
+    incognito_profile =
+        original_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
     if (incognito_profile)
       incognito_tab_ids = std::make_unique<base::ListValue>();
   }

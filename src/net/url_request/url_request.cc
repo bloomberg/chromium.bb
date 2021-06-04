@@ -24,6 +24,9 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate.h"
 #include "net/base/upload_data_stream.h"
+#include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -371,7 +374,7 @@ HttpResponseHeaders* URLRequest::response_headers() const {
   return response_info_.headers.get();
 }
 
-const base::Optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
+const absl::optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
     const {
   return response_info_.auth_challenge;
 }
@@ -431,8 +434,8 @@ void URLRequest::SetLoadFlags(int flags) {
     SetPriority(MAXIMUM_PRIORITY);
 }
 
-void URLRequest::SetDisableSecureDns(bool disable_secure_dns) {
-  disable_secure_dns_ = disable_secure_dns;
+void URLRequest::SetSecureDnsPolicy(SecureDnsPolicy secure_dns_policy) {
+  secure_dns_policy_ = secure_dns_policy;
 }
 
 // static
@@ -452,7 +455,7 @@ void URLRequest::set_first_party_url_policy(
   first_party_url_policy_ = first_party_url_policy;
 }
 
-void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
+void URLRequest::set_initiator(const absl::optional<url::Origin>& initiator) {
   DCHECK(!is_pending_);
   DCHECK(!initiator.has_value() || initiator.value().opaque() ||
          initiator.value().GetURL().is_valid());
@@ -546,6 +549,8 @@ URLRequest::URLRequest(const GURL& url,
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
+      same_party_cookie_context_type_(
+          CookieOptions::SamePartyCookieContextType::kCrossParty),
       force_ignore_site_for_cookies_(false),
       force_ignore_top_frame_party_for_cookies_(false),
       method_("GET"),
@@ -556,7 +561,7 @@ URLRequest::URLRequest(const GURL& url,
       load_flags_(LOAD_NORMAL),
       allow_credentials_(true),
       privacy_mode_(PRIVACY_MODE_DISABLED),
-      disable_secure_dns_(false),
+      secure_dns_policy_(SecureDnsPolicy::kAllow),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_upload_depth_(0),
 #endif
@@ -614,6 +619,13 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(!is_pending_);
   DCHECK(!job_);
 
+  set_same_party_cookie_context_type(
+      context()->cookie_store()
+          ? cookie_util::ComputeSamePartyContext(
+                SchemefulSite(url()), isolation_info(),
+                context()->cookie_store()->cookie_access_delegate(),
+                force_ignore_top_frame_party_for_cookies())
+          : CookieOptions::SamePartyCookieContextType::kCrossParty);
   privacy_mode_ = DeterminePrivacyMode();
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
@@ -825,8 +837,8 @@ void URLRequest::NotifyResponseStarted(int net_error) {
 }
 
 void URLRequest::FollowDeferredRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const absl::optional<std::vector<std::string>>& removed_headers,
+    const absl::optional<net::HttpRequestHeaders>& modified_headers) {
   DCHECK(job_.get());
   DCHECK_EQ(OK, status_);
 
@@ -910,8 +922,8 @@ void URLRequest::PrepareToRestart() {
 
 void URLRequest::Redirect(
     const RedirectInfo& redirect_info,
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const absl::optional<std::vector<std::string>>& removed_headers,
+    const absl::optional<net::HttpRequestHeaders>& modified_headers) {
   // This method always succeeds. Whether |job_| is allowed to redirect to
   // |redirect_info| is checked in URLRequestJob::CanFollowRedirect, before
   // NotifyReceivedRedirect. This means the delegate can assume that, if it

@@ -37,10 +37,11 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/frame/transient_allow_fullscreen.h"
-#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
@@ -48,28 +49,23 @@
 #include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink.h"
+#include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/media/fullscreen_video_element.mojom-blink.h"
 #include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/web/web_history_item.h"
-#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
-#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/policy_container.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
@@ -83,7 +79,6 @@
 #if defined(OS_MAC)
 #include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
 #endif
-#include "ui/gfx/range/range.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -92,13 +87,8 @@ class SingleThreadTaskRunner;
 
 namespace gfx {
 class Point;
-}
-
-#if defined(OS_MAC)
-namespace gfx {
 class Range;
 }
-#endif
 
 namespace blink {
 
@@ -115,7 +105,6 @@ class EventHandlerRegistry;
 class FloatSize;
 class FrameConsole;
 class FrameOverlay;
-// class FrameScheduler;
 class FrameSelection;
 class FrameWidget;
 class InputMethodController;
@@ -134,7 +123,10 @@ class BackgroundColorPaintImageGenerator;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
+class PolicyContainer;
 class PluginData;
+class RawSystemClipboard;
+class SystemClipboard;
 class SmoothScrollSequencer;
 class SpellChecker;
 class TextFragmentHandler;
@@ -515,6 +507,17 @@ class CORE_EXPORT LocalFrame final
   // (ReadyToCommitNavigation time).
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
+  // Called by the embedder on creation of the initial empty document and, for
+  // all other documents, just before commit (ReadyToCommitNavigation time).
+  void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence);
+
+  // The evidence for or against a frame being an ad. `absl::nullopt` if not yet
+  // set or if the frame is a top-level frame as only subframes can be tagged as
+  // ads.
+  const absl::optional<blink::FrameAdEvidence>& AdEvidence() const {
+    return ad_evidence_;
+  }
+
   bool IsSubframeCreatedByAdScript() const {
     return is_subframe_created_by_ad_script_;
   }
@@ -652,6 +655,9 @@ class CORE_EXPORT LocalFrame final
   void SaveImageAt(const gfx::Point& window_point) final;
   void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
   void RenderFallbackContent() final;
+  void RenderFallbackContentWithResourceTiming(
+      mojom::blink::ResourceTimingInfoPtr timing,
+      const String& server_timing_values) final;
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
   void DispatchBeforeUnload(bool is_reload,
                             BeforeUnloadCallback callback) final;
@@ -660,7 +666,7 @@ class CORE_EXPORT LocalFrame final
       blink::mojom::blink::MediaPlayerActionPtr action) final;
   void AdvanceFocusInFrame(
       mojom::blink::FocusType focus_type,
-      const base::Optional<RemoteFrameToken>& source_frame_token) final;
+      const absl::optional<RemoteFrameToken>& source_frame_token) final;
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;
@@ -672,14 +678,35 @@ class CORE_EXPORT LocalFrame final
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
   void OnScreensChange() final;
   void PostMessageEvent(
-      const base::Optional<RemoteFrameToken>& source_frame_token,
+      const absl::optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
       const String& target_origin,
       BlinkTransferableMessage message) final;
+  void JavaScriptMethodExecuteRequest(
+      const String& object_name,
+      const String& method_name,
+      base::Value arguments,
+      bool wants_result,
+      JavaScriptMethodExecuteRequestCallback callback) final;
+  void JavaScriptExecuteRequest(
+      const String& javascript,
+      bool wants_result,
+      JavaScriptExecuteRequestCallback callback) final;
+  void JavaScriptExecuteRequestForTests(
+      const String& javascript,
+      bool wants_result,
+      bool has_user_gesture,
+      int32_t world_id,
+      JavaScriptExecuteRequestForTestsCallback callback) final;
+  void JavaScriptExecuteRequestInIsolatedWorld(
+      const String& javascript,
+      bool wants_result,
+      int32_t world_id,
+      JavaScriptExecuteRequestInIsolatedWorldCallback callback) final;
   void BindReportingObserver(
       mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
   void UpdateOpener(
-      const base::Optional<blink::FrameToken>& opener_routing_id) final;
+      const absl::optional<blink::FrameToken>& opener_routing_id) final;
   void GetSavableResourceLinks(GetSavableResourceLinksCallback callback) final;
   void MixedContentFound(
       const KURL& main_resource_url,
@@ -690,10 +717,17 @@ class CORE_EXPORT LocalFrame final
       bool had_redirect,
       network::mojom::blink::SourceLocationPtr source_location) final;
   void ActivateForPrerendering() final;
+  void BindDevToolsAgent(
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver)
+      final;
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(const gfx::Rect& rect,
                             ExtractSmartClipDataCallback callback) final;
 #endif
+  void HandleRendererDebugURL(const KURL& url) final;
+  void GetCanonicalUrlForSharing(
+      GetCanonicalUrlForSharingCallback callback) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,
@@ -795,6 +829,8 @@ class CORE_EXPORT LocalFrame final
   // event.
   void DidActivateForPrerendering();
 
+  void LoadJavaScriptURL(const KURL& url);
+
  private:
   friend class FrameNavigationDisabler;
   FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
@@ -803,6 +839,33 @@ class CORE_EXPORT LocalFrame final
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            SmartClipReturnsEmptyStringsWhenUserSelectIsNone);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, SmartClipDoesNotCrashPositionReversed);
+
+  // A wrapper class used as the callback for JavaScript executed
+  // in an isolated world.
+  class JavaScriptIsolatedWorldRequest
+      : public GarbageCollected<JavaScriptIsolatedWorldRequest>,
+        public WebScriptExecutionCallback {
+   public:
+    JavaScriptIsolatedWorldRequest(
+        LocalFrame* local_frame,
+        bool wants_result,
+        JavaScriptExecuteRequestInIsolatedWorldCallback callback);
+    JavaScriptIsolatedWorldRequest(const JavaScriptIsolatedWorldRequest&) =
+        delete;
+    JavaScriptIsolatedWorldRequest& operator=(
+        const JavaScriptIsolatedWorldRequest&) = delete;
+    ~JavaScriptIsolatedWorldRequest() override;
+
+    // WebScriptExecutionCallback:
+    void Completed(const WebVector<v8::Local<v8::Value>>& result) override;
+
+    void Trace(Visitor* visitor) const { visitor->Trace(local_frame_); }
+
+   private:
+    Member<LocalFrame> local_frame_;
+    bool wants_result_;
+    JavaScriptExecuteRequestInIsolatedWorldCallback callback_;
+  };
 
   // Frame protected overrides:
   bool DetachImpl(FrameDetachType) override;
@@ -985,7 +1048,7 @@ class CORE_EXPORT LocalFrame final
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
-  base::Optional<base::UnguessableToken> embedding_token_;
+  absl::optional<base::UnguessableToken> embedding_token_;
 
   mojom::FrameLifecycleState lifecycle_state_;
 
@@ -1038,6 +1101,17 @@ class CORE_EXPORT LocalFrame final
 
   bool is_window_controls_overlay_visible_ = false;
   gfx::Rect window_controls_overlay_rect_;
+
+  // The evidence for or against a frame being an ad frame. `absl::nullopt` if
+  // not yet set or if the frame is a top-level frame. (Only subframes can be
+  // tagged as ad frames.) This is per-frame (as opposed to per-document) as we
+  // want to decide whether a frame is an ad or not before commit, while the
+  // document has not yet been created.
+  //
+  // This is constructed directly in the renderer in the case of an initial
+  // synchronous commit and otherwise is signaled from the browser process at
+  // ready-to-commit time.
+  absl::optional<blink::FrameAdEvidence> ad_evidence_;
 
   // True if this frame is a subframe that had a script tagged as an ad on the
   // v8 stack at the time of creation. This is not currently propagated when a

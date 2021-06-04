@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
+#include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
@@ -218,6 +219,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>());
+  if (PrivacySandboxSettingsFactory::GetForProfile(profile)
+          ->PrivacySandboxSettingsFunctional()) {
+    AddSettingsPageUIHandler(std::make_unique<PrivacySandboxHandler>());
+  }
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SecureDnsHandler>());
   AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(
@@ -254,6 +259,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(
         std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+  bool enable_landing_page_redesign =
+      base::FeatureList::IsEnabled(features::kSettingsLandingPageRedesign);
+  html_source->AddString(
+      "enableLandingPageRedesignAttribute",
+      enable_landing_page_redesign ? "enable-landing-page-redesign" : "");
+  html_source->AddBoolean("enableLandingPageRedesign",
+                          enable_landing_page_redesign);
 
   html_source->AddBoolean("signinAllowed", !profile->IsGuestSession() &&
                                                profile->GetPrefs()->GetBoolean(
@@ -292,6 +305,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
                           base::FeatureList::IsEnabled(
                               language::kDesktopRestructuredLanguageSettings));
+  html_source->AddBoolean(
+      "enableDesktopDetailedLanguageSettings",
+      base::FeatureList::IsEnabled(language::kDesktopDetailedLanguageSettings));
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -367,6 +383,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   if (sandbox_enabled) {
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
+    html_source->AddBoolean(
+        "privacySandboxSettings2Enabled",
+        base::FeatureList::IsEnabled(features::kPrivacySandboxSettings2));
   }
 
   TryShowHatsSurveyWithTimeout();

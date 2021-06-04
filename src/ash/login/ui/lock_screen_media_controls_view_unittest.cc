@@ -12,13 +12,14 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -92,10 +93,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     // Enable media controls.
     feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
-    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
-    power_source_ = power_source.get();
-    base::PowerMonitor::Initialize(std::move(power_source));
-
     LoginTestBase::SetUp();
 
     lock_contents_view_ = new LockContentsView(
@@ -124,8 +121,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     actions_.clear();
 
     LoginTestBase::TearDown();
-
-    base::PowerMonitor::ShutdownForTesting();
   }
 
   void EnableAllActions() {
@@ -255,10 +250,9 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->GetArtworkClipPath();
   }
 
-  base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
-
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
   AnimationWaiter* animation_waiter_ = nullptr;
+  base::test::ScopedPowerMonitorTestSource test_power_monitor_source_;
 
  private:
   void NotifyUpdatedActions() {
@@ -271,7 +265,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockContentsView* lock_contents_view_ = nullptr;
   std::unique_ptr<TestMediaController> media_controller_;
   std::set<MediaSessionAction> actions_;
-  base::PowerMonitorTestSource* power_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
@@ -456,7 +449,7 @@ TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
   EXPECT_TRUE(progress_view()->GetVisible());
 
   // Simulate position turning null.
-  media_controls_view_->MediaSessionPositionChanged(base::nullopt);
+  media_controls_view_->MediaSessionPositionChanged(absl::nullopt);
 
   // Verify that the progress is hidden again.
   EXPECT_FALSE(progress_view()->GetVisible());
@@ -1112,7 +1105,7 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_SessionChanged) {
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping and delay.
-  media_controls_view_->MediaSessionChanged(base::nullopt);
+  media_controls_view_->MediaSessionChanged(absl::nullopt);
   mock_timer->Fire();
 
   SimulateSessionUnlock();
@@ -1170,7 +1163,7 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_DeviceSleep) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
 
-  GetTestPowerSource().GenerateSuspendEvent();
+  test_power_monitor_source_.GenerateSuspendEvent();
 
   SimulateSessionUnlock();
 

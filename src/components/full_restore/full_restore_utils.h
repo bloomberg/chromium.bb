@@ -58,10 +58,10 @@ extern const ui::ClassProperty<std::string*>* const kAppIdKey;
 // if a window is restored by the full restore process. Only a window, restored
 // from the full restore file and read by FullRestoreReadHandler during the
 // system startup phase, could have a kActivationIndexKey. This is cleared after
-// the window been stacked accordingly, or has been activated. A larger index
-// indicates a more recently used window. If this key is null, then the window
-// was not launched from full restore, or it is longer treated like a full
-// restore launched window (i.e. user clicked on it).
+// the window been activated. A smaller index indicates a more recently used
+// window. If this key is null, then the window was not launched from full
+// restore, or it is longer treated like a full restore launched window (i.e.
+// user clicked on it).
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<int32_t*>* const kActivationIndexKey;
 
@@ -69,6 +69,11 @@ extern const ui::ClassProperty<int32_t*>* const kActivationIndexKey;
 // not created when the window is initialized.
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<bool>* const kParentToHiddenContainerKey;
+
+// A property key indicating whether a window was launched from full restore.
+// These windows will not be activatable until they are shown.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<bool>* const kLaunchedFromFullRestoreKey;
 
 // Saves the app launch parameters to the full restore file.
 COMPONENT_EXPORT(FULL_RESTORE)
@@ -96,6 +101,13 @@ int32_t GetArcRestoreWindowId(int32_t task_id);
 // and the user's choice from the notification. Otherwise, returns false.
 COMPONENT_EXPORT(FULL_RESTORE) bool ShouldRestore(const AccountId& account_id);
 
+// Returns true if the restore pref is 'Always' or 'Ask every time', as we
+// could restore apps and pages based on the user's choice from the
+// notification for |account_id|. Otherwise, returns false, when the restore
+// pref is 'Do not restore'.
+COMPONENT_EXPORT(FULL_RESTORE)
+bool CanPerformRestore(const AccountId& account_id);
+
 // Sets the current active profile path.
 COMPONENT_EXPORT(FULL_RESTORE)
 void SetActiveProfilePath(const base::FilePath& profile_path);
@@ -107,9 +119,9 @@ COMPONENT_EXPORT(FULL_RESTORE)
 bool HasWindowInfo(int32_t restore_window_id);
 
 // Modifies `out_params` based on the window info associated with
-// `restore_window_id`. Returns true if `out_params` was modified.
+// `restore_window_id`.
 COMPONENT_EXPORT(FULL_RESTORE)
-bool ModifyWidgetParams(int32_t restore_window_id,
+void ModifyWidgetParams(int32_t restore_window_id,
                         views::Widget::InitParams* out_params);
 
 // Invoked when the task is created for an ARC app.
@@ -121,6 +133,12 @@ void OnTaskCreated(const std::string& app_id,
 // Invoked when the task is destroyed for an ARC app.
 COMPONENT_EXPORT(FULL_RESTORE)
 void OnTaskDestroyed(int32_t task_id);
+
+// Invoked when the task theme colors are updated for an ARC app.
+COMPONENT_EXPORT(FULL_RESTORE)
+void OnTaskThemeColorUpdated(int32_t task_id,
+                             uint32_t primary_color,
+                             uint32_t status_bar_color);
 
 }  // namespace full_restore
 

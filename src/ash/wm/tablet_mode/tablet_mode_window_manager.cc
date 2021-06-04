@@ -36,6 +36,7 @@
 #include "base/containers/contains.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/display/screen.h"
 
@@ -211,9 +212,9 @@ void TabletModeWindowManager::Shutdown() {
     }
   }
 
-  for (aura::Window* window : added_windows_)
+  for (aura::Window* window : windows_to_track_)
     window->RemoveObserver(this);
-  added_windows_.clear();
+  windows_to_track_.clear();
   split_view_controller->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->overview_controller()->RemoveObserver(this);
@@ -237,9 +238,8 @@ bool TabletModeWindowManager::IsTrackingWindow(aura::Window* window) {
 void TabletModeWindowManager::AddWindow(aura::Window* window) {
   // Only add the window if it is a direct dependent of a container window
   // and not yet tracked.
-  if (IsTrackingWindow(window) || !IsContainerWindow(window->parent())) {
+  if (IsTrackingWindow(window) || !IsContainerWindow(window->parent()))
     return;
-  }
 
   TrackWindow(window);
 }
@@ -336,9 +336,9 @@ void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
     // container window can be removed on display destruction.
     window->RemoveObserver(this);
     observed_container_windows_.erase(window);
-  } else if (base::Contains(added_windows_, window)) {
+  } else if (base::Contains(windows_to_track_, window)) {
     // Added window was destroyed before being shown.
-    added_windows_.erase(window);
+    windows_to_track_.erase(window);
     window->RemoveObserver(this);
   } else {
     // If a known window gets destroyed we need to remove all knowledge about
@@ -351,13 +351,13 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   // A window can get removed and then re-added by a drag and drop operation.
   if (params.new_parent && IsContainerWindow(params.new_parent) &&
-      !base::Contains(window_state_map_, params.target)) {
+      !IsTrackingWindow(params.target)) {
     // Don't register the window if the window is invisible. Instead,
     // wait until it becomes visible because the client may update the
     // flag to control if the window should be added.
     if (!params.target->IsVisible()) {
-      if (!base::Contains(added_windows_, params.target)) {
-        added_windows_.insert(params.target);
+      if (!base::Contains(windows_to_track_, params.target)) {
+        windows_to_track_.insert(params.target);
         params.target->AddObserver(this);
       }
       return;
@@ -365,7 +365,7 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
     TrackWindow(params.target);
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
-    if (base::Contains(window_state_map_, params.target)) {
+    if (IsTrackingWindow(params.target)) {
       WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
       WindowState::Get(params.target)->OnWMEvent(&event);
     }
@@ -411,9 +411,7 @@ void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
     return;
 
   if (IsContainerWindow(window->parent()) &&
-      base::Contains(added_windows_, window) && visible) {
-    added_windows_.erase(window);
-    window->RemoveObserver(this);
+      base::Contains(windows_to_track_, window) && visible) {
     TrackWindow(window);
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
@@ -650,6 +648,13 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
                                           bool entering_tablet_mode,
                                           bool snap,
                                           bool animate_bounds_on_attach) {
+  // Now that we are tracking it (or finding out it cannot be tracked), remove
+  // it from `windows_to_track_`.
+  if (base::Contains(windows_to_track_, window)) {
+    windows_to_track_.erase(window);
+    window->RemoveObserver(this);
+  }
+
   if (!ShouldHandleWindow(window))
     return;
 
@@ -667,7 +672,7 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
 void TabletModeWindowManager::ForgetWindow(aura::Window* window,
                                            bool destroyed,
                                            bool was_in_overview) {
-  added_windows_.erase(window);
+  windows_to_track_.erase(window);
   window->RemoveObserver(this);
 
   WindowToState::iterator it = window_state_map_.find(window);
@@ -709,7 +714,7 @@ bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
     return false;
   }
 
-  return window->type() == aura::client::WINDOW_TYPE_NORMAL;
+  return window->GetType() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
 void TabletModeWindowManager::AddWindowCreationObservers() {

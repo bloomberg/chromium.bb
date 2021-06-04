@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">Letakkan dokumen Anda pada pemindai, lalu pilih Pindai untuk memulai</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2878387241690264070">Daya terpakai <ph name="RATE" /> dalam <ph name="NUM_SECONDS" /> detik.</translation>
+<translation id="2983662233540284543">Belajar dari kreator game, dapatkan aplikasi desain game, dan lainnya</translation>
 <translation id="3008341117444806826">PERBARUI</translation>
 <translation id="3009958530611748826">Pilih folder untuk menyimpan</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">Autentikasi</translation>
 <translation id="5154917547274118687">Memori</translation>
 <translation id="5168185087976003268">Kesehatan baterai</translation>
+<translation id="5170568018924773124">Tampilkan dalam folder</translation>
+<translation id="519607504553633437">Desain dan buat game Anda sendiri</translation>
 <translation id="5212543919916444558">Di layar tidak ada apa pun yang membutuhkan bantuan saya.
 Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5222676887888702881">Logout</translation>
@@ -201,6 +204,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5275828089655680674">Jalankan Kembali Rutinitas</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">versi <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">Pindahkan jendela ke desktop</translation>
 <translation id="5315873049536339193">identitas</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5318334351163689047">Kegagalan permintaan TCP</translation>
@@ -222,6 +226,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Keluarga</translation>
+<translation id="5752751666635965375">Buat game Anda sendiri</translation>
 <translation id="5760715441271661976">Status Portal</translation>
 <translation id="5797428682393400134">BERHASIL</translation>
 <translation id="5832805196449965646">Tambahkan Pengguna</translation>
@@ -294,6 +299,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7216409898977639127">Operator seluler</translation>
 <translation id="7271040990581020067">Pemindai sedang digunakan. Coba lagi nanti.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Perangkat Jaringan</translation>
 <translation id="7359657277149375382">Jenis file</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8372477600026034341">Host tambahan</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> ini dikelola perusahaan</translation>
 <translation id="8398927464629426868">Kecepatan pengisian atau pemakaian daya perangkat saat ini</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">Nama penyedia rumah</translation>
 <translation id="8475690821716466388">Jaringan Wi-Fi diamankan dengan protokol WEP PSK yang lemah</translation>
 <translation id="8477551185774834963">Latensi DNS sedikit melebihi ambang batas yang diizinkan</translation>
@@ -351,6 +358,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8575298406870537639">Operator Anda mungkin memerlukan opsi ini untuk terhubung ke jaringan. Hubungi operator untuk mengetahui detailnya.</translation>
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8620617069779373398">Status roaming</translation>
+<translation id="8660881923941176839">pound</translation>
 <translation id="8675354002693747642">Kunci yang dibagikan sebelumnya</translation>
 <translation id="871560550817059752">Gagal - Tinta habis</translation>
 <translation id="8723108084122415655">Jaringan non-default melebihi ambang batas latensi</translation>
@@ -366,6 +374,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8881098542468797602">Pengujian berhasil</translation>
 <translation id="8898840733695078011">Kekuatan sinyal</translation>
 <translation id="8910721771319628100">Jaringan default melebihi ambang batas latensi</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Gagal - Tidak ada baki</translation>
 <translation id="8928727111548978589">Gagal - Kertas habis</translation>
 <translation id="8930622219860340959">Nirkabel</translation>
@@ -383,6 +392,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="9149391708638971077">Jalankan pengujian Memori</translation>
 <translation id="9173638680043580060">Kurang dari satu menit lagi</translation>
 <translation id="9190063653747922532">L2TP/IPSec + kunci yang dibagikan sebelumnya</translation>
+<translation id="9211490828691860325">Semua desktop</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Tidak diaktifkan</translation>
 <translation id="960719561871045870">Kode operator</translation>

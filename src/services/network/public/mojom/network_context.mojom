@@ -38,7 +38,6 @@ import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
-import "services/network/public/mojom/quic_transport.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
@@ -50,11 +49,12 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/websocket.mojom";
+import "services/network/public/mojom/web_transport.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-[EnableIf=is_chromeos]
+[EnableIf=is_chromeos_ash]
 import "services/network/public/mojom/dhcp_wpad_url_client.mojom";
 
 [EnableIf=is_ct_supported]
@@ -131,7 +131,7 @@ interface CustomProxyConfigClient {
   ClearBadProxiesCache();
 };
 
-[EnableIf=is_chromeos]
+[EnableIf=is_chromeos_ash]
 struct AdditionalCertificates {
   // List of all additional certificates.
   array<X509Certificate> all_certificates;
@@ -227,8 +227,8 @@ struct NetworkContextParams {
   // Retrieves the PAC script URL set via DHCP from the browser process. Only
   // used if |proxy_resolver_factory| is set. Note: optional because some tests
   // build their own NetworkContextParams and don't need a DHCP WPAD client.
-  [EnableIf=is_chromeos]
-  DhcpWpadUrlClient? dhcp_wpad_url_client;
+  [EnableIf=is_chromeos_ash]
+  pending_remote<DhcpWpadUrlClient>? dhcp_wpad_url_client;
 
   // Points to the cookie file. An in-memory cookie store is used if it's empty.
   mojo_base.mojom.FilePath? cookie_path;
@@ -386,7 +386,7 @@ struct NetworkContextParams {
 
   // Initial additional certificates that will be used for certificate
   // validation.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   AdditionalCertificates? initial_additional_certificates;
 
   // Parameters for constructing the cookie manager.
@@ -709,7 +709,7 @@ interface NetworkContextClient {
                                    (int32 result, string auth_token);
 
   // Notification that a trust anchor was used for the given user.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   OnTrustAnchorUsed();
 
   // If it's supported by the implementation, attempts to provide a response to
@@ -945,7 +945,7 @@ interface NetworkContext {
   SetEnableReferrers(bool enable_referrers);
 
   // Updates the additional trust anchors for certificate verification.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   UpdateAdditionalCertificates(AdditionalCertificates? additional_certificates);
 
   // Updates the CT policy to be used for requests. Only applies if the
@@ -1111,19 +1111,19 @@ interface NetworkContext {
       pending_remote<WebSocketAuthenticationHandler>? auth_handler,
       pending_remote<TrustedHeaderClient>? header_client);
 
-  // Creates a QuicTransport connection to |url|. |origin| is used for the
+  // Creates a WebTransport connection to |url|. |origin| is used for the
   // client indication - see
   // https://tools.ietf.org/html/draft-vvv-webtransport-quic-01#section-3.2 .
   // When |fingerprints| is not empty, it is used to verify the certificate.
   // https://wicg.github.io/web-transport/#dom-quictransportconfiguration-server_certificate_fingerprints
   //
   // It is recommended to detect mojo connection errors on |handshake_client|.
-  CreateQuicTransport(
+  CreateWebTransport(
         url.mojom.Url url,
         url.mojom.Origin origin,
         NetworkIsolationKey network_isolation_key,
-        array<QuicTransportCertificateFingerprint> fingerprints,
-        pending_remote<QuicTransportHandshakeClient> handshake_client);
+        array<WebTransportCertificateFingerprint> fingerprints,
+        pending_remote<WebTransportHandshakeClient> handshake_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts
@@ -1288,7 +1288,7 @@ interface NetworkContext {
   // |auth_scheme| is the authentication scheme of the challenge and it's
   // specified as a case-insensitive string. Unlike server credentials, proxy
   // credentials are not keyed on NetworkIsolationKey.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   LookupProxyAuthCredentials(proxy_resolver.mojom.ProxyServer proxy_server,
       string auth_scheme, string realm)
       => (AuthCredentials? credentials);

@@ -9,6 +9,8 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
@@ -16,6 +18,7 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/bits.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -475,28 +478,23 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 
 #if defined(PA_HAS_64_BITS_POINTERS)
     // Reserve address space for partition alloc.
-    if (features::IsPartitionAllocGigaCageEnabled())
-      internal::PartitionAddressSpace::Init();
+    internal::PartitionAddressSpace::Init();
 #endif
 
     allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
     allow_cookies = opts.cookies == PartitionOptions::Cookies::kAllowed;
-    // Allow ref-count if it's expressly allowed *and* GigaCage is enabled.
-    // Without GigaCage it'd be unused, thus wasteful.
-    allow_ref_count =
-        (opts.ref_count == PartitionOptions::RefCount::kAllowed) &&
-        features::IsPartitionAllocGigaCageEnabled();
+    allow_ref_count = opts.ref_count == PartitionOptions::RefCount::kAllowed;
 
     // Cookies and ref-count mess up alignment needed for AlignedAlloc, making
     // those options incompatible. However, ref-count is acceptable in the
-    // REF_COUNT_AT_END_OF_ALLOCATION case.
+    // PUT_REF_COUNT_IN_PREVIOUS_SLOT case.
     PA_DCHECK(!allow_aligned_alloc || !allow_cookies);
-#if !BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+#if !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
     PA_DCHECK(!allow_aligned_alloc || !allow_ref_count);
 #endif
 
-#if PARTITION_EXTRAS_REQUIRED
+#if PA_EXTRAS_REQUIRED
     extras_size = 0;
     extras_offset = 0;
 
@@ -506,7 +504,7 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     }
 
     if (allow_ref_count) {
-      // TODO(tasak): In the REF_COUNT_AT_END_OF_ALLOCATION case, ref-count is
+      // TODO(tasak): In the PUT_REF_COUNT_IN_PREVIOUS_SLOT case, ref-count is
       // stored out-of-line for single-slot slot spans, so no need to
       // add/subtract its size in this case.
       extras_size += internal::kPartitionRefCountSizeAdjustment;
@@ -678,6 +676,9 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
     size_t decommit_size = current_slot_size - new_slot_size;
     DecommitSystemPagesForData(slot_start + new_slot_size, decommit_size,
                                PageUpdatePermissions);
+    // For BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT):
+    // Since the decommited system pages are still reserved, we don't need to
+    // change the entries for decommitted pages of the offset table.
   } else if (new_slot_size <=
              DirectMapExtent::FromSlotSpan(slot_span)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
@@ -686,6 +687,10 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
     RecommitSystemPagesForData(slot_start + current_slot_size,
                                recommit_slot_size_growth,
                                PageUpdatePermissions);
+    // For BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT):
+    // The recommited system pages have been already reserved and all the
+    // entries (for map_size) have been already initialized when reserving the
+    // pages. So we don't need to change the entries of the offset table.
 
 #if DCHECK_IS_ON()
     memset(slot_start + current_slot_size, kUninitializedByte,
@@ -728,23 +733,22 @@ bool PartitionRoot<thread_safe>::TryReallocInPlace(void* ptr,
   // underlying memory as we're already using, so re-use the allocation
   // after updating statistics (and cookies, if present).
   if (slot_span->CanStoreRawSize()) {
-#if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) && DCHECK_IS_ON()
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && DCHECK_IS_ON()
     void* slot_start = AdjustPointerForExtrasSubtract(ptr);
     internal::PartitionRefCount* old_ref_count;
     if (allow_ref_count) {
-      PA_DCHECK(features::IsPartitionAllocGigaCageEnabled());
       old_ref_count = internal::PartitionRefCountPointer(slot_start);
     }
-#endif  // BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+#endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
     size_t new_raw_size = AdjustSizeForExtrasAdd(new_size);
     slot_span->SetRawSize(new_raw_size);
-#if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) && DCHECK_IS_ON()
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && DCHECK_IS_ON()
     if (allow_ref_count) {
       internal::PartitionRefCount* new_ref_count =
           internal::PartitionRefCountPointer(slot_start);
       PA_DCHECK(new_ref_count == old_ref_count);
     }
-#endif  // BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION) && DCHECK_IS_ON()
+#endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && DCHECK_IS_ON()
 #if DCHECK_IS_ON()
     // Write a new trailing cookie only when it is possible to keep track
     // raw size (otherwise we wouldn't know where to look for it later).
@@ -771,8 +775,9 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 #else
   bool no_hooks = flags & PartitionAllocNoHooks;
   if (UNLIKELY(!ptr)) {
-    return no_hooks ? AllocFlagsNoHooks(flags, new_size)
-                    : AllocFlags(flags, new_size, type_name);
+    return no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
+                    : AllocFlagsInternal(flags, new_size, PartitionPageSize(),
+                                         type_name);
   }
 
   if (UNLIKELY(!new_size)) {
@@ -824,8 +829,9 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size)
-                       : AllocFlags(flags, new_size, type_name);
+  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
+                       : AllocFlagsInternal(flags, new_size,
+                                            PartitionPageSize(), type_name);
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
@@ -846,7 +852,7 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
     // takes snapshot of all allocated pages, decommitting pages here (even
     // under the lock) is racy.
     // TODO(bikineev): Consider rescheduling the purging after PCScan.
-    if (PCScan::Instance().IsInProgress())
+    if (PCScan::IsInProgress())
       return;
     if (flags & PartitionPurgeDecommitEmptySlotSpans)
       DecommitEmptySlotSpans();
@@ -868,7 +874,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
   // skirmishes (on Windows, in particular). Allocate before locking below,
   // otherwise when PartitionAlloc is malloc() we get reentrancy issues. This
   // inflates reported values a bit for detailed dumps though, by 16kiB.
-  std::unique_ptr<uint32_t[]> direct_map_lengths = nullptr;
+  std::unique_ptr<uint32_t[]> direct_map_lengths;
   if (!is_light_dump) {
     direct_map_lengths =
         std::unique_ptr<uint32_t[]>(new uint32_t[kMaxReportableDirectMaps]);
@@ -952,6 +958,49 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
     }
   }
   dumper->PartitionDumpTotals(partition_name, &stats);
+}
+
+template <>
+void* PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCacheAndAlloc(
+    uint16_t bucket_index,
+    size_t* slot_size) {
+  auto* tcache = internal::ThreadCache::Get();
+  if (internal::ThreadCache::IsTombstone(tcache) ||
+      thread_caches_being_constructed_.load(std::memory_order_relaxed)) {
+    // Two cases:
+    // 1. Thread is being terminated, don't try to use the thread cache, and
+    //    don't try to resurrect it.
+    // 2. Someone, somewhere is currently allocating a thread cache. This may
+    //    be us, in which case we are re-entering and should not create a thread
+    //    cache. If it is not us, then this merely delays thread cache
+    //    construction a bit, which is not an issue.
+    return nullptr;
+  }
+
+  // There is no per-thread ThreadCache allocated here yet, and this partition
+  // has a thread cache, allocate a new one.
+  //
+  // The thread cache allocation itself will not reenter here, as it sidesteps
+  // the thread cache by using placement new and |RawAlloc()|. However,
+  // internally to libc, allocations may happen to create a new TLS
+  // variable. This would end up here again, which is not what we want (and
+  // likely is not supported by libc).
+  //
+  // To avoid this sort of reentrancy, increase the count of thread caches that
+  // are currently allocating a thread cache.
+  //
+  // Note that there is no deadlock or data inconsistency concern, since we do
+  // not hold the lock, and has such haven't touched any internal data.
+  int before =
+      thread_caches_being_constructed_.fetch_add(1, std::memory_order_relaxed);
+  PA_CHECK(before < std::numeric_limits<int>::max());
+  tcache = internal::ThreadCache::Create(this);
+  thread_caches_being_constructed_.fetch_sub(1, std::memory_order_relaxed);
+
+  // Cache is created empty, but at least this will trigger batch fill, which
+  // may be useful, and we are already in a slow path anyway (first small
+  // allocation of this thread).
+  return tcache->GetFromCache(bucket_index, slot_size);
 }
 
 template struct BASE_EXPORT PartitionRoot<internal::ThreadSafe>;

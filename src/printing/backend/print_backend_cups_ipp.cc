@@ -17,6 +17,7 @@
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_ipp_helper.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -28,21 +29,32 @@ PrintBackendCupsIpp::PrintBackendCupsIpp(
 
 PrintBackendCupsIpp::~PrintBackendCupsIpp() = default;
 
-bool PrintBackendCupsIpp::EnumeratePrinters(PrinterList* printer_list) {
+mojom::ResultCode PrintBackendCupsIpp::EnumeratePrinters(
+    PrinterList* printer_list) {
   DCHECK(printer_list);
   printer_list->clear();
 
   std::vector<std::unique_ptr<CupsPrinter>> printers =
       cups_connection_->GetDests();
   if (printers.empty()) {
-    LOG(WARNING) << "CUPS: Error getting printers from CUPS server"
-                 << ", server: " << cups_connection_->server_name()
-                 << ", error: "
-                 << static_cast<int>(cups_connection_->last_error());
-
-    return false;
+    // No destinations could mean the operation failed or that there are simply
+    // no printer drivers installed.  Rely upon CUPS error code to distinguish
+    // between these.
+    const int last_error = cups_connection_->last_error();
+    if (last_error != IPP_STATUS_ERROR_NOT_FOUND) {
+      LOG(WARNING) << "CUPS: Error getting printers from CUPS server"
+                   << ", server: " << cups_connection_->server_name()
+                   << ", error: " << last_error << " - "
+                   << cups_connection_->last_error_message();
+      return mojom::ResultCode::kFailed;
+    }
+    VLOG(1) << "CUPS: No printers found for CUPS server: "
+            << cups_connection_->server_name();
+    return mojom::ResultCode::kSuccess;
   }
 
+  VLOG(1) << "CUPS: found " << printers.size()
+          << " printers from CUPS server: " << cups_connection_->server_name();
   for (const auto& printer : printers) {
     PrinterBasicInfo basic_info;
     if (printer->ToPrinterInfo(&basic_info)) {
@@ -50,7 +62,7 @@ bool PrintBackendCupsIpp::EnumeratePrinters(PrinterList* printer_list) {
     }
   }
 
-  return true;
+  return mojom::ResultCode::kSuccess;
 }
 
 std::string PrintBackendCupsIpp::GetDefaultPrinterName() {
@@ -65,36 +77,38 @@ std::string PrintBackendCupsIpp::GetDefaultPrinterName() {
   return std::string();
 }
 
-bool PrintBackendCupsIpp::GetPrinterBasicInfo(const std::string& printer_name,
-                                              PrinterBasicInfo* printer_info) {
+mojom::ResultCode PrintBackendCupsIpp::GetPrinterBasicInfo(
+    const std::string& printer_name,
+    PrinterBasicInfo* printer_info) {
   std::unique_ptr<CupsPrinter> printer(
       cups_connection_->GetPrinter(printer_name));
   if (!printer)
-    return false;
+    return mojom::ResultCode::kFailed;
 
   DCHECK_EQ(printer_name, printer->GetName());
 
-  return printer->ToPrinterInfo(printer_info);
+  return printer->ToPrinterInfo(printer_info) ? mojom::ResultCode::kSuccess
+                                              : mojom::ResultCode::kFailed;
 }
 
-bool PrintBackendCupsIpp::GetPrinterCapsAndDefaults(
+mojom::ResultCode PrintBackendCupsIpp::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     PrinterCapsAndDefaults* printer_info) {
   NOTREACHED();
-  return false;
+  return mojom::ResultCode::kFailed;
 }
 
-bool PrintBackendCupsIpp::GetPrinterSemanticCapsAndDefaults(
+mojom::ResultCode PrintBackendCupsIpp::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   std::unique_ptr<CupsPrinter> printer(
       cups_connection_->GetPrinter(printer_name));
   if (!printer || !printer->EnsureDestInfo())
-    return false;
+    return mojom::ResultCode::kFailed;
 
   CapsAndDefaultsFromPrinter(*printer, printer_info);
 
-  return true;
+  return mojom::ResultCode::kSuccess;
 }
 
 std::string PrintBackendCupsIpp::GetPrinterDriverInfo(

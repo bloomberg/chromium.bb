@@ -8,11 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -51,10 +49,12 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/notification_service.h"
@@ -83,6 +83,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/switches.h"
@@ -199,7 +200,8 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
       web_app_info->start_url = start_url;
       web_app_info->scope = start_url.GetWithoutFilename();
       web_app_info->open_as_window = true;
-      app_id_ = web_app::InstallWebApp(profile(), std::move(web_app_info));
+      app_id_ =
+          web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
       // Launch app in a window.
       app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id_);
@@ -668,7 +670,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, CanUserUninstall) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL("app.com", "/title1.html");
   SetupAppWithURL(app_url);
-  EXPECT_TRUE(app_browser_->app_controller()->CanUninstall());
+  EXPECT_TRUE(app_browser_->app_controller()->CanUserUninstall());
 }
 
 // Tests that platform apps can still load mixed content.
@@ -1884,7 +1886,7 @@ class HostedAppOriginIsolationTest : public HostedOrWebAppTest {
                 nested_origin_url.spec().c_str());
             content::URLLoaderInterceptor::WriteResponse(
                 headers, body, params->client.get(),
-                base::Optional<net::SSLInfo>());
+                absl::optional<net::SSLInfo>());
             return true;
           } else if (params->url_request.url.host() ==
                      nested_origin_url.host()) {
@@ -1895,7 +1897,7 @@ class HostedAppOriginIsolationTest : public HostedOrWebAppTest {
                 nested_origin_url.spec().c_str());
             content::URLLoaderInterceptor::WriteResponse(
                 headers, body, params->client.get(),
-                base::Optional<net::SSLInfo>());
+                absl::optional<net::SSLInfo>());
             return true;
           }
           // Not handled by us.

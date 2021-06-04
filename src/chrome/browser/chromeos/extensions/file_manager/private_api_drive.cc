@@ -28,6 +28,8 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_native_message_host.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_system_provider/mount_path_util.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -35,8 +37,6 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
-#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -326,7 +326,7 @@ void OnSearchDriveFs(
     bool filter_dirs,
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback,
     drive::FileError error,
-    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+    absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
   Profile* const profile =
       Profile::FromBrowserContext(function->browser_context());
   drive::DriveIntegrationService* integration_service =
@@ -343,8 +343,8 @@ void OnSearchDriveFs(
 
   GURL url;
   file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-      profile, integration_service->GetMountPointPath(),
-      function->extension_id(), &url);
+      profile, integration_service->GetMountPointPath(), function->source_url(),
+      &url);
   const auto fs_root = base::StrCat({url.spec(), "/"});
   const auto fs_name =
       integration_service->GetMountPointPath().BaseName().value();
@@ -385,7 +385,7 @@ drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
       std::move(query),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
-          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+          absl::optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
 }
 
 void UmaEmitSearchOutcome(
@@ -734,7 +734,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
   }
 
   auto results_list = std::make_unique<base::ListValue>();
-  for (auto& entry : *results) {
+  for (auto& entry : results->GetList()) {
     base::DictionaryValue dict;
     std::string highlight;
     base::Value* value = entry.FindKey("fileFullPath");
@@ -861,7 +861,8 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context())
+      browser_context()
+          ->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess();
   auth_service_ = std::make_unique<google_apis::AuthService>(
       identity_manager, account_id, url_loader_factory, scopes);

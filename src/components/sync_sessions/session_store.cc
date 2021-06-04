@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
@@ -93,7 +94,7 @@ std::string GetSessionTagWithPrefs(const std::string& cache_guid,
 }
 
 void ForwardError(syncer::OnceModelErrorHandler error_handler,
-                  const base::Optional<syncer::ModelError>& error) {
+                  const absl::optional<syncer::ModelError>& error) {
   if (error) {
     std::move(error_handler).Run(*error);
   }
@@ -101,7 +102,7 @@ void ForwardError(syncer::OnceModelErrorHandler error_handler,
 
 // Parses the content of |record_list| into |*initial_data|. The output
 // parameters are first for binding purposes.
-base::Optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
+absl::optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
     std::map<std::string, sync_pb::SessionSpecifics>* initial_data,
     std::string* session_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
@@ -122,7 +123,7 @@ base::Optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
 
   *session_name = syncer::GetPersonalizableDeviceNameBlocking();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -322,7 +323,7 @@ std::string SessionStore::GetTabClientTagForTest(const std::string& session_tag,
 // static
 void SessionStore::OnStoreCreated(
     std::unique_ptr<Builder> builder,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<ModelTypeStore> underlying_store) {
   DCHECK(builder);
 
@@ -344,7 +345,7 @@ void SessionStore::OnStoreCreated(
 // static
 void SessionStore::OnReadAllMetadata(
     std::unique_ptr<Builder> builder,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK(builder);
 
@@ -370,7 +371,7 @@ void SessionStore::OnReadAllMetadata(
 // static
 void SessionStore::OnReadAllData(
     std::unique_ptr<Builder> builder,
-    const base::Optional<syncer::ModelError>& error) {
+    const absl::optional<syncer::ModelError>& error) {
   DCHECK(builder);
 
   if (error) {
@@ -394,7 +395,7 @@ void SessionStore::OnReadAllData(
       builder->metadata_batch->GetAllMetadata(), builder->sessions_client));
 
   std::move(builder->callback)
-      .Run(/*error=*/base::nullopt, std::move(session_store),
+      .Run(/*error=*/absl::nullopt, std::move(session_store),
            std::move(builder->metadata_batch));
 }
 

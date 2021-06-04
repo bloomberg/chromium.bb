@@ -196,6 +196,18 @@ TEST_F('NewTabPageImgTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var NewTabPageModulesModulesTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/modules_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesModulesTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var NewTabPageModulesModuleDescriptorTest =
     class extends NewTabPageBrowserTest {
   /** @override */
@@ -229,6 +241,18 @@ var NewTabPageModulesModuleHeaderTest = class extends NewTabPageBrowserTest {
 };
 
 TEST_F('NewTabPageModulesModuleHeaderTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var NewTabPageModulesInfoDialogTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/info_dialog_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesInfoDialogTest', 'All', function() {
   mocha.run();
 });
 

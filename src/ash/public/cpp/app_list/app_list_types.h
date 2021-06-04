@@ -11,8 +11,8 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "base/optional.h"
 #include "components/sync/model/string_ordinal.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
@@ -33,6 +33,9 @@ constexpr int kMouseDragThreshold = 2;
 
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
+
+// The AppListItem ID of the "Linux apps" folder.
+ASH_PUBLIC_EXPORT extern const char kCrostiniFolderId[];
 
 // App list config types supported by AppListConfig.
 enum class AppListConfigType {
@@ -70,6 +73,7 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
                                // 1 item.
   gfx::ImageSkia icon;         // The icon of this item.
   bool is_page_break = false;  // Whether this item is a "page break" item.
+  SkColor badge_color = SK_ColorWHITE;  // Notification badge color.
 };
 
 // All possible states of the app list.
@@ -131,7 +135,9 @@ enum class AppListLaunchType {
   kAppSearchResult,
 };
 
-// Type of the search result, which is set in Chrome.
+// Type of the search result, which is set in Chrome. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never be
+// reused.
 enum class AppListSearchResultType {
   kUnknown,       // Unknown type. Don't use over IPC
   kInstalledApp,  // Installed apps.
@@ -155,6 +161,7 @@ enum class AppListSearchResultType {
   kFileSearch,             // Local file search results.
   kDriveSearch,            // Drive file search results.
   // Add new values here.
+  kMaxValue = kDriveSearch,
 };
 
 // Which UI container(s) the result should be displayed in.
@@ -182,11 +189,12 @@ enum SearchResultDisplayIndex {
 };
 
 // The rich entity subtype of Omnibox results.
-enum SearchResultOmniboxType {
+enum SearchResultOmniboxDisplayType {
   kDefault,
   kAnswer,
   kCalculatorAnswer,
   kRichImage,
+  kFavicon,
   kOmniboxTypeMax,  // Do not use.
 };
 
@@ -283,13 +291,6 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // The type of this result.
   AppListSearchResultType result_type = AppListSearchResultType::kUnknown;
 
-  // The subtype of this result. Derived search result classes can use this to
-  // represent their own subtypes. Currently, OmniboxResult sets this to
-  // indicate this is a history result, previous query, etc. If a result is an
-  // Answer, OmniboxResult will set this to be the answer type. A value of -1
-  // indicates no subtype has been set.
-  int result_subtype = -1;
-
   // A search result type used for metrics.
   ash::SearchResultType metrics_type = ash::SEARCH_RESULT_TYPE_BOUNDARY;
 
@@ -300,7 +301,8 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
 
   // The rich entity subtype of Omnibox results.
-  SearchResultOmniboxType omnibox_type = SearchResultOmniboxType::kDefault;
+  SearchResultOmniboxDisplayType omnibox_type =
+      SearchResultOmniboxDisplayType::kDefault;
 
   // A score to settle conflicts between two apps with the same requested
   // |display_index|.
@@ -320,12 +322,12 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // A query URL associated with this result. The meaning and treatment of the
   // URL (e.g. displaying inline web contents) is dependent on the result type.
-  base::Optional<GURL> query_url;
+  absl::optional<GURL> query_url;
 
   // An optional id that identifies an equivalent result to this result. Answer
   // card result has this set to remove the equivalent omnibox
   // search-what-you-typed result when there is an answer card for the query.
-  base::Optional<std::string> equivalent_result_id;
+  absl::optional<std::string> equivalent_result_id;
 
   // The icon of this result.
   gfx::ImageSkia icon;

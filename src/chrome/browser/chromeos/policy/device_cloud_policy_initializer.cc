@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -129,7 +130,7 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
 
   policy_manager_->core()->Disconnect();
 
-  enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
+  enrollment_handler_ = std::make_unique<EnrollmentHandlerChromeOS>(
       policy_store_, install_attributes_, state_keys_broker_,
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
@@ -137,7 +138,7 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
       EnrollmentRequisitionManager::GetDeviceRequisition(),
       EnrollmentRequisitionManager::GetSubOrganization(),
       base::BindOnce(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
-                     base::Unretained(this), std::move(enrollment_callback))));
+                     base::Unretained(this), std::move(enrollment_callback)));
 }
 
 void DeviceCloudPolicyInitializer::StartEnrollment() {
@@ -211,7 +212,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
       local_state_->GetDictionary(prefs::kServerBackedDeviceState);
   std::string device_state_mode;
   std::string device_state_management_domain;
-  base::Optional<bool> is_license_packaged_with_device;
+  absl::optional<bool> is_license_packaged_with_device;
 
   if (device_state) {
     device_state->GetString(kDeviceStateMode, &device_state_mode);

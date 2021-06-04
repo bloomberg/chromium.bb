@@ -4,7 +4,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as SDK from '../../core/sdk/sdk.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 
 export abstract class ReportRenderer {
   constructor(_dom: DOM) {
@@ -16,7 +16,7 @@ export abstract class ReportRenderer {
   }
 }
 
-export class ReportUIFeatures {
+export abstract class ReportUIFeatures {
   json!: ReportJSON;
   _document!: Document;
 
@@ -28,6 +28,8 @@ export class ReportUIFeatures {
 
   initFeatures(_report: ReportJSON): void {
   }
+
+  abstract addButton(_opts: {text: string, icon?: string, onClick: () => void}): HTMLButtonElement;
 
   _resetUIState(): void {
   }

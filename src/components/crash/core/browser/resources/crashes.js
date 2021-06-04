@@ -10,7 +10,7 @@ import 'chrome://resources/js/action_link.js';
 import './strings.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$, appendParam} from 'chrome://resources/js/util.m.js';
 
 /* Id for tracking automatic refresh of crash list.  */
 let refreshCrashListId = undefined;
@@ -178,7 +178,7 @@ function fileBug(crashId, os, version) {
     // TODO(scottmg): Use add_labels to add 'User-Submitted' rather than
     // duplicating the template's labels (the first two) once
     // https://bugs.chromium.org/p/monorail/issues/detail?id=1488 is done.
-    labels: 'Restrict-View-EditIssue,Stability-Crash,User-Submitted',
+    labels: 'Restrict-View-EditIssue,Stability-Crash,User-Submitted,Pri-3,Type-Bug',
   };
   let href = 'https://bugs.chromium.org/p/chromium/issues/entry';
   for (const param in params) {

@@ -6,6 +6,7 @@
 #define HEADLESS_LIB_BROWSER_HEADLESS_CONTENT_BROWSER_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -73,8 +74,12 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() override;
 
   bool CanAcceptUntrustedExchangesIfNeeded() override;
-  device::GeolocationSystemPermissionManager* GetLocationPermissionManager()
-      override;
+  device::GeolocationManager* GetGeolocationManager() override;
+
+#if defined(HEADLESS_USE_POLICY)
+  std::vector<std::unique_ptr<content::NavigationThrottle>>
+  CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
+#endif
 
  private:
   class StubBadgeService;

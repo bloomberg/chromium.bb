@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright 2020 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -157,7 +157,7 @@ DEPS_TEMPLATE = """\
         }},
       ],
       'dep_type': 'cipd',
-      'condition': 'checkout_angle_internal',
+      'condition': 'checkout_angle_restricted_traces',
   }},
 """
 
@@ -334,7 +334,7 @@ def main():
         return 0
 
     format_args = {
-        "script_name": __file__,
+        "script_name": os.path.basename(__file__),
         "data_source_name": json_file,
     }
 

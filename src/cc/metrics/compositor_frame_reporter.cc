@@ -14,6 +14,7 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_id_helper.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/metrics/dropped_frame_counter.h"
 #include "cc/metrics/frame_sequence_tracker.h"
@@ -339,15 +340,6 @@ std::string GetEventLatencyHistogramBaseName(
 
 base::TimeTicks ComputeSafeDeadlineForFrame(const viz::BeginFrameArgs& args) {
   return args.frame_time + (args.interval * 1.5);
-}
-
-bool IsScrollActive(const CompositorFrameReporter::ActiveTrackers& trackers) {
-  return trackers.test(
-             static_cast<size_t>(FrameSequenceTrackerType::kWheelScroll)) ||
-         trackers.test(
-             static_cast<size_t>(FrameSequenceTrackerType::kTouchScroll)) ||
-         trackers.test(
-             static_cast<size_t>(FrameSequenceTrackerType::kScrollbarScroll));
 }
 
 }  // namespace
@@ -1056,7 +1048,8 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
                                                      args_.frame_time);
   }
 
-  const auto trace_track = perfetto::Track(reinterpret_cast<uint64_t>(this));
+  const auto trace_track =
+      perfetto::Track(base::trace_event::GetNextGlobalTraceId());
   TRACE_EVENT_BEGIN(
       "cc,benchmark", "PipelineReporter", trace_track, args_.frame_time,
       [&](perfetto::EventContext context) {
@@ -1077,6 +1070,7 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
         reporter->set_state(state);
         reporter->set_frame_source(args_.frame_id.source_id);
         reporter->set_frame_sequence(args_.frame_id.sequence_number);
+        reporter->set_layer_tree_host_id(layer_tree_host_id_);
         reporter->set_has_missing_content(has_missing_content_);
         if (IsDroppedFrameAffectingSmoothness()) {
           DCHECK(state == ChromeFrameReporter::STATE_DROPPED ||
@@ -1096,44 +1090,49 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
             break;
         }
         reporter->set_scroll_state(scroll_state);
+        reporter->set_has_main_animation(
+            HasMainThreadAnimation(active_trackers_));
+        reporter->set_has_compositor_animation(
+            HasCompositorThreadAnimation(active_trackers_));
+
+        bool has_smooth_input_main = false;
+        for (const auto& event_metrics : events_metrics_) {
+          has_smooth_input_main |= event_metrics->HasSmoothInputEvent();
+        }
+        reporter->set_has_smooth_input_main(has_smooth_input_main);
 
         // TODO(crbug.com/1086974): Set 'drop reason' if applicable.
       });
 
-  // The trace-viewer cannot seem to handle a single child-event that has the
-  // same start/end timestamps as the parent-event. So avoid adding the
-  // child-events if there's only one.
-  if (stage_history_.size() > 1) {
-    for (const auto& stage : stage_history_) {
-      const int stage_type_index = static_cast<int>(stage.stage_type);
-      CHECK_LT(stage_type_index, static_cast<int>(StageType::kStageTypeCount));
-      CHECK_GE(stage_type_index, 0);
-      if (stage.start_time >= frame_termination_time_)
-        break;
-      DCHECK_GE(stage.end_time, stage.start_time);
-      if (stage.start_time == stage.end_time)
-        continue;
-      const char* stage_name = GetStageName(stage_type_index);
-      TRACE_EVENT_BEGIN("cc,benchmark", perfetto::StaticString{stage_name},
-                        trace_track, stage.start_time);
-      if (stage.stage_type ==
-          StageType::kSubmitCompositorFrameToPresentationCompositorFrame) {
-        DCHECK(processed_viz_breakdown_);
-        for (auto it = processed_viz_breakdown_->CreateIterator(true);
-             it.IsValid(); it.Advance()) {
-          base::TimeTicks start_time = it.GetStartTime();
-          base::TimeTicks end_time = it.GetEndTime();
-          if (start_time >= end_time)
-            continue;
-          const char* breakdown_name = GetVizBreakdownName(it.GetBreakdown());
-          TRACE_EVENT_BEGIN("cc,benchmark",
-                            perfetto::StaticString{breakdown_name}, trace_track,
-                            start_time);
-          TRACE_EVENT_END("cc,benchmark", trace_track, end_time);
-        }
+  for (const auto& stage : stage_history_) {
+    const int stage_type_index = static_cast<int>(stage.stage_type);
+    CHECK_LT(stage_type_index, static_cast<int>(StageType::kStageTypeCount));
+    CHECK_GE(stage_type_index, 0);
+    if (stage.start_time >= frame_termination_time_)
+      break;
+    DCHECK_GE(stage.end_time, stage.start_time);
+    if (stage.start_time == stage.end_time)
+      continue;
+    const char* stage_name = GetStageName(stage_type_index);
+    TRACE_EVENT_BEGIN("cc,benchmark", perfetto::StaticString{stage_name},
+                      trace_track, stage.start_time);
+    if (stage.stage_type ==
+        StageType::kSubmitCompositorFrameToPresentationCompositorFrame) {
+      DCHECK(processed_viz_breakdown_);
+      for (auto it = processed_viz_breakdown_->CreateIterator(true);
+           it.IsValid(); it.Advance()) {
+        base::TimeTicks start_time = it.GetStartTime();
+        base::TimeTicks end_time = it.GetEndTime();
+        if (start_time >= end_time)
+          continue;
+        const char* breakdown_name = GetVizBreakdownName(it.GetBreakdown());
+        TRACE_EVENT_BEGIN("cc,benchmark",
+                          perfetto::StaticString{breakdown_name}, trace_track,
+                          start_time);
+        TRACE_EVENT_END("cc,benchmark", trace_track, end_time);
       }
-      TRACE_EVENT_END("cc,benchmark", trace_track, stage.end_time);
     }
+    TRACE_EVENT_END("cc,benchmark", trace_track, stage.end_time);
   }
 
   TRACE_EVENT_END("cc,benchmark", trace_track, frame_termination_time_);

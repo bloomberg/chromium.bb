@@ -8,15 +8,22 @@ It produces the .js file that accompanies include-analysis.html.
 
 Usage:
 
-$ gn gen --args="show_includes=true" out/Debug
-$ autoninja -C out/Debug -v base_unittests | tee /tmp/build_log
-$ analyze_includes.py base_unittests $(git rev-parse --short HEAD) \
-    /tmp/build_log /tmp/include-analysis.js
+$ gn gen --args="show_includes=true symbol_level=0" out/Debug
+$ autoninja -C out/Debug -v chrome | tee /tmp/build_log
+$ analyze_includes.py --target=chrome --revision=$(git rev-parse --short HEAD) \
+    --json-out=/tmp/include-analysis.js /tmp/build_log
 
-(Optionally, add use_goma=true to the gn args.)
+(If you have goma access, add use_goma=true to the gn args.)
 
-The script takes a little under an hour to run on a fast machine for the chrome
-build target, which is considered fast enough for batch job purposes for now.
+The script takes roughly half an hour on a fast machine for the chrome build
+target, which is considered fast enough for batch job purposes for now.
+
+If --json-out is not provided, the script exits after printing some statistics
+to stdout. This is significantly faster than generating the full JSON data. For
+example:
+
+$ autoninja -C out/Debug -v chrome | analyze_includes.py - 2>/dev/null
+build_size 270237664463
 """
 
 from __future__ import print_function
@@ -47,24 +54,13 @@ def parse_build(build_log):
   # ninja: Entering directory `out/foo'
   ENTER_DIR_RE = re.compile(r'ninja: Entering directory `(.*?)\'$')
   # ...clang... -c foo.cc -o foo.o ...
-  COMPILE_RE = re.compile(r'.*clang.* -c (.*?) ')
+  COMPILE_RE = re.compile(r'.*clang.* -c (\S*)')
   # . a.h
   # .. b.h
   # . c.h
   INCLUDE_RE = re.compile(r'(\.+) (.*)$')
 
   for line in build_log:
-    m = ENTER_DIR_RE.match(line)
-    if m:
-      build_dir = m.group(1)
-
-    m = COMPILE_RE.match(line)
-    if m:
-      filename = m.group(1)
-      roots.add(filename)
-      file_stack = [filename]
-      includes.setdefault(filename, set())
-
     m = INCLUDE_RE.match(line)
     if m:
       prev_depth = len(file_stack) - 1
@@ -80,13 +76,27 @@ def parse_build(build_log):
 
       includes[file_stack[-1]].add(filename)
       file_stack.append(filename)
+      continue
+
+    m = COMPILE_RE.match(line)
+    if m:
+      filename = m.group(1)
+      roots.add(filename)
+      file_stack = [filename]
+      includes.setdefault(filename, set())
+      continue
+
+    m = ENTER_DIR_RE.match(line)
+    if m:
+      build_dir = m.group(1)
+      continue
 
   # Normalize paths.
   normalized = {}
 
   def n(fn):
     if not fn in normalized:
-      x = os.path.normpath(os.path.join(build_dir, fn))
+      x = os.path.relpath(os.path.realpath(os.path.join(build_dir, fn)))
       normalized[fn] = x
     return normalized[fn]
 
@@ -165,39 +175,86 @@ def post_order_nodes(root, child_nodes):
 def compute_doms(root, includes):
   """Compute the dominators for all nodes reachable from root. Node A dominates
   node B if all paths from the root to B go through A. Returns a dict from
-  filename to the set of dominators of that filename (including itself)."""
-  rpo = list(reversed(list(post_order_nodes(root, includes))))
-  assert rpo[0] == root
+  filename to the set of dominators of that filename (including itself).
 
-  # Initialization.
-  # The data-flow analysis starts with full dom sets,
-  # except for root, where we know the end result already.
-  # preds[n] are the direct predecessors of node n.
-  # The order is not important here, rpo is just handy as a list of all nodes.
-  doms = {}
-  preds = defaultdict(set)
-  for n in rpo:
-    doms[n] = set(rpo)
-    for x in includes[n]:
-      preds[x].add(n)
-  doms[root] = set([root])
+  The implementation follows the "simple" version of Lengauer & Tarjan "A Fast
+  Algorithm for Finding Dominators in a Flowgraph" (TOPLAS 1979).
+  """
 
-  # Iterate to fixed point.
-  # This is not the fastest algorithm, but it's simple and fast enough for us.
-  # Processing the nodes in reverse post-order leads to faster convergence.
-  # rpo[0] (the root) is skipped, because its dominators are known, and its
-  # empty preds set would break the set.intersection() invocation.
-  changed = True
-  while changed:
-    changed = False
-    for n in rpo[1:]:
-      new_set = set.intersection(*[doms[p] for p in preds[n]])
-      new_set.add(n)
-      if new_set != doms[n]:
-        doms[n] = new_set
-        changed = True
+  parent = {}
+  ancestor = {}
+  vertex = []
+  label = {}
+  semi = {}
+  pred = defaultdict(list)
+  bucket = defaultdict(list)
+  dom = {}
 
-  return doms
+  def dfs(v):
+    semi[v] = len(vertex)
+    vertex.append(v)
+    label[v] = v
+
+    for w in includes[v]:
+      if not w in semi:
+        parent[w] = v
+        dfs(w)
+      pred[w].append(v)
+
+  def compress(v):
+    if ancestor[v] in ancestor:
+      compress(ancestor[v])
+      if semi[label[ancestor[v]]] < semi[label[v]]:
+        label[v] = label[ancestor[v]]
+      ancestor[v] = ancestor[ancestor[v]]
+
+  def eval(v):
+    if v not in ancestor:
+      return v
+    compress(v)
+    return label[v]
+
+  def link(v, w):
+    ancestor[w] = v
+
+  # Step 1: Initialization.
+  dfs(root)
+
+  for w in reversed(vertex[1:]):
+    # Step 2: Compute semidominators.
+    for v in pred[w]:
+      u = eval(v)
+      if semi[u] < semi[w]:
+        semi[w] = semi[u]
+
+    bucket[vertex[semi[w]]].append(w)
+    link(parent[w], w)
+
+    # Step 3: Implicitly define the immediate dominator for each node.
+    for v in bucket[parent[w]]:
+      u = eval(v)
+      dom[v] = u if semi[u] < semi[v] else parent[w]
+    bucket[parent[w]] = []
+
+  # Step 4: Explicitly define the immediate dominator for each node.
+  for w in vertex[1:]:
+    if dom[w] != vertex[semi[w]]:
+      dom[w] = dom[dom[w]]
+
+  # Get the full dominator set for each node.
+  all_doms = {}
+  all_doms[root] = {root}
+
+  def dom_set(node):
+    if node not in all_doms:
+      # node's dominators is itself and the dominators of its immediate
+      # dominator.
+      all_doms[node] = {node}
+      all_doms[node].update(dom_set(dom[node]))
+
+    return all_doms[node]
+
+  return {n: dom_set(n) for n in vertex}
 
 
 class TestComputeDoms(unittest.TestCase):
@@ -218,6 +275,41 @@ class TestComputeDoms(unittest.TestCase):
     self.assertEqual(doms[4], set([5, 4]))
     self.assertEqual(doms[5], set([5]))
 
+  def test_larger(self):
+    # Fig. 1 in the Lengauer-Tarjan paper.
+    includes = {}
+    includes['a'] = ['d']
+    includes['b'] = ['a', 'd', 'e']
+    includes['c'] = ['f', 'g']
+    includes['d'] = ['l']
+    includes['e'] = ['h']
+    includes['f'] = ['i']
+    includes['g'] = ['i', 'j']
+    includes['h'] = ['k', 'e']
+    includes['i'] = ['k']
+    includes['j'] = ['i']
+    includes['k'] = ['i', 'r']
+    includes['l'] = ['h']
+    includes['r'] = ['a', 'b', 'c']
+    root = 'r'
+
+    doms = compute_doms(root, includes)
+
+    # Fig. 2 in the Lengauer-Tarjan paper.
+    self.assertEqual(doms['a'], set(['a', 'r']))
+    self.assertEqual(doms['b'], set(['b', 'r']))
+    self.assertEqual(doms['c'], set(['c', 'r']))
+    self.assertEqual(doms['d'], set(['d', 'r']))
+    self.assertEqual(doms['e'], set(['e', 'r']))
+    self.assertEqual(doms['f'], set(['f', 'c', 'r']))
+    self.assertEqual(doms['g'], set(['g', 'c', 'r']))
+    self.assertEqual(doms['h'], set(['h', 'r']))
+    self.assertEqual(doms['i'], set(['i', 'r']))
+    self.assertEqual(doms['j'], set(['j', 'g', 'c', 'r']))
+    self.assertEqual(doms['k'], set(['k', 'r']))
+    self.assertEqual(doms['l'], set(['l', 'd', 'r']))
+    self.assertEqual(doms['r'], set(['r']))
+
 
 def trans_size(root, includes, sizes):
   """Compute the transitive size of a file, i.e. the size of the file itself and
@@ -225,32 +317,44 @@ def trans_size(root, includes, sizes):
   return sum([sizes[n] for n in post_order_nodes(root, includes)])
 
 
+def log(*args, **kwargs):
+  """Log output to stderr."""
+  print(*args, file=sys.stderr, **kwargs)
+
+
 def analyze(target, revision, build_log_file, json_file):
-  print('Parsing build log...')
+  log('Parsing build log...')
   (roots, includes) = parse_build(build_log_file)
 
-  print('Getting file sizes...')
+  log('Getting file sizes...')
   sizes = {name: os.path.getsize(name) for name in includes}
 
-  print('Computing transitive sizes...')
+  log('Computing transitive sizes...')
   trans_sizes = {n: trans_size(n, includes, sizes) for n in includes}
 
-  print('Counting prevalence...')
+  build_size = sum([trans_sizes[n] for n in roots])
+
+  print('build_size', build_size)
+
+  if json_file is None:
+    log('--json-out not set; exiting.')
+    return 0
+
+  log('Counting prevalence...')
   prevalence = {name: 0 for name in includes}
   for r in roots:
     for n in post_order_nodes(r, includes):
       prevalence[n] += 1
 
   # Map from file to files that include it.
-  print('Building reverse include map...')
+  log('Building reverse include map...')
   included_by = {k: set() for k in includes}
   for k in includes:
     for i in includes[k]:
       included_by[i].add(k)
 
-  build_size = sum([trans_sizes[n] for n in roots])
 
-  print('Computing added sizes...')
+  log('Computing added sizes...')
   added_sizes = {name: 0 for name in includes}
   for r in roots:
     doms = compute_doms(r, includes)
@@ -268,7 +372,7 @@ def analyze(target, revision, build_log_file, json_file):
   def nr(name):
     return name2nr[name]
 
-  print('Writing output...')
+  log('Writing output...')
 
   # Provide a JS object for convenient inclusion in the HTML file.
   # If someone really wants a proper JSON file, maybe we can reconsider this.
@@ -289,7 +393,7 @@ def analyze(target, revision, build_log_file, json_file):
           'prevalence': [prevalence[n] for n in names],
       }, json_file)
 
-  print('All done!')
+  log('All done!')
 
 
 def main():
@@ -298,15 +402,24 @@ def main():
     return 1
 
   parser = argparse.ArgumentParser(description='Analyze an #include graph.')
-  parser.add_argument('target', nargs=1, help='The target that was built.')
-  parser.add_argument('revision', nargs=1, help='The build revision.')
-  parser.add_argument('build_log', nargs=1, help='The build log to analyze.')
-  parser.add_argument('output_file', nargs=1, help='The JSON output file.')
+  parser.add_argument('build_log',
+                      type=argparse.FileType('r'),
+                      help='The build log to analyze (- for stdin).')
+  parser.add_argument('--target',
+                      help='The target that was built (e.g. chrome).')
+  parser.add_argument('--revision',
+                      help='The revision that was built (e.g. 016588d4ee20).')
+  parser.add_argument(
+      '--json-out',
+      type=argparse.FileType('w'),
+      help='Write full analysis data to a JSON file (- for stdout).')
   args = parser.parse_args()
 
-  with open(args.build_log[0], 'r') as build_log_file:
-    with open(args.output_file[0], 'w') as json_file:
-      analyze(args.target[0], args.revision[0], build_log_file, json_file)
+  if args.json_out and not (args.target and args.revision):
+    print('error: --jsoun-out requires both --target and --revision to be set')
+    return 1
+
+  analyze(args.target, args.revision, args.build_log, args.json_out)
 
 
 if __name__ == '__main__':

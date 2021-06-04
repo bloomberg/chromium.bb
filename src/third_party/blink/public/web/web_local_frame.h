@@ -11,18 +11,18 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
 #include "third_party/blink/public/common/css/page_size_type.h"
+#include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
@@ -39,6 +39,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -72,7 +73,6 @@ class WebAssociatedURLLoader;
 class WebAutofillClient;
 class WebContentCaptureClient;
 class WebContentSettingsClient;
-class WebDocument;
 class WebLocalFrameClient;
 class WebFrameWidget;
 class WebHistoryItem;
@@ -230,8 +230,7 @@ class WebLocalFrame : public WebFrame {
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
       const viz::FrameSinkId& frame_sink_id,
       bool is_for_nested_main_frame = false,
-      bool hidden = false,
-      bool never_composited = false);
+      bool hidden = false);
 
   // Returns the frame identified by the given name.  This method supports
   // pseudo-names like _self, _top, and _blank and otherwise performs the same
@@ -247,7 +246,7 @@ class WebLocalFrame : public WebFrame {
   // Returns the embedding token for this frame or nullopt if the frame hasn't
   // committed a navigation. This token changes when a new document is committed
   // in this WebLocalFrame.
-  virtual const base::Optional<base::UnguessableToken>& GetEmbeddingToken()
+  virtual const absl::optional<base::UnguessableToken>& GetEmbeddingToken()
       const = 0;
 
   // Navigation Ping --------------------------------------------------------
@@ -324,14 +323,16 @@ class WebLocalFrame : public WebFrame {
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   virtual void ExecuteScriptInIsolatedWorld(int32_t world_id,
-                                            const WebScriptSource&) = 0;
+                                            const WebScriptSource&,
+                                            BackForwardCacheAware) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
   WARN_UNUSED_RESULT virtual v8::Local<v8::Value>
   ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
-                                             const WebScriptSource&) = 0;
+                                             const WebScriptSource&,
+                                             BackForwardCacheAware) = 0;
 
   // Clears the isolated world CSP stored for |world_id| by this frame's
   // Document.
@@ -404,7 +405,8 @@ class WebLocalFrame : public WebFrame {
       unsigned num_sources,
       bool user_gesture,
       ScriptExecutionType,
-      WebScriptExecutionCallback*) = 0;
+      WebScriptExecutionCallback*,
+      BackForwardCacheAware) = 0;
 
   // Logs to the console associated with this frame. If |discard_duplicates| is
   // set, the message will only be added if it is unique (i.e. has not been
@@ -424,13 +426,11 @@ class WebLocalFrame : public WebFrame {
   virtual WebString Prompt(const WebString& message,
                            const WebString& default_value) = 0;
 
-  // Debugging -----------------------------------------------------------
-
-  virtual void BindDevToolsAgent(
-      CrossVariantMojoAssociatedRemote<mojom::DevToolsAgentHostInterfaceBase>
-          devtools_agent_host_remote,
-      CrossVariantMojoAssociatedReceiver<mojom::DevToolsAgentInterfaceBase>
-          devtools_agent_receiver) = 0;
+  // Generates an intervention report, which will be routed to the Reporting API
+  // and any ReportingObservers. It will also emit the intervention message to
+  // the console.
+  virtual void GenerateInterventionReport(const WebString& message_id,
+                                          const WebString& message) = 0;
 
   // Editing -------------------------------------------------------------
   virtual void UnmarkText() = 0;
@@ -739,10 +739,14 @@ class WebLocalFrame : public WebFrame {
 
   // Captures a full frame paint preview of the WebFrame including subframes. If
   // |include_linked_destinations| is true, the capture will include annotations
-  // about linked destinations within the document.
+  // about linked destinations within the document. If
+  // |skip_accelerated_content| is true, the capture will omit GPU accelerated
+  // content where applicable. Currently, this setting replaces video frames
+  // with a poster or empty space.
   virtual bool CapturePaintPreview(const gfx::Rect& bounds,
                                    cc::PaintCanvas* canvas,
-                                   bool include_linked_destinations) = 0;
+                                   bool include_linked_destinations,
+                                   bool skip_accelerated_content) = 0;
 
   // Focus --------------------------------------------------------------
 
@@ -760,8 +764,11 @@ class WebLocalFrame : public WebFrame {
   // advertising purposes.
   bool IsAdSubframe() const override = 0;
 
-  // See blink::LocalFrame::SetIsAdSubframe()
-  virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) = 0;
+  // See blink::LocalFrame::SetAdEvidence()
+  virtual void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence) = 0;
+
+  // See blink::LocalFrame::AdEvidence()
+  virtual const absl::optional<blink::FrameAdEvidence>& AdEvidence() = 0;
 
   // True iff a script tagged as an ad was on the v8 stack when the frame was
   // created and the frame is a subframe. This is not currently propagated when
@@ -861,9 +868,8 @@ class WebLocalFrame : public WebFrame {
           widget_host,
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
       const viz::FrameSinkId& frame_sink_id,
-      bool is_for_nested_main_frame = false,
-      bool hidden = false,
-      bool never_composited = false) = 0;
+      bool is_for_nested_main_frame,
+      bool hidden) = 0;
 };
 
 }  // namespace blink

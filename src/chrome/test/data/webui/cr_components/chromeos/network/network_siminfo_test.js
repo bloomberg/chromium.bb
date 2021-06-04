@@ -8,6 +8,7 @@
 
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
 suite('NetworkSiminfoTest', function() {
@@ -25,9 +26,6 @@ suite('NetworkSiminfoTest', function() {
     cellularNetwork.typeState.cellular.iccid = TEST_ICCID;
 
     simInfo.networkState = cellularNetwork;
-    simInfo.deviceState =
-        createDeviceState(/*isPrimary=*/ true, /*lockEnabled=*/ true);
-
     document.body.appendChild(simInfo);
     await flushAsync();
   });
@@ -42,106 +40,155 @@ suite('NetworkSiminfoTest', function() {
    *
    * @param {boolean} isPrimary
    * @param {boolean} lockEnabled
-   * @returns {OncMojo.DeviceStateProperties}
+   * @param {boolean} isLocked
    */
-  function createDeviceState(isPrimary, lockEnabled) {
-    return {
+  async function updateDeviceState(isPrimary, lockEnabled, isLocked) {
+    simInfo.deviceState = {
       simInfos: [{
         iccid: TEST_ICCID,
         isPrimary: isPrimary,
       }],
-      simLockStatus: {lockEnabled: lockEnabled, lockType: '', retriesLeft: 3}
+      simLockStatus: {
+        lockEnabled: lockEnabled,
+        lockType: isLocked ? 'sim-pin' : '',
+        retriesLeft: 3
+      }
     };
+    await flushAsync();
   }
 
   /**
-   * Utility function used to check if a dialog with name |dialogName|
-   * can be opened by setting the device state to |deviceState|
-   * @param {string} dialogName
-   * @param {OncMojo.DeviceStateProperties} deviceState
+   * Verifies that the element with the provided ID exists and that clicking it
+   * opens the SIM dialog. Also verifies that if the <network-siminfo> element
+   * is disabled, this element is also disabled.
+   * @param {string} elementId
    */
-  async function verifyDialogShown(buttonName) {
-    let btn = simInfo.$$(`#${buttonName}`);
-    assertTrue(!!btn);
+  async function verifyExistsAndClickOpensDialog(elementId) {
+    const getSimLockDialogElement = () => simInfo.$$('sim-lock-dialogs');
 
-    let simLockDialogs = simInfo.$$('sim-lock-dialogs');
-    assertFalse(!!simLockDialogs);
-    btn.click();
+    // Element should exist.
+    const element = simInfo.$$(`#${elementId}`);
+    assertTrue(!!element);
+
+    // If the <network-siminfo> element is disabled, this element should also be
+    // disabled.
+    simInfo.disabled = true;
+    assertTrue(element.disabled);
+
+    // Re-enable <network-siminfo>, and the element should become enabled again.
+    simInfo.disabled = false;
+    assertFalse(element.disabled);
+
+    // SIM dialog is not shown.
+    assertFalse(!!getSimLockDialogElement());
+
+    // Click the element; this should cause the SIM dialog to be opened.
+    element.click();
     await flushAsync();
-
-    simLockDialogs = simInfo.$$('sim-lock-dialogs');
-    assertTrue(!!simLockDialogs);
+    assertTrue(!!getSimLockDialogElement());
   }
 
-  test('Show SIM missing', function() {
-    // SIM missing UI is dependent on the device state being set.
-    let simMissingGroup = simInfo.$$('#simMissing');
-    assertTrue(simMissingGroup.hidden);
+  test('Set focus after dialog close', async function() {
+    const getSimLockDialogs = () => simInfo.$$('sim-lock-dialogs');
+    const getSimLockButton = () => simInfo.$$('#simLockButton');
+    const getUnlockPinButton = () => simInfo.$$('#unlockPinButton');
+
+    // SIM lock dialog toggle.
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ false, /*isLocked=*/ false);
+    assertTrue(!!getSimLockButton());
+    assertFalse(!!getSimLockDialogs());
+    getSimLockButton().click();
+    await flushAsync();
+
+    assertTrue(!!getSimLockDialogs());
+
+    // Simulate dialog close.
+    getSimLockDialogs().closeDialogsForTest();
+    await flushAsync();
+    assertFalse(!!getSimLockDialogs());
+    assertEquals(getSimLockButton(), getDeepActiveElement());
+
+    // SIM unlock pin button.
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ true, /*isLocked=*/ true);
+    await flushAsync();
+    assertTrue(!!getUnlockPinButton());
+    assertFalse(!!getSimLockDialogs());
+    getUnlockPinButton().click();
+    await flushAsync();
+    assertTrue(!!getSimLockDialogs());
+
+    // Simulate dialog close.
+    getSimLockDialogs().closeDialogsForTest();
+    await flushAsync();
+    assertFalse(!!getSimLockDialogs());
+    assertEquals(getUnlockPinButton(), getDeepActiveElement());
+  });
+
+  test('SIM missing UI shown ', function() {
+    const isSimMissingShown = (updatedUiEnabled) => {
+      simInfo.isUpdatedCellularUiEnabled_ = updatedUiEnabled;
+      Polymer.dom.flush();
+      return !!simInfo.$$('#simMissing');
+    };
 
     // SIM lock status is not set on the device state, so the SIM is considered
-    // missing.
+    // missing if the flag is off. If the flag is on, the UI is not shown.
     simInfo.deviceState = {};
     Polymer.dom.flush();
-    assertFalse(simMissingGroup.hidden);
+    assertTrue(isSimMissingShown(/*updatedUiEnabled=*/ false));
+    assertFalse(isSimMissingShown(/*updatedUiEnabled=*/ true));
+  });
 
-    // SIM lock status is set, so the SIM is not considered missing.
-    simInfo.deviceState = {
-      simLockStatus: {}
-    };
-    Polymer.dom.flush();
-    assertTrue(simMissingGroup.hidden);
+  test('Show sim lock dialog when unlock button is clicked', async function() {
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ true, /*isLocked=*/ true);
+    verifyExistsAndClickOpensDialog('unlockPinButton');
   });
 
   test('Show sim lock dialog when toggle is clicked', async function() {
-    simInfo.deviceState =
-        createDeviceState(/*isPrimary=*/ true, /*lockEnabled=*/ false);
-    await flushAsync();
-    verifyDialogShown('simLockButton');
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ false, /*isLocked=*/ false);
+    verifyExistsAndClickOpensDialog('simLockButton');
   });
 
   test('Show sim lock dialog when change button is clicked', function() {
-    verifyDialogShown('changePinButton');
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ true, /*isLocked=*/ false);
+    verifyExistsAndClickOpensDialog('changePinButton');
   });
 
-  test(
-      'Hide change pin button and disable sim lock toggle if current slot is not primary',
-      async function() {
-        let changePinButton = simInfo.$$('#changePinButton');
-        let simLockButton = simInfo.$$('#simLockButton');
-        let simLockButtonTooltip = simInfo.$$('#inActiveSimLockTooltip');
-        assertFalse(changePinButton.hidden);
-        assertFalse(simLockButton.disabled);
-        assertFalse(!!simLockButtonTooltip);
+  test('Primary vs. non-primary SIM', function() {
+    const getChangePinButton = () => simInfo.$$('#changePinButton');
+    const getSimLockButton = () => simInfo.$$('#simLockButton');
+    const getSimLockButtonTooltip = () => simInfo.$$('#inActiveSimLockTooltip');
 
-        // Trigger device state change
-        simInfo.deviceState =
-            createDeviceState(/*isPrimary=*/ false, /*lockEnabled=*/ true);
-        await flushAsync();
+    // Lock enabled and primary slot; change button should be visible,
+    // enabled, and checked.
+    updateDeviceState(
+        /*isPrimary=*/ true, /*lockEnabled=*/ true, /*isLocked=*/ false);
+    assertTrue(!!getChangePinButton());
+    assertFalse(getSimLockButton().disabled);
+    assertTrue(getSimLockButton().checked);
+    assertFalse(!!getSimLockButtonTooltip());
 
-        changePinButton = simInfo.$$('#changePinButton');
-        simLockButton = simInfo.$$('#simLockButton');
-        simLockButtonTooltip = simInfo.$$('#inActiveSimLockTooltip');
+    // Lock enabled and non-primary slot; change button should be visible,
+    // disabled, and unchecked.
+    updateDeviceState(
+        /*isPrimary=*/ false, /*lockEnabled=*/ true, /*isLocked=*/ false);
+    assertTrue(!!getChangePinButton());
+    assertTrue(getSimLockButton().disabled);
+    assertFalse(getSimLockButton().checked);
+    assertTrue(!!getSimLockButtonTooltip());
 
-        assertTrue(!!simLockButtonTooltip);
-
-        assertTrue(changePinButton.hidden);
-        assertTrue(simLockButton.disabled);
-        assertFalse(simLockButtonTooltip.hidden);
-      });
-
-  test('Disabled UI state', function() {
-    const unlockPinButton = simInfo.$$('#unlockPinButton');
-    const changePinButton = simInfo.$$('#changePinButton');
-    const simLockButton = simInfo.$$('#simLockButton');
-
-    assertFalse(unlockPinButton.disabled);
-    assertFalse(changePinButton.disabled);
-    assertFalse(simLockButton.disabled);
-
-    simInfo.disabled = true;
-
-    assertTrue(unlockPinButton.disabled);
-    assertTrue(changePinButton.disabled);
-    assertTrue(simLockButton.disabled);
+    // SIM locked and non-primary slot; change button should be visible,
+    // disabled, and unchecked.
+    updateDeviceState(
+        /*isPrimary=*/ false, /*lockEnabled=*/ true, /*isLocked=*/ true);
+    assertTrue(!!getChangePinButton());
+    assertTrue(getSimLockButton().disabled);
+    assertFalse(getSimLockButton().checked);
+    assertTrue(!!getSimLockButtonTooltip());
   });
 });

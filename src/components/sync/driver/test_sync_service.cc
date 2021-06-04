@@ -128,8 +128,8 @@ void TestSyncService::SetTrustedVaultRecoverabilityDegraded(bool degraded) {
   user_settings_.SetTrustedVaultRecoverabilityDegraded(degraded);
 }
 
-void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
-  user_settings_.SetIsUsingSecondaryPassphrase(enabled);
+void TestSyncService::SetIsUsingExplicitPassphrase(bool enabled) {
+  user_settings_.SetIsUsingExplicitPassphrase(enabled);
 }
 
 void TestSyncService::FireStateChanged() {
@@ -294,6 +294,7 @@ void TestSyncService::AddTrustedVaultDecryptionKeysFromWeb(
 void TestSyncService::AddTrustedVaultRecoveryMethodFromWeb(
     const std::string& gaia_id,
     const std::vector<uint8_t>& public_key,
+    int method_type_hint,
     base::OnceClosure callback) {}
 
 void TestSyncService::Shutdown() {

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
@@ -254,7 +256,7 @@ const char SlowDownloadInterceptor::kErrorDownloadUrl[] =
 // Utility method to retrieve a notification object by id. Warning: this will
 // check the last display service that was created. If there's a normal and an
 // incognito one, you may want to be explicit.
-base::Optional<message_center::Notification> GetNotification(
+absl::optional<message_center::Notification> GetNotification(
     const std::string& id) {
   return NotificationDisplayServiceTester::Get()->GetNotification(id);
 }
@@ -294,7 +296,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
 
  protected:
   content::DownloadManager* GetDownloadManager(Browser* browser) {
-    return content::BrowserContext::GetDownloadManager(browser->profile());
+    return browser->profile()->GetDownloadManager();
   }
 
   // Requests to complete the download and wait for it.
@@ -328,7 +330,8 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     Profile* profile = browser()->profile();
 
     std::unique_ptr<TestChromeDownloadManagerDelegate> test_delegate;
-    test_delegate.reset(new TestChromeDownloadManagerDelegate(profile));
+    test_delegate =
+        std::make_unique<TestChromeDownloadManagerDelegate>(profile);
     test_delegate->GetDownloadIdReceiverCallback().Run(
         download::DownloadItem::kInvalidId + 1);
     DownloadCoreServiceFactory::GetForBrowserContext(profile)
@@ -348,8 +351,8 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     Profile* incognito_profile = incognito_browser_->profile();
 
     std::unique_ptr<TestChromeDownloadManagerDelegate> incognito_test_delegate;
-    incognito_test_delegate.reset(
-        new TestChromeDownloadManagerDelegate(incognito_profile));
+    incognito_test_delegate =
+        std::make_unique<TestChromeDownloadManagerDelegate>(incognito_profile);
     DownloadCoreServiceFactory::GetForBrowserContext(incognito_profile)
         ->SetDownloadManagerDelegateForTesting(
             std::move(incognito_test_delegate));
@@ -443,7 +446,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
 
   download::DownloadItem* download_item() const { return download_item_; }
   std::string notification_id() const { return notification_id_; }
-  base::Optional<message_center::Notification> notification() const {
+  absl::optional<message_center::Notification> notification() const {
     return GetNotification(notification_id_);
   }
   Browser* incognito_browser() const { return incognito_browser_; }
@@ -494,8 +497,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   // Try to open the downloaded item by clicking the notification.
   EXPECT_FALSE(GetDownloadManagerDelegate()->opened());
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                  notification_id(), base::nullopt,
-                                  base::nullopt);
+                                  notification_id(), absl::nullopt,
+                                  absl::nullopt);
   EXPECT_TRUE(GetDownloadManagerDelegate()->opened());
 
   EXPECT_FALSE(GetNotification(notification_id()));
@@ -523,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   // Clicks the "keep" button.
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notification_id(), 1,  // 2nd button: "Keep"
-                                  base::nullopt);
+                                  absl::nullopt);
 
   // The notification is closed and re-shown.
   EXPECT_TRUE(notification());
@@ -570,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notification_id(),
                                   0,  // 1st button: "Discard"
-                                  base::nullopt);
+                                  absl::nullopt);
 
   EXPECT_FALSE(notification());
 
@@ -829,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
 
   // Cancels the notification by clicking the "cancel" button.
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                  notification_id(), 1, base::nullopt);
+                                  notification_id(), 1, absl::nullopt);
   EXPECT_FALSE(notification());
   EXPECT_EQ(0u, GetDownloadNotifications().size());
 
@@ -892,8 +895,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(incognito_display_service_->GetNotification(notification_id()));
   EXPECT_FALSE(GetIncognitoDownloadManagerDelegate()->opened());
   incognito_display_service_->SimulateClick(
-      NotificationHandler::Type::TRANSIENT, notification_id(), base::nullopt,
-      base::nullopt);
+      NotificationHandler::Type::TRANSIENT, notification_id(), absl::nullopt,
+      absl::nullopt);
   EXPECT_TRUE(GetIncognitoDownloadManagerDelegate()->opened());
   EXPECT_FALSE(GetDownloadManagerDelegate()->opened());
 
@@ -1049,7 +1052,8 @@ class MultiProfileDownloadNotificationTest
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     if (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync))
-      signin::MakePrimaryAccountAvailable(identity_manager, info.email);
+      signin::MakePrimaryAccountAvailable(identity_manager, info.email,
+                                          signin::ConsentLevel::kSync);
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;

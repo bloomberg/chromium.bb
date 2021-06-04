@@ -51,13 +51,13 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
+  void OnThemeChanged() override;
 
   // views::View:
   void RequestFocus() override;
   bool HasFocus() const override;
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
 
   // views::FocusTraversable:
@@ -87,4 +87,4 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
 }  // namespace ash
 
-#endif
+#endif  // ASH_LOGIN_UI_LOGIN_USER_MENU_VIEW_H_

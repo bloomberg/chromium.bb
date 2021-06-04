@@ -19,6 +19,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -66,6 +69,9 @@
         "override_compile_targets": [
           "performance_webview_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -113,6 +119,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -158,6 +167,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -407,6 +419,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -461,6 +476,9 @@
         "override_compile_targets": [
           "performance_webview_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -511,6 +529,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -532,7 +553,8 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True"
+            "True",
+            "--use-dynamic-shards"
           ],
           "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
@@ -565,6 +587,9 @@
         "override_compile_targets": [
           "performance_weblayer_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -615,6 +640,9 @@
         "override_compile_targets": [
           "performance_webview_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -669,6 +697,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -715,6 +746,9 @@
         "override_compile_targets": [
           "performance_weblayer_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -761,6 +795,9 @@
         "override_compile_targets": [
           "performance_webview_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -808,6 +845,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1147,6 +1187,9 @@
         "override_compile_targets": [
           "performance_test_suite_eve"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1237,6 +1280,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1283,6 +1329,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1341,10 +1390,14 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "gpu": "8086:1626",
               "os": "Mac-10.12.6",
               "pool": "chrome.tests.perf",
@@ -1399,10 +1452,14 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
@@ -1521,6 +1578,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1571,6 +1631,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1625,6 +1688,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1675,6 +1741,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

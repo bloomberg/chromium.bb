@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
+#import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
@@ -70,7 +71,8 @@ class AutofillAgentTests : public web::WebTest {
     web::WebTest::SetUp();
 
     OverrideJavaScriptFeatures(
-        {autofill::AutofillJavaScriptFeature::GetInstance()});
+        {autofill::AutofillJavaScriptFeature::GetInstance(),
+         autofill::FormHandlersJavaScriptFeature::GetInstance()});
 
     fake_web_state_.SetBrowserState(GetBrowserState());
     fake_web_state_.SetContentIsHTML(true);
@@ -132,7 +134,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
   form.url = GURL("https://myform.com");
@@ -204,7 +206,7 @@ TEST_F(AutofillAgentTests,
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
   form.url = GURL("https://myform.com");
@@ -275,7 +277,7 @@ TEST_F(AutofillAgentTests,
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
   form.url = GURL("https://myform.com");
@@ -506,7 +508,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   // Remove the current main frame.
   RemoveWebFrame(fake_main_frame_->GetFrameId());

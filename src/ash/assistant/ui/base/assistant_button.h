@@ -9,11 +9,11 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -50,10 +50,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
     SkColor icon_color = gfx::kGoogleGrey700;
 
     // ID of the localization string for the button's accessible name.
-    base::Optional<int> accessible_name_id;
+    absl::optional<int> accessible_name_id;
 
     // ID of the localization string for the button's tooltip text.
-    base::Optional<int> tooltip_id;
+    absl::optional<int> tooltip_id;
   };
 
   AssistantButton(AssistantButtonListener* listener,
@@ -71,11 +71,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
 
   AssistantButtonId GetAssistantButtonId() const { return id_; }
 
+  // views::ImageButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
  private:
   void OnButtonPressed();

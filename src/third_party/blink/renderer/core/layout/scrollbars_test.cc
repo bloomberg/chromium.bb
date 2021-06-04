@@ -57,6 +57,8 @@ class StubWebThemeEngine : public WebThemeEngine {
     style->fade_out_duration = base::TimeDelta();
     style->thumb_thickness = 3;
     style->scrollbar_margin = 0;
+    style->thumb_thickness_thin = 2;
+    style->scrollbar_margin_thin = 0;
     style->color = SkColorSetARGB(128, 64, 64, 64);
   }
   static constexpr int kMinimumHorizontalLength = 51;
@@ -68,7 +70,7 @@ class StubWebThemeEngine : public WebThemeEngine {
              const gfx::Rect&,
              const ExtraParams*,
              mojom::blink::ColorScheme color_scheme,
-             const base::Optional<SkColor>& accent_color) override {
+             const absl::optional<SkColor>& accent_color) override {
     // Make  sure we don't overflow the array.
     DCHECK(part <= kPartProgressBar);
     painted_color_scheme_[part] = color_scheme;
@@ -1558,58 +1560,6 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(base::TimeDelta());
 }
 
-TEST_F(ScrollbarsTestWithVirtualTimer, TestCompositedOverlayScrollbarsNoFade) {
-  ENABLE_OVERLAY_SCROLLBARS(true);
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(640, 480));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      #space {
-        width: 1000px;
-        height: 1000px;
-      }
-      #container {
-        /* Force composited scrolling */
-        will-change: transform;
-        width: 200px;
-        height: 200px;
-        overflow: scroll;
-      }
-      div { height:1000px; width: 200px; }
-    </style>
-    <div id='container'>
-      <div id='space'></div>
-    </div>
-  )HTML");
-  Compositor().BeginFrame();
-
-  Document& document = GetDocument();
-  Element* container = document.getElementById("container");
-  auto* scrollable_area = GetScrollableArea(*container);
-
-  DCHECK(scrollable_area->UsesCompositedScrolling());
-  EXPECT_TRUE(scrollable_area->HasOverlayScrollbars());
-
-  EXPECT_TRUE(scrollable_area->HasLayerForVerticalScrollbar());
-  Scrollbar* vertical_scrollbar = scrollable_area->VerticalScrollbar();
-
-  scrollable_area->MouseEnteredScrollbar(*vertical_scrollbar);
-  EXPECT_FALSE(scrollable_area->NeedsShowScrollbarLayers());
-
-  scrollable_area->MouseExitedScrollbar(*vertical_scrollbar);
-  EXPECT_FALSE(scrollable_area->NeedsShowScrollbarLayers());
-
-  scrollable_area->MouseCapturedScrollbar();
-  EXPECT_FALSE(scrollable_area->NeedsShowScrollbarLayers());
-
-  scrollable_area->MouseReleasedScrollbar();
-  EXPECT_FALSE(scrollable_area->NeedsShowScrollbarLayers());
-}
-
 class ScrollbarAppearanceTest
     : public ScrollbarsTest,
       public testing::WithParamInterface</*use_overlay_scrollbars=*/bool> {};
@@ -1771,8 +1721,9 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
 
   int max_thumb_position = WebView().MainFrameViewWidget()->Size().height() -
                            StubWebThemeEngine::kMinimumVerticalLength;
-  max_thumb_position -=
-      scrollbar->GetTheme().ScrollbarMargin(scrollbar->ScaleFromDIP()) * 2;
+  max_thumb_position -= scrollbar->GetTheme().ScrollbarMargin(
+                            scrollbar->ScaleFromDIP(), EScrollbarWidth::kAuto) *
+                        2;
 
   EXPECT_EQ(max_thumb_position,
             scrollbar->GetTheme().ThumbPosition(*scrollbar));

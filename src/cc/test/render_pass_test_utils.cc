@@ -44,8 +44,8 @@ viz::ResourceId CreateAndImportResource(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
       false /* is_overlay_candidate */);
   transfer_resource.color_space = std::move(color_space);
-  return resource_provider->ImportResource(
-      transfer_resource, viz::SingleReleaseCallback::Create(base::DoNothing()));
+  return resource_provider->ImportResource(transfer_resource,
+                                           base::DoNothing());
 }
 
 }  // anonymous namespace
@@ -113,7 +113,7 @@ viz::SolidColorDrawQuad* AddClippedQuad(viz::AggregatedRenderPass* pass,
                                         SkColor color) {
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                       rect, true, false, 1, SkBlendMode::kSrcOver, 0);
+                       rect, false, 1, SkBlendMode::kSrcOver, 0);
   auto* quad = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   quad->SetNew(shared_state, rect, rect, color, false);
   return quad;
@@ -124,8 +124,8 @@ viz::SolidColorDrawQuad* AddTransformedQuad(viz::AggregatedRenderPass* pass,
                                             SkColor color,
                                             const gfx::Transform& transform) {
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(transform, rect, rect, gfx::MaskFilterInfo(), rect,
-                       false, false, 1,
+  shared_state->SetAll(transform, rect, rect, gfx::MaskFilterInfo(),
+                       absl::nullopt, false, 1,
 
                        SkBlendMode::kSrcOver, 0);
   auto* quad = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -140,7 +140,7 @@ QuadType* AddRenderPassQuadInternal(RenderPassType* to_pass,
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), output_rect, output_rect,
-                       gfx::MaskFilterInfo(), output_rect, false, false, 1,
+                       gfx::MaskFilterInfo(), absl::nullopt, false, 1,
                        SkBlendMode::kSrcOver, 0);
   auto* quad = to_pass->template CreateAndAppendDrawQuad<QuadType>();
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id,
@@ -171,7 +171,7 @@ void AddRenderPassQuad(viz::AggregatedRenderPass* to_pass,
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, output_rect, output_rect,
-                       gfx::MaskFilterInfo(), output_rect, false, false, 1,
+                       gfx::MaskFilterInfo(), absl::nullopt, false, 1,
                        blend_mode, 0);
   auto* quad =
       to_pass->CreateAndAppendDrawQuad<viz::AggregatedRenderPassDrawQuad>();
@@ -219,7 +219,7 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                       rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
 
   auto* debug_border_quad =
       to_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
@@ -280,7 +280,7 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
   viz::SharedQuadState* shared_state2 =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                       rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
 
   auto* tile_quad = to_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
   tile_quad->SetNew(shared_state2, rect, visible_rect, needs_blending,
@@ -301,9 +301,8 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
           plane_resources[2], plane_resources[3]};
 }
 
-static void CollectResources(
-    std::vector<viz::ReturnedResource>* array,
-    const std::vector<viz::ReturnedResource>& returned) {}
+static void CollectResources(std::vector<viz::ReturnedResource>* array,
+                             std::vector<viz::ReturnedResource> returned) {}
 
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::AggregatedRenderPass* to_pass,
@@ -363,7 +362,8 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child),
+      viz::SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<viz::TransferableResource> list;
@@ -396,7 +396,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                       rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
 
   viz::DebugBorderDrawQuad* debug_border_quad =
       to_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
@@ -457,7 +457,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::SharedQuadState* shared_state2 =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state2->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                        rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                        absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
 
   viz::TileDrawQuad* tile_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();

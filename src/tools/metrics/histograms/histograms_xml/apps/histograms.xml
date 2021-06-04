@@ -21,6 +21,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="AppType">
+  <variant name="Arc" summary="Android apps"/>
+  <variant name="Borealis" summary="Borealis apps"/>
+  <variant name="BuiltIn" summary="BuiltIn apps"/>
+  <variant name="ChromeApp" summary="Chrome apps"/>
+  <variant name="ChromeBrowser" summary="Chrome browsers"/>
+  <variant name="Crostini" summary="Crostini apps"/>
+  <variant name="MacOs" summary="MacOs apps"/>
+  <variant name="PluginVm" summary="Plugin VM app"/>
+  <variant name="RemoteApp" summary="Remote apps"/>
+  <variant name="StandaloneBrowser" summary="Standalone browsers"/>
+  <variant name="SystemWebApp" summary="System web apps"/>
+  <variant name="WebApp" summary="Web apps"/>
+</variants>
+
+<variants name="InstallSource">
+  <variant name="Oem" summary="Installed by an OEM"/>
+  <variant name="Policy" summary="Installed by policy"/>
+  <variant name="Preload" summary="Preinstalled by default"/>
+  <variant name="Sync" summary="Installed by sync"/>
+  <variant name="System" summary="Installed with the system"/>
+  <variant name="Unknown" summary="Installed with unknownn source"/>
+  <variant name="User" summary="Installed by user"/>
+</variants>
+
+<histogram name="Apps.ActivatedCount.{AppType}" units="ms"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    Recorded the app window activated times for {AppType} in Chrome OS. This is
+    logged when more than 24 hours pass after last log, or during the system
+    startup phase if more than 24 hours passed after last log.
+  </summary>
+  <token key="AppType" variants="AppType"/>
+</histogram>
+
 <histogram name="Apps.AppInfoDialog.CreateExtensionShortcutSuccess"
     enum="Boolean" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
@@ -87,6 +124,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The number of times v2 packaged apps are launched grouped by
     extension_misc::AppLaunchBuckets. See also Extensions.AppLaunch.
   </summary>
+</histogram>
+
+<histogram name="Apps.AppLaunchPerAppType" enum="AppType"
+    expires_after="2022-04-01">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>Records an app launch grouped by app type.</summary>
+</histogram>
+
+<histogram name="Apps.AppLaunchSource" enum="LaunchSource"
+    expires_after="2022-04-01">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>Records an app launch grouped by launch source.</summary>
 </histogram>
 
 <histogram name="Apps.AppList.AggregatedMlAppRankFail" units="units"
@@ -158,7 +209,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppList.AppsGridAddPage" enum="AppListAddPageType"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -404,6 +455,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppList.HelpAppProvider.ListSearchResultState"
+    enum="HelpAppProviderListSearchResultState" expires_after="2022-04-19">
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>zufeng@google.com</owner>
+  <summary>
+    The end result of list searches by the provider for the help app in the CrOS
+    launcher. Logged once per time a list search finishes. Not logged if the
+    search is canceled by a new search starting. Not logged for the help app
+    provider's suggestion chips. Chrome OS only.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.HelpAppProvider.QueryTime" units="ms"
+    expires_after="2022-04-19">
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>zufeng@google.com</owner>
+  <summary>
+    The latency of a search in the HelpAppProvider. Recorded each time a search
+    is completed, even if it returns no results. Not recorded if the query is
+    too short to perform a search at all. Chrome OS only.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppList.ItemSuggestCache.ResponseSize" units="bytes"
     expires_after="2021-09-19">
   <owner>tby@chromium.org</owner>
@@ -471,7 +549,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppList.OsSettingsProvider.QueryTime" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -536,7 +614,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppList.SuggestedContent.Enabled" enum="BooleanEnabled"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -695,6 +773,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppList.ZeroStateDriveProvider.Relevance" units="score"
+    expires_after="2021-10-04">
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Relevance score for a zero state Drive result in the results list. Logged
+    whenever ItemSuggest is queried, once for each zero-state result created.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppList.ZeroStateFileProvider.Latency" units="ms"
     expires_after="2021-09-19">
   <owner>wrong@chromium.org</owner>
@@ -718,8 +807,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppList.ZeroStateFileProvider.Relevance" units="score"
+    expires_after="2021-10-04">
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Relevance score for a zero state file result in suggestion chips or the
+    results list. Logged once each time zero state is loaded.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppList.ZeroStateResults.LaunchedItemType"
-    enum="ZeroStateResultType" expires_after="2021-08-15">
+    enum="ZeroStateResultType" expires_after="2021-10-17">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -865,7 +965,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListAppLaunchedV2" enum="AppListLaunchedFrom"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
 <!-- Name completed by histogram_suffixes name="AppListState" -->
 
   <owner>mmourgos@chromium.org</owner>
@@ -878,7 +978,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListAppMovingType" enum="AppListAppMovingType"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -888,7 +988,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListAppTypeClicked" enum="AppListAppType"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>charleszhao@chromium.org</owner>
   <owner>pdyson@chromium.org</owner>
   <summary>
@@ -958,7 +1058,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListFolderOpened" enum="AppListFolderOpened"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -988,7 +1088,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListLauncherClickedSearchQueryLength"
-    units="characters" expires_after="2021-08-22">
+    units="characters" expires_after="2021-10-25">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -1009,7 +1109,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListPageOpened" enum="AppListPage"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>calamity@chromium.org</owner>
   <owner>src/ash/app_list/OWNERS</owner>
   <summary>
@@ -1019,7 +1119,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListPageSwitcherSource"
-    enum="AppListPageSwitcherSource" expires_after="2021-08-22">
+    enum="AppListPageSwitcherSource" expires_after="2021-10-25">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>newcomer@chromium.org</owner>
@@ -1059,7 +1159,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListPlayStoreQueryState"
-    enum="AppListPlayStoreQueryState" expires_after="2021-08-29">
+    enum="AppListPlayStoreQueryState" expires_after="2021-10-31">
   <owner>hejq@chromium.org</owner>
   <summary>The state of a Play Store app search request.</summary>
 </histogram>
@@ -1086,7 +1186,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListRecommendedResponse"
-    enum="ReinstallResponseParseResult" expires_after="2021-08-29">
+    enum="ReinstallResponseParseResult" expires_after="2021-10-31">
   <owner>napper@chromium.org</owner>
   <owner>robsc@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -1175,7 +1275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListSearchCommenced" units="searches"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>tapted@chromium.org</owner>
   <summary>
     The number of searches that are started in the app list. This is gathered
@@ -1197,7 +1297,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListSearchQueryLength" units="characters"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>calamity@chromium.org</owner>
@@ -1217,7 +1317,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListSearchResultInternalApp.Show"
-    enum="AppListInternalAppName" expires_after="2021-08-22">
+    enum="AppListInternalAppName" expires_after="2021-10-24">
   <owner>wutao@chromium.org</owner>
   <summary>
     The app list search result of an internal app that was shown to the user.
@@ -1227,7 +1327,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListSearchResultOpenDisplayType"
-    enum="AppListSearchResultDisplayType" expires_after="2021-08-15">
+    enum="AppListSearchResultDisplayType" expires_after="2021-10-17">
   <owner>calamity@chromium.org</owner>
   <owner>src/ash/app_list/OWNERS</owner>
   <summary>
@@ -1314,6 +1414,34 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppsCount.{AppType}" units="Apps"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    The total number of installed {AppType} for each app type in Chrome OS. This
+    is logged when more than 24 hours pass after last log, or during the system
+    startup phase if more than 24 hours passed after last log. This histogram is
+    capped at 1000; values above this go into the overflow bucket.
+  </summary>
+  <token key="AppType" variants="AppType"/>
+</histogram>
+
+<histogram name="Apps.AppsCountPerInstallSource.{AppType}.{InstallSource}"
+    units="Apps" expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    The total number of installed {AppType} for each app type {InstallSource} in
+    Chrome OS. This is logged when more than 24 hours pass after last log, or
+    during the system startup phase if more than 24 hours passed after last log.
+    This histogram is capped at 1000; values above this go into the overflow
+    bucket.
+  </summary>
+  <token key="AppType" variants="AppType"/>
+  <token key="InstallSource" variants="InstallSource"/>
+</histogram>
+
 <histogram name="Apps.AppShimErrorVersion" units="units" expires_after="M78">
   <owner>jackhou@chromium.org</owner>
   <summary>
@@ -1336,6 +1464,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The total number of apps in folders ignoring OEM folders. This is logged
     each time the app list is initialized. The
     &quot;FullscreenAppListDisabled&quot; suffix has been deprecated.
+  </summary>
+</histogram>
+
+<histogram name="Apps.ArcGhostWindowLaunch" enum="Boolean"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sstan@chromium.org</owner>
+  <summary>
+    Records whether the ARC ghost window is launched when the ARC app are
+    restored during the system startup phase.
   </summary>
 </histogram>
 
@@ -1364,7 +1502,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Apps.ContextMenuShowSource" enum="MenuSourceType"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes
      name="AppUIComponent" -->
 
@@ -1377,7 +1515,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Apps.ContextMenuUserJourneyTime" units="ms"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
 <!-- Name completed by histogram_suffixes
      name="AppUIComponent" -->
 
@@ -1419,7 +1557,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Apps.DefaultAppLaunch" enum="DefaultAppName"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="DefaultAppLaunchSource" -->
 
   <owner>dominickn@chromium.org</owner>
@@ -1504,7 +1642,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.LauncherSearchQueryLengthJumped" enum="Boolean"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -1786,12 +1924,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
-    The number of folders that users have in their Launcher. Includes the OEM
-    folder. This metric is recorded every time the launcher is shown.
+    The number of folders that users have in their Launcher. Includes
+    system-created folders like &quot;Linux apps&quot; or the OEM folder.
+    Recorded every time the launcher is shown.
   </summary>
 </histogram>
 
-<histogram name="Apps.NumberOfPages" units="page(s)" expires_after="2021-08-09">
+<histogram name="Apps.NumberOfNonSystemFolders" units="folder(s)"
+    expires_after="2021-12-31">
+  <owner>jamescook@chromium.org</owner>
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The number of folders that users have in their launcher. Does not include
+    system-created folders like &quot;Linux apps&quot; or the OEM folder.
+    Recorded every time the launcher is shown.
+  </summary>
+</histogram>
+
+<histogram name="Apps.NumberOfPages" units="page(s)" expires_after="2021-10-10">
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -1801,7 +1951,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.NumberOfPagesNotFull" units="page(s)"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -1811,7 +1961,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.PaginationTransition.AnimationSmoothness" units="%"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
   <owner>newcomer@chromium.org</owner>
@@ -1847,7 +1997,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency"
-    units="ms" expires_after="2021-08-15">
+    units="ms" expires_after="2021-10-17">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -1890,6 +2040,70 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     indicate the type of update action. This was briefly logged under
     PreferredApps.UpdateAction in milestone 85.
   </summary>
+</histogram>
+
+<histogram name="Apps.RestoredAppLaunch" enum="AppType"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    Records the number of app launching restored grouped by app type, when the
+    system startup.
+  </summary>
+</histogram>
+
+<histogram name="Apps.RestoreForCrashNotification" enum="RestoreAction"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    Records user actions on the full restore for crash notification, when the
+    notification is closed.
+  </summary>
+</histogram>
+
+<histogram name="Apps.RestoreNotification" enum="RestoreAction"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    Records user actions on the full restore notification, when the notification
+    is closed.
+  </summary>
+</histogram>
+
+<histogram name="Apps.RestoreSetting" enum="RestoreSetting"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    Records the restore apps and pages preference setting, when the preference
+    setting is changed.
+  </summary>
+</histogram>
+
+<histogram name="Apps.RunningDuration.{AppType}" units="ms"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    Recorded the app running duration for {AppType} in Chrome OS. This is logged
+    when more than 24 hours pass after last log, or during the system startup
+    phase if more than 24 hours passed after last log.
+  </summary>
+  <token key="AppType" variants="AppType"/>
+</histogram>
+
+<histogram name="Apps.RunningPercentage.{AppType}" units="%"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    Recorded the app running duration percentage for {AppType} in Chrome OS.
+    This is logged when more than 24 hours pass after last log, or during the
+    system startup phase if more than 24 hours passed after last log.
+  </summary>
+  <token key="AppType" variants="AppType"/>
 </histogram>
 
 <histogram name="Apps.ScrollableShelf.AnimationSmoothness" units="%"
@@ -1962,7 +2176,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.StateTransition.AnimationSmoothness" units="%"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" and
      name="EnterOrExitOverview" and
@@ -2001,6 +2215,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Maximum latency of the presentation time of the app laucnher drag operation.
   </summary>
+</histogram>
+
+<histogram name="Apps.UsageTime.{AppType}" units="ms"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    Records the amount of time that {AppType} were used in the last five minutes
+    on Chrome OS. This is logged every five minutes.
+  </summary>
+  <token key="AppType" variants="AppType"/>
 </histogram>
 
 </histograms>

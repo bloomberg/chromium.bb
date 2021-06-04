@@ -6,15 +6,16 @@
 
 import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../../core/sdk/sdk.js';
-import * as SourceFrame from '../../source_frame/source_frame.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {ApplicationPanelSidebar, CookieTreeElement, StorageCategoryView} from './ApplicationPanelSidebar.js';  // eslint-disable-line no-unused-vars
+import type {CookieTreeElement} from './ApplicationPanelSidebar.js';
+import {ApplicationPanelSidebar, StorageCategoryView} from './ApplicationPanelSidebar.js';  // eslint-disable-line no-unused-vars
 import {CookieItemsView} from './CookieItemsView.js';
 import {DatabaseQueryView} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
 import {DOMStorageItemsView} from './DOMStorageItemsView.js';
-import {DOMStorage} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
+import type {DOMStorage} from './DOMStorageModel.js'; // eslint-disable-line no-unused-vars
 import {StorageItemsView} from './StorageItemsView.js';
 
 let resourcesPanelInstance: ResourcesPanel;
@@ -84,6 +85,11 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
       DatabaseTableView,
     ];
     return viewClassesToClose.some(type => view instanceof type);
+  }
+
+  static async showAndGetSidebar(): Promise<ApplicationPanelSidebar> {
+    await UI.ViewManager.ViewManager.instance().showView('resources');
+    return ResourcesPanel._instance()._sidebar;
   }
 
   focus(): void {
@@ -203,13 +209,13 @@ export class ResourceRevealer implements Common.Revealer.Revealer {
 
   async reveal(resource: Object): Promise<void> {
     if (!(resource instanceof SDK.Resource.Resource)) {
-      return Promise.reject(new Error('Internal error: not a resource'));
+      throw new Error('Internal error: not a resource');
     }
-    const sidebar = ResourcesPanel._instance()._sidebar;
-    await UI.ViewManager.ViewManager.instance().showView('resources');
+    const sidebar = await ResourcesPanel.showAndGetSidebar();
     await sidebar.showResource(resource);
   }
 }
+
 let cookieReferenceRevealerInstance: CookieReferenceRevealer;
 
 export class CookieReferenceRevealer implements Common.Revealer.Revealer {
@@ -228,8 +234,7 @@ export class CookieReferenceRevealer implements Common.Revealer.Revealer {
       throw new Error('Internal error: not a cookie reference');
     }
 
-    const sidebar = ResourcesPanel._instance()._sidebar;
-    await UI.ViewManager.ViewManager.instance().showView('resources');
+    const sidebar = await ResourcesPanel.showAndGetSidebar();
     await sidebar.cookieListTreeElement.select();
 
     const contextUrl = cookie.contextUrl();
@@ -249,5 +254,28 @@ export class CookieReferenceRevealer implements Common.Revealer.Revealer {
       return true;
     }
     return false;
+  }
+}
+
+let frameDetailsRevealerInstance: FrameDetailsRevealer;
+
+export class FrameDetailsRevealer implements Common.Revealer.Revealer {
+  static instance(opts: {
+    forceNew: boolean|null,
+  } = {forceNew: null}): FrameDetailsRevealer {
+    const {forceNew} = opts;
+    if (!frameDetailsRevealerInstance || forceNew) {
+      frameDetailsRevealerInstance = new FrameDetailsRevealer();
+    }
+
+    return frameDetailsRevealerInstance;
+  }
+
+  async reveal(frame: Object): Promise<void> {
+    if (!(frame instanceof SDK.ResourceTreeModel.ResourceTreeFrame)) {
+      throw new Error('Internal error: not a frame');
+    }
+    const sidebar = await ResourcesPanel.showAndGetSidebar();
+    sidebar.showFrame(frame);
   }
 }

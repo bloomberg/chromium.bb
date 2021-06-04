@@ -12,7 +12,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
@@ -38,7 +37,6 @@
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,12 +60,15 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -79,7 +80,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
-#include "chrome/browser/ui/views/accessibility/caption_bubble_controller_views.h"
 #include "chrome/browser/ui/views/accessibility/caret_browsing_dialog_delegate.h"
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -89,6 +89,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_web_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/extensions/extensions_side_panel_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
@@ -118,6 +119,8 @@
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
+#include "chrome/browser/ui/views/sharing_hub/sharing_hub_bubble_view_impl.h"
+#include "chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.h"
 #include "chrome/browser/ui/views/side_panel.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
@@ -132,6 +135,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_bubble_owner_impl.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -147,6 +151,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
@@ -180,9 +185,12 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/display/screen.h"
@@ -200,8 +208,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
@@ -484,6 +490,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   }
 
   int GetTopInsetInBrowserView() const override {
+    // BrowserView should fill the full window when window controls overlay
+    // is enabled.
+    if (browser_view_->IsWindowControlsOverlayEnabled())
+      return 0;
     return browser_view_->frame()->GetTopInset() - browser_view_->y();
   }
 
@@ -616,8 +626,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   tab_strip_region_view_ = top_container_->AddChildView(
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
-  feature_promo_controller_ =
-      std::make_unique<FeaturePromoControllerViews>(this);
+  feature_promo_controller_ = std::make_unique<FeaturePromoControllerViews>(
+      this, FeaturePromoBubbleOwnerImpl::GetInstance());
 
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =
@@ -650,8 +660,21 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-  if (base::FeatureList::IsEnabled(features::kSidePanel))
-    side_panel_ = AddChildView(std::make_unique<SidePanel>());
+  if (base::FeatureList::IsEnabled(features::kSidePanel)) {
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>());
+    right_aligned_side_panel_separator_ =
+        AddChildView(std::make_unique<ContentsSeparator>());
+  }
+
+  if (browser_->is_type_normal() &&
+      base::FeatureList::IsEnabled(features::kExtensionsSidePanel)) {
+    left_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>());
+    left_aligned_side_panel_separator_ =
+        AddChildView(std::make_unique<ContentsSeparator>());
+    extensions_side_panel_controller_ =
+        std::make_unique<ExtensionsSidePanelController>(
+            left_aligned_side_panel_, this);
+  }
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
   // needs to come after toolbar in focus order (see EnsureFocusOrder()).
@@ -1188,7 +1211,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   }
 
   infobar_container_->ChangeInfoBarManager(
-      InfoBarService::FromWebContents(new_contents));
+      infobars::ContentInfoBarManager::FromWebContents(new_contents));
 
   auto* app_banner_manager =
       webapps::AppBannerManager::FromWebContents(new_contents);
@@ -1584,6 +1607,11 @@ void BrowserView::LinkOpeningFromGesture(WindowOpenDisposition disposition) {
   link_opened_from_gesture_callbacks_.Notify(disposition);
 }
 
+bool BrowserView::IsWindowControlsOverlayEnabled() const {
+  return browser()->app_controller() &&
+         browser()->app_controller()->IsWindowControlsOverlayEnabled();
+}
+
 void BrowserView::FocusBookmarksToolbar() {
   DCHECK(!immersive_mode_controller_->IsEnabled());
   if (bookmark_bar_view_ && bookmark_bar_view_->GetVisible() &&
@@ -1764,7 +1792,7 @@ void BrowserView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     PageActionIconType icon_type,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   toolbar_->ShowIntentPickerBubble(std::move(app_info), show_stay_in_chrome,
                                    show_remember_selection, icon_type,
@@ -1781,9 +1809,14 @@ BrowserView::ShowQRCodeGeneratorBubble(
     content::WebContents* contents,
     qrcode_generator::QRCodeGeneratorBubbleController* controller,
     const GURL& url) {
+  base::OnceClosure on_closing = base::BindOnce(
+      &qrcode_generator::QRCodeGeneratorBubbleController::OnBubbleClosed,
+      // Unretained is safe: controller is a WebContentsUserData, owned by
+      // WebContents, and the bubble can't outlive the WebContents.
+      base::Unretained(controller));
   qrcode_generator::QRCodeGeneratorBubble* bubble =
-      new qrcode_generator::QRCodeGeneratorBubble(GetLocationBarView(),
-                                                  contents, controller, url);
+      new qrcode_generator::QRCodeGeneratorBubble(
+          GetLocationBarView(), contents, std::move(on_closing), url);
 
   PageActionIconView* icon_view =
       toolbar_button_provider()->GetPageActionIconView(
@@ -1831,6 +1864,29 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
 
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
+  return bubble;
+}
+
+sharing_hub::SharingHubBubbleView* BrowserView::ShowSharingHubBubble(
+    content::WebContents* web_contents,
+    sharing_hub::SharingHubBubbleController* controller,
+    bool is_user_gesture) {
+  sharing_hub::SharingHubBubbleViewImpl* bubble =
+      new sharing_hub::SharingHubBubbleViewImpl(
+          toolbar_button_provider()->GetAnchorView(
+              PageActionIconType::kSharingHub),
+          web_contents, controller);
+  PageActionIconView* icon_view =
+      toolbar_button_provider()->GetPageActionIconView(
+          PageActionIconType::kSharingHub);
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  bubble->Show(is_user_gesture
+                   ? sharing_hub::SharingHubBubbleViewImpl::USER_GESTURE
+                   : sharing_hub::SharingHubBubbleViewImpl::AUTOMATIC);
+
   return bubble;
 }
 
@@ -1921,68 +1977,8 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
 }
 
 void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
-  // kWebAppTheme is triggered by web apps and will only change colors, not the
-  // frame type; just refresh the theme on all views in the browser window.
-  if (theme_change_type == BrowserThemeChangeType::kWebAppTheme) {
-    GetWidget()->ThemeChanged();
-    return;
-  }
-
-  // When the browser theme changes, the NativeTheme may also change.
-  // In Incognito, the usage of dark or normal hinges on the browser theme.
-  if (theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
-      !GetRegularOrGuestSession()) {
-    ui::NativeTheme::GetInstanceForDarkUI()->NotifyOnNativeThemeUpdated();
-    ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
-
-    // Early exit. A native theme change will update all the
-    // NativeThemeObservers, and then BrowserFrame will re-enter this method
-    // with |theme_change_type| == kNativeTheme, doing all the below things.
-    return;
-  }
-
-  // When the native theme changes in a way that doesn't change the frame type
-  // required, we can skip a frame regeneration. Frame regeneration can cause
-  // visible flicker (see crbug/945138) so it's best avoided if all that has
-  // changed is, for example, the titlebar color, or the user has switched from
-  // light to dark mode.
-  const bool should_use_native_frame = frame_->ShouldUseNativeFrame();
-
-  bool must_regenerate_frame;
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  // GTK and user theme changes can both change frame buttons, so the frame
-  // always needs to be regenerated on Linux.
-  must_regenerate_frame = true;
-#else
-  must_regenerate_frame = using_native_frame_ != should_use_native_frame;
-#endif
-
-#if defined(OS_WIN)
-  // On Windows, DWM transtion does not performed for a frame regeneration in
-  // fullscreen mode, so do a lighweight theme change to refresh a bookmark bar
-  // on new tab. (see crbug/1002480)
-  must_regenerate_frame |=
-      theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
-      !IsFullscreen();
-#else
-  must_regenerate_frame |=
-      theme_change_type == BrowserThemeChangeType::kBrowserTheme;
-#endif
-
-  if (must_regenerate_frame) {
-    // This is a heavyweight theme change that requires regenerating the frame
-    // as well as repainting the browser window.
-    frame_->FrameTypeChanged();
-  } else {
-    // This is a lightweight theme change, so just refresh the theme on all
-    // views in the browser window.
-    GetWidget()->ThemeChanged();
-  }
-  using_native_frame_ = should_use_native_frame;
+  frame()->UserChangedTheme(theme_change_type);
 }
-
 void BrowserView::ShowAppMenu() {
   if (!toolbar_button_provider_->GetAppMenuButton())
     return;
@@ -2318,7 +2314,7 @@ std::u16string BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
   } else if (profile->IsIncognitoProfile()) {
     title = l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
-  } else if (profile->IsRegularProfile() &&
+  } else if (!profile->IsOffTheRecord() &&
              profile_manager->GetNumberOfProfiles() > 1) {
     std::u16string profile_name =
         profiles::GetAvatarNameForProfile(profile->GetPath());
@@ -2336,7 +2332,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
   std::u16string title =
       browser_->GetWindowTitleForTab(include_app_name, index);
 
-  base::Optional<tab_groups::TabGroupId> group =
+  absl::optional<tab_groups::TabGroupId> group =
       tabstrip_->tab_at(index)->group();
   if (group.has_value()) {
     std::u16string group_title = tabstrip_->GetGroupTitle(group.value());
@@ -2361,13 +2357,13 @@ std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
 
   // Tab has a pending permission request.
   if (toolbar_ && toolbar_->location_bar() &&
-      toolbar_->location_bar()->permission_chip()->GetVisible()) {
+      toolbar_->location_bar()->chip()) {
     return l10n_util::GetStringFUTF16(
         IDS_TAB_AX_LABEL_PERMISSION_REQUESTED_FORMAT, title);
   }
 
   // Alert tab states.
-  base::Optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
+  absl::optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
   if (!alert.has_value())
     return title;
 
@@ -2789,8 +2785,9 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
 #endif
   // When permission is requested, permission chip must be first pane in the
   // pane traversal order to be easily accessible for keyboard users.
-  if (toolbar_ && toolbar_->location_bar()) {
-    panes->push_back(toolbar_->location_bar()->permission_chip());
+  if (toolbar_ && toolbar_->location_bar() &&
+      toolbar_->location_bar()->chip()) {
+    panes->push_back(toolbar_->location_bar()->chip());
   }
   panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());
   if (tab_strip_region_view_)
@@ -2804,14 +2801,6 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   if (download_shelf_)
     panes->push_back(download_shelf_->GetView());
 // TODO(crbug.com/1055150): Implement for mac.
-#if !defined(OS_MAC)
-  // See if there is a caption bubble present.
-  views::View* caption_bubble =
-      captions::CaptionBubbleControllerViews::GetCaptionBubbleAccessiblePane(
-          browser());
-  if (caption_bubble)
-    panes->push_back(caption_bubble);
-#endif
   panes->push_back(contents_web_view_);
   if (devtools_web_view_->GetVisible())
     panes->push_back(devtools_web_view_);
@@ -2928,6 +2917,12 @@ void BrowserView::ViewHierarchyChanged(
 }
 
 void BrowserView::AddedToWidget() {
+  // BrowserView may be added to a widget more than once if the user changes
+  // themes after starting the browser. Do not re-initialize BrowserView in
+  // this case.
+  if (initialized_)
+    return;
+
   views::ClientView::AddedToWidget();
 
   widget_observation_.Observe(GetWidget());
@@ -2969,21 +2964,16 @@ void BrowserView::AddedToWidget() {
   immersive_mode_controller_->Init(this);
   immersive_mode_controller_->AddObserver(this);
 
-  // See https://crbug.com/993502.
-  views::View* web_footer_experiment = nullptr;
-  if (base::FeatureList::IsEnabled(features::kWebFooterExperiment)) {
-    web_footer_experiment = AddChildView(
-        std::make_unique<WebFooterExperimentView>(browser_->profile()));
-  }
-
   // TODO(https://crbug.com/1036519): Remove BrowserViewLayout dependence on
   // Widget and move to the constructor.
   SetLayoutManager(std::make_unique<BrowserViewLayout>(
       std::make_unique<BrowserViewLayoutDelegateImpl>(this),
       GetWidget()->GetNativeView(), this, top_container_,
       tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, side_panel_, immersive_mode_controller_.get(),
-      web_footer_experiment, contents_separator_));
+      contents_container_, left_aligned_side_panel_,
+      left_aligned_side_panel_separator_, right_aligned_side_panel_,
+      right_aligned_side_panel_separator_, immersive_mode_controller_.get(),
+      contents_separator_));
 
   EnsureFocusOrder();
 

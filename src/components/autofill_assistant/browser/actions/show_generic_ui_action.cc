@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/web/element.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -111,6 +111,10 @@ ShowGenericUiAction::ShowGenericUiAction(ActionDelegate* delegate,
 
 ShowGenericUiAction::~ShowGenericUiAction() {
   delegate_->GetPersonalDataManager()->RemoveObserver(this);
+}
+
+bool ShowGenericUiAction::ShouldInterruptOnPause() const {
+  return true;
 }
 
 void ShowGenericUiAction::InternalProcessAction(

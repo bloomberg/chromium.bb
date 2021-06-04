@@ -118,6 +118,10 @@ swarming.pool_realm(
         "project-webrtc-ci-task-accounts",
         "project-webrtc-try-task-accounts",
 
+        # ... and Angle.
+        "project-angle-ci-task-accounts",
+        "project-angle-try-task-accounts",
+
         # Used by Pinpoint to trigger bisect jobs on machines in the Chrome-GPU pool.
         "service-account-chromeperf",
     ],
@@ -145,6 +149,8 @@ swarming.pool_realm(
     groups = [
         # Allow CI builders (mac-arm64-rel-tests) to trigger tests.
         "project-chromium-ci-task-accounts",
+        # V8 *CI* is using these Macs, too.
+        "project-v8-ci-task-accounts",
     ],
 )
 

@@ -13,10 +13,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/compositor.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -267,7 +267,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.show_state = show_state;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.parent = WMHelper::GetInstance()->GetRootWindowForNewWindows();
   params.bounds = gfx::Rect(params.parent->bounds().size());
 

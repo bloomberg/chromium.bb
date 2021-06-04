@@ -15,6 +15,7 @@
 #include "components/page_info/page_info_delegate.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -23,7 +24,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 ChosenObjectView::ChosenObjectView(
     std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
@@ -78,10 +78,11 @@ ChosenObjectView::ChosenObjectView(
       display_name, views::style::CONTEXT_DIALOG_BODY_TEXT);
   layout->AddView(std::move(label));
 
-  // Create the delete button.
+  // Create the delete button. It is safe to use base::Unretained here
+  // because the button is owned by this object.
   std::unique_ptr<views::ImageButton> delete_button =
       views::CreateVectorImageButton(base::BindRepeating(
-          [](ChosenObjectView* view) { view->ExecuteDeleteCommand(); }, this));
+          &ChosenObjectView::ExecuteDeleteCommand, base::Unretained(this)));
 
   views::SetImageFromVectorIcon(
       delete_button.get(), vector_icons::kCloseRoundedIcon,
@@ -128,6 +129,8 @@ ChosenObjectView::ChosenObjectView(
   }
 
   layout->AddPaddingRow(column_set_id, list_item_padding);
+
+  UpdateIconImage(/*is_deleted=*/false);
 }
 
 void ChosenObjectView::AddObserver(ChosenObjectViewObserver* observer) {
@@ -137,9 +140,18 @@ void ChosenObjectView::AddObserver(ChosenObjectViewObserver* observer) {
 ChosenObjectView::~ChosenObjectView() {}
 
 void ChosenObjectView::ExecuteDeleteCommand() {
+  // Policy-managed permissions cannot be deleted. This isn't normally
+  // reachable but views::test::ButtonTestApi::NotifyClick doesn't check
+  // before executing the PressedCallback.
+  if (info_->chooser_object->source ==
+      content_settings::SettingSource::SETTING_SOURCE_POLICY) {
+    return;
+  }
+
   // Change the icon to reflect the selected setting.
   UpdateIconImage(/*is_deleted=*/true);
 
+  DCHECK(delete_button_->GetEnabled());
   DCHECK(delete_button_->GetVisible());
   delete_button_->SetVisible(false);
 
@@ -148,17 +160,8 @@ void ChosenObjectView::ExecuteDeleteCommand() {
   }
 }
 
-void ChosenObjectView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  UpdateIconImage(/*is_deleted=*/false);
-}
-
 void ChosenObjectView::UpdateIconImage(bool is_deleted) const {
-  // TODO(crbug.com/1096944): Why are we using label color for an icon?
-  icon_->SetImage(PageInfoUI::GetChosenObjectIcon(
-      *info_, is_deleted,
-      views::style::GetColor(*this, views::style::CONTEXT_LABEL,
-                             views::style::STYLE_PRIMARY)));
+  icon_->SetImage(PageInfoUI::GetChosenObjectIcon(*info_, is_deleted));
 }
 
 BEGIN_METADATA(ChosenObjectView, views::View)

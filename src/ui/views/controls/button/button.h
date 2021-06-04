@@ -33,8 +33,7 @@ class Event;
 
 // A View representing a button. A Button is focusable by default and will
 // be part of the focus chain.
-class VIEWS_EXPORT Button : public InkDropHostView,
-                            public AnimationDelegateViews {
+class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
  public:
   // Button states for various button sub-types.
   enum ButtonState {
@@ -166,8 +165,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void SetShowInkDropWhenHotTracked(bool value);
   bool GetShowInkDropWhenHotTracked() const;
 
-  void SetInkDropBaseColor(SkColor color);
-
   void SetHasInkDropActionOnClick(bool value);
   bool GetHasInkDropActionOnClick() const;
 
@@ -184,6 +181,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   base::CallbackListSubscription AddStateChangedCallback(
       PropertyChangedCallback callback);
+
+  InkDropHost* ink_drop() { return ink_drop_.get(); }
+  const InkDropHost* ink_drop() const { return ink_drop_.get(); }
 
   // Overridden from View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -211,10 +211,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
       const ViewHierarchyChangedDetails& details) override;
   void OnFocus() override;
   void OnBlur() override;
-
-  // Overridden from InkDropHostView:
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
-  SkColor GetInkDropBaseColor() const override;
 
   // Overridden from views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -341,8 +337,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // tracked with SetHotTracked().
   bool show_ink_drop_when_hot_tracked_ = false;
 
-  // The color of the ripple and hover.
-  SkColor ink_drop_base_color_;
+  // The InkDrop for this Button.
+  std::unique_ptr<InkDropHost> ink_drop_{std::make_unique<InkDropHost>(this)};
 
   // The focus ring for this Button.
   FocusRing* focus_ring_ = nullptr;
@@ -362,14 +358,13 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   DISALLOW_COPY_AND_ASSIGN(Button);
 };
 
-BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, InkDropHostView)
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, View)
 VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)
 VIEW_BUILDER_PROPERTY(Button::PressedCallback, Callback)
 VIEW_BUILDER_PROPERTY(base::TimeDelta, AnimationDuration)
 VIEW_BUILDER_PROPERTY(bool, AnimateOnStateChange)
 VIEW_BUILDER_PROPERTY(bool, HasInkDropActionOnClick)
 VIEW_BUILDER_PROPERTY(bool, HideInkDropWhenShowingContextMenu)
-VIEW_BUILDER_PROPERTY(SkColor, InkDropBaseColor)
 VIEW_BUILDER_PROPERTY(bool, InstallFocusRingOnFocus)
 VIEW_BUILDER_PROPERTY(bool, RequestFocusOnPress)
 VIEW_BUILDER_PROPERTY(Button::ButtonState, State)

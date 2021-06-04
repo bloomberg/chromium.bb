@@ -10,7 +10,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -29,11 +28,9 @@ URLDatabase::URLEnumeratorBase::URLEnumeratorBase()
     : initialized_(false) {
 }
 
-URLDatabase::URLEnumeratorBase::~URLEnumeratorBase() {
-}
+URLDatabase::URLEnumeratorBase::~URLEnumeratorBase() = default;
 
-URLDatabase::URLEnumerator::URLEnumerator() {
-}
+URLDatabase::URLEnumerator::URLEnumerator() = default;
 
 bool URLDatabase::URLEnumerator::GetNextURL(URLRow* r) {
   if (statement_.Step()) {
@@ -47,8 +44,7 @@ URLDatabase::URLDatabase()
     : has_keyword_search_terms_(false) {
 }
 
-URLDatabase::~URLDatabase() {
-}
+URLDatabase::~URLDatabase() = default;
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
@@ -159,7 +155,7 @@ bool URLDatabase::UpdateURLRow(URLID url_id, const URLRow& info) {
 
 URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
   // This function is used to insert into two different tables, so we have to
-  // do some shuffling. Unfortinately, we can't use the macro
+  // do some shuffling. Unfortunately, we can't use the macro
   // HISTORY_URL_ROW_FIELDS because that specifies the table name which is
   // invalid in the insert syntax.
   #define ADDURL_COMMON_SUFFIX \
@@ -211,7 +207,7 @@ bool URLDatabase::URLTableContainsAutoincrement() {
   std::string urls_schema = statement.ColumnString(0);
   // We check if the whole schema contains "AUTOINCREMENT", since
   // "AUTOINCREMENT" only can be used for "INTEGER PRIMARY KEY", so we assume no
-  // other columns could cantain "AUTOINCREMENT".
+  // other columns could contain "AUTOINCREMENT".
   return urls_schema.find("AUTOINCREMENT") != std::string::npos;
 }
 
@@ -363,13 +359,13 @@ bool URLDatabase::IsTypedHost(const std::string& host, std::string* scheme) {
     url::kFtpScheme
   };
   URLRows dummy;
-  for (size_t i = 0; i < base::size(schemes); ++i) {
-    std::string scheme_and_host(schemes[i]);
+  for (const char* known_scheme : schemes) {
+    std::string scheme_and_host(known_scheme);
     scheme_and_host += url::kStandardSchemeSeparator + host;
     if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||
         AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy)) {
       if (scheme != nullptr)
-        *scheme = schemes[i];
+        *scheme = known_scheme;
       return true;
     }
   }
@@ -382,7 +378,7 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
                                           int min_typed,
                                           bool allow_base,
                                           URLRow* info) {
-  // Select URLs that start with |base| and are prefixes of |url|.  All parts
+  // Select URLs that start with `base` and are prefixes of `url`.  All parts
   // of this query except the substr() call can be done using the index.  We
   // could do this query with a couple of LIKE or GLOB statements as well, but
   // those wouldn't use the index, and would run into problems with "wildcard"
@@ -736,7 +732,7 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   sql.append(name);
   sql.append(
       "("
-      // The id uses AUTOINCREMENT is for sync propose. Sync uses this |id| as
+      // The id uses AUTOINCREMENT is for sync propose. Sync uses this `id` as
       // an unique key to identify the URLs. If here did not use AUTOINCREMENT,
       // and Sync was not working somehow, a ROWID could be deleted and re-used
       // during this period. Once Sync come back, Sync would use ROWIDs and
@@ -760,7 +756,7 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
       "typed_count INTEGER DEFAULT 0 NOT NULL,"
       "last_visit_time INTEGER NOT NULL,"
       "hidden INTEGER DEFAULT 0 NOT NULL)");
-  // IMPORTANT: If you change the colums, also update in_memory_database.cc
+  // IMPORTANT: If you change the columns, also update in_memory_database.cc
   // where the values are copied (InitFromDisk).
 
   return GetDB().Execute(sql.c_str());

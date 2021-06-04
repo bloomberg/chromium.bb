@@ -17,8 +17,8 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "common/platform/api/quiche_text_utils.h"
 #include "common/quiche_endian.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 namespace {
@@ -599,7 +599,6 @@ std::string AlpnForVersion(ParsedQuicVersion parsed_version) {
 
 void QuicVersionInitializeSupportForIetfDraft() {
   // Enable necessary flags.
-  SetQuicReloadableFlag(quic_fix_key_update_on_first_packet, true);
 }
 
 void QuicEnableVersion(const ParsedQuicVersion& version) {

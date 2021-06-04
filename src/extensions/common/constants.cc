@@ -190,8 +190,6 @@ const char kPolicyBlockedScripting[] =
 
 const int kContentVerificationDefaultBlockSize = 4096;
 
-const logging::LogSeverity kMinimumSeverityToReportError = logging::LOG_WARNING;
-
 const char kCastExtensionIdRelease[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
 const char kCastExtensionIdDev[] = "enhhojjnijigcajfphajepfemndkmdlo";
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/federated_learning/floc_event_logger.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -44,7 +45,7 @@ class MockFlocSortingLshService : public FlocSortingLshClustersService {
  public:
   using FlocSortingLshClustersService::FlocSortingLshClustersService;
   using MappingFunction =
-      base::RepeatingCallback<base::Optional<uint64_t>(uint64_t)>;
+      base::RepeatingCallback<absl::optional<uint64_t>(uint64_t)>;
 
   // Configure the version and the mapping function and trigger the file-ready
   // event. If |mapping_function| is not provided, it will map any input
@@ -52,7 +53,7 @@ class MockFlocSortingLshService : public FlocSortingLshClustersService {
   void ConfigureSortingLsh(base::Version version,
                            MappingFunction mapping_function =
                                base::BindRepeating([](uint64_t sim_hash) {
-                                 return base::Optional<uint64_t>(sim_hash);
+                                 return absl::optional<uint64_t>(sim_hash);
                                })) {
     version_ = version;
     mapping_function_ = mapping_function;
@@ -172,7 +173,7 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
 // compute_time.
 class FlocIdTester {
  public:
-  static FlocId Create(base::Optional<uint64_t> id,
+  static FlocId Create(absl::optional<uint64_t> id,
                        base::Time history_begin_time,
                        base::Time history_end_time,
                        uint32_t finch_config_version,
@@ -233,7 +234,7 @@ class FlocIdProviderUnitTest : public testing::Test {
       base::Version version,
       MockFlocSortingLshService::MappingFunction mapping_function =
           base::BindRepeating([](uint64_t sim_hash) {
-            return base::Optional<uint64_t>(sim_hash);
+            return absl::optional<uint64_t>(sim_hash);
           })) {
     InitializeFlocIdProvider();
     sorting_lsh_service_->ConfigureSortingLsh(version, mapping_function);
@@ -249,8 +250,8 @@ class FlocIdProviderUnitTest : public testing::Test {
     floc_id_provider_->CheckCanComputeFloc(std::move(callback));
   }
 
-  void OnFlocDataAccessibleSinceUpdated() {
-    floc_id_provider_->OnFlocDataAccessibleSinceUpdated();
+  void OnFlocDataAccessibleSinceUpdated(bool reset_compute_timer) {
+    floc_id_provider_->OnFlocDataAccessibleSinceUpdated(reset_compute_timer);
   }
 
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -343,17 +344,23 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_ComputationState) {
   InitializeFlocIdProvider();
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_FALSE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now(),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // Configure the sorting-lsh service to to trigger the 1st floc computation.
   sorting_lsh_service_->ConfigureSortingLsh(base::Version("2.0.0"));
   EXPECT_TRUE(floc_computation_in_progress());
   EXPECT_FALSE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now(),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // Finish any outstanding history queries.
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(7),
+            floc_id_provider_->GetApproximateNextComputeTime());
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(1u, floc_id_provider_->log_event_count());
 
@@ -457,10 +464,11 @@ class FlocIdProviderSimpleFeatureParamUnitTest : public FlocIdProviderUnitTest {
  public:
   FlocIdProviderSimpleFeatureParamUnitTest() {
     feature_list_.Reset();
-    feature_list_.InitAndEnableFeatureWithParameters(
-        kFederatedLearningOfCohorts,
-        {{"update_interval", "24h"},
-         {"minimum_history_domain_size_required", "1"}});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{kFederatedLearningOfCohorts,
+          {{"update_interval", "24h"},
+           {"minimum_history_domain_size_required", "1"}}}},
+        {{features::kPrivacySandboxSettings}});
   }
 };
 
@@ -721,7 +729,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   set_floc_id(FlocId(123, kTime1, kTime2, 2));
 
   prefs_.SetTime(prefs::kPrivacySandboxFlocDataAccessibleSince, kTime2);
-  OnFlocDataAccessibleSinceUpdated();
+  OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/false);
 
   EXPECT_FALSE(floc_id().IsValid());
 }
@@ -737,9 +745,52 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   set_floc_id(FlocId(123, kTime1, kTime2, 2));
 
   prefs_.SetTime(prefs::kPrivacySandboxFlocDataAccessibleSince, kTime1);
-  OnFlocDataAccessibleSinceUpdated();
+  OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/false);
 
   EXPECT_TRUE(floc_id().IsValid());
+}
+
+TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
+       OnFlocDataAccessibeSinceUpdated_ResetComputeTimer) {
+  InitializeFlocIdProviderAndSortingLsh(base::Version("2.0.0"));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
+  EXPECT_EQ(base::Time::Now(), FlocId::ReadFromPrefs(&prefs_).compute_time());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+            floc_id_provider_->GetApproximateNextComputeTime());
+
+  // Move the clock forward 20 hours and update the floc available time,
+  // selecting to reset the compute timer.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(20));
+  OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true);
+  const base::Time kResetComputeTime = base::Time::Now();
+  EXPECT_EQ(kResetComputeTime, FlocId::ReadFromPrefs(&prefs_).compute_time());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+            floc_id_provider_->GetApproximateNextComputeTime());
+
+  // Move the clock forward another 20 hours, moving past the default refresh
+  // interval of 24 hours. A new floc id should not have been computed as the
+  // timer was reset.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(20));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(4),
+            floc_id_provider_->GetApproximateNextComputeTime());
+
+  // Update the floc available time without resetting compute time.
+  OnFlocDataAccessibleSinceUpdated(
+      /*reset_compute_timer=*/false);
+  EXPECT_EQ(kResetComputeTime, FlocId::ReadFromPrefs(&prefs_).compute_time());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(4),
+            floc_id_provider_->GetApproximateNextComputeTime());
+
+  // Move the clock forward 5 hours, making 25 hours since the compute timer was
+  // reset, a new floc id should have been computed.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(5));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(23),
+            floc_id_provider_->GetApproximateNextComputeTime());
 }
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, HistoryDelete_AllHistory) {
@@ -810,7 +861,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   history::DeletionInfo deletion_info(
       history::DeletionTimeRange(kTime3, kTime4),
       /*is_from_expiration=*/false, /*deleted_rows=*/{}, /*favicon_urls=*/{},
-      /*restrict_urls=*/base::nullopt);
+      /*restrict_urls=*/absl::nullopt);
   OnURLsDeleted(history_service_.get(), deletion_info);
 
   EXPECT_EQ(expected_floc, floc_id());
@@ -833,7 +884,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   history::DeletionInfo deletion_info(
       history::DeletionTimeRange(kTime2, kTime3),
       /*is_from_expiration=*/false, /*deleted_rows=*/{}, /*favicon_urls=*/{},
-      /*restrict_urls=*/base::nullopt);
+      /*restrict_urls=*/absl::nullopt);
   OnURLsDeleted(history_service_.get(), deletion_info);
 
   EXPECT_FALSE(floc_id().IsValid());
@@ -855,7 +906,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   history::DeletionInfo deletion_info(
       history::DeletionTimeRange(kTime1, kTime2),
       /*is_from_expiration=*/false, /*deleted_rows=*/{}, /*favicon_urls=*/{},
-      /*restrict_urls=*/base::nullopt);
+      /*restrict_urls=*/absl::nullopt);
   OnURLsDeleted(history_service_.get(), deletion_info);
 
   EXPECT_FALSE(floc_id().IsValid());
@@ -1097,6 +1148,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
   EXPECT_TRUE(floc_computation_in_progress());
+  EXPECT_EQ(base::Time::Now(),
+            floc_id_provider_->GetApproximateNextComputeTime());
   EXPECT_FALSE(need_recompute());
   EXPECT_EQ(FlocIdTester::Create(
                 FlocId::SimHashHistory({"foo.com", "bar.com", "baz.com"}),
@@ -1125,6 +1178,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   EXPECT_EQ(3u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
   EXPECT_FALSE(need_recompute());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // The final floc should be derived from "baz.com".
   EXPECT_TRUE(floc_id().IsValid());
@@ -1142,8 +1197,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, NonDefaultSortingLshMapping) {
   InitializeFlocIdProviderAndSortingLsh(
       base::Version("99.0.0"), base::BindRepeating([](uint64_t sim_hash) {
         if (sim_hash == FlocId::SimHashHistory({"foo.com"}))
-          return base::Optional<uint64_t>(2);
-        return base::Optional<uint64_t>();
+          return absl::optional<uint64_t>(2);
+        return absl::optional<uint64_t>();
       }));
 
   task_environment_.RunUntilIdle();
@@ -1160,7 +1215,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   // Block the sim-hash.
   InitializeFlocIdProviderAndSortingLsh(
       base::Version("999.0.0"), base::BindRepeating([](uint64_t sim_hash) {
-        return base::Optional<uint64_t>();
+        return absl::optional<uint64_t>();
       }));
 
   task_environment_.RunUntilIdle();
@@ -1187,7 +1242,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, MultipleSortingLshUpdate) {
   // Configure the |sorting_lsh_service_| to block any input sim-hash.
   sorting_lsh_service_->ConfigureSortingLsh(
       base::Version("3.4.5"), base::BindRepeating([](uint64_t sim_hash) {
-        return base::Optional<uint64_t>();
+        return absl::optional<uint64_t>();
       }));
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
@@ -1207,8 +1262,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, MultipleSortingLshUpdate) {
   sorting_lsh_service_->ConfigureSortingLsh(
       base::Version("999.0"), base::BindRepeating([](uint64_t sim_hash) {
         if (sim_hash == FlocId::SimHashHistory({"foo.com"}))
-          return base::Optional<uint64_t>(6789);
-        return base::Optional<uint64_t>();
+          return absl::optional<uint64_t>(6789);
+        return absl::optional<uint64_t>();
       }));
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
@@ -1339,7 +1394,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   InitializeFlocIdProvider();
 
   FlocId initial_invalid_floc_id =
-      FlocIdTester::Create(base::nullopt, kTwentyDaysBeforeStart,
+      FlocIdTester::Create(absl::nullopt, kTwentyDaysBeforeStart,
                            kNineteenDaysBeforeStart, 1, 888, kLastComputeTime);
 
   // Initially the floc is invalidated as the last floc has expired, but other
@@ -1389,7 +1444,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   InitializeFlocIdProvider();
 
   FlocId initial_invalid_floc_id =
-      FlocIdTester::Create(base::nullopt, kFourDaysBeforeStart,
+      FlocIdTester::Create(absl::nullopt, kFourDaysBeforeStart,
                            kThreeDaysBeforeStart, 1, 999, kLastComputeTime);
 
   // Initially the floc is invalidated as the "presumed next computation delay"
@@ -1402,12 +1457,16 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_FALSE(floc_computation_scheduled());
   EXPECT_EQ(0u, floc_id_provider_->compute_floc_completed_count());
+  EXPECT_EQ(base::Time::Now(),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // Set up the sorting-lsh service to trigger the 1st floc computation.
   sorting_lsh_service_->ConfigureSortingLsh(base::Version("99.0"));
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // Expect a completed computation and an update to the local prefs.
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
@@ -1442,7 +1501,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   InitializeFlocIdProvider();
 
   FlocId initial_invalid_floc_id =
-      FlocIdTester::Create(base::nullopt, kFourDaysBeforeStart,
+      FlocIdTester::Create(absl::nullopt, kFourDaysBeforeStart,
                            kThreeDaysBeforeStart, 0, 999, kLastComputeTime);
 
   // Initially the floc is invalidated as the version mismatches, but other
@@ -1452,6 +1511,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   EXPECT_EQ(FlocId::ReadFromPrefs(&prefs_), initial_invalid_floc_id);
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_FALSE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now(),
+            floc_id_provider_->GetApproximateNextComputeTime());
   EXPECT_EQ(0u, floc_id_provider_->compute_floc_completed_count());
 
   // Set up the sorting-lsh service to trigger the 1st floc computation.
@@ -1459,6 +1520,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
+  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+            floc_id_provider_->GetApproximateNextComputeTime());
 
   // Expect a completed computation and an update to the local prefs.
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());

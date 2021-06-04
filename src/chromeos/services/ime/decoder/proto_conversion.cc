@@ -4,6 +4,9 @@
 
 #include "chromeos/services/ime/decoder/proto_conversion.h"
 
+#include "chromeos/services/ime/public/cpp/suggestions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace chromeos {
 namespace ime {
 namespace {
@@ -58,6 +61,66 @@ InputFieldInfo::PersonalizationMode PersonalizationModeToProto(
       return InputFieldInfo::PERSONALIZATION_MODE_DISABLED;
     case mojom::PersonalizationMode::kEnabled:
       return InputFieldInfo::PERSONALIZATION_MODE_ENABLED;
+  }
+}
+
+SuggestionMode TextSuggestionModeToProto(TextSuggestionMode mode) {
+  switch (mode) {
+    case TextSuggestionMode::kPrediction:
+      return SuggestionMode::SUGGESTION_MODE_PREDICTION;
+    case TextSuggestionMode::kCompletion:
+      return SuggestionMode::SUGGESTION_MODE_COMPLETION;
+  }
+}
+
+SuggestionType TextSuggestionTypeToProto(TextSuggestionType type) {
+  switch (type) {
+    case TextSuggestionType::kAssistiveEmoji:
+      return SuggestionType::SUGGESTION_TYPE_ASSISTIVE_EMOJI;
+    case TextSuggestionType::kAssistivePersonalInfo:
+      return SuggestionType::SUGGESTION_TYPE_ASSISTIVE_PERSONAL_INFO;
+    case TextSuggestionType::kMultiWord:
+      return SuggestionType::SUGGESTION_TYPE_MULTI_WORD;
+  }
+}
+
+TextSuggestionMode ProtoToTextSuggestionMode(
+    const SuggestionMode& suggestion_mode) {
+  switch (suggestion_mode) {
+    case SuggestionMode::SUGGESTION_MODE_PREDICTION:
+      return TextSuggestionMode::kPrediction;
+    case SuggestionMode::SUGGESTION_MODE_COMPLETION:
+      return TextSuggestionMode::kCompletion;
+    default:
+      return TextSuggestionMode::kPrediction;
+  }
+}
+
+absl::optional<TextSuggestionType> ProtoToTextSuggestionType(
+    const SuggestionType& suggestion_type) {
+  switch (suggestion_type) {
+    case SuggestionType::SUGGESTION_TYPE_ASSISTIVE_EMOJI:
+      return TextSuggestionType::kAssistiveEmoji;
+    case SuggestionType::SUGGESTION_TYPE_ASSISTIVE_PERSONAL_INFO:
+      return TextSuggestionType::kAssistivePersonalInfo;
+    case SuggestionType::SUGGESTION_TYPE_MULTI_WORD:
+      return TextSuggestionType::kMultiWord;
+    default:
+      return absl::nullopt;
+  }
+}
+
+absl::optional<mojom::InputMethodApiOperation> InputMethodApiOperationToMojo(
+    NonCompliantApiMetric::InputMethodApiOperation operation) {
+  switch (operation) {
+    case NonCompliantApiMetric::OPERATION_UNSPECIFIED:
+      return absl::nullopt;
+    case NonCompliantApiMetric::OPERATION_COMMIT_TEXT:
+      return mojom::InputMethodApiOperation::kCommitText;
+    case NonCompliantApiMetric::OPERATION_SET_COMPOSITION_TEXT:
+      return mojom::InputMethodApiOperation::kSetCompositionText;
+    case NonCompliantApiMetric::OPERATION_DELETE_SURROUNDING_TEXT:
+      return mojom::InputMethodApiOperation::kDeleteSurroundingText;
   }
 }
 
@@ -138,6 +201,25 @@ ime::PublicMessage OnCompositionCanceledToProto(uint64_t seq_id) {
   return message;
 }
 
+ime::PublicMessage SuggestionsResponseToProto(
+    uint64_t seq_id,
+    mojom::SuggestionsResponsePtr response) {
+  ime::PublicMessage message;
+  message.set_seq_id(seq_id);
+  ime::SuggestionsResponse* suggestions_response =
+      message.mutable_suggestions_response();
+
+  for (const auto& text_suggestion : response->candidates) {
+    ime::SuggestionCandidate* candidate =
+        suggestions_response->add_candidates();
+    candidate->set_mode(TextSuggestionModeToProto(text_suggestion.mode));
+    candidate->set_type(TextSuggestionTypeToProto(text_suggestion.type));
+    candidate->set_text(text_suggestion.text);
+  }
+
+  return message;
+}
+
 mojom::AutocorrectSpanPtr ProtoToAutocorrectSpan(
     const chromeos::ime::AutocorrectSpan& autocorrect_span) {
   auto mojo_autocorrect_span = mojom::AutocorrectSpan::New();
@@ -147,6 +229,52 @@ mojom::AutocorrectSpanPtr ProtoToAutocorrectSpan(
   mojo_autocorrect_span->original_text = autocorrect_span.original_text();
   mojo_autocorrect_span->current_text = autocorrect_span.current_text();
   return mojo_autocorrect_span;
+}
+
+mojom::SuggestionsRequestPtr ProtoToSuggestionsRequest(
+    const chromeos::ime::SuggestionsRequest& suggestions_request) {
+  auto mojo_suggestions_request = mojom::SuggestionsRequest::New();
+  mojo_suggestions_request->text = suggestions_request.text();
+  mojo_suggestions_request->mode =
+      ProtoToTextSuggestionMode(suggestions_request.suggestion_mode());
+  for (const auto& candidate : suggestions_request.completion_candidates()) {
+    mojo_suggestions_request->completion_candidates.push_back(
+        TextCompletionCandidate{.text = candidate.text(),
+                                .score = candidate.normalized_score()});
+  }
+  return mojo_suggestions_request;
+}
+
+std::vector<TextSuggestion> ProtoToTextSuggestions(
+    const chromeos::ime::DisplaySuggestions& display_suggestions) {
+  std::vector<TextSuggestion> suggestions;
+  for (const auto& candidate : display_suggestions.candidates()) {
+    absl::optional<TextSuggestionType> suggestion_type =
+        ProtoToTextSuggestionType(candidate.type());
+    if (suggestion_type) {
+      // Drop any unexpected suggestion types
+      suggestions.push_back(
+          TextSuggestion{.mode = ProtoToTextSuggestionMode(candidate.mode()),
+                         .type = suggestion_type.value(),
+                         .text = candidate.text()});
+    }
+  }
+  return suggestions;
+}
+
+mojom::UkmEntryPtr ProtoToUkmEntry(const RecordUkm& record_ukm) {
+  switch (record_ukm.entry_case()) {
+    case RecordUkm::ENTRY_NOT_SET:
+      return nullptr;
+    case RecordUkm::kNonCompliantApi: {
+      auto operation = InputMethodApiOperationToMojo(
+          record_ukm.non_compliant_api().non_compliant_operation());
+      if (!operation)
+        return nullptr;
+      return mojom::UkmEntry::NewNonCompliantApi(
+          mojom::NonCompliantApiMetric::New(*operation));
+    }
+  }
 }
 
 }  // namespace ime

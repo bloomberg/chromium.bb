@@ -9,6 +9,7 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkScalar.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkBitmaskEnum.h"
@@ -25,7 +26,6 @@
 #include "modules/skparagraph/src/Run.h"
 #include "modules/skparagraph/src/TextLine.h"
 #include "modules/skshaper/src/SkUnicode.h"
-#include "src/core/SkSpan.h"
 
 #include <memory>
 #include <string>
@@ -205,6 +205,8 @@ public:
     void updateFontSize(size_t from, size_t to, SkScalar fontSize) override;
     void updateForegroundPaint(size_t from, size_t to, SkPaint paint) override;
     void updateBackgroundPaint(size_t from, size_t to, SkPaint paint) override;
+
+    void visit(const Visitor&) override;
 
     InternalLineMetrics getEmptyMetrics() const { return fEmptyMetrics; }
     InternalLineMetrics getStrutMetrics() const { return fStrutMetrics; }

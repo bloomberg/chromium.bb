@@ -45,12 +45,12 @@ namespace {
 
 class Fence {
 public:
-    Fence(const wgpu::Device& device, const wgpu::Fence& fence)
-      : fDevice(device), fFence(fence), fCalled(false) {
-        fFence.OnCompletion(0, callback, this);
+    Fence(const wgpu::Device& device)
+      : fDevice(device), fCalled(false) {
+        device.GetQueue().OnSubmittedWorkDone(0, callback, this);
     }
 
-    static void callback(WGPUFenceCompletionStatus status, void* userData) {
+    static void callback(WGPUQueueWorkDoneStatus status, void* userData) {
         Fence* fence = static_cast<Fence*>(userData);
         fence->fCalled = true;
     }
@@ -60,11 +60,8 @@ public:
         return fCalled;
     }
 
-    wgpu::Fence fence() { return fFence; }
-
 private:
     wgpu::Device            fDevice;
-    wgpu::Fence             fFence;
     bool                    fCalled;
 };
 
@@ -126,7 +123,7 @@ GrDawnGpu::GrDawnGpu(GrDirectContext* direct, const GrContextOptions& options,
                      const wgpu::Device& device)
         : INHERITED(direct)
         , fDevice(device)
-        , fQueue(device.GetDefaultQueue())
+        , fQueue(device.GetQueue())
         , fUniformRingBuffer(this, wgpu::BufferUsage::Uniform)
         , fStagingBufferManager(this)
         , fRenderPipelineCache(kMaxRenderPipelineEntries)
@@ -158,6 +155,7 @@ sk_sp<GrThreadSafePipelineBuilder> GrDawnGpu::refPipelineBuilder() {
 
 GrOpsRenderPass* GrDawnGpu::onGetOpsRenderPass(
         GrRenderTarget* rt,
+        bool /*useMSAASurface*/,
         GrAttachment*,
         GrSurfaceOrigin origin,
         const SkIRect& bounds,
@@ -295,9 +293,8 @@ sk_sp<GrRenderTarget> GrDawnGpu::onWrapBackendRenderTarget(const GrBackendRender
     return GrDawnRenderTarget::MakeWrapped(this, dimensions, sampleCnt, info);
 }
 
-sk_sp<GrAttachment> GrDawnGpu::makeStencilAttachmentForRenderTarget(const GrRenderTarget* rt,
-                                                                    SkISize dimensions,
-                                                                    int numStencilSamples) {
+sk_sp<GrAttachment> GrDawnGpu::makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,
+                                                     SkISize dimensions, int numStencilSamples) {
     fStats.incStencilAttachmentCreates();
     return GrDawnAttachment::MakeStencil(this, dimensions, numStencilSamples);
 }
@@ -319,7 +316,7 @@ GrBackendTexture GrDawnGpu::onCreateBackendTexture(SkISize dimensions,
         wgpu::TextureUsage::CopyDst;
 
     if (GrRenderable::kYes == renderable) {
-        desc.usage |= wgpu::TextureUsage::OutputAttachment;
+        desc.usage |= wgpu::TextureUsage::RenderAttachment;
     }
 
     int numMipLevels = 1;
@@ -361,13 +358,13 @@ void GrDawnGpu::uploadTextureData(GrColorType srcColorType, const GrMipLevel tex
                 this->stagingBufferManager()->allocateStagingBufferSlice(size);
         SkRectMemcpy(slice.fOffsetMapPtr, dstRowBytes, src, srcRowBytes, trimRowBytes, height);
 
-        wgpu::BufferCopyView srcBuffer = {};
+        wgpu::ImageCopyBuffer srcBuffer = {};
         srcBuffer.buffer = static_cast<GrDawnBuffer*>(slice.fBuffer)->get();
         srcBuffer.layout.offset = slice.fOffset;
         srcBuffer.layout.bytesPerRow = dstRowBytes;
         srcBuffer.layout.rowsPerImage = height;
 
-        wgpu::TextureCopyView dstTexture;
+        wgpu::ImageCopyTexture dstTexture;
         dstTexture.texture = texture;
         dstTexture.mipLevel = i;
         dstTexture.origin = {x, y, 0};
@@ -381,35 +378,23 @@ void GrDawnGpu::uploadTextureData(GrColorType srcColorType, const GrMipLevel tex
     }
 }
 
-bool GrDawnGpu::onUpdateBackendTexture(const GrBackendTexture& backendTexture,
-                                       sk_sp<GrRefCntedCallback> finishedCallback,
-                                       const BackendTextureData* data) {
+bool GrDawnGpu::onClearBackendTexture(const GrBackendTexture& backendTexture,
+                                      sk_sp<GrRefCntedCallback> finishedCallback,
+                                      std::array<float, 4> color) {
     GrDawnTextureInfo info;
     SkAssertResult(backendTexture.getDawnTextureInfo(&info));
 
-    size_t bpp = GrDawnBytesPerBlock(info.fFormat);
-    size_t baseLayerSize = bpp * backendTexture.width() * backendTexture.height();
-    const void* pixels;
-    SkAutoMalloc defaultStorage(baseLayerSize);
-    if (data && data->type() == BackendTextureData::Type::kPixmaps) {
-        int numMipLevels = info.fLevelCount;
-        SkAutoTArray<GrMipLevel> texels(numMipLevels);
-        GrColorType colorType = data->pixmap(0).colorType();
-        for (int i = 0; i < numMipLevels; ++i) {
-            texels[i] = {data->pixmap(i).addr(), data->pixmap(i).rowBytes(), nullptr};
-        }
-        SkIRect dstRect = SkIRect::MakeSize(backendTexture.dimensions());
-        this->uploadTextureData(colorType, texels.get(), numMipLevels, dstRect, info.fTexture);
-        return true;
-    }
-    pixels = defaultStorage.get();
     GrColorType colorType;
     if (!GrDawnFormatToGrColorType(info.fFormat, &colorType)) {
         return false;
     }
-    SkISize size{backendTexture.width(), backendTexture.height()};
-    GrImageInfo imageInfo(colorType, kUnpremul_SkAlphaType, nullptr, size);
-    GrClearImage(imageInfo, defaultStorage.get(), bpp * backendTexture.width(), data->color());
+
+    size_t bpp = GrDawnBytesPerBlock(info.fFormat);
+    size_t baseLayerSize = bpp * backendTexture.width() * backendTexture.height();
+    SkAutoMalloc defaultStorage(baseLayerSize);
+    GrImageInfo imageInfo(colorType, kUnpremul_SkAlphaType, nullptr, backendTexture.dimensions());
+    GrClearImage(imageInfo, defaultStorage.get(), bpp * backendTexture.width(), color);
+
     wgpu::Device device = this->device();
     wgpu::CommandEncoder copyEncoder = this->getCopyEncoder();
     int w = backendTexture.width(), h = backendTexture.height();
@@ -420,9 +405,9 @@ bool GrDawnGpu::onUpdateBackendTexture(const GrBackendTexture& backendTexture,
         GrStagingBufferManager::Slice stagingBuffer =
                 this->stagingBufferManager()->allocateStagingBufferSlice(size);
         if (rowBytes == origRowBytes) {
-            memcpy(stagingBuffer.fOffsetMapPtr, pixels, size);
+            memcpy(stagingBuffer.fOffsetMapPtr, defaultStorage.get(), size);
         } else {
-            const char* src = static_cast<const char*>(pixels);
+            const char* src = static_cast<const char*>(defaultStorage.get());
             char* dst = static_cast<char*>(stagingBuffer.fOffsetMapPtr);
             for (int row = 0; row < h; row++) {
                 memcpy(dst, src, origRowBytes);
@@ -430,12 +415,12 @@ bool GrDawnGpu::onUpdateBackendTexture(const GrBackendTexture& backendTexture,
                 src += origRowBytes;
             }
         }
-        wgpu::BufferCopyView srcBuffer = {};
+        wgpu::ImageCopyBuffer srcBuffer = {};
         srcBuffer.buffer = static_cast<GrDawnBuffer*>(stagingBuffer.fBuffer)->get();
         srcBuffer.layout.offset = stagingBuffer.fOffset;
         srcBuffer.layout.bytesPerRow = rowBytes;
         srcBuffer.layout.rowsPerImage = h;
-        wgpu::TextureCopyView dstTexture;
+        wgpu::ImageCopyTexture dstTexture;
         dstTexture.texture = info.fTexture;
         dstTexture.mipLevel = i;
         dstTexture.origin = {0, 0, 0};
@@ -454,7 +439,8 @@ GrBackendTexture GrDawnGpu::onCreateCompressedBackendTexture(
 
 bool GrDawnGpu::onUpdateCompressedBackendTexture(const GrBackendTexture&,
                                                  sk_sp<GrRefCntedCallback> finishedCallback,
-                                                 const BackendTextureData*) {
+                                                 const void* data,
+                                                 size_t size) {
     return false;
 }
 
@@ -505,7 +491,7 @@ GrBackendRenderTarget GrDawnGpu::createTestingOnlyBackendRenderTarget(SkISize di
     wgpu::TextureDescriptor desc;
     desc.usage =
         wgpu::TextureUsage::CopySrc |
-        wgpu::TextureUsage::OutputAttachment;
+        wgpu::TextureUsage::RenderAttachment;
 
     desc.size.width = dimensions.width();
     desc.size.height = dimensions.height();
@@ -556,7 +542,7 @@ void GrDawnGpu::takeOwnershipOfBuffer(sk_sp<GrGpuBuffer> buffer) {
 }
 
 
-static void callback(WGPUFenceCompletionStatus status, void* userData) {
+static void callback(WGPUQueueWorkDoneStatus status, void* userData) {
     *static_cast<bool*>(userData) = true;
 }
 
@@ -569,10 +555,8 @@ bool GrDawnGpu::onSubmitToGpu(bool syncCpu) {
 
     this->moveStagingBuffersToBusyAndMapAsync();
     if (syncCpu) {
-        wgpu::FenceDescriptor desc;
-        wgpu::Fence fence = fQueue.CreateFence(&desc);
         bool called = false;
-        fence.OnCompletion(0, callback, &called);
+        fDevice.GetQueue().OnSubmittedWorkDone(0, callback, &called);
         while (!called) {
             fDevice.Tick();
         }
@@ -604,7 +588,7 @@ bool GrDawnGpu::onCopySurface(GrSurface* dst,
 
     uint32_t width = srcRect.width(), height = srcRect.height();
 
-    wgpu::TextureCopyView srcTextureView, dstTextureView;
+    wgpu::ImageCopyTexture srcTextureView, dstTextureView;
     srcTextureView.texture = srcTexture;
     srcTextureView.origin = {(uint32_t) srcRect.x(), (uint32_t) srcRect.y(), 0};
     dstTextureView.texture = dstTexture;
@@ -638,11 +622,11 @@ bool GrDawnGpu::onReadPixels(GrSurface* surface, int left, int top, int width, i
 
     wgpu::Buffer buf = device().CreateBuffer(&desc);
 
-    wgpu::TextureCopyView srcTexture;
+    wgpu::ImageCopyTexture srcTexture;
     srcTexture.texture = tex;
     srcTexture.origin = {(uint32_t) left, (uint32_t) top, 0};
 
-    wgpu::BufferCopyView dstBuffer = {};
+    wgpu::ImageCopyBuffer dstBuffer = {};
     dstBuffer.buffer = buf;
     dstBuffer.layout.offset = 0;
     dstBuffer.layout.bytesPerRow = rowBytes;
@@ -689,7 +673,7 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
     wgpu::TextureDescriptor texDesc;
     texDesc.usage = wgpu::TextureUsage::Sampled |
                     wgpu::TextureUsage::CopySrc |
-                    wgpu::TextureUsage::OutputAttachment;
+                    wgpu::TextureUsage::RenderAttachment;
     texDesc.size.width = (tex->width() + 1) / 2;
     texDesc.size.height = (tex->height() + 1) / 2;
     texDesc.size.depthOrArrayLayers = 1;
@@ -724,28 +708,26 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
     SkSL::String fsSPIRV =
         this->SkSLToSPIRV(fs, SkSL::ProgramKind::kFragment, false, 0, nullptr);
 
-    wgpu::ProgrammableStageDescriptor vsDesc;
-    vsDesc.module = this->createShaderModule(vsSPIRV);
-    vsDesc.entryPoint = "main";
+    wgpu::VertexState vertexState;
+    vertexState.module = this->createShaderModule(vsSPIRV);
+    vertexState.entryPoint = "main";
+    vertexState.bufferCount = 0;
 
-    wgpu::ProgrammableStageDescriptor fsDesc;
-    fsDesc.module = this->createShaderModule(fsSPIRV);
-    fsDesc.entryPoint = "main";
+    wgpu::ColorTargetState colorTargetState;
+    colorTargetState.format = static_cast<GrDawnTexture*>(tex)->format();
 
-    wgpu::VertexStateDescriptor vertexStateDesc;
-    vertexStateDesc.indexFormat = wgpu::IndexFormat::Uint32;
+    wgpu::FragmentState fragmentState;
+    fragmentState.module = this->createShaderModule(fsSPIRV);
+    fragmentState.entryPoint = "main";
+    fragmentState.targetCount = 1;
+    fragmentState.targets = &colorTargetState;
 
-    wgpu::ColorStateDescriptor csDesc;
-    csDesc.format = static_cast<GrDawnTexture*>(tex)->format();
-
-    wgpu::RenderPipelineDescriptor renderPipelineDesc;
-    renderPipelineDesc.vertexStage = vsDesc;
-    renderPipelineDesc.fragmentStage = &fsDesc;
-    renderPipelineDesc.vertexState = &vertexStateDesc;
-    renderPipelineDesc.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
-    renderPipelineDesc.colorStateCount = 1;
-    renderPipelineDesc.colorStates = &csDesc;
-    wgpu::RenderPipeline pipeline = fDevice.CreateRenderPipeline(&renderPipelineDesc);
+    wgpu::RenderPipelineDescriptor2 renderPipelineDesc;
+    renderPipelineDesc.vertex = vertexState;
+    renderPipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
+    renderPipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Uint16;
+    renderPipelineDesc.fragment = &fragmentState;
+    wgpu::RenderPipeline pipeline = fDevice.CreateRenderPipeline2(&renderPipelineDesc);
 
     wgpu::BindGroupLayout bgl = pipeline.GetBindGroupLayout(0);
     wgpu::TextureViewDescriptor srcViewDesc;
@@ -790,10 +772,10 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
         rpe.EndPass();
 
         wgpu::Extent3D copySize = {(uint32_t)dstWidth, (uint32_t)dstHeight, 1};
-        wgpu::TextureCopyView srcCopyView;
+        wgpu::ImageCopyTexture srcCopyView;
         srcCopyView.texture = dstTexture;
         srcCopyView.mipLevel = mipLevel;
-        wgpu::TextureCopyView dstCopyView;
+        wgpu::ImageCopyTexture dstCopyView;
         dstCopyView.mipLevel = mipLevel + 1;
         dstCopyView.texture = src->texture();
         commandEncoder.CopyTextureToTexture(&srcCopyView, &dstCopyView, &copySize);
@@ -812,9 +794,7 @@ void GrDawnGpu::submit(GrOpsRenderPass* renderPass) {
 }
 
 GrFence SK_WARN_UNUSED_RESULT GrDawnGpu::insertFence() {
-    wgpu::FenceDescriptor desc;
-    wgpu::Fence fence = fQueue.CreateFence(&desc);
-    return reinterpret_cast<GrFence>(new Fence(fDevice, fence));
+    return reinterpret_cast<GrFence>(new Fence(fDevice));
 }
 
 bool GrDawnGpu::waitFence(GrFence fence) {

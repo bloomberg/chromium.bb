@@ -151,14 +151,13 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
   quad_state->quad_layer_rect = gfx::Rect(frame_size);
   quad_state->visible_quad_layer_rect = gfx::Rect(frame_size);
   quad_state->clip_rect = clip;
-  quad_state->is_clipped = true;
   quad_state->opacity = 1.f;
 
   viz::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_rect),
                        gfx::Rect(quad_state->quad_layer_rect),
-                       viz::SurfaceRange(base::nullopt, child_id),
+                       viz::SurfaceRange(absl::nullopt, child_id),
                        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
   surface_quad->allow_merge = !BackdropFiltersPreventMerge(child_id);
 
@@ -196,7 +195,8 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
     // has non-null SwapTimings. We don't know the exact swap start/end times
     // here so we use Now() as a filler.
     base::TimeTicks now = base::TimeTicks::Now();
-    display_->DidReceiveSwapBuffersAck({now, now});
+    display_->DidReceiveSwapBuffersAck({now, now},
+                                       /*release_fence=*/gfx::GpuFenceHandle());
   }
   output_surface_provider_.gl_surface()->MaybeDidPresent(
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
@@ -221,15 +221,14 @@ void SurfacesInstance::RemoveChildId(const viz::SurfaceId& child_id) {
 void SurfacesInstance::SetSolidColorRootFrame() {
   DCHECK(!surface_size_.IsEmpty());
   gfx::Rect rect(surface_size_);
-  bool is_clipped = false;
   bool are_contents_opaque = true;
   auto render_pass = viz::CompositorRenderPass::Create();
   render_pass->SetNew(viz::CompositorRenderPassId{1}, rect, rect,
                       gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(), rect,
-                     is_clipped, are_contents_opaque, 1.f,
+  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
+                     absl::nullopt, are_contents_opaque, 1.f,
                      SkBlendMode::kSrcOver, 0);
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -246,8 +245,8 @@ void SurfacesInstance::SetSolidColorRootFrame() {
 }
 
 void SurfacesInstance::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
-  ReclaimResources(resources);
+    std::vector<viz::ReturnedResource> resources) {
+  ReclaimResources(std::move(resources));
 }
 
 std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
@@ -262,7 +261,7 @@ void SurfacesInstance::OnBeginFrame(
     const viz::FrameTimingDetailsMap& timing_details) {}
 
 void SurfacesInstance::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   // Root surface should have no resources to return.
   CHECK(resources.empty());
 }

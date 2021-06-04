@@ -170,8 +170,8 @@ void ContentIndexProviderImpl::OpenItem(
     const ContentId& id) {
   auto components = GetEntryKeyComponents(id.id);
 
-  auto* storage_partition = content::BrowserContext::GetStoragePartitionForUrl(
-      profile_, components.origin.GetURL(), /* can_create= */ false);
+  auto* storage_partition = profile_->GetStoragePartitionForUrl(
+      components.origin.GetURL(), /* can_create= */ false);
 
   if (!storage_partition || !storage_partition->GetContentIndexContext())
     return;
@@ -183,7 +183,7 @@ void ContentIndexProviderImpl::OpenItem(
 }
 
 void ContentIndexProviderImpl::DidGetEntryToOpen(
-    base::Optional<content::ContentIndexEntry> entry) {
+    absl::optional<content::ContentIndexEntry> entry) {
   if (!entry)
     return;
 
@@ -212,8 +212,8 @@ void ContentIndexProviderImpl::DidOpenTab(content::ContentIndexEntry entry,
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
   auto components = GetEntryKeyComponents(id.id);
 
-  auto* storage_partition = content::BrowserContext::GetStoragePartitionForUrl(
-      profile_, components.origin.GetURL(), /* can_create= */ false);
+  auto* storage_partition = profile_->GetStoragePartitionForUrl(
+      components.origin.GetURL(), /* can_create= */ false);
 
   if (!storage_partition || !storage_partition->GetContentIndexContext())
     return;
@@ -242,12 +242,12 @@ void ContentIndexProviderImpl::GetItemById(const ContentId& id,
                                            SingleItemCallback callback) {
   auto components = GetEntryKeyComponents(id.id);
 
-  auto* storage_partition = content::BrowserContext::GetStoragePartitionForUrl(
-      profile_, components.origin.GetURL(), /* can_create= */ false);
+  auto* storage_partition = profile_->GetStoragePartitionForUrl(
+      components.origin.GetURL(), /* can_create= */ false);
 
   if (!storage_partition || !storage_partition->GetContentIndexContext()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+        FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
     return;
   }
 
@@ -259,9 +259,9 @@ void ContentIndexProviderImpl::GetItemById(const ContentId& id,
 
 void ContentIndexProviderImpl::DidGetItem(
     SingleItemCallback callback,
-    base::Optional<content::ContentIndexEntry> entry) {
+    absl::optional<content::ContentIndexEntry> entry) {
   if (!entry)
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   else
     std::move(callback).Run(EntryToOfflineItem(*entry));
 }
@@ -269,14 +269,12 @@ void ContentIndexProviderImpl::DidGetItem(
 void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
   // Get the number of Storage Paritions.
   std::vector<content::StoragePartition*> storage_paritions;
-  content::BrowserContext::ForEachStoragePartition(
-      profile_,
-      base::BindRepeating(
-          [](std::vector<content::StoragePartition*>* storage_paritions,
-             content::StoragePartition* storage_partition) {
-            storage_paritions->push_back(storage_partition);
-          },
-          &storage_paritions));
+  profile_->ForEachStoragePartition(base::BindRepeating(
+      [](std::vector<content::StoragePartition*>* storage_paritions,
+         content::StoragePartition* storage_partition) {
+        storage_paritions->push_back(storage_partition);
+      },
+      &storage_paritions));
   DCHECK(!storage_paritions.empty());
 
   auto item_list = std::make_unique<OfflineItemList>();
@@ -332,8 +330,8 @@ void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
                                                  VisualsCallback callback) {
   auto components = GetEntryKeyComponents(id.id);
 
-  auto* storage_partition = content::BrowserContext::GetStoragePartitionForUrl(
-      profile_, components.origin.GetURL(), /* can_create= */ false);
+  auto* storage_partition = profile_->GetStoragePartitionForUrl(
+      components.origin.GetURL(), /* can_create= */ false);
 
   if (!storage_partition || !storage_partition->GetContentIndexContext()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -397,6 +395,6 @@ void ContentIndexProviderImpl::RenameItem(const ContentId& id,
 
 void ContentIndexProviderImpl::ChangeSchedule(
     const ContentId& id,
-    base::Optional<OfflineItemSchedule> schedule) {
+    absl::optional<OfflineItemSchedule> schedule) {
   NOTREACHED();
 }

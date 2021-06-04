@@ -9,17 +9,18 @@
 #include <fuchsia/math/cpp/fidl.h>
 #include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/inspect/cpp/vmo/types.h>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/ax_tree_converter.h"
 #include "fuchsia/engine/web_engine_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -42,13 +43,16 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
       public fuchsia::accessibility::semantics::SemanticListener,
       public ui::AXTreeObserver {
  public:
+  using AXNodeID = std::pair<ui::AXTreeID, int32_t>;
+
   // |semantics_manager| is used during construction to register the instance.
   // |web_contents| is required to exist for the duration of |this|.
   AccessibilityBridge(
       fuchsia::accessibility::semantics::SemanticsManager* semantics_manager,
       fuchsia::ui::views::ViewRef view_ref,
       content::WebContents* web_contents,
-      base::OnceCallback<void(zx_status_t)> on_error_callback);
+      base::OnceCallback<void(zx_status_t)> on_error_callback,
+      inspect::Node inspect_node);
   ~AccessibilityBridge() final;
 
   AccessibilityBridge(const AccessibilityBridge&) = delete;
@@ -64,6 +68,8 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
     device_scale_factor_override_for_test_ = device_scale_factor;
   }
 
+  NodeIDMapper* node_id_mapper_for_test() { return id_mapper_.get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest, OnSemanticsModeChanged);
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest,
@@ -75,8 +81,6 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest,
                            OffsetContainerBookkeepingIsUpdated);
 
-  using AXNodeID = std::pair<ui::AXTreeID, int32_t>;
-
   // Represents a connection between two AXTrees that are in different frames.
   struct TreeConnection {
     // ID of the node in the parent tree that points to this tree.
@@ -87,12 +91,20 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
     bool is_connected = false;
   };
 
+  // Populates inspect data with the AXTrees. Updates must be enabled.
+  inspect::Inspector FillInspectData();
+
   // Processes pending data and commits it to the Semantic Tree.
   void TryCommit();
 
   // Connects trees if they are present or deletes the connection if both are
   // gone.
   void UpdateTreeConnections();
+
+  // Updates the node in focus and clears the focus from the old node. The nodes
+  // are added to |to_update_|, and will be sent to Fuchsia the next time the
+  // update is committed.
+  void UpdateFocus();
 
   // Returns true if the main frame AXTree is not present or if trees are not
   // connected.
@@ -123,6 +135,31 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // children mapping.
   void RemoveNodeFromOffsetMapping(ui::AXTree* tree,
                                    const ui::AXNodeData& node_data);
+
+  // Helper method to return the node in focus. Returns nullptr if the main
+  // frame is not ready yet. If no focus information is present, returns the
+  // root node of the frame in focus.
+  absl::optional<AXNodeID> GetFocusedNodeId() const;
+
+  // Helper method to return the fuchsia representation of the node if it is
+  // being changed in this update. Returns nullptr if the node is not part of
+  // the current update.
+  fuchsia::accessibility::semantics::Node* GetNodeIfChangingInUpdate(
+      const ui::AXTreeID& tree_id,
+      ui::AXNodeID node_id);
+
+  // Helper method to get the most recently updated fuchsia representation of
+  // the node. Note that it differs from |GetNodeIfChangingInUpdate| because
+  // here a node will be created to be part of the update if it is not. Returns
+  // nullptr if the node does not exist.
+  fuchsia::accessibility::semantics::Node* GetUpdatedNode(
+      const ui::AXTreeID& tree_id,
+      ui::AXNodeID node_id);
+
+  // Returns the node in focus in this frame or in one of its descendants if the
+  // node in focus points to a child frame.
+  absl::optional<AXNodeID> GetFocusFromThisOrDescendantFrame(
+      const ui::AXSerializableTree* tree) const;
 
   // content::WebContentsObserver implementation.
   void AccessibilityEventReceived(
@@ -167,6 +204,9 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // tree.
   base::flat_map<ui::AXTreeID, TreeConnection> tree_connections_;
 
+  // Last focused node. If nullptr, no node is in focus.
+  absl::optional<AXNodeID> last_focused_node_id_;
+
   // Maintain a map of callbacks as multiple hit test events can happen at
   // once. These are keyed by the request_id field of ui::AXActionData.
   base::flat_map<int, HitTestCallback> pending_hit_test_callbacks_;
@@ -196,7 +236,13 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   base::OnceClosure event_received_callback_for_test_;
 
   // If set, the scale factor for this device for use in tests.
-  base::Optional<float> device_scale_factor_override_for_test_;
+  absl::optional<float> device_scale_factor_override_for_test_;
+
+  // Inspect node for the accessibility bridge.
+  inspect::Node inspect_node_;
+
+  // Inspect node to store a dump of the semantic tree.
+  inspect::LazyNode inspect_node_tree_dump_;
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_ACCESSIBILITY_BRIDGE_H_

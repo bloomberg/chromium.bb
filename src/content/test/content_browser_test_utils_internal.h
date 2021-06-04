@@ -18,12 +18,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_type.h"
@@ -32,6 +30,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
@@ -83,6 +82,20 @@ RenderFrameHost* CreateSubframe(WebContentsImpl* web_contents,
                                 std::string frame_id,
                                 const GURL& url,
                                 bool wait_for_navigation);
+
+// Returns the frames visited by |RenderFrameHostImpl::ForEachRenderFrameHost|
+// in the same order.
+std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
+    RenderFrameHostImpl* starting_rfh);
+std::vector<RenderFrameHostImpl*>
+CollectAllRenderFrameHostsIncludingSpeculative(
+    RenderFrameHostImpl* starting_rfh);
+// Returns the frames visited by |WebContentsImpl::ForEachRenderFrameHost|
+// in the same order.
+std::vector<RenderFrameHostImpl*> CollectAllRenderFrameHosts(
+    WebContentsImpl* web_contents);
+std::vector<RenderFrameHostImpl*>
+CollectAllRenderFrameHostsIncludingSpeculative(WebContentsImpl* web_contents);
 
 // Open a new popup passing no URL to window.open, which results in a blank page
 // and no last committed entry. Returns the newly created shell. Also saves the
@@ -242,9 +255,9 @@ class RenderProcessHostBadIpcMessageWaiter {
       RenderProcessHost* render_process_host);
 
   // Waits until the renderer process exits.  Returns the bad message that made
-  // //content kill the renderer.  |base::nullopt| is returned if the renderer
+  // //content kill the renderer.  |absl::nullopt| is returned if the renderer
   // was killed outside of //content or exited normally.
-  base::Optional<bad_message::BadMessageReason> Wait() WARN_UNUSED_RESULT;
+  absl::optional<bad_message::BadMessageReason> Wait() WARN_UNUSED_RESULT;
 
  private:
   RenderProcessHostKillWaiter internal_waiter_;
@@ -478,6 +491,10 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     EXPECT_EQ(1U, is_overriding_user_agents_.size());
     return is_overriding_user_agents_[0];
   }
+  bool is_error_page() const {
+    EXPECT_EQ(1U, is_error_pages_.size());
+    return is_error_pages_[0];
+  }
 
   // Gets various captured parameters from all observed navigations.
   const std::vector<ui::PageTransition>& transitions() { return transitions_; }
@@ -493,6 +510,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
   const std::vector<bool>& is_overriding_user_agents() {
     return is_overriding_user_agents_;
   }
+  const std::vector<bool>& is_error_pages() { return is_error_pages_; }
 
  private:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
@@ -519,6 +537,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
   std::vector<bool> is_renderer_initiateds_;
   std::vector<bool> has_user_gestures_;
   std::vector<bool> is_overriding_user_agents_;
+  std::vector<bool> is_error_pages_;
 
   base::RunLoop loop_;
 };

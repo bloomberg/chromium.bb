@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Methods related to querying the ResultDB BigQuery tables."""
 
+from __future__ import print_function
+
 import json
 import logging
 import math
@@ -60,6 +62,7 @@ WITH
       FROM `luci-resultdb.chromium.gpu_{builder_type}_test_results` tr
       WHERE
         status != "SKIP"
+        AND exported.realm = "chromium:{builder_type}"
         AND STRUCT("builder", @builder_name) IN UNNEST(variant)
         {test_filter_clause}
       GROUP BY exported.id
@@ -105,6 +108,7 @@ WITH
       FROM `luci-resultdb.chromium.gpu_{builder_type}_test_results` tr
       WHERE
         status != "SKIP"
+        AND exported.realm = "chromium:{builder_type}"
         AND STRUCT("builder", @builder_name) IN UNNEST(variant)
         AND REGEXP_CONTAINS(
           test_id,
@@ -555,7 +559,7 @@ class _SplitQueryTestFilter(_BaseQueryTestFilter):
 
     split_lists = []
     start = 0
-    for _ in xrange(num_lists):
+    for _ in range(num_lists):
       end = min(len(test_ids), start + list_size)
       split_lists.append(test_ids[start:end])
       start = end

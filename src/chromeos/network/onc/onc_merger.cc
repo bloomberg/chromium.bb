@@ -54,10 +54,9 @@ void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
   if (!policy.GetListWithoutPathExpansion(::onc::kRecommended,
                                           &recommended_value))
     return;
-  for (base::ListValue::const_iterator it = recommended_value->begin();
-       it != recommended_value->end(); ++it) {
+  for (const auto& value : recommended_value->GetList()) {
     std::string entry;
-    if (it->GetAsString(&entry))
+    if (value.GetAsString(&entry))
       result->SetKey(entry, base::Value(true));
   }
 }
@@ -77,8 +76,8 @@ DictionaryPtr GetEditableFlags(const base::DictionaryValue& policy) {
       continue;
     }
 
-    result_editable->SetWithoutPathExpansion(it.key(),
-                                             GetEditableFlags(*child_policy));
+    result_editable->SetKey(it.key(), base::Value::FromUniquePtrValue(
+                                          GetEditableFlags(*child_policy)));
   }
   return result_editable;
 }
@@ -123,7 +122,7 @@ class MergeListOfDictionaries {
             nested_dicts.push_back(nested_dict);
           }
           DictionaryPtr merged_dict(MergeNestedDictionaries(key, nested_dicts));
-          if (!merged_dict->empty())
+          if (!merged_dict->DictEmpty())
             merged_value = std::move(merged_dict);
         } else {
           std::vector<const base::Value*> values;
@@ -138,7 +137,8 @@ class MergeListOfDictionaries {
         }
 
         if (merged_value)
-          result->SetWithoutPathExpansion(key, std::move(merged_value));
+          result->SetKey(
+              key, base::Value::FromUniquePtrValue(std::move(merged_value)));
       }
     }
     return result;
@@ -311,7 +311,7 @@ class MergeToEffective : public MergeSettingsAndPolicies {
       // dictionaries contained a value for it.
     }
     if (result)
-      return base::WrapUnique(result->DeepCopy());
+      return base::Value::ToUniquePtrValue(result->Clone());
     return nullptr;
   }
 
@@ -331,15 +331,15 @@ namespace {
 // Returns true if all not-null values in |values| are equal to |value|.
 bool AllPresentValuesEqual(const MergeSettingsAndPolicies::ValueParams& values,
                            const base::Value& value) {
-  if (values.user_policy && !value.Equals(values.user_policy))
+  if (values.user_policy && value != *values.user_policy)
     return false;
-  if (values.device_policy && !value.Equals(values.device_policy))
+  if (values.device_policy && value != *values.device_policy)
     return false;
-  if (values.user_setting && !value.Equals(values.user_setting))
+  if (values.user_setting && value != *values.user_setting)
     return false;
-  if (values.shared_setting && !value.Equals(values.shared_setting))
+  if (values.shared_setting && value != *values.shared_setting)
     return false;
-  if (values.active_setting && !value.Equals(values.active_setting))
+  if (values.active_setting && value != *values.active_setting)
     return false;
   return true;
 }
@@ -381,7 +381,7 @@ class MergeToAugmented : public MergeToEffective {
       // controlled by policy. Return the plain active value instead of an
       // augmented dictionary.
       if (values.active_setting)
-        return base::WrapUnique(values.active_setting->DeepCopy());
+        return base::Value::ToUniquePtrValue(values.active_setting->Clone());
       return nullptr;
     }
 
@@ -403,7 +403,7 @@ class MergeToAugmented : public MergeToEffective {
       }
       if (values.active_setting) {
         // Unmanaged networks have assigned (active) values.
-        return base::WrapUnique(values.active_setting->DeepCopy());
+        return base::Value::ToUniquePtrValue(values.active_setting->Clone());
       }
       LOG(ERROR) << "Field has no effective value: " << key;
       return nullptr;
@@ -470,7 +470,7 @@ class MergeToAugmented : public MergeToEffective {
       augmented_value->SetKey(::onc::kAugmentationDeviceEditable,
                               base::Value(true));
     }
-    if (augmented_value->empty())
+    if (augmented_value->DictEmpty())
       augmented_value.reset();
     return std::move(augmented_value);
   }

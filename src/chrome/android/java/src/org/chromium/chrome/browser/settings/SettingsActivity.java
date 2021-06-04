@@ -27,6 +27,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -37,13 +38,13 @@ import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsControlle
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsSettings;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditUiFactory;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEntryFragmentViewBase;
+import org.chromium.chrome.browser.privacy_sandbox.FlocSettingsFragment;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragment;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -51,7 +52,7 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckCoordinator;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckUpdatesDelegateImpl;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
-import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
@@ -324,7 +325,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
                     new SafetyCheckUpdatesDelegateImpl(this), mSettingsLauncher,
-                    SigninActivityLauncherImpl.get());
+                    SyncConsentActivityLauncherImpl.get());
         }
         if (fragment instanceof PasswordCheckFragmentView) {
             PasswordCheckComponentUiFactory.create((PasswordCheckFragmentView) fragment,
@@ -343,7 +344,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SearchEngineSettings) {
             SearchEngineSettings settings = (SearchEngineSettings) fragment;
             settings.setDisableAutoSwitchRunnable(
-                    () -> LocaleManager.getInstance().setSearchEngineAutoSwitch(false));
+                    () -> AppHooks.get().getLocaleManager().setSearchEngineAutoSwitch(false));
             settings.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof ImageDescriptionsSettings) {
@@ -361,6 +362,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof PrivacySandboxSettingsFragment) {
             ((PrivacySandboxSettingsFragment) fragment)
+                    .setCctHelpers(LaunchIntentDispatcher::createCustomTabActivityIntent,
+                            IntentHandler::addTrustedIntentExtras);
+        }
+        if (fragment instanceof FlocSettingsFragment) {
+            ((FlocSettingsFragment) fragment)
                     .setCctHelpers(LaunchIntentDispatcher::createCustomTabActivityIntent,
                             IntentHandler::addTrustedIntentExtras);
         }

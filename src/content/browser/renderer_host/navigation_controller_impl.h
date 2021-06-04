@@ -18,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
@@ -30,6 +29,8 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/reload_type.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "services/network/public/mojom/source_location.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace content {
@@ -167,7 +168,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const GURL& url,
       const blink::LocalFrameToken* initiator_frame_token,
       int initiator_process_id,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       bool is_renderer_initiated,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
@@ -177,8 +178,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
+      network::mojom::SourceLocationPtr source_location,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      const base::Optional<blink::Impression>& impression);
+      const absl::optional<blink::Impression>& impression);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -344,7 +346,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   static std::unique_ptr<NavigationEntryImpl> CreateNavigationEntry(
       const GURL& url,
       Referrer referrer,
-      base::Optional<url::Origin> initiator_origin,
+      absl::optional<url::Origin> initiator_origin,
       SiteInstance* source_site_instance,
       ui::PageTransition transition,
       bool is_renderer_initiated,
@@ -353,6 +355,13 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       bool should_replace_entry,
       WebContents* web_contents);
+
+  // Called just before sending the commit to the renderer. Walks the
+  // session history entries for the committing FrameTreeNode, forward and
+  // backward from the pending entry. All contiguous and same-origin
+  // FrameNavigationEntries are serialized and added to |request|'s commit
+  // params.
+  void PopulateAppHistoryEntryVectors(NavigationRequest* request);
 
  private:
   friend class RestoreHelper;
@@ -488,6 +497,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool override_user_agent,
       bool should_replace_current_entry,
       bool has_user_gesture,
+      network::mojom::SourceLocationPtr source_location,
       blink::NavigationDownloadPolicy download_policy,
       ReloadType reload_type,
       NavigationEntryImpl* entry,
@@ -661,6 +671,16 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void LogStoragePartitionIdCrashKeys(
       const StoragePartitionId& original_partition_id,
       const StoragePartitionId& new_partition_id);
+
+  // Used by PopulateAppHistoryEntryVectors to initialize a single vector.
+  enum class Direction { kForward, kBack };
+  std::vector<mojom::AppHistoryEntryPtr> PopulateSingleAppHistoryEntryVector(
+      Direction direction,
+      int entry_index,
+      const url::Origin& pending_origin,
+      FrameTreeNode* node,
+      SiteInstance* site_instance,
+      int64_t previous_item_sequence_number);
 
   // ---------------------------------------------------------------------------
 

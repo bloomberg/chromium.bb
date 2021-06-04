@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/scheduling.h"
@@ -38,7 +39,7 @@ class LoadMoreTask : public offline_pages::Task {
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
     bool loaded_new_content_from_network = false;
-    base::Optional<RequestSchedule> request_schedule;
+    absl::optional<RequestSchedule> request_schedule;
     std::unique_ptr<StreamModelUpdateRequest> model_update_request;
   };
 
@@ -56,7 +57,11 @@ class LoadMoreTask : public offline_pages::Task {
   }
 
   void UploadActionsComplete(UploadActionsTask::Result result);
+  void QueryApiRequestComplete(
+      FeedNetwork::ApiResult<feedwire::Response> result);
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
+  void ProcessNetworkResponse(std::unique_ptr<feedwire::Response> response_body,
+                              NetworkResponseInfo response_info);
   void Done(LoadStreamStatus status);
 
   StreamType stream_type_;

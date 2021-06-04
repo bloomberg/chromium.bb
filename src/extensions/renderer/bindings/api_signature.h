@@ -10,13 +10,12 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/v8.h"
 
 namespace base {
 class Value;
-class ListValue;
 }
 
 namespace extensions {
@@ -56,13 +55,13 @@ class APISignature {
     // since it will include null-filled optional arguments. Populated if
     // parsing was successful. Note that the callback, if any, is included in
     // this list.
-    base::Optional<std::vector<v8::Local<v8::Value>>> arguments;
+    absl::optional<std::vector<v8::Local<v8::Value>>> arguments;
 
     // Whether the asynchronous response is handled by a callback or a promise.
     binding::AsyncResponseType async_type = binding::AsyncResponseType::kNone;
 
     // The parse error, if parsing failed.
-    base::Optional<std::string> error;
+    absl::optional<std::string> error;
   };
 
   struct JSONParseResult {
@@ -72,12 +71,12 @@ class APISignature {
     JSONParseResult(JSONParseResult&& other);
     JSONParseResult& operator=(JSONParseResult&& other);
 
-    bool succeeded() const { return !!arguments; }
+    bool succeeded() const { return !!arguments_list; }
 
     // The parsed JSON arguments, with null-filled optional arguments filled in.
     // Populated if parsing was successful. Does not include the callback (if
     // any).
-    std::unique_ptr<base::ListValue> arguments;
+    std::unique_ptr<base::Value> arguments_list;
 
     // The callback, if one was provided.
     v8::Local<v8::Function> callback;
@@ -86,7 +85,7 @@ class APISignature {
     binding::AsyncResponseType async_type = binding::AsyncResponseType::kNone;
 
     // The parse error, if parsing failed.
-    base::Optional<std::string> error;
+    absl::optional<std::string> error;
   };
 
   // Parses |arguments| against this signature, returning the result and

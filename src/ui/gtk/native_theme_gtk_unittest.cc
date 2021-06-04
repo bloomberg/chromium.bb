@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gtk/native_theme_gtk.h"
-
+#include <memory>
 #include <tuple>
 
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/buildflag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/gtk/gtk_compat.h"
-#include "ui/gtk/gtk_util.h"
+#include "ui/gtk/gtk_ui_factory.h"
 #include "ui/native_theme/native_theme_color_id.h"
 #include "ui/native_theme/test/color_utils.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 namespace gtk {
 
@@ -25,11 +24,7 @@ class NativeThemeGtkRedirectedEquivalenceTest
     : public testing::TestWithParam<
           std::tuple<ui::NativeTheme::ColorScheme, ui::NativeTheme::ColorId>> {
  public:
-  NativeThemeGtkRedirectedEquivalenceTest() {
-    static bool loaded = LoadGtk(BUILDFLAG(GTK_VERSION));
-    CHECK(loaded);
-    GtkInitFromCommandLine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-  }
+  NativeThemeGtkRedirectedEquivalenceTest() { gtk_ui_ = BuildGtkUi(); }
 
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<
@@ -42,6 +37,9 @@ class NativeThemeGtkRedirectedEquivalenceTest
            ui::test::ColorIdToString(
                std::get<ui::NativeTheme::ColorId>(param_tuple));
   }
+
+ protected:
+  views::LinuxUI* gtk_ui() { return gtk_ui_.get(); }
 
  private:
   static std::string ColorSchemeToString(ui::NativeTheme::ColorScheme scheme) {
@@ -58,6 +56,8 @@ class NativeThemeGtkRedirectedEquivalenceTest
         return "kPlatformHighContrast";
     }
   }
+
+  std::unique_ptr<views::LinuxUI> gtk_ui_;
 };
 
 }  // namespace
@@ -68,7 +68,7 @@ TEST_P(NativeThemeGtkRedirectedEquivalenceTest, GetSystemColor) {
   auto color_id = std::get<ui::NativeTheme::ColorId>(param_tuple);
 
   // Verifies that colors with and without the Color Provider are the same.
-  auto* native_theme_gtk = NativeThemeGtk::instance();
+  auto* native_theme_gtk = gtk_ui()->GetNativeTheme(nullptr);
 
   ui::test::PrintableSkColor original{
       native_theme_gtk->GetSystemColor(color_id, color_scheme)};

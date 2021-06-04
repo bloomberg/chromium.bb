@@ -66,9 +66,9 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   // NearbyShareCertificateStorage
   std::vector<std::string> GetPublicCertificateIds() const override;
   void GetPublicCertificates(PublicCertificateCallback callback) override;
-  base::Optional<std::vector<NearbySharePrivateCertificate>>
+  absl::optional<std::vector<NearbySharePrivateCertificate>>
   GetPrivateCertificates() const override;
-  base::Optional<base::Time> NextPublicCertificateExpirationTime()
+  absl::optional<base::Time> NextPublicCertificateExpirationTime()
       const override;
   void ReplacePrivateCertificates(
       const std::vector<NearbySharePrivateCertificate>& private_certificates)
@@ -89,7 +89,8 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   enum class InitStatus { kUninitialized, kInitialized, kFailed };
 
   void Initialize();
-  void OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status);
+  void OnDatabaseInitialized(base::TimeTicks initialize_start_time,
+                             leveldb_proto::Enums::InitStatus status);
   void FinishInitialization(bool success);
 
   void OnDatabaseDestroyedReinitialize(bool success);

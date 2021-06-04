@@ -35,6 +35,7 @@
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_paths.h"
 #include "crypto/sha2.h"
+#include "media/cdm/cdm_capability.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -113,16 +114,18 @@ void RegisterWidevineCdmWithChrome(
   // This check must be a subset of the check in VerifyInstallation() to
   // avoid the case where the CDM is accepted by the component updater
   // but not registered.
-  content::CdmCapability capability;
+  media::CdmCapability capability;
   if (!ParseCdmManifest(*manifest, &capability)) {
     VLOG(1) << "Not registering Widevine CDM due to malformed manifest.";
     return;
   }
 
   VLOG(1) << "Register Widevine CDM with Chrome";
-  content::CdmInfo cdm_info(kWidevineCdmDisplayName, kWidevineCdmGuid,
-                            cdm_version, cdm_path, kWidevineCdmFileSystemId,
-                            std::move(capability), kWidevineKeySystem, false);
+  content::CdmInfo cdm_info(
+      kWidevineKeySystem, content::CdmInfo::Robustness::kSoftwareSecure,
+      std::move(capability), /*supports_sub_key_systems=*/false,
+      kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version, cdm_path,
+      kWidevineCdmFileSystemId);
   CdmRegistry::GetInstance()->RegisterCdm(cdm_info);
 }
 #endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -214,7 +217,7 @@ bool WidevineCdmComponentInstallerPolicy::VerifyInstallation(
     const base::FilePath& install_dir) const {
   base::FilePath cdm_path = GetCdmPathFromInstallDir(install_dir);
 
-  content::CdmCapability capability;
+  media::CdmCapability capability;
   return IsCdmManifestCompatibleWithChrome(manifest) &&
          base::PathExists(cdm_path) && ParseCdmManifest(manifest, &capability);
 }

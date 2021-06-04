@@ -30,10 +30,10 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -70,7 +70,7 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSigninErrorWebView(Browser* browser) {
   return CreateDialogWebView(browser, GURL(chrome::kChromeUISigninErrorURL),
-                             kSigninErrorDialogHeight, base::nullopt);
+                             kSigninErrorDialogHeight, absl::nullopt);
 }
 
 // static
@@ -212,7 +212,7 @@ SigninViewControllerDelegateViews::CreateDialogWebView(
     Browser* browser,
     const GURL& url,
     int dialog_height,
-    base::Optional<int> opt_width) {
+    absl::optional<int> opt_width) {
   int dialog_width = opt_width.value_or(kModalDialogWidth);
   views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(url);

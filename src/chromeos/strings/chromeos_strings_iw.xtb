@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">כדי להתחיל, יש למקם את המסמך על הסורק וללחוץ על 'סריקה'</translation>
 <translation id="2872961005593481000">כיבוי</translation>
 <translation id="2878387241690264070">בוצעה פריקה של <ph name="RATE" /> ב-<ph name="NUM_SECONDS" /> שניות.</translation>
+<translation id="2983662233540284543">לומדים מיוצרי משחקים, מקבלים אפליקציות לעיצוב משחקים ועוד</translation>
 <translation id="3008341117444806826">רענון</translation>
 <translation id="3009958530611748826">בחירת תיקייה לשמירה</translation>
 <translation id="3054177598518735801">mA<ph name="CURRENT_VALUE" /></translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">אימות</translation>
 <translation id="5154917547274118687">זיכרון</translation>
 <translation id="5168185087976003268">תקינות הסוללה</translation>
+<translation id="5170568018924773124">הצגה בתיקייה</translation>
+<translation id="519607504553633437">עיצוב ופיתוח משחקים</translation>
 <translation id="5212543919916444558">לא מצאתי במסך משהו שאוכל לעזור בו.
 אפשר להקיש על המיקרופון כדי לשאול אותי משהו.</translation>
 <translation id="5222676887888702881">יציאה</translation>
@@ -201,6 +204,7 @@
 <translation id="5275828089655680674">הפעלת תרחישים מחדש</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">גרסה <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">העברת חלון לשולחן עבודה וירטואלי</translation>
 <translation id="5315873049536339193">זהות</translation>
 <translation id="5317780077021120954">שמירה</translation>
 <translation id="5318334351163689047">‏בקשות TCP נכשלו</translation>
@@ -222,6 +226,7 @@
 <translation id="5669267381087807207">ההפעלה מתבצעת</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">משפחה</translation>
+<translation id="5752751666635965375">רוצה ליצור משחק משלך?</translation>
 <translation id="5760715441271661976">מצב הפורטל</translation>
 <translation id="5797428682393400134">הבדיקה הסתיימה בהצלחה</translation>
 <translation id="5832805196449965646">הוספת משתמש</translation>
@@ -294,6 +299,7 @@
 <translation id="7216409898977639127">ספק שירות סלולרי</translation>
 <translation id="7271040990581020067">הסורק נמצא בשימוש כרגע. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">מכשירים ברשת</translation>
 <translation id="7359657277149375382">סוג קובץ</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -342,6 +348,7 @@
 <translation id="8372477600026034341">מארחים נוספים</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> זה מנוהל על ידי ארגון</translation>
 <translation id="8398927464629426868">קצב הטעינה או קצב הפריקה הנוכחיים של המכשיר</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">שם ספק ביתי</translation>
 <translation id="8475690821716466388">‏רשת ה-Wi-Fi מאובטחת בפרוטוקול WEP PSK חלש</translation>
 <translation id="8477551185774834963">‏זמן האחזור של ה-DNS חורג מעט מהסף המותר</translation>
@@ -351,6 +358,7 @@
 <translation id="8575298406870537639">ייתכן שהספק שלך ידרוש את האפשרות הזו כדי להתחבר לרשת שלו. למידע נוסף, ניתן לפנות לספק.</translation>
 <translation id="8576249514688522074">לא מאותחלת</translation>
 <translation id="8620617069779373398">סטטוס נדידה</translation>
+<translation id="8660881923941176839">פאונד</translation>
 <translation id="8675354002693747642">מפתח משותף מראש</translation>
 <translation id="871560550817059752">נכשלה – הדיו נגמר</translation>
 <translation id="8723108084122415655">הרשת שאינה מוגדרת כברירת מחדל חורגת מסף זמן האחזור</translation>
@@ -366,6 +374,7 @@
 <translation id="8881098542468797602">הבדיקה הושלמה בהצלחה</translation>
 <translation id="8898840733695078011">עוצמת אות</translation>
 <translation id="8910721771319628100">רשת ברירת המחדל חורגת מסף זמן האחזור</translation>
+<translation id="8918637186205009138">ה-<ph name="DEVICE_TYPE" /> של <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">נכשלה – המגש לא נמצא</translation>
 <translation id="8928727111548978589">נכשלה – הנייר נגמר</translation>
 <translation id="8930622219860340959">אלחוטי</translation>
@@ -383,6 +392,7 @@
 <translation id="9149391708638971077">הפעלה של בדיקת זיכרון</translation>
 <translation id="9173638680043580060">נותרה פחות מדקה</translation>
 <translation id="9190063653747922532">‏L2TP/‏IPSec + מפתח משותף מראש</translation>
+<translation id="9211490828691860325">כל שולחנות העבודה הווירטואליים</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">לא פעיל</translation>
 <translation id="960719561871045870">קוד ספק</translation>

@@ -79,7 +79,8 @@ struct LegacyDOMSnapshotAgent::VectorStringHashTraits
   }
 
   static void ConstructDeletedValue(Vector<String>& vec, bool) {
-    new (NotNull, &vec) Vector<String>(WTF::kHashTableDeletedValue);
+    new (NotNullTag::kNotNull, &vec)
+        Vector<String>(WTF::kHashTableDeletedValue);
   }
 
   static bool IsDeletedValue(const Vector<String>& vec) {
@@ -112,6 +113,8 @@ Response LegacyDOMSnapshotAgent::GetSnapshot(
         layout_tree_nodes,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>*
         computed_styles) {
+  document->View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kInspector);
   // Setup snapshot.
   dom_nodes_ =
       std::make_unique<protocol::Array<protocol::DOMSnapshot::DOMNode>>();

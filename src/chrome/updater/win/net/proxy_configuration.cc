@@ -9,7 +9,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/policy_manager.h"
+#include "chrome/updater/policy/service.h"
 #include "chrome/updater/win/net/net_util.h"
 #include "chrome/updater/win/net/proxy_info.h"
 #include "chrome/updater/win/net/scoped_winttp_proxy_info.h"
@@ -87,13 +87,13 @@ int ProxyConfiguration::DoGetAccessType() const {
                               : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
 }
 
-base::Optional<ScopedWinHttpProxyInfo> ProxyConfiguration::GetProxyForUrl(
+absl::optional<ScopedWinHttpProxyInfo> ProxyConfiguration::GetProxyForUrl(
     HINTERNET session_handle,
     const GURL& url) const {
   return DoGetProxyForUrl(session_handle, url);
 }
 
-base::Optional<ScopedWinHttpProxyInfo> ProxyConfiguration::DoGetProxyForUrl(
+absl::optional<ScopedWinHttpProxyInfo> ProxyConfiguration::DoGetProxyForUrl(
     HINTERNET session_handle,
     const GURL& url) const {
   // Detect proxy settings using Web Proxy Auto Detection (WPAD).
@@ -150,7 +150,7 @@ base::Optional<ScopedWinHttpProxyInfo> ProxyConfiguration::DoGetProxyForUrl(
 
 void SetProxyForRequest(
     const HINTERNET request_handle,
-    const base::Optional<ScopedWinHttpProxyInfo>& winhttp_proxy_info) {
+    const absl::optional<ScopedWinHttpProxyInfo>& winhttp_proxy_info) {
   // Set the proxy option on the request handle.
   if (winhttp_proxy_info.has_value() && winhttp_proxy_info.value().IsValid()) {
     const ScopedWinHttpProxyInfo& proxy_info = winhttp_proxy_info.value();
@@ -164,9 +164,10 @@ void SetProxyForRequest(
 }
 
 scoped_refptr<ProxyConfiguration> GetProxyConfiguration() {
-  std::unique_ptr<PolicyManagerInterface> policy_manager = GetPolicyManager();
+  std::unique_ptr<PolicyService> policy_service = GetUpdaterPolicyService();
+
   std::string policy_proxy_mode;
-  if (policy_manager->GetProxyMode(&policy_proxy_mode) &&
+  if (policy_service->GetProxyMode(nullptr, &policy_proxy_mode) &&
       policy_proxy_mode.compare(kProxyModeSystem) != 0) {
     DVLOG(3) << "Using policy proxy " << policy_proxy_mode;
     bool auto_detect = false;
@@ -176,7 +177,7 @@ scoped_refptr<ProxyConfiguration> GetProxyConfiguration() {
 
     if (policy_proxy_mode.compare(kProxyModeFixedServers) == 0) {
       std::string policy_proxy_url;
-      if (!policy_manager->GetProxyServer(&policy_proxy_url)) {
+      if (!policy_service->GetProxyServer(nullptr, &policy_proxy_url)) {
         VLOG(1) << "Fixed server mode proxy has no URL specified.";
         is_policy_config_valid = false;
       } else {
@@ -184,7 +185,7 @@ scoped_refptr<ProxyConfiguration> GetProxyConfiguration() {
       }
     } else if (policy_proxy_mode.compare(kProxyModePacScript) == 0) {
       std::string policy_pac_url;
-      if (!policy_manager->GetProxyServer(&policy_pac_url)) {
+      if (!policy_service->GetProxyServer(nullptr, &policy_pac_url)) {
         VLOG(1) << "PAC proxy policy has no PAC URL specified.";
         is_policy_config_valid = false;
       } else {
@@ -234,7 +235,7 @@ int AutoProxyConfiguration::DoGetAccessType() const {
   return WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY;
 }
 
-base::Optional<ScopedWinHttpProxyInfo> AutoProxyConfiguration::DoGetProxyForUrl(
+absl::optional<ScopedWinHttpProxyInfo> AutoProxyConfiguration::DoGetProxyForUrl(
     HINTERNET,
     const GURL&) const {
   // When using automatic proxy settings, Windows will resolve the proxy

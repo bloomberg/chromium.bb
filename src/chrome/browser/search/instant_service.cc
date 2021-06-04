@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -81,9 +81,9 @@ base::DictionaryValue GetBackgroundInfoAsDict(
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
     const GURL& action_url,
-    const base::Optional<std::string>& collection_id,
-    const base::Optional<std::string>& resume_token,
-    const base::Optional<int> refresh_timestamp) {
+    const absl::optional<std::string>& collection_id,
+    const absl::optional<std::string>& resume_token,
+    const absl::optional<int> refresh_timestamp) {
   base::DictionaryValue background_info;
   background_info.SetKey(kNtpCustomBackgroundURL,
                          base::Value(background_url.spec()));
@@ -251,13 +251,13 @@ InstantService::InstantService(Profile* profile)
 
   image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
       std::make_unique<ImageDecoderImpl>(),
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess());
 
-  theme_observer_.Add(native_theme_);
+  theme_observation_.Observe(native_theme_);
 
   if (background_service_)
-    background_service_observer_.Add(background_service_);
+    background_service_observation_.Observe(background_service_);
 }
 
 InstantService::~InstantService() = default;
@@ -456,7 +456,7 @@ void InstantService::SetCustomBackgroundInfo(
   background_updated_timestamp_ = base::TimeTicks::Now();
 
   if (!collection_id.empty() && is_backdrop_collection) {
-    background_service_->FetchNextCollectionImage(collection_id, base::nullopt);
+    background_service_->FetchNextCollectionImage(collection_id, absl::nullopt);
   } else if (background_url.is_valid() && is_backdrop_url) {
     const GURL& thumbnail_url =
         background_service_->GetThumbnailUrl(background_url);
@@ -466,7 +466,7 @@ void InstantService::SetCustomBackgroundInfo(
 
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url,
-        base::nullopt, base::nullopt, base::nullopt);
+        absl::nullopt, absl::nullopt, absl::nullopt);
     pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
   } else {
     pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
@@ -506,9 +506,9 @@ NtpTheme* InstantService::GetInitializedNtpTheme() {
 }
 
 void InstantService::SetNativeThemeForTesting(ui::NativeTheme* theme) {
-  theme_observer_.RemoveAll();
+  theme_observation_.Reset();
   native_theme_ = theme;
-  theme_observer_.Add(native_theme_);
+  theme_observation_.Observe(native_theme_);
 }
 
 void InstantService::Shutdown() {
@@ -543,7 +543,7 @@ void InstantService::OnNextCollectionImageAvailable() {
 
 void InstantService::OnNtpBackgroundServiceShuttingDown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  background_service_observer_.RemoveAll();
+  background_service_observation_.Reset();
   background_service_ = nullptr;
 }
 
@@ -851,7 +851,7 @@ bool InstantService::IsCustomBackgroundDisabledByPolicy() {
       pref_service_->IsManagedPreference(prefs::kNtpCustomBackgroundDict);
   if (managed) {
     DCHECK(
-        pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+        pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict)->DictEmpty());
   }
   return managed;
 }

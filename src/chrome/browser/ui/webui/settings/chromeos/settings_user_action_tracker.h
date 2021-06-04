@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/per_session_settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace settings {
@@ -42,6 +42,8 @@ class SettingsUserActionTracker : public mojom::UserActionRecorder {
                            TestRecordSettingChangedBool);
   FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
                            TestRecordSettingChangedInt);
+  FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
+                           TestRecordSettingChangedString);
   FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
                            TestRecordSettingChangedBoolPref);
   FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,

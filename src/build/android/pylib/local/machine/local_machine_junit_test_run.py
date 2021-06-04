@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import collections
 import json
 import logging
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import zipfile
 
+from six.moves import range  # pylint: disable=redefined-builtin
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_run
@@ -34,11 +36,6 @@ _EXCLUDED_SUITES = {
     'touch_to_fill_junit_tests',
 }
 
-# Running time for chrome_junit_tests locally:
-# 1 shard: 3 min 15 sec, 4 shards: 1 min 29 sec,
-# 6 shards: 1 min 10 sec, 8 shards 1 min 6 sec,
-# 10 shards: 1 min 0 sec, 12 shards 1 min 10 sec, 16 shards: 1 min 4 sec
-_MAX_SHARDS = 10
 
 # It can actually take longer to run if you shard too much, especially on
 # smaller suites. Locally media_base_junit_tests takes 4.3 sec with 1 shard,
@@ -125,6 +122,8 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
     # This avoids searching through the classparth jars for tests classes,
     # which takes about 1-2 seconds.
+    # Do not shard when a test filter is present since we do not know at this
+    # point which tests will be filtered out.
     if (self._test_instance.shards == 1 or self._test_instance.test_filter
         or self._test_instance.suite in _EXCLUDED_SUITES):
       test_classes = []
@@ -204,7 +203,11 @@ def ChooseNumOfShards(test_classes, shards):
   if shards > (len(test_classes) // _MIN_CLASSES_PER_SHARD) or shards < 1:
     shards = max(1, (len(test_classes) // _MIN_CLASSES_PER_SHARD))
 
-  shards = min(shards, (multiprocessing.cpu_count() // 2) + 1, _MAX_SHARDS)
+  # Local tests of explicit --shard values show that max speed is achieved
+  # at cpu_count() / 2.
+  # Using -XX:TieredStopAtLevel=1 is required for this result. The flag reduces
+  # CPU time by two-thirds, making sharding more effective.
+  shards = max(1, min(shards, multiprocessing.cpu_count() // 2))
   # Can have at minimum one test_class per shard.
   shards = min(len(test_classes), shards)
 
@@ -270,20 +273,11 @@ def _GetTestClasses(file_path):
   test_jar_paths = test_jar_paths.split(':')
 
   test_classes = []
-  for test_jar in test_jar_paths:
+  for test_jar_path in test_jar_paths:
     # Avoid searching through jars that are for the test runner.
     # TODO(crbug.com/1144077): Use robolectric buildconfig file arg.
-    if 'third_party/robolectric/' in test_jar:
+    if 'third_party/robolectric/' in test_jar_path:
       continue
-
-    test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT, test_jar)
-
-    # Bots write the classpath indexed from src.
-    if not os.path.exists(test_jar_path):
-      src_relpath = os.path.relpath(constants.DIR_SOURCE_ROOT) + os.path.sep
-      if test_jar.startswith(src_relpath):
-        test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT,
-                                     test_jar[len(src_relpath):])
 
     test_classes += _GetTestClassesFromJar(test_jar_path)
 

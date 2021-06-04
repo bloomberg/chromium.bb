@@ -34,27 +34,30 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as BrowserSDK from '../../browser_sdk/browser_sdk.js';
-import * as Components from '../../components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as DataGrid from '../../data_grid/data_grid.js';
-import * as HARImporter from '../../har_importer/har_importer.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as HAR from '../../models/har/har.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as PerfUI from '../../perf_ui/perf_ui.js';
-import * as ThemeSupport from '../../theme_support/theme_support.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 
-import {HARWriter} from './HARWriter.js';
-import {Events, NetworkGroupNode, NetworkLogViewInterface, NetworkNode, NetworkRequestNode} from './NetworkDataGridNode.js';  // eslint-disable-line no-unused-vars
+import type {NetworkLogViewInterface, NetworkNode} from './NetworkDataGridNode.js';
+import {Events, NetworkGroupNode, NetworkRequestNode} from './NetworkDataGridNode.js';  // eslint-disable-line no-unused-vars
 import {NetworkFrameGrouper} from './NetworkFrameGrouper.js';
 import {NetworkLogViewColumns} from './NetworkLogViewColumns.js';
-import {FilterOptions} from './NetworkPanel.js';  // eslint-disable-line no-unused-vars
-import {NetworkTimeBoundary, NetworkTimeCalculator, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+import type {FilterOptions} from './NetworkPanel.js'; // eslint-disable-line no-unused-vars
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
+import {NetworkTimeBoundary, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
 
 const UIStrings = {
   /**
@@ -377,7 +380,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
       networkLogLargeRowsSetting: Common.Settings.Setting<boolean>) {
     super();
     this.setMinimumSize(50, 64);
-    this.registerRequiredCSS('panels/network/networkLogView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/network/networkLogView.css', {enableLegacyPatching: false});
 
     this.element.id = 'network-container';
     this.element.classList.add('no-node-selected');
@@ -499,11 +502,11 @@ export class NetworkLogView extends UI.Widget.VBox implements
         .addChangeListener(this._invalidateAllItems.bind(this, false), this);
 
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.NetworkManager.NetworkManager, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(
-        SDK.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(
-        SDK.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
-    SDK.NetworkLog.NetworkLog.instance().addEventListener(SDK.NetworkLog.Events.Reset, this._reset, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(
+        Logs.NetworkLog.Events.RequestAdded, this._onRequestUpdated, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(
+        Logs.NetworkLog.Events.RequestUpdated, this._onRequestUpdated, this);
+    Logs.NetworkLog.NetworkLog.instance().addEventListener(Logs.NetworkLog.Events.Reset, this._reset, this);
 
     this._updateGroupByFrame();
     Common.Settings.Settings.instance()
@@ -731,13 +734,12 @@ export class NetworkLogView extends UI.Widget.VBox implements
     let harRoot;
     try {
       // HARRoot and JSON.parse might throw.
-      harRoot = new HARImporter.HARFormat.HARRoot(JSON.parse(outputStream.data()));
+      harRoot = new HAR.HARFormat.HARRoot(JSON.parse(outputStream.data()));
     } catch (e) {
       this._harLoadFailed(e);
       return;
     }
-    SDK.NetworkLog.NetworkLog.instance().importRequests(
-        HARImporter.HARImporter.Importer.requestsFromHARLog(harRoot.log));
+    Logs.NetworkLog.NetworkLog.instance().importRequests(HAR.Importer.Importer.requestsFromHARLog(harRoot.log));
   }
 
   _harLoadFailed(message: string): void {
@@ -963,7 +965,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
     let maxTime = -1;
 
     let nodeCount = 0;
-    for (const request of SDK.NetworkLog.NetworkLog.instance().requests()) {
+    for (const request of Logs.NetworkLog.NetworkLog.instance().requests()) {
       const node = networkRequestToNode.get(request);
       if (!node) {
         continue;
@@ -1082,7 +1084,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   }
 
   _invalidateAllItems(deferUpdate?: boolean): void {
-    this._staleRequests = new Set(SDK.NetworkLog.NetworkLog.instance().requests());
+    this._staleRequests = new Set(Logs.NetworkLog.NetworkLog.instance().requests());
     if (deferUpdate) {
       this.scheduleRefresh();
     } else {
@@ -1544,14 +1546,17 @@ export class NetworkLogView extends UI.Widget.VBox implements
   }
 
   _harRequests(): SDK.NetworkRequest.NetworkRequest[] {
-    return SDK.NetworkLog.NetworkLog.instance().requests().filter(NetworkLogView.HTTPRequestsFilter).filter(request => {
-      return request.finished ||
-          (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime);
-    });
+    return Logs.NetworkLog.NetworkLog.instance()
+        .requests()
+        .filter(NetworkLogView.HTTPRequestsFilter)
+        .filter(request => {
+          return request.finished ||
+              (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime);
+        });
   }
 
   async _copyAll(): Promise<void> {
-    const harArchive = {log: await SDK.HARLog.HARLog.build(this._harRequests())};
+    const harArchive = {log: await HAR.Log.Log.build(this._harRequests())};
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(JSON.stringify(harArchive, null, 2));
   }
 
@@ -1561,7 +1566,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   }
 
   async _copyAllCurlCommand(platform: string): Promise<void> {
-    const commands = await this._generateAllCurlCommand(SDK.NetworkLog.NetworkLog.instance().requests(), platform);
+    const commands = await this._generateAllCurlCommand(Logs.NetworkLog.NetworkLog.instance().requests(), platform);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
 
@@ -1571,7 +1576,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   }
 
   async _copyAllFetchCall(includeCookies: boolean): Promise<void> {
-    const commands = await this._generateAllFetchCall(SDK.NetworkLog.NetworkLog.instance().requests(), includeCookies);
+    const commands = await this._generateAllFetchCall(Logs.NetworkLog.NetworkLog.instance().requests(), includeCookies);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
 
@@ -1581,7 +1586,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   }
 
   async _copyAllPowerShellCommand(): Promise<void> {
-    const commands = await this._generateAllPowerShellCommand(SDK.NetworkLog.NetworkLog.instance().requests());
+    const commands = await this._generateAllPowerShellCommand(Logs.NetworkLog.NetworkLog.instance().requests());
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
 
@@ -1601,7 +1606,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
     const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
     this._progressBarContainer.appendChild(progressIndicator.element);
-    await HARWriter.write(stream, this._harRequests(), progressIndicator);
+    await HAR.Writer.Writer.write(stream, this._harRequests(), progressIndicator);
     progressIndicator.done();
     stream.close();
   }
@@ -1639,13 +1644,10 @@ export class NetworkLogView extends UI.Widget.VBox implements
       return false;
     }
     if (this._onlyIssuesFilterUI.checked() &&
-        !BrowserSDK.RelatedIssue.hasIssueOfCategory(request, SDK.Issue.IssueCategory.SameSiteCookie)) {
+        !IssuesManager.RelatedIssue.hasIssueOfCategory(request, IssuesManager.Issue.IssueCategory.SameSiteCookie)) {
       return false;
     }
     if (this._onlyBlockedRequestsUI.checked() && !request.wasBlocked() && !request.corsErrorStatus()) {
-      return false;
-    }
-    if (request.statusText === 'Service Worker Fallback Required') {
       return false;
     }
     for (let i = 0; i < this._filters.length; ++i) {
@@ -2003,15 +2005,10 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
     let inferredMethod = 'GET';
     const data = [];
-    const requestContentType = request.requestContentType();
     const formData = await request.requestFormData();
-    if (requestContentType && requestContentType.startsWith('application/x-www-form-urlencoded') && formData) {
+    if (formData) {
       // Note that formData is not necessarily urlencoded because it might for example
       // come from a fetch request made with an explicitly unencoded body.
-      data.push('--data-raw ' + escapeString(formData));
-      ignoredHeaders.add('content-length');
-      inferredMethod = 'POST';
-    } else if (formData) {
       data.push('--data-raw ' + escapeString(formData));
       ignoredHeaders.add('content-length');
       inferredMethod = 'POST';

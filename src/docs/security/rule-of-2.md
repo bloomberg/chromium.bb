@@ -104,6 +104,22 @@ good) or [origin
 isolation](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=IsolateOrigins)
 (even better).
 
+### Processing, Parsing, And Deserializing
+
+Turning a stream of bytes into a structured object is hard to do correctly and
+safely. For example, turning a stream of bytes into a sequence of Unicode code
+points, and from there into an HTML DOM tree with all its elements, attributes,
+and metadata, is very error-prone. The same is true of QUIC packets, video
+frames, and so on.
+
+Whenever the code branches on the byte values it's processing, the risk
+increases that an attacker can influence control flow and exploit bugs in the
+implementation.
+
+Although we are all human and mistakes are always possible, a function that does
+not branch on input values has a better chance of being free of vulnerabilities.
+(Consider an arithmetic function, such as SHA-256, for example.)
+
 ## Solutions To This Puzzle
 
 Chrome Security Team will generally not approve landing a CL or new feature
@@ -262,7 +278,7 @@ source, at high privilege, and in an unsafe language. These types are
 fundamental for passing data between processes using IPC, tend to have simpler
 grammar or structure, and/or have been audited or fuzzed heavily.
 
-* `GURL`
+* `GURL` and `url::Origin`
 * `SkBitmap`
 * `SkPixmap`
 * Protocol buffers (see above; this is not a preferred option and should be

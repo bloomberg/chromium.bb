@@ -29,10 +29,15 @@ class BaseKeyValAPI : public testing::Test {
 #if CONFIG_AV1_ENCODER
     aom_codec_iface_t *iface_cx = aom_codec_av1_cx();
     aom_codec_enc_cfg_t enc_cfg;
-
+#if CONFIG_REALTIME_ONLY
+    const int usage = 1;
+#else
+    const int usage = 0;
+#endif
     EXPECT_EQ(AOM_CODEC_OK,
-              aom_codec_enc_config_default(iface_cx, &enc_cfg, 0));
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc_, iface_cx, &enc_cfg, 0));
+              aom_codec_enc_config_default(iface_cx, &enc_cfg, usage));
+    EXPECT_EQ(AOM_CODEC_OK,
+              aom_codec_enc_init(&enc_, iface_cx, &enc_cfg, usage));
 #endif
 #if CONFIG_AV1_DECODER
     aom_codec_iface_t *iface_dx = aom_codec_av1_dx();

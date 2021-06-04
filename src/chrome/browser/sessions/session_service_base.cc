@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -42,7 +43,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #endif
 
 #if defined(OS_MAC)
@@ -277,7 +278,7 @@ void SessionServiceBase::TabRestored(WebContents* tab, bool pinned) {
   if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
     return;
 
-  BuildCommandsForTab(session_tab_helper->window_id(), tab, -1, base::nullopt,
+  BuildCommandsForTab(session_tab_helper->window_id(), tab, -1, absl::nullopt,
                       pinned, nullptr);
   command_storage_manager()->StartSaveTimer();
 }
@@ -486,7 +487,7 @@ void SessionServiceBase::BuildCommandsForTab(
     const SessionID& window_id,
     WebContents* tab,
     int index_in_window,
-    base::Optional<tab_groups::TabGroupId> group,
+    absl::optional<tab_groups::TabGroupId> group,
     bool is_pinned,
     IdToRange* tab_to_available_range) {
   DCHECK(tab);
@@ -606,7 +607,7 @@ void SessionServiceBase::BuildCommandsForBrowser(
   for (int i = 0; i < tab_strip->count(); ++i) {
     WebContents* tab = tab_strip->GetWebContentsAt(i);
     DCHECK(tab);
-    const base::Optional<tab_groups::TabGroupId> group_id =
+    const absl::optional<tab_groups::TabGroupId> group_id =
         tab_strip->GetTabGroupForTab(i);
     BuildCommandsForTab(browser->session_id(), tab, i, group_id,
                         tab_strip->IsTabPinned(i), tab_to_available_range);
@@ -661,9 +662,8 @@ bool SessionServiceBase::ShouldTrackBrowser(Browser* browser) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Do not track Crostini apps or terminal.  Apps will fail since VMs are not
   // restarted on restore, and we don't want terminal to force the VM to start.
-  if (crostini::CrostiniAppIdFromAppName(browser->app_name()) ||
-      web_app::GetAppIdFromApplicationName(browser->app_name()) ==
-          crostini::kCrostiniTerminalSystemAppId) {
+  if (web_app::GetAppIdFromApplicationName(browser->app_name()) ==
+      crostini::kCrostiniTerminalSystemAppId) {
     return false;
   }
 

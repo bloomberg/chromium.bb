@@ -207,9 +207,9 @@ declare_args() {
   rtc_win_undef_unicode = false
 
   # When set to true, a capturer implementation that uses the
-  # Windows.Graphics.Capture APIs will be available for use. These APIs are
-  # available in the Win 10 SDK v10.0.19041.
-  rtc_enable_win_wgc = false
+  # Windows.Graphics.Capture APIs will be available for use. This introduces a
+  # dependency on the Win 10 SDK v10.0.17763.0.
+  rtc_enable_win_wgc = is_win
 }
 
 if (!build_with_mozilla) {
@@ -233,7 +233,6 @@ declare_args() {
   rtc_libvpx_build_vp9 = !build_with_mozilla
   rtc_build_opus = !build_with_mozilla
   rtc_build_ssl = !build_with_mozilla
-  rtc_build_usrsctp = !build_with_mozilla
 
   # Enable libevent task queues on platforms that support it.
   if (is_win || is_mac || is_ios || is_nacl || is_fuchsia ||
@@ -244,10 +243,6 @@ declare_args() {
     rtc_enable_libevent = true
     rtc_build_libevent = !build_with_mozilla
   }
-
-  # Build sources requiring GTK. NOTICE: This is not present in Chrome OS
-  # build environments, even if available for Chromium builds.
-  rtc_use_gtk = !build_with_chromium && !build_with_mozilla
 
   # Excluded in Chromium since its prerequisites don't require Pulse Audio.
   rtc_include_pulse_audio = !build_with_chromium
@@ -288,6 +283,14 @@ declare_args() {
   # Set this to true to exclude the transient suppressor in the audio processing
   # module from the build.
   rtc_exclude_transient_suppressor = false
+}
+
+declare_args() {
+  # Enable the dcsctp backend for DataChannels and related unittests
+  rtc_build_dcsctp = !build_with_mozilla && rtc_enable_sctp
+
+  # Enable the usrsctp backend for DataChannels and related unittests
+  rtc_build_usrsctp = !build_with_mozilla && rtc_enable_sctp
 }
 
 # Make it possible to provide custom locations for some libraries (move these
@@ -469,9 +472,13 @@ template("rtc_test") {
     }
     if (!build_with_chromium && is_android) {
       android_manifest = webrtc_root + "test/android/AndroidManifest.xml"
+      use_raw_android_executable = false
       min_sdk_version = 21
       target_sdk_version = 23
-      deps += [ webrtc_root + "test:native_test_java" ]
+      deps += [
+        "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
+        webrtc_root + "test:native_test_java",
+      ]
     }
 
     # When not targeting a simulator, building //base/test:google_test_runner

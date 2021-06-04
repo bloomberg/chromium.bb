@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
@@ -29,10 +28,13 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/command_buffer_id.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
@@ -76,14 +78,14 @@ ContextResult CommandBufferProxyImpl::Initialize(
   // prevent cleanup on destruction.
   auto channel = std::move(channel_);
 
-  GPUCreateCommandBufferConfig init_params;
-  init_params.surface_handle = surface_handle;
-  init_params.share_group_id =
+  auto params = mojom::CreateCommandBufferParams::New();
+  params->surface_handle = surface_handle;
+  params->share_group_id =
       share_group ? share_group->route_id_ : MSG_ROUTING_NONE;
-  init_params.stream_id = stream_id_;
-  init_params.stream_priority = stream_priority;
-  init_params.attribs = attribs;
-  init_params.active_url = active_url;
+  params->stream_id = stream_id_;
+  params->stream_priority = stream_priority;
+  params->attribs = attribs;
+  params->active_url = active_url;
 
   TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
   std::tie(shared_state_shm_, shared_state_mapping_) =
@@ -116,16 +118,17 @@ ContextResult CommandBufferProxyImpl::Initialize(
   // so it won't cause additional jank.
   // TODO(piman): Make this asynchronous (http://crbug.com/125248).
   ContextResult result = ContextResult::kSuccess;
-  bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
-      init_params, route_id_, std::move(region), &result, &capabilities_));
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  bool sent = channel->GetGpuChannel().CreateCommandBuffer(
+      std::move(params), route_id_, std::move(region), &result, &capabilities_);
   if (!sent) {
     channel->RemoveRoute(route_id_);
     LOG(ERROR) << "ContextResult::kTransientFailure: "
-                  "Failed to send GpuChannelMsg_CreateCommandBuffer.";
+                  "Failed to send GpuControl.CreateCommandBuffer.";
     return ContextResult::kTransientFailure;
   }
   if (result != ContextResult::kSuccess) {
-    DLOG(ERROR) << "Failure processing GpuChannelMsg_CreateCommandBuffer.";
+    DLOG(ERROR) << "Failure processing GpuControl.CreateCommandBuffer.";
     channel->RemoveRoute(route_id_);
     return result;
   }
@@ -299,9 +302,10 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForTokenInRange(
   TryUpdateState();
   if (!InRange(start, end, last_state_.token) &&
       last_state_.error == gpu::error::kNoError) {
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(route_id_, start, end,
-                                                         &state))) {
+    if (channel_->GetGpuChannel().WaitForTokenInRange(route_id_, start, end,
+                                                      &state)) {
       SetStateFromMessageReply(state);
     }
   }
@@ -333,10 +337,12 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForGetOffsetInRange(
   if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
        !InRange(start, end, last_state_.get_offset)) &&
       last_state_.error == gpu::error::kNoError) {
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(
-            route_id_, set_get_buffer_count, start, end, &state)))
+    if (channel_->GetGpuChannel().WaitForGetOffsetInRange(
+            route_id_, set_get_buffer_count, start, end, &state)) {
       SetStateFromMessageReply(state);
+    }
   }
   if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
        !InRange(start, end, last_state_.get_offset)) &&
@@ -404,7 +410,10 @@ void CommandBufferProxyImpl::DestroyTransferBuffer(int32_t id) {
     return;
 
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_, mojom::DeferredCommandBufferRequestParams::
+                             NewDestroyTransferBuffer(id))));
 }
 
 void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
@@ -452,6 +461,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   params.gpu_memory_buffer = std::move(handle);
   params.size = gfx::Size(width, height);
   params.format = gpu_memory_buffer->GetFormat();
+  params.plane = gfx::BufferPlane::DEFAULT;
   params.image_release_count = image_fence_sync;
 
   Send(new GpuCommandBufferMsg_CreateImage(route_id_, params));
@@ -647,7 +657,11 @@ void CommandBufferProxyImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {
   // TakeFrontBuffer should be a deferred message so that it's sequenced
   // correctly with respect to preceding ReturnFrontBuffer messages.
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_TakeFrontBuffer(route_id_, mailbox));
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_,
+              mojom::DeferredCommandBufferRequestParams::NewTakeFrontBuffer(
+                  mailbox))));
 }
 
 void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
@@ -659,7 +673,11 @@ void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
     return;
 
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_ReturnFrontBuffer(route_id_, mailbox, is_lost),
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_,
+              mojom::DeferredCommandBufferRequestParams::NewReturnFrontBuffer(
+                  mojom::ReturnFrontBufferParams::New(mailbox, is_lost)))),
       {sync_token});
 }
 
@@ -906,7 +924,10 @@ void CommandBufferProxyImpl::DisconnectChannel() {
     return;
   disconnected_ = true;
   channel_->VerifyFlush(UINT32_MAX);
-  channel_->Send(new GpuChannelMsg_DestroyCommandBuffer(route_id_));
+
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  channel_->GetGpuChannel().DestroyCommandBuffer(route_id_);
+
   channel_->RemoveRoute(route_id_);
   if (gpu_control_client_)
     gpu_control_client_->OnGpuControlLostContext();

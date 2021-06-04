@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.NumberOfChannels" units="units"
-    expires_after="2021-09-05">
+    expires_after="2021-11-14">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -42,7 +42,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.SampleRate384kHz" units="Hz"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -73,7 +73,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.latencyHintCategory" units="units"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -86,7 +86,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.latencyHintMilliSeconds" units="ms"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -142,7 +142,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.HardwareBufferSize" units="units"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -198,7 +198,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.ConvolverNode.ImpulseResponseLength" units="ms"
-    expires_after="2021-08-18">
+    expires_after="2021-10-17">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>

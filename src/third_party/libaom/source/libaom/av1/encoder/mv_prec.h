@@ -22,7 +22,7 @@ void av1_collect_mv_stats(AV1_COMP *cpi, int current_q);
 
 static AOM_INLINE int av1_frame_allows_smart_mv(const AV1_COMP *cpi) {
   const int gf_group_index = cpi->gf_frame_index;
-  const int gf_update_type = cpi->gf_group.update_type[gf_group_index];
+  const int gf_update_type = cpi->ppi->gf_group.update_type[gf_group_index];
   return !frame_is_intra_only(&cpi->common) &&
          !(gf_update_type == INTNL_OVERLAY_UPDATE ||
            gf_update_type == OVERLAY_UPDATE);

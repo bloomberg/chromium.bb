@@ -32,6 +32,11 @@
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#include "chrome/browser/chromeos/service_sandbox_type.h"
+#include "chromeos/services/libassistant/public/mojom/service.mojom.h"
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+
 AssistantClientImpl::AssistantClientImpl() {
   auto* session_manager = session_manager::SessionManager::Get();
   // AssistantClientImpl must be created before any user session is created.
@@ -162,6 +167,18 @@ void AssistantClientImpl::RequestNetworkConfig(
   ash::GetNetworkConfigService(std::move(receiver));
 }
 
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+void AssistantClientImpl::RequestLibassistantService(
+    mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
+        receiver) {
+  content::ServiceProcessHost::Launch<
+      chromeos::libassistant::mojom::LibassistantService>(
+      std::move(receiver), content::ServiceProcessHost::Options()
+                               .WithDisplayName("Libassistant Service")
+                               .Pass());
+}
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+
 void AssistantClientImpl::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
   if (initialized_)
@@ -171,9 +188,9 @@ void AssistantClientImpl::OnExtendedAccountInfoUpdated(
 }
 
 void AssistantClientImpl::OnUserProfileLoaded(const AccountId& account_id) {
-  if (!assistant_state_observer_.IsObservingSources() && !initialized_ &&
+  if (!assistant_state_observation_.IsObserving() && !initialized_ &&
       ash::AssistantState::Get()) {
-    assistant_state_observer_.Add(ash::AssistantState::Get());
+    assistant_state_observation_.Observe(ash::AssistantState::Get());
   }
 }
 

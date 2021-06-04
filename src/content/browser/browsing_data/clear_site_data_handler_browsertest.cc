@@ -131,8 +131,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    BrowserContext::GetBrowsingDataRemover(browser_context())
-        ->SetEmbedderDelegate(&embedder_delegate_);
+    browser_context()->GetBrowsingDataRemover()->SetEmbedderDelegate(
+        &embedder_delegate_);
 
     // Set up HTTP and HTTPS test servers that handle all hosts.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -160,7 +160,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   StoragePartition* storage_partition() {
-    return BrowserContext::GetDefaultStoragePartition(browser_context());
+    return browser_context()->GetDefaultStoragePartition();
   }
 
   // Adds a cookie for the |url|. Used in the cookie integration tests.
@@ -170,7 +170,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         storage_partition()->GetCookieManagerForBrowserProcess();
 
     std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-        url, "A=1", base::Time::Now(), base::nullopt /* server_time */));
+        url, "A=1", base::Time::Now(), absl::nullopt /* server_time */));
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
@@ -224,10 +224,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   bool RunScriptAndGetBool(const std::string& script) {
-    bool data;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(shell()->web_contents(),
-                                                     script, &data));
-    return data;
+    return EvalJs(shell()->web_contents(), script,
+                  EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractBool();
   }
 
  private:
@@ -855,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                                       false);
 
   base::RunLoop loop;
-  auto* remover = BrowserContext::GetBrowsingDataRemover(browser_context());
+  auto* remover = browser_context()->GetBrowsingDataRemover();
   remover->SetWouldCompleteCallbackForTesting(
       base::BindLambdaForTesting([&](base::OnceClosure callback) {
         std::move(callback).Run();

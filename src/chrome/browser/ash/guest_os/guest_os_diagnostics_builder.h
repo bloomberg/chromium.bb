@@ -7,9 +7,10 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "chrome/browser/ash/guest_os/guest_os_diagnostics.mojom.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace guest_os {
 
@@ -24,6 +25,7 @@ class DiagnosticsBuilder {
 
     // The default status of the entry is pass.
     explicit EntryBuilder(const std::string& requirement);
+    explicit EntryBuilder(int requirement_message_id);
 
     EntryBuilder(EntryBuilder&&);
     ~EntryBuilder();
@@ -31,18 +33,28 @@ class DiagnosticsBuilder {
     // Set the status to N/A.
     void SetNotApplicable();
 
-    // Set the status to fail. The top error message is also set to explanation.
-    void SetFail(const std::string& explanation);
-
-    // Set the status to fail.
-    void SetFail(
+    // Set the status to fail. By default, the associated top error is assumed
+    // to be the same as the explanation. You can call `OverrideTopError()` to
+    // change it. Also see `DiagnosticsBuilder::AddEntry()` for how the top
+    // error is applied.
+    EntryBuilder& SetFail(
         const std::string& explanation,
-        const std::string& top_error_message,
-        const base::Optional<std::string>& learn_more_link = base::nullopt);
+        const absl::optional<GURL>& learn_more_link = absl::nullopt);
+    void OverrideTopError(
+        const std::string& error,
+        const absl::optional<GURL>& learn_more_link = absl::nullopt);
+
+    // Version that accepting a message id.
+    EntryBuilder& SetFail(
+        int explanation_message_id,
+        const absl::optional<GURL>& learn_more_link = absl::nullopt);
+    void OverrideTopError(
+        int error_message_id,
+        const absl::optional<GURL>& learn_more_link = absl::nullopt);
 
    private:
-    mojom::DiagnosticEntryPtr entry;
-    mojom::DiagnosticTopErrorPtr top_error;
+    mojom::DiagnosticEntryPtr entry_;
+    mojom::DiagnosticMessagePtr overridden_top_error_;
   };
 
   // Add a new entry. If the top error hasn't been set, the top error inside the

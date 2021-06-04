@@ -37,7 +37,6 @@
 #include "compiler/translator/tree_ops/RemoveArrayLengthMethod.h"
 #include "compiler/translator/tree_ops/RemoveDynamicIndexing.h"
 #include "compiler/translator/tree_ops/RemoveInvariantDeclaration.h"
-#include "compiler/translator/tree_ops/RemovePow.h"
 #include "compiler/translator/tree_ops/RemoveUnreferencedVariables.h"
 #include "compiler/translator/tree_ops/ScalarizeVecAndMatConstructorArgs.h"
 #include "compiler/translator/tree_ops/SeparateDeclarations.h"
@@ -548,6 +547,12 @@ bool TCompiler::validateAST(TIntermNode *root)
     {
         bool valid = ValidateAST(root, &mDiagnostics, mValidateASTOptions);
 
+#if defined(ANGLE_ENABLE_ASSERTS)
+        if (!valid)
+        {
+            fprintf(stderr, "AST validation error(s):\n%s\n", mInfoSink.info.c_str());
+        }
+#endif
         // In debug, assert validation.  In release, validation errors will be returned back to the
         // application as internal ANGLE errors.
         ASSERT(valid);
@@ -561,6 +566,12 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
                                     const TParseContext &parseContext,
                                     ShCompileOptions compileOptions)
 {
+    mValidateASTOptions = {};
+    if (!validateAST(root))
+    {
+        return false;
+    }
+
     // Disallow expressions deemed too complex.
     if ((compileOptions & SH_LIMIT_EXPRESSION_COMPLEXITY) != 0 && !limitExpressionComplexity(root))
     {
@@ -634,10 +645,7 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
         return false;
     }
 
-    if ((compileOptions & SH_DONT_PRUNE_UNUSED_FUNCTIONS) == 0)
-    {
-        pruneUnusedFunctions(root);
-    }
+    pruneUnusedFunctions(root);
     if (IsSpecWithFunctionBodyNewScope(mShaderSpec, mShaderVersion))
     {
         if (!ReplaceShadowingVariables(this, root, &mSymbolTable))
@@ -717,14 +725,6 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     if ((compileOptions & SH_UNFOLD_SHORT_CIRCUIT) != 0)
     {
         if (!UnfoldShortCircuitAST(this, root))
-        {
-            return false;
-        }
-    }
-
-    if ((compileOptions & SH_REMOVE_POW_WITH_CONSTANT_EXPONENT) != 0)
-    {
-        if (!RemovePow(this, root, &mSymbolTable))
         {
             return false;
         }

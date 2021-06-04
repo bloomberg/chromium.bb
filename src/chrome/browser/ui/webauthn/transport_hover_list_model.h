@@ -5,29 +5,22 @@
 #ifndef CHROME_BROWSER_UI_WEBAUTHN_TRANSPORT_HOVER_LIST_MODEL_H_
 #define CHROME_BROWSER_UI_WEBAUTHN_TRANSPORT_HOVER_LIST_MODEL_H_
 
-#include <stddef.h>
+#include <string>
 #include <vector>
 
-#include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webauthn/hover_list_model.h"
-#include "chrome/browser/webauthn/authenticator_transport.h"
+#include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+
+namespace gfx {
+struct VectorIcon;
+}
 
 class TransportHoverListModel : public HoverListModel {
  public:
-  // Interface that the client should implement to learn when the user clicks on
-  // views that observe the model.
-  class Delegate {
-   public:
-    // Called when the given |transport| is selected by the user.
-    virtual void OnTransportSelected(AuthenticatorTransport transport) = 0;
-    // Called to trigger the native Windows API.
-    virtual void StartWinNativeApi() = 0;
-  };
-
-  TransportHoverListModel(base::flat_set<AuthenticatorTransport> transport_list,
-                          bool show_win_native_api_item,
-                          Delegate* delegate);
+  explicit TransportHoverListModel(
+      base::span<const AuthenticatorRequestDialogModel::Mechanism> mechanisms);
   ~TransportHoverListModel() override;
 
   // HoverListModel:
@@ -44,14 +37,8 @@ class TransportHoverListModel : public HoverListModel {
   bool StyleForTwoLines() const override;
 
  private:
-  // Contains an AuthenticatorTransport for each item in the list.
-  base::flat_set<AuthenticatorTransport> transport_list_;
-
-  // Indicates whether a button to dispatch the request to the native Windows
-  // API should be shown.
-  const bool show_win_native_api_item_ = false;
-
-  Delegate* const delegate_;  // Weak, may be nullptr.
+  const base::span<const AuthenticatorRequestDialogModel::Mechanism>
+      mechanisms_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportHoverListModel);
 };

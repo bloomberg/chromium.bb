@@ -169,6 +169,8 @@ StubResolverConfigReader::StubResolverConfigReader(PrefService* local_state,
   pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled, pref_callback);
   pref_change_registrar_.Add(prefs::kDnsOverHttpsMode, pref_callback);
   pref_change_registrar_.Add(prefs::kDnsOverHttpsTemplates, pref_callback);
+  pref_change_registrar_.Add(prefs::kAdditionalDnsQueryTypesEnabled,
+                             pref_callback);
 
   parental_controls_delay_timer_.Start(
       FROM_HERE, kParentalControlsCheckDelay,
@@ -196,6 +198,7 @@ void StubResolverConfigReader::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
   registry->RegisterStringPref(prefs::kDnsOverHttpsMode, std::string());
   registry->RegisterStringPref(prefs::kDnsOverHttpsTemplates, std::string());
+  registry->RegisterBooleanPref(prefs::kAdditionalDnsQueryTypesEnabled, true);
 }
 
 SecureDnsConfig StubResolverConfigReader::GetSecureDnsConfiguration(
@@ -227,7 +230,7 @@ bool StubResolverConfigReader::ShouldDisableDohForManaged() {
   if (base::IsMachineExternallyManaged())
     return true;
 #endif
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (g_browser_process->browser_policy_connector()->HasMachineLevelPolicies())
     return true;
 #endif
@@ -355,7 +358,7 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
       local_state_->GetString(prefs::kDnsOverHttpsTemplates);
   std::string server_method;
   std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+  absl::optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       servers_mojo;
   if (!doh_templates.empty() && secure_dns_mode != net::SecureDnsMode::kOff) {
     for (base::StringPiece server_template :
@@ -369,7 +372,7 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
                                           use_post);
 
       if (!servers_mojo.has_value()) {
-        servers_mojo = base::make_optional<
+        servers_mojo = absl::make_optional<
             std::vector<network::mojom::DnsOverHttpsServerPtr>>();
       }
 
@@ -384,7 +387,8 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
   if (update_network_service) {
     content::GetNetworkService()->ConfigureStubHostResolver(
         GetInsecureStubResolverEnabled(), secure_dns_mode,
-        std::move(servers_mojo));
+        std::move(servers_mojo),
+        local_state_->GetBoolean(prefs::kAdditionalDnsQueryTypesEnabled));
   }
 
   return SecureDnsConfig(secure_dns_mode, std::move(dns_over_https_servers),

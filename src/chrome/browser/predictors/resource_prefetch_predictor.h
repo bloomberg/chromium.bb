@@ -16,12 +16,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -32,6 +30,7 @@
 #include "components/sqlite_proto/key_value_data.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -120,7 +119,7 @@ struct OptimizationGuidePrediction {
   optimization_guide::OptimizationGuideDecision decision;
   PreconnectPrediction preconnect_prediction;
   std::vector<GURL> predicted_subresources;
-  base::Optional<base::TimeTicks> optimization_guide_prediction_arrived;
+  absl::optional<base::TimeTicks> optimization_guide_prediction_arrived;
 };
 
 // Contains logic for learning what can be prefetched and for kicking off
@@ -162,8 +161,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
       sqlite_proto::KeyValueData<RedirectData, internal::LastVisitTimeCompare>;
   using OriginDataMap =
       sqlite_proto::KeyValueData<OriginData, internal::LastVisitTimeCompare>;
-  using NavigationMap =
-      std::map<NavigationID, std::unique_ptr<PageRequestSummary>>;
 
   ResourcePrefetchPredictor(const LoadingPredictorConfig& config,
                             Profile* profile);
@@ -315,8 +312,9 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   std::unique_ptr<RedirectDataMap> host_redirect_data_;
   std::unique_ptr<OriginDataMap> origin_data_;
 
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_{this};
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
 
   // Indicates if all predictors data should be deleted after the
   // initialization is completed.

@@ -31,7 +31,6 @@
 #include "lib/jxl/common.h"
 #include "lib/jxl/dec_ans.h"
 #include "lib/jxl/dec_bit_reader.h"
-#include "lib/jxl/enc_ans.h"
 #include "lib/jxl/enc_bit_writer.h"
 #include "lib/jxl/entropy_coder.h"
 #include "lib/jxl/field_encodings.h"
@@ -62,7 +61,7 @@ static constexpr uint8_t kDefaultColorFactor = 84;
 static constexpr uint8_t kCFLFixedPointPrecision = 11;
 
 static constexpr U32Enc kColorFactorDist(Val(kDefaultColorFactor), Val(256),
-                                         BitsOffset(2, 8), BitsOffset(258, 12));
+                                         BitsOffset(8, 2), BitsOffset(16, 258));
 
 struct ColorCorrelationMap {
   ColorCorrelationMap() = default;

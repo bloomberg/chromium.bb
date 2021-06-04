@@ -7,8 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/limits.h"
 #include "media/base/media_util.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
@@ -21,6 +24,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_support.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_region.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
@@ -88,8 +92,6 @@ void DecoderSupport_OnGpuFactories(
           CrossThreadUnretained(gpu_factories))));
 }
 
-}  // namespace
-
 bool ParseCodecString(const String& codec_string,
                       media::VideoType& out_video_type,
                       String& out_console_message) {
@@ -119,94 +121,132 @@ bool ParseCodecString(const String& codec_string,
 // TODO(crbug.com/1179970): rename out_console_message.
 // TODO(crbug.com/1181443): Make this a pure virtual in DecoderTemplate, and
 // refactor its uses.
+// TODO(crbug.com/1198324): Merge shared logic with VideoFramePlaneInit.
 bool IsValidConfig(const VideoDecoderConfig& config,
                    media::VideoType& out_video_type,
                    String& out_console_message) {
   if (!ParseCodecString(config.codec(), out_video_type, out_console_message))
     return false;
 
-  if (config.hasCodedWidth()) {
-    if (config.codedWidth() == 0) {
+  if (config.hasCodedWidth() || config.hasCodedHeight()) {
+    if (!config.hasCodedWidth()) {
       out_console_message =
-          "Invalid codedWidth. Value must be greater than zero.";
+          "Invalid config, codedHeight specified without codedWidth.";
+      return false;
+    }
+    if (!config.hasCodedHeight()) {
+      out_console_message =
+          "Invalid config, codedWidth specified without codedHeight.";
       return false;
     }
 
-    uint32_t crop_left = config.hasCropLeft() ? config.cropLeft() : 0;
-    uint32_t crop_width =
-        config.hasCropWidth() ? config.cropWidth() : config.codedWidth();
-
-    if (crop_width == 0) {
-      out_console_message =
-          "Invalid cropWidth. Value must be greater than zero.";
+    const uint32_t coded_width = config.codedWidth();
+    const uint32_t coded_height = config.codedHeight();
+    if (coded_width == 0 || coded_width > media::limits::kMaxDimension ||
+        coded_height == 0 || coded_height > media::limits::kMaxDimension) {
+      out_console_message = String::Format("Invalid coded size (%u, %u).",
+                                           coded_width, coded_height);
       return false;
     }
 
-    if (crop_left + crop_width > config.codedWidth()) {
-      out_console_message =
-          "Invalid cropLeft + cropWidth. Sum must not exceed codedWidth.";
+    // Validate visible region.
+    uint32_t visible_left = 0;
+    uint32_t visible_top = 0;
+    uint32_t visible_width = coded_width;
+    uint32_t visible_height = coded_height;
+    if (config.hasVisibleRegion()) {
+      visible_left = config.visibleRegion()->left();
+      visible_top = config.visibleRegion()->top();
+      visible_width = config.visibleRegion()->width();
+      visible_height = config.visibleRegion()->height();
+    } else {
+      // TODO(sandersd): Plumb |execution_context| so we can log a deprecation
+      // notice.
+      if (config.hasCropLeft()) {
+        visible_left = config.cropLeft();
+        if (visible_left >= coded_width) {
+          out_console_message =
+              String::Format("Invalid cropLeft %u for codedWidth %u.",
+                             visible_left, coded_width);
+          return false;
+        }
+        visible_width = coded_width - visible_left;
+      }
+      if (config.hasCropTop()) {
+        visible_top = config.cropTop();
+        if (visible_top >= coded_height) {
+          out_console_message =
+              String::Format("Invalid cropTop %u for codedHeight %u.",
+                             visible_top, coded_height);
+          return false;
+        }
+        visible_width = coded_width - visible_left;
+      }
+      if (config.hasCropWidth())
+        visible_width = config.cropWidth();
+      if (config.hasCropHeight())
+        visible_height = config.cropHeight();
+    }
+    if (visible_left >= coded_width || visible_top >= coded_height ||
+        visible_width == 0 || visible_width > media::limits::kMaxDimension ||
+        visible_height == 0 || visible_height > media::limits::kMaxDimension ||
+        visible_left + visible_width > coded_width ||
+        visible_top + visible_height > coded_height) {
+      out_console_message = String::Format(
+          "Invalid visible region {left: %u, top: %u, width: %u, height: %u} "
+          "for coded size (%u, %u).",
+          visible_left, visible_top, visible_width, visible_height, coded_width,
+          coded_height);
       return false;
     }
-  } else {  // !config.hasCodedWidth()
+  } else {
+    if (config.hasVisibleRegion()) {
+      out_console_message =
+          "Invalid config, visibleRegion specified without coded size.";
+      return false;
+    }
     if (config.hasCropLeft()) {
       out_console_message =
-          "Invalid config. cropLeft specified without codedWidth.";
+          "Invalid config, cropLeft specified without coded size.";
       return false;
     }
-
-    if (config.hasCropWidth()) {
-      out_console_message =
-          "Invalid config. cropWidth specified without codedWidth.";
-      return false;
-    }
-  }
-
-  if (config.hasCodedHeight()) {
-    if (config.codedHeight() == 0) {
-      out_console_message =
-          "Invalid codedHeight. Value must be greater than zero.";
-      return false;
-    }
-
-    uint32_t crop_top = config.hasCropTop() ? config.cropTop() : 0;
-    uint32_t crop_height =
-        config.hasCropHeight() ? config.cropHeight() : config.codedHeight();
-
-    if (crop_height == 0) {
-      out_console_message =
-          "Invalid cropHeight. Value must be greater than zero.";
-      return false;
-    }
-
-    if (crop_top + crop_height > config.codedHeight()) {
-      out_console_message =
-          "Invalid cropTop + cropHeight. Sum must not exceed codedHeight.";
-      return false;
-    }
-  } else {  // !config.hasCodedHeight()
     if (config.hasCropTop()) {
       out_console_message =
-          "Invalid config. cropTop specified without codedHeight.";
+          "Invalid config, cropTop specified without coded size.";
       return false;
     }
-
+    if (config.hasCropWidth()) {
+      out_console_message =
+          "Invalid config, cropWidth specified without coded size.";
+      return false;
+    }
     if (config.hasCropHeight()) {
       out_console_message =
-          "Invalid config. cropHeight specified without codedHeight.";
+          "Invalid config, cropHeight specified without coded size.";
       return false;
     }
   }
 
-  if (config.hasDisplayWidth() && config.displayWidth() == 0) {
-    out_console_message =
-        "Invalid displayWidth. Value must be greater than zero.";
-    return false;
-  }
+  if (config.hasDisplayWidth() || config.hasDisplayHeight()) {
+    if (!config.hasDisplayWidth()) {
+      out_console_message =
+          "Invalid config, displayHeight specified without displayWidth.";
+      return false;
+    }
+    if (!config.hasDisplayHeight()) {
+      out_console_message =
+          "Invalid config, displayWidth specified without displayHeight.";
+      return false;
+    }
 
-  if (config.hasDisplayHeight() && config.displayHeight() == 0) {
-    out_console_message =
-        "Invalid displayHeight. Value must be greater than zero.";
-    return false;
+    uint32_t display_width = config.displayWidth();
+    uint32_t display_height = config.displayHeight();
+    if (display_width == 0 || display_width > media::limits::kMaxDimension ||
+        display_height == 0 || display_height > media::limits::kMaxDimension) {
+      out_console_message = String::Format("Invalid display size (%u, %u).",
+                                           display_width, display_height);
+      return false;
+    }
   }
 
   return true;
@@ -230,6 +270,15 @@ VideoDecoderConfig* CopyConfig(const VideoDecoderConfig& config) {
   if (config.hasCodedHeight())
     copy->setCodedHeight(config.codedHeight());
 
+  if (config.hasVisibleRegion()) {
+    auto* region = MakeGarbageCollected<VideoFrameRegion>();
+    region->setLeft(config.visibleRegion()->left());
+    region->setTop(config.visibleRegion()->top());
+    region->setWidth(config.visibleRegion()->width());
+    region->setHeight(config.visibleRegion()->height());
+    copy->setVisibleRegion(region);
+  }
+
   if (config.hasCropLeft())
     copy->setCropLeft(config.cropLeft());
 
@@ -251,8 +300,13 @@ VideoDecoderConfig* CopyConfig(const VideoDecoderConfig& config) {
   if (config.hasHardwareAcceleration())
     copy->setHardwareAcceleration(config.hardwareAcceleration());
 
+  if (config.hasOptimizeForLatency())
+    copy->setOptimizeForLatency(config.optimizeForLatency());
+
   return copy;
 }
+
+}  // namespace
 
 // static
 std::unique_ptr<VideoDecoderTraits::MediaDecoderType>
@@ -276,12 +330,12 @@ HardwarePreference VideoDecoder::GetHardwareAccelerationPreference(
 // static
 void VideoDecoderTraits::InitializeDecoder(
     MediaDecoderType& decoder,
+    bool low_delay,
     const MediaConfigType& media_config,
     MediaDecoderType::InitCB init_cb,
     MediaDecoderType::OutputCB output_cb) {
-  decoder.Initialize(media_config, false /* low_delay */,
-                     nullptr /* cdm_context */, std::move(init_cb), output_cb,
-                     media::WaitingCB());
+  decoder.Initialize(media_config, low_delay, nullptr /* cdm_context */,
+                     std::move(init_cb), output_cb, media::WaitingCB());
 }
 
 // static
@@ -296,6 +350,10 @@ void VideoDecoderTraits::UpdateDecoderLog(const MediaDecoderType& decoder,
       decoder.IsPlatformDecoder());
   media_log->SetProperty<media::MediaLogProperty::kVideoTracks>(
       std::vector<MediaConfigType>{media_config});
+  MEDIA_LOG(INFO, media_log)
+      << "Initialized VideoDecoder: " << media_config.AsHumanReadableString();
+  UMA_HISTOGRAM_ENUMERATION("Blink.WebCodecs.VideoDecoder.Codec",
+                            media_config.codec(), media::kVideoCodecMax + 1);
 }
 
 // static
@@ -309,6 +367,11 @@ media::StatusOr<VideoDecoderTraits::OutputType*> VideoDecoderTraits::MakeOutput(
 // static
 int VideoDecoderTraits::GetMaxDecodeRequests(const MediaDecoderType& decoder) {
   return decoder.GetMaxDecodeRequests();
+}
+
+// static
+const char* VideoDecoderTraits::GetName() {
+  return "VideoDecoder";
 }
 
 // static
@@ -395,6 +458,10 @@ ScriptPromise VideoDecoder::IsAcceleratedConfigSupported(
 HardwarePreference VideoDecoder::GetHardwarePreference(
     const ConfigType& config) {
   return GetHardwareAccelerationPreference(config);
+}
+
+bool VideoDecoder::GetLowDelayPreference(const ConfigType& config) {
+  return config.hasOptimizeForLatency() && config.optimizeForLatency();
 }
 
 void VideoDecoder::SetHardwarePreference(HardwarePreference preference) {
@@ -516,9 +583,15 @@ VideoDecoder::MakeDecoderBuffer(const InputType& chunk) {
 
   decoder_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(chunk.timestamp()));
-  // TODO(sandersd): Use kUnknownTimestamp instead of 0?
-  decoder_buffer->set_duration(
-      base::TimeDelta::FromMicroseconds(chunk.duration().value_or(0)));
+
+  if (chunk.duration()) {
+    // Clamp within bounds of our internal TimeDelta-based duration.
+    // See media/base/timestamp_constants.h
+    decoder_buffer->set_duration(base::TimeDelta::FromMicroseconds(
+        std::min(base::saturated_cast<int64_t>(chunk.duration().value()),
+                 std::numeric_limits<int64_t>::max() - 1)));
+  }
+
   decoder_buffer->set_is_key_frame(chunk.type() == "key");
 
   return decoder_buffer;

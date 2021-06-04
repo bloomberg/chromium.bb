@@ -14,7 +14,6 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -34,6 +33,7 @@
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/site_for_cookies.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_request_headers.h"
@@ -47,6 +47,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/referrer_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -259,6 +260,16 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   const IsolationInfo& isolation_info() const { return isolation_info_; }
 
+  // The party_context_ of this leg of the request. This gets updated on
+  // redirects.
+  CookieOptions::SamePartyCookieContextType same_party_cookie_context_type() {
+    return same_party_cookie_context_type_;
+  }
+  void set_same_party_cookie_context_type(
+      CookieOptions::SamePartyCookieContextType context_type) {
+    same_party_cookie_context_type_ = context_type;
+  }
+
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
   bool force_ignore_site_for_cookies() const {
@@ -307,9 +318,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Note: the initiator can be null for browser-initiated top level
   // navigations. This is different from a unique Origin (e.g. in sandboxed
   // iframes).
-  const base::Optional<url::Origin>& initiator() const { return initiator_; }
+  const absl::optional<url::Origin>& initiator() const { return initiator_; }
   // This method may only be called before Start().
-  void set_initiator(const base::Optional<url::Origin>& initiator);
+  void set_initiator(const absl::optional<url::Origin>& initiator);
 
   // The request method, as an uppercase string.  "GET" is the default value.
   // The request method may only be changed before Start() is called and
@@ -471,7 +482,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Get the SSL connection info.
   const SSLInfo& ssl_info() const { return response_info_.ssl_info; }
 
-  const base::Optional<AuthChallengeInfo>& auth_challenge_info() const;
+  const absl::optional<AuthChallengeInfo>& auth_challenge_info() const;
 
   // Gets timing information related to the request.  Events that have not yet
   // occurred are left uninitialized.  After a second request starts, due to
@@ -521,8 +532,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // the request is redirected.
   PrivacyMode privacy_mode() const { return privacy_mode_; }
 
-  // Returns whether secure DNS should be disabled for the request.
-  bool disable_secure_dns() const { return disable_secure_dns_; }
+  // Returns the Secure DNS Policy for the request.
+  SecureDnsPolicy secure_dns_policy() const { return secure_dns_policy_; }
 
   void set_maybe_sent_cookies(CookieAccessResultList cookies);
   void set_maybe_stored_cookies(CookieAndLineAccessResultList cookies);
@@ -551,8 +562,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // the priority of this request must already be MAXIMUM_PRIORITY.
   void SetLoadFlags(int flags);
 
-  // Sets whether secure DNS should be disabled for the request.
-  void SetDisableSecureDns(bool disable_secure_dns);
+  // Controls the Secure DNS behavior to use when creating the socket for this
+  // request.
+  void SetSecureDnsPolicy(SecureDnsPolicy secure_dns_policy);
 
   // Returns true if the request is "pending" (i.e., if Start() has been called,
   // and the response has not yet been called).
@@ -608,8 +620,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // |modified_headers| are changes applied to the request headers after
   // updating them for the redirect.
   void FollowDeferredRedirect(
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers);
+      const absl::optional<std::vector<std::string>>& removed_headers,
+      const absl::optional<net::HttpRequestHeaders>& modified_headers);
 
   // One of the following two methods should be called in response to an
   // OnAuthRequired() callback (and only then).
@@ -696,13 +708,13 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     return accepted_stream_types_->contains(type);
   }
 
-  const base::Optional<base::flat_set<net::SourceStream::SourceType>>&
+  const absl::optional<base::flat_set<net::SourceStream::SourceType>>&
   accepted_stream_types() const {
     return accepted_stream_types_;
   }
 
   void set_accepted_stream_types(
-      const base::Optional<base::flat_set<net::SourceStream::SourceType>>&
+      const absl::optional<base::flat_set<net::SourceStream::SourceType>>&
           types) {
     if (types) {
       DCHECK(!types->contains(net::SourceStream::SourceType::TYPE_NONE));
@@ -786,8 +798,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // applied to the request headers after updating them for the redirect.
   void Redirect(
       const RedirectInfo& redirect_info,
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers);
+      const absl::optional<std::vector<std::string>>& removed_headers,
+      const absl::optional<net::HttpRequestHeaders>& modified_headers);
 
   // Called by URLRequestJob to allow interception when a redirect occurs.
   void NotifyReceivedRedirect(const RedirectInfo& redirect_info,
@@ -888,9 +900,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   IsolationInfo isolation_info_;
 
+  CookieOptions::SamePartyCookieContextType same_party_cookie_context_type_;
+
   bool force_ignore_site_for_cookies_;
   bool force_ignore_top_frame_party_for_cookies_;
-  base::Optional<url::Origin> initiator_;
+  absl::optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
   std::string referrer_;
@@ -908,7 +922,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // currently be blocked independently of this field by setting the deprecated
   // LOAD_DO_NOT_SAVE_COOKIES field in |load_flags_|.
   PrivacyMode privacy_mode_;
-  bool disable_secure_dns_;
+  SecureDnsPolicy secure_dns_policy_;
 
   CookieAccessResultList maybe_sent_cookies_;
   CookieAndLineAccessResultList maybe_stored_cookies_;
@@ -992,7 +1006,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // If not null, the network service will not advertise any stream types
   // (via Accept-Encoding) that are not listed. Also, it will not attempt
   // decoding any non-listed stream types.
-  base::Optional<base::flat_set<net::SourceStream::SourceType>>
+  absl::optional<base::flat_set<net::SourceStream::SourceType>>
       accepted_stream_types_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;

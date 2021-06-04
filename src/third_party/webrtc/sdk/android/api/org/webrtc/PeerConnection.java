@@ -501,6 +501,9 @@ public class PeerConnection {
     // to keep NAT bindings open.
     // The default value in the implementation is used if this field is null.
     @Nullable public Integer stunCandidateKeepaliveIntervalMs;
+    // The interval in milliseconds of pings sent when the connection is stable and writable.
+    // The default value in the implementation is used if this field is null.
+    @Nullable public Integer stableWritableConnectionPingIntervalMs;
     public boolean disableIPv6OnWifi;
     // By default, PeerConnection will use a limited number of IPv6 network
     // interfaces, in order to avoid too many ICE candidate pairs being created
@@ -514,7 +517,6 @@ public class PeerConnection {
     public boolean disableIpv6;
     public boolean enableDscp;
     public boolean enableCpuOveruseDetection;
-    public boolean enableRtpDataChannel;
     public boolean suspendBelowMinBitrate;
     @Nullable public Integer screencastMinBitrate;
     @Nullable public Boolean combinedAudioVideoBwe;
@@ -590,12 +592,12 @@ public class PeerConnection {
       iceUnwritableTimeMs = null;
       iceUnwritableMinChecks = null;
       stunCandidateKeepaliveIntervalMs = null;
+      stableWritableConnectionPingIntervalMs = null;
       disableIPv6OnWifi = false;
       maxIPv6Networks = 5;
       disableIpv6 = false;
       enableDscp = false;
       enableCpuOveruseDetection = true;
-      enableRtpDataChannel = false;
       suspendBelowMinBitrate = false;
       screencastMinBitrate = null;
       combinedAudioVideoBwe = null;
@@ -737,6 +739,12 @@ public class PeerConnection {
       return stunCandidateKeepaliveIntervalMs;
     }
 
+    @Nullable
+    @CalledByNative("RTCConfiguration")
+    Integer getStableWritableConnectionPingIntervalMs() {
+      return stableWritableConnectionPingIntervalMs;
+    }
+
     @CalledByNative("RTCConfiguration")
     boolean getDisableIPv6OnWifi() {
       return disableIPv6OnWifi;
@@ -766,11 +774,6 @@ public class PeerConnection {
     @CalledByNative("RTCConfiguration")
     boolean getEnableCpuOveruseDetection() {
       return enableCpuOveruseDetection;
-    }
-
-    @CalledByNative("RTCConfiguration")
-    boolean getEnableRtpDataChannel() {
-      return enableRtpDataChannel;
     }
 
     @CalledByNative("RTCConfiguration")
@@ -930,6 +933,11 @@ public class PeerConnection {
 
   public boolean addIceCandidate(IceCandidate candidate) {
     return nativeAddIceCandidate(candidate.sdpMid, candidate.sdpMLineIndex, candidate.sdp);
+  }
+
+  public void addIceCandidate(IceCandidate candidate, AddIceObserver observer) {
+    nativeAddIceCandidateWithObserver(
+        candidate.sdpMid, candidate.sdpMLineIndex, candidate.sdp, observer);
   }
 
   public boolean removeIceCandidates(final IceCandidate[] candidates) {
@@ -1293,6 +1301,8 @@ public class PeerConnection {
   private native boolean nativeSetConfiguration(RTCConfiguration config);
   private native boolean nativeAddIceCandidate(
       String sdpMid, int sdpMLineIndex, String iceCandidateSdp);
+  private native void nativeAddIceCandidateWithObserver(
+      String sdpMid, int sdpMLineIndex, String iceCandidateSdp, AddIceObserver observer);
   private native boolean nativeRemoveIceCandidates(final IceCandidate[] candidates);
   private native boolean nativeAddLocalStream(long stream);
   private native void nativeRemoveLocalStream(long stream);

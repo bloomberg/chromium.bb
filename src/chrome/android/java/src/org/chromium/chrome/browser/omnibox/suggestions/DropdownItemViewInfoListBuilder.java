@@ -14,15 +14,14 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
 import org.chromium.chrome.browser.omnibox.suggestions.clipboard.ClipboardSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
@@ -54,25 +53,23 @@ class DropdownItemViewInfoListBuilder {
 
     private final @NonNull List<SuggestionProcessor> mPriorityOrderedSuggestionProcessors;
     private final @NonNull Supplier<Tab> mActivityTabSupplier;
-    private @NonNull AutocompleteController mAutocompleteController;
 
     private @Nullable HeaderProcessor mHeaderProcessor;
     private @Nullable Supplier<ShareDelegate> mShareDelegateSupplier;
     private @Nullable ImageFetcher mImageFetcher;
     private @Nullable LargeIconBridge mIconBridge;
-    private @Nullable BookmarkBridge mBookmarkBridge;
+    private @NonNull BookmarkState mBookmarkState;
     @Px
     private int mDropdownHeight;
     private boolean mEnableAdaptiveSuggestionsCount;
-    private boolean mEnableNativeVoiceSuggestProvider;
     private boolean mBuiltListHasFullyConcealedElements;
 
     DropdownItemViewInfoListBuilder(
-            AutocompleteController controller, @NonNull Supplier<Tab> tabSupplier) {
+            @NonNull Supplier<Tab> tabSupplier, BookmarkState bookmarkState) {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
         mDropdownHeight = DROPDOWN_HEIGHT_UNKNOWN;
-        mAutocompleteController = controller;
         mActivityTabSupplier = tabSupplier;
+        mBookmarkState = bookmarkState;
     }
 
     /**
@@ -93,7 +90,6 @@ class DropdownItemViewInfoListBuilder {
         final Supplier<LargeIconBridge> iconBridgeSupplier = () -> mIconBridge;
         final Supplier<ShareDelegate> shareSupplier =
                 () -> mShareDelegateSupplier == null ? null : mShareDelegateSupplier.get();
-        final Supplier<BookmarkBridge> bookmarkSupplier = () -> mBookmarkBridge;
 
         mHeaderProcessor = new HeaderProcessor(context, host, delegate);
         registerSuggestionProcessor(new EditUrlSuggestionProcessor(
@@ -110,7 +106,7 @@ class DropdownItemViewInfoListBuilder {
         registerSuggestionProcessor(
                 new MostVisitedTilesProcessor(context, host, iconBridgeSupplier));
         registerSuggestionProcessor(new BasicSuggestionProcessor(
-                context, host, textProvider, iconBridgeSupplier, bookmarkSupplier));
+                context, host, textProvider, iconBridgeSupplier, mBookmarkState));
     }
 
     void destroy() {
@@ -161,15 +157,9 @@ class DropdownItemViewInfoListBuilder {
             mImageFetcher = null;
         }
 
-        if (mBookmarkBridge != null) {
-            mBookmarkBridge.destroy();
-            mBookmarkBridge = null;
-        }
-
         mIconBridge = new LargeIconBridge(profile);
         mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
                 profile, GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
-        mBookmarkBridge = new BookmarkBridge(profile);
     }
 
     /**
@@ -226,8 +216,6 @@ class DropdownItemViewInfoListBuilder {
     void onNativeInitialized() {
         mEnableAdaptiveSuggestionsCount =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT);
-        mEnableNativeVoiceSuggestProvider = ChromeFeatureList.isEnabled(
-                ChromeFeatureList.OMNIBOX_NATIVE_VOICE_SUGGEST_PROVIDER);
 
         mHeaderProcessor.onNativeInitialized();
         for (int index = 0; index < mPriorityOrderedSuggestionProcessors.size(); index++) {
@@ -341,11 +329,6 @@ class DropdownItemViewInfoListBuilder {
             if (suggestion.getGroupId() != AutocompleteMatch.INVALID_GROUP) {
                 break;
             }
-            // We do not include Java-sourced Voice suggestions in partial grouping. Terminate.
-            if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST
-                    && !mEnableNativeVoiceSuggestProvider) {
-                break;
-            }
 
             final SuggestionProcessor processor =
                     getProcessorForSuggestion(suggestion, lastVisibleIndex);
@@ -375,14 +358,5 @@ class DropdownItemViewInfoListBuilder {
         }
         assert false : "No default handler for suggestions";
         return null;
-    }
-
-    /**
-     * Change the AutocompleteController instance that will be used by this class.
-     *
-     * @param controller New AutocompleteController to use.
-     */
-    void setAutocompleteControllerForTest(@NonNull AutocompleteController controller) {
-        mAutocompleteController = controller;
     }
 }

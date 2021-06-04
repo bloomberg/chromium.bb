@@ -64,7 +64,7 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          expires: 30d
+          expires: 10d
           channelId: cts-prs-${{ env.PR }}-${{ github.event.workflow_run.head_sha }}
       - uses: peter-evans/create-or-update-comment@v1
         continue-on-error: true

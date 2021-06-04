@@ -31,6 +31,7 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/span.h"
 
 namespace {
@@ -92,7 +93,7 @@ void DrawAxialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
                       const std::vector<std::unique_ptr<CPDF_Function>>& funcs,
                       const RetainPtr<CPDF_ColorSpace>& pCS,
                       int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
 
   const uint32_t total_results = GetValidatedOutputsCount(funcs, pCS);
   if (total_results == 0)
@@ -160,7 +161,7 @@ void DrawRadialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
                        const std::vector<std::unique_ptr<CPDF_Function>>& funcs,
                        const RetainPtr<CPDF_ColorSpace>& pCS,
                        int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
 
   const uint32_t total_results = GetValidatedOutputsCount(funcs, pCS);
   if (total_results == 0)
@@ -259,7 +260,7 @@ void DrawFuncShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
                      const std::vector<std::unique_ptr<CPDF_Function>>& funcs,
                      const RetainPtr<CPDF_ColorSpace>& pCS,
                      int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
 
   const uint32_t total_results = GetValidatedOutputsCount(funcs, pCS);
   if (total_results == 0)
@@ -420,7 +421,7 @@ void DrawFreeGouraudShading(
     const std::vector<std::unique_ptr<CPDF_Function>>& funcs,
     const RetainPtr<CPDF_ColorSpace>& pCS,
     int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
 
   CPDF_MeshStream stream(kFreeFormGouraudTriangleMeshShading, funcs,
                          pShadingStream, pCS);
@@ -459,7 +460,7 @@ void DrawLatticeGouraudShading(
     const std::vector<std::unique_ptr<CPDF_Function>>& funcs,
     const RetainPtr<CPDF_ColorSpace>& pCS,
     int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
 
   int row_verts = pShadingStream->GetDict()->GetIntegerFor("VerticesPerRow");
   if (row_verts < 2)
@@ -495,7 +496,6 @@ void DrawLatticeGouraudShading(
 }
 
 struct Coon_BezierCoeff {
-  float a, b, c, d;
   void FromPoints(float p0, float p1, float p2, float p3) {
     a = -p0 + 3 * p1 - 3 * p2 + p3;
     b = 3 * p0 - 6 * p1 + 3 * p2;
@@ -538,6 +538,11 @@ struct Coon_BezierCoeff {
     float dis = a + b + c;
     return dis < 0 ? -dis : dis;
   }
+
+  float a;
+  float b;
+  float c;
+  float d;
 };
 
 struct Coon_Bezier {
@@ -772,7 +777,7 @@ void DrawCoonPatchMeshes(
     const RetainPtr<CPDF_ColorSpace>& pCS,
     bool bNoPathSmooth,
     int alpha) {
-  DCHECK(pBitmap->GetFormat() == FXDIB_Format::kArgb);
+  DCHECK_EQ(pBitmap->GetFormat(), FXDIB_Format::kArgb);
   DCHECK(type == kCoonsPatchMeshShading ||
          type == kTensorProductPatchMeshShading);
 
@@ -798,7 +803,9 @@ void DrawCoonPatchMeshes(
     if (!stream.CanReadFlag())
       break;
     uint32_t flag = stream.ReadFlag();
-    int iStartPoint = 0, iStartColor = 0, i = 0;
+    int iStartPoint = 0;
+    int iStartColor = 0;
+    int i = 0;
     if (flag) {
       iStartPoint = 4;
       iStartColor = 2;

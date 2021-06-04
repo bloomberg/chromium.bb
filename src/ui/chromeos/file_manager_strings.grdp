@@ -14,6 +14,12 @@
   <message name="IDS_FILE_SYSTEM_PROVIDER_MANY_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that more than one operations are taking longer than expected.">
     Some operations are taking longer than expected. Do you want to abort them?
   </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_COPY_TO_SHARED_DRIVE" desc="Confirmation dialog message when copying a file to a shared location.">
+    Copying this item will share it with everyone who can see the shared folder '<ph name="DESTINATION_NAME">$1</ph>'.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_MOVE_TO_SHARED_DRIVE" desc="Confirmation dialog message when moving a file to a shared location.">
+    Moving this item will share it with everyone who can see the shared folder '<ph name="DESTINATION_NAME">$1</ph>'.
+  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS" desc="Part of message in the confirmation dialog box when moving a file out of a Team Drive.">
     Members of '<ph name="SOURCE_NAME">$1</ph>' will lose access unless these items are shared with them.
   </message>
@@ -274,6 +280,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED" desc="Error message when an archive mount operation failed.">
     Could not open "<ph name="PATH">$1<ex>zipfile.zip</ex></ph>"
+  </message>
+  <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_INVALID_PATH" desc="Error message when trying to mount an archive from an unsupported path.">
+    Could not open "<ph name="PATH">$1<ex>zipfile.zip</ex></ph>" from this location. Please copy to "My files" to open.
   </message>
   <message name="IDS_FILE_BROWSER_UNMOUNT_FAILED" desc="Title of the error dialog when device unmount operation failed.">
    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Don't remove your device just yet!<ph name="END_BOLD">&lt;/b&gt;</ph>
@@ -625,8 +634,14 @@
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is not in a directory shared into the VM.">
     To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first move them to the Windows files folder.
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is on an external drive so isn't accessile from with the VM.">
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is on an external drive so isn't accessible from within the VM.">
     To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first copy them to the Windows files folder.
+  </message>
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE" desc="Body of the dialog shown to users when they try to drag and drop a file to Parallels, but the file is not in a directory shared into the VM. Do not translate 'Parallels Desktop'">
+    To drop files in Parallels Desktop, the file must be moved to Windows files.
+  </message>
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_DROP_IN_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE" desc="Body of the dialog shown to users when they try to drag and drop a file to Parallels, but the file is on an external drive so isn't accessible from within the VM. Do not translate 'Parallels Desktop'">
+    To drop files in Parallels Desktop, the file must be copied to Windows files.
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files

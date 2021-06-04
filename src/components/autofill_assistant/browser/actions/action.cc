@@ -16,6 +16,10 @@ Action::Action(ActionDelegate* delegate, const ActionProto& proto)
 
 Action::~Action() {}
 
+bool Action::ShouldInterruptOnPause() const {
+  return false;
+}
+
 void Action::ProcessAction(ProcessActionCallback callback) {
   action_stopwatch_.StartActiveTime();
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
@@ -217,6 +221,21 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kSendKeyEvent:
       out << "SendKeyEvent";
+      break;
+    case ActionProto::ActionInfoCase::kSelectOptionElement:
+      out << "SelectOptionElement";
+      break;
+    case ActionProto::ActionInfoCase::kCheckElementTag:
+      out << "CheckElementTag";
+      break;
+    case ActionProto::ActionInfoCase::kCheckOptionElement:
+      out << "CheckOptionElement";
+      break;
+    case ActionProto::ActionInfoCase::kSetPersistentUi:
+      out << "SetPersistentUi";
+      break;
+    case ActionProto::ActionInfoCase::kClearPersistentUi:
+      out << "ClearPersistentUi";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

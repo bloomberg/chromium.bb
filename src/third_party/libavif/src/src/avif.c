@@ -128,7 +128,7 @@ avifImage * avifImageCreateEmpty(void)
     return avifImageCreate(0, 0, 0, AVIF_PIXEL_FORMAT_NONE);
 }
 
-void avifImageCopy(avifImage * dstImage, const avifImage * srcImage, uint32_t planes)
+void avifImageCopy(avifImage * dstImage, const avifImage * srcImage, avifPlanesFlags planes)
 {
     avifImageFreePlanes(dstImage, AVIF_PLANES_ALL);
 
@@ -216,7 +216,7 @@ void avifImageSetMetadataXMP(avifImage * image, const uint8_t * xmp, size_t xmpS
     avifRWDataSet(&image->xmp, xmp, xmpSize);
 }
 
-void avifImageAllocatePlanes(avifImage * image, uint32_t planes)
+void avifImageAllocatePlanes(avifImage * image, avifPlanesFlags planes)
 {
     int channelSize = avifImageUsesU16(image) ? 2 : 1;
     int fullRowBytes = channelSize * image->width;
@@ -257,7 +257,7 @@ void avifImageAllocatePlanes(avifImage * image, uint32_t planes)
     }
 }
 
-void avifImageFreePlanes(avifImage * image, uint32_t planes)
+void avifImageFreePlanes(avifImage * image, avifPlanesFlags planes)
 {
     if ((planes & AVIF_PLANES_YUV) && (image->yuvFormat != AVIF_PIXEL_FORMAT_NONE)) {
         if (image->imageOwnsYUVPlanes) {
@@ -283,7 +283,7 @@ void avifImageFreePlanes(avifImage * image, uint32_t planes)
     }
 }
 
-void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, uint32_t planes)
+void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, avifPlanesFlags planes)
 {
     avifImageFreePlanes(dstImage, planes);
 
@@ -384,6 +384,246 @@ void avifRGBImageFreePixels(avifRGBImage * rgb)
 
     rgb->pixels = NULL;
     rgb->rowBytes = 0;
+}
+
+// ---------------------------------------------------------------------------
+// avifCropRect
+
+typedef struct clapFraction
+{
+    int32_t n;
+    int32_t d;
+} clapFraction;
+
+static clapFraction calcCenter(int32_t dim)
+{
+    clapFraction f;
+    f.n = dim >> 1;
+    f.d = 1;
+    if ((dim % 2) == 1) {
+        f.n = (f.n * 2) + 1;
+        f.d = 2;
+    }
+    return f;
+}
+
+static int32_t calcGCD(int32_t a, int32_t b)
+{
+    if (a < 0) {
+        a *= -1;
+    }
+    if (b < 0) {
+        b *= -1;
+    }
+    while (a > 0) {
+        if (a < b) {
+            int32_t t = a;
+            a = b;
+            b = t;
+        }
+        a = a - b;
+    }
+    return b;
+}
+
+static void clapFractionSimplify(clapFraction * f)
+{
+    int32_t gcd = calcGCD(f->n, f->d);
+    if (gcd > 1) {
+        f->n /= gcd;
+        f->d /= gcd;
+    }
+}
+
+// Make the fractions have a common denominator
+static void clapFractionCD(clapFraction * a, clapFraction * b)
+{
+    clapFractionSimplify(a);
+    clapFractionSimplify(b);
+    if ((a->d != b->d)) {
+        const int32_t ad = a->d;
+        const int32_t bd = b->d;
+        a->n = a->n * bd;
+        a->d *= bd;
+        b->n = b->n * ad;
+        b->d *= ad;
+    }
+}
+
+static clapFraction clapFractionAdd(clapFraction a, clapFraction b)
+{
+    clapFractionCD(&a, &b);
+
+    clapFraction result;
+    result.n = a.n + b.n;
+    result.d = a.d;
+
+    clapFractionSimplify(&result);
+    return result;
+}
+
+static clapFraction clapFractionSub(clapFraction a, clapFraction b)
+{
+    clapFractionCD(&a, &b);
+
+    clapFraction result;
+    result.n = a.n - b.n;
+    result.d = a.d;
+
+    clapFractionSimplify(&result);
+    return result;
+}
+
+static avifBool avifCropRectIsValid(const avifCropRect * cropRect,
+                                    const uint32_t imageW,
+                                    const uint32_t imageH,
+                                    const avifPixelFormat yuvFormat,
+                                    avifDiagnostics * diag)
+
+{
+    // ISO/IEC 23000-22:2019/DAM 2:2021, Section 7.3.6.7:
+    //   The clean aperture property is restricted according to the chroma
+    //   sampling format of the input image (4:4:4, 4:2:2:, 4:2:0, or 4:0:0) as
+    //   follows:
+    //   - when the image is 4:0:0 (monochrome) or 4:4:4, the horizontal and
+    //     vertical cropped offsets and widths shall be integers;
+    //   - when the image is 4:2:2 the horizontal cropped offset and width
+    //     shall be even numbers and the vertical values shall be integers;
+    //   - when the image is 4:2:0 both the horizontal and vertical cropped
+    //     offsets and widths shall be even numbers.
+
+    if ((cropRect->width == 0) || (cropRect->height == 0)) {
+        avifDiagnosticsPrintf(diag, "[Strict] crop rect width and height must be nonzero");
+        return AVIF_FALSE;
+    }
+    if (((cropRect->x + cropRect->width) > imageW) || ((cropRect->y + cropRect->height) > imageH)) {
+        avifDiagnosticsPrintf(diag, "[Strict] crop rect is out of the image's bounds");
+        return AVIF_FALSE;
+    }
+
+    if ((yuvFormat == AVIF_PIXEL_FORMAT_YUV420) || (yuvFormat == AVIF_PIXEL_FORMAT_YUV422)) {
+        if (((cropRect->x % 2) != 0) || ((cropRect->width % 2) != 0)) {
+            avifDiagnosticsPrintf(diag, "[Strict] crop rect X offset and width must both be even due to this image's YUV subsampling");
+            return AVIF_FALSE;
+        }
+    }
+    if (yuvFormat == AVIF_PIXEL_FORMAT_YUV420) {
+        if (((cropRect->y % 2) != 0) || ((cropRect->height % 2) != 0)) {
+            avifDiagnosticsPrintf(diag, "[Strict] crop rect Y offset and height must both be even due to this image's YUV subsampling");
+            return AVIF_FALSE;
+        }
+    }
+    return AVIF_TRUE;
+}
+
+avifBool avifCropRectConvertCleanApertureBox(avifCropRect * cropRect,
+                                             const avifCleanApertureBox * clap,
+                                             const uint32_t imageW,
+                                             const uint32_t imageH,
+                                             const avifPixelFormat yuvFormat,
+                                             avifDiagnostics * diag)
+{
+    // ISO/IEC 14496-12:2020, Section 12.1.4.1:
+    //   For horizOff and vertOff, D shall be strictly positive and N may be
+    //   positive or negative. For cleanApertureWidth and cleanApertureHeight,
+    //   N shall be positive and D shall be strictly positive.
+
+    const int32_t widthN = (int32_t)clap->widthN;
+    const int32_t widthD = (int32_t)clap->widthD;
+    const int32_t heightN = (int32_t)clap->heightN;
+    const int32_t heightD = (int32_t)clap->heightD;
+    const int32_t horizOffN = (int32_t)clap->horizOffN;
+    const int32_t horizOffD = (int32_t)clap->horizOffD;
+    const int32_t vertOffN = (int32_t)clap->vertOffN;
+    const int32_t vertOffD = (int32_t)clap->vertOffD;
+    if ((widthD <= 0) || (heightD <= 0) || (horizOffD <= 0) || (vertOffD <= 0)) {
+        avifDiagnosticsPrintf(diag, "[Strict] clap contains a denominator that is not strictly positive");
+        return AVIF_FALSE;
+    }
+
+    if ((widthN % widthD) != 0) {
+        avifDiagnosticsPrintf(diag, "[Strict] clap width is not an integer");
+        return AVIF_FALSE;
+    }
+    if ((heightN % heightD) != 0) {
+        avifDiagnosticsPrintf(diag, "[Strict] clap height is not an integer");
+        return AVIF_FALSE;
+    }
+
+    clapFraction uncroppedCenterX = calcCenter((int32_t)imageW);
+    clapFraction uncroppedCenterY = calcCenter((int32_t)imageH);
+
+    clapFraction horizOff;
+    horizOff.n = horizOffN;
+    horizOff.d = horizOffD;
+    clapFraction croppedCenterX = clapFractionAdd(uncroppedCenterX, horizOff);
+
+    clapFraction vertOff;
+    vertOff.n = vertOffN;
+    vertOff.d = vertOffD;
+    clapFraction croppedCenterY = clapFractionAdd(uncroppedCenterY, vertOff);
+
+    clapFraction halfW;
+    halfW.n = widthN;
+    halfW.d = widthD * 2;
+    clapFraction cropX = clapFractionSub(croppedCenterX, halfW);
+    if ((cropX.n % cropX.d) != 0) {
+        avifDiagnosticsPrintf(diag, "[Strict] calculated crop X offset is not an integer");
+        return AVIF_FALSE;
+    }
+
+    clapFraction halfH;
+    halfH.n = heightN;
+    halfH.d = heightD * 2;
+    clapFraction cropY = clapFractionSub(croppedCenterY, halfH);
+    if (((int32_t)cropY.n % (int32_t)cropY.d) != 0) {
+        avifDiagnosticsPrintf(diag, "[Strict] calculated crop Y offset is not an integer");
+        return AVIF_FALSE;
+    }
+
+    if ((cropX.n < 0) || (cropY.n < 0)) {
+        avifDiagnosticsPrintf(diag, "[Strict] at least one crop offset is not positive");
+        return AVIF_FALSE;
+    }
+
+    cropRect->x = (uint32_t)(cropX.n / cropX.d);
+    cropRect->y = (uint32_t)(cropY.n / cropY.d);
+    cropRect->width = (uint32_t)(clap->widthN / clap->widthD);
+    cropRect->height = (uint32_t)(clap->heightN / clap->heightD);
+    return avifCropRectIsValid(cropRect, imageW, imageH, yuvFormat, diag);
+}
+
+avifBool avifCleanApertureBoxConvertCropRect(avifCleanApertureBox * clap,
+                                             const avifCropRect * cropRect,
+                                             const uint32_t imageW,
+                                             const uint32_t imageH,
+                                             const avifPixelFormat yuvFormat,
+                                             avifDiagnostics * diag)
+{
+    if (!avifCropRectIsValid(cropRect, imageW, imageH, yuvFormat, diag)) {
+        return AVIF_FALSE;
+    }
+
+    clapFraction uncroppedCenterX = calcCenter(imageW);
+    clapFraction uncroppedCenterY = calcCenter(imageH);
+
+    clapFraction croppedCenterX = calcCenter(cropRect->width);
+    croppedCenterX.n += cropRect->x * croppedCenterX.d;
+    clapFraction croppedCenterY = calcCenter(cropRect->height);
+    croppedCenterY.n += cropRect->y * croppedCenterY.d;
+
+    clapFraction horizOff = clapFractionSub(croppedCenterX, uncroppedCenterX);
+    clapFraction vertOff = clapFractionSub(croppedCenterY, uncroppedCenterY);
+
+    clap->widthN = cropRect->width;
+    clap->widthD = 1;
+    clap->heightN = cropRect->height;
+    clap->heightD = 1;
+    clap->horizOffN = horizOff.n;
+    clap->horizOffD = horizOff.d;
+    clap->vertOffN = vertOff.n;
+    clap->vertOffD = vertOff.d;
+    return AVIF_TRUE;
 }
 
 // ---------------------------------------------------------------------------
@@ -501,7 +741,7 @@ static struct AvailableCodec availableCodecs[] = {
 
 static const int availableCodecsCount = (sizeof(availableCodecs) / sizeof(availableCodecs[0])) - 1;
 
-static struct AvailableCodec * findAvailableCodec(avifCodecChoice choice, uint32_t requiredFlags)
+static struct AvailableCodec * findAvailableCodec(avifCodecChoice choice, avifCodecFlags requiredFlags)
 {
     for (int i = 0; i < availableCodecsCount; ++i) {
         if ((choice != AVIF_CODEC_CHOICE_AUTO) && (availableCodecs[i].choice != choice)) {
@@ -515,7 +755,7 @@ static struct AvailableCodec * findAvailableCodec(avifCodecChoice choice, uint32
     return NULL;
 }
 
-const char * avifCodecName(avifCodecChoice choice, uint32_t requiredFlags)
+const char * avifCodecName(avifCodecChoice choice, avifCodecFlags requiredFlags)
 {
     struct AvailableCodec * availableCodec = findAvailableCodec(choice, requiredFlags);
     if (availableCodec) {
@@ -534,7 +774,7 @@ avifCodecChoice avifCodecChoiceFromName(const char * name)
     return AVIF_CODEC_CHOICE_AUTO;
 }
 
-avifCodec * avifCodecCreate(avifCodecChoice choice, uint32_t requiredFlags)
+avifCodec * avifCodecCreate(avifCodecChoice choice, avifCodecFlags requiredFlags)
 {
     struct AvailableCodec * availableCodec = findAvailableCodec(choice, requiredFlags);
     if (availableCodec) {

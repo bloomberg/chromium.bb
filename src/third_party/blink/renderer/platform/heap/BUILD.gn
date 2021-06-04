@@ -54,6 +54,7 @@ blink_platform_sources("heap") {
 
   sources = [
     "blink_gc_memory_dump_provider.h",
+    "collection_support/clear_collection_scope.h",
     "collection_support/heap_deque.h",
     "collection_support/heap_hash_counted_set.h",
     "collection_support/heap_hash_map.h",
@@ -66,6 +67,7 @@ blink_platform_sources("heap") {
     "collection_support/heap_vector_backing.h",
     "custom_spaces.h",
     "disallow_new_wrapper.h",
+    "forward.h",
     "garbage_collected.h",
     "gc_task_runner.h",
     "handle.h",
@@ -109,8 +111,6 @@ blink_platform_sources("heap") {
       "v8_wrapper/garbage_collected.h",
       "v8_wrapper/heap.h",
       "v8_wrapper/heap_allocator_impl.h",
-      "v8_wrapper/heap_stats_collector.h",
-      "v8_wrapper/heap_traits.h",
       "v8_wrapper/member.h",
       "v8_wrapper/persistent.h",
       "v8_wrapper/process_heap.h",
@@ -118,9 +118,9 @@ blink_platform_sources("heap") {
       "v8_wrapper/thread_state.h",
       "v8_wrapper/thread_state_scopes.h",
       "v8_wrapper/trace_traits.h",
-      "v8_wrapper/unified_heap_controller.h",
       "v8_wrapper/unified_heap_marking_visitor.h",
       "v8_wrapper/visitor.h",
+      "v8_wrapper/write_barrier.h",
     ]
 
     deps += [
@@ -242,6 +242,7 @@ source_set("test_support") {
 
 test("blink_heap_unittests") {
   deps = [ ":blink_heap_unittests_sources" ]
+
   if (is_android) {
     deps += [
       "//base:base_java",
@@ -249,6 +250,13 @@ test("blink_heap_unittests") {
       "//net/android:net_java",
       "//ui/android:ui_full_java",
     ]
+  }
+
+  if (is_fuchsia && enable_blink_heap_use_v8_oilpan) {
+    # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
+    # permissions.
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
   }
 }
 
@@ -262,6 +270,7 @@ source_set("blink_heap_unittests_sources") {
     "test/concurrent_marking_test.cc",
     "test/heap_compact_test.cc",
     "test/heap_linked_stack_test.cc",
+    "test/heap_test.cc",
     "test/heap_traits_test.cc",
     "test/incremental_marking_test.cc",
     "test/persistent_test.cc",
@@ -269,16 +278,11 @@ source_set("blink_heap_unittests_sources") {
     "test/write_barrier_perftest.cc",
   ]
 
-  # TODO(1056170): Remove branch after implementing
-  # v8_wrapper/heap_test_utilities.* as tests should work for both
-  # implementations.
-  if (!enable_blink_heap_use_v8_oilpan) {
-    sources += [ "test/heap_test.cc" ]
-  }
   if (!enable_blink_heap_use_v8_oilpan) {
     sources += [
       "impl/test/card_table_test.cc",
       "impl/test/gc_info_test.cc",
+      "impl/test/heap_internals_test.cc",
       "impl/test/heap_stats_collector_test.cc",
       "impl/test/heap_thread_test.cc",
       "impl/test/incremental_marking_internals_test.cc",
@@ -305,6 +309,7 @@ source_set("blink_heap_unittests_sources") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//gin:gin",
     "//mojo/core/embedder:embedder",
     "//skia:test_fonts",
     "//testing/gmock",

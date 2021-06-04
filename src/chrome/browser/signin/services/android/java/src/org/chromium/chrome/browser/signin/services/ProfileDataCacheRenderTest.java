@@ -9,10 +9,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -20,6 +18,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -33,13 +32,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -53,6 +57,7 @@ import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityManagerJni;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
@@ -101,11 +106,14 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     @Rule
     public final JniMocker mocker = new JniMocker();
 
-    @Mock
-    private IdentityManager.Natives mIdentityManagerNativeMock;
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
     @Mock
-    private ProfileDataCache.Observer mObserverMock;
+    private AccountTrackerService mAccountTrackerServiceMock;
+
+    @Mock
+    private IdentityManager.Natives mIdentityManagerNativeMock;
 
     private final IdentityManager mIdentityManager =
             IdentityManager.create(NATIVE_IDENTITY_MANAGER, null /* OAuth2TokenService */);
@@ -121,9 +129,8 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
 
     @Before
     public void setUp() {
-        initMocks(this);
         mocker.mock(IdentityManagerJni.TEST_HOOKS, mIdentityManagerNativeMock);
-        AccountInfoService.init(mIdentityManager);
+        AccountInfoService.init(mIdentityManager, mAccountTrackerServiceMock);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Activity activity = getActivity();
             mContentView = new FrameLayout(activity);
@@ -147,6 +154,9 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature("RenderTest")
     public void testProfileDataWithAvatarFromIdentityManager() throws IOException {
+        doAnswer(AdditionalAnswers.answerVoid(Runnable::run))
+                .when(mAccountTrackerServiceMock)
+                .seedAccountsIfNeeded(any(Runnable.class));
         when(mIdentityManagerNativeMock
                         .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                                 anyLong(), eq(ACCOUNT_EMAIL)))
@@ -161,6 +171,9 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature("RenderTest")
     public void testProfileDataUpdatedFromIdentityManagerObserver() throws IOException {
+        doAnswer(AdditionalAnswers.answerVoid(Runnable::run))
+                .when(mAccountTrackerServiceMock)
+                .seedAccountsIfNeeded(any(Runnable.class));
         mAccountManagerTestRule.addAccount(
                 new ProfileDataSource.ProfileData(ACCOUNT_EMAIL, null, "Full Name", "Given Name"));
         mIdentityManager.onExtendedAccountInfoUpdated(mAccountInfoWithAvatar);
@@ -183,20 +196,25 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     @EnableFeatures({ChromeFeatureList.DEPRECATE_MENAGERIE_API})
     @Feature("RenderTest")
     public void testProfileDataPopulatedWithoutGmsProfileDataSource() throws IOException {
+        doAnswer(AdditionalAnswers.answerVoid(Runnable::run))
+                .when(mAccountTrackerServiceMock)
+                .seedAccountsIfNeeded(any(Runnable.class));
         when(mIdentityManagerNativeMock
                         .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                                 anyLong(), eq(ACCOUNT_EMAIL)))
                 .thenReturn(mAccountInfoWithAvatar);
         mAccountManagerTestRule.addAccount(ACCOUNT_EMAIL);
-        mProfileDataCache = new ProfileDataCache(getActivity(), mImageSize, /*badgeConfig=*/null);
 
-        // ProfileDataCache only populates the cache when an observer is added.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mProfileDataCache.addObserver(mObserverMock); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mProfileDataCache =
+                    new ProfileDataCache(getActivity(), mImageSize, /*badgeConfig=*/null);
+        });
 
-        // Certain classes like IdentityDiscController can trigger infinite loop if we populate
-        // the cache with an existing observer, details can be found in crbug/1183295.
-        verify(mObserverMock, never()).onProfileDataUpdated(any());
+        CriteriaHelper.pollUiThread(() -> {
+            return !TextUtils.isEmpty(
+                    mProfileDataCache.getProfileDataOrDefault(mAccountInfoWithAvatar.getEmail())
+                            .getFullName());
+        });
         final DisplayableProfileData profileData =
                 mProfileDataCache.getProfileDataOrDefault(mAccountInfoWithAvatar.getEmail());
         Assert.assertEquals(mAccountInfoWithAvatar.getFullName(), profileData.getFullName());

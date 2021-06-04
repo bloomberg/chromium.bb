@@ -10,6 +10,7 @@
 #include "base/android/reached_addresses_bitset.h"
 #include "base/android/reached_code_profiler.h"
 #include "base/debug/elf_reader.h"
+#include "base/strings/string_piece.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/perfetto/include/perfetto/tracing/data_source.h"
@@ -75,12 +76,12 @@ void ReachedCodeDataSource::WriteProfileData() {
     str->set_str(module_id);
   }
 
-  base::Optional<base::StringPiece> library_name =
+  absl::optional<base::StringPiece> library_name =
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (library_name) {
     auto* str = interned_data->add_mapping_paths();
     str->set_iid(0);
-    str->set_str(library_name->as_string());
+    str->set_str(std::string(*library_name));
   }
 
   std::vector<uint32_t> offsets = bitset->GetReachedOffsets();

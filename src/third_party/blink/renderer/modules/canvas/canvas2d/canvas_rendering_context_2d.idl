@@ -51,7 +51,7 @@ interface CanvasRenderingContext2D {
     readonly attribute HTMLCanvasElement canvas;
 
     // state
-    [NoAllocDirectCall] void save(); // push state on state stack
+    void save(); // push state on state stack
     [NoAllocDirectCall] void restore(); // pop state stack and restore state
     // Clear the canvas and reset the path
     [RuntimeEnabled=NewCanvas2DAPI] void reset();
@@ -87,8 +87,8 @@ interface CanvasRenderingContext2D {
     [MeasureAs=Canvas2DImageSmoothingQuality]attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles (see also the CanvasDrawingStyles interface)
-    attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)
-    attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
+    attribute (DOMString or CanvasGradient or CanvasPattern or CSSColorValue) strokeStyle; // (default black)
+    attribute (DOMString or CanvasGradient or CanvasPattern or CSSColorValue) fillStyle; // (default black)
     CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
     [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
     [RuntimeEnabled=NewCanvas2DAPI] CanvasGradient createConicGradient(double startAngle, double cx, double cy);
@@ -139,18 +139,14 @@ interface CanvasRenderingContext2D {
     // hit regions
     [RuntimeEnabled=CanvasHitRegion, RaisesException] void addHitRegion(optional HitRegionOptions options = {});
     [RuntimeEnabled=CanvasHitRegion] void removeHitRegion(DOMString id);
-    [RuntimeEnabled=CanvasHitRegion, NoAllocDirectCall] void clearHitRegions();
+    [RuntimeEnabled=CanvasHitRegion] void clearHitRegions();
 
     // pixel manipulation
     [RaisesException] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh);
-    [RaisesException] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh);
+    [RaisesException] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh, optional ImageDataSettings imageDataSettings = {});
+    [RaisesException] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh, optional ImageDataSettings imageDataSettings = {});
     [RaisesException] void putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy);
     [RaisesException] void putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy, [EnforceRange] long dirtyX, [EnforceRange] long dirtyY, [EnforceRange] long dirtyWidth, [EnforceRange] long dirtyHeight);
-
-    // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
-    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh, ImageDataSettings imageDataSettings);
-    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh, ImageDataSettings imageDataSettings);
 
     // Context state
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental

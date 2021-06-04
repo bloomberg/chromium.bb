@@ -1,16 +1,15 @@
 {
   "dependencies": [
-    "source_frame",
-    "cookie_table",
-    "inline_editor",
-    "data_grid",
-    "components",
-    "object_ui",
-    "perf_ui",
+    "ui/legacy/components/source_frame",
+    "ui/legacy/components/cookie_table",
+    "ui/legacy/components/inline_editor",
+    "ui/legacy/components/data_grid",
+    "ui/legacy/components/utils",
+    "ui/legacy/components/object_ui",
+    "ui/legacy/components/perf_ui",
     "panels/mobile_throttling",
     "panels/network",
-    "sources",
-    "browser_sdk"
+    "panels/sources"
   ],
     "resources": [
     "appManifestView.css",

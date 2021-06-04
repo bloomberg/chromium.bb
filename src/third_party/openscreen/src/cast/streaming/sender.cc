@@ -12,6 +12,7 @@
 #include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/std_util.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace cast {
@@ -311,10 +312,11 @@ void Sender::OnReceiverReport(const RtcpReportBlock& receiver_report) {
     round_trip_time_ =
         (kInertia * round_trip_time_ + measurement) / (kInertia + 1);
   }
-  // TODO(miu): Add tracing event here to note the updated RTT.
+  TRACE_SCOPED(TraceCategory::kSender, "UpdatedRTT");
 }
 
 void Sender::OnReceiverIndicatesPictureLoss() {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kSender);
   // The Receiver will continue the PLI notifications until it has received a
   // key frame. Thus, if a key frame is already in-flight, don't make a state
   // change that would cause this Sender to force another expensive key frame.
@@ -342,6 +344,7 @@ void Sender::OnReceiverIndicatesPictureLoss() {
 
 void Sender::OnReceiverCheckpoint(FrameId frame_id,
                                   milliseconds playout_delay) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kSender);
   if (frame_id > last_enqueued_frame_id_) {
     OSP_LOG_ERROR
         << "Ignoring checkpoint for " << latest_expected_frame_id_
@@ -415,14 +418,13 @@ void Sender::OnReceiverIsMissingPackets(std::vector<PacketNack> nacks) {
     // happen in rare cases where RTCP packets arrive out-of-order (i.e., the
     // network shuffled them).
     if (!slot) {
-      // TODO(miu): Add tracing event here to record this.
+      TRACE_SCOPED(TraceCategory::kSender, "MissingNackSlot");
       for (++nack_it; nack_it != nacks.end() && nack_it->frame_id == frame_id;
            ++nack_it) {
       }
       continue;
     }
 
-    // NOLINTNEXTLINE
     latest_expected_frame_id_ = std::max(latest_expected_frame_id_, frame_id);
 
     const auto HandleIndividualNack = [&](FramePacketId packet_id) {

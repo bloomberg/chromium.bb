@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/webapps/common/web_page_metadata.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
@@ -56,7 +56,9 @@ struct IconBitmaps {
   // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
   std::map<SquareSizePx, SkBitmap> maskable;
 
-  // TODO (crbug.com/1114638): Monochrome support.
+  // Monochrome bitmaps designed for any context, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::map<SquareSizePx, SkBitmap> monochrome;
 };
 
 // Icon sizes for each IconPurpose.
@@ -82,7 +84,9 @@ struct IconSizes {
   // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
   std::vector<SquareSizePx> maskable;
 
-  // TODO (crbug.com/1114638): Monochrome support.
+  // Sizes of monochrome bitmaps, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::vector<SquareSizePx> monochrome;
 };
 
 using ShortcutsMenuIconBitmaps = std::vector<IconBitmaps>;
@@ -99,8 +103,7 @@ struct WebApplicationIconInfo {
   WebApplicationIconInfo& operator=(WebApplicationIconInfo&&) noexcept;
 
   GURL url;
-  base::Optional<SquareSizePx> square_size_px;
-  // TODO (crbug.com/1114638): Support Monochrome.
+  absl::optional<SquareSizePx> square_size_px;
   IconPurpose purpose = IconPurpose::ANY;
 };
 
@@ -150,6 +153,11 @@ struct WebApplicationShortcutsMenuItemInfo {
   // designed for masking.
   // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
   std::vector<Icon> maskable;
+
+  // List of shortcut icon URLs with associated square size,
+  // designed for monochrome contexts.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::vector<Icon> monochrome;
 };
 
 // Structure used when installing a web page as an app.
@@ -166,7 +174,7 @@ struct WebApplicationInfo {
   ~WebApplicationInfo();
 
   // Id specified in the manifest.
-  base::Optional<std::string> manifest_id;
+  absl::optional<std::string> manifest_id;
 
   // Title of the application.
   std::u16string title;
@@ -183,7 +191,7 @@ struct WebApplicationInfo {
   GURL manifest_url;
 
   // Optional query parameters to add to the start_url when launching the app.
-  base::Optional<std::string> launch_query_params;
+  absl::optional<std::string> launch_query_params;
 
   // Scope for the app. Dictates what URLs will be opened in the app.
   // https://www.w3.org/TR/appmanifest/#scope-member
@@ -207,11 +215,11 @@ struct WebApplicationInfo {
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
 
   // The color to use for the web app frame.
-  base::Optional<SkColor> theme_color;
+  absl::optional<SkColor> theme_color;
 
   // The expected page background color of the web app.
   // https://www.w3.org/TR/appmanifest/#background_color-member
-  base::Optional<SkColor> background_color;
+  absl::optional<SkColor> background_color;
 
   // App preference regarding whether the app should be opened in a tab,
   // in a window (with or without minimal-ui buttons), or full screen. Defaults
@@ -236,7 +244,7 @@ struct WebApplicationInfo {
   std::vector<blink::Manifest::FileHandler> file_handlers;
 
   // File types the app accepts as a Web Share Target.
-  base::Optional<apps::ShareTarget> share_target;
+  absl::optional<apps::ShareTarget> share_target;
 
   // Additional search terms that users can use to find the app.
   std::vector<std::string> additional_search_terms;

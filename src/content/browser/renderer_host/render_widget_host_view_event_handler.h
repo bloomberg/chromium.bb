@@ -9,17 +9,17 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/public/mojom/compositing/delegated_ink_point_renderer.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/gestures/motion_event_aura.h"
+#include "ui/gfx/mojom/delegated_ink_point_renderer.mojom.h"
 #include "ui/latency/latency_info.h"
 
 namespace aura {
@@ -151,7 +151,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.
-  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes);
+  bool LockKeyboard(absl::optional<base::flat_set<ui::DomCode>> codes);
   void UnlockKeyboard();
   bool IsKeyboardLocked() const;
 
@@ -304,7 +304,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // of the window when it reaches the window borders to avoid it going outside.
   // This value is used to differentiate between these synthetic mouse move
   // events vs. normal mouse move events.
-  base::Optional<gfx::Point> synthetic_move_position_;
+  absl::optional<gfx::Point> synthetic_move_position_;
 
   bool enable_consolidated_movement_;
 
@@ -327,7 +327,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   // Remote end of the connection for sending delegated ink points to viz to
   // support the delegated ink trails feature.
-  mojo::Remote<viz::mojom::DelegatedInkPointRenderer>
+  mojo::Remote<gfx::mojom::DelegatedInkPointRenderer>
       delegated_ink_point_renderer_;
   // Used to know if we have already told viz to reset prediction because the
   // final point of the delegated ink trail has been sent. True when prediction

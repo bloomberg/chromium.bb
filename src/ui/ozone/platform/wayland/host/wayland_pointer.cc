@@ -47,6 +47,8 @@ void WaylandPointer::Enter(void* data,
                            wl_fixed_t surface_y) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
+  pointer->connection_->set_pointer_enter_serial(serial);
+
   WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   gfx::PointF location{wl_fixed_to_double(surface_x),
                        wl_fixed_to_double(surface_y)};
@@ -60,7 +62,8 @@ void WaylandPointer::Leave(void* data,
                            wl_surface* surface) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  pointer->delegate_->OnPointerFocusChanged(nullptr, {});
+  pointer->delegate_->OnPointerFocusChanged(
+      nullptr, pointer->delegate_->GetPointerLocation());
 }
 
 // static
@@ -121,7 +124,7 @@ void WaylandPointer::Axis(void* data,
                           wl_fixed_t value) {
   static const double kAxisValueScale = 10.0;
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  gfx::Vector2d offset;
+  gfx::Vector2dF offset;
   // Wayland compositors send axis events with values in the surface coordinate
   // space. They send a value of 10 per mouse wheel click by convention, so
   // clients (e.g. GTK+) typically scale down by this amount to convert to

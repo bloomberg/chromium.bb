@@ -33,21 +33,22 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -77,9 +78,6 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-namespace mojom {
-enum class WebFeature : int32_t;
-}  // namespace mojom
 
 class AssociatedInterfaceProvider;
 class DocumentLoader;
@@ -97,6 +95,7 @@ class RemoteFrame;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
+class SourceLocation;
 class WebContentCaptureClient;
 class WebDedicatedWorkerHostFactoryClient;
 class WebLocalFrame;
@@ -132,7 +131,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidHandleOnloadEvents() = 0;
   virtual void DidFinishSameDocumentNavigation(HistoryItem*,
                                                WebHistoryCommitType,
-                                               bool content_initiated,
+                                               bool is_synchronously_committed,
                                                bool is_history_api_navigation,
                                                bool is_client_redirect) {}
   virtual void DispatchDidReceiveTitle(const String&) = 0;
@@ -163,9 +162,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
-      const base::Optional<WebImpression>& impression,
+      const absl::optional<WebImpression>& impression,
       network::mojom::IPAddressSpace,
       const LocalFrameToken* initiator_frame_token,
+      std::unique_ptr<SourceLocation> source_location,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
           initiator_policy_container_handle) = 0;
 
@@ -190,15 +190,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // propogates renderer loading behavior to the browser process for histograms.
   virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}
 
-  // Will be called when a new UseCounter feature has been observed in a frame.
-  // This propogates feature usage to the browser process for histograms.
-  virtual void DidObserveNewFeatureUsage(mojom::WebFeature) {}
-  // Will be called when a new UseCounter CSS property or animated CSS property
-  // has been observed in a frame. This propogates feature usage to the browser
-  // process for histograms.
-  virtual void DidObserveNewCssPropertyUsage(
-      mojom::CSSSampleId /*css_property*/,
-      bool /*is_animated*/) {}
+  // Will be called when a new UseCounterFeature has been observed in a frame.
+  // This propagates feature usage to the browser process for histograms.
+  virtual void DidObserveNewFeatureUsage(const UseCounterFeature&) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
@@ -214,7 +208,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidObserveLayoutNg(uint32_t all_block_count,
                                   uint32_t ng_block_count,
                                   uint32_t all_call_count,
-                                  uint32_t ng_call_count) {}
+                                  uint32_t ng_call_count,
+                                  uint32_t flexbox_ng_block_count,
+                                  uint32_t grid_ng_block_count) {}
 
   // Reports lazy loaded behavior when the frame or image is fully deferred or
   // if the frame or image is loaded after being deferred. Called every time the
@@ -222,6 +218,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // placeholders.
   virtual void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
+
+  // Notifies the observers of the origins for which subresource redirect
+  // optimizations can be preloaded.
+  virtual void PreloadSubresourceOptimizationsForOrigins(
+      const WTF::HashSet<scoped_refptr<const SecurityOrigin>,
+                         SecurityOriginHash>& origins) {}
 
   // Transmits the change in the set of watched CSS selectors property that
   // match any element on the frame.
@@ -241,7 +243,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   virtual String UserAgent() = 0;
-  virtual base::Optional<blink::UserAgentMetadata> UserAgentMetadata() = 0;
+  virtual absl::optional<blink::UserAgentMetadata> UserAgentMetadata() = 0;
 
   virtual String DoNotTrackValue() = 0;
 
@@ -351,7 +353,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual bool HandleCurrentKeyboardEvent() { return false; }
 
-  virtual void DidChangeSelection(bool is_selection_empty) {}
+  // Called when the selection may have changed (Note, that due to
+  // http://crbug.com/632920 the selection may not have changed). Additionally,
+  // in some circumstances the browser selection may be known to not match the
+  // last synced value, in which case SyncCondition::kForced is passed to force
+  // an update even if the selection appears unchanged since the last call.
+  virtual void DidChangeSelection(bool is_selection_empty,
+                                  blink::SyncCondition force_sync) {}
 
   virtual void DidChangeContents() {}
 
@@ -414,6 +422,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   CreateResourceLoadInfoNotifierWrapper() {
     return nullptr;
   }
+
+  // Debugging -----------------------------------------------------------
+  virtual void BindDevToolsAgent(
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver) {}
 
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(

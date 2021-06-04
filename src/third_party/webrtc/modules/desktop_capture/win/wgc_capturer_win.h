@@ -13,6 +13,7 @@
 
 #include <d3d11.h>
 #include <wrl/client.h>
+
 #include <map>
 #include <memory>
 
@@ -45,7 +46,10 @@ class WindowEnumerator final : public SourceEnumerator {
   ~WindowEnumerator() override = default;
 
   bool FindAllSources(DesktopCapturer::SourceList* sources) override {
-    return window_capture_helper_.EnumerateCapturableWindows(sources);
+    // WGC fails to capture windows with the WS_EX_TOOLWINDOW style, so we
+    // provide it as a filter to ensure windows with the style are not returned.
+    return window_capture_helper_.EnumerateCapturableWindows(sources,
+                                                             WS_EX_TOOLWINDOW);
   }
 
  private:
@@ -62,7 +66,7 @@ class ScreenEnumerator final : public SourceEnumerator {
   ~ScreenEnumerator() override = default;
 
   bool FindAllSources(DesktopCapturer::SourceList* sources) override {
-    return webrtc::GetMonitorList(sources);
+    return webrtc::GetScreenList(sources);
   }
 };
 
@@ -90,6 +94,7 @@ class WgcCapturerWin : public DesktopCapturer {
   // DesktopCapturer interface.
   bool GetSourceList(SourceList* sources) override;
   bool SelectSource(SourceId id) override;
+  bool FocusOnSelectedSource() override;
   void Start(Callback* callback) override;
   void CaptureFrame() override;
 

@@ -123,10 +123,17 @@ bool PeerConnectionTestWrapper::CreatePc(
 
   std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator(
       new FakeRTCCertificateGenerator());
-  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      config, std::move(port_allocator), std::move(cert_generator), this);
-
-  return peer_connection_.get() != NULL;
+  webrtc::PeerConnectionDependencies deps(this);
+  deps.allocator = std::move(port_allocator);
+  deps.cert_generator = std::move(cert_generator);
+  auto result = peer_connection_factory_->CreatePeerConnectionOrError(
+      config, std::move(deps));
+  if (result.ok()) {
+    peer_connection_ = result.MoveValue();
+    return true;
+  } else {
+    return false;
+  }
 }
 
 rtc::scoped_refptr<webrtc::DataChannelInterface>
@@ -221,8 +228,7 @@ void PeerConnectionTestWrapper::SetLocalDescription(SdpType type,
                    << ": SetLocalDescription " << webrtc::SdpTypeToString(type)
                    << " " << sdp;
 
-  rtc::scoped_refptr<MockSetSessionDescriptionObserver> observer(
-      new rtc::RefCountedObject<MockSetSessionDescriptionObserver>());
+  auto observer = rtc::make_ref_counted<MockSetSessionDescriptionObserver>();
   peer_connection_->SetLocalDescription(
       observer, webrtc::CreateSessionDescription(type, sdp).release());
 }
@@ -233,8 +239,7 @@ void PeerConnectionTestWrapper::SetRemoteDescription(SdpType type,
                    << ": SetRemoteDescription " << webrtc::SdpTypeToString(type)
                    << " " << sdp;
 
-  rtc::scoped_refptr<MockSetSessionDescriptionObserver> observer(
-      new rtc::RefCountedObject<MockSetSessionDescriptionObserver>());
+  auto observer = rtc::make_ref_counted<MockSetSessionDescriptionObserver>();
   peer_connection_->SetRemoteDescription(
       observer, webrtc::CreateSessionDescription(type, sdp).release());
 }
@@ -331,9 +336,8 @@ PeerConnectionTestWrapper::GetUserMedia(
     config.frame_interval_ms = 100;
     config.timestamp_offset_ms = rtc::TimeMillis();
 
-    rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source =
-        new rtc::RefCountedObject<webrtc::FakePeriodicVideoTrackSource>(
-            config, /* remote */ false);
+    auto source = rtc::make_ref_counted<webrtc::FakePeriodicVideoTrackSource>(
+        config, /* remote */ false);
 
     std::string videotrack_label = stream_id + kVideoTrackLabelBase;
     rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(

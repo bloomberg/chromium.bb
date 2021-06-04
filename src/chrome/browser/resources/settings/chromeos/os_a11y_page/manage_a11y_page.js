@@ -224,6 +224,12 @@ Polymer({
       }
     },
 
+    /** @private */
+    dictationSubtitle_: {
+      type: String,
+      value: loadTimeData.getString('dictationDescription'),
+    },
+
     /**
      * |hasKeyboard_|, |hasMouse_|, |hasPointingStick_|, and |hasTouchpad_|
      * start undefined so observers don't trigger until they have been
@@ -340,6 +346,9 @@ Polymer({
   ready() {
     this.addWebUIListener(
         'initial-data-ready', this.onManageAllyPageReady_.bind(this));
+    this.addWebUIListener(
+        'dictation-setting-subtitle-changed',
+        this.onDictationSettingSubtitleChanged_.bind(this));
     this.manageBrowserProxy_.manageA11yPageReady();
 
     const r = settings.routes;
@@ -412,6 +421,11 @@ Polymer({
   /** @private */
   onChromeVoxSettingsTap_() {
     this.manageBrowserProxy_.showChromeVoxSettings();
+  },
+
+  /** @private */
+  onChromeVoxTutorialTap_() {
+    this.manageBrowserProxy_.showChromeVoxTutorial();
   },
 
   /** @private */
@@ -578,5 +592,13 @@ Polymer({
    */
   shouldShowAdditionalFeaturesLink_(isKiosk, isGuest) {
     return !isKiosk && !isGuest;
+  },
+
+  /**
+   * @param {string} subtitle
+   * @private
+   */
+  onDictationSettingSubtitleChanged_(subtitle) {
+    this.dictationSubtitle_ = subtitle;
   },
 });

@@ -23,11 +23,12 @@ extern const char *gScreenShotDir;
 extern bool gVerboseLogging;
 extern int gWarmupLoops;
 extern double gCalibrationTimeSeconds;
-extern double gTestTimeSeconds;
+extern double gMaxTrialTimeSeconds;
 extern int gTestTrials;
 extern bool gNoFinish;
 extern bool gEnableAllTraceTests;
 extern bool gRetraceMode;
+extern bool gMinimizeGPUWork;
 
 inline bool OneFrame()
 {

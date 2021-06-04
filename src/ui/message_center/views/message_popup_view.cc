@@ -8,6 +8,8 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -15,7 +17,6 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -117,7 +118,7 @@ void MessagePopupView::Show() {
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
   // default but we need focus for the inline reply textarea.
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
 #else
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;

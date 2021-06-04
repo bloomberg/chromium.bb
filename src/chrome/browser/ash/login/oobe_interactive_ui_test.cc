@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -69,6 +70,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_switches.h"
@@ -517,16 +519,12 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
     std::tie(params_.is_tablet, params_.is_quick_unlock_enabled,
              params_.hide_shelf_controls_in_tablet_mode, params_.arc_state) =
         parameters;
-    // TODO(crbug.com/1101318): disable ChildSpecificSign in feature for now due
-    // to test flakiness
     if (params_.hide_shelf_controls_in_tablet_mode) {
       feature_list_.InitWithFeatures(
-          {ash::features::kHideShelfControlsInTabletMode},
-          {features::kChildSpecificSignin});
+          {ash::features::kHideShelfControlsInTabletMode}, {});
     } else {
       feature_list_.InitWithFeatures(
-          {}, {ash::features::kHideShelfControlsInTabletMode,
-               features::kChildSpecificSignin});
+          {}, {ash::features::kHideShelfControlsInTabletMode});
     }
   }
   ~OobeEndToEndTestSetupMixin() override = default;
@@ -699,7 +697,7 @@ void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
 }
 
 void OobeInteractiveUITest::PerformSessionSignInSteps() {
-  if (features::IsChildSpecificSigninEnabled()) {
+  if (GetFirstSigninScreen() == UserCreationView::kScreenId) {
     test::WaitForUserCreationScreen();
     test::TapUserCreationNext();
   }

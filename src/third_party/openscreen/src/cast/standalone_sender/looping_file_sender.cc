@@ -125,7 +125,7 @@ void LoopingFileSender::OnVideoFrame(const AVFrame& av_frame,
   for (int i = 0; i < 3; ++i) {
     frame.yuv_strides[i] = av_frame.linesize[i];
   }
-  // TODO(miu): Add performance metrics visual overlay (based on Stats
+  // TODO(jophba): Add performance metrics visual overlay (based on Stats
   // callback).
   video_encoder_.EncodeAndSend(frame, capture_time, {});
 }

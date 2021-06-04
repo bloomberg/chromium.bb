@@ -13,7 +13,7 @@ namespace features {
 // Use the CUPS IPP printing backend instead of the original CUPS backend that
 // calls the deprecated PPD API.
 const base::Feature kCupsIppPrintingBackend{"CupsIppPrintingBackend",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
@@ -26,7 +26,7 @@ const base::Feature kUseXpsForPrinting{"UseXpsForPrinting",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use XPS for printing instead of GDI for printing PDF documents. This is
-// independent of |kUseXpsForPrinting|; can use XPS for PDFs even if still using
+// independent of `kUseXpsForPrinting`; can use XPS for PDFs even if still using
 // GDI for modifiable content.
 const base::Feature kUseXpsForPrintingFromPdf{
     "UseXpsForPrintingFromPdf", base::FEATURE_DISABLED_BY_DEFAULT};

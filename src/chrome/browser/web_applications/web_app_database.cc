@@ -256,6 +256,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
        web_app.downloaded_icon_sizes(IconPurpose::MASKABLE)) {
     local_data->add_downloaded_icon_sizes_purpose_maskable(size);
   }
+  for (SquareSizePx size :
+       web_app.downloaded_icon_sizes(IconPurpose::MONOCHROME)) {
+    local_data->add_downloaded_icon_sizes_purpose_monochrome(size);
+  }
 
   local_data->set_is_generated_icon(web_app.is_generated_icon());
 
@@ -301,9 +305,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
-  // TODO (crbug.com/1114638): Support Monochrome icons.
-  std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                         IconPurpose::MASKABLE};
+  std::array<IconPurpose, 3> purposes = {
+      IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
   for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
        web_app.shortcuts_menu_item_infos()) {
     WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
@@ -313,11 +316,22 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     for (IconPurpose purpose : purposes) {
       for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
            shortcut_info.GetShortcutIconInfosForPurpose(purpose)) {
-        // TODO (crbug.com/1114638): Add Monochrome support.
-        sync_pb::WebAppIconInfo* shortcut_icon_info_proto =
-            (purpose == IconPurpose::ANY)
-                ? shortcut_info_proto->add_shortcut_icon_infos()
-                : shortcut_info_proto->add_shortcut_icon_infos_maskable();
+        sync_pb::WebAppIconInfo* shortcut_icon_info_proto;
+        switch (purpose) {
+          case IconPurpose::ANY:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos();
+            break;
+          case IconPurpose::MASKABLE:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos_maskable();
+            break;
+          case IconPurpose::MONOCHROME:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos_monochrome();
+            break;
+        }
+
         DCHECK(!icon_info.url.is_empty());
         shortcut_icon_info_proto->set_url(icon_info.url.spec());
         shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
@@ -329,7 +343,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
        web_app.downloaded_shortcuts_menu_icons_sizes()) {
     DownloadedShortcutsMenuIconSizesProto* icon_sizes_proto =
         local_data->add_downloaded_shortcuts_menu_icons_sizes();
-    // TODO (crbug.com/1114638): Add Monochrome support.
     for (const SquareSizePx& icon_size :
          icon_sizes.GetSizesForPurpose(IconPurpose::ANY)) {
       icon_sizes_proto->add_icon_sizes(icon_size);
@@ -337,6 +350,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     for (const SquareSizePx& icon_size :
          icon_sizes.GetSizesForPurpose(IconPurpose::MASKABLE)) {
       icon_sizes_proto->add_icon_sizes_maskable(icon_size);
+    }
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::MONOCHROME)) {
+      icon_sizes_proto->add_icon_sizes_monochrome(icon_size);
     }
   }
 
@@ -367,6 +384,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (!web_app.manifest_url().is_empty())
     local_data->set_manifest_url(web_app.manifest_url().spec());
 
+  local_data->set_file_handler_permission_blocked(
+      web_app.file_handler_permission_blocked());
   return local_data;
 }
 
@@ -388,9 +407,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  base::Optional<std::string> manifest_id = base::nullopt;
+  absl::optional<std::string> manifest_id = absl::nullopt;
   if (sync_data.has_manifest_id())
-    manifest_id = base::Optional<std::string>(sync_data.manifest_id());
+    manifest_id = absl::optional<std::string>(sync_data.manifest_id());
 
   const AppId app_id = GenerateAppId(manifest_id, start_url);
 
@@ -464,7 +483,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   if (local_data.has_chromeos_data()) {
-    auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+    auto chromeos_data = absl::make_optional<WebAppChromeOsData>();
     chromeos_data->show_in_launcher = chromeos_data_proto.show_in_launcher();
     chromeos_data->show_in_search = chromeos_data_proto.show_in_search();
     chromeos_data->show_in_management =
@@ -530,7 +549,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
-  base::Optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
+  absl::optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
       ParseSyncFallbackDataStruct(sync_data);
   if (!parsed_sync_fallback_data.has_value()) {
     // ParseSyncFallbackDataStruct() reports any errors.
@@ -538,7 +557,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 
-  base::Optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
+  absl::optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
       ParseWebAppIconInfos("WebApp", local_data.icon_infos());
   if (!parsed_icon_infos.has_value()) {
     // ParseWebAppIconInfos() reports any errors.
@@ -557,6 +576,12 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     icon_sizes_maskable.push_back(size);
   web_app->SetDownloadedIconSizes(
       IconPurpose::MASKABLE, SortedSizesPx(std::move(icon_sizes_maskable)));
+
+  std::vector<SquareSizePx> icon_sizes_monochrome;
+  for (int32_t size : local_data.downloaded_icon_sizes_purpose_monochrome())
+    icon_sizes_monochrome.push_back(size);
+  web_app->SetDownloadedIconSizes(
+      IconPurpose::MONOCHROME, SortedSizesPx(std::move(icon_sizes_monochrome)));
 
   web_app->SetIsGeneratedIcon(local_data.is_generated_icon());
 
@@ -634,22 +659,34 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
-  // TODO (crbug.com/1114638): Support Monochrome icons.
-  std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
-                                         IconPurpose::MASKABLE};
+  std::array<IconPurpose, 3> purposes = {
+      IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
   for (const auto& shortcut_info_proto :
        local_data.shortcuts_menu_item_infos()) {
     WebApplicationShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
     shortcut_info.url = GURL(shortcut_info_proto.url());
     for (IconPurpose purpose : purposes) {
-      // TODO (crbug.com/1114638): Add Monochrome support.
-      const auto& shortcut_icon_infos =
-          (purpose == IconPurpose::ANY)
-              ? shortcut_info_proto.shortcut_icon_infos()
-              : shortcut_info_proto.shortcut_icon_infos_maskable();
+      // This default init needed to infer the sophisticated protobuf type.
+      const auto* shortcut_icon_infos =
+          &shortcut_info_proto.shortcut_icon_infos();
+
+      switch (purpose) {
+        case IconPurpose::ANY:
+          shortcut_icon_infos = &shortcut_info_proto.shortcut_icon_infos();
+          break;
+        case IconPurpose::MASKABLE:
+          shortcut_icon_infos =
+              &shortcut_info_proto.shortcut_icon_infos_maskable();
+          break;
+        case IconPurpose::MONOCHROME:
+          shortcut_icon_infos =
+              &shortcut_info_proto.shortcut_icon_infos_monochrome();
+          break;
+      }
+
       std::vector<WebApplicationShortcutsMenuItemInfo::Icon> icon_infos;
-      for (const auto& icon_info_proto : shortcut_icon_infos) {
+      for (const auto& icon_info_proto : *shortcut_icon_infos) {
         WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
         shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
         shortcut_icon_info.url = GURL(icon_info_proto.url());
@@ -666,7 +703,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   for (const auto& shortcuts_icon_sizes_proto :
        local_data.downloaded_shortcuts_menu_icons_sizes()) {
     IconSizes icon_sizes;
-    // TODO (crbug.com/1114638): Support Monochrome icons.
     icon_sizes.SetSizesForPurpose(
         IconPurpose::ANY, std::vector<SquareSizePx>(
                               shortcuts_icon_sizes_proto.icon_sizes().begin(),
@@ -676,6 +712,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         std::vector<SquareSizePx>(
             shortcuts_icon_sizes_proto.icon_sizes_maskable().begin(),
             shortcuts_icon_sizes_proto.icon_sizes_maskable().end()));
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::MONOCHROME,
+        std::vector<SquareSizePx>(
+            shortcuts_icon_sizes_proto.icon_sizes_monochrome().begin(),
+            shortcuts_icon_sizes_proto.icon_sizes_monochrome().end()));
 
     shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
   }
@@ -744,12 +785,15 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     }
     web_app->SetManifestUrl(manifest_url);
   }
+  if (local_data.has_file_handler_permission_blocked())
+    web_app->SetFileHandlerPermissionBlocked(
+        local_data.file_handler_permission_blocked());
   return web_app;
 }
 
 void WebAppDatabase::OnDatabaseOpened(
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -768,7 +812,7 @@ void WebAppDatabase::OnDatabaseOpened(
 
 void WebAppDatabase::OnAllDataRead(
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -785,7 +829,7 @@ void WebAppDatabase::OnAllDataRead(
 void WebAppDatabase::OnAllMetadataRead(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -810,7 +854,7 @@ void WebAppDatabase::OnAllMetadataRead(
 
 void WebAppDatabase::OnDataWritten(
     CompletionCallback callback,
-    const base::Optional<syncer::ModelError>& error) {
+    const absl::optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
     error_callback_.Run(*error);

@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
@@ -174,11 +175,8 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
               "  window.domAutomationController.send(false);"
               "};"
               "xhr.send(null)";
-    bool xhr_result = false;
     // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell, script, &xhr_result);
-    return xhr_result && execute_result;
+    return EvalJs(shell, script, EXECUTE_SCRIPT_USE_MANUAL_REPLY).ExtractBool();
   }
 
   // Will reuse the single opened windows through the test case.
@@ -204,11 +202,9 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
         "new_window.document.body.appendChild(inject_script);",
         inject_script.c_str());
 
-    bool xhr_result = false;
     // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), window_open_script, &xhr_result);
-    return xhr_result && execute_result;
+    return EvalJs(shell(), window_open_script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractBool();
   }
 
   // Workers will live throughout the test case unless terminated.
@@ -233,11 +229,9 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
         "\");",
         worker_name.c_str(), worker_url.spec().c_str(),
         fetch_url.spec().c_str());
-    bool fetch_result = false;
     // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), script, &fetch_result);
-    return fetch_result && execute_result;
+    return EvalJs(shell(), script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractBool();
   }
 
   // Terminate and delete the worker.
@@ -253,11 +247,9 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
         "  window.domAutomationController.send(false);"
         "}",
         worker_name.c_str());
-    bool fetch_result = false;
     // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), script, &fetch_result);
-    return fetch_result && execute_result;
+    return EvalJs(shell(), script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractBool();
   }
 
   // Called by |embedded_test_server()|.
@@ -374,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   network::mojom::NetworkContext* old_network_context =
       partition->GetNetworkContext();
@@ -399,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter =
       partition->url_loader_factory_getter();
 
@@ -429,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
       partition->url_loader_factory_getter().get());
@@ -459,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true);
   auto* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context.get()));
+      browser_context->GetDefaultStoragePartition());
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
       partition->url_loader_factory_getter().get());
 
@@ -477,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -499,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
   EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title1.html"));
@@ -525,8 +517,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserUIFactory) {
   if (IsInProcessNetworkService())
     return;
-  auto* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
+  auto* partition = browser_context()->GetDefaultStoragePartition();
   auto* factory = partition->GetURLLoaderFactoryForBrowserProcess().get();
 
   EXPECT_EQ(net::OK, LoadBasicRequestOnUIThread(factory, GetTestURL()));
@@ -548,8 +539,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true);
-  auto* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context.get());
+  auto* partition = browser_context->GetDefaultStoragePartition();
   scoped_refptr<network::SharedURLLoaderFactory> factory(
       partition->GetURLLoaderFactoryForBrowserProcess());
 
@@ -574,8 +564,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        MAYBE_BrowserIOPendingFactory) {
   if (IsInProcessNetworkService())
     return;
-  auto* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
+  auto* partition = browser_context()->GetDefaultStoragePartition();
   auto pending_shared_url_loader_factory =
       partition->GetURLLoaderFactoryForBrowserProcessIOThread();
 
@@ -598,8 +587,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactory) {
   if (IsInProcessNetworkService())
     return;
-  auto* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
+  auto* partition = browser_context()->GetDefaultStoragePartition();
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
       partition->GetURLLoaderFactoryForBrowserProcessIOThread());
 
@@ -620,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WindowOpenXHR) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
   EXPECT_TRUE(CheckCanLoadHttpInWindowOpen("/title1.html"));
@@ -671,7 +659,7 @@ IN_PROC_BROWSER_TEST_P(NetworkServiceRestartForWorkerBrowserTest, WorkerFetch) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
   EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title1.html"));
@@ -697,7 +685,7 @@ IN_PROC_BROWSER_TEST_P(NetworkServiceRestartForWorkerBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
   EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title1.html"));
@@ -740,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
   ServiceWorkerStatusObserver observer;
   ServiceWorkerContextWrapper* service_worker_context =
       partition->GetServiceWorkerContext();
@@ -783,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
   ServiceWorkerStatusObserver observer;
   ServiceWorkerContextWrapper* service_worker_context =
       partition->GetServiceWorkerContext();
@@ -826,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
   ServiceWorkerStatusObserver observer;
   ServiceWorkerContextWrapper* service_worker_context =
       partition->GetServiceWorkerContext();
@@ -868,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
   ServiceWorkerStatusObserver observer;
   ServiceWorkerContextWrapper* service_worker_context =
       partition->GetServiceWorkerContext();
@@ -913,7 +901,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
+      browser_context()->GetDefaultStoragePartition());
 
   InjectTestSharedWorkerService(partition);
 
@@ -998,25 +986,18 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
   auto* web_contents = shell()->web_contents();
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(web_contents, "document.cookie = 'foo=bar';"));
 
-  std::string cookie;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, "window.domAutomationController.send(document.cookie);",
-      &cookie));
-  EXPECT_EQ("foo=bar", cookie);
+  EXPECT_EQ("foo=bar", EvalJs(web_contents, "document.cookie;"));
 
   SimulateNetworkServiceCrash();
 
   // content_shell uses in-memory cookie database, so the value saved earlier
   // won't persist across crashes. What matters is that new access works.
-  EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecJs(web_contents, "document.cookie = 'foo=bar';"));
 
   // This will hang without the fix.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, "window.domAutomationController.send(document.cookie);",
-      &cookie));
-  EXPECT_EQ("foo=bar", cookie);
+  EXPECT_EQ("foo=bar", EvalJs(web_contents, "document.cookie;"));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1111,12 +1092,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
 
 // TODO(crbug.com/901026): Fix deadlock on process startup on Android.
 #if defined(OS_ANDROID)
-#define MAYBE_SyncCallDuringRestart DISABLED_SyncCallDuringRestart
-#else
-#define MAYBE_SyncCallDuringRestart SyncCallDuringRestart
-#endif
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       MAYBE_SyncCallDuringRestart) {
+                       DISABLED_SyncCallDuringRestart) {
   if (IsInProcessNetworkService())
     return;
   base::RunLoop run_loop;
@@ -1137,15 +1114,16 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   network_service_test->AddRules({});
 }
+#endif
 
 // Tests handling of a NetworkService crash that happens after a navigation
 // triggers sending a Commit IPC to the renderer process, but before a DidCommit
 // IPC from the renderer process is handled.  See also
 // https://crbug.com/1056949#c75.
 //
-// TODO(lukasza): https://crbug.com/1129592: Flaky on Android.  No flakiness
-// observed whatsoever on Windows, Linux or CrOS.
-#if defined(OS_ANDROID)
+// TODO(lukasza): https://crbug.com/1129592: Flaky on Android and Mac.  No
+// flakiness observed whatsoever on Windows, Linux or CrOS.
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_BetweenCommitNavigationAndDidCommit \
   DISABLED_BetweenCommitNavigationAndDidCommit
 #else
@@ -1174,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
     // Flush the interface to make sure the error notification was received.
     StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(browser_context()));
+        browser_context()->GetDefaultStoragePartition());
     partition->FlushNetworkInterfaceForTesting();
   };
   CommitMessageDelayer::DidCommitCallback pre_did_commit_callback =

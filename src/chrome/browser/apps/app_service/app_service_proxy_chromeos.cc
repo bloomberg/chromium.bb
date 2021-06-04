@@ -6,13 +6,21 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "chrome/browser/apps/app_service/app_platform_metrics.h"
+#include "chrome/browser/apps/app_service/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
-#include "chrome/browser/apps/app_service/publishers/lacros_apps.h"
+#include "chrome/browser/apps/app_service/publishers/borealis_apps.h"
+#include "chrome/browser/apps/app_service/publishers/built_in_chromeos_apps.h"
+#include "chrome/browser/apps/app_service/publishers/crostini_apps.h"
+#include "chrome/browser/apps/app_service/publishers/extension_apps_chromeos.h"
+#include "chrome/browser/apps/app_service/publishers/plugin_vm_apps.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
+#include "chrome/browser/apps/app_service/publishers/web_apps_chromeos.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chrome/common/chrome_features.h"
@@ -20,7 +28,6 @@
 #include "components/services/app_service/app_service_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user.h"
 #include "extensions/common/constants.h"
 
@@ -87,21 +94,22 @@ void AppServiceProxyChromeOs::Initialize() {
   }
   // Lacros does not support multi-signin, so only create for the primary
   // profile. This also avoids creating an instance for the lock screen app
-  // profile and ensures there is only one instance of LacrosApps.
+  // profile and ensures there is only one instance of StandaloneBrowserApps.
   if (crosapi::browser_util::IsLacrosEnabled() &&
       chromeos::ProfileHelper::IsPrimaryProfile(profile_)) {
-    lacros_apps_ = std::make_unique<LacrosApps>(app_service_);
+    standalone_browser_apps_ =
+        std::make_unique<StandaloneBrowserApps>(app_service_, profile_);
   }
   web_apps_ = std::make_unique<WebAppsChromeOs>(app_service_, profile_,
                                                 &instance_registry_);
 
-  // After moving the web apps to Lacros, the current web app publisher
-  // will become System web app publisher, and a lacros web app publisher
-  // needs to be created.
-  if (crosapi::browser_util::IsLacrosEnabled() &&
-      chromeos::ProfileHelper::IsPrimaryProfile(profile_) &&
-      base::FeatureList::IsEnabled(features::kLacrosWebApps)) {
-    lacros_web_apps_ = std::make_unique<LacrosWebApps>(app_service_);
+  if (!profile_->AsTestingProfile()) {
+    app_platform_metrics_service_ =
+        std::make_unique<AppPlatformMetricsService>(profile_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppServiceProxyChromeOs::InitAppPlatformMetrics,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Asynchronously add app icon source, so we don't do too much work in the
@@ -115,9 +123,11 @@ apps::InstanceRegistry& AppServiceProxyChromeOs::InstanceRegistry() {
   return instance_registry_;
 }
 
-void AppServiceProxyChromeOs::Uninstall(const std::string& app_id,
-                                        gfx::NativeWindow parent_window) {
-  UninstallImpl(app_id, parent_window, base::DoNothing());
+void AppServiceProxyChromeOs::Uninstall(
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source,
+    gfx::NativeWindow parent_window) {
+  UninstallImpl(app_id, uninstall_source, parent_window, base::DoNothing());
 }
 
 void AppServiceProxyChromeOs::PauseApps(
@@ -203,8 +213,8 @@ void AppServiceProxyChromeOs::FlushMojoCallsForTesting() {
   extension_apps_->FlushMojoCallsForTesting();
   if (plugin_vm_apps_)
     plugin_vm_apps_->FlushMojoCallsForTesting();
-  if (lacros_apps_) {
-    lacros_apps_->FlushMojoCallsForTesting();
+  if (standalone_browser_apps_) {
+    standalone_browser_apps_->FlushMojoCallsForTesting();
   }
   if (web_apps_) {
     web_apps_->FlushMojoCallsForTesting();
@@ -230,10 +240,13 @@ void AppServiceProxyChromeOs::UninstallForTesting(
     const std::string& app_id,
     gfx::NativeWindow parent_window,
     base::OnceClosure callback) {
-  UninstallImpl(app_id, parent_window, std::move(callback));
+  UninstallImpl(app_id, apps::mojom::UninstallSource::kUnknown, parent_window,
+                std::move(callback));
 }
 
 void AppServiceProxyChromeOs::Shutdown() {
+  app_platform_metrics_service_.reset();
+
   uninstall_dialogs_.clear();
 
   if (app_service_.is_connected()) {
@@ -245,14 +258,17 @@ void AppServiceProxyChromeOs::Shutdown() {
   borealis_apps_.reset();
 }
 
-void AppServiceProxyChromeOs::UninstallImpl(const std::string& app_id,
-                                            gfx::NativeWindow parent_window,
-                                            base::OnceClosure callback) {
+void AppServiceProxyChromeOs::UninstallImpl(
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source,
+    gfx::NativeWindow parent_window,
+    base::OnceClosure callback) {
   if (!app_service_.is_connected()) {
     return;
   }
 
-  app_registry_cache_.ForOneApp(app_id, [this, parent_window, &callback](
+  app_registry_cache_.ForOneApp(app_id, [this, uninstall_source, parent_window,
+                                         &callback](
                                             const apps::AppUpdate& update) {
     apps::mojom::IconKeyPtr icon_key = update.IconKey();
     auto uninstall_dialog = std::make_unique<UninstallDialog>(
@@ -260,7 +276,7 @@ void AppServiceProxyChromeOs::UninstallImpl(const std::string& app_id,
         std::move(icon_key), this, parent_window,
         base::BindOnce(&AppServiceProxyChromeOs::OnUninstallDialogClosed,
                        weak_ptr_factory_.GetWeakPtr(), update.AppType(),
-                       update.AppId()));
+                       update.AppId(), uninstall_source));
     uninstall_dialog->SetDialogCreatedCallbackForTesting(std::move(callback));
     uninstall_dialogs_.emplace(std::move(uninstall_dialog));
   });
@@ -269,6 +285,7 @@ void AppServiceProxyChromeOs::UninstallImpl(const std::string& app_id,
 void AppServiceProxyChromeOs::OnUninstallDialogClosed(
     apps::mojom::AppType app_type,
     const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source,
     bool uninstall,
     bool clear_site_data,
     bool report_abuse,
@@ -276,9 +293,8 @@ void AppServiceProxyChromeOs::OnUninstallDialogClosed(
   if (uninstall) {
     app_registry_cache_.ForOneApp(app_id, RecordAppBounce);
 
-    app_service_->Uninstall(app_type, app_id,
-                            apps::mojom::UninstallSource::kUser,
-                            clear_site_data, report_abuse);
+    app_service_->Uninstall(app_type, app_id, uninstall_source, clear_site_data,
+                            report_abuse);
   }
 
   DCHECK(uninstall_dialog);
@@ -307,8 +323,8 @@ bool AppServiceProxyChromeOs::MaybeShowLaunchPreventionDialog(
   // is paused.
   if (update.Paused() == apps::mojom::OptionalBool::kTrue ||
       pending_pause_requests_.IsPaused(update.AppId())) {
-    chromeos::app_time::AppTimeLimitInterface* app_limit =
-        chromeos::app_time::AppTimeLimitInterface::Get(profile_);
+    ash::app_time::AppTimeLimitInterface* app_limit =
+        ash::app_time::AppTimeLimitInterface::Get(profile_);
     DCHECK(app_limit);
     auto time_limit =
         app_limit->GetTimeLimitForApp(update.AppId(), update.AppType());
@@ -432,6 +448,22 @@ void AppServiceProxyChromeOs::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   AppServiceProxyBase::OnAppUpdate(update);
+}
+
+void AppServiceProxyChromeOs::RecordAppPlatformMetrics(
+    Profile* profile,
+    const apps::AppUpdate& update,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::LaunchContainer container) {
+  RecordAppLaunchMetrics(profile, update.AppType(), update.AppId(),
+                         launch_source, container);
+}
+
+void AppServiceProxyChromeOs::InitAppPlatformMetrics() {
+  if (app_platform_metrics_service_) {
+    app_platform_metrics_service_->Start(app_registry_cache_,
+                                         instance_registry_);
+  }
 }
 
 ScopedOmitBuiltInAppsForTesting::ScopedOmitBuiltInAppsForTesting()

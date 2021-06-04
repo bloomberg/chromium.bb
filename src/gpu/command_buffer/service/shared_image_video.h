@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing_android.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
 class SharedImageRepresentationGLTexture;
@@ -37,7 +37,6 @@ class GPU_GLES2_EXPORT SharedImageVideo
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii,
-      std::unique_ptr<gles2::AbstractTexture> abstract_texture,
       scoped_refptr<SharedContextState> shared_context_state,
       bool is_thread_safe);
 
@@ -57,7 +56,7 @@ class GPU_GLES2_EXPORT SharedImageVideo
 
   // Returns ycbcr information. This is only valid in vulkan context and
   // nullopt for other context.
-  static base::Optional<VulkanYCbCrInfo> GetYcbcrInfo(
+  static absl::optional<VulkanYCbCrInfo> GetYcbcrInfo(
       TextureOwner* texture_owner,
       scoped_refptr<SharedContextState> context_state);
 
@@ -89,12 +88,18 @@ class GPU_GLES2_EXPORT SharedImageVideo
   friend class SharedImageRepresentationVideoSkiaVk;
   friend class SharedImageRepresentationOverlayVideo;
 
-  void BeginGLReadAccess();
+  // Whether we're using the passthrough command decoder and should generate
+  // passthrough textures.
+  bool Passthrough();
+
+  // Helper method to generate an abstract texture.
+  std::unique_ptr<gles2::AbstractTexture> GenAbstractTexture(
+      scoped_refptr<SharedContextState> context_state,
+      const bool passthrough);
+
+  void BeginGLReadAccess(const GLuint service_id);
 
   scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii_;
-
-  // |abstract_texture_| is only used for legacy mailbox.
-  std::unique_ptr<gles2::AbstractTexture> abstract_texture_;
   scoped_refptr<SharedContextState> context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageVideo);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view.h"
 
+#include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,9 +18,10 @@
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -56,9 +59,10 @@ ExpandDeviceSelectorButton::ExpandDeviceSelectorButton(
       delegate_(delegate) {
   SetLabel(l10n_util::GetStringUTF16(
       IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_BUTTON_LABEL));
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  ink_drop()->GetInkDrop()->SetShowHighlightOnHover(true);
 
   SetBorder(views::CreateRoundedRectBorder(
       1, kExpandButtonStripSize.height() / 2, gfx::Insets(),
@@ -391,16 +395,31 @@ void MediaNotificationDeviceSelectorView::StartCastSession(
     cast_controller_->ClearIssue(sink.issue->id());
     return;
   }
-  // If users try to cast to a connected sink, a new cast session will get
-  // started and override the existing cast session.
-  if (sink.state == media_router::UIMediaSinkState::AVAILABLE ||
-      sink.state == media_router::UIMediaSinkState::CONNECTED) {
-    DCHECK(base::Contains(sink.cast_modes,
-                          media_router::MediaCastMode::PRESENTATION));
-    cast_controller_->StartCasting(sink.id,
-                                   media_router::MediaCastMode::PRESENTATION);
-    RecordStartCastingMetrics();
+  // When users click on a CONNECTED sink,
+  // if it is a CAST sink, a new cast session will replace the existing cast
+  // session.
+  // if it is a DIAL sink, the existing session will be terminated and users
+  // need to click on the sink again to start a new session.
+  // TODO(crbug.com/1206830): implement "terminate existing route and start a
+  // new session" in DIAL MRP.
+  if (sink.state == media_router::UIMediaSinkState::AVAILABLE) {
+    DoStartCastSession(sink);
+  } else if (sink.state == media_router::UIMediaSinkState::CONNECTED) {
+    if (sink.provider == media_router::MediaRouteProviderId::DIAL) {
+      DCHECK(sink.route);
+      cast_controller_->StopCasting(sink.route->media_route_id());
+    } else {
+      DoStartCastSession(sink);
+    }
   }
+}
+void MediaNotificationDeviceSelectorView::DoStartCastSession(
+    const media_router::UIMediaSink& sink) {
+  DCHECK(base::Contains(sink.cast_modes,
+                        media_router::MediaCastMode::PRESENTATION));
+  cast_controller_->StartCasting(sink.id,
+                                 media_router::MediaCastMode::PRESENTATION);
+  RecordStartCastingMetrics();
 }
 
 void MediaNotificationDeviceSelectorView::RecordStartCastingMetrics() {

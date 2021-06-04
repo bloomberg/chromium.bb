@@ -27,6 +27,7 @@
 #include "src/trace_processor/dynamic/connected_flow_generator.h"
 #include "src/trace_processor/dynamic/descendant_slice_generator.h"
 #include "src/trace_processor/dynamic/describe_slice_generator.h"
+#include "src/trace_processor/dynamic/experimental_annotated_stack_generator.h"
 #include "src/trace_processor/dynamic/experimental_counter_dur_generator.h"
 #include "src/trace_processor/dynamic/experimental_flamegraph_generator.h"
 #include "src/trace_processor/dynamic/experimental_sched_upid_generator.h"
@@ -766,6 +767,8 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
                                          storage->thread_table())));
   RegisterDynamicTable(std::unique_ptr<ThreadStateGenerator>(
       new ThreadStateGenerator(&context_)));
+  RegisterDynamicTable(std::unique_ptr<ExperimentalAnnotatedStackGenerator>(
+      new ExperimentalAnnotatedStackGenerator(&context_)));
 
   // New style db-backed tables.
   RegisterDbTable(storage->arg_table());
@@ -822,6 +825,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
   RegisterDbTable(storage->metadata_table());
   RegisterDbTable(storage->cpu_table());
   RegisterDbTable(storage->cpu_freq_table());
+  RegisterDbTable(storage->clock_snapshot_table());
 
   RegisterDbTable(storage->memory_snapshot_table());
   RegisterDbTable(storage->process_memory_snapshot_table());
@@ -873,6 +877,7 @@ void TraceProcessorImpl::NotifyEndOfFile() {
 }
 
 size_t TraceProcessorImpl::RestoreInitialTables() {
+  // Step 1: figure out what tables/views/indices we need to delete.
   std::vector<std::pair<std::string, std::string>> deletion_list;
   std::string msg = "Resetting DB to initial state, deleting table/views:";
   for (auto it = ExecuteQuery(kAllTablesQuery); it.Next();) {
@@ -886,6 +891,8 @@ size_t TraceProcessorImpl::RestoreInitialTables() {
   }
 
   PERFETTO_LOG("%s", msg.c_str());
+
+  // Step 2: actually delete those tables/views/indices.
   for (const auto& tn : deletion_list) {
     std::string query = "DROP " + tn.first + " " + tn.second;
     auto it = ExecuteQuery(query);

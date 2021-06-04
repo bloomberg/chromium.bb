@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/web_feed_subscriptions.h"
 #include "components/feed/core/v2/web_feed_subscriptions/fetch_recommended_web_feeds_task.h"
 #include "components/feed/core/v2/web_feed_subscriptions/fetch_subscribed_web_feeds_task.h"
@@ -18,6 +17,7 @@
 #include "components/feed/core/v2/web_feed_subscriptions/unsubscribe_from_web_feed_task.h"
 #include "components/feed/core/v2/web_feed_subscriptions/web_feed_index.h"
 
+class PrefService;
 namespace feed {
 namespace internal {
 class WebFeedSubscriptionModel;
@@ -29,7 +29,8 @@ class FeedStream;
 // Coordinates the state of subscription to web feeds.
 class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
  public:
-  explicit WebFeedSubscriptionCoordinator(FeedStream* feed_stream);
+  explicit WebFeedSubscriptionCoordinator(PrefService* profile_prefs,
+                                          FeedStream* feed_stream);
   virtual ~WebFeedSubscriptionCoordinator();
   WebFeedSubscriptionCoordinator(const WebFeedSubscriptionCoordinator&) =
       delete;
@@ -60,6 +61,9 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
       base::OnceCallback<void(WebFeedMetadata)> callback) override;
   void GetAllSubscriptions(
       base::OnceCallback<void(std::vector<WebFeedMetadata>)> callback) override;
+  void RefreshSubscriptions(
+      base::OnceCallback<void(RefreshResult)> callback) override;
+  bool IsWebFeedSubscriber() override;
 
   // Types / functions exposed for task implementations.
 
@@ -135,8 +139,8 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
 
   void EnqueueInFlightChange(
       bool subscribing,
-      base::Optional<WebFeedPageInformation> page_information,
-      base::Optional<feedstore::WebFeedInfo> info);
+      absl::optional<WebFeedPageInformation> page_information,
+      absl::optional<feedstore::WebFeedInfo> info);
   const InFlightChange* FindInflightChange(
       const std::string& web_feed_id,
       const WebFeedPageInformation* maybe_page_info);
@@ -151,9 +155,15 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
   void FetchSubscribedWebFeedsStart();
   void FetchSubscribedWebFeedsComplete(
       FetchSubscribedWebFeedsTask::Result result);
+  void CallRefreshCompleteCallbacks(RefreshResult);
+  void UpdateIsSubscriberPref();
 
   FeedStream* feed_stream_;  // Always non-null, it owns this.
+  PrefService* profile_prefs_;
+
   WebFeedIndex index_;
+  // Whether `Populate()` has been called.
+  bool populated_ = false;
   // A model of subscriptions. In memory only while needed.
   // TODO(harringtond): Unload the model eventually.
   std::unique_ptr<WebFeedSubscriptionModel> model_;
@@ -167,6 +177,8 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
   // Chrome process goes down.
   std::vector<feedstore::WebFeedInfo> recent_unsubscribed_;
   std::vector<base::OnceClosure> when_model_loads_;
+  std::vector<base::OnceCallback<void(RefreshResult)>>
+      on_refresh_subscriptions_;
   bool fetching_recommended_web_feeds_ = false;
   bool fetching_subscribed_web_feeds_ = false;
 

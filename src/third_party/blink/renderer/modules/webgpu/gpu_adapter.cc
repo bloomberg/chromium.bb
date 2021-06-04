@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -20,9 +21,7 @@ namespace {
 WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   DCHECK_NE(nullptr, descriptor);
 
-  auto&& feature_names = descriptor->hasExtensions() ? descriptor->extensions()
-                                                     :  // Deprecated path
-                             descriptor->nonGuaranteedFeatures();
+  auto&& feature_names = descriptor->nonGuaranteedFeatures();
 
   HashSet<String> feature_set;
   for (auto& feature : feature_names)
@@ -82,16 +81,8 @@ const String& GPUAdapter::name() const {
   return name_;
 }
 
-Vector<String> GPUAdapter::features() const {
-  return feature_name_list_;
-}
-
-Vector<String> GPUAdapter::extensions(ExecutionContext* execution_context) {
-  AddConsoleWarning(
-      execution_context,
-      "The extensions attribute has been deprecated in favor of the features "
-      "attribute, and will soon be removed.");
-  return feature_name_list_;
+GPUSupportedFeatures* GPUAdapter::features() const {
+  return features_;
 }
 
 void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
@@ -114,21 +105,22 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
 }
 
 void GPUAdapter::InitializeFeatureNameList() {
-  DCHECK(feature_name_list_.IsEmpty());
+  features_ = MakeGarbageCollected<GPUSupportedFeatures>();
+  DCHECK(features_->FeatureNameSet().IsEmpty());
   if (adapter_properties_.textureCompressionBC) {
-    feature_name_list_.emplace_back("texture-compression-bc");
+    features_->AddFeatureName("texture-compression-bc");
   }
   if (adapter_properties_.shaderFloat16) {
-    feature_name_list_.emplace_back("shader-float16");
+    features_->AddFeatureName("shader-float16");
   }
   if (adapter_properties_.pipelineStatisticsQuery) {
-    feature_name_list_.emplace_back("pipeline-statistics-query");
+    features_->AddFeatureName("pipeline-statistics-query");
   }
   if (adapter_properties_.timestampQuery) {
-    feature_name_list_.emplace_back("timestamp-query");
+    features_->AddFeatureName("timestamp-query");
   }
   if (adapter_properties_.depthClamping) {
-    feature_name_list_.emplace_back("depth-clamping");
+    features_->AddFeatureName("depth-clamping");
   }
 }
 
@@ -136,14 +128,6 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
                                         GPUDeviceDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-
-  if (descriptor->hasExtensions()) {
-    AddConsoleWarning(
-        ExecutionContext::From(script_state),
-        "Specifying extensions when requesting a GPUDevice is deprecated in "
-        "favor of specifying nonGuaranteedFeatures, and will soon be removed.");
-    descriptor->setNonGuaranteedFeatures(descriptor->extensions());
-  }
 
   WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
 
@@ -153,6 +137,11 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
                 WrapPersistent(resolver), WrapPersistent(descriptor)));
 
   return promise;
+}
+
+void GPUAdapter::Trace(Visitor* visitor) const {
+  visitor->Trace(features_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -9,13 +9,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -2726,6 +2726,175 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
         blink::SecurityOrigin::CreateFromString("https://192.168.0.1:8888")
             ->IsSameOriginWith(url_handlers[0]->origin.get()));
     ASSERT_FALSE(url_handlers[0]->has_origin_wildcard);
+  }
+
+  // Validate only the first 10 handlers are parsed.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"url_handlers\": ["
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8001\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8002\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8003\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8004\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8005\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8006\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8007\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8008\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8009\""
+        "    },"
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8010\""
+        "    },"
+        // 10 handlers above, this one should not be in the result.
+        "    {"
+        "      \"origin\": \"https://192.168.0.1:8011\""
+        "    }"
+        "  ]"
+        "}");
+    auto& url_handlers = manifest->url_handlers;
+
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'url_handlers' contains more than 10 valid elements, "
+        "only the first 10 are parsed.",
+        errors()[0]);
+    ASSERT_EQ(10u, url_handlers.size());
+    ASSERT_TRUE(
+        blink::SecurityOrigin::CreateFromString("https://192.168.0.1:8010")
+            ->IsSameOriginWith(url_handlers[9]->origin.get()));
+  }
+}
+
+TEST_F(ManifestParserTest, NoteTakingParseRulesWithFeatureDisabled) {
+  // With feature disabled, note taking field should never be parsed.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(blink::features::kWebAppNoteTaking);
+
+  KURL manifest_url = KURL("https://foo.com/manifest.json");
+  KURL document_url = KURL("https://foo.com/index.html");
+
+  {
+    // Manifest does not contain a 'note_taking' field.
+    auto& manifest = ParseManifest("{ }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_TRUE(manifest->note_taking.is_null());
+  }
+
+  {
+    // A valid note_taking entry.
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+          "note_taking": {
+            "new_note_url": "https://foo.com"
+          }
+        })",
+        manifest_url, document_url);
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_TRUE(manifest->note_taking.is_null());
+  }
+}
+
+TEST_F(ManifestParserTest, NoteTakingParseRules) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(blink::features::kWebAppNoteTaking);
+
+  KURL manifest_url = KURL("https://foo.com/manifest.json");
+  KURL document_url = KURL("https://foo.com/index.html");
+
+  {
+    // Manifest does not contain a 'note_taking' field.
+    auto& manifest = ParseManifest("{ }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_TRUE(manifest->note_taking.is_null());
+  }
+
+  {
+    // 'note_taking' is not an object.
+    auto& manifest = ParseManifest(R"( { "note_taking": [ ] } )");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'note_taking' ignored, type object expected.",
+              errors()[0]);
+    EXPECT_TRUE(manifest->note_taking.is_null());
+  }
+
+  {
+    // Contains 'note_taking' field but no new_note_url entry.
+    auto& manifest = ParseManifest(R"( { "note_taking": { } } )");
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->note_taking.is_null());
+    EXPECT_TRUE(manifest->note_taking->new_note_url.IsEmpty());
+  }
+
+  {
+    // 'new_note_url' entries must be valid URLs.
+    auto& manifest =
+        ParseManifest(R"({ "note_taking": { "new_note_url": {} } } )");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'new_note_url' ignored, type string expected.",
+              errors()[0]);
+    ASSERT_FALSE(manifest->note_taking.is_null());
+    EXPECT_TRUE(manifest->note_taking->new_note_url.IsEmpty());
+  }
+
+  {
+    // 'new_note_url' entries must be within scope.
+    auto& manifest = ParseManifest(
+        R"({ "note_taking": { "new_note_url": "https://bar.com" } } )");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'new_note_url' ignored, should be within scope of the "
+        "manifest.",
+        errors()[0]);
+    ASSERT_FALSE(manifest->note_taking.is_null());
+    EXPECT_TRUE(manifest->note_taking->new_note_url.IsEmpty());
+  }
+
+  {
+    // A valid note_taking new_note_url entry.
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+          "note_taking": {
+            "new_note_url": "https://foo.com"
+          }
+        })",
+        manifest_url, document_url);
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->note_taking.is_null());
+    EXPECT_EQ("https://foo.com/",
+              manifest->note_taking->new_note_url.GetString());
+  }
+
+  {
+    // A valid note_taking new_note_url entry, parsed relative to manifest URL.
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+          "note_taking": {
+            "new_note_url": "new_note"
+          }
+        })",
+        manifest_url, document_url);
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->note_taking.is_null());
+    EXPECT_EQ("https://foo.com/new_note",
+              manifest->note_taking->new_note_url.GetString());
   }
 }
 

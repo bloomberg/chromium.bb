@@ -62,6 +62,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
       drivefs::mojom::DialogReasonPtr reason,
       drivefs::mojom::DriveFsDelegate::DisplayConfirmDialogCallback callback);
 
+  mojo::Remote<drivefs::mojom::DriveFsDelegate>& delegate() {
+    return delegate_;
+  }
+
   const base::FilePath& mount_path() { return mount_path_; }
 
  private:
@@ -132,6 +136,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
       drivefs::mojom::DriveFs::LocateFilesByItemIdsCallback callback) override;
 
   const base::FilePath mount_path_;
+  int64_t next_stable_id_ = 1;
 
   std::map<base::FilePath, FileMetadata> metadata_;
 

@@ -12,14 +12,18 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class DictionaryValue;
 }
+
+namespace sync_pb {
+enum SharingSpecificFields_EnabledFeatures : int;
+enum SyncEnums_DeviceType : int;
+}  // namespace sync_pb
 
 namespace syncer {
 
@@ -44,7 +48,7 @@ class DeviceInfo {
   struct SharingInfo {
     SharingInfo(SharingTargetInfo vapid_target_info,
                 SharingTargetInfo sharing_target_info,
-                std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+                std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
                     enabled_features);
     SharingInfo(const SharingInfo& other);
     SharingInfo(SharingInfo&& other);
@@ -59,7 +63,7 @@ class DeviceInfo {
     SharingTargetInfo sender_id_target_info;
 
     // Set of Sharing features enabled on the device.
-    std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features;
+    std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features;
 
     bool operator==(const SharingInfo& other) const;
   };
@@ -93,7 +97,7 @@ class DeviceInfo {
              const std::string& client_name,
              const std::string& chrome_version,
              const std::string& sync_user_agent,
-             const sync_pb::SyncEnums::DeviceType device_type,
+             const sync_pb::SyncEnums_DeviceType device_type,
              const std::string& signin_scoped_device_id,
              const std::string& manufacturer_name,
              const std::string& model_name,
@@ -101,8 +105,8 @@ class DeviceInfo {
              base::Time last_updated_timestamp,
              base::TimeDelta pulse_interval,
              bool send_tab_to_self_receiving_enabled,
-             const base::Optional<SharingInfo>& sharing_info,
-             const base::Optional<PhoneAsASecurityKeyInfo>& paask_info,
+             const absl::optional<SharingInfo>& sharing_info,
+             const absl::optional<PhoneAsASecurityKeyInfo>& paask_info,
              const std::string& fcm_registration_token,
              const ModelTypeSet& interested_data_types);
   ~DeviceInfo();
@@ -128,7 +132,7 @@ class DeviceInfo {
   const std::string& public_id() const;
 
   // Device Type.
-  sync_pb::SyncEnums::DeviceType device_type() const;
+  sync_pb::SyncEnums_DeviceType device_type() const;
 
   // Device_id that is stable until user signs out. This device_id is used for
   // annotating login scoped refresh token.
@@ -157,9 +161,9 @@ class DeviceInfo {
   bool send_tab_to_self_receiving_enabled() const;
 
   // Returns Sharing related info of the device.
-  const base::Optional<SharingInfo>& sharing_info() const;
+  const absl::optional<SharingInfo>& sharing_info() const;
 
-  const base::Optional<PhoneAsASecurityKeyInfo>& paask_info() const;
+  const absl::optional<PhoneAsASecurityKeyInfo>& paask_info() const;
 
   // Returns the FCM registration token for sync invalidations.
   const std::string& fcm_registration_token() const;
@@ -186,7 +190,7 @@ class DeviceInfo {
 
   void set_send_tab_to_self_receiving_enabled(bool new_value);
 
-  void set_sharing_info(const base::Optional<SharingInfo>& sharing_info);
+  void set_sharing_info(const absl::optional<SharingInfo>& sharing_info);
 
   void set_paask_info(PhoneAsASecurityKeyInfo&& paask_info);
 
@@ -209,7 +213,7 @@ class DeviceInfo {
 
   const std::string sync_user_agent_;
 
-  const sync_pb::SyncEnums::DeviceType device_type_;
+  const sync_pb::SyncEnums_DeviceType device_type_;
 
   const std::string signin_scoped_device_id_;
 
@@ -231,9 +235,9 @@ class DeviceInfo {
 
   bool send_tab_to_self_receiving_enabled_;
 
-  base::Optional<SharingInfo> sharing_info_;
+  absl::optional<SharingInfo> sharing_info_;
 
-  base::Optional<PhoneAsASecurityKeyInfo> paask_info_;
+  absl::optional<PhoneAsASecurityKeyInfo> paask_info_;
 
   // An FCM registration token obtained by sync invalidations service.
   std::string fcm_registration_token_;

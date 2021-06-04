@@ -528,18 +528,16 @@ TEST_F(VkLayerTest, InvalidPushConstants) {
 
     const uint32_t too_big = m_device->props.limits.maxPushConstantsSize + 0x4;
     const std::array<PipelineLayoutTestCase, 10> range_tests = {{
-        {{VK_SHADER_STAGE_VERTEX_BIT, 0, 0}, "vkCreatePipelineLayout() call has push constants index 0 with size 0."},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 0, 1}, "vkCreatePipelineLayout() call has push constants index 0 with size 1."},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 4, 1}, "vkCreatePipelineLayout() call has push constants index 0 with size 1."},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 4, 0}, "vkCreatePipelineLayout() call has push constants index 0 with size 0."},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 1, 4}, "vkCreatePipelineLayout() call has push constants index 0 with offset 1. Offset must"},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 0, too_big}, "vkCreatePipelineLayout() call has push constants index 0 with offset "},
-        {{VK_SHADER_STAGE_VERTEX_BIT, too_big, too_big}, "vkCreatePipelineLayout() call has push constants index 0 with offset "},
-        {{VK_SHADER_STAGE_VERTEX_BIT, too_big, 4}, "vkCreatePipelineLayout() call has push constants index 0 with offset "},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 0xFFFFFFF0, 0x00000020},
-         "vkCreatePipelineLayout() call has push constants index 0 with offset "},
-        {{VK_SHADER_STAGE_VERTEX_BIT, 0x00000020, 0xFFFFFFF0},
-         "vkCreatePipelineLayout() call has push constants index 0 with offset "},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 0, 0}, "VUID-VkPushConstantRange-size-00296"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 0, 1}, "VUID-VkPushConstantRange-size-00297"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 4, 1}, "VUID-VkPushConstantRange-size-00297"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 4, 0}, "VUID-VkPushConstantRange-size-00296"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 1, 4}, "VUID-VkPushConstantRange-offset-00295"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 0, too_big}, "VUID-VkPushConstantRange-size-00298"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, too_big, too_big}, "VUID-VkPushConstantRange-offset-00294"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, too_big, 4}, "VUID-VkPushConstantRange-offset-00294"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 0xFFFFFFF0, 0x00000020}, "VUID-VkPushConstantRange-offset-00294"},
+        {{VK_SHADER_STAGE_VERTEX_BIT, 0x00000020, 0xFFFFFFF0}, "VUID-VkPushConstantRange-size-00298"},
     }};
 
     // Check for invalid offset and size
@@ -554,8 +552,7 @@ TEST_F(VkLayerTest, InvalidPushConstants) {
     pc_range.offset = 0;
     pc_range.size = 16;
     pc_range.stageFlags = 0;
-    m_errorMonitor->SetDesiredFailureMsg(
-        kErrorBit, "vkCreatePipelineLayout: value of pCreateInfo->pPushConstantRanges[0].stageFlags must not be 0");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPushConstantRange-stageFlags-requiredbitmask");
     vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_ci, NULL, &pipeline_layout);
     m_errorMonitor->VerifyFound();
 
@@ -633,7 +630,7 @@ TEST_F(VkLayerTest, InvalidPushConstants) {
 
     // Check for invalid stage flag
     // Note that VU 00996 isn't reached due to parameter validation
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdPushConstants: value of stageFlags must not be 0");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPushConstants-stageFlags-requiredbitmask");
     vk::CmdPushConstants(m_commandBuffer->handle(), pipeline_layout_obj.handle(), 0, 0, 16, dummy_values);
     m_errorMonitor->VerifyFound();
 
@@ -681,7 +678,7 @@ TEST_F(VkLayerTest, InvalidPushConstants) {
 }
 
 TEST_F(VkLayerTest, NoBeginCommandBuffer) {
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "You must call vkBeginCommandBuffer() before this call to ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkEndCommandBuffer-commandBuffer-00059");
 
     ASSERT_NO_FATAL_FAILURE(Init());
     VkCommandBufferObj commandBuffer(m_device, m_commandPool);
@@ -4364,7 +4361,7 @@ TEST_F(VkLayerTest, ResolveImageFormatMismatch) {
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;  // guarantee support from sampledImageColorSampleCounts
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     // Note: Some implementations expect color attachment usage for any
     // multisample surface
@@ -4428,7 +4425,7 @@ TEST_F(VkLayerTest, ResolveImageTypeMismatch) {
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;  // guarantee support from sampledImageColorSampleCounts
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     // Note: Some implementations expect color attachment usage for any
     // multisample surface
@@ -4489,7 +4486,7 @@ TEST_F(VkLayerTest, ResolveImageLayoutMismatch) {
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;  // guarantee support from sampledImageColorSampleCounts
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     image_create_info.usage =
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -4577,7 +4574,7 @@ TEST_F(VkLayerTest, ResolveInvalidSubresource) {
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;  // guarantee support from sampledImageColorSampleCounts
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     image_create_info.usage =
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -4763,7 +4760,7 @@ TEST_F(VkLayerTest, ResolveImageImageType) {
     image_create_info.extent.depth = 1;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 4;  // more than 1 to not trip other validation
-    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;  // guarantee support from sampledImageColorSampleCounts
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     image_create_info.usage =
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -8057,8 +8054,8 @@ TEST_F(VkLayerTest, DrawWithoutUpdatePushConstants) {
     g_pipe_small_range.pipeline_layout_ci_ = pipeline_layout_info;
     g_pipe_small_range.InitState();
 
-    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "UNASSIGNED-CoreValidation-Shader-PushConstantOutOfRange");
-    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "UNASSIGNED-CoreValidation-Shader-PushConstantOutOfRange");
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-VkGraphicsPipelineCreateInfo-layout-00756");
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-VkGraphicsPipelineCreateInfo-layout-00756");
     g_pipe_small_range.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 
@@ -8072,17 +8069,22 @@ TEST_F(VkLayerTest, DrawWithoutUpdatePushConstants) {
     vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
     m_errorMonitor->VerifyFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02698");
     const float dummy_values[128] = {};
-    vk::CmdPushConstants(m_commandBuffer->handle(), g_pipe.pipeline_layout_.handle(),
-                         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 96, dummy_values);
-    vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
-    m_errorMonitor->VerifyFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02698");
-    vk::CmdPushConstants(m_commandBuffer->handle(), pipeline_layout_small, VK_SHADER_STAGE_VERTEX_BIT, 4, 4, dummy_values);
-    vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
-    m_errorMonitor->VerifyFound();
+    // NOTE: these are commented out due to ambiguity around VUID 02698 and push constant lifetimes
+    //       See https://gitlab.khronos.org/vulkan/vulkan/-/issues/2602 and
+    //       https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/2689
+    //       for more details.
+    // m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02698");
+    // vk::CmdPushConstants(m_commandBuffer->handle(), g_pipe.pipeline_layout_.handle(),
+    //                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 96, dummy_values);
+    // vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
+    // m_errorMonitor->VerifyFound();
+
+    // m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02698");
+    // vk::CmdPushConstants(m_commandBuffer->handle(), pipeline_layout_small, VK_SHADER_STAGE_VERTEX_BIT, 4, 4, dummy_values);
+    // vk::CmdDraw(m_commandBuffer->handle(), 1, 0, 0, 0);
+    // m_errorMonitor->VerifyFound();
 
     m_errorMonitor->ExpectSuccess();
     vk::CmdPushConstants(m_commandBuffer->handle(), pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 32,

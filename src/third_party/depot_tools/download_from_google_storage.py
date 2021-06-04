@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -76,7 +76,8 @@ class Gsutil(object):
   MAX_TRIES = 5
   RETRY_BASE_DELAY = 5.0
   RETRY_DELAY_MULTIPLE = 1.3
-  VPYTHON = 'vpython.bat' if GetNormalizedPlatform() == 'win32' else 'vpython'
+  VPYTHON3 = ('vpython3.bat'
+              if GetNormalizedPlatform() == 'win32' else 'vpython3')
 
   def __init__(self, path, boto_path=None, version='4.28'):
     if not os.path.exists(path):
@@ -100,12 +101,12 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
     cmd.extend(args)
     return subprocess2.call(cmd, env=self.get_sub_env())
 
   def check_call(self, *args):
-    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
     cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
         cmd,

@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -54,11 +53,7 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
       : ScopedDisplayCutoutAPIForTest(true) {}
   void SetUp() override {
     chrome_client_ = MakeGarbageCollected<MockDisplayCutoutChromeClient>();
-
-    Page::PageClients clients;
-    FillWithEmptyClients(clients);
-    clients.chrome_client = chrome_client_.Get();
-    SetupPageWithClients(&clients,
+    SetupPageWithClients(chrome_client_,
                          MakeGarbageCollected<EmptyLocalFrameClient>());
     video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     GetDocument().body()->AppendChild(video_);

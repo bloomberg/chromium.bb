@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
@@ -42,6 +41,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/switches.h"
 
 namespace {
@@ -113,7 +113,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   base::RunLoop* run_loop_;
 
   // The state CustomManagePasswordsUIController is currently waiting for.
-  base::Optional<password_manager::ui::State> target_state_;
+  absl::optional<password_manager::ui::State> target_state_;
 
   // True iff showing fallback is waited.
   bool wait_for_fallback_;
@@ -600,10 +600,10 @@ void PasswordManagerBrowserTestBase::WaitForElementValue(
           RETURN_CODE_OK, iframe_id.c_str(), iframe_id.c_str(),
           element_id.c_str(), element_id.c_str(), RETURN_CODE_NO_ELEMENT,
           RETURN_CODE_OK, RETURN_CODE_WRONG_VALUE);
-  int return_value = RETURN_CODE_INVALID;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(), script, &return_value));
-  EXPECT_EQ(RETURN_CODE_OK, return_value)
+  EXPECT_EQ(RETURN_CODE_OK,
+            content::EvalJs(RenderFrameHost(), script,
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE |
+                                content::EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "element_id = " << element_id
       << ", expected_value = " << expected_value;
 }
@@ -656,10 +656,10 @@ void PasswordManagerBrowserTestBase::WaitForJsElementValue(
           "}",
           RETURN_CODE_OK, element_selector.c_str(), RETURN_CODE_NO_ELEMENT,
           RETURN_CODE_OK, RETURN_CODE_WRONG_VALUE);
-  int return_value = RETURN_CODE_INVALID;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(), script, &return_value));
-  EXPECT_EQ(RETURN_CODE_OK, return_value)
+  EXPECT_EQ(RETURN_CODE_OK,
+            content::EvalJs(RenderFrameHost(), script,
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE |
+                                content::EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "element_selector = " << element_selector
       << ", expected_value = " << expected_value;
 }
@@ -737,8 +737,7 @@ void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 
 void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetNetworkContext();
+      browser()->profile()->GetDefaultStoragePartition()->GetNetworkContext();
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;
   base::RunLoop run_loop;

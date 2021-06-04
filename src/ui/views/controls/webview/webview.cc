@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -19,10 +20,10 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {

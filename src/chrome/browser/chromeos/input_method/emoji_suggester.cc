@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/ime/constants.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,6 +31,10 @@
 namespace chromeos {
 
 namespace {
+
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
 
 constexpr char kEmojiSuggesterShowSettingCount[] =
     "emoji_suggester.show_setting_count";
@@ -91,6 +96,12 @@ void RecordTimeToAccept(base::TimeDelta delta) {
 void RecordTimeToDismiss(base::TimeDelta delta) {
   UMA_HISTOGRAM_MEDIUM_TIMES("InputMethod.Assistive.TimeToDismiss.Emoji",
                              delta);
+}
+
+TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
+  return {.mode = TextSuggestionMode::kPrediction,
+          .type = TextSuggestionType::kAssistiveEmoji,
+          .text = base::UTF16ToUTF8(candidate_string)};
 }
 
 }  // namespace
@@ -155,6 +166,12 @@ void EmojiSuggester::OnFocus(int context_id) {
 
 void EmojiSuggester::OnBlur() {
   context_id_ = -1;
+}
+
+void EmojiSuggester::OnExternalSuggestionsUpdated(
+    const std::vector<TextSuggestion>& suggestions) {
+  // EmojiSuggester doesn't utilize any suggestions produced externally, so
+  // ignore this call.
 }
 
 SuggestionStatus EmojiSuggester::HandleKeyEvent(const ui::KeyEvent& event) {
@@ -345,10 +362,14 @@ bool EmojiSuggester::HasSuggestions() {
   return suggestion_shown_;
 }
 
-std::vector<std::u16string> EmojiSuggester::GetSuggestions() {
-  if (HasSuggestions())
-    return candidates_;
-  return {};
+std::vector<TextSuggestion> EmojiSuggester::GetSuggestions() {
+  std::vector<TextSuggestion> suggestions;
+  if (HasSuggestions()) {
+    for (const auto& candidate : candidates_) {
+      suggestions.emplace_back(MapToTextSuggestion(candidate));
+    }
+  }
+  return suggestions;
 }
 
 size_t EmojiSuggester::GetCandidatesSizeForTesting() const {

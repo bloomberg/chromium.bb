@@ -103,48 +103,6 @@ api::automation::MarkerType ConvertMarkerTypeFromAXToAutomation(
   }
 }
 
-// Adjust the bounding box of a node from local to global coordinates,
-// walking up the parent hierarchy to offset by frame offsets and
-// scroll offsets.
-// If |clip_bounds| is false, the bounds of the node will not be clipped
-// to the ancestors bounding boxes if needed. Regardless of clipping, results
-// are returned in global coordinates.
-static gfx::Rect ComputeGlobalNodeBounds(AutomationAXTreeWrapper* tree_wrapper,
-                                         ui::AXNode* node,
-                                         gfx::RectF local_bounds = gfx::RectF(),
-                                         bool* offscreen = nullptr,
-                                         bool clip_bounds = true) {
-  gfx::RectF bounds = local_bounds;
-
-  while (node) {
-    bounds = tree_wrapper->tree()->RelativeToTreeBounds(node, bounds, offscreen,
-                                                        clip_bounds);
-
-    if (!tree_wrapper->owner())
-      break;
-
-    AutomationAXTreeWrapper* previous_tree_wrapper = tree_wrapper;
-    ui::AXNode* parent = tree_wrapper->owner()->GetParent(
-        tree_wrapper->tree()->root(), &tree_wrapper);
-    if (parent == node)
-      break;
-
-    // All trees other than the desktop tree are scaled by the device
-    // scale factor. When crossing out of another tree into the desktop
-    // tree, unscale the bounds by the device scale factor.
-    if (!previous_tree_wrapper->IsDesktopTree() &&
-        tree_wrapper->IsDesktopTree()) {
-      float scale_factor = tree_wrapper->owner()->GetDeviceScaleFactor();
-      if (scale_factor > 0)
-        bounds.Scale(1.0 / scale_factor);
-    }
-
-    node = parent;
-  }
-
-  return gfx::ToEnclosingRect(bounds);
-}
-
 // Maps a key, a stringification of values in ui::AXEventGenerator::Event or
 // ax::mojom::Event into a value, automation::api::EventType. The runtime
 // invariant is that there should be exactly the same number of values in the
@@ -360,13 +318,14 @@ class NodeIDPlusAttributeWrapper
 // passes them to the function passed to the constructor.
 //
 
-typedef void (*NodeIDPlusRangeFunction)(v8::Isolate* isolate,
-                                        v8::ReturnValue<v8::Value> result,
-                                        AutomationAXTreeWrapper* tree_wrapper,
-                                        ui::AXNode* node,
-                                        int start,
-                                        int end,
-                                        bool clipped);
+typedef std::function<void(v8::Isolate* isolate,
+                           v8::ReturnValue<v8::Value> result,
+                           AutomationAXTreeWrapper* tree_wrapper,
+                           ui::AXNode* node,
+                           int start,
+                           int end,
+                           bool clipped)>
+    NodeIDPlusRangeFunction;
 
 class NodeIDPlusRangeWrapper
     : public base::RefCountedThreadSafe<NodeIDPlusRangeWrapper> {
@@ -467,14 +426,14 @@ class NodeIDPlusStringBoolWrapper
 };
 
 using NodeIDPlusDimensionsFunction =
-    void (*)(v8::Isolate* isolate,
-             v8::ReturnValue<v8::Value> result,
-             AutomationAXTreeWrapper* tree_wrapper,
-             ui::AXNode* node,
-             int x,
-             int y,
-             int width,
-             int height);
+    std::function<void(v8::Isolate* isolate,
+                       v8::ReturnValue<v8::Value> result,
+                       AutomationAXTreeWrapper* tree_wrapper,
+                       ui::AXNode* node,
+                       int x,
+                       int y,
+                       int width,
+                       int height)>;
 
 class NodeIDPlusDimensionsWrapper
     : public base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper> {
@@ -896,16 +855,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
       });
   RouteNodeIDFunction(
       "GetLocation",
-      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         gfx::Rect global_clipped_bounds =
             ComputeGlobalNodeBounds(tree_wrapper, node);
         result.Set(RectToV8Object(isolate, global_clipped_bounds));
       });
   RouteNodeIDFunction(
       "GetUnclippedLocation",
-      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         bool offscreen = false;
         gfx::Rect global_unclipped_bounds =
             ComputeGlobalNodeBounds(tree_wrapper, node, gfx::RectF(),
@@ -1030,9 +989,9 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
   RouteNodeIDPlusRangeFunction(
       "GetBoundsForRange",
-      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int start,
-         int end, bool clipped) {
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int start,
+             int end, bool clipped) {
         if (node->data().role != ax::mojom::Role::kInlineTextBox)
           return;
 
@@ -1084,9 +1043,9 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
   RouteNodeIDPlusDimensionsFunction(
       "ComputeGlobalBounds",
-      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int x, int y,
-         int width, int height) {
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int x,
+             int y, int width, int height) {
         gfx::RectF local_bounds(x, y, width, height);
 
         // Convert from local coordinates in Android window, to global
@@ -1486,9 +1445,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
         // Increment and decrement are available when the role is a slider or
         // spin button.
-        const std::string& role_string =
-            node->GetStringAttribute(ax::mojom::StringAttribute::kRole);
-        auto role = ui::ParseAXEnum<ax::mojom::Role>(role_string.c_str());
+        auto role = node->data().role;
         if (role == ax::mojom::Role::kSlider ||
             role == ax::mojom::Role::kSpinButton) {
           standard_actions.push_back(
@@ -1617,13 +1574,17 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetTableColumnCount",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper,
-         ui::AXNode* node) { result.Set(*node->GetTableColCount()); });
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableColCount())
+          result.Set(*node->GetTableColCount());
+      });
   RouteNodeIDFunction(
       "GetTableRowCount",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper,
-         ui::AXNode* node) { result.Set(*node->GetTableRowCount()); });
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableRowCount())
+          result.Set(*node->GetTableRowCount());
+      });
   RouteNodeIDFunction(
       "GetTableCellColumnHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -2145,13 +2106,10 @@ void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
 ui::AXNode* AutomationInternalCustomBindings::GetParent(
     ui::AXNode* node,
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
-  if (node->HasStringAttribute(
-          ax::mojom::StringAttribute::kParentTreeNodeAppId)) {
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kAppId)) {
     ui::AXNode* parent_app_node =
         AutomationAXTreeWrapper::GetParentTreeNodeForAppID(
-            node->GetStringAttribute(
-                ax::mojom::StringAttribute::kParentTreeNodeAppId),
-            this);
+            node->GetStringAttribute(ax::mojom::StringAttribute::kAppId), this);
     if (parent_app_node) {
       *in_out_tree_wrapper = GetAutomationAXTreeWrapperFromTreeID(
           parent_app_node->tree()->GetAXTreeID());
@@ -2303,6 +2261,9 @@ ui::AXNode* AutomationInternalCustomBindings::GetPreviousInTreeOrder(
 }
 
 float AutomationInternalCustomBindings::GetDeviceScaleFactor() const {
+  // |context| and/or its RenderFrame might be nullptr in tests.
+  if (device_scale_factor_for_test_)
+    return *device_scale_factor_for_test_;
   return context()->GetRenderFrame()->GetDeviceScaleFactor();
 }
 
@@ -2445,7 +2406,7 @@ void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
   if (!node)
     return;
 
-  base::Optional<gfx::Rect> previous_accessibility_focused_global_bounds =
+  absl::optional<gfx::Rect> previous_accessibility_focused_global_bounds =
       GetAccessibilityFocusedLocation();
 
   node->SetLocation(params.new_location.offset_container_id,
@@ -2549,7 +2510,7 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
     ui::AXTreeID tree_id,
     const gfx::Point& mouse_location,
     const ui::AXEvent& event,
-    base::Optional<ui::AXEventGenerator::Event> generated_event_type) {
+    absl::optional<ui::AXEventGenerator::Event> generated_event_type) {
   AutomationAXTreeWrapper* tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(tree_id);
   if (!tree_wrapper)
@@ -2712,19 +2673,19 @@ void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
   }
 }
 
-base::Optional<gfx::Rect>
+absl::optional<gfx::Rect>
 AutomationInternalCustomBindings::GetAccessibilityFocusedLocation() const {
   if (accessibility_focused_tree_id_ == ui::AXTreeIDUnknown())
-    return base::nullopt;
+    return absl::nullopt;
 
   AutomationAXTreeWrapper* tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
   if (!tree_wrapper)
-    return base::nullopt;
+    return absl::nullopt;
 
   ui::AXNode* node = tree_wrapper->GetAccessibilityFocusedNode();
   if (!node)
-    return base::nullopt;
+    return absl::nullopt;
 
   return ComputeGlobalNodeBounds(tree_wrapper, node);
 }
@@ -2872,4 +2833,59 @@ std::vector<int> AutomationInternalCustomBindings::CalculateSentenceBoundary(
   }
   return sentence_boundary;
 }
+
+gfx::Rect AutomationInternalCustomBindings::ComputeGlobalNodeBounds(
+    AutomationAXTreeWrapper* tree_wrapper,
+    ui::AXNode* node,
+    gfx::RectF local_bounds,
+    bool* offscreen,
+    bool clip_bounds) const {
+  gfx::RectF bounds = local_bounds;
+
+  while (node) {
+    bounds = tree_wrapper->tree()->RelativeToTreeBounds(node, bounds, offscreen,
+                                                        clip_bounds);
+
+    AutomationAXTreeWrapper* previous_tree_wrapper = tree_wrapper;
+    ui::AXNode* parent_of_root =
+        GetParent(tree_wrapper->tree()->root(), &tree_wrapper);
+    if (parent_of_root == node)
+      break;
+
+    // This is a fallback for trees that are constructed using app ids. Do the
+    // least possible expensive check here.
+    if (!parent_of_root && previous_tree_wrapper->GetParentTreeFromAnyAppID()) {
+      // Since the tree has a valid child tree app id pointing to a valid tree,
+      // walk the ancestry of |node| to find the specific app id and resolve to
+      // the parent tree node.
+      ui::AXNode* found_node = node;
+      while (found_node && !found_node->HasStringAttribute(
+                               ax::mojom::StringAttribute::kAppId)) {
+        found_node = found_node->parent();
+      }
+      if (found_node) {
+        const std::string& app_id =
+            found_node->GetStringAttribute(ax::mojom::StringAttribute::kAppId);
+        parent_of_root =
+            AutomationAXTreeWrapper::GetParentTreeNodeForAppID(app_id, this);
+        tree_wrapper =
+            AutomationAXTreeWrapper::GetParentTreeWrapperForAppID(app_id, this);
+      }
+    }
+
+    // When crossing out of a tree that has a device scale factor into a tree
+    // that does not, unscale by the device scale factor.
+    if (previous_tree_wrapper->HasDeviceScaleFactor() &&
+        !tree_wrapper->HasDeviceScaleFactor()) {
+      float scale_factor = GetDeviceScaleFactor();
+      if (scale_factor > 0)
+        bounds.Scale(1.0 / scale_factor);
+    }
+
+    node = parent_of_root;
+  }
+
+  return gfx::ToEnclosingRect(bounds);
+}
+
 }  // namespace extensions

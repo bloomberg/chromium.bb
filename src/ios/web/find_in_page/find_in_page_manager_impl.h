@@ -11,6 +11,7 @@
 #import "ios/web/find_in_page/find_in_page_request.h"
 #import "ios/web/public/find_in_page/find_in_page_manager.h"
 #include "ios/web/public/web_state_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 @class NSString;
 
@@ -55,7 +56,7 @@ class FindInPageManagerImpl : public FindInPageManager,
   // null, then does nothing more.
   void ProcessFindInPageResult(const std::string& frame_id,
                                const int request_id,
-                               base::Optional<int> result);
+                               absl::optional<int> result);
   // Calls delegate DidHighlightMatches() method if |delegate_| is set and
   // starts a FindInPageNext find. Called when the last frame returns results
   // from a Find request.

@@ -13,6 +13,11 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
+#include "chrome/browser/ash/child_accounts/child_status_reporting_service_factory.h"
+#include "chrome/browser/ash/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/ash/child_accounts/family_user_metrics_service_factory.h"
+#include "chrome/browser/ash/child_accounts/screen_time_controller_factory.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
@@ -21,11 +26,6 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
-#include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
-#include "chrome/browser/chromeos/child_accounts/family_user_metrics_service_factory.h"
-#include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
@@ -49,9 +49,12 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+// TODO(https://crbug.com/1164001): remove when moved to ash::
+using ::chromeos::InstallAttributes;
+
 UserSessionInitializer* g_instance = nullptr;
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -69,7 +72,7 @@ UserSessionInitializer::RlzInitParams CollectRlzParams() {
   UserSessionInitializer::RlzInitParams params;
   params.disabled = base::PathExists(GetRlzDisabledFlagPath());
   params.time_since_oobe_completion =
-      chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation();
+      StartupUtils::GetTimeSinceOobeFlagFileCreation();
   return params;
 }
 #endif
@@ -105,7 +108,13 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
 
   if (user_manager::UserManager::Get()->GetPrimaryUser() == user) {
-    DCHECK_EQ(primary_profile_, nullptr);
+    // TODO(https://crbug.com/1208416): Investigate why OnUserProfileLoaded
+    // is called more than once.
+    if (primary_profile_ != nullptr) {
+      NOTREACHED();
+      CHECK_EQ(primary_profile_, profile);
+      return;
+    }
     primary_profile_ = profile;
 
     InitRlz(profile);
@@ -202,7 +211,7 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   if (crostini_manager)
     crostini_manager->MaybeUpdateCrostini();
 
-  if (chromeos::features::IsClipboardHistoryEnabled()) {
+  if (features::IsClipboardHistoryEnabled()) {
     clipboard_image_model_factory_impl_ =
         std::make_unique<ClipboardImageModelFactoryImpl>(profile);
   }
@@ -215,7 +224,7 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   DCHECK(profile);
 
   // Ensure that the `HoldingSpaceKeyedService` for `profile` is created.
-  ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
+  HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
 
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
@@ -302,4 +311,4 @@ void UserSessionInitializer::InitRlzImpl(Profile* profile,
   inited_for_testing_ = true;
 }
 
-}  // namespace chromeos
+}  // namespace ash

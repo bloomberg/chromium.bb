@@ -27,6 +27,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace platform_keys {
@@ -62,11 +63,26 @@ void KeyPermissionsServiceImpl::CanUserGrantPermissionForKeyWithLocations(
     CanUserGrantPermissionForKeyCallback callback,
     const std::vector<TokenId>& key_locations,
     Status key_locations_retrieval_status) {
-  auto bound_callback = base::BindOnce(
-      &KeyPermissionsServiceImpl::
-          CanUserGrantPermissionForKeyWithLocationsAndFlag,
-      weak_factory_.GetWeakPtr(), public_key_spki_der, std::move(callback),
-      key_locations, key_locations_retrieval_status);
+  if (key_locations_retrieval_status != Status::kSuccess) {
+    LOG(ERROR) << "Key locations retrieval failed: "
+               << StatusToString(key_locations_retrieval_status);
+    std::move(callback).Run(/*allowed=*/false);
+    return;
+  }
+
+  // It only makes sense to store the sign_unlimited flag for a key if it is on
+  // a user slot. Currently, system-slot keys are implicitly corporate, so
+  // CanUserGrantPermissionForKey should return false for them.
+  if ((key_locations.size() != 1) || key_locations.front() != TokenId::kUser) {
+    std::move(callback).Run(/*allowed=*/false);
+    return;
+  }
+
+  auto bound_callback =
+      base::BindOnce(&KeyPermissionsServiceImpl::
+                         CanUserGrantPermissionForKeyWithLocationsAndFlag,
+                     weak_factory_.GetWeakPtr(), public_key_spki_der,
+                     std::move(callback), key_locations);
   IsCorporateKeyWithLocations(public_key_spki_der, std::move(bound_callback),
                               key_locations, key_locations_retrieval_status);
 }
@@ -76,14 +92,9 @@ void KeyPermissionsServiceImpl::
         const std::string& public_key_spki_der,
         CanUserGrantPermissionForKeyCallback callback,
         const std::vector<TokenId>& key_locations,
-        Status status,
-        bool corporate_key) {
+        absl::optional<bool> corporate_key,
+        Status status) {
   if (status != Status::kSuccess) {
-    std::move(callback).Run(/*allowed=*/false);
-    return;
-  }
-
-  if (key_locations.empty()) {
     std::move(callback).Run(/*allowed=*/false);
     return;
   }
@@ -97,7 +108,7 @@ void KeyPermissionsServiceImpl::
 
   // If this profile is not managed but we find a corporate key, don't allow
   // the user to grant permissions.
-  std::move(callback).Run(/*allowed=*/!corporate_key);
+  std::move(callback).Run(/*allowed=*/!corporate_key.value());
 }
 
 void KeyPermissionsServiceImpl::IsCorporateKey(
@@ -117,7 +128,7 @@ void KeyPermissionsServiceImpl::IsCorporateKeyWithLocations(
     Status status) {
   if (status != Status::kSuccess) {
     LOG(ERROR) << "Key locations retrieval failed: " << StatusToString(status);
-    std::move(callback).Run(/*corporate=*/false);
+    std::move(callback).Run(/*corporate=*/absl::nullopt, status);
     return;
   }
 
@@ -148,21 +159,21 @@ void KeyPermissionsServiceImpl::IsCorporateKeyWithLocations(
     return;
   }
 
-  std::move(callback).Run(/*corporate=*/false);
+  std::move(callback).Run(/*corporate=*/false, Status::kSuccess);
 }
 
 void KeyPermissionsServiceImpl::IsCorporateKeyWithKpmResponse(
     IsCorporateKeyCallback callback,
-    base::Optional<bool> allowed,
+    absl::optional<bool> allowed,
     Status status) {
   if (allowed.has_value()) {
-    std::move(callback).Run(allowed.value());
+    std::move(callback).Run(allowed.value(), Status::kSuccess);
     return;
   }
 
   LOG(ERROR) << "Checking corporate flag via KeyPermissionsManager failed: "
              << StatusToString(status);
-  std::move(callback).Run(/*corporate=*/false);
+  std::move(callback).Run(/*corporate=*/absl::nullopt, status);
 }
 
 void KeyPermissionsServiceImpl::SetCorporateKey(

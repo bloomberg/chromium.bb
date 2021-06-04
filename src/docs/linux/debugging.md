@@ -62,7 +62,7 @@ instances will fight over the terminal). To auto-start the renderers in the
 debugger, send the "run" command to the debugger:
 
     chrome --no-sandbox --renderer-cmd-prefix='xterm -title renderer -e gdb \
-        -ex run --args
+        -ex run --args'
 
 If you're using Emacs and `M-x gdb`, you can do
 
@@ -82,6 +82,10 @@ You can also use `--renderer-startup-dialog` and attach to the process in order
 to debug the renderer code. Go to
 https://www.chromium.org/blink/getting-started-with-blink-debugging for more
 information on how this can be done.
+
+For utilities you can use `--utility-startup-dialog` to have all utilities
+prompt, or `--utility-startup-dialog=data_decoder.mojom.DataDecoderService`
+to debug only a particular service type.
 
 #### Choosing which renderers to debug
 

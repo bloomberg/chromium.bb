@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">اپنی دستاویز کو اسکینر پر رکھیں اور شروع کرنے کیلئے 'اسکین کریں' کو منتخب کریں</translation>
 <translation id="2872961005593481000">بند کریں</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> سیکنڈ میں <ph name="RATE" /> ڈسچارج ہوئی۔</translation>
+<translation id="2983662233540284543">گیم کے کسی تخلیق کار سے سیکھیں، گیم ڈیزائن کی ایپس حاصل کریں اور بہت کچھ</translation>
 <translation id="3008341117444806826">ریفریش کریں</translation>
 <translation id="3009958530611748826">محفوظ کرنے کے لئے فولڈر منتخب کریں</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">تصدیق</translation>
 <translation id="5154917547274118687">میموری</translation>
 <translation id="5168185087976003268">بیٹری کی صحت</translation>
+<translation id="5170568018924773124">فولڈر میں دکھائیں</translation>
+<translation id="519607504553633437">اپنی ذاتی گیمز ڈیزائن کریں اور بنائیں</translation>
 <translation id="5212543919916444558">مجھے آپ کی اسکرین پر ایسا کچھ نہیں ملا جس سے متعلق میں آپ کی مدد کر سکوں۔ مجھ سے کچھ بھی پوچھنے کے لیے مائیک کو تھپتھپانے کی کوشش کریں۔</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
 <translation id="5252456968953390977">رومنگ</translation>
@@ -200,6 +203,7 @@
 <translation id="5275828089655680674">روٹینز کو دوبارہ چلائیں</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">‏ورژن ‎<ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">ونڈو کو ڈیسک میں منتقل کریں</translation>
 <translation id="5315873049536339193">شناخت</translation>
 <translation id="5317780077021120954">محفوظ کریں</translation>
 <translation id="5318334351163689047">‏TCP درخواست کی ناکامیاں</translation>
@@ -221,6 +225,7 @@
 <translation id="5669267381087807207">فعال ہو رہا ہے</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">فیملی</translation>
+<translation id="5752751666635965375">اپنی ذاتی گیم بنائیں</translation>
 <translation id="5760715441271661976">پورٹل صورت حال</translation>
 <translation id="5797428682393400134">کامیاب</translation>
 <translation id="5832805196449965646">شخص کو شامل کریں</translation>
@@ -293,6 +298,7 @@
 <translation id="7216409898977639127">سیلولر فراہم کنندہ</translation>
 <translation id="7271040990581020067">اسکینر فی الحال زیر استعمال ہے۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">نیٹ ورک کے آلات</translation>
 <translation id="7359657277149375382">فائل کی قسم</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -341,6 +347,7 @@
 <translation id="8372477600026034341">بہت زیادہ میزبان</translation>
 <translation id="8395584934117017006">یہ <ph name="DEVICE_TYPE" /> انٹرپرائز کے زیر انتظام ہے</translation>
 <translation id="8398927464629426868">آلے کی فی الحال چارج ہونے یا چارج ختم ہونے کی شرح</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">گھر فراہم کرنے والے کا نام</translation>
 <translation id="8475690821716466388">‏WiFi نیٹ ورک کمزور پروٹوکول WEP PSK کے ساتھ محفوظ ہے</translation>
 <translation id="8477551185774834963">‏DNS تاخیر قابل اجازت حد سے تھوڑی سی زیادہ ہے</translation>
@@ -350,6 +357,7 @@
 <translation id="8575298406870537639">آپ کے کیریئر کو اپنے نیٹ ورک سے منسلک ہونے کیلئے اس اختیار کی ضرورت پڑ سکتی ہے۔ تفصیلات کیلئے اپنے کیریئر سے رابطہ کریں۔</translation>
 <translation id="8576249514688522074">شروع نہیں کیا گیا</translation>
 <translation id="8620617069779373398">رومنگ کی صورتحال</translation>
+<translation id="8660881923941176839">پاؤنڈز</translation>
 <translation id="8675354002693747642">پہلے سے اشتراک کردہ کلید</translation>
 <translation id="871560550817059752">ناکام ہو گیا - سیاہی ختم ہو گئی</translation>
 <translation id="8723108084122415655">تاخیر کی حد کے اوپر غیر ڈیفالٹ نیٹ ورک</translation>
@@ -365,6 +373,7 @@
 <translation id="8881098542468797602">ٹیسٹ کامیاب ہو گیا</translation>
 <translation id="8898840733695078011">سگنل کی مضبوطی</translation>
 <translation id="8910721771319628100">تاخیر کی حد کے اوپر ڈیفالٹ نیٹ ورک</translation>
+<translation id="8918637186205009138"><ph name="GIVEN_NAME" /> کا <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">ناکام ہو گیا - ٹرے موجود نہیں ہے</translation>
 <translation id="8928727111548978589">ناکام ہو گیا - کاغذ ختم ہو گیا</translation>
 <translation id="8930622219860340959">وائرلیس</translation>
@@ -382,6 +391,7 @@
 <translation id="9149391708638971077">میموری ٹیسٹ چلائیں</translation>
 <translation id="9173638680043580060">ایک منٹ سے کم باقی ہے</translation>
 <translation id="9190063653747922532">‏‎L2TP/IPsec + پیشگی اشتراک کردہ کلید</translation>
+<translation id="9211490828691860325">تمام ڈیسکس</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">فعال نہیں ہے</translation>
 <translation id="960719561871045870">آپریٹر کوڈ</translation>

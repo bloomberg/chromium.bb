@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
@@ -30,6 +31,10 @@
 namespace chromeos {
 
 namespace {
+
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
 
 const size_t kMaxConfirmedTextLength = 10;
 
@@ -95,6 +100,12 @@ void RecordTimeToDismiss(base::TimeDelta delta) {
 
 void RecordAssistiveInsufficientData(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.InsufficientData", type);
+}
+
+TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
+  return {.mode = TextSuggestionMode::kPrediction,
+          .type = TextSuggestionType::kAssistivePersonalInfo,
+          .text = base::UTF16ToUTF8(candidate_string)};
 }
 
 }  // namespace
@@ -188,6 +199,12 @@ void PersonalInfoSuggester::OnFocus(int context_id) {
 
 void PersonalInfoSuggester::OnBlur() {
   context_id_ = -1;
+}
+
+void PersonalInfoSuggester::OnExternalSuggestionsUpdated(
+    const std::vector<TextSuggestion>& suggestions) {
+  // PersonalInfoSuggester doesn't utilize any suggestions produced externally,
+  // so ignore this call.
 }
 
 SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
@@ -399,9 +416,9 @@ bool PersonalInfoSuggester::HasSuggestions() {
   return suggestion_shown_;
 }
 
-std::vector<std::u16string> PersonalInfoSuggester::GetSuggestions() {
+std::vector<TextSuggestion> PersonalInfoSuggester::GetSuggestions() {
   if (HasSuggestions())
-    return {suggestion_};
+    return {MapToTextSuggestion(suggestion_)};
   return {};
 }
 

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
@@ -35,7 +36,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/dns_alias_utility.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -75,12 +76,6 @@
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
-
-// Returns the estimate of dynamically allocated memory of an IPEndPoint in
-// bytes. Used in tracking IPAliasMap.
-size_t EstimateMemoryUsage(const IPEndPoint& end_point) {
-  return 0;
-}
 
 namespace {
 
@@ -351,9 +346,6 @@ class QuicStreamFactory::Job {
   base::WeakPtr<Job> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
   void PopulateNetErrorDetails(NetErrorDetails* details) const;
-
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
 
   void AddRequest(QuicStreamRequest* request) {
     stream_requests_.insert(request);
@@ -687,10 +679,6 @@ void QuicStreamFactory::Job::PopulateNetErrorDetails(
   details->quic_connection_error = session_->error();
 }
 
-size_t QuicStreamFactory::Job::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(key_);
-}
-
 int QuicStreamFactory::Job::DoResolveHost() {
   dns_resolution_start_time_ = base::TimeTicks::Now();
 
@@ -703,8 +691,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
     parameters.cache_usage =
         HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
   }
-  if (key_.session_key().disable_secure_dns())
-    parameters.secure_dns_mode_override = SecureDnsMode::kOff;
+  parameters.secure_dns_policy = key_.session_key().secure_dns_policy();
   resolve_host_request_ = host_resolver_->CreateRequest(
       key_.destination(), key_.session_key().network_isolation_key(), net_log_,
       parameters);
@@ -990,7 +977,7 @@ int QuicStreamRequest::Request(
     RequestPriority priority,
     const SocketTag& socket_tag,
     const NetworkIsolationKey& network_isolation_key,
-    bool disable_secure_dns,
+    SecureDnsPolicy secure_dns_policy,
     bool use_dns_aliases,
     int cert_verify_flags,
     const GURL& url,
@@ -1009,7 +996,7 @@ int QuicStreamRequest::Request(
       std::move(failed_on_default_network_callback);
   session_key_ =
       QuicSessionKey(HostPortPair::FromURL(url), privacy_mode, socket_tag,
-                     network_isolation_key, disable_secure_dns);
+                     network_isolation_key, secure_dns_policy);
 
   int rv =
       factory_->Create(session_key_, destination, quic_version, priority,
@@ -1096,11 +1083,6 @@ bool QuicStreamFactory::QuicSessionAliasKey::operator==(
     const QuicSessionAliasKey& other) const {
   return destination_.Equals(other.destination_) &&
          session_key_ == other.session_key_;
-}
-
-size_t QuicStreamFactory::QuicSessionAliasKey::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(destination_) +
-         base::trace_event::EstimateMemoryUsage(session_key_.server_id());
 }
 
 QuicStreamFactory::QuicStreamFactory(
@@ -1460,6 +1442,10 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     return rv;
   }
 
+  if (params_.ios_network_service_type > 0) {
+    socket->SetIOSNetworkServiceType(params_.ios_network_service_type);
+  }
+
   socket->GetLocalAddress(&local_address_);
   if (need_to_check_persisted_supports_quic_) {
     need_to_check_persisted_supports_quic_ = false;
@@ -1495,9 +1481,6 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
       DatagramSocket::DEFAULT_BIND, net_log, source);
   if (params_.enable_socket_recv_optimization)
     socket->EnableRecvOptimization();
-  if (params_.ios_network_service_type > 0) {
-    socket->SetIOSNetworkServiceType(params_.ios_network_service_type);
-  }
   return socket;
 }
 
@@ -1669,17 +1652,6 @@ void QuicStreamFactory::DumpMemoryStats(
     return;
   base::trace_event::MemoryAllocatorDump* factory_dump =
       pmd->CreateAllocatorDump(parent_absolute_name + "/quic_stream_factory");
-  size_t memory_estimate =
-      base::trace_event::EstimateMemoryUsage(all_sessions_) +
-      base::trace_event::EstimateMemoryUsage(active_sessions_) +
-      base::trace_event::EstimateMemoryUsage(session_aliases_) +
-      base::trace_event::EstimateMemoryUsage(ip_aliases_) +
-      base::trace_event::EstimateMemoryUsage(session_peer_ip_) +
-      base::trace_event::EstimateMemoryUsage(gone_away_aliases_) +
-      base::trace_event::EstimateMemoryUsage(active_jobs_);
-  factory_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          memory_estimate);
   factory_dump->AddScalar("all_sessions",
                           base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                           all_sessions_.size());

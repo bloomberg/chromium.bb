@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_clipping_behavior.h"
 #include "ui/accessibility/ax_coordinate_system.h"
@@ -157,9 +157,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // platform's accessibility layer.
   virtual bool IsChildOfLeaf() const = 0;
 
-  // Returns true if this node is either a plain text field , or one of its
-  // ancestors is.
-  virtual bool IsDescendantOfPlainTextField() const = 0;
+  // Returns true if this node is either an atomic text field , or one of its
+  // ancestors is. An atomic text field does not expose its internal
+  // implementation to assistive software, appearing as a single leaf node in
+  // the accessibility tree. It includes <input>, <textarea> and Views-based
+  // text fields.
+  virtual bool IsDescendantOfAtomicTextField() const = 0;
 
   // Returns true if this is a leaf node, meaning all its
   // children should not be exposed to any platform's native accessibility
@@ -185,6 +188,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // (An ignored node means that the node should not be exposed to platform
   // APIs: See `IsInvisibleOrIgnored`.)
   virtual gfx::NativeViewAccessible GetLowestPlatformAncestor() const = 0;
+
+  // If this node is within an editable region, returns the node that is at the
+  // root of that editable region, otherwise returns nullptr. In accessibility,
+  // an editable region is synonymous to a node with the kTextField role, or a
+  // contenteditable without the role, (see `AXNodeData::IsTextField()`).
+  virtual gfx::NativeViewAccessible GetTextFieldAncestor() const = 0;
 
   class ChildIterator {
    public:
@@ -351,7 +360,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // that the delegate does not have all the information required to calculate
   // this value and it is the responsibility of the AXPlatformNode itself to
   // to calculate it.
-  virtual base::Optional<int> FindTextBoundary(
+  virtual absl::optional<int> FindTextBoundary(
       ax::mojom::TextBoundary boundary,
       int offset,
       ax::mojom::MoveDirection direction,
@@ -378,12 +387,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // role, otherwise they return nullopt.
   //
   virtual bool IsTable() const = 0;
-  virtual base::Optional<int> GetTableColCount() const = 0;
-  virtual base::Optional<int> GetTableRowCount() const = 0;
-  virtual base::Optional<int> GetTableAriaColCount() const = 0;
-  virtual base::Optional<int> GetTableAriaRowCount() const = 0;
-  virtual base::Optional<int> GetTableCellCount() const = 0;
-  virtual base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const = 0;
+  virtual absl::optional<int> GetTableColCount() const = 0;
+  virtual absl::optional<int> GetTableRowCount() const = 0;
+  virtual absl::optional<int> GetTableAriaColCount() const = 0;
+  virtual absl::optional<int> GetTableAriaRowCount() const = 0;
+  virtual absl::optional<int> GetTableCellCount() const = 0;
+  virtual absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const = 0;
   virtual std::vector<int32_t> GetColHeaderNodeIds() const = 0;
   virtual std::vector<int32_t> GetColHeaderNodeIds(int col_index) const = 0;
   virtual std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
@@ -392,20 +401,20 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // Table row-like nodes.
   virtual bool IsTableRow() const = 0;
-  virtual base::Optional<int> GetTableRowRowIndex() const = 0;
+  virtual absl::optional<int> GetTableRowRowIndex() const = 0;
 
   // Table cell-like nodes.
   virtual bool IsTableCellOrHeader() const = 0;
-  virtual base::Optional<int> GetTableCellIndex() const = 0;
-  virtual base::Optional<int> GetTableCellColIndex() const = 0;
-  virtual base::Optional<int> GetTableCellRowIndex() const = 0;
-  virtual base::Optional<int> GetTableCellColSpan() const = 0;
-  virtual base::Optional<int> GetTableCellRowSpan() const = 0;
-  virtual base::Optional<int> GetTableCellAriaColIndex() const = 0;
-  virtual base::Optional<int> GetTableCellAriaRowIndex() const = 0;
-  virtual base::Optional<int32_t> GetCellId(int row_index,
+  virtual absl::optional<int> GetTableCellIndex() const = 0;
+  virtual absl::optional<int> GetTableCellColIndex() const = 0;
+  virtual absl::optional<int> GetTableCellRowIndex() const = 0;
+  virtual absl::optional<int> GetTableCellColSpan() const = 0;
+  virtual absl::optional<int> GetTableCellRowSpan() const = 0;
+  virtual absl::optional<int> GetTableCellAriaColIndex() const = 0;
+  virtual absl::optional<int> GetTableCellAriaRowIndex() const = 0;
+  virtual absl::optional<int32_t> GetCellId(int row_index,
                                             int col_index) const = 0;
-  virtual base::Optional<int32_t> CellIndexToId(int cell_index) const = 0;
+  virtual absl::optional<int32_t> CellIndexToId(int cell_index) const = 0;
 
   // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
   virtual bool IsCellOrHeaderOfARIATable() const = 0;
@@ -414,8 +423,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;
-  virtual base::Optional<int> GetPosInSet() const = 0;
-  virtual base::Optional<int> GetSetSize() const = 0;
+  virtual absl::optional<int> GetPosInSet() const = 0;
+  virtual absl::optional<int> GetSetSize() const = 0;
 
   // Computed colors, taking blending into account.
   virtual SkColor GetColor() const = 0;

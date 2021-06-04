@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/pointer_constraint_delegate.h"
@@ -23,6 +23,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -33,6 +34,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/scale_factor.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -127,6 +129,8 @@ Pointer::Pointer(PointerDelegate* delegate, Seat* seat)
 }
 
 Pointer::~Pointer() {
+  WMHelper* helper = WMHelper::GetInstance();
+  helper->RemovePreTargetHandler(this);
   delegate_->OnPointerDestroying(this);
   if (focus_surface_)
     focus_surface_->RemoveSurfaceObserver(this);
@@ -142,8 +146,6 @@ Pointer::~Pointer() {
   }
   if (stylus_delegate_)
     stylus_delegate_->OnPointerDestroying(this);
-  WMHelper* helper = WMHelper::GetInstance();
-  helper->RemovePreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
   // yet. https://crbug.com/631103.
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
@@ -369,6 +371,9 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
 // ui::EventHandler overrides:
 
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
+  if (seat_->was_shutdown())
+    return;
+
   // Nothing to report to a client nor have to update the pointer when capture
   // changes.
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
@@ -420,7 +425,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     //
     // TODO(b/161755250): the ifdef is only necessary because of the feature
     // flag. This code should work fine on non-cros.
-    base::Optional<gfx::Vector2dF> ordinal_motion = base::nullopt;
+    absl::optional<gfx::Vector2dF> ordinal_motion = absl::nullopt;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (event->flags() & ui::EF_UNADJUSTED_MOUSE &&
         base::FeatureList::IsEnabled(chromeos::features::kExoOrdinalMotion)) {
@@ -766,16 +771,14 @@ void Pointer::UpdateCursor() {
     ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
                                               &bitmap, &hotspot);
 
-    ui::PlatformCursor platform_cursor;
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.
     // https://crbug.com/686600
-    platform_cursor = ui::CursorFactory::GetInstance()->CreateImageCursor(
-        cursor_.type(), bitmap, hotspot);
-    cursor_.SetPlatformCursor(platform_cursor);
+    cursor_.SetPlatformCursor(
+        ui::CursorFactory::GetInstance()->CreateImageCursor(cursor_.type(),
+                                                            bitmap, hotspot));
     cursor_.set_custom_bitmap(bitmap);
     cursor_.set_custom_hotspot(hotspot);
-    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor);
   }
 
   // If there is a focused surface, update its widget as the views framework
@@ -827,7 +830,7 @@ void Pointer::MoveCursorToCenterOfActiveDisplay() {
 bool Pointer::HandleRelativePointerMotion(
     base::TimeTicks time_stamp,
     gfx::PointF location_in_root,
-    const base::Optional<gfx::Vector2dF>& ordinal_motion) {
+    const absl::optional<gfx::Vector2dF>& ordinal_motion) {
   if (!relative_pointer_delegate_)
     return false;
 

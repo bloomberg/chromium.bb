@@ -81,6 +81,17 @@ class EventRewriterChromeOS : public EventRewriter {
                     DomKey::Base input_key,
                     KeyboardCode input_key_code);
 
+    friend bool operator==(const MutableKeyState& lhs,
+                           const MutableKeyState& rhs) {
+      return lhs.flags == rhs.flags && lhs.code == rhs.code &&
+             lhs.key == rhs.key && lhs.key_code == rhs.key_code;
+    }
+
+    friend bool operator!=(const MutableKeyState& lhs,
+                           const MutableKeyState& rhs) {
+      return !(lhs == rhs);
+    }
+
     int flags;
     DomCode code;
     DomKey::Base key;
@@ -92,7 +103,9 @@ class EventRewriterChromeOS : public EventRewriter {
     Delegate() {}
     virtual ~Delegate() {}
 
-    // Returns true if we want to rewrite modifier keys.
+    // Returns true only if the the key event was rewritten to ALTGR. For most
+    // cases, it is expected that this function returns false as most key events
+    // do not involve ALTGR.
     virtual bool RewriteModifierKeys() = 0;
 
     // Returns true if get keyboard remapped preference value successfully and
@@ -125,10 +138,11 @@ class EventRewriterChromeOS : public EventRewriter {
     // and this function returns true if the notification was shown.
     virtual bool NotifyDeprecatedFKeyRewrite() = 0;
 
-    // Used to send a notification about Alt based key rewrite being deprecated.
-    // The notification is only sent once per user session, and this function
-    // returns true if the notification was shown.
-    virtual bool NotifyDeprecatedAltBasedKeyRewrite(KeyboardCode key_code) = 0;
+    // Used to send a notification about a Six Pack (PageUp, PageDown, Home,
+    // End, Insert, Delete) key rewrite being deprecated. The notification
+    // is only sent once per user session, and this function returns true if
+    // the notification was shown.
+    virtual bool NotifyDeprecatedSixPackKeyRewrite(KeyboardCode key_code) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -140,6 +154,13 @@ class EventRewriterChromeOS : public EventRewriter {
   EventRewriterChromeOS(Delegate* delegate,
                         EventRewriter* sticky_keys_controller,
                         bool privacy_screen_supported);
+
+  // Only explicitly use this constructor for tests. Does not take ownership of
+  // |ime_keyboard|.
+  EventRewriterChromeOS(Delegate* delegate,
+                        EventRewriter* sticky_keys_controller,
+                        bool privacy_screen_supported,
+                        ::chromeos::input_method::ImeKeyboard* ime_keyboard);
   ~EventRewriterChromeOS() override;
 
   // Calls KeyboardDeviceAdded.
@@ -155,10 +176,6 @@ class EventRewriterChromeOS : public EventRewriter {
 
   void set_last_keyboard_device_id_for_testing(int device_id) {
     last_keyboard_device_id_ = device_id;
-  }
-  void set_ime_keyboard_for_testing(
-      ::chromeos::input_method::ImeKeyboard* ime_keyboard) {
-    ime_keyboard_for_testing_ = ime_keyboard;
   }
 
   void set_privacy_screen_for_testing(bool supported) {
@@ -318,8 +335,6 @@ class EventRewriterChromeOS : public EventRewriter {
   // used to interpret modifiers on pointer events.
   int last_keyboard_device_id_;
 
-  ::chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
-
   Delegate* const delegate_;
 
   // For each pair, the first element is the rewritten key state and the second
@@ -354,6 +369,8 @@ class EventRewriterChromeOS : public EventRewriter {
   int pressed_modifier_latches_;
   int latched_modifier_latches_;
   int used_modifier_latches_;
+
+  ::chromeos::input_method::ImeKeyboard* const ime_keyboard_;
 
   // True if alt + key and mouse event remapping is allowed. In some scenario,
   // such as clicking a button in the Alt-Tab UI, this remapping undesirably

@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -189,7 +189,7 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
     return false;
 
   const auto& box = To<LayoutBox>(object);
-  if (SmallerThanRegionGranularity(box.VisualOverflowRect()))
+  if (SmallerThanRegionGranularity(box.VisualOverflowRectAllowingUnset()))
     return false;
 
   if (auto* display_lock_context = box.GetDisplayLockContext()) {
@@ -351,10 +351,13 @@ void LayoutShiftTracker::ObjectShifted(
     }
   }
 
-  // Compute move distance based on unclipped rects, to accurately determine how
-  // much the element moved.
+  // Compute move distance based on starting points in root, to accurately
+  // determine how much the element moved.
   float move_distance =
       GetMoveDistance(old_starting_point_in_root, new_starting_point_in_root);
+  if (std::isnan(move_distance) || std::isinf(move_distance))
+    return;
+  DCHECK_GT(move_distance, 0.f);
   frame_max_distance_ = std::max(frame_max_distance_, move_distance);
 
   LocalFrame& frame = frame_view_->GetFrame();
@@ -494,14 +497,17 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
   // Map the subframe view rect into the coordinate space of the local root.
   FloatClipRect subframe_cliprect =
       FloatClipRect(FloatRect(FloatPoint(), FloatSize(frame_view_->Size())));
+  const LocalFrame& local_root = frame.LocalFrameRoot();
   GeometryMapper::LocalToAncestorVisualRect(
       frame_view_->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
-      PropertyTreeState::Root(), subframe_cliprect);
+      local_root.ContentLayoutObject()
+          ->FirstFragment()
+          .LocalBorderBoxProperties(),
+      subframe_cliprect);
   auto subframe_rect = PhysicalRect::EnclosingRect(subframe_cliprect.Rect());
 
   // Intersect with the portion of the local root that overlaps the main frame.
-  frame.LocalFrameRoot().View()->MapToVisualRectInRemoteRootFrame(
-      subframe_rect);
+  local_root.View()->MapToVisualRectInRemoteRootFrame(subframe_rect);
   IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
   IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
 
@@ -541,7 +547,8 @@ void LayoutShiftTracker::NotifyPrePaintFinishedInternal() {
     VLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
             << frame.GetDocument()->Url() << ", viewport was "
             << (impact_fraction * 100) << "% impacted with distance fraction "
-            << move_distance_factor;
+            << move_distance_factor << " and subframe weighting factor "
+            << SubframeWeightingFactor();
   }
 
   if (pointerdown_pending_data_.saw_pointerdown) {
@@ -698,6 +705,10 @@ void LayoutShiftTracker::NotifyFindInPageInput() {
 }
 
 void LayoutShiftTracker::NotifyChangeEvent() {
+  UpdateTimerAndInputTimestamp();
+}
+
+void LayoutShiftTracker::NotifyZoomLevelChanged() {
   UpdateTimerAndInputTimestamp();
 }
 

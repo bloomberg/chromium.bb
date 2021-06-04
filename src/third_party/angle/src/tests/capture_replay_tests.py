@@ -22,6 +22,7 @@ Script testing capture_replay with angle_end2end_tests
 # Command line arguments: run with --help for a full list.
 
 import argparse
+import difflib
 import distutils.util
 import fnmatch
 import logging
@@ -94,7 +95,10 @@ test_trace_info_init_template = """\
         {namespace}::kDefaultFramebufferAlphaBits,
         {namespace}::kDefaultFramebufferDepthBits,
         {namespace}::kDefaultFramebufferStencilBits,
-        {namespace}::kIsBinaryDataCompressed
+        {namespace}::kIsBinaryDataCompressed,
+        {namespace}::kAreClientArraysEnabled,
+        {namespace}::kbindGeneratesResources,
+        {namespace}::kWebGLCompatibility,
     }},
 """
 
@@ -122,6 +126,9 @@ struct TestTraceInfo {{
     EGLint defaultFramebufferDepthBits;
     EGLint defaultFramebufferStencilBits;
     bool isBinaryDataCompressed;
+    bool areClientArraysEnabled;
+    bool bindGeneratesResources;
+    bool webGLCompatibility;
 }};
 
 extern std::vector<TestTraceInfo> testTraceInfos;
@@ -511,7 +518,11 @@ class TestBatch():
             cmd = ['vpython', 'testing/xvfb.py', test_exe_path]
         else:
             cmd = [test_exe_path]
-        cmd += ['--gtest_filter=%s' % filt, '--angle-per-test-capture-label']
+        filter_string = '--gtest_filter=%s' % filt
+        cmd += [filter_string, '--angle-per-test-capture-label']
+
+        if self.verbose:
+            info("Run capture: '{} {}'".format(test_exe_path, filter_string))
 
         returncode, output = child_processes_manager.RunSubprocess(
             cmd, env, timeout=SUBPROCESS_TIMEOUT)
@@ -566,10 +577,14 @@ class TestBatch():
             return False
         return True
 
-    def RunReplay(self, replay_exe_path, child_processes_manager, tests):
+    def RunReplay(self, replay_build_dir, replay_exe_path, child_processes_manager, tests):
         env = os.environ.copy()
         env['ANGLE_CAPTURE_ENABLED'] = '0'
         env['ANGLE_FEATURE_OVERRIDES_ENABLED'] = 'enable_capture_limits'
+
+        if self.verbose:
+            info("Run Replay: {}".format(replay_exe_path))
+
         returncode, output = child_processes_manager.RunSubprocess([replay_exe_path],
                                                                    env,
                                                                    timeout=SUBPROCESS_TIMEOUT)
@@ -595,11 +610,33 @@ class TestBatch():
                     passes.append(self.FindTestByLabel(words[1]))
                 else:
                     fails.append(self.FindTestByLabel(words[1]))
+                    if self.verbose:
+                        print("Context comparison failed: {}".format(
+                            self.FindTestByLabel(words[1])))
+                        self.PrintContextDiff(replay_build_dir, words[1])
+
                 count += 1
         if len(passes) > 0:
             self.results.append(GroupedResult(GroupedResult.Passed, "", "", passes))
         if len(fails) > 0:
             self.results.append(GroupedResult(GroupedResult.Failed, "", "", fails))
+
+    def PrintContextDiff(self, replay_build_dir, test_name):
+        frame = 1
+        while True:
+            capture_file = "{}/{}_ContextCaptured{}.json".format(replay_build_dir, test_name,
+                                                                 frame)
+            replay_file = "{}/{}_ContextReplayed{}.json".format(replay_build_dir, test_name, frame)
+            if os.path.exists(capture_file) and os.path.exists(replay_file):
+                captured_context = open(capture_file, "r").readlines()
+                replayed_context = open(replay_file, "r").readlines()
+                for line in difflib.unified_diff(
+                        captured_context, replayed_context, fromfile=capture_file,
+                        tofile=replay_file):
+                    print(line, end="")
+                frame = frame + 1
+            else:
+                break
 
     def FindTestByLabel(self, label):
         for test in self.tests:
@@ -722,7 +759,8 @@ def RunTests(args, worker_id, job_queue, result_list, message_queue):
                 result_list.append(test_batch.GetResults())
                 message_queue.put(str(test_batch.GetResults()))
                 continue
-            test_batch.RunReplay(replay_exec_path, child_processes_manager, continued_tests)
+            test_batch.RunReplay(replay_build_dir, replay_exec_path, child_processes_manager,
+                                 continued_tests)
             result_list.append(test_batch.GetResults())
             message_queue.put(str(test_batch.GetResults()))
         except KeyboardInterrupt:

@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
+#include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
@@ -125,10 +126,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     std::string result =
         the_browser->web_contents()->GetLastCommittedURL().ref();
     if (result != "pass") {
-      std::string js_result;
-      ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser, "window.domAutomationController.send(getLog())",
-          &js_result));
+      std::string js_result = EvalJs(the_browser, "getLog()").ExtractString();
       FAIL() << "Failed: " << js_result;
     }
     if (shell_out)
@@ -152,8 +150,9 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   storage::mojom::IndexedDBControl& GetControl(Shell* browser = nullptr) {
     if (!browser)
       browser = shell();
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        browser->web_contents()->GetBrowserContext());
+    StoragePartition* partition = browser->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     return partition->GetIndexedDBControl();
   }
 
@@ -166,17 +165,19 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   void BindControlTest(
       mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver) {
     auto* browser = shell();
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        browser->web_contents()->GetBrowserContext());
+    StoragePartition* partition = browser->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     auto& control = partition->GetIndexedDBControl();
     control.BindTestInterface(std::move(receiver));
   }
 
   void SetQuota(int per_host_quota_kilobytes) {
-    SetTempQuota(per_host_quota_kilobytes,
-                 BrowserContext::GetDefaultStoragePartition(
-                     shell()->web_contents()->GetBrowserContext())
-                     ->GetQuotaManager());
+    SetTempQuota(per_host_quota_kilobytes, shell()
+                                               ->web_contents()
+                                               ->GetBrowserContext()
+                                               ->GetDefaultStoragePartition()
+                                               ->GetQuotaManager());
   }
 
   static void SetTempQuota(int per_host_quota_kilobytes,
@@ -432,6 +433,10 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "quota_test.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTestWithCommit) {
+  SimpleTest(GetTestUrl("indexeddb", "bug_1203335.html"));
 }
 
 class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
@@ -830,11 +835,11 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     IndexedDBBrowserTest* test,
     const net::test_server::HttpRequest& request) {
   std::string request_path;
-  if (path.find(s_corrupt_db_test_prefix) != std::string::npos)
-    request_path = request.relative_url.substr(
-        std::string(s_corrupt_db_test_prefix).size());
-  else
-    return std::unique_ptr<net::test_server::HttpResponse>();
+  if (path.find(s_corrupt_db_test_prefix) == std::string::npos)
+    return nullptr;
+
+  request_path =
+      request.relative_url.substr(std::string(s_corrupt_db_test_prefix).size());
 
   // Remove the query string if present.
   std::string request_query;
@@ -968,7 +973,7 @@ std::unique_ptr<net::test_server::HttpResponse> StaticFileRequestHandler(
     IndexedDBBrowserTest* test,
     const net::test_server::HttpRequest& request) {
   if (path.find(s_indexeddb_test_prefix) == std::string::npos)
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   std::string request_path =
       request.relative_url.substr(std::string(s_indexeddb_test_prefix).size());
   return ServePath(request_path);

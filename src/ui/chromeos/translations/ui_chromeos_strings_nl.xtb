@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Zoekbalk</translation>
 <translation id="1404323374378969387">Noors</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
+<translation id="1433628812591023318">Als je bestanden wilt neerzetten in Parallels Desktop, moet het bestand worden verplaatst naar de map met Windows-bestanden.</translation>
 <translation id="1435838927755162558">Map delen met Parallels Desktop</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1471718551822868769">Slowaaks</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows-bestanden</translation>
 <translation id="3078461028045006476">Delen met <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
+<translation id="3113153474486991170">Kan <ph name="PATH" /> niet openen vanaf deze locatie. Kopieer dit naar Mijn bestanden om het te openen.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">KLAAR</translation>
 <translation id="3188257591659621405">Mijn bestanden</translation>
@@ -450,6 +452,7 @@
 <translation id="5602622065581044566">Bulgaars met fonetisch toetsenbord</translation>
 <translation id="5605830556594064952">Amerikaans Dvorak</translation>
 <translation id="5625294776298156701">Tamil met Tamil99-toetsenbord</translation>
+<translation id="5633226425545095130">Als je dit item verplaatst, wordt het gedeeld met iedereen die de gedeelde map <ph name="DESTINATION_NAME" /> kan bekijken.</translation>
 <translation id="5649768706273821470">Luisteren</translation>
 <translation id="5678784840044122290">De Linux-app is beschikbaar in je terminal. Mogelijk staat er ook een icoon van de app in de Launcher.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Kan een archiveringsschijf of virtuele schijf niet deactiveren<ph name="END_BOLD" />
@@ -611,6 +614,7 @@
 <translation id="7417453074306512035">Ethiopisch toetsenbord</translation>
 <translation id="7417705661718309329">Google-kaart</translation>
 <translation id="7460898608667578234">Oekraïens</translation>
+<translation id="7486315294984620427">Als je bestanden wilt neerzetten in Parallels Desktop, moet het bestand worden gekopieerd naar de map met Windows-bestanden.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> gevonden
     <ph name="LINE_BREAK1" />
     Klaar om back-up te maken in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -723,6 +727,7 @@
 <translation id="8395901698320285466">Afmetingen</translation>
 <translation id="8437209419043462667">Amerikaans</translation>
 <translation id="8456681095658380701">Ongeldige naam</translation>
+<translation id="8459404855768962328">Als je dit item kopieert, wordt het gedeeld met iedereen die de gedeelde map <ph name="DESTINATION_NAME" /> kan bekijken.</translation>
 <translation id="8461467696380332069">Klik met de rechtermuisknop op een bestand en selecteer 'Vastzetten op plank' om snel toegang tot je bestanden te krijgen op de plank.</translation>
 <translation id="8463494891489624050">Vietnamees (VIQR)</translation>
 <translation id="8466234950814670489">Tar-archief</translation>

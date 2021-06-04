@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/i18n/base_i18n_switches.h"
+#include "base/i18n/rtl.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,11 +105,11 @@ class MediaNotificationBackgroundImplTest : public testing::Test {
     return background_.get();
   }
 
-  base::Optional<SkColor> GetBackgroundColor() const {
+  absl::optional<SkColor> GetBackgroundColor() const {
     return background_->background_color_;
   }
 
-  base::Optional<SkColor> GetForegroundColor() const {
+  absl::optional<SkColor> GetForegroundColor() const {
     return background_->foreground_color_;
   }
 

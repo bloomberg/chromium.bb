@@ -20,11 +20,13 @@ export type TestQuery =
   | TestQueryMultiTest
   | TestQueryMultiFile;
 
-export type TestQueryLevel =
-  | 1 // MultiFile
-  | 2 // MultiTest
-  | 3 // MultiCase
-  | 4; // SingleCase
+/**
+ * - 1 = MultiFile.
+ * - 2 = MultiTest.
+ * - 3 = MultiCase.
+ * - 4 = SingleCase.
+ */
+export type TestQueryLevel = 1 | 2 | 3 | 4;
 
 export interface TestQueryWithExpectation {
   query: TestQuery;
@@ -238,4 +240,28 @@ Expectation should be of the form path/to/cts.html?worker=0&q=suite:test_path:te
     });
   }
   return expectations;
+}
+
+/**
+ * For display purposes only, produces a "relative" query string from parent to child.
+ * Used in the wpt runtime to reduce the verbosity of logs.
+ */
+export function relativeQueryString(parent: TestQuery, child: TestQuery): string {
+  const ordering = compareQueries(parent, child);
+  if (ordering === Ordering.Equal) {
+    return '';
+  } else if (ordering === Ordering.StrictSuperset) {
+    const parentString = parent.toString();
+    assert(parentString.endsWith(kWildcard));
+    const childString = child.toString();
+    assert(
+      childString.startsWith(parentString.substring(0, parentString.length - 2)),
+      'impossible?: childString does not start with parentString[:-2]'
+    );
+    return childString.substring(parentString.length - 2);
+  } else {
+    unreachable(
+      `relativeQueryString arguments have invalid ordering ${ordering}:\n${parent}\n${child}`
+    );
+  }
 }

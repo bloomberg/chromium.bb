@@ -66,14 +66,14 @@ class ASH_EXPORT OverviewItemView
   // WindowMiniView:
   gfx::Rect GetHeaderBounds() const override;
   gfx::Size GetPreviewViewSize() const override;
-  gfx::ImageSkia ModifyIcon(gfx::ImageSkia* image) const override;
-  void Layout() override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
   void MaybeSwapHighlightedView(bool right) override;
+  bool MaybeActivateHighlightedViewOnOverviewExit(
+      OverviewSession* overview_session) override;
   void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
   gfx::Point GetMagnifierFocusPointInScreen() override;

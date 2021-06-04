@@ -7,14 +7,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -32,7 +31,7 @@ namespace policy {
 namespace {
 
 chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  return chromeos::ConciergeClient::Get();
 }
 
 LockToSingleUserManager* g_lock_to_single_user_manager_instance;
@@ -92,10 +91,10 @@ void LockToSingleUserManager::OnUserAffiliationEstablished(
       user->AddProfileCreatedObserver(
           base::BindOnce(&LockToSingleUserManager::AddVmStartingObservers,
                          weak_factory_.GetWeakPtr(), user));
-      arc_session_observer_.Add(arc::ArcSessionManager::Get());
+      arc_session_observation_.Observe(arc::ArcSessionManager::Get());
       break;
     case RebootOnSignOutPolicy::ARC_SESSION:
-      arc_session_observer_.Add(arc::ArcSessionManager::Get());
+      arc_session_observation_.Observe(arc::ArcSessionManager::Get());
       break;
     case RebootOnSignOutPolicy::NEVER:
       break;
@@ -103,7 +102,7 @@ void LockToSingleUserManager::OnUserAffiliationEstablished(
 }
 
 void LockToSingleUserManager::OnArcStarted() {
-  arc_session_observer_.RemoveAll();
+  arc_session_observation_.Reset();
   LockToSingleUser();
 }
 
@@ -151,7 +150,7 @@ void LockToSingleUserManager::LockToSingleUser() {
 }
 
 void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
-    base::Optional<RebootOnSignOutReply> reply) {
+    absl::optional<RebootOnSignOutReply> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Signing out user: no reply from "
                   "LockToSingleUserMountUntilReboot D-Bus call.";

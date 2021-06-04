@@ -15,7 +15,7 @@
 
 #include "base/callback.h"
 #include "base/containers/contains.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace url {
@@ -46,7 +46,7 @@ using GetOriginsCallback =
                             blink::mojom::StorageType type)>;
 using GetUsageInfoCallback = base::OnceCallback<void(UsageInfoEntries)>;
 using GetOriginCallback =
-    base::OnceCallback<void(const base::Optional<url::Origin>&)>;
+    base::OnceCallback<void(const absl::optional<url::Origin>&)>;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType, typename... Args>
@@ -118,4 +118,4 @@ class CallbackQueueMap {
 
 }  // namespace storage
 
-#endif  // STORAGE_QUOTA_QUOTA_TYPES_H_
+#endif  // STORAGE_BROWSER_QUOTA_QUOTA_CALLBACKS_H_

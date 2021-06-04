@@ -14,11 +14,14 @@
 
 namespace http2 {
 namespace adapter {
+namespace callbacks {
 
 int OnBeginFrame(nghttp2_session* /* session */,
                  const nghttp2_frame_hd* header,
                  void* user_data) {
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
+  visitor->OnFrameHeader(header->stream_id, header->length, header->type,
+                         header->flags);
   if (header->type == NGHTTP2_DATA) {
     visitor->OnBeginDataForStream(header->stream_id, header->length);
   }
@@ -30,6 +33,8 @@ int OnFrameReceived(nghttp2_session* /* session */,
                     void* user_data) {
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
   const Http2StreamId stream_id = frame->hd.stream_id;
+  QUICHE_VLOG(2) << "Frame " << static_cast<int>(frame->hd.type)
+                 << " for stream " << stream_id;
   switch (frame->hd.type) {
     // The beginning of the DATA frame is handled in OnBeginFrame(), and the
     // beginning of the header block is handled in client/server-specific
@@ -158,11 +163,7 @@ int OnStreamClosed(nghttp2_session* /* session */,
                    uint32_t error_code,
                    void* user_data) {
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  if (error_code == static_cast<uint32_t>(Http2ErrorCode::NO_ERROR)) {
-    visitor->OnCloseStream(stream_id);
-  } else {
-    visitor->OnAbortStream(stream_id, ToHttp2ErrorCode(error_code));
-  }
+  visitor->OnCloseStream(stream_id, ToHttp2ErrorCode(error_code));
   return 0;
 }
 
@@ -185,5 +186,24 @@ ssize_t OnReadyToReadDataForStream(nghttp2_session* /* session */,
   return bytes_to_send;
 }
 
+nghttp2_session_callbacks_unique_ptr Create() {
+  nghttp2_session_callbacks* callbacks;
+  nghttp2_session_callbacks_new(&callbacks);
+
+  nghttp2_session_callbacks_set_on_begin_frame_callback(callbacks,
+                                                        &OnBeginFrame);
+  nghttp2_session_callbacks_set_on_frame_recv_callback(callbacks,
+                                                       &OnFrameReceived);
+  nghttp2_session_callbacks_set_on_begin_headers_callback(callbacks,
+                                                          &OnBeginHeaders);
+  nghttp2_session_callbacks_set_on_header_callback2(callbacks, &OnHeader);
+  nghttp2_session_callbacks_set_on_data_chunk_recv_callback(callbacks,
+                                                            &OnDataChunk);
+  nghttp2_session_callbacks_set_on_stream_close_callback(callbacks,
+                                                         &OnStreamClosed);
+  return MakeCallbacksPtr(callbacks);
+}
+
+}  // namespace callbacks
 }  // namespace adapter
 }  // namespace http2

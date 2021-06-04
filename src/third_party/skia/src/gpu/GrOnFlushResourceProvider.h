@@ -9,8 +9,8 @@
 #define GrOnFlushResourceProvider_DEFINED
 
 #include "include/core/SkRefCnt.h"
+#include "include/core/SkSpan.h"
 #include "include/private/SkTArray.h"
-#include "src/core/SkSpan.h"
 #include "src/gpu/GrDeferredUpload.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrResourceProvider.h"
@@ -65,7 +65,7 @@ public:
     std::unique_ptr<GrSurfaceDrawContext> makeRenderTargetContext(sk_sp<GrSurfaceProxy>,
                                                                    GrSurfaceOrigin, GrColorType,
                                                                    sk_sp<SkColorSpace>,
-                                                                   const SkSurfaceProps*);
+                                                                   const SkSurfaceProps&);
 
     void addTextureResolveTask(sk_sp<GrTextureProxy>, GrSurfaceProxy::ResolveFlags);
 

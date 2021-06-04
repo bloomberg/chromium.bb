@@ -7,10 +7,11 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
@@ -50,7 +51,9 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/dedicated_or_shared_worker_fetch_context_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -182,7 +185,7 @@ void DedicatedWorker::Start() {
     // https://html.spec.whatwg.org/C/#workeroptions
     auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
     if (options_->type() == "module") {
-      base::Optional<network::mojom::CredentialsMode> result =
+      absl::optional<network::mojom::CredentialsMode> result =
           Request::ParseCredentialsMode(options_->credentials());
       DCHECK(result);
       credentials_mode = result.value();
@@ -235,8 +238,7 @@ void DedicatedWorker::OnHostCreated(
     const network::CrossOriginEmbedderPolicy& parent_coep) {
   DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   const RejectCoepUnsafeNone reject_coep_unsafe_none(
-      parent_coep.value ==
-      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
+      network::CompatibleWithCrossOriginIsolated(parent_coep));
   if (options_->type() == "classic") {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
@@ -260,7 +262,7 @@ void DedicatedWorker::OnHostCreated(
     ContinueStart(script_request_url_,
                   nullptr /* worker_main_script_load_params */,
                   network::mojom::ReferrerPolicy::kDefault,
-                  base::nullopt /* response_address_space */,
+                  absl::nullopt /* response_address_space */,
                   String() /* source_code */, reject_coep_unsafe_none);
     return;
   }
@@ -325,7 +327,7 @@ void DedicatedWorker::OnScriptLoadStarted(
   // worker thread.
   ContinueStart(script_request_url_, std::move(worker_main_script_load_params),
                 network::mojom::ReferrerPolicy::kDefault,
-                base::nullopt /* response_address_space */,
+                absl::nullopt /* response_address_space */,
                 String() /* source_code */, RejectCoepUnsafeNone(false));
 }
 
@@ -395,7 +397,7 @@ void DedicatedWorker::ContinueStart(
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
     network::mojom::ReferrerPolicy referrer_policy,
-    base::Optional<network::mojom::IPAddressSpace> response_address_space,
+    absl::optional<network::mojom::IPAddressSpace> response_address_space,
     const String& source_code,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   context_proxy_->StartWorkerGlobalScope(
@@ -411,7 +413,7 @@ std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(
     const KURL& script_url,
     network::mojom::ReferrerPolicy referrer_policy,
-    base::Optional<network::mojom::IPAddressSpace> response_address_space) {
+    absl::optional<network::mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
@@ -453,7 +455,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       GetExecutionContext()->GetAgentClusterID(),
       GetExecutionContext()->UkmSourceID(),
       GetExecutionContext()->GetExecutionContextToken(),
-      GetExecutionContext()->CrossOriginIsolatedCapability());
+      GetExecutionContext()->CrossOriginIsolatedCapability(),
+      GetExecutionContext()->DirectSocketCapability());
 }
 
 scoped_refptr<WebWorkerFetchContext>
@@ -476,9 +479,12 @@ DedicatedWorker::CreateWebWorkerFetchContext() {
   // This worker is being created by an existing worker (i.e., nested workers).
   // Clone the worker fetch context from the parent's one.
   auto* scope = To<WorkerGlobalScope>(GetExecutionContext());
+  auto& worker_fetch_context =
+      static_cast<WorkerFetchContext&>(scope->Fetcher()->Context());
+
   return factory_client_->CloneWorkerFetchContext(
-      static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
-          .GetWebWorkerFetchContext(),
+      To<DedicatedOrSharedWorkerFetchContextImpl>(
+          worker_fetch_context.GetWebWorkerFetchContext()),
       scope->GetTaskRunner(TaskType::kNetworking));
 }
 

@@ -10,12 +10,13 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -75,7 +76,7 @@ class AppRegistrar {
   // externally installed app for it. Note that the |install_url| is the URL
   // that the app was installed from, which may not necessarily match the app's
   // current start URL.
-  virtual base::Optional<AppId> LookupExternalAppId(
+  virtual absl::optional<AppId> LookupExternalAppId(
       const GURL& install_url) const;
 
   // Returns whether the AppRegistrar has an externally installed app with
@@ -95,9 +96,9 @@ class AppRegistrar {
   // All names are UTF8 encoded.
   virtual std::string GetAppShortName(const AppId& app_id) const = 0;
   virtual std::string GetAppDescription(const AppId& app_id) const = 0;
-  virtual base::Optional<SkColor> GetAppThemeColor(
+  virtual absl::optional<SkColor> GetAppThemeColor(
       const AppId& app_id) const = 0;
-  virtual base::Optional<SkColor> GetAppBackgroundColor(
+  virtual absl::optional<SkColor> GetAppBackgroundColor(
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppStartUrl(const AppId& app_id) const = 0;
   virtual const std::string* GetAppLaunchQueryParams(
@@ -108,12 +109,15 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
   virtual const apps::FileHandlers* GetAppFileHandlers(
       const AppId& app_id) const = 0;
+  virtual const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const AppId& app_id) const = 0;
+  virtual bool IsAppFileHandlerPermissionBlocked(const AppId& app_id) const = 0;
 
   // Returns the start_url with launch_query_params appended to the end if any.
   GURL GetAppLaunchUrl(const AppId& app_id) const;
 
   // TODO(crbug.com/910016): Replace uses of this with GetAppScope().
-  virtual base::Optional<GURL> GetAppScopeInternal(
+  virtual absl::optional<GURL> GetAppScopeInternal(
       const AppId& app_id) const = 0;
 
   virtual DisplayMode GetAppDisplayMode(const AppId& app_id) const = 0;
@@ -157,6 +161,7 @@ class AppRegistrar {
 
   // Safe downcast.
   virtual WebAppRegistrar* AsWebAppRegistrar() = 0;
+  virtual const WebAppRegistrar* AsWebAppRegistrar() const = 0;
   virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
   void SetSubsystems(OsIntegrationManager* os_integration_manager);
@@ -168,7 +173,7 @@ class AppRegistrar {
 
   // Returns the app id of an app in the registry with the longest scope that is
   // a prefix of |url|, if any.
-  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const;
+  absl::optional<AppId> FindAppWithUrlInScope(const GURL& url) const;
 
   // Returns true if there exists at least one app installed under |scope|.
   bool DoesScopeContainAnyApp(const GURL& scope) const;
@@ -179,7 +184,7 @@ class AppRegistrar {
   // Returns the app id of an installed app in the registry with the longest
   // scope that is a prefix of |url|, if any. If |window_only| is specified,
   // only apps that open in app windows will be considered.
-  base::Optional<AppId> FindInstalledAppWithUrlInScope(
+  absl::optional<AppId> FindInstalledAppWithUrlInScope(
       const GURL& url,
       bool window_only = false) const;
 
@@ -193,7 +198,7 @@ class AppRegistrar {
   bool IsLocallyInstalled(const GURL& start_url) const;
 
   // Returns whether the app is pending successful navigation in order to
-  // complete installation via the PendingAppManager.
+  // complete installation via the ExternallyManagedAppManager.
   bool IsPlaceholderApp(const AppId& app_id) const;
 
   // Computes and returns the DisplayMode, accounting for user preference

@@ -13,11 +13,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
-#include "chrome/browser/chromeos/file_system_provider/request_value.h"
-#include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/ash/file_system_provider/request_manager.h"
+#include "chrome/browser/ash/file_system_provider/request_value.h"
+#include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -92,7 +92,8 @@ void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
     watcher_item.entry_path = watcher.second.entry_path.value();
     watcher_item.recursive = watcher.second.recursive;
     if (!watcher.second.last_tag.empty())
-      watcher_item.last_tag.reset(new std::string(watcher.second.last_tag));
+      watcher_item.last_tag =
+          std::make_unique<std::string>(watcher.second.last_tag);
     output->watchers.push_back(std::move(watcher_item));
   }
 

@@ -9,10 +9,10 @@
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -20,7 +20,7 @@
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 constexpr const char kUserActionAcceptButtonClicked[] = "accept-button";
@@ -176,8 +176,8 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-bool EulaScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
-  if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+bool EulaScreen::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kStartEnrollment) {
     context()->enrollment_triggered_early = true;
     return true;
   }
@@ -199,4 +199,4 @@ void EulaScreen::ShowSecuritySettingsDialog() {
     view_->ShowSecuritySettingsDialog();
 }
 
-}  // namespace chromeos
+}  // namespace ash

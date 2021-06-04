@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 
+#include "base/containers/contains.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
@@ -57,8 +58,8 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                : g_empty_atom,
           time_origin,
           cross_origin_isolated_capability,
-          // TODO(crbug.com/1153336) Use network::IsUrlPotentiallyTrustworthy().
-          SecurityOrigin::IsSecure(window->Url()),
+          base::Contains(url::GetSecureSchemes(),
+                         window->Url().Protocol().Ascii()),
           std::move(server_timing),
           window),
       ExecutionContextClient(window),
@@ -111,7 +112,8 @@ bool PerformanceNavigationTiming::DidReuseConnection() const {
 }
 
 uint64_t PerformanceNavigationTiming::GetTransferSize() const {
-  return resource_timing_info_->TransferSize();
+  return PerformanceResourceTiming::GetTransferSize(
+      resource_timing_info_->FinalResponse().EncodedBodyLength(), CacheState());
 }
 
 uint64_t PerformanceNavigationTiming::GetEncodedBodySize() const {

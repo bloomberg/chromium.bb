@@ -1,9 +1,9 @@
 Tests that fetching the tree for a node without an AXNode functions correctly.
 
-WebArea
+RootWebArea
   main
     article
-      *Ignored
+      *none
 {
     domNode : div#hidden
     ignored : true
@@ -18,8 +18,8 @@ WebArea
     ]
     nodeId : <string>
     role : {
-        type : internalRole
-        value : Ignored
+        type : role
+        value : none
     }
 }
 

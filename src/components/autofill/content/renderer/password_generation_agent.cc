@@ -234,7 +234,7 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
     password_agent_->TrackAutofilledElement(password_element);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
-    render_frame()->GetRenderView()->GetWebView()->AdvanceFocus(false);
+    render_frame()->GetWebView()->AdvanceFocus(false);
   }
 
   std::unique_ptr<FormData> presaved_form_data(CreateFormDataToPresave());
@@ -316,7 +316,7 @@ void PasswordGenerationAgent::TriggeredGeneratePassword(
     std::move(callback).Run(std::move(password_generation_ui_data));
     current_generation_item_->generation_popup_shown_ = true;
   } else {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 }
 

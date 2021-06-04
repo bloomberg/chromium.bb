@@ -87,7 +87,7 @@ class FullscreenEventsWaiter : public content::WebContentsObserver {
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
   bool playing_media_fullscreen_ = false;
-  base::Optional<bool> playing_media_fullscreen_expected_value_ = false;
+  absl::optional<bool> playing_media_fullscreen_expected_value_ = false;
 };
 
 }  // namespace
@@ -126,6 +126,7 @@ class TabUsageScenarioTrackerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     tab_stats_tracker_->RemoveObserver(tab_usage_scenario_tracker_.get());
+    tab_usage_scenario_tracker_.reset();
     InProcessBrowserTest::TearDownOnMainThread();
   }
 

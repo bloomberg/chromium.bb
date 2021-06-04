@@ -6,11 +6,13 @@ package org.chromium.chrome.browser.keyboard_accessory;
 
 import android.app.Activity;
 import android.util.SparseArray;
+
 import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
@@ -26,28 +28,35 @@ class ManualFillingComponentBridge {
             new SparseArray<>();
     private PropertyProvider<Action[]> mActionProvider;
     private final WindowAndroid mWindowAndroid;
+    private final WebContents mWebContents;
     private long mNativeView;
     private final ManualFillingComponent.Observer mDestructionObserver = this::onComponentDestroyed;
 
-    private ManualFillingComponentBridge(long nativeView, WindowAndroid windowAndroid) {
+    private ManualFillingComponentBridge(
+            long nativeView, WindowAndroid windowAndroid, WebContents webContents) {
         mNativeView = nativeView;
         mWindowAndroid = windowAndroid;
+        mWebContents = webContents;
     }
 
     PropertyProvider<AccessorySheetData> getOrCreateProvider(@AccessoryTabType int tabType) {
         PropertyProvider<AccessorySheetData> provider = mProviders.get(tabType);
         if (provider != null) return provider;
         if (getManualFillingComponent() == null) return null;
+        if (mProviders.size() == 0) { // True iff the component is available for the first time.
+            getManualFillingComponent().registerSheetUpdateDelegate(
+                    mWebContents, this::requestSheet);
+        }
         provider = new PropertyProvider<>();
         mProviders.put(tabType, provider);
-        getManualFillingComponent().registerSheetDataProvider(tabType, provider);
+        getManualFillingComponent().registerSheetDataProvider(mWebContents, tabType, provider);
         return provider;
     }
 
     @CalledByNative
     private static ManualFillingComponentBridge create(
-            long nativeView, WindowAndroid windowAndroid) {
-        return new ManualFillingComponentBridge(nativeView, windowAndroid);
+            long nativeView, WindowAndroid windowAndroid, WebContents webContents) {
+        return new ManualFillingComponentBridge(nativeView, windowAndroid, webContents);
     }
 
     @CalledByNative
@@ -86,7 +95,7 @@ class ManualFillingComponentBridge {
         }
         if (mActionProvider == null && getManualFillingComponent() != null) {
             mActionProvider = new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-            getManualFillingComponent().registerActionProvider(mActionProvider);
+            getManualFillingComponent().registerActionProvider(mWebContents, mActionProvider);
         }
         if (mActionProvider != null) mActionProvider.notifyObservers(generationAction);
     }
@@ -212,16 +221,29 @@ class ManualFillingComponentBridge {
     }
 
     private ManualFillingComponent getManualFillingComponent() {
-        ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
-        if (activity == null) return null; // Has the activity died since it was last checked?
-        activity.getManualFillingComponent().addObserver(mDestructionObserver);
-        return activity.getManualFillingComponent();
+        Supplier<ManualFillingComponent> manualFillingComponentSupplier =
+                ManualFillingComponentSupplier.from(mWindowAndroid);
+        if (manualFillingComponentSupplier == null) return null;
+
+        ManualFillingComponent component = manualFillingComponentSupplier.get();
+        if (component != null) {
+            component.addObserver(mDestructionObserver);
+        }
+
+        return component;
     }
 
     private void onComponentDestroyed() {
         if (mNativeView != 0) {
             ManualFillingComponentBridgeJni.get().onViewDestroyed(
                     mNativeView, ManualFillingComponentBridge.this);
+        }
+    }
+
+    private void requestSheet(int sheetType) {
+        if (mNativeView != 0) {
+            ManualFillingComponentBridgeJni.get().requestAccessorySheet(
+                    mNativeView, ManualFillingComponentBridge.this, sheetType);
         }
     }
 
@@ -235,6 +257,8 @@ class ManualFillingComponentBridge {
                 ManualFillingComponentBridge caller, int accessoryAction, boolean enabled);
         void onViewDestroyed(
                 long nativeManualFillingViewAndroid, ManualFillingComponentBridge caller);
+        void requestAccessorySheet(long nativeManualFillingViewAndroid,
+                ManualFillingComponentBridge caller, int sheetType);
         void cachePasswordSheetDataForTesting(WebContents webContents, String[] userNames,
                 String[] passwords, boolean originDenylisted);
         void notifyFocusedFieldTypeForTesting(

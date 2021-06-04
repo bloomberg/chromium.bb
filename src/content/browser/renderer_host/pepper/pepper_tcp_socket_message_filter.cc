@@ -22,6 +22,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/socket_permission_request.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -91,7 +92,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       is_potentially_secure_plugin_context_(
           host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   ++g_num_tcp_filter_instances;
   host_->AddInstanceObserver(instance_, this);
@@ -107,7 +110,9 @@ void PepperTCPSocketMessageFilter::SetConnectedSocket(
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
   // This method grabs a reference to |this|, and releases a reference on the UI
   // thread, so something should be holding on to a reference on the current
   // thread to prevent the object from being deleted before this method returns.
@@ -122,7 +127,9 @@ void PepperTCPSocketMessageFilter::SetConnectedSocket(
 }
 
 PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
   if (host_)
     host_->RemoveInstanceObserver(instance_, this);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -220,7 +227,9 @@ int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
 }
 
 void PepperTCPSocketMessageFilter::OnHostDestroyed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
   host_->RemoveInstanceObserver(instance_, this);
   host_ = nullptr;
 }
@@ -228,7 +237,7 @@ void PepperTCPSocketMessageFilter::OnHostDestroyed() {
 void PepperTCPSocketMessageFilter::OnComplete(
     int result,
     const net::ResolveErrorInfo& resolve_error_info,
-    const base::Optional<net::AddressList>& resolved_addresses) {
+    const absl::optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
 
@@ -349,7 +358,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnBindCompleted,
                          weak_ptr_factory_.GetWeakPtr(),
                          context->MakeReplyMessageContext()),
-          net::ERR_FAILED, base::nullopt /* local_addr */));
+          net::ERR_FAILED, absl::nullopt /* local_addr */));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -396,7 +405,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,
                      base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
-                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
+                     net::ResolveErrorInfo(net::ERR_FAILED), absl::nullopt));
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
   host_resolve_context_ = context->MakeReplyMessageContext();
@@ -489,7 +498,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
                          base::Unretained(this),
                          context->MakeReplyMessageContext()),
           net::ERR_FAILED, mojo::ScopedDataPipeConsumerHandle(),
-          mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info */));
+          mojo::ScopedDataPipeProducerHandle(), absl::nullopt /* ssl_info */));
 
   socket_observer_receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnSocketObserverError,
@@ -611,7 +620,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgAccept(
                          base::Unretained(this),
                          context->MakeReplyMessageContext(),
                          std::move(socket_observer_receiver)),
-          net::ERR_FAILED, base::nullopt /* remote_addr */, mojo::NullRemote(),
+          net::ERR_FAILED, absl::nullopt /* remote_addr */, mojo::NullRemote(),
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle()));
   return PP_OK_COMPLETIONPENDING;
@@ -864,7 +873,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnConnectCompleted,
                          weak_ptr_factory_.GetWeakPtr(), context),
-          net::ERR_FAILED, base::nullopt, base::nullopt,
+          net::ERR_FAILED, absl::nullopt, absl::nullopt,
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle());
   if (bound_socket_) {
@@ -879,7 +888,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
       return;
     }
     network_context->CreateTCPConnectedSocket(
-        base::nullopt /* local_addr */, address_list, std::move(socket_options),
+        absl::nullopt /* local_addr */, address_list, std::move(socket_options),
         pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
         connected_socket_.BindNewPipeAndPassReceiver(),
         std::move(socket_observer), std::move(callback));
@@ -889,8 +898,8 @@ void PepperTCPSocketMessageFilter::StartConnect(
 void PepperTCPSocketMessageFilter::OnConnectCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -957,7 +966,7 @@ void PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted(
     int net_result,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream,
-    const base::Optional<net::SSLInfo>& ssl_info) {
+    const absl::optional<net::SSLInfo>& ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int pp_result = NetErrorToPepperError(net_result);
@@ -965,7 +974,7 @@ void PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted(
     // If this is called as a result of Close() being invoked and closing the
     // pipe, fail the request without doing anything.
     DCHECK_EQ(net_result, net::ERR_FAILED);
-    SendSSLHandshakeReply(context, pp_result, base::nullopt /* ssl_info */);
+    SendSSLHandshakeReply(context, pp_result, absl::nullopt /* ssl_info */);
     return;
   }
 
@@ -988,7 +997,7 @@ void PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted(
 void PepperTCPSocketMessageFilter::OnBindCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result,
-    const base::Optional<net::IPEndPoint>& local_addr) {
+    const absl::optional<net::IPEndPoint>& local_addr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int pp_result = NetErrorToPepperError(net_result);
@@ -1056,7 +1065,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     int net_result,
-    const base::Optional<net::IPEndPoint>& remote_addr,
+    const absl::optional<net::IPEndPoint>& remote_addr,
     mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
@@ -1095,7 +1104,10 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   // already.
   DCHECK(success);
 
-  GetIOThreadTaskRunner({})->PostTask(
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread,
                      this, context, std::move(connected_socket),
@@ -1113,7 +1125,9 @@ void PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread(
     mojo::ScopedDataPipeProducerHandle send_stream,
     PP_NetAddress_Private pp_local_addr,
     PP_NetAddress_Private pp_remote_addr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   if (!host_->IsValidInstance(instance_)) {
     // The instance has been removed while Accept was in progress. This object
@@ -1251,7 +1265,7 @@ void PepperTCPSocketMessageFilter::SendConnectError(
 void PepperTCPSocketMessageFilter::SendSSLHandshakeReply(
     const ppapi::host::ReplyMessageContext& context,
     int32_t pp_result,
-    const base::Optional<net::SSLInfo>& ssl_info) {
+    const absl::optional<net::SSLInfo>& ssl_info) {
   ppapi::host::ReplyMessageContext reply_context(context);
   reply_context.params.set_result(pp_result);
   ppapi::PPB_X509Certificate_Fields certificate_fields;

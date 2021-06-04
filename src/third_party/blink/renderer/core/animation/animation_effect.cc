@@ -108,9 +108,9 @@ void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
   InvalidateAndNotifyOwner();
 }
 
-base::Optional<Timing::Phase> TimelinePhaseToTimingPhase(
-    base::Optional<TimelinePhase> phase) {
-  base::Optional<Timing::Phase> result;
+absl::optional<Timing::Phase> TimelinePhaseToTimingPhase(
+    absl::optional<TimelinePhase> phase) {
+  absl::optional<Timing::Phase> result;
   if (phase) {
     switch (phase.value()) {
       case TimelinePhase::kBefore:
@@ -131,10 +131,10 @@ base::Optional<Timing::Phase> TimelinePhaseToTimingPhase(
 }
 
 void AnimationEffect::UpdateInheritedTime(
-    base::Optional<AnimationTimeDelta> inherited_time,
-    base::Optional<TimelinePhase> inherited_timeline_phase,
+    absl::optional<AnimationTimeDelta> inherited_time,
+    absl::optional<TimelinePhase> inherited_timeline_phase,
     TimingUpdateReason reason) const {
-  base::Optional<double> playback_rate = base::nullopt;
+  absl::optional<double> playback_rate = absl::nullopt;
   if (GetAnimation())
     playback_rate = GetAnimation()->playbackRate();
   const Timing::AnimationDirection direction =
@@ -142,7 +142,7 @@ void AnimationEffect::UpdateInheritedTime(
           ? Timing::AnimationDirection::kBackwards
           : Timing::AnimationDirection::kForwards;
 
-  base::Optional<Timing::Phase> timeline_phase =
+  absl::optional<Timing::Phase> timeline_phase =
       TimelinePhaseToTimingPhase(inherited_timeline_phase);
 
   bool needs_update = needs_update_ || last_update_time_ != inherited_time ||
@@ -152,12 +152,9 @@ void AnimationEffect::UpdateInheritedTime(
   last_update_time_ = inherited_time;
   last_update_phase_ = timeline_phase;
 
-  const base::Optional<double> local_time =
-      inherited_time ? base::make_optional(inherited_time.value().InSecondsF())
-                     : base::nullopt;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
-        local_time, timeline_phase, direction, IsA<KeyframeEffect>(this),
+        inherited_time, timeline_phase, direction, IsA<KeyframeEffect>(this),
         playback_rate);
 
     const bool was_canceled = calculated.phase != calculated_.phase &&
@@ -187,9 +184,9 @@ void AnimationEffect::UpdateInheritedTime(
     // FIXME: This probably shouldn't be recursive.
     UpdateChildrenAndEffects();
     calculated_.time_to_forwards_effect_change = CalculateTimeToEffectChange(
-        true, local_time, calculated_.time_to_next_iteration);
+        true, inherited_time, calculated_.time_to_next_iteration);
     calculated_.time_to_reverse_effect_change = CalculateTimeToEffectChange(
-        false, local_time, calculated_.time_to_next_iteration);
+        false, inherited_time, calculated_.time_to_next_iteration);
   }
 }
 

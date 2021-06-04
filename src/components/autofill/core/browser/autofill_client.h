@@ -15,7 +15,6 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/strong_alias.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
@@ -58,6 +57,7 @@ enum class Channel;
 namespace autofill {
 
 class AddressNormalizer;
+class AutofillAblationStudy;
 class AutofillProfile;
 class AutocompleteHistoryManager;
 class AutofillOfferManager;
@@ -72,6 +72,7 @@ class PersonalDataManager;
 class StrikeDatabase;
 enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
+struct AutofillOfferData;
 struct Suggestion;
 
 namespace payments {
@@ -82,9 +83,9 @@ class PaymentsClient;
 // embedder.
 //
 // Each client instance is associated with a given context within which an
-// AutofillManager is used (e.g. a single tab), so when we say "for the client"
-// below, we mean "in the execution context the client is associated with" (e.g.
-// for the tab the AutofillManager is attached to).
+// BrowserAutofillManager is used (e.g. a single tab), so when we say "for the
+// client" below, we mean "in the execution context the client is associated
+// with" (e.g. for the tab the BrowserAutofillManager is attached to).
 class AutofillClient : public RiskDataLoader {
  public:
   enum PaymentsRpcResult {
@@ -136,10 +137,32 @@ class AutofillClient : public RiskDataLoader {
   };
 
   enum class SaveAddressProfileOfferUserDecision {
+    kUndefined,
+    // No prompt is shown and no decision is needed to proceed with the process.
+    kUserNotAsked,
+    // The user accepted the save/update flow from the initial prompt.
     kAccepted,
-    kEdited,
+    // The user declined the save/update flow from the initial prompt.
     kDeclined,
+    // The user accepted the save/update flow from the edit dialog.
+    kEditAccepted,
+    // The user declined the save/update flow from the edit dialog.
+    kEditDeclined,
+    // The user selected to never save a new profile on a given domain or update
+    // a specific profile (currently not supported).
+    kNever,
+    // The user ignored the prompt.
     kIgnored,
+    // The save/update message timed out before the user interacted. This is
+    // only relevant on mobile.
+    kMessageTimeout,
+    // The user swipes away the save/update Message. This is only relevant on
+    // mobile.
+    kMessageDeclined,
+    // The prompt is suppressed most likely because there is already another
+    // prompt shown on the same tab.
+    kAutoDeclined,
+    kMaxValue = kAutoDeclined,
   };
 
   // Used for explicitly requesting the user to enter/confirm cardholder name,
@@ -183,6 +206,11 @@ class AutofillClient : public RiskDataLoader {
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;
     bool show_prompt = false;
+  };
+
+  // Used for options of save (and update) address profile prompt.
+  struct SaveAddressProfilePromptOptions {
+    bool show_prompt = true;
   };
 
   // Required arguments to create a dropdown showing autofill suggestions.
@@ -313,8 +341,6 @@ class AutofillClient : public RiskDataLoader {
   virtual std::string GetVariationConfigCountryCode() const;
 
   // Returns the profile type of the session.
-  // TODO(https://crbug.com/1169142): Replace by getting profile type directly
-  // from BrowserContext.
   virtual profile_metrics::BrowserProfileType GetProfileType() const;
 
 #if !defined(OS_IOS)
@@ -456,10 +482,16 @@ class AutofillClient : public RiskDataLoader {
   virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
                                            base::OnceClosure callback) = 0;
 
-  // Shows the offer-to-save address profile bubble. Runs |callback| once the
-  // user makes a decision with respect to the offer-to-save prompt.
+  // Shows the offer-to-save (or update) address profile bubble. If
+  // `original_profile` is nullptr, this renders a save prompt. Otherwise, it
+  // renders an update prompt where `original_profile` is the address profile
+  // that will be updated if the user accepts the update prompt. Runs `callback`
+  // once the user makes a decision with respect to the offer-to-save prompt.
+  // `options` carries extra configuration options for the prompt.
   virtual void ConfirmSaveAddressProfile(
       const AutofillProfile& profile,
+      const AutofillProfile* original_profile,
+      AutofillClient::SaveAddressProfilePromptOptions options,
       AddressProfileSavePromptCallback callback) = 0;
 
   // Returns true if both the platform and the device support scanning credit
@@ -509,14 +541,14 @@ class AutofillClient : public RiskDataLoader {
   // Will show a bubble or infobar indicating that the current web domain has an
   // eligible offer or reward if no other notification bubble is currently
   // visible. See bubble controller for details. The bubble is sticky over a set
-  // of domains given in |domains_to_display_bubble|. The bubble displays the
-  // information of the |card| if the offer is card-related. On mobile, the
-  // bubble also shows the |offer_details_url| as a link which has more
-  // information about the offer.
+  // of domains given in the offer.
   virtual void ShowOfferNotificationIfApplicable(
-      const std::vector<GURL>& domains_to_display_bubble,
-      const GURL& offer_details_url,
-      const CreditCard* card);
+      const AutofillOfferData* offer);
+
+  // Indicates that the virtual card was fetched in order to allow the user to
+  // manually fill payment form with the fetched |credit_card| and |cvc|.
+  virtual void OnVirtualCardFetched(const CreditCard* credit_card,
+                                    const std::u16string& cvc);
 
   // Returns true if the Autofill Assistant UI is currently being shown.
   virtual bool IsAutofillAssistantShowing();
@@ -552,8 +584,10 @@ class AutofillClient : public RiskDataLoader {
   // this.
   virtual LogManager* GetLogManager() const;
 
+  virtual const AutofillAblationStudy& GetAblationStudy() const;
+
 #if defined(OS_IOS)
-  // Checks whether the qurrent query is the most recent one.
+  // Checks whether the current query is the most recent one.
   virtual bool IsQueryIDRelevant(int query_id) = 0;
 #endif
 };

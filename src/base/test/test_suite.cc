@@ -254,37 +254,6 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
 };
 #endif  // !defined(OS_IOS)
 
-class CheckThreadPriority : public testing::EmptyTestEventListener {
- public:
-  CheckThreadPriority(bool check_thread_priority_at_test_end)
-      : check_thread_priority_at_test_end_(check_thread_priority_at_test_end) {
-    CHECK_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-             base::ThreadPriority::NORMAL)
-        << " -- The thread priority of this process is not the default. This "
-           "usually indicates nice has been used, which is not supported.";
-  }
-
-  void OnTestStart(const testing::TestInfo& test) override {
-    EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-              base::ThreadPriority::NORMAL)
-        << " -- The thread priority of this process is not the default. This "
-           "usually indicates nice has been used, which is not supported.";
-  }
-  void OnTestEnd(const testing::TestInfo& test) override {
-    if (check_thread_priority_at_test_end_) {
-      EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-                base::ThreadPriority::NORMAL)
-          << " -- The thread priority of this process is not the default. This "
-             "usually indicates nice has been used, which is not supported.";
-    }
-  }
-
- private:
-  const bool check_thread_priority_at_test_end_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckThreadPriority);
-};
-
 const std::string& GetProfileName() {
   static const NoDestructor<std::string> profile_name([]() {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -297,33 +266,16 @@ const std::string& GetProfileName() {
 }
 
 void InitializeLogging() {
-#if defined(OS_ANDROID)
-  InitAndroidTestLogging();
-#else
+  CHECK(logging::InitLogging({.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG |
+                                              logging::LOG_TO_STDERR}));
 
-  FilePath log_filename;
-  FilePath exe;
-  PathService::Get(FILE_EXE, &exe);
-
-#if defined(OS_FUCHSIA)
-  // Write logfiles to /data, because the default log location alongside the
-  // executable (/pkg) is read-only.
-  FilePath data_dir;
-  PathService::Get(DIR_APP_DATA, &data_dir);
-  log_filename = data_dir.Append(exe.BaseName())
-                     .ReplaceExtension(FILE_PATH_LITERAL("log"));
-#else
-  log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
-#endif  // defined(OS_FUCHSIA)
-
-  logging::LoggingSettings settings;
-  settings.log_file_path = log_filename.value().c_str();
-  settings.logging_dest = logging::LOG_TO_ALL;
-  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
-  logging::InitLogging(settings);
   // We want process and thread IDs because we may have multiple processes.
-  // Note: temporarily enabled timestamps in an effort to catch bug 6361.
-  logging::SetLogItems(true, true, true, true);
+#if defined(OS_ANDROID)
+  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
+  logging::SetLogItems(false, false, false, false);
+#else
+  // We want process and thread IDs because we may have multiple processes.
+  logging::SetLogItems(true, true, false, false);
 #endif  // !defined(OS_ANDROID)
 }
 

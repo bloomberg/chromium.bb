@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -57,16 +59,22 @@ void RecordInteractionWithChooser(bool has_null_handler) {
 BluetoothChooserController::BluetoothChooserController(
     content::RenderFrameHost* owner,
     const content::BluetoothChooser::EventHandler& event_handler)
-    : ChooserController(owner,
-                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
-                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
+    : ChooserController(CreateChooserTitle(
+          owner,
+          IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
+          IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME)),
       event_handler_(event_handler) {
   if (owner) {
     frame_tree_node_id_ = owner->GetFrameTreeNodeId();
   }
 }
 
-BluetoothChooserController::~BluetoothChooserController() {}
+BluetoothChooserController::~BluetoothChooserController() {
+  if (event_handler_) {
+    event_handler_.Run(content::BluetoothChooserEvent::CANCELLED,
+                       std::string());
+  }
+}
 
 bool BluetoothChooserController::ShouldShowIconBeforeText() const {
   return true;
@@ -170,6 +178,7 @@ void BluetoothChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_LT(index, devices_.size());
   event_handler_.Run(content::BluetoothChooserEvent::SELECTED,
                      devices_[index].id);
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::Cancel() {
@@ -177,6 +186,7 @@ void BluetoothChooserController::Cancel() {
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooserEvent::CANCELLED, std::string());
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::Close() {
@@ -184,6 +194,7 @@ void BluetoothChooserController::Close() {
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooserEvent::CANCELLED, std::string());
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::OpenHelpCenterUrl() const {

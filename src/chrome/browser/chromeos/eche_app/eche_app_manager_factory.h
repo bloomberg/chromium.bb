@@ -13,6 +13,7 @@ class Profile;
 namespace chromeos {
 namespace eche_app {
 
+class SystemInfo;
 class EcheAppManager;
 
 class EcheAppManagerFactory : public BrowserContextKeyedServiceFactory {
@@ -32,9 +33,21 @@ class EcheAppManagerFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
+
+  std::unique_ptr<SystemInfo> GetSystemInfo(Profile* profile) const;
 };
 
 }  // namespace eche_app
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace eche_app {
+using ::chromeos::eche_app::EcheAppManagerFactory;
+}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_ECHE_APP_ECHE_APP_MANAGER_FACTORY_H_

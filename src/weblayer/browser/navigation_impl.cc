@@ -57,12 +57,6 @@ NavigationImpl::TakeParamsToLoadWhenSafe() {
 }
 
 #if defined(OS_ANDROID)
-void NavigationImpl::SetJavaNavigation(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_navigation) {
-  java_navigation_ = java_navigation;
-}
-
 ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(JNIEnv* env) {
   return ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
@@ -142,6 +136,10 @@ jlong NavigationImpl::GetPage(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(GetPage());
 }
 
+jint NavigationImpl::GetNavigationEntryOffset(JNIEnv* env) {
+  return GetNavigationEntryOffset();
+}
+
 void NavigationImpl::SetResponse(
     std::unique_ptr<embedder_support::WebResourceResponse> response) {
   response_ = std::move(response);
@@ -150,6 +148,13 @@ void NavigationImpl::SetResponse(
 std::unique_ptr<embedder_support::WebResourceResponse>
 NavigationImpl::TakeResponse() {
   return std::move(response_);
+}
+
+void NavigationImpl::SetJavaNavigation(
+    const base::android::ScopedJavaGlobalRef<jobject>& java_navigation) {
+  // SetJavaNavigation() should only be called once.
+  DCHECK(!java_navigation_);
+  java_navigation_ = java_navigation;
 }
 
 #endif
@@ -172,6 +177,10 @@ Page* NavigationImpl::GetPage() {
 
   return PageImpl::GetForCurrentDocument(
       navigation_handle_->GetRenderFrameHost());
+}
+
+int NavigationImpl::GetNavigationEntryOffset() {
+  return navigation_handle_->GetNavigationEntryOffset();
 }
 
 GURL NavigationImpl::GetURL() {

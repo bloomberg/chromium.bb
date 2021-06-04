@@ -30,7 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -56,15 +56,16 @@ class ServiceRequestPerformer {
 
     base::RunLoop run_loop;
     web_request_service_->PerformRequest(
-        wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kGet,
+        chromeos::wilco_dtc_supportd::mojom::
+            WilcoDtcSupportdWebRequestHttpMethod::kGet,
         url, {}, "",
         base::BindOnce(
             [](base::OnceClosure callback,
-               wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus*
-                   out_status,
+               chromeos::wilco_dtc_supportd::mojom::
+                   WilcoDtcSupportdWebRequestStatus* out_status,
                int* out_response, mojo::ScopedHandle* out_response_handle,
-               wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus
-                   status,
+               chromeos::wilco_dtc_supportd::mojom::
+                   WilcoDtcSupportdWebRequestStatus status,
                int response, mojo::ScopedHandle response_handle) {
               *out_status = status;
               *out_response = response;
@@ -75,7 +76,8 @@ class ServiceRequestPerformer {
     run_loop.Run();
   }
 
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status() const {
+  chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status()
+      const {
     DCHECK(request_performed_);
     return status_;
   }
@@ -88,9 +90,8 @@ class ServiceRequestPerformer {
   std::string response_body_release() {
     DCHECK(request_performed_);
     base::ReadOnlySharedMemoryMapping response_shared_memory;
-    return MojoUtils::GetStringPieceFromMojoHandle(std::move(response_handle_),
-                                                   &response_shared_memory)
-        .as_string();
+    return std::string(MojoUtils::GetStringPieceFromMojoHandle(
+        std::move(response_handle_), &response_shared_memory));
   }
 
  private:
@@ -100,8 +101,9 @@ class ServiceRequestPerformer {
   WilcoDtcSupportdWebRequestService* const web_request_service_;
 
   // Results of the request:
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status_ =
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk;
+  chromeos::wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus
+      status_ = chromeos::wilco_dtc_supportd::mojom::
+          WilcoDtcSupportdWebRequestStatus::kOk;
   int response_ = 0;
   mojo::ScopedHandle response_handle_;
 };
@@ -218,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
-                  kNetworkError);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kNetworkError);
     EXPECT_EQ(request_performer.response(), 0);
     EXPECT_EQ(request_performer.response_body_release(), "");
   }
@@ -237,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo?status=500")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
-                  kHttpError);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kHttpError);
     EXPECT_EQ(request_performer.response(), 500);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -257,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -282,7 +285,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -307,8 +311,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
-                  kNetworkError);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kNetworkError);
     EXPECT_EQ(request_performer.response(), 0);
     EXPECT_EQ(request_performer.response_body_release(), "");
   }
@@ -327,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -337,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -356,7 +362,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -369,7 +376,8 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
     ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
         embedded_test_server()->GetURL("/echo")));
     EXPECT_EQ(request_performer.status(),
-              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+              chromeos::wilco_dtc_supportd::mojom::
+                  WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_performer.response(), 200);
     EXPECT_EQ(request_performer.response_body_release(), "Echo");
   }
@@ -488,4 +496,4 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

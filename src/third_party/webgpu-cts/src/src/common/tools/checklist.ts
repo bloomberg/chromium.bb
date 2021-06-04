@@ -51,7 +51,8 @@ function checkForUnmatchedSubtrees(tree: TestTree, matchQueries: TestQuery[]): n
   let subtreeCount = 0;
   const unmatchedSubtrees: TestQuery[] = [];
   const overbroadMatches: [TestQuery, TestQuery][] = [];
-  for (const collapsedSubtree of tree.iterateCollapsedQueries(true)) {
+  const alwaysExpandThroughLevel = 1; // expand to, at minimum, every file.
+  for (const collapsedSubtree of tree.iterateCollapsedQueries(true, alwaysExpandThroughLevel)) {
     subtreeCount++;
     let subtreeMatched = false;
     for (const q of matchQueries) {

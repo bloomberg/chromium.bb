@@ -30,6 +30,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -169,12 +170,12 @@ FileManagerPrivateInternalGetDriveThumbnailFunction::Run() {
           base::BindOnce(&FileManagerPrivateInternalGetDriveThumbnailFunction::
                              GotThumbnail,
                          this),
-          base::nullopt));
+          absl::nullopt));
   return RespondLater();
 }
 
 void FileManagerPrivateInternalGetDriveThumbnailFunction::GotThumbnail(
-    const base::Optional<std::vector<uint8_t>>& data) {
+    const absl::optional<std::vector<uint8_t>>& data) {
   if (!data) {
     Respond(OneArgument(base::Value("")));
     return;

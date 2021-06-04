@@ -7,6 +7,8 @@ package org.chromium.components.signin;
 import android.accounts.Account;
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
@@ -18,6 +20,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -25,31 +28,35 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * JUnit tests of the class {@link AccountRenameChecker}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {AccountRenameCheckerTest.ShadowGoogleAuthUtil.class})
+@Config(shadows = {AccountRenameCheckerTest.ShadowGoogleAuthUtil.class,
+                CustomShadowAsyncTask.class})
 public class AccountRenameCheckerTest {
     @Implements(GoogleAuthUtil.class)
     static final class ShadowGoogleAuthUtil {
-        private static final Map<String, String> sEvents = new HashMap<>();
+        private static final Map<String, List<AccountChangeEvent>> sEvents = new HashMap<>();
 
         @Implementation
         public static List<AccountChangeEvent> getAccountChangeEvents(
                 Context context, int eventIndex, String accountEmail) {
-            if (sEvents.containsKey(accountEmail)) {
-                final AccountChangeEvent event = new AccountChangeEvent(0L, accountEmail,
-                        GoogleAuthUtil.CHANGE_TYPE_ACCOUNT_RENAMED_TO, 0,
-                        sEvents.get(accountEmail));
-                return List.of(event);
-            }
-            return Collections.emptyList();
+            return sEvents.getOrDefault(accountEmail, Collections.emptyList());
         }
 
         static void insertRenameEvent(String from, String to) {
-            sEvents.put(from, to);
+            addEvent(from,
+                    new AccountChangeEvent(
+                            0L, from, GoogleAuthUtil.CHANGE_TYPE_ACCOUNT_RENAMED_TO, 0, to));
+        }
+
+        static void addEvent(String email, AccountChangeEvent event) {
+            final List<AccountChangeEvent> events = sEvents.getOrDefault(email, new ArrayList<>());
+            events.add(event);
+            sEvents.put(email, events);
         }
 
         static void clearAllEvents() {
@@ -57,7 +64,7 @@ public class AccountRenameCheckerTest {
         }
     }
 
-    private final AccountRenameChecker mChecker = new AccountRenameChecker();
+    private final AccountRenameChecker mChecker = AccountRenameChecker.get();
 
     @After
     public void tearDown() {
@@ -68,21 +75,30 @@ public class AccountRenameCheckerTest {
     public void newNameIsValidWhenTheRenamedAccountIsPresent() {
         ShadowGoogleAuthUtil.insertRenameEvent("A", "B");
 
-        Assert.assertEquals("B", mChecker.getNewNameOfRenamedAccount("A", getAccounts("B")));
+        Assert.assertEquals("B", getNewNameOfRenamedAccount("A", List.of("B")));
+    }
+
+    @Test
+    public void newNameIsValidWhenOldAccountIsRemovedAndThenRenamed() {
+        ShadowGoogleAuthUtil.addEvent("A",
+                new AccountChangeEvent(0L, "A", GoogleAuthUtil.CHANGE_TYPE_ACCOUNT_REMOVED, 0, ""));
+        ShadowGoogleAuthUtil.insertRenameEvent("A", "B");
+
+        Assert.assertEquals("B", getNewNameOfRenamedAccount("A", List.of("B")));
     }
 
     @Test
     public void newNameIsNullWhenTheOldAccountIsNotRenamed() {
         ShadowGoogleAuthUtil.insertRenameEvent("B", "C");
 
-        Assert.assertNull(mChecker.getNewNameOfRenamedAccount("A", getAccounts("D")));
+        Assert.assertNull(getNewNameOfRenamedAccount("A", List.of("D")));
     }
 
     @Test
     public void newNameIsNullWhenTheRenamedAccountIsNotPresent() {
         ShadowGoogleAuthUtil.insertRenameEvent("B", "C");
 
-        Assert.assertNull(mChecker.getNewNameOfRenamedAccount("B", getAccounts("D")));
+        Assert.assertNull(getNewNameOfRenamedAccount("B", List.of("D")));
     }
 
     @Test
@@ -90,7 +106,7 @@ public class AccountRenameCheckerTest {
         ShadowGoogleAuthUtil.insertRenameEvent("A", "B");
         ShadowGoogleAuthUtil.insertRenameEvent("B", "C");
 
-        Assert.assertEquals("C", mChecker.getNewNameOfRenamedAccount("A", getAccounts("C")));
+        Assert.assertEquals("C", getNewNameOfRenamedAccount("A", List.of("C")));
     }
 
     @Test
@@ -102,7 +118,7 @@ public class AccountRenameCheckerTest {
         ShadowGoogleAuthUtil.insertRenameEvent("B", "C");
         ShadowGoogleAuthUtil.insertRenameEvent("C", "D");
 
-        Assert.assertEquals("D", mChecker.getNewNameOfRenamedAccount("A", getAccounts("D")));
+        Assert.assertEquals("D", getNewNameOfRenamedAccount("A", List.of("D")));
     }
 
     @Test
@@ -115,14 +131,18 @@ public class AccountRenameCheckerTest {
         ShadowGoogleAuthUtil.insertRenameEvent("C", "D");
         ShadowGoogleAuthUtil.insertRenameEvent("D", "A"); // Looped.
 
-        Assert.assertEquals("D", mChecker.getNewNameOfRenamedAccount("A", getAccounts("D", "X")));
+        Assert.assertEquals("D", getNewNameOfRenamedAccount("A", List.of("D", "X")));
     }
 
-    private List<Account> getAccounts(String... names) {
+    private @Nullable String getNewNameOfRenamedAccount(
+            String oldAccountEmail, List<String> accountEmails) {
         final List<Account> accounts = new ArrayList<>();
-        for (String name : names) {
-            accounts.add(AccountUtils.createAccountFromName(name));
+        for (String email : accountEmails) {
+            accounts.add(AccountUtils.createAccountFromName(email));
         }
-        return accounts;
+        final AtomicReference<String> newAccountName = new AtomicReference<>();
+        mChecker.getNewNameOfRenamedAccountAsync(oldAccountEmail, accounts)
+                .then(newAccountName::set);
+        return newAccountName.get();
     }
 }

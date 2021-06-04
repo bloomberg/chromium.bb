@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
@@ -65,7 +67,7 @@ void RunFuzzingLoop(ImageDecoderExternal* image_decoder,
         image_decoder->decode(options);
         break;
       case wc_fuzzer::ImageDecoderApiInvocation::kDecodeMetadata:
-        image_decoder->decodeMetadata();
+        // Deprecated.
         break;
       case wc_fuzzer::ImageDecoderApiInvocation::kSelectTrack: {
         auto* track = image_decoder->tracks().AnonymousIndexedGetter(
@@ -94,6 +96,9 @@ DEFINE_BINARY_PROTO_FUZZER(
     return page_holder.release();
   }();
 
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kJXL);
+
   //
   // NOTE: GC objects that need to survive iterations of the loop below
   // must be Persistent<>!
@@ -109,6 +114,10 @@ DEFINE_BINARY_PROTO_FUZZER(
     Persistent<ScriptState> script_state =
         ToScriptStateForMainWorld(&page_holder->GetFrame());
     ScriptState::Scope scope(script_state);
+
+    // Fuzz the isTypeSupported() API explicitly.
+    ImageDecoderExternal::isTypeSupported(script_state,
+                                          proto.config().type().c_str());
 
     Persistent<ImageDecoderInit> image_decoder_init =
         MakeGarbageCollected<ImageDecoderInit>();
@@ -139,6 +148,11 @@ DEFINE_BINARY_PROTO_FUZZER(
       // Promises will be fulfilled synchronously since we're using an array
       // buffer based source.
       RunFuzzingLoop(image_decoder, proto.invocations());
+
+      // Close out underlying decoder to simplify reproduction analysis.
+      image_decoder->close();
+      image_decoder = nullptr;
+      base::RunLoop().RunUntilIdle();
     }
 
     Persistent<TestUnderlyingSource> underlying_source =
@@ -152,6 +166,7 @@ DEFINE_BINARY_PROTO_FUZZER(
             stream));
     image_decoder = ImageDecoderExternal::Create(
         script_state, image_decoder_init, IGNORE_EXCEPTION_FOR_TESTING);
+    image_decoder_init = nullptr;
 
     if (image_decoder) {
       // Split the image data into chunks.
@@ -171,6 +186,7 @@ DEFINE_BINARY_PROTO_FUZZER(
       }
 
       underlying_source->Close();
+      data_copy = nullptr;
 
       // Run one additional loop after all data has been appended.
       RunFuzzingLoop(image_decoder, proto.invocations());

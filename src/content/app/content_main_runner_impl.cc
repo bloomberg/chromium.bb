@@ -39,7 +39,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
@@ -53,7 +52,7 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/mojo_ipc_support.h"
 #include "content/browser/browser_main.h"
-#include "content/browser/browser_process_sub_thread.h"
+#include "content/browser/browser_process_io_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -983,7 +982,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams& main_params,
     const bool has_thread_pool =
         GetContentClient()->browser()->CreateThreadPool("Browser");
 
-    delegate_->PreCreateMainMessageLoop();
+    delegate_->PreBrowserMain();
 #if defined(OS_WIN)
     if (l10n_util::GetLocaleOverrides().empty()) {
       // Override the configured locale with the user's preferred UI language.
@@ -996,7 +995,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams& main_params,
     // Register the TaskExecutor for posting task to the BrowserThreads. It is
     // incorrect to post to a BrowserThread before this point. This instantiates
     // and binds the MessageLoopForUI on the main thread (but it's only labeled
-    // as BrowserThread::UI in BrowserMainLoop::MainMessageLoopStart).
+    // as BrowserThread::UI in BrowserMainLoop::CreateMainMessageLoop).
     BrowserTaskExecutor::Create();
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);

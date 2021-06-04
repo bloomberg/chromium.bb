@@ -37,7 +37,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -354,6 +353,10 @@ void NavigationControllerBrowserTest::RunLoadDataWithBaseURL(
   // data: URL loads always have HTTP status code 200.
   EXPECT_EQ(200, contents()->GetMainFrame()->last_http_status_code());
 
+  // Verify that the page is not classified as an error page.
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(contents()->GetMainFrame()->is_error_page());
+
   // The redirect chain contains the base URL instead of the commit URL or
   // the history URL, because it's the URL used by the DocumentLoader (unless
   // the base URL is empty).
@@ -597,8 +600,7 @@ void NavigationControllerBrowserTest::RunLoadDataWithInvalidBaseURL(
   {
     // Make a same-document navigation via history.pushState.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(
-        ExecuteScript(shell(), "history.pushState('', 'test', '#foo')"));
+    EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo')"));
     same_tab_observer.Wait();
   }
 
@@ -606,6 +608,10 @@ void NavigationControllerBrowserTest::RunLoadDataWithInvalidBaseURL(
   EXPECT_EQ(2, controller.GetEntryCount());
   entry = controller.GetLastCommittedEntry();
   EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+
+  // Verify that the page is not classified as an error page.
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(contents()->GetMainFrame()->is_error_page());
 
   const GURL push_state_url =
       GURL("data:text/html;charset=utf-8," + data + "#foo");
@@ -686,11 +692,15 @@ void NavigationControllerBrowserTest::RunLoadDataWithBlockedURL(
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
   EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
   EXPECT_EQ(commit_url, contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // Verify that the page is not classified as an error page.
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(contents()->GetMainFrame()->is_error_page());
+
   {
     // Make a same-document navigation via history.pushState.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(
-        ExecuteScript(shell(), "history.pushState('', 'test', '#foo')"));
+    EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo')"));
     same_tab_observer.Wait();
   }
 
@@ -712,10 +722,14 @@ void NavigationControllerBrowserTest::RunLoadDataWithBlockedURL(
   EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
   EXPECT_EQ(commit_url, contents()->GetMainFrame()->GetLastCommittedURL());
 
+  // Verify that the page is not classified as an error page.
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(contents()->GetMainFrame()->is_error_page());
+
   {
     // Make a same-document navigation via fragment navigation.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(ExecuteScript(shell(), "location.href = '#bar';"));
+    EXPECT_TRUE(ExecJs(shell(), "location.href = '#bar';"));
     same_tab_observer.Wait();
   }
 
@@ -724,6 +738,10 @@ void NavigationControllerBrowserTest::RunLoadDataWithBlockedURL(
   entry = controller.GetLastCommittedEntry();
   EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
   EXPECT_EQ(commit_url, contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // Verify that the page is not classified as an error page.
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(contents()->GetMainFrame()->is_error_page());
 
   SetBrowserClientForTesting(old_client);
 }
@@ -787,8 +805,7 @@ void NavigationControllerBrowserTest::
   {
     // Make a same-document navigation via history.pushState.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(
-        ExecuteScript(shell(), "history.pushState('', 'test', '#foo')"));
+    EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo')"));
     same_tab_observer.Wait();
   }
 
@@ -887,8 +904,7 @@ void NavigationControllerBrowserTest::
   {
     // Make a same-document navigation via history.pushState.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(
-        ExecuteScript(shell(), "history.pushState('', 'test', '#foo')"));
+    EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo')"));
     same_tab_observer.Wait();
   }
 
@@ -938,6 +954,61 @@ IN_PROC_BROWSER_TEST_P(
       true /* use_load_data_as_string_with_base_url */);
 }
 #endif
+
+// Tests that LoadDataWithBaseURL navigations that failed will commit an error
+// page and correctly classified as an error page navigation.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       ErrorPageFromLoadDataWithBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and GuestView cases [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // WebView or WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL base_url("http://baseurl");
+  const GURL history_url("http://historyurl");
+  const std::string data = "<html><body></body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  // Set up an URLLoaderInterceptor which will cause all navigations to fail.
+  auto url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+      base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_NOT_IMPLEMENTED;
+        params->client->OnComplete(status);
+        return true;
+      }));
+
+  // Do a LoadDataWithBaseURL navigation that will fail and commit an error
+  // page instead.
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    shell()->LoadDataWithBaseURL(history_url, data, base_url);
+    same_tab_observer.Wait();
+
+    EXPECT_FALSE(same_tab_observer.last_navigation_succeeded());
+    EXPECT_EQ(1, controller.GetEntryCount());
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+    // Verify that the page is classified as an error page.
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_TRUE(contents()->GetMainFrame()->is_error_page());
+
+    EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+    EXPECT_EQ(history_url, entry->GetVirtualURL());
+    EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+    EXPECT_EQ(data_url, entry->GetURL());
+  }
+}
 
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigateFromLoadDataWithBaseURL) {
@@ -1339,7 +1410,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   {
     TestNavigationObserver observer(shell()->web_contents(), 1);
     std::string script = "document.getElementById('thelink').click()";
-    EXPECT_TRUE(ExecuteScript(child, script));
+    EXPECT_TRUE(ExecJs(child, script));
     observer.Wait();
   }
 
@@ -1350,7 +1421,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   }
 
   // Passes if renderer is still alive.
-  EXPECT_TRUE(ExecuteScript(shell(), "console.log('Success');"));
+  EXPECT_TRUE(ExecJs(shell(), "console.log('Success');"));
 }
 
 class LoadCommittedCapturer : public WebContentsObserver {
@@ -1908,17 +1979,18 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     previous_entry = controller.GetLastCommittedEntry();
   }
 
+  // Set up an URLLoaderInterceptor which will cause all navigations to fail.
+  auto url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+      base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_NOT_IMPLEMENTED;
+        params->client->OnComplete(status);
+        return true;
+      }));
+
+  // Reload the tab (browser-initiated), but this time we hit a network error
+  // and end up in an error page.
   {
-    // Reload the tab (browser-initiated), but this time we hit a network error
-    // and end up in an error page.
-    std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
-    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
-        base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
-          network::URLLoaderCompletionStatus status;
-          status.error_code = net::ERR_NOT_IMPLEMENTED;
-          params->client->OnComplete(status);
-          return true;
-        }));
     TestNavigationObserver reload_observer(shell()->web_contents());
     FrameNavigateParamsCapturer capturer(root);
     shell()->Reload();
@@ -1934,11 +2006,37 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // TODO(https://crbug.com/1188956): This should replace the last committed
     // entry instead.
     EXPECT_FALSE(capturer.did_replace_entry());
-    EXPECT_EQ(previous_entry, controller.GetLastCommittedEntry());
-
-    previous_entry = controller.GetLastCommittedEntry();
-    url_loader_interceptor.reset();
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(previous_entry, entry);
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    previous_entry = entry;
   }
+
+  // Reload the tab and hit the same network error again.
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->Reload();
+    capturer.Wait();
+    EXPECT_FALSE(reload_observer.last_navigation_succeeded());
+
+    // We're classifying this as EXISTING_ENTRY.
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition(), ui::PAGE_TRANSITION_RELOAD));
+
+    // We reused the last committed entry for this navigation.
+    // TODO(https://crbug.com/1188956): This should replace the last committed
+    // entry instead.
+    EXPECT_FALSE(capturer.did_replace_entry());
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(previous_entry, entry);
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    previous_entry = entry;
+  }
+
+  // Reset the  URLLoaderInterceptor so future navigations will succeed.
+  url_loader_interceptor.reset();
 
   {
     // Reload the tab successfully after a failed navigation.
@@ -1992,7 +2090,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // Same-document location.replace().
     FrameNavigateParamsCapturer capturer(root);
     std::string script = "location.replace('#foo')";
-    EXPECT_TRUE(ExecuteScript(root, script));
+    EXPECT_TRUE(ExecJs(root, script));
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(),
@@ -2178,8 +2276,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   {
     // Navigate to the same URL (browser-initiated), but this time we hit a
     // network error and end up in an error page.
-    std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
-    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+    auto url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
         base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
           network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_NOT_IMPLEMENTED;
@@ -2339,7 +2436,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // The 'center-element' y-position is 2000px. This script scrolls the view
   // 100px below this element. 2000px and 100px are arbitrary values.
   std::string script_scroll_down = "window.scroll(0, 2100)";
-  EXPECT_TRUE(ExecuteScript(shell(), script_scroll_down));
+  EXPECT_TRUE(ExecJs(shell(), script_scroll_down));
 
   double window_scroll_y = EvalJs(shell(), "window.scrollY").ExtractDouble();
 
@@ -2878,9 +2975,7 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
   // This case is not enabled for browser-initiated navigation because the
   // browser-calculated vs renderer-calculated origin doesn't match, leading to
   // a crash.
-  // TODO(https://crbug.com/1190088): Enable this for browser-initiated
-  // navigations too once the bug is fixed.
-  if (renderer_initiated()) {
+  {
     SCOPED_TRACE(testing::Message() << " Testing case 2.");
 
     // Create a new blank window that won't create a NavigationEntry.
@@ -3002,12 +3097,10 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
   }
 }
 
-// Test pushState in a new window's initial empty document after it has done a
-// document.open() (inheriting the opener's URL).
-// https://crbug.com/1189026: disabled because document.open() no longer makes
-// pushState possible.
+// Test a same-document navigation in a new window's initial empty document to
+// ensure it is classified correctly.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
-                       DISABLED_PushStateAfterDocumentOpenInNewWindow) {
+                       SameDocumentInInitialEmptyDocument) {
   GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_window_url));
 
@@ -3021,31 +3114,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_FALSE(controller.GetLastCommittedEntry());
 
   {
-    // Do a document.open() on the blank window, generating a same-document
-    // navigation.
-    TestNavigationObserver nav_observer(new_contents);
-    EXPECT_TRUE(ExecJs(contents(), R"(
-          last_opened_window.document.open();
-          last_opened_window.document.write("foo");
-          last_opened_window.document.close();
-      )"));
-    nav_observer.Wait();
-
-    // The document.open() changed the window's URL to be the same as the main
-    // tab's URL, but didn't add a new entry because the navigation is
-    // ignored (see https://crbug.com/1190111).
-    EXPECT_EQ(main_window_url,
-              new_contents->GetFrameTree()->root()->current_url());
-    EXPECT_EQ(0, controller.GetEntryCount());
-  }
-
-  {
-    // Do a pushState (now that document.open has made it possible), generating
-    // a same-document navigation.
+    // Do a same-document navigation.
     LoadCommittedDetailsObserver load_details_observer(new_contents);
     FrameNavigateParamsCapturer capturer(root);
-    EXPECT_TRUE(ExecJs(contents(),
-                       "last_opened_window.history.pushState({}, '', 'foo');"));
+    EXPECT_TRUE(ExecJs(contents(), "last_opened_window.location.hash='foo';"));
     capturer.Wait();
     load_details_observer.Wait();
 
@@ -3131,8 +3203,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     GURL push_state_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html#bar"));
     FrameNavigateParamsCapturer capturer(root);
-    EXPECT_TRUE(ExecuteScript(
-        shell(), "history.pushState({}, '', 'simple_page_1.html#bar')"));
+    EXPECT_TRUE(
+        ExecJs(shell(), "history.pushState({}, '', 'simple_page_1.html#bar')"));
     capturer.Wait();
     EXPECT_EQ(push_state_url, contents()->GetLastCommittedURL());
     ASSERT_EQ(1U, capturer.transitions().size());
@@ -5498,7 +5570,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              main_url_a, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
               false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
@@ -5566,7 +5638,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              main_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
               false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   restored_entry->SetPageState(blink::PageState::CreateFromURL(main_url));
@@ -5769,7 +5841,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // location.replace().
     FrameNavigateParamsCapturer capturer(root);
     std::string script = "location.replace('" + url2.spec() + "')";
-    EXPECT_TRUE(ExecuteScript(root, script));
+    EXPECT_TRUE(ExecJs(root, script));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -5823,7 +5895,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root);
     std::string script =
         "history.replaceState({}, 'page 2', 'simple_page_2.html')";
-    ASSERT_TRUE(ExecuteScript(root, script));
+    ASSERT_TRUE(ExecJs(root, script));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -5844,7 +5916,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // Reload from the renderer side and make sure the replaced entry data
     // doesn't change.
     FrameNavigateParamsCapturer capturer(root);
-    ASSERT_TRUE(ExecuteScript(root, "location.reload()"));
+    ASSERT_TRUE(ExecJs(root, "location.reload()"));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -5866,7 +5938,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root);
     std::string script =
         "history.replaceState({}, 'page 3', 'simple_page_3.html')";
-    ASSERT_TRUE(ExecuteScript(root, script));
+    ASSERT_TRUE(ExecJs(root, script));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -5916,7 +5988,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root);
     std::string script =
         "history.pushState({}, 'page 2', 'simple_page_2.html')";
-    ASSERT_TRUE(ExecuteScript(root, script));
+    ASSERT_TRUE(ExecJs(root, script));
     capturer.Wait();
 
     ASSERT_EQ(2, controller.GetEntryCount());
@@ -5961,7 +6033,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // Reload from the renderer side and make sure replaced entry data is not
     // stored.
     FrameNavigateParamsCapturer capturer(root);
-    ASSERT_TRUE(ExecuteScript(root, "location.reload()"));
+    ASSERT_TRUE(ExecJs(root, "location.reload()"));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -6021,7 +6093,7 @@ IN_PROC_BROWSER_TEST_P(
     std::string script = "history.replaceState({}, 'page 2', '" +
                          redirecting_url_to_url2.spec() + "')";
 
-    ASSERT_TRUE(ExecuteScript(root, script));
+    ASSERT_TRUE(ExecJs(root, script));
     capturer.Wait();
 
     ASSERT_EQ(1, controller.GetEntryCount());
@@ -6545,8 +6617,8 @@ IN_PROC_BROWSER_TEST_P(
     GURL push_state_url(embedded_test_server()->GetURL("/title1.html#bar"));
     TestNavigationManager navigation_manager(shell()->web_contents(),
                                              push_state_url);
-    EXPECT_TRUE(ExecuteScript(shell(),
-                              "history.pushState({}, '', '/title1.html#bar')"));
+    EXPECT_TRUE(
+        ExecJs(shell(), "history.pushState({}, '', '/title1.html#bar')"));
     navigation_manager.WaitForNavigationFinished();
 
     EXPECT_EQ(3, controller.GetEntryCount());
@@ -7115,6 +7187,38 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// Tests navigating from an error page that server-redirects to the current URL
+// (which results in an error page again).
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       ServerRedirectToSameURLErrorPage) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL fail_url(embedded_test_server()->GetURL("/empty404.html"));
+  GURL server_redirecting_url(
+      embedded_test_server()->GetURL("/server-redirect?/empty404.html"));
+
+  // Navigate to a URL that will result in an error page.
+  EXPECT_FALSE(NavigateToURL(shell(), fail_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntry* last_entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(fail_url, last_entry->GetURL());
+
+  // Navigate to a URL that redirects to the same URL we're currently on, which
+  // will commit an error page again.
+  EXPECT_FALSE(NavigateToURL(shell(), server_redirecting_url, fail_url));
+
+  // The navigation will do a replacement.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
+  last_entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(fail_url, last_entry->GetURL());
+
+  // We replaced the previous entry.
+  EXPECT_TRUE(last_entry->GetReplacedEntryData().has_value());
+  EXPECT_EQ(fail_url, last_entry->GetReplacedEntryData()->first_committed_url);
+}
+
 // Checks the contents of the redirect chain after client-side redirect to a
 // different document than the original URL.
 IN_PROC_BROWSER_TEST_P(
@@ -7400,7 +7504,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              main_url_a, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
               false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
@@ -9010,7 +9114,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UncacheablePost) {
   // Submit the form.
   TestNavigationObserver form_post_observer(web_contents, 1);
   EXPECT_TRUE(
-      ExecuteScript(web_contents, "document.getElementById('form').submit();"));
+      ExecJs(web_contents, "document.getElementById('form').submit();"));
   form_post_observer.Wait();
 
   // Verify that we arrived at the expected location.
@@ -9018,23 +9122,16 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UncacheablePost) {
   EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
 
   // Verify that this was a POST request.
-  std::string request_headers;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[1].innerText);",
-      &request_headers));
+  std::string request_headers =
+      EvalJs(web_contents, "document.getElementsByTagName('pre')[1].innerText;")
+          .ExtractString();
   EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
 
   // Verify that POST body was correctly passed to the server and ended up in
   // the body of the page.
-  std::string body;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[0].innerText);",
-      &body));
-  EXPECT_EQ("text=value\n", body);
+  EXPECT_EQ("text=value\n",
+            EvalJs(web_contents,
+                   "document.getElementsByTagName('pre')[0].innerText;"));
 
   // Extract the response nonce.
   std::string old_response_nonce =
@@ -9084,22 +9181,17 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UncacheablePost) {
 
   // MAIN VERIFICATION for https://crbug.com/860807: Verify that the reload was
   // a POST request.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[1].innerText);",
-      &request_headers));
+  request_headers =
+      EvalJs(web_contents, "document.getElementsByTagName('pre')[1].innerText;")
+          .ExtractString();
   EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
 
   // Verify that POST body was correctly passed to the server and ended up in
   // the body of the page.  This is supplementary verification against
   // https://crbug.com/860807.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[0].innerText);",
-      &body));
-  EXPECT_EQ("text=value\n", body);
+  EXPECT_EQ("text=value\n",
+            EvalJs(web_contents,
+                   "document.getElementsByTagName('pre')[0].innerText;"));
 
   // Extract the new response nonce and verify that it did change (e.g. that the
   // reload did load fresh content).
@@ -9134,8 +9226,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
         URLLoaderInterceptor::SetupRequestFailForURL(
             target_url, net::ERR_INTERNET_DISCONNECTED);
     TestNavigationObserver form_post_observer(web_contents, 1);
-    EXPECT_TRUE(ExecuteScript(web_contents,
-                              "document.getElementById('form').submit();"));
+    EXPECT_TRUE(
+        ExecJs(web_contents, "document.getElementById('form').submit();"));
     form_post_observer.Wait();
   }
   EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
@@ -9152,23 +9244,16 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
 
   // Verify that the reload was a POST request.
-  std::string request_headers;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[1].innerText);",
-      &request_headers));
+  std::string request_headers =
+      EvalJs(web_contents, "document.getElementsByTagName('pre')[1].innerText;")
+          .ExtractString();
   EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
 
   // Verify that POST body was correctly passed to the server and ended up in
   // the body of the page.
-  std::string body;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-      "document.getElementsByTagName('pre')[0].innerText);",
-      &body));
-  EXPECT_EQ("text=value\n", body);
+  EXPECT_EQ("text=value\n",
+            EvalJs(web_contents,
+                   "document.getElementsByTagName('pre')[0].innerText;"));
 }
 
 // Tests that inserting a named subframe into the FrameTree clears any
@@ -9290,7 +9375,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Add, then remove a named frame. It will create a FrameNavigationEntry
   // for the name and remove it (since this is a frame created by script).
-  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
+  EXPECT_TRUE(ExecJs(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
   scoped_refptr<FrameNavigationEntry> old_fne =
@@ -9304,7 +9389,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // NOT consider them the same and should NOT result in the
   // FrameNavigationEntry being reused (because the frame injected by javascript
   // will get a fresh, random unique name each time it is created or recreated).
-  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
+  EXPECT_TRUE(ExecJs(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
   scoped_refptr<FrameNavigationEntry> new_fne =
@@ -10138,7 +10223,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadDoesntKeepTitle) {
     entry->SetTitle(title);
 
     TestNavigationObserver reload_observer(shell()->web_contents());
-    EXPECT_TRUE(ExecuteScript(shell(), "location.reload()"));
+    EXPECT_TRUE(ExecJs(shell(), "location.reload()"));
     reload_observer.Wait();
 
     EXPECT_TRUE(entry->GetTitle().empty());
@@ -10264,7 +10349,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Pop open a new window.
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(root, "var w = window.open()"));
+  EXPECT_TRUE(ExecJs(root, "var w = window.open()"));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
   EXPECT_FALSE(
@@ -10275,8 +10360,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   GURL redirect_to_data_url(
       embedded_test_server()->GetURL("/server-redirect?data:text/html,Hello!"));
   TestNavigationObserver nav_observer(new_shell->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(
-      root, "w.location.href = '" + redirect_to_data_url.spec() + "';"));
+  EXPECT_TRUE(
+      ExecJs(root, "w.location.href = '" + redirect_to_data_url.spec() + "';"));
   nav_observer.WaitForNavigationFinished();
   EXPECT_FALSE(nav_observer.last_navigation_succeeded());
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -10670,7 +10755,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     std::string pushStateToXfo =
         "history.pushState({}, '', '/x-frame-options-deny.html')";
-    EXPECT_TRUE(ExecuteScript(root->child_at(0), pushStateToXfo));
+    EXPECT_TRUE(ExecJs(root->child_at(0), pushStateToXfo));
     capturer.Wait();
     EXPECT_EQ(x_frame_options_deny_url, root->child_at(0)->current_url());
     EXPECT_TRUE(capturer.is_same_document());
@@ -10752,7 +10837,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   }
 
   // Check that the renderer is still alive.
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), "console.log('Success');"));
+  EXPECT_TRUE(ExecJs(root->child_at(0), "console.log('Success');"));
 }
 
 // Similar to BackSameDocumentAfterBlockedSubframe but does the navigation on a
@@ -10774,8 +10859,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   GURL error_url = embedded_test_server()->GetURL("/empty404.html");
   {
     FrameNavigateParamsCapturer capturer(root);
-    EXPECT_TRUE(
-        ExecuteScript(root, "history.pushState({}, '', '/empty404.html')"));
+    EXPECT_TRUE(ExecJs(root, "history.pushState({}, '', '/empty404.html')"));
     capturer.Wait();
     EXPECT_EQ(error_url, root->current_url());
     EXPECT_TRUE(capturer.is_same_document());
@@ -10812,7 +10896,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   }
 
   // Check that the renderer is still alive.
-  EXPECT_TRUE(ExecuteScript(root, "console.log('Success');"));
+  EXPECT_TRUE(ExecJs(root, "console.log('Success');"));
 }
 
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
@@ -10837,8 +10921,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   GURL push_state_url(embedded_test_server()->GetURL("/title2.html"));
   {
     FrameNavigateParamsCapturer capturer(root);
-    EXPECT_TRUE(
-        ExecuteScript(root, "history.pushState({}, '', '/title2.html')"));
+    EXPECT_TRUE(ExecJs(root, "history.pushState({}, '', '/title2.html')"));
     capturer.Wait();
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_EQ(start_dsn, controller.GetLastCommittedEntry()
@@ -11039,7 +11122,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Execute |history.back()| in the subframe.
   TestNavigationObserver nav_observer(shell()->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), "history.back()"));
+  EXPECT_TRUE(ExecJs(root->child_at(0), "history.back()"));
   nav_observer.Wait();
   EXPECT_EQ(initial_subframe_url,
             root->child_at(0)->current_frame_host()->GetLastCommittedURL());
@@ -11053,9 +11136,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   GURL hash_url(embedded_test_server()->GetURL("/title1.html#hash"));
 
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  EXPECT_TRUE(
-      ExecuteScript(shell(),
-                    R"( window.addEventListener("beforeunload", function(e) {
+  EXPECT_TRUE(ExecJs(shell(),
+                     R"( window.addEventListener("beforeunload", function(e) {
               domAutomationController.send("beforeunload");
           });
           window.addEventListener("unload", function(e) {
@@ -11137,7 +11219,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
           var iframe = document.createElement("iframe");
           document.body.appendChild(iframe);
         }; )";
-  EXPECT_TRUE(ExecuteScript(frame, script));
+  EXPECT_TRUE(ExecJs(frame, script));
 
   // Verify that now there are 5 FNEs for the dynamic frames.
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -11179,7 +11261,7 @@ IN_PROC_BROWSER_TEST_P(
           var iframe = document.createElement("iframe");
           document.body.appendChild(iframe);
         }; )";
-  EXPECT_TRUE(ExecuteScript(frame, script));
+  EXPECT_TRUE(ExecJs(frame, script));
 
   // Verify that now there are 5 FNEs for the dynamic frames.
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -12071,7 +12153,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root);
     std::string script =
         "history.replaceState({}, '', '" + redirecting_url.spec() + "')";
-    EXPECT_TRUE(ExecuteScript(root, script));
+    EXPECT_TRUE(ExecJs(root, script));
     capturer.Wait();
   }
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -12381,8 +12463,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
   EXPECT_TRUE(NavigateToURL(shell(), url3));
 
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(ExecJs(shell(), "history.back(); history.back();",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
@@ -12401,7 +12483,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
   EXPECT_TRUE(NavigateToURL(shell(), url3));
 
-  EXPECT_TRUE(ExecuteScript(shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(ExecJs(shell(), "history.back(); history.back();"));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // TODO(https://crbug.com/869710): This should be url2.
@@ -13221,8 +13303,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   GURL push_state_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script("history.pushState('', '','" + push_state_url.spec() +
                      "');");
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -13278,8 +13360,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   GURL push_state_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script("history.pushState('', '','" + push_state_url.spec() +
                      "');");
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -13395,7 +13477,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerDisableHistoryIntervention,
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
   // Go back to the last entry using history.back.
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(shell(), "history.back();"));
+  EXPECT_TRUE(
+      ExecJs(shell(), "history.back();", EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // Going back again to an entry should not reset its skippable flag.
@@ -13435,14 +13518,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   GURL push_state_url1(embedded_test_server()->GetURL("/title1.html"));
   std::string script("history.pushState('', '','" + push_state_url1.spec() +
                      "');");
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Use the pushState API to add another entry without user gesture.
   GURL push_state_url2(embedded_test_server()->GetURL("/title2.html"));
   script = "history.pushState('', '','" + push_state_url2.spec() + "');";
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   EXPECT_EQ(3, controller.GetCurrentEntryIndex());
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
@@ -13464,8 +13547,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // Do another pushState so push_state_url2's entry also becomes skippable.
   GURL push_state_url3(embedded_test_server()->GetURL("/title3.html"));
   script = "history.pushState('', '','" + push_state_url3.spec() + "');";
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
   // We now have
   // [skippable_url(skip), redirected_url(skip), push_state_url1(skip),
@@ -13490,7 +13573,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // Simulate a user gesture. ExecuteScript internally also sends a user
   // gesture.
   script = "a=5";
-  EXPECT_TRUE(content::ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(content::ExecJs(shell()->web_contents(), script));
 
   // We now have (After user gesture)
   // [skippable_url(skip), redirected_url, push_state_url1*, push_state_url2,
@@ -13513,8 +13596,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // Do another pushState without user gesture.
   GURL push_state_url4(embedded_test_server()->GetURL("/title3.html"));
   script = "history.pushState('', '','" + push_state_url3.spec() + "');";
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
-                                                       script));
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
   // We now have
   // [skippable_url(skip), redirected_url, push_state_url4*]
   EXPECT_EQ(3, controller.GetEntryCount());
@@ -13702,7 +13785,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // Attempt to go back to the skippable entry using the History API should
   // not skip the corresponding entry.
   TestNavigationObserver frame_observer(shell()->web_contents());
-  EXPECT_TRUE(ExecuteScript(root, "window.history.back()"));
+  EXPECT_TRUE(ExecJs(root, "window.history.back()"));
   frame_observer.Wait();
 
   histograms.ExpectTotalCount("Navigation.BackForward.BackTargetSkipped", 0);
@@ -13990,7 +14073,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   // Attempt to go forward to the skippable entry using the History API should
   // not skip the corresponding entry.
   TestNavigationObserver nav_observer2(shell()->web_contents());
-  EXPECT_TRUE(ExecuteScript(root, "window.history.forward()"));
+  EXPECT_TRUE(ExecJs(root, "window.history.forward()"));
   nav_observer2.Wait();
 
   histograms.ExpectTotalCount("Navigation.BackForward.ForwardTargetSkipped", 0);
@@ -14126,7 +14209,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
 
   // Invoke pushstate from a subframe.
   std::string script = "history.pushState({}, 'page 1', 'simple_page_1.html')";
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(root->child_at(0), script));
+  EXPECT_TRUE(
+      ExecJs(root->child_at(0), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -14202,7 +14286,8 @@ IN_PROC_BROWSER_TEST_P(
 
   // Invoke pushstate from a subframe.
   std::string script = "history.pushState({}, 'page 1', 'simple_page_1.html')";
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(root->child_at(0), script));
+  EXPECT_TRUE(
+      ExecJs(root->child_at(0), script, EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -14536,7 +14621,8 @@ IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerWithBfcacheBrowserTest,
       "b.com", "/navigation_controller/page_with_sandbox_iframe.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), cached_url));
-  RenderFrameHost* cached_rfh = shell()->web_contents()->GetMainFrame();
+  RenderFrameHostImpl* cached_rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
   content::RenderFrameDeletedObserver observer(cached_rfh);
 
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -14768,11 +14854,20 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 
 }  //  namespace
 
+// Test is flaky on Mac: https://crbug.com/1151545.
+#if defined(OS_MAC)
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#else
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#endif
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
-IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
-                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
   // This tests something that can only happened with out of process iframes.
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -15180,8 +15275,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
     // Navigate the subframe (browser-initiated) to the same URL it's currently
     // on, but end up in an error page instead.
-    std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
-    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+    auto url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
         base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
           network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_NOT_IMPLEMENTED;
@@ -15257,7 +15351,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // Navigate the subframe to a fragment.
     TestNavigationObserver observer(shell()->web_contents());
     FrameNavigateParamsCapturer capturer(child);
-    EXPECT_TRUE(ExecuteScript(child, "location.href = '#bar';"));
+    EXPECT_TRUE(ExecJs(child, "location.href = '#bar';"));
     capturer.Wait();
     observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -15432,8 +15526,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
     // Reload the subframe (browser-initiated), but this time we hit a network
     // error and end up in an error page.
-    std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
-    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+    auto url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
         base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
           network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_NOT_IMPLEMENTED;
@@ -15526,8 +15619,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   GURL ps2_url(embedded_test_server()->GetURL("a.com", "/ps2.html"));
   {
     FrameNavigateParamsCapturer capturer(ftn_a);
-    ASSERT_TRUE(
-        ExecuteScript(ftn_a, "history.pushState({}, 'page 2', 'ps2.html')"));
+    ASSERT_TRUE(ExecJs(ftn_a, "history.pushState({}, 'page 2', 'ps2.html')"));
     capturer.Wait();
     EXPECT_EQ(2, controller.GetEntryCount());
     EXPECT_EQ(ps2_url, controller.GetLastCommittedEntry()->GetURL());
@@ -15536,15 +15628,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // history.pushState() twice in the c subframe.
   {
     FrameNavigateParamsCapturer capturer(ftn_c);
-    ASSERT_TRUE(
-        ExecuteScript(ftn_c, "history.pushState({}, 'page 3', 'ps3.html')"));
+    ASSERT_TRUE(ExecJs(ftn_c, "history.pushState({}, 'page 3', 'ps3.html')"));
     capturer.Wait();
     EXPECT_EQ(3, controller.GetEntryCount());
   }
   {
     FrameNavigateParamsCapturer capturer(ftn_c);
-    ASSERT_TRUE(
-        ExecuteScript(ftn_c, "history.pushState({}, 'page 4', 'ps4.html')"));
+    ASSERT_TRUE(ExecJs(ftn_c, "history.pushState({}, 'page 4', 'ps4.html')"));
     capturer.Wait();
     EXPECT_EQ(4, controller.GetEntryCount());
   }
@@ -15760,7 +15850,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   {
     FrameNavigateParamsCapturer capturer(ftn_a);
     ASSERT_TRUE(
-        ExecuteScript(ftn_a, "history.pushState({}, 'push state', 'ps.html')"));
+        ExecJs(ftn_a, "history.pushState({}, 'push state', 'ps.html')"));
     capturer.Wait();
     EXPECT_EQ(4, controller.GetEntryCount());
     EXPECT_EQ(ps_url, controller.GetLastCommittedEntry()->GetURL());
@@ -16038,7 +16128,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   {
     // Make a same-document navigation via history.pushState.
     TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-    EXPECT_TRUE(ExecuteScript(shell(), "history.pushState('', 'test', '#')"));
+    EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#')"));
     same_tab_observer.Wait();
   }
 
@@ -16109,7 +16199,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   ASSERT_EQ(1U, entry_1->root_node()->children.size());
   FrameNavigationEntry* frame_entry_1 =
       entry_1->root_node()->children[0]->frame_entry.get();
-  base::Optional<url::Origin> origin_1 = frame_entry_1->initiator_origin();
+  absl::optional<url::Origin> origin_1 = frame_entry_1->initiator_origin();
   ASSERT_TRUE(frame_entry_1->initiator_origin().has_value());
   EXPECT_EQ(url::Origin::Create(main_url),
             frame_entry_1->initiator_origin().value());
@@ -16142,7 +16232,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
   ASSERT_EQ(1U, entry_1->root_node()->children.size());
   FrameNavigationEntry* frame_entry_2 =
       entry_2->root_node()->children[0]->frame_entry.get();
-  base::Optional<url::Origin> origin_2 = frame_entry_2->initiator_origin();
+  absl::optional<url::Origin> origin_2 = frame_entry_2->initiator_origin();
   ASSERT_TRUE(frame_entry_2->initiator_origin().has_value());
   EXPECT_EQ(url::Origin::Create(main_url),
             frame_entry_2->initiator_origin().value());
@@ -16240,6 +16330,56 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
       window.top.testStatus;
       )";
   EXPECT_EQ("DONE", EvalJs(cc_frame, set_status_done).ExtractString());
+}
+
+// If the NavigationEntry |is_overriding_user_agent_| attribute is updated and
+// the entry reloaded, the new document will load with the user agent
+// overridden. Consecutive navigation will continue with the user agent
+// overridden.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       OverrideUserAgentThenReload) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/empty.html")));
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(contents()->GetController());
+
+  // Update the entry and load it.
+  controller.GetLastCommittedEntry()->SetIsOverridingUserAgent(true);
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+  controller.Reload(ReloadType::ORIGINAL_REQUEST_URL, true);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+
+  // Consecutive same-document navigation uses the new state.
+  EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo2')"));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+
+  // Consecutive cross-document same-origin navigation uses the new state.
+  EXPECT_TRUE(ExecJs(shell(), "location.href = '/title1.html';"));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+
+  // Consecutive cross-document cross-origin navigation uses the new state.
+  EXPECT_TRUE(ExecJs(
+      shell(), JsReplace("location.href = $1;", embedded_test_server()->GetURL(
+                                                    "b.com", "/empty.html"))));
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+}
+
+// If the NavigationEntry |is_overriding_user_agent_| attribute is updated and
+// the document is still the one loaded without overriding user agent, then
+// committing a same-document navigation will restore the value used by the
+// document.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       OverrideUserAgentThenSameDocument) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/empty.html")));
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(contents()->GetController());
+
+  controller.GetLastCommittedEntry()->SetIsOverridingUserAgent(true);
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+  EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo1')"));
+  EXPECT_FALSE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

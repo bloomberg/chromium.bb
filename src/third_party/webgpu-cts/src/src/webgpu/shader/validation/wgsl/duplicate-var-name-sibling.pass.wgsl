@@ -1,7 +1,7 @@
 // v-0014 - This passes because variable `a` is redeclared in a sibling scope.
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   if (true) {
     var a : i32 = -1;
   }

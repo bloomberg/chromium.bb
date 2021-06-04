@@ -741,7 +741,7 @@ class CookieTreeSharedWorkerNode : public CookieTreeNode {
     if (container) {
       container->shared_worker_helper_->DeleteSharedWorker(
           shared_worker_info_->worker, shared_worker_info_->name,
-          shared_worker_info_->constructor_origin);
+          shared_worker_info_->storage_key);
       container->shared_worker_info_list_.erase(shared_worker_info_);
     }
   }
@@ -1935,8 +1935,7 @@ CookiesTreeModel::GetCookieDeletionDisabledCallback(Profile* profile) {
 // static
 std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
     Profile* profile) {
-  auto* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile);
+  auto* storage_partition = profile->GetDefaultStoragePartition();
   auto* file_system_context = storage_partition->GetFileSystemContext();
   auto* native_io_context = storage_partition->GetNativeIOContext();
 

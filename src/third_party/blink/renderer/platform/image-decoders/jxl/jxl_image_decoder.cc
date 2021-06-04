@@ -4,57 +4,99 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/jxl/jxl_image_decoder.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 
 namespace blink {
 
-JXLImageDecoder::JXLImageDecoder(AlphaOption alpha_option,
-                                 const ColorBehavior& color_behavior,
-                                 size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option,
-                   ImageDecoder::kDefaultBitDepth,
-                   color_behavior,
-                   max_decoded_bytes) {}
-
-JXLImageDecoder::~JXLImageDecoder() {
-  JxlDecoderDestroy(dec_);
+namespace {
+// Returns transfer function which approximates HLG with linear range 0..1,
+// while skcms_TransferFunction_makeHLGish uses linear range 0..12.
+void MakeTransferFunctionHLG01(skcms_TransferFunction* tf) {
+  skcms_TransferFunction_makeScaledHLGish(
+      tf, 1 / 12.0f, 2.0f, 2.0f, 1 / 0.17883277f, 0.28466892f, 0.55991073f);
 }
 
-void JXLImageDecoder::Decode(bool only_size) {
+// Computes whether the transfer function from the parsed ICC profile
+// approximately matches the given parametric transfer function. Returns a
+// ColorProfile if it matches, or nullptr if not.
+std::unique_ptr<ColorProfile> ApproximatelyMatchesTF(
+    const skcms_ICCProfile* parsed,
+    const skcms_TransferFunction* tf) {
+  skcms_ICCProfile parsed_test = *parsed;
+  parsed_test.has_trc = true;
+  for (int c = 0; c < 3; c++) {
+    parsed_test.trc[c].table_entries = 0;
+    parsed_test.trc[c].parametric = *tf;
+  }
+  if (skcms_ApproximatelyEqualProfiles(parsed, &parsed_test)) {
+    return std::make_unique<ColorProfile>(parsed_test);
+  }
+  return nullptr;
+}
+}  // namespace
+
+JXLImageDecoder::JXLImageDecoder(
+    AlphaOption alpha_option,
+    HighBitDepthDecodingOption high_bit_depth_decoding_option,
+    const ColorBehavior& color_behavior,
+    size_t max_decoded_bytes)
+    : ImageDecoder(alpha_option,
+                   high_bit_depth_decoding_option,
+                   color_behavior,
+                   max_decoded_bytes) {
+  info_.have_animation = false;
+}
+
+void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
+  if (Failed())
+    return;
+
   if (IsDecodedSizeAvailable() && only_size) {
     // Also SetEmbeddedProfile is done already if the size was set.
     return;
   }
-  if (!dec_) {
-    dec_ = JxlDecoderCreate(nullptr);
-  } else {
-    JxlDecoderReset(dec_);
-  }
 
-  // Subscribe to color encoding event even when only getting size, because
-  // SetSize must be called after SetEmbeddedColorProfile
-  const int events = JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING |
-                     (only_size ? 0 : JXL_DEC_FULL_IMAGE);
+  DCHECK_LE(num_decoded_frames_, frame_buffer_cache_.size());
 
-  if (JXL_DEC_SUCCESS != JxlDecoderSubscribeEvents(dec_, events)) {
-    SetFailed();
+  if (finished_ ||
+      (num_decoded_frames_ > index &&
+       frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete)) {
     return;
   }
 
-  JxlBasicInfo info;
-  const JxlPixelFormat format = {4, JXL_TYPE_UINT8, JXL_NATIVE_ENDIAN, 0};
+  if (!dec_) {
+    dec_ = JxlDecoderMake(nullptr);
+    // Subscribe to color encoding event even when only getting size, because
+    // SetSize must be called after SetEmbeddedColorProfile
+    const int events =
+        JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE;
+
+    if (JXL_DEC_SUCCESS != JxlDecoderSubscribeEvents(dec_.get(), events)) {
+      SetFailed();
+      return;
+    }
+  } else {
+    offset_ -= JxlDecoderReleaseInput(dec_.get());
+  }
 
   FastSharedBufferReader reader(data_.get());
-  size_t offset = 0;
 
-  // SetEmbeddedColorProfile may only be used if !size_available at the
-  // beginning of Decode. This means even if only_size is true, we must already
-  // read the color profile as well, or we cannot set it anymore later.
+  const JxlPixelFormat format = {4, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0};
+
   const bool size_available = IsDecodedSizeAvailable();
-  // Our API guarantees that we either get JXL_DEC_ERROR, JXL_DEC_SUCCESS or
-  // JXL_DEC_NEED_MORE_INPUT, and we exit the loop below in either case.
+
+  if (have_color_info_) {
+    xform_ = ColorTransform();
+  }
+
+  // The JXL API guarantees that we eventually get JXL_DEC_ERROR,
+  // JXL_DEC_SUCCESS or JXL_DEC_NEED_MORE_INPUT, and we exit the loop below in
+  // each case.
   for (;;) {
-    JxlDecoderStatus status = JxlDecoderProcessInput(dec_);
+    if (only_size && have_color_info_)
+      return;
+    JxlDecoderStatus status = JxlDecoderProcessInput(dec_.get());
     switch (status) {
       case JXL_DEC_ERROR: {
         DVLOG(1) << "Decoder error " << status;
@@ -62,84 +104,179 @@ void JXLImageDecoder::Decode(bool only_size) {
         return;
       }
       case JXL_DEC_NEED_MORE_INPUT: {
-        const size_t remaining = JxlDecoderReleaseInput(dec_);
-        if (remaining != 0) {
-          DVLOG(1) << "api needs more input but didn't use all " << remaining;
-          SetFailed();
-          return;
-        }
-        if (offset >= reader.size()) {
+        const size_t remaining = JxlDecoderReleaseInput(dec_.get());
+        offset_ -= remaining;
+        if (offset_ >= reader.size()) {
           if (IsAllDataReceived()) {
             DVLOG(1) << "need more input but all data received";
             SetFailed();
             return;
           }
+          // Return because we need more input from the reader, to continue
+          // decoding in the next call.
           return;
         }
         const char* buffer = nullptr;
-        size_t read = reader.GetSomeData(buffer, offset);
+        size_t read = reader.GetSomeData(buffer, offset_);
         if (JXL_DEC_SUCCESS !=
-            JxlDecoderSetInput(dec_, reinterpret_cast<const uint8_t*>(buffer),
-                               read)) {
+            JxlDecoderSetInput(
+                dec_.get(), reinterpret_cast<const uint8_t*>(buffer), read)) {
           DVLOG(1) << "JxlDecoderSetInput failed";
           SetFailed();
           return;
         }
-        offset += read;
+        offset_ += read;
         break;
       }
       case JXL_DEC_BASIC_INFO: {
-        if (JXL_DEC_SUCCESS != JxlDecoderGetBasicInfo(dec_, &info)) {
+        if (JXL_DEC_SUCCESS != JxlDecoderGetBasicInfo(dec_.get(), &info_)) {
           DVLOG(1) << "JxlDecoderGetBasicInfo failed";
           SetFailed();
           return;
         }
-        if (!size_available && !SetSize(info.xsize, info.ysize))
+        if (!size_available && !SetSize(info_.xsize, info_.ysize)) {
           return;
+        }
         break;
       }
       case JXL_DEC_COLOR_ENCODING: {
         if (IgnoresColorSpace()) {
+          have_color_info_ = true;
           continue;
         }
 
-        if (!size_available) {
-          size_t icc_size;
-          if (JXL_DEC_SUCCESS !=
-              JxlDecoderGetICCProfileSize(
-                  dec_, &format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)) {
-            DVLOG(1) << "JxlDecoderGetICCProfileSize failed";
-            SetFailed();
-            return;
+        // If the decoder was used before with only_size == true, the color
+        // encoding is already decoded as well, and SetEmbeddedColorProfile
+        // should not be called a second time anymore.
+        if (size_available) {
+          continue;
+        }
+
+        // Detect whether the JXL image is intended to be an HDR image: when it
+        // uses more than 8 bits per pixel, or when it has explicitly marked
+        // PQ or HLG color profile.
+        if (info_.bits_per_sample > 8) {
+          is_hdr_ = true;
+        }
+        JxlColorEncoding color_encoding;
+        if (JXL_DEC_SUCCESS == JxlDecoderGetColorAsEncodedProfile(
+                                   dec_.get(), &format,
+                                   JXL_COLOR_PROFILE_TARGET_ORIGINAL,
+                                   &color_encoding)) {
+          if (color_encoding.transfer_function == JXL_TRANSFER_FUNCTION_PQ ||
+              color_encoding.transfer_function == JXL_TRANSFER_FUNCTION_HLG) {
+            is_hdr_ = true;
           }
+        }
+
+        std::unique_ptr<ColorProfile> profile;
+
+        if (is_hdr_ &&
+            high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) {
+          decode_to_half_float_ = true;
+        }
+
+        bool have_data_profile = false;
+        if (JXL_DEC_SUCCESS ==
+            JxlDecoderGetColorAsEncodedProfile(dec_.get(), &format,
+                                               JXL_COLOR_PROFILE_TARGET_DATA,
+                                               &color_encoding)) {
+          bool known_transfer_function = true;
+          bool known_gamut = true;
+          skcms_Matrix3x3 gamut;
+          skcms_TransferFunction transfer;
+          if (color_encoding.transfer_function == JXL_TRANSFER_FUNCTION_PQ) {
+            transfer = SkNamedTransferFn::kPQ;
+          } else if (color_encoding.transfer_function ==
+                     JXL_TRANSFER_FUNCTION_HLG) {
+            // Cannot use transfer = SkNamedTransferFn::kHLG directly since JXL
+            // uses the linear 0..1, not the linear 0..12, version of HLG.
+            MakeTransferFunctionHLG01(&transfer);
+          } else if (color_encoding.transfer_function ==
+                     JXL_TRANSFER_FUNCTION_LINEAR) {
+            transfer = SkNamedTransferFn::kLinear;
+          } else if (color_encoding.transfer_function ==
+                     JXL_TRANSFER_FUNCTION_SRGB) {
+            transfer = SkNamedTransferFn::kSRGB;
+          } else {
+            known_transfer_function = false;
+          }
+
+          if (color_encoding.white_point == JXL_WHITE_POINT_D65 &&
+              color_encoding.primaries == JXL_PRIMARIES_2100) {
+            gamut = SkNamedGamut::kRec2020;
+          } else if (color_encoding.white_point == JXL_WHITE_POINT_D65 &&
+                     color_encoding.primaries == JXL_PRIMARIES_SRGB) {
+            gamut = SkNamedGamut::kSRGB;
+          } else {
+            known_gamut = false;
+          }
+
+          have_data_profile = known_transfer_function && known_gamut;
+
+          if (have_data_profile) {
+            skcms_ICCProfile dataProfile;
+            SkColorSpace::MakeRGB(transfer, gamut)->toProfile(&dataProfile);
+            profile = std::make_unique<ColorProfile>(dataProfile);
+          }
+        }
+
+        // Did not handle exact enum values, get as ICC profile instead.
+        if (!have_data_profile) {
+          size_t icc_size;
+          bool got_size =
+              JXL_DEC_SUCCESS == JxlDecoderGetICCProfileSize(
+                                     dec_.get(), &format,
+                                     JXL_COLOR_PROFILE_TARGET_DATA, &icc_size);
           std::vector<uint8_t> icc_profile(icc_size);
-          if (JXL_DEC_SUCCESS != JxlDecoderGetColorAsICCProfile(
-                                     dec_, &format,
+          if (got_size &&
+              JXL_DEC_SUCCESS == JxlDecoderGetColorAsICCProfile(
+                                     dec_.get(), &format,
                                      JXL_COLOR_PROFILE_TARGET_DATA,
                                      icc_profile.data(), icc_profile.size())) {
-            DVLOG(1) << "JxlDecoderGetColorAsICCProfile failed";
-            SetFailed();
-            return;
-          }
-          std::unique_ptr<ColorProfile> profile =
-              ColorProfile::Create(icc_profile.data(), icc_profile.size());
+            profile =
+                ColorProfile::Create(icc_profile.data(), icc_profile.size());
+            have_data_profile = true;
 
+            // Detect whether the ICC profile approximately equals PQ or HLG,
+            // and set the profile to one that indicates this transfer function
+            // more clearly than a raw ICC profile does, so Chrome considers
+            // the profile as HDR.
+            const skcms_ICCProfile* parsed = profile->GetProfile();
+
+            skcms_TransferFunction tf_pq;
+            skcms_TransferFunction tf_hlg01;
+            skcms_TransferFunction tf_hlg12;
+            skcms_TransferFunction_makePQ(&tf_pq);
+            MakeTransferFunctionHLG01(&tf_hlg01);
+            skcms_TransferFunction_makeHLG(&tf_hlg12);
+
+            for (skcms_TransferFunction tf : {tf_pq, tf_hlg01, tf_hlg12}) {
+              auto match = ApproximatelyMatchesTF(parsed, &tf);
+              if (match) {
+                is_hdr_ = true;
+                profile.swap(match);
+                break;
+              }
+            }
+          }
+        }
+
+        if (is_hdr_ &&
+            high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) {
+          decode_to_half_float_ = true;
+        }
+
+        if (have_data_profile) {
           if (profile->GetProfile()->data_color_space == skcms_Signature_RGB) {
             SetEmbeddedColorProfile(std::move(profile));
           }
         }
+        have_color_info_ = true;
         break;
       }
       case JXL_DEC_NEED_IMAGE_OUT_BUFFER: {
-        // Progressive is not yet implemented, and we potentially require some
-        // color transforms applied on the buffer from the frame. If we let the
-        // JPEG XL decoder write to the buffer immediately, Chrome may already
-        // render its intermediate stage with the wrong color format. Hence, for
-        // now, only set the buffer and let JXL decode once we have all data.
-        if (!IsAllDataReceived())
-          return;
-        // Always 0 because animation is not yet implemented.
-        const size_t frame_index = 0;
+        const size_t frame_index = num_decoded_frames_++;
         ImageFrame& frame = frame_buffer_cache_[frame_index];
         // This is guaranteed to occur after JXL_DEC_BASIC_INFO so the size
         // is correct.
@@ -148,60 +285,78 @@ void JXLImageDecoder::Decode(bool only_size) {
           SetFailed();
           return;
         }
+        frame.SetHasAlpha(info_.alpha_bits != 0);
+
         size_t buffer_size;
         if (JXL_DEC_SUCCESS !=
-            JxlDecoderImageOutBufferSize(dec_, &format, &buffer_size)) {
+            JxlDecoderImageOutBufferSize(dec_.get(), &format, &buffer_size)) {
           DVLOG(1) << "JxlDecoderImageOutBufferSize failed";
           SetFailed();
           return;
         }
-        if (buffer_size != info.xsize * info.ysize * 4) {
+        if (buffer_size != info_.xsize * info_.ysize * 16) {
           DVLOG(1) << "Unexpected buffer size";
           SetFailed();
           return;
         }
-        void* pixels_buffer = reinterpret_cast<void*>(frame.GetAddr(0, 0));
-        if (JXL_DEC_SUCCESS != JxlDecoderSetImageOutBuffer(
-                                   dec_, &format, pixels_buffer, buffer_size)) {
-          DVLOG(1) << "JxlDecoderSetImageOutBuffer failed";
+
+        // TODO(http://crbug.com/1210465): Add Munsell chart color accuracy
+        // tests for JXL
+        xform_ = ColorTransform();
+        auto callback = [](void* opaque, size_t x, size_t y, size_t num_pixels,
+                           const void* pixels) {
+          JXLImageDecoder* self = reinterpret_cast<JXLImageDecoder*>(opaque);
+          ImageFrame& frame =
+              self->frame_buffer_cache_[self->num_decoded_frames_ - 1];
+          void* row_dst = self->decode_to_half_float_
+                              ? reinterpret_cast<void*>(frame.GetAddrF16(x, y))
+                              : reinterpret_cast<void*>(frame.GetAddr(x, y));
+
+          bool dst_premultiply = frame.PremultiplyAlpha();
+
+          const skcms_PixelFormat kSrcFormat = skcms_PixelFormat_RGBA_ffff;
+          const skcms_PixelFormat kDstFormat = self->decode_to_half_float_
+                                                   ? skcms_PixelFormat_RGBA_hhhh
+                                                   : XformColorFormat();
+
+          if (self->xform_ || (kDstFormat != kSrcFormat) ||
+              (dst_premultiply && frame.HasAlpha())) {
+            skcms_AlphaFormat src_alpha = skcms_AlphaFormat_Unpremul;
+            skcms_AlphaFormat dst_alpha =
+                (dst_premultiply && self->info_.alpha_bits)
+                    ? skcms_AlphaFormat_PremulAsEncoded
+                    : skcms_AlphaFormat_Unpremul;
+            const auto* src_profile =
+                self->xform_ ? self->xform_->SrcProfile() : nullptr;
+            const auto* dst_profile =
+                self->xform_ ? self->xform_->DstProfile() : nullptr;
+            bool color_conversion_successful = skcms_Transform(
+                pixels, kSrcFormat, src_alpha, src_profile, row_dst, kDstFormat,
+                dst_alpha, dst_profile, num_pixels);
+            DCHECK(color_conversion_successful);
+          }
+        };
+        if (JXL_DEC_SUCCESS != JxlDecoderSetImageOutCallback(
+                                   dec_.get(), &format, callback, this)) {
+          DVLOG(1) << "JxlDecoderSetImageOutCallback failed";
           SetFailed();
           return;
         }
         break;
       }
       case JXL_DEC_FULL_IMAGE: {
-        ImageFrame& frame = frame_buffer_cache_[0];
-        frame.SetHasAlpha(info.alpha_bits != 0);
-        ColorProfileTransform* xform = ColorTransform();
-        constexpr skcms_PixelFormat kSrcFormat = skcms_PixelFormat_RGBA_8888;
-        const skcms_PixelFormat kDstFormat = XformColorFormat();
-
-        if (xform || (kDstFormat != kSrcFormat) ||
-            (frame.PremultiplyAlpha() && frame.HasAlpha())) {
-          skcms_AlphaFormat src_alpha = skcms_AlphaFormat_Unpremul;
-          skcms_AlphaFormat dst_alpha =
-              (frame.PremultiplyAlpha() && info.alpha_bits)
-                  ? skcms_AlphaFormat_PremulAsEncoded
-                  : skcms_AlphaFormat_Unpremul;
-          const auto* src_profile = xform ? xform->SrcProfile() : nullptr;
-          const auto* dst_profile = xform ? xform->DstProfile() : nullptr;
-          for (size_t y = 0; y < info.ysize; ++y) {
-            ImageFrame::PixelData* row = frame.GetAddr(0, y);
-            bool color_conversion_successful =
-                skcms_Transform(row, kSrcFormat, src_alpha, src_profile, row,
-                                kDstFormat, dst_alpha, dst_profile, info.xsize);
-            DCHECK(color_conversion_successful);
-          }
-        }
+        ImageFrame& frame = frame_buffer_cache_[num_decoded_frames_ - 1];
         frame.SetPixelsChanged(true);
         frame.SetStatus(ImageFrame::kFrameComplete);
-        // We do not support animated images yet, so return after the first
-        // frame rather than wait for JXL_DEC_SUCCESS.
-        JxlDecoderReset(dec_);
-        return;
+        // All required frames were decoded.
+        if (num_decoded_frames_ > index) {
+          return;
+        }
+        break;
       }
       case JXL_DEC_SUCCESS: {
-        JxlDecoderReset(dec_);
+        dec_ = nullptr;
+        finished_ = true;
         return;
       }
       default: {
@@ -227,6 +382,130 @@ bool JXLImageDecoder::MatchesJXLSignature(
   if (!memcmp(contents, "\0\0\0\x0CJXL \x0D\x0A\x87\x0A", 12))
     return true;
   return false;
+}
+
+void JXLImageDecoder::InitializeNewFrame(size_t index) {
+  auto& buffer = frame_buffer_cache_[index];
+  if (decode_to_half_float_)
+    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
+  buffer.SetHasAlpha(info_.alpha_bits != 0);
+  buffer.SetPremultiplyAlpha(premultiply_alpha_);
+}
+
+bool JXLImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
+  return IsAllDataReceived() ||
+         (index < num_decoded_frames_ &&
+          frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete);
+}
+
+int JXLImageDecoder::RepetitionCount() const {
+  if (!info_.have_animation)
+    return kAnimationNone;
+
+  if (info_.animation.num_loops == 0)
+    return kAnimationLoopInfinite;
+
+  if (info_.animation.num_loops == 1)
+    return kAnimationLoopOnce;
+
+  return info_.animation.num_loops;
+}
+
+base::TimeDelta JXLImageDecoder::FrameDurationAtIndex(size_t index) const {
+  if (index < frame_durations_.size())
+    return base::TimeDelta::FromSecondsD(frame_durations_[index]);
+
+  return base::TimeDelta();
+}
+
+size_t JXLImageDecoder::DecodeFrameCount() {
+  DecodeSize();
+  if (!info_.have_animation) {
+    frame_durations_.resize(1);
+    frame_durations_[0] = 0;
+    return 1;
+  }
+
+  FastSharedBufferReader reader(data_.get());
+  if (finished_ || size_at_last_frame_count_ == reader.size() ||
+      has_full_frame_count_) {
+    return frame_buffer_cache_.size();
+  }
+  size_at_last_frame_count_ = reader.size();
+
+  // Decode the metadata of every frame that is available.
+  if (frame_count_dec_ == nullptr) {
+    frame_durations_.clear();
+    frame_count_dec_ = JxlDecoderMake(nullptr);
+    frame_count_offset_ = 0;
+    if (JXL_DEC_SUCCESS !=
+        JxlDecoderSubscribeEvents(frame_count_dec_.get(), JXL_DEC_FRAME)) {
+      SetFailed();
+      return frame_buffer_cache_.size();
+    }
+  }
+
+  for (;;) {
+    JxlDecoderStatus status = JxlDecoderProcessInput(frame_count_dec_.get());
+    switch (status) {
+      case JXL_DEC_ERROR: {
+        DVLOG(1) << "Decoder error " << status;
+        SetFailed();
+        return frame_buffer_cache_.size();
+      }
+      case JXL_DEC_NEED_MORE_INPUT: {
+        frame_count_offset_ -= JxlDecoderReleaseInput(frame_count_dec_.get());
+        if (frame_count_offset_ >= reader.size()) {
+          if (IsAllDataReceived()) {
+            DVLOG(1) << "need more input but all data received";
+            SetFailed();
+            return frame_buffer_cache_.size();
+          }
+          return frame_durations_.size();
+        }
+        const char* buffer = nullptr;
+        size_t read = reader.GetSomeData(buffer, frame_count_offset_);
+        if (JXL_DEC_SUCCESS !=
+            JxlDecoderSetInput(frame_count_dec_.get(),
+                               reinterpret_cast<const uint8_t*>(buffer),
+                               read)) {
+          DVLOG(1) << "JxlDecoderSetInput failed";
+          SetFailed();
+          return frame_buffer_cache_.size();
+        }
+        frame_count_offset_ += read;
+        break;
+      }
+      case JXL_DEC_FRAME: {
+        JxlFrameHeader frame_header;
+        if (JxlDecoderGetFrameHeader(frame_count_dec_.get(), &frame_header) !=
+            JXL_DEC_SUCCESS) {
+          DVLOG(1) << "GetFrameHeader failed";
+          SetFailed();
+          return frame_buffer_cache_.size();
+        }
+        if (frame_header.is_last) {
+          has_full_frame_count_ = true;
+        }
+        frame_durations_.push_back(1.0f * frame_header.duration *
+                                   info_.animation.tps_denominator /
+                                   info_.animation.tps_numerator);
+        break;
+      }
+      case JXL_DEC_SUCCESS: {
+        // If the file is fully processed, we won't need to run the decoder
+        // anymore: we can free the memory.
+        frame_count_dec_ = nullptr;
+        DCHECK(has_full_frame_count_);
+        return frame_durations_.size();
+      }
+      default: {
+        DVLOG(1) << "Unexpected decoder status " << status;
+        SetFailed();
+        return frame_buffer_cache_.size();
+      }
+    }
+  }
 }
 
 }  // namespace blink

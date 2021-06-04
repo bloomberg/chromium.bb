@@ -12,7 +12,9 @@
 #include "device/fido/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_util.h"
@@ -66,7 +68,7 @@ blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
 // registrable domain suffix of, or be equal to, the origin's effective domain.
 // Reference:
 // https://html.spec.whatwg.org/multipage/origin.html#is-a-registrable-domain-suffix-of-or-is-equal-to.
-base::Optional<std::string> GetRelyingPartyId(
+absl::optional<std::string> GetRelyingPartyId(
     const std::string& claimed_relying_party_id,
     const url::Origin& caller_origin) {
   if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
@@ -76,7 +78,7 @@ base::Optional<std::string> GetRelyingPartyId(
   }
 
   if (claimed_relying_party_id.empty()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (caller_origin.host() == claimed_relying_party_id) {
@@ -84,7 +86,7 @@ base::Optional<std::string> GetRelyingPartyId(
   }
 
   if (!caller_origin.DomainIs(claimed_relying_party_id)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (!net::registry_controlled_domains::HostHasRegistryControlledDomain(
@@ -98,7 +100,7 @@ base::Optional<std::string> GetRelyingPartyId(
     // TODO(crbug.com/803414): Accept corner-case situations like the following
     // origin: "https://login.awesomecompany",
     // relying_party_id: "awesomecompany".
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return claimed_relying_party_id;
@@ -158,7 +160,7 @@ WebAuthRequestSecurityChecker::ValidateDomainAndRelyingPartyID(
     return domain_validation;
   }
 
-  base::Optional<std::string> valid_rp_id =
+  absl::optional<std::string> valid_rp_id =
       GetRelyingPartyId(relying_party_id, caller_origin);
   if (!valid_rp_id) {
     return blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID;

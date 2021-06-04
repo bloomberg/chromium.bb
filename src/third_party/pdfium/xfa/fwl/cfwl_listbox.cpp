@@ -100,9 +100,9 @@ void CFWL_ListBox::DrawWidget(CFGAS_GEGraphics* pGraphics,
 
   pGraphics->SetClipRect(matrix.TransformRect(rtClip));
   if ((m_Properties.m_dwStyles & FWL_WGTSTYLE_NoBackground) == 0)
-    DrawBkground(pGraphics, &matrix);
+    DrawBkground(pGraphics, matrix);
 
-  DrawItems(pGraphics, &matrix);
+  DrawItems(pGraphics, matrix);
   pGraphics->RestoreGraphState();
 }
 
@@ -328,16 +328,13 @@ bool CFWL_ListBox::ScrollToVisible(Item* pItem) {
 }
 
 void CFWL_ListBox::DrawBkground(CFGAS_GEGraphics* pGraphics,
-                                const CFX_Matrix* pMatrix) {
+                                const CFX_Matrix& mtMatrix) {
   if (!pGraphics)
     return;
 
-  CFWL_ThemeBackground param;
-  param.m_pWidget = this;
+  CFWL_ThemeBackground param(this, pGraphics);
   param.m_iPart = CFWL_Part::Background;
-  param.m_dwStates = 0;
-  param.m_pGraphics = pGraphics;
-  param.m_matrix.Concat(*pMatrix);
+  param.m_matrix = mtMatrix;
   param.m_PartRect = m_ClientRect;
   if (IsShowScrollBar(false) && IsShowScrollBar(true))
     param.m_pRtData = &m_StaticRect;
@@ -347,7 +344,7 @@ void CFWL_ListBox::DrawBkground(CFGAS_GEGraphics* pGraphics,
 }
 
 void CFWL_ListBox::DrawItems(CFGAS_GEGraphics* pGraphics,
-                             const CFX_Matrix* pMatrix) {
+                             const CFX_Matrix& mtMatrix) {
   float fPosX = 0.0f;
   if (m_pHorzScrollBar)
     fPosX = m_pHorzScrollBar->GetPos();
@@ -374,7 +371,7 @@ void CFWL_ListBox::DrawItems(CFGAS_GEGraphics* pGraphics,
       continue;
     if (rtItem.top >= m_ContentRect.bottom())
       break;
-    DrawItem(pGraphics, pItem, i, rtItem, pMatrix);
+    DrawItem(pGraphics, pItem, i, rtItem, mtMatrix);
   }
 }
 
@@ -382,7 +379,7 @@ void CFWL_ListBox::DrawItem(CFGAS_GEGraphics* pGraphics,
                             Item* pItem,
                             int32_t Index,
                             const CFX_RectF& rtItem,
-                            const CFX_Matrix* pMatrix) {
+                            const CFX_Matrix& mtMatrix) {
   uint32_t dwItemStyles = pItem ? pItem->GetStates() : 0;
   uint32_t dwPartStates = CFWL_PartState_Normal;
   if (m_Properties.m_dwStates & FWL_WGTSTATE_Disabled)
@@ -396,12 +393,10 @@ void CFWL_ListBox::DrawItem(CFGAS_GEGraphics* pGraphics,
   }
 
   CFX_RectF rtFocus(rtItem);  // Must outlive |bg_param|.
-  CFWL_ThemeBackground bg_param;
-  bg_param.m_pWidget = this;
+  CFWL_ThemeBackground bg_param(this, pGraphics);
   bg_param.m_iPart = CFWL_Part::ListItem;
   bg_param.m_dwStates = dwPartStates;
-  bg_param.m_pGraphics = pGraphics;
-  bg_param.m_matrix.Concat(*pMatrix);
+  bg_param.m_matrix = mtMatrix;
   bg_param.m_PartRect = rtItem;
   bg_param.m_bMaximize = true;
   bg_param.m_pRtData = &rtFocus;
@@ -424,12 +419,10 @@ void CFWL_ListBox::DrawItem(CFGAS_GEGraphics* pGraphics,
   CFX_RectF rtText(rtItem);
   rtText.Deflate(kItemTextMargin, kItemTextMargin);
 
-  CFWL_ThemeText textParam;
-  textParam.m_pWidget = this;
+  CFWL_ThemeText textParam(this, pGraphics);
   textParam.m_iPart = CFWL_Part::ListItem;
   textParam.m_dwStates = dwPartStates;
-  textParam.m_pGraphics = pGraphics;
-  textParam.m_matrix.Concat(*pMatrix);
+  textParam.m_matrix = mtMatrix;
   textParam.m_PartRect = rtText;
   textParam.m_wsText = std::move(wsText);
   textParam.m_dwTTOStyles = m_TTOStyles;
@@ -443,8 +436,7 @@ CFX_SizeF CFWL_ListBox::CalcSize(bool bAutoSize) {
   m_ContentRect = m_ClientRect;
   CFX_RectF rtUIMargin;
   if (!GetOuter()) {
-    CFWL_ThemePart part;
-    part.m_pWidget = this;
+    CFWL_ThemePart part(this);
     CFX_RectF pUIMargin = GetThemeProvider()->GetUIMargin(part);
     m_ContentRect.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                           pUIMargin.height);
@@ -580,8 +572,7 @@ float CFWL_ListBox::GetScrollWidth() {
 }
 
 float CFWL_ListBox::CalcItemHeight() {
-  CFWL_ThemePart part;
-  part.m_pWidget = this;
+  CFWL_ThemePart part(this);
   return GetThemeProvider()->GetFontSize(part) + 2 * kItemTextMargin;
 }
 
@@ -665,7 +656,7 @@ void CFWL_ListBox::OnProcessEvent(CFWL_Event* pEvent) {
       (pSrcTarget == m_pHorzScrollBar && m_pHorzScrollBar)) {
     CFWL_EventScroll* pScrollEvent = static_cast<CFWL_EventScroll*>(pEvent);
     OnScroll(static_cast<CFWL_ScrollBar*>(pSrcTarget),
-             pScrollEvent->m_iScrollCode, pScrollEvent->m_fPos);
+             pScrollEvent->GetScrollCode(), pScrollEvent->GetPos());
   }
 }
 

@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/search_box/search_box_constants.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -87,8 +88,8 @@ void AssistantMainView::OnAssistantControllerDestroying() {
 void AssistantMainView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (!assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     return;
   }

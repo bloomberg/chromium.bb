@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -28,6 +27,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -42,7 +42,9 @@ constexpr char kMyFilesPath[] = "/home/chronos/user/MyFiles";
 
 // Scanner names used for tests.
 constexpr char kFirstTestScannerName[] = "Test Scanner 1";
+constexpr char16_t kFirstTestScannerName16[] = u"Test Scanner 1";
 constexpr char kSecondTestScannerName[] = "Test Scanner 2";
+constexpr char16_t kSecondTestScannerName16[] = u"Test Scanner 2";
 constexpr char kEpsonTestName[] = "Epson";
 
 // Document source name used for tests.
@@ -276,8 +278,7 @@ TEST_F(ScanServiceTest, GetScanners) {
       {kFirstTestScannerName});
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
-  EXPECT_EQ(scanners[0]->display_name,
-            base::UTF8ToUTF16(kFirstTestScannerName));
+  EXPECT_EQ(scanners[0]->display_name, kFirstTestScannerName16);
 }
 
 // Test that two returned scanners have unique IDs.
@@ -286,10 +287,8 @@ TEST_F(ScanServiceTest, UniqueScannerIds) {
       {kFirstTestScannerName, kSecondTestScannerName});
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 2u);
-  EXPECT_EQ(scanners[0]->display_name,
-            base::UTF8ToUTF16(kFirstTestScannerName));
-  EXPECT_EQ(scanners[1]->display_name,
-            base::UTF8ToUTF16(kSecondTestScannerName));
+  EXPECT_EQ(scanners[0]->display_name, kFirstTestScannerName16);
+  EXPECT_EQ(scanners[1]->display_name, kSecondTestScannerName16);
   EXPECT_NE(scanners[0]->id, scanners[1]->id);
 }
 
@@ -319,7 +318,7 @@ TEST_F(ScanServiceTest, NoCapabilities) {
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
   fake_lorgnette_scanner_manager_.SetGetScannerCapabilitiesResponse(
-      base::nullopt);
+      absl::nullopt);
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
   auto caps = GetScannerCapabilities(scanners[0]->id);
@@ -495,7 +494,7 @@ TEST_F(ScanServiceTest, ScanFails) {
 TEST_F(ScanServiceTest, PageSaveFails) {
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
-  // Sending an empty string in test data simulates a page saving to fail.
+  // Sending an empty string in test data simulates a page failing to save.
   const std::vector<std::string> scan_data = {"TestData1", "", "TestData3"};
   fake_lorgnette_scanner_manager_.SetScanResponse(scan_data);
   auto scanners = GetScanners();

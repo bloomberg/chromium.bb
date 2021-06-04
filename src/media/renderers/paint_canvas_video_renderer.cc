@@ -812,7 +812,7 @@ void PaintCanvasVideoRenderer::Paint(
   cc::PaintImage image = cache_->paint_image;
   DCHECK(image);
 
-  base::Optional<ScopedSharedImageAccess> source_access;
+  absl::optional<ScopedSharedImageAccess> source_access;
   if (video_frame->HasTextures() && cache_->source_texture) {
     DCHECK(cache_->texture_backing);
     source_access.emplace(raster_context_provider->RasterInterface(),
@@ -896,21 +896,19 @@ void PaintCanvasVideoRenderer::Paint(
   } else if (video_frame->HasTextures()) {
     DCHECK_EQ(video_frame->coded_size(),
               gfx::Size(image.width(), image.height()));
-    canvas->drawImageRect(
-        image, gfx::RectToSkRect(video_frame->visible_rect()),
-        SkRect::MakeWH(video_frame->visible_rect().width(),
-                       video_frame->visible_rect().height()),
-        SkSamplingOptions(flags.getFilterQuality(),
-                          SkSamplingOptions::kMedium_asMipmapLinear),
-        &video_flags, SkCanvas::kStrict_SrcRectConstraint);
+    canvas->drawImageRect(image, gfx::RectToSkRect(video_frame->visible_rect()),
+                          SkRect::MakeWH(video_frame->visible_rect().width(),
+                                         video_frame->visible_rect().height()),
+                          cc::PaintFlags::FilterQualityToSkSamplingOptions(
+                              flags.getFilterQuality()),
+                          &video_flags, SkCanvas::kStrict_SrcRectConstraint);
   } else {
     DCHECK_EQ(video_frame->visible_rect().size(),
               gfx::Size(image.width(), image.height()));
-    canvas->drawImage(
-        image, 0, 0,
-        SkSamplingOptions(flags.getFilterQuality(),
-                          SkSamplingOptions::kMedium_asMipmapLinear),
-        &video_flags);
+    canvas->drawImage(image, 0, 0,
+                      cc::PaintFlags::FilterQualityToSkSamplingOptions(
+                          flags.getFilterQuality()),
+                      &video_flags);
   }
 
   if (need_transform)
@@ -1477,7 +1475,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     int level,
     bool premultiply_alpha,
     bool flip_y) {
-  DCHECK(raster_context_provider);
+  if (!raster_context_provider)
+    return false;
 #if defined(OS_ANDROID)
   // TODO(crbug.com/1181993): These formats don't work with the passthrough
   // command decoder on Android for some reason.

@@ -9,8 +9,8 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_switches.h"
 #include "chrome/browser/nearby_sharing/webrtc_signaling_messenger.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sharing/webrtc/ice_config_fetcher.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
+#include "chrome/browser/sharing/webrtc/tachyon_ice_config_fetcher.h"
 #include "content/public/browser/storage_partition.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -56,8 +56,7 @@ class MdnsResponderFactory
 
   void CreateMdnsResponder(mojo::PendingReceiver<network::mojom::MdnsResponder>
                                responder_receiver) override {
-    auto* partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_);
+    auto* partition = profile_->GetDefaultStoragePartition();
     if (!partition) {
       LOG(ERROR) << "MdnsResponderFactory::" << __func__
                  << ": GetDefaultStoragePartition(profile) failed.";
@@ -145,8 +144,7 @@ NearbyConnectionsDependenciesProvider::GetBluetoothAdapterPendingRemote() {
 location::nearby::connections::mojom::WebRtcDependenciesPtr
 NearbyConnectionsDependenciesProvider::GetWebRtcDependencies() {
   auto* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetNetworkContext();
+      profile_->GetDefaultStoragePartition()->GetNetworkContext();
 
   MojoPipe<network::mojom::P2PTrustedSocketManagerClient> socket_manager_client;
   MojoPipe<network::mojom::P2PTrustedSocketManager> trusted_socket_manager;
@@ -172,9 +170,9 @@ NearbyConnectionsDependenciesProvider::GetWebRtcDependencies() {
   // Create ice config fetcher.
   auto url_loader_factory = profile_->GetURLLoaderFactory();
   MojoPipe<sharing::mojom::IceConfigFetcher> ice_config_fetcher;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<IceConfigFetcher>(url_loader_factory),
-      std::move(ice_config_fetcher.receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<TachyonIceConfigFetcher>(
+                                  identity_manager_, url_loader_factory),
+                              std::move(ice_config_fetcher.receiver));
 
   MojoPipe<sharing::mojom::WebRtcSignalingMessenger> messenger;
   mojo::MakeSelfOwnedReceiver(std::make_unique<WebRtcSignalingMessenger>(

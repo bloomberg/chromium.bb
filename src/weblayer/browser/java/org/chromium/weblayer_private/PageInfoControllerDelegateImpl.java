@@ -72,17 +72,6 @@ public class PageInfoControllerDelegateImpl extends PageInfoControllerDelegate {
         return mBrowser.getWindowAndroid().getModalDialogManager();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void showSiteSettings(String url) {
-        Intent intent = SettingsIntentHelper.createIntentForSiteSettingsSingleWebsite(
-                mContext, mProfile.getName(), mProfile.isIncognito(), url);
-
-        launchIntent(intent);
-    }
-
     @Override
     public void showCookieSettings() {
         String category = SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.COOKIES);
@@ -138,9 +127,9 @@ public class PageInfoControllerDelegateImpl extends PageInfoControllerDelegate {
     }
 
     @Override
-    public void getFavicon(String url, Callback<Drawable> callback) {
+    public void getFavicon(GURL url, Callback<Drawable> callback) {
         mProfile.getCachedFaviconForPageUri(
-                url, ObjectWrapper.wrap((ValueCallback<Bitmap>) (bitmap) -> {
+                url.getSpec(), ObjectWrapper.wrap((ValueCallback<Bitmap>) (bitmap) -> {
                     if (bitmap != null) {
                         callback.onResult(new BitmapDrawable(mContext.getResources(), bitmap));
                     } else {

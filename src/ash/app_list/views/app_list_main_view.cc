@@ -32,6 +32,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -143,7 +144,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   // TODO(jennyz): Activate the folder via AppListModel notification.
   if (item->GetItemType() == AppListFolderItem::kItemType) {
     contents_view_->ShowFolderContent(static_cast<AppListFolderItem*>(item));
-    UMA_HISTOGRAM_ENUMERATION(kAppListFolderOpenedHistogram,
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListFolderOpened",
                               kFullscreenAppListFolders, kMaxFolderOpened);
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
@@ -218,10 +219,10 @@ void AppListMainView::SearchBoxFocusChanged(SearchBoxViewBase* sender) {
     return;
 
   SearchResultBaseView* first_result_view =
-      contents_view_->search_results_page_view()->first_result_view();
+      contents_view_->search_result_page_view()->first_result_view();
   if (!first_result_view || !first_result_view->selected())
     return;
-  first_result_view->SetSelected(false, base::nullopt);
+  first_result_view->SetSelected(false, absl::nullopt);
 }
 
 void AppListMainView::AssistantButtonPressed() {

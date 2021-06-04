@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
+#include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
-#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -49,8 +49,8 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
 
   void SetUp() override {
     // Create a testing profile.
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     Profile* const profile =
         profile_manager_->CreateTestingProfile("test-user");

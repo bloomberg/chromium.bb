@@ -23,7 +23,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace extensions {
@@ -116,9 +115,8 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
     return;
 
   browser_context = browser_context ? browser_context : active_context_;
-  std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnAccessibilityTreeDestroyed::Create(
-          tree_id.ToString()));
+  auto args(api::automation_internal::OnAccessibilityTreeDestroyed::Create(
+      tree_id.ToString()));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
@@ -136,9 +134,8 @@ void AutomationEventRouter::DispatchActionResult(
   if (listeners_.empty())
     return;
 
-  std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnActionResult::Create(
-          data.target_tree_id.ToString(), data.request_id, result));
+  auto args(api::automation_internal::OnActionResult::Create(
+      data.target_tree_id.ToString(), data.request_id, result));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
       api::automation_internal::OnActionResult::kEventName, std::move(args),
@@ -149,7 +146,7 @@ void AutomationEventRouter::DispatchActionResult(
 
 void AutomationEventRouter::DispatchGetTextLocationDataResult(
     const ui::AXActionData& data,
-    const base::Optional<gfx::Rect>& rect) {
+    const absl::optional<gfx::Rect>& rect) {
   CHECK(!data.source_extension_id.empty());
 
   if (listeners_.empty())
@@ -167,8 +164,7 @@ void AutomationEventRouter::DispatchGetTextLocationDataResult(
   }
   params.request_id = data.request_id;
 
-  std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnGetTextLocationResult::Create(params));
+  auto args(api::automation_internal::OnGetTextLocationResult::Create(params));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT,
       api::automation_internal::OnGetTextLocationResult::kEventName,

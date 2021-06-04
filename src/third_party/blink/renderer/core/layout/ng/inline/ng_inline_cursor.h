@@ -8,6 +8,7 @@
 #include <unicode/ubidi.h>
 
 #include "base/containers/span.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
@@ -292,6 +293,10 @@ class CORE_EXPORT NGInlineCursor {
   // has no children, returns an empty cursor.
   NGInlineCursor CursorForDescendants() const;
 
+  // Returns a new |NGInlineCursor| whose root is containing block or multicol
+  // container for traversing fragmentainers in root.
+  NGInlineCursor CursorForMovingAcrossFragmentainer() const;
+
   // If |this| is created by |CursorForDescendants()| to traverse parts of an
   // inline formatting context, expand the traversable range to the containing
   // |LayoutBlockFlow|. Does nothing if |this| is for an inline formatting
@@ -466,6 +471,14 @@ class CORE_EXPORT NGInlineCursor {
   // Move the cursor position to previous fragment in pre-order DFS.
   void MoveToPrevious();
 
+  // Move to the previous fragmentainer.
+  // Valid when |CanMoveAcrossFragmentainer|.
+  void MoveToPreviousFragmentainer();
+
+  // Same as |MoveToPrevious|, except this moves to the previous fragmentainer
+  // if |Current| is at the end of a fragmentainer.
+  void MoveToPreviousIncludingFragmentainer();
+
   // Move the current position to previous line. It is error to call other than
   // line box.
   void MoveToPreviousLine();
@@ -572,6 +585,10 @@ class CORE_EXPORT NGInlineCursor {
 
   bool TrySetRootFragmentItems();
 
+  // Returns true and move to current position to |fragment_item|, otherwise
+  // returns false.
+  bool TryToMoveTo(const NGFragmentItem& fragment_item);
+
   void MoveToItem(const ItemsSpan::iterator& iter);
 
   void SlowMoveToFirstFor(const LayoutObject& layout_object);
@@ -614,7 +631,8 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToNextCulledInlineDescendantIfNeeded();
 
   void ResetFragmentIndex();
-  void AdvanceFragmentIndex();
+  void DecrementFragmentIndex();
+  void IncrementFragmentIndex();
 
   NGInlineCursorPosition current_;
 

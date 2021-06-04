@@ -12,12 +12,14 @@
 #include "base/containers/adapters.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/frame_caption_button.h"
 
@@ -286,7 +288,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
   // non-null.
   bool should_show_toolbar =
       !delegate_->IsFullscreen() && web_app_frame_toolbar_;
-  base::Optional<int> icon_spacing;
+  absl::optional<int> icon_spacing;
 
   if (should_show_icon || should_show_title || should_show_toolbar) {
     use_hidden_icon_location = false;
@@ -606,10 +608,20 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetPreferredSize(
 
 void OpaqueBrowserFrameViewLayout::ViewAdded(views::View* host,
                                              views::View* view) {
+  if (views::IsViewClass<views::ClientView>(view)) {
+    client_view_ = static_cast<views::ClientView*>(view);
+    return;
+  }
+
   SetView(view->GetID(), view);
 }
 
 void OpaqueBrowserFrameViewLayout::ViewRemoved(views::View* host,
                                                views::View* view) {
+  if (views::IsViewClass<views::ClientView>(view)) {
+    client_view_ = nullptr;
+    return;
+  }
+
   SetView(view->GetID(), nullptr);
 }

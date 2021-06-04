@@ -45,7 +45,7 @@ message AndroidStartupMetric {
 
   // Timing information spanning the intent received by the
   // activity manager to the first frame drawn.
-  // Next id: 29.
+  // Next id: 31.
   message ToFirstFrame {
     // The duration between the intent received and first frame.
     optional int64 dur_ns = 1;
@@ -101,6 +101,9 @@ message AndroidStartupMetric {
     // Time spent running CPU on jit thread pool.
     optional Slice time_jit_thread_pool_on_cpu = 28;
 
+    // Time spent on garbage collection.
+    optional Slice time_gc_total = 29;
+    optional Slice time_gc_on_cpu = 30;
     // Deprecated was other_process_to_activity_cpu_ratio
     reserved 12;
 
@@ -119,7 +122,15 @@ message AndroidStartupMetric {
   message Activity {
     optional string name = 1;
     optional string method = 2;
-    optional Slice slice = 3;
+    optional int64 ts_method_start = 4;
+
+    // Field 3 contained Slice with a sum of durations for matching slices.
+    reserved 3;
+  }
+
+  message BinderTransaction {
+    optional Slice duration = 1;
+    optional string thread = 2;
   }
 
   // Metrics with information about the status of odex files and the outcome
@@ -141,7 +152,7 @@ message AndroidStartupMetric {
     optional int64 first_frame = 2;
   }
 
-  // Next id: 14
+  // Next id: 15
   message Startup {
     // Random id uniquely identifying an app startup in this trace.
     optional uint32 startup_id = 1;
@@ -154,6 +165,10 @@ message AndroidStartupMetric {
 
     // Details about the activities launched
     repeated Activity activities = 11;
+
+    // Details about slow binder transactions during the startup. The definition
+    // of a slow transaction is an implementation detail.
+    repeated BinderTransaction long_binder_transactions = 14;
 
     // Did we ask the zygote for a new process
     optional bool zygote_new_process = 4;

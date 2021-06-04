@@ -160,7 +160,7 @@ namespace dawn_native { namespace d3d12 {
 
         // The environment can only use DXC when it's available. Override the decision if it is not
         // applicable.
-        ApplyUseDxcToggle();
+        DAWN_TRY(ApplyUseDxcToggle());
         return {};
     }
 
@@ -196,25 +196,33 @@ namespace dawn_native { namespace d3d12 {
         return ToBackend(GetAdapter())->GetBackend()->GetFactory();
     }
 
-    void Device::ApplyUseDxcToggle() {
+    MaybeError Device::ApplyUseDxcToggle() {
         if (!ToBackend(GetAdapter())->GetBackend()->GetFunctions()->IsDXCAvailable()) {
             ForceSetToggle(Toggle::UseDXC, false);
         } else if (IsExtensionEnabled(Extension::ShaderFloat16)) {
             // Currently we can only use DXC to compile HLSL shaders using float16.
             ForceSetToggle(Toggle::UseDXC, true);
         }
+
+        if (IsToggleEnabled(Toggle::UseDXC)) {
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcCompiler());
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcLibrary());
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcValidator());
+        }
+
+        return {};
     }
 
-    ResultOrError<IDxcLibrary*> Device::GetOrCreateDxcLibrary() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcLibrary();
+    ComPtr<IDxcLibrary> Device::GetDxcLibrary() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcLibrary();
     }
 
-    ResultOrError<IDxcCompiler*> Device::GetOrCreateDxcCompiler() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcCompiler();
+    ComPtr<IDxcCompiler> Device::GetDxcCompiler() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcCompiler();
     }
 
-    ResultOrError<IDxcValidator*> Device::GetOrCreateDxcValidator() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcValidator();
+    ComPtr<IDxcValidator> Device::GetDxcValidator() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcValidator();
     }
 
     const PlatformFunctions* Device::GetFunctions() const {
@@ -339,13 +347,13 @@ namespace dawn_native { namespace d3d12 {
     }
     ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return SwapChain::Create(this, descriptor);
+        return OldSwapChain::Create(this, descriptor);
     }
     ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
-        return DAWN_VALIDATION_ERROR("New swapchains not implemented.");
+        return SwapChain::Create(this, surface, previousSwapChain, descriptor);
     }
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
         return Texture::Create(this, descriptor);
@@ -540,14 +548,17 @@ namespace dawn_native { namespace d3d12 {
 
         // Currently this workaround is only needed on Intel Gen9 and Gen9.5 GPUs.
         // See http://crbug.com/1161355 for more information.
-        // TODO(jiawei.shao@intel.com): disable this workaround on the newer drivers when the driver
-        // bug is fixed.
         if (gpu_info::IsIntel(pciInfo.vendorId) &&
             (gpu_info::IsSkylake(pciInfo.deviceId) || gpu_info::IsKabylake(pciInfo.deviceId) ||
              gpu_info::IsCoffeelake(pciInfo.deviceId))) {
-            SetToggle(
-                Toggle::UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel,
-                true);
+            constexpr gpu_info::D3DDriverVersion kFirstDriverVersionWithFix = {27, 20, 100, 9466};
+            if (gpu_info::CompareD3DDriverVersion(pciInfo.vendorId,
+                                                  ToBackend(GetAdapter())->GetDriverVersion(),
+                                                  kFirstDriverVersionWithFix) < 0) {
+                SetToggle(
+                    Toggle::UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel,
+                    true);
+            }
         }
     }
 

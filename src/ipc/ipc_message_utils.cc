@@ -11,7 +11,9 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -95,17 +97,12 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     case base::Value::Type::NONE:
       break;
     case base::Value::Type::BOOLEAN: {
-      bool val;
-      result = value->GetAsBoolean(&val);
-      DCHECK(result);
-      WriteParam(m, val);
+      WriteParam(m, value->GetBool());
       break;
     }
     case base::Value::Type::INTEGER: {
-      int val;
-      result = value->GetAsInteger(&val);
-      DCHECK(result);
-      WriteParam(m, val);
+      DCHECK(value->is_int());
+      WriteParam(m, value->GetInt());
       break;
     }
     case base::Value::Type::DOUBLE: {
@@ -131,7 +128,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       const base::DictionaryValue* dict =
           static_cast<const base::DictionaryValue*>(value);
 
-      WriteParam(m, base::checked_cast<int>(dict->size()));
+      WriteParam(m, base::checked_cast<int>(dict->DictSize()));
 
       for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
            it.Advance()) {
@@ -143,16 +140,11 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     case base::Value::Type::LIST: {
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
       WriteParam(m, base::checked_cast<int>(list->GetSize()));
-      for (const auto& entry : *list) {
+      for (const auto& entry : list->GetList()) {
         WriteValue(m, &entry, recursion + 1);
       }
       break;
     }
-
-    // TODO(crbug.com/859477): Remove after root cause is found.
-    default:
-      CHECK(false);
-      break;
   }
 }
 

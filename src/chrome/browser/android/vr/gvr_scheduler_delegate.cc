@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -179,9 +180,14 @@ void GvrSchedulerDelegate::ConnectPresentingService(
     device::mojom::XRRuntimeSessionOptionsPtr options) {
   ClosePresentationBindings();
 
-  gfx::Size webxr_size(display_info->left_eye->render_width +
-                           display_info->right_eye->render_width,
-                       display_info->left_eye->render_height);
+  int width = 0;
+  int height = 0;
+  for (const auto& view : display_info->views) {
+    width += view->viewport.width();
+    height = std::max(height, view->viewport.height());
+  }
+
+  gfx::Size webxr_size(width, height);
   DVLOG(1) << __func__ << ": resize initial to " << webxr_size.width() << "x"
            << webxr_size.height();
 
@@ -566,7 +572,7 @@ void GvrSchedulerDelegate::UpdatePendingBounds(int16_t frame_index) {
 
 void GvrSchedulerDelegate::SubmitDrawnFrame(FrameType frame_type,
                                             const gfx::Transform& head_pose) {
-  std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
+  std::unique_ptr<gl::GLFenceEGL> fence;
   if (frame_type == kWebXrFrame && graphics_->DoesSurfacelessRendering()) {
     webxr_.GetProcessingFrame()->time_copied = base::TimeTicks::Now();
     if (webxr_use_gpu_fence_) {

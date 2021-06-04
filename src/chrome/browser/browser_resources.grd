@@ -88,11 +88,6 @@
         <include name="IDR_VIDEO_PLAYER_JS" file="resources\video_tutorials\video_player.js" type="BINDATA" />
       </if>
 
-      <if expr="not is_android">
-        <!-- New Tab Page -->
-        <part file="resources/local_ntp/icons.grdp" />
-      </if>
-
       <if expr="enable_supervised_users">
         <part file="resources/supervised_user_error_page_resources.grdp" />
       </if>
@@ -254,7 +249,7 @@
         <include name="IDR_CROSTINI_INSTALLER_APP_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\crostini_installer\app.js" type="BINDATA" use_base_dir="false" />
         <include name="IDR_CROSTINI_INSTALLER_BROWSER_PROXY_JS" file="resources\chromeos\crostini_installer\browser_proxy.js" type="BINDATA" />
         <include name="IDR_CROSTINI_INSTALLER_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\chromeos\crostini_installer\crostini_installer.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_CROSTINI_INSTALLER_TYPES_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\chromeos\crostini\crostini_types.mojom-lite.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_CROSTINI_INSTALLER_TYPES_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ash\crostini\crostini_types.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_CROSTINI_UPGRADER_INDEX_HTML" file="resources\chromeos\crostini_upgrader\index.html" type="BINDATA" />
         <include name="IDR_CROSTINI_UPGRADER_APP_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\crostini_upgrader\app.js" type="BINDATA" use_base_dir="false" />
         <include name="IDR_CROSTINI_UPGRADER_BROWSER_PROXY_JS" file="resources\chromeos\crostini_upgrader\browser_proxy.js" type="BINDATA" />
@@ -445,21 +440,6 @@
         <include name="IDR_ARC_POWER_CONTROL_HTML" file="resources\chromeos\arc_power_control\arc_power_control.html" type="BINDATA"/>
         <include name="IDR_ARC_POWER_CONTROL_JS" file="resources\chromeos\arc_power_control\arc_power_control.js" type="BINDATA" />
         <include name="IDR_ARC_POWER_CONTROL_CSS" file="resources\chromeos\arc_power_control\arc_power_control.css" type="BINDATA" />
-      </if>
-      <if expr="chromeos">
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_GRAPH_EXECUTOR_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\graph_executor.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_HANDWRITING_RECOGNIZER_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\handwriting_recognizer.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_HTML" file="resources\chromeos\machine_learning\machine_learning_internals.html" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_JS" file="resources\chromeos\machine_learning\machine_learning_internals.js" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_MACHINE_LEARNING_SERVICE_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\machine_learning_service.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_MODEL_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\model.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_PAGE_HANDLER_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\chromeos\machine_learning\machine_learning_internals_page_handler.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_SODA_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\soda.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_TENSOR_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\tensor.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_TEST_MODEL_TAB_JS" file="resources\chromeos\machine_learning\test_model_tab.js" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_TIME_MOJO_JS" file="${root_gen_dir}\mojo/public/mojom/base/time.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_UTILS_JS" file="resources\chromeos\machine_learning\machine_learning_internals_utils.js" type="BINDATA" />
-        <include name="IDR_MACHINE_LEARNING_INTERNALS_WEB_PLATFORM_HANDWRITING_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\web_platform_handwriting.mojom-lite.js" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="not is_android">
         <!-- Chrome Cart -->

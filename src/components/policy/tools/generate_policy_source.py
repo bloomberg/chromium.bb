@@ -92,6 +92,7 @@ class PolicyDetails:
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
     self.is_future = policy.get('future', False)
+    self.per_profile = features.get('per_profile', False)
     self.supported_chrome_os_management = policy.get(
         'supported_chrome_os_management', ['active_directory', 'google_cloud'])
     self.schema = policy['schema']
@@ -470,23 +471,24 @@ def _LoadJSONFile(json_file):
 
 def _WritePolicyConstantHeader(policies, policy_atomic_groups, target_platform,
                                f, risk_tags):
-  f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
-          '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
-          '\n'
-          '#include <cstdint>\n'
-          '#include <string>\n'
-          '\n'
-          '#include "base/values.h"\n'
-          '#include "build/chromeos_buildflags.h"\n'
-          '#include "components/policy/core/common/policy_details.h"\n'
-          '#include "components/policy/core/common/policy_map.h"\n'
-          '#include "components/policy/proto/cloud_policy.pb.h"\n'
-          '\n'
-          'namespace policy {\n'
-          '\n'
-          'namespace internal {\n'
-          'struct SchemaData;\n'
-          '}\n\n')
+  f.write('''#ifndef COMPONENTS_POLICY_POLICY_CONSTANTS_H_
+#define COMPONENTS_POLICY_POLICY_CONSTANTS_H_
+
+#include <cstdint>
+#include <string>
+
+#include "build/chromeos_buildflags.h"
+#include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/proto/cloud_policy.pb.h"
+
+namespace policy {
+
+namespace internal {
+struct SchemaData;
+}
+
+''')
 
   if target_platform == 'win':
     f.write('// The windows registry path where Chrome policy '
@@ -544,7 +546,7 @@ def _WritePolicyConstantHeader(policies, policy_atomic_groups, target_platform,
           % _ComputeTotalDevicePolicyExternalDataMaxSize(policies))
 
   f.write('\n}  // namespace policy\n\n'
-          '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
+          '#endif  // COMPONENTS_POLICY_POLICY_CONSTANTS_H_\n')
 
 
 def _WriteChromePolicyAccessHeader(f, protobuf_type):
@@ -552,6 +554,7 @@ def _WriteChromePolicyAccessHeader(f, protobuf_type):
           % protobuf_type.lower())
   f.write('struct %sPolicyAccess {\n' % protobuf_type)
   f.write('  const char* policy_key;\n'
+          '  bool per_profile;\n'
           '  bool (enterprise_management::CloudPolicySettings::'
           '*has_proto)() const;\n'
           '  const enterprise_management::%sPolicyProto&\n'
@@ -1039,6 +1042,7 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
 
 #include "base/check_op.h"
 #include "base/stl_util.h"  // base::size()
+#include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_internal.h"
@@ -1259,11 +1263,13 @@ def _WriteChromePolicyAccessSource(policies, f, protobuf_type):
       if protobuf_type == 'String':
         extra_args = ',\n   ' + _GetStringPolicyType(policy.policy_type)
       f.write('  {key::k%s,\n'
+              '   %s,\n'
               '   &em::CloudPolicySettings::has_%s,\n'
               '   &em::CloudPolicySettings::%s%s},\n' %
-              (name, name.lower(), name.lower(), extra_args))
+              (name, str(policy.per_profile).lower(), name.lower(),
+               name.lower(), extra_args))
   # The list is nullptr-terminated.
-  f.write('  {nullptr, nullptr, nullptr},\n' '};\n\n')
+  f.write('  {nullptr, false, nullptr, nullptr},\n' '};\n\n')
 
 
 #------------------ policy risk tag header -------------------------#
@@ -1538,6 +1544,7 @@ def _WriteChromeOSPolicyAccessHeader(f, protobuf_type):
           '%s user\n// policies.\n' % protobuf_type.lower())
   f.write('struct %sPolicyAccess {\n'
           '  const char* policy_key;\n'
+          '  bool per_profile;\n'
           '  enterprise_management::%sPolicyProto*\n'
           '      (enterprise_management::CloudPolicySettings::'
           '*mutable_proto_ptr)();\n'
@@ -1592,11 +1599,13 @@ def _WriteChromeOSPolicyAccessSource(policies, f, protobuf_type):
                                                                 protobuf_type))
   for policy in policies:
     if policy.policy_protobuf_type == protobuf_type:
-      f.write('  {key::k%s,\n'
-              '   &em::CloudPolicySettings::mutable_%s},\n' %
-              (policy.name, policy.name.lower()))
+      f.write(
+          '  {key::k%s,\n'
+          '   %s,\n'
+          '   &em::CloudPolicySettings::mutable_%s},\n' %
+          (policy.name, str(policy.per_profile).lower(), policy.name.lower()))
   # The list is nullptr-terminated.
-  f.write('  {nullptr, nullptr},\n' '};\n\n')
+  f.write('  {nullptr, false, nullptr},\n' '};\n\n')
 
 
 # Writes policy_constants.cc for use in Chrome OS.

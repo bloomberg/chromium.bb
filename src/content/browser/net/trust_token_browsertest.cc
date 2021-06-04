@@ -8,9 +8,11 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -1705,7 +1707,7 @@ HandlerWrappingLocalTrustTokenFulfiller::
 void HandlerWrappingLocalTrustTokenFulfiller::FulfillTrustTokenIssuance(
     network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
     FulfillTrustTokenIssuanceCallback callback) {
-  base::Optional<std::string> maybe_result =
+  absl::optional<std::string> maybe_result =
       handler_.Issue(std::move(request->request));
   if (maybe_result) {
     std::move(callback).Run(

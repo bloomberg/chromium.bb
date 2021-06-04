@@ -19,6 +19,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/policy/sandbox_type.h"
@@ -58,6 +59,11 @@
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/linux/bpf_ime_policy_linux.h"
 #include "sandbox/policy/linux/bpf_tts_policy_linux.h"
+
+#include "chromeos/assistant/buildflags.h"
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#include "sandbox/policy/linux/bpf_libassistant_policy_linux.h"
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using sandbox::bpf_dsl::Allow;
@@ -176,8 +182,10 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<CdmProcessPolicy>();
     case SandboxType::kPrintCompositor:
       return std::make_unique<PrintCompositorProcessPolicy>();
+#if BUILDFLAG(ENABLE_PRINTING)
     case SandboxType::kPrintBackend:
       return std::make_unique<PrintBackendProcessPolicy>();
+#endif
     case SandboxType::kNetwork:
       return std::make_unique<NetworkProcessPolicy>();
     case SandboxType::kAudio:
@@ -191,6 +199,10 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<ImeProcessPolicy>();
     case SandboxType::kTts:
       return std::make_unique<TtsProcessPolicy>();
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+    case SandboxType::kLibassistant:
+      return std::make_unique<LibassistantProcessPolicy>();
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     case SandboxType::kZygoteIntermediateSandbox:
     case SandboxType::kNoSandbox:
@@ -235,12 +247,17 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case SandboxType::kIme:
     case SandboxType::kTts:
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+    case SandboxType::kLibassistant:
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     case SandboxType::kAudio:
     case SandboxType::kService:
     case SandboxType::kSpeechRecognition:
     case SandboxType::kNetwork:
+#if BUILDFLAG(ENABLE_PRINTING)
     case SandboxType::kPrintBackend:
+#endif
     case SandboxType::kUtility:
     case SandboxType::kNoSandbox:
     case SandboxType::kVideoCapture:

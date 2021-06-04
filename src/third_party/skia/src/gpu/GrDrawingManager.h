@@ -8,10 +8,10 @@
 #ifndef GrDrawingManager_DEFINED
 #define GrDrawingManager_DEFINED
 
+#include "include/core/SkSpan.h"
 #include "include/core/SkSurface.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "src/core/SkSpan.h"
 #include "src/gpu/GrBufferAllocPool.h"
 #include "src/gpu/GrDeferredUpload.h"
 #include "src/gpu/GrHashMapWithCache.h"
@@ -23,18 +23,20 @@
 // Enabling this will print out which path renderers are being chosen
 #define GR_PATH_RENDERER_SPEW 0
 
+class GrArenas;
 class GrCoverageCountingPathRenderer;
 class GrGpuBuffer;
 class GrOnFlushCallbackObject;
 class GrOpFlushState;
 class GrOpsTask;
 class GrRecordingContext;
-class GrSurfaceDrawContext;
 class GrRenderTargetProxy;
 class GrRenderTask;
+class GrResourceAllocator;
 class GrSemaphore;
 class GrSoftwarePathRenderer;
 class GrSurfaceContext;
+class GrSurfaceDrawContext;
 class GrSurfaceProxyView;
 class GrTextureResolveRenderTask;
 class SkDeferredDisplayList;
@@ -46,7 +48,9 @@ public:
     void freeGpuResources();
 
     // OpsTasks created at flush time are stored and handled different from the others.
-    sk_sp<GrOpsTask> newOpsTask(GrSurfaceProxyView, bool flushTimeOpsTask);
+    sk_sp<GrOpsTask> newOpsTask(GrSurfaceProxyView,
+                                sk_sp<GrArenas> arenas,
+                                bool flushTimeOpsTask);
 
     // Create a render task that can resolve MSAA and/or regenerate mipmap levels on proxies. This
     // method will only add the new render task to the list. It is up to the caller to call
@@ -155,7 +159,11 @@ private:
     void removeRenderTasks();
 
     void sortTasks();
-    void reorderTasks();
+
+    // Attempt to reorder tasks to reduce render passes, and check the memory budget of the
+    // resulting intervals. Returns whether the reordering was successful & the memory budget
+    // acceptable. If it returns true, fDAG has been updated to reflect the reordered tasks.
+    bool reorderTasks(GrResourceAllocator*);
 
     void closeAllTasks();
 

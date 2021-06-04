@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -159,6 +158,7 @@ class MutatorHost {
   virtual bool NextFrameHasPendingRAF() const = 0;
   virtual bool HasCanvasInvalidation() const = 0;
   virtual bool HasJSAnimation() const = 0;
+  virtual bool HasSmilAnimation() const = 0;
 
   // Iterates through all animations and returns the minimum tick interval.
   // Returns 0 if there is a continuous animation which should be ticked

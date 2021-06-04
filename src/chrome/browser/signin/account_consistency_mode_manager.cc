@@ -26,6 +26,10 @@
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager_util.h"
+#endif
+
 using signin::AccountConsistencyMethod;
 
 namespace {
@@ -167,12 +171,7 @@ void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
 // static
 bool AccountConsistencyModeManager::ShouldBuildServiceForProfile(
     Profile* profile) {
-  // IsGuestSession() returns true for the ProfileImpl associated with Guest
-  // profiles. This profile manually sets the kSigninAllowed preference, which
-  // causes crashes if the AccountConsistencyModeManager is instantiated. See
-  // https://crbug.com/940026
-  return profile->IsRegularProfile() && !profile->IsGuestSession() &&
-         !profile->IsSystemProfile();
+  return profile->IsRegularProfile() || profile->IsEphemeralGuestProfile();
 }
 
 AccountConsistencyMethod
@@ -205,6 +204,15 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   return ash::IsAccountManagerAvailable(profile)
              ? AccountConsistencyMethod::kMirror
              : AccountConsistencyMethod::kDisabled;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Mirror / Account Manager is available only for the first / Main Profile.
+  if (IsAccountManagerAvailable(profile))
+    return AccountConsistencyMethod::kMirror;
+    // else: Fall through to ENABLE_DICE_SUPPORT section below.
+    // TODO(crbug.com/1198490): Return `AccountConsistencyMethod::kDisabled` if
+    // AccountManager is not available, when DICE has been disabled on Lacros.
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

@@ -232,7 +232,7 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   bool enable_http2_alternative_service;
   bool enable_websocket_over_http2;
-  base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
+  absl::optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
   bool http2_end_stream_with_data_frame;
   NetLog* net_log;
   bool disable_idle_sockets_close_on_memory_pressure;
@@ -263,13 +263,6 @@ bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key);
 base::WeakPtr<SpdySession> CreateSpdySession(HttpNetworkSession* http_session,
                                              const SpdySessionKey& key,
                                              const NetLogWithSource& net_log);
-
-// Like CreateSpdySession(), but the host is considered a trusted proxy and
-// allowed to push cross-origin resources.
-base::WeakPtr<SpdySession> CreateTrustedSpdySession(
-    HttpNetworkSession* http_session,
-    const SpdySessionKey& key,
-    const NetLogWithSource& net_log);
 
 // Like CreateSpdySession(), but does not fail if there is already an IP
 // pooled session for |key|.

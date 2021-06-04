@@ -69,6 +69,38 @@ TEST_F(SelectionModifierTest, MoveByLineHorizontal) {
   EXPECT_EQ("<p>ab|c<br>d<br><br>ghi</p>", MoveBackwardByLine(modifier));
 }
 
+TEST_F(SelectionModifierTest, MoveByLineMultiColumnSingleText) {
+  RuntimeEnabledFeaturesTestHelpers::ScopedLayoutNGBlockFragmentation
+      block_fragmentation(RuntimeEnabledFeatures::LayoutNGEnabled());
+  LoadAhem();
+  InsertStyleElement(
+      "div { font: 10px/15px Ahem; column-count: 3; width: 20ch; }");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<div>|abc def ghi jkl mno pqr</div>");
+  // This HTML is rendered as:
+  //    abc ghi mno
+  //    def jkl pqr
+  SelectionModifier modifier(GetFrame(), selection);
+
+  EXPECT_EQ("<div>abc |def ghi jkl mno pqr</div>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<div>abc def |ghi jkl mno pqr</div>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<div>abc def ghi |jkl mno pqr</div>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<div>abc def ghi jkl |mno pqr</div>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<div>abc def ghi jkl mno |pqr</div>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<div>abc def ghi jkl mno pqr|</div>", MoveForwardByLine(modifier));
+
+  EXPECT_EQ("<div>abc def ghi jkl |mno pqr</div>",
+            MoveBackwardByLine(modifier));
+  EXPECT_EQ("<div>abc def ghi |jkl mno pqr</div>",
+            MoveBackwardByLine(modifier));
+  EXPECT_EQ("<div>abc def |ghi jkl mno pqr</div>",
+            MoveBackwardByLine(modifier));
+  EXPECT_EQ("<div>abc |def ghi jkl mno pqr</div>",
+            MoveBackwardByLine(modifier));
+  EXPECT_EQ("<div>|abc def ghi jkl mno pqr</div>",
+            MoveBackwardByLine(modifier));
+}
+
 TEST_F(SelectionModifierTest, MoveByLineVertical) {
   LoadAhem();
   InsertStyleElement(
@@ -331,9 +363,10 @@ TEST_F(SelectionModifierTest, PositionDisconnectedInFlatTree2) {
       modifier.Modify(SelectionModifyAlteration::kExtend,
                       SelectionModifyDirection::kForward,
                       TextGranularity::kParagraph);
+      EXPECT_TRUE(extent.IsConnected());
       bool flat_extent_is_connected =
           ToPositionInFlatTree(selection.Extent()).IsConnected();
-      EXPECT_EQ(flat_base_is_connected && flat_extent_is_connected
+      EXPECT_EQ(flat_base_is_connected || flat_extent_is_connected
                     ? "<div id=\"host\">x</div>^y|"
                     : "<div id=\"host\">x</div>y",
                 GetSelectionTextFromBody(modifier.Selection().AsSelection()));

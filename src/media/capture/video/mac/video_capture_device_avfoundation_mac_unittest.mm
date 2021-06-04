@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -29,8 +30,7 @@ namespace media {
 TEST(VideoCaptureDeviceAVFoundationMacTest,
      OutputsNv12WithoutScalingByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kInCaptureConvertToNv12, kInCapturerScaling}, {});
+  scoped_feature_list.InitAndEnableFeature(kInCapturerScaling);
 
   RunTestCase(base::BindOnce([] {
     NSString* deviceId = GetFirstDeviceId();
@@ -76,7 +76,6 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
 TEST(VideoCaptureDeviceAVFoundationMacTest,
      SpecifiedScalingIsIgnoredWhenInCapturerScalingIsNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kInCaptureConvertToNv12);
   // By default, kInCapturerScaling is false.
   EXPECT_FALSE(base::FeatureList::IsEnabled(kInCapturerScaling));
 
@@ -127,8 +126,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
 
 TEST(VideoCaptureDeviceAVFoundationMacTest, SpecifiedScalingOutputsNv12) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kInCaptureConvertToNv12, kInCapturerScaling}, {});
+  scoped_feature_list.InitAndEnableFeature(kInCapturerScaling);
 
   RunTestCase(base::BindOnce([] {
     NSString* deviceId = GetFirstDeviceId();
@@ -183,8 +181,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, SpecifiedScalingOutputsNv12) {
 TEST(VideoCaptureDeviceAVFoundationMacTest,
      SpecifiedScalingCanChangeDuringCapture) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kInCaptureConvertToNv12, kInCapturerScaling}, {});
+  scoped_feature_list.InitAndEnableFeature(kInCapturerScaling);
 
   RunTestCase(base::BindOnce([] {
     NSString* deviceId = GetFirstDeviceId();
@@ -254,8 +251,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
 TEST(VideoCaptureDeviceAVFoundationMacTest,
      SpecifiedScalingUsesGoodSizesButNotBadSizes) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kInCaptureConvertToNv12, kInCapturerScaling}, {});
+  scoped_feature_list.InitAndEnableFeature(kInCapturerScaling);
 
   RunTestCase(base::BindOnce([] {
     VideoCaptureDeviceFactoryMac video_capture_device_factory;
@@ -266,8 +262,8 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
       return;
     }
     const auto& device_info = device_infos.front();
-    NSString* deviceId = [NSString
-        stringWithUTF8String:device_info.descriptor.device_id.c_str()];
+    NSString* deviceId =
+        base::SysUTF8ToNSString(device_info.descriptor.device_id);
     VideoCaptureFormat camera_format = device_info.supported_formats.front();
 
     testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>

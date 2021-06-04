@@ -37,11 +37,8 @@ class F extends ValidationTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[builtin(position)]] var<out> Position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-              Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-              return;
+            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+              return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -49,10 +46,8 @@ class F extends ValidationTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[location(0)]] var<out> fragColor : vec4<f32>;
-            [[stage(fragment)]] fn main() -> void {
-              fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-              return;
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+              return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             }`,
         }),
         entryPoint: 'main',
@@ -75,7 +70,7 @@ class F extends ValidationTest {
     return encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachment.createView(),
+          view: colorAttachment.createView(),
           loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
           storeOp: 'store',
         },

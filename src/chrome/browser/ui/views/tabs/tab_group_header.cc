@@ -29,10 +29,13 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
@@ -42,7 +45,6 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -328,7 +330,7 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
 
   editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
       tab_strip_->controller()->GetBrowser(), group().value(), this,
-      base::nullopt, nullptr, kStopContextMenuPropagation));
+      absl::nullopt, nullptr, kStopContextMenuPropagation));
 }
 
 bool TabGroupHeader::DoesIntersectRect(const views::View* target,

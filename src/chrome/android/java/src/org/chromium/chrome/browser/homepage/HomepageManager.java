@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -175,7 +174,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     public static boolean isHomepageNonNtpPreNative() {
         String currentHomepage = getHomepageUri();
         return !TextUtils.isEmpty(currentHomepage)
-                && !ReturnToChromeExperimentsUtil.isCanonicalizedNTPUrl(currentHomepage);
+                && !UrlUtilities.isCanonicalizedNTPUrl(currentHomepage);
     }
 
     /**

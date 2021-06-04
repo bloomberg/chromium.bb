@@ -5,6 +5,8 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export class BackgroundServiceModel extends SDK.SDKModel.SDKModel implements
     ProtocolProxyApi.BackgroundServiceDispatcher {
@@ -50,7 +52,8 @@ export class BackgroundServiceModel extends SDK.SDKModel.SDKModel implements
   }
 }
 
-SDK.SDKModel.SDKModel.register(BackgroundServiceModel, SDK.SDKModel.Capability.Browser, false);
+SDK.SDKModel.SDKModel.register(
+    BackgroundServiceModel, {capabilities: SDK.SDKModel.Capability.Browser, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

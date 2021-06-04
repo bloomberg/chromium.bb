@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_DELEGATE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_DELEGATE_H_
 
-#include <string>
 #include <vector>
 
 #include "base/time/time.h"
@@ -39,11 +38,6 @@ class AccountReconcilorDelegate {
   // Returns true if the reconcilor should reconcile the profile. Defaults to
   // false.
   virtual bool IsReconcileEnabled() const;
-
-  // Returns whether the OAuth multilogin endpoint can be used to build the Gaia
-  // cookies.
-  // Default implementation returns true.
-  virtual bool IsMultiloginEndpointEnabled() const;
 
   // Returns the value to set in the "source" parameter for Gaia API calls.
   virtual gaia::GaiaSource GetGaiaApiSource() const;

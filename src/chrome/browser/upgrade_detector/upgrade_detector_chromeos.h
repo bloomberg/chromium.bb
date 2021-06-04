@@ -49,16 +49,8 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   UpgradeDetectorChromeos(const base::Clock* clock,
                           const base::TickClock* tick_clock);
 
-  // Return adjusted high annoyance deadline which takes place at night between
-  // 2am and 4am. If |deadline| takes place after 4am it is prolonged for the
-  // next day night between 2am and 4am.
-  static base::Time AdjustDeadline(base::Time deadline);
-
  private:
   friend class base::NoDestructor<UpgradeDetectorChromeos>;
-
-  // Return random TimeDelta uniformly selected between zero and |max|.
-  static base::TimeDelta GenRandomTimeDelta(base::TimeDelta max);
 
   // Returns the period between first notification and Recommended / Required
   // deadline specified via the RelaunchHeadsUpPeriod policy setting, or a
@@ -91,7 +83,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // user that a new version is available.
   void NotifyOnUpgrade();
 
-  base::Optional<InstalledVersionUpdater> installed_version_updater_;
+  absl::optional<InstalledVersionUpdater> installed_version_updater_;
 
   // The time when elevated annoyance deadline is reached.
   base::Time elevated_deadline_;
@@ -114,6 +106,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // Indicates whether the flag status has been sent to update engine.
   bool toggled_update_flag_;
+
+  // Indicates whether there is an update in progress.
+  bool update_in_progress_;
 
   base::WeakPtrFactory<UpgradeDetectorChromeos> weak_factory_{this};
 

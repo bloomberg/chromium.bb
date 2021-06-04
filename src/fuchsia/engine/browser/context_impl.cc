@@ -5,18 +5,20 @@
 #include "fuchsia/engine/browser/context_impl.h"
 
 #include <lib/zx/channel.h>
+#include <lib/zx/handle.h>
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/koid.h"
+#include "base/strings/stringprintf.h"
+#include "components/cast_streaming/browser/public/network_context_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/cast_streaming/public/cast_streaming_session.h"
-#include "fuchsia/cast_streaming/public/network_context_getter.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -24,17 +26,16 @@
 
 ContextImpl::ContextImpl(
     std::unique_ptr<content::BrowserContext> browser_context,
+    inspect::Node inspect_node,
     WebEngineDevToolsController* devtools_controller)
     : browser_context_(std::move(browser_context)),
       devtools_controller_(devtools_controller),
+      inspect_node_(std::move(inspect_node)),
       cookie_manager_(base::BindRepeating(&ContextImpl::GetNetworkContext,
                                           base::Unretained(this))) {
   DCHECK(browser_context_);
   DCHECK(devtools_controller_);
   devtools_controller_->OnContextCreated();
-
-  cast_streaming::SetNetworkContextGetter(base::BindRepeating(
-      &ContextImpl::GetNetworkContext, base::Unretained(this)));
 }
 
 ContextImpl::~ContextImpl() {
@@ -49,6 +50,12 @@ void ContextImpl::DestroyFrame(FrameImpl* frame) {
 
 bool ContextImpl::IsJavaScriptInjectionAllowed() {
   return allow_javascript_injection_;
+}
+
+void ContextImpl::SetCastStreamingEnabled() {
+  cast_streaming_enabled_ = true;
+  cast_streaming::SetNetworkContextGetter(base::BindRepeating(
+      &ContextImpl::GetNetworkContext, base::Unretained(this)));
 }
 
 void ContextImpl::CreateFrame(
@@ -124,7 +131,7 @@ void ContextImpl::CreateFrameForWebContents(
 
   // Verify the explicit sites filter error page content. If the parameter is
   // present, it will be provided to the FrameImpl after it is created below.
-  base::Optional<std::string> explicit_sites_filter_error_page;
+  absl::optional<std::string> explicit_sites_filter_error_page;
   if (params.has_explicit_sites_filter_error_page()) {
     explicit_sites_filter_error_page.emplace();
     if (!cr_fuchsia::StringFromMemData(
@@ -148,9 +155,11 @@ void ContextImpl::CreateFrameForWebContents(
   }
 
   // Wrap the WebContents into a FrameImpl owned by |this|.
-  auto frame_impl =
-      std::make_unique<FrameImpl>(std::move(web_contents), this,
-                                  std::move(params), std::move(frame_request));
+  auto inspect_node_name =
+      base::StringPrintf("frame-%lu", *base::GetKoid(frame_request.channel()));
+  auto frame_impl = std::make_unique<FrameImpl>(
+      std::move(web_contents), this, std::move(params),
+      inspect_node_.CreateChild(inspect_node_name), std::move(frame_request));
 
   if (explicit_sites_filter_error_page) {
     frame_impl->EnableExplicitSitesFilter(
@@ -188,21 +197,14 @@ FrameImpl* ContextImpl::GetFrameImplForTest(
   DCHECK(frame_ptr);
 
   // Find the FrameImpl whose channel is connected to |frame_ptr| by inspecting
-  // the related_koids of active FrameImpls.
-  zx_info_handle_basic_t handle_info{};
-  zx_status_t status = frame_ptr->channel().get_info(
-      ZX_INFO_HANDLE_BASIC, &handle_info, sizeof(zx_info_handle_basic_t),
-      nullptr, nullptr);
-  ZX_CHECK(status == ZX_OK, status) << "zx_object_get_info";
-  zx_handle_t client_handle_koid = handle_info.koid;
-
+  // the "related" KOIDs of active FrameImpls.
+  zx_koid_t channel_koid = base::GetKoid(frame_ptr->channel()).value();
   for (const std::unique_ptr<FrameImpl>& frame : frames_) {
-    status = frame->GetBindingChannelForTest()->get_info(
-        ZX_INFO_HANDLE_BASIC, &handle_info, sizeof(zx_info_handle_basic_t),
-        nullptr, nullptr);
-    ZX_CHECK(status == ZX_OK, status) << "zx_object_get_info";
+    zx_koid_t peer_koid =
+        base::GetRelatedKoid(*frame->GetBindingChannelForTest())  // IN-TEST
+            .value();
 
-    if (client_handle_koid == handle_info.related_koid)
+    if (peer_koid == channel_koid)
       return frame.get();
   }
 
@@ -211,7 +213,5 @@ FrameImpl* ContextImpl::GetFrameImplForTest(
 
 network::mojom::NetworkContext* ContextImpl::GetNetworkContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return content::BrowserContext::GetDefaultStoragePartition(
-             browser_context_.get())
-      ->GetNetworkContext();
+  return browser_context_->GetDefaultStoragePartition()->GetNetworkContext();
 }

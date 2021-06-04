@@ -174,6 +174,18 @@ id<GREYMatcher> ShowTabsButton() {
   return [ChromeMatchersAppInterface showTabsButton];
 }
 
+id<GREYMatcher> AddToReadingListButton() {
+  return [ChromeMatchersAppInterface addToReadingListButton];
+}
+
+id<GREYMatcher> AddToBookmarksButton() {
+  return [ChromeMatchersAppInterface addToBookmarksButton];
+}
+
+id<GREYMatcher> CloseTabMenuButton() {
+  return [ChromeMatchersAppInterface closeTabMenuButton];
+}
+
 id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                                    BOOL is_toggled_on) {
   return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
@@ -404,8 +416,12 @@ id<GREYMatcher> ClearAutofillButton() {
   return [ChromeMatchersAppInterface clearAutofillButton];
 }
 
-id<GREYMatcher> ContentSuggestionCollectionView() {
+id<GREYMatcher> ContentSuggestionsCollectionView() {
   return [ChromeMatchersAppInterface contentSuggestionCollectionView];
+}
+
+id<GREYMatcher> NTPCollectionView() {
+  return [ChromeMatchersAppInterface ntpCollectionView];
 }
 
 id<GREYMatcher> WarningMessageView() {
@@ -487,6 +503,14 @@ id<GREYMatcher> NewTabPageOmnibox() {
 
 id<GREYMatcher> FakeOmnibox() {
   return [ChromeMatchersAppInterface fakeOmnibox];
+}
+
+id<GREYMatcher> DiscoverHeaderLabel() {
+  return [ChromeMatchersAppInterface discoverHeaderLabel];
+}
+
+id<GREYMatcher> NTPLogo() {
+  return [ChromeMatchersAppInterface ntpLogo];
 }
 
 id<GREYMatcher> WebViewMatcher() {
@@ -695,8 +719,9 @@ id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher() {
       manualFallbackCreditCardTableViewWindowMatcher];
 }
 
-id<GREYMatcher> ActivityViewHeader(NSString* page_title) {
-  return [ChromeMatchersAppInterface activityViewHeaderWithTitle:page_title];
+id<GREYMatcher> ActivityViewHeader(NSString* url_host, NSString* page_title) {
+  return [ChromeMatchersAppInterface activityViewHeaderWithURLHost:url_host
+                                                             title:page_title];
 }
 
 id<GREYMatcher> ManualFallbackSuggestPasswordMatcher() {

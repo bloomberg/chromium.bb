@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import socket
 
@@ -22,7 +23,10 @@ def GetUIDevtoolsBackend(port, app_backend, browser_target='/0'):
   client = UIDevToolsClientBackend(app_backend)
   try:
     client.Connect(port or DEFAULT_UI_DEVTOOLS_PORT, browser_target)
-    logging.info('DevTools agent ready at %s', client)
+    logging.info('DevTools agent connected at %s', client)
+    # Enable UI DevTools agents. This is required on Mac so we will be
+    # notified about future updates.
+    client.Enable()
     client.GetDocument()
   except _DEVTOOLS_CONNECTION_ERRORS as exc:
     logging.info('DevTools agent at %s not ready yet: %s', client, exc)
@@ -118,6 +122,12 @@ class UIDevToolsClientBackend(object):
     response = self.GetSearchResults(response['result']['searchId'], 0, count)
     return response['result']['nodeIds']
 
+  def Enable(self):
+    request = {
+        'method': 'DOM.enable',
+    }
+    return self._browser_websocket.SyncRequest(request, timeout=30)
+
   def GetDocument(self):
     request = {
         'method': 'DOM.getDocument',
@@ -162,6 +172,31 @@ class UIDevToolsClientBackend(object):
                 'y': y,
                 'button': button,
                 'wheelDirection': wheel_direction,
+            },
+        }
+    }
+    return self._browser_websocket.SyncRequest(request, timeout=60)
+
+  # pylint: disable=redefined-builtin
+  def DispatchKeyEvent(self,
+                       node_id,
+                       type,
+                       key_code,
+                       code,
+                       flags,
+                       key,
+                       is_char):
+    request = {
+        'method': 'DOM.dispatchKeyEvent',
+        'params': {
+            'nodeId': node_id,
+            'event': {
+                'type': type,
+                'keyCode': key_code,
+                'code': code,
+                'flags': flags,
+                'key': key,
+                'isChar': is_char,
             },
         }
     }

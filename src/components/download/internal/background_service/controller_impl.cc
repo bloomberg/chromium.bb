@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -31,6 +30,7 @@
 #include "components/download/public/background_service/navigation_monitor.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace download {
 namespace {
@@ -163,7 +163,7 @@ Controller::State ControllerImpl::GetState() {
   return controller_state_;
 }
 
-void ControllerImpl::StartDownload(const DownloadParams& params) {
+void ControllerImpl::StartDownload(DownloadParams params) {
   DCHECK(controller_state_ == State::READY ||
          controller_state_ == State::UNAVAILABLE);
 
@@ -173,7 +173,7 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
   if (controller_state_ != State::READY) {
     HandleStartDownloadResponse(params.client, params.guid,
                                 DownloadParams::StartResult::INTERNAL_ERROR,
-                                params.callback);
+                                std::move(params.callback));
     return;
   }
 
@@ -183,7 +183,7 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
       model_->Get(params.guid) != nullptr) {
     HandleStartDownloadResponse(params.client, params.guid,
                                 DownloadParams::StartResult::UNEXPECTED_GUID,
-                                params.callback);
+                                std::move(params.callback));
     return;
   }
 
@@ -191,7 +191,7 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
   if (!client) {
     HandleStartDownloadResponse(params.client, params.guid,
                                 DownloadParams::StartResult::UNEXPECTED_CLIENT,
-                                params.callback);
+                                std::move(params.callback));
     return;
   }
 
@@ -200,11 +200,11 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
   if (client_count >= config_->max_scheduled_downloads) {
     HandleStartDownloadResponse(params.client, params.guid,
                                 DownloadParams::StartResult::BACKOFF,
-                                params.callback);
+                                std::move(params.callback));
     return;
   }
 
-  start_callbacks_[params.guid] = params.callback;
+  start_callbacks_[params.guid] = std::move(params.callback);
   Entry entry(params);
   entry.target_file_path = download_file_dir_.AppendASCII(params.guid);
   model_->Add(entry);
@@ -619,15 +619,15 @@ LogSource::EntryDetailsList ControllerImpl::GetServiceDownloads() {
   return list;
 }
 
-base::Optional<LogSource::EntryDetails> ControllerImpl::GetServiceDownload(
+absl::optional<LogSource::EntryDetails> ControllerImpl::GetServiceDownload(
     const std::string& guid) {
   if (controller_state_ != State::READY)
-    return base::nullopt;
+    return absl::nullopt;
 
   auto* entry = model_->Get(guid);
   auto driver_entry = driver_->Find(guid);
 
-  return base::Optional<LogSource::EntryDetails>(
+  return absl::optional<LogSource::EntryDetails>(
       std::make_pair(entry, driver_entry));
 }
 
@@ -767,7 +767,7 @@ void ControllerImpl::CleanupUnknownFiles() {
   auto entries = model_->PeekEntries();
   std::vector<DriverEntry> driver_entries;
   for (auto* entry : entries) {
-    base::Optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
+    absl::optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
     if (driver_entry.has_value())
       driver_entries.push_back(driver_entry.value());
   }
@@ -784,7 +784,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
     // Pull the initial Entry::State and DriverEntry::State.
     Entry::State state = entry->state;
     auto driver_entry = driver_->Find(entry->guid);
-    base::Optional<DriverEntry::State> driver_state;
+    absl::optional<DriverEntry::State> driver_state;
     if (driver_entry.has_value()) {
       DCHECK_NE(DriverEntry::State::UNKNOWN, driver_entry->state);
       driver_state = driver_entry->state;
@@ -927,7 +927,7 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     return;
   }
 
-  base::Optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
+  absl::optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
 
   // Check if the DriverEntry is in a finished state already.  If so we need to
   // clean up our Entry and finish the download.
@@ -1105,9 +1105,9 @@ void ControllerImpl::HandleStartDownloadResponse(
     DownloadClient client,
     const std::string& guid,
     DownloadParams::StartResult result) {
-  auto callback = start_callbacks_[guid];
+  DownloadParams::StartCallback callback = std::move(start_callbacks_[guid]);
   start_callbacks_.erase(guid);
-  HandleStartDownloadResponse(client, guid, result, callback);
+  HandleStartDownloadResponse(client, guid, result, std::move(callback));
 }
 
 void ControllerImpl::HandleStartDownloadResponse(
@@ -1323,7 +1323,7 @@ bool ControllerImpl::ShouldBlockDownloadOnNavigation(Entry* entry) {
   bool pausable_priority =
       entry->scheduling_params.priority <= SchedulingParams::Priority::NORMAL;
 
-  base::Optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
+  absl::optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
   bool new_download = !driver_entry.has_value();
   bool resumable_download =
       driver_entry.has_value() && driver_entry->can_resume;

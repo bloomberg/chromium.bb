@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MOCK_MOJO_MEDIA_STREAM_DISPATCHER_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MOCK_MOJO_MEDIA_STREAM_DISPATCHER_HOST_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -35,7 +33,7 @@ class MockMojoMediaStreamDispatcherHost
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const WTF::String& device_id,
-      const base::Optional<base::UnguessableToken>& session_id) override;
+      const absl::optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const WTF::String& device_id,
                   mojom::blink::MediaStreamType type,
@@ -43,7 +41,7 @@ class MockMojoMediaStreamDispatcherHost
 
   MOCK_METHOD1(CloseDevice, void(const WTF::String&));
   MOCK_METHOD3(SetCapturingLinkSecured,
-               void(const base::Optional<base::UnguessableToken>&,
+               void(const absl::optional<base::UnguessableToken>&,
                     mojom::blink::MediaStreamType,
                     bool));
   MOCK_METHOD1(OnStreamStarted, void(const WTF::String&));

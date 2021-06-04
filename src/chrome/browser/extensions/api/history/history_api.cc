@@ -147,8 +147,7 @@ void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
                                       const history::URLRow& row,
                                       const history::RedirectList& redirects,
                                       base::Time visit_time) {
-  std::unique_ptr<base::ListValue> args =
-      OnVisited::Create(GetHistoryItem(row));
+  auto args = OnVisited::Create(GetHistoryItem(row));
   DispatchEvent(profile_, events::HISTORY_ON_VISITED,
                 api::history::OnVisited::kEventName, std::move(args));
 }
@@ -164,16 +163,15 @@ void HistoryEventRouter::OnURLsDeleted(
     urls->push_back(row.url().spec());
   removed.urls.reset(urls);
 
-  std::unique_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
+  auto args = OnVisitRemoved::Create(removed);
   DispatchEvent(profile_, events::HISTORY_ON_VISIT_REMOVED,
                 api::history::OnVisitRemoved::kEventName, std::move(args));
 }
 
-void HistoryEventRouter::DispatchEvent(
-    Profile* profile,
-    events::HistogramValue histogram_value,
-    const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
+void HistoryEventRouter::DispatchEvent(Profile* profile,
+                                       events::HistogramValue histogram_value,
+                                       const std::string& event_name,
+                                       std::vector<base::Value> event_args) {
   if (profile && EventRouter::Get(profile)) {
     auto event = std::make_unique<Event>(histogram_value, event_name,
                                          std::move(event_args), profile);

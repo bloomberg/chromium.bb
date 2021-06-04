@@ -125,7 +125,7 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
   // changes for us, but in addition we "apply" these changes by treating
   // the FakeSyncChangeProcessor's SyncDataList as a map keyed by extension
   // id.
-  base::Optional<syncer::ModelError> ProcessSyncChanges(
+  absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     syncer::FakeSyncChangeProcessor::ProcessSyncChanges(from_here, change_list);
@@ -155,7 +155,7 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
         ADD_FAILURE() << "Unexpected change type " << change.change_type();
       }
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // We override this to help catch the error of trying to use a single
@@ -1578,9 +1578,8 @@ TEST_F(ExtensionServiceSyncCustomGalleryTest, ProcessSyncDataDeferredEnable) {
   PackCRXAndUpdateExtension(id, path, pem_path, ENABLED);
 }
 
-// Flaky on a few platforms.
 TEST_F(ExtensionServiceSyncCustomGalleryTest,
-       DISABLED_ProcessSyncDataPermissionApproval) {
+       ProcessSyncDataPermissionApproval) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),

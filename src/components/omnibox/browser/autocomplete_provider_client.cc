@@ -4,6 +4,11 @@
 
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 
+history_clusters::HistoryClustersService*
+AutocompleteProviderClient::GetHistoryClustersService() {
+  return nullptr;
+}
+
 std::string AutocompleteProviderClient::ProfileUserName() const {
   return "";
 }

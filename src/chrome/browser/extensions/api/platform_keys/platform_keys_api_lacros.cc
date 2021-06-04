@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "chromeos/crosapi/cpp/keystore_service_util.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -32,31 +32,31 @@ const char kErrorInvalidToken[] = "The token is not valid.";
 using crosapi::keystore_service_util::kWebCryptoEcdsa;
 using crosapi::keystore_service_util::kWebCryptoRsassaPkcs1v15;
 
-base::Optional<SigningAlgorithmName> SigningAlgorithmNameFromString(
+absl::optional<SigningAlgorithmName> SigningAlgorithmNameFromString(
     const std::string& input) {
   if (input == kWebCryptoRsassaPkcs1v15)
     return SigningAlgorithmName::kRsassaPkcs115;
   if (input == kWebCryptoEcdsa)
     return SigningAlgorithmName::kEcdsa;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<crosapi::mojom::KeystoreType> KeystoreTypeFromString(
+absl::optional<crosapi::mojom::KeystoreType> KeystoreTypeFromString(
     const std::string& input) {
   if (input == "user")
     return crosapi::mojom::KeystoreType::kUser;
   if (input == "system")
     return crosapi::mojom::KeystoreType::kDevice;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<SigningScheme> SigningSchemeFromStrings(
+absl::optional<SigningScheme> SigningSchemeFromStrings(
     const std::string& hashing,
     const std::string& signing) {
   if (hashing == "none") {
     if (signing == kWebCryptoRsassaPkcs1v15)
       return SigningScheme::kRsassaPkcs1V15None;
-    return base::nullopt;
+    return absl::nullopt;
   }
   if (hashing == "SHA-1") {
     if (signing == kWebCryptoRsassaPkcs1v15)
@@ -82,7 +82,7 @@ base::Optional<SigningScheme> SigningSchemeFromStrings(
     if (signing == kWebCryptoEcdsa)
       return SigningScheme::kEcdsaSha512;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -104,7 +104,7 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
       api_pki::GetPublicKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (chromeos::LacrosChromeServiceImpl::Get()->GetInterfaceVersion(
+  if (chromeos::LacrosService::Get()->GetInterfaceVersion(
           KeystoreService::Uuid_) <
       static_cast<int>(KeystoreService::kGetPublicKeyMinVersion)) {
     return RespondNow(Error(kUnsupportedByAsh));
@@ -117,7 +117,7 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
   if (!Profile::FromBrowserContext(browser_context())->IsMainProfile())
     return RespondNow(Error(kUnsupportedProfile));
 
-  base::Optional<SigningAlgorithmName> algorithm_name =
+  absl::optional<SigningAlgorithmName> algorithm_name =
       SigningAlgorithmNameFromString(params->algorithm_name);
   if (!algorithm_name) {
     return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
@@ -125,8 +125,8 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
 
   auto cb = base::BindOnce(
       &PlatformKeysInternalGetPublicKeyFunction::OnGetPublicKey, this);
-  chromeos::LacrosChromeServiceImpl::Get()
-      ->keystore_service_remote()
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
       ->GetPublicKey(params->certificate, algorithm_name.value(),
                      std::move(cb));
   return RespondLater();
@@ -141,7 +141,7 @@ void PlatformKeysInternalGetPublicKeyFunction::OnGetPublicKey(
       return;
     case Result::Tag::SUCCESS_RESULT:
       api_pki::GetPublicKey::Results::Algorithm algorithm;
-      base::Optional<base::DictionaryValue> dict =
+      absl::optional<base::DictionaryValue> dict =
           crosapi::keystore_service_util::DictionaryFromSigningAlgorithm(
               result->get_success_result()->algorithm_properties);
       if (!dict) {
@@ -170,9 +170,9 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
       api_pki::Sign::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (chromeos::LacrosChromeServiceImpl::Get()->GetInterfaceVersion(
+  if (chromeos::LacrosService::Get()->GetInterfaceVersion(
           KeystoreService::Uuid_) <
-      static_cast<int>(KeystoreService::kSignMinVersion)) {
+      static_cast<int>(KeystoreService::kExtensionSignMinVersion)) {
     return RespondNow(Error(kUnsupportedByAsh));
   }
 
@@ -183,27 +183,28 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
   if (!Profile::FromBrowserContext(browser_context())->IsMainProfile())
     return RespondNow(Error(kUnsupportedProfile));
 
-  base::Optional<crosapi::mojom::KeystoreType> keystore_type =
+  absl::optional<crosapi::mojom::KeystoreType> keystore_type =
       KeystoreTypeFromString(params->token_id);
   if (!keystore_type) {
     return RespondNow(Error(kErrorInvalidToken));
   }
 
-  base::Optional<SigningScheme> scheme = SigningSchemeFromStrings(
+  absl::optional<SigningScheme> scheme = SigningSchemeFromStrings(
       params->hash_algorithm_name, params->algorithm_name);
   if (!scheme) {
     return RespondNow(Error(kErrorAlgorithmNotSupported));
   }
 
   auto cb = base::BindOnce(&PlatformKeysInternalSignFunction::OnSign, this);
-  chromeos::LacrosChromeServiceImpl::Get()->keystore_service_remote()->Sign(
-      keystore_type.value(), params->public_key, scheme.value(), params->data,
-      extension_id(), std::move(cb));
+  chromeos::LacrosService::Get()
+      ->GetRemote<crosapi::mojom::KeystoreService>()
+      ->ExtensionSign(keystore_type.value(), params->public_key, scheme.value(),
+                      params->data, extension_id(), std::move(cb));
   return RespondLater();
 }
 
 void PlatformKeysInternalSignFunction::OnSign(ResultPtr result) {
-  using Result = crosapi::mojom::KeystoreBinaryResult;
+  using Result = crosapi::mojom::ExtensionKeystoreBinaryResult;
   switch (result->which()) {
     case Result::Tag::ERROR_MESSAGE:
       Respond(Error(result->get_error_message()));

@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Klizač za premotavanje</translation>
 <translation id="1404323374378969387">norveški</translation>
 <translation id="1430915738399379752">Štampaj</translation>
+<translation id="1433628812591023318">Da ispustite fajlove u Parallels Desktop, fajl se mora premjestiti u fajlove Windowsa.</translation>
 <translation id="1435838927755162558">Dijeljenje foldera pomoću aplikacije Parallels Desktop</translation>
 <translation id="1467432559032391204">Lijevo</translation>
 <translation id="1471718551822868769">slovački</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">Windows fajlovi</translation>
 <translation id="3078461028045006476">Dijeli s osobom <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Uređaji Chromebit</translation>
+<translation id="3113153474486991170">Otvaranje putanje "<ph name="PATH" />" s ove lokacije nije uspjelo. Kopirajte u folder "Moji fajlovi" da otvorite.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">GOTOVO</translation>
 <translation id="3188257591659621405">Moji fajlovi</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">bugarski s fonetskom tastaturom</translation>
 <translation id="5605830556594064952">SAD Dvorak</translation>
 <translation id="5625294776298156701">tamilski s tastaturom Tamil99</translation>
+<translation id="5633226425545095130">Ako premjestite ovu stavku, dijelit će se sa svakim ko može vidjeti dijeljeni folder "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Poslušajte</translation>
 <translation id="5678784840044122290">Linux aplikacija će biti dostupna unutar vašeg Terminala, a može i prikazivati ikonu na vašem Pokretaču.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nije moguće prekinuti vezu s arhivom ili virtuelnim diskom<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Etiopijska tastatura</translation>
 <translation id="7417705661718309329">Google Mapa</translation>
 <translation id="7460898608667578234">Ukrajinska</translation>
+<translation id="7486315294984620427">Da ispustite fajlove u Parallels Desktop, fajl se mora kopirati u fajlove Windowsa.</translation>
 <translation id="7489215562877293245">Broj pronađenih fajlova: <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     Spremno za izradu sigurnosne kopije na <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimenzije</translation>
 <translation id="8437209419043462667">SAD</translation>
 <translation id="8456681095658380701">Nevažeće ime</translation>
+<translation id="8459404855768962328">Ako kopirate ovu stavku, dijelit će se sa svakim ko može vidjeti dijeljeni folder "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="8461467696380332069">Desnim tasterom kliknite na fajl i odaberite "Zakači na policu" da brzo pristupite fajlovima na polici.</translation>
 <translation id="8463494891489624050">vijetnamski VIQR</translation>
 <translation id="8466234950814670489">Tar arhiva</translation>

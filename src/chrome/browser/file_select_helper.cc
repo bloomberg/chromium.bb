@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,7 +70,7 @@ namespace {
 
 #if defined(OS_ANDROID)
 // The MIME type for selecting contacts.
-constexpr char kContactsMimeType[] = "text/json+contacts";
+constexpr char16_t kContactsMimeType[] = u"text/json+contacts";
 #endif
 
 void DeleteFiles(std::vector<base::FilePath> paths) {
@@ -102,6 +104,7 @@ bool IsDownloadAllowedBySafeBrowsing(
     case Result::UNCOMMON:
     case Result::DANGEROUS_HOST:
     case Result::POTENTIALLY_UNWANTED:
+    case Result::DANGEROUS_ACCOUNT_COMPROMISE:
       return false;
 
     // Safe Browsing should only return these results for client downloads, not
@@ -156,7 +159,8 @@ FileSelectHelper::~FileSelectHelper() {
 }
 
 void FileSelectHelper::FileSelected(const base::FilePath& path,
-                                    int index, void* params) {
+                                    int index,
+                                    void* params) {
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
 }
 
@@ -230,7 +234,7 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 void FileSelectHelper::StartNewEnumeration(const base::FilePath& path) {
   base_dir_ = path;
   auto entry = std::make_unique<ActiveDirectoryEnumeration>(path);
-  entry->lister_.reset(new net::DirectoryLister(
+  entry->lister_ = base::WrapUnique(new net::DirectoryLister(
       path, net::DirectoryLister::NO_SORT_RECURSIVE, this));
   entry->lister_->Start();
   directory_enumeration_ = std::move(entry);
@@ -306,8 +310,7 @@ void FileSelectHelper::ConvertToFileChooserFileInfoList(
     content::SiteInstance* site_instance =
         render_frame_host_->GetSiteInstance();
     storage::FileSystemContext* file_system_context =
-        content::BrowserContext::GetStoragePartition(profile_, site_instance)
-            ->GetFileSystemContext();
+        profile_->GetStoragePartition(site_instance)->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
         file_system_context, site_instance->GetSiteURL(), files,
         base::BindOnce(&FileSelectHelper::PerformContentAnalysisIfNeeded,
@@ -506,8 +509,7 @@ void FileSelectHelper::RunFileChooser(
 
 #if defined(OS_ANDROID)
   if (params.accept_types.size() == 1 &&
-      params.accept_types[0].compare(base::ASCIIToUTF16(kContactsMimeType)) ==
-          0) {
+      params.accept_types[0] == kContactsMimeType) {
     scoped_refptr<FileSelectHelperContactsAndroid> file_select_helper_android(
         new FileSelectHelperContactsAndroid(profile));
     file_select_helper_android->RunFileChooser(
@@ -555,9 +557,9 @@ void FileSelectHelper::RunFileChooser(
   render_frame_host_ = render_frame_host;
   web_contents_ = WebContents::FromRenderFrameHost(render_frame_host);
   listener_ = std::move(listener);
-  observer_.RemoveAll();
+  observation_.Reset();
   content::WebContentsObserver::Observe(web_contents_);
-  observer_.Add(render_frame_host_->GetRenderViewHost()->GetWidget());
+  observation_.Observe(render_frame_host_->GetRenderViewHost()->GetWidget());
 
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
@@ -698,8 +700,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       select_file_types_.get() && !select_file_types_->extensions.empty()
           ? 1
           : 0,  // 1-based index of default extension to show.
-      base::FilePath::StringType(),
-      owning_window,
+      base::FilePath::StringType(), owning_window,
 #if defined(OS_ANDROID)
       &accept_types);
 #else
@@ -754,7 +755,8 @@ void FileSelectHelper::EnumerateDirectoryEnd() {
 void FileSelectHelper::RenderWidgetHostDestroyed(
     content::RenderWidgetHost* widget_host) {
   render_frame_host_ = nullptr;
-  observer_.Remove(widget_host);
+  DCHECK(observation_.IsObservingSource(widget_host));
+  observation_.Reset();
 }
 
 void FileSelectHelper::RenderFrameHostChanged(

@@ -59,6 +59,8 @@ class MediaControlOverlayPlayButtonElement;
 class MediaControlPanelElement;
 class MediaControlPanelEnclosureElement;
 class MediaControlPictureInPictureButtonElement;
+class MediaControlPlaybackSpeedButtonElement;
+class MediaControlPlaybackSpeedListElement;
 class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
 class MediaControlScrubbingMessageElement;
@@ -127,6 +129,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ToggleTextTrackList();
   bool TextTrackListIsWanted();
   MediaControlsTextTrackManager& GetTextTrackManager();
+
+  // Methods related to the playback speed menu.
+  void TogglePlaybackSpeedList();
+  bool PlaybackSpeedListIsWanted();
 
   // Methods related to the overflow menu.
   void OpenOverflowMenu();
@@ -367,6 +373,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlToggleClosedCaptionsButtonElement>
       toggle_closed_captions_button_;
   Member<MediaControlTextTrackListElement> text_track_list_;
+  Member<MediaControlPlaybackSpeedButtonElement> playback_speed_button_;
+  Member<MediaControlPlaybackSpeedListElement> playback_speed_list_;
   Member<MediaControlOverflowMenuButtonElement> overflow_menu_;
   Member<MediaControlOverflowMenuListElement> overflow_list_;
   Member<MediaControlButtonPanelElement> media_button_panel_;
@@ -392,6 +400,12 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool is_mouse_over_controls_ : 1;
   bool is_paused_for_scrubbing_ : 1;
   bool is_scrubbing_ = false;
+
+  // When controls are hidden, we defer CSS updates on them in order to avoid
+  // unnecessary style calculation. When controls transition from shown to
+  // hidden, we set this flag to true to ensure that one final style update
+  // takes place in order to eliminate states such as scrubbing.
+  bool is_hiding_controls_ = false;
 
   // Watches the video element for resize and updates media controls as
   // necessary.
@@ -430,4 +444,4 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 };
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_IMPL_H_

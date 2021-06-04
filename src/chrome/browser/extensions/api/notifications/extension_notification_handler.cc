@@ -52,7 +52,7 @@ ExtensionNotificationHandler::~ExtensionNotificationHandler() = default;
 std::string ExtensionNotificationHandler::GetExtensionId(const GURL& url) {
   if (!url.is_valid() || !url.SchemeIs(extensions::kExtensionScheme))
     return "";
-  return url.GetOrigin().host_piece().as_string();
+  return std::string(url.GetOrigin().host_piece());
 }
 
 void ExtensionNotificationHandler::OnClose(
@@ -85,8 +85,8 @@ void ExtensionNotificationHandler::OnClick(
     Profile* profile,
     const GURL& origin,
     const std::string& notification_id,
-    const base::Optional<int>& action_index,
-    const base::Optional<std::u16string>& reply,
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply,
     base::OnceClosure completed_closure) {
   DCHECK(!reply.has_value());
 
@@ -131,7 +131,7 @@ void ExtensionNotificationHandler::SendEvent(
     return;
 
   std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(args)));
+      new Event(histogram_value, event_name, args->TakeList()));
   event->user_gesture = user_gesture;
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }

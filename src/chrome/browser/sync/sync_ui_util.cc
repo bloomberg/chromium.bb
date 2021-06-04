@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -228,14 +229,14 @@ MessageType GetStatus(Profile* profile) {
   return GetStatusLabels(profile).message_type;
 }
 
-AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile) {
+absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType(Profile* profile) {
   const syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // If there is no SyncService (probably because sync is disabled from the
   // command line), then there's no error to show.
   if (!service)
-    return NO_SYNC_ERROR;
+    return absl::nullopt;
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Outdated client errors. 4. Passphrase errors.
@@ -289,7 +290,7 @@ AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile) {
   }
 
   // There is no error.
-  return NO_SYNC_ERROR;
+  return absl::nullopt;
 }
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {

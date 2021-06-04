@@ -35,6 +35,7 @@
 #include "absl/base/macros.h"
 #include "absl/container/fixed_array.h"
 #include "absl/strings/cord_test_helpers.h"
+#include "absl/strings/cordz_test_helpers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -189,14 +190,15 @@ class CordTestPeer {
   }
 
   static Cord MakeSubstring(Cord src, size_t offset, size_t length) {
-    Cord cord = src;
-    ABSL_RAW_CHECK(cord.contents_.is_tree(), "Can not be inlined");
+    ABSL_RAW_CHECK(src.contents_.is_tree(), "Can not be inlined");
+    Cord cord;
     auto* rep = new cord_internal::CordRepSubstring;
     rep->tag = cord_internal::SUBSTRING;
-    rep->child = cord.contents_.tree();
+    rep->child = cord_internal::CordRep::Ref(src.contents_.tree());
     rep->start = offset;
     rep->length = length;
-    cord.contents_.replace_tree(rep);
+    cord.contents_.EmplaceTree(rep,
+                               cord_internal::CordzUpdateTracker::kSubCord);
     return cord;
   }
 };
@@ -239,7 +241,6 @@ TEST(GigabyteCord, FromExternal) {
   // caused crashes in production.  We grow exponentially so that the code will
   // execute in a reasonable amount of time.
   absl::Cord c;
-  ABSL_RAW_LOG(INFO, "Made a Cord with %zu bytes!", c.size());
   c.Append(from);
   while (c.size() < max_size) {
     c.Append(c);

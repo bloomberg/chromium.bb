@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -105,8 +104,8 @@ class WorkerTaskProviderBrowserTest : public InProcessBrowserTest,
   }
 
   content::ServiceWorkerContext* GetServiceWorkerContext(Browser* browser) {
-    return content::BrowserContext::GetDefaultStoragePartition(
-               browser->profile())
+    return browser->profile()
+        ->GetDefaultStoragePartition()
         ->GetServiceWorkerContext();
   }
 

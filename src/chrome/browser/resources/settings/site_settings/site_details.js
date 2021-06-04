@@ -96,26 +96,10 @@ Polymer({
     },
 
     /** @private */
-    enableFontAccessContentSetting_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableFontAccessContentSetting');
-      }
-    },
-
-    /** @private */
     enableWebBluetoothNewPermissionsBackend_: {
       type: Boolean,
       value: () =>
           loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
-    },
-
-    /** @private */
-    enableFileHandlingContentSetting_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableFileHandlingContentSetting');
-      }
     },
   },
 
@@ -135,11 +119,6 @@ Polymer({
     this.addWebUIListener(
         'contentSettingSitePermissionChanged',
         this.onPermissionChanged_.bind(this));
-
-    // <if expr="chromeos">
-    this.addWebUIListener(
-        'prefEnableDrmChanged', this.prefEnableDrmChanged_.bind(this));
-    // </if>
 
     // Refresh block autoplay status from the backend.
     this.browserProxy.fetchBlockAutoplayStatus();
@@ -214,12 +193,6 @@ Polymer({
       this.numCookies_ = cookies;
     }
   },
-
-  // <if expr="chromeos">
-  prefEnableDrmChanged_() {
-    this.updatePermissions_([ContentSettingsTypes.PROTECTED_CONTENT]);
-  },
-  // </if>
 
   /**
    * Retrieves the permissions listed in |categoryList| from the backend for

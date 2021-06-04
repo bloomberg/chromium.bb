@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_HELP_APP_LAUNCHER_H_
 #define CHROME_BROWSER_ASH_LOGIN_HELP_APP_LAUNCHER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
@@ -74,5 +72,11 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when //ch/br/ash/login is moved to
+// ash
+namespace ash {
+using ::chromeos::HelpAppLauncher;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_HELP_APP_LAUNCHER_H_

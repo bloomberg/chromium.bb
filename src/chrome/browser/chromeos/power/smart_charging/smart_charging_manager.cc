@@ -188,9 +188,10 @@ SmartChargingManager::SmartChargingManager(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(detector);
   DCHECK(session_manager);
-  user_activity_observer_.Add(detector);
-  power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
-  session_manager_observer_.Add(session_manager);
+  user_activity_observation_.Observe(detector);
+  power_manager_client_observation_.Observe(
+      chromeos::PowerManagerClient::Get());
+  session_manager_observation_.Observe(session_manager);
   blocking_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
@@ -476,14 +477,14 @@ void SmartChargingManager::OnTimerFired() {
 }
 
 void SmartChargingManager::OnReceiveScreenBrightnessPercent(
-    base::Optional<double> screen_brightness_percent) {
+    absl::optional<double> screen_brightness_percent) {
   if (screen_brightness_percent.has_value()) {
     screen_brightness_percent_ = *screen_brightness_percent;
   }
 }
 
 void SmartChargingManager::OnReceiveSwitchStates(
-    const base::Optional<chromeos::PowerManagerClient::SwitchStates>
+    const absl::optional<chromeos::PowerManagerClient::SwitchStates>
         switch_states) {
   if (switch_states.has_value()) {
     lid_state_ = switch_states->lid_state;

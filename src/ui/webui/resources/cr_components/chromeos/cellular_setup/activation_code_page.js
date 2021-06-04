@@ -81,10 +81,6 @@ Polymer({
       value: UiElement,
     },
 
-    showNoProfilesMessage: {
-      type: Boolean,
-    },
-
     /**
      * @type {!PageState}
      * @private
@@ -111,6 +107,26 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /**
+     * If true, video is expanded.
+     */
+    expanded_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    /**
+     * A11y string used to announce the current status of qr code camera
+     * detection. Used when device web cam is turned on and ready to scan,
+     * and also used after scan has been completed.
+     * @private
+     */
+    qrCodeCameraA11yString_: {
+      type: String,
+      value: '',
+    }
   },
 
   /**
@@ -180,7 +196,7 @@ Polymer({
   detached() {
     this.stopStream_(this.stream_);
     if (this.qrCodeDetectorTimer_) {
-      clearTimeout(this.qrCodeDetectorTimer_);
+      this.clearQrCodeDetectorTimer_();
     }
     this.mediaDevices_.removeEventListener(
         'devicechange', this.updateCameraCount_.bind(this));
@@ -246,6 +262,13 @@ Polymer({
   },
 
   /**
+   * @returns {?number}
+   */
+  getQrCodeDetectorTimerForTest() {
+    return this.qrCodeDetectorTimer_;
+  },
+
+  /**
    * @return {string}
    * @private
    */
@@ -285,7 +308,7 @@ Polymer({
   startScanning_() {
     const oldStream = this.stream_;
     if (this.qrCodeDetectorTimer_) {
-      clearTimeout(this.qrCodeDetectorTimer_);
+      this.clearQrCodeDetectorTimer_();
     }
 
     const useUserFacingCamera =
@@ -337,7 +360,7 @@ Polymer({
             const frame = await capturer.grabFrame();
             const activationCode = await this.detectActivationCode_(frame);
             if (activationCode) {
-              clearTimeout(this.qrCodeDetectorTimer_);
+              this.clearQrCodeDetectorTimer_();
               this.activationCode = activationCode;
               this.stopStream_(this.stream_);
               this.state_ = PageState.SCANNING_SUCCESS;
@@ -373,6 +396,12 @@ Polymer({
   onActivationCodeChanged_() {
     const activationCode = this.validateActivationCode_(this.activationCode);
     this.fire('activation-code-updated', {activationCode: activationCode});
+  },
+
+  /** @private */
+  clearQrCodeDetectorTimer_() {
+    clearTimeout(this.qrCodeDetectorTimer_);
+    this.qrCodeDetectorTimer_ = null;
   },
 
   /**
@@ -417,17 +446,38 @@ Polymer({
 
   /** @private */
   onStateChanged_() {
+    this.qrCodeCameraA11yString_ = '';
     if (this.state_ !== PageState.MANUAL_ENTRY_INSTALL_FAILURE &&
         this.state_ !== PageState.SCANNING_INSTALL_FAILURE) {
       this.showError = false;
     }
     if (this.state_ === PageState.MANUAL_ENTRY) {
+      // Clear |qrCodeDetectorTimer_| before closing video stream, prevents
+      // image capturer from going into an inactive state and throwing errors
+      // when |grabFrame()| is called.
+      this.clearQrCodeDetectorTimer_();
+
       // Wait for the video element to be hidden by isUiElementHidden() before
       // stopping the stream or the user will see a flash.
       Polymer.RenderStatus.afterNextRender(this, () => {
         this.stopStream_(this.stream_);
       });
     }
+
+    if (this.state_ === PageState.SCANNING_USER_FACING ||
+        this.state_ === PageState.SCANNING_ENVIRONMENT_FACING) {
+      this.qrCodeCameraA11yString_ = this.i18n('qrCodeA11YCameraOn');
+      this.expanded_ = true;
+      return;
+    }
+
+    // Focus on the next button after scanning is successful.
+    if (this.state_ === PageState.SCANNING_SUCCESS) {
+      this.qrCodeCameraA11yString_ = this.i18n('qrCodeA11YCameraScanSuccess');
+      this.fire('focus-default-button');
+    }
+
+    this.expanded_ = false;
   },
 
   /**
@@ -437,9 +487,16 @@ Polymer({
   onKeyDown_(e) {
     if (e.key === 'Enter') {
       this.fire('forward-navigation-requested');
-    } else {
-      this.state_ = PageState.MANUAL_ENTRY;
     }
+
+    // Prevents barcode detector video from closing if user tabs through
+    // window. We should only close barcode detector window if user
+    // types in activation code input.
+    if (e.key === 'Tab') {
+      return;
+    }
+
+    this.state_ = PageState.MANUAL_ENTRY;
     e.stopPropagation();
   },
 
@@ -504,8 +561,7 @@ Polymer({
     if (!this.isScanningAvailable_()) {
       return this.i18n('scanQRCodeEnterActivationCode');
     }
-    return this.showNoProfilesMessage ? this.i18n('scanQRCodeNoProfiles') :
-                                        this.i18n('scanQRCode');
+    return this.i18n('scanQRCode');
   },
 
   /**
@@ -515,5 +571,5 @@ Polymer({
    */
   shouldActivationCodeInputBeInvalid_(state) {
     return state === PageState.MANUAL_ENTRY_INSTALL_FAILURE;
-  }
+  },
 });

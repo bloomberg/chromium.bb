@@ -105,13 +105,9 @@ SessionState SessionControllerImpl::GetSessionState() const {
 }
 
 bool SessionControllerImpl::ShouldEnableSettings() const {
-  // Settings opens a web UI window, so it is not available at the lock screen.
-  if (!IsActiveUserSessionStarted() || IsScreenLocked() ||
-      IsInSecondaryLoginScreen()) {
-    return false;
-  }
-
-  return true;
+  // Settings opens a web UI window, so it is only available at active session
+  // at the moment.
+  return !IsUserSessionBlocked();
 }
 
 bool SessionControllerImpl::ShouldShowNotificationTray() const {
@@ -183,12 +179,12 @@ bool SessionControllerImpl::IsUserPublicAccount() const {
   return active_user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
-base::Optional<user_manager::UserType> SessionControllerImpl::GetUserType()
+absl::optional<user_manager::UserType> SessionControllerImpl::GetUserType()
     const {
   if (!IsActiveUserSessionStarted())
-    return base::nullopt;
+    return absl::nullopt;
 
-  return base::make_optional(GetUserSession(0)->user_info.type);
+  return absl::make_optional(GetUserSession(0)->user_info.type);
 }
 
 bool SessionControllerImpl::IsUserPrimary() const {

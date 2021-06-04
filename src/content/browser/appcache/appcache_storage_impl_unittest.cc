@@ -272,7 +272,7 @@ class AppCacheStorageImplTest : public testing::Test {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     background_thread =
         std::make_unique<base::Thread>("AppCacheTest::BackgroundThread");
-    ASSERT_TRUE(background_thread->StartWithOptions(options));
+    ASSERT_TRUE(background_thread->StartWithOptions(std::move(options)));
   }
 
   static void TearDownTestCase() {
@@ -309,7 +309,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // including setting up a disk cache, which checks feature lists.
     // Defer until here so test constructors can set feature lists first.
     weak_partition_factory_.emplace(static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)));
+        browser_context_.GetDefaultStoragePartition()));
   }
 
   void SetUpTest() {
@@ -1828,7 +1828,7 @@ class AppCacheStorageImplTest : public testing::Test {
   TestBrowserContext browser_context_;
   base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
   // Delayed initialization to avoid data races with feature list.
-  base::Optional<base::WeakPtrFactory<StoragePartitionImpl>>
+  absl::optional<base::WeakPtrFactory<StoragePartitionImpl>>
       weak_partition_factory_;
 
   // Test data

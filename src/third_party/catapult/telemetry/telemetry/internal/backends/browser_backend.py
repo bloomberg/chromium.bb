@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+from __future__ import absolute_import
 import logging
 import os
 import posixpath
@@ -55,7 +57,7 @@ class BrowserBackend(app_backend.AppBackend):
   def GetLogFileContents(self):
     if not self.log_file_path:
       return 'No log file'
-    with file(self.log_file_path) as f:
+    with open(self.log_file_path) as f:
       return f.read()
 
   def UploadLogsToCloudStorage(self):
@@ -162,9 +164,11 @@ class BrowserBackend(app_backend.AppBackend):
 
   def _CollectPeriodicScreenshots(self, start_time, frequency_ms):
     self._CollectScreenshot(logging.INFO, "periodic.png", start_time)
-    self._periodic_screenshot_timer = threading.Timer(frequency_ms / 1000.0,
-                                                      self._CollectPeriodicScreenshots,
-                                                      [start_time, frequency_ms])
+    #2To3-division: this line is unchanged as result is expected floats.
+    self._periodic_screenshot_timer = threading.Timer(
+        frequency_ms / 1000.0,
+        self._CollectPeriodicScreenshots,
+        [start_time, frequency_ms])
     if self._collect_periodic_screenshots:
       self._periodic_screenshot_timer.start()
 
@@ -189,7 +193,8 @@ class BrowserBackend(app_backend.AppBackend):
         if start_time:
           # Prepend time since test started to path
           test_time = datetime.now() - start_time
-          suffix = str(test_time.total_seconds()).replace('.', '_') + '-' + suffix
+          suffix = str(test_time.total_seconds()).replace(
+              '.', '_') + '-' + suffix
 
         artifact_name = posixpath.join(
             'debug_screenshots', 'screenshot-%s' % suffix)
@@ -457,3 +462,10 @@ class BrowserBackend(app_backend.AppBackend):
 
   def GetUIDevtoolsBackend(self, port): # pylint: disable=unused-argument
     raise exceptions.StoryActionError('UI Devtools not supported')
+
+  def GetWindowForTarget(self, target_id): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Get Window For Target not supported')
+
+  def SetWindowBounds(
+      self, window_id, bounds): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Set Window Bounds not supported')

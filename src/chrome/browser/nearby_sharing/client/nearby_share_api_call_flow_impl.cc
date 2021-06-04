@@ -137,7 +137,7 @@ void NearbyShareApiCallFlowImpl::ProcessApiCallFailure(
     int net_error,
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
-  base::Optional<NearbyShareHttpError> error;
+  absl::optional<NearbyShareHttpError> error;
   std::string error_message;
   if (net_error == net::OK) {
     int response_code = -1;
@@ -148,8 +148,8 @@ void NearbyShareApiCallFlowImpl::ProcessApiCallFailure(
     error = NearbyShareHttpError::kOffline;
   }
 
-  NS_LOG(ERROR) << "API call failed, error code: "
-                << net::ErrorToString(net_error);
+  NS_LOG(ERROR) << "API call failed: "
+                << NearbyShareHttpStatus(net_error, head).ToString();
   if (body)
     NS_LOG(VERBOSE) << "API failure response body: " << *body;
 

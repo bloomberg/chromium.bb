@@ -55,6 +55,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -73,6 +74,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -272,6 +274,8 @@ class NoStatePrefetchBrowserTest
         command_line);
     command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialPublicKeyForTesting);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "SpeculationRulesPrefetchProxy");
   }
 
   void SetUpOnMainThread() override {
@@ -289,8 +293,9 @@ class NoStatePrefetchBrowserTest
   void WaitForAppcache(const GURL& manifest_url) {
     bool found_manifest = false;
     content::AppCacheService* appcache_service =
-        content::BrowserContext::GetDefaultStoragePartition(
-            current_browser()->profile())
+        current_browser()
+            ->profile()
+            ->GetDefaultStoragePartition()
             ->GetAppCacheService();
     do {
       base::RunLoop wait_loop;
@@ -384,7 +389,7 @@ class NoStatePrefetchBrowserTest
   // Clears the specified data using BrowsingDataRemover.
   void ClearBrowsingData(Browser* browser, uint64_t remove_mask) {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(browser->profile());
+        browser->profile()->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver observer(remover);
     remover->RemoveAndReply(
         base::Time(), base::Time::Max(), remove_mask,
@@ -834,8 +839,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
       PrefetchFromURL(url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForUrl(
-          current_browser()->profile(), url, false);
+      current_browser()->profile()->GetStoragePartitionForUrl(url, false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
@@ -856,8 +860,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   // While the request is cross-site, it's permitted to set (implicitly) lax
   // cookies on a cross-site navigation.
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForUrl(
-          current_browser()->profile(), cross_domain_url, false);
+      current_browser()->profile()->GetStoragePartitionForUrl(cross_domain_url,
+                                                              false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
@@ -942,10 +946,10 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   test_prerender->WaitForLoads(0);
   monitor.WaitForUrls();
 
-  base::Optional<network::ResourceRequest> page_request =
+  absl::optional<network::ResourceRequest> page_request =
       monitor.GetRequestInfo(prefetch_page);
   EXPECT_TRUE(page_request->load_flags & net::LOAD_PREFETCH);
-  base::Optional<network::ResourceRequest> script_request =
+  absl::optional<network::ResourceRequest> script_request =
       monitor.GetRequestInfo(prefetch_script);
   EXPECT_TRUE(script_request->load_flags & net::LOAD_PREFETCH);
 }
@@ -964,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PurposeHeaderIsSet) {
   WaitForRequestCount(prefetch_script, 1);
   monitor.WaitForUrls();
   for (const GURL& url : {prefetch_page, prefetch_script}) {
-    base::Optional<network::ResourceRequest> request =
+    absl::optional<network::ResourceRequest> request =
         monitor.GetRequestInfo(url);
     EXPECT_TRUE(request->load_flags & net::LOAD_PREFETCH);
     EXPECT_FALSE(request->headers.HasHeader(kExpectedPurposeHeaderOnPrefetch));
@@ -993,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   WaitForRequestCount(prefetch_script2, 1);
   monitor.WaitForUrls();
   for (const GURL& url : {prefetch_page, prefetch_script, prefetch_script2}) {
-    base::Optional<network::ResourceRequest> request =
+    absl::optional<network::ResourceRequest> request =
         monitor.GetRequestInfo(url);
     EXPECT_FALSE(request->load_flags & net::LOAD_PREFETCH);
     EXPECT_FALSE(request->headers.HasHeader(kExpectedPurposeHeaderOnPrefetch));
@@ -1170,7 +1174,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
   WaitForRequestCount(page_url, 1);
   monitor.WaitForUrls();
 
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(redirect_url);
   EXPECT_TRUE(request->load_flags & net::LOAD_PREFETCH);
 }
@@ -1299,7 +1303,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   std::unique_ptr<NoStatePrefetchHandle> no_state_prefetch_handle(
       GetNoStatePrefetchManager()->AddPrerenderFromExternalRequest(
-          GURL(content::kChromeUICrashURL), content::Referrer(),
+          GURL(blink::kChromeUICrashURL), content::Referrer(),
           storage_namespace, gfx::Rect(kSize)));
   ASSERT_EQ(no_state_prefetch_handle->contents(), test_prerender->contents());
   test_prerender->WaitForStop();
@@ -1432,7 +1436,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
 #else
   constexpr net::RequestPriority kExpectedPriority = net::IDLE;
 #endif
-  base::Optional<network::ResourceRequest> request =
+  absl::optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(script_url);
   EXPECT_EQ(kExpectedPriority, request->priority);
 }
@@ -1812,6 +1816,98 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderNoSSLReferrer) {
   const std::string referrer =
       EvalJs(web_contents, "document.referrer").ExtractString();
   EXPECT_TRUE(referrer.empty());
+}
+
+// Test class to verify speculation hints for non-private same origin no state
+// prefetches.
+class SpeculationNoStatePrefetchBrowserTest
+    : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kSpeculationRulesPrefetchProxy);
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+  void InsertSpeculation(const GURL& prefetch_url,
+                         FinalStatus expected_final_status,
+                         bool should_navigate_away = false) {
+    std::string speculation_script = R"(
+      var script = document.createElement('script');
+      script.type = 'speculationrules';
+      script.text = `{)";
+    speculation_script.append(R"("prefetch_with_subresources": [{)");
+    speculation_script.append(R"("source": "list",
+          "urls": [)");
+
+    speculation_script.append("\"").append(prefetch_url.spec()).append("\"");
+
+    speculation_script.append(R"(]
+        }]
+      }`;
+      document.head.appendChild(script);)");
+    std::unique_ptr<TestPrerender> test_prerender =
+        no_state_prefetch_contents_factory()->ExpectNoStatePrefetchContents(
+            expected_final_status);
+    EXPECT_TRUE(ExecuteScript(GetActiveWebContents(), speculation_script));
+    if (should_navigate_away) {
+      ui_test_utils::NavigateToURL(
+          current_browser(), src_server()->GetURL("/defaultresponse?page"));
+    }
+    test_prerender->WaitForStop();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationPrefetch) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL(kPrefetchPage),
+                    FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationDisallowsCrossOriginRedirect) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(
+      src_server()->GetURL("/server-redirect-307?" +
+                           src_server()->GetURL(kPrefetchPage).spec()),
+      FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       SpeculationAllowsSameOriginRedirectBlocked) {
+  UseHttpsSrcServer();
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL(
+                        "/server-redirect-307?" +
+                        embedded_test_server()->GetURL(kPrefetchPage).spec()),
+                    FINAL_STATUS_UNSUPPORTED_SCHEME);
+  EXPECT_EQ(0u, GetRequestCount(embedded_test_server()->GetURL(kPrefetchPage)));
+  EXPECT_EQ(0u,
+            GetRequestCount(embedded_test_server()->GetURL(kPrefetchScript)));
+}
+
+IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
+                       HungSpeculationTimedOutByNavigation) {
+  UseHttpsSrcServer();
+  GetNoStatePrefetchManager()->mutable_config().abandon_time_to_live =
+      base::TimeDelta::FromMilliseconds(500);
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/defaultresponse?landing"));
+  InsertSpeculation(src_server()->GetURL("/hung"), FINAL_STATUS_TIMED_OUT,
+                    /*should_navigate_away=*/true);
 }
 
 }  // namespace prerender

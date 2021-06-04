@@ -51,11 +51,17 @@ struct AlphaBlendingOutput {
 void PerformAlphaBlending(const AlphaBlendingInputLayer& bg,
                           const AlphaBlendingInputLayer& fg,
                           const AlphaBlendingOutput& out, size_t num_pixels,
-                          bool alpha_is_premultiplied);
+                          bool alpha_is_premultiplied, bool clamp);
 // Single plane alpha blending
-void PerformAlphaBlending(float* bg, const float* bga, float* fg,
+void PerformAlphaBlending(const float* bg, const float* bga, const float* fg,
                           const float* fga, float* out, size_t num_pixels,
-                          bool alpha_is_premultiplied);
+                          bool alpha_is_premultiplied, bool clamp);
+
+void PerformAlphaWeightedAdd(const float* bg, const float* fg, const float* fga,
+                             float* out, size_t num_pixels, bool clamp);
+
+void PerformMulBlending(const float* bg, const float* fg, float* out,
+                        size_t num_pixels, bool clamp);
 
 void PremultiplyAlpha(float* JXL_RESTRICT r, float* JXL_RESTRICT g,
                       float* JXL_RESTRICT b, const float* JXL_RESTRICT a,

@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace payments {
@@ -43,16 +43,26 @@ void PaymentRequestRowView::SetActiveBackground() {
 }
 
 void PaymentRequestRowView::ShowBottomSeparator() {
-  SetBorder(payments::CreatePaymentRequestRowBorder(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_SeparatorColor),
-      insets_));
+  bottom_separator_visible_ = true;
+  UpdateBottomSeparator();
   SchedulePaint();
 }
 
 void PaymentRequestRowView::HideBottomSeparator() {
-  SetBorder(views::CreateEmptyBorder(insets_));
+  bottom_separator_visible_ = false;
+  UpdateBottomSeparator();
   SchedulePaint();
+}
+
+void PaymentRequestRowView::UpdateBottomSeparator() {
+  if (!GetWidget())
+    return;
+  SetBorder(bottom_separator_visible_
+                ? payments::CreatePaymentRequestRowBorder(
+                      GetNativeTheme()->GetSystemColor(
+                          ui::NativeTheme::kColorId_SeparatorColor),
+                      insets_)
+                : views::CreateEmptyBorder(insets_));
 }
 
 void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
@@ -76,6 +86,11 @@ void PaymentRequestRowView::StateChanged(ButtonState old_state) {
 
   SetIsHighlighted(GetState() == views::Button::STATE_HOVERED ||
                    GetState() == views::Button::STATE_PRESSED);
+}
+
+void PaymentRequestRowView::OnThemeChanged() {
+  Button::OnThemeChanged();
+  UpdateBottomSeparator();
 }
 
 void PaymentRequestRowView::OnFocus() {

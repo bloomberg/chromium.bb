@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
@@ -173,15 +174,11 @@ WidgetBase::~WidgetBase() {
 
 void WidgetBase::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    cc::TaskGraphRunner* task_graph_runner,
     bool for_child_local_root_frame,
     const ScreenInfos& screen_infos,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
     const cc::LayerTreeSettings* settings,
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
-        frame_widget_input_handler,
-    gfx::RenderingPipeline* main_thread_pipeline,
-    gfx::RenderingPipeline* compositor_thread_pipeline) {
+        frame_widget_input_handler) {
   DCHECK(!initialized_);
   scheduler::WebThreadScheduler* main_thread_scheduler =
       &agent_group_scheduler.GetMainThreadScheduler();
@@ -193,7 +190,7 @@ void WidgetBase::InitializeCompositing(
   layer_tree_view_ =
       std::make_unique<LayerTreeView>(this, main_thread_scheduler);
 
-  base::Optional<cc::LayerTreeSettings> default_settings;
+  absl::optional<cc::LayerTreeSettings> default_settings;
   if (!settings) {
     const ScreenInfo& screen_info = screen_infos.current();
     default_settings = GenerateLayerTreeSettings(
@@ -202,13 +199,14 @@ void WidgetBase::InitializeCompositing(
     settings = &default_settings.value();
   }
   screen_infos_ = screen_infos;
+  Platform* platform = Platform::Current();
   layer_tree_view_->Initialize(
       *settings, main_thread_compositor_task_runner_,
       compositing_thread_scheduler
           ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
-      task_graph_runner, std::move(ukm_recorder_factory), main_thread_pipeline,
-      compositor_thread_pipeline);
+      platform->GetTaskGraphRunner(), platform->GetMainThreadPipeline(),
+      platform->GetCompositorThreadPipeline());
 
   FrameWidget* frame_widget = client_->FrameWidget();
 
@@ -763,6 +761,10 @@ void WidgetBase::RunPaintBenchmark(int repeat_count,
   client_->RunPaintBenchmark(repeat_count, result);
 }
 
+void WidgetBase::ScheduleAnimationForWebTests() {
+  client_->ScheduleAnimationForWebTests();
+}
+
 void WidgetBase::SetCompositorVisible(bool visible) {
   if (never_composited_)
     return;
@@ -814,9 +816,10 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
   }
 }
 
-void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
-  widget_host_->SetToolTipText(tooltip_text.IsEmpty() ? "" : tooltip_text,
-                               ToBaseTextDirection(dir));
+void WidgetBase::UpdateTooltipUnderCursor(const String& tooltip_text,
+                                          TextDirection dir) {
+  widget_host_->UpdateTooltipUnderCursor(
+      tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir));
 }
 
 void WidgetBase::ShowVirtualKeyboard() {
@@ -853,8 +856,8 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
   ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
       ui::mojom::VirtualKeyboardVisibilityRequest::NONE;
   bool always_hide_ime = false;
-  base::Optional<gfx::Rect> control_bounds;
-  base::Optional<gfx::Rect> selection_bounds;
+  absl::optional<gfx::Rect> control_bounds;
+  absl::optional<gfx::Rect> selection_bounds;
   if (frame_widget) {
     new_info = frame_widget->TextInputInfo();
     // This will be used to decide whether or not to show VK when VK policy is
@@ -888,6 +891,7 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       (selection_bounds && frame_selection_bounds_ != selection_bounds)) {
     ui::mojom::blink::TextInputStatePtr params =
         ui::mojom::blink::TextInputState::New();
+    params->node_id = new_info.node_id;
     params->type = new_type;
     params->mode = new_mode;
     params->action = new_info.action;
@@ -1502,6 +1506,10 @@ bool WidgetBase::ComputePreferCompositingToLCDText() {
     return true;
   return false;
 #endif
+}
+
+void WidgetBase::CountDroppedPointerDownForEventTiming(unsigned count) {
+  client_->CountDroppedPointerDownForEventTiming(count);
 }
 
 gfx::PointF WidgetBase::DIPsToBlinkSpace(const gfx::PointF& point) {

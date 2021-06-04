@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/i18n/rtl.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -36,6 +35,7 @@
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -43,6 +43,7 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "third_party/blink/public/mojom/media/capture_handle_config.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
@@ -88,6 +89,7 @@ class ClipboardFormatType;
 namespace content {
 class AgentSchedulingGroupHost;
 class FrameTreeNode;
+class PrerenderHostRegistry;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class SessionStorageNamespace;
@@ -161,7 +163,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const std::u16string& message,
       int32_t line_no,
       const std::u16string& source_id,
-      const base::Optional<std::u16string>& untrusted_stack_trace);
+      const absl::optional<std::u16string>& untrusted_stack_trace);
 
   // Called when a RenderFrame for |render_frame_host| is created in the
   // renderer process. Use |RenderFrameDeleted| to listen for when this
@@ -196,7 +198,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // the renderer process.
   virtual void UpdateFaviconURL(
       RenderFrameHostImpl* source,
-      std::vector<blink::mojom::FaviconURLPtr> candidates) {}
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) {}
 
   // The frame changed its window.name property.
   virtual void DidChangeName(RenderFrameHostImpl* render_frame_host,
@@ -264,6 +266,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // default device for the given |type|.
   virtual std::string GetDefaultMediaDeviceID(
       blink::mojom::MediaStreamType type);
+
+  // Setter for the capture handle config, which allows a captured application
+  // to opt-in to exposing information to its capturer(s).
+  virtual void SetCaptureHandleConfig(
+      blink::mojom::CaptureHandleConfigPtr config) {}
 
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual ui::AXMode GetAccessibilityMode();
@@ -510,6 +517,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node);
 
+  // Returns FrameTreeNodes that are logically owned by another frame even
+  // though this relationship is not yet reflected in their frame trees. This
+  // can happen, for example, with unattached guests and orphaned portals.
+  virtual std::vector<FrameTreeNode*> GetUnattachedOwnedNodes(
+      RenderFrameHostImpl* owner);
+
   // Registers a new URL handler for the given protocol.
   virtual void RegisterProtocolHandler(RenderFrameHostImpl* host,
                                        const std::string& scheme,
@@ -569,6 +582,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Return true if the page has a transient affordance to enter fullscreen
   // without consuming user activation.
   virtual bool IsTransientAllowFullscreenActive() const;
+
+  // Return true if the back forward cache is supported. This is not an
+  // indication that the cache will be used.
+  virtual bool IsBackForwardCacheSupported();
 
   // The page is trying to open a new widget (e.g. a select popup). The
   // widget should be created associated with the given
@@ -641,6 +658,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual std::vector<RenderFrameHostImpl*>
   GetActiveTopLevelDocumentsInBrowsingContextGroup(
       RenderFrameHostImpl* render_frame_host);
+
+  // Returns the PrerenderHostRegistry to start/cancel prerendering. This
+  // doesn't return nullptr except for some tests. This should only be called
+  // when blink::features::IsPrerender2Enabled() is true.
+  virtual PrerenderHostRegistry* GetPrerenderHostRegistry();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   virtual void OnPepperInstanceCreated(RenderFrameHostImpl* source,

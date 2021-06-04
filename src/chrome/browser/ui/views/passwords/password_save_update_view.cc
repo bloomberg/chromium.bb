@@ -26,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -33,7 +34,7 @@
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -187,7 +188,9 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
   });
   bool display_arrow = !usernames.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(std::move(usernames)),
+      std::make_unique<ui::SimpleComboboxModel>(
+          std::vector<ui::SimpleComboboxModel::Item>(usernames.begin(),
+                                                     usernames.end())),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
       views::style::STYLE_PRIMARY, display_arrow);
@@ -214,7 +217,9 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
   });
   bool display_arrow = !passwords.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(std::move(passwords)),
+      std::make_unique<ui::SimpleComboboxModel>(
+          std::vector<ui::SimpleComboboxModel::Item>(passwords.begin(),
+                                                     passwords.end())),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
       STYLE_PRIMARY_MONOSPACED, display_arrow);
@@ -262,8 +267,8 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
     AddChildView(std::make_unique<CredentialsItemView>(
                      views::Button::PressedCallback(), titles.first,
                      titles.second, &password_form,
-                     content::BrowserContext::GetDefaultStoragePartition(
-                         controller_.GetProfile())
+                     controller_.GetProfile()
+                         ->GetDefaultStoragePartition()
                          ->GetURLLoaderFactoryForBrowserProcess()
                          .get()))
         ->SetEnabled(false);
@@ -353,9 +358,14 @@ gfx::ImageSkia PasswordSaveUpdateView::GetWindowIcon() {
 void PasswordSaveUpdateView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
-
-  SetBubbleHeader(IDR_SAVE_PASSWORD_MULTI_DEVICE,
-                  IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::
+              kUseNewHeaderForLegacySavePasswordBubble)) {
+    SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+  } else {
+    SetBubbleHeader(IDR_SAVE_PASSWORD_MULTI_DEVICE,
+                    IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK);
+  }
 }
 
 void PasswordSaveUpdateView::OnThemeChanged() {
@@ -402,16 +412,14 @@ void PasswordSaveUpdateView::UpdateUsernameAndPasswordInModel() {
 }
 
 void PasswordSaveUpdateView::ReplaceWithPromo() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  NOTREACHED();
-#else
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)  // PasswordSignInPromoView requires DICE
   RemoveAllChildViews(true);
   username_dropdown_ = nullptr;
   password_dropdown_ = nullptr;
   password_view_button_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   if (controller_.state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     sign_in_promo_ = new PasswordSignInPromoView(controller_.GetWebContents());
     AddChildView(sign_in_promo_);
@@ -425,7 +433,9 @@ void PasswordSaveUpdateView::ReplaceWithPromo() {
   DialogModelChanged();
 
   SizeToContents();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#else
+  NOTREACHED();
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
 void PasswordSaveUpdateView::UpdateBubbleUIElements() {

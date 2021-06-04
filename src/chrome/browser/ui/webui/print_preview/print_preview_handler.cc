@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -58,6 +59,7 @@
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/browser/prefs_util.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
@@ -69,11 +71,15 @@
 #include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/backend/print_backend_utils.h"
 #include "printing/backend/printing_restrictions.h"
 #include "printing/buildflags/buildflags.h"
-#include "printing/printing_utils.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
+
+#if defined(OS_CHROMEOS)
+#include "components/account_manager_core/account_manager_facade.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
@@ -81,11 +87,17 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
-#include "components/account_manager_core/account_manager_facade.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager_util.h"
+#include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 using content::RenderFrameHost;
 using content::WebContents;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+using ash::IsAccountManagerAvailable;
+#endif
 
 namespace printing {
 
@@ -170,12 +182,12 @@ const char kCssBackground[] = "cssBackground";
 // Name of a dictionary pref holding the policy value for the paper size
 // setting.
 const char kMediaSize[] = "mediaSize";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 // Name of a dictionary field holding policy value for the setting.
 const char kValue[] = "value";
 // Name of a dictionary pref holding the policy value for the sheets number.
 const char kSheets[] = "sheets";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
 const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
@@ -193,7 +205,7 @@ const char kIsDriveMounted[] = "isDriveMounted";
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
 base::Value GetSettingsDictionary(const std::string& json_str) {
-  base::Optional<base::Value> settings = base::JSONReader::Read(json_str);
+  absl::optional<base::Value> settings = base::JSONReader::Read(json_str);
   if (!settings || !settings->is_dict()) {
     NOTREACHED() << "Print job settings must be a dictionary.";
     return base::Value();
@@ -247,22 +259,59 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   return UserActionBuckets::kPrintToPrinter;
 }
 
-base::Optional<gfx::Size> ParsePaperSize(const base::Value* paper_size_value) {
-  if (!paper_size_value || paper_size_value->DictEmpty())
-    return base::nullopt;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+base::Value PoliciesToValue(crosapi::mojom::PoliciesPtr ptr) {
+  base::Value policies(base::Value::Type::DICTIONARY);
 
-  const base::Value* custom_size =
-      paper_size_value->FindKey(kPaperSizeCustomSize);
-  if (custom_size) {
-    return gfx::Size(*custom_size->FindIntKey(kPaperSizeWidth),
-                     *custom_size->FindIntKey(kPaperSizeHeight));
+  base::Value header_footer_policy(base::Value::Type::DICTIONARY);
+  if (ptr->print_header_footer_allowed !=
+      crosapi::mojom::Policies::OptionalBool::kUnset) {
+    header_footer_policy.SetBoolKey(
+        kAllowedMode, ptr->print_header_footer_allowed ==
+                          crosapi::mojom::Policies::OptionalBool::kTrue);
+  }
+  if (ptr->print_header_footer_default !=
+      crosapi::mojom::Policies::OptionalBool::kUnset) {
+    header_footer_policy.SetBoolKey(
+        kDefaultMode, ptr->print_header_footer_default ==
+                          crosapi::mojom::Policies::OptionalBool::kTrue);
+  }
+  if (!header_footer_policy.DictEmpty())
+    policies.SetKey(kHeaderFooter, std::move(header_footer_policy));
+
+  base::Value background_graphics_policy(base::Value::Type::DICTIONARY);
+  int value = static_cast<int>(ptr->allowed_background_graphics_modes);
+  if (value)
+    background_graphics_policy.SetIntKey(kAllowedMode, value);
+  value = static_cast<int>(ptr->background_graphics_default);
+  if (value)
+    background_graphics_policy.SetIntKey(kDefaultMode, value);
+  if (!background_graphics_policy.DictEmpty())
+    policies.SetKey(kCssBackground, std::move(background_graphics_policy));
+
+  base::Value paper_size_policy(base::Value::Type::DICTIONARY);
+  const absl::optional<gfx::Size>& default_paper_size = ptr->paper_size_default;
+  if (default_paper_size.has_value()) {
+    base::Value default_paper_size_value(base::Value::Type::DICTIONARY);
+    default_paper_size_value.SetIntKey(kPaperSizeWidth,
+                                       default_paper_size.value().width());
+    default_paper_size_value.SetIntKey(kPaperSizeHeight,
+                                       default_paper_size.value().height());
+    paper_size_policy.SetKey(kDefaultMode, std::move(default_paper_size_value));
+  }
+  if (!paper_size_policy.DictEmpty())
+    policies.SetKey(kMediaSize, std::move(paper_size_policy));
+
+  if (ptr->max_sheets_allowed_has_value) {
+    base::Value sheets_policy(base::Value::Type::DICTIONARY);
+    sheets_policy.SetIntKey(kValue, ptr->max_sheets_allowed);
+    policies.SetKey(kSheets, std::move(sheets_policy));
   }
 
-  const std::string* name = paper_size_value->FindStringKey(kPaperSizeName);
-  DCHECK(name);
-  return ParsePaper(*name).size_um;
+  return policies;
 }
 
+#else
 base::Value GetPolicies(const PrefService& prefs) {
   base::Value policies(base::Value::Type::DICTIONARY);
 
@@ -294,37 +343,43 @@ base::Value GetPolicies(const PrefService& prefs) {
     policies.SetKey(kCssBackground, std::move(background_graphics_policy));
 
   base::Value paper_size_policy(base::Value::Type::DICTIONARY);
-  if (prefs.HasPrefPath(prefs::kPrintingPaperSizeDefault)) {
-    base::Optional<gfx::Size> default_paper_size =
-        ParsePaperSize(prefs.Get(prefs::kPrintingPaperSizeDefault));
-    if (default_paper_size.has_value()) {
-      base::Value default_paper_size_value(base::Value::Type::DICTIONARY);
-      default_paper_size_value.SetIntKey(kPaperSizeWidth,
-                                         default_paper_size.value().width());
-      default_paper_size_value.SetIntKey(kPaperSizeHeight,
-                                         default_paper_size.value().height());
-      paper_size_policy.SetKey(kDefaultMode,
-                               std::move(default_paper_size_value));
-    }
+  absl::optional<gfx::Size> default_paper_size = ParsePaperSizeDefault(prefs);
+  if (default_paper_size.has_value()) {
+    base::Value default_paper_size_value(base::Value::Type::DICTIONARY);
+    default_paper_size_value.SetIntKey(kPaperSizeWidth,
+                                       default_paper_size.value().width());
+    default_paper_size_value.SetIntKey(kPaperSizeHeight,
+                                       default_paper_size.value().height());
+    paper_size_policy.SetKey(kDefaultMode, std::move(default_paper_size_value));
   }
   if (!paper_size_policy.DictEmpty())
     policies.SetKey(kMediaSize, std::move(paper_size_policy));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   if (prefs.HasPrefPath(prefs::kPrintingMaxSheetsAllowed)) {
     base::Value sheets_policy(base::Value::Type::DICTIONARY);
     sheets_policy.SetIntKey(kValue,
                             prefs.GetInteger(prefs::kPrintingMaxSheetsAllowed));
     policies.SetKey(kSheets, std::move(sheets_policy));
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
   return policies;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
 PrintPreviewHandler::PrintPreviewHandler() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::LacrosChromeServiceImpl* service =
+      chromeos::LacrosChromeServiceImpl::Get();
+  if (service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
+    local_printer_ = service->GetRemote<crosapi::mojom::LocalPrinter>().get();
+  } else {
+    LOG(ERROR) << "Local printer not available";
+  }
+#endif
   ReportUserActionHistogram(UserActionBuckets::kPreviewStarted);
 }
 
@@ -395,11 +450,11 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   printer_type_deny_list_.clear();
 }
 
-WebContents* PrintPreviewHandler::preview_web_contents() const {
+WebContents* PrintPreviewHandler::preview_web_contents() {
   return web_ui()->GetWebContents();
 }
 
-PrefService* PrintPreviewHandler::GetPrefs() const {
+PrefService* PrintPreviewHandler::GetPrefs() {
   auto* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   DCHECK(prefs);
   return prefs;
@@ -434,7 +489,7 @@ void PrintPreviewHandler::ReadPrinterTypeDenyListFromPrefs() {
   }
 }
 
-PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
+PrintPreviewUI* PrintPreviewHandler::print_preview_ui() {
   return static_cast<PrintPreviewUI*>(web_ui()->GetController());
 }
 
@@ -470,6 +525,8 @@ std::string PrintPreviewHandler::GetCallbackId(int request_id) {
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
+  // TODO(crbug.com/1195284): Remove log once bug is confirmed fix.
+  LOG(ERROR) << "Initiated PrintPreviewHandler::HandleGetPrinters()";
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
@@ -501,6 +558,8 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
     const base::ListValue* args) {
+  // TODO(crbug.com/1195284): Remove log once bug is confirmed fix.
+  LOG(ERROR) << "Initiated PrintPreviewHandler::HandleGetPrinterCapabilities()";
   std::string callback_id;
   std::string printer_name;
   int type;
@@ -531,6 +590,8 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
+  // TODO(crbug.com/1195284): Remove log once bug is confirmed fix.
+  LOG(ERROR) << "Initiated PrintPreviewHandler::HandleGetPreview()";
   DCHECK_EQ(2U, args->GetSize());
   std::string callback_id;
   std::string json_str;
@@ -573,7 +634,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 
   // Retrieve the page title and url and send it to the renderer process if
   // headers and footers are to be displayed.
-  base::Optional<bool> display_header_footer_opt =
+  absl::optional<bool> display_header_footer_opt =
       settings.FindBoolKey(kSettingHeaderFooterEnabled);
   DCHECK(display_header_footer_opt);
   if (display_header_footer_opt.value_or(false)) {
@@ -693,8 +754,8 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::IsAccountManagerAvailable(profile)) {
+#if defined(OS_CHROMEOS)
+  if (IsAccountManagerAvailable(profile)) {
     // Chrome OS Account Manager is enabled on this Profile and hence, all
     // account management flows will go through native UIs and not through a
     // tabbed browser window.
@@ -703,7 +764,7 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
                                    AccountAdditionSource::kPrintPreviewDialog);
     return;
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   CreateCloudPrintSigninTab(
@@ -772,6 +833,8 @@ void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
 
 void PrintPreviewHandler::HandleGetInitialSettings(
     const base::ListValue* args) {
+  // TODO(crbug.com/1195284): Remove log once bug is confirmed fix.
+  LOG(ERROR) << "Initiated PrintPreviewHandler::HandleGetInitialSettings()";
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
@@ -779,13 +842,33 @@ void PrintPreviewHandler::HandleGetInitialSettings(
   AllowJavascript();
 
   PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
-  handler->GetDefaultPrinter(
+  base::OnceCallback<void(base::Value, const std::string&)> cb =
       base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
-                     weak_factory_.GetWeakPtr(), callback_id));
+                     weak_factory_.GetWeakPtr(), callback_id);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!local_printer_) {
+    LOG(ERROR) << "Local printer not available";
+    handler->GetDefaultPrinter(base::BindOnce(std::move(cb), base::Value()));
+    return;
+  }
+  local_printer_->GetPolicies(
+      base::BindOnce(PoliciesToValue)
+          .Then(base::BindOnce(
+              [](base::OnceCallback<void(base::Value, const std::string&)> cb,
+                 PrinterHandler* handler, base::Value policies) {
+                handler->GetDefaultPrinter(
+                    base::BindOnce(std::move(cb), std::move(policies)));
+              },
+              std::move(cb), handler)));
+#else
+  handler->GetDefaultPrinter(
+      base::BindOnce(std::move(cb), GetPolicies(*GetPrefs())));
+#endif
 }
 
 void PrintPreviewHandler::SendInitialSettings(
     const std::string& callback_id,
+    base::Value policies,
     const std::string& default_printer) {
   base::Value initial_settings(base::Value::Type::DICTIONARY);
   initial_settings.SetStringKey(kDocumentTitle,
@@ -812,8 +895,7 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetKey(kAppState, base::Value());
   }
 
-  base::Value policies = GetPolicies(*prefs);
-  if (!policies.DictEmpty())
+  if (policies.is_dict() && !policies.DictEmpty())
     initial_settings.SetKey(kPolicies, std::move(policies));
 
   if (IsCloudPrintEnabled()) {
@@ -895,11 +977,11 @@ void PrintPreviewHandler::SendCloudPrintJob(
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(base64_data));
 }
 
-WebContents* PrintPreviewHandler::GetInitiator() const {
+WebContents* PrintPreviewHandler::GetInitiator() {
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
-    return NULL;
+    return nullptr;
   return dialog_controller->GetInitiator(preview_web_contents());
 }
 
@@ -1131,6 +1213,12 @@ void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       Profile::FromWebUI(web_ui()),
       chromeos::settings::mojom::kPrintingDetailsSubpagePath);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!local_printer_) {
+    LOG(ERROR) << "Local printer not available";
+    return;
+  }
+  local_printer_->ShowSystemPrintSettings(base::DoNothing());
 #else
   printing::PrinterManagerDialog::ShowPrinterManagerDialog(
       Profile::FromWebUI(web_ui()));

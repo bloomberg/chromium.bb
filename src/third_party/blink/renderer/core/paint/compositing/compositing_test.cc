@@ -45,10 +45,6 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
     web_view_helper_->Initialize(nullptr, nullptr,
                                  &ConfigureCompositingWebView);
     web_view_helper_->Resize(gfx::Size(200, 200));
-
-    // The paint artifact compositor should have been created as part of the
-    // web view helper setup.
-    DCHECK(paint_artifact_compositor());
   }
 
   void TearDown() override { web_view_helper_.reset(); }
@@ -116,6 +112,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
 INSTANTIATE_PAINT_TEST_SUITE_P(CompositingTest);
 
 TEST_P(CompositingTest, DisableAndEnableAcceleratedCompositing) {
+  UpdateAllLifecyclePhases();
   auto* settings = GetLocalFrameView()->GetFrame().GetSettings();
   size_t num_layers = RootCcLayer()->children().size();
   EXPECT_GT(num_layers, 1u);
@@ -166,7 +163,7 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back(
-      {scroll_element_id, gfx::ScrollOffset(0, 1), base::nullopt});
+      {scroll_element_id, gfx::ScrollOffset(0, 1), absl::nullopt});
   overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
       &commit_data);
   UpdateAllLifecyclePhases();
@@ -187,7 +184,7 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   ASSERT_EQ(overflow_scroll_layer,
             CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
   commit_data.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
-                            base::nullopt};
+                            absl::nullopt};
   overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
       &commit_data);
 
@@ -223,7 +220,7 @@ TEST_P(CompositingTest, FrameViewScroll) {
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back({scrollable_area->GetScrollElementId(),
-                                 gfx::ScrollOffset(0, 1), base::nullopt});
+                                 gfx::ScrollOffset(0, 1), absl::nullopt});
   RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
@@ -1773,7 +1770,7 @@ TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
   // Simulate the scroll update with scroll delta from impl-side.
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.emplace_back(cc::CompositorCommitData::ScrollUpdateInfo(
-      element_id, gfx::ScrollOffset(0, 10), base::nullopt));
+      element_id, gfx::ScrollOffset(0, 10), absl::nullopt));
   Compositor().LayerTreeHost()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 10), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 10),

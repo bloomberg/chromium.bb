@@ -77,13 +77,11 @@ static bool depends_on(GrRenderTask* depender, GrRenderTask* dependee) {
         }
     }
     // Check for a formal dependency.
-    for (GrRenderTask* t : depender->dependencies()) {
-        if (dependee == t) {
-            CLUSTER_DEBUGF("Cluster: Bail, %s depends on %s.\n",
-                           describe_task(depender).c_str(),
-                           describe_task(dependee).c_str());
-            return true;
-        }
+    if (depender->dependsOn(dependee)) {
+        CLUSTER_DEBUGF("Cluster: Bail, %s depends on %s.\n",
+                       describe_task(depender).c_str(),
+                       describe_task(dependee).c_str());
+        return true;
     }
     return false;
 }
@@ -160,7 +158,7 @@ bool GrClusterRenderTasks(SkSpan<const sk_sp<GrRenderTask>> input,
                           SkTInternalLList<GrRenderTask>* llist) {
     SkASSERT(llist->isEmpty());
 
-    if (input.count() < 3) {
+    if (input.size() < 3) {
         return false;
     }
 

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
@@ -17,10 +16,12 @@
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -55,7 +56,7 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
       api_epki::GenerateKey::Params::Create(*args_));
 
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
+  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
       platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
   if (!platform_keys_token_id)
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
@@ -92,13 +93,14 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
 
 void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
     const std::string& public_key_der,
-    chromeos::platform_keys::Status status) {
+    absl::optional<crosapi::mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (status == chromeos::platform_keys::Status::kSuccess) {
+  if (!error) {
     Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
         std::vector<uint8_t>(public_key_der.begin(), public_key_der.end()))));
   } else {
-    Respond(Error(chromeos::platform_keys::StatusToString(status)));
+    Respond(
+        Error(chromeos::platform_keys::KeystoreErrorToString(error.value())));
   }
 }
 
@@ -110,7 +112,7 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
   std::unique_ptr<api_epk::GetCertificates::Params> params(
       api_epk::GetCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
+  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
       platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
   if (!platform_keys_token_id)
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
@@ -157,7 +159,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   std::unique_ptr<api_epk::ImportCertificate::Params> params(
       api_epk::ImportCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
+  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
       platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
   if (!platform_keys_token_id)
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
@@ -204,7 +206,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   std::unique_ptr<api_epk::RemoveCertificate::Params> params(
       api_epk::RemoveCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
+  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
       platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
   if (!platform_keys_token_id)
     return RespondNow(Error(platform_keys::kErrorInvalidToken));

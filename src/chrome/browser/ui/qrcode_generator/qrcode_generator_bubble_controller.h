@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_QRCODE_GENERATOR_QRCODE_GENERATOR_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_QRCODE_GENERATOR_QRCODE_GENERATOR_BUBBLE_CONTROLLER_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -27,9 +25,8 @@ class QRCodeGeneratorBubbleController
  public:
   ~QRCodeGeneratorBubbleController() override;
 
-  // Returns whether the generator is available for a given page and
-  // state (incognito etc.).
-  static bool IsGeneratorAvailable(const GURL& url, bool in_incognito);
+  // Returns whether the generator is available for a given page.
+  static bool IsGeneratorAvailable(const GURL& url);
 
   static QRCodeGeneratorBubbleController* Get(
       content::WebContents* web_contents);
@@ -53,6 +50,8 @@ class QRCodeGeneratorBubbleController
   QRCodeGeneratorBubbleController();
 
   friend class content::WebContentsUserData<QRCodeGeneratorBubbleController>;
+
+  void UpdateIcon();
 
   // The web_contents associated with this controller.
   content::WebContents* web_contents_;

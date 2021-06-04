@@ -24,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
@@ -77,7 +76,7 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler_chromeos.h"
 #endif
 
@@ -92,10 +91,9 @@ namespace printing {
 namespace {
 
 #if defined(OS_MAC)
-// U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
-const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
-#elif !BUILDFLAG(IS_CHROMEOS_ASH)
-const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
+const char16_t kBasicPrintShortcut[] = u"\u0028\u21e7\u2318\u0050\u0029";
+#elif !defined(OS_CHROMEOS)
+const char16_t kBasicPrintShortcut[] = u"(Ctrl+Shift+P)";
 #endif
 
 constexpr char kInvalidArgsForDidStartPreview[] =
@@ -290,11 +288,13 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"optionCustomPages", IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES},
     {"optionCustomScaling", IDS_PRINT_PREVIEW_OPTION_CUSTOM_SCALING},
     {"optionDefaultScaling", IDS_PRINT_PREVIEW_OPTION_DEFAULT_SCALING},
+    {"optionEvenPages", IDS_PRINT_PREVIEW_OPTION_EVEN_PAGES},
     {"optionFitToPage", IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE},
     {"optionFitToPaper", IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAPER},
     {"optionHeaderFooter", IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER},
     {"optionLandscape", IDS_PRINT_PREVIEW_OPTION_LANDSCAPE},
     {"optionLongEdge", IDS_PRINT_PREVIEW_OPTION_LONG_EDGE},
+    {"optionOddPages", IDS_PRINT_PREVIEW_OPTION_ODD_PAGES},
     {"optionPortrait", IDS_PRINT_PREVIEW_OPTION_PORTRAIT},
     {"optionRasterize", IDS_PRINT_PREVIEW_OPTION_RASTERIZE},
     {"optionSelectionOnly", IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY},
@@ -313,7 +313,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON},
     {"printDestinationsTitle", IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE},
     {"printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL},
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     {"printToGoogleDrive", IDS_PRINT_PREVIEW_PRINT_TO_GOOGLE_DRIVE},
 #endif
     {"printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF},
@@ -338,14 +338,14 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"selectButton", IDS_PRINT_PREVIEW_BUTTON_SELECT},
     {"seeMore", IDS_PRINT_PREVIEW_SEE_MORE},
     {"seeMoreDestinationsLabel", IDS_PRINT_PREVIEW_SEE_MORE_DESTINATIONS_LABEL},
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     {"serverSearchBoxPlaceholder",
      IDS_PRINT_PREVIEW_SERVER_SEARCH_BOX_PLACEHOLDER},
 #endif
     {"title", IDS_PRINT_PREVIEW_TITLE},
     {"top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL},
     {"unsupportedCloudPrinter", IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER},
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     {"configuringFailedText", IDS_PRINT_CONFIGURING_FAILED_TEXT},
     {"configuringInProgressText", IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT},
     {"optionPin", IDS_PRINT_PREVIEW_OPTION_PIN},
@@ -380,8 +380,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  const std::u16string shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
+#if !defined(OS_CHROMEOS)
+  const std::u16string shortcut_text(kBasicPrintShortcut);
   source->AddString("systemDialogOption",
                     l10n_util::GetStringFUTF16(
                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
@@ -397,7 +397,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 }
 
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   source->AddBoolean("useSystemDefaultPrinter", false);
 #else
   bool system_default_printer = profile->GetPrefs()->GetBoolean(
@@ -423,6 +423,10 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean(
       "printServerScaling",
       base::FeatureList::IsEnabled(chromeos::features::kPrintServerScaling));
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  source->AddBoolean("showPrinterStatus", true);
+  source->AddBoolean("showPrinterStatusInDialog", true);
+  source->AddBoolean("printServerScaling", true);
 #endif
 }
 
@@ -452,7 +456,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
 PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
   auto handler = std::make_unique<PrintPreviewHandler>();
   PrintPreviewHandler* handler_ptr = handler.get();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   web_ui->AddMessageHandler(std::make_unique<PrintPreviewHandlerChromeOS>());
 #endif
   web_ui->AddMessageHandler(std::move(handler));
@@ -464,7 +468,7 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
       "printPreviewPageSummaryLabel", IDS_PRINT_PREVIEW_PAGE_SUMMARY_LABEL);
   plural_string_handler->AddLocalizedString(
       "printPreviewSheetSummaryLabel", IDS_PRINT_PREVIEW_SHEET_SUMMARY_LABEL);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   plural_string_handler->AddLocalizedString(
       "sheetsLimitErrorMessage", IDS_PRINT_PREVIEW_SHEETS_LIMIT_ERROR_MESSAGE);
 #endif
@@ -808,7 +812,7 @@ void PrintPreviewUI::SetInitialParams(
 
 // static
 bool PrintPreviewUI::ShouldCancelRequest(
-    const base::Optional<int32_t>& preview_ui_id,
+    const absl::optional<int32_t>& preview_ui_id,
     int request_id) {
   if (!preview_ui_id)
     return true;
@@ -818,7 +822,7 @@ bool PrintPreviewUI::ShouldCancelRequest(
   return request_id != current_id;
 }
 
-base::Optional<int32_t> PrintPreviewUI::GetIDForPrintPreviewUI() const {
+absl::optional<int32_t> PrintPreviewUI::GetIDForPrintPreviewUI() const {
   return id_;
 }
 

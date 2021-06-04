@@ -2,7 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//ios/build/config.gni")
+import("//ios/features.gni")
+
+buildflag_header("webkit_session_restore_buildflags") {
+  header = "webkit_session_restore_buildflags.h"
+  flags = [ "WEBKIT_SESSION_RESTORE=$webkit_session_restore" ]
+}
 
 source_set("ui") {
   public_deps = [ ":web_controller_header" ]
@@ -10,8 +17,10 @@ source_set("ui") {
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
     ":web_view_handler",
+    ":webkit_session_restore_buildflags",
     "//base",
     "//base/ios",
+    "//build:branding_buildflags",
     "//ios/net",
     "//ios/third_party/webkit",
     "//ios/web:core",
@@ -37,6 +46,7 @@ source_set("ui") {
     "//ios/web/public/webui",
     "//ios/web/security",
     "//ios/web/session",
+    "//ios/web/text_fragments",
     "//ios/web/web_state:page_viewport_state",
     "//ios/web/web_state:user_interaction",
     "//ios/web/web_state:web_state_impl_header",

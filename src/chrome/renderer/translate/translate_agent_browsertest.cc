@@ -13,6 +13,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_constants.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
@@ -29,6 +30,12 @@ using testing::AtLeast;
 using testing::Return;
 
 namespace {
+
+std::string UpdateGURLScheme(GURL url, const char scheme[]) {
+  GURL::Replacements replacements;
+  replacements.SetScheme(scheme, url::Component(0, strlen(scheme)));
+  return url.ReplaceComponents(replacements).spec();
+}
 
 class FakeContentTranslateDriver
     : public translate::mojom::ContentTranslateDriver {
@@ -56,13 +63,13 @@ class FakeContentTranslateDriver
 
   void ResetNewPageValues() {
     called_new_page_ = false;
-    details_ = base::nullopt;
+    details_ = absl::nullopt;
     page_level_translation_critiera_met_ = false;
   }
 
   bool called_new_page_ = false;
   bool page_level_translation_critiera_met_ = false;
-  base::Optional<translate::LanguageDetectionDetails> details_;
+  absl::optional<translate::LanguageDetectionDetails> details_;
 
  private:
   mojo::ReceiverSet<translate::mojom::ContentTranslateDriver> receivers_;
@@ -89,8 +96,8 @@ class TestTranslateAgent : public translate::TranslateAgent {
     // Reset result values firstly.
     page_translated_ = false;
     trans_result_cancelled_ = false;
-    trans_result_original_lang_ = base::nullopt;
-    trans_result_translated_lang_ = base::nullopt;
+    trans_result_source_lang_ = absl::nullopt;
+    trans_result_translated_lang_ = absl::nullopt;
     trans_result_error_type_ = translate::TranslateErrors::NONE;
 
     // Will get new result values via OnPageTranslated.
@@ -99,13 +106,13 @@ class TestTranslateAgent : public translate::TranslateAgent {
                                   base::Unretained(this)));
   }
 
-  bool GetPageTranslatedResult(std::string* original_lang,
+  bool GetPageTranslatedResult(std::string* source_lang,
                                std::string* target_lang,
                                translate::TranslateErrors::Type* error) {
     if (!page_translated_)
       return false;
-    if (original_lang)
-      *original_lang = *trans_result_original_lang_;
+    if (source_lang)
+      *source_lang = *trans_result_source_lang_;
     if (target_lang)
       *target_lang = *trans_result_translated_lang_;
     if (error)
@@ -117,7 +124,7 @@ class TestTranslateAgent : public translate::TranslateAgent {
   MOCK_METHOD0(IsTranslateLibReady, bool());
   MOCK_METHOD0(HasTranslationFinished, bool());
   MOCK_METHOD0(HasTranslationFailed, bool());
-  MOCK_METHOD0(GetOriginalPageLanguage, std::string());
+  MOCK_METHOD0(GetPageSourceLanguage, std::string());
   MOCK_METHOD0(GetErrorCode, int64_t());
   MOCK_METHOD0(StartTranslation, bool());
   MOCK_METHOD1(ExecuteScript, void(const std::string&));
@@ -129,20 +136,20 @@ class TestTranslateAgent : public translate::TranslateAgent {
 
  private:
   void OnPageTranslated(bool cancelled,
-                        const std::string& original_lang,
+                        const std::string& source_lang,
                         const std::string& translated_lang,
                         translate::TranslateErrors::Type error_type) {
     page_translated_ = true;
     trans_result_cancelled_ = cancelled;
-    trans_result_original_lang_ = original_lang;
+    trans_result_source_lang_ = source_lang;
     trans_result_translated_lang_ = translated_lang;
     trans_result_error_type_ = error_type;
   }
 
   bool page_translated_;
   bool trans_result_cancelled_;
-  base::Optional<std::string> trans_result_original_lang_;
-  base::Optional<std::string> trans_result_translated_lang_;
+  absl::optional<std::string> trans_result_source_lang_;
+  absl::optional<std::string> trans_result_translated_lang_;
   translate::TranslateErrors::Type trans_result_error_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTranslateAgent);
@@ -238,17 +245,17 @@ TEST_F(TranslateAgentBrowserTest, TranslateSuccess) {
   // V8 call for performance monitoring should be ignored.
   EXPECT_CALL(*translate_agent_, ExecuteScriptAndGetDoubleResult(_)).Times(3);
 
-  std::string original_lang("en");
+  std::string source_lang("en");
   std::string target_lang("fr");
-  translate_agent_->TranslatePage(original_lang, target_lang, std::string());
+  translate_agent_->TranslatePage(source_lang, target_lang, std::string());
   base::RunLoop().RunUntilIdle();
 
-  std::string received_original_lang;
+  std::string received_source_lang;
   std::string received_target_lang;
   translate::TranslateErrors::Type error;
   ASSERT_TRUE(translate_agent_->GetPageTranslatedResult(
-      &received_original_lang, &received_target_lang, &error));
-  EXPECT_EQ(original_lang, received_original_lang);
+      &received_source_lang, &received_target_lang, &error));
+  EXPECT_EQ(source_lang, received_source_lang);
   EXPECT_EQ(target_lang, received_target_lang);
   EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
@@ -303,7 +310,7 @@ TEST_F(TranslateAgentBrowserTest, UndefinedSourceLang) {
 
   EXPECT_CALL(*translate_agent_, IsTranslateLibReady()).WillOnce(Return(true));
 
-  EXPECT_CALL(*translate_agent_, GetOriginalPageLanguage())
+  EXPECT_CALL(*translate_agent_, GetPageSourceLanguage())
       .WillOnce(Return("de"));
 
   EXPECT_CALL(*translate_agent_, StartTranslation()).WillOnce(Return(true));
@@ -321,11 +328,11 @@ TEST_F(TranslateAgentBrowserTest, UndefinedSourceLang) {
   base::RunLoop().RunUntilIdle();
 
   translate::TranslateErrors::Type error;
-  std::string original_lang;
+  std::string source_lang;
   std::string target_lang;
-  ASSERT_TRUE(translate_agent_->GetPageTranslatedResult(&original_lang,
+  ASSERT_TRUE(translate_agent_->GetPageTranslatedResult(&source_lang,
                                                         &target_lang, &error));
-  EXPECT_EQ("de", original_lang);
+  EXPECT_EQ("de", source_lang);
   EXPECT_EQ("fr", target_lang);
   EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
@@ -351,20 +358,20 @@ TEST_F(TranslateAgentBrowserTest, MultipleSimilarTranslations) {
   // V8 call for performance monitoring should be ignored.
   EXPECT_CALL(*translate_agent_, ExecuteScriptAndGetDoubleResult(_)).Times(3);
 
-  std::string original_lang("en");
+  std::string source_lang("en");
   std::string target_lang("fr");
-  translate_agent_->TranslatePage(original_lang, target_lang, std::string());
+  translate_agent_->TranslatePage(source_lang, target_lang, std::string());
   // While this is running call again TranslatePage to make sure noting bad
   // happens.
-  translate_agent_->TranslatePage(original_lang, target_lang, std::string());
+  translate_agent_->TranslatePage(source_lang, target_lang, std::string());
   base::RunLoop().RunUntilIdle();
 
-  std::string received_original_lang;
+  std::string received_source_lang;
   std::string received_target_lang;
   translate::TranslateErrors::Type error;
   ASSERT_TRUE(translate_agent_->GetPageTranslatedResult(
-      &received_original_lang, &received_target_lang, &error));
-  EXPECT_EQ(original_lang, received_original_lang);
+      &received_source_lang, &received_target_lang, &error));
+  EXPECT_EQ(source_lang, received_source_lang);
   EXPECT_EQ(target_lang, received_target_lang);
   EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
@@ -386,21 +393,20 @@ TEST_F(TranslateAgentBrowserTest, MultipleDifferentTranslations) {
   // V8 call for performance monitoring should be ignored.
   EXPECT_CALL(*translate_agent_, ExecuteScriptAndGetDoubleResult(_)).Times(5);
 
-  std::string original_lang("en");
+  std::string source_lang("en");
   std::string target_lang("fr");
-  translate_agent_->TranslatePage(original_lang, target_lang, std::string());
+  translate_agent_->TranslatePage(source_lang, target_lang, std::string());
   // While this is running call again TranslatePage with a new target lang.
   std::string new_target_lang("de");
-  translate_agent_->TranslatePage(original_lang, new_target_lang,
-                                  std::string());
+  translate_agent_->TranslatePage(source_lang, new_target_lang, std::string());
   base::RunLoop().RunUntilIdle();
 
-  std::string received_original_lang;
+  std::string received_source_lang;
   std::string received_target_lang;
   translate::TranslateErrors::Type error;
   ASSERT_TRUE(translate_agent_->GetPageTranslatedResult(
-      &received_original_lang, &received_target_lang, &error));
-  EXPECT_EQ(original_lang, received_original_lang);
+      &received_source_lang, &received_target_lang, &error));
+  EXPECT_EQ(source_lang, received_source_lang);
   EXPECT_EQ(new_target_lang, received_target_lang);
   EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
@@ -530,4 +536,39 @@ TEST_F(TranslateAgentBrowserTest, BackToTranslatablePage) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_translate_driver_.called_new_page_);
   EXPECT_EQ("es", fake_translate_driver_.details_->adopted_language);
+}
+
+TEST_F(TranslateAgentBrowserTest, UnsupportedTranslateSchemes) {
+  GURL url("https://foo.com");
+  LoadHTMLWithUrlOverride(
+      "<html><body>A random page with random content.</body></html>",
+      UpdateGURLScheme(url, content::kChromeUIScheme).c_str());
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(fake_translate_driver_.called_new_page_);
+  EXPECT_FALSE(fake_translate_driver_.page_level_translation_critiera_met_);
+
+  LoadHTMLWithUrlOverride(
+      "<html><body>A random page with random content.</body></html>",
+      UpdateGURLScheme(url, url::kFtpScheme).c_str());
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(fake_translate_driver_.called_new_page_);
+  EXPECT_FALSE(fake_translate_driver_.page_level_translation_critiera_met_);
+
+  LoadHTMLWithUrlOverride(
+      "<html><body>A random page with random content.</body></html>",
+      url::kAboutBlankURL);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(fake_translate_driver_.called_new_page_);
+  EXPECT_FALSE(fake_translate_driver_.page_level_translation_critiera_met_);
+
+  LoadHTMLWithUrlOverride(
+      "<html><body>A random page with random content.</body></html>",
+      UpdateGURLScheme(url, content::kChromeDevToolsScheme).c_str());
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(fake_translate_driver_.called_new_page_);
+  EXPECT_FALSE(fake_translate_driver_.page_level_translation_critiera_met_);
 }

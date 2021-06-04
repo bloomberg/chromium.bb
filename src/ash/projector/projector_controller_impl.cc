@@ -10,7 +10,6 @@
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -35,16 +34,17 @@ void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
 
 void ProjectorControllerImpl::OnTranscription(
     const std::u16string& text,
-    base::TimeDelta audio_start_time,
-    base::TimeDelta audio_end_time,
-    const std::vector<base::TimeDelta>& word_offsets,
+    absl::optional<base::TimeDelta> start_time,
+    absl::optional<base::TimeDelta> end_time,
+    const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
     bool is_final) {
   std::string transcript = base::UTF16ToUTF8(text);
 
-  if (is_final) {
+  if (is_final && start_time.has_value() && end_time.has_value() &&
+      word_offsets.has_value()) {
     // Records final transcript.
-    metadata_controller_->RecordTranscription(transcript, audio_start_time,
-                                              audio_end_time, word_offsets);
+    metadata_controller_->RecordTranscription(
+        transcript, start_time.value(), end_time.value(), word_offsets.value());
   }
 
   // Render transcription.
@@ -56,25 +56,27 @@ void ProjectorControllerImpl::OnTranscription(
 void ProjectorControllerImpl::SetProjectorToolsVisible(bool is_visible) {
   // TODO(yilkal): Projector toolbar shouldn't be shown if soda is not
   // available.
-  if (is_visible)
+  if (is_visible) {
     ui_controller_->ShowToolbar();
-  else
-    ui_controller_->CloseToolbar();
-}
+    OnRecordingStarted();
+    return;
+  }
 
-void ProjectorControllerImpl::StartProjectorSession(SourceType scope,
-                                                    aura::Window* window) {
-  // TODO(https://crbug.com/1185262): Start projector session.
+  OnRecordingEnded();
+  if (client_->IsSelfieCamVisible())
+    client_->CloseSelfieCam();
+  ui_controller_->CloseToolbar();
 }
 
 bool ProjectorControllerImpl::IsEligible() const {
   return is_speech_recognition_available_;
 }
 
-void ProjectorControllerImpl::SetCaptionState(bool is_on) {
-  if (is_on == is_caption_on_)
-    return;
+void ProjectorControllerImpl::SetCaptionBubbleState(bool is_on) {
+  ui_controller_->SetCaptionBubbleState(is_on);
+}
 
+void ProjectorControllerImpl::OnCaptionBubbleModelStateChanged(bool is_on) {
   is_caption_on_ = is_on;
 }
 
@@ -85,7 +87,16 @@ void ProjectorControllerImpl::MarkKeyIdea() {
 
 void ProjectorControllerImpl::OnRecordingStarted() {
   StartSpeechRecognition();
+  ui_controller_->OnRecordingStateChanged(true /* started */);
   metadata_controller_->OnRecordingStarted();
+}
+
+void ProjectorControllerImpl::OnRecordingEnded() {
+  StopSpeechRecognition();
+  ui_controller_->OnRecordingStateChanged(false /* started */);
+
+  // TODO(crbug.com/1165439): Call on to SaveScreencast when the metadata file
+  // saving format is finalized.
 }
 
 void ProjectorControllerImpl::SaveScreencast(
@@ -99,6 +110,32 @@ void ProjectorControllerImpl::OnLaserPointerPressed() {
 
 void ProjectorControllerImpl::OnMarkerPressed() {
   ui_controller_->OnMarkerPressed();
+}
+
+void ProjectorControllerImpl::OnClearAllMarkersPressed() {
+  ui_controller_->OnClearAllMarkersPressed();
+}
+
+void ProjectorControllerImpl::OnSelfieCamPressed(bool enabled) {
+  ui_controller_->OnSelfieCamPressed(enabled);
+
+  DCHECK_NE(client_, nullptr);
+  if (enabled == client_->IsSelfieCamVisible())
+    return;
+
+  if (enabled) {
+    client_->ShowSelfieCam();
+    return;
+  }
+  client_->CloseSelfieCam();
+}
+
+void ProjectorControllerImpl::OnMagnifierButtonPressed(bool enabled) {
+  ui_controller_->OnMagnifierButtonPressed(enabled);
+}
+
+void ProjectorControllerImpl::OnChangeMarkerColorPressed(SkColor new_color) {
+  ui_controller_->OnChangeMarkerColorPressed(new_color);
 }
 
 void ProjectorControllerImpl::SetProjectorUiControllerForTest(

@@ -139,19 +139,18 @@ class NavigationManagerImpl : public NavigationManager {
   // Prepares for the deletion of WKWebView such as caching necessary data.
   void DetachFromWebView();
 
-  // Adds a transient item with the given URL. A transient item will be
-  // discarded on any navigation.
-  void AddTransientItem(const GURL& url);
-
   // Adds a new item with the given url, referrer, navigation type, initiation
   // type and user agent override option, making it the pending item. If pending
   // item is the same as the current item, this does nothing. |referrer| may be
   // nil if there isn't one. The item starts out as pending, and will be lost
-  // unless |-commitPendingItem| is called.
+  // unless |-commitPendingItem| is called. |is_using_https_as_default_scheme|
+  // must be true for navigations that use https:// as the default scheme
+  // in their URL, if the user typed the URL without a scheme.
   void AddPendingItem(const GURL& url,
                       const web::Referrer& referrer,
                       ui::PageTransition navigation_type,
-                      NavigationInitiationType initiation_type);
+                      NavigationInitiationType initiation_type,
+                      bool is_using_https_as_default_scheme = false);
 
   // Commits the pending item, if any.
   // TODO(crbug.com/936933): Remove this method.
@@ -202,8 +201,7 @@ class NavigationManagerImpl : public NavigationManager {
   void UpdatePendingItemUrl(const GURL& url) const;
 
   // The current NavigationItem. During a pending navigation, returns the
-  // NavigationItem for that navigation. If a transient NavigationItem exists,
-  // this NavigationItem will be returned.
+  // NavigationItem for that navigation.
   // TODO(crbug.com/661316): Make this private once all navigation code is moved
   // out of CRWWebController.
   NavigationItemImpl* GetCurrentItemImpl() const;
@@ -232,7 +230,6 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetLastCommittedItem() const final;
   int GetLastCommittedItemIndex() const final;
   NavigationItem* GetPendingItem() const final;
-  NavigationItem* GetTransientItem() const final;
   void DiscardNonCommittedItems() final;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) final;
   void LoadIfNecessary() final;
@@ -258,7 +255,6 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Implementation for corresponding NavigationManager getters.
   NavigationItemImpl* GetPendingItemInCurrentOrRestoredSession() const;
-  NavigationItemImpl* GetTransientItemImpl() const;
   // Unlike GetLastCommittedItem(), this method does not return null during
   // session restoration (and returns last known committed item instead).
   NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession() const;
@@ -372,6 +368,7 @@ class NavigationManagerImpl : public NavigationManager {
       const Referrer& referrer,
       ui::PageTransition transition,
       NavigationInitiationType initiation_type,
+      bool is_using_https_as_default_scheme,
       const GURL& previous_url,
       const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
@@ -427,11 +424,6 @@ class NavigationManagerImpl : public NavigationManager {
   // is empty but not nil. Any subsequent call to CommitPendingItem() will reset
   // this field to null.
   std::unique_ptr<NavigationItemImpl> empty_window_open_item_;
-
-  // The transient item in main frame.
-  // TODO(crbug.com/1028755): Remove the transient item once SafeBrowsing is
-  // launched.
-  std::unique_ptr<NavigationItemImpl> transient_item_;
 
   // A placeholder item used when CanTrustLastCommittedItem
   // returns false.  The navigation item returned uses crw_web_controller's

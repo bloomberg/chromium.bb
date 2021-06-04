@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """A wrapper around ssh for common operations on a CrOS-based device"""
+from __future__ import absolute_import
 import logging
 import os
 import posixpath
@@ -708,7 +709,7 @@ class CrOSInterface(object):
     self.RunCmdOnDevice(['mkdir', '-p', screenshot_dir])
     # Large number of screenshots can increase hardware lab bandwidth
     # dramatically, so keep this number low. crbug.com/524814.
-    for i in xrange(2):
+    for i in range(2):
       screenshot_file = ('%s%s-%d%s' %
                          (screenshot_dir, screenshot_prefix, i, screenshot_ext))
       if not self.FileExistsOnDevice(screenshot_file):

@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -68,7 +67,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
             base::BindRepeating(&CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
-      return std::unique_ptr<net::ServerSocket>();
+      return nullptr;
 
     return std::move(socket);
   }
@@ -94,7 +93,7 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
     if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
-      return std::unique_ptr<net::ServerSocket>();
+      return nullptr;
 
     net::IPEndPoint endpoint;
     if (socket->GetLocalAddress(&endpoint) == net::OK)

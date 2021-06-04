@@ -4,8 +4,8 @@
 
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//tools/polymer/polymer.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 group("closure_compile") {
   deps = [
@@ -40,14 +40,12 @@ js_type_check("closure_compile_local") {
   ]
 }
 
-js_type_check("closure_compile_module") {
-  is_polymer3 = true
+group("closure_compile_module") {
   deps = [
-    ":display_manager_types.m",
-    ":login_screen_behavior.m",
-    ":multi_step_behavior.m",
+    ":oobe_icons.m",
   ]
 }
+
 
 ###############################
 # Closure compiler libraries below
@@ -119,31 +117,14 @@ js_library("html-echo") {
 
 #### Polymer3 / JS Modules
 
-js_library("display_manager_types.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/display_manager_types.m.js" ]
+js_library("oobe_icons.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_icons.m.js" ]
   deps = []
-  extra_deps = [ ":modulize" ]
+  extra_deps = [ ":oobe_icons_module" ]
 }
 
-js_library("login_screen_behavior.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/login_screen_behavior.m.js" ]
-  deps = [
-    ":display_manager_types.m"
-  ]
-  extra_deps = [ ":modulize" ]
-}
-
-js_library("multi_step_behavior.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/multi_step_behavior.m.js" ]
-  deps = []
-  extra_deps = [ ":modulize" ]
-}
-
-js_modulizer("modulize") {
-  input_files = [
-    "display_manager_types.js",
-    "login_screen_behavior.js",
-    "multi_step_behavior.js",
-  ]
-  namespace_rewrites = []
+polymer_modulizer("oobe_icons") {
+  js_file = "oobe_icons.m.js"
+  html_file = "oobe_icons.html"
+  html_type = "iron-iconset"
 }

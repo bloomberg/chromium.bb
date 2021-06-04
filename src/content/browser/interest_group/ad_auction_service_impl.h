@@ -5,11 +5,12 @@
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_AD_AUCTION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_AD_AUCTION_SERVICE_IMPL_H_
 
+#include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
-#include "base/callback_helpers.h"
-#include "base/memory/weak_ptr.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/interest_group_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
@@ -24,12 +25,13 @@
 
 namespace content {
 
-class AuctionURLLoaderFactoryProxy;
+class AuctionRunner;
 class RenderFrameHost;
 
 // Implements the AdAuctionService service called by Blink code.
 class CONTENT_EXPORT AdAuctionServiceImpl final
-    : public FrameServiceBase<blink::mojom::AdAuctionService> {
+    : public FrameServiceBase<blink::mojom::AdAuctionService>,
+      public AuctionRunner::Delegate {
  public:
   // Factory method for creating an instance of this interface that is
   // bound to the lifetime of the frame or receiver (whichever is shorter).
@@ -41,6 +43,14 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   void RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
                     RunAdAuctionCallback callback) override;
 
+  // AuctionRunner::Delegate implementation:
+  network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory() override;
+  network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory() override;
+  auction_worklet::mojom::AuctionWorkletService* GetWorkletService() override;
+
+  using FrameServiceBase::origin;
+  using FrameServiceBase::render_frame_host;
+
  private:
   // `render_frame_host` must not be null, and FrameServiceBase guarantees
   // `this` will not outlive the `render_frame_host`.
@@ -51,61 +61,18 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   // `this` can only be destroyed by FrameServiceBase.
   ~AdAuctionServiceImpl() override;
 
-  InterestGroupManager* GetInterestGroupManager();
+  // Deletes `auction`.
+  void OnAuctionComplete(RunAdAuctionCallback callback,
+                         AuctionRunner* auction,
+                         absl::optional<GURL> render_url,
+                         absl::optional<GURL> bidder_report_url,
+                         absl::optional<GURL> seller_report_url,
+                         std::vector<std::string> errors);
 
-  // Launches worklet service if not already launched.
-  void LaunchWorkletServiceIfNeeded();
-  // Gets a list of all interest groups with their bidding information
-  // associated with the provided owners. These interest groups will
-  // be the bidders in the ad auction.
-  void GetInterestGroupsFromStorage(blink::mojom::AuctionAdConfigPtr config,
-                                    const std::vector<url::Origin>& buyers,
-                                    RunAdAuctionCallback callback);
-
-  // Reads interest groups from the storage for the next buyer, then either
-  // reschedules itself or calls StartAuction (if all interest groups are
-  // retrieved).
-  void GetInterestGroup(
-      std::vector<url::Origin> buyers,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders,
-      blink::mojom::AuctionAdConfigPtr config,
-      RunAdAuctionCallback callback,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>
-          interest_groups);
-
-  // Calls auction worklet service's runAuction.
-  void StartAuction(
-      blink::mojom::AuctionAdConfigPtr config,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders,
-      RunAdAuctionCallback callback);
-
-  // Deals with works such as reporting auction results after auction worklet
-  // service's runAuction finishes.
-  //
-  // `url_loader_factory_proxy` is the proxy for network requests issued by the
-  // auctions worklet, and is an argument so that it will be destroywed when an
-  // auction completes, or the callback is destroyed (e.g., on navigation away).
-  void WorkletComplete(
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders_copy,
-      RunAdAuctionCallback* callback,
-      std::unique_ptr<AuctionURLLoaderFactoryProxy> url_loader_factory_proxy,
-      base::ScopedClosureRunner on_crash,
-      const GURL& render_url,
-      const url::Origin& owner,
-      const std::string& name,
-      auction_worklet::mojom::WinningBidderReportPtr bidder_report,
-      auction_worklet::mojom::SellerReportPtr seller_report);
-
-  // Returns an untrusted URLLoaderFactory created by the RenderFrameHost,
-  // suitable for loading URLs like subresources. Caches the factory in
-  // `frame_url_loader_factory_` for reuse.
-  network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory();
-
-  // Returns a trusted URLLoaderFactory. Consumers should set
-  // ResourceRequest::TrustedParams to specify a NetworkIsolationKey when using
-  // the returned factory. Caches the factory in `trusted_url_loader_factory_`
-  // for reuse.
-  network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory();
+  // This must be above `auction_worklet_service_`, since auctions may own
+  // callbacks over the AuctionWorkletService pipe, and mojo pipes must be
+  // destroyed before any callbacks that are bound to them.
+  std::set<std::unique_ptr<AuctionRunner>, base::UniquePtrComparator> auctions_;
 
   mojo::Remote<auction_worklet::mojom::AuctionWorkletService>
       auction_worklet_service_;

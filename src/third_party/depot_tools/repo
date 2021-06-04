@@ -38,8 +38,8 @@ def _UpdateDepotTools():
   if UPDATE_DEPOT_TOOLS.exists():
     subprocess.run([UPDATE_DEPOT_TOOLS], check=True)
   else:
-    print('warning: %s does not exist; export DEPOT_TOOLS_UPDATE=0 to disable.'
-          % (UPDATE_DEPOT_TOOLS,), file=sys.stderr)
+    print(f'warning: {UPDATE_DEPOT_TOOLS} does not exist; export '
+          'DEPOT_TOOLS_UPDATE=0 to disable.', file=sys.stderr)
 
 
 def main(argv):

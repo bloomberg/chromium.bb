@@ -48,14 +48,14 @@ constexpr gfx::Insets kBubblePadding(0, 0, kBubbleBottomPaddingDip, 0);
 PhoneHubTray::PhoneHubTray(Shelf* shelf)
     : TrayBackgroundView(shelf), ui_controller_(new PhoneHubUiController()) {
   observed_phone_hub_ui_controller_.Observe(ui_controller_.get());
+  observed_session_.Observe(Shell::Get()->session_controller());
 
   auto icon = std::make_unique<views::ImageView>();
   icon->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_TRAY_ACCESSIBLE_NAME));
   icon->SetImage(CreateVectorIcon(
       kPhoneHubPhoneIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary)));
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
 
   tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
   icon_ = tray_container()->AddChildView(std::move(icon));
@@ -131,6 +131,16 @@ void PhoneHubTray::OnPhoneHubUiStateChanged() {
 
   // Updates bubble to handle possible size change with a different child view.
   bubble_view->UpdateBubble();
+}
+
+void PhoneHubTray::OnSessionStateChanged(session_manager::SessionState state) {
+  icon_->SetImage(CreateVectorIcon(kPhoneHubPhoneIcon, TrayIconColor(state)));
+
+  TemporarilyDisableAnimation();
+}
+
+void PhoneHubTray::OnActiveUserSessionChanged(const AccountId& account_id) {
+  TemporarilyDisableAnimation();
 }
 
 void PhoneHubTray::AnchorUpdated() {
@@ -240,6 +250,12 @@ void PhoneHubTray::UpdateVisibility() {
   DCHECK(ui_controller_.get());
   auto ui_state = ui_controller_->ui_state();
   SetVisiblePreferred(ui_state != PhoneHubUiController::UiState::kHidden);
+}
+
+void PhoneHubTray::TemporarilyDisableAnimation() {
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, DisableShowAnimation().Release(),
+      base::TimeDelta::FromSeconds(5));
 }
 
 }  // namespace ash

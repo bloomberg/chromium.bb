@@ -24,6 +24,8 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -40,8 +42,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -149,10 +149,6 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // We'll do all of our own layout inside the bubble, so no need to inset this
   // view inside the client view.
   set_margins(gfx::Insets());
-
-  // Inset the tab hover cards anchor rect to bring the card closer to the tab.
-  constexpr gfx::Insets kTabHoverCardAnchorInsets(2, 0);
-  set_anchor_view_insets(kTabHoverCardAnchorInsets);
 
   // Set so that when hovering over a tab in a inactive window that window will
   // not become active. Setting this to false creates the need to explicitly
@@ -275,7 +271,7 @@ TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 ax::mojom::Role TabHoverCardBubbleView::GetAccessibleWindowRole() {
   // Override the role so that hover cards are not read when they appear because
   // tabs handle accessibility text.
-  return ax::mojom::Role::kIgnored;
+  return ax::mojom::Role::kNone;
 }
 
 void TabHoverCardBubbleView::Layout() {
@@ -290,7 +286,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     preview_image_->SetVisible(!tab->IsActive());
 
   std::u16string title;
-  base::Optional<TabAlertState> old_alert_state = alert_state_;
+  absl::optional<TabAlertState> old_alert_state = alert_state_;
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.
@@ -299,7 +295,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     title = tab->data().IsCrashed()
                 ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
                 : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-    alert_state_ = base::nullopt;
+    alert_state_ = absl::nullopt;
   } else {
     domain_url = tab->data().last_committed_url;
     title = tab->data().title;

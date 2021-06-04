@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 
 from telemetry.core import exceptions
@@ -109,7 +110,8 @@ class Oobe(web_contents.WebContents):
       self.ExecuteJavaScript('Oobe.showAddUserForTesting()')
 
     py_utils.WaitFor(self._GaiaWebviewContext, 20)
-    self._NavigateWebviewLogin(username, password, wait_for_close=True)
+    self._NavigateWebviewLogin(username, password,
+                               wait_for_close=not enterprise_enroll)
 
     if enterprise_enroll:
       self.WaitForJavaScriptCondition(

@@ -30,6 +30,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
@@ -43,6 +44,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -533,7 +535,7 @@ bool TabletModeController::InTabletMode() const {
 }
 
 bool TabletModeController::ForceUiTabletModeState(
-    base::Optional<bool> enabled) {
+    absl::optional<bool> enabled) {
   if (!enabled.has_value()) {
     tablet_mode_behavior_ = kDefault;
     AccelerometerReader::GetInstance()->SetEnabled(true);
@@ -961,7 +963,7 @@ void TabletModeController::HandleHingeRotation(
 }
 
 void TabletModeController::OnGetSwitchStates(
-    base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
+    absl::optional<chromeos::PowerManagerClient::SwitchStates> result) {
   if (!result.has_value())
     return;
 

@@ -64,7 +64,7 @@
 }
 
 .profiles-toolbar {
-  background-color: var(--toolbar-bg-color);
+  background-color: var(--color-background-elevation-1);
   border-bottom: 1px solid var(--color-details-hairline);
   flex-shrink: 0;
 }
@@ -129,7 +129,7 @@
 }
 
 .cpu-profile-flame-chart-overview-pane {
-  flex: 0 0 80px !important;
+  flex: 0 0 80px !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .profile-text-view {

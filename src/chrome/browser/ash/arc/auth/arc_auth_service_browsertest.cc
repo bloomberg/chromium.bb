@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -71,6 +70,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace {
@@ -371,7 +371,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   void RequestGoogleAccountsInArc() {
     arc_google_accounts_.clear();
     arc_google_accounts_callback_called_ = false;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
 
     ArcAuthService::GetGoogleAccountsInArcCallback callback = base::BindOnce(
         [](std::vector<mojom::ArcAccountInfoPtr>* accounts,
@@ -492,9 +492,9 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, GetPrimaryAccountForPublicAccounts) {
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        GetPrimaryAccountForOfflineDemoAccounts) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOffline);
-  chromeos::DemoSession::StartIfInDemoMode();
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOffline);
+  ash::DemoSession::StartIfInDemoMode();
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   const std::pair<std::string, mojom::ChromeAccountType>
       primary_account = RequestPrimaryAccount();
@@ -768,7 +768,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile());
-  base::Optional<AccountInfo> maybe_account_info =
+  absl::optional<AccountInfo> maybe_account_info =
       identity_manager
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               kSecondaryAccountEmail);
@@ -843,9 +843,9 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
 // Tests that when ARC requests account info for a demo session account,
 // Chrome supplies the info configured in SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
-  chromeos::DemoSession::StartIfInDemoMode();
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
+  ash::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
@@ -868,9 +868,9 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
 }
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOffline);
-  chromeos::DemoSession::StartIfInDemoMode();
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOffline);
+  ash::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
@@ -889,9 +889,9 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
                        GetDemoAccountOnAuthTokenFetchFailure) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
-  chromeos::DemoSession::StartIfInDemoMode();
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
+  ash::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
@@ -970,25 +970,25 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   ArcDataRemover data_remover(profile()->GetPrefs(),
                               cryptohome::Identification{EmptyAccountId()});
 
-  const std::vector<mojom::SupervisionChangeStatus> success_statuses{
-      mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLED,
-      mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_DISABLED,
-      mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLED,
-      mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_ENABLED};
+  const std::vector<mojom::ManagementChangeStatus> success_statuses{
+      mojom::ManagementChangeStatus::CLOUD_DPC_DISABLED,
+      mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_DISABLED,
+      mojom::ManagementChangeStatus::CLOUD_DPC_ENABLED,
+      mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_ENABLED};
 
-  const std::vector<mojom::SupervisionChangeStatus> failure_statuses{
-      mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLING_FAILED,
-      mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLING_FAILED};
+  const std::vector<mojom::ManagementChangeStatus> failure_statuses{
+      mojom::ManagementChangeStatus::CLOUD_DPC_DISABLING_FAILED,
+      mojom::ManagementChangeStatus::CLOUD_DPC_ENABLING_FAILED};
 
   // Suppress ToS.
   profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
   // Success statuses do not affect running state of ARC++.
-  for (mojom::SupervisionChangeStatus status : success_statuses) {
+  for (mojom::ManagementChangeStatus status : success_statuses) {
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
     EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
-    auth_service().ReportSupervisionChangeStatus(status);
+    auth_service().ReportManagementChangeStatus(status);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
     EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
@@ -996,14 +996,14 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
 
   // Test failure statuses that lead to showing data removal confirmation and
   // ARC++ stopping. This block tests cancelation of data removal.
-  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+  for (mojom::ManagementChangeStatus status : failure_statuses) {
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
     // Confirmation dialog is not shown.
     EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
     // No data removal request.
     EXPECT_FALSE(data_remover.IsScheduledForTesting());
     // Report a failure that brings confirmation dialog.
-    auth_service().ReportSupervisionChangeStatus(status);
+    auth_service().ReportManagementChangeStatus(status);
     base::RunLoop().RunUntilIdle();
     // This does not cause ARC++ stopped.
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
@@ -1022,11 +1022,11 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   }
 
   // At this time accepts data removal.
-  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+  for (mojom::ManagementChangeStatus status : failure_statuses) {
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
     EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
     EXPECT_FALSE(data_remover.IsScheduledForTesting());
-    auth_service().ReportSupervisionChangeStatus(status);
+    auth_service().ReportManagementChangeStatus(status);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
     EXPECT_TRUE(IsDataRemovalConfirmationDialogOpenForTesting());
@@ -1049,14 +1049,14 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   EXPECT_EQ(ArcSessionManager::State::STOPPED, session->state());
 
   // Opting out ARC++ forces confirmation dialog to close.
-  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+  for (mojom::ManagementChangeStatus status : failure_statuses) {
     // Suppress ToS.
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
     session->StartArcForTesting();
     EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
 
-    auth_service().ReportSupervisionChangeStatus(status);
+    auth_service().ReportManagementChangeStatus(status);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(IsDataRemovalConfirmationDialogOpenForTesting());
 

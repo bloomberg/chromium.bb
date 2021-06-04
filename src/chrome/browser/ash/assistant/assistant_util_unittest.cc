@@ -33,6 +33,7 @@ namespace assistant {
 namespace {
 
 constexpr char kTestProfileName[] = "user@gmail.com";
+constexpr char16_t kTestProfileName16[] = u"user@gmail.com";
 constexpr char kTestGaiaId[] = "1234567890";
 
 class ScopedSpoofGoogleBrandedDevice {
@@ -192,7 +193,7 @@ class ChromeAssistantUtilTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     profile_ = profile_manager_->CreateTestingProfile(
-        kTestProfileName, /*prefs=*/{}, base::UTF8ToUTF16(kTestProfileName),
+        kTestProfileName, /*prefs=*/{}, kTestProfileName16,
         /*avatar_id=*/0, /*supervised_user_id=*/{},
         IdentityTestEnvironmentProfileAdaptor::
             GetIdentityTestEnvironmentFactories());
@@ -314,16 +315,16 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_Locale) {
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_DemoMode) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     GetNonGaiaUserAccountId(profile()),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_EQ(chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE,
             IsAssistantAllowedForProfile(profile()));
 
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kNone);
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kNone);
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_PublicSession) {

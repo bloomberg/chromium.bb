@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/nacl/common/buildflags.h"
-#include "content/common/frame_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
@@ -666,7 +665,7 @@ bool PluginModule::InitializeModule(
 scoped_refptr<PluginModule> PluginModule::Create(
     RenderFrameImpl* render_frame,
     const WebPluginInfo& webplugin_info,
-    const base::Optional<url::Origin>& origin_lock,
+    const absl::optional<url::Origin>& origin_lock,
     bool* pepper_plugin_was_registered,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   *pepper_plugin_was_registered = true;

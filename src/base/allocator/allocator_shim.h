@@ -69,10 +69,8 @@ struct AllocatorDispatch {
   using FreeFn = void(const AllocatorDispatch* self,
                       void* address,
                       void* context);
-  // Returns the best available estimate for the actual amount of memory
-  // consumed by the allocation |address|. If possible, this should include
-  // heap overhead or at least a decent estimate of the full cost of the
-  // allocation. If no good estimate is possible, returns zero.
+  // Returns the allocated size of user data (not including heap overhead).
+  // Can be larger than the requested size.
   using GetSizeEstimateFn = size_t(const AllocatorDispatch* self,
                                    void* address,
                                    void* context);
@@ -169,7 +167,7 @@ BASE_EXPORT void ConfigurePartitionRefCountSupport(bool enable_ref_count);
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_ALLOW_PCSCAN
-BASE_EXPORT void EnablePCScan();
+BASE_EXPORT void EnablePCScan(bool dcscan);
 #endif
 
 }  // namespace allocator

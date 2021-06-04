@@ -425,11 +425,11 @@ class GerritUtilTest(unittest.TestCase):
   @mock.patch('gerrit_util.ReadHttpJsonResponse')
   def testQueryChanges(self, mockJsonResponse, mockCreateHttpConn):
     gerrit_util.QueryChanges(
-        'host', [('key', 'val'), ('foo', 'bar')], 'first param', limit=500,
+        'host', [('key', 'val'), ('foo', 'bar baz')], 'first param', limit=500,
         o_params=['PARAM_A', 'PARAM_B'], start='start')
     mockCreateHttpConn.assert_called_once_with(
         'host',
-        ('changes/?q=first%20param+key:val+foo:bar'
+        ('changes/?q=first%20param+key:val+foo:bar+baz'
          '&start=start'
          '&n=500'
          '&o=PARAM_A'

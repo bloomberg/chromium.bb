@@ -11,10 +11,11 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 const char kPhoneName[] = "Nexus 6";
+const char16_t kPhoneName16[] = u"Nexus 6";
 
 class TestableNotificationController : public EasyUnlockNotificationController {
  public:
@@ -60,7 +61,7 @@ TEST_F(EasyUnlockNotificationControllerTest,
   const char kNotificationId[] = "easyunlock_notification_ids.chromebook_added";
 
   notification_controller_->ShowChromebookAddedNotification();
-  base::Optional<message_center::Notification> notification =
+  absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(kNotificationId);
   ASSERT_TRUE(notification);
   ASSERT_EQ(1u, notification->buttons().size());
@@ -68,11 +69,11 @@ TEST_F(EasyUnlockNotificationControllerTest,
 
   // Clicking notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->delegate()->Click(0, base::nullopt);
+  notification->delegate()->Click(0, absl::nullopt);
 
   // Clicking the notification itself should also launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->delegate()->Click(base::nullopt, base::nullopt);
+  notification->delegate()->Click(absl::nullopt, absl::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -80,7 +81,7 @@ TEST_F(EasyUnlockNotificationControllerTest,
   const char kNotificationId[] = "easyunlock_notification_ids.pairing_change";
 
   notification_controller_->ShowPairingChangeNotification();
-  base::Optional<message_center::Notification> notification =
+  absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(kNotificationId);
   ASSERT_TRUE(notification);
   ASSERT_EQ(2u, notification->buttons().size());
@@ -88,14 +89,14 @@ TEST_F(EasyUnlockNotificationControllerTest,
 
   // Clicking 1st notification button should lock screen settings.
   EXPECT_CALL(*notification_controller_, LockScreen());
-  notification->delegate()->Click(0, base::nullopt);
+  notification->delegate()->Click(0, absl::nullopt);
 
   // Clicking 2nd notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->delegate()->Click(1, base::nullopt);
+  notification->delegate()->Click(1, absl::nullopt);
 
   // Clicking the notification itself should do nothing.
-  notification->delegate()->Click(base::nullopt, base::nullopt);
+  notification->delegate()->Click(absl::nullopt, absl::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -104,23 +105,22 @@ TEST_F(EasyUnlockNotificationControllerTest,
       "easyunlock_notification_ids.pairing_change_applied";
 
   notification_controller_->ShowPairingChangeAppliedNotification(kPhoneName);
-  base::Optional<message_center::Notification> notification =
+  absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(kNotificationId);
   ASSERT_TRUE(notification);
   ASSERT_EQ(1u, notification->buttons().size());
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
 
   // Check that the phone name is in the notification message.
-  EXPECT_NE(std::string::npos,
-            notification->message().find(base::UTF8ToUTF16(kPhoneName)));
+  EXPECT_NE(std::string::npos, notification->message().find(kPhoneName16));
 
   // Clicking notification button should launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->delegate()->Click(0, base::nullopt);
+  notification->delegate()->Click(0, absl::nullopt);
 
   // Clicking the notification itself should also launch settings.
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
-  notification->delegate()->Click(base::nullopt, base::nullopt);
+  notification->delegate()->Click(absl::nullopt, absl::nullopt);
 }
 
 TEST_F(EasyUnlockNotificationControllerTest,
@@ -138,4 +138,4 @@ TEST_F(EasyUnlockNotificationControllerTest,
 }
 
 }  // namespace
-}  // namespace chromeos
+}  // namespace ash

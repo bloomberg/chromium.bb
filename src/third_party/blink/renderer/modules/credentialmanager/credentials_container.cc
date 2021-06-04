@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/sms/webotp_constants.h"
 #include "third_party/blink/public/common/sms/webotp_service_outcome.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
@@ -286,10 +287,7 @@ bool IsIconURLNullOrSecure(const KURL& url) {
   if (!url.IsValid())
     return false;
 
-  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
-  return url.IsAboutSrcdocURL() || url.IsAboutBlankURL() ||
-         url.ProtocolIsData() ||
-         SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
+  return network::IsUrlPotentiallyTrustworthy(url);
 }
 
 // Checks if the size of the supplied ArrayBuffer or ArrayBufferView is at most
@@ -554,6 +552,9 @@ void OnMakePublicKeyCredentialComplete(
     }
     extension_outputs->setCredProps(cred_props_output);
   }
+  if (credential->echo_cred_blob) {
+    extension_outputs->setCredBlob(credential->cred_blob);
+  }
   if (credential->echo_large_blob) {
     DCHECK(
         RuntimeEnabledFeatures::WebAuthenticationLargeBlobExtensionEnabled());
@@ -624,6 +625,14 @@ void OnGetAssertionComplete(
         large_blob_outputs->setWritten(credential->large_blob_written);
       }
       extension_outputs->setLargeBlob(large_blob_outputs);
+    }
+    if (credential->echo_get_cred_blob) {
+      if (credential->get_cred_blob) {
+        extension_outputs->setGetCredBlob(
+            VectorToDOMArrayBuffer(std::move(*credential->get_cred_blob)));
+      } else {
+        extension_outputs->setGetCredBlob(nullptr);
+      }
     }
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id, raw_id, authenticator_response,
@@ -1343,7 +1352,7 @@ ScriptPromise CredentialsContainer::create(
   }
   if (options->publicKey()->hasAuthenticatorSelection() &&
       options->publicKey()->authenticatorSelection()->hasResidentKey() &&
-      !mojo::ConvertTo<base::Optional<mojom::blink::ResidentKeyRequirement>>(
+      !mojo::ConvertTo<absl::optional<mojom::blink::ResidentKeyRequirement>>(
           options->publicKey()->authenticatorSelection()->residentKey())) {
     resolver->DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(

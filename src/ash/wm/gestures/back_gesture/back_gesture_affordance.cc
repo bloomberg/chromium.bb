@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -346,7 +347,7 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "BackGestureAffordance";
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.parent = window_util::GetRootWindowAt(location)->GetChildById(
       kShellWindowId_OverlayContainer);
 

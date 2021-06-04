@@ -27,13 +27,11 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -44,15 +42,15 @@
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_reporting_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/enterprise_activity_storage.h"
@@ -104,6 +102,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -308,20 +307,20 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
 
 // If |contents| contains |prefix| followed by a hex integer, parses the hex
 // integer of specified length and returns it.
-// Otherwise, returns base::nullopt.
-base::Optional<int> ExtractHexIntegerAfterPrefix(base::StringPiece contents,
+// Otherwise, returns absl::nullopt.
+absl::optional<int> ExtractHexIntegerAfterPrefix(base::StringPiece contents,
                                                  base::StringPiece prefix,
                                                  size_t hex_number_length) {
   size_t prefix_position = contents.find(prefix);
   if (prefix_position == std::string::npos)
-    return base::nullopt;
+    return absl::nullopt;
   if (prefix_position + prefix.size() + hex_number_length >= contents.size())
-    return base::nullopt;
+    return absl::nullopt;
   int parsed_number;
   if (!base::HexStringToInt(
           contents.substr(prefix_position + prefix.size(), hex_number_length),
           &parsed_number)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return parsed_number;
 }
@@ -621,6 +620,35 @@ void ReadCrashReportInfo(
   scoped_refptr<UploadList> upload_list = CreateCrashUploadList();
   upload_list->Load(
       base::BindOnce(CrashReportsLoaded, upload_list, std::move(callback)));
+}
+
+em::ActiveTimePeriod::SessionType GetSessionType(
+    const std::string& user_email) {
+  policy::DeviceLocalAccount::Type type;
+  if (!IsDeviceLocalAccountUser(user_email, &type)) {
+    return em::ActiveTimePeriod::SESSION_AFFILIATED_USER;
+  }
+
+  switch (type) {
+    case policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION:
+    case policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION:
+      return em::ActiveTimePeriod::SESSION_MANAGED_GUEST;
+
+    case policy::DeviceLocalAccount::TYPE_KIOSK_APP:
+      return em::ActiveTimePeriod::SESSION_KIOSK;
+
+    case policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP:
+      return em::ActiveTimePeriod::SESSION_ARC_KIOSK;
+
+    case policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP:
+      return em::ActiveTimePeriod::SESSION_WEB_KIOSK;
+
+    default:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return em::ActiveTimePeriod::SESSION_UNKNOWN;
 }
 
 }  // namespace
@@ -1241,6 +1269,37 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                   system_info->product_name.value());
             }
           }
+          break;
+        }
+      }
+    }
+
+    // Process StatefulPartition result.
+    const auto& stateful_partition_result =
+        probe_result->stateful_partition_result;
+    if (!stateful_partition_result.is_null()) {
+      switch (stateful_partition_result->which()) {
+        case cros_healthd::StatefulPartitionResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting Stateful Partition info: "
+                     << stateful_partition_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::StatefulPartitionResult::Tag::PARTITION_INFO: {
+          const auto& partition_info =
+              stateful_partition_result->get_partition_info();
+          if (partition_info.is_null()) {
+            LOG(ERROR) << "Null PartitionInfo from cros_healthd";
+            break;
+          }
+
+          em::StatefulPartitionInfo* partition_info_out =
+              response_params_.device_status->mutable_stateful_partition_info();
+          partition_info_out->set_available_space(
+              partition_info->available_space);
+          partition_info_out->set_total_space(partition_info->total_space);
+          partition_info_out->set_filesystem(partition_info->filesystem);
+          partition_info_out->set_mount_source(partition_info->mount_source);
           break;
         }
       }
@@ -1960,12 +2019,15 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
   // multi-user sessions.
   const user_manager::User* const primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!primary_user || !primary_user->HasGaiaAccount())
+  if (!primary_user)
     return std::string();
 
-  // Report only affiliated users for enterprise reporting.
+  // Store affiliated user emails or the kiosk app id / guest session account
+  // emails. Those emails will be used to calculate the session type when
+  // constructing the ActiveTimePeriod protos sent as part of the report.
   std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
-  if (!ash::ChromeUserManager::Get()->ShouldReportUser(primary_user_email)) {
+  if (primary_user->HasGaiaAccount() &&
+      !ash::ChromeUserManager::Get()->ShouldReportUser(primary_user_email)) {
     return std::string();
   }
   return primary_user_email;
@@ -2002,9 +2064,19 @@ bool DeviceStatusCollector::GetActivityTimes(
       period->set_end_timestamp(end_timestamp);
       active_period->set_active_duration(activity_period.end_timestamp() -
                                          activity_period.start_timestamp());
-      // Report user email only if users reporting is turned on.
+      // Report user email and session_type only if users reporting is on.
       if (!user_email.empty()) {
-        active_period->set_user_email(user_email);
+        em::ActiveTimePeriod::SessionType session_type =
+            GetSessionType(user_email);
+        // Don't report the email address for MGS / Kiosk apps
+        if (session_type == em::ActiveTimePeriod::SESSION_AFFILIATED_USER) {
+          active_period->set_user_email(user_email);
+        }
+        if (session_type != em::ActiveTimePeriod::SESSION_UNKNOWN &&
+            base::FeatureList::IsEnabled(
+                features::kActivityReportingSessionType)) {
+          active_period->set_session_type(session_type);
+        }
       }
       if (last_reported_end_timestamp_ < end_timestamp) {
         last_reported_end_timestamp_ = end_timestamp;
@@ -2308,7 +2380,7 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
           ->GetUpdateEngineClient()
           ->GetLastStatus();
 
-  base::Optional<base::Version> required_platform_version;
+  absl::optional<base::Version> required_platform_version;
 
   if (required_platform_version_string.empty()) {
     // If this is non-Kiosk session, the OS is considered as up-to-date if the
@@ -2465,7 +2537,7 @@ void DeviceStatusCollector::GetDeviceStatus(
     anything_reported |= GetVersionInfo(status);
 
   if (report_boot_mode_) {
-    base::Optional<std::string> boot_mode =
+    absl::optional<std::string> boot_mode =
         StatusCollector::GetBootMode(statistics_provider_);
     if (boot_mode) {
       status->set_boot_mode(*boot_mode);
@@ -2653,13 +2725,27 @@ void DeviceStatusCollector::OnSubmittedSuccessfully() {
 }
 
 bool DeviceStatusCollector::ShouldReportActivityTimes() const {
-  return report_activity_times_;
+  // This function is used for checking if a message about activity reporting
+  // should be displayed to a user in the transparency panel. User activity for
+  // a current user is reported only if the user is managed by the same
+  // organization as a device.
+  if (!report_activity_times_) {
+    return false;
+  }
+  std::string user_email = GetUserForActivityReporting();
+  return !user_email.empty() && !IsDeviceLocalAccountUser(user_email, NULL);
 }
 bool DeviceStatusCollector::ShouldReportNetworkInterfaces() const {
   return report_network_interfaces_;
 }
 bool DeviceStatusCollector::ShouldReportUsers() const {
-  return report_users_;
+  // For more details, see comment in
+  // DeviceStatusCollector::ShouldReportActivityTimes() function.
+  if (!report_users_) {
+    return false;
+  }
+  std::string user_email = GetUserForActivityReporting();
+  return !user_email.empty() && !IsDeviceLocalAccountUser(user_email, NULL);
 }
 bool DeviceStatusCollector::ShouldReportHardwareStatus() const {
   return report_hardware_status_;

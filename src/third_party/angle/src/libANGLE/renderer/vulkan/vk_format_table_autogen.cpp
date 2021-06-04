@@ -46,9 +46,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_INT_10_10_10_2_OES;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<true, false>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<true, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -56,9 +56,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_A2_RGB10_SNORM_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<true, true>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<true, true, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -66,9 +66,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_A2_RGB10_SSCALED_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<true, false>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<true, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -76,9 +76,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_UNSIGNED_INT_10_10_10_2_OES;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<false, false>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<false, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -86,9 +86,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_A2_RGB10_UNORM_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<false, true>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<false, true, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -96,9 +96,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_A2_RGB10_USCALED_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyW2XYZ10ToXYZW32FVertexData<false, false>;
+            vertexLoadFunction           = CopyW2XYZ10ToXYZWFloatVertexData<false, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -674,41 +674,41 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             vertexLoadRequiresConversion = false;
             break;
 
-        case angle::FormatID::BPTC_RGBA_UNORM_BLOCK:
-            intendedGLFormat             = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;
-            actualImageFormatID          = angle::FormatID::BPTC_RGBA_UNORM_BLOCK;
-            imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::BPTC_RGBA_UNORM_BLOCK;
-            vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = nullptr;
-            vertexLoadRequiresConversion = false;
-            break;
-
-        case angle::FormatID::BPTC_RGB_SIGNED_FLOAT_BLOCK:
+        case angle::FormatID::BC6H_RGB_SFLOAT_BLOCK:
             intendedGLFormat             = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT;
-            actualImageFormatID          = angle::FormatID::BPTC_RGB_SIGNED_FLOAT_BLOCK;
+            actualImageFormatID          = angle::FormatID::BC6H_RGB_SFLOAT_BLOCK;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::BPTC_RGB_SIGNED_FLOAT_BLOCK;
+            actualBufferFormatID         = angle::FormatID::BC6H_RGB_SFLOAT_BLOCK;
             vkBufferFormatIsPacked       = false;
             vertexLoadFunction           = nullptr;
             vertexLoadRequiresConversion = false;
             break;
 
-        case angle::FormatID::BPTC_RGB_UNSIGNED_FLOAT_BLOCK:
+        case angle::FormatID::BC6H_RGB_UFLOAT_BLOCK:
             intendedGLFormat             = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT;
-            actualImageFormatID          = angle::FormatID::BPTC_RGB_UNSIGNED_FLOAT_BLOCK;
+            actualImageFormatID          = angle::FormatID::BC6H_RGB_UFLOAT_BLOCK;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::BPTC_RGB_UNSIGNED_FLOAT_BLOCK;
+            actualBufferFormatID         = angle::FormatID::BC6H_RGB_UFLOAT_BLOCK;
             vkBufferFormatIsPacked       = false;
             vertexLoadFunction           = nullptr;
             vertexLoadRequiresConversion = false;
             break;
 
-        case angle::FormatID::BPTC_SRGB_ALPHA_UNORM_BLOCK:
-            intendedGLFormat             = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
-            actualImageFormatID          = angle::FormatID::BPTC_SRGB_ALPHA_UNORM_BLOCK;
+        case angle::FormatID::BC7_RGBA_UNORM_BLOCK:
+            intendedGLFormat             = GL_COMPRESSED_RGBA_BPTC_UNORM_EXT;
+            actualImageFormatID          = angle::FormatID::BC7_RGBA_UNORM_BLOCK;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::BPTC_SRGB_ALPHA_UNORM_BLOCK;
+            actualBufferFormatID         = angle::FormatID::BC7_RGBA_UNORM_BLOCK;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = nullptr;
+            vertexLoadRequiresConversion = false;
+            break;
+
+        case angle::FormatID::BC7_RGBA_UNORM_SRGB_BLOCK:
+            intendedGLFormat             = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
+            actualImageFormatID          = angle::FormatID::BC7_RGBA_UNORM_SRGB_BLOCK;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::BC7_RGBA_UNORM_SRGB_BLOCK;
             vkBufferFormatIsPacked       = false;
             vertexLoadFunction           = nullptr;
             vertexLoadRequiresConversion = false;
@@ -1073,7 +1073,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R10G10B10A2_SINT, true, CopyNativeVertexData<GLuint, 1, 1, 0>,
                      false},
                     {angle::FormatID::R16G16B16A16_SINT, false,
-                     CopyXYZ10W2ToXYZW32FVertexData<true, false, false>, true}};
+                     CopyXYZ10W2ToXYZWFloatVertexData<true, false, false, false>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1086,8 +1086,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R10G10B10A2_SNORM, true,
                      CopyNativeVertexData<GLuint, 1, 1, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyXYZ10W2ToXYZW32FVertexData<true, true, true>, true}};
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyXYZ10W2ToXYZWFloatVertexData<true, true, true, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1100,8 +1100,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R10G10B10A2_SSCALED, true,
                      CopyNativeVertexData<GLuint, 1, 1, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyXYZ10W2ToXYZW32FVertexData<true, false, true>, true}};
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyXYZ10W2ToXYZWFloatVertexData<true, false, true, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1115,7 +1115,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R10G10B10A2_UINT, true, CopyNativeVertexData<GLuint, 1, 1, 0>,
                      false},
                     {angle::FormatID::R16G16B16A16_UINT, false,
-                     CopyXYZ10W2ToXYZW32FVertexData<false, false, false>, true}};
+                     CopyXYZ10W2ToXYZWFloatVertexData<false, false, false, false>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1138,8 +1138,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R10G10B10A2_USCALED, true,
                      CopyNativeVertexData<GLuint, 1, 1, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyXYZ10W2ToXYZW32FVertexData<false, false, true>, true}};
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyXYZ10W2ToXYZWFloatVertexData<false, false, true, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1185,17 +1185,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16G16B16A16_SNORM:
-            intendedGLFormat         = GL_RGBA16_SNORM_EXT;
-            actualImageFormatID      = angle::FormatID::R16G16B16A16_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16G16B16A16_SNORM, false,
-                     CopyNativeVertexData<GLshort, 4, 4, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLshort, 4, 4, true>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RGBA16_SNORM_EXT;
+            actualImageFormatID          = angle::FormatID::R16G16B16A16_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLshort, 4, 4, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16G16B16A16_SSCALED:
@@ -1207,7 +1203,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16A16_SSCALED, false,
                      CopyNativeVertexData<GLshort, 4, 4, 0>, false},
                     {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLshort, 4, 4, false>, true}};
+                     CopyToFloatVertexData<GLshort, 4, 4, false, false>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 4, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1223,17 +1221,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16G16B16A16_UNORM:
-            intendedGLFormat         = GL_RGBA16_EXT;
-            actualImageFormatID      = angle::FormatID::R16G16B16A16_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16G16B16A16_UNORM, false,
-                     CopyNativeVertexData<GLushort, 4, 4, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 4, 4, true>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RGBA16_EXT;
+            actualImageFormatID          = angle::FormatID::R16G16B16A16_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLushort, 4, 4, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16G16B16A16_USCALED:
@@ -1245,7 +1239,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16A16_USCALED, false,
                      CopyNativeVertexData<GLushort, 4, 4, 0>, false},
                     {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 4, 4, false>, true}};
+                     CopyToFloatVertexData<GLushort, 4, 4, false, false>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 4, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1264,7 +1260,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_FLOAT, false, CopyNativeVertexData<GLhalf, 3, 3, 0>,
                      false},
                     {angle::FormatID::R16G16B16A16_FLOAT, false,
-                     CopyNativeVertexData<GLhalf, 3, 4, 0>, true}};
+                     CopyNativeVertexData<GLhalf, 3, 4, gl::Float16One>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1283,7 +1279,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_SINT, false, CopyNativeVertexData<GLshort, 3, 3, 0>,
                      false},
                     {angle::FormatID::R16G16B16A16_SINT, false,
-                     CopyNativeVertexData<GLshort, 3, 4, 0>, true}};
+                     CopyNativeVertexData<GLshort, 3, 4, 1>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1297,7 +1293,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_SNORM, false,
                      CopyNativeVertexData<GLshort, 3, 3, 0>, false},
                     {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLshort, 3, 3, true>, true}};
+                     CopyToFloatVertexData<GLshort, 3, 3, true, false>, true},
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 3, 3, true, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 3, 4, true, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1311,7 +1311,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_SSCALED, false,
                      CopyNativeVertexData<GLshort, 3, 3, 0>, false},
                     {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLshort, 3, 3, false>, true}};
+                     CopyToFloatVertexData<GLshort, 3, 3, false, false>, true},
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 3, 3, false, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 3, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1330,7 +1334,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_UINT, false,
                      CopyNativeVertexData<GLushort, 3, 3, 0>, false},
                     {angle::FormatID::R16G16B16A16_UINT, false,
-                     CopyNativeVertexData<GLushort, 3, 4, 0>, true}};
+                     CopyNativeVertexData<GLushort, 3, 4, 1>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1344,7 +1348,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_UNORM, false,
                      CopyNativeVertexData<GLushort, 3, 3, 0>, false},
                     {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 3, 3, true>, true}};
+                     CopyToFloatVertexData<GLushort, 3, 3, true, false>, true},
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 3, 3, true, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 3, 4, true, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1358,7 +1366,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16B16_USCALED, false,
                      CopyNativeVertexData<GLushort, 3, 3, 0>, false},
                     {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 3, 3, false>, true}};
+                     CopyToFloatVertexData<GLushort, 3, 3, false, false>, true},
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 3, 3, false, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 3, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1384,17 +1396,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16G16_SNORM:
-            intendedGLFormat         = GL_RG16_SNORM_EXT;
-            actualImageFormatID      = angle::FormatID::R16G16_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16G16_SNORM, false, CopyNativeVertexData<GLshort, 2, 2, 0>,
-                     false},
-                    {angle::FormatID::R32G32_FLOAT, false, CopyTo32FVertexData<GLshort, 2, 2, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RG16_SNORM_EXT;
+            actualImageFormatID          = angle::FormatID::R16G16_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16G16_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLshort, 2, 2, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16G16_SSCALED:
@@ -1406,7 +1414,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16_SSCALED, false, CopyNativeVertexData<GLshort, 2, 2, 0>,
                      false},
                     {angle::FormatID::R32G32_FLOAT, false,
-                     CopyTo32FVertexData<GLshort, 2, 2, false>, true}};
+                     CopyToFloatVertexData<GLshort, 2, 2, false, false>, true},
+                    {angle::FormatID::R16G16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 2, 2, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1422,17 +1432,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16G16_UNORM:
-            intendedGLFormat         = GL_RG16_EXT;
-            actualImageFormatID      = angle::FormatID::R16G16_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16G16_UNORM, false, CopyNativeVertexData<GLushort, 2, 2, 0>,
-                     false},
-                    {angle::FormatID::R32G32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 2, 2, true>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RG16_EXT;
+            actualImageFormatID          = angle::FormatID::R16G16_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16G16_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLushort, 2, 2, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16G16_USCALED:
@@ -1444,7 +1450,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R16G16_USCALED, false,
                      CopyNativeVertexData<GLushort, 2, 2, 0>, false},
                     {angle::FormatID::R32G32_FLOAT, false,
-                     CopyTo32FVertexData<GLushort, 2, 2, false>, true}};
+                     CopyToFloatVertexData<GLushort, 2, 2, false, false>, true},
+                    {angle::FormatID::R16G16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 2, 2, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1470,17 +1478,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16_SNORM:
-            intendedGLFormat         = GL_R16_SNORM_EXT;
-            actualImageFormatID      = angle::FormatID::R16_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16_SNORM, false, CopyNativeVertexData<GLshort, 1, 1, 0>,
-                     false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLshort, 1, 1, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_R16_SNORM_EXT;
+            actualImageFormatID          = angle::FormatID::R16_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLshort, 1, 1, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16_SSCALED:
@@ -1491,8 +1495,10 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R16_SSCALED, false, CopyNativeVertexData<GLshort, 1, 1, 0>,
                      false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLshort, 1, 1, false>,
-                     true}};
+                    {angle::FormatID::R32_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 1, 1, false, false>, true},
+                    {angle::FormatID::R16_FLOAT, false,
+                     CopyToFloatVertexData<GLshort, 1, 1, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1508,17 +1514,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R16_UNORM:
-            intendedGLFormat         = GL_R16_EXT;
-            actualImageFormatID      = angle::FormatID::R16_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R16_UNORM, false, CopyNativeVertexData<GLushort, 1, 1, 0>,
-                     false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLushort, 1, 1, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_R16_EXT;
+            actualImageFormatID          = angle::FormatID::R16_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R16_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLushort, 1, 1, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R16_USCALED:
@@ -1529,8 +1531,10 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R16_USCALED, false, CopyNativeVertexData<GLushort, 1, 1, 0>,
                      false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLushort, 1, 1, false>,
-                     true}};
+                    {angle::FormatID::R32_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 1, 1, false, false>, true},
+                    {angle::FormatID::R16_FLOAT, false,
+                     CopyToFloatVertexData<GLushort, 1, 1, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1553,7 +1557,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R32G32B32A32_FLOAT, false,
                      CopyNativeVertexData<GLfloat, 4, 4, 0>, false},
                     {angle::FormatID::R16G16B16A16_FLOAT, false,
-                     CopyTo32FVertexData<GLfloat, 4, 4, false>, true}};
+                     CopyToFloatVertexData<GLfloat, 4, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 1);
             }
             break;
@@ -1573,7 +1577,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 4, 4, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 4, 4, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1582,7 +1586,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 4, 4, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 4, 4, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1601,7 +1605,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 4, 4, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 4, 4, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1610,7 +1614,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 4, 4, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 4, 4, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1637,8 +1641,10 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R32G32B32_FLOAT, false,
                      CopyNativeVertexData<GLfloat, 3, 3, 0>, false},
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLfloat, 3, 3, false, true>, true},
                     {angle::FormatID::R16G16B16A16_FLOAT, false,
-                     CopyTo32FVertexData<GLfloat, 3, 3, false>, true}};
+                     CopyToFloatVertexData<GLfloat, 3, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 1);
             }
             break;
@@ -1664,7 +1670,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 3, 3, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 3, 3, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1673,7 +1679,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 3, 3, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 3, 3, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1698,7 +1704,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 3, 3, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 3, 3, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1707,7 +1713,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32B32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 3, 3, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 3, 3, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1729,7 +1735,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                     {angle::FormatID::R32G32_FLOAT, false, CopyNativeVertexData<GLfloat, 2, 2, 0>,
                      false},
                     {angle::FormatID::R16G16_FLOAT, false,
-                     CopyTo32FVertexData<GLfloat, 2, 2, false>, true}};
+                     CopyToFloatVertexData<GLfloat, 2, 2, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 1);
             }
             break;
@@ -1749,7 +1755,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 2, 2, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 2, 2, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1758,7 +1764,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 2, 2, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 2, 2, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1777,7 +1783,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 2, 2, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 2, 2, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1786,7 +1792,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32G32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 2, 2, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 2, 2, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1807,8 +1813,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R32_FLOAT, false, CopyNativeVertexData<GLfloat, 1, 1, 0>,
                      false},
-                    {angle::FormatID::R16_FLOAT, false, CopyTo32FVertexData<GLfloat, 1, 1, false>,
-                     true}};
+                    {angle::FormatID::R16_FLOAT, false,
+                     CopyToFloatVertexData<GLfloat, 1, 1, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 1);
             }
             break;
@@ -1828,7 +1834,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 1, 1, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 1, 1, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1837,7 +1843,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLint, 1, 1, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLint, 1, 1, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1856,7 +1862,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 1, 1, true>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 1, 1, true, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1865,7 +1871,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 
             actualBufferFormatID         = angle::FormatID::R32_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyTo32FVertexData<GLuint, 1, 1, false>;
+            vertexLoadFunction           = CopyToFloatVertexData<GLuint, 1, 1, false, false>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -1918,17 +1924,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8G8B8A8_SNORM:
-            intendedGLFormat         = GL_RGBA8_SNORM;
-            actualImageFormatID      = angle::FormatID::R8G8B8A8_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8G8B8A8_SNORM, false, CopyNativeVertexData<GLbyte, 4, 4, 0>,
-                     false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLbyte, 4, 4, true>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RGBA8_SNORM;
+            actualImageFormatID          = angle::FormatID::R8G8B8A8_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8G8B8A8_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLbyte, 4, 4, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8G8B8A8_SSCALED:
@@ -1939,8 +1941,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8A8_SSCALED, false,
                      CopyNativeVertexData<GLbyte, 4, 4, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLbyte, 4, 4, false>, true}};
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLbyte, 4, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -1964,17 +1966,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8G8B8A8_UNORM:
-            intendedGLFormat         = GL_RGBA8;
-            actualImageFormatID      = angle::FormatID::R8G8B8A8_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8G8B8A8_UNORM, false, CopyNativeVertexData<GLubyte, 4, 4, 0>,
-                     false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLubyte, 4, 4, true>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RGBA8;
+            actualImageFormatID          = angle::FormatID::R8G8B8A8_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8G8B8A8_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLubyte, 4, 4, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8G8B8A8_UNORM_SRGB:
@@ -1995,8 +1993,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8A8_USCALED, false,
                      CopyNativeVertexData<GLubyte, 4, 4, 0>, false},
-                    {angle::FormatID::R32G32B32A32_FLOAT, false,
-                     CopyTo32FVertexData<GLubyte, 4, 4, false>, true}};
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLubyte, 4, 4, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2014,7 +2012,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8_SINT, false, CopyNativeVertexData<GLbyte, 3, 3, 0>,
                      false},
-                    {angle::FormatID::R8G8B8A8_SINT, false, CopyNativeVertexData<GLbyte, 3, 4, 0>,
+                    {angle::FormatID::R8G8B8A8_SINT, false, CopyNativeVertexData<GLbyte, 3, 4, 1>,
                      true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
@@ -2033,8 +2031,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8_SNORM, false, CopyNativeVertexData<GLbyte, 3, 3, 0>,
                      false},
-                    {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLbyte, 3, 3, true>, true}};
+                    {angle::FormatID::R8G8B8A8_SNORM, false,
+                     CopyNativeVertexData<GLbyte, 3, 4, std::numeric_limits<GLbyte>::max()>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2047,9 +2045,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8_SSCALED, false, CopyNativeVertexData<GLbyte, 3, 3, 0>,
                      false},
-                    {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLbyte, 3, 3, false>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLbyte, 3, 3, false, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLbyte, 3, 4, false, true>, true}};
+                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 3);
             }
             break;
 
@@ -2066,7 +2066,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8_UINT, false, CopyNativeVertexData<GLubyte, 3, 3, 0>,
                      false},
-                    {angle::FormatID::R8G8B8A8_UINT, false, CopyNativeVertexData<GLubyte, 3, 4, 0>,
+                    {angle::FormatID::R8G8B8A8_UINT, false, CopyNativeVertexData<GLubyte, 3, 4, 1>,
                      true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
@@ -2076,9 +2076,10 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat         = GL_RGB8;
             actualImageFormatID      = angle::FormatID::R8G8B8A8_UNORM;
             imageInitializerFunction = Initialize4ComponentData<GLubyte, 0x00, 0x00, 0x00, 0xFF>;
-            actualBufferFormatID     = angle::FormatID::R32G32B32_FLOAT;
+            actualBufferFormatID     = angle::FormatID::R8G8B8A8_UNORM;
             vkBufferFormatIsPacked   = false;
-            vertexLoadFunction       = CopyTo32FVertexData<GLubyte, 3, 3, true>;
+            vertexLoadFunction =
+                CopyNativeVertexData<GLubyte, 3, 4, std::numeric_limits<GLubyte>::max()>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2105,9 +2106,11 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8B8_USCALED, false, CopyNativeVertexData<GLubyte, 3, 3, 0>,
                      false},
-                    {angle::FormatID::R32G32B32_FLOAT, false,
-                     CopyTo32FVertexData<GLubyte, 3, 3, false>, true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
+                    {angle::FormatID::R16G16B16_FLOAT, false,
+                     CopyToFloatVertexData<GLubyte, 3, 3, false, true>, true},
+                    {angle::FormatID::R16G16B16A16_FLOAT, false,
+                     CopyToFloatVertexData<GLubyte, 3, 4, false, true>, true}};
+                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 3);
             }
             break;
 
@@ -2122,17 +2125,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8G8_SNORM:
-            intendedGLFormat         = GL_RG8_SNORM;
-            actualImageFormatID      = angle::FormatID::R8G8_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8G8_SNORM, false, CopyNativeVertexData<GLbyte, 2, 2, 0>,
-                     false},
-                    {angle::FormatID::R32G32_FLOAT, false, CopyTo32FVertexData<GLbyte, 2, 2, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RG8_SNORM;
+            actualImageFormatID          = angle::FormatID::R8G8_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8G8_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLbyte, 2, 2, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8G8_SSCALED:
@@ -2143,8 +2142,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8_SSCALED, false, CopyNativeVertexData<GLbyte, 2, 2, 0>,
                      false},
-                    {angle::FormatID::R32G32_FLOAT, false, CopyTo32FVertexData<GLbyte, 2, 2, false>,
-                     true}};
+                    {angle::FormatID::R16G16_FLOAT, false,
+                     CopyToFloatVertexData<GLbyte, 2, 2, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2160,17 +2159,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8G8_UNORM:
-            intendedGLFormat         = GL_RG8;
-            actualImageFormatID      = angle::FormatID::R8G8_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8G8_UNORM, false, CopyNativeVertexData<GLubyte, 2, 2, 0>,
-                     false},
-                    {angle::FormatID::R32G32_FLOAT, false, CopyTo32FVertexData<GLubyte, 2, 2, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_RG8;
+            actualImageFormatID          = angle::FormatID::R8G8_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8G8_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLubyte, 2, 2, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8G8_USCALED:
@@ -2181,8 +2176,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8G8_USCALED, false, CopyNativeVertexData<GLubyte, 2, 2, 0>,
                      false},
-                    {angle::FormatID::R32G32_FLOAT, false,
-                     CopyTo32FVertexData<GLubyte, 2, 2, false>, true}};
+                    {angle::FormatID::R16G16_FLOAT, false,
+                     CopyToFloatVertexData<GLubyte, 2, 2, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2198,17 +2193,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8_SNORM:
-            intendedGLFormat         = GL_R8_SNORM;
-            actualImageFormatID      = angle::FormatID::R8_SNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8_SNORM, false, CopyNativeVertexData<GLbyte, 1, 1, 0>,
-                     false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLbyte, 1, 1, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_R8_SNORM;
+            actualImageFormatID          = angle::FormatID::R8_SNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8_SNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLbyte, 1, 1, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8_SSCALED:
@@ -2219,8 +2210,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8_SSCALED, false, CopyNativeVertexData<GLbyte, 1, 1, 0>,
                      false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLbyte, 1, 1, false>,
-                     true}};
+                    {angle::FormatID::R16_FLOAT, false,
+                     CopyToFloatVertexData<GLbyte, 1, 1, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2236,17 +2227,13 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::R8_UNORM:
-            intendedGLFormat         = GL_R8;
-            actualImageFormatID      = angle::FormatID::R8_UNORM;
-            imageInitializerFunction = nullptr;
-            {
-                static constexpr BufferFormatInitInfo kInfo[] = {
-                    {angle::FormatID::R8_UNORM, false, CopyNativeVertexData<GLubyte, 1, 1, 0>,
-                     false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLubyte, 1, 1, true>,
-                     true}};
-                initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
-            }
+            intendedGLFormat             = GL_R8;
+            actualImageFormatID          = angle::FormatID::R8_UNORM;
+            imageInitializerFunction     = nullptr;
+            actualBufferFormatID         = angle::FormatID::R8_UNORM;
+            vkBufferFormatIsPacked       = false;
+            vertexLoadFunction           = CopyNativeVertexData<GLubyte, 1, 1, 0>;
+            vertexLoadRequiresConversion = false;
             break;
 
         case angle::FormatID::R8_UNORM_SRGB:
@@ -2267,8 +2254,8 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
                 static constexpr BufferFormatInitInfo kInfo[] = {
                     {angle::FormatID::R8_USCALED, false, CopyNativeVertexData<GLubyte, 1, 1, 0>,
                      false},
-                    {angle::FormatID::R32_FLOAT, false, CopyTo32FVertexData<GLubyte, 1, 1, false>,
-                     true}};
+                    {angle::FormatID::R16_FLOAT, false,
+                     CopyToFloatVertexData<GLubyte, 1, 1, false, true>, true}};
                 initBufferFallback(renderer, kInfo, ArraySize(kInfo), 2);
             }
             break;
@@ -2303,9 +2290,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_SINT_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<true, false>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<true, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2313,9 +2300,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_SNORM_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<true, true>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<true, true, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2323,9 +2310,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_SSCALED_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<true, false>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<true, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2333,9 +2320,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_UINT_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<false, false>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<false, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2343,9 +2330,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_UNORM_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<false, true>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<false, true, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2353,9 +2340,9 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             intendedGLFormat             = GL_X2_RGB10_USCALED_ANGLEX;
             actualImageFormatID          = angle::FormatID::NONE;
             imageInitializerFunction     = nullptr;
-            actualBufferFormatID         = angle::FormatID::R32G32B32A32_FLOAT;
+            actualBufferFormatID         = angle::FormatID::R16G16B16A16_FLOAT;
             vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = CopyXYZ10ToXYZW32FVertexData<false, false>;
+            vertexLoadFunction           = CopyXYZ10ToXYZWFloatVertexData<false, false, true>;
             vertexLoadRequiresConversion = true;
             break;
 
@@ -2368,153 +2355,153 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
 VkFormat GetVkFormatFromFormatID(angle::FormatID formatID)
 {
     static constexpr angle::FormatMap<VkFormat> kMap = {
-        {angle::FormatID::R8G8_USCALED, VK_FORMAT_R8G8_USCALED},
-        {angle::FormatID::D32_FLOAT_S8X24_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT},
-        {angle::FormatID::ETC2_R8G8B8_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK},
-        {angle::FormatID::R32G32B32A32_SINT, VK_FORMAT_R32G32B32A32_SINT},
-        {angle::FormatID::ASTC_10x8_SRGB_BLOCK, VK_FORMAT_ASTC_10x8_SRGB_BLOCK},
-        {angle::FormatID::R16G16B16_USCALED, VK_FORMAT_R16G16B16_USCALED},
-        {angle::FormatID::BC4_RED_SNORM_BLOCK, VK_FORMAT_BC4_SNORM_BLOCK},
-        {angle::FormatID::R16G16B16_SNORM, VK_FORMAT_R16G16B16_SNORM},
-        {angle::FormatID::S8_UINT, VK_FORMAT_S8_UINT},
-        {angle::FormatID::R8G8B8_USCALED, VK_FORMAT_R8G8B8_USCALED},
-        {angle::FormatID::ASTC_5x4_UNORM_BLOCK, VK_FORMAT_ASTC_5x4_UNORM_BLOCK},
-        {angle::FormatID::BC5_RG_UNORM_BLOCK, VK_FORMAT_BC5_UNORM_BLOCK},
-        {angle::FormatID::ASTC_8x5_SRGB_BLOCK, VK_FORMAT_ASTC_8x5_SRGB_BLOCK},
-        {angle::FormatID::R8G8_SNORM, VK_FORMAT_R8G8_SNORM},
-        {angle::FormatID::R16G16B16_UINT, VK_FORMAT_R16G16B16_UINT},
-        {angle::FormatID::ETC2_R8G8B8A8_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK},
-        {angle::FormatID::R16G16_UINT, VK_FORMAT_R16G16_UINT},
-        {angle::FormatID::R16_USCALED, VK_FORMAT_R16_USCALED},
-        {angle::FormatID::BC3_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC3_SRGB_BLOCK},
-        {angle::FormatID::R8_SINT, VK_FORMAT_R8_SINT},
-        {angle::FormatID::R11G11B10_FLOAT, VK_FORMAT_B10G11R11_UFLOAT_PACK32},
-        {angle::FormatID::D24_UNORM_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-        {angle::FormatID::B4G4R4A4_UNORM, VK_FORMAT_B4G4R4A4_UNORM_PACK16},
-        {angle::FormatID::ASTC_12x10_UNORM_BLOCK, VK_FORMAT_ASTC_12x10_UNORM_BLOCK},
-        {angle::FormatID::R8G8B8_SSCALED, VK_FORMAT_R8G8B8_SSCALED},
-        {angle::FormatID::R32G32B32_UINT, VK_FORMAT_R32G32B32_UINT},
-        {angle::FormatID::R16_SINT, VK_FORMAT_R16_SINT},
-        {angle::FormatID::D16_UNORM, VK_FORMAT_D16_UNORM},
-        {angle::FormatID::ASTC_4x4_UNORM_BLOCK, VK_FORMAT_ASTC_4x4_UNORM_BLOCK},
-        {angle::FormatID::ASTC_8x8_SRGB_BLOCK, VK_FORMAT_ASTC_8x8_SRGB_BLOCK},
-        {angle::FormatID::R8_USCALED, VK_FORMAT_R8_USCALED},
-        {angle::FormatID::R8G8B8_UNORM_SRGB, VK_FORMAT_R8G8B8_SRGB},
-        {angle::FormatID::BPTC_RGB_UNSIGNED_FLOAT_BLOCK, VK_FORMAT_BC6H_UFLOAT_BLOCK},
-        {angle::FormatID::B5G5R5A1_UNORM, VK_FORMAT_B5G5R5A1_UNORM_PACK16},
-        {angle::FormatID::R16G16_SSCALED, VK_FORMAT_R16G16_SSCALED},
-        {angle::FormatID::B8G8R8A8_UNORM_SRGB, VK_FORMAT_B8G8R8A8_SRGB},
-        {angle::FormatID::BC3_RGBA_UNORM_BLOCK, VK_FORMAT_BC3_UNORM_BLOCK},
-        {angle::FormatID::G8_B8R8_2PLANE_420_UNORM, VK_FORMAT_G8_B8R8_2PLANE_420_UNORM},
-        {angle::FormatID::R16_FLOAT, VK_FORMAT_R16_SFLOAT},
-        {angle::FormatID::R8G8B8A8_SNORM, VK_FORMAT_R8G8B8A8_SNORM},
-        {angle::FormatID::R8G8B8A8_SSCALED, VK_FORMAT_R8G8B8A8_SSCALED},
-        {angle::FormatID::R8_UNORM_SRGB, VK_FORMAT_R8_SRGB},
-        {angle::FormatID::BC1_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC1_RGBA_SRGB_BLOCK},
+        {angle::FormatID::A1R5G5B5_UNORM, VK_FORMAT_A1R5G5B5_UNORM_PACK16},
         {angle::FormatID::ASTC_10x10_SRGB_BLOCK, VK_FORMAT_ASTC_10x10_SRGB_BLOCK},
-        {angle::FormatID::R10G10B10A2_UNORM, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
+        {angle::FormatID::ASTC_10x10_UNORM_BLOCK, VK_FORMAT_ASTC_10x10_UNORM_BLOCK},
+        {angle::FormatID::ASTC_10x5_SRGB_BLOCK, VK_FORMAT_ASTC_10x5_SRGB_BLOCK},
+        {angle::FormatID::ASTC_10x5_UNORM_BLOCK, VK_FORMAT_ASTC_10x5_UNORM_BLOCK},
+        {angle::FormatID::ASTC_10x6_SRGB_BLOCK, VK_FORMAT_ASTC_10x6_SRGB_BLOCK},
+        {angle::FormatID::ASTC_10x6_UNORM_BLOCK, VK_FORMAT_ASTC_10x6_UNORM_BLOCK},
+        {angle::FormatID::ASTC_10x8_SRGB_BLOCK, VK_FORMAT_ASTC_10x8_SRGB_BLOCK},
+        {angle::FormatID::ASTC_10x8_UNORM_BLOCK, VK_FORMAT_ASTC_10x8_UNORM_BLOCK},
         {angle::FormatID::ASTC_12x10_SRGB_BLOCK, VK_FORMAT_ASTC_12x10_SRGB_BLOCK},
+        {angle::FormatID::ASTC_12x10_UNORM_BLOCK, VK_FORMAT_ASTC_12x10_UNORM_BLOCK},
+        {angle::FormatID::ASTC_12x12_SRGB_BLOCK, VK_FORMAT_ASTC_12x12_SRGB_BLOCK},
+        {angle::FormatID::ASTC_12x12_UNORM_BLOCK, VK_FORMAT_ASTC_12x12_UNORM_BLOCK},
+        {angle::FormatID::ASTC_4x4_SRGB_BLOCK, VK_FORMAT_ASTC_4x4_SRGB_BLOCK},
+        {angle::FormatID::ASTC_4x4_UNORM_BLOCK, VK_FORMAT_ASTC_4x4_UNORM_BLOCK},
         {angle::FormatID::ASTC_5x4_SRGB_BLOCK, VK_FORMAT_ASTC_5x4_SRGB_BLOCK},
-        {angle::FormatID::ASTC_8x5_UNORM_BLOCK, VK_FORMAT_ASTC_8x5_UNORM_BLOCK},
-        {angle::FormatID::R16G16B16A16_USCALED, VK_FORMAT_R16G16B16A16_USCALED},
-        {angle::FormatID::R8G8B8A8_UNORM_SRGB, VK_FORMAT_R8G8B8A8_SRGB},
-        {angle::FormatID::NONE, VK_FORMAT_UNDEFINED},
-        {angle::FormatID::R32G32_UINT, VK_FORMAT_R32G32_UINT},
-        {angle::FormatID::R16G16_SNORM, VK_FORMAT_R16G16_SNORM},
-        {angle::FormatID::R16_UNORM, VK_FORMAT_R16_UNORM},
-        {angle::FormatID::R10G10B10A2_SINT, VK_FORMAT_A2B10G10R10_SINT_PACK32},
-        {angle::FormatID::R16G16B16A16_FLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
+        {angle::FormatID::ASTC_5x4_UNORM_BLOCK, VK_FORMAT_ASTC_5x4_UNORM_BLOCK},
         {angle::FormatID::ASTC_5x5_SRGB_BLOCK, VK_FORMAT_ASTC_5x5_SRGB_BLOCK},
-        {angle::FormatID::EAC_R11_SNORM_BLOCK, VK_FORMAT_EAC_R11_SNORM_BLOCK},
-        {angle::FormatID::ASTC_8x6_SRGB_BLOCK, VK_FORMAT_ASTC_8x6_SRGB_BLOCK},
-        {angle::FormatID::R8G8B8A8_USCALED, VK_FORMAT_R8G8B8A8_USCALED},
+        {angle::FormatID::ASTC_5x5_UNORM_BLOCK, VK_FORMAT_ASTC_5x5_UNORM_BLOCK},
+        {angle::FormatID::ASTC_6x5_SRGB_BLOCK, VK_FORMAT_ASTC_6x5_SRGB_BLOCK},
         {angle::FormatID::ASTC_6x5_UNORM_BLOCK, VK_FORMAT_ASTC_6x5_UNORM_BLOCK},
-        {angle::FormatID::R8G8B8A8_UINT, VK_FORMAT_R8G8B8A8_UINT},
+        {angle::FormatID::ASTC_6x6_SRGB_BLOCK, VK_FORMAT_ASTC_6x6_SRGB_BLOCK},
+        {angle::FormatID::ASTC_6x6_UNORM_BLOCK, VK_FORMAT_ASTC_6x6_UNORM_BLOCK},
+        {angle::FormatID::ASTC_8x5_SRGB_BLOCK, VK_FORMAT_ASTC_8x5_SRGB_BLOCK},
+        {angle::FormatID::ASTC_8x5_UNORM_BLOCK, VK_FORMAT_ASTC_8x5_UNORM_BLOCK},
+        {angle::FormatID::ASTC_8x6_SRGB_BLOCK, VK_FORMAT_ASTC_8x6_SRGB_BLOCK},
+        {angle::FormatID::ASTC_8x6_UNORM_BLOCK, VK_FORMAT_ASTC_8x6_UNORM_BLOCK},
+        {angle::FormatID::ASTC_8x8_SRGB_BLOCK, VK_FORMAT_ASTC_8x8_SRGB_BLOCK},
+        {angle::FormatID::ASTC_8x8_UNORM_BLOCK, VK_FORMAT_ASTC_8x8_UNORM_BLOCK},
+        {angle::FormatID::B10G10R10A2_UNORM, VK_FORMAT_A2R10G10B10_UNORM_PACK32},
+        {angle::FormatID::B4G4R4A4_UNORM, VK_FORMAT_B4G4R4A4_UNORM_PACK16},
+        {angle::FormatID::B5G5R5A1_UNORM, VK_FORMAT_B5G5R5A1_UNORM_PACK16},
+        {angle::FormatID::B5G6R5_UNORM, VK_FORMAT_B5G6R5_UNORM_PACK16},
+        {angle::FormatID::B8G8R8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM},
+        {angle::FormatID::B8G8R8A8_UNORM_SRGB, VK_FORMAT_B8G8R8A8_SRGB},
+        {angle::FormatID::BC1_RGBA_UNORM_BLOCK, VK_FORMAT_BC1_RGBA_UNORM_BLOCK},
+        {angle::FormatID::BC1_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC1_RGBA_SRGB_BLOCK},
+        {angle::FormatID::BC1_RGB_UNORM_BLOCK, VK_FORMAT_BC1_RGB_UNORM_BLOCK},
+        {angle::FormatID::BC1_RGB_UNORM_SRGB_BLOCK, VK_FORMAT_BC1_RGB_SRGB_BLOCK},
+        {angle::FormatID::BC2_RGBA_UNORM_BLOCK, VK_FORMAT_BC2_UNORM_BLOCK},
+        {angle::FormatID::BC2_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC2_SRGB_BLOCK},
+        {angle::FormatID::BC3_RGBA_UNORM_BLOCK, VK_FORMAT_BC3_UNORM_BLOCK},
+        {angle::FormatID::BC3_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC3_SRGB_BLOCK},
+        {angle::FormatID::BC4_RED_SNORM_BLOCK, VK_FORMAT_BC4_SNORM_BLOCK},
+        {angle::FormatID::BC4_RED_UNORM_BLOCK, VK_FORMAT_BC4_UNORM_BLOCK},
+        {angle::FormatID::BC5_RG_SNORM_BLOCK, VK_FORMAT_BC5_SNORM_BLOCK},
+        {angle::FormatID::BC5_RG_UNORM_BLOCK, VK_FORMAT_BC5_UNORM_BLOCK},
+        {angle::FormatID::BC6H_RGB_SFLOAT_BLOCK, VK_FORMAT_BC6H_SFLOAT_BLOCK},
+        {angle::FormatID::BC6H_RGB_UFLOAT_BLOCK, VK_FORMAT_BC6H_UFLOAT_BLOCK},
+        {angle::FormatID::BC7_RGBA_UNORM_BLOCK, VK_FORMAT_BC7_UNORM_BLOCK},
+        {angle::FormatID::BC7_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC7_SRGB_BLOCK},
+        {angle::FormatID::D16_UNORM, VK_FORMAT_D16_UNORM},
+        {angle::FormatID::D24_UNORM_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+        {angle::FormatID::D24_UNORM_X8_UINT, VK_FORMAT_X8_D24_UNORM_PACK32},
+        {angle::FormatID::D32_FLOAT, VK_FORMAT_D32_SFLOAT},
+        {angle::FormatID::D32_FLOAT_S8X24_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT},
+        {angle::FormatID::EAC_R11G11_SNORM_BLOCK, VK_FORMAT_EAC_R11G11_SNORM_BLOCK},
+        {angle::FormatID::EAC_R11G11_UNORM_BLOCK, VK_FORMAT_EAC_R11G11_UNORM_BLOCK},
+        {angle::FormatID::EAC_R11_SNORM_BLOCK, VK_FORMAT_EAC_R11_SNORM_BLOCK},
+        {angle::FormatID::EAC_R11_UNORM_BLOCK, VK_FORMAT_EAC_R11_UNORM_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8A1_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8A1_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8A8_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8A8_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK},
+        {angle::FormatID::ETC2_R8G8B8_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK},
+        {angle::FormatID::G8_B8R8_2PLANE_420_UNORM, VK_FORMAT_G8_B8R8_2PLANE_420_UNORM},
+        {angle::FormatID::G8_B8_R8_3PLANE_420_UNORM, VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM},
+        {angle::FormatID::NONE, VK_FORMAT_UNDEFINED},
+        {angle::FormatID::R10G10B10A2_SINT, VK_FORMAT_A2B10G10R10_SINT_PACK32},
+        {angle::FormatID::R10G10B10A2_SNORM, VK_FORMAT_A2B10G10R10_SNORM_PACK32},
+        {angle::FormatID::R10G10B10A2_SSCALED, VK_FORMAT_A2B10G10R10_SSCALED_PACK32},
+        {angle::FormatID::R10G10B10A2_UINT, VK_FORMAT_A2B10G10R10_UINT_PACK32},
+        {angle::FormatID::R10G10B10A2_UNORM, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
+        {angle::FormatID::R10G10B10A2_USCALED, VK_FORMAT_A2B10G10R10_USCALED_PACK32},
+        {angle::FormatID::R11G11B10_FLOAT, VK_FORMAT_B10G11R11_UFLOAT_PACK32},
+        {angle::FormatID::R16G16B16A16_FLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
+        {angle::FormatID::R16G16B16A16_SINT, VK_FORMAT_R16G16B16A16_SINT},
+        {angle::FormatID::R16G16B16A16_SNORM, VK_FORMAT_R16G16B16A16_SNORM},
+        {angle::FormatID::R16G16B16A16_SSCALED, VK_FORMAT_R16G16B16A16_SSCALED},
+        {angle::FormatID::R16G16B16A16_UINT, VK_FORMAT_R16G16B16A16_UINT},
+        {angle::FormatID::R16G16B16A16_UNORM, VK_FORMAT_R16G16B16A16_UNORM},
+        {angle::FormatID::R16G16B16A16_USCALED, VK_FORMAT_R16G16B16A16_USCALED},
+        {angle::FormatID::R16G16B16_FLOAT, VK_FORMAT_R16G16B16_SFLOAT},
+        {angle::FormatID::R16G16B16_SINT, VK_FORMAT_R16G16B16_SINT},
+        {angle::FormatID::R16G16B16_SNORM, VK_FORMAT_R16G16B16_SNORM},
+        {angle::FormatID::R16G16B16_SSCALED, VK_FORMAT_R16G16B16_SSCALED},
+        {angle::FormatID::R16G16B16_UINT, VK_FORMAT_R16G16B16_UINT},
+        {angle::FormatID::R16G16B16_UNORM, VK_FORMAT_R16G16B16_UNORM},
+        {angle::FormatID::R16G16B16_USCALED, VK_FORMAT_R16G16B16_USCALED},
+        {angle::FormatID::R16G16_FLOAT, VK_FORMAT_R16G16_SFLOAT},
+        {angle::FormatID::R16G16_SINT, VK_FORMAT_R16G16_SINT},
+        {angle::FormatID::R16G16_SNORM, VK_FORMAT_R16G16_SNORM},
+        {angle::FormatID::R16G16_SSCALED, VK_FORMAT_R16G16_SSCALED},
+        {angle::FormatID::R16G16_UINT, VK_FORMAT_R16G16_UINT},
+        {angle::FormatID::R16G16_UNORM, VK_FORMAT_R16G16_UNORM},
+        {angle::FormatID::R16G16_USCALED, VK_FORMAT_R16G16_USCALED},
+        {angle::FormatID::R16_FLOAT, VK_FORMAT_R16_SFLOAT},
+        {angle::FormatID::R16_SINT, VK_FORMAT_R16_SINT},
+        {angle::FormatID::R16_SNORM, VK_FORMAT_R16_SNORM},
+        {angle::FormatID::R16_SSCALED, VK_FORMAT_R16_SSCALED},
+        {angle::FormatID::R16_UINT, VK_FORMAT_R16_UINT},
+        {angle::FormatID::R16_UNORM, VK_FORMAT_R16_UNORM},
+        {angle::FormatID::R16_USCALED, VK_FORMAT_R16_USCALED},
+        {angle::FormatID::R32G32B32A32_FLOAT, VK_FORMAT_R32G32B32A32_SFLOAT},
+        {angle::FormatID::R32G32B32A32_SINT, VK_FORMAT_R32G32B32A32_SINT},
+        {angle::FormatID::R32G32B32A32_UINT, VK_FORMAT_R32G32B32A32_UINT},
+        {angle::FormatID::R32G32B32_FLOAT, VK_FORMAT_R32G32B32_SFLOAT},
+        {angle::FormatID::R32G32B32_SINT, VK_FORMAT_R32G32B32_SINT},
+        {angle::FormatID::R32G32B32_UINT, VK_FORMAT_R32G32B32_UINT},
+        {angle::FormatID::R32G32_FLOAT, VK_FORMAT_R32G32_SFLOAT},
+        {angle::FormatID::R32G32_SINT, VK_FORMAT_R32G32_SINT},
+        {angle::FormatID::R32G32_UINT, VK_FORMAT_R32G32_UINT},
+        {angle::FormatID::R32_FLOAT, VK_FORMAT_R32_SFLOAT},
+        {angle::FormatID::R32_SINT, VK_FORMAT_R32_SINT},
+        {angle::FormatID::R32_UINT, VK_FORMAT_R32_UINT},
+        {angle::FormatID::R4G4B4A4_UNORM, VK_FORMAT_R4G4B4A4_UNORM_PACK16},
+        {angle::FormatID::R5G5B5A1_UNORM, VK_FORMAT_R5G5B5A1_UNORM_PACK16},
         {angle::FormatID::R5G6B5_UNORM, VK_FORMAT_R5G6B5_UNORM_PACK16},
         {angle::FormatID::R8G8B8A8_SINT, VK_FORMAT_R8G8B8A8_SINT},
-        {angle::FormatID::B8G8R8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM},
-        {angle::FormatID::R32G32B32A32_FLOAT, VK_FORMAT_R32G32B32A32_SFLOAT},
-        {angle::FormatID::R16G16B16_UNORM, VK_FORMAT_R16G16B16_UNORM},
-        {angle::FormatID::BC2_RGBA_UNORM_BLOCK, VK_FORMAT_BC2_UNORM_BLOCK},
-        {angle::FormatID::ASTC_12x12_UNORM_BLOCK, VK_FORMAT_ASTC_12x12_UNORM_BLOCK},
-        {angle::FormatID::ETC2_R8G8B8A8_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK},
-        {angle::FormatID::R10G10B10A2_SNORM, VK_FORMAT_A2B10G10R10_SNORM_PACK32},
+        {angle::FormatID::R8G8B8A8_SNORM, VK_FORMAT_R8G8B8A8_SNORM},
+        {angle::FormatID::R8G8B8A8_SSCALED, VK_FORMAT_R8G8B8A8_SSCALED},
+        {angle::FormatID::R8G8B8A8_UINT, VK_FORMAT_R8G8B8A8_UINT},
         {angle::FormatID::R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM},
-        {angle::FormatID::ASTC_6x6_SRGB_BLOCK, VK_FORMAT_ASTC_6x6_SRGB_BLOCK},
-        {angle::FormatID::ASTC_10x10_UNORM_BLOCK, VK_FORMAT_ASTC_10x10_UNORM_BLOCK},
-        {angle::FormatID::ETC2_R8G8B8A1_SRGB_BLOCK, VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK},
-        {angle::FormatID::R16G16B16_SSCALED, VK_FORMAT_R16G16B16_SSCALED},
-        {angle::FormatID::R16G16_UNORM, VK_FORMAT_R16G16_UNORM},
-        {angle::FormatID::D32_FLOAT, VK_FORMAT_D32_SFLOAT},
-        {angle::FormatID::R16G16B16A16_UNORM, VK_FORMAT_R16G16B16A16_UNORM},
-        {angle::FormatID::EAC_R11_UNORM_BLOCK, VK_FORMAT_EAC_R11_UNORM_BLOCK},
-        {angle::FormatID::R16G16B16A16_UINT, VK_FORMAT_R16G16B16A16_UINT},
-        {angle::FormatID::R16G16B16A16_SINT, VK_FORMAT_R16G16B16A16_SINT},
-        {angle::FormatID::BPTC_RGBA_UNORM_BLOCK, VK_FORMAT_BC7_UNORM_BLOCK},
-        {angle::FormatID::A1R5G5B5_UNORM, VK_FORMAT_A1R5G5B5_UNORM_PACK16},
-        {angle::FormatID::ASTC_8x6_UNORM_BLOCK, VK_FORMAT_ASTC_8x6_UNORM_BLOCK},
-        {angle::FormatID::EAC_R11G11_SNORM_BLOCK, VK_FORMAT_EAC_R11G11_SNORM_BLOCK},
-        {angle::FormatID::R10G10B10A2_SSCALED, VK_FORMAT_A2B10G10R10_SSCALED_PACK32},
-        {angle::FormatID::BC1_RGBA_UNORM_BLOCK, VK_FORMAT_BC1_RGBA_UNORM_BLOCK},
-        {angle::FormatID::R32G32_SINT, VK_FORMAT_R32G32_SINT},
-        {angle::FormatID::R32G32B32_FLOAT, VK_FORMAT_R32G32B32_SFLOAT},
-        {angle::FormatID::R8_UINT, VK_FORMAT_R8_UINT},
-        {angle::FormatID::ASTC_10x6_UNORM_BLOCK, VK_FORMAT_ASTC_10x6_UNORM_BLOCK},
-        {angle::FormatID::BC1_RGB_UNORM_BLOCK, VK_FORMAT_BC1_RGB_UNORM_BLOCK},
-        {angle::FormatID::R4G4B4A4_UNORM, VK_FORMAT_R4G4B4A4_UNORM_PACK16},
-        {angle::FormatID::BC1_RGB_UNORM_SRGB_BLOCK, VK_FORMAT_BC1_RGB_SRGB_BLOCK},
-        {angle::FormatID::BPTC_RGB_SIGNED_FLOAT_BLOCK, VK_FORMAT_BC6H_SFLOAT_BLOCK},
-        {angle::FormatID::R10G10B10A2_UINT, VK_FORMAT_A2B10G10R10_UINT_PACK32},
-        {angle::FormatID::ASTC_6x5_SRGB_BLOCK, VK_FORMAT_ASTC_6x5_SRGB_BLOCK},
-        {angle::FormatID::R16G16_FLOAT, VK_FORMAT_R16G16_SFLOAT},
-        {angle::FormatID::B5G6R5_UNORM, VK_FORMAT_B5G6R5_UNORM_PACK16},
-        {angle::FormatID::R32_FLOAT, VK_FORMAT_R32_SFLOAT},
-        {angle::FormatID::ASTC_12x12_SRGB_BLOCK, VK_FORMAT_ASTC_12x12_SRGB_BLOCK},
-        {angle::FormatID::ASTC_5x5_UNORM_BLOCK, VK_FORMAT_ASTC_5x5_UNORM_BLOCK},
+        {angle::FormatID::R8G8B8A8_UNORM_SRGB, VK_FORMAT_R8G8B8A8_SRGB},
+        {angle::FormatID::R8G8B8A8_USCALED, VK_FORMAT_R8G8B8A8_USCALED},
         {angle::FormatID::R8G8B8_SINT, VK_FORMAT_R8G8B8_SINT},
-        {angle::FormatID::ASTC_8x8_UNORM_BLOCK, VK_FORMAT_ASTC_8x8_UNORM_BLOCK},
-        {angle::FormatID::R32_SINT, VK_FORMAT_R32_SINT},
-        {angle::FormatID::ETC2_R8G8B8A1_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK},
-        {angle::FormatID::R16_SSCALED, VK_FORMAT_R16_SSCALED},
-        {angle::FormatID::ASTC_6x6_UNORM_BLOCK, VK_FORMAT_ASTC_6x6_UNORM_BLOCK},
         {angle::FormatID::R8G8B8_SNORM, VK_FORMAT_R8G8B8_SNORM},
-        {angle::FormatID::R16_UINT, VK_FORMAT_R16_UINT},
-        {angle::FormatID::R8_UNORM, VK_FORMAT_R8_UNORM},
-        {angle::FormatID::R32G32_FLOAT, VK_FORMAT_R32G32_SFLOAT},
-        {angle::FormatID::BC5_RG_SNORM_BLOCK, VK_FORMAT_BC5_SNORM_BLOCK},
-        {angle::FormatID::R16G16B16A16_SNORM, VK_FORMAT_R16G16B16A16_SNORM},
-        {angle::FormatID::R8G8_UNORM, VK_FORMAT_R8G8_UNORM},
-        {angle::FormatID::ASTC_10x6_SRGB_BLOCK, VK_FORMAT_ASTC_10x6_SRGB_BLOCK},
-        {angle::FormatID::ASTC_10x5_UNORM_BLOCK, VK_FORMAT_ASTC_10x5_UNORM_BLOCK},
-        {angle::FormatID::B10G10R10A2_UNORM, VK_FORMAT_A2R10G10B10_UNORM_PACK32},
-        {angle::FormatID::BC2_RGBA_UNORM_SRGB_BLOCK, VK_FORMAT_BC2_SRGB_BLOCK},
-        {angle::FormatID::R32G32B32_SINT, VK_FORMAT_R32G32B32_SINT},
-        {angle::FormatID::R10G10B10A2_USCALED, VK_FORMAT_A2B10G10R10_USCALED_PACK32},
-        {angle::FormatID::R8G8_SINT, VK_FORMAT_R8G8_SINT},
-        {angle::FormatID::R16G16B16A16_SSCALED, VK_FORMAT_R16G16B16A16_SSCALED},
-        {angle::FormatID::ASTC_10x5_SRGB_BLOCK, VK_FORMAT_ASTC_10x5_SRGB_BLOCK},
-        {angle::FormatID::R8_SSCALED, VK_FORMAT_R8_SSCALED},
-        {angle::FormatID::R16G16B16_FLOAT, VK_FORMAT_R16G16B16_SFLOAT},
-        {angle::FormatID::R8_SNORM, VK_FORMAT_R8_SNORM},
-        {angle::FormatID::R16_SNORM, VK_FORMAT_R16_SNORM},
-        {angle::FormatID::D24_UNORM_X8_UINT, VK_FORMAT_X8_D24_UNORM_PACK32},
-        {angle::FormatID::R16G16_SINT, VK_FORMAT_R16G16_SINT},
-        {angle::FormatID::R16G16B16_SINT, VK_FORMAT_R16G16B16_SINT},
-        {angle::FormatID::R8G8_SSCALED, VK_FORMAT_R8G8_SSCALED},
-        {angle::FormatID::EAC_R11G11_UNORM_BLOCK, VK_FORMAT_EAC_R11G11_UNORM_BLOCK},
-        {angle::FormatID::ASTC_10x8_UNORM_BLOCK, VK_FORMAT_ASTC_10x8_UNORM_BLOCK},
-        {angle::FormatID::ASTC_4x4_SRGB_BLOCK, VK_FORMAT_ASTC_4x4_SRGB_BLOCK},
-        {angle::FormatID::R8G8_UINT, VK_FORMAT_R8G8_UINT},
-        {angle::FormatID::R5G5B5A1_UNORM, VK_FORMAT_R5G5B5A1_UNORM_PACK16},
+        {angle::FormatID::R8G8B8_SSCALED, VK_FORMAT_R8G8B8_SSCALED},
         {angle::FormatID::R8G8B8_UINT, VK_FORMAT_R8G8B8_UINT},
-        {angle::FormatID::G8_B8_R8_3PLANE_420_UNORM, VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM},
-        {angle::FormatID::ETC2_R8G8B8_UNORM_BLOCK, VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK},
-        {angle::FormatID::R32_UINT, VK_FORMAT_R32_UINT},
+        {angle::FormatID::R8G8B8_UNORM_SRGB, VK_FORMAT_R8G8B8_SRGB},
+        {angle::FormatID::R8G8B8_USCALED, VK_FORMAT_R8G8B8_USCALED},
+        {angle::FormatID::R8G8_SINT, VK_FORMAT_R8G8_SINT},
+        {angle::FormatID::R8G8_SNORM, VK_FORMAT_R8G8_SNORM},
+        {angle::FormatID::R8G8_SSCALED, VK_FORMAT_R8G8_SSCALED},
+        {angle::FormatID::R8G8_UINT, VK_FORMAT_R8G8_UINT},
+        {angle::FormatID::R8G8_UNORM, VK_FORMAT_R8G8_UNORM},
+        {angle::FormatID::R8G8_USCALED, VK_FORMAT_R8G8_USCALED},
+        {angle::FormatID::R8_SINT, VK_FORMAT_R8_SINT},
+        {angle::FormatID::R8_SNORM, VK_FORMAT_R8_SNORM},
+        {angle::FormatID::R8_SSCALED, VK_FORMAT_R8_SSCALED},
+        {angle::FormatID::R8_UINT, VK_FORMAT_R8_UINT},
+        {angle::FormatID::R8_UNORM, VK_FORMAT_R8_UNORM},
+        {angle::FormatID::R8_UNORM_SRGB, VK_FORMAT_R8_SRGB},
+        {angle::FormatID::R8_USCALED, VK_FORMAT_R8_USCALED},
         {angle::FormatID::R9G9B9E5_SHAREDEXP, VK_FORMAT_E5B9G9R9_UFLOAT_PACK32},
-        {angle::FormatID::BC4_RED_UNORM_BLOCK, VK_FORMAT_BC4_UNORM_BLOCK},
-        {angle::FormatID::R32G32B32A32_UINT, VK_FORMAT_R32G32B32A32_UINT},
-        {angle::FormatID::BPTC_SRGB_ALPHA_UNORM_BLOCK, VK_FORMAT_BC7_SRGB_BLOCK},
-        {angle::FormatID::R16G16_USCALED, VK_FORMAT_R16G16_USCALED}};
+        {angle::FormatID::S8_UINT, VK_FORMAT_S8_UINT}};
 
     return kMap[formatID];
 }
@@ -2523,300 +2510,300 @@ angle::FormatID GetFormatIDFromVkFormat(VkFormat vkFormat)
 {
     switch (vkFormat)
     {
-        case VK_FORMAT_R8G8_USCALED:
-            return angle::FormatID::R8G8_USCALED;
-        case VK_FORMAT_D32_SFLOAT_S8_UINT:
-            return angle::FormatID::D32_FLOAT_S8X24_UINT;
-        case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8_SRGB_BLOCK;
-        case VK_FORMAT_R32G32B32A32_SINT:
-            return angle::FormatID::R32G32B32A32_SINT;
-        case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
-            return angle::FormatID::ASTC_10x8_SRGB_BLOCK;
-        case VK_FORMAT_R16G16B16_USCALED:
-            return angle::FormatID::R16G16B16_USCALED;
-        case VK_FORMAT_BC4_SNORM_BLOCK:
-            return angle::FormatID::BC4_RED_SNORM_BLOCK;
-        case VK_FORMAT_R16G16B16_SNORM:
-            return angle::FormatID::R16G16B16_SNORM;
-        case VK_FORMAT_S8_UINT:
-            return angle::FormatID::S8_UINT;
-        case VK_FORMAT_R8G8B8_USCALED:
-            return angle::FormatID::R8G8B8_USCALED;
-        case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
-            return angle::FormatID::ASTC_5x4_UNORM_BLOCK;
-        case VK_FORMAT_BC5_UNORM_BLOCK:
-            return angle::FormatID::BC5_RG_UNORM_BLOCK;
-        case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
-            return angle::FormatID::ASTC_8x5_SRGB_BLOCK;
-        case VK_FORMAT_R8G8_SNORM:
-            return angle::FormatID::R8G8_SNORM;
-        case VK_FORMAT_R16G16B16_UINT:
-            return angle::FormatID::R16G16B16_UINT;
-        case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8A8_UNORM_BLOCK;
-        case VK_FORMAT_R16G16_UINT:
-            return angle::FormatID::R16G16_UINT;
-        case VK_FORMAT_R16_USCALED:
-            return angle::FormatID::R16_USCALED;
-        case VK_FORMAT_BC3_SRGB_BLOCK:
-            return angle::FormatID::BC3_RGBA_UNORM_SRGB_BLOCK;
-        case VK_FORMAT_R8_SINT:
-            return angle::FormatID::R8_SINT;
-        case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-            return angle::FormatID::R11G11B10_FLOAT;
-        case VK_FORMAT_D24_UNORM_S8_UINT:
-            return angle::FormatID::D24_UNORM_S8_UINT;
-        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-            return angle::FormatID::B4G4R4A4_UNORM;
-        case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
-            return angle::FormatID::ASTC_12x10_UNORM_BLOCK;
-        case VK_FORMAT_R8G8B8_SSCALED:
-            return angle::FormatID::R8G8B8_SSCALED;
-        case VK_FORMAT_R32G32B32_UINT:
-            return angle::FormatID::R32G32B32_UINT;
-        case VK_FORMAT_R16_SINT:
-            return angle::FormatID::R16_SINT;
-        case VK_FORMAT_D16_UNORM:
-            return angle::FormatID::D16_UNORM;
-        case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
-            return angle::FormatID::ASTC_4x4_UNORM_BLOCK;
-        case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
-            return angle::FormatID::ASTC_8x8_SRGB_BLOCK;
-        case VK_FORMAT_R8_USCALED:
-            return angle::FormatID::R8_USCALED;
-        case VK_FORMAT_R8G8B8_SRGB:
-            return angle::FormatID::R8G8B8_UNORM_SRGB;
-        case VK_FORMAT_BC6H_UFLOAT_BLOCK:
-            return angle::FormatID::BPTC_RGB_UNSIGNED_FLOAT_BLOCK;
-        case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
-            return angle::FormatID::B5G5R5A1_UNORM;
-        case VK_FORMAT_R16G16_SSCALED:
-            return angle::FormatID::R16G16_SSCALED;
-        case VK_FORMAT_B8G8R8A8_SRGB:
-            return angle::FormatID::B8G8R8A8_UNORM_SRGB;
-        case VK_FORMAT_BC3_UNORM_BLOCK:
-            return angle::FormatID::BC3_RGBA_UNORM_BLOCK;
-        case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
-            return angle::FormatID::G8_B8R8_2PLANE_420_UNORM;
-        case VK_FORMAT_R16_SFLOAT:
-            return angle::FormatID::R16_FLOAT;
-        case VK_FORMAT_R8G8B8A8_SNORM:
-            return angle::FormatID::R8G8B8A8_SNORM;
-        case VK_FORMAT_R8G8B8A8_SSCALED:
-            return angle::FormatID::R8G8B8A8_SSCALED;
-        case VK_FORMAT_R8_SRGB:
-            return angle::FormatID::R8_UNORM_SRGB;
-        case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
-            return angle::FormatID::BC1_RGBA_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+            return angle::FormatID::A1R5G5B5_UNORM;
         case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
             return angle::FormatID::ASTC_10x10_SRGB_BLOCK;
-        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-            return angle::FormatID::R10G10B10A2_UNORM;
+        case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+            return angle::FormatID::ASTC_10x10_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+            return angle::FormatID::ASTC_10x5_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+            return angle::FormatID::ASTC_10x5_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+            return angle::FormatID::ASTC_10x6_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+            return angle::FormatID::ASTC_10x6_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+            return angle::FormatID::ASTC_10x8_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+            return angle::FormatID::ASTC_10x8_UNORM_BLOCK;
         case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
             return angle::FormatID::ASTC_12x10_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+            return angle::FormatID::ASTC_12x10_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+            return angle::FormatID::ASTC_12x12_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+            return angle::FormatID::ASTC_12x12_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+            return angle::FormatID::ASTC_4x4_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+            return angle::FormatID::ASTC_4x4_UNORM_BLOCK;
         case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
             return angle::FormatID::ASTC_5x4_SRGB_BLOCK;
-        case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
-            return angle::FormatID::ASTC_8x5_UNORM_BLOCK;
-        case VK_FORMAT_R16G16B16A16_USCALED:
-            return angle::FormatID::R16G16B16A16_USCALED;
-        case VK_FORMAT_R8G8B8A8_SRGB:
-            return angle::FormatID::R8G8B8A8_UNORM_SRGB;
-        case VK_FORMAT_UNDEFINED:
-            return angle::FormatID::NONE;
-        case VK_FORMAT_R32G32_UINT:
-            return angle::FormatID::R32G32_UINT;
-        case VK_FORMAT_R16G16_SNORM:
-            return angle::FormatID::R16G16_SNORM;
-        case VK_FORMAT_R16_UNORM:
-            return angle::FormatID::R16_UNORM;
-        case VK_FORMAT_A2B10G10R10_SINT_PACK32:
-            return angle::FormatID::R10G10B10A2_SINT;
-        case VK_FORMAT_R16G16B16A16_SFLOAT:
-            return angle::FormatID::R16G16B16A16_FLOAT;
+        case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+            return angle::FormatID::ASTC_5x4_UNORM_BLOCK;
         case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
             return angle::FormatID::ASTC_5x5_SRGB_BLOCK;
-        case VK_FORMAT_EAC_R11_SNORM_BLOCK:
-            return angle::FormatID::EAC_R11_SNORM_BLOCK;
-        case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
-            return angle::FormatID::ASTC_8x6_SRGB_BLOCK;
-        case VK_FORMAT_R8G8B8A8_USCALED:
-            return angle::FormatID::R8G8B8A8_USCALED;
+        case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+            return angle::FormatID::ASTC_5x5_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+            return angle::FormatID::ASTC_6x5_SRGB_BLOCK;
         case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
             return angle::FormatID::ASTC_6x5_UNORM_BLOCK;
-        case VK_FORMAT_R8G8B8A8_UINT:
-            return angle::FormatID::R8G8B8A8_UINT;
+        case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+            return angle::FormatID::ASTC_6x6_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+            return angle::FormatID::ASTC_6x6_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+            return angle::FormatID::ASTC_8x5_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+            return angle::FormatID::ASTC_8x5_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+            return angle::FormatID::ASTC_8x6_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+            return angle::FormatID::ASTC_8x6_UNORM_BLOCK;
+        case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+            return angle::FormatID::ASTC_8x8_SRGB_BLOCK;
+        case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+            return angle::FormatID::ASTC_8x8_UNORM_BLOCK;
+        case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+            return angle::FormatID::B10G10R10A2_UNORM;
+        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+            return angle::FormatID::B4G4R4A4_UNORM;
+        case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+            return angle::FormatID::B5G5R5A1_UNORM;
+        case VK_FORMAT_B5G6R5_UNORM_PACK16:
+            return angle::FormatID::B5G6R5_UNORM;
+        case VK_FORMAT_B8G8R8A8_UNORM:
+            return angle::FormatID::B8G8R8A8_UNORM;
+        case VK_FORMAT_B8G8R8A8_SRGB:
+            return angle::FormatID::B8G8R8A8_UNORM_SRGB;
+        case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
+            return angle::FormatID::BC1_RGBA_UNORM_BLOCK;
+        case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
+            return angle::FormatID::BC1_RGBA_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+            return angle::FormatID::BC1_RGB_UNORM_BLOCK;
+        case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
+            return angle::FormatID::BC1_RGB_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_BC2_UNORM_BLOCK:
+            return angle::FormatID::BC2_RGBA_UNORM_BLOCK;
+        case VK_FORMAT_BC2_SRGB_BLOCK:
+            return angle::FormatID::BC2_RGBA_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_BC3_UNORM_BLOCK:
+            return angle::FormatID::BC3_RGBA_UNORM_BLOCK;
+        case VK_FORMAT_BC3_SRGB_BLOCK:
+            return angle::FormatID::BC3_RGBA_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_BC4_SNORM_BLOCK:
+            return angle::FormatID::BC4_RED_SNORM_BLOCK;
+        case VK_FORMAT_BC4_UNORM_BLOCK:
+            return angle::FormatID::BC4_RED_UNORM_BLOCK;
+        case VK_FORMAT_BC5_SNORM_BLOCK:
+            return angle::FormatID::BC5_RG_SNORM_BLOCK;
+        case VK_FORMAT_BC5_UNORM_BLOCK:
+            return angle::FormatID::BC5_RG_UNORM_BLOCK;
+        case VK_FORMAT_BC6H_SFLOAT_BLOCK:
+            return angle::FormatID::BC6H_RGB_SFLOAT_BLOCK;
+        case VK_FORMAT_BC6H_UFLOAT_BLOCK:
+            return angle::FormatID::BC6H_RGB_UFLOAT_BLOCK;
+        case VK_FORMAT_BC7_UNORM_BLOCK:
+            return angle::FormatID::BC7_RGBA_UNORM_BLOCK;
+        case VK_FORMAT_BC7_SRGB_BLOCK:
+            return angle::FormatID::BC7_RGBA_UNORM_SRGB_BLOCK;
+        case VK_FORMAT_D16_UNORM:
+            return angle::FormatID::D16_UNORM;
+        case VK_FORMAT_D24_UNORM_S8_UINT:
+            return angle::FormatID::D24_UNORM_S8_UINT;
+        case VK_FORMAT_X8_D24_UNORM_PACK32:
+            return angle::FormatID::D24_UNORM_X8_UINT;
+        case VK_FORMAT_D32_SFLOAT:
+            return angle::FormatID::D32_FLOAT;
+        case VK_FORMAT_D32_SFLOAT_S8_UINT:
+            return angle::FormatID::D32_FLOAT_S8X24_UINT;
+        case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+            return angle::FormatID::EAC_R11G11_SNORM_BLOCK;
+        case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+            return angle::FormatID::EAC_R11G11_UNORM_BLOCK;
+        case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+            return angle::FormatID::EAC_R11_SNORM_BLOCK;
+        case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+            return angle::FormatID::EAC_R11_UNORM_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8A1_SRGB_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8A1_UNORM_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8A8_SRGB_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8A8_UNORM_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8_SRGB_BLOCK;
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return angle::FormatID::ETC2_R8G8B8_UNORM_BLOCK;
+        case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+            return angle::FormatID::G8_B8R8_2PLANE_420_UNORM;
+        case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+            return angle::FormatID::G8_B8_R8_3PLANE_420_UNORM;
+        case VK_FORMAT_UNDEFINED:
+            return angle::FormatID::NONE;
+        case VK_FORMAT_A2B10G10R10_SINT_PACK32:
+            return angle::FormatID::R10G10B10A2_SINT;
+        case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
+            return angle::FormatID::R10G10B10A2_SNORM;
+        case VK_FORMAT_A2B10G10R10_SSCALED_PACK32:
+            return angle::FormatID::R10G10B10A2_SSCALED;
+        case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+            return angle::FormatID::R10G10B10A2_UINT;
+        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+            return angle::FormatID::R10G10B10A2_UNORM;
+        case VK_FORMAT_A2B10G10R10_USCALED_PACK32:
+            return angle::FormatID::R10G10B10A2_USCALED;
+        case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+            return angle::FormatID::R11G11B10_FLOAT;
+        case VK_FORMAT_R16G16B16A16_SFLOAT:
+            return angle::FormatID::R16G16B16A16_FLOAT;
+        case VK_FORMAT_R16G16B16A16_SINT:
+            return angle::FormatID::R16G16B16A16_SINT;
+        case VK_FORMAT_R16G16B16A16_SNORM:
+            return angle::FormatID::R16G16B16A16_SNORM;
+        case VK_FORMAT_R16G16B16A16_SSCALED:
+            return angle::FormatID::R16G16B16A16_SSCALED;
+        case VK_FORMAT_R16G16B16A16_UINT:
+            return angle::FormatID::R16G16B16A16_UINT;
+        case VK_FORMAT_R16G16B16A16_UNORM:
+            return angle::FormatID::R16G16B16A16_UNORM;
+        case VK_FORMAT_R16G16B16A16_USCALED:
+            return angle::FormatID::R16G16B16A16_USCALED;
+        case VK_FORMAT_R16G16B16_SFLOAT:
+            return angle::FormatID::R16G16B16_FLOAT;
+        case VK_FORMAT_R16G16B16_SINT:
+            return angle::FormatID::R16G16B16_SINT;
+        case VK_FORMAT_R16G16B16_SNORM:
+            return angle::FormatID::R16G16B16_SNORM;
+        case VK_FORMAT_R16G16B16_SSCALED:
+            return angle::FormatID::R16G16B16_SSCALED;
+        case VK_FORMAT_R16G16B16_UINT:
+            return angle::FormatID::R16G16B16_UINT;
+        case VK_FORMAT_R16G16B16_UNORM:
+            return angle::FormatID::R16G16B16_UNORM;
+        case VK_FORMAT_R16G16B16_USCALED:
+            return angle::FormatID::R16G16B16_USCALED;
+        case VK_FORMAT_R16G16_SFLOAT:
+            return angle::FormatID::R16G16_FLOAT;
+        case VK_FORMAT_R16G16_SINT:
+            return angle::FormatID::R16G16_SINT;
+        case VK_FORMAT_R16G16_SNORM:
+            return angle::FormatID::R16G16_SNORM;
+        case VK_FORMAT_R16G16_SSCALED:
+            return angle::FormatID::R16G16_SSCALED;
+        case VK_FORMAT_R16G16_UINT:
+            return angle::FormatID::R16G16_UINT;
+        case VK_FORMAT_R16G16_UNORM:
+            return angle::FormatID::R16G16_UNORM;
+        case VK_FORMAT_R16G16_USCALED:
+            return angle::FormatID::R16G16_USCALED;
+        case VK_FORMAT_R16_SFLOAT:
+            return angle::FormatID::R16_FLOAT;
+        case VK_FORMAT_R16_SINT:
+            return angle::FormatID::R16_SINT;
+        case VK_FORMAT_R16_SNORM:
+            return angle::FormatID::R16_SNORM;
+        case VK_FORMAT_R16_SSCALED:
+            return angle::FormatID::R16_SSCALED;
+        case VK_FORMAT_R16_UINT:
+            return angle::FormatID::R16_UINT;
+        case VK_FORMAT_R16_UNORM:
+            return angle::FormatID::R16_UNORM;
+        case VK_FORMAT_R16_USCALED:
+            return angle::FormatID::R16_USCALED;
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            return angle::FormatID::R32G32B32A32_FLOAT;
+        case VK_FORMAT_R32G32B32A32_SINT:
+            return angle::FormatID::R32G32B32A32_SINT;
+        case VK_FORMAT_R32G32B32A32_UINT:
+            return angle::FormatID::R32G32B32A32_UINT;
+        case VK_FORMAT_R32G32B32_SFLOAT:
+            return angle::FormatID::R32G32B32_FLOAT;
+        case VK_FORMAT_R32G32B32_SINT:
+            return angle::FormatID::R32G32B32_SINT;
+        case VK_FORMAT_R32G32B32_UINT:
+            return angle::FormatID::R32G32B32_UINT;
+        case VK_FORMAT_R32G32_SFLOAT:
+            return angle::FormatID::R32G32_FLOAT;
+        case VK_FORMAT_R32G32_SINT:
+            return angle::FormatID::R32G32_SINT;
+        case VK_FORMAT_R32G32_UINT:
+            return angle::FormatID::R32G32_UINT;
+        case VK_FORMAT_R32_SFLOAT:
+            return angle::FormatID::R32_FLOAT;
+        case VK_FORMAT_R32_SINT:
+            return angle::FormatID::R32_SINT;
+        case VK_FORMAT_R32_UINT:
+            return angle::FormatID::R32_UINT;
+        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+            return angle::FormatID::R4G4B4A4_UNORM;
+        case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+            return angle::FormatID::R5G5B5A1_UNORM;
         case VK_FORMAT_R5G6B5_UNORM_PACK16:
             return angle::FormatID::R5G6B5_UNORM;
         case VK_FORMAT_R8G8B8A8_SINT:
             return angle::FormatID::R8G8B8A8_SINT;
-        case VK_FORMAT_B8G8R8A8_UNORM:
-            return angle::FormatID::B8G8R8A8_UNORM;
-        case VK_FORMAT_R32G32B32A32_SFLOAT:
-            return angle::FormatID::R32G32B32A32_FLOAT;
-        case VK_FORMAT_R16G16B16_UNORM:
-            return angle::FormatID::R16G16B16_UNORM;
-        case VK_FORMAT_BC2_UNORM_BLOCK:
-            return angle::FormatID::BC2_RGBA_UNORM_BLOCK;
-        case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
-            return angle::FormatID::ASTC_12x12_UNORM_BLOCK;
-        case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8A8_SRGB_BLOCK;
-        case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
-            return angle::FormatID::R10G10B10A2_SNORM;
+        case VK_FORMAT_R8G8B8A8_SNORM:
+            return angle::FormatID::R8G8B8A8_SNORM;
+        case VK_FORMAT_R8G8B8A8_SSCALED:
+            return angle::FormatID::R8G8B8A8_SSCALED;
+        case VK_FORMAT_R8G8B8A8_UINT:
+            return angle::FormatID::R8G8B8A8_UINT;
         case VK_FORMAT_R8G8B8A8_UNORM:
             return angle::FormatID::R8G8B8A8_UNORM;
-        case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
-            return angle::FormatID::ASTC_6x6_SRGB_BLOCK;
-        case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
-            return angle::FormatID::ASTC_10x10_UNORM_BLOCK;
-        case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8A1_SRGB_BLOCK;
-        case VK_FORMAT_R16G16B16_SSCALED:
-            return angle::FormatID::R16G16B16_SSCALED;
-        case VK_FORMAT_R16G16_UNORM:
-            return angle::FormatID::R16G16_UNORM;
-        case VK_FORMAT_D32_SFLOAT:
-            return angle::FormatID::D32_FLOAT;
-        case VK_FORMAT_R16G16B16A16_UNORM:
-            return angle::FormatID::R16G16B16A16_UNORM;
-        case VK_FORMAT_EAC_R11_UNORM_BLOCK:
-            return angle::FormatID::EAC_R11_UNORM_BLOCK;
-        case VK_FORMAT_R16G16B16A16_UINT:
-            return angle::FormatID::R16G16B16A16_UINT;
-        case VK_FORMAT_R16G16B16A16_SINT:
-            return angle::FormatID::R16G16B16A16_SINT;
-        case VK_FORMAT_BC7_UNORM_BLOCK:
-            return angle::FormatID::BPTC_RGBA_UNORM_BLOCK;
-        case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-            return angle::FormatID::A1R5G5B5_UNORM;
-        case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
-            return angle::FormatID::ASTC_8x6_UNORM_BLOCK;
-        case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
-            return angle::FormatID::EAC_R11G11_SNORM_BLOCK;
-        case VK_FORMAT_A2B10G10R10_SSCALED_PACK32:
-            return angle::FormatID::R10G10B10A2_SSCALED;
-        case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
-            return angle::FormatID::BC1_RGBA_UNORM_BLOCK;
-        case VK_FORMAT_R32G32_SINT:
-            return angle::FormatID::R32G32_SINT;
-        case VK_FORMAT_R32G32B32_SFLOAT:
-            return angle::FormatID::R32G32B32_FLOAT;
-        case VK_FORMAT_R8_UINT:
-            return angle::FormatID::R8_UINT;
-        case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
-            return angle::FormatID::ASTC_10x6_UNORM_BLOCK;
-        case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
-            return angle::FormatID::BC1_RGB_UNORM_BLOCK;
-        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
-            return angle::FormatID::R4G4B4A4_UNORM;
-        case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
-            return angle::FormatID::BC1_RGB_UNORM_SRGB_BLOCK;
-        case VK_FORMAT_BC6H_SFLOAT_BLOCK:
-            return angle::FormatID::BPTC_RGB_SIGNED_FLOAT_BLOCK;
-        case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-            return angle::FormatID::R10G10B10A2_UINT;
-        case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
-            return angle::FormatID::ASTC_6x5_SRGB_BLOCK;
-        case VK_FORMAT_R16G16_SFLOAT:
-            return angle::FormatID::R16G16_FLOAT;
-        case VK_FORMAT_B5G6R5_UNORM_PACK16:
-            return angle::FormatID::B5G6R5_UNORM;
-        case VK_FORMAT_R32_SFLOAT:
-            return angle::FormatID::R32_FLOAT;
-        case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
-            return angle::FormatID::ASTC_12x12_SRGB_BLOCK;
-        case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
-            return angle::FormatID::ASTC_5x5_UNORM_BLOCK;
+        case VK_FORMAT_R8G8B8A8_SRGB:
+            return angle::FormatID::R8G8B8A8_UNORM_SRGB;
+        case VK_FORMAT_R8G8B8A8_USCALED:
+            return angle::FormatID::R8G8B8A8_USCALED;
         case VK_FORMAT_R8G8B8_SINT:
             return angle::FormatID::R8G8B8_SINT;
-        case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
-            return angle::FormatID::ASTC_8x8_UNORM_BLOCK;
-        case VK_FORMAT_R32_SINT:
-            return angle::FormatID::R32_SINT;
-        case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8A1_UNORM_BLOCK;
-        case VK_FORMAT_R16_SSCALED:
-            return angle::FormatID::R16_SSCALED;
-        case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
-            return angle::FormatID::ASTC_6x6_UNORM_BLOCK;
         case VK_FORMAT_R8G8B8_SNORM:
             return angle::FormatID::R8G8B8_SNORM;
-        case VK_FORMAT_R16_UINT:
-            return angle::FormatID::R16_UINT;
-        case VK_FORMAT_R8_UNORM:
-            return angle::FormatID::R8_UNORM;
-        case VK_FORMAT_R32G32_SFLOAT:
-            return angle::FormatID::R32G32_FLOAT;
-        case VK_FORMAT_BC5_SNORM_BLOCK:
-            return angle::FormatID::BC5_RG_SNORM_BLOCK;
-        case VK_FORMAT_R16G16B16A16_SNORM:
-            return angle::FormatID::R16G16B16A16_SNORM;
-        case VK_FORMAT_R8G8_UNORM:
-            return angle::FormatID::R8G8_UNORM;
-        case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
-            return angle::FormatID::ASTC_10x6_SRGB_BLOCK;
-        case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
-            return angle::FormatID::ASTC_10x5_UNORM_BLOCK;
-        case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-            return angle::FormatID::B10G10R10A2_UNORM;
-        case VK_FORMAT_BC2_SRGB_BLOCK:
-            return angle::FormatID::BC2_RGBA_UNORM_SRGB_BLOCK;
-        case VK_FORMAT_R32G32B32_SINT:
-            return angle::FormatID::R32G32B32_SINT;
-        case VK_FORMAT_A2B10G10R10_USCALED_PACK32:
-            return angle::FormatID::R10G10B10A2_USCALED;
-        case VK_FORMAT_R8G8_SINT:
-            return angle::FormatID::R8G8_SINT;
-        case VK_FORMAT_R16G16B16A16_SSCALED:
-            return angle::FormatID::R16G16B16A16_SSCALED;
-        case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
-            return angle::FormatID::ASTC_10x5_SRGB_BLOCK;
-        case VK_FORMAT_R8_SSCALED:
-            return angle::FormatID::R8_SSCALED;
-        case VK_FORMAT_R16G16B16_SFLOAT:
-            return angle::FormatID::R16G16B16_FLOAT;
-        case VK_FORMAT_R8_SNORM:
-            return angle::FormatID::R8_SNORM;
-        case VK_FORMAT_R16_SNORM:
-            return angle::FormatID::R16_SNORM;
-        case VK_FORMAT_X8_D24_UNORM_PACK32:
-            return angle::FormatID::D24_UNORM_X8_UINT;
-        case VK_FORMAT_R16G16_SINT:
-            return angle::FormatID::R16G16_SINT;
-        case VK_FORMAT_R16G16B16_SINT:
-            return angle::FormatID::R16G16B16_SINT;
-        case VK_FORMAT_R8G8_SSCALED:
-            return angle::FormatID::R8G8_SSCALED;
-        case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
-            return angle::FormatID::EAC_R11G11_UNORM_BLOCK;
-        case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
-            return angle::FormatID::ASTC_10x8_UNORM_BLOCK;
-        case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
-            return angle::FormatID::ASTC_4x4_SRGB_BLOCK;
-        case VK_FORMAT_R8G8_UINT:
-            return angle::FormatID::R8G8_UINT;
-        case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
-            return angle::FormatID::R5G5B5A1_UNORM;
+        case VK_FORMAT_R8G8B8_SSCALED:
+            return angle::FormatID::R8G8B8_SSCALED;
         case VK_FORMAT_R8G8B8_UINT:
             return angle::FormatID::R8G8B8_UINT;
-        case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
-            return angle::FormatID::G8_B8_R8_3PLANE_420_UNORM;
-        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-            return angle::FormatID::ETC2_R8G8B8_UNORM_BLOCK;
-        case VK_FORMAT_R32_UINT:
-            return angle::FormatID::R32_UINT;
+        case VK_FORMAT_R8G8B8_SRGB:
+            return angle::FormatID::R8G8B8_UNORM_SRGB;
+        case VK_FORMAT_R8G8B8_USCALED:
+            return angle::FormatID::R8G8B8_USCALED;
+        case VK_FORMAT_R8G8_SINT:
+            return angle::FormatID::R8G8_SINT;
+        case VK_FORMAT_R8G8_SNORM:
+            return angle::FormatID::R8G8_SNORM;
+        case VK_FORMAT_R8G8_SSCALED:
+            return angle::FormatID::R8G8_SSCALED;
+        case VK_FORMAT_R8G8_UINT:
+            return angle::FormatID::R8G8_UINT;
+        case VK_FORMAT_R8G8_UNORM:
+            return angle::FormatID::R8G8_UNORM;
+        case VK_FORMAT_R8G8_USCALED:
+            return angle::FormatID::R8G8_USCALED;
+        case VK_FORMAT_R8_SINT:
+            return angle::FormatID::R8_SINT;
+        case VK_FORMAT_R8_SNORM:
+            return angle::FormatID::R8_SNORM;
+        case VK_FORMAT_R8_SSCALED:
+            return angle::FormatID::R8_SSCALED;
+        case VK_FORMAT_R8_UINT:
+            return angle::FormatID::R8_UINT;
+        case VK_FORMAT_R8_UNORM:
+            return angle::FormatID::R8_UNORM;
+        case VK_FORMAT_R8_SRGB:
+            return angle::FormatID::R8_UNORM_SRGB;
+        case VK_FORMAT_R8_USCALED:
+            return angle::FormatID::R8_USCALED;
         case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
             return angle::FormatID::R9G9B9E5_SHAREDEXP;
-        case VK_FORMAT_BC4_UNORM_BLOCK:
-            return angle::FormatID::BC4_RED_UNORM_BLOCK;
-        case VK_FORMAT_R32G32B32A32_UINT:
-            return angle::FormatID::R32G32B32A32_UINT;
-        case VK_FORMAT_BC7_SRGB_BLOCK:
-            return angle::FormatID::BPTC_SRGB_ALPHA_UNORM_BLOCK;
-        case VK_FORMAT_R16G16_USCALED:
-            return angle::FormatID::R16G16_USCALED;
+        case VK_FORMAT_S8_UINT:
+            return angle::FormatID::S8_UINT;
 
         default:
             return angle::FormatID::NONE;

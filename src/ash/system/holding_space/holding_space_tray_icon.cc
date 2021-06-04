@@ -17,15 +17,18 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/barrier_closure.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -176,6 +179,16 @@ gfx::Size HoldingSpaceTrayIcon::CalculatePreferredSize() const {
       /*vertical=*/gfx::Size(kTrayItemSize, primary_axis_size));
 }
 
+void HoldingSpaceTrayIcon::OnThemeChanged() {
+  views::View::OnThemeChanged();
+
+  for (auto& preview_by_id : previews_by_id_)
+    preview_by_id.second->OnThemeChanged();
+
+  for (auto& preview : removed_previews_)
+    preview->OnThemeChanged();
+}
+
 void HoldingSpaceTrayIcon::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -253,7 +266,7 @@ void HoldingSpaceTrayIcon::UpdatePreviews(
   std::set<std::string> item_ids;
   for (size_t index = 0; index < items.size(); ++index) {
     const HoldingSpaceItem* item = items[index];
-    DCHECK(item->IsFinalized());
+    DCHECK(item->IsInitialized());
 
     item_ids.insert(item->id());
     item_ids_.push_back(item->id());

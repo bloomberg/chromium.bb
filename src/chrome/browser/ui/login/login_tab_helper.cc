@@ -217,14 +217,13 @@ LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
 void LoginTabHelper::HandleCredentials(
-    const base::Optional<net::AuthCredentials>& credentials) {
+    const absl::optional<net::AuthCredentials>& credentials) {
   login_handler_.reset();
   url_for_login_handler_ = GURL();
 
   if (credentials.has_value()) {
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetStoragePartition(
-            web_contents()->GetBrowserContext(),
+        web_contents()->GetBrowserContext()->GetStoragePartition(
             web_contents()->GetSiteInstance());
     // Pass a weak pointer for the callback, as the WebContents (and thus this
     // LoginTabHelper) could be destroyed while the network service is

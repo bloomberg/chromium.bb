@@ -61,9 +61,9 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/autofill/android/provider/autofill_provider_android.h"
+#include "components/android_autofill/android/autofill_provider_android.h"
+#include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -221,7 +221,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       browser_view_renderer_(this, content::GetUIThreadTaskRunner({})),
       web_contents_(std::move(web_contents)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
-  icon_helper_.reset(new IconHelper(web_contents_.get()));
+  icon_helper_ = std::make_unique<IconHelper>(web_contents_.get());
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
                              std::make_unique<AwContentsUserData>(this));
@@ -234,18 +234,20 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   }
 
   browser_view_renderer_.SetActiveFrameSinkId(frame_sink_id);
-  render_view_host_ext_.reset(
-      new AwRenderViewHostExt(this, web_contents_.get()));
+  render_view_host_ext_ =
+      std::make_unique<AwRenderViewHostExt>(this, web_contents_.get());
 
   InitializePageLoadMetricsForWebContents(web_contents_.get());
 
-  permission_request_handler_.reset(
-      new PermissionRequestHandler(this, web_contents_.get()));
+  permission_request_handler_ =
+      std::make_unique<PermissionRequestHandler>(this, web_contents_.get());
 
-  AwAutofillClient* autofill_manager_delegate =
+  AwAutofillClient* browser_autofill_manager_delegate =
       AwAutofillClient::FromWebContents(web_contents_.get());
-  if (autofill_manager_delegate)
-    InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
+  if (browser_autofill_manager_delegate) {
+    InitAutofillIfNecessary(
+        browser_autofill_manager_delegate->GetSaveFormData());
+  }
   content::SynchronousCompositor::SetClientForWebContents(
       web_contents_.get(), &browser_view_renderer_);
   AwContentsLifecycleNotifier::GetInstance().OnWebViewCreated(this);
@@ -259,19 +261,18 @@ void AwContents::SetJavaPeers(
     const JavaParamRef<jobject>& web_contents_delegate,
     const JavaParamRef<jobject>& contents_client_bridge,
     const JavaParamRef<jobject>& io_thread_client,
-    const JavaParamRef<jobject>& intercept_navigation_delegate,
-    const JavaParamRef<jobject>& autofill_provider) {
+    const JavaParamRef<jobject>& intercept_navigation_delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The |aw_content| param is technically spurious as it duplicates |obj| but
   // is passed over anyway to make the binding more explicit.
   java_ref_ = JavaObjectWeakGlobalRef(env, aw_contents);
 
-  web_contents_delegate_.reset(
-      new AwWebContentsDelegate(env, web_contents_delegate));
+  web_contents_delegate_ =
+      std::make_unique<AwWebContentsDelegate>(env, web_contents_delegate);
   web_contents_->SetDelegate(web_contents_delegate_.get());
 
-  contents_client_bridge_.reset(
-      new AwContentsClientBridge(env, contents_client_bridge));
+  contents_client_bridge_ =
+      std::make_unique<AwContentsClientBridge>(env, contents_client_bridge);
   AwContentsClientBridge::Associate(web_contents_.get(),
                                     contents_client_bridge_.get());
 
@@ -280,17 +281,23 @@ void AwContents::SetJavaPeers(
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), std::make_unique<InterceptNavigationDelegate>(
                                env, intercept_navigation_delegate));
+}
 
-  if (autofill_provider) {
-    autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
-        autofill_provider, web_contents_.get());
-  }
+void AwContents::InitializeAndroidAutofill(JNIEnv* env) {
+  // Initialize Android Autofill, this method shall only be called in Android O
+  // and beyond.
+  // AutofillProvider shall already be created for |web_contents_| from
+  // AutofillProvider java.
+  DCHECK(autofill::AutofillProvider::FromWebContents(web_contents_.get()));
+  // Autocomplete is only supported for Android pre-O, disable it if Android
+  // autofill is enabled.
+  InitAutofillIfNecessary(/*autocomplete_enabled=*/false);
 }
 
 void AwContents::SetSaveFormData(bool enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InitAutofillIfNecessary(enabled);
-  // We need to check for the existence, since autofill_manager_delegate
+  // We need to check for the existence, since browser_autofill_manager_delegate
   // may not be created when the setting is false.
   if (AwAutofillClient::FromWebContents(web_contents_.get())) {
     AwAutofillClient::FromWebContents(web_contents_.get())
@@ -299,20 +306,23 @@ void AwContents::SetSaveFormData(bool enabled) {
 }
 
 void AwContents::InitAutofillIfNecessary(bool autocomplete_enabled) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // This method initializes either Android autofill or Chrome autocomplete:
+  // - If autofill_provider is available, Android autofill shall be initialized.
+  // - Otherwise, initialize Chrome autocomplete if autocomplete_enabled.
+
   // Check if the autofill driver factory already exists.
   content::WebContents* web_contents = web_contents_.get();
   if (ContentAutofillDriverFactory::FromWebContents(web_contents))
     return;
 
-  // Check if AutofillProvider is available.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj)
-    return;
+  // The autofill_provider object shall already be created by the
+  // AutofillProvider Java object in Android O and beyond.
+  auto* autofill_provider =
+      autofill::AutofillProvider::FromWebContents(web_contents);
 
   // Just return, if the app neither runs on O sdk nor enables autocomplete.
-  if (!autofill_provider_ && !autocomplete_enabled)
+  if (!autofill_provider && !autocomplete_enabled)
     return;
 
   AwAutofillClient::CreateForWebContents(web_contents);
@@ -323,9 +333,11 @@ void AwContents::InitAutofillIfNecessary(bool autocomplete_enabled) {
           autofill::features::kAndroidAutofillQueryServerFieldTypes) &&
               (!autofill::AutofillProvider::
                    is_download_manager_disabled_for_testing())
-          ? autofill::AutofillHandler::ENABLE_AUTOFILL_DOWNLOAD_MANAGER
-          : autofill::AutofillHandler::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-      autofill_provider_.get());
+          ? autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER
+          : autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      autofill_provider
+          ? base::BindRepeating(&autofill::AndroidAutofillManager::Create)
+          : autofill::AutofillManager::AutofillManagerFactoryCallback());
 }
 
 void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
@@ -504,7 +516,8 @@ void AwContents::GenerateMHTML(JNIEnv* env,
 void AwContents::CreatePdfExporter(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    const JavaParamRef<jobject>& pdfExporter) {
-  pdf_exporter_.reset(new AwPdfExporter(env, pdfExporter, web_contents_.get()));
+  pdf_exporter_ =
+      std::make_unique<AwPdfExporter>(env, pdfExporter, web_contents_.get());
 }
 
 bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
@@ -762,8 +775,7 @@ void AwContents::ClearCache(JNIEnv* env,
 
   if (include_disk_files) {
     content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(
-            web_contents_->GetBrowserContext());
+        web_contents_->GetBrowserContext()->GetBrowsingDataRemover();
     remover->Remove(
         base::Time(), base::Time::Max(),
         content::BrowsingDataRemover::DATA_TYPE_CACHE,
@@ -775,7 +787,7 @@ void AwContents::ClearCache(JNIEnv* env,
 FindHelper* AwContents::GetFindHelper() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!find_helper_.get()) {
-    find_helper_.reset(new FindHelper(web_contents_.get()));
+    find_helper_ = std::make_unique<FindHelper>(web_contents_.get());
     find_helper_->SetListener(this);
   }
   return find_helper_.get();
@@ -1104,7 +1116,7 @@ void AwContents::SetPendingWebContentsForPopup(
                                                     pending.release());
     return;
   }
-  pending_contents_.reset(new AwContents(std::move(pending)));
+  pending_contents_ = std::make_unique<AwContents>(std::move(pending));
   // Set dip_scale for pending contents, which is necessary for the later
   // SynchronousCompositor and InputHandler setup.
   pending_contents_->SetDipScaleInternal(browser_view_renderer_.dip_scale());
@@ -1481,12 +1493,6 @@ void AwContents::ResumeLoadingCreatedPopupWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   web_contents_->ResumeLoadingCreatedWebContents();
-}
-
-jlong AwContents::GetAutofillProvider(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  return reinterpret_cast<jlong>(autofill_provider_.get());
 }
 
 void JNI_AwContents_SetShouldDownloadFavicons(JNIEnv* env) {

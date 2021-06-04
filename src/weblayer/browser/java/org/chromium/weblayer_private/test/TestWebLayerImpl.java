@@ -297,7 +297,7 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
             AutofillProviderTestHelper.disableDownloadServerForTesting();
             BrowserImpl browserImpl = (BrowserImpl) browser;
             TabImpl tab = browserImpl.getActiveTab();
-            tab.getAutofillProviderForTesting().setAutofillManagerWrapperForTesting(
+            tab.getAutofillProviderForTesting().replaceAutofillManagerWrapperForTesting(
                     new TestAutofillManagerWrapper(browserImpl.getContext(), unwrappedOnNewEvents,
                             unwrappedEventsObserved));
         });

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {ModuleDescriptor, ModuleRegistry, NewTabPageProxy, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {assertDeepEquals, assertEquals} from '../../chai_assert.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
@@ -53,16 +54,17 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
     const bazModule =
         /** @type {!HTMLElement} */ (document.createElement('div'));
     const bazModuleResolver = new PromiseResolver();
-    ModuleRegistry.getInstance().registerModules([
+    const descriptors = [
       new ModuleDescriptor('foo', 'bli', () => Promise.resolve(fooModule)),
       new ModuleDescriptor('bar', 'blu', () => Promise.resolve(null)),
       new ModuleDescriptor('baz', 'bla', () => bazModuleResolver.promise),
       new ModuleDescriptor('buz', 'blo', () => Promise.resolve(fooModule)),
-    ]);
+    ];
     windowProxy.setResultFor('now', 5.0);
 
     // Act.
-    const modulesPromise = ModuleRegistry.getInstance().initializeModules(0);
+    const moduleRegistry = new ModuleRegistry(descriptors);
+    const modulesPromise = moduleRegistry.initializeModules(0);
     callbackRouterRemote.setDisabledModules(false, ['buz']);
     // Wait for first batch of modules.
     await flushTasks();
@@ -75,9 +77,9 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
     // Assert.
     assertEquals(1, handler.getCallCount('updateDisabledModules'));
     assertEquals(2, modules.length);
-    assertEquals('foo', modules[0].id);
+    assertEquals('foo', modules[0].descriptor.id);
     assertDeepEquals(fooModule, modules[0].element);
-    assertEquals('baz', modules[1].id);
+    assertEquals('baz', modules[1].descriptor.id);
     assertDeepEquals(bazModule, modules[1].element);
     assertEquals(2, metrics.count('NewTabPage.Modules.Loaded'));
     assertEquals(1, metrics.count('NewTabPage.Modules.Loaded', 5));

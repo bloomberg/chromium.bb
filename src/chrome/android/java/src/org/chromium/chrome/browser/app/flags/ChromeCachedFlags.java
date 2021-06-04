@@ -66,9 +66,9 @@ public class ChromeCachedFlags {
         // clang-format off
         List<String> featuresToCache = Arrays.asList(
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
-                ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM,
                 ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE,
                 ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION,
+                ChromeFeatureList.APP_TO_WEB_ATTRIBUTION,
                 ChromeFeatureList.BOOKMARK_BOTTOM_SHEET,
                 ChromeFeatureList.CCT_INCOGNITO,
                 ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY,
@@ -85,11 +85,15 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.INSTANT_START,
                 ChromeFeatureList.INTEREST_FEED_V2,
                 ChromeFeatureList.LENS_CAMERA_ASSISTED_SEARCH,
+                ChromeFeatureList.NEW_WINDOW_APP_MENU,
+                ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK,
+                ChromeFeatureList.OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS,
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
                 ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
                 ChromeFeatureList.READ_LATER,
                 ChromeFeatureList.START_SURFACE_ANDROID,
+                ChromeFeatureList.STORE_HOURS,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
@@ -97,8 +101,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.TAB_TO_GTS_ANIMATION,
                 ChromeFeatureList.THEME_REFACTOR_ANDROID,
                 ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW,
-                ChromeFeatureList.USE_CHIME_ANDROID_SDK,
-                ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK);
+                ChromeFeatureList.USE_CHIME_ANDROID_SDK);
         // clang-format on
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
         CachedFeatureFlags.cacheAdditionalNativeFlags();
@@ -133,12 +136,7 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
-                StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE,
                 StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY,
-                StartSurfaceConfiguration.TRENDY_ENABLED,
-                StartSurfaceConfiguration.TRENDY_ENDPOINT,
-                StartSurfaceConfiguration.TRENDY_FAILURE_MIN_PERIOD_MS,
-                StartSurfaceConfiguration.TRENDY_SUCCESS_MIN_PERIOD_MS,
                 StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM,
                 CommerceSubscriptionsServiceConfig.STALE_TAB_LOWER_BOUND_SECONDS,
                 CommerceSubscriptionsServiceConfig.SUBSCRIPTIONS_SERVICE_BASE_URL,

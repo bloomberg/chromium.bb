@@ -2,10 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import re
-import mock
 import sys
+
+if sys.version_info[0] == 2:
+  import mock
+else:
+  import unittest.mock as mock
 
 # This set must be the union of the driver tags used in WebGL and WebGL2
 # expectations files.
@@ -24,6 +30,13 @@ EXPECTATIONS_DRIVER_TAGS = frozenset([
 # Driver tag format: VENDOR_OPERATION_VERSION
 DRIVER_TAG_MATCHER = re.compile(
     r'^([a-z\d]+)_(eq|ne|ge|gt|le|lt)_([a-z\d\.]+)$')
+
+REMOTE_BROWSER_TYPES = [
+    'android-chromium',
+    'android-webview-instrumentation',
+    'cros-chrome',
+    'web-engine-shell',
+]
 
 
 def _ParseANGLEGpuVendorString(device_string):
@@ -158,7 +171,12 @@ def GetSkiaRenderer(gpu_feature_status, extra_browser_args):
   return retval
 
 
-def GetDisplayServer():
+def GetDisplayServer(browser_type):
+  # Browser types run on a remote device aren't Linux, but the host running
+  # this code uses Linux, so return early to avoid erroneously reporting a
+  # display server.
+  if browser_type in REMOTE_BROWSER_TYPES:
+    return None
   if sys.platform == 'linux2':
     if 'WAYLAND_DISPLAY' in os.environ:
       return 'display-server-wayland'
@@ -168,7 +186,7 @@ def GetDisplayServer():
     return None
 
 
-# TODO(sgilhuly): Use GPU feature status for Dawn instead of command line.
+# TODO(rivr): Use GPU feature status for Dawn instead of command line.
 def HasDawnSkiaRenderer(extra_browser_args):
   if extra_browser_args:
     for arg in extra_browser_args:

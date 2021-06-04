@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#include "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -50,9 +51,9 @@ NSString* kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 }  // namespace
 
-@interface ManageSyncSettingsMediator () <BooleanObserver,
-                                          IdentityManagerObserverBridgeDelegate,
-                                          SyncObserverModelBridge> {
+@interface ManageSyncSettingsMediator () <
+    BooleanObserver,
+    IdentityManagerObserverBridgeDelegate> {
   // Sync observer.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   // Whether Sync State changes should be currently ignored.
@@ -74,6 +75,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 @property(nonatomic, strong) TableViewImageItem* encryptionItem;
 // Sync error item.
 @property(nonatomic, strong) TableViewItem* syncErrorItem;
+// Sign out and turn off sync item.
+@property(nonatomic, strong) TableViewItem* signOutAndTurnOffSyncItem;
 // Returns YES if the sync data items should be enabled.
 @property(nonatomic, assign, readonly) BOOL shouldSyncDataItemEnabled;
 // Returns whether the Sync settings should be disabled because of a Sync error.
@@ -296,6 +299,57 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   }
 }
 
+#pragma mark - Loads sign out section
+
+- (void)loadSignOutSection {
+  // The sign-out section will only apply to kMobileIdentityConsistency.
+  if (!base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    return;
+  }
+
+  // Creates the sign-out item and its section.
+  TableViewModel* model = self.consumer.tableViewModel;
+  [model addSectionWithIdentifier:SignOutSectionIdentifier];
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:SignOutItemType];
+  item.text = GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC);
+  item.textColor = [UIColor colorNamed:kRedColor];
+  self.signOutAndTurnOffSyncItem = item;
+
+  // The user must be signed-in and syncing.
+  if (!self.shouldDisplaySignoutSection) {
+    return;
+  }
+  [model addItem:self.signOutAndTurnOffSyncItem
+      toSectionWithIdentifier:SignOutSectionIdentifier];
+}
+
+- (void)updateSignOutSection {
+  // The sign-out section will only apply to kMobileIdentityConsistency.
+  if (!base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    return;
+  }
+
+  BOOL hasModelUpdate = NO;
+  TableViewModel* model = self.consumer.tableViewModel;
+  if (self.shouldDisplaySignoutSection) {
+    DCHECK(self.signOutAndTurnOffSyncItem);
+    [model addItem:self.signOutAndTurnOffSyncItem
+        toSectionWithIdentifier:SignOutSectionIdentifier];
+    hasModelUpdate = YES;
+  } else if ([model hasItem:self.signOutAndTurnOffSyncItem]) {
+    [model removeItemWithType:SignOutItemType
+        fromSectionWithIdentifier:SignOutSectionIdentifier];
+    hasModelUpdate = YES;
+  }
+
+  if (hasModelUpdate) {
+    NSUInteger sectionIndex =
+        [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+    [self.consumer reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+  }
+}
+
 #pragma mark - Private
 
 // Creates a SyncSwitchItem instance.
@@ -380,6 +434,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
          !self.disabledBecauseOfSyncError;
 }
 
+- (BOOL)shouldDisplaySignoutSection {
+  return self.isAuthenticated &&
+         self.syncSetupService->IsFirstSetupComplete() &&
+         self.syncSetupService->IsSyncEnabled();
+}
+
 #pragma mark - ManageSyncSettingsTableViewControllerModelDelegate
 
 - (void)manageSyncSettingsTableViewControllerLoadModel:
@@ -387,6 +447,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK_EQ(self.consumer, controller);
   [self loadSyncErrorsSection];
   [self loadSyncDataTypeSection];
+  [self loadSignOutSection];
   [self loadAdvancedSettingsSection];
 }
 
@@ -407,6 +468,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self updateSyncEverythingItemNotifyConsumer:YES];
   [self updateSyncItemsNotifyConsumer:YES];
   [self updateEncryptionItem:YES];
+  [self updateSignOutSection];
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate
@@ -472,6 +534,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case AutocompleteWalletItemType:
         self.autocompleteWalletPreference.value = value;
         break;
+      case SignOutItemType:
       case EncryptionItemType:
       case GoogleActivityControlsItemType:
       case DataFromChromeSync:
@@ -516,6 +579,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case SyncNeedsTrustedVaultKeyErrorItemType:
       [self.syncErrorHandler openTrustedVaultReauth];
+      break;
+    case SignOutItemType:
+      [self.commandHandler showTurnOffSyncOptions];
       break;
     case SyncEverythingItemType:
     case AutofillDataTypeItemType:
@@ -586,9 +652,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   }
   BOOL needsSyncErrorItemsUpdate = [self updateSyncErrorItems];
   if (notifyConsumer && needsSyncErrorItemsUpdate) {
-    NSUInteger sectionIndex = [self.consumer.tableViewModel
-        sectionForSectionIdentifier:SyncErrorsSectionIdentifier];
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    // Need to reload all sections since the error will be inserted into the
+    // first section position.
+    NSIndexSet* indexSet = [NSIndexSet
+        indexSetWithIndexesInRange:NSMakeRange(0, self.consumer.tableViewModel
+                                                      .numberOfSections)];
     [self.consumer reloadSections:indexSet];
   }
 }
@@ -651,10 +719,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     self.syncErrorItem = [self createSyncErrorItemWithItemType:type];
   }
   [self.consumer.tableViewModel
-      addSectionWithIdentifier:SyncErrorsSectionIdentifier];
-  [model insertItem:self.syncErrorItem
-      inSectionWithIdentifier:SyncErrorsSectionIdentifier
-                      atIndex:0];
+      insertSectionWithIdentifier:SyncErrorsSectionIdentifier
+                          atIndex:0];
+  [model addItem:self.syncErrorItem
+      toSectionWithIdentifier:SyncErrorsSectionIdentifier];
   return YES;
 }
 

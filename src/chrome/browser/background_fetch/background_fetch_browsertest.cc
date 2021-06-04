@@ -9,7 +9,6 @@
 #include "base/check_op.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
@@ -181,7 +180,7 @@ class OfflineContentProviderObserver final
   void OnItemRemoved(const ContentId& id) override {}
   void OnItemUpdated(
       const OfflineItem& item,
-      const base::Optional<offline_items_collection::UpdateDelta>& update_delta)
+      const absl::optional<offline_items_collection::UpdateDelta>& update_delta)
       override {
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&

@@ -817,7 +817,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermissionID::kAutofillAssistantPrivate);
   skip.insert(APIPermissionID::kBookmarkManagerPrivate);
   skip.insert(APIPermissionID::kBrailleDisplayPrivate);
-  skip.insert(APIPermissionID::kCast);
   skip.insert(APIPermissionID::kCecPrivate);
   skip.insert(APIPermissionID::kChromeosInfoPrivate);
   skip.insert(APIPermissionID::kCommandLinePrivate);
@@ -826,7 +825,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermissionID::kDownloadsInternal);
   skip.insert(APIPermissionID::kEchoPrivate);
   skip.insert(APIPermissionID::kEnterprisePlatformKeysPrivate);
-  skip.insert(APIPermissionID::kEnterpriseReportingPrivate);
   skip.insert(APIPermissionID::kFeedbackPrivate);
   skip.insert(APIPermissionID::kFileBrowserHandlerInternal);
   skip.insert(APIPermissionID::kFileManagerPrivate);
@@ -871,7 +869,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermissionID::kSocket);
   skip.insert(APIPermissionID::kUsb);
   skip.insert(APIPermissionID::kVirtualKeyboard);
-  skip.insert(APIPermissionID::kLauncherSearchProvider);
 
   // The lock screen apps are set by user through settings, no need to warn at
   // installation time.
@@ -1103,8 +1100,8 @@ TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
-  scoped_refptr<Extension> extension;
-  extension = LoadManifest("permissions", "many-hosts.json");
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "many-hosts.json");
   EXPECT_TRUE(VerifyOnePermissionMessage(
       extension->permissions_data(),
       "Read and change your data on encrypted.google.com and www.google.com"));
@@ -1293,9 +1290,8 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
 // access user data on other domains, so there's no need to prompt about host
 // permissions. See crbug.com/255229.
 TEST(PermissionsTest, GetWarningMessages_PlatformAppHosts) {
-  scoped_refptr<Extension> extension;
-
-  extension = LoadManifest("permissions", "platform_app_hosts.json");
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "platform_app_hosts.json");
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 

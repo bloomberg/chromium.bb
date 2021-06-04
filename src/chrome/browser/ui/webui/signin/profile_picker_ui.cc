@@ -57,11 +57,9 @@ bool IsBrowserSigninAllowed() {
   if (!browser_signin_value)
     return true;
 
-  int int_browser_signin_value;
-  bool success = browser_signin_value->GetAsInteger(&int_browser_signin_value);
-  DCHECK(success);
-
-  return static_cast<policy::BrowserSigninMode>(int_browser_signin_value) !=
+  DCHECK(browser_signin_value->is_int());
+  return static_cast<policy::BrowserSigninMode>(
+             browser_signin_value->GetInt()) !=
          policy::BrowserSigninMode::kDisabled;
 }
 
@@ -73,7 +71,7 @@ bool IsSignInProfileCreationFlowSupported() {
 std::string GetManagedDeviceDisclaimer() {
   if (!base::FeatureList::IsEnabled(features::kSignInProfileCreationEnterprise))
     return std::string();
-  base::Optional<std::string> device_manager =
+  absl::optional<std::string> device_manager =
       chrome::GetDeviceManagerIdentity();
   if (!device_manager)
     return std::string();
@@ -163,11 +161,10 @@ void AddStrings(content::WebUIDataSource* html_source) {
       static_cast<ProfilePicker::AvailabilityOnStartup>(
           g_browser_process->local_state()->GetInteger(
               prefs::kBrowserProfilePickerAvailabilityOnStartup));
-  bool disable_ask_on_startup =
-      availability_on_startup !=
-          ProfilePicker::AvailabilityOnStartup::kEnabled ||
-      !base::FeatureList::IsEnabled(kEnableProfilePickerOnStartupFeature);
-  html_source->AddBoolean("disableAskOnStartup", disable_ask_on_startup);
+  bool ask_on_startup_allowed =
+      availability_on_startup ==
+          ProfilePicker::AvailabilityOnStartup::kEnabled &&
+      base::FeatureList::IsEnabled(kEnableProfilePickerOnStartupFeature);
   html_source->AddBoolean("askOnStartup",
                           g_browser_process->local_state()->GetBoolean(
                               prefs::kBrowserShowProfilePickerOnStartup));
@@ -192,6 +189,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
                           profiles::IsProfileCreationAllowed());
   html_source->AddBoolean("profileShortcutsEnabled",
                           ProfileShortcutManager::IsFeatureEnabled());
+  html_source->AddBoolean("isAskOnStartupAllowed", ask_on_startup_allowed);
 }
 
 }  // namespace

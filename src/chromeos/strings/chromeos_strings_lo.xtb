@@ -81,6 +81,7 @@
 <translation id="2862104018715411648">ວາງເອກະສານຂອງທ່ານໃສ່ເຄື່ອງສະແກນ ແລ້ວເລືອກສະແກນເພື່ອເລີ່ມຕົ້ນ</translation>
 <translation id="2872961005593481000">ມອດ</translation>
 <translation id="2878387241690264070">ຄາຍປະຈຸ <ph name="RATE" /> ໃນ <ph name="NUM_SECONDS" /> ວິນາທີ.</translation>
+<translation id="2983662233540284543">ສຶກສາຈາກຜູ້ສ້າງເນື້ອຫາເກມ, ດາວໂຫຼດແອັບອອກແບບເກມ ແລະ ອື່ນໆ</translation>
 <translation id="3008341117444806826">ໂຫຼດຂໍ້ມູນໃໝ່</translation>
 <translation id="3009958530611748826">ເລືອກໂຟນເດີທີ່ຈະບັນທຶກໄວ້ໃນ</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -192,6 +193,8 @@
 <translation id="5142961317498132443">ການຮັບຮອງຄວາມຖືກຕ້ອງ</translation>
 <translation id="5154917547274118687">ຄວາມ​ຈໍາ</translation>
 <translation id="5168185087976003268">ສະຖານະແບັດເຕີຣີ</translation>
+<translation id="5170568018924773124">ສະ​ແດງ​ຢູ່​ໃນ​ໂຟລ​ເດີ</translation>
+<translation id="519607504553633437">ອອກແບບ ແລະ ສ້າງເກມຂອງທ່ານເອງ</translation>
 <translation id="5212543919916444558">ຂ້ອຍບໍ່ສາມາດຊອກເຫັນອັນໃດຢູ່ໃນໜ້າຈໍຂອງທ່ານທີ່ຂ້ອຍສາມາດຊ່ວຍໄດ້.
 ລອງແຕະໄມເພື່ອຖາມຂ້ອຍອັນໃດກໍໄດ້.</translation>
 <translation id="5222676887888702881">ອອກຈາກລະບົບ</translation>
@@ -201,6 +204,7 @@
 <translation id="5275828089655680674">ເປີດສິ່ງທີ່ເຮັດປະຈຳຄືນໃໝ່</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">ເວີຊັນ <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5300814202279832142">ຍ້າຍໜ້າຈໍໄປຍັງໂຕະ</translation>
 <translation id="5315873049536339193">ລະບຸຕົວຕົນ</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>
 <translation id="5318334351163689047">ຂໍ TCP ບໍ່ສຳເລັດ</translation>
@@ -222,6 +226,7 @@
 <translation id="5669267381087807207">ກຳລັງເປີດນຳໃຊ້</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">ຄອບຄົວ</translation>
+<translation id="5752751666635965375">ສ້າງເກມຂອງທ່ານ</translation>
 <translation id="5760715441271661976">ສະຖານະຜອດໂທລ</translation>
 <translation id="5797428682393400134">ສໍາເລັດແລ້ວ</translation>
 <translation id="5832805196449965646">ເພີ່ມບຸກຄົນ</translation>
@@ -295,6 +300,7 @@
 <translation id="7216409898977639127">ຜູ້ໃຫ້ບໍລິການມືຖື</translation>
 <translation id="7271040990581020067">ຕອນນີ້ມີຄົນໃຊ້ເຄື່ອງສະແກນຢູ່. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">ອຸປະກອນເຄືອຂ່າຍ</translation>
 <translation id="7359657277149375382">ປະເພດໄຟລ໌</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -343,6 +349,7 @@
 <translation id="8372477600026034341">ໂຮສເພີ່ມເຕີມ</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> ຈັດການໂດຍວິສາຫະກິດ</translation>
 <translation id="8398927464629426868">ອັດຕາການສາກ ຫຼື ຄາຍປະຈຸຂອງອຸປະກອນໃນປັດຈຸບັນ</translation>
+<translation id="8422748173858722634">IMEI</translation>
 <translation id="8461329675984532579">ຊື່ຜູ້ໃຫ້ບໍລິການ Home</translation>
 <translation id="8475690821716466388">ເຄືອຂ່າຍ WiFi ມີການຮັກສາຄວາມປອດໄພດ້ວຍໂປຣໂຕຄໍ WEP PSK ທີ່ບໍ່ຮັດກຸມ</translation>
 <translation id="8477551185774834963">ເວລາໃນການຕອບສະໜອງ DNS ສູງກວ່າເກນທີ່ຍອມຮັບໄດ້ເລັກນ້ອຍ</translation>
@@ -352,6 +359,7 @@
 <translation id="8575298406870537639">ຜູ້ໃຫ້ບໍລິການຂອງທ່ານອາດຕ້ອງໃຊ້ຕົວເລືອກນີ້ເພື່ອເຊື່ອມຕໍ່ຫາເຄືອຂ່າຍຂອງເຂົາເຈົ້າ. ກະລຸນາຕິດຕໍ່ຫາຜູ້ໃຫ້ບໍລິການຂອງທ່ານສຳລັບລາຍລະອຽດ.</translation>
 <translation id="8576249514688522074">ບໍ່ໄດ້ລິເລີ່ມ</translation>
 <translation id="8620617069779373398">ສະຖານະການໂຣມມິງ</translation>
+<translation id="8660881923941176839">ພາວ</translation>
 <translation id="8675354002693747642">ລະຫັດທີ່ແບ່ງປັນລ່ວງໜ້າ</translation>
 <translation id="871560550817059752">ບໍ່ສຳເລັດ, ນໍ້າໝຶກໝົດ</translation>
 <translation id="8723108084122415655">ເຄືອຂ່າຍທີ່ບໍ່ແມ່ນຄ່າເລີ່ມຕົ້ນສູງກວ່າເກນເວລາໃນການຕອບສະໜອງ</translation>
@@ -367,6 +375,7 @@
 <translation id="8881098542468797602">ສຳເລັດການທົດສອບແລ້ວ</translation>
 <translation id="8898840733695078011">ຄວາມແຮງສັນຍານ</translation>
 <translation id="8910721771319628100">ເຄືອຂ່າຍເລີ່ມຕົ້ນສູງກວ່າເກນເວລາໃນການຕອບສະໜອງ</translation>
+<translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> ຂອງ <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">ບໍ່ສຳເລັດ, ຖາດໃສ່ເຈ້ຍຫາຍໄປ</translation>
 <translation id="8928727111548978589">ບໍ່ສຳເລັດ, ເຈ້ຍໝົດ</translation>
 <translation id="8930622219860340959">ໄຮ້ສາຍ</translation>
@@ -384,6 +393,7 @@
 <translation id="9149391708638971077">ດຳເນີນການທົດສອບຄວາມຈຳ</translation>
 <translation id="9173638680043580060">ເຫຼືອບໍ່ຮອດໜຶ່ງນາທີ</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ປຸ່ມແຊຣ໌ກ່ອນ</translation>
+<translation id="9211490828691860325">ໂຕະທັງໝົດ</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">ບໍ່ໄດ້ເປີດໃຊ້ງານ</translation>
 <translation id="960719561871045870">ລະຫັດຜູ້ໃຫ້ບໍລິການ</translation>

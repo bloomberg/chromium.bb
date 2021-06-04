@@ -36,7 +36,6 @@
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/file_system/sandbox_directory_database.h"
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
-#include "storage/browser/file_system/sandbox_isolated_origin_database.h"
 #include "storage/browser/file_system/sandbox_origin_database.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/async_file_test_helper.h"
@@ -1605,7 +1604,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   enumerator = ofu()->CreateOriginEnumerator();
   EXPECT_TRUE(enumerator.get());
   std::set<Origin> origins_found;
-  base::Optional<url::Origin> enumerator_origin;
+  absl::optional<url::Origin> enumerator_origin;
   while ((enumerator_origin = enumerator->Next()).has_value()) {
     origins_found.insert(enumerator_origin.value());
     SCOPED_TRACE(testing::Message()

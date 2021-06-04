@@ -11,12 +11,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_blocklist.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -24,9 +26,10 @@ SerialChooserController::SerialChooserController(
     content::RenderFrameHost* render_frame_host,
     std::vector<blink::mojom::SerialPortFilterPtr> filters,
     content::SerialChooser::Callback callback)
-    : ChooserController(render_frame_host,
-                        IDS_SERIAL_PORT_CHOOSER_PROMPT_ORIGIN,
-                        IDS_SERIAL_PORT_CHOOSER_PROMPT_EXTENSION_NAME),
+    : ChooserController(
+          CreateChooserTitle(render_frame_host,
+                             IDS_SERIAL_PORT_CHOOSER_PROMPT_ORIGIN,
+                             IDS_SERIAL_PORT_CHOOSER_PROMPT_EXTENSION_NAME)),
       filters_(std::move(filters)),
       callback_(std::move(callback)),
       frame_tree_node_id_(render_frame_host->GetFrameTreeNodeId()) {
@@ -42,7 +45,7 @@ SerialChooserController::SerialChooserController(
 
   chooser_context_->GetPortManager()->GetDevices(base::BindOnce(
       &SerialChooserController::OnGetDevices, weak_factory_.GetWeakPtr()));
-  observer_.Add(chooser_context_.get());
+  observation_.Observe(chooser_context_.get());
 }
 
 SerialChooserController::~SerialChooserController() {
@@ -152,7 +155,7 @@ void SerialChooserController::OnPortRemoved(
 }
 
 void SerialChooserController::OnPortManagerConnectionError() {
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 void SerialChooserController::OnGetDevices(

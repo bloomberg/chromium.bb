@@ -15,6 +15,7 @@
 <link rel="import" href="/components/throbber_notice.html">
 <link rel="import" href="/components/login_screen_behavior.html">
 <link rel="import" href="/components/multi_step_behavior.html">
+<link rel="import" href="/components/oobe_icons.html">
 
 <dom-module id="gaia-signin-element">
   <template>
@@ -46,8 +47,9 @@
         navigation-hidden="[[navigationButtonsHidden_]]"
         webview-name="signin-frame"
         can-go-back="{{canGaiaGoBack_}}"
+        on-authcompleted="onAuthCompletedMessage_"
         on-backcancel="onBackButtonCancel_"
-        on-closesaml="cancel"
+        on-closesaml="closeSaml_"
         on-identifierentered="onIdentifierEnteredMessage_"
         on-webviewerror="onLoadAbortMessage_"
         on-ready="onAuthReady_"

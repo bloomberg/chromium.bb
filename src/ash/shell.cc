@@ -74,7 +74,6 @@
 #include "ash/login_status.h"
 #include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/media/media_notification_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
@@ -111,7 +110,6 @@
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/caps_lock_notification_controller.h"
-#include "ash/system/holding_space/holding_space_color_provider_impl.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -190,7 +188,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "dbus/bus.h"
-#include "media/base/media_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -564,9 +561,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       native_cursor_manager_(nullptr) {
-  // Ash doesn't properly remove pre-target-handlers.
-  ui::EventHandler::DisableCheckTargets();
-
   AccelerometerReader::GetInstance()->Initialize();
 
   login_screen_controller_ =
@@ -778,7 +772,6 @@ Shell::~Shell() {
   modality_filter_.reset();
 
   touch_transformer_controller_.reset();
-  partial_magnification_controller_.reset();
   highlighter_controller_.reset();
   key_accessibility_enabler_.reset();
 
@@ -846,8 +839,11 @@ Shell::~Shell() {
   display_color_manager_.reset();
   projecting_observer_.reset();
 
-  // Depends on MarkerController and LaserPointerController.
+  // Depends on MarkerController, LaserPointerController and
+  // PartialMagnificationController.
   projector_controller_.reset();
+
+  partial_magnification_controller_.reset();
 
   marker_controller_.reset();
   laser_pointer_controller_.reset();
@@ -880,10 +876,6 @@ Shell::~Shell() {
   // DetachableBaseHandler depends on the PrefService and must be destructed
   // before it.
   detachable_base_handler_.reset();
-
-  // MediaNotificationControllerImpl depends on MessageCenter and must be
-  // destructed before it.
-  media_notification_controller_.reset();
 
   pcie_peripheral_notification_controller_.reset();
 
@@ -965,7 +957,7 @@ void Shell::Init(
 
   peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>(
       peripheral_battery_listener_.get());
-  power_event_observer_.reset(new PowerEventObserver());
+  power_event_observer_ = std::make_unique<PowerEventObserver>();
   window_cycle_controller_ = std::make_unique<WindowCycleController>();
 
   if (features::IsCaptureModeEnabled()) {
@@ -1060,10 +1052,7 @@ void Shell::Init(
   }
 
   // `HoldingSpaceController` must be instantiated before the shelf.
-  if (features::IsTemporaryHoldingSpaceEnabled()) {
-    holding_space_controller_ = std::make_unique<HoldingSpaceController>(
-        std::make_unique<HoldingSpaceColorProviderImpl>());
-  }
+  holding_space_controller_ = std::make_unique<HoldingSpaceController>();
 
   shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();
@@ -1079,9 +1068,9 @@ void Shell::Init(
 
   // ui::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
-  user_activity_detector_.reset(new ui::UserActivityDetector);
+  user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
 
-  overlay_filter_.reset(new OverlayEventFilter);
+  overlay_filter_ = std::make_unique<OverlayEventFilter>();
   AddPreTargetHandler(overlay_filter_.get());
 
   control_v_histogram_recorder_ = std::make_unique<ControlVHistogramRecorder>();
@@ -1091,7 +1080,8 @@ void Shell::Init(
       std::make_unique<PreTargetAcceleratorHandler>());
   AddPreTargetHandler(accelerator_filter_.get());
 
-  event_transformation_handler_.reset(new EventTransformationHandler);
+  event_transformation_handler_ =
+      std::make_unique<EventTransformationHandler>();
   AddPreTargetHandler(event_transformation_handler_.get());
 
   back_gesture_event_handler_ = std::make_unique<BackGestureEventHandler>();
@@ -1103,7 +1093,7 @@ void Shell::Init(
   system_gesture_filter_ = std::make_unique<SystemGestureEventFilter>();
   AddPreTargetHandler(system_gesture_filter_.get());
 
-  sticky_keys_controller_.reset(new StickyKeysController);
+  sticky_keys_controller_ = std::make_unique<StickyKeysController>();
   screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
 
   power_prefs_ = std::make_unique<PowerPrefs>(
@@ -1138,11 +1128,12 @@ void Shell::Init(
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
   // RootWindowController as possible.
-  visibility_controller_.reset(new AshVisibilityController);
+  visibility_controller_ = std::make_unique<AshVisibilityController>();
 
-  laser_pointer_controller_.reset(new LaserPointerController());
-  partial_magnification_controller_.reset(new PartialMagnificationController());
-  highlighter_controller_.reset(new HighlighterController());
+  laser_pointer_controller_ = std::make_unique<LaserPointerController>();
+  partial_magnification_controller_ =
+      std::make_unique<PartialMagnificationController>();
+  highlighter_controller_ = std::make_unique<HighlighterController>();
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
@@ -1168,23 +1159,23 @@ void Shell::Init(
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
-  high_contrast_controller_.reset(new HighContrastController);
+  high_contrast_controller_ = std::make_unique<HighContrastController>();
 
   docked_magnifier_controller_ =
       std::make_unique<DockedMagnifierControllerImpl>();
 
   video_detector_ = std::make_unique<VideoDetector>();
 
-  tooltip_controller_.reset(new views::corewm::TooltipController(
-      std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
+  tooltip_controller_ = std::make_unique<views::corewm::TooltipController>(
+      std::make_unique<views::corewm::TooltipAura>());
   AddPreTargetHandler(tooltip_controller_.get());
 
-  modality_filter_.reset(new SystemModalContainerEventFilter(this));
+  modality_filter_ = std::make_unique<SystemModalContainerEventFilter>(this);
   AddPreTargetHandler(modality_filter_.get());
 
-  event_client_.reset(new EventClientImpl);
+  event_client_ = std::make_unique<EventClientImpl>();
 
-  resize_shadow_controller_.reset(new ResizeShadowController());
+  resize_shadow_controller_ = std::make_unique<ResizeShadowController>();
   shadow_controller_ = std::make_unique<::wm::ShadowController>(
       focus_controller_.get(), std::make_unique<WmShadowControllerDelegate>(),
       env);
@@ -1240,8 +1231,8 @@ void Shell::Init(
   user_activity_notifier_ =
       std::make_unique<ui::UserActivityPowerManagerNotifier>(
           user_activity_detector_.get(), std::move(fingerprint));
-  video_activity_notifier_.reset(
-      new VideoActivityNotifier(video_detector_.get()));
+  video_activity_notifier_ =
+      std::make_unique<VideoActivityNotifier>(video_detector_.get());
   bluetooth_notification_controller_ =
       std::make_unique<BluetoothNotificationController>(
           message_center::MessageCenter::Get());
@@ -1250,8 +1241,8 @@ void Shell::Init(
 
   cros_display_config_ = std::make_unique<CrosDisplayConfig>();
 
-  screen_layout_observer_.reset(new ScreenLayoutObserver());
-  sms_observer_.reset(new SmsObserver());
+  screen_layout_observer_ = std::make_unique<ScreenLayoutObserver>();
+  sms_observer_ = std::make_unique<SmsObserver>();
   snap_controller_ = std::make_unique<SnapControllerImpl>();
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 
@@ -1263,12 +1254,6 @@ void Shell::Init(
   // order to create mirror window. Run it after the main message loop
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
-
-  if (base::FeatureList::IsEnabled(features::kMediaSessionNotification) &&
-      !base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
-    media_notification_controller_ =
-        std::make_unique<MediaNotificationControllerImpl>();
-  }
 
   // TODO(1091497): Consider combining DisplayHighlightController and
   // DisplayAlignmentController.

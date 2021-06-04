@@ -17,19 +17,19 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // gn check complains on Linux Ozone.
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #endif
 
 AppInfoFooterPanel::AppInfoFooterPanel(Profile* profile,
@@ -98,7 +98,7 @@ void AppInfoFooterPanel::CreateButtons() {
 void AppInfoFooterPanel::UpdatePinButtons(bool focus_visible_button) {
   if (pin_to_shelf_button_ && unpin_from_shelf_button_) {
     const bool was_pinned =
-        ChromeLauncherController::instance()->shelf_model()->IsAppPinned(
+        ChromeShelfController::instance()->shelf_model()->IsAppPinned(
             app_->id());
     pin_to_shelf_button_->SetVisible(!was_pinned);
     unpin_from_shelf_button_->SetVisible(was_pinned);
@@ -144,7 +144,7 @@ bool AppInfoFooterPanel::CanCreateShortcuts(const extensions::Extension* app) {
 void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
   DCHECK(CanSetPinnedToShelf(profile_, app_));
   ash::ShelfModel* shelf_model =
-      ChromeLauncherController::instance()->shelf_model();
+      ChromeShelfController::instance()->shelf_model();
   DCHECK(shelf_model);
   ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(shelf_model);
   if (value)

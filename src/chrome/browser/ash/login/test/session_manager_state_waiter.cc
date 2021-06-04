@@ -18,7 +18,7 @@ void WaitForPrimaryUserSessionStart() {
 }  // namespace test
 
 SessionStateWaiter::SessionStateWaiter(
-    base::Optional<session_manager::SessionState> target_state)
+    absl::optional<session_manager::SessionState> target_state)
     : target_state_(target_state) {}
 
 SessionStateWaiter::~SessionStateWaiter() = default;
@@ -29,7 +29,7 @@ void SessionStateWaiter::Wait() {
     return;
   }
 
-  session_observer_.Add(session_manager::SessionManager::Get());
+  session_observation_.Observe(session_manager::SessionManager::Get());
 
   base::RunLoop run_loop;
   session_state_callback_ = run_loop.QuitClosure();
@@ -39,14 +39,14 @@ void SessionStateWaiter::Wait() {
 void SessionStateWaiter::OnSessionStateChanged() {
   if (session_manager::SessionManager::Get()->session_state() ==
       target_state_) {
-    session_observer_.RemoveAll();
+    session_observation_.Reset();
     std::move(session_state_callback_).Run();
   }
 }
 
 void SessionStateWaiter::OnUserSessionStarted(bool is_primary_user) {
   if (!target_state_) {
-    session_observer_.RemoveAll();
+    session_observation_.Reset();
     std::move(session_state_callback_).Run();
   }
 }

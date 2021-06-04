@@ -4,6 +4,7 @@
 
 #include "chrome/browser/win/jumplist.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -269,7 +270,7 @@ JumpList::JumpList(Profile* profile)
   tab_restore_service->AddObserver(this);
 
   // kIncognitoModeAvailability is monitored for changes on Incognito mode.
-  pref_change_registrar_.reset(new PrefChangeRegistrar);
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(profile_->GetPrefs());
   // base::Unretained is safe since |this| is guaranteed to outlive
   // pref_change_registrar_.
@@ -337,17 +338,16 @@ void JumpList::OnIncognitoAvailabilityChanged() {
 void JumpList::InitializeTimerForUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (timer_.IsRunning()) {
-    timer_.Reset();
-  } else {
-    // base::Unretained is safe since |this| is guaranteed to outlive timer_.
-    timer_.Start(FROM_HERE,
-                 profile_->GetUserData(chrome::kJumpListIconDirname)
-                     ? kShortDelayForUpdate
-                     : kLongDelayForUpdate,
-                 base::BindOnce(&JumpList::ProcessNotifications,
-                                base::Unretained(this)));
-  }
+  // The existence of the user data indicates that the jumplist has been used in
+  // this session.
+  const bool jumplist_has_been_used =
+      profile_->GetUserData(chrome::kJumpListIconDirname);
+
+  // This will restart the timer if it is already running.
+  timer_.Start(
+      FROM_HERE,
+      jumplist_has_been_used ? kShortDelayForUpdate : kLongDelayForUpdate, this,
+      &JumpList::ProcessNotifications);
 }
 
 void JumpList::ProcessNotifications() {
@@ -936,5 +936,5 @@ base::FilePath JumpList::GetCmdLineProfileDir() {
                      ->GetProfileAttributesStorage()
                      .GetNumberOfProfiles() < 2
              ? base::FilePath()
-             : profile_->GetPath().BaseName();
+             : profile_->GetBaseName();
 }

@@ -10,7 +10,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -23,6 +22,7 @@
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 using base::UTF16ToUTF8;
@@ -220,11 +220,95 @@ void SortProfilesByFrecency(std::vector<AutofillProfile*>* profiles) {
 
 }  // namespace
 
+// The values corresponding to those types are visible in the settings.
+ServerFieldTypeSet GetUserVisibleTypes() {
+  static const ServerFieldTypeSet user_visibe_type = {
+      NAME_FULL,
+      NAME_HONORIFIC_PREFIX,
+      ADDRESS_HOME_STREET_ADDRESS,
+      ADDRESS_HOME_CITY,
+      ADDRESS_HOME_DEPENDENT_LOCALITY,
+      ADDRESS_HOME_STATE,
+      ADDRESS_HOME_ZIP,
+      ADDRESS_HOME_COUNTRY,
+      EMAIL_ADDRESS,
+      PHONE_HOME_WHOLE_NUMBER,
+      COMPANY_NAME};
+  return user_visibe_type;
+}
+
+bool ProfileValueDifference::operator==(
+    const ProfileValueDifference& right) const {
+  return (type == right.type) && (first_value == right.first_value) &&
+         (second_value == right.second_value);
+}
+
 AutofillProfileComparator::AutofillProfileComparator(
     const base::StringPiece& app_locale)
     : app_locale_(app_locale.data(), app_locale.size()) {}
 
 AutofillProfileComparator::~AutofillProfileComparator() = default;
+
+std::vector<ProfileValueDifference>
+AutofillProfileComparator::GetProfileDifference(
+    const AutofillProfile& first_profile,
+    const AutofillProfile& second_profile,
+    ServerFieldTypeSet types,
+    const std::string& app_locale) {
+  std::vector<ProfileValueDifference> difference;
+  difference.reserve(types.size());
+
+  for (auto type : types) {
+    const std::u16string& first_value = first_profile.GetInfo(type, app_locale);
+    const std::u16string& second_value =
+        second_profile.GetInfo(type, app_locale);
+    if (first_value != second_value) {
+      difference.emplace_back(
+          ProfileValueDifference{type, first_value, second_value});
+    }
+  }
+  return difference;
+}
+
+base::flat_map<ServerFieldType, std::pair<std::u16string, std::u16string>>
+AutofillProfileComparator::GetProfileDifferenceMap(
+    const AutofillProfile& first_profile,
+    const AutofillProfile& second_profile,
+    ServerFieldTypeSet types,
+    const std::string& app_locale) {
+  std::vector<
+      std::pair<ServerFieldType, std::pair<std::u16string, std::u16string>>>
+      result;
+  result.reserve(types.size());
+
+  for (auto& diff : AutofillProfileComparator::GetProfileDifference(
+           first_profile, second_profile, types, app_locale)) {
+    result.push_back(
+        {diff.type,
+         {std::move(diff.first_value), std::move(diff.second_value)}});
+  }
+  return base::flat_map<ServerFieldType,
+                        std::pair<std::u16string, std::u16string>>(
+      std::move(result));
+}
+
+std::vector<ProfileValueDifference>
+AutofillProfileComparator::GetSettingsVisibleProfileDifference(
+    const AutofillProfile& first_profile,
+    const AutofillProfile& second_profile,
+    const std::string& app_locale) {
+  return GetProfileDifference(first_profile, second_profile,
+                              GetUserVisibleTypes(), app_locale);
+}
+
+base::flat_map<ServerFieldType, std::pair<std::u16string, std::u16string>>
+AutofillProfileComparator::GetSettingsVisibleProfileDifferenceMap(
+    const AutofillProfile& first_profile,
+    const AutofillProfile& second_profile,
+    const std::string& app_locale) {
+  return GetProfileDifferenceMap(first_profile, second_profile,
+                                 GetUserVisibleTypes(), app_locale);
+}
 
 bool AutofillProfileComparator::Compare(base::StringPiece16 text1,
                                         base::StringPiece16 text2,
@@ -916,15 +1000,10 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
 bool AutofillProfileComparator::ProfilesHaveDifferentSettingsVisibleValues(
     const AutofillProfile& p1,
     const AutofillProfile& p2) {
-  // The values corresponding to those types are visible in the settings.
-  static const ServerFieldTypeSet kUserVisibleTypes = {
-      NAME_FULL,         NAME_HONORIFIC_PREFIX,  ADDRESS_HOME_STREET_ADDRESS,
-      ADDRESS_HOME_CITY, ADDRESS_HOME_ZIP,       ADDRESS_HOME_COUNTRY,
-      EMAIL_ADDRESS,     PHONE_HOME_WHOLE_NUMBER};
 
   // Return true if at least one value corresponding to the settings visible
   // types is different between the two profiles.
-  return base::ranges::any_of(kUserVisibleTypes, [&](const auto type) {
+  return base::ranges::any_of(GetUserVisibleTypes(), [&](const auto type) {
     return p1.GetRawInfo(type) != p2.GetRawInfo(type);
   });
 }
@@ -953,7 +1032,7 @@ bool AutofillProfileComparator::IsMergeCandidate(
 }
 
 // static
-base::Optional<AutofillProfile>
+absl::optional<AutofillProfile>
 AutofillProfileComparator::GetAutofillProfileMergeCandidate(
     const AutofillProfile& new_profile,
     const std::vector<AutofillProfile*>& existing_profiles,
@@ -966,7 +1045,7 @@ AutofillProfileComparator::GetAutofillProfileMergeCandidate(
   SortProfilesByFrecency(&existing_profiles_copies);
 
   // Find and return the first profile that classifies as a merge candidate. If
-  // not profile classifies, return |base::nullopt|.
+  // not profile classifies, return |absl::nullopt|.
   AutofillProfileComparator comparator(app_locale);
   auto merge_candidate = base::ranges::find_if(
       existing_profiles_copies, [&](const AutofillProfile* existing_profile) {
@@ -975,8 +1054,8 @@ AutofillProfileComparator::GetAutofillProfileMergeCandidate(
       });
 
   return merge_candidate != existing_profiles_copies.end()
-             ? base::make_optional(**merge_candidate)
-             : base::nullopt;
+             ? absl::make_optional(**merge_candidate)
+             : absl::nullopt;
 }
 
 // static
@@ -1280,9 +1359,9 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   bool use_alternative_state_name_map_enabled = base::FeatureList::IsEnabled(
       features::kAutofillUseAlternativeStateNameMap);
   if (use_alternative_state_name_map_enabled) {
-    base::Optional<AlternativeStateNameMap::CanonicalStateName>
+    absl::optional<AlternativeStateNameMap::CanonicalStateName>
         canonical_name_state1 = p1.GetAddress().GetCanonicalizedStateName();
-    base::Optional<AlternativeStateNameMap::CanonicalStateName>
+    absl::optional<AlternativeStateNameMap::CanonicalStateName>
         canonical_name_state2 = p2.GetAddress().GetCanonicalizedStateName();
     if (canonical_name_state1 && canonical_name_state2) {
       if (canonical_name_state1.value() == canonical_name_state2.value())

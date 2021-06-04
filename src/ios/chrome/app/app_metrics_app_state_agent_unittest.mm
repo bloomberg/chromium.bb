@@ -54,11 +54,21 @@ class FakeProfileSessionDurationsService
 // A fake that allows overriding connectedScenes.
 @interface FakeAppState : AppState
 @property(nonatomic, strong) NSArray<SceneState*>* connectedScenes;
-@property(nonatomic, assign) BOOL isInSafeMode;
+// Init stage that will be returned by the initStage getter when testing.
+@property(nonatomic, assign) InitStage initStageForTesting;
 @end
 
 @implementation FakeAppState
+
+- (InitStage)initStage {
+  return self.initStageForTesting;
+}
+
 @end
+
+InitStage GetMinimalInitStageThatAllowsLogging() {
+  return static_cast<InitStage>(InitStageSafeMode + 1);
+}
 
 class AppMetricsAppStateAgentTest : public PlatformTest {
  protected:
@@ -79,6 +89,7 @@ class AppMetricsAppStateAgentTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     app_state_.mainBrowserState = browser_state_.get();
+    app_state_.initStageForTesting = GetMinimalInitStageThatAllowsLogging();
     [agent_ setAppState:app_state_];
   }
 
@@ -86,6 +97,14 @@ class AppMetricsAppStateAgentTest : public PlatformTest {
     return static_cast<FakeProfileSessionDurationsService*>(
         IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
             browser_state_.get()));
+  }
+
+  void SimulateTransitionToCurrentStage() {
+    InitStage previousStage =
+        app_state_.initStage == InitStageStart
+            ? InitStageStart
+            : static_cast<InitStage>(app_state_.initStage - 1);
+    [agent_ appState:app_state_ didTransitionFromInitStage:previousStage];
   }
 
   AppMetricsAppStateAgent* agent_;
@@ -107,6 +126,8 @@ TEST_F(AppMetricsAppStateAgentTest, CountSessionDuration) {
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_started_count());
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
 
+  SimulateTransitionToCurrentStage();
+
   // Going foreground starts the session.
   scene.activationLevel = SceneActivationLevelForegroundInactive;
   EXPECT_EQ(1, getProfileSessionDurationsService()->session_started_count());
@@ -127,6 +148,8 @@ TEST_F(AppMetricsAppStateAgentTest, CountSessionDurationMultiwindow) {
 
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_started_count());
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
+
+  SimulateTransitionToCurrentStage();
 
   // One scene is enough to start a session.
   sceneA.activationLevel = SceneActivationLevelForegroundInactive;
@@ -152,11 +175,13 @@ TEST_F(AppMetricsAppStateAgentTest, CountSessionDurationMultiwindow) {
 TEST_F(AppMetricsAppStateAgentTest, CountSessionDurationSafeMode) {
   SceneState* scene = [[SceneState alloc] initWithAppState:app_state_];
   app_state_.connectedScenes = @[ scene ];
-  app_state_.isInSafeMode = YES;
+  app_state_.initStageForTesting = InitStageSafeMode;
   [agent_ appState:app_state_ sceneConnected:scene];
 
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_started_count());
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
+
+  SimulateTransitionToCurrentStage();
 
   // Going to background at app start doesn't log anything.
   scene.activationLevel = SceneActivationLevelBackground;
@@ -169,8 +194,8 @@ TEST_F(AppMetricsAppStateAgentTest, CountSessionDurationSafeMode) {
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
 
   // Session starts when safe mode completes.
-  app_state_.isInSafeMode = NO;
-  [agent_ appStateDidExitSafeMode:app_state_];
+  app_state_.initStageForTesting = GetMinimalInitStageThatAllowsLogging();
+  SimulateTransitionToCurrentStage();
   EXPECT_EQ(1, getProfileSessionDurationsService()->session_started_count());
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
 

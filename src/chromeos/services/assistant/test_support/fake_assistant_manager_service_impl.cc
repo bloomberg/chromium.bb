@@ -14,27 +14,28 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
 void FakeAssistantManagerServiceImpl::FinishStart() {
-  SetStateAndInformObservers(State::kRunning);
+  SetStateAndInformObservers(State::RUNNING);
 }
 
 void FakeAssistantManagerServiceImpl::Start(
-    const base::Optional<UserInfo>& user,
+    const absl::optional<UserInfo>& user,
     bool enable_hotword) {
+  SetStateAndInformObservers(State::STARTING);
   SetUser(user);
 }
 
 void FakeAssistantManagerServiceImpl::Stop() {
-  SetStateAndInformObservers(State::kStopped);
+  SetStateAndInformObservers(State::STOPPED);
 }
 
 void FakeAssistantManagerServiceImpl::SetUser(
-    const base::Optional<UserInfo>& user) {
+    const absl::optional<UserInfo>& user) {
   if (user) {
     gaia_id_ = user.value().gaia_id;
     access_token_ = user.value().access_token;
   } else {
-    gaia_id_ = base::nullopt;
-    access_token_ = base::nullopt;
+    gaia_id_ = absl::nullopt;
+    access_token_ = absl::nullopt;
   }
 }
 
@@ -128,12 +129,13 @@ void FakeAssistantManagerServiceImpl::SetStateAndInformObservers(
   State old_state = state_;
   state_ = new_state;
 
-  // In reality we will not skip states, i.e. we will always get |STARTED|
-  // before ever encountering |RUNNING|. As such our fake implementation will
+  // In reality we will not skip states, i.e. we will always get |STARTING|
+  // before ever encountering |STARTED|. As such our fake implementation will
   // send out all intermediate states between |old_state| and |new_state|.
-  MaybeSendStateChange(State::kStopped, old_state, new_state);
-  MaybeSendStateChange(State::kStarted, old_state, new_state);
-  MaybeSendStateChange(State::kRunning, old_state, new_state);
+  MaybeSendStateChange(State::STOPPED, old_state, new_state);
+  MaybeSendStateChange(State::STARTING, old_state, new_state);
+  MaybeSendStateChange(State::STARTED, old_state, new_state);
+  MaybeSendStateChange(State::RUNNING, old_state, new_state);
 }
 
 void FakeAssistantManagerServiceImpl::MaybeSendStateChange(State state,

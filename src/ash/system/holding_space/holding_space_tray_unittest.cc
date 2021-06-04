@@ -8,7 +8,6 @@
 #include <deque>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -26,13 +25,17 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/window_preview_view.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -169,6 +172,81 @@ class MockHoldingSpaceClient : public HoldingSpaceClient {
               (override));
 };
 
+// Waiters ---------------------------------------------------------------------
+
+// A class capable of waiting until a layer has stopped animating.
+class LayerAnimationStoppedWaiter : public ui::LayerAnimationObserver {
+ public:
+  // Waits until the specified `layer`'s animation is stopped.
+  void Wait(ui::Layer* layer) {
+    if (!layer->GetAnimator()->is_animating())
+      return;
+
+    // Temporarily cache and observe `layer`'s animator.
+    layer_animator_ = layer->GetAnimator();
+    base::ScopedObservation<ui::LayerAnimator, ui::LayerAnimationObserver>
+        layer_animator_observer{this};
+    layer_animator_observer.Observe(layer_animator_);
+
+    // Loop until the `layer`'s animation is stopped.
+    wait_loop_ = std::make_unique<base::RunLoop>();
+    wait_loop_->Run();
+
+    // Reset.
+    layer_animator_ = nullptr;
+    wait_loop_.reset();
+  }
+
+ private:
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {}
+
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
+    if (!layer_animator_->is_animating())
+      wait_loop_->Quit();
+  }
+
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    if (!layer_animator_->is_animating())
+      wait_loop_->Quit();
+  }
+
+  ui::LayerAnimator* layer_animator_ = nullptr;
+  std::unique_ptr<base::RunLoop> wait_loop_;
+};
+
+// ViewVisibilityChangedWaiter -------------------------------------------------
+
+// A class capable of waiting until a view's visibility is changed.
+class ViewVisibilityChangedWaiter : public views::ViewObserver {
+ public:
+  // Waits until the specified `view`'s visibility is changed.
+  void Wait(views::View* view) {
+    // Temporarily observe `view`.
+    base::ScopedObservation<views::View, views::ViewObserver> observer{this};
+    observer.Observe(view);
+
+    // Loop until the `view`'s visibility is changed.
+    wait_loop_ = std::make_unique<base::RunLoop>();
+    wait_loop_->Run();
+
+    // Reset.
+    wait_loop_.reset();
+  }
+
+ private:
+  // views::ViewObserver:
+  void OnViewVisibilityChanged(views::View* view,
+                               views::View* starting_view) override {
+    wait_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> wait_loop_;
+};
+
 // TransformRecordingLayerDelegate ---------------------------------------------
 
 // A scoped `ui::LayerDelegate` which records information about transforms.
@@ -192,10 +270,14 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
   // Resets recorded information.
   void Reset() {
     const gfx::Transform& transform = layer_->transform();
+    did_animate_ = false;
     start_scale_ = end_scale_ = min_scale_ = max_scale_ = transform.Scale2d();
     start_translation_ = end_translation_ = min_translation_ =
         max_translation_ = transform.To2dTranslation();
   }
+
+  // Returns true if an animation occurred.
+  bool DidAnimate() const { return did_animate_; }
 
   // Returns true if a scale occurred.
   bool DidScale() const {
@@ -240,6 +322,7 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
   void OnLayerTransformed(const gfx::Transform& old_transform,
                           ui::PropertyChangeReason reason) override {
     const gfx::Transform& transform = layer_->transform();
+    did_animate_ |= reason == ui::PropertyChangeReason::FROM_ANIMATION;
     end_scale_ = transform.Scale2d();
     end_translation_ = transform.To2dTranslation();
     min_scale_.SetToMin(end_scale_);
@@ -251,6 +334,7 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
   ui::Layer* const layer_;
   ui::LayerDelegate* const layer_delegate_;
 
+  bool did_animate_ = false;
   gfx::Vector2dF start_scale_;
   gfx::Vector2dF start_translation_;
   gfx::Vector2dF end_scale_;
@@ -265,23 +349,9 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
 
 // HoldingSpaceTrayTest --------------------------------------------------------
 
-// Parameterized by whether the previews feature is enabled.
-class HoldingSpaceTrayTest : public AshTestBase,
-                             public testing::WithParamInterface<bool> {
+class HoldingSpaceTrayTest : public AshTestBase {
  public:
-  HoldingSpaceTrayTest() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-
-    enabled_features.push_back(features::kTemporaryHoldingSpace);
-
-    if (IsPreviewsFeatureEnabled())
-      enabled_features.push_back(features::kTemporaryHoldingSpacePreviews);
-    else
-      disabled_features.push_back(features::kTemporaryHoldingSpacePreviews);
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
+  HoldingSpaceTrayTest() = default;
 
   // AshTestBase:
   void SetUp() override {
@@ -394,8 +464,6 @@ class HoldingSpaceTrayTest : public AshTestBase,
         user_account, nullptr, nullptr);
   }
 
-  bool IsPreviewsFeatureEnabled() const { return GetParam(); }
-
   HoldingSpaceTestApi* test_api() { return test_api_.get(); }
 
   testing::NiceMock<MockHoldingSpaceClient>* client() {
@@ -422,12 +490,11 @@ class HoldingSpaceTrayTest : public AshTestBase,
   std::unique_ptr<HoldingSpaceTestApi> test_api_;
   testing::NiceMock<MockHoldingSpaceClient> holding_space_client_;
   HoldingSpaceModel holding_space_model_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests -----------------------------------------------------------------------
 
-TEST_P(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
+TEST_F(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
   StartSession(/*pre_mark_time_of_first_add=*/false);
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
 
@@ -441,10 +508,8 @@ TEST_P(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
   MarkTimeOfFirstAdd();
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   // Show the bubble - both the pinned files and recent files child bubbles
   // should be shown.
@@ -478,7 +543,7 @@ TEST_P(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 }
 
-TEST_P(HoldingSpaceTrayTest, HideButtonWhenModelDetached) {
+TEST_F(HoldingSpaceTrayTest, HideButtonWhenModelDetached) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -489,10 +554,8 @@ TEST_P(HoldingSpaceTrayTest, HideButtonWhenModelDetached) {
   // Add a download item - the button should be shown.
   AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   SwitchToSecondaryUser("user@secondary", /*client=*/nullptr,
                         /*model=*/nullptr);
@@ -502,7 +565,7 @@ TEST_P(HoldingSpaceTrayTest, HideButtonWhenModelDetached) {
   UnregisterModelForUser("user@secondary");
 }
 
-TEST_P(HoldingSpaceTrayTest, HideButtonOnChangeToEmptyModel) {
+TEST_F(HoldingSpaceTrayTest, HideButtonOnChangeToEmptyModel) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -513,10 +576,8 @@ TEST_P(HoldingSpaceTrayTest, HideButtonOnChangeToEmptyModel) {
   // Add a download item - the button should be shown.
   AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   HoldingSpaceModel secondary_holding_space_model;
   SwitchToSecondaryUser("user@secondary", /*client=*/nullptr,
@@ -529,15 +590,13 @@ TEST_P(HoldingSpaceTrayTest, HideButtonOnChangeToEmptyModel) {
                  base::FilePath("/tmp/fake_2"));
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   UnregisterModelForUser("user@secondary");
 }
 
-TEST_P(HoldingSpaceTrayTest, HideButtonOnChangeToNonEmptyModel) {
+TEST_F(HoldingSpaceTrayTest, HideButtonOnChangeToNonEmptyModel) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -556,15 +615,13 @@ TEST_P(HoldingSpaceTrayTest, HideButtonOnChangeToNonEmptyModel) {
                         /*model=*/&secondary_holding_space_model);
   EXPECT_TRUE(test_api()->IsShowingInShelf());
 
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   UnregisterModelForUser("user@secondary");
 }
 
-TEST_P(HoldingSpaceTrayTest, HideButtonOnUserAddingScreen) {
+TEST_F(HoldingSpaceTrayTest, HideButtonOnUserAddingScreen) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -585,7 +642,7 @@ TEST_P(HoldingSpaceTrayTest, HideButtonOnUserAddingScreen) {
   EXPECT_TRUE(test_api()->IsShowingInShelf());
 }
 
-TEST_P(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
+TEST_F(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -598,10 +655,8 @@ TEST_P(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
       AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   // Remove the only item - the button should be hidden.
   model()->RemoveItem(item_1->id());
@@ -612,10 +667,8 @@ TEST_P(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
   HoldingSpaceItem* item_2 =
       AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_2"));
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   // Remove the only item - the button should be hidden.
   model()->RemoveItem(item_2->id());
@@ -627,10 +680,8 @@ TEST_P(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
       AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_3"));
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
   // Remove the only item - the button should be hidden.
   model()->RemoveItem(item_3->id());
@@ -638,7 +689,7 @@ TEST_P(HoldingSpaceTrayTest, AddingItemShowsTrayBubble) {
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 }
 
-TEST_P(HoldingSpaceTrayTest, TrayButtonNotShownForPartialItemsOnly) {
+TEST_F(HoldingSpaceTrayTest, TrayButtonNotShownForPartialItemsOnly) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -661,24 +712,22 @@ TEST_P(HoldingSpaceTrayTest, TrayButtonNotShownForPartialItemsOnly) {
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
-  // Finalize one item, and verify the tray button gets shown.
-  model()->FinalizeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
+  // Initialize one item, and verify the tray button gets shown.
+  model()->InitializeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
 
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  EXPECT_EQ(!IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetDefaultTrayIcon()));
-  EXPECT_EQ(IsPreviewsFeatureEnabled(),
-            IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_FALSE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
+  EXPECT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
 
-  // Remove the finalized item - the shelf button should get hidden.
+  // Remove the initialized item - the shelf button should get hidden.
   model()->RemoveItem(item_2->id());
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 }
 
 // Tests that the tray icon size changes on in-app shelf.
-TEST_P(HoldingSpaceTrayTest, UpdateTrayIconSizeForInAppShelf) {
+TEST_F(HoldingSpaceTrayTest, UpdateTrayIconSizeForInAppShelf) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -691,15 +740,9 @@ TEST_P(HoldingSpaceTrayTest, UpdateTrayIconSizeForInAppShelf) {
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
 
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  if (IsPreviewsFeatureEnabled()) {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
-              test_api()->GetPreviewsTrayIcon()->size());
-  } else {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
-              test_api()->GetDefaultTrayIcon()->size());
-  }
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
 
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -708,33 +751,75 @@ TEST_P(HoldingSpaceTrayTest, UpdateTrayIconSizeForInAppShelf) {
   ASSERT_TRUE(widget);
 
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-  if (IsPreviewsFeatureEnabled()) {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconSmallPreviewSize, kTrayItemSize),
-              test_api()->GetPreviewsTrayIcon()->size());
-  } else {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
-              test_api()->GetDefaultTrayIcon()->size());
-  }
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconSmallPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
 
   // Transition to home screen.
   widget->Minimize();
 
-  if (IsPreviewsFeatureEnabled()) {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
-              test_api()->GetPreviewsTrayIcon()->size());
-  } else {
-    ASSERT_TRUE(IsViewVisible(test_api()->GetDefaultTrayIcon()));
-    EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
-              test_api()->GetDefaultTrayIcon()->size());
-  }
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
+}
+
+// Tests that the tray icon size changes on in-app shelf after transition from
+// overview when overview is not showing in-app shelf.
+TEST_F(
+    HoldingSpaceTrayTest,
+    UpdateTrayIconSizeForInAppShelfAfterTransitionFromOverviewWithHomeShelf) {
+  MarkTimeOfFirstPin();
+  StartSession();
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Add a download item - the button should be shown.
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
+  GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
+
+  // Create a test widget and minimize it to transition to home screen.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  ASSERT_TRUE(widget);
+  widget->Minimize();
+
+  ASSERT_FALSE(ShelfConfig::Get()->is_in_app());
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
+
+  // Transition to overview, the shelf is expected to remain in home screen
+  // style state.
+  Shell::Get()->overview_controller()->StartOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+
+  ASSERT_FALSE(ShelfConfig::Get()->is_in_app());
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconDefaultPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
+
+  // Tap the test window preview within the overview UI, and tap it to exit
+  // overview.
+  OverviewItem* overview_item =
+      Shell::Get()
+          ->overview_controller()
+          ->overview_session()
+          ->GetOverviewItemForWindow(widget->GetNativeWindow());
+  GetEventGenerator()->GestureTapAt(overview_item->overview_item_view()
+                                        ->preview_view()
+                                        ->GetBoundsInScreen()
+                                        .CenterPoint());
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
+
+  ASSERT_TRUE(ShelfConfig::Get()->is_in_app());
+  ASSERT_TRUE(IsViewVisible(test_api()->GetPreviewsTrayIcon()));
+  EXPECT_EQ(gfx::Size(kHoldingSpaceTrayIconSmallPreviewSize, kTrayItemSize),
+            test_api()->GetPreviewsTrayIcon()->size());
 }
 
 // Tests that a shelf config change just after an item has been removed does
 // not cause a crash.
-TEST_P(HoldingSpaceTrayTest, ShelfConfigChangeWithDelayedItemRemoval) {
+TEST_F(HoldingSpaceTrayTest, ShelfConfigChangeWithDelayedItemRemoval) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -768,11 +853,7 @@ TEST_P(HoldingSpaceTrayTest, ShelfConfigChangeWithDelayedItemRemoval) {
 
 // Tests that a shelf alignment change will behave as expected when there are
 // multiple displays (and therefore multiple shelves/trays).
-TEST_P(HoldingSpaceTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
-  // This test is only relevant when previews are enabled.
-  if (!IsPreviewsFeatureEnabled())
-    return;
-
+TEST_F(HoldingSpaceTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -861,9 +942,28 @@ TEST_P(HoldingSpaceTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
   }
 }
 
+// Base class for tests of the holding space downloads section parameterized by
+// the set of holding space item types which are expected to appear there.
+class HoldingSpaceTrayDownloadsSectionTest
+    : public HoldingSpaceTrayTest,
+      public ::testing::WithParamInterface<HoldingSpaceItem::Type> {
+ public:
+  HoldingSpaceItem::Type GetType() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HoldingSpaceTrayDownloadsSectionTest,
+    ::testing::Values(HoldingSpaceItem::Type::kArcDownload,
+                      HoldingSpaceItem::Type::kDiagnosticsLog,
+                      HoldingSpaceItem::Type::kDownload,
+                      HoldingSpaceItem::Type::kLacrosDownload,
+                      HoldingSpaceItem::Type::kNearbyShare,
+                      HoldingSpaceItem::Type::kPrintedPdf));
+
 // Tests how download chips are updated during item addition, removal and
-// finalization.
-TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
+// initialization.
+TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   StartSession();
 
   test_api()->Show();
@@ -873,8 +973,7 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
 
   // Add a download item and verify recent file bubble gets shown.
-  HoldingSpaceItem* item_1 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
+  HoldingSpaceItem* item_1 = AddItem(GetType(), base::FilePath("/tmp/fake_1"));
 
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
   EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
@@ -885,8 +984,8 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
 
   // Add partially initialized download item - verify it doesn't get shown in
   // the UI yet.
-  HoldingSpaceItem* item_2 = AddPartiallyInitializedItem(
-      HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_2"));
+  HoldingSpaceItem* item_2 =
+      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_2"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
@@ -896,8 +995,7 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
             HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
 
   // Add another download, and verify it's shown in the UI.
-  HoldingSpaceItem* item_3 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_3"));
+  HoldingSpaceItem* item_3 = AddItem(GetType(), base::FilePath("/tmp/fake_3"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
@@ -908,9 +1006,9 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
   EXPECT_EQ(item_1->id(),
             HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
 
-  // Finalize partially initialized item, and verify it gets added to the
-  // section, in the order of addition, replacing the oldest item.
-  model()->FinalizeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
+  // Fully initialize partially initialized item, and verify it gets added to
+  // the section, in the order of addition, replacing the oldest item.
+  model()->InitializeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
@@ -952,17 +1050,17 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSection) {
 }
 
 // Verifies the downloads section is shown and orders items as expected when the
-// model contains a number of finalized items prior to showing UI.
-TEST_P(HoldingSpaceTrayTest, DownloadsSectionWithFinalizedItemsOnly) {
+// model contains a number of initialized items prior to showing UI.
+TEST_P(HoldingSpaceTrayDownloadsSectionTest,
+       DownloadsSectionWithInitializedItemsOnly) {
   MarkTimeOfFirstPin();
   StartSession();
 
-  // Add a number of finalized download items.
+  // Add a number of initialized download items.
   std::deque<HoldingSpaceItem*> items;
   for (size_t i = 0; i < kMaxDownloads; ++i) {
-    items.push_back(
-        AddItem(HoldingSpaceItem::Type::kDownload,
-                base::FilePath("/tmp/fake_" + base::NumberToString(i))));
+    items.push_back(AddItem(
+        GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
   }
 
   test_api()->Show();
@@ -983,7 +1081,8 @@ TEST_P(HoldingSpaceTrayTest, DownloadsSectionWithFinalizedItemsOnly) {
   test_api()->Close();
 }
 
-TEST_P(HoldingSpaceTrayTest, FinalizingDownloadItemThatShouldBeInvisible) {
+TEST_P(HoldingSpaceTrayDownloadsSectionTest,
+       InitializingDownloadItemThatShouldBeInvisible) {
   StartSession();
   test_api()->Show();
 
@@ -991,14 +1090,12 @@ TEST_P(HoldingSpaceTrayTest, FinalizingDownloadItemThatShouldBeInvisible) {
 
   // Add partially initialized download item - verify it doesn't get shown in
   // the UI yet.
-  HoldingSpaceItem* item_1 = AddPartiallyInitializedItem(
-      HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
+  HoldingSpaceItem* item_1 =
+      AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_1"));
 
   // Add two download items.
-  HoldingSpaceItem* item_2 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_2"));
-  HoldingSpaceItem* item_3 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_3"));
+  HoldingSpaceItem* item_2 = AddItem(GetType(), base::FilePath("/tmp/fake_2"));
+  HoldingSpaceItem* item_3 = AddItem(GetType(), base::FilePath("/tmp/fake_3"));
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
@@ -1008,9 +1105,9 @@ TEST_P(HoldingSpaceTrayTest, FinalizingDownloadItemThatShouldBeInvisible) {
   EXPECT_EQ(item_2->id(),
             HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
 
-  // Finalize partially initialized item, and verify it's not added to the
-  // section.
-  model()->FinalizeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
+  // Fully initialize partially initialized item, and verify it's not added to
+  // the section.
+  model()->InitializeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
@@ -1036,7 +1133,8 @@ TEST_P(HoldingSpaceTrayTest, FinalizingDownloadItemThatShouldBeInvisible) {
 
 // Tests that a partially initialized download item does not get shown if a full
 // download item gets removed from the holding space.
-TEST_P(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingADownloadItem) {
+TEST_P(HoldingSpaceTrayDownloadsSectionTest,
+       PartialItemNowShownOnRemovingADownloadItem) {
   StartSession();
   test_api()->Show();
 
@@ -1044,14 +1142,11 @@ TEST_P(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingADownloadItem) {
 
   // Add partially initialized download item - verify it doesn't get shown in
   // the UI yet.
-  AddPartiallyInitializedItem(HoldingSpaceItem::Type::kDownload,
-                              base::FilePath("/tmp/fake_1"));
+  AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_1"));
 
   // Add two download items.
-  HoldingSpaceItem* item_2 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_2"));
-  HoldingSpaceItem* item_3 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_3"));
+  HoldingSpaceItem* item_2 = AddItem(GetType(), base::FilePath("/tmp/fake_2"));
+  HoldingSpaceItem* item_3 = AddItem(GetType(), base::FilePath("/tmp/fake_3"));
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
@@ -1074,8 +1169,8 @@ TEST_P(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingADownloadItem) {
 }
 
 // Tests how screen captures section is updated during item addition, removal
-// and finalization.
-TEST_P(HoldingSpaceTrayTest, ScreenCapturesSection) {
+// and initialization.
+TEST_F(HoldingSpaceTrayTest, ScreenCapturesSection) {
   StartSession();
   test_api()->Show();
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
@@ -1122,9 +1217,9 @@ TEST_P(HoldingSpaceTrayTest, ScreenCapturesSection) {
   EXPECT_EQ(item_1->id(),
             HoldingSpaceItemView::Cast(screen_captures[2])->item()->id());
 
-  // Finalize partially initialized item, and verify it gets added to the
-  // section, in the order of addition, replacing the oldest item.
-  model()->FinalizeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
+  // Fully initialize partially initialized item, and verify it gets added to
+  // the section, in the order of addition, replacing the oldest item.
+  model()->InitializeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -1174,12 +1269,12 @@ TEST_P(HoldingSpaceTrayTest, ScreenCapturesSection) {
 }
 
 // Verifies the screen captures section is shown and orders items as expected
-// when the model contains a number of finalized items prior to showing UI.
-TEST_P(HoldingSpaceTrayTest, ScreenCapturesSectionWithFinalizedItemsOnly) {
+// when the model contains a number of initialized items prior to showing UI.
+TEST_F(HoldingSpaceTrayTest, ScreenCapturesSectionWithInitializedItemsOnly) {
   MarkTimeOfFirstPin();
   StartSession();
 
-  // Add a number of finalized screen capture items.
+  // Add a number of initialized screen capture items.
   std::deque<HoldingSpaceItem*> items;
   for (size_t i = 0; i < kMaxScreenCaptures; ++i) {
     items.push_back(
@@ -1205,7 +1300,8 @@ TEST_P(HoldingSpaceTrayTest, ScreenCapturesSectionWithFinalizedItemsOnly) {
   test_api()->Close();
 }
 
-TEST_P(HoldingSpaceTrayTest, FinalizingScreenCaptureItemThatShouldBeInvisible) {
+TEST_F(HoldingSpaceTrayTest,
+       InitializingScreenCaptureItemThatShouldBeInvisible) {
   StartSession();
   test_api()->Show();
 
@@ -1242,9 +1338,9 @@ TEST_P(HoldingSpaceTrayTest, FinalizingScreenCaptureItemThatShouldBeInvisible) {
   EXPECT_EQ(item_2->id(),
             HoldingSpaceItemView::Cast(screen_captures[2])->item()->id());
 
-  // Finalize partially initialized item, and verify it's not added to the
-  // section.
-  model()->FinalizeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
+  // Fully initialize partially initialized item, and verify it's not added to
+  // the section.
+  model()->InitializeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -1276,7 +1372,7 @@ TEST_P(HoldingSpaceTrayTest, FinalizingScreenCaptureItemThatShouldBeInvisible) {
 
 // Tests that a partially initialized screenshot item does not get shown if a
 // fully initialized screenshot item gets removed from the holding space.
-TEST_P(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingAScreenCapture) {
+TEST_F(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingAScreenCapture) {
   StartSession();
   test_api()->Show();
 
@@ -1321,8 +1417,8 @@ TEST_P(HoldingSpaceTrayTest, PartialItemNowShownOnRemovingAScreenCapture) {
 }
 
 // Tests how the pinned item section is updated during item addition, removal
-// and finalization.
-TEST_P(HoldingSpaceTrayTest, PinnedFilesSection) {
+// and initialization.
+TEST_F(HoldingSpaceTrayTest, PinnedFilesSection) {
   MarkTimeOfFirstPin();
   StartSession();
 
@@ -1367,8 +1463,8 @@ TEST_P(HoldingSpaceTrayTest, PinnedFilesSection) {
   EXPECT_EQ(item_1->id(),
             HoldingSpaceItemView::Cast(pinned_files[1])->item()->id());
 
-  // Finalize partially initialized item, and verify it gets shown.
-  model()->FinalizeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
+  // Full initialize partially initialized item, and verify it gets shown.
+  model()->InitializeOrRemoveItem(item_2->id(), GURL("filesystem:fake_2"));
 
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
@@ -1427,7 +1523,7 @@ TEST_P(HoldingSpaceTrayTest, PinnedFilesSection) {
 
 // Verifies the pinned files bubble is not shown if it only contains partially
 // initialized items.
-TEST_P(HoldingSpaceTrayTest,
+TEST_F(HoldingSpaceTrayTest,
        PinnedFilesBubbleWithPartiallyInitializedItemsOnly) {
   MarkTimeOfFirstPin();
   StartSession();
@@ -1457,9 +1553,9 @@ TEST_P(HoldingSpaceTrayTest,
             HoldingSpaceItemView::Cast(pinned_files[0])->item()->id());
   EXPECT_TRUE(HoldingSpaceItemView::Cast(pinned_files[0])->GetVisible());
 
-  // Finalize a partially initialized item with an empty URL - it should get
-  // removed.
-  model()->FinalizeOrRemoveItem(item_2->id(), GURL());
+  // Fully initialize a partially initialized item with an empty URL - it should
+  // get removed.
+  model()->InitializeOrRemoveItem(item_2->id(), GURL());
 
   pinned_files = test_api()->GetPinnedFileChips();
   ASSERT_EQ(1u, pinned_files.size());
@@ -1468,12 +1564,12 @@ TEST_P(HoldingSpaceTrayTest,
 }
 
 // Verifies the pinned items section is shown and orders items as expected when
-// the model contains a number of finalized items prior to showing UI.
-TEST_P(HoldingSpaceTrayTest, PinnedFilesSectionWithFinalizedItemsOnly) {
+// the model contains a number of initialized items prior to showing UI.
+TEST_F(HoldingSpaceTrayTest, PinnedFilesSectionWithInitializedItemsOnly) {
   MarkTimeOfFirstPin();
   StartSession();
 
-  // Add a number of finalized pinned items.
+  // Add a number of initialized pinned items.
   std::deque<HoldingSpaceItem*> items;
   for (int i = 0; i < 10; ++i) {
     items.push_back(
@@ -1498,197 +1594,9 @@ TEST_P(HoldingSpaceTrayTest, PinnedFilesSectionWithFinalizedItemsOnly) {
   test_api()->Close();
 }
 
-// Tests that as nearby shared files are added to the model, they show on the
-// downloads section.
-TEST_P(HoldingSpaceTrayTest, DownloadsSectionWithNearbySharedFiles) {
-  StartSession();
-
-  test_api()->Show();
-  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  ASSERT_TRUE(test_api()->GetDownloadChips().empty());
-
-  // Add a nearby share item and verify recent files bubble gets shown.
-  HoldingSpaceItem* item_1 = AddItem(HoldingSpaceItem::Type::kNearbyShare,
-                                     base::FilePath("/tmp/fake_1"));
-  ASSERT_TRUE(item_1->IsFinalized());
-
-  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
-  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  ASSERT_EQ(1u, test_api()->GetDownloadChips().size());
-
-  // Add a download item, and verify it's also shown in the UI in the order they
-  // were added.
-  HoldingSpaceItem* item_2 =
-      AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_2"));
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Remove the first item, and verify the section gets updated.
-  model()->RemoveItem(item_1->id());
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(1u, download_chips.size());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-
-  test_api()->Close();
-}
-
-// Tests that a partially initialized nearby share item does not get shown if a
-// full download item gets removed from the holding space.
-TEST_P(HoldingSpaceTrayTest, PartialNearbyShareItemWithExistingDownloadItems) {
-  StartSession();
-  test_api()->Show();
-
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-  ASSERT_TRUE(test_api()->GetDownloadChips().empty());
-
-  // Add partially initialized nearby share item - verify it doesn't get shown
-  // in the UI yet.
-  HoldingSpaceItem* nearby_share_item =
-      AddPartiallyInitializedItem(HoldingSpaceItem::Type::kNearbyShare,
-                                  base::FilePath("/tmp/nearby_share"));
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-  EXPECT_TRUE(test_api()->GetDownloadChips().empty());
-
-  // Add partially initialized screenshot item - verify it doesn't get shown in
-  // the UI yet.
-  HoldingSpaceItem* screenshot_item = AddPartiallyInitializedItem(
-      HoldingSpaceItem::Type::kScreenshot, base::FilePath("/tmp/screenshot"));
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-
-  // Add two download items.
-  HoldingSpaceItem* download_item_1 = AddItem(
-      HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/download_1"));
-  HoldingSpaceItem* download_item_2 = AddItem(
-      HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/download_2"));
-  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(download_item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(download_item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Finalize the nearby share item and verify it is not shown.
-  model()->FinalizeOrRemoveItem(nearby_share_item->id(),
-                                GURL("filesystem:nearby_share"));
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(download_item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(download_item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Finalize the screenshot item and verify it is shown. Note that the
-  // finalized screenshot item should not affect appearance of the downloads
-  // section of holding space UI. It shows in the screen captures section.
-  model()->FinalizeOrRemoveItem(screenshot_item->id(),
-                                GURL("filesystem:screenshot"));
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_EQ(1u, test_api()->GetScreenCaptureViews().size());
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(download_item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(download_item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Remove one of the fully initialized items, and verify the nearby share item
-  // that was finalized late is shown.
-  model()->RemoveItem(download_item_1->id());
-
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(download_item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(nearby_share_item->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  test_api()->Close();
-}
-
-// Tests that a partially initialized download item does not get shown if a
-// full download item gets removed from the holding space.
-TEST_P(HoldingSpaceTrayTest, PartialDownloadItemWithExistingNearbyShareItems) {
-  StartSession();
-  test_api()->Show();
-
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-  ASSERT_TRUE(test_api()->GetDownloadChips().empty());
-
-  // Add partially initialized download item - verify it doesn't get shown
-  // in the UI yet.
-  HoldingSpaceItem* item_1 = AddPartiallyInitializedItem(
-      HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake_1"));
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
-  EXPECT_TRUE(test_api()->GetDownloadChips().empty());
-
-  // Add two nearby share items.
-  HoldingSpaceItem* item_2 = AddItem(HoldingSpaceItem::Type::kNearbyShare,
-                                     base::FilePath("/tmp/fake_2"));
-  HoldingSpaceItem* item_3 = AddItem(HoldingSpaceItem::Type::kNearbyShare,
-                                     base::FilePath("/tmp/fake_3"));
-  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Finalize the download item and verify it is not shown.
-  model()->FinalizeOrRemoveItem(item_1->id(), GURL("filesystem:fake_1"));
-
-  EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
-  EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_2->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  // Remove one of the fully initialized items, and verify the partially
-  // initialized item is not shown.
-  model()->RemoveItem(item_2->id());
-
-  download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(2u, download_chips.size());
-  EXPECT_EQ(item_3->id(),
-            HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
-  EXPECT_EQ(item_1->id(),
-            HoldingSpaceItemView::Cast(download_chips[1])->item()->id());
-
-  test_api()->Close();
-}
-
 // Right clicking the holding space tray should show a context menu if the
 // previews feature is enabled. Otherwise it should do nothing.
-TEST_P(HoldingSpaceTrayTest, ShouldMaybeShowContextMenuOnRightClick) {
+TEST_F(HoldingSpaceTrayTest, ShouldMaybeShowContextMenuOnRightClick) {
   StartSession();
 
   views::View* tray = test_api()->GetTray();
@@ -1702,13 +1610,12 @@ TEST_P(HoldingSpaceTrayTest, ShouldMaybeShowContextMenuOnRightClick) {
   event_generator.MoveMouseTo(tray->GetBoundsInScreen().CenterPoint());
   event_generator.ClickRightButton();
 
-  EXPECT_EQ(!!views::MenuController::GetActiveInstance(),
-            IsPreviewsFeatureEnabled());
+  EXPECT_TRUE(views::MenuController::GetActiveInstance());
 }
 
 // Tests that as screen recording files are added to the model, they show in the
 // screen captures section.
-TEST_P(HoldingSpaceTrayTest, ScreenCapturesSectionWithScreenRecordingFiles) {
+TEST_F(HoldingSpaceTrayTest, ScreenCapturesSectionWithScreenRecordingFiles) {
   StartSession();
 
   test_api()->Show();
@@ -1721,7 +1628,7 @@ TEST_P(HoldingSpaceTrayTest, ScreenCapturesSectionWithScreenRecordingFiles) {
   // Add a screen recording item and verify recent files section gets shown.
   HoldingSpaceItem* item_1 = AddItem(HoldingSpaceItem::Type::kScreenRecording,
                                      base::FilePath("/tmp/fake_1"));
-  ASSERT_TRUE(item_1->IsFinalized());
+  ASSERT_TRUE(item_1->IsInitialized());
 
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
   EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
@@ -1759,8 +1666,8 @@ TEST_P(HoldingSpaceTrayTest, ScreenCapturesSectionWithScreenRecordingFiles) {
 }
 
 // Tests that a partially initialized screen recording item shows in the UI in
-// the reverse order from added time rather than finalization time.
-TEST_P(HoldingSpaceTrayTest,
+// the reverse order from added time rather than initialization time.
+TEST_F(HoldingSpaceTrayTest,
        PartialScreenRecordingItemWithExistingScreenshotItems) {
   StartSession();
   test_api()->Show();
@@ -1796,9 +1703,9 @@ TEST_P(HoldingSpaceTrayTest,
   EXPECT_EQ(screenshot_item_1->id(),
             HoldingSpaceItemView::Cast(screen_capture_chips[2])->item()->id());
 
-  // Finalize the screen recording item and verify it is not shown.
-  model()->FinalizeOrRemoveItem(screen_recording_item->id(),
-                                GURL("filesystem:screen_recording"));
+  // Initialize the screen recording item and verify it is not shown.
+  model()->InitializeOrRemoveItem(screen_recording_item->id(),
+                                  GURL("filesystem:screen_recording"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -1812,7 +1719,7 @@ TEST_P(HoldingSpaceTrayTest,
             HoldingSpaceItemView::Cast(screen_capture_chips[2])->item()->id());
 
   // Remove one of the fully initialized items, and verify the screen recording
-  // item that was finalized late is shown.
+  // item that was initialized late is shown.
   model()->RemoveItem(screenshot_item_1->id());
 
   screen_capture_chips = test_api()->GetScreenCaptureViews();
@@ -1838,9 +1745,9 @@ TEST_P(HoldingSpaceTrayTest,
   EXPECT_EQ(screen_recording_item->id(),
             HoldingSpaceItemView::Cast(screen_capture_chips[2])->item()->id());
 
-  // Finalize the screen recording item and verify it is shown first.
-  model()->FinalizeOrRemoveItem(screen_recording_item_last->id(),
-                                GURL("filesystem:screen_recording"));
+  // Initialize the screen recording item and verify it is shown first.
+  model()->InitializeOrRemoveItem(screen_recording_item_last->id(),
+                                  GURL("filesystem:screen_recording"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -1857,8 +1764,8 @@ TEST_P(HoldingSpaceTrayTest,
 }
 
 // Tests that partially initialized screenshot item shows in the UI in the
-// reverse order from added time rather than finalization time.
-TEST_P(HoldingSpaceTrayTest,
+// reverse order from added time rather than initialization time.
+TEST_F(HoldingSpaceTrayTest,
        PartialScreenshotItemWithExistingScreenRecordingItems) {
   StartSession();
   test_api()->Show();
@@ -1893,9 +1800,9 @@ TEST_P(HoldingSpaceTrayTest,
   EXPECT_EQ(screen_recording_item_1->id(),
             HoldingSpaceItemView::Cast(screen_capture_chips[2])->item()->id());
 
-  // Finalize the screenshot item and verify it is not shown.
-  model()->FinalizeOrRemoveItem(screenshot_item->id(),
-                                GURL("filesystem:fake_1"));
+  // Initialize the screenshot item and verify it is not shown.
+  model()->InitializeOrRemoveItem(screenshot_item->id(),
+                                  GURL("filesystem:fake_1"));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -1925,7 +1832,7 @@ TEST_P(HoldingSpaceTrayTest,
 }
 
 // Screen recordings should have an overlaying play icon.
-TEST_P(HoldingSpaceTrayTest, PlayIconForScreenRecordings) {
+TEST_F(HoldingSpaceTrayTest, PlayIconForScreenRecordings) {
   StartSession();
   test_api()->Show();
 
@@ -1953,7 +1860,7 @@ TEST_P(HoldingSpaceTrayTest, PlayIconForScreenRecordings) {
 
 // Until the user has pinned an item, a placeholder should exist in the pinned
 // files bubble which contains a chip to open the Files app.
-TEST_P(HoldingSpaceTrayTest, PlaceholderContainsFilesAppChip) {
+TEST_F(HoldingSpaceTrayTest, PlaceholderContainsFilesAppChip) {
   StartSession(/*pre_mark_time_of_first_add=*/false);
 
   // The tray button should *not* be shown for users that have never added
@@ -1994,11 +1901,66 @@ TEST_P(HoldingSpaceTrayTest, PlaceholderContainsFilesAppChip) {
   histogram_tester.ExpectBucketCount(
       "HoldingSpace.FilesAppChip.Action.All",
       holding_space_metrics::FilesAppChipAction::kClick, 1);
+
+  // Because the holding space model contains a download item, the holding space
+  // tray should still be shown. The recent files bubble should be shown but
+  // pinned files child bubble should have been hidden due to destruction of the
+  // pinned files section placeholder which is no longer relevant.
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+  EXPECT_FALSE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
+}
+
+// The pinned files section of holding space UI contains a placeholder if the
+// user has never pinned a file. The placeholder contains a Files app chip to
+// take the user to the Files app to pin their first file. Once the user has
+// pressed the Files app chip, the pinned files section placeholder should be
+// permanently hidden.
+TEST_F(HoldingSpaceTrayTest, PlaceholderHiddenAfterFilesAppChipPressed) {
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+
+  // The tray button should be shown because the user has previously added an
+  // item to their holding space.
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Show the bubble. Only the pinned files child bubble should be shown.
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+
+  // A chip to open the Files app should exist in the pinned files bubble.
+  views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+  ASSERT_TRUE(pinned_files_bubble);
+  views::View* files_app_chip =
+      pinned_files_bubble->GetViewByID(kHoldingSpaceFilesAppChipId);
+  ASSERT_TRUE(files_app_chip);
+
+  // Click the chip and expect a call to open the Files app.
+  EXPECT_CALL(*client(), OpenMyFiles);
+  Click(files_app_chip);
+
+  // Because the holding space is completely empty, clicking the Files app chip
+  // should cause the holding space tray and all associated bubbles to hide.
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+  EXPECT_FALSE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+
+  // Add a download item. This should cause the tray button to show.
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake"));
+  MarkTimeOfFirstAdd();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Show holding space UI. Because the Files app chip was previously pressed,
+  // the recent files bubble should be shown but the pinned files bubble should
+  // not.
+  test_api()->Show();
+  EXPECT_FALSE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
 }
 
 // User should be able to open the Downloads folder in the Files app by pressing
 // the enter key on the Downloads section header.
-TEST_P(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
+TEST_F(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
   StartSession();
 
   // Add a download item.
@@ -2029,7 +1991,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
 
 // User should be able to launch selected holding space items by pressing the
 // enter key.
-TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
+TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   StartSession();
 
   // Add three holding space items.
@@ -2092,7 +2054,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
 }
 
 // Clicking on tote bubble background should deselect any selected items.
-TEST_P(HoldingSpaceTrayTest, ClickBackgroundToDeselectItems) {
+TEST_F(HoldingSpaceTrayTest, ClickBackgroundToDeselectItems) {
   StartSession();
 
   // Add two items.
@@ -2131,7 +2093,7 @@ TEST_P(HoldingSpaceTrayTest, ClickBackgroundToDeselectItems) {
 }
 
 // It should be possible to select multiple items in clamshell mode.
-TEST_P(HoldingSpaceTrayTest, MultiselectInClamshellMode) {
+TEST_F(HoldingSpaceTrayTest, MultiselectInClamshellMode) {
   StartSession();
 
   // Add a few holding space items to populate each section.
@@ -2275,7 +2237,7 @@ TEST_P(HoldingSpaceTrayTest, MultiselectInClamshellMode) {
 }
 
 // It should be possible to select multiple items in touch mode.
-TEST_P(HoldingSpaceTrayTest, MultiselectInTouchMode) {
+TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
   StartSession();
 
   // Add a few holding space items.
@@ -2358,7 +2320,7 @@ TEST_P(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
 // Verifies that selection UI is correctly represented depending on device state
 // and the number of selected holding space item views.
-TEST_P(HoldingSpaceTrayTest, SelectionUi) {
+TEST_F(HoldingSpaceTrayTest, SelectionUi) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -2493,7 +2455,7 @@ TEST_P(HoldingSpaceTrayTest, SelectionUi) {
 
 // Verifies that attempting to open holding space items via double click works
 // as expected with event modifiers.
-TEST_P(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
+TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -2585,10 +2547,11 @@ TEST_P(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   testing::Mock::VerifyAndClearExpectations(client());
 }
 
+// TODO(crbug.com/1208501): Fix flakes and re-enable.
 // Verifies that the holding space tray animates in and out as expected.
-TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
+TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Prior to session start, the tray should not be showing.
   EXPECT_FALSE(test_api()->IsShowingInShelf());
@@ -2600,15 +2563,13 @@ TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
   ScopedTransformRecordingLayerDelegate transform_recorder(tray->layer());
 
   // Start the session. Because a holding space item was added in a previous
-  // session (according to prefs state), the tray should animate in.
+  // session (according to prefs state), the tray should show up without
+  // animation.
   StartSession();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-
-  // The entry animation should be the default entry animation in which the
-  // tray translates in from the right without scaling.
-  EXPECT_FALSE(transform_recorder.DidScale());
-  EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {0.f, 0.f}));
-  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 0.f}));
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(tray->layer()->transform().IsIdentity());
+  EXPECT_FALSE(transform_recorder.DidAnimate());
   transform_recorder.Reset();
 
   // Pin a holding space item. Because the tray was already showing there
@@ -2618,17 +2579,21 @@ TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
   EXPECT_TRUE(test_api()->IsShowingInShelf());
 
   // Because there was no change in visibility, there should be no transform.
-  EXPECT_FALSE(transform_recorder.DidScale());
-  EXPECT_FALSE(transform_recorder.DidTranslate());
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(tray->layer()->transform().IsIdentity());
+  EXPECT_FALSE(transform_recorder.DidAnimate());
   transform_recorder.Reset();
 
   // Remove all holding space items. Because a holding space item was
   // previously pinned, the tray should animate out.
   RemoveAllItems();
+  ViewVisibilityChangedWaiter().Wait(tray);
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
   // The exit animation should be the default exit animation in which the tray
   // scales down and pivots about its center point.
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(transform_recorder.DidAnimate());
   EXPECT_TRUE(transform_recorder.ScaledFrom({1.f, 1.f}, {0.5f, 0.5f}));
   EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {11.f, 12.f}));
@@ -2641,6 +2606,9 @@ TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
 
   // The entry animation should be the bounce in animation in which the tray
   // translates in vertically with scaling (since it previously scaled out).
+  LayerAnimationStoppedWaiter().Wait(tray->layer());
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(transform_recorder.DidAnimate());
   EXPECT_TRUE(transform_recorder.ScaledFrom({0.5f, 0.5f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.TranslatedFrom({11.f, 12.f}, {0.f, 0.f}));
@@ -2651,29 +2619,29 @@ TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
   auto* session_controller =
       ash_test_helper()->test_session_controller_client();
   session_controller->LockScreen();
+  ViewVisibilityChangedWaiter().Wait(tray);
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
   // The exit animation should be the default exit animation in which the tray
   // scales down and pivots about its center point.
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(transform_recorder.DidAnimate());
   EXPECT_TRUE(transform_recorder.ScaledFrom({1.0f, 1.0f}, {0.5f, 0.5f}));
   EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {11.f, 12.f}));
   EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {11.f, 12.f}));
   transform_recorder.Reset();
 
-  // Unlock the screen. The tray should animate in.
+  // Unlock the screen. The tray should show up without animation.
   session_controller->UnlockScreen();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
-
-  // The entry animation should be the default entry animation in which the
-  // tray translates in from the right.
-  EXPECT_TRUE(transform_recorder.ScaledFrom({0.5f, 0.5f}, {1.f, 1.f}));
-  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
-  EXPECT_TRUE(transform_recorder.TranslatedFrom({11.f, 12.f}, {0.f, 0.f}));
-  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 12.f}));
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(tray->layer()->transform().IsIdentity());
+  EXPECT_FALSE(transform_recorder.DidAnimate());
   transform_recorder.Reset();
 
-  // Switch to another user with a populated model. The tray should animate in.
+  // Switch to another user with a populated model. The tray should show up
+  // without animation.
   constexpr char kSecondaryUserId[] = "user@secondary";
   HoldingSpaceModel secondary_holding_space_model;
   AddItemToModel(&secondary_holding_space_model,
@@ -2683,18 +2651,19 @@ TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
                         &secondary_holding_space_model);
   EXPECT_TRUE(test_api()->IsShowingInShelf());
 
-  // The entry animation should be the default entry animation in which the
-  // tray translates in from the right.
+  // NOTE: When switching to the secondary user the tray will have briefly been
+  // hidden while the primary user's holding space model was detached until the
+  // secondary user's holding space model was attached. That said, the tray will
+  // have scaled out and must scale back in but should *not* bounce.
+  EXPECT_FALSE(tray->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(transform_recorder.ScaledFrom({1.f, 1.f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
   EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {0.f, 0.f}));
-  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 12.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {11.f, 12.f}));
   transform_recorder.Reset();
 
   // Clean up.
   UnregisterModelForUser(kSecondaryUserId);
 }
-
-INSTANTIATE_TEST_SUITE_P(All, HoldingSpaceTrayTest, testing::Bool());
 
 }  // namespace ash

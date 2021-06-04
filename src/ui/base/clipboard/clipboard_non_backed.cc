@@ -183,7 +183,7 @@ class ClipboardInternal {
   // Reads image from the ClipboardData.
   SkBitmap ReadImage() const {
     SkBitmap img;
-    if (!HasFormat(ClipboardInternalFormat::kBitmap))
+    if (!HasFormat(ClipboardInternalFormat::kPng))
       return img;
 
     // A shallow copy should be fine here, but just to be safe...
@@ -435,9 +435,10 @@ bool ClipboardNonBacked::IsFormatAvailable(
   if (format == ClipboardFormatType::GetRtfType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kRtf);
-  if (format == ClipboardFormatType::GetBitmapType())
+  if (format == ClipboardFormatType::GetPngType() ||
+      format == ClipboardFormatType::GetBitmapType())
     return clipboard_internal_->IsFormatAvailable(
-        ClipboardInternalFormat::kBitmap);
+        ClipboardInternalFormat::kPng);
   if (format == ClipboardFormatType::GetWebKitSmartPasteType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kWeb);
@@ -604,6 +605,14 @@ void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
 #endif
 }
 
+void ClipboardNonBacked::ReadPng(ClipboardBuffer buffer,
+                                 const DataTransferEndpoint* data_dst,
+                                 ReadPngCallback callback) const {
+  DCHECK(CalledOnValidThread());
+  // TODO(crbug.com/1201018): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
                                    const DataTransferEndpoint* data_dst,
                                    ReadImageCallback callback) const {
@@ -688,6 +697,7 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
 #endif
 }
 
+#if defined(USE_OZONE)
 bool ClipboardNonBacked::IsSelectionBufferAvailable() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
@@ -695,6 +705,7 @@ bool ClipboardNonBacked::IsSelectionBufferAvailable() const {
   return true;
 #endif
 }
+#endif  // defined(USE_OZONE)
 
 void ClipboardNonBacked::WritePortableRepresentations(
     ClipboardBuffer buffer,

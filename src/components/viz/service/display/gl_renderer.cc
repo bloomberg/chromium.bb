@@ -23,7 +23,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -61,6 +60,7 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -79,6 +79,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 
@@ -303,7 +304,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* backdrop_filters = nullptr;
-  base::Optional<gfx::RRectF> backdrop_filter_bounds;
+  absl::optional<gfx::RRectF> backdrop_filter_bounds;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -867,7 +868,7 @@ bool GLRenderer::ShouldApplyBackdropFilters(
 gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     DrawRenderPassDrawQuadParams* params,
     gfx::Transform* backdrop_filter_bounds_transform,
-    base::Optional<gfx::RRectF>* backdrop_filter_bounds,
+    absl::optional<gfx::RRectF>* backdrop_filter_bounds,
     gfx::Rect* unclipped_rect) const {
   DCHECK(backdrop_filter_bounds_transform);
   DCHECK(backdrop_filter_bounds);
@@ -1053,7 +1054,7 @@ static sk_sp<SkImage> FinalizeImage(sk_sp<SkSurface> surface) {
 sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     DrawRenderPassDrawQuadParams* params,
     const gfx::Rect& unclipped_rect,
-    const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
+    const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
     const gfx::Transform& backdrop_filter_bounds_transform) {
   DCHECK(ShouldApplyBackdropFilters(params));
   DCHECK(params->backdrop_filter_quality > 0.0f &&
@@ -1421,7 +1422,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
-    base::Optional<gfx::RRectF> backdrop_filter_bounds;
+    absl::optional<gfx::RRectF> backdrop_filter_bounds;
     gfx::Transform backdrop_filter_bounds_transform;
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
@@ -1519,10 +1520,8 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         filter = sk_ref_sp(filter->getInput(0));
       }
       if (filter) {
-        gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
-        if (clip_rect.IsEmpty()) {
-          clip_rect = current_draw_rect_;
-        }
+        gfx::Rect clip_rect =
+            quad->shared_quad_state->clip_rect.value_or(current_draw_rect_);
         gfx::Transform transform = params->quad_to_target_transform;
         transform.FlattenTo2d();
         if (!transform.IsInvertible()) {
@@ -2603,7 +2602,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   }
 #endif
 
-  // TODO(jbauman): Use base::Optional when available.
+  // TODO(jbauman): Use absl::optional when available.
   std::unique_ptr<DisplayResourceProviderGL::ScopedSamplerGL> v_plane_lock;
   if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
     v_plane_lock = std::make_unique<DisplayResourceProviderGL::ScopedSamplerGL>(
@@ -2837,7 +2836,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Bind the program to the GL state.
   SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
                 CurrentRenderPassColorSpace(),
-                /*adjust_src_white_level=*/draw_cache_.is_video_frame);
+                /*adjust_src_white_level=*/draw_cache_.is_video_frame,
+                locked_quad.hdr_metadata());
 
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
@@ -3458,7 +3458,8 @@ void GLRenderer::SwapBuffersSkipped() {
   }
 }
 
-void GLRenderer::SwapBuffersComplete() {
+void GLRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
+  DCHECK(release_fence.is_null());
   if (settings_->release_overlay_resources_after_gpu_query) {
     // Once a resource has been swap-ACKed, send a query to the GPU process to
     // ask if the resource is no longer being consumed by the system compositor.
@@ -3663,12 +3664,16 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
                                const gfx::ColorSpace& dst_color_space,
-                               bool adjust_src_white_level) {
+                               bool adjust_src_white_level,
+                               absl::optional<gfx::HDRMetadata> hdr_metadata) {
   DCHECK(dst_color_space.IsValid());
   gfx::ColorSpace adjusted_src_color_space = src_color_space;
-  if (adjust_src_white_level) {
-    // If the input color space is HDR, and it did not specify a white level,
-    // override it with the frame's white level.
+  if (adjust_src_white_level && src_color_space.IsHDR()) {
+    // TODO(b/183236148): consider using the destination's HDR static metadata
+    // in current_frame()->display_color_spaces.hdr_static_metadata() and the
+    // mastering metadata in |src_hdr_metadata| for the tone mapping; e.g. the
+    // content might be mastered in 0-1000 nits but the display only be able to
+    // represent 0 to 500.
     adjusted_src_color_space = src_color_space.GetWithSDRWhiteLevel(
         current_frame()->display_color_spaces.GetSDRWhiteLevel());
   }
@@ -3914,8 +3919,9 @@ void GLRenderer::ScheduleDCLayers() {
     const gfx::Rect& quad_rect = dc_layer_overlay.quad_rect;
     DCHECK(dc_layer_overlay.transform.IsFlat());
     const SkMatrix44& transform = dc_layer_overlay.transform.matrix();
-    bool is_clipped = dc_layer_overlay.is_clipped;
-    const gfx::Rect& clip_rect = dc_layer_overlay.clip_rect;
+    bool is_clipped = dc_layer_overlay.clip_rect.has_value();
+    const gfx::Rect& clip_rect =
+        dc_layer_overlay.clip_rect.value_or(gfx::Rect());
     unsigned protected_video_type =
         static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 

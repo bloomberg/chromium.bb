@@ -52,8 +52,8 @@ struct CrossThreadCopier<media::Status>
 };
 
 template <>
-struct CrossThreadCopier<base::Optional<DecoderDetails>>
-    : public CrossThreadCopierPassThrough<base::Optional<DecoderDetails>> {
+struct CrossThreadCopier<absl::optional<DecoderDetails>>
+    : public CrossThreadCopierPassThrough<absl::optional<DecoderDetails>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -69,7 +69,7 @@ class MediaVideoTaskWrapper {
  public:
   using CrossThreadOnceInitCB =
       WTF::CrossThreadOnceFunction<void(media::Status status,
-                                        base::Optional<DecoderDetails>)>;
+                                        absl::optional<DecoderDetails>)>;
   using CrossThreadOnceDecodeCB =
       WTF::CrossThreadOnceFunction<void(const media::Status&)>;
   using CrossThreadOnceResetCB = WTF::CrossThreadOnceClosure;
@@ -121,7 +121,7 @@ class MediaVideoTaskWrapper {
   MediaVideoTaskWrapper(const MediaVideoTaskWrapper&) = delete;
   MediaVideoTaskWrapper& operator=(const MediaVideoTaskWrapper&) = delete;
 
-  void Initialize(const media::VideoDecoderConfig& config) {
+  void Initialize(const media::VideoDecoderConfig& config, bool low_delay) {
     DVLOG(2) << __func__;
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -138,8 +138,9 @@ class MediaVideoTaskWrapper {
                            weak_factory_.GetWeakPtr()));
 
     selector_->SelectDecoder(
-        config, WTF::Bind(&MediaVideoTaskWrapper::OnDecoderSelected,
-                          weak_factory_.GetWeakPtr()));
+        config, low_delay,
+        WTF::Bind(&MediaVideoTaskWrapper::OnDecoderSelected,
+                  weak_factory_.GetWeakPtr()));
   }
 
   void Decode(scoped_refptr<media::DecoderBuffer> buffer, int cb_id) {
@@ -254,7 +255,7 @@ class MediaVideoTaskWrapper {
     decoder_ = std::move(decoder);
 
     media::Status status(media::StatusCode::kDecoderUnsupportedConfig);
-    base::Optional<DecoderDetails> decoder_details;
+    absl::optional<DecoderDetails> decoder_details;
     if (decoder_) {
       status = media::OkStatus();
       decoder_details = DecoderDetails({decoder_->GetDecoderType(),
@@ -376,9 +377,6 @@ void VideoDecoderBroker::Initialize(const media::VideoDecoderConfig& config,
   DCHECK(!init_cb_) << "Initialize already pending";
 
   // The following are not currently supported in WebCodecs.
-  // TODO(chcunningham): Should |low_delay| be supported? Should it be
-  // hard-coded to true?
-  DCHECK(!low_delay);
   DCHECK(!cdm_context);
   DCHECK(!waiting_cb);
 
@@ -393,7 +391,7 @@ void VideoDecoderBroker::Initialize(const media::VideoDecoderConfig& config,
       *media_task_runner_, FROM_HERE,
       WTF::CrossThreadBindOnce(&MediaVideoTaskWrapper::Initialize,
                                WTF::CrossThreadUnretained(media_tasks_.get()),
-                               config));
+                               config, low_delay));
 }
 
 int VideoDecoderBroker::CreateCallbackId() {
@@ -410,7 +408,7 @@ int VideoDecoderBroker::CreateCallbackId() {
 }
 
 void VideoDecoderBroker::OnInitialize(media::Status status,
-                                      base::Optional<DecoderDetails> details) {
+                                      absl::optional<DecoderDetails> details) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(init_cb_);

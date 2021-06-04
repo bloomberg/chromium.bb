@@ -12,9 +12,12 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
+#include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -29,107 +32,89 @@ class WorkletLoader;
 // Represents a bidder worklet for FLEDGE
 // (https://github.com/WICG/turtledove/blob/main/FLEDGE.md). Loads and runs the
 // bidder worklet's Javascript.
-class BidderWorklet {
+//
+// Each worklet object can only be used to load and run a single script's
+// generateBid() and (if the bid is won) reportWin() once.
+//
+// TODO(mmenke): Make worklets reuseable. Allow a single BidderWorklet instance
+// to both be used for two generateBid() calls for different interest groups
+// with the same owner in the same auction, and to be used to bid for the same
+// interest group in different auctions.
+class BidderWorklet : public mojom::BidderWorklet {
  public:
-  struct BidResult {
-    // Constructor for when there is no bid, either due to an error or the
-    // script not offering one.
-    BidResult();
-
-    // Constructor when a bid is made. `bid` must be > 0, and the URL must be
-    // valid.
-    BidResult(std::string ad, double bid, GURL render_url);
-
-    // `success` will be false on any type of failure, and other values will be
-    // empty or 0. Inability to extract ad string, bid value, or valid render
-    // URL are all considered errors.
-    //
-    // TODO(mmenke): Pass along some sort of error string instead, to make
-    // debugging easier.
-    bool success = false;
-
-    // JSON string to be passed to the scoring function.
-    std::string ad;
-
-    // Bid. 0 if no bid is offered (even if underlying script returned a
-    // negative value).
-    double bid = 0;
-
-    // Render URL, if any bid was made.
-    GURL render_url;
-  };
-
-  struct ReportWinResult {
-    // Constructor for when there is a failure of some sort, or no URL to report
-    // to.
-    ReportWinResult();
-
-    // Constructor when a report was requested.
-    explicit ReportWinResult(GURL report_url);
-
-    // `success` will be false on any type of failure. Neither lack or reporting
-    // function nor lack of report URL is considered an error.
-    //
-    // TODO(mmenke): Pass along some sort of error string instead, to make
-    // debugging easier.
-    bool success = false;
-
-    // Report URL, if one is provided. Empty on failure, or if no report URL is
-    // provided.
-    GURL report_url;
-  };
-
-  using LoadWorkletCallback = base::OnceCallback<void(bool success)>;
-
-  // Starts loading the worklet script on construction. Callback will be invoked
-  // asynchronously once the data has been fetched or an error has occurred.
-  // Must be destroyed before `v8_helper`. No data is leaked between consecutive
-  // invocations of this method, or between invocations of this method and
-  // GenerateBid().
-  BidderWorklet(network::mojom::URLLoaderFactory* url_loader_factory,
-                const GURL& script_source_url,
-                AuctionV8Helper* v8_helper,
-                LoadWorkletCallback load_worklet_callback);
+  // Starts loading the worklet script on construction, as well as the trusted
+  // bidding data, if necessary. Will then call the script's generateBid()
+  // function and invoke the callback with the results. Callback will always be
+  // invoked asynchronously, once a bid has been generated or a fatal error has
+  // occurred. Must be destroyed before `v8_helper`.
+  //
+  // Data is cached and will be reused ReportWin().
+  BidderWorklet(
+      AuctionV8Helper* v8_helper,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_url_loader_factory,
+      mojom::BiddingInterestGroupPtr bidding_interest_group,
+      const absl::optional<std::string>& auction_signals_json,
+      const absl::optional<std::string>& per_buyer_signals_json,
+      const url::Origin& browser_signal_top_window_origin,
+      const url::Origin& browser_signal_seller_origin,
+      base::Time auction_start_time,
+      mojom::AuctionWorkletService::LoadBidderWorkletAndGenerateBidCallback
+          load_bidder_worklet_and_generate_bid_callback);
   explicit BidderWorklet(const BidderWorklet&) = delete;
   BidderWorklet& operator=(const BidderWorklet&) = delete;
-  ~BidderWorklet();
 
-  // Calls generateBid(), and returns resulting bid, if any. May only be called
-  // once BidderWorklet has successfully loaded.
-  BidResult GenerateBid(
-      const blink::mojom::InterestGroup& interest_group,
-      const base::Optional<std::string>& auction_signals_json,
-      const base::Optional<std::string>& per_buyer_signals_json,
-      const std::vector<std::string>& trusted_bidding_signals_keys,
-      TrustedBiddingSignals* trusted_bidding_signals,
-      const std::string& browser_signal_top_window_hostname,
-      const std::string& browser_signal_seller,
-      int browser_signal_join_count,
-      int browser_signal_bid_count,
-      const std::vector<mojo::StructPtr<mojom::PreviousWin>>&
-          browser_signal_prev_wins,
-      base::Time auction_start_time);
+  ~BidderWorklet() override;
 
-  // Calls reportWin(), and returns reporting information. May only be called
-  // once the worklet has successfully loaded.
-  ReportWinResult ReportWin(
-      const base::Optional<std::string>& auction_signals_json,
-      const base::Optional<std::string>& per_buyer_signals_json,
-      const std::string& seller_signals_json,
-      const std::string& browser_signal_top_window_hostname,
-      const url::Origin& browser_signal_interest_group_owner,
-      const std::string& browser_signal_interest_group_name,
-      const GURL& browser_signal_render_url,
-      const std::string& browser_signal_ad_render_fingerprint,
-      double browser_signal_bid);
+  // mojom::BidderWorklet implementation:
+  void ReportWin(const std::string& seller_signals_json,
+                 const GURL& browser_signal_render_url,
+                 const std::string& browser_signal_ad_render_fingerprint,
+                 double browser_signal_bid,
+                 ReportWinCallback callback) override;
 
  private:
-  void OnDownloadComplete(
-      LoadWorkletCallback load_worklet_callback,
-      std::unique_ptr<v8::Global<v8::UnboundScript>> worklet_script);
+  void OnScriptDownloaded(
+      std::unique_ptr<v8::Global<v8::UnboundScript>> worklet_script,
+      absl::optional<std::string> error_msg);
+
+  void OnTrustedBiddingSignalsDownloaded(bool load_result,
+                                         absl::optional<std::string> error_msg);
+
+  // Checks if the script has been loaded successfully, and the
+  // TrustedBiddingSignals load has finished (successfully or not). If so, calls
+  // generateBid(), and invokes `load_script_and_generate_bid_callback_` with
+  // the resulting bid, if any. May only be called once BidderWorklet has
+  // successfully loaded.
+  void GenerateBidIfReady();
+
+  // Utility function to invoke `load_script_and_generate_bid_callback_` with
+  // `error_msgs` and `trusted_bidding_signals_error_msg_`.
+  void InvokeBidCallbackOnError(
+      std::vector<std::string> error_msgs = std::vector<std::string>());
 
   AuctionV8Helper* const v8_helper_;
+
+  GURL script_source_url_;
+  mojom::AuctionWorkletService::LoadBidderWorkletAndGenerateBidCallback
+      load_bidder_worklet_and_generate_bid_callback_;
+
+  const mojom::BiddingInterestGroupPtr bidding_interest_group_;
+  const absl::optional<std::string> auction_signals_json_;
+  const absl::optional<std::string> per_buyer_signals_json_;
+  const std::string browser_signal_top_window_hostname_;
+  // Serialized copy of seller's origin.
+  const std::string browser_signal_seller_;
+  const base::Time auction_start_time_;
+
   std::unique_ptr<WorkletLoader> worklet_loader_;
+
+  bool trusted_bidding_signals_loading_ = false;
+  std::unique_ptr<TrustedBiddingSignals> trusted_bidding_signals_;
+  // Error message returned by attempt to load `trusted_bidding_signals_`.
+  // Errors loading it are not fatal, so such errors are cached here and only
+  // reported on bid completion.
+  absl::optional<std::string> trusted_bidding_signals_error_msg_;
 
   // Compiled script, not bound to any context. Can be repeatedly bound to
   // different context and executed, without persisting any state.

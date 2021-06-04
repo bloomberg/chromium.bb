@@ -155,8 +155,8 @@ static std::unique_ptr<GrSurfaceDrawContext> random_render_target_context(
 
     return GrSurfaceDrawContext::Make(
             rContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
-            {kRenderTargetWidth, kRenderTargetHeight}, sampleCnt, GrMipmapped::kNo,
-            GrProtected::kNo, origin);
+            {kRenderTargetWidth, kRenderTargetHeight}, SkSurfaceProps(), sampleCnt,
+            GrMipmapped::kNo, GrProtected::kNo, origin);
 }
 
 #if GR_TEST_UTILS
@@ -302,7 +302,7 @@ bool GrDrawingManager::ProgramUnitTest(GrDirectContext* direct, int maxStages, i
     // Validate that GrFPs work correctly without an input.
     auto surfaceDrawContext = GrSurfaceDrawContext::Make(
             direct, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
-            {kRenderTargetWidth, kRenderTargetHeight});
+            {kRenderTargetWidth, kRenderTargetHeight}, SkSurfaceProps());
     if (!surfaceDrawContext) {
         SkDebugf("Could not allocate a surfaceDrawContext");
         return false;
@@ -342,9 +342,9 @@ static int get_programs_max_stages(const sk_gpu_test::ContextInfo& ctxInfo) {
         // Android devices. We have passes on ARM devices with the default number of stages.
         // TODO When we run ES 3.00 GLSL in more places, test again
 #ifdef SK_BUILD_FOR_ANDROID
-            if (kARM_GrGLVendor != gpu->ctxInfo().vendor()) {
-                maxStages = 1;
-            }
+        if (gpu->ctxInfo().vendor() != GrGLVendor::kARM) {
+            maxStages = 1;
+        }
 #endif
         // On iOS we can exceed the maximum number of varyings. http://skbug.com/6627.
 #ifdef SK_BUILD_FOR_IOS
@@ -377,7 +377,7 @@ static int get_programs_max_levels(const sk_gpu_test::ContextInfo& ctxInfo) {
         GrGLGpu* gpu = static_cast<GrGLGpu*>(ctxInfo.directContext()->priv().getGpu());
         // Tecno Spark 3 Pro with Power VR Rogue GE8300 will fail shader compiles with
         // no message if the shader is particularly long.
-        if (gpu->ctxInfo().vendor() == kImagination_GrGLVendor) {
+        if (gpu->ctxInfo().vendor() == GrGLVendor::kImagination) {
             maxTreeLevels = 3;
         }
 #endif

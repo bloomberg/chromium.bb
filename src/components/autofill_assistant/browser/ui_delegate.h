@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/event_handler.h"
@@ -19,6 +18,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 class ControllerObserver;
@@ -67,13 +67,13 @@ class UiDelegate {
   virtual int GetProgress() const = 0;
 
   // Returns the currently active progress step.
-  virtual base::Optional<int> GetProgressActiveStep() const = 0;
+  virtual absl::optional<int> GetProgressActiveStep() const = 0;
 
   // Returns whether the progress bar is visible.
   virtual bool GetProgressVisible() const = 0;
 
   // Returns the current configuration of the step progress bar.
-  virtual base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  virtual absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
   GetStepProgressBarConfiguration() const = 0;
 
   // Returns whether the progress bar should show an error state.
@@ -143,19 +143,19 @@ class UiDelegate {
 
   // Sets the start date of the date/time range.
   virtual void SetDateTimeRangeStartDate(
-      const base::Optional<DateProto>& date) = 0;
+      const absl::optional<DateProto>& date) = 0;
 
   // Sets the start timeslot of the date/time range.
   virtual void SetDateTimeRangeStartTimeSlot(
-      const base::Optional<int>& timeslot_index) = 0;
+      const absl::optional<int>& timeslot_index) = 0;
 
   // Sets the end date of the date/time range.
   virtual void SetDateTimeRangeEndDate(
-      const base::Optional<DateProto>& date) = 0;
+      const absl::optional<DateProto>& date) = 0;
 
   // Sets the end timeslot of the date/time range.
   virtual void SetDateTimeRangeEndTimeSlot(
-      const base::Optional<int>& timeslot_index) = 0;
+      const absl::optional<int>& timeslot_index) = 0;
 
   // Sets an additional value.
   virtual void SetAdditionalValue(const std::string& client_memory_key,
@@ -255,6 +255,10 @@ class UiDelegate {
   // The generic user interface to show, if any.
   virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
 
+  // The persistent generic user interface to show, if any.
+  virtual const GenericUserInterfaceProto* GetPersistentGenericUiProto()
+      const = 0;
+
   // Whether the overlay should be determined based on AA state or always
   // hidden.
   virtual bool ShouldShowOverlay() const = 0;
@@ -264,6 +268,10 @@ class UiDelegate {
 
   // Called when the visibility of the keyboard has changed.
   virtual void OnKeyboardVisibilityChanged(bool visible) = 0;
+
+  // Called when the user starts or finishes to focus an input text field in the
+  // bottom sheet.
+  virtual void OnInputTextFocusChanged(bool is_text_focused) = 0;
 
  protected:
   UiDelegate() = default;

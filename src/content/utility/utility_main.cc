@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
@@ -23,20 +22,31 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/utility/utility_thread_impl.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/sandbox.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "content/utility/speech/speech_recognition_sandbox_hook_linux.h"
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/sandbox/print_backend_sandbox_hook_linux.h"
+#endif
 #include "sandbox/policy/linux/sandbox_linux.h"
 #include "services/audio/audio_sandbox_hook_linux.h"
 #include "services/network/network_sandbox_hook_linux.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/ime/ime_sandbox_hook.h"
 #include "chromeos/services/tts/tts_sandbox_hook.h"
+
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#include "chromeos/services/libassistant/libassistant_sandbox_hook.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif
 
 #if defined(OS_MAC)
@@ -82,12 +92,26 @@ int UtilityMain(const MainFunctionParams& parameters) {
     message_pump_type = base::MessagePumpType::IO;
 #endif  // defined(OS_FUCHSIA)
 
+  if (parameters.command_line.HasSwitch(switches::kTimeZoneForTesting)) {
+    std::string time_zone = parameters.command_line.GetSwitchValueASCII(
+        switches::kTimeZoneForTesting);
+    icu::TimeZone::adoptDefault(
+        icu::TimeZone::createTimeZone(icu::UnicodeString(time_zone.c_str())));
+  }
+
   // The main task executor of the utility process.
   base::SingleThreadTaskExecutor main_thread_task_executor(message_pump_type);
   base::PlatformThread::SetName("CrUtilityMain");
 
-  if (parameters.command_line.HasSwitch(switches::kUtilityStartupDialog))
-    WaitForDebugger("Utility");
+  if (parameters.command_line.HasSwitch(switches::kUtilityStartupDialog)) {
+    auto dialog_match = parameters.command_line.GetSwitchValueASCII(
+        switches::kUtilityStartupDialog);
+    auto sub_type =
+        parameters.command_line.GetSwitchValueASCII(switches::kUtilitySubType);
+    if (dialog_match.empty() || dialog_match == sub_type) {
+      WaitForDebugger(sub_type.empty() ? "Utility" : sub_type);
+    }
+  }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Initializes the sandbox before any threads are created.
@@ -95,32 +119,41 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // Seccomp-BPF policy.
   auto sandbox_type =
       sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
-  if (parameters.zygote_child ||
-      sandbox_type == sandbox::policy::SandboxType::kNetwork ||
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      sandbox_type == sandbox::policy::SandboxType::kIme ||
-      sandbox_type == sandbox::policy::SandboxType::kTts ||
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      sandbox_type == sandbox::policy::SandboxType::kPrintBackend ||
-      sandbox_type == sandbox::policy::SandboxType::kAudio ||
-      sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition) {
-    sandbox::policy::SandboxLinux::PreSandboxHook pre_sandbox_hook;
-    if (sandbox_type == sandbox::policy::SandboxType::kNetwork)
+  sandbox::policy::SandboxLinux::PreSandboxHook pre_sandbox_hook;
+  switch (sandbox_type) {
+    case sandbox::policy::SandboxType::kNetwork:
       pre_sandbox_hook = base::BindOnce(&network::NetworkPreSandboxHook);
-    else if (sandbox_type == sandbox::policy::SandboxType::kPrintBackend)
+      break;
+#if BUILDFLAG(ENABLE_PRINTING)
+    case sandbox::policy::SandboxType::kPrintBackend:
       pre_sandbox_hook = base::BindOnce(&printing::PrintBackendPreSandboxHook);
-    else if (sandbox_type == sandbox::policy::SandboxType::kAudio)
+      break;
+#endif  // BUILDFLAG(ENABLE_PRINTING)
+    case sandbox::policy::SandboxType::kAudio:
       pre_sandbox_hook = base::BindOnce(&audio::AudioPreSandboxHook);
-    else if (sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition)
+      break;
+    case sandbox::policy::SandboxType::kSpeechRecognition:
       pre_sandbox_hook =
           base::BindOnce(&speech::SpeechRecognitionPreSandboxHook);
+      break;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    else if (sandbox_type == sandbox::policy::SandboxType::kIme)
+    case sandbox::policy::SandboxType::kIme:
       pre_sandbox_hook = base::BindOnce(&chromeos::ime::ImePreSandboxHook);
-    else if (sandbox_type == sandbox::policy::SandboxType::kTts)
+      break;
+    case sandbox::policy::SandboxType::kTts:
       pre_sandbox_hook = base::BindOnce(&chromeos::tts::TtsPreSandboxHook);
+      break;
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+    case sandbox::policy::SandboxType::kLibassistant:
+      pre_sandbox_hook =
+          base::BindOnce(&chromeos::libassistant::LibassistantPreSandboxHook);
+      break;
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
+    default:
+      break;
+  }
+  if (parameters.zygote_child || !pre_sandbox_hook.is_null()) {
     sandbox::policy::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),
         sandbox::policy::SandboxLinux::Options());
@@ -157,7 +190,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // TODO(leonhsl): Once http://crbug.com/646833 got resolved, re-enable
   // base::HighResolutionTimerManager here for future possible usage of high
   // resolution timer in service utility process.
-  base::Optional<base::HighResolutionTimerManager> hi_res_timer_manager;
+  absl::optional<base::HighResolutionTimerManager> hi_res_timer_manager;
   if (base::PowerMonitor::IsInitialized()) {
     hi_res_timer_manager.emplace();
   }
@@ -165,6 +198,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   auto sandbox_type =
       sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
+  DVLOG(1) << "Sandbox type: " << static_cast<int>(sandbox_type);
 
   // https://crbug.com/1076771 https://crbug.com/1075487 Premature unload of
   // shell32 caused process to crash during process shutdown.
@@ -172,7 +206,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   UNREFERENCED_PARAMETER(shell32_pin);
 
   if (!sandbox::policy::IsUnsandboxedSandboxType(sandbox_type) &&
-      sandbox_type != sandbox::policy::SandboxType::kCdm) {
+      sandbox_type != sandbox::policy::SandboxType::kCdm &&
+      sandbox_type != sandbox::policy::SandboxType::kMediaFoundationCdm) {
     if (!g_utility_target_services)
       return false;
     char buffer;

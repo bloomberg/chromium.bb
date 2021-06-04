@@ -40,7 +40,7 @@ benchmark. Two files will be present in each directory; perf_results.json, which
 is the perf specific results (with unenforced format, could be histogram or
 graph json), and test_results.json, which is a JSON test results
 format file
-https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
+https://chromium.googlesource.com/chromium/src/+/main/docs/testing/json_test_results_format.md
 
 TESTING:
 To test changes to this script, please run
@@ -51,6 +51,7 @@ cd tools/perf
 import argparse
 import json
 import os
+import requests
 import shutil
 import sys
 import time
@@ -245,7 +246,7 @@ class GtestCommandGenerator(object):
 
 def write_simple_test_results(return_code, output_filepath, benchmark_name):
   # TODO(crbug.com/1115658): Fix to output
-  # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
+  # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/json_test_results_format.md
   # for each test rather than this summary.
   # Append the shard index to the end of the name so that the merge script
   # doesn't blow up trying to merge unmergeable results.
@@ -255,6 +256,7 @@ def write_simple_test_results(return_code, output_filepath, benchmark_name):
           benchmark_name: {
               'expected': 'PASS',
               'actual': 'FAIL' if return_code else 'PASS',
+              'is_unexpected': True if return_code else False,
           },
       },
       'interrupted': False,
@@ -270,7 +272,44 @@ def write_simple_test_results(return_code, output_filepath, benchmark_name):
     json.dump(output_json, fh)
 
 
-def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
+def upload_simple_test_results(return_code, benchmark_name):
+  # TODO(crbug.com/1115658): Fix to upload results for each test rather than
+  # this summary.
+  try:
+    with open(os.environ['LUCI_CONTEXT']) as f:
+      sink = json.load(f)['result_sink']
+  except KeyError:
+    return
+
+  if return_code:
+    summary = '<p>Benchmark failed with status code %d</p>' % return_code
+  else:
+    summary = '<p>Benchmark passed</p>'
+
+  result_json = {
+      'testResults': [{
+        'testId': benchmark_name,
+        'expected': not return_code,
+        'status': 'FAIL' if return_code else 'PASS',
+        'summaryHtml': summary,
+        'tags': [{'key': 'exit_code', 'value': str(return_code)}],
+      }]
+  }
+
+  res = requests.post(
+      url='http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults' %
+      sink['address'],
+      headers={
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'ResultSink %s' % sink['auth_token'],
+      },
+      data=json.dumps(result_json))
+  res.raise_for_status()
+
+
+def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False,
+                            is_unittest=False):
   start = time.time()
 
   env = os.environ.copy()
@@ -334,6 +373,8 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
     return_code = 1
   write_simple_test_results(return_code, output_paths.test_results,
                             output_paths.name)
+  if not is_unittest:
+    upload_simple_test_results(return_code, output_paths.name)
 
   print_duration(
       'executing gtest %s' % command_generator.executable_name, start)
@@ -503,10 +544,14 @@ def execute_telemetry_benchmark(
            'outputing structured test results and perf results output:')
     print traceback.format_exc()
   finally:
-    # Add ignore_errors=True because otherwise rmtree may fail due to leaky
-    # processes of tests are still holding opened handles to files under
-    # |tempfile_dir|. For example, see crbug.com/865896
-    shutil.rmtree(temp_dir, ignore_errors=True)
+    # On swarming bots, don't remove output directory, since Result Sink might
+    # still be uploading files to Result DB. Also, swarming bots automatically
+    # clean up at the end of each task.
+    if 'SWARMING_TASK_ID' not in os.environ:
+      # Add ignore_errors=True because otherwise rmtree may fail due to leaky
+      # processes of tests are still holding opened handles to files under
+      # |tempfile_dir|. For example, see crbug.com/865896
+      shutil.rmtree(temp_dir, ignore_errors=True)
 
   print_duration('executing benchmark %s' % command_generator.benchmark, start)
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -49,10 +51,7 @@ namespace ash {
 namespace {
 
 constexpr char kNewDeskHistogramName[] = "Ash.Desks.NewDesk2";
-// TODO(minch): Remove kDesksCountHistogramName and make the corresponding
-// histogram obsolete when Bento is fully launched.
-constexpr char kDesksCountHistogramName[] = "Ash.Desks.DesksCount2";
-constexpr char kBentoDesksCountHistogramName[] = "Ash.Desks.DesksCount3";
+constexpr char kDesksCountHistogramName[] = "Ash.Desks.DesksCount3";
 constexpr char kWeeklyActiveDesksHistogramName[] =
     "Ash.Desks.WeeklyActiveDesks";
 constexpr char kRemoveDeskHistogramName[] = "Ash.Desks.RemoveDesk";
@@ -162,6 +161,16 @@ bool IsParentSwitchableContainer(const aura::Window* window) {
   return window->parent() && IsSwitchableContainer(window->parent());
 }
 
+bool IsApplistActiveInTabletMode(const aura::Window* active_window) {
+  DCHECK(active_window);
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  auto* app_list_controller = shell->app_list_controller();
+  return active_window == app_list_controller->GetWindow();
+}
+
 }  // namespace
 
 // Helper class which wraps around a OneShotTimer and used for recording how
@@ -231,8 +240,7 @@ class DesksController::DeskTraversalsMetricsHelper {
 };
 
 DesksController::DesksController()
-    : is_enhanced_desk_animations_(features::IsEnhancedDeskAnimations()),
-      metrics_helper_(std::make_unique<DeskTraversalsMetricsHelper>(this)) {
+    : metrics_helper_(std::make_unique<DeskTraversalsMetricsHelper>(this)) {
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
@@ -263,7 +271,7 @@ DesksController* DesksController::Get() {
 
 // static
 std::u16string DesksController::GetDeskDefaultName(size_t desk_index) {
-  DCHECK_LT(desk_index, desks_util::GetMaxNumberOfDesks());
+  DCHECK_LT(desk_index, desks_util::kMaxNumberOfDesks);
   return l10n_util::GetStringUTF16(kDeskDefaultNameIds[desk_index]);
 }
 
@@ -322,7 +330,7 @@ bool DesksController::AreDesksBeingModified() const {
 }
 
 bool DesksController::CanCreateDesks() const {
-  return desks_.size() < desks_util::GetMaxNumberOfDesks();
+  return desks_.size() < desks_util::kMaxNumberOfDesks;
 }
 
 Desk* DesksController::GetNextDesk(bool use_target_active_desk) const {
@@ -362,11 +370,10 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
   available_container_ids_.pop();
   Desk* new_desk = desks_.back().get();
 
-  // If Bento is enabled and the user creates a desk with the button, the new
-  // desk should have an empty name to encourage them to rename their desks.
-  const bool empty_name = features::IsBentoEnabled() &&
-                          source == DesksCreationRemovalSource::kButton &&
-                          desks_.size() > 1;
+  // The new desk should have an empty name when the user creates a desk with
+  // the button. This is done to encourage them to rename their desks.
+  const bool empty_name =
+      source == DesksCreationRemovalSource::kButton && desks_.size() > 1;
   if (!empty_name) {
     new_desk->SetName(GetDeskDefaultName(desks_.size() - 1),
                       /*set_by_user=*/false);
@@ -379,8 +386,6 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
 
   for (auto& observer : observers_)
     observer.OnDeskAdded(new_desk);
-
-  shell->shell_delegate()->DesksStateChanged(desks_.size());
 
   if (!is_first_ever_desk) {
     desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
@@ -418,7 +423,6 @@ void DesksController::RemoveDesk(const Desk* desk,
 }
 
 void DesksController::ReorderDesk(int old_index, int new_index) {
-  DCHECK(features::IsBentoEnabled());
   DCHECK_NE(old_index, new_index);
   DCHECK_GE(old_index, 0);
   DCHECK_GE(new_index, 0);
@@ -496,8 +500,14 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   if (desk == active_desk_) {
     if (in_overview) {
       // Selecting the active desk's mini_view in overview mode is allowed and
-      // should just exit overview mode normally.
-      overview_controller->EndOverview();
+      // should just exit overview mode normally. Immediately exit overview if
+      // switching to a new user, otherwise the multi user switch animation will
+      // animate the same windows that overview watches to determine if the
+      // overview shutdown animation is complete. See https://crbug.com/1001586.
+      const bool immediate_exit = source == DesksSwitchSource::kUserSwitch;
+      overview_controller->EndOverview(
+          immediate_exit ? OverviewEnterExitType::kImmediateExit
+                         : OverviewEnterExitType::kNormal);
     }
     return;
   }
@@ -525,12 +535,16 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   // ensure that after switching desks, we will try to focus a candidate window.
   // We will also update window activation if the currently active window is one
   // in a switchable container. Otherwise, do not update the window activation.
-  // This will prevent some system UI windows like the app list from closing
-  // when switching desks.
+  // This will prevent some ephemeral system UI surfaces such as the app list
+  // and system tray from closing when switching desks. An exception is the app
+  // list in tablet mode, which should gain activation when there are no
+  // windows, as it is treated like a bottom stacked window.
   aura::Window* active_window = window_util::GetActiveWindow();
   const bool update_window_activation =
       in_overview || !active_window ||
-      IsParentSwitchableContainer(active_window);
+      IsParentSwitchableContainer(active_window) ||
+      IsApplistActiveInTabletMode(active_window);
+
   const int starting_desk_index = GetDeskIndex(active_desk());
   animation_ = std::make_unique<DeskActivationAnimation>(
       this, starting_desk_index, target_desk_index, source,
@@ -542,18 +556,21 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
 
 bool DesksController::ActivateAdjacentDesk(bool going_left,
                                            DesksSwitchSource source) {
-  // An on-going desk switch animation might be in progress. Skip this
-  // accelerator or touchpad event if enhanced desk animations are not enabled.
-  if (!is_enhanced_desk_animations_ && AreDesksBeingModified())
-    return false;
-
   if (Shell::Get()->session_controller()->IsUserSessionBlocked())
     return false;
 
   // Try replacing an ongoing desk animation of the same source.
-  if (is_enhanced_desk_animations_ && animation_ &&
-      animation_->Replace(going_left, source)) {
-    return true;
+  if (animation_) {
+    if (animation_->Replace(going_left, source))
+      return true;
+
+    // We arrive here if `DeskActivationAnimation::Replace()` fails
+    // due to trying to replace an animation before the original animation has
+    // finished taking their screenshots. We can continue with creating a new
+    // animation in `ActivateDesk()`, but we need to clean up some desk state.
+    ActivateDeskInternal(desks()[animation_->ending_desk_index()].get(),
+                         /*update_window_activation=*/false);
+    animation_.reset();
   }
 
   const Desk* desk_to_activate = going_left ? GetPreviousDesk() : GetNextDesk();
@@ -568,8 +585,6 @@ bool DesksController::ActivateAdjacentDesk(bool going_left,
 }
 
 bool DesksController::StartSwipeAnimation(bool move_left) {
-  DCHECK(is_enhanced_desk_animations_);
-
   // Activate an adjacent desk. It will replace an ongoing touchpad animation if
   // one exists.
   return ActivateAdjacentDesk(move_left,
@@ -577,13 +592,11 @@ bool DesksController::StartSwipeAnimation(bool move_left) {
 }
 
 void DesksController::UpdateSwipeAnimation(float scroll_delta_x) {
-  DCHECK(is_enhanced_desk_animations_);
   if (animation_)
     animation_->UpdateSwipeAnimation(scroll_delta_x);
 }
 
 void DesksController::EndSwipeAnimation() {
-  DCHECK(is_enhanced_desk_animations_);
   if (animation_)
     animation_->EndSwipeAnimation();
 }
@@ -658,9 +671,6 @@ bool DesksController::MoveWindowFromActiveDeskTo(
 }
 
 void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
-  if (!features::IsBentoEnabled())
-    return;
-
   const bool added = visible_on_all_desks_windows_.emplace(window).second;
   DCHECK(added);
   NotifyAllDesksForContentChanged();
@@ -936,8 +946,7 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
     observer.OnDeskActivationChanged(active_desk_, old_active);
 
   // Only update active desk prefs when a primary user switches a desk.
-  if (features::IsBentoEnabled() &&
-      shell->session_controller()->IsUserPrimary()) {
+  if (shell->session_controller()->IsUserPrimary()) {
     desks_restore_util::UpdatePrimaryUserActiveDeskPrefs(
         GetDeskIndex(active_desk_));
   }
@@ -1068,8 +1077,6 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   for (auto& observer : observers_)
     observer.OnDeskRemoved(removed_desk.get());
 
-  shell->shell_delegate()->DesksStateChanged(desks_.size());
-
   available_container_ids_.push(removed_desk->container_id());
 
   // Avoid having stale backdrop state as a desk is removed while in overview
@@ -1097,7 +1104,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
   desks_restore_util::UpdatePrimaryUserDeskMetricsPrefs();
 
-  DCHECK_LE(available_container_ids_.size(), desks_util::GetMaxNumberOfDesks());
+  DCHECK_LE(available_container_ids_.size(), desks_util::kMaxNumberOfDesks);
 }
 
 void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(
@@ -1217,11 +1224,9 @@ void DesksController::ReportNumberOfWindowsPerDeskHistogram() const {
 }
 
 void DesksController::ReportDesksCountHistogram() const {
-  DCHECK_LE(desks_.size(), desks_util::GetMaxNumberOfDesks());
-  UMA_HISTOGRAM_EXACT_LINEAR(features::IsBentoEnabled()
-                                 ? kBentoDesksCountHistogramName
-                                 : kDesksCountHistogramName,
-                             desks_.size(), desks_util::GetMaxNumberOfDesks());
+  DCHECK_LE(desks_.size(), desks_util::kMaxNumberOfDesks);
+  UMA_HISTOGRAM_EXACT_LINEAR(kDesksCountHistogramName, desks_.size(),
+                             desks_util::kMaxNumberOfDesks);
 }
 
 void DesksController::RecordAndResetNumberOfWeeklyActiveDesks() {

@@ -31,16 +31,35 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) SyncTrustedVaultKeys {
   // authenticator.js.
   static SyncTrustedVaultKeys FromJs(const base::DictionaryValue& js_object);
 
+  const std::string& gaia_id() const;
+
   const std::vector<std::vector<uint8_t>>& encryption_keys() const;
   int last_encryption_key_version() const;
-  const std::vector<std::vector<uint8_t>>& trusted_public_keys() const;
+
+  struct TrustedRecoveryMethod {
+    TrustedRecoveryMethod();
+    TrustedRecoveryMethod(const TrustedRecoveryMethod&);
+    TrustedRecoveryMethod& operator=(const TrustedRecoveryMethod&);
+    ~TrustedRecoveryMethod();
+
+    std::vector<uint8_t> public_key;
+    int type_hint = 0;
+  };
+  const std::vector<TrustedRecoveryMethod>& trusted_recovery_methods() const;
 
  private:
+  std::string gaia_id_;
   std::vector<std::vector<uint8_t>> encryption_keys_;
   int last_encryption_key_version_ = 0;
-  std::vector<std::vector<uint8_t>> trusted_public_keys_;
+  std::vector<TrustedRecoveryMethod> trusted_recovery_methods_;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::SyncTrustedVaultKeys;
+}
 
 #endif  // CHROMEOS_LOGIN_AUTH_SYNC_TRUSTED_VAULT_KEYS_H_

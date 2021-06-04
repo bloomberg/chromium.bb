@@ -39,6 +39,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -88,9 +89,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListView* app_list_view)
     : SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
-      app_list_view_(app_list_view),
-      is_app_list_search_autocomplete_enabled_(
-          app_list_features::IsAppListSearchAutocompleteEnabled()) {}
+      app_list_view_(app_list_view) {}
 
 SearchBoxView::~SearchBoxView() {
   search_model_->search_box()->RemoveObserver(this);
@@ -426,7 +425,7 @@ void SearchBoxView::ProcessAutocomplete() {
     return;
 
   SearchResultBaseView* const first_result_view =
-      contents_view_->search_results_page_view()->first_result_view();
+      contents_view_->search_result_page_view()->first_result_view();
   if (!first_result_view || !first_result_view->selected())
     return;
 
@@ -593,7 +592,7 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
   if (!is_search_box_active())
     return;
 
-  contents_view_->search_results_page_view()
+  contents_view_->search_result_page_view()
       ->result_selection_controller()
       ->ClearSelection();
   a11y_selection_on_search_result_ = false;
@@ -624,11 +623,11 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   // Nothing to do if no results are available (the rest of the method handles
   // result actions and result traversal). This might happen if zero state
   // suggestions are not enabled, and search box textfield is empty.
-  if (!contents_view_->search_results_page_view()->first_result_view())
+  if (!contents_view_->search_result_page_view()->first_result_view())
     return false;
 
   ResultSelectionController* selection_controller =
-      contents_view_->search_results_page_view()->result_selection_controller();
+      contents_view_->search_result_page_view()->result_selection_controller();
 
   // When search box is active, the focus cycles between close button and the
   // search_box - when close button is focused, traversal keys (arrows and
@@ -773,7 +772,7 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
   if (selected_result->result_type() == AppListSearchResultType::kOmnibox &&
       (!selected_result->is_omnibox_search() ||
        selected_result->omnibox_type() ==
-           SearchResultOmniboxType::kCalculatorAnswer) &&
+           SearchResultOmniboxDisplayType::kCalculatorAnswer) &&
       !selected_result->details().empty()) {
     // For url (non-search) results, use details to ensure that the url is
     // displayed. For calculator results, use details to ensure that the
@@ -804,8 +803,7 @@ void SearchBoxView::ShowAssistantChanged() {
 bool SearchBoxView::ShouldProcessAutocomplete() {
   // IME sets composition text while the user is typing, so avoid handle
   // autocomplete in this case to avoid conflicts.
-  return is_app_list_search_autocomplete_enabled_ &&
-         !(search_box()->IsIMEComposing() && highlight_range_.is_empty());
+  return !(search_box()->IsIMEComposing() && highlight_range_.is_empty());
 }
 
 void SearchBoxView::ResetHighlightRange() {

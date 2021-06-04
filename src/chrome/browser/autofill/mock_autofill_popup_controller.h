@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/test/gfx_util.h"
 
 namespace autofill {
 
@@ -69,8 +70,8 @@ class MockAutofillPopupController
   MOCK_METHOD3(GetRemovalConfirmationText,
                bool(int index, std::u16string* title, std::u16string* body));
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
-  MOCK_METHOD1(SetSelectedLine, void(base::Optional<int> selected_line));
-  MOCK_CONST_METHOD0(selected_line, base::Optional<int>());
+  MOCK_METHOD1(SetSelectedLine, void(absl::optional<int> selected_line));
+  MOCK_CONST_METHOD0(selected_line, absl::optional<int>());
   MOCK_CONST_METHOD0(GetPopupType, PopupType());
 
   void set_suggestions(const std::vector<int>& ids) {
@@ -84,6 +85,7 @@ class MockAutofillPopupController
 
  private:
   std::vector<autofill::Suggestion> suggestions_;
+  gfx::ScopedDefaultFontDescription default_font_desc_setter_;
 
   base::WeakPtrFactory<MockAutofillPopupController> weak_ptr_factory_{this};
 };

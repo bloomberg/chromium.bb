@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -240,9 +241,7 @@ void ReportingCacheImpl::OnParsedHeader(
               new_client.network_isolation_key);
     DCHECK_EQ(new_group.group_key.origin, new_client.origin);
 
-    std::set<GURL> new_endpoints;
     for (const auto& parsed_endpoint_info : parsed_endpoint_group.endpoints) {
-      new_endpoints.insert(parsed_endpoint_info.url);
       endpoints_per_group[new_group.group_key].insert(parsed_endpoint_info.url);
       ReportingEndpoint new_endpoint(new_group.group_key,
                                      std::move(parsed_endpoint_info));
@@ -412,7 +411,7 @@ void ReportingCacheImpl::AddClientsLoadedFromStore(
   auto endpoints_it = loaded_endpoints.begin();
   auto endpoint_groups_it = loaded_endpoint_groups.begin();
 
-  base::Optional<Client> client;
+  absl::optional<Client> client;
 
   while (endpoint_groups_it != loaded_endpoint_groups.end() &&
          endpoints_it != loaded_endpoints.end()) {
@@ -457,7 +456,7 @@ void ReportingCacheImpl::AddClientsLoadedFromStore(
         EnforcePerClientAndGlobalEndpointLimits(client_it);
       }
       DCHECK(FindClientIt(group_key) == clients_.end());
-      client = base::make_optional(
+      client = absl::make_optional(
           Client(group_key.network_isolation_key, group_key.origin));
     }
     DCHECK(client.has_value());
@@ -971,7 +970,7 @@ void ReportingCacheImpl::RemoveEndpointsInGroupOtherThan(
 
     // This may invalidate |group_it| (and also possibly |client_it|), but only
     // if we are processing the last remaining endpoint in the group.
-    base::Optional<EndpointMap::iterator> next_it =
+    absl::optional<EndpointMap::iterator> next_it =
         RemoveEndpointInternal(client_it, group_it, it);
     if (!next_it.has_value())
       return;
@@ -1025,7 +1024,7 @@ void ReportingCacheImpl::MarkEndpointGroupAndClientUsed(
     store()->UpdateReportingEndpointGroupAccessTime(group_it->second);
 }
 
-base::Optional<ReportingCacheImpl::EndpointMap::iterator>
+absl::optional<ReportingCacheImpl::EndpointMap::iterator>
 ReportingCacheImpl::RemoveEndpointInternal(ClientMap::iterator client_it,
                                            EndpointGroupMap::iterator group_it,
                                            EndpointMap::iterator endpoint_it) {
@@ -1039,7 +1038,7 @@ ReportingCacheImpl::RemoveEndpointInternal(ClientMap::iterator client_it,
   // be removed if it becomes empty.
   if (endpoints_.count(group_key) == 1) {
     RemoveEndpointGroupInternal(client_it, group_it);
-    return base::nullopt;
+    return absl::nullopt;
   }
   // Otherwise, there are other endpoints in the group, so there is no chance
   // of needing to remove the group/client. Just remove this endpoint and
@@ -1052,7 +1051,7 @@ ReportingCacheImpl::RemoveEndpointInternal(ClientMap::iterator client_it,
   return endpoints_.erase(endpoint_it);
 }
 
-base::Optional<ReportingCacheImpl::EndpointGroupMap::iterator>
+absl::optional<ReportingCacheImpl::EndpointGroupMap::iterator>
 ReportingCacheImpl::RemoveEndpointGroupInternal(
     ClientMap::iterator client_it,
     EndpointGroupMap::iterator group_it,
@@ -1088,14 +1087,14 @@ ReportingCacheImpl::RemoveEndpointGroupInternal(
   if (context_->IsClientDataPersisted())
     store()->DeleteReportingEndpointGroup(group_it->second);
 
-  base::Optional<EndpointGroupMap::iterator> rv =
+  absl::optional<EndpointGroupMap::iterator> rv =
       endpoint_groups_.erase(group_it);
 
   // Delete client if empty.
   if (client.endpoint_count == 0) {
     DCHECK(client.endpoint_group_names.empty());
     clients_.erase(client_it);
-    rv = base::nullopt;
+    rv = absl::nullopt;
   }
   return rv;
 }

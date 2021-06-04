@@ -34,7 +34,7 @@ const bool PlatformStyle::kIsOkButtonLeading = false;
 const float PlatformStyle::kFocusHaloThickness = 2.f;
 const float PlatformStyle::kFocusHaloInset = -1.f;
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 
 const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
@@ -47,7 +47,6 @@ const bool PlatformStyle::kReturnClicksFocusedControl = true;
 const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
-const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = true;
 const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = false;
 const View::FocusBehavior PlatformStyle::kDefaultFocusBehavior =
@@ -85,7 +84,7 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const std::u16string& text,
   return gfx::Range(cursor_position, previous_grapheme_index);
 }
 
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 #if !BUILDFLAG(ENABLE_DESKTOP_AURA) || \
     (!defined(OS_LINUX) && !defined(OS_CHROMEOS))

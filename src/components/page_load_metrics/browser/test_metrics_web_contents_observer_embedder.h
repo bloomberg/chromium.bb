@@ -7,11 +7,11 @@
 
 #include <vector>
 
-#include "base/optional.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -29,7 +29,7 @@ class TestMetricsWebContentsObserverEmbedder
   bool IsNewTabPageUrl(const GURL& url) override;
   void RegisterObservers(PageLoadTracker* tracker) override;
   std::unique_ptr<base::OneShotTimer> CreateTimer() override;
-  bool IsPrerender(content::WebContents* web_contents) override;
+  bool IsNoStatePrefetch(content::WebContents* web_contents) override;
   bool IsExtensionUrl(const GURL& url) override;
   PageLoadMetricsMemoryTracker* GetMemoryTrackerForBrowserContext(
       content::BrowserContext* browser_context) override;
@@ -59,11 +59,11 @@ class TestMetricsWebContentsObserverEmbedder
     return observed_aborted_urls_;
   }
 
-  const std::vector<mojom::PageLoadFeatures>& observed_features() const {
+  const std::vector<blink::UseCounterFeature>& observed_features() const {
     return observed_features_;
   }
 
-  const base::Optional<bool>& is_first_navigation_in_web_contents() const {
+  const absl::optional<bool>& is_first_navigation_in_web_contents() const {
     return is_first_navigation_in_web_contents_;
   }
 
@@ -89,8 +89,8 @@ class TestMetricsWebContentsObserverEmbedder
   std::vector<GURL> observed_aborted_urls_;
   std::vector<ExtraRequestCompleteInfo> loaded_resources_;
   std::vector<GURL> completed_filtered_urls_;
-  std::vector<mojom::PageLoadFeatures> observed_features_;
-  base::Optional<bool> is_first_navigation_in_web_contents_;
+  std::vector<blink::UseCounterFeature> observed_features_;
+  absl::optional<bool> is_first_navigation_in_web_contents_;
   bool is_ntp_ = false;
   int count_on_enter_back_forward_cache_ = 0;
 };

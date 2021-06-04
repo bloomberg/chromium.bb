@@ -48,6 +48,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_CONST_METHOD0(GetTextInputFlags, int());
   MOCK_CONST_METHOD0(CanComposeInline, bool());
   MOCK_CONST_METHOD0(GetCaretBounds, gfx::Rect());
+  MOCK_CONST_METHOD0(GetSelectionBoundingBox, gfx::Rect());
   MOCK_CONST_METHOD2(GetCompositionCharacterBounds, bool(uint32_t, gfx::Rect*));
   MOCK_CONST_METHOD0(HasCompositionText, bool());
   MOCK_CONST_METHOD0(GetFocusReason, ui::TextInputClient::FocusReason());
@@ -72,8 +73,8 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD3(SetActiveCompositionForAccessibility,
                void(const gfx::Range&, const std::u16string&, bool));
   MOCK_METHOD2(GetActiveTextInputControlLayoutBounds,
-               void(base::Optional<gfx::Rect>* control_bounds,
-                    base::Optional<gfx::Rect>* selection_bounds));
+               void(absl::optional<gfx::Rect>* control_bounds,
+                    absl::optional<gfx::Rect>* selection_bounds));
 };
 
 class MockInputMethodDelegate : public internal::InputMethodDelegate {

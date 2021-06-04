@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import os
 import tempfile
 import unittest
 import json
+import six
 
 
 from telemetry import project_config
@@ -66,7 +68,7 @@ class RunTestsUnitTest(unittest.TestCase):
     def _IsLeafNode(node):
       test_dict = node[1]
       return ('expected' in test_dict and
-              isinstance(test_dict['expected'], basestring))
+              isinstance(test_dict['expected'], six.string_types))
     node_queues = []
     for t in test_result['tests']:
       node_queues.append((t, test_result['tests'][t]))
@@ -102,7 +104,11 @@ class RunTestsUnitTest(unittest.TestCase):
     temp_file.close()
     temp_file_name = temp_file.name
     try:
-      passed_args = []
+      passed_args = [
+          # We don't want the underlying tests to report their results to
+          # ResultDB.
+          '--disable-resultsink',
+      ]
       if test_name:
         passed_args.append(test_name)
       if no_browser:
@@ -221,7 +227,7 @@ class RunTestsUnitTest(unittest.TestCase):
         [], [], [test_name],
         test_name=test_name,
         extra_args=['--skip=*fail'])
-    self.assertEqual(actual_skips, set([test_name]))
+    self.assertEqual(actual_skips, {test_name})
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testTestFailsAllRetryOnFailureRetriesAndIsNotARegression(self):
@@ -267,7 +273,7 @@ class RunTestsUnitTest(unittest.TestCase):
         extra_args=['--skip=*test_pass'])
     test_result = (self._test_result['tests']['unit_tests_test']
                    ['ExampleTests']['test_pass'])
-    self.assertEqual(actual_skips, set([test_name]))
+    self.assertEqual(actual_skips, {test_name})
     self.assertEqual(test_result['expected'], 'SKIP')
     self.assertEqual(test_result['actual'], 'SKIP')
     self.assertNotIn('is_unexpected', test_result)
@@ -280,7 +286,7 @@ class RunTestsUnitTest(unittest.TestCase):
         [], [], [test_name], test_name=test_name)
     result = (self._test_result['tests']['unit_tests_test']
               ['ExampleTests']['test_skip'])
-    self.assertEqual(actual_skips, set([test_name]))
+    self.assertEqual(actual_skips, {test_name})
     self.assertEqual(result['actual'], 'SKIP')
     self.assertEqual(result['expected'], 'SKIP')
     self.assertNotIn('is_unexpected', result)
@@ -327,61 +333,61 @@ class RunTestsUnitTest(unittest.TestCase):
 
   def testSystemMacMavericks(self):
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testMacOnly',
-             'testMavericksOnly',
-             'testNoChromeOS',
-             'testNoWinLinux',
-             'testSystemOnly',
-             'testHasTabs']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testMacOnly',
+         'testMavericksOnly',
+         'testNoChromeOS',
+         'testNoWinLinux',
+         'testSystemOnly',
+         'testHasTabs'},
         self._GetEnabledTests('system', 'mac', 'mavericks', True))
 
   def testSystemMacLion(self):
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testMacOnly',
-             'testNoChromeOS',
-             'testNoMavericks',
-             'testNoWinLinux',
-             'testSystemOnly',
-             'testHasTabs']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testMacOnly',
+         'testNoChromeOS',
+         'testNoMavericks',
+         'testNoWinLinux',
+         'testSystemOnly',
+         'testHasTabs'},
         self._GetEnabledTests('system', 'mac', 'lion', True))
 
   def testCrosGuestChromeOS(self):
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testChromeOSOnly',
-             'testNoMac',
-             'testNoMavericks',
-             'testNoSystem',
-             'testNoWinLinux',
-             'testHasTabs']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testChromeOSOnly',
+         'testNoMac',
+         'testNoMavericks',
+         'testNoSystem',
+         'testNoWinLinux',
+         'testHasTabs'},
         self._GetEnabledTests('cros-guest', 'chromeos', '', True))
 
   def testCanaryWindowsWin7(self):
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testNoChromeOS',
-             'testNoMac',
-             'testNoMavericks',
-             'testNoSystem',
-             'testWinOrLinuxOnly',
-             'testHasTabs']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testNoChromeOS',
+         'testNoMac',
+         'testNoMavericks',
+         'testNoSystem',
+         'testWinOrLinuxOnly',
+         'testHasTabs'},
         self._GetEnabledTests('canary', 'win', 'win7', True))
 
   def testDoesntHaveTabs(self):
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testNoChromeOS',
-             'testNoMac',
-             'testNoMavericks',
-             'testNoSystem',
-             'testWinOrLinuxOnly']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testNoChromeOS',
+         'testNoMac',
+         'testNoMavericks',
+         'testNoSystem',
+         'testWinOrLinuxOnly'},
         self._GetEnabledTests('canary', 'win', 'win7', False))
 
   def testSkip(self):
@@ -390,18 +396,18 @@ class RunTestsUnitTest(unittest.TestCase):
         'telemetry.*testNoMac', '*NoMavericks',
         'telemetry.testing.disabled_cases.DisabledCases.testNoSystem']
     self.assertEquals(
-        set(['testAllEnabled',
-             'testAllEnabledVersion2',
-             'testNoChromeOS',
-             'testWinOrLinuxOnly',
-             'testHasTabs']),
+        {'testAllEnabled',
+         'testAllEnabledVersion2',
+         'testNoChromeOS',
+         'testWinOrLinuxOnly',
+         'testHasTabs'},
         self._GetEnabledTests('canary', 'win', 'win7', True, runner))
 
   def testtPostionalArgsTestFiltering(self):
     runner = run_tests.typ.Runner()
     runner.args.partial_match_filter = ['testAllEnabled']
     self.assertEquals(
-        set(['testAllEnabled', 'testAllEnabledVersion2']),
+        {'testAllEnabled', 'testAllEnabledVersion2'},
         self._GetEnabledTests('system', 'win', 'win7', True, runner))
 
   def testPostionalArgsTestFiltering(self):
@@ -411,5 +417,5 @@ class RunTestsUnitTest(unittest.TestCase):
         'telemetry.testing.disabled_cases.DisabledCases.testNoMavericks::'
         'testAllEnabledVersion2')  # Partial test name won't match
     self.assertEquals(
-        set(['testAllEnabled', 'testNoMavericks']),
+        {'testAllEnabled', 'testNoMavericks'},
         self._GetEnabledTests('system', 'win', 'win7', True, runner))

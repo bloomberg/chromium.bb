@@ -14,9 +14,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/media_session/public/mojom/media_controller.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using chromeos::AudioNode;
@@ -24,35 +24,6 @@ using chromeos::AudioNodeList;
 
 namespace ash {
 namespace {
-
-class FakeMediaControllerManager
-    : public media_session::mojom::MediaControllerManagerInterceptorForTesting {
- public:
-  FakeMediaControllerManager() = default;
-
-  mojo::PendingRemote<media_session::mojom::MediaControllerManager>
-  MakeRemote() {
-    mojo::PendingRemote<media_session::mojom::MediaControllerManager> remote;
-    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
-    return remote;
-  }
-
-  // media_session::mojom::MediaControllerManagerInterceptorForTesting:
-  media_session::mojom::MediaControllerManager* GetForwardingInterface()
-      override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  void CreateActiveMediaController(
-      mojo::PendingReceiver<media_session::mojom::MediaController> receiver)
-      override {}
-
-  MOCK_METHOD0(SuspendAllSessions, void());
-
- private:
-  mojo::ReceiverSet<media_session::mojom::MediaControllerManager> receivers_;
-};
 
 constexpr uint64_t kMicJackId = 10010;
 constexpr uint64_t kInternalMicId = 10003;
@@ -70,6 +41,9 @@ struct AudioNodeInfo {
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = 1;
+const uint32_t kOutputAudioEffect = 0;
+
 const AudioNodeInfo kMicJack[] = {
     {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack"}};
 
@@ -85,12 +59,13 @@ const AudioNodeInfo kRearMic[] = {
 AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
   uint64_t stable_device_id_v2 = 0;
   uint64_t stable_device_id_v1 = node_info->id;
-  return AudioNode(node_info->is_input, node_info->id, false,
-                   stable_device_id_v1, stable_device_id_v2,
-                   node_info->device_name, node_info->type, node_info->name,
-                   false /* is_active*/, 0 /* pluged_time */,
-                   node_info->is_input ? kInputMaxSupportedChannels
-                                       : kOutputMaxSupportedChannels);
+  return AudioNode(
+      node_info->is_input, node_info->id, false, stable_device_id_v1,
+      stable_device_id_v2, node_info->device_name, node_info->type,
+      node_info->name, false /* is_active*/, 0 /* pluged_time */,
+      node_info->is_input ? kInputMaxSupportedChannels
+                          : kOutputMaxSupportedChannels,
+      node_info->is_input ? kInputAudioEffect : kOutputAudioEffect);
 }
 
 AudioNodeList GenerateAudioNodeList(
@@ -114,7 +89,10 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    fake_manager_ = std::make_unique<FakeMediaControllerManager>();
+    audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
+    cras_audio_handler_ = CrasAudioHandler::Get();
+    cras_audio_handler_->SetPrefHandlerForTesting(audio_pref_handler_);
+
     tray_model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     tray_controller_ =
         std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
@@ -137,20 +115,7 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
     tray_controller_.reset();
     tray_model_.reset();
 
-    fake_manager_.reset();
     AshTestBase::TearDown();
-  }
-
-  void SetUpCrasAudioHandler(const AudioNodeList& audio_nodes) {
-    // Shutdown previous instance in case there is one.
-    if (CrasAudioHandler::Get())
-      CrasAudioHandler::Shutdown();
-
-    fake_cras_audio_client()->SetAudioNodesForTesting(audio_nodes);
-    audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
-    CrasAudioHandler::Initialize(fake_manager_->MakeRemote(),
-                                 audio_pref_handler_);
-    cras_audio_handler_ = CrasAudioHandler::Get();
   }
 
   void AddViewToSliderDeviceMap(uint64_t device_id, views::View* view) {
@@ -166,7 +131,6 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
   MicGainSliderController::MapDeviceSliderCallback map_device_sliders_callback_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;  // Not owned.
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
-  std::unique_ptr<FakeMediaControllerManager> fake_manager_;
   std::unique_ptr<UnifiedAudioDetailedViewController>
       audio_detailed_view_controller_;
   std::unique_ptr<UnifiedSystemTrayModel> tray_model_;
@@ -175,8 +139,9 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
 };
 
 TEST_F(UnifiedAudioDetailedViewControllerTest, OnlyOneVisibleSlider) {
-  SetUpCrasAudioHandler(GenerateAudioNodeList({kInternalMic, kMicJack}));
   audio_detailed_view_controller_->CreateView();
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack}));
 
   // Only slider corresponding to the Internal Mic should be visible initially.
   cras_audio_handler_->SwitchToDevice(
@@ -198,7 +163,8 @@ TEST_F(UnifiedAudioDetailedViewControllerTest, OnlyOneVisibleSlider) {
 
 TEST_F(UnifiedAudioDetailedViewControllerTest,
        DualInternalMicHasSingleVisibleSlider) {
-  SetUpCrasAudioHandler(GenerateAudioNodeList({kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kFrontMic, kRearMic}));
 
   // Verify the device has dual internal mics.
   EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());

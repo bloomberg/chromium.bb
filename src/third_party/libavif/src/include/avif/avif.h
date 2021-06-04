@@ -57,14 +57,16 @@ extern "C" {
 // to leverage in-development code without breaking their stable builds.
 #define AVIF_VERSION_MAJOR 0
 #define AVIF_VERSION_MINOR 9
-#define AVIF_VERSION_PATCH 0
-#define AVIF_VERSION_DEVEL 1
+#define AVIF_VERSION_PATCH 1
+#define AVIF_VERSION_DEVEL 0
 #define AVIF_VERSION \
     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
 
 typedef int avifBool;
 #define AVIF_TRUE 1
 #define AVIF_FALSE 0
+
+#define AVIF_DIAGNOSTICS_ERROR_BUFFER_SIZE 256
 
 // a 12 hour AVIF image sequence, running at 60 fps (a basic sanity check as this is quite ridiculous)
 #define AVIF_DEFAULT_IMAGE_COUNT_LIMIT (12 * 3600 * 60)
@@ -79,13 +81,14 @@ typedef int avifBool;
 #define AVIF_SPEED_SLOWEST 0
 #define AVIF_SPEED_FASTEST 10
 
-enum avifPlanesFlags
+typedef enum avifPlanesFlag
 {
     AVIF_PLANES_YUV = (1 << 0),
     AVIF_PLANES_A = (1 << 1),
 
     AVIF_PLANES_ALL = 0xff
-};
+} avifPlanesFlag;
+typedef uint32_t avifPlanesFlags;
 
 enum avifChannelIndex
 {
@@ -290,9 +293,23 @@ enum
 typedef uint16_t avifMatrixCoefficients; // AVIF_MATRIX_COEFFICIENTS_*
 
 // ---------------------------------------------------------------------------
+// avifDiagnostics
+
+typedef struct avifDiagnostics
+{
+    // Upon receiving an error from any non-const libavif API call, if the toplevel structure used
+    // in the API call (avifDecoder, avifEncoder) contains a diag member, this buffer may be
+    // populated with a NULL-terminated, freeform error string explaining the most recent error in
+    // more detail. It will be cleared at the beginning of every non-const API call.
+    char error[AVIF_DIAGNOSTICS_ERROR_BUFFER_SIZE];
+} avifDiagnostics;
+
+AVIF_API void avifDiagnosticsClearError(avifDiagnostics * diag);
+
+// ---------------------------------------------------------------------------
 // Optional transformation structs
 
-typedef enum avifTransformationFlags
+typedef enum avifTransformFlag
 {
     AVIF_TRANSFORM_NONE = 0,
 
@@ -300,7 +317,8 @@ typedef enum avifTransformationFlags
     AVIF_TRANSFORM_CLAP = (1 << 1),
     AVIF_TRANSFORM_IROT = (1 << 2),
     AVIF_TRANSFORM_IMIR = (1 << 3)
-} avifTransformationFlags;
+} avifTransformFlag;
+typedef uint32_t avifTransformFlags;
 
 typedef struct avifPixelAspectRatioBox
 {
@@ -353,6 +371,32 @@ typedef struct avifImageMirror
 } avifImageMirror;
 
 // ---------------------------------------------------------------------------
+// avifCropRect - Helper struct/functions to work with avifCleanApertureBox
+
+typedef struct avifCropRect
+{
+    uint32_t x;
+    uint32_t y;
+    uint32_t width;
+    uint32_t height;
+} avifCropRect;
+
+// These will return AVIF_FALSE if the resultant values violate any standards, and if so, the output
+// values are not guaranteed to be complete or correct and should not be used.
+AVIF_API avifBool avifCropRectConvertCleanApertureBox(avifCropRect * cropRect,
+                                                      const avifCleanApertureBox * clap,
+                                                      const uint32_t imageW,
+                                                      const uint32_t imageH,
+                                                      const avifPixelFormat yuvFormat,
+                                                      avifDiagnostics * diag);
+AVIF_API avifBool avifCleanApertureBoxConvertCropRect(avifCleanApertureBox * clap,
+                                                      const avifCropRect * cropRect,
+                                                      const uint32_t imageW,
+                                                      const uint32_t imageH,
+                                                      const avifPixelFormat yuvFormat,
+                                                      avifDiagnostics * diag);
+
+// ---------------------------------------------------------------------------
 // avifImage
 
 typedef struct avifImage
@@ -395,7 +439,7 @@ typedef struct avifImage
     //
     // To encode any of these boxes, set the values in the associated box, then enable the flag in
     // transformFlags. On decode, only honor the values in boxes with the associated transform flag set.
-    uint32_t transformFlags;
+    avifTransformFlags transformFlags;
     avifPixelAspectRatioBox pasp;
     avifCleanApertureBox clap;
     avifImageRotation irot;
@@ -408,7 +452,7 @@ typedef struct avifImage
 
 AVIF_API avifImage * avifImageCreate(int width, int height, int depth, avifPixelFormat yuvFormat);
 AVIF_API avifImage * avifImageCreateEmpty(void); // helper for making an image to decode into
-AVIF_API void avifImageCopy(avifImage * dstImage, const avifImage * srcImage, uint32_t planes); // deep copy
+AVIF_API void avifImageCopy(avifImage * dstImage, const avifImage * srcImage, avifPlanesFlags planes); // deep copy
 AVIF_API void avifImageDestroy(avifImage * image);
 
 AVIF_API void avifImageSetProfileICC(avifImage * image, const uint8_t * icc, size_t iccSize);
@@ -417,9 +461,9 @@ AVIF_API void avifImageSetProfileICC(avifImage * image, const uint8_t * icc, siz
 AVIF_API void avifImageSetMetadataExif(avifImage * image, const uint8_t * exif, size_t exifSize);
 AVIF_API void avifImageSetMetadataXMP(avifImage * image, const uint8_t * xmp, size_t xmpSize);
 
-AVIF_API void avifImageAllocatePlanes(avifImage * image, uint32_t planes); // Ignores any pre-existing planes
-AVIF_API void avifImageFreePlanes(avifImage * image, uint32_t planes);     // Ignores already-freed planes
-AVIF_API void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, uint32_t planes);
+AVIF_API void avifImageAllocatePlanes(avifImage * image, avifPlanesFlags planes); // Ignores any pre-existing planes
+AVIF_API void avifImageFreePlanes(avifImage * image, avifPlanesFlags planes);     // Ignores already-freed planes
+AVIF_API void avifImageStealPlanes(avifImage * dstImage, avifImage * srcImage, avifPlanesFlags planes);
 
 // ---------------------------------------------------------------------------
 // Understanding maxThreads
@@ -550,14 +594,15 @@ typedef enum avifCodecChoice
     AVIF_CODEC_CHOICE_SVT      // Encode only
 } avifCodecChoice;
 
-typedef enum avifCodecFlags
+typedef enum avifCodecFlag
 {
     AVIF_CODEC_FLAG_CAN_DECODE = (1 << 0),
     AVIF_CODEC_FLAG_CAN_ENCODE = (1 << 1)
-} avifCodecFlags;
+} avifCodecFlag;
+typedef uint32_t avifCodecFlags;
 
 // If this returns NULL, the codec choice/flag combination is unavailable
-AVIF_API const char * avifCodecName(avifCodecChoice choice, uint32_t requiredFlags);
+AVIF_API const char * avifCodecName(avifCodecChoice choice, avifCodecFlags requiredFlags);
 AVIF_API avifCodecChoice avifCodecChoiceFromName(const char * name);
 
 typedef struct avifCodecConfigurationBox
@@ -643,6 +688,31 @@ AVIF_API void avifIODestroy(avifIO * io);
 
 // ---------------------------------------------------------------------------
 // avifDecoder
+
+// Some encoders (including very old versions of avifenc) do not implement the AVIF standard
+// perfectly, and thus create invalid files. However, these files are likely still recoverable /
+// decodable, if it wasn't for the strict requirements imposed by libavif's decoder. These flags
+// allow a user of avifDecoder to decide what level of strictness they want in their project.
+typedef enum avifStrictFlag
+{
+    // Disables all strict checks.
+    AVIF_STRICT_DISABLED = 0,
+
+    // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image items. libheif v1.11.0
+    // or older does not add the 'pixi' item property to AV1 image items. If you need to decode AVIF
+    // images encoded by libheif v1.11.0 or older, be sure to disable this bit. (This issue has been
+    // corrected in libheif v1.12.0.)
+    AVIF_STRICT_PIXI_REQUIRED = (1 << 0),
+
+    // This demands that the values surfaced in the clap box are valid, determined by attempting to
+    // convert the clap box to a crop rect using avifCropRectConvertCleanApertureBox(). If this
+    // function returns AVIF_FALSE and this strict flag is set, the decode will fail.
+    AVIF_STRICT_CLAP_VALID = (1 << 1),
+
+    // Maximum strictness; enables all bits above. This is avifDecoder's default.
+    AVIF_STRICT_ENABLED = AVIF_STRICT_PIXI_REQUIRED | AVIF_STRICT_CLAP_VALID
+} avifStrictFlag;
+typedef uint32_t avifStrictFlags;
 
 // Useful stats related to a read/write
 typedef struct avifIOStats
@@ -734,11 +804,17 @@ typedef struct avifDecoder
     // (see comment above), and setting this to 0 disables the limit.
     uint32_t imageCountLimit;
 
+    // Strict flags. Defaults to AVIF_STRICT_ENABLED. See avifStrictFlag definitions above.
+    avifStrictFlags strictFlags;
+
     // stats from the most recent read, possibly 0s if reading an image sequence
     avifIOStats ioStats;
 
     // Use one of the avifDecoderSetIO*() functions to set this
     avifIO * io;
+
+    // Additional diagnostics (such as detailed error state)
+    avifDiagnostics diag;
 
     // Internals used by the decoder
     struct avifDecoderData * data;
@@ -861,6 +937,9 @@ typedef struct avifEncoder
     // stats from the most recent write
     avifIOStats ioStats;
 
+    // Additional diagnostics (such as detailed error state)
+    avifDiagnostics diag;
+
     // Internals used by the encoder
     struct avifEncoderData * data;
     struct avifCodecSpecificOptions * csOptions;
@@ -870,7 +949,7 @@ AVIF_API avifEncoder * avifEncoderCreate(void);
 AVIF_API avifResult avifEncoderWrite(avifEncoder * encoder, const avifImage * image, avifRWData * output);
 AVIF_API void avifEncoderDestroy(avifEncoder * encoder);
 
-enum avifAddImageFlags
+typedef enum avifAddImageFlag
 {
     AVIF_ADD_IMAGE_FLAG_NONE = 0,
 
@@ -881,7 +960,8 @@ enum avifAddImageFlags
     // tweaks various compression rules. This is enabled automatically when using the
     // avifEncoderWrite() single-image encode path.
     AVIF_ADD_IMAGE_FLAG_SINGLE = (1 << 1)
-};
+} avifAddImageFlag;
+typedef uint32_t avifAddImageFlags;
 
 // Multi-function alternative to avifEncoderWrite() for image sequences.
 //
@@ -895,12 +975,12 @@ enum avifAddImageFlags
 // * avifEncoderDestroy()
 //
 
-AVIF_API avifResult avifEncoderAddImage(avifEncoder * encoder, const avifImage * image, uint64_t durationInTimescales, uint32_t addImageFlags);
+AVIF_API avifResult avifEncoderAddImage(avifEncoder * encoder, const avifImage * image, uint64_t durationInTimescales, avifAddImageFlags addImageFlags);
 AVIF_API avifResult avifEncoderAddImageGrid(avifEncoder * encoder,
                                             uint32_t gridCols,
                                             uint32_t gridRows,
                                             const avifImage * const * cellImages,
-                                            uint32_t addImageFlags);
+                                            avifAddImageFlags addImageFlags);
 AVIF_API avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output);
 
 // Codec-specific, optional "advanced" tuning settings, in the form of string key/value pairs. These

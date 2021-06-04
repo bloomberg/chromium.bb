@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -553,7 +554,8 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest, AddObserverAudibleTab) {
   // Start the audio.
   base::RunLoop run_loop;
   AudioStartObserver audio_start_observer(web_contents, run_loop.QuitClosure());
-  EXPECT_EQ("OK", EvalJsWithManualReply(web_contents, "StartOscillator();"));
+  EXPECT_EQ("OK", content::EvalJs(web_contents, "StartOscillator();",
+                                  content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
   run_loop.Run();
 
   // Adding an observer now should receive the OnTabIsAudibleChanged() call.

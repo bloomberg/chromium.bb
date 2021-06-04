@@ -14,9 +14,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
+#import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
+#import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/ios/password_manager_java_script_feature.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -36,9 +39,11 @@
 #include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
+#include "ios/chrome/browser/web/image_fetch/image_fetch_java_script_feature.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_feature.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_feature_factory.h"
 #include "ios/chrome/browser/web/print/print_java_script_feature.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/legacy_tls/legacy_tls_blocking_page.h"
 #import "ios/components/security_interstitials/legacy_tls/legacy_tls_controller_client.h"
@@ -229,13 +234,6 @@ bool ChromeWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kChromeUIScheme);
 }
 
-void ChromeWebClient::AddSerializableData(
-    web::SerializableUserDataManager* user_data_manager,
-    web::WebState* web_state) {
-  return ios::GetChromeBrowserProvider()->AddSerializableData(user_data_manager,
-                                                              web_state);
-}
-
 std::u16string ChromeWebClient::GetPluginNotSupportedText() const {
   return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
 }
@@ -310,14 +308,15 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(print_feature.get());
 
   features.push_back(autofill::AutofillJavaScriptFeature::GetInstance());
+  features.push_back(autofill::FormHandlersJavaScriptFeature::GetInstance());
+  features.push_back(
+      autofill::SuggestionControllerJavaScriptFeature::GetInstance());
   features.push_back(FontSizeJavaScriptFeature::GetInstance());
+  features.push_back(ImageFetchJavaScriptFeature::GetInstance());
+  features.push_back(
+      password_manager::PasswordManagerJavaScriptFeature::GetInstance());
 
   return features;
-}
-
-NSString* ChromeWebClient::GetDocumentStartScriptForAllFrames(
-    web::BrowserState* browser_state) const {
-  return GetPageScript(@"chrome_bundle_all_frames");
 }
 
 NSString* ChromeWebClient::GetDocumentStartScriptForMainFrame(
@@ -342,7 +341,7 @@ void ChromeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
-    const base::Optional<net::SSLInfo>& info,
+    const absl::optional<net::SSLInfo>& info,
     int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   OfflinePageTabHelper* offline_page_tab_helper =
@@ -383,7 +382,6 @@ void ChromeWebClient::PrepareErrorPage(
     std::move(error_html_callback)
         .Run(GetLegacyTLSErrorPageHTML(web_state, navigation_id));
   } else if (info.has_value()) {
-    base::OnceCallback<void(bool)> proceed_callback;
     base::OnceCallback<void(NSString*)> blocking_page_callback =
         base::BindOnce(^(NSString* blocking_page_html) {
           error_html = blocking_page_html;
@@ -392,7 +390,7 @@ void ChromeWebClient::PrepareErrorPage(
     IOSSSLErrorHandler::HandleSSLError(
         web_state, net::MapCertStatusToNetError(info.value().cert_status),
         info.value(), url, info.value().is_fatal_cert_error, navigation_id,
-        std::move(proceed_callback), std::move(blocking_page_callback));
+        std::move(blocking_page_callback));
   } else {
     std::move(error_html_callback)
         .Run(GetErrorPage(url, error, is_post, is_off_the_record));
@@ -441,4 +439,9 @@ web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
                               UIUserInterfaceSizeClassRegular;
   return isRegularRegular ? web::UserAgentType::DESKTOP
                           : web::UserAgentType::MOBILE;
+}
+
+bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
+  return WebSessionStateTabHelper::FromWebState(web_state)
+      ->RestoreSessionFromCache();
 }

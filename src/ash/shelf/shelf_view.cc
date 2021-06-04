@@ -733,8 +733,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // Slow down activation animations if Control key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
   if (event.IsControlDown()) {
-    slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+    slowing_animations = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
   }
 
   // Collect usage statistics before we decide what to do with the click.
@@ -799,7 +799,7 @@ void ShelfView::ShowContextMenuForViewImpl(views::View* source,
   const ShelfItem* item = ShelfItemForView(source);
   if (!item_awaiting_response_.IsNull()) {
     if (item && item->id != item_awaiting_response_) {
-      static_cast<views::Button*>(source)->AnimateInkDrop(
+      static_cast<views::Button*>(source)->ink_drop()->AnimateToState(
           views::InkDropState::DEACTIVATED, nullptr);
     }
     return;
@@ -2076,7 +2076,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
   // Bail if the view and shelf sizes do not match. ShelfItemChanged may be
-  // called here before ShelfItemAdded, due to ChromeLauncherController's
+  // called here before ShelfItemAdded, due to ChromeShelfController's
   // item initialization, which calls SetItem during ShelfItemAdded.
   if (static_cast<int>(model_->items().size()) != view_model_->view_size())
     return;
@@ -2317,8 +2317,10 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
   if ((source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
        source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) &&
       item) {
-    static_cast<ShelfAppButton*>(source)->GetInkDrop()->AnimateToState(
-        views::InkDropState::ACTIVATED);
+    static_cast<ShelfAppButton*>(source)
+        ->ink_drop()
+        ->GetInkDrop()
+        ->AnimateToState(views::InkDropState::ACTIVATED);
   }
 
   // Only selected shelf items with context menu opened can be dragged.
@@ -2487,6 +2489,11 @@ int ShelfView::CalculateAppIconsLayoutOffset() const {
       shelf_->hotseat_widget()->scrollable_shelf_view();
   const gfx::Insets& edge_padding_insets =
       scrollable_shelf_view->edge_padding_insets();
+
+  // Note that `edge_padding_insets` fetched from `scrollable_shelf_view` is
+  // mirrored under RTL.
+  if (scrollable_shelf_view->ShouldAdaptToRTL())
+    return edge_padding_insets.right();
 
   return shelf_->IsHorizontalAlignment() ? edge_padding_insets.left()
                                          : edge_padding_insets.top();

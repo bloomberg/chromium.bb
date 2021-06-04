@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -144,7 +145,7 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
   std::unique_ptr<event> evt(controller->ReleaseEvent());
   if (!evt) {
     // Ownership is transferred to the controller.
-    evt.reset(new event);
+    evt = std::make_unique<event>();
   } else {
     // Make sure we don't pick up any funky internal libevent masks.
     int old_interest_mask = evt->ev_events & (EV_READ | EV_WRITE | EV_PERSIST);
@@ -211,7 +212,7 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
 
     // Process native events if any are ready. Do not block waiting for more.
     {
-      auto scoped_do_native_work = delegate->BeginNativeWork();
+      auto scoped_do_work_item = delegate->BeginWorkItem();
       event_base_loop(event_base_, EVLOOP_NONBLOCK);
     }
 
@@ -328,9 +329,9 @@ void MessagePumpLibevent::OnLibeventNotification(int fd,
 
   // Make the MessagePumpDelegate aware of this other form of "DoWork". Skip if
   // OnLibeventNotification is called outside of Run() (e.g. in unit tests).
-  Delegate::ScopedDoNativeWork scoped_do_native_work;
+  Delegate::ScopedDoWorkItem scoped_do_work_item;
   if (pump->run_state_)
-    scoped_do_native_work = pump->run_state_->delegate->BeginNativeWork();
+    scoped_do_work_item = pump->run_state_->delegate->BeginWorkItem();
 
   if ((flags & (EV_READ | EV_WRITE)) == (EV_READ | EV_WRITE)) {
     // Both callbacks will be called. It is necessary to check that |controller|

@@ -13,8 +13,6 @@
 #include "chrome/browser/display_capture/display_capture_permission_context.h"
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 #include "chrome/browser/idle/idle_detection_permission_context.h"
-#include "chrome/browser/media/midi_permission_context.h"
-#include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/camera_pan_tilt_zoom_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/nfc/chrome_nfc_permission_context_delegate.h"
@@ -34,14 +32,15 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/contexts/clipboard_read_write_permission_context.h"
 #include "components/permissions/contexts/clipboard_sanitized_write_permission_context.h"
-#include "components/permissions/contexts/file_handling_permission_context.h"
 #include "components/permissions/contexts/font_access_permission_context.h"
+#include "components/permissions/contexts/midi_permission_context.h"
+#include "components/permissions/contexts/midi_sysex_permission_context.h"
 #include "components/permissions/contexts/payment_handler_permission_context.h"
 #include "components/permissions/contexts/webxr_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #endif
 
@@ -51,6 +50,7 @@
 #include "components/permissions/contexts/nfc_permission_context_android.h"
 #else
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
+#include "chrome/browser/web_applications/components/file_handling_permission_context.h"
 #include "components/permissions/contexts/geolocation_permission_context.h"
 #include "components/permissions/contexts/nfc_permission_context.h"
 #endif
@@ -60,9 +60,9 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
     Profile* profile) {
   permissions::PermissionManager::PermissionContextMap permission_contexts;
   permission_contexts[ContentSettingsType::MIDI_SYSEX] =
-      std::make_unique<MidiSysexPermissionContext>(profile);
+      std::make_unique<permissions::MidiSysexPermissionContext>(profile);
   permission_contexts[ContentSettingsType::MIDI] =
-      std::make_unique<MidiPermissionContext>(profile);
+      std::make_unique<permissions::MidiPermissionContext>(profile);
   permission_contexts[ContentSettingsType::NOTIFICATIONS] =
       std::make_unique<NotificationPermissionContext>(profile);
 #if !defined(OS_ANDROID)
@@ -77,7 +77,7 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
           std::make_unique<GeolocationPermissionContextDelegateAndroid>(
               profile));
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID) || defined(OS_WIN)
   permission_contexts[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =
       std::make_unique<ProtectedMediaIdentifierPermissionContext>(profile);
 #endif
@@ -141,8 +141,10 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<FontAccessPermissionContext>(profile);
   permission_contexts[ContentSettingsType::DISPLAY_CAPTURE] =
       std::make_unique<DisplayCapturePermissionContext>(profile);
+#if !defined(OS_ANDROID)  // File Handling is not available on Android.
   permission_contexts[ContentSettingsType::FILE_HANDLING] =
       std::make_unique<FileHandlingPermissionContext>(profile);
+#endif  // !defined(OS_ANDROID)
   return permission_contexts;
 }
 }  // namespace

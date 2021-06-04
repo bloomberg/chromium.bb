@@ -75,14 +75,6 @@ export class Options {
     this.refreshingVideoDeviceIds_ = false;
 
     /**
-     * Whether the current device is HALv1 and lacks facing configuration.
-     * get facing information.
-     * @type {?boolean}
-     * private
-     */
-    this.isV1NoFacingConfig_ = null;
-
-    /**
      * Mirroring set per device.
      * @type {!Object}
      * @private
@@ -122,10 +114,9 @@ export class Options {
     });
 
     // Restore saved mirroring states per video device.
-    localStorage.get({mirroringToggles: {}})
-        .then((values) => this.mirroringToggles_ = values['mirroringToggles']);
+    this.mirroringToggles_ = localStorage.getObject('mirroringToggles');
     // Remove the deprecated values.
-    localStorage.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
+    localStorage.remove('effectIndex', 'toggleMulti', 'toggleMirror');
 
     this.infoUpdater_.addDeviceChangeListener(async (updater) => {
       state.set(
@@ -167,49 +158,17 @@ export class Options {
   }
 
   /**
-   * Maps MediaTrackSettings.facingMode to CCA facing type.
-   * @param {string|undefined} facing The target facingMode to map.
-   * @return {!Facing} The mapped CCA facing.
-   * @private
-   */
-  mapFacing_(facing) {
-    switch (facing) {
-      case undefined:
-        return Facing.EXTERNAL;
-      case 'user':
-        return Facing.USER;
-      case 'environment':
-        return Facing.ENVIRONMENT;
-      default:
-        throw new Error('Unknown facing: ' + facing);
-    }
-  }
-
-  /**
    * Updates the options' values for the current constraints and stream.
    * @param {!MediaStream} stream Current Stream in use.
-   * @return {!Promise<!Facing>} Facing-mode in use.
+   * @param {!Facing} facing
    */
-  async updateValues(stream) {
+  updateValues(stream, facing) {
     const track = stream.getVideoTracks()[0];
     const trackSettings = track.getSettings && track.getSettings();
-    const facingMode = trackSettings && trackSettings.facingMode;
-    if (this.isV1NoFacingConfig_ === null) {
-      // Because the facing mode of external camera will be set to undefined on
-      // all devices, to distinguish HALv1 device without facing configuration,
-      // assume the first opened camera is built-in camera. Device without
-      // facing configuration won't set facing of built-in cameras. Also if
-      // HALv1 device with facing configuration opened external camera first
-      // after CCA launched the logic here may misjudge it as this category.
-      this.isV1NoFacingConfig_ = facingMode === undefined;
-    }
-    const facing =
-        this.isV1NoFacingConfig_ ? Facing.NOT_SET : this.mapFacing_(facingMode);
     this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
     this.updateMirroring_(facing);
     this.audioTrack_ = stream.getAudioTracks()[0];
     this.updateAudioByMic_();
-    return facing;
   }
 
   /**
@@ -236,7 +195,7 @@ export class Options {
    */
   saveMirroring_() {
     this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
-    localStorage.set({mirroringToggles: this.mirroringToggles_});
+    localStorage.set('mirroringToggles', this.mirroringToggles_);
   }
 
   /**
@@ -263,14 +222,13 @@ export class Options {
 
   /**
    * Gets the video device ids sorted by preference.
-   * @return {!Promise<!Array<?string>>} May contain null for user facing camera
-   *     on HALv1 devices.
+   * @return {!Promise<!Array<?string>>} May contain null for fake cameras.
    */
   async videoDeviceIds() {
     /** @type {!Array<(!Camera3DeviceInfo|!MediaDeviceInfo)>} */
     let devices;
     /**
-     * Object mapping from device id to facing. Set to null on HALv1 device.
+     * Object mapping from device id to facing. Set to null for fake cameras.
      * @type {?Object<string, !Facing>}
      */
     let facings = null;
@@ -282,7 +240,6 @@ export class Options {
       for (const {deviceId, facing} of camera3Info) {
         facings[deviceId] = facing;
       }
-      this.isV1NoFacingConfig_ = false;
     } else {
       devices = await this.infoUpdater_.getDevicesInfo();
     }
@@ -299,8 +256,9 @@ export class Options {
       }
       return 1;
     });
-    // Prepended 'null' deviceId means the system default camera on HALv1
-    // device. Add it only when the app is launched (no video-device-id set).
+    // Prepended 'null' deviceId means there is no facing information to sort
+    // device IDs and prefer the default one. Add it only when the app is
+    // launched (no video-device-id set).
     if (!facings && this.videoDeviceId_ === null) {
       sorted.unshift(null);
     }

@@ -29,6 +29,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -167,7 +168,7 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   // Width and height of test images.
   gfx::Size decoded_size_{10, 20};
   // If set, will replay this image.
-  base::Optional<gfx::ImageSkia> decoded_image_;
+  absl::optional<gfx::ImageSkia> decoded_image_;
 
   std::map<int, PhotoCacheEntry> files_;
 };

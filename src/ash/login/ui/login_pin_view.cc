@@ -84,7 +84,7 @@ int GetViewIdForPinNumber(int number) {
 }
 
 // A base class for pin button in the pin keyboard.
-class BasePinButton : public views::InkDropHostView {
+class BasePinButton : public views::View {
  public:
   BasePinButton(const LoginPalette& palette,
                 const gfx::Size& size,
@@ -106,7 +106,31 @@ class BasePinButton : public views::InkDropHostView {
     // focus painter to paint.
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+        [](BasePinButton* host) {
+          auto highlight = std::make_unique<views::InkDropHighlight>(
+              gfx::SizeF(host->size()),
+              host->palette_.pin_ink_drop_highlight_color);
+          highlight->set_visible_opacity(1.0f);
+          return highlight;
+        },
+        this));
+    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+        [](BasePinButton* host) -> std::unique_ptr<views::InkDropRipple> {
+          const gfx::Point center = host->GetLocalBounds().CenterPoint();
+          const gfx::Rect bounds(center.x() - kInkDropCornerRadiusDp,
+                                 center.y() - kInkDropCornerRadiusDp,
+                                 kInkDropCornerRadiusDp * 2,
+                                 kInkDropCornerRadiusDp * 2);
+
+          return std::make_unique<views::FloodFillInkDropRipple>(
+              host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              host->palette_.pin_ink_drop_ripple_color,
+              /*visible_opacity=*/1.f);
+        },
+        this));
 
     views::FocusRing* focus_ring = views::FocusRing::Install(this);
     login_views_utils::ConfigureRectFocusRingCircleInkDrop(
@@ -119,16 +143,15 @@ class BasePinButton : public views::InkDropHostView {
     palette_ = palette;
   }
 
-  // views::InkDropHostView:
-  void OnPaint(gfx::Canvas* canvas) override {
-    InkDropHostView::OnPaint(canvas);
-  }
+  views::InkDropHost* ink_drop() { return &ink_drop_; }
+
+  // views::View:
   void OnFocus() override {
-    InkDropHostView::OnFocus();
+    View::OnFocus();
     SchedulePaint();
   }
   void OnBlur() override {
-    InkDropHostView::OnBlur();
+    View::OnBlur();
     SchedulePaint();
   }
   void OnEvent(ui::Event* event) override {
@@ -143,29 +166,11 @@ class BasePinButton : public views::InkDropHostView {
       return;
     }
 
-    views::InkDropHostView::OnEvent(event);
+    views::View::OnEvent(event);
   }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(accessible_name_);
     node_data->role = ax::mojom::Role::kButton;
-  }
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - kInkDropCornerRadiusDp,
-                     center.y() - kInkDropCornerRadiusDp,
-                     kInkDropCornerRadiusDp * 2, kInkDropCornerRadiusDp * 2);
-
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), palette_.pin_ink_drop_ripple_color,
-        /*visible_opacity=*/1.f);
-  }
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(size()), palette_.pin_ink_drop_highlight_color);
-    highlight->set_visible_opacity(1.f);
-    return highlight;
   }
 
  protected:
@@ -174,8 +179,8 @@ class BasePinButton : public views::InkDropHostView {
     if (event)
       event->SetHandled();
 
-    AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED,
-                   ui::LocatedEvent::FromIfValid(event));
+    ink_drop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED,
+                               ui::LocatedEvent::FromIfValid(event));
     SchedulePaint();
 
     // |on_press_| may delete us.
@@ -189,6 +194,8 @@ class BasePinButton : public views::InkDropHostView {
   LoginPalette palette_;
 
  private:
+  views::InkDropHost ink_drop_{this};
+
   const std::u16string accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
@@ -275,7 +282,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
 
   void OnEnabledChanged() {
     if (!GetEnabled()) {
-      AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+      ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
       CancelRepeat();
     }
     UpdateImage();
@@ -322,8 +329,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
       if (event)
         event->SetHandled();
 
-      AnimateInkDrop(views::InkDropState::ACTIVATED,
-                     ui::LocatedEvent::FromIfValid(event));
+      ink_drop()->AnimateToState(views::InkDropState::ACTIVATED,
+                                 ui::LocatedEvent::FromIfValid(event));
       SchedulePaint();
 
       return;
@@ -359,7 +366,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
     if (!did_submit && on_press_)
       on_press_.Run();
 
-    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+    ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
     SchedulePaint();
   }
 

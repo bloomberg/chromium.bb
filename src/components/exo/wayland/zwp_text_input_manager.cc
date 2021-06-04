@@ -76,6 +76,7 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
           break;
         case ui::ImeTextSpan::Type::kMisspellingSuggestion:
         case ui::ImeTextSpan::Type::kAutocorrect:
+        case ui::ImeTextSpan::Type::kGrammarSuggestion:
           style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT;
           break;
       }
@@ -222,7 +223,7 @@ void text_input_hide_input_panel(wl_client* client, wl_resource* resource) {
 }
 
 void text_input_reset(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<TextInput>(resource)->Resync();
+  GetUserDataAs<TextInput>(resource)->Reset();
 }
 
 void text_input_set_surrounding_text(wl_client* client,

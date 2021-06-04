@@ -160,6 +160,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SetProcessLock(const IsolationContext& isolation_context,
                       const ProcessLock& process_lock) override;
   bool IsProcessLockedToSiteForTesting() override;
+  void CancelAllProcessShutdownDelays() override {}
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy&,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,
@@ -211,6 +212,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver)
       override {}
   void CreateNotificationService(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override {}
@@ -221,7 +223,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
-  void WriteIntoTracedValue(perfetto::TracedValue context) override;
+  void WriteIntoTrace(perfetto::TracedValue context) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

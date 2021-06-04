@@ -15,6 +15,7 @@
 
 namespace ui {
 
+class GtkSurface1;
 class ShellToplevelWrapper;
 
 class WaylandToplevelWindow : public WaylandWindow,
@@ -56,12 +57,14 @@ class WaylandToplevelWindow : public WaylandWindow,
   // xdg-decoration mode for a window.
   void SetUseNativeFrame(bool use_native_frame) override;
   bool ShouldUseNativeFrame() const override;
+  bool ShouldUpdateWindowShape() const override;
 
   // WaylandWindow overrides:
-  base::Optional<std::vector<gfx::Rect>> GetWindowShape() const override;
+  absl::optional<std::vector<gfx::Rect>> GetWindowShape() const override;
 
  private:
   // WaylandWindow overrides:
+  void UpdateBufferScale(bool update_bounds) override;
   void HandleToplevelConfigure(int32_t width,
                                int32_t height,
                                bool is_maximized,
@@ -91,6 +94,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void SetImmersiveFullscreenStatus(bool status) override;
   void ShowSnapPreview(WaylandWindowSnapDirection snap) override;
   void CommitSnap(WaylandWindowSnapDirection snap) override;
+  void SetCanGoBack(bool value) override;
 
   void TriggerStateChanges();
   void SetWindowState(PlatformWindowState state);
@@ -105,9 +109,9 @@ class WaylandToplevelWindow : public WaylandWindow,
 
   void SetOrResetRestoredBounds();
 
-  // Initializes the aura-shell surface, in the case aura-shell EXO extension
-  // is available.
-  void InitializeAuraShellSurface();
+  // Initializes additional shell integration, if the appropriate interfaces are
+  // available.
+  void SetUpShellIntegration();
 
   // Sets decoration mode for a window.
   void OnDecorationModeChanged();
@@ -154,10 +158,13 @@ class WaylandToplevelWindow : public WaylandWindow,
   std::u16string window_title_;
 
   // Max and min sizes of the WaylandToplevelWindow window.
-  base::Optional<gfx::Size> min_size_;
-  base::Optional<gfx::Size> max_size_;
+  absl::optional<gfx::Size> min_size_;
+  absl::optional<gfx::Size> max_size_;
 
   wl::Object<zaura_surface> aura_surface_;
+  // |gtk_surface1_| is the optional GTK surface that provides better
+  // integration with the desktop shell.
+  std::unique_ptr<GtkSurface1> gtk_surface1_;
 
   // When use_native_frame is false, client-side decoration is set,
   // e.g. lacros-browser.
@@ -165,7 +172,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   // e.g. lacros-taskmanager.
   bool use_native_frame_ = false;
 
-  base::Optional<std::vector<gfx::Rect>> window_shape_in_dips_;
+  absl::optional<std::vector<gfx::Rect>> window_shape_in_dips_;
 
   // Pending xdg-shell configures, once this window is drawn to |bounds_dip|,
   // ack_configure with |serial| will be sent to the Wayland compositor.

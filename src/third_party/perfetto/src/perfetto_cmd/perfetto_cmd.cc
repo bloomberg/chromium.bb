@@ -176,7 +176,7 @@ Usage: %s
   --upload                 : Upload field trace (Android only)
   --dropbox        TAG     : DEPRECATED: Use --upload instead
                              TAG should always be set to 'perfetto'
-  --no-guardrails          : Ignore guardrails triggered when using --dropbox
+  --no-guardrails          : Ignore guardrails triggered when using --upload
                              (for testing).
   --txt                    : Parse config as pbtxt. Not for production use.
                              Not a stable API.
@@ -195,6 +195,7 @@ light configuration flags: (only when NOT using -c/--config)
   --time           -t      : Trace duration N[s,m,h] (default: 10s)
   --buffer         -b      : Ring buffer size N[mb,gb] (default: 32mb)
   --size           -s      : Max file size N[mb,gb] (default: in-memory ring-buffer only)
+  --app            -a      : Android (atrace) app name
   ATRACE_CAT               : Record ATRACE_CAT (e.g. wm)
   FTRACE_GROUP/FTRACE_NAME : Record ftrace event (e.g. sched/sched_switch)
 
@@ -227,7 +228,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
     OPT_PBTXT_CONFIG,
     OPT_DROPBOX,
     OPT_UPLOAD,
-    OPT_ATRACE_APP,
     OPT_IGNORE_GUARDRAILS,
     OPT_DETACH,
     OPT_ATTACH,
@@ -245,6 +245,7 @@ int PerfettoCmd::Main(int argc, char** argv) {
       {"time", required_argument, nullptr, 't'},
       {"buffer", required_argument, nullptr, 'b'},
       {"size", required_argument, nullptr, 's'},
+      {"app", required_argument, nullptr, 'a'},
       {"no-guardrails", no_argument, nullptr, OPT_IGNORE_GUARDRAILS},
       {"txt", no_argument, nullptr, OPT_PBTXT_CONFIG},
       {"upload", no_argument, nullptr, OPT_UPLOAD},
@@ -258,7 +259,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
       {"attach", required_argument, nullptr, OPT_ATTACH},
       {"is_detached", required_argument, nullptr, OPT_IS_DETACHED},
       {"stop", no_argument, nullptr, OPT_STOP},
-      {"app", required_argument, nullptr, OPT_ATRACE_APP},
       {"query", no_argument, nullptr, OPT_QUERY},
       {"query-raw", no_argument, nullptr, OPT_QUERY_RAW},
       {"version", no_argument, nullptr, OPT_VERSION},
@@ -278,7 +278,8 @@ int PerfettoCmd::Main(int argc, char** argv) {
   bool has_config_options = false;
 
   for (;;) {
-    int option = getopt_long(argc, argv, "hc:o:dt:b:s:", long_options, nullptr);
+    int option =
+        getopt_long(argc, argv, "hc:o:dt:b:s:a:", long_options, nullptr);
 
     if (option == -1)
       break;  // EOF.
@@ -331,6 +332,12 @@ int PerfettoCmd::Main(int argc, char** argv) {
     if (option == 's') {
       has_config_options = true;
       config_options.max_file_size = std::string(optarg);
+      continue;
+    }
+
+    if (option == 'a') {
+      config_options.atrace_apps.push_back(std::string(optarg));
+      has_config_options = true;
       continue;
     }
 
@@ -388,12 +395,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
 
     if (option == OPT_SUBSCRIPTION_ID) {
       statsd_metadata.set_triggering_subscription_id(atoll(optarg));
-      continue;
-    }
-
-    if (option == OPT_ATRACE_APP) {
-      config_options.atrace_apps.push_back(std::string(optarg));
-      has_config_options = true;
       continue;
     }
 
@@ -654,31 +655,7 @@ int PerfettoCmd::Main(int argc, char** argv) {
   }
 
   if (background) {
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-    PERFETTO_FATAL("--background is not supported on Windows");
-#else
-    pid_t pid;
-    switch (pid = fork()) {
-      case -1:
-        PERFETTO_FATAL("fork");
-      case 0: {
-        PERFETTO_CHECK(setsid() != -1);
-        base::ignore_result(chdir("/"));
-        base::ScopedFile null = base::OpenFile("/dev/null", O_RDONLY);
-        PERFETTO_CHECK(null);
-        PERFETTO_CHECK(dup2(*null, STDIN_FILENO) != -1);
-        PERFETTO_CHECK(dup2(*null, STDOUT_FILENO) != -1);
-        PERFETTO_CHECK(dup2(*null, STDERR_FILENO) != -1);
-        // Do not accidentally close stdin/stdout/stderr.
-        if (*null <= 2)
-          null.release();
-        break;
-      }
-      default:
-        printf("%d\n", pid);
-        exit(0);
-    }
-#endif  // OS_WIN
+    base::Daemonize();
   }
 
   // If we are just activating triggers then we don't need to rate limit,
@@ -770,6 +747,18 @@ int PerfettoCmd::Main(int argc, char** argv) {
     LogUploadEvent(err_atom.value());
     return 1;
   }
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  if (!background && !is_detach() && !upload_flag &&
+      triggers_to_activate.empty() && !isatty(STDIN_FILENO) &&
+      !isatty(STDERR_FILENO)) {
+    fprintf(stderr,
+            "Warning: No PTY. CTRL+C won't gracefully stop the trace. If you "
+            "are running perfetto via adb shell, use the -tt arg (adb shell "
+            "-t perfetto ...) or consider using the helper script "
+            "tools/record_android_trace from the Perfetto repository.\n\n");
+  }
+#endif
 
   consumer_endpoint_ =
       ConsumerIPCClient::Connect(GetConsumerSocket(), this, &task_runner_);
@@ -926,6 +915,10 @@ void PerfettoCmd::FinalizeTraceAndExit() {
   }
 
   if (save_to_incidentd_) {
+    if (!uuid_.empty()) {
+      base::Uuid uuid(uuid_);
+      PERFETTO_LOG("go/trace-uuid/%s", uuid.ToPrettyString().c_str());
+    }
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
     SaveTraceIntoDropboxAndIncidentOrCrash();
 #endif
@@ -948,7 +941,7 @@ bool PerfettoCmd::OpenOutputFile() {
   base::ScopedFile fd;
   if (trace_out_path_.empty()) {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
-    fd = CreateUnlikedTmpFile();
+    fd = CreateUnlinkedTmpFile();
 #endif
   } else if (trace_out_path_ == "-") {
     fd.reset(dup(fileno(stdout)));

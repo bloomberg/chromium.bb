@@ -34,9 +34,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <variants name="HoldingSpaceItemType">
   <variant name="All" summary="Includes all item types."/>
-  <variant name="Download" summary="Items backed by a download file."/>
+  <variant name="ArcDownload" summary="Items backed by an ARC download file."/>
+  <variant name="DiagnosticsLog"
+      summary="Items backed by a diagnostics log file."/>
+  <variant name="Download"
+      summary="Items backed by a download file originating from Ash Chrome."/>
+  <variant name="LacrosDownload"
+      summary="Items backed by a download file originating from Lacros
+               Chrome."/>
   <variant name="NearbyShare" summary="Items backed by a nearby shared file."/>
   <variant name="PinnedFile" summary="Items pinned explicitly by the user."/>
+  <variant name="PrintedPdf" summary="Items backed by a printed PDF file."/>
   <variant name="ScreenRecording"
       summary="Items backed by a screen recording file."/>
   <variant name="Screenshot" summary="Items backed by a screenshot file."/>
@@ -136,6 +144,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records a failure to launch a holding space item of a specific type at the
     moment of failure.
+  </summary>
+</histogram>
+
+<histogram name="HoldingSpace.Item.FailureToLaunch.Extension"
+    enum="HoldingSpaceExtension" expires_after="2021-09-24">
+  <owner>dmblack@google.com</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records a failure to launch a holding space item backed by file of a
+    specific extension at the moment of failure.
   </summary>
 </histogram>
 

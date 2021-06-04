@@ -48,7 +48,6 @@ public class CachedFeatureFlags {
     private static Map<String, Boolean> sDefaults = new HashMap<String, Boolean>() {
         {
             put(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR, false);
-            put(ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM, true);
             put(ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE, true);
             put(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET, false);
             put(ChromeFeatureList.CHROME_STARTUP_DELEGATE, false);
@@ -66,6 +65,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false);
             put(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, false);
             put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
+            put(ChromeFeatureList.STORE_HOURS, false);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
             put(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);
@@ -87,6 +87,9 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.EXPERIMENTS_FOR_AGSA, true);
             put(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION, false);
             put(ChromeFeatureList.CLIPBOARD_SUGGESTION_CONTENT_HIDDEN, false);
+            put(ChromeFeatureList.OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
+            put(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION, false);
+            put(ChromeFeatureList.NEW_WINDOW_APP_MENU, true);
         }
     };
 

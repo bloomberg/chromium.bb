@@ -8,5 +8,5 @@ struct Particles {
 [[group(0), binding(1)]] var<storage> particles : Particles;
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
 }

@@ -335,6 +335,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action,
       const std::string& settings,
       DevToolsOpenedByAction opened_by = DevToolsOpenedByAction::kUnknown);
+  static Profile* GetProfileForDevToolsWindow(
+      content::WebContents* web_contents);
 
   // content::WebContentsDelegate:
   void ActivateContents(content::WebContents* contents) override;
@@ -391,7 +393,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void ReadyForTest() override;
   void ConnectionReady() override;
   void SetOpenNewWindowForPopups(bool value) override;
-  InfoBarService* GetInfoBarService() override;
+  infobars::ContentInfoBarManager* GetInfoBarManager() override;
   void RenderProcessGone(bool crashed) override;
   void ShowCertificateViewer(const std::string& cert_viewer) override;
 

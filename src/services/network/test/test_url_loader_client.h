@@ -16,7 +16,6 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace network {
@@ -61,7 +60,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   const mojom::URLResponseHeadPtr& response_head() const {
     return response_head_;
   }
-  const base::Optional<net::SSLInfo>& ssl_info() const {
+  const absl::optional<net::SSLInfo>& ssl_info() const {
     DCHECK(response_head_);
     return response_head_->ssl_info;
   }

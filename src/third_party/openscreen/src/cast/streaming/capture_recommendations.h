@@ -11,7 +11,7 @@
 #include <tuple>
 
 #include "cast/streaming/constants.h"
-
+#include "cast/streaming/resolution.h"
 namespace openscreen {
 namespace cast {
 
@@ -80,30 +80,12 @@ struct Audio {
   int min_sample_rate = kDefaultAudioMinSampleRate;
 };
 
-struct Resolution {
-  bool operator==(const Resolution& other) const;
-  bool operator<(const Resolution& other) const;
-  bool operator<=(const Resolution& other) const;
-  void set_minimum(const Resolution& other);
-
-  // The effective bit rate is the predicted average bit rate based on the
-  // properties of the Resolution instance, and is currently just the product.
-  constexpr int effective_bit_rate() const {
-    return static_cast<int>(static_cast<double>(width * height) * frame_rate);
-  }
-
-  int width;
-  int height;
-  double frame_rate;
-};
-
 // The minimum dimensions are as close as possible to low-definition
 // television, factoring in the receiver's aspect ratio if provided.
-constexpr Resolution kDefaultMinResolution{kMinVideoWidth, kMinVideoHeight,
-                                           kDefaultFrameRate};
+constexpr Resolution kDefaultMinResolution{kMinVideoWidth, kMinVideoHeight};
 
 // Currently mirroring only supports 1080P.
-constexpr Resolution kDefaultMaxResolution{1920, 1080, kDefaultFrameRate};
+constexpr Dimensions kDefaultMaxResolution{1920, 1080, kDefaultFrameRate};
 
 // The mirroring spec suggests 300kbps as the absolute minimum bitrate.
 constexpr int kDefaultVideoMinBitRate = 300 * 1000;
@@ -117,7 +99,7 @@ constexpr int kDefaultVideoMaxPixelsPerSecond =
 // Our default limits are merely the product of the minimum and maximum
 // dimensions, and are only used if the receiver fails to give better
 // constraint information.
-constexpr BitRateLimits kDefaultVideoBitRateLimits{
+const BitRateLimits kDefaultVideoBitRateLimits{
     kDefaultVideoMinBitRate, kDefaultMaxResolution.effective_bit_rate()};
 
 // Video capture recommendations.
@@ -131,7 +113,7 @@ struct Video {
   Resolution minimum = kDefaultMinResolution;
 
   // Represents the recommended maximum resolution.
-  Resolution maximum = kDefaultMaxResolution;
+  Dimensions maximum = kDefaultMaxResolution;
 
   // Indicates whether the receiver can scale frames from a different aspect
   // ratio, or if it needs to be done by the sender. Default is false, meaning

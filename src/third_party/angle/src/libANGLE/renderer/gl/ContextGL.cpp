@@ -115,12 +115,23 @@ BufferImpl *ContextGL::createBuffer(const gl::BufferState &state)
 
 VertexArrayImpl *ContextGL::createVertexArray(const gl::VertexArrayState &data)
 {
-    const FunctionsGL *functions = getFunctions();
+    const angle::FeaturesGL &features = getFeaturesGL();
 
-    GLuint vao = 0;
-    functions->genVertexArrays(1, &vao);
+    if (features.syncVertexArraysToDefault.enabled)
+    {
+        StateManagerGL *stateManager = getStateManager();
 
-    return new VertexArrayGL(data, vao);
+        return new VertexArrayGL(data, stateManager->getDefaultVAO(),
+                                 stateManager->getDefaultVAOState());
+    }
+    else
+    {
+        const FunctionsGL *functions = getFunctions();
+
+        GLuint vao = 0;
+        functions->genVertexArrays(1, &vao);
+        return new VertexArrayGL(data, vao);
+    }
 }
 
 QueryImpl *ContextGL::createQuery(gl::QueryType type)
@@ -832,6 +843,15 @@ angle::Result ContextGL::onMakeCurrent(const gl::Context *context)
 {
     // Queries need to be paused/resumed on context switches
     return mRenderer->getStateManager()->onMakeCurrent(context);
+}
+
+angle::Result ContextGL::onUnMakeCurrent(const gl::Context *context)
+{
+    if (getFeaturesGL().unbindFBOOnContextSwitch.enabled)
+    {
+        mRenderer->getStateManager()->bindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    return ContextImpl::onUnMakeCurrent(context);
 }
 
 gl::Caps ContextGL::getNativeCaps() const

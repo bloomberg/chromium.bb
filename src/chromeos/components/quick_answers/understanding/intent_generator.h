@@ -38,6 +38,8 @@ class IntentGenerator {
   // Generate intent from the |request|. Virtual for testing.
   virtual void GenerateIntent(const QuickAnswersRequest& request);
 
+  void UseTextAnnotatorForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(IntentGeneratorTest,
                            TextAnnotationIntentNoAnnotation);
@@ -54,12 +56,14 @@ class IntentGenerator {
 
   void MaybeGenerateTranslationIntent(const QuickAnswersRequest& request);
   void LanguageDetectorCallback(const QuickAnswersRequest& request,
-                                base::Optional<std::string> detected_language);
+                                absl::optional<std::string> detected_language);
 
   IntentGeneratorCallback complete_callback_;
   mojo::Remote<::chromeos::machine_learning::mojom::TextClassifier>
       text_classifier_;
   std::unique_ptr<LanguageDetector> language_detector_;
+
+  bool use_text_annotator_for_testing_ = false;
 
   base::WeakPtrFactory<IntentGenerator> weak_factory_{this};
 };

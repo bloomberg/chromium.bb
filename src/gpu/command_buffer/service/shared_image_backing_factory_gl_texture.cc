@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -235,6 +236,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
+    gfx::BufferPlane plane,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -253,6 +255,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     return nullptr;
   }
 
+  if (!gpu::IsPlaneValidForGpuMemoryBufferFormat(plane, buffer_format)) {
+    LOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane) << " for "
+               << gfx::BufferFormatToString(buffer_format);
+    return nullptr;
+  }
+
   const gfx::GpuMemoryBufferType handle_type = handle.type;
   GLenum target =
       (handle_type == gfx::SHARED_MEMORY_BUFFER ||
@@ -260,7 +268,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
           ? GL_TEXTURE_2D
           : gpu::GetPlatformSpecificTextureTarget();
   scoped_refptr<gl::GLImage> image = MakeGLImage(
-      client_id, std::move(handle), buffer_format, surface_handle, size);
+      client_id, std::move(handle), buffer_format, plane, surface_handle, size);
   if (!image) {
     LOG(ERROR) << "Failed to create image.";
     return nullptr;
@@ -288,7 +296,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
     image->DisableInUseByWindowServer();
 
-  viz::ResourceFormat format = viz::GetResourceFormat(buffer_format);
+  gfx::BufferFormat plane_buffer_format =
+      GetPlaneBufferFormat(plane, buffer_format);
+  viz::ResourceFormat format = viz::GetResourceFormat(plane_buffer_format);
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
@@ -335,9 +345,12 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat format,
+    gfx::BufferPlane plane,
     SurfaceHandle surface_handle,
     const gfx::Size& size) {
   if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
+    if (plane != gfx::BufferPlane::DEFAULT)
+      return nullptr;
     if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
       return nullptr;
     auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
@@ -353,7 +366,7 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
     return nullptr;
 
   return image_factory_->CreateImageForGpuMemoryBuffer(
-      std::move(handle), size, format, client_id, surface_handle);
+      std::move(handle), size, format, plane, client_id, surface_handle);
 }
 
 bool SharedImageBackingFactoryGLTexture::CanImportGpuMemoryBuffer(

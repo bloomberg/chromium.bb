@@ -379,17 +379,25 @@ bool MessagePumpKqueue::DoInternalWork(Delegate* delegate,
     events_.resize(event_count_);
   }
 
-  bool poll = next_work_info == nullptr;
-  int flags = poll ? KEVENT_FLAG_IMMEDIATE : 0;
-  if (!poll && scheduled_wakeup_time_ != next_work_info->delayed_run_time) {
-    UpdateWakeupTimer(next_work_info->delayed_run_time);
+  bool immediate = next_work_info == nullptr;
+  int flags = immediate ? KEVENT_FLAG_IMMEDIATE : 0;
+
+  if (!immediate) {
+    if (scheduled_wakeup_time_ != next_work_info->delayed_run_time)
+      UpdateWakeupTimer(next_work_info->delayed_run_time);
     DCHECK_EQ(scheduled_wakeup_time_, next_work_info->delayed_run_time);
+    delegate->BeforeWait();
   }
 
   int rv = HANDLE_EINTR(kevent64(kqueue_.get(), nullptr, 0, events_.data(),
                                  events_.size(), flags, nullptr));
 
   PCHECK(rv >= 0) << "kevent64";
+  if (rv == 0) {
+    // No events to dispatch so no need to call ProcessEvents().
+    return false;
+  }
+
   return ProcessEvents(delegate, rv);
 }
 
@@ -418,7 +426,7 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, int count) {
         --event_count_;
       }
 
-      auto scoped_do_native_work = delegate->BeginNativeWork();
+      auto scoped_do_work_item = delegate->BeginWorkItem();
       if (event->filter == EVFILT_READ) {
         fd_watcher->OnFileCanReadWithoutBlocking(event->ident);
       } else if (event->filter == EVFILT_WRITE) {
@@ -449,7 +457,7 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, int count) {
       // The controller could have been removed by some other work callout
       // before this event could be processed.
       if (controller) {
-        auto scoped_do_native_work = delegate->BeginNativeWork();
+        auto scoped_do_work_item = delegate->BeginWorkItem();
         controller->watcher()->OnMachMessageReceived(port);
       }
     } else if (event->filter == EVFILT_TIMER) {

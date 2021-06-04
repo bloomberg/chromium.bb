@@ -11,6 +11,25 @@
 
 namespace chromeos {
 
+enum class SigninError {
+  kCaptivePortalError,
+  kGoogleAccountNotAllowed,
+  kOwnerRequired,
+  kTpmUpdateRequired,
+  kAuthenticationError,
+  kOfflineFailedNetworkNotConnected,
+  kAuthenticatingNew,
+  kAuthenticating,
+  kOwnerKeyLost,
+  kChallengeResponseAuthMultipleClientCerts,
+  kChallengeResponseAuthInvalidClientCert,
+  kCookieWaitTimeout,
+  kFailedToFetchSamlRedirect,
+  kActiveDirectoryNetworkProblem,
+  kActiveDirectoryNotSupportedEncryption,
+  kActiveDirectoryUnknownError,
+};
+
 // This class represents an interface between code that performs sign-in
 // operations and code that handles sign-in UI. It is used to encapsulate UI
 // implementation details and declare the required set of parameters that need
@@ -24,8 +43,8 @@ class SigninUI {
 
   // Starts user onboarding after successful sign-in for new users.
   virtual void StartUserOnboarding() = 0;
-  // Show UI for supervision transition flow.
-  virtual void StartSupervisionTransition() = 0;
+  // Show UI for management transition flow.
+  virtual void StartManagementTransition() = 0;
 
   virtual void StartEncryptionMigration(
       const UserContext& user_context,
@@ -40,7 +59,18 @@ class SigninUI {
   // already tried to enter old password but it turned out to be incorrect.
   virtual void ShowPasswordChangedDialog(const AccountId& account_id,
                                          bool password_incorrect) = 0;
+
+  virtual void ShowSigninError(SigninError error,
+                               const std::string& details,
+                               int login_attempts) = 0;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::SigninError;
+}
+
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_

@@ -12,10 +12,10 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -25,6 +25,7 @@
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 
 namespace content {
@@ -40,7 +41,6 @@ class ActivationStateComputingNavigationThrottle;
 class PageLoadStatistics;
 class ProfileInteractionManager;
 class SubresourceFilterProfileContext;
-class SubresourceFilterClient;
 
 // This enum backs a histogram. Make sure new elements are only added to the
 // end. Keep histograms.xml up to date with any changes.
@@ -76,10 +76,7 @@ enum class SubresourceFilterAction {
 // RenderFrameHosts, along with their associated DocumentSubresourceFilters.
 //
 // The class is designed to be attached to a WebContents instance by an embedder
-// via CreateForWebContents(), with the embedder passing a
-// SubresourceFilterClient instance customized for that embedder. The client
-// will be notified of the first disallowed subresource load for a top level
-// navgation, and has veto power for frame activation.
+// via CreateForWebContents().
 class ContentSubresourceFilterThrottleManager
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver,
@@ -95,16 +92,18 @@ class ContentSubresourceFilterThrottleManager
   // not enabled.
   static void CreateForWebContents(
       content::WebContents* web_contents,
-      std::unique_ptr<SubresourceFilterClient> client,
       SubresourceFilterProfileContext* profile_context,
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+          database_manager,
       VerifiedRulesetDealer::Handle* dealer_handle);
 
   static ContentSubresourceFilterThrottleManager* FromWebContents(
       content::WebContents* web_contents);
 
   ContentSubresourceFilterThrottleManager(
-      std::unique_ptr<SubresourceFilterClient> client,
       SubresourceFilterProfileContext* profile_context,
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+          database_manager,
       VerifiedRulesetDealer::Handle* dealer_handle,
       content::WebContents* web_contents);
   ~ContentSubresourceFilterThrottleManager() override;
@@ -124,8 +123,6 @@ class ContentSubresourceFilterThrottleManager
 
   PageLoadStatistics* page_load_statistics() const { return statistics_.get(); }
 
-  SubresourceFilterClient* client() { return client_.get(); }
-
   VerifiedRuleset::Handle* ruleset_handle_for_testing() {
     return ruleset_handle_.get();
   }
@@ -138,10 +135,10 @@ class ContentSubresourceFilterThrottleManager
   // the last navigation was not evaluated by the subresource filter in
   // |frame_host|. Load policy is determined by presence of the navigation url
   // in the filter list.
-  base::Optional<LoadPolicy> LoadPolicyForLastCommittedNavigation(
+  absl::optional<LoadPolicy> LoadPolicyForLastCommittedNavigation(
       content::RenderFrameHost* frame_host) const;
 
-  // Notifies the client that the user has requested a reload of a page with
+  // Called when the user has requested a reload of a page with
   // blocked ads (e.g., via an infobar).
   void OnReloadRequested();
 
@@ -154,11 +151,18 @@ class ContentSubresourceFilterThrottleManager
   void SetIsAdSubframeForTesting(content::RenderFrameHost* render_frame_host,
                                  bool is_ad_subframe);
 
+  // Sets the SafeBrowsingDatabaseManager instance used to |database_manager|.
+  void set_database_manager_for_testing(
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+          database_manager) {
+    database_manager_ = std::move(database_manager);
+  }
+
   // Returns the matching FrameAdEvidence for the frame indicated by
-  // `render_frame_host` or `base::nullopt` if there is none (i.e. the frame is
+  // `render_frame_host` or `absl::nullopt` if there is none (i.e. the frame is
   // a main frame, or no navigation or commit has yet occurred and no evidence
   // has been reported by the renderer).
-  base::Optional<blink::FrameAdEvidence> GetAdEvidenceForFrame(
+  absl::optional<blink::FrameAdEvidence> GetAdEvidenceForFrame(
       content::RenderFrameHost* render_frame_host);
 
  protected:
@@ -208,12 +212,12 @@ class ContentSubresourceFilterThrottleManager
       content::RenderFrameHost* frame_host);
 
   // Returns the activation state of the frame's filter. If the frame is not
-  // activated (and therefore has no subresource filter), returns base::nullopt.
-  const base::Optional<subresource_filter::mojom::ActivationState>
+  // activated (and therefore has no subresource filter), returns absl::nullopt.
+  const absl::optional<subresource_filter::mojom::ActivationState>
   GetFrameActivationState(content::RenderFrameHost* frame_host);
 
-  // Calls ShowNotification on |client_| at most once per committed,
-  // non-same-page navigation in the main frame.
+  // Calls MaybeShowNotification on |profile_interaction_manager_| at most once
+  // per committed, non-same-page navigation in the main frame.
   void MaybeShowNotification();
 
   VerifiedRuleset::Handle* EnsureRulesetHandle();
@@ -221,6 +225,9 @@ class ContentSubresourceFilterThrottleManager
 
   blink::FrameAdEvidence& EnsureFrameAdEvidence(
       content::RenderFrameHost* render_frame_host);
+
+  mojom::ActivationState ActivationStateForNextCommittedLoad(
+      content::NavigationHandle* navigation_handle);
 
   // Registers `render_frame_host` as an ad frame. If the frame later moves to
   // a new process its RenderHost will be told that it's an ad.
@@ -316,7 +323,7 @@ class ContentSubresourceFilterThrottleManager
   // This member outlives this class.
   VerifiedRulesetDealer::Handle* dealer_handle_;
 
-  std::unique_ptr<SubresourceFilterClient> client_;
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
 
   std::unique_ptr<ProfileInteractionManager> profile_interaction_manager_;
 

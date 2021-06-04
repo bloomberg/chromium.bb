@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -29,6 +30,10 @@ struct NGSVGFragmentData {
   scoped_refptr<const ShapeResultView> shape_result;
   NGTextOffset text_offset;
   FloatRect rect;
+  float length_adjust_scale;
+  float angle;
+  float baseline_shift;
+  bool in_text_path;
 };
 
 // This class represents a text run or a box in an inline formatting context.
@@ -107,8 +112,9 @@ class CORE_EXPORT NGFragmentItem {
   bool IsListMarker() const;
 
   // Make this kSVGText type. |this| type must be kText.
-  void ConvertToSVGText(const PhysicalRect& unscaled_rect,
-                        const FloatRect& scaled_rect);
+  void ConvertToSVGText(std::unique_ptr<NGSVGFragmentData> data,
+                        const PhysicalRect& unscaled_rect,
+                        bool is_hidden);
 
   // A sequence number of fragments generated from a |LayoutObject|.
   // For line boxes, please see |kInitialLineFragmentId|.
@@ -175,6 +181,11 @@ class CORE_EXPORT NGFragmentItem {
   void SetDeltaToNextForSameLayoutObject(wtf_size_t delta) const;
 
   const PhysicalRect& RectInContainerFragment() const { return rect_; }
+  // This function returns a transformed unscaled FloatRect for kSVGText
+  // type, and returns a FloatRect just converted from
+  // RectInContainerFragment() for other types.
+  FloatRect ObjectBoundingBox() const;
+
   const PhysicalOffset& OffsetInContainerFragment() const {
     return rect_.offset;
   }
@@ -321,9 +332,9 @@ class CORE_EXPORT NGFragmentItem {
   //  * ellipsis            kGeneratedText
   //  * first-letter-part   kText
   //  * list marker         kGeneratedText
-  //  * soft hyphen         kGeneratedText
-  // TODO(yosin): When we implement |kGeneratedText|, we rename this function
-  // to avoid confliction with |kGeneratedText|.
+  //  * hyphen (soft/auto)  kGeneratedText
+  bool IsLayoutGeneratedText() const { return Type() == kGeneratedText; }
+  bool IsStyleGeneratedText() const;
   bool IsGeneratedText() const;
 
   bool IsSymbolMarker() const {
@@ -339,6 +350,12 @@ class CORE_EXPORT NGFragmentItem {
   unsigned StartOffset() const { return TextOffset().start; }
   unsigned EndOffset() const { return TextOffset().end; }
   unsigned TextLength() const { return TextOffset().Length(); }
+
+  // Layout-generated text has two offsets; one for its own generated string,
+  // and the other for the container. |TextOffset| returns the former, while
+  // this function returns the latter.
+  unsigned StartOffsetInContainer(const NGInlineCursor& container) const;
+
   StringView Text(const NGFragmentItems& items) const;
   String GeneratedText() const {
     DCHECK_EQ(Type(), kGeneratedText);
@@ -402,6 +419,19 @@ class CORE_EXPORT NGFragmentItem {
   const NGSVGFragmentData* SVGFragmentData() const {
     return Type() == kSVGText ? svg_text_.data.get() : nullptr;
   }
+  // Returns true if BuildSVGTransformForPaint() returns non-identity transform.
+  bool HasSVGTransformForPaint() const;
+  // A transform which should be used on painting this fragment.
+  // This contains a transform for lengthAdjust=spacingAndGlyphs.
+  AffineTransform BuildSVGTransformForPaint() const;
+  // Returns true if BuildSVGTransformForBoundingBox() returns non-identity
+  // transform.
+  bool HasSVGTransformForBoundingBox() const;
+  // A transform which should be used on computing a bounding box.
+  // This contains no transform for lengthAdjust=spacingAndGlyphs because
+  // FloatRectInContainerFragment() already takes into account of
+  // lengthAdjust=spacingAndGlyphs.
+  AffineTransform BuildSVGTransformForBoundingBox() const;
 
   // Get a description of |this| for the debug purposes.
   String ToString() const;
@@ -436,7 +466,8 @@ class CORE_EXPORT NGFragmentItem {
     return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
   }
   bool IsInkOverflowComputed() const {
-    return InkOverflowType() != NGInkOverflow::kNotSet;
+    return InkOverflowType() != NGInkOverflow::kNotSet &&
+           InkOverflowType() != NGInkOverflow::kInvalidated;
   }
   bool HasInkOverflow() const {
     return InkOverflowType() != NGInkOverflow::kNone;
@@ -449,6 +480,10 @@ class CORE_EXPORT NGFragmentItem {
   // Re-compute the ink overflow for this item. |cursor| should be at |this|.
   void RecalcInkOverflow(const NGInlineCursor& cursor,
                          PhysicalRect* self_and_contents_rect_out);
+
+  AffineTransform BuildSVGTransformForTextPath(
+      const AffineTransform& length_adjust) const;
+  AffineTransform BuildSVGTransformForLengthAdjust() const;
 
   const LayoutObject* layout_object_;
 

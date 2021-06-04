@@ -6,7 +6,7 @@ struct S{
 };
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var <storage> x : S;
   var y : array<i32,2>;
   y = x;

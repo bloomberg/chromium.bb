@@ -205,11 +205,7 @@ public class LocationBarLayout extends FrameLayout {
                     MarginLayoutParamsCompat.getMarginStart(urlActionContainerLayoutParams)
                     + MarginLayoutParamsCompat.getMarginEnd(urlActionContainerLayoutParams);
         }
-        // Include the space which the URL bar will be translated post-layout into the end
-        // margin so the URL bar doesn't overlap with the URL actions container when focused.
-        if (mStatusCoordinator.isSearchEngineStatusIconVisible() && hasFocus()) {
-            urlContainerMarginEnd += mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
-        }
+        urlContainerMarginEnd += mStatusCoordinator.getAdditionalUrlContainerMarginEnd();
         return urlContainerMarginEnd;
     }
 
@@ -301,18 +297,10 @@ public class LocationBarLayout extends FrameLayout {
         mStatusCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
     }
 
-    protected void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-            boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mStatusCoordinator.updateSearchEngineStatusIcon(isSearchEngineGoogle, searchEngineUrl);
-    }
-
     @VisibleForTesting
     public StatusCoordinator getStatusCoordinatorForTesting() {
         return mStatusCoordinator;
     }
-
-    /** Update the status visibility according to the current state held in LocationBar. */
-    /* package */ void updateStatusVisibility() {}
 
     /* package */ void setUrlActionContainerVisibility(int visibility) {
         mUrlActionContainer.setVisibility(visibility);

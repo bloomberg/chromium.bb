@@ -111,7 +111,7 @@ namespace {
 bool IsInShelfContainer(aura::Window* container) {
   if (!container)
     return false;
-  int id = container->id();
+  int id = container->GetId();
   if (id == ash::kShellWindowId_ShelfContainer ||
       id == ash::kShellWindowId_ShelfBubbleContainer) {
     return true;
@@ -228,7 +228,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_PipContainer,
       kShellWindowId_SystemModalContainer,
       kShellWindowId_LockSystemModalContainer,
-      kShellWindowId_UnparentedControlContainer,
+      kShellWindowId_UnparentedContainer,
       kShellWindowId_OverlayContainer,
       kShellWindowId_LockActionHandlerContainer,
       kShellWindowId_MenuContainer,
@@ -553,7 +553,7 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
   if (window) {
     aura::Window* window_container = GetContainerForWindow(window);
     if (window_container &&
-        window_container->id() >= kShellWindowId_LockScreenContainer) {
+        window_container->GetId() >= kShellWindowId_LockScreenContainer) {
       modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
     } else {
       modal_container = GetContainer(kShellWindowId_SystemModalContainer);
@@ -875,10 +875,10 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
   aura::Window* root_window = GetRootWindow();
   GetRootWindowSettings(root_window)->controller = this;
 
-  stacking_controller_.reset(new StackingController);
+  stacking_controller_ = std::make_unique<StackingController>();
   aura::client::SetWindowParentingClient(root_window,
                                          stacking_controller_.get());
-  capture_client_.reset(new ::wm::ScopedCaptureClient(root_window));
+  capture_client_ = std::make_unique<::wm::ScopedCaptureClient>(root_window);
 }
 
 void RootWindowController::Init(RootWindowType root_window_type) {
@@ -1058,8 +1058,8 @@ void RootWindowController::CreateContainers() {
   app_list_tablet_mode_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                               true);
 
-  CreateContainer(kShellWindowId_UnparentedControlContainer,
-                  "UnparentedControlContainer", non_lock_screen_containers);
+  CreateContainer(kShellWindowId_UnparentedContainer, "UnparentedContainer",
+                  non_lock_screen_containers);
 
   for (const auto& id : desks_util::GetDesksContainersIds()) {
     aura::Window* container = CreateContainer(
@@ -1234,10 +1234,10 @@ aura::Window* RootWindowController::CreateContainer(int window_id,
   aura::Window* window =
       new aura::Window(nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->set_id(window_id);
+  window->SetId(window_id);
   window->SetName(name);
   parent->AddChild(window);
-  if (window_id != kShellWindowId_UnparentedControlContainer)
+  if (window_id != kShellWindowId_UnparentedContainer)
     window->Show();
   root_window_layout_manager_->AddContainer(window);
   return window;
@@ -1255,8 +1255,8 @@ void RootWindowController::CreateSystemWallpaper(
           chromeos::switches::kFirstExecAfterBoot);
   if (is_boot_splash_screen)
     color = kChromeOsBootColor;
-  system_wallpaper_.reset(
-      new SystemWallpaperController(GetRootWindow(), color));
+  system_wallpaper_ =
+      std::make_unique<SystemWallpaperController>(GetRootWindow(), color);
 }
 
 AccessibilityPanelLayoutManager*

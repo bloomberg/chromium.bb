@@ -4,6 +4,7 @@
 
 #include "content/test/web_contents_observer_consistency_checker.h"
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,7 +13,6 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -126,6 +126,7 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   CHECK(GetRoutingPair(old_host) != GetRoutingPair(new_host));
 
   if (old_host) {
+    CHECK(base::Contains(frame_tree_node_ids_, new_host->GetFrameTreeNodeId()));
     EnsureStableParentValue(old_host);
     CHECK_EQ(old_host->GetParent(), new_host->GetParent());
     GlobalRoutingID routing_pair = GetRoutingPair(old_host);
@@ -138,6 +139,8 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
           << "RenderFrameHostChanged called with old host that did not exist:"
           << Format(old_host);
     }
+  } else {
+    CHECK(frame_tree_node_ids_.insert(new_host->GetFrameTreeNodeId()).second);
   }
 
   auto* new_host_impl = static_cast<RenderFrameHostImpl*>(new_host);
@@ -161,7 +164,7 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   bool host_exists = !current_hosts_.insert(routing_pair).second;
   // TODO(https://crbug.com/1179683): Figure out a better way to deal with
   // MPArch.
-  if (host_exists && !blink::features::IsPrerenderMPArchEnabled()) {
+  if (host_exists && !blink::features::IsPrerender2Enabled()) {
     CHECK(false)
         << "RenderFrameHostChanged called more than once for routing pair:"
         << Format(new_host);
@@ -174,8 +177,7 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   // TODO(https://crbug.com/1179683): Figure out a better way to deal with
   // handling the new RenderFrameHost coming from a prerendered activation
   // rather than an ordinary activation.
-  if (!IsBackForwardCacheEnabled() &&
-      !blink::features::IsPrerenderMPArchEnabled()) {
+  if (!IsBackForwardCacheEnabled() && !blink::features::IsPrerender2Enabled()) {
     CHECK(!HasAnyChildren(new_host))
         << "A frame should not have children before it is committed.";
   }
@@ -186,6 +188,8 @@ void WebContentsObserverConsistencyChecker::FrameDeleted(
   // A frame can be deleted before RenderFrame in the renderer process is
   // created, so there is not much that can be enforced here.
   CHECK(!web_contents_destroyed_);
+
+  CHECK(frame_tree_node_ids_.erase(frame_tree_node_id));
 
   RenderFrameHostImpl* render_frame_host =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id)->current_frame_host();
@@ -356,12 +360,14 @@ void WebContentsObserverConsistencyChecker::WebContentsDestroyed() {
   CHECK(ongoing_navigations_.empty());
   CHECK(active_media_players_.empty());
   CHECK(live_routes_.empty());
+  CHECK(frame_tree_node_ids_.empty());
 }
 
 void WebContentsObserverConsistencyChecker::DidStartLoading() {
   // TODO(clamy): add checks for the loading state in the rest of observer
   // methods.
-  CHECK(!is_loading_);
+  // TODO(crbug.com/1145572): Add back CHECK(!is_loading_). The CHECK was
+  // removed because of flaky failures during some browser_tests.
   CHECK(web_contents()->IsLoading());
   is_loading_ = true;
 }

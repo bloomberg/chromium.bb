@@ -13,6 +13,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/crl_set_remover.h"
 #include "components/component_updater/installer_policies/autofill_states_component_installer.h"
@@ -54,10 +57,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/browsing_data/sessions_storage_util.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
@@ -102,6 +102,8 @@
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
@@ -172,6 +174,9 @@ NSString* const kStartSpotlightBookmarksIndexing =
 
 // Constants for deferring the enterprise managed device check.
 NSString* const kEnterpriseManagedDeviceCheck = @"EnterpriseManagedDeviceCheck";
+
+// Constants for deferred deletion of leftover session state files.
+NSString* const kPurgeWebSessionStates = @"PurgeWebSessionStates";
 
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
@@ -280,6 +285,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Hander for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
+
+  // List of closure to run as part of shutdown. The closure will be called
+  // in reverse order of registration.
+  std::vector<base::OnceClosure> _cleanupClosures;
 }
 
 // Handles collecting metrics on user triggered screenshots
@@ -333,18 +342,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)crashIfRequested;
 // Performs synchronous browser state initialization steps.
 - (void)initializeBrowserState:(ChromeBrowserState*)browserState;
-// Helper methods to initialize the application to a specific stage.
-// Setting |_browserInitializationStage| to a specific stage requires the
-// corresponding function to return YES.
 // Initializes the application to the minimum initialization needed in all
 // cases.
 - (void)startUpBrowserBasicInitialization;
-// Initializes the application to INITIALIZATION_STAGE_BACKGROUND, which is
-// needed by background handlers.
+//  Initializes the browser objects for the background handlers.
 - (void)startUpBrowserBackgroundInitialization;
-// Initializes the application to INITIALIZATION_STAGE_FOREGROUND, which is
-// needed when application runs in foreground.
+// Initializes the browser objects for the browser UI (e.g., the browser
+// state).
 - (void)startUpBrowserForegroundInitialization;
+// Register a closure to be called as part of app cleanup.
+- (void)registerCleanupClosure:(base::OnceClosure)closure;
 @end
 
 @implementation MainController
@@ -354,7 +361,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Defined by public protocols.
 // - BrowserLauncher
 @synthesize launchOptions = _launchOptions;
-@synthesize browserInitializationStage = _browserInitializationStage;
 // - StartupInformation
 @synthesize isColdStart = _isColdStart;
 @synthesize appLaunchTime = _appLaunchTime;
@@ -370,25 +376,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)dealloc {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
-// This function starts up to only what is needed at each stage of the
-// initialization. It is possible to continue initialization later.
-- (void)startUpBrowserToStage:(BrowserInitializationStageType)stage {
-  if (_browserInitializationStage < INITIALIZATION_STAGE_BACKGROUND &&
-      stage >= INITIALIZATION_STAGE_BACKGROUND) {
-    [self startUpBrowserBackgroundInitialization];
-    _browserInitializationStage = INITIALIZATION_STAGE_BACKGROUND;
-  }
-
-  if (_browserInitializationStage < INITIALIZATION_STAGE_FOREGROUND &&
-      stage >= INITIALIZATION_STAGE_FOREGROUND) {
-    // When adding a new initialization flow, consider setting
-    // |_appState.userInteracted| at the appropriate time.
-    DCHECK(_appState.userInteracted);
-    [self startUpBrowserForegroundInitialization];
-    _browserInitializationStage = INITIALIZATION_STAGE_FOREGROUND;
-  }
 }
 
 - (void)startUpBrowserBasicInitialization {
@@ -410,7 +397,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startUpBrowserBackgroundInitialization {
-  DCHECK(![self.appState isInSafeMode]);
+  DCHECK(self.appState.initStage > InitStageSafeMode);
 
   NSBundle* baseBundle = base::mac::OuterBundle();
   base::mac::SetBaseBundleID(
@@ -509,7 +496,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self initializeBrowserState:chromeBrowserState];
   self.appState.mainBrowserState = chromeBrowserState;
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
     [self startLoggingBreadcrumbs];
   }
 
@@ -584,6 +571,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                 self.appState.postCrashLaunch];
 }
 
+- (void)registerCleanupClosure:(base::OnceClosure)closure {
+  _cleanupClosures.push_back(std::move(closure));
+}
+
 - (void)initializeBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(!browserState->IsOffTheRecord());
   search_engines::UpdateSearchEnginesIfNeeded(
@@ -596,15 +587,47 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Called when the first scene becomes active.
 - (void)appState:(AppState*)appState
     firstSceneHasInitializedUI:(SceneState*)sceneState {
-  DCHECK(!appState.isInSafeMode);
+  DCHECK(self.appState.initStage > InitStageSafeMode);
   [self startUpAfterFirstWindowCreated];
 }
 
 - (void)appState:(AppState*)appState
-    didTransitionToInitStage:(InitStage)initStage {
-  if (initStage == InitStageStart) {
-    [self startUpBrowserBasicInitialization];
+    didTransitionFromInitStage:(InitStage)previousInitStage {
+  switch (appState.initStage) {
+    case InitStageStart:
+      [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageBrowserBasic:
+      [self startUpBrowserBasicInitialization];
+      break;
+    case InitStageSafeMode:
+      [self addPostSafeModeAgents];
+      break;
+    case InitStageBrowserObjectsForBackgroundHandlers:
+      [self startUpBrowserBackgroundInitialization];
+      [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageBrowserObjectsForUI:
+      // When adding a new initialization flow, consider setting
+      // |_appState.userInteracted| at the appropriate time.
+      DCHECK(_appState.userInteracted);
+      [self startUpBrowserForegroundInitialization];
+      [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageFirstRun:
+      // TODO(crbug.com/1178821): Move this to the FRE agent.
+      if (!ShouldPresentFirstRunExperience()) {
+        [appState queueTransitionToNextInitStage];
+      }
+      break;
+    case InitStageFinal:
+      break;
   }
+}
+
+- (void)addPostSafeModeAgents {
+  [self.appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
+  [self.appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
 }
 
 #pragma mark - Property implementation.
@@ -616,8 +639,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Create app state agents.
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
-  [appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
-  [appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
 
   // Create the window accessibility agent only when multuple windows are
@@ -678,9 +699,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
     if (self.appState.mainBrowserState->HasOffTheRecordChromeBrowserState()) {
-      BreadcrumbManagerKeyedService* service =
+      breadcrumbs::BreadcrumbManagerKeyedService* service =
           BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
               self.appState.mainBrowserState
                   ->GetOffTheRecordChromeBrowserState());
@@ -688,7 +709,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       breakpad::StopMonitoringBreadcrumbManagerService(service);
     }
 
-    BreadcrumbManagerKeyedService* service =
+    breadcrumbs::BreadcrumbManagerKeyedService* service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             self.appState.mainBrowserState);
     service->StopPersisting();
@@ -697,9 +718,20 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _extensionSearchEngineDataUpdater = nullptr;
 
-  ios::GetChromeBrowserProvider()
-      ->GetMailtoHandlerProvider()
-      ->RemoveMailtoHandling();
+  if (!_cleanupClosures.empty()) {
+    std::vector<base::OnceClosure> cleanupClosures;
+    cleanupClosures.swap(_cleanupClosures);
+
+    while (!cleanupClosures.empty()) {
+      base::OnceClosure closure = std::move(cleanupClosures.back());
+      cleanupClosures.pop_back();
+      std::move(closure).Run();
+    }
+
+    DCHECK(_cleanupClosures.empty())
+        << "-registerCleanupClosure must not be called during shutdown";
+  }
+
   // _localStatePrefChangeRegistrar is observing the PrefService, which is owned
   // indirectly by _chromeMain (through the ChromeBrowserState).
   // Unregister the observer before the service is destroyed.
@@ -744,39 +776,38 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)schedulePrefObserverInitialization {
+  __weak MainController* weakSelf = self;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kPrefObserverInit
                   block:^{
-                    // Track changes to local state prefs.
-                    _localStatePrefObserverBridge.reset(
-                        new PrefObserverBridge(self));
-                    _localStatePrefChangeRegistrar.Init(
-                        GetApplicationContext()->GetLocalState());
-                    _localStatePrefObserverBridge->ObserveChangesForPreference(
-                        metrics::prefs::kMetricsReportingEnabled,
-                        &_localStatePrefChangeRegistrar);
-                    if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-                      _localStatePrefObserverBridge
-                          ->ObserveChangesForPreference(
-                              prefs::kMetricsReportingWifiOnly,
-                              &_localStatePrefChangeRegistrar);
-                    }
-
-                    // Calls the onPreferenceChanged function in case there was
-                    // a change to the observed preferences before the observer
-                    // bridge was set up.
-                    [self onPreferenceChanged:metrics::prefs::
-                                                  kMetricsReportingEnabled];
-                    [self onPreferenceChanged:prefs::kMetricsReportingWifiOnly];
-
-                    // Track changes to default search engine.
-                    TemplateURLService* service =
-                        ios::TemplateURLServiceFactory::GetForBrowserState(
-                            self.appState.mainBrowserState);
-                    _extensionSearchEngineDataUpdater =
-                        std::make_unique<ExtensionSearchEngineDataUpdater>(
-                            service);
+                    [weakSelf initializePrefObservers];
                   }];
+}
+
+- (void)initializePrefObservers {
+  // Track changes to local state prefs.
+  _localStatePrefChangeRegistrar.Init(GetApplicationContext()->GetLocalState());
+  _localStatePrefObserverBridge = std::make_unique<PrefObserverBridge>(self);
+  _localStatePrefObserverBridge->ObserveChangesForPreference(
+      metrics::prefs::kMetricsReportingEnabled,
+      &_localStatePrefChangeRegistrar);
+  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+    _localStatePrefObserverBridge->ObserveChangesForPreference(
+        prefs::kMetricsReportingWifiOnly, &_localStatePrefChangeRegistrar);
+  }
+
+  // Calls the onPreferenceChanged function in case there was
+  // a change to the observed preferences before the observer
+  // bridge was set up.
+  [self onPreferenceChanged:metrics::prefs::kMetricsReportingEnabled];
+  [self onPreferenceChanged:prefs::kMetricsReportingWifiOnly];
+
+  // Track changes to default search engine.
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          self.appState.mainBrowserState);
+  _extensionSearchEngineDataUpdater =
+      std::make_unique<ExtensionSearchEngineDataUpdater>(service);
 }
 
 - (void)scheduleAppDistributionPings {
@@ -834,6 +865,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
+- (void)scheduleSessionStateCacheCleanup {
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kPurgeWebSessionStates
+                  block:^{
+                    WebSessionStateCache* cache =
+                        WebSessionStateCacheFactory::GetForBrowserState(
+                            self.appState.mainBrowserState);
+                    [cache purgeUnassociatedData];
+                  }];
+}
+
 - (void)scheduleStartupCleanupTasks {
   [self scheduleCrashReportCleanup];
 
@@ -850,24 +892,32 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Remove all discarded sessions from disk.
   [self scheduleDiscardedSessionsCleanup];
 
-  // If the user chooses to restore their session, some cached snapshots may
-  // be needed. Otherwise, cleanup the snapshots.
+  // If the user chooses to restore their session, some cached snapshots and
+  // session states may be needed. Otherwise, cleanup the snapshots and session
+  // states
   if (![self mustShowRestoreInfobar]) {
     [self scheduleSnapshotsCleanup];
+    [self scheduleSessionStateCacheCleanup];
   }
 }
 
 - (void)scheduleMemoryDebuggingTools {
   if (experimental_flags::IsMemoryDebuggingEnabled()) {
+    __weak MainController* weakSelf = self;
     [[DeferredInitializationRunner sharedInstance]
         enqueueBlockNamed:kMemoryDebuggingToolsStartup
                     block:^{
-                      _memoryDebuggerManager = [[MemoryDebuggerManager alloc]
-                          initWithView:self.window
-                                 prefs:GetApplicationContext()
-                                           ->GetLocalState()];
+                      [weakSelf initializedMemoryDebuggingTools];
                     }];
   }
+}
+
+- (void)initializedMemoryDebuggingTools {
+  DCHECK(!_memoryDebuggerManager);
+  DCHECK(experimental_flags::IsMemoryDebuggingEnabled());
+  _memoryDebuggerManager = [[MemoryDebuggerManager alloc]
+      initWithView:self.window
+             prefs:GetApplicationContext()->GetLocalState()];
 }
 
 - (void)initializeMailtoHandling {
@@ -883,6 +933,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                         ->GetMailtoHandlerProvider()
                         ->PrepareMailtoHandling(
                             strongSelf.appState.mainBrowserState);
+
+                    [strongSelf registerCleanupClosure:base::BindOnce([] {
+                                  ios::GetChromeBrowserProvider()
+                                      ->GetMailtoHandlerProvider()
+                                      ->RemoveMailtoHandling();
+                                })];
                   }];
 }
 
@@ -943,12 +999,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startLoggingBreadcrumbs {
-  BreadcrumbManagerKeyedService* breadcrumbService =
+  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumbService =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
           self.appState.mainBrowserState);
   breakpad::MonitorBreadcrumbManagerService(breadcrumbService);
 
-  BreadcrumbPersistentStorageManager* persistentStorageManager =
+  breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
       GetApplicationContext()->GetBreadcrumbPersistentStorageManager();
 
   // Application context can return a null persistent storage manager if
@@ -1024,15 +1080,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleSpotlightResync {
-  if (!_spotlightManager) {
-    return;
-  }
-  ProceduralBlock block = ^{
-    [_spotlightManager resyncIndex];
-  };
+  __weak SpotlightManager* spotlightManager = _spotlightManager;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kStartSpotlightBookmarksIndexing
-                  block:block];
+                  block:^{
+                    [spotlightManager resyncIndex];
+                  }];
 }
 
 - (void)expireFirstUserActionRecorder {

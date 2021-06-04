@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/gpu_fence.h"
 
 namespace gl {
 class GLContext;
@@ -71,17 +72,19 @@ using ArCoreGlCreateSessionCallback =
 
 struct ArCoreGlInitializeResult {
   std::unordered_set<device::mojom::XRSessionFeature> enabled_features;
-  base::Optional<device::mojom::XRDepthConfig> depth_configuration;
+  absl::optional<device::mojom::XRDepthConfig> depth_configuration;
+  viz::FrameSinkId frame_sink_id;
 
   ArCoreGlInitializeResult(
       std::unordered_set<device::mojom::XRSessionFeature> enabled_features,
-      base::Optional<device::mojom::XRDepthConfig> depth_configuration);
+      absl::optional<device::mojom::XRDepthConfig> depth_configuration,
+      viz::FrameSinkId frame_sink_id);
   ArCoreGlInitializeResult(ArCoreGlInitializeResult&& other);
   ~ArCoreGlInitializeResult();
 };
 
 using ArCoreGlInitializeCallback =
-    base::OnceCallback<void(base::Optional<ArCoreGlInitializeResult>)>;
+    base::OnceCallback<void(absl::optional<ArCoreGlInitializeResult>)>;
 
 // All of this class's methods must be called on the same valid GL thread with
 // the exception of GetGlThreadTaskRunner() and GetWeakPtr().
@@ -238,12 +241,13 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void OnReclaimedGpuFenceAvailable(WebXrFrame* frame,
                                     std::unique_ptr<gfx::GpuFence> gpu_fence);
   void ClearRenderingFrame(WebXrFrame* frame);
+  void RecalculateUvsAndProjection();
 
   // Set of features enabled on this session. Required to correctly configure
   // the session and only send out necessary data related to reference spaces to
   // blink. Valid after the call to |Initialize()| method.
   std::unordered_set<device::mojom::XRSessionFeature> enabled_features_;
-  base::Optional<device::mojom::XRDepthConfig> depth_configuration_;
+  absl::optional<device::mojom::XRDepthConfig> depth_configuration_;
 
   base::OnceClosure session_shutdown_callback_;
 
@@ -260,6 +264,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   std::unique_ptr<ArCore> arcore_;
   std::unique_ptr<ArImageTransport> ar_image_transport_;
 
+  // Where possible, we should use the ArCompositor to integrate with viz,
+  // rather than our own custom compositing logic.
   std::unique_ptr<ArCompositorFrameSink> ar_compositor_;
   const bool use_ar_compositor_;
 
@@ -294,11 +300,15 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // in their WebXrFrame state.
   gfx::RectF viewport_bounds_ = gfx::RectF(0.f, 0.f, 1.f, 1.f);
 
-  // The camera image size stays locked to the screen size even if
+  // The screen size stays locked to the output screen size even if
   // framebufferScaleFactor changes.
+  gfx::Size screen_size_ = gfx::Size(0, 0);
+
+  // The camera image size is used for the camera image buffer. It has the
+  // same aspect ratio as the screen size, but may have a different resolution.
   gfx::Size camera_image_size_ = gfx::Size(0, 0);
+
   display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
-  bool should_update_display_geometry_ = true;
 
   // UV transform for drawing the camera texture, this is supplied by ARCore
   // and can include 90 degree rotations or other nontrivial transforms.
@@ -308,7 +318,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   gfx::Transform inverse_projection_;
   // The first run of ProduceFrame should set uv_transform_ and projection_
   // using the default settings in ArCore.
-  bool should_recalculate_uvs_ = true;
+  bool recalculate_uvs_and_projection_ = true;
   bool have_camera_image_ = false;
 
   ArCoreGlInitializeCallback initialized_callback_;
@@ -356,7 +366,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   uint32_t stage_parameters_id_;
 
   // Currently estimated floor height.
-  base::Optional<float> floor_height_estimate_;
+  absl::optional<float> floor_height_estimate_;
 
   // Touch-related data.
   // Android will report touch events via MotionEvent - see ArImmersiveOverlay

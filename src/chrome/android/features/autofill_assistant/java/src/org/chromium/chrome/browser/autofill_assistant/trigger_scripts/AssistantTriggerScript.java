@@ -18,6 +18,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantBottomBarDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AssistantBottomSheetContent;
 import org.chromium.chrome.browser.autofill_assistant.AssistantRootViewContainer;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantServiceInjector;
 import org.chromium.chrome.browser.autofill_assistant.BottomSheetUtils;
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 import org.chromium.chrome.browser.autofill_assistant.ScrollToHideGestureListener;
@@ -183,11 +184,6 @@ public class AssistantTriggerScript {
     }
 
     @VisibleForTesting
-    public void disableBottomSheetAnimationsForTesting(boolean disable) {
-        mAnimateBottomSheet = !disable;
-    }
-
-    @VisibleForTesting
     public List<AssistantChip> getLeftAlignedChipsForTest() {
         return mLeftAlignedChips;
     }
@@ -222,6 +218,10 @@ public class AssistantTriggerScript {
         mHeaderCoordinator = new AssistantHeaderCoordinator(mContext, mHeaderModel);
         mHeaderModel.set(
                 AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK, mDelegate::onFeedbackButtonClicked);
+        if (AutofillAssistantServiceInjector.hasServiceRequestSenderToInject()) {
+            mHeaderModel.set(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING, true);
+            mAnimateBottomSheet = false;
+        }
         return mHeaderModel;
     }
 

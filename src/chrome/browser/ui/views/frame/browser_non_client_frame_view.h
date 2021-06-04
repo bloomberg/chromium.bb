@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -120,7 +120,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
-  base::Optional<int> GetCustomBackgroundId(
+  absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const;
 
   // Updates the throbber.
@@ -157,8 +157,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
-  bool DoesIntersectRect(const views::View* target,
-                         const gfx::Rect& rect) const override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;

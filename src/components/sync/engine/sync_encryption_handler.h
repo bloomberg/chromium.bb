@@ -11,7 +11,8 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -34,9 +35,6 @@ enum BootstrapTokenType {
 // TODO(crbug.com/1010397): Rename this class.
 class SyncEncryptionHandler {
  public:
-  static constexpr PassphraseType kInitialPassphraseType =
-      PassphraseType::kImplicitPassphrase;
-
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.
   class Observer {
@@ -55,7 +53,9 @@ class SyncEncryptionHandler {
         const sync_pb::EncryptedData& pending_keys) = 0;
 
     // Called when the passphrase provided by the user has been accepted and is
-    // now used to encrypt sync data.
+    // now used to encrypt sync data. This gets invoked last, relative to other
+    // relevant notifications corresponding to the same event, e.g.
+    // OnCryptographerStateChanged().
     virtual void OnPassphraseAccepted() = 0;
 
     // Called when decryption keys are required in order to decrypt pending
@@ -85,7 +85,7 @@ class SyncEncryptionHandler {
     //
     // |encrypted_types| will always be a superset of
     // AlwaysEncryptedUserTypes().  If |encrypt_everything| is
-    // true, |encrypted_types| will be the set of all known types.
+    // true, |encrypted_types| will be the set of all encryptable types.
     //
     // Until this function is called, observers can assume that the
     // set of encrypted types is AlwaysEncryptedUserTypes() and that the
@@ -113,19 +113,13 @@ class SyncEncryptionHandler {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Reads the nigori node, updates internal state as needed, and, if an
-  // empty/stale nigori node is detected, overwrites the existing
-  // nigori node. Upon completion, if the cryptographer is still ready
-  // attempts to re-encrypt all sync data. Returns false in case of error.
-  // Note: This method is expensive (it iterates through all encrypted types),
-  // so should only be used sparingly (e.g. on startup).
-  // TODO(crbug.com/): Rename to something like NotifyStateToObservers() or
-  // even delete this API altogether.
-  virtual bool Init() = 0;
+  virtual void NotifyInitialStateToObservers() = 0;
 
-  // TODO(crbug.com/1178418): Add similar getters for the rest of the state
-  // notified to the observers.
+  virtual ModelTypeSet GetEncryptedTypes() = 0;
+
   virtual Cryptographer* GetCryptographer() = 0;
+
+  virtual PassphraseType GetPassphraseType() = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -153,11 +147,15 @@ class SyncEncryptionHandler {
   // Returns the time when Nigori was migrated to keystore or when it was
   // initialized in case it happens after migration was introduced. Returns
   // base::Time() in case migration isn't completed.
-  virtual base::Time GetKeystoreMigrationTime() const = 0;
+  virtual base::Time GetKeystoreMigrationTime() = 0;
 
   // Returns KeystoreKeysHandler, allowing to pass new keystore keys and to
   // check whether keystore keys need to be requested from the server.
   virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;
+
+  // Returns debug information related to trusted vault passphrase type.
+  virtual const sync_pb::NigoriSpecifics::TrustedVaultDebugInfo&
+  GetTrustedVaultDebugInfo() = 0;
 };
 
 }  // namespace syncer

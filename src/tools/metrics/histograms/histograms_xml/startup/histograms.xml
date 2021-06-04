@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Startup.AfterStartupTaskCount" units="units"
-    expires_after="2021-09-05">
+    expires_after="2021-11-07">
   <owner>michaeln@chromium.org</owner>
   <summary>
     The number of after-startup tasks that were queued prior to startup
@@ -66,7 +66,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2021-09-12">
+    units="ms" expires_after="2021-11-14">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -79,7 +79,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2021-09-12">
+    units="ms" expires_after="2021-11-14">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -106,7 +106,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
@@ -135,7 +135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.FeedsLoadingPlaceholderShown.Instant"
-    units="ms" expires_after="2021-08-09">
+    units="ms" expires_after="2021-10-10">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -162,7 +162,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FirstDrawCompletedTime" units="ms"
-    expires_after="2021-08-09">
+    expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -174,7 +174,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.GURLEnsureMainDexInitialized" units="ms"
-    expires_after="2021-08-08">
+    expires_after="2021-10-10">
   <owner>mthiesse@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -184,7 +184,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.SingleTabTitleAvailableTime"
-    units="ms" expires_after="2021-08-09">
+    units="ms" expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -199,7 +199,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.StartupTabPreloader.TabLoaded" units="Boolean"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>skyostil@chromium.org</owner>
   <summary>
     Android: Whether or not creation of a profile lead to the
@@ -234,7 +234,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>yusufo@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -260,7 +260,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint.Warm" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>yusufo@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -315,6 +315,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The amount of time that elapsed during the second section of
     BrowserMainRunnerImpl::Initialize.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopFirstIdle" units="ms"
+    expires_after="2022-01-31">
+  <owner>gab@chromium.org</owner>
+  <owner>etienneb@chromium.org</owner>
+  <summary>
+    Time from application start to the first time MainMessageLoopRun() reaches
+    idle. This is a new (Feb'2021) metric intended to capture UI jank caused by
+    the long queue of tasks post initialization. This is believed to capture
+    performance issues (startup responsiveness) none of the other Startup.*
+    metrics capture (crbug.com/1175074). Recording is dropped if blocking UI is
+    shown before first-idle is reached (as this blocks main loop progress on
+    unbounded user interaction).
   </summary>
 </histogram>
 
@@ -436,7 +451,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-08-22">
   <obsolete>
     Removed 03/2021. Broken starting M-87; removed and replaced with
-    Startup.ColdStartFromProcessCreationTime2 in M-91.
+    Startup.ColdStartFromProcessCreationTimeV2 in M-91.
   </obsolete>
   <owner>djean@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -456,10 +471,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>djean@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
-    The duration of all initializations from process creation time to UI ready.
-    This includes code loading, static initializers and the execution time
+    The duration of all initializations from process creation time to UI ready
+    to receive input. iOS specific, from M91+
+
+    The process can only be created in response to a user action, either tapping
+    the icon, tapping a link that opens in Chrome, or using the app switcher to
+    switch to Chrome after it has been background-killed by the OS.
+
+    The metric is recorded at the point where the Chrome window starts receiving
+    input events like touches and keypresses. However, the Chrome splash screen
+    is showing at this point, so there aren't any UI elements for a user to
+    interact with.
+
+    It includes code loading, static initializers and the execution time
     contained in Startup.ColdStartWithExternalURLTime and
-    Startup.ColdStartWithoutExternalURLTime metrics. iOS specific, from M91+.
+    Startup.ColdStartWithoutExternalURLTime metrics.
+
+    The total counts in this histogram can be compared with the number of emits
+    to the user action MobileWillEnterForeground. The former reports the number
+    of cold starts. The latter is only recorded when Chrome comes to the
+    foreground on non-cold starts.
   </summary>
 </histogram>
 
@@ -596,7 +627,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2021-09-05">
+    enum="MobileSessionStartAction" expires_after="2021-11-07">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -606,7 +637,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartFromApps"
-    enum="MobileSessionCallerApp" expires_after="2021-09-05">
+    enum="MobileSessionCallerApp" expires_after="2021-11-07">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>The calling application (if any).</summary>
@@ -676,7 +707,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2021-10-25">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
@@ -693,7 +724,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Temperature" enum="StartupTemperature"
-    expires_after="2021-08-08">
+    expires_after="2021-10-10">
 <!-- expires-after: Diagnosis metric for changes in StartupTemperature suffix.
      Shouldn't truly expire but kColdStartHardFaultCountThreshold should be
      surveyed yearly. -->

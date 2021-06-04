@@ -94,6 +94,8 @@ source_set("autofill_shared") {
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser",
     "//ios/chrome/browser/ui/util",
+    "//ios/web/public",
+    "//ios/web/public/js_messaging",
   ]
   frameworks = [ "UIKit.framework" ]
 }
@@ -515,7 +517,7 @@ source_set("unit_tests") {
     "form_input_accessory_view_handler_unittest.mm",
     "form_structure_browsertest.mm",
     "form_suggestion_controller_unittest.mm",
-    "js_suggestion_manager_unittest.mm",
+    "suggestion_controller_java_script_feature_unittest.mm",
   ]
   deps = [
     ":autofill",
@@ -530,6 +532,7 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/autofill/ios/form_util",
+    "//components/autofill/ios/form_util:form_util_feature",
     "//components/autofill/ios/form_util:test_support",
     "//components/infobars/core",
     "//components/keyed_service/core",

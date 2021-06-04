@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 .media-messages-header {
-  background-color: var(--toolbar-bg-color);
+  background-color: var(--color-background-elevation-1);
   border-bottom: 1px solid var(--color-details-hairline);
   min-height: 26px;
 }
@@ -14,17 +14,15 @@
 }
 
 .media-messages-level-dropdown-element {
-  background-color: var(--toolbar-bg-color);
-  color: #000; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background-elevation-1);
+  color: var(--color-text-primary);
   height: 18px;
   line-height: 18px;
 }
 
 .media-messages-level-dropdown-element:hover {
-  background-color: var(--accent-color-hover);
-  color: #fff; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--legacy-accent-color-hover);
+  color: var(--color-background);
 }
 
 .media-messages-level-dropdown-text {
@@ -47,13 +45,25 @@
 }
 
 .media-message-warning {
-  background-color: hsl(45deg 100% 97%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-media-message-warning-background: hsl(45deg 100% 97%);
+
+  background-color: var(--override-media-message-warning-background);
+}
+
+.-theme-with-dark-background .media-message-warning,
+:host-context(.-theme-with-dark-background) .media-message-warning {
+  --override-media-message-warning-background: rgb(79 58 0);
 }
 
 .media-message-error {
-  background-color: hsl(0deg 100% 97%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  --override-media-message-error-background: rgb(255 240 240);
+
+  background-color: var(--override-media-message-error-background);
+}
+
+.-theme-with-dark-background .media-message-error,
+:host-context(.-theme-with-dark-background) .media-message-error {
+  --override-media-message-error-background: rgb(79 0 0);
 }
 
 .media-messages-message-filtered {

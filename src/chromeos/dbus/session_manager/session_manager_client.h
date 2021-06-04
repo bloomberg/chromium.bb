@@ -190,8 +190,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // returned by the session manager. |error| contains an error message if an
   // error occurred, otherwise empty.
   using LoginScreenStorageRetrieveCallback =
-      base::OnceCallback<void(base::Optional<std::string> /* data */,
-                              base::Optional<std::string> /* error */)>;
+      base::OnceCallback<void(absl::optional<std::string> /* data */,
+                              absl::optional<std::string> /* error */)>;
 
   // Retrieve data stored earlier with the |LoginScreenStorageStore()| method.
   virtual void LoginScreenStorageRetrieve(
@@ -203,7 +203,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // |keys| is empty and |error| contains the error message.
   using LoginScreenStorageListKeysCallback =
       base::OnceCallback<void(std::vector<std::string> /* keys */,
-                              base::Optional<std::string> /* error */)>;
+                              absl::optional<std::string> /* error */)>;
 
   // List all keys currently stored in the login screen storage.
   virtual void LoginScreenStorageListKeys(
@@ -220,6 +220,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // Stops the current session. Don't call directly unless there's no user on
   // the device. Use SessionTerminationManager::StopSession instead.
   virtual void StopSession(login_manager::SessionStopReason reason) = 0;
+
+  // Triggers loading the shill profile for |cryptohome_id|.
+  virtual void LoadShillProfile(
+      const cryptohome::AccountIdentifier& cryptohome_id) = 0;
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
@@ -477,5 +481,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::SessionManagerClient;
+}
 
 #endif  // CHROMEOS_DBUS_SESSION_MANAGER_SESSION_MANAGER_CLIENT_H_

@@ -8,10 +8,11 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/updater/updater_scope.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class CommandLine;
@@ -49,7 +50,7 @@ void CopyLog(const base::FilePath& src_dir);
 void SleepFor(int seconds);
 
 // Returns the path to the updater data dir.
-base::Optional<base::FilePath> GetDataDirPath(UpdaterScope scope);
+absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope);
 
 // Expects that the updater is installed on the system.
 void ExpectInstalled(UpdaterScope scope);
@@ -81,11 +82,11 @@ void RegisterTestApp(UpdaterScope scope);
 bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
 
 // Returns the path of the Updater executable.
-base::Optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
+absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
 
 // Returns the folder path under which the executable for the fake updater
 // should reside.
-base::Optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
+absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
     UpdaterScope scope,
     const base::Version& version);
 
@@ -114,10 +115,14 @@ void ExpectActive(UpdaterScope scope, const std::string& app_id);
 // Expects that the active bit for `app_id` is unset.
 void ExpectNotActive(UpdaterScope scope, const std::string& app_id);
 
-void SetFakeExistenceCheckerPath(const std::string& app_id);
+void SetExistenceCheckerPath(const std::string& app_id,
+                             const base::FilePath& path);
+
 void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id);
 
 void RegisterApp(const std::string& app_id);
+
+void WaitForServerExit(UpdaterScope scope);
 
 #if defined(OS_WIN)
 void ExpectInterfacesRegistered();

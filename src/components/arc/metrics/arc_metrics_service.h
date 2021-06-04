@@ -14,16 +14,18 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/mojom/metrics.mojom.h"
 #include "components/arc/mojom/process.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/guest_os/guest_os_engagement_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/ozone/gamepad/gamepad_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -60,6 +62,11 @@ class ArcMetricsService : public KeyedService,
     virtual void OnArcMetricsServiceDestroyed() {}
   };
 
+  class UserInteractionObserver : public base::CheckedObserver {
+   public:
+    virtual void OnUserInteraction(UserInteractionType type) = 0;
+  };
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcMetricsService* GetForBrowserContext(
@@ -76,6 +83,10 @@ class ArcMetricsService : public KeyedService,
 
   // KeyedService overrides.
   void Shutdown() override;
+
+  // Records one of Arc.UserInteraction UMA stats. |context| cannot be null.
+  static void RecordArcUserInteraction(content::BrowserContext* context,
+                                       UserInteractionType type);
 
   // Sets the histogram namer. Required to not have a dependency on browser
   // codebase.
@@ -98,6 +109,7 @@ class ArcMetricsService : public KeyedService,
   void ReportArcCorePriAbiMigBootTime(base::TimeDelta duration) override;
   void ReportClipboardDragDropEvent(
       mojom::ArcClipboardDragDropEvent event_type) override;
+  void ReportAnr(mojom::AnrPtr anr) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.
@@ -119,11 +131,14 @@ class ArcMetricsService : public KeyedService,
   void AddAppKillObserver(AppKillObserver* obs);
   void RemoveAppKillObserver(AppKillObserver* obs);
 
+  void AddUserInteractionObserver(UserInteractionObserver* obs);
+  void RemoveUserInteractionObserver(UserInteractionObserver* obs);
+
   // Finds the boot_progress_arc_upgraded event, removes it from |events|, and
   // returns the event time. If the boot_progress_arc_upgraded event is not
-  // found, base::nullopt is returned. This function is public for testing
+  // found, absl::nullopt is returned. This function is public for testing
   // purposes.
-  base::Optional<base::TimeTicks> GetArcStartTimeFromEvents(
+  absl::optional<base::TimeTicks> GetArcStartTimeFromEvents(
       std::vector<mojom::BootProgressEventPtr>& events);
 
  private:
@@ -193,16 +208,17 @@ class ArcMetricsService : public KeyedService,
     DISALLOW_COPY_AND_ASSIGN(AppLauncherObserver);
   };
 
+  void RecordArcUserInteraction(UserInteractionType type);
   void RequestProcessList();
   void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
   // DBus callbacks.
   void OnArcStartTimeRetrieved(std::vector<mojom::BootProgressEventPtr> events,
                                mojom::BootType boot_type,
-                               base::Optional<base::TimeTicks> arc_start_time);
+                               absl::optional<base::TimeTicks> arc_start_time);
   void OnArcStartTimeForPriAbiMigration(
       base::TimeTicks durationTicks,
-      base::Optional<base::TimeTicks> arc_start_time);
+      absl::optional<base::TimeTicks> arc_start_time);
 
   // Notify AppKillObservers.
   void NotifyLowMemoryKill();
@@ -232,12 +248,30 @@ class ArcMetricsService : public KeyedService,
   bool gamepad_interaction_recorded_ = false;
 
   base::ObserverList<AppKillObserver> app_kill_observers_;
+  base::ObserverList<UserInteractionObserver> user_interaction_observers_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.
   base::WeakPtrFactory<ArcMetricsService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcMetricsService);
+};
+
+// Singleton factory for ArcMetricsService.
+class ArcMetricsServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcMetricsService,
+          ArcMetricsServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcMetricsServiceFactory";
+
+  static ArcMetricsServiceFactory* GetInstance();
+
+ private:
+  friend base::DefaultSingletonTraits<ArcMetricsServiceFactory>;
+  ArcMetricsServiceFactory() = default;
+  ~ArcMetricsServiceFactory() override = default;
 };
 
 }  // namespace arc

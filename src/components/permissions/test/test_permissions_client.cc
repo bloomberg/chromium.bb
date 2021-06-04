@@ -56,7 +56,7 @@ PermissionManager* TestPermissionsClient::GetPermissionManager(
   return nullptr;
 }
 
-ChooserContextBase* TestPermissionsClient::GetChooserContext(
+ObjectPermissionContextBase* TestPermissionsClient::GetChooserContext(
     content::BrowserContext* browser_context,
     ContentSettingsType type) {
   return nullptr;
@@ -72,7 +72,7 @@ void TestPermissionsClient::GetUkmSourceId(
         ukm::GetSourceIdForWebContentsDocument(web_contents);
     std::move(callback).Run(source_id);
   } else {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 }
 

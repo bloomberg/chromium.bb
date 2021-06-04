@@ -41,6 +41,7 @@
 <translation id="1395262318152388157">Bilah geser</translation>
 <translation id="1404323374378969387">Norwegia</translation>
 <translation id="1430915738399379752">Cetak</translation>
+<translation id="1433628812591023318">Untuk melepaskan file di Parallels Desktop, file harus dipindahkan ke file Windows.</translation>
 <translation id="1435838927755162558">Bagikan folder ke Parallels Desktop</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1471718551822868769">Slovakia</translation>
@@ -196,6 +197,7 @@
 <translation id="3067790092342515856">File Windows</translation>
 <translation id="3078461028045006476">Bagikan dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
+<translation id="3113153474486991170">Tidak dapat membuka "<ph name="PATH" />" dari lokasi ini. Salin ke "File saya" untuk membuka.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3144126448740580210">SELESAI</translation>
 <translation id="3188257591659621405">File saya</translation>
@@ -449,6 +451,7 @@
 <translation id="5602622065581044566">Bulgaria dengan keyboard Fonetik</translation>
 <translation id="5605830556594064952">Dvorak AS</translation>
 <translation id="5625294776298156701">Tamil dengan keyboard Tamil99</translation>
+<translation id="5633226425545095130">Memindahkan item ini akan membagikannya ke siapa saja yang dapat melihat folder bersama '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">Dengar</translation>
 <translation id="5678784840044122290">Aplikasi Linux akan tersedia dalam Terminal Anda dan juga mungkin menampilkan ikon di Peluncur.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Tidak dapat memutuskan hubungan dari arsip atau disk virtual<ph name="END_BOLD" />
@@ -610,6 +613,7 @@
 <translation id="7417453074306512035">Keyboard Ethiopia</translation>
 <translation id="7417705661718309329">Peta Google</translation>
 <translation id="7460898608667578234">Ukraina</translation>
+<translation id="7486315294984620427">Untuk melepaskan file di Parallels Desktop, file harus disalin ke file Windows.</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> ditemukan
     <ph name="LINE_BREAK1" />
     Siap untuk mencadangkan ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -722,6 +726,7 @@
 <translation id="8395901698320285466">Dimensi</translation>
 <translation id="8437209419043462667">AS</translation>
 <translation id="8456681095658380701">Nama tidak valid</translation>
+<translation id="8459404855768962328">Menyalin item ini akan membagikannya ke siapa saja yang dapat melihat folder bersama '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="8461467696380332069">Klik kanan file, lalu pilih "Sematkan ke Rak" untuk mendapatkan akses cepat ke file Anda di rak.</translation>
 <translation id="8463494891489624050">VIQR Vietnam</translation>
 <translation id="8466234950814670489">Arsip Tar</translation>

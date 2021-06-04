@@ -12,13 +12,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -41,7 +41,7 @@ ConfirmSignoutDialog::ConfirmSignoutDialog() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::DialogContentType::TEXT, views::DialogContentType::TEXT)));
+          views::DialogContentType::kText, views::DialogContentType::kText)));
 
   // |body| will be owned by the views system.
   views::Label* body = new views::Label;

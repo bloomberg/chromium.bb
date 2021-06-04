@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">バナー</translation>
 <translation id="145015347812617860"><ph name="COUNT" />個のアイテム</translation>
 <translation id="1480676835519562650">複数の選択が可能です。<ph name="COUNT" /> 件中 <ph name="SELECTED" /> 件が選択されています。</translation>
+<translation id="1588438908519853928">ノーマル</translation>
 <translation id="1589122976691792535">地域</translation>
 <translation id="1591562245178063882">今月</translation>
 <translation id="1637811476055996098">ファイル選択</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">タイマー</translation>
 <translation id="3199563858620722075">コンボボックス</translation>
 <translation id="3220661731597678625">現在のステップ</translation>
+<translation id="3321030238473337787">再生速度</translation>
 <translation id="3329013043687509092">彩度</translation>
 <translation id="3450233048674729344">値は <ph name="MAXIMUM" /> 以下にする必要があります。</translation>
 <translation id="3486220673238053218">定義</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">メニューバー</translation>
 <translation id="4293574643247337246">ページヘッダー</translation>
 <translation id="4360991593054037559">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE_LOW" /> と <ph name="VALID_VALUE_HIGHER" /> です。</translation>
+<translation id="4371899966896349864">再生速度メニューを非表示にします</translation>
 <translation id="4384249794467006333">この画像にはラベルがありません。画像の説明を取得するには、右上のその他のオプションメニューを開いてください。</translation>
 <translation id="4384583879834880242">Q＆A</translation>
 <translation id="4444765639179266822"><ph name="OCR_TEXT" /> というテキストのようです</translation>
@@ -147,6 +150,7 @@
 <translation id="512758898067543763">行見出し</translation>
 <translation id="5143125788380636750">エピローグ</translation>
 <translation id="5164977714490026579">値は <ph name="MINIMUM" /> 以上にする必要があります。</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">「<ph name="ATSIGN" />」の前の文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
 <translation id="5334352251556557839">メディアを再生できません。</translation>
@@ -157,6 +161,7 @@
 <translation id="5453733299334684579">ツリー項目</translation>
 <translation id="5466621249238537318">1 つ以上のファイルを選択してください。</translation>
 <translation id="5468998798572797635">全画面表示を終了</translation>
+<translation id="5516235301412634559">0.75</translation>
 <translation id="5516424706154626233">日付選択ツール</translation>
 <translation id="5537725057119320332">キャスト</translation>
 <translation id="5546461542133609677">ミュートを解除</translation>
@@ -168,6 +173,7 @@
 <translation id="5677946354068040947">その他のオプション</translation>
 <translation id="576709008726043716">序論</translation>
 <translation id="57838592816432529">ミュート</translation>
+<translation id="5786442179789148008">再生速度メニューを表示します</translation>
 <translation id="5787939484346677755">展開表示されています。オートコンプリート候補があります。</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="588258955323874662">全画面表示</translation>
@@ -176,6 +182,7 @@
 <translation id="5916664084637901428">オン</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5966707198760109579">週</translation>
+<translation id="5985507339671257014">0.5</translation>
 <translation id="5987525920412732405">スピンボタン</translation>
 <translation id="6011459053400940133">音量スライダー</translation>
 <translation id="6015796118275082299">年</translation>
@@ -214,6 +221,7 @@
 <translation id="6843725295806269523">ミュート</translation>
 <translation id="6885760532393684712">ディレクトリ</translation>
 <translation id="689129560213475294">奥付</translation>
+<translation id="6919891270253167948">1.5</translation>
 <translation id="6934078000481955284">引用</translation>
 <translation id="693476918119313863">ヘッダー</translation>
 <translation id="6941933287844615239">メディアをダウンロード</translation>
@@ -250,6 +258,7 @@
 <translation id="7745230546936012372">画像の説明がない場合に取得するには、コンテキスト メニューを開きます。</translation>
 <translation id="7750228210027921155">ピクチャー イン ピクチャー</translation>
 <translation id="775297008183122718">入力した値が無効です</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">一時停止</translation>
 <translation id="7802800022689234070">三角形の展開ボタン</translation>
 <translation id="7852167693871241274">色相スライダー</translation>
@@ -263,6 +272,7 @@
 <translation id="8105797009065549151">備考</translation>
 <translation id="811583516810654505">説明を取得しています...</translation>
 <translation id="8117451130807776954">今週</translation>
+<translation id="8131955114056917397">0.25</translation>
 <translation id="8199524924445686405"> 年 </translation>
 <translation id="8208673686607688524">ローカル日時選択ツール</translation>
 <translation id="8261464734335370856">スペルが無効です</translation>
@@ -287,6 +297,7 @@
 <translation id="8613126697340063924">リモート再生をコントロール</translation>
 <translation id="862370744433916922">副題</translation>
 <translation id="8634971699417195529">月選択ツールを表示します</translation>
+<translation id="8637593834423658414">1.75</translation>
 <translation id="8668988909814782445">行を折り返す</translation>
 <translation id="8711688047404765493">出力</translation>
 <translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>

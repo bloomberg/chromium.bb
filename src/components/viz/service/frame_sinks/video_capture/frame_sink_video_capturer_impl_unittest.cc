@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
@@ -30,6 +29,7 @@
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -249,6 +249,10 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
     client_ = nullptr;
   }
 
+  void OnClientCaptureStarted() override { ++number_clients_capturing_; }
+
+  void OnClientCaptureStopped() override { --number_clients_capturing_; }
+
   gfx::Size GetActiveFrameSize() override { return source_size(); }
 
   void RequestCopyOfOutput(
@@ -296,7 +300,11 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
     task_runner_ = std::move(runner);
   }
 
+  int number_clients_capturing() const { return number_clients_capturing_; }
+
  private:
+  // Number of clients that have started capturing.
+  int number_clients_capturing_ = 0;
   CapturableFrameSink::Client* client_ = nullptr;
   YUVColor color_ = {0xde, 0xad, 0xbf};
   SizeSet size_set_;
@@ -330,13 +338,13 @@ class InstrumentedVideoCaptureOracle : public media::VideoCaptureOracle {
     return media::VideoCaptureOracle::capture_size();
   }
 
-  void set_forced_capture_size(base::Optional<gfx::Size> size) {
+  void set_forced_capture_size(absl::optional<gfx::Size> size) {
     forced_capture_size_ = size;
   }
 
  private:
   bool return_false_on_complete_capture_;
-  base::Optional<gfx::Size> forced_capture_size_;
+  absl::optional<gfx::Size> forced_capture_size_;
 };
 
 // Matcher that returns true if the content region of a letterboxed VideoFrame
@@ -1295,6 +1303,23 @@ TEST_F(FrameSinkVideoCapturerTest, CaptureCounterSkipsWhenFramesAreDropped) {
               *received_frame->metadata().capture_counter);
   }
   StopCapture();
+}
+
+TEST_F(FrameSinkVideoCapturerTest, ClientCaptureStartsAndStops) {
+  EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
+      .WillRepeatedly(Return(&frame_sink_));
+
+  capturer_->ChangeTarget(kFrameSinkId, SubtreeCaptureId());
+  EXPECT_EQ(frame_sink_.number_clients_capturing(), 0);
+
+  // Start capturing. frame_sink_ should now have one client capturing.
+  NiceMock<MockConsumer> consumer;
+  StartCapture(&consumer);
+  EXPECT_EQ(frame_sink_.number_clients_capturing(), 1);
+
+  // Stop capturing. frame_sink_ should now have no client capturing.
+  StopCapture();
+  EXPECT_EQ(frame_sink_.number_clients_capturing(), 0);
 }
 
 }  // namespace viz

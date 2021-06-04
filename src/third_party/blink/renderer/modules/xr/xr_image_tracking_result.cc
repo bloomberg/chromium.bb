@@ -28,10 +28,10 @@ XRImageTrackingResult::XRImageTrackingResult(
   }
 }
 
-base::Optional<TransformationMatrix> XRImageTrackingResult::MojoFromObject()
+absl::optional<TransformationMatrix> XRImageTrackingResult::MojoFromObject()
     const {
   if (!mojo_from_this_) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return TransformationMatrix(mojo_from_this_->ToTransform().matrix());
@@ -44,6 +44,16 @@ XRSpace* XRImageTrackingResult::imageSpace() const {
   }
 
   return image_space_;
+}
+
+device::mojom::blink::XRNativeOriginInformationPtr
+XRImageTrackingResult::NativeOrigin() const {
+  // TODO(https://crbug.com/1143575): We'll want these to correspond to an
+  // actual, independent space eventually, but at the moment it's sufficient for
+  // the ARCore implementation to have it be equivalent to the local reference
+  // space.
+  return device::mojom::blink::XRNativeOriginInformation::NewReferenceSpaceType(
+      device::mojom::XRReferenceSpaceType::kLocal);
 }
 
 void XRImageTrackingResult::Trace(Visitor* visitor) const {

@@ -9,16 +9,17 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/rrect_f.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
 class SkDeferredDisplayList;
@@ -78,6 +79,9 @@ class VIZ_SERVICE_EXPORT CALayerOverlay {
   unsigned edge_aa_mask = 0;
   // The minification and magnification filters for the CALayer.
   unsigned filter = 0;
+  // The protected video status of the AVSampleBufferDisplayLayer.
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
   const AggregatedRenderPassDrawQuad* rpdq = nullptr;
@@ -131,6 +135,7 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
           render_pass_filters,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_backdrop_filters,
+      gfx::ProtectedVideoType protected_video_type,
       CALayerOverlayList* ca_layer_overlays) const;
 
   DISALLOW_COPY_AND_ASSIGN(CALayerOverlayProcessor);

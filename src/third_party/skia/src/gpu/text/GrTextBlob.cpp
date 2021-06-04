@@ -27,10 +27,6 @@
 #include "src/gpu/text/GrStrikeCache.h"
 #include "src/gpu/text/GrTextBlob.h"
 
-#include <cstddef>
-#include <memory>
-#include <new>
-
 namespace {
 struct AtlasPt {
     uint16_t u;
@@ -351,11 +347,11 @@ GlyphVector GlyphVector::Make(
         variants[i] = gv.glyph()->getPackedID();
     }
 
-    return GlyphVector{spec, SkSpan(variants, glyphs.size())};
+    return GlyphVector{spec, SkMakeSpan(variants, glyphs.size())};
 }
 
 SkSpan<const GrGlyph*> GlyphVector::glyphs() const {
-    return SkSpan(reinterpret_cast<const GrGlyph**>(fGlyphs.data()), fGlyphs.size());
+    return SkMakeSpan(reinterpret_cast<const GrGlyph**>(fGlyphs.data()), fGlyphs.size());
 }
 
 void GlyphVector::packedGlyphIDToGrGlyph(GrStrikeCache* cache) {
@@ -413,7 +409,7 @@ std::tuple<bool, int> GlyphVector::regenerateAtlas(int begin, int end,
         }
 
         // Update atlas generation if there are no more glyphs to put in the atlas.
-        if (success && begin + glyphsPlacedInAtlas == fGlyphs.count()) {
+        if (success && begin + glyphsPlacedInAtlas == SkCount(fGlyphs)) {
             // Need to get the freshest value of the atlas' generation because
             // updateTextureCoordinates may have changed it.
             fAtlasGeneration = atlasManager->atlasGeneration(maskFormat);
@@ -422,7 +418,7 @@ std::tuple<bool, int> GlyphVector::regenerateAtlas(int begin, int end,
         return {success, glyphsPlacedInAtlas};
     } else {
         // The atlas hasn't changed, so our texture coordinates are still valid.
-        if (end == fGlyphs.count()) {
+        if (end == SkCount(fGlyphs)) {
             // The atlas hasn't changed and the texture coordinates are all still valid. Update
             // all the plots used to the new use token.
             atlasManager->setUseTokenBulk(fBulkUseToken,
@@ -588,7 +584,7 @@ size_t DirectMaskSubRun::vertexStride(const SkMatrix&) const {
 }
 
 int DirectMaskSubRun::glyphCount() const {
-    return fGlyphs.glyphs().count();
+    return SkCount(fGlyphs.glyphs());
 }
 
 namespace {
@@ -677,7 +673,8 @@ DirectMaskSubRun::makeAtlasTextOp(const GrClip* clip, const SkMatrixProvider& vi
             drawOrigin,
             clipRect,
             sk_ref_sp<GrTextBlob>(fBlob),
-            drawingColor);
+            drawingColor,
+            sdc->arenaAlloc());
 
     GrRecordingContext* const rContext = sdc->recordingContext();
     GrOp::Owner op = GrOp::Make<GrAtlasTextOp>(rContext,
@@ -970,7 +967,8 @@ TransformedMaskSubRun::makeAtlasTextOp(const GrClip* clip,
             drawOrigin,
             SkIRect::MakeEmpty(),
             sk_ref_sp<GrTextBlob>(fBlob),
-            drawingColor);
+            drawingColor,
+            sdc->arenaAlloc());
 
     GrRecordingContext* const rContext = sdc->recordingContext();
     GrOp::Owner op = GrOp::Make<GrAtlasTextOp>(
@@ -1061,7 +1059,7 @@ size_t TransformedMaskSubRun::vertexStride(const SkMatrix& drawMatrix) const {
 }
 
 int TransformedMaskSubRun::glyphCount() const {
-    return fVertexData.count();
+    return SkCount(fVertexData);
 }
 
 SkRect TransformedMaskSubRun::deviceRect(const SkMatrix& drawMatrix, SkPoint drawOrigin) const {
@@ -1252,7 +1250,8 @@ SDFTSubRun::makeAtlasTextOp(const GrClip* clip,
             drawOrigin,
             SkIRect::MakeEmpty(),
             sk_ref_sp<GrTextBlob>(fBlob),
-            drawingColor);
+            drawingColor,
+            sdc->arenaAlloc());
 
     GrRecordingContext* const rContext = sdc->recordingContext();
     GrOp::Owner op = GrOp::Make<GrAtlasTextOp>(
@@ -1328,7 +1327,7 @@ void SDFTSubRun::fillVertexData(
 }
 
 int SDFTSubRun::glyphCount() const {
-    return fVertexData.count();
+    return SkCount(fVertexData);
 }
 
 SkRect SDFTSubRun::deviceRect(const SkMatrix& drawMatrix, SkPoint drawOrigin) const {
@@ -1529,8 +1528,11 @@ bool GrTextBlob::hasPerspective() const { return fInitialMatrix.hasPerspective()
 
 bool GrTextBlob::canReuse(const SkPaint& paint, const SkMatrix& drawMatrix) const {
     // A singular matrix will create a GrTextBlob with no SubRuns, but unknown glyphs can
-    // also cause empty runs. If there are no subRuns, then regenerate.
-    if ((fSubRunList.isEmpty() || fSomeGlyphsExcluded) && fInitialMatrix != drawMatrix) {
+    // also cause empty runs. If there are no subRuns or some glyphs were excluded or perspective,
+    // then regenerate when the matrices don't match.
+    if ((fSubRunList.isEmpty() || fSomeGlyphsExcluded || hasPerspective()) &&
+         fInitialMatrix != drawMatrix)
+    {
         return false;
     }
 
@@ -1626,80 +1628,6 @@ void GrTextBlob::processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& drawabl
 void GrTextBlob::processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                                     const SkStrikeSpec& strikeSpec) {
     this->addMultiMaskFormat(TransformedMaskSubRun::Make, drawables, strikeSpec);
-}
-
-// -- GrBagOfBytes ---------------------------------------------------------------------------------
-GrBagOfBytes::GrBagOfBytes(char* bytes, size_t size, size_t firstHeapAllocation)
-        : fFibProgression(size, firstHeapAllocation) {
-    SkASSERT_RELEASE(size < kMaxByteSize);
-    SkASSERT_RELEASE(firstHeapAllocation < kMaxByteSize);
-
-    std::size_t space = size;
-    void* ptr = bytes;
-    if (bytes && std::align(kMaxAlignment, sizeof(Block), ptr, space)) {
-        this->setupBytesAndCapacity(bytes, size);
-        new (fEndByte) Block(nullptr, nullptr);
-    }
-}
-
-GrBagOfBytes::GrBagOfBytes(size_t firstHeapAllocation)
-        : GrBagOfBytes(nullptr, 0, firstHeapAllocation) {}
-
-GrBagOfBytes::~GrBagOfBytes() {
-    Block* cursor = reinterpret_cast<Block*>(fEndByte);
-    while (cursor != nullptr) {
-        char* toDelete = cursor->fBlockStart;
-        cursor = cursor->fPrevious;
-        delete [] toDelete;
-    }
-}
-
-GrBagOfBytes::Block::Block(char* previous, char* startOfBlock)
-        : fBlockStart{startOfBlock}
-        , fPrevious{reinterpret_cast<Block*>(previous)} {}
-
-void* GrBagOfBytes::alignedBytes(int size, int alignment) {
-    SkASSERT_RELEASE(0 < size && size < kMaxByteSize);
-    SkASSERT_RELEASE(0 < alignment && alignment <= kMaxAlignment);
-    SkASSERT_RELEASE(SkIsPow2(alignment));
-
-    return this->allocateBytes(size, alignment);
-}
-
-void GrBagOfBytes::setupBytesAndCapacity(char* bytes, int size) {
-    // endByte must be aligned to the maximum alignment to allow tracking alignment using capacity;
-    // capacity and endByte are both aligned to max alignment.
-    intptr_t endByte = reinterpret_cast<intptr_t>(bytes + size - sizeof(Block)) & -kMaxAlignment;
-    fEndByte  = reinterpret_cast<char*>(endByte);
-    fCapacity = fEndByte - bytes;
-}
-
-void GrBagOfBytes::needMoreBytes(int requestedSize, int alignment) {
-    int nextBlockSize = fFibProgression.nextBlockSize();
-    const int size = PlatformMinimumSizeWithOverhead(
-            std::max(requestedSize, nextBlockSize), alignof(max_align_t));
-    char* const bytes = new char[size];
-    // fEndByte is changed by setupBytesAndCapacity. Remember it to link back to.
-    char* const previousBlock = fEndByte;
-    this->setupBytesAndCapacity(bytes, size);
-
-    // Make a block to delete these bytes, and points to the previous block.
-    new (fEndByte) Block{previousBlock, bytes};
-
-    // Make fCapacity the alignment for the requested object.
-    fCapacity = fCapacity & -alignment;
-    SkASSERT(fCapacity >= requestedSize);
-}
-
-// -- GrTextBlobAllocator --------------------------------------------------------------------------
-GrSubRunAllocator::GrSubRunAllocator(char* bytes, int size, int firstHeapAllocation)
-        : fAlloc{bytes, SkTo<size_t>(size), SkTo<size_t>(firstHeapAllocation)} {}
-
-GrSubRunAllocator::GrSubRunAllocator(int firstHeapAllocation)
-        : GrSubRunAllocator(nullptr, 0, firstHeapAllocation) {}
-
-void* GrSubRunAllocator::alignedBytes(int unsafeSize, int unsafeAlignment) {
-    return fAlloc.alignedBytes(unsafeSize, unsafeAlignment);
 }
 
 // ----------------------------- Begin no cache implementation -------------------------------------
@@ -1815,7 +1743,7 @@ size_t DirectMaskSubRunNoCache::vertexStride(const SkMatrix&) const {
 }
 
 int DirectMaskSubRunNoCache::glyphCount() const {
-    return fGlyphs.glyphs().count();
+    return SkCount(fGlyphs.glyphs());
 }
 
 std::tuple<const GrClip*, GrOp::Owner>
@@ -2148,7 +2076,7 @@ size_t TransformedMaskSubRunNoCache::vertexStride(const SkMatrix& drawMatrix) co
 }
 
 int TransformedMaskSubRunNoCache::glyphCount() const {
-    return fVertexData.count();
+    return SkCount(fVertexData);
 }
 
 SkRect TransformedMaskSubRunNoCache::deviceRect(
@@ -2341,7 +2269,7 @@ void SDFTSubRunNoCache::fillVertexData(
 }
 
 int SDFTSubRunNoCache::glyphCount() const {
-    return fVertexData.count();
+    return SkCount(fVertexData);
 }
 
 SkRect SDFTSubRunNoCache::deviceRect(const SkMatrix& drawMatrix, SkPoint drawOrigin) const {
@@ -2478,6 +2406,9 @@ void GrSubRunNoCachePainter::processSourceSDFT(const SkZip<SkGlyphVariant, SkPoi
 }
 
 void GrSubRunNoCachePainter::draw(GrAtlasSubRunOwner subRun) {
+    if (subRun == nullptr) {
+        return;
+    }
     GrAtlasSubRun* subRunPtr = subRun.get();
     auto [drawingClip, op] = subRunPtr->makeAtlasTextOp(
             fClip, fViewMatrix, fGlyphRunList, fPaint, fSDC, std::move(subRun));

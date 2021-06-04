@@ -78,7 +78,6 @@
 #include "extensions/common/extension_set.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #endif
 
@@ -257,7 +256,7 @@ class SessionRestoreImpl : public BrowserListObserver {
           use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
       web_contents = chrome::AddRestoredTab(
           browser, tab.navigations, tab_index, selected_index,
-          tab.extension_app_id, base::nullopt,
+          tab.extension_app_id, absl::nullopt,
           disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, base::TimeTicks(), nullptr, tab.user_agent_override,
           true /* from_session_restore */);
@@ -370,7 +369,13 @@ class SessionRestoreImpl : public BrowserListObserver {
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-GotSession", false);
 #endif
-    read_error_ = read_error;
+
+    // This function could be called twice from both SessionService and
+    // AppSessionService. If one of them returns error, then |read_error_| is
+    // true. So check whether |read_error_| has been set as true to prevent the
+    // result is overwritten.
+    if (!read_error_)
+      read_error_ = read_error;
 
     // Copy windows into windows_ so that we can combine both app and browser
     // windows together before doing a one-pass restore.
@@ -450,7 +455,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     if (windows->empty()) {
       // Restore was unsuccessful. The DOM storage system can also delete its
       // data, since no session restore will happen at a later point in time.
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetDOMStorageContext()
           ->StartScavengingUnusedSessionStorage();
       return FinishedTabCreation(false, false, created_contents);
@@ -535,16 +540,13 @@ class SessionRestoreImpl : public BrowserListObserver {
 
       // 5. Restore tabs in |browser|. This will also call Show() on |browser|
       //    if its initial show state is not mimimized.
-      // However, with desks restore enabled, a window is restored to its parent
-      // desk, which can be non-active desk, and left invisible but unminimized.
+      // For the cases that users have more than one desk, a window is restored
+      // to its parent desk, which can be non-active desk, and left invisible
+      // but unminimized.
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count, created_contents);
       (*tab_count) += (static_cast<int>(browser->tab_strip_model()->count()) -
                        initial_tab_count);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      DCHECK(browser->window()->IsVisible() ||
-             browser->window()->IsMinimized() ||
-             ash::features::IsBentoEnabled());
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
       DCHECK(browser->window()->IsVisible() ||
              browser->window()->IsMinimized());
 #endif
@@ -600,7 +602,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     // sessionStorages needed for the session restore have now been recreated
     // by RestoreTab. Now it's safe for the DOM storage system to start
     // deleting leftover data.
-    content::BrowserContext::GetDefaultStoragePartition(profile_)
+    profile_->GetDefaultStoragePartition()
         ->GetDOMStorageContext()
         ->StartScavengingUnusedSessionStorage();
     return last_normal_browser;
@@ -709,7 +711,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
     if (!tab.session_storage_persistent_id.empty()) {
       session_storage_namespace =
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
+          profile_->GetDefaultStoragePartition()
               ->GetDOMStorageContext()
               ->RecreateSessionStorage(tab.session_storage_persistent_id);
     }
@@ -884,12 +886,13 @@ class SessionRestoreImpl : public BrowserListObserver {
 
 // static
 Browser* SessionRestore::RestoreSession(
-    Profile* profile, Browser* browser,
+    Profile* profile,
+    Browser* browser,
     SessionRestore::BehaviorBitmask behavior,
     const std::vector<GURL>& urls_to_open) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
-      "SessionRestore-Start", false);
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker("SessionRestore-Start",
+                                                         false);
 #endif
   DCHECK(profile);
   DCHECK(SessionServiceFactory::GetForProfile(profile));
@@ -910,15 +913,13 @@ void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
   auto* profile = browser->profile();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Bento restores a window to the right desk, so we should not
-  // reuse any browser window. Otherwise, the conflict of the parent desk
-  // arises because tabs created in this |browser| should remain in the
-  // current active desk, but the first restored window should be restored
-  // to its saved parent desk before a crash. This also avoids users'
-  // confusion of the current window disappearing from the current desk
-  // after pressing a restore button.
-  if (ash::features::IsBentoEnabled())
-    browser = nullptr;
+  // Desks restore a window to the right desk, so we should not reuse any
+  // browser window. Otherwise, the conflict of the parent desk arises because
+  // tabs created in this |browser| should remain in the current active desk,
+  // but the first restored window should be restored to its saved parent desk
+  // before a crash. This also avoids users' confusion of the current window
+  // disappearing from the current desk after pressing a restore button.
+  browser = nullptr;
 #endif
 
   SessionRestore::BehaviorBitmask behavior =

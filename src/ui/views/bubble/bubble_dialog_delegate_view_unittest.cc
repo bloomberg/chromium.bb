@@ -298,6 +298,21 @@ TEST_F(BubbleDialogDelegateViewTest, ResetAnchorWidget) {
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
+TEST_F(BubbleDialogDelegateViewTest, NoParentWidget) {
+  test_views_delegate()->set_use_desktop_native_widgets(true);
+#if defined(OS_CHROMEOS)
+  test_views_delegate()->set_context(GetContext());
+#endif
+  BubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_has_parent(false);
+  WidgetAutoclosePtr bubble_widget(
+      BubbleDialogDelegateView::CreateBubble(std::move(bubble_delegate)));
+  EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
+  EXPECT_EQ(bubble_widget.get(), bubble_delegate->GetWidget());
+  EXPECT_EQ(nullptr, bubble_widget->parent());
+}
+
 TEST_F(BubbleDialogDelegateViewTest, InitiallyFocusedView) {
   std::unique_ptr<Widget> anchor_widget =
       CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
@@ -357,6 +372,17 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleWhenAnchorWidgetBoundsChanged) {
   EXPECT_TRUE(bubble_widget->IsVisible());
   anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
   EXPECT_TRUE(bubble_widget->IsVisible());
+}
+
+TEST_F(BubbleDialogDelegateViewTest, GetPrimaryWindowWidget) {
+  std::unique_ptr<Widget> anchor_widget =
+      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  BubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  EXPECT_EQ(anchor_widget.get(), anchor_widget->GetPrimaryWindowWidget());
+  EXPECT_EQ(anchor_widget.get(), bubble_widget->GetPrimaryWindowWidget());
 }
 
 // Test that setting WidgetDelegate::SetCanActivate() to false makes the
@@ -452,8 +478,8 @@ TEST_F(BubbleDialogDelegateViewTest, CustomTitle) {
             title_view->bounds().right());
 
   LayoutProvider* provider = LayoutProvider::Get();
-  const gfx::Insets content_margins =
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  const gfx::Insets content_margins = provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText);
   const gfx::Insets title_margins =
       provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   EXPECT_EQ(content_margins, bubble_delegate->margins());
@@ -539,7 +565,8 @@ TEST_F(BubbleDialogDelegateViewTest, AttachedWidgetShowsInkDropWhenVisible) {
       anchor_widget->SetContentsView(std::make_unique<LabelButton>(
           Button::PressedCallback(), std::u16string()));
   TestInkDrop* ink_drop = new TestInkDrop();
-  test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
+  test::InkDropHostTestApi(button->ink_drop())
+      .SetInkDrop(base::WrapUnique(ink_drop));
   TestBubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(nullptr);
   bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
@@ -568,7 +595,8 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleWidgetShowsInkDropOnAttaching) {
       anchor_widget->SetContentsView(std::make_unique<LabelButton>(
           Button::PressedCallback(), std::u16string()));
   TestInkDrop* ink_drop = new TestInkDrop();
-  test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
+  test::InkDropHostTestApi(button->ink_drop())
+      .SetInkDrop(base::WrapUnique(ink_drop));
   TestBubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(nullptr);
   bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
@@ -599,13 +627,13 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {
   Widget* bubble_widget =
       BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // All child widgets make the parent paint as active on Mac.
   // See https://crbug.com/1046540
   EXPECT_TRUE(anchor_widget->ShouldPaintAsActive());
 #else
   EXPECT_FALSE(anchor_widget->ShouldPaintAsActive());
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
   bubble_delegate->SetAnchorView(anchor_widget->GetContentsView());
   EXPECT_TRUE(anchor_widget->ShouldPaintAsActive());
 

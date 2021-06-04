@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.RecreateObserver;
@@ -52,7 +52,7 @@ import java.util.List;
 public class MultiInstanceManager
         implements PauseResumeWithNativeObserver, RecreateObserver, ConfigurationChangedObserver,
                    NativeInitObserver, MultiWindowModeStateDispatcher.MultiWindowModeObserver,
-                   Destroyable, MenuOrKeyboardActionController.MenuOrKeyboardActionHandler {
+                   DestroyObserver, MenuOrKeyboardActionController.MenuOrKeyboardActionHandler {
     /**
      * Should be called when multi-instance mode is started.
      */
@@ -119,7 +119,7 @@ public class MultiInstanceManager
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         mMultiWindowModeStateDispatcher.removeObserver(this);
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(this);
         DisplayManager displayManager =
@@ -321,7 +321,11 @@ public class MultiInstanceManager
             Tab currentTab = tabModelSelector.getCurrentTab();
             if (currentTab != null) moveTabToOtherWindow(currentTab);
             return true;
+        } else if (id == org.chromium.chrome.R.id.new_window_menu_id) {
+            openNewWindow();
+            return true;
         }
+
         return false;
     }
 
@@ -422,6 +426,20 @@ public class MultiInstanceManager
         onMultiInstanceModeStarted();
         ReparentingTask.from(tab).begin(mActivity, intent,
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivityOptions(), null);
+    }
+
+    private void openNewWindow() {
+        assert mMultiWindowModeStateDispatcher.canEnterMultiWindowMode()
+                || mMultiWindowModeStateDispatcher.isInMultiWindowMode()
+                || mMultiWindowModeStateDispatcher.isInMultiDisplayMode();
+
+        Intent intent = mMultiWindowModeStateDispatcher.getOpenInOtherWindowIntent();
+        if (intent == null) return;
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+
+        onMultiInstanceModeStarted();
+        mActivity.startActivity(intent);
     }
 
     /**

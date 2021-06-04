@@ -497,6 +497,11 @@ void shaderc_compile_options_set_auto_bind_uniforms(
   options->compiler.SetAutoBindUniforms(auto_bind);
 }
 
+void shaderc_compile_options_set_auto_combined_image_sampler(
+    shaderc_compile_options_t options, bool upgrade) {
+  options->compiler.SetAutoCombinedImageSampler(upgrade);
+}
+
 void shaderc_compile_options_set_hlsl_io_mapping(
     shaderc_compile_options_t options, bool hlsl_iomap) {
   options->compiler.SetHlslIoMapping(hlsl_iomap);

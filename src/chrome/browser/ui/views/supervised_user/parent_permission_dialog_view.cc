@@ -40,6 +40,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
@@ -56,8 +58,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 constexpr int kPermissionSectionPaddingTop = 20;
@@ -206,8 +206,8 @@ class ParentPermissionInputSection : public views::TextfieldController {
     credential_input_field_->set_controller(this);
 
     const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-    const gfx::Insets content_insets =
-        provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
+    const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
+        views::DialogContentType::kControl, views::DialogContentType::kControl);
     view->SetBorder(views::CreateEmptyBorder(0, content_insets.left(), 0,
                                              content_insets.right()));
 
@@ -407,8 +407,8 @@ void ParentPermissionDialogView::CreateContents() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets()));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const gfx::Insets content_insets =
-      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
+  const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kControl, views::DialogContentType::kControl);
   const int content_width = GetPreferredSize().width() - content_insets.width();
   set_margins(gfx::Insets(content_insets.top(), 0, content_insets.bottom(), 0));
 

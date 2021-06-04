@@ -9,7 +9,6 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/time/time.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -133,5 +132,11 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::CaptivePortalWindowProxy;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_CAPTIVE_PORTAL_WINDOW_PROXY_H_

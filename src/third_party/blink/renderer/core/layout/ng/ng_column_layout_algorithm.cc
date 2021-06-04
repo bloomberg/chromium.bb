@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -23,7 +24,7 @@ namespace blink {
 namespace {
 
 LayoutUnit CalculateColumnContentBlockSize(
-    const NGPhysicalContainerFragment& fragment,
+    const NGPhysicalFragment& fragment,
     WritingDirectionMode writing_direction) {
   WritingModeConverter converter(writing_direction, fragment.Size());
   // Note that what we're doing here is almost the same as what we do when
@@ -40,8 +41,8 @@ LayoutUnit CalculateColumnContentBlockSize(
     // block direction. The combination of overflow-x:clip and
     // overflow-y:visible should enter children here.
     if (child->IsContainer() && !child->HasNonVisibleOverflow()) {
-      LayoutUnit children_size = CalculateColumnContentBlockSize(
-          To<NGPhysicalContainerFragment>(*child), writing_direction);
+      LayoutUnit children_size =
+          CalculateColumnContentBlockSize(*child, writing_direction);
       if (size < children_size)
         size = children_size;
     }
@@ -219,7 +220,18 @@ void MulticolPartWalker::MoveToNext() {
 
 NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {}
+    : NGLayoutAlgorithm(params) {
+  // When a list item has multicol, |NGColumnLayoutAlgorithm| needs to keep
+  // track of the list marker instead of the child layout algorithm. See
+  // |NGBlockLayoutAlgorithm|.
+  if (const NGBlockNode marker_node = Node().ListMarkerBlockNodeIfListItem()) {
+    if (!marker_node.ListMarkerOccupiesWholeLine() &&
+        (!BreakToken() || BreakToken()->HasUnpositionedListMarker())) {
+      container_builder_.SetUnpositionedListMarker(
+          NGUnpositionedListMarker(marker_node));
+    }
+  }
+}
 
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
@@ -291,6 +303,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   container_builder_.SetBlockOffsetForAdditionalColumns(
       CurrentContentBlockOffset());
 
+  PositionAnyUnclaimedListMarker();
+
   if (ConstraintSpace().HasBlockFragmentation()) {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
@@ -321,11 +335,24 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
   MinMaxSizesResult result =
       algorithm.ComputeMinMaxSizes(MinMaxSizesFloatInput());
 
-  // If column-width is non-auto, pick the larger of that and intrinsic column
-  // width.
+  // How column-width affects min/max sizes is currently not defined in any
+  // spec, but there used to be a definition, which everyone still follows to
+  // some extent:
+  // https://www.w3.org/TR/2016/WD-css-sizing-3-20160510/#multicol-intrinsic
+  //
+  // GitHub issue for getting this back into some spec:
+  // https://github.com/w3c/csswg-drafts/issues/1742
   if (!Style().HasAutoColumnWidth()) {
-    result.sizes.min_size =
-        std::max(result.sizes.min_size, LayoutUnit(Style().ColumnWidth()));
+    // One peculiarity in the (old and only) spec is that column-width may
+    // shrink min intrinsic inline-size to become less than what the contents
+    // require:
+    //
+    // "The min-content inline size of a multi-column element with a computed
+    // column-width not auto is the smaller of its column-width and the largest
+    // min-content inline-size contribution of its contents."
+    const LayoutUnit column_width(Style().ColumnWidth());
+    result.sizes.min_size = std::min(result.sizes.min_size, column_width);
+    result.sizes.max_size = std::max(result.sizes.max_size, column_width);
     result.sizes.max_size =
         std::max(result.sizes.max_size, result.sizes.min_size);
   }
@@ -334,14 +361,53 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
   // values. We typically have multiple columns and also gaps between them.
   int column_count = Style().ColumnCount();
   DCHECK_GE(column_count, 1);
-  result.sizes.min_size *= column_count;
-  result.sizes.max_size *= column_count;
   LayoutUnit column_gap = ResolveUsedColumnGap(LayoutUnit(), Style());
-  result.sizes += column_gap * (column_count - 1);
+  LayoutUnit gap_extra = column_gap * (column_count - 1);
 
-  // TODO(mstensho): Need to include spanners.
+  // Another peculiarity in the (old and only) spec (see above) is that
+  // column-count (and therefore also column-gap) is ignored in intrinsic min
+  // inline-size calculation, if column-width is specified.
+  if (Style().HasAutoColumnWidth()) {
+    result.sizes.min_size *= column_count;
+    result.sizes.min_size += gap_extra;
+  }
+  result.sizes.max_size *= column_count;
+  result.sizes.max_size += gap_extra;
+
+  // The block layout algorithm skips spanners for min/max calculation (since
+  // they shouldn't be part of the column-count multiplication above). Calculate
+  // min/max inline-size for spanners now.
+  result.sizes.Encompass(ComputeSpannersMinMaxSizes(Node()).sizes);
 
   result.sizes += BorderScrollbarPadding().InlineSum();
+  return result;
+}
+
+MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeSpannersMinMaxSizes(
+    const NGBlockNode& search_parent) const {
+  MinMaxSizesResult result;
+  for (NGLayoutInputNode child = search_parent.FirstChild(); child;
+       child = child.NextSibling()) {
+    const NGBlockNode* child_block = DynamicTo<NGBlockNode>(&child);
+    if (!child_block)
+      continue;
+    MinMaxSizesResult child_result;
+    if (!child_block->IsColumnSpanAll()) {
+      // Spanners don't need to be a direct child of the multicol container, but
+      // they need to be in its formatting context.
+      if (child_block->CreatesNewFormattingContext())
+        continue;
+      child_result = ComputeSpannersMinMaxSizes(*child_block);
+    } else {
+      NGMinMaxConstraintSpaceBuilder builder(
+          ConstraintSpace(), Style(), *child_block, /* is_new_fc */ true);
+      builder.SetAvailableBlockSize(ChildAvailableSize().block_size);
+      const NGConstraintSpace child_space = builder.ToConstraintSpace();
+      child_result = ComputeMinAndMaxContentContribution(Style(), *child_block,
+                                                         child_space);
+    }
+    result.sizes.Encompass(child_result.sizes);
+  }
   return result;
 }
 
@@ -723,15 +789,24 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     has_processed_first_child_ = true;
     container_builder_.SetPreviousBreakAfter(EBreakBetween::kAuto);
 
+    const auto& first_column =
+        To<NGPhysicalBoxFragment>(new_columns[0].Fragment());
     if (!has_processed_first_column_) {
       has_processed_first_column_ = true;
 
       // According to the spec, we should only look for a baseline in the first
       // column.
-      const auto& first_column =
-          To<NGPhysicalBoxFragment>(new_columns[0].Fragment());
+      //
+      // TODO(layout-dev): It might make sense to look for baselines inside
+      // every column that's first in a row, not just the first column in the
+      // multicol container.
       PropagateBaselineFromChild(first_column, intrinsic_block_size_);
     }
+
+    // Only the first column in a row may attempt to place any unpositioned
+    // list-item. This matches the behavior in Gecko, and also to some extent
+    // with how baselines are propagated inside a multicol container.
+    AttemptToPositionListMarker(first_column, intrinsic_block_size_);
   }
 
   intrinsic_block_size_ += column_size.block_size;
@@ -809,6 +884,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   // content, where only the first column may contribute with a baseline.
   PropagateBaselineFromChild(spanner_fragment, offset.block_offset);
 
+  AttemptToPositionListMarker(spanner_fragment, block_offset);
+
   *margin_strut = NGMarginStrut();
   margin_strut->Append(margins.block_end, /* is_quirky */ false);
 
@@ -816,6 +893,53 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   has_processed_first_child_ = true;
 
   return NGBreakStatus::kContinue;
+}
+
+void NGColumnLayoutAlgorithm::AttemptToPositionListMarker(
+    const NGPhysicalBoxFragment& child_fragment,
+    LayoutUnit block_offset) {
+  const auto marker = container_builder_.UnpositionedListMarker();
+  if (!marker)
+    return;
+  DCHECK(Node().IsListItem());
+
+  FontBaseline baseline_type = Style().GetFontBaseline();
+  auto baseline = marker.ContentAlignmentBaseline(
+      ConstraintSpace(), baseline_type, child_fragment);
+  if (!baseline)
+    return;
+
+  scoped_refptr<const NGLayoutResult> layout_result = marker.Layout(
+      ConstraintSpace(), container_builder_.Style(), baseline_type);
+  DCHECK(layout_result);
+
+  // TODO(layout-dev): AddToBox() may increase the specified block-offset, which
+  // is bad, since it means that we may need to refragment. For now we'll just
+  // ignore the adjustment (which is also bad, of course).
+  marker.AddToBox(ConstraintSpace(), baseline_type, child_fragment,
+                  BorderScrollbarPadding(), *layout_result, *baseline,
+                  &block_offset, &container_builder_);
+
+  container_builder_.ClearUnpositionedListMarker();
+}
+
+void NGColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
+  if (!Node().IsListItem())
+    return;
+  const auto marker = container_builder_.UnpositionedListMarker();
+  if (!marker)
+    return;
+
+  // Lay out the list marker.
+  FontBaseline baseline_type = Style().GetFontBaseline();
+  scoped_refptr<const NGLayoutResult> layout_result =
+      marker.Layout(ConstraintSpace(), Style(), baseline_type);
+  DCHECK(layout_result);
+  // Position the list marker without aligning with line boxes.
+  marker.AddToBoxWithoutLineBoxes(ConstraintSpace(), baseline_type,
+                                  *layout_result, &container_builder_,
+                                  &intrinsic_block_size_);
+  container_builder_.ClearUnpositionedListMarker();
 }
 
 void NGColumnLayoutAlgorithm::PropagateBaselineFromChild(

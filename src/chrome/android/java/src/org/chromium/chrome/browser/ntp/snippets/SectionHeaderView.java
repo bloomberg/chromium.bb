@@ -42,6 +42,7 @@ import org.chromium.ui.widget.ViewRectProvider;
  * manage the feed.
  */
 public class SectionHeaderView extends LinearLayout {
+    private static final String TAG = "SectionHeaderView";
     private static final int ANIMATION_DURATION_MS = 200;
 
     /** OnTabSelectedListener that delegates calls to the SectionHeadSelectedListener. */
@@ -133,30 +134,63 @@ public class SectionHeaderView extends LinearLayout {
     /** Adds a blank tab. */
     void addTab() {
         if (mTabLayout != null) {
-            mTabLayout.addTab(mTabLayout.newTab());
+            TabLayout.Tab tab = mTabLayout.newTab();
+            tab.setCustomView(R.layout.new_tab_page_section_tab);
+            TextView textView = (TextView) tab.getCustomView().findViewById(android.R.id.text1);
+            textView.setTextColor(mTabLayout.getTabTextColors());
+            mTabLayout.addTab(tab);
+        }
+    }
+
+    /** Removes a tab. */
+    void removeTabAt(int index) {
+        if (mTabLayout != null) {
+            mTabLayout.removeTabAt(index);
+        }
+    }
+
+    /** Removes all tabs. */
+    void removeAllTabs() {
+        if (mTabLayout != null) {
+            mTabLayout.removeAllTabs();
         }
     }
 
     /**
-     * Set text for the header tab at a particular index to text.
+     * Set the properties for the header tab at a particular index to text.
      *
      * Does nothing if index is invalid. Make sure to call addTab() beforehand.
      *
      * @param text Text to set the tab to.
+     * @param hasUnreadContent Whether there is unread content.
      * @param index Index of the tab to set.
      */
-    void setHeaderTextAt(String text, int index) {
-        if (mTabLayout != null && mTabLayout.getTabCount() > index && index >= 0) {
-            mTabLayout.getTabAt(index).setText(text);
+    void setHeaderAt(String text, boolean hasUnreadContent, int index) {
+        TabLayout.Tab tab = getTabAt(index);
+        if (tab != null) {
+            tab.setText(text);
+            TextView textView = (TextView) tab.getCustomView().findViewById(android.R.id.text1);
+            ImageView badgeView = tab.getCustomView().findViewById(R.id.badge);
+            if (hasUnreadContent) {
+                badgeView.setVisibility(View.VISIBLE);
+            } else {
+                badgeView.setVisibility(View.GONE);
+            }
         }
+    }
+
+    @Nullable
+    private TabLayout.Tab getTabAt(int index) {
+        return mTabLayout != null ? mTabLayout.getTabAt(index) : null;
     }
 
     /**
      * @param index The index of the tab to set as active. Does nothing if index is invalid.
      */
     void setActiveTab(int index) {
-        if (mTabLayout != null && mTabLayout.getTabCount() > index && index >= 0) {
-            mTabLayout.selectTab(mTabLayout.getTabAt(index));
+        TabLayout.Tab tab = getTabAt(index);
+        if (tab != null) {
+            mTabLayout.selectTab(tab);
         }
     }
 

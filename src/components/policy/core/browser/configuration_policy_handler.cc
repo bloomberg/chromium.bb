@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -174,11 +175,12 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
   if (!input)
     return true;
 
-  int value;
-  if (!input->GetAsInteger(&value)) {
+  if (!input->is_int()) {
     NOTREACHED();
     return false;
   }
+
+  int value = input->GetInt();
 
   if (value < min_ || value > max_) {
     if (errors) {
@@ -247,12 +249,13 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
     return false;
   }
 
-  for (auto entry = list_value->begin(); entry != list_value->end(); ++entry) {
+  int index = -1;
+  for (const auto& entry : list_value->GetList()) {
+    ++index;
     std::string entry_value;
-    if (!entry->GetAsString(&entry_value)) {
+    if (!entry.GetAsString(&entry_value)) {
       if (errors) {
-        errors->AddError(policy_name(), entry - list_value->begin(),
-                         IDS_POLICY_TYPE_ERROR,
+        errors->AddError(policy_name(), index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(base::Value::Type::STRING));
       }
       continue;
@@ -262,11 +265,8 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
     if (mapped_value) {
       if (output)
         output->Append(std::move(mapped_value));
-    } else {
-      if (errors) {
-        errors->AddError(policy_name(), entry - list_value->begin(),
-                         IDS_POLICY_OUT_OF_RANGE_ERROR);
-      }
+    } else if (errors) {
+      errors->AddError(policy_name(), index, IDS_POLICY_OUT_OF_RANGE_ERROR);
     }
   }
 
@@ -281,7 +281,8 @@ std::unique_ptr<base::Value> StringMappingListPolicyHandler::Map(
 
   for (const auto& mapping_entry : map_) {
     if (mapping_entry->enum_value == entry_value) {
-      return mapping_entry->mapped_value->CreateDeepCopy();
+      return base::Value::ToUniquePtrValue(
+          mapping_entry->mapped_value->Clone());
     }
   }
   return nullptr;
@@ -392,7 +393,7 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   if (!value)
     return true;
 
-  output->reset(value->DeepCopy());
+  *output = base::Value::ToUniquePtrValue(value->Clone());
   std::string error_path;
   std::string error;
   bool result =

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_ITEM_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_ITEM_RESULT_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
@@ -54,7 +55,7 @@ struct CORE_EXPORT NGInlineItemResult {
   NGTextOffset text_offset;
 
   // Indicates the limits of the trailing space run.
-  base::Optional<unsigned> non_hangable_run_end;
+  absl::optional<unsigned> non_hangable_run_end;
 
   // Inline size of this item.
   LayoutUnit inline_size;
@@ -79,7 +80,7 @@ struct CORE_EXPORT NGInlineItemResult {
   // NGPositionedFloat for floating inline items. Should only be present for
   // positioned floats (not unpositioned). It indicates where it was placed
   // within the BFC.
-  base::Optional<NGPositionedFloat> positioned_float;
+  absl::optional<NGPositionedFloat> positioned_float;
 
   // Margins, borders, and padding for open tags.
   // Margins are set for atomic inlines too.

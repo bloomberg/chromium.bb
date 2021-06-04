@@ -52,9 +52,9 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
   std::u16string GetStepTitle() const override { return u"Test Title"; }
 
   std::u16string GetStepDescription() const override {
-    return base::ASCIIToUTF16(
-        "Test Description That Is Super Long So That It No Longer Fits On One "
-        "Line Because Life Would Be Just Too Simple That Way");
+    return u"Test Description That Is Super Long So That It No Longer Fits On "
+           u"One "
+           u"Line Because Life Would Be Just Too Simple That Way";
   }
 
   std::u16string GetAdditionalDescription() const override {
@@ -112,7 +112,7 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
 
     auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>(
         /*relying_party_id=*/"example.com");
-    dialog_model->SetCurrentStep(
+    dialog_model->SetCurrentStepForTesting(
         AuthenticatorRequestDialogModel::Step::kTimedOut);
     AuthenticatorRequestDialogView* dialog =
         test::AuthenticatorRequestDialogViewTestApi::CreateDialogView(

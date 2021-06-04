@@ -42,7 +42,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
   using DisplayIndex = ash::SearchResultDisplayIndex;
-  using OmniboxType = ash::SearchResultOmniboxType;
+  using OmniboxType = ash::SearchResultOmniboxDisplayType;
 
   SearchResult();
   virtual ~SearchResult();
@@ -85,10 +85,10 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   }
   void SetFormattedPrice(const std::u16string& formatted_price);
 
-  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
+  const absl::optional<GURL>& query_url() const { return metadata_->query_url; }
   void set_query_url(const GURL& url) { metadata_->query_url = url; }
 
-  const base::Optional<std::string>& equivalent_result_id() const {
+  const absl::optional<std::string>& equivalent_result_id() const {
     return metadata_->equivalent_result_id;
   }
   void set_equivalent_result_id(const std::string& equivalent_result_id) {
@@ -130,11 +130,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   float position_priority() const { return metadata_->position_priority; }
   void set_position_priority(float position_priority) {
     metadata_->position_priority = position_priority;
-  }
-
-  int result_subtype() const { return metadata_->result_subtype; }
-  void set_result_subtype(int result_subtype) {
-    metadata_->result_subtype = result_subtype;
   }
 
   const Actions& actions() const { return metadata_->actions; }

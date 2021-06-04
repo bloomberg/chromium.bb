@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import os
 import re
@@ -32,29 +33,46 @@ def main(argv):
   parser.add_argument('--gen_dir', required=True)
   parser.add_argument('--path_mappings', nargs='*')
   parser.add_argument('--root_dir', required=True)
-  parser.add_argument('--sources', nargs='*', required=True)
+  parser.add_argument('--out_dir', required=True)
+  parser.add_argument('--tsconfig_base')
+  parser.add_argument('--in_files', nargs='*')
   parser.add_argument('--definitions', nargs='*')
+  parser.add_argument('--composite', action='store_true')
   args = parser.parse_args(argv)
 
   root_dir = os.path.relpath(args.root_dir, args.gen_dir)
-  sources = [os.path.join(root_dir, f) for f in args.sources]
+  out_dir = os.path.relpath(args.out_dir, args.gen_dir)
+  TSCONFIG_BASE_PATH = os.path.join(_HERE_DIR, 'tsconfig_base.json')
 
-  with open(os.path.join(_HERE_DIR, 'tsconfig_base.json')) as root_tsconfig:
-    tsconfig = json.loads(root_tsconfig.read())
+  tsconfig = collections.OrderedDict()
 
-  tsconfig['files'] = sources
-  if args.definitions is not None:
-    # Definitions .d.ts files are always assumed to reside in |gen_dir|.
-    tsconfig['files'].extend(args.definitions)
+  tsconfig['extends'] = args.tsconfig_base \
+      if args.tsconfig_base is not None \
+      else os.path.relpath(TSCONFIG_BASE_PATH, args.gen_dir)
 
+  tsconfig['compilerOptions'] = collections.OrderedDict()
+  tsconfig['compilerOptions']['tsBuildInfoFile'] = 'tsconfig.tsbuildinfo'
   tsconfig['compilerOptions']['rootDir'] = root_dir
+  tsconfig['compilerOptions']['outDir'] = out_dir
+
+  if args.composite:
+    tsconfig['compilerOptions']['composite'] = True
+    tsconfig['compilerOptions']['declaration'] = True
+
+  tsconfig['files'] = []
+  if args.in_files is not None:
+    # Source .ts files are always resolved as being relative to |root_dir|.
+    tsconfig['files'].extend([os.path.join(root_dir, f) for f in args.in_files])
+
+  if args.definitions is not None:
+    tsconfig['files'].extend(args.definitions)
 
   # Handle custom path mappings, for example chrome://resources/ URLs.
   if args.path_mappings is not None:
-    path_mappings = {}
+    path_mappings = collections.defaultdict(list)
     for m in args.path_mappings:
       mapping = m.split('|')
-      path_mappings[mapping[0]] = [os.path.join('./', mapping[1])]
+      path_mappings[mapping[0]].append(os.path.join('./', mapping[1]))
     tsconfig['compilerOptions']['paths'] = path_mappings
 
   if args.deps is not None:
@@ -67,12 +85,14 @@ def main(argv):
       os.path.join(args.gen_dir, 'tsconfig.json')
   ])
 
-  with open(os.path.join(args.gen_dir, 'tsconfig.manifest'), 'w') \
-      as manifest_file:
-    manifest_data = {}
-    manifest_data['base_dir'] = args.gen_dir
-    manifest_data['files'] = [re.sub(r'\.ts$', '.js', f) for f in args.sources]
-    json.dump(manifest_data, manifest_file)
+  if args.in_files is not None:
+    with open(os.path.join(args.gen_dir, 'tsconfig.manifest'), 'w') \
+        as manifest_file:
+      manifest_data = {}
+      manifest_data['base_dir'] = args.out_dir
+      manifest_data['files'] = \
+          [re.sub(r'\.ts$', '.js', f) for f in args.in_files]
+      json.dump(manifest_data, manifest_file)
 
 
 if __name__ == '__main__':

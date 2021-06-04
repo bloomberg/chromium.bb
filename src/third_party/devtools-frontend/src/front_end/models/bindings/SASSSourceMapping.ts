@@ -32,10 +32,11 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Workspace from '../../workspace/workspace.js';
+import * as Workspace from '../workspace/workspace.js';
 
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
-import {CSSWorkspaceBinding, SourceMapping} from './CSSWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
+import type {SourceMapping} from './CSSWorkspaceBinding.js';
+import {CSSWorkspaceBinding} from './CSSWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 import {NetworkProject} from './NetworkProject.js';
 
 export class SASSSourceMapping implements SourceMapping {
@@ -117,7 +118,16 @@ export class SASSSourceMapping implements SourceMapping {
     if (!sourceMap) {
       return null;
     }
-    const entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
+    let {lineNumber, columnNumber} = rawLocation;
+    // If the source map maps the origin (line:0, column:0) but the CSS header is inline (in a HTML doc),
+    // then adjust the line and column numbers.
+    if (sourceMap.mapsOrigin() && header.isInline) {
+      lineNumber -= header.startLine;
+      if (lineNumber === 0) {
+        columnNumber -= header.startColumn;
+      }
+    }
+    const entry = sourceMap.findEntry(lineNumber, columnNumber);
     if (!entry || !entry.sourceURL) {
       return null;
     }

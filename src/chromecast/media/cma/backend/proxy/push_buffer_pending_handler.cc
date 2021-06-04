@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "chromecast/media/cma/backend/proxy/push_buffer_queue.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/task_runner.h"
@@ -78,7 +77,7 @@ bool PushBufferPendingHandler::HasBufferedData() const {
   return delegated_handler_->HasBufferedData();
 }
 
-base::Optional<AudioChannelPushBufferHandler::PushBufferRequest>
+absl::optional<AudioChannelPushBufferHandler::PushBufferRequest>
 PushBufferPendingHandler::GetBufferedData() {
   // The pending data is only considered by the producer sequence, so this
   // consumer sequence call does not consider it.

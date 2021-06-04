@@ -17,16 +17,17 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_class_properties.h"
 
@@ -48,14 +49,14 @@ TabCloseButton::TabCloseButton(PressedCallback pressed_callback,
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
-  SetInkDropMode(InkDropMode::ON);
-  SetInkDropHighlightOpacity(0.16f);
-  SetInkDropVisibleOpacity(0.14f);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop()->SetHighlightOpacity(0.16f);
+  ink_drop()->SetVisibleOpacity(0.14f);
 
   // Disable animation so that the hover indicator shows up immediately to help
   // avoid mis-clicks.
   SetAnimationDuration(base::TimeDelta());
-  GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
+  ink_drop()->GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
 
   // The ink drop highlight path is the same as the focus ring highlight path,
   // but needs to be explicitly mirrored for RTL.
@@ -97,7 +98,7 @@ void TabCloseButton::SetColors(TabStyle::TabColors colors) {
   if (colors == colors_)
     return;
   colors_ = std::move(colors);
-  SetInkDropBaseColor(
+  ink_drop()->SetBaseColor(
       color_utils::GetColorWithMaxContrast(colors_.background_color));
   OnPropertyChanged(&colors_, views::kPropertyEffectsPaint);
 }

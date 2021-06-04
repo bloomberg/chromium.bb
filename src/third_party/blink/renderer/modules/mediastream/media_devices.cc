@@ -16,12 +16,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_supported_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/mediastream/capture_handle_config.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
@@ -33,6 +35,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -53,10 +56,17 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
                  MediaStream* stream) override {
     resolver_->Resolve(stream);
   }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void OnError(ScriptWrappable* callback_this_value,
+               const V8MediaStreamError* error) override {
+    resolver_->Reject(error);
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void OnError(ScriptWrappable* callback_this_value,
                DOMExceptionOrOverconstrainedError error) override {
     resolver_->Reject(error);
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(resolver_);
@@ -213,6 +223,67 @@ ScriptPromise MediaDevices::getCurrentBrowsingContextMedia(
       script_state,
       UserMediaRequest::MediaType::kGetCurrentBrowsingContextMedia, options,
       exception_state);
+}
+
+void MediaDevices::setCaptureHandleConfig(ScriptState* script_state,
+                                          const CaptureHandleConfig* config,
+                                          ExceptionState& exception_state) {
+  DCHECK(config->hasExposeOrigin());
+  DCHECK(config->hasHandle());
+
+  if (config->handle().length() > 1024) {
+    exception_state.ThrowTypeError(
+        "Handle length exceeds 1024 16-bit characters.");
+    return;
+  }
+
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Current frame is detached.");
+    return;
+  }
+
+  LocalDOMWindow* const window = To<LocalDOMWindow>(GetExecutionContext());
+  if (!window || !window->GetFrame()) {
+    return;
+  }
+
+  if (window->GetFrame() != window->GetFrame()->Top()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Can only be called from the top-level document.");
+  }
+
+  auto config_ptr = mojom::blink::CaptureHandleConfig::New();
+  config_ptr->expose_origin = config->exposeOrigin();
+  config_ptr->capture_handle = config->handle();
+  if (config->permittedOrigins().size() == 1 &&
+      config->permittedOrigins()[0] == "*") {
+    config_ptr->all_origins_permitted = true;
+  } else {
+    config_ptr->all_origins_permitted = false;
+    config_ptr->permitted_origins.ReserveCapacity(
+        config->permittedOrigins().size());
+    for (const auto& permitted_origin : config->permittedOrigins()) {
+      if (permitted_origin == "*") {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Wildcard only valid in isolation.");
+        return;
+      }
+
+      scoped_refptr<SecurityOrigin> origin =
+          SecurityOrigin::CreateFromString(permitted_origin);
+      if (!origin || origin->IsOpaque()) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Invalid origin encountered.");
+        return;
+      }
+      config_ptr->permitted_origins.emplace_back(std::move(origin));
+    }
+  }
+
+  GetDispatcherHost(window->GetFrame())
+      ->SetCaptureHandleConfig(std::move(config_ptr));
 }
 
 const AtomicString& MediaDevices::InterfaceName() const {

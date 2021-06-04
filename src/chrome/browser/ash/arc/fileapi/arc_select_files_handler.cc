@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -302,14 +302,13 @@ void ArcSelectFilesHandler::FilesSelectedInternal(
   DCHECK(callback_);
 
   storage::FileSystemContext* file_system_context =
-      file_manager::util::GetFileSystemContextForExtensionId(
-          profile_, file_manager::kFileManagerAppId);
+      file_manager::util::GetFileManagerFileSystemContext(profile_);
 
   std::vector<storage::FileSystemURL> file_system_urls;
   for (const base::FilePath& file_path : files) {
     GURL gurl;
     file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-        profile_, file_path, file_manager::kFileManagerAppId, &gurl);
+        profile_, file_path, file_manager::util::GetFileManagerURL(), &gurl);
     file_system_urls.push_back(file_system_context->CrackURL(gurl));
   }
 
@@ -382,7 +381,7 @@ bool SelectFileDialogHolder::SelectFile(
     const std::string& search_query,
     bool show_android_picker_apps) {
   aura::Window* owner_window = nullptr;
-  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+  for (auto* window : ChromeShelfController::instance()->GetArcWindows()) {
     if (arc::GetWindowTaskId(window) == task_id) {
       owner_window = window;
       break;

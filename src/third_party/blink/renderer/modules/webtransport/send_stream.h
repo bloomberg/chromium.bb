@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webtransport/outgoing_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_stream.h"
@@ -17,10 +18,11 @@
 
 namespace blink {
 
-class QuicTransport;
+class ExceptionState;
+class WebTransport;
 class ScriptState;
 
-class MODULES_EXPORT SendStream final : public ScriptWrappable,
+class MODULES_EXPORT SendStream final : public WritableStream,
                                         public WebTransportStream,
                                         public OutgoingStream::Client {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,16 +31,18 @@ class MODULES_EXPORT SendStream final : public ScriptWrappable,
   // SendStream doesn't have a JavaScript constructor. It is only constructed
   // from C++.
   explicit SendStream(ScriptState*,
-                      QuicTransport*,
+                      WebTransport*,
                       uint32_t stream_id,
                       mojo::ScopedDataPipeProducerHandle);
   ~SendStream() override;
 
-  void Init() { outgoing_stream_->Init(); }
+  void Init(ExceptionState& exception_state) {
+    outgoing_stream_->InitWithExistingWritableStream(this, exception_state);
+  }
 
-  // Implementation of send_stream.idl. As noted in the IDL file, these
-  // properties are implemented on OutgoingStream in the standard.
-  WritableStream* writable() const { return outgoing_stream_->Writable(); }
+  // Methods for backwards compatibility.
+  // TODO(ricea): Remove them when they have been removed from the IDL file.
+  SendStream* writable() { return this; }
 
   ScriptPromise writingAborted() const {
     return outgoing_stream_->WritingAborted();
@@ -61,7 +65,7 @@ class MODULES_EXPORT SendStream final : public ScriptWrappable,
 
  private:
   const Member<OutgoingStream> outgoing_stream_;
-  const Member<QuicTransport> quic_transport_;
+  const Member<WebTransport> web_transport_;
   const uint32_t stream_id_;
 };
 

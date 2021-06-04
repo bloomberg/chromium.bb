@@ -120,9 +120,12 @@ class FullCardRequester : public FullCardRequest::ResultDelegate,
       return;
     }
 
-    driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
-        *card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST, AsWeakPtr(),
-        driver->autofill_manager()->GetAsFullCardRequestUIDelegate());
+    driver->browser_autofill_manager()
+        ->GetOrCreateFullCardRequest()
+        ->GetFullCard(*card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST,
+                      AsWeakPtr(),
+                      driver->browser_autofill_manager()
+                          ->GetAsFullCardRequestUIDelegate());
   }
 
  private:
@@ -353,6 +356,7 @@ void PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
                   Java_AutofillProfile_getEmailAddress(env, jprofile));
   profile->set_language_code(ConvertJavaStringToUTF8(
       Java_AutofillProfile_getLanguageCode(env, jprofile)));
+  profile->FinalizeAfterImport();
 }
 
 jboolean PersonalDataManagerAndroid::IsDataLoaded(

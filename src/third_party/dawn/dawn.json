@@ -226,17 +226,24 @@
         "values": [
             {"value": 0, "name": "zero"},
             {"value": 1, "name": "one"},
-            {"value": 2, "name": "src color"},
-            {"value": 3, "name": "one minus src color"},
+            {"value": 2, "name": "src"},
+            {"value": 3, "name": "one minus src"},
             {"value": 4, "name": "src alpha"},
             {"value": 5, "name": "one minus src alpha"},
-            {"value": 6, "name": "dst color"},
-            {"value": 7, "name": "one minus dst color"},
+            {"value": 6, "name": "dst"},
+            {"value": 7, "name": "one minus dst"},
             {"value": 8, "name": "dst alpha"},
             {"value": 9, "name": "one minus dst alpha"},
             {"value": 10, "name": "src alpha saturated"},
-            {"value": 11, "name": "blend color"},
-            {"value": 12, "name": "one minus blend color"}
+            {"value": 11, "name": "constant"},
+            {"value": 12, "name": "one minus constant"},
+
+            {"value": 102, "name": "src color"},
+            {"value": 103, "name": "one minus src color"},
+            {"value": 106, "name": "dst color"},
+            {"value": 107, "name": "one minus dst color"},
+            {"value": 111, "name": "blend color"},
+            {"value": 112, "name": "one minus blend color"}
         ]
     },
     "blend operation": {
@@ -490,7 +497,7 @@
     "compare function": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
+            {"value": 0, "name": "undefined", "jsrepr": "undefined", "valid": false},
             {"value": 1, "name": "never"},
             {"value": 2, "name": "less"},
             {"value": 3, "name": "less equal"},
@@ -533,7 +540,9 @@
             {"name": "message", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "type", "type": "compilation message type"},
             {"name": "line num", "type": "uint64_t"},
-            {"name": "line pos", "type": "uint64_t"}
+            {"name": "line pos", "type": "uint64_t"},
+            {"name": "offset", "type": "uint64_t"},
+            {"name": "length", "type": "uint64_t"}
         ]
     },
     "compilation message type": {
@@ -806,10 +815,6 @@
                 "returns": "queue"
             },
             {
-                "name": "get default queue",
-                "returns": "queue"
-            },
-            {
                 "name": "create external texture",
                 "returns": "external texture",
                 "args": [
@@ -926,8 +931,7 @@
         "members": [
             {"name": "width", "type": "uint32_t"},
             {"name": "height", "type": "uint32_t", "default": 1},
-            {"name": "depth or array layers", "type": "uint32_t", "default": 1},
-            {"name": "depth", "type": "uint32_t", "default": 1}
+            {"name": "depth or array layers", "type": "uint32_t", "default": 1}
         ]
     },
     "external texture": {
@@ -1378,15 +1382,6 @@
                 ]
             },
             {
-                "name": "set index buffer with format",
-                "args": [
-                    {"name": "buffer", "type": "buffer"},
-                    {"name": "format", "type": "index format"},
-                    {"name": "offset", "type": "uint64_t", "default": "0"},
-                    {"name": "size", "type": "uint64_t", "default": "0"}
-                ]
-            },
-            {
                 "name": "finish",
                 "returns": "render bundle",
                 "args": [
@@ -1416,21 +1411,27 @@
         ]
     },
 
-    "render pass color attachment descriptor": {
+    "render pass color attachment": {
         "category": "structure",
         "members": [
-            {"name": "attachment", "type": "texture view"},
+            {"name": "view", "type": "texture view", "optional": true},
             {"name": "resolve target", "type": "texture view", "optional": true},
             {"name": "load op", "type": "load op"},
             {"name": "store op", "type": "store op"},
-            {"name": "clear color", "type": "color"}
+            {"name": "clear color", "type": "color"},
+            {"name": "attachment", "type": "texture view", "optional": true}
         ]
     },
 
-    "render pass depth stencil attachment descriptor": {
+    "render pass color attachment descriptor": {
+        "category": "typedef",
+        "type": "render pass color attachment"
+    },
+
+    "render pass depth stencil attachment": {
         "category": "structure",
         "members": [
-            {"name": "attachment", "type": "texture view"},
+            {"name": "view", "type": "texture view", "optional": true},
             {"name": "depth load op", "type": "load op"},
             {"name": "depth store op", "type": "store op"},
             {"name": "clear depth", "type": "float"},
@@ -1438,8 +1439,14 @@
             {"name": "stencil load op", "type": "load op"},
             {"name": "stencil store op", "type": "store op"},
             {"name": "clear stencil", "type": "uint32_t", "default": "0"},
-            {"name": "stencil read only", "type": "bool", "default": "false"}
+            {"name": "stencil read only", "type": "bool", "default": "false"},
+            {"name": "attachment", "type": "texture view", "optional": true}
         ]
+    },
+
+    "render pass depth stencil attachment descriptor": {
+        "category": "typedef",
+        "type": "render pass depth stencil attachment"
     },
 
     "render pass descriptor": {
@@ -1448,8 +1455,8 @@
         "members": [
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "color attachment count", "type": "uint32_t"},
-            {"name": "color attachments", "type": "render pass color attachment descriptor", "annotation": "const*", "length": "color attachment count"},
-            {"name": "depth stencil attachment", "type": "render pass depth stencil attachment descriptor", "annotation": "const*", "optional": true},
+            {"name": "color attachments", "type": "render pass color attachment", "annotation": "const*", "length": "color attachment count"},
+            {"name": "depth stencil attachment", "type": "render pass depth stencil attachment", "annotation": "const*", "optional": true},
             {"name": "occlusion query set", "type": "query set", "optional": true}
         ]
     },
@@ -1540,6 +1547,12 @@
                 ]
             },
             {
+                "name": "set blend constant",
+                "args": [
+                    {"name": "color", "type": "color", "annotation": "const*"}
+                ]
+            },
+            {
                 "name": "set viewport",
                 "args": [
                     {"name": "x", "type": "float"},
@@ -1570,15 +1583,6 @@
             },
             {
                 "name": "set index buffer",
-                "args": [
-                    {"name": "buffer", "type": "buffer"},
-                    {"name": "format", "type": "index format"},
-                    {"name": "offset", "type": "uint64_t", "default": "0"},
-                    {"name": "size", "type": "uint64_t", "default": "0"}
-                ]
-            },
-            {
-                "name": "set index buffer with format",
                 "args": [
                     {"name": "buffer", "type": "buffer"},
                     {"name": "format", "type": "index format"},
@@ -1626,7 +1630,7 @@
         "members": [
             {"name": "module", "type": "shader module"},
             {"name": "entry point", "type": "char", "annotation": "const*", "length": "strlen"},
-            {"name": "buffer count", "type": "uint32_t"},
+            {"name": "buffer count", "type": "uint32_t", "default": 0},
             {"name": "buffers", "type": "vertex buffer layout", "annotation": "const*", "length": "buffer count"}
         ]
     },
@@ -1739,13 +1743,6 @@
         ]
     },
 
-    "render pipeline descriptor dummy extension": {
-        "category": "structure",
-        "chained": true,
-        "members": [
-            {"name": "dummy stage", "type": "programmable stage descriptor"}
-        ]
-    },
     "sampler": {
         "category": "object"
     },
@@ -1764,13 +1761,6 @@
             {"name": "lod max clamp", "type": "float", "default": "1000.0f"},
             {"name": "compare", "type": "compare function", "default": "undefined"},
             {"name": "max anisotropy", "type": "uint16_t", "default": "1"}
-        ]
-    },
-    "sampler descriptor dummy anisotropic filtering": {
-        "category": "structure",
-        "chained": true,
-        "members": [
-            {"name": "max anisotropy", "type": "float"}
         ]
     },
     "shader module": {
@@ -1886,6 +1876,14 @@
             {"name": "window", "type": "uint32_t"}
         ]
     },
+    "surface descriptor from windows core window": {
+        "category": "structure",
+        "chained": true,
+        "javascript": false,
+        "members": [
+            {"name": "core window", "type": "void", "annotation": "*"}
+        ]
+    },
     "swap chain": {
         "category": "object",
         "methods": [
@@ -1926,9 +1924,8 @@
             {"value": 4, "name": "surface descriptor from canvas HTML selector"},
             {"value": 5, "name": "shader module SPIRV descriptor"},
             {"value": 6, "name": "shader module WGSL descriptor"},
-            {"value": 7, "name": "sampler descriptor dummy anisotropic filtering"},
-            {"value": 8, "name": "render pipeline descriptor dummy extension"},
-            {"value": 9, "name": "primitive depth clamping state"}
+            {"value": 7, "name": "primitive depth clamping state"},
+            {"value": 8, "name": "surface descriptor from windows core window"}
         ]
     },
     "texture": {
@@ -2074,7 +2071,6 @@
             {"value": 2, "name": "copy dst"},
             {"value": 4, "name": "sampled"},
             {"value": 8, "name": "storage"},
-            {"value": 16, "name": "output attachment"},
             {"value": 16, "name": "render attachment"},
             {"value": 32, "name": "present"}
         ]

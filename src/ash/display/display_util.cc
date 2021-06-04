@@ -19,6 +19,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "ui/aura/env.h"
@@ -165,7 +167,7 @@ void ShowDisplayErrorNotification(const std::u16string& message,
               kNotifierDisplayError),
           data,
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::BindRepeating([](base::Optional<int> button_index) {
+              base::BindRepeating([](absl::optional<int> button_index) {
                 if (button_index)
                   NewWindowDelegate::GetInstance()->OpenFeedbackPage();
               })),

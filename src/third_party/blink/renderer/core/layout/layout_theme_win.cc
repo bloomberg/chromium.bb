@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -67,7 +66,7 @@ Color LayoutThemeWin::SystemColor(
       (color_scheme != mojom::blink::ColorScheme::kDark ||
        Platform::Current()->ThemeEngine()->GetForcedColors() !=
            ForcedColors::kNone)) {
-    const base::Optional<SkColor> system_color =
+    const absl::optional<SkColor> system_color =
         Platform::Current()->ThemeEngine()->GetSystemColor(theme_color);
     if (system_color)
       return Color(system_color.value());

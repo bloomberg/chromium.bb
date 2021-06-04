@@ -4,9 +4,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -24,6 +24,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 namespace {
@@ -44,7 +45,7 @@ class TestBrowserClient : public ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory)
       override {
     EXPECT_FALSE(observed_url_.has_value());
@@ -55,7 +56,7 @@ class TestBrowserClient : public ContentBrowserClient {
   GURL observed_url() const { return observed_url_ ? *observed_url_ : GURL(); }
 
  private:
-  base::Optional<GURL> observed_url_;
+  absl::optional<GURL> observed_url_;
 };
 
 class FinishNavigationObserver : public WebContentsObserver {
@@ -76,12 +77,12 @@ class FinishNavigationObserver : public WebContentsObserver {
     }
   }
 
-  const base::Optional<net::Error>& error_code() const { return error_code_; }
+  const absl::optional<net::Error>& error_code() const { return error_code_; }
 
  private:
   GURL expected_url_;
   base::OnceClosure done_closure_;
-  base::Optional<net::Error> error_code_;
+  absl::optional<net::Error> error_code_;
 };
 
 int64_t GetTestDataFileSize(const base::FilePath::CharType* file_path) {
@@ -211,8 +212,8 @@ IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, FollowLink) {
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(
       shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "document.getElementById('link').click();"));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     "document.getElementById('link').click();"));
   run_loop.Run();
   EXPECT_EQ(net::ERR_ABORTED, *finish_navigation_observer.error_code());
   EXPECT_EQ(GURL(kUrnUuidURL), GetObservedUnknownSchemeUrl());

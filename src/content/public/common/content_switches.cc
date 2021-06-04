@@ -271,7 +271,9 @@ const char kDisableV8IdleTasks[]            = "disable-v8-idle-tasks";
 // Disables WebGL rendering into a scanout buffer for overlay support.
 const char kDisableWebGLImageChromium[]     = "disable-webgl-image-chromium";
 
-// Don't enforce the same-origin policy. (Used by people testing their sites.)
+// Don't enforce the same-origin policy; meant for website testing only.
+// This switch has no effect unless --user-data-dir (as defined by the content
+// embedder) is also present.
 const char kDisableWebSecurity[]            = "disable-web-security";
 
 // Disable the video decoder from drawing directly to a texture.
@@ -340,7 +342,7 @@ const char kEnableExperimentalWebPlatformFeatures[] =
 // it will probably even make things a bit slower.  Its purpose is to guarantee
 // test coverage for the blink side of V8 Fast API calls, independently of
 // whether or not V8 actually activates the fast path, which depends on
-// heuristics.
+// heuristics.  This flag is effective only when DCHECKs are enabled.
 const char kEnableFakeNoAllocDirectCallForTesting[] =
     "enable-fake-no-alloc-direct-call-for-testing";
 
@@ -559,6 +561,9 @@ const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
 
+// Sets the maximum number of WebMediaPlayers allowed per frame.
+const char kMaxWebMediaPlayerCount[] = "max-web-media-player-count";
+
 // Indicates the utility process should run with a message loop type of UI.
 const char kMessageLoopTypeUi[] = "message-loop-type-ui";
 
@@ -762,6 +767,9 @@ const char kSkiaResourceCacheLimitMb[] = "skia-resource-cache-limit-mb";
 
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
+
+// The time zone to use for testing. Passed to renderers and plugins on startup.
+const char kTimeZoneForTesting[] = "time-zone-for-testing";
 
 // Enable support for touch event feature detection.
 const char kTouchEventFeatureDetection[] = "touch-events";

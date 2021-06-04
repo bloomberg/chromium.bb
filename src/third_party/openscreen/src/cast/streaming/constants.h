@@ -17,6 +17,12 @@
 namespace openscreen {
 namespace cast {
 
+// Mirroring App identifier.
+constexpr char kMirroringAppId[] = "0F5096E8";
+
+// Mirroring App identifier for audio-only mirroring.
+constexpr char kMirroringAudioOnlyAppId[] = "85CDB22F";
+
 // Default target playout delay. The playout delay is the window of time between
 // capture from the source until presentation at the receiver.
 constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);
@@ -58,12 +64,42 @@ constexpr int kMinVideoWidth = 320;
 // The default frame rate for capture options is 30FPS.
 constexpr int kDefaultFrameRate = 30;
 
+// The mirroring spec suggests 300kbps as the absolute minimum bitrate.
+constexpr int kDefaultVideoMinBitRate = 300 * 1000;
+
+// Default video max bitrate is based on 1080P @ 30FPS, which can be played back
+// at good quality around 10mbps.
+constexpr int kDefaultVideoMaxBitRate = 10 * 1000 * 1000;
+
+// The mirroring control protocol specifies 32kbps as the absolute minimum
+// for audio. Depending on the type of audio content (narrowband, fullband,
+// etc.) Opus specifically can perform very well at this bitrate.
+// See: https://research.google/pubs/pub41650/
+constexpr int kDefaultAudioMinBitRate = 32 * 1000;
+
+// Opus generally sees little improvement above 192kbps, but some older codecs
+// that we may consider supporting improve at up to 256kbps.
+constexpr int kDefaultAudioMaxBitRate = 256 * 1000;
+
+// While generally audio should be captured at the maximum sample rate, 16kHz is
+// the recommended absolute minimum.
+constexpr int kDefaultAudioMinSampleRate = 16000;
+
 // The default audio sample rate is 48kHz, slightly higher than standard
 // consumer audio.
 constexpr int kDefaultAudioSampleRate = 48000;
 
 // The default audio number of channels is set to stereo.
 constexpr int kDefaultAudioChannels = 2;
+
+// Default maximum delay for both audio and video. Used if the sender fails
+// to provide any constraints.
+constexpr std::chrono::milliseconds kDefaultMaxDelayMs(1500);
+
+// TODO(issuetracker.google.com/184189100): As part of updating remoting
+// OFFER/ANSWER and capabilities exchange, remoting version should be updated
+// to 3.
+constexpr int kSupportedRemotingVersion = 2;
 
 // Codecs known and understood by cast senders and receivers. Note: receivers
 // are required to implement the following codecs to be Cast V2 compliant: H264,

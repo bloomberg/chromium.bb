@@ -40,19 +40,20 @@ class F extends ValidationTest {
   createColorAttachment(
     format: GPUTextureFormat,
     sampleCount?: number
-  ): GPURenderPassColorAttachmentDescriptor {
+  ): GPURenderPassColorAttachment {
     return {
-      attachment: this.createAttachmentTextureView(format, sampleCount),
+      view: this.createAttachmentTextureView(format, sampleCount),
       loadValue: [0, 0, 0, 0],
+      storeOp: 'store',
     };
   }
 
   createDepthAttachment(
     format: GPUTextureFormat,
     sampleCount?: number
-  ): GPURenderPassDepthStencilAttachmentDescriptor {
+  ): GPURenderPassDepthStencilAttachment {
     return {
-      attachment: this.createAttachmentTextureView(format, sampleCount),
+      view: this.createAttachmentTextureView(format, sampleCount),
       depthLoadValue: 0,
       depthStoreOp: 'clear',
       stencilLoadValue: 1,
@@ -115,17 +116,15 @@ class F extends ValidationTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[builtin(position)]] var<out> position : vec4<f32>;
-
-            [[stage(vertex)]] fn main() -> void {
-              position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+              return vec4<f32>(0.0, 0.0, 0.0, 0.0);
             }`,
         }),
         entryPoint: 'main',
       },
       fragment: {
         module: this.device.createShaderModule({
-          code: '[[stage(fragment)]] fn main() -> void {}',
+          code: '[[stage(fragment)]] fn main() {}',
         }),
         entryPoint: 'main',
         targets,

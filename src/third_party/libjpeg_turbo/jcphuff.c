@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2015, 2018, D. R. Commander.
+ * Copyright (C) 2011, 2015, 2018, 2021, D. R. Commander.
  * Copyright (C) 2016, 2018, Matthieu Darbois.
  * Copyright (C) 2020, Arm Limited.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -174,24 +174,26 @@ INLINE
 METHODDEF(int)
 count_zeroes(size_t *x)
 {
-  int result;
 #if defined(HAVE_BUILTIN_CTZL)
+  int result;
   result = __builtin_ctzl(*x);
   *x >>= result;
 #elif defined(HAVE_BITSCANFORWARD64)
+  unsigned long result;
   _BitScanForward64(&result, *x);
   *x >>= result;
 #elif defined(HAVE_BITSCANFORWARD)
+  unsigned long result;
   _BitScanForward(&result, *x);
   *x >>= result;
 #else
-  result = 0;
+  int result = 0;
   while ((*x & 1) == 0) {
     ++result;
     *x >>= 1;
   }
 #endif
-  return result;
+  return (int)result;
 }
 
 
@@ -865,7 +867,7 @@ encode_mcu_AC_refine_prepare(const JCOEF *block,
 
 #define ENCODE_COEFS_AC_REFINE(label) { \
   while (zerobits) { \
-    int idx = count_zeroes(&zerobits); \
+    idx = count_zeroes(&zerobits); \
     r += idx; \
     cabsvalue += idx; \
     signbits >>= idx; \
@@ -922,7 +924,7 @@ METHODDEF(boolean)
 encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 {
   phuff_entropy_ptr entropy = (phuff_entropy_ptr)cinfo->entropy;
-  register int temp, r;
+  register int temp, r, idx;
   char *BR_buffer;
   unsigned int BR;
   int Sl = cinfo->Se - cinfo->Ss + 1;
@@ -973,7 +975,7 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
   if (zerobits) {
     int diff = ((absvalues + DCTSIZE2 / 2) - cabsvalue);
-    int idx = count_zeroes(&zerobits);
+    idx = count_zeroes(&zerobits);
     signbits >>= idx;
     idx += diff;
     r += idx;

@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/optional.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -42,6 +42,10 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
   const WebApp* GetAppByStartUrl(const GURL& start_url) const;
   std::vector<AppId> GetAppsInSyncInstall();
 
+  // Returns true if the app was preinstalled and NOT installed via any other
+  // mechanism.
+  bool WasInstalledByDefaultOnly(const AppId& app_id) const;
+
   // AppRegistrar:
   void Start() override;
   void Shutdown() override;
@@ -52,8 +56,8 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppBackgroundColor(
+  absl::optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
+  absl::optional<SkColor> GetAppBackgroundColor(
       const AppId& app_id) const override;
   const GURL& GetAppStartUrl(const AppId& app_id) const override;
   const std::string* GetAppLaunchQueryParams(
@@ -64,7 +68,11 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
       const AppId& app_id) const override;
   const apps::FileHandlers* GetAppFileHandlers(
       const AppId& app_id) const override;
-  base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
+  const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const AppId& app_id) const override;
+  bool IsAppFileHandlerPermissionBlocked(
+      const web_app::AppId& app_id) const override;
+  absl::optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<DisplayMode> GetAppDisplayModeOverride(
@@ -85,6 +93,7 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
   RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
+  const WebAppRegistrar* AsWebAppRegistrar() const override;
 
   // ProfileManagerObserver:
   void OnProfileMarkedForPermanentDeletion(

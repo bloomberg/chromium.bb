@@ -273,14 +273,6 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
   if (disposition != network::mojom::XFrameOptionsValue::kNone &&
       disposition != network::mojom::XFrameOptionsValue::kAllowAll &&
       HeadersContainFrameAncestorsCSP(request->response()->parsed_headers)) {
-    if (logging == LoggingDisposition::LOG_TO_CONSOLE) {
-      AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          "The page delivered both an 'X-Frame-Options' header and a "
-          "'Content-Security-Policy' header with a 'frame-ancestors' "
-          "directive. Although the 'X-Frame-Options' header alone would have "
-          "blocked embedding, it has been ignored.");
-    }
     RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
     return CheckResult::PROCEED;
   }
@@ -405,6 +397,7 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateFrameAncestors(
             content_security_policy,
             network::mojom::CSPDirectiveName::FrameAncestors,
             parent->GetLastCommittedOrigin().GetURL(),
+            GURL(),  // url_before_redirects is ignored for frame-ancestors
             navigation_handle()->WasServerRedirect(),
             true /* is_response_check */, empty_source_location,
             network::CSPContext::CheckCSPDisposition::CHECK_ALL_CSP,

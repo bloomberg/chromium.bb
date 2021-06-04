@@ -530,7 +530,13 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockOopifCrashes) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
+#if defined(OS_LINUX)
+#define MAYBE_PointerLockWheelEventRouting DISABLED_PointerLockWheelEventRouting
+#else
+#define MAYBE_PointerLockWheelEventRouting PointerLockWheelEventRouting
+#endif
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       MAYBE_PointerLockWheelEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -756,7 +762,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions, UnadjustedMovement) {
+// Flaky on all platforms http://crbug.com/1198612.
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
+                       DISABLED_UnadjustedMovement) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

@@ -206,12 +206,6 @@ void CopyConstraintsIntoRtcConfiguration(
     configuration->set_suspend_below_min_bitrate(the_value);
   }
 
-  if (!GetConstraintValueAsBoolean(
-          constraints,
-          &MediaTrackConstraintSetPlatform::enable_rtp_data_channels,
-          &configuration->enable_rtp_data_channel)) {
-    configuration->enable_rtp_data_channel = false;
-  }
   int rate;
   if (GetConstraintValueAsInteger(
           constraints,
@@ -1065,8 +1059,8 @@ class RTCPeerConnectionHandler::Observer
     if (handler_) {
       handler_->OnIceCandidateError(
           address,
-          port ? base::Optional<uint16_t>(static_cast<uint16_t>(port))
-               : base::nullopt,
+          port ? absl::optional<uint16_t>(static_cast<uint16_t>(port))
+               : absl::nullopt,
           host_candidate, url, error_code, error_text);
     }
   }
@@ -1143,6 +1137,10 @@ void RTCPeerConnectionHandler::StopAndUnregister() {
   // garbage collection.
   client_ = nullptr;
   is_unregistered_ = true;
+
+  // Reset the `PeerConnectionDependencyFactory` so we don't prevent it from
+  // being garbage-collected.
+  dependency_factory_ = nullptr;
 }
 
 bool RTCPeerConnectionHandler::Initialize(
@@ -1153,6 +1151,7 @@ bool RTCPeerConnectionHandler::Initialize(
     ExceptionState& exception_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame);
+  DCHECK(dependency_factory_);
   frame_ = frame;
 
   CHECK(!initialize_called_);
@@ -1204,6 +1203,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     PeerConnectionTracker* peer_connection_tracker,
     ExceptionState& exception_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(dependency_factory_);
 
   CHECK(!initialize_called_);
   initialize_called_ = true;
@@ -1573,11 +1573,12 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
   return webrtc_error.type();
 }
 
-void RTCPeerConnectionHandler::AddICECandidate(
+void RTCPeerConnectionHandler::AddIceCandidate(
     RTCVoidRequest* request,
     RTCIceCandidatePlatform* candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
+  DCHECK(dependency_factory_);
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addIceCandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
           candidate->SdpMid(),
@@ -1967,7 +1968,7 @@ RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
   if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     if (RemoveTrackPlanB(web_sender)) {
       // In Plan B, null indicates success.
-      std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver = nullptr;
+      std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver;
       return std::move(platform_transceiver);
     }
     // TODO(hbos): Surface RTCError from third_party/webrtc when
@@ -1980,6 +1981,7 @@ RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
 
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
     blink::RTCRtpSenderPlatform* web_sender) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kPlanB);
   auto* track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
@@ -2324,6 +2326,7 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 void RTCPeerConnectionHandler::TrackIceConnectionStateChange(
     RTCPeerConnectionHandler::IceConnectionStateVersion version,
     webrtc::PeerConnectionInterface::IceConnectionState state) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!peer_connection_tracker_)
     return;
   switch (version) {
@@ -2483,6 +2486,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     webrtc::PeerConnectionInterface::SignalingState signaling_state,
     std::vector<blink::RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
       SafeCast<WTF::wtf_size_t>(transceiver_states.size()));
@@ -2596,7 +2600,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
 
 void RTCPeerConnectionHandler::OnIceCandidateError(
     const String& address,
-    base::Optional<uint16_t> port,
+    absl::optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     int error_code,
@@ -2752,6 +2756,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
 scoped_refptr<base::SingleThreadTaskRunner>
 RTCPeerConnectionHandler::signaling_thread() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(dependency_factory_);
   return dependency_factory_->GetWebRtcSignalingTaskRunner();
 }
 

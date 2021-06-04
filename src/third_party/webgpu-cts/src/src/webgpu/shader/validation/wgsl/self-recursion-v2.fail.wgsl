@@ -17,7 +17,7 @@ fn a() -> i32 {
 }
 
 [[stage(vertex)]]
-fn main() -> void {
+fn main() {
   var v : i32 = a();
   return;
 }

@@ -8,7 +8,6 @@
 #include <iomanip>
 
 #include "base/base64url.h"
-#include "base/callback_forward.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -175,7 +174,7 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   base::StringPiece response_body_json(*response_body);
   if (base::StartsWith(response_body_json, kJsonXssPreventionPrefix))
     response_body_json.remove_prefix(kJsonXssPreventionPrefix.length());
-  base::Optional<base::Value> output = ParseResponse(response_body_json);
+  absl::optional<base::Value> output = ParseResponse(response_body_json);
   if (!output.has_value()) {
     // TODO(thanhdng): Add a UMA histogram here.
     delegate_->OnParseResponseError();
@@ -185,7 +184,7 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   delegate_->OnLoadSuccess(std::move(output.value()));
 }
 
-base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
+absl::optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
     base::StringPiece response) {
   base::JSONReader::ValueWithError parsed_json =
       base::JSONReader::ReadAndReturnValueWithError(response);
@@ -194,7 +193,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       (!parsed_json.value->is_list() && !parsed_json.value->is_dict())) {
     LOG(ERROR) << "Error parsing response JSON: " << parsed_json.error_message;
     // TODO(thanhdng): Add a UMA histogram here.
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // If the response is a dictionary, it is an error message in the
@@ -209,7 +208,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       LOG(ERROR) << "Unable to find error code: response="
                  << response.substr(0, 128);
       // TODO(thanhdng): Add a UMA histogram here.
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     base::StringPiece response_error_code_str =
@@ -218,7 +217,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
     if (!base::StringToInt(response_error_code_str, &response_error_code)) {
       LOG(WARNING) << "Unable to parse error code: " << response_error_code_str;
       // TODO(thanhdng): Add a UMA histogram here.
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     if (response_error_code == kResponseErrorNotFirstTimeChromebookUser) {
@@ -230,7 +229,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       // TODO(thanhdng): Add a UMA histogram here.
     }
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Otherwise, the response should return a list of apps.
@@ -238,7 +237,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
   if (app_list.empty()) {
     DVLOG(1) << "No app in the response.";
     // TODO(thanhdng): Add a UMA histogram here.
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   base::Value output(base::Value::Type::LIST);

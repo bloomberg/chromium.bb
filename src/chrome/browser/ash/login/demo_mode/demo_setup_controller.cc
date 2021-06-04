@@ -42,10 +42,11 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
+// TODO(https://crbug.com/1164001): remove after moving to ash::
+using ::chromeos::InstallAttributes;
 using ErrorCode = DemoSetupController::DemoSetupError::ErrorCode;
 using RecoveryMethod = DemoSetupController::DemoSetupError::RecoveryMethod;
 
@@ -101,10 +102,10 @@ policy::CloudPolicyStore* GetDeviceLocalAccountPolicyStore(
 // A utility function of base::ReadFileToString which returns an optional
 // string.
 // TODO(mukai): move this to base/files.
-base::Optional<std::string> ReadFileToOptionalString(
+absl::optional<std::string> ReadFileToOptionalString(
     const base::FilePath& file_path) {
   std::string content;
-  base::Optional<std::string> result;
+  absl::optional<std::string> result;
   if (base::ReadFileToString(file_path, &content))
     result = std::move(content);
   return result;
@@ -762,7 +763,7 @@ void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(
 }
 
 void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
-    base::Optional<std::string> blob) {
+    absl::optional<std::string> blob) {
   if (!blob.has_value()) {
     // This is very unlikely to happen since the file existence is already
     // checked as CheckOfflinePolicyFilesExist.
@@ -878,4 +879,4 @@ void DemoSetupController::OnStoreError(policy::CloudPolicyStore* store) {
                      "Failed to store the local account policy"));
 }
 
-}  //  namespace chromeos
+}  //  namespace ash

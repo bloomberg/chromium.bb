@@ -20,11 +20,10 @@ class BrowserContext;
 
 namespace web_app {
 
-class WebAppMigrationManager;
 class AppRegistrar;
 class OsIntegrationManager;
 class InstallFinalizer;
-class PendingAppManager;
+class ExternallyManagedAppManager;
 class SystemWebAppManager;
 class WebAppInstallManager;
 class WebAppPolicyManager;
@@ -53,22 +52,21 @@ class TestWebAppProvider : public WebAppProvider {
   // if it's a part of TestingProfile (see BuildDefault() method above).
   void SetRunSubsystemStartupTasks(bool run_subsystem_startup_tasks);
 
-  void SetMigrationManager(
-      std::unique_ptr<WebAppMigrationManager> migration_manager);
   void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
   void SetRegistryController(std::unique_ptr<AppRegistryController> controller);
   void SetOsIntegrationManager(
       std::unique_ptr<OsIntegrationManager> os_integration_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
-  void SetPendingAppManager(
-      std::unique_ptr<PendingAppManager> pending_app_manager);
+  void SetExternallyManagedAppManager(
+      std::unique_ptr<ExternallyManagedAppManager>
+          externally_managed_app_manager);
   void SetWebAppUiManager(std::unique_ptr<WebAppUiManager> ui_manager);
   void SetSystemWebAppManager(
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
-  void DisableMigrationManager();
+  void SkipAwaitingExtensionSystem();
 
  private:
   void CheckNotStarted() const;

@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -23,6 +21,7 @@
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_stop_reason.h"
 #include "components/arc/session/arc_upgrade_params.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace arc {
 
@@ -111,6 +110,12 @@ class ArcSessionRunner : public ArcSession::Observer {
   void SetDemoModeDelegate(
       std::unique_ptr<ArcClientAdapter::DemoModeDelegate> delegate);
 
+  // Trims VM's memory by moving it to zram. |callback| is called when the
+  // operation is done.
+  using TrimVmMemoryCallback =
+      base::OnceCallback<void(bool success, const std::string& failure_reason)>;
+  void TrimVmMemory(TrimVmMemoryCallback callback);
+
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
@@ -141,7 +146,7 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Target ARC instance running mode. If nullopt, it means the ARC instance
   // should stop eventually.
-  base::Optional<ArcInstanceMode> target_mode_;
+  absl::optional<ArcInstanceMode> target_mode_;
 
   // Instead of immediately trying to restart the container, give it some time
   // to finish tearing down in case it is still in the process of stopping.

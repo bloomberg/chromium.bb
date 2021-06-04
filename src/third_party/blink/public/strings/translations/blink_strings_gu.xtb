@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">બેનર</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> આઇટમ્સ</translation>
 <translation id="1480676835519562650">એકથી વધુ પસંદ કરવા યોગ્ય, <ph name="COUNT" />માંથી <ph name="SELECTED" /> બાળક પસંદ કરવામાં આવ્યા.</translation>
+<translation id="1588438908519853928">સામાન્ય</translation>
 <translation id="1589122976691792535">પ્રદેશ</translation>
 <translation id="1591562245178063882">આ મહિને</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">ટાઇમર</translation>
 <translation id="3199563858620722075">કૉમ્બો બૉક્સ</translation>
 <translation id="3220661731597678625">હાલનું પગલું</translation>
+<translation id="3321030238473337787">પ્લેબૅકની ઝડપ</translation>
 <translation id="3329013043687509092">સંતૃપ્તતા</translation>
 <translation id="3450233048674729344">મૂલ્ય <ph name="MAXIMUM" /> જેટલું અથવા આનાથી ઓછું હોવું આવશ્યક છે.</translation>
 <translation id="3486220673238053218">વિવરણ</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">મેનૂ બાર</translation>
 <translation id="4293574643247337246">પેજ હેડર</translation>
 <translation id="4360991593054037559">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. બે નિકટતમ માન્ય મૂલ્યો <ph name="VALID_VALUE_LOW" /> અને <ph name="VALID_VALUE_HIGHER" /> છે.</translation>
+<translation id="4371899966896349864">પ્લેબૅકની ઝડપનું મેનૂ છુપાવો</translation>
 <translation id="4384249794467006333">આ છબીને લેબલ કરવામાં આવી નથી. છબીનું વર્ણન મેળવવા માટે ઉપર જમણી બાજુએ વધુ વિકલ્પોનું મેનૂ ખોલો.</translation>
 <translation id="4384583879834880242">પ્રશ્ન અને જવાબ</translation>
 <translation id="4444765639179266822">આવું બોલતા જણાય છે: <ph name="OCR_TEXT" /></translation>
@@ -147,6 +150,7 @@
 <translation id="512758898067543763">પંક્તિ હેડર</translation>
 <translation id="5143125788380636750">ઉપસંહાર</translation>
 <translation id="5164977714490026579">મૂલ્ય <ph name="MINIMUM" /> જેટલું અથવા આનાથી વધુ હોવું આવશ્યક છે.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">કૃપા કરીને '<ph name="ATSIGN" />' ની આગળનો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
 <translation id="5334352251556557839">મીડિયા ચલાવવામાં નિષ્ફળ રહ્યાં.</translation>
@@ -157,6 +161,7 @@
 <translation id="5453733299334684579">ટ્રી આઇટમ</translation>
 <translation id="5466621249238537318">કૃપા કરીને એક અથવા વધુ ફાઇલ પસંદ કરો. </translation>
 <translation id="5468998798572797635">પૂર્ણ સ્ક્રીનથી બહાર નીકળો</translation>
+<translation id="5516235301412634559">0.75</translation>
 <translation id="5516424706154626233">તારીખ પીકર</translation>
 <translation id="5537725057119320332">કાસ્ટ કરો</translation>
 <translation id="5546461542133609677">અનમ્યૂટ કરો</translation>
@@ -168,6 +173,7 @@
 <translation id="5677946354068040947">વધુ વિકલ્પો</translation>
 <translation id="576709008726043716">પ્રસ્તાવના</translation>
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
+<translation id="5786442179789148008">પ્લેબૅકની ઝડપનું મેનૂ બતાવો</translation>
 <translation id="5787939484346677755">મોટી કરી છે, ઑટોમૅટિક રીતે પૂર્ણ કરવાના વિકલ્પો ઉપલબ્ધ છે.</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="588258955323874662">પૂર્ણસ્ક્રીન</translation>
@@ -176,6 +182,7 @@
 <translation id="5916664084637901428">ચાલુ</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5966707198760109579">અઠવાડિયું</translation>
+<translation id="5985507339671257014">0.5</translation>
 <translation id="5987525920412732405">સ્પિન બટન</translation>
 <translation id="6011459053400940133">વોલ્યુમ સ્લાઇડર</translation>
 <translation id="6015796118275082299">વર્ષ</translation>
@@ -214,6 +221,7 @@
 <translation id="6843725295806269523">બંધ કરો</translation>
 <translation id="6885760532393684712">ડિરેક્ટરી</translation>
 <translation id="689129560213475294">પ્રકાશકની માહિતી</translation>
+<translation id="6919891270253167948">1.5</translation>
 <translation id="6934078000481955284">બ્લૉકક્વોટ</translation>
 <translation id="693476918119313863">હેડર</translation>
 <translation id="6941933287844615239">મીડિયા ડાઉનલોડ કરો</translation>
@@ -250,6 +258,7 @@
 <translation id="7745230546936012372">છબીઓના ખૂટતા વર્ણનો માટે, સંદર્ભ મેનૂ ખોલો.</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
 <translation id="775297008183122718">અમાન્ય એન્ટ્રી</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="7802800022689234070">પ્રકટીકરણ ત્રિકોણ</translation>
 <translation id="7852167693871241274">રંગ છટાનું સ્લાઇડર</translation>
@@ -263,6 +272,7 @@
 <translation id="8105797009065549151">નોંધ સંદર્ભ</translation>
 <translation id="811583516810654505">વર્ણન મેળવી રહ્યાં છીએ…</translation>
 <translation id="8117451130807776954">આ અઠવાડિયે</translation>
+<translation id="8131955114056917397">0.25</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">સ્થાનિક તારીખ અને સમય પિકર</translation>
 <translation id="8261464734335370856">અમાન્ય જોડણી</translation>
@@ -287,6 +297,7 @@
 <translation id="8613126697340063924">રિમોટ પ્લેબેકનું નિયંત્રણ કરો</translation>
 <translation id="862370744433916922">(સબટાઇટલ)</translation>
 <translation id="8634971699417195529">મહિનાનું પિકર બતાવો</translation>
+<translation id="8637593834423658414">1.75</translation>
 <translation id="8668988909814782445">લાઇન વીંટો</translation>
 <translation id="8711688047404765493">આઉટપુટ</translation>
 <translation id="8750798805984357768">કૃપા કરીને આ વિકલ્પોમાંથી કોઈ એક પસંદ કરો.</translation>

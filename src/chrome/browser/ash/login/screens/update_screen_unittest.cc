@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ash/login/screens/update_screen.h"
 
+#include <memory>
+
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/ash/login/screens/mock_error_screen.h"
 #include "chrome/browser/ash/login/screens/mock_update_screen.h"
@@ -18,17 +19,18 @@
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::Return;
+namespace ash {
 
-namespace chromeos {
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Return;
 
 class UpdateScreenUnitTest : public testing::Test {
  public:
@@ -72,13 +74,14 @@ class UpdateScreenUnitTest : public testing::Test {
     wizard_context_ = std::make_unique<WizardContext>();
     PowerManagerClient::InitializeFake();
     fake_update_engine_client_ = new FakeUpdateEngineClient();
+    DBusThreadManager::Initialize();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
-    NetworkHandler::Initialize();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     mock_network_portal_detector_ = new MockNetworkPortalDetector();
     network_portal_detector::SetNetworkPortalDetector(
         mock_network_portal_detector_);
-    mock_error_screen_.reset(new MockErrorScreen(&mock_error_view_));
+    mock_error_screen_ = std::make_unique<MockErrorScreen>(&mock_error_view_);
 
     // Ensure proper behavior of UpdateScreen's supporting objects.
     EXPECT_CALL(*mock_network_portal_detector_, IsEnabled())
@@ -96,7 +99,7 @@ class UpdateScreenUnitTest : public testing::Test {
     update_screen_.reset();
     mock_error_screen_.reset();
     network_portal_detector::Shutdown();
-    NetworkHandler::Shutdown();
+    network_handler_test_helper_.reset();
     PowerManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
@@ -113,7 +116,7 @@ class UpdateScreenUnitTest : public testing::Test {
   FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<WizardContext> wizard_context_;
 
-  base::Optional<UpdateScreen::Result> last_screen_result_;
+  absl::optional<UpdateScreen::Result> last_screen_result_;
 
  private:
   void HandleScreenExit(UpdateScreen::Result result) {
@@ -124,6 +127,7 @@ class UpdateScreenUnitTest : public testing::Test {
   // Test versions of core browser infrastructure.
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenUnitTest);
 };
@@ -199,4 +203,4 @@ TEST_F(UpdateScreenUnitTest, HandleCriticalUpdateError) {
   EXPECT_EQ(UpdateScreen::Result::UPDATE_ERROR, last_screen_result_.value());
 }
 
-}  // namespace chromeos
+}  // namespace ash

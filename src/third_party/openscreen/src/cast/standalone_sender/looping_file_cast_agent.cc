@@ -15,6 +15,7 @@
 #include "cast/streaming/offer_messages.h"
 #include "json/value.h"
 #include "platform/api/tls_connection_factory.h"
+#include "util/json/json_helpers.h"
 #include "util/stringprintf.h"
 #include "util/trace_logging.h"
 
@@ -23,45 +24,6 @@ namespace cast {
 namespace {
 
 using DeviceMediaPolicy = SenderSocketFactory::DeviceMediaPolicy;
-
-// TODO(miu): These string constants appear in a few places and should be
-// de-duped to a common location.
-constexpr char kMirroringAppId[] = "0F5096E8";
-constexpr char kMirroringAudioOnlyAppId[] = "85CDB22F";
-
-// Parses the given string as a JSON object. If the parse fails, an empty object
-// is returned.
-//
-// TODO(miu): De-dupe this code (same as in cast/receiver/application_agent.cc)!
-Json::Value ParseAsObject(absl::string_view value) {
-  ErrorOr<Json::Value> parsed = json::Parse(value);
-  if (parsed.is_value() && parsed.value().isObject()) {
-    return std::move(parsed.value());
-  }
-  return Json::Value(Json::objectValue);
-}
-
-// Returns true if the 'type' field in |object| has the given |type|.
-//
-// TODO(miu): De-dupe this code (same as in cast/receiver/application_agent.cc)!
-bool HasType(const Json::Value& object, CastMessageType type) {
-  OSP_DCHECK(object.isObject());
-  const Json::Value& value =
-      object.get(kMessageKeyType, Json::Value::nullSingleton());
-  return value.isString() && value.asString() == CastMessageTypeToString(type);
-}
-
-// Returns the string found in object[field] if possible; otherwise, returns
-// |fallback|. The fallback string is returned if |object| is not an object or
-// the |field| key does not reference a string within the object.
-std::string ExtractStringFieldValue(const Json::Value& object,
-                                    const char* field,
-                                    std::string fallback = {}) {
-  if (object.isObject() && object[field].isString()) {
-    return object[field].asString();
-  }
-  return fallback;
-}
 
 }  // namespace
 
@@ -161,18 +123,31 @@ void LoopingFileCastAgent::OnMessage(VirtualConnectionRouter* router,
 
   if (message.namespace_() == kReceiverNamespace &&
       message_port_.GetSocketId() == ToCastSocketId(socket)) {
-    const Json::Value payload = ParseAsObject(message.payload_utf8());
-    if (HasType(payload, CastMessageType::kReceiverStatus)) {
-      HandleReceiverStatus(payload);
-    } else if (HasType(payload, CastMessageType::kLaunchError)) {
+    const ErrorOr<Json::Value> payload = json::Parse(message.payload_utf8());
+    if (payload.is_error()) {
+      OSP_LOG_ERROR << "Failed to parse message: " << payload.error();
+    }
+
+    if (HasType(payload.value(), CastMessageType::kReceiverStatus)) {
+      HandleReceiverStatus(payload.value());
+    } else if (HasType(payload.value(), CastMessageType::kLaunchError)) {
+      std::string reason;
+      if (!json::ParseAndValidateString(payload.value()[kMessageKeyReason],
+                                        &reason)) {
+        reason = "UNKNOWN";
+      }
       OSP_LOG_ERROR
           << "Failed to launch the Cast Mirroring App on the Receiver! Reason: "
-          << ExtractStringFieldValue(payload, kMessageKeyReason, "UNKNOWN");
+          << reason;
       Shutdown();
-    } else if (HasType(payload, CastMessageType::kInvalidRequest)) {
+    } else if (HasType(payload.value(), CastMessageType::kInvalidRequest)) {
+      std::string reason;
+      if (!json::ParseAndValidateString(payload.value()[kMessageKeyReason],
+                                        &reason)) {
+        reason = "UNKNOWN";
+      }
       OSP_LOG_ERROR << "Cast Receiver thinks our request is invalid: "
-                    << ExtractStringFieldValue(payload, kMessageKeyReason,
-                                               "UNKNOWN");
+                    << reason;
     }
   }
 }
@@ -191,9 +166,10 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
           ? status[kMessageKeyStatus][kMessageKeyApplications][0]
           : Json::Value();
 
-  const std::string& running_app_id =
-      ExtractStringFieldValue(details, kMessageKeyAppId);
-  if (running_app_id != GetMirroringAppId()) {
+  std::string running_app_id;
+  if (!json::ParseAndValidateString(details[kMessageKeyAppId],
+                                    &running_app_id) ||
+      running_app_id != GetMirroringAppId()) {
     // The mirroring app is not running. If it was just stopped, Shutdown() will
     // tear everything down. If it has been stopped already, Shutdown() is a
     // no-op.
@@ -201,9 +177,10 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
     return;
   }
 
-  const std::string& session_id =
-      ExtractStringFieldValue(details, kMessageKeySessionId);
-  if (session_id.empty()) {
+  std::string session_id;
+  if (!json::ParseAndValidateString(details[kMessageKeySessionId],
+                                    &session_id) ||
+      session_id.empty()) {
     OSP_LOG_ERROR
         << "Cannot continue: Cast Receiver did not provide a session ID for "
            "the Mirroring App running on it.";
@@ -229,9 +206,10 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
     return;
   }
 
-  const std::string& message_destination_id =
-      ExtractStringFieldValue(details, kMessageKeyTransportId);
-  if (message_destination_id.empty()) {
+  std::string message_destination_id;
+  if (!json::ParseAndValidateString(details[kMessageKeyTransportId],
+                                    &message_destination_id) ||
+      message_destination_id.empty()) {
     OSP_LOG_ERROR
         << "Cannot continue: Cast Receiver did not provide a transport ID for "
            "routing messages to the Mirroring App running on it.";
@@ -291,7 +269,7 @@ void LoopingFileCastAgent::CreateAndStartSession() {
   video_config.max_bit_rate =
       connection_settings_->max_bitrate - audio_config.bit_rate;
   // Use default display resolution of 1080P.
-  video_config.resolutions.emplace_back(DisplayResolution{});
+  video_config.resolutions.emplace_back(Resolution{1920, 1080});
 
   OSP_VLOG << "Starting session negotiation.";
   const Error negotiation_error =

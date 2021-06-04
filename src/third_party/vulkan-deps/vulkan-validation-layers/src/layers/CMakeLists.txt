@@ -135,7 +135,6 @@ endif()
 set(CHASSIS_LIBRARY_FILES
     generated/chassis.cpp
     generated/layer_chassis_dispatch.cpp
-    generated/command_counter_helper.cpp
     generated/vk_safe_struct.cpp
     generated/vk_safe_struct.h
     layer_options.cpp
@@ -157,17 +156,21 @@ set(CORE_VALIDATION_LIBRARY_FILES
     core_error_location.h
     core_error_location.cpp
     core_validation_types.h
+    base_node.h
     drawdispatch.cpp
     convert_to_renderpass2.cpp
     descriptor_sets.cpp
     descriptor_sets.h
     buffer_validation.cpp
     buffer_validation.h
+    shader_module.cpp
+    shader_module.h
     shader_validation.cpp
     shader_validation.h
     sync_vuid_maps.cpp
     sync_vuid_maps.h
     generated/spirv_validation_helper.cpp
+    generated/command_validation.cpp
     generated/synchronization_validation_types.cpp
     gpu_validation.cpp
     generated/corechecks_optick_instrumentation.cpp
@@ -291,7 +294,7 @@ if(BUILD_LAYERS)
     # Run each .json.in file through the generator We need to create the generator.cmake script so that the generator can be run at
     # compile time, instead of configure time Running at compile time lets us use cmake generator expressions (TARGET_FILE_NAME and
     # TARGET_FILE_DIR, specifically)
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\")")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\" @ONLY)")
     foreach(TARGET_NAME ${TARGET_NAMES})
         set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
         # If this json file is not a metalayer, get the needed properties from that target

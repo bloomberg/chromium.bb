@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-
-class Profile;
+#include "ui/base/metadata/metadata_header_macros.h"
 
 namespace ui {
 class MouseEvent;
@@ -42,13 +40,6 @@ class CastDialogSinkButton : public HoverButton {
 
   const UIMediaSink& sink() const { return sink_; }
 
-  // If this button will cast to a meeting, creates a view showing a warning
-  // about the feature being deprecated.  Otherwise returns nullptr.  The
-  // |profile| parameter is used to open the meeting tab the the user clicks on
-  // the link in the warning.
-  std::unique_ptr<views::View> MakeCastToMeetingDeprecationWarningView(
-      Profile* profile);
-
   static const gfx::VectorIcon* GetVectorIcon(SinkIconType icon_type);
   static const gfx::VectorIcon* GetVectorIcon(UIMediaSink sink);
 
@@ -67,7 +58,7 @@ class CastDialogSinkButton : public HoverButton {
   void OnEnabledChanged();
 
   const UIMediaSink sink_;
-  base::Optional<std::u16string> saved_status_text_;
+  absl::optional<std::u16string> saved_status_text_;
   base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
           base::BindRepeating(&CastDialogSinkButton::OnEnabledChanged,

@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/test/https_forwarder.h"
 
 #include <cstring>
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/check.h"
@@ -31,7 +32,7 @@ class ForwardingServer : public net::LocalTestServer {
   ForwardingServer(const std::string& ssl_host, const GURL& forward_target);
 
   // net::LocalTestServer:
-  base::Optional<std::vector<base::FilePath>> GetPythonPath() const override;
+  absl::optional<std::vector<base::FilePath>> GetPythonPath() const override;
   bool GetTestServerPath(base::FilePath* testserver_path) const override;
   bool GenerateAdditionalArguments(
       base::DictionaryValue* arguments) const override;
@@ -51,16 +52,16 @@ ForwardingServer::ForwardingServer(const std::string& ssl_host,
       ssl_host_(ssl_host),
       forward_target_(forward_target) {}
 
-base::Optional<std::vector<base::FilePath>> ForwardingServer::GetPythonPath()
+absl::optional<std::vector<base::FilePath>> ForwardingServer::GetPythonPath()
     const {
-  base::Optional<std::vector<base::FilePath>> ret =
+  absl::optional<std::vector<base::FilePath>> ret =
       net::LocalTestServer::GetPythonPath();
   if (!ret)
-    return base::nullopt;
+    return absl::nullopt;
 
   base::FilePath net_testserver_path;
   if (!LocalTestServer::GetTestServerPath(&net_testserver_path))
-    return base::nullopt;
+    return absl::nullopt;
   ret->push_back(net_testserver_path.DirName());
   return ret;
 }
@@ -114,10 +115,11 @@ bool HTTPSForwarder::Initialize(const std::string& ssl_host,
       net::GetTestCertsDirectory(), "ocsp-test-root.pem");
   if (!root_cert)
     return false;
-  test_root_.reset(new net::ScopedTestRoot(root_cert.get()));
+  test_root_ = std::make_unique<net::ScopedTestRoot>(root_cert.get());
 
   ssl_host_ = ssl_host;
-  forwarding_server_.reset(new ForwardingServer(ssl_host, forward_target));
+  forwarding_server_ =
+      std::make_unique<ForwardingServer>(ssl_host, forward_target);
   return forwarding_server_->Start();
 }
 

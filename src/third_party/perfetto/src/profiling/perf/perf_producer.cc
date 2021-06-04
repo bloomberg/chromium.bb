@@ -538,7 +538,7 @@ bool PerfProducer::ReadAndParsePerCpuBuffer(EventReader* reader,
     if (!ds->event_config.sample_callstacks()) {
       CompletedSample output;
       output.common = sample->common;
-      PostEmitSample(ds_id, std::move(output));
+      EmitSample(ds_id, std::move(output));
       continue;
     }
 
@@ -554,8 +554,8 @@ bool PerfProducer::ReadAndParsePerCpuBuffer(EventReader* reader,
     if (process_state == ProcessTrackingStatus::kExpired) {
       PERFETTO_DLOG("Skipping sample for previously expired pid [%d]",
                     static_cast<int>(pid));
-      PostEmitSkippedSample(ds_id, std::move(sample.value()),
-                            SampleSkipReason::kReadStage);
+      EmitSkippedSample(ds_id, std::move(sample.value()),
+                        SampleSkipReason::kReadStage);
       continue;
     }
 
@@ -597,8 +597,8 @@ bool PerfProducer::ReadAndParsePerCpuBuffer(EventReader* reader,
       uint64_t footprint_bytes = unwinding_worker_->GetEnqueuedFootprint();
       if (footprint_bytes + sample_stack_size >= max_footprint_bytes) {
         PERFETTO_DLOG("Skipping sample enqueueing due to footprint limit.");
-        PostEmitSkippedSample(ds_id, std::move(sample.value()),
-                              SampleSkipReason::kUnwindEnqueue);
+        EmitSkippedSample(ds_id, std::move(sample.value()),
+                          SampleSkipReason::kUnwindEnqueue);
         continue;
       }
     }
@@ -613,8 +613,8 @@ bool PerfProducer::ReadAndParsePerCpuBuffer(EventReader* reader,
       unwinding_worker_->IncrementEnqueuedFootprint(sample_stack_size);
     } else {
       PERFETTO_DLOG("Unwinder queue full, skipping sample");
-      PostEmitSkippedSample(ds_id, std::move(sample.value()),
-                            SampleSkipReason::kUnwindEnqueue);
+      EmitSkippedSample(ds_id, std::move(sample.value()),
+                        SampleSkipReason::kUnwindEnqueue);
     }
   }
 
@@ -636,7 +636,8 @@ void PerfProducer::OnProcDescriptors(pid_t pid,
     if (proc_status_it == ds.process_states.end())
       continue;
 
-    if (!CanProfile(ds.event_config.raw_ds_config(), uid)) {
+    if (!CanProfile(ds.event_config.raw_ds_config(), uid,
+                    ds.event_config.target_installed_by())) {
       PERFETTO_DLOG("Not profileable: pid [%d], uid [%d] for DS [%zu]",
                     static_cast<int>(pid), static_cast<int>(uid),
                     static_cast<size_t>(it.first));

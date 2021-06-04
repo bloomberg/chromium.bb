@@ -78,11 +78,11 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   // ConversionStorage
   void StoreImpression(const StorableImpression& impression) override;
-  int MaybeCreateAndStoreConversionReports(
+  bool MaybeCreateAndStoreConversionReport(
       const StorableConversion& conversion) override;
-  std::vector<ConversionReport> GetConversionsToReport(
-      base::Time expiry_time) override;
-  std::vector<StorableImpression> GetActiveImpressions() override;
+  std::vector<ConversionReport> GetConversionsToReport(base::Time expiry_time,
+                                                       int limit = -1) override;
+  std::vector<StorableImpression> GetActiveImpressions(int limit = -1) override;
   int DeleteExpiredImpressions() override;
   bool DeleteConversion(int64_t conversion_id) override;
   void ClearData(
@@ -96,18 +96,6 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   bool HasCapacityForStoringImpression(const std::string& serialized_origin);
   int GetCapacityForStoringConversion(const std::string& serialized_origin);
-
-  enum class ImpressionFilter { kAll, kOnlyActive };
-
-  // Returns rows of the impressions table. |filter| indicates whether to
-  // only retrieve active impressions. |min_expiry_time| controls the minimum
-  // impression expiry time to filter by. |start_impression_id| is the smallest
-  // impression id that can be returned. |num_impressions| limits the number
-  // of rows returned.
-  std::vector<StorableImpression> GetImpressions(ImpressionFilter filter,
-                                                 base::Time min_expiry_time,
-                                                 int64_t start_impression_id,
-                                                 int num_impressions);
 
   // Initializes the database if necessary, and returns whether the database is
   // open. |should_create| indicates whether the database should be created if
@@ -130,7 +118,7 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   // at for lazy initialization, and used as a signal for if the database is
   // closed. This is initialized in the first call to LazyInit() to avoid doing
   // additional work in the constructor, see https://crbug.com/1121307.
-  base::Optional<DbStatus> db_init_status_;
+  absl::optional<DbStatus> db_init_status_;
 
   // May be null if the database:
   //  - could not be opened

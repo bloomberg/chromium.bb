@@ -232,6 +232,7 @@ struct CompressParams {
 
   // Down/upsample the image before encoding / after decoding by this factor.
   size_t resampling = 1;
+  size_t ec_resampling = 1;
 };
 
 static constexpr float kMinButteraugliForDynamicAR = 0.5f;
@@ -244,6 +245,11 @@ static constexpr float kMinButteraugliForNoise = 99.0f;
 
 // Minimum butteraugli distance the encoder accepts.
 static constexpr float kMinButteraugliDistance = 0.01f;
+
+// Tile size for encoder-side processing. Must be equal to color tile dim in the
+// current implementation.
+static constexpr size_t kEncTileDim = 64;
+static constexpr size_t kEncTileDimInBlocks = kEncTileDim / kBlockDim;
 
 }  // namespace jxl
 

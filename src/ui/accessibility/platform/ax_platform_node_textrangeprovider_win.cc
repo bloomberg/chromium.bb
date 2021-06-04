@@ -161,7 +161,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
           ? other_provider->start()
           : other_provider->end();
 
-  base::Optional<int> comparison =
+  absl::optional<int> comparison =
       this_provider_endpoint->CompareTo(*other_provider_endpoint);
   if (!comparison)
     return UIA_E_INVALIDOPERATION;
@@ -532,13 +532,13 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     const bool at_end_leaf_text_anchor =
         it->anchor_id() == end_leaf_text_position->anchor_id() &&
         it->tree_id() == end_leaf_text_position->tree_id();
-    const base::Optional<int> start_offset =
-        it->IsTextPosition() ? base::make_optional(it->text_offset())
-                             : base::nullopt;
-    const base::Optional<int> end_offset =
+    const absl::optional<int> start_offset =
+        it->IsTextPosition() ? absl::make_optional(it->text_offset())
+                             : absl::nullopt;
+    const absl::optional<int> end_offset =
         at_end_leaf_text_anchor
-            ? base::make_optional(end_leaf_text_position->text_offset())
-            : base::nullopt;
+            ? absl::make_optional(end_leaf_text_position->text_offset())
+            : absl::nullopt;
     HRESULT hr = platform_node->GetTextAttributeValue(
         attribute_id, start_offset, end_offset, &current_value);
     if (FAILED(hr))
@@ -788,7 +788,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitImpl(
 
   // If the start was moved past the end, create a degenerate range with the end
   // equal to the start; do the equivalent if the end moved past the start.
-  base::Optional<int> endpoint_comparison =
+  absl::optional<int> endpoint_comparison =
       AXNodeRange::CompareEndpoints(start().get(), end().get());
   DCHECK(endpoint_comparison.has_value());
 
@@ -1243,8 +1243,8 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange(
   // the TextPattern must be preserved so that the UIA client can handle
   // scenarios such as determining which characters were deleted. So
   // normalization must be bypassed.
-  if (HasCaretOrSelectionInPlainTextField(start) ||
-      HasCaretOrSelectionInPlainTextField(end)) {
+  if (HasCaretOrSelectionInAtomicTextField(start) ||
+      HasCaretOrSelectionInAtomicTextField(end)) {
     return;
   }
 
@@ -1395,28 +1395,36 @@ AXPlatformNodeTextRangeProviderWin::GetLowestAccessibleCommonPlatformNode()
   return platform_node->GetLowestAccessibleElement();
 }
 
-bool AXPlatformNodeTextRangeProviderWin::HasCaretOrSelectionInPlainTextField(
+bool AXPlatformNodeTextRangeProviderWin::HasCaretOrSelectionInAtomicTextField(
     const AXPositionInstance& position) const {
-  // This condition fixes issues when the caret is inside a plain text field,
-  // but causes more issues when used inside of a rich text field. For this
-  // reason, if we have a caret or a selection inside of an editable node,
-  // restrict this to a plain text field as we gain nothing from using it in a
-  // rich text field.
+  // This condition fixes issues when the caret is inside an atomic text field,
+  // but causes more issues when used inside of a non-atomic text field. An
+  // atomic text field does not expose its internal implementation to assistive
+  // software, appearing as a single leaf node in the accessibility tree. It
+  // includes <input>, <textarea> and Views-based text fields.
   //
-  // Note that "AXPlatformNodeDelegate::IsDescendantOfPlainTextField()" also
-  // returns true when this node is at the root of a plain text field, i.e. the
-  // node could either be a descendant or it could be equivalent to the field's
-  // root node.
+  // For this reason, if we have a caret or a selection inside of an editable
+  // node, restrict this to an atomic text field as we gain nothing from using
+  // it in a non-atomic text field.
+  //
+  // Note that "AXPlatformNodeDelegate::IsDescendantOfAtomicTextField()" also
+  // returns true when this node is at the root of an atomic text field, i.e.
+  // the node could either be a descendant or it could be equivalent to the
+  // field's root node. An atomic text field does not expose its internal
+  // implementation to assistive software, appearing as a single leaf node in
+  // the accessibility tree. It includes <input>, <textarea> and Views-based
+  // text fields.
   AXPlatformNodeDelegate* delegate = GetDelegate(position.get());
   return delegate && delegate->HasVisibleCaretOrSelection() &&
-         delegate->IsDescendantOfPlainTextField();
+         delegate->IsDescendantOfAtomicTextField();
 }
 
 // static
 bool AXPlatformNodeTextRangeProviderWin::TextAttributeIsArrayType(
     TEXTATTRIBUTEID attribute_id) {
   // https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-textattribute-ids
-  return attribute_id == UIA_AnnotationTypesAttributeId ||
+  return attribute_id == UIA_AnnotationObjectsAttributeId ||
+         attribute_id == UIA_AnnotationTypesAttributeId ||
          attribute_id == UIA_TabsAttributeId;
 }
 

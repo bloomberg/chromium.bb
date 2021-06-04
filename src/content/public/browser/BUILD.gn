@@ -153,6 +153,8 @@ source_set("browser_sources") {
     "favicon_status.cc",
     "favicon_status.h",
     "feature_observer_client.h",
+    "federated_identity_request_permission_context_delegate.h",
+    "federated_identity_sharing_permission_context_delegate.h",
     "file_select_listener.h",
     "file_system_access_entry_factory.h",
     "file_system_access_permission_context.h",
@@ -193,7 +195,6 @@ source_set("browser_sources") {
     "installability_error.h",
     "installed_payment_apps_finder.h",
     "invalidate_type.h",
-    "is_uvpaa.h",
     "jank_monitor.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
@@ -233,6 +234,7 @@ source_set("browser_sources") {
     "navigation_handle.h",
     "navigation_handle_timing.cc",
     "navigation_handle_timing.h",
+    "navigation_handle_user_data.h",
     "navigation_throttle.cc",
     "navigation_throttle.h",
     "navigation_type.h",
@@ -327,6 +329,7 @@ source_set("browser_sources") {
     "service_worker_external_request_result.h",
     "service_worker_running_info.cc",
     "service_worker_running_info.h",
+    "service_worker_version_base_info.h",
     "session_storage_namespace.cc",
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
@@ -339,6 +342,7 @@ source_set("browser_sources") {
     "site_isolation_policy.cc",
     "site_isolation_policy.h",
     "sms_fetcher.h",
+    "speculation_host_delegate.h",
     "speech_recognition_event_listener.h",
     "speech_recognition_manager.h",
     "speech_recognition_manager_delegate.h",
@@ -464,6 +468,7 @@ source_set("browser_sources") {
   deps = [
     "//build:chromeos_buildflags",
     "//cc",
+    "//components/services/storage/public/cpp",
     "//components/viz/host",
     "//content/browser",  # Must not be public_deps!
     "//device/fido",
@@ -491,7 +496,7 @@ source_set("browser_sources") {
     "//content/browser",
   ]
 
-  if (is_chromeos_ash || is_android || is_chromecast || is_fuchsia) {
+  if (is_chromeos_ash || is_android || is_win || is_chromecast || is_fuchsia) {
     defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 

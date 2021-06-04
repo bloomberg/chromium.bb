@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/profile_metrics",
   "+components/security_state",
   "+components/viz",
   "+printing",
@@ -23,8 +24,14 @@ specific_include_rules = {
   "headless_browser_main_parts.*": [
     "+components/policy",
     "+components/prefs",
+    "+components/pref_registry",
+    "+components/keyed_service/content",
   ],
-  "headless_browser_policy_connector.*": [
+  "headless_browser_context_impl.cc": [
+    "+components/keyed_service/content",
+    "+components/user_prefs",
+  ],
+  "headless_content_browser_client.cc": [
     "+components/policy",
   ],
 }

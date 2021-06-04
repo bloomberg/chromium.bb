@@ -30,6 +30,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_performance_monitor.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
@@ -45,6 +46,10 @@ namespace blink {
 class CanvasImageSource;
 class HTMLCanvasElement;
 class ImageBitmap;
+class
+    V8UnionCanvasRenderingContext2DOrGPUCanvasContextOrImageBitmapRenderingContextOrWebGL2RenderingContextOrWebGLRenderingContext;
+class
+    V8UnionGPUCanvasContextOrImageBitmapRenderingContextOrOffscreenCanvasRenderingContext2DOrWebGL2RenderingContextOrWebGLRenderingContext;
 
 class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
                                            public Thread::TaskObserver {
@@ -85,13 +90,17 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void RecordUKMCanvasDrawnToRenderingAPI(
       CanvasRenderingAPI canvasRenderingAPI);
 
-  static ContextType ContextTypeFromId(const String& id);
+  static ContextType ContextTypeFromId(
+      const String& id,
+      const ExecutionContext* execution_context);
   static ContextType ResolveContextTypeAliases(ContextType);
 
   CanvasRenderingContextHost* Host() const { return host_; }
 
-  const CanvasColorParams& CanvasRenderingContextColorParams() const {
-    return color_params_;
+  // TODO(https://crbug.com/1208480): This function applies only to 2D rendering
+  // contexts, and should be removed.
+  virtual CanvasColorParams CanvasRenderingContextColorParams() const {
+    return CanvasColorParams();
   }
 
   virtual scoped_refptr<StaticBitmapImage> GetImage() = 0;
@@ -117,11 +126,25 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   // called when the context is first displayed.
   virtual void SetIsBeingDisplayed(bool) = 0;
   virtual bool isContextLost() const { return true; }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  // TODO(fserb): remove AsV8RenderingContext and AsV8OffscreenRenderingContext.
+  virtual V8UnionCanvasRenderingContext2DOrGPUCanvasContextOrImageBitmapRenderingContextOrWebGL2RenderingContextOrWebGLRenderingContext*
+  AsV8RenderingContext() {
+    NOTREACHED();
+    return nullptr;
+  }
+  virtual V8UnionGPUCanvasContextOrImageBitmapRenderingContextOrOffscreenCanvasRenderingContext2DOrWebGL2RenderingContextOrWebGLRenderingContext*
+  AsV8OffscreenRenderingContext() {
+    NOTREACHED();
+    return nullptr;
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   // TODO(fserb): remove SetCanvasGetContextResult.
   virtual void SetCanvasGetContextResult(RenderingContext&) { NOTREACHED(); }
   virtual void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) {
     NOTREACHED();
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual bool IsPaintable() const = 0;
   virtual void DidDraw(const SkIRect& dirty_rect);
   virtual void DidDraw();
@@ -219,6 +242,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   virtual bool IdentifiabilityEncounteredSensitiveOps() const { return false; }
 
+  static CanvasPerformanceMonitor& GetCanvasPerformanceMonitor();
+
  protected:
   CanvasRenderingContext(CanvasRenderingContextHost*,
                          const CanvasContextCreationAttributesCore&);
@@ -230,13 +255,13 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   CanvasColorParams color_params_;
   CanvasContextCreationAttributesCore creation_attributes_;
 
-  void StartListeningForDidProcessTask();
-  void StopListeningForDidProcessTask();
-  bool listening_for_did_process_task_ = false;
+  void DidDrawCommon();
+  void RenderTaskEnded();
+  bool did_draw_in_current_task_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext);
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_

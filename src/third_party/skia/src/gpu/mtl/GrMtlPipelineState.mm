@@ -56,7 +56,7 @@ GrMtlPipelineState::GrMtlPipelineState(
 void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
                                  const GrProgramInfo& programInfo) {
     this->setRenderTargetState(renderTarget, programInfo.origin());
-    fGeometryProcessor->setData(fDataManager, programInfo.geomProc());
+    fGeometryProcessor->setData(fDataManager, *fGpu->caps()->shaderCaps(), programInfo.geomProc());
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
@@ -77,7 +77,7 @@ void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
 #ifdef SK_DEBUG
     if (programInfo.isStencilEnabled()) {
         SkASSERT(renderTarget->getStencilAttachment());
-        SkASSERT(renderTarget->numStencilBits() == 8);
+        SkASSERT(renderTarget->numStencilBits(renderTarget->numSamples() > 1) == 8);
     }
 #endif
 

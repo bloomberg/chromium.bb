@@ -13,9 +13,9 @@ static_library("sandbox") {
   sources = [
     "src/acl.cc",
     "src/acl.h",
-    "src/app_container_profile.h",
-    "src/app_container_profile_base.cc",
-    "src/app_container_profile_base.h",
+    "src/app_container.h",
+    "src/app_container_base.cc",
+    "src/app_container_base.h",
     "src/broker_services.cc",
     "src/broker_services.h",
     "src/crosscall_client.h",
@@ -95,8 +95,6 @@ static_library("sandbox") {
     "src/restricted_token_utils.h",
     "src/sandbox.cc",
     "src/sandbox.h",
-    "src/sandbox_constants.cc",
-    "src/sandbox_constants.h",
     "src/sandbox_factory.h",
     "src/sandbox_globals.cc",
     "src/sandbox_nt_types.h",
@@ -184,11 +182,18 @@ static_library("sandbox") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
+  public_deps = [ "//base" ]
+
   deps = [
-    "//base",
     "//base:base_static",
     "//sandbox:common",
   ]
+
+  # NACL on 32-bit builds this target twice, once for 64-bit and once for 32-bit
+  # so avoid this dep from running twice with the same output in that case.
+  if (current_cpu == target_cpu) {
+    deps += [ ":set_appcontainer_acls" ]
+  }
 }
 
 test("sbox_integration_tests") {
@@ -246,6 +251,20 @@ shared_library("sbox_integration_test_hijack_dll") {
   sources = [
     "tests/integration_tests/hijack_dll.cc",
     "tests/integration_tests/hijack_dll.def",
+  ]
+
+  deps = [ ":set_appcontainer_acls" ]
+}
+
+action("set_appcontainer_acls") {
+  script = "//build/win/set_appcontainer_acls.py"
+  stamp_file = "$target_out_dir/acls.stamp"
+  inputs = [ script ]
+  outputs = [ stamp_file ]
+
+  args = [
+    "--stamp=" + rebase_path(stamp_file, root_out_dir),
+    "--dir=" + rebase_path(root_out_dir, root_out_dir),
   ]
 }
 

@@ -36,6 +36,7 @@ blink::Impression CreateValidImpression() {
   result.conversion_destination = url::Origin::Create(GURL(kConversionUrl));
   result.reporting_origin = url::Origin::Create(GURL("https://c.com"));
   result.impression_data = 1UL;
+  result.priority = 10;
   return result;
 }
 
@@ -166,10 +167,10 @@ TEST_F(ConversionHostTest,
       SetBrowserClientForTesting(&browser_client);
 
   browser_client.BlockConversionMeasurementInContext(
-      base::nullopt /* impression_origin */,
-      base::make_optional(
+      absl::nullopt /* impression_origin */,
+      absl::make_optional(
           url::Origin::Create(GURL("https://blocked-top.example"))),
-      base::make_optional(
+      absl::make_optional(
           url::Origin::Create(GURL("https://blocked-reporting.example"))));
 
   struct {
@@ -295,9 +296,9 @@ TEST_F(ConversionHostTest, EmbedderDisabledContext_ConversionDisallowed) {
       SetBrowserClientForTesting(&browser_client);
 
   browser_client.BlockConversionMeasurementInContext(
-      base::nullopt /* impression_origin */,
-      base::make_optional(url::Origin::Create(GURL("https://top.example"))),
-      base::make_optional(
+      absl::nullopt /* impression_origin */,
+      absl::make_optional(url::Origin::Create(GURL("https://top.example"))),
+      absl::make_optional(
           url::Origin::Create(GURL("https://embedded.example"))));
 
   struct {
@@ -329,15 +330,17 @@ TEST_F(ConversionHostTest, EmbedderDisabledContext_ConversionDisallowed) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ConversionHostTest, EmbedderDisabledContext_ImpressionDisallowed) {
+// TODO(crbug.com/1203592): Disabled due to flakiness.
+TEST_F(ConversionHostTest,
+       DISABLED_EmbedderDisabledContext_ImpressionDisallowed) {
   ConfigurableConversionTestBrowserClient browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&browser_client);
 
   browser_client.BlockConversionMeasurementInContext(
-      base::make_optional(url::Origin::Create(GURL("https://top.example"))),
-      base::nullopt /* conversion_origin */,
-      base::make_optional(
+      absl::make_optional(url::Origin::Create(GURL("https://top.example"))),
+      absl::nullopt /* conversion_origin */,
+      absl::make_optional(
           url::Origin::Create(GURL("https://embedded.example"))));
 
   struct {
@@ -474,7 +477,8 @@ TEST_F(ConversionHostTest, NavigationWithNoImpression_Ignored) {
   EXPECT_EQ(0u, test_manager_.num_impressions());
 }
 
-TEST_F(ConversionHostTest, ValidImpression_ForwardedToManager) {
+// TODO(crbug.com/1203601): Disabled due to flakiness.
+TEST_F(ConversionHostTest, DISABLED_ValidImpression_ForwardedToManager) {
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
   auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
       GURL(kConversionUrl), main_rfh());
@@ -574,8 +578,9 @@ TEST_F(ConversionHostTest,
   EXPECT_EQ(0u, test_manager_.num_impressions());
 }
 
+// TODO(crbug.com/1203544): Disabled due to flakiness.
 TEST_F(ConversionHostTest,
-       ImpressionNavigation_OriginTrustworthyChecksPerformed) {
+       DISABLED_ImpressionNavigation_OriginTrustworthyChecksPerformed) {
   const char kLocalHost[] = "http://localhost";
 
   struct {
@@ -624,6 +629,58 @@ TEST_F(ConversionHostTest,
         << test_case.conversion_origin << " | " << test_case.reporting_origin;
     test_manager_.Reset();
   }
+}
+
+TEST_F(ConversionHostTest,
+       ImpressionInSubframe_ImpressionOriginMatchesTopPageOrigin) {
+  contents()->NavigateAndCommit(GURL("https://www.example.com"));
+
+  // Create a subframe and use it as a target for the impression registration
+  // mojo.
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+  subframe = NavigationSimulatorImpl::NavigateAndCommitFromDocument(
+      GURL("https://www.impression.com"), subframe);
+  conversion_host()->SetCurrentTargetFrameForTesting(subframe);
+
+  // Create a fake dispatch context to trigger a bad message in.
+  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::test::BadMessageObserver bad_message_observer;
+
+  const blink::Impression impression = CreateValidImpression();
+  conversion_host()->RegisterImpression(impression);
+
+  // Run loop to allow the bad message code to run if a bad message was
+  // triggered.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(bad_message_observer.got_bad_message());
+  EXPECT_EQ(1u, test_manager_.num_impressions());
+
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
+            test_manager_.last_impression_origin());
+}
+
+TEST_F(ConversionHostTest, ValidImpression_NoBadMessage) {
+  // Create a page with a secure origin.
+  contents()->NavigateAndCommit(GURL("https://www.example.com"));
+  conversion_host()->SetCurrentTargetFrameForTesting(main_rfh());
+
+  // Create a fake dispatch context to listen for bad messages.
+  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::test::BadMessageObserver bad_message_observer;
+
+  const blink::Impression impression = CreateValidImpression();
+  conversion_host()->RegisterImpression(impression);
+
+  // Run loop to allow the bad message code to run if a bad message was
+  // triggered.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(bad_message_observer.got_bad_message());
+  EXPECT_EQ(1u, test_manager_.num_impressions());
+  EXPECT_EQ(StorableImpression::SourceType::kEvent,
+            test_manager_.last_impression_source_type());
+  EXPECT_EQ(10, test_manager_.last_attribution_source_priority());
 }
 
 }  // namespace content

@@ -10,20 +10,20 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/authenticator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace user_manager {
 class User;
-}
+}  // namespace user_manager
 
-namespace chromeos {
+namespace ash {
 namespace parent_access {
 
 // Base class for parent access code configuration providers.
@@ -56,6 +56,6 @@ class ConfigSource {
 };
 
 }  // namespace parent_access
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_CONFIG_SOURCE_H_

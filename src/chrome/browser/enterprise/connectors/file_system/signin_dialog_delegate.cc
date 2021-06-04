@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,8 +21,9 @@
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "url/gurl.h"
 
 namespace {
@@ -168,8 +168,8 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
   }
 
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForUrl(
-          web_view_->GetBrowserContext(), GURL(kFileSystemBoxEndpointApi));
+      web_view_->GetBrowserContext()->GetStoragePartitionForUrl(
+          GURL(kFileSystemBoxEndpointApi));
   auto url_loader = partition->GetURLLoaderFactoryForBrowserProcess();
   auto callback =
       base::BindOnce(&FileSystemSigninDialogDelegate::OnGotOAuthTokens,

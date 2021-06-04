@@ -126,8 +126,15 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     upload_args.append('--send-mail')
   if enable_auto_submit:
     upload_args.append('--enable-auto-submit')
-  print('Uploading CL for ' + directory + '.')
-  cmd_upload(upload_args)
+  print('Uploading CL for ' + directory + '...')
+
+  ret = cmd_upload(upload_args)
+  if ret != 0:
+    print('Uploading failed for ' + directory + '.')
+    print('Note: git cl split has built-in resume capabilities.')
+    print('Delete ' + git.current_branch() +
+          ' then run git cl split again to resume uploading.')
+
   if comment:
     changelist().AddComment(FormatDescriptionOrComment(comment, directory),
                             publish=True)
@@ -232,6 +239,16 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
       answer = gclient_utils.AskForData('Proceed? (y/n):')
       if answer.lower() != 'y':
         return 0
+
+    # Verify that the description contains a bug link.
+    bug_pattern = re.compile(r"^Bug:\s*[0-9]+", re.MULTILINE)
+    matches = re.findall(bug_pattern, description)
+    answer = 'y'
+    if not matches:
+      answer = gclient_utils.AskForData(
+          'Description does not include a bug link. Proceed? (y/n):')
+    if answer.lower() != 'y':
+      return 0
 
     for cl_index, (directory, files) in \
         enumerate(files_split_by_owners.items(), 1):
